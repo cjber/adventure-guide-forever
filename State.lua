@@ -42,6 +42,14 @@ function State.Player()
 	}
 end
 
+-- The client's name for a map, in the player's language; nil when it has none, so the caller falls back to data.
+---@param map integer
+---@return string?
+function State.MapName(map)
+	local info = C_Map.GetMapInfo(map)
+	return info and info.name ~= "" and info.name or nil
+end
+
 ---@type table<integer, boolean>
 local completed = {}
 local ready = false

@@ -5,9 +5,9 @@ card | 1440 Ashenvale | 8 quests
 step 1 | turnin:947 | Turn in: Cave Mushrooms | 1439 0.3732,0.4364 | ready to hand in
 step 2 | turnin:948 | Turn in: Onu | 1439 0.4355,0.7629 | ready to hand in
 step 3 | turnin:967 | Turn in: The Tower of Althalaxx | 1440 0.2620,0.3870 | ready to hand in
-step 4 | turnin:168 | Turn in: Collecting Memories | 1453 0.7031,0.4082 | ready to hand in
-step 5 | pickup:1429:0.6522:0.6971 | Pick up quests: Theocritus | 1429 0.6522,0.6971 | near your level
-step 6 | pickup:1433:0.1019:0.7146 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
-step 7 | pickup:1433:0.1677:0.4633 | Pick up quests: Martie Jainrose | 1433 0.1677,0.4633 | 2 quests here
-step 8 | pickup:1433:0.2140:0.4396 | Pick up quests: Barkeep Daniels | 1433 0.2140,0.4396 | 3 quests here
-step 9 | pickup:1433:0.2264:0.4738 | Pick up quests: Dockmaster Baren | 1433 0.2264,0.4738 | 2 quests here
+step 4 | pickup:1429:0.6522:0.6971 | Pick up quests: Theocritus | 1429 0.6522,0.6971 | near your level
+step 5 | pickup:1433:0.1019:0.7146 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
+step 6 | pickup:1433:0.1677:0.4633 | Pick up quests: Martie Jainrose | 1433 0.1677,0.4633 | 2 quests here
+step 7 | pickup:1433:0.2140:0.4396 | Pick up quests: Barkeep Daniels | 1433 0.2140,0.4396 | 3 quests here
+step 8 | pickup:1433:0.2264:0.4738 | Pick up quests: Dockmaster Baren | 1433 0.2264,0.4738 | 2 quests here
+step 9 | turnin:168 | Turn in: Collecting Memories | 1453 0.7031,0.4082 | Hand in when you're in Stormwind City

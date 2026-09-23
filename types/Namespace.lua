@@ -121,7 +121,7 @@
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
 ---@field Zones fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>): AGFZoneChoice[]
----@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs): AGFRoute
+---@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: fun(map: integer): string?): AGFRoute
 
 ---@class AGFState
 ---@field Player fun(): AGFPlayer
@@ -129,6 +129,7 @@
 ---@field Log fun(): table<integer, AGFLogQuest>
 ---@field OnChange fun(callback: fun())
 ---@field Ready fun(): boolean completion data has loaded
+---@field MapName fun(map: integer): string? the client's localised map name, nil when it has none
 
 -- Shortest Path Forever's public API, mirrored field for field from its types/API.lua (SPFAPIStop, SPFPublicAPI) at
 -- the sha tests/contract_spec.lua pins; that spec fails on any drift. Integrations.lua's REQUIRED lists exactly
@@ -183,6 +184,7 @@
 ---@field HELP_OPEN string
 ---@field HELP_AUDIT string
 ---@field HELP_DUMP string
+---@field HAND_IN_WHEN string format: zone name; the reason on a turn-in the route leaves for another continent
 
 ---@class AGFNamespace
 ---@field TITLE string

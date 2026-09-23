@@ -14,6 +14,7 @@ ns.L = {
 	HELP_OPEN = "open the world map and use the Adventure Guide tab.",
 	HELP_AUDIT = "/agf audit - check the bundled data against the game",
 	HELP_DUMP = "/agf dump - save the guide's layout for a bug report",
+	HAND_IN_WHEN = "Hand in when you're in %s",
 }
 local L = ns.L
 
@@ -144,7 +145,8 @@ local pendingRebuild = false
 local routeListeners = {}
 
 local function BuildRoute()
-	return ns.Model.Plan(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), ns.Prefs())
+	local state = ns.State
+	return ns.Model.Plan(ns.Data, state.Player(), state.Completed(), state.Log(), ns.Prefs(), state.MapName)
 end
 
 local function Rebuild()

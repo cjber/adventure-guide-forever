@@ -256,6 +256,10 @@ do
 		equal(h.prints[before + index]:sub(-#line), line, "L: help line " .. index)
 	end
 	equal(#h.prints, before + 3, "L: three help lines")
+	-- Map names come from the client (C_Map.GetMapInfo), which the planner prefers over the data's English.
+	equal(h.ns.State.MapName(1453), "Map 1453", "L: the client's map name")
+	h.G.C_Map.GetMapInfo = function() end
+	equal(h.ns.State.MapName(1453), nil, "L: no client name, so the data's")
 	clean(h, "L")
 end
 

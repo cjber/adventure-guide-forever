@@ -409,7 +409,46 @@ local function TwoOpt(path, start, where)
 	return path
 end
 
-function Model.Plan(data, player, completed, log, prefs)
+-- Groups the selected steps by continent, the player's first and the rest by how dear they are to reach, so the
+-- route crosses each ocean once. In each group the turn-ins in `away` (another continent than the player's) go last.
+local function Order(selected, origin, where, away)
+	local groups, byContinent = {}, {}
+	for _, step in ipairs(selected) do
+		local continent = where[step].continent
+		local group = byContinent[continent]
+		if not group then
+			group = { continent = continent, main = {}, last = {}, reach = math.huge }
+			byContinent[continent] = group
+			groups[#groups + 1] = group
+		end
+		table.insert(away[step] and group.last or group.main, step)
+		group.reach = math.min(group.reach, Cost(origin, where[step]))
+	end
+	local home = origin and origin.continent
+	table.sort(groups, function(a, b)
+		if (a.continent == home) ~= (b.continent == home) then
+			return a.continent == home
+		end
+		if a.reach ~= b.reach then
+			return a.reach < b.reach
+		end
+		return tostring(a.continent) < tostring(b.continent)
+	end)
+	local steps, from = {}, origin
+	for _, group in ipairs(groups) do
+		for _, part in ipairs({ group.main, group.last }) do
+			local start = from
+			for _, step in ipairs(TwoOpt(Path(part, start, where), start, where)) do
+				steps[#steps + 1] = step
+				from = where[step]
+			end
+		end
+	end
+	return steps
+end
+
+---@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
+function Model.Plan(data, player, completed, log, prefs, mapName)
 	local index = Index(data)
 	local zones, eligible = Choices(data, player, completed, log, index, prefs)
 	local zone = prefs.zone or (zones[1] and zones[1].map)
@@ -463,5 +502,24 @@ function Model.Plan(data, player, completed, log, prefs)
 		Take(best)
 	end
 
-	return { steps = TwoOpt(Path(selected, origin, where), origin, where), zones = zones, zone = zone }
+	-- A turn-in across an ocean waits for the rest of that continent's steps, and says where it is.
+	local away = {}
+	for _, step in ipairs(selected) do
+		local position = where[step]
+		if
+			step.kind == "turnin"
+			and origin
+			and origin.known
+			and position.known
+			and position.continent ~= origin.continent
+		then
+			away[step] = true
+			local name = (mapName and mapName(step.map)) or (data.maps[step.map] and data.maps[step.map].name)
+			if name then
+				step.reason = ns.L.HAND_IN_WHEN:format(name)
+				step.detail = step.reason
+			end
+		end
+	end
+	return { steps = Order(selected, origin, where, away), zones = zones, zone = zone }
 end

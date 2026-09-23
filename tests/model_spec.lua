@@ -1,5 +1,12 @@
 -- Run from the repository root: luajit tests/model_spec.lua
 local ns = {}
+-- Core.lua for ns.L, the planner's copy; its load-time hooks into the client are stubbed, since only the copy is read.
+local core = assert(loadfile("Core.lua"))
+setfenv(
+	core,
+	setmetatable({ EventUtil = { ContinueOnAddOnLoaded = function() end }, SlashCmdList = {} }, { __index = _G })
+)
+core("AdventureGuideForever", ns)
 assert(loadfile("Model.lua"))("AdventureGuideForever", ns)
 local Model, checks = ns.Model, 0
 local function equal(actual, expected, label)
@@ -207,6 +214,7 @@ for id = 1, 8 do
 end
 local room = Model.Plan(eight, player, {}, carried, prefs())
 equal(room.steps[Model.MAX_STEPS].key, "turnin:200", "with room, the far turn-in comes last")
+equal(room.steps[Model.MAX_STEPS].reason, "Hand in when you're in Far Shore", "and says where")
 local near = { quests = { [1] = quest(0.9), [2] = quest(0.4, 0.5, 8) }, zones = data.zones, maps = tiers.maps }
 near.quests[2].zone = 1
 equal(Model.Plan(near, player, {}, {}, prefs()).steps[1].map, 1, "the player's own map first")

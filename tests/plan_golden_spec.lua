@@ -3,6 +3,13 @@
 -- tests/golden/<fixture>.txt, so every model change shows as a reviewable diff. AGF_UPDATE_GOLDEN=1 rewrites them.
 local ns = {}
 assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
+-- Core.lua for ns.L, the planner's copy; its load-time hooks into the client are stubbed, since only the copy is read.
+local core = assert(loadfile("Core.lua"))
+setfenv(
+	core,
+	setmetatable({ EventUtil = { ContinueOnAddOnLoaded = function() end }, SlashCmdList = {} }, { __index = _G })
+)
+core("AdventureGuideForever", ns)
 assert(loadfile("Model.lua"))("AdventureGuideForever", ns)
 local characters = dofile("tests/fixtures/characters.lua")
 local Model, data, checks = ns.Model, ns.Data, 0
@@ -78,6 +85,27 @@ for _, fixture in ipairs(characters.list) do
 				equal(index > next, true, "ne21_crosszone: " .. step.key .. " (another continent) comes after")
 			end
 		end
+	end
+
+	-- F12: a route crosses an ocean at most once, and a turn-in over there waits until the route is there.
+	local changes = 0
+	for index = 2, #route.steps do
+		local before, after = data.maps[route.steps[index - 1].map], data.maps[route.steps[index].map]
+		changes = changes + (before.continent ~= after.continent and 1 or 0)
+	end
+	equal(changes <= 1, true, fixture.name .. ": at most one continent change")
+	if fixture.name == "ne21_crosszone" then
+		local last = route.steps[#route.steps]
+		equal(changes, 1, "ne21_crosszone: exactly one continent change")
+		equal(last.key, "turnin:168", "ne21_crosszone: the Stormwind turn-in is last")
+		equal(last.reason, "Hand in when you're in Stormwind City", "ne21_crosszone: the far turn-in says where")
+		equal(
+			Model.Plan(data, player, completed, log, prefs, function()
+				return "Hurlevent"
+			end).steps[#route.steps].reason,
+			"Hand in when you're in Hurlevent",
+			"ne21_crosszone: the client's map name wins"
+		)
 	end
 
 	local text = Render(fixture, zones, route)
