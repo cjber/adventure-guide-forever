@@ -1,0 +1,24 @@
+package-as: AdventureGuideForever
+
+manual-changelog:
+  filename: .release-notes.md
+  markup-type: markdown
+
+ignore:
+  - AGENTS.md
+  - .release-notes.md
+  - tools
+  - types
+  - .types
+  - .styluaignore
+  - tests
+  - docs
+  - media/icon.svg
+  - media/icon-400.png
+  - PLAN.md
+  - .luacheckrc
+  - .gitleaks.toml
+  - .agents
+  - .sift
+  - .luarc.json
+  - stylua.toml

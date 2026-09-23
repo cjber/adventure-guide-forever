@@ -1,0 +1,11 @@
+# The data generators are standard-library scripts run by hand and by
+# refresh-data.yml on the runner's system python3.
+line-length = 120
+target-version = "py310"
+
+[lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[lint.per-file-ignores]
+# Imports wowmock after putting its directory on sys.path.
+"screenshots.py" = ["E402"]
