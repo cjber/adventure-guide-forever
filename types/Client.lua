@@ -33,14 +33,27 @@ SlashCmdList = nil
 ---@param uiMapID? integer
 function ToggleWorldMap(uiMapID) end
 
+---@class AGFQuestContentFrame : Frame
+---@field displayMode any
+
 ---@class AGFQuestMapFrame : Frame
 ---@field TabButtons AGFTabButton[]
----@field ContentFrames Frame[]
+---@field ContentFrames AGFQuestContentFrame[]
+---@field QuestsTab Button
 ---@field MapLegendTab Button
 ---@field ContentsAnchor Frame
 ---@field displayMode any
 ---@type AGFQuestMapFrame
 QuestMapFrame = nil
+
+---@class AGFQuestMapFrameOverrides
+---@field questTabHidden? boolean
+---@field GetQuestsTabAnchorOffset fun(): number, number
+---@type AGFQuestMapFrameOverrides
+QuestMapFrameOverrides = nil
+
+---@type string
+QUESTS_LABEL = nil
 
 ---@class AGFMapProvider
 ---@field GetMap fun(self: AGFMapProvider): AGFWorldMapFrame
@@ -108,8 +121,9 @@ Settings = nil
 ---@class AGFTabButton : Button
 ---@field SetCustomOnMouseUpHandler fun(self: AGFTabButton, handler: fun(self: AGFTabButton, mouseButton: string, upInside: boolean))
 ---@field SetChecked fun(self: AGFTabButton, checked: boolean)
----@field activeAtlas string
----@field inactiveAtlas string
+---@field Icon Texture
+---@field activeAtlas? string
+---@field inactiveAtlas? string
 ---@field tooltipText string
 
 ---@class AGFTrackerBlock

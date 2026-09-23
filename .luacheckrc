@@ -8,7 +8,6 @@ globals = {
 	"AdventureGuideForeverCharDB",
 	"AdventureGuideForeverPinMixin",
 	"AdventureGuideForever_OnAddonCompartmentClick",
-	"QuestMapFrame", -- Panel.lua writes .displayMode on it
 	"SLASH_ADVENTUREGUIDEFOREVER1",
 	"SLASH_ADVENTUREGUIDEFOREVER2",
 	"SlashCmdList",
@@ -49,6 +48,9 @@ read_globals = {
 	"UnitXP",
 	"UnitXPMax",
 	"GetXPExhaustion",
+	"QuestMapFrame",
+	"QuestMapFrameOverrides",
+	"QUESTS_LABEL",
 	"GameTooltip_Hide",
 	-- Tracker.lua
 	"Mixin",
