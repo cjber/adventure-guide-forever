@@ -51,6 +51,10 @@ read_globals = {
 	"QuestMapFrame",
 	"QuestMapFrameOverrides",
 	"QUESTS_LABEL",
+	"BACKDROP_TUTORIAL_16_16",
+	"BACKDROP_TOAST_12_12",
+	"NORMAL_FONT_COLOR",
+	"GRAY_FONT_COLOR",
 	"GameTooltip_Hide",
 	-- Tracker.lua
 	"Mixin",

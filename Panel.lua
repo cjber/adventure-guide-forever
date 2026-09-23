@@ -4,11 +4,10 @@ local _, ns = ...
 local MAX_STEPS = 5
 local MAX_ZONES = 3
 local PAD = 8
-local ROW_HEIGHT = 42
-local CARD_HEIGHT = 70
-local GOLD = { 1, 0.82, 0 }
-local EDGE = { 0.35, 0.33, 0.3 }
-local NONE = { 0, 0, 0, 0 }
+local ROW_HEIGHT = 44
+local ROW_GAP = 2
+local ROUTE_TOP = 34
+local CARD_HEIGHT = 64
 -- Classic's XP bar colours: blue while rested XP remains, purple once it runs out.
 local XP_RESTED = { 0, 0.39, 0.88 }
 local XP_NORMAL = { 0.58, 0, 0.55 }
@@ -34,50 +33,31 @@ local cards = {}
 local routeLabel
 ---@type AGFRouteRow[]
 local rows = {}
+-- How many route rows fit the panel at its current height; the rest stay hidden.
+local visibleRows = MAX_STEPS
+-- Defined below the builders; the route section's resize handler needs it.
+local Refresh
 ---@type FontString?
 local emptyText
 ---@type Button?
 local goButton
 
----@class AGFBordered : Frame
----@field Border Texture[]
+---@class AGFEdgeFrame : Frame, BackdropTemplate
 
--- A one-pixel frame edge, recoloured to gold for "selected"; four textures are cheaper and
--- crisper than stretching a square border atlas over non-square cards and rows.
----@param frame AGFBordered
----@param color number[]
-local function SetBorder(frame, color)
-	if not frame.Border then
-		frame.Border = {}
-		for index, points in ipairs({
-			{ "TOPLEFT", "TOPRIGHT", 0, 1 },
-			{ "BOTTOMLEFT", "BOTTOMRIGHT", 0, 1 },
-			{ "TOPLEFT", "BOTTOMLEFT", 1, 0 },
-			{ "TOPRIGHT", "BOTTOMRIGHT", 1, 0 },
-		}) do
-			local line = frame:CreateTexture(nil, "OVERLAY")
-			line:SetPoint(points[1])
-			line:SetPoint(points[2])
-			if points[3] > 0 then
-				line:SetWidth(1)
-			else
-				line:SetHeight(1)
-			end
-			frame.Border[index] = line
-		end
-	end
-	for _, line in ipairs(frame.Border) do
-		line:SetColorTexture(color[1], color[2], color[3], color[4] or 1)
-	end
-end
+---@class AGFEdged : Frame
+---@field Edge AGFEdgeFrame
 
----@param frame Frame
----@param alpha number
-local function Shade(frame, alpha)
-	local shade = frame:CreateTexture(nil, "BACKGROUND")
-	shade:SetAllPoints()
-	shade:SetColorTexture(0, 0, 0, alpha)
-	return shade
+-- Classic frame edges, taken from the stock backdrops (tooltip edge for cards, toast edge for
+-- the XP bar) on a child frame, so the edge draws over the art it frames.
+---@param frame AGFEdged
+---@param backdrop {edgeFile: string, edgeSize: number}
+---@param outset number
+local function AddEdge(frame, backdrop, outset)
+	local edge = CreateFrame("Frame", nil, frame, "BackdropTemplate") --[[@as AGFEdgeFrame]]
+	edge:SetPoint("TOPLEFT", -outset, outset)
+	edge:SetPoint("BOTTOMRIGHT", outset, -outset)
+	edge:SetBackdrop({ edgeFile = backdrop.edgeFile, edgeSize = backdrop.edgeSize, tileEdge = true })
+	frame.Edge = edge
 end
 
 ---@param step AGFStep
@@ -101,7 +81,7 @@ local function ShowTooltip(owner, lines)
 	GameTooltip:Show()
 end
 
----@class AGFChip : Button, AGFBordered
+---@class AGFChip : Button
 ---@field pref "quests"|"dungeons"
 
 ---@param parent Frame
@@ -113,7 +93,8 @@ local function CreateChip(parent, label, pref)
 	chip.pref = pref
 	chip:SetHeight(24)
 	chip:SetText(label)
-	chip:SetHighlightFontObject("GameFontHighlight")
+	-- A locked highlight is the template's own "on" state; gold text marks it like the mockup.
+	chip:SetHighlightFontObject("GameFontNormal")
 	chip:SetScript("OnClick", function()
 		local prefs = ns.Prefs()
 		prefs[pref] = not prefs[pref]
@@ -122,7 +103,7 @@ local function CreateChip(parent, label, pref)
 	return chip
 end
 
----@class AGFZoneCard : Button, AGFBordered
+---@class AGFZoneCard : Button, AGFEdged
 ---@field Art Texture
 ---@field Name FontString
 ---@field Range FontString
@@ -181,11 +162,14 @@ local function CreateZoneCard(parent)
 	card.BestFit:SetPoint("BOTTOMLEFT", 1, 1)
 	card.BestFit:SetPoint("BOTTOMRIGHT", -1, 1)
 	card.BestFit:SetHeight(15)
-	Shade(card.BestFit, 0.7)
+	local band = card.BestFit:CreateTexture(nil, "BACKGROUND")
+	band:SetAllPoints()
+	band:SetColorTexture(0, 0, 0, 0.7)
 	local best = card.BestFit:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
 	best:SetPoint("CENTER")
 	best:SetText("Best fit")
 
+	AddEdge(card, BACKDROP_TUTORIAL_16_16, 3)
 	card:SetScript("OnClick", function()
 		local zone = card.zone
 		if not zone then
@@ -209,7 +193,8 @@ local function CreateZoneCard(parent)
 	return card
 end
 
----@class AGFRouteRow : Button, AGFBordered
+---@class AGFRouteRow : Button
+---@field Selected Texture
 ---@field Ring Texture
 ---@field Number FontString
 ---@field Title FontString
@@ -246,10 +231,14 @@ end
 local function CreateRow(parent)
 	local row = CreateFrame("Button", nil, parent) --[[@as AGFRouteRow]]
 	row:SetHeight(ROW_HEIGHT)
-	Shade(row, 0.3)
-	local hover = row:CreateTexture(nil, "HIGHLIGHT")
-	hover:SetAllPoints()
-	hover:SetColorTexture(1, 1, 1, 0.06)
+	-- The Classic mount and pet collection list rows: background, hover and selected art.
+	local background = row:CreateTexture(nil, "BACKGROUND")
+	background:SetAtlas("PetList-ButtonBackground")
+	background:SetAllPoints()
+	row:SetHighlightAtlas("PetList-ButtonHighlight")
+	row.Selected = row:CreateTexture(nil, "OVERLAY")
+	row.Selected:SetAtlas("PetList-ButtonSelect")
+	row.Selected:SetAllPoints()
 
 	row.SkipButton = CreateRowIcon(row, "common-icon-redx", function()
 		return "Skip this step for now"
@@ -333,8 +322,10 @@ local function BuildExperience(parent, below)
 	restedBar:SetHeight(12)
 	restedBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
 	restedBar:SetStatusBarColor(XP_RESTED[1], XP_RESTED[2], XP_RESTED[3], 0.35)
-	Shade(restedBar, 0.7)
-	SetBorder(restedBar --[[@as AGFBordered]], EDGE)
+	local trough = restedBar:CreateTexture(nil, "BACKGROUND")
+	trough:SetAllPoints()
+	trough:SetColorTexture(0, 0, 0, 0.6)
+	AddEdge(restedBar --[[@as AGFEdged]], BACKDROP_TOAST_12_12, 4)
 
 	xpBar = CreateFrame("StatusBar", nil, restedBar)
 	xpBar:SetAllPoints()
@@ -402,13 +393,17 @@ local function BuildRoute(parent, below)
 	routeLabel:SetPoint("TOPLEFT", 10, -9)
 	for index = 1, MAX_STEPS do
 		local row = CreateRow(section)
-		row:SetPoint("TOPLEFT", index == 1 and routeLabel or rows[index - 1], "BOTTOMLEFT", 0, index == 1 and -8 or -4)
-		if index == 1 then
-			row:SetPoint("LEFT", 6, 0)
-		end
-		row:SetPoint("RIGHT", section, "RIGHT", -6, 0)
+		local top = -ROUTE_TOP - (index - 1) * (ROW_HEIGHT + ROW_GAP)
+		row:SetPoint("TOPLEFT", 6, top)
+		row:SetPoint("TOPRIGHT", -6, top)
 		rows[index] = row
 	end
+	-- Show only the rows that fit: the panel's height depends on the map size and UI scale.
+	section:SetScript("OnSizeChanged", function(_, _, height)
+		local fit = math.floor((height - ROUTE_TOP - 6 + ROW_GAP) / (ROW_HEIGHT + ROW_GAP))
+		visibleRows = math.max(1, math.min(MAX_STEPS, fit))
+		Refresh()
+	end)
 	emptyText = section:CreateFontString(nil, "ARTWORK", "GameFontDisable")
 	emptyText:SetPoint("TOPLEFT", routeLabel, "BOTTOMLEFT", 0, -16)
 	emptyText:SetPoint("RIGHT", -10, 0)
@@ -486,7 +481,11 @@ local function RefreshChoices(route, prefs)
 	for _, chip in ipairs(chips) do
 		local on = prefs[chip.pref]
 		chip:SetNormalFontObject(on and "GameFontNormal" or "GameFontDisable")
-		SetBorder(chip, on and GOLD or NONE)
+		if on then
+			chip:LockHighlight()
+		else
+			chip:UnlockHighlight()
+		end
 	end
 	for index, card in ipairs(cards) do
 		local zone = route.zones[index]
@@ -497,7 +496,11 @@ local function RefreshChoices(route, prefs)
 			card.Name:SetText(zone.name)
 			card.Range:SetText(("%d-%d"):format(zone.min, zone.max))
 			card.BestFit:SetShown(zone.best)
-			SetBorder(card, zone.map == route.zone and GOLD or EDGE)
+			if zone.map == route.zone then
+				card.Edge:SetBackdropBorderColor(NORMAL_FONT_COLOR:GetRGB())
+			else
+				card.Edge:SetBackdropBorderColor(GRAY_FONT_COLOR:GetRGB())
+			end
 		end
 	end
 end
@@ -512,10 +515,10 @@ local function RefreshRow(row, step, index)
 	row.Tag:SetShown(step.optional == true)
 	row:SetAlpha(step.optional and 0.6 or 1)
 	row.PinButton:SetNormalAtlas(step.pinned and "Waypoint-MapPin-Tracked" or "Waypoint-MapPin-Untracked")
-	SetBorder(row, index == 1 and GOLD or EDGE)
+	row.Selected:SetShown(index == 1)
 end
 
-local function Refresh()
+function Refresh()
 	if not (panel and panel:IsShown()) then
 		return
 	end
@@ -535,7 +538,7 @@ local function Refresh()
 	end
 	emptyText:SetShown(not ns.State.Ready() or #route.steps == 0)
 	for index, row in ipairs(rows) do
-		local step = route.steps[index]
+		local step = index <= visibleRows and route.steps[index] or nil
 		row.step = step
 		row:SetShown(step ~= nil)
 		if step then
