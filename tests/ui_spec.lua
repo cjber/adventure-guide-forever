@@ -170,7 +170,8 @@ for _, spf in ipairs({ false, "v1" }) do
 end
 
 -- F1, the map budget: a fresh install draws no mark with the tab closed; opted in, at most 9 rings and exactly the
--- zone's eligible givers, which stay while Shortest Path guides; either switch off hides every giver.
+-- zone's eligible givers, which stay while Shortest Path guides; either switch off hides every giver. The rings,
+-- the open guide's preview included, step aside while it guides.
 do
 	local h = Load(false)
 	h.G.OpenQuestLog()
@@ -205,6 +206,10 @@ for _, case in ipairs({
 	equal(ns.Integrations.Guiding(), true, label .. ": Shortest Path guides")
 	h.map:SetMapID(1413)
 	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, label .. ": rings step aside while Shortest Path guides")
+	ns.OpenPanel()
+	h.flush()
+	h.map:SetMapID(1413)
+	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, label .. ": the guide's preview steps aside as well")
 	h.map:SetMapID(1442)
 	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, expected, label .. ": givers stay while it guides")
 	clean(h, label)
