@@ -33,6 +33,7 @@ read_globals = {
 	"OpenQuestLog",
 	"EventUtil",
 	"MAP_PIN_INVALID_MAP",
+	"InCombatLockdown",
 	-- State.lua
 	"bit",
 	"UnitRace",

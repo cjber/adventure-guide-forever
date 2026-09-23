@@ -454,7 +454,8 @@ end
 
 -- Groups the selected steps by continent, the player's first and the rest by how dear they are to reach, so the
 -- route crosses each ocean once. In each group the turn-ins in `away` (another continent than the player's) go last.
-local function Order(selected, origin, where, away)
+-- `cheap` (the in-combat rebuild) keeps the nearest-neighbour order and skips 2-opt.
+local function Order(selected, origin, where, away, cheap)
 	local groups, byContinent = {}, {}
 	for _, step in ipairs(selected) do
 		local continent = where[step].continent
@@ -481,7 +482,8 @@ local function Order(selected, origin, where, away)
 	for _, group in ipairs(groups) do
 		for _, part in ipairs({ group.main, group.last }) do
 			local start = from
-			for _, step in ipairs(TwoOpt(Path(part, start, where), start, where)) do
+			local path = Path(part, start, where)
+			for _, step in ipairs(cheap and path or TwoOpt(path, start, where)) do
 				steps[#steps + 1] = step
 				from = where[step]
 			end
@@ -490,13 +492,8 @@ local function Order(selected, origin, where, away)
 	return steps
 end
 
----@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
-function Model.Plan(data, player, completed, log, prefs, mapName)
-	local index = Index(data)
-	local zones, eligible = Choices(data, player, completed, log, index, prefs)
-	local zone = prefs.zone or (zones[1] and zones[1].map)
-	local candidates = LogSteps(data, player, log, prefs)
-	PickupSteps(data, player, eligible, zone, index.hubs, candidates, prefs)
+-- Chooses up to MAX_STEPS of `candidates` and orders them from the player (docs/design.md §4.1).
+local function Build(data, player, candidates, prefs, mapName, cheap)
 	local byKey, pool, where, docks = {}, {}, {}, Docks(data, player.side)
 	for _, step in ipairs(candidates) do
 		if not (prefs.skipped and prefs.skipped[step.key]) then
@@ -577,5 +574,29 @@ function Model.Plan(data, player, completed, log, prefs, mapName)
 			break
 		end
 	end
-	return { steps = Order(selected, start, where, away), zones = zones, zone = zone }
+	return Order(selected, start, where, away, cheap)
+end
+
+---@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
+function Model.Plan(data, player, completed, log, prefs, mapName)
+	local index = Index(data)
+	local zones, eligible = Choices(data, player, completed, log, index, prefs)
+	local zone = prefs.zone or (zones[1] and zones[1].map)
+	local candidates = LogSteps(data, player, log, prefs)
+	PickupSteps(data, player, eligible, zone, index.hubs, candidates, prefs)
+	return { steps = Build(data, player, candidates, prefs, mapName), zones = zones, zone = zone }
+end
+
+-- The in-combat rebuild (Core.lua): the carried quests' steps fresh from the live log, which is what changes in a
+-- fight, and every other step as the last full build chose it. No eligibility pass over the data and no 2-opt, so
+-- it stays cheap; the full build runs once combat ends.
+---@param last AGFRoute
+function Model.Refresh(data, player, log, prefs, last, mapName)
+	local candidates = LogSteps(data, player, log, prefs)
+	for _, step in ipairs(last.steps) do
+		if not (step.key:find("^turnin:") or step.key:find("^objective:")) then
+			candidates[#candidates + 1] = step
+		end
+	end
+	return { steps = Build(data, player, candidates, prefs, mapName, true), zones = last.zones, zone = last.zone }
 end

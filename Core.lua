@@ -151,8 +151,21 @@ local pendingRebuild = false
 ---@type fun()[]
 local routeListeners = {}
 
+-- Combat ends: the full build the fight put off. Registered only while one is owed, so no event runs otherwise.
+local afterCombat = CreateFrame("Frame")
+afterCombat:SetScript("OnEvent", function(self)
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	ns.Invalidate()
+end)
+
+-- In combat only the cheap rebuild runs (the log's steps; the rest as the last full build left them), and the full
+-- one waits for PLAYER_REGEN_ENABLED: looting a quest item mid-fight must not cost a frame.
 local function BuildRoute()
 	local state = ns.State
+	if InCombatLockdown() then
+		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return ns.Model.Refresh(ns.Data, state.Player(), state.Log(), ns.Prefs(), cachedRoute, state.MapName)
+	end
 	return ns.Model.Plan(ns.Data, state.Player(), state.Completed(), state.Log(), ns.Prefs(), state.MapName)
 end
 

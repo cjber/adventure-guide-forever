@@ -7,7 +7,13 @@ assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
 local core = assert(loadfile("Core.lua"))
 setfenv(
 	core,
-	setmetatable({ EventUtil = { ContinueOnAddOnLoaded = function() end }, SlashCmdList = {} }, { __index = _G })
+	setmetatable({
+		EventUtil = { ContinueOnAddOnLoaded = function() end },
+		SlashCmdList = {},
+		CreateFrame = function()
+			return { SetScript = function() end }
+		end,
+	}, { __index = _G })
 )
 core("AdventureGuideForever", ns)
 assert(loadfile("Model.lua"))("AdventureGuideForever", ns)

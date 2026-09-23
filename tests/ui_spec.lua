@@ -251,6 +251,42 @@ for _, spf in ipairs({ "v1", "v1+" }) do
 	clean(h, spf .. ": travel")
 end
 
+-- The combat rule (docs/plan.md §1.1 assert 6): in combat a rebuild runs only the cheap path, which still shows the
+-- log's news, and the full build runs once, when combat ends. No timer: PLAYER_REGEN_ENABLED brings it.
+do
+	local log = {
+		{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
+		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
+	}
+	local h = harness.load({ completed = { 844 }, log = log })
+	local ns, before = h.ns, h.modelCalls.Plan
+	h.SetCombat(true)
+	for _ = 1, 10 do
+		ns.Invalidate()
+		h.flush()
+	end
+	log[2].complete = true
+	ns.Invalidate()
+	equal(ns.Route().steps ~= nil, true, "combat: the lazy path answers")
+	h.flush()
+	equal(h.modelCalls.Plan - before, 0, "combat: no full build in combat")
+	local keys = {}
+	for _, step in ipairs(ns.Route().steps) do
+		keys[step.key] = true
+	end
+	equal(keys["turnin:843"], true, "combat: a quest finished mid-fight is ready to hand in")
+	equal(keys["objective:843"], nil, "combat: its objective step is gone")
+	equal(keys["pickup:1413:0.5223:0.3101"], true, "combat: the pickups stay as the last full build left them")
+	equal(h.counts.tickers, 0, "combat: no timer waits for the fight to end")
+	h.SetCombat(false)
+	h.flush()
+	equal(h.modelCalls.Plan - before, 1, "combat: one full build once it ends")
+	h.SetCombat(false)
+	h.flush()
+	equal(h.modelCalls.Plan - before, 1, "combat: the owed build runs once")
+	clean(h, "combat")
+end
+
 -- The contract (types/Namespace.lua AGFSPFAPI): version 1 with every required function, or no Shortest Path at all.
 do
 	local h = Load("v1")
