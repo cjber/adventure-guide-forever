@@ -217,7 +217,7 @@ do
 end
 
 -- Go: Shortest Path's answer decides. When it declines or is absent, the native waypoint takes step 1, on any map
--- the client allows one on; where it allows none, nothing is set and Go says so.
+-- the client allows one on; where it allows none, nothing is set and Navigate returns false.
 for _, case in ipairs({
 	{ label = "Shortest Path accepts", spf = "v1", routes = 1, waypoints = 0 },
 	{ label = "Shortest Path declines", spf = "v1", declines = true, routes = 1, waypoints = 1 },
