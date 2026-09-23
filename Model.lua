@@ -664,9 +664,10 @@ function Model.Journeys(data, player, completed, log, prefs, mapName)
 		story.title = L.JOURNEY_STORY:format(ZoneName(data, zone, mapName))
 		journeys[#journeys + 1] = story
 	end
-	-- The zone that fits two levels on, when it is another zone and already has enough the player can take now.
+	-- The zone that fits two levels on, when it is another zone than the story's and the one the player stands in,
+	-- and already has enough the player can take now.
 	for _, choice in ipairs(ahead or {}) do
-		if choice.map ~= zone then
+		if choice.map ~= zone and choice.map ~= player.map then
 			local nextZone, quests = ZoneJourney(data, player, eligible, choice.map, index, prefs, mapName, {})
 			if nextZone and quests >= NEXT_ZONE_PICKUPS then
 				nextZone.kind, nextZone.key = "nextzone", "nextzone:" .. choice.map

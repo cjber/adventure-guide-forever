@@ -202,6 +202,8 @@ local capped = { level = 18, maxLevel = 19, side = 2, raceBit = 2, classBit = 64
 equal(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys[2].title, "Head to There at 19", "never past the cap")
 capped.maxLevel = 18
 equal(Kinds(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys), "story:1", "and none at the cap")
+local standing = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 2, x = 0.5, y = 0.5 }
+equal(Kinds(Model.Plan(Ahead(5), standing, {}, {}, prefs()).journeys), "story:1", "never the zone the player is in")
 equal(Kinds(Model.Plan(Ahead(4), player, {}, {}, prefs()).journeys), "story:1", "four quests are too few")
 equal(Kinds(Model.Plan(Ahead(5, 20), player, {}, {}, prefs()).journeys), "story:1", "only quests open now count")
 local there = prefs()
