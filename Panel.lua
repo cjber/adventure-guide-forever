@@ -288,7 +288,9 @@ end
 ---@param height number
 ---@return Frame
 local function CreateSection(parent, below, height)
-	local section = CreateFrame("Frame", nil, parent, "InsetFrameTemplate") --[[@as Frame]]
+	local section = CreateFrame("Frame", nil, parent, "InsetFrameTemplate") --[[@as AGFInset]]
+	-- The inset's marble fill reads as a grey slab on the quest log's parchment; keep only its edge.
+	section.Bg:Hide()
 	section:SetPoint("TOPLEFT", below, "BOTTOMLEFT", 0, -6)
 	section:SetPoint("RIGHT", parent, "RIGHT", -PAD, 0)
 	section:SetHeight(height)
@@ -622,6 +624,11 @@ local function Attach()
 	panel = CreateFrame("Frame", "AdventureGuideForeverPanel", map)
 	panel:SetPoint("TOPLEFT", map.ContentsAnchor, 0, -29)
 	panel:SetPoint("BOTTOMRIGHT", map.ContentsAnchor, -22, 0)
+	-- The quest list's own background and gold frame, so the guide reads as another page of the same log.
+	local background = panel:CreateTexture(nil, "BACKGROUND")
+	background:SetAtlas("QuestLog-main-background")
+	background:SetAllPoints()
+	CreateFrame("Frame", nil, panel, "QuestLogBorderFrameTemplate")
 	-- Above the quest details view, which is not one of the content frames ShowGuide hides.
 	panel:SetFrameLevel(map:GetFrameLevel() + 20)
 	panel:EnableMouse(true)

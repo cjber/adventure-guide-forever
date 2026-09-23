@@ -36,6 +36,9 @@ function ToggleWorldMap(uiMapID) end
 ---@param mapID? integer
 function OpenQuestLog(mapID) end
 
+---@class AGFInset : Frame
+---@field Bg Texture
+
 ---@class AGFQuestContentFrame : Frame
 ---@field displayMode any
 
