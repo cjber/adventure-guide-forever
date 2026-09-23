@@ -885,6 +885,10 @@ function harness.load(options)
 	G.UnitLevel = function()
 		return player.level
 	end
+	-- WoW: Forever's cap.
+	G.GetMaxPlayerLevel = function()
+		return 60
+	end
 	G.UnitFactionGroup = function()
 		return player.faction, player.faction
 	end

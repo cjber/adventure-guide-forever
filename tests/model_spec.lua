@@ -37,7 +37,7 @@ for _, case in ipairs({
 end
 equal(Model.IsGray(-1, 60), false, "scaling quest")
 
-local player = { level = 18, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
+local player = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
 local function quest(x, y, map)
 	return {
 		title = "Quest",
@@ -198,6 +198,10 @@ end
 local later = Model.Plan(Ahead(5), player, {}, {}, prefs())
 equal(Kinds(later.journeys), "story:1 nextzone:2", "the next zone after the story")
 equal(later.journeys[2].title, "Head to There at 20", "named for the level it fits")
+local capped = { level = 18, maxLevel = 19, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
+equal(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys[2].title, "Head to There at 19", "never past the cap")
+capped.maxLevel = 18
+equal(Kinds(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys), "story:1", "and none at the cap")
 equal(Kinds(Model.Plan(Ahead(4), player, {}, {}, prefs()).journeys), "story:1", "four quests are too few")
 equal(Kinds(Model.Plan(Ahead(5, 20), player, {}, {}, prefs()).journeys), "story:1", "only quests open now count")
 local there = prefs()
@@ -281,7 +285,13 @@ local room = Model.Plan(shore, player, {}, Objectives(8), prefs())
 equal(room.steps[Model.MAX_STEPS].key, "turnin:200", "with room, the far turn-in comes last")
 equal(room.steps[Model.MAX_STEPS].reason, "Hand in when you're in Far Shore", "and says where")
 -- In an instance the player has no position: nothing measures from them, so the turn-in leads and is never dropped.
-local lost = { level = player.level, side = player.side, raceBit = player.raceBit, classBit = player.classBit }
+local lost = {
+	level = player.level,
+	maxLevel = player.maxLevel,
+	side = player.side,
+	raceBit = player.raceBit,
+	classBit = player.classBit,
+}
 local blind = Model.Plan(shore, lost, {}, Objectives(9), prefs())
 equal(blind.steps[1].key, "turnin:200", "without a position the turn-in leads")
 equal(blind.journeys[1].reason, "Ready to hand in", "and gives the card its reason")

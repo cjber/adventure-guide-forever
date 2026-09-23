@@ -40,6 +40,7 @@ read_globals = {
 	"UnitClass",
 	"UnitFactionGroup",
 	"UnitLevel",
+	"GetMaxPlayerLevel",
 	"C_Map",
 	"C_QuestLog",
 	"CreateFrame",

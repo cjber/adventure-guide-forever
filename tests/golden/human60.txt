@@ -2,10 +2,3 @@
 card (chosen) | story:1451 | A Silithus story | 8 quests near your level | - | map 1451
   step 1 | pickup:1451:0.5161:0.3863 | Pick up quests: Beetix Ficklespragg | 1451 0.5161,0.3863 | 4 quests here
   step 2 | pickup:1451:0.4945:0.3645 | Pick up quests: Baristolth of the Shifting Sands | 1451 0.4945,0.3645 | 4 quests here
-card | nextzone:1423 | Head to Eastern Plaguelands at 62 | 9 quests near your level | - | map 1423
-  step 1 | pickup:1423:0.7166:0.4994 | Pick up quests: Smokey LaRue | 1423 0.7088,0.4843 | near your level
-  step 2 | pickup:1423:0.6993:0.5372 | Pick up quests: Caretaker Alen | 1423 0.6993,0.5372 | near your level
-  step 3 | pickup:1423:0.2290:0.7295 | Pick up quests: Torn Scroll | 1423 0.2290,0.7295 | near your level
-  step 4 | pickup:1423:0.1135:0.2660 | Pick up quests: Augustus the Touched | 1423 0.1135,0.2637 | near your level
-  step 5 | pickup:1423:0.0516:0.3557 | Pick up quests: Tirion Fordring | 1423 0.0516,0.3557 | 3 quests here
-  step 6 | pickup:1416:0.8860:0.2067 | Pick up quests: Marlene Redpath | 1416 0.8860,0.2067 | near your level

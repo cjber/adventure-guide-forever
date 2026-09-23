@@ -651,7 +651,9 @@ end
 ---@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
 function Model.Journeys(data, player, completed, log, prefs, mapName)
 	local index, L = Index(data), ns.L
-	local zones, eligible, ahead = Choices(data, player, completed, log, index, prefs, NEXT_ZONE_AHEAD)
+	-- Never past the level cap: a player at it has no next zone to head for.
+	local levels = math.min(NEXT_ZONE_AHEAD, player.maxLevel - player.level)
+	local zones, eligible, ahead = Choices(data, player, completed, log, index, prefs, levels > 0 and levels or nil)
 	local journeys = { Carry(data, player, log, prefs, mapName) }
 	-- The zone the player's level fits best (or the one they picked), named after it. Model.Story (F4) makes it the
 	-- chapter of a chain; until then it holds the zone's pickups, as the route did.
@@ -663,13 +665,13 @@ function Model.Journeys(data, player, completed, log, prefs, mapName)
 		journeys[#journeys + 1] = story
 	end
 	-- The zone that fits two levels on, when it is another zone and already has enough the player can take now.
-	for _, choice in ipairs(ahead) do
+	for _, choice in ipairs(ahead or {}) do
 		if choice.map ~= zone then
 			local nextZone, quests = ZoneJourney(data, player, eligible, choice.map, index, prefs, mapName, {})
 			if nextZone and quests >= NEXT_ZONE_PICKUPS then
 				nextZone.kind, nextZone.key = "nextzone", "nextzone:" .. choice.map
 				local name = ZoneName(data, choice.map, mapName)
-				nextZone.title = L.JOURNEY_NEXT_ZONE:format(name, player.level + NEXT_ZONE_AHEAD)
+				nextZone.title = L.JOURNEY_NEXT_ZONE:format(name, player.level + levels)
 				journeys[#journeys + 1] = nextZone
 			end
 			break

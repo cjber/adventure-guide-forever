@@ -66,6 +66,7 @@
 -- What the live state tells the planner. Built by State.lua, consumed by Model.lua.
 ---@class AGFPlayer
 ---@field level integer
+---@field maxLevel integer the level cap
 ---@field side integer 1 Alliance, 2 Horde
 ---@field raceBit integer
 ---@field classBit integer

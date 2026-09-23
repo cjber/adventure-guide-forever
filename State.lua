@@ -33,6 +33,7 @@ function State.Player()
 
 	return {
 		level = UnitLevel("player"),
+		maxLevel = GetMaxPlayerLevel(),
 		side = side,
 		raceBit = RaceBit(),
 		classBit = ClassBit(),

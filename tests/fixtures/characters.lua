@@ -120,6 +120,7 @@ end
 function characters.Resolve(data, fixture)
 	local player = {
 		level = fixture.level,
+		maxLevel = 60, -- WoW: Forever's cap, as GetMaxPlayerLevel() gives it
 		side = fixture.side,
 		raceBit = fixture.raceBit,
 		classBit = fixture.classBit,
