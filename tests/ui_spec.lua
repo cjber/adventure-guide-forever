@@ -255,7 +255,10 @@ do
 	local step = h.ns.Route().steps[1]
 	h.ns.Integrations.Navigate(step)
 	equal(h.ns.Integrations.Guiding(), true, "declined later: the first Go guides")
-	h.spfDeclines = true
+	h.spfDeclines, h.noWaypoint[step.map] = true, true
+	equal(h.ns.Integrations.Navigate(step), false, "declined later, no waypoint map: nothing new guides")
+	equal(h.spf.Cancel, 0, "declined later, no waypoint map: the earlier journey is kept")
+	h.noWaypoint[step.map], h.uiErrors = nil, {}
 	equal(h.ns.Integrations.Navigate(step), true, "declined later: the waypoint guides")
 	equal(h.spf.Cancel, 1, "declined later: the earlier journey is cancelled")
 	equal(h.ns.Integrations.Guiding(), false, "declined later: Shortest Path no longer guides")

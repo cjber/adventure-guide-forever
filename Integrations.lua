@@ -97,20 +97,20 @@ function Integrations.Navigate(step)
 		if not found then
 			stops[1] = { map = step.map, x = step.x, y = step.y, title = step.title }
 		end
-		local started = api.NavigateRoute(OWNER, stops)
-		if not started then
-			-- A refusal leaves the journey an earlier Go started drawn; the waypoint below replaces it.
-			api.Cancel(OWNER)
-		end
-		ns.Pins.Refresh()
-		if started then
+		if api.NavigateRoute(OWNER, stops) then
+			ns.Pins.Refresh()
 			return true
 		end
 	end
 	if not C_Map.CanSetUserWaypointOnMap(step.map) then
-		-- The red line the world map shows when a pin can't go on a map, so Go never fails silently.
+		-- The red line the world map shows when a pin can't go on a map, so Go never fails silently. Any journey an
+		-- earlier Go started keeps guiding: a failed Go changes nothing.
 		UIErrorsFrame:AddExternalErrorMessage(ns.L.NO_WAYPOINT)
 		return false
+	end
+	-- A refusal leaves the journey an earlier Go started drawn; the waypoint below replaces it.
+	if api and api.Cancel(OWNER) then
+		ns.Pins.Refresh()
 	end
 	C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(step.map, step.x, step.y))
 	C_SuperTrack.SetSuperTrackedUserWaypoint(true)
