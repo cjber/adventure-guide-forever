@@ -34,6 +34,7 @@
 ---@field zones table<integer, {name: string, min: integer, max: integer}> uiMapID -> zone name and level range
 ---@field maps table<integer, AGFMapCentre> uiMapID -> where the map sits in the world, for every map a place uses
 ---@field continents table<integer, AGFContinentShift> continent -> its place on the Azeroth world map
+---@field crossings AGFCrossing[] every boat and zeppelin between two continents
 
 -- Measures between steps on different maps without travel maths (Model.lua Cost). World coordinates are yards.
 ---@class AGFMapCentre
@@ -49,6 +50,18 @@
 ---@class AGFContinentShift
 ---@field x number
 ---@field y number
+
+-- One boat or zeppelin between continents (TaxiPathNode stops), so an ocean crossing is measured dock to dock.
+---@class AGFCrossing
+---@field transport integer the transport's gameobject entry
+---@field side integer bitmask of the sides whose flight masters serve both docks: 1 Alliance, 2 Horde
+---@field a AGFDock
+---@field b AGFDock
+
+---@class AGFDock
+---@field continent integer world map (instance) ID
+---@field x number world x, yards
+---@field y number world y, yards
 
 -- What the live state tells the planner. Built by State.lua, consumed by Model.lua.
 ---@class AGFPlayer

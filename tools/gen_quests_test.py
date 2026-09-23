@@ -2,7 +2,16 @@
 
 import unittest
 
-from gen_quests import continents, faction, geometry, parse_values, prerequisite_index, prerequisites, project
+from gen_quests import (
+    continents,
+    crossings,
+    faction,
+    geometry,
+    parse_values,
+    prerequisite_index,
+    prerequisites,
+    project,
+)
 
 
 class ParsingTest(unittest.TestCase):
@@ -98,6 +107,40 @@ class GeometryTest(unittest.TestCase):
         ui_maps = [{"ID": "947", "Type": "1"}, {"ID": "1415", "Type": "2"}]
         self.assertEqual(continents(ui_maps, [kalimdor, eastern], {0, 1}), {1: {"x": 8724.0, "y": 14824.5}})
         self.assertEqual(continents(ui_maps, [kalimdor], {0}), {})
+
+
+class CrossingTest(unittest.TestCase):
+    @staticmethod
+    def node(path, index, continent, x, y, delay):
+        return {"PathID": path, "NodeIndex": index, "ContinentID": continent, "Loc_0": x, "Loc_1": y, "Delay": delay}
+
+    @staticmethod
+    def taxi(continent, x, y, flags):
+        return {"ContinentID": continent, "Pos_0": x, "Pos_1": y, "Flags": flags}
+
+    def test_docks_and_sides(self):
+        # Serenity's Shore (176310) on TaxiPath 295 at 1.60.1.69913: Menethil Harbor to Auberdine.
+        path = [
+            self.node(295, 24, 1, "6406.2158", "823.0809", 60),
+            self.node(295, 7, 0, "-3709.474", "-575.0987", 60),
+            self.node(295, 12, 0, "-3000", "-900", 0),
+        ]
+        taxis = [self.taxi(0, "-3790.5", "-783.3", 1025), self.taxi(1, "6343.2", "561.6", 1025)]
+        boat = {"entry": 176310, "type": 15, "data0": 295}
+        self.assertEqual(
+            crossings([boat, {"entry": 1, "type": 3, "data0": 295}], path, taxis, {0, 1}),
+            [
+                {
+                    "transport": 176310,
+                    "side": 1,
+                    "a": {"continent": 0, "x": -3709.5, "y": -575.1},
+                    "b": {"continent": 1, "x": 6406.2, "y": 823.1},
+                }
+            ],
+        )
+        # A dock no flight master stands near serves nobody; a continent off the world map is left out.
+        self.assertEqual(crossings([boat], path, taxis[:1], {0, 1}), [])
+        self.assertEqual(crossings([boat], path, taxis, {0}), [])
 
 
 if __name__ == "__main__":
