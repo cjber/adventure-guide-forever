@@ -768,6 +768,180 @@ def quest_log(ui, data, rects, scene, pins=()):
     return canvas, frame
 
 
+# ------------------------------------------------------------------------------ Shortest Path's route (map scene)
+
+# The Shortest Path Forever build the map scene draws (the same sha tests/contract_spec.lua pins); its geometry is
+# SPF's own Path.FindSync, run by LuaJIT in an extracted copy (docs/plan.md §1.3).
+SPF_SHA = "39d9a986d423557ab13039b45732d0c9dd12bf02"
+SPF_TARBALL = f"https://codeload.github.com/cjber/shortest-path-forever/tar.gz/{SPF_SHA}"
+SPF_CACHE = ROOT / "tools/.cache" / f"spf-{SPF_SHA}"
+# Route.lua: THICKNESS 2 over UNDER_THICKNESS 4 at UNDER_ALPHA .5; walks are DOT 4 breadcrumbs every SPACING 9, each
+# over a dark dot RIM 1 wider; the walk colour is NORMAL_FONT_COLOR.
+SPF_DOT, SPF_RIM, SPF_SPACING, SPF_UNDER = 4, 1, 9, (0.04, 0.04, 0.04, 0.5)
+
+SPF_PROGRAM = r"""
+local ns = {}
+for _, name in ipairs({ "Data/Routes", "Data/Transports", "Data/Portals", "Data/Taxi", "Model", "Path", "Planner" }) do
+	assert(loadfile(name .. ".lua"))("ShortestPathForever", ns)
+end
+local walks = {}
+for index, leg in ipairs(LEGS) do
+	assert(loadfile("tools/load_nav.lua"))(leg.map)
+	local points, why = ns.Path.FindSync(leg.map, leg.from, leg.to)
+	assert(points, tostring(why))
+	local out = {}
+	for i, point in ipairs(points) do
+		out[i] = string.format("[%.3f,%.3f]", point.x, point.y)
+	end
+	walks[index] = "[" .. table.concat(out, ",") .. "]"
+end
+print("[" .. table.concat(walks, ",") .. "]")
+"""
+
+
+def spf_sources():
+    """SPF_CACHE, extracted from a local clone ($SPF, else a sibling of this checkout or of its main worktree) with
+    `git archive`, else from GitHub's tarball of the sha."""
+    if (SPF_CACHE / "Path.lua").is_file():
+        return SPF_CACHE
+    import io
+    import tarfile
+    import urllib.request
+
+    common = subprocess.run(["git", "rev-parse", "--git-common-dir"], cwd=ROOT, capture_output=True, text=True)
+    candidates = [os.environ.get("SPF"), ROOT.parent / "shortest-path-forever"]
+    if common.returncode == 0:
+        candidates.append((ROOT / common.stdout.strip()).resolve().parent.parent / "shortest-path-forever")
+    archive = None
+    for candidate in filter(None, candidates):
+        result = subprocess.run(["git", "-C", str(candidate), "archive", SPF_SHA], capture_output=True)
+        if result.returncode == 0:
+            archive, strip = result.stdout, 0
+            break
+    if archive is None:
+        with urllib.request.urlopen(SPF_TARBALL, timeout=300) as response:
+            archive, strip = response.read(), 1
+    staging = SPF_CACHE.with_name(SPF_CACHE.name + ".tmp")
+    with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
+        members = []
+        for member in tar.getmembers():
+            parts = Path(member.name).parts[strip:]
+            if parts:
+                member.name = str(Path(*parts))
+                members.append(member)
+        tar.extractall(staging, members, filter="data")
+    staging.rename(SPF_CACHE)
+    return SPF_CACHE
+
+
+def assignment(ui, map_id):
+    """The UiMapAssignment row placing a uiMap on its world map, as SPF's own screenshots.py picks it."""
+    rows = [
+        r
+        for r in ui.table("UiMapAssignment").values()
+        if r["UiMapID"] == str(map_id) and r["WMODoodadPlacementID"] == "0"
+    ]
+    return min(rows, key=lambda row: (int(row["OrderIndex"]), int(row["ID"])))
+
+
+def world_point(ui, map_id, x, y):
+    """A uiMap position in world coordinates (x north, y west), inverting SPF's projection; ns.WorldPoint needs the
+    client's C_Map."""
+    r = assignment(ui, map_id)
+    nx = (x - float(r["UiMin_0"])) / (float(r["UiMax_0"]) - float(r["UiMin_0"]))
+    ny = (y - float(r["UiMin_1"])) / (float(r["UiMax_1"]) - float(r["UiMin_1"]))
+    west = float(r["Region_4"]) - nx * (float(r["Region_4"]) - float(r["Region_1"]))
+    north = float(r["Region_3"]) - ny * (float(r["Region_3"]) - float(r["Region_0"]))
+    return {"map": int(r["MapID"]), "x": north, "y": west}
+
+
+def map_position(ui, map_id, point):
+    r = assignment(ui, map_id)
+    nx = (float(r["Region_4"]) - point[1]) / (float(r["Region_4"]) - float(r["Region_1"]))
+    ny = (float(r["Region_3"]) - point[0]) / (float(r["Region_3"]) - float(r["Region_0"]))
+    return tuple(
+        float(r[f"UiMin_{i}"]) + n * (float(r[f"UiMax_{i}"]) - float(r[f"UiMin_{i}"])) for i, n in enumerate((nx, ny))
+    )
+
+
+def spf_walks(ui, legs):
+    """Path.FindSync's points for each (uiMap, from, to) leg, in world coordinates."""
+    root = spf_sources()
+    entries = []
+    for map_id, a, b in legs:
+        start, goal = world_point(ui, map_id, *a), world_point(ui, map_id, *b)
+        assert start["map"] == goal["map"]
+        entries.append(
+            f"{{ map = {start['map']}, from = {{ x = {start['x']:.4f}, y = {start['y']:.4f} }}, "
+            f"to = {{ x = {goal['x']:.4f}, y = {goal['y']:.4f} }} }}"
+        )
+    program = "local LEGS = { " + ", ".join(entries) + " }\n" + SPF_PROGRAM
+    result = subprocess.run(["luajit", "-"], input=program, text=True, cwd=root, capture_output=True)
+    if result.returncode:
+        sys.exit("Shortest Path's Path.FindSync failed:\n" + result.stderr)
+    return json.loads(result.stdout)
+
+
+def breadcrumbs(canvas, rects, lines):
+    """Route.lua's walk: breadcrumbs every SPF_SPACING along each polyline (normalised map points), the distance
+    carried across its bends, each dot over a larger dark rim, every rim beneath every dot (ARTWORK -1)."""
+    import math
+
+    dots = []
+    for line in lines:
+        points = [map_point(rects, x, y) for x, y in line]
+        walked = 0.0
+        for (ax, ay), (bx, by) in zip(points, points[1:], strict=False):
+            length = math.hypot(bx - ax, by - ay)
+            distance = math.ceil(walked / SPF_SPACING) * SPF_SPACING - walked
+            while length and distance <= length:
+                dots.append((ax + (bx - ax) * distance / length, ay + (by - ay) * distance / length))
+                distance += SPF_SPACING
+            walked += length
+    k = canvas.ui.scale
+    for radius, color in ((SPF_DOT / 2 + SPF_RIM, SPF_UNDER), (SPF_DOT / 2, (*wm.NORMAL, 1))):
+        layer = wm.Image.new("RGBA", canvas.image.size)
+        draw = wm.ImageDraw.Draw(layer)
+        for x, y in dots:
+            draw.ellipse(
+                ((x - radius) * k, (y - radius) * k, (x + radius) * k, (y + radius) * k), fill=wm.rgba255(color)
+            )
+        canvas.image.alpha_composite(layer)
+
+
+def goal_pins(canvas, rects, stops):
+    """SPF's numbered stop pins (Map.xml:23, GoalPinMixin:OnAcquired): 26x26, a black .75 disc 22x22 cut round by
+    TempPortraitAlphaMask, the adventureguide-ring over it and services-number-N 22x25 at the centre."""
+    ui = canvas.ui
+    for number, stop in enumerate(stops, 1):
+        cx, cy = map_point(rects, stop["x"], stop["y"])
+        disc = ui.canvas(canvas.width, canvas.height)
+        disc.fill(cx - 11, cy - 11, 22, 22, (0, 0, 0, 0.75))
+        disc.mask(ui.texture("interface/characterframe/tempportraitalphamask.blp"), cx - 11, cy - 11, 22, 22)
+        canvas.paste(disc, 0, 0)
+        canvas.draw(ui.atlas("adventureguide-ring"), cx - 13, cy - 13, 26, 26)
+        canvas.draw(ui.atlas(f"services-number-{number}"), cx - 11, cy - 12.5, 22, 25)
+
+
+def shortest_path(ui, data):
+    """The map while Shortest Path guides the route AGF handed it: the current leg (player to stop 1) walked with
+    Path.FindSync, the later stops joined by the straight preview walk (Route.lua's `preview` path), the numbered
+    stops, and the player."""
+    stops, map_id = data["map"]["stops"], data["panel"]["map"]
+    player = data["map"]["player"]
+    (walk,) = spf_walks(ui, [(map_id, (player["x"], player["y"]), (stops[0]["x"], stops[0]["y"]))])
+    current = [map_position(ui, map_id, point) for point in walk]
+    preview = [(stop["x"], stop["y"]) for stop in stops]
+
+    def on_map(canvas, rects):
+        breadcrumbs(canvas, rects, [current, preview])
+        goal_pins(canvas, rects, stops)
+        draw_player(canvas, rects, player)
+
+    canvas, _ = map_frame(ui, wm.map_art(ui, map_id), False, on_map)
+    return canvas, len(walk)
+
+
 def render(out):
     """Every scene into `out`; returns the written paths."""
     load_wowmock()
@@ -787,12 +961,7 @@ def render(out):
     images["search"] = wm.scene(ui, [(crop(canvas, qx - 3, qy - 30, qw + 3 + 64, qh + 30 + 22), 0, 0)])
 
     art = wm.map_art(ui, data["panel"]["map"])
-
-    def rings(canvas, frame_rects):
-        draw_pins(canvas, frame_rects, data["panel"]["pins"])
-        draw_player(canvas, frame_rects, PLAYER)
-
-    canvas, _ = map_frame(ui, art, False, rings)
+    canvas, _ = shortest_path(ui, data)
     images["map"] = wm.scene(ui, [(canvas, 0, 0)])
 
     hovered = data["tooltip"]["hovered"] - 1
