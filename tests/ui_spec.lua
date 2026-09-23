@@ -110,4 +110,66 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label .. ": idle")
 end
 
+local function same(actual, expected, label)
+	equal(table.concat(actual, "\n"), table.concat(expected, "\n"), label)
+end
+
+-- Map pins: a refresh replaces, never adds; removal leaves none; tooltips and the tracker menu read as today.
+-- The expected text is today's. The features that change it (F6, F7, F10) change these lists in the same
+-- commit, until they read as design §2.8 and §2.9.
+for _, spf in ipairs({ false, "v1" }) do
+	local label = spf or "no Shortest Path"
+	local click = spf and "instruction: Click to travel with Shortest Path" or "instruction: Click to set a waypoint"
+	-- With Shortest Path the detail line adds its estimate; the stub answers 360 s.
+	local detail = spf and "highlight: ready to hand in · 6 min travel" or "highlight: ready to hand in"
+	local h = Load(spf)
+	local provider, ns = h.providers[1], h.ns
+	h.G.OpenQuestLog()
+	h.flush()
+	local function Live()
+		return #h.pins.AdventureGuideForeverPinTemplate + #h.pins.AdventureGuideForeverGiverPinTemplate
+	end
+	provider:RefreshAllData()
+	local first = Live()
+	provider:RefreshAllData()
+	equal(Live(), first, label .. ": a second refresh keeps the pin count")
+	equal(#h.pins.AdventureGuideForeverPinTemplate, #ns.Route().steps, label .. ": one ring per step on this map")
+
+	local ring = h.pins.AdventureGuideForeverPinTemplate[1]
+	equal(ring.Number:GetAtlas(), "services-number-1", label .. ": the ring's numeral")
+	h.Hover(ring)
+	same(h.tooltip, {
+		"title: 1. Turn in: The Zhevra",
+		detail,
+		"normal: ready to hand in",
+		click,
+	}, label .. ": ring tooltip")
+	equal(ring.Glow:IsShown(), true, label .. ": hover glow")
+	ring:OnMouseLeave()
+	equal(ring.Glow:IsShown(), false, label .. ": glow off after hover")
+
+	-- Stonetalon has quest givers and no route step, so every eligible giver gets a "!".
+	h.map:SetMapID(1442)
+	local givers = ns.Model.Givers(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), 1442)
+	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, #givers, label .. ": a giver pin per eligible giver")
+	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, label .. ": no rings off the route's map")
+	local giverPin = h.pins.AdventureGuideForeverGiverPinTemplate[1]
+	h.Hover(giverPin)
+	equal(h.tooltip[1], "title: " .. giverPin.giver.title, label .. ": giver tooltip title")
+	equal(#h.tooltip, #giverPin.giver.quests + 2, label .. ": a giver tooltip line per quest")
+	equal(h.tooltip[#h.tooltip], click, label .. ": giver tooltip instruction")
+
+	provider:RemoveAllData()
+	equal(Live(), 0, label .. ": RemoveAllData leaves no pins")
+
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["turnin:845"], "RightButton")
+	same(h.MenuLines(), {
+		"title: Turn in: The Zhevra",
+		"button: Skip",
+		"button: Change route",
+		"button: Go",
+	}, label .. ": tracker menu")
+	clean(h, label .. ": pins")
+end
+
 print(("ui_spec: %d checks passed"):format(checks))

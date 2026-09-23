@@ -92,8 +92,8 @@ once and sends the SavedVariables; F1, F2 and F5 start only after that file is r
   2. There are 0 writes to `QuestMapFrame.displayMode` across open, close, card select, row click and tracker click.
   3. No `OnUpdate` script is set on any frame after `harness.flush()` while idle (the tab closed and no animation playing).
   4. `CreateFrame` is called 0 times across 10 `ns.Invalidate()` + `flush()` cycles after the first render. Pins are pooled, so `AcquirePin` does not count.
-  5. Pin lifecycle: `RefreshAllData` twice gives the same pin count. `RemoveAllData` leaves 0 live pins. The pin tooltip lines equal the §2.9 lines. The menu entries equal the §2.8 list for a log quest, and "Show quest" is absent for a non-log step.
-  6. Combat: `InCombatLockdown` on + 10 invalidations + `flush()` → 0 `Model.Journeys` calls; after `PLAYER_REGEN_ENABLED` + `flush()` → 1.
+  5. Pin lifecycle: `RefreshAllData` twice gives the same pin count. `RemoveAllData` leaves 0 live pins. The ring and giver tooltips and the tracker menu equal an exact list. **Changed (commit 4):** that list is today's text (ring: "1. Turn in: …", detail, reason, click line; menu: title, Skip, Change route, Go), not the design's. The §2.9 lines need F4's chapter and F10's travel line, and the §2.8 menu needs F6's "Show quest" and F7's Stop and "Skipped (n)"; asserting them at commit 4 would fail or pull those features forward. F6, F7 and F10 each update the expected lists in the commit that changes the text, and F7 adds "Show quest is absent for a non-log step".
+  6. Combat: `InCombatLockdown` on + 10 invalidations + `flush()` → 0 `Model.Journeys` calls; after `PLAYER_REGEN_ENABLED` + `flush()` → 1. **Lands with commit 19** (the combat rule); commits 2-4 cover asserts 1-5.
 - **No paths outside the repo.** CI runs `! grep -rnE '/home/|~/|drive/proj' tests/`.
 - **Command:** `luajit tests/ui_spec.lua`, picked up by CI's existing `tests/*_spec.lua` loop.
 
@@ -287,7 +287,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 **F6 Click opens Blizzard's quest details (Must)**
 - **Files:** `Tracker.lua` (`OnBlockHeaderClick`) · `Panel.lua` (row `OnClick`).
 - **APIs:** `InCombatLockdown() -> bool` (DOC/RestrictedActionsDocumentation.lua:45); `OpenQuestLog()`; `QuestMapFrame_ShowQuestDetails(questID)` (`BLZ/Blizzard_UIPanels_Game/Mainline/QuestMapFrame.lua:1044`, which does not write `displayMode`). Never `QuestMapFrame_OpenToQuestDetails` (:1175).
-- **Acceptance:** "Clicking a log quest opens its page once, and nothing opens in combat" → `ui_spec`: 1 `ShowQuestDetails(id)` call, 0 `displayMode` writes, and 0 calls with combat on.
+- **Acceptance:** "Clicking a log quest opens its page once, and nothing opens in combat" → `ui_spec`: 1 `ShowQuestDetails(id)` call, 0 `displayMode` writes, and 0 calls with combat on. If F6 adds the "Show quest" menu entry, it updates §1.1 assert 5's menu list in the same commit.
 
 **F7 Stop with waypoint ownership, Skip, "Skipped (n)" and "Show again" (Must)**
 - **Files:** `Integrations.lua` (`Cancel` clears only AGF's own waypoint; `Owns()` compares the live user waypoint with `charDB.waypoint` within 1e-4, and clears `charDB.waypoint` when it no longer matches) · `Core.lua` (`ns.Unskip`, `charDB.waypoint`) · new `Menu.lua`, in the TOC right after `Integrations.lua` (the generator shared by `Tracker.lua` and `Panel.lua`; Tracker needs it even before Blizzard_WorldMap loads) · `Panel.lua` (the "Skipped (n)" text button under the rows, design §2.1, opening the same Skipped submenu).
@@ -298,6 +298,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
   - after a simulated reload (harness reloads with the saved DB) Stop is still shown for a matching native waypoint;
   - with the `v1` profile: Stop calls `Cancel(OWNER)` once, and Stop hides when `CurrentStop(OWNER)` is nil;
   - "Skipped (n)" is hidden at 0; after 2 skips it reads "Skipped (2)" and opens the same submenu; "Show again" restores the skipped step to the golden route.
+  - the tracker menu list pinned by §1.1 assert 5 becomes design §2.8's for a log quest, and "Show quest" is absent for a non-log step.
 
 **F8 Tracker lines and the resume line (Must)**
 - **Files:** `Tracker.lua` (`LayoutContents`: place, reason, travel, next) · `State.lua:131` (pass `isInitialLogin`) · `Core.lua` (`charDB.last`; a latch set by an initial login and held until the first rebuild with `State.Ready()` true and ≥ 1 step, which then compares once with the live step 1).
@@ -344,7 +345,8 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
   - all-walk → "Walk to … · N min";
   - `v1` → "About 6 min away"; absent → no line;
   - combat on gives 0 SPF calls, and the text is unchanged;
-  - `grep -ci unreachable` over `layout.json` gives 0.
+  - `grep -ci unreachable` over `layout.json` gives 0;
+  - the ring tooltip pinned by §1.1 assert 5 becomes design §2.9's lines.
 
 **F11 Chapter-end fanfare (Should)**
 - **Files:** `Tracker.lua` (`blockTemplate = "ObjectiveTrackerAnimBlockTemplate"`, `BLZ/Blizzard_ObjectiveTracker/Blizzard_ObjectiveTrackerAnimTemplates.xml:55`; `SetNeedsFanfare(key)` `Blizzard_ObjectiveTrackerModule.lua:634`) · `State.lua` (`QUEST_TURNED_IN` → `ns.OnTurnIn`).
