@@ -30,16 +30,8 @@ function ns.RegisterSettings()
 		"Show tracker section",
 		'A short "Adventure Guide" section above your quests in the objective tracker, for the current step.'
 	)
-	Checkbox(
-		"showMapPins",
-		"Show route pins on the map",
-		"Number the suggested route's steps on the world map while their zone is shown."
-	)
-	Checkbox(
-		"showQuestGivers",
-		"Show quest givers on the map",
-		'A "!" on the world map over everyone with a quest you can take now.'
-	)
+	Checkbox("showMapPins", "Show route pins on the map", ns.L.SETTING_MAP_PINS_TOOLTIP)
+	Checkbox("showQuestGivers", "Show quest givers on the map", ns.L.SETTING_GIVERS_TOOLTIP)
 	Checkbox(
 		"includeDungeonsDefault",
 		"Include dungeons by default",

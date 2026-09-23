@@ -15,6 +15,10 @@ ns.L = {
 	HELP_AUDIT = "/agf audit - check the bundled data against the game",
 	HELP_DUMP = "/agf dump - save the guide's layout for a bug report",
 	HAND_IN_WHEN = "Hand in when you're in %s",
+	SETTING_MAP_PINS_TOOLTIP = "Every Adventure Guide mark on the world map: the route's numbered steps while their "
+		.. "zone is shown, and quest givers when those are on too.",
+	SETTING_GIVERS_TOOLTIP = 'A "!" on the world map over everyone with a quest you can take now. '
+		.. "Needs route pins on the map as well.",
 	-- The client's own line, localised, where it has one.
 	NO_WAYPOINT = MAP_PIN_INVALID_MAP or "You can't place a pin on this map.",
 }
@@ -25,8 +29,9 @@ local L = ns.L
 ---@type table<string, boolean>
 local DEFAULTS = {
 	showTracker = true,
-	showMapPins = true,
-	showQuestGivers = true,
+	-- Opt-in: with the Adventure tab closed the map shows no Adventure Guide mark unless the player asks for them.
+	showMapPins = false,
+	showQuestGivers = false,
 	includeDungeonsDefault = false,
 }
 ns.DEFAULTS = DEFAULTS

@@ -199,6 +199,8 @@
 ---@field HELP_DUMP string
 ---@field HAND_IN_WHEN string format: zone name; the reason on a turn-in the route leaves for another continent
 ---@field NO_WAYPOINT string the error Go shows when nothing can guide the player on the step's map
+---@field SETTING_MAP_PINS_TOOLTIP string
+---@field SETTING_GIVERS_TOOLTIP string
 
 ---@class AGFNamespace
 ---@field TITLE string

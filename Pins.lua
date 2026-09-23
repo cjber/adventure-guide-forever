@@ -11,9 +11,17 @@ ns.Pins = Pins
 ---@type table<string, AGFPinFrame>
 local pinsByKey = {}
 
+-- One switch over every mark AGF draws (design §2.6): nothing unless showMapPins is on.
+-- The route's rings step aside while Shortest Path guides, since it numbers the same stops itself.
 ---@return boolean
-local function Active()
+local function RingsShown()
 	return ns.Setting("showMapPins") and not ns.Integrations.Guiding()
+end
+
+-- Givers need both switches, and stay while Shortest Path guides: it draws no givers of its own.
+---@return boolean
+local function GiversShown()
+	return ns.Setting("showMapPins") and ns.Setting("showQuestGivers")
 end
 
 ---@param tooltip GameTooltip
@@ -55,7 +63,7 @@ end
 ---@param map AGFWorldMapFrame
 ---@param mapID integer
 local function AddGivers(map, mapID)
-	if not ns.Setting("showQuestGivers") or not ns.State.Ready() then
+	if not GiversShown() or not ns.State.Ready() then
 		return
 	end
 	local routed = {}
@@ -85,7 +93,7 @@ function provider:RefreshAllData()
 		return
 	end
 	AddGivers(self:GetMap(), mapID)
-	if not Active() then
+	if not RingsShown() then
 		return
 	end
 	for index, step in ipairs(ns.Route().steps) do

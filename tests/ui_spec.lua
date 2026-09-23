@@ -14,10 +14,13 @@ local function clean(h, label)
 	equal(#h.errors, 0, label .. ": errors\n" .. table.concat(h.errors, "\n"))
 end
 
--- A level-18 orc shaman in The Barrens with one quest ready to hand in and one under way.
-local function Load(spf)
+-- A level-18 orc shaman in The Barrens with one quest ready to hand in and one under way. `db` is the account's
+-- saved settings; the map marks are off unless it turns them on.
+local PINS_ON = { showMapPins = true, showQuestGivers = true }
+local function Load(spf, db)
 	return harness.load({
 		spf = spf or nil,
+		db = db,
 		completed = { 844 },
 		log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
@@ -93,7 +96,7 @@ end
 
 for _, spf in ipairs({ false, "v1" }) do
 	local label = spf or "no Shortest Path"
-	local h = Load(spf)
+	local h = Load(spf, PINS_ON)
 	equal(IdleUpdates(h), 0, label .. ": per-frame work after loading")
 	h.ns.OpenPanel()
 	h.flush()
@@ -120,7 +123,7 @@ end
 for _, spf in ipairs({ false, "v1" }) do
 	local label = spf or "no Shortest Path"
 	local click = spf and "instruction: Click to travel with Shortest Path" or "instruction: Click to set a waypoint"
-	local h = Load(spf)
+	local h = Load(spf, PINS_ON)
 	local provider, ns = h.providers[1], h.ns
 	h.G.OpenQuestLog()
 	h.flush()
@@ -168,6 +171,53 @@ for _, spf in ipairs({ false, "v1" }) do
 		"button: Go",
 	}, label .. ": tracker menu")
 	clean(h, label .. ": pins")
+end
+
+-- F1, the map budget: a fresh install draws no mark with the tab closed; opted in, at most 9 rings and exactly the
+-- zone's eligible givers, which stay while Shortest Path guides; either switch off hides every giver.
+do
+	local h = Load(false)
+	h.G.OpenQuestLog()
+	h.flush()
+	for _ = 1, 10 do
+		h.providers[1]:RefreshAllData()
+	end
+	equal(h.counts.AcquirePin, 0, "map budget: a fresh install draws nothing")
+	equal(h.G.AdventureGuideForeverDB.showMapPins, false, "map budget: pins are opt-in")
+	equal(h.G.AdventureGuideForeverDB.showQuestGivers, false, "map budget: givers are opt-in")
+	clean(h, "map budget: fresh")
+end
+for _, case in ipairs({
+	{ label = "both on", db = PINS_ON, givers = true },
+	{ label = "pins only", db = { showMapPins = true }, givers = false },
+	{ label = "givers only", db = { showQuestGivers = true }, givers = false },
+}) do
+	local label = "map budget, " .. case.label
+	local h = Load("v1", case.db)
+	local ns = h.ns
+	h.G.OpenQuestLog()
+	h.flush()
+	local rings = #h.pins.AdventureGuideForeverPinTemplate
+	equal(rings <= ns.Model.MAX_STEPS, true, label .. ": at most 9 rings")
+	equal(rings, case.db.showMapPins and #ns.Route().steps or 0, label .. ": a ring per step, only with pins on")
+	h.map:SetMapID(1442)
+	local givers = #ns.Model.Givers(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), 1442)
+	equal(givers > 0, true, label .. ": Stonetalon has givers")
+	local expected = case.givers and givers or 0
+	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, expected, label .. ": givers")
+	ns.Integrations.Navigate(ns.Route().steps[1])
+	equal(ns.Integrations.Guiding(), true, label .. ": Shortest Path guides")
+	h.map:SetMapID(1413)
+	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, label .. ": rings step aside while Shortest Path guides")
+	h.map:SetMapID(1442)
+	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, expected, label .. ": givers stay while it guides")
+	clean(h, label)
+end
+do
+	local h = Load(false, { showMapPins = true })
+	equal(h.ns.Setting("showMapPins"), true, "map budget: a saved true survives the new default")
+	equal(h.G.AdventureGuideForeverDB.showMapPins, true, "map budget: and stays saved")
+	clean(h, "map budget: saved")
 end
 
 -- F0: a rebuild asks Shortest Path nothing; step 1's travel line is one estimate, in the frame after.

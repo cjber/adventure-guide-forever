@@ -103,7 +103,7 @@ function harness.load(options)
 		tooltip = {},
 		pins = {},
 		providers = {},
-		counts = { CreateFrame = 0, displayModeWrites = 0, tickers = 0 },
+		counts = { CreateFrame = 0, displayModeWrites = 0, tickers = 0, AcquirePin = 0 },
 		modelCalls = {},
 		waypoint = nil,
 		combat = false,
@@ -1132,6 +1132,7 @@ function harness.load(options)
 		return self.mapID
 	end
 	function map:AcquirePin(template, ...)
+		h.counts.AcquirePin = h.counts.AcquirePin + 1
 		pools[template] = pools[template] or {}
 		h.pins[template] = h.pins[template] or {}
 		local pin = table.remove(pools[template])

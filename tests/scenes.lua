@@ -22,6 +22,8 @@ local requested, loaded = {}, {}
 local function Load(spf)
 	local h = harness.load({
 		spf = spf or nil,
+		-- The map scenes show the marks a player opts into (both are off by default).
+		db = { showMapPins = true, showQuestGivers = true },
 		completed = { 844 },
 		log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
