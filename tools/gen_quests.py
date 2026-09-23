@@ -75,6 +75,9 @@ PUBLISHED = {
     1452: (53, 60),
 }
 TABLES = {
+    "game_event_creature",
+    "game_event_gameobject",
+    "game_event_quest",
     "quest_template",
     "creature",
     "gameobject",
@@ -252,10 +255,12 @@ def places(tables, world):
     for kind in ("creature", "gameobject"):
         wanted = {r["id"] for suffix in ("questrelation", "involvedrelation") for r in tables[f"{kind}_{suffix}"]}
         names = {r.get("Entry", r.get("entry")): r.get("Name", r.get("name")) for r in tables[f"{kind}_template"]}
+        # A positive event spawns the row only while that event (Midsummer, Hallow's End...) runs.
+        seasonal = {r["guid"] for r in tables[f"game_event_{kind}"] if r["event"] > 0}
         spawns = defaultdict(list)
         for spawn in tables[kind]:
             entry = spawn["id"]
-            if entry not in wanted or not names.get(entry):
+            if entry not in wanted or not names.get(entry) or spawn["guid"] in seasonal:
                 continue
             options = []
             for row in world[spawn["map"]]:
@@ -310,6 +315,7 @@ def generate(tables, ui_maps, assignments, valid_ids):
     quests = {r["entry"]: r for r in tables["quest_template"]}
     home = homes(locations, quests, areas)
     incoming, groups = prerequisite_index(quests)
+    seasonal = {r["quest"] for r in tables["game_event_quest"]}
     emitted, counts = {}, Counter()
     for qid, row in sorted(quests.items()):
         if qid not in valid_ids:
@@ -376,6 +382,9 @@ def generate(tables, ui_maps, assignments, valid_ids):
         if unknown or any(p not in valid_ids for p in pre + pre_any):
             quest.pop("start", None)
             counts["suppressed pickup: unknown prerequisite"] += 1
+        elif qid in seasonal:
+            quest.pop("start", None)
+            counts["suppressed pickup: event quest"] += 1
         elif gated or not quest["side"] or not quest["title"] or quest["level"] == 0:
             quest.pop("start", None)
             counts["suppressed pickup: unsupported eligibility"] += 1
