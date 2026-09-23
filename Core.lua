@@ -1,7 +1,8 @@
 ---@type string, AGFNamespace
 local addonName, ns = ...
 
-ns.TITLE = "Adventure Guide Forever"
+-- Only WoW: Forever loads this addon, so in game it is simply the Adventure Guide.
+ns.TITLE = "Adventure Guide"
 
 -- Account-wide settings (Settings.lua), one key per row on the AddOns page. A missing key
 -- always reads as its default here, so an old save file and a new option agree (WFA-14).
