@@ -2,6 +2,18 @@
 	<!-- The guide tab and its content are plain frames built with CreateFrame in Panel.lua. -->
 	<!-- They reuse the stock QuestLogTabButtonTemplate directly (see Panel.lua Attach()) instead of a home-grown template here, and anchor to QuestMapFrame in Lua once Blizzard_WorldMap loads. -->
 	<!-- The route pin below must be a real XML template: MapCanvasMixin AcquirePin resolves its template argument through CreateFramePool, which needs a declared virtual frame. -->
+	<!-- A quest giver: the game's own available-quest "!", brightened on hover like the quest POIs. -->
+	<Frame name="AdventureGuideForeverGiverPinTemplate" mixin="AdventureGuideForeverGiverPinMixin" enableMouse="true" virtual="true">
+		<Size x="22" y="22"/>
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture parentKey="Icon" atlas="QuestNormal" setAllPoints="true"/>
+			</Layer>
+			<Layer level="ARTWORK" textureSubLevel="1">
+				<Texture parentKey="Glow" atlas="QuestNormal" alphaMode="ADD" setAllPoints="true" hidden="true"/>
+			</Layer>
+		</Layers>
+	</Frame>
 	<Frame name="AdventureGuideForeverPinTemplate" mixin="AdventureGuideForeverPinMixin" enableMouse="true" virtual="true">
 		<Size x="26" y="26"/>
 		<Layers>

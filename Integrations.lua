@@ -38,7 +38,7 @@ function Integrations.Guiding()
 end
 
 -- With a Shortest Path that takes routes, the step and every step after it become one numbered journey.
----@param step AGFStep
+---@param step AGFStep|AGFGiver
 function Integrations.Navigate(step)
 	local api = SPF()
 	if api and api.NavigateRoute then

@@ -8,6 +8,7 @@ Levelling guides tell you exactly what to do, in order, as fast as possible. Adv
 - **Steps** hand in finished quests, pick up clusters of quests you can take now, and finish objectives already in your log. Dungeon and elite quests appear only when you want them.
 - **Pin and skip** steps to shape the route.
 - **Map pins** number the route on the world map.
+- **Quest givers** show the game's "!" on the world map over everyone with a quest you can take now.
 - **Objective tracker section** above your quests with the current and next step.
 - **Go** hands the step to Shortest Path Forever, flight paths and boats included, or sets the game's own waypoint without it.
 

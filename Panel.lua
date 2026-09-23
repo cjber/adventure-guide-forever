@@ -465,6 +465,7 @@ local function BuildSettingsMenu(_, menu)
 	Pref("Quests", "quests")
 	Pref("Dungeons", "dungeons")
 	Setting("Show map pins", "showMapPins")
+	Setting("Show quest givers", "showQuestGivers")
 	Setting("Show in objective tracker", "showTracker")
 	menu:CreateButton("More settings", function()
 		if ns.OpenSettings then

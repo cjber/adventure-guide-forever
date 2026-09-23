@@ -16,6 +16,7 @@ Levelling guides tell you exactly what to do, in order, as fast as possible. Thi
 - **Steps** hand in finished quests, pick up clusters of quests you can take now, and finish objectives already in your log. Dungeon and elite quests are included only when you turn on *Dungeons*, and are marked optional.
 - **Pin and skip**: a pinned step stays at the top of the route; a skipped one stays hidden until you `/reload`.
 - **Map pins** number the route on the world map.
+- **Quest givers** show the game's "!" on the world map over everyone with a quest you can take now.
 - **Objective tracker section** above your quests showing the current step and the next one. Right-click it to skip a step or change the route.
 - **Go** hands the route from that step onward to Shortest Path Forever as one numbered journey, flight paths and boats included; it moves to the next stop as you arrive. Without it, Go sets the game's own waypoint to the step.
 
