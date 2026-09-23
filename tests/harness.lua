@@ -102,7 +102,7 @@ function harness.load(options)
 		tooltip = {},
 		pins = {},
 		providers = {},
-		counts = { CreateFrame = 0, displayModeWrites = 0, tickers = 0, AcquirePin = 0 },
+		counts = { CreateFrame = 0, displayModeWrites = 0, tickers = 0, AcquirePin = 0, SetMapID = 0 },
 		modelCalls = {},
 		waypoint = nil,
 		combat = false,
@@ -1098,6 +1098,7 @@ function harness.load(options)
 	-- MapCanvasMixin:OnShow and OnMapChanged refresh every provider, before any hook of the addon's runs.
 	map:SetScript("OnShow", map.RefreshAllDataProviders)
 	function map:SetMapID(mapID)
+		h.counts.SetMapID = h.counts.SetMapID + 1
 		self.mapID = mapID
 		if self:IsShown() then
 			self:RefreshAllDataProviders()

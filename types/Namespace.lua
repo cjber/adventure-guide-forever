@@ -246,6 +246,7 @@
 ---@field Route fun(): AGFRoute the current route, rebuilt lazily when state or prefs change
 ---@field Invalidate fun() mark the route stale and notify views
 ---@field OnRouteChange fun(callback: fun())
+---@field PanelShown? fun(): boolean whether the guide is open, set once Blizzard_WorldMap has loaded
 ---@field Skip fun(key: string)
 ---@field TogglePin fun(key: string)
 ---@field DumpLayout fun(root: Frame, describe?: fun(region: Region, entry: AGFDumpEntry)): AGFDumpEntry[]

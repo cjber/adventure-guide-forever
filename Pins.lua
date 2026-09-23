@@ -12,9 +12,13 @@ ns.Pins = Pins
 local pinsByKey = {}
 
 -- One switch over every mark AGF draws (design §2.6): nothing unless showMapPins is on.
--- The route's rings step aside while Shortest Path guides, since it numbers the same stops itself.
+-- The route's rings step aside while Shortest Path guides, since it numbers the same stops itself. While the guide
+-- is open they preview the chosen journey whatever the switch says (F3): choosing a card is looking at its route.
 ---@return boolean
 local function RingsShown()
+	if ns.PanelShown and ns.PanelShown() then
+		return true
+	end
 	return ns.Setting("showMapPins") and not ns.Integrations.Guiding()
 end
 

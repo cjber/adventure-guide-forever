@@ -195,7 +195,17 @@ local function BuildJourneys(parent, below)
 	list:SetPoint("TOPLEFT", below, "BOTTOMLEFT", 0, -6)
 	list:SetPoint("RIGHT", parent, "RIGHT", -PAD, 0)
 	for index = 1, MAX_JOURNEYS do
-		cards[index] = CreateFrame("Button", nil, list, "AdventureGuideForeverJourneyCardTemplate") --[[@as AGFJourneyCard]]
+		local card = CreateFrame("Button", nil, list, "AdventureGuideForeverJourneyCardTemplate") --[[@as AGFJourneyCard]]
+		-- Choosing a journey shows its route and turns the map to it; it never starts guidance, only Go does.
+		card:SetScript("OnClick", function(self)
+			local journey = self.journey
+			if journey then
+				ns.Prefs().journey = journey.key
+				ns.Invalidate()
+				WorldMapFrame:SetMapID(journey.map)
+			end
+		end)
+		cards[index] = card
 	end
 	for index = 1, ns.Model.MAX_STEPS do
 		rows[index] = CreateRow(list)
@@ -441,6 +451,8 @@ local function ShowGuide(showGuide)
 	if showGuide then
 		Refresh()
 	end
+	-- The rings preview the chosen journey only while the guide is open.
+	ns.Pins.Refresh()
 end
 
 ---@param name string
@@ -515,6 +527,10 @@ local function Attach()
 		end
 	end)
 	ns.OnRouteChange(Refresh)
+
+	function ns.PanelShown()
+		return panel:IsVisible()
+	end
 
 	function ns.OpenPanel()
 		-- Also brings back a collapsed quest sidebar, which hides QuestMapFrame and so the panel inside it.

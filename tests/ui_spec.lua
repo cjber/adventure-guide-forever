@@ -463,6 +463,56 @@ do
 	clean(none, "guide: empty")
 end
 
+-- F3, select then Go: choosing a journey moves nothing until Go; it turns the map to the journey and its rings
+-- preview it while the guide is open, even with map pins off. Closing the guide takes them away.
+for _, spf in ipairs({ false, "v1" }) do
+	local label = "select: " .. (spf or "no Shortest Path")
+	local h = Load(spf)
+	h.ns.OpenPanel()
+	h.flush()
+	local function Cards()
+		return Shown(h, function(frame)
+			return frame.IconFrame ~= nil and frame.journey ~= nil
+		end)
+	end
+	equal(#Cards(), 3, label .. ": three cards")
+	local waypoints, maps = h.counts.SetUserWaypoint, h.counts.SetMapID
+	local function Spf(name)
+		return h.spf and h.spf[name] or 0
+	end
+	local navigate, drawn = Spf("Navigate") + Spf("NavigateRoute"), 0
+	for click, index in ipairs({ 2, 3, 1, 2, 3 }) do
+		local estimates = Spf("Estimate") + Spf("EstimateDetail")
+		local card = Cards()[index]
+		local journey = card.journey
+		h.Click(card)
+		h.flush()
+		local route = h.ns.Route()
+		equal(route.journey, journey.key, label .. ": click " .. click .. " chooses " .. journey.key)
+		equal(h.map:GetMapID(), journey.map, label .. ": click " .. click .. " turns the map to it")
+		equal(Spf("Estimate") + Spf("EstimateDetail") - estimates <= 1, true, label .. ": at most one estimate")
+		local rings, expected = {}, {}
+		for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
+			rings[#rings + 1] = pin.step.key
+		end
+		for _, step in ipairs(route.steps) do
+			if step.map == journey.map then
+				expected[#expected + 1] = step.key
+			end
+		end
+		equal(table.concat(rings, " "), table.concat(expected, " "), label .. ": click " .. click .. " rings")
+		drawn = drawn + #rings
+	end
+	equal(h.counts.SetUserWaypoint - waypoints, 0, label .. ": no waypoint")
+	equal(Spf("Navigate") + Spf("NavigateRoute") - navigate, 0, label .. ": no guidance")
+	equal(h.counts.SetMapID - maps, 5, label .. ": the map turns once per click")
+	equal(drawn > 0, true, label .. ": the rings preview with map pins off")
+	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+	h.flush()
+	equal(#(h.pins.AdventureGuideForeverPinTemplate or {}), 0, label .. ": closing the guide takes the rings away")
+	clean(h, label)
+end
+
 -- The activity filters live in the cog's menu, not on the guide (design §2.1).
 do
 	local h = Load(false)
