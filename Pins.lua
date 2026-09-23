@@ -31,6 +31,10 @@ end
 local function AddPinTooltip(tooltip, step, index)
 	GameTooltip_SetTitle(tooltip, ("%d. %s"):format(index, step.title))
 	GameTooltip_AddHighlightLine(tooltip, step.detail)
+	local travel = ns.Integrations.Travel(step)
+	if travel then
+		GameTooltip_AddHighlightLine(tooltip, travel)
+	end
 	GameTooltip_AddNormalLine(tooltip, step.reason)
 	if step.pinned then
 		GameTooltip_AddNormalLine(tooltip, "Pinned")

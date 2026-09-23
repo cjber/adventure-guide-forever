@@ -120,8 +120,6 @@ end
 for _, spf in ipairs({ false, "v1" }) do
 	local label = spf or "no Shortest Path"
 	local click = spf and "instruction: Click to travel with Shortest Path" or "instruction: Click to set a waypoint"
-	-- With Shortest Path the detail line adds its estimate; the stub answers 360 s.
-	local detail = spf and "highlight: ready to hand in · 6 min travel" or "highlight: ready to hand in"
 	local h = Load(spf)
 	local provider, ns = h.providers[1], h.ns
 	h.G.OpenQuestLog()
@@ -138,12 +136,12 @@ for _, spf in ipairs({ false, "v1" }) do
 	local ring = h.pins.AdventureGuideForeverPinTemplate[1]
 	equal(ring.Number:GetAtlas(), "services-number-1", label .. ": the ring's numeral")
 	h.Hover(ring)
-	same(h.tooltip, {
-		"title: 1. Turn in: The Zhevra",
-		detail,
-		"normal: ready to hand in",
-		click,
-	}, label .. ": ring tooltip")
+	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s.
+	local expected = { "title: 1. Turn in: The Zhevra", "highlight: ready to hand in" }
+	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
+	expected[#expected + 1] = "normal: ready to hand in"
+	expected[#expected + 1] = click
+	same(h.tooltip, expected, label .. ": ring tooltip")
 	equal(ring.Glow:IsShown(), true, label .. ": hover glow")
 	ring:OnMouseLeave()
 	equal(ring.Glow:IsShown(), false, label .. ": glow off after hover")
@@ -170,6 +168,23 @@ for _, spf in ipairs({ false, "v1" }) do
 		"button: Go",
 	}, label .. ": tracker menu")
 	clean(h, label .. ": pins")
+end
+
+-- F0: a rebuild asks Shortest Path nothing; step 1's travel line is one estimate, in the frame after.
+for _, spf in ipairs({ "v1", "v1+" }) do
+	local h = Load(spf)
+	local function Estimates()
+		return h.spf.Estimate + (h.spf.EstimateDetail or 0)
+	end
+	local before = Estimates()
+	h.MovePlayer(1413, 0.6, 0.4)
+	h.ns.Invalidate()
+	h.flush()
+	equal(Estimates() - before, 1, spf .. ": a move and a rebuild cost exactly one estimate")
+	equal(h.ns.Integrations.Travel(h.ns.Route().steps[1]), "About 6 min away", spf .. ": step 1's travel line")
+	equal(h.ns.Integrations.Travel(h.ns.Route().steps[2]), nil, spf .. ": no line for other steps")
+	equal(Estimates() - before, 1, spf .. ": reading the line asks nothing")
+	clean(h, spf .. ": travel")
 end
 
 -- /agf dump: a plain-table snapshot in the saved variables, kept across /reload and dropped at the next login.

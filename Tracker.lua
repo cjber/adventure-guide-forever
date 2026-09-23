@@ -65,6 +65,11 @@ function ModuleMixin:LayoutContents()
 	end
 	line = line + 1
 	block:AddObjective(line, step.detail)
+	local travel = ns.Integrations.Travel(step)
+	if travel then
+		line = line + 1
+		block:AddObjective(line, travel)
+	end
 	local nextStep = ns.Route().steps[2]
 	if nextStep then
 		line = line + 1
@@ -127,3 +132,4 @@ end
 
 Register()
 ns.OnRouteChange(Refresh)
+ns.Integrations.OnTravelChange(Refresh)

@@ -74,14 +74,13 @@
 ---@field key string stable identity for pin/skip, e.g. "pickup:1519:0.46:0.52" or "turnin:4581"
 ---@field kind AGFStepKind
 ---@field title string e.g. "Turn in: Bathran's Hair" or "The Ruins of Stardust"
----@field detail string grey second line, e.g. "2 quests · 3 min walk · continues chain"
+---@field detail string grey second line, e.g. "2 quests here"
 ---@field reason string short why, e.g. "continues chain"
 ---@field quests integer[] quest IDs this step covers
 ---@field map integer
 ---@field x number
 ---@field y number
 ---@field place? string NPC/object or area name
----@field seconds? number travel time from the previous step, when known
 ---@field optional? boolean elite/group or outside the player's level band
 ---@field pinned? boolean
 
@@ -105,10 +104,6 @@
 ---@field steps AGFStep[] 3-5 steps, never more than MAX_STEPS
 ---@field zones AGFZoneChoice[] up to 3, best first
 ---@field zone? integer the zone the route was built for
----@field minutes? integer rough total, when travel times are known
-
--- Travel time between two points in seconds, or nil when unknown. Supplied by Integrations.
----@alias AGFTravel fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): number?
 
 ---@class AGFModel
 ---@field MAX_STEPS integer
@@ -116,7 +111,7 @@
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
 ---@field Zones fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>): AGFZoneChoice[]
----@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, travel?: AGFTravel): AGFRoute
+---@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs): AGFRoute
 
 ---@class AGFState
 ---@field Player fun(): AGFPlayer
@@ -126,7 +121,10 @@
 ---@field Ready fun(): boolean completion data has loaded
 
 ---@class AGFIntegrations
----@field Travel fun(): AGFTravel? Shortest Path's estimate when it is loaded
+---@field TravelLine fun(step: AGFStep): string? asks Shortest Path now: one estimate, nil without it
+---@field RefreshTravel fun() refetches step 1's line; Core runs it in the frame after each rebuild
+---@field Travel fun(step: AGFStep): string? the last line fetched for this step, without asking again
+---@field OnTravelChange fun(callback: fun())
 ---@field Navigate fun(step: AGFStep|AGFGiver) route there with Shortest Path, else the native waypoint
 ---@field Cancel fun()
 ---@field Guiding fun(): boolean Shortest Path is walking our multi-stop route and draws its own numbered stops

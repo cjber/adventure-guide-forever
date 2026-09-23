@@ -131,14 +131,7 @@ local pendingRebuild = false
 local routeListeners = {}
 
 local function BuildRoute()
-	return ns.Model.Plan(
-		ns.Data,
-		ns.State.Player(),
-		ns.State.Completed(),
-		ns.State.Log(),
-		ns.Prefs(),
-		ns.Integrations.Travel()
-	)
+	return ns.Model.Plan(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), ns.Prefs())
 end
 
 local function Rebuild()
@@ -180,6 +173,8 @@ function ns.Invalidate()
 	C_Timer.After(0, function()
 		Rebuild()
 		NotifyRouteChange()
+		-- Step 1's travel line gets a frame of its own: at most one Shortest Path estimate, never in the rebuild's.
+		C_Timer.After(0, ns.Integrations.RefreshTravel)
 	end)
 end
 

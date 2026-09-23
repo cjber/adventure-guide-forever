@@ -64,6 +64,22 @@ for _, fixture in ipairs(characters.list) do
 		end
 	end
 
+	-- F0: a turn-in in the next zone follows every step on this map and precedes every other-continent step.
+	if fixture.name == "ne21_crosszone" then
+		local next
+		for index, step in ipairs(route.steps) do
+			next = step.key == "turnin:967" and index or next
+		end
+		equal(next ~= nil, true, "ne21_crosszone: the Ashenvale turn-in is on the route")
+		for index, step in ipairs(route.steps) do
+			if step.map == fixture.map then
+				equal(index < next, true, "ne21_crosszone: " .. step.key .. " (Darkshore) comes first")
+			elseif data.maps[step.map].continent ~= data.maps[fixture.map].continent then
+				equal(index > next, true, "ne21_crosszone: " .. step.key .. " (another continent) comes after")
+			end
+		end
+	end
+
 	local text = Render(fixture, zones, route)
 	local path = "tests/golden/" .. fixture.name .. ".txt"
 	if update then

@@ -323,15 +323,20 @@ local function PickupSteps(data, player, eligible, zone, hubs, steps, prefs)
 	end
 end
 
-local function Cost(from, step, travel)
-	if ValidPlace(from) and travel then
-		local seconds = travel(from.map, from.x, from.y, step.map, step.x, step.y)
-		if type(seconds) == "number" and seconds >= 0 and seconds < math.huge then
-			return seconds, seconds
-		end
+-- The ranking is offline, so a rebuild never waits on travel maths: tier 0 is the same map (map distance), tier 1
+-- the same continent (the world distance between the two maps' centres), tier 2 anywhere else or unknown.
+local function Cost(data, from, step)
+	if not ValidPlace(from) then
+		return 2, 0
 	end
-	-- A ranking estimate, never presented as measured seconds or included in the route's minutes.
-	return math.sqrt(Distance(from, step)) * 1000, nil
+	if from.map == step.map then
+		return 0, math.sqrt(Distance(from, step))
+	end
+	local a, b = data.maps and data.maps[from.map], data.maps and data.maps[step.map]
+	if a and b and a.continent == b.continent then
+		return 1, math.sqrt((a.cx - b.cx) ^ 2 + (a.cy - b.cy) ^ 2)
+	end
+	return 2, 0
 end
 
 local function Phase(step)
@@ -341,7 +346,7 @@ local function Phase(step)
 	return step.key:match("^objective:") and 3 or 2
 end
 
-function Model.Plan(data, player, completed, log, prefs, travel)
+function Model.Plan(data, player, completed, log, prefs)
 	local index = Index(data)
 	local zones, eligible = Choices(data, player, completed, log, index, prefs)
 	local zone = prefs.zone or (zones[1] and zones[1].map)
@@ -353,15 +358,9 @@ function Model.Plan(data, player, completed, log, prefs, travel)
 			byKey[step.key] = step
 		end
 	end
-	local from, total, known = player, 0, true
-	local function Append(step, seconds, pinned)
-		step.seconds, step.pinned = seconds, pinned or nil
-		if seconds then
-			total = total + seconds
-			step.detail = step.detail .. " · " .. math.max(1, math.ceil(seconds / 60)) .. " min travel"
-		else
-			known = false
-		end
+	local from = player
+	local function Append(step, pinned)
+		step.pinned = pinned or nil
 		selected[step.key] = true
 		steps[#steps + 1] = step
 		from = step
@@ -369,30 +368,30 @@ function Model.Plan(data, player, completed, log, prefs, travel)
 	for _, key in ipairs(prefs.pinned or {}) do
 		local step = byKey[key]
 		if step and not selected[key] and #steps < Model.MAX_STEPS then
-			local _, seconds = Cost(from, step, travel)
-			Append(step, seconds, true)
+			Append(step, true)
 		end
 	end
 	while #steps < Model.MAX_STEPS do
-		local best, bestCost, bestSeconds, phase
+		local best, bestTier, bestDistance, phase
 		for _, step in ipairs(candidates) do
 			local candidatePhase = Phase(step)
 			if byKey[step.key] and not selected[step.key] and (not phase or candidatePhase <= phase) then
-				local cost, seconds = Cost(from, step, travel)
+				local tier, distance = Cost(data, from, step)
 				if
 					not best
 					or candidatePhase < phase
-					or cost < bestCost
-					or (cost == bestCost and step.key < best.key)
+					or tier < bestTier
+					or (tier == bestTier and distance < bestDistance)
+					or (tier == bestTier and distance == bestDistance and step.key < best.key)
 				then
-					best, bestCost, bestSeconds, phase = step, cost, seconds, candidatePhase
+					best, bestTier, bestDistance, phase = step, tier, distance, candidatePhase
 				end
 			end
 		end
 		if not best then
 			break
 		end
-		Append(best, bestSeconds)
+		Append(best)
 	end
-	return { steps = steps, zones = zones, zone = zone, minutes = known and #steps > 0 and math.ceil(total / 60) or nil }
+	return { steps = steps, zones = zones, zone = zone }
 end

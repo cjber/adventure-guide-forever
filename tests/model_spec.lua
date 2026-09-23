@@ -103,7 +103,6 @@ local route = Model.Plan(data, player, {}, log, options)
 equal(#route.steps, Model.MAX_STEPS, "step cap")
 equal(route.steps[1].key, "turnin:100", "hand-ins first")
 equal(route.steps[2].quests[1], 8, "greedy nearest pickup after turn-in")
-equal(route.minutes, nil, "unknown travel does not invent minutes")
 local empty = prefs()
 empty.quests = false
 equal(#Model.Plan(data, player, {}, log, empty).steps, 0, "activity filter")
@@ -165,21 +164,24 @@ options.zone = 4
 equal(Model.Plan(zones, player, {}, {}, options).steps[1].map, 4, "zone override beyond top three")
 options.pinned = { Model.Plan(zones, player, {}, {}, prefs()).steps[1].key }
 equal(Model.Plan(zones, player, {}, {}, options).steps[1].map, 1, "pinned pickup survives a zone change")
-local travelData = { quests = { [1] = quest(0.5), [2] = quest(0.9) }, zones = data.zones }
-local function travel(_, _, _, _, x)
-	return x == 0.9 and 15 or 90
+-- Offline ranking (F0): the same map first, then the same continent by map centres, then anywhere else by key.
+local tiers = { quests = {}, zones = data.zones, maps = {} }
+for id, place in ipairs({ { 7, 0.9 }, { 9, 0.1 }, { 3, 0.5 }, { 8, 0.2 } }) do
+	tiers.quests[id] = quest(place[2], 0.5, place[1])
+	tiers.quests[id].zone = 1
 end
-local timed = Model.Plan(travelData, player, {}, {}, prefs(), travel)
-equal(timed.steps[1].quests[1], 2, "travel planner controls greedy order")
-equal(timed.steps[1].seconds, 15, "seconds exposed")
-equal(timed.minutes, 2, "total rounded minutes")
-equal(
-	Model.Plan(travelData, player, {}, {}, prefs(), function()
-		return nil
-	end).minutes,
-	nil,
-	"nil estimate fallback"
-)
+tiers.maps[1] = { continent = 1, cx = 0, cy = 0 }
+tiers.maps[7] = { continent = 1, cx = 900, cy = 0 }
+tiers.maps[8] = { continent = 1, cx = 300, cy = 400 }
+tiers.maps[9] = { continent = 0, cx = 10, cy = 0 }
+local order = {}
+for _, step in ipairs(Model.Plan(tiers, player, {}, {}, prefs()).steps) do
+	order[#order + 1] = step.map
+end
+equal(table.concat(order, " "), "8 7 3 9", "same continent by centre distance, then other and unknown maps by key")
+local near = { quests = { [1] = quest(0.9), [2] = quest(0.4, 0.5, 8) }, zones = data.zones, maps = tiers.maps }
+near.quests[2].zone = 1
+equal(Model.Plan(near, player, {}, {}, prefs()).steps[1].map, 1, "the player's own map first")
 
 assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
 local count = 0

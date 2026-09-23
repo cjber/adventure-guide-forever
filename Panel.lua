@@ -662,7 +662,7 @@ function Refresh()
 	RefreshExperience()
 	RefreshChoices(route, ns.Prefs())
 
-	routeLabel:SetText(route.minutes and ("Suggested route - about %d min"):format(route.minutes) or "Suggested route")
+	routeLabel:SetText("Suggested route")
 	if not ns.State.Ready() then
 		emptyText:SetText("Loading your completed quests...")
 	elseif #route.steps == 0 then

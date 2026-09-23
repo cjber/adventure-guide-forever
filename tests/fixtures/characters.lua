@@ -29,6 +29,26 @@ characters.list = {
 		completed = { zones = { 1438, 1439 } },
 	},
 	{
+		-- ne21_darkshore carrying finished quests with turn-ins on three kinds of map: Darkshore (947, 948), the next
+		-- zone over (967, Ashenvale) and another continent (168, Stormwind). The log gives no waypoint, so each
+		-- turn-in is the data's `finish`.
+		name = "ne21_crosszone",
+		level = 21,
+		side = 1,
+		raceBit = 8,
+		classBit = 4,
+		map = 1439,
+		x = 0.3700,
+		y = 0.4400,
+		completed = { zones = { 1438, 1439 } },
+		log = {
+			{ id = 947, title = "Cave Mushrooms", level = 17, complete = true },
+			{ id = 948, title = "Onu", level = 17, complete = true },
+			{ id = 967, title = "The Tower of Althalaxx", level = 18, complete = true },
+			{ id = 168, title = "Collecting Memories", level = 18, complete = true },
+		},
+	},
+	{
 		-- A human warrior in Goldshire who finished Elwynn Forest.
 		name = "human12_elwynn",
 		level = 12,
@@ -89,6 +109,10 @@ local function Completed(data, fixture)
 	end
 	for _, id in ipairs(rules.ids or {}) do
 		completed[id] = true
+	end
+	-- A quest in the log is not completed, whatever the rules above say.
+	for _, entry in ipairs(fixture.log or {}) do
+		completed[entry.id] = nil
 	end
 	return completed
 end
