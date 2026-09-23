@@ -246,6 +246,20 @@ for _, case in ipairs({
 	clean(h, case.label)
 end
 
+-- A refusal after an earlier Go cancels that journey, so Shortest Path's old line never stays beside the waypoint.
+do
+	local h = Load("v1")
+	local step = h.ns.Route().steps[1]
+	h.ns.Integrations.Navigate(step)
+	equal(h.ns.Integrations.Guiding(), true, "declined later: the first Go guides")
+	h.spfDeclines = true
+	equal(h.ns.Integrations.Navigate(step), true, "declined later: the waypoint guides")
+	equal(h.spf.Cancel, 1, "declined later: the earlier journey is cancelled")
+	equal(h.ns.Integrations.Guiding(), false, "declined later: Shortest Path no longer guides")
+	equal(h.counts.SetUserWaypoint, 1, "declined later: the native waypoint is set")
+	clean(h, "declined later")
+end
+
 -- Chat copy comes from ns.L: an unknown command prints the three help lines, in order.
 do
 	local h = Load(false)

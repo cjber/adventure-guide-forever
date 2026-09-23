@@ -98,6 +98,10 @@ function Integrations.Navigate(step)
 			stops[1] = { map = step.map, x = step.x, y = step.y, title = step.title }
 		end
 		local started = api.NavigateRoute(OWNER, stops)
+		if not started then
+			-- A refusal leaves the journey an earlier Go started drawn; the waypoint below replaces it.
+			api.Cancel(OWNER)
+		end
 		ns.Pins.Refresh()
 		if started then
 			return true
