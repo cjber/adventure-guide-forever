@@ -196,13 +196,14 @@ local function BuildJourneys(parent, below)
 	list:SetPoint("RIGHT", parent, "RIGHT", -PAD, 0)
 	for index = 1, MAX_JOURNEYS do
 		local card = CreateFrame("Button", nil, list, "AdventureGuideForeverJourneyCardTemplate") --[[@as AGFJourneyCard]]
-		-- Choosing a journey shows its route and turns the map to it; it never starts guidance, only Go does.
+		-- Choosing a journey shows its route and turns the map to it; it never starts guidance, only Go does. The map
+		-- turns before the invalidation, so its redraw reads the route as it is and the one rebuild waits a frame.
 		card:SetScript("OnClick", function(self)
 			local journey = self.journey
 			if journey then
 				ns.Prefs().journey = journey.key
-				ns.Invalidate()
 				WorldMapFrame:SetMapID(journey.map)
+				ns.Invalidate()
 			end
 		end)
 		cards[index] = card

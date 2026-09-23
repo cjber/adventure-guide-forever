@@ -487,11 +487,13 @@ for _, spf in ipairs({ false, "v1" }) do
 	end
 	local navigate, drawn = Spf("Navigate") + Spf("NavigateRoute"), 0
 	for click, index in ipairs({ 2, 3, 1, 2, 3 }) do
-		local estimates = Spf("Estimate") + Spf("EstimateDetail")
+		local estimates, builds = Spf("Estimate") + Spf("EstimateDetail"), h.modelCalls.Journeys
 		local card = Cards()[index]
 		local journey = card.journey
 		h.Click(card)
+		equal(h.modelCalls.Journeys - builds, 0, label .. ": click " .. click .. " builds nothing in its own frame")
 		h.flush()
+		equal(h.modelCalls.Journeys - builds, 1, label .. ": click " .. click .. " builds once, a frame later")
 		local route = h.ns.Route()
 		equal(route.journey, journey.key, label .. ": click " .. click .. " chooses " .. journey.key)
 		equal(h.map:GetMapID(), journey.map, label .. ": click " .. click .. " turns the map to it")

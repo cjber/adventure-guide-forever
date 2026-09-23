@@ -232,7 +232,12 @@ function ns.Invalidate()
 	end
 	pendingRebuild = true
 	C_Timer.After(0, function()
-		Rebuild()
+		-- A caller in the same frame (the map a card click turns) may have rebuilt through ns.Route() already.
+		if dirty then
+			Rebuild()
+		else
+			pendingRebuild = false
+		end
 		NotifyRouteChange()
 		-- Step 1's travel line gets a frame of its own: at most one Shortest Path estimate, never in the rebuild's.
 		C_Timer.After(0, RefreshTravel)
