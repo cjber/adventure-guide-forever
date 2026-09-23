@@ -702,15 +702,37 @@ function Model.Plan(data, player, completed, log, prefs, mapName)
 	return Route(journeys, prefs, zones, zone)
 end
 
+-- A journey from the last full build without the steps skipped since; the same table when none was.
+---@param journey AGFJourney
+---@return AGFJourney?
+local function Unskipped(journey, skipped)
+	local steps = {}
+	for _, step in ipairs(journey.steps) do
+		if not skipped[step.key] then
+			steps[#steps + 1] = step
+		end
+	end
+	if #steps == #journey.steps or #steps == 0 then
+		return #steps > 0 and journey or nil
+	end
+	local copy = {}
+	for key, value in pairs(journey) do
+		copy[key] = value
+	end
+	copy.steps, copy.map = steps, steps[1].map
+	return copy --[[@as AGFJourney]]
+end
+
 -- The in-combat rebuild (Core.lua): the carry journey fresh from the live log, which is what changes in a fight,
--- and every other journey as the last full build left it. No eligibility pass over the data and no 2-opt, so it
--- stays cheap; the full build runs once combat ends.
+-- and every other journey as the last full build left it, less any step skipped since. No eligibility pass over the
+-- data and no 2-opt, so it stays cheap; the full build runs once combat ends.
 ---@param last AGFRoute
 function Model.Refresh(data, player, log, prefs, last, mapName)
 	local journeys = { Carry(data, player, log, prefs, mapName, true) }
 	for _, journey in ipairs(last.journeys) do
-		if journey.kind ~= "carry" then
-			journeys[#journeys + 1] = journey
+		local kept = journey.kind ~= "carry" and Unskipped(journey, prefs.skipped or {})
+		if kept then
+			journeys[#journeys + 1] = kept
 		end
 	end
 	return Route(journeys, prefs, last.zones, last.zone)

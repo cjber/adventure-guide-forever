@@ -285,6 +285,16 @@ do
 		"combat: the story stays as the last full build left it"
 	)
 	equal(h.counts.tickers, 0, "combat: no timer waits for the fight to end")
+	-- A skip mid-fight takes effect at once, on the story's card as on the log's.
+	ns.Prefs().journey = story.key
+	ns.Invalidate()
+	h.flush()
+	local skipped = ns.Route().steps[1].key
+	ns.Skip(skipped)
+	h.flush()
+	equal(ns.Route().steps[1].key ~= skipped, true, "combat: a skipped story step goes at once")
+	equal(#ns.Route().steps, #story.steps - 1, "combat: and only that step")
+	equal(h.modelCalls.Journeys - before, 0, "combat: still no full build")
 	h.SetCombat(false)
 	h.flush()
 	equal(h.modelCalls.Journeys - before, 1, "combat: one full build once it ends")
