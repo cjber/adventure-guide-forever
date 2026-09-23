@@ -1788,7 +1788,6 @@
       "type": "Button"
     },
     {
-      "alpha": 0.60,
       "anchors": [
         {
           "point": "TOPLEFT",
@@ -1894,7 +1893,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[4].Title",
-      "text": "Pick up quests: Mebok Mizzyrix",
+      "text": "Pick up quests: Kadrak",
       "type": "FontString",
       "wordWrap": false
     },
@@ -1912,25 +1911,9 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[4].Detail",
-      "text": "8 quests here",
+      "text": "near your level",
       "type": "FontString",
       "wordWrap": false
-    },
-    {
-      "anchors": [
-        {
-          "point": "LEFT",
-          "relativePoint": "RIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[4].Detail",
-          "x": 6.00,
-          "y": 0.00
-        }
-      ],
-      "font": "GameFontDisableSmall",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[4].Tag",
-      "text": "optional",
-      "type": "FontString"
     },
     {
       "anchors": [
@@ -2076,7 +2059,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[5].Title",
-      "text": "Pick up quests: Gilthares Firebough",
+      "text": "Pick up quests: Wizzlecrank's Shredder",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2243,7 +2226,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[6].Title",
-      "text": "Pick up quests: Mangletooth",
+      "text": "Pick up quests: Mebok Mizzyrix",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2261,7 +2244,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[6].Detail",
-      "text": "2 quests here",
+      "text": "8 quests here",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2425,7 +2408,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[7].Title",
-      "text": "Pick up quests: Wizzlecrank's Shredder",
+      "text": "Pick up quests: Gilthares Firebough",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2486,6 +2469,7 @@
       "type": "Button"
     },
     {
+      "alpha": 0.60,
       "anchors": [
         {
           "point": "TOPLEFT",
@@ -2591,7 +2575,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[8].Title",
-      "text": "Pick up quests: Kadrak",
+      "text": "Pick up quests: Mangletooth",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2609,9 +2593,25 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[8].Detail",
-      "text": "near your level",
+      "text": "2 quests here",
       "type": "FontString",
       "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[8].Detail",
+          "x": 6.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontDisableSmall",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[8].Tag",
+      "text": "optional",
+      "type": "FontString"
     },
     {
       "anchors": [

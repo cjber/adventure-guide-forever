@@ -2,8 +2,8 @@
 card | 1439 Darkshore | 13 quests
 card | 1436 Westfall | 11 quests
 card | 1432 Loch Modan | 10 quests
-step 1 | pickup:1439:0.3664:0.4626 | Pick up quests: Gubber Blump | 1439 0.3610,0.4493 | 2 quests here
-step 2 | pickup:1439:0.3744:0.4184 | Pick up quests: Barithras Moonshade | 1439 0.3732,0.4364 | 8 quests here
+step 1 | pickup:1439:0.4594:0.9029 | Pick up quests: Sentinel Aynasha | 1439 0.4594,0.9029 | near your level
+step 2 | pickup:1439:0.3864:0.8733 | Pick up quests: Therylune | 1439 0.3864,0.8733 | near your level
 step 3 | pickup:1439:0.4030:0.5973 | Pick up quests: Sentinel Tysha Moonblade | 1439 0.4030,0.5973 | near your level
-step 4 | pickup:1439:0.3864:0.8733 | Pick up quests: Therylune | 1439 0.3864,0.8733 | near your level
-step 5 | pickup:1439:0.4594:0.9029 | Pick up quests: Sentinel Aynasha | 1439 0.4594,0.9029 | near your level
+step 4 | pickup:1439:0.3664:0.4626 | Pick up quests: Gubber Blump | 1439 0.3610,0.4493 | 2 quests here
+step 5 | pickup:1439:0.3744:0.4184 | Pick up quests: Barithras Moonshade | 1439 0.3732,0.4364 | 8 quests here

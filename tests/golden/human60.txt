@@ -2,5 +2,5 @@
 card | 1451 Silithus | 8 quests
 card | 1423 Eastern Plaguelands | 9 quests
 card | 1450 Moonglade | 1 quests
-step 1 | pickup:1451:0.4945:0.3645 | Pick up quests: Baristolth of the Shifting Sands | 1451 0.4945,0.3645 | 4 quests here
-step 2 | pickup:1451:0.5161:0.3863 | Pick up quests: Beetix Ficklespragg | 1451 0.5161,0.3863 | 4 quests here
+step 1 | pickup:1451:0.5161:0.3863 | Pick up quests: Beetix Ficklespragg | 1451 0.5161,0.3863 | 4 quests here
+step 2 | pickup:1451:0.4945:0.3645 | Pick up quests: Baristolth of the Shifting Sands | 1451 0.4945,0.3645 | 4 quests here

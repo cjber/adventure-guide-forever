@@ -101,8 +101,16 @@ local log = {
 local options = prefs()
 local route = Model.Plan(data, player, {}, log, options)
 equal(#route.steps, Model.MAX_STEPS, "step cap")
-equal(route.steps[1].key, "turnin:100", "hand-ins first")
-equal(route.steps[2].quests[1], 8, "greedy nearest pickup after turn-in")
+-- No phase (F12): the nearest step leads whatever its kind, and a far turn-in yields its slot to nearer steps.
+equal(route.steps[1].quests[1], 5, "the nearest step first")
+local function Has(steps, key)
+	local count = 0
+	for _, step in ipairs(steps) do
+		count = count + (step.key == key and 1 or 0)
+	end
+	return count
+end
+equal(Has(route.steps, "turnin:100"), 0, "a far turn-in yields to nine nearer steps")
 local empty = prefs()
 empty.quests = false
 equal(#Model.Plan(data, player, {}, log, empty).steps, 0, "activity filter")
@@ -115,14 +123,16 @@ for _, step in ipairs(remainder.steps) do
 	equal(skip.skipped[step.key], nil, "skipped steps removed")
 end
 local pin = prefs()
-pin.pinned = { route.steps[4].key, route.steps[3].key, route.steps[4].key }
+-- Pins keep their slot (the far turn-in is back) but are ordered by cost like every other step.
+pin.pinned = { "turnin:100", route.steps[3].key, "turnin:100" }
 local pinned = Model.Plan(data, player, {}, log, pin)
-equal(pinned.steps[1].key, pin.pinned[1], "first pin")
-equal(pinned.steps[2].key, pin.pinned[2], "second pin")
-equal(pinned.steps[3].key, "turnin:100", "duplicate pin ignored")
-equal(pinned.steps[1].pinned, true, "pin marker")
-pin.skipped[pin.pinned[1]] = true
-equal(Model.Plan(data, player, {}, log, pin).steps[1].key, pin.pinned[2], "skip wins over pin")
+equal(Has(pinned.steps, "turnin:100"), 1, "a pin keeps its slot, once")
+equal(Has(pinned.steps, route.steps[3].key), 1, "second pin")
+equal(#pinned.steps, Model.MAX_STEPS, "pins count towards the cap")
+equal(pinned.steps[#pinned.steps].key, "turnin:100", "the far pin is still ordered by cost")
+equal(pinned.steps[#pinned.steps].pinned, true, "pin marker")
+pin.skipped["turnin:100"] = true
+equal(Has(Model.Plan(data, player, {}, log, pin).steps, "turnin:100"), 0, "skip wins over pin")
 
 local hub = { quests = { [1] = quest(0.1), [2] = quest(0.11) }, zones = data.zones }
 local before = Model.Plan(hub, player, {}, {}, prefs()).steps[1]
@@ -133,7 +143,7 @@ equal(before.key, after.key, "hub key survives quest completion")
 equal(after.x, 0.11, "remaining known starter used")
 local objectives = Model.Plan({ quests = {}, zones = {} }, player, {}, log, prefs())
 equal(#objectives.steps, 2, "nearby objectives grouped; missing location omitted")
-equal(#objectives.steps[2].quests, 2, "objective cluster membership")
+equal(#objectives.steps[1].quests, 2, "objective cluster membership, nearest first")
 local withFinish = { quests = { [103] = quest() }, zones = data.zones }
 local unknown = { [103] = log[103] }
 equal(#Model.Plan(withFinish, player, {}, unknown, prefs()).steps, 0, "starter never becomes objective")
@@ -164,21 +174,39 @@ options.zone = 4
 equal(Model.Plan(zones, player, {}, {}, options).steps[1].map, 4, "zone override beyond top three")
 options.pinned = { Model.Plan(zones, player, {}, {}, prefs()).steps[1].key }
 equal(Model.Plan(zones, player, {}, {}, options).steps[1].map, 1, "pinned pickup survives a zone change")
--- Offline ranking (F0): the same map first, then the same continent by map centres, then anywhere else by key.
-local tiers = { quests = {}, zones = data.zones, maps = {} }
+-- One cost in yards (F12): this continent by distance, then across the ocean, then a map with no geometry.
+local tiers = { quests = {}, zones = data.zones, maps = {}, continents = { [0] = { x = 50000, y = 0 }, [1] = {} } }
+tiers.continents[1] = { x = 0, y = 0 }
 for id, place in ipairs({ { 7, 0.9 }, { 9, 0.1 }, { 3, 0.5 }, { 8, 0.2 } }) do
 	tiers.quests[id] = quest(place[2], 0.5, place[1])
 	tiers.quests[id].zone = 1
 end
-tiers.maps[1] = { continent = 1, cx = 0, cy = 0 }
-tiers.maps[7] = { continent = 1, cx = 900, cy = 0 }
-tiers.maps[8] = { continent = 1, cx = 300, cy = 400 }
-tiers.maps[9] = { continent = 0, cx = 10, cy = 0 }
+local function Map(continent, cx, cy, name)
+	return { name = name, continent = continent, cx = cx, cy = cy, sx = 1000, sy = 1000 }
+end
+tiers.maps[1], tiers.maps[7], tiers.maps[8] = Map(1, 0, 0, "Home"), Map(1, 900, 0, "East"), Map(1, 300, 400, "North")
+tiers.maps[9] = Map(0, 10, 0, "Far Shore")
 local order = {}
 for _, step in ipairs(Model.Plan(tiers, player, {}, {}, prefs()).steps) do
 	order[#order + 1] = step.map
 end
-equal(table.concat(order, " "), "8 7 3 9", "same continent by centre distance, then other and unknown maps by key")
+equal(table.concat(order, " "), "8 7 9 3", "this continent by distance, then over the sea, then no geometry")
+
+-- A far turn-in never displaces a near pickup (F12): nine pickups here fill the route; with eight it comes last.
+local crowd = { quests = {}, zones = data.zones, maps = tiers.maps, continents = tiers.continents }
+for id = 1, 9 do
+	crowd.quests[id] = quest(0.05 + id * 0.09, 0.5)
+end
+local carried = { [200] = { id = 200, title = "Over there", complete = true, level = 18, map = 9, x = 0.5, y = 0.5 } }
+local full = Model.Plan(crowd, player, {}, carried, prefs())
+equal(#full.steps, Model.MAX_STEPS, "nine near pickups")
+equal(Has(full.steps, "turnin:200"), 0, "the far turn-in waits for a free slot")
+local eight = { quests = {}, zones = data.zones, maps = tiers.maps, continents = tiers.continents }
+for id = 1, 8 do
+	eight.quests[id] = crowd.quests[id]
+end
+local room = Model.Plan(eight, player, {}, carried, prefs())
+equal(room.steps[Model.MAX_STEPS].key, "turnin:200", "with room, the far turn-in comes last")
 local near = { quests = { [1] = quest(0.9), [2] = quest(0.4, 0.5, 8) }, zones = data.zones, maps = tiers.maps }
 near.quests[2].zone = 1
 equal(Model.Plan(near, player, {}, {}, prefs()).steps[1].map, 1, "the player's own map first")

@@ -323,27 +323,90 @@ local function PickupSteps(data, player, eligible, zone, hubs, steps, prefs)
 	end
 end
 
--- The ranking is offline, so a rebuild never waits on travel maths: tier 0 is the same map (map distance), tier 1
--- the same continent (the world distance between the two maps' centres), tier 2 anywhere else or unknown.
-local function Cost(data, from, step)
-	if not ValidPlace(from) then
-		return 2, 0
+-- One cost in yards, offline, so a rebuild never waits on travel maths (docs/design.md §4.1). A place goes into one
+-- frame: its map's world rectangle, then its continent's place on the Azeroth map, so two steps an ocean apart still
+-- get a distance, and the far side's nearest step is the one the route enters at.
+local CROSSING = 10000 -- the dock, the wait and the sail, which a straight line across the sea cannot see
+local UNKNOWN = 1000000 -- no way to measure: dearer than any crossing, so it never ties by accident
+
+-- `continent` is the world map ID when the data places the map on the Azeroth map (`known`). A map it doesn't is an
+-- island of its own, measured in map units, so its steps still order among themselves but never against the rest.
+---@class AGFPosition
+---@field x number
+---@field y number
+---@field continent integer|string
+---@field known boolean
+
+---@return AGFPosition?
+local function Position(data, place)
+	if not ValidPlace(place) then
+		return nil
 	end
-	if from.map == step.map then
-		return 0, math.sqrt(Distance(from, step))
+	local map = data.maps and data.maps[place.map]
+	local shift = map and data.continents and data.continents[map.continent]
+	if not shift then
+		return { x = place.x, y = place.y, continent = "map " .. place.map, known = false }
 	end
-	local a, b = data.maps and data.maps[from.map], data.maps and data.maps[step.map]
-	if a and b and a.continent == b.continent then
-		return 1, math.sqrt((a.cx - b.cx) ^ 2 + (a.cy - b.cy) ^ 2)
-	end
-	return 2, 0
+	return {
+		x = shift.x - map.cy + (place.x - 0.5) * map.sx,
+		y = shift.y - map.cx + (place.y - 0.5) * map.sy,
+		continent = map.continent,
+		known = true,
+	}
 end
 
-local function Phase(step)
-	if step.kind == "turnin" then
-		return 1
+---@param a AGFPosition?
+---@param b AGFPosition?
+local function Cost(a, b)
+	if not (a and b) or (a.continent ~= b.continent and not (a.known and b.known)) then
+		return UNKNOWN
 	end
-	return step.key:match("^objective:") and 3 or 2
+	local distance = math.sqrt((a.x - b.x) ^ 2 + (a.y - b.y) ^ 2)
+	return a.continent == b.continent and distance or CROSSING + distance
+end
+
+-- Nearest neighbour from `from`; TwoOpt then removes crossings with that start fixed and the end open.
+local function Path(steps, from, where)
+	local path, left = {}, {}
+	for _, step in ipairs(steps) do
+		left[#left + 1] = step
+	end
+	while #left > 0 do
+		local best
+		for index, step in ipairs(left) do
+			local cost = Cost(from, where[step])
+			if not best or cost < best.cost or (cost == best.cost and step.key < left[best.index].key) then
+				best = { index = index, cost = cost }
+			end
+		end
+		local step = table.remove(left, best.index)
+		path[#path + 1] = step
+		from = where[step]
+	end
+	return path
+end
+
+local function TwoOpt(path, start, where)
+	local function At(index)
+		return index == 0 and start or where[path[index]]
+	end
+	local improved = true
+	while improved do
+		improved = false
+		for i = 1, #path - 1 do
+			for j = i + 1, #path do
+				local before = Cost(At(i - 1), At(i)) + (j < #path and Cost(At(j), At(j + 1)) or 0)
+				local after = Cost(At(i - 1), At(j)) + (j < #path and Cost(At(i), At(j + 1)) or 0)
+				if after < before - 1e-6 then
+					for k = 0, math.floor((j - i - 1) / 2) do
+						path[i + k], path[j - k] = path[j - k], path[i + k]
+					end
+					improved = true
+				end
+			end
+		end
+	end
+	return path
 end
 
 function Model.Plan(data, player, completed, log, prefs)
@@ -352,46 +415,53 @@ function Model.Plan(data, player, completed, log, prefs)
 	local zone = prefs.zone or (zones[1] and zones[1].map)
 	local candidates = LogSteps(data, player, log, prefs)
 	PickupSteps(data, player, eligible, zone, index.hubs, candidates, prefs)
-	local byKey, selected, steps = {}, {}, {}
+	local byKey, pool, where = {}, {}, {}
 	for _, step in ipairs(candidates) do
 		if not (prefs.skipped and prefs.skipped[step.key]) then
 			byKey[step.key] = step
+			pool[#pool + 1] = step
+			where[step] = Position(data, step)
 		end
 	end
-	local from = player
-	local function Append(step, pinned)
+	local origin = Position(data, player)
+
+	-- Selection grows from the player: each pick is the step cheapest to reach from the player or any step already
+	-- picked. Pinned steps come first; there is no phase, so a far turn-in never pushes out a nearby pickup.
+	local reach, chosen, selected = {}, {}, {}
+	for _, step in ipairs(pool) do
+		reach[step] = Cost(origin, where[step])
+	end
+	local function Take(step, pinned)
 		step.pinned = pinned or nil
-		selected[step.key] = true
-		steps[#steps + 1] = step
-		from = step
+		chosen[step] = true
+		selected[#selected + 1] = step
+		for _, other in ipairs(pool) do
+			if not chosen[other] then
+				reach[other] = math.min(reach[other], Cost(where[step], where[other]))
+			end
+		end
 	end
 	for _, key in ipairs(prefs.pinned or {}) do
 		local step = byKey[key]
-		if step and not selected[key] and #steps < Model.MAX_STEPS then
-			Append(step, true)
+		if step and not chosen[step] and #selected < Model.MAX_STEPS then
+			Take(step, true)
 		end
 	end
-	while #steps < Model.MAX_STEPS do
-		local best, bestTier, bestDistance, phase
-		for _, step in ipairs(candidates) do
-			local candidatePhase = Phase(step)
-			if byKey[step.key] and not selected[step.key] and (not phase or candidatePhase <= phase) then
-				local tier, distance = Cost(data, from, step)
-				if
-					not best
-					or candidatePhase < phase
-					or tier < bestTier
-					or (tier == bestTier and distance < bestDistance)
-					or (tier == bestTier and distance == bestDistance and step.key < best.key)
-				then
-					best, bestTier, bestDistance, phase = step, tier, distance, candidatePhase
-				end
+	while #selected < Model.MAX_STEPS do
+		local best
+		for _, step in ipairs(pool) do
+			if
+				not chosen[step]
+				and (not best or reach[step] < reach[best] or (reach[step] == reach[best] and step.key < best.key))
+			then
+				best = step
 			end
 		end
 		if not best then
 			break
 		end
-		Append(best)
+		Take(best)
 	end
-	return { steps = steps, zones = zones, zone = zone }
+
+	return { steps = TwoOpt(Path(selected, origin, where), origin, where), zones = zones, zone = zone }
 end
