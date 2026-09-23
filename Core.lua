@@ -28,8 +28,8 @@ ns.L = {
 	READY_TO_HAND_IN = "Ready to hand in",
 	NOTHING_NEARBY = "Nothing nearby fits your level.",
 	LOADING = "Loading your completed quests...",
-	SETTING_MAP_PINS_TOOLTIP = "Every Adventure Guide mark on the world map: the route's numbered steps while their "
-		.. "zone is shown, and quest givers when those are on too.",
+	SETTING_MAP_PINS_TOOLTIP = "The route's numbered steps on the world map while their zone is shown, and quest "
+		.. "givers when those are on too. The open guide previews its route either way.",
 	SETTING_DUNGEONS_DEFAULT_TOOLTIP = "Suggest dungeon and group quests for a character the first time you open "
 		.. "the guide. Change it any time from the guide's settings menu.",
 	SETTING_GIVERS_TOOLTIP = 'A "!" on the world map over everyone with a quest you can take now. '
