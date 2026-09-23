@@ -33,6 +33,9 @@ SlashCmdList = nil
 ---@param uiMapID? integer
 function ToggleWorldMap(uiMapID) end
 
+---@param mapID? integer
+function OpenQuestLog(mapID) end
+
 ---@class AGFQuestContentFrame : Frame
 ---@field displayMode any
 

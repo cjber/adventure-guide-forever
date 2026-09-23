@@ -96,7 +96,7 @@ end
 function Pins.Ping(key)
 	local pin = pinsByKey[key]
 	if pin then
-		UIFrameFlash(pin.Icon, 0.2, 0.2, 1.2, false)
+		UIFrameFlash(pin.Icon, 0.2, 0.2, 1.2, true)
 	end
 end
 

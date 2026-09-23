@@ -21,6 +21,7 @@ read_globals = {
 	"strtrim",
 	"WorldMapFrame",
 	"ToggleWorldMap",
+	"OpenQuestLog",
 	"EventUtil",
 	-- State.lua
 	"bit",

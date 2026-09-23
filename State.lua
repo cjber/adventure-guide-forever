@@ -19,7 +19,7 @@ end
 
 ---@return AGFPlayer
 function State.Player()
-	local _, englishFaction = UnitFactionGroup("player")
+	local englishFaction = UnitFactionGroup("player")
 	local side = englishFaction == "Horde" and 2 or 1
 
 	local map, x, y

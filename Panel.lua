@@ -176,7 +176,11 @@ local function CreateZoneCard(parent)
 			return
 		end
 		local prefs = ns.Prefs()
-		prefs.zone = (prefs.zone == zone.map or zone.best) and nil or zone.map
+		if prefs.zone == zone.map or zone.best then
+			prefs.zone = nil
+		else
+			prefs.zone = zone.map
+		end
 		ns.Invalidate()
 	end)
 	card:SetScript("OnEnter", function(self)
@@ -630,12 +634,18 @@ local function Attach()
 			ShowGuide(false)
 		end
 	end, panel)
+	-- Opening a tracked quest asks for Quests mode, but SetDisplayMode returns early when the mode is unchanged,
+	-- so the callback above never fires for it.
+	hooksecurefunc("QuestMapFrame_ShowQuestDetails", function()
+		if panel:IsShown() then
+			ShowGuide(false)
+		end
+	end)
 	ns.OnRouteChange(Refresh)
 
 	function ns.OpenPanel()
-		if not WorldMapFrame:IsShown() then
-			ToggleWorldMap()
-		end
+		-- Also brings back a collapsed quest sidebar, which hides QuestMapFrame and so the panel inside it.
+		OpenQuestLog()
 		ShowGuide(true)
 	end
 end
