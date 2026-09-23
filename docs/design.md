@@ -30,8 +30,9 @@ Two standing rules from AGENTS.md:
 
 ## 2. Surfaces
 
-All atlases below appear as exact rows in the CSV. None of the atlases AGF sets has a `-c60` row, except the
-tracker check, where AGF uses the `-c60` name. The tracker header and glow are set by Blizzard's templates, not
+All atlases below appear as exact rows in the CSV. AGF always passes the **plain** atlas name, never a `-c60`
+name: on Forever `C_Texture.GetAtlasInfo` returns nil for every `-c60` name tried, and the plain name resolves to
+the `-c60` art where one exists (probe `c60`, §9). The tracker header and glow are set by Blizzard's templates, not
 by AGF.
 
 ### 2.1 Quest-log tab "Adventure" (the journal)
@@ -152,7 +153,7 @@ player's side. Eligible matches show as normal rows. Ineligible matches show why
 | [red linen.................]                  |
 |  [L] Red Linen Goods             Westfall     |  questlog-questtypeicon-lock (CSV:9393) 18x18, GameFontNormal
 |      Requires level 14                        |  unmet: GameFontHighlightSmall in RED_FONT_COLOR
-|      [v] Completed: The Forgotten Heirloom    |  met: |A:ui-questtracker-tracker-check-c60:12:12|a (CSV:18734), GRAY_FONT_COLOR
+|      [v] Completed: The Forgotten Heirloom    |  met: |A:ui-questtracker-tracker-check:12:12|a (CSV:10177), GRAY_FONT_COLOR
 |      Warriors only                            |  unmet
 |  [L] Grove of the Ancients                    |
 |      The guide can't tell where this starts   |  start suppressed by the generator: one line, never a Go
@@ -217,7 +218,7 @@ ADVENTURE GUIDE                                 module header (template)
 | Layer | Max | Shown when |
 |---|---|---|
 | Numbered route rings | 9 (`MAX_STEPS`, Model.lua:5), only the selected journey's, only on its zone map | the Adventure tab is open (preview), **or** `showMapPins` is on |
-| Quest-giver "!" | the zone's eligible, non-gray givers | `showMapPins` **and** `showQuestGivers` are both on; both default **off** |
+| Quest-giver "!" | the zone's eligible, non-gray givers | `showMapPins` **and** `showQuestGivers` are both on; both default **off**. Kept because Blizzard draws no givers on Forever (probe `questoffer`, §9) |
 | Lines, dots, overlays, continent marks | 0 | never drawn by AGF |
 
 While SPF is guiding, AGF's rings hide, because SPF draws its own stops (Pins.lua:15-17).
@@ -311,8 +312,11 @@ When `SPF.Active()` exists and reports another journey running, Go's tooltip add
   unknown, the line is left out.
 - Travel verbs match SPF's `VERB` table (shortest-path-forever `Journey.lua:11-20`: "Fly to", "Boat to", …), so
   AGF and SPF speak with one voice.
-- All strings live in one `L` table in Core.lua. Titles come from `C_QuestLog.GetTitleForQuestID` when the
-  client has them cached, otherwise from the data's English title. Zone names come from `C_Map.GetMapInfo`.
+- All strings live in one `L` table in Core.lua.
+- Names the game already localises come from the game: zone names from `C_Map.GetMapInfo(uiMapID).name`, quest
+  titles from `C_QuestLog.GetTitleForQuestID(questID)`, class and race names from `C_CreatureInfo.GetClassInfo` /
+  `GetRaceInfo` (probe `classnames`). The data's English name or title is only the fallback when the client
+  returns nothing (an uncached quest, a headless spec).
 
 | Where | Example |
 |---|---|
@@ -341,17 +345,34 @@ When `SPF.Active()` exists and reports another journey running, Go's tooltip add
 | 9 | YAGNI and contract sweep (see list below the table) | Must | The brief's wired-or-deleted rule. |
 | 10 | Travel line from SPF `EstimateDetail` | Should | Honest cost of a choice. Blocked until SPF ships it; `Estimate` covers the gap. |
 | 11 | Chapter-end fanfare in the tracker | Should | A small, finite reward. Needs `/reload` validation first. |
-| 12 | Route interleaving plus 2-opt over ≤9 stops, out of combat | Should | Today every turn-in comes before any pickup, however far away (agf.md). The pass never adds steps, only removes zig-zags. |
+| 12 | Continent-aware ordering: one numeric cost, selection by it, nearest-neighbour plus 2-opt over ≤9 stops, at most one continent crossing (§4.1) | **Must** | Today every turn-in comes before any pickup, however far away (agf.md): the `ne21_crosszone` golden puts a Stormwind turn-in between Kalimdor steps, and SPF then draws a straight line across the ocean. |
 | 13 | SPF `Active()`: Go warns before replacing the player's own journey | Should | Respects a journey the player chose. |
 | 14 | Zones 2521 Zephras Isle and 2548 Riverglades in `gen_quests.py` (TF has them, siblings.md §4) | Should | Forever-only zones currently get no range. |
 | 15 | One `L` table for all copy | Should | Localisation groundwork. The strings are inline English today. |
 | 16 | "New in Forever" tag (`adventureguide-icon-whatsnew`, CSV:2024) on quests already in the log only | Could | Needs the generator to emit the IDs missing from CMaNGOS (count unverified). Never on cards or recommendations. |
 | 17 | Dungeon card | Could | Blocked: `dungeon` is set on 0 quests (agf.md) and the EJ is absent (PROBE). Needs a generator fix plus a TF `DungeonEntrance` API. |
 | 18 | Discovery hint: one unexplored area named as text | Could | Needs a LegacyForever API that does not exist. Text only, never a ring. |
+| 19 | "Visit your class trainer" step from Tweaks Forever's `TrainableSpells` (§5.2), feature-detected | Should | The client lists no `FutureSpell` entries (probe `spellbook2`), so only Tweaks Forever's trainer data can tell. The data has no trainer coordinates, so the step is text only: no ring, no Go. |
+
+### 4.1 Route ordering (#12)
+
+- **One cost, in yards.** Every place is placed in one frame: its map's world rectangle, then its continent's
+  rectangle on the Azeroth map (UiMap 947's `UiMapAssignment` rows), both generated from wago. On one continent the
+  cost is the straight distance. Across an ocean it is a large fixed crossing penalty plus the distance measured on
+  the Azeroth map, so the far continent's nearest step is the one it enters at, not the one whose key sorts first.
+- **Selection by cost, not by phase.** Steps grow from the player outward: each next pick is the candidate
+  cheapest to reach from the player or any step already picked. A turn-in on another continent no longer pushes out
+  a nearby pickup. Skipped steps are never candidates.
+- **Order.** Nearest neighbour from the player, grouped by continent so the route crosses at most once (the
+  player's continent first), then 2-opt on the same cost. A turn-in on another continent is kept but goes last,
+  with the reason "Hand in when you're in <zone>".
+- **Unchanged.** A quest whose eligibility the data cannot establish is never a candidate, and every step keeps
+  the data's coordinates.
 
 Contents of the sweep (#9):
 - delete `prefs.legacy` and `prefs.professions` (Core.lua:23-24, types/Namespace.lua:58-59, the spec);
-- set TOC `OptionalDeps` to `ShortestPathForever` only;
+- set TOC `OptionalDeps` to `ShortestPathForever` only (Tweaks Forever is read at rebuild time, never at load, so
+  load order does not matter for #19);
 - replace the SPF detection with §5.1 and move its types into `types/Namespace.lua`;
 - fix the "3-5 steps" copy (toc:3, Namespace.lua:98) and the stale Panel.xml:3 comment.
 
@@ -422,7 +443,8 @@ What AGF does when each piece is missing:
 
 | Missing | AGF does |
 |---|---|
-| All of SPF, or v1.1.0 from the stores | Sets a native user waypoint for step 1. Stop clears it only if `C_Map.GetUserWaypoint()` (MapDocumentation.lua:454) still matches the `UiMapPoint` AGF set (same map, and x/y within 1e-4). Routes are ordered by map distance. There is no travel line. |
+| All of SPF, or v1.1.0 from the stores | Sets a native user waypoint for step 1, only when `C_Map.CanSetUserWaypointOnMap(map)` is true. Stop clears it only if `C_Map.GetUserWaypoint()` (MapDocumentation.lua:454) still matches the `UiMapPoint` AGF set (same map, and x/y within 1e-4). Routes are ordered as §4.1. There is no travel line. |
+| `Navigate` / `NavigateRoute` returns false | The same native waypoint as when SPF is absent: SPF declined, so the player still gets a destination. |
 | `EstimateDetail` | Travel line reads "About N min away", from `Estimate`. |
 | The nil reason | AGF checks `InCombatLockdown()` before calling. A nil result means the line is omitted, or the previous line is kept if there was one. |
 | `Active` | Go behaves as it does today, and no warning is shown. |
@@ -431,14 +453,16 @@ Not requested:
 - `RegisterCallback`. Rings and Stop re-check `CurrentStop(OWNER)` on route change and on map `RefreshAllData`.
 - `EstimateMany`. Siblings.md measures 40 estimates at about 0.63 ms warm.
 - Stop metadata.
-- `Preview`. SPF's dotted preview stays SPF's; AGF draws no lines.
+- `Preview`. SPF's dotted preview stays SPF's; AGF draws no lines. `NavigateRoute` previews every later stop as
+  one walk path, drawn as straight dots even across an ocean (SPF `Route.lua` `SetJourneyRoute`); SPF PR #29 fixes
+  that on SPF's side, and §4.1 keeps AGF's routes to one crossing.
 
-### 5.2 Legacy Forever, Tweaks Forever, SkillUp Forever: none in v1
+### 5.2 Legacy Forever, Tweaks Forever, SkillUp Forever
 
 | Sibling | Contract | Why not |
 |---|---|---|
 | LegacyForever (formerly LegacyHere) | none | It has no public API (origin/main ea0fb8c; the PROBE `legacy` scan shows only `LegacyForever*` mixins and DB). Its data has 0 quest criteria (siblings.md §3), so no quest can be honestly tagged, and percentages are Legacy's domain. It returns only if Could #18 is promoted, as `Objectives(uiMapID)` with no percent. |
-| TweaksForever | none | AGF bakes the same zone table at generation time (siblings.md §4). `DungeonEntrance` is needed only for Could #17. |
+| TweaksForever | `TweaksForever.API.TrainableSpells()` (TF PR #45, `version = 1`), for Should #19 only | Returns fresh `{spellID, name, level, cost?, line, lineID}` tables for the trainer spells the player's level allows and they haven't learned, or nil before login and in combat. AGF checks `type(api.TrainableSpells) == "function"` where it uses it, and treats nil as "no step this rebuild". The zone table is still baked at generation time (siblings.md §4); `DungeonEntrance` is needed only for Could #17. |
 | SkillUpForever | none | Profession steps are out of scope for a quest journal. |
 
 ## 6. Known flight paths: decision
@@ -462,9 +486,8 @@ nodes". There is no separate known-flight-paths API.
 - **Separate story and why-not pages, "Then" rows, "Other roads", zone-art crop.** These add surface area and would not fit the 510 px page. Search and the selected card cover them.
 - **Reusing the settings cog as a zone dropdown.** It would remove access to settings.
 - **Stretching `pricestrikethrough-gray` over text.** Blizzard draws it at atlas size only. Met requirements are ticked instead.
-- **Class trainer reminder.** `spellbook.future = {}` with 34 items at level 18 (PROBE lines 123-127). That is one sample, so this is a re-probe question (§9), not a proven absence.
 - **Rest stop.** None of the 28 candidate camp auras was present (PROBE lines 129-147), and the CSV has no camp atlas.
-- **Encounter Journal integration.** It is not loaded, and has 0 tiers (PROBE `ej`).
+- **Encounter Journal integration.** It is not loaded, and has 0 tiers (PROBE `ej`, again in batch 2).
 - **Reputation requirements.** There is no data field for them.
 - **Traveler's Journal and alt memory.** They need account-wide progress state, which is a treadmill (games.md pain point 9).
 - **Weekly bounties.** A progress treadmill, and against the pillars.
@@ -483,8 +506,29 @@ Nothing below has been validated in game yet.
 5. Login (not a `/reload`) shows the resume line once. It stays hidden if step 1 changed.
 6. Finishing a chain with an established end glows the tracker header once and plays the stage-end sound. There is no toast.
 7. With SPF disabled, the waypoint works and no travel line shows. On SPF v1 without `EstimateDetail`, "About N min away" shows.
+8. When SPF declines a route (Go returns false), the native waypoint appears instead.
+9. With a turn-in on another continent, the route stays on this continent first, crosses once, and ends with that
+   turn-in ("Hand in when you're in <zone>").
+10. With Tweaks Forever (PR #45) loaded and spells to train, "Visit your class trainer" shows with no ring; without
+    Tweaks Forever, nothing changes.
 
 ## 9. Open questions that need client probes
+
+**Answered** by the batch-2 run on 2026-09-23 (client 1.60.1.69977, a level-18 Alliance shaman in Auberdine):
+
+| Probe | Result | Decision |
+|---|---|---|
+| 1 FutureSpell (`spellbook2`) | 0 `FutureSpell` entries in all 4 lines at level 18 | The client can't tell; #19 asks Tweaks Forever instead |
+| 2 `questoffer` | `QuestOfferDataProvider` exists, but 0 quest lines and no `QuestOfferPinTemplate` in the live pin pools | Blizzard draws no givers: AGF's giver layer stays, off by default (§2.6) |
+| 3 `classnames` | `C_CreatureInfo.GetClassInfo` / `GetRaceInfo` return names | Use them (§3) |
+| 4 `c60` | `GetAtlasInfo` is nil for every `-c60` name; plain names resolve to the `-c60` art | Plain names only (§2) |
+| 5 `questline` | `GetQuestLineInfo` nil for all 5 log quests; 0 lines | Keep the conservative `pre`/`next` rule |
+| 6 cache | A quest requested last session is cached next session; another is not | Live title when cached, else the data's (§3) |
+| `templates` | `AlphaHighlightButtonTemplate` exists; it errors on `Hide` before a `NormalTexture` is set | Inherit it; set the normal texture first |
+| `ej` | Loadable but not loaded, 0 tiers | No Encounter Journal use (§7) |
+| 8 fanfare | `SetNeedsFanfare` exists | Whether the glow plays for an addon module stays a `/reload` check |
+
+The original questions follow for the record.
 
 probes.md records the run from 19:27:32. Its batch-2 results (explore, gamerules, ej, questtext, camp, taxi,
 questmap, legacy) exist only in the PROBE SavedVariables written at 19:38:41, which is one session on one level-18
