@@ -2,7 +2,7 @@
 
 import unittest
 
-from gen_quests import faction, geometry, parse_values, prerequisite_index, prerequisites, project
+from gen_quests import continents, faction, geometry, parse_values, prerequisite_index, prerequisites, project
 
 
 class ParsingTest(unittest.TestCase):
@@ -78,12 +78,26 @@ class GeometryTest(unittest.TestCase):
         # Darkshore's UiMapAssignment row at 1.60.1.69913: Kalimdor (MapID 1).
         darkshore = self.row(1439, 1, (3966.6665039062, -3608.3332519531, -1e6, 8333.3330078125, 2941.6665039062, 1e6))
         other = self.row(1440, 1, (829.1666, -4066.6665, -1e6, 4672.9165, 1699.9999, 1e6))
-        self.assertEqual(geometry([darkshore, other], {1439}), {1439: {"continent": 1, "cx": 6150.0, "cy": -333.3}})
+        self.assertEqual(
+            geometry([darkshore, other], {1439}, {1439: "Darkshore"}),
+            {1439: {"name": "Darkshore", "continent": 1, "cx": 6150.0, "cy": -333.3, "sx": 6550.0, "sy": 4366.7}},
+        )
 
     def test_ambiguous_or_partial_rows_left_out(self):
         region = (0, 0, -1, 10, 10, 1)
         rows = [self.row(947, 0, region), self.row(947, 1, region), self.row(1453, 0, region, doodad=5)]
-        self.assertEqual(geometry(rows, {947, 1453}), {})
+        self.assertEqual(geometry(rows, {947, 1453}, {}), {})
+
+    def test_continent_shift_onto_the_world_map(self):
+        # Kalimdor's row on UiMap 947 (Azeroth, a Type 1 world map) at 1.60.1.69913. A continent map's own row
+        # (Type 2) is not a world map, and a continent no place uses is left out.
+        kalimdor = self.row(947, 1, (-12800, -9600, -1e6, 12266.700195312, 6933.2998046875, 1e6))
+        kalimdor.update(UiMin_0="0.03990000114", UiMax_0="0.40830001235", UiMin_1="0.08550000191")
+        kalimdor["UiMax_1"] = "0.92339998484"
+        eastern = self.row(1415, 0, (-16000, -19199.9, -1e6, 7466.6, 16000, 1e6))
+        ui_maps = [{"ID": "947", "Type": "1"}, {"ID": "1415", "Type": "2"}]
+        self.assertEqual(continents(ui_maps, [kalimdor, eastern], {0, 1}), {1: {"x": 8724.0, "y": 14824.5}})
+        self.assertEqual(continents(ui_maps, [kalimdor], {0}), {})
 
 
 if __name__ == "__main__":

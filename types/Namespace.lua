@@ -33,12 +33,22 @@
 ---@field quests table<integer, AGFQuest>
 ---@field zones table<integer, {name: string, min: integer, max: integer}> uiMapID -> zone name and level range
 ---@field maps table<integer, AGFMapCentre> uiMapID -> where the map sits in the world, for every map a place uses
+---@field continents table<integer, AGFContinentShift> continent -> its place on the Azeroth world map
 
--- Ranks steps on different maps without travel maths (Model.lua Cost). World coordinates are yards.
+-- Measures between steps on different maps without travel maths (Model.lua Cost). World coordinates are yards.
 ---@class AGFMapCentre
+---@field name string the map's English name, the fallback when the client has none (C_Map.GetMapInfo)
 ---@field continent integer the world map (instance) ID: 0 Eastern Kingdoms, 1 Kalimdor
 ---@field cx number world x of the map rectangle's centre
 ---@field cy number world y of the map rectangle's centre
+---@field sx number yards from the map's left edge to its right (map x 0 to 1)
+---@field sy number yards from the map's top edge to its bottom (map y 0 to 1)
+
+-- One continent on the Azeroth world map, in yards: x = shift x - world y, y = shift y - world x, so both continents
+-- share one frame, oriented like a zone map.
+---@class AGFContinentShift
+---@field x number
+---@field y number
 
 -- What the live state tells the planner. Built by State.lua, consumed by Model.lua.
 ---@class AGFPlayer
