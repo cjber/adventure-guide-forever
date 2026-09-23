@@ -143,20 +143,39 @@ function harness.load(options)
 	-- Client methods whose effect no spec reads: accepted and ignored.
 	for _, name in ipairs({
 		"EnableMouse",
-		"SetBackdrop",
-		"SetBackdropBorderColor",
-		"SetHighlightFontObject",
-		"SetJustifyH",
 		"SetMaxLetters",
-		"SetMinMaxValues",
 		"SetShadowOffset",
-		"SetStatusBarColor",
-		"SetStatusBarTexture",
-		"SetTexCoord",
-		"SetValue",
-		"SetWordWrap",
 	}) do
 		Methods[name] = noop
+	end
+	-- Setters no spec reads but tools/screenshots.py draws: each stores its arguments under `field` for h.Describe.
+	for name, field in pairs({
+		SetBackdrop = "backdrop",
+		SetBackdropBorderColor = "backdropBorderColor",
+		SetHighlightFontObject = "highlightFont",
+		SetJustifyH = "justifyH",
+		SetTexCoord = "texCoord",
+		SetWordWrap = "wordWrap",
+	}) do
+		Methods[name] = function(self, first, ...)
+			self[field] = select("#", ...) > 0 and { first, ... } or first -- multi-value: every argument
+		end
+	end
+	function Methods:SetStatusBarTexture(file)
+		self.statusBar = self.statusBar or {}
+		self.statusBar.texture = file
+	end
+	function Methods:SetStatusBarColor(r, g, b, a)
+		self.statusBar = self.statusBar or {}
+		self.statusBar.color = { r, g, b, a or 1 }
+	end
+	function Methods:SetMinMaxValues(low, high)
+		self.statusBar = self.statusBar or {}
+		self.statusBar.min, self.statusBar.max = low, high
+	end
+	function Methods:SetValue(value)
+		self.statusBar = self.statusBar or {}
+		self.statusBar.value = value
 	end
 
 	local function visibilityChanged(frame, shown)
@@ -290,7 +309,9 @@ function harness.load(options)
 		end
 	end
 
-	-- No layout engine: a size is only what was set explicitly, which is what GetSize(true) reports in game.
+	-- No layout engine: a size is only what was set explicitly, which is what GetSize(true) reports in game. Only
+	-- h.SetRects (tools/screenshots.py's layout pass) gives regions a laid-out rect; specs never do, so there the
+	-- edges stay nil and a size is the explicit one.
 	function Methods:SetSize(width, height)
 		self.width, self.height = width, height
 	end
@@ -300,16 +321,30 @@ function harness.load(options)
 	function Methods:SetHeight(height)
 		self.height = height
 	end
-	function Methods:GetSize()
+	function Methods:GetSize(explicit)
+		if self.rect and not explicit then
+			return self.rect[3], self.rect[4]
+		end
 		return self.width or 0, self.height or 0
 	end
 	function Methods:GetWidth()
-		return self.width or 0
+		return (self:GetSize())
 	end
 	function Methods:GetHeight()
-		return self.height or 0
+		return (select(2, self:GetSize()))
 	end
-	Methods.GetTop, Methods.GetBottom, Methods.GetLeft, Methods.GetRight = noop, noop, noop, noop
+	function Methods:GetLeft()
+		return self.rect and self.rect[1]
+	end
+	function Methods:GetBottom()
+		return self.rect and self.rect[2]
+	end
+	function Methods:GetRight()
+		return self.rect and self.rect[1] + self.rect[3]
+	end
+	function Methods:GetTop()
+		return self.rect and self.rect[2] + self.rect[4]
+	end
 	function Methods:GetEffectiveScale()
 		return 1
 	end
@@ -478,6 +513,8 @@ function harness.load(options)
 		local region = NewRegion(objectType, nil, parent, true)
 		region.parentKey = key
 		parent[key] = region
+		parent.internals = parent.internals or {}
+		parent.internals[key] = region
 		return region
 	end
 
@@ -635,7 +672,14 @@ function harness.load(options)
 				end
 			elseif tag == "Color" then
 				region:SetColorTexture(tonumber(attrs.r), tonumber(attrs.g), tonumber(attrs.b), tonumber(attrs.a))
-			elseif tag ~= "MaskedTextures" then -- a mask has no state a headless spec can see
+			elseif tag == "MaskedTextures" then
+				-- No spec sees a mask; the masked texture keeps the mask's file for tools/screenshots.py.
+				for _, masked in ipairs(child.children) do
+					deferred[#deferred + 1] = function()
+						region.parent[masked.attrs.childKey].maskFile = region.file
+					end
+				end
+			else
 				error("unsupported <" .. tag .. "> in the addon XML")
 			end
 		end
@@ -1160,10 +1204,11 @@ function harness.load(options)
 			questMap[key] = value
 		end,
 	})
+	-- Blizzard_UIPanels_Game/Camelot/QuestMapFrameOverrides.lua.
 	G.QuestMapFrameOverrides = {
 		questTabHidden = true,
 		GetQuestsTabAnchorOffset = function()
-			return 0, -40
+			return 5, -28
 		end,
 	}
 	G.OpenQuestLog = function()
@@ -1296,9 +1341,72 @@ function harness.load(options)
 		end
 		return found
 	end
-	-- Layout-dump extras only the harness knows: the stock template a frame stands in for.
+	-- Layout-dump extras only the harness knows, for tools/screenshots.py: the stock template a frame stands in for,
+	-- what the client's dump leaves out (layers, colours, button text and fonts, backdrops, status bars) and the
+	-- state of the stock innards the addon reached into (an inset's Bg, a search box's instructions).
+	local EXTRAS = {
+		"activeAtlas",
+		"alphaMode",
+		"backdrop",
+		"backdropBorderColor",
+		"checked",
+		"color",
+		"disabled",
+		"file",
+		"highlightFont",
+		"highlightLocked",
+		"inactiveAtlas",
+		"justifyH",
+		"layer",
+		"maskFile",
+		"normalAtlas",
+		"normalFont",
+		"statusBar",
+		"subLevel",
+		"texCoord",
+		"wordWrap",
+	}
 	function h.Describe(region, entry)
 		entry.stockTemplate = region.stockTemplate
+		for _, key in ipairs(EXTRAS) do
+			entry[key] = region[key]
+		end
+		if region:GetAlpha() ~= 1 then
+			entry.alpha = region:GetAlpha()
+		end
+		if entry.type ~= "FontString" and region.text and region.text ~= "" then
+			entry.text = region.text
+		end
+		for key, inner in pairs(region.internals or {}) do
+			entry.stock = entry.stock or {}
+			local points = {}
+			for index, point in ipairs(inner.points) do
+				assert(point[2] == region, "a stock innard anchored off its frame")
+				points[index] = { point = point[1], relativePoint = point[3], x = point[4], y = point[5] }
+			end
+			entry.stock[key] = {
+				shown = inner:IsShown(),
+				text = inner.text,
+				atlas = inner.atlas,
+				size = inner.width and { inner.width, inner.height } or nil,
+				anchors = #points > 0 and points or nil,
+			}
+		end
+	end
+	-- tools/screenshots.py's layout pass: each region under `root` whose path `rects` names takes that rect ({left,
+	-- bottom, width, height}, y up) and runs OnSizeChanged when its size changed, as the client's layout does.
+	function h.SetRects(root, rects)
+		h.ns.DumpLayout(root, function(region, entry)
+			local rect = rects[entry.path]
+			if rect then
+				local old = region.rect
+				region.rect = rect
+				local script = region.scripts and region.scripts.OnSizeChanged
+				if script and not (old and old[3] == rect[3] and old[4] == rect[4]) then
+					h.call(script, region, rect[3], rect[4])
+				end
+			end
+		end)
 	end
 	return h
 end

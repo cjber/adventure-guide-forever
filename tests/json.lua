@@ -1,4 +1,5 @@
 -- JSON for the test tools (not shipped): sorted keys and "%.2f" numbers, so the output is a stable, reviewable diff.
+-- tests/scenes.lua passes a finer number format: map positions need more than two places.
 local json = {}
 
 local escapes = { ['"'] = '\\"', ["\\"] = "\\\\", ["\n"] = "\\n", ["\r"] = "\\r", ["\t"] = "\\t" }
@@ -11,7 +12,7 @@ local function IsArray(value)
 	return count == #value
 end
 
-local function Encode(value, indent, out)
+local function Encode(value, indent, out, number)
 	local kind = type(value)
 	if kind == "table" then
 		local inner = indent .. "  "
@@ -23,7 +24,7 @@ local function Encode(value, indent, out)
 			out[#out + 1] = "[\n"
 			for index, item in ipairs(value) do
 				out[#out + 1] = inner
-				Encode(item, inner, out)
+				Encode(item, inner, out, number)
 				out[#out + 1] = index < #value and ",\n" or "\n"
 			end
 			out[#out + 1] = indent .. "]"
@@ -36,7 +37,7 @@ local function Encode(value, indent, out)
 			out[#out + 1] = "{\n"
 			for index, key in ipairs(keys) do
 				out[#out + 1] = inner .. ('"%s": '):format(key)
-				Encode(value[key], inner, out)
+				Encode(value[key], inner, out, number)
 				out[#out + 1] = index < #keys and ",\n" or "\n"
 			end
 			out[#out + 1] = indent .. "}"
@@ -48,7 +49,7 @@ local function Encode(value, indent, out)
 			end)
 			.. '"'
 	elseif kind == "number" then
-		out[#out + 1] = ("%.2f"):format(value)
+		out[#out + 1] = number:format(value)
 	elseif kind == "boolean" then
 		out[#out + 1] = tostring(value)
 	else
@@ -56,9 +57,9 @@ local function Encode(value, indent, out)
 	end
 end
 
-function json.encode(value)
+function json.encode(value, number)
 	local out = {}
-	Encode(value, "", out)
+	Encode(value, "", out, number or "%.2f")
 	out[#out + 1] = "\n"
 	return table.concat(out)
 end
