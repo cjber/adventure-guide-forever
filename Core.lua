@@ -10,6 +10,7 @@ ns.TITLE = "Adventure Guide"
 local DEFAULTS = {
 	showTracker = true,
 	showMapPins = true,
+	showQuestGivers = true,
 	includeDungeonsDefault = false,
 }
 ns.DEFAULTS = DEFAULTS

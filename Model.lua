@@ -1,7 +1,8 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 ---@class AGFModel
-local Model = { MAX_STEPS = 10 }
+-- Nine: the stock numerals (services-number-1..9) that label each step stop at 9.
+local Model = { MAX_STEPS = 9 }
 ns.Model = Model
 
 -- CMaNGOS mangos-classic/src/game/Tools/Formulas.h, GetQuestGreenRange (quest, not creature XP).
@@ -175,6 +176,33 @@ local function Choices(data, player, completed, log, index, prefs)
 		zones[1].best = true
 	end
 	return zones, eligible
+end
+
+-- Every quest giver on `mapID` with a quest the player can take now, one entry per NPC or object, like the
+-- game's own "!". Gray quests stay hidden, as the game hides them unless low-level tracking is on.
+---@return AGFGiver[]
+function Model.Givers(data, player, completed, log, mapID)
+	local index, byPlace, givers = Index(data), {}, {}
+	for _, id in ipairs(index.ids) do
+		local quest = data.quests[id]
+		local start = quest.start
+		if
+			start
+			and start.map == mapID
+			and not Model.IsGray(quest.level, player.level)
+			and Eligible(data, player, completed, log, id, index.groups)
+		then
+			local key = string.format("%s:%.4f:%.4f", start.name, start.x, start.y)
+			local giver = byPlace[key]
+			if not giver then
+				giver = { map = mapID, x = start.x, y = start.y, title = start.name, quests = {} }
+				byPlace[key] = giver
+				givers[#givers + 1] = giver
+			end
+			giver.quests[#giver.quests + 1] = id
+		end
+	end
+	return givers
 end
 
 function Model.Zones(data, player, completed, log)

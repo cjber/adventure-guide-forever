@@ -68,6 +68,15 @@ local gated = quest()
 gated.races, gated.classes, gated.pre, gated.preAny = 178, 64, { 2, 3 }, { 4, 5 }
 local gates = { quests = { [1] = gated }, zones = {} }
 equal(Model.Eligible(gates, player, { [2] = true, [3] = true, [5] = true }, {}, 1), true, "all and any prerequisites")
+
+local gray, elsewhere = quest(0.2, 0.2), quest(0.5, 0.5, 2)
+gray.level = 1
+local offers =
+	{ quests = { [1] = quest(), [2] = quest(), [3] = quest(0.2, 0.2), [4] = gray, [5] = elsewhere }, zones = {} }
+local givers = Model.Givers(offers, player, { [3] = true }, {}, 1)
+equal(#givers, 1, "one giver per NPC; gray, completed and other maps hidden")
+equal(#givers[1].quests, 2, "an NPC's quests share one giver")
+equal(givers[1].title, "Quest giver", "giver named after the NPC")
 equal(Model.Eligible(gates, player, { [2] = true, [5] = true }, {}, 1), false, "missing all prerequisite")
 equal(Model.Eligible(gates, player, { [2] = true, [3] = true }, {}, 1), false, "missing any prerequisite")
 local a, b = quest(), quest()

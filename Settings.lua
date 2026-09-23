@@ -36,6 +36,11 @@ function ns.RegisterSettings()
 		"Number the suggested route's steps on the world map while their zone is shown."
 	)
 	Checkbox(
+		"showQuestGivers",
+		"Show quest givers on the map",
+		'A "!" on the world map over everyone with a quest you can take now.'
+	)
+	Checkbox(
 		"includeDungeonsDefault",
 		"Include dungeons by default",
 		"Turn the Dungeons chip on for a character the first time you open the guide. "

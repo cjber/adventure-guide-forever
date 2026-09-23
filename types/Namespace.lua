@@ -78,6 +78,14 @@
 ---@field optional? boolean elite/group or outside the player's level band
 ---@field pinned? boolean
 
+-- A quest giver drawn as a "!" on the world map.
+---@class AGFGiver
+---@field map integer
+---@field x number
+---@field y number
+---@field title string NPC or object name
+---@field quests integer[] quest IDs it offers the player now, ascending
+
 ---@class AGFZoneChoice
 ---@field map integer
 ---@field name string
@@ -99,6 +107,7 @@
 ---@field MAX_STEPS integer
 ---@field IsGray fun(questLevel: integer, playerLevel: integer): boolean
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
+---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
 ---@field Zones fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>): AGFZoneChoice[]
 ---@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, travel?: AGFTravel): AGFRoute
 
@@ -111,7 +120,7 @@
 
 ---@class AGFIntegrations
 ---@field Travel fun(): AGFTravel? Shortest Path's estimate when it is loaded
----@field Navigate fun(step: AGFStep) route there with Shortest Path, else the native waypoint
+---@field Navigate fun(step: AGFStep|AGFGiver) route there with Shortest Path, else the native waypoint
 ---@field Cancel fun()
 ---@field Guiding fun(): boolean Shortest Path is walking our multi-stop route and draws its own numbered stops
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")

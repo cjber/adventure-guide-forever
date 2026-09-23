@@ -208,7 +208,7 @@ end
 ---@class AGFRouteRow : Button
 ---@field Selected Texture
 ---@field Ring Texture
----@field Number FontString
+---@field Number Texture
 ---@field Title FontString
 ---@field Detail FontString
 ---@field Tag FontString
@@ -266,7 +266,8 @@ local function CreateRow(parent)
 	row.Ring:SetAtlas("adventureguide-ring")
 	row.Ring:SetSize(26, 26)
 	row.Ring:SetPoint("LEFT", 6, 0)
-	row.Number = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	row.Number = row:CreateTexture(nil, "OVERLAY")
+	row.Number:SetSize(22, 25)
 	row.Number:SetPoint("CENTER", row.Ring)
 
 	row.Title = row:CreateFontString(nil, "ARTWORK", "GameFontNormalMed3")
@@ -464,6 +465,7 @@ local function BuildSettingsMenu(_, menu)
 	Pref("Quests", "quests")
 	Pref("Dungeons", "dungeons")
 	Setting("Show map pins", "showMapPins")
+	Setting("Show quest givers", "showQuestGivers")
 	Setting("Show in objective tracker", "showTracker")
 	menu:CreateButton("More settings", function()
 		if ns.OpenSettings then
@@ -593,7 +595,7 @@ end
 ---@param step AGFStep
 ---@param index integer
 local function RefreshRow(row, step, index)
-	row.Number:SetText(tostring(index))
+	row.Number:SetAtlas("services-number-" .. index)
 	row.Title:SetText(step.title)
 	row.Detail:SetText(step.detail)
 	row.Tag:SetShown(step.optional == true)
