@@ -101,7 +101,7 @@
 ---@field best boolean
 
 ---@class AGFRoute
----@field steps AGFStep[] 3-5 steps, never more than MAX_STEPS
+---@field steps AGFStep[] never more than MAX_STEPS
 ---@field zones AGFZoneChoice[] up to 3, best first
 ---@field zone? integer the zone the route was built for
 

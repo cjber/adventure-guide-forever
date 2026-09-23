@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: Adventure Guide Forever
-## Notes: Suggests your next 3-5 quest steps from your level, finished quests and current log.
+## Notes: Suggests a short route of next quest steps from your level, finished quests and current log.
 ## Author: cjber
 ## Version: @project-version@
 ## Category: Quests

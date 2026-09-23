@@ -330,7 +330,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
   - `types/Namespace.lua:58-60` and `:62` (`legacy`, `professions`, `zone`, `pinned`; `skipped` stays), `:79` (`AGFStep.pinned`), `:89-100` (`AGFZoneChoice`, `route.zones`, `route.zone`), `:142` (`TogglePin`);
   - `tests/model_spec.lua:40`, `:119-126`, `:166-167`;
   - README/CHANGELOG pin copy (in the docs step);
-  - TOC: `## OptionalDeps: ShortestPathForever` (was `…, TweaksForever, LegacyForever`); `Notes` no longer says "3-5";
+  - TOC: `## OptionalDeps: ShortestPathForever` (was `…, TweaksForever, LegacyForever`); `Notes` no longer says "3-5" (**landed early, after commit 17:** with `AGFRoute.steps`' "3-5 steps" description, since `MAX_STEPS` is 9 and the copy was already wrong);
   - `Panel.xml:3`: the comment names `QuestLogTabButtonTemplate`, but Panel.lua:704 uses `LargeSideTabButtonTemplate`; it names the real template;
   - `Integrations.lua:11-17`: types move to `types/Namespace.lua` (lands with §1.6), and `REQUIRED` detection is added. `AGFSPFAPI.Cancel` becomes `fun(owner: string): boolean`, `Navigate`'s `title` becomes optional, and `NavigateRoute`/`CurrentStop` become required (they are v1 members in SPF).
   - `includeDungeonsDefault` stays: it seeds each new character's `prefs.dungeons` (Core.lua:57), which the cog menu then toggles.
@@ -466,7 +466,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 14. `tools: screenshots rendered from layout.json, with stock-template chrome`
 15. `tools(screenshots): Shortest Path route geometry from Path.FindSync`
 16. `tools(screenshots): manifest and compare montages against Legacy Forever and SkillUp`
-17. `refactor: ns.L table for copy` (F14 part 1)
+17. `refactor: ns.L table for copy` (F14 part 1; Core.lua's chat lines move in, the other files wait for 42), then `fix: drop the stale "3-5 steps" copy from the TOC and types` (part of 37, pulled forward; it keeps no number so later numbers hold)
     — gate: §1.0 probe results read —
 18. `feat(map)!: pins and givers off by default; givers ignore guiding` (F1)
 19. `feat(core): cheap rebuild in combat, full rebuild after` (combat rule, F12 part 1)
