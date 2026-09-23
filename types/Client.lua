@@ -9,6 +9,7 @@
 ---@class AGFNamespace
 ---@field OpenPanel fun() set once the world map tab exists (Panel.lua); opens the guide tab.
 ---@field RegisterSettings fun() defined by Settings.lua, called once after ADDON_LOADED.
+---@field OpenSettings? fun() set by RegisterSettings; opens our page under Settings > AddOns.
 ---@field Pins AGFPinsModule
 ---@field DEFAULTS table<string, boolean> account-wide setting defaults (Core.lua)
 
@@ -35,6 +36,21 @@ function ToggleWorldMap(uiMapID) end
 
 ---@param mapID? integer
 function OpenQuestLog(mapID) end
+
+-- Blizzard_Menu's root description, as handed to a DropdownButton's SetupMenu generator.
+---@class AGFMenu
+---@field CreateCheckbox fun(self: AGFMenu, text: string, isSelected: (fun(): boolean), setSelected: fun())
+---@field CreateButton fun(self: AGFMenu, text: string, onClick: fun())
+
+---@class AGFDropdown : Frame
+---@field SetupMenu fun(self: AGFDropdown, generator: fun(owner: AGFDropdown, root: AGFMenu))
+
+-- ScrollFrameTemplate: ScrollFrame_OnLoad attaches a MinimalScrollBar as ScrollBar.
+---@class AGFScrollFrame : ScrollFrame
+---@field ScrollBar Frame
+
+---@class AGFSearchBox : EditBox
+---@field Instructions FontString
 
 ---@class AGFInset : Frame
 ---@field Bg Texture
@@ -118,12 +134,14 @@ ShortestPathForever = nil
 ---@class AGFSettingsSetting
 ---@field SetValueChangedCallback fun(self: AGFSettingsSetting, callback: fun(setting: AGFSettingsSetting, value: boolean))
 ---@class AGFSettingsCategory
+---@field GetID fun(self: AGFSettingsCategory): integer
 ---@class AGFSettingsModule
 ---@field VarType {Boolean: string}
 ---@field RegisterVerticalLayoutCategory fun(name: string): AGFSettingsCategory
 ---@field RegisterAddOnSetting fun(category: AGFSettingsCategory, variable: string, key: string, storage: table, variableType: string, name: string, default: boolean): AGFSettingsSetting
 ---@field CreateCheckbox fun(category: AGFSettingsCategory, setting: AGFSettingsSetting, tooltip?: string)
 ---@field RegisterAddOnCategory fun(category: AGFSettingsCategory)
+---@field OpenToCategory fun(categoryID: integer)
 ---@type AGFSettingsModule
 Settings = nil
 

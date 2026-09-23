@@ -12,7 +12,7 @@ Levelling guides tell you exactly what to do, in order, as fast as possible. Thi
 
 ## Features
 
-- **Adventure Guide tab** on the world map's quest log, beside Quests and Map Legend. It shows your level and rested XP, three zones that suit your level under *Where next?*, and a suggested route of three to five steps. Each step says why it is there: `2 quests · continues chain`.
+- **Adventure Guide tab** on the world map's quest log, beside Quests and Map Legend. It shows your level and rested XP, three zones that suit your level under *Where next?*, and a suggested route of up to ten steps you can scroll and search. Each step says why it is there: `2 quests · continues chain`.
 - **Steps** hand in finished quests, pick up clusters of quests you can take now, and finish objectives already in your log. Dungeon and elite quests are included only when you turn on *Dungeons*, and are marked optional.
 - **Pin and skip**: a pinned step stays at the top of the route; a skipped one stays hidden until you `/reload`.
 - **Map pins** number the route on the world map.

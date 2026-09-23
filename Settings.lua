@@ -43,4 +43,7 @@ function ns.RegisterSettings()
 	)
 
 	Settings.RegisterAddOnCategory(category)
+	function ns.OpenSettings()
+		Settings.OpenToCategory(category:GetID())
+	end
 end

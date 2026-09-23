@@ -1,12 +1,14 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
-local MAX_STEPS = 5
 local MAX_ZONES = 3
 local PAD = 8
 local ROW_HEIGHT = 44
 local ROW_GAP = 2
 local ROUTE_TOP = 34
+-- The quest log's own geometry: a 29px search bar above the list, a 40px footer below it for the Go button.
+local TOP_BAR = 29
+local FOOTER = 40
 local CARD_HEIGHT = 64
 -- Classic's XP bar colours: blue while rested XP remains, purple once it runs out.
 local XP_RESTED = { 0, 0.39, 0.88 }
@@ -33,9 +35,15 @@ local cards = {}
 local routeLabel
 ---@type AGFRouteRow[]
 local rows = {}
--- How many route rows fit the panel at its current height; the rest stay hidden.
-local visibleRows = MAX_STEPS
--- Defined below the builders; the route section's resize handler needs it.
+---@type Frame?
+local routeSection
+---@type Frame?
+local content
+---@type AGFSearchBox?
+local searchBox
+---@type FontString?
+local countText
+-- Defined below the builders; the search box's handler needs it.
 local Refresh
 ---@type FontString?
 local emptyText
@@ -393,23 +401,13 @@ end
 ---@param parent Frame
 ---@param below Region
 local function BuildRoute(parent, below)
-	local section = CreateSection(parent, below, 0)
-	section:SetPoint("BOTTOM", parent, "BOTTOM", 0, 40)
+	local section = CreateSection(parent, below, ROUTE_TOP)
+	routeSection = section
 	routeLabel = section:CreateFontString(nil, "ARTWORK", "GameFontHighlightMedium")
 	routeLabel:SetPoint("TOPLEFT", 10, -9)
-	for index = 1, MAX_STEPS do
-		local row = CreateRow(section)
-		local top = -ROUTE_TOP - (index - 1) * (ROW_HEIGHT + ROW_GAP)
-		row:SetPoint("TOPLEFT", 6, top)
-		row:SetPoint("TOPRIGHT", -6, top)
-		rows[index] = row
+	for index = 1, ns.Model.MAX_STEPS do
+		rows[index] = CreateRow(section)
 	end
-	-- Show only the rows that fit: the panel's height depends on the map size and UI scale.
-	section:SetScript("OnSizeChanged", function(_, _, height)
-		local fit = math.floor((height - ROUTE_TOP - 6 + ROW_GAP) / (ROW_HEIGHT + ROW_GAP))
-		visibleRows = math.max(1, math.min(MAX_STEPS, fit))
-		Refresh()
-	end)
 	emptyText = section:CreateFontString(nil, "ARTWORK", "GameFontDisable")
 	emptyText:SetPoint("TOPLEFT", routeLabel, "BOTTOMLEFT", 0, -16)
 	emptyText:SetPoint("RIGHT", -10, 0)
@@ -444,13 +442,93 @@ local function BuildFooter(parent)
 	why:SetScript("OnLeave", GameTooltip_Hide)
 end
 
+---@param _ AGFDropdown
+---@param menu AGFMenu
+local function BuildSettingsMenu(_, menu)
+	local function Setting(label, key)
+		menu:CreateCheckbox(label, function()
+			return ns.Setting(key)
+		end, function()
+			ns.SetSetting(key, not ns.Setting(key))
+		end)
+	end
+	local function Pref(label, key)
+		menu:CreateCheckbox(label, function()
+			return ns.Prefs()[key]
+		end, function()
+			local prefs = ns.Prefs()
+			prefs[key] = not prefs[key]
+			ns.Invalidate()
+		end)
+	end
+	Pref("Quests", "quests")
+	Pref("Dungeons", "dungeons")
+	Setting("Show map pins", "showMapPins")
+	Setting("Show in objective tracker", "showTracker")
+	menu:CreateButton("More settings", function()
+		if ns.OpenSettings then
+			ns.OpenSettings()
+		end
+	end)
+end
+
+-- The quest log's top bar: a search box that filters the route, a count box and the settings cog.
+---@param panelFrame Frame
+local function BuildTopBar(panelFrame)
+	local count = CreateFrame("Frame", nil, panelFrame, "InputBoxVisualTemplate") --[[@as Frame]]
+	count:SetSize(100, 20)
+	count:SetPoint("TOPRIGHT", -3, -2)
+	countText = count:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+	countText:SetPoint("RIGHT", -5, 0)
+
+	searchBox = CreateFrame("EditBox", nil, panelFrame, "SearchBoxTemplate") --[[@as AGFSearchBox]]
+	searchBox.Instructions:SetText("Search route")
+	searchBox:SetHeight(20)
+	searchBox:SetPoint("TOPLEFT", 6, -2)
+	searchBox:SetPoint("RIGHT", count, "LEFT", -3, 0)
+	searchBox:SetMaxLetters(60)
+	searchBox:HookScript("OnTextChanged", function()
+		Refresh()
+	end)
+
+	local cog = CreateFrame("DropdownButton", nil, panelFrame, "UIPanelIconDropdownButtonTemplate") --[[@as AGFDropdown]]
+	cog:SetPoint("TOPRIGHT", 19, 25 - TOP_BAR)
+	cog:SetupMenu(BuildSettingsMenu)
+end
+
+-- Everything between the top bar and the footer scrolls, with the quest log's own scroll bar and offsets.
+---@param panelFrame Frame
+---@return Frame
+local function BuildScroll(panelFrame)
+	local body = CreateFrame("Frame", nil, panelFrame)
+	body:SetPoint("TOPLEFT", 0, -TOP_BAR)
+	body:SetPoint("BOTTOMRIGHT")
+	CreateFrame("Frame", nil, body, "QuestLogBorderFrameTemplate")
+
+	local scroll = CreateFrame("ScrollFrame", nil, body, "ScrollFrameTemplate") --[[@as AGFScrollFrame]]
+	scroll:SetPoint("TOPLEFT")
+	scroll:SetPoint("BOTTOMRIGHT", 0, FOOTER)
+	scroll.ScrollBar:ClearAllPoints()
+	scroll.ScrollBar:SetPoint("TOPLEFT", scroll, "TOPRIGHT", 8, 2)
+	scroll.ScrollBar:SetPoint("BOTTOMLEFT", scroll, "BOTTOMRIGHT", 8, -4)
+	local child = CreateFrame("Frame", nil, scroll)
+	child:SetSize(1, 1)
+	scroll:SetScrollChild(child)
+	scroll:SetScript("OnSizeChanged", function(_, width)
+		child:SetWidth(width)
+	end)
+	return child
+end
+
 ---@param panelFrame Frame
 local function BuildContent(panelFrame)
-	local header = BuildHeader(panelFrame)
-	local experience = BuildExperience(panelFrame, header)
-	local strip = BuildChips(panelFrame, experience)
-	local zones = BuildZones(panelFrame, strip)
-	BuildRoute(panelFrame, zones)
+	BuildTopBar(panelFrame)
+	content = BuildScroll(panelFrame)
+	local header = BuildHeader(content)
+	local experience = BuildExperience(content, header)
+	local strip = BuildChips(content, experience)
+	local zones = BuildZones(content, strip)
+	BuildRoute(content, zones)
 	BuildFooter(panelFrame)
 end
 
@@ -524,6 +602,52 @@ local function RefreshRow(row, step, index)
 	row.Selected:SetShown(index == 1)
 end
 
+-- Plain, case-insensitive text match: the quest log's search works the same way.
+---@param step AGFStep
+---@param query string
+---@return boolean
+local function Matches(step, query)
+	return query == ""
+		or step.title:lower():find(query, 1, true) ~= nil
+		or step.detail:lower():find(query, 1, true) ~= nil
+end
+
+-- Rows keep their route number while the search hides the others; the scroll child grows to fit them.
+---@param route AGFRoute
+local function LayoutRows(route)
+	---@cast searchBox -?
+	---@cast countText -?
+	---@cast routeSection -?
+	---@cast content -?
+	local query = strtrim(searchBox:GetText()):lower()
+	local shown = 0
+	for index, row in ipairs(rows) do
+		---@type AGFStep?
+		local step = route.steps[index]
+		if step and not Matches(step, query) then
+			step = nil
+		end
+		row.step = step
+		row:SetShown(step ~= nil)
+		if step then
+			RefreshRow(row, step, index)
+			local top = -ROUTE_TOP - shown * (ROW_HEIGHT + ROW_GAP)
+			row:SetPoint("TOPLEFT", 6, top)
+			row:SetPoint("TOPRIGHT", -6, top)
+			shown = shown + 1
+		end
+	end
+	countText:SetText(
+		query == "" and ("Steps: %d"):format(#route.steps) or ("Steps: %d/%d"):format(shown, #route.steps)
+	)
+	local rowsHeight = shown > 0 and shown * (ROW_HEIGHT + ROW_GAP) + 6 or 40
+	routeSection:SetHeight(ROUTE_TOP + rowsHeight)
+	local top, bottom = content:GetTop(), routeSection:GetBottom()
+	if top and bottom then
+		content:SetHeight(top - bottom + PAD)
+	end
+end
+
 function Refresh()
 	if not (panel and panel:IsShown()) then
 		return
@@ -543,14 +667,7 @@ function Refresh()
 		emptyText:SetText("Nothing left here at your level - pick another zone.")
 	end
 	emptyText:SetShown(not ns.State.Ready() or #route.steps == 0)
-	for index, row in ipairs(rows) do
-		local step = index <= visibleRows and route.steps[index] or nil
-		row.step = step
-		row:SetShown(step ~= nil)
-		if step then
-			RefreshRow(row, step, index)
-		end
-	end
+	LayoutRows(route)
 
 	local provider = ns.Integrations.Provider()
 	goButton:SetText(provider and ("Go (%s)"):format(provider) or "Set waypoint")
@@ -622,13 +739,13 @@ end
 local function Attach()
 	local map = QuestMapFrame
 	panel = CreateFrame("Frame", "AdventureGuideForeverPanel", map)
-	panel:SetPoint("TOPLEFT", map.ContentsAnchor, 0, -29)
+	panel:SetPoint("TOPLEFT", map.ContentsAnchor)
 	panel:SetPoint("BOTTOMRIGHT", map.ContentsAnchor, -22, 0)
 	-- The quest list's own background and gold frame, so the guide reads as another page of the same log.
 	local background = panel:CreateTexture(nil, "BACKGROUND")
 	background:SetAtlas("QuestLog-main-background")
-	background:SetAllPoints()
-	CreateFrame("Frame", nil, panel, "QuestLogBorderFrameTemplate")
+	background:SetPoint("TOPLEFT", 0, -TOP_BAR)
+	background:SetPoint("BOTTOMRIGHT")
 	-- Above the quest details view, which is not one of the content frames ShowGuide hides.
 	panel:SetFrameLevel(map:GetFrameLevel() + 20)
 	panel:EnableMouse(true)

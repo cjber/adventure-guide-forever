@@ -1,7 +1,7 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 ---@class AGFModel
-local Model = { MAX_STEPS = 5 }
+local Model = { MAX_STEPS = 10 }
 ns.Model = Model
 
 -- CMaNGOS mangos-classic/src/game/Tools/Formulas.h, GetQuestGreenRange (quest, not creature XP).

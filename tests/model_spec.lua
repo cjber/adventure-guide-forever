@@ -91,7 +91,7 @@ local log = {
 }
 local options = prefs()
 local route = Model.Plan(data, player, {}, log, options)
-equal(#route.steps, 5, "step cap")
+equal(#route.steps, Model.MAX_STEPS, "step cap")
 equal(route.steps[1].key, "turnin:100", "hand-ins first")
 equal(route.steps[2].quests[1], 8, "greedy nearest pickup after turn-in")
 equal(route.minutes, nil, "unknown travel does not invent minutes")
