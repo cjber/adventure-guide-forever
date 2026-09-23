@@ -1,6 +1,14 @@
 std = "lua51"
 max_line_length = 120
-exclude_files = { "tools/.cache/**", ".types/**", "types/**", ".release/**", "tests/golden/**" }
+exclude_files = {
+	"tools/.cache/**",
+	".types/**",
+	"types/**",
+	".release/**",
+	"tests/golden/**",
+	-- Shortest Path's own types, vendored byte for byte for tests/contract_spec.lua.
+	"tests/fixtures/spf_types_API.lua",
+}
 ignore = { "212/_.*", "212/self" } -- unused args prefixed with _, and self on mixin handlers
 
 globals = {
