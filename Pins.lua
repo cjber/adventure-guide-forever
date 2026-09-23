@@ -12,7 +12,7 @@ local pinsByKey = {}
 
 ---@return boolean
 local function Active()
-	return ns.Setting("showMapPins")
+	return ns.Setting("showMapPins") and not ns.Integrations.Guiding()
 end
 
 ---@param tooltip GameTooltip
@@ -100,16 +100,17 @@ function Pins.Ping(key)
 	end
 end
 
+function Pins.Refresh()
+	if WorldMapFrame:IsShown() then
+		provider:RefreshAllData()
+	end
+end
+
 local function Attach()
 	local map = WorldMapFrame
 	map:AddDataProvider(provider)
-	local function Refresh()
-		if map:IsShown() then
-			provider:RefreshAllData()
-		end
-	end
-	ns.OnRouteChange(Refresh)
-	map:HookScript("OnShow", Refresh)
+	ns.OnRouteChange(Pins.Refresh)
+	map:HookScript("OnShow", Pins.Refresh)
 end
 
 EventUtil.ContinueOnAddOnLoaded("Blizzard_WorldMap", Attach)

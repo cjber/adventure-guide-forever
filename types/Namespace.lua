@@ -113,6 +113,7 @@
 ---@field Travel fun(): AGFTravel? Shortest Path's estimate when it is loaded
 ---@field Navigate fun(step: AGFStep) route there with Shortest Path, else the native waypoint
 ---@field Cancel fun()
+---@field Guiding fun(): boolean Shortest Path is walking our multi-stop route and draws its own numbered stops
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")
 
 ---@class AGFNamespace
