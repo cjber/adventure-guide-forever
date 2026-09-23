@@ -1035,6 +1035,16 @@ function harness.load(options)
 		entry.isSelected, entry.onClick = isSelected, setSelected
 		return entry
 	end
+	function DescriptionMethods:SetEnabled(isEnabled)
+		self.isEnabled = isEnabled
+	end
+	-- As Blizzard_Menu's IsEnabled: unset is enabled, a function is asked each time.
+	function DescriptionMethods:IsEnabled()
+		if type(self.isEnabled) == "function" then
+			return self.isEnabled(self)
+		end
+		return self.isEnabled ~= false
+	end
 	function DescriptionMethods:CreateDivider()
 		return Add(self, Description("divider"))
 	end

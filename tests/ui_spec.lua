@@ -583,6 +583,10 @@ do
 	h.flush()
 	equal(h.ns.Prefs().dungeons, true, "cog: Dungeons turns them on")
 	equal(h.modelCalls.Journeys - before, 1, "cog: and rebuilds once")
+	local givers = byText["Show quest givers"]
+	equal(givers:IsEnabled(), false, "cog: givers are grayed while map pins are off")
+	byText["Show map pins"].onClick()
+	equal(givers:IsEnabled(), true, "cog: and can be ticked once they are on")
 	clean(h, "cog")
 end
 

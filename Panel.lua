@@ -234,7 +234,7 @@ end
 ---@param menu AGFMenu
 local function BuildSettingsMenu(_, menu)
 	local function Setting(label, key)
-		menu:CreateCheckbox(label, function()
+		return menu:CreateCheckbox(label, function()
 			return ns.Setting(key)
 		end, function()
 			ns.SetSetting(key, not ns.Setting(key))
@@ -252,7 +252,10 @@ local function BuildSettingsMenu(_, menu)
 	Pref("Quests", "quests")
 	Pref("Dungeons", "dungeons")
 	Setting("Show map pins", "showMapPins")
-	Setting("Show quest givers", "showQuestGivers")
+	-- Givers draw only with map pins on, so the box is grayed until they are (the menu polls a function).
+	Setting("Show quest givers", "showQuestGivers"):SetEnabled(function()
+		return ns.Setting("showMapPins")
+	end)
 	Setting("Show in objective tracker", "showTracker")
 	menu:CreateButton("More settings", function()
 		if ns.OpenSettings then

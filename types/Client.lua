@@ -47,8 +47,12 @@ function OpenQuestLog(mapID) end
 
 -- Blizzard_Menu's root description, as handed to a DropdownButton's SetupMenu generator.
 ---@class AGFMenu
----@field CreateCheckbox fun(self: AGFMenu, text: string, isSelected: (fun(): boolean), setSelected: fun())
+---@field CreateCheckbox fun(self: AGFMenu, text: string, isSelected: (fun(): boolean), setSelected: fun()): AGFMenuElement
 ---@field CreateButton fun(self: AGFMenu, text: string, onClick: fun())
+
+-- One entry's description; IsEnabled calls a function each time the open menu polls it (Blizzard_Menu/Menu.lua).
+---@class AGFMenuElement
+---@field SetEnabled fun(self: AGFMenuElement, isEnabled: boolean|fun(): boolean)
 
 ---@class AGFDropdown : Frame
 ---@field SetupMenu fun(self: AGFDropdown, generator: fun(owner: AGFDropdown, root: AGFMenu))
