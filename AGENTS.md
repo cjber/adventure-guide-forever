@@ -22,6 +22,7 @@ The same gate CI runs, plus actionlint, zizmor and gitleaks on the workflows and
   (pins at the top of the script); never hand-edit.
 - `Model.lua` — the headless-testable planner (eligibility, zones, route); `State.lua` reads the client.
 - `Integrations.lua` — Shortest Path Forever's public API when loaded, the native waypoint otherwise.
+- `Dump.lua` — `/agf dump` saves the drawn layout to the saved variables for `tests/dump_diff.lua`.
 - `docs/curseforge.md` — the store description, pasted into CurseForge and Wago by hand.
 
 ## Rules

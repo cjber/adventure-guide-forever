@@ -220,6 +220,8 @@ SlashCmdList.ADVENTUREGUIDEFOREVER = function(msg)
 	local command = strtrim(msg or ""):lower()
 	if command == "audit" then
 		Audit()
+	elseif command == "dump" then
+		ns.Dump()
 	elseif command == "" then
 		if ns.OpenPanel then
 			ns.OpenPanel()
@@ -227,6 +229,7 @@ SlashCmdList.ADVENTUREGUIDEFOREVER = function(msg)
 	else
 		ns.Print("open the world map and use the Adventure Guide tab.")
 		ns.Print("/agf audit - check the bundled data against the game")
+		ns.Print("/agf dump - save the guide's layout for a bug report")
 	end
 end
 

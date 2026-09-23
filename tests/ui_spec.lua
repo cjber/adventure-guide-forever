@@ -172,4 +172,39 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label .. ": pins")
 end
 
+-- /agf dump: a plain-table snapshot in the saved variables, kept across /reload and dropped at the next login.
+do
+	local h = Load(false)
+	h.ns.OpenPanel()
+	h.flush()
+	h.Slash("dump")
+	local dump = h.G.AdventureGuideForeverDB.dump
+	equal(dump.build, "1.60.1.69913", "dump: build")
+	equal(dump.layout[1].path, "AdventureGuideForeverPanel", "dump: the layout starts at the panel")
+	local keys = {}
+	for index, step in ipairs(h.ns.Route().steps) do
+		keys[index] = step.key
+	end
+	same(dump.route, keys, "dump: route keys")
+	equal(dump.tracker ~= nil and #dump.tracker > 0, true, "dump: tracker entries")
+	equal(#dump.frames > 0, true, "dump: frames listed")
+	local busy = 0
+	for _, frame in ipairs(dump.frames) do
+		busy = busy + (frame.onUpdate and 1 or 0)
+	end
+	equal(busy, 0, "dump: no frame runs an OnUpdate")
+	equal(h.counts.displayModeWrites, 0, "dump: displayMode writes")
+	clean(h, "dump")
+	equal(
+		harness.load({ db = h.G.AdventureGuideForeverDB, initialLogin = false }).G.AdventureGuideForeverDB.dump,
+		dump,
+		"dump: kept by /reload"
+	)
+	equal(
+		harness.load({ db = h.G.AdventureGuideForeverDB, initialLogin = true }).G.AdventureGuideForeverDB.dump,
+		nil,
+		"dump: dropped at login"
+	)
+end
+
 print(("ui_spec: %d checks passed"):format(checks))

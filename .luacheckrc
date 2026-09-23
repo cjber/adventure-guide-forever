@@ -68,6 +68,11 @@ read_globals = {
 	"UIParent",
 	-- Settings.lua
 	"Settings",
+	-- Dump.lua: frames Panel.lua and Tracker.lua create by name
+	"AdventureGuideForeverPanel",
+	"AdventureGuideForeverTab",
+	"AdventureGuideForeverQuestsTab",
+	"AdventureGuideForeverObjectiveTracker",
 }
 
 files["tests/"] = { std = "+luajit" }

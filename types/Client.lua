@@ -109,6 +109,7 @@ MapCanvasPinMixin = nil
 ---@field GetMapID fun(self: AGFWorldMapFrame): integer?
 ---@field AcquirePin fun(self: AGFWorldMapFrame, template: string, ...: any): AGFPinFrame
 ---@field RemoveAllPinsByTemplate fun(self: AGFWorldMapFrame, template: string)
+---@field EnumeratePinsByTemplate fun(self: AGFWorldMapFrame, template: string): fun(): AGFPinFrame?
 ---@type AGFWorldMapFrame
 WorldMapFrame = nil
 
@@ -182,3 +183,13 @@ ObjectiveTrackerFrame = nil
 
 ---@type {CreateContextMenu: fun(parent: Frame, initializer: fun(owner: any, root: any))}
 MenuUtil = nil
+
+-- AGF's own named frames (CreateFrame names in Panel.lua and Tracker.lua); nil until they are built.
+---@type Frame?
+AdventureGuideForeverPanel = nil
+---@type AGFTabButton?
+AdventureGuideForeverTab = nil
+---@type AGFTabButton?
+AdventureGuideForeverQuestsTab = nil
+---@type AGFTrackerModule?
+AdventureGuideForeverObjectiveTracker = nil

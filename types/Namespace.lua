@@ -125,6 +125,25 @@
 ---@field Guiding fun(): boolean Shortest Path is walking our multi-stop route and draws its own numbered stops
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")
 
+-- One region in a layout dump (Dump.lua): plain data, so it survives SavedVariables and JSON.
+---@class AGFDumpAnchor
+---@field point string
+---@field relativeTo? string path of the region it is anchored to
+---@field relativePoint string
+---@field x number
+---@field y number
+
+---@class AGFDumpEntry
+---@field path string global name, or the parent's path and the key or type[index] under it
+---@field type string object type
+---@field anchors AGFDumpAnchor[]
+---@field size? number[] width and height set explicitly (GetSize(true)); absent when neither was set
+---@field atlas? string
+---@field font? string font object name
+---@field text? string
+---@field onUpdate? boolean frames only: an OnUpdate script is set
+---@field stockTemplate? string headless only: the stock template the harness frame stands in for
+
 ---@class AGFNamespace
 ---@field TITLE string
 ---@field Data AGFData
@@ -140,3 +159,5 @@
 ---@field OnRouteChange fun(callback: fun())
 ---@field Skip fun(key: string)
 ---@field TogglePin fun(key: string)
+---@field DumpLayout fun(root: Frame, describe?: fun(region: Region, entry: AGFDumpEntry)): AGFDumpEntry[]
+---@field Dump fun() /agf dump: save the layout, route and frames in AdventureGuideForeverDB.dump
