@@ -79,4 +79,35 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	equal(h.counts.displayModeWrites, 1, label .. ": the trap counts writes")
 end
 
+-- WFA-13: nothing runs per frame while idle, and a refresh reuses the frames it has.
+local function IdleUpdates(h)
+	local busy = 0
+	for _, frame in ipairs(h.frames) do
+		busy = busy + (frame.scripts.OnUpdate and 1 or 0)
+		for _, group in ipairs(frame.animationGroups or {}) do
+			busy = busy + (group:IsPlaying() and 1 or 0)
+		end
+	end
+	return busy + h.counts.tickers
+end
+
+for _, spf in ipairs({ false, "v1" }) do
+	local label = spf or "no Shortest Path"
+	local h = Load(spf)
+	equal(IdleUpdates(h), 0, label .. ": per-frame work after loading")
+	h.ns.OpenPanel()
+	h.flush()
+	local created = h.counts.CreateFrame
+	for _ = 1, 10 do
+		h.ns.Invalidate()
+		h.flush()
+	end
+	equal(h.counts.CreateFrame - created, 0, label .. ": frames created by 10 refreshes")
+	equal(#h.pins.AdventureGuideForeverPinTemplate, #h.ns.Route().steps, label .. ": the refreshes drew the route")
+	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+	h.flush()
+	equal(IdleUpdates(h), 0, label .. ": per-frame work once the guide is closed")
+	clean(h, label .. ": idle")
+end
+
 print(("ui_spec: %d checks passed"):format(checks))
