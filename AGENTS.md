@@ -12,9 +12,12 @@ ruff format --check tools && ruff check tools
 luacheck .
 tools/typecheck.sh
 for s in tests/*_spec.lua; do luajit "$s" || exit 1; done
+luajit -joff tests/plan_bench.lua
 ```
 
-The same gate CI runs, plus actionlint, zizmor and gitleaks on the workflows and history.
+The same gate CI runs, plus actionlint, zizmor and gitleaks on the workflows and history. After a change to the
+planner or the rebuild, also run `AGF_BENCH_STRICT=1 luajit -joff tests/plan_bench.lua` (the 3 ms frame budget;
+local only, since shared runners flake). `AGF_UPDATE_GOLDEN=1` rewrites the golden files in `tests/golden/`.
 
 ## Layout
 

@@ -143,6 +143,7 @@ once and sends the SavedVariables; F1, F2 and F5 start only after that file is r
 - **Asserts in CI (deterministic):** SPF calls in the rebuild frame == 0; in the travel frame ≤ 1; `CreateFrame` 0 after the first render.
 - **Asserts locally** (`AGF_BENCH_STRICT=1`, listed in AGENTS.md Commands; shared runners would flake): **max** rebuild-frame CPU < 3 ms, and **max** travel-frame modelled time (CPU + 2.45 ms per miss) < 3 ms. Re-run after F2, F4 and F12.
 - **Command:** `luajit -joff tests/plan_bench.lua`, as a new CI step. It is not named `_spec`, so the spec loop does not run it twice.
+- **After F0 (commit 10, measured):** 0 estimates in every rebuild frame and exactly 1 in every travel frame; rebuild frame 0.57 to 0.90 ms median, 1.54 ms worst; travel frame 2.45 ms median, 2.48 ms worst (modelled). One cold estimate alone is 2.45 ms, so the travel frame has 0.55 ms of headroom: F10 must stay at one call.
 
 ### 1.5 `tests/plan_golden_spec.lua`
 

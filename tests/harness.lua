@@ -709,6 +709,15 @@ function harness.load(options)
 			return { Cancel = noop }
 		end,
 	}
+	-- Runs one frame: the timers queued now, not the ones they queue. Returns how many ran.
+	function h.tick()
+		local due = timers
+		timers = {}
+		for _, fn in ipairs(due) do
+			h.call(fn)
+		end
+		return #due
+	end
 	-- Runs queued timers, and any they queue, the way the next frames would.
 	function h.flush()
 		for _ = 1, 100 do
