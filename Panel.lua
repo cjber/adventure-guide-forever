@@ -451,8 +451,6 @@ local function ShowGuide(showGuide)
 	if showGuide then
 		Refresh()
 	end
-	-- The rings preview the chosen journey only while the guide is open.
-	ns.Pins.Refresh()
 end
 
 ---@param name string
@@ -511,6 +509,10 @@ local function Attach()
 	panel:SetFrameLevel(map:GetFrameLevel() + 20)
 	panel:EnableMouse(true)
 	panel:Hide()
+	-- The rings preview the chosen journey only while the guide is visible: its tab, the quest sidebar collapsing
+	-- and the map closing all come through here.
+	panel:HookScript("OnShow", ns.Pins.Refresh)
+	panel:HookScript("OnHide", ns.Pins.Refresh)
 	BuildContent(panel)
 	CreateTabs()
 

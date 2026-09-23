@@ -518,6 +518,21 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label)
 end
 
+-- The preview follows the guide's visibility, not only its tab: collapsing the quest sidebar hides the guide and
+-- its rings, and bringing the sidebar back brings both.
+do
+	local h = Load(false)
+	h.ns.OpenPanel()
+	h.flush()
+	local rings = #h.pins.AdventureGuideForeverPinTemplate
+	equal(rings > 0, true, "preview: the open guide previews its journey")
+	h.G.QuestMapFrame:Hide()
+	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, "preview: a collapsed sidebar takes the rings away")
+	h.G.QuestMapFrame:Show()
+	equal(#h.pins.AdventureGuideForeverPinTemplate, rings, "preview: and its return brings them back")
+	clean(h, "preview")
+end
+
 -- The activity filters live in the cog's menu, not on the guide (design §2.1).
 do
 	local h = Load(false)
