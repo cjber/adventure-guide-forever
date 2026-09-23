@@ -1,7 +1,7 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
--- WFA-5: Legacy Here holds 0 and -1, SkillUp Forever -2, Shortest Path Forever -3. This is the
+-- WFA-5: Legacy Forever holds 0 and -1, SkillUp Forever -2, Shortest Path Forever -3. This is the
 -- next free slot.
 local UI_ORDER = -4
 
