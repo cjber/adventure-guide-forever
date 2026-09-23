@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>Adventure Guide Forever</title>
+  <defs>
+    <!-- Family palette: keep these four gradients unchanged in every addon. -->
+    <radialGradient id="bg" cx="50%" cy="38%" r="75%">
+      <stop offset="0" stop-color="#3a2a1c"/>
+      <stop offset="1" stop-color="#120c08"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbe7a1"/>
+      <stop offset="0.45" stop-color="#d9a441"/>
+      <stop offset="1" stop-color="#7a4f14"/>
+    </linearGradient>
+    <linearGradient id="emblem" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff4c2"/>
+      <stop offset="0.5" stop-color="#f2c14e"/>
+      <stop offset="1" stop-color="#b3741c"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Frame and background: identical in every addon. -->
+  <rect x="6" y="6" width="244" height="244" rx="28" fill="url(#gold)"/>
+  <rect x="16" y="16" width="224" height="224" rx="20" fill="url(#bg)"/>
+
+  <!-- Emblem: replace this shape. Keep the three layers: shadow (black, 0.45, offset 4 5),
+       body (url(#emblem), #5a360c outline 5, round joins), shine (url(#shine), inset). Fit it
+       inside x 32-224, y 30-218. -->
+  <path d="M169.0 83.0 L144.0 124.0 L169.0 165.0 L128.0 140.0 L87.0 165.0 L112.0 124.0 L87.0 83.0 L128.0 108.0 Z" fill="#000" opacity="0.45" transform="translate(4 5)"/>
+  <path d="M128.0 32.0 L143.6 108.4 L220.0 124.0 L143.6 139.6 L128.0 216.0 L112.4 139.6 L36.0 124.0 L112.4 108.4 Z" fill="#000" opacity="0.45" transform="translate(4 5)"/>
+  <path d="M169.0 83.0 L144.0 124.0 L169.0 165.0 L128.0 140.0 L87.0 165.0 L112.0 124.0 L87.0 83.0 L128.0 108.0 Z" fill="url(#emblem)" stroke="#5a360c" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M128.0 32.0 L143.6 108.4 L220.0 124.0 L143.6 139.6 L128.0 216.0 L112.4 139.6 L36.0 124.0 L112.4 108.4 Z" fill="url(#emblem)" stroke="#5a360c" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M128 44 L142 112 L114 112 Z" fill="url(#shine)"/>
+  <circle cx="128" cy="124" r="13" fill="#5a360c"/>
+  <circle cx="128" cy="124" r="7" fill="url(#emblem)"/>
+</svg>
