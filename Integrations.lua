@@ -8,20 +8,23 @@ ns.Integrations = Integrations
 -- Passed to Shortest Path so it can tell our journeys apart from the player's own.
 local OWNER = "AdventureGuideForever"
 
----@class AGFShortestPathAPI
----@field version integer
----@field Estimate fun(map: integer, x: number, y: number, toMap: integer, toX: number, toY: number): number?
----@field Navigate fun(owner: string, map: integer, x: number, y: number, title: string): boolean
----@field NavigateRoute? fun(owner: string, stops: { map: integer, x: number, y: number, title: string }[]): boolean
----@field CurrentStop? fun(owner: string): integer?
----@field Cancel fun(owner: string)
+-- The v1 members; types/Namespace.lua AGFSPFAPI is the contract, and tests/contract_spec.lua holds this list to
+-- exactly its non-optional functions. A Shortest Path missing any of them is treated as absent.
+local REQUIRED = { "Estimate", "Navigate", "NavigateRoute", "CurrentStop", "Cancel" }
 
----@return AGFShortestPathAPI?
+---@return AGFSPFAPI?
 local function SPF()
 	local api = ShortestPathForever and ShortestPathForever.API
-	if api and api.version and api.version >= 1 then
-		return api
+	if type(api) ~= "table" or api.version ~= 1 then
+		return nil
 	end
+	for _, name in ipairs(REQUIRED) do
+		if type(api[name]) ~= "function" then
+			return nil
+		end
+	end
+	---@cast api AGFSPFAPI
+	return api
 end
 
 -- Step 1's travel line, fetched in its own frame after each rebuild (Core.lua), so the rebuild itself never asks
@@ -73,14 +76,14 @@ end
 ---@return boolean
 function Integrations.Guiding()
 	local api = SPF()
-	return api ~= nil and api.CurrentStop ~= nil and api.CurrentStop(OWNER) ~= nil
+	return api ~= nil and api.CurrentStop(OWNER) ~= nil
 end
 
--- With a Shortest Path that takes routes, the step and every step after it become one numbered journey.
+-- With Shortest Path, the step and every step after it become one numbered journey.
 ---@param step AGFStep|AGFGiver
 function Integrations.Navigate(step)
 	local api = SPF()
-	if api and api.NavigateRoute then
+	if api then
 		local stops, found = {}, false
 		for _, each in ipairs(ns.Route().steps) do
 			found = found or each == step
@@ -93,9 +96,6 @@ function Integrations.Navigate(step)
 		end
 		api.NavigateRoute(OWNER, stops)
 		ns.Pins.Refresh()
-		return
-	elseif api then
-		api.Navigate(OWNER, step.map, step.x, step.y, step.title)
 		return
 	end
 	local point = UiMapPoint.CreateFromCoordinates(step.map, step.x, step.y)

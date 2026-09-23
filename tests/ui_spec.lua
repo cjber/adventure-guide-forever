@@ -187,6 +187,21 @@ for _, spf in ipairs({ "v1", "v1+" }) do
 	clean(h, spf .. ": travel")
 end
 
+-- The contract (types/Namespace.lua AGFSPFAPI): version 1 with every required function, or no Shortest Path at all.
+do
+	local h = Load("v1")
+	local api = h.G.ShortestPathForever.API
+	equal(h.ns.Integrations.Provider(), "Shortest Path", "contract: v1 is used")
+	local cancel = api.Cancel
+	api.Cancel = nil
+	equal(h.ns.Integrations.Provider(), nil, "contract: a missing required function reads as absent")
+	api.Cancel, api.version = cancel, 2
+	equal(h.ns.Integrations.Provider(), nil, "contract: another version reads as absent")
+	h.ns.Integrations.Navigate(h.ns.Route().steps[1])
+	equal(h.counts.SetUserWaypoint, 1, "contract: absent falls back to the native waypoint")
+	clean(h, "contract")
+end
+
 -- /agf dump: a plain-table snapshot in the saved variables, kept across /reload and dropped at the next login.
 do
 	local h = Load(false)

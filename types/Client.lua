@@ -133,7 +133,7 @@ function GameTooltip_Hide() end
 ---@type AGFUiMapPointFactory
 UiMapPoint = nil
 
----@type {API: AGFShortestPathAPI}?
+---@type {API: table?}? read only through Integrations.lua SPF(), which checks it against AGFSPFAPI
 ShortestPathForever = nil
 
 ---@class AGFSettingsSetting

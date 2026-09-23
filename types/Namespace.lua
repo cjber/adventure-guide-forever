@@ -120,6 +120,23 @@
 ---@field OnChange fun(callback: fun())
 ---@field Ready fun(): boolean completion data has loaded
 
+-- Shortest Path Forever's public API, mirrored field for field from its types/API.lua (SPFAPIStop, SPFPublicAPI) at
+-- the sha tests/contract_spec.lua pins; that spec fails on any drift. Integrations.lua's REQUIRED lists exactly
+-- the non-optional functions. Descriptions go after `--` so the type is the whole first token.
+---@class AGFSPFStop
+---@field map integer -- uiMapID
+---@field x number -- normalized 0-1
+---@field y number -- normalized 0-1
+---@field title? string
+
+---@class AGFSPFAPI
+---@field version integer -- AGF accepts exactly 1
+---@field Estimate fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): number? -- seconds, nil when unknown or in combat
+---@field Navigate fun(owner: string, map: integer, x: number, y: number, title?: string): boolean -- starts or replaces guidance
+---@field NavigateRoute fun(owner: string, stops: AGFSPFStop[]): boolean -- 1-64 stops in order
+---@field CurrentStop fun(owner: string): integer? -- nil unless owner owns the active journey
+---@field Cancel fun(owner: string): boolean -- true only when this owner's journey was cancelled
+
 ---@class AGFIntegrations
 ---@field TravelLine fun(step: AGFStep): string? asks Shortest Path now: one estimate, nil without it
 ---@field RefreshTravel fun() refetches step 1's line; Core runs it in the frame after each rebuild
