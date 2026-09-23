@@ -56,7 +56,7 @@ client: `tests/model_spec.lua` loads `Model.lua` and `Data/Quests.lua` with `loa
 | `tools/` | script | data generator, CI helpers; not shipped |
 | `tests/` | test | headless LuaJIT harness |
 | `.github/`, `.pkgmeta`, `.luacheckrc`, `.luarc.json`, `stylua.toml`, `.gitleaks.toml` | config | |
-| `README.md`, `CHANGELOG.md`, `docs/`, `tools/README.md` | docs | `docs/curseforge.md` is the store listing |
+| `README.md`, `CHANGELOG.md`, `docs/` | docs | `docs/curseforge.md` is the store listing |
 | `media/`, `docs/screenshots/` | assets | |
 
 ## Conventions
