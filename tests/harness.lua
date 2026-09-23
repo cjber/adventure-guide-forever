@@ -544,6 +544,15 @@ function harness.load(options)
 	end
 
 	local STOCK = {
+		-- Mainline/SharedUIPanelTemplates.xml:1587 and .lua:1763: the highlight is the normal art, or the pushed art
+		-- while the mouse is down.
+		AlphaHighlightButtonTemplate = function(frame)
+			function frame.UpdateHighlightForState(self)
+				local art = self.isPressed and self.PushedTexture or self.NormalTexture
+				self:SetHighlightAtlas(art:GetAtlas())
+			end
+			frame.scripts.OnLoad = frame.UpdateHighlightForState
+		end,
 		UIMenuButtonStretchTemplate = noop,
 		InputBoxVisualTemplate = noop,
 		UIPanelIconDropdownButtonTemplate = noop,
@@ -606,6 +615,8 @@ function harness.load(options)
 		if node.tag == "FontString" then
 			region.font = attrs.inherits
 			region.text = attrs.text
+			region.justifyH = attrs.justifyH
+			region.wordWrap = attrs.wordwrap and attrs.wordwrap == "true"
 		end
 		region.alphaMode = attrs.alphaMode
 		region.hidden = attrs.hidden == "true"
@@ -648,6 +659,13 @@ function harness.load(options)
 						return self[method](self, ...) -- multi-value: a script returns what its method returns
 					end
 				end
+			elseif tag == "NormalTexture" or tag == "PushedTexture" then
+				-- A button's state art fills the button; the pushed art shows only while it is pressed.
+				local art = { tag = "Texture", attrs = attrs, children = child.children }
+				BuildRegion(region, art, { level = "ARTWORK" }, deferred)
+				local texture = region[assert(attrs.parentKey, "a state texture needs a parentKey")]
+				texture:SetAllPoints()
+				texture.hidden = tag == "PushedTexture"
 			elseif tag == "Color" then
 				region:SetColorTexture(tonumber(attrs.r), tonumber(attrs.g), tonumber(attrs.b), tonumber(attrs.a))
 			elseif tag == "MaskedTextures" then

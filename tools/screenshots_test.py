@@ -84,7 +84,7 @@ class Stock(unittest.TestCase):
 class Render(unittest.TestCase):
     def test_wowmock_loads_the_fonts_the_addon_uses(self):
         wm = screenshots.load_wowmock()
-        for name in ("GameFontNormalMed3", "GameFontDisable"):
+        for name in ("GameFontNormalMed2", "GameFontNormalMed3", "GameFontDisable", "GameFontHighlightSmall"):
             self.assertIn(name, wm.FONTS)
 
 

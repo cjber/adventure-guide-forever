@@ -200,6 +200,8 @@ def load_wowmock():
         # Blizzard_Fonts_Shared/FontStyles.xml: GameFontNormalMed3 (SystemFont_Med3, shadowed) and GameFontDisable.
         wm.FONTS.setdefault("GameFontNormalMed3", wm.Font(wm.FRIZQT, 14, wm.NORMAL, (1, -1)))
         wm.FONTS.setdefault("GameFontDisable", wm.Font(wm.FRIZQT, 12, (0.5, 0.5, 0.5), (1, -1)))
+        # GameFontNormalMed2 is SystemFont_Shadow_Med2 (Fonts.xml: FRIZQT at 13) in gold.
+        wm.FONTS.setdefault("GameFontNormalMed2", wm.Font(wm.FRIZQT, 13, wm.NORMAL, (1, -1)))
     return wm
 
 
@@ -395,7 +397,14 @@ def draw_scroll_frame(canvas, entry, rect, layer, child_height=None):
 
 
 # name: (draw(canvas, entry, rect, layer), its <Size> or None, its own <Anchors> or None, frameLevel)
+def draw_alpha_highlight(canvas, entry, rect, layer):
+    """AlphaHighlightButtonTemplate (Mainline/SharedUIPanelTemplates.xml:1587): no art of its own; its NormalTexture
+    and PushedTexture are the button's regions, and its highlight (the same atlas, added) shows only under the mouse,
+    which no scene holds."""
+
+
 STOCK = {
+    "AlphaHighlightButtonTemplate": (draw_alpha_highlight, None, None, 0),
     "InputBoxVisualTemplate": (draw_input_box, None, None, 0),
     "InsetFrameTemplate": (draw_inset, None, None, 0),
     "LargeSideTabButtonTemplate": (draw_side_tab, tab_size, None, 0),

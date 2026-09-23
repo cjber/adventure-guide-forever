@@ -406,6 +406,18 @@ do
 	)
 end
 
+-- The journey card template (docs/design.md §2.2): the renown card at 0.77 scale, its highlight the card's own art.
+do
+	local h = Load(false)
+	local card = h.G.CreateFrame("Button", nil, h.G.UIParent, "AdventureGuideForeverJourneyCardTemplate")
+	equal(("%dx%d"):format(card:GetSize()), "288x86", "card: 288x86") -- multi-value: width and height
+	equal(("%dx%d"):format(card.IconFrame:GetSize()), "46x46", "card: 46x46 ring") -- multi-value: width and height
+	equal(card.NormalTexture:GetAtlas(), "ui-journeys-renown-button", "card: the renown art")
+	equal(card.highlightAtlas, "ui-journeys-renown-button", "card: highlighted with its own art")
+	equal(card.PushedTexture:IsShown(), false, "card: the pressed art waits for a press")
+	clean(h, "card")
+end
+
 -- The golden layout: any change to what the guide draws shows as a reviewable diff of tests/golden/layout.json.
 do
 	local json, diff = dofile("tests/json.lua"), dofile("tests/dump_diff.lua")
