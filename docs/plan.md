@@ -189,9 +189,9 @@ once and sends the SavedVariables; F1, F2 and F5 start only after that file is r
 - **`.github/workflows/ci.yml` (`check` job):**
   - add `luajit -joff tests/plan_bench.lua`, the contract diff step above, and the `tests/` path grep (§1.1);
   - `ui_spec`, `plan_golden_spec` and `contract_spec` already run through the `tests/*_spec.lua` loop.
-- **`.luacheckrc`:** exclude `tests/fixtures/**` and `tests/golden/**`, and add `Dump.lua`'s and `Menu.lua`'s globals (none expected).
+- **`.luacheckrc`:** exclude `tests/fixtures/**` and `tests/golden/**`, and add `Dump.lua`'s and `Menu.lua`'s globals (none expected). **Changed (commits 12-13):** only the vendored `tests/fixtures/spf_types_API.lua` is excluded (it must stay byte-identical to upstream); `tests/fixtures/characters.lua` is our code and stays linted.
 - **`tools/typecheck.sh`:** add `python3 tools/lint_copy.py` (F14) next to `lint_multivalue.py`. `tools/screenshots_test.py` is picked up by the existing `unittest discover` and is Pillow-free (§1.3). LuaLS already ignores `tests/` (`.luarc.json`).
-- **`AGENTS.md` Commands:** add `AGF_BENCH_STRICT=1 luajit -joff tests/plan_bench.lua` and `python3 tools/screenshots.py`; Layout gains `Menu.lua` and `Dump.lua`.
+- **`AGENTS.md` Commands:** add `AGF_BENCH_STRICT=1 luajit -joff tests/plan_bench.lua` and `python3 tools/screenshots.py`; Layout gains `Menu.lua` and `Dump.lua`. **Timing (commit 13):** the bench line and `AGF_UPDATE_GOLDEN` landed with the bench (commit 10); `screenshots.py`, `Menu.lua` and `lint_copy.py` are wired by the commits that create them (14, 33 and 42), since a gate step for a file that does not exist yet would fail.
 
 ## 2. Shortest Path Forever PR (merges first)
 
