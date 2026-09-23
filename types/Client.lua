@@ -118,6 +118,10 @@ function GameTooltip_SetTitle(tooltip, title) end
 ---@param tooltip GameTooltip
 ---@param text string
 function GameTooltip_AddNormalLine(tooltip, text) end
+
+---@param tooltip GameTooltip
+---@param text string
+function GameTooltip_AddHighlightLine(tooltip, text) end
 ---@param tooltip GameTooltip
 ---@param text string
 function GameTooltip_AddInstructionLine(tooltip, text) end

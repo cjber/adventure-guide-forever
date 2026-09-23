@@ -43,6 +43,7 @@ read_globals = {
 	"GameTooltip",
 	"GameTooltip_SetTitle",
 	"GameTooltip_AddNormalLine",
+	"GameTooltip_AddHighlightLine",
 	"GameTooltip_AddInstructionLine",
 	"UIFrameFlash",
 	"EventRegistry",

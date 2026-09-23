@@ -20,10 +20,16 @@ end
 ---@param index number
 local function AddPinTooltip(tooltip, step, index)
 	GameTooltip_SetTitle(tooltip, ("%d. %s"):format(index, step.title))
-	GameTooltip_AddNormalLine(tooltip, step.detail)
+	GameTooltip_AddHighlightLine(tooltip, step.detail)
+	GameTooltip_AddNormalLine(tooltip, step.reason)
 	if step.pinned then
-		GameTooltip_AddInstructionLine(tooltip, "Pinned")
+		GameTooltip_AddNormalLine(tooltip, "Pinned")
 	end
+	local provider = ns.Integrations.Provider()
+	GameTooltip_AddInstructionLine(
+		tooltip,
+		provider and ("Click to travel with %s"):format(provider) or "Click to set a waypoint"
+	)
 end
 
 local provider = CreateFromMixins(MapCanvasDataProviderMixin) --[[@as AGFMapProvider]]
@@ -55,7 +61,8 @@ end
 
 ---@class AGFPinFrame : AGFMapPinMixin
 ---@field Icon Texture
----@field Number FontString
+---@field Number Texture
+---@field Glow Texture
 ---@field step? AGFStep
 ---@field index? number
 AdventureGuideForeverPinMixin = CreateFromMixins(MapCanvasPinMixin)
@@ -65,13 +72,14 @@ AdventureGuideForeverPinMixin = CreateFromMixins(MapCanvasPinMixin)
 function AdventureGuideForeverPinMixin:OnAcquired(step, index)
 	self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI")
 	self.step, self.index = step, index
-	self.Number:SetText(tostring(index))
+	self.Number:SetAtlas("services-number-" .. index)
 	self:SetPosition(step.x, step.y)
 	self:SetScalingLimits(1, 1.0, 1.2)
 	self:ApplyCurrentScale()
 end
 
 function AdventureGuideForeverPinMixin:OnMouseEnter()
+	self.Glow:Show()
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	if self.step and self.index then
 		AddPinTooltip(GameTooltip, self.step, self.index)
@@ -80,6 +88,7 @@ function AdventureGuideForeverPinMixin:OnMouseEnter()
 end
 
 function AdventureGuideForeverPinMixin:OnMouseLeave()
+	self.Glow:Hide()
 	GameTooltip:Hide()
 end
 

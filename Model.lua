@@ -1,7 +1,8 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 ---@class AGFModel
-local Model = { MAX_STEPS = 10 }
+-- Nine: the stock numerals (services-number-1..9) that label each step stop at 9.
+local Model = { MAX_STEPS = 9 }
 ns.Model = Model
 
 -- CMaNGOS mangos-classic/src/game/Tools/Formulas.h, GetQuestGreenRange (quest, not creature XP).
