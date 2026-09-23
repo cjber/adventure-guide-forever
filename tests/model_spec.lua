@@ -206,9 +206,12 @@ local standing = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 
 equal(Kinds(Model.Plan(Ahead(5), standing, {}, {}, prefs()).journeys), "story:1", "never the zone the player is in")
 equal(Kinds(Model.Plan(Ahead(4), player, {}, {}, prefs()).journeys), "story:1", "four quests are too few")
 equal(Kinds(Model.Plan(Ahead(5, 20), player, {}, {}, prefs()).journeys), "story:1", "only quests open now count")
-local there = prefs()
-there.zone = 2
-equal(Kinds(Model.Plan(Ahead(5), player, {}, {}, there).journeys), "story:2", "never the story's own zone")
+-- At 22 There fits both now and two levels on; the next zone is never the story's own, and Here holds too few.
+local later22 = { level = 22, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
+equal(Kinds(Model.Plan(Ahead(5), later22, {}, {}, prefs()).journeys), "story:2", "never the story's own zone")
+local picked = prefs()
+picked.zone = 1
+equal(Kinds(Model.Plan(Ahead(5), later22, {}, {}, picked).journeys), "story:2", "a zone saved by the old cards is gone")
 
 local hub = { quests = { [1] = quest(0.1), [2] = quest(0.11) }, zones = data.zones }
 local before = Model.Plan(hub, player, {}, {}, prefs()).steps[1]
@@ -246,10 +249,6 @@ local choices = Model.Zones(zones, player, {}, {})
 equal(#choices, 3, "top three zones")
 equal(choices[1].map, 1, "best level fit first")
 equal(choices[1].best, true, "best zone flag")
-options.zone = 4
-equal(Model.Plan(zones, player, {}, {}, options).steps[1].map, 4, "zone override beyond top three")
-options.pinned = { Model.Plan(zones, player, {}, {}, prefs()).steps[1].key }
-equal(Model.Plan(zones, player, {}, {}, options).steps[1].map, 1, "pinned pickup survives a zone change")
 -- One cost in yards (F12): this continent by distance, then across the ocean, then a map with no geometry.
 local tiers = { quests = {}, zones = data.zones, maps = {}, continents = { [0] = { x = 50000, y = 0 }, [1] = {} } }
 tiers.continents[1] = { x = 0, y = 0 }

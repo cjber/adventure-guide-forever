@@ -26,7 +26,7 @@ ns.L = {
 	QUESTS_NEAR = "%d quests near your level",
 	QUESTS_NEAR_ONE = "1 quest near your level",
 	READY_TO_HAND_IN = "Ready to hand in",
-	NOTHING_NEARBY = "Nothing nearby fits your level. Try another zone.",
+	NOTHING_NEARBY = "Nothing nearby fits your level.",
 	LOADING = "Loading your completed quests...",
 	SETTING_MAP_PINS_TOOLTIP = "Every Adventure Guide mark on the world map: the route's numbered steps while their "
 		.. "zone is shown, and quest givers when those are on too.",
@@ -97,9 +97,8 @@ local function LoadCharDB()
 			loaded[key] = type(value) == "table" and {} or value
 		end
 	end
-	if loaded.zone ~= nil and type(loaded.zone) ~= "number" then
-		loaded.zone = nil
-	end
+	-- The zone picked in the old "Where next?" cards: nothing offers that choice any more, so none is kept.
+	loaded.zone = nil
 	if loaded.journey ~= nil and type(loaded.journey) ~= "string" then
 		loaded.journey = nil
 	end

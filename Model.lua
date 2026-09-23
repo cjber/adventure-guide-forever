@@ -655,9 +655,9 @@ function Model.Journeys(data, player, completed, log, prefs, mapName)
 	local levels = math.min(NEXT_ZONE_AHEAD, player.maxLevel - player.level)
 	local zones, eligible, ahead = Choices(data, player, completed, log, index, prefs, levels > 0 and levels or nil)
 	local journeys = { Carry(data, player, log, prefs, mapName) }
-	-- The zone the player's level fits best (or the one they picked), named after it. Model.Story (F4) makes it the
-	-- chapter of a chain; until then it holds the zone's pickups, as the route did.
-	local zone = prefs.zone or (zones[1] and zones[1].map)
+	-- The zone the player's level fits best, named after it. Model.Story (F4) makes it the chapter of a chain; until
+	-- then it holds the zone's pickups, as the route did.
+	local zone = zones[1] and zones[1].map
 	local story = zone and ZoneJourney(data, player, eligible, zone, index, prefs, mapName, prefs.pinned or {})
 	if story then
 		story.kind, story.key = "story", "story:" .. zone

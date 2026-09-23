@@ -328,7 +328,7 @@ When `SPF.Active()` exists and reports another journey running, Go's tooltip add
 | Tracker | `Where you left off: finishes a story` · `Next: The Ruins of Stardust` · `Story complete` |
 | Buttons, menu | `Go` · `Stop` · `Show quest` · `Skip for now` · `Skipped (2)` · `Show again: <title>` · `Choose another journey` |
 | Instructions | `Click to travel with Shortest Path` · `Click to set a waypoint` · `Click to choose this journey` · `Replaces your current journey.` |
-| Empty | `Nothing nearby fits your level. Try another zone.` |
+| Empty | `Nothing nearby fits your level.` |
 
 ## 4. Features, in build order
 
