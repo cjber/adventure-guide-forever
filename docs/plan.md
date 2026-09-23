@@ -159,7 +159,9 @@ once and sends the SavedVariables; F1, F2 and F5 start only after that file is r
   | `ne21_crosszone` (F0): `ne21_darkshore` with a complete log quest whose turn-in is in Ashenvale | recorded when F0 lands |
 
   The lead's example "at 21 with Darkshore done → Ashenvale" is **not** what the model gives today: Ashenvale ranks 3rd at 21 and is absent at 23. No expected value is invented.
-- **Next-zone rule (decided).** The next-zone card needs **at least 5 eligible pickups** in the zone. `plan_golden_spec` asserts it for every fixture, so `orc18_barrens` gets no Westfall card (3 quests; ids 103/136-140/152 are `side = 3`, so the data is right, the zone is just thin) and `human60` no Moonglade card.
+
+  **Changed (commit 7):** the table is `Model.Zones` with no prefs (elite and dungeon quests counted). The golden files record `route.zones`, the cards the panel shows, which apply the default prefs (no group quests), so two rows read differently there: `ne21_darkshore` is Redridge 16 · Wetlands 7 · Ashenvale 8, and `orc18_barrens`, loaded as `ui_spec` loads it (844 completed, 845 and 843 in the log), is The Barrens 23 · Stonetalon 13 · Westfall 3. Completion rules: `zones` completes every quest of the side filed under those maps, `below` every quest of the side under that level, `ids` exactly those.
+- **Next-zone rule (decided).** The next-zone card needs **at least 5 eligible pickups** in the zone. `plan_golden_spec` asserts it for every fixture once `Model.Journeys` exists (commit 20; commit 7 has only zone choices to record), so `orc18_barrens` gets no Westfall card (3 quests; ids 103/136-140/152 are `side = 3`, so the data is right, the zone is just thin) and `human60` no Moonglade card.
 - **Golden files.** `tests/golden/<fixture>.txt` holds one line per card, and per step `key | title | map x,y | reason`, with 4-decimal coordinates and a sorted, stable order. `AGF_UPDATE_GOLDEN=1` rewrites them, so every model change shows as a reviewable text diff.
 - **Command:** `luajit tests/plan_golden_spec.lua`.
 
