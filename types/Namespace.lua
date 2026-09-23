@@ -88,6 +88,7 @@
 ---@field legacy boolean
 ---@field professions boolean
 ---@field zone? integer uiMapID the player picked in "Where next?"; nil = best fit
+---@field journey? string key of the journey card the player chose; nil (or gone) = the first card
 ---@field skipped table<string, boolean> step keys skipped this session
 ---@field pinned string[] step keys pinned, in order
 
@@ -123,8 +124,22 @@
 ---@field quests integer eligible quests there
 ---@field best boolean
 
+---@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"
+
+-- One card in the guide (docs/design.md §2.2): only steps the player can take now.
+---@class AGFJourney
+---@field kind AGFJourneyKind
+---@field key string stable identity for prefs.journey: "carry", "story:<uiMapID>" or "nextzone:<uiMapID>"
+---@field title string e.g. "Finish what you carry" or "A Westfall story"
+---@field subline string e.g. "3 quests ready to hand in"
+---@field reason? string why this journey, when there is an honest answer
+---@field map integer where its first step is: choosing the card turns the world map there
+---@field steps AGFStep[] never more than MAX_STEPS, in route order
+
 ---@class AGFRoute
----@field steps AGFStep[] never more than MAX_STEPS
+---@field journeys AGFJourney[] at most 3: carry, the zone's story, the next zone
+---@field journey? string the chosen journey's key
+---@field steps AGFStep[] the chosen journey's steps, never more than MAX_STEPS
 ---@field zones AGFZoneChoice[] up to 3, best first
 ---@field zone? integer the zone the route was built for
 
@@ -134,6 +149,7 @@
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
 ---@field Zones fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>): AGFZoneChoice[]
+---@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: fun(map: integer): string?): AGFJourney[], AGFZoneChoice[], integer?
 ---@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: fun(map: integer): string?): AGFRoute
 ---@field Refresh fun(data: AGFData, player: AGFPlayer, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, last: AGFRoute, mapName?: fun(map: integer): string?): AGFRoute the cheap in-combat rebuild: the log's steps fresh, the rest from `last`
 
@@ -202,6 +218,16 @@
 ---@field NO_WAYPOINT string the error Go shows when nothing can guide the player on the step's map
 ---@field SETTING_MAP_PINS_TOOLTIP string
 ---@field SETTING_GIVERS_TOOLTIP string
+---@field JOURNEY_CARRY string
+---@field JOURNEY_STORY string format: zone name
+---@field JOURNEY_NEXT_ZONE string format: zone name, the level it fits
+---@field CARRY_READY string format: count
+---@field CARRY_READY_ONE string
+---@field CARRY_IN_PROGRESS string format: count
+---@field CARRY_IN_PROGRESS_ONE string
+---@field QUESTS_NEAR string format: count
+---@field QUESTS_NEAR_ONE string
+---@field READY_TO_HAND_IN string
 
 ---@class AGFNamespace
 ---@field TITLE string

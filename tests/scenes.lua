@@ -101,8 +101,8 @@ h = Load("v1")
 h.G.OpenQuestLog()
 h.flush()
 h.providers[1]:RefreshAllData()
--- Ring 3: rings 1 and 2 overlap at the fixture's position, the player's arrow over both.
-local HOVERED = 3
+-- Ring 2, the carried objective: ring 1, the turn-in, sits under the player's arrow at the fixture's position.
+local HOVERED = 2
 local ring = h.pins.AdventureGuideForeverPinTemplate[HOVERED]
 h.Hover(ring)
 out.tooltip = {

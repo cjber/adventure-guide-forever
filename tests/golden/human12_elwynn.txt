@@ -1,9 +1,16 @@
 # human12_elwynn: level 12, side 1, at 1429 0.4200,0.6500
-card | 1439 Darkshore | 13 quests
-card | 1436 Westfall | 11 quests
-card | 1432 Loch Modan | 10 quests
-step 1 | pickup:1439:0.3664:0.4626 | Pick up quests: Gubber Blump | 1439 0.3610,0.4493 | 2 quests here
-step 2 | pickup:1439:0.3744:0.4184 | Pick up quests: Barithras Moonshade | 1439 0.3732,0.4364 | 8 quests here
-step 3 | pickup:1439:0.4030:0.5973 | Pick up quests: Sentinel Tysha Moonblade | 1439 0.4030,0.5973 | near your level
-step 4 | pickup:1439:0.3864:0.8733 | Pick up quests: Therylune | 1439 0.3864,0.8733 | near your level
-step 5 | pickup:1439:0.4594:0.9029 | Pick up quests: Sentinel Aynasha | 1439 0.4594,0.9029 | near your level
+card (chosen) | story:1439 | A Darkshore story | 13 quests near your level | - | map 1439
+  step 1 | pickup:1439:0.3664:0.4626 | Pick up quests: Gubber Blump | 1439 0.3610,0.4493 | 2 quests here
+  step 2 | pickup:1439:0.3744:0.4184 | Pick up quests: Barithras Moonshade | 1439 0.3732,0.4364 | 8 quests here
+  step 3 | pickup:1439:0.4030:0.5973 | Pick up quests: Sentinel Tysha Moonblade | 1439 0.4030,0.5973 | near your level
+  step 4 | pickup:1439:0.3864:0.8733 | Pick up quests: Therylune | 1439 0.3864,0.8733 | near your level
+  step 5 | pickup:1439:0.4594:0.9029 | Pick up quests: Sentinel Aynasha | 1439 0.4594,0.9029 | near your level
+card | nextzone:1432 | Head to Loch Modan at 14 | 10 quests near your level | - | map 1432
+  step 1 | pickup:1432:0.2323:0.7368 | Pick up quests: Mountaineer Cobbleflint | 1432 0.2207,0.7313 | 2 quests here
+  step 2 | pickup:1432:0.3707:0.4938 | Pick up quests: Vidra Hearthstove | 1432 0.3483,0.4928 | near your level
+  step 3 | pickup:1432:0.3417:0.4784 | Pick up quests: Mountaineer Kadrell | 1432 0.3417,0.4784 | near your level
+  step 4 | pickup:1432:0.2476:0.1840 | Pick up quests: Mountaineer Stormpike | 1432 0.2476,0.1840 | 2 quests here
+  step 5 | pickup:1432:0.6356:0.4792 | Pick up quests: Bingles Blastenheimer | 1432 0.6356,0.4792 | near your level
+  step 6 | pickup:1432:0.6490:0.6666 | Pick up quests: Prospector Ironband | 1432 0.6593,0.6562 | near your level
+  step 7 | pickup:1432:0.8176:0.6166 | Pick up quests: Marek Ironheart | 1432 0.8176,0.6166 | near your level
+  step 8 | pickup:1432:0.8347:0.6546 | Pick up quests: Daryl the Youngling | 1432 0.8347,0.6546 | near your level

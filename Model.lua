@@ -85,14 +85,15 @@ local function Index(data)
 	return index
 end
 
-local function Eligible(data, player, completed, log, id, groups)
+-- `level` stands in for the player's own (the next-zone card asks what opens two levels on).
+local function Eligible(data, player, completed, log, id, groups, level)
 	local quest = data.quests[id]
 	if not quest or completed[id] or log[id] or quest.repeatable or not ValidPlace(quest.start) then
 		return false
 	end
 	if
 		(quest.side ~= 3 and quest.side ~= player.side)
-		or player.level < quest.min
+		or (level or player.level) < quest.min
 		or not HasBit(quest.races, player.raceBit)
 		or not HasBit(quest.classes, player.classBit)
 	then
@@ -127,36 +128,28 @@ function Model.Eligible(data, player, completed, log, questID)
 	return Eligible(data, player, completed, log, questID, Index(data).groups)
 end
 
-local function Choices(data, player, completed, log, index, prefs)
-	local choices, scores, eligible = {}, {}, {}
-	for _, id in ipairs(index.ids) do
+-- The three zones that best fit `level` for the quests `ids`, best first.
+local function Rank(data, ids, level)
+	local choices, scores = {}, {}
+	for _, id in ipairs(ids) do
 		local quest = data.quests[id]
-		local group = quest.elite or quest.dungeon
-		if
-			Eligible(data, player, completed, log, id, index.groups)
-			and not Model.IsGray(quest.level, player.level)
-			and (not prefs or (group and prefs.dungeons) or (not group and prefs.quests))
-		then
-			eligible[#eligible + 1] = id
-			local map = quest.zone or quest.start.map
-			local zone = data.zones[map]
-			if zone then
-				if not choices[map] then
-					choices[map] =
-						{ map = map, name = zone.name, min = zone.min, max = zone.max, quests = 0, best = false }
-					scores[map] = 0
-				end
-				choices[map].quests = choices[map].quests + 1
-				local level = quest.level == -1 and player.level or quest.level
-				-- Fit dominates; a bounded density bonus below favors enough quests for a short route.
-				scores[map] = scores[map] + math.abs(level - player.level) + math.max(0, level - player.level - 2)
+		local map = quest.zone or quest.start.map
+		local zone = data.zones[map]
+		if zone and not Model.IsGray(quest.level, level) then
+			if not choices[map] then
+				choices[map] = { map = map, name = zone.name, min = zone.min, max = zone.max, quests = 0, best = false }
+				scores[map] = 0
 			end
+			choices[map].quests = choices[map].quests + 1
+			local questLevel = quest.level == -1 and level or quest.level
+			-- Fit dominates; a bounded density bonus below favors enough quests for a short route.
+			scores[map] = scores[map] + math.abs(questLevel - level) + math.max(0, questLevel - level - 2)
 		end
 	end
 	local zones = {}
 	for map, choice in pairs(choices) do
 		scores[map] = scores[map] / choice.quests
-			+ math.max(0, choice.min - player.level, player.level - choice.max) * 2
+			+ math.max(0, choice.min - level, level - choice.max) * 2
 			- math.min(choice.quests, 12) * 0.5
 		zones[#zones + 1] = choice
 	end
@@ -175,7 +168,27 @@ local function Choices(data, player, completed, log, index, prefs)
 	if zones[1] then
 		zones[1].best = true
 	end
-	return zones, eligible
+	return zones
+end
+
+-- One eligibility pass for two levels: the player's, and `ahead` levels on for the next-zone card. A level reaches
+-- eligibility only through a quest's minimum, so what opens at level + ahead holds everything open now.
+local function Choices(data, player, completed, log, index, prefs, ahead)
+	local eligible, later, target = {}, {}, player.level + (ahead or 0)
+	for _, id in ipairs(index.ids) do
+		local quest = data.quests[id]
+		local group = quest.elite or quest.dungeon
+		if
+			(not prefs or (group and prefs.dungeons) or (not group and prefs.quests))
+			and Eligible(data, player, completed, log, id, index.groups, target)
+		then
+			later[#later + 1] = id
+			if quest.min <= player.level and not Model.IsGray(quest.level, player.level) then
+				eligible[#eligible + 1] = id
+			end
+		end
+	end
+	return Rank(data, eligible, player.level), eligible, ahead and Rank(data, later, target)
 end
 
 -- Every quest giver on `mapID` with a quest the player can take now, one entry per NPC or object, like the
@@ -283,9 +296,9 @@ local function LogSteps(data, player, log, prefs)
 	return steps
 end
 
-local function PickupSteps(data, player, eligible, zone, hubs, steps, prefs)
+local function PickupSteps(data, player, eligible, zone, hubs, steps, pins)
 	local pickups, chosenGroups, pinned = {}, {}, {}
-	for _, key in ipairs(prefs.pinned or {}) do
+	for _, key in ipairs(pins) do
 		pinned[key] = true
 	end
 	for _, id in ipairs(eligible) do
@@ -577,26 +590,125 @@ local function Build(data, player, candidates, prefs, mapName, cheap)
 	return Order(selected, start, where, away, cheap)
 end
 
----@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
-function Model.Plan(data, player, completed, log, prefs, mapName)
-	local index = Index(data)
-	local zones, eligible = Choices(data, player, completed, log, index, prefs)
-	local zone = prefs.zone or (zones[1] and zones[1].map)
-	local candidates = LogSteps(data, player, log, prefs)
-	PickupSteps(data, player, eligible, zone, index.hubs, candidates, prefs)
-	return { steps = Build(data, player, candidates, prefs, mapName), zones = zones, zone = zone }
+-- The journey cards (docs/design.md §2.2): at most three, each holding only steps the player can take now.
+local NEXT_ZONE_AHEAD = 2 -- levels: the next zone is the one that fits the player two levels on
+local NEXT_ZONE_PICKUPS = 5 -- eligible quests there, or the card is too thin to offer (docs/plan.md §1.5)
+
+local function Count(one, many, count)
+	return count == 1 and one or many:format(count)
 end
 
--- The in-combat rebuild (Core.lua): the carried quests' steps fresh from the live log, which is what changes in a
--- fight, and every other step as the last full build chose it. No eligibility pass over the data and no 2-opt, so
--- it stays cheap; the full build runs once combat ends.
----@param last AGFRoute
-function Model.Refresh(data, player, log, prefs, last, mapName)
-	local candidates = LogSteps(data, player, log, prefs)
-	for _, step in ipairs(last.steps) do
-		if not (step.key:find("^turnin:") or step.key:find("^objective:")) then
-			candidates[#candidates + 1] = step
+local function ZoneName(data, map, mapName)
+	return (mapName and mapName(map)) or data.zones[map].name
+end
+
+-- "Finish what you carry": the log's turn-ins and objectives. `carried` is every log step, so the subline counts
+-- what the player carries, not only the steps that made the route.
+local function Carry(data, player, log, prefs, mapName, cheap)
+	local carried = LogSteps(data, player, log, prefs)
+	local steps = Build(data, player, carried, prefs, mapName, cheap)
+	if #steps == 0 then
+		return nil
+	end
+	local L, ready, underway = ns.L, 0, 0
+	for _, step in ipairs(carried) do
+		if not prefs.skipped[step.key] then
+			if step.kind == "turnin" then
+				ready = ready + 1
+			else
+				underway = underway + #step.quests
+			end
 		end
 	end
-	return { steps = Build(data, player, candidates, prefs, mapName, true), zones = last.zones, zone = last.zone }
+	return {
+		kind = "carry",
+		key = "carry",
+		title = L.JOURNEY_CARRY,
+		subline = ready > 0 and Count(L.CARRY_READY_ONE, L.CARRY_READY, ready)
+			or Count(L.CARRY_IN_PROGRESS_ONE, L.CARRY_IN_PROGRESS, underway),
+		reason = steps[1].kind == "turnin" and L.READY_TO_HAND_IN or nil,
+		map = steps[1].map,
+		steps = steps,
+	}
+end
+
+-- A zone's pickups as one journey (kind, key and title are the caller's), and how many eligible quests it holds.
+local function ZoneJourney(data, player, eligible, zone, index, prefs, mapName, pins)
+	local candidates, quests = {}, 0
+	for _, id in ipairs(eligible) do
+		local quest = data.quests[id]
+		quests = quests + ((quest.zone or quest.start.map) == zone and 1 or 0)
+	end
+	PickupSteps(data, player, eligible, zone, index.hubs, candidates, pins)
+	local steps = Build(data, player, candidates, prefs, mapName)
+	if #steps == 0 then
+		return nil, quests
+	end
+	local subline = Count(ns.L.QUESTS_NEAR_ONE, ns.L.QUESTS_NEAR, quests)
+	return { map = steps[1].map, steps = steps, subline = subline }, quests
+end
+
+---@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
+function Model.Journeys(data, player, completed, log, prefs, mapName)
+	local index, L = Index(data), ns.L
+	local zones, eligible, ahead = Choices(data, player, completed, log, index, prefs, NEXT_ZONE_AHEAD)
+	local journeys = { Carry(data, player, log, prefs, mapName) }
+	-- The zone the player's level fits best (or the one they picked), named after it. Model.Story (F4) makes it the
+	-- chapter of a chain; until then it holds the zone's pickups, as the route did.
+	local zone = prefs.zone or (zones[1] and zones[1].map)
+	local story = zone and ZoneJourney(data, player, eligible, zone, index, prefs, mapName, prefs.pinned or {})
+	if story then
+		story.kind, story.key = "story", "story:" .. zone
+		story.title = L.JOURNEY_STORY:format(ZoneName(data, zone, mapName))
+		journeys[#journeys + 1] = story
+	end
+	-- The zone that fits two levels on, when it is another zone and already has enough the player can take now.
+	for _, choice in ipairs(ahead) do
+		if choice.map ~= zone then
+			local nextZone, quests = ZoneJourney(data, player, eligible, choice.map, index, prefs, mapName, {})
+			if nextZone and quests >= NEXT_ZONE_PICKUPS then
+				nextZone.kind, nextZone.key = "nextzone", "nextzone:" .. choice.map
+				local name = ZoneName(data, choice.map, mapName)
+				nextZone.title = L.JOURNEY_NEXT_ZONE:format(name, player.level + NEXT_ZONE_AHEAD)
+				journeys[#journeys + 1] = nextZone
+			end
+			break
+		end
+	end
+	return journeys, zones, zone
+end
+
+-- The route is the chosen journey's steps; the first journey's when the choice is gone or was never made.
+local function Route(journeys, prefs, zones, zone)
+	local chosen = journeys[1]
+	for _, journey in ipairs(journeys) do
+		chosen = journey.key == prefs.journey and journey or chosen
+	end
+	return {
+		journeys = journeys,
+		journey = chosen and chosen.key,
+		steps = chosen and chosen.steps or {},
+		zones = zones,
+		zone = zone,
+	}
+end
+
+---@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
+function Model.Plan(data, player, completed, log, prefs, mapName)
+	local journeys, zones, zone = Model.Journeys(data, player, completed, log, prefs, mapName)
+	return Route(journeys, prefs, zones, zone)
+end
+
+-- The in-combat rebuild (Core.lua): the carry journey fresh from the live log, which is what changes in a fight,
+-- and every other journey as the last full build left it. No eligibility pass over the data and no 2-opt, so it
+-- stays cheap; the full build runs once combat ends.
+---@param last AGFRoute
+function Model.Refresh(data, player, log, prefs, last, mapName)
+	local journeys = { Carry(data, player, log, prefs, mapName, true) }
+	for _, journey in ipairs(last.journeys) do
+		if journey.kind ~= "carry" then
+			journeys[#journeys + 1] = journey
+		end
+	end
+	return Route(journeys, prefs, last.zones, last.zone)
 end

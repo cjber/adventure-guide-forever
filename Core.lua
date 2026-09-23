@@ -15,6 +15,17 @@ ns.L = {
 	HELP_AUDIT = "/agf audit - check the bundled data against the game",
 	HELP_DUMP = "/agf dump - save the guide's layout for a bug report",
 	HAND_IN_WHEN = "Hand in when you're in %s",
+	-- Journey cards (docs/design.md §2.2 and §3): a title, a subline that counts, and a reason when there is one.
+	JOURNEY_CARRY = "Finish what you carry",
+	JOURNEY_STORY = "A %s story",
+	JOURNEY_NEXT_ZONE = "Head to %s at %d",
+	CARRY_READY = "%d quests ready to hand in",
+	CARRY_READY_ONE = "1 quest ready to hand in",
+	CARRY_IN_PROGRESS = "%d quests in progress",
+	CARRY_IN_PROGRESS_ONE = "1 quest in progress",
+	QUESTS_NEAR = "%d quests near your level",
+	QUESTS_NEAR_ONE = "1 quest near your level",
+	READY_TO_HAND_IN = "Ready to hand in",
 	SETTING_MAP_PINS_TOOLTIP = "Every Adventure Guide mark on the world map: the route's numbered steps while their "
 		.. "zone is shown, and quest givers when those are on too.",
 	SETTING_GIVERS_TOOLTIP = 'A "!" on the world map over everyone with a quest you can take now. '
@@ -85,6 +96,9 @@ local function LoadCharDB()
 	if loaded.zone ~= nil and type(loaded.zone) ~= "number" then
 		loaded.zone = nil
 	end
+	if loaded.journey ~= nil and type(loaded.journey) ~= "string" then
+		loaded.journey = nil
+	end
 	-- The defaults loop above guarantees every AGFPrefs field except `skipped`, which ns.Prefs()
 	-- always sets before returning; nothing else reads charDB directly.
 	---@cast loaded AGFPrefs
@@ -145,7 +159,7 @@ end
      C_Timer.After(0) so a burst of QUEST_LOG_UPDATE events costs one rebuild. ]]
 
 ---@type AGFRoute
-local cachedRoute = { steps = {}, zones = {} }
+local cachedRoute = { journeys = {}, steps = {}, zones = {} }
 local dirty = true
 local pendingRebuild = false
 ---@type fun()[]
@@ -173,7 +187,7 @@ local function Rebuild()
 	pendingRebuild = false
 	if not ns.State.Ready() then
 		-- Completed-quest data hasn't loaded yet; an empty route beats a wrong one.
-		cachedRoute = { steps = {}, zones = {} }
+		cachedRoute = { journeys = {}, steps = {}, zones = {} }
 		return
 	end
 	cachedRoute = BuildRoute()

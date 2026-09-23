@@ -1,5 +1,5 @@
 -- Run from the repository root: luajit tests/plan_golden_spec.lua
--- Golden routes (docs/plan.md §1.5): each fixed character's zone choices and route, written as text in
+-- Golden routes (docs/plan.md §1.5): each fixed character's journey cards and their steps, written as text in
 -- tests/golden/<fixture>.txt, so every model change shows as a reviewable diff. AGF_UPDATE_GOLDEN=1 rewrites them.
 local ns = {}
 assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
@@ -32,7 +32,7 @@ local function Place(map, x, y)
 	return ("%d %.4f,%.4f"):format(map, x, y)
 end
 
-local function Render(fixture, zones, route)
+local function Render(fixture, route)
 	local lines = {
 		("# %s: level %d, side %d, at %s"):format(
 			fixture.name,
@@ -41,18 +41,25 @@ local function Render(fixture, zones, route)
 			Place(fixture.map, fixture.x, fixture.y)
 		),
 	}
-	-- Today's cards are the route's zone choices, as the panel shows them; journey cards replace them in F2.
-	for _, zone in ipairs(zones) do
-		lines[#lines + 1] = ("card | %d %s | %d quests"):format(zone.map, zone.name, zone.quests)
-	end
-	for index, step in ipairs(route.steps) do
-		lines[#lines + 1] = ("step %d | %s | %s | %s | %s"):format(
-			index,
-			step.key,
-			step.title,
-			Place(step.map, step.x, step.y),
-			step.reason
+	-- Every card, the chosen one marked, each followed by its steps in route order.
+	for _, journey in ipairs(route.journeys) do
+		lines[#lines + 1] = ("card%s | %s | %s | %s | %s | map %d"):format(
+			journey.key == route.journey and " (chosen)" or "",
+			journey.key,
+			journey.title,
+			journey.subline,
+			journey.reason or "-",
+			journey.map
 		)
+		for index, step in ipairs(journey.steps) do
+			lines[#lines + 1] = ("  step %d | %s | %s | %s | %s"):format(
+				index,
+				step.key,
+				step.title,
+				Place(step.map, step.x, step.y),
+				step.reason
+			)
+		end
 	end
 	return table.concat(lines, "\n") .. "\n"
 end
@@ -64,16 +71,38 @@ end
 for _, fixture in ipairs(characters.list) do
 	local player, completed, log, prefs = characters.Resolve(data, fixture)
 	local route = Model.Plan(data, player, completed, log, prefs)
-	local zones = route.zones
 
-	-- The standing rules: nothing ineligible is suggested, and no step points where the data has no place.
-	equal(#route.steps <= Model.MAX_STEPS, true, fixture.name .. ": step cap")
-	equal(#zones <= 3, true, fixture.name .. ": at most three cards")
-	for _, step in ipairs(route.steps) do
-		equal(ValidPlace(step), true, fixture.name .. ": " .. step.key .. " has a place")
-		for _, id in ipairs(step.quests) do
-			local takeable = log[id] ~= nil or Model.Eligible(data, player, completed, log, id)
-			equal(takeable, true, fixture.name .. ": " .. step.key .. " quest " .. id .. " is eligible or in the log")
+	-- F2: at most three journeys, each with at least one step the player can take now. The standing rules hold on
+	-- every card: nothing ineligible is suggested, and no step points where the data has no place.
+	equal(#route.journeys <= 3, true, fixture.name .. ": at most three cards")
+	equal(route.journey, route.journeys[1] and route.journeys[1].key, fixture.name .. ": the first card is chosen")
+	for _, journey in ipairs(route.journeys) do
+		local label = fixture.name .. ": " .. journey.key
+		equal(#journey.steps >= 1 and #journey.steps <= Model.MAX_STEPS, true, label .. ": 1 to 9 steps")
+		equal(journey.map, journey.steps[1].map, label .. ": the card turns the map to its first step")
+		for _, step in ipairs(journey.steps) do
+			equal(ValidPlace(step), true, label .. ": " .. step.key .. " has a place")
+			for _, id in ipairs(step.quests) do
+				local takeable = log[id] ~= nil or Model.Eligible(data, player, completed, log, id)
+				equal(takeable, true, label .. ": " .. step.key .. " quest " .. id .. " is eligible or in the log")
+			end
+		end
+		-- The next-zone rule: another zone than the story's, with at least 5 quests the player can take now.
+		if journey.kind == "nextzone" then
+			local map, quests = tonumber(journey.key:match("%d+")), 0
+			for id, quest in pairs(data.quests) do
+				if
+					(quest.zone or (quest.start and quest.start.map)) == map
+					and Model.Eligible(data, player, completed, log, id)
+					and not Model.IsGray(quest.level, player.level)
+				then
+					quests = quests + 1
+				end
+			end
+			equal(quests >= 5, true, label .. ": at least 5 quests there now")
+			for _, other in ipairs(route.journeys) do
+				equal(other.key ~= "story:" .. map, true, label .. ": another zone than the story's")
+			end
 		end
 	end
 
@@ -94,12 +123,22 @@ for _, fixture in ipairs(characters.list) do
 	end
 
 	-- F12: a route crosses an ocean at most once, and a turn-in over there waits until the route is there.
-	local changes = 0
-	for index = 2, #route.steps do
-		local before, after = data.maps[route.steps[index - 1].map], data.maps[route.steps[index].map]
-		changes = changes + (before.continent ~= after.continent and 1 or 0)
+	local function Changes(steps)
+		local changes = 0
+		for index = 2, #steps do
+			local before, after = data.maps[steps[index - 1].map], data.maps[steps[index].map]
+			changes = changes + (before.continent ~= after.continent and 1 or 0)
+		end
+		return changes
 	end
-	equal(changes <= 1, true, fixture.name .. ": at most one continent change")
+	for _, journey in ipairs(route.journeys) do
+		equal(
+			Changes(journey.steps) <= 1,
+			true,
+			fixture.name .. ": " .. journey.key .. ": at most one continent change"
+		)
+	end
+	local changes = Changes(route.steps)
 	if fixture.name == "ne21_crosszone" then
 		local last = route.steps[#route.steps]
 		equal(changes, 1, "ne21_crosszone: exactly one continent change")
@@ -114,7 +153,7 @@ for _, fixture in ipairs(characters.list) do
 		)
 	end
 
-	local text = Render(fixture, zones, route)
+	local text = Render(fixture, route)
 	local path = "tests/golden/" .. fixture.name .. ".txt"
 	if update then
 		local handle = assert(io.open(path, "w"))
@@ -127,7 +166,7 @@ for _, fixture in ipairs(characters.list) do
 	equal(text, stored, fixture.name .. ": golden route (AGF_UPDATE_GOLDEN=1 rewrites it)")
 	-- Deterministic: a second build of the same state gives the same text.
 	local again = Model.Plan(data, player, completed, log, prefs)
-	equal(Render(fixture, again.zones, again), text, fixture.name .. ": rebuild")
+	equal(Render(fixture, again), text, fixture.name .. ": rebuild")
 end
 
 print(("plan_golden_spec: %d checks passed; %d fixtures"):format(checks, #characters.list))

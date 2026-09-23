@@ -111,11 +111,9 @@ local log = {
 	[102] = { id = 102, title = "Nearby", complete = false, level = 18, map = 1, x = 0.53, y = 0.5 },
 	[103] = { id = 103, title = "Unknown location", complete = false, level = 18 },
 }
+-- Journeys (F2) are disjoint: carry holds the log, the zone's story its pickups; the first card is chosen by default.
 local options = prefs()
 local route = Model.Plan(data, player, {}, log, options)
-equal(#route.steps, Model.MAX_STEPS, "step cap")
--- No phase (F12): the nearest step leads whatever its kind, and a far turn-in yields its slot to nearer steps.
-equal(route.steps[1].quests[1], 5, "the nearest step first")
 local function Has(steps, key)
 	local count = 0
 	for _, step in ipairs(steps) do
@@ -123,29 +121,88 @@ local function Has(steps, key)
 	end
 	return count
 end
-equal(Has(route.steps, "turnin:100"), 0, "a far turn-in yields to nine nearer steps")
+equal(route.journey, "carry", "carry is the first card")
+equal(#route.journeys, 2, "carry and the zone's story")
+equal(route.journeys[1].subline, "1 quest ready to hand in", "carry counts what is ready")
+equal(route.journeys[1].reason, nil, "no reason unless a turn-in leads")
+equal(route.journeys[1].map, route.steps[1].map, "a card turns the map to its first step")
+for _, step in ipairs(route.steps) do
+	equal(step.kind ~= "pickup", true, "carry holds no pickups: " .. step.key)
+end
+equal(Has(route.steps, "turnin:100"), 1, "the turn-in is carried")
+options.journey = "story:1"
+route = Model.Plan(data, player, {}, log, options)
+equal(route.journey, "story:1", "the chosen card")
+equal(route.journeys[2].title, "A Zone story", "the story is named after its zone")
+equal(route.journeys[2].subline, "9 quests near your level", "the story counts its quests")
+equal(#route.steps, 8, "one step per giver")
+equal(route.steps[1].quests[1], 5, "the nearest step first")
+for _, step in ipairs(route.steps) do
+	equal(step.kind, "pickup", "the story holds pickups only")
+end
+options.journey = "gone"
+equal(Model.Plan(data, player, {}, log, options).journey, "carry", "a vanished choice falls back to the first card")
 local empty = prefs()
 empty.quests = false
-equal(#Model.Plan(data, player, {}, log, empty).steps, 0, "activity filter")
+equal(#Model.Plan(data, player, {}, log, empty).journeys, 0, "activity filter")
 local skip = prefs()
 for _, step in ipairs(Model.Plan(data, player, {}, {}, prefs()).steps) do
 	skip.skipped[step.key] = true
 end
-local remainder = Model.Plan(data, player, {}, log, skip)
-for _, step in ipairs(remainder.steps) do
-	equal(skip.skipped[step.key], nil, "skipped steps removed")
+for _, journey in ipairs(Model.Plan(data, player, {}, log, skip).journeys) do
+	for _, step in ipairs(journey.steps) do
+		equal(skip.skipped[step.key], nil, "skipped steps removed")
+	end
 end
+-- Pins keep their slot but are ordered by cost like every other step; a pickup pinned in another zone joins the story.
 local pin = prefs()
--- Pins keep their slot (the far turn-in is back) but are ordered by cost like every other step.
-pin.pinned = { "turnin:100", route.steps[3].key, "turnin:100" }
-local pinned = Model.Plan(data, player, {}, log, pin)
-equal(Has(pinned.steps, "turnin:100"), 1, "a pin keeps its slot, once")
-equal(Has(pinned.steps, route.steps[3].key), 1, "second pin")
+pin.journey = "story:1"
+local pins = {
+	quests = { [10] = quest(0.9, 0.5, 2) },
+	zones = { [1] = data.zones[1], [2] = { name = "Other", min = 30, max = 40 } },
+}
+for id = 1, 9 do
+	pins.quests[id] = data.quests[id]
+end
+pin.pinned = { "pickup:2:0.9000:0.5000", "pickup:1:0.3000:0.5000", "pickup:2:0.9000:0.5000" }
+local pinned = Model.Plan(pins, player, {}, log, pin)
+equal(Has(pinned.steps, "pickup:2:0.9000:0.5000"), 1, "a pin keeps its slot, once")
 equal(#pinned.steps, Model.MAX_STEPS, "pins count towards the cap")
-equal(pinned.steps[#pinned.steps].key, "turnin:100", "the far pin is still ordered by cost")
+equal(pinned.steps[#pinned.steps].key, "pickup:2:0.9000:0.5000", "the far pin is still ordered by cost")
 equal(pinned.steps[#pinned.steps].pinned, true, "pin marker")
-pin.skipped["turnin:100"] = true
-equal(Has(Model.Plan(data, player, {}, log, pin).steps, "turnin:100"), 0, "skip wins over pin")
+pin.skipped["pickup:2:0.9000:0.5000"] = true
+equal(Has(Model.Plan(pins, player, {}, log, pin).steps, "pickup:2:0.9000:0.5000"), 0, "skip wins over pin")
+
+-- The next-zone card: the zone that fits two levels on, when it is another zone with at least 5 quests open now.
+-- Here has three quests at 18; There, which fits 20, has `count` at 20, the last opening at `min`.
+local function Ahead(count, min)
+	local zones = { [1] = { name = "Here", min = 16, max = 20 }, [2] = { name = "There", min = 20, max = 24 } }
+	local ahead = { quests = {}, zones = zones }
+	for id = 1, 3 do
+		ahead.quests[id] = quest(id / 10, 0.5)
+	end
+	for id = 4, 3 + count do
+		ahead.quests[id] = quest(id / 10, 0.5, 2)
+		ahead.quests[id].level = 20
+	end
+	ahead.quests[3 + count].min = min or 10
+	return ahead
+end
+local function Kinds(journeys)
+	local kinds = {}
+	for _, journey in ipairs(journeys) do
+		kinds[#kinds + 1] = journey.key
+	end
+	return table.concat(kinds, " ")
+end
+local later = Model.Plan(Ahead(5), player, {}, {}, prefs())
+equal(Kinds(later.journeys), "story:1 nextzone:2", "the next zone after the story")
+equal(later.journeys[2].title, "Head to There at 20", "named for the level it fits")
+equal(Kinds(Model.Plan(Ahead(4), player, {}, {}, prefs()).journeys), "story:1", "four quests are too few")
+equal(Kinds(Model.Plan(Ahead(5, 20), player, {}, {}, prefs()).journeys), "story:1", "only quests open now count")
+local there = prefs()
+there.zone = 2
+equal(Kinds(Model.Plan(Ahead(5), player, {}, {}, there).journeys), "story:2", "never the story's own zone")
 
 local hub = { quests = { [1] = quest(0.1), [2] = quest(0.11) }, zones = data.zones }
 local before = Model.Plan(hub, player, {}, {}, prefs()).steps[1]
@@ -205,27 +262,30 @@ for _, step in ipairs(Model.Plan(tiers, player, {}, {}, prefs()).steps) do
 end
 equal(table.concat(order, " "), "8 7 9 3", "this continent by distance, then over the sea, then no geometry")
 
--- A far turn-in never displaces a near pickup (F12): nine pickups here fill the route; with eight it comes last.
-local crowd = { quests = {}, zones = data.zones, maps = tiers.maps, continents = tiers.continents }
-for id = 1, 9 do
-	crowd.quests[id] = quest(0.05 + id * 0.09, 0.5)
+-- A far turn-in never displaces a near step (F12): nine objectives here fill the route; with eight it comes last.
+local function Objectives(count)
+	local carried = {}
+	for id = 1, count do
+		carried[300 + id] =
+			{ id = 300 + id, title = "Near", complete = false, level = 18, map = 1, x = 0.05 + id * 0.09, y = 0.5 }
+	end
+	carried[200] = { id = 200, title = "Over there", complete = true, level = 18, map = 9, x = 0.5, y = 0.5 }
+	return carried
 end
-local carried = { [200] = { id = 200, title = "Over there", complete = true, level = 18, map = 9, x = 0.5, y = 0.5 } }
-local full = Model.Plan(crowd, player, {}, carried, prefs())
-equal(#full.steps, Model.MAX_STEPS, "nine near pickups")
+local shore = { quests = {}, zones = data.zones, maps = tiers.maps, continents = tiers.continents }
+local full = Model.Plan(shore, player, {}, Objectives(9), prefs())
+equal(#full.steps, Model.MAX_STEPS, "nine near objectives")
 equal(Has(full.steps, "turnin:200"), 0, "the far turn-in waits for a free slot")
-local eight = { quests = {}, zones = data.zones, maps = tiers.maps, continents = tiers.continents }
-for id = 1, 8 do
-	eight.quests[id] = crowd.quests[id]
-end
-local room = Model.Plan(eight, player, {}, carried, prefs())
+equal(full.journeys[1].subline, "1 quest ready to hand in", "but carry still counts it")
+local room = Model.Plan(shore, player, {}, Objectives(8), prefs())
 equal(room.steps[Model.MAX_STEPS].key, "turnin:200", "with room, the far turn-in comes last")
 equal(room.steps[Model.MAX_STEPS].reason, "Hand in when you're in Far Shore", "and says where")
 -- In an instance the player has no position: nothing measures from them, so the turn-in leads and is never dropped.
 local lost = { level = player.level, side = player.side, raceBit = player.raceBit, classBit = player.classBit }
-local blind = Model.Plan(crowd, lost, {}, carried, prefs())
+local blind = Model.Plan(shore, lost, {}, Objectives(9), prefs())
 equal(blind.steps[1].key, "turnin:200", "without a position the turn-in leads")
-equal(#blind.steps, Model.MAX_STEPS, "and the pickups still fill the route")
+equal(blind.journeys[1].reason, "Ready to hand in", "and gives the card its reason")
+equal(#blind.steps, Model.MAX_STEPS, "and the objectives still fill the route")
 -- Over the sea the route lands where the side's boat docks, not at the far shore's nearest point (F12).
 local ferry = { quests = { quest(0.1, 0.5, 9), quest(0.9, 0.5, 9) }, zones = data.zones, maps = tiers.maps }
 ferry.quests[1].zone, ferry.quests[2].zone, ferry.continents = 1, 1, tiers.continents

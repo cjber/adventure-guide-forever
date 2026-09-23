@@ -259,7 +259,8 @@ do
 		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
 	}
 	local h = harness.load({ completed = { 844 }, log = log })
-	local ns, before = h.ns, h.modelCalls.Plan
+	local ns, before = h.ns, h.modelCalls.Journeys
+	local story = ns.Route().journeys[2]
 	h.SetCombat(true)
 	for _ = 1, 10 do
 		ns.Invalidate()
@@ -269,21 +270,26 @@ do
 	ns.Invalidate()
 	equal(ns.Route().steps ~= nil, true, "combat: the lazy path answers")
 	h.flush()
-	equal(h.modelCalls.Plan - before, 0, "combat: no full build in combat")
+	equal(h.modelCalls.Journeys - before, 0, "combat: no full build in combat")
+	equal(ns.Route().journey, "carry", "combat: the chosen card holds")
 	local keys = {}
 	for _, step in ipairs(ns.Route().steps) do
 		keys[step.key] = true
 	end
 	equal(keys["turnin:843"], true, "combat: a quest finished mid-fight is ready to hand in")
 	equal(keys["objective:843"], nil, "combat: its objective step is gone")
-	equal(keys["pickup:1413:0.5223:0.3101"], true, "combat: the pickups stay as the last full build left them")
+	equal(
+		story ~= nil and ns.Route().journeys[2] == story,
+		true,
+		"combat: the story stays as the last full build left it"
+	)
 	equal(h.counts.tickers, 0, "combat: no timer waits for the fight to end")
 	h.SetCombat(false)
 	h.flush()
-	equal(h.modelCalls.Plan - before, 1, "combat: one full build once it ends")
+	equal(h.modelCalls.Journeys - before, 1, "combat: one full build once it ends")
 	h.SetCombat(false)
 	h.flush()
-	equal(h.modelCalls.Plan - before, 1, "combat: the owed build runs once")
+	equal(h.modelCalls.Journeys - before, 1, "combat: the owed build runs once")
 	clean(h, "combat")
 end
 
