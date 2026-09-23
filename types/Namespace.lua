@@ -32,6 +32,13 @@
 ---@field source string where the data came from, for /agf audit
 ---@field quests table<integer, AGFQuest>
 ---@field zones table<integer, {name: string, min: integer, max: integer}> uiMapID -> zone name and level range
+---@field maps table<integer, AGFMapCentre> uiMapID -> where the map sits in the world, for every map a place uses
+
+-- Ranks steps on different maps without travel maths (Model.lua Cost). World coordinates are yards.
+---@class AGFMapCentre
+---@field continent integer the world map (instance) ID: 0 Eastern Kingdoms, 1 Kalimdor
+---@field cx number world x of the map rectangle's centre
+---@field cy number world y of the map rectangle's centre
 
 -- What the live state tells the planner. Built by State.lua, consumed by Model.lua.
 ---@class AGFPlayer

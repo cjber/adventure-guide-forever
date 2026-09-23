@@ -230,11 +230,11 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 
 **F0 Rank without SPF; travel in its own frame (a prerequisite for the bench)**
 - **Files:**
-  - `tools/gen_quests.py` + `Data/Quests.lua` (regenerated): each `zones[id]` gains `continent` (`UiMapAssignment.MapID`) and `cx, cy`, the world-coordinate centre of its `Region_*` box. `tools/gen_quests_test.py` covers one zone.
+  - `tools/gen_quests.py` + `Data/Quests.lua` (regenerated): a new `maps[id] = {continent, cx, cy}` (`UiMapAssignment.MapID` and the world-coordinate centre of its `Region_*` box) for every map a place uses. `tools/gen_quests_test.py` covers one zone. **Changed (commit 8):** the plan put these on `zones[id]`, but 1,049 of the start/finish places are in the six capital cities, which have no published range and so no `zones` entry (and `Choices` needs `min`/`max` on every `zones` entry). A separate `maps` table covers all 48 place maps, cities included.
   - `Model.lua`: `Plan` drops the `travel` argument. `Cost` orders lexicographically by tier, then distance: tier 0 same map (`Distance`), tier 1 same continent (world distance between the two zones' centres), tier 2 other continent (then by key). No SPF call.
   - `Core.lua`: `ns.Invalidate`'s callback runs `Rebuild` + `NotifyRouteChange`, then queues a separate `C_Timer.After(0)` for `ns.Integrations.RefreshTravel()`.
   - `Integrations.lua`: `TravelLine(step)` with **no AGF cache** (SPF caches 5 s, API.lua:9); it is refetched on every rebuild and on `ZONE_CHANGED_NEW_AREA`.
-- **Types:** `AGFModel.Plan` loses `travel?`, `AGFStep.seconds` goes, `AGFRoute.minutes` goes (the design has no totals), `AGFZone` gains `continent`, `cx`, `cy`.
+- **Types:** `AGFModel.Plan` loses `travel?`, `AGFStep.seconds` goes, `AGFRoute.minutes` goes (the design has no totals), `AGFData` gains `maps: table<integer, AGFMapCentre>`.
 - **Acceptance:**
   - "Opening the guide never waits on travel maths" → `plan_bench`: 0 SPF calls in the rebuild frame, ≤ 1 in the travel frame (§1.4).
   - "A turn-in in the next zone is not ranked at random" → `ne21_crosszone` golden: the Ashenvale turn-in follows every Darkshore step and precedes any other-continent step.

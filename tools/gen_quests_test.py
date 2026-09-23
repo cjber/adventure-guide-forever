@@ -2,7 +2,7 @@
 
 import unittest
 
-from gen_quests import faction, parse_values, prerequisite_index, prerequisites, project
+from gen_quests import faction, geometry, parse_values, prerequisite_index, prerequisites, project
 
 
 class ParsingTest(unittest.TestCase):
@@ -65,6 +65,25 @@ class ProjectionTest(unittest.TestCase):
         self.assertAlmostEqual(y, 0.6)
         self.row["Region_3"] = self.row["Region_0"]
         self.assertIsNone(project(self.row, 100, 400))
+
+
+class GeometryTest(unittest.TestCase):
+    @staticmethod
+    def row(ui_map, map_id, region, doodad=0):
+        row = {"UiMapID": str(ui_map), "MapID": str(map_id), "WMODoodadPlacementID": str(doodad)}
+        row.update((f"Region_{i}", str(value)) for i, value in enumerate(region))
+        return row
+
+    def test_darkshore_centre_and_continent(self):
+        # Darkshore's UiMapAssignment row at 1.60.1.69913: Kalimdor (MapID 1).
+        darkshore = self.row(1439, 1, (3966.6665039062, -3608.3332519531, -1e6, 8333.3330078125, 2941.6665039062, 1e6))
+        other = self.row(1440, 1, (829.1666, -4066.6665, -1e6, 4672.9165, 1699.9999, 1e6))
+        self.assertEqual(geometry([darkshore, other], {1439}), {1439: {"continent": 1, "cx": 6150.0, "cy": -333.3}})
+
+    def test_ambiguous_or_partial_rows_left_out(self):
+        region = (0, 0, -1, 10, 10, 1)
+        rows = [self.row(947, 0, region), self.row(947, 1, region), self.row(1453, 0, region, doodad=5)]
+        self.assertEqual(geometry(rows, {947, 1453}), {})
 
 
 if __name__ == "__main__":
