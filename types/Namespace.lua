@@ -228,6 +228,8 @@
 ---@field QUESTS_NEAR string format: count
 ---@field QUESTS_NEAR_ONE string
 ---@field READY_TO_HAND_IN string
+---@field NOTHING_NEARBY string the guide with no journey
+---@field LOADING string the guide before the completed quests arrive
 
 ---@class AGFNamespace
 ---@field TITLE string

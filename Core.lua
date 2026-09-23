@@ -26,6 +26,8 @@ ns.L = {
 	QUESTS_NEAR = "%d quests near your level",
 	QUESTS_NEAR_ONE = "1 quest near your level",
 	READY_TO_HAND_IN = "Ready to hand in",
+	NOTHING_NEARBY = "Nothing nearby fits your level. Try another zone.",
+	LOADING = "Loading your completed quests...",
 	SETTING_MAP_PINS_TOOLTIP = "Every Adventure Guide mark on the world map: the route's numbered steps while their "
 		.. "zone is shown, and quest givers when those are on too.",
 	SETTING_GIVERS_TOOLTIP = 'A "!" on the world map over everyone with a quest you can take now. '

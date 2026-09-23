@@ -60,9 +60,6 @@ function OpenQuestLog(mapID) end
 ---@class AGFSearchBox : EditBox
 ---@field Instructions FontString
 
----@class AGFInset : Frame
----@field Bg Texture
-
 ---@class AGFQuestContentFrame : Frame
 ---@field displayMode any
 

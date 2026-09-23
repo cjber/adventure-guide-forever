@@ -289,17 +289,6 @@ def draw_quest_log_border(canvas, entry, rect, layer):
         canvas.draw(filigree, x + (w - filigree.width) / 2, y - 1)
 
 
-def draw_inset(canvas, entry, rect, layer):
-    """InsetFrameTemplate (Mainline/SharedUIPanelTemplates.xml:389): Bg (UI-Background-Marble tiled, BACKGROUND -5)
-    unless the addon hid it, and its NineSlice in NineSliceLayouts.InsetFrameTemplate above the frame's regions."""
-    x, y, w, h = rect
-    if layer == "BACKGROUND" and entry.get("stock", {}).get("Bg", {}).get("shown", True):
-        marble = texture(canvas.ui, "Interface\\FrameGeneral\\UI-Background-Marble")
-        wm.tiled(canvas, marble, x, y, w, h, marble.width / canvas.ui.scale, marble.height / canvas.ui.scale)
-    elif layer == "FRAME":
-        canvas.nine_slice(wm.INSET_FRAME_LAYOUT, x, y, w, h)
-
-
 def button_font(entry, normal, highlight, disabled):
     if entry.get("disabled"):
         return font(disabled)
@@ -406,7 +395,6 @@ def draw_alpha_highlight(canvas, entry, rect, layer):
 STOCK = {
     "AlphaHighlightButtonTemplate": (draw_alpha_highlight, None, None, 0),
     "InputBoxVisualTemplate": (draw_input_box, None, None, 0),
-    "InsetFrameTemplate": (draw_inset, None, None, 0),
     "LargeSideTabButtonTemplate": (draw_side_tab, tab_size, None, 0),
     "QuestLogBorderFrameTemplate": (
         draw_quest_log_border,

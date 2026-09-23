@@ -558,9 +558,6 @@ function harness.load(options)
 		UIPanelIconDropdownButtonTemplate = noop,
 		QuestLogBorderFrameTemplate = noop,
 		UIPanelButtonTemplate = noop,
-		InsetFrameTemplate = function(frame)
-			Internal("Texture", frame, "Bg")
-		end,
 		SearchBoxTemplate = function(frame)
 			Internal("FontString", frame, "Instructions")
 		end,
@@ -953,8 +950,11 @@ function harness.load(options)
 		CanSetUserWaypointOnMap = function(mapID)
 			return not h.noWaypoint[mapID]
 		end,
+		-- The client's names for the fixture's zones, so the panel reads as in game; "Map <id>" elsewhere, which no
+		-- data name matches, so a spec can tell the client's name from the data's.
 		GetMapInfo = function(mapID)
-			return { mapID = mapID, name = "Map " .. mapID }
+			local names = { [1413] = "The Barrens", [1442] = "Stonetalon Mountains" }
+			return { mapID = mapID, name = names[mapID] or "Map " .. mapID }
 		end,
 		SetUserWaypoint = function(point)
 			h.counts.SetUserWaypoint = h.counts.SetUserWaypoint + 1

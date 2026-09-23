@@ -1,10 +1,24 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+local L = ns.L
 
 local PAD = 8
 local ROW_HEIGHT = 44
 local ROW_GAP = 2
-local ROUTE_TOP = 34
+local CARD_HEIGHT = 86
+local CARD_GAP = 4
+local MAX_JOURNEYS = 3
+-- The scroll child above the cards: the header 4px down and 34px tall, then the chips 8px below it and 24px tall,
+-- then 6px to the first card.
+local LIST_TOP = 4 + 34 + 8 + 24 + 6
+-- Blizzard's QUEST_TAG_ATLAS icons (Blizzard_FrameXMLBase/Constants.lua:514-527); the next zone gets the map's "!".
+local KIND_ICONS = {
+	carry = "questlog-questtypeicon-quest",
+	story = "questlog-questtypeicon-story",
+	nextzone = "QuestNormal",
+	dungeon = "questlog-questtypeicon-group",
+}
+local CARD_ART, CARD_ART_CHOSEN = "ui-journeys-renown-button", "ui-journeys-renown-button-pressed"
 -- The quest log's own geometry: a 29px search bar above the list, a 40px footer below it for the Go button.
 local TOP_BAR = 29
 local FOOTER = 40
@@ -17,12 +31,12 @@ local guideTab
 local questsTab
 ---@type AGFChip[]
 local chips = {}
----@type FontString?
-local routeLabel
 ---@type AGFRouteRow[]
 local rows = {}
+---@type AGFJourneyCard[]
+local cards = {}
 ---@type Frame?
-local routeSection
+local list
 ---@type Frame?
 local content
 ---@type AGFSearchBox?
@@ -167,20 +181,6 @@ local function CreateRow(parent)
 end
 
 ---@param parent Frame
----@param below Region
----@param height number
----@return Frame
-local function CreateSection(parent, below, height)
-	local section = CreateFrame("Frame", nil, parent, "InsetFrameTemplate") --[[@as AGFInset]]
-	-- The inset's marble fill reads as a grey slab on the quest log's parchment; keep only its edge.
-	section.Bg:Hide()
-	section:SetPoint("TOPLEFT", below, "BOTTOMLEFT", 0, -6)
-	section:SetPoint("RIGHT", parent, "RIGHT", -PAD, 0)
-	section:SetHeight(height)
-	return section
-end
-
----@param parent Frame
 ---@return Frame
 local function BuildHeader(parent)
 	local header = CreateFrame("Frame", nil, parent)
@@ -214,18 +214,36 @@ local function BuildChips(parent, below)
 	return strip
 end
 
+---@class AGFJourneyCardIcon : Frame
+---@field Border Texture
+---@field Icon Texture
+
+-- AdventureGuideForeverJourneyCardTemplate (Panel.xml).
+---@class AGFJourneyCard : Button
+---@field NormalTexture Texture
+---@field PushedTexture Texture
+---@field IconFrame AGFJourneyCardIcon
+---@field Title FontString
+---@field Subline FontString
+---@field Reason FontString
+---@field UpdateHighlightForState fun(self: AGFJourneyCard)
+---@field journey? AGFJourney
+
+-- The cards, and the chosen card's step rows under it; the list lays them out from its top.
 ---@param parent Frame
 ---@param below Region
-local function BuildRoute(parent, below)
-	local section = CreateSection(parent, below, ROUTE_TOP)
-	routeSection = section
-	routeLabel = section:CreateFontString(nil, "ARTWORK", "GameFontHighlightMedium")
-	routeLabel:SetPoint("TOPLEFT", 10, -9)
-	for index = 1, ns.Model.MAX_STEPS do
-		rows[index] = CreateRow(section)
+local function BuildJourneys(parent, below)
+	list = CreateFrame("Frame", nil, parent)
+	list:SetPoint("TOPLEFT", below, "BOTTOMLEFT", 0, -6)
+	list:SetPoint("RIGHT", parent, "RIGHT", -PAD, 0)
+	for index = 1, MAX_JOURNEYS do
+		cards[index] = CreateFrame("Button", nil, list, "AdventureGuideForeverJourneyCardTemplate") --[[@as AGFJourneyCard]]
 	end
-	emptyText = section:CreateFontString(nil, "ARTWORK", "GameFontDisable")
-	emptyText:SetPoint("TOPLEFT", routeLabel, "BOTTOMLEFT", 0, -16)
+	for index = 1, ns.Model.MAX_STEPS do
+		rows[index] = CreateRow(list)
+	end
+	emptyText = list:CreateFontString(nil, "ARTWORK", "GameFontDisable")
+	emptyText:SetPoint("TOPLEFT", 10, -8)
 	emptyText:SetPoint("RIGHT", -10, 0)
 	emptyText:SetJustifyH("LEFT")
 end
@@ -328,7 +346,7 @@ local function BuildContent(panelFrame)
 	content = BuildScroll(panelFrame)
 	local header = BuildHeader(content)
 	local strip = BuildChips(content, header)
-	BuildRoute(content, strip)
+	BuildJourneys(content, strip)
 	BuildFooter(panelFrame)
 end
 
@@ -368,14 +386,26 @@ local function Matches(step, query)
 		or step.detail:lower():find(query, 1, true) ~= nil
 end
 
--- Rows keep their route number while the search hides the others; the scroll child grows to fit them.
+---@param card AGFJourneyCard
+---@param journey AGFJourney
+---@param chosen boolean
+local function RefreshCard(card, journey, chosen)
+	card.journey = journey
+	card.IconFrame.Icon:SetAtlas(KIND_ICONS[journey.kind])
+	card.Title:SetText(journey.title)
+	card.Subline:SetText(journey.subline)
+	card.Reason:SetText(journey.reason or "")
+	card.NormalTexture:SetAtlas(chosen and CARD_ART_CHOSEN or CARD_ART)
+	card:UpdateHighlightForState()
+end
+
+-- The chosen card's rows, from `top` down; they keep their route number while the search hides the others.
 ---@param route AGFRoute
-local function LayoutRows(route)
-	---@cast searchBox -?
-	---@cast countText -?
-	---@cast routeSection -?
-	---@cast content -?
-	local query = strtrim(searchBox:GetText()):lower()
+---@param query string
+---@param top number
+---@return number top below the last row shown
+---@return integer shown
+local function LayoutRows(route, query, top)
 	local shown = 0
 	for index, row in ipairs(rows) do
 		---@type AGFStep?
@@ -387,21 +417,47 @@ local function LayoutRows(route)
 		row:SetShown(step ~= nil)
 		if step then
 			RefreshRow(row, step, index)
-			local top = -ROUTE_TOP - shown * (ROW_HEIGHT + ROW_GAP)
-			row:SetPoint("TOPLEFT", 6, top)
-			row:SetPoint("TOPRIGHT", -6, top)
+			row:SetPoint("TOPLEFT", 6, -top)
+			row:SetPoint("TOPRIGHT", -6, -top)
+			top = top + ROW_HEIGHT + ROW_GAP
 			shown = shown + 1
 		end
+	end
+	return top, shown
+end
+
+-- The cards in order, the chosen one followed by its rows; the scroll child's height is summed, not measured, so
+-- it is right before the client has laid anything out.
+---@param route AGFRoute
+local function LayoutJourneys(route)
+	---@cast searchBox -?
+	---@cast countText -?
+	---@cast list -?
+	---@cast content -?
+	local query = strtrim(searchBox:GetText()):lower()
+	local top, shown = 0, 0
+	for index, card in ipairs(cards) do
+		local journey = route.journeys[index]
+		card:SetShown(journey ~= nil)
+		if journey then
+			RefreshCard(card, journey, journey.key == route.journey)
+			card:SetPoint("TOP", list, "TOP", 0, -top)
+			top = top + CARD_HEIGHT + CARD_GAP
+			if journey.key == route.journey then
+				top, shown = LayoutRows(route, query, top)
+				top = top + CARD_GAP
+			end
+		end
+	end
+	if not route.journey then
+		LayoutRows(route, query, top)
+		top = 40
 	end
 	countText:SetText(
 		query == "" and ("Steps: %d"):format(#route.steps) or ("Steps: %d/%d"):format(shown, #route.steps)
 	)
-	local rowsHeight = shown > 0 and shown * (ROW_HEIGHT + ROW_GAP) + 6 or 40
-	routeSection:SetHeight(ROUTE_TOP + rowsHeight)
-	local top, bottom = content:GetTop(), routeSection:GetBottom()
-	if top and bottom then
-		content:SetHeight(top - bottom + PAD)
-	end
+	list:SetHeight(top)
+	content:SetHeight(LIST_TOP + top + PAD)
 end
 
 function Refresh()
@@ -409,20 +465,15 @@ function Refresh()
 		return
 	end
 	-- BuildContent() always sets every upvalue below before Attach() registers this listener.
-	---@cast routeLabel -?
 	---@cast emptyText -?
 	---@cast goButton -?
 	local route = ns.Route()
 	RefreshChips(ns.Prefs())
 
-	routeLabel:SetText("Suggested route")
-	if not ns.State.Ready() then
-		emptyText:SetText("Loading your completed quests...")
-	elseif #route.steps == 0 then
-		emptyText:SetText("Nothing left here at your level - pick another zone.")
-	end
-	emptyText:SetShown(not ns.State.Ready() or #route.steps == 0)
-	LayoutRows(route)
+	local ready = ns.State.Ready()
+	emptyText:SetText(ready and L.NOTHING_NEARBY or L.LOADING)
+	emptyText:SetShown(not ready or #route.journeys == 0)
+	LayoutJourneys(route)
 
 	local provider = ns.Integrations.Provider()
 	goButton:SetText(provider and ("Go (%s)"):format(provider) or "Set waypoint")

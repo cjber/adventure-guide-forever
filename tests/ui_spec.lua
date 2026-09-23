@@ -418,6 +418,51 @@ do
 	clean(h, "card")
 end
 
+-- The guide (F2): at most three cards, the chosen one pressed and followed by its steps, every card 288x86 with a
+-- 46x46 ring, in the dumped layout the client's own dump is compared with.
+do
+	local h = Load(false)
+	h.ns.OpenPanel()
+	h.flush()
+	local route, shown, pressed = h.ns.Route(), 0, 0
+	for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverPanel, h.Describe)) do
+		if entry.path:match("%.Button%[%d%]$") and entry.size and entry.size[2] == 86 then
+			shown = shown + 1
+			equal(("%dx%d"):format(entry.size[1], entry.size[2]), "288x86", "guide: " .. entry.path .. " is 288x86")
+		elseif entry.path:match("%.IconFrame$") then
+			equal(("%dx%d"):format(entry.size[1], entry.size[2]), "46x46", "guide: " .. entry.path .. " is 46x46")
+		elseif entry.path:match("NormalTexture$") and entry.atlas == "ui-journeys-renown-button-pressed" then
+			pressed = pressed + 1
+		end
+	end
+	equal(shown, #route.journeys, "guide: a card per journey")
+	equal(shown >= 1 and shown <= 3, true, "guide: one to three cards")
+	equal(pressed, 1, "guide: only the chosen card is pressed")
+	local rows = Shown(h, function(frame)
+		return frame.SkipButton ~= nil
+	end)
+	equal(#rows, #route.steps, "guide: only the chosen card's steps are listed")
+	-- The dump holds only what is shown.
+	local function Says(each, text)
+		local count = 0
+		for _, entry in ipairs(each.ns.DumpLayout(each.G.AdventureGuideForeverPanel, each.Describe)) do
+			count = count + (entry.text == text and 1 or 0)
+		end
+		return count
+	end
+	equal(Says(h, h.ns.L.NOTHING_NEARBY), 0, "guide: no empty line beside the cards")
+	clean(h, "guide")
+
+	local none = harness.load({ player = { level = 70 } })
+	none.ns.Prefs().quests = false
+	none.ns.Invalidate()
+	none.ns.OpenPanel()
+	none.flush()
+	equal(#none.ns.Route().journeys, 0, "guide: nothing fits")
+	equal(Says(none, none.ns.L.NOTHING_NEARBY), 1, "guide: says so, and where to look")
+	clean(none, "guide: empty")
+end
+
 -- The golden layout: any change to what the guide draws shows as a reviewable diff of tests/golden/layout.json.
 do
 	local json, diff = dofile("tests/json.lua"), dofile("tests/dump_diff.lua")

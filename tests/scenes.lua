@@ -79,8 +79,11 @@ h.providers[1]:RefreshAllData()
 out.panel.pins = Pins(h)
 out.panel.map = h.map:GetMapID()
 
--- The search filters the route to the stops with the most quests to pick up.
+-- The search filters the chosen journey, here The Barrens' pickups, to the stops with the most quests to pick up.
 h = Load(false)
+h.ns.Prefs().journey = "story:1413"
+h.ns.Invalidate()
+h.flush()
 local search = h.Find(function(frame)
 	return frame.stockTemplate == "SearchBoxTemplate"
 end)[1]
