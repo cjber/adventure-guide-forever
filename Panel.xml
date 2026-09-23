@@ -3,19 +3,35 @@
 	<!-- They reuse the stock QuestLogTabButtonTemplate directly (see Panel.lua Attach()) instead of a home-grown template here, and anchor to QuestMapFrame in Lua once Blizzard_WorldMap loads. -->
 	<!-- The route pin below must be a real XML template: MapCanvasMixin AcquirePin resolves its template argument through CreateFramePool, which needs a declared virtual frame. -->
 	<Frame name="AdventureGuideForeverPinTemplate" mixin="AdventureGuideForeverPinMixin" enableMouse="true" virtual="true">
-		<Size x="20" y="20"/>
+		<Size x="26" y="26"/>
 		<Layers>
-			<Layer level="ARTWORK">
-				<Texture parentKey="Icon" atlas="Waypoint-MapPin-Tracked" useAtlasSize="true">
+			<!-- The panel's numbered ring, so a map pin reads as the same step as its route row. A dark disc, cut round
+			     with the stock portrait mask, keeps the number legible over bright map art. -->
+			<Layer level="BACKGROUND">
+				<Texture parentKey="Disc">
+					<Size x="22" y="22"/>
 					<Anchors>
 						<Anchor point="CENTER"/>
 					</Anchors>
+					<Color r="0" g="0" b="0" a="0.75"/>
 				</Texture>
+				<MaskTexture parentKey="DiscMask" file="Interface\CharacterFrame\TempPortraitAlphaMask" hWrapMode="CLAMPTOBLACKADDITIVE" vWrapMode="CLAMPTOBLACKADDITIVE">
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.Disc"/>
+						<Anchor point="BOTTOMRIGHT" relativeKey="$parent.Disc"/>
+					</Anchors>
+					<MaskedTextures>
+						<MaskedTexture childKey="Disc"/>
+					</MaskedTextures>
+				</MaskTexture>
+			</Layer>
+			<Layer level="ARTWORK">
+				<Texture parentKey="Icon" atlas="adventureguide-ring" setAllPoints="true"/>
 			</Layer>
 			<Layer level="OVERLAY">
-				<FontString parentKey="Number" inherits="NumberFontNormalSmall">
+				<FontString parentKey="Number" inherits="GameFontNormal">
 					<Anchors>
-						<Anchor point="CENTER" x="0" y="2"/>
+						<Anchor point="CENTER"/>
 					</Anchors>
 				</FontString>
 			</Layer>
