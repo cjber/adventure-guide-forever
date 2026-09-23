@@ -207,4 +207,42 @@ do
 	)
 end
 
+-- The golden layout: any change to what the guide draws shows as a reviewable diff of tests/golden/layout.json.
+do
+	local json, diff = dofile("tests/json.lua"), dofile("tests/dump_diff.lua")
+	local h = Load(false)
+	h.ns.OpenPanel()
+	h.flush()
+	local panel = h.G.AdventureGuideForeverPanel
+	local current = json.encode({ layout = h.ns.DumpLayout(panel, h.Describe) })
+	local goldenPath = "tests/golden/layout.json"
+	if os.getenv("AGF_UPDATE_GOLDEN") == "1" then
+		local handle = assert(io.open(goldenPath, "w"))
+		handle:write(current)
+		handle:close()
+	end
+	local handle = assert(io.open(goldenPath), "no golden layout: run with AGF_UPDATE_GOLDEN=1")
+	local stored = handle:read("*a")
+	handle:close()
+	equal(current == stored, true, "golden: layout.json matches (AGF_UPDATE_GOLDEN=1 rewrites it)")
+	equal(json.encode(json.decode(stored)), stored, "golden: json round trip")
+
+	-- The in-game diff, fed a dump taken the way /agf dump takes it.
+	local golden, game = json.decode(stored).layout, h.ns.DumpLayout(panel)
+	local differences, onlyInGame = diff.Compare(golden, game)
+	equal(#differences, 0, "dump_diff: the headless dump matches\n" .. table.concat(differences, "\n"))
+	equal(onlyInGame, 0, "dump_diff: no regions only in game")
+	for _, entry in ipairs(game) do
+		if entry.atlas then
+			entry.atlas = "changed"
+			break
+		end
+	end
+	game[#game + 1] = { path = "AdventureGuideForeverPanel.NineSlice", type = "Frame", anchors = {} }
+	differences, onlyInGame = diff.Compare(golden, game)
+	equal(#differences, 1, "dump_diff: a changed atlas is one difference")
+	equal(onlyInGame, 1, "dump_diff: stock chrome is counted, not failed")
+	clean(h, "golden")
+end
+
 print(("ui_spec: %d checks passed"):format(checks))
