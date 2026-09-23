@@ -164,6 +164,14 @@ local function NotifyRouteChange()
 	end
 end
 
+-- Skipped when an invalidation landed since the rebuild: ns.Route() would rebuild in this frame too, and the
+-- pending rebuild queues its own refresh.
+local function RefreshTravel()
+	if not pendingRebuild then
+		ns.Integrations.RefreshTravel()
+	end
+end
+
 function ns.Invalidate()
 	dirty = true
 	if pendingRebuild then
@@ -174,7 +182,7 @@ function ns.Invalidate()
 		Rebuild()
 		NotifyRouteChange()
 		-- Step 1's travel line gets a frame of its own: at most one Shortest Path estimate, never in the rebuild's.
-		C_Timer.After(0, ns.Integrations.RefreshTravel)
+		C_Timer.After(0, RefreshTravel)
 	end)
 end
 

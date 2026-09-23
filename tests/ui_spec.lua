@@ -184,6 +184,20 @@ for _, spf in ipairs({ "v1", "v1+" }) do
 	equal(h.ns.Integrations.Travel(h.ns.Route().steps[1]), "About 6 min away", spf .. ": step 1's travel line")
 	equal(h.ns.Integrations.Travel(h.ns.Route().steps[2]), nil, spf .. ": no line for other steps")
 	equal(Estimates() - before, 1, spf .. ": reading the line asks nothing")
+	-- An invalidation between the rebuild frame and the travel frame: the travel frame must not rebuild as well.
+	local plan, builds = h.ns.Model.Plan, 0
+	h.ns.Model.Plan = function(...)
+		builds = builds + 1
+		return plan(...) -- multi-value: the wrapper is transparent
+	end
+	h.ns.Invalidate()
+	h.tick()
+	h.ns.Invalidate()
+	h.tick()
+	equal(builds, 2, spf .. ": one build per rebuild frame, none in the skipped travel frame")
+	h.flush()
+	equal(Estimates() - before, 2, spf .. ": the second rebuild's travel frame asks once")
+	h.ns.Model.Plan = plan
 	clean(h, spf .. ": travel")
 end
 
