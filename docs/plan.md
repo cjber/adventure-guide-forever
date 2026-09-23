@@ -18,6 +18,8 @@ against `a128f7a`, unless it says "pinned by the spec". The review in `plan-revi
 | (new) Plan ranking | `Model.Plan` stops calling SPF. It ranks by map distance, then by zone centres (F0), and SPF is asked for step 1's travel line only, in its own frame | Plan asks for 3 to 36 estimates per rebuild today (§1.4). At 2.45 ms per cold estimate, that is up to 88 ms |
 | (new) Pins and zone choice | **Deleted** end to end (F9): `prefs.pinned`, `ns.TogglePin`, the row PinButton, `prefs.zone`, `AGFZoneChoice`, `route.zones` | The design's cards and menu (§2.2, §2.8) never mention pins; journeys replace the zone choice |
 | #18 discovery hint | Stays Could, not planned | Needs a Legacy Forever API that does not exist |
+| (new) #19 class trainer step | **Should** (F16): "Visit your class trainer" from Tweaks Forever's `TrainableSpells`, feature-detected, text only | The client lists 0 `FutureSpell` entries (§1.0 `spellbook2`); TF PR #45 answers from its trainer data. The data has no trainer coordinates, so no ring and no Go |
+| (new) Localised names | Zone names from `C_Map.GetMapInfo(uiMapID).name`, quest titles from `C_QuestLog.GetTitleForQuestID`; the data's English only when the client returns nothing | Design §3 |
 
 ### 0.1 Dungeon flag: available offline
 
@@ -44,28 +46,29 @@ against `a128f7a`, unless it says "pinned by the spec". The review in `plan-revi
 |---|---|---|
 | Shortest Path Forever | **Yes** (§2) | Travel line and `Active()` |
 | Legacy Forever | No | AGF reads no Legacy data. Its `tools/.cache/AreaTable-1.60.1.69913.csv` is only a local copy of a public wago export, and AGF's generator downloads its own. The discovery hint (#18) stays unplanned |
-| Tweaks Forever | No | The dungeon card routes to quest givers only, so no `DungeonEntrance`. #14 is cut, so no `ZoneRange` |
+| Tweaks Forever | **Yes**, PR #45 (open) | `TweaksForever.API.TrainableSpells()` for F16: fresh `{spellID, name, level, cost?, line, lineID}` tables, nil before login and in combat. The dungeon card still needs no `DungeonEntrance`, and #14 is cut, so no `ZoneRange` |
 | SkillUp Forever | No | Profession steps are out of scope. Its `Map` CSV is again just a copy of a public export |
 
 ## 1. Test and verification infrastructure (built first)
 
 Every later feature lands with a check from this section.
 
-### 1.0 Probe gate (blocks F1, F2 and F5)
+### 1.0 Probe gate (passed)
 
-Design §9's batch-2 probes have not run: `ForeverProbe.lua` still holds only the `19:38:41` run, with no
-`questoffer`, `templates`, `c60`, `classnames` or `questline` keys. The user runs the new `forever-probe` build
-once and sends the SavedVariables; F1, F2 and F5 start only after that file is read.
+The batch-2 run came back on 2026-09-23 (client 1.60.1.69977, Durin VII, a level-18 Alliance dwarf shaman in
+Auberdine). The client moved past the atlas CSV's build (69913); the plain names below were checked on 69977.
 
-| Probe (design §9) | Decides | If present | Fallback |
-|---|---|---|---|
-| 2 `questoffer` | F1 giver layer | Delete `AddGivers`, `showQuestGivers` and the giver pin template | Keep AGF's givers, gated as in F1 |
-| `templates`: `AlphaHighlightButtonTemplate` | F2 card hover | Inherit it | A `HighlightTexture` using the card's own atlas with `alphaMode="ADD"`, alpha 0.4 |
-| 3 `classnames` | F5 "Warriors only" | `C_CreatureInfo.GetClassInfo` / `GetRaceInfo` names | `LOCALIZED_CLASS_NAMES_MALE`; for races, the line is omitted |
-| 4 `c60` | F5 check icon, F8/F11 template art | Use the `-c60` rows as cited | Plain names |
-| 5 `questline` | F4 totals | Stays on the conservative rule for v1 (a follow-up may adopt the API) | Conservative `pre`/`next` rule |
-| 6 quest cache | F5 titles | `GetTitleForQuestID` after `RequestLoadQuestByID` | The data's English title |
-| 8 fanfare | F11 glow | Keep `SetNeedsFanfare` | Sound and "Story complete" only; /reload check 9 decides |
+| Probe (design §9) | Result | Decision |
+|---|---|---|
+| 2 `questoffer` | `QuestOfferDataProvider` exists and `questPOILocalStory` is 1, but 0 available quest lines, 0 task quests, and no `QuestOfferPinTemplate` in map 1439's live pin pools | Blizzard draws no givers: F1 **keeps** AGF's giver layer, gated under `showMapPins`, off by default |
+| `templates` | `AlphaHighlightButtonTemplate`, `UIPanelButtonTemplate`, `UIMenuButtonStretchTemplate` and `SearchBoxTemplate` create; `SetNeedsFanfare` and `ObjectiveTrackerAnimBlockMixin` exist. `AlphaHighlightButtonTemplate` errors on `Hide` with no `NormalTexture` (SharedUIPanelTemplates.lua:1774) | F2 inherits it, and sets the normal texture before any `Show`/`Hide` |
+| 3 `classnames` | `C_CreatureInfo.GetClassInfo` (1-5, 7-9, 11) and `GetRaceInfo` (1-8) return names | F5 uses them |
+| 4 `c60` | `GetAtlasInfo` is nil for every `-c60` name tried; the plain names resolve, to the `-c60` art where one exists | **Plain names only**, everywhere: never pass a `-c60` name |
+| 5 `questline` | `GetQuestLineInfo` nil for all 5 log quests; 0 available lines | F4 keeps the conservative `pre`/`next` rule |
+| 6 quest cache | Quest 7, requested last session, is cached ("Kobold Camp Cleanup"); 5892 is not | F5: the live title when cached, else the data's English title |
+| `spellbook2` | Level 18, 34 items, 0 `FutureSpell` in all 4 lines | The client can't tell what to train: F16 asks Tweaks Forever |
+| `ej` | Loadable, not loaded, 0 tiers | No Encounter Journal use |
+| 8 fanfare | `SetNeedsFanfare` exists | F11 keeps it; /reload check 9 decides whether the glow plays |
 
 ### 1.1 `tests/harness.lua` + `tests/ui_spec.lua`
 
@@ -249,7 +252,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
   - `ui_spec`: move the player stub, invalidate, flush → exactly 1 new SPF call.
 
 **F1 Map budget (Must; after §1.0)**
-- **Files:** `Core.lua:12-13` (defaults become `showMapPins=false` and `showQuestGivers=false`) · `Pins.lua:77-94` (`RefreshAllData`: givers gated on `showMapPins and showQuestGivers` only, independent of SPF guiding; rings keep `Active()`, extended by the preview flag `Pins.previewJourney`) · `Settings.lua` tooltips. If the `questoffer` probe is present, `AddGivers` and `showQuestGivers` are deleted instead (§1.0).
+- **Files:** `Core.lua:12-13` (defaults become `showMapPins=false` and `showQuestGivers=false`) · `Pins.lua:77-94` (`RefreshAllData`: givers gated on `showMapPins and showQuestGivers` only, independent of SPF guiding; rings keep `Active()`, extended by the preview flag `Pins.previewJourney`) · `Settings.lua` tooltips. The giver layer stays: the `questoffer` probe found no stock givers (§1.0).
 - **Atlases:** unchanged. `adventureguide-ring` CSV:1189, `services-number-1..9` CSV:1645-1653, `UI-QuestPoi-InnerGlow` CSV:10079, `QuestNormal` CSV:1360. None has a `-c60` row.
 - **Acceptance:**
   - "On a fresh install the map shows 0 Adventure Guide marks with the tab closed" → `ui_spec`: a fresh DB and 10 `RefreshAllData` give `AcquirePin` count 0.
@@ -257,7 +260,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
   - "A saved `true` survives" → `ui_spec` loads `{showMapPins=true}` and the value is still `true`.
 
 **F2 Journey cards (Must; after §1.0)**
-- **Files:** `Model.lua` (new `Model.Journeys`; next-zone needs ≥ 5 eligible pickups, §1.5) · `Panel.lua` (remove the zone cards: `AGFZoneCard`, `SetZoneArt`, `CreateZoneCard` 114-206 and `RefreshChoices` from 566; the XP bar: `BuildExperience` 329-352 and `RefreshExperience` 537-562; "Why these?" 430-443; add `CreateJourneyCard`, and move the quest and dungeon chips (`BuildChips` 357-) into `BuildSettingsMenu`) · `Panel.xml` (`AdventureGuideForeverJourneyCardTemplate`, 288x86, inherits `AlphaHighlightButtonTemplate` `BLZ/Blizzard_SharedXML/Mainline/SharedUIPanelTemplates.xml:1587` or the §1.0 fallback, layout copied from `Blizzard_Journeys.xml:5-107`).
+- **Files:** `Model.lua` (new `Model.Journeys`; next-zone needs ≥ 5 eligible pickups, §1.5) · `Panel.lua` (remove the zone cards: `AGFZoneCard`, `SetZoneArt`, `CreateZoneCard` 114-206 and `RefreshChoices` from 566; the XP bar: `BuildExperience` 329-352 and `RefreshExperience` 537-562; "Why these?" 430-443; add `CreateJourneyCard`, and move the quest and dungeon chips (`BuildChips` 357-) into `BuildSettingsMenu`) · `Panel.xml` (`AdventureGuideForeverJourneyCardTemplate`, 288x86, inherits `AlphaHighlightButtonTemplate` `BLZ/Blizzard_SharedXML/Mainline/SharedUIPanelTemplates.xml:1587`, with its `NormalTexture` set before any `Show`/`Hide` (§1.0), layout copied from `Blizzard_Journeys.xml:5-107`).
 - **Types:**
   - `---@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"`;
   - `AGFJourney{kind, key, title, subline, reason, map, steps: AGFStep[], story?: AGFStory}`;
@@ -288,8 +291,8 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 - **Files:** `Model.lua` (`Why`, with `Eligible` (Model.lua:88-124) rewritten to use it) · `Panel.lua` (search results, 10 at most, when the query is 3+ characters).
 - **Why lines.** The design's lines (`min`, `pre`, `preAny`, `side`, `races`, `classes`, `group`, suppressed start) plus the three other reasons `Eligible` returns false, added to design §2.4 and §3: `completed` → "You've done this", `log` → "In your quest log", `repeatable` → "Repeatable quests aren't suggested". Each is one unmet line; all go in `ns.L`.
 - **Types:** `AGFWhyLine{text: string, met: boolean}` · `AGFModel.Why`.
-- **Atlases:** `questlog-questtypeicon-lock` CSV:9393; `ui-questtracker-tracker-check-c60` CSV:18734 (the `-c60` row is preferred; the plain row is CSV:10177; §1.0 decides).
-- **APIs:** `C_QuestLog.GetTitleForQuestID(questID) -> cstring?` (DOC/QuestLogDocumentation.lua:668); `C_QuestLog.RequestLoadQuestByID(questID)` (:1219).
+- **Atlases:** `questlog-questtypeicon-lock` CSV:9393; `ui-questtracker-tracker-check` CSV:10177 (the plain name; the client maps it to the `-c60` art, §1.0).
+- **APIs:** `C_QuestLog.GetTitleForQuestID(questID) -> cstring?` (DOC/QuestLogDocumentation.lua:668), the data's English title only when it returns nil; `C_QuestLog.RequestLoadQuestByID(questID)` (:1219); `C_CreatureInfo.GetClassInfo(classID)` / `GetRaceInfo(raceID)` for "Warriors only" and race lines (§1.0).
 - **Acceptance:**
   - "Why-not and the planner never disagree" → a `model_spec` loop over 3535 quests × 5 fixtures (with completed and log quests in each): `Eligible == (every Why line met)`, with 0 mismatches.
   - "A quest whose start is suppressed shows exactly 1 line, and no Go" → `ui_spec`.
@@ -313,7 +316,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 **F8 Tracker lines and the resume line (Must)**
 - **Files:** `Tracker.lua` (`LayoutContents`: place, reason, travel, next) · `State.lua:131` (pass `isInitialLogin`) · `Core.lua` (`charDB.last`; a latch set by an initial login and held until the first rebuild with `State.Ready()` true and ≥ 1 step, which then compares once with the live step 1).
 - **Types:** `AGFPrefs.last?: {key: string, reason: string}`.
-- **Atlases:** the header is template-set: `UI-QuestTracker-Secondary-Objective-Header` CSV:10176 (`-c60` CSV:18733).
+- **Atlases:** the header is template-set: `UI-QuestTracker-Secondary-Objective-Header` CSV:10176, the plain name (§1.0).
 - **Acceptance:** "The first login shows 'Where you left off' once; a /reload shows it 0 times" → `ui_spec`:
   - `PLAYER_ENTERING_WORLD(true,false)` with Ready true and a matching key: 1 line;
   - `(true,false)` with Ready false, then Ready true and a rebuild: 1 line;
@@ -360,7 +363,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 
 **F11 Chapter-end fanfare (Should)**
 - **Files:** `Tracker.lua` (`blockTemplate = "ObjectiveTrackerAnimBlockTemplate"`, `BLZ/Blizzard_ObjectiveTracker/Blizzard_ObjectiveTrackerAnimTemplates.xml:55`; `SetNeedsFanfare(key)` `Blizzard_ObjectiveTrackerModule.lua:634`) · `State.lua` (`QUEST_TURNED_IN` → `ns.OnTurnIn`).
-- **Atlases:** `ui-questtracker-objfx-barglow` is template-set (`-c60` CSV:18727).
+- **Atlases:** `ui-questtracker-objfx-barglow` is template-set, by its plain name (§1.0).
 - **APIs:** `PlaySound(soundKitID, ...) -> success, handle` (DOC/SoundDocumentation.lua:52) with `SOUNDKIT.UI_SCENARIO_STAGE_END` = 31757 (`BLZ/Blizzard_SharedXML/Mainline/SoundKitConstants.lua:125`).
 - **Acceptance:** "Finishing a proven chain glows once and plays 1 sound; an unproven chain plays 0" → `ui_spec` (fanfare keys and `PlaySound` count). The `/reload` check 9 must pass before release.
 
@@ -393,6 +396,12 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
   - "133 dungeon and 90 raid quests are tagged" → `python3 tools/gen_quests.py --offline` prints `flagged dungeon: 133` and `flagged raid: 90`, and `model_spec` counts 223 `dungeon` fields.
   - "A dungeon quest you carry never disappears" → golden fixture with a flagged, non-elite quest complete in the log: its turn-in appears with dungeons off.
   - "With dungeons on, an Alliance level-18 character sees a Deadmines card whose steps are all quest givers with data coordinates; with dungeons off, 0 dungeon cards" → the `human18_westfall` golden fixture, and a `model_spec` loop showing that 0 dungeon-card steps lack `ValidPlace(start)`.
+
+**F16 Class trainer step (Should)**
+- **Files:** `Integrations.lua` (`Integrations.Trainable()`: `TweaksForever.API.TrainableSpells()` when `type(api) == "table"`, `api.version == 1` and the function exists; nil otherwise) · `Panel.lua` / `Tracker.lua` (one text line above the steps: not a route step, so no ring, numeral, waypoint or Go, and `Model.Plan` is unchanged) · `types/Namespace.lua` (`AGFTFAPI` and `AGFTFSpell`, mirroring TF's `TFPublicAPI` and `TFAPITrainableSpell`).
+- **Rules.** Nil (before login, in combat, TF absent or older) means no step this rebuild, never an error. The step is text only because the data has no trainer coordinates. `line` is display text; any grouping compares `lineID`.
+- **Copy (`ns.L`):** `Visit your class trainer` · `%d new spells` (`1 new spell` for one).
+- **Acceptance:** "With spells to train, one text-only trainer step; otherwise none" → `ui_spec` with a TF stub in four profiles: absent → 0 trainer steps; `TrainableSpells` returns nil → 0; `{}` → 0; 3 spells → 1 step reading "3 new spells", 0 rings for it, and 0 `SetUserWaypoint`/`NavigateRoute` calls from its row. `plan_bench` stays green.
 
 **Docs (Must, last)**
 - `CHANGELOG.md` `[Unreleased]`: rewrite the prose per WFA-12. Nothing is released yet, so the current bullets are simply replaced: journeys instead of "pick the zone", no pins, map marks and givers off by default ("Turn them on under *Show map pins*").
@@ -436,6 +445,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 | 10 | `/reload` | No resume line appears | SHOT tracker |
 | 11 | Log out, then log in to the same character | "Where you left off: …" appears once, and it goes after the next route change | SHOT tracker, SV |
 | 12 | Enable dungeons in the cog menu at level ≥ 17 (Alliance) | A card named after the instance (localised through `GetRealZoneText`), whose steps are givers only | SHOT panel, SV |
+| 12b | With Tweaks Forever (PR #45) enabled, level up and open the guide before training | "Visit your class trainer · N new spells", no ring; after training, gone. With Tweaks Forever disabled, no such line | SHOT panel + tracker |
 | 13 | Level up (or ding during the test) | The cards rebuild once. No error, and no frame flicker | SV (`dump.route` changes), TAINT |
 | 14 | Stand idle 60 s with the tab closed, then `/agf dump` and `/reload` | SV: 0 AGF frames with `onUpdate = true` | SV |
 | 15 | Pull a mob with the tab open, loot a quest item mid-fight | No rebuild hitch in combat; the cards refresh once after combat | SV, TAINT |
@@ -495,7 +505,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 42. `refactor: remaining copy into L, and the copy lint` (F14 part 2)
 43. `fix(model): log quests are never hidden by the quest or dungeon filters` (F15 part 1)
 44. `feat(gen): flag dungeon and raid quests from AreaTable and Map` (F15; regenerates data. Data/ is excluded from the 50-line target)
-45. `feat(model): dungeon journey card`
+45. `feat(model): dungeon journey card`, then `feat: class trainer step from Tweaks Forever` (F16; keeps no number)
 46. `docs: CHANGELOG prose for the journeys release`
 47. `docs: README and store page per WFA-10/11, with screenshots`
 
