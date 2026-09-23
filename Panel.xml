@@ -20,10 +20,7 @@
 				</FontString>
 			</Layer>
 		</Layers>
-		<Scripts>
-			<OnEnter method="OnMouseEnter"/>
-			<OnLeave method="OnMouseLeave"/>
-		</Scripts>
+		<!-- No OnEnter/OnLeave scripts: MapCanvas asserts a new pin has none and wires OnMouseEnter/OnMouseLeave itself. -->
 		<!-- OnClick is not an XML script here: MapCanvasMixin OnPinMouseUp calls pin OnClick(button) directly once IsMouseClickEnabled() is true (see enableMouse above), same as OnMouseUp/Down. -->
 	</Frame>
 </Ui>
