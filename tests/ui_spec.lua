@@ -214,6 +214,24 @@ for _, case in ipairs({
 	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, expected, label .. ": givers stay while it guides")
 	clean(h, label)
 end
+-- Choosing another card while Shortest Path guides: it still walks the old route, so the new journey's givers
+-- are drawn, not left to stops nobody draws.
+do
+	local h = Load("v1", PINS_ON)
+	local ns = h.ns
+	h.G.OpenQuestLog()
+	h.flush()
+	ns.Integrations.Navigate(ns.Route().steps[1])
+	local nextZone = ns.Route().journeys[3]
+	equal(nextZone.kind, "nextzone", "guided givers: a next-zone card")
+	ns.Prefs().journey = nextZone.key
+	ns.Invalidate()
+	h.flush()
+	h.map:SetMapID(nextZone.map)
+	local givers = ns.Model.Givers(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), nextZone.map)
+	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, #givers, "guided givers: every giver on the new card's map")
+	clean(h, "guided givers")
+end
 do
 	local h = Load(false, { showMapPins = true })
 	equal(h.ns.Setting("showMapPins"), true, "map budget: a saved true survives the new default")

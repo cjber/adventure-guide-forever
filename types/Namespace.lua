@@ -187,6 +187,7 @@
 ---@field Navigate fun(step: AGFStep|AGFGiver): boolean route there with Shortest Path, else (declined or absent) the native waypoint where the map allows one; true when something now guides
 ---@field Cancel fun()
 ---@field Guiding fun(): boolean Shortest Path is walking our multi-stop route and draws its own numbered stops
+---@field Guided fun(): (AGFStep|AGFGiver)[] the stops it walks, while it guides; empty otherwise
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")
 
 -- One region in a layout dump (Dump.lua): plain data, so it survives SavedVariables and JSON.

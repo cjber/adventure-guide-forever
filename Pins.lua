@@ -60,8 +60,8 @@ function provider:RemoveAllData()
 	pinsByKey = {}
 end
 
--- Givers first, so the route's numbered pins draw above them. A giver whose quest is already a route
--- step is left to that step's pin (ours, or Shortest Path's numbered stop).
+-- Givers first, so the route's numbered pins draw above them. A giver whose quest is a stop drawn already is left
+-- to that stop: our ring for the chosen journey, or Shortest Path's numbered stop for what the last Go handed it.
 ---@param map AGFWorldMapFrame
 ---@param mapID integer
 local function AddGivers(map, mapID)
@@ -69,7 +69,7 @@ local function AddGivers(map, mapID)
 		return
 	end
 	local routed = {}
-	for _, step in ipairs(ns.Route().steps) do
+	for _, step in ipairs(RingsShown() and ns.Route().steps or ns.Integrations.Guided()) do
 		for _, id in ipairs(step.quests) do
 			routed[id] = true
 		end

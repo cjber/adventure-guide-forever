@@ -79,6 +79,15 @@ function Integrations.Guiding()
 	return api ~= nil and api.CurrentStop(OWNER) ~= nil
 end
 
+-- What the last Go handed Shortest Path, which may no longer be the chosen journey's steps.
+---@type (AGFStep|AGFGiver)[]
+local guided = {}
+
+---@return (AGFStep|AGFGiver)[]
+function Integrations.Guided()
+	return Integrations.Guiding() and guided or {}
+end
+
 -- With Shortest Path, the step and every step after it become one numbered journey. When it declines (it returns
 -- false when it cannot plan the route) or is absent, the native waypoint takes the step instead, so Go always
 -- leaves a destination on any map the client allows one on. True when something now guides the player.
@@ -87,17 +96,20 @@ end
 function Integrations.Navigate(step)
 	local api = SPF()
 	if api then
-		local stops, found = {}, false
+		local stops, steps, found = {}, {}, false
 		for _, each in ipairs(ns.Route().steps) do
 			found = found or each == step
 			if found then
 				stops[#stops + 1] = { map = each.map, x = each.x, y = each.y, title = each.title }
+				steps[#steps + 1] = each
 			end
 		end
 		if not found then
 			stops[1] = { map = step.map, x = step.x, y = step.y, title = step.title }
+			steps[1] = step
 		end
 		if api.NavigateRoute(OWNER, stops) then
+			guided = steps
 			ns.Pins.Refresh()
 			return true
 		end
