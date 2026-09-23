@@ -19,6 +19,8 @@ against `a128f7a`, unless it says "pinned by the spec". The review in `plan-revi
 | (new) Pins and zone choice | **Deleted** end to end (F9): `prefs.pinned`, `ns.TogglePin`, the row PinButton, `prefs.zone`, `AGFZoneChoice`, `route.zones` | The design's cards and menu (§2.2, §2.8) never mention pins; journeys replace the zone choice |
 | #18 discovery hint | Stays Could, not planned | Needs a Legacy Forever API that does not exist |
 | (new) #19 class trainer step | **Should** (F16): "Visit your class trainer" from Tweaks Forever's `TrainableSpells`, feature-detected, text only | The client lists 0 `FutureSpell` entries (§1.0 `spellbook2`); TF PR #45 answers from its trainer data. The data has no trainer coordinates, so no ring and no Go |
+| (new) Route ordering | **Must**, moved up to right after commit 17 (F12, redesigned): one numeric cost, selection by it, one continent crossing | `Model.Plan` compares phase before distance (Model.lua:376-385), so every log turn-in goes first however far: the `ne21_crosszone` golden's step 4 is a Stormwind turn-in between Kalimdor steps. Cost returns `(2, 0)` for every other-continent step, so those tie by key. SPF then previews the later stops as one straight dotted walk across the ocean |
+| (new) Waypoint fallback | **Must**, right after commit 17 (F0b) | `Integrations.Navigate` ignores `NavigateRoute`'s boolean, so a route SPF declines leaves the player with nothing; the native path never checks `C_Map.CanSetUserWaypointOnMap` |
 | (new) Localised names | Zone names from `C_Map.GetMapInfo(uiMapID).name`, quest titles from `C_QuestLog.GetTitleForQuestID`; the data's English only when the client returns nothing | Design §3 |
 
 ### 0.1 Dungeon flag: available offline
@@ -44,7 +46,7 @@ against `a128f7a`, unless it says "pinned by the spec". The review in `plan-revi
 
 | Sibling | PR? | Reason |
 |---|---|---|
-| Shortest Path Forever | **Yes** (§2) | Travel line and `Active()` |
+| Shortest Path Forever | **Yes** (§2), PR #29 | Travel line and `Active()`. The same PR fixes the route preview: `SetJourneyRoute` (SPF Route.lua:904-918) adds every remaining stop as one walk path with `preview = true`, and `Draw`'s preview branch (Route.lua:453-456) draws a straight dashed line between each pair, even across continents, never reaching the boat and zeppelin code (457-460) |
 | Legacy Forever | No | AGF reads no Legacy data. Its `tools/.cache/AreaTable-1.60.1.69913.csv` is only a local copy of a public wago export, and AGF's generator downloads its own. The discovery hint (#18) stays unplanned |
 | Tweaks Forever | **Yes**, PR #45 (open) | `TweaksForever.API.TrainableSpells()` for F16: fresh `{spellID, name, level, cost?, line, lineID}` tables, nil before login and in combat. The dungeon card still needs no `DungeonEntrance`, and #14 is cut, so no `ZoneRange` |
 | SkillUp Forever | No | Profession steps are out of scope. Its `Map` CSV is again just a copy of a public export |
@@ -242,7 +244,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 **F0 Rank without SPF; travel in its own frame (a prerequisite for the bench)**
 - **Files:**
   - `tools/gen_quests.py` + `Data/Quests.lua` (regenerated): a new `maps[id] = {continent, cx, cy}` (`UiMapAssignment.MapID` and the world-coordinate centre of its `Region_*` box) for every map a place uses. `tools/gen_quests_test.py` covers one zone. **Changed (commit 8):** the plan put these on `zones[id]`, but 1,049 of the start/finish places are in the six capital cities, which have no published range and so no `zones` entry (and `Choices` needs `min`/`max` on every `zones` entry). A separate `maps` table covers all 48 place maps, cities included.
-  - `Model.lua`: `Plan` drops the `travel` argument. `Cost` orders lexicographically by tier, then distance: tier 0 same map (`Distance`), tier 1 same continent (world distance between the two zones' centres), tier 2 other continent (then by key). No SPF call.
+  - `Model.lua`: `Plan` drops the `travel` argument. `Cost` orders lexicographically by tier, then distance: tier 0 same map (`Distance`), tier 1 same continent (world distance between the two zones' centres), tier 2 other continent (then by key). No SPF call. **Superseded by F12** (right after commit 17): one numeric cost in yards.
   - `Core.lua`: `ns.Invalidate`'s callback runs `Rebuild` + `NotifyRouteChange`, then queues a separate `C_Timer.After(0)` for `ns.Integrations.RefreshTravel()`.
   - `Integrations.lua`: `TravelLine(step)` with **no AGF cache** (SPF caches 5 s, API.lua:9); it is refetched on every rebuild and on `ZONE_CHANGED_NEW_AREA`.
 - **Types:** `AGFModel.Plan` loses `travel?`, `AGFStep.seconds` goes, `AGFRoute.minutes` goes (the design has no totals), `AGFData` gains `maps: table<integer, AGFMapCentre>`.
@@ -250,6 +252,11 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
   - "Opening the guide never waits on travel maths" → `plan_bench`: 0 SPF calls in the rebuild frame, ≤ 1 in the travel frame (§1.4).
   - "A turn-in in the next zone is not ranked at random" → `ne21_crosszone` golden: the Ashenvale turn-in follows every Darkshore step and precedes any other-continent step.
   - `ui_spec`: move the player stub, invalidate, flush → exactly 1 new SPF call.
+
+**F0b Shortest Path declines: the native waypoint (Must; right after commit 17)**
+- **Files:** `Integrations.lua` (`Navigate` returns a boolean: SPF's `NavigateRoute`/`Navigate` result, and on false or absent the native waypoint, set only when `C_Map.CanSetUserWaypointOnMap(map)` is true) · `AdventureGuideForever.toc` (`## OptionalDeps: ShortestPathForever`, F9's TOC line pulled forward) · `.luacheckrc` (nothing new: `C_Map` is already read).
+- **APIs:** `C_Map.CanSetUserWaypointOnMap(uiMapID) -> bool` (DOC/MapDocumentation.lua).
+- **Acceptance:** "Go always leaves the player a destination when the map allows one" → `ui_spec`, SPF in three profiles: returns true → 1 `NavigateRoute`, 0 `SetUserWaypoint`; returns false → 1 `NavigateRoute`, then 1 `SetUserWaypoint` at step 1; absent → 1 `SetUserWaypoint`; `CanSetUserWaypointOnMap` false → 0 `SetUserWaypoint` and `Navigate` returns false. `grep -c '^## OptionalDeps: ShortestPathForever$' AdventureGuideForever.toc` == 1.
 
 **F1 Map budget (Must; after §1.0)**
 - **Files:** `Core.lua:12-13` (defaults become `showMapPins=false` and `showQuestGivers=false`) · `Pins.lua:77-94` (`RefreshAllData`: givers gated on `showMapPins and showQuestGivers` only, independent of SPF guiding; rings keep `Active()`, extended by the preview flag `Pins.previewJourney`) · `Settings.lua` tooltips. The giver layer stays: the `questoffer` probe found no stock givers (§1.0).
@@ -333,7 +340,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
   - `types/Namespace.lua:58-60` and `:62` (`legacy`, `professions`, `zone`, `pinned`; `skipped` stays), `:79` (`AGFStep.pinned`), `:89-100` (`AGFZoneChoice`, `route.zones`, `route.zone`), `:142` (`TogglePin`);
   - `tests/model_spec.lua:40`, `:119-126`, `:166-167`;
   - README/CHANGELOG pin copy (in the docs step);
-  - TOC: `## OptionalDeps: ShortestPathForever` (was `…, TweaksForever, LegacyForever`); `Notes` no longer says "3-5" (**landed early, after commit 17:** with `AGFRoute.steps`' "3-5 steps" description, since `MAX_STEPS` is 9 and the copy was already wrong);
+  - TOC: `## OptionalDeps: ShortestPathForever` (was `…, TweaksForever, LegacyForever`; **landed early with F0b**; F16 reads Tweaks Forever at rebuild time, so load order does not matter); `Notes` no longer says "3-5" (**landed early, after commit 17:** with `AGFRoute.steps`' "3-5 steps" description, since `MAX_STEPS` is 9 and the copy was already wrong);
   - `Panel.xml:3`: the comment names `QuestLogTabButtonTemplate`, but Panel.lua:704 uses `LargeSideTabButtonTemplate`; it names the real template;
   - `Integrations.lua:11-17`: types move to `types/Namespace.lua` (lands with §1.6), and `REQUIRED` detection is added. `AGFSPFAPI.Cancel` becomes `fun(owner: string): boolean`, `Navigate`'s `title` becomes optional, and `NavigateRoute`/`CurrentStop` become required (they are v1 members in SPF).
   - `includeDungeonsDefault` stays: it seeds each new character's `prefs.dungeons` (Core.lua:57), which the cog menu then toggles.
@@ -367,10 +374,21 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 - **APIs:** `PlaySound(soundKitID, ...) -> success, handle` (DOC/SoundDocumentation.lua:52) with `SOUNDKIT.UI_SCENARIO_STAGE_END` = 31757 (`BLZ/Blizzard_SharedXML/Mainline/SoundKitConstants.lua:125`).
 - **Acceptance:** "Finishing a proven chain glows once and plays 1 sound; an unproven chain plays 0" → `ui_spec` (fanfare keys and `PlaySound` count). The `/reload` check 9 must pass before release.
 
-**F12 Interleaving plus 2-opt over ≤ 9 stops (Should)**
-- **Files:** `Model.lua` (after selection: nearest-neighbour over turn-ins and pickups together, then 2-opt on the F0 cost).
+**F12 Continent-aware ordering (Must; moved up to right after commit 17)**
+- **Files:**
+  - `tools/gen_quests.py` + `Data/Quests.lua` (regenerated): each `maps` entry gains its English `name` and its size in yards (`sx` along map x, `sy` along map y); a new `continents[MapID] = {x, y}` shifts each continent's world frame onto UiMap 947 (Azeroth), from its two whole-continent `UiMapAssignment` rows, so both continents share one frame in yards. `tools/gen_quests_test.py` covers Darkshore's size and Kalimdor's shift.
+  - `Model.lua`:
+    - **Cost**: one number in yards. The same continent: the straight distance between the two places. Another continent: `CROSSING` (a fixed 10,000 yards for the dock, the wait and the sail, which a straight line cannot see) plus the distance on the Azeroth frame. A place with no geometry costs more than any crossing, so it goes last and never ties by accident.
+    - **Selection**: pinned steps first (they keep their priority), then, until 9, the candidate cheapest to reach from the player or any step already selected. No phase: a far turn-in cannot push out a nearby pickup.
+    - **Order**: group by continent, the player's first, then the others by the cost of reaching them, so the route crosses at most once. In each group, nearest neighbour from where the previous group ended, then 2-opt on the same cost with that start fixed. Turn-ins on a continent other than the player's go at the end of their group, with the reason `Hand in when you're in <zone>` (`ns.L`, sentence case, the zone named by `C_Map.GetMapInfo` through `Model.Plan`'s optional `mapName`, else the data's `name`). Pinned steps are ordered by cost too.
+  - `Core.lua`: `BuildRoute` passes `ns.State.MapName`.
+- **Types:** `AGFMapCentre` gains `name`, `sx`, `sy`; `AGFData.continents`; `AGFModel.Plan` gains `mapName?`; `AGFStrings.HAND_IN_WHEN`.
 - **Combat.** `Core.lua`'s `Rebuild` checks `InCombatLockdown()`: in combat it runs only the cheap path (the carry journey's log steps via `LogSteps`; other cards keep the last full build; no `Journeys`, `Story` or 2-opt), sets `pendingFull`, and registers `PLAYER_REGEN_ENABLED` once to run the full rebuild. Event-driven, no timer. `ns.Route()`'s lazy path follows the same rule. (Lands with F2 so the rule exists before the heavier builds; F12 only adds 2-opt to the full path.)
-- **Acceptance:** "Routes zig-zag less, and no step is added or lost" → `plan_golden_spec`: per fixture, the step key set is unchanged, and summed map distance ≤ the F0 golden value. The spec prints the count of fixtures that improved. `ui_spec` assert 6 (§1.1) and `plan_bench` stay green.
+- **Acceptance:**
+  - "A route crosses the ocean at most once, and a turn-in over there waits until you are there" → `plan_golden_spec`: `ne21_crosszone` has exactly one continent change and the Stormwind turn-in (`turnin:168`) last, reading "Hand in when you're in Stormwind City"; every fixture has at most one continent change.
+  - "A far turn-in never displaces a near pickup" → `model_spec`: 9 pickups on the player's map and 1 turn-in on another continent give the 9 pickups, and with 8 pickups the turn-in is 9th.
+  - "Routes zig-zag less" → the goldens are rewritten deliberately (`AGF_UPDATE_GOLDEN=1`) and reviewed as text diffs; "a quest whose eligibility the data can't establish is never recommended" stays asserted per step.
+  - `plan_bench` under `AGF_BENCH_STRICT=1` (3 ms) and `ui_spec` stay green. `ui_spec` assert 6 (§1.1) lands with commit 19 as before.
 
 **F13 Go warns before replacing someone else's journey (Should)**
 - **Files:** `Panel.lua` / the menu tooltip.
@@ -413,7 +431,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 
 ## 4. Merge order
 
-1. **SPF PR** `cb/api-detail`: review and merge. cjber tags the SPF release when convenient.
+1. **SPF PR** `cb/api-detail` (#29, which also carries the cross-continent route-preview fix): review and merge. cjber tags the SPF release when convenient. **Tweaks Forever PR #45** merges independently; F16 feature-detects it.
 2. **AGF PR** `cb/journeys`. AGF runs on any SPF version:
    - `REQUIRED` covers only the v1 members;
    - `EstimateDetail` and `Active` are checked with `type(api.X) == "function"` where they are used;
@@ -440,6 +458,8 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 | 6 | Click a log quest in the tracker, then enter combat (attack a training dummy or a mob) and click again | Blizzard's details open and the guide closes. In combat nothing opens | SHOT, TAINT (expect 0 AGF lines) |
 | 7 | Set your own map waypoint, press Go with SPF disabled (`/disable ShortestPathForever`, `/reload`), then move the waypoint by hand and press Stop | Your own waypoint survives Stop. The tracker has no travel line | SHOT map, SV |
 | 7b | Press Go without SPF, `/reload`, press Stop | Stop is still offered, and clears AGF's waypoint | SHOT map |
+| 7c | With SPF enabled, press Go on a step SPF cannot route (e.g. inside a city with no navmesh) | The native waypoint appears instead of nothing | SHOT map |
+| 7d | As a night elf in Darkshore carrying a finished Stormwind quest, open the guide and press Go | The route stays on Kalimdor, crosses once, and ends with "Hand in when you're in Stormwind City"; SPF (with PR #29) draws the boat, not dots over the sea | SHOT map (Azeroth view), SV |
 | 8 | With SPF enabled (the release with `EstimateDetail`), press Go | The tracker reads "Fly to … · N min" or, for a short trip, "Walk to … · N min". On an SPF build without `EstimateDetail` it reads "About N min away"; on v1.1.0 there is no line | SHOT tracker |
 | 9 | Hand in the last quest of a chain the panel showed as "Chapter N of N" | "Story complete", the header glows once, and the stage-end sound plays. No toast | SHOT tracker (right after the turn-in), SV |
 | 10 | `/reload` | No resume line appears | SHOT tracker |
@@ -476,7 +496,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 14. `tools: screenshots rendered from layout.json, with stock-template chrome`
 15. `tools(screenshots): Shortest Path route geometry from Path.FindSync`
 16. `tools(screenshots): manifest and compare montages against Legacy Forever and SkillUp`
-17. `refactor: ns.L table for copy` (F14 part 1; Core.lua's chat lines move in, the other files wait for 42), then `fix: drop the stale "3-5 steps" copy from the TOC and types` (part of 37, pulled forward; it keeps no number so later numbers hold)
+17. `refactor: ns.L table for copy` (F14 part 1; Core.lua's chat lines move in, the other files wait for 42), then `fix: drop the stale "3-5 steps" copy from the TOC and types` (part of 37, pulled forward; it keeps no number so later numbers hold), then `fix(integrations): fall back to the native waypoint when Shortest Path declines` (F0b, with 37's OptionalDeps line), then `feat(gen): map names, sizes and the Azeroth frame` and `feat(model): continent-aware ordering` (40, moved up as F12)
     — gate: §1.0 probe results read —
 18. `feat(map)!: pins and givers off by default; givers ignore guiding` (F1)
 19. `feat(core): cheap rebuild in combat, full rebuild after` (combat rule, F12 part 1)
@@ -500,7 +520,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 37. `chore: drop legacy and professions prefs, and fix stale TOC and XML copy` (F9 remainder)
 38. `feat(integrations): travel line from EstimateDetail, falling back to Estimate` (F10; bumps `SPF_SHA`)
 39. `feat(tracker): chapter-end fanfare` (F11)
-40. `feat(model): interleave steps and remove zig-zags` (F12)
+40. (landed early, after 17, as continent-aware ordering: F12)
 41. `feat: warn before replacing another addon's journey` (F13)
 42. `refactor: remaining copy into L, and the copy lint` (F14 part 2)
 43. `fix(model): log quests are never hidden by the quest or dungeon filters` (F15 part 1)
