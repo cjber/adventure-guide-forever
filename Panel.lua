@@ -1,7 +1,6 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
-local MAX_ZONES = 3
 local PAD = 8
 local ROW_HEIGHT = 44
 local ROW_GAP = 2
@@ -9,11 +8,6 @@ local ROUTE_TOP = 34
 -- The quest log's own geometry: a 29px search bar above the list, a 40px footer below it for the Go button.
 local TOP_BAR = 29
 local FOOTER = 40
-local CARD_HEIGHT = 64
--- Classic's XP bar colours: blue while rested XP remains, purple once it runs out.
-local XP_RESTED = { 0, 0.39, 0.88 }
-local XP_NORMAL = { 0.58, 0, 0.55 }
-local BUBBLES = 20
 
 ---@type Frame?
 local panel
@@ -21,16 +15,8 @@ local panel
 local guideTab
 ---@type AGFTabButton?
 local questsTab
----@type FontString?
-local levelText
----@type StatusBar?
-local xpBar
----@type StatusBar?
-local restedBar
 ---@type AGFChip[]
 local chips = {}
----@type AGFZoneCard[]
-local cards = {}
 ---@type FontString?
 local routeLabel
 ---@type AGFRouteRow[]
@@ -49,24 +35,6 @@ local Refresh
 local emptyText
 ---@type Button?
 local goButton
-
----@class AGFEdgeFrame : Frame, BackdropTemplate
-
----@class AGFEdged : Frame
----@field Edge AGFEdgeFrame
-
--- Classic frame edges, taken from the stock backdrops (tooltip edge for cards, toast edge for
--- the XP bar) on a child frame, so the edge draws over the art it frames.
----@param frame AGFEdged
----@param backdrop {edgeFile: string, edgeSize: number}
----@param outset number
-local function AddEdge(frame, backdrop, outset)
-	local edge = CreateFrame("Frame", nil, frame, "BackdropTemplate") --[[@as AGFEdgeFrame]]
-	edge:SetPoint("TOPLEFT", -outset, outset)
-	edge:SetPoint("BOTTOMRIGHT", outset, -outset)
-	edge:SetBackdrop({ edgeFile = backdrop.edgeFile, edgeSize = backdrop.edgeSize, tileEdge = true })
-	frame.Edge = edge
-end
 
 ---@param step AGFStep
 local function FocusStep(step)
@@ -109,100 +77,6 @@ local function CreateChip(parent, label, pref)
 		ns.Invalidate()
 	end)
 	return chip
-end
-
----@class AGFZoneCard : Button, AGFEdged
----@field Art Texture
----@field Name FontString
----@field Range FontString
----@field BestFit Frame
----@field art? integer uiMapID whose art is loaded
----@field zone? AGFZoneChoice
-
--- The card shows a crop of the zone's own world-map art: the middle tile of its base layer,
--- trimmed to the card's aspect. No per-zone artwork has to ship with the addon.
----@param card AGFZoneCard
----@param mapID integer
-local function SetZoneArt(card, mapID)
-	if card.art == mapID then
-		return
-	end
-	card.art = mapID
-	local layer = (C_Map.GetMapArtLayers(mapID) or {})[1]
-	local textures = C_Map.GetMapArtLayerTextures(mapID, 1)
-	if not (layer and textures and #textures > 0) then
-		card.Art:SetColorTexture(0.12, 0.1, 0.08, 1)
-		return
-	end
-	local columns = math.ceil(layer.layerWidth / layer.tileWidth)
-	local tileRows = math.ceil(layer.layerHeight / layer.tileHeight)
-	local index = math.floor(tileRows / 2) * columns + math.floor(columns / 2) + 1
-	card.Art:SetTexture(textures[index] or textures[1])
-	local width, height = card:GetSize()
-	local trim = (1 - math.min(1, height / width)) / 2
-	card.Art:SetTexCoord(0, 1, trim, 1 - trim)
-end
-
----@param parent Frame
----@return AGFZoneCard
-local function CreateZoneCard(parent)
-	local card = CreateFrame("Button", nil, parent) --[[@as AGFZoneCard]]
-	card:SetHeight(CARD_HEIGHT)
-	card.Art = card:CreateTexture(nil, "BACKGROUND")
-	card.Art:SetAllPoints()
-	local veil = card:CreateTexture(nil, "BORDER")
-	veil:SetAllPoints()
-	veil:SetColorTexture(0, 0, 0, 0.35)
-	local hover = card:CreateTexture(nil, "HIGHLIGHT")
-	hover:SetAllPoints()
-	hover:SetColorTexture(1, 1, 1, 0.1)
-
-	card.Name = card:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-	card.Name:SetPoint("LEFT", 4, 0)
-	card.Name:SetPoint("RIGHT", -4, 0)
-	card.Name:SetPoint("TOP", 0, -14)
-	card.Name:SetShadowOffset(1, -1)
-	card.Range = card:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-	card.Range:SetPoint("TOP", card.Name, "BOTTOM", 0, -2)
-	card.Range:SetShadowOffset(1, -1)
-
-	card.BestFit = CreateFrame("Frame", nil, card)
-	card.BestFit:SetPoint("BOTTOMLEFT", 1, 1)
-	card.BestFit:SetPoint("BOTTOMRIGHT", -1, 1)
-	card.BestFit:SetHeight(15)
-	local band = card.BestFit:CreateTexture(nil, "BACKGROUND")
-	band:SetAllPoints()
-	band:SetColorTexture(0, 0, 0, 0.7)
-	local best = card.BestFit:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-	best:SetPoint("CENTER")
-	best:SetText("Best fit")
-
-	AddEdge(card, BACKDROP_TUTORIAL_16_16, 3)
-	card:SetScript("OnClick", function()
-		local zone = card.zone
-		if not zone then
-			return
-		end
-		local prefs = ns.Prefs()
-		if prefs.zone == zone.map or zone.best then
-			prefs.zone = nil
-		else
-			prefs.zone = zone.map
-		end
-		ns.Invalidate()
-	end)
-	card:SetScript("OnEnter", function(self)
-		local zone = self.zone
-		if zone then
-			ShowTooltip(self, {
-				zone.name,
-				("Levels %d-%d"):format(zone.min, zone.max),
-				("%d quests you can pick up"):format(zone.quests),
-			})
-		end
-	end)
-	card:SetScript("OnLeave", GameTooltip_Hide)
-	return card
 end
 
 ---@class AGFRouteRow : Button
@@ -326,34 +200,6 @@ end
 ---@param parent Frame
 ---@param below Region
 ---@return Frame
-local function BuildExperience(parent, below)
-	local section = CreateSection(parent, below, 48)
-	levelText = section:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-	levelText:SetPoint("TOP", 0, -8)
-
-	restedBar = CreateFrame("StatusBar", nil, section)
-	restedBar:SetPoint("TOPLEFT", 10, -26)
-	restedBar:SetPoint("RIGHT", -10, 0)
-	restedBar:SetHeight(12)
-	restedBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
-	restedBar:SetStatusBarColor(XP_RESTED[1], XP_RESTED[2], XP_RESTED[3], 0.35)
-	local trough = restedBar:CreateTexture(nil, "BACKGROUND")
-	trough:SetAllPoints()
-	trough:SetColorTexture(0, 0, 0, 0.6)
-	AddEdge(restedBar --[[@as AGFEdged]], BACKDROP_TOAST_12_12, 4)
-
-	xpBar = CreateFrame("StatusBar", nil, restedBar)
-	xpBar:SetAllPoints()
-	xpBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
-	local label = xpBar:CreateFontString(nil, "OVERLAY", "TextStatusBarText")
-	label:SetPoint("CENTER", 0, 1)
-	label:SetText("XP")
-	return section
-end
-
----@param parent Frame
----@param below Region
----@return Frame
 local function BuildChips(parent, below)
 	local strip = CreateFrame("Frame", nil, parent)
 	strip:SetPoint("TOPLEFT", below, "BOTTOMLEFT", 0, -8)
@@ -366,37 +212,6 @@ local function BuildChips(parent, below)
 	chips[2]:SetPoint("TOPRIGHT")
 	chips[2]:SetPoint("LEFT", strip, "CENTER", 3, 0)
 	return strip
-end
-
----@param parent Frame
----@param below Region
----@return Frame
-local function BuildZones(parent, below)
-	local section = CreateSection(parent, below, CARD_HEIGHT + 40)
-	local label = section:CreateFontString(nil, "ARTWORK", "GameFontHighlightMedium")
-	label:SetPoint("TOPLEFT", 10, -9)
-	label:SetText("Where next?")
-	for index = 1, MAX_ZONES do
-		local card = CreateZoneCard(section)
-		card:SetPoint("TOP", 0, -32)
-		if index == 1 then
-			card:SetPoint("LEFT", 8, 0)
-		else
-			card:SetPoint("LEFT", cards[index - 1], "RIGHT", 6, 0)
-		end
-		cards[index] = card
-	end
-	section:SetScript("OnSizeChanged", function(_, width)
-		for _, card in ipairs(cards) do
-			card:SetWidth((width - 16 - 6 * (MAX_ZONES - 1)) / MAX_ZONES)
-			-- The crop depends on the card's aspect, so redo it at the new width.
-			card.art = nil
-			if card.zone then
-				SetZoneArt(card, card.zone.map)
-			end
-		end
-	end)
-	return section
 end
 
 ---@param parent Frame
@@ -426,21 +241,6 @@ local function BuildFooter(parent)
 			ns.Integrations.Navigate(step)
 		end
 	end)
-
-	local why = CreateFrame("Button", nil, parent)
-	why:SetSize(90, 26)
-	why:SetPoint("BOTTOMRIGHT", -PAD, 8)
-	why:SetNormalFontObject("GameFontNormal")
-	why:SetHighlightFontObject("GameFontHighlight")
-	why:SetText("Why these?")
-	why:SetScript("OnEnter", function(self)
-		local lines = { "Why these steps?" }
-		for index, step in ipairs(ns.Route().steps) do
-			lines[#lines + 1] = ("%d. %s - %s"):format(index, step.title, step.reason)
-		end
-		ShowTooltip(self, lines)
-	end)
-	why:SetScript("OnLeave", GameTooltip_Hide)
 end
 
 ---@param _ AGFDropdown
@@ -527,43 +327,13 @@ local function BuildContent(panelFrame)
 	BuildTopBar(panelFrame)
 	content = BuildScroll(panelFrame)
 	local header = BuildHeader(content)
-	local experience = BuildExperience(content, header)
-	local strip = BuildChips(content, experience)
-	local zones = BuildZones(content, strip)
-	BuildRoute(content, zones)
+	local strip = BuildChips(content, header)
+	BuildRoute(content, strip)
 	BuildFooter(panelFrame)
 end
 
-local function RefreshExperience()
-	---@cast levelText -?
-	---@cast xpBar -?
-	---@cast restedBar -?
-	local level = UnitLevel("player")
-	local xp, xpMax = UnitXP("player"), UnitXPMax("player")
-	if not (xpMax and xpMax > 0) then
-		levelText:SetText(("|cffffd100Level %d|r"):format(level))
-		xpBar:SetMinMaxValues(0, 1)
-		xpBar:SetValue(1)
-		restedBar:SetValue(0)
-		return
-	end
-	local rested = GetXPExhaustion() or 0
-	local text = ("|cffffd100Level %d|r - %d%% to %d"):format(level, math.floor(xp / xpMax * 100), level + 1)
-	if rested > 0 then
-		text = ("%s - Rested %.1f bubbles"):format(text, rested / (xpMax / BUBBLES))
-	end
-	levelText:SetText(text)
-	local color = rested > 0 and XP_RESTED or XP_NORMAL
-	xpBar:SetStatusBarColor(color[1], color[2], color[3])
-	xpBar:SetMinMaxValues(0, xpMax)
-	xpBar:SetValue(xp)
-	restedBar:SetMinMaxValues(0, xpMax)
-	restedBar:SetValue(math.min(xpMax, xp + rested))
-end
-
----@param route AGFRoute
 ---@param prefs AGFPrefs
-local function RefreshChoices(route, prefs)
+local function RefreshChips(prefs)
 	for _, chip in ipairs(chips) do
 		local on = prefs[chip.pref]
 		chip:SetNormalFontObject(on and "GameFontNormal" or "GameFontDisable")
@@ -571,22 +341,6 @@ local function RefreshChoices(route, prefs)
 			chip:LockHighlight()
 		else
 			chip:UnlockHighlight()
-		end
-	end
-	for index, card in ipairs(cards) do
-		local zone = route.zones[index]
-		card.zone = zone
-		card:SetShown(zone ~= nil)
-		if zone then
-			SetZoneArt(card, zone.map)
-			card.Name:SetText(zone.name)
-			card.Range:SetText(("%d-%d"):format(zone.min, zone.max))
-			card.BestFit:SetShown(zone.best)
-			if zone.map == route.zone then
-				card.Edge:SetBackdropBorderColor(NORMAL_FONT_COLOR:GetRGB())
-			else
-				card.Edge:SetBackdropBorderColor(GRAY_FONT_COLOR:GetRGB())
-			end
 		end
 	end
 end
@@ -659,8 +413,7 @@ function Refresh()
 	---@cast emptyText -?
 	---@cast goButton -?
 	local route = ns.Route()
-	RefreshExperience()
-	RefreshChoices(route, ns.Prefs())
+	RefreshChips(ns.Prefs())
 
 	routeLabel:SetText("Suggested route")
 	if not ns.State.Ready() then

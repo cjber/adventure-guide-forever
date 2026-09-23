@@ -271,7 +271,7 @@
           "relativePoint": "BOTTOMLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[1]",
           "x": 0.00,
-          "y": -6.00
+          "y": -8.00
         },
         {
           "point": "RIGHT",
@@ -285,193 +285,6 @@
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
       "size": [
         0.00,
-        48.00
-      ],
-      "stock": {
-        "Bg": {
-          "shown": false
-        }
-      },
-      "stockTemplate": "InsetFrameTemplate",
-      "type": "Frame"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOP",
-          "relativePoint": "TOP",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
-          "x": 0.00,
-          "y": -8.00
-        }
-      ],
-      "font": "GameFontHighlight",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].FontString[1]",
-      "text": "|cffffd100Level 18|r - 0% to 19",
-      "type": "FontString"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
-          "x": 10.00,
-          "y": -26.00
-        },
-        {
-          "point": "RIGHT",
-          "relativePoint": "RIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
-          "x": -10.00,
-          "y": 0.00
-        }
-      ],
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].StatusBar[1]",
-      "size": [
-        0.00,
-        12.00
-      ],
-      "statusBar": {
-        "color": [
-          0.00,
-          0.39,
-          0.88,
-          0.35
-        ],
-        "max": 10000.00,
-        "min": 0.00,
-        "texture": "Interface\\TargetingFrame\\UI-StatusBar",
-        "value": 0.00
-      },
-      "type": "StatusBar"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].StatusBar[1]",
-          "x": 0.00,
-          "y": 0.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].StatusBar[1]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "color": [
-        0.00,
-        0.00,
-        0.00,
-        0.60
-      ],
-      "layer": "BACKGROUND",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].StatusBar[1].Texture[1]",
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].StatusBar[1]",
-          "x": -4.00,
-          "y": 4.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].StatusBar[1]",
-          "x": 4.00,
-          "y": -4.00
-        }
-      ],
-      "backdrop": {
-        "edgeFile": "Interface\\FriendsFrame\\UI-Toast-Border",
-        "edgeSize": 12.00,
-        "tileEdge": true
-      },
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].StatusBar[1].Edge",
-      "stockTemplate": "BackdropTemplate",
-      "type": "Frame"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].StatusBar[1]",
-          "x": 0.00,
-          "y": 0.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].StatusBar[1]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].StatusBar[1].StatusBar[1]",
-      "statusBar": {
-        "color": [
-          0.58,
-          0.00,
-          0.55,
-          1.00
-        ],
-        "max": 10000.00,
-        "min": 0.00,
-        "texture": "Interface\\TargetingFrame\\UI-StatusBar",
-        "value": 0.00
-      },
-      "type": "StatusBar"
-    },
-    {
-      "anchors": [
-        {
-          "point": "CENTER",
-          "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].StatusBar[1].StatusBar[1]",
-          "x": 0.00,
-          "y": 1.00
-        }
-      ],
-      "font": "TextStatusBarText",
-      "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].StatusBar[1].StatusBar[1].FontString[1]",
-      "text": "XP",
-      "type": "FontString"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "BOTTOMLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
-          "x": 0.00,
-          "y": -8.00
-        },
-        {
-          "point": "RIGHT",
-          "relativePoint": "RIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild",
-          "x": -8.00,
-          "y": 0.00
-        }
-      ],
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3]",
-      "size": [
-        0.00,
         24.00
       ],
       "type": "Frame"
@@ -481,14 +294,14 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
           "x": 0.00,
           "y": 0.00
         },
         {
           "point": "RIGHT",
           "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
           "x": -3.00,
           "y": 0.00
         }
@@ -497,7 +310,7 @@
       "highlightLocked": true,
       "normalFont": "GameFontNormal",
       "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1]",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[1]",
       "size": [
         0.00,
         24.00
@@ -511,14 +324,14 @@
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
           "x": 0.00,
           "y": 0.00
         },
         {
           "point": "LEFT",
           "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
           "x": 3.00,
           "y": 0.00
         }
@@ -527,7 +340,7 @@
       "highlightLocked": false,
       "normalFont": "GameFontDisable",
       "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2]",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[2]",
       "size": [
         0.00,
         24.00
@@ -541,7 +354,7 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "BOTTOMLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
           "x": 0.00,
           "y": -6.00
         },
@@ -554,674 +367,7 @@
         }
       ],
       "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4]",
-      "size": [
-        0.00,
-        104.00
-      ],
-      "stock": {
-        "Bg": {
-          "shown": false
-        }
-      },
-      "stockTemplate": "InsetFrameTemplate",
-      "type": "Frame"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4]",
-          "x": 10.00,
-          "y": -9.00
-        }
-      ],
-      "font": "GameFontHighlightMedium",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].FontString[1]",
-      "text": "Where next?",
-      "type": "FontString"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOP",
-          "relativePoint": "TOP",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4]",
-          "x": 0.00,
-          "y": -32.00
-        },
-        {
-          "point": "LEFT",
-          "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4]",
-          "x": 8.00,
-          "y": 0.00
-        }
-      ],
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1]",
-      "size": [
-        0.00,
-        64.00
-      ],
-      "type": "Button"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1]",
-          "x": 0.00,
-          "y": 0.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "color": [
-        0.12,
-        0.10,
-        0.08,
-        1.00
-      ],
-      "layer": "BACKGROUND",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1].Art",
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1]",
-          "x": 0.00,
-          "y": 0.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "color": [
-        0.00,
-        0.00,
-        0.00,
-        0.35
-      ],
-      "layer": "BORDER",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1].Texture[1]",
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1]",
-          "x": 0.00,
-          "y": 0.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "color": [
-        1.00,
-        1.00,
-        1.00,
-        0.10
-      ],
-      "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1].Texture[2]",
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "LEFT",
-          "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1]",
-          "x": 4.00,
-          "y": 0.00
-        },
-        {
-          "point": "RIGHT",
-          "relativePoint": "RIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1]",
-          "x": -4.00,
-          "y": 0.00
-        },
-        {
-          "point": "TOP",
-          "relativePoint": "TOP",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1]",
-          "x": 0.00,
-          "y": -14.00
-        }
-      ],
-      "font": "GameFontHighlight",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1].Name",
-      "text": "The Barrens",
-      "type": "FontString"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOP",
-          "relativePoint": "BOTTOM",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1].Name",
-          "x": 0.00,
-          "y": -2.00
-        }
-      ],
-      "font": "GameFontHighlight",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1].Range",
-      "text": "10-25",
-      "type": "FontString"
-    },
-    {
-      "anchors": [
-        {
-          "point": "BOTTOMLEFT",
-          "relativePoint": "BOTTOMLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1]",
-          "x": 1.00,
-          "y": 1.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1]",
-          "x": -1.00,
-          "y": 1.00
-        }
-      ],
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1].BestFit",
-      "size": [
-        0.00,
-        15.00
-      ],
-      "type": "Frame"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1].BestFit",
-          "x": 0.00,
-          "y": 0.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1].BestFit",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "color": [
-        0.00,
-        0.00,
-        0.00,
-        0.70
-      ],
-      "layer": "BACKGROUND",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1].BestFit.Texture[1]",
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "CENTER",
-          "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1].BestFit",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "font": "GameFontNormalSmall",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1].BestFit.FontString[1]",
-      "text": "Best fit",
-      "type": "FontString"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1]",
-          "x": -3.00,
-          "y": 3.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1]",
-          "x": 3.00,
-          "y": -3.00
-        }
-      ],
-      "backdrop": {
-        "edgeFile": "Interface\\Tooltips\\UI-Tooltip-Border",
-        "edgeSize": 16.00,
-        "tileEdge": true
-      },
-      "backdropBorderColor": [
-        1.00,
-        0.82,
-        0.00
-      ],
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1].Edge",
-      "stockTemplate": "BackdropTemplate",
-      "type": "Frame"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOP",
-          "relativePoint": "TOP",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4]",
-          "x": 0.00,
-          "y": -32.00
-        },
-        {
-          "point": "LEFT",
-          "relativePoint": "RIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[1]",
-          "x": 6.00,
-          "y": 0.00
-        }
-      ],
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2]",
-      "size": [
-        0.00,
-        64.00
-      ],
-      "type": "Button"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2]",
-          "x": 0.00,
-          "y": 0.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "color": [
-        0.12,
-        0.10,
-        0.08,
-        1.00
-      ],
-      "layer": "BACKGROUND",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2].Art",
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2]",
-          "x": 0.00,
-          "y": 0.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "color": [
-        0.00,
-        0.00,
-        0.00,
-        0.35
-      ],
-      "layer": "BORDER",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2].Texture[1]",
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2]",
-          "x": 0.00,
-          "y": 0.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "color": [
-        1.00,
-        1.00,
-        1.00,
-        0.10
-      ],
-      "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2].Texture[2]",
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "LEFT",
-          "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2]",
-          "x": 4.00,
-          "y": 0.00
-        },
-        {
-          "point": "RIGHT",
-          "relativePoint": "RIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2]",
-          "x": -4.00,
-          "y": 0.00
-        },
-        {
-          "point": "TOP",
-          "relativePoint": "TOP",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2]",
-          "x": 0.00,
-          "y": -14.00
-        }
-      ],
-      "font": "GameFontHighlight",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2].Name",
-      "text": "Stonetalon Mountains",
-      "type": "FontString"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOP",
-          "relativePoint": "BOTTOM",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2].Name",
-          "x": 0.00,
-          "y": -2.00
-        }
-      ],
-      "font": "GameFontHighlight",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2].Range",
-      "text": "15-27",
-      "type": "FontString"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2]",
-          "x": -3.00,
-          "y": 3.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2]",
-          "x": 3.00,
-          "y": -3.00
-        }
-      ],
-      "backdrop": {
-        "edgeFile": "Interface\\Tooltips\\UI-Tooltip-Border",
-        "edgeSize": 16.00,
-        "tileEdge": true
-      },
-      "backdropBorderColor": [
-        0.50,
-        0.50,
-        0.50
-      ],
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2].Edge",
-      "stockTemplate": "BackdropTemplate",
-      "type": "Frame"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOP",
-          "relativePoint": "TOP",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4]",
-          "x": 0.00,
-          "y": -32.00
-        },
-        {
-          "point": "LEFT",
-          "relativePoint": "RIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[2]",
-          "x": 6.00,
-          "y": 0.00
-        }
-      ],
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3]",
-      "size": [
-        0.00,
-        64.00
-      ],
-      "type": "Button"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3]",
-          "x": 0.00,
-          "y": 0.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "color": [
-        0.12,
-        0.10,
-        0.08,
-        1.00
-      ],
-      "layer": "BACKGROUND",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3].Art",
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3]",
-          "x": 0.00,
-          "y": 0.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "color": [
-        0.00,
-        0.00,
-        0.00,
-        0.35
-      ],
-      "layer": "BORDER",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3].Texture[1]",
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3]",
-          "x": 0.00,
-          "y": 0.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "color": [
-        1.00,
-        1.00,
-        1.00,
-        0.10
-      ],
-      "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3].Texture[2]",
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "LEFT",
-          "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3]",
-          "x": 4.00,
-          "y": 0.00
-        },
-        {
-          "point": "RIGHT",
-          "relativePoint": "RIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3]",
-          "x": -4.00,
-          "y": 0.00
-        },
-        {
-          "point": "TOP",
-          "relativePoint": "TOP",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3]",
-          "x": 0.00,
-          "y": -14.00
-        }
-      ],
-      "font": "GameFontHighlight",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3].Name",
-      "text": "Westfall",
-      "type": "FontString"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOP",
-          "relativePoint": "BOTTOM",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3].Name",
-          "x": 0.00,
-          "y": -2.00
-        }
-      ],
-      "font": "GameFontHighlight",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3].Range",
-      "text": "10-20",
-      "type": "FontString"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3]",
-          "x": -3.00,
-          "y": 3.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3]",
-          "x": 3.00,
-          "y": -3.00
-        }
-      ],
-      "backdrop": {
-        "edgeFile": "Interface\\Tooltips\\UI-Tooltip-Border",
-        "edgeSize": 16.00,
-        "tileEdge": true
-      },
-      "backdropBorderColor": [
-        0.50,
-        0.50,
-        0.50
-      ],
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4].Button[3].Edge",
-      "stockTemplate": "BackdropTemplate",
-      "type": "Frame"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "BOTTOMLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[4]",
-          "x": 0.00,
-          "y": -6.00
-        },
-        {
-          "point": "RIGHT",
-          "relativePoint": "RIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild",
-          "x": -8.00,
-          "y": 0.00
-        }
-      ],
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5]",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3]",
       "size": [
         0.00,
         132.00
@@ -1239,14 +385,14 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3]",
           "x": 10.00,
           "y": -9.00
         }
       ],
       "font": "GameFontHighlightMedium",
       "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].FontString[1]",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].FontString[1]",
       "text": "Suggested route",
       "type": "FontString"
     },
@@ -1255,20 +401,20 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3]",
           "x": 6.00,
           "y": -34.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3]",
           "x": -6.00,
           "y": -34.00
         }
       ],
       "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1]",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1]",
       "size": [
         0.00,
         44.00
@@ -1280,21 +426,21 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1]",
           "x": 0.00,
           "y": 0.00
         },
         {
           "point": "BOTTOMRIGHT",
           "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1]",
           "x": 0.00,
           "y": 0.00
         }
       ],
       "atlas": "PetList-ButtonBackground",
       "layer": "BACKGROUND",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1].Texture[1]",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1].Texture[1]",
       "type": "Texture"
     },
     {
@@ -1302,21 +448,21 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1]",
           "x": 0.00,
           "y": 0.00
         },
         {
           "point": "BOTTOMRIGHT",
           "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1]",
           "x": 0.00,
           "y": 0.00
         }
       ],
       "atlas": "PetList-ButtonSelect",
       "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1].Selected",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1].Selected",
       "type": "Texture"
     },
     {
@@ -1324,14 +470,14 @@
         {
           "point": "LEFT",
           "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1]",
           "x": 6.00,
           "y": 0.00
         }
       ],
       "atlas": "adventureguide-ring",
       "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1].Ring",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1].Ring",
       "size": [
         26.00,
         26.00
@@ -1343,14 +489,14 @@
         {
           "point": "CENTER",
           "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1].Ring",
           "x": 0.00,
           "y": 0.00
         }
       ],
       "atlas": "services-number-1",
       "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1].Number",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1].Number",
       "size": [
         22.00,
         25.00
@@ -1362,14 +508,14 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1].Ring",
           "x": 8.00,
           "y": 4.00
         },
         {
           "point": "RIGHT",
           "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1].PinButton",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1].PinButton",
           "x": -4.00,
           "y": 0.00
         }
@@ -1377,7 +523,7 @@
       "font": "GameFontNormalMed3",
       "justifyH": "LEFT",
       "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1].Title",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1].Title",
       "text": "Turn in: The Zhevra",
       "type": "FontString",
       "wordWrap": false
@@ -1387,7 +533,7 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "BOTTOMLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1].Title",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1].Title",
           "x": 0.00,
           "y": -4.00
         }
@@ -1395,7 +541,7 @@
       "font": "GameFontHighlightSmall",
       "justifyH": "LEFT",
       "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1].Detail",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1].Detail",
       "text": "ready to hand in",
       "type": "FontString",
       "wordWrap": false
@@ -1405,14 +551,14 @@
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1]",
           "x": -6.00,
           "y": -7.00
         }
       ],
       "normalAtlas": "common-icon-redx",
       "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1].SkipButton",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1].SkipButton",
       "size": [
         14.00,
         14.00
@@ -1424,14 +570,14 @@
         {
           "point": "RIGHT",
           "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1].SkipButton",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1].SkipButton",
           "x": -6.00,
           "y": 0.00
         }
       ],
       "normalAtlas": "Waypoint-MapPin-Untracked",
       "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[1].PinButton",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[1].PinButton",
       "size": [
         18.00,
         18.00
@@ -1444,20 +590,20 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3]",
           "x": 6.00,
           "y": -80.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3]",
           "x": -6.00,
           "y": -80.00
         }
       ],
       "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2]",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2]",
       "size": [
         0.00,
         44.00
@@ -1469,21 +615,21 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2]",
           "x": 0.00,
           "y": 0.00
         },
         {
           "point": "BOTTOMRIGHT",
           "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2]",
           "x": 0.00,
           "y": 0.00
         }
       ],
       "atlas": "PetList-ButtonBackground",
       "layer": "BACKGROUND",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2].Texture[1]",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2].Texture[1]",
       "type": "Texture"
     },
     {
@@ -1491,14 +637,14 @@
         {
           "point": "LEFT",
           "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2]",
           "x": 6.00,
           "y": 0.00
         }
       ],
       "atlas": "adventureguide-ring",
       "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2].Ring",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2].Ring",
       "size": [
         26.00,
         26.00
@@ -1510,14 +656,14 @@
         {
           "point": "CENTER",
           "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2].Ring",
           "x": 0.00,
           "y": 0.00
         }
       ],
       "atlas": "services-number-2",
       "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2].Number",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2].Number",
       "size": [
         22.00,
         25.00
@@ -1529,14 +675,14 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2].Ring",
           "x": 8.00,
           "y": 4.00
         },
         {
           "point": "RIGHT",
           "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2].PinButton",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2].PinButton",
           "x": -4.00,
           "y": 0.00
         }
@@ -1544,7 +690,7 @@
       "font": "GameFontNormalMed3",
       "justifyH": "LEFT",
       "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2].Title",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2].Title",
       "text": "Gann's Reclamation",
       "type": "FontString",
       "wordWrap": false
@@ -1554,7 +700,7 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "BOTTOMLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2].Title",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2].Title",
           "x": 0.00,
           "y": -4.00
         }
@@ -1562,7 +708,7 @@
       "font": "GameFontHighlightSmall",
       "justifyH": "LEFT",
       "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2].Detail",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2].Detail",
       "text": "quests in progress",
       "type": "FontString",
       "wordWrap": false
@@ -1572,14 +718,14 @@
         {
           "point": "LEFT",
           "relativePoint": "RIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2].Detail",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2].Detail",
           "x": 6.00,
           "y": 0.00
         }
       ],
       "font": "GameFontDisableSmall",
       "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2].Tag",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2].Tag",
       "text": "optional",
       "type": "FontString"
     },
@@ -1588,14 +734,14 @@
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2]",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2]",
           "x": -6.00,
           "y": -7.00
         }
       ],
       "normalAtlas": "common-icon-redx",
       "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2].SkipButton",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2].SkipButton",
       "size": [
         14.00,
         14.00
@@ -1607,14 +753,14 @@
         {
           "point": "RIGHT",
           "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2].SkipButton",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2].SkipButton",
           "x": -6.00,
           "y": 0.00
         }
       ],
       "normalAtlas": "Waypoint-MapPin-Untracked",
       "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[5].Button[2].PinButton",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[3].Button[2].PinButton",
       "size": [
         18.00,
         18.00
@@ -1640,27 +786,6 @@
       ],
       "stockTemplate": "UIPanelButtonTemplate",
       "text": "Set waypoint",
-      "type": "Button"
-    },
-    {
-      "anchors": [
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel",
-          "x": -8.00,
-          "y": 8.00
-        }
-      ],
-      "highlightFont": "GameFontHighlight",
-      "normalFont": "GameFontNormal",
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Button[2]",
-      "size": [
-        90.00,
-        26.00
-      ],
-      "text": "Why these?",
       "type": "Button"
     }
   ]

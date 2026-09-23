@@ -3,20 +3,20 @@
 -- text or layout is retyped in Python. Not a spec: it checks nothing and prints one JSON object.
 --
 -- input.json comes from screenshots.py's layout pass: `rects` (per scene, a path -> {left, bottom, width, height}
--- map it resolved from the previous run) and `mapArt` (per uiMapID, the art layer and tile file IDs the client's
--- C_Map would return). With no input the panel is exactly tests/golden/layout.json, which screenshots.py checks.
+-- map it resolved from the previous run). With no input the panel is exactly tests/golden/layout.json, which
+-- screenshots.py checks.
 local harness, json = dofile("tests/harness.lua"), dofile("tests/json.lua")
 local QUERY = "8 quests"
 
-local input = { rects = {}, mapArt = {} }
+local input = { rects = {} }
 if arg[1] then
 	local handle = assert(io.open(arg[1]))
 	input = json.decode(handle:read("*a"))
 	handle:close()
 end
 
--- The uiMaps whose art the panel asked for, so the next run can hand it over, and every harness, for its errors.
-local requested, loaded = {}, {}
+-- Every harness, for its errors.
+local loaded = {}
 
 -- ui_spec's level-18 orc shaman in The Barrens: one quest ready to hand in, one under way.
 local function Load(spf)
@@ -31,15 +31,6 @@ local function Load(spf)
 		},
 	})
 	loaded[#loaded + 1] = h
-	h.G.C_Map.GetMapArtLayers = function(map)
-		requested[#requested + 1] = map
-		local art = input.mapArt[tostring(map)]
-		return art and { art.layer }
-	end
-	h.G.C_Map.GetMapArtLayerTextures = function(map)
-		local art = input.mapArt[tostring(map)]
-		return art and art.textures
-	end
 	return h
 end
 
@@ -147,5 +138,4 @@ for _, each in ipairs(loaded) do
 		out.errors[#out.errors + 1] = err
 	end
 end
-out.mapArtRequests = requested
 io.write(json.encode(out, "%.10g"))

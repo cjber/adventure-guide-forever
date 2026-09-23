@@ -172,7 +172,7 @@ def layout_pass(ui, scenes, known):
     golden = json.loads(GOLDEN.read_text())["layout"]
     if data["panel"]["layout"] != golden:
         sys.exit("tests/scenes.lua's panel differs from tests/golden/layout.json: update its fixture to ui_spec's")
-    inputs = {"mapArt": {str(m): map_art_layer(ui, m) for m in sorted(set(data["mapArtRequests"]))}, "rects": {}}
+    inputs = {"rects": {}}
     for _ in range(LAYOUT_PASSES):
         data = run_scenes(inputs)
         rects = {scene: layout_rects(ui, data[scene]["layout"], known) for scene in scenes}
@@ -197,34 +197,10 @@ def load_wowmock():
         import wowmock
 
         wm = wowmock
-        # Blizzard_Fonts_Shared/FontStyles.xml: GameFontNormalMed3 (SystemFont_Med3, shadowed) and GameFontDisable;
-        # TextStatusBarText is SystemFont_Outline_Small.
+        # Blizzard_Fonts_Shared/FontStyles.xml: GameFontNormalMed3 (SystemFont_Med3, shadowed) and GameFontDisable.
         wm.FONTS.setdefault("GameFontNormalMed3", wm.Font(wm.FRIZQT, 14, wm.NORMAL, (1, -1)))
         wm.FONTS.setdefault("GameFontDisable", wm.Font(wm.FRIZQT, 12, (0.5, 0.5, 0.5), (1, -1)))
-        wm.FONTS.setdefault("TextStatusBarText", wm.Font(wm.FRIZQT, 10, wm.WHITE, None, True))
     return wm
-
-
-def map_art_layer(ui, map_id):
-    """What C_Map.GetMapArtLayers(map)[1] and GetMapArtLayerTextures(map, 1) return: the base layer's size and tile
-    size, and its tiles' file IDs in row-major order."""
-    art = wm.map_art_id(ui, map_id)
-    style = ui.table("UiMapArt")[art]["UiMapArtStyleID"]
-    layer = next(
-        r for r in ui.table("UiMapArtStyleLayer").values() if r["UiMapArtStyleID"] == style and r["LayerIndex"] == "0"
-    )
-    tiles = sorted(
-        (int(t["RowIndex"]), int(t["ColIndex"]), int(t["FileDataID"]))
-        for t in ui.table("UiMapArtTile").values()
-        if t["UiMapArtID"] == art and t["LayerIndex"] == "0"
-    )
-    keys = {
-        "layerWidth": "LayerWidth",
-        "layerHeight": "LayerHeight",
-        "tileWidth": "TileWidth",
-        "tileHeight": "TileHeight",
-    }
-    return {"layer": {k: int(layer[v]) for k, v in keys.items()}, "textures": [fdid for _, _, fdid in tiles]}
 
 
 def font(name):
@@ -320,42 +296,6 @@ def draw_inset(canvas, entry, rect, layer):
         wm.tiled(canvas, marble, x, y, w, h, marble.width / canvas.ui.scale, marble.height / canvas.ui.scale)
     elif layer == "FRAME":
         canvas.nine_slice(wm.INSET_FRAME_LAYOUT, x, y, w, h)
-
-
-def backdrop_edges(canvas, x, y, w, h, file, edge, color):
-    """Backdrop.lua's border from any edgeFile: eight edge-sized cells (left, right, top, bottom edges, then the four
-    corners) with 1/128 horizontal and 1/16 vertical texel insets on the corners, the top and bottom edges the
-    vertical strips turned; wowmock.tooltip_backdrop's recipe with the file and size free."""
-    ui = canvas.ui
-    corners = ((x, y), (x + w - edge, y), (x, y + h - edge), (x + w - edge, y + h - edge))
-    for index, (left, top) in enumerate(corners, 4):
-        piece = wm.crop_coords(file, index / 8 + 1 / 128, (index + 1) / 8 - 1 / 128, 1 / 16, 15 / 16)
-        canvas.draw(piece, left, top, edge, edge, color)
-    strips = (
-        (x, y + edge, h - 2 * edge, False),
-        (x + w - edge, y + edge, h - 2 * edge, False),
-        (x + edge, y, w - 2 * edge, True),
-        (x + edge, y + h - edge, w - 2 * edge, True),
-    )
-    for index, (left, top, length, horizontal) in enumerate(strips):
-        if length <= 0:
-            continue
-        piece = wm.crop_coords(file, index / 8 + 1 / 128, (index + 1) / 8 - 1 / 128, 0, 1)
-        if horizontal:
-            piece = piece.transpose(wm.Image.Transpose.ROTATE_270)
-        strip = ui.canvas(length if horizontal else edge, edge if horizontal else length)
-        wm.tiled(strip, wm.tint(piece, color), 0, 0, strip.width, strip.height, edge, edge)
-        canvas.paste(strip, left, top)
-
-
-def draw_backdrop(canvas, entry, rect, layer):
-    """BackdropTemplate (Blizzard_SharedXML/Backdrop.lua): the edgeFile at edgeSize in the border colour (no bgFile
-    is set by the addon)."""
-    backdrop = entry.get("backdrop")
-    if layer == "BACKGROUND" and backdrop and backdrop.get("edgeFile"):
-        color = tuple(entry.get("backdropBorderColor") or (1, 1, 1))
-        file = texture(canvas.ui, backdrop["edgeFile"])
-        backdrop_edges(canvas, *rect, file, backdrop["edgeSize"], (*color[:3], 1))
 
 
 def button_font(entry, normal, highlight, disabled):
@@ -456,7 +396,6 @@ def draw_scroll_frame(canvas, entry, rect, layer, child_height=None):
 
 # name: (draw(canvas, entry, rect, layer), its <Size> or None, its own <Anchors> or None, frameLevel)
 STOCK = {
-    "BackdropTemplate": (draw_backdrop, None, None, 0),
     "InputBoxVisualTemplate": (draw_input_box, None, None, 0),
     "InsetFrameTemplate": (draw_inset, None, None, 0),
     "LargeSideTabButtonTemplate": (draw_side_tab, tab_size, None, 0),
@@ -552,19 +491,6 @@ def draw_font_string(canvas, entry, rect, alpha):
         canvas.paste(target, 0, 0)
 
 
-def draw_status_bar(canvas, entry, rect, alpha):
-    """A StatusBar's fill: its texture cropped to the value's share (StatusBar's default fill style)."""
-    bar = entry["statusBar"]
-    low, high, value = bar.get("min", 0), bar.get("max", 1), bar.get("value", 0)
-    if high <= low or value <= low:
-        return
-    x, y, w, h = rect
-    r, g, b, a = bar.get("color") or (1, 1, 1, 1)
-    share = min(1, (value - low) / (high - low))
-    image = wm.crop_coords(texture(canvas.ui, bar["texture"]), 0, share, 0, 1)
-    canvas.draw(image, x, y, w * share, h, (r, g, b, a * alpha))
-
-
 REGIONS = ("Texture", "FontString", "MaskTexture")
 
 
@@ -618,8 +544,6 @@ class Layout:
 
         for layer in LAYERS:
             art(layer)
-            if layer == "ARTWORK" and entry.get("statusBar"):
-                draw_status_bar(canvas, entry, rect, alpha)
             if layer == "ARTWORK" and entry.get("normalAtlas"):
                 canvas.draw(canvas.ui.atlas(entry["normalAtlas"]), *rect, (1, 1, 1, alpha))
             for region in regions:

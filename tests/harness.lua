@@ -17,7 +17,6 @@ local SUPER = {
 	DropdownButton = "Button",
 	EditBox = "Frame",
 	ScrollFrame = "Frame",
-	StatusBar = "Frame",
 	Texture = "Region",
 	MaskTexture = "Region",
 	FontString = "Region",
@@ -116,8 +115,6 @@ function harness.load(options)
 		map = 1413,
 		x = 0.52,
 		y = 0.30,
-		xp = 0,
-		xpMax = 10000,
 	}
 	for key, value in pairs(options.player or {}) do
 		player[key] = value
@@ -151,8 +148,6 @@ function harness.load(options)
 	end
 	-- Setters no spec reads but tools/screenshots.py draws: each stores its arguments under `field` for h.Describe.
 	for name, field in pairs({
-		SetBackdrop = "backdrop",
-		SetBackdropBorderColor = "backdropBorderColor",
 		SetHighlightFontObject = "highlightFont",
 		SetJustifyH = "justifyH",
 		SetTexCoord = "texCoord",
@@ -162,23 +157,6 @@ function harness.load(options)
 			self[field] = select("#", ...) > 0 and { first, ... } or first -- multi-value: every argument
 		end
 	end
-	function Methods:SetStatusBarTexture(file)
-		self.statusBar = self.statusBar or {}
-		self.statusBar.texture = file
-	end
-	function Methods:SetStatusBarColor(r, g, b, a)
-		self.statusBar = self.statusBar or {}
-		self.statusBar.color = { r, g, b, a or 1 }
-	end
-	function Methods:SetMinMaxValues(low, high)
-		self.statusBar = self.statusBar or {}
-		self.statusBar.min, self.statusBar.max = low, high
-	end
-	function Methods:SetValue(value)
-		self.statusBar = self.statusBar or {}
-		self.statusBar.value = value
-	end
-
 	local function visibilityChanged(frame, shown)
 		local script = frame.scripts and frame.scripts[shown and "OnShow" or "OnHide"]
 		if script then
@@ -566,7 +544,6 @@ function harness.load(options)
 	end
 
 	local STOCK = {
-		BackdropTemplate = noop,
 		UIMenuButtonStretchTemplate = noop,
 		InputBoxVisualTemplate = noop,
 		UIPanelIconDropdownButtonTemplate = noop,
@@ -887,17 +864,7 @@ function harness.load(options)
 		h.call(G.SlashCmdList.ADVENTUREGUIDEFOREVER, message)
 	end
 
-	local function Color(r, g, b)
-		return {
-			GetRGB = function()
-				return r, g, b
-			end,
-		}
-	end
-	G.NORMAL_FONT_COLOR, G.GRAY_FONT_COLOR = Color(1, 0.82, 0), Color(0.5, 0.5, 0.5)
 	G.QUESTS_LABEL = "Quests"
-	G.BACKDROP_TUTORIAL_16_16 = { edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 16 }
-	G.BACKDROP_TOAST_12_12 = { edgeFile = "Interface\\FriendsFrame\\UI-Toast-Border", edgeSize = 12 }
 	G.UIParent = NewRegion("Frame", "UIParent")
 
 	-- The player.
@@ -913,13 +880,6 @@ function harness.load(options)
 	G.UnitClass = function()
 		return "Class", "CLASS", player.classID
 	end
-	G.UnitXP = function()
-		return player.xp
-	end
-	G.UnitXPMax = function()
-		return player.xpMax
-	end
-	G.GetXPExhaustion = noop
 	function h.MovePlayer(map, x, y)
 		player.map, player.x, player.y = map, x, y
 	end
@@ -978,8 +938,6 @@ function harness.load(options)
 		GetMapInfo = function(mapID)
 			return { mapID = mapID, name = "Map " .. mapID }
 		end,
-		GetMapArtLayers = noop,
-		GetMapArtLayerTextures = noop,
 		SetUserWaypoint = function(point)
 			h.counts.SetUserWaypoint = h.counts.SetUserWaypoint + 1
 			h.waypoint = point
@@ -1359,13 +1317,11 @@ function harness.load(options)
 		return found
 	end
 	-- Layout-dump extras only the harness knows, for tools/screenshots.py: the stock template a frame stands in for,
-	-- what the client's dump leaves out (layers, colours, button text and fonts, backdrops, status bars) and the
+	-- what the client's dump leaves out (layers, colours, button text and fonts) and the
 	-- state of the stock innards the addon reached into (an inset's Bg, a search box's instructions).
 	local EXTRAS = {
 		"activeAtlas",
 		"alphaMode",
-		"backdrop",
-		"backdropBorderColor",
 		"checked",
 		"color",
 		"disabled",
@@ -1378,7 +1334,6 @@ function harness.load(options)
 		"maskFile",
 		"normalAtlas",
 		"normalFont",
-		"statusBar",
 		"subLevel",
 		"texCoord",
 		"wordWrap",

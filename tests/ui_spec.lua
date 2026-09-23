@@ -51,10 +51,6 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	equal(panel:IsVisible(), true, label .. ": the guide opens")
 	equal(questsFrame:IsShown(), false, label .. ": the quest list steps aside")
 	h.Click(Shown(h, function(frame)
-		return frame.BestFit ~= nil
-	end)[1])
-	h.flush()
-	h.Click(Shown(h, function(frame)
 		return frame.SkipButton ~= nil
 	end)[1])
 	h.flush()

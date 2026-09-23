@@ -85,12 +85,6 @@ QuestMapFrameOverrides = nil
 ---@type string
 QUESTS_LABEL = nil
 
--- Stock backdrop tables (Blizzard_SharedXML/Backdrop.lua); only the edge fields are read.
----@type {edgeFile: string, edgeSize: number}
-BACKDROP_TUTORIAL_16_16 = nil
----@type {edgeFile: string, edgeSize: number}
-BACKDROP_TOAST_12_12 = nil
-
 ---@class AGFMapProvider
 ---@field GetMap fun(self: AGFMapProvider): AGFWorldMapFrame
 ---@field OnAdded fun(self: AGFMapProvider, map: AGFWorldMapFrame)
