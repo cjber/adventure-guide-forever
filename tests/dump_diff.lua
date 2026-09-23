@@ -28,7 +28,8 @@ function diff.Compare(golden, game)
 					tostring(other.atlas)
 				)
 			end
-			if Size(entry) ~= Size(other) then
+			-- A stock template sizes itself in game only (UIPanelIconDropdownButtonTemplate is 15x16).
+			if not entry.stockTemplate and Size(entry) ~= Size(other) then
 				differences[#differences + 1] = ("%s: size %s in golden, %s in game"):format(
 					entry.path,
 					Size(entry),

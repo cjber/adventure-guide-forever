@@ -238,6 +238,11 @@ do
 			break
 		end
 	end
+	for _, entry in ipairs(game) do
+		if entry.path == "AdventureGuideForeverPanel.DropdownButton[1]" then
+			entry.size = { 15, 16 } -- UIPanelIconDropdownButtonTemplate's own <Size>, applied only in game
+		end
+	end
 	game[#game + 1] = { path = "AdventureGuideForeverPanel.NineSlice", type = "Frame", anchors = {} }
 	differences, onlyInGame = diff.Compare(golden, game)
 	equal(#differences, 1, "dump_diff: a changed atlas is one difference")
