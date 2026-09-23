@@ -79,8 +79,11 @@ function Integrations.Guiding()
 	return api ~= nil and api.CurrentStop(OWNER) ~= nil
 end
 
--- With Shortest Path, the step and every step after it become one numbered journey.
+-- With Shortest Path, the step and every step after it become one numbered journey. When it declines (it returns
+-- false when it cannot plan the route) or is absent, the native waypoint takes the step instead, so Go always
+-- leaves a destination on any map the client allows one on. True when something now guides the player.
 ---@param step AGFStep|AGFGiver
+---@return boolean
 function Integrations.Navigate(step)
 	local api = SPF()
 	if api then
@@ -94,13 +97,18 @@ function Integrations.Navigate(step)
 		if not found then
 			stops[1] = { map = step.map, x = step.x, y = step.y, title = step.title }
 		end
-		api.NavigateRoute(OWNER, stops)
+		local started = api.NavigateRoute(OWNER, stops)
 		ns.Pins.Refresh()
-		return
+		if started then
+			return true
+		end
 	end
-	local point = UiMapPoint.CreateFromCoordinates(step.map, step.x, step.y)
-	C_Map.SetUserWaypoint(point)
+	if not C_Map.CanSetUserWaypointOnMap(step.map) then
+		return false
+	end
+	C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(step.map, step.x, step.y))
 	C_SuperTrack.SetSuperTrackedUserWaypoint(true)
+	return true
 end
 
 function Integrations.Cancel()

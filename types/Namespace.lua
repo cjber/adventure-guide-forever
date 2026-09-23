@@ -142,7 +142,7 @@
 ---@field RefreshTravel fun() refetches step 1's line; Core runs it in the frame after each rebuild
 ---@field Travel fun(step: AGFStep): string? the last line fetched for this step, without asking again
 ---@field OnTravelChange fun(callback: fun())
----@field Navigate fun(step: AGFStep|AGFGiver) route there with Shortest Path, else the native waypoint
+---@field Navigate fun(step: AGFStep|AGFGiver): boolean route there with Shortest Path, else (declined or absent) the native waypoint where the map allows one; true when something now guides
 ---@field Cancel fun()
 ---@field Guiding fun(): boolean Shortest Path is walking our multi-stop route and draws its own numbered stops
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")

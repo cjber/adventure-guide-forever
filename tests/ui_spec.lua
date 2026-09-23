@@ -216,6 +216,36 @@ do
 	clean(h, "contract")
 end
 
+-- Go: Shortest Path's answer decides. When it declines or is absent, the native waypoint takes step 1, on any map
+-- the client allows one on; where it allows none, nothing is set and Go says so.
+for _, case in ipairs({
+	{ label = "Shortest Path accepts", spf = "v1", routes = 1, waypoints = 0 },
+	{ label = "Shortest Path declines", spf = "v1", declines = true, routes = 1, waypoints = 1 },
+	{ label = "no Shortest Path", routes = 0, waypoints = 1 },
+	{ label = "declined, no waypoint map", spf = "v1", declines = true, blocked = true, routes = 1, waypoints = 0 },
+	{ label = "absent, no waypoint map", blocked = true, routes = 0, waypoints = 0 },
+}) do
+	local h = Load(case.spf)
+	local step = h.ns.Route().steps[1]
+	h.spfDeclines = case.declines
+	h.noWaypoint[step.map] = case.blocked
+	local guided = h.ns.Integrations.Navigate(step)
+	equal(guided, not case.blocked, case.label .. ": Navigate's answer")
+	equal(h.spf and h.spf.NavigateRoute or 0, case.routes, case.label .. ": NavigateRoute calls")
+	equal(h.counts.SetUserWaypoint, case.waypoints, case.label .. ": native waypoints")
+	if case.waypoints == 1 then
+		local point = h.waypoint
+		equal(
+			("%d %.4f %.4f"):format(point.uiMapID, point.position.x, point.position.y),
+			("%d %.4f %.4f"):format(step.map, step.x, step.y),
+			case.label .. ": the waypoint is step 1"
+		)
+		equal(h.superTracked, true, case.label .. ": the waypoint is tracked")
+	end
+	equal(h.ns.Integrations.Guiding(), case.spf ~= nil and not case.declines, case.label .. ": Shortest Path guides")
+	clean(h, case.label)
+end
+
 -- Chat copy comes from ns.L: an unknown command prints the three help lines, in order.
 do
 	local h = Load(false)

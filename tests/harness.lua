@@ -948,7 +948,7 @@ function harness.load(options)
 	}
 
 	-- Maps and waypoints: the user waypoint is a value store, with every call counted.
-	h.counts.SetUserWaypoint, h.counts.ClearUserWaypoint = 0, 0
+	h.counts.SetUserWaypoint, h.counts.ClearUserWaypoint, h.noWaypoint = 0, 0, {}
 	G.C_Map = {
 		GetBestMapForUnit = function()
 			return player.map
@@ -962,6 +962,10 @@ function harness.load(options)
 					return player.x, player.y
 				end,
 			}
+		end,
+		-- h.noWaypoint[map] = true stands for a map the client refuses a user waypoint on.
+		CanSetUserWaypointOnMap = function(mapID)
+			return not h.noWaypoint[mapID]
 		end,
 		GetMapInfo = function(mapID)
 			return { mapID = mapID, name = "Map " .. mapID }
@@ -1251,7 +1255,11 @@ function harness.load(options)
 			guiding[owner] = 1
 			return true
 		end)
+		-- h.spfDeclines = true makes Shortest Path refuse the route, as it does when it cannot plan one.
 		Counted("NavigateRoute", function(owner)
+			if h.spfDeclines then
+				return false
+			end
 			guiding[owner] = 1
 			return true
 		end)
