@@ -216,6 +216,19 @@ do
 	clean(h, "contract")
 end
 
+-- Chat copy comes from ns.L: an unknown command prints the three help lines, in order.
+do
+	local h = Load(false)
+	local before = #h.prints
+	h.Slash("help")
+	local L = h.ns.L
+	for index, line in ipairs({ L.HELP_OPEN, L.HELP_AUDIT, L.HELP_DUMP }) do
+		equal(h.prints[before + index]:sub(-#line), line, "L: help line " .. index)
+	end
+	equal(#h.prints, before + 3, "L: three help lines")
+	clean(h, "L")
+end
+
 -- /agf dump: a plain-table snapshot in the saved variables, kept across /reload and dropped at the next login.
 do
 	local h = Load(false)

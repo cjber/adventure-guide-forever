@@ -4,6 +4,19 @@ local addonName, ns = ...
 -- Only WoW: Forever loads this addon, so in game it is simply the Adventure Guide.
 ns.TITLE = "Adventure Guide"
 
+-- Every line the player reads, in one table: new copy lands here from the start, so one place holds the
+-- game's voice (WFA-6) and a later locale only has to replace values. Format strings keep their specifiers.
+---@type AGFStrings
+ns.L = {
+	AUDIT_BUILD = "data from build %s, client build %s.%s",
+	AUDIT_COUNTS = "%d bundled quests, %d eligible now, %d completed known",
+	AUDIT_NOT_READY = "completed-quest data hasn't finished loading yet; the counts above may be low.",
+	HELP_OPEN = "open the world map and use the Adventure Guide tab.",
+	HELP_AUDIT = "/agf audit - check the bundled data against the game",
+	HELP_DUMP = "/agf dump - save the guide's layout for a bug report",
+}
+local L = ns.L
+
 -- Account-wide settings (Settings.lua), one key per row on the AddOns page. A missing key
 -- always reads as its default here, so an old save file and a new option agree (WFA-14).
 ---@type table<string, boolean>
@@ -191,7 +204,7 @@ end
 local function Audit()
 	local data = ns.Data
 	local clientVersion, clientBuild = GetBuildInfo()
-	ns.Print(("data from build %s, client build %s.%s"):format(data.build, clientVersion, clientBuild))
+	ns.Print(L.AUDIT_BUILD:format(data.build, clientVersion, clientBuild))
 
 	local bundled = 0
 	for _ in pairs(data.quests) do
@@ -211,9 +224,9 @@ local function Audit()
 		completedKnown = completedKnown + 1
 	end
 
-	ns.Print(("%d bundled quests, %d eligible now, %d completed known"):format(bundled, eligible, completedKnown))
+	ns.Print(L.AUDIT_COUNTS:format(bundled, eligible, completedKnown))
 	if not ns.State.Ready() then
-		ns.Print("completed-quest data hasn't finished loading yet; the counts above may be low.")
+		ns.Print(L.AUDIT_NOT_READY)
 	end
 end
 
@@ -230,9 +243,9 @@ SlashCmdList.ADVENTUREGUIDEFOREVER = function(msg)
 			ns.OpenPanel()
 		end
 	else
-		ns.Print("open the world map and use the Adventure Guide tab.")
-		ns.Print("/agf audit - check the bundled data against the game")
-		ns.Print("/agf dump - save the guide's layout for a bug report")
+		ns.Print(L.HELP_OPEN)
+		ns.Print(L.HELP_AUDIT)
+		ns.Print(L.HELP_DUMP)
 	end
 end
 
