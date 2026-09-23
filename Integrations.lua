@@ -108,6 +108,8 @@ function Integrations.Navigate(step)
 		end
 	end
 	if not C_Map.CanSetUserWaypointOnMap(step.map) then
+		-- The red line the world map shows when a pin can't go on a map, so Go never fails silently.
+		UIErrorsFrame:AddExternalErrorMessage(ns.L.NO_WAYPOINT)
 		return false
 	end
 	C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(step.map, step.x, step.y))

@@ -99,6 +99,7 @@ function harness.load(options)
 		errors = {},
 		frames = {},
 		prints = {},
+		uiErrors = {},
 		tooltip = {},
 		pins = {},
 		providers = {},
@@ -872,6 +873,13 @@ function harness.load(options)
 	G.DEFAULT_CHAT_FRAME = {
 		AddMessage = function(_, message)
 			h.prints[#h.prints + 1] = message
+		end,
+	}
+	-- The red error line; h.uiErrors holds each message in order. MAP_PIN_INVALID_MAP is left unset, so Core's
+	-- fallback copy is what the specs read.
+	G.UIErrorsFrame = {
+		AddExternalErrorMessage = function(_, message)
+			h.uiErrors[#h.uiErrors + 1] = message
 		end,
 	}
 	G.SlashCmdList = {}

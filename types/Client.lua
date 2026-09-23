@@ -28,6 +28,14 @@ EventRegistry = {}
 ---@type fun(region: Region, fadeInTime: number, fadeOutTime: number, flashDuration: number, showWhenDone: boolean)
 UIFrameFlash = nil
 
+-- UIErrorsFrame.lua: the red line at the top of the screen, as the client shows its own errors.
+---@type {AddExternalErrorMessage: fun(self: any, message: string)}
+UIErrorsFrame = nil
+
+-- GlobalStrings: "You can't place a pin on this map." in enUS; absent from some builds, so read with a fallback.
+---@type string?
+MAP_PIN_INVALID_MAP = nil
+
 ---@type table<string, fun(msg: string, editBox: EditBox)>
 SlashCmdList = nil
 

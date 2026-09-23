@@ -217,7 +217,8 @@ do
 end
 
 -- Go: Shortest Path's answer decides. When it declines or is absent, the native waypoint takes step 1, on any map
--- the client allows one on; where it allows none, nothing is set and Navigate returns false.
+-- the client allows one on; where it allows none, nothing is set, the red error line says so and Navigate returns
+-- false.
 for _, case in ipairs({
 	{ label = "Shortest Path accepts", spf = "v1", routes = 1, waypoints = 0 },
 	{ label = "Shortest Path declines", spf = "v1", declines = true, routes = 1, waypoints = 1 },
@@ -233,6 +234,8 @@ for _, case in ipairs({
 	equal(guided, not case.blocked, case.label .. ": Navigate's answer")
 	equal(h.spf and h.spf.NavigateRoute or 0, case.routes, case.label .. ": NavigateRoute calls")
 	equal(h.counts.SetUserWaypoint, case.waypoints, case.label .. ": native waypoints")
+	local told = case.blocked and "You can't place a pin on this map." or ""
+	equal(table.concat(h.uiErrors, "|"), told, case.label .. ": the player is told only when nothing guides")
 	if case.waypoints == 1 then
 		local point = h.waypoint
 		equal(

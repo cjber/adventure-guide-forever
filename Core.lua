@@ -15,6 +15,8 @@ ns.L = {
 	HELP_AUDIT = "/agf audit - check the bundled data against the game",
 	HELP_DUMP = "/agf dump - save the guide's layout for a bug report",
 	HAND_IN_WHEN = "Hand in when you're in %s",
+	-- The client's own line, localised, where it has one.
+	NO_WAYPOINT = MAP_PIN_INVALID_MAP or "You can't place a pin on this map.",
 }
 local L = ns.L
 

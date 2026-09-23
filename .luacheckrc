@@ -32,6 +32,7 @@ read_globals = {
 	"ToggleWorldMap",
 	"OpenQuestLog",
 	"EventUtil",
+	"MAP_PIN_INVALID_MAP",
 	-- State.lua
 	"bit",
 	"UnitRace",
@@ -45,6 +46,7 @@ read_globals = {
 	"ShortestPathForever",
 	"UiMapPoint",
 	"C_SuperTrack",
+	"UIErrorsFrame",
 	-- Pins.lua
 	"CreateFromMixins",
 	"MapCanvasDataProviderMixin",
