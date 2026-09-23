@@ -297,26 +297,6 @@ def button_font(entry, normal, highlight, disabled):
     return font(entry.get("normalFont") or normal)
 
 
-def draw_menu_button(canvas, entry, rect, layer):
-    """UIMenuButtonStretchTemplate (Mainline/SharedUIPanelTemplates.xml:772): UI-Silver-Button-Up in nine pieces
-    (12x6 corners), its text at CENTER (0, -1), and while the highlight is locked UI-Silver-Button-Highlight
-    (texcoords 0-1 by .03-.7175) added over it."""
-    ui, (x, y, w, h) = canvas.ui, rect
-    if layer == "BACKGROUND":
-        file = texture(ui, "Interface\\Buttons\\UI-Silver-Button-Up")
-        columns = ((x, 12, 0, 0.09375), (x + 12, w - 24, 0.09375, 0.53125), (x + w - 12, 12, 0.53125, 0.625))
-        rows = ((y, 6, 0, 0.1875), (y + 6, h - 12, 0.1875, 0.625), (y + h - 6, 6, 0.625, 0.8125))
-        for left, width, u1, u2 in columns:
-            for top, height, v1, v2 in rows:
-                canvas.draw(wm.crop_coords(file, u1, u2, v1, v2), left, top, width, height)
-    elif layer == "HIGHLIGHT" and entry.get("highlightLocked"):
-        glow = wm.crop_coords(texture(ui, "Interface\\Buttons\\UI-Silver-Button-Highlight"), 0, 1, 0.03, 0.7175)
-        canvas.draw(glow, x, y, w, h, blend="ADD")
-    elif layer == "TEXT" and entry.get("text"):
-        face = button_font(entry, "GameFontHighlightSmall", "GameFontHighlightSmall", "GameFontDisableSmall")
-        canvas.text(x, y + 1, entry["text"], face, justify="CENTER", width=w, box_height=h)
-
-
 def draw_panel_button(canvas, entry, rect, layer):
     """UIPanelButtonTemplate (Mainline/SharedUIPanelTemplates.xml:315, on UIPanelButtonNoTooltipTemplate,
     SecureUIPanelTemplates.xml:39): UI-Panel-Button-Up in three slices, 12-unit caps, texcoords to .6875 down
@@ -404,7 +384,6 @@ STOCK = {
     ),
     "ScrollFrameTemplate": (draw_scroll_frame, None, None, 0),
     "SearchBoxTemplate": (draw_search_box, None, None, 0),
-    "UIMenuButtonStretchTemplate": (draw_menu_button, lambda ui: (40, 26), None, 0),
     "UIPanelButtonTemplate": (draw_panel_button, lambda ui: (40, 22), None, 0),
     "UIPanelIconDropdownButtonTemplate": (draw_icon_dropdown, lambda ui: (15, 16), None, 0),
 }

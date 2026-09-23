@@ -8,9 +8,8 @@ local ROW_GAP = 2
 local CARD_HEIGHT = 86
 local CARD_GAP = 4
 local MAX_JOURNEYS = 3
--- The scroll child above the cards: the header 4px down and 34px tall, then the chips 8px below it and 24px tall,
--- then 6px to the first card.
-local LIST_TOP = 4 + 34 + 8 + 24 + 6
+-- The scroll child above the cards: the header 4px down and 34px tall, then 6px to the first card.
+local LIST_TOP = 4 + 34 + 6
 -- Blizzard's QUEST_TAG_ATLAS icons (Blizzard_FrameXMLBase/Constants.lua:514-527); the next zone gets the map's "!".
 local KIND_ICONS = {
 	carry = "questlog-questtypeicon-quest",
@@ -29,8 +28,6 @@ local panel
 local guideTab
 ---@type AGFTabButton?
 local questsTab
----@type AGFChip[]
-local chips = {}
 ---@type AGFRouteRow[]
 local rows = {}
 ---@type AGFJourneyCard[]
@@ -69,28 +66,6 @@ local function ShowTooltip(owner, lines)
 		GameTooltip_AddNormalLine(GameTooltip, lines[index])
 	end
 	GameTooltip:Show()
-end
-
----@class AGFChip : Button
----@field pref "quests"|"dungeons"
-
----@param parent Frame
----@param label string
----@param pref "quests"|"dungeons"
----@return AGFChip
-local function CreateChip(parent, label, pref)
-	local chip = CreateFrame("Button", nil, parent, "UIMenuButtonStretchTemplate") --[[@as AGFChip]]
-	chip.pref = pref
-	chip:SetHeight(24)
-	chip:SetText(label)
-	-- A locked highlight is the template's own "on" state; gold text marks it like the mockup.
-	chip:SetHighlightFontObject("GameFontNormal")
-	chip:SetScript("OnClick", function()
-		local prefs = ns.Prefs()
-		prefs[pref] = not prefs[pref]
-		ns.Invalidate()
-	end)
-	return chip
 end
 
 ---@class AGFRouteRow : Button
@@ -195,23 +170,6 @@ local function BuildHeader(parent)
 	title:SetPoint("CENTER", 14, 0)
 	title:SetText(ns.TITLE)
 	return header
-end
-
----@param parent Frame
----@param below Region
----@return Frame
-local function BuildChips(parent, below)
-	local strip = CreateFrame("Frame", nil, parent)
-	strip:SetPoint("TOPLEFT", below, "BOTTOMLEFT", 0, -8)
-	strip:SetPoint("RIGHT", parent, "RIGHT", -PAD, 0)
-	strip:SetHeight(24)
-	chips[1] = CreateChip(strip, "Quests", "quests")
-	chips[1]:SetPoint("TOPLEFT")
-	chips[1]:SetPoint("RIGHT", strip, "CENTER", -3, 0)
-	chips[2] = CreateChip(strip, "Dungeons", "dungeons")
-	chips[2]:SetPoint("TOPRIGHT")
-	chips[2]:SetPoint("LEFT", strip, "CENTER", 3, 0)
-	return strip
 end
 
 ---@class AGFJourneyCardIcon : Frame
@@ -345,22 +303,8 @@ local function BuildContent(panelFrame)
 	BuildTopBar(panelFrame)
 	content = BuildScroll(panelFrame)
 	local header = BuildHeader(content)
-	local strip = BuildChips(content, header)
-	BuildJourneys(content, strip)
+	BuildJourneys(content, header)
 	BuildFooter(panelFrame)
-end
-
----@param prefs AGFPrefs
-local function RefreshChips(prefs)
-	for _, chip in ipairs(chips) do
-		local on = prefs[chip.pref]
-		chip:SetNormalFontObject(on and "GameFontNormal" or "GameFontDisable")
-		if on then
-			chip:LockHighlight()
-		else
-			chip:UnlockHighlight()
-		end
-	end
 end
 
 ---@param row AGFRouteRow
@@ -468,7 +412,6 @@ function Refresh()
 	---@cast emptyText -?
 	---@cast goButton -?
 	local route = ns.Route()
-	RefreshChips(ns.Prefs())
 
 	local ready = ns.State.Ready()
 	emptyText:SetText(ready and L.NOTHING_NEARBY or L.LOADING)

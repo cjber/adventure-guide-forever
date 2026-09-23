@@ -32,12 +32,7 @@ function ns.RegisterSettings()
 	)
 	Checkbox("showMapPins", "Show route pins on the map", ns.L.SETTING_MAP_PINS_TOOLTIP)
 	Checkbox("showQuestGivers", "Show quest givers on the map", ns.L.SETTING_GIVERS_TOOLTIP)
-	Checkbox(
-		"includeDungeonsDefault",
-		"Include dungeons by default",
-		"Turn the Dungeons chip on for a character the first time you open the guide. "
-			.. "Change it any time from the guide tab itself."
-	)
+	Checkbox("includeDungeonsDefault", "Include dungeons by default", ns.L.SETTING_DUNGEONS_DEFAULT_TOOLTIP)
 
 	Settings.RegisterAddOnCategory(category)
 	function ns.OpenSettings()

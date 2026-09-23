@@ -218,6 +218,7 @@
 ---@field NO_WAYPOINT string the error Go shows when nothing can guide the player on the step's map
 ---@field SETTING_MAP_PINS_TOOLTIP string
 ---@field SETTING_GIVERS_TOOLTIP string
+---@field SETTING_DUNGEONS_DEFAULT_TOOLTIP string
 ---@field JOURNEY_CARRY string
 ---@field JOURNEY_STORY string format: zone name
 ---@field JOURNEY_NEXT_ZONE string format: zone name, the level it fits

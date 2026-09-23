@@ -553,7 +553,6 @@ function harness.load(options)
 			end
 			frame.scripts.OnLoad = frame.UpdateHighlightForState
 		end,
-		UIMenuButtonStretchTemplate = noop,
 		InputBoxVisualTemplate = noop,
 		UIPanelIconDropdownButtonTemplate = noop,
 		QuestLogBorderFrameTemplate = noop,

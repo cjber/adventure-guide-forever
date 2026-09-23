@@ -463,6 +463,29 @@ do
 	clean(none, "guide: empty")
 end
 
+-- The activity filters live in the cog's menu, not on the guide (design §2.1).
+do
+	local h = Load(false)
+	h.ns.OpenPanel()
+	h.flush()
+	local cog = h.Find(function(frame)
+		return frame.stockTemplate == "UIPanelIconDropdownButtonTemplate"
+	end)[1]
+	local menu = h.OpenMenu(cog)
+	local byText = {}
+	for _, entry in ipairs(menu.entries) do
+		byText[entry.text or entry.kind] = entry
+	end
+	equal(byText.Quests.kind, "checkbox", "cog: a Quests checkbox")
+	equal(byText.Dungeons.isSelected(), false, "cog: dungeons off")
+	local before = h.modelCalls.Journeys
+	byText.Dungeons.onClick()
+	h.flush()
+	equal(h.ns.Prefs().dungeons, true, "cog: Dungeons turns them on")
+	equal(h.modelCalls.Journeys - before, 1, "cog: and rebuilds once")
+	clean(h, "cog")
+end
+
 -- The golden layout: any change to what the guide draws shows as a reviewable diff of tests/golden/layout.json.
 do
 	local json, diff = dofile("tests/json.lua"), dofile("tests/dump_diff.lua")
