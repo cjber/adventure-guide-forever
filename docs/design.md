@@ -362,7 +362,8 @@ When `SPF.Active()` exists and reports another journey running, Go's tooltip add
   the Azeroth map, so the far continent's nearest step is the one it enters at, not the one whose key sorts first.
 - **Selection by cost, not by phase.** Steps grow from the player outward: each next pick is the candidate
   cheapest to reach from the player or any step already picked. A turn-in on another continent no longer pushes out
-  a nearby pickup. Skipped steps are never candidates.
+  a nearby pickup. Skipped steps are never candidates. With no known place for the player (an instance, or a
+  map the data lacks) nothing measures from them: turn-ins lead and the route grows from the first of them.
 - **Order.** Nearest neighbour from the player, grouped by continent so the route crosses at most once (the
   player's continent first), then 2-opt on the same cost. A turn-in on another continent is kept but goes last,
   with the reason "Hand in when you're in <zone>".

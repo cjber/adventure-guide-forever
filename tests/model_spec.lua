@@ -215,6 +215,11 @@ end
 local room = Model.Plan(eight, player, {}, carried, prefs())
 equal(room.steps[Model.MAX_STEPS].key, "turnin:200", "with room, the far turn-in comes last")
 equal(room.steps[Model.MAX_STEPS].reason, "Hand in when you're in Far Shore", "and says where")
+-- In an instance the player has no position: nothing measures from them, so the turn-in leads and is never dropped.
+local lost = { level = player.level, side = player.side, raceBit = player.raceBit, classBit = player.classBit }
+local blind = Model.Plan(crowd, lost, {}, carried, prefs())
+equal(blind.steps[1].key, "turnin:200", "without a position the turn-in leads")
+equal(#blind.steps, Model.MAX_STEPS, "and the pickups still fill the route")
 local near = { quests = { [1] = quest(0.9), [2] = quest(0.4, 0.5, 8) }, zones = data.zones, maps = tiers.maps }
 near.quests[2].zone = 1
 equal(Model.Plan(near, player, {}, {}, prefs()).steps[1].map, 1, "the player's own map first")

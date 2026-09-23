@@ -466,9 +466,14 @@ function Model.Plan(data, player, completed, log, prefs, mapName)
 
 	-- Selection grows from the player: each pick is the step cheapest to reach from the player or any step already
 	-- picked. Pinned steps come first; there is no phase, so a far turn-in never pushes out a nearby pickup.
+	-- Without a known place for the player (no position in an instance, a map the data lacks) most steps cost UNKNOWN
+	-- from them. A turn-in among those leads, as turn-ins did before costs, and the route grows from it instead of
+	-- dropping it for whichever key sorts first.
+	local measured = origin ~= nil and origin.known
 	local reach, chosen, selected = {}, {}, {}
 	for _, step in ipairs(pool) do
-		reach[step] = Cost(origin, where[step])
+		local cost = Cost(origin, where[step])
+		reach[step] = (not measured and cost >= UNKNOWN and step.kind == "turnin") and 0 or cost
 	end
 	local function Take(step, pinned)
 		step.pinned = pinned or nil
@@ -521,5 +526,13 @@ function Model.Plan(data, player, completed, log, prefs, mapName)
 			end
 		end
 	end
-	return { steps = Order(selected, origin, where, away), zones = zones, zone = zone }
+	-- The order starts from the player when some step is measurable from them, from the first pick otherwise.
+	local start = selected[1] and where[selected[1]]
+	for _, step in ipairs(selected) do
+		if Cost(origin, where[step]) < UNKNOWN then
+			start = origin
+			break
+		end
+	end
+	return { steps = Order(selected, start, where, away), zones = zones, zone = zone }
 end
