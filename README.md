@@ -28,6 +28,7 @@ Install it from CurseForge or Wago Addons, or download the zip from [Releases](h
 
 - `/agf` or `/adventureguide` opens the guide on the world map.
 - `/agf audit` compares the bundled quest data with the game.
+- `/agf dump` saves the guide's layout for a bug report; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua`.
 - Options are under *Settings > AddOns > Adventure Guide Forever*.
 
 ## Where the quests come from
