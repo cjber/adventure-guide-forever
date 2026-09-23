@@ -220,6 +220,14 @@ local lost = { level = player.level, side = player.side, raceBit = player.raceBi
 local blind = Model.Plan(crowd, lost, {}, carried, prefs())
 equal(blind.steps[1].key, "turnin:200", "without a position the turn-in leads")
 equal(#blind.steps, Model.MAX_STEPS, "and the pickups still fill the route")
+-- Over the sea the route lands where the side's boat docks, not at the far shore's nearest point (F12).
+local ferry = { quests = { quest(0.1, 0.5, 9), quest(0.9, 0.5, 9) }, zones = data.zones, maps = tiers.maps }
+ferry.quests[1].zone, ferry.quests[2].zone, ferry.continents = 1, 1, tiers.continents
+local dock = { continent = 0, x = 10, y = -400 } -- Far Shore's east end: map x 0.9
+ferry.crossings = { { transport = 1, side = 2, a = { continent = 1, x = 0, y = 0 }, b = dock } }
+equal(Model.Plan(ferry, player, {}, {}, prefs()).steps[1].key, "pickup:9:0.9000:0.5000", "lands at the dock")
+ferry.crossings[1].side = 1
+equal(Model.Plan(ferry, player, {}, {}, prefs()).steps[1].key, "pickup:9:0.1000:0.5000", "another side's boat")
 local near = { quests = { [1] = quest(0.9), [2] = quest(0.4, 0.5, 8) }, zones = data.zones, maps = tiers.maps }
 near.quests[2].zone = 1
 equal(Model.Plan(near, player, {}, {}, prefs()).steps[1].map, 1, "the player's own map first")

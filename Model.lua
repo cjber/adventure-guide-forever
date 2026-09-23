@@ -325,20 +325,30 @@ end
 
 -- One cost in yards, offline, so a rebuild never waits on travel maths (docs/design.md §4.1). A place goes into one
 -- frame: its map's world rectangle, then its continent's place on the Azeroth map, so two steps an ocean apart still
--- get a distance, and the far side's nearest step is the one the route enters at.
-local CROSSING = 10000 -- the dock, the wait and the sail, which a straight line across the sea cannot see
+-- get a distance. Across an ocean it runs through the player's side's boat or zeppelin docks, so the far side's step
+-- nearest the landing is the one the route enters at.
+local CROSSING = 10000 -- the wait and the sail, which the distance to and from the docks cannot see
 local UNKNOWN = 1000000 -- no way to measure: dearer than any crossing, so it never ties by accident
 
 -- `continent` is the world map ID when the data places the map on the Azeroth map (`known`). A map it doesn't is an
 -- island of its own, measured in map units, so its steps still order among themselves but never against the rest.
+-- `docks` are the crossings the player's side can take, shared by every position of one plan.
 ---@class AGFPosition
 ---@field x number
 ---@field y number
 ---@field continent integer|string
 ---@field known boolean
+---@field docks? AGFFrameCrossing[]
+
+-- One direction of an AGFCrossing, its docks in the shared frame.
+---@class AGFFrameCrossing
+---@field from integer
+---@field to integer
+---@field leave {x: number, y: number}
+---@field land {x: number, y: number}
 
 ---@return AGFPosition?
-local function Position(data, place)
+local function Position(data, place, docks)
 	if not ValidPlace(place) then
 		return nil
 	end
@@ -352,7 +362,30 @@ local function Position(data, place)
 		y = shift.y - map.cx + (place.y - 0.5) * map.sy,
 		continent = map.continent,
 		known = true,
+		docks = docks,
 	}
+end
+
+-- Both directions of every crossing `side` may take whose continents the data places on the Azeroth map.
+---@return AGFFrameCrossing[]
+local function Docks(data, side)
+	local docks = {}
+	local function Frame(dock)
+		local shift = data.continents and data.continents[dock.continent]
+		return shift and { x = shift.x - dock.y, y = shift.y - dock.x }
+	end
+	for _, crossing in ipairs(data.crossings or {}) do
+		local a, b = Frame(crossing.a), Frame(crossing.b)
+		if a and b and HasBit(crossing.side, side) then
+			docks[#docks + 1] = { from = crossing.a.continent, to = crossing.b.continent, leave = a, land = b }
+			docks[#docks + 1] = { from = crossing.b.continent, to = crossing.a.continent, leave = b, land = a }
+		end
+	end
+	return docks
+end
+
+local function Yards(a, b)
+	return math.sqrt((a.x - b.x) ^ 2 + (a.y - b.y) ^ 2)
 end
 
 ---@param a AGFPosition?
@@ -361,8 +394,18 @@ local function Cost(a, b)
 	if not (a and b) or (a.continent ~= b.continent and not (a.known and b.known)) then
 		return UNKNOWN
 	end
-	local distance = math.sqrt((a.x - b.x) ^ 2 + (a.y - b.y) ^ 2)
-	return a.continent == b.continent and distance or CROSSING + distance
+	if a.continent == b.continent then
+		return Yards(a, b)
+	end
+	local best
+	for _, dock in ipairs(a.docks or {}) do
+		if dock.from == a.continent and dock.to == b.continent then
+			local via = Yards(a, dock.leave) + Yards(dock.land, b)
+			best = (best and best < via) and best or via
+		end
+	end
+	-- No boat for this side between them: the straight line across the sea, as before the docks were known.
+	return CROSSING + (best or Yards(a, b))
 end
 
 -- Nearest neighbour from `from`; TwoOpt then removes crossings with that start fixed and the end open.
@@ -454,15 +497,15 @@ function Model.Plan(data, player, completed, log, prefs, mapName)
 	local zone = prefs.zone or (zones[1] and zones[1].map)
 	local candidates = LogSteps(data, player, log, prefs)
 	PickupSteps(data, player, eligible, zone, index.hubs, candidates, prefs)
-	local byKey, pool, where = {}, {}, {}
+	local byKey, pool, where, docks = {}, {}, {}, Docks(data, player.side)
 	for _, step in ipairs(candidates) do
 		if not (prefs.skipped and prefs.skipped[step.key]) then
 			byKey[step.key] = step
 			pool[#pool + 1] = step
-			where[step] = Position(data, step)
+			where[step] = Position(data, step, docks)
 		end
 	end
-	local origin = Position(data, player)
+	local origin = Position(data, player, docks)
 
 	-- Selection grows from the player: each pick is the step cheapest to reach from the player or any step already
 	-- picked. Pinned steps come first; there is no phase, so a far turn-in never pushes out a nearby pickup.

@@ -358,8 +358,12 @@ When `SPF.Active()` exists and reports another journey running, Go's tooltip add
 
 - **One cost, in yards.** Every place is placed in one frame: its map's world rectangle, then its continent's
   rectangle on the Azeroth map (UiMap 947's `UiMapAssignment` rows), both generated from wago. On one continent the
-  cost is the straight distance. Across an ocean it is a large fixed crossing penalty plus the distance measured on
-  the Azeroth map, so the far continent's nearest step is the one it enters at, not the one whose key sorts first.
+  cost is the straight distance. Across an ocean it is a large fixed crossing penalty plus the distance to the
+  departure dock and from the landing dock, over the cheapest boat or zeppelin the player's side takes, so the route
+  enters the far continent at the step nearest where it lands (Auberdine, not southern Darkshore). The docks are
+  `Data.crossings`: each transport's two TaxiPathNode stops, its side from the flight masters by each dock, both
+  generated from wago. SPF v1 has no arrival point to ask for (`EstimateDetail` is a proposal), and the rebuild
+  never calls SPF anyway. With no crossing for the side the straight line on the Azeroth map stands in.
 - **Selection by cost, not by phase.** Steps grow from the player outward: each next pick is the candidate
   cheapest to reach from the player or any step already picked. A turn-in on another continent no longer pushes out
   a nearby pickup. Skipped steps are never candidates. With no known place for the player (an instance, or a
