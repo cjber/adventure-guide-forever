@@ -7,7 +7,7 @@
 
 -- Additive: merges with the fields already declared on AGFNamespace in types/Namespace.lua.
 ---@class AGFNamespace
----@field OpenPanel fun() set once the world map tab exists (Panel.lua); opens the guide tab.
+---@field OpenPanel? fun() set once the world map tab exists (Panel.lua); opens the guide tab.
 ---@field RegisterSettings fun() defined by Settings.lua, called once after ADDON_LOADED.
 ---@field OpenSettings? fun() set by RegisterSettings; opens our page under Settings > AddOns.
 ---@field Pins AGFPinsModule
@@ -192,9 +192,6 @@ TweaksForever = nil
 ---@field OpenToCategory fun(categoryID: integer)
 ---@type AGFSettingsModule
 Settings = nil
-
----@class AGFCheckButton : CheckButton
----@field text FontString
 
 ---@class AGFTabButton : Button
 ---@field SetCustomOnMouseUpHandler fun(self: AGFTabButton, handler: fun(self: AGFTabButton, mouseButton: string, upInside: boolean))

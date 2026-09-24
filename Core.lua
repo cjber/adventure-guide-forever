@@ -337,8 +337,7 @@ function ns.SetSetting(key, value)
 		return
 	end
 	db[key] = value
-	-- Cheap: this only wakes listeners (Panel/Pins/Tracker) to redraw with the new setting;
-	-- the route itself rarely depends on an account-wide setting.
+	-- Rebuilds the route (cheap) and wakes listeners (Panel/Pins/Tracker) to redraw with the new setting.
 	ns.Invalidate()
 end
 
@@ -877,7 +876,5 @@ EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	ns.State.OnInitialLogin(function()
 		resumeLatch = true
 	end)
-	if ns.RegisterSettings then
-		ns.RegisterSettings()
-	end
+	ns.RegisterSettings()
 end)
