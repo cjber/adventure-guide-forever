@@ -1035,6 +1035,15 @@ function harness.load(options)
 		end,
 	}
 
+	-- Unspent talent points, only when a spec gives options.talents (the count; a spec edits h.talents), so by
+	-- default the client lacks GetNumUnspentTalents.
+	h.talents = options.talents
+	if options.talents then
+		G.GetNumUnspentTalents = function()
+			return h.talents
+		end
+	end
+
 	-- Maps and waypoints: the user waypoint is a value store, with every call counted.
 	h.counts.SetUserWaypoint, h.counts.ClearUserWaypoint, h.noWaypoint = 0, 0, {}
 	-- The client names an instance Map.ID; a headless client knows none, as it answers for an unknown one.

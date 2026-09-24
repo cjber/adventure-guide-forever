@@ -99,6 +99,8 @@ read_globals = {
 	"UIParent",
 	-- Moments.lua
 	"AddonCompartmentFrame",
+	-- Asides.lua (roadmap #25), read with a nil check
+	"GetNumUnspentTalents",
 	-- Settings.lua
 	"Settings",
 	-- Dump.lua: frames Panel.lua and Tracker.lua create by name

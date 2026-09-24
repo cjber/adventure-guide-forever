@@ -207,6 +207,9 @@ ns.L = {
 	NPC_JOURNEY = "Adventure guide: %s",
 	-- Something new (docs/design.md §2.13): the tracker's line for a journey card the character hasn't been offered.
 	MOMENT = "%s is now for your level",
+	-- Unspent talent points (roadmap #25).
+	TALENT_POINTS = "You have %d talent points to spend",
+	TALENT_POINT = "You have 1 talent point to spend",
 }
 local L = ns.L
 

@@ -669,3 +669,15 @@
 ---@field QUESTIE_FIELD string format: the entity or field it lacks
 ---@field QUESTIE_ZONES string
 ---@field QUESTIE_FAILED string format: the error
+
+-- Unspent talent points (roadmap #25, docs/design.md §2.11).
+
+---@class AGFAside
+---@field renew? integer how often its provider found it news again (a talent point gained): a Skip for now holds while it is unchanged
+
+---@class AGFAsides
+---@field RefreshOn fun(event: string) ask the providers again on the event, when the client has it
+
+---@class AGFStrings
+---@field TALENT_POINTS string format: how many talent points wait to be spent
+---@field TALENT_POINT string the same for one

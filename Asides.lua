@@ -15,11 +15,15 @@ local providers = {}
 -- Every provider's last answer, in registration order.
 ---@type AGFAside[]
 local answers = {}
--- Skip for now: until the next session.
----@type table<string, boolean>
+-- Skip for now: until the next session, or until its provider renews the aside (a new talent point): each skipped key
+-- and the `renew` it had then, `true` for none.
+---@type table<string, integer|true>
 local skipped = {}
 ---@type fun()[]
 local listeners = {}
+-- The events a provider asks again on (RefreshOn).
+---@type Frame?
+local events
 
 local function Notify()
 	for _, fn in ipairs(listeners) do
@@ -51,7 +55,7 @@ end
 function Asides.Current()
 	local declined = Declined()
 	for _, aside in ipairs(answers) do
-		if not (skipped[aside.key] or declined[aside.key]) then
+		if not (skipped[aside.key] == (aside.renew or true) or declined[aside.key]) then
 			return aside
 		end
 	end
@@ -94,8 +98,21 @@ end
 
 ---@param key string
 function Asides.Skip(key)
-	skipped[key] = true
+	local renew = true
+	for _, aside in ipairs(answers) do
+		renew = aside.key == key and aside.renew or renew
+	end
+	skipped[key] = renew
 	Notify()
+end
+
+-- Asks the providers again on `event`, when the client has it: an unknown event is an error on RegisterEvent, and an
+-- API the probe did not confirm may come with none.
+---@param event string
+function Asides.RefreshOn(event)
+	events = events or CreateFrame("Frame")
+	events:SetScript("OnEvent", Asides.Refresh)
+	pcall(events.RegisterEvent, events, event)
 end
 
 ---@param aside AGFAside
@@ -175,6 +192,24 @@ Asides.Register(function()
 end)
 
 -- A spell learned at the trainer shortens the line at once.
-local spellbook = CreateFrame("Frame")
-spellbook:RegisterEvent("SPELLS_CHANGED")
-spellbook:SetScript("OnEvent", Asides.Refresh)
+Asides.RefreshOn("SPELLS_CHANGED")
+
+--[[ Unspent talent points (roadmap #25): "You have 2 talent points to spend", while any are. The probe found
+     GetNumUnspentTalents on Forever and UnitCharacterPoints missing; without the former there is no line. A point
+     gained brings it back after a Skip for now, once per new point; spending them all ends it at once. ]]
+
+-- The count at the last answer, and how many times it has risen this session (the aside's `renew`).
+local talentPoints, talentRises = 0, 0
+
+Asides.Register(function()
+	local points = GetNumUnspentTalents and GetNumUnspentTalents() or 0
+	talentRises = points > talentPoints and talentRises + 1 or talentRises
+	talentPoints = points
+	if points <= 0 then
+		return nil
+	end
+	local text = points == 1 and L.TALENT_POINT or L.TALENT_POINTS:format(points)
+	-- The Legion minor-talents book (CSV:388), the one square talent mark the atlas has.
+	return { key = "talents", text = text, icon = "minortalents-icon-book", renew = talentRises }
+end)
+Asides.RefreshOn("CHARACTER_POINTS_CHANGED")

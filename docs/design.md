@@ -534,7 +534,13 @@ aside shown changes. The first provider's answer the player has not skipped or t
 - **Providers.** The class trainer (F16): "Visit your class trainer in Stormwind · 3 new spells" with the minimap's
   `class` mark (CSV:1321), from Tweaks Forever's `TrainableSpells`, asked again on `SPELLS_CHANGED`. Its place is the
   nearest trainer who teaches the spells (§2.12); without one (a class and side the data has no trainer for, or no
-  place for the player) it is text only: "Visit your class trainer · 3 new spells".
+  place for the player) it is text only: "Visit your class trainer · 3 new spells". Unspent talent points (#25):
+  "You have 2 talent points to spend" with the Legion `minortalents-icon-book` (CSV:388, the atlas's one square
+  talent mark), from `GetNumUnspentTalents` (R5 found it; `UnitCharacterPoints` is missing on Forever), while any wait,
+  asked again on `CHARACTER_POINTS_CHANGED`; no API, no line.
+- **News again.** A provider may give `renew`, how often the aside became news (a talent point gained): Skip for now
+  holds only while it is unchanged, so each new point brings the line back once. An event a provider needs is
+  registered through `Asides.RefreshOn`, which skips one the client lacks.
 
 ### 2.12 Trainers (roadmap R3, #5)
 
@@ -873,6 +879,9 @@ Nothing below has been validated in game yet.
 18. QuestieDB (§2.14): with it loaded, `/agf audit` names "QuestieDB <version>" a few seconds after login with no
     hitch, and the cards, rings and town stops match the bundled run; with it disabled, or Questie alone without it,
     the audit names the bundled data and why.
+19. Talent points (§2.11): a level that brings a point shows "You have 1 talent point to spend" above the cards and
+    in the tracker, with the talents book and no ring; spending it removes the line at once; after Skip for now, the
+    next level's point brings it back. Confirms `GetNumUnspentTalents` counts Forever's points (R5 read 0 at 19).
 
 ## 9. Open questions that need client probes
 
