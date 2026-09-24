@@ -522,6 +522,9 @@ class Layout:
             art(layer)
             if layer == "ARTWORK" and entry.get("normalAtlas"):
                 canvas.draw(canvas.ui.atlas(entry["normalAtlas"]), *rect, (1, 1, 1, alpha))
+            if layer == "HIGHLIGHT" and lit and entry.get("highlightAtlas"):
+                # Button:SetHighlightAtlas's texture: the button's size, blended ADD (the client's default).
+                canvas.draw(canvas.ui.atlas(entry["highlightAtlas"]), *rect, (1, 1, 1, alpha), "ADD")
             for region in regions:
                 if (region.get("layer") or "ARTWORK") != layer or (layer == "HIGHLIGHT" and not lit):
                     continue

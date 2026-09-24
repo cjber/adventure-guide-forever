@@ -472,10 +472,11 @@ do
 	local h = Load(false)
 	h.ns.OpenPanel()
 	h.flush()
-	local route, shown, pressed = h.ns.Route(), 0, 0
+	local route, shown, pressed, lit = h.ns.Route(), 0, 0, 0
 	for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverPanel, h.Describe)) do
 		if entry.path:match("%.Button%[%d%]$") and entry.size and entry.size[2] == 86 then
 			shown = shown + 1
+			lit = lit + (entry.highlightLocked and 1 or 0)
 			equal(("%dx%d"):format(entry.size[1], entry.size[2]), "288x86", "guide: " .. entry.path .. " is 288x86")
 		elseif entry.path:match("%.IconFrame$") then
 			equal(("%dx%d"):format(entry.size[1], entry.size[2]), "46x46", "guide: " .. entry.path .. " is 46x46")
@@ -486,6 +487,7 @@ do
 	equal(shown, #route.journeys, "guide: a card per journey")
 	equal(shown >= 1 and shown <= 3, true, "guide: one to three cards")
 	equal(pressed, 1, "guide: only the chosen card is pressed")
+	equal(lit, 1, "guide: and only it stays lit, so it reads as chosen in game")
 	local rows = Shown(h, function(frame)
 		return frame.SkipButton ~= nil
 	end)

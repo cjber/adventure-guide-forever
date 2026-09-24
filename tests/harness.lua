@@ -1358,6 +1358,7 @@ function harness.load(options)
 		"color",
 		"disabled",
 		"file",
+		"highlightAtlas",
 		"highlightFont",
 		"highlightLocked",
 		"inactiveAtlas",

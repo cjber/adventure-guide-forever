@@ -370,6 +370,13 @@ local function RefreshCard(card, journey, chosen)
 	card.Reason:SetText(journey.reason or "")
 	card.NormalTexture:SetAtlas(chosen and CARD_ART_CHOSEN or CARD_ART)
 	card:UpdateHighlightForState()
+	-- The pressed art alone reads as the same brown card in game: the chosen card also keeps its hover highlight
+	-- (its own art, added) lit, the way a stock list keeps its selected row lit.
+	if chosen then
+		card:LockHighlight()
+	else
+		card:UnlockHighlight()
+	end
 end
 
 -- The story's squares under its card, from `top` down, when the data proves the chain's length and it is 8 or fewer;

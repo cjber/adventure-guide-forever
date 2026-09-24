@@ -299,6 +299,8 @@
           "y": -0.00
         }
       ],
+      "highlightAtlas": "ui-journeys-renown-button-pressed",
+      "highlightLocked": true,
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[1]",
       "size": [
@@ -466,6 +468,8 @@
           "y": -186.00
         }
       ],
+      "highlightAtlas": "ui-journeys-renown-button",
+      "highlightLocked": false,
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[2]",
       "size": [
@@ -633,6 +637,8 @@
           "y": -276.00
         }
       ],
+      "highlightAtlas": "ui-journeys-renown-button",
+      "highlightLocked": false,
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[3]",
       "size": [
@@ -807,6 +813,7 @@
           "y": -90.00
         }
       ],
+      "highlightAtlas": "PetList-ButtonHighlight",
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[4]",
       "size": [
@@ -950,6 +957,7 @@
           "y": -7.00
         }
       ],
+      "highlightAtlas": "common-icon-redx",
       "normalAtlas": "common-icon-redx",
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[4].SkipButton",
@@ -969,6 +977,7 @@
           "y": 0.00
         }
       ],
+      "highlightAtlas": "Waypoint-MapPin-Untracked",
       "normalAtlas": "Waypoint-MapPin-Untracked",
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[4].PinButton",
@@ -996,6 +1005,7 @@
           "y": -136.00
         }
       ],
+      "highlightAtlas": "PetList-ButtonHighlight",
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[5]",
       "size": [
@@ -1133,6 +1143,7 @@
           "y": -7.00
         }
       ],
+      "highlightAtlas": "common-icon-redx",
       "normalAtlas": "common-icon-redx",
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[5].SkipButton",
@@ -1152,6 +1163,7 @@
           "y": 0.00
         }
       ],
+      "highlightAtlas": "Waypoint-MapPin-Untracked",
       "normalAtlas": "Waypoint-MapPin-Untracked",
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[5].PinButton",
