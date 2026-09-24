@@ -184,7 +184,8 @@ local DEFAULTS = {
 	-- Choosing a journey starts its route too; the key keeps the name it had when only the tracker title did, so a
 	-- saved choice carries over.
 	titleStartsRoute = true,
-	trackRouteQuests = true,
+	-- Opt-in (roadmap #17): the route never takes over the player's tracked quests unasked. A saved true stays true.
+	trackRouteQuests = false,
 	-- Opt-in: it throws away the player's own choice of tracked quests.
 	untrackOthers = false,
 }

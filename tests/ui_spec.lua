@@ -136,7 +136,16 @@ do
 		h.flush()
 	end
 
+	-- Roadmap #17: tracking the route's quests is opt-in, so a title click leaves the player's watches alone.
 	local h = Load("v1")
+	h.watched[1] = 99
+	ClickTitle(h)
+	equal(h.ns.Setting("trackRouteQuests"), false, "tracking the route's quests is off by default")
+	equal(table.concat(h.watched, " "), "99", "so the title click tracks nothing")
+	clean(h, "title click, default tracking")
+
+	-- A saved choice keeps its value.
+	h = Load("v1", { trackRouteQuests = true })
 	h.watched[1] = 99
 	ClickTitle(h)
 	equal(h.spf.NavigateRoute, 1, "the title starts the route")
@@ -173,7 +182,7 @@ do
 	equal(h.ns.Prefs().guided, follows, "none chosen: recorded as the chosen journey's route")
 	clean(h, "title click chooses")
 
-	h = Load("v1", { untrackOthers = true })
+	h = Load("v1", { trackRouteQuests = true, untrackOthers = true })
 	h.watched[1] = 99
 	ClickTitle(h)
 	equal(table.concat(h.watched, " "), RouteQuests(h), "untrackOthers leaves only the route's quests")

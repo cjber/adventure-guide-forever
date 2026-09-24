@@ -278,6 +278,8 @@ ADVENTURE GUIDE                                 module header (template)
     `QuestMapFrame_OpenToQuestDetails`, which writes `displayMode` (lua:1175-1178). The existing hook
     (Panel.lua:765-769) closes the guide.
   - Left-click on any other step: opens the Adventure tab.
+  - With "Clicking the tracker title tracks the route's quests" (`trackRouteQuests`, **off** by default since
+    roadmap #17; a saved on stays on), the left-click also puts the route's log quests on the stock tracker.
   - Right-click: the menu (§2.8).
 
 ### 2.6 Map pins and route preview
