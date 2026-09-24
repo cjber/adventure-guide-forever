@@ -5,9 +5,10 @@ local _, ns = ...
      milliseconds a frame. The bundled data serves until then, and for good when QuestieDB is absent or fails a
      check. QuestieDB gives each quest its title, levels, races, classes, zone, givers and their spawns,
      prerequisites, exclusive quests, chain and skill and reputation gates. The rest stays bundled: towns, maps, NPC
-     roles, instances, crossings, elite quests, and the starts withheld for a gate or event neither source holds
-     (Data.suppressed, Data.seasonal). Only the bundled data's quests are read, since only for those does anything
-     say what else gates them; a start is withheld whenever QuestieDB names a requirement the planner cannot check.
+     roles, instances, crossings and elite quests, and whatever QuestieDB leaves out (a level, a dungeon, a giver's
+     place). Only the bundled data's quests are read, and a start only where the bundled data has one: its lack is a
+     gate, an event or an event-only giver, none of which QuestieDB says. A start is also withheld whenever QuestieDB
+     names a requirement the planner cannot check.
      Nothing of Questie's is shipped: this reads the installed addon at runtime. ]]
 
 local ADDON = "QuestieDB"
@@ -236,12 +237,6 @@ local function Build(lib, zones, bundled, yield)
 	for instance, area in pairs(zones.instances) do
 		instanceOf[area] = instance
 	end
-	local suppressed = {}
-	for _, list in ipairs({ bundled.suppressed or {}, bundled.seasonal or {} }) do
-		for _, id in ipairs(list) do
-			suppressed[id] = true
-		end
-	end
 	local cells = TownCells(bundled, yield)
 	-- Each giver's name, its spawns on maps the data places (0-100 on its area's map), and its usual map.
 	local givers = { Npc = {}, Object = {} }
@@ -270,8 +265,9 @@ local function Build(lib, zones, bundled, yield)
 		return giver
 	end
 	-- Where a quest starts or ends among its givers' spawns: in its zone first, then on the giver's usual map, then
-	-- the lowest map, name and point (tools/gen_quests.py pick). An item giver has no place.
-	local function Place(by, zone)
+	-- the lowest map, name and point (tools/gen_quests.py pick). An item giver has no place. A giver QuestieDB can't
+	-- place keeps the bundled place when the bundled data names the same NPC.
+	local function Place(by, zone, old)
 		local best, bestKey
 		for index, kind in ipairs({ "Npc", "Object" }) do
 			for _, id in ipairs(type(by) == "table" and type(by[index]) == "table" and by[index] or {}) do
@@ -291,6 +287,15 @@ local function Build(lib, zones, bundled, yield)
 		end
 		if best then
 			best.hub = Hub(bundled, cells, best)
+		elseif old and old.npc and type(by) == "table" and type(by[1]) == "table" then
+			for _, id in ipairs(by[1]) do
+				if id == old.npc and not best then
+					best = {}
+					for key, value in pairs(old) do
+						best[key] = value
+					end
+				end
+			end
 		end
 		return best
 	end
@@ -310,19 +315,23 @@ local function Build(lib, zones, bundled, yield)
 			local quest = {
 				title = type(v.name) == "string" and v.name or old.title,
 				level = tonumber(v.questLevel) or 0,
-				min = tonumber(v.requiredLevel) or 0,
+				min = tonumber(v.requiredLevel) or old.min,
 				side = Side(races),
 				races = races ~= 0 and races or nil,
 				classes = classes ~= 0 and classes or nil,
 				elite = old.elite,
 			}
+			-- A level of -1 scales with the player: the bundled level.
+			quest.level = quest.level >= 0 and quest.level or old.level
 			local area = tonumber(v.zoneOrSort) or 0
 			local zone = area > 0 and Map(area) or nil
-			quest.start, quest.finish = Place(v.startedBy, zone), Place(v.finishedBy, zone)
+			quest.start, quest.finish = Place(v.startedBy, zone, old.start), Place(v.finishedBy, zone, old.finish)
 			quest.zone = zone and bundled.zones[zone] and zone or (quest.start or quest.finish or {}).map
 			local instance = area > 0 and (instanceOf[area] or instanceOf[Parent(area) or false])
 			if instance and bundled.instances[instance] then
 				quest.dungeon, quest.raid = instance, bundled.instances[instance].raid
+			else
+				quest.dungeon, quest.raid = old.dungeon, old.raid
 			end
 			local start = quest.start
 			if start and quest.classes and start.npc then
@@ -377,7 +386,7 @@ local function Build(lib, zones, bundled, yield)
 			if
 				unknown
 				or gated
-				or suppressed[id]
+				or not old.start
 				or bit.band(flags, GATED_FLAGS) ~= 0
 				or quest.side == 0
 				or quest.level == 0

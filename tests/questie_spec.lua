@@ -150,9 +150,28 @@ for _, case in ipairs(GATED) do
 end
 -- The level cap as a maximum is none.
 fake.quests[47].requiredMaxLevel = 255
--- A start the bundled data withholds stays withheld, whatever giver QuestieDB names.
-local suppressed = bundled.suppressed[1]
-fake.quests[suppressed].startedBy = { { 197 } }
+-- A start only where the bundled data has one (its lack is a gate or an event-only giver), whatever giver QuestieDB
+-- names.
+local startless
+for id, quest in pairs(bundled.quests) do
+	startless = startless or (not quest.start and fake.quests[id] and id) or nil
+end
+fake.quests[startless].startedBy = { { 197 } }
+-- What QuestieDB leaves out stays bundled: a level that scales with the player (-1), a minimum level, a dungeon it
+-- files elsewhere, and a giver it can't place (every spawn on an area no map has).
+fake.quests[33].questLevel = -1
+fake.quests[33].requiredLevel = nil
+local dungeonQuest
+for id, quest in pairs(bundled.quests) do
+	dungeonQuest = dungeonQuest or (quest.dungeon and fake.quests[id] and id) or nil
+end
+fake.quests[dungeonQuest].zoneOrSort = 1429
+local unplaced
+for id, quest in pairs(bundled.quests) do
+	local finish = quest.finish and quest.finish.npc
+	unplaced = unplaced or (finish and finish ~= 197 and fake.quests[id] and fake.npcs[finish] and id) or nil
+end
+fake.npcs[bundled.quests[unplaced].finish.npc].spawns = { [90003] = { { 50, 50 } } }
 -- A quest the bundled data lacks is left out: nothing says what else gates it.
 fake.quests[999998] = { name = "Unknown", questLevel = 5, requiredLevel = 1, startedBy = { { 197 } } }
 
@@ -174,7 +193,12 @@ for _, case in ipairs(GATED) do
 	equal(same(quests[case[1]].finish, bundled.quests[case[1]].finish), true, case[1] .. " keeps its finish")
 end
 equal(quests[47].start ~= nil, true, "the level cap as a maximum keeps the start")
-equal(quests[suppressed].start, nil, "a suppressed start stays withheld")
+equal(quests[startless].start, nil, "no start where the bundled data has none")
+equal(quests[33].level, bundled.quests[33].level, "a scaling level: the bundled one")
+equal(quests[33].min, bundled.quests[33].min, "no minimum: the bundled one")
+equal(quests[dungeonQuest].dungeon, bundled.quests[dungeonQuest].dungeon, "a dungeon QuestieDB files elsewhere")
+equal(same(quests[unplaced].finish, bundled.quests[unplaced].finish), true, "an unplaced giver keeps the bundled place")
+equal(quests[unplaced].finish ~= bundled.quests[unplaced].finish, true, "a copy of the bundled place")
 equal(quests[999998], nil, "a quest the bundled data lacks")
 
 -- The build runs a slice a frame from login, 2 ms each, on the bundled data until the swap; then one rebuild.

@@ -589,10 +589,12 @@ cache that did, Integrations' town places, is keyed on it).
   NPCs' and objects' spawns (quest zone first, then the giver's usual map), prerequisites, exclusive quests (merged
   into one group per connected set), chain, repeatable, skill and reputation gates.
 - **Still bundled:** zones, maps, continents, crossings, towns (a place joins the nearest bundled town place within
-  100 yd), hub names, NPC roles, instances, elite, and `Data.suppressed` and `Data.seasonal`, the starts the generator
-  withholds for a Method, condition, breadcrumb or event gate QuestieDB does not carry.
-- **Withheld start:** any quest the bundled data lacks (nothing says what else gates it), a prerequisite or exclusive
-  quest outside the data, and `parentQuest`, `breadcrumbForQuestId`, `requiredSpell`, `requiredSpecialization`,
+  100 yd), hub names, NPC roles, instances and elite; and what QuestieDB leaves out: a level of -1 (it scales), a
+  missing minimum level, a dungeon it files outside an instance, and the place of a giver none of whose spawns it
+  places when the bundled data names the same NPC.
+- **Withheld start:** any quest the bundled data lacks, or whose bundled start it withholds (nothing says what else
+  gates it: the generator's Method, condition and event gates, and givers CMaNGOS spawns only for an event, which
+  QuestieDB lists as ordinary spawns); a prerequisite or exclusive quest outside the data; and `parentQuest`, `breadcrumbForQuestId`, `requiredSpell`, `requiredSpecialization`,
   `requiredMaxLevel` below the cap, `availableUntilCompleted`, `availableStartingWith`, `requiredRanks`,
   `disabledByQuest`, flags 1024 or 16384, or a gate on a skill line or faction the data doesn't name.
 - **Fallback:** any failed check or read keeps the bundled data; `/agf audit` names the source and the reason.

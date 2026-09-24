@@ -46,7 +46,7 @@ Install it from CurseForge or Wago Addons, or download the zip from [Releases](h
 
 Quest givers, levels and prerequisites come from a pinned CMaNGOS Classic database, and dungeons from the Forever client's own map tables. Quest IDs are checked against the Forever client's data. Which quests you have finished always comes from the game, and quest and zone names come from the game in your language.
 
-With **QuestieDB** loaded (it comes with Questie, or on its own), the guide reads each quest's givers, spawns, levels, prerequisites and gates from it shortly after login, and the bundled data serves until then. Towns, maps, trainers, dungeons and the starts the bundled data withholds still come from the bundled data. If QuestieDB is missing or a version the guide can't read, the bundled data is used, and `/agf audit` says why.
+With **QuestieDB** loaded (it comes with Questie, or on its own), the guide reads each quest's givers, spawns, levels, prerequisites and gates from it shortly after login, and the bundled data serves until then. Towns, maps, trainers and dungeons still come from the bundled data, and a quest is only offered where the bundled data has a start for it too. If QuestieDB is missing or a version the guide can't read, the bundled data is used, and `/agf audit` says why.
 
 A quest the data cannot place, or whose requirements it cannot check, is never suggested, and a step never points at a place the data does not have. So Forever's own new quests are not suggested until they are in your log; once they are, they are used like any other.
 
