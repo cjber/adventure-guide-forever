@@ -140,7 +140,7 @@ function characters.Resolve(data, fixture)
 			y = entry.y,
 		}
 	end
-	local prefs = { quests = true, dungeons = false, legacy = false, professions = false, skipped = {} }
+	local prefs = { quests = true, dungeons = false, skipped = {} }
 	for key, value in pairs(fixture.prefs or {}) do
 		prefs[key] = value
 	end

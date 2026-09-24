@@ -86,8 +86,6 @@
 ---@class AGFPrefs
 ---@field quests boolean
 ---@field dungeons boolean
----@field legacy boolean
----@field professions boolean
 ---@field journey? string key of the journey card the player chose; nil (or gone) = the first card
 ---@field skipped table<string, boolean> step keys skipped this session
 ---@field last? {key: string, reason: string} step 1 at the last rebuild, for the next login's resume line

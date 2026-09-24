@@ -50,7 +50,7 @@ local function quest(x, y, map)
 	}
 end
 local function prefs()
-	return { quests = true, dungeons = false, legacy = false, professions = false, skipped = {} }
+	return { quests = true, dungeons = false, skipped = {} }
 end
 local data = {
 	build = "test",

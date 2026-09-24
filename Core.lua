@@ -88,8 +88,6 @@ ns.DEFAULTS = DEFAULTS
 local PREFS_DEFAULTS = {
 	quests = true,
 	dungeons = false,
-	legacy = false,
-	professions = false,
 }
 
 ---@type table<string, any>?
@@ -183,7 +181,7 @@ end
 
 ---@return AGFPrefs
 function ns.Prefs()
-	charDB = charDB or { quests = true, dungeons = false, legacy = false, professions = false }
+	charDB = charDB or { quests = true, dungeons = false }
 	charDB.skipped = sessionSkipped
 	return charDB
 end

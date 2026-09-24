@@ -1,6 +1,6 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ https://raw.githubusercontent.com/Gethe/wow-ui-source/live/Interface/AddOns/Blizzard_SharedXML/UI.xsd">
 	<!-- The guide tab and its content are plain frames built with CreateFrame in Panel.lua. -->
-	<!-- They reuse the stock QuestLogTabButtonTemplate directly (see Panel.lua Attach()) instead of a home-grown template here, and anchor to QuestMapFrame in Lua once Blizzard_WorldMap loads. -->
+	<!-- The tab reuses the stock LargeSideTabButtonTemplate directly (see Panel.lua CreateTab()) instead of a home-grown template here, and anchors to QuestMapFrame in Lua once Blizzard_WorldMap loads. -->
 	<!-- The route pin below must be a real XML template: MapCanvasMixin AcquirePin resolves its template argument through CreateFramePool, which needs a declared virtual frame. -->
 	<!-- A quest giver: the game's own available-quest "!", brightened on hover like the quest POIs. -->
 	<Frame name="AdventureGuideForeverGiverPinTemplate" mixin="AdventureGuideForeverGiverPinMixin" enableMouse="true" virtual="true">
