@@ -379,7 +379,7 @@ saga.quests[1].next, saga.quests[2].next, saga.quests[2].pre, saga.quests[3].pre
 saga.quests[4].next = 5
 local card = Model.Plan(saga, player, {}, {}, prefs()).journeys[1]
 equal(card.subline, "Chapter 1 of 3", "story card: the longer chain to begin")
-equal(card.reason, "Begins a new story", "story card: begins")
+equal(card.reason, "A chain begins with Quest giver", "story card: begins, with the giver the data names")
 card = Model.Plan(saga, player, { [1] = true }, {}, prefs()).journeys[1]
 equal(card.subline, "Chapter 2 of 3", "story card: a started chain first")
 equal(card.reason, "Continues a story you started", "story card: continues")
@@ -397,6 +397,64 @@ equal(
 	"Chapter 2",
 	"story card: no total unproven"
 )
+-- World-voiced reasons (roadmap #3), one per card, by priority: a started story, then quests about to turn grey (two
+-- or more), then the chain's giver, then a named first town with three pickups; else the plain line.
+do
+	local function Voice(quests, completed, hubs, level)
+		local world = { quests = quests, zones = data.zones, hubs = hubs }
+		local at =
+			{ level = level or 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
+		return Model.Plan(world, at, completed or {}, {}, prefs()).journeys[1]
+	end
+	local function Town(count, level)
+		local quests = {}
+		for id = 1, count do
+			quests[id] = quest(0.5, 0.5)
+			quests[id].start.hub, quests[id].level = 7, level or 18
+		end
+		return quests
+	end
+	local sentinel = { [7] = { name = "Sentinel Hill, Westfall" } }
+	equal(Voice(Town(3), nil, sentinel).reason, "Sentinel Hill needs hands", "voice: a named town with three pickups")
+	equal(Voice(Town(2), nil, sentinel).reason, nil, "voice: two are no call for hands")
+	equal(Voice(Town(3)).reason, nil, "voice: a town the data doesn't name says nothing")
+	equal(Voice(Town(3), nil, { [7] = { name = "Crossroads" } }).reason, "Crossroads needs hands", "voice: a lone name")
+	-- At 20 a level-14 quest is green and grey at 21 (the green range grows at 20).
+	equal(
+		Voice(Town(3, 14), nil, sentinel, 20).reason,
+		"3 quests will soon turn grey",
+		"voice: grey risk before a town"
+	)
+	local lone = Town(3, 14)
+	lone[2].level, lone[3].level = 20, 20
+	equal(Voice(lone, nil, sentinel, 20).reason, "Sentinel Hill needs hands", "voice: one going grey is not enough")
+	local chained = Town(3, 14)
+	chained[1].next, chained[2].pre, chained[1].start.name = 2, { 1 }, "Gryan Stoutmantle"
+	equal(Voice(chained, nil, sentinel, 20).reason, "2 quests will soon turn grey", "voice: grey risk before the giver")
+	equal(
+		Voice(chained, nil, sentinel).reason,
+		"A chain begins with Gryan Stoutmantle",
+		"voice: the giver before a town"
+	)
+	equal(
+		Voice(chained, { [1] = true }, sentinel, 20).reason,
+		"Continues a story you started",
+		"voice: a started story first"
+	)
+	chained[1].start.name = ""
+	equal(Voice(chained, nil, sentinel).reason, "Begins a new story", "voice: an unnamed giver keeps the plain line")
+	-- The next-zone card speaks the same way, and keeps its level otherwise.
+	local bound = Ahead(5)
+	bound.hubs = { [2] = { name = "Sentinel Hill, Westfall" } }
+	for id = 4, 8 do
+		bound.quests[id].start.hub = 2
+	end
+	equal(
+		Model.Plan(bound, player, {}, {}, prefs()).journeys[2].reason,
+		"Sentinel Hill needs hands",
+		"voice: next zone"
+	)
+end
 -- Skipping the chapter's pickup leaves the card to the zone's count: no step on it takes the chain up.
 local skipLead = prefs()
 skipLead.skipped["hub:1:0.4000:0.5000"] = true
@@ -426,8 +484,8 @@ equal(fought.journeys[2].story, nil, "combat rebuild: the taken chapter takes it
 local sequel = { quests = { [1] = quest(0.1), [2] = quest(0.2), [3] = quest(0.3) }, zones = data.zones }
 sequel.quests[2].pre, sequel.quests[2].next, sequel.quests[3].pre = { 1 }, 3, { 2 }
 card = Model.Plan(sequel, player, { [1] = true }, {}, prefs()).journeys[1]
-equal(card.reason, "Begins a new story", "story card: a chapter 1 after another quest begins")
-equal(card.steps[1].detail, "Begins a new story", "story card: and its row says the same")
+equal(card.reason, "A chain begins with Quest giver", "story card: a chapter 1 after another quest begins")
+equal(card.steps[1].detail, "Begins a new story", "story card: and its row says it begins too")
 
 -- Towns (docs/plan.md §7.2): one stop per hub merges its pickups and the hand-ins whose live waypoint agrees with the
 -- data's finish, titled by the town's flight master; a waypoint elsewhere stays a turn-in of its own.

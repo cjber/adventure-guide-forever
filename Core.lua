@@ -35,6 +35,10 @@ ns.L = {
 	CHAPTER = "Chapter %d",
 	CONTINUES_STORY = "Continues a story you started",
 	BEGINS_STORY = "Begins a new story",
+	-- A zone card's reason in the world's voice (roadmap #3): a chain's giver, a town by its flight master's name.
+	REASON_GREY = "%d quests will soon turn grey",
+	REASON_CHAIN_GIVER = "A chain begins with %s",
+	REASON_HANDS = "%s needs hands",
 	NOTHING_NEARBY = "Nothing nearby fits your level.",
 	LOADING = "Loading your completed quests...",
 	SEARCH_QUESTS = "Search quests",

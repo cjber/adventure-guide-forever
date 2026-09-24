@@ -2,7 +2,7 @@
 card (chosen) | carry | Finish what you carry | 1 ready to hand in, 1 in progress | - | map 1413
   step 1 | handin:346 | Turn in: The Zhevra | 1413 0.5223,0.3101 | Opens the next chapter here
   step 2 | objective:843 | Gann's Reclamation | 1413 0.4600,0.8000 | quests in progress
-card | zone:1413 | The Barrens story | Chapter 1 of 5 | Begins a new story | map 1413
+card | zone:1413 | The Barrens story | Chapter 1 of 5 | 2 quests will soon turn grey | map 1413
   step 1 | hub:346 | Crossroads, The Barrens | 1413 0.5193,0.3032 | Opens the next chapter here
   step 2 | hub:353 | Regthar Deathgate | 1413 0.4534,0.2841 | 2 to pick up
   step 3 | hub:382 | Pick up quests: Kadrak | 1413 0.4812,0.0542 | near your level

@@ -465,3 +465,10 @@
 ---@field TrackRouteQuests fun() track the route's log quests; with untrackOthers, stop tracking the rest
 ---@field DumpLayout fun(root: Frame, describe?: fun(region: Region, entry: AGFDumpEntry)): AGFDumpEntry[]
 ---@field Dump fun() /agf dump: save the layout, route and frames in AdventureGuideForeverDB.dump
+
+-- Stream 1a "Tone" (roadmap #3, #17).
+
+---@class AGFStrings
+---@field REASON_GREY string format: how many of a zone card's pickups turn grey at the next level
+---@field REASON_CHAIN_GIVER string format: the giver who begins the card's chain
+---@field REASON_HANDS string format: the first stop's town, by its flight master's name

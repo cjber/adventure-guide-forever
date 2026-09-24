@@ -1195,6 +1195,37 @@ local function Summarise(journey)
 	journey.more, journey.group = #journey.steps - 1, group
 end
 
+-- A zone card's reason in the world's voice (roadmap #3), the first that applies: a story the player started, at least
+-- GREY_REASON_MIN of its quests going grey at the next level, the giver who begins its chain, then its first stop's
+-- town (its flight master's name, before the zone) with HANDS_MIN quests or more to pick up. Nil when none applies;
+-- the caller falls back to its plain line. Only names the data has: a chain's giver, a town's flight master.
+local GREY_REASON_MIN, HANDS_MIN = 2, 3
+---@param journey AGFJourney
+---@param chain? {continues: boolean, giver?: string}
+---@return string?
+local function WorldReason(data, log, player, journey, chain)
+	local L = ns.L
+	if chain and chain.continues then
+		return L.CONTINUES_STORY
+	end
+	local grey = 0
+	for _, step in ipairs(journey.steps) do
+		for _, id in ipairs(step.pickups or {}) do
+			grey = grey + (GreyRisk(QuestLevel(data, log, player, id), player) and 1 or 0)
+		end
+	end
+	if grey >= GREY_REASON_MIN then
+		return L.REASON_GREY:format(grey)
+	elseif chain and chain.giver then
+		return L.REASON_CHAIN_GIVER:format(chain.giver)
+	end
+	local first = journey.steps[1]
+	local town = first and first.hub and data.hubs and data.hubs[first.hub]
+	if town and #(first.pickups or {}) >= HANDS_MIN then
+		return L.REASON_HANDS:format((town.name:match("^(.-),") or town.name))
+	end
+end
+
 -- The zone's story card, or nil when `zone` has no step: of a chain when the zone has one the player can take up.
 ---@param ready table<integer, AGFPlace>
 ---@return AGFJourney?
@@ -1207,17 +1238,25 @@ local function StoryJourney(data, player, completed, log, ready, eligible, zone,
 	end
 	story.kind, story.key = "story", "zone:" .. zone
 	story.title = L.JOURNEY_STORY:format(ZoneName(data, zone, mapName))
+	---@cast story AGFJourney
 	-- With a chain, the card tells its chapter in place of the zone's count, and its step says so on the map.
 	if chain and lead then
+		local begins = continues and L.CONTINUES_STORY or L.BEGINS_STORY
+		local giver = data.quests[chainID].start.name
 		story.story = chain
 		story.subline = chain.total and L.CHAPTER_OF:format(chain.chapter, chain.total)
 			or L.CHAPTER:format(chain.chapter)
-		story.reason = continues and L.CONTINUES_STORY or L.BEGINS_STORY
-		lead.chapter, lead.reason = story.subline, story.reason
+		story.reason = WorldReason(data, log, player, story, {
+			continues = continues == true,
+			giver = giver ~= "" and giver or nil,
+		}) or begins
+		lead.chapter, lead.reason = story.subline, begins
 		-- A lone quest's detail is its reason, so the row never says the chain continues under a card that begins it.
-		lead.detail = #lead.quests == 1 and story.reason or lead.detail
+		lead.detail = #lead.quests == 1 and begins or lead.detail
+	else
+		story.reason = WorldReason(data, log, player, story)
 	end
-	return story --[[@as AGFJourney]]
+	return story
 end
 
 -- At most MAX_JOURNEYS cards: the last one not chosen makes way, so the chosen journey always keeps its slot.
@@ -1290,7 +1329,8 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			for _, map in ipairs(ahead or {}) do
 				fits = fits or map == nextMap
 			end
-			nextZone.reason = fits and L.NEXT_ZONE_LEVEL:format(player.level + levels) or nil
+			nextZone.reason = WorldReason(data, log, player, nextZone --[[@as AGFJourney]])
+				or (fits and L.NEXT_ZONE_LEVEL:format(player.level + levels) or nil)
 			journeys[#journeys + 1] = nextZone
 		end
 	end

@@ -156,6 +156,12 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
     estimate per frame. They are never fetched in the rebuild. Without SPF, or with no answer, the minutes are
     left out.
   - **Line 3.** It shows the journey's reason, or else the hub line: "Lakeshire, Redridge and 2 more stops".
+  - **Reason (roadmap #3).** A zone card (story or next zone) takes one reason in the world's voice, the first that
+    applies: "Continues a story you started"; "3 quests will soon turn grey" (two or more of its pickups grey at the
+    next level); "A chain begins with Gryan Stoutmantle" (the chain's lead giver); "Sentinel Hill needs hands" (the
+    first stop's town has a flight-master name, cut before its ", zone", and 3 or more pickups). Otherwise the
+    plain line: "Begins a new story", "For level N", or none. Only names the data has; the chapter's row keeps
+    "Begins a new story" or "Continues a story you started".
   - **Group badge.** A 12x12 `questlog-questtypeicon-group` sits at line 3's right edge when any quest needs a
     group. Dungeon cards, whose kind icon says so already, do not get it.
   - **Tooltip.** Whole cards now have one as well (§2.9).
@@ -463,7 +469,7 @@ route. Skipping every step of a chosen journey ends it the same way, quietly.
 |---|---|
 | Card titles | `Finish what you carry` · `Westfall story` · `Head to Darkshore` |
 | Card sublines | `3 quests ready to hand in` · `Chapter 2 of 4` · `Chapter 2` · `11 quests near your level` |
-| Reasons | `Continues a story you started` · `Begins a Westfall story` · `Ready to hand in` · `Sentinel Hill needs hands` · `Better with others` · `For level 14` · `Opens the next chapter here` |
+| Reasons | `Continues a story you started` · `3 quests will soon turn grey` · `A chain begins with Gryan Stoutmantle` · `Sentinel Hill needs hands` · `Begins a new story` · `Ready to hand in` · `For level 14` · `Opens the next chapter here` |
 | Card line 3, tooltip | `Lakeshire, Redridge and 2 more stops` · `Lakeshire, Redridge and 1 more stop` · `1 needs a group` · `3 need a group` |
 | Hub stops | `Lakeshire, Redridge` · `2 to hand in, 4 to pick up` · `Marshal Marris, Verner Osgood and 2 more` · `Guard Parker, Redridge Mountains` · `And 3 more` |
 | Travel | `Fly to Sentinel Hill · 6 min` · `Boat to Auberdine · 2 min wait` · `Fly to Astranaar · new flight path` · `About 4 min away` · card: `6 min` · `15 min by boat` · `15 min by zeppelin` |
