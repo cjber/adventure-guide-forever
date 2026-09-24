@@ -317,6 +317,7 @@
 ---@field OPTIONAL string
 ---@field STEP_COUNT string format: step count
 ---@field GO_WITH string format: travel addon name
+---@field SHORTEST_PATH string
 ---@field SET_WAYPOINT string
 ---@field CLICK_TRAVEL string format: travel addon name
 ---@field CLICK_WAYPOINT string

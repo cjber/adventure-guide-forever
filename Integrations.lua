@@ -290,6 +290,6 @@ end
 ---@return string?
 function Integrations.Provider()
 	if SPF() then
-		return "Shortest Path"
+		return L.SHORTEST_PATH
 	end
 end

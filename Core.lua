@@ -116,6 +116,8 @@ ns.L = {
 	OPTIONAL = "optional",
 	STEP_COUNT = "Steps: %d",
 	GO_WITH = "Go (%s)",
+	-- The travel provider's name, for GO_WITH and CLICK_TRAVEL.
+	SHORTEST_PATH = "Shortest Path",
 	SET_WAYPOINT = "Set waypoint",
 	CLICK_TRAVEL = "Click to travel with %s",
 	CLICK_WAYPOINT = "Click to set a waypoint",
