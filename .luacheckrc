@@ -31,6 +31,7 @@ read_globals = {
 	"WorldMapFrame",
 	"ToggleWorldMap",
 	"OpenQuestLog",
+	"QuestMapFrame_ShowQuestDetails",
 	"EventUtil",
 	"MAP_PIN_INVALID_MAP",
 	"ITEM_CLASSES_ALLOWED",

@@ -51,6 +51,9 @@ function ToggleWorldMap(uiMapID) end
 ---@param mapID? integer
 function OpenQuestLog(mapID) end
 
+---@param questID integer
+function QuestMapFrame_ShowQuestDetails(questID) end
+
 -- Blizzard_Menu's root description, as handed to a DropdownButton's SetupMenu generator.
 ---@class AGFMenu
 ---@field CreateCheckbox fun(self: AGFMenu, text: string, isSelected: (fun(): boolean), setSelected: fun()): AGFMenuElement

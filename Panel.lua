@@ -159,8 +159,9 @@ local function CreateRow(parent)
 	row.Tag:SetPoint("LEFT", row.Detail, "RIGHT", 6, 0)
 	row.Tag:SetText("optional")
 
+	-- A quest in the log opens its details; any other step turns the map to it.
 	row:SetScript("OnClick", function()
-		if row.step then
+		if row.step and not ns.ShowQuest(row.step) then
 			FocusStep(row.step)
 		end
 	end)

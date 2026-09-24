@@ -18,7 +18,9 @@ local ModuleMixin = { headerText = "Adventure Guide" }
 ---@diagnostic disable-next-line: unused-local
 function ModuleMixin:OnBlockHeaderClick(_block, mouseButton)
 	if mouseButton ~= "RightButton" then
-		if ns.OpenPanel then
+		-- The step's quest when the log has it, the guide otherwise.
+		local step = CurrentStep()
+		if not (step and ns.ShowQuest(step)) and ns.OpenPanel then
 			ns.OpenPanel()
 		end
 		return

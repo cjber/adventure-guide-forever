@@ -165,6 +165,19 @@ function ns.Skip(key)
 	ns.Invalidate()
 end
 
+-- A quest in the log opens in Blizzard's own details view (docs/design.md §2.5); anything else is left to the caller.
+-- Never in combat, when the quest log's frames are the client's to move. True when the details opened.
+---@param step AGFStep
+---@return boolean
+function ns.ShowQuest(step)
+	if (step.kind ~= "turnin" and step.kind ~= "objective") or InCombatLockdown() then
+		return false
+	end
+	OpenQuestLog()
+	QuestMapFrame_ShowQuestDetails(step.quests[1])
+	return true
+end
+
 ---@param key string
 function ns.TogglePin(key)
 	local prefs = ns.Prefs()

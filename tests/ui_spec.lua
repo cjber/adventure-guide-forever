@@ -50,16 +50,35 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	h.flush()
 	equal(panel:IsVisible(), true, label .. ": the guide opens")
 	equal(questsFrame:IsShown(), false, label .. ": the quest list steps aside")
-	h.Click(Shown(h, function(frame)
-		return frame.SkipButton ~= nil
-	end)[1])
+	-- F6: the first step, a quest in the log, opens in Blizzard's details from its row and from the tracker; in
+	-- combat the row turns the map and the tracker opens the guide instead.
+	local first = h.ns.Route().steps[1]
+	local function Row()
+		return Shown(h, function(frame)
+			return frame.SkipButton ~= nil
+		end)[1]
+	end
+	h.Click(Row())
 	h.flush()
+	equal(table.concat(h.questDetails, " "), tostring(first.quests[1]), label .. ": a row in the log opens the quest")
+	equal(panel:IsShown(), false, label .. ": in place of the guide")
+	h.ns.OpenPanel()
 	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
 	equal(panel:IsShown(), false, label .. ": the Quests tab closes the guide")
 	equal(questsFrame:IsShown(), true, label .. ": the quest list is back")
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["turnin:845"], "LeftButton")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[first.key], "LeftButton")
 	h.flush()
-	equal(panel:IsShown(), true, label .. ": a tracker click opens the guide")
+	equal(#h.questDetails, 2, label .. ": so does a tracker click")
+	h.SetCombat(true)
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[first.key], "LeftButton")
+	h.flush()
+	equal(panel:IsShown(), true, label .. ": a tracker click in combat opens the guide")
+	h.Click(Row())
+	equal(#h.questDetails, 2, label .. ": no quest details in combat")
+	h.SetCombat(false)
+	h.flush()
+	h.ns.OpenPanel()
+	h.flush()
 	h.TriggerEvent("QuestLog.SetDisplayMode")
 	equal(panel:IsShown(), false, label .. ": a display mode change closes the guide")
 	h.ns.OpenPanel()
