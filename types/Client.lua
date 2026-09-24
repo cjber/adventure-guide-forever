@@ -200,6 +200,13 @@ Settings = nil
 ---@field MarkDirty fun(self: ObjectiveTrackerModuleTemplate)
 ---@field LayoutContents fun(self: ObjectiveTrackerModuleTemplate)
 ---@field OnBlockHeaderClick fun(self: ObjectiveTrackerModuleTemplate, block: AGFTrackerBlock, mouseButton: string)
+---@field blockTemplate string
+-- Blizzard_ObjectiveTrackerModule.lua:634: the block with this id plays its fanfare at the next layout.
+---@field SetNeedsFanfare fun(self: ObjectiveTrackerModuleTemplate, key: string)
+
+-- Blizzard_SharedXML/Mainline/SoundKitConstants.lua:125 (UI_SCENARIO_STAGE_END = 31757).
+---@type {UI_SCENARIO_STAGE_END: integer}
+SOUNDKIT = nil
 
 ---@type {SetModuleContainer: fun(self: any, module: ObjectiveTrackerModuleTemplate, container: Frame), GetContainerForModule: fun(self: any, module: ObjectiveTrackerModuleTemplate): Frame?, AddContainer: fun(self: any, container: Frame)}
 ObjectiveTrackerManager = nil

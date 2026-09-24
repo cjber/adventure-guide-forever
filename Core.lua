@@ -91,6 +91,7 @@ ns.L = {
 	-- The tracker (docs/design.md §2.5).
 	NEXT = "Next: %s",
 	RESUME = "Where you left off: %s",
+	STORY_COMPLETE = "Story complete",
 }
 local L = ns.L
 

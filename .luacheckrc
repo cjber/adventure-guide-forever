@@ -77,6 +77,9 @@ read_globals = {
 	"hooksecurefunc",
 	"MenuUtil",
 	"OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE",
+	"PlaySound",
+	"SOUNDKIT",
+	"tContains",
 	"UIParent",
 	-- Settings.lua
 	"Settings",

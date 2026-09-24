@@ -860,6 +860,51 @@ do
 	clean(stale, "resume: stale")
 end
 
+-- F11, the chapter end (design §2.7): handing in the last quest of a chain whose end the data proves glows a
+-- "Story complete" header once and plays the stage-end sound; a chain with no proven end, or a quest before the
+-- end, does neither. The header stays above the steps until step 1 moves on.
+do
+	local h = Load(false)
+	local ns = h.ns
+	local last, open, middle
+	for id in pairs(ns.Data.quests) do
+		local story = ns.Model.Story(ns.Data, id)
+		if story and story.total == story.chapter then
+			last = math.min(last or id, id)
+		elseif story and story.total then
+			middle = math.min(middle or id, id)
+		elseif story then
+			open = math.min(open or id, id)
+		end
+	end
+	equal(last and open and middle and true, true, "fanfare: the data has each kind of chain quest")
+	for _, id in ipairs({ open, middle }) do
+		h.fire("QUEST_TURNED_IN", id)
+		h.flush()
+	end
+	equal(#h.sounds + #h.fanfares, 0, "fanfare: none for an unproven end or a middle chapter")
+	h.fire("QUEST_TURNED_IN", last)
+	h.flush()
+	same(h.sounds, { 31757 }, "fanfare: the stage-end sound, once")
+	same(h.fanfares, { "story-complete" }, "fanfare: the header glows once")
+	local block = h.tracker.liveBlocks["story-complete"]
+	equal(block.header, "Story complete", "fanfare: the header")
+	equal(h.tracker.layoutOrder[1], "story-complete", "fanfare: above the steps")
+	h.tracker:MarkDirty()
+	equal(#h.fanfares, 1, "fanfare: a later layout doesn't glow again")
+	equal(h.tracker.layoutOrder[1], "story-complete", "fanfare: and still shows the header")
+	local first = ns.Route().steps[1]
+	ns.Skip(first.key, first.title)
+	h.flush()
+	equal(h.tracker.layoutOrder[1], ns.Route().steps[1].key, "fanfare: gone once step 1 moves on")
+	clean(h, "fanfare")
+
+	h = Load(false, { showTracker = false })
+	h.fire("QUEST_TURNED_IN", last)
+	h.flush()
+	equal(#h.sounds, 0, "fanfare: no sound without the tracker section")
+end
+
 -- Chat copy comes from ns.L: an unknown command prints the three help lines, in order.
 do
 	local h = Load(false)

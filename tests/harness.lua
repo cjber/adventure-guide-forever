@@ -106,6 +106,8 @@ function harness.load(options)
 		providers = {},
 		counts = { CreateFrame = 0, displayModeWrites = 0, tickers = 0, AcquirePin = 0, SetMapID = 0 },
 		modelCalls = {},
+		fanfares = {},
+		sounds = {},
 		waypoint = options.waypoint,
 		combat = false,
 	}
@@ -540,12 +542,29 @@ function harness.load(options)
 		function module:GetContextMenuParent()
 			return self
 		end
+		-- Blizzard_ObjectiveTrackerModule.lua:634-649; an anim block glows on layout while its key needs a fanfare
+		-- (Blizzard_ObjectiveTrackerAnimTemplates.lua:97-100), recorded in h.fanfares, and every layout ends clearing
+		-- them (EndLayout).
+		function module:SetNeedsFanfare(key)
+			self.fanfares = self.fanfares or {}
+			self.fanfares[key] = true
+		end
 		function module:MarkDirty()
 			self.layoutOrder = {}
 			for _, block in pairs(self.liveBlocks) do
 				block.used, block.lines, block.order, block.dashes = false, {}, {}, {}
 			end
 			h.call(self.LayoutContents, self)
+			for _, id in ipairs(self.layoutOrder) do
+				if
+					self.blockTemplate == "ObjectiveTrackerAnimBlockTemplate"
+					and self.fanfares
+					and self.fanfares[id]
+				then
+					h.fanfares[#h.fanfares + 1] = id
+				end
+			end
+			self.fanfares = nil
 		end
 	end
 
@@ -908,8 +927,9 @@ function harness.load(options)
 		player.map, player.x, player.y = map, x, y
 	end
 
-	-- Quest log and completion: `log` entries are {id, title, level, complete, map, x, y}.
+	-- Quest log and completion: `log` entries are {id, title, level, complete, map, x, y}; a spec edits h.log.
 	local log = options.log or {}
+	h.log = log
 	h.titleRequests = {}
 	h.watched = options.watched or {}
 	G.C_QuestLog = {
@@ -1273,6 +1293,22 @@ function harness.load(options)
 	h.questDetails = {}
 	G.QuestMapFrame_ShowQuestDetails = function(questID)
 		h.questDetails[#h.questDetails + 1] = questID
+	end
+
+	-- Sounds are recorded by kit ID (Blizzard_SharedXML/Mainline/SoundKitConstants.lua:125).
+	G.SOUNDKIT = { UI_SCENARIO_STAGE_END = 31757 }
+	G.PlaySound = function(kit)
+		h.sounds[#h.sounds + 1] = kit
+		return true
+	end
+	-- Blizzard_SharedXML/TableUtil.lua.
+	G.tContains = function(list, value)
+		for _, each in ipairs(list) do
+			if each == value then
+				return true
+			end
+		end
+		return false
 	end
 
 	-- The objective tracker (Blizzard_ObjectiveTrackerShared.lua:21-23).

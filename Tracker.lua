@@ -10,8 +10,15 @@ local function CurrentStep()
 	return ns.Route().steps[1]
 end
 
+-- The chapter end (docs/design.md §2.7): Blizzard's anim block glows a header once when its key needs a fanfare.
+local STORY_COMPLETE = "story-complete"
+-- Set by a turn-in that ends a story: the quest, then the first step 1 the route shows without it. The header stays
+-- above the steps until step 1 moves on from that.
+---@type {quest: integer, key?: string}?
+local finished
+
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
-local ModuleMixin = { headerText = "Adventure Guide" }
+local ModuleMixin = { headerText = "Adventure Guide", blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
 
 ---@param _block AGFTrackerBlock the header's own block; CurrentStep() is used instead since it's always current
 ---@param mouseButton string
@@ -40,6 +47,13 @@ end
 function ModuleMixin:LayoutContents()
 	if not ns.Setting("showTracker") then
 		return
+	end
+	if finished then
+		local block = self:GetBlock(STORY_COMPLETE)
+		block:SetHeader(ns.L.STORY_COMPLETE)
+		if not self:LayoutBlock(block) then
+			return
+		end
 	end
 	local step = CurrentStep()
 	if not step then
@@ -126,6 +140,34 @@ local function Refresh()
 	end
 end
 
+-- Only a chain whose end the data proves (Model.Story's total) is ever called complete; the sound plays with the
+-- glow, never without the tracker section to show it.
+---@param questID integer
+function ns.OnTurnIn(questID)
+	local story = ns.Data.quests[questID] and ns.Model.Story(ns.Data, questID)
+	if not (module and ns.Setting("showTracker") and story and story.total and story.chapter == story.total) then
+		return
+	end
+	finished = { quest = questID }
+	module:SetNeedsFanfare(STORY_COMPLETE)
+	PlaySound(SOUNDKIT.UI_SCENARIO_STAGE_END)
+	Refresh()
+end
+
+-- The first rebuild whose step 1 isn't the quest just handed in names the step the header stands over.
+local function OnRouteChange()
+	local step = CurrentStep()
+	if finished and not (step and tContains(step.quests, finished.quest)) then
+		local key = step and step.key or ""
+		if finished.key == nil then
+			finished.key = key
+		elseif finished.key ~= key then
+			finished = nil
+		end
+	end
+	Refresh()
+end
+
 Register()
-ns.OnRouteChange(Refresh)
+ns.OnRouteChange(OnRouteChange)
 ns.Integrations.OnTravelChange(Refresh)

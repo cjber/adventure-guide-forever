@@ -277,6 +277,7 @@
 ---@field TRAVEL_PASSAGE string
 ---@field NEXT string format: the step after the tracker's
 ---@field RESUME string format: the reason saved with step 1 last session
+---@field STORY_COMPLETE string the tracker header that glows when a proven chain's last quest is handed in
 ---@field SETTING_MAP_PINS_TOOLTIP string
 ---@field SETTING_GIVERS_TOOLTIP string
 ---@field SETTING_DUNGEONS_DEFAULT_TOOLTIP string
@@ -339,6 +340,7 @@
 ---@field InLog fun(step: AGFStep): boolean the step is a quest in the player's log (a turn-in or its objectives)
 ---@field Menu AGFMenuModule
 ---@field ShowQuest fun(step: AGFStep): boolean open a log step's quest in Blizzard's details; false for other steps or in combat
+---@field OnTurnIn? fun(questID: integer) QUEST_TURNED_IN: the chapter-end fanfare when the quest ends a proven chain; set by Tracker.lua
 ---@field TrackRouteQuests fun() track the route's log quests in route order; with untrackOthers, stop tracking the rest
 ---@field DumpLayout fun(root: Frame, describe?: fun(region: Region, entry: AGFDumpEntry)): AGFDumpEntry[]
 ---@field Dump fun() /agf dump: save the layout, route and frames in AdventureGuideForeverDB.dump
