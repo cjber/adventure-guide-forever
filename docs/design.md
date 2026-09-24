@@ -665,9 +665,11 @@ cache that did, Integrations' town places, is keyed on it).
 **NPC roles (`Data.npcs`, roadmap R2).** The generator emits class trainers (with the class, and `upto`, the highest
 level they teach, so a starting-area trainer is told apart, and `from`, the lowest, when above 1, so a trainer of
 only part of the class's spells, a mage's portal trainer, is too), hunter pet trainers, riding trainers (with
-CMaNGOS's TrainerRace), profession trainers (skill line and the highest rank taught: the SKILL_STEP effect of a
-taught spell in wago SpellEffect, on a SkillLine profession or secondary skill), battlemasters
-(`battlemaster_entry`) and innkeepers, from the pinned CMaNGOS dump.
+CMaNGOS's TrainerRace), profession trainers (skill line and each rank taught: the SKILL_STEP effect of a
+taught spell in wago SpellEffect, on a SkillLine profession or secondary skill; a Journeyman-only trainer teaches no
+Apprentice), battlemasters (`battlemaster_entry`) and innkeepers, from the pinned CMaNGOS dump. `Data.professions`
+gives each line those trainers teach its name, whether it is a secondary skill, and each taught rank's `npc_trainer`
+reqlevel and reqskillvalue (the most any trainer asks).
 The side is every side the FactionTemplate's EnemyGroup is not hostile to. The place is a non-seasonal spawn
 projected as a quest giver's is. Within 100 yards of a quest place it takes that place's hub and the map most of
 the hub's quest places use, since zone rectangles overhang (Astranaar is Ashenvale, not Stonetalon); elsewhere it

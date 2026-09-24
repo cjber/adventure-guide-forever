@@ -479,7 +479,7 @@
 ---@field riding? boolean riding trainer
 ---@field race? integer riding trainer: the race ID it teaches (CMaNGOS TrainerRace), when it names one
 ---@field skill? integer profession trainer: its skill line ID
----@field rank? integer profession trainer: the highest rank it teaches, 1 Apprentice to 4 Artisan (SpellEffect SKILL_STEP)
+---@field ranks? integer[] profession trainer: each rank it teaches, ascending, 1 Apprentice to 4 Artisan (SpellEffect SKILL_STEP)
 ---@field bg? integer battlemaster: its battleground (CMaNGOS battlemaster_entry.bg_template: 1 AV, 2 WSG, 3 AB)
 ---@field inn? boolean innkeeper
 
@@ -669,3 +669,19 @@
 ---@field QUESTIE_FIELD string format: the entity or field it lacks
 ---@field QUESTIE_ZONES string
 ---@field QUESTIE_FAILED string format: the error
+
+--[[ Stream 3b "Professions" (roadmap #9, Hints/Profession.lua, docs/design.md §2.15) ]]
+
+-- A rank a trainer teaches and what its rank spell asks (npc_trainer reqlevel, reqskillvalue; the most any asks).
+---@class AGFProfessionRank
+---@field rank integer 1 Apprentice to 4 Artisan
+---@field level integer
+---@field skill integer
+
+---@class AGFProfession
+---@field name string SkillLine.DisplayName_lang (English), for a line the character has not learned
+---@field secondary? boolean a secondary skill (First Aid, Cooking, Fishing), which takes no profession slot
+---@field ranks AGFProfessionRank[] ascending; a rank no trainer teaches (from a book or quest) is absent
+
+---@class AGFData
+---@field professions? table<integer, AGFProfession> SkillLine ID -> its trainers' ranks, for each line a trainer here teaches
