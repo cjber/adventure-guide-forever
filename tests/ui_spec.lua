@@ -137,6 +137,16 @@ do
 	equal(table.concat(h.watched, " ", 2), RouteQuests(h), "a second click tracks nothing twice")
 	clean(h, "title click")
 
+	-- Shortest Path refuses every route in combat; that refusal must not end the journey a click already started.
+	local cancels, waypoints = h.spf.Cancel, h.counts.SetUserWaypoint
+	h.SetCombat(true)
+	ClickTitle(h)
+	equal(h.ns.Integrations.Guiding(), true, "a title click in combat keeps the running journey")
+	equal(h.spf.Cancel, cancels, "and cancels nothing")
+	equal(h.counts.SetUserWaypoint, waypoints, "nor sets a waypoint over it")
+	h.SetCombat(false)
+	clean(h, "title click in combat")
+
 	h = Load("v1", { untrackOthers = true })
 	h.watched[1] = 99
 	ClickTitle(h)

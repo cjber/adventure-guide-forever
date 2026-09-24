@@ -212,6 +212,14 @@ end
 ---@return boolean
 function Integrations.Navigate(step)
 	local api = SPF()
+	-- Shortest Path refuses every route in combat, which is no sign it cannot plan this one: a journey an earlier Go
+	-- started keeps guiding, and without one the waypoint takes the step as for any refusal.
+	if api and InCombatLockdown() then
+		if Integrations.Guiding() then
+			return false
+		end
+		api = nil
+	end
 	if api then
 		local stops, steps, found = {}, {}, false
 		for _, each in ipairs(ns.Route().steps) do

@@ -1352,9 +1352,10 @@ function harness.load(options)
 			guiding[owner] = 1
 			return true
 		end)
-		-- h.spfDeclines = true makes Shortest Path refuse the route, as it does when it cannot plan one.
+		-- h.spfDeclines = true makes Shortest Path refuse the route, as it does when it cannot plan one; it refuses
+		-- every route in combat too (its API.lua Ready).
 		Counted("NavigateRoute", function(owner)
-			if h.spfDeclines then
+			if h.spfDeclines or h.combat then
 				return false
 			end
 			guiding[owner] = 1
