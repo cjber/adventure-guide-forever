@@ -494,11 +494,19 @@ route. Skipping every step of a chosen journey ends it the same way, quietly.
 | 16 | "New in Forever" tag (`adventureguide-icon-whatsnew`, CSV:2024) on quests already in the log only | Could | Needs the generator to emit the IDs missing from CMaNGOS (count unverified). Never on cards or recommendations. |
 | 17 | Dungeon card | Could | Blocked: `dungeon` is set on 0 quests (agf.md) and the EJ is absent (PROBE). Needs a generator fix plus a TF `DungeonEntrance` API. |
 | 18 | Discovery hint: one unexplored area named as text | Could | Needs a LegacyForever API that does not exist. Text only, never a ring. |
-| 19 | "Visit your class trainer" step from Tweaks Forever's `TrainableSpells` (§5.2), feature-detected | Should | The client lists no `FutureSpell` entries (probe `spellbook2`), so only Tweaks Forever's trainer data can tell. The data has no trainer coordinates, so the step is text only: no ring, no Go. |
+| 19 | "Visit your class trainer" step from Tweaks Forever's `TrainableSpells` (§5.2), feature-detected | Should | The client lists no `FutureSpell` entries (probe `spellbook2`), so only Tweaks Forever's trainer data can tell. `Data.npcs` now places trainers (below), but nothing reads it yet, so the step is text only: no ring, no Go. |
 | 20 | Hubs: one stop per town, named from flight masters (plan §7.2) | Must | A Redridge route spent 4 of 9 steps in Lakeshire, and their rings merged into one. |
 | 21 | Level-aware selection and in-stop order for carried quests (plan §7.3) | Must | The user asked for quests picked up to be ordered by level distance. Travel still orders the route. |
 | 22 | Card minutes, hub line, group badge, and tooltips on whole cards (plan §7.4) | Should | The honest cost of a choice at a glance, with no percentages. |
 | 23 | Route rings above quest POIs (SPF and AGF, §2.6) | Must | A merged stop ring drew under the super-tracked "?". |
+
+**NPC roles (`Data.npcs`, roadmap R2).** The generator emits class trainers (with the class, and `upto`, the highest
+level they teach, so a starting-area trainer is told apart), hunter pet trainers, riding trainers (with
+CMaNGOS's TrainerRace), profession trainers (skill line and the highest rank taught: the SKILL_STEP effect of a
+taught spell in wago SpellEffect), battlemasters (`battlemaster_entry`) and innkeepers, from the pinned CMaNGOS dump.
+The side is every side the FactionTemplate's EnemyGroup is not hostile to. The place is a non-seasonal spawn
+projected as a quest giver's is, preferring the smallest map the quests use; the hub is the nearest quest place's
+within 100 yards, so NPCs never renumber or merge towns. An NPC with no side or no zone-map spawn is left out.
 
 ### 4.1 Route ordering (#12)
 
