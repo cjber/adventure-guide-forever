@@ -53,11 +53,13 @@ local function Minutes(seconds)
 	return math.max(1, math.ceil(seconds / 60))
 end
 
--- The first leg that isn't a walk, and the minutes until it arrives; a trip on foot names where it ends. A new
--- flight path on the way, and a wait of a minute or more for the chosen leg, are added (docs/plan.md F10).
+-- The first leg that isn't a walk, and the minutes until it arrives; a trip on foot names where it ends, the step's
+-- town when it has one (Shortest Path names only the zone). A new flight path on the way, and a wait of a minute or
+-- more for the chosen leg, are added (docs/plan.md F10).
 ---@param detail AGFSPFDetail
+---@param step AGFStep
 ---@return string?
-local function DetailLine(detail)
+local function DetailLine(detail, step)
 	local chosen, elapsed, newFlightPath = nil, 0, false
 	for _, leg in ipairs(detail.legs) do
 		newFlightPath = newFlightPath or (leg.mode == "walk" and leg.newFlightPath == true)
@@ -66,12 +68,13 @@ local function DetailLine(detail)
 			chosen = leg.mode ~= "walk" and leg or nil
 		end
 	end
+	local onFoot = not chosen
 	chosen = chosen or detail.legs[#detail.legs]
 	local verb = chosen and VERBS[chosen.mode]
 	if not verb then
 		return nil
 	end
-	return L.TRAVEL:format(verb:format(chosen.to), Minutes(elapsed))
+	return L.TRAVEL:format(verb:format(onFoot and step.place or chosen.to), Minutes(elapsed))
 		.. (newFlightPath and L.TRAVEL_NEW_FLIGHT_PATH or "")
 		.. (chosen.wait and L.TRAVEL_WAIT:format(Minutes(chosen.wait)) or "")
 end
@@ -101,7 +104,7 @@ local function Fetch(step)
 	if type(api.EstimateDetail) == "function" then
 		local detail = api.EstimateDetail(player.map, player.x, player.y, step.map, step.x, step.y)
 		if detail then
-			return DetailLine(detail), Minutes(detail.seconds), Crossing(detail)
+			return DetailLine(detail, step), Minutes(detail.seconds), Crossing(detail)
 		end
 		return nil
 	end

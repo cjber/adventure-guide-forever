@@ -887,10 +887,17 @@ do
 		{
 			"on foot",
 			{ { mode = "walk", to = "Crossroads", seconds = 90 }, { mode = "walk", to = "The Barrens", seconds = 45 } },
-			"Walk to The Barrens · 3 min",
+			-- Shortest Path names only the zone; the step knows the town.
+			"Walk to Crossroads, The Barrens · 3 min",
 		},
 		{ "no route", false, nil },
 	}
+	h.spfLegs = cases[4][2]
+	equal(
+		ns.Integrations.TravelLine(setmetatable({ place = false }, { __index = step })),
+		"Walk to The Barrens · 3 min",
+		"travel line, on foot to a step with no place: where the walk ends"
+	)
 	for _, case in ipairs(cases) do
 		h.spfLegs = case[2]
 		local detail, estimate = h.spf.EstimateDetail, h.spf.Estimate
