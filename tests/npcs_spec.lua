@@ -31,6 +31,7 @@ for _, case in ipairs({
 end
 equal(npcs[6929].place.hub ~= nil, true, "Gryshka stands in an Orgrimmar hub")
 equal(npcs[5497].place.hub, npcs[5499].place.hub, "Stormwind's Mage Quarter trainers share a hub")
+equal(npcs[2737], nil, "Durtham Greldon teaches CMaNGOS's old Lockpicking line, no profession")
 
 local ROLES = { "class", "pet", "riding", "skill", "bg", "inn" }
 local count = 0

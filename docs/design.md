@@ -503,7 +503,8 @@ route. Skipping every step of a chosen journey ends it the same way, quietly.
 **NPC roles (`Data.npcs`, roadmap R2).** The generator emits class trainers (with the class, and `upto`, the highest
 level they teach, so a starting-area trainer is told apart), hunter pet trainers, riding trainers (with
 CMaNGOS's TrainerRace), profession trainers (skill line and the highest rank taught: the SKILL_STEP effect of a
-taught spell in wago SpellEffect), battlemasters (`battlemaster_entry`) and innkeepers, from the pinned CMaNGOS dump.
+taught spell in wago SpellEffect, on a SkillLine profession or secondary skill), battlemasters
+(`battlemaster_entry`) and innkeepers, from the pinned CMaNGOS dump.
 The side is every side the FactionTemplate's EnemyGroup is not hostile to. The place is a non-seasonal spawn
 projected as a quest giver's is, preferring the smallest map the quests use; the hub is the nearest quest place's
 within 100 yards, so NPCs never renumber or merge towns. An NPC with no side or no zone-map spawn is left out.

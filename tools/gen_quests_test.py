@@ -285,8 +285,12 @@ class NpcTest(unittest.TestCase):
         effects = [
             {"SpellID": "2280", "Effect": "36", "EffectMiscValue_0": "0", "EffectBasePointsF": "25"},
             {"SpellID": "2280", "Effect": "44", "EffectMiscValue_0": "171", "EffectBasePointsF": "2"},
+            # CMaNGOS's old Lockpicking line 242 (1809) is no SkillLine; Frost (6, a class line) is no profession.
+            {"SpellID": "1809", "Effect": "44", "EffectMiscValue_0": "242", "EffectBasePointsF": "1"},
+            {"SpellID": "1", "Effect": "44", "EffectMiscValue_0": "6", "EffectBasePointsF": "1"},
         ]
-        self.assertEqual(skill_steps(effects), {2280: (171, 2)})
+        lines = [{"ID": "171", "CategoryID": "11"}, {"ID": "129", "CategoryID": "9"}, {"ID": "6", "CategoryID": "7"}]
+        self.assertEqual(skill_steps(effects, lines), {2280: (171, 2)})
 
     def test_roles(self):
         tables = {
