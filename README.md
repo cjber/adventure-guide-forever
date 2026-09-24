@@ -8,7 +8,7 @@ Where to go next, for your level, inside WoW: Forever's world map.<br>
 <a href="https://github.com/cjber/adventure-guide-forever/releases/latest"><img src="https://img.shields.io/github/v/release/cjber/adventure-guide-forever" alt="Latest release"></a>
 </p>
 
-Levelling guides tell you exactly what to do, in order. I wanted something looser. From your level, the quests you have finished and the ones in your log, this addon offers a few journeys to choose from, each with a reason, and a short route for the one you pick.
+Levelling guides tell you exactly what to do, in order, as fast as possible. I wanted something looser. From your level, the quests you have finished and the ones in your log, this addon offers a few journeys to choose from, each with a reason, and a short route for the one you pick.
 
 It looks like it came with the game: a tab in the quest log beside Quests, cards drawn with retail's Journeys art, the game's own map pins and objective tracker, and Blizzard's quest details when you click a quest. With the tab closed it draws nothing on your map.
 
