@@ -916,7 +916,7 @@
         {
           "point": "RIGHT",
           "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[4].PinButton",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[4].SkipButton",
           "x": -4.00,
           "y": 0.00
         }
@@ -964,26 +964,6 @@
       "size": [
         14.00,
         14.00
-      ],
-      "type": "Button"
-    },
-    {
-      "anchors": [
-        {
-          "point": "RIGHT",
-          "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[4].SkipButton",
-          "x": -6.00,
-          "y": 0.00
-        }
-      ],
-      "highlightAtlas": "Waypoint-MapPin-Untracked",
-      "normalAtlas": "Waypoint-MapPin-Untracked",
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[4].PinButton",
-      "size": [
-        18.00,
-        18.00
       ],
       "type": "Button"
     },
@@ -1086,7 +1066,7 @@
         {
           "point": "RIGHT",
           "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[5].PinButton",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[5].SkipButton",
           "x": -4.00,
           "y": 0.00
         }
@@ -1150,26 +1130,6 @@
       "size": [
         14.00,
         14.00
-      ],
-      "type": "Button"
-    },
-    {
-      "anchors": [
-        {
-          "point": "RIGHT",
-          "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[5].SkipButton",
-          "x": -6.00,
-          "y": 0.00
-        }
-      ],
-      "highlightAtlas": "Waypoint-MapPin-Untracked",
-      "normalAtlas": "Waypoint-MapPin-Untracked",
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[5].PinButton",
-      "size": [
-        18.00,
-        18.00
       ],
       "type": "Button"
     },

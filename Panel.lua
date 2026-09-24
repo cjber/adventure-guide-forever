@@ -92,7 +92,6 @@ end
 ---@field Title FontString
 ---@field Detail FontString
 ---@field Tag FontString
----@field PinButton Button
 ---@field SkipButton Button
 ---@field step? AGFStep
 
@@ -139,12 +138,6 @@ local function CreateRow(parent)
 	end)
 	row.SkipButton:SetSize(14, 14)
 	row.SkipButton:SetPoint("TOPRIGHT", -6, -7)
-	row.PinButton = CreateRowIcon(row, "Waypoint-MapPin-Untracked", function()
-		return (row.step and row.step.pinned) and "Unpin this step" or "Pin this step to the top of the route"
-	end, function(step)
-		ns.TogglePin(step.key)
-	end)
-	row.PinButton:SetPoint("RIGHT", row.SkipButton, "LEFT", -6, 0)
 
 	row.Ring = row:CreateTexture(nil, "ARTWORK")
 	row.Ring:SetAtlas("adventureguide-ring")
@@ -156,7 +149,7 @@ local function CreateRow(parent)
 
 	row.Title = row:CreateFontString(nil, "ARTWORK", "GameFontNormalMed3")
 	row.Title:SetPoint("TOPLEFT", row.Ring, "TOPRIGHT", 8, 4)
-	row.Title:SetPoint("RIGHT", row.PinButton, "LEFT", -4, 0)
+	row.Title:SetPoint("RIGHT", row.SkipButton, "LEFT", -4, 0)
 	row.Title:SetJustifyH("LEFT")
 	row.Title:SetWordWrap(false)
 
@@ -448,7 +441,6 @@ local function RefreshRow(row, step, index)
 	row.Detail:SetText(step.detail)
 	row.Tag:SetShown(step.optional == true)
 	row:SetAlpha(step.optional and 0.6 or 1)
-	row.PinButton:SetNormalAtlas(step.pinned and "Waypoint-MapPin-Tracked" or "Waypoint-MapPin-Untracked")
 	row.Selected:SetShown(index == 1)
 end
 

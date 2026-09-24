@@ -49,9 +49,6 @@ local function AddPinTooltip(tooltip, step, index)
 		GameTooltip_AddHighlightLine(tooltip, travel)
 	end
 	GameTooltip_AddNormalLine(tooltip, step.reason)
-	if step.pinned then
-		GameTooltip_AddNormalLine(tooltip, "Pinned")
-	end
 	AddClickLine(tooltip)
 end
 

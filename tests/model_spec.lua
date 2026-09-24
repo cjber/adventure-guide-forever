@@ -50,7 +50,7 @@ local function quest(x, y, map)
 	}
 end
 local function prefs()
-	return { quests = true, dungeons = false, legacy = false, professions = false, skipped = {}, pinned = {} }
+	return { quests = true, dungeons = false, legacy = false, professions = false, skipped = {} }
 end
 local data = {
 	build = "test",
@@ -154,25 +154,6 @@ for _, journey in ipairs(Model.Plan(data, player, {}, log, skip).journeys) do
 		equal(skip.skipped[step.key], nil, "skipped steps removed")
 	end
 end
--- Pins keep their slot but are ordered by cost like every other step; a pickup pinned in another zone joins the story.
-local pin = prefs()
-pin.journey = "story:1"
-local pins = {
-	quests = { [10] = quest(0.9, 0.5, 2) },
-	zones = { [1] = data.zones[1], [2] = { name = "Other", min = 30, max = 40 } },
-}
-for id = 1, 9 do
-	pins.quests[id] = data.quests[id]
-end
-pin.pinned = { "pickup:2:0.9000:0.5000", "pickup:1:0.3000:0.5000", "pickup:2:0.9000:0.5000" }
-local pinned = Model.Plan(pins, player, {}, log, pin)
-equal(Has(pinned.steps, "pickup:2:0.9000:0.5000"), 1, "a pin keeps its slot, once")
-equal(#pinned.steps, Model.MAX_STEPS, "pins count towards the cap")
-equal(pinned.steps[#pinned.steps].key, "pickup:2:0.9000:0.5000", "the far pin is still ordered by cost")
-equal(pinned.steps[#pinned.steps].pinned, true, "pin marker")
-pin.skipped["pickup:2:0.9000:0.5000"] = true
-equal(Has(Model.Plan(pins, player, {}, log, pin).steps, "pickup:2:0.9000:0.5000"), 0, "skip wins over pin")
-
 -- The next-zone card: the zone that fits two levels on, when it is another zone with at least 5 quests open now.
 -- Here has three quests at 18; There, which fits 20, has `count` at 20, the last opening at `min`.
 local function Ahead(count, min)
@@ -209,9 +190,6 @@ equal(Kinds(Model.Plan(Ahead(5, 20), player, {}, {}, prefs()).journeys), "story:
 -- At 22 There fits both now and two levels on; the next zone is never the story's own, and Here holds too few.
 local later22 = { level = 22, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
 equal(Kinds(Model.Plan(Ahead(5), later22, {}, {}, prefs()).journeys), "story:2", "never the story's own zone")
-local picked = prefs()
-picked.zone = 1
-equal(Kinds(Model.Plan(Ahead(5), later22, {}, {}, picked).journeys), "story:2", "a zone saved by the old cards is gone")
 
 local hub = { quests = { [1] = quest(0.1), [2] = quest(0.11) }, zones = data.zones }
 local before = Model.Plan(hub, player, {}, {}, prefs()).steps[1]
@@ -245,10 +223,7 @@ for id = 1, 4 do
 	zones.quests[id].level = 17 + id
 	zones.zones[id] = { name = "Zone " .. id, min = 10, max = 25 }
 end
-local choices = Model.Zones(zones, player, {}, {})
-equal(#choices, 3, "top three zones")
-equal(choices[1].map, 1, "best level fit first")
-equal(choices[1].best, true, "best zone flag")
+equal(Model.Plan(zones, player, {}, {}, prefs()).journeys[1].key, "story:1", "the story is the best level fit's")
 -- One cost in yards (F12): this continent by distance, then across the ocean, then a map with no geometry.
 local tiers = { quests = {}, zones = data.zones, maps = {}, continents = { [0] = { x = 50000, y = 0 }, [1] = {} } }
 tiers.continents[1] = { x = 0, y = 0 }
@@ -370,31 +345,6 @@ skipLead.skipped["pickup:1:0.4000:0.5000"] = true
 card = Model.Plan(saga, player, {}, {}, skipLead).journeys[1]
 equal(card.subline, "3 quests near your level", "story card: a skipped chapter is no chapter")
 equal(card.story == nil and card.reason == nil, true, "story card: nor its chain or reason")
--- A pinned chapter stays pinned, and pins come before it: with a full route of pins the card falls back.
-local pinLead = prefs()
-pinLead.pinned = { "pickup:1:0.4000:0.5000" }
-card = Model.Plan(saga, player, {}, {}, pinLead).journeys[1]
-equal(card.subline, "Chapter 1 of 2", "story card: a pinned chapter")
-for _, step in ipairs(card.steps) do
-	lead = step.chapter and step or lead
-end
-equal(lead.pinned, true, "story card: keeps its pin")
-local crowd = { quests = {}, zones = saga.zones }
-local crowdPins = prefs()
-for id, q in pairs(saga.quests) do
-	crowd.quests[id] = q
-end
-for id = 11, 11 + Model.MAX_STEPS - 1 do
-	crowd.quests[id] = quest((id - 10) / 10, 0.9)
-	crowdPins.pinned[#crowdPins.pinned + 1] = ("pickup:1:%.4f:0.9000"):format((id - 10) / 10)
-end
-card = Model.Plan(crowd, player, {}, {}, crowdPins).journeys[1]
-local pinnedSteps = 0
-for _, step in ipairs(card.steps) do
-	pinnedSteps = pinnedSteps + (step.pinned and 1 or 0)
-end
-equal(pinnedSteps, Model.MAX_STEPS, "story card: every pin kept ahead of the chapter")
-equal(card.story, nil, "story card: which then claims no chain")
 -- The same in combat, where the cheap rebuild keeps the last card less the skipped step.
 card = Model.Refresh(saga, player, {}, skipLead, Model.Plan(saga, player, {}, {}, prefs())).journeys[1]
 equal(card.subline, "3 quests near your level", "story card: a chapter skipped in combat is no chapter")
@@ -406,11 +356,9 @@ card = Model.Plan(sequel, player, { [1] = true }, {}, prefs()).journeys[1]
 equal(card.reason, "Begins a new story", "story card: a chapter 1 after another quest begins")
 equal(card.steps[1].detail, "Begins a new story", "story card: and its row says the same")
 
--- No zone the level fits (a city's quests only): a pinned pickup there makes no story card, and no error.
+-- No zone the level fits (a city's quests only): no story card, and no error.
 local city = { quests = { [1] = quest(0.5, 0.5, 9) }, zones = data.zones }
-local cityPins = prefs()
-cityPins.pinned = { "pickup:9:0.5000:0.5000" }
-equal(#Model.Plan(city, player, {}, {}, cityPins).journeys, 0, "story card: none without a zone, pins or not")
+equal(#Model.Plan(city, player, {}, {}, prefs()).journeys, 0, "story card: none without a zone")
 
 assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
 local count = 0

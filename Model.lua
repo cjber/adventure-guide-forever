@@ -330,7 +330,8 @@ function Model.Search(data, player, query, title)
 	return found
 end
 
--- The three zones that best fit `level` for the quests `ids`, best first.
+-- The maps of the three zones that best fit `level` for the quests `ids`, best first.
+---@return integer[]
 local function Rank(data, ids, level)
 	local choices, scores = {}, {}
 	for _, id in ipairs(ids) do
@@ -339,7 +340,7 @@ local function Rank(data, ids, level)
 		local zone = data.zones[map]
 		if zone and not Model.IsGray(quest.level, level) then
 			if not choices[map] then
-				choices[map] = { map = map, name = zone.name, min = zone.min, max = zone.max, quests = 0, best = false }
+				choices[map] = { map = map, min = zone.min, max = zone.max, quests = 0 }
 				scores[map] = 0
 			end
 			choices[map].quests = choices[map].quests + 1
@@ -364,13 +365,11 @@ local function Rank(data, ids, level)
 		end
 		return a.map < b.map
 	end)
-	while #zones > 3 do
-		table.remove(zones)
+	local maps = {}
+	for index = 1, math.min(#zones, 3) do
+		maps[index] = zones[index].map
 	end
-	if zones[1] then
-		zones[1].best = true
-	end
-	return zones
+	return maps
 end
 
 -- One eligibility pass for two levels: the player's, and `ahead` levels on for the next-zone card. A level reaches
@@ -418,11 +417,6 @@ function Model.Givers(data, player, completed, log, mapID)
 		end
 	end
 	return givers
-end
-
-function Model.Zones(data, player, completed, log)
-	local zones = Choices(data, player, completed, log, Index(data))
-	return zones
 end
 
 local function Optional(quest, level, player)
@@ -498,18 +492,13 @@ local function LogSteps(data, player, log, prefs)
 	return steps
 end
 
-local function PickupSteps(data, player, eligible, zone, hubs, steps, pins)
-	local pickups, chosenGroups, pinned = {}, {}, {}
-	for _, key in ipairs(pins) do
-		pinned[key] = true
-	end
+local function PickupSteps(data, player, eligible, zone, hubs, steps)
+	local pickups, chosenGroups = {}, {}
 	for _, id in ipairs(eligible) do
 		local quest = data.quests[id]
 		local kind = (quest.elite or quest.dungeon) and "dungeon" or "pickup"
 		local key = kind .. ":" .. hubs[id]
-		if
-			((quest.zone or quest.start.map) == zone or pinned[key]) and not (quest.group and chosenGroups[quest.group])
-		then
+		if (quest.zone or quest.start.map) == zone and not (quest.group and chosenGroups[quest.group]) then
 			if quest.group then
 				chosenGroups[quest.group] = true
 			end
@@ -708,13 +697,11 @@ local function Order(selected, origin, where, away, cheap)
 end
 
 -- Chooses up to MAX_STEPS of `candidates` and orders them from the player (docs/design.md §4.1). `lead`, the story
--- card's chapter, is chosen next after the pinned steps (keeping its pin when it has one), ordered by cost like the
--- rest.
+-- card's chapter, is chosen first, then ordered by cost like the rest.
 local function Build(data, player, candidates, prefs, mapName, cheap, lead)
-	local byKey, pool, where, docks = {}, {}, {}, Docks(data, player.side)
+	local pool, where, docks = {}, {}, Docks(data, player.side)
 	for _, step in ipairs(candidates) do
 		if not (prefs.skipped and prefs.skipped[step.key]) then
-			byKey[step.key] = step
 			pool[#pool + 1] = step
 			where[step] = Position(data, step, docks)
 		end
@@ -722,7 +709,7 @@ local function Build(data, player, candidates, prefs, mapName, cheap, lead)
 	local origin = Position(data, player, docks)
 
 	-- Selection grows from the player: each pick is the step cheapest to reach from the player or any step already
-	-- picked. Pinned steps come first; there is no phase, so a far turn-in never pushes out a nearby pickup.
+	-- picked. There is no phase, so a far turn-in never pushes out a nearby pickup.
 	-- Without a known place for the player (no position in an instance, a map the data lacks) most steps cost UNKNOWN
 	-- from them. A turn-in among those leads, as turn-ins did before costs, and the route grows from it instead of
 	-- dropping it for whichever key sorts first.
@@ -732,8 +719,7 @@ local function Build(data, player, candidates, prefs, mapName, cheap, lead)
 		local cost = Cost(origin, where[step])
 		reach[step] = (not measured and cost >= UNKNOWN and step.kind == "turnin") and 0 or cost
 	end
-	local function Take(step, pinned)
-		step.pinned = pinned or nil
+	local function Take(step)
 		chosen[step] = true
 		selected[#selected + 1] = step
 		for _, other in ipairs(pool) do
@@ -742,13 +728,7 @@ local function Build(data, player, candidates, prefs, mapName, cheap, lead)
 			end
 		end
 	end
-	for _, key in ipairs(prefs.pinned or {}) do
-		local step = byKey[key]
-		if step and not chosen[step] and #selected < Model.MAX_STEPS then
-			Take(step, true)
-		end
-	end
-	if lead and byKey[lead.key] and not chosen[lead] and #selected < Model.MAX_STEPS then
+	if lead and where[lead] then
 		Take(lead)
 	end
 	while #selected < Model.MAX_STEPS do
@@ -849,13 +829,13 @@ end
 
 -- A zone's pickups as one journey (kind, key and title are the caller's), and how many eligible quests it holds.
 -- The step that offers `leadID` is always among them.
-local function ZoneJourney(data, player, eligible, zone, index, prefs, mapName, pins, leadID)
+local function ZoneJourney(data, player, eligible, zone, index, prefs, mapName, leadID)
 	local candidates, quests, lead = {}, 0, nil
 	for _, id in ipairs(eligible) do
 		local quest = data.quests[id]
 		quests = quests + ((quest.zone or quest.start.map) == zone and 1 or 0)
 	end
-	PickupSteps(data, player, eligible, zone, index.hubs, candidates, pins)
+	PickupSteps(data, player, eligible, zone, index.hubs, candidates)
 	for _, step in ipairs(candidates) do
 		for _, id in ipairs(step.quests) do
 			lead = id == leadID and step or lead
@@ -903,11 +883,11 @@ function Model.Journeys(data, player, completed, log, prefs, mapName)
 	local journeys = { Carry(data, player, log, prefs, mapName) }
 	-- The zone the player's level fits best, named after it. Model.Story (F4) makes it the chapter of a chain; until
 	-- then it holds the zone's pickups, as the route did.
-	local zone = zones[1] and zones[1].map
+	local zone = zones[1]
 	local chain, chainID, continues, story, lead, _
 	if zone then
 		chain, chainID, continues = ZoneStory(data, completed, eligible, zone)
-		story, _, lead = ZoneJourney(data, player, eligible, zone, index, prefs, mapName, prefs.pinned or {}, chainID)
+		story, _, lead = ZoneJourney(data, player, eligible, zone, index, prefs, mapName, chainID)
 	end
 	if story then
 		local name = ZoneName(data, zone, mapName)
@@ -927,23 +907,23 @@ function Model.Journeys(data, player, completed, log, prefs, mapName)
 	end
 	-- The zone that fits two levels on, when it is another zone than the story's and the one the player stands in,
 	-- and already has enough the player can take now.
-	for _, choice in ipairs(ahead or {}) do
-		if choice.map ~= zone and choice.map ~= player.map then
-			local nextZone, quests = ZoneJourney(data, player, eligible, choice.map, index, prefs, mapName, {})
+	for _, map in ipairs(ahead or {}) do
+		if map ~= zone and map ~= player.map then
+			local nextZone, quests = ZoneJourney(data, player, eligible, map, index, prefs, mapName)
 			if nextZone and quests >= NEXT_ZONE_PICKUPS then
-				nextZone.kind, nextZone.key = "nextzone", "nextzone:" .. choice.map
-				local name = ZoneName(data, choice.map, mapName)
+				nextZone.kind, nextZone.key = "nextzone", "nextzone:" .. map
+				local name = ZoneName(data, map, mapName)
 				nextZone.title = L.JOURNEY_NEXT_ZONE:format(name, player.level + levels)
 				journeys[#journeys + 1] = nextZone
 			end
 			break
 		end
 	end
-	return journeys, zones, zone
+	return journeys
 end
 
 -- The route is the chosen journey's steps; the first journey's when the choice is gone or was never made.
-local function Route(journeys, prefs, zones, zone)
+local function Route(journeys, prefs)
 	local chosen = journeys[1]
 	for _, journey in ipairs(journeys) do
 		chosen = journey.key == prefs.journey and journey or chosen
@@ -952,15 +932,12 @@ local function Route(journeys, prefs, zones, zone)
 		journeys = journeys,
 		journey = chosen and chosen.key,
 		steps = chosen and chosen.steps or {},
-		zones = zones,
-		zone = zone,
 	}
 end
 
 ---@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
 function Model.Plan(data, player, completed, log, prefs, mapName)
-	local journeys, zones, zone = Model.Journeys(data, player, completed, log, prefs, mapName)
-	return Route(journeys, prefs, zones, zone)
+	return Route(Model.Journeys(data, player, completed, log, prefs, mapName), prefs)
 end
 
 -- A journey from the last full build without the steps skipped since; the same table when none was.
@@ -1002,5 +979,5 @@ function Model.Refresh(data, player, log, prefs, last, mapName)
 			journeys[#journeys + 1] = kept
 		end
 	end
-	return Route(journeys, prefs, last.zones, last.zone)
+	return Route(journeys, prefs)
 end

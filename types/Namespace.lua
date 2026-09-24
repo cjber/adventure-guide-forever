@@ -88,17 +88,15 @@
 ---@field dungeons boolean
 ---@field legacy boolean
 ---@field professions boolean
----@field zone? integer uiMapID the player picked in "Where next?"; nil = best fit
 ---@field journey? string key of the journey card the player chose; nil (or gone) = the first card
 ---@field skipped table<string, boolean> step keys skipped this session
----@field pinned string[] step keys pinned, in order
 ---@field last? {key: string, reason: string} step 1 at the last rebuild, for the next login's resume line
 ---@field waypoint? {map: integer, x: number, y: number} the native waypoint the last Go set, while it may still be ours
 
 ---@alias AGFStepKind "turnin"|"pickup"|"objective"|"dungeon"
 
 ---@class AGFStep
----@field key string stable identity for pin/skip, e.g. "pickup:1519:0.46:0.52" or "turnin:4581"
+---@field key string stable identity for skips and the resume line, e.g. "pickup:1519:0.46:0.52" or "turnin:4581"
 ---@field kind AGFStepKind
 ---@field title string e.g. "Turn in: Bathran's Hair" or "The Ruins of Stardust"
 ---@field detail string grey second line, e.g. "2 quests here"
@@ -109,7 +107,6 @@
 ---@field y number
 ---@field place? string NPC/object or area name
 ---@field optional? boolean elite/group or outside the player's level band
----@field pinned? boolean
 ---@field chapter? string the story card's chapter line, on the step that takes the chain up
 
 ---@class AGFSkipped
@@ -123,14 +120,6 @@
 ---@field y number
 ---@field title string NPC or object name
 ---@field quests integer[] quest IDs it offers the player now, ascending
-
----@class AGFZoneChoice
----@field map integer
----@field name string
----@field min integer
----@field max integer
----@field quests integer eligible quests there
----@field best boolean
 
 ---@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"
 
@@ -157,8 +146,6 @@
 ---@field journeys AGFJourney[] at most 3: carry, the zone's story, the next zone
 ---@field journey? string the chosen journey's key
 ---@field steps AGFStep[] the chosen journey's steps, never more than MAX_STEPS
----@field zones AGFZoneChoice[] up to 3, best first
----@field zone? integer the zone the route was built for
 
 -- One requirement in the why-not view (Model.Why).
 ---@class AGFWhyLine
@@ -179,8 +166,7 @@
 ---@field Search fun(data: AGFData, player: AGFPlayer, query: string, title?: fun(questID: integer): string?): integer[] up to 10 quest IDs whose title holds `query`, by title
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
 ---@field Story fun(data: AGFData, questID: integer): AGFStory? the chain the quest belongs to; nil when it is in none, or the way back forks
----@field Zones fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>): AGFZoneChoice[]
----@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: fun(map: integer): string?): AGFJourney[], AGFZoneChoice[], integer?
+---@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: fun(map: integer): string?): AGFJourney[]
 ---@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: fun(map: integer): string?): AGFRoute
 ---@field Refresh fun(data: AGFData, player: AGFPlayer, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, last: AGFRoute, mapName?: fun(map: integer): string?): AGFRoute the cheap in-combat rebuild: the log's steps fresh, the rest from `last`
 
@@ -317,7 +303,6 @@
 ---@field Resume fun(step: AGFStep): string? the reason saved last session, while the resume line stands for this step
 ---@field InLog fun(step: AGFStep): boolean the step is a quest in the player's log (a turn-in or its objectives)
 ---@field Menu AGFMenuModule
----@field TogglePin fun(key: string)
 ---@field ShowQuest fun(step: AGFStep): boolean open a log step's quest in Blizzard's details; false for other steps or in combat
 ---@field DumpLayout fun(root: Frame, describe?: fun(region: Region, entry: AGFDumpEntry)): AGFDumpEntry[]
 ---@field Dump fun() /agf dump: save the layout, route and frames in AdventureGuideForeverDB.dump

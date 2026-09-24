@@ -90,7 +90,6 @@ local PREFS_DEFAULTS = {
 	dungeons = false,
 	legacy = false,
 	professions = false,
-	pinned = {},
 }
 
 ---@type table<string, any>?
@@ -184,7 +183,7 @@ end
 
 ---@return AGFPrefs
 function ns.Prefs()
-	charDB = charDB or { quests = true, dungeons = false, legacy = false, professions = false, pinned = {} }
+	charDB = charDB or { quests = true, dungeons = false, legacy = false, professions = false }
 	charDB.skipped = sessionSkipped
 	return charDB
 end
@@ -236,25 +235,11 @@ function ns.ShowQuest(step)
 	return true
 end
 
----@param key string
-function ns.TogglePin(key)
-	local prefs = ns.Prefs()
-	for index, pinned in ipairs(prefs.pinned) do
-		if pinned == key then
-			table.remove(prefs.pinned, index)
-			ns.Invalidate()
-			return
-		end
-	end
-	prefs.pinned[#prefs.pinned + 1] = key
-	ns.Invalidate()
-end
-
 --[[ Route: rebuilt lazily, with invalidations from events/prefs coalesced onto one
      C_Timer.After(0) so a burst of QUEST_LOG_UPDATE events costs one rebuild. ]]
 
 ---@type AGFRoute
-local cachedRoute = { journeys = {}, steps = {}, zones = {} }
+local cachedRoute = { journeys = {}, steps = {} }
 local dirty = true
 local pendingRebuild = false
 ---@type fun()[]
@@ -312,7 +297,7 @@ local function Rebuild()
 	pendingRebuild = false
 	if not ns.State.Ready() then
 		-- Completed-quest data hasn't loaded yet; an empty route beats a wrong one.
-		cachedRoute = { journeys = {}, steps = {}, zones = {} }
+		cachedRoute = { journeys = {}, steps = {} }
 		return
 	end
 	cachedRoute = BuildRoute()
