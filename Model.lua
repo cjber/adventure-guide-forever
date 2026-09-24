@@ -1296,10 +1296,13 @@ local function StoryJourney(data, player, completed, log, ready, eligible, zone,
 	return story
 end
 
--- A class quest (roadmap #7): its data names classes, and not every one. Eligibility has matched the player's already.
----@param quest AGFQuest
-local function IsCalling(quest)
-	return quest.classes ~= nil and quest.classes ~= 0 and not Covers(quest.classes, ALL_CLASSES)
+-- A class quest (roadmap #7): one only the player's class may take. A mask of several classes is no calling: Vile
+-- Familiars is every Horde class's but the warlock's, a starting zone's quest.
+---@return fun(quest: AGFQuest): boolean
+local function ForClass(classBit)
+	return function(quest)
+		return quest.classes == classBit
+	end
 end
 
 -- Your calling (roadmap #7, docs/design.md §2.2): the class quests the player can take now, as one card. It leads with
@@ -1308,13 +1311,13 @@ end
 ---@param ready table<integer, AGFPlace>
 ---@return AGFJourney?
 local function CallingJourney(data, player, completed, log, ready, eligible, prefs, mapName)
-	local L = ns.L
-	local chain, leadID, continues = Lead(data, completed, eligible, IsCalling)
+	local L, belongs = ns.L, ForClass(player.classBit)
+	local chain, leadID, continues = Lead(data, completed, eligible, belongs)
 	for _, id in ipairs(leadID and {} or eligible) do
-		leadID = leadID or (IsCalling(data.quests[id]) and id or nil)
+		leadID = leadID or (belongs(data.quests[id]) and id or nil)
 	end
 	local calling, quests, lead =
-		Pickups(data, player, completed, log, ready, eligible, IsCalling, prefs, mapName, leadID)
+		Pickups(data, player, completed, log, ready, eligible, belongs, prefs, mapName, leadID)
 	if not calling then
 		return nil
 	end
@@ -1422,7 +1425,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 		end
 	end
 	if not dismissed.calling then
-		Offer("calling", "calling", IsCalling, function()
+		Offer("calling", "calling", ForClass(player.classBit), function()
 			return CallingJourney(data, player, completed, log, ready, eligible, prefs, mapName)
 		end)
 	end
