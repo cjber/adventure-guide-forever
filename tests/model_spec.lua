@@ -1008,6 +1008,86 @@ equal(
 	"why: the other's"
 )
 
+-- Roadmap #8: a skill line's rank and a faction's standing gate a quest, on the data's scale (0 starts Neutral).
+local locks = {
+	quests = { quest(), quest(), quest(), quest() },
+	zones = {},
+	skills = { [197] = { name = "Tailoring" } },
+	factions = { [576] = { name = "Timbermaw Hold" }, [529] = { name = "Argent Dawn" }, [21] = { name = "Booty Bay" } },
+}
+locks.quests[1].skill = { id = 197, value = 150 }
+locks.quests[2].rep = { faction = 576, min = 3000 }
+locks.quests[3].rep = { faction = 529, min = 9000, max = 20999 }
+locks.quests[4].rep = { faction = 21, max = 1 }
+local standings = { [576] = 2999, [529] = 9000 }
+local skilled = setmetatable({
+	skills = { [197] = 149 },
+	reputation = function(faction)
+		return standings[faction]
+	end,
+}, { __index = player })
+local function Open(id)
+	return Model.Eligible(locks, skilled, {}, {}, id)
+end
+equal(Open(1), false, "skill: rank 149 of 150")
+skilled.skills[197] = 150
+equal(Open(1), true, "skill: rank 150")
+equal(Model.Eligible(locks, player, {}, {}, 1), false, "skill: an unlearned line is rank 0")
+equal(Open(2), false, "rep: 2999 is one short of Friendly")
+standings[576] = 3000
+equal(Open(2), true, "rep: Friendly")
+equal(Open(3), true, "rep: Honored, below the maximum")
+standings[529] = 20999
+equal(Open(3), false, "rep: the maximum itself closes it")
+equal(Open(4), false, "rep: no standing from the client meets nothing")
+standings[21] = 0
+equal(Open(4), true, "rep: below the maximum")
+equal(
+	Texts(Model.Why(locks, player, {}, {}, 1)),
+	"+ Horde only | + Requires level 10 | - Requires Tailoring 150",
+	"why: a skill line and its rank"
+)
+equal(
+	Texts(Model.Why(locks, skilled, {}, {}, 2)),
+	"+ Horde only | + Requires level 10 | + Requires Friendly with Timbermaw Hold",
+	"why: a standing and its faction"
+)
+equal(
+	Texts(Model.Why(locks, skilled, {}, {}, 3)),
+	"+ Horde only | + Requires level 10 | + Requires Honored with Argent Dawn "
+		.. "| - Only while below Revered with Argent Dawn",
+	"why: a minimum and a maximum one short of a rank"
+)
+equal(
+	Model.Why(locks, skilled, {}, {}, 4)[3].text,
+	"Depends on your standing with Booty Bay",
+	"why: a value between ranks names only the faction"
+)
+local french = {
+	skill = function()
+		return "Couture"
+	end,
+	faction = function()
+		return "Grumegueules"
+	end,
+	standing = function(reaction)
+		return reaction == 5 and "Amical" or nil
+	end,
+}
+equal(Model.Why(locks, player, {}, {}, 1, french)[3].text, "Requires Couture 150", "why: the client's skill name")
+equal(
+	Model.Why(locks, player, {}, {}, 2, french)[3].text,
+	"Requires Amical with Grumegueules",
+	"why: the client's standing and faction names"
+)
+-- The data: locks quests keep their start and carry the gate (tools/gen_quests.py `requirements`).
+equal(ns.Data.quests[6031].rep.faction, 576, "data: Runecloth needs Timbermaw Hold")
+equal(ns.Data.quests[6031].rep.min, 3000, "data: at Friendly")
+equal(ns.Data.quests[6031].start ~= nil, true, "data: and has a start")
+equal(ns.Data.quests[3385].skill.id, 197, "data: The Undermarket needs Tailoring")
+equal(ns.Data.factions[576].name, "Timbermaw Hold", "data: faction names")
+equal(ns.Data.skills[197].name, "Tailoring", "data: skill names")
+
 -- F5 search: the player's side and both sides, a plain case-insensitive title match, by title then ID, 10 at most;
 -- the client's title wins over the data's.
 local wolves = { quests = {}, zones = {} }

@@ -541,3 +541,47 @@
 
 ---@class AGFStrings
 ---@field STORY_HOOK string format: the tracker's one line with no journey chosen: a story's title, its reason or subline
+
+-- Stream 2c: skill- and reputation-gated quests (roadmap #8, docs/design.md §2.4).
+
+-- CMaNGOS RequiredSkill/Value: the skill line's rank must be at least `value`.
+---@class AGFSkillGate
+---@field id integer SkillLine ID
+---@field value integer
+
+-- CMaNGOS RequiredMin/MaxRep: the reputation (0 starts Neutral, 3000 Friendly, 42000 Exalted, the client's
+-- FactionData.currentStanding) must be at least `min` and below `max`.
+---@class AGFRepGate
+---@field faction integer Faction ID
+---@field min? integer
+---@field max? integer
+
+---@class AGFQuest
+---@field skill? AGFSkillGate
+---@field rep? AGFRepGate
+
+---@class AGFData
+---@field skills? table<integer, {name: string}> SkillLine ID -> its English name, for every quest's `skill`
+---@field factions? table<integer, {name: string}> Faction ID -> its English name, for every quest's `rep`
+
+---@class AGFPlayer
+---@field skills? table<integer, integer> learned skill line -> rank; an absent line has rank 0
+---@field reputation? fun(factionID: integer): integer? the standing on AGFRepGate's scale; nil when the client gives none
+
+---@class AGFWhyNames
+---@field skill? fun(skillLineID: integer): string?
+---@field faction? fun(factionID: integer): string?
+---@field standing? fun(reaction: integer): string? 1 Hated to 8 Exalted
+
+---@class AGFState
+---@field Skills fun(): table<integer, integer> learned skill line -> rank (C_SkillInfo), read again on SKILL_LINES_CHANGED
+---@field Reputation fun(factionID: integer): integer? C_Reputation's currentStanding; nil for a faction it gives none for
+---@field SkillName fun(skillLineID: integer): string? the client's name for a learned skill line
+---@field FactionName fun(factionID: integer): string?
+---@field StandingName fun(reaction: integer): string? FACTION_STANDING_LABEL1-8
+
+---@class AGFStrings
+---@field WHY_SKILL string format: a skill line's name and the rank a quest needs
+---@field WHY_REP_MIN string format: the standing and the faction a quest needs
+---@field WHY_REP_BELOW string format: the standing a quest closes at, and the faction
+---@field WHY_REPUTATION string format: a faction whose required value falls between standings

@@ -2663,4 +2663,65 @@ do
 	end
 end
 
+-- Roadmap #8: State reads skill ranks from C_SkillInfo, again on SKILL_LINES_CHANGED, and standings from
+-- C_Reputation; a change of either rebuilds, and the why-not search names both in the client's words.
+do
+	local label = "gates"
+	local h = harness.load({
+		player = { level = 55 },
+		skills = { { skillID = 197, name = "Tailoring", rank = 75 } },
+		reputation = { [576] = { name = "Timbermaw Hold", currentStanding = 2999 } },
+	})
+	local State = h.ns.State
+	equal(State.Skills()[197], 75, label .. ": a learned line's rank")
+	equal(State.Skills()[186], nil, label .. ": no unlearned line")
+	h.skills[1].rank = 150
+	h.fire("SKILL_LINES_CHANGED")
+	equal(State.Player().skills[197], 150, label .. ": read again when the lines change")
+	equal(State.Reputation(576), 2999, label .. ": the client's standing")
+	equal(State.Reputation(529), nil, label .. ": none where the client gives none")
+	equal(State.SkillName(197), "Tailoring", label .. ": the client's skill name")
+	equal(State.SkillName(186), nil, label .. ": none for an unlearned line")
+	equal(State.FactionName(576), "Timbermaw Hold", label .. ": the client's faction name")
+	h.G.FACTION_STANDING_LABEL5 = "Amical"
+	equal(State.StandingName(5), "Amical", label .. ": the client's standing name")
+	equal(State.StandingName(9), nil, label .. ": none past Exalted")
+	equal(h.ns.Model.Eligible(h.ns.Data, State.Player(), {}, {}, 6031), false, label .. ": Runecloth short of Friendly")
+	h.reputation[576].currentStanding = 3000
+	equal(h.ns.Model.Eligible(h.ns.Data, State.Player(), {}, {}, 6031), true, label .. ": open at Friendly")
+	h.ns.OpenPanel()
+	h.flush()
+	local plans = h.modelCalls.Plan
+	h.fire("UPDATE_FACTION")
+	h.flush()
+	equal(h.modelCalls.Plan > plans, true, label .. ": a standing change rebuilds")
+	plans = h.modelCalls.Plan
+	h.fire("UPDATE_FACTION")
+	h.skills[2] = { skillID = 43, name = "Swords", rank = 11 }
+	h.fire("SKILL_LINES_CHANGED")
+	h.flush()
+	equal(h.modelCalls.Plan, plans, label .. ": no gated standing or rank moved, no rebuild")
+	h.skills[1].rank = 151
+	h.fire("SKILL_LINES_CHANGED")
+	h.flush()
+	equal(h.modelCalls.Plan > plans, true, label .. ": a gated rank moved")
+	h.reputation[576].currentStanding = 2999
+	h.Type(
+		h.Find(function(frame)
+			return frame.stockTemplate == "SearchBoxTemplate"
+		end)[1],
+		"Runecloth"
+	)
+	local row = Shown(h, function(frame)
+		return frame.Lines ~= nil and frame.Title:GetText() == "Runecloth"
+	end)[1]
+	local lines = {}
+	for _, line in ipairs(assert(row, label .. ": Runecloth found").Lines) do
+		lines[#lines + 1] = line:IsVisible() and line:GetText() or nil
+	end
+	equal(lines[1], "Requires Amical with Timbermaw Hold", label .. ": the unmet standing leads, in the client's words")
+	equal(row.Lock:IsShown(), true, label .. ": behind a lock")
+	clean(h, label)
+end
+
 print(("ui_spec: %d checks passed"):format(checks))

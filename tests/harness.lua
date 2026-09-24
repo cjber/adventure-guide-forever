@@ -1005,6 +1005,33 @@ function harness.load(options)
 	}
 	-- No client names for races and classes: Model.Why's English stands in, as on a client that lacks them.
 	G.C_CreatureInfo = { GetRaceInfo = noop, GetClassInfo = noop }
+	-- Skill lines and standings: options.skills is {skillID, name, rank} entries, the lines the character has, and
+	-- options.reputation maps a faction ID to {name, currentStanding}; a spec edits h.skills and h.reputation.
+	h.skills, h.reputation = options.skills or {}, options.reputation or {}
+	local function SkillInfo(entry)
+		return entry and { skillID = entry.skillID, name = entry.name, rank = entry.rank, isHeader = false }
+	end
+	G.C_SkillInfo = {
+		GetNumSkillLines = function()
+			return #h.skills
+		end,
+		GetSkillLineInfo = function(index)
+			return SkillInfo(h.skills[index])
+		end,
+		GetSkillLineInfoByID = function(id)
+			for _, entry in ipairs(h.skills) do
+				if entry.skillID == id then
+					return SkillInfo(entry)
+				end
+			end
+		end,
+	}
+	G.C_Reputation = {
+		GetFactionDataByID = function(id)
+			local entry = h.reputation[id]
+			return entry and { factionID = id, name = entry.name, currentStanding = entry.currentStanding }
+		end,
+	}
 
 	-- Maps and waypoints: the user waypoint is a value store, with every call counted.
 	h.counts.SetUserWaypoint, h.counts.ClearUserWaypoint, h.noWaypoint = 0, 0, {}

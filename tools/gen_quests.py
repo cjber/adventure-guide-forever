@@ -547,6 +547,42 @@ def skill_steps(effects, skill_lines):
     return {int(r["SpellID"]): (line, int(float(r["EffectBasePointsF"]))) for r, line in steps if line in lines}
 
 
+def gate_names(skill_lines, reputations):
+    """The names of the skill lines and factions a quest gate can name: each profession or secondary skill line
+    (SkillLine.DisplayName_lang), and each faction with a reputation (Faction.ReputationIndex 0 or more), by ID.
+    """
+    skills = {int(r["ID"]): r["DisplayName_lang"] for r in skill_lines if int(r["CategoryID"]) in PROFESSIONS}
+    factions = {int(r["ID"]): r["Name_lang"] for r in reputations if int(r["ReputationIndex"]) >= 0}
+    return skills, factions
+
+
+def requirements(row, skills, factions):
+    """A quest's skill and reputation gates as CMaNGOS Player::SatisfyQuestSkill and SatisfyQuestReputation check
+    them: `skill` {id, value}, the skill line's rank at least `value`; `rep` {faction, min, max}, the reputation at
+    least `min` and below `max`. Reputation is base plus earned, 0 at the start of Neutral, 3000 Friendly, 9000
+    Honored, 21000 Revered, 42000 Exalted (ReputationMgr::GetReputation), the scale of the client's
+    FactionData.currentStanding. A skill value of 0 asks nothing, since an unlearned line's rank is 0.
+
+    None when a gate names a skill line or faction outside `skills` or `factions` (`gate_names`), or its minimum
+    and maximum name two factions: AGFQuest cannot hold that quest's eligibility.
+    """
+    fields = {}
+    if row["RequiredSkill"] and row["RequiredSkillValue"]:
+        if row["RequiredSkill"] not in skills:
+            return None
+        fields["skill"] = {"id": row["RequiredSkill"], "value": row["RequiredSkillValue"]}
+    low, high = row["RequiredMinRepFaction"], row["RequiredMaxRepFaction"]
+    if low or high:
+        if (low and high and low != high) or (low or high) not in factions:
+            return None
+        fields["rep"] = {"faction": low or high}
+        if low:
+            fields["rep"]["min"] = row["RequiredMinRepValue"]
+        if high:
+            fields["rep"]["max"] = row["RequiredMaxRepValue"]
+    return fields
+
+
 def roles(tables, steps):
     """Each role NPC's fields: `class` and `upto` (its highest spell's level) for a class trainer, `pet` for a hunter
     pet trainer, `riding` and its `race` for a riding trainer, `skill` and `rank` (the highest rank it teaches) for a
@@ -661,8 +697,10 @@ def generate(
     faction_rows,
     effects,
     skill_lines,
+    reputations,
 ):
     maps, world, areas = map_indexes(ui_maps, assignments)
+    skill_names, faction_names = gate_names(skill_lines, reputations)
     instance_of, instances = instance_index(area_rows, map_rows)
     locations = places(tables, world)
     quests = {r["entry"]: r for r in tables["quest_template"]}
@@ -720,19 +758,12 @@ def generate(
                 quest["raid"] = True
             counts["flagged raid" if quest.get("raid") else "flagged dungeon"] += 1
             counts["flagged, not elite"] += not elite
-        # The state contract has no reputation, skill, condition, event or maximum-level state.
-        # Preserve records/enders for the live log; no start means never recommend an unknown pickup.
+        # The state contract has no condition, event or maximum-level state; skill and reputation gates it holds
+        # (`requirements`). Preserve records/enders for the live log; no start means never recommend an unknown pickup.
+        needs = requirements(row, skill_names, faction_names)
         gated = (
-            any(
-                row[k]
-                for k in (
-                    "RequiredSkill",
-                    "RequiredCondition",
-                    "RequiredMinRepFaction",
-                    "RequiredMaxRepFaction",
-                    "BreadcrumbForQuestId",
-                )
-            )
+            needs is None
+            or any(row[k] for k in ("RequiredCondition", "BreadcrumbForQuestId"))
             or row["MaxLevel"] not in (0, 255)
             or row["Method"] != 2
             or row["QuestFlags"] & (1024 | 16384)
@@ -746,6 +777,9 @@ def generate(
         elif gated or not quest["side"] or not quest["title"] or quest["level"] == 0:
             quest.pop("start", None)
             counts["suppressed pickup: unsupported eligibility"] += 1
+        elif needs and "start" in quest:
+            quest.update(needs)
+            counts["skill- or reputation-gated start"] += 1
         counts["with start"] += "start" in quest
         counts["with finish"] += "finish" in quest
         counts["repeatable"] += bool(quest.get("repeatable"))
@@ -787,7 +821,13 @@ def generate(
     counts["ocean crossings"] = len(ferries)
     used = {q["dungeon"] for q in emitted.values() if "dungeon" in q}
     named = {m: {"name": instances[m]["name"]} for m in sorted(used)}
-    return emitted, zones, named, centres, shifts, ferries, towns, npcs, counts
+    skills = {q["skill"]["id"] for q in emitted.values() if "skill" in q}
+    factions = {q["rep"]["faction"] for q in emitted.values() if "rep" in q}
+    gates = {
+        "skills": {s: {"name": skill_names[s]} for s in skills},
+        "factions": {f: {"name": faction_names[f]} for f in factions},
+    }
+    return emitted, zones, named, centres, shifts, ferries, towns, npcs, gates, counts
 
 
 def lua(value):
@@ -805,12 +845,12 @@ def lua(value):
     return str(value)
 
 
-def render(quests, zones, instances, centres, shifts, ferries, towns, npcs):
+def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, gates):
     lines = [
         "-- Generated by tools/gen_quests.py — do not edit.",
         f"-- CMaNGOS classic-db (GPL-3.0), pinned: {CLASSICDB_URL}",
         "-- wago.tools UiMap, UiMapAssignment, QuestV2, TaxiPathNode, TaxiNodes, AreaTable, Map, FactionTemplate,",
-        "-- SpellEffect, SkillLine:",
+        "-- SpellEffect, SkillLine, Faction:",
         f"-- https://wago.tools/db2/QuestV2/csv?build={BUILD}",
         f"-- Published zone ranges (tweaks-forever/tools/gen_zonelevels.py): {ZONE_SOURCE}",
         "-- Prev > 0: completed; Prev < 0: unknown, no pickup. NextQuestId contributes reverse prerequisites.",
@@ -825,6 +865,8 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs):
         "-- not hostile to; place: a non-seasonal spawn, as quest givers'. Within",
         f"-- {LINK} yd of a quest place: its hub, on the map most of the hub's places use; else the smallest map.",
         "-- No side or zone-map spawn: left out.",
+        "-- skill, rep: RequiredSkill/Value and RequiredMin/MaxRep, as Player::SatisfyQuestSkill and",
+        "-- SatisfyQuestReputation check them; skills and factions: the names of those a quest here needs.",
         "---@type string, AGFNamespace",
         "local _, ns = ...",
         "---@type AGFData",
@@ -847,6 +889,9 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs):
     lines.extend(f"\t\t[{hub}] = {lua(town)}," for hub, town in sorted(towns.items()))
     lines.extend(["\t},", "\tnpcs = {"])
     lines.extend(f"\t\t[{entry}] = {lua(npc)}," for entry, npc in sorted(npcs.items()))
+    for name in ("skills", "factions"):
+        lines.extend(["\t},", f"\t{name} = {{"])
+        lines.extend(f"\t\t[{key}] = {lua(value)}," for key, value in sorted(gates[name].items()))
     lines.extend(["\t},", "\tquests = {"])
     lines.extend(f"\t\t[{qid}] = {lua(quest)}," for qid, quest in sorted(quests.items()))
     return "\n".join(lines + ["\t},", "}", ""])
@@ -861,7 +906,7 @@ def main():
     content = download(CLASSICDB_URL, f"classicdb-{CLASSICDB_COMMIT[:7]}.sql.gz", **options)
     with gzip.open(io.BytesIO(content), "rt", encoding="utf-8") as dump:
         tables = read_tables(dump)
-    quests, zones, instances, centres, shifts, ferries, towns, npcs, counts = generate(
+    quests, zones, instances, centres, shifts, ferries, towns, npcs, gates, counts = generate(
         tables,
         db2("UiMap", ("ID", "Name_lang", "Type"), **options),
         db2("UiMapAssignment", ("ID", "UiMapID", "MapID", "AreaID", "Region_0", "Region_5", "UiMin_0"), **options),
@@ -887,12 +932,13 @@ def main():
         db2("Map", ("ID", "MapName_lang", "InstanceType"), **options),
         db2("FactionTemplate", ("ID", "EnemyGroup"), **options),
         db2("SpellEffect", ("SpellID", "Effect", "EffectMiscValue_0", "EffectBasePointsF"), **options),
-        db2("SkillLine", ("ID", "CategoryID"), **options),
+        db2("SkillLine", ("ID", "CategoryID", "DisplayName_lang"), **options),
+        db2("Faction", ("ID", "Name_lang", "ReputationIndex"), **options),
     )
     if not quests or not counts["with start"]:
         raise ValueError("No usable quests; leaving existing output untouched")
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(render(quests, zones, instances, centres, shifts, ferries, towns, npcs), encoding="utf-8")
+    OUTPUT.write_text(render(quests, zones, instances, centres, shifts, ferries, towns, npcs, gates), encoding="utf-8")
     for name, count in sorted(counts.items()):
         print(f"{name}: {count}")
     print(

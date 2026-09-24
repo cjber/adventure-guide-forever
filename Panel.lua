@@ -788,7 +788,14 @@ end
 ---@return number top below it
 local function RefreshResult(row, id, top)
 	local state, data = ns.State, ns.Data
-	local names = { title = QuestTitle, race = state.RaceName, class = state.ClassName }
+	local names = {
+		title = QuestTitle,
+		race = state.RaceName,
+		class = state.ClassName,
+		skill = state.SkillName,
+		faction = state.FactionName,
+		standing = state.StandingName,
+	}
 	local why = ns.Model.Why(data, state.Player(), state.Completed(), state.Log(), id, names)
 	local shown = {}
 	for _, met in ipairs({ false, true }) do

@@ -236,10 +236,24 @@ player's side. Eligible matches show as normal rows. Ineligible matches show why
   - `side`;
   - `races` and `classes`;
   - exclusive `group` ("You chose X instead");
+  - `skill` ("Requires Tailoring 150") and `rep` ("Requires Friendly with Timbermaw Hold", "Only while below
+    Revered with Argent Dawn"; "Depends on your standing with X" when the value falls between ranks), in the
+    client's names for the skill line, faction and standing (`FACTION_STANDING_LABEL1-8`) when it has them;
   - the other reasons `Eligible` returns false: completed ("You've done this"), in the log ("In your quest log"),
     repeatable ("Repeatable quests aren't suggested").
-- **Not covered.** Reputation has no field, so it is never shown. Quests whose start the generator suppressed
-  (gen_quests.py:367-390) get only the "can't tell" line.
+- **Skill and reputation gates (roadmap #8).** The generator keeps the start of a quest gated only by CMaNGOS
+  RequiredSkill/Value or RequiredMin/MaxRep (141 more starts at the pin) and emits `skill = {id, value}` and
+  `rep = {faction, min, max}`, checked as `Player::SatisfyQuestSkill` and `SatisfyQuestReputation` do: rank at least
+  `value`; reputation at least `min` and below `max`. A skill value of 0 asks nothing. CMaNGOS reputation is base
+  plus earned, 0 at the start of Neutral (3000 Friendly, 42000 Exalted), the same scale as the client's
+  `FactionData.currentStanding` (the stock reputation bar subtracts `currentReactionThreshold` from it). A gate on
+  a weapon skill, a faction with no reputation, or two factions stays suppressed. At runtime State reads ranks from
+  `C_SkillInfo` (the global `GetSkillLineInfo` is missing on Forever; an unlearned line is rank 0) again on
+  `SKILL_LINES_CHANGED`, and standings from `C_Reputation.GetFactionDataByID`; a faction it gives none for (the
+  other side's) meets neither bound. `UPDATE_FACTION` or `SKILL_LINES_CHANGED` rebuilds only when a rank or
+  standing a gate names moved, not on every weapon skill-up or reputation kill.
+- **Not covered.** Quests whose start the generator suppressed (gen_quests.py `generate`) get only the "can't
+  tell" line.
 - **No ring, no Go.** A locked or unknown quest never gets a map ring or a Go button.
 - **Met lines are ticked and dimmed, not struck through.** A FontString cannot be struck through. Blizzard's only
   precedent is a hand-sized 1x2 texture in the shop card
@@ -713,7 +727,6 @@ nodes". There is no separate known-flight-paths API.
 - **Stretching `pricestrikethrough-gray` over text.** Blizzard draws it at atlas size only. Met requirements are ticked instead.
 - **Rest stop.** None of the 28 candidate camp auras was present (PROBE lines 129-147), and the CSV has no camp atlas.
 - **Encounter Journal integration.** It is not loaded, and has 0 tiers (PROBE `ej`, again in batch 2).
-- **Reputation requirements.** There is no data field for them.
 - **Traveler's Journal and alt memory.** They need account-wide progress state, which is a treadmill (games.md pain point 9).
 - **Weekly bounties.** A progress treadmill, and against the pillars.
 - **Bundled quest text.** Uncached quests have no text (PROBE `questtext`: `HaveQuestData` false for 5892 and 7). Blizzard's details page shows log quests.
@@ -749,6 +762,10 @@ Nothing below has been validated in game yet.
     and the hub line; the footer's Stop goes as soon as Shortest Path ends the journey.
 13. Batch G (plan §8.2): a chosen journey lasts through travel, turn-ins and `/reload`, and a paused route resumes
     from its card or the tracker title.
+14. Roadmap #8: searching a quest gated on a profession the character has ("Requires <skill> <rank>") ticks it at or
+    past that rank; on an unlearned line it is unmet. A reputation-gated quest reads "Requires Friendly with …" in
+    the client's words and ticks once the standing is reached; learning a rank or gaining the standing opens it
+    without a `/reload`.
 
 ## 9. Open questions that need client probes
 

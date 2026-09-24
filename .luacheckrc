@@ -49,6 +49,8 @@ read_globals = {
 	"C_Map",
 	"C_QuestLog",
 	"C_CreatureInfo",
+	"C_SkillInfo",
+	"C_Reputation",
 	"CreateFrame",
 	-- Integrations.lua
 	"ShortestPathForever",
