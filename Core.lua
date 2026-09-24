@@ -35,13 +35,17 @@ ns.L = {
 	CHAPTER = "Chapter %d",
 	CONTINUES_STORY = "Continues a story you started",
 	BEGINS_STORY = "Begins a new story",
+	-- A zone card's reason in the world's voice (roadmap #3): a chain's giver, a town by its flight master's name.
+	REASON_GREY = "%d quests will soon turn grey",
+	REASON_CHAIN_GIVER = "A chain begins with %s",
+	REASON_HANDS = "%s needs hands",
 	NOTHING_NEARBY = "Nothing nearby fits your level.",
 	LOADING = "Loading your completed quests...",
 	SEARCH_QUESTS = "Search quests",
 	SEARCH_NONE = "No quests match your search.",
 	SETTING_MAP_PINS_TOOLTIP = "The route's numbered steps on the world map while their zone is shown, and quest "
 		.. "givers when those are on too. The open guide previews its route either way.",
-	SETTING_DUNGEONS_DEFAULT_TOOLTIP = "Suggest dungeon and group quests for a character the first time you open "
+	SETTING_DUNGEONS_DEFAULT_TOOLTIP = "Suggest dungeon quests for a character the first time you open "
 		.. "the guide. Change it any time from the guide's settings menu.",
 	SETTING_GIVERS_TOOLTIP = 'A "!" on the world map over everyone with a quest you can take now. '
 		.. "Needs route pins on the map as well.",
@@ -79,6 +83,9 @@ ns.L = {
 	SKIP = "Skip for now",
 	SKIPPED = "Skipped (%d)",
 	SHOW_AGAIN = "Show again: %s",
+	-- A journey card's right-click (roadmap #17): hidden on this character until Show again.
+	NOT_INTERESTED = "Not interested",
+	RIGHT_CLICK_NOT_INTERESTED = "Right-click if you're not interested",
 	CHOOSE_JOURNEY = "Choose another journey",
 	-- With no card chosen every card is whole and no steps show (docs/design.md §2.2); the chosen card toggles back.
 	CHOOSE_TO_SEE_STEPS = "Choose a journey to see its steps.",
@@ -145,7 +152,6 @@ ns.L = {
 	-- The guide and the map.
 	SKIP_STEP = "Skip this step for now",
 	OPTIONAL = "optional",
-	STEP_COUNT = "Steps: %d",
 	-- The travel provider's name, for CLICK_TRAVEL.
 	SHORTEST_PATH = "Shortest Path",
 	STARTS_AFTER_COMBAT = "The route starts when combat ends",
@@ -184,7 +190,8 @@ local DEFAULTS = {
 	-- Choosing a journey starts its route too; the key keeps the name it had when only the tracker title did, so a
 	-- saved choice carries over.
 	titleStartsRoute = true,
-	trackRouteQuests = true,
+	-- Opt-in (roadmap #17): the route never takes over the player's tracked quests unasked. A saved true stays true.
+	trackRouteQuests = false,
 	-- Opt-in: it throws away the player's own choice of tracked quests.
 	untrackOthers = false,
 }
@@ -195,6 +202,7 @@ ns.DEFAULTS = DEFAULTS
 local PREFS_DEFAULTS = {
 	quests = true,
 	dungeons = false,
+	notInterested = {},
 }
 
 ---@type table<string, any>?
@@ -234,6 +242,12 @@ local function LoadCharDB()
 	for key, value in pairs(PREFS_DEFAULTS) do
 		if key ~= "dungeons" and type(loaded[key]) ~= type(value) then
 			loaded[key] = type(value) == "table" and {} or value
+		end
+	end
+	-- Journeys marked "Not interested": key -> the title Show again names it by.
+	for key, title in pairs(loaded.notInterested) do
+		if type(key) ~= "string" or type(title) ~= "string" then
+			loaded.notInterested[key] = nil
 		end
 	end
 	-- The zone picked in the old "Where next?" cards: nothing offers that choice any more, so none is kept.
@@ -295,7 +309,7 @@ end
 
 ---@return AGFPrefs
 function ns.Prefs()
-	charDB = charDB or { quests = true, dungeons = false }
+	charDB = charDB or { quests = true, dungeons = false, notInterested = {} }
 	charDB.skipped = sessionSkipped
 	return charDB
 end
@@ -310,8 +324,23 @@ function ns.Skip(key, title)
 	ns.Invalidate()
 end
 
+-- "Not interested" (roadmap #17): the journey `key` is left out on this character until Show again, and a choice of it
+-- ends, as a click on its card would.
+---@param key string
+---@param title string
+function ns.NotInterested(key, title)
+	local prefs = ns.Prefs()
+	prefs.notInterested[key] = title
+	if prefs.journey == key then
+		ns.Choose(nil)
+	else
+		ns.Invalidate()
+	end
+end
+
 ---@param key string
 function ns.Unskip(key)
+	ns.Prefs().notInterested[key] = nil
 	sessionSkipped[key] = nil
 	for index, skipped in ipairs(skippedOrder) do
 		if skipped.key == key then
@@ -322,9 +351,27 @@ function ns.Unskip(key)
 	ns.Invalidate()
 end
 
+-- This session's skipped steps in the order they were skipped, then the journeys this character is not interested in,
+-- by title.
 ---@return AGFSkipped[]
 function ns.Skipped()
-	return skippedOrder
+	local all, journeys = {}, {}
+	for index, skipped in ipairs(skippedOrder) do
+		all[index] = skipped
+	end
+	for key, title in pairs(ns.Prefs().notInterested) do
+		journeys[#journeys + 1] = { key = key, title = title }
+	end
+	table.sort(journeys, function(a, b)
+		if a.title ~= b.title then
+			return a.title < b.title
+		end
+		return a.key < b.key
+	end)
+	for _, journey in ipairs(journeys) do
+		all[#all + 1] = journey
+	end
+	return all
 end
 
 -- The step's quests in the log: a town's hand-ins, or every quest of a turn-in or objectives (a group quest under

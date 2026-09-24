@@ -1,5 +1,5 @@
 # ne21_darkshore: level 21, side 1, at 1439 0.3700,0.4400
-card (chosen) | zone:1433 | Redridge Mountains story | Chapter 1 of 3 | Begins a new story | map 1433
+card (chosen) | zone:1433 | Redridge Mountains story | Chapter 1 of 3 | 3 quests will soon turn grey | map 1433
   step 1 | hub:76 | Pick up quests: Corporal Keeshan | 1433 0.2330,0.1255 | near your level
   step 2 | hub:61 | Lakeshire, Redridge | 1433 0.2140,0.4396 | Begins a new story
   step 3 | hub:56 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level

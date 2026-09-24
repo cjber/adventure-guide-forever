@@ -317,7 +317,8 @@ function Model.Search(data, player, query, title)
 	return found
 end
 
--- The maps of the three zones that best fit `level` for the quests `ids`, best first.
+-- The maps of the three zones that best fit `level` for the quests `ids`, best first. An outdoor elite is optional
+-- (roadmap #16): it rides along on its zone's cards but never picks the zone a solo player is sent to.
 ---@return integer[]
 local function Rank(data, ids, level)
 	local choices, scores = {}, {}
@@ -325,7 +326,7 @@ local function Rank(data, ids, level)
 		local quest = data.quests[id]
 		local map = quest.zone or quest.start.map
 		local zone = data.zones[map]
-		if zone and not Model.IsGray(quest.level, level) then
+		if zone and not Model.IsGray(quest.level, level) and not (quest.elite and not quest.dungeon) then
 			if not choices[map] then
 				choices[map] = { map = map, min = zone.min, max = zone.max, quests = 0 }
 				scores[map] = 0
@@ -360,14 +361,15 @@ local function Rank(data, ids, level)
 end
 
 -- One eligibility pass for two levels: the player's, and `ahead` levels on for the next-zone card. A level reaches
--- eligibility only through a quest's minimum, so what opens at level + ahead holds everything open now.
+-- eligibility only through a quest's minimum, so what opens at level + ahead holds everything open now. Only an
+-- instance's quests wait behind Dungeons: an outdoor elite is a zone's quest, optional and badged for a group.
 local function Choices(data, player, completed, log, index, prefs, ahead)
 	local eligible, later, target = {}, {}, player.level + (ahead or 0)
 	for _, id in ipairs(index.ids) do
 		local quest = data.quests[id]
-		local group = quest.elite or quest.dungeon
+		local instance = quest.dungeon ~= nil
 		if
-			((group and prefs.dungeons) or (not group and prefs.quests))
+			((instance and prefs.dungeons) or (not instance and prefs.quests))
 			and Eligible(data, player, completed, log, id, index.groups, target)
 		then
 			later[#later + 1] = id
@@ -1125,11 +1127,11 @@ local function DungeonJourney(data, player, completed, log, eligible, prefs, map
 	if not (prefs.dungeons and data.instances) then
 		return nil
 	end
-	local counts, best = {}, nil
+	local counts, best, dismissed = {}, nil, prefs.notInterested or {}
 	for _, id in ipairs(eligible) do
 		local quest = data.quests[id]
 		local instance = not quest.raid and quest.dungeon
-		if instance and data.instances[instance] then
+		if instance and data.instances[instance] and not dismissed["dungeon:" .. instance] then
 			counts[instance] = (counts[instance] or 0) + 1
 		end
 	end
@@ -1194,6 +1196,39 @@ local function Summarise(journey)
 	journey.more, journey.group = #journey.steps - 1, group
 end
 
+-- A zone card's reason in the world's voice (roadmap #3), the first that applies: a story the player started, at least
+-- GREY_REASON_MIN of its quests going grey at the next level (never at the cap), the giver who begins its chain, then
+-- its first stop's town (its flight master's name, before the zone) with HANDS_MIN quests or more to pick up. Nil when
+-- none applies; the caller falls back to its plain line. Only names the data has: a chain's giver, a town's flight
+-- master.
+local GREY_REASON_MIN, HANDS_MIN = 2, 3
+---@param journey AGFJourney
+---@param chain? {continues: boolean, giver?: string}
+---@return string?
+local function WorldReason(data, log, player, journey, chain)
+	local L = ns.L
+	if chain and chain.continues then
+		return L.CONTINUES_STORY
+	end
+	-- At the level cap there is no next level, so nothing is about to turn grey.
+	local grey = 0
+	for _, step in ipairs(player.level < player.maxLevel and journey.steps or {}) do
+		for _, id in ipairs(step.pickups or {}) do
+			grey = grey + (GreyRisk(QuestLevel(data, log, player, id), player) and 1 or 0)
+		end
+	end
+	if grey >= GREY_REASON_MIN then
+		return L.REASON_GREY:format(grey)
+	elseif chain and chain.giver then
+		return L.REASON_CHAIN_GIVER:format(chain.giver)
+	end
+	local first = journey.steps[1]
+	local town = first and first.hub and data.hubs and data.hubs[first.hub]
+	if town and #(first.pickups or {}) >= HANDS_MIN then
+		return L.REASON_HANDS:format((town.name:match("^(.-),") or town.name))
+	end
+end
+
 -- The zone's story card, or nil when `zone` has no step: of a chain when the zone has one the player can take up.
 ---@param ready table<integer, AGFPlace>
 ---@return AGFJourney?
@@ -1206,17 +1241,25 @@ local function StoryJourney(data, player, completed, log, ready, eligible, zone,
 	end
 	story.kind, story.key = "story", "zone:" .. zone
 	story.title = L.JOURNEY_STORY:format(ZoneName(data, zone, mapName))
+	---@cast story AGFJourney
 	-- With a chain, the card tells its chapter in place of the zone's count, and its step says so on the map.
 	if chain and lead then
+		local begins = continues and L.CONTINUES_STORY or L.BEGINS_STORY
+		local giver = data.quests[chainID].start.name
 		story.story = chain
 		story.subline = chain.total and L.CHAPTER_OF:format(chain.chapter, chain.total)
 			or L.CHAPTER:format(chain.chapter)
-		story.reason = continues and L.CONTINUES_STORY or L.BEGINS_STORY
-		lead.chapter, lead.reason = story.subline, story.reason
+		story.reason = WorldReason(data, log, player, story, {
+			continues = continues == true,
+			giver = giver ~= "" and giver or nil,
+		}) or begins
+		lead.chapter, lead.reason = story.subline, begins
 		-- A lone quest's detail is its reason, so the row never says the chain continues under a card that begins it.
-		lead.detail = #lead.quests == 1 and story.reason or lead.detail
+		lead.detail = #lead.quests == 1 and begins or lead.detail
+	else
+		story.reason = WorldReason(data, log, player, story)
 	end
-	return story --[[@as AGFJourney]]
+	return story
 end
 
 -- At most MAX_JOURNEYS cards: the last one not chosen makes way, so the chosen journey always keeps its slot.
@@ -1245,18 +1288,28 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	-- has a step, whatever would offer it now.
 	local chosen = prefs.journey or ""
 	local chosenZone, chosenDungeon = tonumber(chosen:match("^zone:(%d+)$")), tonumber(chosen:match("^dungeon:(%d+)$"))
+	-- A zone the player is not interested in (roadmap #17) is never a card, chosen or not: the next best takes its place.
+	local dismissed = prefs.notInterested or {}
+	local function Open(map)
+		return map ~= nil and not dismissed["zone:" .. map]
+	end
+	chosenZone = Open(chosenZone) and chosenZone or nil
 	local journeys = { Carry(data, player, completed, log, ready, prefs, mapName) }
 	-- The story: the zone the player stands in when it is among the three their level fits now or two levels on (the
 	-- next zone's, which is never the zone they are in), or is the chosen zone, so heading to a zone becomes its story
 	-- on arrival; otherwise, or when it has no step (a capital), the zone the level fits best.
-	local zone, tries, here = zones[1], { zones[1] }, chosenZone ~= nil and chosenZone == player.map
+	local best
+	for _, map in ipairs(zones) do
+		best = best or (Open(map) and map or nil)
+	end
+	local zone, tries, here = best, { best }, chosenZone ~= nil and chosenZone == player.map
 	for _, map in ipairs(zones) do
 		here = here or map == player.map
 	end
 	for _, map in ipairs(ahead or {}) do
 		here = here or map == player.map
 	end
-	if here and player.map ~= zones[1] then
+	if here and player.map ~= best and Open(player.map) then
 		table.insert(tries, 1, player.map)
 	end
 	for _, map in ipairs(tries) do
@@ -1274,7 +1327,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	-- and already has enough the player can take now; or the chosen zone, while it has a step.
 	local nextMap = chosenZone ~= zone and chosenZone or nil
 	for _, map in ipairs(not nextMap and ahead or {}) do
-		if map ~= zone and map ~= player.map then
+		if map ~= zone and map ~= player.map and Open(map) then
 			nextMap = #journeys < Model.MAX_JOURNEYS and map or nil
 			break
 		end
@@ -1289,7 +1342,8 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			for _, map in ipairs(ahead or {}) do
 				fits = fits or map == nextMap
 			end
-			nextZone.reason = fits and L.NEXT_ZONE_LEVEL:format(player.level + levels) or nil
+			nextZone.reason = WorldReason(data, log, player, nextZone --[[@as AGFJourney]])
+				or (fits and L.NEXT_ZONE_LEVEL:format(player.level + levels) or nil)
 			journeys[#journeys + 1] = nextZone
 		end
 	end
@@ -1421,9 +1475,11 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 		end
 		return copy
 	end
-	local journeys = { Carry(data, player, completed, log, Ready(data, log), prefs, mapName, true) }
+	local journeys, dismissed =
+		{ Carry(data, player, completed, log, Ready(data, log), prefs, mapName, true) }, prefs.notInterested or {}
 	for _, journey in ipairs(last.journeys) do
-		journeys[#journeys + 1] = journey.kind ~= "carry" and Retained(journey, Prune) or nil
+		journeys[#journeys + 1] = journey.kind ~= "carry" and not dismissed[journey.key] and Retained(journey, Prune)
+			or nil
 	end
 	-- A carry card the last build lacked pushes out the last card not chosen, as the full build would leave it out.
 	Cap(journeys, prefs.journey)

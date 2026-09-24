@@ -1,5 +1,5 @@
 # human12_elwynn: level 12, side 1, at 1429 0.4200,0.6500
-card (chosen) | zone:1439 | Darkshore story | Chapter 1 of 5 | Begins a new story | map 1439
+card (chosen) | zone:1439 | Darkshore story | Chapter 1 of 5 | A chain begins with Barithras Moonshade | map 1439
   step 1 | hub:450 | Auberdine, Darkshore | 1439 0.3574,0.4371 | Begins a new story
   step 2 | hub:447 | Pick up quests: Sentinel Tysha Moonblade | 1439 0.4030,0.5973 | near your level
   step 3 | hub:429 | Pick up quests: Therylune | 1439 0.3864,0.8733 | near your level

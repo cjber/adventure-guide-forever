@@ -194,6 +194,24 @@ local later = Model.Plan(Ahead(5), player, {}, {}, prefs())
 equal(Kinds(later.journeys), "zone:1 zone:2", "the next zone after the story")
 equal(later.journeys[2].title, "Head to There", "named for its zone")
 equal(later.journeys[2].reason, "For level 20", "the level it fits under the name")
+-- "Not interested" (roadmap #17): a zone so marked is never a card, chosen or not, and the next best takes its place.
+local uninterested = prefs()
+uninterested.notInterested = { ["zone:1"] = "Here story" }
+equal(
+	Kinds(Model.Plan(Ahead(5), player, {}, {}, uninterested).journeys),
+	"zone:2",
+	"not interested: the next zone steps up"
+)
+uninterested.journey = "zone:1"
+equal(Kinds(Model.Plan(Ahead(5), player, {}, {}, uninterested).journeys), "zone:2", "not interested: even when chosen")
+uninterested.notInterested = { ["zone:2"] = "Head to There" }
+equal(Kinds(Model.Plan(Ahead(5), player, {}, {}, uninterested).journeys), "zone:1", "not interested: no next zone")
+local wasOffered = Model.Plan(Ahead(5), player, {}, {}, prefs())
+equal(
+	Kinds(Model.Refresh(Ahead(5), player, {}, {}, uninterested, wasOffered).journeys),
+	"zone:1",
+	"not interested: in combat"
+)
 local capped = { level = 18, maxLevel = 19, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
 equal(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys[2].reason, "For level 19", "never past the cap")
 capped.maxLevel = 18
@@ -238,6 +256,9 @@ delve.journey = nil
 equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:48", "chosen: unchosen, the most quests")
 delve.journey = "dungeon:36"
 equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "chosen: the chosen instance stays")
+-- Not interested (roadmap #17) in the busier instance: the other takes its card.
+delve.journey, delve.notInterested = nil, { ["dungeon:48"] = "Many" }
+equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "not interested: the next dungeon")
 
 local hub = { quests = { [1] = quest(0.1), [2] = quest(0.11), [3] = quest(0.09) }, zones = data.zones }
 hub.quests[1].start.hub, hub.quests[2].start.hub = 7, 7
@@ -259,13 +280,27 @@ equal(#Model.Plan(withFinish, player, {}, unknown, prefs()).steps, 0, "starter n
 unknown[103].complete = true
 equal(Model.Plan(withFinish, player, {}, unknown, prefs()).steps[1].x, 0.6, "bundled turn-in fallback")
 
-local special = { quests = { [1] = quest(), [2] = quest(0.9) }, zones = data.zones }
+local special = { quests = { [1] = quest(), [2] = quest(0.9), [3] = quest(0.1) }, zones = data.zones }
 special.quests[1].elite, special.quests[2].dungeon = true, 99
-equal(#Model.Plan(special, player, {}, {}, prefs()).steps, 0, "group quests opt in")
+-- Roadmap #16: an outdoor elite is a zone's quest (optional, badged); only an instance's quest waits behind Dungeons.
+local outdoor = Model.Plan(special, player, {}, {}, prefs())
+local elite
+for _, step in ipairs(outdoor.steps) do
+	equal(step.quests[1] ~= 2, true, "the instance quest waits behind Dungeons")
+	elite = step.quests[1] == 1 and step or elite
+end
+equal(#outdoor.steps, 2, "an outdoor elite shows with dungeons off, beside the zone's solo quest")
+equal(elite ~= nil and elite.group, 1, "badged for a group")
+equal(elite.optional, true, "and optional")
+-- Being optional, an outdoor elite never picks the zone: a zone with only elites open has no card.
+local elitesOnly = { quests = { [1] = quest() }, zones = data.zones }
+elitesOnly.quests[1].elite = true
+equal(#Model.Plan(elitesOnly, player, {}, {}, prefs()).journeys, 0, "an elite alone never draws a zone card")
 local dungeon = prefs()
 dungeon.quests, dungeon.dungeons = false, true
 local groups = Model.Plan(special, player, {}, {}, dungeon)
-equal(#groups.steps, 2, "dungeon-only activity")
+equal(#groups.steps, 1, "dungeon-only activity holds the instance quest alone")
+equal(groups.steps[1].quests[1], 2, "not the outdoor elite")
 equal(groups.steps[1].group, 1, "a group quest counts in its town")
 equal(groups.steps[1].optional, true, "group optional marker")
 
@@ -373,7 +408,7 @@ saga.quests[1].next, saga.quests[2].next, saga.quests[2].pre, saga.quests[3].pre
 saga.quests[4].next = 5
 local card = Model.Plan(saga, player, {}, {}, prefs()).journeys[1]
 equal(card.subline, "Chapter 1 of 3", "story card: the longer chain to begin")
-equal(card.reason, "Begins a new story", "story card: begins")
+equal(card.reason, "A chain begins with Quest giver", "story card: begins, with the giver the data names")
 card = Model.Plan(saga, player, { [1] = true }, {}, prefs()).journeys[1]
 equal(card.subline, "Chapter 2 of 3", "story card: a started chain first")
 equal(card.reason, "Continues a story you started", "story card: continues")
@@ -391,6 +426,66 @@ equal(
 	"Chapter 2",
 	"story card: no total unproven"
 )
+-- World-voiced reasons (roadmap #3), one per card, by priority: a started story, then quests about to turn grey (two
+-- or more), then the chain's giver, then a named first town with three pickups; else the plain line.
+do
+	local function Voice(quests, completed, hubs, level)
+		local world = { quests = quests, zones = data.zones, hubs = hubs }
+		local at =
+			{ level = level or 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
+		return Model.Plan(world, at, completed or {}, {}, prefs()).journeys[1]
+	end
+	local function Town(count, level)
+		local quests = {}
+		for id = 1, count do
+			quests[id] = quest(0.5, 0.5)
+			quests[id].start.hub, quests[id].level = 7, level or 18
+		end
+		return quests
+	end
+	local sentinel = { [7] = { name = "Sentinel Hill, Westfall" } }
+	equal(Voice(Town(3), nil, sentinel).reason, "Sentinel Hill needs hands", "voice: a named town with three pickups")
+	equal(Voice(Town(2), nil, sentinel).reason, nil, "voice: two are no call for hands")
+	equal(Voice(Town(3)).reason, nil, "voice: a town the data doesn't name says nothing")
+	equal(Voice(Town(3), nil, { [7] = { name = "Crossroads" } }).reason, "Crossroads needs hands", "voice: a lone name")
+	-- At 20 a level-14 quest is green and grey at 21 (the green range grows at 20).
+	equal(
+		Voice(Town(3, 14), nil, sentinel, 20).reason,
+		"3 quests will soon turn grey",
+		"voice: grey risk before a town"
+	)
+	-- At the level cap no quest turns grey: there is no next level.
+	equal(Voice(Town(3, 48), nil, sentinel, 60).reason, "Sentinel Hill needs hands", "voice: no grey risk at the cap")
+	local lone = Town(3, 14)
+	lone[2].level, lone[3].level = 20, 20
+	equal(Voice(lone, nil, sentinel, 20).reason, "Sentinel Hill needs hands", "voice: one going grey is not enough")
+	local chained = Town(3, 14)
+	chained[1].next, chained[2].pre, chained[1].start.name = 2, { 1 }, "Gryan Stoutmantle"
+	equal(Voice(chained, nil, sentinel, 20).reason, "2 quests will soon turn grey", "voice: grey risk before the giver")
+	equal(
+		Voice(chained, nil, sentinel).reason,
+		"A chain begins with Gryan Stoutmantle",
+		"voice: the giver before a town"
+	)
+	equal(
+		Voice(chained, { [1] = true }, sentinel, 20).reason,
+		"Continues a story you started",
+		"voice: a started story first"
+	)
+	chained[1].start.name = ""
+	equal(Voice(chained, nil, sentinel).reason, "Begins a new story", "voice: an unnamed giver keeps the plain line")
+	-- The next-zone card speaks the same way, and keeps its level otherwise.
+	local bound = Ahead(5)
+	bound.hubs = { [2] = { name = "Sentinel Hill, Westfall" } }
+	for id = 4, 8 do
+		bound.quests[id].start.hub = 2
+	end
+	equal(
+		Model.Plan(bound, player, {}, {}, prefs()).journeys[2].reason,
+		"Sentinel Hill needs hands",
+		"voice: next zone"
+	)
+end
 -- Skipping the chapter's pickup leaves the card to the zone's count: no step on it takes the chain up.
 local skipLead = prefs()
 skipLead.skipped["hub:1:0.4000:0.5000"] = true
@@ -420,8 +515,8 @@ equal(fought.journeys[2].story, nil, "combat rebuild: the taken chapter takes it
 local sequel = { quests = { [1] = quest(0.1), [2] = quest(0.2), [3] = quest(0.3) }, zones = data.zones }
 sequel.quests[2].pre, sequel.quests[2].next, sequel.quests[3].pre = { 1 }, 3, { 2 }
 card = Model.Plan(sequel, player, { [1] = true }, {}, prefs()).journeys[1]
-equal(card.reason, "Begins a new story", "story card: a chapter 1 after another quest begins")
-equal(card.steps[1].detail, "Begins a new story", "story card: and its row says the same")
+equal(card.reason, "A chain begins with Quest giver", "story card: a chapter 1 after another quest begins")
+equal(card.steps[1].detail, "Begins a new story", "story card: and its row says it begins too")
 
 -- Towns (docs/plan.md §7.2): one stop per hub merges its pickups and the hand-ins whose live waypoint agrees with the
 -- data's finish, titled by the town's flight master; a waypoint elsewhere stays a turn-in of its own.

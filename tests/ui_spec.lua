@@ -136,7 +136,16 @@ do
 		h.flush()
 	end
 
+	-- Roadmap #17: tracking the route's quests is opt-in, so a title click leaves the player's watches alone.
 	local h = Load("v1")
+	h.watched[1] = 99
+	ClickTitle(h)
+	equal(h.ns.Setting("trackRouteQuests"), false, "tracking the route's quests is off by default")
+	equal(table.concat(h.watched, " "), "99", "so the title click tracks nothing")
+	clean(h, "title click, default tracking")
+
+	-- A saved choice keeps its value.
+	h = Load("v1", { trackRouteQuests = true })
 	h.watched[1] = 99
 	ClickTitle(h)
 	equal(h.spf.NavigateRoute, 1, "the title starts the route")
@@ -173,7 +182,7 @@ do
 	equal(h.ns.Prefs().guided, follows, "none chosen: recorded as the chosen journey's route")
 	clean(h, "title click chooses")
 
-	h = Load("v1", { untrackOthers = true })
+	h = Load("v1", { trackRouteQuests = true, untrackOthers = true })
 	h.watched[1] = 99
 	ClickTitle(h)
 	equal(table.concat(h.watched, " "), RouteQuests(h), "untrackOthers leaves only the route's quests")
@@ -1346,6 +1355,65 @@ do
 	equal(button:IsShown(), false, "skipped: hidden again at 0")
 	clean(h, "step menu")
 end
+-- "Not interested" (roadmap #17): a journey card's right-click hides it on this character, the choice of it ends, and
+-- Skipped (n) under the cards and in the cog lists it with Show again. The carry card has no menu.
+do
+	local h =
+		Load(false, nil, { journey = "carry", notInterested = { ["zone:1"] = 5, [2] = "x", ["zone:9"] = "Kept" } })
+	local ns = h.ns
+	local kept = ns.Prefs().notInterested
+	equal(kept["zone:1"] == nil and kept[2] == nil, true, "not interested: a malformed saved entry is dropped")
+	equal(kept["zone:9"], "Kept", "not interested: a good one stays")
+	ns.Unskip("zone:9")
+	ns.OpenPanel()
+	h.flush()
+	local function Card(kind)
+		return Shown(h, function(frame)
+			return frame.IconFrame ~= nil and frame.journey ~= nil and frame.journey.kind == kind
+		end)[1]
+	end
+	h.menu = nil
+	h.Click(Card("carry"), "RightButton")
+	equal(h.menu, nil, "not interested: the carry card has no menu")
+	local story = Card("story").journey
+	h.Click(Card("story"))
+	h.flush()
+	equal(ns.Route().journey, story.key, "not interested: the story chosen")
+	h.Click(Card("story"), "RightButton")
+	same(h.MenuLines(), { "title: " .. story.title, "button: Not interested" }, "not interested: the card's menu")
+	h.menu.entries[2].onClick()
+	h.flush()
+	equal(ns.Prefs().journey, nil, "not interested: the choice of it ends")
+	equal(h.ns.Integrations.Owns(), false, "not interested: and its route stops")
+	equal(h.G.AdventureGuideForeverCharDB.notInterested[story.key], story.title, "not interested: saved per character")
+	for _, journey in ipairs(ns.Route().journeys) do
+		equal(journey.key ~= story.key, true, "not interested: its card is gone")
+	end
+	local button = Shown(h, function(frame)
+		return frame.text == "Skipped (1)"
+	end)[1]
+	equal(button ~= nil, true, "not interested: Skipped (1) under the cards")
+	local cog = h.Find(function(frame)
+		return frame.stockTemplate == "UIPanelIconDropdownButtonTemplate"
+	end)[1]
+	local lines = h.MenuLines(h.OpenMenu(cog))
+	local listed = false
+	for index, line in ipairs(lines) do
+		listed = listed
+			or (line == "button: Skipped (1)" and lines[index + 1] == "  button: Show again: " .. story.title)
+	end
+	equal(listed, true, "not interested: the cog's Skipped (1) offers it back")
+	h.Click(button)
+	h.menu.entries[1].onClick()
+	h.flush()
+	equal(h.G.AdventureGuideForeverCharDB.notInterested[story.key], nil, "not interested: Show again forgets it")
+	local back = false
+	for _, journey in ipairs(ns.Route().journeys) do
+		back = back or journey.key == story.key
+	end
+	equal(back, true, "not interested: and its card returns")
+	clean(h, "not interested")
+end
 -- A skipped step the route no longer has (the quest turned in anyway) leaves Skipped (n); one it still has stays.
 do
 	local completed = { 844 }
@@ -1969,7 +2037,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Heights(), "86 86 86", label .. ": every card whole")
 	equal(Rows(), 0, label .. ": no steps listed")
 	equal(Hint(), 1, label .. ": the hint under the cards")
-	equal(Says(h.ns.L.STEP_COUNT:format(0)), 1, label .. ": and no steps counted")
+	equal(Says("Steps: 0"), 0, label .. ": and no step counter (docs/design.md §1)")
 	equal(#(h.pins.AdventureGuideForeverPinTemplate or {}), 0, label .. ": no rings previewed")
 	equal(Starts(), 0, label .. ": nothing guides")
 	for _, card in ipairs(Cards()) do
@@ -2022,6 +2090,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		end
 		expected[#expected + 1] = "highlight: " .. L.GROUP_ONE
 		expected[#expected + 1] = "instruction: " .. L.CLICK_TO_CHOOSE
+		expected[#expected + 1] = journey.kind ~= "carry" and "instruction: " .. L.RIGHT_CLICK_NOT_INTERESTED or nil
 		same(h.tooltip, expected, label .. ": " .. journey.key .. "'s tooltip")
 		journey.group = 0
 	end
