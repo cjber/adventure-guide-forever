@@ -853,12 +853,12 @@ for _, spf in ipairs({ false, "v1" }) do
 	local label = "tracker: " .. (spf or "no Shortest Path")
 	local h = Load(spf)
 	local steps = h.ns.Route().steps
-	local expected = { "Crossroads, The Barrens" }
+	local expected = { "Sergra Darkthorn, The Barrens" }
 	expected[#expected + 1] = spf and "About 6 min away" or nil
 	expected[#expected + 1] = "Next: " .. steps[2].title .. " (no dash)"
 	local lines, block = TrackerLines(h)
 	equal(block.header, steps[1].title, label .. ": step 1's title heads the block")
-	same(lines, expected, label .. ": a turn-in's header is its reason; its town, travel, next")
+	same(lines, expected, label .. ": a turn-in's header is its reason; its NPC and zone, travel, next")
 	clean(h, label)
 end
 -- A row's detail has no right anchor, so the tag can follow it: its width is capped instead, so a long one is cut

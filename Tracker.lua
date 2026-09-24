@@ -108,10 +108,11 @@ function ModuleMixin:LayoutContents()
 	local line = 0
 	local town = step.kind == "hub" and #step.quests > 1
 	-- A town's header is its name, so its counts come first. One quest's stop says where it is instead: "NPC, zone",
-	-- the place alone when it already names the zone, the zone alone when there is no place. No line repeats the header.
-	local place = step.place
-	if step.place and step.zone and not step.place:find(step.zone, 1, true) then
-		place = L.PLACE:format(step.place, step.zone)
+	-- the place alone when it already names the zone, the zone alone when there is no place. A lone quest in a town
+	-- names its giver, not the town (design §2.5). No line repeats the header.
+	local place = (step.kind == "hub" and #step.quests == 1) and step.spots[step.quests[1]].name or step.place
+	if place and step.zone and not place:find(step.zone, 1, true) then
+		place = L.PLACE:format(place, step.zone)
 	end
 	place = town and step.detail or place or step.zone
 	if place and not step.title:find(place, 1, true) then
