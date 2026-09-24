@@ -76,10 +76,22 @@ local function DetailLine(detail)
 		.. (chosen.wait and L.TRAVEL_WAIT:format(Minutes(chosen.wait)) or "")
 end
 
--- The travel line and the whole trip's minutes, from one call.
+-- The first boat or zeppelin leg's mode, which a card names when it has room.
+---@param detail AGFSPFDetail
+---@return AGFSPFMode?
+local function Crossing(detail)
+	for _, leg in ipairs(detail.legs) do
+		if leg.mode == "boat" or leg.mode == "zeppelin" then
+			return leg.mode
+		end
+	end
+end
+
+-- The travel line, the whole trip's minutes and any crossing, from one call.
 ---@param step AGFStep
 ---@return string? line
 ---@return integer? minutes
+---@return AGFSPFMode? crossing
 local function Fetch(step)
 	local api = SPF()
 	local player = ns.State.Player()
@@ -89,7 +101,7 @@ local function Fetch(step)
 	if type(api.EstimateDetail) == "function" then
 		local detail = api.EstimateDetail(player.map, player.x, player.y, step.map, step.x, step.y)
 		if detail then
-			return DetailLine(detail), Minutes(detail.seconds)
+			return DetailLine(detail), Minutes(detail.seconds), Crossing(detail)
 		end
 		return nil
 	end
@@ -187,6 +199,77 @@ end
 ---@param fn fun()
 function Integrations.OnTravelChange(fn)
 	travelListeners[#travelListeners + 1] = fn
+end
+
+-- Each card's travel (docs/plan.md §7.4), keyed by its journey and first stop. While the guide is open and out of
+-- combat, one estimate a frame asks Shortest Path, never in a rebuild's frame or step 1's travel frame (ns.Settling);
+-- in combat the last answers stand. The chosen card's first stop is step 1's, which Shortest Path has cached for 5 s.
+---@type table<string, AGFCardTravel>
+local cardTravel = {}
+---@type AGFJourney[]
+local cardQueue = {}
+local chained = false
+---@type fun()[]
+local cardListeners = {}
+
+---@param journey AGFJourney
+---@return string
+local function CardKey(journey)
+	return journey.key .. ":" .. journey.steps[1].key
+end
+
+local function NextCard()
+	chained = false
+	if not (ns.PanelShown and ns.PanelShown()) or InCombatLockdown() then
+		cardQueue = {}
+		return
+	end
+	-- The queue may have emptied since this frame was asked for: a route with nothing new to fetch.
+	local journey = not ns.Settling() and table.remove(cardQueue, 1)
+	if journey then
+		local line, minutes, crossing = Fetch(journey.steps[1])
+		cardTravel[CardKey(journey)] = { line = line, minutes = minutes, crossing = crossing }
+		for _, fn in ipairs(cardListeners) do
+			fn()
+		end
+	end
+	if cardQueue[1] then
+		chained = true
+		C_Timer.After(0, NextCard)
+	end
+end
+
+-- The cards now shown: answers for cards no longer shown go, and up to 3 cards without one queue, a frame each.
+---@param journeys AGFJourney[]
+function Integrations.RefreshCards(journeys)
+	local kept = {}
+	cardQueue = {}
+	for _, journey in ipairs(journeys) do
+		local key = journey.steps[1] and CardKey(journey)
+		if key then
+			kept[key] = cardTravel[key]
+			if not kept[key] and #cardQueue < ns.Model.MAX_JOURNEYS then
+				cardQueue[#cardQueue + 1] = journey
+			end
+		end
+	end
+	cardTravel = kept
+	if cardQueue[1] and SPF() and not chained then
+		chained = true
+		C_Timer.After(0, NextCard)
+	end
+end
+
+-- The card's last answer, never an SPF call.
+---@param journey AGFJourney
+---@return AGFCardTravel?
+function Integrations.CardTravel(journey)
+	return journey.steps[1] and cardTravel[CardKey(journey)] or nil
+end
+
+---@param fn fun()
+function Integrations.OnCardTravel(fn)
+	cardListeners[#cardListeners + 1] = fn
 end
 
 -- Go and Stop run from the footer, the step menu and the tracker; each tells these so the footer's Stop follows.

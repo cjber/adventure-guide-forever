@@ -87,6 +87,10 @@ ns.L = {
 	-- A card's third line when it has no reason (docs/plan.md §7.4): its first stop, then how many follow.
 	HUB_MORE = "%s and %d more stops",
 	HUB_MORE_ONE = "%s and 1 more stop",
+	-- A card's minutes from Shortest Path, naming a crossing when the subline leaves room.
+	CARD_MINUTES = "%d min",
+	CARD_BY_BOAT = "%d min by boat",
+	CARD_BY_ZEPPELIN = "%d min by zeppelin",
 	-- A card's tooltip: how many of its quests need a group, and what a click on it does.
 	GROUP_ONE = "1 needs a group",
 	GROUP_MANY = "%d need a group",
@@ -481,9 +485,13 @@ local function NotifyRouteChange()
 	end
 end
 
+-- Step 1's travel frame is queued: it and the rebuild's frame belong to their own estimate.
+local travelPending = false
+
 -- Skipped when an invalidation landed since the rebuild: ns.Route() would rebuild in this frame too, and the
 -- pending rebuild queues its own refresh.
 local function RefreshTravel()
+	travelPending = false
 	if not pendingRebuild then
 		ns.Integrations.RefreshTravel()
 	end
@@ -502,10 +510,18 @@ function ns.Invalidate()
 		else
 			pendingRebuild = false
 		end
+		-- Set before the listeners run, so a card estimate they queue waits out step 1's frame too.
+		travelPending = true
 		NotifyRouteChange()
 		-- Step 1's travel line gets a frame of its own: at most one Shortest Path estimate, never in the rebuild's.
 		C_Timer.After(0, RefreshTravel)
 	end)
+end
+
+-- A rebuild or step 1's travel line is due: this frame or the next belongs to them, not to a card's estimate.
+---@return boolean
+function ns.Settling()
+	return pendingRebuild or travelPending
 end
 
 --[[ Slash command and audit ]]

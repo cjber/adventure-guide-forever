@@ -1481,6 +1481,11 @@ for _, spf in ipairs({ false, "v1" }) do
 			expected[#expected + 1] = "highlight: " .. journey.reason
 			expected[#expected + 1] = "highlight: " .. Hub(journey)
 		end
+		local travel = h.ns.Integrations.CardTravel(journey)
+		equal(travel ~= nil and travel.line ~= nil, spf ~= false, label .. ": " .. journey.key .. "'s travel is cached")
+		if travel and travel.line then
+			expected[#expected + 1] = "highlight: " .. travel.line
+		end
 		expected[#expected + 1] = "highlight: " .. L.GROUP_ONE
 		expected[#expected + 1] = "instruction: " .. L.CLICK_TO_CHOOSE
 		same(h.tooltip, expected, label .. ": " .. journey.key .. "'s tooltip")
@@ -1543,6 +1548,106 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(h.G.AdventureGuideForeverCharDB.journey, nil, label .. ": and saves none")
 	equal(h.counts.SetMapID, maps, label .. ": without turning the map")
 	equal(Heights(), "86 86 86", label .. ": every card whole again")
+	clean(h, label)
+end
+
+-- Card minutes (docs/plan.md §7.4): while the guide is open, one Shortest Path estimate a frame over the shown cards,
+-- none in the rebuild's frame, none in step 1's travel frame beyond its own, none in combat (the last answers stand),
+-- none with the guide closed and none without Shortest Path. A boat names itself where the subline leaves room.
+for _, spf in ipairs({ false, "v1", "v1+" }) do
+	local label = "card minutes: " .. (spf or "no Shortest Path")
+	local h = Load(spf, nil, false)
+	h.ns.OpenPanel()
+	h.flush()
+	local integrations, L = h.ns.Integrations, h.ns.L
+	local function Calls()
+		return h.spf and h.spf.Estimate + (h.spf.EstimateDetail or 0) or 0
+	end
+	local function Frames()
+		local perFrame = {}
+		for _ = 1, 20 do
+			local before = Calls()
+			if h.tick() == 0 then
+				break
+			end
+			perFrame[#perFrame + 1] = Calls() - before
+		end
+		return table.concat(perFrame, " ")
+	end
+	local function Cached()
+		local count = 0
+		for _, journey in ipairs(h.ns.Route().journeys) do
+			local travel = integrations.CardTravel(journey)
+			count = count + (travel and travel.minutes and 1 or 0)
+		end
+		return count
+	end
+	local function Cards()
+		return Shown(h, function(frame)
+			return frame.IconFrame ~= nil and frame.journey ~= nil
+		end)
+	end
+	local journeys = h.ns.Route().journeys
+	equal(Cached(), spf and #journeys or 0, label .. ": every card has its minutes on opening")
+	-- A new route: the rebuild's frame asks nothing, step 1's frame asks for step 1 only, then a card a frame.
+	integrations.RefreshCards({})
+	h.ns.Invalidate()
+	equal(Frames(), spf and "0 1 1 1 1" or "0 0", label .. ": one estimate a frame, none in the rebuild's")
+	equal(Cached(), spf and #journeys or 0, label .. ": each card answered")
+	local shown = 0
+	for _, card in ipairs(Cards()) do
+		local travel = integrations.CardTravel(card.journey)
+		shown = shown + (card.Travel:IsShown() and 1 or 0)
+		if travel then
+			equal(card.Travel:GetText(), L.CARD_MINUTES:format(travel.minutes), label .. ": the card reads its minutes")
+			local _, beside = card.Subline:GetPoint(2)
+			equal(beside, card.Travel, label .. ": and the subline stops short of them")
+		end
+	end
+	equal(shown, spf and #journeys or 0, label .. ": minutes on every card with an answer")
+	-- A queue emptied before its frame asks nothing.
+	integrations.RefreshCards({})
+	integrations.RefreshCards(journeys)
+	integrations.RefreshCards({})
+	local before = Calls()
+	h.flush()
+	equal(Calls() - before, 0, label .. ": an emptied queue asks nothing")
+	integrations.RefreshCards(journeys)
+	h.flush()
+	-- In combat nothing is asked and the answers stand.
+	h.SetCombat(true)
+	integrations.RefreshCards(journeys)
+	before = Calls()
+	h.flush()
+	equal(Calls() - before, 0, label .. ": none in combat")
+	equal(Cached(), spf and #journeys or 0, label .. ": the last answers stand")
+	h.SetCombat(false)
+	h.flush()
+	-- Closed, nothing is asked.
+	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+	h.flush()
+	integrations.RefreshCards({})
+	integrations.RefreshCards(journeys)
+	before = Calls()
+	h.flush()
+	equal(Calls() - before, 0, label .. ": none with the guide closed")
+	-- A boat names itself where the subline leaves room; the card falls back to the minutes where it doesn't.
+	if spf == "v1+" then
+		h.spfLegs = {
+			{ mode = "walk", to = "Ratchet", seconds = 60 },
+			{ mode = "boat", to = "Booty Bay", seconds = 300 },
+		}
+		h.ns.OpenPanel()
+		h.flush()
+		local boats = 0
+		for _, card in ipairs(Cards()) do
+			local long = L.CARD_BY_BOAT:format(6)
+			local fits = card.Subline:GetUnboundedStringWidth() + 6 + #long * 6 <= 212
+			equal(card.Travel:GetText(), fits and long or L.CARD_MINUTES:format(6), label .. ": " .. card.journey.key)
+			boats = boats + (fits and 1 or 0)
+		end
+		equal(boats > 0 and boats < #Cards(), true, label .. ": a short subline names the boat, a long one doesn't")
+	end
 	clean(h, label)
 end
 

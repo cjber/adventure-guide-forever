@@ -264,6 +264,15 @@
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")
 ---@field Trainable fun(): AGFTFSpell[]? Tweaks Forever's trainable spells; nil without a v1 Tweaks Forever or its answer
 ---@field Trainer fun(): string? the trainer line's count ("3 new spells") as last fetched, nil with nothing to train
+---@field RefreshCards fun(journeys: AGFJourney[]) the cards shown: drops other answers, asks for up to 3 missing, one a frame
+---@field CardTravel fun(journey: AGFJourney): AGFCardTravel? a card's last answer, without asking again
+---@field OnCardTravel fun(callback: fun()) called as each card's answer arrives
+
+-- A card's travel from Shortest Path; all nil when it had no answer.
+---@class AGFCardTravel
+---@field line? string the travel line, as TravelLine gives it
+---@field minutes? integer the whole trip
+---@field crossing? AGFSPFMode "boat" or "zeppelin" when the way takes one
 
 -- One region in a layout dump (Dump.lua): plain data, so it survives SavedVariables and JSON.
 ---@class AGFDumpAnchor
@@ -306,6 +315,9 @@
 ---@field STOP_AND_SHOW_EVERY_JOURNEY string the same while the route it started runs, which the click stops
 ---@field HUB_MORE string format: a card's first stop, how many stops follow it
 ---@field HUB_MORE_ONE string format: a card's first stop, when one stop follows it
+---@field CARD_MINUTES string format: a card's minutes to its first stop
+---@field CARD_BY_BOAT string format: the same when the way takes a boat
+---@field CARD_BY_ZEPPELIN string format: the same when the way takes a zeppelin
 ---@field GROUP_ONE string a card's tooltip when one of its quests needs a group
 ---@field GROUP_MANY string format: how many of a card's quests need a group
 ---@field CLICK_TO_CHOOSE string an unchosen card's tooltip instruction
@@ -420,6 +432,7 @@
 ---@field Route fun(): AGFRoute the current route, rebuilt lazily when state or prefs change
 ---@field Invalidate fun() mark the route stale and notify views
 ---@field OnRouteChange fun(callback: fun())
+---@field Settling fun(): boolean a rebuild or step 1's travel line is due, whose frames take no card estimate
 ---@field PanelShown? fun(): boolean whether the guide is open, set once Blizzard_WorldMap has loaded
 ---@field Skip fun(key: string, title: string) hide a step for this session; the menu offers it back by its title
 ---@field Unskip fun(key: string)

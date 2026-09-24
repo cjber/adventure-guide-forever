@@ -58,6 +58,13 @@
 						<Anchor point="TOPLEFT" relativeKey="$parent.Title" relativePoint="BOTTOMLEFT" y="-2"/>
 					</Anchors>
 				</FontString>
+				<!-- Shortest Path's minutes at the right of the subline's row; the subline stops short of them. -->
+				<FontString parentKey="Travel" inherits="GameFontHighlightSmall" justifyH="RIGHT" wordwrap="false" hidden="true">
+					<Size y="14"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativeKey="$parent.Title" relativePoint="BOTTOMRIGHT" y="-2"/>
+					</Anchors>
+				</FontString>
 				<FontString parentKey="Reason" inherits="GameFontHighlightSmall" justifyH="LEFT" wordwrap="false">
 					<Size x="212" y="14"/>
 					<Anchors>

@@ -502,6 +502,13 @@
           "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[2].Title",
           "x": 0.00,
           "y": -2.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[2].Travel",
+          "x": -6.00,
+          "y": 0.00
         }
       ],
       "font": "GameFontHighlightSmall",
@@ -513,6 +520,28 @@
         14.00
       ],
       "text": "Chapter 1 of 5",
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPRIGHT",
+          "relativePoint": "BOTTOMRIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[2].Title",
+          "x": 0.00,
+          "y": -2.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "RIGHT",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[2].Travel",
+      "size": [
+        0.00,
+        14.00
+      ],
+      "text": "6 min",
       "type": "FontString",
       "wordWrap": false
     },

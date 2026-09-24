@@ -17,6 +17,8 @@ local COMPACT_HEIGHT, COMPACT_ICON = 26, 16
 local ROW_ART = "_options_listexpand_middle"
 local ROW_CAPS = { { "options_listexpand_left", 12, "LEFT" }, { "options_listexpand_right", 28, "RIGHT" } }
 local CARD_RING, CARD_ICON = 46, 18
+-- A card's text column: its title, subline and reason are this wide.
+local CARD_TEXT = 212
 -- Under the cards while none is chosen.
 local HINT_HEIGHT = 14
 -- The scroll child above the cards: the header 4px down and 34px tall, then 6px to the first card.
@@ -247,6 +249,7 @@ end
 ---@field Subline FontString
 ---@field Reason FontString
 ---@field Group Texture
+---@field Travel FontString
 ---@field UpdateHighlightForState fun(self: AGFJourneyCard)
 ---@field journey? AGFJourney
 ---@field state? "full"|"chosen"|"compact"
@@ -559,6 +562,10 @@ function CardTooltip(card)
 	if hub and (journey.reason or card.state == "compact") then
 		GameTooltip_AddHighlightLine(GameTooltip, hub)
 	end
+	local travel = ns.Integrations.CardTravel(journey)
+	if travel and travel.line then
+		GameTooltip_AddHighlightLine(GameTooltip, travel.line)
+	end
 	local group = journey.group or 0
 	if group > 0 then
 		GameTooltip_AddHighlightLine(GameTooltip, group == 1 and L.GROUP_ONE or L.GROUP_MANY:format(group))
@@ -604,6 +611,21 @@ local function RefreshCard(card, journey, state)
 	card.Reason:SetShown(not compact)
 	card.Subline:SetText(journey.subline)
 	card.Reason:SetText(journey.reason or HubLine(journey) or "")
+	-- Shortest Path's minutes, naming a boat or zeppelin when the subline leaves room for it.
+	local travel = not compact and ns.Integrations.CardTravel(journey) or nil
+	local minutes = travel and travel.minutes
+	card.Travel:SetShown(minutes ~= nil)
+	card.Subline:ClearAllPoints()
+	card.Subline:SetPoint("TOPLEFT", card.Title, "BOTTOMLEFT", 0, -2)
+	if travel and minutes then
+		local crossing = travel.crossing
+		local long = (crossing == "boat" and L.CARD_BY_BOAT) or (crossing == "zeppelin" and L.CARD_BY_ZEPPELIN)
+		card.Travel:SetText((long or L.CARD_MINUTES):format(minutes))
+		if long and card.Subline:GetUnboundedStringWidth() + 6 + card.Travel:GetUnboundedStringWidth() > CARD_TEXT then
+			card.Travel:SetText(L.CARD_MINUTES:format(minutes))
+		end
+		card.Subline:SetPoint("RIGHT", card.Travel, "LEFT", -6, 0)
+	end
 	-- The dungeon card's own icon already says it needs a group.
 	local group = not compact and (journey.group or 0) > 0 and journey.kind ~= "dungeon"
 	card.Group:SetShown(group)
@@ -942,6 +964,14 @@ local function Attach()
 	-- and the map closing all come through here.
 	panel:HookScript("OnShow", ns.Pins.Refresh)
 	panel:HookScript("OnHide", ns.Pins.Refresh)
+	-- The cards' minutes, while the guide is open: on opening it and on each new route.
+	local function QueueCards()
+		if panel:IsShown() then
+			ns.Integrations.RefreshCards(ns.Route().journeys)
+		end
+	end
+	panel:HookScript("OnShow", QueueCards)
+	ns.OnRouteChange(QueueCards)
 	BuildContent(panel)
 	panel:RegisterEvent("QUEST_DATA_LOAD_RESULT")
 	panel:SetScript("OnEvent", function(_, _, questID)
@@ -967,6 +997,7 @@ local function Attach()
 	ns.OnRouteChange(Refresh)
 	ns.Integrations.OnGuidanceChange(Refresh)
 	ns.Integrations.OnTravelChange(Refresh)
+	ns.Integrations.OnCardTravel(Refresh)
 
 	function ns.PanelShown()
 		return panel:IsVisible()
