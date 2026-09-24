@@ -124,9 +124,9 @@ local OPENS = {
 	[30] = { { id = 1157, name = "Darkspear Islands" } },
 }
 
--- ui_spec's level-18 orc shaman in The Barrens, with the carry card chosen.
+-- ui_spec's level-18 orc shaman in The Barrens, with the Barrens story chosen.
 local function Load(options)
-	options.charDB = options.charDB or { journey = "carry" }
+	options.charDB = options.charDB or { journey = "zone:1413" }
 	options.completed = { 844 }
 	options.log =
 		{ { id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 } }
@@ -262,7 +262,7 @@ end
 
 -- A client without C_PvP, C_MajorFactions or IsInInstance: no line, no card, no error.
 do
-	local h = Load({ charDB = { journey = "carry", battlegrounds = true } })
+	local h = Load({ charDB = { journey = "zone:1413", battlegrounds = true } })
 	Settle(h)
 	equal(h.ns.Asides.Current(), nil, "no API: no aside")
 	equal(#h.ns.State.Battlegrounds(), 0, "no API: nothing open")

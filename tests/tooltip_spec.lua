@@ -23,7 +23,7 @@ local function Load(charDB, zhevra)
 		completed = { 844 },
 		log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = zhevra.x, y = zhevra.y },
-			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
+			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 		},
 	})
 	h.flush()
@@ -42,24 +42,30 @@ end
 
 local SERGRA, THORK, KADRAK = 3338, 3429, 8582 -- The Zhevra's ender; Crossroads and Mor'shan Rampart givers
 
--- The carry card: Sergra Darkthorn takes The Zhevra at the Crossroads, and nobody else there is on its route.
+-- The log's quests ride on the zone's story (they are done on its map): Sergra Darkthorn takes The Zhevra at the
+-- Crossroads; Innkeeper Gryshka in Orgrimmar is on none of its steps.
+local GRYSHKA = 6929
 do
-	local h = Load({ journey = "carry" })
-	same(Lines(h, Creature(SERGRA)), { "normal: Adventure guide: Finish what you carry" }, "carry: the ender")
-	same(Lines(h, Creature(THORK)), {}, "carry: a giver the card doesn't visit")
-	same(Lines(h, "Player-5250-0A1B2C3D"), {}, "carry: a player")
-	same(Lines(h, nil), {}, "carry: no unit")
+	local h = Load({ journey = "zone:1413" })
+	local line = { "normal: Adventure guide: The Barrens story" }
+	same(Lines(h, Creature(SERGRA)), line, "log: the ender")
+	same(Lines(h, Creature(GRYSHKA)), {}, "log: an NPC the card doesn't visit")
+	same(Lines(h, "Player-5250-0A1B2C3D"), {}, "log: a player")
+	same(Lines(h, nil), {}, "log: no unit")
 	h.SetCombat(true)
 	h.flush()
-	same(Lines(h, Creature(SERGRA)), { "normal: Adventure guide: Finish what you carry" }, "carry: in combat too")
+	same(Lines(h, Creature(SERGRA)), line, "log: in combat too")
 	h.SetCombat(false)
-	-- Once The Zhevra is handed in the card goes on without its ender, and her line goes.
+	-- Once The Zhevra is handed in the card goes on without it.
 	table.remove(h.log, 1)
 	h.fire("QUEST_TURNED_IN", 845)
 	h.flush()
-	equal(h.ns.Route().steps[1].key, "objective:843", "carry: only Gann's Reclamation left")
-	same(Lines(h, Creature(SERGRA)), {}, "carry: no line once handed in")
-	equal(#h.errors, 0, "carry: errors\n" .. table.concat(h.errors, "\n"))
+	local handins = 0
+	for _, step in ipairs(h.ns.Route().steps) do
+		handins = handins + #(step.handins or {})
+	end
+	equal(handins, 0, "log: nothing left to hand in")
+	equal(#h.errors, 0, "log: errors\n" .. table.concat(h.errors, "\n"))
 end
 
 -- The zone's story: its pickups' givers, in towns beyond the first; choosing none takes the line away.
@@ -79,9 +85,13 @@ end
 
 -- A turn-in at the client's waypoint, away from the town: the quest's finish NPC still takes it.
 do
-	local h = Load({ journey = "carry" }, { x = 0.62, y = 0.38 })
-	equal(h.ns.Route().steps[1].kind, "turnin", "a turn-in step")
-	same(Lines(h, Creature(SERGRA)), { "normal: Adventure guide: Finish what you carry" }, "turn-in: the ender")
+	local h = Load({ journey = "zone:1413" }, { x = 0.62, y = 0.38 })
+	local turnin
+	for _, step in ipairs(h.ns.Route().steps) do
+		turnin = turnin or (step.key == "turnin:845" and step or nil)
+	end
+	equal(turnin and turnin.kind, "turnin", "a turn-in step")
+	same(Lines(h, Creature(SERGRA)), { "normal: Adventure guide: The Barrens story" }, "turn-in: the ender")
 	equal(#h.errors, 0, "turn-in: errors\n" .. table.concat(h.errors, "\n"))
 end
 

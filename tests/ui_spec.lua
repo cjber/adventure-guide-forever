@@ -19,19 +19,26 @@ local function clean(h, label)
 end
 
 -- A level-18 orc shaman in The Barrens with one quest ready to hand in and one under way. `db` is the account's
--- saved settings; the map marks are off unless it turns them on. The character chose the carry card before, as a
--- player past their first session has; `charDB` false is a fresh character, with no card chosen.
+-- saved settings; the map marks are off unless it turns them on. The character chose the Barrens story before, as a
+-- player past their first session has; `charDB` false is a fresh character, with no card chosen. `away` adds a
+-- finished quest handed in at Orgrimmar, off the story's map, so the log has a carry card.
 local PINS_ON = { showMapPins = true, showQuestGivers = true }
-local function Load(spf, db, charDB)
+local AWAY = 5729
+local function Load(spf, db, charDB, away)
+	local log = {
+		{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
+		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
+	}
+	if away then
+		log[3] =
+			{ id = AWAY, title = "Hidden Enemies", level = 15, complete = true, map = 1454, x = 0.4947, y = 0.5059 }
+	end
 	return harness.load({
 		spf = spf or nil,
 		db = db,
-		charDB = charDB ~= false and (charDB or { journey = "carry" }) or nil,
+		charDB = charDB ~= false and (charDB or { journey = "zone:1413" }) or nil,
 		completed = { 844 },
-		log = {
-			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
-			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
-		},
+		log = log,
 	})
 end
 
@@ -48,7 +55,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	equal(h.G.ShortestPathForever ~= nil, spf ~= false, label .. ": Shortest Path global")
 	equal(h.G.TweaksForever, nil, label .. ": no Tweaks Forever")
 	equal(h.G.LegacyForever, nil, label .. ": no Legacy Forever")
-	equal(h.ns.Route().steps[1].key, "handin:349", label .. ": the hand-in leads the route")
+	equal(h.ns.Route().steps[1].key, "hub:349", label .. ": the hand-in leads the route")
 
 	-- Blizzard's displayMode is never written, whatever the player clicks (Panel.lua ShowGuide).
 	local panel, questsFrame = h.G.AdventureGuideForeverPanel, h.questMap.QuestsFrame
@@ -122,10 +129,9 @@ do
 	local function RouteQuests(h)
 		local quests = {}
 		for _, step in ipairs(h.ns.Route().steps) do
-			if h.ns.InLog(step) then
-				for _, questID in ipairs(step.quests) do
-					quests[#quests + 1] = questID
-				end
+			-- A town's log quests are its hand-ins; its pickups are not in the log.
+			for _, questID in ipairs(step.kind == "hub" and step.handins or step.quests) do
+				quests[#quests + 1] = questID
 			end
 		end
 		return table.concat(quests, " ")
@@ -262,7 +268,7 @@ do
 	local h = Load("ended")
 	h.ns.StartRoute()
 	h.flush()
-	equal(h.ns.Prefs().guided, "carry", "follow: the chosen journey's route")
+	equal(h.ns.Prefs().guided, "zone:1413", "follow: the chosen journey's route")
 	equal(h.spf.NavigateRoute, 1, "follow: started once")
 	Moved(h, 1413, 0.5223, 0.3101)
 	equal(h.spf.NavigateRoute, 1, "follow: a rebuild that changes nothing sends nothing")
@@ -293,7 +299,13 @@ do
 	Moved(h, 1413, 0.46, 0.79)
 	equal(h.spf.NavigateRoute, 4, "follow: out of the town, the journey goes on")
 	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: every step")
-	h.spfAdvance()
+	-- Shortest Path moves on stop by stop until it heads for the Crossroads, then the player reaches it.
+	for _, step in ipairs(h.ns.Route().steps) do
+		if step.key == "hub:349" then
+			break
+		end
+		h.spfAdvance()
+	end
 	Moved(h, 1413, 0.5223, 0.3101)
 	equal(h.spf.NavigateRoute, 4, "follow: heading for the town it stands in: nothing")
 	h.spfOther()
@@ -377,8 +389,9 @@ end
 -- "complete" only after a turn-in. A filter keeps the choice but stops the route; nothing ends before the completed
 -- quests load, or in combat.
 do
+	-- The carry card is the journey that ends: the story's zone always has more.
 	local function Started(spf, charDB)
-		local h = Load(spf, nil, charDB)
+		local h = Load(spf, nil, charDB or { journey = "carry" }, true)
 		h.ns.StartRoute()
 		h.flush()
 		h.completes = 0
@@ -396,7 +409,7 @@ do
 		h.fire(event, id)
 		h.flush()
 	end
-	for _, case in ipairs({ { "QUEST_TURNED_IN", 845, 1, "turned in" }, { "QUEST_LOG_UPDATE", nil, 0, "abandoned" } }) do
+	for _, case in ipairs({ { "QUEST_TURNED_IN", AWAY, 1, "turned in" }, { "QUEST_LOG_UPDATE", nil, 0, "abandoned" } }) do
 		local h, label = Started("v1"), "ends, " .. case[4]
 		equal(h.ns.Prefs().guided, "carry", label .. ": guided before")
 		Emptied(h, case[1], case[2])
@@ -412,7 +425,7 @@ do
 	-- The tracker's "Journey complete": its glow without the story's sound, its click opens the guide, and the next
 	-- route change takes it away.
 	local h = Started("v1")
-	Emptied(h, "QUEST_TURNED_IN", 845)
+	Emptied(h, "QUEST_TURNED_IN", AWAY)
 	local block = h.tracker.liveBlocks["journey-complete"]
 	equal(block and block.header, "Journey complete", "journey complete: the header")
 	-- None is chosen now: the tracker's one line, the story's hook, then the header, and no step.
@@ -478,9 +491,9 @@ do
 		clean(h, "dungeon gone, " .. case[3])
 	end
 
-	h = harness.load({ charDB = { journey = "carry" }, completedPending = true })
+	h = harness.load({ charDB = { journey = "zone:1413" }, completedPending = true })
 	h.flush()
-	equal(h.ns.Prefs().journey, "carry", "ends: nothing before the completed quests load")
+	equal(h.ns.Prefs().journey, "zone:1413", "ends: nothing before the completed quests load")
 end
 
 -- How our journey ended (design §2.10), from Shortest Path's Ended or, without it, guessed: another journey running
@@ -516,7 +529,7 @@ do
 	for _, spf in ipairs({ "ended", "v1+", "v1" }) do
 		local label = "ended, " .. spf
 		local h = Ending(spf, Arrive, true)
-		equal(h.ns.Prefs().guided, "carry", label .. ", arrived: the guidance is kept")
+		equal(h.ns.Prefs().guided, "zone:1413", label .. ", arrived: the guidance is kept")
 		equal(h.ns.Integrations.Arrived(), true, label .. ", arrived: and known")
 		h = Ending(spf, Clear, spf == "ended")
 		equal(h.ns.Prefs().guided, nil, label .. ", cleared: the guidance is forgotten")
@@ -602,8 +615,8 @@ do
 	h.Click(Chosen(h))
 	h.flush()
 	equal(h.spf.NavigateRoute, 2, "paused: the click resumes the route")
-	equal(h.ns.Prefs().journey, "carry", "paused: and keeps the choice")
-	equal(h.ns.Prefs().guided, "carry", "paused: as the chosen journey's route")
+	equal(h.ns.Prefs().journey, "zone:1413", "paused: and keeps the choice")
+	equal(h.ns.Prefs().guided, "zone:1413", "paused: as the chosen journey's route")
 	equal(Hint(h), false, "paused: the hint goes")
 	h.Click(Chosen(h))
 	h.flush()
@@ -684,22 +697,22 @@ do
 		h.flush()
 		return h
 	end
-	local h = Reloaded({ journey = "carry", guided = "carry" })
+	local h = Reloaded({ journey = "zone:1413", guided = "zone:1413" })
 	equal(h.spf.NavigateRoute, 1, "restore: our route runs again")
 	equal(h.ns.Integrations.Guiding(), true, "restore: and guides")
-	equal(h.ns.Prefs().guided, "carry", "restore: still the chosen journey's")
+	equal(h.ns.Prefs().guided, "zone:1413", "restore: still the chosen journey's")
 	h.ns.Invalidate()
 	h.flush()
 	equal(h.spf.NavigateRoute, 1, "restore: once")
 	clean(h, "restore")
 
-	h = Reloaded({ journey = "carry", guided = "carry" }, function(reloaded)
+	h = Reloaded({ journey = "zone:1413", guided = "zone:1413" }, function(reloaded)
 		reloaded.spfOther()
 	end)
 	equal(h.spf.NavigateRoute, 0, "restore: never over someone else's journey")
 	equal(h.ns.Prefs().guided, nil, "restore: which keeps the way")
 
-	h = Reloaded({ journey = "carry", guided = "carry" }, function(reloaded)
+	h = Reloaded({ journey = "zone:1413", guided = "zone:1413" }, function(reloaded)
 		reloaded.SetCombat(true)
 	end)
 	equal(h.spf.NavigateRoute, 0, "restore: not in combat")
@@ -707,11 +720,11 @@ do
 	h.flush()
 	equal(h.spf.NavigateRoute, 1, "restore: once combat ends")
 
-	h = Reloaded({ journey = "carry", guided = "carry" }, function(reloaded)
+	h = Reloaded({ journey = "zone:1413", guided = "zone:1413" }, function(reloaded)
 		reloaded.spfDeclines = true
 	end)
 	equal(h.counts.SetUserWaypoint, 0, "restore, declined: no waypoint")
-	equal(h.ns.Prefs().guided, "carry", "restore, declined: the route is kept")
+	equal(h.ns.Prefs().guided, "zone:1413", "restore, declined: the route is kept")
 	h.spfDeclines = false
 	h.ns.Invalidate()
 	h.flush()
@@ -719,8 +732,8 @@ do
 	equal(h.ns.Integrations.Guiding(), true, "restore, declined: and guides once it takes it")
 
 	for _, case in ipairs({
-		{ { journey = "carry" }, "after Stop" },
-		{ { guided = "carry" }, "after a cleared card" },
+		{ { journey = "zone:1413" }, "after Stop" },
+		{ { guided = "zone:1413" }, "after a cleared card" },
 		{ nil, "no saved variables" },
 	}) do
 		h = Reloaded(case[1])
@@ -782,14 +795,15 @@ for _, spf in ipairs({ false, "v1" }) do
 	-- Rings draw above the stock quest marks; givers stay under them (Blizzard_WorldMap.lua:291-311).
 	equal(ring.frameLevelType, "PIN_FRAME_LEVEL_WAYPOINT_LOCATION", label .. ": rings at the user waypoint's level")
 	h.Hover(ring)
-	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. The Zhevra opens its next chapter here.
-	local expected = { "title: 1. Turn in: The Zhevra" }
+	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. Step 1 is the Crossroads, where The
+	-- Zhevra opens its next chapter, handed in before the town's pickups.
+	local expected = { "title: 1. Crossroads, The Barrens" }
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
 	expected[#expected + 1] = "highlight: Opens the next chapter here"
 	expected[#expected + 1] = "normal: Sergra Darkthorn"
 	expected[#expected + 1] = "colored: |A:questturnin:14:14|a The Zhevra"
-	expected[#expected + 1] = click
-	same(h.tooltip, expected, label .. ": ring tooltip")
+	same({ unpack(h.tooltip, 1, #expected) }, expected, label .. ": ring tooltip")
+	equal(h.tooltip[#h.tooltip], click, label .. ": ring tooltip instruction")
 	equal(ring.Glow:IsShown(), true, label .. ": hover glow")
 	ring:OnMouseLeave()
 	equal(ring.Glow:IsShown(), false, label .. ": glow off after hover")
@@ -808,7 +822,7 @@ for _, spf in ipairs({ false, "v1" }) do
 
 	-- The story card's step tells its chapter under the title (design §2.9).
 	h.map:SetMapID(1413)
-	ns.Prefs().journey = ns.Route().journeys[2].key
+	ns.Prefs().journey = ns.Route().journeys[1].key
 	ns.Invalidate()
 	h.flush()
 	local chapter
@@ -824,10 +838,10 @@ for _, spf in ipairs({ false, "v1" }) do
 	provider:RemoveAllData()
 	equal(Live(), 0, label .. ": RemoveAllData leaves no pins")
 
-	-- Design §2.8's menu for a log quest; Stop only once Go runs, Show quest never in combat.
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["handin:349"], "RightButton")
+	-- Design §2.8's menu for a town holding a log quest; Stop only once Go runs, Show quest never in combat.
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["hub:349"], "RightButton")
 	local menu = {
-		"title: Turn in: The Zhevra",
+		"title: Crossroads, The Barrens",
 		"button: Go",
 		"button: Show quest",
 		"button: Skip for now",
@@ -836,7 +850,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	same(h.MenuLines(), menu, label .. ": tracker menu")
 	ns.Integrations.Navigate(ns.Route().steps[1])
 	h.SetCombat(true)
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["handin:349"], "RightButton")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["hub:349"], "RightButton")
 	h.SetCombat(false)
 	menu[3] = "button: Stop"
 	same(h.MenuLines(), menu, label .. ": tracker menu while Go guides, in combat")
@@ -897,8 +911,12 @@ do
 	h.G.OpenQuestLog()
 	h.flush()
 	ns.Integrations.Navigate(ns.Route().steps[1])
-	local nextZone = ns.Route().journeys[3]
-	equal(nextZone.kind, "nextzone", "guided givers: a next-zone card")
+	local nextZone
+	for _, journey in ipairs(ns.Route().journeys) do
+		nextZone = nextZone or (journey.kind == "nextzone" and journey or nil)
+	end
+	equal(nextZone and nextZone.kind, "nextzone", "guided givers: a next-zone card")
+	---@cast nextZone -?
 	ns.Prefs().journey = nextZone.key
 	ns.Invalidate()
 	h.flush()
@@ -1013,7 +1031,7 @@ do
 	equal(ns.Integrations.Travel(step), cases[4][3], "travel line, after combat: asked again")
 
 	-- The guide: step 1's row reads the line fetched already; another row's tooltip asks once per hover.
-	ns.Prefs().journey = "carry"
+	ns.Prefs().journey = "zone:1413"
 	ns.OpenPanel()
 	h.flush()
 	local rows = Shown(h, function(frame)
@@ -1028,7 +1046,7 @@ do
 	h.spfLegs = cases[1][2]
 	h.Hover(rows[2])
 	equal(h.spf.EstimateDetail, calls + 1, "travel line: another row's tooltip asks once")
-	same(h.tooltip, {
+	same({ unpack(h.tooltip, 1, 3) }, {
 		"title: 2. " .. rows[2].step.title,
 		"highlight: " .. cases[1][3],
 		"highlight: " .. rows[2].step.reason,
@@ -1044,11 +1062,11 @@ end
 do
 	local log = {
 		{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
-		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
+		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 	}
 	local h = harness.load({ completed = { 844 }, log = log })
 	local ns, before = h.ns, h.modelCalls.Journeys
-	local story = ns.Route().journeys[2]
+	local story = ns.Route().journeys[1]
 	h.SetCombat(true)
 	for _ = 1, 10 do
 		ns.Invalidate()
@@ -1059,18 +1077,18 @@ do
 	equal(ns.Route().steps ~= nil, true, "combat: the lazy path answers")
 	h.flush()
 	equal(h.modelCalls.Journeys - before, 0, "combat: no full build in combat")
-	equal(ns.Route().journey, "carry", "combat: the chosen card holds")
-	local keys = {}
-	for _, step in ipairs(ns.Route().steps) do
-		keys[step.key] = true
+	equal(ns.Route().journey, "zone:1413", "combat: the chosen card holds")
+	-- The story lets go of a quest finished mid-fight, and carry, fresh from the log, hands it in.
+	local keys, cards = {}, ns.Route().journeys
+	for _, journey in ipairs(cards) do
+		for _, step in ipairs(journey.steps) do
+			keys[step.key] = journey.kind
+		end
 	end
-	equal(keys["turnin:843"], true, "combat: a quest finished mid-fight is ready to hand in")
+	equal(keys["turnin:843"], "carry", "combat: a quest finished mid-fight is ready to hand in")
 	equal(keys["objective:843"], nil, "combat: its objective step is gone")
-	equal(
-		story ~= nil and ns.Route().journeys[2] == story,
-		true,
-		"combat: the story stays as the last full build left it"
-	)
+	equal(cards[1].key, story.key, "combat: the story stays first")
+	equal(#cards[1].steps, #story.steps - 1, "combat: less only that step")
 	equal(h.counts.tickers, 0, "combat: no timer waits for the fight to end")
 	-- A skip mid-fight takes effect at once, on the story's card as on the log's.
 	ns.Prefs().journey = story.key
@@ -1080,7 +1098,7 @@ do
 	ns.Skip(skipped)
 	h.flush()
 	equal(ns.Route().steps[1].key ~= skipped, true, "combat: a skipped story step goes at once")
-	equal(#ns.Route().steps, #story.steps - 1, "combat: and only that step")
+	equal(#ns.Route().steps, #story.steps - 2, "combat: and only that step")
 	equal(h.modelCalls.Journeys - before, 0, "combat: still no full build")
 	h.SetCombat(false)
 	h.flush()
@@ -1319,11 +1337,11 @@ end
 -- The step menu (design §2.8) from a step row, and "Skipped (n)": hidden at 0, it counts the session's skips and
 -- opens the same Skipped submenu, whose "Show again" puts a step back where the route had it.
 do
-	local h = Load(false)
+	local h = Load(false, nil, false)
 	local ns = h.ns
 	ns.OpenPanel()
 	h.flush()
-	local story = ns.Route().journeys[2]
+	local story = ns.Route().journeys[1]
 	h.Click(Shown(h, function(frame)
 		return frame.journey == story
 	end)[1])
@@ -1388,7 +1406,8 @@ do
 	clean(h, "step menu")
 end
 -- "Not interested" (roadmap #17): a journey card's right-click hides it on this character, the choice of it ends, and
--- Skipped (n) under the cards and in the cog lists it with Show again. The carry card has no menu.
+-- Skipped (n) under the cards and in the cog lists it with Show again. The carry card, here for the quest handed in
+-- at Orgrimmar, has no menu.
 do
 	local h = Load(false, nil, {
 		journey = "carry",
@@ -1399,7 +1418,7 @@ do
 			["zone:9"] = "Kept",
 			["zone:8"] = { title = "Chosen", chosen = true, extra = 1 },
 		},
-	})
+	}, true)
 	local ns = h.ns
 	local kept = ns.Prefs().notInterested
 	equal(
@@ -1492,7 +1511,7 @@ do
 	local completed = { 844 }
 	local log = {
 		{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
-		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
+		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 	}
 	local h = harness.load({ completed = completed, log = log })
 	local ns = h.ns
@@ -1528,12 +1547,12 @@ for _, spf in ipairs({ false, "v1" }) do
 	local label = "tracker: " .. (spf or "no Shortest Path")
 	local h = Load(spf)
 	local steps = h.ns.Route().steps
-	local expected = { "Sergra Darkthorn, The Barrens" }
+	local expected = { "1 to hand in, 7 to pick up", "Opens the next chapter here" }
 	expected[#expected + 1] = spf and "About 6 min away" or nil
 	expected[#expected + 1] = "Next: " .. steps[2].title .. " (no dash)"
 	local lines, block = TrackerLines(h)
 	equal(block.header, steps[1].title, label .. ": step 1's title heads the block")
-	same(lines, expected, label .. ": a turn-in's header is its reason; its NPC and zone, travel, next")
+	same(lines, expected, label .. ": a town's counts, its reason, travel, next")
 	clean(h, label)
 end
 -- A row's detail has no right anchor, so the tag can follow it: its width is capped instead, so a long one is cut
@@ -1578,7 +1597,7 @@ do
 	local ns = h.ns
 	-- Egg Hunt at 20, two over the player: yellow, so offered (at 22 it is orange and never is), a ninth to count.
 	ns.Data.quests[868].level = 20
-	ns.Prefs().journey = ns.Route().journeys[2].key
+	ns.Prefs().journey = ns.Route().journeys[1].key
 	ns.Invalidate()
 	h.flush()
 	ns.OpenPanel()
@@ -1636,7 +1655,7 @@ end
 do
 	local h = Load(false)
 	local ns = h.ns
-	ns.Prefs().journey = ns.Route().journeys[2].key
+	ns.Prefs().journey = ns.Route().journeys[1].key
 	ns.Invalidate()
 	h.flush()
 	local steps = ns.Route().steps
@@ -1682,14 +1701,14 @@ do
 	end
 	local session = Load(false)
 	local saved = session.G.AdventureGuideForeverCharDB.last
-	equal(saved and saved.key, "handin:349", "resume: each rebuild saves step 1")
+	equal(saved and saved.key, "hub:349", "resume: each rebuild saves step 1")
 	equal(Resumed(session), 0, "resume: nothing saved, nothing to resume")
 	local function Login(options)
-		options.charDB = { journey = "carry", last = { key = saved.key, reason = "finishes a story" } }
+		options.charDB = { journey = "zone:1413", last = { key = saved.key, reason = "finishes a story" } }
 		options.completed = { 844 }
 		options.log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
-			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
+			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 		}
 		return harness.load(options)
 	end
@@ -1697,7 +1716,7 @@ do
 	equal(Resumed(h), 1, "resume: a login with a matching key shows the line")
 	equal(TrackerLines(h)[2], "Where you left off: finishes a story", "resume: in place of the reason, after the town")
 	local capital = harness.load({
-		charDB = { journey = "carry", last = { key = saved.key, reason = "Continues a story you started" } },
+		charDB = { journey = "zone:1413", last = { key = saved.key, reason = "Continues a story you started" } },
 		completed = { 844 },
 		log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
@@ -1862,7 +1881,7 @@ end
 -- its steps; the others sit above it as one-line 288x26 header rows with a 16x16 icon and no ring, in the dumped
 -- layout the client's own dump is compared with.
 do
-	local h = Load(false)
+	local h = Load(false, nil, nil, true)
 	h.ns.OpenPanel()
 	h.flush()
 	local route, full, compact, lit = h.ns.Route(), 0, 0, 0
@@ -1899,7 +1918,7 @@ do
 	equal(Says(h, h.ns.L.NO_JOURNEY), 0, "guide: no empty line beside the cards")
 
 	-- F4: the chosen story shows its chapter track, one square per proven chapter, and never a later chapter's title.
-	local story = route.journeys[2]
+	local story = route.journeys[1]
 	h.ns.Prefs().journey = story.key
 	h.ns.Invalidate()
 	h.flush()
@@ -2029,7 +2048,7 @@ end
 -- journey and its rings preview it while the guide is open, even with map pins off. Closing the guide takes them away.
 for _, spf in ipairs({ false, "v1" }) do
 	local label = "select: " .. (spf or "no Shortest Path")
-	local h = Load(spf, { titleStartsRoute = false })
+	local h = Load(spf, { titleStartsRoute = false }, nil, true)
 	h.ns.OpenPanel()
 	h.flush()
 	local function Cards()
@@ -2083,7 +2102,7 @@ end
 -- starts its route in place of the first, and the chosen card toggles back to none, stopping the route it started.
 for _, spf in ipairs({ false, "v1" }) do
 	local label = "none chosen: " .. (spf or "no Shortest Path")
-	local h = Load(spf, nil, false)
+	local h = Load(spf, nil, false, true)
 	h.ns.OpenPanel()
 	h.flush()
 	local route = h.ns.Route()
@@ -2128,10 +2147,10 @@ for _, spf in ipairs({ false, "v1" }) do
 		return h.spf and h.spf.Cancel or h.counts.ClearUserWaypoint
 	end
 	equal(route.chosen, false, label .. ": nothing chosen")
-	equal(route.journey, "carry", label .. ": the route falls back to the first card")
+	equal(route.journey, "zone:1413", label .. ": the route falls back to the first card")
 	same(h.tracker.layoutOrder, { "hook" }, label .. ": the tracker's one line")
-	equal(route.journeys[2].kind, "story", label .. ": a story card")
-	local hook = route.journeys[2].title .. " · " .. (route.journeys[2].reason or route.journeys[2].subline)
+	equal(route.journeys[1].kind, "story", label .. ": a story card")
+	local hook = route.journeys[1].title .. " · " .. (route.journeys[1].reason or route.journeys[1].subline)
 	equal(h.tracker.liveBlocks.hook.header, hook, label .. ": the story's title and its hook")
 	equal(#h.tracker.liveBlocks.hook.order, 0, label .. ": one line, the header alone")
 	equal(Heights(), "86 86 86", label .. ": every card whole")
@@ -2259,7 +2278,7 @@ end
 -- none with the guide closed and none without Shortest Path. A boat names itself where the subline leaves room.
 for _, spf in ipairs({ false, "v1", "v1+" }) do
 	local label = "card minutes: " .. (spf or "no Shortest Path")
-	local h = Load(spf, nil, false)
+	local h = Load(spf, nil, false, true)
 	h.ns.OpenPanel()
 	h.flush()
 	local integrations, L = h.ns.Integrations, h.ns.L
@@ -2572,7 +2591,7 @@ do
 			completed = { 844 },
 			log = {
 				{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
-				{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
+				{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 			},
 		})
 		h.ns.OpenPanel()
@@ -2636,7 +2655,7 @@ do
 		if case.text then
 			equal(h.spfRoute.stops[1].title, "Swart", label .. ": named for the trainer")
 		end
-		equal(h.ns.Route().steps[1].key, "handin:349", label .. ": the route is unchanged")
+		equal(h.ns.Route().steps[1].key, "hub:349", label .. ": the route is unchanged")
 		-- A spell learned at the trainer shortens the line at once.
 		if case.tf and case.tf.spells == THREE then
 			case.tf.spells = { SPELL }
@@ -2774,7 +2793,7 @@ do
 		local label = "unlisted, " .. case.label
 		local log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
-			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
+			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 		}
 		log[#log + 1] = case.log
 		local h = harness.load({ completed = case.completed or { 844 }, log = log, player = case.player })
@@ -2873,14 +2892,14 @@ do
 end
 
 -- Roadmap #11: with no rest the route ends at the inn its last town has; stepping into an inn ticks it off, and a
--- rest or XP event that moves nothing rebuilds nothing.
+-- rest or XP event that moves nothing rebuilds nothing. The carry card's one stop is a hand-in in Orgrimmar.
 do
 	local h = harness.load({
 		player = { rested = false },
 		charDB = { journey = "carry" },
 		completed = { 844 },
 		log = {
-			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
+			{ id = AWAY, title = "Hidden Enemies", level = 15, complete = true, map = 1454, x = 0.4947, y = 0.5059 },
 		},
 	})
 	h.flush()

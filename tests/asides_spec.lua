@@ -19,15 +19,16 @@ local function clean(h, label)
 	equal(#h.errors, 0, label .. ": errors\n" .. table.concat(h.errors, "\n"))
 end
 
--- ui_spec's level-18 orc shaman in The Barrens, the carry card chosen unless `charDB` says otherwise.
+-- ui_spec's level-18 orc shaman in The Barrens, the Barrens story (with the log's quests) chosen unless `charDB` says
+-- otherwise.
 local function Load(spf, charDB)
 	return harness.load({
 		spf = spf or nil,
-		charDB = charDB or { journey = "carry" },
+		charDB = charDB or { journey = "zone:1413" },
 		completed = { 844 },
 		log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
-			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
+			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 		},
 	})
 end

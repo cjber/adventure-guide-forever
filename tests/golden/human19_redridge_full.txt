@@ -1,0 +1,15 @@
+# human19_redridge_full: level 19, side 1, at 1433 0.1580,0.5660
+card (chosen) | zone:1433 | Redridge Mountains story | 1 ready to hand in, 10 in progress | - | map 1433
+  step 1 | objective:34 | An Unwelcome Guest | 1433 0.1100,0.4930 | quests in progress
+  step 2 | hub:56 | Turn in: A Free Lunch | 1433 0.1019,0.7146 | Opens the next chapter here
+  step 3 | objective:92 | Redridge Goulash | 1433 0.2580,0.7350 | 3 quests here
+  step 4 | objective:125 | The Lost Tools | 1433 0.3640,0.5460 | 2 quests here
+  step 5 | objective:169 | Wanted: Gath'Ilzogg | 1433 0.6450,0.5580 | quests in progress
+  step 6 | objective:91 | Solomon's Law | 1433 0.7400,0.5220 | 2 quests here
+  step 7 | objective:20 | Blackrock Menace | 1433 0.2710,0.1090 | quests in progress
+card | carry | Finish what you carry | 4 ready to hand in, 1 in progress | - | map 1429
+  step 1 | handin:60 | Turn in: The Price of Shoes | 1429 0.4171,0.6554 | Opens the next chapter here
+  step 2 | handin:69 | Turn in: Messenger to Stormwind | 1453 0.6917,0.8271 | Opens the next chapter here
+  step 3 | handin:80 | Turn in: Elmore's Task | 1453 0.5972,0.3378 | ready to hand in
+  step 4 | handin:37 | Turn in: The Defias Brotherhood | 1436 0.5633,0.4752 | Opens the next chapter here
+  step 5 | objective:116 | Dry Times | 1436 0.4590,0.7910 | quests in progress

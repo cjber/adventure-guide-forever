@@ -134,6 +134,42 @@ for _, fixture in ipairs(characters.list) do
 		equal(route.journeys[1].title, "Redridge Mountains story", "human18_redridge: chosen, the same card")
 	end
 
+	-- The user's report: with Redridge's quests taken on (the live client gives no waypoint for one under way), the
+	-- story is Redridge's and leads, its quests under way are steps at the data's objective areas, and the two log
+	-- cards count every carried quest between them, placed or not. Never Carry and a Darkshore story alone.
+	if fixture.name == "human19_redridge_full" then
+		local story, areas = route.journeys[1], 0
+		equal(story.key, "zone:1433", "human19_redridge_full: Redridge is card 1")
+		for _, step in ipairs(story.steps) do
+			if step.kind == "objective" or step.kind == "dungeon" then
+				areas = areas + 1
+				equal(step.map, 1433, "human19_redridge_full: " .. step.key .. " is on Redridge")
+				local placed = false
+				for _, id in ipairs(step.quests) do
+					for _, area in ipairs(data.quests[id].obj or {}) do
+						placed = placed
+							or (
+								(area[5] or data.quests[id].zone) == step.map
+								and area[2] / 1000 == step.x
+								and area[3] / 1000 == step.y
+							)
+					end
+				end
+				equal(placed, true, "human19_redridge_full: " .. step.key .. " is at a data objective area")
+			end
+		end
+		equal(areas >= 5, true, "human19_redridge_full: the quests under way are area steps")
+		local counted = 0
+		for _, journey in ipairs(route.journeys) do
+			equal(journey.key ~= "zone:1439", true, "human19_redridge_full: no Darkshore story")
+			local lines = journey.subline .. "|" .. (journey.reason or "")
+			for _, pattern in ipairs({ "(%d+) ready to hand in", "(%d+) in progress", "(%d+) to hand in across" }) do
+				counted = counted + tonumber(lines:match(pattern) or 0)
+			end
+		end
+		equal(counted, #fixture.log, "human19_redridge_full: every carried quest counted once")
+	end
+
 	-- F12: a route crosses an ocean at most once, and a turn-in over there waits until the route is there.
 	local function Changes(steps)
 		local changes = 0
@@ -161,8 +197,10 @@ for _, fixture in ipairs(characters.list) do
 		equal(prefs.dungeons, false, "ne21_crosszone: with dungeons off")
 		equal(last.reason, "Hand in when you're in Stormwind City", "ne21_crosszone: the far turn-in says where")
 		-- The in-game audit: the far turn-in is finished but not ready here, and the card says each fact once.
-		equal(route.journeys[1].subline, "3 ready to hand in", "ne21_crosszone: ready counts this continent only")
-		equal(route.journeys[1].reason, "1 to hand in across the sea", "ne21_crosszone: the far one apart")
+		local carry = route.journeys[2]
+		equal(carry.key, "carry", "ne21_crosszone: carry follows the story")
+		equal(carry.subline, "3 ready to hand in", "ne21_crosszone: ready counts this continent only")
+		equal(carry.reason, "1 to hand in across the sea", "ne21_crosszone: the far one apart")
 		equal(
 			Model.Plan(data, player, completed, log, prefs, function()
 				return "Hurlevent"
@@ -187,14 +225,16 @@ for _, fixture in ipairs(characters.list) do
 	local again = Model.Plan(data, player, completed, log, prefs)
 	equal(Render(fixture, again), text, fixture.name .. ": rebuild")
 	-- The in-combat rebuild keeps three cards at most: a quest looted mid-fight brings a carry card the last build
-	-- lacked, and the last card not chosen makes way, as the full build leaves it out (design §2.10).
+	-- lacked, in the story's wake as the full build orders them, and the last card not chosen makes way, as the full
+	-- build leaves it out (design §2.10).
 	local saved, last = prefs.journey, route.journeys[#route.journeys]
 	local fight = { [168] = { id = 168, title = "Collecting Memories", level = 18, complete = true } }
 	prefs.journey = last and last.key
 	local refreshed = Model.Refresh(data, player, completed, fight, prefs, route)
 	local full = Model.Plan(data, player, completed, fight, prefs)
 	equal(#refreshed.journeys <= Model.MAX_JOURNEYS, true, fixture.name .. ": at most three cards in combat")
-	equal(refreshed.journeys[1].key, "carry", fixture.name .. ": the new carry card first")
+	local story = refreshed.journeys[1].kind == "story"
+	equal(refreshed.journeys[story and 2 or 1].key, "carry", fixture.name .. ": the new carry card after the story")
 	equal(refreshed.journey, prefs.journey, fixture.name .. ": the chosen last card keeps its slot in combat")
 	equal(full.journey == prefs.journey and full.chosen, last ~= nil, fixture.name .. ": and in the full build")
 	prefs.journey = saved
