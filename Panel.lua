@@ -22,6 +22,8 @@ local CARD_RING, CARD_ICON = 46, 18
 local CARD_TEXT, CARD_INSET = 212, 8
 -- Under the cards while none is chosen.
 local HINT_HEIGHT = 14
+-- The honest-coverage line under the cards: two lines of GameFontDisableSmall.
+local UNLISTED_HEIGHT = 26
 -- The scroll child above the cards: the header 4px down and 34px tall, then 6px to the first card.
 local LIST_TOP = 4 + 34 + 6
 -- Blizzard's QUEST_TAG_ATLAS icons (Blizzard_FrameXMLBase/Constants.lua:514-527); the next zone gets the map's "!".
@@ -74,6 +76,8 @@ local emptyText
 local trainerText
 ---@type FontString?
 local hintText
+---@type FontString?
+local unlistedText
 ---@type FontString?
 local queuedText
 ---@type Button?
@@ -386,6 +390,10 @@ local function BuildJourneys(parent, below)
 	hintText:SetPoint("RIGHT", -10, 0)
 	hintText:SetJustifyH("LEFT")
 	hintText:SetText(L.CHOOSE_TO_SEE_STEPS)
+	unlistedText = list:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+	unlistedText:SetPoint("RIGHT", -10, 0)
+	unlistedText:SetJustifyH("LEFT")
+	unlistedText:SetText(L.UNLISTED)
 	-- The trainer line (F16) above the cards: text only, since the data has no trainer's place.
 	trainerText = list:CreateFontString(nil, "ARTWORK", "GameFontNormal")
 	trainerText:SetPoint("RIGHT", -10, 0)
@@ -833,6 +841,15 @@ local function LayoutJourneys(route)
 	end
 	if searching or not chosen then
 		top = math.max(top, emptyTop + 40)
+	end
+	-- Honest coverage: quests here the data lacks, so the cards can't be every story.
+	---@cast unlistedText -?
+	local state = ns.State
+	local unlisted = not searching and ns.Model.Unlisted(ns.Data, state.Player().map, state.Log())
+	unlistedText:SetShown(unlisted)
+	if unlisted then
+		unlistedText:SetPoint("TOPLEFT", 10, -top)
+		top = top + UNLISTED_HEIGHT + CARD_GAP
 	end
 	local skipped = not searching and #ns.Skipped() or 0
 	---@cast skippedButton -?

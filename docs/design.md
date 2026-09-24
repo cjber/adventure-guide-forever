@@ -107,6 +107,14 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   when combat ends" meanwhile, so the wait reads as queued, not failed. Clearing the choice first cancels it.
 - **Stop** appears only while AGF owns the guidance. That means SPF's `CurrentStop(OWNER)` is non-nil, or the
   native user waypoint is still the one AGF set (§5.1).
+- **Honest coverage (roadmap #23).** When the log holds a quest `Data.quests` lacks, or the player's zone map has
+  quests Forever added that it lacks, one `GameFontDisableSmall` line sits under the cards and hint, above Skipped:
+  "This land has stories the guide doesn't know yet; look for the "!" on the map." It is never on a card (§2.2) and
+  never beside the search's results. `Model.Unlisted` decides. The added quests come from `Data/Forever.lua`, which
+  `tools/diff_forever.py` generates: the QuestV2 IDs Forever's build has and Classic Era 1.15.9.69722 lacks, each
+  placed on the zone maps its `QuestPOIBlob` rows name. Only 26 of the 1795 added quests have a blob, so the zone
+  half is narrow; a quest with no blob has no zone and is left out. The slice also lists the 160 added AreaTable IDs
+  for later exploration work; TaxiNodes and Map diffs are printed only.
 - Fit: with a card chosen the three cards take 148 px (was 270), so the list holds between two and three more 46 px
   step rows before it scrolls.
 
@@ -471,6 +479,7 @@ route. Skipping every step of a chosen journey ends it the same way, quietly.
 | Buttons, menu | `Go` (menus only) · `Stop` · `Show quest` · `Skip for now` · `Skipped (2)` · `Show again: <title>` · `Choose another journey` |
 | Instructions | `Click to travel with Shortest Path` · `Click to set a waypoint` · `Click to choose this journey` · `Replaces your current journey.` |
 | Empty | `Nothing nearby fits your level.` |
+| Coverage | `This land has stories the guide doesn't know yet; look for the "!" on the map.` |
 
 ## 4. Features, in build order
 

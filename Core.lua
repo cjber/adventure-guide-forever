@@ -166,6 +166,8 @@ ns.L = {
 	SETTING_MAP_PINS = "Show route pins on the map",
 	SETTING_GIVERS = "Show quest givers on the map",
 	SETTING_DUNGEONS_DEFAULT = "Include dungeons by default",
+	-- Honest coverage (docs/design.md §2.1): the stock "!" marks the quests the guide can't list.
+	UNLISTED = 'This land has stories the guide doesn\'t know yet; look for the "!" on the map.',
 }
 local L = ns.L
 

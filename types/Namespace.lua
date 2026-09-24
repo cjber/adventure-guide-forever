@@ -477,3 +477,9 @@
 
 ---@class AGFData
 ---@field forever? AGFForever nil where only Data/Quests.lua is loaded (the planner specs and bench)
+
+---@class AGFModel
+---@field Unlisted fun(data: AGFData, map?: integer, log: table<integer, AGFLogQuest>): boolean the log holds a quest the data lacks, or Forever added quests on `map` the data lacks
+
+---@class AGFStrings
+---@field UNLISTED string the panel's honest-coverage line
