@@ -64,6 +64,13 @@
 						<Anchor point="TOPLEFT" relativeKey="$parent.Subline" relativePoint="BOTTOMLEFT" y="-2"/>
 					</Anchors>
 				</FontString>
+				<!-- Blizzard's group quest tag (QUEST_TAG_ATLAS), at the right of the reason's row when a quest needs a group. -->
+				<Texture parentKey="Group" atlas="questlog-questtypeicon-group" hidden="true">
+					<Size x="12" y="12"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativeKey="$parent.Title" relativePoint="BOTTOMRIGHT" y="-19"/>
+					</Anchors>
+				</Texture>
 			</Layer>
 		</Layers>
 	</Button>

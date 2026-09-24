@@ -244,6 +244,7 @@ end
 ---@field Title FontString
 ---@field Subline FontString
 ---@field Reason FontString
+---@field Group Texture
 ---@field UpdateHighlightForState fun(self: AGFJourneyCard)
 ---@field journey? AGFJourney
 ---@field state? "full"|"chosen"|"compact"
@@ -549,6 +550,19 @@ local function RefreshRow(row, step, index)
 	row.Selected:SetShown(index == 1)
 end
 
+-- A card's first stop and how many stops follow it, its third line when it has no reason.
+---@param journey AGFJourney
+---@return string?
+local function HubLine(journey)
+	local more = journey.more or 0
+	if not journey.hub then
+		return nil
+	end
+	return (more > 1 and L.HUB_MORE:format(journey.hub, more))
+		or (more == 1 and L.HUB_MORE_ONE:format(journey.hub))
+		or journey.hub
+end
+
 -- `state`: "full" (none chosen), "chosen" (full and lit) or "compact" (another is chosen: icon and title only).
 ---@param card AGFJourneyCard
 ---@param journey AGFJourney
@@ -577,7 +591,15 @@ local function RefreshCard(card, journey, state)
 	card.Subline:SetShown(not compact)
 	card.Reason:SetShown(not compact)
 	card.Subline:SetText(journey.subline)
-	card.Reason:SetText(journey.reason or "")
+	card.Reason:SetText(journey.reason or HubLine(journey) or "")
+	-- The dungeon card's own icon already says it needs a group.
+	local group = not compact and (journey.group or 0) > 0 and journey.kind ~= "dungeon"
+	card.Group:SetShown(group)
+	card.Reason:ClearAllPoints()
+	card.Reason:SetPoint("TOPLEFT", card.Subline, "BOTTOMLEFT", 0, -2)
+	if group then
+		card.Reason:SetPoint("RIGHT", card.Group, "LEFT", -4, 0)
+	end
 	-- The pushed art is the normal art, so a press moves nothing; the highlight follows it (AlphaHighlightButton).
 	local art = compact and ROW_ART or CARD_ART
 	card.NormalTexture:SetAtlas(art)

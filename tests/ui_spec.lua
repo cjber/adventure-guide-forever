@@ -1441,6 +1441,33 @@ for _, spf in ipairs({ false, "v1" }) do
 	for _, card in ipairs(Cards()) do
 		equal(card.highlightLocked == true, false, label .. ": no card lit")
 	end
+	-- Line 3 is the reason, else the first stop and how many follow; the group tag sits at its right (docs/plan.md
+	-- §7.4), never on the dungeon card, whose icon says as much.
+	local L, hubLines = h.ns.L, 0
+	for _, card in ipairs(Cards()) do
+		local journey = card.journey
+		local more = journey.more
+		local hub = (more > 1 and L.HUB_MORE:format(journey.hub, more))
+			or (more == 1 and L.HUB_MORE_ONE:format(journey.hub))
+			or journey.hub
+		equal(card.Reason:GetText(), journey.reason or hub, label .. ": " .. journey.key .. " line 3")
+		hubLines = hubLines + (journey.reason and 0 or 1)
+		equal(
+			card.Group:IsShown(),
+			journey.group > 0 and journey.kind ~= "dungeon",
+			label .. ": " .. journey.key .. " tag"
+		)
+	end
+	equal(hubLines > 0, true, label .. ": a card without a reason shows its hub line")
+	local tagged = Cards()[1]
+	tagged.journey.group = 2
+	h.ns.OpenPanel()
+	equal(tagged.Group:IsShown(), true, label .. ": a group quest tags the card")
+	local _, beside = tagged.Reason:GetPoint(2)
+	equal(beside, tagged.Group, label .. ": and line 3 stops short of the tag")
+	tagged.journey.group = 0
+	h.ns.OpenPanel()
+	equal(tagged.Reason:GetNumPoints(), 1, label .. ": without one line 3 runs its full width")
 
 	-- A compact row's tooltip keeps the card's lines.
 	local story = Cards()[2].journey

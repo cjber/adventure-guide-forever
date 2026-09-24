@@ -84,6 +84,9 @@ ns.L = {
 	CHOOSE_TO_SEE_STEPS = "Choose a journey to see its steps.",
 	SHOW_EVERY_JOURNEY = "Click again to see every journey",
 	STOP_AND_SHOW_EVERY_JOURNEY = "Click again to stop the route and see every journey",
+	-- A card's third line when it has no reason (docs/plan.md §7.4): its first stop, then how many follow.
+	HUB_MORE = "%s and %d more stops",
+	HUB_MORE_ONE = "%s and 1 more stop",
 	-- The travel line (docs/design.md §2.5): Shortest Path's own verbs (its JourneySteps.lua VERB), so both addons
 	-- name a leg alike.
 	TRAVEL = "%s · %d min",
