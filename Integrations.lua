@@ -225,10 +225,25 @@ local function Here()
 	return player.map and player.x and player.y and string.format("%d:%.4f:%.4f", player.map, player.x, player.y) or nil
 end
 
-local function NextCard()
+local NextCard
+
+-- A fight holds the queue; its end asks for the rest. Registered only while cards wait, so no event runs otherwise.
+local afterCombat = CreateFrame("Frame")
+afterCombat:SetScript("OnEvent", function(self)
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	if cardQueue[1] and not chained then
+		chained = true
+		C_Timer.After(0, NextCard)
+	end
+end)
+
+function NextCard()
 	chained = false
-	if not (ns.PanelShown and ns.PanelShown()) or InCombatLockdown() then
+	if not (ns.PanelShown and ns.PanelShown()) then
 		cardQueue = {}
+		return
+	elseif InCombatLockdown() then
+		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return
 	end
 	-- The queue may have emptied since this frame was asked for: a route with nothing new to fetch.

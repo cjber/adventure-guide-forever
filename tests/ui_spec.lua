@@ -1655,6 +1655,15 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	equal(Cached(), spf and #journeys or 0, label .. ": the last answers stand")
 	h.SetCombat(false)
 	h.flush()
+	-- Cards still unanswered when a fight starts ask once it ends, with no rebuild to requeue them.
+	integrations.RefreshCards({})
+	integrations.RefreshCards(journeys)
+	h.SetCombat(true)
+	h.flush()
+	equal(Cached(), 0, label .. ": unanswered through the fight")
+	h.SetCombat(false)
+	h.flush()
+	equal(Cached(), spf and #journeys or 0, label .. ": answered once it ends")
 	-- Closed, nothing is asked.
 	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
 	h.flush()
