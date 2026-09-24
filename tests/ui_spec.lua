@@ -1275,6 +1275,7 @@ end
 do
 	local SPELL = { name = "Lightning Bolt", level = 14, line = "Elemental", lineID = 375, general = false }
 	local THREE = { SPELL, SPELL, SPELL }
+	local rings0
 	for _, case in ipairs({
 		{ label = "no Tweaks Forever", lines = 0 },
 		{ label = "no answer", tf = {}, lines = 0 },
@@ -1335,9 +1336,16 @@ do
 		local shown = block and block.used and block.lines[1] or nil
 		equal(shown, case.text and "3 new spells", label .. ": the tracker's line")
 		-- Text only: no ring for it, and its tracker title neither guides nor sets a waypoint.
-		for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
-			equal(pin.step and pin.step.key ~= "trainer", true, label .. ": every ring is a step's")
+		local steps, rings = {}, 0
+		for _, step in ipairs(h.ns.Route().steps) do
+			steps[step] = true
 		end
+		for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
+			equal(steps[pin.step] or false, true, label .. ": every ring is a route step's")
+			rings = rings + 1
+		end
+		rings0 = rings0 or rings
+		equal(rings > 0 and rings == rings0, true, label .. ": as many rings as without Tweaks Forever")
 		local waypoints, routes = h.counts.SetUserWaypoint, h.spf.Navigate + h.spf.NavigateRoute
 		if block then
 			h.tracker:OnBlockHeaderClick(block, "LeftButton")
