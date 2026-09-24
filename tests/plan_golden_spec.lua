@@ -124,6 +124,16 @@ for _, fixture in ipairs(characters.list) do
 		end
 	end
 
+	-- The reported case (design §2.10): standing in Redridge, where the level fits two levels on, the story is
+	-- Redridge's whether or not it was chosen, never Darkshore's.
+	if fixture.name == "human18_redridge" then
+		prefs.journey = nil
+		local unchosen = Model.Plan(data, player, completed, log, prefs).journeys[1]
+		prefs.journey = fixture.prefs.journey
+		equal(unchosen.title, "Redridge Mountains story", "human18_redridge: the story of the zone you stand in")
+		equal(route.journeys[1].title, "Redridge Mountains story", "human18_redridge: chosen, the same card")
+	end
+
 	-- F12: a route crosses an ocean at most once, and a turn-in over there waits until the route is there.
 	local function Changes(steps)
 		local changes = 0

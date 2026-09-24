@@ -1234,11 +1234,18 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	local chosen = prefs.journey or ""
 	local chosenZone, chosenDungeon = tonumber(chosen:match("^zone:(%d+)$")), tonumber(chosen:match("^dungeon:(%d+)$"))
 	local journeys = { Carry(data, player, completed, log, ready, prefs, mapName) }
-	-- The story: the zone the player's level fits best, or the chosen zone once the player stands in it, so heading
-	-- to a zone becomes its story on arrival.
-	local zone, tries = zones[1], { zones[1] }
-	if chosenZone and chosenZone == player.map then
-		table.insert(tries, 1, chosenZone)
+	-- The story: the zone the player stands in when it is among the three their level fits now or two levels on (the
+	-- next zone's, which is never the zone they are in), or is the chosen zone, so heading to a zone becomes its story
+	-- on arrival; otherwise, or when it has no step (a capital), the zone the level fits best.
+	local zone, tries, here = zones[1], { zones[1] }, chosenZone ~= nil and chosenZone == player.map
+	for _, map in ipairs(zones) do
+		here = here or map == player.map
+	end
+	for _, map in ipairs(ahead or {}) do
+		here = here or map == player.map
+	end
+	if here and player.map ~= zones[1] then
+		table.insert(tries, 1, player.map)
 	end
 	for _, map in ipairs(tries) do
 		local story = StoryJourney(data, player, completed, log, ready, eligible, map, prefs, mapName)

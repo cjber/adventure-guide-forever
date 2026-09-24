@@ -199,12 +199,17 @@ equal(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys[2].reason, "For lev
 capped.maxLevel = 18
 equal(Kinds(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys), "zone:1", "and none at the cap")
 local standing = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 2, x = 0.5, y = 0.5 }
-equal(Kinds(Model.Plan(Ahead(5), standing, {}, {}, prefs()).journeys), "zone:1", "never the zone the player is in")
+-- Standing in There, which fits too, makes it the story (design §2.10), and the next zone is never the zone you are in.
+equal(Kinds(Model.Plan(Ahead(5), standing, {}, {}, prefs()).journeys), "zone:2", "the story is the zone you stand in")
+local capital = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 9, x = 0.5, y = 0.5 }
+equal(Kinds(Model.Plan(Ahead(5), capital, {}, {}, prefs()).journeys), "zone:1 zone:2", "a zone with none: level fit")
 equal(Kinds(Model.Plan(Ahead(4), player, {}, {}, prefs()).journeys), "zone:1", "four quests are too few")
 equal(Kinds(Model.Plan(Ahead(5, 20), player, {}, {}, prefs()).journeys), "zone:1", "only quests open now count")
 -- At 22 There fits both now and two levels on; the next zone is never the story's own, and Here holds too few.
-local later22 = { level = 22, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
+local later22 = { level = 22, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 3, x = 0.5, y = 0.5 }
 equal(Kinds(Model.Plan(Ahead(5), later22, {}, {}, prefs()).journeys), "zone:2", "never the story's own zone")
+later22.map = 1
+equal(Kinds(Model.Plan(Ahead(5), later22, {}, {}, prefs()).journeys), "zone:1 zone:2", "in Here, There is next")
 -- The offer rules only gate new choices (design §2.10): a chosen zone stays while it has a step.
 local function Choose(key)
 	local chosen = prefs()
