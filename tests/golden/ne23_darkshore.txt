@@ -9,7 +9,7 @@ card (chosen) | story:1433 | Redridge Mountains story | Chapter 1 of 2 | Begins 
   step 7 | pickup:1433:0.2140:0.4396 | Pick up quests: Wanted: Lieutenant Fangore | 1433 0.2167,0.4644 | near your level
   step 8 | pickup:1433:0.1677:0.4633 | Pick up quests: Martie Jainrose | 1433 0.1677,0.4633 | 2 quests here
   step 9 | pickup:1429:0.6522:0.6971 | Pick up quests: Theocritus | 1429 0.6522,0.6971 | near your level
-card | nextzone:1431 | Head to Duskwood at 25 | 11 quests near your level | - | map 1431
+card | nextzone:1431 | Head to Duskwood | 11 quests near your level | For level 25 | map 1431
   step 1 | pickup:1431:0.0778:0.3407 | Pick up quests: Sven Yorgen | 1431 0.0778,0.3407 | 2 quests here
   step 2 | pickup:1431:0.1838:0.5637 | Pick up quests: Jitters | 1431 0.1838,0.5637 | near your level
   step 3 | pickup:1431:0.2811:0.3146 | Pick up quests: Abercrombie | 1431 0.2811,0.3146 | near your level

@@ -688,7 +688,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Stonetalon Mountains at 20",
+      "text": "Head to Stonetalon Mountains",
       "type": "FontString",
       "wordWrap": false
     },
@@ -732,7 +732,7 @@
         212.00,
         14.00
       ],
-      "text": "",
+      "text": "For level 20",
       "type": "FontString",
       "wordWrap": false
     },

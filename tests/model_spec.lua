@@ -188,9 +188,10 @@ local function Kinds(journeys)
 end
 local later = Model.Plan(Ahead(5), player, {}, {}, prefs())
 equal(Kinds(later.journeys), "story:1 nextzone:2", "the next zone after the story")
-equal(later.journeys[2].title, "Head to There at 20", "named for the level it fits")
+equal(later.journeys[2].title, "Head to There", "named for its zone")
+equal(later.journeys[2].reason, "For level 20", "the level it fits under the name")
 local capped = { level = 18, maxLevel = 19, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
-equal(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys[2].title, "Head to There at 19", "never past the cap")
+equal(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys[2].reason, "For level 19", "never past the cap")
 capped.maxLevel = 18
 equal(Kinds(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys), "story:1", "and none at the cap")
 local standing = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 2, x = 0.5, y = 0.5 }

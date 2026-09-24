@@ -18,7 +18,9 @@ ns.L = {
 	-- Journey cards (docs/design.md §2.2 and §3): a title, a subline that counts, and a reason when there is one.
 	JOURNEY_CARRY = "Finish what you carry",
 	JOURNEY_STORY = "%s story",
-	JOURNEY_NEXT_ZONE = "Head to %s at %d",
+	JOURNEY_NEXT_ZONE = "Head to %s",
+	-- The next zone's level goes under its name, so a long zone name never cuts it off.
+	NEXT_ZONE_LEVEL = "For level %d",
 	DUNGEON_QUESTS = "%d quests for this dungeon",
 	DUNGEON_QUESTS_ONE = "1 quest for this dungeon",
 	-- The carry card's counts, joined when several apply: "3 ready to hand in, 1 in progress".

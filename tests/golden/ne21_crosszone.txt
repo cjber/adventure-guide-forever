@@ -14,7 +14,7 @@ card | story:1433 | Redridge Mountains story | Chapter 1 of 3 | Begins a new sto
   step 7 | pickup:1433:0.2298:0.5204 | Pick up quests: Shawn | 1433 0.2423,0.5364 | near your level
   step 8 | pickup:1433:0.1677:0.4633 | Pick up quests: Martie Jainrose | 1433 0.1677,0.4633 | 2 quests here
   step 9 | pickup:1433:0.1019:0.7146 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
-card | nextzone:1431 | Head to Duskwood at 23 | 9 quests near your level | - | map 1431
+card | nextzone:1431 | Head to Duskwood | 9 quests near your level | For level 23 | map 1431
   step 1 | pickup:1431:0.0778:0.3407 | Pick up quests: Sven Yorgen | 1431 0.0778,0.3407 | 2 quests here
   step 2 | pickup:1431:0.1838:0.5637 | Pick up quests: Jitters | 1431 0.1838,0.5637 | near your level
   step 3 | pickup:1431:0.2811:0.3146 | Pick up quests: Abercrombie | 1431 0.2811,0.3146 | near your level

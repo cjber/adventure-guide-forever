@@ -970,7 +970,8 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			if nextZone and quests >= NEXT_ZONE_PICKUPS and #journeys < Model.MAX_JOURNEYS then
 				nextZone.kind, nextZone.key = "nextzone", "nextzone:" .. map
 				local name = ZoneName(data, map, mapName)
-				nextZone.title = L.JOURNEY_NEXT_ZONE:format(name, player.level + levels)
+				nextZone.title = L.JOURNEY_NEXT_ZONE:format(name)
+				nextZone.reason = L.NEXT_ZONE_LEVEL:format(player.level + levels)
 				journeys[#journeys + 1] = nextZone
 			end
 			break

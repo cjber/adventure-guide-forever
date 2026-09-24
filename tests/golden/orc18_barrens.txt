@@ -10,7 +10,7 @@ card | story:1413 | The Barrens story | Chapter 1 of 5 | Begins a new story | ma
   step 5 | pickup:1413:0.6226:0.3839 | Pick up quests: Mebok Mizzyrix | 1413 0.6237,0.3762 | Begins a new story
   step 6 | pickup:1413:0.6196:0.5496 | Pick up quests: Gilthares Firebough | 1413 0.6196,0.5496 | near your level
   step 7 | pickup:1413:0.4486:0.5914 | Pick up quests: Mangletooth | 1413 0.4455,0.5926 | 2 quests here
-card | nextzone:1442 | Head to Stonetalon Mountains at 20 | 11 quests near your level | - | map 1442
+card | nextzone:1442 | Head to Stonetalon Mountains | 11 quests near your level | For level 20 | map 1442
   step 1 | pickup:1442:0.8593:0.9789 | Pick up quests: Seereth Stonebreak | 1442 0.8593,0.9789 | 2 quests here
   step 2 | pickup:1442:0.7325:0.9513 | Pick up quests: Xen'Zilla | 1442 0.7125,0.9502 | 2 quests here
   step 3 | pickup:1442:0.7348:0.8559 | Pick up quests: Kaya Flathoof | 1442 0.7348,0.8559 | near your level

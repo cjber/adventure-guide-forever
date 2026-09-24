@@ -9,7 +9,7 @@ card (chosen) | story:1439 | Darkshore story | Chapter 1 of 5 | Begins a new sto
 card | dungeon:36 | Deadmines | 3 quests for this dungeon | - | map 1453
   step 1 | dungeon:1453:0.7031:0.4082 | Pick up quests: Wilder Thistlenettle | 1453 0.7031,0.4082 | 2 quests here
   step 2 | dungeon:1453:0.5972:0.3378 | Pick up quests: Shoni the Shilent | 1453 0.6263,0.3412 | near your level
-card | nextzone:1433 | Head to Redridge Mountains at 20 | 14 quests near your level | - | map 1433
+card | nextzone:1433 | Head to Redridge Mountains | 14 quests near your level | For level 20 | map 1433
   step 1 | pickup:1433:0.1019:0.7146 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
   step 2 | pickup:1433:0.1677:0.4633 | Pick up quests: Martie Jainrose | 1433 0.1677,0.4633 | 2 quests here
   step 3 | pickup:1433:0.2140:0.4396 | Pick up quests: Barkeep Daniels | 1433 0.2140,0.4396 | 3 quests here

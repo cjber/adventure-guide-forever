@@ -61,8 +61,9 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
 |  2 The Defias Brotherhood                     |
 |  3 Red Linen Goods                            |    optional rows at alpha 0.6 (Panel.lua:602)
 | +-------------------------------------------+ |
-| | (!)  Head to Darkshore at 14              | |  card 3
+| | (!)  Head to Darkshore                    | |  card 3
 | | ( )  11 quests near your level            | |
+| |      For level 14                         | |  the level as its reason, so a long zone name never hides it
 | +-------------------------------------------+ |
 |  Skipped (2)                                  |  GameFontNormalSmall text button, hidden at 0
 |-----------------------------------------------|
@@ -320,9 +321,9 @@ When `SPF.Active()` exists and reports another journey running, Go's tooltip add
 
 | Where | Example |
 |---|---|
-| Card titles | `Finish what you carry` · `Westfall story` · `Head to Darkshore at 14` |
+| Card titles | `Finish what you carry` · `Westfall story` · `Head to Darkshore` |
 | Card sublines | `3 quests ready to hand in` · `Chapter 2 of 4` · `Chapter 2` · `11 quests near your level` |
-| Reasons | `Continues a story you started` · `Begins a Westfall story` · `Ready to hand in` · `Sentinel Hill needs hands` · `Better with others` |
+| Reasons | `Continues a story you started` · `Begins a Westfall story` · `Ready to hand in` · `Sentinel Hill needs hands` · `Better with others` · `For level 14` |
 | Travel | `Fly to Sentinel Hill · 6 min` · `Boat to Auberdine · 2 min wait` · `Fly to Astranaar · new flight path` · `About 4 min away` |
 | Why-not | `Requires level 14` · `Completed: The Forgotten Heirloom` · `Requires one of: A, B` · `Horde only` · `Warriors only` · `You chose X instead` · `The guide can't tell where this starts` · `You've done this` · `In your quest log` · `Repeatable quests aren't suggested` |
 | Tracker | `Where you left off: finishes a story` · `Next: The Ruins of Stardust` · `Story complete` |

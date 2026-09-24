@@ -5,7 +5,7 @@ card (chosen) | story:1439 | Darkshore story | Chapter 1 of 5 | Begins a new sto
   step 3 | pickup:1439:0.4030:0.5973 | Pick up quests: Sentinel Tysha Moonblade | 1439 0.4030,0.5973 | near your level
   step 4 | pickup:1439:0.3864:0.8733 | Pick up quests: Therylune | 1439 0.3864,0.8733 | near your level
   step 5 | pickup:1439:0.4594:0.9029 | Pick up quests: Sentinel Aynasha | 1439 0.4594,0.9029 | near your level
-card | nextzone:1432 | Head to Loch Modan at 14 | 10 quests near your level | - | map 1432
+card | nextzone:1432 | Head to Loch Modan | 10 quests near your level | For level 14 | map 1432
   step 1 | pickup:1432:0.2323:0.7368 | Pick up quests: Mountaineer Cobbleflint | 1432 0.2207,0.7313 | 2 quests here
   step 2 | pickup:1432:0.3707:0.4938 | Pick up quests: Vidra Hearthstove | 1432 0.3483,0.4928 | near your level
   step 3 | pickup:1432:0.3417:0.4784 | Pick up quests: Mountaineer Kadrell | 1432 0.3417,0.4784 | near your level

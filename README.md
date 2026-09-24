@@ -16,7 +16,7 @@ It looks like it came with the game: a tab in the quest log beside Quests, cards
 
 ## Features
 
-- **Journeys**: up to three cards on the Adventure Guide tab. *Finish what you carry* counts what is ready to hand in and in progress; *Westfall story* follows the zone's quest chain; *Head to Darkshore at 14* suggests the next zone once it has at least five quests near your level. Pick one and it shows its steps, up to nine.
+- **Journeys**: up to three cards on the Adventure Guide tab. *Finish what you carry* counts what is ready to hand in and in progress; *Westfall story* follows the zone's quest chain; *Head to Darkshore* ("For level 14") suggests the next zone once it has at least five quests near your level. Pick one and it shows its steps, up to nine.
 - **Stories as chapters**: a chain reads "Chapter 2 of 4" only when the quest data proves its length, and "Chapter 2" otherwise. Later chapters are never named. Finishing a story of known length glows the tracker once and plays the game's stage-end sound.
 - **Select, then Go**: choosing a card turns the map to its zone and previews its numbered steps, but starts nothing. *Go* hands the steps from there on to Shortest Path Forever as one journey, or sets the game's own waypoint without it. *Stop* only removes what the guide set, so a waypoint you moved yourself stays.
 - **Routes by distance**: steps are ordered by where they are, cross the sea at most once, and a turn-in on the other continent waits at the end with "Hand in when you're in Stormwind City".

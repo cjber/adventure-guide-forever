@@ -345,7 +345,8 @@
 ---@field SETTING_UNTRACK_OTHERS_TOOLTIP string
 ---@field JOURNEY_CARRY string
 ---@field JOURNEY_STORY string format: zone name
----@field JOURNEY_NEXT_ZONE string format: zone name, the level it fits
+---@field JOURNEY_NEXT_ZONE string format: zone name
+---@field NEXT_ZONE_LEVEL string format: the level the next zone fits
 ---@field DUNGEON_QUESTS string format: quest count
 ---@field DUNGEON_QUESTS_ONE string
 ---@field CARRY_READY string format: count of finished quests whose hand-in is on this continent
