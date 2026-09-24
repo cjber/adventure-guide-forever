@@ -83,6 +83,7 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   - "Why these?" (Panel.lua:430-443). Each row now gives its own reason, and "why not" moves to search.
 - The quest/dungeon chips move into the cog's settings menu. Dungeons holds back only an instance's quests (a quest
   with `dungeon`); an outdoor elite (Hogger) is a zone's quest under Quests, shown optional with the group badge.
+  Being optional, it never picks the zone: zones are ranked by their other quests.
 - **None chosen** is the default (a fresh character, a card clicked again, or a saved choice whose card is no longer
   offered): every card whole in order, no step rows, the hint "Choose a journey to see its steps." under them, and
   nothing guides. The route still falls back to the first card

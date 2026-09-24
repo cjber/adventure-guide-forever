@@ -317,7 +317,8 @@ function Model.Search(data, player, query, title)
 	return found
 end
 
--- The maps of the three zones that best fit `level` for the quests `ids`, best first.
+-- The maps of the three zones that best fit `level` for the quests `ids`, best first. An outdoor elite is optional
+-- (roadmap #16): it rides along on its zone's cards but never picks the zone a solo player is sent to.
 ---@return integer[]
 local function Rank(data, ids, level)
 	local choices, scores = {}, {}
@@ -325,7 +326,7 @@ local function Rank(data, ids, level)
 		local quest = data.quests[id]
 		local map = quest.zone or quest.start.map
 		local zone = data.zones[map]
-		if zone and not Model.IsGray(quest.level, level) then
+		if zone and not Model.IsGray(quest.level, level) and not (quest.elite and not quest.dungeon) then
 			if not choices[map] then
 				choices[map] = { map = map, min = zone.min, max = zone.max, quests = 0 }
 				scores[map] = 0

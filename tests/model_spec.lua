@@ -280,14 +280,22 @@ equal(#Model.Plan(withFinish, player, {}, unknown, prefs()).steps, 0, "starter n
 unknown[103].complete = true
 equal(Model.Plan(withFinish, player, {}, unknown, prefs()).steps[1].x, 0.6, "bundled turn-in fallback")
 
-local special = { quests = { [1] = quest(), [2] = quest(0.9) }, zones = data.zones }
+local special = { quests = { [1] = quest(), [2] = quest(0.9), [3] = quest(0.1) }, zones = data.zones }
 special.quests[1].elite, special.quests[2].dungeon = true, 99
 -- Roadmap #16: an outdoor elite is a zone's quest (optional, badged); only an instance's quest waits behind Dungeons.
 local outdoor = Model.Plan(special, player, {}, {}, prefs())
-equal(#outdoor.steps, 1, "an outdoor elite shows with dungeons off, the instance quest does not")
-equal(outdoor.steps[1].quests[1], 1, "and it is the elite")
-equal(outdoor.steps[1].group, 1, "badged for a group")
-equal(outdoor.steps[1].optional, true, "and optional")
+local elite
+for _, step in ipairs(outdoor.steps) do
+	equal(step.quests[1] ~= 2, true, "the instance quest waits behind Dungeons")
+	elite = step.quests[1] == 1 and step or elite
+end
+equal(#outdoor.steps, 2, "an outdoor elite shows with dungeons off, beside the zone's solo quest")
+equal(elite ~= nil and elite.group, 1, "badged for a group")
+equal(elite.optional, true, "and optional")
+-- Being optional, an outdoor elite never picks the zone: a zone with only elites open has no card.
+local elitesOnly = { quests = { [1] = quest() }, zones = data.zones }
+elitesOnly.quests[1].elite = true
+equal(#Model.Plan(elitesOnly, player, {}, {}, prefs()).journeys, 0, "an elite alone never draws a zone card")
 local dungeon = prefs()
 dungeon.quests, dungeon.dungeons = false, true
 local groups = Model.Plan(special, player, {}, {}, dungeon)
