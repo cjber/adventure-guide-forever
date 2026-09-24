@@ -19,11 +19,12 @@ end
 local loaded = {}
 
 -- ui_spec's level-18 orc shaman in The Barrens: one quest ready to hand in, one under way.
-local function Load(spf)
+-- `optIn` turns on the marks a player opts into (both are off by default); the panel and search scenes, the store
+-- page's lead images, keep the defaults, so they show only the rings the open guide previews.
+local function Load(spf, optIn)
 	local h = harness.load({
 		spf = spf or nil,
-		-- The map scenes show the marks a player opts into (both are off by default).
-		db = { showMapPins = true, showQuestGivers = true },
+		db = optIn and { showMapPins = true, showQuestGivers = true } or nil,
 		completed = { 844 },
 		log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
@@ -91,7 +92,7 @@ h.Type(search, QUERY)
 out.search = Panel(h, "search")
 
 -- With Shortest Path loaded: the ring's tooltip, the tracker and its menu, then the route handed to Shortest Path.
-h = Load("v1")
+h = Load("v1", true)
 h.G.OpenQuestLog()
 h.flush()
 h.providers[1]:RefreshAllData()

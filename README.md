@@ -12,7 +12,7 @@ Levelling guides tell you exactly what to do, in order. I wanted something loose
 
 It looks like it came with the game: a tab in the quest log beside Quests, cards drawn with retail's Journeys art, the game's own map pins and objective tracker, and Blizzard's quest details when you click a quest. With the tab closed it draws nothing on your map.
 
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png" width="640" alt="The Barrens on the world map with the Adventure Guide tab open: a card for the quests you carry with its two steps, a zone story card at chapter 1 of 5, and a card for the next zone"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png" width="640" alt="The Barrens on the world map with the Adventure Guide tab open: a card for the quests you carry with its two steps ringed on the map, a zone story card at chapter 1 of 5, and a card for the next zone at level 20"></p>
 
 ## Features
 
