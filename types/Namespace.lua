@@ -23,6 +23,7 @@
 ---@field pre? integer[] all must be completed first
 ---@field preAny? integer[] one of these must be completed first
 ---@field group? integer exclusive group: completing one member closes the others
+---@field breadcrumb? integer the quest this breadcrumb leads to: open only while that is neither done nor in the log
 ---@field next? integer the chain's follow-up
 ---@field repeatable? boolean
 ---@field dungeon? integer instance Map.ID (not a uiMapID) when the quest is filed under a dungeon or raid
@@ -422,6 +423,7 @@
 ---@field WHY_COMPLETED string format: the prerequisite's title
 ---@field WHY_ONE_OF string format: the titles, joined
 ---@field WHY_CHOSE string format: the exclusive sibling's title
+---@field WHY_BREADCRUMB string format: the title of the quest a breadcrumb leads to
 ---@field WHY_EARLIER_QUEST string a prerequisite the data has no title for
 ---@field WHY_RACES string format: race names, joined (the client's ITEM_RACES_ALLOWED)
 ---@field WHY_CLASSES string format: class names, joined (the client's ITEM_CLASSES_ALLOWED)

@@ -48,7 +48,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	equal(h.G.ShortestPathForever ~= nil, spf ~= false, label .. ": Shortest Path global")
 	equal(h.G.TweaksForever, nil, label .. ": no Tweaks Forever")
 	equal(h.G.LegacyForever, nil, label .. ": no Legacy Forever")
-	equal(h.ns.Route().steps[1].key, "handin:346", label .. ": the hand-in leads the route")
+	equal(h.ns.Route().steps[1].key, "handin:349", label .. ": the hand-in leads the route")
 
 	-- Blizzard's displayMode is never written, whatever the player clicks (Panel.lua ShowGuide).
 	local panel, questsFrame = h.G.AdventureGuideForeverPanel, h.questMap.QuestsFrame
@@ -109,7 +109,7 @@ do
 	local h = Load(false)
 	local show = h.ns.ShowQuest
 	equal(show({ kind = "dungeon", key = "objective:843", quests = { 843 } }), true, "a group quest in the log opens")
-	local town = { kind = "hub", key = "hub:346", quests = { 843 }, pickups = { 843 }, handins = {} }
+	local town = { kind = "hub", key = "hub:349", quests = { 843 }, pickups = { 843 }, handins = {} }
 	equal(show(town), false, "a group pickup does not")
 	town.quests, town.pickups, town.handins = { 845, 843 }, { 843 }, { 845 }
 	equal(show(town), true, "a town with a hand-in opens it")
@@ -815,7 +815,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Live(), 0, label .. ": RemoveAllData leaves no pins")
 
 	-- Design §2.8's menu for a log quest; Stop only once Go runs, Show quest never in combat.
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["handin:346"], "RightButton")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["handin:349"], "RightButton")
 	local menu = {
 		"title: Turn in: The Zhevra",
 		"button: Go",
@@ -826,7 +826,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	same(h.MenuLines(), menu, label .. ": tracker menu")
 	ns.Integrations.Navigate(ns.Route().steps[1])
 	h.SetCombat(true)
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["handin:346"], "RightButton")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["handin:349"], "RightButton")
 	h.SetCombat(false)
 	menu[3] = "button: Stop"
 	same(h.MenuLines(), menu, label .. ": tracker menu while Go guides, in combat")
@@ -1670,7 +1670,7 @@ do
 	end
 	local session = Load(false)
 	local saved = session.G.AdventureGuideForeverCharDB.last
-	equal(saved and saved.key, "handin:346", "resume: each rebuild saves step 1")
+	equal(saved and saved.key, "handin:349", "resume: each rebuild saves step 1")
 	equal(Resumed(session), 0, "resume: nothing saved, nothing to resume")
 	local function Login(options)
 		options.charDB = { journey = "carry", last = { key = saved.key, reason = "finishes a story" } }
@@ -1937,10 +1937,17 @@ do
 	equal(#Results(), 0, "search: two characters keep the cards")
 	h.Type(search, "\231\139\188\231\139\188") -- two CJK characters, six bytes
 	equal(#Results() + Says(h, h.ns.L.SEARCH_NONE), 0, "search: counts characters, not bytes")
+	-- Call of Water (96) is the one of its title with no start in the data.
+	assert(h.ns.Data.quests[96].title == "Call of Water" and not h.ns.Data.quests[96].start)
+	h.Type(search, "Call of Water")
+	local suppressed
+	for _, row in ipairs(Results()) do
+		local first = row.Title:GetText() == "Call of Water" and Lines(row)[1]
+		suppressed = suppressed or (first == h.ns.L.WHY_NO_START and row) or nil
+	end
 	h.Type(search, "Call of")
-	local found, suppressed, open = Results(), nil, nil
+	local found, open = Results(), nil
 	for _, row in ipairs(found) do
-		suppressed = suppressed or (row.Title:GetText() == "Call of Fire" and row) or nil
 		open = open or (not row.Lock:IsShown() and row) or nil
 	end
 	equal(#found, 10, "search: ten results at most")
@@ -1948,12 +1955,14 @@ do
 	equal(#Shown(h, function(frame)
 		return frame.SkipButton ~= nil
 	end), 0, "search: and their steps")
-	local lines = Lines(assert(suppressed, "search: Call of Fire, whose start the data suppresses"))
+	h.Type(search, "Call of Water")
+	local lines = Lines(assert(suppressed, "search: Call of Water, whose start the data suppresses"))
 	equal(#lines, 1, "search: a suppressed start shows exactly 1 line")
 	equal(lines[1], h.ns.L.WHY_NO_START, "search: saying the guide can't tell where it starts")
 	equal(suppressed.Lock:IsShown(), true, "search: behind a lock")
 	h.Hover(suppressed)
-	equal(table.concat(h.tooltip, "\n"), "title: Call of Fire\nerror: " .. h.ns.L.WHY_NO_START, "search: tooltip")
+	equal(table.concat(h.tooltip, "\n"), "title: Call of Water\nerror: " .. h.ns.L.WHY_NO_START, "search: tooltip")
+	h.Type(search, "Call of")
 	equal(#Lines(assert(open, "search: a quest open now")), 0, "search: an open quest has nothing to explain")
 	local ready = h.ns.State.Ready
 	h.ns.State.Ready = function()
@@ -2603,7 +2612,7 @@ do
 		if case.text then
 			equal(h.spfRoute.stops[1].title, "Swart", label .. ": named for the trainer")
 		end
-		equal(h.ns.Route().steps[1].key, "handin:346", label .. ": the route is unchanged")
+		equal(h.ns.Route().steps[1].key, "handin:349", label .. ": the route is unchanged")
 		-- A spell learned at the trainer shortens the line at once.
 		if case.tf and case.tf.spells == THREE then
 			case.tf.spells = { SPELL }

@@ -231,6 +231,8 @@ local function WhyText(data, key, arg, names)
 		return L.WHY_ONE_OF:format(table.concat(titles, L.LIST_SEPARATOR))
 	elseif key == "group" then
 		return L.WHY_CHOSE:format(Title(data, arg, names))
+	elseif key == "breadcrumb" then
+		return L.WHY_BREADCRUMB:format(Title(data, arg, names))
 	elseif key == "skill" then
 		local name = (names and names.skill and names.skill(arg.id))
 			or (data.skills and data.skills[arg.id] and data.skills[arg.id].name)
@@ -332,6 +334,11 @@ local function Check(data, player, completed, log, id, groups, level, lines, nam
 		if other ~= id and (completed[other] or log[other]) and not Line(data, lines, false, "group", other, names) then
 			return false
 		end
+	end
+	-- A breadcrumb leads to its target, and closes once the target is taken or done.
+	local target = quest.breadcrumb
+	if target and not Line(data, lines, not completed[target] and not log[target], "breadcrumb", target, names) then
+		return false
 	end
 	return true
 end

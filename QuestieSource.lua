@@ -4,11 +4,11 @@ local _, ns = ...
 --[[ QuestieDB, when it is loaded (docs/design.md §2.14): after login the quests are rebuilt from it a few
      milliseconds a frame. The bundled data serves until then, and for good when QuestieDB is absent or fails a
      check. QuestieDB gives each quest its title, levels, races, classes, zone, givers and their spawns,
-     prerequisites, exclusive quests, chain and skill and reputation gates. The rest stays bundled: towns, maps, NPC
-     roles, instances, crossings and elite quests, and whatever QuestieDB leaves out (a level, a dungeon, a giver's
-     place). Only the bundled data's quests are read, and a start only where the bundled data has one: its lack is a
-     gate, an event or an event-only giver, none of which QuestieDB says. A start is also withheld whenever QuestieDB
-     names a requirement the planner cannot check.
+     prerequisites, exclusive quests, chain, breadcrumb target and skill and reputation gates. The rest stays
+     bundled: towns, maps, NPC roles, instances, crossings and elite quests, and whatever QuestieDB leaves out (a
+     level, a dungeon, a giver's place, a breadcrumb target). Only the bundled data's quests are read, and a start
+     only where the bundled data has one: its lack is a gate, an event or an event-only giver, none of which
+     QuestieDB says. A start is also withheld whenever QuestieDB names a requirement the planner cannot check.
      Nothing of Questie's is shipped: this reads the installed addon at runtime. ]]
 
 local ADDON = "QuestieDB"
@@ -31,6 +31,7 @@ local QUEST_FIELDS = {
 	"preQuestSingle",
 	"exclusiveTo",
 	"nextQuestInChain",
+	"breadcrumbForQuestId",
 	"questFlags",
 	"specialFlags",
 	"requiredSkill",
@@ -40,7 +41,6 @@ local QUEST_FIELDS = {
 -- A start is withheld when any of these is set (requiredMaxLevel: below the cap): the planner has no state for them.
 local GATES = {
 	"parentQuest",
-	"breadcrumbForQuestId",
 	"requiredSpell",
 	"requiredSpecialization",
 	"requiredMaxLevel",
@@ -361,6 +361,18 @@ local function Build(lib, zones, bundled, yield)
 			end
 			local following = tonumber(v.nextQuestInChain) or 0
 			quest.next = following > 0 and following or nil
+			-- A breadcrumb's target, QuestieDB's else the bundled one: open only while the target is neither done nor in
+			-- the log, which only a target in the data can say.
+			local target = v.breadcrumbForQuestId
+			if target == nil or target == 0 then
+				target = old.breadcrumb
+			elseif type(target) ~= "number" or target < 0 then
+				target, unknown = nil, true
+			end
+			if target then
+				quest.breadcrumb = target
+				unknown = unknown or not bundled.quests[target]
+			end
 			local flags, special = tonumber(v.questFlags) or 0, tonumber(v.specialFlags) or 0
 			quest.repeatable = (bit.band(special, 1) ~= 0 or bit.band(flags, REPEATABLE_FLAGS) ~= 0) or nil
 			-- Skill and reputation gates, as tools/gen_quests.py requirements: only on lines and factions the data

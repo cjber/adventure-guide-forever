@@ -98,6 +98,13 @@ local exclusive = { quests = { [1] = a, [2] = b }, zones = data.zones }
 equal(Model.Eligible(exclusive, player, { [2] = true }, {}, 1), false, "completed exclusive sibling")
 equal(Model.Eligible(exclusive, player, {}, { [2] = {} }, 1), false, "active exclusive sibling")
 equal(#Model.Plan(exclusive, player, {}, {}, prefs()).steps[1].quests, 1, "recommend one exclusive choice")
+-- A breadcrumb is open only while the quest it leads to is neither done nor in the log.
+local crumb = { quests = { [1] = quest(), [2] = quest(0.2, 0.2) }, zones = data.zones }
+crumb.quests[1].breadcrumb = 2
+equal(Model.Eligible(crumb, player, {}, {}, 1), true, "breadcrumb: open before its target")
+equal(Model.Eligible(crumb, player, { [2] = true }, {}, 1), false, "breadcrumb: closed once its target is done")
+equal(Model.Eligible(crumb, player, {}, { [2] = {} }, 1), false, "breadcrumb: closed while its target is in the log")
+equal(#Model.Plan(crumb, player, {}, {}, prefs()).steps, 2, "breadcrumb: a pickup beside its target's")
 
 data = { quests = {}, zones = {} }
 for id = 1, 8 do
@@ -1249,6 +1256,22 @@ equal(
 	"+ Horde only | + Requires level 10 | - Classes: Warrior | + Completed: First | + Requires one of: First, Second",
 	"why: classes and prerequisites"
 )
+custom.quests[1].classes, custom.quests[1].pre, custom.quests[1].preAny, custom.quests[1].breadcrumb = nil, nil, nil, 2
+equal(
+	Texts(Model.Why(custom, player, {}, {}, 1)),
+	"+ Horde only | + Requires level 10 | + Only until you take First",
+	"why: breadcrumb"
+)
+equal(
+	Texts(Model.Why(custom, player, {}, { [2] = {} }, 1)),
+	"+ Horde only | + Requires level 10 | - Only until you take First",
+	"why: taken"
+)
+-- Call of Fire (1522), an orc shaman's breadcrumb from Searn Firewarder to Kranal Fiss's Call of Fire (1524).
+local shaman = { level = 10, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1454, x = 0.38, y = 0.38 }
+equal(ns.Data.quests[1522].breadcrumb, 1524, "Call of Fire: a breadcrumb")
+equal(Model.Eligible(ns.Data, shaman, {}, {}, 1522), true, "Call of Fire: open")
+equal(Model.Eligible(ns.Data, shaman, {}, { [1524] = {} }, 1522), false, "Call of Fire: closed by its target")
 custom = { quests = custom.quests, zones = {} } -- a new data table: the index of groups is memoised per data
 custom.quests[2].start, custom.quests[1].group, custom.quests[3].group = nil, 5, 5
 equal(Texts(Model.Why(custom, player, {}, {}, 2)), "- The guide can't tell where this starts", "why: one line")

@@ -81,6 +81,7 @@ ns.L = {
 	WHY_COMPLETED = "Completed: %s",
 	WHY_ONE_OF = "Requires one of: %s",
 	WHY_CHOSE = "You chose %s instead",
+	WHY_BREADCRUMB = "Only until you take %s",
 	WHY_EARLIER_QUEST = "an earlier quest",
 	-- Skill and reputation gates (roadmap #8): a skill line and its rank; a standing (the client's word) and a faction.
 	WHY_SKILL = "Requires %s %d",

@@ -92,11 +92,23 @@ do
 	for id, quest in pairs(bundled.quests) do
 		count = count + 1
 		local built = data.quests[id]
-		for _, field in ipairs({ "title", "level", "min", "side", "races", "classes", "start", "finish", "pre" }) do
+		for _, field in ipairs({ "title", "level", "min", "side", "races", "classes", "pre", "preAny", "next" }) do
 			equal(same(built[field], quest[field]), true, id .. " " .. field)
 		end
-		for _, field in ipairs({ "preAny", "next", "repeatable", "elite", "dungeon", "raid", "skill", "rep" }) do
+		for _, field in ipairs({ "repeatable", "elite", "dungeon", "raid", "skill", "rep", "breadcrumb" }) do
 			equal(same(built[field], quest[field]), true, id .. " " .. field)
+		end
+		-- The mirror lists a spawn under every map the bundled data places it on (Melor Stonehoof, in Thunder Bluff and
+		-- on the Barrens map over it), and a quest takes the one on its zone's map: the same spawn and town, another map.
+		for _, field in ipairs({ "start", "finish" }) do
+			local was, now = quest[field], built[field]
+			local moved = was ~= nil
+				and now ~= nil
+				and was.npc == now.npc
+				and was.hub ~= nil
+				and was.hub == now.hub
+				and now.map == quest.zone
+			equal(same(now, was) or moved, true, id .. " " .. field)
 		end
 		if quest.start or bundled.zones[quest.zone] then
 			equal(built.zone, quest.zone, id .. " zone")
@@ -137,7 +149,8 @@ local GATED = {
 	{ 5, "requiredSpell", 1234 },
 	{ 15, "requiredMaxLevel", 20 },
 	{ 21, "parentQuest", 20 },
-	{ 22, "breadcrumbForQuestId", 38 },
+	{ 48, "breadcrumbForQuestId", 999999 },
+	{ 52, "breadcrumbForQuestId", -38 },
 	{ 35, "exclusiveTo", { 999999 } },
 	{ 37, "preQuestGroup", { 999999 } },
 	{ 39, "preQuestSingle", { -40 } },
@@ -148,6 +161,10 @@ for _, case in ipairs(GATED) do
 	assert(bundled.quests[case[1]].start, case[1] .. " has a bundled start")
 	fake.quests[case[1]][case[2]] = case[3]
 end
+-- A breadcrumb keeps its start and names its target: QuestieDB's, else the bundled one.
+fake.quests[22].breadcrumbForQuestId = 38
+assert(bundled.quests[860].breadcrumb == 844)
+fake.quests[860].breadcrumbForQuestId = nil
 -- The level cap as a maximum is none.
 fake.quests[47].requiredMaxLevel = 255
 -- A start only where the bundled data has one (its lack is a gate or an event-only giver), whatever giver QuestieDB
@@ -197,6 +214,8 @@ for _, case in ipairs(GATED) do
 	equal(same(quests[case[1]].finish, bundled.quests[case[1]].finish), true, case[1] .. " keeps its finish")
 end
 equal(quests[47].start ~= nil, true, "the level cap as a maximum keeps the start")
+equal(quests[22].start ~= nil and quests[22].breadcrumb, 38, "a breadcrumb keeps its start and names its target")
+equal(quests[860].start ~= nil and quests[860].breadcrumb, 844, "a breadcrumb QuestieDB doesn't name: the bundled one")
 equal(quests[startless].start, nil, "no start where the bundled data has none")
 equal(quests[33].level, bundled.quests[33].level, "a scaling level: the bundled one")
 equal(quests[33].min, bundled.quests[33].min, "no minimum: the bundled one")

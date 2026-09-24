@@ -779,6 +779,9 @@ def generate(
             quest["preAny"] = pre_any
         if row["ExclusiveGroup"] > 0:
             quest["group"] = row["ExclusiveGroup"]
+        # A breadcrumb leads to its target: open only while the target is neither done nor in the log.
+        if crumb := row["BreadcrumbForQuestId"]:
+            quest["breadcrumb"] = crumb
         if following := row["NextQuestInChain"] or max(0, row["NextQuestId"]):
             quest["next"] = following
         if row["SpecialFlags"] & 1 or row["QuestFlags"] & (4096 | 32768):
@@ -798,12 +801,12 @@ def generate(
         needs = requirements(row, skill_names, faction_names)
         gated = (
             needs is None
-            or any(row[k] for k in ("RequiredCondition", "BreadcrumbForQuestId"))
+            or row["RequiredCondition"]
             or row["MaxLevel"] not in (0, 255)
             or row["Method"] != 2
             or row["QuestFlags"] & (1024 | 16384)
         )
-        if unknown or any(p not in valid_ids for p in pre + pre_any):
+        if unknown or any(p not in valid_ids for p in pre + pre_any) or (crumb and crumb not in valid_ids):
             quest.pop("start", None)
             counts["suppressed pickup: unknown prerequisite"] += 1
         elif qid in seasonal:
@@ -815,6 +818,7 @@ def generate(
         elif needs and "start" in quest:
             quest.update(needs)
             counts["skill- or reputation-gated start"] += 1
+        counts["breadcrumb starts"] += "breadcrumb" in quest and "start" in quest
         counts["with start"] += "start" in quest
         counts["with finish"] += "finish" in quest
         counts["repeatable"] += bool(quest.get("repeatable"))
@@ -906,6 +910,8 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, gate
         "-- skill, rep: RequiredSkill/Value and RequiredMin/MaxRep, as Player::SatisfyQuestSkill and",
         "-- SatisfyQuestReputation check them; skills and factions: the names of those a quest here needs.",
         "-- trainer: a class quest's giver who trains a class (creature_template TrainerClass): that class.",
+        "-- breadcrumb: BreadcrumbForQuestId, the quest a breadcrumb leads to; it is open only while that is neither",
+        "-- completed nor in the log, and has no start when that is not in QuestV2.",
         "-- dungeon: the instance a quest's ZoneOrSort area lies in (AreaTable, Map InstanceType); raid: filed in a",
         f"-- raid, or of Type {' or '.join(map(str, RAID_TYPES))} (a raid's quest wherever it is filed).",
         "---@type string, AGFNamespace",

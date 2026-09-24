@@ -256,6 +256,9 @@ player's side. Eligible matches show as normal rows. Ineligible matches show why
   - `side`;
   - `races` and `classes`;
   - exclusive `group` ("You chose X instead");
+  - `breadcrumb`, the quest a breadcrumb leads to ("Only until you take X"): open only while that quest is neither
+    completed nor in the log. The generator emits CMaNGOS `BreadcrumbForQuestId` (wago's QuestV2 export has no such
+    column) and withholds the start when the target is not in QuestV2 (124 breadcrumb starts at the pin);
   - `skill` ("Requires Tailoring 150") and `rep` ("Requires Friendly with Timbermaw Hold", "Only while below
     Revered with Argent Dawn"; "Depends on your standing with X" when the value falls between ranks), in the
     client's names for the skill line, faction and standing (`FACTION_STANDING_LABEL1-8`) when it has them;
@@ -593,7 +596,8 @@ cache that did, Integrations' town places, is keyed on it).
 
 - **From QuestieDB:** title, levels, races, classes, zone (area to parent zone to uiMap), each start and finish from its
   NPCs' and objects' spawns (quest zone first, then the giver's usual map), prerequisites, exclusive quests (merged
-  into one group per connected set), chain, repeatable, skill and reputation gates.
+  into one group per connected set), chain, breadcrumb target (else the bundled one), repeatable, skill and
+  reputation gates.
 - **Still bundled:** zones, maps, continents, crossings, towns (a place joins the nearest bundled town place within
   100 yd), hub names, NPC roles, instances, elite and a raid's quest (a quest typed Raid stays one wherever QuestieDB
   files it); and what QuestieDB leaves out: a level of -1 (it scales), a
@@ -601,7 +605,7 @@ cache that did, Integrations' town places, is keyed on it).
   places when the bundled data names the same NPC.
 - **Withheld start:** any quest the bundled data lacks, or whose bundled start it withholds (nothing says what else
   gates it: the generator's Method, condition and event gates, and givers CMaNGOS spawns only for an event, which
-  QuestieDB lists as ordinary spawns); a prerequisite or exclusive quest outside the data; and `parentQuest`, `breadcrumbForQuestId`, `requiredSpell`, `requiredSpecialization`,
+  QuestieDB lists as ordinary spawns); a prerequisite, exclusive quest or breadcrumb target outside the data; and `parentQuest`, `requiredSpell`, `requiredSpecialization`,
   `requiredMaxLevel` below the cap, `availableUntilCompleted`, `availableStartingWith`, `requiredRanks`,
   `disabledByQuest`, flags 1024 or 16384, or a gate on a skill line or faction the data doesn't name.
 - **Fallback:** any failed check or read keeps the bundled data; `/agf audit` names the source and the reason.
@@ -882,6 +886,10 @@ Nothing below has been validated in game yet.
     the audit names the bundled data and why.
 19. Not interested (§2.8) on the chosen journey, then `/reload`: the cog's "Skipped (1)" → "Show again: <title>"
     brings its card back chosen, with its steps; on a journey that was not chosen it only brings the card back.
+20. Breadcrumbs (§2.4): a level-10 orc shaman in Durotar is offered Call of Fire at Searn Firewarder; searching "Call
+    of Fire" ticks "Only until you take Call of Fire", and once Kranal Fiss's Call of Fire is in the log the
+    breadcrumb's pickup leaves the route and its line turns red. With QuestieDB, a level-12 paladin is offered Tome of
+    Divinity at the class trainer.
 
 ## 9. Open questions that need client probes
 
