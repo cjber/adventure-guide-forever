@@ -38,7 +38,7 @@ Install it from CurseForge or Wago Addons, or download the zip from [Releases](h
 ## Usage
 
 - `/agf` or `/adventureguide` opens the guide on the world map, as does the addon compartment on the minimap.
-- `/agf audit` compares the bundled quest data with the game.
+- `/agf audit` compares the quest data with the game and says where it came from.
 - `/agf dump` saves the guide's layout for a bug report; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua`.
 - The cog on the tab holds *Quests*, *Dungeons*, the map pins, the tracker and anything skipped. The rest is under *Settings > AddOns > Adventure Guide*, including whether choosing a journey or clicking the tracker title starts the route.
 
@@ -46,12 +46,15 @@ Install it from CurseForge or Wago Addons, or download the zip from [Releases](h
 
 Quest givers, levels and prerequisites come from a pinned CMaNGOS Classic database, and dungeons from the Forever client's own map tables. Quest IDs are checked against the Forever client's data. Which quests you have finished always comes from the game, and quest and zone names come from the game in your language.
 
+With **QuestieDB** loaded (it comes with Questie, or on its own), the guide reads each quest's givers, spawns, levels, prerequisites and gates from it shortly after login, and the bundled data serves until then. Towns, maps, trainers, dungeons and the starts the bundled data withholds still come from the bundled data. If QuestieDB is missing or a version the guide can't read, the bundled data is used, and `/agf audit` says why.
+
 A quest the data cannot place, or whose requirements it cannot check, is never suggested, and a step never points at a place the data does not have. So Forever's own new quests are not suggested until they are in your log; once they are, they are used like any other.
 
 ## Works alongside
 
 - **Shortest Path Forever** plans the travel when you choose a journey and gives the tracker its travel line. Without it, choosing sets a waypoint and there is no travel line.
 - **Tweaks Forever** tells the guide when you have class spells to train.
+- **QuestieDB** (with Questie, or alone) supplies the quest data when loaded; see above.
 - **Questie**, **RestedXP** and other guides: the guide still works with them loaded, but the routes may overlap. Turn off *Show tracker section* in the settings if you follow another guide.
 
 ## Development
@@ -70,7 +73,7 @@ See `AGENTS.md` for the full gate.
 GPL-3.0-or-later. Quest data derives from [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0),
 map, flight and dungeon tables from the Forever client's own data via [wago.tools](https://wago.tools), and zone level
 ranges from [Warcraft Wiki](https://warcraft.wiki.gg/wiki/Zones_by_level_(original)). The addon bundles no data from
-Questie or Wowhead.
+Questie or Wowhead; it reads an installed QuestieDB at runtime only.
 
 World of Warcraft and its content are trademarks and copyrights of Blizzard Entertainment. This addon is free, and
 is not affiliated with or endorsed by Blizzard.

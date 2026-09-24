@@ -577,6 +577,28 @@ character has never been offered is announced once, quietly: `Moments.lua`, afte
 - **Clearing.** Opening the guide clears the pips and the tracker line; the marks stay while it shows and go when it
   closes. Found with the guide already open, only the marks show. Pips and marks last the session only.
 
+### 2.14 QuestieDB as the quest source
+
+`QuestieSource.lua`, after `Integrations.lua` in the TOC; QuestieDB is an `## OptionalDeps`. After `PLAYER_LOGIN` it
+checks the installed QuestieDB (contract 2 through `RequireContract`, `X-Flavor` Forever, every field it reads in
+`Meta.*Meta.*Keys`, ZoneDB's zone tables) and rebuilds the bundled data's quests from it in 2 ms slices, one a frame;
+then `ns.Data` is swapped and `ns.Invalidate()` rebuilds the route. Nothing may hold `ns.Data` past a call (the one
+cache that did, Integrations' town places, is keyed on it).
+
+- **From QuestieDB:** title, levels, races, classes, zone (area to parent zone to uiMap), each start and finish from its
+  NPCs' and objects' spawns (quest zone first, then the giver's usual map), prerequisites, exclusive quests (merged
+  into one group per connected set), chain, repeatable, skill and reputation gates.
+- **Still bundled:** zones, maps, continents, crossings, towns (a place joins the nearest bundled town place within
+  100 yd), hub names, NPC roles, instances, elite, and `Data.suppressed` and `Data.seasonal`, the starts the generator
+  withholds for a Method, condition, breadcrumb or event gate QuestieDB does not carry.
+- **Withheld start:** any quest the bundled data lacks (nothing says what else gates it), a prerequisite or exclusive
+  quest outside the data, and `parentQuest`, `breadcrumbForQuestId`, `requiredSpell`, `requiredSpecialization`,
+  `requiredMaxLevel` below the cap, `availableUntilCompleted`, `availableStartingWith`, `requiredRanks`,
+  `disabledByQuest`, flags 1024 or 16384, or a gate on a skill line or faction the data doesn't name.
+- **Fallback:** any failed check or read keeps the bundled data; `/agf audit` names the source and the reason.
+  Questie and QuestieDB carry no licence, so the repo, specs and goldens hold none of their code, types or data; the
+  specs use a synthetic stand-in, mostly a mirror of the bundled data (`harness.questieMirror`).
+
 ## 3. Copy style sheet
 
 - Sentence case. No exclamation marks. Digits for numbers. "·" as the separator.
@@ -846,6 +868,9 @@ Nothing below has been validated in game yet.
 17. Something new (§2.13): a level-up that brings a new next-zone card glows "<Zone> is now for your level" once,
     with the tab and compartment pips; opening the tab clears both, the card's mark stays until it closes. A login
     or `/reload` never glows.
+18. QuestieDB (§2.14): with it loaded, `/agf audit` names "QuestieDB <version>" a few seconds after login with no
+    hitch, and the cards, rings and town stops match the bundled run; with it disabled, or Questie alone without it,
+    the audit names the bundled data and why.
 
 ## 9. Open questions that need client probes
 
