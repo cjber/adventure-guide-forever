@@ -4,6 +4,8 @@ local L = ns.L
 
 local PAD = 8
 local ROW_HEIGHT = 44
+-- A row's detail runs under the skip button, to 10px short of the row's edge; the tag follows it within that room.
+local DETAIL_WIDTH = 230
 local ROW_GAP = 2
 local CARD_HEIGHT = 86
 local CARD_GAP = 4
@@ -526,6 +528,9 @@ local function RefreshRow(row, step, index)
 	-- Step 1 says how far it is when Shortest Path knows (docs/design.md §2.1); its tooltip still gives the reason.
 	row.Detail:SetText(index == 1 and ns.Integrations.Travel(step) or step.detail)
 	row.Tag:SetShown(step.optional == true)
+	-- The detail has no right anchor, so the tag can follow its text; a width cap cuts it short with "..." instead.
+	local room = DETAIL_WIDTH - (row.Tag:IsShown() and row.Tag:GetUnboundedStringWidth() + 6 or 0)
+	row.Detail:SetWidth(math.min(row.Detail:GetUnboundedStringWidth(), room))
 	row:SetAlpha(step.optional and 0.6 or 1)
 	row.Selected:SetShown(index == 1)
 end

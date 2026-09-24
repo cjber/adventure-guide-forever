@@ -136,10 +136,12 @@ def scroll_child_anchors(entry):
     return []
 
 
-def lua_rects(rects):
-    """Rects for h.SetRects: {left, bottom, width, height} with y growing upwards, as the client's edges are."""
+def lua_rects(rects, widths=None):
+    """Rects for h.SetRects: {left, bottom, width, height} with y growing upwards, as the client's edges are, and a
+    font string's text width in the client's font fifth (its GetUnboundedStringWidth)."""
+    widths = widths or {}
     return {
-        path: [left, -(top + height), width, height]
+        path: [left, -(top + height), width, height] + ([widths[path]] if path in widths else [])
         for path, rect in rects.items()
         if rect is not None
         for left, top, width, height in [rect]
@@ -177,7 +179,7 @@ def layout_pass(ui, scenes, known):
     for _ in range(LAYOUT_PASSES):
         data = run_scenes(inputs)
         rects = {scene: layout_rects(ui, data[scene]["layout"], known) for scene in scenes}
-        fed = {scene: lua_rects(rects[scene]) for scene in scenes}
+        fed = {scene: lua_rects(rects[scene], text_widths(ui, data[scene]["layout"])) for scene in scenes}
         if fed == inputs["rects"]:
             return data, rects
         inputs["rects"] = fed
@@ -431,6 +433,16 @@ def layout_rects(ui, entries, known):
         return scroll_child_anchors(entry)
 
     return resolve(entries, known, intrinsic, defaults)
+
+
+def text_widths(ui, entries):
+    """Each font string's text width in the client's font, whatever width it is laid out in."""
+    measure = ui.canvas(1, 1)
+    return {
+        entry["path"]: measure.text_width(entry["text"], font(entry["font"]))
+        for entry in entries
+        if entry["type"] == "FontString" and entry.get("text")
+    }
 
 
 def draw_texture(canvas, entry, rect, alpha):

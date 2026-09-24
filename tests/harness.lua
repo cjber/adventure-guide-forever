@@ -472,6 +472,11 @@ function harness.load(options)
 	function Methods:GetStringWidth()
 		return #(self.text or "") * 6
 	end
+	-- The client's font's width once tools/screenshots.py's layout pass has measured this text, else the estimate.
+	function Methods:GetUnboundedStringWidth()
+		local measured = self.measured
+		return measured and measured.text == self.text and measured.width or self:GetStringWidth()
+	end
 	-- A button's label, as wide as a font string's.
 	Methods.GetTextWidth = Methods.GetStringWidth
 	function Methods:GetStringHeight()
@@ -1530,13 +1535,15 @@ function harness.load(options)
 		end
 	end
 	-- tools/screenshots.py's layout pass: each region under `root` whose path `rects` names takes that rect ({left,
-	-- bottom, width, height}, y up) and runs OnSizeChanged when its size changed, as the client's layout does.
+	-- bottom, width, height}, y up) and runs OnSizeChanged when its size changed, as the client's layout does. A font
+	-- string's rect carries a fifth number, its text's width in the client's font, for GetUnboundedStringWidth.
 	function h.SetRects(root, rects)
 		h.ns.DumpLayout(root, function(region, entry)
 			local rect = rects[entry.path]
 			if rect then
 				local old = region.rect
 				region.rect = rect
+				region.measured = rect[5] and { text = entry.text, width = rect[5] } or nil
 				local script = region.scripts and region.scripts.OnSizeChanged
 				if script and not (old and old[3] == rect[3] and old[4] == rect[4]) then
 					h.call(script, region, rect[3], rect[4])

@@ -67,6 +67,10 @@ class Resolve(unittest.TestCase):
     def test_lua_rects_flip_y(self):
         self.assertEqual(screenshots.lua_rects({"a": (10, 20, 30, 40), "b": None}), {"a": [10, -60, 30, 40]})
 
+    def test_lua_rects_carry_text_widths(self):
+        rects = screenshots.lua_rects({"a": (10, 20, 30, 40), "t": (0, 0, 5, 6)}, {"t": 12.5})
+        self.assertEqual(rects, {"a": [10, -60, 30, 40], "t": [0, -6, 5, 6, 12.5]})
+
 
 class Stock(unittest.TestCase):
     def test_unknown_stock_template_fails_the_run(self):

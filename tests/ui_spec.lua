@@ -855,6 +855,27 @@ for _, spf in ipairs({ false, "v1" }) do
 	same(lines, expected, label .. ": a turn-in's header is its reason; its town, travel, next")
 	clean(h, label)
 end
+-- A row's detail has no right anchor, so the tag can follow it: its width is capped instead, so a long one is cut
+-- short with "..." and the tag stays beside it, all within 230px.
+do
+	local h = Load(false)
+	local ns = h.ns
+	ns.OpenPanel()
+	h.flush()
+	local steps = ns.Route().steps
+	steps[1].detail = "short"
+	steps[2].detail, steps[2].optional = string.rep("a long detail ", 10), true
+	ns.OpenPanel()
+	local rows = Shown(h, function(frame)
+		return frame.SkipButton ~= nil
+	end)
+	equal(rows[1].Detail:GetWidth(), 5 * 6, "detail width: a short one keeps its own width")
+	local tag = rows[2].Tag:GetUnboundedStringWidth() + 6
+	equal(rows[2].Tag:IsShown(), true, "detail width: the tag shows")
+	equal(rows[2].Detail:GetWidth(), 230 - tag, "detail width: a long one stops short of the tag")
+	clean(h, "detail width")
+end
+
 -- A town is titled by its name, so step 1 of the story (Crossroads) shows its reason: The Zhevra opens its next
 -- chapter.
 do

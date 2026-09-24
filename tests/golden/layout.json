@@ -885,6 +885,10 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[4].Detail",
+      "size": [
+        162.00,
+        0.00
+      ],
       "text": "Opens the next chapter here",
       "type": "FontString",
       "wordWrap": false
@@ -1035,6 +1039,10 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[5].Detail",
+      "size": [
+        108.00,
+        0.00
+      ],
       "text": "quests in progress",
       "type": "FontString",
       "wordWrap": false
