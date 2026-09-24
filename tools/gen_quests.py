@@ -15,6 +15,7 @@ import csv
 import gzip
 import io
 import json
+import math
 import re
 import sys
 import urllib.error
@@ -335,6 +336,70 @@ def crossings(templates, path_nodes, taxi_nodes, wanted):
     return result
 
 
+LINK = 100  # yards: two givers this close stand in one town (docs/plan.md §7.2)
+CAP = 400  # yards: a town wider than this is split again at a shorter link (only the capitals are)
+
+
+def world_point(centre, place):
+    """A place's world x and y in yards: the inverse of `project`, through its map's `geometry` rectangle."""
+    return centre["cx"] - (place["y"] - 0.5) * centre["sy"], centre["cy"] - (place["x"] - 0.5) * centre["sx"]
+
+
+def link(points, reach):
+    """Single linkage: the groups of `points` (x, y, key) joined by chains of steps of at most `reach` yards."""
+    parent = list(range(len(points)))
+
+    def find(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    cells = defaultdict(list)
+    for i, (x, y, _) in enumerate(points):
+        cells[math.floor(x / reach), math.floor(y / reach)].append(i)
+    for (cx, cy), members in cells.items():
+        for other in (cells.get((cx + dx, cy + dy), ()) for dx in (-1, 0, 1) for dy in (-1, 0, 1)):
+            for j in other:
+                for i in members:
+                    a, b = points[i], points[j]
+                    if i < j and (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 <= reach**2:
+                        parent[find(i)] = find(j)
+    groups = defaultdict(list)
+    for i, point in enumerate(points):
+        groups[find(i)].append(point)
+    return list(groups.values())
+
+
+def diameter(points):
+    return max((math.dist(a[:2], b[:2]) for a in points for b in points), default=0)
+
+
+def split(points, reach):
+    """Groups at `reach`; each one wider than CAP is grouped again at `reach` - 10, recursively. One shorter cut for
+    the whole world would break towns apart (at 60 yards Darkshire loses its crier), so only wide groups are cut.
+    """
+    result = []
+    for group in link(points, reach):
+        if reach > 10 and diameter(group) > CAP:
+            result.extend(split(group, reach - 10))
+        else:
+            result.append(group)
+    return result
+
+
+def town_hubs(points):
+    """Towns from quest places: `points` maps a key to (continent, x, y) in world yards. Each continent is grouped
+    apart. Returns every hub as (continent, members), members being (x, y, key), in ID order from 1: by continent,
+    then the hub's least x, then its least y.
+    """
+    by_continent = defaultdict(list)
+    for key, (continent, x, y) in sorted(points.items()):
+        by_continent[continent].append((x, y, key))
+    hubs = [(continent, group) for continent, members in by_continent.items() for group in split(members, LINK)]
+    return sorted(hubs, key=lambda h: (h[0], min(p[0] for p in h[1]), min(p[1] for p in h[1]), sorted(h[1])))
+
+
 def places(tables, world):
     """Every spawn of a quest giver or ender, with each zone map whose rectangle contains it.
 
@@ -505,6 +570,24 @@ def generate(tables, ui_maps, assignments, valid_ids, path_nodes, taxi_nodes, ar
     wanted = {q[k]["map"] for q in emitted.values() for k in ("start", "finish") if k in q} | zones.keys()
     centres = geometry(assignments, wanted, {m: row["Name_lang"] for m, row in maps.items()})
     counts["maps without a centre"] = len(wanted - centres.keys())
+    points = {}
+    for quest in emitted.values():
+        for place in (quest[k] for k in ("start", "finish") if k in quest):
+            if centre := centres.get(place["map"]):
+                points[place["map"], place["x"], place["y"]] = (centre["continent"], *world_point(centre, place))
+    hubs = town_hubs(points)
+    hub_of = {key: hub for hub, (_, members) in enumerate(hubs, 1) for _, _, key in members}
+    for quest in emitted.values():
+        for place in (quest[k] for k in ("start", "finish") if k in quest):
+            if (key := (place["map"], place["x"], place["y"])) in hub_of:
+                place["hub"] = hub_of[key]
+    names = defaultdict(set)
+    for quest in emitted.values():
+        for place in (quest[k] for k in ("start", "finish") if "hub" in quest.get(k, {})):
+            names[place["hub"]].add(place["name"])
+    counts["town hubs"] = len(hubs)
+    counts["town hubs with several givers"] = sum(len(n) > 1 for n in names.values())
+    counts["widest town hub (yards)"] = round(max(diameter(members) for _, members in hubs))
     shifts = continents(ui_maps, assignments, {c["continent"] for c in centres.values()})
     counts["continents off the world map"] = len({c["continent"] for c in centres.values()} - shifts.keys())
     ferries = crossings(tables["gameobject_template"], path_nodes, taxi_nodes, shifts.keys())
@@ -540,6 +623,7 @@ def render(quests, zones, instances, centres, shifts, ferries):
         "-- Positive exclusive groups close siblings; negative predecessor groups expand to pre (all completed).",
         "-- NextQuestInChain is display-only. Complex alternatives and unsupported gates have no start.",
         "-- Item starters and spawns without zone-level coordinates have no start; no objective coordinates invented.",
+        f"-- hub: the town a start or finish stands in, by single linkage at {LINK} yd, split again past {CAP} yd.",
         "---@type string, AGFNamespace",
         "local _, ns = ...",
         "---@type AGFData",

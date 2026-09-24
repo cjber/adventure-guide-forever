@@ -3,6 +3,8 @@
 import unittest
 
 from gen_quests import (
+    CAP,
+    LINK,
     continents,
     crossings,
     faction,
@@ -12,6 +14,8 @@ from gen_quests import (
     prerequisite_index,
     prerequisites,
     project,
+    town_hubs,
+    world_point,
 )
 
 
@@ -165,6 +169,45 @@ class InstanceTest(unittest.TestCase):
                 {36: {"name": "Deadmines", "raid": False}, 409: {"name": "Molten Core", "raid": True}},
             ),
         )
+
+
+class HubTest(unittest.TestCase):
+    @staticmethod
+    def keys(hubs):
+        return [sorted(key for _, _, key in members) for _, members in hubs]
+
+    def test_single_linkage(self):
+        # A chain of steps of LINK yards is one town however long; one more yard is another town.
+        points = {"a": (0, 0, 0), "b": (0, LINK, 0), "c": (0, 2 * LINK, 0), "d": (0, 3 * LINK + 1, 0)}
+        self.assertEqual(self.keys(town_hubs(points)), [["a", "b", "c"], ["d"]])
+        # Continents never link, however close their coordinates.
+        self.assertEqual(self.keys(town_hubs({"a": (0, 0, 0), "b": (1, 0, 0)})), [["a"], ["b"]])
+
+    def test_wide_towns_split_again(self):
+        # Five givers 95 yards apart span 380 yards: one town under CAP. Six span 475: split at LINK - 10, where
+        # the 95-yard steps no longer link. A 90-yard pair inside a wide town stays together.
+        five = {f"g{i}": (0, 95 * i, 0) for i in range(5)}
+        self.assertEqual(self.keys(town_hubs(five)), [sorted(five)])
+        six = {f"g{i}": (0, 95 * i, 0) for i in range(6)}
+        self.assertEqual(self.keys(town_hubs(six)), [[key] for key in six])
+        self.assertGreater(95 * 5, CAP)
+        six["near"] = (0, 95, 85)
+        self.assertEqual(self.keys(town_hubs(six)), [["g0"], ["g1", "near"], ["g2"], ["g3"], ["g4"], ["g5"]])
+
+    def test_ids_are_stable(self):
+        # Ordered by continent, then least x, then least y, whatever order the places come in.
+        points = {"k1": (1, 0, 0), "e2": (0, 500, 0), "e1": (0, 0, 500), "e3": (0, 0, 900)}
+        expected = [["e1"], ["e3"], ["e2"], ["k1"]]
+        self.assertEqual(self.keys(town_hubs(points)), expected)
+        self.assertEqual(self.keys(town_hubs(dict(reversed(points.items())))), expected)
+
+    def test_world_point_inverts_the_projection(self):
+        # Darkshore's rectangle (GeometryTest): its centre is the map's middle, and map x grows as world y falls.
+        darkshore = {"continent": 1, "cx": 6150.0, "cy": -333.3, "sx": 6550.0, "sy": 4366.7}
+        self.assertEqual(world_point(darkshore, {"x": 0.5, "y": 0.5}), (6150.0, -333.3))
+        x, y = world_point(darkshore, {"x": 0.6, "y": 0.5})
+        self.assertAlmostEqual(y, -333.3 - 655.0)
+        self.assertEqual(x, 6150.0)
 
 
 if __name__ == "__main__":

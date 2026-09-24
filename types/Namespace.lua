@@ -8,6 +8,7 @@
 ---@field x number
 ---@field y number
 ---@field name string NPC or object name
+---@field hub? integer the town it stands in (tools/gen_quests.py town_hubs); nil when its map has no world rectangle
 
 ---@class AGFQuest
 ---@field title string English title from the source data; the client's own title wins when cached
