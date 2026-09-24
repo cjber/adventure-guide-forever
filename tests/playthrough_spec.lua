@@ -3,7 +3,9 @@
 -- it takes card 1's route, one lap a level, picking up, finishing objectives and handing in finished quests as the
 -- steps say, then levels up and drops what went grey. Four things a player should never see fail it: an empty guide
 -- while quests they can take exist, an orange or red pickup, a story that flips back to a zone it left (A, B, A),
--- and a step on a point the data does not have. It reports the quests handed in and the yards walked a level.
+-- a step on a point the data does not have, and fewer than two zone cards (the story and the zones to head to) while
+-- the data has two zones with enough for them (design §2.2). It reports the quests handed in and the yards walked a
+-- level.
 -- A second pass plays a scripted chooser (design §2.18): always card 2 when there is one, and "Not this quest" on every
 -- tenth quest by ID; a step that holds a dropped quest fails it too.
 -- AGF_PLAYTHROUGH_TRACE="Human class 1" prints that character's card 1 each round.
@@ -61,7 +63,7 @@ for _, npc in pairs(data.npcs or {}) do
 	Add(npc.place)
 end
 
-local flags = { empty = {}, orange = {}, red = {}, flip = {}, unplaced = {}, dropped = {} }
+local flags = { empty = {}, orange = {}, red = {}, flip = {}, unplaced = {}, dropped = {}, zones = {} }
 local function Flag(kind, text)
 	local list = flags[kind]
 	list[#list + 1] = text
@@ -93,6 +95,37 @@ local function Doable(player, completed, log, prefs)
 		end
 	end
 	return false
+end
+
+-- The zones the data has enough in for a zone card: five quests the character can take now (as Doable, and no outdoor
+-- elite, which never picks a zone) that are still not grey two levels on, in a zone whose range they haven't outgrown.
+-- None with a full log: nothing can be picked up, so a card of pickups has no step.
+local function ZonesWithEnough(player, completed, log, held)
+	if held >= LOG_SIZE then
+		return 0
+	end
+	local counts, zones, ahead = {}, 0, math.min(player.level + 2, player.maxLevel)
+	for id, quest in pairs(data.quests) do
+		local map = quest.zone or (quest.start and quest.start.map)
+		local zone = map and data.zones[map]
+		if
+			zone
+			and player.level <= zone.max
+			and quest.min <= player.level
+			and quest.level - player.level < ORANGE
+			and not Model.IsGray(quest.level, ahead)
+			and not quest.elite
+			and not quest.dungeon
+			and not quest.raid
+			and not completed[id]
+			and not log[id]
+			and Model.Eligible(data, player, completed, log, id)
+		then
+			counts[map] = (counts[map] or 0) + 1
+			zones = zones + (counts[map] == 5 and 1 or 0)
+		end
+	end
+	return zones
 end
 
 local function Finished(log, id)
@@ -155,6 +188,16 @@ local function Play(race, classID, chooser)
 			end
 			if not card and Doable(player, completed, log, prefs) then
 				Flag("empty", where .. " at " .. Key(player.map, player.x, player.y))
+			end
+			if not chooser then
+				local zoneCards = 0
+				for _, journey in ipairs(route.journeys) do
+					zoneCards = zoneCards + (journey.key:match("^zone:") and 1 or 0)
+				end
+				local enough = zoneCards < 2 and ZonesWithEnough(player, completed, log, held) or 0
+				if enough >= 2 then
+					Flag("zones", ("%s: %d zone cards, the data has %d"):format(where, zoneCards, enough))
+				end
 			end
 			for _, journey in ipairs(route.journeys) do
 				if not chooser and journey.kind == "story" and journey.key:match("^zone:") and journey == card then
@@ -241,7 +284,7 @@ for _, chooser in ipairs({ false, true }) do
 end
 
 local total = 0
-for _, kind in ipairs({ "empty", "orange", "red", "flip", "unplaced", "dropped" }) do
+for _, kind in ipairs({ "empty", "orange", "red", "flip", "unplaced", "dropped", "zones" }) do
 	local list = flags[kind]
 	total = total + #list
 	print(("playthrough: %-8s %d"):format(kind, #list))
