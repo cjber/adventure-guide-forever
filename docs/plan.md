@@ -482,6 +482,9 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 | 24 | Carry a finished quest handed in at a town the story card visits, and open the guide | That town's step reads "1 to hand in, N to pick up", and right-click > Show quest opens the finished quest. The carry card holds it as the same town; alone there it reads "Turn in: …" with the town under it in the tracker | SHOT panel + tracker |
 | 24b | Carry a finished quest whose client waypoint is not at the data's ender (a moved or Forever-only ender) | It stays its own "Turn in: …" step at the client's waypoint, with no NPC line | SHOT tracker |
 | 24c | Take a quest from a town step in combat, then hand one in | The town stays, recounted ("N to pick up" one fewer); it goes only once nothing is left | SHOT panel |
+| 25 | Orc at level 18 in The Barrens carrying a finished The Zhevra (Batch F2) | The Crossroads step reads "Opens the next chapter here" (row, ring tooltip); Prowlers of the Barrens is not offered until you turn it in, then appears there after the rebuild | SHOT panel + tooltip |
+| 25b | Hover a town step holding a hand-in, a quest one level from grey and others | Right-click > Show quest opens the hand-in; the town's quests list hand-ins first, then the one about to grey, then by level distance | SHOT panel |
+| 25c | Enable Tweaks Forever "Nearest quests first", choose a card | The stock quest tracker keeps Tweaks' order; only AGF's section follows the route | SHOT tracker |
 
 ## 6. Commit plan (each commit signed with `git commit -S`, one idea, about 50 lines)
 
