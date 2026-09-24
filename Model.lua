@@ -561,6 +561,7 @@ local function Opens(data, player, completed, log, step)
 		local after = setmetatable({ [id] = true }, { __index = completed })
 		if
 			follow
+			and follow.start
 			and follow.start.hub == step.hub
 			and Eligible(data, player, after, log, nextID, Index(data).groups)
 		then

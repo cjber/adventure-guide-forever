@@ -530,6 +530,11 @@ equal(lone.detail, "Opens the next chapter here", "chain: a lone hand-in's row s
 chained.quests[30].races = 1 -- Human only; the visitor is an Orc
 stop = Model.Plan(chained, visitor, {}, handing, townPrefs).steps[1]
 equal(stop.reason, "1 to hand in, 4 to pick up", "chain: nothing said when the next chapter is not the player's")
+-- A next chapter the data gives no start (an item starts it) opens nowhere the town can claim.
+chained.quests[30].races, chained.quests[30].start = nil, nil
+chainPlan = Model.Plan(chained, visitor, {}, handing, townPrefs)
+equal(chainPlan.steps[1].reason, "1 to hand in, 4 to pick up", "chain: nothing said when the next chapter has no start")
+equal(chainPlan.journeys[1].steps[1].detail, "ready to hand in", "chain: nor on the carry card")
 -- One quest keeps the single step's title.
 town.quests[2], town.quests[3], town.quests[4] = nil, nil, nil
 town = { quests = town.quests, zones = town.zones, maps = town.maps, continents = town.continents, hubs = town.hubs }
