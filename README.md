@@ -8,7 +8,7 @@ Where to go next, for your level, inside WoW: Forever's world map.<br>
 <a href="https://github.com/cjber/adventure-guide-forever/releases/latest"><img src="https://img.shields.io/github/v/release/cjber/adventure-guide-forever" alt="Latest release"></a>
 </p>
 
-Levelling guides tell you exactly what to do, in order, as fast as possible. This addon is looser. From your level, the quests you have finished and the ones in your log, it suggests the next few things worth doing and where they are. You steer it: pick the zone, decide whether dungeon quests count, and pin or skip steps.
+Levelling guides tell you exactly what to do, in order, as fast as possible. This addon is looser. From your level, the quests you have finished and the ones in your log, it suggests the next few things worth doing and where they are. You steer it: pick the zone, decide whether dungeon quests count, and pin or skip steps. It is a tab in the map's quest log and uses the game's own pins, quest markers and objective tracker, so it looks like it came with the game.
 
 ## Features
 
