@@ -76,6 +76,10 @@ read_globals = {
 	"QuestMapFrameOverrides",
 	"QUESTS_LABEL",
 	"GameTooltip_Hide",
+	-- Tooltip.lua
+	"TooltipDataProcessor",
+	"Enum",
+	"UnitGUID",
 	-- Tracker.lua
 	"Mixin",
 	"ObjectiveTrackerManager",

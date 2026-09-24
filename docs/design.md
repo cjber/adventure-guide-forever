@@ -423,6 +423,13 @@ and the tracker title. The chosen card's tooltip, while AGF's route runs, reads 
 see every journey"; while it is paused (§2.10), "Click to resume the route", with the warning when another journey
 runs.
 
+**NPC line (roadmap #19, `Tooltip.lua`).** While a journey is chosen, hovering an NPC its steps visit adds one
+`AddNormalLine` to the unit tooltip: "Adventure guide: <journey title>". The NPCs are a town stop's givers and enders
+(its spots) and a turn-in's finish NPC, matched by the creature entry in `UnitGUID` against the places' `npc` (the
+generator's creature entry; an object giver has none). An objective or dungeon step visits no NPC. The set is
+gathered on each route change, so a hover only reads; the line comes from a `TooltipDataProcessor` post call, in
+combat too, and touches no secure frame. With no journey chosen, and for every other unit, nothing is added.
+
 ### 2.10 A journey's lifecycle
 
 A **choice** (`prefs.journey`, one card) is kept apart from **guidance** (`prefs.guided`, the key of the chosen
@@ -749,6 +756,8 @@ Nothing below has been validated in game yet.
     and the hub line; the footer's Stop goes as soon as Shortest Path ends the journey.
 13. Batch G (plan §8.2): a chosen journey lasts through travel, turn-ins and `/reload`, and a paused route resumes
     from its card or the tracker title.
+14. With a journey chosen, hovering its next stop's giver adds "Adventure guide: <title>" under the stock unit lines
+    (in combat too, with no taint logged); another NPC, a player, and every NPC once the choice is cleared add nothing.
 
 ## 9. Open questions that need client probes
 

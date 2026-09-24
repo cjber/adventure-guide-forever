@@ -238,3 +238,8 @@ AdventureGuideForeverTab = nil
 AdventureGuideForeverQuestsTab = nil
 ---@type AGFTrackerModule?
 AdventureGuideForeverObjectiveTracker = nil
+
+-- Blizzard_SharedXMLGame/Tooltip/TooltipDataHandler.lua:199 (Forever 1.60.1): a callback after a tooltip of this
+-- Enum.TooltipDataType has drawn its lines, before it shows; an insecure one runs insecure.
+---@type {AddTooltipPostCall: fun(tooltipType: Enum.TooltipDataType, func: fun(tooltip: GameTooltip, tooltipData: TooltipData))}
+TooltipDataProcessor = nil

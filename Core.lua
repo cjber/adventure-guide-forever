@@ -177,6 +177,8 @@ ns.L = {
 	UNLISTED = 'This land has stories the guide doesn\'t know yet; look for the "!" over quest givers.',
 	-- The tracker's one line while no journey is chosen: a story's title, then its reason or chapter.
 	STORY_HOOK = "%s · %s",
+	-- A unit tooltip's line on an NPC the chosen journey visits: its title.
+	NPC_JOURNEY = "Adventure guide: %s",
 }
 local L = ns.L
 

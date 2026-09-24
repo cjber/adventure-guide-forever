@@ -546,3 +546,6 @@
 
 ---@class AGFPlace
 ---@field npc? integer the creature entry of an NPC giver, the ID in its UnitGUID; nil for an object
+
+---@class AGFStrings
+---@field NPC_JOURNEY string format: the chosen journey's title, on a unit tooltip of an NPC its steps visit
