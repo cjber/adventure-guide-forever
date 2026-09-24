@@ -197,4 +197,11 @@ equal(#h.fanfares, 0, "tracker off: no glow")
 equal(select(1, Pips(h)), true, "tracker off: the pip")
 clean(h, "tracker off")
 
+-- A way into an instance (roadmap #21) is no place to be the level for: the cap brings it, and it is open to you.
+h = harness.load({ player = { level = 1 }, charDB = { quests = false, seen = { ["dungeon:329"] = true } } })
+h.flush()
+LevelUp(h, 70)
+equal(Tracker(h), "The way into Scholomance is open to you", "way in: open to you")
+clean(h, "way in")
+
 print(("moments_spec: %d checks passed"):format(checks))

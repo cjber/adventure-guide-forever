@@ -34,6 +34,11 @@ ns.L = {
 	NEXT_ZONE_LEVEL = "For level %d",
 	DUNGEON_QUESTS = "%d quests for this dungeon",
 	DUNGEON_QUESTS_ONE = "1 quest for this dungeon",
+	-- The dungeon card's reason (roadmap #15): the log's quests filed under its instance, counted.
+	DUNGEON_INSIDE = "%d of your quests end inside %s",
+	DUNGEON_INSIDE_ONE = "1 of your quests ends inside %s",
+	-- A chain that leads into an instance, a story when there is no next zone (roadmap #21): the instance's name.
+	JOURNEY_INTO = "The way into %s",
 	-- The carry card's counts, joined when several apply: "3 ready to hand in, 1 in progress".
 	CARRY_READY = "%d ready to hand in",
 	CARRY_IN_PROGRESS = "%d in progress",
@@ -50,7 +55,7 @@ ns.L = {
 	REASON_GREY = "%d quests will soon turn grey",
 	REASON_CHAIN_GIVER = "A chain begins with %s",
 	REASON_HANDS = "%s needs hands",
-	NOTHING_NEARBY = "Nothing nearby fits your level.",
+	NO_JOURNEY = 'The guide has no journey for you here; look for the "!" over quest givers.',
 	LOADING = "Loading your completed quests...",
 	SEARCH_QUESTS = "Search quests",
 	SEARCH_NONE = "No quests match your search.",
@@ -81,6 +86,7 @@ ns.L = {
 	WHY_COMPLETED = "Completed: %s",
 	WHY_ONE_OF = "Requires one of: %s",
 	WHY_CHOSE = "You chose %s instead",
+	WHY_BREADCRUMB = "Only until you take %s",
 	WHY_EARLIER_QUEST = "an earlier quest",
 	-- Skill and reputation gates (roadmap #8): a skill line and its rank; a standing (the client's word) and a faction.
 	WHY_SKILL = "Requires %s %d",
@@ -207,6 +213,41 @@ ns.L = {
 	NPC_JOURNEY = "Adventure guide: %s",
 	-- Something new (docs/design.md §2.13): the tracker's line for a journey card the character hasn't been offered.
 	MOMENT = "%s is now for your level",
+	-- Stream 3a "PvP" (roadmap #12, #28, docs/design.md §2.15): a battleground open to the player, as an aside and as
+	-- the opt-in card, which goes to a battlemaster; the next PvP rank's reward, in its own words.
+	BATTLEGROUND_OPEN = "%s is open to you",
+	BATTLEGROUND_SUBLINE = "A battleground open to you",
+	BATTLEMASTER_IN = "Battlemaster in %s",
+	BATTLEMASTER_QUEUE = "Queue for %s",
+	MENU_BATTLEGROUNDS = "Battlegrounds",
+	PVP_RANK_REWARD = "Rank %d · %s",
+	-- Unspent talent points (roadmap #25).
+	TALENT_POINTS = "You have %d talent points to spend",
+	TALENT_POINT = "You have 1 talent point to spend",
+	-- Stream 3b "Professions" (roadmap #9, docs/design.md §2.16): the profession aside, its lead then where to train.
+	PROFESSION_CAP = "Your %s has reached %d of %d",
+	PROFESSION_RANK_IN = "%s training in %s",
+	PROFESSION_RANK = "%s training is open to you",
+	PROFESSION_SLOT = "A profession slot is free",
+	PROFESSION_SLOT_IN = "trainers in %s",
+	PROFESSION_LEARN_IN = "You can learn %s in %s",
+	PROFESSION_LEARN = "You can learn %s",
+	PROFESSION_LINE = "%s · %s",
+	PROFESSION_RANK_1 = "Apprentice",
+	PROFESSION_RANK_2 = "Journeyman",
+	PROFESSION_RANK_3 = "Expert",
+	PROFESSION_RANK_4 = "Artisan",
+	-- Exploration and new lands (roadmap #13 and #14): a land Forever added and its levels; an area not yet seen.
+	NEW_LAND = "%s · For levels %d-%d",
+	UNEXPLORED = "You haven't seen %s yet",
+	-- A way into an instance is no place to be the level for (roadmap #21).
+	MOMENT_OPEN = "%s is open to you",
+	-- Roadmap #11: the route's last stop, when rested XP is low and an innkeeper stands there.
+	REST_HERE = "Rest at the inn here",
+	-- Roadmap #24: hint strength. A wanderer is told where, never taken there.
+	SETTING_WANDERER = "Wanderer: name places only",
+	SETTING_WANDERER_TOOLTIP = "The guide names where to go next and leaves the way to you: no waypoint, no route "
+		.. "with Shortest Path Forever and no marks on the map.",
 }
 local L = ns.L
 
@@ -226,6 +267,8 @@ local DEFAULTS = {
 	trackRouteQuests = false,
 	-- Opt-in: it throws away the player's own choice of tracked quests.
 	untrackOthers = false,
+	-- Roadmap #24: hint strength, Guide (false) or Wanderer (true), which gates every waypoint, route and map mark.
+	wanderer = false,
 }
 ns.DEFAULTS = DEFAULTS
 
@@ -234,6 +277,8 @@ ns.DEFAULTS = DEFAULTS
 local PREFS_DEFAULTS = {
 	quests = true,
 	dungeons = false,
+	-- Opt-in (roadmap #12): the Battlegrounds card.
+	battlegrounds = false,
 	notInterested = {},
 }
 
@@ -248,9 +293,6 @@ local sessionSkipped = {}
 -- The same steps in the order they were skipped, with the titles the menu offers them back by.
 ---@type AGFSkipped[]
 local skippedOrder = {}
--- The chosen journey a "Not interested" ended this session: Show again chooses it again.
----@type string?
-local dismissedChoice
 
 ---@param msg string
 function ns.Print(msg)
@@ -279,10 +321,14 @@ local function LoadCharDB()
 			loaded[key] = type(value) == "table" and {} or value
 		end
 	end
-	-- Journeys marked "Not interested": key -> the title Show again names it by.
-	for key, title in pairs(loaded.notInterested) do
-		if type(key) ~= "string" or type(title) ~= "string" then
+	-- Journeys marked "Not interested": key -> the title Show again names it by, and whether it ended the choice of it.
+	-- A bare title is the older shape, from before `chosen` was kept: a journey that was not chosen.
+	for key, entry in pairs(loaded.notInterested) do
+		entry = type(entry) == "string" and { title = entry } or entry
+		if type(key) ~= "string" or type(entry) ~= "table" or type(entry.title) ~= "string" then
 			loaded.notInterested[key] = nil
+		else
+			loaded.notInterested[key] = { title = entry.title, chosen = entry.chosen == true or nil }
 		end
 	end
 	-- The zone picked in the old "Where next?" cards: nothing offers that choice any more, so none is kept.
@@ -337,6 +383,10 @@ function ns.SetSetting(key, value)
 		return
 	end
 	db[key] = value
+	-- Wandering from now: what Go started stops, as the player's Stop would.
+	if key == "wanderer" and value then
+		ns.Integrations.Cancel()
+	end
 	-- Rebuilds the route (cheap) and wakes listeners (Panel/Pins/Tracker) to redraw with the new setting.
 	ns.Invalidate()
 end
@@ -359,14 +409,13 @@ function ns.Skip(key, title)
 end
 
 -- "Not interested" (roadmap #17): the journey `key` is left out on this character until Show again, and a choice of it
--- ends, as a click on its card would; Show again this session chooses it again.
+-- ends, as a click on its card would; Show again chooses it again, after a /reload too.
 ---@param key string
 ---@param title string
 function ns.NotInterested(key, title)
 	local prefs = ns.Prefs()
-	prefs.notInterested[key] = title
+	prefs.notInterested[key] = { title = title, chosen = prefs.journey == key or nil }
 	if prefs.journey == key then
-		dismissedChoice = key
 		ns.Choose(nil)
 	else
 		ns.Invalidate()
@@ -380,7 +429,8 @@ function ns.Unskip(key)
 		ns.Asides.Restore(aside)
 		return
 	end
-	local chosen = ns.Prefs().notInterested[key] ~= nil and key == dismissedChoice
+	local dismissed = ns.Prefs().notInterested[key]
+	local chosen = dismissed ~= nil and dismissed.chosen
 	ns.Prefs().notInterested[key] = nil
 	sessionSkipped[key] = nil
 	for index, skipped in ipairs(skippedOrder) do
@@ -390,7 +440,6 @@ function ns.Unskip(key)
 		end
 	end
 	if chosen then
-		dismissedChoice = nil
 		ns.Choose(key, ns.Setting("titleStartsRoute"))
 		return
 	end
@@ -405,8 +454,8 @@ function ns.Skipped()
 	for index, skipped in ipairs(skippedOrder) do
 		all[index] = skipped
 	end
-	for key, title in pairs(ns.Prefs().notInterested) do
-		journeys[#journeys + 1] = { key = key, title = title }
+	for key, dismissed in pairs(ns.Prefs().notInterested) do
+		journeys[#journeys + 1] = { key = key, title = dismissed.title }
 	end
 	table.sort(journeys, function(a, b)
 		if a.title ~= b.title then
@@ -569,14 +618,17 @@ function ns.TurnedIn(questID)
 	end
 end
 
--- The chosen journey's key a filter hides (Quests or Dungeons off in the cog): the player's own toggle can bring it
--- back, so the choice is kept.
+-- The chosen journey's key a filter hides (Quests, Dungeons or Battlegrounds off in the cog): the player's own toggle
+-- can bring it back, so the choice is kept. With no next zone (roadmap #21) Dungeons hides nothing, so a dungeon that
+-- went ended.
 ---@param key string
 ---@param prefs AGFPrefs
+---@param route AGFRoute
 ---@return boolean
-local function Filtered(key, prefs)
-	return (key:find("^dungeon:") ~= nil and not prefs.dungeons)
-		or ((key:find("^zone:") ~= nil or key == "calling") and not prefs.quests)
+local function Filtered(key, prefs, route)
+	return (key:find("^dungeon:") ~= nil and not prefs.dungeons and not route.stranded)
+		or ((key:find("^zone:") ~= nil or key:find("^chain:") ~= nil or key == "calling") and not prefs.quests)
+		or (key:find("^battleground:") ~= nil and not prefs.battlegrounds)
 end
 
 local pendingStart = false
@@ -592,7 +644,7 @@ local function Ended(route)
 	if not key or route.chosen then
 		return
 	end
-	if not Filtered(key, prefs) then
+	if not Filtered(key, prefs, route) then
 		prefs.journey, pendingStart = nil, false
 		if completed and ns.OnJourneyComplete then
 			ns.OnJourneyComplete()
@@ -707,7 +759,8 @@ function ns.Choose(key, start)
 	local prefs = ns.Prefs()
 	local guided = prefs.guided
 	prefs.journey = key
-	pendingStart = key ~= nil and start == true
+	-- A wanderer's choice starts nothing (StartRoute), so nothing waits for combat's end either.
+	pendingStart = key ~= nil and start == true and not ns.Setting("wanderer")
 	if guided and guided ~= key and not pendingStart then
 		ns.Integrations.Cancel()
 	end
@@ -728,7 +781,11 @@ function ns.StartRoute(step)
 		prefs.journey = route.journey
 		ns.Invalidate()
 	end
-	if InCombatLockdown() and ns.Integrations.Provider() then
+	-- A wanderer (roadmap #24) chooses the journey and sets off on foot: nothing to start, now or after combat.
+	if ns.Setting("wanderer") then
+		pendingStart = false
+		return false
+	elseif InCombatLockdown() and ns.Integrations.Provider() then
 		pendingStart = true
 		return true
 	end

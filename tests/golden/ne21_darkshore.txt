@@ -1,5 +1,12 @@
 # ne21_darkshore: level 21, side 1, at 1439 0.3700,0.4400
-card (chosen) | zone:1433 | Redridge Mountains story | Chapter 1 of 3 | 3 quests will soon turn grey | map 1433
-  step 1 | hub:61 | Lakeshire, Redridge | 1433 0.1759,0.4384 | Begins a new story
-  step 2 | hub:56 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
-  step 3 | hub:57 | Pick up quests: Theocritus | 1429 0.6522,0.6971 | near your level
+card (chosen) | zone:1437 | Wetlands story | Chapter 1 of 5 | A chain begins with Karl Boran | map 1437
+  step 1 | hub:147 | Menethil Harbor, Wetlands | 1437 0.0832,0.5857 | Begins a new story
+  step 2 | hub:153 | Pick up quests: Einar Stonegrip | 1437 0.4992,0.3937 | near your level
+  step 3 | hub:152 | Pick up quests: Rethiel the Greenwarden | 1437 0.5637,0.4040 | near your level
+  step 4 | hub:144 | Pick up quests: Mountaineer Rockgar | 1437 0.5576,0.9181 | near your level
+  step 5 | hub:123 | Pick up quests: Mountaineer Kadrell | 1432 0.3417,0.4784 | near your level
+card | zone:1431 | Head to Duskwood | 5 quests near your level | For level 23 | map 1431
+  step 1 | hub:41 | Pick up quests: Lars | 1431 0.0771,0.3320 | near your level
+  step 2 | hub:28 | Pick up quests: Jitters | 1431 0.1838,0.5637 | near your level
+  step 3 | hub:24 | Pick up quests: Watcher Dodds | 1431 0.4512,0.6703 | near your level
+  step 4 | hub:32 | Darkshire, Duskwood | 1431 0.7534,0.4875 | 2 to pick up

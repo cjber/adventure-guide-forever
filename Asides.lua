@@ -15,11 +15,15 @@ local providers = {}
 -- Every provider's last answer, in registration order.
 ---@type AGFAside[]
 local answers = {}
--- Skip for now: until the next session.
----@type table<string, boolean>
+-- Skip for now: until the next session, or until its provider renews the aside (a new talent point): each skipped key
+-- and the `renew` it had then, `true` for none.
+---@type table<string, integer|true>
 local skipped = {}
 ---@type fun()[]
 local listeners = {}
+-- The events a provider asks again on (RefreshOn).
+---@type Frame?
+local events
 
 local function Notify()
 	for _, fn in ipairs(listeners) do
@@ -49,12 +53,20 @@ end
 
 ---@return AGFAside?
 function Asides.Current()
-	local declined = Declined()
 	for _, aside in ipairs(answers) do
-		if not (skipped[aside.key] or declined[aside.key]) then
+		if Asides.Wanted(aside.key, aside.renew) then
 			return aside
 		end
 	end
+end
+
+-- The player has neither skipped this key this session nor turned it down: a provider with several candidates offers
+-- the first they still want. A skip holds only while the aside's `renew` is the one it had then.
+---@param key string
+---@param renew integer?
+---@return boolean
+function Asides.Wanted(key, renew)
+	return not (skipped[key] == (renew or true) or Declined()[key])
 end
 
 -- Every provider's last answer, skipped or not, in registration order (Moments.lua's seen set).
@@ -73,6 +85,7 @@ local function Seen(aside)
 				aside.key,
 				aside.text,
 				aside.icon,
+				aside.texture or "",
 				place and ("%d:%.4f:%.4f"):format(place.map, place.x, place.y) or "",
 			}, "\n")
 		or ""
@@ -92,16 +105,32 @@ function Asides.Refresh()
 	end
 end
 
+-- Skip and Not interested ask the providers again, so one with several candidates offers its next (Wanted).
 ---@param key string
 function Asides.Skip(key)
-	skipped[key] = true
+	local renew = true
+	for _, aside in ipairs(answers) do
+		renew = aside.key == key and aside.renew or renew
+	end
+	skipped[key] = renew
 	Notify()
+	Asides.Refresh()
+end
+
+-- Asks the providers again on `event`, when the client has it: an unknown event is an error on RegisterEvent, and an
+-- API the probe did not confirm may come with none.
+---@param event string
+function Asides.RefreshOn(event)
+	events = events or CreateFrame("Frame")
+	events:SetScript("OnEvent", Asides.Refresh)
+	pcall(events.RegisterEvent, events, event)
 end
 
 ---@param aside AGFAside
 function Asides.Decline(aside)
 	Declined()[aside.key] = aside.text
 	Notify()
+	Asides.Refresh()
 end
 
 -- The turned-down asides, by text, for Show again: its provider's answer now, else the text it had when turned down.
@@ -144,7 +173,7 @@ function Asides.Open(owner, tag, aside)
 	MenuUtil.CreateContextMenu(owner, function(_, root)
 		root:SetTag(tag)
 		root:CreateTitle(aside.text)
-		if aside.place then
+		if aside.place and not ns.Setting("wanderer") then
 			root:CreateButton(L.GO, function()
 				Asides.Go(aside)
 			end)
@@ -175,6 +204,24 @@ Asides.Register(function()
 end)
 
 -- A spell learned at the trainer shortens the line at once.
-local spellbook = CreateFrame("Frame")
-spellbook:RegisterEvent("SPELLS_CHANGED")
-spellbook:SetScript("OnEvent", Asides.Refresh)
+Asides.RefreshOn("SPELLS_CHANGED")
+
+--[[ Unspent talent points (roadmap #25): "You have 2 talent points to spend", while any are. The probe found
+     GetNumUnspentTalents on Forever and UnitCharacterPoints missing; without the former there is no line. A point
+     gained brings it back after a Skip for now, once per new point; spending them all ends it at once. ]]
+
+-- The count at the last answer, and how many times it has risen this session (the aside's `renew`).
+local talentPoints, talentRises = 0, 0
+
+Asides.Register(function()
+	local points = GetNumUnspentTalents and GetNumUnspentTalents() or 0
+	talentRises = points > talentPoints and talentRises + 1 or talentRises
+	talentPoints = points
+	if points <= 0 then
+		return nil
+	end
+	local text = points == 1 and L.TALENT_POINT or L.TALENT_POINTS:format(points)
+	-- The Legion minor-talents book (CSV:388), the one square talent mark the atlas has.
+	return { key = "talents", text = text, icon = "minortalents-icon-book", renew = talentRises }
+end)
+Asides.RefreshOn("CHARACTER_POINTS_CHANGED")

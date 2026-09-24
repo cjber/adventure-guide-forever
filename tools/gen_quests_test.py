@@ -1,6 +1,7 @@
 """Pure generator checks: python3 -m unittest discover -s tools -p '*_test.py'."""
 
 import unittest
+from collections import Counter
 
 from gen_quests import (
     CAP,
@@ -13,11 +14,14 @@ from gen_quests import (
     gate_names,
     geometry,
     hub_names,
+    instance_fields,
     instance_index,
     nearest_hub,
+    overlays,
     parse_values,
     prerequisite_index,
     prerequisites,
+    professions,
     project,
     quest_place,
     reaction,
@@ -25,6 +29,7 @@ from gen_quests import (
     roles,
     skill_steps,
     town_hubs,
+    trainer_spells,
     world_point,
 )
 
@@ -222,6 +227,21 @@ class InstanceTest(unittest.TestCase):
             ),
         )
 
+    def test_raid_by_instance_or_type(self):
+        instance_of = {1581: 36, 2717: 409}
+        instances = {36: {"name": "Deadmines", "raid": False}, 409: {"name": "Molten Core", "raid": True}}
+
+        def fields(zone, kind=0):
+            return instance_fields({"ZoneOrSort": zone, "Type": kind}, instance_of, instances)
+
+        self.assertEqual(fields(1581), {"dungeon": 36})
+        self.assertEqual(fields(2717), {"dungeon": 409, "raid": True})
+        # Paragons of Power: filed under the outdoor Zul'Gurub area (19), typed Raid.
+        self.assertEqual(fields(19, 62), {"raid": True})
+        self.assertEqual(fields(1581, 62), {"dungeon": 36, "raid": True})
+        self.assertEqual(fields(19, 81), {})
+        self.assertEqual(fields(-141), {})
+
 
 class HubTest(unittest.TestCase):
     @staticmethod
@@ -322,8 +342,8 @@ class NpcTest(unittest.TestCase):
         }
 
     @staticmethod
-    def taught(entry, spell, level=0, condition=0):
-        return {"entry": entry, "spell": spell, "reqlevel": level, "condition_id": condition}
+    def taught(entry, spell, level=0, condition=0, skill=0):
+        return {"entry": entry, "spell": spell, "reqlevel": level, "reqskillvalue": skill, "condition_id": condition}
 
     def test_skill_steps(self):
         # Journeyman Alchemy's teaching spell 2280 at 1.60.1.69913: LEARN_SPELL (36), then SKILL_STEP (44) rank 2.
@@ -375,7 +395,7 @@ class NpcTest(unittest.TestCase):
         }
         steps = {2275: (171, 1), 2280: (171, 2), 2372: (182, 1)}
         self.assertEqual(
-            roles(tables, steps),
+            roles(tables, steps, trainer_spells(tables)),
             {
                 198: {"class": 8, "upto": 6},
                 347: {"bg": 1},
@@ -383,10 +403,53 @@ class NpcTest(unittest.TestCase):
                 4732: {"riding": True, "race": 1},
                 2485: {"class": 8, "upto": 40, "from": 20},
                 5497: {"class": 8, "upto": 60},
-                5499: {"skill": 171, "rank": 2},
+                5499: {"skill": 171, "ranks": [1, 2]},
                 6929: {"inn": True},
             },
         )
+
+    def test_professions(self):
+        # Two alchemy trainers who ask differently for Journeyman, a Journeyman-only one, and a cooking trainer; a
+        # recipe (99) is no rank, and a class trainer's spells are not a profession's.
+        tables = {
+            "creature_template": [
+                self.template(1, 16, kind=2),
+                self.template(2, 16, kind=2),
+                self.template(3, 16, kind=2),
+                self.template(4, 16, kind=2, template=9),
+                self.template(5, 16, klass=8),
+            ],
+            "npc_trainer": [
+                self.taught(1, 2275, 5),
+                self.taught(1, 2280, 10, skill=50),
+                self.taught(1, 99, 1),
+                self.taught(2, 2280, 12, skill=40),
+                self.taught(3, 2280, 10, skill=50),
+                self.taught(5, 2275, 5),
+            ],
+            "npc_trainer_template": [self.taught(9, 2551, 5)],
+            "battlemaster_entry": [],
+        }
+        steps = {2275: (171, 1), 2280: (171, 2), 2551: (185, 1)}
+        spells = trainer_spells(tables)
+        npcs = roles(tables, steps, spells)
+        self.assertEqual([npcs[e].get("ranks") for e in (1, 2, 4)], [[1, 2], [2], [1]])
+        lines = [
+            {"ID": "171", "CategoryID": "11", "DisplayName_lang": "Alchemy"},
+            {"ID": "185", "CategoryID": "9", "DisplayName_lang": "Cooking"},
+        ]
+        counts = Counter()
+        self.assertEqual(
+            professions(npcs, steps, spells, lines, counts),
+            {
+                171: {
+                    "name": "Alchemy",
+                    "ranks": [{"rank": 1, "level": 5, "skill": 0}, {"rank": 2, "level": 12, "skill": 50}],
+                },
+                185: {"name": "Cooking", "secondary": True, "ranks": [{"rank": 1, "level": 5, "skill": 0}]},
+            },
+        )
+        self.assertEqual(counts["profession ranks asked differently"], 2)
 
     def test_reaction(self):
         # FactionTemplate.EnemyGroup at 1.60.1.69913: 12 Stormwind 4, 85 Orgrimmar 2, 120 Booty Bay 0; 12 and 10
@@ -416,6 +479,48 @@ class QuestPlaceTest(unittest.TestCase):
 
     def test_an_object_has_no_npc(self):
         self.assertNotIn("npc", quest_place(self.spawn("gameobject"), {1429}, None))
+
+
+class OverlayTest(unittest.TestCase):
+    MAPS = [{"ID": "1439", "Type": "3"}, {"ID": "1414", "Type": "2"}]
+    ART = [
+        {"UiMapID": "1439", "UiMapArtID": "2171", "PhaseID": "0"},
+        {"UiMapID": "1414", "UiMapArtID": "2171", "PhaseID": "0"},
+    ]
+    AREAS = [
+        {"ID": "447", "AreaName_lang": "Ameth'Aran", "ExplorationLevel": "11"},
+        {"ID": "442", "AreaName_lang": "Auberdine", "ExplorationLevel": "12"},
+        {"ID": "616", "AreaName_lang": "Mount Hyjal", "ExplorationLevel": "0"},
+    ]
+
+    @staticmethod
+    def row(overlay, area, offset, size=(256, 256), hit=(350, 420, 395, 460), condition=0):
+        keys = ("HitRectTop", "HitRectBottom", "HitRectLeft", "HitRectRight")
+        row = {"ID": str(overlay), "UiMapArtID": "2171", "AreaID_0": str(area), "PlayerConditionID": str(condition)}
+        row.update(
+            OffsetX=str(offset[0]), OffsetY=str(offset[1]), TextureWidth=str(size[0]), TextureHeight=str(size[1])
+        )
+        row.update(zip(keys, map(str, hit), strict=True))
+        return row
+
+    def test_darkshore_overlay_matches_the_probe(self):
+        # WorldMapOverlay 5385 at 1.60.1.69913; the probe's GetExploredMapTextures(1439) gave offset 324, 306 and this
+        # hit rectangle. The Kalimdor map shares the art but is no zone map.
+        self.assertEqual(
+            overlays(self.MAPS, self.ART, [self.row(5385, 447, (324, 306))], self.AREAS),
+            {1439: [{"area": 447, "name": "Ameth'Aran", "level": 11, "ox": 324, "oy": 306, "x": 0.4266, "y": 0.5763}]},
+        )
+
+    def test_unknowable_or_unsuggestable_overlays_left_out(self):
+        rows = [
+            self.row(1, 616, (10, 10)),  # ExplorationLevel 0
+            self.row(2, 447, (20, 20), size=(0, 0)),  # no texture: never returned as explored
+            self.row(3, 447, (30, 30), condition=5),  # drawn only under a condition
+            self.row(4, 999, (40, 40)),  # no AreaTable row
+            self.row(5, 447, (50, 50)),  # shares its offset with 6
+            self.row(6, 442, (50, 50)),
+        ]
+        self.assertEqual(overlays(self.MAPS, self.ART, rows, self.AREAS), {})
 
 
 if __name__ == "__main__":

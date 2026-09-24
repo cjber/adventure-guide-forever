@@ -119,6 +119,8 @@ function harness.load(options)
 		map = 1413,
 		x = 0.52,
 		y = 0.30,
+		rested = 5000,
+		xpMax = 10000,
 	}
 	for key, value in pairs(options.player or {}) do
 		player[key] = value
@@ -934,6 +936,17 @@ function harness.load(options)
 	G.UnitClass = function()
 		return "Class", "CLASS", player.classID
 	end
+	-- Rest (roadmap #11): a spec sets player.rested (false for none: the client gives nil), player.xpMax and
+	-- player.resting; by default the bar is half rested, so no route ends at an inn.
+	G.GetXPExhaustion = function()
+		return player.rested or nil
+	end
+	G.UnitXPMax = function()
+		return player.xpMax
+	end
+	G.IsResting = function()
+		return player.resting == true
+	end
 	function h.MovePlayer(map, x, y)
 		player.map, player.x, player.y = map, x, y
 	end
@@ -1007,11 +1020,30 @@ function harness.load(options)
 	}
 	-- No client names for races and classes: Model.Why's English stands in, as on a client that lacks them.
 	G.C_CreatureInfo = { GetRaceInfo = noop, GetClassInfo = noop }
-	-- Skill lines and standings: options.skills is {skillID, name, rank} entries, the lines the character has, and
-	-- options.reputation maps a faction ID to {name, currentStanding}; a spec edits h.skills and h.reputation.
-	h.skills, h.reputation = options.skills or {}, options.reputation or {}
+	-- Skill lines and standings: options.skills is {skillID, name, rank, maxRank?, category?} entries, the lines the
+	-- character has (maxRank defaults to 300, no next rank; category to 11, a profession's), and options.reputation
+	-- maps a faction ID to {name, currentStanding}; a spec edits h.skills and h.reputation. Without options.skills the
+	-- character has two professions and every secondary skill at rank 1, lines whose ranks open no quest the scenes
+	-- reach (Enchanting and Engineering gate only at 200, First Aid at 225), so the profession aside says nothing.
+	h.skills = options.skills
+		or {
+			{ skillID = 333, name = "Enchanting", rank = 1, maxRank = 75 },
+			{ skillID = 202, name = "Engineering", rank = 1, maxRank = 75 },
+			{ skillID = 129, name = "First Aid", rank = 1, maxRank = 75, category = 9 },
+			{ skillID = 185, name = "Cooking", rank = 1, maxRank = 75, category = 9 },
+			{ skillID = 356, name = "Fishing", rank = 1, maxRank = 75, category = 9 },
+		}
+	h.reputation = options.reputation or {}
 	local function SkillInfo(entry)
-		return entry and { skillID = entry.skillID, name = entry.name, rank = entry.rank, isHeader = false }
+		return entry
+			and {
+				skillID = entry.skillID,
+				name = entry.name,
+				rank = entry.rank,
+				maxRank = entry.maxRank or 300,
+				skillLineCategoryID = entry.category or 11,
+				isHeader = false,
+			}
 	end
 	G.C_SkillInfo = {
 		GetNumSkillLines = function()
@@ -1034,6 +1066,41 @@ function harness.load(options)
 			return entry and { factionID = id, name = entry.name, currentStanding = entry.currentStanding }
 		end,
 	}
+
+	-- PvP and talents, each only when a spec gives it, so by default the client lacks the API: options.battlegrounds
+	-- maps a level to the {id, name} list C_PvP.GetLevelUpBattlegrounds gives there (h.levelUpAsks counts the asks);
+	-- options.rank is {info, rewards} for C_MajorFactions (rewards: rank -> reward list); options.talents is the unspent
+	-- count; options.instanceType what IsInInstance names. A spec edits h.rank, h.talents and h.instanceType.
+	if options.battlegrounds then
+		h.levelUpAsks = 0
+		G.C_PvP = {
+			GetLevelUpBattlegrounds = function(level)
+				h.levelUpAsks = h.levelUpAsks + 1
+				return options.battlegrounds[level] or {}
+			end,
+		}
+	end
+	h.rank, h.talents, h.instanceType = options.rank, options.talents, options.instanceType
+	if options.rank then
+		G.C_MajorFactions = {
+			GetMajorFactionProgressionInfo = function(id)
+				return id == 2800 and h.rank.info or nil
+			end,
+			GetRenownRewardsForLevel = function(id, rank)
+				return id == 2800 and h.rank.rewards[rank] or {}
+			end,
+		}
+	end
+	if options.talents then
+		G.GetNumUnspentTalents = function()
+			return h.talents
+		end
+	end
+	if options.instanceType then
+		G.IsInInstance = function()
+			return h.instanceType ~= "none", h.instanceType
+		end
+	end
 
 	-- Maps and waypoints: the user waypoint is a value store, with every call counted.
 	h.counts.SetUserWaypoint, h.counts.ClearUserWaypoint, h.noWaypoint = 0, 0, {}
@@ -1845,6 +1912,7 @@ function harness.questieMirror(data)
 			preQuestSingle = quest.preAny,
 			exclusiveTo = exclusive[1] and exclusive or nil,
 			nextQuestInChain = quest.next,
+			breadcrumbForQuestId = quest.breadcrumb,
 			specialFlags = quest.repeatable and 1 or 0,
 			requiredSkill = quest.skill and { quest.skill.id, quest.skill.value },
 			requiredMinRep = quest.rep and quest.rep.min and { quest.rep.faction, quest.rep.min },

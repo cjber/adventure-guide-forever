@@ -45,6 +45,9 @@ read_globals = {
 	"UnitFactionGroup",
 	"UnitLevel",
 	"GetMaxPlayerLevel",
+	"GetXPExhaustion",
+	"IsResting",
+	"UnitXPMax",
 	"GetRealZoneText",
 	"C_Map",
 	"C_QuestLog",
@@ -99,6 +102,13 @@ read_globals = {
 	"UIParent",
 	-- Moments.lua
 	"AddonCompartmentFrame",
+	-- Asides.lua and PvP.lua (roadmap #12, #25, #28), each read with a nil check
+	"GetNumUnspentTalents",
+	"C_PvP",
+	"C_MajorFactions",
+	"IsInInstance",
+	-- Hints/Explore.lua
+	"C_MapExplorationInfo",
 	-- Settings.lua
 	"Settings",
 	-- Dump.lua: frames Panel.lua and Tracker.lua create by name

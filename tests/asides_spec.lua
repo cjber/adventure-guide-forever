@@ -200,6 +200,22 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks.aside, "LeftButton")
 	h.flush()
 	equal(starts(), before + 2, label .. ": so does the tracker's")
+	-- A wanderer (roadmap #24) is told the place and never taken there: no Go, no click line, and a click goes nowhere.
+	h.ns.SetSetting("wanderer", true)
+	Settle(h)
+	h.Click(Line(h)[1], "RightButton")
+	same(
+		h.MenuLines(),
+		{ "title: Somewhere to be", "button: Skip for now", "button: Not interested" },
+		label .. ": a wanderer's menu has no Go"
+	)
+	h.tooltip = {}
+	h.Hover(Line(h)[1])
+	same(h.tooltip, { "title: Somewhere to be" }, label .. ": nor a click line")
+	h.Click(Line(h)[1])
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks.aside, "LeftButton")
+	h.flush()
+	equal(starts(), before + 2, label .. ": a wanderer's click goes nowhere")
 	clean(h, label)
 end
 
@@ -232,6 +248,42 @@ do
 	h.flush()
 	same(h.tracker.layoutOrder, { "hook" }, "ambient: none again, the hook again")
 	clean(h, "ambient")
+end
+
+-- Unspent talent points (roadmap #25): a line while any wait; a Skip for now holds until a point is gained.
+do
+	local h = harness.load({ charDB = { journey = "carry" }, talents = 0 })
+	Settle(h)
+	equal(h.ns.Asides.Current(), nil, "talents: none to spend")
+	h.talents = 1
+	h.fire("CHARACTER_POINTS_CHANGED")
+	local aside = h.ns.Asides.Current()
+	equal(aside.key .. "|" .. aside.text, "talents|You have 1 talent point to spend", "talents: one, at once")
+	equal(aside.icon, "minortalents-icon-book", "talents: the talents book")
+	h.ns.Asides.Skip("talents")
+	Settle(h)
+	equal(h.ns.Asides.Current(), nil, "talents: skipped")
+	h.talents = 2
+	Settle(h)
+	equal(h.ns.Asides.Current().text, "You have 2 talent points to spend", "talents: a new point brings it back")
+	h.ns.Asides.Skip("talents")
+	h.talents = 1
+	Settle(h)
+	equal(h.ns.Asides.Current(), nil, "talents: spending one is no news")
+	h.talents = 0
+	h.fire("CHARACTER_POINTS_CHANGED")
+	h.talents = 1
+	h.fire("CHARACTER_POINTS_CHANGED")
+	equal(h.ns.Asides.Current().text, "You have 1 talent point to spend", "talents: all spent, then a new one")
+	h.ns.Asides.Decline(h.ns.Asides.Current())
+	h.talents = 2
+	Settle(h)
+	equal(h.ns.Asides.Current(), nil, "talents: not interested holds")
+	clean(h, "talents")
+	local without = Load(false)
+	Settle(without)
+	equal(without.ns.Asides.Current(), nil, "talents: a client without GetNumUnspentTalents has none")
+	clean(without, "talents, no API")
 end
 
 print(("asides_spec: %d checks passed"):format(checks))

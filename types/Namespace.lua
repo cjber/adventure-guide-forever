@@ -23,10 +23,11 @@
 ---@field pre? integer[] all must be completed first
 ---@field preAny? integer[] one of these must be completed first
 ---@field group? integer exclusive group: completing one member closes the others
+---@field breadcrumb? integer the quest this breadcrumb leads to: open only while that is neither done nor in the log
 ---@field next? integer the chain's follow-up
 ---@field repeatable? boolean
 ---@field dungeon? integer instance Map.ID (not a uiMapID) when the quest is filed under a dungeon or raid
----@field raid? boolean the instance is a raid
+---@field raid? boolean a raid's quest: its instance is a raid, or it is typed Raid wherever it is filed
 ---@field elite? boolean group quest
 
 ---@class AGFData
@@ -98,7 +99,7 @@
 
 -- "hub" is a town's stop (its pickups and agreeing hand-ins), "turnin" a hand-in at the client's waypoint, and
 -- "objective" or "dungeon" (a group quest) the log's quests under way.
----@alias AGFStepKind "hub"|"turnin"|"objective"|"dungeon"|"trainer"
+---@alias AGFStepKind "hub"|"turnin"|"objective"|"dungeon"|"trainer"|"battlemaster"
 
 ---@class AGFStep
 ---@field key string stable identity for skips and the resume line, e.g. "hub:61" or "turnin:4581"
@@ -133,7 +134,7 @@
 ---@field title string NPC or object name
 ---@field quests integer[] quest IDs it offers the player now, ascending
 
----@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"|"calling"
+---@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"|"calling"|"battleground"
 
 -- A quest's place in its chain (Model.Story): the data's `next` links from the chain's head. Later members are IDs
 -- only, so no later chapter's title is ever drawn.
@@ -145,7 +146,7 @@
 -- One card in the guide (docs/design.md §2.2): only steps the player can take now.
 ---@class AGFJourney
 ---@field kind AGFJourneyKind
----@field key string stable identity for prefs.journey: "carry", "zone:<uiMapID>" (a zone's story or next-zone card alike), "dungeon:<Map.ID>" or "calling"
+---@field key string stable identity for prefs.journey: "carry", "zone:<uiMapID>" (a zone's story or next-zone card alike), "dungeon:<Map.ID>", "calling", "chain:<questID>" (a way into an instance, by its chain's first quest) or "battleground:<BattlemasterList ID>"
 ---@field title string e.g. "Finish what you carry" or "Westfall story"
 ---@field subline string e.g. "3 ready to hand in, 1 in progress"
 ---@field reason? string why this journey, when there is an honest answer
@@ -158,9 +159,10 @@
 ---@field group? integer how many of its quests are elite, dungeon or raid (the sum of its steps' `group`)
 
 ---@class AGFRoute
----@field journeys AGFJourney[] at most 3: carry, the zone's story, then the diversions (calling, dungeon, next zone) newest first
+---@field journeys AGFJourney[] at most 3: carry, the zone's story, then the diversions (calling, dungeon, a way into an instance, battleground, next zone) newest first
 ---@field journey? string the key of the journey whose steps these are: the chosen one, else the first
 ---@field chosen boolean the player chose `journey`; false while the route falls back to the first card
+---@field stranded? true no next zone (roadmap #21): the dungeon card came whatever the Dungeons toggle says
 ---@field steps AGFStep[] that journey's steps, never more than MAX_STEPS
 ---@field skipped? table<string, boolean> the skipped keys a full build still had a step for; nil after the combat one
 
@@ -184,7 +186,7 @@
 ---@field Search fun(data: AGFData, player: AGFPlayer, query: string, title?: fun(questID: integer): string?): integer[] up to 10 quest IDs whose title holds `query`, by title
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
 ---@field Story fun(data: AGFData, questID: integer): AGFStory? the chain the quest belongs to; nil when it is in none, or the way back forks
----@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?)): AGFJourney[]
+---@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?)): AGFJourney[], boolean
 ---@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?)): AGFRoute
 ---@field Yards fun(data: AGFData, a: {map: integer, x: number, y: number}, b: {map: integer, x: number, y: number}): number? yards between two places on one continent the data places; nil otherwise
 ---@field Refresh fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, last: AGFRoute, mapName?: fun(map: integer): string?): AGFRoute the cheap in-combat rebuild: the log's steps fresh, the rest from `last`
@@ -401,6 +403,9 @@
 ---@field NEXT_ZONE_LEVEL string format: the level the next zone fits
 ---@field DUNGEON_QUESTS string format: quest count
 ---@field DUNGEON_QUESTS_ONE string
+---@field DUNGEON_INSIDE string format: count of the log's quests filed under the instance, its name
+---@field DUNGEON_INSIDE_ONE string format: the instance's name
+---@field JOURNEY_INTO string format: the instance a chain leads into
 ---@field CARRY_READY string format: count of finished quests whose hand-in is on this continent
 ---@field CARRY_IN_PROGRESS string format: count
 ---@field CARRY_AWAY string format: count of finished quests whose hand-in is across an ocean
@@ -411,7 +416,7 @@
 ---@field CHAPTER string format: chapter; the chain's length unproven
 ---@field CONTINUES_STORY string
 ---@field BEGINS_STORY string
----@field NOTHING_NEARBY string the guide with no journey
+---@field NO_JOURNEY string the guide with no journey
 ---@field WHY_NO_START string the one line for a quest whose start the generator suppressed
 ---@field WHY_DONE string
 ---@field WHY_IN_LOG string
@@ -422,6 +427,7 @@
 ---@field WHY_COMPLETED string format: the prerequisite's title
 ---@field WHY_ONE_OF string format: the titles, joined
 ---@field WHY_CHOSE string format: the exclusive sibling's title
+---@field WHY_BREADCRUMB string format: the title of the quest a breadcrumb leads to
 ---@field WHY_EARLIER_QUEST string a prerequisite the data has no title for
 ---@field WHY_RACES string format: race names, joined (the client's ITEM_RACES_ALLOWED)
 ---@field WHY_CLASSES string format: class names, joined (the client's ITEM_CLASSES_ALLOWED)
@@ -479,7 +485,7 @@
 ---@field riding? boolean riding trainer
 ---@field race? integer riding trainer: the race ID it teaches (CMaNGOS TrainerRace), when it names one
 ---@field skill? integer profession trainer: its skill line ID
----@field rank? integer profession trainer: the highest rank it teaches, 1 Apprentice to 4 Artisan (SpellEffect SKILL_STEP)
+---@field ranks? integer[] profession trainer: each rank it teaches, ascending, 1 Apprentice to 4 Artisan (SpellEffect SKILL_STEP)
 ---@field bg? integer battlemaster: its battleground (CMaNGOS battlemaster_entry.bg_template: 1 AV, 2 WSG, 3 AB)
 ---@field inn? boolean innkeeper
 
@@ -508,8 +514,12 @@
 ---@field NOT_INTERESTED string a journey card's menu: hide it on this character
 ---@field RIGHT_CLICK_NOT_INTERESTED string a journey card's tooltip: its right-click
 
+---@class AGFNotInterested
+---@field title string the title Show again names the journey by
+---@field chosen? boolean it was the chosen journey: Show again chooses it again
+
 ---@class AGFPrefs
----@field notInterested table<string, string> journey keys this character is not interested in -> the title Show again names
+---@field notInterested table<string, AGFNotInterested> journey keys this character is not interested in
 
 ---@class AGFNamespace
 ---@field NotInterested fun(key: string, title: string) hide a journey on this character until Show again; a choice of it ends
@@ -647,6 +657,7 @@
 
 ---@class AGFStrings
 ---@field MOMENT string format: the tracker's line for a new journey: its zone's or dungeon's name
+---@field MOMENT_OPEN string format: the tracker's line for a new way into an instance: the card's title
 
 -- QuestieDB as a quest source (QuestieSource.lua, docs/design.md §2.14).
 
@@ -669,3 +680,155 @@
 ---@field QUESTIE_FIELD string format: the entity or field it lacks
 ---@field QUESTIE_ZONES string
 ---@field QUESTIE_FAILED string format: the error
+
+-- Stream 3a "PvP" (roadmap #12, #28, docs/design.md §2.15) and unspent talent points (#25).
+
+-- A battleground open to the player (State.Battlegrounds, from C_PvP.GetLevelUpBattlegrounds).
+---@class AGFBattleground
+---@field id integer its BattlemasterList ID, which AGFNpc.bg shares (2 Warsong Gulch, 3 Arathi Basin)
+---@field name string the client's name for it
+---@field level integer the level it opened at
+
+---@class AGFPlayer
+---@field battlegrounds? AGFBattleground[] open to the player, the newest first; the opt-in card's choices
+
+---@class AGFPrefs
+---@field battlegrounds? boolean the opt-in Battlegrounds card (the guide's cog), off by default
+---@field battled? integer the highest level this character has stood in a battleground at: the aside's acted on
+
+---@class AGFModel
+---@field Battlemaster fun(data: AGFData, player: AGFPlayer, bg: integer): AGFNpc?, integer? the nearest battlemaster of the player's side for battleground `bg`, and its creature entry; nil when the data places none or the player has no place
+
+---@class AGFState
+---@field Battlegrounds fun(): AGFBattleground[] open to the player, the newest first; empty without C_PvP.GetLevelUpBattlegrounds
+
+---@class AGFAside
+---@field renew? integer how often its provider found it news again (a talent point gained): a Skip for now holds while it is unchanged
+---@field texture? integer|string a client texture (a reward's icon) drawn in place of `icon`, which stays the fallback
+
+---@class AGFAsides
+---@field RefreshOn fun(event: string) ask the providers again on the event, when the client has it
+
+---@class AGFStrings
+---@field BATTLEGROUND_OPEN string format: a battleground's name; the aside, and the new card's tracker line
+---@field BATTLEGROUND_SUBLINE string the Battlegrounds card's subline
+---@field BATTLEMASTER_IN string format: the battlemaster's town; the step's title and the card's reason
+---@field BATTLEMASTER_QUEUE string format: the battleground's name; the battlemaster step's reason
+---@field MENU_BATTLEGROUNDS string the guide's cog: the opt-in Battlegrounds card
+---@field PVP_RANK_REWARD string format: the next rank with a reward, and the reward's description
+---@field TALENT_POINTS string format: how many talent points wait to be spent
+---@field TALENT_POINT string the same for one
+
+--[[ Stream 3b "Professions" (roadmap #9, Hints/Profession.lua, docs/design.md §2.16) ]]
+
+-- A rank a trainer teaches and what its rank spell asks (npc_trainer reqlevel, reqskillvalue; the most any asks).
+---@class AGFProfessionRank
+---@field rank integer 1 Apprentice to 4 Artisan
+---@field level integer
+---@field skill integer
+
+---@class AGFProfession
+---@field name string SkillLine.DisplayName_lang (English), for a line the character has not learned
+---@field secondary? boolean a secondary skill (First Aid, Cooking, Fishing), which takes no profession slot
+---@field ranks AGFProfessionRank[] ascending; a rank no trainer teaches (from a book or quest) is absent
+
+---@class AGFData
+---@field professions? table<integer, AGFProfession> SkillLine ID -> its trainers' ranks, for each line a trainer here teaches
+
+-- One reason to visit a profession trainer, in Model.Profession's order: "cap" a learned line at its rank's cap whose
+-- next rank the player can train now, "slot" a free profession slot, "learn" a secondary skill they lack.
+---@alias AGFProfessionNudgeKind "cap"|"slot"|"learn"
+
+---@class AGFProfessionNudge
+---@field key string the aside's: "profession:<skill>:<rank>", or "profession:slot"
+---@field kind AGFProfessionNudgeKind
+---@field rank integer the rank to train: the next for a cap, 1 (Apprentice) otherwise
+---@field skill? integer the line, for a cap or a secondary skill
+---@field skills? integer[] a free slot: the professions the player lacks and can learn now
+---@field npc? AGFNpc the nearest trainer of that rank the data places for the player; nil when none
+
+---@class AGFPlayer
+---@field caps? table<integer, integer> learned skill line -> its rank's cap (C_SkillInfo maxRank)
+---@field primaries? integer how many professions (SkillLine category 11) the character has; nil when unknown
+
+---@class AGFModel
+---@field Profession fun(data: AGFData, player: AGFPlayer, wanted?: fun(key: string): boolean): AGFProfessionNudge? the first nudge `wanted` takes, with its nearest trainer
+
+---@class AGFAsides
+---@field Wanted fun(key: string, renew?: integer): boolean neither skipped this session (at this `renew`) nor turned down: a provider offers the first it still wants
+
+---@class AGFStrings
+---@field PROFESSION_CAP string format: a line's name, its rank and its cap
+---@field PROFESSION_RANK_IN string format: the next rank's name and the nearest trainer's town
+---@field PROFESSION_RANK string format: the next rank's name, without a trainer the data places
+---@field PROFESSION_SLOT string a free profession slot
+---@field PROFESSION_SLOT_IN string format: the nearest profession trainer's town
+---@field PROFESSION_LEARN_IN string format: a secondary skill's name and the nearest trainer's town
+---@field PROFESSION_LEARN string format: a secondary skill's name, without a trainer the data places
+---@field PROFESSION_LINE string format: the lead, then where to train
+---@field PROFESSION_RANK_1 string
+---@field PROFESSION_RANK_2 string
+---@field PROFESSION_RANK_3 string
+---@field PROFESSION_RANK_4 string
+
+-- Stream 3c "Exploration and new lands" (roadmap #13 and #14, Hints/Explore.lua, docs/design.md §2.11).
+
+-- A zone map's explorable area (tools/gen_quests.py `overlays`): a WorldMapOverlay the client draws once explored.
+---@class AGFOverlay
+---@field area integer its AreaTable ID, for C_Map.GetAreaInfo
+---@field name string its English name, the fallback when the client has none
+---@field level integer its ExplorationLevel, never 0
+---@field ox integer its offset, as GetExploredMapTextures returns it for an explored one
+---@field oy integer
+---@field x number its hit rectangle's centre on the map, for which is nearer only: never a place
+---@field y number
+
+-- A zone map Forever added (tools/diff_forever.py `lands`): its range and its flight masters.
+---@class AGFLand
+---@field name string its English name, the fallback when the client has none
+---@field min integer the least non-zero ExplorationLevel of its areas
+---@field max integer the greatest
+---@field taxi AGFLandTaxi[] its Forever flight masters that serve a side, by node ID
+
+---@class AGFLandTaxi : AGFPlace
+---@field side integer 1 Alliance, 2 Horde
+
+---@class AGFForever
+---@field lands table<integer, AGFLand> uiMapID -> the land; only lands with a level range
+
+---@class AGFData
+---@field overlays? table<integer, AGFOverlay[]> zone uiMapID -> its explorable areas
+
+---@class AGFExplore
+---@field Explored fun(map: integer): table<string, true>? the map's explored overlays by "ox:oy"; nil without C_MapExplorationInfo
+---@field Unexplored fun(data: AGFData, player: AGFPlayer, explored: table<string, true>): AGFOverlay? the area to suggest on the player's map
+---@field NewLand fun(data: AGFData, player: AGFPlayer, explored: fun(map: integer): table<string, true>?): integer?, AGFLand?, AGFLandTaxi? the land to suggest, and where Go takes the player
+
+---@class AGFNamespace
+---@field Explore AGFExplore
+
+---@class AGFStrings
+---@field NEW_LAND string format: the land's name, its least and greatest level
+---@field UNEXPLORED string format: the area's name
+
+-- Stream 3e "Rest and pacing" (roadmap #11, #24, docs/design.md §2.17).
+
+---@class AGFPlayer
+---@field rested? integer rested XP (GetXPExhaustion, 0 with none); nil where the player's rest is unknown
+---@field xpMax? integer the XP the level needs (UnitXPMax), when the client gives it
+---@field resting? boolean in an inn or a city (IsResting): the last stop's rest line is ticked off
+
+-- What Model.RestLow reads of the player: an AGFPlayer, or State's own read of the rest.
+---@class AGFRest
+---@field level integer
+---@field maxLevel integer
+---@field rested? integer
+---@field xpMax? integer
+
+---@class AGFModel
+---@field RestLow fun(player: AGFRest): boolean rested XP under one bubble (a twentieth of the level), below the cap; false when unknown
+
+---@class AGFStrings
+---@field REST_HERE string the route's last stop, when rest is low and an innkeeper of the player's side stands there
+---@field SETTING_WANDERER string hint strength: Wanderer names places and sets no waypoint, route or map mark
+---@field SETTING_WANDERER_TOOLTIP string

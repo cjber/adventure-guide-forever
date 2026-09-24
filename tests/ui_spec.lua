@@ -48,7 +48,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	equal(h.G.ShortestPathForever ~= nil, spf ~= false, label .. ": Shortest Path global")
 	equal(h.G.TweaksForever, nil, label .. ": no Tweaks Forever")
 	equal(h.G.LegacyForever, nil, label .. ": no Legacy Forever")
-	equal(h.ns.Route().steps[1].key, "handin:346", label .. ": the hand-in leads the route")
+	equal(h.ns.Route().steps[1].key, "handin:349", label .. ": the hand-in leads the route")
 
 	-- Blizzard's displayMode is never written, whatever the player clicks (Panel.lua ShowGuide).
 	local panel, questsFrame = h.G.AdventureGuideForeverPanel, h.questMap.QuestsFrame
@@ -109,7 +109,7 @@ do
 	local h = Load(false)
 	local show = h.ns.ShowQuest
 	equal(show({ kind = "dungeon", key = "objective:843", quests = { 843 } }), true, "a group quest in the log opens")
-	local town = { kind = "hub", key = "hub:346", quests = { 843 }, pickups = { 843 }, handins = {} }
+	local town = { kind = "hub", key = "hub:349", quests = { 843 }, pickups = { 843 }, handins = {} }
 	equal(show(town), false, "a group pickup does not")
 	town.quests, town.pickups, town.handins = { 845, 843 }, { 843 }, { 845 }
 	equal(show(town), true, "a town with a hand-in opens it")
@@ -208,9 +208,10 @@ do
 	end
 	-- Every row goes in through the secure delegate, in page order; none from addon code, which taints the search.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 7, "every row is registered through Settings.RegisterInitializer")
-	equal(h.settings[1].key .. " " .. h.settings[7].key, "showTracker untrackOthers", "in page order")
-	equal(h.settings[7].category, h.ns.TITLE, "on the addon's page")
+	equal(#h.settings, 8, "every row is registered through Settings.RegisterInitializer")
+	equal(h.settings[1].key .. " " .. h.settings[2].key, "showTracker wanderer", "in page order")
+	equal(h.settings[8].key, "untrackOthers", "in page order, to the last")
+	equal(h.settings[8].category, h.ns.TITLE, "on the addon's page")
 	equal(byKey.untrackOthers.parent, "trackRouteQuests", "untrackOthers hangs under the tracking setting")
 	equal(byKey.untrackOthers.enabled(), false, "and is greyed while it is off")
 	-- The client re-sorts its watches by distance on every zone change (Blizzard_ObjectiveTracker.lua
@@ -467,6 +468,15 @@ do
 	equal(h.ns.Route().chosen, false, "filtered calling: no card with Quests off")
 	equal(h.ns.Prefs().journey, "calling", "filtered calling: the choice kept")
 	clean(h, "filtered calling")
+
+	-- Roadmap #21: with no next zone Dungeons hides nothing, so a chosen dungeon that went has ended; below the cap
+	-- the toggle keeps it.
+	for _, case in ipairs({ { 70, nil, "at the cap" }, { 18, "dungeon:1", "below the cap" } }) do
+		h = harness.load({ player = { level = case[1] }, charDB = { journey = "dungeon:1", dungeons = false } })
+		h.flush()
+		equal(h.ns.Prefs().journey, case[2], "dungeon gone, " .. case[3])
+		clean(h, "dungeon gone, " .. case[3])
+	end
 
 	h = harness.load({ charDB = { journey = "carry" }, completedPending = true })
 	h.flush()
@@ -815,7 +825,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Live(), 0, label .. ": RemoveAllData leaves no pins")
 
 	-- Design §2.8's menu for a log quest; Stop only once Go runs, Show quest never in combat.
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["handin:346"], "RightButton")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["handin:349"], "RightButton")
 	local menu = {
 		"title: Turn in: The Zhevra",
 		"button: Go",
@@ -826,7 +836,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	same(h.MenuLines(), menu, label .. ": tracker menu")
 	ns.Integrations.Navigate(ns.Route().steps[1])
 	h.SetCombat(true)
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["handin:346"], "RightButton")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["handin:349"], "RightButton")
 	h.SetCombat(false)
 	menu[3] = "button: Stop"
 	same(h.MenuLines(), menu, label .. ": tracker menu while Go guides, in combat")
@@ -1380,13 +1390,30 @@ end
 -- "Not interested" (roadmap #17): a journey card's right-click hides it on this character, the choice of it ends, and
 -- Skipped (n) under the cards and in the cog lists it with Show again. The carry card has no menu.
 do
-	local h =
-		Load(false, nil, { journey = "carry", notInterested = { ["zone:1"] = 5, [2] = "x", ["zone:9"] = "Kept" } })
+	local h = Load(false, nil, {
+		journey = "carry",
+		notInterested = {
+			["zone:1"] = 5,
+			[2] = "x",
+			["zone:3"] = { chosen = true },
+			["zone:9"] = "Kept",
+			["zone:8"] = { title = "Chosen", chosen = true, extra = 1 },
+		},
+	})
 	local ns = h.ns
 	local kept = ns.Prefs().notInterested
-	equal(kept["zone:1"] == nil and kept[2] == nil, true, "not interested: a malformed saved entry is dropped")
-	equal(kept["zone:9"], "Kept", "not interested: a good one stays")
+	equal(
+		kept["zone:1"] == nil and kept[2] == nil and kept["zone:3"] == nil,
+		true,
+		"not interested: a malformed saved entry is dropped"
+	)
+	same(kept["zone:9"], { title = "Kept" }, "not interested: a saved title alone is a journey that was not chosen")
+	same(kept["zone:8"], { title = "Chosen", chosen = true }, "not interested: a good one stays")
 	ns.Unskip("zone:9")
+	equal(ns.Prefs().journey, "carry", "not interested: Show again of one not chosen chooses nothing")
+	ns.Unskip("zone:8")
+	equal(ns.Prefs().journey, "zone:8", "not interested: Show again of a saved choice chooses it")
+	ns.Choose("carry")
 	ns.OpenPanel()
 	h.flush()
 	local function Card(kind)
@@ -1414,7 +1441,11 @@ do
 		"not interested: the tooltip over its card speaks for the journey that takes its place"
 	)
 	equal(h.ns.Integrations.Owns(), false, "not interested: and its route stops")
-	equal(h.G.AdventureGuideForeverCharDB.notInterested[story.key], story.title, "not interested: saved per character")
+	same(
+		h.G.AdventureGuideForeverCharDB.notInterested[story.key],
+		{ title = story.title, chosen = true },
+		"not interested: saved per character, with the choice it ended"
+	)
 	for _, journey in ipairs(ns.Route().journeys) do
 		equal(journey.key ~= story.key, true, "not interested: its card is gone")
 	end
@@ -1443,6 +1474,18 @@ do
 	end
 	equal(back, true, "not interested: and its card returns")
 	clean(h, "not interested")
+	-- After a /reload, Show again still chooses the journey the Not interested ended.
+	h.menu = nil
+	h.Click(Card("story"), "RightButton")
+	h.menu.entries[2].onClick()
+	h.flush()
+	local saved = h.G.AdventureGuideForeverCharDB
+	equal(saved.journey, nil, "not interested: the choice ends before the /reload")
+	local reloaded = Load(false, nil, saved)
+	reloaded.ns.Unskip(story.key)
+	reloaded.flush()
+	equal(reloaded.ns.Prefs().journey, story.key, "not interested: Show again after a /reload chooses it again")
+	clean(reloaded, "not interested: reloaded")
 end
 -- A skipped step the route no longer has (the quest turned in anyway) leaves Skipped (n); one it still has stays.
 do
@@ -1639,7 +1682,7 @@ do
 	end
 	local session = Load(false)
 	local saved = session.G.AdventureGuideForeverCharDB.last
-	equal(saved and saved.key, "handin:346", "resume: each rebuild saves step 1")
+	equal(saved and saved.key, "handin:349", "resume: each rebuild saves step 1")
 	equal(Resumed(session), 0, "resume: nothing saved, nothing to resume")
 	local function Login(options)
 		options.charDB = { journey = "carry", last = { key = saved.key, reason = "finishes a story" } }
@@ -1853,7 +1896,7 @@ do
 		end
 		return count
 	end
-	equal(Says(h, h.ns.L.NOTHING_NEARBY), 0, "guide: no empty line beside the cards")
+	equal(Says(h, h.ns.L.NO_JOURNEY), 0, "guide: no empty line beside the cards")
 
 	-- F4: the chosen story shows its chapter track, one square per proven chapter, and never a later chapter's title.
 	local story = route.journeys[2]
@@ -1906,10 +1949,17 @@ do
 	equal(#Results(), 0, "search: two characters keep the cards")
 	h.Type(search, "\231\139\188\231\139\188") -- two CJK characters, six bytes
 	equal(#Results() + Says(h, h.ns.L.SEARCH_NONE), 0, "search: counts characters, not bytes")
+	-- Call of Water (96) is the one of its title with no start in the data.
+	assert(h.ns.Data.quests[96].title == "Call of Water" and not h.ns.Data.quests[96].start)
+	h.Type(search, "Call of Water")
+	local suppressed
+	for _, row in ipairs(Results()) do
+		local first = row.Title:GetText() == "Call of Water" and Lines(row)[1]
+		suppressed = suppressed or (first == h.ns.L.WHY_NO_START and row) or nil
+	end
 	h.Type(search, "Call of")
-	local found, suppressed, open = Results(), nil, nil
+	local found, open = Results(), nil
 	for _, row in ipairs(found) do
-		suppressed = suppressed or (row.Title:GetText() == "Call of Fire" and row) or nil
 		open = open or (not row.Lock:IsShown() and row) or nil
 	end
 	equal(#found, 10, "search: ten results at most")
@@ -1917,12 +1967,14 @@ do
 	equal(#Shown(h, function(frame)
 		return frame.SkipButton ~= nil
 	end), 0, "search: and their steps")
-	local lines = Lines(assert(suppressed, "search: Call of Fire, whose start the data suppresses"))
+	h.Type(search, "Call of Water")
+	local lines = Lines(assert(suppressed, "search: Call of Water, whose start the data suppresses"))
 	equal(#lines, 1, "search: a suppressed start shows exactly 1 line")
 	equal(lines[1], h.ns.L.WHY_NO_START, "search: saying the guide can't tell where it starts")
 	equal(suppressed.Lock:IsShown(), true, "search: behind a lock")
 	h.Hover(suppressed)
-	equal(table.concat(h.tooltip, "\n"), "title: Call of Fire\nerror: " .. h.ns.L.WHY_NO_START, "search: tooltip")
+	equal(table.concat(h.tooltip, "\n"), "title: Call of Water\nerror: " .. h.ns.L.WHY_NO_START, "search: tooltip")
+	h.Type(search, "Call of")
 	equal(#Lines(assert(open, "search: a quest open now")), 0, "search: an open quest has nothing to explain")
 	local ready = h.ns.State.Ready
 	h.ns.State.Ready = function()
@@ -1951,13 +2003,25 @@ do
 	equal(#Results(), 0, "search: cleared")
 	clean(h, "guide")
 
-	local none = harness.load({ player = { level = 70 } })
+	-- Roadmap #21: past the cap with quests and dungeons off, the dungeon card and a way into an instance still show.
+	local capped = harness.load({ player = { level = 70 } })
+	capped.ns.Prefs().quests = false
+	capped.ns.Invalidate()
+	capped.ns.OpenPanel()
+	capped.flush()
+	equal(#capped.ns.Route().journeys, 2, "guide: at the cap, never nothing")
+	equal(Says(capped, "Stratholme"), 1, "guide: the dungeon card, toggle off")
+	equal(Says(capped, capped.ns.L.JOURNEY_INTO:format("Scholomance")), 1, "guide: the way in, as a story")
+	equal(Says(capped, capped.ns.L.NO_JOURNEY), 0, "guide: no empty line")
+	clean(capped, "guide: at the cap")
+
+	local none = harness.load({ player = { level = 1 } })
 	none.ns.Prefs().quests = false
 	none.ns.Invalidate()
 	none.ns.OpenPanel()
 	none.flush()
 	equal(#none.ns.Route().journeys, 0, "guide: nothing fits")
-	equal(Says(none, none.ns.L.NOTHING_NEARBY), 1, "guide: says so, and where to look")
+	equal(Says(none, none.ns.L.NO_JOURNEY), 1, "guide: says so, and where to look")
 	clean(none, "guide: empty")
 end
 
@@ -2572,7 +2636,7 @@ do
 		if case.text then
 			equal(h.spfRoute.stops[1].title, "Swart", label .. ": named for the trainer")
 		end
-		equal(h.ns.Route().steps[1].key, "handin:346", label .. ": the route is unchanged")
+		equal(h.ns.Route().steps[1].key, "handin:349", label .. ": the route is unchanged")
 		-- A spell learned at the trainer shortens the line at once.
 		if case.tf and case.tf.spells == THREE then
 			case.tf.spells = { SPELL }
@@ -2806,6 +2870,99 @@ do
 	equal(lines[1], "Requires Amical with Timbermaw Hold", label .. ": the unmet standing leads, in the client's words")
 	equal(row.Lock:IsShown(), true, label .. ": behind a lock")
 	clean(h, label)
+end
+
+-- Roadmap #11: with no rest the route ends at the inn its last town has; stepping into an inn ticks it off, and a
+-- rest or XP event that moves nothing rebuilds nothing.
+do
+	local h = harness.load({
+		player = { rested = false },
+		charDB = { journey = "carry" },
+		completed = { 844 },
+		log = {
+			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
+		},
+	})
+	h.flush()
+	local REST = h.ns.L.REST_HERE
+	local function Last()
+		local steps = h.ns.Route().steps
+		return steps[#steps].reason
+	end
+	equal(Last(), REST, "rest: no rest, the route ends at an inn")
+	local builds = h.modelCalls.Journeys
+	h.fire("UPDATE_EXHAUSTION")
+	h.fire("PLAYER_XP_UPDATE", "player")
+	h.flush()
+	equal(h.modelCalls.Journeys - builds, 0, "rest: an event that moves nothing rebuilds nothing")
+	h.player.resting = true
+	h.fire("PLAYER_UPDATE_RESTING")
+	h.flush()
+	equal(h.modelCalls.Journeys - builds, 1, "rest: resting rebuilds once")
+	equal(Last() ~= REST, true, "rest: resting ticks it off")
+	h.player.resting, h.player.rested = false, 5000
+	h.fire("PLAYER_UPDATE_RESTING")
+	h.fire("UPDATE_EXHAUSTION")
+	h.flush()
+	equal(Last() ~= REST, true, "rest: rested, no line")
+	h.player.rested = 100
+	h.fire("PLAYER_XP_UPDATE", "player")
+	h.flush()
+	equal(Last(), REST, "rest: XP that spends the rest brings it back")
+	clean(h, "rest")
+end
+
+-- Roadmap #24: a wanderer is told where and never taken there. The one setting gates every waypoint, Shortest Path
+-- route and map mark; choosing still chooses, and turning it on stops what Go started.
+for _, spf in ipairs({ false, "v1" }) do
+	local label = "wanderer, " .. (spf or "no Shortest Path")
+	local h = Load(spf, { showMapPins = true, showQuestGivers = true, wanderer = true })
+	local ns = h.ns
+	equal(ns.Setting("wanderer"), true, label .. ": the saved setting")
+	equal(Load(spf).ns.Setting("wanderer"), false, label .. ": Guide by default")
+	local step = ns.Route().steps[1]
+	equal(ns.StartRoute(step), false, label .. ": Go guides nothing")
+	equal(ns.Integrations.Navigate(step), false, label .. ": nor does Navigate")
+	equal(h.counts.SetUserWaypoint or 0, 0, label .. ": no waypoint")
+	equal(spf and h.spf.NavigateRoute or 0, 0, label .. ": no Shortest Path route")
+	equal(#h.uiErrors, 0, label .. ": and no error line")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[step.key], "LeftButton")
+	h.flush()
+	equal(h.counts.SetUserWaypoint or 0, 0, label .. ": the tracker title sets none either")
+	equal(ns.Prefs().guided, nil, label .. ": nothing recorded as guided")
+	equal(ns.Paused(), false, label .. ": so the journey never reads as paused")
+	h.SetCombat(true)
+	equal(ns.StartRoute(), false, label .. ": in combat nothing waits to start")
+	equal(ns.StartPending(), false, label .. ": no start pending")
+	ns.Choose("zone:1413", true)
+	equal(ns.StartPending(), false, label .. ": a card chosen in combat waits for nothing")
+	h.SetCombat(false)
+	h.flush()
+	equal(h.counts.SetUserWaypoint or 0, 0, label .. ": nor starts once combat ends")
+	equal(spf and h.spf.NavigateRoute or 0, 0, label .. ": nor hands Shortest Path a route")
+	h.G.OpenQuestLog()
+	h.flush()
+	ns.OpenPanel()
+	h.flush()
+	h.providers[1]:RefreshAllData()
+	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, label .. ": no rings, even with the guide open")
+	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, 0, label .. ": no givers")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[step.key], "RightButton")
+	for _, entry in ipairs(h.menu.entries) do
+		equal(entry.text ~= ns.L.GO, true, label .. ": the step menu offers no Go")
+	end
+	clean(h, label)
+
+	-- Guide mode's Go, then wandering: what Go started stops.
+	h = Load(spf)
+	ns = h.ns
+	equal(ns.StartRoute(), true, label .. ": Guide's Go guides")
+	equal(ns.Integrations.Owns(), true, label .. ": ours")
+	ns.SetSetting("wanderer", true)
+	h.flush()
+	equal(ns.Integrations.Owns(), false, label .. ": wandering stops it")
+	equal(ns.Prefs().guided, nil, label .. ": and forgets it")
+	clean(h, label .. ": turned on")
 end
 
 print(("ui_spec: %d checks passed"):format(checks))

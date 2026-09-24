@@ -83,7 +83,11 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   - "Why these?" (Panel.lua:430-443). Each row now gives its own reason, and "why not" moves to search.
 - The quest/dungeon chips move into the cog's settings menu. Dungeons holds back only an instance's quests (a quest
   with `dungeon`); an outdoor elite (Hogger) is a zone's quest under Quests, shown optional with the group badge.
-  Being optional, it never picks the zone: zones are ranked by their other quests.
+  Being optional, it never picks the zone: zones are ranked by their other quests. A raid's quest (`raid`) is on
+  no card at all, neither a zone's nor the dungeon card, and never ranks or picks a zone: a raid is not a step a
+  short route can hold. The generator flags a quest filed in a raid instance, and one of CMaNGOS Type 62 or 88
+  (QuestInfo Raid) wherever it is filed: Zul'Gurub's Paragons of Power are filed under the outdoor Zul'Gurub area and
+  given on Yojamba Isle, yet ask for the raid's drops, so only their type says so (83 such quests at the pin).
 - **None chosen** is the default (a fresh character, a card clicked again, or a saved choice whose card is no longer
   offered): every card whole in order, no step rows, the hint "Choose a journey to see its steps." under them, and
   nothing guides. The route still falls back to the first card (`route.chosen` false), but the tracker shows no
@@ -116,8 +120,8 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   never beside the search's results. `Model.Unlisted` decides. The added quests come from `Data/Forever.lua`, which
   `tools/diff_forever.py` generates: the QuestV2 IDs Forever's build has and Classic Era 1.15.9.69722 lacks, each placed
   on the zone maps its `QuestPOIBlob` rows name. Only 26 of the 1795 added quests have a blob, so the zone half is
-  narrow; a quest with no blob has no zone and is left out. The slice also lists the 160 added AreaTable IDs for later
-  exploration work; TaxiNodes and Map diffs are printed only.
+  narrow; a quest with no blob has no zone and is left out. The slice also lists the 160 added AreaTable IDs, which
+  put an unexplored area first (§2.11), and the added lands (§2.11); TaxiNodes and Map diffs are printed only.
 - Fit: with a card chosen the three cards take 148 px (was 270), so the list holds between two and three more 46 px
   step rows before it scrolls.
 
@@ -189,14 +193,27 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
        raid's. It leads with a chain as the story does (§2.3), else the lowest quest ID. Its reason names that quest:
        "Your class trainer has a task: Call of Earth" only when the data proves its giver trains the player's class
        (`start.trainer`, from CMaNGOS TrainerClass), else "A task for your class: Call of Earth".
-     - **Dungeon** (Dungeons on): the party instance with the most quests open now.
+     - **Dungeon** (Dungeons on, or no next zone): the party instance with the most quests open now. Its reason
+       (roadmap #15) counts the log's quests filed under it, which end inside: "2 of your quests end inside Wailing
+       Caverns", "1 of your quests ends inside Wailing Caverns"; none carried, no reason. There is no "Find group"
+       button: R5 found `LFGVanilla_ShowFrame` but never called it, so its taint is unknown, and the button waits on a
+       probe that calls it.
+     - **A way into an instance** (roadmap #21, no next zone only): the chain (§2.3) the player can take up now that
+       has a quest filed under an instance the data names, from its chapter on, as a story card: "The way into
+       Scholomance", its chapter as the subline, "Begins a new story" or "Continues a story you started". The data
+       never says a chain is an attunement, only that it goes inside, so the card says no more. The story's own chain
+       is never offered twice. Key `chain:<first quest>`.
      - **Next zone**: the zone that ranks first for `level + 2` in the same eligibility pass (`Choices` in
        `Model.Journeys`), shown only when it differs from the story's zone and the player's own and has at least 5
        quests to take now.
 - **Which diversion.** Each is ranked by the level its newest quest opened at (the highest `min` among its quests
   open now), highest first, so a level just gained or a bracket just opened takes the slot and an older one yields
-  as the player levels on. A tie goes calling, dungeon, next zone. It is stateless: nothing is remembered between
-  sessions. Only as many are built as there are free slots, plus the chosen one, which always keeps its slot.
+  as the player levels on. A tie goes calling, dungeon, a way in, next zone. It is stateless: nothing is remembered
+  between sessions. Only as many are built as there are free slots, plus the chosen one, which always keeps its slot.
+- **No next zone** (roadmap #21): at the level cap, or when no zone is ahead and no story was built, the guide never
+  ends on "nothing fits". The dungeon card comes whatever the Dungeons toggle says (its eligibility pass then takes in
+  the instance quests the toggle holds back), and a way into an instance may take a slot. The route carries
+  `stranded`, so a chosen dungeon that goes then has ended rather than been filtered (§2.10).
 
 ### 2.3 Zone story chapters
 
@@ -252,6 +269,9 @@ player's side. Eligible matches show as normal rows. Ineligible matches show why
   - `side`;
   - `races` and `classes`;
   - exclusive `group` ("You chose X instead");
+  - `breadcrumb`, the quest a breadcrumb leads to ("Only until you take X"): open only while that quest is neither
+    completed nor in the log. The generator emits CMaNGOS `BreadcrumbForQuestId` (wago's QuestV2 export has no such
+    column) and withholds the start when the target is not in QuestV2 (124 breadcrumb starts at the pin);
   - `skill` ("Requires Tailoring 150") and `rep` ("Requires Friendly with Timbermaw Hold", "Only while below
     Revered with Argent Dawn"; "Depends on your standing with X" when the value falls between ranks), in the
     client's names for the skill line, faction and standing (`FACTION_STANDING_LABEL1-8`) when it has them;
@@ -340,7 +360,8 @@ ADVENTURE GUIDE                                 module header (template)
 | Quest-giver "!" | the zone's eligible, non-gray givers | `showMapPins` **and** `showQuestGivers` are both on; both default **off**. Kept because Blizzard draws no givers on Forever (probe `questoffer`, §9) |
 | Lines, dots, overlays, continent marks | 0 | never drawn by AGF |
 
-While SPF is guiding, AGF's rings hide, because SPF draws its own stops (Pins.lua:15-17).
+While SPF is guiding, AGF's rings hide, because SPF draws its own stops (Pins.lua:15-17). A wanderer (§2.17) sees
+no layer at all.
 
 ```
 +--------------------------------------------------------------+
@@ -410,10 +431,12 @@ Skipped submenu on its own.
 Step skips stay session-only. The menu has no auto-go.
 
 **Not interested (roadmap #17).** A journey card's right-click (not the carry card's: what the player carries is
-theirs) opens its title and "Not interested". That saves `charDB.notInterested[key] = title` for this character, so
-the card stays gone across sessions; the planner offers the next best zone or dungeon in its place, and a choice of it
-ends as a click on its card would. "Skipped (n)" (under the cards, in the step menu and in the cog) counts these after
-the session's step skips and offers each back with "Show again: <title>". The card's tooltip ends with "Right-click if
+theirs) opens its title and "Not interested". That saves `charDB.notInterested[key] = {title, chosen}` for this
+character, so the card stays gone across sessions; the planner offers the next best zone or dungeon in its place, and a
+choice of it ends as a click on its card would. "Skipped (n)" (under the cards, in the step menu and in the cog) counts
+these after the session's step skips and offers each back with "Show again: <title>". `chosen` records that the
+journey was the chosen one, so Show again chooses it again, after a `/reload` or a login too. A saved bare title (the
+shape before `chosen` was kept) loads as a journey that was not chosen. The card's tooltip ends with "Right-click if
 you're not interested".
 
 ### 2.9 Tooltips
@@ -469,7 +492,8 @@ journey whose route AGF started). Choosing, starting and ending all live in Core
 the cards, the tracker title, the menus and the map's rings behave the same, with the guide open or closed.
 
 Keys: `carry`, `zone:<map>` for a zone's story and its next-zone card alike (so heading to a zone becomes its story
-on arrival), `dungeon:<instance>`, and `calling`. `LoadCharDB` migrates the old `story:` and `nextzone:` keys once.
+on arrival), `dungeon:<instance>`, `calling`, and `chain:<quest>` for a way into an instance (§2.2). `LoadCharDB`
+migrates the old `story:` and `nextzone:` keys once.
 
 Invariants:
 
@@ -514,7 +538,8 @@ the route again until the card resumes it.
 
 A chosen journey the full build no longer has ends: its route is cancelled and the choice cleared, so the cards are
 whole again. A Quests or Dungeons filter keeps the key (the player's own toggle can bring it back) but stops the
-route; Quests covers `zone:` keys and `calling`, Dungeons `dungeon:` keys. Skipping every step of a chosen journey ends it the same way, quietly.
+route; Quests covers `zone:` and `chain:` keys and `calling`, Dungeons `dungeon:` keys, except with no next zone,
+when Dungeons hides nothing. Skipping every step of a chosen journey ends it the same way, quietly.
 
 ### 2.11 Asides
 
@@ -534,7 +559,37 @@ aside shown changes. The first provider's answer the player has not skipped or t
 - **Providers.** The class trainer (F16): "Visit your class trainer in Stormwind · 3 new spells" with the minimap's
   `class` mark (CSV:1321), from Tweaks Forever's `TrainableSpells`, asked again on `SPELLS_CHANGED`. Its place is the
   nearest trainer who teaches the spells (§2.12); without one (a class and side the data has no trainer for, or no
-  place for the player) it is text only: "Visit your class trainer · 3 new spells".
+  place for the player) it is text only: "Visit your class trainer · 3 new spells". Unspent talent points (#25):
+  "You have 2 talent points to spend" with the Legion `minortalents-icon-book` (CSV:388, the atlas's one square
+  talent mark), from `GetNumUnspentTalents` (R5 found it; `UnitCharacterPoints` is missing on Forever), while any wait,
+  asked again on `CHARACTER_POINTS_CHANGED`; no API, no line. Then the profession aside (§2.16), then a battleground
+  open to you and the next PvP rank's reward (§2.15), then a new land and the zone's unexplored area (below). Providers
+  are asked in that order, the TOC's.
+- **News again.** A provider may give `renew`, how often the aside became news (a talent point gained): Skip for now
+  holds only while it is unchanged, so each new point brings the line back once. An event a provider needs is
+  registered through `Asides.RefreshOn`, which skips one the client lacks.
+- **Several candidates.** A provider with several offers the first the player still wants (`Asides.Wanted`), and Skip
+  for now and Not interested ask the providers again, so the next one shows at once.
+- **New lands (roadmap #14).** "Riverglades · For levels 36-44" with the minimap's `flightmaster` mark (CSV:1330),
+  key `land:<uiMapID>`: a zone map Forever added (`tools/diff_forever.py` `lands`) whose range holds the player's
+  level, never before it or after (no teaser). The range is the least and greatest non-zero
+  `AreaTable.ExplorationLevel` of the land's areas and their children, so a land whose areas are all 0 (Mount Hyjal,
+  Shen'dralas) is never one. Its place is the first Forever-added flight master on the land that serves the player's
+  side (TaxiNodes Flags; Rog'mar for the Horde, Farholde Keep for the Alliance), projected as a quest giver is. A
+  land with none for the side says nothing: Zephras Isle (3-12) has no flight master the data places, and nothing
+  says how to reach it. It retires once the client reports any of the land explored, and never shows while the
+  player stands in it. The name is the client's (`C_Map.GetMapInfo`), else the data's.
+- **Unexplored nearby (roadmap #13).** "You haven't seen Thorn Hill yet" with the guide tab's compass, key `explore`
+  (Not interested ends every area), text only: no place, no ring, no waypoint. The areas are the zone map's
+  `WorldMapOverlay` rows with a texture (`Data.overlays`, `tools/gen_quests.py` `overlays`), each named by its first
+  AreaTable row, left out at ExplorationLevel 0. The client reports an explored overlay by its offset
+  (`C_MapExplorationInfo.GetExploredMapTextures`, probe `explore`: 7 of Darkshore's 9 at level 18, matching the
+  data's offsets), so the aside names one of the player's zone the client doesn't report, at most two levels above
+  them: an area Forever added first, then the nearest by its hit rectangle's centre (never shown or pointed at),
+  then the lowest area ID. The name is the client's (`C_Map.GetAreaInfo`), else the data's. `MAP_EXPLORATION_UPDATED`
+  (the client's "Discovered") asks the providers again at once, so the line moves on or goes.
+- **Order.** A new land, then the zone's area: `Hints/Explore.lua` registers after `PvP.lua`, last. Without
+  `C_MapExplorationInfo` neither exploration aside says anything.
 
 ### 2.12 Trainers (roadmap R3, #5)
 
@@ -569,8 +624,8 @@ character has never been offered is announced once, quietly: `Moments.lua`, afte
   empty set: the session's first look, a new character and a save file the client never loaded (#34) all learn
   silently, so nothing floods.
 - **What it shows.** A new journey: the tracker line "Duskwood is now for your level" (the zone's client name, a
-  dungeon's card title) under the quiet line, glowing once as §2.7's fanfare does, with no sound; its click opens the
-  guide. A new aside: its own tracker line glows. Either way `adventureguide-microbutton-alert` (CSV:2025) pips the
+  dungeon's card title; a way into an instance "The way into Scholomance is open to you") under the quiet line,
+  glowing once as §2.7's fanfare does, with no sound; its click opens the guide. A new aside: its own tracker line glows. Either way `adventureguide-microbutton-alert` (CSV:2025) pips the
   Adventure tab and the addon compartment's button, and a new card carries `adventureguide-icon-whatsnew` (CSV:2024)
   over its ring's top-right (beside the "+" on a one-line row). No toast; nothing opens by itself; the tracker section
   off leaves the pips and marks.
@@ -587,19 +642,90 @@ cache that did, Integrations' town places, is keyed on it).
 
 - **From QuestieDB:** title, levels, races, classes, zone (area to parent zone to uiMap), each start and finish from its
   NPCs' and objects' spawns (quest zone first, then the giver's usual map), prerequisites, exclusive quests (merged
-  into one group per connected set), chain, repeatable, skill and reputation gates.
+  into one group per connected set), chain, breadcrumb target (else the bundled one), repeatable, skill and
+  reputation gates.
 - **Still bundled:** zones, maps, continents, crossings, towns (a place joins the nearest bundled town place within
-  100 yd), hub names, NPC roles, instances and elite; and what QuestieDB leaves out: a level of -1 (it scales), a
+  100 yd), hub names, NPC roles, instances, elite and a raid's quest (a quest typed Raid stays one wherever QuestieDB
+  files it); and what QuestieDB leaves out: a level of -1 (it scales), a
   missing minimum level, a dungeon it files outside an instance, and the place of a giver none of whose spawns it
   places when the bundled data names the same NPC.
 - **Withheld start:** any quest the bundled data lacks, or whose bundled start it withholds (nothing says what else
   gates it: the generator's Method, condition and event gates, and givers CMaNGOS spawns only for an event, which
-  QuestieDB lists as ordinary spawns); a prerequisite or exclusive quest outside the data; and `parentQuest`, `breadcrumbForQuestId`, `requiredSpell`, `requiredSpecialization`,
+  QuestieDB lists as ordinary spawns); a prerequisite, exclusive quest or breadcrumb target outside the data; and `parentQuest`, `requiredSpell`, `requiredSpecialization`,
   `requiredMaxLevel` below the cap, `availableUntilCompleted`, `availableStartingWith`, `requiredRanks`,
   `disabledByQuest`, flags 1024 or 16384, or a gate on a skill line or faction the data doesn't name.
 - **Fallback:** any failed check or read keeps the bundled data; `/agf audit` names the source and the reason.
   Questie and QuestieDB carry no licence, so the repo, specs and goldens hold none of their code, types or data; the
   specs use a synthetic stand-in, mostly a mirror of the bundled data (`harness.questieMirror`).
+
+### 2.15 PvP (roadmap #12, #28)
+
+`PvP.lua`, after `Hints/Profession.lua` in the TOC, gives two asides; the opt-in card is the planner's.
+
+- **Open to you.** Only `C_PvP.GetLevelUpBattlegrounds(level)` says which battlegrounds are open: each level up to
+  the player's is asked once (R5: Warsong Gulch at 10, Arathi Basin at 20, Darkspear Islands at 30). `canEnter` gates
+  nothing, since R5 found it false for all three at level 19. A battleground behind a condition (Battle for
+  Blackrock) or with no levels (Battle for Gilneas) is on no list, so neither shows falsely. No API, nothing shows.
+- **The aside.** "Warsong Gulch is open to you" with the minimap's `battlemaster` mark (CSV:1319), for the newest open
+  battleground, until the character stands in a battleground (`IsInInstance` names "pvp") at a level at or past the
+  one it opened at: `charDB.battled` keeps the highest such level, so the next battleground to open brings the next
+  line. Its place is the nearest battlemaster of the player's side the data has (CMaNGOS `battlemaster_entry`, whose
+  `bg_template` is the BattlemasterList ID the API gives); Darkspear Islands has none, so its line is text only.
+- **The Battlegrounds card.** Opt-in: *Battlegrounds* in the cog, per character, off by default. The card is the
+  newest open battleground the data places a battlemaster for and the player is interested in (the chosen one while
+  it is open), titled by the client's name, "A battleground open to you", with one step, "Battlemaster in
+  Crossroads" ("Queue for Warsong Gulch"; `kind = "battlemaster"`, key `battlemaster:<npc>`, no quests), which combat's
+  cheap rebuild keeps. It is a diversion (R4) as new as the level the battleground opened at, after the dungeon on a
+  tie; the chosen one keeps its slot. A new card's moment reads "Arathi Basin is open to you". The stock queue is
+  never opened: Forever has no `TogglePVPFrame` (R5).
+- **The next rank's reward (#28).** For a character with rank points (major faction 2800, Camelot's
+  `PVPRankFrame.lua`): "Rank 7 · <description>" with the reward's own icon, for the next rank with rewards and the
+  first of them with a description, as the character pane's next-reward rows show them. The icon is a texture, so an
+  aside may give `texture`, drawn in place of its atlas. No probe reached `GetMajorFactionProgressionInfo`: without it,
+  nothing shows. Asked again on `PLAYER_PVP_RANK_CHANGED` and `MAJOR_FACTION_RENOWN_LEVEL_CHANGED`.
+
+### 2.16 Professions (roadmap #9)
+
+Only where to go next: SkillUp Forever keeps recipes, skill-up colours and its levelling route. `Hints/Profession.lua`,
+after `Asides.lua` in the TOC, registers the profession aside, after the class trainer's. `Model.Profession` gives the
+first of these the player still wants:
+
+- **Rank cap.** A learned line at its rank's cap whose next rank they can train now: "Your Mining has reached 75 of 75
+  · Journeyman training in Durotar". The cap is C_SkillInfo's `maxRank`; its rank is the cap over 75 (CMaNGOS
+  `Spell::EffectSkillStep` sets the cap to 75 times the rank), and a cap off that scale says nothing. The next rank
+  must be one a trainer teaches (`Data.professions`: Expert Cooking and Fishing come from books, so 150 of 150 says
+  nothing) and the player must have the level and skill its rank spell asks (`npc_trainer` reqlevel, reqskillvalue).
+- **Free slot.** Fewer than two professions (C_SkillInfo's `skillLineCategoryID` 11; two is CMaNGOS
+  MaxPrimaryTradeSkill's default) while one they lack is one they can learn now: "A profession slot is free ·
+  trainers in Crossroads", at the nearest trainer of any such profession's Apprentice rank.
+- **Secondary skill.** First Aid, Cooking or Fishing not learned, once the player has its Apprentice level: "You can
+  learn Fishing in Crossroads", the name from the data (English) since the client names only learned lines.
+
+Each goes to the nearest trainer of the player's side who teaches that rank (`Data.npcs` `ranks`), by the route's
+cost (§4.1), with the minimap's `profession` mark (CSV:1322). A rank only the other side's trainers teach (Artisan
+Fishing is Katoom the Angler's, Horde) is no nudge; with no place for the player the line is text only ("Journeyman
+training is open to you", "A profession slot is free"). The keys are `profession:<skill>:<rank>` and
+`profession:slot`. `SKILL_LINES_CHANGED` asks the providers again a frame later, only when a profession line's rank or
+cap, or the count of professions, moved; a weapon skill-up asks nothing. SkillUp Forever has no public API (its
+`NextRanks` is local to its Route.lua), so AGF reads its own copy of the CMaNGOS trainer rows; `IsSpellKnown` on the
+rank spells is not needed, since the cap already says which rank is known.
+
+### 2.17 Rest and pacing (roadmap #11, #24)
+
+- **Rest at the inn (#11).** State reads `GetXPExhaustion()` (0 when nil), `UnitXPMax("player")` when the client has
+  it, and `IsResting()`. Rest is low under one bubble (a twentieth of the level's XP: a night at an inn), or at none
+  when there is no bar to measure by; never at the cap, and never when the rest is unknown (a spec's player, so the
+  goldens keep their reasons). Then each journey's last stop whose town has an innkeeper of the player's side
+  (`Data.npcs` `inn`: its hub, or within 100 yards) reads "Rest at the inn here" in place of its reason; its detail
+  stays. It is a reason, never a step, so it moves no route. Resting (an inn or a city) ticks it off, and the stop's
+  own reason is back. `PLAYER_UPDATE_RESTING`, `UPDATE_EXHAUSTION` and `PLAYER_XP_UPDATE` are registered by
+  feature detection and rebuild only when low or resting flips. Combat's cheap rebuild keeps the last build's line.
+- **Hint strength (#24).** One account-wide setting, "Wanderer: name places only" (`wanderer`, off: Guide). A wanderer
+  gets the same cards, steps and asides, which already name places ("Lakeshire, Redridge"), and is never taken
+  there: `Integrations.Navigate` and `Restore` set no waypoint and hand Shortest Path nothing, `StartRoute` starts
+  nothing (and waits for nothing in combat), Pins draws no rings or givers (the open guide's preview included), and
+  no menu offers Go or tooltip a click line. Choosing a journey still chooses it. Turning it on stops what Go started,
+  as Stop does.
 
 ## 3. Copy style sheet
 
@@ -627,11 +753,12 @@ cache that did, Integrations' town places, is keyed on it).
 | Travel | `Fly to Sentinel Hill · 6 min` · `Boat to Auberdine · 2 min wait` · `Fly to Astranaar · new flight path` · `About 4 min away` · card: `6 min` · `15 min by boat` · `15 min by zeppelin` |
 | Why-not | `Requires level 14` · `Completed: The Forgotten Heirloom` · `Requires one of: A, B` · `Horde only` · `Warriors only` · `You chose X instead` · `The guide can't tell where this starts` · `You've done this` · `In your quest log` · `Repeatable quests aren't suggested` |
 | Tracker | `Where you left off: finishes a story` · `Next: The Ruins of Stardust` · `Story complete` · `Westfall story · Begins a new story` |
-| Asides | `Visit your class trainer in Stormwind · 3 new spells` · `Visit your class trainer · 3 new spells` |
+| Asides | `Visit your class trainer in Stormwind · 3 new spells` · `Visit your class trainer · 3 new spells` · `Riverglades · For levels 36-44` · `You haven't seen Thorn Hill yet` |
 | Trainer stop | `Train in Stormwind` · `3 new spells` · `1 new spell` |
 | Buttons, menu | `Go` (menus only) · `Stop` · `Show quest` · `Skip for now` · `Not interested` · `Skipped (2)` · `Show again: <title>` · `Choose another journey` |
 | Instructions | `Click to travel with Shortest Path` · `Click to set a waypoint` · `Click to choose this journey` · `Replaces your current journey.` |
-| Empty | `Nothing nearby fits your level.` |
+| Dungeon, way in | `2 of your quests end inside Wailing Caverns` · `1 of your quests ends inside Wailing Caverns` · `The way into Scholomance` · `The way into Scholomance is open to you` |
+| Empty | `The guide has no journey for you here; look for the "!" over quest givers.` |
 | Coverage | `This land has stories the guide doesn't know yet; look for the "!" over quest givers.` |
 
 ## 4. Features, in build order
@@ -655,7 +782,7 @@ cache that did, Integrations' town places, is keyed on it).
 | 15 | One `L` table for all copy | Should | Localisation groundwork. The strings are inline English today. |
 | 16 | "New in Forever" tag (`adventureguide-icon-whatsnew`, CSV:2024) on quests already in the log only | Could | Needs the generator to emit the IDs missing from CMaNGOS (count unverified). Never on cards or recommendations. |
 | 17 | Dungeon card | Could | Blocked: `dungeon` is set on 0 quests (agf.md) and the EJ is absent (PROBE). Needs a generator fix plus a TF `DungeonEntrance` API. |
-| 18 | Discovery hint: one unexplored area named as text | Could | Needs a LegacyForever API that does not exist. Text only, never a ring. |
+| 18 | Discovery hint: one unexplored area named as text | Could | Built as roadmap #13 (§2.11) from `C_MapExplorationInfo` and the map's overlays, with no LegacyForever API. Text only, never a ring. |
 | 19 | "Visit your class trainer" step from Tweaks Forever's `TrainableSpells` (§5.2), feature-detected | Should | The client lists no `FutureSpell` entries (probe `spellbook2`), so only Tweaks Forever's trainer data can tell. The aside goes to the nearest trainer who teaches the spells, and a chosen route may stop to train in a town it passes (§2.12). |
 | 20 | Hubs: one stop per town, named from flight masters (plan §7.2) | Must | A Redridge route spent 4 of 9 steps in Lakeshire, and their rings merged into one. |
 | 21 | Level-aware selection and in-stop order for carried quests (plan §7.3) | Must | The user asked for quests picked up to be ordered by level distance. Travel still orders the route. |
@@ -665,9 +792,11 @@ cache that did, Integrations' town places, is keyed on it).
 **NPC roles (`Data.npcs`, roadmap R2).** The generator emits class trainers (with the class, and `upto`, the highest
 level they teach, so a starting-area trainer is told apart, and `from`, the lowest, when above 1, so a trainer of
 only part of the class's spells, a mage's portal trainer, is too), hunter pet trainers, riding trainers (with
-CMaNGOS's TrainerRace), profession trainers (skill line and the highest rank taught: the SKILL_STEP effect of a
-taught spell in wago SpellEffect, on a SkillLine profession or secondary skill), battlemasters
-(`battlemaster_entry`) and innkeepers, from the pinned CMaNGOS dump.
+CMaNGOS's TrainerRace), profession trainers (skill line and each rank taught: the SKILL_STEP effect of a
+taught spell in wago SpellEffect, on a SkillLine profession or secondary skill; a Journeyman-only trainer teaches no
+Apprentice), battlemasters (`battlemaster_entry`) and innkeepers, from the pinned CMaNGOS dump. `Data.professions`
+gives each line those trainers teach its name, whether it is a secondary skill, and each taught rank's `npc_trainer`
+reqlevel and reqskillvalue (the most any trainer asks).
 The side is every side the FactionTemplate's EnemyGroup is not hostile to. The place is a non-seasonal spawn
 projected as a quest giver's is. Within 100 yards of a quest place it takes that place's hub and the map most of
 the hub's quest places use, since zone rectangles overhang (Astranaar is Ashenvale, not Stonetalon); elsewhere it
@@ -798,10 +927,10 @@ Not requested:
 
 | Sibling | Contract | Why not |
 |---|---|---|
-| LegacyForever (formerly LegacyHere) | none | It has no public API (origin/main ea0fb8c; the PROBE `legacy` scan shows only `LegacyForever*` mixins and DB). Its data has 0 quest criteria (siblings.md §3), so no quest can be honestly tagged, and percentages are Legacy's domain. It returns only if Could #18 is promoted, as `Objectives(uiMapID)` with no percent. |
+| LegacyForever (formerly LegacyHere) | none | It has no public API (origin/main ea0fb8c; the PROBE `legacy` scan shows only `LegacyForever*` mixins and DB). Its data has 0 quest criteria (siblings.md §3), so no quest can be honestly tagged, and percentages are Legacy's domain. Could #18 needed none: the client's own exploration API serves it (§2.11). |
 | TweaksForever | `TweaksForever.API.TrainableSpells()` (TF PR #45, `version = 1`), for Should #19 and the trainer stop (§2.12) | Returns fresh `{spellID, name, level, cost?, line, lineID}` tables for the trainer spells the player's level allows and they haven't learned, or nil before login and in combat. AGF checks `type(api.TrainableSpells) == "function"` where it uses it, and treats nil as "no step this rebuild". The zone table is still baked at generation time (siblings.md §4); `DungeonEntrance` is needed only for Could #17. AGF never re-sorts the stock tracker, which TF's "Nearest quests first" owns. A public `DungeonEntrance(mapID)` is a follow-up (plan §7.5). |
 | WorkOrdersForever | none | It messages agents, and has no gameplay data or API. |
-| SkillUpForever | none | Profession steps are out of scope for a quest journal. |
+| SkillUpForever | none | It has no public API. The profession aside (§2.16) names only the next rank's trainer, a free slot and an unlearned secondary skill, from AGF's own CMaNGOS trainer rows; recipes, skill-ups and levelling routes stay SkillUp's. |
 
 ## 6. Known flight paths: decision
 
@@ -876,6 +1005,53 @@ Nothing below has been validated in game yet.
 18. QuestieDB (§2.14): with it loaded, `/agf audit` names "QuestieDB <version>" a few seconds after login with no
     hitch, and the cards, rings and town stops match the bundled run; with it disabled, or Questie alone without it,
     the audit names the bundled data and why.
+19. Not interested (§2.8) on the chosen journey, then `/reload`: the cog's "Skipped (1)" → "Show again: <title>"
+    brings its card back chosen, with its steps; on a journey that was not chosen it only brings the card back.
+20. Breadcrumbs (§2.4): a level-10 orc shaman in Durotar is offered Call of Fire at Searn Firewarder; searching "Call
+    of Fire" ticks "Only until you take Call of Fire", and once Kranal Fiss's Call of Fire is in the log the
+    breadcrumb's pickup leaves the route and its line turns red. With QuestieDB, a level-12 paladin is offered Tome of
+    Divinity at the class trainer.
+21. Raids (§2.1): a level-60 character on Yojamba Isle with Dungeons on sees no Paragons of Power pickup on any card.
+22. Talent points (§2.11): a level that brings a point shows "You have 1 talent point to spend" above the cards and
+    in the tracker, with the talents book and no ring; spending it removes the line at once; after Skip for now, the
+    next level's point brings it back. Confirms `GetNumUnspentTalents` counts Forever's points (R5 read 0 at 19).
+23. Battlegrounds (§2.15): at 10 or more, "Warsong Gulch is open to you" with the battlemaster mark, and its click
+    goes to the nearest battlemaster of your side. Entering a battleground ends it for good (`IsInInstance` naming
+    "pvp" there is unprobed). *Battlegrounds* in the cog is off; ticked, with the card chosen, the step rings the
+    battlemaster, and unticking hides the card but keeps the choice. At 30, "Darkspear Islands is open to you" is
+    text only; Battle for Blackrock and Battle for Gilneas never show.
+24. PvP rank (§2.15): a character with rank points sees "Rank N · <reward>" with the reward's icon, matching the
+    character pane's next-reward row; one with none sees nothing, and no error shows where
+    `C_MajorFactions.GetMajorFactionProgressionInfo` is missing.
+25. Professions (§2.16): `C_SkillInfo` reports professions and secondary skills by their base SkillLine IDs (186
+    Mining, not Forever's 2946), with `maxRank` 75/150/225/300 and `skillLineCategoryID` 11 for a profession. A
+    character with Mining at 75 of 75 and level 10 sees "Your Mining has reached 75 of 75 · Journeyman training in
+    <town>" with the profession mark, above the cards and in the tracker; its click goes to that trainer, and
+    learning Journeyman removes the line without a `/reload`. A character with one profession sees "A profession
+    slot is free · trainers in <town>"; one with two professions and no Cooking at level 5 or more sees "You can
+    learn Cooking in <town>". Skip for now moves on to the next at once; a weapon skill-up changes nothing.
+26. Unexplored nearby (§2.11): in a zone with an area not yet explored, "You haven't seen <area> yet" shows with the
+    compass and no ring, in the client's name for the area; discovering it replaces the line with the next area, or
+    removes it, without a `/reload`; Not interested ends every area. `/dump C_MapExplorationInfo.GetExploredMapTextures`
+    on a map never visited returns nothing (not every overlay).
+27. New lands (§2.11, level 36-44 only, so after launch): a character in range who has never been to Riverglades sees
+    "Riverglades · For levels 36-44" with the flight master mark; Go routes to Rog'mar (Horde) or Farholde Keep
+    (Alliance); entering Riverglades removes it, and it stays gone after leaving. A character below 36 never sees it.
+28. Dungeons (roadmap #15): with Wailing Caverns quests in the log and Dungeons on, its card reads "N of your quests
+    end inside Wailing Caverns" in the client's name for it, and no Group Finder button shows.
+29. No next zone (roadmap #21; the level cap is above the beta's 30, so after launch): at 60 with Dungeons off, the
+    guide shows a dungeon card and, where a chain goes inside, "The way into <instance>" as a story with its chapter;
+    choosing either routes to its givers, and once its quests are all taken up the choice ends instead of waiting on
+    the toggle. A new one glows "The way into <instance> is open to you" once. With nothing at all, the guide says to
+    look for the "!" over quest givers.
+30. Rest (§2.17): with little rested XP, a route whose last town has an inn ends "Rest at the inn here" on its
+    ring's tooltip, and in the tracker once that stop is next; stepping into the inn clears it without a
+    `/reload`, and no Lua error is logged at login (the rest events are registered by feature detection). `UnitXPMax`
+    and the three events were never probed on Forever: with any missing, the line shows only at no rest at all, or
+    waits for the next rebuild.
+31. Wanderer (§2.17): turning it on in Settings stops a running route and clears AGF's waypoint; then choosing a card,
+    the tracker title and an aside's click set no waypoint and no Shortest Path route, the map shows no rings or
+    givers (guide open or not), and no menu has Go. Turning it off brings them back.
 
 ## 9. Open questions that need client probes
 

@@ -267,3 +267,15 @@ function C_SkillInfo.GetSkillLineInfoByID(skillLineID) end
 -- Enum.TooltipDataType has drawn its lines, before it shows; an insecure one runs insecure.
 ---@type {AddTooltipPostCall: fun(tooltipType: Enum.TooltipDataType, func: fun(tooltip: GameTooltip, tooltipData: TooltipData))}
 TooltipDataProcessor = nil
+
+-- Camelot's PvP rank track (Blizzard_UIPanels_Game/Camelot/PVPRankFrame.lua): major faction 2800's progression, which
+-- Ketho's Core annotations lack. Unconfirmed by a probe, so PvP.lua reads it with a nil check.
+---@class AGFMajorFactionProgressionInfo
+---@field renownLevel integer the rank, 0 unranked
+---@field renownReputationEarned integer points toward the next rank
+---@field renownLevelThreshold integer
+---@field maxLevel integer the season's highest rank
+
+---@param majorFactionID integer
+---@return AGFMajorFactionProgressionInfo?
+function C_MajorFactions.GetMajorFactionProgressionInfo(majorFactionID) end

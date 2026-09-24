@@ -541,9 +541,25 @@ def instance_index(area_rows, map_rows):
     return by_area, names
 
 
+RAID_TYPES = (62, 88)  # quest_template Type (QuestInfo): Raid, Raid (10)
+
+
+def instance_fields(row, instance_of, instances):
+    """A quest's `dungeon`, the instance its ZoneOrSort area lies in, and `raid`: filed in a raid, or typed one wherever
+    it is filed. Zul'Gurub's Paragons of Power are filed under the outdoor Zul'Gurub area and given on Yojamba Isle,
+    yet each asks for the raid's drops: only their Type says so."""
+    fields = {}
+    if (instance := instance_of.get(row["ZoneOrSort"])) is not None:
+        fields["dungeon"] = instance
+    if row["Type"] in RAID_TYPES or (instance is not None and instances[instance]["raid"]):
+        fields["raid"] = True
+    return fields
+
+
 TRAINER, INNKEEPER = 16, 128  # creature_template NpcFlags (CMaNGOS UNIT_NPC_FLAG_TRAINER, _INNKEEPER)
 SKILL_STEP = 44  # SpellEffect.Effect: teaches rank EffectBasePointsF of skill line EffectMiscValue_0
-PROFESSIONS = {9, 11}  # SkillLine.CategoryID: secondary skills (First Aid, Cooking, Fishing), professions
+SECONDARY = 9  # SkillLine.CategoryID: secondary skills (First Aid, Cooking, Fishing, and riding and racial lines)
+PROFESSIONS = {SECONDARY, 11}  # SkillLine.CategoryID: secondary skills and professions
 
 
 def skill_steps(effects, skill_lines):
@@ -591,16 +607,9 @@ def requirements(row, skills, factions):
     return fields
 
 
-def roles(tables, steps):
-    """Each role NPC's fields: `class` and `upto` (its highest spell's level) for a class trainer, and `from` (its
-    lowest) when that is above 1, so a trainer of only part of the class's spells (a mage's portals) is told apart;
-    `pet` for a hunter pet trainer, `riding` and its `race` for a riding trainer, `skill` and `rank` (the highest rank
-    it teaches) for a profession trainer, `bg` (battlemaster_entry.bg_template) for a battlemaster, `inn` for an
-    innkeeper.
-
-    A trainer teaches its npc_trainer rows plus its TrainerTemplateId's npc_trainer_template rows, less any behind a
-    condition. One that teaches nothing, a profession trainer with no rank spell or ranks of several skills, and a
-    TrainerType 0 trainer with no class (weapon masters and the like) are no trainer here.
+def trainer_spells(tables):
+    """Each trainer's spells: its npc_trainer rows plus its TrainerTemplateId's npc_trainer_template rows, less any
+    behind a condition, by creature entry.
     """
     taught, templates = defaultdict(list), defaultdict(list)
     for row in tables["npc_trainer"]:
@@ -609,14 +618,30 @@ def roles(tables, steps):
     for row in tables["npc_trainer_template"]:
         if not row["condition_id"]:
             templates[row["entry"]].append(row)
+    return {
+        row["Entry"]: taught[row["Entry"]] + (templates[row["TrainerTemplateId"]] if row["TrainerTemplateId"] else [])
+        for row in tables["creature_template"]
+    }
+
+
+def roles(tables, steps, spells):
+    """Each role NPC's fields: `class` and `upto` (its highest spell's level) for a class trainer, and `from` (its
+    lowest) when that is above 1, so a trainer of only part of the class's spells (a mage's portals) is told apart;
+    `pet` for a hunter pet trainer, `riding` and its `race` for a riding trainer, `skill` and `ranks` (each rank it
+    teaches, ascending: a Journeyman-only trainer teaches no Apprentice) for a profession trainer, `bg`
+    (battlemaster_entry.bg_template) for a battlemaster, `inn` for an innkeeper.
+
+    A trainer teaches its `trainer_spells`. One that teaches nothing, a profession trainer with no rank spell or ranks
+    of several skills, and a TrainerType 0 trainer with no class (weapon masters and the like) are no trainer here.
+    """
     battles = {r["entry"]: r["bg_template"] for r in tables["battlemaster_entry"]}
     result = {}
     for row in sorted(tables["creature_template"], key=lambda r: r["Entry"]):
         entry, kind, fields = row["Entry"], row["TrainerType"], {}
-        spells = taught[entry] + (templates[row["TrainerTemplateId"]] if row["TrainerTemplateId"] else [])
-        if row["NpcFlags"] & TRAINER and spells:
+        taught = spells[entry]
+        if row["NpcFlags"] & TRAINER and taught:
             if kind == 0 and row["TrainerClass"]:
-                levels = [s["reqlevel"] for s in spells]
+                levels = [s["reqlevel"] for s in taught]
                 fields.update({"class": row["TrainerClass"], "upto": max(levels)})
                 if min(levels) > 1:
                     fields["from"] = min(levels)
@@ -625,9 +650,9 @@ def roles(tables, steps):
                 if row["TrainerRace"]:
                     fields["race"] = row["TrainerRace"]
             elif kind == 2:
-                ranks = {steps[s["spell"]] for s in spells if s["spell"] in steps}
+                ranks = {steps[s["spell"]] for s in taught if s["spell"] in steps}
                 if len({skill for skill, _ in ranks}) == 1:
-                    fields.update(zip(("skill", "rank"), max(ranks), strict=True))
+                    fields.update({"skill": min(ranks)[0], "ranks": sorted(rank for _, rank in ranks)})
             elif kind == 3:
                 fields["pet"] = True
         if entry in battles:
@@ -637,6 +662,34 @@ def roles(tables, steps):
         if fields:
             result[entry] = fields
     return result
+
+
+def professions(npcs, steps, spells, skill_lines, counts):
+    """Each skill line an emitted profession trainer teaches: its `name` (SkillLine.DisplayName_lang), `secondary`
+    for a secondary skill (CategoryID 9: First Aid, Cooking, Fishing), and `ranks`, ascending, each rank a trainer
+    teaches with the `level` and `skill` (npc_trainer reqlevel and reqskillvalue) its rank spell asks. Where trainers
+    ask differently, the most any asks, so a rank is never offered before every trainer would teach it. A rank no
+    trainer teaches (Expert Cooking comes from a book) is absent.
+    """
+    lines = {int(r["ID"]): r for r in skill_lines}
+    asks = defaultdict(dict)
+    for entry, npc in npcs.items():
+        for row in spells[entry] if "skill" in npc else ():
+            skill, rank = steps.get(row["spell"], (None, None))
+            if skill == npc["skill"]:
+                need = (row["reqlevel"], row["reqskillvalue"])
+                known = asks[skill].setdefault(rank, need)
+                if known != need:
+                    counts["profession ranks asked differently"] += 1
+                    asks[skill][rank] = tuple(map(max, known, need))
+    return {
+        skill: {
+            "name": lines[skill]["DisplayName_lang"],
+            **({"secondary": True} if int(lines[skill]["CategoryID"]) == SECONDARY else {}),
+            "ranks": [{"rank": r, "level": asks[skill][r][0], "skill": asks[skill][r][1]} for r in sorted(asks[skill])],
+        }
+        for skill in sorted(asks)
+    }
 
 
 def reaction(template):
@@ -697,6 +750,54 @@ def role_npcs(tables, world, faction_rows, role, grid, town_maps, maps, counts):
     return npcs
 
 
+CANVAS = (1002, 668)  # a zone map's art in pixels: WorldMapOverlay offsets and hit rectangles are on this canvas
+
+
+def overlays(ui_maps, map_art, overlay_rows, area_rows):
+    """Each zone map's (UiMap Type 3) explorable areas: the WorldMapOverlay rows of its art that the client draws once
+    explored, so the addon can tell which it hasn't seen (roadmap #13).
+
+    `ox`, `oy` are the overlay's offset, which C_MapExplorationInfo.GetExploredMapTextures returns for an explored one;
+    an overlay without a texture is never returned, so it is left out, as is every overlay sharing its offset with
+    another on the map. `area`, `name` and `level` are its first AreaTable row's ID, English name and ExplorationLevel;
+    an area whose level is 0 is never suggested, so it is left out. `x`, `y` are the hit rectangle's centre on the
+    map, for which is nearer only: never a place.
+    """
+    zones = {int(r["ID"]) for r in ui_maps if int(r["Type"]) == 3}
+    maps_of = defaultdict(set)
+    for row in map_art:
+        if int(row["UiMapID"]) in zones and int(row["PhaseID"]) == 0:
+            maps_of[int(row["UiMapArtID"])].add(int(row["UiMapID"]))
+    areas = {int(r["ID"]): r for r in area_rows}
+    found = defaultdict(list)
+    for row in sorted(overlay_rows, key=lambda r: int(r["ID"])):
+        area = areas.get(int(row["AreaID_0"]))
+        if (
+            not area
+            or not int(area["ExplorationLevel"])
+            or int(row["PlayerConditionID"])
+            or not (int(row["TextureWidth"]) and int(row["TextureHeight"]))
+        ):
+            continue
+        entry = {
+            "area": int(area["ID"]),
+            "name": area["AreaName_lang"],
+            "level": int(area["ExplorationLevel"]),
+            "ox": int(row["OffsetX"]),
+            "oy": int(row["OffsetY"]),
+            "x": round((int(row["HitRectLeft"]) + int(row["HitRectRight"])) / 2 / CANVAS[0], 4),
+            "y": round((int(row["HitRectTop"]) + int(row["HitRectBottom"])) / 2 / CANVAS[1], 4),
+        }
+        for ui_map in maps_of.get(int(row["UiMapArtID"]), ()):
+            found[ui_map].append(entry)
+    result = {}
+    for ui_map, entries in sorted(found.items()):
+        offsets = Counter((e["ox"], e["oy"]) for e in entries)
+        if kept := [e for e in entries if offsets[e["ox"], e["oy"]] == 1]:
+            result[ui_map] = kept
+    return result
+
+
 def generate(
     tables,
     ui_maps,
@@ -710,6 +811,8 @@ def generate(
     effects,
     skill_lines,
     reputations,
+    map_art,
+    overlay_rows,
 ):
     maps, world, areas = map_indexes(ui_maps, assignments)
     skill_names, faction_names = gate_names(skill_lines, reputations)
@@ -719,7 +822,8 @@ def generate(
     home = homes(locations, quests, areas)
     incoming, groups = prerequisite_index(quests)
     seasonal = {r["quest"] for r in tables["game_event_quest"]}
-    role = roles(tables, skill_steps(effects, skill_lines))
+    steps, spells = skill_steps(effects, skill_lines), trainer_spells(tables)
+    role = roles(tables, steps, spells)
     trains = {("creature", entry): fields["class"] for entry, fields in role.items() if "class" in fields}
     emitted, counts = {}, Counter()
     for qid, row in sorted(quests.items()):
@@ -764,6 +868,9 @@ def generate(
             quest["preAny"] = pre_any
         if row["ExclusiveGroup"] > 0:
             quest["group"] = row["ExclusiveGroup"]
+        # A breadcrumb leads to its target: open only while the target is neither done nor in the log.
+        if crumb := row["BreadcrumbForQuestId"]:
+            quest["breadcrumb"] = crumb
         if following := row["NextQuestInChain"] or max(0, row["NextQuestId"]):
             quest["next"] = following
         if row["SpecialFlags"] & 1 or row["QuestFlags"] & (4096 | 32768):
@@ -772,23 +879,23 @@ def generate(
         if elite:
             quest["elite"] = True
         # ZoneOrSort names the area a quest is filed under; an area inside an instance names its Map.ID.
-        if (instance := instance_of.get(row["ZoneOrSort"])) is not None:
-            quest["dungeon"] = instance
-            if instances[instance]["raid"]:
-                quest["raid"] = True
+        quest.update(instance_fields(row, instance_of, instances))
+        if "dungeon" in quest:
             counts["flagged raid" if quest.get("raid") else "flagged dungeon"] += 1
             counts["flagged, not elite"] += not elite
+        elif quest.get("raid"):
+            counts["typed raid, filed outdoors"] += 1
         # The state contract has no condition, event or maximum-level state; skill and reputation gates it holds
         # (`requirements`). Preserve records/enders for the live log; no start means never recommend an unknown pickup.
         needs = requirements(row, skill_names, faction_names)
         gated = (
             needs is None
-            or any(row[k] for k in ("RequiredCondition", "BreadcrumbForQuestId"))
+            or row["RequiredCondition"]
             or row["MaxLevel"] not in (0, 255)
             or row["Method"] != 2
             or row["QuestFlags"] & (1024 | 16384)
         )
-        if unknown or any(p not in valid_ids for p in pre + pre_any):
+        if unknown or any(p not in valid_ids for p in pre + pre_any) or (crumb and crumb not in valid_ids):
             quest.pop("start", None)
             counts["suppressed pickup: unknown prerequisite"] += 1
         elif qid in seasonal:
@@ -800,6 +907,7 @@ def generate(
         elif needs and "start" in quest:
             quest.update(needs)
             counts["skill- or reputation-gated start"] += 1
+        counts["breadcrumb starts"] += "breadcrumb" in quest and "start" in quest
         counts["with start"] += "start" in quest
         counts["with finish"] += "finish" in quest
         counts["repeatable"] += bool(quest.get("repeatable"))
@@ -845,11 +953,15 @@ def generate(
     }
     skills = {q["skill"]["id"] for q in emitted.values() if "skill" in q}
     factions = {q["rep"]["faction"] for q in emitted.values() if "rep" in q}
-    gates = {
+    lookups = {
         "skills": {s: {"name": skill_names[s]} for s in skills},
         "factions": {f: {"name": faction_names[f]} for f in factions},
+        "professions": professions(npcs, steps, spells, skill_lines, counts),
     }
-    return emitted, zones, named, centres, shifts, ferries, towns, npcs, gates, counts
+    explorable = overlays(ui_maps, map_art, overlay_rows, area_rows)
+    counts["explorable areas"] = sum(map(len, explorable.values()))
+    counts["zone maps with explorable areas"] = len(explorable)
+    return emitted, zones, named, centres, shifts, ferries, towns, npcs, lookups, explorable, counts
 
 
 def lua(value):
@@ -867,12 +979,12 @@ def lua(value):
     return str(value)
 
 
-def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, gates):
+def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, lookups, explorable):
     lines = [
         "-- Generated by tools/gen_quests.py — do not edit.",
         f"-- CMaNGOS classic-db (GPL-3.0), pinned: {CLASSICDB_URL}",
         "-- wago.tools UiMap, UiMapAssignment, QuestV2, TaxiPathNode, TaxiNodes, AreaTable, Map, FactionTemplate,",
-        "-- SpellEffect, SkillLine, Faction:",
+        "-- SpellEffect, SkillLine, Faction, UiMapXMapArt, WorldMapOverlay:",
         f"-- https://wago.tools/db2/QuestV2/csv?build={BUILD}",
         f"-- Published zone ranges (tweaks-forever/tools/gen_zonelevels.py): {ZONE_SOURCE}",
         "-- Prev > 0: completed; Prev < 0: unknown, no pickup. NextQuestId contributes reverse prerequisites.",
@@ -883,14 +995,21 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, gate
         f"-- hubs: a town's name is its flight master's (TaxiNodes) within {NAME_REACH} yd of a giver; no other name.",
         "-- npc: a creature giver's entry, the ID in its UnitGUID; an object giver has none.",
         "-- npcs: class, pet, riding and profession trainers, battlemasters and innkeepers (creature_template",
-        "-- NpcFlags, TrainerType, npc_trainer, battlemaster_entry); rank: the highest SKILL_STEP spell taught of a",
+        "-- NpcFlags, TrainerType, npc_trainer, battlemaster_entry); ranks: each SKILL_STEP spell taught of a",
         "-- SkillLine profession or secondary skill (SpellEffect); side: every side FactionTemplate.EnemyGroup is",
         "-- not hostile to; place: a non-seasonal spawn, as quest givers'. Within",
         f"-- {LINK} yd of a quest place: its hub, on the map most of the hub's places use; else the smallest map.",
         "-- No side or zone-map spawn: left out.",
         "-- skill, rep: RequiredSkill/Value and RequiredMin/MaxRep, as Player::SatisfyQuestSkill and",
         "-- SatisfyQuestReputation check them; skills and factions: the names of those a quest here needs.",
+        "-- professions: each skill line a trainer here teaches, its ranks' npc_trainer reqlevel and reqskillvalue.",
         "-- trainer: a class quest's giver who trains a class (creature_template TrainerClass): that class.",
+        "-- breadcrumb: BreadcrumbForQuestId, the quest a breadcrumb leads to; it is open only while that is neither",
+        "-- completed nor in the log, and has no start when that is not in QuestV2.",
+        "-- dungeon: the instance a quest's ZoneOrSort area lies in (AreaTable, Map InstanceType); raid: filed in a",
+        f"-- raid, or of Type {' or '.join(map(str, RAID_TYPES))} (a raid's quest wherever it is filed).",
+        "-- overlays: a zone map's explorable areas (WorldMapOverlay with a texture, one per offset; AreaTable name",
+        "-- and ExplorationLevel, never 0); ox, oy: the offset GetExploredMapTextures returns; x, y: nearness only.",
         "---@type string, AGFNamespace",
         "local _, ns = ...",
         "---@type AGFData",
@@ -913,9 +1032,14 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, gate
     lines.extend(f"\t\t[{hub}] = {lua(town)}," for hub, town in sorted(towns.items()))
     lines.extend(["\t},", "\tnpcs = {"])
     lines.extend(f"\t\t[{entry}] = {lua(npc)}," for entry, npc in sorted(npcs.items()))
-    for name in ("skills", "factions"):
+    for name in ("skills", "factions", "professions"):
         lines.extend(["\t},", f"\t{name} = {{"])
-        lines.extend(f"\t\t[{key}] = {lua(value)}," for key, value in sorted(gates[name].items()))
+        lines.extend(f"\t\t[{key}] = {lua(value)}," for key, value in sorted(lookups[name].items()))
+    lines.extend(["\t},", "\toverlays = {"])
+    for ui_map, entries in sorted(explorable.items()):
+        lines.append(f"\t\t[{ui_map}] = {{")
+        lines.extend(f"\t\t\t{lua(entry)}," for entry in entries)
+        lines.append("\t\t},")
     lines.extend(["\t},", "\tquests = {"])
     lines.extend(f"\t\t[{qid}] = {lua(quest)}," for qid, quest in sorted(quests.items()))
     return "\n".join(lines + ["\t},", "}", ""])
@@ -930,7 +1054,7 @@ def main():
     content = download(CLASSICDB_URL, f"classicdb-{CLASSICDB_COMMIT[:7]}.sql.gz", **options)
     with gzip.open(io.BytesIO(content), "rt", encoding="utf-8") as dump:
         tables = read_tables(dump)
-    quests, zones, instances, centres, shifts, ferries, towns, npcs, gates, counts = generate(
+    quests, zones, instances, centres, shifts, ferries, towns, npcs, lookups, explorable, counts = generate(
         tables,
         db2("UiMap", ("ID", "Name_lang", "Type"), **options),
         db2("UiMapAssignment", ("ID", "UiMapID", "MapID", "AreaID", "Region_0", "Region_5", "UiMin_0"), **options),
@@ -952,17 +1076,26 @@ def main():
             ),
             **options,
         ),
-        db2("AreaTable", ("ID", "ContinentID"), **options),
+        db2("AreaTable", ("ID", "ContinentID", "AreaName_lang", "ExplorationLevel"), **options),
         db2("Map", ("ID", "MapName_lang", "InstanceType"), **options),
         db2("FactionTemplate", ("ID", "EnemyGroup"), **options),
         db2("SpellEffect", ("SpellID", "Effect", "EffectMiscValue_0", "EffectBasePointsF"), **options),
         db2("SkillLine", ("ID", "CategoryID", "DisplayName_lang"), **options),
         db2("Faction", ("ID", "Name_lang", "ReputationIndex"), **options),
+        db2("UiMapXMapArt", ("UiMapID", "UiMapArtID", "PhaseID"), **options),
+        db2(
+            "WorldMapOverlay",
+            ("ID", "UiMapArtID", "TextureWidth", "TextureHeight", "OffsetX", "OffsetY", "PlayerConditionID")
+            + ("HitRectTop", "HitRectBottom", "HitRectLeft", "HitRectRight", "AreaID_0"),
+            **options,
+        ),
     )
     if not quests or not counts["with start"]:
         raise ValueError("No usable quests; leaving existing output untouched")
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(render(quests, zones, instances, centres, shifts, ferries, towns, npcs, gates), encoding="utf-8")
+    OUTPUT.write_text(
+        render(quests, zones, instances, centres, shifts, ferries, towns, npcs, lookups, explorable), encoding="utf-8"
+    )
     for name, count in sorted(counts.items()):
         print(f"{name}: {count}")
     print(

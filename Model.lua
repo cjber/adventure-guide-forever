@@ -231,6 +231,8 @@ local function WhyText(data, key, arg, names)
 		return L.WHY_ONE_OF:format(table.concat(titles, L.LIST_SEPARATOR))
 	elseif key == "group" then
 		return L.WHY_CHOSE:format(Title(data, arg, names))
+	elseif key == "breadcrumb" then
+		return L.WHY_BREADCRUMB:format(Title(data, arg, names))
 	elseif key == "skill" then
 		local name = (names and names.skill and names.skill(arg.id))
 			or (data.skills and data.skills[arg.id] and data.skills[arg.id].name)
@@ -333,6 +335,11 @@ local function Check(data, player, completed, log, id, groups, level, lines, nam
 			return false
 		end
 	end
+	-- A breadcrumb leads to its target, and closes once the target is taken or done.
+	local target = quest.breadcrumb
+	if target and not Line(data, lines, not completed[target] and not log[target], "breadcrumb", target, names) then
+		return false
+	end
 	return true
 end
 
@@ -383,7 +390,8 @@ function Model.Search(data, player, query, title)
 end
 
 -- The maps of the three zones that best fit `level` for the quests `ids`, best first. An outdoor elite is optional
--- (roadmap #16): it rides along on its zone's cards but never picks the zone a solo player is sent to.
+-- (roadmap #16): it rides along on its zone's cards but never picks the zone a solo player is sent to. A raid's quest,
+-- which no card offers, never picks one either.
 ---@return integer[]
 local function Rank(data, ids, level)
 	local choices, scores = {}, {}
@@ -391,7 +399,12 @@ local function Rank(data, ids, level)
 		local quest = data.quests[id]
 		local map = quest.zone or quest.start.map
 		local zone = data.zones[map]
-		if zone and not Model.IsGray(quest.level, level) and not (quest.elite and not quest.dungeon) then
+		if
+			zone
+			and not quest.raid
+			and not Model.IsGray(quest.level, level)
+			and not (quest.elite and not quest.dungeon)
+		then
 			if not choices[map] then
 				choices[map] = { map = map, min = zone.min, max = zone.max, quests = 0 }
 				scores[map] = 0
@@ -903,25 +916,179 @@ local function Teaches(npc, player, level)
 		and npc.upto >= level
 end
 
--- The nearest trainer who teaches the player's spells to train (Teaches), by the route's own cost, so across an ocean
--- it runs through the side's docks; the lowest NPC ID on a tie. Nil when the data places none, or cannot measure from
--- the player (no place for them).
+-- The nearest NPC `fits` takes, by the route's own cost, so across an ocean it runs through the side's docks; the
+-- lowest NPC ID on a tie. Nil when the data places none, or cannot measure from the player (no place for them).
 ---@param player AGFPlayer
----@param level integer the highest level among the spells to train
----@return AGFNpc?
-function Model.Trainer(data, player, level)
+---@param fits fun(npc: AGFNpc): boolean
+---@return AGFNpc?, integer? npc its creature entry
+local function Nearest(data, player, fits)
 	local docks = Docks(data, player.side)
 	local origin = Position(data, player, docks)
 	local best, bestCost, bestID
 	for id, npc in pairs(data.npcs or {}) do
-		if Teaches(npc, player, level) then
+		if fits(npc) then
 			local cost = Cost(origin, Position(data, npc.place, docks))
 			if cost < UNKNOWN and (not best or cost < bestCost or (cost == bestCost and id < bestID)) then
 				best, bestCost, bestID = npc, cost, id
 			end
 		end
 	end
-	return best
+	return best, bestID
+end
+
+-- The nearest trainer who teaches the player's spells to train (Teaches).
+---@param player AGFPlayer
+---@param level integer the highest level among the spells to train
+---@return AGFNpc?
+function Model.Trainer(data, player, level)
+	return (Nearest(data, player, function(npc)
+		return Teaches(npc, player, level)
+	end))
+end
+
+-- Roadmap #12: the nearest battlemaster of the player's side for battleground `bg` (a BattlemasterList ID, which
+-- CMaNGOS's bg_template shares), by the route's cost; nil where the data places none (Darkspear Islands).
+---@param player AGFPlayer
+---@param bg integer
+---@return AGFNpc?, integer? npc its creature entry
+function Model.Battlemaster(data, player, bg)
+	return Nearest(data, player, function(npc)
+		return npc.bg == bg and HasBit(npc.side, player.side)
+	end) -- multi-value: the NPC and its entry
+end
+
+--[[ Roadmap #9: where to go next for a profession. SkillUp Forever keeps recipes and skill-ups; this only names the
+     trainer of the next rank, a free profession slot and a secondary skill not yet learned. ]]
+
+local RANK_SKILL = 75 -- a rank's cap per step: CMaNGOS Spell::EffectSkillStep sets the cap to 75 times the rank
+local PROFESSION_SLOTS = 2 -- CMaNGOS MaxPrimaryTradeSkill's default: two professions; secondary skills take none
+
+-- A rank of the line the player can train now: a trainer teaches it (Data.professions), and they have the level and
+-- the skill its rank spell asks.
+---@param player AGFPlayer
+---@param skill integer
+---@param rank integer
+---@return boolean
+local function Trainable(data, player, skill, rank)
+	for _, entry in ipairs(data.professions[skill].ranks) do
+		if entry.rank == rank then
+			return player.level >= entry.level and ((player.skills or {})[skill] or 0) >= entry.skill
+		end
+	end
+	return false
+end
+
+-- A profession trainer of the player's side who teaches this rank of this line.
+---@param npc AGFNpc
+---@param player AGFPlayer
+local function TeachesRank(npc, player, skill, rank)
+	if npc.skill ~= skill or not HasBit(npc.side, player.side) then
+		return false
+	end
+	for _, taught in ipairs(npc.ranks) do
+		if taught == rank then
+			return true
+		end
+	end
+	return false
+end
+
+-- Every nudge the player's skills call for, in order: a learned line at its rank's cap whose next rank they can train
+-- now, then a free profession slot while a profession they lack is one they can learn now, then each secondary skill
+-- they lack and can learn now; lines by ID. A player with no `primaries` (no client count) has no slot nudge.
+---@param player AGFPlayer
+---@return AGFProfessionNudge[]
+local function Nudges(data, player)
+	local ids, nudges = {}, {}
+	for id in pairs(data.professions or {}) do
+		ids[#ids + 1] = id
+	end
+	table.sort(ids)
+	local skills, caps = player.skills or {}, player.caps or {}
+	for _, id in ipairs(ids) do
+		local rank, cap = skills[id], caps[id]
+		local upcoming = rank and cap and rank >= cap and cap % RANK_SKILL == 0 and cap / RANK_SKILL + 1
+		if upcoming and Trainable(data, player, id, upcoming) then
+			local key = ("profession:%d:%d"):format(id, upcoming)
+			nudges[#nudges + 1] = { key = key, kind = "cap", skill = id, rank = upcoming }
+		end
+	end
+	-- The lines the player lacks and can learn now: professions under false, secondary skills under true.
+	local open = { [false] = {}, [true] = {} }
+	for _, id in ipairs(ids) do
+		local secondary = data.professions[id].secondary == true
+		if not skills[id] and Trainable(data, player, id, 1) then
+			open[secondary][#open[secondary] + 1] = id
+		end
+	end
+	if player.primaries and player.primaries < PROFESSION_SLOTS and #open[false] > 0 then
+		nudges[#nudges + 1] = { key = "profession:slot", kind = "slot", rank = 1, skills = open[false] }
+	end
+	for _, id in ipairs(open[true]) do
+		nudges[#nudges + 1] = { key = ("profession:%d:1"):format(id), kind = "learn", skill = id, rank = 1 }
+	end
+	return nudges
+end
+
+-- Roadmap #9: the first nudge `wanted` takes (every one, without it) that a trainer of the player's side teaches, with
+-- the nearest such trainer; for a free slot, of any profession it lists. Its `npc` is nil when the data cannot measure
+-- from the player (no place for them); a rank only the other side's trainers teach is no nudge.
+---@param player AGFPlayer
+---@param wanted? fun(key: string): boolean
+---@return AGFProfessionNudge?
+function Model.Profession(data, player, wanted)
+	for _, nudge in ipairs(Nudges(data, player)) do
+		local lines = nudge.skills or { nudge.skill }
+		local function Teacher(npc)
+			for _, skill in ipairs(lines) do
+				if TeachesRank(npc, player, skill, nudge.rank) then
+					return true
+				end
+			end
+			return false
+		end
+		if not wanted or wanted(nudge.key) then
+			for _, npc in pairs(data.npcs or {}) do
+				if Teacher(npc) then
+					nudge.npc = (Nearest(data, player, Teacher))
+					return nudge
+				end
+			end
+		end
+	end
+end
+
+-- Roadmap #11: rested XP is low when it is under one bubble of the bar (a twentieth of the level's XP, a night at an
+-- inn's worth), or none at all when the client gives no bar. Nil when the player's rest is unknown (a spec's player),
+-- and never at the level cap, where rested XP buys nothing.
+local REST_BUBBLE = 0.05
+---@param player AGFRest
+---@return boolean
+function Model.RestLow(player)
+	local rested, max = player.rested, player.xpMax
+	return rested ~= nil
+		and player.level < player.maxLevel
+		and (rested == 0 or (max ~= nil and max > 0 and rested < max * REST_BUBBLE))
+end
+
+-- The route's last stop reads "Rest at the inn here" when rest is low (RestLow), the player isn't already resting,
+-- and an innkeeper of their side stands in its town: its hub, or within the town linkage of its point. A reason on
+-- the stop, never a step of its own; resting ticks it off, and the stop's own reason is back.
+---@param steps AGFStep[]
+local function Rest(data, player, steps)
+	local last = steps[#steps]
+	if not last or player.resting or not Model.RestLow(player) then
+		return
+	end
+	for _, npc in pairs(data.npcs or {}) do
+		if npc.inn and HasBit(npc.side, player.side) then
+			local yards = Model.Yards(data, last, npc.place)
+			if (last.hub ~= nil and npc.place.hub == last.hub) or (yards ~= nil and yards <= AGREE) then
+				last.reason = ns.L.REST_HERE
+				return
+			end
+		end
+	end
 end
 
 -- The chosen journey's trainer stops (roadmap #5): with spells to train, one per town among the trainers who teach
@@ -1279,11 +1446,12 @@ local function HandIns(ready)
 	end
 end
 
--- The quests a zone's cards hold: those filed under it, else those picked up on it.
+-- The quests a zone's cards hold: those filed under it, else those picked up on it; never a raid's, which no zone card
+-- offers, as the dungeon card offers none (F15).
 ---@return fun(quest: AGFQuest): boolean
 local function InZone(zone)
 	return function(quest)
-		return (quest.zone or quest.start.map) == zone
+		return not quest.raid and (quest.zone or quest.start.map) == zone
 	end
 end
 
@@ -1319,13 +1487,14 @@ local function Pickups(data, player, completed, log, ready, eligible, belongs, k
 	return { map = steps[1].map, steps = steps, subline = subline, count = subline }, quests, kept and lead or nil
 end
 
--- The dungeon card's instance (F15): with dungeons on, the party instance with the most quests the player can take now
--- (the lowest Map.ID on a tie); the `chosen` instance instead while it has any, so a choice never moves to another
--- dungeon. Raids are never offered. Nil when none has a quest.
+-- The dungeon card's instance (F15): while dungeons are `open` (on, or no next zone: roadmap #21), the party instance
+-- with the most quests the player can take now (the lowest Map.ID on a tie); the `chosen` instance instead while it has
+-- any, so a choice never moves to another dungeon. Raids are never offered. Nil when none has a quest.
+---@param open boolean
 ---@param chosen? integer
 ---@return integer?
-local function BestDungeon(data, eligible, prefs, chosen)
-	if not (prefs.dungeons and data.instances) then
+local function BestDungeon(data, eligible, prefs, open, chosen)
+	if not (open and data.instances) then
 		return nil
 	end
 	local counts, best, dismissed = {}, nil, prefs.notInterested or {}
@@ -1353,7 +1522,8 @@ local function InDungeon(instance)
 end
 
 -- The dungeon card for `best`: its steps the givers of its quests. Named by the client, in the player's language, and
--- by the data otherwise; an instance the data doesn't name gets no card.
+-- by the data otherwise; an instance the data doesn't name gets no card. Its reason (roadmap #15) counts the log's
+-- quests filed under the instance, which end inside it: "2 of your quests end inside Wailing Caverns".
 ---@param instanceName? fun(id: integer): string?
 ---@param best integer
 ---@param quests integer how many of its quests the player can take now
@@ -1368,29 +1538,75 @@ local function DungeonJourney(data, player, completed, log, eligible, prefs, map
 		return nil
 	end
 	local name = instanceName and instanceName(best) or data.instances[best].name
-	local subline = Count(ns.L.DUNGEON_QUESTS_ONE, ns.L.DUNGEON_QUESTS, quests)
+	local L, inside, belongs = ns.L, 0, InDungeon(best)
+	for id in pairs(log) do
+		inside = inside + ((data.quests[id] and belongs(data.quests[id])) and 1 or 0)
+	end
+	local reason = inside == 1 and L.DUNGEON_INSIDE_ONE:format(name)
+		or inside > 1 and L.DUNGEON_INSIDE:format(inside, name)
+		or nil
 	return {
 		kind = "dungeon",
 		key = "dungeon:" .. best,
 		title = name,
-		subline = subline,
+		subline = Count(L.DUNGEON_QUESTS_ONE, L.DUNGEON_QUESTS, quests),
+		reason = reason,
 		map = steps[1].map,
 		steps = steps,
 	}
+end
+
+-- The eligible quests with the instance quests the Dungeons toggle holds back put in, in the index's order: each open
+-- to the player now, as Choices judges its own (roadmap #21).
+---@param eligible integer[]
+---@return integer[]
+local function WithInstances(data, player, completed, log, index, eligible)
+	local open, pool = {}, {}
+	for _, id in ipairs(eligible) do
+		open[id] = true
+	end
+	for _, id in ipairs(index.ids) do
+		local quest = data.quests[id]
+		if
+			open[id]
+			or (
+				quest.dungeon
+				and quest.min <= player.level
+				and not Model.IsGray(quest.level, player.level)
+				and Eligible(data, player, completed, log, id, index.groups)
+			)
+		then
+			pool[#pool + 1] = id
+		end
+	end
+	return pool
+end
+
+-- The instance a chain leads into: the first quest from its chapter on filed under an instance the data names. Nil
+-- when none is: the data never says a chain is an attunement, only that it goes inside.
+---@param chain AGFStory
+---@return integer?
+local function Into(data, chain)
+	for index = chain.chapter, #chain.members do
+		local instance = data.quests[chain.members[index]].dungeon
+		if instance and data.instances and data.instances[instance] then
+			return instance
+		end
+	end
 end
 
 -- The chain a card leads with (docs/design.md §2.3): of the chains among the quests `belongs` keeps that the player
 -- can take up now, one they have already started before one they would begin, then the longest proven one, then the
 -- lowest quest ID. A chapter whose chain was begun elsewhere, with the chapter before it not done, has no honest reason
 -- to offer, so it never leads. Of an exclusive group only the first quest leads, the one PickupSteps offers.
----@param belongs fun(quest: AGFQuest): boolean
+---@param belongs fun(quest: AGFQuest, id: integer): boolean
 ---@return AGFStory?, integer?, boolean? the chain, the quest that takes it up, and whether it continues one
 local function Lead(data, completed, eligible, belongs)
 	local best, bestID, bestRank, continues
 	local groups = {}
 	for _, id in ipairs(eligible) do
 		local quest = data.quests[id]
-		local offered = belongs(quest) and not (quest.group and groups[quest.group])
+		local offered = belongs(quest, id) and not (quest.group and groups[quest.group])
 		if offered and quest.group then
 			groups[quest.group] = true
 		end
@@ -1541,6 +1757,24 @@ local function CallingJourney(data, player, completed, log, ready, eligible, pre
 	return calling
 end
 
+-- A chain that leads into an instance, as a story (roadmap #21): `into` holds its quests the player can take now, led
+-- by its chapter at `step`, and is named after the instance it goes into, by the client when it can.
+---@param into table the chain's Pickups
+---@param chain AGFStory
+---@param step? AGFStep the chapter's step, when Build kept it
+---@param instanceName? fun(id: integer): string?
+---@return AGFJourney
+local function WayIn(data, into, chain, step, continues, instanceName)
+	local instance = Into(data, chain) --[[@as integer]]
+	into.kind, into.key = "story", "chain:" .. chain.members[1]
+	into.title = ns.L.JOURNEY_INTO:format(instanceName and instanceName(instance) or data.instances[instance].name)
+	---@cast into AGFJourney
+	if step then
+		into.reason = Chapter(into, chain, step, continues)
+	end
+	return into
+end
+
 -- At most MAX_JOURNEYS cards: the last one not chosen makes way, so the chosen journey always keeps its slot.
 ---@param journeys AGFJourney[]
 ---@param chosen? string
@@ -1570,12 +1804,75 @@ local function Newest(data, eligible, belongs)
 	return count, opened
 end
 
--- The diversions' order on a tie in newness (roadmap R4): the calling, then the dungeon the player asked for, then the
--- next zone.
-local DIVERSION_ORDER = { calling = 1, dungeon = 2, nextzone = 3 }
+-- The diversions' order on a tie in newness (roadmap R4): the calling, then the dungeon, then a way into an instance
+-- (roadmap #21), then the battleground the player asked for, then the next zone.
+local DIVERSION_ORDER = { calling = 1, dungeon = 2, chain = 3, battleground = 4, nextzone = 5 }
+
+-- Roadmap #12, opt-in: a battleground open to the player (player.battlegrounds, newest first) as a diversion whose card
+-- has one step, its nearest battlemaster: the chosen battleground while it is still open, else the newest one the data
+-- places a battlemaster for and the player is interested in. None where the data places none, so a card never points
+-- at coordinates the data lacks; none either while its step is skipped, which Skipped (n) then keeps.
+---@param prefs AGFPrefs
+---@param mapName? fun(map: integer): string?
+local function Battleground(data, player, prefs, mapName)
+	local L, dismissed, open = ns.L, prefs.notInterested or {}, {}
+	for _, bg in ipairs(player.battlegrounds or {}) do
+		local key = "battleground:" .. bg.id
+		if not dismissed[key] then
+			table.insert(open, key == prefs.journey and 1 or #open + 1, bg)
+		end
+	end
+	for _, bg in ipairs(open) do
+		local npc, id = Model.Battlemaster(data, player, bg.id)
+		if npc and id then
+			local key, place = "battlemaster:" .. id, npc.place
+			if prefs.skipped and prefs.skipped[key] then
+				if skippedSeen then
+					skippedSeen[key] = true
+				end
+				return nil
+			end
+			local reason = L.BATTLEMASTER_QUEUE:format(bg.name)
+			local step = {
+				kind = "battlemaster",
+				key = key,
+				hub = place.hub,
+				title = L.BATTLEMASTER_IN:format(Model.TownName(data, place, mapName)),
+				detail = reason,
+				reason = reason,
+				quests = {},
+				map = place.map,
+				x = place.x,
+				y = place.y,
+				place = place.name,
+			}
+			Locate(data, step, mapName)
+			local journey = {
+				kind = "battleground",
+				key = "battleground:" .. bg.id,
+				title = bg.name,
+				subline = L.BATTLEGROUND_SUBLINE,
+				reason = step.title,
+				map = step.map,
+				steps = { step },
+			}
+			return {
+				kind = "battleground",
+				key = journey.key,
+				opened = bg.level,
+				quests = 0,
+				build = function()
+					return journey
+				end,
+			}
+		end
+	end
+end
 
 ---@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
 ---@param instanceName? fun(id: integer): string? the client's name for an instance Map.ID; the data's otherwise
+---@return AGFJourney[] journeys
+---@return boolean stranded no next zone (roadmap #21)
 function Model.Journeys(data, player, completed, log, prefs, mapName, instanceName)
 	local index, L = Index(data), ns.L
 	-- Never past the level cap: a player at it has no next zone to head for.
@@ -1604,12 +1901,13 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 		best = best or (Open(map) and map or nil)
 	end
 	local zone, tries, here = best, { best }, chosenZone ~= nil and chosenZone == player.map
-	-- As in the ranking, only a quest that isn't an outdoor elite makes the zone the player's: an elite is optional.
+	-- As in the ranking, only a quest that isn't an outdoor elite or a raid's makes the zone the player's: an elite is
+	-- optional, and no card offers a raid's.
 	local band = data.zones[player.map]
 	if band and band.min <= player.level and player.level <= band.max then
 		for _, id in ipairs(here and {} or eligible) do
 			local quest = data.quests[id]
-			here = here or (not quest.elite and (quest.zone or quest.start.map) == player.map)
+			here = here or (not quest.elite and not quest.raid and (quest.zone or quest.start.map) == player.map)
 		end
 	end
 	for _, map in ipairs(zones) do
@@ -1621,10 +1919,11 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	if here and player.map ~= best and Open(player.map) then
 		table.insert(tries, 1, player.map)
 	end
+	local told
 	for _, map in ipairs(tries) do
 		local story = StoryJourney(data, player, completed, log, ready, eligible, map, prefs, mapName)
 		if story then
-			zone = map
+			zone, told = map, story
 			journeys[#journeys + 1] = story
 			break
 		end
@@ -1633,8 +1932,8 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	-- holds and the level its newest one opened at, and the newest since then is built first, so a level just gained or
 	-- a bracket just opened takes the slot. Only as many are built as there are slots, and the chosen one always.
 	local diversions = {}
-	local function Offer(kind, key, belongs, build, enough)
-		local quests, opened = Newest(data, eligible, belongs)
+	local function Offer(kind, key, belongs, build, enough, from)
+		local quests, opened = Newest(data, from or eligible, belongs)
 		if opened and (key == prefs.journey or quests >= (enough or 1)) then
 			diversions[#diversions + 1] = { kind = kind, key = key, opened = opened, quests = quests, build = build }
 		end
@@ -1642,23 +1941,6 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	if not dismissed.calling then
 		Offer("calling", "calling", ForClass(player.classBit), function()
 			return CallingJourney(data, player, completed, log, ready, eligible, prefs, mapName)
-		end)
-	end
-	local instance = BestDungeon(data, eligible, prefs, chosenDungeon)
-	if instance then
-		Offer("dungeon", "dungeon:" .. instance, InDungeon(instance), function(quests)
-			return DungeonJourney(
-				data,
-				player,
-				completed,
-				log,
-				eligible,
-				prefs,
-				mapName,
-				instanceName,
-				instance,
-				quests
-			)
 		end)
 	end
 	-- The zone that fits two levels on, when it is another zone than the story's and the one the player stands in,
@@ -1669,6 +1951,52 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			nextMap = map
 			break
 		end
+	end
+	-- No next zone (roadmap #21): at the level cap, or with none ahead and no story here. The dungeon card is offered
+	-- then whatever the Dungeons toggle says, and a chain that leads into an instance shows as a story, so the guide
+	-- never ends on "nothing fits".
+	local stranded = levels <= 0 or not (nextMap or told)
+	local pool = (stranded and not prefs.dungeons) and WithInstances(data, player, completed, log, index, eligible)
+		or eligible
+	local instance = BestDungeon(data, pool, prefs, prefs.dungeons or stranded, chosenDungeon)
+	if instance then
+		Offer("dungeon", "dungeon:" .. instance, InDungeon(instance), function(quests)
+			return DungeonJourney(data, player, completed, log, pool, prefs, mapName, instanceName, instance, quests)
+		end, nil, pool)
+	end
+	-- A way into an instance (roadmap #21): the chain the player can take up that goes inside, when stranded or chosen,
+	-- and not the one the story already leads with.
+	local chosenHead = tonumber(chosen:match("^chain:(%d+)$"))
+	local chain, leadID, continues
+	if stranded or chosenHead then
+		chain, leadID, continues = Lead(data, completed, pool, function(_, id)
+			local story = Model.Story(data, id)
+			if not story then
+				return false
+			end
+			local head = story.members[1]
+			return (chosenHead == nil or head == chosenHead)
+				and not dismissed["chain:" .. head]
+				and not (told and told.story and told.story.members[1] == head)
+				and Into(data, story) ~= nil
+		end)
+	end
+	if chain and leadID then
+		local way, members = chain, {}
+		for _, id in ipairs(way.members) do
+			members[data.quests[id]] = true
+		end
+		local function Member(quest)
+			return members[quest] == true
+		end
+		local key = "chain:" .. way.members[1]
+		Offer("chain", key, Member, function()
+			local into, _, step =
+				Pickups(data, player, completed, log, ready, pool, Member, key, prefs, mapName, leadID)
+			if into then
+				return WayIn(data, into, way, step, continues, instanceName)
+			end
+		end, nil, pool)
 	end
 	if nextMap then
 		Offer("nextzone", "zone:" .. nextMap, InZone(nextMap), function()
@@ -1699,6 +2027,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			return nextZone
 		end, NEXT_ZONE_PICKUPS)
 	end
+	diversions[#diversions + 1] = prefs.battlegrounds and Battleground(data, player, prefs, mapName) or nil
 	table.sort(diversions, function(a, b)
 		if a.opened ~= b.opened then
 			return a.opened > b.opened
@@ -1713,8 +2042,9 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	Cap(journeys, prefs.journey)
 	for _, journey in ipairs(journeys) do
 		Summarise(journey --[[@as AGFJourney]])
+		Rest(data, player, journey.steps)
 	end
-	return journeys
+	return journeys, stranded
 end
 
 -- The route is the chosen journey's steps. With none chosen (never, cleared, or the choice is gone) it is the first
@@ -1738,8 +2068,9 @@ end
 ---@param instanceName? fun(id: integer): string? the client's name for an instance Map.ID; the data's otherwise
 function Model.Plan(data, player, completed, log, prefs, mapName, instanceName)
 	skippedSeen = {}
-	local route = Route(Model.Journeys(data, player, completed, log, prefs, mapName, instanceName), prefs)
-	route.skipped, skippedSeen = skippedSeen, nil
+	local journeys, stranded = Model.Journeys(data, player, completed, log, prefs, mapName, instanceName)
+	local route = Route(journeys, prefs)
+	route.skipped, skippedSeen, route.stranded = skippedSeen, nil, stranded or nil
 	return route
 end
 
@@ -1814,8 +2145,8 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 	local function Prune(step)
 		if skipped[step.key] then
 			return nil
-		elseif step.kind == "trainer" then
-			return step -- nothing is learned in a fight
+		elseif step.kind == "trainer" or step.kind == "battlemaster" then
+			return step -- nothing is learned, and no battleground opens, in a fight
 		end
 		local pickups, handins = Keep(step.pickups, Open), Keep(step.handins, Carried)
 		if #pickups + #handins == #step.quests then
@@ -1848,7 +2179,9 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 	end
 	-- A carry card the last build lacked pushes out the last card not chosen, as the full build would leave it out.
 	Cap(journeys, prefs.journey)
-	return Route(journeys, prefs)
+	local route = Route(journeys, prefs)
+	route.stranded = last.stranded
+	return route
 end
 
 -- Honest coverage (docs/design.md §2.1): the log holds a quest the data lacks, or Forever added quests on this zone map

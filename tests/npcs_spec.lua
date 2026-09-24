@@ -17,7 +17,7 @@ for _, case in ipairs({
 	{ 6929, { inn = true, side = 2 }, 1454, "Innkeeper Gryshka" }, -- Orgrimmar
 	{ 295, { inn = true, side = 1 }, 1429, "Innkeeper Farley" }, -- Goldshire
 	{ 347, { bg = 1, side = 2 }, 1458, "Grizzle Halfmane" }, -- Alterac Valley battlemaster
-	{ 5499, { skill = 171, rank = 2, side = 1 }, 1453, "Lilyssia Nightbreeze" }, -- Stormwind alchemy, to Journeyman
+	{ 5499, { skill = 171, side = 1 }, 1453, "Lilyssia Nightbreeze" }, -- Stormwind alchemy, to Journeyman
 	{ 543, { pet = true, side = 1 }, 1448, "Nalesette Wildbringer" }, -- Felwood, not the Mount Hyjal map over it
 	{ 4732, { riding = true, race = 1, side = 1 }, 1429, "Randal Hunter" }, -- Eastvale horse riding
 	{ 3963, { class = 3, side = 1 }, 1440, "Danlaar Nightstride" }, -- Astranaar is Ashenvale, not Stonetalon over it
@@ -35,6 +35,7 @@ for _, case in ipairs({
 end
 equal(npcs[6929].place.hub ~= nil, true, "Gryshka stands in an Orgrimmar hub")
 equal(npcs[5497].place.hub, npcs[5499].place.hub, "Stormwind's Mage Quarter trainers share a hub")
+equal(table.concat(npcs[5499].ranks, ","), "1,2", "Lilyssia Nightbreeze teaches Apprentice and Journeyman")
 equal(npcs[2737], nil, "Durtham Greldon teaches CMaNGOS's old Lockpicking line, no profession")
 
 -- A class quest's start names the class its giver trains, only when the giver is a class trainer.
@@ -58,15 +59,34 @@ for id, npc in pairs(npcs) do
 	end
 	equal(roles > 0, true, id .. " has a role")
 	equal(npc.side >= 1 and npc.side <= 3, true, id .. " side")
-	equal(npc.skill == nil, npc.rank == nil, id .. " skill and rank together")
+	equal(npc.skill == nil, npc.ranks == nil, id .. " skill and ranks together")
 	equal(npc.class == nil, npc.upto == nil, id .. " class and upto together")
 	equal(npc.from == nil or (npc.class ~= nil and npc.from > 1 and npc.from <= npc.upto), true, id .. " from")
-	equal(npc.rank == nil or (npc.rank >= 1 and npc.rank <= 4), true, id .. " rank")
+	for i, rank in ipairs(npc.ranks or {}) do
+		equal(rank >= 1 and rank <= 4 and rank > (npc.ranks[i - 1] or 0), true, id .. " ranks ascend from 1 to 4")
+	end
+	equal(npc.skill == nil or ns.Data.professions[npc.skill] ~= nil, true, id .. " skill has its ranks")
 	local place = npc.place
 	equal(maps[place.map] ~= nil, true, id .. " map has a centre")
 	equal(place.x >= 0 and place.x <= 1 and place.y >= 0 and place.y <= 1, true, id .. " coordinates")
 end
 equal(count > 400, true, "NPC count")
+
+-- Data.professions: each rank a trainer teaches, with what its rank spell asks (npc_trainer reqlevel, reqskillvalue).
+local function Rank(skill, rank)
+	for _, entry in ipairs(ns.Data.professions[skill].ranks) do
+		if entry.rank == rank then
+			return entry
+		end
+	end
+end
+equal(ns.Data.professions[171].name, "Alchemy", "Alchemy's name")
+equal(ns.Data.professions[171].secondary, nil, "Alchemy is a profession")
+equal(ns.Data.professions[185].secondary, true, "Cooking is a secondary skill")
+equal(Rank(171, 2).level .. "/" .. Rank(171, 2).skill, "10/50", "Journeyman Alchemy: level 10, skill 50")
+equal(Rank(186, 3).level .. "/" .. Rank(186, 3).skill, "0/125", "Expert Mining: skill 125 at any level")
+equal(Rank(185, 3), nil, "Expert Cooking comes from a book, no trainer")
+equal(ns.Data.professions[762], nil, "riding is no profession here")
 
 -- A quest place's `npc`: the creature entry of an NPC giver, never an object's.
 equal(quests[7].start.npc, 197, "Marshal McBride starts Kobold Camp Cleanup")

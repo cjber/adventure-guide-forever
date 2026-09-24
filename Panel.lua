@@ -34,6 +34,8 @@ local KIND_ICONS = {
 	nextzone = "QuestNormal",
 	dungeon = "questlog-questtypeicon-dungeon",
 	calling = "questlog-questtypeicon-class",
+	-- The minimap's battlemaster mark (CSV:1319).
+	battleground = "battlemaster",
 }
 -- Something new (docs/design.md §2.13): the Adventure Guide's own "new" mark (CSV:2024) on a card the character
 -- hasn't been offered before, over its ring's top-right, or beside a one-line row's "+"; its micro button's alert
@@ -463,7 +465,10 @@ local function BuildJourneys(parent, below)
 		end
 		local provider = ns.Integrations.Provider()
 		local lines = { aside.text }
-		lines[2] = aside.place and (provider and L.CLICK_TRAVEL:format(provider) or L.CLICK_WAYPOINT) or nil
+		lines[2] = aside.place
+				and not ns.Setting("wanderer")
+				and (provider and L.CLICK_TRAVEL:format(provider) or L.CLICK_WAYPOINT)
+			or nil
 		ShowTooltip(self, lines)
 	end)
 	asideLine:SetScript("OnLeave", GameTooltip_Hide)
@@ -504,6 +509,7 @@ local function BuildSettingsMenu(_, menu)
 	end
 	Pref(ns.L.MENU_QUESTS, "quests")
 	Pref(ns.L.MENU_DUNGEONS, "dungeons")
+	Pref(ns.L.MENU_BATTLEGROUNDS, "battlegrounds")
 	Setting(ns.L.MENU_MAP_PINS, "showMapPins")
 	-- Givers draw only with map pins on, so the box is grayed until they are (the menu polls a function).
 	Setting(ns.L.MENU_GIVERS, "showQuestGivers"):SetEnabled(function()
@@ -892,7 +898,11 @@ local function LayoutJourneys(route)
 	local aside = not searching and ns.Asides.Current() or nil
 	asideLine:SetShown(aside ~= nil)
 	if aside then
-		asideLine.Icon:SetAtlas(aside.icon)
+		if aside.texture then
+			asideLine.Icon:SetTexture(aside.texture)
+		else
+			asideLine.Icon:SetAtlas(aside.icon)
+		end
 		asideLine.Text:SetText(aside.text)
 		asideLine:SetPoint("TOPLEFT", 10, -top)
 		top = top + ASIDE_HEIGHT + CARD_GAP
@@ -969,7 +979,7 @@ function Refresh()
 
 	local ready = ns.State.Ready()
 	local searching, found = LayoutJourneys(route)
-	emptyText:SetText((not ready and L.LOADING) or (searching and L.SEARCH_NONE) or L.NOTHING_NEARBY)
+	emptyText:SetText((not ready and L.LOADING) or (searching and L.SEARCH_NONE) or L.NO_JOURNEY)
 	emptyText:SetShown(not ready or (searching and found == 0) or (not searching and #route.journeys == 0))
 
 	local queued = ns.StartPending() and InCombatLockdown()
