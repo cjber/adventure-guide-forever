@@ -836,6 +836,16 @@ for id = 1, 3 do
 	academy.quests[id].start.x = 0.65 + id / 1000
 end
 equal(#Trainers(Model.Plan(academy, trainee, {}, {}, Choose("zone:1")).steps), 0, "trainer: never a detour")
+-- A route through two trainers' towns stops to train once.
+local towns = { quests = {}, zones = academy.zones, maps = academy.maps, continents = academy.continents }
+towns.hubs, towns.npcs = academy.hubs, academy.npcs
+for id, place in ipairs({ { 0.501, 5 }, { 0.502, 5 }, { 0.201, 6 }, { 0.202, 6 } }) do
+	towns.quests[id] = quest(place[1])
+	towns.quests[id].start.hub = place[2]
+end
+local twice = Model.Plan(towns, trainee, {}, {}, Choose("zone:1")).steps
+equal(#twice, 3, "trainer: a route through two trainers' towns")
+equal(#Trainers(twice), 1, "trainer: stops to train once")
 academy.hubs = nil
 equal(Model.TownName(academy, academy.npcs[902].place), "Home", "town: the map's name without a flight master")
 equal(

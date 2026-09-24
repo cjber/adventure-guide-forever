@@ -2579,6 +2579,12 @@ do
 	})
 	h.ns.OpenPanel()
 	h.flush()
+	-- Tweaks Forever's list, counted, at its highest level: the trainer must teach up to it.
+	tf.spells =
+		{ { spellID = 2, name = "Gouge", level = 10, line = "Combat", lineID = 38, general = false }, spells[1] }
+	local training = h.ns.Integrations.Training() or {}
+	equal(training.count .. "|" .. training.level, "2|10", label .. ": counted, at the highest level")
+	tf.spells = spells
 	local step = h.ns.Route().steps[1]
 	equal(step.key, "trainer:3170", label .. ": the route's first stop")
 	same({ h.tracker.liveBlocks[step.key].header, unpack((TrackerLines(h))) }, {
@@ -2598,6 +2604,17 @@ do
 	h.flush()
 	equal(h.spf.NavigateRoute - routes, 1, label .. ": Go")
 	equal(h.spfRoute.stops[1].title, "Train in Durotar", label .. ": to the trainer")
+	-- In combat Tweaks Forever is never asked, and the cheap rebuild keeps the stop.
+	h.SetCombat(true)
+	local asked = h.tf.TrainableSpells
+	h.fire("SPELLS_CHANGED")
+	h.ns.Invalidate()
+	h.flush()
+	equal(h.tf.TrainableSpells - asked, 0, label .. ": not asked in combat")
+	equal(h.ns.Route().steps[1].key, step.key, label .. ": kept in combat")
+	h.SetCombat(false)
+	h.flush()
+	equal(h.ns.Route().steps[1].key, step.key, label .. ": and after it")
 	tf.spells = nil
 	h.fire("SPELLS_CHANGED")
 	h.flush()
