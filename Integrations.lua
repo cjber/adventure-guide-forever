@@ -352,6 +352,9 @@ end
 local guided = {}
 -- Shortest Path held our journey at the last look, and it ended at its last stop since.
 local ours, arrived = false, false
+-- The chosen journey whose route the player cleared or another journey replaced, until something is handed again.
+---@type string?
+local stopped
 
 -- Yards past which a stop's point has moved (a town's point moving to its next giver): the town linkage
 -- (tools/gen_quests.py LINK). Nearer, the stock "!" and "?" marks show the way.
@@ -377,7 +380,7 @@ local function Send(api, steps)
 	then
 		return false
 	end
-	guided, ours, arrived = steps, true, false
+	guided, ours, arrived, stopped = steps, true, false, nil
 	ns.Pins.Refresh()
 	NotifyGuidance()
 	return true
@@ -506,7 +509,7 @@ end
 
 -- Stop: ends only what Go started. Shortest Path's journey by our name, and the native waypoint only while it is ours.
 function Integrations.Cancel()
-	ns.Prefs().guided, ours, arrived = nil, false, false
+	ns.Prefs().guided, ours, arrived, stopped = nil, false, false, nil
 	local api = SPF()
 	if api and api.Cancel(OWNER) then
 		ns.Pins.Refresh()
@@ -549,7 +552,7 @@ local function Watch(api)
 		if reason == "arrived" then
 			arrived = true
 		elseif reason == "cleared" or reason == "replaced" then
-			ns.Prefs().guided = nil
+			stopped, ns.Prefs().guided = ns.Prefs().guided, nil
 		end
 		ns.Pins.Refresh()
 	end
@@ -614,6 +617,12 @@ events:SetScript("OnEvent", function()
 		end)
 	end
 end)
+
+-- The chosen journey whose route the player cleared or another journey replaced, until something is handed again.
+---@return string?
+function Integrations.Stopped()
+	return stopped
+end
 
 -- Our journey reached its last stop, and nothing was handed since.
 ---@return boolean

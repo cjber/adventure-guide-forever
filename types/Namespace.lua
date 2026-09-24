@@ -267,6 +267,7 @@
 ---@field Owns fun(): boolean Go's guidance is still running: our Shortest Path journey (guided or held), or the waypoint Go set
 ---@field Guiding fun(): boolean Shortest Path is walking our multi-stop route and draws its own numbered stops; held (its "Guide me" off) is not guiding
 ---@field Guided fun(): (AGFStep|AGFGiver)[] the stops it walks, while it guides; empty otherwise
+---@field Stopped fun(): string? the chosen journey whose route the player cleared or another journey replaced, until something is handed again
 ---@field Arrived fun(): boolean our journey reached its last stop, and nothing was handed since
 ---@field Restore fun(steps: AGFStep[]): boolean hands Shortest Path the chosen journey's steps again after a /reload; never the waypoint
 ---@field Stale fun(handed: AGFStep[], index: integer, steps: AGFStep[], far?: fun(a: AGFStep, b: AGFStep): boolean): boolean the guidance handed to Shortest Path no longer matches the journey's steps
@@ -324,6 +325,8 @@
 ---@field CHOOSE_TO_SEE_STEPS string under the cards while none is chosen
 ---@field SHOW_EVERY_JOURNEY string the chosen card's tooltip: clicking it again chooses none
 ---@field STOP_AND_SHOW_EVERY_JOURNEY string the same while the route it started runs, which the click stops
+---@field CLICK_TO_RESUME string the chosen card's tooltip while its route is paused: the click resumes it
+---@field ROUTE_PAUSED string the footer line while the chosen journey's route is paused
 ---@field HUB_MORE string format: a card's first stop, how many stops follow it
 ---@field HUB_MORE_ONE string format: a card's first stop, when one stop follows it
 ---@field CARD_MINUTES string format: a card's minutes to its first stop
@@ -447,6 +450,7 @@
 ---@field OnRouteChange fun(callback: fun())
 ---@field Choose fun(key?: string, start?: boolean) choose a journey, or none; `start` sets off on the rebuild with its steps
 ---@field StartRoute fun(step?: AGFStep): boolean guidance along the chosen journey (choosing the route's own when none is); waits out combat with Shortest Path
+---@field Paused fun(): boolean the chosen journey has steps but its route stopped: its card and the tracker title resume it
 ---@field StartPending fun(): boolean a start waits for combat's end
 ---@field Settling fun(): boolean a rebuild or step 1's travel line is due, whose frames take no card estimate
 ---@field PanelShown? fun(): boolean whether the guide is open, set once Blizzard_WorldMap has loaded

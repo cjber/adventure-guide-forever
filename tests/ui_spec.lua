@@ -432,6 +432,122 @@ do
 	equal(h.ns.Integrations.Arrived(), false, "ended, cancelled: not arrived")
 end
 
+-- No Go (design §2.10): while the chosen journey's route is paused (cleared in Shortest Path, replaced, refused), its
+-- card resumes it, says so, and the footer says how; while the route runs, the card stops it and chooses none. Our
+-- own Stop, a route that arrived, or the setting off pause nothing.
+do
+	local L
+	local function Chosen(h)
+		return Shown(h, function(frame)
+			return frame.IconFrame ~= nil and frame.state == "chosen"
+		end)[1]
+	end
+	local function Hint(h)
+		for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverPanel, h.Describe)) do
+			if entry.text == L.ROUTE_PAUSED then
+				return true
+			end
+		end
+		return false
+	end
+	local function Tip(h)
+		h.Hover(Chosen(h))
+		return table.concat(h.tooltip, "\n")
+	end
+	local function Opened(spf, db, how)
+		local h = Load(spf, db)
+		L = h.ns.L
+		h.ns.OpenPanel()
+		h.flush()
+		h.ns.StartRoute()
+		h.flush()
+		if how then
+			how(h)
+			h.fire("SUPER_TRACKING_CHANGED")
+			h.flush()
+		end
+		return h
+	end
+
+	local h = Opened("ended")
+	equal(h.ns.Paused(), false, "paused: not while it guides")
+	equal(Hint(h), false, "paused: no hint while it guides")
+	equal(Tip(h):find(L.STOP_AND_SHOW_EVERY_JOURNEY, 1, true) ~= nil, true, "paused: guiding, the click stops")
+
+	h = Opened("ended", nil, function(cleared)
+		cleared.spfEnd("cleared")
+	end)
+	equal(h.ns.Paused(), true, "paused: cleared in Shortest Path")
+	equal(Hint(h), true, "paused: the footer says the card resumes it")
+	equal(Tip(h):find(L.CLICK_TO_RESUME, 1, true) ~= nil, true, "paused: the tooltip says the click resumes")
+	equal(Tip(h):find(L.REPLACES_JOURNEY, 1, true), nil, "paused: nothing to replace")
+	h.Click(Chosen(h))
+	h.flush()
+	equal(h.spf.NavigateRoute, 2, "paused: the click resumes the route")
+	equal(h.ns.Prefs().journey, "carry", "paused: and keeps the choice")
+	equal(h.ns.Prefs().guided, "carry", "paused: as the chosen journey's route")
+	equal(Hint(h), false, "paused: the hint goes")
+	h.Click(Chosen(h))
+	h.flush()
+	equal(h.ns.Prefs().journey, nil, "paused: once resumed, the next click chooses none")
+	clean(h, "paused")
+
+	h = Opened("ended", nil, function(replaced)
+		replaced.spfOther()
+	end)
+	equal(h.ns.Paused(), true, "paused: replaced by another journey")
+	equal(Tip(h):find(L.REPLACES_JOURNEY, 1, true) ~= nil, true, "paused, replaced: resuming warns first")
+
+	-- The tracker title resumes it too.
+	h = Opened("ended", nil, function(cleared)
+		cleared.spfEnd("cleared")
+	end)
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[h.ns.Route().steps[1].key], "LeftButton")
+	h.flush()
+	equal(h.spf.NavigateRoute, 2, "paused: the tracker title resumes it")
+
+	for _, case in ipairs({
+		{
+			"our Stop",
+			nil,
+			function(stopped)
+				stopped.ns.Integrations.Cancel()
+			end,
+		},
+		{
+			"arrived",
+			nil,
+			function(done)
+				done.spfEnd("arrived")
+			end,
+		},
+		{
+			"held",
+			nil,
+			function(held)
+				held.spfHeld = true
+			end,
+		},
+		{
+			"the setting off",
+			{ titleStartsRoute = false },
+			function(cleared)
+				cleared.ns.Integrations.Navigate(cleared.ns.Route().steps[1])
+				cleared.spfEnd("cleared")
+			end,
+		},
+	}) do
+		h = Opened("ended", case[2], case[3])
+		equal(h.ns.Paused(), false, "not paused: " .. case[1])
+		equal(Hint(h), false, "not paused, " .. case[1] .. ": no hint")
+	end
+	local routes = h.spf.NavigateRoute
+	h.Click(Chosen(h))
+	h.flush()
+	equal(h.ns.Prefs().journey, nil, "not paused: the click chooses none")
+	equal(h.spf.NavigateRoute, routes, "not paused: and starts nothing")
+end
+
 -- Shortest Path's journeys end with the session: a /reload or login with a route AGF started for the chosen journey
 -- sends it again once, on the first full build out of combat. Not over someone else's journey; a refusal sets no
 -- waypoint and asks again on the next full build; Stop, a cleared card or no saved variables (#34) restore nothing.

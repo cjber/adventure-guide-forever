@@ -323,13 +323,16 @@ local function BuildJourneys(parent, below)
 		-- Choosing a journey shows its route and turns the map to it, and with the setting on starts it (ns.Choose,
 		-- once the rebuild has its steps). The map turns before the invalidation, so its redraw reads the route as it
 		-- is and the one rebuild waits a frame. The chosen card is a toggle: clicking it again chooses none, every card
-		-- is whole again and the route it started stops (never anyone else's).
+		-- is whole again and the route it started stops (never anyone else's); while its route is paused, the click
+		-- resumes it instead.
 		card:SetScript("OnClick", function(self)
 			local journey = self.journey
 			if not journey then
 				return
 			end
-			if self.state == "chosen" then
+			if self.state == "chosen" and ns.Paused() then
+				ns.StartRoute()
+			elseif self.state == "chosen" then
 				ns.Choose(nil)
 			else
 				WorldMapFrame:SetMapID(journey.map)
@@ -391,10 +394,10 @@ end
 
 ---@param parent Frame
 local function BuildFooter(parent)
-	-- No Go: choosing a card starts its route. A choice made in combat says it waits, so it never reads as failed.
+	-- No Go: choosing a card starts its route. A choice made in combat says it waits, so it never reads as failed, and
+	-- a route that stopped says its card resumes it.
 	queuedText = parent:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
 	queuedText:SetPoint("BOTTOMLEFT", PAD, 15)
-	queuedText:SetText(L.STARTS_AFTER_COMBAT)
 	-- Shown only while our guidance runs (design §2.1): it never stops what the player or another addon started.
 	stopButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate") --[[@as Button]]
 	stopButton:SetSize(90, 26)
@@ -561,13 +564,16 @@ function CardTooltip(card)
 	if group > 0 then
 		GameTooltip_AddHighlightLine(GameTooltip, group == 1 and L.GROUP_ONE or L.GROUP_MANY:format(group))
 	end
+	local resumes = chosen and ns.Paused()
 	if not chosen then
 		GameTooltip_AddInstructionLine(GameTooltip, L.CLICK_TO_CHOOSE)
+	elseif resumes then
+		GameTooltip_AddInstructionLine(GameTooltip, L.CLICK_TO_RESUME)
 	else
 		local stops = starts and ns.Integrations.Owns()
 		GameTooltip_AddInstructionLine(GameTooltip, stops and L.STOP_AND_SHOW_EVERY_JOURNEY or L.SHOW_EVERY_JOURNEY)
 	end
-	if not chosen and starts and ns.Integrations.ReplacesJourney() then
+	if (resumes or not chosen and starts) and ns.Integrations.ReplacesJourney() then
 		GameTooltip_AddInstructionLine(GameTooltip, L.REPLACES_JOURNEY)
 	end
 	GameTooltip:Show()
@@ -859,7 +865,9 @@ function Refresh()
 	emptyText:SetText((not ready and L.LOADING) or (searching and L.SEARCH_NONE) or L.NOTHING_NEARBY)
 	emptyText:SetShown(not ready or (searching and found == 0) or (not searching and #route.journeys == 0))
 
-	queuedText:SetShown(ns.StartPending() and InCombatLockdown())
+	local queued = ns.StartPending() and InCombatLockdown()
+	queuedText:SetText(queued and L.STARTS_AFTER_COMBAT or L.ROUTE_PAUSED)
+	queuedText:SetShown(queued or ns.Paused())
 	stopButton:SetShown(ns.Integrations.Owns())
 end
 

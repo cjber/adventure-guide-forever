@@ -84,6 +84,9 @@ ns.L = {
 	CHOOSE_TO_SEE_STEPS = "Choose a journey to see its steps.",
 	SHOW_EVERY_JOURNEY = "Click again to see every journey",
 	STOP_AND_SHOW_EVERY_JOURNEY = "Click again to stop the route and see every journey",
+	-- The chosen journey's route stopped (cleared, replaced or refused): its card and the tracker title resume it.
+	CLICK_TO_RESUME = "Click to resume the route",
+	ROUTE_PAUSED = "Route paused. Click the journey to resume.",
 	-- A card's third line when it has no reason (docs/plan.md §7.4): its first stop, then how many follow.
 	HUB_MORE = "%s and %d more stops",
 	HUB_MORE_ONE = "%s and 1 more stop",
@@ -635,6 +638,23 @@ end
 ---@return boolean
 function ns.StartPending()
 	return pendingStart
+end
+
+-- The route AGF started for the chosen journey stopped without the player's Stop: cleared in Shortest Path, replaced
+-- by another journey, refused after a /reload, or its waypoint moved. It has steps, nothing of ours guides it and no
+-- start is on its way, so its card and the tracker title resume it rather than clear the choice. A route that arrived
+-- at its last stop is done, not paused.
+---@return boolean
+function ns.Paused()
+	local route, integrations = ns.Route(), ns.Integrations
+	local key = route.journey
+	return route.chosen
+		and (ns.Prefs().guided == key or integrations.Stopped() == key)
+		and #route.steps > 0
+		and ns.Setting("titleStartsRoute")
+		and not pendingStart
+		and not integrations.Owns()
+		and not integrations.Arrived()
 end
 
 -- Registered before any view's listener, so the footer already reads the route as started.
