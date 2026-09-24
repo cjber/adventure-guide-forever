@@ -453,6 +453,21 @@ do
 	equal(h.spf.Cancel, 1, "filtered: our route cancelled")
 	clean(h, "filtered")
 
+	-- Your calling (roadmap #7) holds quests, so the Quests toggle keeps its choice too: a level-12 orc warrior in
+	-- Durotar, whose trainer has a task.
+	h = harness.load({
+		player = { level = 12, classID = 1, map = 1411, x = 0.52, y = 0.44 },
+		charDB = { journey = "calling" },
+	})
+	h.flush()
+	equal(h.ns.Route().chosen and h.ns.Route().journey, "calling", "filtered calling: chosen")
+	h.ns.Prefs().quests = false
+	h.ns.Invalidate()
+	h.flush()
+	equal(h.ns.Route().chosen, false, "filtered calling: no card with Quests off")
+	equal(h.ns.Prefs().journey, "calling", "filtered calling: the choice kept")
+	clean(h, "filtered calling")
+
 	h = harness.load({ charDB = { journey = "carry" }, completedPending = true })
 	h.flush()
 	equal(h.ns.Prefs().journey, "carry", "ends: nothing before the completed quests load")

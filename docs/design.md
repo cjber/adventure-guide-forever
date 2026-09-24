@@ -157,6 +157,8 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
   | Hand-ins ("Finish what you carry") | `questlog-questtypeicon-quest` (CSV:9396) | `(?)` |
   | Zone story | `questlog-questtypeicon-story` (CSV:9400) | `(S)` |
   | Next zone | `QuestNormal` (CSV:1360), the same "!" the map uses | `(!)` |
+  | Dungeon | `questlog-questtypeicon-dungeon` (CSV:9387) | `(D)` |
+  | Your calling | `questlog-questtypeicon-class` (CSV:9385), the same sheet's class icon | `(C)` |
   | Group quest (elite) | `questlog-questtypeicon-group` (CSV:9388) | — |
 
 - **Card detail (batch F, plan §7.4).** No new line and no new art:
@@ -177,10 +179,24 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
   - **Tooltip.** Whole cards now have one as well (§2.9).
 - **Fonts.** Blizzard sets the name in white `GameFontHighlightMed2` over a gold `GameFontNormalMed2` subline. AGF deliberately reverses this, to follow the house rule of a gold header over white body text.
 - **What a card may offer.** A card only ever holds eligible, recommendable steps. It never shows a lock, never shows "opens at level N", and never marks something new-in-Forever or of unknown location. Locked quests appear only in search (§2.4).
-- **Card kinds** (three at most, only those that have steps):
+- **Card kinds** (three at most, only those that have steps). Carry and the story keep their fixed slots; the
+  diversions share what is left (roadmap R4):
   1. **Finish what you carry**: log turn-ins and objectives.
   2. **The zone story**: the best eligible chain in the zone the player's level fits best.
-  3. **Next zone**: the zone that ranks first for `level + 2` in the same eligibility pass (`Choices` in `Model.Journeys`), shown only when it differs from the story's zone and the player's own and has at least 5 quests to take now.
+  3. **Diversions**, newest first:
+     - **Your calling** (roadmap #7): the class quests the player can take now, as one card: a `classes` mask of the
+       player's class alone (Vile Familiars, every Horde class's but the warlock's, is a starting quest), never a
+       raid's. It leads with a chain as the story does (§2.3), else the lowest quest ID. Its reason names that quest:
+       "Your class trainer has a task: Call of Earth" only when the data proves its giver trains the player's class
+       (`start.trainer`, from CMaNGOS TrainerClass), else "A task for your class: Call of Earth".
+     - **Dungeon** (Dungeons on): the party instance with the most quests open now.
+     - **Next zone**: the zone that ranks first for `level + 2` in the same eligibility pass (`Choices` in
+       `Model.Journeys`), shown only when it differs from the story's zone and the player's own and has at least 5
+       quests to take now.
+- **Which diversion.** Each is ranked by the level its newest quest opened at (the highest `min` among its quests
+  open now), highest first, so a level just gained or a bracket just opened takes the slot and an older one yields
+  as the player levels on. A tie goes calling, dungeon, next zone. It is stateless: nothing is remembered between
+  sessions. Only as many are built as there are free slots, plus the chosen one, which always keeps its slot.
 
 ### 2.3 Zone story chapters
 
@@ -444,7 +460,7 @@ journey whose route AGF started). Choosing, starting and ending all live in Core
 the cards, the tracker title, the menus and the map's rings behave the same, with the guide open or closed.
 
 Keys: `carry`, `zone:<map>` for a zone's story and its next-zone card alike (so heading to a zone becomes its story
-on arrival), and `dungeon:<instance>`. `LoadCharDB` migrates the old `story:` and `nextzone:` keys once.
+on arrival), `dungeon:<instance>`, and `calling`. `LoadCharDB` migrates the old `story:` and `nextzone:` keys once.
 
 Invariants:
 
@@ -487,7 +503,7 @@ the route again until the card resumes it.
 
 A chosen journey the full build no longer has ends: its route is cancelled and the choice cleared, so the cards are
 whole again. A Quests or Dungeons filter keeps the key (the player's own toggle can bring it back) but stops the
-route. Skipping every step of a chosen journey ends it the same way, quietly.
+route; Quests covers `zone:` keys and `calling`, Dungeons `dungeon:` keys. Skipping every step of a chosen journey ends it the same way, quietly.
 
 ### 2.11 Asides
 
@@ -547,9 +563,9 @@ aside shown changes. The first provider's answer the player has not skipped or t
 
 | Where | Example |
 |---|---|
-| Card titles | `Finish what you carry` · `Westfall story` · `Head to Darkshore` |
-| Card sublines | `3 quests ready to hand in` · `Chapter 2 of 4` · `Chapter 2` · `11 quests near your level` |
-| Reasons | `Continues a story you started` · `3 quests will soon turn grey` · `A chain begins with Gryan Stoutmantle` · `Sentinel Hill needs hands` · `Begins a new story` · `Ready to hand in` · `For level 14` · `Opens the next chapter here` |
+| Card titles | `Finish what you carry` · `Westfall story` · `Head to Darkshore` · `Your calling` |
+| Card sublines | `3 quests ready to hand in` · `Chapter 2 of 4` · `Chapter 2` · `11 quests near your level` · `2 quests for your class` |
+| Reasons | `Your class trainer has a task: Call of Earth` · `A task for your class: Call of Earth` · `Continues a story you started` · `3 quests will soon turn grey` · `A chain begins with Gryan Stoutmantle` · `Sentinel Hill needs hands` · `Begins a new story` · `Ready to hand in` · `For level 14` · `Opens the next chapter here` |
 | Card line 3, tooltip | `Lakeshire, Redridge and 2 more stops` · `Lakeshire, Redridge and 1 more stop` · `1 needs a group` · `3 need a group` |
 | Hub stops | `Lakeshire, Redridge` · `2 to hand in, 4 to pick up` · `Marshal Marris, Verner Osgood and 2 more` · `Guard Parker, Redridge Mountains` · `And 3 more` |
 | Travel | `Fly to Sentinel Hill · 6 min` · `Boat to Auberdine · 2 min wait` · `Fly to Astranaar · new flight path` · `About 4 min away` · card: `6 min` · `15 min by boat` · `15 min by zeppelin` |

@@ -186,6 +186,12 @@ ns.L = {
 	-- and a chosen journey's route may stop there.
 	TRAINER_IN = "Visit your class trainer in %s",
 	TRAIN_IN = "Train in %s",
+	-- Your calling (roadmap #7, docs/design.md §2.2): the class quests open now; the trainer only when the data says so.
+	JOURNEY_CALLING = "Your calling",
+	CALLING_QUESTS = "%d quests for your class",
+	CALLING_QUESTS_ONE = "1 quest for your class",
+	CALLING_TRAINER = "Your class trainer has a task: %s",
+	CALLING_TASK = "A task for your class: %s",
 }
 local L = ns.L
 
@@ -555,7 +561,8 @@ end
 ---@param prefs AGFPrefs
 ---@return boolean
 local function Filtered(key, prefs)
-	return (key:find("^dungeon:") ~= nil and not prefs.dungeons) or (key:find("^zone:") ~= nil and not prefs.quests)
+	return (key:find("^dungeon:") ~= nil and not prefs.dungeons)
+		or ((key:find("^zone:") ~= nil or key == "calling") and not prefs.quests)
 end
 
 local pendingStart = false

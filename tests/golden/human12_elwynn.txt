@@ -11,3 +11,5 @@ card | zone:1432 | Head to Loch Modan | 10 quests near your level | For level 14
   step 4 | hub:126 | Pick up quests: Bingles Blastenheimer | 1432 0.6356,0.4792 | near your level
   step 5 | hub:117 | Pick up quests: Prospector Ironband | 1432 0.6593,0.6562 | near your level
   step 6 | hub:118 | Marek Ironheart | 1432 0.8176,0.6166 | 2 to pick up
+card | calling | Your calling | Chapter 2 of 4 | A task for your class: Bartleby the Drunk | map 1453
+  step 1 | hub:80 | Pick up quests: Harry Burlguard | 1453 0.7713,0.5326 | Continues a story you started
