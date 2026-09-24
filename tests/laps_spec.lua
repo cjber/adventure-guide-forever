@@ -160,6 +160,103 @@ local function Walk(where, steps, player, completed, log, held)
 	end
 end
 
+-- The card's keys in order.
+local function Keys(route, key)
+	local keys = {}
+	for _, journey in ipairs(route.journeys) do
+		for _, step in ipairs(journey.key == key and journey.steps or {}) do
+			keys[#keys + 1] = step.key
+		end
+	end
+	return table.concat(keys, " ")
+end
+
+-- Whether the player stands where step 1 is, which leads whatever the committed order (docs/design.md §4.3): a town
+-- with a giver or hand-in within 100 yd, else an open area's ring.
+local function Standing(player, route)
+	local head = route.steps[1]
+	for _, spot in pairs(head and head.kind ~= "area" and head.hub and head.spots or {}) do
+		local yards = Model.Yards(data, player, spot)
+		if yards and yards <= 100 then
+			return true
+		end
+	end
+	return head ~= nil and Model.Here(data, player, route.steps) == 1
+end
+
+-- Stability (docs/design.md §4.3, §5.5) on the chosen card: a rebuild with nothing changed gives the same route; one
+-- after the player walked to a later step, or took up a quest the route does not hold, keeps step 1 unless the player
+-- stands where another leads; and each such route still walks in order.
+local stable = { same = 0, walked = 0, added = 0, fronted = 0 }
+local function Stability(where, player, completed, log, held, prefs)
+	local first = Model.Plan(data, player, completed, log, prefs)
+	local key = first.journey
+	if not (key and first.steps[2]) then
+		return
+	end
+	-- The first build commits an order; a rebuild keeps its step 1 and may only settle what the order left out (a
+	-- visit back past the step limit), and from then on every rebuild with nothing changed is the same route.
+	local again = Model.Plan(data, player, completed, log, prefs, nil, nil, first)
+	local head = first.steps[1].key
+	check(again.steps[1] and again.steps[1].key == head, where .. ": the first rebuild keeps step 1")
+	local third = Model.Plan(data, player, completed, log, prefs, nil, nil, again)
+	check(Keys(third, key) == Keys(again, key), where .. ": a rebuild with nothing changed keeps the route")
+	stable.same = stable.same + (Keys(again, key) == Keys(first, key) and 1 or 0)
+	-- Walked to a later step's point.
+	local to = first.steps[math.random(2, #first.steps)]
+	local moved = { map = to.map, x = to.x, y = to.y }
+	for name, value in pairs(player) do
+		moved[name] = moved[name] or value
+	end
+	local walked = Model.Plan(data, moved, completed, log, prefs, nil, nil, again)
+	if walked.journey == key and walked.steps[1] then
+		local fronted = Standing(moved, walked)
+		check(walked.steps[1].key == head or fronted, where .. ": walked to " .. to.key .. ", step 1 holds")
+		stable.walked, stable.fronted = stable.walked + 1, stable.fronted + (fronted and 1 or 0)
+		Walk(where .. " walked", walked.steps, moved, completed, log, held)
+	end
+	-- A quest of the zone the route holds nowhere, taken up while the log has room for it and every pickup on the
+	-- route, so the log's limit changes nothing.
+	local on, picks = {}, 0
+	for _, journey in ipairs(first.journeys) do
+		for _, step in ipairs(journey.steps) do
+			for _, id in ipairs(step.quests) do
+				on[id] = true
+			end
+		end
+	end
+	for _, step in ipairs(again.steps) do
+		picks = picks + #(step.pickups or {})
+	end
+	local extra
+	for id, quest in pairs(data.quests) do
+		if
+			not on[id]
+			and not log[id]
+			and quest.zone == player.map
+			and quest.obj
+			and (not extra or id < extra)
+			and Model.Eligible(data, player, completed, log, id)
+		then
+			extra = id
+		end
+	end
+	if extra and held + picks < (player.logMax or math.huge) then
+		log[extra] =
+			{ id = extra, title = data.quests[extra].title, level = data.quests[extra].level, complete = false }
+		local added = Model.Plan(data, player, completed, log, prefs, nil, nil, again)
+		if added.journey == key and added.steps[1] then
+			check(
+				added.steps[1].key == head or Standing(player, added),
+				where .. ": took up " .. extra .. ", step 1 holds"
+			)
+			stable.added = stable.added + 1
+			Walk(where .. " took up " .. extra, added.steps, player, completed, log, held + 1)
+		end
+		log[extra] = nil
+	end
+end
+
 local plans, started = 0, os.clock()
 for character = 1, CHARACTERS do
 	local player, completed, log, held = Character()
@@ -185,12 +282,23 @@ for character = 1, CHARACTERS do
 			end
 		end
 	end
+	prefs.journey = nil
+	Stability(where, player, completed, log, held, prefs)
+	plans = plans + 4
 end
 
 for index = 1, math.min(10, #failures) do
 	print("  " .. failures[index])
 end
 print(("laps_spec: %d checks, %d failed; %d plans in %.1f s"):format(checks, #failures, plans, os.clock() - started))
+print(
+	("laps_spec: stability: %d first rebuilds the same, %d walked (%d led by where they stand), %d taken up"):format(
+		stable.same,
+		stable.walked,
+		stable.fronted,
+		stable.added
+	)
+)
 if #failures > 0 then
 	os.exit(1)
 end

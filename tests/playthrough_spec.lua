@@ -108,7 +108,7 @@ for _, race in ipairs(RACES) do
 			y = at[3],
 			logMax = LOG_SIZE,
 		}
-		local completed, log, held, stories = {}, {}, 0, {}
+		local completed, log, held, stories, last = {}, {}, 0, {}, nil
 		characters = characters + 1
 		for level = 1, 60 do
 			player.level = level
@@ -119,8 +119,18 @@ for _, race in ipairs(RACES) do
 				end
 			end
 			for _ = 1, ROUNDS do
-				local route =
-					Model.Plan(data, player, completed, log, { quests = true, dungeons = false, skipped = {} })
+				-- Each plan keeps to the last one's committed order, as the addon's rebuilds do.
+				local route = Model.Plan(
+					data,
+					player,
+					completed,
+					log,
+					{ quests = true, dungeons = false, skipped = {} },
+					nil,
+					nil,
+					last
+				)
+				last = route
 				plans = plans + 1
 				local where = ("%s, level %d"):format(label, level)
 				local card = route.journeys[1]

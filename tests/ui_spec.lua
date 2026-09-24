@@ -268,18 +268,37 @@ do
 		h.ns.Invalidate()
 		h.flush()
 	end
+	-- A rebuild far from the route keeps it (design §4.3): the player moving is no reason to change the way.
 	local h = Load("ended")
+	local function Keys()
+		local keys = {}
+		for index, step in ipairs(h.ns.Route().steps) do
+			keys[index] = step.key
+		end
+		return table.concat(keys, " ")
+	end
+	local before = Keys()
+	Moved(h, 1413, 0.46, 0.79)
+	equal(Keys(), before, "follow: a rebuild away from the route keeps it")
+	h = Load("ended")
 	h.ns.StartRoute()
 	h.flush()
 	equal(h.ns.Prefs().guided, "zone:1413", "follow: the chosen journey's route")
 	equal(h.spf.NavigateRoute, 1, "follow: started once")
 	Moved(h, 1413, 0.5223, 0.3101)
 	equal(h.spf.NavigateRoute, 1, "follow: a rebuild that changes nothing sends nothing")
-	-- Near Gann's objective, the objective is step 1 before the Crossroads the route heads for: the way changed.
-	Moved(h, 1413, 0.46, 0.79)
+	-- Southsea Freebooters and Baron Longshore picked up in Ratchet and the player in their area's ring: it is step 1
+	-- before the Crossroads the route heads for, so the way changed.
+	h.log[#h.log + 1] = { id = 887, title = "Southsea Freebooters", level = 14, complete = false }
+	h.log[#h.log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
+	h.fire("QUEST_LOG_UPDATE")
+	h.flush()
+	equal(h.spf.NavigateRoute, 1, "follow: a pickup ahead of step 1 sends nothing")
+	Moved(h, 1413, 0.64, 0.46)
+	equal(h.ns.Route().steps[1].key, "area:887:0", "follow: the area the player stands in leads")
 	equal(h.spf.NavigateRoute, 2, "follow: step 1 elsewhere, sent again once")
 	equal(h.spfRoute.stops[1].x, h.ns.Route().steps[1].x, "follow: from the new step 1")
-	Moved(h, 1413, 0.46, 0.78)
+	Moved(h, 1413, 0.64, 0.47)
 	equal(h.spf.NavigateRoute, 2, "follow: and not again while it matches")
 	h.SetCombat(true)
 	Moved(h, 1413, 0.5223, 0.3101)

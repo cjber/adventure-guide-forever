@@ -575,7 +575,16 @@ local function BuildRoute()
 	end
 	training = prefs.journey and ns.Integrations.Training() or nil
 	player.train = training
-	return ns.Model.Plan(ns.Data, player, state.Completed(), state.Log(), prefs, state.MapName, state.InstanceName)
+	return ns.Model.Plan(
+		ns.Data,
+		player,
+		state.Completed(),
+		state.Log(),
+		prefs,
+		state.MapName,
+		state.InstanceName,
+		cachedRoute
+	)
 end
 
 -- A spell learned (or a new level's) changes what the trainer stop says, or ends it: rebuild when the answer moved.

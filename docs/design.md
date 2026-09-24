@@ -27,6 +27,11 @@ Forever pillars (Blizzard, *What's Next* panel recap):
 - **Approachable and familiar.** The guide lives in the quest log tab and the objective tracker, both stock frames.
   Quest text is Blizzard's own details page. Leaving the plan is normal: Stop and Skip always work, and the route
   rebuilds from the live quest log.
+- **A steady route.** The route rebuilds on events (a quest taken, an objective done, a hand-in, a zone, a skip or a
+  choice), never because the player walked. Each card keeps its order for the session (`route.orders`): its lap goes
+  on until it ends, a new step goes where it adds the fewest yards, and a new order replaces it only when it saves
+  15% and 200 yd. The town or open area ring the player stands in leads; walking into a ring is checked every 2 s
+  only while the player moves.
 
 Two standing rules from AGENTS.md:
 - A quest whose eligibility the data cannot establish is never recommended.
