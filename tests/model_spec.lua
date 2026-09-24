@@ -431,6 +431,7 @@ equal(stop.title, "Lakeshire, Redridge", "town: named by its flight master")
 equal(table.concat(stop.quests, " "), "10 11 1 2 3 4", "town: hand-ins first, then by ID")
 equal(table.concat(stop.givers, " "), "Marris Osgood", "town: its givers, once each")
 equal(stop.group, 1, "town: the elite quest needs a group")
+equal(stop.optional, nil, "town: one elite quest never dims the whole town")
 equal(stop.x, 0.5, "town: its point is the giver nearest the player, never a centre")
 -- The card's hub line and group count (docs/plan.md §7.4): its first stop's place and the stops after it.
 local function Chosen(plan)
@@ -510,6 +511,15 @@ local emptied = Model.Refresh(
 	toured
 )
 equal(#emptied.steps, 0, "town, combat: an empty town goes")
+local eliteLeft = Model.Refresh(
+	town,
+	visitor,
+	{ [10] = true, [11] = true, [12] = true },
+	{ [1] = takenHere, [2] = takenHere, [3] = takenHere },
+	townPrefs,
+	toured
+)
+equal(eliteLeft.steps[1] and eliteLeft.steps[1].optional, true, "town, combat: optional once only the elite is left")
 -- Within a town: hand-ins first, then a quest grey at the next level, then nearest the player's level, then by ID; the
 -- givers and the hand-in Show quest opens follow that order.
 local levelled = Town()

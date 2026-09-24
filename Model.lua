@@ -480,14 +480,14 @@ local function HubStop(stops, steps, place, prefix)
 end
 
 -- Adds quest `id`, which `place` starts or finishes, to a stop's `list` (its pickups or hand-ins).
-local function Join(stop, list, id, place, optional)
+local function Join(stop, list, id, place)
 	list[#list + 1] = id
 	stop.quests[#stop.quests + 1] = id
 	stop.spots[id] = place
-	stop.optional = stop.optional or optional or nil
 end
 
--- A hub stop's quests, givers, group count, title and detail, from its pickups and hand-ins. The quests go hand-ins
+-- A hub stop's quests, givers, group count, title and detail, from its pickups and hand-ins; it is optional only when
+-- every quest there is. The quests go hand-ins
 -- first, then those grey at the next level, then nearest the player's level, then by ID (docs/plan.md §7.3); the givers
 -- and the quest ShowQuest opens follow that order. One quest keeps the single step's title; several take the town's
 -- name, else their busiest giver's.
@@ -495,14 +495,16 @@ end
 ---@param log table<integer, AGFLogQuest>
 local function Describe(data, log, player, step)
 	local L = ns.L
-	local handin, risk, distance = {}, {}, {}
+	local handin, risk, distance, optional = {}, {}, {}, true
 	for _, list in ipairs({ step.handins, step.pickups }) do
 		for _, id in ipairs(list) do
 			local level = QuestLevel(data, log, player, id)
 			handin[id], risk[id], distance[id] =
 				list == step.handins, GreyRisk(level, player), math.abs(level - player.level)
+			optional = optional and Optional(data.quests[id], level, player)
 		end
 	end
+	step.optional = optional or nil
 	local function Before(a, b)
 		if handin[a] ~= handin[b] then
 			return handin[a]
@@ -596,7 +598,7 @@ local function LogSteps(data, player, log, ready)
 		local optional = Optional(quest, entry.level, player)
 		if ready[id] then
 			local stop = HubStop(stops, steps, ready[id], "handin:")
-			Join(stop, stop.handins, id, ready[id], optional)
+			Join(stop, stop.handins, id, ready[id])
 		elseif ValidPlace(place) then
 			if entry.complete then
 				steps[#steps + 1] = Step(
@@ -619,7 +621,7 @@ local function LogSteps(data, player, log, ready)
 				end
 				if existing then
 					existing.quests[#existing.quests + 1] = id
-					existing.optional = existing.optional or optional or nil
+					existing.optional = existing.optional and optional or nil
 					existing.reason = ns.L.QUESTS_HERE:format(#existing.quests)
 					existing.detail = existing.reason
 				else
@@ -636,7 +638,7 @@ end
 
 -- One stop per town of the eligible quests `wanted` accepts; a group quest joins its town's stop like any other.
 ---@param wanted fun(quest: AGFQuest): boolean
-local function PickupSteps(data, player, eligible, wanted, steps)
+local function PickupSteps(data, eligible, wanted, steps)
 	local stops, chosenGroups = {}, {}
 	for _, id in ipairs(eligible) do
 		local quest = data.quests[id]
@@ -645,7 +647,7 @@ local function PickupSteps(data, player, eligible, wanted, steps)
 				chosenGroups[quest.group] = true
 			end
 			local stop = HubStop(stops, steps, quest.start, "hub:")
-			Join(stop, stop.pickups, id, quest.start, Optional(quest, quest.level, player))
+			Join(stop, stop.pickups, id, quest.start)
 		end
 	end
 end
@@ -1080,7 +1082,7 @@ local function ZoneJourney(data, player, completed, log, ready, eligible, zone, 
 		local quest = data.quests[id]
 		quests = quests + ((quest.zone or quest.start.map) == zone and 1 or 0)
 	end
-	PickupSteps(data, player, eligible, function(quest)
+	PickupSteps(data, eligible, function(quest)
 		return (quest.zone or quest.start.map) == zone
 	end, candidates)
 	for _, step in ipairs(candidates) do
@@ -1126,7 +1128,7 @@ local function DungeonJourney(data, player, completed, log, eligible, prefs, map
 		return nil
 	end
 	local candidates = {}
-	PickupSteps(data, player, eligible, function(quest)
+	PickupSteps(data, eligible, function(quest)
 		return quest.dungeon == best and not quest.raid
 	end, candidates)
 	local steps = Build(data, player, completed, log, candidates, prefs, mapName)

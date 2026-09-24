@@ -881,7 +881,6 @@
       "type": "Texture"
     },
     {
-      "alpha": 0.60,
       "anchors": [
         {
           "point": "TOPLEFT",
@@ -1029,28 +1028,12 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[4].Detail",
       "size": [
-        176.00,
+        210.00,
         0.00
       ],
       "text": "1 to hand in, 8 to pick up · 6 min",
       "type": "FontString",
       "wordWrap": false
-    },
-    {
-      "anchors": [
-        {
-          "point": "LEFT",
-          "relativePoint": "RIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[4].Detail",
-          "x": 6.00,
-          "y": 0.00
-        }
-      ],
-      "font": "GameFontDisableSmall",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[4].Tag",
-      "text": "optional",
-      "type": "FontString"
     },
     {
       "anchors": [
@@ -1532,7 +1515,6 @@
       "type": "Button"
     },
     {
-      "alpha": 0.60,
       "anchors": [
         {
           "point": "TOPLEFT",
@@ -1664,22 +1646,6 @@
       "text": "8 to pick up",
       "type": "FontString",
       "wordWrap": false
-    },
-    {
-      "anchors": [
-        {
-          "point": "LEFT",
-          "relativePoint": "RIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[8].Detail",
-          "x": 6.00,
-          "y": 0.00
-        }
-      ],
-      "font": "GameFontDisableSmall",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[8].Tag",
-      "text": "optional",
-      "type": "FontString"
     },
     {
       "anchors": [
