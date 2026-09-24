@@ -18,8 +18,9 @@ Forever pillars (Blizzard, *What's Next* panel recap):
 - **The world as the main character.** The map remains Blizzard's map. When the Adventure tab is closed, AGF draws
   nothing on it unless the player opts in. Steps are named after places and people ("Sentinel Hill needs hands"),
   not XP.
-- **The journey before the destination.** The player chooses from at most three journeys. Chains read as a zone's
-  chapters, with later chapter titles left unrevealed. There are no percentages, XP/hour figures or step counters.
+- **The journey before the destination.** The player chooses from at most three journeys. Until they do, the guide
+  draws the first card's steps on its own, so a new character has a route without a click; a choice overrides it.
+  Chains read as a zone's chapters, with later chapter titles left unrevealed. There are no percentages, XP/hour figures or step counters.
   The one exception is the card's hub line ("Lakeshire, Redridge and 2 more stops"). The user asked for it, and it
   counts towns, not progress (plan §7.4).
 - **A stop is a town.** One stop per hub (plan §7.2) merges its hand-ins and pickups. The route leads to the
@@ -27,6 +28,9 @@ Forever pillars (Blizzard, *What's Next* panel recap):
 - **Approachable and familiar.** The guide lives in the quest log tab and the objective tracker, both stock frames.
   Quest text is Blizzard's own details page. Leaving the plan is normal: Stop and Skip always work, and the route
   rebuilds from the live quest log.
+- **The player steers.** "Not this quest" drops a quest from every route, a shift-click adds one, and a nearly full
+  log gets a count of what could go (§2.18). The guide advises; it never abandons, accepts or tracks a quest for
+  the player.
 - **A steady route.** The route rebuilds on events (a quest taken, an objective done, a hand-in, a zone, a skip or a
   choice), never because the player walked. Each card keeps its order for the session (`route.orders`): its lap goes
   on until it ends, a new step goes where it adds the fewest yards, and a new order replaces it only when it saves
@@ -56,19 +60,11 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
 +-----------------------------------------------+  308 px pane (QuestMapFrame.xml:648)
 | [Search quests..........................] [*] |  29 px top bar: SearchBoxTemplate across the width
 |-----------------------------------------------|    (no step count, §1), settings cog
-| +-------------------------------------------+ |  none chosen: every card whole, 288x86, in order
-| | (?)  Finish what you carry                | |
-| | ( )  3 quests ready to hand in            | |
-| +-------------------------------------------+ |
-|  ... the story and next-zone cards, likewise   |
-|  Choose a journey to see its steps.           |  GameFontDisableSmall hint; nothing guides
-|                                               |
-|  --- after choosing the story: ---            |
-| [(?) Finish what you carry                +] |  the others, one line each: 288x26, 2 px apart
+| [(?) Loose ends                           +] |  the others, one line each: 288x26, 2 px apart
 | [(!) Head to Darkshore                    +] |
-| +===========================================+ |  the chosen card, whole and lit (its own art),
-| | (S)  Westfall story                       | |    4 px under the rows
-| | ( )  Chapter 2 of 4                       | |
+| +===========================================+ |  the shown card, whole, 4 px under the rows: the
+| | (S)  Westfall story                       | |    chosen one (lit, its own art), else the first
+| | ( )  Chapter 2 of 4                       | |    card, unlit
 | +===========================================+ |
 |    [#][#][ ][ ]                               |  chapter track (2.3)
 |  1 Sentinel Hill, Westfall                    |  step rows, 44 px each, 9 at most; a town is titled by its name
@@ -94,14 +90,15 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   (QuestInfo Raid) wherever it is filed: Zul'Gurub's Paragons of Power are filed under the outdoor Zul'Gurub area and
   given on Yojamba Isle, yet ask for the raid's drops, so only their type says so (83 such quests at the pin).
 - **None chosen** is the default (a fresh character, a card clicked again, or a saved choice whose card is no longer
-  offered): every card whole in order, no step rows, the hint "Choose a journey to see its steps." under them, and
-  nothing guides. The route still falls back to the first card (`route.chosen` false), but the tracker shows no
-  step until a journey is chosen, only its one quiet line (§2.5). A stale saved key stays saved and is chosen again
-  should its card come back.
+  offered). The guide draws the first card's steps on its own (auto-start): the route falls back to the first card
+  (`route.chosen` false), which sits whole but unlit over its track and step rows, the others as one-line rows above
+  it, and the tracker, the map preview and the NPC line all follow it. Nothing guides until the player asks: a card
+  or row click, the tracker title, a ring's click or Go. A click on the first card, or on a ring of its route,
+  chooses it. A stale saved key stays saved and is chosen again should its card come back.
 - **One chosen:** the others fold to one-line rows above it, in their order, and it sits whole and lit right over
   its track and step rows. Its steps start at the same place whichever card it is (two rows, 58 px, then the card),
   and no card sits between a card and its steps, which the old order did (a middle card's steps pushed the last card
-  below the fold). A row chooses its card; the chosen card is a toggle, and clicking it again chooses none.
+  below the fold). A row chooses its card; the chosen card is a toggle, and clicking it again lets the guide choose.
   No animation: the quest log's own headers fold at once, and a height tween would need an OnUpdate.
 - **Choosing starts the route.** Selecting a card (whole or a row) sets `prefs.journey`, rebuilds the route and, on
   the rebuild that has its steps, hands them to `Integrations.Navigate`: SPF's journey, or the native waypoint
@@ -119,8 +116,8 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
 - **Stop** appears only while AGF owns the guidance. That means SPF's `CurrentStop(OWNER)` is non-nil, or the
   native user waypoint is still the one AGF set (§5.1).
 - **Honest coverage (roadmap #23).** When the log holds a quest `Data.quests` lacks, or the player's zone map has quests
-  Forever added that it lacks and the player hasn't finished, one `GameFontDisableSmall` line sits under the cards and
-  hint, above Skipped: "This land has stories the guide doesn't know yet; look for the "!" over quest givers." It points
+  Forever added that it lacks and the player hasn't finished, one `GameFontDisableSmall` line sits under the shown
+  card's steps, above Skipped: "This land has stories the guide doesn't know yet; look for the "!" over quest givers." It points
   at the giver's own mark, since Forever draws no givers on the map (§9 `questoffer`). It is never on a card (§2.2) and
   never beside the search's results. `Model.Unlisted` decides. The added quests come from `Data/Forever.lua`, which
   `tools/diff_forever.py` generates: the QuestV2 IDs Forever's build has and Classic Era 1.15.9.69722 lacks, each placed
@@ -147,11 +144,11 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
   Icon 18x18 at CENTER; hover inherits AlphaHighlightButtonTemplate (SharedUIPanelTemplates.xml:1587)
 ```
 
-- **One-line row** (another card is chosen): the Settings list's collapsible category header in three slices at its
+- **One-line row** (another card is shown): the Settings list's collapsible category header in three slices at its
   own 26 px height, `options_listexpand_left` (12x26), `_options_listexpand_middle` (tiled) and
   `options_listexpand_right` (28x26, its "+"), 288x26 in all, with the 16x16 kind icon at LEFT x=12 and no ring, and
   the title (GameFontNormalMed2) at the icon's RIGHT +6. Its tooltip has the title, subline and reason, so nothing is
-  lost. The chosen card's tooltip says "Click again to see every journey". Pooled: the three card buttons are
+  lost. The chosen card's tooltip says "Click again to let the guide choose". Pooled: the three card buttons are
   resized in place, no frame is made per refresh.
   - Why this art: it is a stock single-line row drawn at native height with a "+" that says it opens; the renown
     card squeezed to 28 px pinched its frame, `friendslist-categorybutton` read as a second heavy card and
@@ -163,7 +160,7 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
 
   | Card kind | Icon | Mock label |
   |---|---|---|
-  | Hand-ins ("Finish what you carry") | `questlog-questtypeicon-quest` (CSV:9396) | `(?)` |
+  | Hand-ins ("Loose ends") | `questlog-questtypeicon-quest` (CSV:9396) | `(?)` |
   | Zone story | `questlog-questtypeicon-story` (CSV:9400) | `(S)` |
   | Next zone | `QuestNormal` (CSV:1360), the same "!" the map uses | `(!)` |
   | Dungeon | `questlog-questtypeicon-dungeon` (CSV:9387) | `(D)` |
@@ -176,7 +173,8 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
   - **Fetching.** The minutes are fetched only while the tab is shown and out of combat, one Shortest Path
     estimate per frame. They are never fetched in the rebuild. Without SPF, or with no answer, the minutes are
     left out.
-  - **Line 3.** It shows the journey's reason, or else the hub line: "Lakeshire, Redridge and 2 more stops".
+  - **Line 3.** It shows the log-full note on the first card when it has one (§2.18), else the journey's reason,
+    else the hub line: "Lakeshire, Redridge and 2 more stops".
   - **Reason (roadmap #3).** A zone card (story or next zone) takes one reason in the world's voice, the first that
     applies: "Continues a story you started"; "3 quests will soon turn grey" (two or more of its pickups grey at the
     next level, never at the level cap); "A chain begins with Gryan Stoutmantle" (the chain's lead giver); "Sentinel
@@ -194,7 +192,8 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
      while its quests are theirs to take or carry. It also holds the log's quests done next on its map: hand-ins
      share its towns' stops, and quests under way are steps at the client's point for them, else the data's area
      for their first open objective. Its subline counts them first.
-  2. **Finish what you carry**: the log's turn-ins and objectives the story does not hold.
+  2. **Loose ends**: the log's turn-ins and objectives the story does not hold, and the quests the player added
+     (§2.18) that no zone card holds; its subline counts those as "N you added".
   3. **Diversions**, newest first:
      - **Your calling** (roadmap #7): the class quests the player can take now, as one card: a `classes` mask of the
        player's class alone (Vile Familiars, every Horde class's but the warlock's, is a starting quest), never a
@@ -327,11 +326,9 @@ ADVENTURE GUIDE                                 module header (template)
 ```
 
 - **One quiet line first.** The aside (§2.11) when there is one, as a block whose header is its whole line.
-- **No journey chosen.** The tracker shows that one line and nothing else: the aside, else the top story's hook
-  ("Westfall story · Begins a new story": the first story card's title, then its reason or subline; the
-  first card when no story is offered). Its click chooses that journey as its card does, starting the route with
-  "Choosing a journey starts the route"; right-click is the tracker menu. The step block, with its "Next:" line,
-  appears only once a journey is chosen, and a fanfare header sits under the line.
+- **No journey chosen.** The step block is the first card's step 1, as the guide draws it (§2.1). Its title click
+  chooses that card as a click on it does, starting the route with "Choosing a journey starts the route";
+  right-click is the tracker menu.
 - **Something new** (§2.13): "Duskwood is now for your level" sits under the quiet line, glowing once, until the
   guide opens.
 - **Place line.** A stop with one giver reads "NPC, zone". The zone name comes from the client by map ID, with the
@@ -383,10 +380,12 @@ no layer at all.
         adventureguide-ring (CSV:1189) + services-number-1..9 (CSV:1645-1653), hover UI-QuestPoi-InnerGlow (CSV:10079)
 ```
 
-- **Preview.** With no card chosen the open guide previews no rings: rings numbered for a card that is not lit
-  would read as a choice made (with `showMapPins` on they still show the first card's route, as the tracker does).
-  Selecting a card turns the map to that journey's first zone (`WorldMapFrame:SetMapID`) and draws
-  only its rings. Hovering a step row flashes its ring (`Pins.Ping`, Pins.lua:184-188).
+- **Preview.** The open guide previews the shown card's rings: the chosen card's, else the first card's, which the
+  guide draws on its own (§2.1); a ring's click chooses that card. Selecting a card turns the map to that journey's
+  first zone (`WorldMapFrame:SetMapID`) and draws only its rings. Hovering a step row flashes its ring (`Pins.Ping`,
+  Pins.lua:184-188).
+- **Area rings** (a quest's objective area, sized to it): step 1's is drawn whole, and every later one at half
+  alpha, so the next place reads first where rings overlap.
 - **Layering.** A route ring marks "your destination", so it takes the stock level of the user-waypoint pin,
   `PIN_FRAME_LEVEL_WAYPOINT_LOCATION`. That is above every quest "!" and "?", including the super-tracked one.
   AGF's preview ring uses this level, and SPF's stop ring does too (plan §7.9). Givers stay at `AREA_POI`, below
@@ -431,6 +430,7 @@ Skipped submenu on its own.
 | Stop                        |  only while AGF owns guidance
 | Show quest                  |  only for log quests, out of combat
 | Skip for now                |  ns.Skip(key)
+| Not this quest            > |  ns.NotThisQuest(id); a submenu per quest when the stop has several
 | Skipped (2)               > |  "Show again: <title>" -> new ns.Unskip(key) + ns.Invalidate()
 | Choose another journey      |  ns.OpenPanel()
 +-----------------------------+
@@ -483,15 +483,15 @@ which counts towns, not steps (§1).
 When `SPF.Active()` exists and reports another journey running, every way to start the route warns with "Replaces
 your current journey.": a card or row another click would choose (while choosing starts the route), the menus' Go
 and the tracker title. The chosen card's tooltip, while AGF's route runs, reads "Click again to stop the route and
-see every journey"; while it is paused (§2.10), "Click to resume the route", with the warning when another journey
+let the guide choose"; while it is paused (§2.10), "Click to resume the route", with the warning when another journey
 runs.
 
-**NPC line (roadmap #19, `Tooltip.lua`).** While a journey is chosen, hovering an NPC its steps visit adds one
+**NPC line (roadmap #19, `Tooltip.lua`).** Hovering an NPC the shown journey's steps visit adds one
 `AddNormalLine` to the unit tooltip: "Adventure guide: <journey title>". The NPCs are a town stop's givers and enders
 (its spots) and a turn-in's finish NPC, matched by the creature entry in `UnitGUID` against the places' `npc` (the
 generator's creature entry; an object giver has none). An objective or dungeon step visits no NPC. The set is
 gathered on each route change, so a hover only reads; the line comes from a `TooltipDataProcessor` post call, in
-combat too, and touches no secure frame. With no journey chosen, and for every other unit, nothing is added.
+combat too, and touches no secure frame. For every other unit nothing is added.
 
 ### 2.10 A journey's lifecycle
 
@@ -510,8 +510,9 @@ Invariants:
 2. **The story is the zone you stand in** when it fits (top 3 now, or two levels on), when your level is within its
    range and it has a quest open now that is not an outdoor elite (a zone whose quests you have mostly taken up ranks
    low, yet is still where you are adventuring), or when it is the chosen zone.
-3. **Only a chosen journey is guided.** The tracker shows a step only for a chosen journey; with none, its hook line
-   chooses one (§2.5).
+3. **Only a chosen journey is guided.** With none chosen the guide, tracker and map draw the first card's steps
+   (auto-start, §2.1), but nothing guides until the player chooses or asks for Go; the tracker title, a card or a
+   ring chooses the card it shows.
 4. **Guidance follows the journey.** On each rebuild and on the frame after Shortest Path's super-tracking events,
    `Integrations.Stale` sends the route again, once, when a stop it has yet to reach left the steps, step 1 is neither
    the stop it heads for nor the one just reached, or step 1's point moved more than 100 yd (the town linkage).
@@ -544,8 +545,8 @@ An end is classified by Shortest Path's `API.Ended(owner)` when present ("arrive
 arrived, and anything else means cleared. Arrived keeps `guided`; cleared and replaced forget it, so nothing sends
 the route again until the card resumes it.
 
-A chosen journey the full build no longer has ends: its route is cancelled and the choice cleared, so the cards are
-whole again. A Quests or Dungeons filter keeps the key (the player's own toggle can bring it back) but stops the
+A chosen journey the full build no longer has ends: its route is cancelled and the choice cleared, so the guide
+draws the first card again. A Quests or Dungeons filter keeps the key (the player's own toggle can bring it back) but stops the
 route; Quests covers `zone:` and `chain:` keys and `calling`, Dungeons `dungeon:` keys, except with no next zone,
 when Dungeons hides nothing. Skipping every step of a chosen journey ends it the same way, quietly.
 
@@ -735,6 +736,27 @@ rank spells is not needed, since the cap already says which rank is known.
   no menu offers Go or tooltip a click line. Choosing a journey still chooses it. Turning it on stops what Go started,
   as Stop does.
 
+### 2.18 Choice: dropping and adding quests
+
+The player steers the route a quest at a time, per character, and the guide only ever advises.
+
+- **Not this quest.** A step's menu (§2.8) has "Not this quest": one button for a stop with one quest, else a
+  submenu naming each. It saves `charDB.notInterested["quest:<id>"] = {title}`, the store "Not interested" uses, so
+  "Skipped (n)" counts it and "Show again: <title>" brings it back. A dropped quest is never a pickup, never a
+  hand-in or objective step and never counts towards a card; it stays in the log, since the guide never abandons.
+  Trainer and battlemaster stops have no quest to drop.
+- **Adding a quest.** A shift-click on a quest giver's "!" or on an open search result (§2.4) adds its quests
+  (`charDB.pinned[id] = true`); a second shift-click takes them off. Their tooltips say which it will do. An added
+  quest skips the lap's filters (a timed or event quest, an objective the data does not place) and the ratio cut, so
+  it is on the route whenever it is eligible; eligibility and the orange/red rule (§4.1) still apply. One on the
+  story's map joins the story; one elsewhere is on Loose ends, within the log's room. A search result it added
+  wears the tradeskill favourite's star (`tradeskills-star`). Dropping a quest takes it off; adding one forgets a
+  drop.
+- **Log-full note.** With 2 or fewer free slots in the log, the first card's line 3 reads "Log nearly full: N you
+  could drop", and its tooltip lists them under "To make room in your log, you could drop:". They are the log's
+  unfinished quests the data knows that are dropped, grey, placed nowhere the data has, or on another continent.
+  Advice only: nothing is abandoned, and a finished quest is never listed.
+
 ## 3. Copy style sheet
 
 - Sentence case. No exclamation marks. Digits for numbers. "·" as the separator.
@@ -753,18 +775,18 @@ rank spells is not needed, since the cap already says which rank is known.
 
 | Where | Example |
 |---|---|
-| Card titles | `Finish what you carry` · `Westfall story` · `Head to Darkshore` · `Your calling` |
+| Card titles | `Loose ends` · `Westfall story` · `Head to Darkshore` · `Your calling` |
 | Card sublines | `3 quests ready to hand in` · `Chapter 2 of 4` · `Chapter 2` · `11 quests near your level` · `2 quests for your class` |
 | Reasons | `Your class trainer has a task: Call of Earth` · `A task for your class: Call of Earth` · `Continues a story you started` · `3 quests will soon turn grey` · `A chain begins with Gryan Stoutmantle` · `Sentinel Hill needs hands` · `Begins a new story` · `Ready to hand in` · `For level 14` · `Opens the next chapter here` |
-| Card line 3, tooltip | `Lakeshire, Redridge and 2 more stops` · `Lakeshire, Redridge and 1 more stop` · `1 needs a group` · `3 need a group` |
+| Card line 3, tooltip | `Lakeshire, Redridge and 2 more stops` · `Lakeshire, Redridge and 1 more stop` · `1 needs a group` · `3 need a group` · `Log nearly full: 3 you could drop` · `To make room in your log, you could drop:` |
 | Hub stops | `Lakeshire, Redridge` · `2 to hand in, 4 to pick up` · `Marshal Marris, Verner Osgood and 2 more` · `Guard Parker, Redridge Mountains` · `And 3 more` |
 | Travel | `Fly to Sentinel Hill · 6 min` · `Boat to Auberdine · 2 min wait` · `Fly to Astranaar · new flight path` · `About 4 min away` · card: `6 min` · `15 min by boat` · `15 min by zeppelin` |
 | Why-not | `Requires level 14` · `Completed: The Forgotten Heirloom` · `Requires one of: A, B` · `Horde only` · `Warriors only` · `You chose X instead` · `The guide can't tell where this starts` · `You've done this` · `In your quest log` · `Repeatable quests aren't suggested` |
-| Tracker | `Where you left off: finishes a story` · `Next: The Ruins of Stardust` · `Story complete` · `Westfall story · Begins a new story` |
+| Tracker | `Where you left off: finishes a story` · `Next: The Ruins of Stardust` · `Story complete` |
 | Asides | `Visit your class trainer in Stormwind · 3 new spells` · `Visit your class trainer · 3 new spells` · `Riverglades · For levels 36-44` · `You haven't seen Thorn Hill yet` |
 | Trainer stop | `Train in Stormwind` · `3 new spells` · `1 new spell` |
-| Buttons, menu | `Go` (menus only) · `Stop` · `Show quest` · `Skip for now` · `Not interested` · `Skipped (2)` · `Show again: <title>` · `Choose another journey` |
-| Instructions | `Click to travel with Shortest Path` · `Click to set a waypoint` · `Click to choose this journey` · `Replaces your current journey.` |
+| Buttons, menu | `Go` (menus only) · `Stop` · `Show quest` · `Skip for now` · `Not this quest` · `Not interested` · `Skipped (2)` · `Show again: <title>` · `Choose another journey` |
+| Instructions | `Click to travel with Shortest Path` · `Click to set a waypoint` · `Click to choose this journey` · `Click again to let the guide choose` · `Shift-click to add it to your route` · `Shift-click to take it off your route` · `Replaces your current journey.` |
 | Dungeon, way in | `2 of your quests end inside Wailing Caverns` · `1 of your quests ends inside Wailing Caverns` · `The way into Scholomance` · `The way into Scholomance is open to you` |
 | Empty | `The guide has no journey for you here; look for the "!" over quest givers.` |
 | Coverage | `This land has stories the guide doesn't know yet; look for the "!" over quest givers.` |
@@ -839,6 +861,8 @@ takes the smallest map the quests use. NPCs never renumber or merge towns. An NP
 - **Orange and red.** A quest three or more levels up (the stock orange or red) is never a pickup, though its
   minimum allows it: too hard alone. At 19, Missing In Action (25) waits in a Blackrock camp. The map's
   quest-giver "!" still shows it, as the game does.
+- **The player's choices (§2.18).** A dropped quest is never a candidate. An added quest always is while eligible:
+  it passes the lap's filters and the ratio cut, but not the orange/red rule or the log's room.
 - **Unchanged.** A quest whose eligibility the data cannot establish is never a candidate, and every step keeps
   the data's coordinates.
 
@@ -993,8 +1017,9 @@ Nothing below has been validated in game yet.
     shows above the cards and in the tracker with the class trainer mark and no ring; its click goes to the nearest
     trainer; its X, Skip for now and Not interested hide it, and the cog's "Skipped (1)" brings it back. Without
     Tweaks Forever, nothing changes.
-11. With no journey chosen the tracker shows one line (the aside, else the story's hook) and no step; its click
-    chooses the story and the full step block appears.
+11. With no journey chosen the guide draws the first card whole over its steps, unlit, with its rings on the map and
+    its step 1 in the tracker, and nothing guides; the tracker title or a ring's click chooses that card and starts
+    its route.
 12. Batch F (plan §7.10): Lakeshire is one stop; a stop ring draws over a super-tracked "?"; the cards show minutes
     and the hub line; the footer's Stop goes as soon as Shortest Path ends the journey.
 13. Batch G (plan §8.2): a chosen journey lasts through travel, turn-ins and `/reload`, and a paused route resumes
@@ -1005,8 +1030,8 @@ Nothing below has been validated in game yet.
     without a `/reload`.
 15. Trainers (§2.12): with spells to train and a journey chosen whose route passes the trainer's town, a "Train in
     <town>" stop shows with a ring and Go; training the spells removes it at once.
-16. With a journey chosen, hovering its next stop's giver adds "Adventure guide: <title>" under the stock unit lines
-    (in combat too, with no taint logged); another NPC, a player, and every NPC once the choice is cleared add nothing.
+16. Hovering the shown journey's next stop's giver adds "Adventure guide: <title>" under the stock unit lines
+    (in combat too, with no taint logged); another NPC and a player add nothing.
 17. Something new (§2.13): a level-up that brings a new next-zone card glows "<Zone> is now for your level" once,
     with the tab and compartment pips; opening the tab clears both, the card's mark stays until it closes. A login
     or `/reload` never glows.
@@ -1060,6 +1085,12 @@ Nothing below has been validated in game yet.
 31. Wanderer (§2.17): turning it on in Settings stops a running route and clears AGF's waypoint; then choosing a card,
     the tracker title and an aside's click set no waypoint and no Shortest Path route, the map shows no rings or
     givers (guide open or not), and no menu has Go. Turning it off brings them back.
+32. Choice (§2.18): a step's right-click "Not this quest" takes the quest off the route and leaves it in the log;
+    "Skipped (1)" → "Show again" brings it back, also after `/reload`. Shift-clicking a "!" giver (pins and givers
+    on) or an open search result adds its quests (the result wears a star) and a second shift-click takes them off;
+    one in another zone shows on Loose ends as "1 you added". With the log two short of full, the first card reads
+    "Log nearly full: N you could drop" and its tooltip names them; nothing is abandoned. Later area rings are
+    fainter than step 1's.
 
 ## 9. Open questions that need client probes
 
