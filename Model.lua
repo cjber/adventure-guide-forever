@@ -1590,13 +1590,23 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	chosenZone = Open(chosenZone) and chosenZone or nil
 	local journeys = { Carry(data, player, completed, log, ready, prefs, mapName) }
 	-- The story: the zone the player stands in when it is among the three their level fits now or two levels on (the
-	-- next zone's, which is never the zone they are in), or is the chosen zone, so heading to a zone becomes its story
-	-- on arrival; otherwise, or when it has no step (a capital), the zone the level fits best.
+	-- next zone's, which is never the zone they are in), when their level is within its range (a zone whose quests
+	-- they have mostly taken up ranks low, yet is still where they are adventuring), or is the chosen zone, so heading
+	-- to a zone becomes its story on arrival; otherwise, or when it has no step (a capital), the zone the level fits
+	-- best.
 	local best
 	for _, map in ipairs(zones) do
 		best = best or (Open(map) and map or nil)
 	end
 	local zone, tries, here = best, { best }, chosenZone ~= nil and chosenZone == player.map
+	-- As in the ranking, only a quest that isn't an outdoor elite makes the zone the player's: an elite is optional.
+	local band = data.zones[player.map]
+	if band and band.min <= player.level and player.level <= band.max then
+		for _, id in ipairs(here and {} or eligible) do
+			local quest = data.quests[id]
+			here = here or (not quest.elite and (quest.zone or quest.start.map) == player.map)
+		end
+	end
 	for _, map in ipairs(zones) do
 		here = here or map == player.map
 	end

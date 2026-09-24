@@ -1,12 +1,15 @@
 # human18_westfall: level 18, side 1, at 1436 0.5600,0.4700
-card (chosen) | zone:1439 | Darkshore story | Chapter 1 of 5 | A chain begins with Barithras Moonshade | map 1439
-  step 1 | hub:450 | Auberdine, Darkshore | 1439 0.3574,0.4371 | Begins a new story
+card (chosen) | zone:1436 | Westfall story | Chapter 1 of 5 | A chain begins with Gryan Stoutmantle | map 1436
+  step 1 | hub:45 | Pick up quests: Farmer Saldean | 1436 0.5604,0.3123 | near your level
+  step 2 | hub:51 | Pick up quests: Verna Furlbrow | 1436 0.5992,0.1942 | near your level
+  step 3 | hub:37 | Sentinel Hill, Westfall | 1436 0.5633,0.4752 | Begins a new story
+  step 4 | hub:30 | Pick up quests: Scout Galiaan | 1436 0.5398,0.5298 | near your level
+  step 5 | hub:16 | Captain Grayson | 1436 0.3001,0.8602 | 3 to pick up
+card | zone:1439 | Head to Darkshore | 16 quests near your level | Auberdine needs hands | map 1439
+  step 1 | hub:450 | Auberdine, Darkshore | 1439 0.3574,0.4371 | 12 to pick up
   step 2 | hub:435 | Pick up quests: Kerlonian Evershade | 1439 0.4440,0.7643 | near your level
   step 3 | hub:429 | Pick up quests: Therylune | 1439 0.3864,0.8733 | near your level
   step 4 | hub:427 | Pick up quests: Sentinel Aynasha | 1439 0.4594,0.9029 | near your level
   step 5 | hub:467 | Pick up quests: Gelkak Gyromast | 1439 0.5666,0.1348 | near your level
-card | zone:1433 | Head to Redridge Mountains | 14 quests near your level | For level 20 | map 1433
-  step 1 | hub:56 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
-  step 2 | hub:61 | Lakeshire, Redridge | 1433 0.1677,0.4633 | 13 to pick up
 card | dungeon:36 | Deadmines | 3 quests for this dungeon | - | map 1453
   step 1 | hub:80 | Wilder Thistlenettle | 1453 0.7031,0.4082 | 3 to pick up

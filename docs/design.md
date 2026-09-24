@@ -475,7 +475,9 @@ Invariants:
 
 1. **Offer rules only gate new choices.** A chosen journey is built while it has a step, whatever would offer it
    now, and keeps its slot when a new card pushes one out.
-2. **The story is the zone you stand in** when it fits (top 3 now, or two levels on), or when it is the chosen zone.
+2. **The story is the zone you stand in** when it fits (top 3 now, or two levels on), when your level is within its
+   range and it has a quest open now that is not an outdoor elite (a zone whose quests you have mostly taken up ranks
+   low, yet is still where you are adventuring), or when it is the chosen zone.
 3. **Only a chosen journey is guided.** The tracker shows a step only for a chosen journey; with none, its hook line
    chooses one (§2.5).
 4. **Guidance follows the journey.** On each rebuild and on the frame after Shortest Path's super-tracking events,

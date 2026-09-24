@@ -219,6 +219,25 @@ equal(Kinds(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys), "zone:1", "
 local standing = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 2, x = 0.5, y = 0.5 }
 -- Standing in There, which fits too, makes it the story (design §2.10), and the next zone is never the zone you are in.
 equal(Kinds(Model.Plan(Ahead(5), standing, {}, {}, prefs()).journeys), "zone:2", "the story is the zone you stand in")
+-- A zone within the player's level range stays their story while they stand in it, though most of its quests are
+-- already taken up and it ranks below the three that fit best.
+local mostlyTaken = Ahead(5)
+mostlyTaken.zones[3] = { name = "Taken", min = 15, max = 19 }
+mostlyTaken.quests[20] = quest(0.5, 0.5, 3)
+for map = 4, 6 do
+	mostlyTaken.zones[map] = { name = "Busy " .. map, min = 16, max = 20 }
+	for n = 1, 6 do
+		mostlyTaken.quests[map * 100 + n] = quest(n / 10, 0.5, map)
+	end
+end
+local inTaken = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 3, x = 0.5, y = 0.5 }
+equal(
+	Kinds(Model.Plan(mostlyTaken, inTaken, {}, {}, prefs()).journeys):match("^zone:3 "),
+	"zone:3 ",
+	"in range: its story"
+)
+inTaken.level = 20
+equal(Kinds(Model.Plan(mostlyTaken, inTaken, {}, {}, prefs()).journeys):match("zone:3"), nil, "past its range: not")
 local capital = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 9, x = 0.5, y = 0.5 }
 equal(Kinds(Model.Plan(Ahead(5), capital, {}, {}, prefs()).journeys), "zone:1 zone:2", "a zone with none: level fit")
 equal(Kinds(Model.Plan(Ahead(4), player, {}, {}, prefs()).journeys), "zone:1", "four quests are too few")
