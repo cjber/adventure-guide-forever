@@ -15,8 +15,8 @@ It looks like it came with the game: a tab in the quest log beside Quests, cards
 - **Choose and go**: choosing a card previews its steps on the map and hands the route to Shortest Path Forever, boats and flight paths included, or sets the game's own waypoint. A setting makes choosing preview only. *Stop* never removes a waypoint you placed yourself.
 - **Routes by distance** cross the sea at most once; a turn-in on the other continent waits until you are there.
 - **Why not?**: search a quest and see what it needs, ticked when you meet it.
-- **Objective tracker section** above your quests with the current step, how you'll get there, and the next one. Click the title to start the route; right-click to skip a step or pick another journey.
-- **Dungeons when you ask**: a card for the dungeon with the most quests you can take, routed to their givers. Raids are never suggested.
+- **Objective tracker section** above your quests with the current step, how you'll get there, and the next one. Click the title to start the route; right-click to skip a step or pick another journey. Right-click a card if you are not interested in it.
+- **Dungeons when you ask**: a card for the dungeon with the most quests you can take, routed to their givers. Outdoor elite quests stay on the zone cards, marked optional. Raids are never suggested.
 - **Class trainer**: with Tweaks Forever, a line tells you when you have new spells to train.
 - **Map pins and quest givers** are off by default. Turn them on in the guide's settings menu.
 

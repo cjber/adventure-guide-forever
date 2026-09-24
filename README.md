@@ -16,17 +16,17 @@ It looks like it came with the game: a tab in the quest log beside Quests, cards
 
 ## Features
 
-- **Journeys**: up to three cards on the Adventure Guide tab. *Finish what you carry* counts what is ready to hand in and in progress; *Westfall story* follows the zone's quest chain; *Head to Darkshore* ("For level 14") suggests the next zone once it has at least five quests near your level. Pick one and it shows its steps, up to nine.
+- **Journeys**: up to three cards on the Adventure Guide tab. *Finish what you carry* counts what is ready to hand in and in progress; *Westfall story* follows the zone's quest chain; *Head to Darkshore* ("For level 14") suggests the next zone once it has at least five quests near your level. Each card gives one reason from the quest data, such as "A chain begins with Gryan Stoutmantle", "Sentinel Hill needs hands" or "3 quests will soon turn grey". Pick one and it shows its steps, up to nine.
 - **Stories as chapters**: a chain reads "Chapter 2 of 4" only when the quest data proves its length, and "Chapter 2" otherwise. Later chapters are never named. Finishing a story of known length glows the tracker once and plays the game's stage-end sound.
 - **Choose and go**: choosing a card turns the map to its zone, previews its numbered steps and hands them to Shortest Path Forever as one journey, or sets the game's own waypoint without it. In combat it starts once the fight ends. Clicking the chosen card again, or *Stop*, removes only what the guide set, so a waypoint you moved yourself stays. A setting turns this off, so choosing only previews.
 - **Routes by distance**: steps are ordered by where they are, cross the sea at most once, and a turn-in on the other continent waits at the end with "Hand in when you're in Stormwind City".
 - **Why not?**: type three letters or more in *Search quests* and each match lists what the data says it needs (level, earlier quests, race, class, faction), ticked when you meet it.
 - **Objective tracker section** above your quests: the current step, how you'll get there with Shortest Path Forever ("Fly to Sentinel Hill · 6 min"), and the step after. Click the title to start the route (and, with the setting on, track its quests); right-click for *Go*, *Show quest*, *Skip for now* or another journey. After a login, when step 1 is still the step you stopped on, it says "Where you left off".
 - **Quest details**: clicking a quest from your log, in the guide or the tracker, opens Blizzard's own quest page. Nothing opens in combat.
-- **Dungeons when you ask**: turn on *Dungeons* in the guide's settings menu and a card offers the dungeon with the most quests you can take, routed to their quest givers. Raids are never suggested. Quests in your log always show, whatever the filters.
+- **Dungeons when you ask**: turn on *Dungeons* in the guide's settings menu and a card offers the dungeon with the most quests you can take, routed to their quest givers. Outdoor elite quests stay on the zone cards, marked optional with the group badge. Raids are never suggested. Quests in your log always show, whatever the filters.
 - **Class trainer**: with Tweaks Forever loaded, "Visit your class trainer · 3 new spells" appears above the steps when you have spells to train. It has no map mark, because the data has no trainer locations.
 - **Map pins and quest givers**, off by default: numbered route pins, and the game's "!" over everyone with a quest you can take now. Turn them on under *Show map pins* and *Show quest givers*.
-- **Skip for now** hides a step until your next `/reload`; *Skipped (n)* under the steps brings one back.
+- **Skip for now** hides a step until your next `/reload`. Right-click a journey card for *Not interested*, which hides it on this character. *Skipped (n)*, under the steps and in the cog, brings either back.
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png" width="400" alt="The objective tracker's Adventure Guide section: Crossroads, The Barrens, 1 to hand in, 8 to pick up, Opens the next chapter here, About 6 min away, Next: Regthar Deathgate"></p>
 
@@ -39,7 +39,7 @@ Install it from CurseForge or Wago Addons, or download the zip from [Releases](h
 - `/agf` or `/adventureguide` opens the guide on the world map, as does the addon compartment on the minimap.
 - `/agf audit` compares the bundled quest data with the game.
 - `/agf dump` saves the guide's layout for a bug report; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua`.
-- The cog on the tab holds *Quests*, *Dungeons*, the map pins and the tracker. The rest is under *Settings > AddOns > Adventure Guide*, including whether choosing a journey or clicking the tracker title starts the route.
+- The cog on the tab holds *Quests*, *Dungeons*, the map pins, the tracker and anything skipped. The rest is under *Settings > AddOns > Adventure Guide*, including whether choosing a journey or clicking the tracker title starts the route.
 
 ## Where the quests come from
 
