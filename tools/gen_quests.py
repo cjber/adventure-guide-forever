@@ -111,8 +111,8 @@ def download(url, filename, refresh=False, offline=False):
     return content
 
 
-def db2(name, columns, **options):
-    content = download(f"https://wago.tools/db2/{name}/csv?build={BUILD}", f"{name}-{BUILD}.csv", **options)
+def db2(name, columns, build=BUILD, **options):
+    content = download(f"https://wago.tools/db2/{name}/csv?build={build}", f"{name}-{build}.csv", **options)
     reader = csv.DictReader(io.StringIO(content.decode("utf-8-sig")), strict=True)
     if not set(columns) <= set(reader.fieldnames or []):
         raise ValueError(f"{name}: missing required columns {columns}")

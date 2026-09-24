@@ -466,3 +466,14 @@
 ---@field TrackRouteQuests fun() track the route's log quests; with untrackOthers, stop tracking the rest
 ---@field DumpLayout fun(root: Frame, describe?: fun(region: Region, entry: AGFDumpEntry)): AGFDumpEntry[]
 ---@field Dump fun() /agf dump: save the layout, route and frames in AdventureGuideForeverDB.dump
+
+--[[ Stream 1e: what Forever added (tools/diff_forever.py, Data/Forever.lua) and honest coverage ]]
+
+-- The IDs Forever's DB2 tables have and Classic Era's lack, at the pinned builds.
+---@class AGFForever
+---@field era string the Classic Era build the diff ran against
+---@field quests table<integer, integer[]> uiMapID -> the added quests whose QuestPOIBlob sits on it; the rest have no zone
+---@field areas table<integer, true> the added AreaTable IDs
+
+---@class AGFData
+---@field forever? AGFForever nil where only Data/Quests.lua is loaded (the planner specs and bench)
