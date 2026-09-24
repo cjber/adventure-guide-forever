@@ -599,6 +599,31 @@ do
 	equal(button:IsShown(), false, "skipped: hidden again at 0")
 	clean(h, "step menu")
 end
+-- A skipped step the route no longer has (the quest turned in anyway) leaves Skipped (n); one it still has stays.
+do
+	local completed = { 844 }
+	local log = {
+		{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
+		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
+	}
+	local h = harness.load({ completed = completed, log = log })
+	local ns = h.ns
+	h.flush()
+	ns.Skip("turnin:845", "Turn in: The Zhevra")
+	h.flush()
+	local other = ns.Route().steps[1]
+	ns.Skip(other.key, other.title)
+	h.flush()
+	equal(#ns.Skipped(), 2, "skipped, pruned: both counted")
+	table.remove(log, 1)
+	completed[#completed + 1] = 845
+	ns.Invalidate()
+	h.flush()
+	equal(#ns.Skipped(), 1, "skipped, pruned: the turned-in quest leaves")
+	equal(ns.Skipped()[1].key, other.key, "skipped, pruned: the other stays")
+	equal(ns.Prefs().skipped["turnin:845"], nil, "skipped, pruned: and is no longer skipped")
+	clean(h, "skipped, pruned")
+end
 
 -- F8, the tracker (design §2.5): step 1's place, its reason and, with Shortest Path, its travel line, dashed; then the
 -- next step, undashed.

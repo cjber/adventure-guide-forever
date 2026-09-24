@@ -696,6 +696,10 @@ local function Order(selected, origin, where, away, cheap)
 	return steps
 end
 
+-- The skipped keys a full build still found among its candidates (Model.Plan); nil outside one.
+---@type table<string, boolean>?
+local skippedSeen
+
 -- Chooses up to MAX_STEPS of `candidates` and orders them from the player (docs/design.md §4.1). `lead`, the story
 -- card's chapter, is chosen first, then ordered by cost like the rest.
 local function Build(data, player, candidates, prefs, mapName, cheap, lead)
@@ -704,6 +708,8 @@ local function Build(data, player, candidates, prefs, mapName, cheap, lead)
 		if not (prefs.skipped and prefs.skipped[step.key]) then
 			pool[#pool + 1] = step
 			where[step] = Position(data, step, docks)
+		elseif skippedSeen then
+			skippedSeen[step.key] = true
 		end
 	end
 	local origin = Position(data, player, docks)
@@ -937,7 +943,10 @@ end
 
 ---@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
 function Model.Plan(data, player, completed, log, prefs, mapName)
-	return Route(Model.Journeys(data, player, completed, log, prefs, mapName), prefs)
+	skippedSeen = {}
+	local route = Route(Model.Journeys(data, player, completed, log, prefs, mapName), prefs)
+	route.skipped, skippedSeen = skippedSeen, nil
+	return route
 end
 
 -- A journey from the last full build without the steps skipped since; the same table when none was.

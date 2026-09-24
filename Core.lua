@@ -300,6 +300,18 @@ local function Rebuild()
 	end
 	cachedRoute = BuildRoute()
 	dirty = false
+	-- A skipped step the full build no longer finds (turned in, abandoned) leaves Skipped (n): Show again would
+	-- bring nothing back.
+	local seen = cachedRoute.skipped
+	if seen then
+		for index = #skippedOrder, 1, -1 do
+			local key = skippedOrder[index].key
+			if not seen[key] then
+				sessionSkipped[key] = nil
+				table.remove(skippedOrder, index)
+			end
+		end
+	end
 	Remember(cachedRoute.steps[1])
 end
 

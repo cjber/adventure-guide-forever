@@ -144,6 +144,7 @@
 ---@field journeys AGFJourney[] at most 3: carry, the zone's story, the next zone
 ---@field journey? string the chosen journey's key
 ---@field steps AGFStep[] the chosen journey's steps, never more than MAX_STEPS
+---@field skipped? table<string, boolean> the skipped keys a full build still had a step for; nil after the combat one
 
 -- One requirement in the why-not view (Model.Why).
 ---@class AGFWhyLine
