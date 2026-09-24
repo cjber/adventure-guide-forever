@@ -165,7 +165,9 @@ AdventureGuideForeverPinMixin = CreateFromMixins(MapCanvasPinMixin)
 ---@param step AGFStep
 ---@param index number
 function AdventureGuideForeverPinMixin:OnAcquired(step, index)
-	self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI")
+	-- The stock user waypoint's level (WaypointLocationDataProvider), above every quest "!" and "?", the super-tracked
+	-- one's included (Blizzard_WorldMap.lua:291-311); givers stay at AREA_POI, under both.
+	self:UseFrameLevelType("PIN_FRAME_LEVEL_WAYPOINT_LOCATION")
 	self.step, self.index = step, index
 	self.Number:SetAtlas("services-number-" .. index)
 	self:SetPosition(step.x, step.y)

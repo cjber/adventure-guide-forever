@@ -231,6 +231,8 @@ for _, spf in ipairs({ false, "v1" }) do
 
 	local ring = h.pins.AdventureGuideForeverPinTemplate[1]
 	equal(ring.Number:GetAtlas(), "services-number-1", label .. ": the ring's numeral")
+	-- Rings draw above the stock quest marks; givers stay under them (Blizzard_WorldMap.lua:291-311).
+	equal(ring.frameLevelType, "PIN_FRAME_LEVEL_WAYPOINT_LOCATION", label .. ": rings at the user waypoint's level")
 	h.Hover(ring)
 	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. The Zhevra opens its next chapter here.
 	local expected = { "title: 1. Turn in: The Zhevra" }
@@ -250,6 +252,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, #givers, label .. ": a giver pin per eligible giver")
 	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, label .. ": no rings off the route's map")
 	local giverPin = h.pins.AdventureGuideForeverGiverPinTemplate[1]
+	equal(giverPin.frameLevelType, "PIN_FRAME_LEVEL_AREA_POI", label .. ": givers at the area POI level")
 	h.Hover(giverPin)
 	equal(h.tooltip[1], "title: " .. giverPin.giver.title, label .. ": giver tooltip title")
 	equal(#h.tooltip, #giverPin.giver.quests + 2, label .. ": a giver tooltip line per quest")
