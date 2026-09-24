@@ -185,8 +185,11 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
 - **What a card may offer.** A card only ever holds eligible, recommendable steps. It never shows a lock, never shows "opens at level N", and never marks something new-in-Forever or of unknown location (§2.13's mark says new to the character). Locked quests appear only in search (§2.4).
 - **Card kinds** (three at most, only those that have steps). Carry and the story keep their fixed slots; the
   diversions share what is left (roadmap R4):
-  1. **Finish what you carry**: log turn-ins and objectives.
-  2. **The zone story**: the best eligible chain in the zone the player's level fits best.
+  1. **The zone story**: the best eligible chain in the zone the player's level fits best, or the zone they stand in
+     while its quests are theirs to take or carry. It also holds the log's quests done next on its map: hand-ins
+     share its towns' stops, and quests under way are steps at the client's point for them, else the data's area
+     for their first open objective. Its subline counts them first.
+  2. **Finish what you carry**: the log's turn-ins and objectives the story does not hold.
   3. **Diversions**, newest first:
      - **Your calling** (roadmap #7): the class quests the player can take now, as one card: a `classes` mask of the
        player's class alone (Vile Familiars, every Horde class's but the warlock's, is a starting quest), never a
