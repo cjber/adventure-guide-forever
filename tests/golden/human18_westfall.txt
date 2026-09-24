@@ -1,13 +1,12 @@
 # human18_westfall: level 18, side 1, at 1436 0.5600,0.4700
 card (chosen) | story:1439 | Darkshore story | Chapter 1 of 5 | Begins a new story | map 1439
-  step 1 | pickup:450 | Pick up quests: Archaeologist Hollee | 1439 0.3744,0.4184 | Begins a new story
-  step 2 | pickup:435 | Pick up quests: Kerlonian Evershade | 1439 0.4440,0.7643 | near your level
-  step 3 | pickup:429 | Pick up quests: Therylune | 1439 0.3864,0.8733 | near your level
-  step 4 | pickup:427 | Pick up quests: Sentinel Aynasha | 1439 0.4594,0.9029 | near your level
-  step 5 | pickup:467 | Pick up quests: Gelkak Gyromast | 1439 0.5666,0.1348 | near your level
+  step 1 | hub:450 | Auberdine, Darkshore | 1439 0.3574,0.4371 | Begins a new story
+  step 2 | hub:435 | Pick up quests: Kerlonian Evershade | 1439 0.4440,0.7643 | near your level
+  step 3 | hub:429 | Pick up quests: Therylune | 1439 0.3864,0.8733 | near your level
+  step 4 | hub:427 | Pick up quests: Sentinel Aynasha | 1439 0.4594,0.9029 | near your level
+  step 5 | hub:467 | Pick up quests: Gelkak Gyromast | 1439 0.5666,0.1348 | near your level
 card | dungeon:36 | Deadmines | 3 quests for this dungeon | - | map 1453
-  step 1 | dungeon:80 | Pick up quests: Wilder Thistlenettle | 1453 0.7031,0.4082 | 3 quests here
+  step 1 | hub:80 | Wilder Thistlenettle | 1453 0.7031,0.4082 | 3 to pick up
 card | nextzone:1433 | Head to Redridge Mountains | 14 quests near your level | For level 20 | map 1433
-  step 1 | pickup:56 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
-  step 2 | dungeon:61 | Pick up quests: Wanted: Gath'Ilzogg | 1433 0.2454,0.4616 | near your level
-  step 3 | pickup:61 | Pick up quests: Marshal Marris | 1433 0.2842,0.4897 | 12 quests here
+  step 1 | hub:56 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
+  step 2 | hub:61 | Lakeshire, Redridge | 1433 0.1677,0.4633 | 13 to pick up

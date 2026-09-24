@@ -95,15 +95,23 @@
 ---@field last? {key: string, reason: string} step 1 at the last rebuild, for the next login's resume line
 ---@field waypoint? {map: integer, x: number, y: number} the native waypoint the last Go set, while it may still be ours
 
----@alias AGFStepKind "turnin"|"pickup"|"objective"|"dungeon"
+-- "hub" is a town's stop (its pickups and agreeing hand-ins), "turnin" a hand-in at the client's waypoint, and
+-- "objective" or "dungeon" (a group quest) the log's quests under way.
+---@alias AGFStepKind "hub"|"turnin"|"objective"|"dungeon"
 
 ---@class AGFStep
----@field key string stable identity for skips and the resume line, e.g. "pickup:1519:0.46:0.52" or "turnin:4581"
+---@field key string stable identity for skips and the resume line, e.g. "hub:61" or "turnin:4581"
 ---@field kind AGFStepKind
----@field title string e.g. "Turn in: Bathran's Hair" or "The Ruins of Stardust"
----@field detail string grey second line, e.g. "2 quests here"
+---@field title string e.g. "Turn in: Bathran's Hair", "Pick up quests: Guard Parker" or "Lakeshire, Redridge"
+---@field detail string grey second line, e.g. "2 to hand in, 4 to pick up"
 ---@field reason string short why, e.g. "continues chain"
----@field quests integer[] quest IDs this step covers
+---@field quests integer[] quest IDs this step covers; a town's hand-ins first, then by ID
+---@field hub? integer a town's hub (AGFPlace.hub); nil for a town the generator could not place
+---@field pickups? integer[] a town's eligible quests this card wants there, ascending
+---@field handins? integer[] a town's finished log quests handed in there, ascending
+---@field givers? string[] a town's distinct NPC and object names, in `quests` order
+---@field group? integer how many of a town's quests are elite, dungeon or raid
+---@field spots? table<integer, AGFPlace> a town's quest ID -> its start or finish there; the point is one of them
 ---@field map integer
 ---@field x number
 ---@field y number
@@ -318,6 +326,8 @@
 ---@field QUESTS_IN_PROGRESS string
 ---@field QUESTS_HERE string format: quest count
 ---@field PICK_UP string format: place name
+---@field HUB_HAND_IN string format: a town stop's hand-in count
+---@field HUB_PICK_UP string format: a town stop's pickup count
 ---@field NEAR_YOUR_LEVEL string
 ---@field SKIP_STEP string
 ---@field OPTIONAL string

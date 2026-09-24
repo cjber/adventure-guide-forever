@@ -99,9 +99,10 @@ function ModuleMixin:LayoutContents()
 		block:AddObjective(line, step.place)
 	end
 	local resume = ns.Resume(step)
+	-- A lone hand-in, a turn-in or a town's, is titled "Turn in: …", which already says it is ready.
+	local handIn = step.kind == "turnin" or (step.kind == "hub" and #step.quests == 1 and #step.handins == 1)
 	-- Mid-line, a reason that is a sentence of its own ("Continues a story you started") loses its capital.
-	local reason = resume and ns.L.RESUME:format((resume:gsub("^%u", string.lower)))
-		or step.kind ~= "turnin" and step.reason
+	local reason = resume and ns.L.RESUME:format((resume:gsub("^%u", string.lower))) or not handIn and step.reason
 	if reason then
 		line = line + 1
 		block:AddObjective(line, reason)

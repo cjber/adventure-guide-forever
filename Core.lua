@@ -117,6 +117,8 @@ ns.L = {
 	QUESTS_IN_PROGRESS = "quests in progress",
 	QUESTS_HERE = "%d quests here",
 	PICK_UP = "Pick up quests: %s",
+	HUB_HAND_IN = "%d to hand in",
+	HUB_PICK_UP = "%d to pick up",
 	NEAR_YOUR_LEVEL = "near your level",
 	-- The guide and the map.
 	SKIP_STEP = "Skip this step for now",
@@ -293,11 +295,21 @@ function ns.Skipped()
 	return skippedOrder
 end
 
--- By key, not kind: a group quest in the log is a "dungeon" step, as is a group quest's pickup.
+-- The step's quests in the log: a town's hand-ins, or every quest of a turn-in or objectives (a group quest under
+-- way is a "dungeon" step); a town's pickups never are.
+---@param step AGFStep
+---@return integer[]
+local function LogQuests(step)
+	if step.kind == "hub" then
+		return step.handins or {}
+	end
+	return (step.kind == "turnin" or step.kind == "objective" or step.kind == "dungeon") and step.quests or {}
+end
+
 ---@param step AGFStep
 ---@return boolean
 function ns.InLog(step)
-	return step.key:find("^turnin:") ~= nil or step.key:find("^objective:") ~= nil
+	return #LogQuests(step) > 0
 end
 
 -- A quest in the log opens in Blizzard's own details view (docs/design.md §2.5); anything else is left to the caller.
@@ -309,7 +321,7 @@ function ns.ShowQuest(step)
 		return false
 	end
 	OpenQuestLog()
-	QuestMapFrame_ShowQuestDetails(step.quests[1])
+	QuestMapFrame_ShowQuestDetails(LogQuests(step)[1])
 	return true
 end
 
@@ -319,12 +331,10 @@ end
 function ns.TrackRouteQuests()
 	local onRoute, order = {}, {}
 	for _, step in ipairs(ns.Route().steps) do
-		if ns.InLog(step) then
-			for _, questID in ipairs(step.quests) do
-				if not onRoute[questID] then
-					onRoute[questID] = true
-					order[#order + 1] = questID
-				end
+		for _, questID in ipairs(LogQuests(step)) do
+			if not onRoute[questID] then
+				onRoute[questID] = true
+				order[#order + 1] = questID
 			end
 		end
 	end

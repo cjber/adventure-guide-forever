@@ -423,9 +423,103 @@ local function Step(kind, key, title, place, id, optional, reason)
 	}
 end
 
+-- The town a place stands in (the data's hub), so a stop keeps its identity when one of the town's quests is taken
+-- or done. A place the generator could not put in a town is a town of its own.
+---@param place AGFPlace
+local function Hub(place)
+	return place.hub and tostring(place.hub) or string.format("%d:%.4f:%.4f", place.map, place.x, place.y)
+end
+
+-- The stop for `place`'s town among `stops` (by key), made and added to `steps` when the town has none yet. Its point
+-- is the first quest's place until Build moves it to the giver nearest the route.
+---@param place AGFPlace
+---@return AGFStep
+local function HubStop(stops, steps, place)
+	local key = "hub:" .. Hub(place)
+	local stop = stops[key]
+	if not stop then
+		stop = {
+			kind = "hub",
+			key = key,
+			hub = place.hub,
+			title = "",
+			detail = "",
+			reason = "",
+			quests = {},
+			pickups = {},
+			handins = {},
+			givers = {},
+			group = 0,
+			spots = {},
+			map = place.map,
+			x = place.x,
+			y = place.y,
+		}
+		stops[key] = stop
+		steps[#steps + 1] = stop
+	end
+	return stop
+end
+
+-- Adds quest `id`, which `place` starts or finishes, to a stop's `list` (its pickups or hand-ins).
+local function Join(stop, list, id, place, optional)
+	list[#list + 1] = id
+	stop.quests[#stop.quests + 1] = id
+	stop.spots[id] = place
+	stop.optional = stop.optional or optional or nil
+end
+
+-- A hub stop's quests (hand-ins first, then by ID), givers, group count, title and detail, from its pickups and
+-- hand-ins. One quest keeps the single step's title; several take the town's name, else their busiest giver's.
+---@param step AGFStep
+---@param log table<integer, AGFLogQuest>
+local function Describe(data, log, step)
+	local L = ns.L
+	table.sort(step.handins)
+	table.sort(step.pickups)
+	local quests, givers, counts, group = {}, {}, {}, 0
+	for _, list in ipairs({ step.handins, step.pickups }) do
+		for _, id in ipairs(list) do
+			quests[#quests + 1] = id
+			local name, quest = step.spots[id].name, data.quests[id]
+			if not counts[name] then
+				counts[name], givers[#givers + 1] = 0, name
+			end
+			counts[name] = counts[name] + 1
+			group = group + ((quest and (quest.elite or quest.dungeon or quest.raid)) and 1 or 0)
+		end
+	end
+	step.quests, step.givers, step.group = quests, givers, group
+	if #quests == 1 then
+		local id, quest = quests[1], data.quests[quests[1]]
+		if #step.handins == 1 then
+			step.title = L.TURN_IN:format((log[id] and log[id].title) or quest.title)
+			step.reason = L.READY_TO_HAND_IN
+		else
+			step.title = L.PICK_UP:format(step.spots[id].name)
+			step.reason = (quest.pre or quest.preAny) and L.CONTINUES_STORY or L.NEAR_YOUR_LEVEL
+		end
+	else
+		local busiest = givers[1]
+		for _, name in ipairs(givers) do
+			busiest = counts[name] > counts[busiest] and name or busiest
+		end
+		local town = step.hub and data.hubs and data.hubs[step.hub]
+		step.title = town and town.name or busiest
+		local parts = {}
+		parts[#parts + 1] = #step.handins > 0 and L.HUB_HAND_IN:format(#step.handins) or nil
+		parts[#parts + 1] = #step.pickups > 0 and L.HUB_PICK_UP:format(#step.pickups) or nil
+		step.reason = table.concat(parts, L.LIST_SEPARATOR)
+	end
+	step.detail = step.reason
+end
+
 -- The quest and dungeon prefs choose what to pick up; a quest already carried always shows, whatever its kind.
-local function LogSteps(data, player, log)
-	local ids, steps, objectives = {}, {}, {}
+-- A finished quest in `ready` (the data and the client agree where it is handed in) joins its town's stop; any other
+-- finished quest is a turn-in at the client's waypoint.
+---@param ready table<integer, AGFPlace>
+local function LogSteps(data, player, log, ready)
+	local ids, steps, objectives, stops = {}, {}, {}, {}
 	for id in pairs(log) do
 		ids[#ids + 1] = id
 	end
@@ -435,8 +529,11 @@ local function LogSteps(data, player, log)
 		local group = quest and (quest.elite or quest.dungeon)
 		-- A live completion waypoint is a turn-in; an incomplete waypoint is never replaced with the starter.
 		local place = ValidPlace(entry) and entry or (entry.complete and quest and quest.finish)
-		if ValidPlace(place) then
-			local optional = Optional(quest, entry.level, player)
+		local optional = Optional(quest, entry.level, player)
+		if ready[id] then
+			local stop = HubStop(stops, steps, ready[id])
+			Join(stop, stop.handins, id, ready[id], optional)
+		elseif ValidPlace(place) then
 			if entry.complete then
 				steps[#steps + 1] = Step(
 					"turnin",
@@ -473,46 +570,18 @@ local function LogSteps(data, player, log)
 	return steps
 end
 
--- The town a place stands in (the data's hub), so a step keeps its identity when one of the town's quests is taken
--- or done. A place the generator could not put in a town is a town of its own.
----@param place AGFPlace
-local function Hub(place)
-	return place.hub and tostring(place.hub) or string.format("%d:%.4f:%.4f", place.map, place.x, place.y)
-end
-
--- One step per town of the eligible quests `wanted` accepts.
+-- One stop per town of the eligible quests `wanted` accepts; a group quest joins its town's stop like any other.
 ---@param wanted fun(quest: AGFQuest): boolean
 local function PickupSteps(data, player, eligible, wanted, steps)
-	local pickups, chosenGroups = {}, {}
+	local stops, chosenGroups = {}, {}
 	for _, id in ipairs(eligible) do
 		local quest = data.quests[id]
-		local kind = (quest.elite or quest.dungeon) and "dungeon" or "pickup"
-		local key = kind .. ":" .. Hub(quest.start)
 		if wanted(quest) and not (quest.group and chosenGroups[quest.group]) then
 			if quest.group then
 				chosenGroups[quest.group] = true
 			end
-			local step = pickups[key]
-			local chain = quest.pre or quest.preAny
-			if step then
-				step.quests[#step.quests + 1] = id
-				step.reason = ns.L.QUESTS_HERE:format(#step.quests)
-				step.detail = step.reason
-				step.optional = step.optional or Optional(quest, quest.level, player) or nil
-			else
-				local place = quest.start
-				step = Step(
-					kind,
-					key,
-					ns.L.PICK_UP:format(place.name),
-					place,
-					id,
-					Optional(quest, quest.level, player),
-					chain and ns.L.CONTINUES_STORY or ns.L.NEAR_YOUR_LEVEL
-				)
-				pickups[key] = step
-				steps[#steps + 1] = step
-			end
+			local stop = HubStop(stops, steps, quest.start)
+			Join(stop, stop.pickups, id, quest.start, Optional(quest, quest.level, player))
 		end
 	end
 end
@@ -580,6 +649,32 @@ end
 
 local function Yards(a, b)
 	return math.sqrt((a.x - b.x) ^ 2 + (a.y - b.y) ^ 2)
+end
+
+local AGREE = 100 -- yards: the town linkage (tools/gen_quests.py LINK); a waypoint this near the data's finish is it
+
+-- The finished log quests whose hand-in the data and the client agree on: the client's waypoint is on a map the data
+-- places and lies within AGREE of the data's finish, which is in a town. Each maps to that finish.
+---@return table<integer, AGFPlace>
+local function Ready(data, log)
+	local ready = {}
+	for id, entry in pairs(log) do
+		local quest = data.quests[id]
+		local finish = entry.complete and quest and quest.finish
+		if finish and finish.hub then
+			local live, there = Position(data, entry), Position(data, finish)
+			if live and there and live.known and there.known and live.continent == there.continent then
+				ready[id] = Yards(live, there) <= AGREE and finish or nil
+			end
+		end
+	end
+	return ready
+end
+
+-- A stop the player only hands in at: a turn-in, or a town with hand-ins and nothing to pick up.
+---@param step AGFStep
+local function HandInOnly(step)
+	return step.kind == "turnin" or (step.kind == "hub" and #step.pickups == 0)
 end
 
 ---@param a AGFPosition?
@@ -691,8 +786,10 @@ end
 local skippedSeen
 
 -- Chooses up to MAX_STEPS of `candidates` and orders them from the player (docs/design.md §4.1). `lead`, the story
--- card's chapter, is chosen first, then ordered by cost like the rest.
-local function Build(data, player, candidates, prefs, mapName, cheap, lead)
+-- card's chapter, is chosen first, then ordered by cost like the rest. `join` adds to the chosen steps (hand-ins to
+-- their towns) before they are described and ordered, so it never adds a step. `log` titles the hand-ins.
+---@param join? fun(selected: AGFStep[])
+local function Build(data, player, log, candidates, prefs, mapName, cheap, lead, join)
 	local pool, where, docks = {}, {}, Docks(data, player.side)
 	for _, step in ipairs(candidates) do
 		if not (prefs.skipped and prefs.skipped[step.key]) then
@@ -713,7 +810,7 @@ local function Build(data, player, candidates, prefs, mapName, cheap, lead)
 	local reach, chosen, selected = {}, {}, {}
 	for _, step in ipairs(pool) do
 		local cost = Cost(origin, where[step])
-		reach[step] = (not measured and cost >= UNKNOWN and step.kind == "turnin") and 0 or cost
+		reach[step] = (not measured and cost >= UNKNOWN and HandInOnly(step)) and 0 or cost
 	end
 	local function Take(step)
 		chosen[step] = true
@@ -742,13 +839,21 @@ local function Build(data, player, candidates, prefs, mapName, cheap, lead)
 		end
 		Take(best)
 	end
+	if join then
+		join(selected)
+	end
+	for _, step in ipairs(selected) do
+		if step.kind == "hub" then
+			Describe(data, log, step)
+		end
+	end
 
 	-- A turn-in across an ocean waits for the rest of that continent's steps, and says where it is.
 	local away = {}
 	for _, step in ipairs(selected) do
 		local position = where[step]
 		if
-			step.kind == "turnin"
+			HandInOnly(step)
 			and origin
 			and origin.known
 			and position.known
@@ -770,7 +875,23 @@ local function Build(data, player, candidates, prefs, mapName, cheap, lead)
 			break
 		end
 	end
-	return Order(selected, start, where, away, cheap)
+	-- Each town's point is the place of its quest nearest the stop before it (the player, for the first): a real
+	-- giver, never a centre, so Shortest Path takes the player to the nearest door of the town.
+	local steps, from = Order(selected, start, where, away, cheap), start
+	for _, step in ipairs(steps) do
+		if step.spots then
+			local best, bestCost
+			for _, id in ipairs(step.quests) do
+				local cost = Cost(from, Position(data, step.spots[id], docks))
+				if not best or cost < bestCost then
+					best, bestCost = step.spots[id], cost
+				end
+			end
+			step.map, step.x, step.y = best.map, best.x, best.y
+		end
+		from = Position(data, step, docks)
+	end
+	return steps
 end
 
 -- The journey cards (docs/design.md §2.2): at most three, each holding only steps the player can take now.
@@ -787,29 +908,30 @@ end
 
 -- "Finish what you carry": the log's turn-ins and objectives. `carried` is every log step, so the subline counts
 -- what the player carries, not only the steps that made the route.
-local function Carry(data, player, log, prefs, mapName, cheap)
-	local carried = LogSteps(data, player, log)
-	local steps = Build(data, player, carried, prefs, mapName, cheap)
+---@param ready table<integer, AGFPlace>
+local function Carry(data, player, log, ready, prefs, mapName, cheap)
+	local carried = LogSteps(data, player, log, ready)
+	local steps = Build(data, player, log, carried, prefs, mapName, cheap)
 	if #steps == 0 then
 		return nil
 	end
 	-- A finished quest whose hand-in is across an ocean is not ready yet: the reason line counts those, so no fact
 	-- is told twice on the card.
-	local L, ready, underway, away, here = ns.L, 0, 0, 0, Position(data, player)
+	local L, finished, underway, away, here = ns.L, 0, 0, 0, Position(data, player)
 	for _, step in ipairs(carried) do
 		if not prefs.skipped[step.key] then
-			local there = Position(data, step)
-			if step.kind ~= "turnin" then
-				underway = underway + #step.quests
-			elseif here and there and here.known and there.known and here.continent ~= there.continent then
-				away = away + 1
+			local there, done =
+				Position(data, step), step.handins and #step.handins or (step.kind == "turnin" and 1 or 0)
+			underway = underway + #step.quests - done
+			if here and there and here.known and there.known and here.continent ~= there.continent then
+				away = away + done
 			else
-				ready = ready + 1
+				finished = finished + done
 			end
 		end
 	end
 	local parts = {}
-	parts[#parts + 1] = ready > 0 and L.CARRY_READY:format(ready) or nil
+	parts[#parts + 1] = finished > 0 and L.CARRY_READY:format(finished) or nil
 	parts[#parts + 1] = underway > 0 and L.CARRY_IN_PROGRESS:format(underway) or nil
 	local farther = away > 0 and L.CARRY_AWAY:format(away) or nil
 	return {
@@ -823,9 +945,32 @@ local function Carry(data, player, log, prefs, mapName, cheap)
 	}
 end
 
+-- The finished quests in `ready` join the chosen towns they are handed in at, hand-ins first; none adds a town.
+---@param ready table<integer, AGFPlace>
+---@return fun(selected: AGFStep[])
+local function HandIns(ready)
+	return function(selected)
+		local towns, ids = {}, {}
+		for _, step in ipairs(selected) do
+			towns[step.key] = step.kind == "hub" and step or nil
+		end
+		for id in pairs(ready) do
+			ids[#ids + 1] = id
+		end
+		table.sort(ids)
+		for _, id in ipairs(ids) do
+			local town = towns["hub:" .. Hub(ready[id])]
+			if town then
+				Join(town, town.handins, id, ready[id])
+			end
+		end
+	end
+end
+
 -- A zone's pickups as one journey (kind, key and title are the caller's), and how many eligible quests it holds.
--- The step that offers `leadID` is always among them.
-local function ZoneJourney(data, player, eligible, zone, prefs, mapName, leadID)
+-- The step that offers `leadID` is always among them; the hand-ins in `ready` join the towns it holds.
+---@param ready table<integer, AGFPlace>
+local function ZoneJourney(data, player, log, ready, eligible, zone, prefs, mapName, leadID)
 	local candidates, quests, lead = {}, 0, nil
 	for _, id in ipairs(eligible) do
 		local quest = data.quests[id]
@@ -839,7 +984,7 @@ local function ZoneJourney(data, player, eligible, zone, prefs, mapName, leadID)
 			lead = id == leadID and step or lead
 		end
 	end
-	local steps = Build(data, player, candidates, prefs, mapName, false, lead)
+	local steps = Build(data, player, log, candidates, prefs, mapName, false, lead, HandIns(ready))
 	if #steps == 0 then
 		return nil, quests
 	end
@@ -856,7 +1001,7 @@ end
 -- lowest Map.ID on a tie), its steps the givers of those quests. Raids are never offered. Named by the client, in the
 -- player's language, and by the data otherwise; an instance the data doesn't name gets no card.
 ---@param instanceName? fun(id: integer): string?
-local function DungeonJourney(data, player, eligible, prefs, mapName, instanceName)
+local function DungeonJourney(data, player, log, eligible, prefs, mapName, instanceName)
 	if not (prefs.dungeons and data.instances) then
 		return nil
 	end
@@ -880,7 +1025,7 @@ local function DungeonJourney(data, player, eligible, prefs, mapName, instanceNa
 	PickupSteps(data, player, eligible, function(quest)
 		return quest.dungeon == best and not quest.raid
 	end, candidates)
-	local steps = Build(data, player, candidates, prefs, mapName)
+	local steps = Build(data, player, log, candidates, prefs, mapName)
 	if #steps == 0 then
 		return nil
 	end
@@ -923,14 +1068,15 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	-- Never past the level cap: a player at it has no next zone to head for.
 	local levels = math.min(NEXT_ZONE_AHEAD, player.maxLevel - player.level)
 	local zones, eligible, ahead = Choices(data, player, completed, log, index, prefs, levels > 0 and levels or nil)
-	local journeys = { Carry(data, player, log, prefs, mapName) }
+	local ready = Ready(data, log)
+	local journeys = { Carry(data, player, log, ready, prefs, mapName) }
 	-- The zone the player's level fits best, named after it. Model.Story (F4) makes it the chapter of a chain; until
 	-- then it holds the zone's pickups, as the route did.
 	local zone = zones[1]
 	local chain, chainID, continues, story, lead, _
 	if zone then
 		chain, chainID, continues = ZoneStory(data, completed, eligible, zone)
-		story, _, lead = ZoneJourney(data, player, eligible, zone, prefs, mapName, chainID)
+		story, _, lead = ZoneJourney(data, player, log, ready, eligible, zone, prefs, mapName, chainID)
 	end
 	if story then
 		local name = ZoneName(data, zone, mapName)
@@ -949,12 +1095,12 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 		journeys[#journeys + 1] = story
 	end
 	-- A player who turned dungeons on asked for this card, so it comes before the next zone's.
-	journeys[#journeys + 1] = DungeonJourney(data, player, eligible, prefs, mapName, instanceName)
+	journeys[#journeys + 1] = DungeonJourney(data, player, log, eligible, prefs, mapName, instanceName)
 	-- The zone that fits two levels on, when it is another zone than the story's and the one the player stands in,
 	-- and already has enough the player can take now.
 	for _, map in ipairs(ahead or {}) do
 		if map ~= zone and map ~= player.map then
-			local nextZone, quests = ZoneJourney(data, player, eligible, map, prefs, mapName)
+			local nextZone, quests = ZoneJourney(data, player, log, ready, eligible, map, prefs, mapName)
 			if nextZone and quests >= NEXT_ZONE_PICKUPS and #journeys < Model.MAX_JOURNEYS then
 				nextZone.kind, nextZone.key = "nextzone", "nextzone:" .. map
 				local name = ZoneName(data, map, mapName)
@@ -994,28 +1140,45 @@ function Model.Plan(data, player, completed, log, prefs, mapName, instanceName)
 	return route
 end
 
--- A journey from the last full build without the steps skipped since or no longer open: every step on it is a pickup,
--- and one whose quest the player has taken, done or ruled out (a group choice) since goes whole; the full build after
--- combat brings back any other quest its giver still has. The same table when no step went.
----@param journey AGFJourney
----@param gone fun(step: AGFStep): boolean
----@return AGFJourney?
-local function Retained(journey, gone)
-	local steps, chapterGone = {}, false
-	for _, step in ipairs(journey.steps) do
-		if not gone(step) then
-			steps[#steps + 1] = step
-		elseif step.chapter then
-			chapterGone = true
-		end
-	end
-	if #steps == #journey.steps or #steps == 0 then
-		return #steps > 0 and journey or nil
-	end
+local function Copy(source)
 	local copy = {}
-	for key, value in pairs(journey) do
+	for key, value in pairs(source) do
 		copy[key] = value
 	end
+	return copy
+end
+
+-- A journey from the last full build less what went since: every step on it is a town, and a quest the player has
+-- taken, done or ruled out (a group choice), or handed in, leaves its town, which goes only once it is empty or
+-- skipped; the full build after combat brings back anything else. The same table when nothing went.
+---@param journey AGFJourney
+---@param prune fun(step: AGFStep): AGFStep? the step, a copy less the quests gone, or nil when none is left
+---@return AGFJourney?
+local function Retained(journey, prune)
+	local steps, changed, chapterGone = {}, false, false
+	local chapterID = journey.story and journey.story.members[journey.story.chapter]
+	for _, step in ipairs(journey.steps) do
+		local kept = prune(step)
+		changed = changed or kept ~= step
+		local chapterKept = false
+		for _, id in ipairs(kept and kept.quests or {}) do
+			chapterKept = chapterKept or id == chapterID
+		end
+		if step.chapter and not chapterKept then
+			chapterGone = true
+			if kept then
+				kept.chapter = nil -- a copy: its chapter's quest went
+			end
+		elseif kept and kept ~= step and step.chapter then
+			-- The chapter stays: its town keeps the story's reason, as the full build gives it.
+			kept.reason, kept.detail = step.reason, #kept.quests == 1 and step.reason or kept.detail
+		end
+		steps[#steps + 1] = kept
+	end
+	if not changed or #steps == 0 then
+		return #steps > 0 and journey or nil
+	end
+	local copy = Copy(journey)
 	copy.steps, copy.map = steps, steps[1].map
 	-- A chapter that went takes the card's chain with it, as the full build does.
 	if chapterGone then
@@ -1031,20 +1194,47 @@ end
 ---@param last AGFRoute
 function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 	local skipped, groups = prefs.skipped or {}, Index(data).groups
-	local function Gone(step)
-		if skipped[step.key] then
-			return true
+	local function Keep(ids, open)
+		local kept = {}
+		for _, id in ipairs(ids) do
+			kept[#kept + 1] = open(id) and id or nil
 		end
-		for _, id in ipairs(step.quests) do
-			if not Eligible(data, player, completed, log, id, groups) then
-				return true
-			end
-		end
-		return false
+		return kept
 	end
-	local journeys = { Carry(data, player, log, prefs, mapName, true) }
+	local function Open(id)
+		return Eligible(data, player, completed, log, id, groups)
+	end
+	local function Carried(id)
+		return log[id] ~= nil and log[id].complete
+	end
+	local function Prune(step)
+		if skipped[step.key] then
+			return nil
+		end
+		local pickups, handins = Keep(step.pickups, Open), Keep(step.handins, Carried)
+		if #pickups + #handins == #step.quests then
+			return step
+		elseif #pickups + #handins == 0 then
+			return nil
+		end
+		local copy = Copy(step) --[[@as AGFStep]]
+		copy.pickups, copy.handins = pickups, handins
+		Describe(data, log, copy)
+		-- A point whose giver has nothing left moves to the first quest's place.
+		local here = false
+		for _, id in ipairs(copy.quests) do
+			local spot = copy.spots[id]
+			here = here or (spot.map == copy.map and spot.x == copy.x and spot.y == copy.y)
+		end
+		if not here then
+			local spot = copy.spots[copy.quests[1]]
+			copy.map, copy.x, copy.y = spot.map, spot.x, spot.y
+		end
+		return copy
+	end
+	local journeys = { Carry(data, player, log, Ready(data, log), prefs, mapName, true) }
 	for _, journey in ipairs(last.journeys) do
-		local kept = journey.kind ~= "carry" and Retained(journey, Gone)
+		local kept = journey.kind ~= "carry" and Retained(journey, Prune)
 		-- A carry card the last build lacked pushes out the last card, as the full build would leave it out.
 		if kept and #journeys < Model.MAX_JOURNEYS then
 			journeys[#journeys + 1] = kept

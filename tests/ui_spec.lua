@@ -44,7 +44,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	equal(h.G.ShortestPathForever ~= nil, spf ~= false, label .. ": Shortest Path global")
 	equal(h.G.TweaksForever, nil, label .. ": no Tweaks Forever")
 	equal(h.G.LegacyForever, nil, label .. ": no Legacy Forever")
-	equal(h.ns.Route().steps[1].key, "turnin:845", label .. ": the hand-in leads the route")
+	equal(h.ns.Route().steps[1].key, "hub:346", label .. ": the hand-in leads the route")
 
 	-- Blizzard's displayMode is never written, whatever the player clicks (Panel.lua ShowGuide).
 	local panel, questsFrame = h.G.AdventureGuideForeverPanel, h.questMap.QuestsFrame
@@ -99,13 +99,17 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	equal(h.counts.displayModeWrites, 1, label .. ": the trap counts writes")
 end
 
--- F6: a group quest in the log (a "dungeon" step) opens its details too; a group quest's pickup does not.
+-- F6: a group quest in the log (a "dungeon" step) opens its details too; a group quest's pickup does not, and a town
+-- opens its first hand-in.
 do
 	local h = Load(false)
 	local show = h.ns.ShowQuest
 	equal(show({ kind = "dungeon", key = "objective:843", quests = { 843 } }), true, "a group quest in the log opens")
-	equal(show({ kind = "dungeon", key = "dungeon:1413:0.5:0.5", quests = { 843 } }), false, "a group pickup does not")
-	equal(table.concat(h.questDetails, " "), "843", "the details opened once")
+	local town = { kind = "hub", key = "hub:346", quests = { 843 }, pickups = { 843 }, handins = {} }
+	equal(show(town), false, "a group pickup does not")
+	town.quests, town.pickups, town.handins = { 845, 843 }, { 843 }, { 845 }
+	equal(show(town), true, "a town with a hand-in opens it")
+	equal(table.concat(h.questDetails, " "), "843 845", "the details opened once each")
 end
 
 -- The tracker title sets off along the route and tracks its quests; each part has its own setting, and untracking
@@ -268,7 +272,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Live(), 0, label .. ": RemoveAllData leaves no pins")
 
 	-- Design §2.8's menu for a log quest; Stop only once Go runs, Show quest never in combat.
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["turnin:845"], "RightButton")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["hub:346"], "RightButton")
 	local menu = {
 		"title: Turn in: The Zhevra",
 		"button: Go",
@@ -279,7 +283,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	same(h.MenuLines(), menu, label .. ": tracker menu")
 	ns.Integrations.Navigate(ns.Route().steps[1])
 	h.SetCombat(true)
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["turnin:845"], "RightButton")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["hub:346"], "RightButton")
 	h.SetCombat(false)
 	menu[3] = "button: Stop"
 	same(h.MenuLines(), menu, label .. ": tracker menu while Go guides, in combat")
@@ -761,14 +765,15 @@ do
 		"title: " .. first.title,
 		"button: Go",
 		"button: Stop",
+		"button: Show quest",
 		"button: Skip for now",
 		"button: Choose another journey",
-	}, "step menu: a pickup has no Show quest; choosing started the route, which Stop ends")
+	}, "step menu: a town with a hand-in shows it; choosing started the route, which Stop ends")
 	local skipped = h.Find(function(frame)
 		return frame.text ~= nil and frame.text:match("^Skipped")
 	end)
 	equal(#skipped, 0, "skipped: no button at 0")
-	h.menu.entries[4].onClick()
+	h.menu.entries[5].onClick()
 	h.flush()
 	h.Click(Rows()[1].SkipButton)
 	h.flush()
@@ -811,19 +816,20 @@ do
 	local h = harness.load({ completed = completed, log = log })
 	local ns = h.ns
 	h.flush()
-	ns.Skip("turnin:845", "Turn in: The Zhevra")
+	-- A town's step stays while the town offers anything, so the gone step here is the objective's.
+	ns.Skip("objective:843", "Gann's Reclamation")
 	h.flush()
 	local other = ns.Route().steps[1]
 	ns.Skip(other.key, other.title)
 	h.flush()
 	equal(#ns.Skipped(), 2, "skipped, pruned: both counted")
-	table.remove(log, 1)
-	completed[#completed + 1] = 845
+	table.remove(log, 2)
+	completed[#completed + 1] = 843
 	ns.Invalidate()
 	h.flush()
 	equal(#ns.Skipped(), 1, "skipped, pruned: the turned-in quest leaves")
 	equal(ns.Skipped()[1].key, other.key, "skipped, pruned: the other stays")
-	equal(ns.Prefs().skipped["turnin:845"], nil, "skipped, pruned: and is no longer skipped")
+	equal(ns.Prefs().skipped["objective:843"], nil, "skipped, pruned: and is no longer skipped")
 	clean(h, "skipped, pruned")
 end
 
@@ -849,7 +855,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	same(lines, expected, label .. ": a turn-in's header is its reason; travel, next")
 	clean(h, label)
 end
--- A pickup's place is its title's NPC and an objective's has none, so step 1 of the story shows only its reason.
+-- A town is titled by its name, so step 1 of the story (Crossroads) shows only its counts.
 do
 	local h = Load(false)
 	local ns = h.ns
@@ -857,9 +863,10 @@ do
 	ns.Invalidate()
 	h.flush()
 	local step = ns.Route().steps[1]
-	equal(step.place ~= nil and step.title:find(step.place, 1, true) ~= nil, true, "tracker, pickup: titled by place")
-	equal(TrackerLines(h)[1], step.reason, "tracker, pickup: the reason, never the place again")
-	clean(h, "tracker, pickup")
+	equal(step.title, "Crossroads, The Barrens", "tracker, town: titled by its flight master")
+	equal(TrackerLines(h)[1], step.reason, "tracker, town: its counts, never the place again")
+	equal(step.reason, "1 to hand in, 8 to pick up", "tracker, town: the hand-in joins the pickups")
+	clean(h, "tracker, town")
 end
 
 -- F8, the resume line: a login shows "Where you left off" once, when last session's step 1 is still step 1; a
@@ -874,7 +881,7 @@ do
 	end
 	local session = Load(false)
 	local saved = session.G.AdventureGuideForeverCharDB.last
-	equal(saved and saved.key, "turnin:845", "resume: each rebuild saves step 1")
+	equal(saved and saved.key, "hub:346", "resume: each rebuild saves step 1")
 	equal(Resumed(session), 0, "resume: nothing saved, nothing to resume")
 	local function Login(options)
 		options.charDB = { last = { key = saved.key, reason = "finishes a story" } }
@@ -919,7 +926,7 @@ do
 
 	local reload = Login({ initialLogin = false })
 	equal(Resumed(reload), 0, "resume: a /reload shows none")
-	saved.key = "pickup:0:0:0"
+	saved.key = "hub:0"
 	local stale = Login({})
 	equal(Resumed(stale), 0, "resume: a stale key shows none")
 	clean(reload, "resume: reload")
@@ -1562,7 +1569,7 @@ do
 		end
 		equal(h.counts.SetUserWaypoint - waypoints, 0, label .. ": no waypoint")
 		equal(h.spf.Navigate + h.spf.NavigateRoute - routes, 0, label .. ": no guidance")
-		equal(h.ns.Route().steps[1].key, "turnin:845", label .. ": the route is unchanged")
+		equal(h.ns.Route().steps[1].key, "hub:346", label .. ": the route is unchanged")
 		-- A spell learned at the trainer shortens the line at once.
 		if case.tf and case.tf.spells == THREE then
 			case.tf.spells = { SPELL }
