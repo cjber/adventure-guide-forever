@@ -562,3 +562,7 @@ Every blocker and major in `plan-review.md` is applied above. Minor findings are
   `tools/screenshots.py`'s stale SPF pin (it now reads `contract_spec`'s), F15's carried dungeon quest (the
   `ne21_crosszone` golden fixture's 168), and the provider's name outside `L`. Deferred: `tools/lint_copy.py` checks
   literals passed to text setters only, so a returned literal that reaches one still slips past it.
+- **Batch E (46-47) review:** fixed in their own `fix(...)` commits: the story card's title ("The Barrens story",
+  not "A The Barrens story"), the next zone's level moved from its cut-off title to the card's reason ("For level
+  20"), the lead screenshot drawn with the default map switches, and release copy that overclaimed (Questie and
+  RestedXP, "moves nothing", the resume line). Nothing deferred.
