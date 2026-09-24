@@ -1,6 +1,6 @@
-**Where to go next, for your level, inside WoW: Forever's world map.**
+Where to go next, for your level, as a tab in the world map's own quest log.
 
-Levelling guides tell you exactly what to do, in order, as fast as possible. Adventure Guide Forever is looser. From your level, the quests you have finished and the ones in your log, it suggests the next few things worth doing and where they are. You steer it: pick the zone, decide whether dungeon quests count, and pin or skip steps.
+Levelling guides tell you exactly what to do, in order, as fast as possible. Adventure Guide Forever is looser. From your level, the quests you have finished and the ones in your log, it suggests the next few things worth doing and where they are. You steer it: pick the zone, decide whether dungeon quests count, and pin or skip steps. It uses the map's own pins, quest markers and objective tracker, so it looks like it came with the game.
 
 ## Features
 
