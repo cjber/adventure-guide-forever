@@ -114,6 +114,7 @@ ns.L = {
 	-- Steps (Model.lua): a title and a reason.
 	TURN_IN = "Turn in: %s",
 	READY_TO_HAND_IN = "ready to hand in",
+	OPENS_CHAPTER_HERE = "Opens the next chapter here",
 	QUESTS_IN_PROGRESS = "quests in progress",
 	QUESTS_HERE = "%d quests here",
 	PICK_UP = "Pick up quests: %s",

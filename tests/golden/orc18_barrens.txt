@@ -1,9 +1,9 @@
 # orc18_barrens: level 18, side 2, at 1413 0.5200,0.3000
 card (chosen) | carry | Finish what you carry | 1 ready to hand in, 1 in progress | - | map 1413
-  step 1 | hub:346 | Turn in: The Zhevra | 1413 0.5223,0.3101 | ready to hand in
+  step 1 | hub:346 | Turn in: The Zhevra | 1413 0.5223,0.3101 | Opens the next chapter here
   step 2 | objective:843 | Gann's Reclamation | 1413 0.4600,0.8000 | quests in progress
 card | story:1413 | The Barrens story | Chapter 1 of 5 | Begins a new story | map 1413
-  step 1 | hub:346 | Crossroads, The Barrens | 1413 0.5193,0.3032 | 1 to hand in, 8 to pick up
+  step 1 | hub:346 | Crossroads, The Barrens | 1413 0.5193,0.3032 | Opens the next chapter here
   step 2 | hub:353 | Regthar Deathgate | 1413 0.4534,0.2841 | 2 to pick up
   step 3 | hub:382 | Pick up quests: Kadrak | 1413 0.4812,0.0542 | near your level
   step 4 | hub:379 | Pick up quests: Wizzlecrank's Shredder | 1413 0.5652,0.0745 | near your level

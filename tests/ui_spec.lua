@@ -232,10 +232,10 @@ for _, spf in ipairs({ false, "v1" }) do
 	local ring = h.pins.AdventureGuideForeverPinTemplate[1]
 	equal(ring.Number:GetAtlas(), "services-number-1", label .. ": the ring's numeral")
 	h.Hover(ring)
-	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s.
+	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. The Zhevra opens its next chapter here.
 	local expected = { "title: 1. Turn in: The Zhevra" }
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
-	expected[#expected + 1] = "highlight: ready to hand in"
+	expected[#expected + 1] = "highlight: Opens the next chapter here"
 	expected[#expected + 1] = click
 	same(h.tooltip, expected, label .. ": ring tooltip")
 	equal(ring.Glow:IsShown(), true, label .. ": hover glow")
@@ -855,7 +855,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	same(lines, expected, label .. ": a turn-in's header is its reason; its town, travel, next")
 	clean(h, label)
 end
--- A town is titled by its name, so step 1 of the story (Crossroads) shows only its counts.
+-- A town is titled by its name, so step 1 of the story (Crossroads) shows its reason: The Zhevra opens its next chapter.
 do
 	local h = Load(false)
 	local ns = h.ns
@@ -864,8 +864,8 @@ do
 	h.flush()
 	local step = ns.Route().steps[1]
 	equal(step.title, "Crossroads, The Barrens", "tracker, town: titled by its flight master")
-	equal(TrackerLines(h)[1], step.reason, "tracker, town: its counts, never the place again")
-	equal(step.reason, "1 to hand in, 8 to pick up", "tracker, town: the hand-in joins the pickups")
+	equal(TrackerLines(h)[1], step.reason, "tracker, town: its reason, never the place again")
+	equal(step.detail, "1 to hand in, 8 to pick up", "tracker, town: the hand-in joins the pickups")
 	clean(h, "tracker, town")
 end
 

@@ -497,6 +497,24 @@ equal(stop.handins[1], 11, "town order: Show quest opens the hand-in grey soones
 stop = Model.Plan(levelled, visitor, {}, {}, townPrefs).steps[1]
 equal(table.concat(stop.quests, " "), "2 3 4 1", "town order: pickups only")
 equal(table.concat(stop.givers, " "), "Marris Osgood", "town order: the grey-soon quest's giver first")
+-- A hand-in whose next chapter starts in the same town says so, once Check proves that chapter open after it; the
+-- chapter itself waits for the rebuild after the turn-in.
+local chained = Town()
+chained.quests[10].next = 30
+chained.quests[30] = quest(0.52, 0.5)
+chained.quests[30].start.hub, chained.quests[30].pre = 5, { 10 }
+local handing = { [10] = Carried()[10] }
+local chainPlan = Model.Plan(chained, visitor, {}, handing, townPrefs)
+stop = chainPlan.steps[1]
+equal(stop.reason, "Opens the next chapter here", "chain: the town says the hand-in opens the next chapter")
+equal(stop.detail, "1 to hand in, 4 to pick up", "chain: and still counts its quests")
+equal(table.concat(stop.pickups, " "), "1 2 3 4", "chain: the next chapter is no pickup before the turn-in")
+local lone = chainPlan.journeys[1].steps[1]
+equal(lone.key, "hub:5", "chain: the carry card's town")
+equal(lone.detail, "Opens the next chapter here", "chain: a lone hand-in's row says it")
+chained.quests[30].races = 1 -- Human only; the visitor is an Orc
+stop = Model.Plan(chained, visitor, {}, handing, townPrefs).steps[1]
+equal(stop.reason, "1 to hand in, 4 to pick up", "chain: nothing said when the next chapter is not the player's")
 -- One quest keeps the single step's title.
 town.quests[2], town.quests[3], town.quests[4] = nil, nil, nil
 town = { quests = town.quests, zones = town.zones, maps = town.maps, continents = town.continents, hubs = town.hubs }

@@ -885,7 +885,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[4].Detail",
-      "text": "ready to hand in",
+      "text": "Opens the next chapter here",
       "type": "FontString",
       "wordWrap": false
     },
