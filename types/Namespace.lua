@@ -653,3 +653,25 @@
 ---@class AGFData
 ---@field suppressed? integer[] quests whose start the bundled data withholds for an eligibility it cannot hold
 ---@field seasonal? integer[] quests whose start the bundled data withholds for a world event
+
+-- QuestieDB as a quest source (QuestieSource.lua, docs/design.md §2.14).
+
+---@class AGFQuestieStatus
+---@field state "bundled"|"building"|"questie" the quests in use: bundled, bundled while QuestieDB's are built, or QuestieDB's
+---@field version? string QuestieDB's version, once its quests are in use
+---@field reason? string why QuestieDB is not used (an ns.L line); nil while it is, or before login
+
+---@class AGFNamespace
+---@field QuestieStatus AGFQuestieStatus
+
+---@class AGFStrings
+---@field AUDIT_SOURCE_BUNDLED string
+---@field AUDIT_SOURCE_QUESTIE string format: QuestieDB's version
+---@field AUDIT_QUESTIE_BUILDING string
+---@field AUDIT_QUESTIE_UNUSED string format: one of the QUESTIE_ reasons
+---@field QUESTIE_ABSENT string
+---@field QUESTIE_CONTRACT string
+---@field QUESTIE_FLAVOUR string
+---@field QUESTIE_FIELD string format: the entity or field it lacks
+---@field QUESTIE_ZONES string
+---@field QUESTIE_FAILED string format: the error

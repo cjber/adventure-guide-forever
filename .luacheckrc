@@ -58,6 +58,10 @@ read_globals = {
 	"UiMapPoint",
 	"C_SuperTrack",
 	"UIErrorsFrame",
+	-- QuestieSource.lua
+	"LibQuestieDB",
+	"C_AddOns",
+	"debugprofilestop",
 	-- Pins.lua
 	"CreateFromMixins",
 	"MapCanvasDataProviderMixin",
