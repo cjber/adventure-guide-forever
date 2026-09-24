@@ -200,7 +200,7 @@
 ---@class AGFJourney
 ---@field kind AGFJourneyKind
 ---@field key string stable identity for prefs.journey: "carry", "zone:<uiMapID>" (a zone's story or next-zone card alike), "dungeon:<Map.ID>", "calling", "chain:<questID>" (a way into an instance, by its chain's first quest) or "battleground:<BattlemasterList ID>"
----@field title string e.g. "Finish what you carry" or "Westfall story"
+---@field title string e.g. "Loose ends" or "Westfall story"
 ---@field subline string e.g. "3 ready to hand in, 1 in progress"
 ---@field reason? string why this journey, when there is an honest answer
 ---@field map integer where its first step is: choosing the card turns the world map there
@@ -210,6 +210,7 @@
 ---@field hub? string its first stop's place, else that stop's title: the card's line 3 when it has no reason
 ---@field more? integer how many stops follow the first (Model.Journeys sets it and `group` once the card is built)
 ---@field group? integer how many of its quests are elite, dungeon or raid (the sum of its steps' `group`)
+---@field drop? integer[] the first card's log-full note: the log's quests the guide would let go, by ID, when 2 or fewer slots are free
 
 ---@class AGFRoute
 ---@field journeys AGFJourney[] at most 3: the zone's story, carry, then the diversions (calling, dungeon, a way into an instance, battleground, next zone) newest first
@@ -579,10 +580,26 @@
 ---@field chosen? boolean it was the chosen journey: Show again chooses it again
 
 ---@class AGFPrefs
----@field notInterested table<string, AGFNotInterested> journey keys this character is not interested in
+---@field notInterested table<string, AGFNotInterested> journey keys this character is not interested in, and "quest:<id>" for each quest dropped by "Not this quest"
 
 ---@class AGFNamespace
 ---@field NotInterested fun(key: string, title: string) hide a journey on this character until Show again; a choice of it ends
+
+-- Choice (docs/design.md §2.18): quests the player drops or adds, and the log-full note.
+
+---@class AGFStrings
+---@field CARRY_ADDED string format: count of quests the player added that Loose ends holds
+---@field LOG_FULL string format: the log-full note's count of quests the player could drop
+---@field LOG_FULL_ONE string the same for one quest
+---@field LOG_FULL_LIST string the log-full note's tooltip, over the quests' titles
+
+---@class AGFPrefs
+---@field pinned table<integer, true> quests the player added by shift-click: in the route past the ratio cut
+
+---@class AGFNamespace
+---@field NotThisQuest fun(id: integer, title: string) drop a quest on this character until Show again; it stays in the log
+---@field Pinned fun(ids: integer[]): boolean every one is added, and there is at least one
+---@field TogglePinned fun(ids: integer[]) add them all, or take them all off when every one is added
 
 -- Asides (Asides.lua, docs/design.md §2.11): one-line hints beside the journeys, never a route.
 ---@class AGFAside

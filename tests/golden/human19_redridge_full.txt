@@ -6,7 +6,7 @@ card (chosen) | zone:1433 | Redridge Mountains story | 1 ready to hand in, 5 in 
   step 4 | area:34:4 | An Unwelcome Guest | 1433 0.1100,0.4930 | quests in progress | 0 yd | 34/4
   step 5 | town:61 | Lakeshire, Redridge | 1433 0.1677,0.4633 | 3 to hand in
   step 6 | area:169:4 | Wanted: Gath'Ilzogg | 1433 0.6450,0.5580 | quests in progress | 0 yd | 169/4
-card | carry | Finish what you carry | 4 ready to hand in, 6 in progress | - | map 1433
+card | carry | Loose ends | 4 ready to hand in, 6 in progress | - | map 1433
   step 1 | area:20:4 | Blackrock Menace | 1433 0.2710,0.1090 | quests in progress | 134 yd | 20/4
   step 2 | area:91:4 | Solomon's Law | 1433 0.7400,0.5220 | 2 quests here | 209 yd | 91/4 180/4
   step 3 | area:125:4 | The Lost Tools | 1433 0.3640,0.5460 | 2 quests here | 157 yd | 125/4 127/4

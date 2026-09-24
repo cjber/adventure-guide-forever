@@ -5,7 +5,7 @@ card (chosen) | zone:1413 | The Barrens story | Chapter 1 of 4 | 2 quests will s
   step 3 | area:887:0 | Southsea Freebooters | 1413 0.6400,0.4600 | 2 quests here | 221 yd | 887/0 887/1 895/4
   step 4 | area:896:4 | Miner's Fortune | 1413 0.6050,0.0380 | after you pick it up | 184 yd | 896/4
   step 5 | town:340:2 | Ratchet, The Barrens | 1413 0.6268,0.3623 | Opens the next chapter here | then 890
-card | carry | Finish what you carry | 1 in progress | - | map 1413
+card | carry | Loose ends | 1 in progress | - | map 1413
   step 1 | area:843:0 | Gann's Reclamation | 1413 0.4760,0.8510 | quests in progress | 106 yd | 843/0 843/1 843/6
 card | zone:1442 | Head to Stonetalon Mountains | 7 quests near your level | For level 20 | map 1442
   step 1 | town:358 | Makaba Flathoof | 1442 0.8593,0.9789 | 2 to pick up

@@ -27,7 +27,7 @@ ns.L = {
 	HELP_DUMP = "/agf dump - save the guide's layout for a bug report",
 	HAND_IN_WHEN = "Hand in when you're in %s",
 	-- Journey cards (docs/design.md §2.2 and §3): a title, a subline that counts, and a reason when there is one.
-	JOURNEY_CARRY = "Finish what you carry",
+	JOURNEY_CARRY = "Loose ends",
 	JOURNEY_STORY = "%s story",
 	JOURNEY_NEXT_ZONE = "Head to %s",
 	-- The next zone's level goes under its name, so a long zone name never cuts it off.
@@ -43,6 +43,12 @@ ns.L = {
 	CARRY_READY = "%d ready to hand in",
 	CARRY_IN_PROGRESS = "%d in progress",
 	CARRY_AWAY = "%d to hand in across the sea",
+	-- Quests the player added with a shift-click that no zone card holds.
+	CARRY_ADDED = "%d you added",
+	-- The log nearly full (docs/design.md §2.18): card 1's line 3 counts what could go, and its tooltip lists them.
+	LOG_FULL = "Log nearly full: %d you could drop",
+	LOG_FULL_ONE = "Log nearly full: 1 you could drop",
+	LOG_FULL_LIST = "To make room in your log, you could drop:",
 	LIST_SEPARATOR = ", ",
 	QUESTS_NEAR = "%d quests near your level",
 	QUESTS_NEAR_ONE = "1 quest near your level",
@@ -286,6 +292,8 @@ local PREFS_DEFAULTS = {
 	-- Opt-in (roadmap #12): the Battlegrounds card.
 	battlegrounds = false,
 	notInterested = {},
+	-- Quests added to the route with a shift-click: quest ID -> true.
+	pinned = {},
 }
 
 ---@type table<string, any>?
@@ -335,6 +343,11 @@ local function LoadCharDB()
 			loaded.notInterested[key] = nil
 		else
 			loaded.notInterested[key] = { title = entry.title, chosen = entry.chosen == true or nil }
+		end
+	end
+	for id, value in pairs(loaded.pinned) do
+		if type(id) ~= "number" or value ~= true then
+			loaded.pinned[id] = nil
 		end
 	end
 	-- The zone picked in the old "Where next?" cards: nothing offers that choice any more, so none is kept.
@@ -399,7 +412,7 @@ end
 
 ---@return AGFPrefs
 function ns.Prefs()
-	charDB = charDB or { quests = true, dungeons = false, notInterested = {} }
+	charDB = charDB or { quests = true, dungeons = false, notInterested = {}, pinned = {} }
 	charDB.skipped = sessionSkipped
 	return charDB
 end
@@ -426,6 +439,42 @@ function ns.NotInterested(key, title)
 	else
 		ns.Invalidate()
 	end
+end
+
+-- "Not this quest" (docs/design.md §2.18): quest `id` leaves every route on this character, and stays in the log; the
+-- Skipped menu's Show again brings it back.
+---@param id integer
+---@param title string
+function ns.NotThisQuest(id, title)
+	ns.Prefs().pinned[id] = nil
+	ns.NotInterested("quest:" .. id, title)
+end
+
+-- Whether every quest in `ids` is on the route by the player's shift-click.
+---@param ids integer[]
+---@return boolean
+function ns.Pinned(ids)
+	local pinned = ns.Prefs().pinned
+	for _, id in ipairs(ids) do
+		if not pinned[id] then
+			return false
+		end
+	end
+	return #ids > 0
+end
+
+-- A shift-click (docs/design.md §2.18): the quests `ids` join the route whatever the planner would leave out, or leave
+-- it when they all had joined. Ruled-out quests come back too.
+---@param ids integer[]
+function ns.TogglePinned(ids)
+	local prefs, pin = ns.Prefs(), not ns.Pinned(ids)
+	for _, id in ipairs(ids) do
+		prefs.pinned[id] = pin or nil
+		if pin then
+			prefs.notInterested["quest:" .. id] = nil
+		end
+	end
+	ns.Invalidate()
 end
 
 ---@param key string

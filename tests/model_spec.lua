@@ -1755,6 +1755,123 @@ equal(Nearest(2, 2, 1413, 0.52, 0.3, 20), "none", "trainer: the data has no Hord
 equal(Nearest(2, 0, 1413, 0.52, 0.3, 20), "none", "trainer: no class, none")
 equal(Model.Trainer(ns.Data, { side = 2, classBit = 64 }, 18), nil, "trainer: no place to measure from, none")
 
+-- Not this quest, pins and the log-full note (docs/design.md §2.18), on the real data at 18 in The Barrens.
+do
+	player.map, player.x, player.y = 1413, 0.52, 0.3
+	local function Holds(steps, id)
+		for _, step in ipairs(steps) do
+			for _, held in ipairs(step.quests) do
+				if held == id then
+					return true
+				end
+			end
+		end
+		return false
+	end
+	local function Choice(extra)
+		local p = prefs()
+		p.notInterested, p.pinned = {}, {}
+		for key, value in pairs(extra or {}) do
+			p[key] = value
+		end
+		return p
+	end
+	local plan = Model.Plan(ns.Data, player, {}, {}, Choice())
+	local first = plan.steps[1].quests[1]
+	equal(first ~= nil, true, "not this quest: the route leads with a quest")
+	-- Dropped: off every card's steps.
+	local dropped = Choice({ notInterested = { ["quest:" .. first] = { title = "Dropped" } } })
+	for _, journey in ipairs(Model.Plan(ns.Data, player, {}, {}, dropped).journeys) do
+		dropped.journey = journey.key
+		equal(
+			Holds(Model.Plan(ns.Data, player, {}, {}, dropped).steps, first),
+			false,
+			"not this quest: " .. journey.key
+		)
+	end
+	-- In the log it is left there, and no step leads to it.
+	local logged =
+		{ [first] = { id = first, title = "Dropped", level = ns.Data.quests[first].level, complete = false } }
+	dropped.journey = nil
+	for _, journey in ipairs(Model.Plan(ns.Data, player, {}, logged, dropped).journeys) do
+		dropped.journey = journey.key
+		equal(Holds(Model.Plan(ns.Data, player, {}, logged, dropped).steps, first), false, "not this quest, in the log")
+	end
+	-- A pinned quest in another zone, which no card offers, is on Loose ends.
+	local away
+	for id, candidate in pairs(ns.Data.quests) do
+		if
+			not away
+			and candidate.start
+			and candidate.start.map ~= 1413
+			and not (candidate.dungeon or candidate.raid)
+			and candidate.min <= player.level
+			and Model.Eligible(ns.Data, player, {}, {}, id)
+			and not Holds(plan.steps, id)
+		then
+			local carried = false
+			for _, journey in ipairs(plan.journeys) do
+				local p = Choice({ journey = journey.key })
+				carried = carried or Holds(Model.Plan(ns.Data, player, {}, {}, p).steps, id)
+			end
+			away = not carried and id or nil
+		end
+	end
+	equal(away ~= nil, true, "pin: a quest no card holds")
+	local pinned = Choice({ pinned = { [away] = true }, journey = "carry" })
+	local carry = Model.Plan(ns.Data, player, {}, {}, pinned)
+	equal(carry.journey, "carry", "pin: on Loose ends")
+	equal(Holds(carry.steps, away), true, "pin: which leads to it")
+	pinned.notInterested["quest:" .. away] = { title = "Dropped" }
+	equal(Holds(Model.Plan(ns.Data, player, {}, {}, pinned).steps, away), false, "pin: never a dropped one")
+	-- A pinned quest the story's cut left out is in its route, past the cut.
+	local cut
+	for id, candidate in pairs(ns.Data.quests) do
+		if
+			not cut
+			and candidate.start
+			and candidate.start.map == 1413
+			and not (candidate.dungeon or candidate.raid)
+			and candidate.min <= player.level
+			and Model.Eligible(ns.Data, player, {}, {}, id)
+			and not Holds(plan.steps, id)
+		then
+			cut = id
+		end
+	end
+	equal(cut ~= nil, true, "pin: a story quest the cut left out")
+	local led = Model.Plan(ns.Data, player, {}, {}, Choice({ pinned = { [cut] = true } }))
+	equal(led.journey, plan.journey, "pin: the same card leads")
+	equal(Holds(led.steps, cut), true, "pin: and its route has the pinned quest")
+	-- The log-full note: nil with room, else the log's quests the guide would let go, sorted.
+	local grey, crowded = {}, {}
+	for id, candidate in pairs(ns.Data.quests) do
+		if
+			#grey < 3
+			and candidate.side ~= 1
+			and candidate.level > 0
+			and candidate.level <= 5
+			and candidate.start
+			and candidate.finish
+		then
+			grey[#grey + 1] = id
+		end
+	end
+	table.sort(grey)
+	for _, id in ipairs(grey) do
+		crowded[id] = { id = id, title = ns.Data.quests[id].title, level = ns.Data.quests[id].level, complete = false }
+	end
+	player.logMax = 20
+	equal(Model.Plan(ns.Data, player, {}, crowded, Choice()).journeys[1].drop, nil, "log full: room, no note")
+	player.logMax = #grey + 2
+	local drop = Model.Plan(ns.Data, player, {}, crowded, Choice()).journeys[1].drop
+	equal(drop and table.concat(drop, " "), table.concat(grey, " "), "log full: the grey quests, sorted")
+	crowded[grey[1]].complete = true
+	drop = Model.Plan(ns.Data, player, {}, crowded, Choice()).journeys[1].drop
+	equal(drop and drop[1], grey[2], "log full: never a finished quest")
+	player.logMax = nil
+end
+
 player.map, player.x, player.y = 1413, 0.52, 0.3
 local baseline = Model.Plan(ns.Data, player, {}, {}, prefs())
 equal(#baseline.steps >= 3, true, "level 18 Horde route offers at least three steps")

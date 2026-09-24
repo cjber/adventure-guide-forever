@@ -389,6 +389,29 @@ function Model.Search(data, player, query, title)
 	return found
 end
 
+-- "Not this quest" (docs/design.md §2.18): a quest ruled out on this character stays in the log, and out of every plan.
+-- The IDs are read from `prefs.notInterested` once per build (ReadDropped, at Model.Journeys and Model.Refresh), so the
+-- planner's loops over every quest never build a key.
+---@type table<integer, true>
+local droppedIDs = {}
+
+---@param prefs AGFPrefs
+local function ReadDropped(prefs)
+	droppedIDs = {}
+	for key in pairs(prefs.notInterested or {}) do
+		local id = type(key) == "string" and tonumber(key:match("^quest:(%d+)$"))
+		if id then
+			droppedIDs[id] = true
+		end
+	end
+end
+
+---@param id integer
+---@return boolean
+local function Dropped(id)
+	return droppedIDs[id] == true
+end
+
 -- The maps of the three zones that best fit `level` for the quests `ids`, best first. An outdoor elite is optional
 -- (roadmap #16): it rides along on its zone's cards but never picks the zone a solo player is sent to. A raid's quest,
 -- which no card offers, never picks one either.
@@ -443,11 +466,12 @@ end
 -- instance's quests wait behind Dungeons: an outdoor elite is a zone's quest, optional and badged for a group. An
 -- orange or red quest (ORANGE levels up or more) is never offered, though its minimum allows it: too hard alone. The
 -- zones that fit now also count the log's quests the data has, as a pickup each: a zone the player has taken on is
--- where they are adventuring, though little is left there to pick up.
+-- where they are adventuring, though little is left there to pick up. A quest the player ruled out (Dropped) counts
+-- nowhere; one they added (shift-click, `prefs.pinned`) is offered once open whatever its colour.
 local function Choices(data, player, completed, log, index, prefs, ahead)
-	local eligible, later, target, ranked = {}, {}, player.level + (ahead or 0), {}
+	local eligible, later, target, ranked, pinned = {}, {}, player.level + (ahead or 0), {}, prefs.pinned or {}
 	for id in pairs(prefs.quests and log or {}) do
-		ranked[#ranked + 1] = data.quests[id] and id or nil
+		ranked[#ranked + 1] = data.quests[id] and not Dropped(id) and id or nil
 	end
 	table.sort(ranked)
 	for _, id in ipairs(index.ids) do
@@ -455,13 +479,16 @@ local function Choices(data, player, completed, log, index, prefs, ahead)
 		local instance = quest.dungeon ~= nil
 		if
 			((instance and prefs.dungeons) or (not instance and prefs.quests))
+			and not Dropped(id)
 			and Eligible(data, player, completed, log, id, index.groups, target)
 		then
 			later[#later + 1] = id
 			if
 				quest.min <= player.level
-				and not Model.IsGray(quest.level, player.level)
-				and quest.level - player.level < ORANGE
+				and (
+					pinned[id]
+					or (not Model.IsGray(quest.level, player.level) and quest.level - player.level < ORANGE)
+				)
 			then
 				eligible[#eligible + 1] = id
 				ranked[#ranked + 1] = id
@@ -999,12 +1026,12 @@ end
 local AGREE = 100 -- yards: the town linkage (tools/gen_quests.py LINK); a waypoint this near the data's finish is it
 
 -- The finished log quests whose hand-in the data and the client agree on: the client's waypoint is on a map the data
--- places and lies within AGREE of the data's finish, which is in a town. Each maps to that finish.
+-- places and lies within AGREE of the data's finish, which is in a town. Each maps to that finish; none ruled out.
 ---@return table<integer, AGFPlace>
 local function Ready(data, log)
 	local ready = {}
 	for id, entry in pairs(log) do
-		local quest = data.quests[id]
+		local quest = not Dropped(id) and data.quests[id]
 		local finish = entry.complete and quest and quest.finish
 		if finish and finish.hub then
 			local live, there = Position(data, entry), Position(data, finish)
@@ -1987,7 +2014,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	for index, ident in ipairs(committedOrders and committedOrders[card] or {}) do
 		rank[ident] = index
 	end
-	local skipped, where = prefs.skipped or {}, {}
+	local skipped, where, pinned = prefs.skipped or {}, {}, prefs.pinned or {}
 	local function At(place)
 		local position = where[place]
 		if position == nil then
@@ -2025,7 +2052,8 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	for _, town in ipairs(towns) do
 		local pickups = {}
 		for _, id in ipairs(town.pickups) do
-			if id == leadID or Pickable(data.quests[id]) then
+			-- One the player added (shift-click) goes whatever its kind, as the lead does.
+			if id == leadID or pinned[id] or Pickable(data.quests[id]) then
 				pickups[#pickups + 1], picks[id], ids[#ids + 1] = id, town, id
 				-- An outdoor elite is picked up, optional and with the group badge, but its work waits for a group.
 				nodes[id] = data.quests[id].elite and {} or Planned(data.quests[id], id)
@@ -2071,7 +2099,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	for _, town in ipairs(towns) do
 		local pickups = {}
 		for _, id in ipairs(town.pickups) do
-			if id == leadID or not ratio[id] or ratio[id] >= KEEP * sums[town] / counts[town] then
+			if id == leadID or pinned[id] or not ratio[id] or ratio[id] >= KEEP * sums[town] / counts[town] then
 				pickups[#pickups + 1] = id
 				local quest = data.quests[id]
 				local optional = Optional(quest, QuestLevel(data, log, player, id), player)
@@ -2581,14 +2609,105 @@ local function Tally(data, player, log, held, prefs)
 	return finished, away, underway
 end
 
--- "Finish what you carry": the log's turn-ins and objectives the story card doesn't hold (`elsewhere`). The subline
--- counts every quest the card holds, not only the steps that made the route, and those nothing places.
+-- The log nearly full (docs/design.md §2.18): with LOG_ROOM slots or fewer left, the quests under way the player
+-- could drop to make room, by ID: one they ruled out, one gone grey, one nothing places, and one done across an ocean
+-- from them. Never a finished one, nor one the data lacks. Advice only: the guide abandons nothing. Nil otherwise.
+local LOG_ROOM = 2
+---@return integer[]?
+local function Droppable(data, player, log)
+	local count, ids = 0, {}
+	for _ in pairs(log) do
+		count = count + 1
+	end
+	if not player.logMax or player.logMax - count > LOG_ROOM then
+		return nil
+	end
+	local here = Position(data, player)
+	for id, entry in pairs(log) do
+		if data.quests[id] and not entry.complete then
+			local place = Nodes(data, entry)[1]
+			local there = place and Position(data, place)
+			if
+				Dropped(id)
+				or Model.IsGray(QuestLevel(data, log, player, id), player.level)
+				or not place
+				or (here and there and here.known and there.known and here.continent ~= there.continent)
+			then
+				ids[#ids + 1] = id
+			end
+		end
+	end
+	table.sort(ids)
+	return #ids > 0 and ids or nil
+end
+
+-- Build's route within the log's limit (Laps keeps its own): walked in order, a pickup past it waits, and a town left
+-- with nothing goes.
+---@param steps AGFStep[]
+---@return AGFStep[]
+local function Within(data, player, completed, log, steps)
+	local left, cap, kept = 0, player.logMax or math.huge, {}
+	for _ in pairs(log) do
+		left = left + 1
+	end
+	for _, step in ipairs(steps) do
+		if step.kind == "town" then
+			left = left - #step.handins
+			local pickups = {}
+			for _, id in ipairs(step.pickups) do
+				if left < cap then
+					pickups[#pickups + 1], left = id, left + 1
+				end
+			end
+			if #pickups < #step.pickups then
+				Trim(step, step.handins, pickups)
+				Describe(data, log, player, step)
+				Opens(data, player, completed, log, step)
+			end
+		end
+		kept[#kept + 1] = #step.quests > 0 and step or (step.kind == "trainer" and step) or nil
+	end
+	return kept
+end
+
+-- The quests the player added (shift-click, `prefs.pinned`) that no zone card holds: open now, not ruled out, and not
+-- an instance's or a raid's, which only the dungeon card offers. By ID.
+---@param elsewhere fun(quest: AGFQuest): boolean
+---@return integer[]
+local function Added(data, player, completed, log, prefs, elsewhere)
+	local ids, groups = {}, Index(data).groups
+	for id in pairs(prefs.quests and prefs.pinned or {}) do
+		local quest = data.quests[id]
+		if
+			quest
+			and not (quest.dungeon or quest.raid)
+			and not Dropped(id)
+			and elsewhere(quest)
+			and Eligible(data, player, completed, log, id, groups)
+		then
+			ids[#ids + 1] = id
+		end
+	end
+	table.sort(ids)
+	return ids
+end
+
+-- "Loose ends": the log's turn-ins and objectives the story card doesn't hold (`elsewhere`), and the quests the player
+-- added that no zone card holds (`added`). The subline counts every quest the card holds, not only the steps that made
+-- the route, and those nothing places.
 ---@param ready table<integer, AGFPlace>
 ---@param elsewhere fun(id: integer, place?: table): boolean
-local function Carry(data, player, completed, log, ready, prefs, mapName, cheap, elsewhere)
-	local candidates = TrainerSteps(data, player, prefs, "carry")
-	local held = LogSteps(data, player, log, ready, elsewhere, {}, candidates, { areas = {}, anchors = {} })
+---@param added integer[]
+local function Carry(data, player, completed, log, ready, prefs, mapName, cheap, elsewhere, added)
+	local candidates, stops = TrainerSteps(data, player, prefs, "carry"), {}
+	local held = LogSteps(data, player, log, ready, function(id, place)
+		return not Dropped(id) and elsewhere(id, place)
+	end, stops, candidates, { areas = {}, anchors = {} })
+	PickupSteps(data, added, function()
+		return true
+	end, candidates, stops)
 	local steps = Build(data, player, completed, log, candidates, prefs, mapName, cheap)
+	steps = #added > 0 and Within(data, player, completed, log, steps) or steps
 	if #steps == 0 then
 		return nil
 	end
@@ -2599,6 +2718,7 @@ local function Carry(data, player, completed, log, ready, prefs, mapName, cheap,
 	local parts = {}
 	parts[#parts + 1] = finished > 0 and L.CARRY_READY:format(finished) or nil
 	parts[#parts + 1] = underway > 0 and L.CARRY_IN_PROGRESS:format(underway) or nil
+	parts[#parts + 1] = #added > 0 and L.CARRY_ADDED:format(#added) or nil
 	local farther = away > 0 and L.CARRY_AWAY:format(away) or nil
 	return {
 		kind = "carry",
@@ -2642,35 +2762,6 @@ local function InZone(zone)
 	end
 end
 
--- Build's route within the log's limit (Laps keeps its own): walked in order, a pickup past it waits, and a town left
--- with nothing goes.
----@param steps AGFStep[]
----@return AGFStep[]
-local function Within(data, player, completed, log, steps)
-	local left, cap, kept = 0, player.logMax or math.huge, {}
-	for _ in pairs(log) do
-		left = left + 1
-	end
-	for _, step in ipairs(steps) do
-		if step.kind == "town" then
-			left = left - #step.handins
-			local pickups = {}
-			for _, id in ipairs(step.pickups) do
-				if left < cap then
-					pickups[#pickups + 1], left = id, left + 1
-				end
-			end
-			if #pickups < #step.pickups then
-				Trim(step, step.handins, pickups)
-				Describe(data, log, player, step)
-				Opens(data, player, completed, log, step)
-			end
-		end
-		kept[#kept + 1] = #step.quests > 0 and step or (step.kind == "trainer" and step) or nil
-	end
-	return kept
-end
-
 -- The eligible quests `belongs` keeps as one journey (kind, key and title are the caller's), and how many it holds.
 -- The step that offers `leadID` is always among them; the hand-ins in `ready` join the towns it holds. A story card
 -- (`zone`) also holds the log quests done next on its zone (OnZone), its towns' hand-ins with their pickups, and its
@@ -2689,7 +2780,7 @@ local function Pickups(data, player, completed, log, ready, eligible, belongs, k
 	-- With Quests off the story holds no log quest, so it never stays for the log alone: carry holds them.
 	if zone and prefs.quests then
 		held = LogSteps(data, player, log, ready, function(id, place)
-			return OnZone(data, zone, id, place)
+			return not Dropped(id) and OnZone(data, zone, id, place)
 		end, stops, candidates, plan)
 	end
 	PickupSteps(data, eligible, belongs, candidates, stops)
@@ -2804,7 +2895,7 @@ local function DungeonJourney(data, player, completed, log, eligible, prefs, map
 	local name = instanceName and instanceName(best) or data.instances[best].name
 	local L, inside, belongs = ns.L, 0, InDungeon(best)
 	for id in pairs(log) do
-		inside = inside + ((data.quests[id] and belongs(data.quests[id])) and 1 or 0)
+		inside = inside + ((data.quests[id] and not Dropped(id) and belongs(data.quests[id])) and 1 or 0)
 	end
 	local reason = inside == 1 and L.DUNGEON_INSIDE_ONE:format(name)
 		or inside > 1 and L.DUNGEON_INSIDE:format(inside, name)
@@ -3152,6 +3243,7 @@ end
 ---@return AGFJourney[] journeys
 ---@return boolean stranded no next zone (roadmap #21)
 function Model.Journeys(data, player, completed, log, prefs, mapName, instanceName)
+	ReadDropped(prefs)
 	local index, L = Index(data), ns.L
 	-- Never past the level cap: a player at it has no next zone to head for.
 	local levels = math.min(NEXT_ZONE_AHEAD, player.maxLevel - player.level)
@@ -3188,7 +3280,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			here = here or (not quest.elite and not quest.raid and (quest.zone or quest.start.map) == player.map)
 		end
 		for id in pairs((here or not prefs.quests) and {} or log) do
-			local quest = data.quests[id]
+			local quest = not Dropped(id) and data.quests[id] or nil
 			here = here
 				or (
 					quest ~= nil
@@ -3223,9 +3315,13 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			drawn[id] = true
 		end
 	end
+	local onStory = InZone(zone)
+	local added = Added(data, player, completed, log, prefs, function(quest)
+		return not onStory(quest)
+	end)
 	journeys[#journeys + 1] = Carry(data, player, completed, log, ready, prefs, mapName, false, function(id, place)
 		return not (drawn[id] and OnZone(data, zone, id, place))
-	end)
+	end, added)
 	-- The diversions (roadmap R4) share the slots carry and the story leave: each offers itself with how many quests it
 	-- holds and the level its newest one opened at, and the newest since then is built first, so a level just gained or
 	-- a bracket just opened takes the slot. Only as many are built as there are slots, and the chosen one always.
@@ -3358,6 +3454,9 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 		Summarise(journey --[[@as AGFJourney]])
 		Rest(data, player, journey.steps)
 	end
+	if journeys[1] then
+		journeys[1].drop = Droppable(data, player, log)
+	end
 	return journeys, stranded
 end
 
@@ -3447,6 +3546,7 @@ end
 -- data and no 2-opt, so it stays cheap; the full build runs once combat ends.
 ---@param last AGFRoute
 function Model.Refresh(data, player, completed, log, prefs, last, mapName)
+	ReadDropped(prefs)
 	local skipped, groups = prefs.skipped or {}, Index(data).groups
 	local function Keep(ids, open)
 		local kept = {}
@@ -3536,9 +3636,13 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 		end
 		journeys[#journeys + 1] = kept
 	end
+	local story = InZone(zone)
+	local added = Added(data, player, completed, log, prefs, function(quest)
+		return not story(quest)
+	end)
 	local carry = Carry(data, player, completed, log, Ready(data, log), prefs, mapName, true, function(id, place)
 		return not (told[id] and OnZone(data, zone, id, place))
-	end)
+	end, added)
 	if carry then
 		table.insert(journeys, (journeys[1] and journeys[1].kind == "story") and 2 or 1, carry)
 	end

@@ -51,6 +51,10 @@ local function Render(fixture, route)
 			journey.reason or "-",
 			journey.map
 		)
+		-- The log-full note: the quests it says could go.
+		if journey.drop then
+			lines[#lines + 1] = "  drop | " .. table.concat(journey.drop, " ")
+		end
 		-- An area adds its ring and objectives (quest/slot); a town the chapters that follow its hand-ins.
 		for index, step in ipairs(journey.steps) do
 			local extra = {}
