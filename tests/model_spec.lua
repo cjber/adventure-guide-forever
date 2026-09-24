@@ -554,6 +554,18 @@ equal(
 	"why: an exclusive choice"
 )
 equal(Texts(Model.Why(custom, player, { [3] = true }, {}, 3)):sub(1, 18), "- You've done this", "why: done")
+local pair = { quests = { [1] = quest(), [2] = quest() }, zones = data.zones }
+pair.quests[1].group, pair.quests[2].group = 7, 7
+equal(
+	Texts(Model.Why(pair, player, { [1] = true }, {}, 1)),
+	"- You've done this | + Horde only | + Requires level 10",
+	"why: a done choice is not its own rival"
+)
+equal(
+	Texts(Model.Why(pair, player, { [1] = true }, {}, 2)),
+	"+ Horde only | + Requires level 10 | - You chose Quest instead",
+	"why: the other's"
+)
 
 -- F5 search: the player's side and both sides, a plain case-insensitive title match, by title then ID, 10 at most;
 -- the client's title wins over the data's.

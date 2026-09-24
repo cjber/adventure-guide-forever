@@ -277,7 +277,7 @@ local function Check(data, player, completed, log, id, groups, level, lines, nam
 		end
 	end
 	for _, other in ipairs((quest.group and groups[quest.group]) or {}) do
-		if (completed[other] or log[other]) and not Line(data, lines, false, "group", other, names) then
+		if other ~= id and (completed[other] or log[other]) and not Line(data, lines, false, "group", other, names) then
 			return false
 		end
 	end
