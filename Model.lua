@@ -383,7 +383,8 @@ function Model.Search(data, player, query, title)
 end
 
 -- The maps of the three zones that best fit `level` for the quests `ids`, best first. An outdoor elite is optional
--- (roadmap #16): it rides along on its zone's cards but never picks the zone a solo player is sent to.
+-- (roadmap #16): it rides along on its zone's cards but never picks the zone a solo player is sent to. A raid's quest,
+-- which no card offers, never picks one either.
 ---@return integer[]
 local function Rank(data, ids, level)
 	local choices, scores = {}, {}
@@ -391,7 +392,12 @@ local function Rank(data, ids, level)
 		local quest = data.quests[id]
 		local map = quest.zone or quest.start.map
 		local zone = data.zones[map]
-		if zone and not Model.IsGray(quest.level, level) and not (quest.elite and not quest.dungeon) then
+		if
+			zone
+			and not quest.raid
+			and not Model.IsGray(quest.level, level)
+			and not (quest.elite and not quest.dungeon)
+		then
 			if not choices[map] then
 				choices[map] = { map = map, min = zone.min, max = zone.max, quests = 0 }
 				scores[map] = 0
@@ -1274,11 +1280,12 @@ local function HandIns(ready)
 	end
 end
 
--- The quests a zone's cards hold: those filed under it, else those picked up on it.
+-- The quests a zone's cards hold: those filed under it, else those picked up on it; never a raid's, which no zone card
+-- offers, as the dungeon card offers none (F15).
 ---@return fun(quest: AGFQuest): boolean
 local function InZone(zone)
 	return function(quest)
-		return (quest.zone or quest.start.map) == zone
+		return not quest.raid and (quest.zone or quest.start.map) == zone
 	end
 end
 
@@ -1599,12 +1606,13 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 		best = best or (Open(map) and map or nil)
 	end
 	local zone, tries, here = best, { best }, chosenZone ~= nil and chosenZone == player.map
-	-- As in the ranking, only a quest that isn't an outdoor elite makes the zone the player's: an elite is optional.
+	-- As in the ranking, only a quest that isn't an outdoor elite or a raid's makes the zone the player's: an elite is
+	-- optional, and no card offers a raid's.
 	local band = data.zones[player.map]
 	if band and band.min <= player.level and player.level <= band.max then
 		for _, id in ipairs(here and {} or eligible) do
 			local quest = data.quests[id]
-			here = here or (not quest.elite and (quest.zone or quest.start.map) == player.map)
+			here = here or (not quest.elite and not quest.raid and (quest.zone or quest.start.map) == player.map)
 		end
 	end
 	for _, map in ipairs(zones) do

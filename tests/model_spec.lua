@@ -350,6 +350,33 @@ equal(Calling(several), nil, "calling: a quest for every class but one is no cal
 local raid = Diversions(10, 10, 10)
 raid.quests[11].dungeon, raid.quests[11].raid = 36, true
 equal(Calling(raid, nil, both), nil, "calling: never a raid's quest")
+-- No zone card offers a raid's quest either (F15), outdoors or in, whatever it's filed under, nor ranks a zone by one.
+local function Offered(journeys, id)
+	for _, journey in ipairs(journeys) do
+		for _, step in ipairs(journey.steps) do
+			for _, questID in ipairs(step.quests) do
+				if questID == id then
+					return journey.key
+				end
+			end
+		end
+	end
+end
+local raidQuests = Diversions(10, 10, 10)
+raidQuests.quests[12], raidQuests.quests[13] = quest(0.95, 0.5), quest(0.95, 0.5, 2)
+raidQuests.quests[12].dungeon, raidQuests.quests[12].raid = 36, true
+raidQuests.quests[13].elite, raidQuests.quests[13].raid = true, true
+local raidPlan = Model.Plan(raidQuests, player, {}, {}, both).journeys
+equal(Offered(raidPlan, 12), nil, "raid: never on the story, filed under an instance")
+equal(Offered(raidPlan, 13), nil, "raid: nor on the next zone, typed a raid outdoors")
+equal(Offered(raidPlan, 1), "zone:1", "raid: the story's own quests stay")
+local raidOnly = { quests = {}, zones = Ahead(0).zones }
+for id = 1, 6 do
+	raidOnly.quests[id] = quest(id / 10, 0.5, 2)
+	raidOnly.quests[id].raid = id > 1
+end
+raidOnly.quests[7] = quest(0.5, 0.5)
+equal(Kinds(Model.Plan(raidOnly, player, {}, {}, both).journeys), "zone:1", "raid: never ranks a zone")
 local other = Diversions(10, 10, 10)
 other.quests[11].classes = 1
 equal(Calling(other), nil, "calling: another class's quest")
