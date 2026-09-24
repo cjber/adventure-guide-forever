@@ -52,6 +52,8 @@ local Refresh
 local emptyText
 ---@type Button?
 local goButton
+---@type Button?
+local stopButton
 ---@type AGFSearchRow[]
 local results = {}
 ---@type Frame?
@@ -308,7 +310,17 @@ local function BuildFooter(parent)
 		local step = ns.Route().steps[1]
 		if step then
 			ns.Integrations.Navigate(step)
+			Refresh()
 		end
+	end)
+	-- Shown only while Go's guidance runs (design §2.1): it never stops what the player or another addon started.
+	stopButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate") --[[@as Button]]
+	stopButton:SetSize(90, 26)
+	stopButton:SetPoint("BOTTOMRIGHT", -PAD, 8)
+	stopButton:SetText(L.STOP)
+	stopButton:SetScript("OnClick", function()
+		ns.Integrations.Cancel()
+		Refresh()
 	end)
 end
 
@@ -606,6 +618,7 @@ function Refresh()
 	-- BuildContent() always sets every upvalue below before Attach() registers this listener.
 	---@cast emptyText -?
 	---@cast goButton -?
+	---@cast stopButton -?
 	local route = ns.Route()
 
 	local ready = ns.State.Ready()
@@ -617,6 +630,7 @@ function Refresh()
 	local provider = ns.Integrations.Provider()
 	goButton:SetText(provider and ("Go (%s)"):format(provider) or "Set waypoint")
 	goButton:SetEnabled(route.steps[1] ~= nil and not searching)
+	stopButton:SetShown(ns.Integrations.Owns())
 end
 
 -- Blizzard's displayMode and TabButtons are never written: the guide lays over the quest log

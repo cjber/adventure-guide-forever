@@ -57,6 +57,7 @@ ns.L = {
 	WHY_RACES = ITEM_RACES_ALLOWED or "Races: %s",
 	WHY_CLASSES = ITEM_CLASSES_ALLOWED or "Classes: %s",
 	NO_WAYPOINT = MAP_PIN_INVALID_MAP or "You can't place a pin on this map.",
+	STOP = "Stop",
 }
 local L = ns.L
 
@@ -122,6 +123,18 @@ local function LoadCharDB()
 	loaded.zone = nil
 	if loaded.journey ~= nil and type(loaded.journey) ~= "string" then
 		loaded.journey = nil
+	end
+	local waypoint = loaded.waypoint
+	if
+		waypoint ~= nil
+		and not (
+			type(waypoint) == "table"
+			and type(waypoint.map) == "number"
+			and type(waypoint.x) == "number"
+			and type(waypoint.y) == "number"
+		)
+	then
+		loaded.waypoint = nil
 	end
 	-- The defaults loop above guarantees every AGFPrefs field except `skipped`, which ns.Prefs()
 	-- always sets before returning; nothing else reads charDB directly.

@@ -87,7 +87,8 @@ local function ParseXML(text)
 end
 
 -- options: spf ("v1" or "v1+"; absent by default), db and charDB (saved variables), log ({id, title, level,
--- complete, map, x, y} entries), completed (quest IDs), player (overrides), initialLogin (default true).
+-- complete, map, x, y} entries), completed (quest IDs), player (overrides), initialLogin (default true), waypoint
+-- (the user waypoint the client kept across a /reload, a UiMapPoint).
 function harness.load(options)
 	options = options or {}
 	local G = setmetatable({}, { __index = _G })
@@ -104,7 +105,7 @@ function harness.load(options)
 		providers = {},
 		counts = { CreateFrame = 0, displayModeWrites = 0, tickers = 0, AcquirePin = 0, SetMapID = 0 },
 		modelCalls = {},
-		waypoint = nil,
+		waypoint = options.waypoint,
 		combat = false,
 	}
 	local player = {

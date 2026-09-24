@@ -126,18 +126,45 @@ function Integrations.Navigate(step)
 	end
 	C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(step.map, step.x, step.y))
 	C_SuperTrack.SetSuperTrackedUserWaypoint(true)
+	-- Saved per character, so Stop still knows the waypoint as ours after a /reload.
+	ns.Prefs().waypoint = { map = step.map, x = step.x, y = step.y }
 	return true
 end
 
+-- The native waypoint is ours while it is still where Go put it (x and y within 1e-4); once the player moves or clears
+-- it, it is theirs, and the saved one is forgotten.
+---@return boolean
+local function OwnsWaypoint()
+	local prefs = ns.Prefs()
+	local saved, point = prefs.waypoint, C_Map.GetUserWaypoint()
+	local same = saved ~= nil
+		and point ~= nil
+		and point.uiMapID == saved.map
+		and math.abs(point.position.x - saved.x) < 1e-4
+		and math.abs(point.position.y - saved.y) < 1e-4
+	if not same then
+		prefs.waypoint = nil
+	end
+	return same
+end
+
+---@return boolean
+function Integrations.Owns()
+	local owns = OwnsWaypoint()
+	return owns or Integrations.Guiding()
+end
+
+-- Stop: ends only what Go started. Shortest Path's journey by our name, and the native waypoint only while it is ours.
 function Integrations.Cancel()
 	local api = SPF()
-	if api then
-		api.Cancel(OWNER)
+	if api and api.Cancel(OWNER) then
 		ns.Pins.Refresh()
-		return
 	end
-	C_Map.ClearUserWaypoint()
-	C_SuperTrack.SetSuperTrackedUserWaypoint(false)
+	if OwnsWaypoint() then
+		C_Map.ClearUserWaypoint()
+		C_SuperTrack.SetSuperTrackedUserWaypoint(false)
+		ns.Prefs().waypoint = nil
+	end
 end
 
 ---@return string?

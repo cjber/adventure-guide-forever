@@ -92,6 +92,7 @@
 ---@field journey? string key of the journey card the player chose; nil (or gone) = the first card
 ---@field skipped table<string, boolean> step keys skipped this session
 ---@field pinned string[] step keys pinned, in order
+---@field waypoint? {map: integer, x: number, y: number} the native waypoint the last Go set, while it may still be ours
 
 ---@alias AGFStepKind "turnin"|"pickup"|"objective"|"dungeon"
 
@@ -212,7 +213,8 @@
 ---@field Travel fun(step: AGFStep): string? the last line fetched for this step, without asking again
 ---@field OnTravelChange fun(callback: fun())
 ---@field Navigate fun(step: AGFStep|AGFGiver): boolean route there with Shortest Path, else (declined or absent) the native waypoint where the map allows one; true when something now guides
----@field Cancel fun()
+---@field Cancel fun() Stop: cancels our Shortest Path journey, and clears the native waypoint only while it is ours
+---@field Owns fun(): boolean Go's guidance is still running: our Shortest Path journey, or the waypoint Go set
 ---@field Guiding fun(): boolean Shortest Path is walking our multi-stop route and draws its own numbered stops
 ---@field Guided fun(): (AGFStep|AGFGiver)[] the stops it walks, while it guides; empty otherwise
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")
@@ -245,6 +247,7 @@
 ---@field HELP_DUMP string
 ---@field HAND_IN_WHEN string format: zone name; the reason on a turn-in the route leaves for another continent
 ---@field NO_WAYPOINT string the error Go shows when nothing can guide the player on the step's map
+---@field STOP string ends the guidance Go started
 ---@field SETTING_MAP_PINS_TOOLTIP string
 ---@field SETTING_GIVERS_TOOLTIP string
 ---@field SETTING_DUNGEONS_DEFAULT_TOOLTIP string

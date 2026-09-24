@@ -430,6 +430,78 @@ do
 	clean(h, "declined later")
 end
 
+-- F7, Stop: it ends only what Go started. The native waypoint is ours while it sits where Go put it, across a
+-- /reload; one the player moved is theirs. Shortest Path's journey is cancelled by our name, and Stop shows only while
+-- one of them runs.
+local function StopButton(h)
+	return h.Find(function(frame)
+		return frame.stockTemplate == "UIPanelButtonTemplate" and frame.text == h.ns.L.STOP
+	end)[1]
+end
+do
+	local h = Load(false)
+	local ns = h.ns
+	ns.OpenPanel()
+	h.flush()
+	local stop = StopButton(h)
+	equal(stop:IsShown(), false, "stop: hidden before Go")
+	ns.Integrations.Navigate(ns.Route().steps[1])
+	local moved = h.waypoint
+	h.waypoint = { uiMapID = moved.uiMapID, position = { x = moved.position.x + 0.01, y = moved.position.y } }
+	equal(ns.Integrations.Owns(), false, "stop: a waypoint the player moved is theirs")
+	ns.Integrations.Cancel()
+	equal(h.counts.ClearUserWaypoint, 0, "stop: so Stop leaves it")
+	equal(h.waypoint ~= nil, true, "stop: it is still there")
+	equal(ns.Prefs().waypoint, nil, "stop: and ours is forgotten")
+	h.Click(h.Find(function(frame)
+		return frame.stockTemplate == "UIPanelButtonTemplate"
+	end)[1])
+	equal(stop:IsShown(), true, "stop: shown after Go")
+	h.Click(stop)
+	equal(h.counts.ClearUserWaypoint, 1, "stop: clears the waypoint Go set")
+	equal(h.superTracked, false, "stop: and stops tracking it")
+	equal(stop:IsShown(), false, "stop: then hides")
+	clean(h, "stop")
+
+	-- A /reload: the client keeps the waypoint, the character's saved variables remember it was ours.
+	h.Click(h.Find(function(frame)
+		return frame.stockTemplate == "UIPanelButtonTemplate"
+	end)[1])
+	local reloaded = harness.load({
+		charDB = h.G.AdventureGuideForeverCharDB,
+		waypoint = h.waypoint,
+		initialLogin = false,
+		completed = { 844 },
+	})
+	reloaded.ns.OpenPanel()
+	reloaded.flush()
+	equal(StopButton(reloaded):IsShown(), true, "stop: still offered after a /reload")
+	reloaded.Click(StopButton(reloaded))
+	equal(reloaded.counts.ClearUserWaypoint, 1, "stop: and still clears the waypoint")
+	clean(reloaded, "stop: reload")
+end
+do
+	local h = Load("v1")
+	local ns = h.ns
+	ns.OpenPanel()
+	h.flush()
+	local stop = StopButton(h)
+	h.Click(h.Find(function(frame)
+		return frame.stockTemplate == "UIPanelButtonTemplate"
+	end)[1])
+	equal(stop:IsShown(), true, "stop, Shortest Path: shown while it walks our journey")
+	h.Click(stop)
+	equal(h.spf.Cancel, 1, "stop, Shortest Path: cancels our journey once")
+	equal(stop:IsShown(), false, "stop, Shortest Path: then hides")
+	equal(h.counts.ClearUserWaypoint, 0, "stop, Shortest Path: no native waypoint to clear")
+	ns.Integrations.Navigate(ns.Route().steps[1])
+	h.G.ShortestPathForever.API.Cancel("AdventureGuideForever")
+	ns.Invalidate()
+	h.flush()
+	equal(stop:IsShown(), false, "stop, Shortest Path: hidden once CurrentStop is nil")
+	clean(h, "stop, Shortest Path")
+end
+
 -- Chat copy comes from ns.L: an unknown command prints the three help lines, in order.
 do
 	local h = Load(false)
