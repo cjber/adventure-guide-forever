@@ -57,6 +57,12 @@ function Asides.Current()
 	end
 end
 
+-- Every provider's last answer, skipped or not, in registration order (Moments.lua's seen set).
+---@return AGFAside[]
+function Asides.Answers()
+	return answers
+end
+
 -- What the player sees of an aside, so an unchanged answer redraws nothing.
 ---@param aside? AGFAside
 ---@return string

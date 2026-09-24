@@ -28,6 +28,11 @@ EventRegistry = {}
 ---@type fun(region: Region, fadeInTime: number, fadeOutTime: number, flashDuration: number, showWhenDone: boolean)
 UIFrameFlash = nil
 
+-- Blizzard_Minimap Mainline/AddonCompartment.xml: the minimap's addon compartment button; absent where the flavour
+-- doesn't load it, so read with a nil check.
+---@type DropdownButton?
+AddonCompartmentFrame = nil
+
 -- UIErrorsFrame.lua: the red line at the top of the screen, as the client shows its own errors.
 ---@type {AddExternalErrorMessage: fun(self: any, message: string)}
 UIErrorsFrame = nil

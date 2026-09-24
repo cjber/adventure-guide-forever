@@ -624,3 +624,26 @@
 
 ---@class AGFStrings
 ---@field NPC_JOURNEY string format: the chosen journey's title, on a unit tooltip of an NPC its steps visit
+-- Stream 2d "Something new" (Moments.lua, docs/design.md §2.13, roadmap #10).
+
+---@class AGFMoments
+---@field Observe fun() step 1's travel frame, out of combat: what is offered joins the seen set; a look armed by a level or a zone marks what the set lacks
+---@field IsNew fun(key: string): boolean the journey's card carries the "new" mark
+---@field Unseen fun(): boolean something new since the guide last opened: the tab's and the compartment's pips
+---@field Line fun(): string? the tracker's line, while unseen and its journey is still offered
+---@field Opened fun() the guide shows: the pips and the tracker's line go
+---@field Closed fun() the guide hides: the cards' marks go
+---@field OnChange fun(callback: fun())
+
+---@class AGFAsides
+---@field Answers fun(): AGFAside[] every provider's last answer, skipped or not, in registration order
+
+---@class AGFNamespace
+---@field Moments AGFMoments
+---@field OnMoment? fun(journey: boolean, aside: boolean) something new: glow the moment's line and/or the aside's; set by Tracker.lua
+
+---@class AGFPrefs
+---@field seen? table<string, boolean> journey keys this character has been offered, and "aside:<key>" while a provider gives it
+
+---@class AGFStrings
+---@field MOMENT string format: the tracker's line for a new journey: its zone's or dungeon's name

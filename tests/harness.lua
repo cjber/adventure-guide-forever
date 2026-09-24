@@ -910,6 +910,8 @@ function harness.load(options)
 
 	G.QUESTS_LABEL = "Quests"
 	G.UIParent = NewRegion("Frame", "UIParent")
+	-- The minimap's addon compartment button (Blizzard_Minimap Mainline/AddonCompartment.xml).
+	NewRegion("DropdownButton", "AddonCompartmentFrame", G.UIParent)
 
 	-- The player.
 	G.UnitLevel = function()

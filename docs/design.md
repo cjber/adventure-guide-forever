@@ -178,7 +178,7 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
     group. Dungeon cards, whose kind icon says so already, do not get it.
   - **Tooltip.** Whole cards now have one as well (§2.9).
 - **Fonts.** Blizzard sets the name in white `GameFontHighlightMed2` over a gold `GameFontNormalMed2` subline. AGF deliberately reverses this, to follow the house rule of a gold header over white body text.
-- **What a card may offer.** A card only ever holds eligible, recommendable steps. It never shows a lock, never shows "opens at level N", and never marks something new-in-Forever or of unknown location. Locked quests appear only in search (§2.4).
+- **What a card may offer.** A card only ever holds eligible, recommendable steps. It never shows a lock, never shows "opens at level N", and never marks something new-in-Forever or of unknown location (§2.13's mark says new to the character). Locked quests appear only in search (§2.4).
 - **Card kinds** (three at most, only those that have steps). Carry and the story keep their fixed slots; the
   diversions share what is left (roadmap R4):
   1. **Finish what you carry**: log turn-ins and objectives.
@@ -304,6 +304,8 @@ ADVENTURE GUIDE                                 module header (template)
   first card when no story is offered). Its click chooses that journey as its card does, starting the route with
   "Choosing a journey starts the route"; right-click is the tracker menu. The step block, with its "Next:" line,
   appears only once a journey is chosen, and a fanfare header sits under the line.
+- **Something new** (§2.13): "Duskwood is now for your level" sits under the quiet line, glowing once, until the
+  guide opens.
 - **Place line.** A stop with one giver reads "NPC, zone". The zone name comes from the client by map ID, with the
   data's name as the fallback. A turn-in placed by `GetNextWaypoint` uses the data's finish NPC only when that NPC
   is within the hub; otherwise it shows the zone alone.
@@ -551,6 +553,27 @@ aside shown changes. The first provider's answer the player has not skipped or t
   player's spells). "You can learn to ride" (#20): at the pinned build SpellLevels gives Apprentice Riding (33388)
   BaseLevel and SpellLevel 0, and SkillLineAbility (line 762) and SkillRaceClassInfo no level, so the data cannot
   say when it opens; the riding trainers CMaNGOS has teach the old per-race mounts, not 33388.
+
+### 2.13 Something new
+
+After a level gained or a zone entered (`PLAYER_LEVEL_UP`, `ZONE_CHANGED_NEW_AREA`), a journey card or an aside the
+character has never been offered is announced once, quietly: `Moments.lua`, after `Asides.lua` in the TOC.
+
+- **The seen set.** `charDB.seen` holds every journey key the character has been offered (never `carry`), and
+  `aside:<key>` while a provider gives that aside; one that stops being given leaves (checked on every change of the
+  aside shown too, since training every spell brings no rebuild), so the trainer's next spells are new again. Step 1's travel frame after each rebuild, once the asides have answered, adds what is offered now; out of
+  combat, and only once the completed quests have loaded.
+- **When it compares.** Only on the first such look after the rebuild a level or a zone brings, and never against an
+  empty set: the session's first look, a new character and a save file the client never loaded (#34) all learn
+  silently, so nothing floods.
+- **What it shows.** A new journey: the tracker line "Duskwood is now for your level" (the zone's client name, a
+  dungeon's card title) under the quiet line, glowing once as §2.7's fanfare does, with no sound; its click opens the
+  guide. A new aside: its own tracker line glows. Either way `adventureguide-microbutton-alert` (CSV:2025) pips the
+  Adventure tab and the addon compartment's button, and a new card carries `adventureguide-icon-whatsnew` (CSV:2024)
+  over its ring's top-right (beside the "+" on a one-line row). No toast; nothing opens by itself; the tracker section
+  off leaves the pips and marks.
+- **Clearing.** Opening the guide clears the pips and the tracker line; the marks stay while it shows and go when it
+  closes. Found with the guide already open, only the marks show. Pips and marks last the session only.
 
 ## 3. Copy style sheet
 
@@ -818,6 +841,9 @@ Nothing below has been validated in game yet.
     <town>" stop shows with a ring and Go; training the spells removes it at once.
 16. With a journey chosen, hovering its next stop's giver adds "Adventure guide: <title>" under the stock unit lines
     (in combat too, with no taint logged); another NPC, a player, and every NPC once the choice is cleared add nothing.
+17. Something new (§2.13): a level-up that brings a new next-zone card glows "<Zone> is now for your level" once,
+    with the tab and compartment pips; opening the tab clears both, the card's mark stays until it closes. A login
+    or `/reload` never glows.
 
 ## 9. Open questions that need client probes
 
