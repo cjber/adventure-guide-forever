@@ -474,7 +474,7 @@
 
 ---@class AGFNpc
 ---@field side integer the sides it is not hostile to (FactionTemplate.EnemyGroup): 1 Alliance, 2 Horde, 3 both
----@field place AGFPlace a non-seasonal spawn; `hub` when a quest place stands within 100 yards
+---@field place AGFPlace a non-seasonal spawn; within 100 yards of a quest place, its `hub` and that town's usual map
 ---@field class? integer class trainer: the class ID it trains (1 Warrior ... 11 Druid)
 ---@field upto? integer class trainer: the highest level among the spells it teaches (6 for a starting-area trainer)
 ---@field pet? boolean hunter pet trainer

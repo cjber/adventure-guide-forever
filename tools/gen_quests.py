@@ -452,7 +452,8 @@ def hub_names(hubs, nodes):
 def spawns(tables, kind, wanted, world):
     """Every spawn of the `wanted` entries of `kind`, with each zone map whose rectangle contains it.
 
-    Zone rectangles overlap (Durotar's covers the eastern Barrens), so the map is chosen in `pick`, not here.
+    Zone rectangles overlap (Durotar's covers the eastern Barrens), so the map is chosen in `pick`, not here. `at` is
+    the spawn's continent and world x, y.
     """
     names = {r.get("Entry", r.get("entry")): r.get("Name", r.get("name")) for r in tables[f"{kind}_template"]}
     # A positive event spawns the row only while that event (Midsummer, Hallow's End...) runs.
@@ -471,7 +472,8 @@ def spawns(tables, kind, wanted, world):
                 )
                 options.append((area, int(row["OrderIndex"]), int(row["UiMapID"]), xy))
         if options:
-            result[entry].append({"entry": (kind, entry), "name": names[entry], "options": sorted(options)})
+            at = (spawn["map"], spawn["position_x"], spawn["position_y"])
+            result[entry].append({"entry": (kind, entry), "name": names[entry], "options": sorted(options), "at": at})
     return result
 
 
@@ -600,9 +602,9 @@ def reaction(template):
     return 0 if enemies & 1 else (0 if enemies & 2 else 1) | (0 if enemies & 4 else 2)
 
 
-def nearest_hub(point, members):
-    """The hub of the quest place nearest `point` (continent, x, y) within LINK yards, or None. `members` maps a
-    (continent, cell x, cell y) grid cell of LINK yards to its places as (x, y, hub).
+def nearest_hub(point, grid):
+    """The hub of the quest place nearest `point` (continent, world x, world y) within LINK yards, or None. `grid` maps
+    a (continent, cell x, cell y) cell of LINK yards to its places as (x, y, hub).
     """
     continent, x, y = point
     cx, cy = math.floor(x / LINK), math.floor(y / LINK)
@@ -610,15 +612,17 @@ def nearest_hub(point, members):
         (math.dist((x, y), (mx, my)), hub)
         for dx in (-1, 0, 1)
         for dy in (-1, 0, 1)
-        for mx, my, hub in members.get((continent, cx + dx, cy + dy), ())
+        for mx, my, hub in grid.get((continent, cx + dx, cy + dy), ())
     ]
     best = min((n for n in near if n[0] <= LINK), default=None)
     return None if best is None else best[1]
 
 
-def role_npcs(tables, world, faction_rows, effects, skill_lines, quest_maps, counts):
-    """Each role NPC (`roles`) with its side (`reaction`) and place: a spawn projected as a quest giver's is, the
-    smallest map the quests use first (Talonbranch Glade is Felwood, not the Mount Hyjal map over it). Several spawns
+def role_npcs(tables, world, faction_rows, effects, skill_lines, grid, town_maps, maps, counts):
+    """Each role NPC (`roles`) with its side (`reaction`) and place: a spawn projected as a quest giver's is. Within
+    LINK yards of a quest place it takes that place's hub and the map most of the hub's quest places use (Astranaar
+    is Ashenvale, not the Stonetalon map that overhangs it; `town_maps` ranks each hub's maps). Elsewhere it takes the
+    smallest of `maps` it stands in (Talonbranch Glade is Felwood, not the Mount Hyjal map over it). Several spawns
     give the least place, as several givers of one quest do.
     """
     factions = {int(r["ID"]): r for r in faction_rows}
@@ -628,13 +632,20 @@ def role_npcs(tables, world, faction_rows, effects, skill_lines, quest_maps, cou
     npcs = {}
     for entry, fields in role.items():
         side = reaction(factions.get(template_faction[entry]))
-        candidates = [pick(spawn, quest_maps, None) for spawn in found[entry]]
+        candidates = []
+        for spawn in found[entry]:
+            if options := [o for o in spawn["options"] if o[2] in maps]:
+                hub = nearest_hub(spawn["at"], grid)
+                home = next((m for m in town_maps.get(hub, ()) if any(o[2] == m for o in options)), None)
+                place = pick({**spawn, "options": options}, (), home)
+                candidates.append(place if hub is None else {**place, "hub": hub})
         if not side or not candidates:
             counts["dropped NPC: no side" if candidates else "dropped NPC: no zone-map spawn"] += 1
             continue
         place = min(candidates, key=lambda p: (p["map"], p["name"], p["x"], p["y"]))
         npcs[entry] = {**fields, "side": side, "place": place}
     counts["NPCs"] = len(npcs)
+    counts["NPCs in a hub"] = sum("hub" in npc["place"] for npc in npcs.values())
     return npcs
 
 
@@ -741,8 +752,6 @@ def generate(
         emitted[qid] = quest
     zones = {m: {"name": maps[m]["Name_lang"], "min": low, "max": high} for m, (low, high) in sorted(PUBLISHED.items())}
     wanted = {q[k]["map"] for q in emitted.values() for k in ("start", "finish") if k in q} | zones.keys()
-    npcs = role_npcs(tables, world, faction_rows, effects, skill_lines, wanted, counts)
-    wanted |= {npc["place"]["map"] for npc in npcs.values()}
     centres = geometry(assignments, wanted, {m: row["Name_lang"] for m, row in maps.items()})
     counts["maps without a centre"] = len(wanted - centres.keys())
     points = {}
@@ -756,17 +765,13 @@ def generate(
         for place in (quest[k] for k in ("start", "finish") if k in quest):
             if (key := (place["map"], place["x"], place["y"])) in hub_of:
                 place["hub"] = hub_of[key]
-    grid = defaultdict(list)
+    grid, votes = defaultdict(list), defaultdict(Counter)
     for hub, (continent, members) in enumerate(hubs, 1):
-        for x, y, _ in members:
+        for x, y, (ui_map, _, _) in members:
             grid[continent, math.floor(x / LINK), math.floor(y / LINK)].append((x, y, hub))
-    for npc in npcs.values():
-        place = npc["place"]
-        if (centre := centres.get(place["map"])) and (
-            hub := nearest_hub((centre["continent"], *world_point(centre, place)), grid)
-        ) is not None:
-            place["hub"] = hub
-    counts["NPCs in a hub"] = sum("hub" in npc["place"] for npc in npcs.values())
+            votes[hub][ui_map] += 1
+    town_maps = {hub: sorted(counter, key=lambda m: (-counter[m], m)) for hub, counter in votes.items()}
+    npcs = role_npcs(tables, world, faction_rows, effects, skill_lines, grid, town_maps, centres.keys(), counts)
     names = defaultdict(set)
     for quest in emitted.values():
         for place in (quest[k] for k in ("start", "finish") if "hub" in quest.get(k, {})):
@@ -817,8 +822,9 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs):
         "-- npcs: class, pet, riding and profession trainers, battlemasters and innkeepers (creature_template",
         "-- NpcFlags, TrainerType, npc_trainer, battlemaster_entry); rank: the highest SKILL_STEP spell taught of a",
         "-- SkillLine profession or secondary skill (SpellEffect); side: every side FactionTemplate.EnemyGroup is",
-        "-- not hostile to; place: a non-seasonal spawn, as quest givers';",
-        f"-- hub: the nearest quest place's within {LINK} yd. No side or zone-map spawn: left out.",
+        "-- not hostile to; place: a non-seasonal spawn, as quest givers'. Within",
+        f"-- {LINK} yd of a quest place: its hub, on the map most of the hub's places use; else the smallest map.",
+        "-- No side or zone-map spawn: left out.",
         "---@type string, AGFNamespace",
         "local _, ns = ...",
         "---@type AGFData",

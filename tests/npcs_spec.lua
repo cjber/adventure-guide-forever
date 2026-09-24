@@ -19,6 +19,9 @@ for _, case in ipairs({
 	{ 5499, { skill = 171, rank = 2, side = 1 }, 1453, "Lilyssia Nightbreeze" }, -- Stormwind alchemy, to Journeyman
 	{ 543, { pet = true, side = 1 }, 1448, "Nalesette Wildbringer" }, -- Felwood, not the Mount Hyjal map over it
 	{ 4732, { riding = true, race = 1, side = 1 }, 1429, "Randal Hunter" }, -- Eastvale horse riding
+	{ 3963, { class = 3, side = 1 }, 1440, "Danlaar Nightstride" }, -- Astranaar is Ashenvale, not Stonetalon over it
+	{ 2127, { class = 9, side = 2 }, 1420, "Rupert Boch" }, -- Brill is Tirisfal, not Western Plaguelands over it
+	{ 6929, { inn = true }, 1454, "Innkeeper Gryshka" }, -- a city NPC keeps its city's map
 }) do
 	local id, fields, map, name = case[1], case[2], case[3], case[4]
 	local npc = npcs[id]

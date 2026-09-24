@@ -506,8 +506,9 @@ CMaNGOS's TrainerRace), profession trainers (skill line and the highest rank tau
 taught spell in wago SpellEffect, on a SkillLine profession or secondary skill), battlemasters
 (`battlemaster_entry`) and innkeepers, from the pinned CMaNGOS dump.
 The side is every side the FactionTemplate's EnemyGroup is not hostile to. The place is a non-seasonal spawn
-projected as a quest giver's is, preferring the smallest map the quests use; the hub is the nearest quest place's
-within 100 yards, so NPCs never renumber or merge towns. An NPC with no side or no zone-map spawn is left out.
+projected as a quest giver's is. Within 100 yards of a quest place it takes that place's hub and the map most of
+the hub's quest places use, since zone rectangles overhang (Astranaar is Ashenvale, not Stonetalon); elsewhere it
+takes the smallest map the quests use. NPCs never renumber or merge towns. An NPC with no side or no zone-map spawn is left out.
 
 ### 4.1 Route ordering (#12)
 
