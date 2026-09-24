@@ -36,6 +36,12 @@ UIErrorsFrame = nil
 ---@type string?
 MAP_PIN_INVALID_MAP = nil
 
+-- GlobalStrings: "Classes: %s" and "Races: %s" in enUS, the item tooltip's restriction lines; read with a fallback.
+---@type string?
+ITEM_CLASSES_ALLOWED = nil
+---@type string?
+ITEM_RACES_ALLOWED = nil
+
 ---@type table<string, fun(msg: string, editBox: EditBox)>
 SlashCmdList = nil
 

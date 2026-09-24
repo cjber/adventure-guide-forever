@@ -39,7 +39,21 @@ ns.L = {
 		.. "the guide. Change it any time from the guide's settings menu.",
 	SETTING_GIVERS_TOOLTIP = 'A "!" on the world map over everyone with a quest you can take now. '
 		.. "Needs route pins on the map as well.",
-	-- The client's own line, localised, where it has one.
+	-- Why-not (docs/design.md §2.4): what the data says a quest needs, one line per requirement.
+	WHY_NO_START = "The guide can't tell where this starts",
+	WHY_DONE = "You've done this",
+	WHY_IN_LOG = "In your quest log",
+	WHY_REPEATABLE = "Repeatable quests aren't suggested",
+	WHY_ALLIANCE = "Alliance only",
+	WHY_HORDE = "Horde only",
+	WHY_LEVEL = "Requires level %d",
+	WHY_COMPLETED = "Completed: %s",
+	WHY_ONE_OF = "Requires one of: %s",
+	WHY_CHOSE = "You chose %s instead",
+	WHY_EARLIER_QUEST = "an earlier quest",
+	-- The client's own lines, localised, where it has one.
+	WHY_RACES = ITEM_RACES_ALLOWED or "Races: %s",
+	WHY_CLASSES = ITEM_CLASSES_ALLOWED or "Classes: %s",
 	NO_WAYPOINT = MAP_PIN_INVALID_MAP or "You can't place a pin on this map.",
 }
 local L = ns.L

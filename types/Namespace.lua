@@ -153,10 +153,22 @@
 ---@field zones AGFZoneChoice[] up to 3, best first
 ---@field zone? integer the zone the route was built for
 
+-- One requirement in the why-not view (Model.Why).
+---@class AGFWhyLine
+---@field text string
+---@field met boolean
+
+-- The client's names for Model.Why; each returns nil when it has none, and the data's English is used.
+---@class AGFWhyNames
+---@field title? fun(questID: integer): string?
+---@field race? fun(raceID: integer): string?
+---@field class? fun(classID: integer): string?
+
 ---@class AGFModel
 ---@field MAX_STEPS integer
 ---@field IsGray fun(questLevel: integer, playerLevel: integer): boolean
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
+---@field Why fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer, names?: AGFWhyNames): AGFWhyLine[] every requirement, met or not; eligible exactly when all are met
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
 ---@field Story fun(data: AGFData, questID: integer): AGFStory? the chain the quest belongs to; nil when it is in none, or the way back forks
 ---@field Zones fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>): AGFZoneChoice[]
@@ -245,6 +257,19 @@
 ---@field CONTINUES_STORY string
 ---@field BEGINS_STORY string
 ---@field NOTHING_NEARBY string the guide with no journey
+---@field WHY_NO_START string the one line for a quest whose start the generator suppressed
+---@field WHY_DONE string
+---@field WHY_IN_LOG string
+---@field WHY_REPEATABLE string
+---@field WHY_ALLIANCE string
+---@field WHY_HORDE string
+---@field WHY_LEVEL string format: minimum level
+---@field WHY_COMPLETED string format: the prerequisite's title
+---@field WHY_ONE_OF string format: the titles, joined
+---@field WHY_CHOSE string format: the exclusive sibling's title
+---@field WHY_EARLIER_QUEST string a prerequisite the data has no title for
+---@field WHY_RACES string format: race names, joined (the client's ITEM_RACES_ALLOWED)
+---@field WHY_CLASSES string format: class names, joined (the client's ITEM_CLASSES_ALLOWED)
 ---@field LOADING string the guide before the completed quests arrive
 
 ---@class AGFNamespace

@@ -433,6 +433,80 @@ equal(#heads, 815, "walk: chain heads in the data")
 equal(totals, 581, "walk: heads whose total the data proves")
 equal(textOnly, 226, "walk: heads shown as a chapter only")
 equal(#heads - totals - textOnly, 8, "walk: heads whose next dangles at once")
+
+-- Why-not and the planner never disagree (F5 acceptance): every quest, for each fixture character with completed
+-- quests and a log (the first quests it could take moved into the log), is eligible exactly when every line is met.
+local characters, mismatches, fixtures = dofile("tests/fixtures/characters.lua"), 0, 0
+for _, fixture in ipairs(characters.list) do
+	local who, done, carried = characters.Resolve(ns.Data, fixture)
+	local moved, fresh = 0, next(done) == nil
+	for id = 1, 10000 do
+		if moved < 10 and Model.Eligible(ns.Data, who, done, carried, id) then
+			-- A fixture with nothing done (human60) gets its first five done; the next five go in the log.
+			if fresh and moved < 5 then
+				done[id] = true
+			else
+				carried[id] = { id = id, title = "", complete = false, level = 1 }
+			end
+			moved = moved + 1
+		end
+	end
+	assert(next(done) and next(carried), fixture.name .. ": completed quests and a log")
+	fixtures = fixtures + 1
+	for id in pairs(ns.Data.quests) do
+		local all = true
+		for _, line in ipairs(Model.Why(ns.Data, who, done, carried, id)) do
+			all = all and line.met
+		end
+		mismatches = mismatches + (all == Model.Eligible(ns.Data, who, done, carried, id) and 0 or 1)
+	end
+end
+equal(fixtures >= 5, true, "why: five fixtures or more")
+equal(mismatches, 0, "why: Eligible == every Why line met, for every quest and fixture")
+
+-- The lines themselves: the design's copy, the client's names first, a suppressed start alone.
+local horde = { level = 10, maxLevel = 60, side = 2, raceBit = 2, classBit = 1, map = 1, x = 0.5, y = 0.5 }
+local q = ns.Data.quests[83] -- Red Linen Goods: Alliance races, level 4
+local function Texts(lines)
+	local out = {}
+	for _, line in ipairs(lines) do
+		out[#out + 1] = (line.met and "+ " or "- ") .. line.text
+	end
+	return table.concat(out, " | ")
+end
+equal(q.title, "Red Linen Goods", "why: the fixture quest")
+equal(
+	Texts(Model.Why(ns.Data, horde, {}, {}, 83)),
+	"- Alliance only | + Requires level 4 | - Races: Human, Dwarf, Night Elf, Gnome",
+	"why: side, level and races"
+)
+local names = {
+	race = function(id)
+		return id == 1 and "Humain" or nil
+	end,
+}
+equal(
+	Model.Why(ns.Data, horde, {}, {}, 83, names)[3].text,
+	"Races: Humain, Dwarf, Night Elf, Gnome",
+	"why: the client's names win"
+)
+local custom = { quests = { quest(), quest(), quest() }, zones = {} }
+custom.quests[1].pre, custom.quests[1].preAny, custom.quests[1].classes = { 2 }, { 2, 3 }, 1
+custom.quests[2].title, custom.quests[3].title = "First", "Second"
+equal(
+	Texts(Model.Why(custom, player, { [2] = true }, {}, 1)),
+	"+ Horde only | + Requires level 10 | - Classes: Warrior | + Completed: First | + Requires one of: First, Second",
+	"why: classes and prerequisites"
+)
+custom = { quests = custom.quests, zones = {} } -- a new data table: the index of groups is memoised per data
+custom.quests[2].start, custom.quests[1].group, custom.quests[3].group = nil, 5, 5
+equal(Texts(Model.Why(custom, player, {}, {}, 2)), "- The guide can't tell where this starts", "why: one line")
+equal(
+	Texts(Model.Why(custom, player, {}, { [1] = {} }, 3)),
+	"+ Horde only | + Requires level 10 | - You chose Quest instead",
+	"why: an exclusive choice"
+)
+equal(Texts(Model.Why(custom, player, { [3] = true }, {}, 3)):sub(1, 18), "- You've done this", "why: done")
 player.map, player.x, player.y = 1413, 0.52, 0.3
 local baseline = Model.Plan(ns.Data, player, {}, {}, prefs())
 equal(#baseline.steps >= 3, true, "level 18 Horde route offers at least three steps")

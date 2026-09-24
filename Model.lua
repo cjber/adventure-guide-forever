@@ -146,47 +146,159 @@ function Model.Story(data, questID)
 	return story or nil
 end
 
--- `level` stands in for the player's own (the next-zone card asks what opens two levels on).
-local function Eligible(data, player, completed, log, id, groups, level)
-	local quest = data.quests[id]
-	if not quest or completed[id] or log[id] or quest.repeatable or not ValidPlace(quest.start) then
-		return false
-	end
-	if
-		(quest.side ~= 3 and quest.side ~= player.side)
-		or (level or player.level) < quest.min
-		or not HasBit(quest.races, player.raceBit)
-		or not HasBit(quest.classes, player.classBit)
-	then
-		return false
-	end
-	for _, pre in ipairs(quest.pre or {}) do
-		if pre <= 0 or not completed[pre] then
-			return false
-		end
-	end
-	if quest.preAny then
-		local found = false
-		for _, pre in ipairs(quest.preAny) do
-			if pre > 0 and completed[pre] then
-				found = true
-				break
-			end
-		end
-		if not found then
-			return false
-		end
-	end
-	for _, other in ipairs((quest.group and groups[quest.group]) or {}) do
-		if completed[other] or log[other] then
+-- English race and class names by UnitRace/UnitClass ID, the fallback when the client names none (a headless spec).
+local RACES = { "Human", "Orc", "Dwarf", "Night Elf", "Undead", "Tauren", "Gnome", "Troll" }
+RACES[10], RACES[11] = "Blood Elf", "Draenei"
+local CLASSES = { "Warrior", "Paladin", "Hunter", "Rogue", "Priest" }
+CLASSES[7], CLASSES[8], CLASSES[9], CLASSES[11] = "Shaman", "Mage", "Warlock", "Druid"
+local SIDE_RACES = { 1 + 4 + 8 + 64, 2 + 16 + 32 + 128 } -- each side's four classic races, as bit masks
+local ALL_CLASSES = 1 + 2 + 4 + 8 + 16 + 64 + 128 + 256 + 1024
+
+-- Whether `mask` holds every bit of `bits`; an absent or zero mask holds everything, as in HasBit.
+local function Covers(mask, bits)
+	for id = 0, 15 do
+		local bit = 2 ^ id
+		if math.floor(bits / bit) % 2 == 1 and not (not mask or mask == 0 or math.floor(mask / bit) % 2 == 1) then
 			return false
 		end
 	end
 	return true
 end
 
+-- Every name a mask holds, joined: the client's (`lookup`) first, the English above otherwise.
+local function MaskNames(mask, lookup, english)
+	local names = {}
+	for id = 1, 16 do
+		if math.floor(mask / 2 ^ (id - 1)) % 2 == 1 then
+			names[#names + 1] = (lookup and lookup(id)) or english[id]
+		end
+	end
+	return table.concat(names, ns.L.LIST_SEPARATOR)
+end
+
+---@param names? AGFWhyNames
+local function Title(data, id, names)
+	local quest = data.quests[id]
+	return (names and names.title and names.title(id)) or (quest and quest.title) or ns.L.WHY_EARLIER_QUEST
+end
+
+-- One requirement's line. Built only when Why asks, so the planner's pass never formats a string.
+---@param names? AGFWhyNames
+local function WhyText(data, key, arg, names)
+	local L = ns.L
+	if key == "side" then
+		return arg == 1 and L.WHY_ALLIANCE or L.WHY_HORDE
+	elseif key == "level" then
+		return L.WHY_LEVEL:format(arg)
+	elseif key == "races" then
+		return L.WHY_RACES:format(MaskNames(arg, names and names.race, RACES))
+	elseif key == "classes" then
+		return L.WHY_CLASSES:format(MaskNames(arg, names and names.class, CLASSES))
+	elseif key == "pre" then
+		return L.WHY_COMPLETED:format(Title(data, arg, names))
+	elseif key == "preAny" then
+		local titles = {}
+		for index, id in ipairs(arg) do
+			titles[index] = Title(data, id, names)
+		end
+		return L.WHY_ONE_OF:format(table.concat(titles, L.LIST_SEPARATOR))
+	elseif key == "group" then
+		return L.WHY_CHOSE:format(Title(data, arg, names))
+	end
+	return L[key]
+end
+
+-- Records one requirement when Why passes `lines`. False tells the planner's pass (no `lines`) to stop there.
+local function Line(data, lines, met, key, arg, names)
+	if lines then
+		lines[#lines + 1] = { text = WhyText(data, key, arg, names), met = met }
+	end
+	return met or lines ~= nil
+end
+
+-- The one eligibility check (docs/design.md §2.4). The planner passes no `lines` and it stops at the first unmet
+-- requirement; Why passes `lines` and gets every requirement as a line. So the two never disagree: a quest is
+-- eligible exactly when every line is met. A met line that says nothing (level 1, a whole side's races, every
+-- class) is left out. `level` stands in for the player's own (the next-zone card asks what opens two levels on).
+local function Check(data, player, completed, log, id, groups, level, lines, names)
+	local quest = data.quests[id]
+	if not quest then
+		return false
+	elseif not ValidPlace(quest.start) then
+		-- The generator suppressed the start: the only line, since nothing else about the quest can be acted on.
+		Line(data, lines, false, "WHY_NO_START")
+		return false
+	end
+	if completed[id] and not Line(data, lines, false, "WHY_DONE") then
+		return false
+	elseif log[id] and not Line(data, lines, false, "WHY_IN_LOG") then
+		return false
+	elseif quest.repeatable and not Line(data, lines, false, "WHY_REPEATABLE") then
+		return false
+	end
+	-- Each line below is written only when unmet (the planner stops there) or when Why asks and it says something.
+	local met = quest.side == 3 or quest.side == player.side
+	if not met or (lines and quest.side ~= 3) then
+		if not Line(data, lines, met, "side", quest.side, names) then
+			return false
+		end
+	end
+	met = (level or player.level) >= quest.min
+	if not met or (lines and quest.min > 1) then
+		if not Line(data, lines, met, "level", quest.min, names) then
+			return false
+		end
+	end
+	met = HasBit(quest.races, player.raceBit)
+	if not met or (lines and not Covers(quest.races, SIDE_RACES[player.side] or 0)) then
+		if not Line(data, lines, met, "races", quest.races, names) then
+			return false
+		end
+	end
+	met = HasBit(quest.classes, player.classBit)
+	if not met or (lines and not Covers(quest.classes, ALL_CLASSES)) then
+		if not Line(data, lines, met, "classes", quest.classes, names) then
+			return false
+		end
+	end
+	for _, pre in ipairs(quest.pre or {}) do
+		met = pre > 0 and completed[pre] == true
+		if (lines or not met) and not Line(data, lines, met, "pre", pre, names) then
+			return false
+		end
+	end
+	if quest.preAny then
+		met = false
+		for _, pre in ipairs(quest.preAny) do
+			met = met or (pre > 0 and completed[pre] == true)
+		end
+		if not Line(data, lines, met, "preAny", quest.preAny, names) then
+			return false
+		end
+	end
+	for _, other in ipairs((quest.group and groups[quest.group]) or {}) do
+		if (completed[other] or log[other]) and not Line(data, lines, false, "group", other, names) then
+			return false
+		end
+	end
+	return true
+end
+
+local function Eligible(data, player, completed, log, id, groups, level)
+	return Check(data, player, completed, log, id, groups, level)
+end
+
 function Model.Eligible(data, player, completed, log, questID)
 	return Eligible(data, player, completed, log, questID, Index(data).groups)
+end
+
+-- Why a quest is or isn't open to the player: each requirement the data carries, met or not (docs/design.md §2.4).
+---@param names? AGFWhyNames the client's names for quests, races and classes
+---@return AGFWhyLine[]
+function Model.Why(data, player, completed, log, questID, names)
+	local lines = {}
+	Check(data, player, completed, log, questID, Index(data).groups, nil, lines, names)
+	return lines
 end
 
 -- The three zones that best fit `level` for the quests `ids`, best first.
