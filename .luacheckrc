@@ -104,6 +104,8 @@ read_globals = {
 	"C_PvP",
 	"C_MajorFactions",
 	"IsInInstance",
+	-- Hints/Explore.lua
+	"C_MapExplorationInfo",
 	-- Settings.lua
 	"Settings",
 	-- Dump.lua: frames Panel.lua and Tracker.lua create by name

@@ -3,6 +3,8 @@
 -- quests: zone map -> the added QuestV2 IDs whose QuestPOIBlob sits on it. A quest with no blob has no zone,
 -- so it is left out; the addon compares these with Data.quests at runtime.
 -- areas: the added AreaTable IDs.
+-- lands: each added zone map with a level range: the least and greatest non-zero ExplorationLevel of its
+-- areas; taxi: its flight masters that serve a side (Flags 1 Alliance, 2 Horde), projected onto it.
 ---@type string, AGFNamespace
 local _, ns = ...
 -- stylua: ignore
@@ -42,5 +44,13 @@ ns.Data.forever = {
 		[17674] = true, [17675] = true, [17676] = true, [17677] = true, [17678] = true, [17684] = true,
 		[17707] = true, [17716] = true, [17732] = true, [17738] = true, [17780] = true, [17803] = true,
 		[17804] = true, [17808] = true, [17809] = true, [17824] = true,
+	},
+	lands = {
+		[2521] = { name = "Zephras Isle", min = 3, max = 12, taxi = {
+		} },
+		[2548] = { name = "Riverglades", min = 36, max = 44, taxi = {
+			{ side = 2, map = 2548, x = 0.5961, y = 0.4506, name = "Rog'mar, Riverglades" },
+			{ side = 1, map = 2548, x = 0.6059, y = 0.8157, name = "Farholde Keep, Riverglades" },
+		} },
 	},
 }

@@ -232,6 +232,9 @@ ns.L = {
 	PROFESSION_RANK_2 = "Journeyman",
 	PROFESSION_RANK_3 = "Expert",
 	PROFESSION_RANK_4 = "Artisan",
+	-- Exploration and new lands (roadmap #13 and #14): a land Forever added and its levels; an area not yet seen.
+	NEW_LAND = "%s · For levels %d-%d",
+	UNEXPLORED = "You haven't seen %s yet",
 }
 local L = ns.L
 

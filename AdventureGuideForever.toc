@@ -22,6 +22,7 @@ QuestieSource.lua
 Asides.lua
 Hints\Profession.lua
 PvP.lua
+Hints\Explore.lua
 Moments.lua
 Menu.lua
 Pins.lua
