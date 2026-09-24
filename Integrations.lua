@@ -81,7 +81,7 @@ end
 function Integrations.TravelLine(step)
 	local api = SPF()
 	local player = ns.State.Player()
-	if not (api and player.map and player.x and player.y) then
+	if not (api and player.map and player.x and player.y) or InCombatLockdown() then
 		return nil
 	end
 	if type(api.EstimateDetail) == "function" then

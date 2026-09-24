@@ -192,9 +192,8 @@ local function same(actual, expected, label)
 	equal(table.concat(actual, "\n"), table.concat(expected, "\n"), label)
 end
 
--- Map pins: a refresh replaces, never adds; removal leaves none; tooltips and the tracker menu read as today.
--- The expected text is today's. The features that change it (F6, F7, F10) change these lists in the same
--- commit, until they read as design §2.8 and §2.9.
+-- Map pins: a refresh replaces, never adds; removal leaves none; the tooltips read as design §2.9 and the tracker
+-- menu as §2.8.
 for _, spf in ipairs({ false, "v1" }) do
 	local label = spf or "no Shortest Path"
 	local click = spf and "instruction: Click to travel with Shortest Path" or "instruction: Click to set a waypoint"
@@ -215,9 +214,9 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(ring.Number:GetAtlas(), "services-number-1", label .. ": the ring's numeral")
 	h.Hover(ring)
 	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s.
-	local expected = { "title: 1. Turn in: The Zhevra", "highlight: ready to hand in" }
+	local expected = { "title: 1. Turn in: The Zhevra" }
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
-	expected[#expected + 1] = "normal: ready to hand in"
+	expected[#expected + 1] = "highlight: ready to hand in"
 	expected[#expected + 1] = click
 	same(h.tooltip, expected, label .. ": ring tooltip")
 	equal(ring.Glow:IsShown(), true, label .. ": hover glow")
@@ -433,6 +432,27 @@ do
 	h.SetCombat(false)
 	h.flush()
 	equal(ns.Integrations.Travel(step), cases[4][3], "travel line, after combat: asked again")
+
+	-- The guide: step 1's row reads the line fetched already; another row's tooltip asks once per hover.
+	ns.Prefs().journey = "carry"
+	ns.OpenPanel()
+	h.flush()
+	local rows = Shown(h, function(frame)
+		return frame.SkipButton ~= nil
+	end)
+	equal(rows[1].Detail:GetText(), cases[4][3], "travel line: step 1's row")
+	calls = h.spf.EstimateDetail
+	h.Hover(rows[1])
+	equal(h.spf.EstimateDetail, calls, "travel line: step 1's tooltip asks nothing")
+	equal(h.tooltip[2], "highlight: " .. cases[4][3], "travel line: step 1's tooltip")
+	h.spfLegs = cases[1][2]
+	h.Hover(rows[2])
+	equal(h.spf.EstimateDetail, calls + 1, "travel line: another row's tooltip asks once")
+	same(h.tooltip, {
+		"title: 2. " .. rows[2].step.title,
+		"highlight: " .. cases[1][3],
+		"highlight: " .. rows[2].step.reason,
+	}, "travel line: another row's tooltip")
 	clean(h, "travel line")
 
 	h = Load(false)

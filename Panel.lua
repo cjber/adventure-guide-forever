@@ -94,6 +94,7 @@ end
 ---@field Tag FontString
 ---@field SkipButton Button
 ---@field step? AGFStep
+---@field index? integer
 
 ---@param row AGFRouteRow
 ---@param atlas string
@@ -161,6 +162,18 @@ local function CreateRow(parent)
 	row.Tag:SetPoint("LEFT", row.Detail, "RIGHT", 6, 0)
 	row.Tag:SetText("optional")
 
+	-- The ring's lines; a row after step 1 asks Shortest Path for its travel line once, on hover.
+	row:SetScript("OnEnter", function(self)
+		local step, index = self.step, self.index
+		if not (step and index) then
+			return
+		end
+		local travel = index == 1 and ns.Integrations.Travel(step) or ns.Integrations.TravelLine(step)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		ns.Pins.StepTooltip(GameTooltip, step, index, travel)
+		GameTooltip:Show()
+	end)
+	row:SetScript("OnLeave", GameTooltip_Hide)
 	-- A quest in the log opens its details; any other step turns the map to it. Right-click is the step menu.
 	row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	row:SetScript("OnClick", function(self, mouseButton)
@@ -432,9 +445,11 @@ end
 ---@param step AGFStep
 ---@param index integer
 local function RefreshRow(row, step, index)
+	row.index = index
 	row.Number:SetAtlas("services-number-" .. index)
 	row.Title:SetText(step.title)
-	row.Detail:SetText(step.detail)
+	-- Step 1 says how far it is when Shortest Path knows (docs/design.md §2.1); its tooltip still gives the reason.
+	row.Detail:SetText(index == 1 and ns.Integrations.Travel(step) or step.detail)
 	row.Tag:SetShown(step.optional == true)
 	row:SetAlpha(step.optional and 0.6 or 1)
 	row.Selected:SetShown(index == 1)
@@ -757,6 +772,7 @@ local function Attach()
 	end)
 	ns.OnRouteChange(Refresh)
 	ns.Integrations.OnGuidanceChange(Refresh)
+	ns.Integrations.OnTravelChange(Refresh)
 
 	function ns.PanelShown()
 		return panel:IsVisible()

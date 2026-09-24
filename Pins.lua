@@ -35,21 +35,21 @@ local function AddClickLine(tooltip)
 	)
 end
 
+-- A step's lines (docs/design.md §2.9), shared by its ring and its row in the guide: the title numbered as the route
+-- numbers it, the chapter, the travel line when there is one, and why it is on the route.
 ---@param tooltip GameTooltip
 ---@param step AGFStep
 ---@param index number
-local function AddPinTooltip(tooltip, step, index)
+---@param travel? string
+function Pins.StepTooltip(tooltip, step, index, travel)
 	GameTooltip_SetTitle(tooltip, ("%d. %s"):format(index, step.title))
 	if step.chapter then
 		GameTooltip_AddNormalLine(tooltip, step.chapter)
 	end
-	GameTooltip_AddHighlightLine(tooltip, step.detail)
-	local travel = ns.Integrations.Travel(step)
 	if travel then
 		GameTooltip_AddHighlightLine(tooltip, travel)
 	end
-	GameTooltip_AddNormalLine(tooltip, step.reason)
-	AddClickLine(tooltip)
+	GameTooltip_AddHighlightLine(tooltip, step.reason)
 end
 
 local provider = CreateFromMixins(MapCanvasDataProviderMixin) --[[@as AGFMapProvider]]
@@ -130,7 +130,8 @@ function AdventureGuideForeverPinMixin:OnMouseEnter()
 	self.Glow:Show()
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	if self.step and self.index then
-		AddPinTooltip(GameTooltip, self.step, self.index)
+		Pins.StepTooltip(GameTooltip, self.step, self.index, ns.Integrations.Travel(self.step))
+		AddClickLine(GameTooltip)
 	end
 	GameTooltip:Show()
 end
