@@ -226,6 +226,10 @@
 ---@field seconds number -- equal to Estimate's answer
 ---@field legs AGFSPFLeg[] -- fresh copies on every call
 
+-- AGFSPFAPI with Shortest Path's optional Ended (its types/API.lua SPFAPIEnded), until the contract carries it.
+---@class AGFSPFEnds : AGFSPFAPI
+---@field Ended? fun(owner: string): ("arrived"|"cleared"|"replaced"|"cancelled")?, number?
+
 ---@class AGFSPFAPI
 ---@field version integer -- AGF accepts exactly 1
 ---@field Estimate fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): number?, AGFSPFNoRoute? -- travel seconds; nil comes with the reason
@@ -263,6 +267,7 @@
 ---@field Owns fun(): boolean Go's guidance is still running: our Shortest Path journey (guided or held), or the waypoint Go set
 ---@field Guiding fun(): boolean Shortest Path is walking our multi-stop route and draws its own numbered stops; held (its "Guide me" off) is not guiding
 ---@field Guided fun(): (AGFStep|AGFGiver)[] the stops it walks, while it guides; empty otherwise
+---@field Arrived fun(): boolean our journey reached its last stop, and nothing was handed since
 ---@field Restore fun(steps: AGFStep[]): boolean hands Shortest Path the chosen journey's steps again after a /reload; never the waypoint
 ---@field Stale fun(handed: AGFStep[], index: integer, steps: AGFStep[], far?: fun(a: AGFStep, b: AGFStep): boolean): boolean the guidance handed to Shortest Path no longer matches the journey's steps
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")

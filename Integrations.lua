@@ -350,6 +350,8 @@ end
 -- What the last Go handed Shortest Path, which may no longer be the chosen journey's steps.
 ---@type (AGFStep|AGFGiver)[]
 local guided = {}
+-- Shortest Path held our journey at the last look, and it ended at its last stop since.
+local ours, arrived = false, false
 
 -- Yards past which a stop's point has moved (a town's point moving to its next giver): the town linkage
 -- (tools/gen_quests.py LINK). Nearer, the stock "!" and "?" marks show the way.
@@ -375,7 +377,7 @@ local function Send(api, steps)
 	then
 		return false
 	end
-	guided = steps
+	guided, ours, arrived = steps, true, false
 	ns.Pins.Refresh()
 	NotifyGuidance()
 	return true
@@ -504,7 +506,7 @@ end
 
 -- Stop: ends only what Go started. Shortest Path's journey by our name, and the native waypoint only while it is ours.
 function Integrations.Cancel()
-	ns.Prefs().guided = nil
+	ns.Prefs().guided, ours, arrived = nil, false, false
 	local api = SPF()
 	if api and api.Cancel(OWNER) then
 		ns.Pins.Refresh()
@@ -520,23 +522,104 @@ end
 -- Guidance follows the chosen journey (docs/design.md §2.10): on each rebuild, a route AGF started for the chosen
 -- journey that no longer matches its steps is sent again, at most once. Never in combat (Shortest Path refuses), in
 -- the air, where the player's position is unknown (at sea, in an instance), or while Shortest Path isn't guiding it.
+-- Why our journey ended: Shortest Path's Ended when it has it; otherwise guessed. Another journey running replaced
+-- it, the player standing within the town linkage of its last stop arrived, and anything else was cleared.
+---@param api AGFSPFAPI
+---@return string?
+local function EndReason(api)
+	---@cast api AGFSPFEnds
+	if type(api.Ended) == "function" then
+		return (api.Ended(OWNER))
+	elseif type(api.Active) == "function" and api.Active() then
+		return "replaced"
+	end
+	local last, player = guided[#guided], ns.State.Player()
+	local yards = last and player.map and ns.Model.Yards(ns.Data, player --[[@as AGFStep]], last)
+	return yards and yards <= LINK and "arrived" or "cleared"
+end
+
+-- Our journey ended since the last look (docs/design.md §2.10): arriving keeps the choice's guidance, so new steps
+-- extend it; the player clearing it or another journey replacing it forgets it, so nothing sends it again. Our own
+-- Cancel already forgot it.
+---@param api AGFSPFAPI
+local function Watch(api)
+	local now = api.CurrentStop(OWNER) ~= nil
+	if ours and not now then
+		local reason = EndReason(api)
+		if reason == "arrived" then
+			arrived = true
+		elseif reason == "cleared" or reason == "replaced" then
+			ns.Prefs().guided = nil
+		end
+		ns.Pins.Refresh()
+	end
+	ours = now
+end
+
+-- A step the route has that Shortest Path was never handed: arrived, the journey goes on.
+---@param steps AGFStep[]
+---@return boolean
+local function Unhanded(steps)
+	local handed = {}
+	for _, step in ipairs(guided) do
+		handed[step.key] = true
+	end
+	for _, step in ipairs(steps) do
+		if not handed[step.key] then
+			return true
+		end
+	end
+	return false
+end
+
+-- Guidance follows the chosen journey (docs/design.md §2.10): on each rebuild, and on the frame after Shortest Path's
+-- own super-tracking events, a route AGF started for the chosen journey that no longer matches its steps is sent
+-- again, at most once, and one that arrived goes on to steps it was never handed. Never in combat (Shortest Path
+-- refuses), in the air, where the player's position is unknown (at sea, in an instance), or once it no longer guides.
 local function Follow()
 	local api, route, prefs = SPF(), ns.Route(), ns.Prefs()
+	if api then
+		Watch(api)
+	end
 	if not (api and route.chosen and prefs.guided == route.journey and ns.State.Player().map) then
 		return
 	elseif InCombatLockdown() or UnitOnTaxi("player") then
 		return
 	end
 	local index = api.CurrentStop(OWNER)
-	if
-		index
-		and Integrations.Guiding()
-		and Integrations.Stale(guided --[[@as AGFStep[] ]], index, route.steps, Far)
-	then
+	if index then
+		if
+			Integrations.Guiding() and Integrations.Stale(guided --[[@as AGFStep[] ]], index, route.steps, Far)
+		then
+			Send(api, route.steps)
+		end
+	elseif arrived and Unhanded(route.steps) then
 		Send(api, route.steps)
 	end
 end
 ns.OnRouteChange(Follow)
+
+-- Shortest Path ending our journey and the player clearing or moving the waypoint: the super-tracking events Shortest
+-- Path itself registers. Handled on the next frame, once its own handler has run, with the guide open or closed.
+local events, eventPending = CreateFrame("Frame"), false
+events:RegisterEvent("SUPER_TRACKING_CHANGED")
+events:RegisterEvent("USER_WAYPOINT_UPDATED")
+events:SetScript("OnEvent", function()
+	if not eventPending then
+		eventPending = true
+		C_Timer.After(0, function()
+			eventPending = false
+			Follow()
+			NotifyGuidance()
+		end)
+	end
+end)
+
+-- Our journey reached its last stop, and nothing was handed since.
+---@return boolean
+function Integrations.Arrived()
+	return arrived and not Integrations.Guiding()
+end
 
 ---@return string?
 function Integrations.Provider()

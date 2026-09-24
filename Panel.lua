@@ -952,29 +952,12 @@ local function Attach()
 	panel:HookScript("OnShow", QueueCards)
 	ns.OnRouteChange(QueueCards)
 	BuildContent(panel)
-	-- The footer's Stop follows Shortest Path ending our journey and the player clearing or moving the waypoint: the
-	-- super-tracking events Shortest Path itself registers. It redraws on the next frame, once Shortest Path's own
-	-- handler has run, and only while the guide is open; opening it redraws the footer too.
-	local footerPending = false
-	local function RefreshFooter()
-		footerPending = false
-		if panel:IsShown() then
-			---@cast stopButton -?
-			stopButton:SetShown(ns.Integrations.Owns())
-		end
-	end
-	panel:HookScript("OnShow", RefreshFooter)
+	-- The footer's Stop follows Shortest Path ending our journey and the player clearing or moving the waypoint through
+	-- Integrations.OnGuidanceChange (below), on the frame after the super-tracking events.
 	panel:RegisterEvent("QUEST_DATA_LOAD_RESULT")
-	panel:RegisterEvent("SUPER_TRACKING_CHANGED")
-	panel:RegisterEvent("USER_WAYPOINT_UPDATED")
-	panel:SetScript("OnEvent", function(_, event, questID)
-		if event == "QUEST_DATA_LOAD_RESULT" then
-			if requested[questID] then
-				Refresh()
-			end
-		elseif panel:IsShown() and not footerPending then
-			footerPending = true
-			C_Timer.After(0, RefreshFooter)
+	panel:SetScript("OnEvent", function(_, _, questID)
+		if requested[questID] then
+			Refresh()
 		end
 	end)
 	CreateTabs()

@@ -373,6 +373,65 @@ do
 	equal(h.ns.Prefs().journey, "carry", "ends: nothing before the completed quests load")
 end
 
+-- How our journey ended (design §2.10), from Shortest Path's Ended or, without it, guessed: another journey running
+-- replaced it, the player at its last stop arrived, anything else was cleared. Arriving keeps the guidance, and a
+-- step it was never handed extends it; cleared or replaced forgets it, so nothing sends it again.
+do
+	local function Ending(spf, how, at)
+		local h = Load(spf)
+		h.ns.StartRoute()
+		h.flush()
+		local handed = h.spfRoute.stops
+		if at then
+			local last = handed[#handed]
+			h.MovePlayer(last.map, last.x, last.y)
+		end
+		how(h)
+		h.fire("SUPER_TRACKING_CHANGED")
+		h.flush()
+		return h
+	end
+	local function Arrive(h)
+		h.spfEnd("arrived")
+	end
+	local function Clear(h)
+		h.spfEnd("cleared")
+	end
+	local function Replace(h)
+		h.spfOther()
+	end
+	for _, spf in ipairs({ "ended", "v1+", "v1" }) do
+		local label = "ended, " .. spf
+		local h = Ending(spf, Arrive, true)
+		equal(h.ns.Prefs().guided, "carry", label .. ", arrived: the guidance is kept")
+		equal(h.ns.Integrations.Arrived(), true, label .. ", arrived: and known")
+		h = Ending(spf, Clear, spf == "ended")
+		equal(h.ns.Prefs().guided, nil, label .. ", cleared: the guidance is forgotten")
+		h.ns.Invalidate()
+		h.flush()
+		equal(h.spf.NavigateRoute, 1, label .. ", cleared: nothing sends it again")
+		if spf ~= "v1" then
+			h = Ending(spf, Replace, true)
+			equal(h.ns.Prefs().guided, nil, label .. ", replaced: the guidance is forgotten")
+		end
+	end
+	-- Arrived at the last stop handed, the route has a step it never had: sent on, once.
+	local h = Ending("ended", Arrive, true)
+	h.log[#h.log + 1] = { id = 846, title = "Fresh", level = 14, complete = false, map = 1413, x = 0.2, y = 0.2 }
+	h.fire("QUEST_LOG_UPDATE")
+	h.flush()
+	equal(h.spf.NavigateRoute, 2, "ended, arrived: a new step extends the route")
+	equal(h.ns.Integrations.Arrived(), false, "ended, arrived: which guides again")
+	h.ns.Invalidate()
+	h.flush()
+	equal(h.spf.NavigateRoute, 2, "ended, arrived: once")
+	-- Our own Stop is no ending to judge.
+	h = Ending("ended", function(stopped)
+		stopped.ns.Integrations.Cancel()
+	end)
+	equal(h.ns.Integrations.Arrived(), false, "ended, cancelled: not arrived")
+end
+
 -- Shortest Path's journeys end with the session: a /reload or login with a route AGF started for the chosen journey
 -- sends it again once, on the first full build out of combat. Not over someone else's journey; a refusal sets no
 -- waypoint and asks again on the next full build; Stop, a cleared card or no saved variables (#34) restore nothing.
@@ -1972,7 +2031,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 end
 
 -- The footer's Stop follows Shortest Path ending our journey, or the player clearing the waypoint, on the frame after
--- the super-tracking event (Shortest Path's own handler runs first); with the guide closed nothing is queued.
+-- the super-tracking event (Shortest Path's own handler runs first); the guide closed, the ending is still judged.
 for _, spf in ipairs({ false, "v1+" }) do
 	local label = "footer events: " .. (spf or "no Shortest Path")
 	local h = Load(spf)
@@ -1995,7 +2054,7 @@ for _, spf in ipairs({ false, "v1+" }) do
 	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
 	h.flush()
 	h.fire(event)
-	equal(h.tick(), 0, label .. ": nothing queued with the guide closed")
+	equal(h.tick(), 1, label .. ": the ending is judged with the guide closed too, in one frame")
 	clean(h, label)
 end
 
