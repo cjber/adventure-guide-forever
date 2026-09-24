@@ -4,6 +4,8 @@
 -- steps say, then levels up and drops what went grey. Four things a player should never see fail it: an empty guide
 -- while quests they can take exist, an orange or red pickup, a story that flips back to a zone it left (A, B, A),
 -- and a step on a point the data does not have. It reports the quests handed in and the yards walked a level.
+-- A second pass plays a scripted chooser (design §2.18): always card 2 when there is one, and "Not this quest" on every
+-- tenth quest by ID; a step that holds a dropped quest fails it too.
 -- AGF_PLAYTHROUGH_TRACE="Human class 1" prints that character's card 1 each round.
 local ns = {}
 assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
@@ -59,17 +61,27 @@ for _, npc in pairs(data.npcs or {}) do
 	Add(npc.place)
 end
 
-local flags = { empty = {}, orange = {}, red = {}, flip = {}, unplaced = {} }
+local flags = { empty = {}, orange = {}, red = {}, flip = {}, unplaced = {}, dropped = {} }
 local function Flag(kind, text)
 	local list = flags[kind]
 	list[#list + 1] = text
 end
 
--- Quests the character could take now and would be offered: open, not grey, not orange, and not an instance's.
-local function Doable(player, completed, log)
+-- The chooser's "Not this quest": every tenth quest by ID, the same on every character.
+local notInterested = {}
+for id, quest in pairs(data.quests) do
+	if id % 10 == 0 then
+		notInterested["quest:" .. id] = { title = quest.title }
+	end
+end
+
+-- Quests the character could take now and would be offered: open, not grey, not orange, not an instance's and not
+-- dropped.
+local function Doable(player, completed, log, prefs)
 	for id, quest in pairs(data.quests) do
 		if
-			not quest.dungeon
+			not (prefs.notInterested and prefs.notInterested["quest:" .. id])
+			and not quest.dungeon
 			and not quest.raid
 			and not completed[id]
 			and not log[id]
@@ -92,126 +104,144 @@ local function Finished(log, id)
 	end
 end
 
-local plans, started, characters, handed, lowest, walked = 0, os.clock(), 0, 0, math.huge, 0
-for _, race in ipairs(RACES) do
-	local name, raceID, side, at, classes = race[1], race[2], race[3], race[4], race[5]
-	for _, classID in ipairs(classes) do
-		local label = ("%s class %d"):format(name, classID)
-		local player = {
-			level = 1,
-			maxLevel = 60,
-			side = side,
-			raceBit = 2 ^ (raceID - 1),
-			classBit = 2 ^ (classID - 1),
-			map = at[1],
-			x = at[2],
-			y = at[3],
-			logMax = LOG_SIZE,
-		}
-		local completed, log, held, stories, last = {}, {}, 0, {}, nil
-		characters = characters + 1
-		for level = 1, 60 do
-			player.level = level
-			-- What went grey is dropped, as a player would.
-			for id, entry in pairs(log) do
-				if Model.IsGray(entry.level, level) and not entry.complete then
-					log[id], held = nil, held - 1
+local plans, started, characters = 0, os.clock(), 0
+-- Each pass's quests handed in and yards walked: card 1's, and the chooser's.
+local played = { handed = 0, lowest = math.huge, walked = 0 }
+local chosen = { handed = 0, lowest = math.huge, walked = 0 }
+-- One character's levels 1 to 60; `chooser` plays card 2 and drops every tenth quest.
+local function Play(race, classID, chooser)
+	local name, raceID, side, at = race[1], race[2], race[3], race[4]
+	local label = ("%s class %d%s"):format(name, classID, chooser and ", chooser" or "")
+	local player = {
+		level = 1,
+		maxLevel = 60,
+		side = side,
+		raceBit = 2 ^ (raceID - 1),
+		classBit = 2 ^ (classID - 1),
+		map = at[1],
+		x = at[2],
+		y = at[3],
+		logMax = LOG_SIZE,
+	}
+	local completed, log, held, stories, last = {}, {}, 0, {}, nil
+	local prefs = { quests = true, dungeons = false, skipped = {} }
+	if chooser then
+		prefs.notInterested = notInterested
+	end
+	characters = characters + (chooser and 0 or 1)
+	for level = 1, 60 do
+		player.level = level
+		-- What went grey is dropped, as a player would.
+		for id, entry in pairs(log) do
+			if Model.IsGray(entry.level, level) and not entry.complete then
+				log[id], held = nil, held - 1
+			end
+		end
+		for _ = 1, ROUNDS do
+			-- Each plan keeps to the last one's committed order, as the addon's rebuilds do.
+			local route = Model.Plan(data, player, completed, log, prefs, nil, nil, last)
+			plans = plans + 1
+			-- The chooser takes card 2 whenever the cards offer one.
+			local second = chooser and route.journeys[2]
+			if second and route.journey ~= second.key then
+				prefs.journey = second.key
+				route, plans = Model.Plan(data, player, completed, log, prefs, nil, nil, last), plans + 1
+			end
+			last = route
+			local where = ("%s, level %d"):format(label, level)
+			local card = route.journeys[1]
+			if trace and label:find(trace, 1, true) then
+				print(where, card and card.key, card and #card.steps, held)
+			end
+			if not card and Doable(player, completed, log, prefs) then
+				Flag("empty", where .. " at " .. Key(player.map, player.x, player.y))
+			end
+			for _, journey in ipairs(route.journeys) do
+				if not chooser and journey.kind == "story" and journey.key:match("^zone:") and journey == card then
+					if stories[#stories] ~= journey.key then
+						stories[#stories + 1] = journey.key
+						local back = stories[#stories - 2]
+						if back == journey.key then
+							Flag("flip", ("%s: %s, %s, %s"):format(where, back, stories[#stories - 1], back))
+						end
+					end
+				end
+				for _, step in ipairs(journey.steps) do
+					for _, id in ipairs(step.quests) do
+						if chooser and notInterested["quest:" .. id] then
+							Flag("dropped", ("%s: %s holds %d"):format(where, step.key, id))
+						end
+					end
+					if not places[Key(step.map, step.x, step.y)] then
+						Flag("unplaced", ("%s: %s %s"):format(where, step.key, Key(step.map, step.x, step.y)))
+					end
+					for _, id in ipairs(step.pickups or {}) do
+						local over = data.quests[id].level - level
+						if over >= RED then
+							Flag("red", ("%s: %s pickup %d at %d"):format(where, journey.key, id, over + level))
+						elseif over >= ORANGE then
+							Flag("orange", ("%s: %s pickup %d at %d"):format(where, journey.key, id, over + level))
+						end
+					end
 				end
 			end
-			for _ = 1, ROUNDS do
-				-- Each plan keeps to the last one's committed order, as the addon's rebuilds do.
-				local route = Model.Plan(
-					data,
-					player,
-					completed,
-					log,
-					{ quests = true, dungeons = false, skipped = {} },
-					nil,
-					nil,
-					last
-				)
-				last = route
-				plans = plans + 1
-				local where = ("%s, level %d"):format(label, level)
-				local card = route.journeys[1]
+			-- The route shown, as the steps say: card 1's, or the chooser's card.
+			for _, step in ipairs(route.steps) do
 				if trace and label:find(trace, 1, true) then
-					print(where, card and card.key, card and #card.steps, held)
+					print("", step.key, step.map, step.x, step.y, table.concat(step.quests, ","))
 				end
-				if not card and Doable(player, completed, log) then
-					Flag("empty", where .. " at " .. Key(player.map, player.x, player.y))
-				end
-				for _, journey in ipairs(route.journeys) do
-					if journey.kind == "story" and journey.key:match("^zone:") and journey == card then
-						if stories[#stories] ~= journey.key then
-							stories[#stories + 1] = journey.key
-							local back = stories[#stories - 2]
-							if back == journey.key then
-								Flag("flip", ("%s: %s, %s, %s"):format(where, back, stories[#stories - 1], back))
-							end
-						end
+				for _, id in ipairs(step.handins or {}) do
+					if log[id] and log[id].complete then
+						log[id], completed[id], held = nil, true, held - 1
 					end
-					for _, step in ipairs(journey.steps) do
-						if not places[Key(step.map, step.x, step.y)] then
-							Flag("unplaced", ("%s: %s %s"):format(where, step.key, Key(step.map, step.x, step.y)))
-						end
-						for _, id in ipairs(step.pickups or {}) do
-							local over = data.quests[id].level - level
-							if over >= RED then
-								Flag("red", ("%s: %s pickup %d at %d"):format(where, journey.key, id, over + level))
-							elseif over >= ORANGE then
-								Flag("orange", ("%s: %s pickup %d at %d"):format(where, journey.key, id, over + level))
-							end
+				end
+				for _, id in ipairs(step.pickups or {}) do
+					if held < LOG_SIZE and not log[id] then
+						local quest = data.quests[id]
+						log[id], held =
+							{ id = id, title = quest.title, level = quest.level, complete = false }, held + 1
+						if not next(quest.need or {}) then
+							Finished(log, id)
 						end
 					end
 				end
-				-- Card 1's route, as the steps say.
-				for _, step in ipairs(card and card.steps or {}) do
-					if trace and label:find(trace, 1, true) then
-						print("", step.key, step.map, step.x, step.y, table.concat(step.quests, ","))
+				if step.kind == "area" or step.kind == "dungeon" then
+					for _, id in ipairs(step.quests) do
+						if log[id] then
+							Finished(log, id)
+						end
 					end
-					for _, id in ipairs(step.handins or {}) do
-						if log[id] and log[id].complete then
+				elseif step.kind == "turnin" then
+					for _, id in ipairs(step.quests) do
+						if log[id] then
 							log[id], completed[id], held = nil, true, held - 1
 						end
 					end
-					for _, id in ipairs(step.pickups or {}) do
-						if held < LOG_SIZE and not log[id] then
-							local quest = data.quests[id]
-							log[id], held =
-								{ id = id, title = quest.title, level = quest.level, complete = false }, held + 1
-							if not next(quest.need or {}) then
-								Finished(log, id)
-							end
-						end
-					end
-					if step.kind == "area" or step.kind == "dungeon" then
-						for _, id in ipairs(step.quests) do
-							if log[id] then
-								Finished(log, id)
-							end
-						end
-					elseif step.kind == "turnin" then
-						for _, id in ipairs(step.quests) do
-							if log[id] then
-								log[id], completed[id], held = nil, true, held - 1
-							end
-						end
-					end
-					walked = walked + (Model.Yards(data, player, step) or 0)
-					player.map, player.x, player.y = step.map, step.x, step.y
 				end
+				local pass = chooser and chosen or played
+				pass.walked = pass.walked + (Model.Yards(data, player, step) or 0)
+				player.map, player.x, player.y = step.map, step.x, step.y
 			end
 		end
-		local count = 0
-		for _ in pairs(completed) do
-			count = count + 1
+	end
+	local count = 0
+	for _ in pairs(completed) do
+		count = count + 1
+	end
+	local pass = chooser and chosen or played
+	pass.handed, pass.lowest = pass.handed + count, math.min(pass.lowest, count)
+end
+
+for _, chooser in ipairs({ false, true }) do
+	for _, race in ipairs(RACES) do
+		for _, classID in ipairs(race[5]) do
+			Play(race, classID, chooser)
 		end
-		handed, lowest = handed + count, math.min(lowest, count)
 	end
 end
 
 local total = 0
-for _, kind in ipairs({ "empty", "orange", "red", "flip", "unplaced" }) do
+for _, kind in ipairs({ "empty", "orange", "red", "flip", "unplaced", "dropped" }) do
 	local list = flags[kind]
 	total = total + #list
 	print(("playthrough: %-8s %d"):format(kind, #list))
@@ -219,14 +249,18 @@ for _, kind in ipairs({ "empty", "orange", "red", "flip", "unplaced" }) do
 		print("  " .. list[index])
 	end
 end
-print(
-	("playthrough: %d characters handed in %d quests each on average, %d at least, walking %d yards a level"):format(
-		characters,
-		handed / characters,
-		lowest,
-		walked / characters / 60
+for _, pass in ipairs({ { "", played }, { ", choosing card 2", chosen } }) do
+	local stats = pass[2]
+	print(
+		("playthrough: %d characters%s handed in %d quests each on average, %d at least, walking %d yards a level"):format(
+			characters,
+			pass[1],
+			stats.handed / characters,
+			stats.lowest,
+			stats.walked / characters / 60
+		)
 	)
-)
+end
 print(("playthrough_spec: %d plans in %.1f s; %d flags"):format(plans, os.clock() - started, total))
 if total > 0 then
 	os.exit(1)
