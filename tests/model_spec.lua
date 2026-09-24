@@ -144,7 +144,17 @@ options.journey = "gone"
 equal(Model.Plan(data, player, {}, log, options).journey, "carry", "a vanished choice falls back to the first card")
 local empty = prefs()
 empty.quests = false
-equal(#Model.Plan(data, player, {}, log, empty).journeys, 0, "activity filter")
+local carriedOnly = Model.Plan(data, player, {}, log, empty).journeys
+equal(#carriedOnly, 1, "the activity filter leaves only what you carry")
+equal(carriedOnly[1] and carriedOnly[1].key, "carry", "the carry card stays with both filters off")
+-- F15: a group quest in the log is never hidden by the dungeon filter, finished or under way.
+data.quests[100], data.quests[101] = quest(), quest()
+data.quests[100].elite, data.quests[101].dungeon = true, 36
+local kept = Model.Plan(data, player, {}, log, prefs())
+equal(kept.journey, "carry", "carry is chosen")
+equal(Has(kept.steps, "turnin:100"), 1, "an elite turn-in shows with dungeons off")
+equal(Has(kept.steps, "objective:101"), 1, "a dungeon quest under way shows with dungeons off")
+data.quests[100], data.quests[101] = nil, nil
 local skip = prefs()
 for _, step in ipairs(Model.Plan(data, player, {}, {}, prefs()).steps) do
 	skip.skipped[step.key] = true

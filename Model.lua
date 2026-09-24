@@ -441,7 +441,8 @@ local function Step(kind, key, title, place, id, optional, reason)
 	}
 end
 
-local function LogSteps(data, player, log, prefs)
+-- The quest and dungeon prefs choose what to pick up; a quest already carried always shows, whatever its kind.
+local function LogSteps(data, player, log)
 	local ids, steps, objectives = {}, {}, {}
 	for id in pairs(log) do
 		ids[#ids + 1] = id
@@ -450,41 +451,39 @@ local function LogSteps(data, player, log, prefs)
 	for _, id in ipairs(ids) do
 		local entry, quest = log[id], data.quests[id]
 		local group = quest and (quest.elite or quest.dungeon)
-		if (group and prefs.dungeons) or (not group and prefs.quests) then
-			-- A live completion waypoint is a turn-in; an incomplete waypoint is never replaced with the starter.
-			local place = ValidPlace(entry) and entry or (entry.complete and quest and quest.finish)
-			if ValidPlace(place) then
-				local optional = Optional(quest, entry.level, player)
-				if entry.complete then
-					steps[#steps + 1] = Step(
-						"turnin",
-						"turnin:" .. id,
-						ns.L.TURN_IN:format(entry.title),
-						place,
-						id,
-						optional,
-						ns.L.READY_TO_HAND_IN
-					)
+		-- A live completion waypoint is a turn-in; an incomplete waypoint is never replaced with the starter.
+		local place = ValidPlace(entry) and entry or (entry.complete and quest and quest.finish)
+		if ValidPlace(place) then
+			local optional = Optional(quest, entry.level, player)
+			if entry.complete then
+				steps[#steps + 1] = Step(
+					"turnin",
+					"turnin:" .. id,
+					ns.L.TURN_IN:format(entry.title),
+					place,
+					id,
+					optional,
+					ns.L.READY_TO_HAND_IN
+				)
+			else
+				local kind = group and "dungeon" or "objective"
+				local existing
+				for _, step in ipairs(objectives) do
+					if step.kind == kind and Distance(step, place) <= CLOSE then
+						existing = step
+						break
+					end
+				end
+				if existing then
+					existing.quests[#existing.quests + 1] = id
+					existing.optional = existing.optional or optional or nil
+					existing.reason = ns.L.QUESTS_HERE:format(#existing.quests)
+					existing.detail = existing.reason
 				else
-					local kind = group and "dungeon" or "objective"
-					local existing
-					for _, step in ipairs(objectives) do
-						if step.kind == kind and Distance(step, place) <= CLOSE then
-							existing = step
-							break
-						end
-					end
-					if existing then
-						existing.quests[#existing.quests + 1] = id
-						existing.optional = existing.optional or optional or nil
-						existing.reason = ns.L.QUESTS_HERE:format(#existing.quests)
-						existing.detail = existing.reason
-					else
-						local step =
-							Step(kind, "objective:" .. id, entry.title, place, id, optional, ns.L.QUESTS_IN_PROGRESS)
-						objectives[#objectives + 1] = step
-						steps[#steps + 1] = step
-					end
+					local step =
+						Step(kind, "objective:" .. id, entry.title, place, id, optional, ns.L.QUESTS_IN_PROGRESS)
+					objectives[#objectives + 1] = step
+					steps[#steps + 1] = step
 				end
 			end
 		end
@@ -798,7 +797,7 @@ end
 -- "Finish what you carry": the log's turn-ins and objectives. `carried` is every log step, so the subline counts
 -- what the player carries, not only the steps that made the route.
 local function Carry(data, player, log, prefs, mapName, cheap)
-	local carried = LogSteps(data, player, log, prefs)
+	local carried = LogSteps(data, player, log)
 	local steps = Build(data, player, carried, prefs, mapName, cheap)
 	if #steps == 0 then
 		return nil
