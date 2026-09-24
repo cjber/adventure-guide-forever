@@ -489,6 +489,25 @@ do
 	reloaded.Click(StopButton(reloaded))
 	equal(reloaded.counts.ClearUserWaypoint, 1, "stop: and still clears the waypoint")
 	clean(reloaded, "stop: reload")
+
+	-- Go and Stop from a step row's menu move the footer's Stop too, with no route change to redraw it.
+	local function Choose(text)
+		for _, entry in ipairs(reloaded.menu.entries) do
+			if entry.text == text then
+				return entry.onClick()
+			end
+		end
+		error("no menu entry " .. text)
+	end
+	local row = Shown(reloaded, function(frame)
+		return frame.SkipButton ~= nil
+	end)[1]
+	reloaded.Click(row, "RightButton")
+	Choose(ns.L.GO)
+	equal(StopButton(reloaded):IsShown(), true, "stop: shown after the menu's Go")
+	reloaded.Click(row, "RightButton")
+	Choose(ns.L.STOP)
+	equal(StopButton(reloaded):IsShown(), false, "stop: hidden after the menu's Stop")
 end
 do
 	local h = Load("v1")

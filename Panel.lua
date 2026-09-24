@@ -327,7 +327,6 @@ local function BuildFooter(parent)
 		local step = ns.Route().steps[1]
 		if step then
 			ns.Integrations.Navigate(step)
-			Refresh()
 		end
 	end)
 	-- Shown only while Go's guidance runs (design §2.1): it never stops what the player or another addon started.
@@ -335,10 +334,7 @@ local function BuildFooter(parent)
 	stopButton:SetSize(90, 26)
 	stopButton:SetPoint("BOTTOMRIGHT", -PAD, 8)
 	stopButton:SetText(L.STOP)
-	stopButton:SetScript("OnClick", function()
-		ns.Integrations.Cancel()
-		Refresh()
-	end)
+	stopButton:SetScript("OnClick", ns.Integrations.Cancel)
 end
 
 ---@param _ AGFDropdown
@@ -760,6 +756,7 @@ local function Attach()
 		end
 	end)
 	ns.OnRouteChange(Refresh)
+	ns.Integrations.OnGuidanceChange(Refresh)
 
 	function ns.PanelShown()
 		return panel:IsVisible()

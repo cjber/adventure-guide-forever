@@ -203,6 +203,7 @@
 ---@field Travel fun(step: AGFStep): string? the last line fetched for this step, without asking again
 ---@field OnTravelChange fun(callback: fun())
 ---@field Navigate fun(step: AGFStep|AGFGiver): boolean route there with Shortest Path, else (declined or absent) the native waypoint where the map allows one; true when something now guides
+---@field OnGuidanceChange fun(callback: fun()) called after every Go that guides and every Stop
 ---@field Cancel fun() Stop: cancels our Shortest Path journey, and clears the native waypoint only while it is ours
 ---@field Owns fun(): boolean Go's guidance is still running: our Shortest Path journey, or the waypoint Go set
 ---@field Guiding fun(): boolean Shortest Path is walking our multi-stop route and draws its own numbered stops

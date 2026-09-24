@@ -72,6 +72,21 @@ function Integrations.OnTravelChange(fn)
 	travelListeners[#travelListeners + 1] = fn
 end
 
+-- Go and Stop run from the footer, the step menu and the tracker; each tells these so the footer's Stop follows.
+---@type fun()[]
+local guidanceListeners = {}
+
+---@param fn fun()
+function Integrations.OnGuidanceChange(fn)
+	guidanceListeners[#guidanceListeners + 1] = fn
+end
+
+local function NotifyGuidance()
+	for _, fn in ipairs(guidanceListeners) do
+		fn()
+	end
+end
+
 -- True while Shortest Path is walking one of our multi-stop routes; it draws the numbered stops itself then.
 ---@return boolean
 function Integrations.Guiding()
@@ -111,6 +126,7 @@ function Integrations.Navigate(step)
 		if api.NavigateRoute(OWNER, stops) then
 			guided = steps
 			ns.Pins.Refresh()
+			NotifyGuidance()
 			return true
 		end
 	end
@@ -128,6 +144,7 @@ function Integrations.Navigate(step)
 	C_SuperTrack.SetSuperTrackedUserWaypoint(true)
 	-- Saved per character, so Stop still knows the waypoint as ours after a /reload.
 	ns.Prefs().waypoint = { map = step.map, x = step.x, y = step.y }
+	NotifyGuidance()
 	return true
 end
 
@@ -165,6 +182,7 @@ function Integrations.Cancel()
 		C_SuperTrack.SetSuperTrackedUserWaypoint(false)
 		ns.Prefs().waypoint = nil
 	end
+	NotifyGuidance()
 end
 
 ---@return string?
