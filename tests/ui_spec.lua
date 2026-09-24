@@ -1651,6 +1651,34 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	clean(h, label)
 end
 
+-- The footer's Stop follows Shortest Path ending our journey, or the player clearing the waypoint, on the frame after
+-- the super-tracking event (Shortest Path's own handler runs first); with the guide closed nothing is queued.
+for _, spf in ipairs({ false, "v1+" }) do
+	local label = "footer events: " .. (spf or "no Shortest Path")
+	local h = Load(spf)
+	h.ns.OpenPanel()
+	h.flush()
+	local event = spf and "SUPER_TRACKING_CHANGED" or "USER_WAYPOINT_UPDATED"
+	h.ns.Integrations.Navigate(h.ns.Route().steps[1])
+	h.flush()
+	equal(StopButton(h):IsShown(), true, label .. ": Stop while ours guides")
+	if spf then
+		h.G.ShortestPathForever.API.Cancel("AdventureGuideForever")
+	else
+		h.G.C_Map.ClearUserWaypoint()
+	end
+	h.fire(event)
+	equal(StopButton(h):IsShown(), true, label .. ": not in the event's own frame")
+	h.fire(event)
+	equal(h.tick(), 1, label .. ": one redraw however many events")
+	equal(StopButton(h):IsShown(), false, label .. ": Stop goes on the next frame")
+	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+	h.flush()
+	h.fire(event)
+	equal(h.tick(), 0, label .. ": nothing queued with the guide closed")
+	clean(h, label)
+end
+
 -- A saved choice from before survives the update, and one whose card is gone reads as none chosen.
 do
 	local kept = Load(false, nil, { journey = "story:1413" })
