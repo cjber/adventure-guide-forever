@@ -280,6 +280,30 @@ do
 	equal(h.spf.NavigateRoute, 3, "follow: another journey replaced ours: nothing")
 	clean(h, "follow")
 
+	-- Without Shortest Path, the waypoint Go set for the chosen journey moves to its new step 1; on a map that refuses
+	-- one it stays, with no error line; one the player moved is theirs and never touched.
+	h = Load(false)
+	h.ns.StartRoute()
+	h.flush()
+	local sets = h.counts.SetUserWaypoint
+	Moved(h, 1413, 0.46, 0.79)
+	local first = h.ns.Route().steps[1]
+	equal(h.counts.SetUserWaypoint, sets + 1, "waypoint follows: moved to the new step 1")
+	equal(h.waypoint.position.x .. " " .. h.waypoint.position.y, first.x .. " " .. first.y, "waypoint follows: there")
+	equal(h.ns.Integrations.Owns(), true, "waypoint follows: still ours")
+	Moved(h, 1413, 0.46, 0.78)
+	equal(h.counts.SetUserWaypoint, sets + 1, "waypoint follows: once")
+	h.noWaypoint[1413] = true
+	Moved(h, 1413, 0.5223, 0.3101)
+	equal(h.counts.SetUserWaypoint, sets + 1, "waypoint follows: a map that refuses one leaves it")
+	equal(#h.uiErrors, 0, "waypoint follows: with no error line")
+	h.noWaypoint[1413] = nil
+	h.waypoint = { uiMapID = 1413, position = { x = 0.3, y = 0.3 } }
+	Moved(h, 1413, 0.46, 0.79)
+	Moved(h, 1413, 0.5223, 0.3101)
+	equal(h.counts.SetUserWaypoint, sets + 1, "waypoint follows: one the player moved is never touched")
+	clean(h, "waypoint follows")
+
 	-- A route the step menu or a giver started is not the chosen journey's: it is never sent again.
 	h = Load("ended")
 	h.ns.Integrations.Navigate(h.ns.Route().steps[1])

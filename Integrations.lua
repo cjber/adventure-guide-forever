@@ -584,9 +584,26 @@ local function Follow()
 	if api then
 		Watch(api)
 	end
-	if not (api and route.chosen and prefs.guided == route.journey and ns.State.Player().map) then
+	if not (route.chosen and prefs.guided == route.journey and ns.State.Player().map) then
 		return
 	elseif InCombatLockdown() or UnitOnTaxi("player") then
+		return
+	end
+	local first, saved = route.steps[1], prefs.waypoint
+	-- The native waypoint Go set for the chosen journey moves to its new step 1, quietly: where the client allows no
+	-- pin it stays, with no error line, since the player asked for nothing just now.
+	if first and saved and OwnsWaypoint() then
+		local moved = first.map ~= saved.map
+			or math.abs(first.x - saved.x) >= 1e-4
+			or math.abs(first.y - saved.y) >= 1e-4
+		if moved and C_Map.CanSetUserWaypointOnMap(first.map) then
+			C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(first.map, first.x, first.y))
+			prefs.waypoint = { map = first.map, x = first.x, y = first.y }
+			NotifyGuidance()
+		end
+		return
+	end
+	if not api then
 		return
 	end
 	local index = api.CurrentStop(OWNER)
