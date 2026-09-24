@@ -1431,12 +1431,14 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 end
 
 -- Honest coverage (docs/design.md §2.1): the log holds a quest the data lacks, or Forever added quests on this zone map
--- (Data/Forever.lua) that the data lacks. Either way the cards can't be every story here, and the panel says so.
+-- (Data/Forever.lua) that the data lacks and the player hasn't finished. Either way the cards can't be every story
+-- here, and the panel says so.
 ---@param data AGFData
 ---@param map? integer the player's zone map
+---@param completed table<integer, boolean>
 ---@param log table<integer, AGFLogQuest>
 ---@return boolean
-function Model.Unlisted(data, map, log)
+function Model.Unlisted(data, map, completed, log)
 	for id in pairs(log) do
 		if not data.quests[id] then
 			return true
@@ -1444,7 +1446,7 @@ function Model.Unlisted(data, map, log)
 	end
 	local added = map and data.forever and data.forever.quests[map] or {}
 	for _, id in ipairs(added) do
-		if not data.quests[id] then
+		if not data.quests[id] and not completed[id] then
 			return true
 		end
 	end

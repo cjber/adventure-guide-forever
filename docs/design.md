@@ -108,8 +108,8 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
 - **Stop** appears only while AGF owns the guidance. That means SPF's `CurrentStop(OWNER)` is non-nil, or the
   native user waypoint is still the one AGF set (§5.1).
 - **Honest coverage (roadmap #23).** When the log holds a quest `Data.quests` lacks, or the player's zone map has
-  quests Forever added that it lacks, one `GameFontDisableSmall` line sits under the cards and hint, above Skipped:
-  "This land has stories the guide doesn't know yet; look for the "!" on the map." It is never on a card (§2.2) and
+  quests Forever added that it lacks and the player hasn't finished, one `GameFontDisableSmall` line sits under the
+  cards and hint, above Skipped: "This land has stories the guide doesn't know yet; look for the "!" on the map." It is never on a card (§2.2) and
   never beside the search's results. `Model.Unlisted` decides. The added quests come from `Data/Forever.lua`, which
   `tools/diff_forever.py` generates: the QuestV2 IDs Forever's build has and Classic Era 1.15.9.69722 lacks, each
   placed on the zone maps its `QuestPOIBlob` rows name. Only 26 of the 1795 added quests have a blob, so the zone

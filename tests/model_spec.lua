@@ -696,20 +696,25 @@ equal(raids, 90, "raid quests flagged")
 do
 	local known =
 		{ quests = { [1] = quest(0.5, 0.5, 9) }, forever = { era = "", quests = { [7] = { 1 } }, areas = {} } }
-	equal(Model.Unlisted(known, 7, { [1] = {} }), false, "unlisted: every quest known")
-	equal(Model.Unlisted(known, 7, { [2] = {} }), true, "unlisted: a log quest the data lacks")
-	equal(Model.Unlisted({ quests = {} }, 7, {}), false, "unlisted: no Forever slice loaded")
-	equal(Model.Unlisted({ quests = {}, forever = known.forever }, nil, {}), false, "unlisted: no known map")
-	equal(Model.Unlisted({ quests = {}, forever = known.forever }, 7, {}), true, "unlisted: an added quest here")
-	equal(Model.Unlisted({ quests = {}, forever = known.forever }, 8, {}), false, "unlisted: none on another map")
+	equal(Model.Unlisted(known, 7, {}, { [1] = {} }), false, "unlisted: every quest known")
+	equal(Model.Unlisted(known, 7, {}, { [2] = {} }), true, "unlisted: a log quest the data lacks")
+	equal(Model.Unlisted({ quests = {} }, 7, {}, {}), false, "unlisted: no Forever slice loaded")
+	equal(Model.Unlisted({ quests = {}, forever = known.forever }, nil, {}, {}), false, "unlisted: no known map")
+	equal(Model.Unlisted({ quests = {}, forever = known.forever }, 7, {}, {}), true, "unlisted: an added quest here")
+	equal(
+		Model.Unlisted({ quests = {}, forever = known.forever }, 7, { [1] = true }, {}),
+		false,
+		"unlisted: every added quest here finished"
+	)
+	equal(Model.Unlisted({ quests = {}, forever = known.forever }, 8, {}, {}), false, "unlisted: none on another map")
 	-- The generated slice against the bundled data: Westfall's added quests are unknown to it, the Barrens has none.
 	assert(loadfile("Data/Forever.lua"))("AdventureGuideForever", ns)
 	local forever = ns.Data.forever
 	---@cast forever -?
 	equal(forever.areas[16591], true, "unlisted: Riverglades is an added area")
 	equal(forever.areas[40], nil, "unlisted: Westfall is not")
-	equal(Model.Unlisted(ns.Data, 1436, {}), true, "unlisted: Westfall has added quests")
-	equal(Model.Unlisted(ns.Data, 1413, {}), false, "unlisted: the Barrens has none")
+	equal(Model.Unlisted(ns.Data, 1436, {}, {}), true, "unlisted: Westfall has added quests")
+	equal(Model.Unlisted(ns.Data, 1413, {}, {}), false, "unlisted: the Barrens has none")
 end
 
 -- Story against an independent walk over every chain head in the data (F4 acceptance): a head is a quest with a

@@ -2526,6 +2526,12 @@ do
 		{ label = "every quest known", lines = 0 },
 		{ label = "a log quest the data lacks", log = UNKNOWN, lines = 1 },
 		{ label = "Westfall, where Forever added quests", player = { map = 1436, x = 0.5, y = 0.5 }, lines = 1 },
+		{
+			label = "Westfall, its added quests finished",
+			player = { map = 1436, x = 0.5, y = 0.5 },
+			completed = { 844, 92742, 92744, 92745, 92747, 92748, 92752, 92753, 92819 },
+			lines = 0,
+		},
 	}) do
 		local label = "unlisted, " .. case.label
 		local log = {
@@ -2533,7 +2539,7 @@ do
 			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
 		}
 		log[#log + 1] = case.log
-		local h = harness.load({ completed = { 844 }, log = log, player = case.player })
+		local h = harness.load({ completed = case.completed or { 844 }, log = log, player = case.player })
 		h.ns.OpenPanel()
 		h.flush()
 		local function Line(text)
