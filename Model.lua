@@ -446,11 +446,13 @@ local function Hub(place)
 end
 
 -- The stop for `place`'s town among `stops` (by key), made and added to `steps` when the town has none yet. Its point
--- is the first quest's place until Build moves it to the giver nearest the route.
+-- is the first quest's place until Build moves it to the giver nearest the route. `prefix` keeps the carry card's
+-- towns ("handin:") apart from the other cards' ("hub:"), so a skip on one card never empties a town on another.
 ---@param place AGFPlace
+---@param prefix string
 ---@return AGFStep
-local function HubStop(stops, steps, place)
-	local key = "hub:" .. Hub(place)
+local function HubStop(stops, steps, place, prefix)
+	local key = prefix .. Hub(place)
 	local stop = stops[key]
 	if not stop then
 		stop = {
@@ -592,7 +594,7 @@ local function LogSteps(data, player, log, ready)
 		local place = ValidPlace(entry) and entry or (entry.complete and quest and quest.finish)
 		local optional = Optional(quest, entry.level, player)
 		if ready[id] then
-			local stop = HubStop(stops, steps, ready[id])
+			local stop = HubStop(stops, steps, ready[id], "handin:")
 			Join(stop, stop.handins, id, ready[id], optional)
 		elseif ValidPlace(place) then
 			if entry.complete then
@@ -641,7 +643,7 @@ local function PickupSteps(data, player, eligible, wanted, steps)
 			if quest.group then
 				chosenGroups[quest.group] = true
 			end
-			local stop = HubStop(stops, steps, quest.start)
+			local stop = HubStop(stops, steps, quest.start, "hub:")
 			Join(stop, stop.pickups, id, quest.start, Optional(quest, quest.level, player))
 		end
 	end

@@ -44,7 +44,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	equal(h.G.ShortestPathForever ~= nil, spf ~= false, label .. ": Shortest Path global")
 	equal(h.G.TweaksForever, nil, label .. ": no Tweaks Forever")
 	equal(h.G.LegacyForever, nil, label .. ": no Legacy Forever")
-	equal(h.ns.Route().steps[1].key, "hub:346", label .. ": the hand-in leads the route")
+	equal(h.ns.Route().steps[1].key, "handin:346", label .. ": the hand-in leads the route")
 
 	-- Blizzard's displayMode is never written, whatever the player clicks (Panel.lua ShowGuide).
 	local panel, questsFrame = h.G.AdventureGuideForeverPanel, h.questMap.QuestsFrame
@@ -277,7 +277,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Live(), 0, label .. ": RemoveAllData leaves no pins")
 
 	-- Design §2.8's menu for a log quest; Stop only once Go runs, Show quest never in combat.
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["hub:346"], "RightButton")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["handin:346"], "RightButton")
 	local menu = {
 		"title: Turn in: The Zhevra",
 		"button: Go",
@@ -288,7 +288,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	same(h.MenuLines(), menu, label .. ": tracker menu")
 	ns.Integrations.Navigate(ns.Route().steps[1])
 	h.SetCombat(true)
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["hub:346"], "RightButton")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["handin:346"], "RightButton")
 	h.SetCombat(false)
 	menu[3] = "button: Stop"
 	same(h.MenuLines(), menu, label .. ": tracker menu while Go guides, in combat")
@@ -1005,7 +1005,7 @@ do
 	end
 	local session = Load(false)
 	local saved = session.G.AdventureGuideForeverCharDB.last
-	equal(saved and saved.key, "hub:346", "resume: each rebuild saves step 1")
+	equal(saved and saved.key, "handin:346", "resume: each rebuild saves step 1")
 	equal(Resumed(session), 0, "resume: nothing saved, nothing to resume")
 	local function Login(options)
 		options.charDB = { last = { key = saved.key, reason = "finishes a story" } }
@@ -1874,7 +1874,7 @@ do
 		end
 		equal(h.counts.SetUserWaypoint - waypoints, 0, label .. ": no waypoint")
 		equal(h.spf.Navigate + h.spf.NavigateRoute - routes, 0, label .. ": no guidance")
-		equal(h.ns.Route().steps[1].key, "hub:346", label .. ": the route is unchanged")
+		equal(h.ns.Route().steps[1].key, "handin:346", label .. ": the route is unchanged")
 		-- A spell learned at the trainer shortens the line at once.
 		if case.tf and case.tf.spells == THREE then
 			case.tf.spells = { SPELL }

@@ -608,7 +608,8 @@ Rejected sources: `UiMapAssignment` has only whole-map rows, with no subzone rec
 Forever is also unproven.
 
 **Model** (`Model.lua`):
-- **Stop.** A card holds at most one stop per hub: `key = "hub:" .. id`, `kind = "hub"`. A hub stop carries:
+- **Stop.** A card holds at most one stop per hub: `key = "hub:" .. id` (`"handin:" .. id` on the carry card, so a
+  skip on one card never empties the town on another), `kind = "hub"`. A hub stop carries:
   - `pickups`: the card's eligible quests there;
   - `handins`: complete log quests whose data `finish.hub` is this hub;
   - `quests`: all of them;

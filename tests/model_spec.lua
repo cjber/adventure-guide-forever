@@ -446,9 +446,20 @@ equal(townCard.more, #townCard.steps - 1, "card: and counts the stops after it")
 equal(townCard.group, 1, "card: the elite quest needs a group")
 local carriedCard = toured.journeys[1]
 equal(Has(carriedCard.steps, "turnin:12"), 1, "town: a waypoint 350 yd from the data's finish stays a turn-in")
-equal(carriedCard.steps[1].key, "hub:5", "town: the carry card's agreeing hand-ins share the town's stop")
+equal(carriedCard.steps[1].key, "handin:5", "town: the carry card's agreeing hand-ins share the town's stop")
 equal(carriedCard.steps[1].detail, "2 to hand in", "town: and count as hand-ins")
 equal(carriedCard.subline, "3 ready to hand in", "town: the carry card counts every hand-in")
+-- A skip is the card's own: the carry card's town and the story card's are different stops.
+local townSkip = prefs()
+townSkip.dungeons, townSkip.journey = true, "story:1"
+townSkip.skipped[carriedCard.steps[1].key] = true
+local skippedTown = Model.Plan(town, visitor, {}, Carried(), townSkip)
+equal(skippedTown.steps[1] and skippedTown.steps[1].key, "hub:5", "skip: the carry card's town leaves the story's")
+equal(skippedTown.steps[1].detail, "2 to hand in, 4 to pick up", "skip: with its hand-ins")
+townSkip.skipped = { ["hub:5"] = true }
+skippedTown = Model.Plan(town, visitor, {}, Carried(), townSkip)
+equal(skippedTown.journeys[1].steps[1].key, carriedCard.steps[1].key, "skip: the story's town leaves the carry card's")
+equal(skippedTown.journeys[1].subline, "3 ready to hand in", "skip: and its count")
 -- Each step's place and zone, for the "NPC, zone" line: the town's name, else its busiest giver; a turn-in names the
 -- data's NPC only where its waypoint agrees with the data's finish; the zone is the client's map name, else the data's.
 equal(stop.place, "Lakeshire, Redridge", "place: a unnamedPlan town")
@@ -525,7 +536,7 @@ equal(stop.reason, "Opens the next chapter here", "chain: the town says the hand
 equal(stop.detail, "1 to hand in, 4 to pick up", "chain: and still counts its quests")
 equal(table.concat(stop.pickups, " "), "1 2 3 4", "chain: the next chapter is no pickup before the turn-in")
 local lone = chainPlan.journeys[1].steps[1]
-equal(lone.key, "hub:5", "chain: the carry card's town")
+equal(lone.key, "handin:5", "chain: the carry card's town")
 equal(lone.detail, "Opens the next chapter here", "chain: a lone hand-in's row says it")
 chained.quests[30].races = 1 -- Human only; the visitor is an Orc
 stop = Model.Plan(chained, visitor, {}, handing, townPrefs).steps[1]
