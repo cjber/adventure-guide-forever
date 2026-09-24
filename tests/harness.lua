@@ -511,15 +511,15 @@ function harness.load(options)
 		function module:GetBlock(id)
 			local block = self.liveBlocks[id]
 			if not block then
-				block = { id = id, lines = {}, order = {} }
+				block = { id = id, lines = {}, order = {}, dashes = {} }
 				block.SetHeader = function(this, text)
 					this.header = text
 				end
-				block.AddObjective = function(this, key, text)
+				block.AddObjective = function(this, key, text, _, _, dashStyle)
 					if not this.lines[key] then
 						this.order[#this.order + 1] = key
 					end
-					this.lines[key] = text
+					this.lines[key], this.dashes[key] = text, dashStyle
 					return { Text = {
 						GetText = function()
 							return text
@@ -541,7 +541,7 @@ function harness.load(options)
 		function module:MarkDirty()
 			self.layoutOrder = {}
 			for _, block in pairs(self.liveBlocks) do
-				block.used, block.lines, block.order = false, {}, {}
+				block.used, block.lines, block.order, block.dashes = false, {}, {}, {}
 			end
 			h.call(self.LayoutContents, self)
 		end
@@ -1234,7 +1234,8 @@ function harness.load(options)
 		h.questDetails[#h.questDetails + 1] = questID
 	end
 
-	-- The objective tracker.
+	-- The objective tracker (Blizzard_ObjectiveTrackerShared.lua:21-23).
+	G.OBJECTIVE_DASH_STYLE_SHOW, G.OBJECTIVE_DASH_STYLE_HIDE, G.OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 1, 2, 3
 	local containers = {}
 	G.ObjectiveTrackerFrame = NewRegion("Frame", "ObjectiveTrackerFrame", G.UIParent)
 	G.ObjectiveTrackerManager = {

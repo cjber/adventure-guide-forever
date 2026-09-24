@@ -54,6 +54,10 @@ function OpenQuestLog(mapID) end
 ---@param questID integer
 function QuestMapFrame_ShowQuestDetails(questID) end
 
+-- Blizzard_ObjectiveTracker/Blizzard_ObjectiveTrackerShared.lua:23: an objective line with no dash and no indent.
+---@type integer
+OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 3
+
 -- Blizzard_Menu's root description, as handed to a DropdownButton's SetupMenu generator.
 ---@class AGFMenu
 ---@field CreateCheckbox fun(self: AGFMenu, text: string, isSelected: (fun(): boolean), setSelected: fun()): AGFMenuElement

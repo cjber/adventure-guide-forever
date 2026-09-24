@@ -112,7 +112,8 @@ for index, id in ipairs(module.layoutOrder) do
 	local block = module.liveBlocks[id]
 	local lines = {}
 	for position, key in ipairs(block.order) do
-		lines[position] = block.lines[key]
+		-- A dash unless the line hides it (OBJECTIVE_DASH_STYLE_HIDE and _HIDE_AND_COLLAPSE).
+		lines[position] = { text = block.lines[key], dash = (block.dashes[key] or 1) == 1 }
 	end
 	blocks[index] = { header = block.header, lines = lines }
 end

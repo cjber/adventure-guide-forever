@@ -581,6 +581,31 @@ do
 	clean(h, "step menu")
 end
 
+-- F8, the tracker (design §2.5): step 1's place, its reason and, with Shortest Path, its travel line, dashed; then the
+-- next step, undashed.
+local function TrackerLines(h)
+	local block = h.tracker.liveBlocks[h.ns.Route().steps[1].key]
+	local lines = {}
+	for index, key in ipairs(block.order) do
+		lines[index] = block.lines[key] .. (block.dashes[key] == 3 and " (no dash)" or "")
+	end
+	return lines, block
+end
+for _, spf in ipairs({ false, "v1" }) do
+	local label = "tracker: " .. (spf or "no Shortest Path")
+	local h = Load(spf)
+	local steps = h.ns.Route().steps
+	local expected = {}
+	expected[#expected + 1] = steps[1].place
+	expected[#expected + 1] = steps[1].reason
+	expected[#expected + 1] = spf and "About 6 min away" or nil
+	expected[#expected + 1] = "Next: " .. steps[2].title .. " (no dash)"
+	local lines, block = TrackerLines(h)
+	equal(block.header, steps[1].title, label .. ": step 1's title heads the block")
+	same(lines, expected, label .. ": place, reason, travel, next")
+	clean(h, label)
+end
+
 -- Chat copy comes from ns.L: an unknown command prints the three help lines, in order.
 do
 	local h = Load(false)

@@ -28,8 +28,8 @@ function ModuleMixin:OnBlockHeaderClick(_block, mouseButton)
 	ns.Menu.Open(self:GetContextMenuParent(), "MENU_ADVENTURE_GUIDE_FOREVER_TRACKER", CurrentStep())
 end
 
--- One block for the current step: its place and detail as objective lines, then what
--- follows it. Nothing is laid out (an empty, self-hiding module) when the setting is off,
+-- One block for the current step (docs/design.md §2.5): its place, why it is next and the travel line as objective
+-- lines, then what follows it, undashed. Nothing is laid out (an empty, self-hiding module) when the setting is off,
 -- there's no route yet, or the route is empty.
 function ModuleMixin:LayoutContents()
 	if not ns.Setting("showTracker") then
@@ -47,7 +47,7 @@ function ModuleMixin:LayoutContents()
 		block:AddObjective(line, step.place)
 	end
 	line = line + 1
-	block:AddObjective(line, step.detail)
+	block:AddObjective(line, step.reason)
 	local travel = ns.Integrations.Travel(step)
 	if travel then
 		line = line + 1
@@ -56,7 +56,7 @@ function ModuleMixin:LayoutContents()
 	local nextStep = ns.Route().steps[2]
 	if nextStep then
 		line = line + 1
-		block:AddObjective(line, ("Next: %s"):format(nextStep.title))
+		block:AddObjective(line, ns.L.NEXT:format(nextStep.title), nil, nil, OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE)
 	end
 	if not self:LayoutBlock(block) then
 		return

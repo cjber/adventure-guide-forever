@@ -258,6 +258,7 @@
 ---@field SKIPPED string format: how many steps are skipped this session
 ---@field SHOW_AGAIN string format: a skipped step's title
 ---@field CHOOSE_JOURNEY string opens the guide
+---@field NEXT string format: the step after the tracker's
 ---@field SETTING_MAP_PINS_TOOLTIP string
 ---@field SETTING_GIVERS_TOOLTIP string
 ---@field SETTING_DUNGEONS_DEFAULT_TOOLTIP string

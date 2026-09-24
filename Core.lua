@@ -65,6 +65,8 @@ ns.L = {
 	SKIPPED = "Skipped (%d)",
 	SHOW_AGAIN = "Show again: %s",
 	CHOOSE_JOURNEY = "Choose another journey",
+	-- The tracker (docs/design.md §2.5).
+	NEXT = "Next: %s",
 }
 local L = ns.L
 

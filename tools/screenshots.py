@@ -966,7 +966,10 @@ def render(out):
     images["tooltip"] = wm.scene(ui, [(shot, 0, 0), (tip, tip_x - left, tip_y - top)])
 
     tracker = data["tracker"]
-    blocks = [wm.TrackerBlock(block["header"], block["lines"]) for block in tracker["blocks"]]
+    blocks = [
+        wm.TrackerBlock(block["header"], [(line["text"], line["dash"]) for line in block["lines"]])
+        for block in tracker["blocks"]
+    ]
     canvas, tracked = wm.objective_tracker(ui, [wm.TrackerModule(tracker["header"], blocks)])
     images["tracker"] = wm.scene(ui, [(canvas, 0, 0)])
 

@@ -76,6 +76,7 @@ read_globals = {
 	"ObjectiveTrackerFrame",
 	"hooksecurefunc",
 	"MenuUtil",
+	"OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE",
 	"UIParent",
 	-- Settings.lua
 	"Settings",
