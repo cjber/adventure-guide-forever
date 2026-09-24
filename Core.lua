@@ -67,6 +67,7 @@ ns.L = {
 	CHOOSE_JOURNEY = "Choose another journey",
 	-- The tracker (docs/design.md §2.5).
 	NEXT = "Next: %s",
+	RESUME = "Where you left off: %s",
 }
 local L = ns.L
 
@@ -135,6 +136,10 @@ local function LoadCharDB()
 	loaded.zone = nil
 	if loaded.journey ~= nil and type(loaded.journey) ~= "string" then
 		loaded.journey = nil
+	end
+	local last = loaded.last
+	if last ~= nil and not (type(last) == "table" and type(last.key) == "string" and type(last.reason) == "string") then
+		loaded.last = nil
 	end
 	local waypoint = loaded.waypoint
 	if
@@ -273,6 +278,36 @@ local function BuildRoute()
 	return ns.Model.Plan(ns.Data, state.Player(), state.Completed(), state.Log(), ns.Prefs(), state.MapName)
 end
 
+-- The resume line (docs/design.md §2.5). A login sets the latch; the first rebuild with a step 1 compares it once with
+-- the step saved last session, and the line lasts until step 1 changes. A /reload never sets the latch.
+local resumeLatch = false
+---@type {key: string, reason: string}?
+local resume
+
+---@param first? AGFStep
+local function Remember(first)
+	if not first then
+		resume = nil
+		return
+	end
+	local prefs = ns.Prefs()
+	local last = prefs.last
+	if resumeLatch then
+		resumeLatch = false
+		resume = last and last.key == first.key and { key = last.key, reason = last.reason } or nil
+	elseif resume and resume.key ~= first.key then
+		resume = nil
+	end
+	prefs.last = { key = first.key, reason = first.reason }
+end
+
+-- The reason the last session left `step` with, while the resume line stands for it.
+---@param step AGFStep
+---@return string?
+function ns.Resume(step)
+	return resume and resume.key == step.key and resume.reason or nil
+end
+
 local function Rebuild()
 	pendingRebuild = false
 	if not ns.State.Ready() then
@@ -282,6 +317,7 @@ local function Rebuild()
 	end
 	cachedRoute = BuildRoute()
 	dirty = false
+	Remember(cachedRoute.steps[1])
 end
 
 ---@return AGFRoute
@@ -395,6 +431,9 @@ EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	LoadDB()
 	LoadCharDB()
 	ns.State.OnChange(ns.Invalidate)
+	ns.State.OnInitialLogin(function()
+		resumeLatch = true
+	end)
 	if ns.RegisterSettings then
 		ns.RegisterSettings()
 	end

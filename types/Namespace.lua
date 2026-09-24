@@ -92,6 +92,7 @@
 ---@field journey? string key of the journey card the player chose; nil (or gone) = the first card
 ---@field skipped table<string, boolean> step keys skipped this session
 ---@field pinned string[] step keys pinned, in order
+---@field last? {key: string, reason: string} step 1 at the last rebuild, for the next login's resume line
 ---@field waypoint? {map: integer, x: number, y: number} the native waypoint the last Go set, while it may still be ours
 
 ---@alias AGFStepKind "turnin"|"pickup"|"objective"|"dungeon"
@@ -188,6 +189,7 @@
 ---@field Completed fun(): table<integer, boolean>
 ---@field Log fun(): table<integer, AGFLogQuest>
 ---@field OnChange fun(callback: fun())
+---@field OnInitialLogin fun(callback: fun()) called on a login's PLAYER_ENTERING_WORLD, never on a /reload
 ---@field Ready fun(): boolean completion data has loaded
 ---@field MapName fun(map: integer): string? the client's localised map name, nil when it has none
 ---@field QuestTitle fun(questID: integer): string? the client's cached title, nil until it has one
@@ -259,6 +261,7 @@
 ---@field SHOW_AGAIN string format: a skipped step's title
 ---@field CHOOSE_JOURNEY string opens the guide
 ---@field NEXT string format: the step after the tracker's
+---@field RESUME string format: the reason saved with step 1 last session
 ---@field SETTING_MAP_PINS_TOOLTIP string
 ---@field SETTING_GIVERS_TOOLTIP string
 ---@field SETTING_DUNGEONS_DEFAULT_TOOLTIP string
@@ -311,6 +314,7 @@
 ---@field Skip fun(key: string, title: string) hide a step for this session; the menu offers it back by its title
 ---@field Unskip fun(key: string)
 ---@field Skipped fun(): AGFSkipped[] this session's skipped steps, in the order they were skipped
+---@field Resume fun(step: AGFStep): string? the reason saved last session, while the resume line stands for this step
 ---@field InLog fun(step: AGFStep): boolean the step is a quest in the player's log (a turn-in or its objectives)
 ---@field Menu AGFMenuModule
 ---@field TogglePin fun(key: string)

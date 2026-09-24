@@ -47,7 +47,8 @@ function ModuleMixin:LayoutContents()
 		block:AddObjective(line, step.place)
 	end
 	line = line + 1
-	block:AddObjective(line, step.reason)
+	local resume = ns.Resume(step)
+	block:AddObjective(line, resume and ns.L.RESUME:format(resume) or step.reason)
 	local travel = ns.Integrations.Travel(step)
 	if travel then
 		line = line + 1

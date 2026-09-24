@@ -128,6 +128,14 @@ end
 
 ---@type fun()[]
 local listeners = {}
+---@type fun()[]
+local loginListeners = {}
+
+-- Called on PLAYER_ENTERING_WORLD for a login only, never for a /reload or a loading screen.
+---@param fn fun()
+function State.OnInitialLogin(fn)
+	loginListeners[#loginListeners + 1] = fn
+end
 
 ---@param fn fun()
 function State.OnChange(fn)
@@ -160,13 +168,19 @@ events:RegisterEvent("QUEST_LOG_UPDATE")
 events:RegisterEvent("QUEST_TURNED_IN")
 events:RegisterEvent("PLAYER_LEVEL_UP")
 events:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-events:SetScript("OnEvent", function(_, event, questID)
+-- The first argument is PLAYER_ENTERING_WORLD's isInitialLogin, and QUEST_TURNED_IN's questID.
+events:SetScript("OnEvent", function(_, event, arg)
 	if event == "PLAYER_ENTERING_WORLD" then
 		if not ready and LoadCompleted() then
 			ready = true
 		end
-	elseif event == "QUEST_TURNED_IN" and questID then
-		completed[questID] = true
+		if arg == true then
+			for _, fn in ipairs(loginListeners) do
+				fn()
+			end
+		end
+	elseif event == "QUEST_TURNED_IN" and arg then
+		completed[arg] = true
 	end
 	Coalesce()
 end)

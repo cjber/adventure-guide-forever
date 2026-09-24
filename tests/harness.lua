@@ -88,7 +88,8 @@ end
 
 -- options: spf ("v1" or "v1+"; absent by default), db and charDB (saved variables), log ({id, title, level,
 -- complete, map, x, y} entries), completed (quest IDs), player (overrides), initialLogin (default true), waypoint
--- (the user waypoint the client kept across a /reload, a UiMapPoint).
+-- (the user waypoint the client kept across a /reload, a UiMapPoint), completedPending (the client has no completed
+-- quests to give until the spec sets h.completedPending to false).
 function harness.load(options)
 	options = options or {}
 	local G = setmetatable({}, { __index = _G })
@@ -121,6 +122,7 @@ function harness.load(options)
 		player[key] = value
 	end
 	h.player = player
+	h.completedPending = options.completedPending
 
 	-- Errors never stop the run: like the client's error handler they are collected, and specs assert none.
 	function h.call(fn, ...)
@@ -911,6 +913,9 @@ function harness.load(options)
 	h.titleRequests = {}
 	G.C_QuestLog = {
 		GetAllCompletedQuestIDs = function()
+			if h.completedPending then
+				return nil
+			end
 			return options.completed or {}
 		end,
 		GetNumQuestLogEntries = function()

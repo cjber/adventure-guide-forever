@@ -606,6 +606,57 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label)
 end
 
+-- F8, the resume line: a login shows "Where you left off" once, when last session's step 1 is still step 1; a
+-- /reload, a stale key or a route change shows none.
+do
+	local function Resumed(h)
+		local count = 0
+		for _, line in ipairs((TrackerLines(h))) do
+			count = count + (line:find("^Where you left off: ") and 1 or 0)
+		end
+		return count
+	end
+	local session = Load(false)
+	local saved = session.G.AdventureGuideForeverCharDB.last
+	equal(saved and saved.key, "turnin:845", "resume: each rebuild saves step 1")
+	equal(Resumed(session), 0, "resume: nothing saved, nothing to resume")
+	local function Login(options)
+		options.charDB = { last = { key = saved.key, reason = "finishes a story" } }
+		options.completed = { 844 }
+		options.log = {
+			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
+			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
+		}
+		return harness.load(options)
+	end
+	local h = Login({})
+	equal(Resumed(h), 1, "resume: a login with a matching key shows the line")
+	equal(TrackerLines(h)[1], "Where you left off: finishes a story", "resume: in place of the reason")
+	local first = h.ns.Route().steps[1]
+	h.ns.Skip(first.key, first.title)
+	h.flush()
+	h.ns.Unskip(first.key)
+	h.flush()
+	equal(Resumed(h), 0, "resume: gone after a route change, even when step 1 comes back")
+	clean(h, "resume: login")
+
+	local pending = Login({ completedPending = true })
+	equal(#pending.ns.Route().steps, 0, "resume: no route before completed quests load")
+	pending.completedPending = false
+	pending.fire("PLAYER_ENTERING_WORLD", false, false)
+	pending.flush()
+	equal(Resumed(pending), 1, "resume: the login waits for the first route with a step")
+	clean(pending, "resume: pending")
+
+	local reload = Login({ initialLogin = false })
+	equal(Resumed(reload), 0, "resume: a /reload shows none")
+	saved.key = "pickup:0:0:0"
+	local stale = Login({})
+	equal(Resumed(stale), 0, "resume: a stale key shows none")
+	clean(reload, "resume: reload")
+	clean(stale, "resume: stale")
+end
+
 -- Chat copy comes from ns.L: an unknown command prints the three help lines, in order.
 do
 	local h = Load(false)
