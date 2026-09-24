@@ -88,7 +88,7 @@
 ---@class AGFPrefs
 ---@field quests boolean
 ---@field dungeons boolean
----@field journey? string key of the journey card the player chose; nil (or gone) = the first card
+---@field journey? string key of the journey card the player chose; nil (or gone) = none chosen, every card whole
 ---@field skipped table<string, boolean> step keys skipped this session
 ---@field last? {key: string, reason: string} step 1 at the last rebuild, for the next login's resume line
 ---@field waypoint? {map: integer, x: number, y: number} the native waypoint the last Go set, while it may still be ours
@@ -144,8 +144,9 @@
 
 ---@class AGFRoute
 ---@field journeys AGFJourney[] at most 3: carry, the zone's story, a dungeon, the next zone
----@field journey? string the chosen journey's key
----@field steps AGFStep[] the chosen journey's steps, never more than MAX_STEPS
+---@field journey? string the key of the journey whose steps these are: the chosen one, else the first
+---@field chosen boolean the player chose `journey`; false while the route falls back to the first card
+---@field steps AGFStep[] that journey's steps, never more than MAX_STEPS
 ---@field skipped? table<string, boolean> the skipped keys a full build still had a step for; nil after the combat one
 
 -- One requirement in the why-not view (Model.Why).
@@ -285,6 +286,8 @@
 ---@field SKIPPED string format: how many steps are skipped this session
 ---@field SHOW_AGAIN string format: a skipped step's title
 ---@field CHOOSE_JOURNEY string opens the guide
+---@field CHOOSE_TO_SEE_STEPS string under the cards while none is chosen
+---@field SHOW_EVERY_JOURNEY string the chosen card's tooltip: clicking it again chooses none
 ---@field TRAVEL string format: a leg ("Fly to X"), minutes until it arrives
 ---@field TRAVEL_ABOUT string format: minutes; the line from a Shortest Path with Estimate only
 ---@field TRAVEL_NEW_FLIGHT_PATH string appended when a walk leg reaches an undiscovered flight master

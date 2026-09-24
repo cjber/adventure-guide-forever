@@ -7,6 +7,12 @@ local ROW_HEIGHT = 44
 local ROW_GAP = 2
 local CARD_HEIGHT = 86
 local CARD_GAP = 4
+-- A card not chosen while another is (docs/design.md §2.2): the same renown art as one line, 288x28, its ring 24px
+-- round the 14px kind icon, so the three read as one set and the chosen card's steps start near the top.
+local COMPACT_HEIGHT, COMPACT_RING, COMPACT_ICON = 28, 24, 14
+local CARD_RING, CARD_ICON = 46, 18
+-- Under the cards while none is chosen.
+local HINT_HEIGHT = 14
 -- The scroll child above the cards: the header 4px down and 34px tall, then 6px to the first card.
 local LIST_TOP = 4 + 34 + 6
 -- Blizzard's QUEST_TAG_ATLAS icons (Blizzard_FrameXMLBase/Constants.lua:514-527); the next zone gets the map's "!".
@@ -53,6 +59,8 @@ local Refresh
 local emptyText
 ---@type FontString?
 local trainerText
+---@type FontString?
+local hintText
 ---@type Button?
 local goButton
 ---@type Button?
@@ -222,6 +230,7 @@ end
 ---@field Reason FontString
 ---@field UpdateHighlightForState fun(self: AGFJourneyCard)
 ---@field journey? AGFJourney
+---@field state? "full"|"chosen"|"compact"
 
 -- One search result: the quest and where it starts, and for a locked one a lock and why (docs/design.md §2.4).
 ---@class AGFSearchRow : Frame
@@ -292,14 +301,41 @@ local function BuildJourneys(parent, below)
 		local card = CreateFrame("Button", nil, list, "AdventureGuideForeverJourneyCardTemplate") --[[@as AGFJourneyCard]]
 		-- Choosing a journey shows its route and turns the map to it; it never starts guidance, only Go does. The map
 		-- turns before the invalidation, so its redraw reads the route as it is and the one rebuild waits a frame.
+		-- The chosen card is a pressed toggle: clicking it again chooses none, and every card is whole again.
 		card:SetScript("OnClick", function(self)
 			local journey = self.journey
-			if journey then
+			if not journey then
+				return
+			end
+			if self.state == "chosen" then
+				ns.Prefs().journey = nil
+			else
 				ns.Prefs().journey = journey.key
 				WorldMapFrame:SetMapID(journey.map)
-				ns.Invalidate()
 			end
+			-- Its tooltip spoke for the state the click just left.
+			GameTooltip_Hide()
+			ns.Invalidate()
 		end)
+		-- A one-line card keeps what it no longer shows in its tooltip; the chosen one says how to see them all again.
+		card:HookScript("OnEnter", function(self)
+			local journey = self.journey
+			if not journey or self.state == "full" then
+				return
+			end
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip_SetTitle(GameTooltip, journey.title)
+			if self.state == "compact" then
+				GameTooltip_AddHighlightLine(GameTooltip, journey.subline)
+				if journey.reason then
+					GameTooltip_AddHighlightLine(GameTooltip, journey.reason)
+				end
+			else
+				GameTooltip_AddInstructionLine(GameTooltip, L.SHOW_EVERY_JOURNEY)
+			end
+			GameTooltip:Show()
+		end)
+		card:HookScript("OnLeave", GameTooltip_Hide)
 		cards[index] = card
 	end
 	track = CreateFrame("Frame", nil, list)
@@ -331,6 +367,10 @@ local function BuildJourneys(parent, below)
 	emptyText:SetPoint("TOPLEFT", 10, -8)
 	emptyText:SetPoint("RIGHT", -10, 0)
 	emptyText:SetJustifyH("LEFT")
+	hintText = list:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+	hintText:SetPoint("RIGHT", -10, 0)
+	hintText:SetJustifyH("LEFT")
+	hintText:SetText(L.CHOOSE_TO_SEE_STEPS)
 	-- The trainer line (F16) above the cards: text only, since the data has no trainer's place.
 	trainerText = list:CreateFontString(nil, "ARTWORK", "GameFontNormal")
 	trainerText:SetPoint("RIGHT", -10, 0)
@@ -469,13 +509,29 @@ local function RefreshRow(row, step, index)
 	row.Selected:SetShown(index == 1)
 end
 
+-- `state`: "full" (none chosen), "chosen" (full and pressed) or "compact" (another is chosen: title only).
 ---@param card AGFJourneyCard
 ---@param journey AGFJourney
----@param chosen boolean
-local function RefreshCard(card, journey, chosen)
-	card.journey = journey
+---@param state "full"|"chosen"|"compact"
+---@return number height
+local function RefreshCard(card, journey, state)
+	local compact, chosen = state == "compact", state == "chosen"
+	card.journey, card.state = journey, state
+	card:SetHeight(compact and COMPACT_HEIGHT or CARD_HEIGHT)
+	local ring = compact and COMPACT_RING or CARD_RING
+	card.IconFrame:SetSize(ring, ring)
+	card.IconFrame:SetPoint("LEFT", compact and 10 or 15, 0)
+	card.IconFrame.Icon:SetSize(compact and COMPACT_ICON or CARD_ICON, compact and COMPACT_ICON or CARD_ICON)
 	card.IconFrame.Icon:SetAtlas(KIND_ICONS[journey.kind])
 	card.Title:SetText(journey.title)
+	card.Title:ClearAllPoints()
+	if compact then
+		card.Title:SetPoint("LEFT", card.IconFrame, "RIGHT", 6, 0)
+	else
+		card.Title:SetPoint("TOPLEFT", card.IconFrame, "TOPRIGHT", 6, 4)
+	end
+	card.Subline:SetShown(not compact)
+	card.Reason:SetShown(not compact)
 	card.Subline:SetText(journey.subline)
 	card.Reason:SetText(journey.reason or "")
 	card.NormalTexture:SetAtlas(chosen and CARD_ART_CHOSEN or CARD_ART)
@@ -487,6 +543,7 @@ local function RefreshCard(card, journey, chosen)
 	else
 		card:UnlockHighlight()
 	end
+	return compact and COMPACT_HEIGHT or CARD_HEIGHT
 end
 
 -- The story's squares under its card, from `top` down, when the data proves the chain's length and it is 8 or fewer;
@@ -611,8 +668,10 @@ local function LayoutResults(query)
 	return top, #found
 end
 
--- The cards in order, the chosen one followed by its rows, or the search's results; the scroll child's height is
--- summed, not measured, so it is right before the client has laid anything out.
+-- With none chosen, every card whole in order and a hint under them. With one chosen, the others first as one-line
+-- rows in their order, then the chosen card with its track and rows, so its steps start at the same place whichever
+-- card it is and no card sits between them. Or the search's results. The scroll child's height is summed, not
+-- measured, so it is right before the client has laid anything out.
 ---@param route AGFRoute
 ---@return boolean searching
 ---@return integer found
@@ -641,21 +700,37 @@ local function LayoutJourneys(route)
 	---@cast emptyText -?
 	local emptyTop = trainer and TRAINER_HEIGHT + CARD_GAP or 0
 	emptyText:SetPoint("TOPLEFT", 10, -emptyTop - 8)
+	local chosen = not searching and route.chosen
+	local chosenCard, chosenJourney, compactRows = nil, nil, 0
 	for index, card in ipairs(cards) do
 		local journey = not searching and route.journeys[index] or nil
 		card:SetShown(journey ~= nil)
-		if journey then
-			RefreshCard(card, journey, journey.key == route.journey)
+		if journey and chosen and journey.key == route.journey then
+			chosenCard, chosenJourney = card, journey
+		elseif journey then
 			card:SetPoint("TOP", list, "TOP", 0, -top)
-			top = top + CARD_HEIGHT + CARD_GAP
-			if journey.key == route.journey then
-				top = LayoutTrack(journey, top)
-				top = LayoutRows(route, top) + CARD_GAP
-			end
+			top = top + RefreshCard(card, journey, chosen and "compact" or "full") + (chosen and ROW_GAP or CARD_GAP)
+			compactRows = compactRows + (chosen and 1 or 0)
 		end
 	end
-	if searching or not route.journey then
+	if chosenCard and chosenJourney then
+		-- The one-line rows sit a row's gap apart, and a card's gap above the chosen card.
+		top = top + (compactRows > 0 and CARD_GAP - ROW_GAP or 0)
+		RefreshCard(chosenCard, chosenJourney, "chosen")
+		chosenCard:SetPoint("TOP", list, "TOP", 0, -top)
+		top = LayoutTrack(chosenJourney, top + CARD_HEIGHT + CARD_GAP)
+		top = LayoutRows(route, top) + CARD_GAP
+	else
 		LayoutRows(route, top, true)
+	end
+	---@cast hintText -?
+	local hint = not searching and not chosen and #route.journeys > 0
+	hintText:SetShown(hint)
+	if hint then
+		hintText:SetPoint("TOPLEFT", 10, -top)
+		top = top + HINT_HEIGHT + CARD_GAP
+	end
+	if searching or not chosen then
 		top = math.max(top, emptyTop + 40)
 	end
 	local skipped = not searching and #ns.Skipped() or 0
@@ -667,7 +742,8 @@ local function LayoutJourneys(route)
 		skippedButton:SetPoint("TOPLEFT", 10, -top)
 		top = top + SKIPPED_HEIGHT + CARD_GAP
 	end
-	countText:SetText(ns.L.STEP_COUNT:format(#route.steps))
+	-- The steps the guide lists: none until a card is chosen.
+	countText:SetText(ns.L.STEP_COUNT:format(route.chosen and #route.steps or 0))
 	list:SetHeight(top)
 	content:SetHeight(LIST_TOP + top + PAD)
 	return searching, found
@@ -688,10 +764,11 @@ function Refresh()
 	emptyText:SetText((not ready and L.LOADING) or (searching and L.SEARCH_NONE) or L.NOTHING_NEARBY)
 	emptyText:SetShown(not ready or (searching and found == 0) or (not searching and #route.journeys == 0))
 
-	-- Go follows the chosen journey, which the search hides: it waits until the search is cleared.
+	-- Go follows the chosen journey, which the search hides: it waits until the search is cleared. With none chosen
+	-- the guide shows no step for it to start, so it waits for a choice (the hint under the cards says so).
 	local provider = ns.Integrations.Provider()
 	goButton:SetText(provider and ns.L.GO_WITH:format(provider) or ns.L.SET_WAYPOINT)
-	goButton:SetEnabled(route.steps[1] ~= nil and not searching)
+	goButton:SetEnabled(route.chosen and route.steps[1] ~= nil and not searching)
 	stopButton:SetShown(ns.Integrations.Owns())
 end
 

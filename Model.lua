@@ -980,16 +980,20 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	return journeys
 end
 
--- The route is the chosen journey's steps; the first journey's when the choice is gone or was never made.
+-- The route is the chosen journey's steps. With none chosen (never, cleared, or the choice is gone) it is the first
+-- journey's, so the tracker still has a next step, and `chosen` says the player picked nothing: the guide then shows
+-- every card whole and no steps (docs/design.md §2.1).
 local function Route(journeys, prefs)
-	local chosen = journeys[1]
+	local chosen
 	for _, journey in ipairs(journeys) do
 		chosen = journey.key == prefs.journey and journey or chosen
 	end
+	local route = chosen or journeys[1]
 	return {
 		journeys = journeys,
-		journey = chosen and chosen.key,
-		steps = chosen and chosen.steps or {},
+		journey = route and route.key,
+		chosen = chosen ~= nil,
+		steps = route and route.steps or {},
 	}
 end
 

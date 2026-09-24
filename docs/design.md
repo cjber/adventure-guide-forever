@@ -47,24 +47,25 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
 +-----------------------------------------------+  308 px pane (QuestMapFrame.xml:648)
 | [Search quests............]   Level 14   [*]  |  29 px top bar: SearchBoxTemplate (Panel.lua:486),
 |-----------------------------------------------|  GameFontHighlightSmall, settings cog (Panel.lua:496, unchanged)
-| +-------------------------------------------+ |
-| | (?)  Finish what you carry                | |  card 1  288x86
+| +-------------------------------------------+ |  none chosen: every card whole, 288x86, in order
+| | (?)  Finish what you carry                | |
 | | ( )  3 quests ready to hand in            | |
 | +-------------------------------------------+ |
-| +===========================================+ |  card 2, selected (-pressed art)
-| | (S)  Westfall story                       | |
+|  ... the story and next-zone cards, likewise   |
+|  Choose a journey to see its steps.           |  GameFontDisableSmall hint; Go disabled, Steps: 0
+|                                               |
+|  --- after choosing the story: ---            |
+| [(?) Finish what you carry                  ] |  the others, one line each: 288x28, 2 px apart
+| [(!) Head to Darkshore                      ] |
+| +===========================================+ |  the chosen card, whole and pressed (-pressed art),
+| | (S)  Westfall story                       | |    4 px under the rows
 | | ( )  Chapter 2 of 4                       | |
 | +===========================================+ |
 |    [#][#][ ][ ]                               |  chapter track (2.3)
-|  1 Gryan Stoutmantle          Sentinel Hill   |  step rows, 22 px each, 9 at most
+|  1 Gryan Stoutmantle          Sentinel Hill   |  step rows, 44 px each, 9 at most
 |      Fly to Sentinel Hill · 6 min             |    GameFontHighlightSmall
 |  2 The Defias Brotherhood                     |
-|  3 Red Linen Goods                            |    optional rows at alpha 0.6 (Panel.lua:602)
-| +-------------------------------------------+ |
-| | (!)  Head to Darkshore                    | |  card 3
-| | ( )  11 quests near your level            | |
-| |      For level 14                         | |  the level as its reason, so a long zone name never hides it
-| +-------------------------------------------+ |
+|  3 Red Linen Goods                            |    optional rows at alpha 0.6
 |  Skipped (2)                                  |  GameFontNormalSmall text button, hidden at 0
 |-----------------------------------------------|
 | [          Go          ]          [  Stop  ]  |  40 px footer: UIPanelButtonTemplate 190x26 / 90x26
@@ -76,11 +77,22 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   - the XP bar (Panel.lua:329-356). The stock XP bar already shows this.
   - "Why these?" (Panel.lua:430-443). Each row now gives its own reason, and "why not" moves to search.
 - The quest/dungeon chips move into the cog's settings menu. The cog stays the settings entry and is not reused for anything else.
-- Only the selected card shows its step rows. Selecting a card sets `prefs.journey` and rebuilds the route. It never
-  starts guidance. **Go** is the only way to start.
+- **None chosen** is the default (a fresh character, a card clicked again, or a saved choice whose card is no longer
+  offered): every card whole in order, no step rows, the hint "Choose a journey to see its steps." under them, and
+  Go disabled, since the guide shows no step for it to start. The route still falls back to the first card
+  (`route.chosen` false), so the tracker keeps a next step and its title click still sets off along it: there the
+  step is on screen. A stale saved key stays saved and is chosen again should its card come back.
+- **One chosen:** the others fold to one-line rows above it, in their order, and it sits whole and pressed right over
+  its track and step rows. Its steps start at the same place whichever card it is (two rows, 62 px, then the card),
+  and no card sits between a card and its steps, which the old order did (a middle card's steps pushed the last card
+  below the fold). A row chooses its card; the chosen card is a pressed toggle, and clicking it again chooses none.
+  No animation: the quest log's own headers fold at once, and a height tween would need an OnUpdate.
+- Selecting a card sets `prefs.journey` and rebuilds the route. It never starts guidance. **Go** is the only way to
+  start.
 - **Stop** appears only while AGF owns the guidance. That means SPF's `CurrentStop(OWNER)` is non-nil, or the
   native user waypoint is still the one AGF set (§5.1).
-- Fit: top bar, three cards and footer come to 342 px, which leaves room for about 7 step rows before the list scrolls.
+- Fit: with a card chosen the three cards take 152 px (was 270), so the list holds between two and three more 46 px
+  step rows before it scrolls.
 
 ### 2.2 Journey card
 
@@ -99,6 +111,11 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
   Icon 18x18 at CENTER; hover inherits AlphaHighlightButtonTemplate (SharedUIPanelTemplates.xml:1587)
 ```
 
+- **One-line row** (another card is chosen): the same button and the same `ui-journeys-renown-button` art at
+  288x28, so the set reads as one; the ring 24x24 at LEFT x=10 round a 14x14 kind icon, the title
+  (GameFontNormalMed2) at the ring's RIGHT +6, no subline or reason. Its tooltip has the title, subline and reason,
+  so nothing is lost. The chosen card's tooltip says "Click again to see every journey". Pooled: the three card
+  buttons are resized in place, no frame is made per refresh.
 - **Kind icons** follow Blizzard's `QUEST_TAG_ATLAS` (`BLZ/Blizzard_FrameXMLBase/Constants.lua:514-527`):
 
   | Card kind | Icon | Mock label |
@@ -236,7 +253,9 @@ While SPF is guiding, AGF's rings hide, because SPF draws its own stops (Pins.lu
         adventureguide-ring (CSV:1189) + services-number-1..9 (CSV:1645-1653), hover UI-QuestPoi-InnerGlow (CSV:10079)
 ```
 
-- **Preview.** Selecting a card turns the map to that journey's first zone (`WorldMapFrame:SetMapID`) and draws
+- **Preview.** With no card chosen the open guide previews no rings: rings numbered for a card that is not pressed
+  would read as a choice made (with `showMapPins` on they still show the first card's route, as the tracker does).
+  Selecting a card turns the map to that journey's first zone (`WorldMapFrame:SetMapID`) and draws
   only its rings. Hovering a step row flashes its ring (`Pins.Ping`, Pins.lua:184-188). Nothing moves until Go.
 - **One switch.** `showMapPins` (Core.lua:12) becomes the single control for every AGF layer, and its default
   changes to off (opt-in). `AddGivers` moves under that check: today it runs first (Pins.lua:83-86), so givers

@@ -13,10 +13,12 @@ local pinsByKey = {}
 
 -- One switch over every mark AGF draws (design §2.6): nothing unless showMapPins is on.
 -- While the guide is open the rings preview the chosen journey whatever the switch says (F3): choosing a card is
--- looking at its route. Either way they step aside while Shortest Path guides, since it numbers its stops itself.
+-- looking at its route. With none chosen the guide lists no steps, so it previews none: rings numbered for a card
+-- that isn't pressed would read as a choice made. Either way they step aside while Shortest Path guides, since it
+-- numbers its stops itself.
 ---@return boolean
 local function RingsShown()
-	local preview = ns.PanelShown ~= nil and ns.PanelShown()
+	local preview = ns.PanelShown ~= nil and ns.PanelShown() and ns.Route().chosen
 	return (preview or ns.Setting("showMapPins")) and not ns.Integrations.Guiding()
 end
 

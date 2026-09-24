@@ -79,6 +79,9 @@ ns.L = {
 	SKIPPED = "Skipped (%d)",
 	SHOW_AGAIN = "Show again: %s",
 	CHOOSE_JOURNEY = "Choose another journey",
+	-- With no card chosen every card is whole and no steps show (docs/design.md §2.2); the chosen card toggles back.
+	CHOOSE_TO_SEE_STEPS = "Choose a journey to see its steps.",
+	SHOW_EVERY_JOURNEY = "Click again to see every journey",
 	-- The travel line (docs/design.md §2.5): Shortest Path's own verbs (its JourneySteps.lua VERB), so both addons
 	-- name a leg alike.
 	TRAVEL = "%s · %d min",
@@ -339,7 +342,7 @@ end
      C_Timer.After(0) so a burst of QUEST_LOG_UPDATE events costs one rebuild. ]]
 
 ---@type AGFRoute
-local cachedRoute = { journeys = {}, steps = {} }
+local cachedRoute = { journeys = {}, chosen = false, steps = {} }
 local dirty = true
 local pendingRebuild = false
 ---@type fun()[]
@@ -413,7 +416,7 @@ local function Rebuild()
 	pendingRebuild = false
 	if not ns.State.Ready() then
 		-- Completed-quest data hasn't loaded yet; an empty route beats a wrong one.
-		cachedRoute = { journeys = {}, steps = {} }
+		cachedRoute = { journeys = {}, chosen = false, steps = {} }
 		return
 	end
 	cachedRoute = BuildRoute()

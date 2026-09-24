@@ -15,12 +15,14 @@ local function clean(h, label)
 end
 
 -- A level-18 orc shaman in The Barrens with one quest ready to hand in and one under way. `db` is the account's
--- saved settings; the map marks are off unless it turns them on.
+-- saved settings; the map marks are off unless it turns them on. The character chose the carry card before, as a
+-- player past their first session has; `charDB` false is a fresh character, with no card chosen.
 local PINS_ON = { showMapPins = true, showQuestGivers = true }
-local function Load(spf, db)
+local function Load(spf, db, charDB)
 	return harness.load({
 		spf = spf or nil,
 		db = db,
+		charDB = charDB ~= false and (charDB or { journey = "carry" }) or nil,
 		completed = { 844 },
 		log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
@@ -677,6 +679,9 @@ do
 		initialLogin = false,
 		completed = { 844 },
 	})
+	-- No log after the reload, so no carry card: the story is chosen for the row menu below.
+	reloaded.ns.Prefs().journey = reloaded.ns.Route().journeys[1].key
+	reloaded.ns.Invalidate()
 	reloaded.ns.OpenPanel()
 	reloaded.flush()
 	equal(StopButton(reloaded):IsShown(), true, "stop: still offered after a /reload")
@@ -1042,26 +1047,31 @@ do
 	clean(h, "card")
 end
 
--- The guide (F2): at most three cards, the chosen one pressed and followed by its steps, every card 288x86 with a
--- 46x46 ring, in the dumped layout the client's own dump is compared with.
+-- The guide (F2): at most three cards. The chosen one is pressed, 288x86 with a 46x46 ring and followed by its steps;
+-- the others sit above it as one-line 288x28 rows with a 24x24 ring, in the dumped layout the client's own dump is
+-- compared with.
 do
 	local h = Load(false)
 	h.ns.OpenPanel()
 	h.flush()
-	local route, shown, pressed, lit = h.ns.Route(), 0, 0, 0
+	local route, full, compact, pressed, lit = h.ns.Route(), 0, 0, 0, 0
+	local sizes = {}
 	for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverPanel, h.Describe)) do
-		if entry.path:match("%.Button%[%d%]$") and entry.size and entry.size[2] == 86 then
-			shown = shown + 1
+		if entry.path:match("%.Button%[%d%]$") and entry.size and entry.size[1] == 288 then
+			sizes[entry.path] = entry.size[2]
+			full = full + (entry.size[2] == 86 and 1 or 0)
+			compact = compact + (entry.size[2] == 28 and 1 or 0)
 			lit = lit + (entry.highlightLocked and 1 or 0)
-			equal(("%dx%d"):format(entry.size[1], entry.size[2]), "288x86", "guide: " .. entry.path .. " is 288x86")
 		elseif entry.path:match("%.IconFrame$") then
-			equal(("%dx%d"):format(entry.size[1], entry.size[2]), "46x46", "guide: " .. entry.path .. " is 46x46")
+			local ring = sizes[entry.path:gsub("%.IconFrame$", "")] == 86 and "46x46" or "24x24"
+			equal(("%dx%d"):format(entry.size[1], entry.size[2]), ring, "guide: " .. entry.path .. " is " .. ring)
 		elseif entry.path:match("NormalTexture$") and entry.atlas == "ui-journeys-renown-button-pressed" then
 			pressed = pressed + 1
 		end
 	end
-	equal(shown, #route.journeys, "guide: a card per journey")
-	equal(shown >= 1 and shown <= 3, true, "guide: one to three cards")
+	equal(full + compact, #route.journeys, "guide: a card per journey")
+	equal(#route.journeys, 3, "guide: the fixture has three cards")
+	equal(full, 1, "guide: only the chosen card is whole")
 	equal(pressed, 1, "guide: only the chosen card is pressed")
 	equal(lit, 1, "guide: and only it stays lit, so it reads as chosen in game")
 	local rows = Shown(h, function(frame)
@@ -1239,6 +1249,117 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(#(h.pins.AdventureGuideForeverPinTemplate or {}), 0, label .. ": closing the guide takes the rings away")
 	clean(h, label)
+end
+
+-- None chosen (docs/design.md §2.2): a fresh character sees every card whole, no steps, no rings and the hint, and Go
+-- waits for a choice while the tracker still follows the first card. Choosing one folds the others into one-line rows
+-- above it, each keeping its lines in a tooltip; a row chooses its card, and the chosen card toggles back to none.
+for _, spf in ipairs({ false, "v1" }) do
+	local label = "none chosen: " .. (spf or "no Shortest Path")
+	local h = Load(spf, nil, false)
+	h.ns.OpenPanel()
+	h.flush()
+	local route = h.ns.Route()
+	-- Top to bottom as laid out, not in pool order.
+	local function Cards()
+		local shown = Shown(h, function(frame)
+			return frame.IconFrame ~= nil and frame.journey ~= nil
+		end)
+		table.sort(shown, function(a, b)
+			return select(5, a:GetPoint(1)) > select(5, b:GetPoint(1)) -- multi-value: the y offset only
+		end)
+		return shown
+	end
+	local function Heights()
+		local heights = {}
+		for index, card in ipairs(Cards()) do
+			heights[index] = select(2, card:GetSize()) -- multi-value: the height only
+		end
+		return table.concat(heights, " ")
+	end
+	local function Rows()
+		return #Shown(h, function(frame)
+			return frame.SkipButton ~= nil
+		end)
+	end
+	-- The dump holds only what is shown.
+	local function Says(text)
+		local count = 0
+		for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverPanel, h.Describe)) do
+			count = count + (entry.text == text and 1 or 0)
+		end
+		return count
+	end
+	local function Hint()
+		return Says(h.ns.L.CHOOSE_TO_SEE_STEPS)
+	end
+	local goButton = h.Find(function(frame)
+		return frame.stockTemplate == "UIPanelButtonTemplate"
+	end)[1]
+	equal(route.chosen, false, label .. ": nothing chosen")
+	equal(route.journey, "carry", label .. ": the route falls back to the first card")
+	equal(h.tracker.liveBlocks[route.steps[1].key] ~= nil, true, label .. ": which the tracker still follows")
+	equal(Heights(), "86 86 86", label .. ": every card whole")
+	equal(Rows(), 0, label .. ": no steps listed")
+	equal(Hint(), 1, label .. ": the hint under the cards")
+	equal(Says(h.ns.L.STEP_COUNT:format(0)), 1, label .. ": and no steps counted")
+	equal(#(h.pins.AdventureGuideForeverPinTemplate or {}), 0, label .. ": no rings previewed")
+	equal(goButton:IsEnabled(), false, label .. ": Go waits for a choice")
+	for _, card in ipairs(Cards()) do
+		equal(card.NormalTexture:GetAtlas(), "ui-journeys-renown-button", label .. ": no card pressed")
+	end
+
+	-- A compact row's tooltip keeps the card's lines.
+	local story = Cards()[2].journey
+	h.Click(Cards()[2])
+	h.flush()
+	equal(h.ns.Route().journey, story.key, label .. ": a click chooses")
+	equal(h.G.AdventureGuideForeverCharDB.journey, story.key, label .. ": and is saved")
+	equal(Heights(), "28 28 86", label .. ": the others fold above the chosen card")
+	equal(Cards()[3].journey.key, story.key, label .. ": the chosen card last, over its steps")
+	equal(Rows(), #h.ns.Route().steps, label .. ": its steps listed")
+	equal(Hint(), 0, label .. ": no hint")
+	equal(goButton:IsEnabled(), true, label .. ": Go follows the choice")
+	local nextZone = Cards()[2]
+	h.Hover(nextZone)
+	local tip = table.concat(h.tooltip, "\n")
+	equal(tip:find(nextZone.journey.title, 1, true) ~= nil, true, label .. ": the row's tooltip has its title")
+	equal(tip:find(nextZone.journey.subline, 1, true) ~= nil, true, label .. ": its subline")
+	equal(tip:find(nextZone.journey.reason, 1, true) ~= nil, true, label .. ": and its reason")
+	h.Hover(Cards()[3])
+	tip = table.concat(h.tooltip, "\n")
+	equal(tip:find(h.ns.L.SHOW_EVERY_JOURNEY, 1, true) ~= nil, true, label .. ": the chosen card says how back")
+
+	-- A row chooses its card; the one chosen before folds in its place.
+	local key = nextZone.journey.key
+	h.Click(nextZone)
+	h.flush()
+	equal(h.ns.Route().journey, key, label .. ": a row chooses its card")
+	equal(Heights(), "28 28 86", label .. ": still one whole card")
+	equal(Cards()[3].journey.key, key, label .. ": the new choice over the steps")
+
+	-- The chosen card again: none chosen, every card whole, and the map stays where it was.
+	local maps = h.counts.SetMapID
+	h.Click(Cards()[3])
+	h.flush()
+	equal(h.ns.Route().chosen, false, label .. ": clicking the chosen card chooses none")
+	equal(h.G.AdventureGuideForeverCharDB.journey, nil, label .. ": and saves none")
+	equal(h.counts.SetMapID, maps, label .. ": without turning the map")
+	equal(Heights(), "86 86 86", label .. ": every card whole again")
+	equal(goButton:IsEnabled(), false, label .. ": Go waits again")
+	clean(h, label)
+end
+
+-- A saved choice from before survives the update, and one whose card is gone reads as none chosen.
+do
+	local kept = Load(false, nil, { journey = "story:1413" })
+	equal(kept.ns.Route().chosen, true, "saves: a saved card stays chosen")
+	equal(kept.ns.Route().journey, "story:1413", "saves: the same card")
+	local gone = Load(false, nil, { journey = "dungeon:36" })
+	equal(gone.ns.Route().chosen, false, "saves: a card no longer offered is none chosen")
+	equal(gone.G.AdventureGuideForeverCharDB.journey, "dungeon:36", "saves: kept, should it come back")
+	clean(kept, "saves: kept")
+	clean(gone, "saves: gone")
 end
 
 -- The preview follows the guide's visibility, not only its tab: collapsing the quest sidebar hides the guide and

@@ -21,10 +21,12 @@ local loaded = {}
 -- ui_spec's level-18 orc shaman in The Barrens: one quest ready to hand in, one under way.
 -- `optIn` turns on the marks a player opts into (both are off by default); the panel and search scenes, the store
 -- page's lead images, keep the defaults, so they show only the rings the open guide previews.
-local function Load(spf, optIn)
+-- The character chose the carry card before, as ui_spec's has; `fresh` is one that has chosen nothing yet.
+local function Load(spf, optIn, fresh)
 	local h = harness.load({
 		spf = spf or nil,
 		db = optIn and { showMapPins = true, showQuestGivers = true } or nil,
+		charDB = not fresh and { journey = "carry" } or nil,
 		completed = { 844 },
 		log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
@@ -79,6 +81,12 @@ out.panel = Panel(h, "panel")
 h.providers[1]:RefreshAllData()
 out.panel.pins = Pins(h)
 out.panel.map = h.map:GetMapID()
+
+-- A character with no card chosen: every card whole, no steps and no rings, the hint under the cards.
+h = Load(false, false, true)
+out.journeys = Panel(h, "journeys")
+h.providers[1]:RefreshAllData()
+out.journeys.pins = Pins(h)
 
 -- The search: the Call of quests a level-18 orc shaman sees, the locked ones saying why.
 h = Load(false)

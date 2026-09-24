@@ -122,6 +122,7 @@ local function Has(steps, key)
 	return count
 end
 equal(route.journey, "carry", "carry is the first card")
+equal(route.chosen, false, "with none chosen the route is the first card's, not a choice")
 equal(#route.journeys, 2, "carry and the zone's story")
 equal(route.journeys[1].subline, "1 ready to hand in, 2 in progress", "carry counts what is ready, then the rest")
 equal(route.journeys[1].reason, nil, "no reason unless a turn-in leads")
@@ -133,6 +134,7 @@ equal(Has(route.steps, "turnin:100"), 1, "the turn-in is carried")
 options.journey = "story:1"
 route = Model.Plan(data, player, {}, log, options)
 equal(route.journey, "story:1", "the chosen card")
+equal(route.chosen, true, "and it is a choice")
 equal(route.journeys[2].title, "Zone story", "the story is named after its zone")
 equal(route.journeys[2].subline, "9 quests near your level", "the story counts its quests")
 equal(#route.steps, 8, "one step per giver")
@@ -142,6 +144,7 @@ for _, step in ipairs(route.steps) do
 end
 options.journey = "gone"
 equal(Model.Plan(data, player, {}, log, options).journey, "carry", "a vanished choice falls back to the first card")
+equal(Model.Plan(data, player, {}, log, options).chosen, false, "and reads as none chosen")
 local empty = prefs()
 empty.quests = false
 local carriedOnly = Model.Plan(data, player, {}, log, empty).journeys

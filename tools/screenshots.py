@@ -935,11 +935,16 @@ def render(out):
         print(f"warning: Pillow {version}, not the pinned {PILLOW}: the PNGs may not match byte for byte")
     ui = wm.Ui(scale=SCALE)
     _, frame = map_frame(ui, wm.Image.new("RGBA", (1002, 668)), True)
-    data, rects = layout_pass(ui, ("panel", "search"), known_frames(frame))
+    data, rects = layout_pass(ui, ("panel", "journeys", "search"), known_frames(frame))
     images = {}
 
     canvas, _ = quest_log(ui, data, rects, "panel", data["panel"]["pins"])
     images["panel"] = wm.scene(ui, [(canvas, 0, 0)])
+
+    # No card chosen yet: every card whole, and no rings, since the guide lists no steps.
+    canvas, frame = quest_log(ui, data, rects, "journeys", data["journeys"]["pins"])
+    qx, qy, qw, qh = frame["quests"]
+    images["journeys"] = wm.scene(ui, [(crop(canvas, qx - 3, qy - 30, qw + 3 + 64, qh + 30 + 22), 0, 0)])
 
     canvas, frame = quest_log(ui, data, rects, "search", data["panel"]["pins"])
     qx, qy, qw, qh = frame["quests"]

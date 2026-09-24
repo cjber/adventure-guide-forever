@@ -200,7 +200,7 @@
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild",
       "size": [
         1.00,
-        418.00
+        300.00
       ],
       "type": "Frame"
     },
@@ -285,7 +285,7 @@
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
       "size": [
         0.00,
-        366.00
+        248.00
       ],
       "type": "Frame"
     },
@@ -296,7 +296,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
           "x": 0.00,
-          "y": -0.00
+          "y": -62.00
         }
       ],
       "highlightAtlas": "ui-journeys-renown-button-pressed",
@@ -465,7 +465,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
           "x": 0.00,
-          "y": -186.00
+          "y": -0.00
         }
       ],
       "highlightAtlas": "ui-journeys-renown-button",
@@ -474,7 +474,7 @@
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[2]",
       "size": [
         288.00,
-        86.00
+        28.00
       ],
       "stockTemplate": "AlphaHighlightButtonTemplate",
       "type": "Button"
@@ -504,11 +504,11 @@
     {
       "anchors": [
         {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPRIGHT",
+          "point": "LEFT",
+          "relativePoint": "RIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[2].IconFrame",
           "x": 6.00,
-          "y": 4.00
+          "y": 0.00
         }
       ],
       "font": "GameFontNormalMed2",
@@ -526,62 +526,18 @@
     {
       "anchors": [
         {
-          "point": "TOPLEFT",
-          "relativePoint": "BOTTOMLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[2].Title",
-          "x": 0.00,
-          "y": -2.00
-        }
-      ],
-      "font": "GameFontHighlightSmall",
-      "justifyH": "LEFT",
-      "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[2].Subline",
-      "size": [
-        212.00,
-        14.00
-      ],
-      "text": "Chapter 1 of 5",
-      "type": "FontString",
-      "wordWrap": false
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "BOTTOMLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[2].Subline",
-          "x": 0.00,
-          "y": -2.00
-        }
-      ],
-      "font": "GameFontHighlightSmall",
-      "justifyH": "LEFT",
-      "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[2].Reason",
-      "size": [
-        212.00,
-        14.00
-      ],
-      "text": "Begins a new story",
-      "type": "FontString",
-      "wordWrap": false
-    },
-    {
-      "anchors": [
-        {
           "point": "LEFT",
           "relativePoint": "LEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[2]",
-          "x": 15.00,
+          "x": 10.00,
           "y": 0.00
         }
       ],
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[2].IconFrame",
       "size": [
-        46.00,
-        46.00
+        24.00,
+        24.00
       ],
       "type": "Frame"
     },
@@ -622,8 +578,8 @@
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[2].IconFrame.Icon",
       "size": [
-        18.00,
-        18.00
+        14.00,
+        14.00
       ],
       "type": "Texture"
     },
@@ -634,7 +590,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
           "x": 0.00,
-          "y": -276.00
+          "y": -30.00
         }
       ],
       "highlightAtlas": "ui-journeys-renown-button",
@@ -643,7 +599,7 @@
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[3]",
       "size": [
         288.00,
-        86.00
+        28.00
       ],
       "stockTemplate": "AlphaHighlightButtonTemplate",
       "type": "Button"
@@ -673,11 +629,11 @@
     {
       "anchors": [
         {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPRIGHT",
+          "point": "LEFT",
+          "relativePoint": "RIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[3].IconFrame",
           "x": 6.00,
-          "y": 4.00
+          "y": 0.00
         }
       ],
       "font": "GameFontNormalMed2",
@@ -695,62 +651,18 @@
     {
       "anchors": [
         {
-          "point": "TOPLEFT",
-          "relativePoint": "BOTTOMLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[3].Title",
-          "x": 0.00,
-          "y": -2.00
-        }
-      ],
-      "font": "GameFontHighlightSmall",
-      "justifyH": "LEFT",
-      "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[3].Subline",
-      "size": [
-        212.00,
-        14.00
-      ],
-      "text": "11 quests near your level",
-      "type": "FontString",
-      "wordWrap": false
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "BOTTOMLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[3].Subline",
-          "x": 0.00,
-          "y": -2.00
-        }
-      ],
-      "font": "GameFontHighlightSmall",
-      "justifyH": "LEFT",
-      "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[3].Reason",
-      "size": [
-        212.00,
-        14.00
-      ],
-      "text": "For level 20",
-      "type": "FontString",
-      "wordWrap": false
-    },
-    {
-      "anchors": [
-        {
           "point": "LEFT",
           "relativePoint": "LEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[3]",
-          "x": 15.00,
+          "x": 10.00,
           "y": 0.00
         }
       ],
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[3].IconFrame",
       "size": [
-        46.00,
-        46.00
+        24.00,
+        24.00
       ],
       "type": "Frame"
     },
@@ -791,8 +703,8 @@
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[3].IconFrame.Icon",
       "size": [
-        18.00,
-        18.00
+        14.00,
+        14.00
       ],
       "type": "Texture"
     },
@@ -803,14 +715,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
           "x": 6.00,
-          "y": -90.00
+          "y": -152.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
           "x": -6.00,
-          "y": -90.00
+          "y": -152.00
         }
       ],
       "highlightAtlas": "PetList-ButtonHighlight",
@@ -975,14 +887,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
           "x": 6.00,
-          "y": -136.00
+          "y": -198.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2]",
           "x": -6.00,
-          "y": -136.00
+          "y": -198.00
         }
       ],
       "highlightAtlas": "PetList-ButtonHighlight",
