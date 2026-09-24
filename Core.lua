@@ -87,6 +87,10 @@ ns.L = {
 	-- A card's third line when it has no reason (docs/plan.md §7.4): its first stop, then how many follow.
 	HUB_MORE = "%s and %d more stops",
 	HUB_MORE_ONE = "%s and 1 more stop",
+	-- A card's tooltip: how many of its quests need a group, and what a click on it does.
+	GROUP_ONE = "1 needs a group",
+	GROUP_MANY = "%d need a group",
+	CLICK_TO_CHOOSE = "Click to choose this journey",
 	-- The travel line (docs/design.md §2.5): Shortest Path's own verbs (its JourneySteps.lua VERB), so both addons
 	-- name a leg alike.
 	TRAVEL = "%s · %d min",

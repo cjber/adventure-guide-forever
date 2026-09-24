@@ -306,6 +306,9 @@
 ---@field STOP_AND_SHOW_EVERY_JOURNEY string the same while the route it started runs, which the click stops
 ---@field HUB_MORE string format: a card's first stop, how many stops follow it
 ---@field HUB_MORE_ONE string format: a card's first stop, when one stop follows it
+---@field GROUP_ONE string a card's tooltip when one of its quests needs a group
+---@field GROUP_MANY string format: how many of a card's quests need a group
+---@field CLICK_TO_CHOOSE string an unchosen card's tooltip instruction
 ---@field TRAVEL string format: a leg ("Fly to X"), minutes until it arrives
 ---@field TRAVEL_ABOUT string format: minutes; the line from a Shortest Path with Estimate only
 ---@field TRAVEL_NEW_FLIGHT_PATH string appended when a walk leg reaches an undiscovered flight master

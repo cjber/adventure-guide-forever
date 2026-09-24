@@ -1444,13 +1444,15 @@ for _, spf in ipairs({ false, "v1" }) do
 	-- Line 3 is the reason, else the first stop and how many follow; the group tag sits at its right (docs/plan.md
 	-- §7.4), never on the dungeon card, whose icon says as much.
 	local L, hubLines = h.ns.L, 0
-	for _, card in ipairs(Cards()) do
-		local journey = card.journey
+	local function Hub(journey)
 		local more = journey.more
-		local hub = (more > 1 and L.HUB_MORE:format(journey.hub, more))
+		return (more > 1 and L.HUB_MORE:format(journey.hub, more))
 			or (more == 1 and L.HUB_MORE_ONE:format(journey.hub))
 			or journey.hub
-		equal(card.Reason:GetText(), journey.reason or hub, label .. ": " .. journey.key .. " line 3")
+	end
+	for _, card in ipairs(Cards()) do
+		local journey = card.journey
+		equal(card.Reason:GetText(), journey.reason or Hub(journey), label .. ": " .. journey.key .. " line 3")
 		hubLines = hubLines + (journey.reason and 0 or 1)
 		equal(
 			card.Group:IsShown(),
@@ -1468,6 +1470,23 @@ for _, spf in ipairs({ false, "v1" }) do
 	tagged.journey.group = 0
 	h.ns.OpenPanel()
 	equal(tagged.Reason:GetNumPoints(), 1, label .. ": without one line 3 runs its full width")
+	-- A whole card's tooltip (plan §7.4): its lines, the hub line when line 3 holds the reason, the group line, and
+	-- what a click does.
+	for _, card in ipairs(Cards()) do
+		local journey = card.journey
+		journey.group = 1
+		h.Hover(card)
+		local expected = { "title: " .. journey.title, "normal: " .. journey.subline }
+		if journey.reason then
+			expected[#expected + 1] = "highlight: " .. journey.reason
+			expected[#expected + 1] = "highlight: " .. Hub(journey)
+		end
+		expected[#expected + 1] = "highlight: " .. L.GROUP_ONE
+		expected[#expected + 1] = "instruction: " .. L.CLICK_TO_CHOOSE
+		same(h.tooltip, expected, label .. ": " .. journey.key .. "'s tooltip")
+		journey.group = 0
+	end
+	h.ns.OpenPanel()
 
 	-- A compact row's tooltip keeps the card's lines.
 	local story = Cards()[2].journey
@@ -1494,6 +1513,8 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(tip:find(nextZone.journey.title, 1, true) ~= nil, true, label .. ": the row's tooltip has its title")
 	equal(tip:find(nextZone.journey.subline, 1, true) ~= nil, true, label .. ": its subline")
 	equal(tip:find(nextZone.journey.reason, 1, true) ~= nil, true, label .. ": and its reason")
+	equal(tip:find(Hub(nextZone.journey), 1, true) ~= nil, true, label .. ": the hub line it no longer shows")
+	equal(tip:find(L.CLICK_TO_CHOOSE, 1, true) ~= nil, true, label .. ": and what a click does")
 	h.Hover(Cards()[3])
 	tip = table.concat(h.tooltip, "\n")
 	equal(

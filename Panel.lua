@@ -63,6 +63,8 @@ local searchBox
 local countText
 -- Defined below the builders; the search box's handler needs it.
 local Refresh
+-- Defined with the card's refresh; the cards' OnEnter needs it.
+local CardTooltip
 ---@type FontString?
 local emptyText
 ---@type FontString?
@@ -342,34 +344,7 @@ local function BuildJourneys(parent, below)
 			GameTooltip_Hide()
 			ns.Invalidate()
 		end)
-		-- A one-line card keeps what it no longer shows in its tooltip; the chosen one says how to see them all again.
-		-- A card whose click would replace someone else's journey warns first, as Go did (docs/design.md §2.9).
-		card:HookScript("OnEnter", function(self)
-			local journey = self.journey
-			local starts = ns.Setting("titleStartsRoute")
-			local warns = self.state ~= "chosen" and starts and ns.Integrations.ReplacesJourney()
-			if not journey or (self.state == "full" and not warns) then
-				return
-			end
-			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-			GameTooltip_SetTitle(GameTooltip, journey.title)
-			if self.state == "compact" then
-				GameTooltip_AddHighlightLine(GameTooltip, journey.subline)
-				if journey.reason then
-					GameTooltip_AddHighlightLine(GameTooltip, journey.reason)
-				end
-			elseif self.state == "chosen" then
-				local stops = starts and ns.Integrations.Owns()
-				GameTooltip_AddInstructionLine(
-					GameTooltip,
-					stops and L.STOP_AND_SHOW_EVERY_JOURNEY or L.SHOW_EVERY_JOURNEY
-				)
-			end
-			if warns then
-				GameTooltip_AddInstructionLine(GameTooltip, L.REPLACES_JOURNEY)
-			end
-			GameTooltip:Show()
-		end)
+		card:HookScript("OnEnter", CardTooltip)
 		card:HookScript("OnLeave", GameTooltip_Hide)
 		card.Caps = {}
 		for _, cap in ipairs(ROW_CAPS) do
@@ -561,6 +536,43 @@ local function HubLine(journey)
 	return (more > 1 and L.HUB_MORE:format(journey.hub, more))
 		or (more == 1 and L.HUB_MORE_ONE:format(journey.hub))
 		or journey.hub
+end
+
+-- Every card's tooltip, whole or one-line (docs/plan.md §7.4): its lines, the hub line when line 3 holds the reason
+-- or is folded away, how many quests need a group, then what a click does. The chosen card says how to see them all
+-- again; a card whose click would replace someone else's journey warns first, as Go did (docs/design.md §2.9).
+---@param card AGFJourneyCard
+function CardTooltip(card)
+	local journey = card.journey
+	if not journey then
+		return
+	end
+	local starts = ns.Setting("titleStartsRoute")
+	local chosen = card.state == "chosen"
+	GameTooltip:SetOwner(card, "ANCHOR_RIGHT")
+	GameTooltip_SetTitle(GameTooltip, journey.title)
+	GameTooltip_AddNormalLine(GameTooltip, journey.subline)
+	if journey.reason then
+		GameTooltip_AddHighlightLine(GameTooltip, journey.reason)
+	end
+	local hub = HubLine(journey)
+	if hub and (journey.reason or card.state == "compact") then
+		GameTooltip_AddHighlightLine(GameTooltip, hub)
+	end
+	local group = journey.group or 0
+	if group > 0 then
+		GameTooltip_AddHighlightLine(GameTooltip, group == 1 and L.GROUP_ONE or L.GROUP_MANY:format(group))
+	end
+	if not chosen then
+		GameTooltip_AddInstructionLine(GameTooltip, L.CLICK_TO_CHOOSE)
+	else
+		local stops = starts and ns.Integrations.Owns()
+		GameTooltip_AddInstructionLine(GameTooltip, stops and L.STOP_AND_SHOW_EVERY_JOURNEY or L.SHOW_EVERY_JOURNEY)
+	end
+	if not chosen and starts and ns.Integrations.ReplacesJourney() then
+		GameTooltip_AddInstructionLine(GameTooltip, L.REPLACES_JOURNEY)
+	end
+	GameTooltip:Show()
 end
 
 -- `state`: "full" (none chosen), "chosen" (full and lit) or "compact" (another is chosen: icon and title only).
