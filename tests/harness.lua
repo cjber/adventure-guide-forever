@@ -915,6 +915,10 @@ function harness.load(options)
 	G.UnitLevel = function()
 		return player.level
 	end
+	-- h.onTaxi stands for a flight in the air.
+	G.UnitOnTaxi = function()
+		return h.onTaxi == true
+	end
 	-- WoW: Forever's cap.
 	G.GetMaxPlayerLevel = function()
 		return 60
@@ -1381,10 +1385,13 @@ function harness.load(options)
 		AddContainer = noop,
 	}
 
-	-- Shortest Path Forever: absent, v1 (Estimate, Navigate, NavigateRoute, CurrentStop, Cancel) or v1+ (adds
-	-- EstimateDetail and Active). Each profile counts its calls per function in h.spf.
+	-- Shortest Path Forever: absent, v1 (Estimate, Navigate, NavigateRoute, CurrentStop, Cancel), v1+ (adds
+	-- EstimateDetail and Active) or "ended" (v1+ and Ended). Each profile counts its calls per function in h.spf. One
+	-- journey runs at a time, as in its API.lua: h.spfRoute is {owner, index, stops}, and a spec moves it on with
+	-- h.spfAdvance or ends it with h.spfEnd(reason) ("arrived", "cleared"), h.spfOther (another addon's journey) or
+	-- h.spfHeld (its "Guide me" off: the journey stays, Active is false).
 	if options.spf then
-		local api, guiding = { version = 1 }, {}
+		local api, ended = { version = 1 }, {}
 		h.spf, h.spfSeconds = {}, 360
 		local function Counted(name, fn)
 			h.spf[name] = 0
@@ -1393,31 +1400,48 @@ function harness.load(options)
 				return fn(...) -- multi-value: the stub returns what its profile returns
 			end
 		end
+		local function Start(owner, stops)
+			local last = h.spfRoute
+			if last and last.owner ~= owner then
+				ended[last.owner] = "replaced"
+			end
+			h.spfRoute, ended[owner] = { owner = owner, index = 1, stops = stops }, nil
+			return true
+		end
+		function h.spfAdvance()
+			h.spfRoute.index = h.spfRoute.index + 1
+		end
+		function h.spfEnd(reason)
+			ended[h.spfRoute.owner], h.spfRoute = reason, nil
+		end
+		function h.spfOther()
+			Start("Player", { { map = 1413, x = 0.1, y = 0.1 } })
+		end
 		Counted("Estimate", function()
 			return h.spfSeconds
 		end)
-		Counted("Navigate", function(owner)
-			guiding[owner] = 1
-			return true
+		Counted("Navigate", function(owner, mapID, x, y)
+			return Start(owner, { { map = mapID, x = x, y = y } })
 		end)
 		-- h.spfDeclines = true makes Shortest Path refuse the route, as it does when it cannot plan one; it refuses
 		-- every route in combat too (its API.lua Ready).
-		Counted("NavigateRoute", function(owner)
+		Counted("NavigateRoute", function(owner, stops)
 			if h.spfDeclines or h.combat then
 				return false
 			end
-			guiding[owner] = 1
-			return true
+			return Start(owner, stops)
 		end)
 		Counted("CurrentStop", function(owner)
-			return guiding[owner]
+			return h.spfRoute and h.spfRoute.owner == owner and h.spfRoute.index or nil
 		end)
 		Counted("Cancel", function(owner)
-			local was = guiding[owner] ~= nil
-			guiding[owner] = nil
-			return was
+			if not (h.spfRoute and h.spfRoute.owner == owner) then
+				return false
+			end
+			h.spfEnd("cancelled")
+			return true
 		end)
-		if options.spf == "v1+" then
+		if options.spf == "v1+" or options.spf == "ended" then
 			-- h.spfLegs replaces the one flight leg, and false is no route; seconds add up as Shortest Path's do.
 			Counted("EstimateDetail", function()
 				if h.spfLegs == false then
@@ -1431,7 +1455,12 @@ function harness.load(options)
 				return { seconds = seconds, legs = legs }
 			end)
 			Counted("Active", function()
-				return next(guiding) ~= nil
+				return h.spfRoute ~= nil and not h.spfHeld
+			end)
+		end
+		if options.spf == "ended" then
+			Counted("Ended", function(owner)
+				return not (h.spfRoute and h.spfRoute.owner == owner) and ended[owner] or nil
 			end)
 		end
 		G.ShortestPathForever = { API = api }

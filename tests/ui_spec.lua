@@ -200,6 +200,90 @@ do
 	clean(h, "title click settings")
 end
 
+-- Guidance follows the chosen journey (design §2.10): a route AGF started for it is sent again, once, when a stop
+-- it has yet to reach leaves the steps, step 1 is neither the stop it heads for nor the one just reached, or step 1's
+-- point has moved past the town linkage. Never in combat, in the air, off the map, or once it no longer guides ours.
+do
+	local function S(...)
+		local steps = {}
+		for index, key in ipairs({ ... }) do
+			steps[index] = { key = key }
+		end
+		return steps
+	end
+	local function never()
+		return false
+	end
+	local function always()
+		return true
+	end
+	local Stale, handed = Load(false).ns.Integrations.Stale, S("a", "b", "c")
+	for _, case in ipairs({
+		{ 1, S("a", "b", "c"), never, false, "unchanged" },
+		{ 1, S("a", "c", "b"), never, false, "later stops reorder" },
+		{ 2, S("b", "c"), never, false, "arrived at a: b is next" },
+		{ 2, S("a", "b", "c"), never, false, "a still open where it just arrived" },
+		{ 1, S("b", "c"), never, true, "a skipped before arriving" },
+		{ 2, S("b"), never, true, "c left the steps" },
+		{ 1, S("c", "a", "b"), never, true, "step 1 is elsewhere" },
+		{ 1, S("a", "b", "c"), always, true, "step 1's point moved far" },
+		{ 1, S("d", "a", "b", "c"), never, true, "a new stop comes first" },
+		{ 3, S("c", "d"), never, false, "a new stop after the one it heads for" },
+		{ 1, {}, never, true, "no steps: every stop left" },
+	}) do
+		equal(Stale(handed, case[1], case[2], case[3]), case[4], "stale: " .. case[5])
+	end
+
+	local function Moved(h, map, x, y)
+		h.MovePlayer(map, x, y)
+		h.ns.Invalidate()
+		h.flush()
+	end
+	local h = Load("ended")
+	h.ns.StartRoute()
+	h.flush()
+	equal(h.ns.Prefs().guided, "carry", "follow: the chosen journey's route")
+	equal(h.spf.NavigateRoute, 1, "follow: started once")
+	Moved(h, 1413, 0.5223, 0.3101)
+	equal(h.spf.NavigateRoute, 1, "follow: a rebuild that changes nothing sends nothing")
+	-- Near Gann's objective, the objective is step 1 before the Crossroads the route heads for: the way changed.
+	Moved(h, 1413, 0.46, 0.79)
+	equal(h.spf.NavigateRoute, 2, "follow: step 1 elsewhere, sent again once")
+	equal(h.spfRoute.stops[1].x, h.ns.Route().steps[1].x, "follow: from the new step 1")
+	Moved(h, 1413, 0.46, 0.78)
+	equal(h.spf.NavigateRoute, 2, "follow: and not again while it matches")
+	h.SetCombat(true)
+	Moved(h, 1413, 0.5223, 0.3101)
+	equal(h.spf.NavigateRoute, 2, "follow: nothing in combat")
+	h.SetCombat(false)
+	h.flush()
+	equal(h.spf.NavigateRoute, 3, "follow: once, when combat ends")
+	h.onTaxi = true
+	Moved(h, 1413, 0.46, 0.79)
+	equal(h.spf.NavigateRoute, 3, "follow: nothing in the air")
+	h.onTaxi = false
+	Moved(h, nil, nil, nil)
+	equal(h.spf.NavigateRoute, 3, "follow: nothing off the map")
+	Moved(h, 1413, 0.5223, 0.3101)
+	h.spfAdvance()
+	Moved(h, 1413, 0.46, 0.79)
+	equal(h.spf.NavigateRoute, 3, "follow: arrived, step 1 is the stop it heads for: nothing")
+	Moved(h, 1413, 0.5223, 0.3101)
+	equal(h.spf.NavigateRoute, 3, "follow: step 1 the stop it just reached: nothing")
+	h.spfOther()
+	Moved(h, 1413, 0.46, 0.79)
+	Moved(h, 1413, 0.5223, 0.3101)
+	equal(h.spf.NavigateRoute, 3, "follow: another journey replaced ours: nothing")
+	clean(h, "follow")
+
+	-- A route the step menu or a giver started is not the chosen journey's: it is never sent again.
+	h = Load("ended")
+	h.ns.Integrations.Navigate(h.ns.Route().steps[1])
+	h.flush()
+	Moved(h, 1413, 0.46, 0.79)
+	equal(h.spf.NavigateRoute, 1, "follow: a route not the journey's stays as handed")
+end
+
 -- WFA-13: nothing runs per frame while idle, and a refresh reuses the frames it has.
 local function IdleUpdates(h)
 	local busy = 0

@@ -717,6 +717,18 @@ local function Yards(a, b)
 	return math.sqrt((a.x - b.x) ^ 2 + (a.y - b.y) ^ 2)
 end
 
+-- Yards between two places on one continent the data places; nil when it cannot say (another continent, or a map
+-- the data has no geometry for).
+---@param a {map: integer, x: number, y: number}
+---@param b {map: integer, x: number, y: number}
+---@return number?
+function Model.Yards(data, a, b)
+	local here, there = Position(data, a), Position(data, b)
+	if here and there and here.known and there.known and here.continent == there.continent then
+		return Yards(here, there)
+	end
+end
+
 local AGREE = 100 -- yards: the town linkage (tools/gen_quests.py LINK); a waypoint this near the data's finish is it
 
 -- The finished log quests whose hand-in the data and the client agree on: the client's waypoint is on a map the data

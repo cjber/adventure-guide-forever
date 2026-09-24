@@ -343,6 +343,74 @@ end
 ---@type (AGFStep|AGFGiver)[]
 local guided = {}
 
+-- Yards past which a stop's point has moved (a town's point moving to its next giver): the town linkage
+-- (tools/gen_quests.py LINK). Nearer, the stock "!" and "?" marks show the way.
+local LINK = 100
+
+---@param steps AGFStep[]
+---@return AGFSPFStop[]
+local function Stops(steps)
+	local stops = {}
+	for index, step in ipairs(steps) do
+		stops[index] = { map = step.map, x = step.x, y = step.y, title = step.title }
+	end
+	return stops
+end
+
+-- Hands Shortest Path `steps` as one numbered journey; true when it took them.
+---@param api AGFSPFAPI
+---@param steps (AGFStep|AGFGiver)[]
+---@return boolean
+local function Send(api, steps)
+	if
+		not api.NavigateRoute(OWNER, Stops(steps --[[@as AGFStep[] ]]))
+	then
+		return false
+	end
+	guided = steps
+	ns.Pins.Refresh()
+	NotifyGuidance()
+	return true
+end
+
+-- True when the guidance handed to Shortest Path no longer matches the journey (docs/design.md §2.10): a stop it has
+-- yet to reach has left the steps (a town emptied, a step skipped, a quest abandoned or grey), step 1 is neither the
+-- stop it heads for nor the one it just reached (the player was taken elsewhere, or a new chapter opens at another
+-- town), or step 1's point has moved `far` from the stop it heads for. Later stops reordering alone is not stale.
+---@param handed AGFStep[] what was last handed, in order
+---@param index integer the stop Shortest Path heads for (CurrentStop)
+---@param steps AGFStep[] the chosen journey's steps now
+---@param far? fun(a: AGFStep, b: AGFStep): boolean
+---@return boolean
+function Integrations.Stale(handed, index, steps, far)
+	local keys = {}
+	for _, step in ipairs(steps) do
+		keys[step.key] = true
+	end
+	for stop = index, #handed do
+		if not keys[handed[stop].key] then
+			return true
+		end
+	end
+	local first, current, previous = steps[1], handed[index], handed[index - 1]
+	if not first then
+		return false
+	end
+	if current and first.key == current.key then
+		return far ~= nil and far(first, current)
+	end
+	-- The town just reached, where Shortest Path has already moved on: sending it again would arrive at once.
+	return not (previous and first.key == previous.key)
+end
+
+---@param a AGFStep
+---@param b AGFStep
+---@return boolean
+local function Far(a, b)
+	local yards = ns.Model.Yards(ns.Data, a, b)
+	return yards ~= nil and yards > LINK
+end
+
 ---@return (AGFStep|AGFGiver)[]
 function Integrations.Guided()
 	return Integrations.Guiding() and guided or {}
@@ -364,24 +432,14 @@ function Integrations.Navigate(step)
 		api = nil
 	end
 	if api then
-		local stops, steps, found = {}, {}, false
+		local steps, found = {}, false
 		for _, each in ipairs(ns.Route().steps) do
 			found = found or each == step
-			if found then
-				stops[#stops + 1] = { map = each.map, x = each.x, y = each.y, title = each.title }
-				steps[#steps + 1] = each
-			end
+			steps[#steps + 1] = found and each or nil
 		end
-		if not found then
-			stops[1] = { map = step.map, x = step.x, y = step.y, title = step.title }
-			steps[1] = step
-		end
-		if api.NavigateRoute(OWNER, stops) then
-			-- Whatever this guides, ns.StartRoute says whether it is the chosen journey's.
-			ns.Prefs().guided = nil
-			guided = steps
-			ns.Pins.Refresh()
-			NotifyGuidance()
+		-- Whatever this guides, ns.StartRoute says whether it is the chosen journey's.
+		ns.Prefs().guided = nil
+		if Send(api, found and steps or { step }) then
 			return true
 		end
 	end
@@ -440,6 +498,27 @@ function Integrations.Cancel()
 	end
 	NotifyGuidance()
 end
+
+-- Guidance follows the chosen journey (docs/design.md §2.10): on each rebuild, a route AGF started for the chosen
+-- journey that no longer matches its steps is sent again, at most once. Never in combat (Shortest Path refuses), in
+-- the air, where the player's position is unknown (at sea, in an instance), or while Shortest Path isn't guiding it.
+local function Follow()
+	local api, route, prefs = SPF(), ns.Route(), ns.Prefs()
+	if not (api and route.chosen and prefs.guided == route.journey and ns.State.Player().map) then
+		return
+	elseif InCombatLockdown() or UnitOnTaxi("player") then
+		return
+	end
+	local index = api.CurrentStop(OWNER)
+	if
+		index
+		and Integrations.Guiding()
+		and Integrations.Stale(guided --[[@as AGFStep[] ]], index, route.steps, Far)
+	then
+		Send(api, route.steps)
+	end
+end
+ns.OnRouteChange(Follow)
 
 ---@return string?
 function Integrations.Provider()

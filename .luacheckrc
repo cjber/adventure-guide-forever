@@ -37,6 +37,7 @@ read_globals = {
 	"ITEM_CLASSES_ALLOWED",
 	"ITEM_RACES_ALLOWED",
 	"InCombatLockdown",
+	"UnitOnTaxi",
 	-- State.lua
 	"bit",
 	"UnitRace",
