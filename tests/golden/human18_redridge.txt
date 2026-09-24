@@ -4,6 +4,7 @@ card (chosen) | zone:1433 | Redridge Mountains story | Chapter 1 of 3 | A chain 
   step 2 | area:3741:4 | Hilary's Necklace | 1433 0.2320,0.5390 | after you pick it up | 200 yd | 3741/4
   step 3 | area:125:4 | The Lost Tools | 1433 0.3640,0.5460 | after you pick it up | 0 yd | 125/4
   step 4 | town:61:2 | Lakeshire, Redridge | 1433 0.2705,0.4864 | 2 to hand in
+  step 5 | town:56 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
 card | zone:1440 | Head to Ashenvale | 3 quests near your level | Astranaar needs hands | map 1440
   step 1 | town:405 | Astranaar, Ashenvale | 1440 0.3467,0.4884 | 3 to pick up
 card | zone:1413 | Head to The Barrens | 7 quests near your level | Ratchet needs hands | map 1413

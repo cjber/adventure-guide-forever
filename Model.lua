@@ -2009,10 +2009,12 @@ end
 -- with the log's), and one whose XP per yard falls below KEEP of its town's mean waits. Each quest's stops are laps
 -- around the town it goes back to (its pickup town when new, else its hand-in's when a lap reaches it), cut by Sweep.
 -- The lap that leads (the story's chapter, else the least reach less worth) is ordered by Sequence, and another follows
--- only while no area has come. Then the route is checked in order: a quest's objectives never before its pickup, its
--- hand-in never before all of them, and the log never past the client's limit, the least XP per yard left in town
--- first. The card's committed order (`card`, its journey key) keeps the route steady: its lap goes on until it ends,
--- its towns before that lap keep their visits, and its order stands unless a fresh one is much shorter (Stabilise).
+-- only while no area has come; then, while the numerals have room, the next lap's town last, so a short lap still
+-- shows the pickups waiting after it. Then the route is checked in order: a quest's objectives never before its
+-- pickup, its hand-in never before all of them, and the log never past the client's limit, the least XP per yard left
+-- in town first. The card's committed order (`card`, its journey key) keeps the route steady: its lap goes on until it
+-- ends, its towns before that lap keep their visits, and its order stands unless a fresh one is much shorter
+-- (Stabilise).
 -- The town or open area the player stands in leads (Model.Here). A second visit to a town is keyed "town:<hub>:2".
 ---@param candidates AGFStep[]
 ---@param plan AGFPlanAreas
@@ -2383,6 +2385,22 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 			from = At(step) or from
 		end
 	end
+	-- The next lap's town once the lap under way has gone out, when a step is left over: the first by reach and worth
+	-- with quests to pick up. Its areas wait for the lap it leads, so the route stays one lap long.
+	underway = nil
+	local nextTown
+	while out and #route + #groups < Model.MAX_STEPS do
+		local nextLap = Pick()
+		if not nextLap then
+			break
+		end
+		used[nextLap] = true
+		local open = not nextLap.anchor.visited and nextLap.anchor.open or nil
+		if open and #open.pickups > 0 then
+			nextTown, nextLap.anchor.visited, route[#route + 1] = open, true, open
+			break
+		end
+	end
 	for _, step in ipairs(groups) do
 		route[#route + 1] = step
 	end
@@ -2501,6 +2519,13 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 		plain[#plain + 1] = survived[step] and step or nil
 	end
 	route = Stabilise(verified, plain, rank, Holds, At, origin)
+	-- The next lap's town stays after the lap under way, wherever an older order had it.
+	local last = {}
+	for _, step in ipairs(route) do
+		last[#last + 1] = step ~= nextTown and step or nil
+	end
+	last[#last + 1] = #last < #route and nextTown or nil
+	route = Holds(last) and last or route
 	local inTown = {}
 	for _, step in ipairs(route) do
 		inTown[step] = step.kind ~= "area" and step.hub ~= nil and Cost(origin, At(step)) <= HERE or nil

@@ -287,6 +287,71 @@ for character = 1, CHARACTERS do
 	plans = plans + 4
 end
 
+-- A short lap still shows the next town's pickups: a human at Raven Hill, Duskwood, with Wolves at Our Heels (226)
+-- under way, Jitters' Growling Gut (5) finished and 28 quests from Westfall and Redridge carried, gets Watcher Dodds's
+-- Eight-Legged Menaces (245) after the lap back to Lars, and the log's 30 of 40 leave it room.
+do
+	local carried = {}
+	for id, quest in pairs(data.quests) do
+		if
+			(quest.side == 1 or quest.side == 3)
+			and (quest.zone == 1433 or quest.zone == 1436)
+			and quest.level >= 14
+			and quest.level <= 22
+			and quest.start
+			and not quest.elite
+		then
+			carried[#carried + 1] = id
+		end
+	end
+	table.sort(carried)
+	for _, level in ipairs({ 19, 20 }) do
+		local player = {
+			level = level,
+			maxLevel = 60,
+			side = 1,
+			raceBit = 1,
+			classBit = 1,
+			map = 1431,
+			x = 0.162,
+			y = 0.365,
+			logMax = 40,
+		}
+		local log, completed = {}, {}
+		for index = 1, 28 do
+			local id = carried[index]
+			log[id] = { id = id, title = data.quests[id].title, level = data.quests[id].level, complete = false }
+		end
+		log[226] = { id = 226, title = data.quests[226].title, level = data.quests[226].level, complete = false }
+		log[5] = { id = 5, title = data.quests[5].title, level = data.quests[5].level, complete = true }
+		local done = { [1426] = true, [1429] = true, [1432] = true, [1433] = true, [1436] = true }
+		for id, quest in pairs(data.quests) do
+			if (quest.side == 1 or quest.side == 3) and done[quest.zone] and not log[id] then
+				completed[id] = true
+			end
+		end
+		local prefs = { quests = true, dungeons = false, skipped = {}, journey = "zone:1431" }
+		local where = ("Raven Hill at level %d"):format(level)
+		local steps
+		for _, journey in ipairs(Model.Plan(data, player, completed, log, prefs).journeys) do
+			steps = journey.key == prefs.journey and journey.steps or steps
+		end
+		check(steps ~= nil, where .. ": the Duskwood card")
+		local handed, picked = nil, nil
+		for index, step in ipairs(steps or {}) do
+			for _, id in ipairs(step.handins or {}) do
+				handed = id == 226 and index or handed
+			end
+			for _, id in ipairs(step.pickups or {}) do
+				picked = id == 245 and index or picked
+			end
+		end
+		check(handed ~= nil, where .. ": the lap under way hands in Wolves at Our Heels")
+		check(picked ~= nil and picked > (handed or 0), where .. ": Eight-Legged Menaces after it")
+		Walk(where, steps or {}, player, completed, log, 30)
+	end
+end
+
 for index = 1, math.min(10, #failures) do
 	print("  " .. failures[index])
 end

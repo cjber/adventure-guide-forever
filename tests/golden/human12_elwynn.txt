@@ -4,6 +4,7 @@ card (chosen) | zone:1436 | Westfall story | Chapter 1 of 4 | A chain begins wit
   step 2 | area:12:0 | The People's Militia | 1436 0.4630,0.2210 | after you pick it up | 141 yd | 12/0 12/1
   step 3 | area:102:4 | Patrolling Westfall | 1436 0.6140,0.7400 | after you pick it up | 183 yd | 102/4
   step 4 | town:37:2 | Sentinel Hill, Westfall | 1436 0.5642,0.4762 | Opens the next chapter here | then 13
+  step 5 | town:45 | Pick up quests: Salma Saldean | 1436 0.5642,0.3052 | near your level
 card | zone:1432 | Head to Loch Modan | 5 quests near your level | For level 14 | map 1432
   step 1 | town:112 | Mountaineer Cobbleflint | 1432 0.2207,0.7313 | 2 to pick up
   step 2 | town:123 | Thelsamar, Loch Modan | 1432 0.3483,0.4928 | 2 to pick up

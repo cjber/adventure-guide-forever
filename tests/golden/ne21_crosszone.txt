@@ -5,6 +5,7 @@ card | zone:1440 | Ashenvale story | Chapter 1 of 3 | A chain begins with Faldre
   step 3 | town:415 | Pick up quests: Orendil Broadleaf | 1440 0.2644,0.3859 | near your level
   step 4 | area:1010:4 | Bathran's Hair | 1440 0.3140,0.2270 | after you pick it up | 90 yd | 1010/4
   step 5 | town:415:2 | Turn in: Bathran's Hair | 1440 0.2644,0.3859 | once it's done
+  step 6 | town:418 | Pick up quests: Talen | 1440 0.1479,0.3129 | near your level
 card (chosen) | carry | Loose ends | 2 ready to hand in | 1 to hand in across the sea | map 1439
   step 1 | turnin:947 | Turn in: Cave Mushrooms | 1439 0.3732,0.4364 | ready to hand in
   step 2 | turnin:948 | Turn in: Onu | 1439 0.4355,0.7629 | ready to hand in

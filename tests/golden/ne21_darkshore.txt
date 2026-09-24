@@ -4,6 +4,7 @@ card (chosen) | zone:1440 | Ashenvale story | Chapter 1 of 3 | A chain begins wi
   step 2 | town:415 | Pick up quests: Orendil Broadleaf | 1440 0.2644,0.3859 | near your level
   step 3 | area:1010:4 | Bathran's Hair | 1440 0.3140,0.2270 | after you pick it up | 90 yd | 1010/4
   step 4 | town:415:2 | Turn in: Bathran's Hair | 1440 0.2644,0.3859 | once it's done
+  step 5 | town:418 | Pick up quests: Talen | 1440 0.1479,0.3129 | near your level
 card | zone:1437 | Head to Wetlands | 7 quests near your level | Menethil Harbor needs hands | map 1437
   step 1 | town:147 | Menethil Harbor, Wetlands | 1437 0.0832,0.5857 | 3 to pick up
   step 2 | town:153 | Pick up quests: Einar Stonegrip | 1437 0.4992,0.3937 | near your level
