@@ -341,6 +341,8 @@
 ---@field NEXT string format: the step after the tracker's
 ---@field RESUME string format: the reason saved with step 1 last session
 ---@field STORY_COMPLETE string the tracker header that glows when a proven chain's last quest is handed in
+---@field JOURNEY_COMPLETE string the tracker header that glows when a turn-in ends the chosen journey
+---@field CHOOSE_NEXT string its line: the guide has every journey again
 ---@field TRAINER string
 ---@field TRAINER_SPELLS string format: spell count
 ---@field TRAINER_SPELL string

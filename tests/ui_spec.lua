@@ -10,6 +10,10 @@ local function equal(actual, expected, label)
 	end
 end
 
+local function same(actual, expected, label)
+	equal(table.concat(actual, "\n"), table.concat(expected, "\n"), label)
+end
+
 local function clean(h, label)
 	equal(#h.errors, 0, label .. ": errors\n" .. table.concat(h.errors, "\n"))
 end
@@ -293,8 +297,10 @@ do
 		h.ns.StartRoute()
 		h.flush()
 		h.completes = 0
+		local complete = h.ns.OnJourneyComplete
 		h.ns.OnJourneyComplete = function()
 			h.completes = h.completes + 1
+			complete()
 		end
 		return h
 	end
@@ -314,10 +320,32 @@ do
 		equal(h.spf.Cancel, 1, label .. ": our route cancelled once")
 		equal(h.ns.Route().chosen, false, label .. ": the cards whole again")
 		equal(h.completes, case[3], label .. ": complete only after a turn-in")
+		equal(#h.fanfares, case[3], label .. ": the tracker glows once, or not at all")
 		clean(h, label)
 	end
 
+	-- The tracker's "Journey complete": its glow without the story's sound, its click opens the guide, and the next
+	-- route change takes it away.
 	local h = Started("v1")
+	Emptied(h, "QUEST_TURNED_IN", 845)
+	local block = h.tracker.liveBlocks["journey-complete"]
+	equal(block and block.header, "Journey complete", "journey complete: the header")
+	equal(h.tracker.layoutOrder[1], "journey-complete", "journey complete: above the steps")
+	same(h.fanfares, { "journey-complete" }, "journey complete: glows once")
+	equal(#h.sounds, 0, "journey complete: no stage-end sound")
+	local opened, openPanel = 0, h.ns.OpenPanel
+	h.ns.OpenPanel = function()
+		opened = opened + 1
+	end
+	h.tracker:OnBlockHeaderClick(block, "LeftButton")
+	h.ns.OpenPanel = openPanel
+	equal(opened, 1, "journey complete: a click opens the guide")
+	equal(h.spf.NavigateRoute, 1, "journey complete: and starts nothing")
+	h.ns.Invalidate()
+	h.flush()
+	equal(h.tracker.layoutOrder[1], h.ns.Route().steps[1].key, "journey complete: gone on the next route change")
+
+	h = Started("v1")
 	h.SetCombat(true)
 	Emptied(h, "QUEST_LOG_UPDATE")
 	equal(h.ns.Prefs().journey, "carry", "ends: not in combat")
@@ -374,10 +402,6 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(IdleUpdates(h), 0, label .. ": per-frame work once the guide is closed")
 	clean(h, label .. ": idle")
-end
-
-local function same(actual, expected, label)
-	equal(table.concat(actual, "\n"), table.concat(expected, "\n"), label)
 end
 
 -- Map pins: a refresh replaces, never adds; removal leaves none; the tooltips read as design §2.9 and the tracker

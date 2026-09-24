@@ -13,16 +13,22 @@ end
 
 -- The chapter end (docs/design.md §2.7): Blizzard's anim block glows a header once when its key needs a fanfare.
 local STORY_COMPLETE = "story-complete"
+-- A turn-in ended the chosen journey (docs/design.md §2.10): the same glow once, and a click opens the guide.
+local JOURNEY_COMPLETE = "journey-complete"
 -- The trainer line (F16): a block of its own, text only.
 local TRAINER = "trainer"
 -- Headers that are not the step's: its click and hover never act on them.
-local NOT_STEP = { [STORY_COMPLETE] = true, [TRAINER] = true }
+local NOT_STEP = { [STORY_COMPLETE] = true, [TRAINER] = true, [JOURNEY_COMPLETE] = true }
 -- A town's NPC line names this many, then counts the rest.
 local NAMED_GIVERS = 2
 -- Set by a turn-in that ends a story: the quest, then the first step 1 the route shows without it. The header stays
 -- above the steps until step 1 moves on from that.
 ---@type {quest: integer, key?: string}?
 local finished
+-- Set when a turn-in ends the chosen journey; `seen` once the route change of that rebuild has passed, and the next
+-- one takes the block away.
+---@type {seen: boolean}?
+local journeyDone
 
 -- A town's NPCs: the first two by name, the rest counted.
 ---@param givers string[]
@@ -42,6 +48,9 @@ local ModuleMixin = { headerText = L.TRACKER_HEADER, blockTemplate = "ObjectiveT
 ---@param mouseButton string
 function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 	if NOT_STEP[block.id] then
+		if block.id == JOURNEY_COMPLETE and mouseButton ~= "RightButton" and ns.OpenPanel then
+			ns.OpenPanel()
+		end
 		return
 	end
 	if mouseButton ~= "RightButton" then
@@ -96,6 +105,14 @@ function ModuleMixin:LayoutContents()
 	if finished then
 		local block = self:GetBlock(STORY_COMPLETE)
 		block:SetHeader(L.STORY_COMPLETE)
+		if not self:LayoutBlock(block) then
+			return
+		end
+	end
+	if journeyDone then
+		local block = self:GetBlock(JOURNEY_COMPLETE)
+		block:SetHeader(L.JOURNEY_COMPLETE)
+		block:AddObjective(1, L.CHOOSE_NEXT)
 		if not self:LayoutBlock(block) then
 			return
 		end
@@ -212,8 +229,21 @@ function ns.OnTurnIn(questID)
 	Refresh()
 end
 
+-- The fanfare without the sound, which only a story's end plays (OnTurnIn, in the same turn-in).
+function ns.OnJourneyComplete()
+	if not (module and ns.Setting("showTracker")) then
+		return
+	end
+	journeyDone = { seen = false }
+	module:SetNeedsFanfare(JOURNEY_COMPLETE)
+	Refresh()
+end
+
 -- The first rebuild whose step 1 isn't the quest just handed in names the step the header stands over.
 local function OnRouteChange()
+	if journeyDone then
+		journeyDone = not journeyDone.seen and { seen = true } or nil
+	end
 	local step = CurrentStep()
 	if finished and not (step and tContains(step.quests, finished.quest)) then
 		local key = step and step.key or ""

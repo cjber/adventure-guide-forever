@@ -113,6 +113,8 @@ ns.L = {
 	NEXT = "Next: %s",
 	RESUME = "Where you left off: %s",
 	STORY_COMPLETE = "Story complete",
+	JOURNEY_COMPLETE = "Journey complete",
+	CHOOSE_NEXT = "Choose your next journey",
 	-- The trainer line (docs/plan.md F16): text only, above the steps.
 	TRAINER = "Visit your class trainer",
 	TRAINER_SPELLS = "%d new spells",
