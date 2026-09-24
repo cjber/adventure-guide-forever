@@ -338,8 +338,9 @@ local function Build(lib, zones, bundled, yield)
 			-- Objectives, their areas, XP and flags stay bundled (an area leaves out its map when it is the bundled zone,
 			-- so it names that map once QuestieDB files the quest elsewhere); a dungeon's quest has no areas.
 			quest.xp, quest.flags = old.xp, old.flags
+			quest.need = not quest.dungeon and old.need or nil
 			if old.obj and not quest.dungeon then
-				quest.need, quest.obj = old.need, old.obj
+				quest.obj = old.obj
 				if quest.zone ~= old.zone then
 					quest.obj = {}
 					for i, spot in ipairs(old.obj) do

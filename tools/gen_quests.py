@@ -1118,7 +1118,9 @@ def generate(
         # xp values a pickup; a quest in the log is finished whatever it is worth.
         if "start" in quest and (xp := full_xp(row)):
             quest["xp"] = xp
-        # A dungeon's objectives are inside it, and a lap never goes there: they have no areas. need goes with obj.
+        # A dungeon's objectives are inside it, and a lap never goes there: they have no areas. need goes with every
+        # other quest's objectives, placed or not, so the planner can tell a quest with none to do from one it cannot
+        # place, which it never picks up for the player.
         slots = objectives(row, qid in explores)
         if slots and "dungeon" not in quest:
             found = {
@@ -1127,8 +1129,9 @@ def generate(
                 ]
                 for slot in slots
             }
+            quest["need"] = slots
             if spots := objective_areas(slots, shapes[qid], found, world, zone_maps, quest.get("zone")):
-                quest["need"], quest["obj"] = slots, spots
+                quest["obj"] = spots
             open_world = (
                 "start" in quest and quest.get("zone") in PUBLISHED and not quest.get("repeatable") and not elite
             )
@@ -1238,7 +1241,7 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, look
         "-- overlays: a zone map's explorable areas (WorldMapOverlay with a texture, one per offset; AreaTable name",
         "-- and ExplorationLevel, never 0); ox, oy: the offset GetExploredMapTextures returns; x, y: nearness only.",
         "-- need: each objective's count by quest_poi objIndex slot (0-3 ReqCreatureOrGOCount, 4-7 ReqItemCount,",
-        "-- 16 an areatrigger_involvedrelation explore), leaving out the item SrcItemId gives; only with obj.",
+        "-- 16 an areatrigger_involvedrelation explore), leaving out the item SrcItemId gives; never for a dungeon's.",
         "-- obj: where each is done, as { slot, x, y, r[, map] }: x, y in thousandths of the map (the quest's zone",
         "-- unless given), r the yards holding 80% of the source. The source is Blizzard's quest_poi shape: its",
         "-- vertex mean when that lies inside it, else its nearest vertex. With no shape, the biggest groups of the",

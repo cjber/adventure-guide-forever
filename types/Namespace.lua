@@ -30,7 +30,8 @@
 ---@field raid? boolean a raid's quest: its instance is a raid, or it is typed Raid wherever it is filed
 ---@field elite? boolean group quest
 ---@field xp? integer the XP it gives a player at most 5 levels above it (Quest::XPValue); only with a start
----@field need? table<integer, integer> objective slot -> the count it needs: 0-3 kill or use, 4-7 collect, 16 explore
+---@field need? table<integer, integer> objective slot -> the count it needs: 0-3 kill or use, 4-7 collect, 16 explore;
+--- every objective, placed in obj or not; never for a dungeon quest
 ---@field obj? AGFObjectiveArea[] where the objectives are done, at most 3 each; never for a dungeon quest; with need
 ---@field flags? AGFQuestFlags
 

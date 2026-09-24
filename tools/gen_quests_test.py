@@ -619,8 +619,8 @@ class DataTest(unittest.TestCase):
     """The committed Data/Quests.lua."""
 
     TEXT = OUTPUT.read_text(encoding="utf-8")
-    # Before objectives, XP and flags it was 1,179,151 bytes.
-    BOUND = 1_179_151 + 140_000
+    # Before objectives, XP and flags it was 1,179,151 bytes; need for every quest's objectives adds 11 KB of it.
+    BOUND = 1_179_151 + 150_000
 
     def test_size(self):
         self.assertLess(len(self.TEXT.encode()), self.BOUND)
@@ -632,10 +632,10 @@ class DataTest(unittest.TestCase):
         for line in quests:
             need = re.search(r"need = \{ (.*?) \}", line)
             obj = re.search(r"obj = \{ (.*) \} \},$", line)
-            self.assertEqual(bool(need), bool(obj), line)
+            self.assertTrue(bool(need) or not obj, line)
+            self.assertFalse(need and "dungeon = " in line, line)
             if not obj:
                 continue
-            self.assertNotIn("dungeon = ", line)
             slots = {int(k) for k in re.findall(r"\[(\d+)\] = \d+", need[1])}
             for spot in re.findall(r"\{ ([\d, ]+) \}", obj[1]):
                 slot, x, y, r, *ui_map = map(int, spot.split(", "))
