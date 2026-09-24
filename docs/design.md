@@ -427,6 +427,9 @@ Guidance states:
 | Paused | chosen, `guided` (or cleared or replaced), no route | resumes it (so does the tracker title) | "Route paused. Click the journey to resume." |
 | Arrived | ended at its last stop | clears the choice | |
 
+Stop, in the footer or a step's menu, does what a click on the guided card does: the route stops and the choice
+clears, so no journey is left chosen with nothing to resume it.
+
 An end is classified by Shortest Path's `API.Ended(owner)` when present ("arrived", "cleared", "replaced",
 "cancelled"). Without it: another journey running means replaced, standing within 100 yd of the last stop means
 arrived, and anything else means cleared. Arrived keeps `guided`; cleared and replaced forget it, so nothing sends

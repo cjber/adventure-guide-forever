@@ -448,6 +448,7 @@
 ---@field OnRouteChange fun(callback: fun())
 ---@field Choose fun(key?: string, start?: boolean) choose a journey, or none; `start` sets off on the rebuild with its steps
 ---@field StartRoute fun(step?: AGFStep): boolean guidance along the chosen journey (choosing the route's own when none is); waits out combat with Shortest Path
+---@field Stop fun() the player's Stop: our route stops and the choice clears
 ---@field Paused fun(): boolean the chosen journey has steps but its route stopped: its card and the tracker title resume it
 ---@field StartPending fun(): boolean a start waits for combat's end
 ---@field Settling fun(): boolean a rebuild or step 1's travel line is due, whose frames take no card estimate

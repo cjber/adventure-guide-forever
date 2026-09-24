@@ -634,6 +634,13 @@ function ns.StartRoute(step)
 	return false
 end
 
+-- The player's Stop, from the footer or a step's menu: what a click on the guided card does, so no journey is left
+-- chosen with nothing to resume it.
+function ns.Stop()
+	ns.Integrations.Cancel()
+	ns.Choose(nil)
+end
+
 -- A start is waiting for combat to end.
 ---@return boolean
 function ns.StartPending()

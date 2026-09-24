@@ -42,7 +42,7 @@ function Menu.Step(root, step)
 		end
 	end
 	if ns.Integrations.Owns() then
-		root:CreateButton(L.STOP, ns.Integrations.Cancel)
+		root:CreateButton(L.STOP, ns.Stop)
 	end
 	-- Blizzard's details only open out of combat, so in combat the entry is left out rather than doing nothing.
 	if step and ns.InLog(step) and not InCombatLockdown() then

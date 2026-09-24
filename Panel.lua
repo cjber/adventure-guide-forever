@@ -403,7 +403,7 @@ local function BuildFooter(parent)
 	stopButton:SetSize(90, 26)
 	stopButton:SetPoint("BOTTOMRIGHT", -PAD, 8)
 	stopButton:SetText(L.STOP)
-	stopButton:SetScript("OnClick", ns.Integrations.Cancel)
+	stopButton:SetScript("OnClick", ns.Stop)
 end
 
 ---@param _ AGFDropdown

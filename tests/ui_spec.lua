@@ -1179,6 +1179,7 @@ do
 	reloaded.Click(row, "RightButton")
 	Choose(ns.L.STOP)
 	equal(StopButton(reloaded):IsShown(), false, "stop: hidden after the menu's Stop")
+	equal(reloaded.ns.Prefs().journey, nil, "stop: the menu's Stop clears the choice too")
 end
 do
 	local h = Load("v1")
@@ -1191,6 +1192,9 @@ do
 	h.Click(stop)
 	equal(h.spf.Cancel, 1, "stop, Shortest Path: cancels our journey once")
 	equal(stop:IsShown(), false, "stop, Shortest Path: then hides")
+	-- As a click on the guided card: no journey is left chosen with nothing to resume it.
+	equal(ns.Prefs().journey, nil, "stop, Shortest Path: and clears the choice")
+	equal(ns.Paused(), false, "stop, Shortest Path: nothing is paused")
 	equal(h.counts.ClearUserWaypoint, 0, "stop, Shortest Path: no native waypoint to clear")
 	ns.Integrations.Navigate(ns.Route().steps[1])
 	h.G.ShortestPathForever.API.Cancel("AdventureGuideForever")
