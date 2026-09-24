@@ -1,7 +1,7 @@
 -- Run from the repository root: luajit tests/contract_spec.lua (docs/plan.md §1.6)
 -- AGF's mirror of the Shortest Path API (types/Namespace.lua, AGFSPF*) against SPF's own types/API.lua at a pinned sha,
 -- read from the vendored tests/fixtures/spf_types_API.lua so it runs offline. CI diffs that copy against upstream.
-local SPF_SHA = "39d9a986d423557ab13039b45732d0c9dd12bf02"
+local SPF_SHA = "84f57927cc087d1450a6875839701bd07ed3514e"
 local checks = 0
 
 local function equal(actual, expected, label)
@@ -18,7 +18,7 @@ local function Read(path)
 	return text
 end
 
--- AGF class <-> SPF class. Classes absent on both sides are simply not compared (the proposed ones land with F10).
+-- AGF class or alias <-> SPF's.
 local ALIASES = {
 	AGFSPFAPI = "SPFPublicAPI",
 	AGFSPFStop = "SPFAPIStop",
@@ -65,7 +65,8 @@ local function TypeToken(text)
 	end
 	local items = {}
 	for item in (returns .. ", "):gmatch("(.-), ") do
-		local word, prose = item:match("^(%S+)(.*)$")
+		-- A named return (`seconds: number?`) compares by its type alone.
+		local word, prose = item:gsub("^[%a_][%w_]*:%s+", ""):match("^(%S+)(.*)$")
 		if not (word and IsAtom(word)) then
 			break
 		end
@@ -77,13 +78,17 @@ local function TypeToken(text)
 	return #items > 0 and token .. ": " .. table.concat(items, ", ") or token
 end
 
--- { [class] = { [field name, "?" kept] = type } } from ---@class / ---@field lines.
+-- { [class] = { [field name, "?" kept] = type } } from ---@class / ---@field lines; an alias is a class whose one
+-- field, "=", is its type.
 local function Parse(text)
 	local classes, current = {}, nil
 	for line in (text .. "\n"):gmatch("(.-)\r?\n") do
 		local class = line:match("^%-%-%-@class%s+([%w_]+)")
 		local name, rest = line:match("^%-%-%-@field%s+([%w_]+%??)%s+(.*)$")
-		if class then
+		local alias, definition = line:match("^%-%-%-@alias%s+([%w_]+)%s+(.*)$")
+		if alias then
+			classes[alias], current = { ["="] = TypeToken(definition) }, nil
+		elseif class then
 			current = {}
 			classes[class] = current
 		elseif name and current then
@@ -111,7 +116,9 @@ local function Sorted(set)
 	return list
 end
 
--- Every difference between AGF's mirror and SPF, as readable lines; an empty list means they agree.
+-- Every difference between AGF's mirror and SPF, as readable lines; an empty list means they agree. AGF may mark a
+-- field optional that SPF always has (`EstimateDetail?`): AGF also runs on a Shortest Path from before it and checks
+-- the member where it uses it. Never the reverse.
 local function Compare(agfText, spfText, required)
 	local agf, spf, problems = Parse(agfText), Parse(spfText), {}
 	local mirrored = {}
@@ -125,14 +132,15 @@ local function Compare(agfText, spfText, required)
 			problems[#problems + 1] = spfClass .. ": AGF has no " .. agfClass
 		elseif ours then
 			for _, name in ipairs(Sorted(ours)) do
-				if theirs[name] == nil then
+				local spfType = theirs[name] or theirs[(name:gsub("%?$", ""))]
+				if spfType == nil then
 					problems[#problems + 1] = ("%s.%s: not in SPF's %s"):format(agfClass, name, spfClass)
-				elseif ToSPF(ours[name]) ~= theirs[name] then
-					problems[#problems + 1] = ("%s.%s: AGF %s, SPF %s"):format(agfClass, name, ours[name], theirs[name])
+				elseif ToSPF(ours[name]) ~= spfType then
+					problems[#problems + 1] = ("%s.%s: AGF %s, SPF %s"):format(agfClass, name, ours[name], spfType)
 				end
 			end
 			for _, name in ipairs(Sorted(theirs)) do
-				if ours[name] == nil then
+				if ours[name] == nil and ours[name .. "?"] == nil then
 					problems[#problems + 1] = ("%s.%s: not mirrored in %s"):format(spfClass, name, agfClass)
 				end
 			end
@@ -173,6 +181,11 @@ equal(
 equal(TypeToken("fun(): number?, AGFSPFNoRoute? -- proposed"), "fun(): number?, AGFSPFNoRoute?", "token: two returns")
 equal(TypeToken("fun(owner: string) starts guidance"), "fun(owner: string)", "token: no return clause")
 equal(TypeToken('"walk"|"flight" -- modes'), '"walk"|"flight"', "token: a literal union")
+equal(
+	TypeToken("fun(a: integer): seconds: number?, reason: SPFAPINoRoute? -- travel seconds"),
+	"fun(a: integer): number?, SPFAPINoRoute?",
+	"token: named returns"
+)
 
 local vendored = Read("tests/fixtures/spf_types_API.lua")
 equal(vendored:match("^([^\n]*)\n"), "-- shortest-path-forever " .. SPF_SHA .. ":types/API.lua", "vendored copy's sha")

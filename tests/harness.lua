@@ -1325,11 +1325,17 @@ function harness.load(options)
 			return was
 		end)
 		if options.spf == "v1+" then
+			-- h.spfLegs replaces the one flight leg, and false is no route; seconds add up as Shortest Path's do.
 			Counted("EstimateDetail", function()
-				return {
-					seconds = h.spfSeconds,
-					legs = { { mode = "flight", to = "Sentinel Hill", seconds = h.spfSeconds } },
-				}
+				if h.spfLegs == false then
+					return nil, "unreachable"
+				end
+				local legs = h.spfLegs or { { mode = "flight", to = "Sentinel Hill", seconds = h.spfSeconds } }
+				local seconds = 0
+				for _, leg in ipairs(legs) do
+					seconds = seconds + leg.seconds
+				end
+				return { seconds = seconds, legs = legs }
 			end)
 			Counted("Active", function()
 				return next(guiding) ~= nil

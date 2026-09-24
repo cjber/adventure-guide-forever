@@ -74,6 +74,20 @@ ns.L = {
 	SKIPPED = "Skipped (%d)",
 	SHOW_AGAIN = "Show again: %s",
 	CHOOSE_JOURNEY = "Choose another journey",
+	-- The travel line (docs/design.md §2.5): Shortest Path's own verbs (its JourneySteps.lua VERB), so both addons
+	-- name a leg alike.
+	TRAVEL = "%s · %d min",
+	TRAVEL_ABOUT = "About %d min away",
+	TRAVEL_NEW_FLIGHT_PATH = " · new flight path",
+	TRAVEL_WAIT = " · %d min wait",
+	TRAVEL_WALK = "Walk to %s",
+	TRAVEL_FLIGHT = "Fly to %s",
+	TRAVEL_BOAT = "Boat to %s",
+	TRAVEL_ZEPPELIN = "Zeppelin to %s",
+	TRAVEL_LIFT = "Lift to %s",
+	TRAVEL_TRAM = "Tram to %s",
+	TRAVEL_PORTAL = "Portal to %s",
+	TRAVEL_PASSAGE = "Go through to %s",
 	-- The tracker (docs/design.md §2.5).
 	NEXT = "Next: %s",
 	RESUME = "Where you left off: %s",

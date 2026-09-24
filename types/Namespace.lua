@@ -183,23 +183,40 @@
 
 -- Shortest Path Forever's public API, mirrored field for field from its types/API.lua (SPFAPIStop, SPFPublicAPI) at
 -- the sha tests/contract_spec.lua pins; that spec fails on any drift. Integrations.lua's REQUIRED lists exactly
--- the non-optional functions. Descriptions go after `--` so the type is the whole first token.
+-- the non-optional functions. Descriptions go after `--` so the type is the whole first token. The members a
+-- Shortest Path before 1.2 lacks are optional here, and checked where they are used.
+---@alias AGFSPFMode "walk"|"flight"|"boat"|"zeppelin"|"lift"|"tram"|"portal"|"passage"
+---@alias AGFSPFNoRoute "combat"|"invalid"|"unreachable" -- why an estimate has no answer
+
 ---@class AGFSPFStop
 ---@field map integer -- uiMapID
 ---@field x number -- normalized 0-1
 ---@field y number -- normalized 0-1
 ---@field title? string
 
+---@class AGFSPFLeg
+---@field mode AGFSPFMode
+---@field to string -- where the leg ends, named as Shortest Path's tracker names it
+---@field seconds number -- from the previous leg's arrival (the first from the start), waits included
+---@field wait? number -- seconds waiting for a boat, zeppelin, lift or tram; present only from 60 up
+---@field newFlightPath? boolean -- a walk to a flight master this character has not discovered
+
+---@class AGFSPFDetail
+---@field seconds number -- equal to Estimate's answer
+---@field legs AGFSPFLeg[] -- fresh copies on every call
+
 ---@class AGFSPFAPI
 ---@field version integer -- AGF accepts exactly 1
----@field Estimate fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): number? -- seconds, nil when unknown or in combat
+---@field Estimate fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): number?, AGFSPFNoRoute? -- travel seconds; nil comes with the reason
 ---@field Navigate fun(owner: string, map: integer, x: number, y: number, title?: string): boolean -- starts or replaces guidance
 ---@field NavigateRoute fun(owner: string, stops: AGFSPFStop[]): boolean -- 1-64 stops in order
 ---@field CurrentStop fun(owner: string): integer? -- nil unless owner owns the active journey
 ---@field Cancel fun(owner: string): boolean -- true only when this owner's journey was cancelled
+---@field EstimateDetail? fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): AGFSPFDetail?, AGFSPFNoRoute? -- Estimate leg by leg, sharing its cache
+---@field Active? fun(): boolean -- true while any journey is guiding, whoever started it
 
 ---@class AGFIntegrations
----@field TravelLine fun(step: AGFStep): string? asks Shortest Path now: one estimate, nil without it
+---@field TravelLine fun(step: AGFStep): string? asks Shortest Path now, at most one call: "Fly to X · N min" from EstimateDetail, "About N min away" from Estimate, nil without either or an answer
 ---@field RefreshTravel fun() refetches step 1's line; Core runs it in the frame after each rebuild
 ---@field Travel fun(step: AGFStep): string? the last line fetched for this step, without asking again
 ---@field OnTravelChange fun(callback: fun())
@@ -246,6 +263,18 @@
 ---@field SKIPPED string format: how many steps are skipped this session
 ---@field SHOW_AGAIN string format: a skipped step's title
 ---@field CHOOSE_JOURNEY string opens the guide
+---@field TRAVEL string format: a leg ("Fly to X"), minutes until it arrives
+---@field TRAVEL_ABOUT string format: minutes; the line from a Shortest Path with Estimate only
+---@field TRAVEL_NEW_FLIGHT_PATH string appended when a walk leg reaches an undiscovered flight master
+---@field TRAVEL_WAIT string format: minutes waiting for the chosen leg's boat, zeppelin, lift or tram; appended
+---@field TRAVEL_WALK string format: the place a leg ends; one per AGFSPFMode
+---@field TRAVEL_FLIGHT string
+---@field TRAVEL_BOAT string
+---@field TRAVEL_ZEPPELIN string
+---@field TRAVEL_LIFT string
+---@field TRAVEL_TRAM string
+---@field TRAVEL_PORTAL string
+---@field TRAVEL_PASSAGE string
 ---@field NEXT string format: the step after the tracker's
 ---@field RESUME string format: the reason saved with step 1 last session
 ---@field SETTING_MAP_PINS_TOOLTIP string

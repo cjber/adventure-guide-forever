@@ -34,6 +34,48 @@ local travel
 ---@type fun()[]
 local travelListeners = {}
 
+local L = ns.L
+---@type table<AGFSPFMode, string>
+local VERBS = {
+	walk = L.TRAVEL_WALK,
+	flight = L.TRAVEL_FLIGHT,
+	boat = L.TRAVEL_BOAT,
+	zeppelin = L.TRAVEL_ZEPPELIN,
+	lift = L.TRAVEL_LIFT,
+	tram = L.TRAVEL_TRAM,
+	portal = L.TRAVEL_PORTAL,
+	passage = L.TRAVEL_PASSAGE,
+}
+
+---@param seconds number
+---@return integer
+local function Minutes(seconds)
+	return math.max(1, math.ceil(seconds / 60))
+end
+
+-- The first leg that isn't a walk, and the minutes until it arrives; a trip on foot names where it ends. A new
+-- flight path on the way, and a wait of a minute or more for the chosen leg, are added (docs/plan.md F10).
+---@param detail AGFSPFDetail
+---@return string?
+local function DetailLine(detail)
+	local chosen, elapsed, newFlightPath = nil, 0, false
+	for _, leg in ipairs(detail.legs) do
+		newFlightPath = newFlightPath or (leg.mode == "walk" and leg.newFlightPath == true)
+		if not chosen then
+			elapsed = elapsed + leg.seconds
+			chosen = leg.mode ~= "walk" and leg or nil
+		end
+	end
+	chosen = chosen or detail.legs[#detail.legs]
+	local verb = chosen and VERBS[chosen.mode]
+	if not verb then
+		return nil
+	end
+	return L.TRAVEL:format(verb:format(chosen.to), Minutes(elapsed))
+		.. (newFlightPath and L.TRAVEL_NEW_FLIGHT_PATH or "")
+		.. (chosen.wait and L.TRAVEL_WAIT:format(Minutes(chosen.wait)) or "")
+end
+
 ---@param step AGFStep
 ---@return string?
 function Integrations.TravelLine(step)
@@ -42,13 +84,21 @@ function Integrations.TravelLine(step)
 	if not (api and player.map and player.x and player.y) then
 		return nil
 	end
+	if type(api.EstimateDetail) == "function" then
+		local detail = api.EstimateDetail(player.map, player.x, player.y, step.map, step.x, step.y)
+		return detail and DetailLine(detail)
+	end
 	local seconds = api.Estimate(player.map, player.x, player.y, step.map, step.x, step.y)
-	if type(seconds) == "number" and seconds >= 0 and seconds < math.huge then
-		return ("About %d min away"):format(math.max(1, math.ceil(seconds / 60)))
+	if seconds then
+		return L.TRAVEL_ABOUT:format(Minutes(seconds))
 	end
 end
 
+-- In combat Shortest Path has no answer to give, so the last line stands and nothing is asked (docs/design.md §2.5).
 function Integrations.RefreshTravel()
+	if InCombatLockdown() then
+		return
+	end
 	local step = ns.Route().steps[1]
 	local line = step and Integrations.TravelLine(step)
 	local changed = (travel and travel.key) ~= (step and step.key) or (travel and travel.line) ~= line

@@ -354,7 +354,8 @@ for _, spf in ipairs({ "v1", "v1+" }) do
 	h.ns.Invalidate()
 	h.flush()
 	equal(Estimates() - before, 1, spf .. ": a move and a rebuild cost exactly one estimate")
-	equal(h.ns.Integrations.Travel(h.ns.Route().steps[1]), "About 6 min away", spf .. ": step 1's travel line")
+	local line = spf == "v1" and "About 6 min away" or "Fly to Sentinel Hill · 6 min"
+	equal(h.ns.Integrations.Travel(h.ns.Route().steps[1]), line, spf .. ": step 1's travel line")
 	equal(h.ns.Integrations.Travel(h.ns.Route().steps[2]), nil, spf .. ": no line for other steps")
 	equal(Estimates() - before, 1, spf .. ": reading the line asks nothing")
 	-- An invalidation between the rebuild frame and the travel frame: the travel frame must not rebuild as well.
@@ -372,6 +373,70 @@ for _, spf in ipairs({ "v1", "v1+" }) do
 	equal(Estimates() - before, 2, spf .. ": the second rebuild's travel frame asks once")
 	h.ns.Model.Plan = plan
 	clean(h, spf .. ": travel")
+end
+
+-- F10, the travel line: the first leg that isn't a walk and the minutes until it arrives, from one EstimateDetail;
+-- no answer, no line, and never the reason. In combat nothing is asked and the last line stands.
+do
+	local h = Load("v1+")
+	local ns = h.ns
+	local step = ns.Route().steps[1]
+	local cases = {
+		{
+			"a flight",
+			{
+				{ mode = "walk", to = "Crossroads", seconds = 60 },
+				{ mode = "flight", to = "Sentinel Hill", seconds = 300 },
+			},
+			"Fly to Sentinel Hill · 6 min",
+		},
+		{
+			"a boat's wait",
+			{
+				{ mode = "walk", to = "Ratchet", seconds = 30 },
+				{ mode = "boat", to = "Booty Bay", seconds = 400, wait = 120 },
+				{ mode = "walk", to = "Booty Bay", seconds = 20 },
+			},
+			"Boat to Booty Bay · 8 min · 2 min wait",
+		},
+		{
+			"a new flight path",
+			{
+				{ mode = "walk", to = "Splintertree Post", seconds = 100, newFlightPath = true },
+				{ mode = "flight", to = "Astranaar", seconds = 200 },
+			},
+			"Fly to Astranaar · 5 min · new flight path",
+		},
+		{
+			"on foot",
+			{ { mode = "walk", to = "Crossroads", seconds = 90 }, { mode = "walk", to = "The Barrens", seconds = 45 } },
+			"Walk to The Barrens · 3 min",
+		},
+		{ "no route", false, nil },
+	}
+	for _, case in ipairs(cases) do
+		h.spfLegs = case[2]
+		local detail, estimate = h.spf.EstimateDetail, h.spf.Estimate
+		equal(ns.Integrations.TravelLine(step), case[3], "travel line, " .. case[1])
+		equal(h.spf.EstimateDetail - detail + h.spf.Estimate - estimate, 1, "travel line, " .. case[1] .. ": one call")
+	end
+
+	h.spfLegs = cases[1][2]
+	ns.Integrations.RefreshTravel()
+	h.SetCombat(true)
+	h.spfLegs = cases[4][2]
+	local calls = h.spf.EstimateDetail
+	ns.Invalidate()
+	h.flush()
+	equal(h.spf.EstimateDetail, calls, "travel line, combat: nothing asked")
+	equal(ns.Integrations.Travel(step), cases[1][3], "travel line, combat: the last line stands")
+	h.SetCombat(false)
+	h.flush()
+	equal(ns.Integrations.Travel(step), cases[4][3], "travel line, after combat: asked again")
+	clean(h, "travel line")
+
+	h = Load(false)
+	equal(h.ns.Integrations.TravelLine(h.ns.Route().steps[1]), nil, "travel line: none without Shortest Path")
 end
 
 -- The combat rule (docs/plan.md §1.1 assert 6): in combat a rebuild runs only the cheap path, which still shows the
@@ -1099,6 +1164,7 @@ do
 	handle:close()
 	equal(current == stored, true, "golden: layout.json matches (AGF_UPDATE_GOLDEN=1 rewrites it)")
 	equal(json.encode(json.decode(stored)), stored, "golden: json round trip")
+	equal(stored:lower():find("unreachable", 1, true), nil, "golden: no line ever says unreachable")
 
 	-- The in-game diff, fed a dump taken the way /agf dump takes it.
 	local golden, game = json.decode(stored).layout, h.ns.DumpLayout(panel)
