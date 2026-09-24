@@ -2,7 +2,7 @@
 
 Levelling guides tell you exactly what to do, in order. I wanted something looser. From your level, the quests you have finished and the ones in your log, Adventure Guide Forever offers a few journeys to choose from, each with a reason, and a short route for the one you pick.
 
-It looks like it came with the game: a tab in the quest log beside Quests, cards drawn with retail's Journeys art, the game's own objective tracker, and Blizzard's quest details when you click a quest. With the tab closed it draws nothing on your map. It works with Shortest Path Forever for travel and stays out of the way of Questie or RestedXP.
+It looks like it came with the game: a tab in the quest log beside Quests, cards drawn with retail's Journeys art, the game's own objective tracker, and Blizzard's quest details when you click a quest. With the tab closed it draws nothing on your map. It works with Shortest Path Forever for travel, and loads alongside Questie or RestedXP, though their routes may overlap.
 
 ![The Barrens on the world map with the Adventure Guide tab open: a card for the quests you carry with its two steps ringed on the map, a zone story card at chapter 1 of 5, and a card for the next zone at level 20](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png)
 
