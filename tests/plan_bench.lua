@@ -46,6 +46,51 @@ local function Completed(side, level)
 	return ids
 end
 
+-- A full log (design §5.2): 40 quests of the side around `level`, not yet done, every other one finished (the live
+-- client gives its turn-in waypoint) and the rest under way, with the client's objectives in the data's need slots
+-- and, on every third, the client's point for it. The worst case for the log's steps and their area merging.
+local LOG_SIZE = 40
+local function FullLog(side, level)
+	local ids = {}
+	for id, quest in pairs(data.quests) do
+		if
+			(quest.side == 3 or quest.side == side)
+			and not quest.dungeon
+			and quest.level >= level - 2
+			and quest.level <= level + 2
+			and quest.min <= level
+		then
+			ids[#ids + 1] = id
+		end
+	end
+	table.sort(ids)
+	local log = {}
+	for index = 1, math.min(LOG_SIZE, #ids) do
+		local quest = data.quests[ids[index]]
+		local entry = { id = ids[index], title = quest.title, level = quest.level, complete = index % 2 == 0 }
+		if entry.complete and quest.finish then
+			entry.map, entry.x, entry.y = quest.finish.map, quest.finish.x, quest.finish.y
+		elseif not entry.complete then
+			local slots, objectives = {}, {}
+			for slot in pairs(quest.need or {}) do
+				slots[#slots + 1] = slot
+			end
+			table.sort(slots)
+			for _, slot in ipairs(slots) do
+				local kind = slot < 4 and "monster" or slot < 16 and "item" or "event"
+				objectives[#objectives + 1] = { type = kind, done = false, have = 0, need = quest.need[slot] }
+			end
+			entry.objectives = objectives
+			local area = quest.obj and quest.obj[1]
+			if area and index % 3 == 0 then
+				entry.poi = { map = area[5] or quest.zone, x = area[2] / 1000, y = area[3] / 1000 }
+			end
+		end
+		log[#log + 1] = entry
+	end
+	return log
+end
+
 -- Shortest Path's estimate cache, modelled: returns the modelled milliseconds of one call.
 local function CostModel()
 	local model = { now = 0, ms = 0, misses = 0, calls = 0 }
@@ -117,9 +162,14 @@ local function Slices(h)
 	end
 end
 
-local function Profile(profile, level, questiedb)
+local function Profile(profile, level, questiedb, full)
 	local at = profile.at[level] or SHARED[level]
-	local label = ("%s %d%s"):format(profile.faction, level, questiedb and " QuestieDB" or "")
+	local label = ("%s %d%s%s"):format(
+		profile.faction,
+		level,
+		questiedb and " QuestieDB" or "",
+		full and " log 40" or ""
+	)
 	profiles = profiles + 1
 	local h = harness.load({
 		spf = "v1",
@@ -135,6 +185,7 @@ local function Profile(profile, level, questiedb)
 		},
 		questiedb = questiedb,
 		setup = questiedb and Slices,
+		log = full and FullLog(profile.side, level) or nil,
 	})
 	check(not questiedb or h.ns.QuestieStatus.state == "questie", label .. ": QuestieDB's quests not in use")
 	local api, model = h.G.ShortestPathForever.API, CostModel()
@@ -154,6 +205,12 @@ local function Profile(profile, level, questiedb)
 	for sample = 1, SAMPLES do
 		model.reset()
 		model.now = sample * 60
+		-- A full log's rebuild follows the log's event, so it reads the objectives and the quest points again; the
+		-- event's own frame only schedules it.
+		if full then
+			h.fire("QUEST_LOG_UPDATE")
+			h.tick()
+		end
 		h.ns.Invalidate()
 		local started = os.clock()
 		h.tick()
@@ -167,6 +224,7 @@ local function Profile(profile, level, questiedb)
 		check(h.tick() == 0, label .. ": a third frame ran")
 	end
 	check(h.counts.CreateFrame == created, label .. ": frames created after the first render")
+	check(not full or #h.log == LOG_SIZE, label .. ": a log of " .. #h.log)
 	check(#h.errors == 0, label .. ": errors\n" .. table.concat(h.errors, "\n"))
 	worstRebuild, worstTravel = math.max(worstRebuild, Max(rebuild)), math.max(worstTravel, Max(travel))
 	lines[#lines + 1] = ("%-14s %d steps  rebuild %.3f / %.3f ms  travel %.3f / %.3f ms (modelled, median / max)"):format(
@@ -183,6 +241,10 @@ for _, level in ipairs({ 1, 10, 20, 30, 40, 50, 60 }) do
 	for _, profile in ipairs(SIDES) do
 		Profile(profile, level)
 	end
+end
+-- The same frames with a full log.
+for _, profile in ipairs(SIDES) do
+	Profile(profile, 20, nil, true)
 end
 -- The same frames on QuestieDB's quests, converted from a synthetic mirror of the bundled data (the harness's).
 local mirror = harness.questieMirror(data)
