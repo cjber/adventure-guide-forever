@@ -15,6 +15,7 @@ from gen_quests import (
     hub_names,
     instance_index,
     nearest_hub,
+    overlays,
     parse_values,
     prerequisite_index,
     prerequisites,
@@ -416,6 +417,48 @@ class QuestPlaceTest(unittest.TestCase):
 
     def test_an_object_has_no_npc(self):
         self.assertNotIn("npc", quest_place(self.spawn("gameobject"), {1429}, None))
+
+
+class OverlayTest(unittest.TestCase):
+    MAPS = [{"ID": "1439", "Type": "3"}, {"ID": "1414", "Type": "2"}]
+    ART = [
+        {"UiMapID": "1439", "UiMapArtID": "2171", "PhaseID": "0"},
+        {"UiMapID": "1414", "UiMapArtID": "2171", "PhaseID": "0"},
+    ]
+    AREAS = [
+        {"ID": "447", "AreaName_lang": "Ameth'Aran", "ExplorationLevel": "11"},
+        {"ID": "442", "AreaName_lang": "Auberdine", "ExplorationLevel": "12"},
+        {"ID": "616", "AreaName_lang": "Mount Hyjal", "ExplorationLevel": "0"},
+    ]
+
+    @staticmethod
+    def row(overlay, area, offset, size=(256, 256), hit=(350, 420, 395, 460), condition=0):
+        keys = ("HitRectTop", "HitRectBottom", "HitRectLeft", "HitRectRight")
+        row = {"ID": str(overlay), "UiMapArtID": "2171", "AreaID_0": str(area), "PlayerConditionID": str(condition)}
+        row.update(
+            OffsetX=str(offset[0]), OffsetY=str(offset[1]), TextureWidth=str(size[0]), TextureHeight=str(size[1])
+        )
+        row.update(zip(keys, map(str, hit), strict=True))
+        return row
+
+    def test_darkshore_overlay_matches_the_probe(self):
+        # WorldMapOverlay 5385 at 1.60.1.69913; the probe's GetExploredMapTextures(1439) gave offset 324, 306 and this
+        # hit rectangle. The Kalimdor map shares the art but is no zone map.
+        self.assertEqual(
+            overlays(self.MAPS, self.ART, [self.row(5385, 447, (324, 306))], self.AREAS),
+            {1439: [{"area": 447, "name": "Ameth'Aran", "level": 11, "ox": 324, "oy": 306, "x": 0.4266, "y": 0.5763}]},
+        )
+
+    def test_unknowable_or_unsuggestable_overlays_left_out(self):
+        rows = [
+            self.row(1, 616, (10, 10)),  # ExplorationLevel 0
+            self.row(2, 447, (20, 20), size=(0, 0)),  # no texture: never returned as explored
+            self.row(3, 447, (30, 30), condition=5),  # drawn only under a condition
+            self.row(4, 999, (40, 40)),  # no AreaTable row
+            self.row(5, 447, (50, 50)),  # shares its offset with 6
+            self.row(6, 442, (50, 50)),
+        ]
+        self.assertEqual(overlays(self.MAPS, self.ART, rows, self.AREAS), {})
 
 
 if __name__ == "__main__":

@@ -669,3 +669,43 @@
 ---@field QUESTIE_FIELD string format: the entity or field it lacks
 ---@field QUESTIE_ZONES string
 ---@field QUESTIE_FAILED string format: the error
+
+-- Stream 3c "Exploration and new lands" (roadmap #13 and #14, Hints/Explore.lua, docs/design.md §2.11).
+
+-- A zone map's explorable area (tools/gen_quests.py `overlays`): a WorldMapOverlay the client draws once explored.
+---@class AGFOverlay
+---@field area integer its AreaTable ID, for C_Map.GetAreaInfo
+---@field name string its English name, the fallback when the client has none
+---@field level integer its ExplorationLevel, never 0
+---@field ox integer its offset, as GetExploredMapTextures returns it for an explored one
+---@field oy integer
+---@field x number its hit rectangle's centre on the map, for which is nearer only: never a place
+---@field y number
+
+-- A zone map Forever added (tools/diff_forever.py `lands`): its range and its flight masters.
+---@class AGFLand
+---@field name string its English name, the fallback when the client has none
+---@field min integer the least non-zero ExplorationLevel of its areas
+---@field max integer the greatest
+---@field taxi AGFLandTaxi[] its Forever flight masters that serve a side, by node ID
+
+---@class AGFLandTaxi : AGFPlace
+---@field side integer 1 Alliance, 2 Horde
+
+---@class AGFForever
+---@field lands table<integer, AGFLand> uiMapID -> the land; only lands with a level range
+
+---@class AGFData
+---@field overlays? table<integer, AGFOverlay[]> zone uiMapID -> its explorable areas
+
+---@class AGFExplore
+---@field Explored fun(map: integer): table<string, true>? the map's explored overlays by "ox:oy"; nil without C_MapExplorationInfo
+---@field Unexplored fun(data: AGFData, player: AGFPlayer, explored: table<string, true>): AGFOverlay? the area to suggest on the player's map
+---@field NewLand fun(data: AGFData, player: AGFPlayer, explored: fun(map: integer): table<string, true>?): integer?, AGFLand?, AGFLandTaxi? the land to suggest, and where Go takes the player
+
+---@class AGFNamespace
+---@field Explore AGFExplore
+
+---@class AGFStrings
+---@field NEW_LAND string format: the land's name, its least and greatest level
+---@field UNEXPLORED string format: the area's name
