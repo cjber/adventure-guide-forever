@@ -490,6 +490,61 @@ town = { quests = town.quests, zones = town.zones, maps = town.maps, continents 
 stop = Model.Plan(town, visitor, {}, {}, townPrefs).steps[1]
 equal(stop.title, "Pick up quests: Osgood", "town: a lone pickup keeps its title")
 
+-- Selection weighs worth against travel (docs/plan.md §7.3); with one step to choose, the worth decides which.
+local function Field()
+	return {
+		quests = {},
+		zones = data.zones,
+		maps = { [1] = { name = "Zone", continent = 0, cx = 0, cy = 0, sx = 1000, sy = 1000 } },
+		continents = { [0] = { x = 0, y = 0 } },
+	}
+end
+-- The keys of the steps `plan` returns with room for only `steps` of them.
+local function Only(steps, plan)
+	Model.MAX_STEPS = steps
+	local ok, result = pcall(plan)
+	Model.MAX_STEPS = 9
+	assert(ok, result)
+	local keys = {}
+	for _, step in ipairs(result) do
+		keys[#keys + 1] = step.key
+	end
+	return table.concat(keys, " ")
+end
+local field = Field()
+field.quests[1] = quest(0.35, 0.5) -- 50 yd, a lone giver
+for id = 2, 6 do -- 100 yd, five quests in one town
+	field.quests[id] = quest(0.4, 0.5)
+	field.quests[id].start.hub = 3
+end
+local function FieldSteps()
+	return Model.Plan(field, visitor, {}, {}, prefs()).steps
+end
+equal(Only(1, FieldSteps), "hub:3", "value: a slightly farther five-quest town beats a nearer lone quest")
+for id = 2, 6 do
+	field.quests[id].start.x = 0.7
+end
+equal(Only(1, FieldSteps), "hub:1:0.3500:0.5000", "value: but not one 400 yd away")
+local carrying = {
+	[20] = { id = 20, title = "Normal", complete = false, level = 18, map = 1, x = 0.2, y = 0.5 },
+	[21] = { id = 21, title = "Grey soon", complete = false, level = 13, map = 1, x = 0.4, y = 0.5 },
+}
+equal(
+	Only(1, function()
+		return Model.Plan(Field(), visitor, {}, carrying, prefs()).journeys[1].steps
+	end),
+	"objective:21",
+	"value: a quest grey at the next level goes before an equidistant one"
+)
+local red = Field()
+red.quests[1], red.quests[2], red.quests[3] = quest(0.32, 0.5), quest(0.45, 0.5), quest(0.15, 0.5)
+red.quests[1].level = 23
+local function RedSteps()
+	return Model.Plan(red, visitor, {}, {}, prefs()).steps
+end
+equal(Only(2, RedSteps):find("0.3200", 1, true), nil, "value: a stop of red quests only waits, though nearest")
+equal(#RedSteps(), 3, "value: and is still on a route with room for it")
+
 -- No zone the level fits (a city's quests only): no story card, and no error.
 local city = { quests = { [1] = quest(0.5, 0.5, 9) }, zones = data.zones }
 equal(#Model.Plan(city, player, {}, {}, prefs()).journeys, 0, "story card: none without a zone")

@@ -9,6 +9,10 @@ ns.Model = Model
 -- CMaNGOS mangos-classic/src/game/Tools/Formulas.h, GetQuestGreenRange (quest, not creature XP).
 local GREEN_RANGE = { 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 10, 11, 12 }
 local CLOSE = 0.03 * 0.03
+-- What a stop is worth against the yards to reach it (docs/plan.md §7.3): each quest there (at most 8), a quest that
+-- goes grey at the next level, each hand-in, and a stop where every quest is red or optional, which waits.
+local VALUE_QUEST, VALUE_QUESTS_MAX, VALUE_GREY_RISK, VALUE_HAND_IN, VALUE_WEAK = 40, 8, 150, 60, -300
+local RED = 5 -- levels above the player: the stock red
 
 function Model.IsGray(questLevel, playerLevel)
 	local range = GREEN_RANGE[math.min(#GREEN_RANGE, math.floor(playerLevel / 5) + 1)] or 4
@@ -801,6 +805,30 @@ local function Order(selected, origin, where, away, cheap)
 	return steps
 end
 
+-- A quest's level for its colour: the log's, the data's otherwise; a scaling quest (-1) is the player's own.
+local function QuestLevel(data, log, player, id)
+	local entry, quest = log[id], data.quests[id]
+	local level = (entry and entry.level) or (quest and quest.level)
+	return (level and level > 0) and level or player.level
+end
+
+-- A step's worth in yards (VALUE_* above), so selection weighs it against the reach. Only a step placed in yards has
+-- one: a map the data cannot place is measured in map units, where yards mean nothing.
+---@param step AGFStep
+local function Value(data, log, player, step)
+	local risk, weak = false, true
+	for _, id in ipairs(step.quests) do
+		local level = QuestLevel(data, log, player, id)
+		risk = risk or (not Model.IsGray(level, player.level) and Model.IsGray(level, player.level + 1))
+		weak = weak and (level - player.level >= RED or Optional(data.quests[id], level, player))
+	end
+	local handins = step.handins and #step.handins or (step.kind == "turnin" and 1 or 0)
+	return VALUE_QUEST * math.min(#step.quests, VALUE_QUESTS_MAX)
+		+ (risk and VALUE_GREY_RISK or 0)
+		+ VALUE_HAND_IN * handins
+		+ (weak and VALUE_WEAK or 0)
+end
+
 -- The skipped keys a full build still found among its candidates (Model.Plan); nil outside one.
 ---@type table<string, boolean>?
 local skippedSeen
@@ -822,15 +850,16 @@ local function Build(data, player, log, candidates, prefs, mapName, cheap, lead,
 	local origin = Position(data, player, docks)
 
 	-- Selection grows from the player: each pick is the step cheapest to reach from the player or any step already
-	-- picked. There is no phase, so a far turn-in never pushes out a nearby pickup.
+	-- picked, less its worth (Value). There is no phase, so a far turn-in never pushes out a nearby pickup.
 	-- Without a known place for the player (no position in an instance, a map the data lacks) most steps cost UNKNOWN
 	-- from them. A turn-in among those leads, as turn-ins did before costs, and the route grows from it instead of
 	-- dropping it for whichever key sorts first.
 	local measured = origin ~= nil and origin.known
-	local reach, chosen, selected = {}, {}, {}
+	local reach, value, chosen, selected = {}, {}, {}, {}
 	for _, step in ipairs(pool) do
 		local cost = Cost(origin, where[step])
 		reach[step] = (not measured and cost >= UNKNOWN and HandInOnly(step)) and 0 or cost
+		value[step] = (where[step] and where[step].known) and Value(data, log, player, step) or 0
 	end
 	local function Take(step)
 		chosen[step] = true
@@ -844,14 +873,13 @@ local function Build(data, player, log, candidates, prefs, mapName, cheap, lead,
 	if lead and where[lead] then
 		Take(lead)
 	end
+	-- Each pick weighs the reach against the step's worth; Order and 2-opt then look at travel alone.
 	while #selected < Model.MAX_STEPS do
-		local best
+		local best, bestKey
 		for _, step in ipairs(pool) do
-			if
-				not chosen[step]
-				and (not best or reach[step] < reach[best] or (reach[step] == reach[best] and step.key < best.key))
-			then
-				best = step
+			local key = reach[step] - value[step]
+			if not chosen[step] and (not best or key < bestKey or (key == bestKey and step.key < best.key)) then
+				best, bestKey = step, key
 			end
 		end
 		if not best then
