@@ -670,7 +670,7 @@
 ---@field QUESTIE_ZONES string
 ---@field QUESTIE_FAILED string format: the error
 
--- Stream 3e "Rest and pacing" (roadmap #11, docs/design.md §2.15).
+-- Stream 3e "Rest and pacing" (roadmap #11, #24, docs/design.md §2.15).
 
 ---@class AGFPlayer
 ---@field rested? integer rested XP (GetXPExhaustion, 0 with none); nil where the player's rest is unknown
@@ -689,3 +689,5 @@
 
 ---@class AGFStrings
 ---@field REST_HERE string the route's last stop, when rest is low and an innkeeper of the player's side stands there
+---@field SETTING_WANDERER string hint strength: Wanderer names places and sets no waypoint, route or map mark
+---@field SETTING_WANDERER_TOOLTIP string

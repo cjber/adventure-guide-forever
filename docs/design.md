@@ -340,7 +340,8 @@ ADVENTURE GUIDE                                 module header (template)
 | Quest-giver "!" | the zone's eligible, non-gray givers | `showMapPins` **and** `showQuestGivers` are both on; both default **off**. Kept because Blizzard draws no givers on Forever (probe `questoffer`, §9) |
 | Lines, dots, overlays, continent marks | 0 | never drawn by AGF |
 
-While SPF is guiding, AGF's rings hide, because SPF draws its own stops (Pins.lua:15-17).
+While SPF is guiding, AGF's rings hide, because SPF draws its own stops (Pins.lua:15-17). A wanderer (§2.15) sees
+no layer at all.
 
 ```
 +--------------------------------------------------------------+
@@ -601,7 +602,7 @@ cache that did, Integrations' town places, is keyed on it).
   Questie and QuestieDB carry no licence, so the repo, specs and goldens hold none of their code, types or data; the
   specs use a synthetic stand-in, mostly a mirror of the bundled data (`harness.questieMirror`).
 
-### 2.15 Rest and pacing (roadmap #11)
+### 2.15 Rest and pacing (roadmap #11, #24)
 
 - **Rest at the inn (#11).** State reads `GetXPExhaustion()` (0 when nil), `UnitXPMax("player")` when the client has
   it, and `IsResting()`. Rest is low under one bubble (a twentieth of the level's XP: a night at an inn), or at none
@@ -611,6 +612,12 @@ cache that did, Integrations' town places, is keyed on it).
   stays. It is a reason, never a step, so it moves no route. Resting (an inn or a city) ticks it off, and the stop's
   own reason is back. `PLAYER_UPDATE_RESTING`, `UPDATE_EXHAUSTION` and `PLAYER_XP_UPDATE` are registered by
   feature detection and rebuild only when low or resting flips. Combat's cheap rebuild keeps the last build's line.
+- **Hint strength (#24).** One account-wide setting, "Wanderer: name places only" (`wanderer`, off: Guide). A wanderer
+  gets the same cards, steps and asides, which already name places ("Lakeshire, Redridge"), and is never taken
+  there: `Integrations.Navigate` and `Restore` set no waypoint and hand Shortest Path nothing, `StartRoute` starts
+  nothing (and waits for nothing in combat), Pins draws no rings or givers (the open guide's preview included), and
+  no menu offers Go or tooltip a click line. Choosing a journey still chooses it. Turning it on stops what Go started,
+  as Stop does.
 
 ## 3. Copy style sheet
 
@@ -889,6 +896,9 @@ Nothing below has been validated in game yet.
     `/reload`, and no Lua error is logged at login (the rest events are registered by feature detection). `UnitXPMax`
     and the three events were never probed on Forever: with any missing, the line shows only at no rest at all, or
     waits for the next rebuild.
+20. Wanderer (§2.15): turning it on in Settings stops a running route and clears AGF's waypoint; then choosing a card,
+    the tracker title and an aside's click set no waypoint and no Shortest Path route, the map shows no rings or
+    givers (guide open or not), and no menu has Go. Turning it off brings them back.
 
 ## 9. Open questions that need client probes
 
