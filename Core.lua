@@ -615,7 +615,7 @@ function ns.Choose(key, start)
 end
 
 -- Guidance along the chosen journey from `step`, its first by default. With none chosen, the route's own journey (the
--- first card, which the tracker follows) is chosen first. With Shortest Path loaded a start in combat waits for
+-- first card) is chosen first. With Shortest Path loaded a start in combat waits for
 -- combat's end. True when something now guides the player, or the start waits.
 ---@param step? AGFStep
 ---@return boolean
