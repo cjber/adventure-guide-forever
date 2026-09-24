@@ -1101,6 +1101,10 @@ function harness.load(options)
 		entry.isSelected, entry.onClick = isSelected, setSelected
 		return entry
 	end
+	-- MenuUtil.lua:293: the menu calls it with GameTooltip on hover; h.HoverEntry does the same.
+	function DescriptionMethods:SetTooltip(tooltip)
+		self.tooltip = tooltip
+	end
 	function DescriptionMethods:SetEnabled(isEnabled)
 		self.isEnabled = isEnabled
 	end

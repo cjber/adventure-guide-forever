@@ -18,14 +18,28 @@ function Menu.Skipped(description)
 	end
 end
 
+-- Go's warning (docs/design.md §2.9) for any surface that starts the route: callers ask
+-- ns.Integrations.ReplacesJourney() first, since there is nothing to say otherwise.
+---@param tooltip GameTooltip
+---@param title string
+function Menu.GoWarning(tooltip, title)
+	GameTooltip_SetTitle(tooltip, title)
+	GameTooltip_AddInstructionLine(tooltip, L.REPLACES_JOURNEY)
+end
+
 ---@param root SharedMenuDescriptionProxy
 ---@param step? AGFStep
 function Menu.Step(root, step)
 	root:CreateTitle(step and step.title or ns.TITLE)
 	if step then
-		root:CreateButton(L.GO, function()
+		local go = root:CreateButton(L.GO, function()
 			ns.Integrations.Navigate(step)
 		end)
+		if ns.Integrations.ReplacesJourney() then
+			go:SetTooltip(function(tooltip)
+				Menu.GoWarning(tooltip, L.GO)
+			end)
+		end
 	end
 	if ns.Integrations.Owns() then
 		root:CreateButton(L.STOP, ns.Integrations.Cancel)

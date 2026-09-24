@@ -576,6 +576,51 @@ do
 	clean(h, "declined later")
 end
 
+-- F13: while someone else's Shortest Path journey runs, each way to start the route warns once before replacing it:
+-- the footer's Go, the step menu's Go and the tracker title (while it starts the route). Our own journey, or a
+-- Shortest Path without Active, warns of nothing.
+local function Warnings(h)
+	local warning, counts = "instruction: " .. h.ns.L.REPLACES_JOURNEY, {}
+	local function Count()
+		local count = 0
+		for _, line in ipairs(h.tooltip) do
+			count = count + (line == warning and 1 or 0)
+		end
+		counts[#counts + 1] = count
+	end
+	h.tooltip = {}
+	h.Hover(h.Find(function(frame)
+		return frame.stockTemplate == "UIPanelButtonTemplate"
+	end)[1])
+	Count()
+	h.tooltip = {}
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[h.ns.Route().steps[1].key], "RightButton")
+	local go = h.menu.entries[2]
+	if go.tooltip then
+		h.call(go.tooltip, h.G.GameTooltip, go)
+	end
+	Count()
+	h.tooltip = {}
+	h.tracker:OnBlockHeaderEnter(h.tracker.liveBlocks[h.ns.Route().steps[1].key])
+	Count()
+	return table.concat(counts, " ")
+end
+for _, spf in ipairs({ "v1", "v1+" }) do
+	local h = Load(spf)
+	local ns = h.ns
+	ns.OpenPanel()
+	h.flush()
+	equal(Warnings(h), "0 0 0", spf .. ": no journey, no warning")
+	h.G.ShortestPathForever.API.Navigate("OtherAddon", 1413, 0.5, 0.5)
+	equal(Warnings(h), spf == "v1+" and "1 1 1" or "0 0 0", spf .. ": another addon's journey")
+	ns.SetSetting("titleStartsRoute", false)
+	h.flush()
+	equal(Warnings(h), spf == "v1+" and "1 1 0" or "0 0 0", spf .. ": a title that doesn't start the route")
+	ns.Integrations.Navigate(ns.Route().steps[1])
+	equal(Warnings(h), "0 0 0", spf .. ": our own journey")
+	clean(h, spf .. ": replace warning")
+end
+
 -- F7, Stop: it ends only what Go started. The native waypoint is ours while it sits where Go put it, across a
 -- /reload; one the player moved is theirs. Shortest Path's journey is cancelled by our name, and Stop shows only while
 -- one of them runs.

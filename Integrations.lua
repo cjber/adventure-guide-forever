@@ -144,6 +144,14 @@ function Integrations.Guiding()
 	return api ~= nil and api.CurrentStop(OWNER) ~= nil
 end
 
+-- Go would replace a journey someone else started: the player's own, or another addon's (docs/design.md §2.9). Only
+-- a Shortest Path with Active can tell; without it Go warns of nothing.
+---@return boolean
+function Integrations.ReplacesJourney()
+	local api = SPF()
+	return api ~= nil and type(api.Active) == "function" and api.Active() == true and api.CurrentStop(OWNER) == nil
+end
+
 -- What the last Go handed Shortest Path, which may no longer be the chosen journey's steps.
 ---@type (AGFStep|AGFGiver)[]
 local guided = {}

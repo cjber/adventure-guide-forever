@@ -68,6 +68,7 @@ ns.L = {
 	NO_WAYPOINT = MAP_PIN_INVALID_MAP or "You can't place a pin on this map.",
 	-- The step menu (docs/design.md §2.8).
 	GO = "Go",
+	REPLACES_JOURNEY = "Replaces your current journey.",
 	STOP = "Stop",
 	SHOW_QUEST = "Show quest",
 	SKIP = "Skip for now",

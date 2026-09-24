@@ -222,6 +222,7 @@
 ---@field OnTravelChange fun(callback: fun())
 ---@field Navigate fun(step: AGFStep|AGFGiver): boolean route there with Shortest Path, else (declined or absent) the native waypoint where the map allows one; true when something now guides
 ---@field OnGuidanceChange fun(callback: fun()) called after every Go that guides and every Stop
+---@field ReplacesJourney fun(): boolean Go would replace a Shortest Path journey someone else started (needs Active)
 ---@field Cancel fun() Stop: cancels our Shortest Path journey, and clears the native waypoint only while it is ours
 ---@field Owns fun(): boolean Go's guidance is still running: our Shortest Path journey, or the waypoint Go set
 ---@field Guiding fun(): boolean Shortest Path is walking our multi-stop route and draws its own numbered stops
@@ -257,6 +258,7 @@
 ---@field HAND_IN_WHEN string format: zone name; the reason on a turn-in the route leaves for another continent
 ---@field NO_WAYPOINT string the error Go shows when nothing can guide the player on the step's map
 ---@field GO string the step menu's entry that starts guidance
+---@field REPLACES_JOURNEY string Go's tooltip line while someone else's Shortest Path journey runs
 ---@field STOP string ends the guidance Go started
 ---@field SHOW_QUEST string opens a log quest in Blizzard's details
 ---@field SKIP string hides the step for this session

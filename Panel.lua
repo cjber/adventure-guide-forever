@@ -342,6 +342,14 @@ local function BuildFooter(parent)
 			ns.Integrations.Navigate(step)
 		end
 	end)
+	goButton:SetScript("OnEnter", function(self)
+		if ns.Integrations.ReplacesJourney() then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			ns.Menu.GoWarning(GameTooltip, self:GetText())
+			GameTooltip:Show()
+		end
+	end)
+	goButton:SetScript("OnLeave", GameTooltip_Hide)
 	-- Shown only while Go's guidance runs (design §2.1): it never stops what the player or another addon started.
 	stopButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate") --[[@as Button]]
 	stopButton:SetSize(90, 26)

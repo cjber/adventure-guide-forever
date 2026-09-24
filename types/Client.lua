@@ -186,7 +186,7 @@ Settings = nil
 ---@field inactiveAtlas? string
 ---@field tooltipText string
 
----@class AGFTrackerBlock
+---@class AGFTrackerBlock : Frame
 ---@field id string
 ---@field SetHeader fun(self: AGFTrackerBlock, text: string)
 ---@field AddObjective fun(self: AGFTrackerBlock, index: integer|string, text: string, ...: any)

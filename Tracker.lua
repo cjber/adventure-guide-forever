@@ -41,6 +41,21 @@ function ModuleMixin:OnBlockHeaderClick(_block, mouseButton)
 	ns.Menu.Open(self:GetContextMenuParent(), "MENU_ADVENTURE_GUIDE_FOREVER_TRACKER", CurrentStep())
 end
 
+-- The title's click starts the route when the setting says so, so it warns as Go does.
+---@param block AGFTrackerBlock
+function ModuleMixin:OnBlockHeaderEnter(block)
+	local step = CurrentStep()
+	if step and ns.Setting("titleStartsRoute") and ns.Integrations.ReplacesJourney() then
+		GameTooltip:SetOwner(block, "ANCHOR_RIGHT")
+		ns.Menu.GoWarning(GameTooltip, step.title)
+		GameTooltip:Show()
+	end
+end
+
+function ModuleMixin:OnBlockHeaderLeave()
+	GameTooltip:Hide()
+end
+
 -- One block for the current step (docs/design.md §2.5): its place, why it is next and the travel line as objective
 -- lines, then what follows it, undashed. Nothing is laid out (an empty, self-hiding module) when the setting is off,
 -- there's no route yet, or the route is empty.
