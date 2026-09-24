@@ -104,7 +104,7 @@
       "stock": {
         "Instructions": {
           "shown": true,
-          "text": "Search route"
+          "text": "Search quests"
         }
       },
       "stockTemplate": "SearchBoxTemplate",

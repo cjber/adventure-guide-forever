@@ -301,6 +301,35 @@ function Model.Why(data, player, completed, log, questID, names)
 	return lines
 end
 
+local SEARCH_MAX = 10
+
+-- The player's side's quests whose title holds `query` (plain, case-insensitive, as the quest log's search), by title
+-- then ID, at most 10: the search's rows (docs/design.md §2.4). `title` is the client's, the data's otherwise.
+---@param title? fun(questID: integer): string?
+---@return integer[]
+function Model.Search(data, player, query, title)
+	query = query:lower()
+	local found, titles = {}, {}
+	for id, quest in pairs(data.quests) do
+		if quest.side == 3 or quest.side == player.side then
+			local name = (title and title(id)) or quest.title
+			if name:lower():find(query, 1, true) then
+				found[#found + 1], titles[id] = id, name
+			end
+		end
+	end
+	table.sort(found, function(a, b)
+		if titles[a] ~= titles[b] then
+			return titles[a] < titles[b]
+		end
+		return a < b
+	end)
+	for index = #found, SEARCH_MAX + 1, -1 do
+		found[index] = nil
+	end
+	return found
+end
+
 -- The three zones that best fit `level` for the quests `ids`, best first.
 local function Rank(data, ids, level)
 	local choices, scores = {}, {}

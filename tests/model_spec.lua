@@ -507,6 +507,22 @@ equal(
 	"why: an exclusive choice"
 )
 equal(Texts(Model.Why(custom, player, { [3] = true }, {}, 3)):sub(1, 18), "- You've done this", "why: done")
+
+-- F5 search: the player's side and both sides, a plain case-insensitive title match, by title then ID, 10 at most;
+-- the client's title wins over the data's.
+local wolves = { quests = {}, zones = {} }
+for id = 1, 14 do
+	wolves.quests[id] = quest()
+	wolves.quests[id].title = "Wolf pack"
+end
+wolves.quests[13].title, wolves.quests[13].side = "A wolf hunt", 1
+wolves.quests[14].title, wolves.quests[14].side = "Big wolf", 3
+wolves.quests[5].title = "Sheep"
+local found = Model.Search(wolves, player, "WOLF", function(id)
+	return id == 12 and "Aardwolf" or nil
+end)
+equal(table.concat(found, " "), "12 14 1 2 3 4 6 7 8 9", "search: side, order and limit")
+equal(#Model.Search(wolves, player, "wolf."), 0, "search: plain, not a pattern")
 player.map, player.x, player.y = 1413, 0.52, 0.3
 local baseline = Model.Plan(ns.Data, player, {}, {}, prefs())
 equal(#baseline.steps >= 3, true, "level 18 Horde route offers at least three steps")

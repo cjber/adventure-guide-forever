@@ -135,6 +135,12 @@ function GameTooltip_AddHighlightLine(tooltip, text) end
 ---@param tooltip GameTooltip
 ---@param text string
 function GameTooltip_AddInstructionLine(tooltip, text) end
+---@param tooltip GameTooltip
+---@param text string
+function GameTooltip_AddErrorLine(tooltip, text) end
+---@param tooltip GameTooltip
+---@param text string
+function GameTooltip_AddDisabledLine(tooltip, text) end
 function GameTooltip_Hide() end
 
 ---@class AGFUiMapPointFactory

@@ -45,6 +45,7 @@ read_globals = {
 	"GetMaxPlayerLevel",
 	"C_Map",
 	"C_QuestLog",
+	"C_CreatureInfo",
 	"CreateFrame",
 	-- Integrations.lua
 	"ShortestPathForever",
@@ -60,6 +61,8 @@ read_globals = {
 	"GameTooltip_AddNormalLine",
 	"GameTooltip_AddHighlightLine",
 	"GameTooltip_AddInstructionLine",
+	"GameTooltip_AddErrorLine",
+	"GameTooltip_AddDisabledLine",
 	"UIFrameFlash",
 	"EventRegistry",
 	"QuestMapFrame",

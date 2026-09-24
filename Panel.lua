@@ -21,6 +21,9 @@ local CARD_ART, CARD_ART_CHOSEN = "ui-journeys-renown-button", "ui-journeys-reno
 -- The chapter track (docs/design.md §2.3): Blizzard's delve squares at 12px, with their meanings kept
 -- (RewardTrackTemplates.lua:427-436): done, the one most recently finished in green, the rest grey.
 local TRACK_MAX, SQUARE, SQUARE_GAP = 8, 12, 3
+-- The search (docs/design.md §2.4): 3 characters or more put up to 10 quests in place of the cards; a locked one lists
+-- why, unmet lines first, up to 6 (its tooltip has them all).
+local SEARCH_MIN, SEARCH_ROWS, WHY_LINES, RESULT_HEIGHT, WHY_HEIGHT = 3, 10, 6, 24, 14
 -- The quest log's own geometry: a 29px search bar above the list, a 40px footer below it for the Go button.
 local TOP_BAR = 29
 local FOOTER = 40
@@ -49,6 +52,8 @@ local Refresh
 local emptyText
 ---@type Button?
 local goButton
+---@type AGFSearchRow[]
+local results = {}
 ---@type Frame?
 local track
 ---@type Texture[]
@@ -194,6 +199,64 @@ end
 ---@field UpdateHighlightForState fun(self: AGFJourneyCard)
 ---@field journey? AGFJourney
 
+-- One search result: the quest and where it starts, and for a locked one a lock and why (docs/design.md §2.4).
+---@class AGFSearchRow : Frame
+---@field Lock Texture
+---@field Title FontString
+---@field Zone FontString
+---@field Checks Texture[]
+---@field Lines FontString[]
+---@field why AGFWhyLine[]
+
+---@param parent Frame
+---@return AGFSearchRow
+local function CreateResult(parent)
+	local row = CreateFrame("Frame", nil, parent) --[[@as AGFSearchRow]]
+	row:EnableMouse(true)
+	row.why = {}
+	row.Lock = row:CreateTexture(nil, "ARTWORK")
+	row.Lock:SetAtlas("questlog-questtypeicon-lock")
+	row.Lock:SetSize(18, 18)
+	row.Lock:SetPoint("TOPLEFT", 4, -2)
+	row.Zone = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	row.Zone:SetPoint("TOPRIGHT", -4, -6)
+	row.Zone:SetJustifyH("RIGHT")
+	row.Title = row:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+	row.Title:SetPoint("TOPLEFT", 26, -4)
+	row.Title:SetPoint("RIGHT", row.Zone, "LEFT", -6, 0)
+	row.Title:SetJustifyH("LEFT")
+	row.Title:SetWordWrap(false)
+	row.Checks, row.Lines = {}, {}
+	for index = 1, WHY_LINES do
+		local top = -(RESULT_HEIGHT + (index - 1) * WHY_HEIGHT) + 2
+		local check = row:CreateTexture(nil, "ARTWORK")
+		check:SetAtlas("ui-questtracker-tracker-check")
+		check:SetSize(12, 12)
+		check:SetPoint("TOPLEFT", 26, top)
+		local line = row:CreateFontString(nil, "ARTWORK", "GameFontRedSmall")
+		line:SetPoint("TOPLEFT", 40, top)
+		line:SetPoint("RIGHT", -4, 0)
+		line:SetJustifyH("LEFT")
+		line:SetWordWrap(false)
+		row.Checks[index], row.Lines[index] = check, line
+	end
+	-- Every line as a tooltip, in the game's own error and disabled voices.
+	row:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip_SetTitle(GameTooltip, self.Title:GetText())
+		for _, why in ipairs(self.why) do
+			if why.met then
+				GameTooltip_AddDisabledLine(GameTooltip, why.text)
+			else
+				GameTooltip_AddErrorLine(GameTooltip, why.text)
+			end
+		end
+		GameTooltip:Show()
+	end)
+	row:SetScript("OnLeave", GameTooltip_Hide)
+	return row
+end
+
 -- The cards, and the chosen card's step rows under it; the list lays them out from its top.
 ---@param parent Frame
 ---@param below Region
@@ -225,6 +288,9 @@ local function BuildJourneys(parent, below)
 	end
 	for index = 1, ns.Model.MAX_STEPS do
 		rows[index] = CreateRow(list)
+	end
+	for index = 1, SEARCH_ROWS do
+		results[index] = CreateResult(list)
 	end
 	emptyText = list:CreateFontString(nil, "ARTWORK", "GameFontDisable")
 	emptyText:SetPoint("TOPLEFT", 10, -8)
@@ -279,7 +345,7 @@ local function BuildSettingsMenu(_, menu)
 	end)
 end
 
--- The quest log's top bar: a search box that filters the route, a count box and the settings cog.
+-- The quest log's top bar: a search box for any quest, a count box and the settings cog.
 ---@param panelFrame Frame
 local function BuildTopBar(panelFrame)
 	local count = CreateFrame("Frame", nil, panelFrame, "InputBoxVisualTemplate") --[[@as Frame]]
@@ -289,7 +355,7 @@ local function BuildTopBar(panelFrame)
 	countText:SetPoint("RIGHT", -5, 0)
 
 	searchBox = CreateFrame("EditBox", nil, panelFrame, "SearchBoxTemplate") --[[@as AGFSearchBox]]
-	searchBox.Instructions:SetText("Search route")
+	searchBox.Instructions:SetText(L.SEARCH_QUESTS)
 	searchBox:SetHeight(20)
 	searchBox:SetPoint("TOPLEFT", 6, -2)
 	searchBox:SetPoint("RIGHT", count, "LEFT", -3, 0)
@@ -349,16 +415,6 @@ local function RefreshRow(row, step, index)
 	row.Selected:SetShown(index == 1)
 end
 
--- Plain, case-insensitive text match: the quest log's search works the same way.
----@param step AGFStep
----@param query string
----@return boolean
-local function Matches(step, query)
-	return query == ""
-		or step.title:lower():find(query, 1, true) ~= nil
-		or step.detail:lower():find(query, 1, true) ~= nil
-end
-
 ---@param card AGFJourneyCard
 ---@param journey AGFJourney
 ---@param chosen boolean
@@ -405,20 +461,15 @@ local function LayoutTrack(journey, top)
 	return top + SQUARE + CARD_GAP
 end
 
--- The chosen card's rows, from `top` down; they keep their route number while the search hides the others.
+-- The chosen card's rows, from `top` down; `hidden` (no journey chosen, or a search) hides them all.
 ---@param route AGFRoute
----@param query string
 ---@param top number
+---@param hidden? boolean
 ---@return number top below the last row shown
----@return integer shown
-local function LayoutRows(route, query, top)
-	local shown = 0
+local function LayoutRows(route, top, hidden)
 	for index, row in ipairs(rows) do
 		---@type AGFStep?
-		local step = route.steps[index]
-		if step and not Matches(step, query) then
-			step = nil
-		end
+		local step = not hidden and route.steps[index] or nil
 		row.step = step
 		row:SetShown(step ~= nil)
 		if step then
@@ -426,24 +477,89 @@ local function LayoutRows(route, query, top)
 			row:SetPoint("TOPLEFT", 6, -top)
 			row:SetPoint("TOPRIGHT", -6, -top)
 			top = top + ROW_HEIGHT + ROW_GAP
-			shown = shown + 1
 		end
 	end
-	return top, shown
+	return top
 end
 
--- The cards in order, the chosen one followed by its rows; the scroll child's height is summed, not measured, so
--- it is right before the client has laid anything out.
+-- One result from `top` down. A quest the player can take now is a plain row; a locked one gets the lock and its
+-- lines, unmet first. No ring and no Go: the search only explains.
+---@param row AGFSearchRow
+---@param id integer
+---@param top number
+---@return number top below it
+local function RefreshResult(row, id, top)
+	local state, data = ns.State, ns.Data
+	local names = { title = state.QuestTitle, race = state.RaceName, class = state.ClassName }
+	local why = ns.Model.Why(data, state.Player(), state.Completed(), state.Log(), id, names)
+	local shown = {}
+	for _, met in ipairs({ false, true }) do
+		for _, line in ipairs(why) do
+			if line.met == met then
+				shown[#shown + 1] = line
+			end
+		end
+	end
+	-- Every line met is the quest open now: nothing to explain.
+	if not (shown[1] and not shown[1].met) then
+		shown = {}
+	end
+	row.why = shown
+	local quest = data.quests[id]
+	local map = quest.zone or (quest.start and quest.start.map)
+	local zone = map and (data.zones[map] or data.maps[map])
+	row.Title:SetText(state.QuestTitle(id) or quest.title)
+	row.Zone:SetText(map and (state.MapName(map) or (zone and zone.name)) or "")
+	row.Lock:SetShown(shown[1] ~= nil)
+	for index, line in ipairs(row.Lines) do
+		local entry = shown[index]
+		line:SetShown(entry ~= nil)
+		row.Checks[index]:SetShown(entry ~= nil and entry.met)
+		if entry then
+			line:SetFontObject(entry.met and "GameFontDisableSmall" or "GameFontRedSmall")
+			line:SetText(entry.text)
+		end
+	end
+	local height = RESULT_HEIGHT + math.min(#shown, WHY_LINES) * WHY_HEIGHT
+	row:SetHeight(height)
+	row:SetPoint("TOPLEFT", 6, -top)
+	row:SetPoint("TOPRIGHT", -6, -top)
+	return top + height + ROW_GAP
+end
+
+-- The search's results in place of the cards, from the list's top; no `query` hides them.
+---@param query? string
+---@return number top below the last result
+---@return integer found
+local function LayoutResults(query)
+	local found = query and ns.Model.Search(ns.Data, ns.State.Player(), query, ns.State.QuestTitle) or {}
+	local top = 0
+	for index, row in ipairs(results) do
+		row:SetShown(found[index] ~= nil)
+		if found[index] then
+			top = RefreshResult(row, found[index], top)
+		end
+	end
+	return top, #found
+end
+
+-- The cards in order, the chosen one followed by its rows, or the search's results; the scroll child's height is
+-- summed, not measured, so it is right before the client has laid anything out.
 ---@param route AGFRoute
+---@return boolean searching
+---@return integer found
 local function LayoutJourneys(route)
 	---@cast searchBox -?
 	---@cast countText -?
 	---@cast list -?
 	---@cast content -?
-	local query = strtrim(searchBox:GetText()):lower()
-	local top, shown = 0, 0
+	---@cast track -?
+	local query = strtrim(searchBox:GetText())
+	local searching = #query >= SEARCH_MIN
+	local top, found = LayoutResults(searching and query or nil)
+	track:Hide()
 	for index, card in ipairs(cards) do
-		local journey = route.journeys[index]
+		local journey = not searching and route.journeys[index] or nil
 		card:SetShown(journey ~= nil)
 		if journey then
 			RefreshCard(card, journey, journey.key == route.journey)
@@ -451,22 +567,18 @@ local function LayoutJourneys(route)
 			top = top + CARD_HEIGHT + CARD_GAP
 			if journey.key == route.journey then
 				top = LayoutTrack(journey, top)
-				top, shown = LayoutRows(route, query, top)
-				top = top + CARD_GAP
+				top = LayoutRows(route, top) + CARD_GAP
 			end
 		end
 	end
-	if not route.journey then
-		---@cast track -?
-		track:Hide()
-		LayoutRows(route, query, top)
-		top = 40
+	if searching or not route.journey then
+		LayoutRows(route, top, true)
+		top = math.max(top, 40)
 	end
-	countText:SetText(
-		query == "" and ("Steps: %d"):format(#route.steps) or ("Steps: %d/%d"):format(shown, #route.steps)
-	)
+	countText:SetText(("Steps: %d"):format(#route.steps))
 	list:SetHeight(top)
 	content:SetHeight(LIST_TOP + top + PAD)
+	return searching, found
 end
 
 function Refresh()
@@ -479,13 +591,14 @@ function Refresh()
 	local route = ns.Route()
 
 	local ready = ns.State.Ready()
-	emptyText:SetText(ready and L.NOTHING_NEARBY or L.LOADING)
-	emptyText:SetShown(not ready or #route.journeys == 0)
-	LayoutJourneys(route)
+	local searching, found = LayoutJourneys(route)
+	emptyText:SetText((not ready and L.LOADING) or (searching and L.SEARCH_NONE) or L.NOTHING_NEARBY)
+	emptyText:SetShown(not ready or (searching and found == 0) or (not searching and #route.journeys == 0))
 
+	-- Go follows the chosen journey, which the search hides: it waits until the search is cleared.
 	local provider = ns.Integrations.Provider()
 	goButton:SetText(provider and ("Go (%s)"):format(provider) or "Set waypoint")
-	goButton:SetEnabled(route.steps[1] ~= nil)
+	goButton:SetEnabled(route.steps[1] ~= nil and not searching)
 end
 
 -- Blizzard's displayMode and TabButtons are never written: the guide lays over the quest log

@@ -169,6 +169,7 @@
 ---@field IsGray fun(questLevel: integer, playerLevel: integer): boolean
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
 ---@field Why fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer, names?: AGFWhyNames): AGFWhyLine[] every requirement, met or not; eligible exactly when all are met
+---@field Search fun(data: AGFData, player: AGFPlayer, query: string, title?: fun(questID: integer): string?): integer[] up to 10 quest IDs whose title holds `query`, by title
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
 ---@field Story fun(data: AGFData, questID: integer): AGFStory? the chain the quest belongs to; nil when it is in none, or the way back forks
 ---@field Zones fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>): AGFZoneChoice[]
@@ -183,6 +184,9 @@
 ---@field OnChange fun(callback: fun())
 ---@field Ready fun(): boolean completion data has loaded
 ---@field MapName fun(map: integer): string? the client's localised map name, nil when it has none
+---@field QuestTitle fun(questID: integer): string? the client's cached title, nil until it has one
+---@field RaceName fun(raceID: integer): string?
+---@field ClassName fun(classID: integer): string?
 
 -- Shortest Path Forever's public API, mirrored field for field from its types/API.lua (SPFAPIStop, SPFPublicAPI) at
 -- the sha tests/contract_spec.lua pins; that spec fails on any drift. Integrations.lua's REQUIRED lists exactly
@@ -271,6 +275,8 @@
 ---@field WHY_RACES string format: race names, joined (the client's ITEM_RACES_ALLOWED)
 ---@field WHY_CLASSES string format: class names, joined (the client's ITEM_CLASSES_ALLOWED)
 ---@field LOADING string the guide before the completed quests arrive
+---@field SEARCH_QUESTS string the search box's instructions
+---@field SEARCH_NONE string a search that finds no quest
 
 ---@class AGFNamespace
 ---@field TITLE string

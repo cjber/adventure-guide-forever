@@ -202,6 +202,8 @@ def load_wowmock():
         wm.FONTS.setdefault("GameFontDisable", wm.Font(wm.FRIZQT, 12, (0.5, 0.5, 0.5), (1, -1)))
         # GameFontNormalMed2 is SystemFont_Shadow_Med2 (Fonts.xml: FRIZQT at 13) in gold.
         wm.FONTS.setdefault("GameFontNormalMed2", wm.Font(wm.FRIZQT, 13, wm.NORMAL, (1, -1)))
+        # GameFontRedSmall: SystemFont_Shadow_Small (FRIZQT at 10) in RED_FONT_COLOR.
+        wm.FONTS.setdefault("GameFontRedSmall", wm.Font(wm.FRIZQT, 10, (1.0, 0.1, 0.1), (1, -1)))
     return wm
 
 

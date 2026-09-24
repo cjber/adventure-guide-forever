@@ -51,6 +51,29 @@ function State.MapName(map)
 	return info and info.name ~= "" and info.name or nil
 end
 
+-- The client's title for a quest in the player's language, when it has it cached; nil otherwise, for the data's.
+---@param questID integer
+---@return string?
+function State.QuestTitle(questID)
+	local title = C_QuestLog.GetTitleForQuestID(questID)
+	return title ~= "" and title or nil
+end
+
+-- The client's names for a race and a class ID, for the why-not lines; nil when it has none.
+---@param raceID integer
+---@return string?
+function State.RaceName(raceID)
+	local info = C_CreatureInfo.GetRaceInfo(raceID)
+	return info and info.raceName or nil
+end
+
+---@param classID integer
+---@return string?
+function State.ClassName(classID)
+	local info = C_CreatureInfo.GetClassInfo(classID)
+	return info and info.className or nil
+end
+
 ---@type table<integer, boolean>
 local completed = {}
 local ready = false

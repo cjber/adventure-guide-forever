@@ -932,6 +932,8 @@ function harness.load(options)
 		end,
 		GetTitleForQuestID = noop,
 	}
+	-- No client names for races and classes: Model.Why's English stands in, as on a client that lacks them.
+	G.C_CreatureInfo = { GetRaceInfo = noop, GetClassInfo = noop }
 
 	-- Maps and waypoints: the user waypoint is a value store, with every call counted.
 	h.counts.SetUserWaypoint, h.counts.ClearUserWaypoint, h.noWaypoint = 0, 0, {}
@@ -995,6 +997,8 @@ function harness.load(options)
 		normal = "GameTooltip_AddNormalLine",
 		highlight = "GameTooltip_AddHighlightLine",
 		instruction = "GameTooltip_AddInstructionLine",
+		error = "GameTooltip_AddErrorLine",
+		disabled = "GameTooltip_AddDisabledLine",
 	}) do
 		G[name] = function(_, text)
 			h.tooltip[#h.tooltip + 1] = kind .. ": " .. tostring(text)

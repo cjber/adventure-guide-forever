@@ -33,6 +33,8 @@ ns.L = {
 	BEGINS_STORY = "Begins a new story",
 	NOTHING_NEARBY = "Nothing nearby fits your level.",
 	LOADING = "Loading your completed quests...",
+	SEARCH_QUESTS = "Search quests",
+	SEARCH_NONE = "No quests match your search.",
 	SETTING_MAP_PINS_TOOLTIP = "The route's numbered steps on the world map while their zone is shown, and quest "
 		.. "givers when those are on too. The open guide previews its route either way.",
 	SETTING_DUNGEONS_DEFAULT_TOOLTIP = "Suggest dungeon and group quests for a character the first time you open "

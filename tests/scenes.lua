@@ -6,7 +6,7 @@
 -- map it resolved from the previous run). With no input the panel is exactly tests/golden/layout.json, which
 -- screenshots.py checks.
 local harness, json = dofile("tests/harness.lua"), dofile("tests/json.lua")
-local QUERY = "8 quests"
+local QUERY = "Call of"
 
 local input = { rects = {} }
 if arg[1] then
@@ -79,7 +79,7 @@ h.providers[1]:RefreshAllData()
 out.panel.pins = Pins(h)
 out.panel.map = h.map:GetMapID()
 
--- The search filters the chosen journey, here The Barrens' pickups, to the stops with the most quests to pick up.
+-- The search: the Call of quests a level-18 orc shaman sees, the locked ones saying why.
 h = Load(false)
 h.ns.Prefs().journey = "story:1413"
 h.ns.Invalidate()

@@ -530,6 +530,55 @@ do
 		after = after + ((entry.atlas or ""):match("^ui%-journeys%-delve") and 1 or 0)
 	end
 	equal(after, 0, "story: no track under another card")
+
+	-- F5: a search of 3 characters or more puts quests in place of the cards; a locked one says why, and Go waits.
+	local search = h.Find(function(frame)
+		return frame.stockTemplate == "SearchBoxTemplate"
+	end)[1]
+	local function Results()
+		return Shown(h, function(frame)
+			return frame.Lines ~= nil
+		end)
+	end
+	local function Lines(row)
+		local out = {}
+		for _, line in ipairs(row.Lines) do
+			if line:IsVisible() then
+				out[#out + 1] = line:GetText()
+			end
+		end
+		return out
+	end
+	local goButton = h.Find(function(frame)
+		return frame.stockTemplate == "UIPanelButtonTemplate"
+	end)[1]
+	h.Type(search, "ca")
+	equal(#Results(), 0, "search: two characters keep the cards")
+	h.Type(search, "Call of")
+	local found, suppressed, open = Results(), nil, nil
+	for _, row in ipairs(found) do
+		suppressed = suppressed or (row.Title:GetText() == "Call of Fire" and row) or nil
+		open = open or (not row.Lock:IsShown() and row) or nil
+	end
+	equal(#found, 10, "search: ten results at most")
+	equal(Says(h, story.title), 0, "search: the cards step aside")
+	equal(#Shown(h, function(frame)
+		return frame.SkipButton ~= nil
+	end), 0, "search: and their steps")
+	equal(goButton:IsEnabled(), false, "search: no Go")
+	local lines = Lines(assert(suppressed, "search: Call of Fire, whose start the data suppresses"))
+	equal(#lines, 1, "search: a suppressed start shows exactly 1 line")
+	equal(lines[1], h.ns.L.WHY_NO_START, "search: saying the guide can't tell where it starts")
+	equal(suppressed.Lock:IsShown(), true, "search: behind a lock")
+	h.Hover(suppressed)
+	equal(table.concat(h.tooltip, "\n"), "title: Call of Fire\nerror: " .. h.ns.L.WHY_NO_START, "search: tooltip")
+	equal(#Lines(assert(open, "search: a quest open now")), 0, "search: an open quest has nothing to explain")
+	h.Type(search, "no such quest")
+	equal(#Results(), 0, "search: nothing found")
+	equal(Says(h, h.ns.L.SEARCH_NONE), 1, "search: says so")
+	h.Type(search, "")
+	equal(#Results(), 0, "search: cleared")
+	equal(goButton:IsEnabled(), true, "search: Go is back")
 	clean(h, "guide")
 
 	local none = harness.load({ player = { level = 70 } })
