@@ -951,7 +951,8 @@ function harness.load(options)
 		player.map, player.x, player.y = map, x, y
 	end
 
-	-- Quest log and completion: `log` entries are {id, title, level, complete, map, x, y}; a spec edits h.log.
+	-- Quest log and completion: `log` entries are {id, title, level, complete, map, x, y, objectives, poi}; a spec
+	-- edits h.log.
 	local log = options.log or {}
 	h.log = log
 	h.titleRequests = {}
@@ -978,12 +979,43 @@ function harness.load(options)
 			end
 			return false
 		end,
+		-- As the live client: a waypoint only once the quest is finished (its turn-in).
 		GetNextWaypoint = function(questID)
 			for _, entry in ipairs(log) do
-				if entry.id == questID then
+				if entry.id == questID and entry.complete then
 					return entry.map, entry.x, entry.y
 				end
 			end
+		end,
+		-- An entry's `objectives` are {type, done, have, need}, as State.lua reads them back.
+		GetQuestObjectives = function(questID)
+			for _, entry in ipairs(log) do
+				if entry.id == questID then
+					local objectives = {}
+					for index, objective in ipairs(entry.objectives or {}) do
+						objectives[index] = {
+							text = "",
+							type = objective.type,
+							finished = objective.done,
+							numFulfilled = objective.have,
+							numRequired = objective.need,
+						}
+					end
+					return objectives
+				end
+			end
+			return {}
+		end,
+		-- An entry's `poi` {map, x, y} is the client's point for it on that map; h.poiCalls counts the reads.
+		GetQuestsOnMap = function(uiMapID)
+			h.poiCalls = (h.poiCalls or 0) + 1
+			local quests = {}
+			for _, entry in ipairs(log) do
+				if entry.poi and entry.poi.map == uiMapID then
+					quests[#quests + 1] = { questID = entry.id, x = entry.poi.x, y = entry.poi.y }
+				end
+			end
+			return quests
 		end,
 		GetTitleForQuestID = noop,
 		-- Tracked quests, in order: options.watched seeds them; the client's limit is 25.

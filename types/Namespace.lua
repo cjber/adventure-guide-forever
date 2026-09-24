@@ -9,6 +9,7 @@
 ---@field y number
 ---@field name string NPC or object name
 ---@field hub? integer the town it stands in (tools/gen_quests.py town_hubs); nil when its map has no world rectangle
+---@field r? number a quest's objective area only (Model.lua Area): its radius in yards, 0 for a single point
 
 ---@class AGFQuest
 ---@field title string English title from the source data; the client's own title wins when cached
@@ -100,9 +101,18 @@
 ---@field title string
 ---@field complete boolean ready to hand in
 ---@field level integer
----@field map? integer where to go next (objective area or turn-in), from C_QuestLog waypoints
+---@field map? integer where to go next, from C_QuestLog.GetNextWaypoint: the live client gives one only once finished
 ---@field x? number
 ---@field y? number
+---@field objectives? AGFLogObjective[] the client's objectives, in its order (C_QuestLog.GetQuestObjectives)
+---@field poi? {map: integer, x: number, y: number} the client's point for the quest (C_QuestLog.GetQuestsOnMap)
+
+-- One objective of a logged quest as the client counts it.
+---@class AGFLogObjective
+---@field type string "monster", "object", "item", "event", or another kind the data has no slot for
+---@field done boolean
+---@field have integer
+---@field need integer
 
 ---@class AGFPrefs
 ---@field quests boolean
@@ -136,6 +146,7 @@
 ---@field place? string the town's name, else its busiest giver; a turn-in's NPC only where its waypoint agrees; a trainer's NPC
 ---@field zone? string the client's name for `map`, else the data's
 ---@field optional? boolean elite/group or outside the player's level band
+---@field r? number an objective step's radius in yards: its area's, 0 for a point
 ---@field chapter? string the story card's chapter line, on the step that takes the chain up
 
 ---@class AGFSkipped
@@ -175,7 +186,7 @@
 ---@field group? integer how many of its quests are elite, dungeon or raid (the sum of its steps' `group`)
 
 ---@class AGFRoute
----@field journeys AGFJourney[] at most 3: carry, the zone's story, then the diversions (calling, dungeon, a way into an instance, battleground, next zone) newest first
+---@field journeys AGFJourney[] at most 3: the zone's story, carry, then the diversions (calling, dungeon, a way into an instance, battleground, next zone) newest first
 ---@field journey? string the key of the journey whose steps these are: the chosen one, else the first
 ---@field chosen boolean the player chose `journey`; false while the route falls back to the first card
 ---@field stranded? true no next zone (roadmap #21): the dungeon card came whatever the Dungeons toggle says

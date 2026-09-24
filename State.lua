@@ -242,6 +242,60 @@ function State.Ready()
 	return ready
 end
 
+-- The client's point for each logged quest (C_QuestLog.GetQuestsOnMap), on the player's map and the zones the data
+-- files the log's quests under, the player's map first. Read again only after a quest or zone event says it may have
+-- moved, never on every rebuild; empty on a client without the API.
+---@type table<integer, {map: integer, x: number, y: number}>
+local points = {}
+local pointsStale = true
+
+---@param log table<integer, AGFLogQuest>
+local function LoadPoints(log)
+	points, pointsStale = {}, false
+	if not C_QuestLog.GetQuestsOnMap then
+		return
+	end
+	local maps, seen = {}, {}
+	local function Add(map)
+		if map and not seen[map] then
+			seen[map], maps[#maps + 1] = true, map
+		end
+	end
+	Add(C_Map.GetBestMapForUnit("player"))
+	local ids = {}
+	for id in pairs(log) do
+		ids[#ids + 1] = id
+	end
+	table.sort(ids)
+	for _, id in ipairs(ids) do
+		local quest = ns.Data.quests[id]
+		Add(quest and quest.zone)
+	end
+	for _, map in ipairs(maps) do
+		for _, info in ipairs(C_QuestLog.GetQuestsOnMap(map) or {}) do
+			if log[info.questID] and not points[info.questID] then
+				points[info.questID] = { map = map, x = info.x, y = info.y }
+			end
+		end
+	end
+end
+
+-- The client's objectives for a quest, in its order: each one's type ("monster", "object", "item", "event", ...),
+-- whether it is done, and its count.
+---@return AGFLogObjective[]
+local function Objectives(questID)
+	local objectives = {}
+	for index, info in ipairs(C_QuestLog.GetQuestObjectives(questID) or {}) do
+		objectives[index] = {
+			type = info.type,
+			done = info.finished == true,
+			have = info.numFulfilled or 0,
+			need = info.numRequired or 0,
+		}
+	end
+	return objectives
+end
+
 -- Keyed by quest ID, like Completed(), so the model can look either up in O(1).
 ---@return table<integer, AGFLogQuest>
 function State.Log()
@@ -259,8 +313,15 @@ function State.Log()
 				map = map,
 				x = x,
 				y = y,
+				objectives = Objectives(info.questID),
 			}
 		end
+	end
+	if pointsStale then
+		LoadPoints(log)
+	end
+	for id, entry in pairs(log) do
+		entry.poi = points[id]
 	end
 	return log
 end
@@ -332,11 +393,21 @@ events:RegisterEvent("SKILL_LINES_CHANGED")
 events:RegisterEvent("UPDATE_FACTION")
 -- Rest and XP (roadmap #11), by feature detection: the Forever probes never registered these, and the client raises
 -- on an event it lacks, so one it refuses just leaves the rest line to the next rebuild.
-for _, event in ipairs({ "PLAYER_UPDATE_RESTING", "UPDATE_EXHAUSTION", "PLAYER_XP_UPDATE" }) do
+-- QUEST_POI_UPDATE moves the client's quest points (LoadPoints).
+for _, event in ipairs({ "PLAYER_UPDATE_RESTING", "UPDATE_EXHAUSTION", "PLAYER_XP_UPDATE", "QUEST_POI_UPDATE" }) do
 	pcall(events.RegisterEvent, events, event)
 end
 -- The first argument is PLAYER_ENTERING_WORLD's isInitialLogin, and QUEST_TURNED_IN's questID.
+-- The events that never move the client's quest points; every other one may.
+local KEEPS_POINTS = {
+	SKILL_LINES_CHANGED = true,
+	UPDATE_FACTION = true,
+	PLAYER_UPDATE_RESTING = true,
+	UPDATE_EXHAUSTION = true,
+	PLAYER_XP_UPDATE = true,
+}
 events:SetScript("OnEvent", function(_, event, arg)
+	pointsStale = pointsStale or not KEEPS_POINTS[event]
 	if event == "PLAYER_ENTERING_WORLD" then
 		if not ready and LoadCompleted() then
 			ready = true
