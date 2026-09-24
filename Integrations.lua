@@ -29,7 +29,7 @@ end
 
 -- Step 1's travel line, fetched in its own frame after each rebuild (Core.lua), so the rebuild itself never asks
 -- Shortest Path anything. No cache here: Shortest Path keeps its own for 5 s.
----@type {key: string, line: string?}?
+---@type {key: string, line: string?, minutes: integer?}?
 local travel
 ---@type fun()[]
 local travelListeners = {}
@@ -76,9 +76,11 @@ local function DetailLine(detail)
 		.. (chosen.wait and L.TRAVEL_WAIT:format(Minutes(chosen.wait)) or "")
 end
 
+-- The travel line and the whole trip's minutes, from one call.
 ---@param step AGFStep
----@return string?
-function Integrations.TravelLine(step)
+---@return string? line
+---@return integer? minutes
+local function Fetch(step)
 	local api = SPF()
 	local player = ns.State.Player()
 	if not (api and player.map and player.x and player.y) or InCombatLockdown() then
@@ -86,12 +88,21 @@ function Integrations.TravelLine(step)
 	end
 	if type(api.EstimateDetail) == "function" then
 		local detail = api.EstimateDetail(player.map, player.x, player.y, step.map, step.x, step.y)
-		return detail and DetailLine(detail)
+		if detail then
+			return DetailLine(detail), Minutes(detail.seconds)
+		end
+		return nil
 	end
 	local seconds = api.Estimate(player.map, player.x, player.y, step.map, step.x, step.y)
 	if seconds then
-		return L.TRAVEL_ABOUT:format(Minutes(seconds))
+		return L.TRAVEL_ABOUT:format(Minutes(seconds)), Minutes(seconds)
 	end
+end
+
+---@param step AGFStep
+---@return string?
+function Integrations.TravelLine(step)
+	return (Fetch(step))
 end
 
 -- Tweaks Forever's spells to train (F16), from its API.lua when a version 1 is loaded.
@@ -137,9 +148,14 @@ function Integrations.RefreshTravel()
 		return
 	end
 	local step = ns.Route().steps[1]
-	local line = step and Integrations.TravelLine(step)
-	local changed = (travel and travel.key) ~= (step and step.key) or (travel and travel.line) ~= line
-	travel = step and { key = step.key, line = line } or nil
+	local line, minutes
+	if step then
+		line, minutes = Fetch(step)
+	end
+	local changed = (travel and travel.key) ~= (step and step.key)
+		or (travel and travel.line) ~= line
+		or (travel and travel.minutes) ~= minutes
+	travel = step and { key = step.key, line = line, minutes = minutes } or nil
 	if RefreshTrainer() or changed then
 		NotifyTravel()
 	end
@@ -159,6 +175,13 @@ end)
 ---@return string?
 function Integrations.Travel(step)
 	return travel and travel.key == step.key and travel.line or nil
+end
+
+-- The whole trip's minutes, fetched with the line.
+---@param step AGFStep
+---@return integer?
+function Integrations.TravelMinutes(step)
+	return travel and travel.key == step.key and travel.minutes or nil
 end
 
 ---@param fn fun()

@@ -6,6 +6,7 @@ local PAD = 8
 local ROW_HEIGHT = 44
 -- A row's detail runs under the skip button, to 10px short of the row's edge; the tag follows it within that room.
 local DETAIL_WIDTH = 230
+local GROUP_ICON = 12
 local ROW_GAP = 2
 local CARD_HEIGHT = 86
 local CARD_GAP = 4
@@ -111,6 +112,7 @@ end
 ---@field Number Texture
 ---@field Title FontString
 ---@field Detail FontString
+---@field Group Texture
 ---@field Tag FontString
 ---@field SkipButton Button
 ---@field step? AGFStep
@@ -178,8 +180,12 @@ local function CreateRow(parent)
 	row.Detail:SetPoint("TOPLEFT", row.Title, "BOTTOMLEFT", 0, -4)
 	row.Detail:SetJustifyH("LEFT")
 	row.Detail:SetWordWrap(false)
+	-- Blizzard's group quest tag (QUEST_TAG_ATLAS), after the detail when a quest at the stop needs a group.
+	row.Group = row:CreateTexture(nil, "ARTWORK")
+	row.Group:SetAtlas("questlog-questtypeicon-group")
+	row.Group:SetSize(GROUP_ICON, GROUP_ICON)
+	row.Group:SetPoint("LEFT", row.Detail, "RIGHT", 4, 0)
 	row.Tag = row:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-	row.Tag:SetPoint("LEFT", row.Detail, "RIGHT", 6, 0)
 	row.Tag:SetText(ns.L.OPTIONAL)
 
 	-- The ring's lines; a row after step 1 asks Shortest Path for its travel line once, on hover.
@@ -525,11 +531,19 @@ local function RefreshRow(row, step, index)
 	row.index = index
 	row.Number:SetAtlas("services-number-" .. index)
 	row.Title:SetText(step.title)
-	-- Step 1 says how far it is when Shortest Path knows (docs/design.md §2.1); its tooltip still gives the reason.
-	row.Detail:SetText(index == 1 and ns.Integrations.Travel(step) or step.detail)
+	-- Step 1 adds how long it takes when Shortest Path knows (docs/plan.md §7.4); its tooltip gives the way.
+	local minutes = index == 1 and ns.Integrations.TravelMinutes(step)
+	row.Detail:SetText(minutes and L.TRAVEL:format(step.detail, minutes) or step.detail)
+	local group = (step.group or 0) > 0
+	row.Group:SetShown(group)
 	row.Tag:SetShown(step.optional == true)
-	-- The detail has no right anchor, so the tag can follow its text; a width cap cuts it short with "..." instead.
-	local room = DETAIL_WIDTH - (row.Tag:IsShown() and row.Tag:GetUnboundedStringWidth() + 6 or 0)
+	row.Tag:ClearAllPoints()
+	row.Tag:SetPoint("LEFT", group and row.Group or row.Detail, "RIGHT", group and 4 or 6, 0)
+	-- The detail has no right anchor, so the icon and tag can follow its text; a width cap cuts it short with "..."
+	-- instead.
+	local room = DETAIL_WIDTH
+		- (group and GROUP_ICON + 4 or 0)
+		- (row.Tag:IsShown() and row.Tag:GetUnboundedStringWidth() + (group and 4 or 6) or 0)
 	row.Detail:SetWidth(math.min(row.Detail:GetUnboundedStringWidth(), room))
 	row:SetAlpha(step.optional and 0.6 or 1)
 	row.Selected:SetShown(index == 1)

@@ -459,7 +459,8 @@ do
 	local rows = Shown(h, function(frame)
 		return frame.SkipButton ~= nil
 	end)
-	equal(rows[1].Detail:GetText(), cases[4][3], "travel line: step 1's row")
+	-- 90 + 45 seconds on foot: 3 minutes after the counts; the way itself is the tooltip's.
+	equal(rows[1].Detail:GetText(), rows[1].step.detail .. " · 3 min", "travel line: step 1's row adds the minutes")
 	calls = h.spf.EstimateDetail
 	h.Hover(rows[1])
 	equal(h.spf.EstimateDetail, calls, "travel line: step 1's tooltip asks nothing")
@@ -873,6 +874,20 @@ do
 	local tag = rows[2].Tag:GetUnboundedStringWidth() + 6
 	equal(rows[2].Tag:IsShown(), true, "detail width: the tag shows")
 	equal(rows[2].Detail:GetWidth(), 230 - tag, "detail width: a long one stops short of the tag")
+	equal(rows[2].Group:IsShown(), false, "group icon: none without a group quest")
+
+	-- A stop with a group quest: Blizzard's group tag follows the detail, the tag follows it, and the detail makes room.
+	steps[2].group = 1
+	ns.OpenPanel()
+	equal(rows[2].Group:IsShown(), true, "group icon: shown")
+	equal(rows[2].Group:GetAtlas(), "questlog-questtypeicon-group", "group icon: the stock tag")
+	equal(select(2, rows[2].Tag:GetPoint()), rows[2].Group, "group icon: the tag follows it")
+	equal(rows[2].Detail:GetWidth(), 230 - 16 - (tag - 2), "group icon: the detail makes room")
+	equal(
+		select(2, rows[1].Tag:GetPoint()),
+		rows[1].Detail,
+		"group icon: a row without one keeps the tag on its detail"
+	)
 	clean(h, "detail width")
 end
 
