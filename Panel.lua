@@ -556,7 +556,9 @@ local function LayoutJourneys(route)
 	---@cast content -?
 	---@cast track -?
 	local query = strtrim(searchBox:GetText())
-	local searching = #query >= SEARCH_MIN
+	-- Characters, not bytes: a character is one byte that doesn't continue a UTF-8 sequence.
+	local _, characters = query:gsub("[^\128-\191]", "")
+	local searching = characters >= SEARCH_MIN
 	local top, found = LayoutResults(searching and query or nil)
 	track:Hide()
 	for index, card in ipairs(cards) do

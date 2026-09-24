@@ -582,6 +582,8 @@ do
 	end)[1]
 	h.Type(search, "ca")
 	equal(#Results(), 0, "search: two characters keep the cards")
+	h.Type(search, "\231\139\188\231\139\188") -- two CJK characters, six bytes
+	equal(#Results() + Says(h, h.ns.L.SEARCH_NONE), 0, "search: counts characters, not bytes")
 	h.Type(search, "Call of")
 	local found, suppressed, open = Results(), nil, nil
 	for _, row in ipairs(found) do
