@@ -209,9 +209,12 @@ do
 end
 
 -- A level that opens a battleground brings its card, whose moment says it is open (Moments.lua); the calling, new at
--- the same level, is turned down so the line is the card's.
+-- the same level, is turned down so the line is the card's, as is Hillsbrad, a zone to head to from that level.
 do
-	local charDB = { battlegrounds = true, notInterested = { calling = "Your calling" } }
+	local charDB = {
+		battlegrounds = true,
+		notInterested = { calling = "Your calling", ["zone:1424"] = "Head to Hillsbrad Foothills" },
+	}
 	local h = harness.load({ battlegrounds = OPENS, charDB = charDB, completed = { 844 }, log = {} })
 	h.player.level = 19
 	h.fire("PLAYER_LEVEL_UP")

@@ -251,9 +251,9 @@ function NextCard()
 	Chain()
 end
 
--- The cards now shown (a new route, or the guide opening): answers for cards no longer shown go, and up to 3 cards
--- queue, a frame each, when they have no minutes or the player has moved since they asked, as step 1 asks again with
--- each route; a card's last answer stands until the new one.
+-- The cards now shown (a new route, or the guide opening): answers for cards no longer shown go, and every card
+-- (MAX_JOURNEYS) queues, a frame each, when it has no minutes or the player has moved since it asked, as step 1 asks
+-- again with each route; a card's last answer stands until the new one.
 ---@param journeys AGFJourney[]
 function Integrations.RefreshCards(journeys)
 	local kept, here = {}, Here()

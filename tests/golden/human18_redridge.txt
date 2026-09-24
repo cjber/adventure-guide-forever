@@ -4,11 +4,16 @@ card (chosen) | zone:1433 | Redridge Mountains story | Chapter 1 of 3 | A chain 
   step 2 | area:3741:4 | Hilary's Necklace | 1433 0.2320,0.5390 | after you pick it up | 200 yd | 3741/4
   step 3 | area:125:4 | The Lost Tools | 1433 0.3640,0.5460 | after you pick it up | 0 yd | 125/4
   step 4 | town:61:2 | Lakeshire, Redridge | 1433 0.2705,0.4864 | 2 to hand in
-card | zone:1439 | Head to Darkshore | 16 quests near your level | Auberdine needs hands | map 1439
-  step 1 | town:452 | Auberdine, Darkshore | 1439 0.3574,0.4371 | 12 to pick up
-  step 2 | town:437 | Pick up quests: Kerlonian Evershade | 1439 0.4440,0.7643 | near your level
-  step 3 | town:431 | Pick up quests: Therylune | 1439 0.3864,0.8733 | near your level
-  step 4 | town:429 | Pick up quests: Sentinel Aynasha | 1439 0.4594,0.9029 | near your level
-  step 5 | town:469 | Pick up quests: Gelkak Gyromast | 1439 0.5666,0.1348 | near your level
+card | zone:1440 | Head to Ashenvale | 3 quests near your level | Astranaar needs hands | map 1440
+  step 1 | town:405 | Astranaar, Ashenvale | 1440 0.3467,0.4884 | 3 to pick up
+card | zone:1413 | Head to The Barrens | 7 quests near your level | Ratchet needs hands | map 1413
+  step 1 | town:340 | Ratchet, The Barrens | 1413 0.6335,0.3845 | 6 to pick up
+  step 2 | town:382 | Pick up quests: Wizzlecrank's Shredder | 1413 0.5652,0.0745 | near your level
+card | zone:1436 | Head to Westfall | 8 quests near your level | - | map 1436
+  step 1 | town:51 | Pick up quests: Verna Furlbrow | 1436 0.5992,0.1942 | near your level
+  step 2 | town:45 | Pick up quests: Farmer Saldean | 1436 0.5604,0.3123 | near your level
+  step 3 | town:37 | Sentinel Hill, Westfall | 1436 0.5633,0.4752 | 2 to pick up
+  step 4 | town:30 | Pick up quests: Scout Galiaan | 1436 0.5398,0.5298 | near your level
+  step 5 | town:16 | Captain Grayson | 1436 0.3001,0.8602 | 3 to pick up
 card | dungeon:36 | Deadmines | 3 quests for this dungeon | - | map 1453
   step 1 | town:80 | Wilder Thistlenettle | 1453 0.7031,0.4082 | 3 to pick up

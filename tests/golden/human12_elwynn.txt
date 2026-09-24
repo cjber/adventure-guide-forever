@@ -1,13 +1,15 @@
 # human12_elwynn: level 12, side 1, at 1429 0.4200,0.6500
-card (chosen) | zone:1439 | Darkshore story | Chapter 1 of 4 | A chain begins with Thundris Windweaver | map 1439
-  step 1 | town:452 | Auberdine, Darkshore | 1439 0.3610,0.4493 | Begins a new story
-  step 2 | area:953:0 | The Fall of Ameth'Aran | 1439 0.4330,0.5870 | 2 quests here | 964 yd | 958/4 2118/0
-  step 3 | area:3524:4 | Washed Ashore | 1439 0.3640,0.5090 | after you pick it up | 0 yd | 3524/4
-  step 4 | area:983:4 | Buzzbox 827 | 1439 0.3850,0.3360 | 2 quests here | 1221 yd | 983/4 1141/4
-  step 5 | town:452:2 | Auberdine, Darkshore | 1439 0.3740,0.4013 | Opens the next chapter here | then 4681 then 1001 then 2138
-card | calling | Your calling | Chapter 2 of 4 | A task for your class: Bartleby the Drunk | map 1453
-  step 1 | town:80 | Pick up quests: Harry Burlguard | 1453 0.7713,0.5326 | Continues a story you started
+card (chosen) | zone:1436 | Westfall story | Chapter 1 of 4 | A chain begins with Quartermaster Lewis | map 1436
+  step 1 | town:37 | Sentinel Hill, Westfall | 1436 0.5700,0.4717 | Begins a new story
+  step 2 | area:12:0 | The People's Militia | 1436 0.4630,0.2210 | after you pick it up | 141 yd | 12/0 12/1
+  step 3 | area:102:4 | Patrolling Westfall | 1436 0.6140,0.7400 | after you pick it up | 183 yd | 102/4
+  step 4 | town:37:2 | Sentinel Hill, Westfall | 1436 0.5642,0.4762 | Opens the next chapter here | then 13
 card | zone:1432 | Head to Loch Modan | 5 quests near your level | For level 14 | map 1432
   step 1 | town:112 | Mountaineer Cobbleflint | 1432 0.2207,0.7313 | 2 to pick up
   step 2 | town:123 | Thelsamar, Loch Modan | 1432 0.3483,0.4928 | 2 to pick up
   step 3 | town:137 | Pick up quests: Mountaineer Stormpike | 1432 0.2476,0.1840 | near your level
+card | zone:1439 | Head to Darkshore | 9 quests near your level | Auberdine needs hands | map 1439
+  step 1 | town:452 | Auberdine, Darkshore | 1439 0.3610,0.4493 | 8 to pick up
+  step 2 | town:449 | Pick up quests: Sentinel Tysha Moonblade | 1439 0.4030,0.5973 | near your level
+card | calling | Your calling | Chapter 2 of 4 | A task for your class: Bartleby the Drunk | map 1453
+  step 1 | town:80 | Pick up quests: Harry Burlguard | 1453 0.7713,0.5326 | Continues a story you started

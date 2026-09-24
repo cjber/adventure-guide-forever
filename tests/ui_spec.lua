@@ -2123,9 +2123,9 @@ do
 	clean(h, "card")
 end
 
--- The guide (F2): at most three cards. The chosen one is lit, never moved, 288x86 with a 46x46 ring and followed by
--- its steps; the others sit above it as one-line 288x26 header rows with a 16x16 icon and no ring, in the dumped
--- layout the client's own dump is compared with.
+-- The guide (F2): at most MAX_JOURNEYS cards, three here. The chosen one is lit, never moved, 288x86 with a 46x46 ring
+-- and followed by its steps; the others sit above it as one-line 288x26 header rows with a 16x16 icon and no ring, in
+-- the dumped layout the client's own dump is compared with.
 do
 	local h = Load(false, nil, nil, true)
 	h.ns.OpenPanel()

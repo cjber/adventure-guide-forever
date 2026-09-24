@@ -199,7 +199,8 @@ for _, journey in ipairs(Model.Plan(data, player, {}, log, skip).journeys) do
 		equal(skip.skipped[step.key], nil, "skipped steps removed")
 	end
 end
--- The next-zone card: the zone that fits two levels on, when it is another zone with at least 5 quests open now.
+-- The next-zone cards: the zones that fit two levels on, when another zone with at least 5 quests there then and 3 open
+-- now.
 -- Here has three quests at 18; There, which fits 20, has `count` at 20, the last opening at `min`.
 local function Ahead(count, min)
 	local zones = { [1] = { name = "Here", min = 16, max = 20 }, [2] = { name = "There", min = 20, max = 24 } }
@@ -245,8 +246,11 @@ equal(
 )
 local capped = { level = 18, maxLevel = 19, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
 equal(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys[2].reason, "For level 19", "never past the cap")
+-- At the cap the zones that fit now are still there to head to, with no level to name.
 capped.maxLevel = 18
-equal(Kinds(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys), "zone:1", "and none at the cap")
+local capCards = Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys
+equal(Kinds(capCards), "zone:1 zone:2", "at the cap, the zones that fit now")
+equal(capCards[2].reason, nil, "and no level past the cap")
 local standing = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 2, x = 0.5, y = 0.5 }
 -- Standing in There, which fits too, makes it the story (design §2.10), and the next zone is never the zone you are in.
 equal(Kinds(Model.Plan(Ahead(5), standing, {}, {}, prefs()).journeys), "zone:2", "the story is the zone you stand in")
@@ -272,7 +276,10 @@ equal(Kinds(Model.Plan(mostlyTaken, inTaken, {}, {}, prefs()).journeys):match("z
 local capital = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 9, x = 0.5, y = 0.5 }
 equal(Kinds(Model.Plan(Ahead(5), capital, {}, {}, prefs()).journeys), "zone:1 zone:2", "a zone with none: level fit")
 equal(Kinds(Model.Plan(Ahead(4), player, {}, {}, prefs()).journeys), "zone:1", "four quests are too few")
-equal(Kinds(Model.Plan(Ahead(5, 20), player, {}, {}, prefs()).journeys), "zone:1", "only quests open now count")
+equal(Kinds(Model.Plan(Ahead(5, 20), player, {}, {}, prefs()).journeys), "zone:1 zone:2", "4 open now, 5 at 20")
+local thin = Ahead(5, 20)
+thin.quests[6].min, thin.quests[7].min = 20, 20
+equal(Kinds(Model.Plan(thin, player, {}, {}, prefs()).journeys), "zone:1", "2 open now are too few")
 -- At 22 There fits both now and two levels on; the next zone is never the story's own, and Here holds too few.
 local later22 = { level = 22, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 3, x = 0.5, y = 0.5 }
 equal(Kinds(Model.Plan(Ahead(5), later22, {}, {}, prefs()).journeys), "zone:2", "never the story's own zone")
@@ -338,8 +345,9 @@ do
 	)
 	halls.quests[6], halls.quests[7], halls.quests[8], delve.journey = nil, nil, nil, nil
 
-	-- Roadmap #21: at the cap there is no next zone, so the dungeon card comes without the Dungeons toggle and a chain
-	-- that leads into an instance is a story. Here holds the story; on a map with no zone, 50 leads to 51 inside the Hall.
+	-- Roadmap #21: at the cap there is no level ahead, so the dungeon card comes without the Dungeons toggle and a chain
+	-- that leads into an instance is a story, after the zones that fit now. Here holds the story; on a map with no zone,
+	-- 50 leads to 51 inside the Hall.
 	local function Stranded()
 		local fixture = Ahead(5)
 		fixture.instances = { [36] = { name = "Hall" } }
@@ -351,48 +359,53 @@ do
 	end
 	local atCap = { level = 18, maxLevel = 18, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
 	local stranded = Model.Plan(Stranded(), atCap, {}, {}, prefs())
-	equal(Kinds(stranded.journeys), "zone:1 dungeon:36 chain:50", "at the cap: the dungeon and the way in, toggle off")
+	equal(
+		Kinds(stranded.journeys),
+		"zone:1 zone:2 dungeon:36 chain:50",
+		"at the cap: the dungeon and the way in, toggle off"
+	)
 	equal(stranded.stranded, true, "at the cap: stranded")
-	local way = stranded.journeys[3]
+	local way = stranded.journeys[4]
 	equal(way.kind .. " · " .. way.title, "story · The way into Hall", "the way in: a story named for the instance")
 	equal(way.subline .. " · " .. way.reason, "Chapter 1 of 2 · Begins a new story", "the way in: its chapter")
 	local onward = Model.Plan(Stranded(), atCap, { [50] = true }, {}, prefs())
-	equal(Kinds(onward.journeys), "zone:1 dungeon:36 chain:50", "the way in: its next chapter is inside")
-	equal(onward.journeys[3].reason, "Continues a story you started", "the way in: continues")
-	equal(onward.journeys[2].subline, "2 quests for this dungeon", "at the cap: every instance quest open now")
+	equal(Kinds(onward.journeys), "zone:1 zone:2 dungeon:36 chain:50", "the way in: its next chapter is inside")
+	equal(onward.journeys[4].reason, "Continues a story you started", "the way in: continues")
+	equal(onward.journeys[3].subline, "2 quests for this dungeon", "at the cap: every instance quest open now")
 	local roomy = Model.Plan(Stranded(), player, {}, {}, prefs())
 	equal(Kinds(roomy.journeys), "zone:1 zone:2", "below the cap with a next zone: neither")
 	equal(roomy.stranded, nil, "below the cap: not stranded")
 	equal(
 		Kinds(Model.Plan(Stranded(), player, {}, {}, Choose("chain:50")).journeys),
-		"zone:1 chain:50 zone:2",
+		"zone:1 zone:2 chain:50",
 		"chosen"
 	)
 	local wayOff = prefs()
 	wayOff.notInterested = { ["chain:50"] = "The way into Hall" }
 	equal(
 		Kinds(Model.Plan(Stranded(), atCap, {}, {}, wayOff).journeys),
-		"zone:1 dungeon:36",
+		"zone:1 zone:2 dungeon:36",
 		"not interested: the way in"
 	)
 	local unnamed = Stranded()
 	unnamed.instances = {}
 	equal(
 		Kinds(Model.Plan(unnamed, atCap, {}, {}, prefs()).journeys),
-		"zone:1",
+		"zone:1 zone:2",
 		"an instance the data can't name: neither"
 	)
 	-- The story's own chain is never offered twice: in Here, 1 leads to 2 inside the Hall.
 	local ownChain = Stranded()
 	ownChain.quests[1].next, ownChain.quests[2].pre, ownChain.quests[2].dungeon = 2, { 1 }, 36
 	local told = Model.Plan(ownChain, atCap, {}, {}, prefs())
-	equal(Kinds(told.journeys), "zone:1 dungeon:36 chain:50", "the story's chain: the story's alone")
+	equal(Kinds(told.journeys), "zone:1 zone:2 dungeon:36 chain:50", "the story's chain: the story's alone")
 	equal(told.journeys[1].subline, "Chapter 1 of 2", "the story's chain: it leads the story")
 end
 
--- The diversions (roadmap R4): the story and carry keep their slots; the calling, a dungeon and the next zone share the
--- rest, the one whose newest quest opened at the highest level first, then in that order on a tie. Here's story holds
--- 1-3; There holds 4-8 (the next zone); the Hall 9-10 and the calling 11 are on a map with no zone of their own.
+-- The diversions (roadmap R4): the story, carry and the zones to head to keep their slots; the calling, a dungeon and a
+-- battleground share the rest, the one whose newest quest opened at the highest level first, then in that order on a
+-- tie. Here's story holds 1-3; There holds 4-8 (a zone to head to); the Hall 9-10 and the calling 11 are on a map with
+-- no zone of their own. Four cards here, so one slot is left to share.
 local function Diversions(nextMin, hallMin, callingMin)
 	local fixture = { quests = {}, zones = Ahead(0).zones, instances = { [36] = { name = "Hall" } } }
 	for id = 1, 3 do
@@ -418,21 +431,36 @@ local inLog = { [100] = { id = 100, title = "Carried", level = 18, complete = tr
 local function Diverted(fixture, choices, entries)
 	return Kinds(Model.Plan(fixture, player, {}, entries or {}, choices).journeys)
 end
-equal(Diverted(Diversions(10, 10, 10), both), "zone:1 calling dungeon:36", "diversions: a tie, the calling first")
-equal(Diverted(Diversions(18, 10, 10), both), "zone:1 zone:2 calling", "diversions: the newest first")
-equal(Diverted(Diversions(18, 10, 10), both, inLog), "zone:1 carry zone:2", "diversions: carry leaves one slot")
-equal(Diverted(Diversions(16, 17, 10), both, inLog), "zone:1 carry dungeon:36", "diversions: a dungeon just opened")
-equal(Diverted(Diversions(16, 17, 18), both, inLog), "zone:1 carry calling", "diversions: a calling just opened")
+local sixCards = Model.MAX_JOURNEYS
+Model.MAX_JOURNEYS = 4
+equal(
+	Diverted(Diversions(10, 10, 10), both),
+	"zone:1 zone:2 calling dungeon:36",
+	"diversions: a tie, the calling first"
+)
+equal(Diverted(Diversions(18, 10, 10), both), "zone:1 zone:2 calling dungeon:36", "diversions: after the zones")
+equal(Diverted(Diversions(18, 10, 10), both, inLog), "zone:1 carry zone:2 calling", "diversions: carry leaves one slot")
+equal(
+	Diverted(Diversions(16, 17, 10), both, inLog),
+	"zone:1 carry zone:2 dungeon:36",
+	"diversions: a dungeon just opened"
+)
+equal(Diverted(Diversions(16, 17, 18), both, inLog), "zone:1 carry zone:2 calling", "diversions: a calling just opened")
 local hall = prefs()
 hall.dungeons, hall.journey = true, "dungeon:36"
-equal(Diverted(Diversions(18, 10, 10), hall, inLog), "zone:1 carry dungeon:36", "diversions: the chosen one stays")
-equal(Diverted(Diversions(18, 10, 10), prefs(), inLog), "zone:1 carry zone:2", "diversions: dungeons off")
+equal(
+	Diverted(Diversions(18, 10, 10), hall, inLog),
+	"zone:1 carry zone:2 dungeon:36",
+	"diversions: the chosen one stays"
+)
+equal(Diverted(Diversions(18, 10, 10), prefs(), inLog), "zone:1 carry zone:2 calling", "diversions: dungeons off")
 local combat = Model.Plan(Diversions(10, 10, 18), player, {}, {}, both)
 equal(
 	Kinds(Model.Refresh(Diversions(10, 10, 18), player, {}, inLog, both, combat).journeys),
-	"zone:1 carry calling",
+	"zone:1 carry zone:2 calling",
 	"diversions: in combat a new carry card pushes out the last"
 )
+Model.MAX_JOURNEYS = sixCards
 
 -- Your calling (roadmap #7): the class quests open now as one card, its reason naming the quest it leads with.
 local function Calling(fixture, completed, choices)

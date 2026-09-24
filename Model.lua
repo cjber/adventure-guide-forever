@@ -1,9 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 ---@class AGFModel
--- Nine steps: the stock numerals (services-number-1..9) that label each step stop at 9. Three journeys: design §2.2,
--- and the panel builds as many cards.
-local Model = { MAX_STEPS = 9, MAX_JOURNEYS = 3 }
+-- Nine steps: the stock numerals (services-number-1..9) that label each step stop at 9. Six journeys (design §2.2): the
+-- story, Loose ends, three zones to head to and a diversion, in the room the panel has; it builds as many cards.
+local Model = { MAX_STEPS = 9, MAX_JOURNEYS = 6 }
 ns.Model = Model
 
 -- CMaNGOS mangos-classic/src/game/Tools/Formulas.h, GetQuestGreenRange (quest, not creature XP).
@@ -412,12 +412,25 @@ local function Dropped(id)
 	return droppedIDs[id] == true
 end
 
--- The maps of the three zones that best fit `level` for the quests `ids`, best first. An outdoor elite is optional
--- (roadmap #16): it rides along on its zone's cards but never picks the zone a solo player is sent to. A raid's quest,
--- which no card offers, never picks one either.
----@return integer[]
-local function Rank(data, ids, level)
-	local choices, scores = {}, {}
+-- How a zone ranks (docs/design.md §2.2), lowest first. Quest fit leads: each quest's distance from the level, doubled
+-- past two levels up. The zone's range (the client's zone levels, `data.zones`) comes next: two a level outside it, up
+-- to one less in the lower half the player has just entered, and up to three more in its top fifth, where what is left
+-- is cleanup the story's laps and Loose ends already hold. A zone with more quests edges ahead, up to eight of them; at
+-- a like fit the nearer one does (`far`).
+local ZONE_OUTSIDE = 2 -- a level outside the zone's range
+local ZONE_FRESH = 2 -- the lower half: this less, times how far short of its middle the level is
+local ZONE_TOP, ZONE_CLEANUP = 0.8, 3 -- the top fifth: up to this more, at the zone's last level
+local ZONE_QUEST, ZONE_QUESTS = 0.25, 8 -- this less a quest, for this many at most
+
+-- The maps of the zones that fit `level` for the quests `ids`, best first, and how many of those quests each holds. An
+-- outdoor elite is optional (roadmap #16): it rides along on its zone's cards but never picks the zone a solo player is
+-- sent to. A raid's quest, which no card offers, never picks one either. `far` is a zone's distance cost from the
+-- player (Journeys' Far).
+---@param far fun(map: integer): number
+---@return integer[] maps
+---@return table<integer, integer> quests
+local function Rank(data, ids, level, far)
+	local choices, scores, quests = {}, {}, {}
 	for _, id in ipairs(ids) do
 		local quest = data.quests[id]
 		local map = quest.zone or (quest.start and quest.start.map)
@@ -428,47 +441,45 @@ local function Rank(data, ids, level)
 			and not Model.IsGray(quest.level, level)
 			and not (quest.elite and not quest.dungeon)
 		then
-			if not choices[map] then
-				choices[map] = { map = map, min = zone.min, max = zone.max, quests = 0 }
-				scores[map] = 0
+			if not quests[map] then
+				choices[#choices + 1], quests[map], scores[map] = map, 0, 0
 			end
-			choices[map].quests = choices[map].quests + 1
+			quests[map] = quests[map] + 1
 			local questLevel = quest.level == -1 and level or quest.level
-			-- Fit dominates; a bounded density bonus below favors enough quests for a short route.
 			scores[map] = scores[map] + math.abs(questLevel - level) + math.max(0, questLevel - level - 2)
 		end
 	end
-	local zones = {}
-	for map, choice in pairs(choices) do
-		scores[map] = scores[map] / choice.quests
-			+ math.max(0, choice.min - level, level - choice.max) * 2
-			- math.min(choice.quests, 12) * 0.5
-		zones[#zones + 1] = choice
+	for _, map in ipairs(choices) do
+		local zone = data.zones[map]
+		local into = zone.max > zone.min and (level - zone.min) / (zone.max - zone.min) or 0
+		scores[map] = scores[map] / quests[map]
+			+ math.max(0, zone.min - level, level - zone.max) * ZONE_OUTSIDE
+			- math.max(0, 0.5 - into) * ZONE_FRESH
+			+ math.max(0, math.min(into, 1) - ZONE_TOP) / (1 - ZONE_TOP) * ZONE_CLEANUP
+			- math.min(quests[map], ZONE_QUESTS) * ZONE_QUEST
+			+ far(map)
 	end
-	table.sort(zones, function(a, b)
-		if scores[a.map] ~= scores[b.map] then
-			return scores[a.map] < scores[b.map]
+	table.sort(choices, function(a, b)
+		if scores[a] ~= scores[b] then
+			return scores[a] < scores[b]
 		end
-		if a.quests ~= b.quests then
-			return a.quests > b.quests
+		if quests[a] ~= quests[b] then
+			return quests[a] > quests[b]
 		end
-		return a.map < b.map
+		return a < b
 	end)
-	local maps = {}
-	for index = 1, math.min(#zones, 3) do
-		maps[index] = zones[index].map
-	end
-	return maps
+	return choices, quests
 end
 
--- One eligibility pass for two levels: the player's, and `ahead` levels on for the next-zone card. A level reaches
+-- One eligibility pass for two levels: the player's, and `ahead` levels on for the next-zone cards. A level reaches
 -- eligibility only through a quest's minimum, so what opens at level + ahead holds everything open now. Only an
 -- instance's quests wait behind Dungeons: an outdoor elite is a zone's quest, optional and badged for a group. An
 -- orange or red quest (ORANGE levels up or more) is never offered, though its minimum allows it: too hard alone. The
 -- zones that fit now also count the log's quests the data has, as a pickup each: a zone the player has taken on is
 -- where they are adventuring, though little is left there to pick up. A quest the player ruled out (Dropped) counts
 -- nowhere; one they added (shift-click, `prefs.pinned`) is offered once open whatever its colour.
-local function Choices(data, player, completed, log, index, prefs, ahead)
+---@param far fun(map: integer): number
+local function Choices(data, player, completed, log, index, prefs, ahead, far)
 	local eligible, later, target, ranked, pinned = {}, {}, player.level + (ahead or 0), {}, prefs.pinned or {}
 	for id in pairs(prefs.quests and log or {}) do
 		ranked[#ranked + 1] = data.quests[id] and not Dropped(id) and id or nil
@@ -495,7 +506,11 @@ local function Choices(data, player, completed, log, index, prefs, ahead)
 			end
 		end
 	end
-	return Rank(data, ranked, player.level), eligible, ahead and Rank(data, later, target)
+	local zones = Rank(data, ranked, player.level, far)
+	if not ahead then
+		return zones, eligible
+	end
+	return zones, eligible, Rank(data, later, target, far) -- multi-value: the zones ahead and their quests
 end
 
 -- Every quest giver on `mapID` with a quest the player can take now, one entry per NPC or object, like the
@@ -2568,9 +2583,30 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	return route
 end
 
--- The journey cards (docs/design.md §2.2): at most three, each holding only steps the player can take now.
-local NEXT_ZONE_AHEAD = 2 -- levels: the next zone is the one that fits the player two levels on
-local NEXT_ZONE_PICKUPS = 5 -- eligible quests there, or the card is too thin to offer (docs/plan.md §1.5)
+-- The journey cards (docs/design.md §2.2): at most MAX_JOURNEYS, each holding only steps the player can take now.
+local NEXT_ZONE_AHEAD = 2 -- levels: the next zones are those that fit the player two levels on
+local NEXT_ZONES = 3 -- zone cards besides the story's, best ranked first
+local NEXT_ZONE_PICKUPS = 5 -- quests there two levels on, or the card is too thin to offer (docs/plan.md §1.5)...
+local NEXT_ZONE_NOW = 3 -- ...of which this many open now: a zone the player has just come of age for is offered early
+local FITS = 3 -- the zones "that fit": the first this many of a ranking, where the zone the player stands in is theirs
+local ZONE_AWAY = 3 -- a zone's cost on another continent than the player's (Rank)
+local ZONE_YARDS, ZONE_NEAR = 4000, 1.5 -- one a this many yards to a zone's middle on the player's own, at most this
+
+-- A zone's distance cost from the player for Rank: none when the data cannot place them both, so the ranking never
+-- guesses.
+---@return fun(map: integer): number
+local function Far(data, player)
+	local here = Position(data, player)
+	return function(map)
+		local there = here and here.known and Position(data, { map = map, x = 0.5, y = 0.5 })
+		if not (here and there and there.known) then
+			return 0
+		elseif there.continent ~= here.continent then
+			return ZONE_AWAY
+		end
+		return math.min(Yards(here, there) / ZONE_YARDS, ZONE_NEAR)
+	end
+end
 
 local function ZoneName(data, map, mapName)
 	return (mapName and mapName(map)) or data.zones[map].name
@@ -3174,8 +3210,8 @@ local function Newest(data, eligible, belongs)
 end
 
 -- The diversions' order on a tie in newness (roadmap R4): the calling, then the dungeon, then a way into an instance
--- (roadmap #21), then the battleground the player asked for, then the next zone.
-local DIVERSION_ORDER = { calling = 1, dungeon = 2, chain = 3, battleground = 4, nextzone = 5 }
+-- (roadmap #21), then the battleground the player asked for.
+local DIVERSION_ORDER = { calling = 1, dungeon = 2, chain = 3, battleground = 4 }
 
 -- Roadmap #12, opt-in: a battleground open to the player (player.battlegrounds, newest first) as a diversion whose card
 -- has one step, its nearest battlemaster: the chosen battleground while it is still open, else the newest one the data
@@ -3247,7 +3283,8 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	local index, L = Index(data), ns.L
 	-- Never past the level cap: a player at it has no next zone to head for.
 	local levels = math.min(NEXT_ZONE_AHEAD, player.maxLevel - player.level)
-	local zones, eligible, ahead = Choices(data, player, completed, log, index, prefs, levels > 0 and levels or nil)
+	local zones, eligible, ahead, aheadQuests =
+		Choices(data, player, completed, log, index, prefs, levels > 0 and levels or nil, Far(data, player))
 	local ready = Ready(data, log)
 	-- The offer rules below only gate new choices (docs/design.md §2.10): a chosen zone or dungeon is built while it
 	-- has a step, whatever would offer it now.
@@ -3290,11 +3327,10 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 				)
 		end
 	end
-	for _, map in ipairs(zones) do
-		here = here or map == player.map
-	end
-	for _, map in ipairs(ahead or {}) do
-		here = here or map == player.map
+	for _, ranking in ipairs({ zones, ahead or {} }) do
+		for place = 1, math.min(FITS, #ranking) do
+			here = here or ranking[place] == player.map
+		end
 	end
 	if here and player.map ~= best and Open(player.map) then
 		table.insert(tries, 1, player.map)
@@ -3322,9 +3358,78 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	journeys[#journeys + 1] = Carry(data, player, completed, log, ready, prefs, mapName, false, function(id, place)
 		return not (drawn[id] and OnZone(data, zone, id, place))
 	end, added)
-	-- The diversions (roadmap R4) share the slots carry and the story leave: each offers itself with how many quests it
-	-- holds and the level its newest one opened at, and the newest since then is built first, so a level just gained or
-	-- a bracket just opened takes the slot. Only as many are built as there are slots, and the chosen one always.
+	-- The zones to head to (docs/design.md §2.2), best ranked first: two levels on, or now at the level cap. Each is
+	-- another zone than the story's and the one the player stands in, whose range the player hasn't outgrown, with
+	-- NEXT_ZONE_PICKUPS quests there at that level and NEXT_ZONE_NOW of them open now; and the chosen zone while it has
+	-- a step, in its place or last. Only NEXT_ZONES are built, with Build's route: laps are for card 1 and the chosen
+	-- card alone (§4.3).
+	local open, headed, zoneCards = {}, chosenZone ~= zone and chosenZone or nil, 0
+	for _, id in ipairs(eligible) do
+		local quest = data.quests[id]
+		local map = not quest.raid and (quest.zone or quest.start.map)
+		if map then
+			open[map] = (open[map] or 0) + 1
+		end
+	end
+	local function NextZone(map)
+		local key = "zone:" .. map
+		local nextZone = Pickups(
+			data,
+			player,
+			completed,
+			log,
+			ready,
+			eligible,
+			InZone(map),
+			key,
+			prefs,
+			mapName,
+			nil,
+			nil,
+			chosen == key
+		)
+		if not nextZone then
+			return nil
+		end
+		nextZone.kind, nextZone.key = "nextzone", key
+		nextZone.title = L.JOURNEY_NEXT_ZONE:format(ZoneName(data, map, mapName))
+		-- The level it fits, while it is among the zones that fit two levels on.
+		local fits, fitting = false, ahead or {}
+		for place = 1, math.min(FITS, #fitting) do
+			fits = fits or fitting[place] == map
+		end
+		nextZone.reason = WorldReason(data, log, player, nextZone --[[@as AGFJourney]])
+			or (fits and L.NEXT_ZONE_LEVEL:format(player.level + levels) or nil)
+		return nextZone
+	end
+	local offered = false
+	for _, map in ipairs(ahead or zones) do
+		local mine = map == chosenZone
+		if map ~= zone and (mine or (map ~= player.map and Open(map))) then
+			headed = headed or map
+			local enough = (ahead and aheadQuests or {})[map] or open[map] or 0
+			-- Never a zone the player has outgrown: what is left there is cleanup, which Loose ends holds.
+			if
+				mine
+				or (
+					player.level <= data.zones[map].max
+					and zoneCards < NEXT_ZONES
+					and enough >= NEXT_ZONE_PICKUPS
+					and (open[map] or 0) >= NEXT_ZONE_NOW
+				)
+			then
+				local card = NextZone(map)
+				journeys[#journeys + 1] = card
+				zoneCards, offered = zoneCards + (card and 1 or 0), offered or mine
+			end
+		end
+	end
+	if chosenZone and chosenZone ~= zone and not offered then
+		journeys[#journeys + 1] = NextZone(chosenZone)
+	end
+	-- The diversions (roadmap R4) share the slots the zones leave: each offers itself with how many quests it holds and
+	-- the level its newest one opened at, and the newest since then is built first, so a level just gained or a bracket
+	-- just opened takes the slot. Only as many are built as there are slots, and the chosen one always.
 	local diversions = {}
 	local function Offer(kind, key, belongs, build, enough, from)
 		local quests, opened = Newest(data, from or eligible, belongs)
@@ -3337,19 +3442,10 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			return CallingJourney(data, player, completed, log, ready, eligible, prefs, mapName)
 		end)
 	end
-	-- The zone that fits two levels on, when it is another zone than the story's and the one the player stands in,
-	-- and already has enough the player can take now; or the chosen zone, while it has a step.
-	local nextMap = chosenZone ~= zone and chosenZone or nil
-	for _, map in ipairs(not nextMap and ahead or {}) do
-		if map ~= zone and map ~= player.map and Open(map) then
-			nextMap = map
-			break
-		end
-	end
 	-- No next zone (roadmap #21): at the level cap, or with none ahead and no story here. The dungeon card is offered
 	-- then whatever the Dungeons toggle says, and a chain that leads into an instance shows as a story, so the guide
 	-- never ends on "nothing fits".
-	local stranded = levels <= 0 or not (nextMap or told)
+	local stranded = levels <= 0 or not (headed or told)
 	local pool = (stranded and not prefs.dungeons) and WithInstances(data, player, completed, log, index, eligible)
 		or eligible
 	local instance = BestDungeon(data, pool, prefs, prefs.dungeons or stranded, chosenDungeon)
@@ -3404,38 +3500,6 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 				return WayIn(data, into, way, step, continues, instanceName)
 			end
 		end, nil, pool)
-	end
-	if nextMap then
-		Offer("nextzone", "zone:" .. nextMap, InZone(nextMap), function()
-			local nextZone = Pickups(
-				data,
-				player,
-				completed,
-				log,
-				ready,
-				eligible,
-				InZone(nextMap),
-				"zone:" .. nextMap,
-				prefs,
-				mapName,
-				nil,
-				nil,
-				chosen == "zone:" .. nextMap
-			)
-			if not nextZone then
-				return nil
-			end
-			nextZone.kind, nextZone.key = "nextzone", "zone:" .. nextMap
-			nextZone.title = L.JOURNEY_NEXT_ZONE:format(ZoneName(data, nextMap, mapName))
-			-- The level it fits, while it is among the zones that fit two levels on.
-			local fits = false
-			for _, map in ipairs(ahead or {}) do
-				fits = fits or map == nextMap
-			end
-			nextZone.reason = WorldReason(data, log, player, nextZone --[[@as AGFJourney]])
-				or (fits and L.NEXT_ZONE_LEVEL:format(player.level + levels) or nil)
-			return nextZone
-		end, NEXT_ZONE_PICKUPS)
 	end
 	diversions[#diversions + 1] = prefs.battlegrounds and Battleground(data, player, prefs, mapName) or nil
 	table.sort(diversions, function(a, b)

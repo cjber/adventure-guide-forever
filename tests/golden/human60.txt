@@ -3,9 +3,17 @@ card (chosen) | zone:1423 | Eastern Plaguelands story | Chapter 1 of 2 | A chain
   step 1 | town:226 | Light's Hope Chapel, Eastern Plaguelands | 1423 0.6993,0.5372 | Begins a new story
   step 2 | area:6021:4 | Zaeldarr the Outcast | 1423 0.2310,0.7270 | after you pick it up | 1244 yd | 6021/4
   step 3 | town:226:2 | Turn in: Zaeldarr the Outcast | 1423 0.6993,0.5372 | once it's done
+card | zone:1451 | Head to Silithus | 11 quests near your level | Cenarion Hold needs hands | map 1451
+  step 1 | town:258 | Cenarion Hold, Silithus | 1451 0.5068,0.3471 | 11 to pick up
+card | zone:1452 | Head to Winterspring | 10 quests near your level | - | map 1452
+  step 1 | town:453 | Pick up quests: Donova Snowden | 1452 0.3127,0.4516 | near your level
+  step 2 | town:463 | Jaron Stoneshaper | 1452 0.5197,0.3039 | 2 to pick up
+  step 3 | town:455 | Everlook, Winterspring | 1452 0.6066,0.3817 | 7 to pick up
 card | calling | Your calling | Chapter 1 of 4 | Your class trainer has a task: A Troubled Spirit | map 1455
   step 1 | town:134 | Pick up quests: Deliana | 1455 0.4353,0.5264 | near your level
   step 2 | town:78 | Pick up quests: Wu Shen | 1453 0.8056,0.5987 | Begins a new story
   step 3 | town:31 | Pick up quests: Fallen Hero of the Horde | 1419 0.5277,0.0294 | near your level
 card | dungeon:329 | Stratholme | 4 quests for this dungeon | - | map 1423
   step 1 | town:229 | Light's Hope Chapel, Eastern Plaguelands | 1423 0.7163,0.5009 | 4 to pick up
+card | chain:5382 | The way into Scholomance | Chapter 1 of 3 | Begins a new story | map 1425
+  step 1 | town:204 | Pick up quests: Eva Sarkhoff | 1425 0.2669,0.0830 | Begins a new story

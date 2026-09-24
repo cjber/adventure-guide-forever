@@ -86,9 +86,9 @@ for _, fixture in ipairs(characters.list) do
 	local player, completed, log, prefs = characters.Resolve(data, fixture)
 	local route = Model.Plan(data, player, completed, log, prefs)
 
-	-- F2: at most three journeys, each with at least one step the player can take now. The standing rules hold on
+	-- F2: at most MAX_JOURNEYS journeys, each with at least one step the player can take now. The standing rules hold on
 	-- every card: nothing ineligible is suggested, and no step points where the data has no place.
-	equal(#route.journeys <= Model.MAX_JOURNEYS, true, fixture.name .. ": at most three cards")
+	equal(#route.journeys <= Model.MAX_JOURNEYS, true, fixture.name .. ": at most MAX_JOURNEYS cards")
 	-- The saved choice while its card is built, the first card otherwise.
 	local first = route.journeys[1] and route.journeys[1].key
 	equal(route.journey, prefs.journey or first, fixture.name .. ": the chosen card, else the first")
@@ -103,7 +103,8 @@ for _, fixture in ipairs(characters.list) do
 				equal(takeable, true, label .. ": " .. step.key .. " quest " .. id .. " is eligible or in the log")
 			end
 		end
-		-- The next-zone rule: another zone than the story's, with at least 5 quests the player can take now.
+		-- The next-zone rule: another zone than the story's, one the player hasn't outgrown, with at least 3 quests
+		-- they can take now.
 		if journey.kind == "nextzone" then
 			local map, quests = tonumber(journey.key:match("%d+")), 0
 			for id, quest in pairs(data.quests) do
@@ -115,27 +116,25 @@ for _, fixture in ipairs(characters.list) do
 					quests = quests + 1
 				end
 			end
-			equal(quests >= 5, true, label .. ": at least 5 quests there now")
+			equal(quests >= 3, true, label .. ": at least 3 quests there now")
+			equal(player.level <= data.zones[map].max, true, label .. ": not outgrown")
 			for _, other in ipairs(route.journeys) do
 				equal(other == journey or other.key ~= journey.key, true, label .. ": another zone than the story's")
 			end
 		end
 	end
 
-	-- F0: a turn-in in the next zone follows every step on this map and precedes every other-continent step.
+	-- F0: every step on this map comes first, then the rest of this continent's, then another continent's. The
+	-- Ashenvale turn-in goes with Ashenvale's story, which is card 1 now the zones rank by distance too.
 	if fixture.name == "ne21_crosszone" then
-		local next
-		for index, step in ipairs(route.steps) do
-			next = step.key == "turnin:967" and index or next
+		local phase, continent = 1, data.maps[fixture.map].continent
+		for _, step in ipairs(route.steps) do
+			local at = (step.map == fixture.map and 1) or (data.maps[step.map].continent == continent and 2) or 3
+			equal(at >= phase, true, "ne21_crosszone: " .. step.key .. " keeps to Darkshore, Kalimdor, then away")
+			phase = at
 		end
-		equal(next ~= nil, true, "ne21_crosszone: the Ashenvale turn-in is on the route")
-		for index, step in ipairs(route.steps) do
-			if step.map == fixture.map then
-				equal(index < next, true, "ne21_crosszone: " .. step.key .. " (Darkshore) comes first")
-			elseif data.maps[step.map].continent ~= data.maps[fixture.map].continent then
-				equal(index > next, true, "ne21_crosszone: " .. step.key .. " (another continent) comes after")
-			end
-		end
+		equal(phase, 3, "ne21_crosszone: the Stormwind turn-in is on the route, last")
+		equal(route.journeys[1].key, "zone:1440", "ne21_crosszone: Ashenvale's story, beside Darkshore")
 	end
 
 	-- The reported case (design §2.10): standing in Redridge, where the level fits two levels on, the story is
@@ -180,6 +179,15 @@ for _, fixture in ipairs(characters.list) do
 			end
 		end
 		equal(areas >= 5, true, "human19_redridge_full: the quests under way are area steps")
+		-- "Why is Duskwood not suggested at all?": it has just come into range (18-30) next door, so it is a zone to
+		-- head to, as is the Wetlands; Westfall and Darkshore, at the top of theirs, are not.
+		local offered = {}
+		for _, journey in ipairs(route.journeys) do
+			offered[journey.key] = journey.kind
+		end
+		equal(offered["zone:1431"], "nextzone", "human19_redridge_full: head to Duskwood")
+		equal(offered["zone:1437"], "nextzone", "human19_redridge_full: head to the Wetlands")
+		equal(offered["zone:1436"], nil, "human19_redridge_full: not Westfall, near its top")
 		local counted = 0
 		for _, journey in ipairs(route.journeys) do
 			equal(journey.key ~= "zone:1439", true, "human19_redridge_full: no Darkshore story")
@@ -220,7 +228,8 @@ for _, fixture in ipairs(characters.list) do
 		-- The in-game audit: the far turn-in is finished but not ready here, and the card says each fact once.
 		local carry = route.journeys[2]
 		equal(carry.key, "carry", "ne21_crosszone: carry follows the story")
-		equal(carry.subline, "3 ready to hand in", "ne21_crosszone: ready counts this continent only")
+		-- Onu and Cave Mushrooms: The Tower of Althalaxx is the Ashenvale story's.
+		equal(carry.subline, "2 ready to hand in", "ne21_crosszone: ready counts this continent only")
 		equal(carry.reason, "1 to hand in across the sea", "ne21_crosszone: the far one apart")
 		equal(
 			Model.Plan(data, player, completed, log, prefs, function()
@@ -245,7 +254,7 @@ for _, fixture in ipairs(characters.list) do
 	-- Deterministic: a second build of the same state gives the same text.
 	local again = Model.Plan(data, player, completed, log, prefs)
 	equal(Render(fixture, again), text, fixture.name .. ": rebuild")
-	-- The in-combat rebuild keeps three cards at most: a quest looted mid-fight brings a carry card the last build
+	-- The in-combat rebuild keeps MAX_JOURNEYS cards at most: a quest looted mid-fight brings a carry card the last build
 	-- lacked, in the story's wake as the full build orders them, and the last card not chosen makes way, as the full
 	-- build leaves it out (design §2.10).
 	local saved, last = prefs.journey, route.journeys[#route.journeys]
@@ -253,7 +262,7 @@ for _, fixture in ipairs(characters.list) do
 	prefs.journey = last and last.key
 	local refreshed = Model.Refresh(data, player, completed, fight, prefs, route)
 	local full = Model.Plan(data, player, completed, fight, prefs)
-	equal(#refreshed.journeys <= Model.MAX_JOURNEYS, true, fixture.name .. ": at most three cards in combat")
+	equal(#refreshed.journeys <= Model.MAX_JOURNEYS, true, fixture.name .. ": at most MAX_JOURNEYS cards in combat")
 	local story = refreshed.journeys[1].kind == "story"
 	equal(refreshed.journeys[story and 2 or 1].key, "carry", fixture.name .. ": the new carry card after the story")
 	equal(refreshed.journey, prefs.journey, fixture.name .. ": the chosen last card keeps its slot in combat")

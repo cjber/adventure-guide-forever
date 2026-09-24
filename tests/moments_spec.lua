@@ -147,8 +147,9 @@ same(h.fanfares, { "moment" }, "after combat: the line glows")
 clean(h, "combat")
 
 -- An aside no provider gave before: its own line glows, with the pips, and no moment line. One that stops being
--- given leaves the seen set, so it is new again when it comes back.
-h = Load()
+-- given leaves the seen set, so it is new again when it comes back. Hillsbrad, a zone to head to from level 20, is
+-- turned down so the line level 20 brings is the calling's.
+h = Load({ notInterested = { ["zone:1424"] = "Head to Hillsbrad Foothills" } })
 local provider = {}
 h.ns.Asides.Register(function()
 	return provider.aside
