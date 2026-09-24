@@ -52,6 +52,13 @@ do
 	h.SetCombat(true)
 	h.flush()
 	same(Lines(h, Creature(SERGRA)), { "normal: Adventure guide: Finish what you carry" }, "carry: in combat too")
+	h.SetCombat(false)
+	-- Once The Zhevra is handed in the card goes on without its ender, and her line goes.
+	table.remove(h.log, 1)
+	h.fire("QUEST_TURNED_IN", 845)
+	h.flush()
+	equal(h.ns.Route().steps[1].key, "objective:843", "carry: only Gann's Reclamation left")
+	same(Lines(h, Creature(SERGRA)), {}, "carry: no line once handed in")
 	equal(#h.errors, 0, "carry: errors\n" .. table.concat(h.errors, "\n"))
 end
 
