@@ -27,6 +27,7 @@ local SEARCH_MIN, SEARCH_ROWS, WHY_LINES, RESULT_HEIGHT, WHY_HEIGHT = 3, 10, 6, 
 -- The quest log's own geometry: a 29px search bar above the list, a 40px footer below it for the Go button.
 local TOP_BAR = 29
 local SKIPPED_HEIGHT = 16
+local TRAINER_HEIGHT = 14
 local FOOTER = 40
 
 ---@type Frame?
@@ -51,6 +52,8 @@ local countText
 local Refresh
 ---@type FontString?
 local emptyText
+---@type FontString?
+local trainerText
 ---@type Button?
 local goButton
 ---@type Button?
@@ -329,6 +332,10 @@ local function BuildJourneys(parent, below)
 	emptyText:SetPoint("TOPLEFT", 10, -8)
 	emptyText:SetPoint("RIGHT", -10, 0)
 	emptyText:SetJustifyH("LEFT")
+	-- The trainer line (F16) above the cards: text only, since the data has no trainer's place.
+	trainerText = list:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+	trainerText:SetPoint("RIGHT", -10, 0)
+	trainerText:SetJustifyH("LEFT")
 end
 
 ---@param parent Frame
@@ -623,6 +630,14 @@ local function LayoutJourneys(route)
 	local searching = characters >= SEARCH_MIN and ns.State.Ready()
 	local top, found = LayoutResults(searching and query or nil)
 	track:Hide()
+	---@cast trainerText -?
+	local trainer = not searching and ns.Integrations.Trainer() or nil
+	trainerText:SetShown(trainer ~= nil)
+	if trainer then
+		trainerText:SetText(L.TRAINER_LINE:format(L.TRAINER, trainer))
+		trainerText:SetPoint("TOPLEFT", 10, -top)
+		top = top + TRAINER_HEIGHT + CARD_GAP
+	end
 	for index, card in ipairs(cards) do
 		local journey = not searching and route.journeys[index] or nil
 		card:SetShown(journey ~= nil)

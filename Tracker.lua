@@ -12,6 +12,8 @@ end
 
 -- The chapter end (docs/design.md §2.7): Blizzard's anim block glows a header once when its key needs a fanfare.
 local STORY_COMPLETE = "story-complete"
+-- The trainer line (F16): a block of its own, text only; the step's click and hover never act on it.
+local TRAINER = "trainer"
 -- Set by a turn-in that ends a story: the quest, then the first step 1 the route shows without it. The header stays
 -- above the steps until step 1 moves on from that.
 ---@type {quest: integer, key?: string}?
@@ -20,10 +22,13 @@ local finished
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
 local ModuleMixin = { headerText = ns.L.TRACKER_HEADER, blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
 
----@param _block AGFTrackerBlock the header's own block; CurrentStep() is used instead since it's always current
+---@param block AGFTrackerBlock the header's own block: the trainer's does nothing; for the step's, CurrentStep()
+---is used since it's always current
 ---@param mouseButton string
----@diagnostic disable-next-line: unused-local
-function ModuleMixin:OnBlockHeaderClick(_block, mouseButton)
+function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
+	if block.id == TRAINER then
+		return
+	end
 	if mouseButton ~= "RightButton" then
 		local step = CurrentStep()
 		if step and ns.Setting("trackRouteQuests") then
@@ -45,7 +50,7 @@ end
 ---@param block AGFTrackerBlock
 function ModuleMixin:OnBlockHeaderEnter(block)
 	local step = CurrentStep()
-	if step and ns.Setting("titleStartsRoute") and ns.Integrations.ReplacesJourney() then
+	if block.id ~= TRAINER and step and ns.Setting("titleStartsRoute") and ns.Integrations.ReplacesJourney() then
 		GameTooltip:SetOwner(block, "ANCHOR_RIGHT")
 		ns.Menu.GoWarning(GameTooltip, step.title)
 		GameTooltip:Show()
@@ -62,6 +67,15 @@ end
 function ModuleMixin:LayoutContents()
 	if not ns.Setting("showTracker") then
 		return
+	end
+	local trainer = ns.Integrations.Trainer()
+	if trainer then
+		local block = self:GetBlock(TRAINER)
+		block:SetHeader(ns.L.TRAINER)
+		block:AddObjective(1, trainer)
+		if not self:LayoutBlock(block) then
+			return
+		end
 	end
 	if finished then
 		local block = self:GetBlock(STORY_COMPLETE)

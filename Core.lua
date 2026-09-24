@@ -95,6 +95,11 @@ ns.L = {
 	NEXT = "Next: %s",
 	RESUME = "Where you left off: %s",
 	STORY_COMPLETE = "Story complete",
+	-- The trainer line (docs/plan.md F16): text only, above the steps.
+	TRAINER = "Visit your class trainer",
+	TRAINER_SPELLS = "%d new spells",
+	TRAINER_SPELL = "1 new spell",
+	TRAINER_LINE = "%s · %s",
 	TRACKER_HEADER = "Adventure Guide",
 	TRACKER_UNATTACHED = "couldn't add a section to the objective tracker; please report with /agf audit.",
 	DUMP_SAVED = "layout saved. Type /reload, then send "

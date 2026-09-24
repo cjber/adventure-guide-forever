@@ -94,6 +94,43 @@ function Integrations.TravelLine(step)
 	end
 end
 
+-- Tweaks Forever's spells to train (F16), from its API.lua when a version 1 is loaded.
+---@return AGFTFSpell[]?
+function Integrations.Trainable()
+	local api = TweaksForever and TweaksForever.API
+	if type(api) ~= "table" or api.version ~= 1 or type(api.TrainableSpells) ~= "function" then
+		return nil
+	end
+	---@cast api AGFTFAPI
+	return api.TrainableSpells()
+end
+
+-- The trainer line's count, fetched with the travel line and when the spellbook changes; nil (no Tweaks Forever,
+-- no answer yet, nothing to train) means no line.
+---@type string?
+local trainer
+
+local function NotifyTravel()
+	for _, fn in ipairs(travelListeners) do
+		fn()
+	end
+end
+
+---@return boolean changed
+local function RefreshTrainer()
+	local spells = Integrations.Trainable()
+	local count = spells and #spells or 0
+	local line = count > 0 and (count == 1 and L.TRAINER_SPELL or L.TRAINER_SPELLS:format(count)) or nil
+	local changed = line ~= trainer
+	trainer = line
+	return changed
+end
+
+---@return string?
+function Integrations.Trainer()
+	return trainer
+end
+
 -- In combat Shortest Path has no answer to give, so the last line stands and nothing is asked (docs/design.md §2.5).
 function Integrations.RefreshTravel()
 	if InCombatLockdown() then
@@ -103,12 +140,19 @@ function Integrations.RefreshTravel()
 	local line = step and Integrations.TravelLine(step)
 	local changed = (travel and travel.key) ~= (step and step.key) or (travel and travel.line) ~= line
 	travel = step and { key = step.key, line = line } or nil
-	if changed then
-		for _, fn in ipairs(travelListeners) do
-			fn()
-		end
+	if RefreshTrainer() or changed then
+		NotifyTravel()
 	end
 end
+
+-- A spell learned at the trainer shortens the line at once.
+local spellbook = CreateFrame("Frame")
+spellbook:RegisterEvent("SPELLS_CHANGED")
+spellbook:SetScript("OnEvent", function()
+	if not InCombatLockdown() and RefreshTrainer() then
+		NotifyTravel()
+	end
+end)
 
 -- The last fetched line, only for the step it was fetched for; never an SPF call.
 ---@param step AGFStep

@@ -10,7 +10,7 @@
 ## SavedVariables: AdventureGuideForeverDB
 ## SavedVariablesPerCharacter: AdventureGuideForeverCharDB
 ## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick
-## OptionalDeps: ShortestPathForever
+## OptionalDeps: ShortestPathForever, TweaksForever
 
 Data\Quests.lua
 Core.lua

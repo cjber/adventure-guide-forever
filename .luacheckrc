@@ -51,6 +51,7 @@ read_globals = {
 	"CreateFrame",
 	-- Integrations.lua
 	"ShortestPathForever",
+	"TweaksForever",
 	"UiMapPoint",
 	"C_SuperTrack",
 	"UIErrorsFrame",

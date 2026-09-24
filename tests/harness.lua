@@ -1388,6 +1388,32 @@ function harness.load(options)
 		G.ShortestPathForever = { API = api }
 	end
 
+	-- Tweaks Forever (its API.lua, version 1): options.tf.spells is what TrainableSpells answers (nil before login
+	-- and in combat), fresh copies each call; h.tf counts the calls. No options.tf is no Tweaks Forever.
+	if options.tf then
+		h.tf = { TrainableSpells = 0 }
+		G.TweaksForever = {
+			API = {
+				version = 1,
+				TrainableSpells = function()
+					h.tf.TrainableSpells = h.tf.TrainableSpells + 1
+					local spells = options.tf.spells
+					if not spells then
+						return nil
+					end
+					local copies = {}
+					for index, spell in ipairs(spells) do
+						copies[index] = {}
+						for key, value in pairs(spell) do
+							copies[index][key] = value
+						end
+					end
+					return copies
+				end,
+			},
+		}
+	end
+
 	--[[ Load the addon: the TOC's files in order, each given (addonName, ns) ]]
 
 	G.AdventureGuideForeverDB, G.AdventureGuideForeverCharDB = options.db, options.charDB

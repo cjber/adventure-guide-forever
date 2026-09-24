@@ -218,6 +218,20 @@
 ---@field EstimateDetail? fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): AGFSPFDetail?, AGFSPFNoRoute? -- Estimate leg by leg, sharing its cache
 ---@field Active? fun(): boolean -- true while any journey is guiding, whoever started it
 
+-- Tweaks Forever's public API (its types/API.lua TFPublicAPI and TFAPITrainableSpell), version 1.
+---@class AGFTFSpell
+---@field spellID integer
+---@field name string
+---@field level integer the level the trainer teaches it from
+---@field cost? integer the fee in copper, when known
+---@field line string the spellbook tab, localised, for display only
+---@field lineID integer the tab's SkillLine ID (the spell's own when `general`): compare this, not `line`
+---@field general boolean it goes on the General tab
+
+---@class AGFTFAPI
+---@field version integer 1
+---@field TrainableSpells fun(): AGFTFSpell[]? the spells the player's level allows and they haven't learned; nil before login and in combat
+
 ---@class AGFIntegrations
 ---@field TravelLine fun(step: AGFStep): string? asks Shortest Path now, at most one call: "Fly to X · N min" from EstimateDetail, "About N min away" from Estimate, nil without either or an answer
 ---@field RefreshTravel fun() refetches step 1's line; Core runs it in the frame after each rebuild
@@ -231,6 +245,8 @@
 ---@field Guiding fun(): boolean Shortest Path is walking our multi-stop route and draws its own numbered stops
 ---@field Guided fun(): (AGFStep|AGFGiver)[] the stops it walks, while it guides; empty otherwise
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")
+---@field Trainable fun(): AGFTFSpell[]? Tweaks Forever's trainable spells; nil without a v1 Tweaks Forever or its answer
+---@field Trainer fun(): string? the trainer line's count ("3 new spells") as last fetched, nil with nothing to train
 
 -- One region in a layout dump (Dump.lua): plain data, so it survives SavedVariables and JSON.
 ---@class AGFDumpAnchor
@@ -283,6 +299,10 @@
 ---@field NEXT string format: the step after the tracker's
 ---@field RESUME string format: the reason saved with step 1 last session
 ---@field STORY_COMPLETE string the tracker header that glows when a proven chain's last quest is handed in
+---@field TRAINER string
+---@field TRAINER_SPELLS string format: spell count
+---@field TRAINER_SPELL string
+---@field TRAINER_LINE string format: TRAINER, then the spell count
 ---@field TRACKER_HEADER string
 ---@field TRACKER_UNATTACHED string
 ---@field DUMP_SAVED string

@@ -1255,6 +1255,74 @@ do
 	clean(h, "cog")
 end
 
+-- F16: with spells to train, one text-only trainer line in the guide and the tracker; otherwise none. Four Tweaks
+-- Forever profiles: absent, no answer yet, nothing to train, and three spells.
+do
+	local SPELL = { name = "Lightning Bolt", level = 14, line = "Elemental", lineID = 375, general = false }
+	local THREE = { SPELL, SPELL, SPELL }
+	for _, case in ipairs({
+		{ label = "no Tweaks Forever", lines = 0 },
+		{ label = "no answer", tf = {}, lines = 0 },
+		{ label = "nothing to train", tf = { spells = {} }, lines = 0 },
+		{
+			label = "three spells",
+			tf = { spells = THREE },
+			lines = 1,
+			text = "Visit your class trainer · 3 new spells",
+		},
+	}) do
+		local label = "trainer, " .. case.label
+		local h = harness.load({
+			spf = "v1+",
+			db = PINS_ON,
+			tf = case.tf,
+			completed = { 844 },
+			log = {
+				{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
+				{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
+			},
+		})
+		h.ns.OpenPanel()
+		h.flush()
+		local lines = {}
+		for _, frame in ipairs(h.frames) do
+			for _, region in ipairs(frame.regions or {}) do
+				local text = region:GetObjectType() == "FontString" and region:IsVisible() and region:GetText()
+				if text and text:find("class trainer", 1, true) then
+					lines[#lines + 1] = text
+				end
+			end
+		end
+		equal(#lines, case.lines, label .. ": panel lines")
+		equal(lines[1], case.text, label .. ": the panel's line")
+		local block = h.tracker.liveBlocks.trainer
+		local shown = block and block.used and block.lines[1] or nil
+		equal(shown, case.text and "3 new spells", label .. ": the tracker's line")
+		-- Text only: no ring for it, and its tracker title neither guides nor sets a waypoint.
+		for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
+			equal(pin.step and pin.step.key ~= "trainer", true, label .. ": every ring is a step's")
+		end
+		local waypoints, routes = h.counts.SetUserWaypoint, h.spf.Navigate + h.spf.NavigateRoute
+		if block then
+			h.tracker:OnBlockHeaderClick(block, "LeftButton")
+			h.tracker:OnBlockHeaderClick(block, "RightButton")
+			h.flush()
+		end
+		equal(h.counts.SetUserWaypoint - waypoints, 0, label .. ": no waypoint")
+		equal(h.spf.Navigate + h.spf.NavigateRoute - routes, 0, label .. ": no guidance")
+		equal(h.ns.Route().steps[1].key, "turnin:845", label .. ": the route is unchanged")
+		-- A spell learned at the trainer shortens the line at once.
+		if case.tf and case.tf.spells == THREE then
+			case.tf.spells = { SPELL }
+			h.fire("SPELLS_CHANGED")
+			h.flush()
+			equal(h.tracker.liveBlocks.trainer.lines[1], "1 new spell", label .. ": one left")
+			case.tf.spells = THREE
+		end
+		clean(h, label)
+	end
+end
+
 -- The golden layout: any change to what the guide draws shows as a reviewable diff of tests/golden/layout.json.
 do
 	local json, diff = dofile("tests/json.lua"), dofile("tests/dump_diff.lua")

@@ -158,6 +158,9 @@ UiMapPoint = nil
 ---@type {API: table?}? read only through Integrations.lua SPF(), which checks it against AGFSPFAPI
 ShortestPathForever = nil
 
+---@type {API: table?}? read only through Integrations.Trainable(), which checks it against AGFTFAPI
+TweaksForever = nil
+
 ---@class AGFSettingsSetting
 ---@field SetValueChangedCallback fun(self: AGFSettingsSetting, callback: fun(setting: AGFSettingsSetting, value: boolean))
 -- A checkbox's row (Blizzard_Settings_Shared SettingsListElementInitializer); a child is greyed while predicate is false.
