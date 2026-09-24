@@ -608,14 +608,15 @@ do
 	}
 	local done = { [1] = true, [2] = true, [3] = true }
 	local plan = Model.Plan(fields, player, done, carried, prefs())
-	-- A lap goes out once, so an area of a later lap is carry's: the areas are sought on every card.
+	-- A lap goes out once: an area of a later lap waits on the story, which counts its quest.
 	local byKey = {}
 	for _, journey in ipairs(plan.journeys) do
 		for _, step in ipairs(journey.steps) do
 			byKey[step.key] = byKey[step.key] or step
 		end
 	end
-	local shared, loots, apart = byKey["area:1:0"], byKey["area:1:4"], byKey["area:3:4"]
+	local shared, loots = byKey["area:1:0"], byKey["area:1:4"]
+	local apart = Model.Plan(fields, player, done, { [3] = carried[3] }, prefs()).steps[1]
 	equal(shared and shared.kind, "area", "areas: the kills, an area visit")
 	equal(shared and table.concat(shared.quests, " "), "1 2", "areas: the nearby quest joins it")
 	equal(shared and shared.reason, "2 quests here", "areas: counts its quests")
@@ -629,13 +630,14 @@ do
 	equal(math.floor(shared.r + 0.5), 80, "areas: the ring covers both, 50 yd off with 30 yd of its own")
 	equal(loots and loots.quests[1], 1, "areas: the collect, another visit for the same quest")
 	equal(loots and loots.objectives[1].text, nil, "areas: no empty words")
+	equal(apart and apart.key, "area:3:4", "areas: a quest 150 yd off is its own visit")
 	equal(apart and apart.r, 0, "areas: a single point's ring")
-	-- The story's lap takes 1 and 2; carry holds 3, the lap after. Each card counts its quests once.
+	-- The story's lap takes 1 and 2, and 3 waits for the lap after: the story counts all three, and no carry card.
 	local counts = {}
 	for _, journey in ipairs(plan.journeys) do
 		counts[#counts + 1] = journey.subline
 	end
-	equal(table.concat(counts, " | "), "2 in progress | 1 in progress", "areas: each card counts each quest once")
+	equal(table.concat(counts, " | "), "3 in progress, 1 of them on later laps", "areas: the story counts each quest")
 	-- In combat an area keeps its objectives of the quests still carried, and recounts.
 	local fought = { [1] = carried[1], [3] = carried[3] }
 	local refreshed = Model.Refresh(fields, player, done, fought, prefs(), plan)

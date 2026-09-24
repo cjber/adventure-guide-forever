@@ -210,6 +210,7 @@
 ---@field hub? string its first stop's place, else that stop's title: the card's line 3 when it has no reason
 ---@field more? integer how many stops follow the first (Model.Journeys sets it and `group` once the card is built)
 ---@field group? integer how many of its quests are elite, dungeon or raid (the sum of its steps' `group`)
+---@field holds? table<integer, true> a zone story's log quests on its zone, a later lap's too: carry (Loose ends) holds the rest
 
 ---@class AGFRoute
 ---@field journeys AGFJourney[] at most 3: the zone's story, carry, then the diversions (calling, dungeon, a way into an instance, battleground, next zone) newest first
@@ -466,6 +467,7 @@
 ---@field AFTER_PICK_UP string an area's reason for its one quest, which the lap picks up first
 ---@field CARRY_IN_PROGRESS string format: count
 ---@field CARRY_AWAY string format: count of finished quests whose hand-in is across an ocean
+---@field LATER_LAPS string format: count of a story's log quests its later laps take
 ---@field LIST_SEPARATOR string between the parts of one line
 ---@field QUESTS_NEAR string format: count
 ---@field QUESTS_NEAR_ONE string

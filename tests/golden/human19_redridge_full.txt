@@ -1,18 +1,17 @@
 # human19_redridge_full: level 19, side 1, at 1433 0.1580,0.5660
-card (chosen) | zone:1433 | Redridge Mountains story | 1 ready to hand in, 5 in progress | - | map 1433
+card (chosen) | zone:1433 | Redridge Mountains story | 1 ready to hand in, 10 in progress, 5 of them on later laps | - | map 1433
   step 1 | town:56 | Turn in: A Free Lunch | 1433 0.1019,0.7146 | Opens the next chapter here | then 130
   step 2 | area:92:4 | Redridge Goulash | 1433 0.2580,0.7350 | 2 quests here | 199 yd | 92/4 246/1
   step 3 | area:3741:4 | Hilary's Necklace | 1433 0.2320,0.5390 | quests in progress | 200 yd | 3741/4
   step 4 | area:34:4 | An Unwelcome Guest | 1433 0.1100,0.4930 | quests in progress | 0 yd | 34/4
   step 5 | town:61 | Lakeshire, Redridge | 1433 0.1677,0.4633 | 3 to hand in
   step 6 | area:169:4 | Wanted: Gath'Ilzogg | 1433 0.6450,0.5580 | quests in progress | 0 yd | 169/4
-card | carry | Finish what you carry | 4 ready to hand in, 6 in progress | - | map 1433
-  step 1 | area:20:4 | Blackrock Menace | 1433 0.2710,0.1090 | quests in progress | 134 yd | 20/4
-  step 2 | area:91:4 | Solomon's Law | 1433 0.7400,0.5220 | 2 quests here | 209 yd | 91/4 180/4
-  step 3 | area:125:4 | The Lost Tools | 1433 0.3640,0.5460 | 2 quests here | 157 yd | 125/4 127/4
-  step 4 | area:116:6 | Dry Times | 1431 0.7370,0.4410 | quests in progress | 0 yd | 116/6
-  step 5 | area:116:7 | Dry Times | 1429 0.4400,0.6570 | quests in progress | 0 yd | 116/7
-  step 6 | town:60 | Turn in: The Price of Shoes | 1429 0.4171,0.6554 | Opens the next chapter here | then 119
-  step 7 | town:69 | Turn in: Messenger to Stormwind | 1453 0.6917,0.8271 | Opens the next chapter here | then 121
-  step 8 | area:116:5 | Dry Times | 1453 0.6000,0.7700 | quests in progress | 0 yd | 116/5
-  step 9 | town:80 | Turn in: Elmore's Task | 1453 0.5972,0.3378 | ready to hand in
+card | carry | Finish what you carry | 4 ready to hand in, 1 in progress | - | map 1431
+  step 1 | area:116:6 | Dry Times | 1431 0.7370,0.4410 | quests in progress | 0 yd | 116/6
+  step 2 | area:116:7 | Dry Times | 1429 0.4400,0.6570 | quests in progress | 0 yd | 116/7
+  step 3 | town:60 | Turn in: The Price of Shoes | 1429 0.4171,0.6554 | Opens the next chapter here | then 119
+  step 4 | town:69 | Turn in: Messenger to Stormwind | 1453 0.6917,0.8271 | Opens the next chapter here | then 121
+  step 5 | town:80 | Turn in: Elmore's Task | 1453 0.5972,0.3378 | ready to hand in
+  step 6 | area:116:5 | Dry Times | 1453 0.6000,0.7700 | quests in progress | 0 yd | 116/5
+  step 7 | town:37 | Turn in: The Defias Brotherhood | 1436 0.5633,0.4752 | Opens the next chapter here | then 135
+  step 8 | area:116:4 | Dry Times | 1436 0.4590,0.7910 | quests in progress | 0 yd | 116/4

@@ -118,6 +118,8 @@ characters.list = {
 		map = 1433,
 		x = 0.1580,
 		y = 0.5660,
+		-- 39 of 40 in game: one slot left, as there.
+		logMax = 17,
 		completed = { zones = { 1426, 1432 }, ids = { 65, 244 } },
 		log = {
 			{ id = 116, title = "Dry Times", level = 15, complete = false },
@@ -214,6 +216,7 @@ function characters.Resolve(data, fixture)
 		map = fixture.map,
 		x = fixture.x,
 		y = fixture.y,
+		logMax = fixture.logMax, -- nil: no limit
 	}
 	local log = {}
 	for _, entry in ipairs(fixture.log or {}) do
