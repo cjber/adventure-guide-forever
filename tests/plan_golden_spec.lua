@@ -150,7 +150,14 @@ for _, fixture in ipairs(characters.list) do
 	if fixture.name == "human19_redridge_full" then
 		local story, areas = route.journeys[1], 0
 		equal(story.key, "zone:1433", "human19_redridge_full: Redridge is card 1")
-		for _, step in ipairs(story.steps) do
+		-- The story goes out one lap; carry holds the areas of the laps after it.
+		local steps = {}
+		for _, journey in ipairs(route.journeys) do
+			for _, step in ipairs(journey.steps) do
+				steps[#steps + 1] = (journey == story or step.map == 1433) and step or nil
+			end
+		end
+		for _, step in ipairs(steps) do
 			if step.kind == "area" or step.kind == "dungeon" then
 				areas = areas + 1
 				equal(step.map, 1433, "human19_redridge_full: " .. step.key .. " is on Redridge")

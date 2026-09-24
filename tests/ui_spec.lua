@@ -127,11 +127,13 @@ end
 -- the player's other quests is opt-in.
 do
 	local function RouteQuests(h)
-		local quests = {}
+		local quests, seen = {}, {}
 		for _, step in ipairs(h.ns.Route().steps) do
-			-- A town's log quests are its hand-ins; its pickups are not in the log.
+			-- A town's log quests are its hand-ins; its pickups, and a lap's quests it picks up first, are not in the log.
 			for _, questID in ipairs(step.kind == "town" and step.handins or step.quests) do
-				quests[#quests + 1] = questID
+				if not seen[questID] and not (step.planned and step.planned[questID]) then
+					quests[#quests + 1], seen[questID] = questID, true
+				end
 			end
 		end
 		return table.concat(quests, " ")
@@ -156,7 +158,8 @@ do
 	ClickTitle(h)
 	equal(h.spf.NavigateRoute, 1, "the title starts the route")
 	equal(h.watched[1], 99, "the player's own tracked quest stays")
-	equal(RouteQuests(h), "845 843", "the route holds both log quests")
+	-- Gann's Reclamation is done on a later lap, so carry holds it.
+	equal(RouteQuests(h), "845", "the route holds the log quest its lap hands in")
 	equal(table.concat(h.watched, " ", 2), RouteQuests(h), "the route's quests join it")
 	ClickTitle(h)
 	equal(table.concat(h.watched, " ", 2), RouteQuests(h), "a second click tracks nothing twice")
@@ -862,9 +865,10 @@ end
 -- (no mouse: an in-game check); its tooltip lists each open objective under its quest in the client's words, else
 -- its count.
 do
+	-- Gann's Reclamation is a later lap's on the story (Ratchet's leads), so carry holds it.
 	local h = harness.load({
 		db = PINS_ON,
-		charDB = { journey = "zone:1413" },
+		charDB = { journey = "carry" },
 		completed = { 844 },
 		log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
@@ -1103,8 +1107,10 @@ do
 	h.spfLegs = cases[1][2]
 	h.Hover(rows[2])
 	equal(h.spf.EstimateDetail, calls + 1, "travel line: another row's tooltip asks once")
-	same({ unpack(h.tooltip, 1, 3) }, {
+	-- Row 2 is the lead's town, so its chapter line comes before the way.
+	same({ unpack(h.tooltip, 1, 4) }, {
 		"title: 2. " .. rows[2].step.title,
+		"normal: Chapter 1 of 4",
 		"highlight: " .. cases[1][3],
 		"highlight: " .. rows[2].step.reason,
 	}, "travel line: another row's tooltip")
@@ -1135,7 +1141,8 @@ do
 	h.flush()
 	equal(h.modelCalls.Journeys - before, 0, "combat: no full build in combat")
 	equal(ns.Route().journey, "zone:1413", "combat: the chosen card holds")
-	-- The story lets go of a quest finished mid-fight, and carry, fresh from the log, hands it in.
+	-- A quest finished mid-fight: carry, fresh from the log, hands it in. Gann's is a later lap's on the story
+	-- (Ratchet's leads), so the story, which never held it, keeps every step.
 	local keys, cards = {}, ns.Route().journeys
 	for _, journey in ipairs(cards) do
 		for _, step in ipairs(journey.steps) do
@@ -1145,7 +1152,7 @@ do
 	equal(keys["turnin:843"], "carry", "combat: a quest finished mid-fight is ready to hand in")
 	equal(keys["area:843:0"], nil, "combat: its objective step is gone")
 	equal(cards[1].key, story.key, "combat: the story stays first")
-	equal(#cards[1].steps, #story.steps - 1, "combat: less only that step")
+	equal(#cards[1].steps, #story.steps, "combat: the story's steps hold")
 	equal(h.counts.tickers, 0, "combat: no timer waits for the fight to end")
 	-- A skip mid-fight takes effect at once, on the story's card as on the log's.
 	ns.Prefs().journey = story.key
@@ -1155,7 +1162,7 @@ do
 	ns.Skip(skipped)
 	h.flush()
 	equal(ns.Route().steps[1].key ~= skipped, true, "combat: a skipped story step goes at once")
-	equal(#ns.Route().steps, #story.steps - 2, "combat: and only that step")
+	equal(#ns.Route().steps, #story.steps - 1, "combat: and only that step")
 	equal(h.modelCalls.Journeys - before, 0, "combat: still no full build")
 	h.SetCombat(false)
 	h.flush()
@@ -1604,7 +1611,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	local label = "tracker: " .. (spf or "no Shortest Path")
 	local h = Load(spf)
 	local steps = h.ns.Route().steps
-	local expected = { "1 to hand in, 7 to pick up", "Opens the next chapter here" }
+	local expected = { "1 to hand in, 5 to pick up", "Opens the next chapter here" }
 	expected[#expected + 1] = spf and "About 6 min away" or nil
 	expected[#expected + 1] = "Next: " .. steps[2].title .. " (no dash)"
 	local lines, block = TrackerLines(h)
@@ -1654,6 +1661,15 @@ do
 	local ns = h.ns
 	-- Egg Hunt at 20, two over the player: yellow, so offered (at 22 it is orange and never is), a ninth to count.
 	ns.Data.quests[868].level = 20
+	-- Their work a step from town and alike in XP, so the lap keeps all of them (one worth less per yard waits).
+	for _, quest in pairs(ns.Data.quests) do
+		if quest.start and quest.start.hub == 349 then
+			quest.xp = 1000
+			if quest.obj then
+				quest.need, quest.obj = { [4] = 1 }, { { 4, 530, 310, 20 } }
+			end
+		end
+	end
 	ns.Prefs().journey = ns.Route().journeys[1].key
 	ns.Invalidate()
 	h.flush()
@@ -1718,7 +1734,7 @@ do
 	local steps = ns.Route().steps
 	local step = steps[1]
 	equal(step.title, "Crossroads, The Barrens", "tracker, town: titled by its flight master")
-	equal(step.detail, "1 to hand in, 7 to pick up", "tracker, town: the hand-in joins the pickups")
+	equal(step.detail, "1 to hand in, 5 to pick up", "tracker, town: the hand-in joins the pickups")
 	same(TrackerLines(h), {
 		step.detail,
 		"Opens the next chapter here",
@@ -1729,20 +1745,26 @@ do
 	h.tracker:MarkDirty()
 	same(TrackerLines(h), {
 		step.detail,
-		"Sergra Darkthorn, Gazrog and 5 more",
+		"Sergra Darkthorn, Gazrog and 4 more",
 		"Next: " .. steps[2].title .. " (no dash)",
 	}, "tracker, town: its NPCs, two named")
 	step.givers = { "Sergra Darkthorn", "Gazrog" }
 	h.tracker:MarkDirty()
 	equal(TrackerLines(h)[2], "Sergra Darkthorn, Gazrog", "tracker, town: two NPCs, both named")
 
-	-- Kadrak's one quest: its NPC and zone, since its title names only the NPC.
-	ns.Skip(steps[1].key, steps[1].title)
-	ns.Skip(steps[2].key, steps[2].title)
-	h.flush()
+	-- A town with one quest: its NPC and zone, since its title names only the NPC. The towns before it are skipped.
+	for _ = 1, 6 do
+		step = ns.Route().steps[1]
+		if step.kind == "town" and #step.quests == 1 then
+			break
+		end
+		ns.Skip(step.key, step.title)
+		h.flush()
+	end
 	step = ns.Route().steps[1]
-	equal(step.title, "Pick up quests: Kadrak", "tracker, one quest: Kadrak leads")
-	equal(TrackerLines(h)[1], "Kadrak, The Barrens", "tracker, one quest: NPC, zone")
+	local npc = step.title:match("^Pick up quests: (.+)$")
+	equal(npc ~= nil, true, "tracker, one quest: a town of one leads, " .. step.title)
+	equal(TrackerLines(h)[1], npc .. ", The Barrens", "tracker, one quest: NPC, zone")
 	clean(h, "tracker, town")
 end
 

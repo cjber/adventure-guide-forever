@@ -1,7 +1,10 @@
 # human12_elwynn: level 12, side 1, at 1429 0.4200,0.6500
 card (chosen) | zone:1439 | Darkshore story | Chapter 1 of 4 | A chain begins with Thundris Windweaver | map 1439
   step 1 | town:452 | Auberdine, Darkshore | 1439 0.3610,0.4493 | Begins a new story
-  step 2 | town:449 | Pick up quests: Sentinel Tysha Moonblade | 1439 0.4030,0.5973 | near your level
+  step 2 | area:953:0 | The Fall of Ameth'Aran | 1439 0.4330,0.5870 | 2 quests here | 964 yd | 958/4 2118/0
+  step 3 | area:3524:4 | Washed Ashore | 1439 0.3640,0.5090 | after you pick it up | 0 yd | 3524/4
+  step 4 | area:983:4 | Buzzbox 827 | 1439 0.3850,0.3360 | 2 quests here | 1221 yd | 983/4 1141/4
+  step 5 | town:452:2 | Auberdine, Darkshore | 1439 0.3740,0.4013 | Opens the next chapter here | then 4681 then 1001 then 2138
 card | calling | Your calling | Chapter 2 of 4 | A task for your class: Bartleby the Drunk | map 1453
   step 1 | town:80 | Pick up quests: Harry Burlguard | 1453 0.7713,0.5326 | Continues a story you started
 card | zone:1432 | Head to Loch Modan | 5 quests near your level | For level 14 | map 1432

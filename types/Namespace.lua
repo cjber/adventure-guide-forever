@@ -171,6 +171,8 @@
 ---@field zone? string the client's name for `map`, else the data's
 ---@field optional? boolean elite/group or outside the player's level band
 ---@field r? number an area's radius in yards, wide enough for all its objectives; 0 for a point
+---@field planned? table<integer, true> the quests on it the route picks up first, not in the log yet (Model.lua Laps)
+---@field returns? table<integer, true> a town's hand-ins the route comes back for once their objectives are done
 ---@field chapter? string the story card's chapter line, on the step that takes the chain up
 
 ---@class AGFSkipped
@@ -460,6 +462,8 @@
 ---@field DUNGEON_INSIDE_ONE string format: the instance's name
 ---@field JOURNEY_INTO string format: the instance a chain leads into
 ---@field CARRY_READY string format: count of finished quests whose hand-in is on this continent
+---@field HAND_IN_WHEN_DONE string a lap's return visit's reason for its one hand-in, a quest the lap does first
+---@field AFTER_PICK_UP string an area's reason for its one quest, which the lap picks up first
 ---@field CARRY_IN_PROGRESS string format: count
 ---@field CARRY_AWAY string format: count of finished quests whose hand-in is across an ocean
 ---@field LIST_SEPARATOR string between the parts of one line

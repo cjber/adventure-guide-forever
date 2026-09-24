@@ -1,10 +1,8 @@
 # ne21_darkshore: level 21, side 1, at 1439 0.3700,0.4400
 card (chosen) | zone:1437 | Wetlands story | Chapter 1 of 5 | A chain begins with Karl Boran | map 1437
   step 1 | town:147 | Menethil Harbor, Wetlands | 1437 0.0832,0.5857 | Begins a new story
-  step 2 | town:153 | Pick up quests: Einar Stonegrip | 1437 0.4992,0.3937 | near your level
-  step 3 | town:152 | Pick up quests: Rethiel the Greenwarden | 1437 0.5637,0.4040 | near your level
-  step 4 | town:144 | Pick up quests: Mountaineer Rockgar | 1437 0.5576,0.9181 | near your level
-  step 5 | town:123 | Pick up quests: Mountaineer Kadrell | 1432 0.3417,0.4784 | near your level
+  step 2 | area:279:0 | Claws from the Deep | 1437 0.1540,0.3980 | after you pick it up | 177 yd | 279/0 279/5
+  step 3 | town:147:2 | Turn in: Claws from the Deep | 1437 0.0832,0.5857 | Opens the next chapter here | then 281
 card | zone:1431 | Head to Duskwood | 5 quests near your level | For level 23 | map 1431
   step 1 | town:41 | Pick up quests: Lars | 1431 0.0771,0.3320 | near your level
   step 2 | town:28 | Pick up quests: Jitters | 1431 0.1838,0.5637 | near your level

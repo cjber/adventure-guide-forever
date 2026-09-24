@@ -608,9 +608,12 @@ do
 	}
 	local done = { [1] = true, [2] = true, [3] = true }
 	local plan = Model.Plan(fields, player, done, carried, prefs())
+	-- A lap goes out once, so an area of a later lap is carry's: the areas are sought on every card.
 	local byKey = {}
-	for _, step in ipairs(plan.journeys[1].steps) do
-		byKey[step.key] = step
+	for _, journey in ipairs(plan.journeys) do
+		for _, step in ipairs(journey.steps) do
+			byKey[step.key] = byKey[step.key] or step
+		end
 	end
 	local shared, loots, apart = byKey["area:1:0"], byKey["area:1:4"], byKey["area:3:4"]
 	equal(shared and shared.kind, "area", "areas: the kills, an area visit")
@@ -627,7 +630,12 @@ do
 	equal(loots and loots.quests[1], 1, "areas: the collect, another visit for the same quest")
 	equal(loots and loots.objectives[1].text, nil, "areas: no empty words")
 	equal(apart and apart.r, 0, "areas: a single point's ring")
-	equal(plan.journeys[1].subline, "3 in progress", "areas: the card counts each quest once")
+	-- The story's lap takes 1 and 2; carry holds 3, the lap after. Each card counts its quests once.
+	local counts = {}
+	for _, journey in ipairs(plan.journeys) do
+		counts[#counts + 1] = journey.subline
+	end
+	equal(table.concat(counts, " | "), "2 in progress | 1 in progress", "areas: each card counts each quest once")
 	-- In combat an area keeps its objectives of the quests still carried, and recounts.
 	local fought = { [1] = carried[1], [3] = carried[3] }
 	local refreshed = Model.Refresh(fields, player, done, fought, prefs(), plan)
@@ -1138,6 +1146,50 @@ local function RedSteps()
 end
 equal(Only(2, RedSteps):find("0.3200", 1, true), nil, "value: a red quest is never first, though nearest")
 equal(#RedSteps(), 2, "value: nor on the route at all")
+
+-- Laps (docs/design.md §4.3): the story's town hands out its quests, the lap goes out to their areas and comes back to
+-- hand them in, a second visit keyed ":2". A quest worth far less per yard than the town's others waits, and the log's
+-- limit caps the pickups, the best worth per yard first.
+do
+	local lapped = {
+		quests = {},
+		zones = data.zones,
+		maps = { [1] = { name = "Zone", continent = 0, cx = 0, cy = 0, sx = 1000, sy = 1000 } },
+		continents = { [0] = { x = 0, y = 0 } },
+		hubs = { [5] = { name = "Lakeshire, Redridge" } },
+	}
+	for id, spot in ipairs({ { 560, 500 }, { 500, 600 }, { 470, 600 }, { 900, 900 } }) do
+		local given = quest(0.5, 0.5)
+		given.start.hub, given.finish = 5, { map = 1, x = 0.5, y = 0.5, name = "Quest giver", hub = 5 }
+		given.xp, given.need, given.obj = 1000 - id * 10, { [0] = 5 }, { { 0, spot[1], spot[2], 20 } }
+		lapped.quests[id] = given
+	end
+	lapped.quests[4].xp = 100 -- 550 yd off for a tenth of the XP
+	local walker = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.45, y = 0.5 }
+	local function Keys(steps)
+		local keys = {}
+		for _, step in ipairs(steps) do
+			keys[#keys + 1] = step.key
+		end
+		return table.concat(keys, " ")
+	end
+	local steps = Model.Plan(lapped, walker, {}, {}, Choose("zone:1")).steps
+	equal(steps[1].key, "town:5", "laps: the town first")
+	equal(table.concat(steps[1].pickups, " "), "1 2 3", "laps: its quests, less the one worth little per yard")
+	equal(steps[#steps].key, "town:5:2", "laps: back to the town, a second visit")
+	equal(table.concat(steps[#steps].handins, " "), "1 2 3", "laps: handing in what the lap did")
+	equal(steps[#steps].reason, "3 to hand in", "laps: counted as hand-ins")
+	equal(Keys(steps), "town:5 area:2:0 area:1:0 town:5:2", "laps: the town, the areas (2 and 3's merged), the town")
+	walker.logMax = 2
+	steps = Model.Plan(lapped, walker, {}, {}, Choose("zone:1")).steps
+	-- 2 and 3 share an area, so each costs less than 1.
+	equal(table.concat(steps[1].pickups, " "), "2 3", "laps, full log: as many as the log takes, best per yard")
+	equal(Keys(steps), "town:5 area:2:0 town:5:2", "laps, full log: only their area")
+	local held = { [9] = { id = 9, title = "Held", level = 18, complete = false } }
+	walker.logMax = 1
+	steps = Model.Plan(lapped, walker, {}, held, Choose("zone:1")).steps
+	equal(steps[1] and steps[1].pickups and #steps[1].pickups, nil, "laps, log full: nothing to pick up")
+end
 
 -- No zone the level fits (a city's quests only): no story card, and no error.
 local city = { quests = { [1] = quest(0.5, 0.5, 9) }, zones = data.zones }

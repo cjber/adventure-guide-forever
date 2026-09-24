@@ -1,12 +1,12 @@
 # orc18_barrens: level 18, side 2, at 1413 0.5200,0.3000
 card (chosen) | zone:1413 | The Barrens story | Chapter 1 of 4 | 2 quests will soon turn grey | map 1413
   step 1 | town:349 | Crossroads, The Barrens | 1413 0.5193,0.3032 | Opens the next chapter here | then 903
-  step 2 | town:356 | Regthar Deathgate | 1413 0.4534,0.2841 | 2 to pick up
-  step 3 | town:385 | Pick up quests: Kadrak | 1413 0.4812,0.0542 | near your level
-  step 4 | town:382 | Pick up quests: Wizzlecrank's Shredder | 1413 0.5652,0.0745 | near your level
-  step 5 | town:340 | Ratchet, The Barrens | 1413 0.6268,0.3623 | Begins a new story
-  step 6 | town:317 | Pick up quests: Gilthares Firebough | 1413 0.6196,0.5496 | near your level
-  step 7 | area:843:0 | Gann's Reclamation | 1413 0.4760,0.8510 | quests in progress | 106 yd | 843/0 843/1 843/6
+  step 2 | town:340 | Ratchet, The Barrens | 1413 0.6268,0.3623 | Begins a new story
+  step 3 | area:887:0 | Southsea Freebooters | 1413 0.6400,0.4600 | 2 quests here | 221 yd | 887/0 887/1 895/4
+  step 4 | area:896:4 | Miner's Fortune | 1413 0.6050,0.0380 | after you pick it up | 184 yd | 896/4
+  step 5 | town:340:2 | Ratchet, The Barrens | 1413 0.6268,0.3623 | Opens the next chapter here | then 890
+card | carry | Finish what you carry | 1 in progress | - | map 1413
+  step 1 | area:843:0 | Gann's Reclamation | 1413 0.4760,0.8510 | quests in progress | 106 yd | 843/0 843/1 843/6
 card | zone:1442 | Head to Stonetalon Mountains | 7 quests near your level | For level 20 | map 1442
   step 1 | town:358 | Makaba Flathoof | 1442 0.8593,0.9789 | 2 to pick up
   step 2 | town:360 | Xen'Zilla | 1442 0.7325,0.9489 | 2 to pick up

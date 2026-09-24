@@ -40,7 +40,7 @@ local function Lines(h, guid)
 	return h.tooltip
 end
 
-local SERGRA, THORK, KADRAK = 3338, 3429, 8582 -- The Zhevra's ender; Crossroads and Mor'shan Rampart givers
+local SERGRA, THORK, GAZLOWE = 3338, 3429, 3391 -- The Zhevra's ender; Crossroads and Ratchet givers
 
 -- The log's quests ride on the zone's story (they are done on its map): Sergra Darkthorn takes The Zhevra at the
 -- Crossroads; Innkeeper Gryshka in Orgrimmar is on none of its steps.
@@ -62,9 +62,11 @@ do
 	h.flush()
 	local handins = 0
 	for _, step in ipairs(h.ns.Route().steps) do
-		handins = handins + #(step.handins or {})
+		for _, id in ipairs(step.handins or {}) do
+			handins = handins + (id == 845 and 1 or 0)
+		end
 	end
-	equal(handins, 0, "log: nothing left to hand in")
+	equal(handins, 0, "log: The Zhevra is no longer handed in")
 	equal(#h.errors, 0, "log: errors\n" .. table.concat(h.errors, "\n"))
 end
 
@@ -73,9 +75,8 @@ do
 	local h = Load({ journey = "zone:1413" })
 	local line = { "normal: Adventure guide: The Barrens story" }
 	same(Lines(h, Creature(THORK)), line, "story: a pickup's giver")
-	same(Lines(h, Creature(KADRAK)), line, "story: in a later town")
+	same(Lines(h, Creature(GAZLOWE)), line, "story: in a later town")
 	same(Lines(h, Creature(SERGRA)), line, "story: its hand-in's ender")
-	same(Lines(h, Creature(3439)), line, "story: Wizzlecrank's Shredder is a creature")
 	h.ns.Choose(nil)
 	h.flush()
 	equal(h.ns.Route().chosen, false, "none chosen")

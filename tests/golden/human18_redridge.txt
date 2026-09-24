@@ -1,7 +1,9 @@
 # human18_redridge: level 18, side 1, at 1433 0.2600,0.4500
 card (chosen) | zone:1433 | Redridge Mountains story | Chapter 1 of 3 | A chain begins with Darcy | map 1433
   step 1 | town:61 | Lakeshire, Redridge | 1433 0.2490,0.4445 | Begins a new story
-  step 2 | town:56 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
+  step 2 | area:3741:4 | Hilary's Necklace | 1433 0.2320,0.5390 | after you pick it up | 200 yd | 3741/4
+  step 3 | area:125:4 | The Lost Tools | 1433 0.3640,0.5460 | after you pick it up | 0 yd | 125/4
+  step 4 | town:61:2 | Lakeshire, Redridge | 1433 0.2705,0.4864 | 2 to hand in
 card | zone:1439 | Head to Darkshore | 16 quests near your level | Auberdine needs hands | map 1439
   step 1 | town:452 | Auberdine, Darkshore | 1439 0.3574,0.4371 | 12 to pick up
   step 2 | town:437 | Pick up quests: Kerlonian Evershade | 1439 0.4440,0.7643 | near your level

@@ -159,6 +159,9 @@ ns.L = {
 	-- Steps (Model.lua): a title and a reason.
 	TURN_IN = "Turn in: %s",
 	READY_TO_HAND_IN = "ready to hand in",
+	-- A hand-in the route comes back for once the quest's objectives are done, and an area of a quest picked up first.
+	HAND_IN_WHEN_DONE = "once it's done",
+	AFTER_PICK_UP = "after you pick it up",
 	OPENS_CHAPTER_HERE = "Opens the next chapter here",
 	QUESTS_IN_PROGRESS = "quests in progress",
 	QUESTS_HERE = "%d quests here",
@@ -480,10 +483,18 @@ end
 ---@param step AGFStep
 ---@return integer[]
 local function LogQuests(step)
-	if step.kind == "town" then
-		return step.handins or {}
+	local quests = (step.kind == "town" and step.handins)
+		or ((step.kind == "turnin" or step.kind == "area" or step.kind == "dungeon") and step.quests)
+		or {}
+	if not step.planned then
+		return quests
 	end
-	return (step.kind == "turnin" or step.kind == "area" or step.kind == "dungeon") and step.quests or {}
+	-- A quest the route picks up first wasn't in the log when it was planned.
+	local carried = {}
+	for _, id in ipairs(quests) do
+		carried[#carried + 1] = not step.planned[id] and id or nil
+	end
+	return carried
 end
 
 ---@param step AGFStep
