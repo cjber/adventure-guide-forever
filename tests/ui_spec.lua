@@ -1969,7 +1969,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Heights(), "86 86 86", label .. ": every card whole")
 	equal(Rows(), 0, label .. ": no steps listed")
 	equal(Hint(), 1, label .. ": the hint under the cards")
-	equal(Says(h.ns.L.STEP_COUNT:format(0)), 1, label .. ": and no steps counted")
+	equal(Says("Steps: 0"), 0, label .. ": and no step counter (docs/design.md §1)")
 	equal(#(h.pins.AdventureGuideForeverPinTemplate or {}), 0, label .. ": no rings previewed")
 	equal(Starts(), 0, label .. ": nothing guides")
 	for _, card in ipairs(Cards()) do

@@ -49,14 +49,14 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
 
 ```
 +-----------------------------------------------+  308 px pane (QuestMapFrame.xml:648)
-| [Search quests............]   Level 14   [*]  |  29 px top bar: SearchBoxTemplate (Panel.lua:486),
-|-----------------------------------------------|  GameFontHighlightSmall, settings cog (Panel.lua:496, unchanged)
+| [Search quests..........................] [*] |  29 px top bar: SearchBoxTemplate across the width
+|-----------------------------------------------|    (no step count, §1), settings cog
 | +-------------------------------------------+ |  none chosen: every card whole, 288x86, in order
 | | (?)  Finish what you carry                | |
 | | ( )  3 quests ready to hand in            | |
 | +-------------------------------------------+ |
 |  ... the story and next-zone cards, likewise   |
-|  Choose a journey to see its steps.           |  GameFontDisableSmall hint; Steps: 0, nothing guides
+|  Choose a journey to see its steps.           |  GameFontDisableSmall hint; nothing guides
 |                                               |
 |  --- after choosing the story: ---            |
 | [(?) Finish what you carry                +] |  the others, one line each: 288x26, 2 px apart

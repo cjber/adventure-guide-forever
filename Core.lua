@@ -145,7 +145,6 @@ ns.L = {
 	-- The guide and the map.
 	SKIP_STEP = "Skip this step for now",
 	OPTIONAL = "optional",
-	STEP_COUNT = "Steps: %d",
 	-- The travel provider's name, for CLICK_TRAVEL.
 	SHORTEST_PATH = "Shortest Path",
 	STARTS_AFTER_COMBAT = "The route starts when combat ends",

@@ -371,7 +371,6 @@
 ---@field NEAR_YOUR_LEVEL string
 ---@field SKIP_STEP string
 ---@field OPTIONAL string
----@field STEP_COUNT string format: step count
 ---@field SHORTEST_PATH string
 ---@field STARTS_AFTER_COMBAT string the footer while a choice made in combat waits to start its route
 ---@field CLICK_TRAVEL string format: travel addon name

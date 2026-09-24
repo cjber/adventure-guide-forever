@@ -62,8 +62,6 @@ local list
 local content
 ---@type AGFSearchBox?
 local searchBox
----@type FontString?
-local countText
 -- Defined below the builders; the search box's handler needs it.
 local Refresh
 -- Defined with the card's refresh; the cards' OnEnter needs it.
@@ -440,20 +438,15 @@ local function BuildSettingsMenu(_, menu)
 	end)
 end
 
--- The quest log's top bar: a search box for any quest, a count box and the settings cog.
+-- The quest log's top bar: a search box for any quest across its width, and the settings cog. No step count
+-- (docs/design.md §1).
 ---@param panelFrame Frame
 local function BuildTopBar(panelFrame)
-	local count = CreateFrame("Frame", nil, panelFrame, "InputBoxVisualTemplate") --[[@as Frame]]
-	count:SetSize(100, 20)
-	count:SetPoint("TOPRIGHT", -3, -2)
-	countText = count:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-	countText:SetPoint("RIGHT", -5, 0)
-
 	searchBox = CreateFrame("EditBox", nil, panelFrame, "SearchBoxTemplate") --[[@as AGFSearchBox]]
 	searchBox.Instructions:SetText(L.SEARCH_QUESTS)
 	searchBox:SetHeight(20)
 	searchBox:SetPoint("TOPLEFT", 6, -2)
-	searchBox:SetPoint("RIGHT", count, "LEFT", -3, 0)
+	searchBox:SetPoint("TOPRIGHT", -3, -2)
 	searchBox:SetMaxLetters(60)
 	searchBox:HookScript("OnTextChanged", function()
 		Refresh()
@@ -778,7 +771,6 @@ end
 ---@return integer found
 local function LayoutJourneys(route)
 	---@cast searchBox -?
-	---@cast countText -?
 	---@cast list -?
 	---@cast content -?
 	---@cast track -?
@@ -843,8 +835,6 @@ local function LayoutJourneys(route)
 		skippedButton:SetPoint("TOPLEFT", 10, -top)
 		top = top + SKIPPED_HEIGHT + CARD_GAP
 	end
-	-- The steps the guide lists: none until a card is chosen.
-	countText:SetText(ns.L.STEP_COUNT:format(route.chosen and #route.steps or 0))
 	list:SetHeight(top)
 	content:SetHeight(LIST_TOP + top + PAD)
 	return searching, found
