@@ -170,7 +170,24 @@ equal(h.G.AdventureGuideForeverCharDB.seen["aside:trainer"], nil, "aside gone: l
 provider.aside = { key = "trainer", text = "Visit your class trainer · 2 new spells", icon = "class" }
 LevelUp(h, 21)
 equal(#h.fanfares, 2, "aside back: new again")
+-- Every spell trained at the trainer brings no rebuild, only SPELLS_CHANGED; the next level's spells are still new.
+provider.aside = nil
+h.fire("SPELLS_CHANGED")
+h.flush()
+equal(h.G.AdventureGuideForeverCharDB.seen["aside:trainer"], nil, "trained: leaves the seen set without a rebuild")
+provider.aside = { key = "trainer", text = "Visit your class trainer · 1 new spell", icon = "class" }
+LevelUp(h, 21)
+same(h.fanfares, { "aside", "aside", "aside" }, "trained, then a level: new again")
 clean(h, "aside")
+
+-- A zone entered that brings a card the character hasn't been offered: Westfall, among the zones level 18 fits.
+h = Load()
+h.player.map = 1436
+h.fire("ZONE_CHANGED_NEW_AREA")
+h.flush()
+same(h.fanfares, { "moment" }, "new zone entered: the line glows")
+equal(Tracker(h), "Map 1436 is now for your level", "new zone entered: its line")
+clean(h, "zone entered")
 
 -- With the tracker section off, the card and the pips still say it; nothing glows.
 h = harness.load({ db = { showTracker = false }, charDB = {}, completed = { 844 }, log = {} })

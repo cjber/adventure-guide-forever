@@ -502,8 +502,8 @@ After a level gained or a zone entered (`PLAYER_LEVEL_UP`, `ZONE_CHANGED_NEW_ARE
 character has never been offered is announced once, quietly: `Moments.lua`, after `Asides.lua` in the TOC.
 
 - **The seen set.** `charDB.seen` holds every journey key the character has been offered (never `carry`), and
-  `aside:<key>` while a provider gives that aside; one that stops being given leaves, so the trainer's next spells are
-  new again. Step 1's travel frame after each rebuild, once the asides have answered, adds what is offered now; out of
+  `aside:<key>` while a provider gives that aside; one that stops being given leaves (checked on every change of the
+  aside shown too, since training every spell brings no rebuild), so the trainer's next spells are new again. Step 1's travel frame after each rebuild, once the asides have answered, adds what is offered now; out of
   combat, and only once the completed quests have loaded.
 - **When it compares.** Only on the first such look after the rebuild a level or a zone brings, and never against an
   empty set: the session's first look, a new character and a save file the client never loaded (#34) all learn

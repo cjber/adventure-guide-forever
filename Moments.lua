@@ -60,6 +60,24 @@ local function Text(journey)
 	return L.MOMENT:format(name)
 end
 
+-- An aside no provider gives any more leaves the set, so the trainer's next spells are new again; so does anything a
+-- hand-edited save file put there that isn't a key. Also on each change of the aside shown: training every spell
+-- (SPELLS_CHANGED) brings no rebuild, and the level that follows must still find the next ones new.
+---@param seen table<string, boolean>
+---@return table<string, boolean> answered the asides' keys in the seen set's form
+local function Forget(seen)
+	local answered = {}
+	for _, aside in ipairs(ns.Asides.Answers()) do
+		answered[ASIDE .. aside.key] = true
+	end
+	for key in pairs(seen) do
+		if type(key) ~= "string" or key:sub(1, #ASIDE) == ASIDE and not answered[key] then
+			seen[key] = nil
+		end
+	end
+	return answered
+end
+
 -- Step 1's travel frame after each rebuild (Core), once the asides have answered: out of combat, once the completed
 -- quests have loaded. Everything offered now joins the seen set; only a look armed by a level or a zone compares
 -- first, and never against an empty set.
@@ -84,17 +102,7 @@ function Moments.Observe()
 			seen[journey.key] = true
 		end
 	end
-	-- An aside no provider gives any more leaves the set, so the trainer's next spells are new again; so does anything
-	-- a hand-edited save file put there that isn't a key.
-	local answered = {}
-	for _, aside in ipairs(ns.Asides.Answers()) do
-		answered[ASIDE .. aside.key] = true
-	end
-	for key in pairs(seen) do
-		if type(key) ~= "string" or key:sub(1, #ASIDE) == ASIDE and not answered[key] then
-			seen[key] = nil
-		end
-	end
+	local answered = Forget(seen)
 	local aside = ns.Asides.Current()
 	local newAside = compare and aside ~= nil and not seen[ASIDE .. aside.key]
 	for key in pairs(answered) do
@@ -168,6 +176,9 @@ events:SetScript("OnEvent", function()
 end)
 ns.OnRouteChange(function()
 	armed = armed or pending
+end)
+ns.Asides.OnChange(function()
+	Forget(Seen())
 end)
 
 -- The compartment's button is Blizzard's (Blizzard_Minimap AddonCompartment.xml); the pip is a texture of AGF's on it.
