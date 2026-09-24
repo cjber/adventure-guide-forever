@@ -111,6 +111,10 @@
 ---@field pinned? boolean
 ---@field chapter? string the story card's chapter line, on the step that takes the chain up
 
+---@class AGFSkipped
+---@field key string
+---@field title string
+
 -- A quest giver drawn as a "!" on the world map.
 ---@class AGFGiver
 ---@field map integer
@@ -247,7 +251,13 @@
 ---@field HELP_DUMP string
 ---@field HAND_IN_WHEN string format: zone name; the reason on a turn-in the route leaves for another continent
 ---@field NO_WAYPOINT string the error Go shows when nothing can guide the player on the step's map
+---@field GO string the step menu's entry that starts guidance
 ---@field STOP string ends the guidance Go started
+---@field SHOW_QUEST string opens a log quest in Blizzard's details
+---@field SKIP string hides the step for this session
+---@field SKIPPED string format: how many steps are skipped this session
+---@field SHOW_AGAIN string format: a skipped step's title
+---@field CHOOSE_JOURNEY string opens the guide
 ---@field SETTING_MAP_PINS_TOOLTIP string
 ---@field SETTING_GIVERS_TOOLTIP string
 ---@field SETTING_DUNGEONS_DEFAULT_TOOLTIP string
@@ -297,7 +307,11 @@
 ---@field Invalidate fun() mark the route stale and notify views
 ---@field OnRouteChange fun(callback: fun())
 ---@field PanelShown? fun(): boolean whether the guide is open, set once Blizzard_WorldMap has loaded
----@field Skip fun(key: string)
+---@field Skip fun(key: string, title: string) hide a step for this session; the menu offers it back by its title
+---@field Unskip fun(key: string)
+---@field Skipped fun(): AGFSkipped[] this session's skipped steps, in the order they were skipped
+---@field InLog fun(step: AGFStep): boolean the step is a quest in the player's log (a turn-in or its objectives)
+---@field Menu AGFMenuModule
 ---@field TogglePin fun(key: string)
 ---@field ShowQuest fun(step: AGFStep): boolean open a log step's quest in Blizzard's details; false for other steps or in combat
 ---@field DumpLayout fun(root: Frame, describe?: fun(region: Region, entry: AGFDumpEntry)): AGFDumpEntry[]

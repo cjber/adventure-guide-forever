@@ -57,7 +57,14 @@ ns.L = {
 	WHY_RACES = ITEM_RACES_ALLOWED or "Races: %s",
 	WHY_CLASSES = ITEM_CLASSES_ALLOWED or "Classes: %s",
 	NO_WAYPOINT = MAP_PIN_INVALID_MAP or "You can't place a pin on this map.",
+	-- The step menu (docs/design.md §2.8).
+	GO = "Go",
 	STOP = "Stop",
+	SHOW_QUEST = "Show quest",
+	SKIP = "Skip for now",
+	SKIPPED = "Skipped (%d)",
+	SHOW_AGAIN = "Show again: %s",
+	CHOOSE_JOURNEY = "Choose another journey",
 }
 local L = ns.L
 
@@ -91,6 +98,9 @@ local charDB
 -- next time the route is rebuilt from scratch.
 ---@type table<string, boolean>
 local sessionSkipped = {}
+-- The same steps in the order they were skipped, with the titles the menu offers them back by.
+---@type AGFSkipped[]
+local skippedOrder = {}
 
 ---@param msg string
 function ns.Print(msg)
@@ -173,9 +183,37 @@ function ns.Prefs()
 end
 
 ---@param key string
-function ns.Skip(key)
-	sessionSkipped[key] = true
+---@param title string
+function ns.Skip(key, title)
+	if not sessionSkipped[key] then
+		sessionSkipped[key] = true
+		skippedOrder[#skippedOrder + 1] = { key = key, title = title }
+	end
 	ns.Invalidate()
+end
+
+---@param key string
+function ns.Unskip(key)
+	sessionSkipped[key] = nil
+	for index, skipped in ipairs(skippedOrder) do
+		if skipped.key == key then
+			table.remove(skippedOrder, index)
+			break
+		end
+	end
+	ns.Invalidate()
+end
+
+---@return AGFSkipped[]
+function ns.Skipped()
+	return skippedOrder
+end
+
+-- By key, not kind: a group quest in the log is a "dungeon" step, as is a group quest's pickup.
+---@param step AGFStep
+---@return boolean
+function ns.InLog(step)
+	return step.key:find("^turnin:") ~= nil or step.key:find("^objective:") ~= nil
 end
 
 -- A quest in the log opens in Blizzard's own details view (docs/design.md §2.5); anything else is left to the caller.
@@ -183,9 +221,7 @@ end
 ---@param step AGFStep
 ---@return boolean
 function ns.ShowQuest(step)
-	-- By key, not kind: a group quest in the log is a "dungeon" step, as is a group quest's pickup.
-	local logged = step.key:find("^turnin:") or step.key:find("^objective:")
-	if not logged or InCombatLockdown() then
+	if not ns.InLog(step) or InCombatLockdown() then
 		return false
 	end
 	OpenQuestLog()

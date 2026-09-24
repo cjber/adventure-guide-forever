@@ -26,6 +26,7 @@ local TRACK_MAX, SQUARE, SQUARE_GAP = 8, 12, 3
 local SEARCH_MIN, SEARCH_ROWS, WHY_LINES, RESULT_HEIGHT, WHY_HEIGHT = 3, 10, 6, 24, 14
 -- The quest log's own geometry: a 29px search bar above the list, a 40px footer below it for the Go button.
 local TOP_BAR = 29
+local SKIPPED_HEIGHT = 16
 local FOOTER = 40
 
 ---@type Frame?
@@ -58,6 +59,8 @@ local stopButton
 local results = {}
 ---@type Frame?
 local track
+---@type Button?
+local skippedButton
 ---@type Texture[]
 local squares = {}
 
@@ -96,7 +99,7 @@ end
 ---@param row AGFRouteRow
 ---@param atlas string
 ---@param tip fun(): string
----@param action fun(key: string)
+---@param action fun(step: AGFStep)
 ---@return Button
 local function CreateRowIcon(row, atlas, tip, action)
 	local button = CreateFrame("Button", nil, row)
@@ -105,7 +108,7 @@ local function CreateRowIcon(row, atlas, tip, action)
 	button:SetHighlightAtlas(atlas, "ADD")
 	button:SetScript("OnClick", function()
 		if row.step then
-			action(row.step.key)
+			action(row.step)
 		end
 	end)
 	button:SetScript("OnEnter", function(self)
@@ -131,12 +134,16 @@ local function CreateRow(parent)
 
 	row.SkipButton = CreateRowIcon(row, "common-icon-redx", function()
 		return "Skip this step for now"
-	end, ns.Skip)
+	end, function(step)
+		ns.Skip(step.key, step.title)
+	end)
 	row.SkipButton:SetSize(14, 14)
 	row.SkipButton:SetPoint("TOPRIGHT", -6, -7)
 	row.PinButton = CreateRowIcon(row, "Waypoint-MapPin-Untracked", function()
 		return (row.step and row.step.pinned) and "Unpin this step" or "Pin this step to the top of the route"
-	end, ns.TogglePin)
+	end, function(step)
+		ns.TogglePin(step.key)
+	end)
 	row.PinButton:SetPoint("RIGHT", row.SkipButton, "LEFT", -6, 0)
 
 	row.Ring = row:CreateTexture(nil, "ARTWORK")
@@ -161,10 +168,16 @@ local function CreateRow(parent)
 	row.Tag:SetPoint("LEFT", row.Detail, "RIGHT", 6, 0)
 	row.Tag:SetText("optional")
 
-	-- A quest in the log opens its details; any other step turns the map to it.
-	row:SetScript("OnClick", function()
-		if row.step and not ns.ShowQuest(row.step) then
-			FocusStep(row.step)
+	-- A quest in the log opens its details; any other step turns the map to it. Right-click is the step menu.
+	row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	row:SetScript("OnClick", function(self, mouseButton)
+		if not self.step then
+			return
+		end
+		if mouseButton == "RightButton" then
+			ns.Menu.Open(self, "MENU_ADVENTURE_GUIDE_FOREVER_STEP", self.step)
+		elseif not ns.ShowQuest(self.step) then
+			FocusStep(self.step)
 		end
 	end)
 	return row
@@ -295,6 +308,17 @@ local function BuildJourneys(parent, below)
 	for index = 1, SEARCH_ROWS do
 		results[index] = CreateResult(list)
 	end
+	-- "Skipped (n)" under the cards (design §2.1), a small gold text button that opens the Skipped submenu on its own.
+	skippedButton = CreateFrame("Button", nil, list) --[[@as Button]]
+	skippedButton:SetHeight(SKIPPED_HEIGHT)
+	skippedButton:SetNormalFontObject("GameFontNormalSmall")
+	skippedButton:SetHighlightFontObject("GameFontHighlightSmall")
+	skippedButton:SetScript("OnClick", function(self)
+		MenuUtil.CreateContextMenu(self, function(_, root)
+			root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_SKIPPED")
+			ns.Menu.Skipped(root)
+		end)
+	end)
 	emptyText = list:CreateFontString(nil, "ARTWORK", "GameFontDisable")
 	emptyText:SetPoint("TOPLEFT", 10, -8)
 	emptyText:SetPoint("RIGHT", -10, 0)
@@ -604,6 +628,15 @@ local function LayoutJourneys(route)
 	if searching or not route.journey then
 		LayoutRows(route, top, true)
 		top = math.max(top, 40)
+	end
+	local skipped = not searching and #ns.Skipped() or 0
+	---@cast skippedButton -?
+	skippedButton:SetShown(skipped > 0)
+	if skipped > 0 then
+		skippedButton:SetText(L.SKIPPED:format(skipped))
+		skippedButton:SetWidth(skippedButton:GetTextWidth() + 4)
+		skippedButton:SetPoint("TOPLEFT", 10, -top)
+		top = top + SKIPPED_HEIGHT + CARD_GAP
 	end
 	countText:SetText(("Steps: %d"):format(#route.steps))
 	list:SetHeight(top)

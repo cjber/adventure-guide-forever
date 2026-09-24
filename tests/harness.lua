@@ -142,6 +142,7 @@ function harness.load(options)
 	-- Client methods whose effect no spec reads: accepted and ignored.
 	for _, name in ipairs({
 		"EnableMouse",
+		"RegisterForClicks",
 		"SetMaxLetters",
 		"SetShadowOffset",
 	}) do
@@ -467,6 +468,8 @@ function harness.load(options)
 	function Methods:GetStringWidth()
 		return #(self.text or "") * 6
 	end
+	-- A button's label, as wide as a font string's.
+	Methods.GetTextWidth = Methods.GetStringWidth
 	function Methods:GetStringHeight()
 		return 12
 	end

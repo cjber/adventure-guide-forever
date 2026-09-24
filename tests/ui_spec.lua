@@ -202,13 +202,23 @@ for _, spf in ipairs({ false, "v1" }) do
 	provider:RemoveAllData()
 	equal(Live(), 0, label .. ": RemoveAllData leaves no pins")
 
+	-- Design §2.8's menu for a log quest; Stop only once Go runs, Show quest never in combat.
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["turnin:845"], "RightButton")
-	same(h.MenuLines(), {
+	local menu = {
 		"title: Turn in: The Zhevra",
-		"button: Skip",
-		"button: Change route",
 		"button: Go",
-	}, label .. ": tracker menu")
+		"button: Show quest",
+		"button: Skip for now",
+		"button: Choose another journey",
+	}
+	same(h.MenuLines(), menu, label .. ": tracker menu")
+	ns.Integrations.Navigate(ns.Route().steps[1])
+	h.SetCombat(true)
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["turnin:845"], "RightButton")
+	h.SetCombat(false)
+	menu[3] = "button: Stop"
+	same(h.MenuLines(), menu, label .. ": tracker menu while Go guides, in combat")
+	ns.Integrations.Cancel()
 	clean(h, label .. ": pins")
 end
 
@@ -500,6 +510,75 @@ do
 	h.flush()
 	equal(stop:IsShown(), false, "stop, Shortest Path: hidden once CurrentStop is nil")
 	clean(h, "stop, Shortest Path")
+end
+
+-- The step menu (design §2.8) from a step row, and "Skipped (n)": hidden at 0, it counts the session's skips and
+-- opens the same Skipped submenu, whose "Show again" puts a step back where the route had it.
+do
+	local h = Load(false)
+	local ns = h.ns
+	ns.OpenPanel()
+	h.flush()
+	local story = ns.Route().journeys[2]
+	h.Click(Shown(h, function(frame)
+		return frame.journey == story
+	end)[1])
+	h.flush()
+	local function Keys()
+		local keys = {}
+		for index, step in ipairs(ns.Route().steps) do
+			keys[index] = step.key
+		end
+		return table.concat(keys, " ")
+	end
+	local before, first, second = Keys(), ns.Route().steps[1], ns.Route().steps[2]
+	local function Rows()
+		return Shown(h, function(frame)
+			return frame.SkipButton ~= nil
+		end)
+	end
+	h.Click(Rows()[1], "RightButton")
+	same(h.MenuLines(), {
+		"title: " .. first.title,
+		"button: Go",
+		"button: Skip for now",
+		"button: Choose another journey",
+	}, "step menu: a pickup has no Show quest")
+	local skipped = h.Find(function(frame)
+		return frame.text ~= nil and frame.text:match("^Skipped")
+	end)
+	equal(#skipped, 0, "skipped: no button at 0")
+	h.menu.entries[3].onClick()
+	h.flush()
+	h.Click(Rows()[1].SkipButton)
+	h.flush()
+	local button = Shown(h, function(frame)
+		return frame.text == "Skipped (2)"
+	end)[1]
+	equal(button ~= nil, true, "skipped: reads Skipped (2) after 2 skips")
+	h.Click(Rows()[1], "RightButton")
+	local submenu = { "  button: Show again: " .. first.title, "  button: Show again: " .. second.title }
+	same(h.MenuLines(), {
+		"title: " .. ns.Route().steps[1].title,
+		"button: Go",
+		"button: Skip for now",
+		"button: Skipped (2)",
+		submenu[1],
+		submenu[2],
+		"button: Choose another journey",
+	}, "step menu: the Skipped submenu")
+	h.Click(button)
+	same(
+		h.MenuLines(),
+		{ "button: Show again: " .. first.title, "button: Show again: " .. second.title },
+		"skipped: the same submenu"
+	)
+	h.menu.entries[2].onClick()
+	h.menu.entries[1].onClick()
+	h.flush()
+	equal(Keys(), before, "skipped: Show again restores the route")
+	equal(button:IsShown(), false, "skipped: hidden again at 0")
+	clean(h, "step menu")
 end
 
 -- Chat copy comes from ns.L: an unknown command prints the three help lines, in order.

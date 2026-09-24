@@ -25,26 +25,7 @@ function ModuleMixin:OnBlockHeaderClick(_block, mouseButton)
 		end
 		return
 	end
-	MenuUtil.CreateContextMenu(self:GetContextMenuParent(), function(_, root)
-		root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_TRACKER")
-		local step = CurrentStep()
-		root:CreateTitle(step and step.title or ns.TITLE)
-		root:CreateButton("Skip", function()
-			if step then
-				ns.Skip(step.key)
-			end
-		end)
-		root:CreateButton("Change route", function()
-			if ns.OpenPanel then
-				ns.OpenPanel()
-			end
-		end)
-		root:CreateButton("Go", function()
-			if step then
-				ns.Integrations.Navigate(step)
-			end
-		end)
-	end)
+	ns.Menu.Open(self:GetContextMenuParent(), "MENU_ADVENTURE_GUIDE_FOREVER_TRACKER", CurrentStep())
 end
 
 -- One block for the current step: its place and detail as objective lines, then what
