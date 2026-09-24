@@ -242,6 +242,12 @@ ns.L = {
 	UNEXPLORED = "You haven't seen %s yet",
 	-- A way into an instance is no place to be the level for (roadmap #21).
 	MOMENT_OPEN = "%s is open to you",
+	-- Roadmap #11: the route's last stop, when rested XP is low and an innkeeper stands there.
+	REST_HERE = "Rest at the inn here",
+	-- Roadmap #24: hint strength. A wanderer is told where, never taken there.
+	SETTING_WANDERER = "Wanderer: name places only",
+	SETTING_WANDERER_TOOLTIP = "The guide names where to go next and leaves the way to you: no waypoint, no route "
+		.. "with Shortest Path Forever and no marks on the map.",
 }
 local L = ns.L
 
@@ -261,6 +267,8 @@ local DEFAULTS = {
 	trackRouteQuests = false,
 	-- Opt-in: it throws away the player's own choice of tracked quests.
 	untrackOthers = false,
+	-- Roadmap #24: hint strength, Guide (false) or Wanderer (true), which gates every waypoint, route and map mark.
+	wanderer = false,
 }
 ns.DEFAULTS = DEFAULTS
 
@@ -375,6 +383,10 @@ function ns.SetSetting(key, value)
 		return
 	end
 	db[key] = value
+	-- Wandering from now: what Go started stops, as the player's Stop would.
+	if key == "wanderer" and value then
+		ns.Integrations.Cancel()
+	end
 	-- Cheap: this only wakes listeners (Panel/Pins/Tracker) to redraw with the new setting;
 	-- the route itself rarely depends on an account-wide setting.
 	ns.Invalidate()
@@ -748,7 +760,8 @@ function ns.Choose(key, start)
 	local prefs = ns.Prefs()
 	local guided = prefs.guided
 	prefs.journey = key
-	pendingStart = key ~= nil and start == true
+	-- A wanderer's choice starts nothing (StartRoute), so nothing waits for combat's end either.
+	pendingStart = key ~= nil and start == true and not ns.Setting("wanderer")
 	if guided and guided ~= key and not pendingStart then
 		ns.Integrations.Cancel()
 	end
@@ -769,7 +782,11 @@ function ns.StartRoute(step)
 		prefs.journey = route.journey
 		ns.Invalidate()
 	end
-	if InCombatLockdown() and ns.Integrations.Provider() then
+	-- A wanderer (roadmap #24) chooses the journey and sets off on foot: nothing to start, now or after combat.
+	if ns.Setting("wanderer") then
+		pendingStart = false
+		return false
+	elseif InCombatLockdown() and ns.Integrations.Provider() then
 		pendingStart = true
 		return true
 	end

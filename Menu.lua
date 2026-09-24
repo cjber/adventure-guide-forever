@@ -32,7 +32,7 @@ end
 ---@param step? AGFStep
 function Menu.Step(root, step)
 	root:CreateTitle(step and step.title or ns.TITLE)
-	if step then
+	if step and not ns.Setting("wanderer") then
 		local go = root:CreateButton(L.GO, function()
 			ns.StartRoute(step)
 		end)

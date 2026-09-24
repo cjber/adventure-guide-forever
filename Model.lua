@@ -1053,6 +1053,39 @@ function Model.Profession(data, player, wanted)
 	end
 end
 
+-- Roadmap #11: rested XP is low when it is under one bubble of the bar (a twentieth of the level's XP, a night at an
+-- inn's worth), or none at all when the client gives no bar. Nil when the player's rest is unknown (a spec's player),
+-- and never at the level cap, where rested XP buys nothing.
+local REST_BUBBLE = 0.05
+---@param player AGFRest
+---@return boolean
+function Model.RestLow(player)
+	local rested, max = player.rested, player.xpMax
+	return rested ~= nil
+		and player.level < player.maxLevel
+		and (rested == 0 or (max ~= nil and max > 0 and rested < max * REST_BUBBLE))
+end
+
+-- The route's last stop reads "Rest at the inn here" when rest is low (RestLow), the player isn't already resting,
+-- and an innkeeper of their side stands in its town: its hub, or within the town linkage of its point. A reason on
+-- the stop, never a step of its own; resting ticks it off, and the stop's own reason is back.
+---@param steps AGFStep[]
+local function Rest(data, player, steps)
+	local last = steps[#steps]
+	if not last or player.resting or not Model.RestLow(player) then
+		return
+	end
+	for _, npc in pairs(data.npcs or {}) do
+		if npc.inn and HasBit(npc.side, player.side) then
+			local yards = Model.Yards(data, last, npc.place)
+			if (last.hub ~= nil and npc.place.hub == last.hub) or (yards ~= nil and yards <= AGREE) then
+				last.reason = ns.L.REST_HERE
+				return
+			end
+		end
+	end
+end
+
 -- The chosen journey's trainer stops (roadmap #5): with spells to train, one per town among the trainers who teach
 -- them, the lowest NPC ID in each. Build takes one only after a stop in its town (Open), so none is a detour. A trainer
 -- the data puts in no town is never a stop; the aside still names them.
@@ -2004,6 +2037,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	Cap(journeys, prefs.journey)
 	for _, journey in ipairs(journeys) do
 		Summarise(journey --[[@as AGFJourney]])
+		Rest(data, player, journey.steps)
 	end
 	return journeys, stranded
 end

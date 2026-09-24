@@ -465,7 +465,10 @@ local function BuildJourneys(parent, below)
 		end
 		local provider = ns.Integrations.Provider()
 		local lines = { aside.text }
-		lines[2] = aside.place and (provider and L.CLICK_TRAVEL:format(provider) or L.CLICK_WAYPOINT) or nil
+		lines[2] = aside.place
+				and not ns.Setting("wanderer")
+				and (provider and L.CLICK_TRAVEL:format(provider) or L.CLICK_WAYPOINT)
+			or nil
 		ShowTooltip(self, lines)
 	end)
 	asideLine:SetScript("OnLeave", GameTooltip_Hide)

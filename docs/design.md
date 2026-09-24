@@ -360,7 +360,8 @@ ADVENTURE GUIDE                                 module header (template)
 | Quest-giver "!" | the zone's eligible, non-gray givers | `showMapPins` **and** `showQuestGivers` are both on; both default **off**. Kept because Blizzard draws no givers on Forever (probe `questoffer`, §9) |
 | Lines, dots, overlays, continent marks | 0 | never drawn by AGF |
 
-While SPF is guiding, AGF's rings hide, because SPF draws its own stops (Pins.lua:15-17).
+While SPF is guiding, AGF's rings hide, because SPF draws its own stops (Pins.lua:15-17). A wanderer (§2.17) sees
+no layer at all.
 
 ```
 +--------------------------------------------------------------+
@@ -709,6 +710,23 @@ cap, or the count of professions, moved; a weapon skill-up asks nothing. SkillUp
 `NextRanks` is local to its Route.lua), so AGF reads its own copy of the CMaNGOS trainer rows; `IsSpellKnown` on the
 rank spells is not needed, since the cap already says which rank is known.
 
+### 2.17 Rest and pacing (roadmap #11, #24)
+
+- **Rest at the inn (#11).** State reads `GetXPExhaustion()` (0 when nil), `UnitXPMax("player")` when the client has
+  it, and `IsResting()`. Rest is low under one bubble (a twentieth of the level's XP: a night at an inn), or at none
+  when there is no bar to measure by; never at the cap, and never when the rest is unknown (a spec's player, so the
+  goldens keep their reasons). Then each journey's last stop whose town has an innkeeper of the player's side
+  (`Data.npcs` `inn`: its hub, or within 100 yards) reads "Rest at the inn here" in place of its reason; its detail
+  stays. It is a reason, never a step, so it moves no route. Resting (an inn or a city) ticks it off, and the stop's
+  own reason is back. `PLAYER_UPDATE_RESTING`, `UPDATE_EXHAUSTION` and `PLAYER_XP_UPDATE` are registered by
+  feature detection and rebuild only when low or resting flips. Combat's cheap rebuild keeps the last build's line.
+- **Hint strength (#24).** One account-wide setting, "Wanderer: name places only" (`wanderer`, off: Guide). A wanderer
+  gets the same cards, steps and asides, which already name places ("Lakeshire, Redridge"), and is never taken
+  there: `Integrations.Navigate` and `Restore` set no waypoint and hand Shortest Path nothing, `StartRoute` starts
+  nothing (and waits for nothing in combat), Pins draws no rings or givers (the open guide's preview included), and
+  no menu offers Go or tooltip a click line. Choosing a journey still chooses it. Turning it on stops what Go started,
+  as Stop does.
+
 ## 3. Copy style sheet
 
 - Sentence case. No exclamation marks. Digits for numbers. "·" as the separator.
@@ -1023,6 +1041,14 @@ Nothing below has been validated in game yet.
     choosing either routes to its givers, and once its quests are all taken up the choice ends instead of waiting on
     the toggle. A new one glows "The way into <instance> is open to you" once. With nothing at all, the guide says to
     look for the "!" over quest givers.
+30. Rest (§2.17): with little rested XP, a route whose last town has an inn ends "Rest at the inn here" on its
+    ring's tooltip, and in the tracker once that stop is next; stepping into the inn clears it without a
+    `/reload`, and no Lua error is logged at login (the rest events are registered by feature detection). `UnitXPMax`
+    and the three events were never probed on Forever: with any missing, the line shows only at no rest at all, or
+    waits for the next rebuild.
+31. Wanderer (§2.17): turning it on in Settings stops a running route and clears AGF's waypoint; then choosing a card,
+    the tracker title and an aside's click set no waypoint and no Shortest Path route, the map shows no rings or
+    givers (guide open or not), and no menu has Go. Turning it off brings them back.
 
 ## 9. Open questions that need client probes
 

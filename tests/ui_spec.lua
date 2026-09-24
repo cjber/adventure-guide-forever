@@ -208,9 +208,10 @@ do
 	end
 	-- Every row goes in through the secure delegate, in page order; none from addon code, which taints the search.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 7, "every row is registered through Settings.RegisterInitializer")
-	equal(h.settings[1].key .. " " .. h.settings[7].key, "showTracker untrackOthers", "in page order")
-	equal(h.settings[7].category, h.ns.TITLE, "on the addon's page")
+	equal(#h.settings, 8, "every row is registered through Settings.RegisterInitializer")
+	equal(h.settings[1].key .. " " .. h.settings[2].key, "showTracker wanderer", "in page order")
+	equal(h.settings[8].key, "untrackOthers", "in page order, to the last")
+	equal(h.settings[8].category, h.ns.TITLE, "on the addon's page")
 	equal(byKey.untrackOthers.parent, "trackRouteQuests", "untrackOthers hangs under the tracking setting")
 	equal(byKey.untrackOthers.enabled(), false, "and is greyed while it is off")
 	-- The client re-sorts its watches by distance on every zone change (Blizzard_ObjectiveTracker.lua
@@ -2867,6 +2868,100 @@ do
 	equal(lines[1], "Requires Amical with Timbermaw Hold", label .. ": the unmet standing leads, in the client's words")
 	equal(row.Lock:IsShown(), true, label .. ": behind a lock")
 	clean(h, label)
+end
+
+-- Roadmap #11: with no rest the route ends at the inn its last town has; stepping into an inn ticks it off, and a
+-- rest or XP event that moves nothing rebuilds nothing.
+do
+	local h = harness.load({
+		player = { rested = false },
+		charDB = { journey = "zone:1413" },
+		completed = { 844 },
+		log = {
+			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
+			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
+		},
+	})
+	h.flush()
+	local REST = h.ns.L.REST_HERE
+	local function Last()
+		local steps = h.ns.Route().steps
+		return steps[#steps].reason
+	end
+	equal(Last(), REST, "rest: no rest, the route ends at an inn")
+	local builds = h.modelCalls.Journeys
+	h.fire("UPDATE_EXHAUSTION")
+	h.fire("PLAYER_XP_UPDATE", "player")
+	h.flush()
+	equal(h.modelCalls.Journeys - builds, 0, "rest: an event that moves nothing rebuilds nothing")
+	h.player.resting = true
+	h.fire("PLAYER_UPDATE_RESTING")
+	h.flush()
+	equal(h.modelCalls.Journeys - builds, 1, "rest: resting rebuilds once")
+	equal(Last() ~= REST, true, "rest: resting ticks it off")
+	h.player.resting, h.player.rested = false, 5000
+	h.fire("PLAYER_UPDATE_RESTING")
+	h.fire("UPDATE_EXHAUSTION")
+	h.flush()
+	equal(Last() ~= REST, true, "rest: rested, no line")
+	h.player.rested = 100
+	h.fire("PLAYER_XP_UPDATE", "player")
+	h.flush()
+	equal(Last(), REST, "rest: XP that spends the rest brings it back")
+	clean(h, "rest")
+end
+
+-- Roadmap #24: a wanderer is told where and never taken there. The one setting gates every waypoint, Shortest Path
+-- route and map mark; choosing still chooses, and turning it on stops what Go started.
+for _, spf in ipairs({ false, "v1" }) do
+	local label = "wanderer, " .. (spf or "no Shortest Path")
+	local h = Load(spf, { showMapPins = true, showQuestGivers = true, wanderer = true })
+	local ns = h.ns
+	equal(ns.Setting("wanderer"), true, label .. ": the saved setting")
+	equal(Load(spf).ns.Setting("wanderer"), false, label .. ": Guide by default")
+	local step = ns.Route().steps[1]
+	equal(ns.StartRoute(step), false, label .. ": Go guides nothing")
+	equal(ns.Integrations.Navigate(step), false, label .. ": nor does Navigate")
+	equal(h.counts.SetUserWaypoint or 0, 0, label .. ": no waypoint")
+	equal(spf and h.spf.NavigateRoute or 0, 0, label .. ": no Shortest Path route")
+	equal(#h.uiErrors, 0, label .. ": and no error line")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[step.key], "LeftButton")
+	h.flush()
+	equal(h.counts.SetUserWaypoint or 0, 0, label .. ": the tracker title sets none either")
+	equal(ns.Prefs().guided, nil, label .. ": nothing recorded as guided")
+	equal(ns.Paused(), false, label .. ": so the journey never reads as paused")
+	h.SetCombat(true)
+	equal(ns.StartRoute(), false, label .. ": in combat nothing waits to start")
+	equal(ns.StartPending(), false, label .. ": no start pending")
+	ns.Choose("zone:1413", true)
+	equal(ns.StartPending(), false, label .. ": a card chosen in combat waits for nothing")
+	h.SetCombat(false)
+	h.flush()
+	equal(h.counts.SetUserWaypoint or 0, 0, label .. ": nor starts once combat ends")
+	equal(spf and h.spf.NavigateRoute or 0, 0, label .. ": nor hands Shortest Path a route")
+	h.G.OpenQuestLog()
+	h.flush()
+	ns.OpenPanel()
+	h.flush()
+	h.providers[1]:RefreshAllData()
+	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, label .. ": no rings, even with the guide open")
+	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, 0, label .. ": no givers")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[step.key], "RightButton")
+	for _, entry in ipairs(h.menu.entries) do
+		equal(entry.text ~= ns.L.GO, true, label .. ": the step menu offers no Go")
+	end
+	clean(h, label)
+
+	-- Guide mode's Go, then wandering: what Go started stops.
+	h = Load(spf)
+	ns = h.ns
+	equal(ns.StartRoute(), true, label .. ": Guide's Go guides")
+	equal(ns.Integrations.Owns(), true, label .. ": ours")
+	ns.SetSetting("wanderer", true)
+	h.flush()
+	equal(ns.Integrations.Owns(), false, label .. ": wandering stops it")
+	equal(ns.Prefs().guided, nil, label .. ": and forgets it")
+	clean(h, label .. ": turned on")
 end
 
 print(("ui_spec: %d checks passed"):format(checks))

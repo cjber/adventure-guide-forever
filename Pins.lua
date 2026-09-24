@@ -11,7 +11,8 @@ ns.Pins = Pins
 ---@type table<string, AGFPinFrame>
 local pinsByKey = {}
 
--- One switch over every mark AGF draws (design §2.6): nothing unless showMapPins is on.
+-- One switch over every mark AGF draws (design §2.6): nothing unless showMapPins is on, and nothing for a wanderer
+-- (roadmap #24), who is told where and never shown.
 -- While the guide is open the rings preview the chosen journey whatever the switch says (F3): choosing a card is
 -- looking at its route. With none chosen the guide lists no steps, so it previews none: rings numbered for a card
 -- that isn't pressed would read as a choice made. Either way they step aside while Shortest Path guides, since it
@@ -19,13 +20,13 @@ local pinsByKey = {}
 ---@return boolean
 local function RingsShown()
 	local preview = ns.PanelShown ~= nil and ns.PanelShown() and ns.Route().chosen
-	return (preview or ns.Setting("showMapPins")) and not ns.Integrations.Guiding()
+	return (preview or ns.Setting("showMapPins")) and not ns.Integrations.Guiding() and not ns.Setting("wanderer")
 end
 
 -- Givers need both switches, and stay while Shortest Path guides: it draws no givers of its own.
 ---@return boolean
 local function GiversShown()
-	return ns.Setting("showMapPins") and ns.Setting("showQuestGivers")
+	return ns.Setting("showMapPins") and ns.Setting("showQuestGivers") and not ns.Setting("wanderer")
 end
 
 ---@param tooltip GameTooltip

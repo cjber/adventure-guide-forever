@@ -466,7 +466,7 @@ end
 ---@return boolean
 function Integrations.Restore(steps)
 	local api = SPF()
-	return api ~= nil and not InCombatLockdown() and Send(api, steps)
+	return api ~= nil and not InCombatLockdown() and not ns.Setting("wanderer") and Send(api, steps)
 end
 
 ---@return (AGFStep|AGFGiver)[]
@@ -476,10 +476,14 @@ end
 
 -- With Shortest Path, the step and every step after it become one numbered journey. When it declines (it returns
 -- false when it cannot plan the route) or is absent, the native waypoint takes the step instead, so Go always
--- leaves a destination on any map the client allows one on. True when something now guides the player.
+-- leaves a destination on any map the client allows one on. True when something now guides the player. A wanderer
+-- (roadmap #24) is never guided: nothing is set, and nothing is said.
 ---@param step AGFStep|AGFGiver
 ---@return boolean
 function Integrations.Navigate(step)
+	if ns.Setting("wanderer") then
+		return false
+	end
 	local api = SPF()
 	-- Shortest Path refuses every route in combat, which is no sign it cannot plan this one: a journey an earlier Go
 	-- started keeps guiding, and without one the waypoint takes the step as for any refusal.

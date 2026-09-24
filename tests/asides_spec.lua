@@ -200,6 +200,22 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks.aside, "LeftButton")
 	h.flush()
 	equal(starts(), before + 2, label .. ": so does the tracker's")
+	-- A wanderer (roadmap #24) is told the place and never taken there: no Go, no click line, and a click goes nowhere.
+	h.ns.SetSetting("wanderer", true)
+	Settle(h)
+	h.Click(Line(h)[1], "RightButton")
+	same(
+		h.MenuLines(),
+		{ "title: Somewhere to be", "button: Skip for now", "button: Not interested" },
+		label .. ": a wanderer's menu has no Go"
+	)
+	h.tooltip = {}
+	h.Hover(Line(h)[1])
+	same(h.tooltip, { "title: Somewhere to be" }, label .. ": nor a click line")
+	h.Click(Line(h)[1])
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks.aside, "LeftButton")
+	h.flush()
+	equal(starts(), before + 2, label .. ": a wanderer's click goes nowhere")
 	clean(h, label)
 end
 
