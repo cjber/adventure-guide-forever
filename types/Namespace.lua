@@ -331,6 +331,8 @@
 ---@field PICK_UP string format: place name
 ---@field HUB_HAND_IN string format: a town stop's hand-in count
 ---@field HUB_PICK_UP string format: a town stop's pickup count
+---@field HUB_MORE_QUESTS string format: how many more quests a town's tooltip leaves out
+---@field HUB_NPCS_MORE string format: a town's first NPCs, how many more
 ---@field PLACE string format: a step's place (NPC or town), its zone
 ---@field NEAR_YOUR_LEVEL string
 ---@field SKIP_STEP string
