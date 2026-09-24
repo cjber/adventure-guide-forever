@@ -530,7 +530,6 @@ end
 ---@param api AGFSPFAPI
 ---@return string?
 local function EndReason(api)
-	---@cast api AGFSPFEnds
 	if type(api.Ended) == "function" then
 		return (api.Ended(OWNER))
 	elseif type(api.Active) == "function" and api.Active() then

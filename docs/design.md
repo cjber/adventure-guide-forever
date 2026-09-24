@@ -569,6 +569,7 @@ SPF `origin/main` 39d9a98 exposes `version = 1`, `Estimate`, `NavigateRoute`, `N
 ---@field Cancel fun(owner: string): boolean
 ---@field EstimateDetail? fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): AGFSPFDetail?, AGFSPFNoRoute?  -- proposed
 ---@field Active? fun(): boolean  -- proposed: any journey running, anyone's
+---@field Ended? fun(owner: string): AGFSPFEnded?, number?  -- why owner's last journey ended (§2.10); SPF ee2346b
 ```
 
 Runtime detection replaces today's `version >= 1` (Integrations.lua:22):

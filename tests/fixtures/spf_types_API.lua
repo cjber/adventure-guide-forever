@@ -1,4 +1,4 @@
--- shortest-path-forever 1a70828f0f76e664ec601caafd9bec21f20ba121:types/API.lua
+-- shortest-path-forever ee2346bddc51c7bb8e8bacafc022f1ea267da5d9:types/API.lua
 ---@meta
 
 -- Public addon-to-addon interface. Coordinates are uiMapID and normalized 0-1 x/y, not world yards.
@@ -6,6 +6,8 @@
 
 ---@alias SPFAPIMode "walk"|"flight"|"boat"|"zeppelin"|"lift"|"tram"|"portal"|"passage"
 ---@alias SPFAPINoRoute "combat"|"invalid"|"unreachable" -- retry after combat; never for bad input; unreachable with what this character knows
+
+---@alias SPFAPIEnded "arrived"|"cleared"|"replaced"|"cancelled" -- reached the last stop; the player cleared it; another journey took over; the owner's own Cancel
 
 ---@class SPFAPIStop
 ---@field map integer -- uiMapID
@@ -33,6 +35,7 @@
 ---@field Cancel fun(owner: string): boolean -- true only when this owner's current journey was cancelled
 ---@field EstimateDetail fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): detail: SPFAPIDetail?, reason: SPFAPINoRoute? -- Estimate leg by leg, sharing its cache
 ---@field Active fun(): boolean -- true while any journey is guiding, whoever started it
+---@field Ended fun(owner: string): reason: SPFAPIEnded?, at: number? -- why owner's last journey ended and its GetTime(); nil while it runs, before any, or after a reload
 
 ---@class SPFPublicAddon
 ---@field API SPFPublicAPI

@@ -1,7 +1,7 @@
 -- Run from the repository root: luajit tests/contract_spec.lua (docs/plan.md §1.6)
 -- AGF's mirror of the Shortest Path API (types/Namespace.lua, AGFSPF*) against SPF's own types/API.lua at a pinned sha,
 -- read from the vendored tests/fixtures/spf_types_API.lua so it runs offline. CI diffs that copy against upstream.
-local SPF_SHA = "1a70828f0f76e664ec601caafd9bec21f20ba121"
+local SPF_SHA = "ee2346bddc51c7bb8e8bacafc022f1ea267da5d9"
 local checks = 0
 
 local function equal(actual, expected, label)
@@ -26,6 +26,7 @@ local ALIASES = {
 	AGFSPFDetail = "SPFAPIDetail",
 	AGFSPFMode = "SPFAPIMode",
 	AGFSPFNoRoute = "SPFAPINoRoute",
+	AGFSPFEnded = "SPFAPIEnded",
 }
 -- AGF reads ShortestPathForever.API through a checked accessor (Integrations.lua SPF()), not a mirror.
 local EXCLUDED = { SPFPublicAddon = true }

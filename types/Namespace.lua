@@ -208,6 +208,7 @@
 -- Shortest Path before 1.2 lacks are optional here, and checked where they are used.
 ---@alias AGFSPFMode "walk"|"flight"|"boat"|"zeppelin"|"lift"|"tram"|"portal"|"passage"
 ---@alias AGFSPFNoRoute "combat"|"invalid"|"unreachable" -- why an estimate has no answer
+---@alias AGFSPFEnded "arrived"|"cleared"|"replaced"|"cancelled" -- reached the last stop; the player cleared it; another journey took over; the owner's own Cancel
 
 ---@class AGFSPFStop
 ---@field map integer -- uiMapID
@@ -226,10 +227,6 @@
 ---@field seconds number -- equal to Estimate's answer
 ---@field legs AGFSPFLeg[] -- fresh copies on every call
 
--- AGFSPFAPI with Shortest Path's optional Ended (its types/API.lua SPFAPIEnded), until the contract carries it.
----@class AGFSPFEnds : AGFSPFAPI
----@field Ended? fun(owner: string): ("arrived"|"cleared"|"replaced"|"cancelled")?, number?
-
 ---@class AGFSPFAPI
 ---@field version integer -- AGF accepts exactly 1
 ---@field Estimate fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): number?, AGFSPFNoRoute? -- travel seconds; nil comes with the reason
@@ -239,6 +236,7 @@
 ---@field Cancel fun(owner: string): boolean -- true only when this owner's journey was cancelled
 ---@field EstimateDetail? fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): AGFSPFDetail?, AGFSPFNoRoute? -- Estimate leg by leg, sharing its cache
 ---@field Active? fun(): boolean -- true while any journey is guiding, whoever started it
+---@field Ended? fun(owner: string): AGFSPFEnded?, number? -- why owner's last journey ended and its GetTime(); nil while it runs, before any, or after a reload
 
 -- Tweaks Forever's public API (its types/API.lua TFPublicAPI and TFAPITrainableSpell), version 1.
 ---@class AGFTFSpell
