@@ -37,6 +37,8 @@ ns.L = {
 	-- The dungeon card's reason (roadmap #15): the log's quests filed under its instance, counted.
 	DUNGEON_INSIDE = "%d of your quests end inside %s",
 	DUNGEON_INSIDE_ONE = "1 of your quests ends inside %s",
+	-- A chain that leads into an instance, a story when there is no next zone (roadmap #21): the instance's name.
+	JOURNEY_INTO = "The way into %s",
 	-- The carry card's counts, joined when several apply: "3 ready to hand in, 1 in progress".
 	CARRY_READY = "%d ready to hand in",
 	CARRY_IN_PROGRESS = "%d in progress",
@@ -53,7 +55,7 @@ ns.L = {
 	REASON_GREY = "%d quests will soon turn grey",
 	REASON_CHAIN_GIVER = "A chain begins with %s",
 	REASON_HANDS = "%s needs hands",
-	NOTHING_NEARBY = "Nothing nearby fits your level.",
+	NO_JOURNEY = 'The guide has no journey for you here; look for the "!" over quest givers.',
 	LOADING = "Loading your completed quests...",
 	SEARCH_QUESTS = "Search quests",
 	SEARCH_NONE = "No quests match your search.",
@@ -210,6 +212,8 @@ ns.L = {
 	NPC_JOURNEY = "Adventure guide: %s",
 	-- Something new (docs/design.md §2.13): the tracker's line for a journey card the character hasn't been offered.
 	MOMENT = "%s is now for your level",
+	-- A way into an instance is no place to be the level for (roadmap #21).
+	MOMENT_OPEN = "%s is open to you",
 }
 local L = ns.L
 
@@ -574,13 +578,14 @@ function ns.TurnedIn(questID)
 end
 
 -- The chosen journey's key a filter hides (Quests or Dungeons off in the cog): the player's own toggle can bring it
--- back, so the choice is kept.
+-- back, so the choice is kept. With no next zone (roadmap #21) Dungeons hides nothing, so a dungeon that went ended.
 ---@param key string
 ---@param prefs AGFPrefs
+---@param route AGFRoute
 ---@return boolean
-local function Filtered(key, prefs)
-	return (key:find("^dungeon:") ~= nil and not prefs.dungeons)
-		or ((key:find("^zone:") ~= nil or key == "calling") and not prefs.quests)
+local function Filtered(key, prefs, route)
+	return (key:find("^dungeon:") ~= nil and not prefs.dungeons and not route.stranded)
+		or ((key:find("^zone:") ~= nil or key:find("^chain:") ~= nil or key == "calling") and not prefs.quests)
 end
 
 local pendingStart = false
@@ -596,7 +601,7 @@ local function Ended(route)
 	if not key or route.chosen then
 		return
 	end
-	if not Filtered(key, prefs) then
+	if not Filtered(key, prefs, route) then
 		prefs.journey, pendingStart = nil, false
 		if completed and ns.OnJourneyComplete then
 			ns.OnJourneyComplete()

@@ -189,18 +189,27 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
        raid's. It leads with a chain as the story does (§2.3), else the lowest quest ID. Its reason names that quest:
        "Your class trainer has a task: Call of Earth" only when the data proves its giver trains the player's class
        (`start.trainer`, from CMaNGOS TrainerClass), else "A task for your class: Call of Earth".
-     - **Dungeon** (Dungeons on): the party instance with the most quests open now. Its reason (roadmap #15) counts
-       the log's quests filed under it, which end inside: "2 of your quests end inside Wailing Caverns", "1 of your
-       quests ends inside Wailing Caverns"; none carried, no reason. There is no "Find group" button: R5 found
-       `LFGVanilla_ShowFrame` but never called it, so its taint is unknown, and the button waits on a probe that calls
-       it.
+     - **Dungeon** (Dungeons on, or no next zone): the party instance with the most quests open now. Its reason
+       (roadmap #15) counts the log's quests filed under it, which end inside: "2 of your quests end inside Wailing
+       Caverns", "1 of your quests ends inside Wailing Caverns"; none carried, no reason. There is no "Find group"
+       button: R5 found `LFGVanilla_ShowFrame` but never called it, so its taint is unknown, and the button waits on a
+       probe that calls it.
+     - **A way into an instance** (roadmap #21, no next zone only): the chain (§2.3) the player can take up now that
+       has a quest filed under an instance the data names, from its chapter on, as a story card: "The way into
+       Scholomance", its chapter as the subline, "Begins a new story" or "Continues a story you started". The data
+       never says a chain is an attunement, only that it goes inside, so the card says no more. The story's own chain
+       is never offered twice. Key `chain:<first quest>`.
      - **Next zone**: the zone that ranks first for `level + 2` in the same eligibility pass (`Choices` in
        `Model.Journeys`), shown only when it differs from the story's zone and the player's own and has at least 5
        quests to take now.
 - **Which diversion.** Each is ranked by the level its newest quest opened at (the highest `min` among its quests
   open now), highest first, so a level just gained or a bracket just opened takes the slot and an older one yields
-  as the player levels on. A tie goes calling, dungeon, next zone. It is stateless: nothing is remembered between
-  sessions. Only as many are built as there are free slots, plus the chosen one, which always keeps its slot.
+  as the player levels on. A tie goes calling, dungeon, a way in, next zone. It is stateless: nothing is remembered
+  between sessions. Only as many are built as there are free slots, plus the chosen one, which always keeps its slot.
+- **No next zone** (roadmap #21): at the level cap, or when no zone is ahead and no story was built, the guide never
+  ends on "nothing fits". The dungeon card comes whatever the Dungeons toggle says (its eligibility pass then takes in
+  the instance quests the toggle holds back), and a way into an instance may take a slot. The route carries
+  `stranded`, so a chosen dungeon that goes then has ended rather than been filtered (§2.10).
 
 ### 2.3 Zone story chapters
 
@@ -473,7 +482,8 @@ journey whose route AGF started). Choosing, starting and ending all live in Core
 the cards, the tracker title, the menus and the map's rings behave the same, with the guide open or closed.
 
 Keys: `carry`, `zone:<map>` for a zone's story and its next-zone card alike (so heading to a zone becomes its story
-on arrival), `dungeon:<instance>`, and `calling`. `LoadCharDB` migrates the old `story:` and `nextzone:` keys once.
+on arrival), `dungeon:<instance>`, `calling`, and `chain:<quest>` for a way into an instance (§2.2). `LoadCharDB`
+migrates the old `story:` and `nextzone:` keys once.
 
 Invariants:
 
@@ -518,7 +528,8 @@ the route again until the card resumes it.
 
 A chosen journey the full build no longer has ends: its route is cancelled and the choice cleared, so the cards are
 whole again. A Quests or Dungeons filter keeps the key (the player's own toggle can bring it back) but stops the
-route; Quests covers `zone:` keys and `calling`, Dungeons `dungeon:` keys. Skipping every step of a chosen journey ends it the same way, quietly.
+route; Quests covers `zone:` and `chain:` keys and `calling`, Dungeons `dungeon:` keys, except with no next zone,
+when Dungeons hides nothing. Skipping every step of a chosen journey ends it the same way, quietly.
 
 ### 2.11 Asides
 
@@ -573,8 +584,8 @@ character has never been offered is announced once, quietly: `Moments.lua`, afte
   empty set: the session's first look, a new character and a save file the client never loaded (#34) all learn
   silently, so nothing floods.
 - **What it shows.** A new journey: the tracker line "Duskwood is now for your level" (the zone's client name, a
-  dungeon's card title) under the quiet line, glowing once as §2.7's fanfare does, with no sound; its click opens the
-  guide. A new aside: its own tracker line glows. Either way `adventureguide-microbutton-alert` (CSV:2025) pips the
+  dungeon's card title; a way into an instance "The way into Scholomance is open to you") under the quiet line,
+  glowing once as §2.7's fanfare does, with no sound; its click opens the guide. A new aside: its own tracker line glows. Either way `adventureguide-microbutton-alert` (CSV:2025) pips the
   Adventure tab and the addon compartment's button, and a new card carries `adventureguide-icon-whatsnew` (CSV:2024)
   over its ring's top-right (beside the "+" on a one-line row). No toast; nothing opens by itself; the tracker section
   off leaves the pips and marks.
@@ -635,8 +646,8 @@ cache that did, Integrations' town places, is keyed on it).
 | Trainer stop | `Train in Stormwind` · `3 new spells` · `1 new spell` |
 | Buttons, menu | `Go` (menus only) · `Stop` · `Show quest` · `Skip for now` · `Not interested` · `Skipped (2)` · `Show again: <title>` · `Choose another journey` |
 | Instructions | `Click to travel with Shortest Path` · `Click to set a waypoint` · `Click to choose this journey` · `Replaces your current journey.` |
-| Dungeon | `2 of your quests end inside Wailing Caverns` · `1 of your quests ends inside Wailing Caverns` |
-| Empty | `Nothing nearby fits your level.` |
+| Dungeon, way in | `2 of your quests end inside Wailing Caverns` · `1 of your quests ends inside Wailing Caverns` · `The way into Scholomance` · `The way into Scholomance is open to you` |
+| Empty | `The guide has no journey for you here; look for the "!" over quest givers.` |
 | Coverage | `This land has stories the guide doesn't know yet; look for the "!" over quest givers.` |
 
 ## 4. Features, in build order
@@ -880,6 +891,11 @@ Nothing below has been validated in game yet.
     the audit names the bundled data and why.
 19. Dungeons (roadmap #15): with Wailing Caverns quests in the log and Dungeons on, its card reads "N of your quests
     end inside Wailing Caverns" in the client's name for it, and no Group Finder button shows.
+20. No next zone (roadmap #21; the level cap is above the beta's 30, so after launch): at 60 with Dungeons off, the
+    guide shows a dungeon card and, where a chain goes inside, "The way into <instance>" as a story with its chapter;
+    choosing either routes to its givers, and once its quests are all taken up the choice ends instead of waiting on
+    the toggle. A new one glows "The way into <instance> is open to you" once. With nothing at all, the guide says to
+    look for the "!" over quest givers.
 
 ## 9. Open questions that need client probes
 
