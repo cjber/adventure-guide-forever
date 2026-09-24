@@ -74,7 +74,7 @@ for _, fixture in ipairs(characters.list) do
 
 	-- F2: at most three journeys, each with at least one step the player can take now. The standing rules hold on
 	-- every card: nothing ineligible is suggested, and no step points where the data has no place.
-	equal(#route.journeys <= 3, true, fixture.name .. ": at most three cards")
+	equal(#route.journeys <= Model.MAX_JOURNEYS, true, fixture.name .. ": at most three cards")
 	equal(route.journey, route.journeys[1] and route.journeys[1].key, fixture.name .. ": the first card is chosen")
 	for _, journey in ipairs(route.journeys) do
 		local label = fixture.name .. ": " .. journey.key
@@ -177,7 +177,7 @@ for _, fixture in ipairs(characters.list) do
 	prefs.journey = last and last.key
 	local refreshed = Model.Refresh(data, player, fight, prefs, route)
 	prefs.journey = nil
-	equal(#refreshed.journeys <= 3, true, fixture.name .. ": at most three cards in combat")
+	equal(#refreshed.journeys <= Model.MAX_JOURNEYS, true, fixture.name .. ": at most three cards in combat")
 	equal(refreshed.journeys[1].key, "carry", fixture.name .. ": the new carry card first")
 end
 

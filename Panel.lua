@@ -7,7 +7,6 @@ local ROW_HEIGHT = 44
 local ROW_GAP = 2
 local CARD_HEIGHT = 86
 local CARD_GAP = 4
-local MAX_JOURNEYS = 3
 -- The scroll child above the cards: the header 4px down and 34px tall, then 6px to the first card.
 local LIST_TOP = 4 + 34 + 6
 -- Blizzard's QUEST_TAG_ATLAS icons (Blizzard_FrameXMLBase/Constants.lua:514-527); the next zone gets the map's "!".
@@ -289,7 +288,7 @@ local function BuildJourneys(parent, below)
 	list = CreateFrame("Frame", nil, parent)
 	list:SetPoint("TOPLEFT", below, "BOTTOMLEFT", 0, -6)
 	list:SetPoint("RIGHT", parent, "RIGHT", -PAD, 0)
-	for index = 1, MAX_JOURNEYS do
+	for index = 1, ns.Model.MAX_JOURNEYS do
 		local card = CreateFrame("Button", nil, list, "AdventureGuideForeverJourneyCardTemplate") --[[@as AGFJourneyCard]]
 		-- Choosing a journey shows its route and turns the map to it; it never starts guidance, only Go does. The map
 		-- turns before the invalidation, so its redraw reads the route as it is and the one rebuild waits a frame.

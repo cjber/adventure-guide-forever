@@ -1,8 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 ---@class AGFModel
--- Nine: the stock numerals (services-number-1..9) that label each step stop at 9.
-local Model = { MAX_STEPS = 9 }
+-- Nine steps: the stock numerals (services-number-1..9) that label each step stop at 9. Three journeys: design §2.2,
+-- and the panel builds as many cards.
+local Model = { MAX_STEPS = 9, MAX_JOURNEYS = 3 }
 ns.Model = Model
 
 -- CMaNGOS mangos-classic/src/game/Tools/Formulas.h, GetQuestGreenRange (quest, not creature XP).
@@ -786,7 +787,6 @@ end
 
 -- The journey cards (docs/design.md §2.2): at most three, each holding only steps the player can take now.
 local NEXT_ZONE_AHEAD = 2 -- levels: the next zone is the one that fits the player two levels on
-local MAX_JOURNEYS = 3 -- docs/design.md §2.2
 local NEXT_ZONE_PICKUPS = 5 -- eligible quests there, or the card is too thin to offer (docs/plan.md §1.5)
 
 local function Count(one, many, count)
@@ -967,7 +967,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	for _, map in ipairs(ahead or {}) do
 		if map ~= zone and map ~= player.map then
 			local nextZone, quests = ZoneJourney(data, player, eligible, map, index, prefs, mapName)
-			if nextZone and quests >= NEXT_ZONE_PICKUPS and #journeys < MAX_JOURNEYS then
+			if nextZone and quests >= NEXT_ZONE_PICKUPS and #journeys < Model.MAX_JOURNEYS then
 				nextZone.kind, nextZone.key = "nextzone", "nextzone:" .. map
 				local name = ZoneName(data, map, mapName)
 				nextZone.title = L.JOURNEY_NEXT_ZONE:format(name, player.level + levels)
@@ -1037,7 +1037,7 @@ function Model.Refresh(data, player, log, prefs, last, mapName)
 	for _, journey in ipairs(last.journeys) do
 		local kept = journey.kind ~= "carry" and Unskipped(journey, prefs.skipped or {})
 		-- A carry card the last build lacked pushes out the last card, as the full build would leave it out.
-		if kept and #journeys < MAX_JOURNEYS then
+		if kept and #journeys < Model.MAX_JOURNEYS then
 			journeys[#journeys + 1] = kept
 		end
 	end

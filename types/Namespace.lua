@@ -161,6 +161,7 @@
 
 ---@class AGFModel
 ---@field MAX_STEPS integer
+---@field MAX_JOURNEYS integer the cards a route holds and the panel draws
 ---@field IsGray fun(questLevel: integer, playerLevel: integer): boolean
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
 ---@field Why fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer, names?: AGFWhyNames): AGFWhyLine[] every requirement, met or not; eligible exactly when all are met
