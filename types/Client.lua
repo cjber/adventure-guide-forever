@@ -61,7 +61,7 @@ OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 3
 -- Blizzard_Menu's root description, as handed to a DropdownButton's SetupMenu generator.
 ---@class AGFMenu
 ---@field CreateCheckbox fun(self: AGFMenu, text: string, isSelected: (fun(): boolean), setSelected: fun()): AGFMenuElement
----@field CreateButton fun(self: AGFMenu, text: string, onClick: fun())
+---@field CreateButton fun(self: AGFMenu, text: string, onClick?: fun()): AGFMenu a submenu's own description when it has no onClick
 
 -- One entry's description; IsEnabled calls a function each time the open menu polls it (Blizzard_Menu/Menu.lua).
 ---@class AGFMenuElement

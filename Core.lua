@@ -118,7 +118,7 @@ ns.L = {
 	STORY_COMPLETE = "Story complete",
 	JOURNEY_COMPLETE = "Journey complete",
 	CHOOSE_NEXT = "Choose your next journey",
-	-- The trainer line (docs/plan.md F16): text only, above the steps.
+	-- The trainer aside (docs/plan.md F16): text only.
 	TRAINER = "Visit your class trainer",
 	TRAINER_SPELLS = "%d new spells",
 	TRAINER_SPELL = "1 new spell",
@@ -166,6 +166,9 @@ ns.L = {
 	SETTING_MAP_PINS = "Show route pins on the map",
 	SETTING_GIVERS = "Show quest givers on the map",
 	SETTING_DUNGEONS_DEFAULT = "Include dungeons by default",
+	-- Asides (docs/design.md §2.11): each one's menu turns it down for this character; the cog brings it back.
+	NOT_INTERESTED = "Not interested",
+	NOT_INTERESTED_COUNT = "Not interested (%d)",
 }
 local L = ns.L
 
@@ -549,11 +552,13 @@ end
 local travelPending = false
 
 -- Skipped when an invalidation landed since the rebuild: ns.Route() would rebuild in this frame too, and the
--- pending rebuild queues its own refresh. The cards wait for this frame and ask from the next.
+-- pending rebuild queues its own refresh. The asides are asked in this frame too. The cards wait for this frame and
+-- ask from the next.
 local function RefreshTravel()
 	travelPending = false
 	if not pendingRebuild then
 		ns.Integrations.RefreshTravel()
+		ns.Asides.Refresh()
 		ns.Integrations.ResumeCards()
 	end
 end

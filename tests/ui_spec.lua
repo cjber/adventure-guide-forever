@@ -2376,8 +2376,8 @@ do
 	clean(h, "cog")
 end
 
--- F16: with spells to train, one text-only trainer line in the guide and the tracker; otherwise none. Four Tweaks
--- Forever profiles: absent, no answer yet, nothing to train, and three spells.
+-- F16, the first aside (Asides.lua): with spells to train, one text-only trainer line in the guide and the tracker;
+-- otherwise none. Four Tweaks Forever profiles: absent, no answer yet, nothing to train, and three spells.
 do
 	local SPELL = { name = "Lightning Bolt", level = 14, line = "Elemental", lineID = 375, general = false }
 	local THREE = { SPELL, SPELL, SPELL }
@@ -2438,9 +2438,9 @@ do
 		h.ns.Invalidate()
 		h.flush()
 		equal(lines[1], case.text, label .. ": the panel's line")
-		local block = h.tracker.liveBlocks.trainer
-		local shown = block and block.used and block.lines[1] or nil
-		equal(shown, case.text and "3 new spells", label .. ": the tracker's line")
+		local block = h.tracker.liveBlocks.aside
+		local shown = block and block.used and block.header or nil
+		equal(shown, case.text, label .. ": the tracker's line")
 		-- Text only: no ring for it, and its tracker title neither guides nor sets a waypoint.
 		local steps, rings = {}, 0
 		for _, step in ipairs(h.ns.Route().steps) do
@@ -2466,7 +2466,7 @@ do
 			case.tf.spells = { SPELL }
 			h.fire("SPELLS_CHANGED")
 			h.flush()
-			equal(h.tracker.liveBlocks.trainer.lines[1], "1 new spell", label .. ": one left")
+			equal(h.tracker.liveBlocks.aside.header, "Visit your class trainer · 1 new spell", label .. ": one left")
 			case.tf.spells = THREE
 		end
 		clean(h, label)

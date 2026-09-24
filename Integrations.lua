@@ -120,7 +120,8 @@ function Integrations.TravelLine(step)
 	return (Fetch(step))
 end
 
--- Tweaks Forever's spells to train (F16), from its API.lua when a version 1 is loaded.
+-- Tweaks Forever's spells to train (F16), from its API.lua when a version 1 is loaded, for the trainer aside
+-- (Asides.lua).
 ---@return AGFTFSpell[]?
 function Integrations.Trainable()
 	local api = TweaksForever and TweaksForever.API
@@ -131,30 +132,10 @@ function Integrations.Trainable()
 	return api.TrainableSpells()
 end
 
--- The trainer line's count, fetched with the travel line and when the spellbook changes; nil (no Tweaks Forever,
--- no answer yet, nothing to train) means no line.
----@type string?
-local trainer
-
 local function NotifyTravel()
 	for _, fn in ipairs(travelListeners) do
 		fn()
 	end
-end
-
----@return boolean changed
-local function RefreshTrainer()
-	local spells = Integrations.Trainable()
-	local count = spells and #spells or 0
-	local line = count > 0 and (count == 1 and L.TRAINER_SPELL or L.TRAINER_SPELLS:format(count)) or nil
-	local changed = line ~= trainer
-	trainer = line
-	return changed
-end
-
----@return string?
-function Integrations.Trainer()
-	return trainer
 end
 
 -- In combat Shortest Path has no answer to give, so the last line stands and nothing is asked (docs/design.md §2.5).
@@ -171,19 +152,10 @@ function Integrations.RefreshTravel()
 		or (travel and travel.line) ~= line
 		or (travel and travel.minutes) ~= minutes
 	travel = step and { key = step.key, line = line, minutes = minutes } or nil
-	if RefreshTrainer() or changed then
+	if changed then
 		NotifyTravel()
 	end
 end
-
--- A spell learned at the trainer shortens the line at once.
-local spellbook = CreateFrame("Frame")
-spellbook:RegisterEvent("SPELLS_CHANGED")
-spellbook:SetScript("OnEvent", function()
-	if not InCombatLockdown() and RefreshTrainer() then
-		NotifyTravel()
-	end
-end)
 
 -- The last fetched line, only for the step it was fetched for; never an SPF call.
 ---@param step AGFStep

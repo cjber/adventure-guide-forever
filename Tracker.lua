@@ -15,10 +15,11 @@ end
 local STORY_COMPLETE = "story-complete"
 -- A turn-in ended the chosen journey (docs/design.md §2.10): the same glow once, and a click opens the guide.
 local JOURNEY_COMPLETE = "journey-complete"
--- The trainer line (F16): a block of its own, text only.
-local TRAINER = "trainer"
+-- The aside (Asides.lua): one line, a block of its own. Its click goes to its place when it has one; right-click is its
+-- menu.
+local ASIDE = "aside"
 -- Headers that are not the step's: its click and hover never act on them.
-local NOT_STEP = { [STORY_COMPLETE] = true, [TRAINER] = true, [JOURNEY_COMPLETE] = true }
+local NOT_STEP = { [STORY_COMPLETE] = true, [ASIDE] = true, [JOURNEY_COMPLETE] = true }
 -- A town's NPC line names this many, then counts the rest.
 local NAMED_GIVERS = 2
 -- Set by a turn-in that ends a story: the quest, then the first step 1 the route shows without it. The header stays
@@ -43,11 +44,19 @@ end
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
 local ModuleMixin = { headerText = L.TRACKER_HEADER, blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
 
----@param block AGFTrackerBlock the header's own block: the trainer's and the story's end do nothing; for the step's,
----CurrentStep() is used since it's always current
+---@param block AGFTrackerBlock the header's own block: the aside's goes to its place, the journey's end opens the
+---guide and the story's does nothing; for the step's, CurrentStep() is used since it's always current
 ---@param mouseButton string
 function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
-	if NOT_STEP[block.id] then
+	local aside = ns.Asides.Current()
+	if block.id == ASIDE and aside then
+		if mouseButton == "RightButton" then
+			ns.Asides.Open(self:GetContextMenuParent(), "MENU_ADVENTURE_GUIDE_FOREVER_ASIDE", aside)
+		else
+			ns.Asides.Go(aside)
+		end
+		return
+	elseif NOT_STEP[block.id] then
 		if block.id == JOURNEY_COMPLETE and mouseButton ~= "RightButton" and ns.OpenPanel then
 			ns.OpenPanel()
 		end
@@ -71,13 +80,19 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 	ns.Menu.Open(self:GetContextMenuParent(), "MENU_ADVENTURE_GUIDE_FOREVER_TRACKER", CurrentStep())
 end
 
--- The title's click starts the route when the setting says so, so it warns as Go does.
+-- The title's click starts the route when the setting says so, as an aside's with a place does, so each warns as Go
+-- does.
 ---@param block AGFTrackerBlock
 function ModuleMixin:OnBlockHeaderEnter(block)
-	local step = CurrentStep()
-	if not NOT_STEP[block.id] and step and ns.Setting("titleStartsRoute") and ns.Integrations.ReplacesJourney() then
+	if not ns.Integrations.ReplacesJourney() then
+		return
+	end
+	local step, aside = CurrentStep(), ns.Asides.Current()
+	local title = (block.id == ASIDE and aside and aside.place and aside.text)
+		or (not NOT_STEP[block.id] and step and ns.Setting("titleStartsRoute") and step.title)
+	if title then
 		GameTooltip:SetOwner(block, "ANCHOR_RIGHT")
-		ns.Menu.GoWarning(GameTooltip, step.title)
+		ns.Menu.GoWarning(GameTooltip, title)
 		GameTooltip:Show()
 	end
 end
@@ -86,18 +101,18 @@ function ModuleMixin:OnBlockHeaderLeave()
 	GameTooltip:Hide()
 end
 
--- One block for the current step (docs/design.md §2.5, docs/plan.md §7.4): its place (a town's counts), why it is next
--- (a town's NPCs) and the travel line as objective lines, then what follows it, undashed. Nothing is laid out (an
--- empty, self-hiding module) when the setting is off, there's no route yet, or the route is empty.
+-- The aside's one line (Asides.lua), then one block for the current step (docs/design.md §2.5, docs/plan.md §7.4): its
+-- place (a town's counts), why it is next (a town's NPCs) and the travel line as objective lines, then what follows
+-- it, undashed. Nothing is laid out (an empty, self-hiding module) when the setting is off, there's no route yet, or
+-- the route is empty.
 function ModuleMixin:LayoutContents()
 	if not ns.Setting("showTracker") then
 		return
 	end
-	local trainer = ns.Integrations.Trainer()
-	if trainer then
-		local block = self:GetBlock(TRAINER)
-		block:SetHeader(L.TRAINER)
-		block:AddObjective(1, trainer)
+	local aside = ns.Asides.Current()
+	if aside then
+		local block = self:GetBlock(ASIDE)
+		block:SetHeader(aside.text)
 		if not self:LayoutBlock(block) then
 			return
 		end
@@ -259,3 +274,4 @@ end
 Register()
 ns.OnRouteChange(OnRouteChange)
 ns.Integrations.OnTravelChange(Refresh)
+ns.Asides.OnChange(Refresh)

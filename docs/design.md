@@ -251,6 +251,7 @@ ADVENTURE GUIDE                                 module header (template)
    - Fly to Lakeshire · 6 min                   travel
 ```
 
+- **One quiet line first.** The aside (§2.11) when there is one, as a block whose header is its whole line.
 - **Place line.** A stop with one giver reads "NPC, zone". The zone name comes from the client by map ID, with the
   data's name as the fallback. A turn-in placed by `GetNextWaypoint` uses the data's finish NPC only when that NPC
   is within the hub; otherwise it shows the zone alone.
@@ -442,6 +443,25 @@ A chosen journey the full build no longer has ends: its route is cancelled and t
 whole again. A Quests or Dungeons filter keeps the key (the player's own toggle can bring it back) but stops the
 route. Skipping every step of a chosen journey ends it the same way, quietly.
 
+### 2.11 Asides
+
+An aside is a one-line hint beside the journeys, never a route: `Asides.lua`, after `Integrations.lua` in the TOC.
+Each domain registers a provider returning at most one `{key, text, icon, place?}`: `icon` an atlas the CSV has,
+`place` only a place from the data (none today). Providers are asked in step 1's travel frame after each rebuild
+(Core), never in a rebuild's frame and never in combat, when the last answers stand; views redraw only when the
+aside shown changes. The first provider's answer the player has not skipped or turned down is the aside.
+
+- **Two surfaces at most.** One line above the cards (icon, `GameFontNormal` text, a row's `common-icon-redx`
+  skip), hidden while searching, and the tracker's line (§2.5). Both show the same aside.
+- **Skip for now** hides it for the session: the line's red X, or its menu. **Not interested** hides it for the
+  character (`charDB.asides[key]` = its text); the cog's "Not interested (n)" submenu offers each back as
+  "Show again: <text>".
+- **Clicks.** Right-click on either line is its menu (Go with a place, Skip for now, Not interested). Left-click goes
+  to its place, as a step's Go does (§5.1), and does nothing without one.
+- **Providers.** The class trainer (F16): "Visit your class trainer · 3 new spells" with the minimap's `class`
+  mark (CSV:1321), from Tweaks Forever's `TrainableSpells`, asked again on `SPELLS_CHANGED`; text only, since the
+  data has no trainer's place.
+
 ## 3. Copy style sheet
 
 - Sentence case. No exclamation marks. Digits for numbers. "·" as the separator.
@@ -468,6 +488,7 @@ route. Skipping every step of a chosen journey ends it the same way, quietly.
 | Travel | `Fly to Sentinel Hill · 6 min` · `Boat to Auberdine · 2 min wait` · `Fly to Astranaar · new flight path` · `About 4 min away` · card: `6 min` · `15 min by boat` · `15 min by zeppelin` |
 | Why-not | `Requires level 14` · `Completed: The Forgotten Heirloom` · `Requires one of: A, B` · `Horde only` · `Warriors only` · `You chose X instead` · `The guide can't tell where this starts` · `You've done this` · `In your quest log` · `Repeatable quests aren't suggested` |
 | Tracker | `Where you left off: finishes a story` · `Next: The Ruins of Stardust` · `Story complete` |
+| Asides | `Visit your class trainer · 3 new spells` · `Not interested` · `Not interested (2)` |
 | Buttons, menu | `Go` (menus only) · `Stop` · `Show quest` · `Skip for now` · `Skipped (2)` · `Show again: <title>` · `Choose another journey` |
 | Instructions | `Click to travel with Shortest Path` · `Click to set a waypoint` · `Click to choose this journey` · `Replaces your current journey.` |
 | Empty | `Nothing nearby fits your level.` |
@@ -676,8 +697,9 @@ Nothing below has been validated in game yet.
 8. When SPF declines a route (Go returns false), the native waypoint appears instead.
 9. With a turn-in on another continent, the route stays on this continent first, crosses once, and ends with that
    turn-in ("Hand in when you're in <zone>").
-10. With Tweaks Forever (PR #45) loaded and spells to train, "Visit your class trainer" shows with no ring; without
-    Tweaks Forever, nothing changes.
+10. With Tweaks Forever (PR #45) loaded and spells to train, "Visit your class trainer · N new spells" shows above
+    the cards and in the tracker with the class trainer mark and no ring; its X, Skip for now and Not interested
+    hide it, and the cog's "Not interested (1)" brings it back. Without Tweaks Forever, nothing changes.
 11. Batch F (plan §7.10): Lakeshire is one stop; a stop ring draws over a super-tracked "?"; the cards show minutes
     and the hub line; the footer's Stop goes as soon as Shortest Path ends the journey.
 12. Batch G (plan §8.2): a chosen journey lasts through travel, turn-ins and `/reload`, and a paused route resumes
