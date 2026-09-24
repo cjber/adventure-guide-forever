@@ -2518,4 +2518,59 @@ do
 	clean(h, "golden")
 end
 
+-- #23 Honest coverage: one dimmed line under the cards when the log holds a quest the data lacks, or the player's zone
+-- has quests Forever added that the data lacks; never beside the search's results.
+do
+	local UNKNOWN = { id = 99999, title = "A Forever quest", level = 18, complete = false }
+	for _, case in ipairs({
+		{ label = "every quest known", lines = 0 },
+		{ label = "a log quest the data lacks", log = UNKNOWN, lines = 1 },
+		{ label = "Westfall, where Forever added quests", player = { map = 1436, x = 0.5, y = 0.5 }, lines = 1 },
+		{
+			label = "Westfall, its added quests finished",
+			player = { map = 1436, x = 0.5, y = 0.5 },
+			completed = { 844, 92742, 92744, 92745, 92747, 92748, 92752, 92753, 92819 },
+			lines = 0,
+		},
+	}) do
+		local label = "unlisted, " .. case.label
+		local log = {
+			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
+			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
+		}
+		log[#log + 1] = case.log
+		local h = harness.load({ completed = case.completed or { 844 }, log = log, player = case.player })
+		h.ns.OpenPanel()
+		h.flush()
+		local function Line(text)
+			for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverPanel, h.Describe)) do
+				if entry.text == text then
+					return entry
+				end
+			end
+		end
+		local function Top(entry)
+			for _, anchor in ipairs(entry and entry.anchors or {}) do
+				if anchor.point == "TOPLEFT" then
+					return anchor.y
+				end
+			end
+		end
+		local line, hint = Line(h.ns.L.UNLISTED), Line(h.ns.L.CHOOSE_TO_SEE_STEPS)
+		equal(line and 1 or 0, case.lines, label .. ": the line")
+		if line then
+			equal(line.font, "GameFontDisableSmall", label .. ": dimmed, like the hint")
+			equal(Top(line) <= Top(hint) - 14, true, label .. ": under the hint")
+			h.Type(
+				h.Find(function(frame)
+					return frame.stockTemplate == "SearchBoxTemplate"
+				end)[1],
+				"Call of"
+			)
+			equal(Line(h.ns.L.UNLISTED), nil, label .. ": not beside the search's results")
+		end
+		clean(h, label)
+	end
+end
+
 print(("ui_spec: %d checks passed"):format(checks))

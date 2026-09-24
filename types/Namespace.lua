@@ -484,3 +484,19 @@
 ---@field rank? integer profession trainer: the highest rank it teaches, 1 Apprentice to 4 Artisan (SpellEffect SKILL_STEP)
 ---@field bg? integer battlemaster: its battleground (CMaNGOS battlemaster_entry.bg_template: 1 AV, 2 WSG, 3 AB)
 ---@field inn? boolean innkeeper
+
+--[[ Stream 1e: what Forever added (tools/diff_forever.py, Data/Forever.lua) and honest coverage ]]
+
+-- The IDs Forever's DB2 tables have and Classic Era's lack, at the pinned builds.
+---@class AGFForever
+---@field quests table<integer, integer[]> uiMapID -> the added quests whose QuestPOIBlob sits on it; the rest have no zone
+---@field areas table<integer, true> the added AreaTable IDs
+
+---@class AGFData
+---@field forever? AGFForever nil where only Data/Quests.lua is loaded (the planner specs and bench)
+
+---@class AGFModel
+---@field Unlisted fun(data: AGFData, map?: integer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>): boolean the log holds a quest the data lacks, or Forever added quests on `map` the data lacks and the player hasn't finished
+
+---@class AGFStrings
+---@field UNLISTED string the panel's honest-coverage line

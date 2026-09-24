@@ -13,6 +13,7 @@
 ## OptionalDeps: ShortestPathForever
 
 Data\Quests.lua
+Data\Forever.lua
 Core.lua
 Model.lua
 State.lua
