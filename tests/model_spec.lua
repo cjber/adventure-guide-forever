@@ -328,6 +328,9 @@ equal(Calling(every), nil, "calling: a quest for every class is no calling")
 local several = Diversions(10, 10, 10)
 several.quests[11].classes = 1 + 2 + 4 + 8 + 16 + 64 + 128 + 1024
 equal(Calling(several), nil, "calling: a quest for every class but one is no calling")
+local raid = Diversions(10, 10, 10)
+raid.quests[11].dungeon, raid.quests[11].raid = 36, true
+equal(Calling(raid, nil, both), nil, "calling: never a raid's quest")
 local other = Diversions(10, 10, 10)
 other.quests[11].classes = 1
 equal(Calling(other), nil, "calling: another class's quest")

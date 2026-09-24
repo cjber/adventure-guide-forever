@@ -1297,11 +1297,12 @@ local function StoryJourney(data, player, completed, log, ready, eligible, zone,
 end
 
 -- A class quest (roadmap #7): one only the player's class may take. A mask of several classes is no calling: Vile
--- Familiars is every Horde class's but the warlock's, a starting zone's quest.
+-- Familiars is every Horde class's but the warlock's, a starting zone's quest. A raid's is never offered, as the
+-- dungeon card offers none (F15).
 ---@return fun(quest: AGFQuest): boolean
 local function ForClass(classBit)
 	return function(quest)
-		return quest.classes == classBit
+		return quest.classes == classBit and not quest.raid
 	end
 end
 
