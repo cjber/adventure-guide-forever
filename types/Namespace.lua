@@ -38,6 +38,7 @@
 ---@field maps table<integer, AGFMapCentre> uiMapID -> where the map sits in the world, for every map a place uses
 ---@field continents table<integer, AGFContinentShift> continent -> its place on the Azeroth world map
 ---@field crossings AGFCrossing[] every boat and zeppelin between two continents
+---@field hubs table<integer, {name: string}> hub -> its flight master's name, verbatim; only for hubs with one
 
 -- Measures between steps on different maps without travel maths (Model.lua Cost). World coordinates are yards.
 ---@class AGFMapCentre

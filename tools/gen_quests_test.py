@@ -5,10 +5,13 @@ import unittest
 from gen_quests import (
     CAP,
     LINK,
+    NAME_REACH,
     continents,
     crossings,
     faction,
+    flight_masters,
     geometry,
+    hub_names,
     instance_index,
     parse_values,
     prerequisite_index,
@@ -208,6 +211,53 @@ class HubTest(unittest.TestCase):
         x, y = world_point(darkshore, {"x": 0.6, "y": 0.5})
         self.assertAlmostEqual(y, -333.3 - 655.0)
         self.assertEqual(x, 6150.0)
+
+
+class HubNameTest(unittest.TestCase):
+    @staticmethod
+    def node(node, name="Lakeshire, Redridge", continent=0, flags=3, mounts=(1, 1), conditions=(0, 0)):
+        return {
+            "ID": str(node),
+            "Name_lang": name,
+            "ContinentID": str(continent),
+            "Pos_0": "10",
+            "Pos_1": "20",
+            "Flags": str(flags),
+            "ConditionID": str(conditions[0]),
+            "VisibilityConditionID": str(conditions[1]),
+            "MountCreatureID_0": str(mounts[0]),
+            "MountCreatureID_1": str(mounts[1]),
+        }
+
+    def test_filter_mirrors_shortest_path(self):
+        rows = [
+            self.node(1),
+            self.node(2, flags=1024),
+            self.node(3275, flags=0, mounts=(0, 5)),
+            self.node(4, continent=530),
+            self.node(5, name="zzOLD Lakeshire"),
+            self.node(6, name="Quest - Test"),
+            self.node(7, conditions=(9, 0)),
+            self.node(8, conditions=(0, 9)),
+            self.node(9, mounts=(0, 0)),
+            self.node(62),
+        ]
+        self.assertEqual([n[0] for n in flight_masters(rows)], [1, 3275])
+        self.assertEqual(flight_masters(rows[:1]), [(1, 0, 10.0, 20.0, "Lakeshire, Redridge")])
+
+    def test_nearest_within_reach(self):
+        hubs = [(0, [(0, 0, "a"), (500, 0, "b")]), (0, [(2000, 0, "c")]), (1, [(0, 0, "d")])]
+        nodes = [
+            (7, 0, 500 + NAME_REACH, 0, "Far side"),
+            (5, 0, 500 - NAME_REACH, 0, "Near side"),
+            (3, 0, 2000 + NAME_REACH + 1, 0, "Too far"),
+            (1, 0, 0, 0, "At a giver"),
+        ]
+        # The nearest wins, a tie goes to the lower ID, the reach counts from any giver, and a node on another
+        # continent never names a hub.
+        self.assertEqual(hub_names(hubs, nodes), {1: {"name": "At a giver"}})
+        self.assertEqual(hub_names(hubs, nodes[:3]), {1: {"name": "Near side"}})
+        self.assertEqual(hub_names(hubs[2:], [(1, 0, 0, 0, "At a giver")]), {})
 
 
 if __name__ == "__main__":
