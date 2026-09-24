@@ -1108,15 +1108,17 @@ for id, q in pairs(ns.Data.quests) do
 end
 equal(count > 3000, true, "full dataset loaded")
 -- F15: quests filed under a dungeon or raid carry its instance Map.ID, and every such instance is named.
-local flagged, raids = 0, 0
-for _, q in pairs(ns.Data.quests) do
-	if q.dungeon then
-		flagged, raids = flagged + 1, raids + (q.raid and 1 or 0)
-		assert(ns.Data.instances[q.dungeon].name ~= "", q.title)
+do
+	local flagged, raids = 0, 0
+	for _, q in pairs(ns.Data.quests) do
+		if q.dungeon then
+			flagged, raids = flagged + 1, raids + (q.raid and 1 or 0)
+			assert(ns.Data.instances[q.dungeon].name ~= "", q.title)
+		end
 	end
+	equal(flagged, 223, "dungeon and raid quests flagged")
+	equal(raids, 90, "raid quests flagged")
 end
-equal(flagged, 223, "dungeon and raid quests flagged")
-equal(raids, 90, "raid quests flagged")
 -- A raid's quest filed outdoors (typed Raid): Zul'Gurub's Paragons of Power, given on Yojamba Isle, are on no card for
 -- a level-60 paladin standing there, dungeons on or off.
 do
@@ -1194,36 +1196,38 @@ local function Chain(id, members, seen)
 	return Chain(q.next, members, seen)
 end
 -- Pinned: the plan's pre-check estimated about 499 and 316; these are the design's three rules applied exactly.
-local totals, textOnly = 0, 0
-for _, head in ipairs(heads) do
-	local members, flaw = Chain(head, {}, {})
-	story = Model.Story(ns.Data, head)
-	if #members < 2 then
-		equal(story, nil, "walk: a head whose next dangles at once is no story " .. head)
-	else
-		equal(story.chapter, 1, "walk: a head is chapter 1 " .. head)
-		equal(table.concat(story.members, " "), table.concat(members, " "), "walk: members " .. head)
-		equal(story.total, (not flaw) and #members or nil, "walk: total " .. head .. " " .. tostring(flaw))
-		totals, textOnly = totals + (story.total and 1 or 0), textOnly + (story.total and 0 or 1)
-		-- A later member has its own story unless the way back to the head forks: two quests name it as next.
-		local forked = false
-		for index = 2, #members do
-			local id = members[index]
-			local member = Model.Story(ns.Data, id)
-			forked = forked or named[id] > 1
-			checks = checks + 1
-			if forked then
-				assert(member == nil, "walk: no chapter past a fork " .. id)
-			else
-				assert(member and member.chapter == index and member.members[1] == head, "walk: chapter of " .. id)
+do
+	local totals, textOnly = 0, 0
+	for _, head in ipairs(heads) do
+		local members, flaw = Chain(head, {}, {})
+		story = Model.Story(ns.Data, head)
+		if #members < 2 then
+			equal(story, nil, "walk: a head whose next dangles at once is no story " .. head)
+		else
+			equal(story.chapter, 1, "walk: a head is chapter 1 " .. head)
+			equal(table.concat(story.members, " "), table.concat(members, " "), "walk: members " .. head)
+			equal(story.total, (not flaw) and #members or nil, "walk: total " .. head .. " " .. tostring(flaw))
+			totals, textOnly = totals + (story.total and 1 or 0), textOnly + (story.total and 0 or 1)
+			-- A later member has its own story unless the way back to the head forks: two quests name it as next.
+			local forked = false
+			for index = 2, #members do
+				local id = members[index]
+				local member = Model.Story(ns.Data, id)
+				forked = forked or named[id] > 1
+				checks = checks + 1
+				if forked then
+					assert(member == nil, "walk: no chapter past a fork " .. id)
+				else
+					assert(member and member.chapter == index and member.members[1] == head, "walk: chapter of " .. id)
+				end
 			end
 		end
 	end
+	equal(#heads, 815, "walk: chain heads in the data")
+	equal(totals, 581, "walk: heads whose total the data proves")
+	equal(textOnly, 226, "walk: heads shown as a chapter only")
+	equal(#heads - totals - textOnly, 8, "walk: heads whose next dangles at once")
 end
-equal(#heads, 815, "walk: chain heads in the data")
-equal(totals, 581, "walk: heads whose total the data proves")
-equal(textOnly, 226, "walk: heads shown as a chapter only")
-equal(#heads - totals - textOnly, 8, "walk: heads whose next dangles at once")
 
 -- Why-not and the planner never disagree (F5 acceptance): every quest, for each fixture character with completed
 -- quests and a log (the first quests it could take moved into the log), is eligible exactly when every line is met.
@@ -1256,55 +1260,57 @@ equal(fixtures >= 5, true, "why: five fixtures or more")
 
 -- F15: a dungeon card only with dungeons on or no next zone (roadmap #21: human60, at the cap), and never a step that
 -- is not an eligible giver's data place.
-local function Valid(place)
-	return place and place.map > 0 and place.x >= 0 and place.x <= 1 and place.y >= 0 and place.y <= 1
-end
-local cards, placeless, offCards, strandedCards = 0, 0, 0, 0
-for _, fixture in ipairs(characters.list) do
-	local who, done, carried, cardPrefs = characters.Resolve(ns.Data, fixture)
-	for _, dungeons in ipairs({ true, false }) do
-		cardPrefs.dungeons = dungeons
-		local planned = Model.Plan(ns.Data, who, done, carried, cardPrefs)
-		for _, journey in ipairs(planned.journeys) do
-			if journey.kind == "dungeon" then
-				local off = dungeons and 0 or 1
-				cards, offCards = cards + 1, offCards + (planned.stranded and 0 or off)
-				strandedCards = strandedCards + (planned.stranded and off or 0)
-				for _, step in ipairs(journey.steps) do
-					for _, id in ipairs(step.quests) do
-						local given = ns.Data.quests[id]
-						local fine = Valid(given.start)
-							and not given.raid
-							and Model.Eligible(ns.Data, who, done, carried, id)
-						placeless = placeless + (fine and 0 or 1)
+do
+	local function Valid(place)
+		return place and place.map > 0 and place.x >= 0 and place.x <= 1 and place.y >= 0 and place.y <= 1
+	end
+	local cards, placeless, offCards, strandedCards = 0, 0, 0, 0
+	for _, fixture in ipairs(characters.list) do
+		local who, done, carried, cardPrefs = characters.Resolve(ns.Data, fixture)
+		for _, dungeons in ipairs({ true, false }) do
+			cardPrefs.dungeons = dungeons
+			local planned = Model.Plan(ns.Data, who, done, carried, cardPrefs)
+			for _, journey in ipairs(planned.journeys) do
+				if journey.kind == "dungeon" then
+					local off = dungeons and 0 or 1
+					cards, offCards = cards + 1, offCards + (planned.stranded and 0 or off)
+					strandedCards = strandedCards + (planned.stranded and off or 0)
+					for _, step in ipairs(journey.steps) do
+						for _, id in ipairs(step.quests) do
+							local given = ns.Data.quests[id]
+							local fine = Valid(given.start)
+								and not given.raid
+								and Model.Eligible(ns.Data, who, done, carried, id)
+							placeless = placeless + (fine and 0 or 1)
+						end
 					end
 				end
 			end
 		end
 	end
-end
-equal(cards > 0, true, "dungeon card: offered to a fixture with dungeons on")
-equal(placeless, 0, "dungeon card: every step an eligible giver with a data place")
-equal(offCards, 0, "dungeon card: none with dungeons off")
-equal(strandedCards > 0, true, "dungeon card: at the cap even with dungeons off")
--- The Deadmines card's title: the client's name when it has one (Spanish here), the data's when it answers nil.
-local function DeadminesTitle(clientName)
-	for _, fixture in ipairs(characters.list) do
-		if fixture.name == "human18_westfall" then
-			local who, done, carried, cardPrefs = characters.Resolve(ns.Data, fixture)
-			local planned = Model.Plan(ns.Data, who, done, carried, cardPrefs, nil, function()
-				return clientName
-			end)
-			for _, journey in ipairs(planned.journeys) do
-				if journey.key == "dungeon:36" then
-					return journey.title
+	equal(cards > 0, true, "dungeon card: offered to a fixture with dungeons on")
+	equal(placeless, 0, "dungeon card: every step an eligible giver with a data place")
+	equal(offCards, 0, "dungeon card: none with dungeons off")
+	equal(strandedCards > 0, true, "dungeon card: at the cap even with dungeons off")
+	-- The Deadmines card's title: the client's name when it has one (Spanish here), the data's when it answers nil.
+	local function DeadminesTitle(clientName)
+		for _, fixture in ipairs(characters.list) do
+			if fixture.name == "human18_westfall" then
+				local who, done, carried, cardPrefs = characters.Resolve(ns.Data, fixture)
+				local planned = Model.Plan(ns.Data, who, done, carried, cardPrefs, nil, function()
+					return clientName
+				end)
+				for _, journey in ipairs(planned.journeys) do
+					if journey.key == "dungeon:36" then
+						return journey.title
+					end
 				end
 			end
 		end
 	end
+	equal(DeadminesTitle("Las Minas de la Muerte"), "Las Minas de la Muerte", "dungeon card: the client's name first")
+	equal(DeadminesTitle(nil), "Deadmines", "dungeon card: the data's name otherwise")
 end
-equal(DeadminesTitle("Las Minas de la Muerte"), "Las Minas de la Muerte", "dungeon card: the client's name first")
-equal(DeadminesTitle(nil), "Deadmines", "dungeon card: the data's name otherwise")
 equal(mismatches, 0, "why: Eligible == every Why line met, for every quest and fixture")
 
 -- The lines themselves: the design's copy, the client's names first, a suppressed start alone.
