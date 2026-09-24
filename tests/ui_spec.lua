@@ -176,6 +176,20 @@ do
 	h.watched[1] = 99
 	ClickTitle(h)
 	equal(h.spf.NavigateRoute, 1, "the title starts the route")
+	-- Each stop tells Shortest Path what stands there, so its pin shows the game's own mark rather than hiding it.
+	for index, stop in ipairs(h.spfRoute.stops) do
+		equal(stop.kind, h.ns.Integrations.Kind(h.ns.Route().steps[index]), "stop " .. index .. "'s kind")
+	end
+	local Kind = h.ns.Integrations.Kind
+	local here, there = { map = 1429, x = 0.4, y = 0.5 }, { map = 1429, x = 0.6, y = 0.5 }
+	equal(Kind({ kind = "turnin" } --[[@as AGFStep]]), "turnin", "kind: a hand-in")
+	equal(Kind({ kind = "objective" } --[[@as AGFStep]]), "objective", "kind: an objective")
+	equal(Kind({ kind = "trainer" } --[[@as AGFStep]]), "trainer", "kind: a trainer")
+	equal(Kind({ map = 1429, x = 0.1, y = 0.1, title = "Giver", quests = { 1 } }), "pickup", "kind: a giver")
+	local town = { kind = "hub", map = here.map, x = here.x, y = here.y, handins = { 7 }, spots = { [7] = here } }
+	equal(Kind(town --[[@as AGFStep]]), "turnin", "kind: a town whose point is a hand-in")
+	town.spots[7] = there
+	equal(Kind(town --[[@as AGFStep]]), "pickup", "kind: a town whose point is a giver")
 	equal(h.watched[1], 99, "the player's own tracked quest stays")
 	-- Gann's Reclamation is done on a later lap, so carry holds it.
 	equal(RouteQuests(h), "845", "the route holds the log quest its lap hands in")
@@ -2756,7 +2770,7 @@ end
 
 -- A choice in combat, when Shortest Path refuses every route: the card is chosen at once and its route starts on the
 -- rebuild combat's end brings, while the footer says it waits. A choice cleared before then starts nothing. With the
--- setting off a choice starts nothing and clearing it stops nothing.
+-- setting off a choice starts nothing, yet clearing it still stops what a Go started meanwhile: none chosen draws none.
 for _, spf in ipairs({ false, "v1" }) do
 	local label = "combat choice: " .. (spf or "no Shortest Path")
 	local h = Load(spf, nil, false)
@@ -2809,7 +2823,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.ns.Integrations.Navigate(h.ns.Route().steps[1])
 	h.Click(Card("chosen"))
 	h.flush()
-	equal(h.ns.Integrations.Owns(), true, label .. ": and clearing it stops nothing")
+	equal(h.ns.Integrations.Owns(), false, label .. ": and clearing it stops what a Go started")
 	clean(h, label)
 end
 
@@ -2826,6 +2840,46 @@ do
 		equal(ring:GetAlpha(), 0.5, "ring fade: each faded")
 	end
 	clean(h, "ring fade")
+end
+
+-- The choice going, however it went, stops whatever of ours guides (design §2.6), a Go that left no record of the
+-- journey included. A route the player started in Shortest Path is theirs and stays.
+for _, spf in ipairs({ false, "v1" }) do
+	local label = "cleared: " .. (spf or "no Shortest Path")
+	local h = Load(spf, PINS_ON)
+	h.ns.OpenPanel()
+	h.flush()
+	local function Rings()
+		return #(h.pins.AdventureGuideForeverPinTemplate or {})
+	end
+	equal(Rings() > 0, true, label .. ": the chosen journey's rings")
+	-- A Go that recorded no journey (prefs.guided), as an aside's or a giver's does.
+	h.ns.Integrations.Navigate(h.ns.Route().steps[1])
+	h.flush()
+	equal(h.ns.Prefs().guided, nil, label .. ": no journey recorded")
+	equal(StopButton(h):IsShown(), true, label .. ": Stop offered")
+	h.ns.Choose(nil)
+	h.flush()
+	equal(h.ns.Integrations.Owns(), false, label .. ": nothing of ours guides")
+	if spf then
+		equal(h.spf.Cancel, 1, label .. ": our route cancelled")
+		equal(h.spfRoute, nil, label .. ": and gone")
+	else
+		equal(h.counts.ClearUserWaypoint, 1, label .. ": our waypoint cleared")
+	end
+	equal(Rings() > 0, true, label .. ": the first card is previewed again")
+	equal(StopButton(h):IsShown(), false, label .. ": Stop hides")
+	clean(h, label)
+end
+do
+	local h = Load("v1", PINS_ON)
+	h.flush()
+	h.spfOther()
+	h.ns.Choose(nil)
+	h.flush()
+	equal(h.spf.Cancel, 0, "cleared, player's route: nothing cancelled")
+	equal(h.spfRoute and h.spfRoute.owner, "Player", "cleared, player's route: it keeps guiding")
+	clean(h, "cleared, player's route")
 end
 
 -- The preview follows the guide's visibility, not only its tab: collapsing the quest sidebar hides the guide and

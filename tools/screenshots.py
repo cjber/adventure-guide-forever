@@ -207,6 +207,8 @@ def load_wowmock():
         wm.FONTS.setdefault("GameFontNormalMed2", wm.Font(wm.FRIZQT, 13, wm.NORMAL, (1, -1)))
         # GameFontRedSmall: SystemFont_Shadow_Small (FRIZQT at 10) in RED_FONT_COLOR.
         wm.FONTS.setdefault("GameFontRedSmall", wm.Font(wm.FRIZQT, 10, (1.0, 0.1, 0.1), (1, -1)))
+        # NumberFontNormalSmall: NumberFont_OutlineThick_Mono_Small (ARIALN at 12, outlined) in white.
+        wm.FONTS.setdefault("NumberFontNormalSmall", wm.Font(wm.ARIALN, 12, (1, 1, 1), None, True))
     return wm
 
 
@@ -707,7 +709,8 @@ SPF_DOT, SPF_RIM, SPF_SPACING, SPF_UNDER = 4, 1, 9, (0.04, 0.04, 0.04, 0.5)
 
 SPF_PROGRAM = r"""
 local ns = {}
-for _, name in ipairs({ "Data/Routes", "Data/Transports", "Data/Portals", "Data/Taxi", "Model", "Path", "Planner" }) do
+local files = { "Data/Routes", "Data/Transports", "Data/Portals", "Data/Taxi", "Model", "PathGrid", "Path", "Planner" }
+for _, name in ipairs(files) do
 	assert(loadfile(name .. ".lua"))("ShortestPathForever", ns)
 end
 local walks = {}
@@ -832,12 +835,34 @@ def breadcrumbs(canvas, rects, lines):
         canvas.image.alpha_composite(layer)
 
 
+# A stop's kind as SPF's Looks.lua draws it: the game's own mark, 18 across inside the ring.
+STOP_ATLASES = {
+    "pickup": "QuestNormal",
+    "turnin": "QuestTurnin",
+    "objective": "questobjective",
+    "dungeon": "dungeon",
+    "innkeeper": "innkeeper",
+}
+STOP_FILES = {
+    "trainer": "Interface\\Minimap\\Tracking\\Class",
+    "battlemaster": "Interface\\Minimap\\Tracking\\BattleMaster",
+}
+
+
 def goal_pins(canvas, rects, stops):
     """SPF's numbered stop pins (Map.xml:23, GoalPinMixin:OnAcquired): 26x26, a black .75 disc 22x22 cut round by
-    TempPortraitAlphaMask, the adventureguide-ring over it and services-number-N 22x25 at the centre."""
+    TempPortraitAlphaMask, the adventureguide-ring over it and services-number-N 22x25 at the centre. A stop with a
+    kind wears its mark in the ring instead, with no disc, its number in NumberFontNormalSmall at the ring's foot."""
     ui = canvas.ui
     for number, stop in enumerate(stops, 1):
         cx, cy = map_point(rects, stop["x"], stop["y"])
+        kind = stop.get("kind")
+        if kind in STOP_ATLASES or kind in STOP_FILES:
+            art = ui.atlas(STOP_ATLASES[kind]) if kind in STOP_ATLASES else texture(ui, STOP_FILES[kind])
+            canvas.draw(art, cx - 9, cy - 9, 18, 18)
+            canvas.draw(ui.atlas("adventureguide-ring"), cx - 13, cy - 13, 26, 26)
+            canvas.text(cx + 9 - 10, cy + 9 - 6, str(number), font("NumberFontNormalSmall"), justify="CENTER", width=20)
+            continue
         disc = ui.canvas(canvas.width, canvas.height)
         disc.fill(cx - 11, cy - 11, 22, 22, (0, 0, 0, 0.75))
         disc.mask(ui.texture("interface/characterframe/tempportraitalphamask.blp"), cx - 11, cy - 11, 22, 22)

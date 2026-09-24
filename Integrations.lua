@@ -344,12 +344,40 @@ local stopped
 -- (tools/gen_quests.py LINK). Nearer, the stock "!" and "?" marks show the way.
 local LINK = 100
 
----@param steps AGFStep[]
+-- What stands at a step, in Shortest Path's words, so its stop pin shows the game's own mark there rather than hiding
+-- it. A Shortest Path that predates kinds ignores them.
+---@type table<AGFStepKind, AGFSPFStopKind>
+local KINDS = {
+	turnin = "turnin",
+	objective = "objective",
+	dungeon = "dungeon",
+	trainer = "trainer",
+	battlemaster = "battlemaster",
+}
+
+-- A town's point is one of its quests' places: the "?" when a hand-in is there, else a giver's "!". A giver is a "!".
+---@param step AGFStep|AGFGiver
+---@return AGFSPFStopKind?
+function Integrations.Kind(step)
+	local kind = step.kind --[[@as AGFStepKind?]]
+	if kind and kind ~= "hub" then
+		return KINDS[kind]
+	end
+	for _, id in ipairs(step.handins or {}) do
+		local spot = step.spots and step.spots[id]
+		if spot and spot.map == step.map and spot.x == step.x and spot.y == step.y then
+			return "turnin"
+		end
+	end
+	return "pickup"
+end
+
+---@param steps (AGFStep|AGFGiver)[]
 ---@return AGFSPFStop[]
 local function Stops(steps)
 	local stops = {}
 	for index, step in ipairs(steps) do
-		stops[index] = { map = step.map, x = step.x, y = step.y, title = step.title }
+		stops[index] = { map = step.map, x = step.x, y = step.y, title = step.title, kind = Integrations.Kind(step) }
 	end
 	return stops
 end
@@ -411,9 +439,7 @@ end
 ---@return boolean
 local function Send(api, steps)
 	steps = Hand(steps)
-	if
-		not api.NavigateRoute(OWNER, Stops(steps --[[@as AGFStep[] ]]))
-	then
+	if not api.NavigateRoute(OWNER, Stops(steps)) then
 		return false
 	end
 	guided, ours, arrived, stopped = steps, true, false, nil

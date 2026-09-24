@@ -404,6 +404,8 @@ no layer at all.
   Pins.lua:184-188).
 - **Area rings** (a quest's objective area, sized to it): step 1's is drawn whole, and every later one at half
   alpha, so the next place reads first where rings overlap.
+  The choice going, however it goes, stops what AGF guides (Core.lua's `wasChosen` listener): the first card is
+  previewed again, nothing guides until a click, and a route the player started in SPF stays.
 - **Layering.** A route ring marks "your destination", so it takes the stock level of the user-waypoint pin,
   `PIN_FRAME_LEVEL_WAYPOINT_LOCATION`. That is above every quest "!" and "?", including the super-tracked one.
   AGF's preview ring uses this level, and SPF's stop ring does too (plan §7.9). Givers stay at `AREA_POI`, below
