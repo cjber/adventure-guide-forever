@@ -1519,6 +1519,10 @@ function harness.load(options)
 			end
 		end
 	end
+	-- options.setup(h) runs before the client's load events: a /reload into combat, or into someone else's journey.
+	if options.setup then
+		options.setup(h)
+	end
 	h.fire("ADDON_LOADED", ADDON)
 	h.fire("ADDON_LOADED", "Blizzard_WorldMap")
 	h.fire("PLAYER_ENTERING_WORLD", options.initialLogin ~= false, options.initialLogin == false)

@@ -263,6 +263,7 @@
 ---@field Owns fun(): boolean Go's guidance is still running: our Shortest Path journey (guided or held), or the waypoint Go set
 ---@field Guiding fun(): boolean Shortest Path is walking our multi-stop route and draws its own numbered stops; held (its "Guide me" off) is not guiding
 ---@field Guided fun(): (AGFStep|AGFGiver)[] the stops it walks, while it guides; empty otherwise
+---@field Restore fun(steps: AGFStep[]): boolean hands Shortest Path the chosen journey's steps again after a /reload; never the waypoint
 ---@field Stale fun(handed: AGFStep[], index: integer, steps: AGFStep[], far?: fun(a: AGFStep, b: AGFStep): boolean): boolean the guidance handed to Shortest Path no longer matches the journey's steps
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")
 ---@field Trainable fun(): AGFTFSpell[]? Tweaks Forever's trainable spells; nil without a v1 Tweaks Forever or its answer

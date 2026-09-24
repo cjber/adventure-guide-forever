@@ -644,6 +644,25 @@ ns.OnRouteChange(function()
 	end
 end)
 
+-- Shortest Path's journeys end with the session, so a /reload or login brings back the route AGF had started for the
+-- chosen journey (prefs.guided), once, on the first full build that has its steps. Not over someone else's journey,
+-- which then keeps the way; and a Shortest Path that declines is asked again on the next full build. The native
+-- waypoint needs nothing: the client keeps it.
+local restoring = true
+ns.OnRouteChange(function()
+	if not restoring or InCombatLockdown() or not ns.State.Ready() then
+		return
+	end
+	local prefs, route, integrations = ns.Prefs(), ns.Route(), ns.Integrations
+	if not (prefs.guided and route.chosen and route.journey == prefs.guided) or integrations.Owns() then
+		restoring = false
+	elseif not integrations.Provider() or integrations.ReplacesJourney() then
+		restoring, prefs.guided = false, nil
+	elseif integrations.Restore(route.steps) then
+		restoring = false
+	end
+end)
+
 --[[ Slash command and audit ]]
 
 local function Audit()

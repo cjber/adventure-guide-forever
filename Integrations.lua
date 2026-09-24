@@ -419,6 +419,15 @@ local function Far(a, b)
 	return yards ~= nil and yards > LINK
 end
 
+-- Hands Shortest Path the chosen journey's steps again, as they were started (Core's restore after a /reload). Never
+-- the waypoint: the client kept any that was ours. True when it took them.
+---@param steps AGFStep[]
+---@return boolean
+function Integrations.Restore(steps)
+	local api = SPF()
+	return api ~= nil and not InCombatLockdown() and Send(api, steps)
+end
+
 ---@return (AGFStep|AGFGiver)[]
 function Integrations.Guided()
 	return Integrations.Guiding() and guided or {}

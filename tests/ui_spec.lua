@@ -373,6 +373,68 @@ do
 	equal(h.ns.Prefs().journey, "carry", "ends: nothing before the completed quests load")
 end
 
+-- Shortest Path's journeys end with the session: a /reload or login with a route AGF started for the chosen journey
+-- sends it again once, on the first full build out of combat. Not over someone else's journey; a refusal sets no
+-- waypoint and asks again on the next full build; Stop, a cleared card or no saved variables (#34) restore nothing.
+do
+	local function Reloaded(charDB, setup)
+		local h = harness.load({
+			spf = "v1+",
+			charDB = charDB,
+			initialLogin = false,
+			completed = { 844 },
+			log = {
+				{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
+			},
+			setup = setup,
+		})
+		h.flush()
+		return h
+	end
+	local h = Reloaded({ journey = "carry", guided = "carry" })
+	equal(h.spf.NavigateRoute, 1, "restore: our route runs again")
+	equal(h.ns.Integrations.Guiding(), true, "restore: and guides")
+	equal(h.ns.Prefs().guided, "carry", "restore: still the chosen journey's")
+	h.ns.Invalidate()
+	h.flush()
+	equal(h.spf.NavigateRoute, 1, "restore: once")
+	clean(h, "restore")
+
+	h = Reloaded({ journey = "carry", guided = "carry" }, function(reloaded)
+		reloaded.spfOther()
+	end)
+	equal(h.spf.NavigateRoute, 0, "restore: never over someone else's journey")
+	equal(h.ns.Prefs().guided, nil, "restore: which keeps the way")
+
+	h = Reloaded({ journey = "carry", guided = "carry" }, function(reloaded)
+		reloaded.SetCombat(true)
+	end)
+	equal(h.spf.NavigateRoute, 0, "restore: not in combat")
+	h.SetCombat(false)
+	h.flush()
+	equal(h.spf.NavigateRoute, 1, "restore: once combat ends")
+
+	h = Reloaded({ journey = "carry", guided = "carry" }, function(reloaded)
+		reloaded.spfDeclines = true
+	end)
+	equal(h.counts.SetUserWaypoint, 0, "restore, declined: no waypoint")
+	equal(h.ns.Prefs().guided, "carry", "restore, declined: the route is kept")
+	h.spfDeclines = false
+	h.ns.Invalidate()
+	h.flush()
+	equal(h.spf.NavigateRoute, 2, "restore, declined: asked again on the next full build")
+	equal(h.ns.Integrations.Guiding(), true, "restore, declined: and guides once it takes it")
+
+	for _, case in ipairs({
+		{ { journey = "carry" }, "after Stop" },
+		{ { guided = "carry" }, "after a cleared card" },
+		{ nil, "no saved variables" },
+	}) do
+		h = Reloaded(case[1])
+		equal(h.spf.NavigateRoute + h.counts.SetUserWaypoint, 0, "restore, " .. case[2] .. ": nothing starts")
+	end
+end
+
 -- WFA-13: nothing runs per frame while idle, and a refresh reuses the frames it has.
 local function IdleUpdates(h)
 	local busy = 0
