@@ -461,7 +461,7 @@ aside shown changes. The first provider's answer the player has not skipped or t
   skip), hidden while searching, and the tracker's line (§2.5). Both show the same aside.
 - **Skip for now** hides it for the session: the line's red X, or its menu. **Not interested** hides it for the
   character (`charDB.asides[key]` = its text); the cog's "Not interested (n)" submenu offers each back as
-  "Show again: <text>".
+  "Show again: <text>", its provider's text now when it still answers, else the saved one.
 - **Clicks.** Right-click on either line is its menu (Go with a place, Skip for now, Not interested). Left-click goes
   to its place, as a step's Go does (§5.1), and does nothing without one.
 - **Providers.** The class trainer (F16): "Visit your class trainer · 3 new spells" with the minimap's `class`

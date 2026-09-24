@@ -480,7 +480,7 @@
 ---@field OnChange fun(callback: fun())
 ---@field Skip fun(key: string) hide it until the next session
 ---@field Decline fun(aside: AGFAside) Not interested: hide it for this character, remembering its text
----@field Declined fun(): {key: string, text: string}[] the turned-down asides, by text, for Show again
+---@field Declined fun(): {key: string, text: string}[] the turned-down asides, by text, for Show again: its provider's answer now, else the saved text
 ---@field Restore fun(key: string) Show again: undo a Decline
 ---@field Go fun(aside: AGFAside): boolean to its place, as Integrations.Navigate; false without one
 ---@field Open fun(owner: Region, tag: string, aside: AGFAside) its menu: Go with a place, Skip, Not interested

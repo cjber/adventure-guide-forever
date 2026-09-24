@@ -105,9 +105,10 @@ do
 	same(h.tracker.layoutOrder, { step.key }, "declined: nor in the tracker")
 	equal(h.G.AdventureGuideForeverCharDB.asides.b, B.text, "declined: saved per character with its text")
 
-	-- The cog brings it back.
+	-- The cog brings it back, by the text its provider gives now (a trainer's count moves on).
 	local later = Load(false, h.G.AdventureGuideForeverCharDB)
-	Provider(later, B)
+	local B2 = { key = "b", text = "Another thing, since", icon = B.icon }
+	Provider(later, B2)
 	Opened(later)
 	equal(later.ns.Asides.Current(), nil, "declined: still after a reload")
 	local cog = later.Find(function(frame)
@@ -115,7 +116,7 @@ do
 	end)[1]
 	local menu = later.OpenMenu(cog)
 	local submenu = menu.entries[#menu.entries - 1]
-	same(later.MenuLines(submenu), { "button: Show again: " .. B.text }, "cog: " .. submenu.text)
+	same(later.MenuLines(submenu), { "button: Show again: " .. B2.text }, "cog: " .. submenu.text)
 	equal(submenu.text, "Not interested (1)", "cog: counted")
 	submenu.entries[1].onClick()
 	later.flush()

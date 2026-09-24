@@ -98,12 +98,16 @@ function Asides.Decline(aside)
 	Notify()
 end
 
--- The turned-down asides, by text, for Show again.
+-- The turned-down asides, by text, for Show again: its provider's answer now, else the text it had when turned down.
 ---@return {key: string, text: string}[]
 function Asides.Declined()
+	local now = {}
+	for _, aside in ipairs(answers) do
+		now[aside.key] = aside.text
+	end
 	local list = {}
 	for key, text in pairs(Declined()) do
-		list[#list + 1] = { key = key, text = text }
+		list[#list + 1] = { key = key, text = now[key] or text }
 	end
 	table.sort(list, function(a, b)
 		return a.text < b.text
