@@ -556,3 +556,9 @@ Every blocker and major in `plan-review.md` is applied above. Minor findings are
     unknown event errors in `RegisterEvent`), so it needs a probe first. Opening the guide redraws it.
   - Design §2.5's place line is "NPC, zone"; it is still the bare name, and a log turn-in placed by
     `GetNextWaypoint` has no NPC name at all. The zone needs the map name in the step, a change of its own.
+- **Batch D (38-45, F16) review:** fixed in their own `fix(...)` commits: the in-combat rebuild's fourth card (it
+  now keeps `Model.MAX_JOURNEYS`, which the panel shares), the empty line over the trainer line, the "Story
+  complete" header acting as the step's, the trainer spec's vacuous ring check, `TweaksForever` in `OptionalDeps`,
+  `tools/screenshots.py`'s stale SPF pin (it now reads `contract_spec`'s), F15's carried dungeon quest (the
+  `ne21_crosszone` golden fixture's 168), and the provider's name outside `L`. Deferred: `tools/lint_copy.py` checks
+  literals passed to text setters only, so a returned literal that reaches one still slips past it.
