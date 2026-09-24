@@ -485,6 +485,10 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 | 25 | Orc at level 18 in The Barrens carrying a finished The Zhevra (Batch F2) | The Crossroads step reads "Opens the next chapter here" (row, ring tooltip); Prowlers of the Barrens is not offered until you turn it in, then appears there after the rebuild | SHOT panel + tooltip |
 | 25b | Hover a town step holding a hand-in, a quest one level from grey and others | Right-click > Show quest opens the hand-in; the town's quests list hand-ins first, then the one about to grey, then by level distance | SHOT panel |
 | 25c | Enable Tweaks Forever "Nearest quests first", choose a card | The stock quest tracker keeps Tweaks' order; only AGF's section follows the route | SHOT tracker |
+| 26 | Human at level 16 in Redridge, choose the next-zone card, then hover the Lakeshire row and ring (Batch F3, §7.10 row 23) | The row reads "Lakeshire, Redridge" over "N to pick up" (" · N min" on row 1 with SPF), a long detail ends in "..." before the skip button, and a group quest adds the group tag. The tooltip lists each NPC in gold, then its quests with the "!" or "?" mark and level, in the quest log's difficulty colours; 8 at most, then "And N more"; the click line last | SHOT panel + tooltip |
+| 27 | Carry a finished Lakeshire quest and choose the story card (§7.10 row 24) | The stop reads "1 to hand in, N to pick up". The tracker shows the counts, then "NPC, NPC and N more" (or the reason, when it says more), the travel line and Next | SHOT panel + tracker |
+| 28 | Pins on, no SPF guiding, look at a zone with quest marks; super-track a quest whose "?" sits under a ring (§7.10 row 29) | AGF's rings draw over the stock "!" and "?", the super-tracked one included. Givers stay under them | SHOT map |
+| 29 | A single-giver step in the tracker (§7.10 row 30) | The place line reads "NPC, zone" with the client's zone name | SHOT tracker |
 
 ## 6. Commit plan (each commit signed with `git commit -S`, one idea, about 50 lines)
 
@@ -802,7 +806,7 @@ Every blocker and major in `plan-review.md` is applied above. Minor findings are
   - The footer's Stop still waits for the next redraw when Shortest Path ends our journey itself or the player moves
     or clears the waypoint: API v1 has no callback, and `USER_WAYPOINT_UPDATED` is unproven on Forever (an
     unknown event errors in `RegisterEvent`), so it needs a probe first. Opening the guide redraws it.
-  - Design §2.5's place line is "NPC, zone"; it is still the bare name, and a log turn-in placed by
+  - Design §2.5's place line is "NPC, zone" (closed in Batch F3); it was still the bare name, and a log turn-in placed by
     `GetNextWaypoint` has no NPC name at all. The zone needs the map name in the step, a change of its own.
 - **Batch D (38-45, F16) review:** fixed in their own `fix(...)` commits: the in-combat rebuild's fourth card (it
   now keeps `Model.MAX_JOURNEYS`, which the panel shares), the empty line over the trainer line, the "Story
