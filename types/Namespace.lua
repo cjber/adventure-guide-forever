@@ -401,6 +401,8 @@
 ---@field NEXT_ZONE_LEVEL string format: the level the next zone fits
 ---@field DUNGEON_QUESTS string format: quest count
 ---@field DUNGEON_QUESTS_ONE string
+---@field DUNGEON_INSIDE string format: count of the log's quests filed under the instance, its name
+---@field DUNGEON_INSIDE_ONE string format: the instance's name
 ---@field CARRY_READY string format: count of finished quests whose hand-in is on this continent
 ---@field CARRY_IN_PROGRESS string format: count
 ---@field CARRY_AWAY string format: count of finished quests whose hand-in is across an ocean

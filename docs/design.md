@@ -189,7 +189,11 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
        raid's. It leads with a chain as the story does (§2.3), else the lowest quest ID. Its reason names that quest:
        "Your class trainer has a task: Call of Earth" only when the data proves its giver trains the player's class
        (`start.trainer`, from CMaNGOS TrainerClass), else "A task for your class: Call of Earth".
-     - **Dungeon** (Dungeons on): the party instance with the most quests open now.
+     - **Dungeon** (Dungeons on): the party instance with the most quests open now. Its reason (roadmap #15) counts
+       the log's quests filed under it, which end inside: "2 of your quests end inside Wailing Caverns", "1 of your
+       quests ends inside Wailing Caverns"; none carried, no reason. There is no "Find group" button: R5 found
+       `LFGVanilla_ShowFrame` but never called it, so its taint is unknown, and the button waits on a probe that calls
+       it.
      - **Next zone**: the zone that ranks first for `level + 2` in the same eligibility pass (`Choices` in
        `Model.Journeys`), shown only when it differs from the story's zone and the player's own and has at least 5
        quests to take now.
@@ -631,6 +635,7 @@ cache that did, Integrations' town places, is keyed on it).
 | Trainer stop | `Train in Stormwind` · `3 new spells` · `1 new spell` |
 | Buttons, menu | `Go` (menus only) · `Stop` · `Show quest` · `Skip for now` · `Not interested` · `Skipped (2)` · `Show again: <title>` · `Choose another journey` |
 | Instructions | `Click to travel with Shortest Path` · `Click to set a waypoint` · `Click to choose this journey` · `Replaces your current journey.` |
+| Dungeon | `2 of your quests end inside Wailing Caverns` · `1 of your quests ends inside Wailing Caverns` |
 | Empty | `Nothing nearby fits your level.` |
 | Coverage | `This land has stories the guide doesn't know yet; look for the "!" over quest givers.` |
 
@@ -873,6 +878,8 @@ Nothing below has been validated in game yet.
 18. QuestieDB (§2.14): with it loaded, `/agf audit` names "QuestieDB <version>" a few seconds after login with no
     hitch, and the cards, rings and town stops match the bundled run; with it disabled, or Questie alone without it,
     the audit names the bundled data and why.
+19. Dungeons (roadmap #15): with Wailing Caverns quests in the log and Dungeons on, its card reads "N of your quests
+    end inside Wailing Caverns" in the client's name for it, and no Group Finder button shows.
 
 ## 9. Open questions that need client probes
 

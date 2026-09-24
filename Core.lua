@@ -34,6 +34,9 @@ ns.L = {
 	NEXT_ZONE_LEVEL = "For level %d",
 	DUNGEON_QUESTS = "%d quests for this dungeon",
 	DUNGEON_QUESTS_ONE = "1 quest for this dungeon",
+	-- The dungeon card's reason (roadmap #15): the log's quests filed under its instance, counted.
+	DUNGEON_INSIDE = "%d of your quests end inside %s",
+	DUNGEON_INSIDE_ONE = "1 of your quests ends inside %s",
 	-- The carry card's counts, joined when several apply: "3 ready to hand in, 1 in progress".
 	CARRY_READY = "%d ready to hand in",
 	CARRY_IN_PROGRESS = "%d in progress",

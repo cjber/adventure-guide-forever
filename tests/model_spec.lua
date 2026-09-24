@@ -279,6 +279,34 @@ equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "c
 delve.journey, delve.notInterested = nil, { ["dungeon:48"] = "Many" }
 equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "not interested: the next dungeon")
 
+do
+	-- Roadmap #15: the dungeon card's reason counts the log's quests that end inside, and only those.
+	local function Inside(entries)
+		for _, journey in ipairs(Model.Plan(halls, player, {}, entries, delve).journeys) do
+			if journey.key == "dungeon:36" then
+				return journey.reason
+			end
+		end
+	end
+	delve.notInterested = nil
+	halls.quests[6], halls.quests[7], halls.quests[8] = quest(0.6, 0.5), quest(0.7, 0.5), quest(0.8, 0.5)
+	halls.quests[6].dungeon, halls.quests[7].dungeon, halls.quests[8].raid, halls.quests[8].dungeon = 36, 36, true, 36
+	delve.journey = "dungeon:36"
+	equal(Inside({}), nil, "inside: none carried, no reason")
+	equal(Inside({ [6] = { id = 6, level = 18 } }), "1 of your quests ends inside Few", "inside: one")
+	equal(
+		Inside({
+			[6] = { id = 6, level = 18 },
+			[7] = { id = 7, level = 18 },
+			[8] = { id = 8, level = 18 },
+			[3] = { id = 3 },
+		}),
+		"2 of your quests end inside Few",
+		"inside: two, never a raid's or another dungeon's"
+	)
+	halls.quests[6], halls.quests[7], halls.quests[8], delve.journey = nil, nil, nil, nil
+end
+
 -- The diversions (roadmap R4): carry and the story keep their slots; the calling, a dungeon and the next zone share the
 -- rest, the one whose newest quest opened at the highest level first, then in that order on a tie. Here's story holds
 -- 1-3; There holds 4-8 (the next zone); the Hall 9-10 and the calling 11 are on a map with no zone of their own.

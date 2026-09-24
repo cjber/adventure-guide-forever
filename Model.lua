@@ -1348,7 +1348,8 @@ local function InDungeon(instance)
 end
 
 -- The dungeon card for `best`: its steps the givers of its quests. Named by the client, in the player's language, and
--- by the data otherwise; an instance the data doesn't name gets no card.
+-- by the data otherwise; an instance the data doesn't name gets no card. Its reason (roadmap #15) counts the log's
+-- quests filed under the instance, which end inside it: "2 of your quests end inside Wailing Caverns".
 ---@param instanceName? fun(id: integer): string?
 ---@param best integer
 ---@param quests integer how many of its quests the player can take now
@@ -1363,12 +1364,19 @@ local function DungeonJourney(data, player, completed, log, eligible, prefs, map
 		return nil
 	end
 	local name = instanceName and instanceName(best) or data.instances[best].name
-	local subline = Count(ns.L.DUNGEON_QUESTS_ONE, ns.L.DUNGEON_QUESTS, quests)
+	local L, inside, belongs = ns.L, 0, InDungeon(best)
+	for id in pairs(log) do
+		inside = inside + ((data.quests[id] and belongs(data.quests[id])) and 1 or 0)
+	end
+	local reason = inside == 1 and L.DUNGEON_INSIDE_ONE:format(name)
+		or inside > 1 and L.DUNGEON_INSIDE:format(inside, name)
+		or nil
 	return {
 		kind = "dungeon",
 		key = "dungeon:" .. best,
 		title = name,
-		subline = subline,
+		subline = Count(L.DUNGEON_QUESTS_ONE, L.DUNGEON_QUESTS, quests),
+		reason = reason,
 		map = steps[1].map,
 		steps = steps,
 	}
