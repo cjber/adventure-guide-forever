@@ -541,6 +541,21 @@ def instance_index(area_rows, map_rows):
     return by_area, names
 
 
+RAID_TYPES = (62, 88)  # quest_template Type (QuestInfo): Raid, Raid (10)
+
+
+def instance_fields(row, instance_of, instances):
+    """A quest's `dungeon`, the instance its ZoneOrSort area lies in, and `raid`: filed in a raid, or typed one wherever
+    it is filed. Zul'Gurub's Paragons of Power are filed under the outdoor Zul'Gurub area and given on Yojamba Isle,
+    yet each asks for the raid's drops: only their Type says so."""
+    fields = {}
+    if (instance := instance_of.get(row["ZoneOrSort"])) is not None:
+        fields["dungeon"] = instance
+    if row["Type"] in RAID_TYPES or (instance is not None and instances[instance]["raid"]):
+        fields["raid"] = True
+    return fields
+
+
 TRAINER, INNKEEPER = 16, 128  # creature_template NpcFlags (CMaNGOS UNIT_NPC_FLAG_TRAINER, _INNKEEPER)
 SKILL_STEP = 44  # SpellEffect.Effect: teaches rank EffectBasePointsF of skill line EffectMiscValue_0
 PROFESSIONS = {9, 11}  # SkillLine.CategoryID: secondary skills (First Aid, Cooking, Fishing), professions
@@ -772,12 +787,12 @@ def generate(
         if elite:
             quest["elite"] = True
         # ZoneOrSort names the area a quest is filed under; an area inside an instance names its Map.ID.
-        if (instance := instance_of.get(row["ZoneOrSort"])) is not None:
-            quest["dungeon"] = instance
-            if instances[instance]["raid"]:
-                quest["raid"] = True
+        quest.update(instance_fields(row, instance_of, instances))
+        if "dungeon" in quest:
             counts["flagged raid" if quest.get("raid") else "flagged dungeon"] += 1
             counts["flagged, not elite"] += not elite
+        elif quest.get("raid"):
+            counts["typed raid, filed outdoors"] += 1
         # The state contract has no condition, event or maximum-level state; skill and reputation gates it holds
         # (`requirements`). Preserve records/enders for the live log; no start means never recommend an unknown pickup.
         needs = requirements(row, skill_names, faction_names)
@@ -891,6 +906,8 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, gate
         "-- skill, rep: RequiredSkill/Value and RequiredMin/MaxRep, as Player::SatisfyQuestSkill and",
         "-- SatisfyQuestReputation check them; skills and factions: the names of those a quest here needs.",
         "-- trainer: a class quest's giver who trains a class (creature_template TrainerClass): that class.",
+        "-- dungeon: the instance a quest's ZoneOrSort area lies in (AreaTable, Map InstanceType); raid: filed in a",
+        f"-- raid, or of Type {' or '.join(map(str, RAID_TYPES))} (a raid's quest wherever it is filed).",
         "---@type string, AGFNamespace",
         "local _, ns = ...",
         "---@type AGFData",

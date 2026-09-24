@@ -1030,6 +1030,25 @@ for _, q in pairs(ns.Data.quests) do
 end
 equal(flagged, 223, "dungeon and raid quests flagged")
 equal(raids, 90, "raid quests flagged")
+-- A raid's quest filed outdoors (typed Raid): Zul'Gurub's Paragons of Power, given on Yojamba Isle, are on no card for
+-- a level-60 paladin standing there, dungeons on or off.
+do
+	local typed = 0
+	for _, q in pairs(ns.Data.quests) do
+		typed = typed + ((q.raid and not q.dungeon) and 1 or 0)
+	end
+	equal(typed, 83, "raid quests filed outdoors")
+	equal(ns.Data.quests[8053].raid and not ns.Data.quests[8053].dungeon, true, "Paragons of Power: a raid's, outdoors")
+	local yojamba = { level = 60, maxLevel = 60, side = 1, raceBit = 1, classBit = 2, map = 1434, x = 0.15, y = 0.15 }
+	for _, dungeons in ipairs({ false, true }) do
+		local choices = prefs()
+		choices.dungeons = dungeons
+		local journeys = Model.Plan(ns.Data, yojamba, {}, {}, choices).journeys
+		for id = 8053, 8079 do
+			equal(Offered(journeys, id), nil, "Paragons of Power: never offered " .. id)
+		end
+	end
+end
 
 -- Honest coverage (#23): a log quest the data lacks, or a quest Forever added on this map that the data lacks.
 do

@@ -26,7 +26,7 @@
 ---@field next? integer the chain's follow-up
 ---@field repeatable? boolean
 ---@field dungeon? integer instance Map.ID (not a uiMapID) when the quest is filed under a dungeon or raid
----@field raid? boolean the instance is a raid
+---@field raid? boolean a raid's quest: its instance is a raid, or it is typed Raid wherever it is filed
 ---@field elite? boolean group quest
 
 ---@class AGFData

@@ -327,9 +327,10 @@ local function Build(lib, zones, bundled, yield)
 			local zone = area > 0 and Map(area) or nil
 			quest.start, quest.finish = Place(v.startedBy, zone, old.start), Place(v.finishedBy, zone, old.finish)
 			quest.zone = zone and bundled.zones[zone] and zone or (quest.start or quest.finish or {}).map
+			-- A raid's quest stays one wherever QuestieDB files it: the bundled flag also says a quest is typed Raid.
 			local instance = area > 0 and (instanceOf[area] or instanceOf[Parent(area) or false])
 			if instance and bundled.instances[instance] then
-				quest.dungeon, quest.raid = instance, bundled.instances[instance].raid
+				quest.dungeon, quest.raid = instance, bundled.instances[instance].raid or old.raid
 			else
 				quest.dungeon, quest.raid = old.dungeon, old.raid
 			end

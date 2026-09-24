@@ -172,6 +172,10 @@ for id, quest in pairs(bundled.quests) do
 	unplaced = unplaced or (finish and finish ~= 197 and fake.quests[id] and fake.npcs[finish] and id) or nil
 end
 fake.npcs[bundled.quests[unplaced].finish.npc].spawns = { [90003] = { { 50, 50 } } }
+-- A quest typed Raid (Paragons of Power, filed outdoors in the bundled data) stays a raid's though QuestieDB files it
+-- under a party instance (the Deadmines, 36).
+assert(bundled.quests[8053].raid and not bundled.quests[8053].dungeon and not bundled.instances[36].raid)
+fake.quests[8053].zoneOrSort = fake.zones.instances[36]
 -- A quest the bundled data lacks is left out: nothing says what else gates it.
 fake.quests[999998] = { name = "Unknown", questLevel = 5, requiredLevel = 1, startedBy = { { 197 } } }
 
@@ -200,6 +204,8 @@ equal(quests[dungeonQuest].dungeon, bundled.quests[dungeonQuest].dungeon, "a dun
 equal(same(quests[unplaced].finish, bundled.quests[unplaced].finish), true, "an unplaced giver keeps the bundled place")
 equal(quests[unplaced].finish ~= bundled.quests[unplaced].finish, true, "a copy of the bundled place")
 equal(quests[999998], nil, "a quest the bundled data lacks")
+equal(quests[8053].dungeon, 36, "a raid's quest QuestieDB files in a party instance: that instance")
+equal(quests[8053].raid, true, "and still a raid's")
 
 -- The build runs a slice a frame from login, 2 ms each, on the bundled data until the swap; then one rebuild.
 do

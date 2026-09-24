@@ -85,7 +85,9 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   with `dungeon`); an outdoor elite (Hogger) is a zone's quest under Quests, shown optional with the group badge.
   Being optional, it never picks the zone: zones are ranked by their other quests. A raid's quest (`raid`) is on
   no card at all, neither a zone's nor the dungeon card, and never ranks or picks a zone: a raid is not a step a
-  short route can hold.
+  short route can hold. The generator flags a quest filed in a raid instance, and one of CMaNGOS Type 62 or 88
+  (QuestInfo Raid) wherever it is filed: Zul'Gurub's Paragons of Power are filed under the outdoor Zul'Gurub area and
+  given on Yojamba Isle, yet ask for the raid's drops, so only their type says so (83 such quests at the pin).
 - **None chosen** is the default (a fresh character, a card clicked again, or a saved choice whose card is no longer
   offered): every card whole in order, no step rows, the hint "Choose a journey to see its steps." under them, and
   nothing guides. The route still falls back to the first card (`route.chosen` false), but the tracker shows no
@@ -591,7 +593,8 @@ cache that did, Integrations' town places, is keyed on it).
   NPCs' and objects' spawns (quest zone first, then the giver's usual map), prerequisites, exclusive quests (merged
   into one group per connected set), chain, repeatable, skill and reputation gates.
 - **Still bundled:** zones, maps, continents, crossings, towns (a place joins the nearest bundled town place within
-  100 yd), hub names, NPC roles, instances and elite; and what QuestieDB leaves out: a level of -1 (it scales), a
+  100 yd), hub names, NPC roles, instances, elite and a raid's quest (a quest typed Raid stays one wherever QuestieDB
+  files it); and what QuestieDB leaves out: a level of -1 (it scales), a
   missing minimum level, a dungeon it files outside an instance, and the place of a giver none of whose spawns it
   places when the bundled data names the same NPC.
 - **Withheld start:** any quest the bundled data lacks, or whose bundled start it withholds (nothing says what else
