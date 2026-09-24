@@ -97,6 +97,15 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	equal(h.counts.displayModeWrites, 1, label .. ": the trap counts writes")
 end
 
+-- F6: a group quest in the log (a "dungeon" step) opens its details too; a group quest's pickup does not.
+do
+	local h = Load(false)
+	local show = h.ns.ShowQuest
+	equal(show({ kind = "dungeon", key = "objective:843", quests = { 843 } }), true, "a group quest in the log opens")
+	equal(show({ kind = "dungeon", key = "dungeon:1413:0.5:0.5", quests = { 843 } }), false, "a group pickup does not")
+	equal(table.concat(h.questDetails, " "), "843", "the details opened once")
+end
+
 -- WFA-13: nothing runs per frame while idle, and a refresh reuses the frames it has.
 local function IdleUpdates(h)
 	local busy = 0

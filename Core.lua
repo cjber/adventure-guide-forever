@@ -170,7 +170,9 @@ end
 ---@param step AGFStep
 ---@return boolean
 function ns.ShowQuest(step)
-	if (step.kind ~= "turnin" and step.kind ~= "objective") or InCombatLockdown() then
+	-- By key, not kind: a group quest in the log is a "dungeon" step, as is a group quest's pickup.
+	local logged = step.key:find("^turnin:") or step.key:find("^objective:")
+	if not logged or InCombatLockdown() then
 		return false
 	end
 	OpenQuestLog()
