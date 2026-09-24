@@ -39,6 +39,9 @@ client: `tests/model_spec.lua` loads `Model.lua` and `Data/Quests.lua` with `loa
 | Dead code (Lua) | `luacheck . --no-color` + the live-root searches below | a function stored on `ns` is never "unused" to luacheck — search every file for `ns.<Name>` |
 | Dead code (Python) | `uvx vulture tools --min-confidence 60` | — |
 | Live roots | `rg -n 'hooksecurefunc|RegisterEvent|RegisterCallback|SetScript|AddDataProvider|AddTooltipPostCall|SLASH_|SlashCmdList' -g '*.lua'` | — |
+| Shared-table members | the `ns-defined`/`ns-once` commands in sift's `languages/lua.md` | the `ns\.` pattern has no word boundary, so `options.zone`/`options.pinned` in the spec match; nested tables (`Model.*`, `ns.Integrations.*`) need their own `rg -n 'Model\.Name'` search |
+| Clones | `npx -y jscpd@4 --silent --min-lines 6 --ignore "Data/**,.types/**,**/.cache/**" .` | — (0 clones on 2026-09-24) |
+| Standards | `SIFT_STANDARDS_PATH=/home/cjber/skills python3 <sift>/scripts/agents.py standards` | without the variable the `wow-forever-addon` pack does not resolve (AGENTS.md links it by URL, which the helper never fetches) |
 
 ## Live roots
 
@@ -47,7 +50,9 @@ client: `tests/model_spec.lua` loads `Model.lua` and `Data/Quests.lua` with `loa
 - `## SavedVariables: AdventureGuideForeverDB`, `## SavedVariablesPerCharacter: AdventureGuideForeverCharDB` — keys in `Core.lua` `DEFAULTS` may hold data written by older versions.
 - `## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick` and `SLASH_ADVENTUREGUIDEFOREVER1/2` — called by the client by name.
 - `hooksecurefunc(ObjectiveTrackerManager, "AddContainer")`, `EventRegistry:RegisterCallback("QuestLog.SetDisplayMode")`, `WorldMapFrame:AddDataProvider`, `TooltipDataProcessor.AddTooltipPostCall` — host callbacks.
-- Optional integration (`## OptionalDeps: ShortestPathForever`) — code guarded by `ShortestPathForever.API` is live only with that addon installed.
+- Optional integration (`## OptionalDeps: ShortestPathForever, QuestieDB`) — code guarded by `ShortestPathForever.API` is live only with that addon installed; QuestieDB, when loaded and fit, supplies the quests (`QuestieSource.lua`).
+- `hooksecurefunc("QuestMapFrame_ShowQuestDetails")`, `EventUtil.ContinueOnAddOnLoaded("Blizzard_WorldMap")` — host callbacks.
+- Methods the host calls by name: the map provider's `RefreshAllData`/`RemoveAllData`; the pin mixins' `OnAcquired`/`OnMouseEnter`/`OnMouseLeave`/`OnClick` (bound through `mixin=` in `Panel.xml`); the tracker module's `LayoutContents`/`OnBlockHeaderClick`.
 
 ## Zones
 
@@ -56,8 +61,9 @@ client: `tests/model_spec.lua` loads `Model.lua` and `Data/Quests.lua` with `loa
 | `Data/*.lua` | generated | written by `tools/gen_quests.py`; never hand-edit, fix the generator |
 | `tools/` | script | data generator, CI helpers; not shipped |
 | `tests/` | test | headless LuaJIT harness |
-| `.github/`, `.pkgmeta`, `.luacheckrc`, `.luarc.json`, `stylua.toml`, `.gitleaks.toml` | config | |
-| `README.md`, `CHANGELOG.md`, `docs/` | docs | `docs/curseforge.md` is the store listing |
+| `types/` | production | LuaLS annotations only, never loaded in game; review for dead classes and stale field docs |
+| `.github/`, `.pkgmeta`, `.luacheckrc`, `.luarc.json`, `stylua.toml`, `.styluaignore`, `.gitleaks.toml`, `.gitignore` | config | |
+| `README.md`, `CHANGELOG.md`, `docs/`, `AGENTS.md`, `.agents/` | docs | `docs/curseforge.md` is the store listing |
 | `media/`, `docs/screenshots/` | assets | |
 
 ## Conventions
@@ -66,7 +72,7 @@ client: `tests/model_spec.lua` loads `Model.lua` and `Data/Quests.lua` with `loa
 - Tabs, 120 columns, double quotes (StyLua). PascalCase for functions, camelCase for locals and DB keys.
 - Unknown data is left out rather than guessed; generators raise instead of clamping bad data.
 - Comments explain *why* (client quirks, Forever beta bugs, data provenance), not what.
-- Text shown in game and `docs/curseforge.md` are user-facing: audits propose changes, never make them.
+- Text shown in game, the `.toc` `## Notes` line and `docs/curseforge.md` are user-facing: audits propose changes, never make them.
 - New dev-only root files must be added to `.pkgmeta` `ignore:` so they don't ship in the zip.
 
 ## Risk order
@@ -77,7 +83,16 @@ client: `tests/model_spec.lua` loads `Model.lua` and `Data/Quests.lua` with `loa
 4. `Pins.lua`, `Panel.lua`, `Tracker.lua`, `Tooltip.lua` — UI hooks, in-game verification only.
 5. `State.lua`, `Core.lua`, `Integrations.lua` — client state, SavedVariables and the cross-addon contract.
 
+## Anti-patterns
+
+- Comments and annotations left describing code a rewrite replaced — a template, function, format or
+  range the code no longer has (`comment-narration`/`stale-docs`; e.g. `Panel.xml` naming
+  `QuestLogTabButtonTemplate`, `types/Namespace.lua` "3-5 steps"; six such in the 2026-09-24 audit).
+  Grep for the old name when renaming.
+- Config copied from a sibling addon that names files this repo lacks (`dead-code`/`stale-docs`;
+  e.g. `.pkgmeta` ignoring `PLAN.md`, `tools/ruff.toml` citing `refresh-data.yml`).
+
 ## Project rules and lenses
 
-- Rules: none yet.
+- Rules: none yet (no repeated pattern a tool could recognise without judgment).
 - Lenses: none yet.

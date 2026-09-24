@@ -15,7 +15,6 @@ ignore:
   - docs
   - media/icon.svg
   - media/icon-400.png
-  - PLAN.md
   - .luacheckrc
   - .gitleaks.toml
   - .agents
