@@ -855,7 +855,8 @@ for _, spf in ipairs({ false, "v1" }) do
 	same(lines, expected, label .. ": a turn-in's header is its reason; its town, travel, next")
 	clean(h, label)
 end
--- A town is titled by its name, so step 1 of the story (Crossroads) shows its reason: The Zhevra opens its next chapter.
+-- A town is titled by its name, so step 1 of the story (Crossroads) shows its reason: The Zhevra opens its next
+-- chapter.
 do
 	local h = Load(false)
 	local ns = h.ns
