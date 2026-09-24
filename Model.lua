@@ -1002,14 +1002,19 @@ function Model.Plan(data, player, completed, log, prefs, mapName, instanceName)
 	return route
 end
 
--- A journey from the last full build without the steps skipped since; the same table when none was.
+-- A journey from the last full build without the steps skipped since or no longer open: every step on it is a pickup,
+-- and one whose quest the player has taken, done or ruled out (a group choice) since goes whole; the full build after
+-- combat brings back any other quest its giver still has. The same table when no step went.
 ---@param journey AGFJourney
+---@param gone fun(step: AGFStep): boolean
 ---@return AGFJourney?
-local function Unskipped(journey, skipped)
-	local steps = {}
+local function Retained(journey, gone)
+	local steps, chapterGone = {}, false
 	for _, step in ipairs(journey.steps) do
-		if not skipped[step.key] then
+		if not gone(step) then
 			steps[#steps + 1] = step
+		elseif step.chapter then
+			chapterGone = true
 		end
 	end
 	if #steps == #journey.steps or #steps == 0 then
@@ -1020,23 +1025,34 @@ local function Unskipped(journey, skipped)
 		copy[key] = value
 	end
 	copy.steps, copy.map = steps, steps[1].map
-	-- A skipped chapter takes the card's chain with it, as the full build does.
-	for _, step in ipairs(journey.steps) do
-		if step.chapter and skipped[step.key] then
-			copy.story, copy.reason, copy.subline = nil, nil, journey.count
-		end
+	-- A chapter that went takes the card's chain with it, as the full build does.
+	if chapterGone then
+		copy.story, copy.reason, copy.subline = nil, nil, journey.count
 	end
 	return copy --[[@as AGFJourney]]
 end
 
 -- The in-combat rebuild (Core.lua): the carry journey fresh from the live log, which is what changes in a fight,
--- and every other journey as the last full build left it, less any step skipped since. No eligibility pass over the
--- data and no 2-opt, so it stays cheap; the full build runs once combat ends.
+-- and every other journey as the last full build left it, less any step skipped or no longer open since. Only the
+-- retained steps' quests are checked again: no eligibility pass over the data and no 2-opt, so it stays cheap; the
+-- full build runs once combat ends.
 ---@param last AGFRoute
-function Model.Refresh(data, player, log, prefs, last, mapName)
+function Model.Refresh(data, player, completed, log, prefs, last, mapName)
+	local skipped, groups = prefs.skipped or {}, Index(data).groups
+	local function Gone(step)
+		if skipped[step.key] then
+			return true
+		end
+		for _, id in ipairs(step.quests) do
+			if not Eligible(data, player, completed, log, id, groups) then
+				return true
+			end
+		end
+		return false
+	end
 	local journeys = { Carry(data, player, log, prefs, mapName, true) }
 	for _, journey in ipairs(last.journeys) do
-		local kept = journey.kind ~= "carry" and Unskipped(journey, prefs.skipped or {})
+		local kept = journey.kind ~= "carry" and Retained(journey, Gone)
 		-- A carry card the last build lacked pushes out the last card, as the full build would leave it out.
 		if kept and #journeys < Model.MAX_JOURNEYS then
 			journeys[#journeys + 1] = kept

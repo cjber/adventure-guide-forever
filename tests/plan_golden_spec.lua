@@ -179,7 +179,7 @@ for _, fixture in ipairs(characters.list) do
 	local last = route.journeys[#route.journeys]
 	local fight = { [168] = { id = 168, title = "Collecting Memories", level = 18, complete = true } }
 	prefs.journey = last and last.key
-	local refreshed = Model.Refresh(data, player, fight, prefs, route)
+	local refreshed = Model.Refresh(data, player, completed, fight, prefs, route)
 	prefs.journey = nil
 	equal(#refreshed.journeys <= Model.MAX_JOURNEYS, true, fixture.name .. ": at most three cards in combat")
 	equal(refreshed.journeys[1].key, "carry", fixture.name .. ": the new carry card first")

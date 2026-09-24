@@ -357,7 +357,15 @@ local function BuildRoute()
 	local state = ns.State
 	if InCombatLockdown() then
 		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
-		return ns.Model.Refresh(ns.Data, state.Player(), state.Log(), ns.Prefs(), cachedRoute, state.MapName)
+		return ns.Model.Refresh(
+			ns.Data,
+			state.Player(),
+			state.Completed(),
+			state.Log(),
+			ns.Prefs(),
+			cachedRoute,
+			state.MapName
+		)
 	end
 	return ns.Model.Plan(
 		ns.Data,

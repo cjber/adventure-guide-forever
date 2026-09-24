@@ -357,9 +357,24 @@ card = Model.Plan(saga, player, {}, {}, skipLead).journeys[1]
 equal(card.subline, "3 quests near your level", "story card: a skipped chapter is no chapter")
 equal(card.story == nil and card.reason == nil, true, "story card: nor its chain or reason")
 -- The same in combat, where the cheap rebuild keeps the last card less the skipped step.
-card = Model.Refresh(saga, player, {}, skipLead, Model.Plan(saga, player, {}, {}, prefs())).journeys[1]
+card = Model.Refresh(saga, player, {}, {}, skipLead, Model.Plan(saga, player, {}, {}, prefs())).journeys[1]
 equal(card.subline, "3 quests near your level", "story card: a chapter skipped in combat is no chapter")
 equal(card.story == nil and card.reason == nil, true, "story card: nor its chain or reason, in combat")
+-- A pickup taken in combat leaves the cheap rebuild's cards at once, its chapter's chain with it as a skip's does.
+local taken = { [4] = { id = 4, title = "Quest", level = 18, complete = false, map = 1, x = 0.4, y = 0.5 } }
+local fought = Model.Refresh(saga, player, {}, taken, prefs(), Model.Plan(saga, player, {}, {}, prefs()))
+local offered = {}
+for _, journey in ipairs(fought.journeys) do
+	for _, step in ipairs(journey.kind ~= "carry" and journey.steps or {}) do
+		for _, id in ipairs(step.quests) do
+			offered[id] = true
+		end
+	end
+end
+equal(offered[4], nil, "combat rebuild: a quest taken mid-fight is no longer a pickup")
+equal(offered[1], true, "combat rebuild: the other pickups stay")
+equal(fought.journeys[1].kind, "carry", "combat rebuild: the taken quest is carried")
+equal(fought.journeys[2].story, nil, "combat rebuild: the taken chapter takes its chain with it")
 -- A chapter 1 with a prerequisite of its own begins its story on the card and on its row alike.
 local sequel = { quests = { [1] = quest(0.1), [2] = quest(0.2), [3] = quest(0.3) }, zones = data.zones }
 sequel.quests[2].pre, sequel.quests[2].next, sequel.quests[3].pre = { 1 }, 3, { 2 }
