@@ -1522,6 +1522,95 @@ function harness.load(options)
 		G.ShortestPathForever = { API = api }
 	end
 
+	-- QuestieDB (QuestieSource.lua): a synthetic stand-in with the public shape QuestieSource.lua reads, never
+	-- Questie's data. options.questiedb gives rows by field name (quests, npcs, objects), ZoneDB's tables (zones: area,
+	-- areaOverride, parent, parentOverride, instances), and to fail a check `contract` (the newest it supports),
+	-- `flavor`, `missing` (a field name its schema lacks) or `noZones`. harness.questieMirror builds one from the
+	-- bundled data. h.clockStep is how far debugprofilestop moves on each call, 0 by default: one slice builds all.
+	h.metadata, h.clock, h.clockStep = {}, 0, 0
+	G.debugprofilestop = function()
+		h.clock = h.clock + h.clockStep
+		return h.clock
+	end
+	G.C_AddOns = {
+		GetAddOnMetadata = function(addon, field)
+			return h.metadata[addon] and h.metadata[addon][field]
+		end,
+	}
+	if options.questiedb then
+		local fake = options.questiedb
+		local function Copy(value)
+			if type(value) ~= "table" then
+				return value
+			end
+			local copy = {}
+			for key, inner in pairs(value) do
+				copy[key] = Copy(inner)
+			end
+			return copy
+		end
+		local function Entity(rows)
+			return {
+				GetAll = function(id, keys)
+					local row = rows and rows[id]
+					if not row then
+						return nil
+					end
+					local values = { n = #keys }
+					for index, key in ipairs(keys) do
+						values[index] = Copy(row[key])
+					end
+					return values
+				end,
+			}
+		end
+		-- Every field name has an index, except the one `missing` names.
+		local keys = setmetatable({}, {
+			__index = function(_, name)
+				return name ~= fake.missing and 1 or nil
+			end,
+		})
+		-- ZoneDB keeps these as Lua source.
+		local function Source(values)
+			local parts = {}
+			for key, value in pairs(values or {}) do
+				parts[#parts + 1] = ("[%d] = %d"):format(key, value)
+			end
+			return "return { " .. table.concat(parts, ", ") .. " }"
+		end
+		local zones = fake.zones or {}
+		G.LibQuestieDB = {
+			RequireContract = function(required)
+				return required >= 1 and required <= (fake.contract or 2)
+			end,
+			Meta = {
+				QuestMeta = { questKeys = keys },
+				NpcMeta = { npcKeys = keys },
+				ObjectMeta = { objectKeys = keys },
+			},
+			Quest = Entity(fake.quests),
+			Npc = Entity(fake.npcs),
+			Object = Entity(fake.objects),
+			Support = {
+				Get = function(name)
+					if name ~= "ZoneDB" or fake.noZones then
+						return nil
+					end
+					return {
+						private = {
+							areaIdToUiMapId = Source(zones.area),
+							areaIdToUiMapIdOverride = Source(zones.areaOverride),
+							subZoneToParentZone = Source(zones.parent),
+							subZoneToParentZoneOverride = Source(zones.parentOverride),
+						},
+						instanceIdToAreaId = Copy(zones.instances or {}),
+					}
+				end,
+			},
+		}
+		h.metadata.QuestieDB = { Version = fake.version or "0.0-test", ["X-Flavor"] = fake.flavor or "Forever" }
+	end
+
 	-- Tweaks Forever (its API.lua, version 1): options.tf.spells is what TrainableSpells answers (nil before login
 	-- and in combat), fresh copies each call; h.tf counts the calls. No options.tf is no Tweaks Forever.
 	if options.tf then
@@ -1581,6 +1670,7 @@ function harness.load(options)
 	end
 	h.fire("ADDON_LOADED", ADDON)
 	h.fire("ADDON_LOADED", "Blizzard_WorldMap")
+	h.fire("PLAYER_LOGIN")
 	h.fire("PLAYER_ENTERING_WORLD", options.initialLogin ~= false, options.initialLogin == false)
 	h.fire("VARIABLES_LOADED")
 	h.flush()
@@ -1684,6 +1774,93 @@ function harness.load(options)
 		end)
 	end
 	return h
+end
+
+-- A synthetic QuestieDB (harness.load's options.questiedb) that says what `data` says: each map is its own area, a
+-- dungeon quest's area sits in its instance, and a place's NPC or object gives or takes the quest there. From the
+-- bundled data only, so none of Questie's data is copied.
+---@param data AGFData
+function harness.questieMirror(data)
+	local fake = { quests = {}, npcs = {}, objects = {}, zones = { area = {}, instances = {} } }
+	for map in pairs(data.maps) do
+		fake.zones.area[map] = map
+	end
+	for instance in pairs(data.instances) do
+		fake.zones.instances[instance] = 100000 + instance
+	end
+	local ids, groups = {}, {}
+	for id, quest in pairs(data.quests) do
+		ids[#ids + 1] = id
+		if quest.group then
+			groups[quest.group] = groups[quest.group] or {}
+			table.insert(groups[quest.group], id)
+		end
+	end
+	table.sort(ids)
+	local objects, objectCount, homes = {}, 0, {}
+	-- A place's giver: its NPC, else an object named by where it stands.
+	local function Giver(place)
+		local rows, id = fake.npcs, place.npc
+		if not id then
+			local key = ("%s|%d|%s|%s"):format(place.name, place.map, place.x, place.y)
+			if not objects[key] then
+				objectCount = objectCount + 1
+				objects[key] = objectCount
+			end
+			rows, id = fake.objects, objects[key]
+		end
+		local giver = rows[id] or { name = place.name, spawns = {} }
+		rows[id] = giver
+		local spots = giver.spawns[place.map] or {}
+		giver.spawns[place.map] = spots
+		local seen = false
+		for _, spot in ipairs(spots) do
+			seen = seen or (spot[1] == place.x * 100 and spot[2] == place.y * 100)
+		end
+		if not seen then
+			spots[#spots + 1] = { place.x * 100, place.y * 100 }
+		end
+		homes[giver] = homes[giver] or {}
+		homes[giver][place.map] = (homes[giver][place.map] or 0) + 1
+		return place.npc and { { id } } or { nil, { id } }
+	end
+	for _, id in ipairs(ids) do
+		local quest = data.quests[id]
+		local exclusive = {}
+		for _, other in ipairs(quest.group and groups[quest.group] or {}) do
+			if other ~= id then
+				exclusive[#exclusive + 1] = other
+			end
+		end
+		fake.quests[id] = {
+			name = quest.title,
+			questLevel = quest.level,
+			requiredLevel = quest.min,
+			requiredRaces = quest.races or 0,
+			requiredClasses = quest.classes or 0,
+			zoneOrSort = quest.dungeon and 100000 + quest.dungeon or quest.zone or 0,
+			startedBy = quest.start and Giver(quest.start),
+			finishedBy = quest.finish and Giver(quest.finish),
+			preQuestGroup = quest.pre,
+			preQuestSingle = quest.preAny,
+			exclusiveTo = exclusive[1] and exclusive or nil,
+			nextQuestInChain = quest.next,
+			specialFlags = quest.repeatable and 1 or 0,
+			requiredSkill = quest.skill and { quest.skill.id, quest.skill.value },
+			requiredMinRep = quest.rep and quest.rep.min and { quest.rep.faction, quest.rep.min },
+			requiredMaxRep = quest.rep and quest.rep.max and { quest.rep.faction, quest.rep.max },
+		}
+	end
+	-- Each giver's usual map: the one most of its places use, the lowest on a tie.
+	for giver, counts in pairs(homes) do
+		for map, count in pairs(counts) do
+			local best = giver.zoneID and counts[giver.zoneID]
+			if not best or count > best or (count == best and map < giver.zoneID) then
+				giver.zoneID = map
+			end
+		end
+	end
+	return fake
 end
 
 return harness

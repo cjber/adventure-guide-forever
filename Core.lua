@@ -9,10 +9,21 @@ ns.TITLE = "Adventure Guide"
 ---@type AGFStrings
 ns.L = {
 	AUDIT_BUILD = "data from build %s, client build %s.%s",
-	AUDIT_COUNTS = "%d bundled quests, %d eligible now, %d completed known",
+	AUDIT_COUNTS = "%d quests in the data, %d eligible now, %d completed known",
 	AUDIT_NOT_READY = "completed-quest data hasn't finished loading yet; the counts above may be low.",
+	-- Where the quests come from (QuestieSource.lua): QuestieDB when it is loaded and fit, the bundled data otherwise.
+	AUDIT_SOURCE_BUNDLED = "quests from the bundled data",
+	AUDIT_SOURCE_QUESTIE = "quests from QuestieDB %s",
+	AUDIT_QUESTIE_BUILDING = "QuestieDB's quests are still loading; the bundled ones serve until then.",
+	AUDIT_QUESTIE_UNUSED = "QuestieDB isn't used: %s.",
+	QUESTIE_ABSENT = "it isn't loaded",
+	QUESTIE_CONTRACT = "its version isn't one the guide can read",
+	QUESTIE_FLAVOUR = "it isn't the WoW: Forever edition",
+	QUESTIE_FIELD = "it lacks %s",
+	QUESTIE_ZONES = "it lacks its zone tables",
+	QUESTIE_FAILED = "reading it failed (%s)",
 	HELP_OPEN = "open the world map and use the Adventure Guide tab.",
-	HELP_AUDIT = "/agf audit - check the bundled data against the game",
+	HELP_AUDIT = "/agf audit - check the quest data against the game",
 	HELP_DUMP = "/agf dump - save the guide's layout for a bug report",
 	HAND_IN_WHEN = "Hand in when you're in %s",
 	-- Journey cards (docs/design.md §2.2 and §3): a title, a subline that counts, and a reason when there is one.
@@ -790,9 +801,19 @@ end)
 --[[ Slash command and audit ]]
 
 local function Audit()
-	local data = ns.Data
+	local data, questie = ns.Data, ns.QuestieStatus
 	local clientVersion, clientBuild = GetBuildInfo()
 	ns.Print(L.AUDIT_BUILD:format(data.build, clientVersion, clientBuild))
+	if questie.state == "questie" then
+		ns.Print(L.AUDIT_SOURCE_QUESTIE:format(questie.version))
+	else
+		ns.Print(L.AUDIT_SOURCE_BUNDLED)
+		if questie.state == "building" then
+			ns.Print(L.AUDIT_QUESTIE_BUILDING)
+		elseif questie.reason then
+			ns.Print(L.AUDIT_QUESTIE_UNUSED:format(questie.reason))
+		end
+	end
 
 	local bundled = 0
 	for _ in pairs(data.quests) do

@@ -840,7 +840,9 @@ def generate(
     ferries = crossings(tables["gameobject_template"], path_nodes, taxi_nodes, shifts.keys())
     counts["ocean crossings"] = len(ferries)
     used = {q["dungeon"] for q in emitted.values() if "dungeon" in q}
-    named = {m: {"name": instances[m]["name"]} for m in sorted(used)}
+    named = {
+        m: {"name": instances[m]["name"], **({"raid": True} if instances[m]["raid"] else {})} for m in sorted(used)
+    }
     skills = {q["skill"]["id"] for q in emitted.values() if "skill" in q}
     factions = {q["rep"]["faction"] for q in emitted.values() if "rep" in q}
     gates = {

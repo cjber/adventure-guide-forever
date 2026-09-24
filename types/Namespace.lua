@@ -34,7 +34,7 @@
 ---@field source string where the data came from, for /agf audit
 ---@field quests table<integer, AGFQuest>
 ---@field zones table<integer, {name: string, min: integer, max: integer}> uiMapID -> zone name and level range
----@field instances table<integer, {name: string}> instance Map.ID -> its English name, for every quest's `dungeon`
+---@field instances table<integer, {name: string, raid?: boolean}> instance Map.ID -> its English name and whether it is a raid, for every quest's `dungeon`
 ---@field maps table<integer, AGFMapCentre> uiMapID -> where the map sits in the world, for every map a place uses
 ---@field continents table<integer, AGFContinentShift> continent -> its place on the Azeroth world map
 ---@field crossings AGFCrossing[] every boat and zeppelin between two continents
@@ -647,3 +647,25 @@
 
 ---@class AGFStrings
 ---@field MOMENT string format: the tracker's line for a new journey: its zone's or dungeon's name
+
+-- QuestieDB as a quest source (QuestieSource.lua, docs/design.md §2.14).
+
+---@class AGFQuestieStatus
+---@field state "bundled"|"building"|"questie" the quests in use: bundled, bundled while QuestieDB's are built, or QuestieDB's
+---@field version? string QuestieDB's version, once its quests are in use
+---@field reason? string why QuestieDB is not used (an ns.L line); nil while it is, or before login
+
+---@class AGFNamespace
+---@field QuestieStatus AGFQuestieStatus
+
+---@class AGFStrings
+---@field AUDIT_SOURCE_BUNDLED string
+---@field AUDIT_SOURCE_QUESTIE string format: QuestieDB's version
+---@field AUDIT_QUESTIE_BUILDING string
+---@field AUDIT_QUESTIE_UNUSED string format: one of the QUESTIE_ reasons
+---@field QUESTIE_ABSENT string
+---@field QUESTIE_CONTRACT string
+---@field QUESTIE_FLAVOUR string
+---@field QUESTIE_FIELD string format: the entity or field it lacks
+---@field QUESTIE_ZONES string
+---@field QUESTIE_FAILED string format: the error
