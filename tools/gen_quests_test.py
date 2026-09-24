@@ -1,33 +1,47 @@
 """Pure generator checks: python3 -m unittest discover -s tools -p '*_test.py'."""
 
+import re
 import unittest
 from collections import Counter
 
 from gen_quests import (
+    AREAS,
     CAP,
+    EXPLORE,
     LINK,
     NAME_REACH,
+    OUTPUT,
     continents,
     crossings,
     faction,
     flight_masters,
+    full_xp,
     gate_names,
     geometry,
     hub_names,
+    inside,
     instance_fields,
     instance_index,
+    lua,
     nearest_hub,
+    objective_areas,
+    objectives,
+    options_at,
     overlays,
     parse_values,
     prerequisite_index,
     prerequisites,
     professions,
     project,
+    quest_flags,
     quest_place,
+    quest_shapes,
     reaction,
     requirements,
     roles,
+    shape_area,
     skill_steps,
+    spawn_areas,
     town_hubs,
     trainer_spells,
     world_point,
@@ -521,6 +535,120 @@ class OverlayTest(unittest.TestCase):
             self.row(6, 442, (50, 50)),
         ]
         self.assertEqual(overlays(self.MAPS, self.ART, rows, self.AREAS), {})
+
+
+def quest_row(**fields):
+    columns = ("ReqCreatureOrGOId", "ReqCreatureOrGOCount", "ReqItemId", "ReqItemCount")
+    row = {f"{column}{i}": 0 for column in columns for i in range(1, 5)}
+    row.update(SrcItemId=0, SpecialFlags=0, LimitTime=0, QuestLevel=10, RewMoneyMaxLevel=0)
+    row.update(fields)
+    return row
+
+
+def zone_map(ui_map, region):
+    row = {f"Region_{i}": v for i, v in enumerate(region)}
+    row.update(UiMin_0="0", UiMin_1="0", UiMax_0="1", UiMax_1="1", OrderIndex="0", UiMapID=str(ui_map))
+    return row
+
+
+class ObjectiveTest(unittest.TestCase):
+    # Two zone maps side by side, each 1000 yd square; map x runs against world y, map y against world x.
+    WORLD = {0: [zone_map(1429, (0, 0, -500, 1000, 1000, 500)), zone_map(1436, (0, -1000, -500, 1000, 0, 500))]}
+
+    def spawns(self, *points):
+        return [{"options": options_at(self.WORLD[0], x, y), "at": (0, x, y)} for x, y in points]
+
+    def test_slots(self):
+        # A kill, an item the quest gives at pickup (a delivery, done at the turn-in), a collect, and an explore.
+        row = quest_row(ReqCreatureOrGOId1=6, ReqCreatureOrGOCount1=10, ReqItemId1=50, ReqItemCount1=1, SrcItemId=50)
+        row.update(ReqItemId2=60, ReqItemCount2=8)
+        self.assertEqual(objectives(row, False), {0: 10, 5: 8})
+        self.assertEqual(objectives(row, True), {0: 10, 5: 8, EXPLORE: 1})
+        self.assertEqual(objectives(quest_row(), False), {})
+
+    def test_xp_follows_the_core(self):
+        # Quest::XPValue: RewMoneyMaxLevel / 0.6 rounded up. Kobold Camp Cleanup gives 170; Wanted: Gath'Ilzogg 2650.
+        self.assertEqual(full_xp(quest_row(QuestLevel=2, RewMoneyMaxLevel=102)), 170)
+        self.assertEqual(full_xp(quest_row(QuestLevel=26, RewMoneyMaxLevel=1590)), 2650)
+        self.assertEqual(full_xp(quest_row(QuestLevel=1, RewMoneyMaxLevel=1)), 2)
+        for level, money in ((-1, 600), (0, 600), (61, 600), (10, 0)):
+            self.assertIsNone(full_xp(quest_row(QuestLevel=level, RewMoneyMaxLevel=money)))
+
+    def test_flags(self):
+        self.assertEqual(quest_flags(quest_row(SpecialFlags=2), False), {"event": True})
+        self.assertEqual(quest_flags(quest_row(SpecialFlags=2), True), {}, "an area trigger explores")
+        self.assertEqual(quest_flags(quest_row(LimitTime=900), False), {"timed": 900})
+
+    def test_a_shape_point_is_inside_it_or_one_of_its_vertices(self):
+        square = [(0, 0), (100, 0), (100, 100), (0, 100)]
+        self.assertEqual(shape_area(square), ((50, 50), 71))
+        # A C: the vertex mean lies in the gap, so the vertex nearest it stands in.
+        c = [(0, 0), (100, 0), (100, 20), (20, 20), (20, 80), (100, 80), (100, 100), (0, 100)]
+        self.assertFalse(inside((57.5, 50), c))
+        self.assertIn(shape_area(c)[0], c)
+        for line in ([(5, 5)], [(0, 0), (10, 0)]):
+            self.assertIn(shape_area(line)[0], line)
+
+    def test_unknown_objindex_values_dropped(self):
+        indices = (-1, 0, 4, 9, 10, 11, 12, 13, 16)
+        tables = {
+            "quest_poi": [{"questId": 1, "poiId": i, "objIndex": o, "mapId": 0} for i, o in enumerate(indices)],
+            "quest_poi_points": [{"questId": 1, "poiId": i, "x": 5, "y": 5} for i in range(len(indices))],
+        }
+        self.assertEqual([slot for slot, _, _ in quest_shapes(tables)[1]], [0, 4, EXPLORE])
+
+    def test_a_spawn_area_is_a_real_spawn(self):
+        # Two camps 400 yd apart, and a spawn on the next map; the bigger camp first, at its middle spawn.
+        found = self.spawns((100, 100), (130, 100), (160, 110), (500, 500), (520, 500), (500, -300))
+        areas = spawn_areas(found, 1429)
+        self.assertEqual([a[:2] for a in areas], [found[1]["options"][0][3], found[3]["options"][0][3]])
+        spread = self.spawns(*((i * 150, 900 - i * 150) for i in range(6)))
+        self.assertEqual(len(spawn_areas(spread, 1429)), AREAS)
+
+    def test_objective_areas(self):
+        square = [(100, 100), (200, 100), (200, 200), (100, 200)]
+        shapes = [(0, 0, square)] * 5 + [(4, 0, [(x, y - 700) for x, y in square]), (7, 0, square)]
+        found = {0: [], 4: [], 5: self.spawns((800, 800)), 6: []}
+        areas = objective_areas({0: 10, 4: 1, 5: 2, 6: 1}, shapes, found, self.WORLD, {1429}, 1429)
+        # Slot 0: its shape, at most AREAS times; slot 4: its shape on the next map, which it names; slot 5: its spawn;
+        # slot 6 has neither; slot 7's shape is no objective of the quest's.
+        self.assertEqual(areas, [[0, 850, 850, 71]] * AREAS + [[4, 550, 850, 71, 1436], [5, 200, 200, 0]])
+
+
+class DataTest(unittest.TestCase):
+    """The committed Data/Quests.lua."""
+
+    TEXT = OUTPUT.read_text(encoding="utf-8")
+    # Before objectives, XP and flags it was 1,179,151 bytes.
+    BOUND = 1_179_151 + 140_000
+
+    def test_size(self):
+        self.assertLess(len(self.TEXT.encode()), self.BOUND)
+
+    def test_areas_are_on_a_map_and_the_quests_objectives(self):
+        quests = re.findall(r"^\t\t\[\d+\] = \{ title = .*$", self.TEXT, re.M)
+        self.assertGreater(len(quests), 3000)
+        count = 0
+        for line in quests:
+            need = re.search(r"need = \{ (.*?) \}", line)
+            obj = re.search(r"obj = \{ (.*) \} \},$", line)
+            self.assertEqual(bool(need), bool(obj), line)
+            if not obj:
+                continue
+            self.assertNotIn("dungeon = ", line)
+            slots = {int(k) for k in re.findall(r"\[(\d+)\] = \d+", need[1])}
+            for spot in re.findall(r"\{ ([\d, ]+) \}", obj[1]):
+                slot, x, y, r, *ui_map = map(int, spot.split(", "))
+                count += 1
+                self.assertIn(slot, slots, line)
+                self.assertTrue(0 <= x <= 1000 and 0 <= y <= 1000 and r >= 0 and len(ui_map) <= 1, line)
+        self.assertGreater(count, 2500)
+
+
+class LuaTest(unittest.TestCase):
+    def test_integer_keys(self):
+        self.assertEqual(lua({0: 10, 16: 1}), "{ [0] = 10, [16] = 1 }")
+        self.assertEqual(lua({"a": [1, 2]}), "{ a = { 1, 2 } }")
 
 
 if __name__ == "__main__":

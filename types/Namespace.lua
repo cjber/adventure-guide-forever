@@ -29,6 +29,22 @@
 ---@field dungeon? integer instance Map.ID (not a uiMapID) when the quest is filed under a dungeon or raid
 ---@field raid? boolean a raid's quest: its instance is a raid, or it is typed Raid wherever it is filed
 ---@field elite? boolean group quest
+---@field xp? integer the XP it gives a player at most 5 levels above it (Quest::XPValue); only with a start
+---@field need? table<integer, integer> objective slot -> the count it needs: 0-3 kill or use, 4-7 collect, 16 explore
+---@field obj? AGFObjectiveArea[] where the objectives are done, at most 3 each; never for a dungeon quest; with need
+---@field flags? AGFQuestFlags
+
+--- Where one objective is done: Blizzard's quest POI shape, else a group of its spawns (tools/gen_quests.py).
+---@class AGFObjectiveArea
+---@field [1] integer the objective's slot, a key of the quest's need
+---@field [2] integer map x in thousandths
+---@field [3] integer map y in thousandths
+---@field [4] integer yards from x, y holding 80% of the shape's points or the group's spawns
+---@field [5] integer? the uiMapID x, y are on when it is not the quest's zone
+
+---@class AGFQuestFlags
+---@field event? true a script completes it: an escort, a spell cast or a summoned fight
+---@field timed? integer the seconds it allows
 
 ---@class AGFData
 ---@field build string client build the data was generated for
