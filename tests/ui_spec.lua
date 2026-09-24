@@ -1388,9 +1388,16 @@ do
 	equal(ns.Route().journey, story.key, "not interested: the story chosen")
 	h.Click(Card("story"), "RightButton")
 	same(h.MenuLines(), { "title: " .. story.title, "button: Not interested" }, "not interested: the card's menu")
+	local hovered = Card("story")
+	hovered:GetScript("OnEnter")(hovered)
 	h.menu.entries[2].onClick()
 	h.flush()
 	equal(ns.Prefs().journey, nil, "not interested: the choice of it ends")
+	equal(
+		hovered.journey.key ~= story.key and h.tooltip[1] == "title: " .. hovered.journey.title,
+		true,
+		"not interested: the tooltip over its card speaks for the journey that takes its place"
+	)
 	equal(h.ns.Integrations.Owns(), false, "not interested: and its route stops")
 	equal(h.G.AdventureGuideForeverCharDB.notInterested[story.key], story.title, "not interested: saved per character")
 	for _, journey in ipairs(ns.Route().journeys) do
@@ -1414,6 +1421,7 @@ do
 	h.menu.entries[1].onClick()
 	h.flush()
 	equal(h.G.AdventureGuideForeverCharDB.notInterested[story.key], nil, "not interested: Show again forgets it")
+	equal(ns.Prefs().journey, story.key, "not interested: Show again chooses the journey it ended")
 	local back = false
 	for _, journey in ipairs(ns.Route().journeys) do
 		back = back or journey.key == story.key

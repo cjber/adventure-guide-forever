@@ -218,6 +218,9 @@ local sessionSkipped = {}
 -- The same steps in the order they were skipped, with the titles the menu offers them back by.
 ---@type AGFSkipped[]
 local skippedOrder = {}
+-- The chosen journey a "Not interested" ended this session: Show again chooses it again.
+---@type string?
+local dismissedChoice
 
 ---@param msg string
 function ns.Print(msg)
@@ -327,13 +330,14 @@ function ns.Skip(key, title)
 end
 
 -- "Not interested" (roadmap #17): the journey `key` is left out on this character until Show again, and a choice of it
--- ends, as a click on its card would.
+-- ends, as a click on its card would; Show again this session chooses it again.
 ---@param key string
 ---@param title string
 function ns.NotInterested(key, title)
 	local prefs = ns.Prefs()
 	prefs.notInterested[key] = title
 	if prefs.journey == key then
+		dismissedChoice = key
 		ns.Choose(nil)
 	else
 		ns.Invalidate()
@@ -347,6 +351,7 @@ function ns.Unskip(key)
 		ns.Asides.Restore(aside)
 		return
 	end
+	local chosen = ns.Prefs().notInterested[key] ~= nil and key == dismissedChoice
 	ns.Prefs().notInterested[key] = nil
 	sessionSkipped[key] = nil
 	for index, skipped in ipairs(skippedOrder) do
@@ -354,6 +359,11 @@ function ns.Unskip(key)
 			table.remove(skippedOrder, index)
 			break
 		end
+	end
+	if chosen then
+		dismissedChoice = nil
+		ns.Choose(key, ns.Setting("titleStartsRoute"))
+		return
 	end
 	ns.Invalidate()
 end

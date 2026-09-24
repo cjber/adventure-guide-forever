@@ -712,6 +712,10 @@ local function RefreshCard(card, journey, state)
 	else
 		card:UnlockHighlight()
 	end
+	-- A card under the pointer can change journey (Not interested, a rebuild): its tooltip speaks for the new one.
+	if GameTooltip:IsOwned(card) then
+		CardTooltip(card)
+	end
 	return compact and COMPACT_HEIGHT or CARD_HEIGHT
 end
 
