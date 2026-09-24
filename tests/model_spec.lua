@@ -105,6 +105,7 @@ for id = 1, 8 do
 end
 data.zones[1] = { name = "Zone", min = 10, max = 20 }
 data.quests[9] = quest(0.11, 0.5)
+data.quests[1].start.hub, data.quests[9].start.hub = 1, 1 -- one town by the data's hub, never by distance alone
 local log = {
 	[100] = { id = 100, title = "Finished", complete = true, level = 18, map = 1, x = 0.9, y = 0.9 },
 	[101] = { id = 101, title = "Unfinished", complete = false, level = 18, map = 1, x = 0.52, y = 0.5 },
@@ -205,11 +206,13 @@ equal(Kinds(Model.Plan(Ahead(5, 20), player, {}, {}, prefs()).journeys), "story:
 local later22 = { level = 22, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
 equal(Kinds(Model.Plan(Ahead(5), later22, {}, {}, prefs()).journeys), "story:2", "never the story's own zone")
 
-local hub = { quests = { [1] = quest(0.1), [2] = quest(0.11) }, zones = data.zones }
+local hub = { quests = { [1] = quest(0.1), [2] = quest(0.11), [3] = quest(0.09) }, zones = data.zones }
+hub.quests[1].start.hub, hub.quests[2].start.hub = 7, 7
 local before = Model.Plan(hub, player, {}, {}, prefs()).steps[1]
 local after = Model.Plan(hub, player, { [1] = true }, {}, prefs()).steps[1]
-equal(#before.quests, 2, "cluster pickups")
+equal(#before.quests, 2, "one step per town")
 equal(before.reason, "2 quests here", "cluster reason")
+equal(#Model.Plan(hub, player, {}, {}, prefs()).steps, 2, "a giver nearby in no town of theirs is a step of its own")
 equal(before.key, after.key, "hub key survives quest completion")
 equal(after.x, 0.11, "remaining known starter used")
 local objectives = Model.Plan({ quests = {}, zones = {} }, player, {}, log, prefs())

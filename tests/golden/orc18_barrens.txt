@@ -3,19 +3,18 @@ card (chosen) | carry | Finish what you carry | 1 ready to hand in, 1 in progres
   step 1 | turnin:845 | Turn in: The Zhevra | 1413 0.5223,0.3101 | ready to hand in
   step 2 | objective:843 | Gann's Reclamation | 1413 0.4600,0.8000 | quests in progress
 card | story:1413 | The Barrens story | Chapter 1 of 5 | Begins a new story | map 1413
-  step 1 | pickup:1413:0.5223:0.3101 | Pick up quests: Apothecary Helbrim | 1413 0.5144,0.3015 | 8 quests here
-  step 2 | pickup:1413:0.4534:0.2841 | Pick up quests: Regthar Deathgate | 1413 0.4534,0.2841 | 2 quests here
-  step 3 | pickup:1413:0.4812:0.0542 | Pick up quests: Kadrak | 1413 0.4812,0.0542 | near your level
-  step 4 | pickup:1413:0.5652:0.0745 | Pick up quests: Wizzlecrank's Shredder | 1413 0.5652,0.0745 | near your level
-  step 5 | pickup:1413:0.6226:0.3839 | Pick up quests: Mebok Mizzyrix | 1413 0.6237,0.3762 | Begins a new story
-  step 6 | pickup:1413:0.6196:0.5496 | Pick up quests: Gilthares Firebough | 1413 0.6196,0.5496 | near your level
-  step 7 | pickup:1413:0.4486:0.5914 | Pick up quests: Mangletooth | 1413 0.4455,0.5926 | 2 quests here
+  step 1 | pickup:346 | Pick up quests: Apothecary Helbrim | 1413 0.5144,0.3015 | 8 quests here
+  step 2 | pickup:353 | Pick up quests: Regthar Deathgate | 1413 0.4534,0.2841 | 2 quests here
+  step 3 | pickup:382 | Pick up quests: Kadrak | 1413 0.4812,0.0542 | near your level
+  step 4 | pickup:379 | Pick up quests: Wizzlecrank's Shredder | 1413 0.5652,0.0745 | near your level
+  step 5 | pickup:337 | Pick up quests: Mebok Mizzyrix | 1413 0.6237,0.3762 | Begins a new story
+  step 6 | pickup:314 | Pick up quests: Gilthares Firebough | 1413 0.6196,0.5496 | near your level
+  step 7 | pickup:309 | Pick up quests: Mangletooth | 1413 0.4455,0.5926 | 2 quests here
 card | nextzone:1442 | Head to Stonetalon Mountains | 11 quests near your level | For level 20 | map 1442
-  step 1 | pickup:1442:0.8593:0.9789 | Pick up quests: Seereth Stonebreak | 1442 0.8593,0.9789 | 2 quests here
-  step 2 | pickup:1442:0.7325:0.9513 | Pick up quests: Xen'Zilla | 1442 0.7125,0.9502 | 2 quests here
-  step 3 | pickup:1442:0.7348:0.8559 | Pick up quests: Kaya Flathoof | 1442 0.7348,0.8559 | near your level
-  step 4 | pickup:1442:0.4736:0.6425 | Pick up quests: Mor'rogal | 1442 0.4722,0.6404 | near your level
-  step 5 | pickup:1442:0.4594:0.6042 | Pick up quests: Maggran Earthbinder | 1442 0.4720,0.6116 | 2 quests here
-  step 6 | pickup:1442:0.5899:0.6260 | Pick up quests: Ziz Fizziks | 1442 0.5899,0.6260 | near your level
-  step 7 | pickup:1442:0.7187:0.6000 | Pick up quests: Piznik | 1442 0.7187,0.6000 | near your level
-  step 8 | pickup:1454:0.3893:0.3840 | Pick up quests: Zor Lonetree | 1454 0.3893,0.3840 | near your level
+  step 1 | pickup:355 | Pick up quests: Seereth Stonebreak | 1442 0.8593,0.9789 | 2 quests here
+  step 2 | pickup:357 | Pick up quests: Xen'Zilla | 1442 0.7125,0.9502 | 2 quests here
+  step 3 | pickup:360 | Pick up quests: Kaya Flathoof | 1442 0.7348,0.8559 | near your level
+  step 4 | pickup:371 | Pick up quests: Maggran Earthbinder | 1442 0.4720,0.6116 | 3 quests here
+  step 5 | pickup:374 | Pick up quests: Ziz Fizziks | 1442 0.5899,0.6260 | near your level
+  step 6 | pickup:375 | Pick up quests: Piznik | 1442 0.7187,0.6000 | near your level
+  step 7 | pickup:392 | Pick up quests: Zor Lonetree | 1454 0.3893,0.3840 | near your level

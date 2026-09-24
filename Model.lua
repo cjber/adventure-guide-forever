@@ -39,11 +39,9 @@ local function Distance(a, b)
 end
 
 -- Only immutable bundled data is memoized; player/log/completion tables may change in place.
--- Static hub anchors keep pin/skip identities when one of a hub's quests is accepted or completed.
 ---@class AGFIndex
 ---@field ids integer[]
 ---@field groups table<integer, integer[]>
----@field hubs table<integer, string>
 ---@type table<AGFData, AGFIndex>
 local indexes = setmetatable({}, { __mode = "k" })
 
@@ -52,34 +50,17 @@ local function Index(data)
 	if index then
 		return index
 	end
-	index = { ids = {}, groups = {}, hubs = {} }
+	index = { ids = {}, groups = {} }
 	for id in pairs(data.quests) do
 		index.ids[#index.ids + 1] = id
 	end
 	table.sort(index.ids)
-	local anchors = {}
 	for _, id in ipairs(index.ids) do
 		local quest = data.quests[id]
 		if quest.group and quest.group > 0 then
 			local group = index.groups[quest.group] or {}
 			index.groups[quest.group] = group
 			group[#group + 1] = id
-		end
-		local place = quest.start
-		if ValidPlace(place) then
-			local anchor
-			for _, candidate in ipairs(anchors[place.map] or {}) do
-				if Distance(place, candidate) <= CLOSE then
-					anchor = candidate
-					break
-				end
-			end
-			if not anchor then
-				anchor = place
-				anchors[place.map] = anchors[place.map] or {}
-				table.insert(anchors[place.map], anchor)
-			end
-			index.hubs[id] = string.format("%d:%.4f:%.4f", anchor.map, anchor.x, anchor.y)
 		end
 	end
 	indexes[data] = index
@@ -492,14 +473,21 @@ local function LogSteps(data, player, log)
 	return steps
 end
 
--- One step per giver of the eligible quests `wanted` accepts.
+-- The town a place stands in (the data's hub), so a step keeps its identity when one of the town's quests is taken
+-- or done. A place the generator could not put in a town is a town of its own.
+---@param place AGFPlace
+local function Hub(place)
+	return place.hub and tostring(place.hub) or string.format("%d:%.4f:%.4f", place.map, place.x, place.y)
+end
+
+-- One step per town of the eligible quests `wanted` accepts.
 ---@param wanted fun(quest: AGFQuest): boolean
-local function PickupSteps(data, player, eligible, wanted, hubs, steps)
+local function PickupSteps(data, player, eligible, wanted, steps)
 	local pickups, chosenGroups = {}, {}
 	for _, id in ipairs(eligible) do
 		local quest = data.quests[id]
 		local kind = (quest.elite or quest.dungeon) and "dungeon" or "pickup"
-		local key = kind .. ":" .. hubs[id]
+		local key = kind .. ":" .. Hub(quest.start)
 		if wanted(quest) and not (quest.group and chosenGroups[quest.group]) then
 			if quest.group then
 				chosenGroups[quest.group] = true
@@ -837,7 +825,7 @@ end
 
 -- A zone's pickups as one journey (kind, key and title are the caller's), and how many eligible quests it holds.
 -- The step that offers `leadID` is always among them.
-local function ZoneJourney(data, player, eligible, zone, index, prefs, mapName, leadID)
+local function ZoneJourney(data, player, eligible, zone, prefs, mapName, leadID)
 	local candidates, quests, lead = {}, 0, nil
 	for _, id in ipairs(eligible) do
 		local quest = data.quests[id]
@@ -845,7 +833,7 @@ local function ZoneJourney(data, player, eligible, zone, index, prefs, mapName, 
 	end
 	PickupSteps(data, player, eligible, function(quest)
 		return (quest.zone or quest.start.map) == zone
-	end, index.hubs, candidates)
+	end, candidates)
 	for _, step in ipairs(candidates) do
 		for _, id in ipairs(step.quests) do
 			lead = id == leadID and step or lead
@@ -868,7 +856,7 @@ end
 -- lowest Map.ID on a tie), its steps the givers of those quests. Raids are never offered. Named by the client, in the
 -- player's language, and by the data otherwise; an instance the data doesn't name gets no card.
 ---@param instanceName? fun(id: integer): string?
-local function DungeonJourney(data, player, eligible, index, prefs, mapName, instanceName)
+local function DungeonJourney(data, player, eligible, prefs, mapName, instanceName)
 	if not (prefs.dungeons and data.instances) then
 		return nil
 	end
@@ -891,7 +879,7 @@ local function DungeonJourney(data, player, eligible, index, prefs, mapName, ins
 	local candidates = {}
 	PickupSteps(data, player, eligible, function(quest)
 		return quest.dungeon == best and not quest.raid
-	end, index.hubs, candidates)
+	end, candidates)
 	local steps = Build(data, player, candidates, prefs, mapName)
 	if #steps == 0 then
 		return nil
@@ -942,7 +930,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	local chain, chainID, continues, story, lead, _
 	if zone then
 		chain, chainID, continues = ZoneStory(data, completed, eligible, zone)
-		story, _, lead = ZoneJourney(data, player, eligible, zone, index, prefs, mapName, chainID)
+		story, _, lead = ZoneJourney(data, player, eligible, zone, prefs, mapName, chainID)
 	end
 	if story then
 		local name = ZoneName(data, zone, mapName)
@@ -961,12 +949,12 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 		journeys[#journeys + 1] = story
 	end
 	-- A player who turned dungeons on asked for this card, so it comes before the next zone's.
-	journeys[#journeys + 1] = DungeonJourney(data, player, eligible, index, prefs, mapName, instanceName)
+	journeys[#journeys + 1] = DungeonJourney(data, player, eligible, prefs, mapName, instanceName)
 	-- The zone that fits two levels on, when it is another zone than the story's and the one the player stands in,
 	-- and already has enough the player can take now.
 	for _, map in ipairs(ahead or {}) do
 		if map ~= zone and map ~= player.map then
-			local nextZone, quests = ZoneJourney(data, player, eligible, map, index, prefs, mapName)
+			local nextZone, quests = ZoneJourney(data, player, eligible, map, prefs, mapName)
 			if nextZone and quests >= NEXT_ZONE_PICKUPS and #journeys < Model.MAX_JOURNEYS then
 				nextZone.kind, nextZone.key = "nextzone", "nextzone:" .. map
 				local name = ZoneName(data, map, mapName)

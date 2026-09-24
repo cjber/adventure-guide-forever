@@ -1,21 +1,13 @@
 # human18_westfall: level 18, side 1, at 1436 0.5600,0.4700
 card (chosen) | story:1439 | Darkshore story | Chapter 1 of 5 | Begins a new story | map 1439
-  step 1 | pickup:1439:0.3664:0.4626 | Pick up quests: Gubber Blump | 1439 0.3610,0.4493 | 3 quests here
-  step 2 | pickup:1439:0.3744:0.4184 | Pick up quests: Archaeologist Hollee | 1439 0.3744,0.4184 | Begins a new story
-  step 3 | pickup:1439:0.4355:0.7629 | Pick up quests: Kerlonian Evershade | 1439 0.4440,0.7643 | near your level
-  step 4 | pickup:1439:0.3864:0.8733 | Pick up quests: Therylune | 1439 0.3864,0.8733 | near your level
-  step 5 | pickup:1439:0.4594:0.9029 | Pick up quests: Sentinel Aynasha | 1439 0.4594,0.9029 | near your level
-  step 6 | pickup:1439:0.5666:0.1348 | Pick up quests: Gelkak Gyromast | 1439 0.5666,0.1348 | near your level
+  step 1 | pickup:450 | Pick up quests: Archaeologist Hollee | 1439 0.3744,0.4184 | Begins a new story
+  step 2 | pickup:435 | Pick up quests: Kerlonian Evershade | 1439 0.4440,0.7643 | near your level
+  step 3 | pickup:429 | Pick up quests: Therylune | 1439 0.3864,0.8733 | near your level
+  step 4 | pickup:427 | Pick up quests: Sentinel Aynasha | 1439 0.4594,0.9029 | near your level
+  step 5 | pickup:467 | Pick up quests: Gelkak Gyromast | 1439 0.5666,0.1348 | near your level
 card | dungeon:36 | Deadmines | 3 quests for this dungeon | - | map 1453
-  step 1 | dungeon:1453:0.7031:0.4082 | Pick up quests: Wilder Thistlenettle | 1453 0.7031,0.4082 | 2 quests here
-  step 2 | dungeon:1453:0.5972:0.3378 | Pick up quests: Shoni the Shilent | 1453 0.6263,0.3412 | near your level
+  step 1 | dungeon:80 | Pick up quests: Wilder Thistlenettle | 1453 0.7031,0.4082 | 3 quests here
 card | nextzone:1433 | Head to Redridge Mountains | 14 quests near your level | For level 20 | map 1433
-  step 1 | pickup:1433:0.1019:0.7146 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
-  step 2 | pickup:1433:0.1677:0.4633 | Pick up quests: Martie Jainrose | 1433 0.1677,0.4633 | 2 quests here
-  step 3 | pickup:1433:0.2140:0.4396 | Pick up quests: Barkeep Daniels | 1433 0.2140,0.4396 | 3 quests here
-  step 4 | pickup:1433:0.2264:0.4738 | Pick up quests: Dockmaster Baren | 1433 0.2264,0.4738 | near your level
-  step 5 | pickup:1433:0.2463:0.4426 | Pick up quests: Bailiff Conacher | 1433 0.2463,0.4426 | 2 quests here
-  step 6 | dungeon:1433:0.2463:0.4426 | Pick up quests: Wanted: Gath'Ilzogg | 1433 0.2454,0.4616 | near your level
-  step 7 | pickup:1433:0.2589:0.4727 | Pick up quests: Verner Osgood | 1433 0.2589,0.4727 | near your level
-  step 8 | pickup:1433:0.2842:0.4897 | Pick up quests: Marshal Marris | 1433 0.2842,0.4897 | 2 quests here
-  step 9 | pickup:1433:0.2298:0.5204 | Pick up quests: Shawn | 1433 0.2423,0.5364 | near your level
+  step 1 | pickup:56 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
+  step 2 | dungeon:61 | Pick up quests: Wanted: Gath'Ilzogg | 1433 0.2454,0.4616 | near your level
+  step 3 | pickup:61 | Pick up quests: Marshal Marris | 1433 0.2842,0.4897 | 12 quests here

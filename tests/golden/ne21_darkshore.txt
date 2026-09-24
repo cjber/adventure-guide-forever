@@ -1,19 +1,13 @@
 # ne21_darkshore: level 21, side 1, at 1439 0.3700,0.4400
 card (chosen) | story:1433 | Redridge Mountains story | Chapter 1 of 3 | Begins a new story | map 1433
-  step 1 | pickup:1433:0.2140:0.4396 | Pick up quests: Barkeep Daniels | 1433 0.2140,0.4396 | Begins a new story
-  step 2 | pickup:1433:0.2264:0.4738 | Pick up quests: Dockmaster Baren | 1433 0.2264,0.4738 | 2 quests here
-  step 3 | pickup:1433:0.2463:0.4426 | Pick up quests: Bailiff Conacher | 1433 0.2463,0.4426 | near your level
-  step 4 | pickup:1433:0.2589:0.4727 | Pick up quests: Verner Osgood | 1433 0.2589,0.4727 | near your level
-  step 5 | pickup:1433:0.2842:0.4897 | Pick up quests: Marshal Marris | 1433 0.2842,0.4897 | 2 quests here
-  step 6 | pickup:1433:0.2645:0.5785 | Pick up quests: Guard Howe | 1433 0.2645,0.5785 | near your level
-  step 7 | pickup:1433:0.2298:0.5204 | Pick up quests: Shawn | 1433 0.2423,0.5364 | near your level
-  step 8 | pickup:1433:0.1677:0.4633 | Pick up quests: Martie Jainrose | 1433 0.1677,0.4633 | 2 quests here
-  step 9 | pickup:1433:0.1019:0.7146 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
+  step 1 | pickup:76 | Pick up quests: Corporal Keeshan | 1433 0.2330,0.1255 | near your level
+  step 2 | pickup:61 | Pick up quests: Marshal Marris | 1433 0.2842,0.4897 | Begins a new story
+  step 3 | pickup:56 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
+  step 4 | pickup:57 | Pick up quests: Theocritus | 1429 0.6522,0.6971 | near your level
 card | nextzone:1431 | Head to Duskwood | 9 quests near your level | For level 23 | map 1431
-  step 1 | pickup:1431:0.0778:0.3407 | Pick up quests: Sven Yorgen | 1431 0.0778,0.3407 | 2 quests here
-  step 2 | pickup:1431:0.1838:0.5637 | Pick up quests: Jitters | 1431 0.1838,0.5637 | near your level
-  step 3 | pickup:1431:0.2811:0.3146 | Pick up quests: Abercrombie | 1431 0.2811,0.3146 | near your level
-  step 4 | pickup:1431:0.4512:0.6703 | Pick up quests: Watcher Dodds | 1431 0.4512,0.6703 | near your level
-  step 5 | pickup:1431:0.7354:0.4682 | Pick up quests: Commander Althea Ebonlocke | 1431 0.7354,0.4682 | 2 quests here
-  step 6 | pickup:1431:0.7375:0.4348 | Pick up quests: Chef Grual | 1431 0.7375,0.4348 | near your level
-  step 7 | pickup:1431:0.7980:0.4802 | Pick up quests: Viktori Prism'Antras | 1431 0.7980,0.4802 | near your level
+  step 1 | pickup:41 | Pick up quests: Sven Yorgen | 1431 0.0778,0.3407 | 2 quests here
+  step 2 | pickup:28 | Pick up quests: Jitters | 1431 0.1838,0.5637 | near your level
+  step 3 | pickup:42 | Pick up quests: Abercrombie | 1431 0.2811,0.3146 | near your level
+  step 4 | pickup:24 | Pick up quests: Watcher Dodds | 1431 0.4512,0.6703 | near your level
+  step 5 | pickup:32 | Pick up quests: Commander Althea Ebonlocke | 1431 0.7354,0.4682 | 3 quests here
+  step 6 | pickup:33 | Pick up quests: Viktori Prism'Antras | 1431 0.7980,0.4802 | near your level
