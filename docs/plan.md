@@ -459,6 +459,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 | 7 | Set your own map waypoint, press Go with SPF disabled (`/disable ShortestPathForever`, `/reload`), then move the waypoint by hand and press Stop | Your own waypoint survives Stop. The tracker has no travel line | SHOT map, SV |
 | 7b | Press Go without SPF, `/reload`, press Stop | Stop is still offered, and clears AGF's waypoint | SHOT map |
 | 7c | With SPF enabled, press Go on a step SPF cannot route (e.g. inside a city with no navmesh) | The native waypoint appears instead of nothing | SHOT map |
+| 7e | With the guide open, right-click step row 1 and choose Go, then right-click the tracker and choose Stop | The footer's Stop appears after Go and goes after Stop | SHOT panel |
 | 7d | As a night elf in Darkshore carrying a finished Stormwind quest, open the guide and press Go | The route stays on Kalimdor, crosses once, and ends with "Hand in when you're in Stormwind City"; SPF (with PR #29) draws the boat, not dots over the sea | SHOT map (Azeroth view), SV |
 | 8 | With SPF enabled (the release with `EstimateDetail`), press Go | The tracker reads "Fly to … · N min" or, for a short trip, "Walk to … · N min". On an SPF build without `EstimateDetail` it reads "About N min away"; on v1.1.0 there is no line | SHOT tracker |
 | 9 | Hand in the last quest of a chain the panel showed as "Chapter N of N" | "Story complete", the header glows once, and the stage-end sound plays. No toast | SHOT tracker (right after the turn-in), SV |
@@ -546,3 +547,11 @@ Every blocker and major in `plan-review.md` is applied above. Minor findings are
   - Search matches a quest the client has not cached by the data's English title. Only shown rows and their Why
     lines ask `RequestLoadQuestByID`; asking for every quest on each keystroke would flood the server.
   - `string.lower` folds ASCII only, so Cyrillic titles match case-sensitively; the client has no UTF-8 lower.
+- **Batch C (32-37) review:** fixed in their own `fix(...)` commits: the footer's Stop after the menu's Go and
+  Stop, a skipped step the route no longer has, tracker lines that repeated the header, the resume line's capital,
+  Choices' prefs-less branch, and design §2.2's `Model.Zones`. Deferred:
+  - The footer's Stop still waits for the next redraw when Shortest Path ends our journey itself or the player moves
+    or clears the waypoint: API v1 has no callback, and `USER_WAYPOINT_UPDATED` is unproven on Forever (an
+    unknown event errors in `RegisterEvent`), so it needs a probe first. Opening the guide redraws it.
+  - Design §2.5's place line is "NPC, zone"; it is still the bare name, and a log turn-in placed by
+    `GetNextWaypoint` has no NPC name at all. The zone needs the map name in the step, a change of its own.
