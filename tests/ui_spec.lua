@@ -950,18 +950,43 @@ do
 	clean(h, "hub tooltip")
 end
 
--- A town is titled by its name, so step 1 of the story (Crossroads) shows its reason: The Zhevra opens its next
--- chapter.
+-- A town (plan §7.4) is titled by its name, so step 1 of the story (Crossroads) shows its counts, then its reason in
+-- place of the NPC line, since The Zhevra opens its next chapter. With a reason that is only the counts, the line
+-- names its NPCs: two, then how many more. One quest's stop reads "NPC, zone".
 do
 	local h = Load(false)
 	local ns = h.ns
 	ns.Prefs().journey = ns.Route().journeys[2].key
 	ns.Invalidate()
 	h.flush()
-	local step = ns.Route().steps[1]
+	local steps = ns.Route().steps
+	local step = steps[1]
 	equal(step.title, "Crossroads, The Barrens", "tracker, town: titled by its flight master")
-	equal(TrackerLines(h)[1], step.reason, "tracker, town: its reason, never the place again")
 	equal(step.detail, "1 to hand in, 8 to pick up", "tracker, town: the hand-in joins the pickups")
+	same(TrackerLines(h), {
+		step.detail,
+		"Opens the next chapter here",
+		"Next: " .. steps[2].title .. " (no dash)",
+	}, "tracker, town: its counts, then its reason, never the place again")
+
+	step.reason = step.detail
+	h.tracker:MarkDirty()
+	same(TrackerLines(h), {
+		step.detail,
+		"Sergra Darkthorn, Gazrog and 6 more",
+		"Next: " .. steps[2].title .. " (no dash)",
+	}, "tracker, town: its NPCs, two named")
+	step.givers = { "Sergra Darkthorn", "Gazrog" }
+	h.tracker:MarkDirty()
+	equal(TrackerLines(h)[2], "Sergra Darkthorn, Gazrog", "tracker, town: two NPCs, both named")
+
+	-- Kadrak's one quest: its NPC and zone, since its title names only the NPC.
+	ns.Skip(steps[1].key, steps[1].title)
+	ns.Skip(steps[2].key, steps[2].title)
+	h.flush()
+	step = ns.Route().steps[1]
+	equal(step.title, "Pick up quests: Kadrak", "tracker, one quest: Kadrak leads")
+	equal(TrackerLines(h)[1], "Kadrak, The Barrens", "tracker, one quest: NPC, zone")
 	clean(h, "tracker, town")
 end
 

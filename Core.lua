@@ -122,6 +122,8 @@ ns.L = {
 	HUB_PICK_UP = "%d to pick up",
 	-- A town's tooltip lists its first quests and counts the rest.
 	HUB_MORE_QUESTS = "And %d more",
+	-- The tracker's line for a town's NPCs: the first two, then how many more.
+	HUB_NPCS_MORE = "%s and %d more",
 	PLACE = "%s, %s",
 	NEAR_YOUR_LEVEL = "near your level",
 	-- The guide and the map.

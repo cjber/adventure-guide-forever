@@ -1,5 +1,6 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+local L = ns.L
 
 -- WFA-5: Legacy Forever holds 0 and -1, SkillUp Forever -2, Shortest Path Forever -3. This is the
 -- next free slot.
@@ -16,13 +17,25 @@ local STORY_COMPLETE = "story-complete"
 local TRAINER = "trainer"
 -- Headers that are not the step's: its click and hover never act on them.
 local NOT_STEP = { [STORY_COMPLETE] = true, [TRAINER] = true }
+-- A town's NPC line names this many, then counts the rest.
+local NAMED_GIVERS = 2
 -- Set by a turn-in that ends a story: the quest, then the first step 1 the route shows without it. The header stays
 -- above the steps until step 1 moves on from that.
 ---@type {quest: integer, key?: string}?
 local finished
 
+-- A town's NPCs: the first two by name, the rest counted.
+---@param givers string[]
+---@return string
+local function Givers(givers)
+	if #givers <= NAMED_GIVERS then
+		return table.concat(givers, L.LIST_SEPARATOR)
+	end
+	return L.HUB_NPCS_MORE:format(table.concat(givers, L.LIST_SEPARATOR, 1, NAMED_GIVERS), #givers - NAMED_GIVERS)
+end
+
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
-local ModuleMixin = { headerText = ns.L.TRACKER_HEADER, blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
+local ModuleMixin = { headerText = L.TRACKER_HEADER, blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
 
 ---@param block AGFTrackerBlock the header's own block: the trainer's and the story's end do nothing; for the step's,
 ---CurrentStep() is used since it's always current
@@ -63,9 +76,9 @@ function ModuleMixin:OnBlockHeaderLeave()
 	GameTooltip:Hide()
 end
 
--- One block for the current step (docs/design.md §2.5): its place, why it is next and the travel line as objective
--- lines, then what follows it, undashed. Nothing is laid out (an empty, self-hiding module) when the setting is off,
--- there's no route yet, or the route is empty.
+-- One block for the current step (docs/design.md §2.5, docs/plan.md §7.4): its place (a town's counts), why it is next
+-- (a town's NPCs) and the travel line as objective lines, then what follows it, undashed. Nothing is laid out (an
+-- empty, self-hiding module) when the setting is off, there's no route yet, or the route is empty.
 function ModuleMixin:LayoutContents()
 	if not ns.Setting("showTracker") then
 		return
@@ -73,7 +86,7 @@ function ModuleMixin:LayoutContents()
 	local trainer = ns.Integrations.Trainer()
 	if trainer then
 		local block = self:GetBlock(TRAINER)
-		block:SetHeader(ns.L.TRAINER)
+		block:SetHeader(L.TRAINER)
 		block:AddObjective(1, trainer)
 		if not self:LayoutBlock(block) then
 			return
@@ -81,7 +94,7 @@ function ModuleMixin:LayoutContents()
 	end
 	if finished then
 		local block = self:GetBlock(STORY_COMPLETE)
-		block:SetHeader(ns.L.STORY_COMPLETE)
+		block:SetHeader(L.STORY_COMPLETE)
 		if not self:LayoutBlock(block) then
 			return
 		end
@@ -92,17 +105,28 @@ function ModuleMixin:LayoutContents()
 	end
 	local block = self:GetBlock(step.key)
 	block:SetHeader(step.title)
-	-- No line repeats the header: a pickup's title already names its NPC, and a turn-in's is its reason.
 	local line = 0
-	if step.place and not step.title:find(step.place, 1, true) then
+	local town = step.kind == "hub" and #step.quests > 1
+	-- A town's header is its name, so its counts come first. One quest's stop says where it is instead: "NPC, zone",
+	-- the zone alone when the place already names it. No line repeats the header.
+	local place = step.place
+	if step.place and step.zone and not step.place:find(step.zone, 1, true) then
+		place = L.PLACE:format(step.place, step.zone)
+	end
+	place = town and step.detail or place or step.zone
+	if place and not step.title:find(place, 1, true) then
 		line = line + 1
-		block:AddObjective(line, step.place)
+		block:AddObjective(line, place)
 	end
 	local resume = ns.Resume(step)
 	-- A lone hand-in, a turn-in or a town's, is titled "Turn in: …", which already says it is ready.
 	local handIn = step.kind == "turnin" or (step.kind == "hub" and #step.quests == 1 and #step.handins == 1)
 	-- Mid-line, a reason that is a sentence of its own ("Continues a story you started") loses its capital.
-	local reason = resume and ns.L.RESUME:format((resume:gsub("^%u", string.lower))) or not handIn and step.reason
+	local reason = resume and L.RESUME:format((resume:gsub("^%u", string.lower))) or not handIn and step.reason
+	-- A town's reason is its counts unless something more is true there; then who to see takes the line.
+	if town and not resume and step.reason == step.detail then
+		reason = Givers(step.givers)
+	end
 	if reason then
 		line = line + 1
 		block:AddObjective(line, reason)
@@ -115,7 +139,7 @@ function ModuleMixin:LayoutContents()
 	local nextStep = ns.Route().steps[2]
 	if nextStep then
 		line = line + 1
-		block:AddObjective(line, ns.L.NEXT:format(nextStep.title), nil, nil, OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE)
+		block:AddObjective(line, L.NEXT:format(nextStep.title), nil, nil, OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE)
 	end
 	if not self:LayoutBlock(block) then
 		return
@@ -144,7 +168,7 @@ end
 
 local function WarnIfUnattached()
 	if module and ObjectiveTrackerManager:GetContainerForModule(module) == nil then
-		ns.Print(ns.L.TRACKER_UNATTACHED)
+		ns.Print(L.TRACKER_UNATTACHED)
 	end
 end
 
