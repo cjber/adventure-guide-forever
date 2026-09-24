@@ -256,6 +256,9 @@ delve.journey = nil
 equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:48", "chosen: unchosen, the most quests")
 delve.journey = "dungeon:36"
 equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "chosen: the chosen instance stays")
+-- Not interested (roadmap #17) in the busier instance: the other takes its card.
+delve.journey, delve.notInterested = nil, { ["dungeon:48"] = "Many" }
+equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "not interested: the next dungeon")
 
 local hub = { quests = { [1] = quest(0.1), [2] = quest(0.11), [3] = quest(0.09) }, zones = data.zones }
 hub.quests[1].start.hub, hub.quests[2].start.hub = 7, 7
