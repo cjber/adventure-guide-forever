@@ -98,6 +98,23 @@ local exclusive = { quests = { [1] = a, [2] = b }, zones = data.zones }
 equal(Model.Eligible(exclusive, player, { [2] = true }, {}, 1), false, "completed exclusive sibling")
 equal(Model.Eligible(exclusive, player, {}, { [2] = {} }, 1), false, "active exclusive sibling")
 equal(#Model.Plan(exclusive, player, {}, {}, prefs()).steps[1].quests, 1, "recommend one exclusive choice")
+do -- Missing In Action at 19: open from its minimum, but red, so never offered; the map's "!" still shows it.
+	local fits, red, orange = quest(), quest(0.2, 0.2), quest(0.8, 0.8)
+	fits.level = player.level + 2
+	red.level, red.min, red.start.name = player.level + 5, player.level, "Corporal Keeshan"
+	orange.level, orange.start.name = player.level + 3, "Orange giver"
+	local camp = { quests = { [1] = fits, [2] = red, [3] = orange }, zones = data.zones }
+	local offered = {}
+	for _, step in ipairs(Model.Plan(camp, player, {}, {}, prefs()).steps) do
+		for _, id in ipairs(step.quests) do
+			offered[id] = true
+		end
+	end
+	equal(offered[1], true, "a yellow quest, two levels up, is offered")
+	equal(offered[2], nil, "a red quest is never offered")
+	equal(offered[3], nil, "nor an orange one: too hard alone")
+	equal(#Model.Givers(camp, player, {}, {}, 1), 3, "their givers still show on the map")
+end
 
 data = { quests = {}, zones = {} }
 for id = 1, 8 do
@@ -871,8 +888,8 @@ red.quests[1].level = 23
 local function RedSteps()
 	return Model.Plan(red, visitor, {}, {}, prefs()).steps
 end
-equal(Only(2, RedSteps):find("0.3200", 1, true), nil, "value: a stop of red quests only waits, though nearest")
-equal(#RedSteps(), 3, "value: and is still on a route with room for it")
+equal(Only(2, RedSteps):find("0.3200", 1, true), nil, "value: a red quest is never first, though nearest")
+equal(#RedSteps(), 2, "value: nor on the route at all")
 
 -- No zone the level fits (a city's quests only): no story card, and no error.
 local city = { quests = { [1] = quest(0.5, 0.5, 9) }, zones = data.zones }

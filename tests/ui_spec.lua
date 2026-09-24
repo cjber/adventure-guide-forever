@@ -806,7 +806,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		chapter = pin.step.chapter and pin or chapter
 	end
 	h.Hover(chapter)
-	equal(h.tooltip[2], "normal: Chapter 1 of 5", label .. ": the story's ring tells its chapter")
+	equal(h.tooltip[2], "normal: Chapter 1 of 4", label .. ": the story's ring tells its chapter")
 	ns.Prefs().journey = nil
 	ns.Invalidate()
 	h.flush()
@@ -1533,6 +1533,8 @@ end
 do
 	local h = Load(false, PINS_ON)
 	local ns = h.ns
+	-- Egg Hunt at 20, two over the player: yellow, so offered (at 22 it is orange and never is), a ninth to count.
+	ns.Data.quests[868].level = 20
 	ns.Prefs().journey = ns.Route().journeys[2].key
 	ns.Invalidate()
 	h.flush()
@@ -1597,7 +1599,7 @@ do
 	local steps = ns.Route().steps
 	local step = steps[1]
 	equal(step.title, "Crossroads, The Barrens", "tracker, town: titled by its flight master")
-	equal(step.detail, "1 to hand in, 8 to pick up", "tracker, town: the hand-in joins the pickups")
+	equal(step.detail, "1 to hand in, 7 to pick up", "tracker, town: the hand-in joins the pickups")
 	same(TrackerLines(h), {
 		step.detail,
 		"Opens the next chapter here",
@@ -1608,7 +1610,7 @@ do
 	h.tracker:MarkDirty()
 	same(TrackerLines(h), {
 		step.detail,
-		"Sergra Darkthorn, Gazrog and 6 more",
+		"Sergra Darkthorn, Gazrog and 5 more",
 		"Next: " .. steps[2].title .. " (no dash)",
 	}, "tracker, town: its NPCs, two named")
 	step.givers = { "Sergra Darkthorn", "Gazrog" }
@@ -1859,7 +1861,7 @@ do
 	h.ns.Invalidate()
 	h.flush()
 	local chain, squares, texts = story.story, {}, {}
-	equal(chain and chain.total, 5, "story: the fixture's chain is proven at 5")
+	equal(chain and chain.total, 4, "story: the fixture's chain is proven at 4")
 	for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverPanel, h.Describe)) do
 		if entry.atlas and entry.atlas:match("^ui%-journeys%-delve%-level%-square") then
 			squares[#squares + 1] = entry.atlas

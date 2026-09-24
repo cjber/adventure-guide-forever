@@ -13,7 +13,7 @@ local CLOSE = 0.03 * 0.03
 -- goes grey at the next level, each hand-in, and a stop with no hand-in where every quest is red or optional, which
 -- waits.
 local VALUE_QUEST, VALUE_QUESTS_MAX, VALUE_GREY_RISK, VALUE_HAND_IN, VALUE_WEAK = 40, 8, 150, 60, -300
-local RED = 5 -- levels above the player: the stock red
+local ORANGE = 3 -- levels above the player: the stock orange, where a quest gets hard alone
 
 function Model.IsGray(questLevel, playerLevel)
 	local range = GREEN_RANGE[math.min(#GREEN_RANGE, math.floor(playerLevel / 5) + 1)] or 4
@@ -427,7 +427,8 @@ end
 
 -- One eligibility pass for two levels: the player's, and `ahead` levels on for the next-zone card. A level reaches
 -- eligibility only through a quest's minimum, so what opens at level + ahead holds everything open now. Only an
--- instance's quests wait behind Dungeons: an outdoor elite is a zone's quest, optional and badged for a group.
+-- instance's quests wait behind Dungeons: an outdoor elite is a zone's quest, optional and badged for a group. An
+-- orange or red quest (ORANGE levels up or more) is never offered, though its minimum allows it: too hard alone.
 local function Choices(data, player, completed, log, index, prefs, ahead)
 	local eligible, later, target = {}, {}, player.level + (ahead or 0)
 	for _, id in ipairs(index.ids) do
@@ -438,7 +439,11 @@ local function Choices(data, player, completed, log, index, prefs, ahead)
 			and Eligible(data, player, completed, log, id, index.groups, target)
 		then
 			later[#later + 1] = id
-			if quest.min <= player.level and not Model.IsGray(quest.level, player.level) then
+			if
+				quest.min <= player.level
+				and not Model.IsGray(quest.level, player.level)
+				and quest.level - player.level < ORANGE
+			then
 				eligible[#eligible + 1] = id
 			end
 		end
@@ -1058,7 +1063,7 @@ local function Value(data, log, player, step)
 	for _, id in ipairs(step.quests) do
 		local level = QuestLevel(data, log, player, id)
 		risk = risk or GreyRisk(level, player)
-		weak = weak and (level - player.level >= RED or Optional(data.quests[id], level, player))
+		weak = weak and Optional(data.quests[id], level, player)
 	end
 	return VALUE_QUEST * math.min(#step.quests, VALUE_QUESTS_MAX)
 		+ (risk and VALUE_GREY_RISK or 0)
