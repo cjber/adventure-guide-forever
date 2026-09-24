@@ -38,7 +38,7 @@ client: `tests/model_spec.lua` loads `Model.lua` and `Data/Quests.lua` with `loa
 |---|---|---|
 | Dead code (Lua) | `luacheck . --no-color` + the live-root searches below | a function stored on `ns` is never "unused" to luacheck — search every file for `ns.<Name>` |
 | Dead code (Python) | `uvx vulture tools --min-confidence 60` | — |
-| Live roots | `rg -n 'hooksecurefunc|RegisterEvent|RegisterCallback|SetScript|AddDataProvider|SLASH_|SlashCmdList' -g '*.lua'` | — |
+| Live roots | `rg -n 'hooksecurefunc|RegisterEvent|RegisterCallback|SetScript|AddDataProvider|AddTooltipPostCall|SLASH_|SlashCmdList' -g '*.lua'` | — |
 
 ## Live roots
 
@@ -46,7 +46,7 @@ client: `tests/model_spec.lua` loads `Model.lua` and `Data/Quests.lua` with `loa
 - `ns.*` — the shared addon table; search all files for `ns.Name`, not the local file.
 - `## SavedVariables: AdventureGuideForeverDB`, `## SavedVariablesPerCharacter: AdventureGuideForeverCharDB` — keys in `Core.lua` `DEFAULTS` may hold data written by older versions.
 - `## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick` and `SLASH_ADVENTUREGUIDEFOREVER1/2` — called by the client by name.
-- `hooksecurefunc(ObjectiveTrackerManager, "AddContainer")`, `EventRegistry:RegisterCallback("QuestLog.SetDisplayMode")`, `WorldMapFrame:AddDataProvider` — host callbacks.
+- `hooksecurefunc(ObjectiveTrackerManager, "AddContainer")`, `EventRegistry:RegisterCallback("QuestLog.SetDisplayMode")`, `WorldMapFrame:AddDataProvider`, `TooltipDataProcessor.AddTooltipPostCall` — host callbacks.
 - Optional integration (`## OptionalDeps: ShortestPathForever`) — code guarded by `ShortestPathForever.API` is live only with that addon installed.
 
 ## Zones
@@ -74,7 +74,7 @@ client: `tests/model_spec.lua` loads `Model.lua` and `Data/Quests.lua` with `loa
 1. `tools/` — scripts, not shipped; output is diffable.
 2. `tests/` — harness only.
 3. `Model.lua`, `Settings.lua` — pure planner / settings, the planner under test.
-4. `Pins.lua`, `Panel.lua`, `Tracker.lua` — UI hooks, in-game verification only.
+4. `Pins.lua`, `Panel.lua`, `Tracker.lua`, `Tooltip.lua` — UI hooks, in-game verification only.
 5. `State.lua`, `Core.lua`, `Integrations.lua` — client state, SavedVariables and the cross-addon contract.
 
 ## Project rules and lenses

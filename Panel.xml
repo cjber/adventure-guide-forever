@@ -1,6 +1,6 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ https://raw.githubusercontent.com/Gethe/wow-ui-source/live/Interface/AddOns/Blizzard_SharedXML/UI.xsd">
 	<!-- The guide tab and its content are plain frames built with CreateFrame in Panel.lua. -->
-	<!-- They reuse the stock QuestLogTabButtonTemplate directly (see Panel.lua Attach()) instead of a home-grown template here, and anchor to QuestMapFrame in Lua once Blizzard_WorldMap loads. -->
+	<!-- The tab reuses the stock LargeSideTabButtonTemplate directly (see Panel.lua CreateTab()) instead of a home-grown template here, and anchors to QuestMapFrame in Lua once Blizzard_WorldMap loads. -->
 	<!-- The route pin below must be a real XML template: MapCanvasMixin AcquirePin resolves its template argument through CreateFramePool, which needs a declared virtual frame. -->
 	<!-- A quest giver: the game's own available-quest "!", brightened on hover like the quest POIs. -->
 	<Frame name="AdventureGuideForeverGiverPinTemplate" mixin="AdventureGuideForeverGiverPinMixin" enableMouse="true" virtual="true">
@@ -14,6 +14,73 @@
 			</Layer>
 		</Layers>
 	</Frame>
+	<!-- A journey card: Blizzard's renown card (Blizzard_Journeys.xml:5-107, RenownCardButtonTemplate) at 0.77 scale,
+	     its art and radial ring kept, the kind's quest-log icon in the ring, and a title, a count and a reason beside
+	     it. AlphaHighlightButtonTemplate's OnLoad copies NormalTexture's atlas into the highlight, so the art is set
+	     here, before the card is ever shown. Its pushed art is the same card: the renown pressed art is drawn off
+	     true, so neither a press nor the chosen card ever moves. -->
+	<Button name="AdventureGuideForeverJourneyCardTemplate" inherits="AlphaHighlightButtonTemplate" virtual="true">
+		<Size x="288" y="86"/>
+		<NormalTexture parentKey="NormalTexture" atlas="ui-journeys-renown-button"/>
+		<PushedTexture parentKey="PushedTexture" atlas="ui-journeys-renown-button"/>
+		<Frames>
+			<Frame parentKey="IconFrame">
+				<Size x="46" y="46"/>
+				<Anchors>
+					<Anchor point="LEFT" x="15"/>
+				</Anchors>
+				<Layers>
+					<Layer level="OVERLAY" textureSubLevel="1">
+						<Texture parentKey="Border" atlas="ui-journeys-renown-radial-bar" setAllPoints="true"/>
+					</Layer>
+					<Layer level="OVERLAY">
+						<Texture parentKey="Icon">
+							<Size x="18" y="18"/>
+							<Anchors>
+								<Anchor point="CENTER"/>
+							</Anchors>
+						</Texture>
+					</Layer>
+				</Layers>
+			</Frame>
+		</Frames>
+		<Layers>
+			<Layer level="OVERLAY">
+				<FontString parentKey="Title" inherits="GameFontNormalMed2" justifyH="LEFT" wordwrap="false">
+					<Size x="212" y="16"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.IconFrame" relativePoint="TOPRIGHT" x="6" y="4"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="Subline" inherits="GameFontHighlightSmall" justifyH="LEFT" wordwrap="false">
+					<Size x="212" y="14"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.Title" relativePoint="BOTTOMLEFT" y="-2"/>
+					</Anchors>
+				</FontString>
+				<!-- Shortest Path's minutes at the right of the subline's row; the subline stops short of them. -->
+				<FontString parentKey="Travel" inherits="GameFontHighlightSmall" justifyH="RIGHT" wordwrap="false" hidden="true">
+					<Size y="14"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativeKey="$parent.Title" relativePoint="BOTTOMRIGHT" x="-8" y="-2"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="Reason" inherits="GameFontHighlightSmall" justifyH="LEFT" wordwrap="false">
+					<Size x="212" y="14"/>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeKey="$parent.Subline" relativePoint="BOTTOMLEFT" y="-2"/>
+					</Anchors>
+				</FontString>
+				<!-- Blizzard's group quest tag (QUEST_TAG_ATLAS), at the right of the reason's row when a quest needs a group. -->
+				<Texture parentKey="Group" atlas="questlog-questtypeicon-group" hidden="true">
+					<Size x="12" y="12"/>
+					<Anchors>
+						<Anchor point="TOPRIGHT" relativeKey="$parent.Title" relativePoint="BOTTOMRIGHT" x="-8" y="-19"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+	</Button>
 	<Frame name="AdventureGuideForeverPinTemplate" mixin="AdventureGuideForeverPinMixin" enableMouse="true" virtual="true">
 		<Size x="26" y="26"/>
 		<Layers>

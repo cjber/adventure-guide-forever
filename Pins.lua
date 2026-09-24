@@ -11,31 +11,92 @@ ns.Pins = Pins
 ---@type table<string, AGFPinFrame>
 local pinsByKey = {}
 
+-- One switch over every mark AGF draws (design §2.6): nothing unless showMapPins is on.
+-- While the guide is open the rings preview the chosen journey whatever the switch says (F3): choosing a card is
+-- looking at its route. With none chosen the guide lists no steps, so it previews none: rings numbered for a card
+-- that isn't pressed would read as a choice made. Either way they step aside while Shortest Path guides, since it
+-- numbers its stops itself.
 ---@return boolean
-local function Active()
-	return ns.Setting("showMapPins") and not ns.Integrations.Guiding()
+local function RingsShown()
+	local preview = ns.PanelShown ~= nil and ns.PanelShown() and ns.Route().chosen
+	return (preview or ns.Setting("showMapPins")) and not ns.Integrations.Guiding()
+end
+
+-- Givers need both switches, and stay while Shortest Path guides: it draws no givers of its own.
+---@return boolean
+local function GiversShown()
+	return ns.Setting("showMapPins") and ns.Setting("showQuestGivers")
 end
 
 ---@param tooltip GameTooltip
 local function AddClickLine(tooltip)
 	local name = ns.Integrations.Provider()
-	GameTooltip_AddInstructionLine(
-		tooltip,
-		name and ("Click to travel with %s"):format(name) or "Click to set a waypoint"
-	)
+	GameTooltip_AddInstructionLine(tooltip, name and ns.L.CLICK_TRAVEL:format(name) or ns.L.CLICK_WAYPOINT)
 end
 
+-- The map's own marks, inline: a hand-in's "?", a pickup's "!", and the quest log's group tag.
+local HAND_IN_ICON = "|A:questturnin:14:14|a "
+local PICK_UP_ICON = "|A:questnormal:14:14|a "
+local GROUP_ICON = " |A:questlog-questtypeicon-group:12:12|a"
+-- A town's quests listed in its tooltip; the rest are counted.
+local HUB_QUEST_LINES = 8
+
+-- One line per quest at a town, under the NPC it is handed to or taken from, in the stop's order (hand-ins first, then
+-- by level, docs/plan.md §7.3), each coloured as the quest log colours its level.
+---@param tooltip GameTooltip
+---@param step AGFStep
+local function HubQuests(tooltip, step)
+	local handin, shown = {}, 0
+	for _, id in ipairs(step.handins or {}) do
+		handin[id] = true
+	end
+	for _, giver in ipairs(step.givers or {}) do
+		local named = false
+		for _, id in ipairs(step.quests) do
+			local spot, quest = step.spots and step.spots[id], ns.Data.quests[id]
+			if quest and spot and spot.name == giver then
+				if shown == HUB_QUEST_LINES then
+					GameTooltip_AddHighlightLine(tooltip, ns.L.HUB_MORE_QUESTS:format(#step.quests - shown))
+					return
+				end
+				if not named then
+					GameTooltip_AddNormalLine(tooltip, giver)
+					named = true
+				end
+				shown = shown + 1
+				local level = quest.level == -1 and UnitLevel("player") or quest.level
+				local title = ns.State.QuestTitle(id) or quest.title
+				local text = handin[id] and HAND_IN_ICON .. title
+					or PICK_UP_ICON .. ns.L.QUEST_LEVEL:format(level, title)
+				local color = GetQuestDifficultyColor(level)
+				GameTooltip_AddColoredLine(
+					tooltip,
+					text .. ((quest.elite or quest.dungeon or quest.raid) and GROUP_ICON or ""),
+					CreateColor(color.r, color.g, color.b)
+				)
+			end
+		end
+	end
+end
+
+-- A step's lines (docs/design.md §2.9), shared by its ring and its row in the guide: the title numbered as the route
+-- numbers it, the chapter, the travel line when there is one, why it is on the route, and a town's quests by NPC.
 ---@param tooltip GameTooltip
 ---@param step AGFStep
 ---@param index number
-local function AddPinTooltip(tooltip, step, index)
-	GameTooltip_SetTitle(tooltip, ("%d. %s"):format(index, step.title))
-	GameTooltip_AddHighlightLine(tooltip, step.detail)
-	GameTooltip_AddNormalLine(tooltip, step.reason)
-	if step.pinned then
-		GameTooltip_AddNormalLine(tooltip, "Pinned")
+---@param travel? string
+function Pins.StepTooltip(tooltip, step, index, travel)
+	GameTooltip_SetTitle(tooltip, ns.L.STEP_NUMBERED:format(index, step.title))
+	if step.chapter then
+		GameTooltip_AddNormalLine(tooltip, step.chapter)
 	end
-	AddClickLine(tooltip)
+	if travel then
+		GameTooltip_AddHighlightLine(tooltip, travel)
+	end
+	GameTooltip_AddHighlightLine(tooltip, step.reason)
+	if step.kind == "hub" then
+		HubQuests(tooltip, step)
+	end
 end
 
 local provider = CreateFromMixins(MapCanvasDataProviderMixin) --[[@as AGFMapProvider]]
@@ -46,16 +107,16 @@ function provider:RemoveAllData()
 	pinsByKey = {}
 end
 
--- Givers first, so the route's numbered pins draw above them. A giver whose quest is already a route
--- step is left to that step's pin (ours, or Shortest Path's numbered stop).
+-- Givers first, so the route's numbered pins draw above them. A giver whose quest is a stop drawn already is left
+-- to that stop: our ring for the chosen journey, or Shortest Path's numbered stop for what the last Go handed it.
 ---@param map AGFWorldMapFrame
 ---@param mapID integer
 local function AddGivers(map, mapID)
-	if not ns.Setting("showQuestGivers") or not ns.State.Ready() then
+	if not GiversShown() or not ns.State.Ready() then
 		return
 	end
 	local routed = {}
-	for _, step in ipairs(ns.Route().steps) do
+	for _, step in ipairs(RingsShown() and ns.Route().steps or ns.Integrations.Guided()) do
 		for _, id in ipairs(step.quests) do
 			routed[id] = true
 		end
@@ -81,7 +142,7 @@ function provider:RefreshAllData()
 		return
 	end
 	AddGivers(self:GetMap(), mapID)
-	if not Active() then
+	if not RingsShown() then
 		return
 	end
 	for index, step in ipairs(ns.Route().steps) do
@@ -104,7 +165,9 @@ AdventureGuideForeverPinMixin = CreateFromMixins(MapCanvasPinMixin)
 ---@param step AGFStep
 ---@param index number
 function AdventureGuideForeverPinMixin:OnAcquired(step, index)
-	self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI")
+	-- The stock user waypoint's level (WaypointLocationDataProvider), above every quest "!" and "?", the super-tracked
+	-- one's included (Blizzard_WorldMap.lua:291-311); givers stay at AREA_POI, under both.
+	self:UseFrameLevelType("PIN_FRAME_LEVEL_WAYPOINT_LOCATION")
 	self.step, self.index = step, index
 	self.Number:SetAtlas("services-number-" .. index)
 	self:SetPosition(step.x, step.y)
@@ -116,7 +179,8 @@ function AdventureGuideForeverPinMixin:OnMouseEnter()
 	self.Glow:Show()
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	if self.step and self.index then
-		AddPinTooltip(GameTooltip, self.step, self.index)
+		Pins.StepTooltip(GameTooltip, self.step, self.index, ns.Integrations.Travel(self.step))
+		AddClickLine(GameTooltip)
 	end
 	GameTooltip:Show()
 end
@@ -128,7 +192,7 @@ end
 
 function AdventureGuideForeverPinMixin:OnClick(button)
 	if button == "LeftButton" and self.step then
-		ns.Integrations.Navigate(self.step)
+		ns.StartRoute(self.step)
 	end
 end
 
@@ -160,7 +224,7 @@ function AdventureGuideForeverGiverPinMixin:OnMouseEnter()
 		local quest = ns.Data.quests[id]
 		local level = quest.level == -1 and UnitLevel("player") or quest.level
 		local title = C_QuestLog.GetTitleForQuestID(id) or quest.title
-		GameTooltip_AddNormalLine(GameTooltip, ("[%d] %s"):format(level, title))
+		GameTooltip_AddNormalLine(GameTooltip, ns.L.QUEST_LEVEL:format(level, title))
 	end
 	AddClickLine(GameTooltip)
 	GameTooltip:Show()

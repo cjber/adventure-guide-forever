@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: Adventure Guide Forever
-## Notes: Suggests your next 3-5 quest steps from your level, finished quests and current log.
+## Notes: Suggests a short route of next quest steps from your level, finished quests and current log.
 ## Author: cjber
 ## Version: @project-version@
 ## Category: Quests
@@ -10,15 +10,21 @@
 ## SavedVariables: AdventureGuideForeverDB
 ## SavedVariablesPerCharacter: AdventureGuideForeverCharDB
 ## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick
-## OptionalDeps: ShortestPathForever, TweaksForever, LegacyForever
+## OptionalDeps: ShortestPathForever
 
 Data\Quests.lua
+Data\Forever.lua
 Core.lua
 Model.lua
 State.lua
 Integrations.lua
+Asides.lua
+Moments.lua
+Menu.lua
 Pins.lua
 Panel.xml
 Panel.lua
 Tracker.lua
+Tooltip.lua
 Settings.lua
+Dump.lua

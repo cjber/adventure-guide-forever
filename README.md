@@ -8,17 +8,28 @@ Where to go next, for your level, inside WoW: Forever's world map.<br>
 <a href="https://github.com/cjber/adventure-guide-forever/releases/latest"><img src="https://img.shields.io/github/v/release/cjber/adventure-guide-forever" alt="Latest release"></a>
 </p>
 
-Levelling guides tell you exactly what to do, in order, as fast as possible. This addon is looser. From your level, the quests you have finished and the ones in your log, it suggests the next few things worth doing and where they are. You steer it: pick the zone, decide whether dungeon quests count, and pin or skip steps. It is a tab in the map's quest log and uses the game's own pins, quest markers and objective tracker, so it looks like it came with the game.
+Levelling guides tell you exactly what to do, in order, as fast as possible. I wanted something looser. From your level, the quests you have finished and the ones in your log, this addon offers a few journeys to choose from, each with a reason, and a short route for the one you pick.
+
+It looks like it came with the game: a tab in the quest log beside Quests, cards drawn with retail's Journeys art, the game's own map pins and objective tracker, and Blizzard's quest details when you click a quest. With the tab closed it draws nothing on your map.
+
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png" width="640" alt="The Barrens on the world map with the Adventure Guide tab open: the chosen Barrens story card with its seven stops listed and ringed on the map, towns such as Crossroads with their counts (1 to hand in, 8 to pick up, 6 min), and the other journeys folded to one-line rows above it"></p>
 
 ## Features
 
-- **Adventure Guide tab** on the world map's quest log, beside Quests and Map Legend. It shows your level and rested XP, three zones that suit your level under *Where next?*, and a suggested route of up to nine steps you can scroll and search. Each step says why it is there: `2 quests · continues chain`.
-- **Steps** hand in finished quests, pick up clusters of quests you can take now, and finish objectives already in your log. Dungeon and elite quests are included only when you turn on *Dungeons*, and are marked optional.
-- **Pin and skip**: a pinned step stays at the top of the route; a skipped one stays hidden until you `/reload`.
-- **Map pins** number the route on the world map.
-- **Quest givers** show the game's "!" on the world map over everyone with a quest you can take now.
-- **Objective tracker section** above your quests showing the current step and the next one. Right-click it to skip a step or change the route.
-- **Go** hands the route from that step onward to Shortest Path Forever as one numbered journey, flight paths and boats included; it moves to the next stop as you arrive. Without it, Go sets the game's own waypoint to the step.
+- **Journeys**: up to three cards on the Adventure Guide tab. *Finish what you carry* counts what is ready to hand in and in progress; *Westfall story* follows the zone's quest chain; *Head to Darkshore* ("For level 14") suggests the next zone once it has at least five quests near your level; *Your calling* gathers your class quests ("Your class trainer has a task: The Hunter's Path"). The next zone, a dungeon and your calling share the last slot, the one whose quests opened most recently first. Each card gives one reason from the quest data, such as "A chain begins with Gryan Stoutmantle", "Sentinel Hill needs hands" or "3 quests will soon turn grey". Pick one and it shows its steps, up to nine.
+- **Stories as chapters**: a chain reads "Chapter 2 of 4" only when the quest data proves its length, and "Chapter 2" otherwise. Later chapters are never named. Finishing a story of known length glows the tracker once and plays the game's stage-end sound.
+- **Choose and go**: choosing a card turns the map to its zone, previews its numbered steps and hands them to Shortest Path Forever as one journey, or sets the game's own waypoint without it. In combat it starts once the fight ends. Clicking the chosen card again, or *Stop*, removes only what the guide set, so a waypoint you moved yourself stays. A setting turns this off, so choosing only previews.
+- **Routes by distance**: steps are ordered by where they are, cross the sea at most once, and a turn-in on the other continent waits at the end with "Hand in when you're in Stormwind City".
+- **Why not?**: type three letters or more in *Search quests* and each match lists what the data says it needs (level, earlier quests, race, class, faction), ticked when you meet it.
+- **Objective tracker section** above your quests: until you choose a journey, one quiet line (a hint, or the top story, which a click chooses); then the current step, how you'll get there with Shortest Path Forever ("Fly to Sentinel Hill · 6 min"), and the step after. Click the title to start the route (and, with the setting on, track its quests); right-click for *Go*, *Show quest*, *Skip for now* or another journey. After a login, when step 1 is still the step you stopped on, it says "Where you left off".
+- **Quest details**: clicking a quest from your log, in the guide or the tracker, opens Blizzard's own quest page. Nothing opens in combat.
+- **Dungeons when you ask**: turn on *Dungeons* in the guide's settings menu and a card offers the dungeon with the most quests you can take, routed to their quest givers. Outdoor elite quests stay on the zone cards, marked optional with the group badge. Raids are never suggested. Quests in your log always show, whatever the filters.
+- **Class trainer**: with Tweaks Forever loaded, "Visit your class trainer in Orgrimmar · 3 new spells" appears above the cards and in the tracker when you have spells to train. It names the town of the nearest trainer of your class and faction who teaches them, and clicking it routes there. A chosen journey that passes that town adds a "Train in Orgrimmar" stop. The line's red X skips it for the session. Right-click it for *Not interested*, which *Skipped* in the cog can undo. Hunter pet trainers and riding are not covered.
+- **Something new**: when a level or a new zone brings a journey you haven't been offered, the tracker says so once ("Duskwood is now for your level"); new spells at your trainer light up its line the same way. The Adventure tab and the addon compartment get Blizzard's alert pip, and the new card is marked. Opening the tab clears them; nothing opens by itself.
+- **Map pins and quest givers**, off by default: numbered route pins, and the game's "!" over everyone with a quest you can take now. Turn them on under *Show map pins* and *Show quest givers*.
+- **Skip for now** hides a step until your next `/reload`. Right-click a journey card for *Not interested*, which hides it on this character. *Skipped (n)*, under the steps and in the cog, brings either back.
+
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png" width="400" alt="The objective tracker's Adventure Guide section: Crossroads, The Barrens, 1 to hand in, 8 to pick up, Opens the next chapter here, About 6 min away, Next: Regthar Deathgate"></p>
 
 ## Install
 
@@ -26,23 +37,28 @@ Install it from CurseForge or Wago Addons, or download the zip from [Releases](h
 
 ## Usage
 
-- `/agf` or `/adventureguide` opens the guide on the world map.
+- `/agf` or `/adventureguide` opens the guide on the world map, as does the addon compartment on the minimap.
 - `/agf audit` compares the bundled quest data with the game.
-- Options are under *Settings > AddOns > Adventure Guide Forever*.
+- `/agf dump` saves the guide's layout for a bug report; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua`.
+- The cog on the tab holds *Quests*, *Dungeons*, the map pins, the tracker and anything skipped. The rest is under *Settings > AddOns > Adventure Guide*, including whether choosing a journey or clicking the tracker title starts the route.
 
 ## Where the quests come from
 
-Quest givers, levels and prerequisites come from a pinned CMaNGOS Classic database. Quest IDs are checked against the Forever client's own data. Which quests you have finished always comes from the game. A quest the data cannot place, or whose requirements it cannot check, is never suggested. Quests in your log are always used, including Forever's own new ones.
+Quest givers, levels and prerequisites come from a pinned CMaNGOS Classic database, and dungeons from the Forever client's own map tables. Quest IDs are checked against the Forever client's data. Which quests you have finished always comes from the game, and quest and zone names come from the game in your language.
+
+A quest the data cannot place, or whose requirements it cannot check, is never suggested, and a step never points at a place the data does not have. So Forever's own new quests are not suggested until they are in your log; once they are, they are used like any other.
 
 ## Works alongside
 
-- **Shortest Path Forever** plans the travel between steps when it is installed.
-- **Questie**, **RestedXP** and other guides: the guide still works with them loaded, but the routes may overlap. Use the settings to hide the tracker section if you follow another guide.
+- **Shortest Path Forever** plans the travel when you choose a journey and gives the tracker its travel line. Without it, choosing sets a waypoint and there is no travel line.
+- **Tweaks Forever** tells the guide when you have class spells to train.
+- **Questie**, **RestedXP** and other guides: the guide still works with them loaded, but the routes may overlap. Turn off *Show tracker section* in the settings if you follow another guide.
 
 ## Development
 
 ```sh
 python3 tools/gen_quests.py        # regenerate Data/Quests.lua
+python3 tools/screenshots.py       # regenerate docs/screenshots/
 luacheck . && stylua --check .
 for s in tests/*_spec.lua; do luajit "$s" || exit 1; done
 ```
@@ -51,4 +67,10 @@ See `AGENTS.md` for the full gate.
 
 ## Licence
 
-GPL-3.0-or-later. Quest data derives from [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-2.0-or-later).
+GPL-3.0-or-later. Quest data derives from [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0),
+map, flight and dungeon tables from the Forever client's own data via [wago.tools](https://wago.tools), and zone level
+ranges from [Warcraft Wiki](https://warcraft.wiki.gg/wiki/Zones_by_level_(original)). The addon bundles no data from
+Questie or Wowhead.
+
+World of Warcraft and its content are trademarks and copyrights of Blizzard Entertainment. This addon is free, and
+is not affiliated with or endorsed by Blizzard.

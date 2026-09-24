@@ -1,21 +1,36 @@
 Where to go next, for your level, as a tab in the world map's own quest log.
 
-Levelling guides tell you exactly what to do, in order, as fast as possible. Adventure Guide Forever is looser. From your level, the quests you have finished and the ones in your log, it suggests the next few things worth doing and where they are. You steer it: pick the zone, decide whether dungeon quests count, and pin or skip steps. It uses the map's own pins, quest markers and objective tracker, so it looks like it came with the game.
+Levelling guides tell you exactly what to do, in order, as fast as possible. I wanted something looser. From your level, the quests you have finished and the ones in your log, Adventure Guide Forever offers a few journeys to choose from, each with a reason, and a short route for the one you pick.
+
+It looks like it came with the game: a tab in the quest log beside Quests, cards drawn with retail's Journeys art, the game's own objective tracker, and Blizzard's quest details when you click a quest. With the tab closed it draws nothing on your map. It works with Shortest Path Forever for travel, and loads alongside Questie or RestedXP, though their routes may overlap.
+
+![The Barrens on the world map with the Adventure Guide tab open: the chosen Barrens story card with its seven stops listed and ringed on the map, towns such as Crossroads with their counts (1 to hand in, 8 to pick up, 6 min), and the other journeys folded to one-line rows above it](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png)
+
+![The objective tracker's Adventure Guide section: Crossroads, The Barrens, 1 to hand in, 8 to pick up, Opens the next chapter here, About 6 min away, Next: Regthar Deathgate](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png)
 
 ## Features
 
-- **Adventure Guide tab** on the world map's quest log: your level and rested XP, three zones that suit you under *Where next?*, and a suggested route of up to nine steps you can scroll and search, each with the reason it is there.
-- **Steps** hand in finished quests, pick up clusters of quests you can take now, and finish objectives already in your log. Dungeon and elite quests appear only when you want them.
-- **Pin and skip** steps to shape the route.
-- **Map pins** number the route on the world map.
-- **Quest givers** show the game's "!" on the world map over everyone with a quest you can take now.
-- **Objective tracker section** above your quests with the current and next step.
-- **Go** hands the step to Shortest Path Forever, flight paths and boats included, or sets the game's own waypoint without it.
+- **Journeys**: up to three cards. Finish the quests you carry, follow a zone's story, head to the next zone once it has enough quests near your level, or take up your class quests. Pick one and it shows its steps, up to nine.
+- **Stories as chapters**: "Chapter 2 of 4" only when the data proves the chain's length. Later chapters are never named.
+- **Choose and go**: choosing a card previews its steps on the map and hands the route to Shortest Path Forever, boats and flight paths included, or sets the game's own waypoint. A setting makes choosing preview only. *Stop* never removes a waypoint you placed yourself.
+- **Routes by distance** cross the sea at most once; a turn-in on the other continent waits until you are there.
+- **Why not?**: search a quest and see what it needs, ticked when you meet it.
+- **Objective tracker section** above your quests: one quiet line until you choose a journey (click it to choose that story), then the current step, how you'll get there, and the next one. Click the title to start the route; right-click to skip a step or pick another journey. Right-click a card if you are not interested in it.
+- **Dungeons when you ask**: a card for the dungeon with the most quests you can take, routed to their givers. Outdoor elite quests stay on the zone cards, marked optional. Raids are never suggested.
+- **Class trainer**: with Tweaks Forever, a line tells you when you have new spells to train and names the town of your nearest trainer. Click it to go there. A chosen journey through that town stops there to train. Skip it for now, or say you're not interested.
+- **Something new**: when a level or a new zone brings a journey you haven't seen, the tracker says so once and the Adventure tab gets an alert pip. Nothing opens by itself.
+- **Map pins and quest givers** are off by default. Turn them on in the guide's settings menu.
+
+A quest the data can't check is never suggested, so Forever's own new quests only show once they are in your log.
 
 ## Usage
 
-- `/agf` or `/adventureguide` opens the guide.
+- `/agf` or `/adventureguide` opens the guide on the world map.
 - `/agf audit` checks the bundled quest data against the game.
-- Options: *Settings > AddOns > Adventure Guide Forever*.
+- Options: the cog on the tab, and *Settings > AddOns > Adventure Guide*.
+
+Early days, feedback welcome.
 
 Source and issues: https://github.com/cjber/adventure-guide-forever · GPL-3.0-or-later
+
+Quest data derives from CMaNGOS classic-db (GPL-3.0). World of Warcraft is a trademark of Blizzard Entertainment; this addon is not affiliated with Blizzard.

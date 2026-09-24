@@ -18,6 +18,15 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y luajit lua-check
       - run: luacheck .
       - run: for spec in tests/*_spec.lua; do luajit "$spec" || exit 1; done
+      # Call counts only: the 3 ms budget is AGF_BENCH_STRICT=1, run locally, since shared runners flake.
+      - run: luajit -joff tests/plan_bench.lua
+      - name: The vendored Shortest Path types match upstream at the pinned sha
+        run: |
+          sha=$(sed -n 's/^local SPF_SHA = "\(.*\)"/\1/p' tests/contract_spec.lua)
+          curl -sSfL "https://raw.githubusercontent.com/cjber/shortest-path-forever/$sha/types/API.lua" \
+            | diff <(tail -n +2 tests/fixtures/spf_types_API.lua) -
+      - name: Tests use repository paths only
+        run: "! grep -rnE '/home/|~/|drive/proj' tests/"
       - run: pipx run ruff==0.16.8 check tools
       - run: pipx run ruff==0.16.8 format --check tools
       - uses: JohnnyMorganz/stylua-action@76fd70c03e6340ceaf673366712db9b20560b402 # v5.0.0

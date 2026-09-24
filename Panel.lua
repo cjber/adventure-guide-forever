@@ -1,19 +1,59 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+local L = ns.L
 
-local MAX_ZONES = 3
 local PAD = 8
 local ROW_HEIGHT = 44
+-- A row's detail runs under the skip button, to 10px short of the row's edge; the tag follows it within that room.
+local DETAIL_WIDTH = 230
+local GROUP_ICON = 12
 local ROW_GAP = 2
-local ROUTE_TOP = 34
+local CARD_HEIGHT = 86
+local CARD_GAP = 4
+-- A card not chosen while another is (docs/design.md §2.2): the Settings list's collapsible category header, its "+"
+-- saying the row opens, at its own 26px height (ROW_ART the tiling middle, ROW_CAPS the caps at their atlas size),
+-- with the kind icon alone, so nothing is squashed and the chosen card's steps start near the top.
+local COMPACT_HEIGHT, COMPACT_ICON = 26, 16
+local ROW_ART = "_options_listexpand_middle"
+local ROW_CAPS = { { "options_listexpand_left", 12, "LEFT" }, { "options_listexpand_right", 28, "RIGHT" } }
+local CARD_RING, CARD_ICON = 46, 18
+-- A card's text column: its title, subline and reason are this wide. The minutes and group tag at its right sit this
+-- far inside it, clear of the card's bevel (Panel.xml).
+local CARD_TEXT, CARD_INSET = 212, 8
+-- Under the cards while none is chosen.
+local HINT_HEIGHT = 14
+-- The honest-coverage line under the cards: two lines of GameFontDisableSmall.
+local UNLISTED_HEIGHT = 26
+-- The scroll child above the cards: the header 4px down and 34px tall, then 6px to the first card.
+local LIST_TOP = 4 + 34 + 6
+-- Blizzard's QUEST_TAG_ATLAS icons (Blizzard_FrameXMLBase/Constants.lua:514-527); the next zone gets the map's "!",
+-- the calling the quest log's class icon from the same sheet (CSV:9385).
+local KIND_ICONS = {
+	carry = "questlog-questtypeicon-quest",
+	story = "questlog-questtypeicon-story",
+	nextzone = "QuestNormal",
+	dungeon = "questlog-questtypeicon-dungeon",
+	calling = "questlog-questtypeicon-class",
+}
+-- Something new (docs/design.md §2.13): the Adventure Guide's own "new" mark (CSV:2024) on a card the character
+-- hasn't been offered before, over its ring's top-right, or beside a one-line row's "+"; its micro button's alert
+-- (CSV:2025) on the tab.
+local NEW_MARK, NEW_SIZE, NEW_COMPACT = "adventureguide-icon-whatsnew", 24, 18
+local TAB_PIP = "adventureguide-microbutton-alert"
+-- The chosen card keeps this art and is lit instead: the renown card's pressed art is drawn a few pixels over, which
+-- reads as the card slipping out of line.
+local CARD_ART = "ui-journeys-renown-button"
+-- The chapter track (docs/design.md §2.3): Blizzard's delve squares at 12px, with their meanings kept
+-- (RewardTrackTemplates.lua:427-436): done, the one most recently finished in green, the rest grey.
+local TRACK_MAX, SQUARE, SQUARE_GAP = 8, 12, 3
+-- The search (docs/design.md §2.4): 3 characters or more put up to 10 quests in place of the cards; a locked one lists
+-- why, unmet lines first, up to 6 (its tooltip has them all).
+local SEARCH_MIN, SEARCH_ROWS, WHY_LINES, RESULT_HEIGHT, WHY_HEIGHT = 3, 10, 6, 24, 14
 -- The quest log's own geometry: a 29px search bar above the list, a 40px footer below it for the Go button.
 local TOP_BAR = 29
+local SKIPPED_HEIGHT = 16
+local ASIDE_HEIGHT = 14
 local FOOTER = 40
-local CARD_HEIGHT = 64
--- Classic's XP bar colours: blue while rested XP remains, purple once it runs out.
-local XP_RESTED = { 0, 0.39, 0.88 }
-local XP_NORMAL = { 0.58, 0, 0.55 }
-local BUBBLES = 20
 
 ---@type Frame?
 local panel
@@ -21,52 +61,42 @@ local panel
 local guideTab
 ---@type AGFTabButton?
 local questsTab
----@type FontString?
-local levelText
----@type StatusBar?
-local xpBar
----@type StatusBar?
-local restedBar
----@type AGFChip[]
-local chips = {}
----@type AGFZoneCard[]
-local cards = {}
----@type FontString?
-local routeLabel
+---@type Texture?
+local tabPip
 ---@type AGFRouteRow[]
 local rows = {}
+---@type AGFJourneyCard[]
+local cards = {}
 ---@type Frame?
-local routeSection
+local list
 ---@type Frame?
 local content
 ---@type AGFSearchBox?
 local searchBox
----@type FontString?
-local countText
 -- Defined below the builders; the search box's handler needs it.
 local Refresh
+-- Defined with the card's refresh; the cards' OnEnter needs it.
+local CardTooltip
 ---@type FontString?
 local emptyText
+---@type AGFAsideLine?
+local asideLine
+---@type FontString?
+local hintText
+---@type FontString?
+local unlistedText
+---@type FontString?
+local queuedText
 ---@type Button?
-local goButton
-
----@class AGFEdgeFrame : Frame, BackdropTemplate
-
----@class AGFEdged : Frame
----@field Edge AGFEdgeFrame
-
--- Classic frame edges, taken from the stock backdrops (tooltip edge for cards, toast edge for
--- the XP bar) on a child frame, so the edge draws over the art it frames.
----@param frame AGFEdged
----@param backdrop {edgeFile: string, edgeSize: number}
----@param outset number
-local function AddEdge(frame, backdrop, outset)
-	local edge = CreateFrame("Frame", nil, frame, "BackdropTemplate") --[[@as AGFEdgeFrame]]
-	edge:SetPoint("TOPLEFT", -outset, outset)
-	edge:SetPoint("BOTTOMRIGHT", outset, -outset)
-	edge:SetBackdrop({ edgeFile = backdrop.edgeFile, edgeSize = backdrop.edgeSize, tileEdge = true })
-	frame.Edge = edge
-end
+local stopButton
+---@type AGFSearchRow[]
+local results = {}
+---@type Frame?
+local track
+---@type Button?
+local skippedButton
+---@type Texture[]
+local squares = {}
 
 ---@param step AGFStep
 local function FocusStep(step)
@@ -89,121 +119,11 @@ local function ShowTooltip(owner, lines)
 	GameTooltip:Show()
 end
 
----@class AGFChip : Button
----@field pref "quests"|"dungeons"
-
----@param parent Frame
----@param label string
----@param pref "quests"|"dungeons"
----@return AGFChip
-local function CreateChip(parent, label, pref)
-	local chip = CreateFrame("Button", nil, parent, "UIMenuButtonStretchTemplate") --[[@as AGFChip]]
-	chip.pref = pref
-	chip:SetHeight(24)
-	chip:SetText(label)
-	-- A locked highlight is the template's own "on" state; gold text marks it like the mockup.
-	chip:SetHighlightFontObject("GameFontNormal")
-	chip:SetScript("OnClick", function()
-		local prefs = ns.Prefs()
-		prefs[pref] = not prefs[pref]
-		ns.Invalidate()
-	end)
-	return chip
-end
-
----@class AGFZoneCard : Button, AGFEdged
----@field Art Texture
----@field Name FontString
----@field Range FontString
----@field BestFit Frame
----@field art? integer uiMapID whose art is loaded
----@field zone? AGFZoneChoice
-
--- The card shows a crop of the zone's own world-map art: the middle tile of its base layer,
--- trimmed to the card's aspect. No per-zone artwork has to ship with the addon.
----@param card AGFZoneCard
----@param mapID integer
-local function SetZoneArt(card, mapID)
-	if card.art == mapID then
-		return
-	end
-	card.art = mapID
-	local layer = (C_Map.GetMapArtLayers(mapID) or {})[1]
-	local textures = C_Map.GetMapArtLayerTextures(mapID, 1)
-	if not (layer and textures and #textures > 0) then
-		card.Art:SetColorTexture(0.12, 0.1, 0.08, 1)
-		return
-	end
-	local columns = math.ceil(layer.layerWidth / layer.tileWidth)
-	local tileRows = math.ceil(layer.layerHeight / layer.tileHeight)
-	local index = math.floor(tileRows / 2) * columns + math.floor(columns / 2) + 1
-	card.Art:SetTexture(textures[index] or textures[1])
-	local width, height = card:GetSize()
-	local trim = (1 - math.min(1, height / width)) / 2
-	card.Art:SetTexCoord(0, 1, trim, 1 - trim)
-end
-
----@param parent Frame
----@return AGFZoneCard
-local function CreateZoneCard(parent)
-	local card = CreateFrame("Button", nil, parent) --[[@as AGFZoneCard]]
-	card:SetHeight(CARD_HEIGHT)
-	card.Art = card:CreateTexture(nil, "BACKGROUND")
-	card.Art:SetAllPoints()
-	local veil = card:CreateTexture(nil, "BORDER")
-	veil:SetAllPoints()
-	veil:SetColorTexture(0, 0, 0, 0.35)
-	local hover = card:CreateTexture(nil, "HIGHLIGHT")
-	hover:SetAllPoints()
-	hover:SetColorTexture(1, 1, 1, 0.1)
-
-	card.Name = card:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-	card.Name:SetPoint("LEFT", 4, 0)
-	card.Name:SetPoint("RIGHT", -4, 0)
-	card.Name:SetPoint("TOP", 0, -14)
-	card.Name:SetShadowOffset(1, -1)
-	card.Range = card:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-	card.Range:SetPoint("TOP", card.Name, "BOTTOM", 0, -2)
-	card.Range:SetShadowOffset(1, -1)
-
-	card.BestFit = CreateFrame("Frame", nil, card)
-	card.BestFit:SetPoint("BOTTOMLEFT", 1, 1)
-	card.BestFit:SetPoint("BOTTOMRIGHT", -1, 1)
-	card.BestFit:SetHeight(15)
-	local band = card.BestFit:CreateTexture(nil, "BACKGROUND")
-	band:SetAllPoints()
-	band:SetColorTexture(0, 0, 0, 0.7)
-	local best = card.BestFit:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-	best:SetPoint("CENTER")
-	best:SetText("Best fit")
-
-	AddEdge(card, BACKDROP_TUTORIAL_16_16, 3)
-	card:SetScript("OnClick", function()
-		local zone = card.zone
-		if not zone then
-			return
-		end
-		local prefs = ns.Prefs()
-		if prefs.zone == zone.map or zone.best then
-			prefs.zone = nil
-		else
-			prefs.zone = zone.map
-		end
-		ns.Invalidate()
-	end)
-	card:SetScript("OnEnter", function(self)
-		local zone = self.zone
-		if zone then
-			ShowTooltip(self, {
-				zone.name,
-				("Levels %d-%d"):format(zone.min, zone.max),
-				("%d quests you can pick up"):format(zone.quests),
-			})
-		end
-	end)
-	card:SetScript("OnLeave", GameTooltip_Hide)
-	return card
-end
+-- The aside's line above the cards.
+---@class AGFAsideLine : Button
+---@field Icon Texture
+---@field Text FontString
+---@field Skip Button
 
 ---@class AGFRouteRow : Button
 ---@field Selected Texture
@@ -211,15 +131,16 @@ end
 ---@field Number Texture
 ---@field Title FontString
 ---@field Detail FontString
+---@field Group Texture
 ---@field Tag FontString
----@field PinButton Button
 ---@field SkipButton Button
 ---@field step? AGFStep
+---@field index? integer
 
 ---@param row AGFRouteRow
 ---@param atlas string
 ---@param tip fun(): string
----@param action fun(key: string)
+---@param action fun(step: AGFStep)
 ---@return Button
 local function CreateRowIcon(row, atlas, tip, action)
 	local button = CreateFrame("Button", nil, row)
@@ -228,7 +149,7 @@ local function CreateRowIcon(row, atlas, tip, action)
 	button:SetHighlightAtlas(atlas, "ADD")
 	button:SetScript("OnClick", function()
 		if row.step then
-			action(row.step.key)
+			action(row.step)
 		end
 	end)
 	button:SetScript("OnEnter", function(self)
@@ -253,14 +174,12 @@ local function CreateRow(parent)
 	row.Selected:SetAllPoints()
 
 	row.SkipButton = CreateRowIcon(row, "common-icon-redx", function()
-		return "Skip this step for now"
-	end, ns.Skip)
+		return ns.L.SKIP_STEP
+	end, function(step)
+		ns.Skip(step.key, step.title)
+	end)
 	row.SkipButton:SetSize(14, 14)
 	row.SkipButton:SetPoint("TOPRIGHT", -6, -7)
-	row.PinButton = CreateRowIcon(row, "Waypoint-MapPin-Untracked", function()
-		return (row.step and row.step.pinned) and "Unpin this step" or "Pin this step to the top of the route"
-	end, ns.TogglePin)
-	row.PinButton:SetPoint("RIGHT", row.SkipButton, "LEFT", -6, 0)
 
 	row.Ring = row:CreateTexture(nil, "ARTWORK")
 	row.Ring:SetAtlas("adventureguide-ring")
@@ -272,7 +191,7 @@ local function CreateRow(parent)
 
 	row.Title = row:CreateFontString(nil, "ARTWORK", "GameFontNormalMed3")
 	row.Title:SetPoint("TOPLEFT", row.Ring, "TOPRIGHT", 8, 4)
-	row.Title:SetPoint("RIGHT", row.PinButton, "LEFT", -4, 0)
+	row.Title:SetPoint("RIGHT", row.SkipButton, "LEFT", -4, 0)
 	row.Title:SetJustifyH("LEFT")
 	row.Title:SetWordWrap(false)
 
@@ -280,30 +199,39 @@ local function CreateRow(parent)
 	row.Detail:SetPoint("TOPLEFT", row.Title, "BOTTOMLEFT", 0, -4)
 	row.Detail:SetJustifyH("LEFT")
 	row.Detail:SetWordWrap(false)
+	-- Blizzard's group quest tag (QUEST_TAG_ATLAS), after the detail when a quest at the stop needs a group.
+	row.Group = row:CreateTexture(nil, "ARTWORK")
+	row.Group:SetAtlas("questlog-questtypeicon-group")
+	row.Group:SetSize(GROUP_ICON, GROUP_ICON)
+	row.Group:SetPoint("LEFT", row.Detail, "RIGHT", 4, 0)
 	row.Tag = row:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-	row.Tag:SetPoint("LEFT", row.Detail, "RIGHT", 6, 0)
-	row.Tag:SetText("optional")
+	row.Tag:SetText(ns.L.OPTIONAL)
 
-	row:SetScript("OnClick", function()
-		if row.step then
-			FocusStep(row.step)
+	-- The ring's lines; a row after step 1 asks Shortest Path for its travel line once, on hover.
+	row:SetScript("OnEnter", function(self)
+		local step, index = self.step, self.index
+		if not (step and index) then
+			return
+		end
+		local travel = index == 1 and ns.Integrations.Travel(step) or ns.Integrations.TravelLine(step)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		ns.Pins.StepTooltip(GameTooltip, step, index, travel)
+		GameTooltip:Show()
+	end)
+	row:SetScript("OnLeave", GameTooltip_Hide)
+	-- A quest in the log opens its details; any other step turns the map to it. Right-click is the step menu.
+	row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	row:SetScript("OnClick", function(self, mouseButton)
+		if not self.step then
+			return
+		end
+		if mouseButton == "RightButton" then
+			ns.Menu.Open(self, "MENU_ADVENTURE_GUIDE_FOREVER_STEP", self.step)
+		elseif not ns.ShowQuest(self.step) then
+			FocusStep(self.step)
 		end
 	end)
 	return row
-end
-
----@param parent Frame
----@param below Region
----@param height number
----@return Frame
-local function CreateSection(parent, below, height)
-	local section = CreateFrame("Frame", nil, parent, "InsetFrameTemplate") --[[@as AGFInset]]
-	-- The inset's marble fill reads as a grey slab on the quest log's parchment; keep only its edge.
-	section.Bg:Hide()
-	section:SetPoint("TOPLEFT", below, "BOTTOMLEFT", 0, -6)
-	section:SetPoint("RIGHT", parent, "RIGHT", -PAD, 0)
-	section:SetHeight(height)
-	return section
 end
 
 ---@param parent Frame
@@ -323,131 +251,243 @@ local function BuildHeader(parent)
 	return header
 end
 
----@param parent Frame
----@param below Region
----@return Frame
-local function BuildExperience(parent, below)
-	local section = CreateSection(parent, below, 48)
-	levelText = section:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-	levelText:SetPoint("TOP", 0, -8)
+---@class AGFJourneyCardIcon : Frame
+---@field Border Texture
+---@field Icon Texture
 
-	restedBar = CreateFrame("StatusBar", nil, section)
-	restedBar:SetPoint("TOPLEFT", 10, -26)
-	restedBar:SetPoint("RIGHT", -10, 0)
-	restedBar:SetHeight(12)
-	restedBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
-	restedBar:SetStatusBarColor(XP_RESTED[1], XP_RESTED[2], XP_RESTED[3], 0.35)
-	local trough = restedBar:CreateTexture(nil, "BACKGROUND")
-	trough:SetAllPoints()
-	trough:SetColorTexture(0, 0, 0, 0.6)
-	AddEdge(restedBar --[[@as AGFEdged]], BACKDROP_TOAST_12_12, 4)
+-- AdventureGuideForeverJourneyCardTemplate (Panel.xml).
+---@class AGFJourneyCard : Button
+---@field NormalTexture Texture
+---@field PushedTexture Texture
+---@field IconFrame AGFJourneyCardIcon
+---@field Title FontString
+---@field Subline FontString
+---@field Reason FontString
+---@field Group Texture
+---@field Travel FontString
+---@field UpdateHighlightForState fun(self: AGFJourneyCard)
+---@field journey? AGFJourney
+---@field state? "full"|"chosen"|"compact"
+---@field Caps Texture[]
+---@field New Texture
 
-	xpBar = CreateFrame("StatusBar", nil, restedBar)
-	xpBar:SetAllPoints()
-	xpBar:SetStatusBarTexture("Interface\\TargetingFrame\\UI-StatusBar")
-	local label = xpBar:CreateFontString(nil, "OVERLAY", "TextStatusBarText")
-	label:SetPoint("CENTER", 0, 1)
-	label:SetText("XP")
-	return section
-end
-
----@param parent Frame
----@param below Region
----@return Frame
-local function BuildChips(parent, below)
-	local strip = CreateFrame("Frame", nil, parent)
-	strip:SetPoint("TOPLEFT", below, "BOTTOMLEFT", 0, -8)
-	strip:SetPoint("RIGHT", parent, "RIGHT", -PAD, 0)
-	strip:SetHeight(24)
-	chips[1] = CreateChip(strip, "Quests", "quests")
-	chips[1]:SetPoint("TOPLEFT")
-	chips[1]:SetPoint("RIGHT", strip, "CENTER", -3, 0)
-	chips[2] = CreateChip(strip, "Dungeons", "dungeons")
-	chips[2]:SetPoint("TOPRIGHT")
-	chips[2]:SetPoint("LEFT", strip, "CENTER", 3, 0)
-	return strip
-end
+-- One search result: the quest and where it starts, and for a locked one a lock and why (docs/design.md §2.4).
+---@class AGFSearchRow : Frame
+---@field Lock Texture
+---@field Title FontString
+---@field Zone FontString
+---@field Checks Texture[]
+---@field Lines FontString[]
+---@field why AGFWhyLine[]
 
 ---@param parent Frame
----@param below Region
----@return Frame
-local function BuildZones(parent, below)
-	local section = CreateSection(parent, below, CARD_HEIGHT + 40)
-	local label = section:CreateFontString(nil, "ARTWORK", "GameFontHighlightMedium")
-	label:SetPoint("TOPLEFT", 10, -9)
-	label:SetText("Where next?")
-	for index = 1, MAX_ZONES do
-		local card = CreateZoneCard(section)
-		card:SetPoint("TOP", 0, -32)
-		if index == 1 then
-			card:SetPoint("LEFT", 8, 0)
-		else
-			card:SetPoint("LEFT", cards[index - 1], "RIGHT", 6, 0)
-		end
-		cards[index] = card
+---@return AGFSearchRow
+local function CreateResult(parent)
+	local row = CreateFrame("Frame", nil, parent) --[[@as AGFSearchRow]]
+	row:EnableMouse(true)
+	row.why = {}
+	row.Lock = row:CreateTexture(nil, "ARTWORK")
+	row.Lock:SetAtlas("questlog-questtypeicon-lock")
+	row.Lock:SetSize(18, 18)
+	row.Lock:SetPoint("TOPLEFT", 4, -2)
+	row.Zone = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	row.Zone:SetPoint("TOPRIGHT", -4, -6)
+	row.Zone:SetJustifyH("RIGHT")
+	row.Title = row:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+	row.Title:SetPoint("TOPLEFT", 26, -4)
+	row.Title:SetPoint("RIGHT", row.Zone, "LEFT", -6, 0)
+	row.Title:SetJustifyH("LEFT")
+	row.Title:SetWordWrap(false)
+	row.Checks, row.Lines = {}, {}
+	for index = 1, WHY_LINES do
+		local top = -(RESULT_HEIGHT + (index - 1) * WHY_HEIGHT) + 2
+		local check = row:CreateTexture(nil, "ARTWORK")
+		check:SetAtlas("ui-questtracker-tracker-check")
+		check:SetSize(12, 12)
+		check:SetPoint("TOPLEFT", 26, top)
+		local line = row:CreateFontString(nil, "ARTWORK", "GameFontRedSmall")
+		line:SetPoint("TOPLEFT", 40, top)
+		line:SetPoint("RIGHT", -4, 0)
+		line:SetJustifyH("LEFT")
+		line:SetWordWrap(false)
+		row.Checks[index], row.Lines[index] = check, line
 	end
-	section:SetScript("OnSizeChanged", function(_, width)
-		for _, card in ipairs(cards) do
-			card:SetWidth((width - 16 - 6 * (MAX_ZONES - 1)) / MAX_ZONES)
-			-- The crop depends on the card's aspect, so redo it at the new width.
-			card.art = nil
-			if card.zone then
-				SetZoneArt(card, card.zone.map)
+	-- Every line as a tooltip, in the game's own error and disabled voices.
+	row:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip_SetTitle(GameTooltip, self.Title:GetText())
+		for _, why in ipairs(self.why) do
+			if why.met then
+				GameTooltip_AddDisabledLine(GameTooltip, why.text)
+			else
+				GameTooltip_AddErrorLine(GameTooltip, why.text)
 			end
 		end
+		GameTooltip:Show()
 	end)
-	return section
+	row:SetScript("OnLeave", GameTooltip_Hide)
+	return row
 end
 
+-- The cards, and the chosen card's step rows under it; the list lays them out from its top.
 ---@param parent Frame
 ---@param below Region
-local function BuildRoute(parent, below)
-	local section = CreateSection(parent, below, ROUTE_TOP)
-	routeSection = section
-	routeLabel = section:CreateFontString(nil, "ARTWORK", "GameFontHighlightMedium")
-	routeLabel:SetPoint("TOPLEFT", 10, -9)
-	for index = 1, ns.Model.MAX_STEPS do
-		rows[index] = CreateRow(section)
+local function BuildJourneys(parent, below)
+	list = CreateFrame("Frame", nil, parent)
+	list:SetPoint("TOPLEFT", below, "BOTTOMLEFT", 0, -6)
+	list:SetPoint("RIGHT", parent, "RIGHT", -PAD, 0)
+	for index = 1, ns.Model.MAX_JOURNEYS do
+		local card = CreateFrame("Button", nil, list, "AdventureGuideForeverJourneyCardTemplate") --[[@as AGFJourneyCard]]
+		-- Choosing a journey shows its route and turns the map to it, and with the setting on starts it (ns.Choose,
+		-- once the rebuild has its steps). The map turns before the invalidation, so its redraw reads the route as it
+		-- is and the one rebuild waits a frame. The chosen card is a toggle: clicking it again chooses none, every card
+		-- is whole again and the route it started stops (never anyone else's); while its route is paused, the click
+		-- resumes it instead. Right-click offers "Not interested", except on what the player carries.
+		card:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+		card:SetScript("OnClick", function(self, mouseButton)
+			local journey = self.journey
+			if not journey then
+				return
+			end
+			if mouseButton == "RightButton" then
+				if journey.kind ~= "carry" then
+					GameTooltip_Hide()
+					ns.Menu.Journey(self, journey)
+				end
+				return
+			end
+			if self.state == "chosen" and ns.Paused() then
+				ns.StartRoute()
+			elseif self.state == "chosen" then
+				ns.Choose(nil)
+			else
+				WorldMapFrame:SetMapID(journey.map)
+				ns.Choose(journey.key, ns.Setting("titleStartsRoute"))
+			end
+			-- Its tooltip spoke for the state the click just left.
+			GameTooltip_Hide()
+		end)
+		card:HookScript("OnEnter", CardTooltip)
+		card:HookScript("OnLeave", GameTooltip_Hide)
+		card.Caps = {}
+		for _, cap in ipairs(ROW_CAPS) do
+			local texture = card:CreateTexture(nil, "OVERLAY")
+			texture:SetAtlas(cap[1])
+			texture:SetSize(cap[2], COMPACT_HEIGHT)
+			texture:SetPoint(cap[3])
+			card.Caps[#card.Caps + 1] = texture
+		end
+		card.New = card:CreateTexture(nil, "OVERLAY", nil, 2)
+		card.New:SetAtlas(NEW_MARK)
+		cards[index] = card
 	end
-	emptyText = section:CreateFontString(nil, "ARTWORK", "GameFontDisable")
-	emptyText:SetPoint("TOPLEFT", routeLabel, "BOTTOMLEFT", 0, -16)
+	track = CreateFrame("Frame", nil, list)
+	track:SetSize(TRACK_MAX * (SQUARE + SQUARE_GAP), SQUARE)
+	for index = 1, TRACK_MAX do
+		local square = track:CreateTexture(nil, "ARTWORK")
+		square:SetSize(SQUARE, SQUARE)
+		square:SetPoint("LEFT", (index - 1) * (SQUARE + SQUARE_GAP), 0)
+		squares[index] = square
+	end
+	for index = 1, ns.Model.MAX_STEPS do
+		rows[index] = CreateRow(list)
+	end
+	for index = 1, SEARCH_ROWS do
+		results[index] = CreateResult(list)
+	end
+	-- "Skipped (n)" under the cards (design §2.1), a small gold text button that opens the Skipped submenu on its own.
+	skippedButton = CreateFrame("Button", nil, list) --[[@as Button]]
+	skippedButton:SetHeight(SKIPPED_HEIGHT)
+	skippedButton:SetNormalFontObject("GameFontNormalSmall")
+	skippedButton:SetHighlightFontObject("GameFontHighlightSmall")
+	skippedButton:SetScript("OnClick", function(self)
+		MenuUtil.CreateContextMenu(self, function(_, root)
+			root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_SKIPPED")
+			ns.Menu.Skipped(root)
+		end)
+	end)
+	emptyText = list:CreateFontString(nil, "ARTWORK", "GameFontDisable")
+	emptyText:SetPoint("TOPLEFT", 10, -8)
 	emptyText:SetPoint("RIGHT", -10, 0)
 	emptyText:SetJustifyH("LEFT")
+	hintText = list:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+	hintText:SetPoint("RIGHT", -10, 0)
+	hintText:SetJustifyH("LEFT")
+	hintText:SetText(L.CHOOSE_TO_SEE_STEPS)
+	unlistedText = list:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+	unlistedText:SetPoint("RIGHT", -10, 0)
+	unlistedText:SetJustifyH("LEFT")
+	unlistedText:SetText(L.UNLISTED)
+	-- The aside (Asides.lua) above the cards: its icon, its line and a row's skip. Its click goes to its place when it
+	-- has one; right-click is its menu.
+	asideLine = CreateFrame("Button", nil, list) --[[@as AGFAsideLine]]
+	asideLine:SetHeight(ASIDE_HEIGHT)
+	asideLine:SetPoint("RIGHT", -10, 0)
+	asideLine.Icon = asideLine:CreateTexture(nil, "ARTWORK")
+	asideLine.Icon:SetSize(ASIDE_HEIGHT, ASIDE_HEIGHT)
+	asideLine.Icon:SetPoint("LEFT")
+	asideLine.Skip = CreateFrame("Button", nil, asideLine) --[[@as Button]]
+	asideLine.Skip:SetSize(ASIDE_HEIGHT, ASIDE_HEIGHT)
+	asideLine.Skip:SetPoint("RIGHT")
+	asideLine.Skip:SetNormalAtlas("common-icon-redx")
+	asideLine.Skip:SetHighlightAtlas("common-icon-redx", "ADD")
+	asideLine.Skip:SetScript("OnClick", function()
+		local aside = ns.Asides.Current()
+		if aside then
+			ns.Asides.Skip(aside.key)
+		end
+	end)
+	asideLine.Skip:SetScript("OnEnter", function(self)
+		ShowTooltip(self, { L.SKIP })
+	end)
+	asideLine.Skip:SetScript("OnLeave", GameTooltip_Hide)
+	asideLine.Text = asideLine:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+	asideLine.Text:SetPoint("LEFT", asideLine.Icon, "RIGHT", 4, 0)
+	asideLine.Text:SetPoint("RIGHT", asideLine.Skip, "LEFT", -4, 0)
+	asideLine.Text:SetJustifyH("LEFT")
+	asideLine.Text:SetWordWrap(false)
+	asideLine:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	asideLine:SetScript("OnClick", function(self, mouseButton)
+		local aside = ns.Asides.Current()
+		if aside and mouseButton == "RightButton" then
+			ns.Asides.Open(self, "MENU_ADVENTURE_GUIDE_FOREVER_ASIDE", aside)
+		elseif aside then
+			ns.Asides.Go(aside)
+		end
+	end)
+	-- A long line is cut short, so its tooltip has it whole, and says where a click goes when it goes anywhere.
+	asideLine:SetScript("OnEnter", function(self)
+		local aside = ns.Asides.Current()
+		if not aside then
+			return
+		end
+		local provider = ns.Integrations.Provider()
+		local lines = { aside.text }
+		lines[2] = aside.place and (provider and L.CLICK_TRAVEL:format(provider) or L.CLICK_WAYPOINT) or nil
+		ShowTooltip(self, lines)
+	end)
+	asideLine:SetScript("OnLeave", GameTooltip_Hide)
 end
 
 ---@param parent Frame
 local function BuildFooter(parent)
-	goButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate") --[[@as Button]]
-	goButton:SetSize(190, 26)
-	goButton:SetPoint("BOTTOMLEFT", PAD, 8)
-	goButton:SetScript("OnClick", function()
-		local step = ns.Route().steps[1]
-		if step then
-			ns.Integrations.Navigate(step)
-		end
-	end)
-
-	local why = CreateFrame("Button", nil, parent)
-	why:SetSize(90, 26)
-	why:SetPoint("BOTTOMRIGHT", -PAD, 8)
-	why:SetNormalFontObject("GameFontNormal")
-	why:SetHighlightFontObject("GameFontHighlight")
-	why:SetText("Why these?")
-	why:SetScript("OnEnter", function(self)
-		local lines = { "Why these steps?" }
-		for index, step in ipairs(ns.Route().steps) do
-			lines[#lines + 1] = ("%d. %s - %s"):format(index, step.title, step.reason)
-		end
-		ShowTooltip(self, lines)
-	end)
-	why:SetScript("OnLeave", GameTooltip_Hide)
+	-- No Go: choosing a card starts its route. A choice made in combat says it waits, so it never reads as failed, and
+	-- a route that stopped says its card resumes it.
+	queuedText = parent:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+	queuedText:SetPoint("BOTTOMLEFT", PAD, 15)
+	-- Shown only while our guidance runs (design §2.1): it never stops what the player or another addon started.
+	stopButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate") --[[@as Button]]
+	stopButton:SetSize(90, 26)
+	stopButton:SetPoint("BOTTOMRIGHT", -PAD, 8)
+	stopButton:SetText(L.STOP)
+	stopButton:SetScript("OnClick", ns.Stop)
 end
 
 ---@param _ AGFDropdown
 ---@param menu AGFMenu
 local function BuildSettingsMenu(_, menu)
 	local function Setting(label, key)
-		menu:CreateCheckbox(label, function()
+		return menu:CreateCheckbox(label, function()
 			return ns.Setting(key)
 		end, function()
 			ns.SetSetting(key, not ns.Setting(key))
@@ -462,32 +502,35 @@ local function BuildSettingsMenu(_, menu)
 			ns.Invalidate()
 		end)
 	end
-	Pref("Quests", "quests")
-	Pref("Dungeons", "dungeons")
-	Setting("Show map pins", "showMapPins")
-	Setting("Show quest givers", "showQuestGivers")
-	Setting("Show in objective tracker", "showTracker")
-	menu:CreateButton("More settings", function()
+	Pref(ns.L.MENU_QUESTS, "quests")
+	Pref(ns.L.MENU_DUNGEONS, "dungeons")
+	Setting(ns.L.MENU_MAP_PINS, "showMapPins")
+	-- Givers draw only with map pins on, so the box is grayed until they are (the menu polls a function).
+	Setting(ns.L.MENU_GIVERS, "showQuestGivers"):SetEnabled(function()
+		return ns.Setting("showMapPins")
+	end)
+	Setting(ns.L.MENU_TRACKER, "showTracker")
+	-- Skipped steps, journeys not wanted (roadmap #17) and asides turned down, each with Show again.
+	local skipped = #ns.Skipped()
+	if skipped > 0 then
+		ns.Menu.Skipped(menu:CreateButton(ns.L.SKIPPED:format(skipped)))
+	end
+	menu:CreateButton(ns.L.MENU_MORE_SETTINGS, function()
 		if ns.OpenSettings then
 			ns.OpenSettings()
 		end
 	end)
 end
 
--- The quest log's top bar: a search box that filters the route, a count box and the settings cog.
+-- The quest log's top bar: a search box for any quest across its width, and the settings cog. No step count
+-- (docs/design.md §1).
 ---@param panelFrame Frame
 local function BuildTopBar(panelFrame)
-	local count = CreateFrame("Frame", nil, panelFrame, "InputBoxVisualTemplate") --[[@as Frame]]
-	count:SetSize(100, 20)
-	count:SetPoint("TOPRIGHT", -3, -2)
-	countText = count:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-	countText:SetPoint("RIGHT", -5, 0)
-
 	searchBox = CreateFrame("EditBox", nil, panelFrame, "SearchBoxTemplate") --[[@as AGFSearchBox]]
-	searchBox.Instructions:SetText("Search route")
+	searchBox.Instructions:SetText(L.SEARCH_QUESTS)
 	searchBox:SetHeight(20)
 	searchBox:SetPoint("TOPLEFT", 6, -2)
-	searchBox:SetPoint("RIGHT", count, "LEFT", -3, 0)
+	searchBox:SetPoint("TOPRIGHT", -3, -2)
 	searchBox:SetMaxLetters(60)
 	searchBox:HookScript("OnTextChanged", function()
 		Refresh()
@@ -527,127 +570,391 @@ local function BuildContent(panelFrame)
 	BuildTopBar(panelFrame)
 	content = BuildScroll(panelFrame)
 	local header = BuildHeader(content)
-	local experience = BuildExperience(content, header)
-	local strip = BuildChips(content, experience)
-	local zones = BuildZones(content, strip)
-	BuildRoute(content, zones)
+	BuildJourneys(content, header)
 	BuildFooter(panelFrame)
-end
-
-local function RefreshExperience()
-	---@cast levelText -?
-	---@cast xpBar -?
-	---@cast restedBar -?
-	local level = UnitLevel("player")
-	local xp, xpMax = UnitXP("player"), UnitXPMax("player")
-	if not (xpMax and xpMax > 0) then
-		levelText:SetText(("|cffffd100Level %d|r"):format(level))
-		xpBar:SetMinMaxValues(0, 1)
-		xpBar:SetValue(1)
-		restedBar:SetValue(0)
-		return
-	end
-	local rested = GetXPExhaustion() or 0
-	local text = ("|cffffd100Level %d|r - %d%% to %d"):format(level, math.floor(xp / xpMax * 100), level + 1)
-	if rested > 0 then
-		text = ("%s - Rested %.1f bubbles"):format(text, rested / (xpMax / BUBBLES))
-	end
-	levelText:SetText(text)
-	local color = rested > 0 and XP_RESTED or XP_NORMAL
-	xpBar:SetStatusBarColor(color[1], color[2], color[3])
-	xpBar:SetMinMaxValues(0, xpMax)
-	xpBar:SetValue(xp)
-	restedBar:SetMinMaxValues(0, xpMax)
-	restedBar:SetValue(math.min(xpMax, xp + rested))
-end
-
----@param route AGFRoute
----@param prefs AGFPrefs
-local function RefreshChoices(route, prefs)
-	for _, chip in ipairs(chips) do
-		local on = prefs[chip.pref]
-		chip:SetNormalFontObject(on and "GameFontNormal" or "GameFontDisable")
-		if on then
-			chip:LockHighlight()
-		else
-			chip:UnlockHighlight()
-		end
-	end
-	for index, card in ipairs(cards) do
-		local zone = route.zones[index]
-		card.zone = zone
-		card:SetShown(zone ~= nil)
-		if zone then
-			SetZoneArt(card, zone.map)
-			card.Name:SetText(zone.name)
-			card.Range:SetText(("%d-%d"):format(zone.min, zone.max))
-			card.BestFit:SetShown(zone.best)
-			if zone.map == route.zone then
-				card.Edge:SetBackdropBorderColor(NORMAL_FONT_COLOR:GetRGB())
-			else
-				card.Edge:SetBackdropBorderColor(GRAY_FONT_COLOR:GetRGB())
-			end
-		end
-	end
 end
 
 ---@param row AGFRouteRow
 ---@param step AGFStep
 ---@param index integer
 local function RefreshRow(row, step, index)
+	row.index = index
 	row.Number:SetAtlas("services-number-" .. index)
 	row.Title:SetText(step.title)
-	row.Detail:SetText(step.detail)
+	-- Step 1 adds how long it takes when Shortest Path knows (docs/plan.md §7.4); its tooltip gives the way.
+	local minutes = index == 1 and ns.Integrations.TravelMinutes(step)
+	row.Detail:SetText(minutes and L.TRAVEL:format(step.detail, minutes) or step.detail)
+	local group = (step.group or 0) > 0
+	row.Group:SetShown(group)
 	row.Tag:SetShown(step.optional == true)
+	row.Tag:ClearAllPoints()
+	row.Tag:SetPoint("LEFT", group and row.Group or row.Detail, "RIGHT", group and 4 or 6, 0)
+	-- The detail has no right anchor, so the icon and tag can follow its text; a width cap cuts it short with "..."
+	-- instead.
+	local room = DETAIL_WIDTH
+		- (group and GROUP_ICON + 4 or 0)
+		- (row.Tag:IsShown() and row.Tag:GetUnboundedStringWidth() + (group and 4 or 6) or 0)
+	row.Detail:SetWidth(math.min(row.Detail:GetUnboundedStringWidth(), room))
 	row:SetAlpha(step.optional and 0.6 or 1)
-	row.PinButton:SetNormalAtlas(step.pinned and "Waypoint-MapPin-Tracked" or "Waypoint-MapPin-Untracked")
 	row.Selected:SetShown(index == 1)
 end
 
--- Plain, case-insensitive text match: the quest log's search works the same way.
----@param step AGFStep
----@param query string
----@return boolean
-local function Matches(step, query)
-	return query == ""
-		or step.title:lower():find(query, 1, true) ~= nil
-		or step.detail:lower():find(query, 1, true) ~= nil
+-- A card's first stop and how many stops follow it, its third line when it has no reason.
+---@param journey AGFJourney
+---@return string?
+local function HubLine(journey)
+	local more = journey.more or 0
+	if not journey.hub then
+		return nil
+	end
+	return (more > 1 and L.HUB_MORE:format(journey.hub, more))
+		or (more == 1 and L.HUB_MORE_ONE:format(journey.hub))
+		or journey.hub
 end
 
--- Rows keep their route number while the search hides the others; the scroll child grows to fit them.
+-- Every card's tooltip, whole or one-line (docs/plan.md §7.4): its lines, the hub line when line 3 holds the reason
+-- or is folded away, how many quests need a group, then what a click does. The chosen card says how to see them all
+-- again; a card whose click would replace someone else's journey warns first, as Go did (docs/design.md §2.9).
+---@param card AGFJourneyCard
+function CardTooltip(card)
+	local journey = card.journey
+	if not journey then
+		return
+	end
+	local starts = ns.Setting("titleStartsRoute")
+	local chosen = card.state == "chosen"
+	GameTooltip:SetOwner(card, "ANCHOR_RIGHT")
+	GameTooltip_SetTitle(GameTooltip, journey.title)
+	GameTooltip_AddNormalLine(GameTooltip, journey.subline)
+	if journey.reason then
+		GameTooltip_AddHighlightLine(GameTooltip, journey.reason)
+	end
+	local hub = HubLine(journey)
+	if hub and (journey.reason or card.state == "compact") then
+		GameTooltip_AddHighlightLine(GameTooltip, hub)
+	end
+	local travel = ns.Integrations.CardTravel(journey)
+	if travel and travel.line then
+		GameTooltip_AddHighlightLine(GameTooltip, travel.line)
+	end
+	local group = journey.group or 0
+	if group > 0 then
+		GameTooltip_AddHighlightLine(GameTooltip, group == 1 and L.GROUP_ONE or L.GROUP_MANY:format(group))
+	end
+	local resumes = chosen and ns.Paused()
+	if not chosen then
+		GameTooltip_AddInstructionLine(GameTooltip, L.CLICK_TO_CHOOSE)
+	elseif resumes then
+		GameTooltip_AddInstructionLine(GameTooltip, L.CLICK_TO_RESUME)
+	else
+		local stops = starts and ns.Integrations.Owns()
+		GameTooltip_AddInstructionLine(GameTooltip, stops and L.STOP_AND_SHOW_EVERY_JOURNEY or L.SHOW_EVERY_JOURNEY)
+	end
+	if (resumes or not chosen and starts) and ns.Integrations.ReplacesJourney() then
+		GameTooltip_AddInstructionLine(GameTooltip, L.REPLACES_JOURNEY)
+	end
+	if journey.kind ~= "carry" then
+		GameTooltip_AddInstructionLine(GameTooltip, L.RIGHT_CLICK_NOT_INTERESTED)
+	end
+	GameTooltip:Show()
+end
+
+-- `state`: "full" (none chosen), "chosen" (full and lit) or "compact" (another is chosen: icon and title only).
+---@param card AGFJourneyCard
+---@param journey AGFJourney
+---@param state "full"|"chosen"|"compact"
+---@return number height
+local function RefreshCard(card, journey, state)
+	local compact, chosen = state == "compact", state == "chosen"
+	card.journey, card.state = journey, state
+	card:SetHeight(compact and COMPACT_HEIGHT or CARD_HEIGHT)
+	local ring = compact and COMPACT_ICON or CARD_RING
+	card.IconFrame:SetSize(ring, ring)
+	card.IconFrame:SetPoint("LEFT", compact and 12 or 15, 0)
+	card.IconFrame.Border:SetShown(not compact)
+	card.IconFrame.Icon:SetSize(compact and COMPACT_ICON or CARD_ICON, compact and COMPACT_ICON or CARD_ICON)
+	for _, cap in ipairs(card.Caps) do
+		cap:SetShown(compact)
+	end
+	card.New:SetShown(ns.Moments.IsNew(journey.key))
+	card.New:ClearAllPoints()
+	if compact then
+		card.New:SetSize(NEW_COMPACT, NEW_COMPACT)
+		card.New:SetPoint("RIGHT", -ROW_CAPS[2][2], 0)
+	else
+		card.New:SetSize(NEW_SIZE, NEW_SIZE)
+		card.New:SetPoint("CENTER", card.IconFrame, "TOPRIGHT", -4, -4)
+	end
+	card.IconFrame.Icon:SetAtlas(KIND_ICONS[journey.kind])
+	card.Title:SetText(journey.title)
+	card.Title:ClearAllPoints()
+	if compact then
+		card.Title:SetPoint("LEFT", card.IconFrame, "RIGHT", 6, 0)
+	else
+		card.Title:SetPoint("TOPLEFT", card.IconFrame, "TOPRIGHT", 6, 4)
+	end
+	card.Subline:SetShown(not compact)
+	card.Reason:SetShown(not compact)
+	card.Subline:SetText(journey.subline)
+	card.Reason:SetText(journey.reason or HubLine(journey) or "")
+	-- Shortest Path's minutes, naming a boat or zeppelin when the subline leaves room for it.
+	local travel = not compact and ns.Integrations.CardTravel(journey) or nil
+	local minutes = travel and travel.minutes
+	card.Travel:SetShown(minutes ~= nil)
+	card.Subline:ClearAllPoints()
+	card.Subline:SetPoint("TOPLEFT", card.Title, "BOTTOMLEFT", 0, -2)
+	if travel and minutes then
+		local crossing = travel.crossing
+		local long = (crossing == "boat" and L.CARD_BY_BOAT) or (crossing == "zeppelin" and L.CARD_BY_ZEPPELIN)
+		card.Travel:SetText((long or L.CARD_MINUTES):format(minutes))
+		local room = CARD_TEXT - CARD_INSET - 6 - card.Subline:GetUnboundedStringWidth()
+		if long and card.Travel:GetUnboundedStringWidth() > room then
+			card.Travel:SetText(L.CARD_MINUTES:format(minutes))
+		end
+		card.Subline:SetPoint("RIGHT", card.Travel, "LEFT", -6, 0)
+	end
+	-- The dungeon card's own icon already says it needs a group.
+	local group = not compact and (journey.group or 0) > 0 and journey.kind ~= "dungeon"
+	card.Group:SetShown(group)
+	card.Reason:ClearAllPoints()
+	card.Reason:SetPoint("TOPLEFT", card.Subline, "BOTTOMLEFT", 0, -2)
+	if group then
+		card.Reason:SetPoint("RIGHT", card.Group, "LEFT", -4, 0)
+	end
+	-- The pushed art is the normal art, so a press moves nothing; the highlight follows it (AlphaHighlightButton).
+	local art = compact and ROW_ART or CARD_ART
+	card.NormalTexture:SetAtlas(art)
+	card.PushedTexture:SetAtlas(art)
+	card:UpdateHighlightForState()
+	-- The chosen card keeps its hover highlight (its own art, added) lit, the way a stock list keeps its selected row
+	-- lit, and never moves.
+	if chosen then
+		card:LockHighlight()
+	else
+		card:UnlockHighlight()
+	end
+	-- A card under the pointer can change journey (Not interested, a rebuild): its tooltip speaks for the new one.
+	if GameTooltip:IsOwned(card) then
+		CardTooltip(card)
+	end
+	return compact and COMPACT_HEIGHT or CARD_HEIGHT
+end
+
+-- The story's squares under its card, from `top` down, when the data proves the chain's length and it is 8 or fewer;
+-- otherwise the card's "Chapter N" says all there is. Squares only: the card's subline already names the chapter.
+---@param journey AGFJourney
+---@param top number
+---@return number top below the track
+local function LayoutTrack(journey, top)
+	---@cast track -?
+	local story = journey.story
+	local total = story and story.total
+	local shown = total ~= nil and total <= TRACK_MAX
+	track:SetShown(shown)
+	if not (story and shown) then
+		return top
+	end
+	for index, square in ipairs(squares) do
+		square:SetShown(index <= total)
+		square:SetAtlas(
+			(index >= story.chapter and "ui-journeys-delve-level-square-grey")
+				or (index == story.chapter - 1 and "ui-journeys-delve-level-square-green")
+				or "ui-journeys-delve-level-square"
+		)
+	end
+	track:SetPoint("TOPLEFT", 14, -top)
+	return top + SQUARE + CARD_GAP
+end
+
+-- The chosen card's rows, from `top` down; `hidden` (no journey chosen, or a search) hides them all.
 ---@param route AGFRoute
-local function LayoutRows(route)
-	---@cast searchBox -?
-	---@cast countText -?
-	---@cast routeSection -?
-	---@cast content -?
-	local query = strtrim(searchBox:GetText()):lower()
-	local shown = 0
+---@param top number
+---@param hidden? boolean
+---@return number top below the last row shown
+local function LayoutRows(route, top, hidden)
 	for index, row in ipairs(rows) do
 		---@type AGFStep?
-		local step = route.steps[index]
-		if step and not Matches(step, query) then
-			step = nil
-		end
+		local step = not hidden and route.steps[index] or nil
 		row.step = step
 		row:SetShown(step ~= nil)
 		if step then
 			RefreshRow(row, step, index)
-			local top = -ROUTE_TOP - shown * (ROW_HEIGHT + ROW_GAP)
-			row:SetPoint("TOPLEFT", 6, top)
-			row:SetPoint("TOPRIGHT", -6, top)
-			shown = shown + 1
+			row:SetPoint("TOPLEFT", 6, -top)
+			row:SetPoint("TOPRIGHT", -6, -top)
+			top = top + ROW_HEIGHT + ROW_GAP
 		end
 	end
-	countText:SetText(
-		query == "" and ("Steps: %d"):format(#route.steps) or ("Steps: %d/%d"):format(shown, #route.steps)
-	)
-	local rowsHeight = shown > 0 and shown * (ROW_HEIGHT + ROW_GAP) + 6 or 40
-	routeSection:SetHeight(ROUTE_TOP + rowsHeight)
-	local top, bottom = content:GetTop(), routeSection:GetBottom()
-	if top and bottom then
-		content:SetHeight(top - bottom + PAD)
+	return top
+end
+
+-- The client's title, asked for once when it has none cached; the search redraws as titles arrive (Attach).
+---@type table<integer, boolean>
+local requested = {}
+---@param questID integer
+---@return string?
+local function QuestTitle(questID)
+	local title = ns.State.QuestTitle(questID)
+	if not title and not requested[questID] then
+		requested[questID] = true
+		C_QuestLog.RequestLoadQuestByID(questID)
 	end
+	return title
+end
+
+-- One result from `top` down. A quest the player can take now is a plain row; a locked one gets the lock and its
+-- lines, unmet first. No ring and no Go: the search only explains.
+---@param row AGFSearchRow
+---@param id integer
+---@param top number
+---@return number top below it
+local function RefreshResult(row, id, top)
+	local state, data = ns.State, ns.Data
+	local names = {
+		title = QuestTitle,
+		race = state.RaceName,
+		class = state.ClassName,
+		skill = state.SkillName,
+		faction = state.FactionName,
+		standing = state.StandingName,
+	}
+	local why = ns.Model.Why(data, state.Player(), state.Completed(), state.Log(), id, names)
+	local shown = {}
+	for _, met in ipairs({ false, true }) do
+		for _, line in ipairs(why) do
+			if line.met == met then
+				shown[#shown + 1] = line
+			end
+		end
+	end
+	-- Every line met is the quest open now: nothing to explain.
+	if not (shown[1] and not shown[1].met) then
+		shown = {}
+	end
+	row.why = shown
+	local quest = data.quests[id]
+	local map = quest.zone or (quest.start and quest.start.map)
+	local zone = map and (data.zones[map] or data.maps[map])
+	row.Title:SetText(QuestTitle(id) or quest.title)
+	row.Zone:SetText(map and (state.MapName(map) or (zone and zone.name)) or "")
+	row.Lock:SetShown(shown[1] ~= nil)
+	for index, line in ipairs(row.Lines) do
+		local entry = shown[index]
+		line:SetShown(entry ~= nil)
+		row.Checks[index]:SetShown(entry ~= nil and entry.met)
+		if entry then
+			line:SetFontObject(entry.met and "GameFontDisableSmall" or "GameFontRedSmall")
+			line:SetText(entry.text)
+		end
+	end
+	local height = RESULT_HEIGHT + math.min(#shown, WHY_LINES) * WHY_HEIGHT
+	row:SetHeight(height)
+	row:SetPoint("TOPLEFT", 6, -top)
+	row:SetPoint("TOPRIGHT", -6, -top)
+	return top + height + ROW_GAP
+end
+
+-- The search's results in place of the cards, from the list's top; no `query` hides them.
+---@param query? string
+---@return number top below the last result
+---@return integer found
+local function LayoutResults(query)
+	local found = query and ns.Model.Search(ns.Data, ns.State.Player(), query, ns.State.QuestTitle) or {}
+	local top = 0
+	for index, row in ipairs(results) do
+		row:SetShown(found[index] ~= nil)
+		if found[index] then
+			top = RefreshResult(row, found[index], top)
+		end
+	end
+	return top, #found
+end
+
+-- With none chosen, every card whole in order and a hint under them. With one chosen, the others first as one-line
+-- rows in their order, then the chosen card with its track and rows, so its steps start at the same place whichever
+-- card it is and no card sits between them. Or the search's results. The scroll child's height is summed, not
+-- measured, so it is right before the client has laid anything out.
+---@param route AGFRoute
+---@return boolean searching
+---@return integer found
+local function LayoutJourneys(route)
+	---@cast searchBox -?
+	---@cast list -?
+	---@cast content -?
+	---@cast track -?
+	local query = strtrim(searchBox:GetText())
+	-- Characters, not bytes: a character is one byte that doesn't continue a UTF-8 sequence.
+	local _, characters = query:gsub("[^\128-\191]", "")
+	-- Not before completion data loads: every chain quest would read as locked.
+	local searching = characters >= SEARCH_MIN and ns.State.Ready()
+	local top, found = LayoutResults(searching and query or nil)
+	track:Hide()
+	---@cast asideLine -?
+	local aside = not searching and ns.Asides.Current() or nil
+	asideLine:SetShown(aside ~= nil)
+	if aside then
+		asideLine.Icon:SetAtlas(aside.icon)
+		asideLine.Text:SetText(aside.text)
+		asideLine:SetPoint("TOPLEFT", 10, -top)
+		top = top + ASIDE_HEIGHT + CARD_GAP
+	end
+	-- The empty line goes under the aside, never over it; the search's results, when it has any, hide it.
+	---@cast emptyText -?
+	local emptyTop = aside and ASIDE_HEIGHT + CARD_GAP or 0
+	emptyText:SetPoint("TOPLEFT", 10, -emptyTop - 8)
+	local chosen = not searching and route.chosen
+	local chosenCard, chosenJourney, compactRows = nil, nil, 0
+	for index, card in ipairs(cards) do
+		local journey = not searching and route.journeys[index] or nil
+		card:SetShown(journey ~= nil)
+		if journey and chosen and journey.key == route.journey then
+			chosenCard, chosenJourney = card, journey
+		elseif journey then
+			card:SetPoint("TOP", list, "TOP", 0, -top)
+			top = top + RefreshCard(card, journey, chosen and "compact" or "full") + (chosen and ROW_GAP or CARD_GAP)
+			compactRows = compactRows + (chosen and 1 or 0)
+		end
+	end
+	if chosenCard and chosenJourney then
+		-- The one-line rows sit a row's gap apart, and a card's gap above the chosen card.
+		top = top + (compactRows > 0 and CARD_GAP - ROW_GAP or 0)
+		RefreshCard(chosenCard, chosenJourney, "chosen")
+		chosenCard:SetPoint("TOP", list, "TOP", 0, -top)
+		top = LayoutTrack(chosenJourney, top + CARD_HEIGHT + CARD_GAP)
+		top = LayoutRows(route, top) + CARD_GAP
+	else
+		LayoutRows(route, top, true)
+	end
+	---@cast hintText -?
+	local hint = not searching and not chosen and #route.journeys > 0
+	hintText:SetShown(hint)
+	if hint then
+		hintText:SetPoint("TOPLEFT", 10, -top)
+		top = top + HINT_HEIGHT + CARD_GAP
+	end
+	if searching or not chosen then
+		top = math.max(top, emptyTop + 40)
+	end
+	-- Honest coverage: quests here the data lacks, so the cards can't be every story.
+	---@cast unlistedText -?
+	local state = ns.State
+	local unlisted = not searching and ns.Model.Unlisted(ns.Data, state.Player().map, state.Completed(), state.Log())
+	unlistedText:SetShown(unlisted)
+	if unlisted then
+		unlistedText:SetPoint("TOPLEFT", 10, -top)
+		top = top + UNLISTED_HEIGHT + CARD_GAP
+	end
+	local skipped = not searching and #ns.Skipped() or 0
+	---@cast skippedButton -?
+	skippedButton:SetShown(skipped > 0)
+	if skipped > 0 then
+		skippedButton:SetText(L.SKIPPED:format(skipped))
+		skippedButton:SetWidth(skippedButton:GetTextWidth() + 4)
+		skippedButton:SetPoint("TOPLEFT", 10, -top)
+		top = top + SKIPPED_HEIGHT + CARD_GAP
+	end
+	list:SetHeight(top)
+	content:SetHeight(LIST_TOP + top + PAD)
+	return searching, found
 end
 
 function Refresh()
@@ -655,25 +962,20 @@ function Refresh()
 		return
 	end
 	-- BuildContent() always sets every upvalue below before Attach() registers this listener.
-	---@cast routeLabel -?
 	---@cast emptyText -?
-	---@cast goButton -?
+	---@cast queuedText -?
+	---@cast stopButton -?
 	local route = ns.Route()
-	RefreshExperience()
-	RefreshChoices(route, ns.Prefs())
 
-	routeLabel:SetText(route.minutes and ("Suggested route - about %d min"):format(route.minutes) or "Suggested route")
-	if not ns.State.Ready() then
-		emptyText:SetText("Loading your completed quests...")
-	elseif #route.steps == 0 then
-		emptyText:SetText("Nothing left here at your level - pick another zone.")
-	end
-	emptyText:SetShown(not ns.State.Ready() or #route.steps == 0)
-	LayoutRows(route)
+	local ready = ns.State.Ready()
+	local searching, found = LayoutJourneys(route)
+	emptyText:SetText((not ready and L.LOADING) or (searching and L.SEARCH_NONE) or L.NOTHING_NEARBY)
+	emptyText:SetShown(not ready or (searching and found == 0) or (not searching and #route.journeys == 0))
 
-	local provider = ns.Integrations.Provider()
-	goButton:SetText(provider and ("Go (%s)"):format(provider) or "Set waypoint")
-	goButton:SetEnabled(route.steps[1] ~= nil)
+	local queued = ns.StartPending() and InCombatLockdown()
+	queuedText:SetText(queued and L.STARTS_AFTER_COMBAT or L.ROUTE_PAUSED)
+	queuedText:SetShown(queued or ns.Paused())
+	stopButton:SetShown(ns.Integrations.Owns())
 end
 
 -- Blizzard's displayMode and TabButtons are never written: the guide lays over the quest log
@@ -720,6 +1022,11 @@ local function CreateTabs()
 	end)
 	guideTab.Icon:SetAtlas("islands-queue-prop-compass")
 	guideTab.Icon:SetSize(30, 30)
+	tabPip = guideTab:CreateTexture(nil, "OVERLAY")
+	tabPip:SetAtlas(TAB_PIP)
+	tabPip:SetSize(20, 20)
+	tabPip:SetPoint("CENTER", guideTab, "TOPRIGHT", -8, -8)
+	tabPip:SetShown(ns.Moments.Unseen())
 	if QuestMapFrameOverrides.questTabHidden then
 		questsTab = CreateTab("AdventureGuideForeverQuestsTab", QUESTS_LABEL, function()
 			ShowGuide(false)
@@ -752,7 +1059,30 @@ local function Attach()
 	panel:SetFrameLevel(map:GetFrameLevel() + 20)
 	panel:EnableMouse(true)
 	panel:Hide()
+	-- The rings preview the chosen journey only while the guide is visible: its tab, the quest sidebar collapsing
+	-- and the map closing all come through here.
+	panel:HookScript("OnShow", ns.Pins.Refresh)
+	panel:HookScript("OnHide", ns.Pins.Refresh)
+	-- The cards' minutes, while the guide is open: on opening it and on each new route.
+	local function QueueCards()
+		if panel:IsShown() then
+			ns.Integrations.RefreshCards(ns.Route().journeys)
+		end
+	end
+	panel:HookScript("OnShow", QueueCards)
+	-- Something new: seen once the guide shows; its cards' marks go when it closes.
+	panel:HookScript("OnShow", ns.Moments.Opened)
+	panel:HookScript("OnHide", ns.Moments.Closed)
+	ns.OnRouteChange(QueueCards)
 	BuildContent(panel)
+	-- The footer's Stop follows Shortest Path ending our journey and the player clearing or moving the waypoint through
+	-- Integrations.OnGuidanceChange (below), on the frame after the super-tracking events.
+	panel:RegisterEvent("QUEST_DATA_LOAD_RESULT")
+	panel:SetScript("OnEvent", function(_, _, questID)
+		if requested[questID] then
+			Refresh()
+		end
+	end)
 	CreateTabs()
 
 	EventRegistry:RegisterCallback("QuestLog.SetDisplayMode", function()
@@ -768,6 +1098,19 @@ local function Attach()
 		end
 	end)
 	ns.OnRouteChange(Refresh)
+	ns.Integrations.OnGuidanceChange(Refresh)
+	ns.Integrations.OnTravelChange(Refresh)
+	ns.Integrations.OnCardTravel(Refresh)
+	ns.Asides.OnChange(Refresh)
+	ns.Moments.OnChange(function()
+		---@cast tabPip -?
+		tabPip:SetShown(ns.Moments.Unseen())
+		Refresh()
+	end)
+
+	function ns.PanelShown()
+		return panel:IsVisible()
+	end
 
 	function ns.OpenPanel()
 		-- Also brings back a collapsed quest sidebar, which hides QuestMapFrame and so the panel inside it.

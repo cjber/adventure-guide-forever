@@ -1,6 +1,14 @@
 std = "lua51"
 max_line_length = 120
-exclude_files = { "tools/.cache/**", ".types/**", "types/**", ".release/**" }
+exclude_files = {
+	"tools/.cache/**",
+	".types/**",
+	"types/**",
+	".release/**",
+	"tests/golden/**",
+	-- Shortest Path's own types, vendored byte for byte for tests/contract_spec.lua.
+	"tests/fixtures/spf_types_API.lua",
+}
 ignore = { "212/_.*", "212/self" } -- unused args prefixed with _, and self on mixin handlers
 
 globals = {
@@ -23,20 +31,33 @@ read_globals = {
 	"WorldMapFrame",
 	"ToggleWorldMap",
 	"OpenQuestLog",
+	"QuestMapFrame_ShowQuestDetails",
 	"EventUtil",
+	"MAP_PIN_INVALID_MAP",
+	"ITEM_CLASSES_ALLOWED",
+	"ITEM_RACES_ALLOWED",
+	"InCombatLockdown",
+	"UnitOnTaxi",
 	-- State.lua
 	"bit",
 	"UnitRace",
 	"UnitClass",
 	"UnitFactionGroup",
 	"UnitLevel",
+	"GetMaxPlayerLevel",
+	"GetRealZoneText",
 	"C_Map",
 	"C_QuestLog",
+	"C_CreatureInfo",
+	"C_SkillInfo",
+	"C_Reputation",
 	"CreateFrame",
 	-- Integrations.lua
 	"ShortestPathForever",
+	"TweaksForever",
 	"UiMapPoint",
 	"C_SuperTrack",
+	"UIErrorsFrame",
 	-- Pins.lua
 	"CreateFromMixins",
 	"MapCanvasDataProviderMixin",
@@ -46,28 +67,41 @@ read_globals = {
 	"GameTooltip_AddNormalLine",
 	"GameTooltip_AddHighlightLine",
 	"GameTooltip_AddInstructionLine",
+	"GameTooltip_AddErrorLine",
+	"GameTooltip_AddDisabledLine",
+	"GameTooltip_AddColoredLine",
+	"GetQuestDifficultyColor",
+	"CreateColor",
 	"UIFrameFlash",
 	"EventRegistry",
-	"UnitXP",
-	"UnitXPMax",
-	"GetXPExhaustion",
 	"QuestMapFrame",
 	"QuestMapFrameOverrides",
 	"QUESTS_LABEL",
-	"BACKDROP_TUTORIAL_16_16",
-	"BACKDROP_TOAST_12_12",
-	"NORMAL_FONT_COLOR",
-	"GRAY_FONT_COLOR",
 	"GameTooltip_Hide",
+	-- Tooltip.lua
+	"TooltipDataProcessor",
+	"Enum",
+	"UnitGUID",
 	-- Tracker.lua
 	"Mixin",
 	"ObjectiveTrackerManager",
 	"ObjectiveTrackerFrame",
 	"hooksecurefunc",
 	"MenuUtil",
+	"OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE",
+	"PlaySound",
+	"SOUNDKIT",
+	"tContains",
 	"UIParent",
+	-- Moments.lua
+	"AddonCompartmentFrame",
 	-- Settings.lua
 	"Settings",
+	-- Dump.lua: frames Panel.lua and Tracker.lua create by name
+	"AdventureGuideForeverPanel",
+	"AdventureGuideForeverTab",
+	"AdventureGuideForeverQuestsTab",
+	"AdventureGuideForeverObjectiveTracker",
 }
 
 files["tests/"] = { std = "+luajit" }
