@@ -370,6 +370,10 @@ skipLead.skipped["pickup:1:0.4000:0.5000"] = true
 card = Model.Plan(saga, player, {}, {}, skipLead).journeys[1]
 equal(card.subline, "3 quests near your level", "story card: a skipped chapter is no chapter")
 equal(card.story == nil and card.reason == nil, true, "story card: nor its chain or reason")
+-- The same in combat, where the cheap rebuild keeps the last card less the skipped step.
+card = Model.Refresh(saga, player, {}, skipLead, Model.Plan(saga, player, {}, {}, prefs())).journeys[1]
+equal(card.subline, "3 quests near your level", "story card: a chapter skipped in combat is no chapter")
+equal(card.story == nil and card.reason == nil, true, "story card: nor its chain or reason, in combat")
 -- No zone the level fits (a city's quests only): a pinned pickup there makes no story card, and no error.
 local city = { quests = { [1] = quest(0.5, 0.5, 9) }, zones = data.zones }
 local cityPins = prefs()

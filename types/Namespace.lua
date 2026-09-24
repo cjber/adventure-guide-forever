@@ -145,6 +145,7 @@
 ---@field map integer where its first step is: choosing the card turns the world map there
 ---@field steps AGFStep[] never more than MAX_STEPS, in route order
 ---@field story? AGFStory the story card's chain, when the zone has one the player can take up now
+---@field count? string a zone card's count of quests, the story card's subline once its chapter is skipped
 
 ---@class AGFRoute
 ---@field journeys AGFJourney[] at most 3: carry, the zone's story, the next zone

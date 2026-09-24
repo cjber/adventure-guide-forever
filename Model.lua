@@ -870,7 +870,7 @@ local function ZoneJourney(data, player, eligible, zone, index, prefs, mapName, 
 		kept = kept or step == lead
 	end
 	local subline = Count(ns.L.QUESTS_NEAR_ONE, ns.L.QUESTS_NEAR, quests)
-	return { map = steps[1].map, steps = steps, subline = subline }, quests, kept and lead or nil
+	return { map = steps[1].map, steps = steps, subline = subline, count = subline }, quests, kept and lead or nil
 end
 
 -- The zone's story (docs/design.md §2.3): of the chains the player can take up in `zone` now, one they have already
@@ -978,6 +978,12 @@ local function Unskipped(journey, skipped)
 		copy[key] = value
 	end
 	copy.steps, copy.map = steps, steps[1].map
+	-- A skipped chapter takes the card's chain with it, as the full build does.
+	for _, step in ipairs(journey.steps) do
+		if step.chapter and skipped[step.key] then
+			copy.story, copy.reason, copy.subline = nil, nil, journey.count
+		end
+	end
 	return copy --[[@as AGFJourney]]
 end
 
