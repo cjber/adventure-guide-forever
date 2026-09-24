@@ -98,6 +98,16 @@ do
 		for _, field in ipairs({ "repeatable", "elite", "dungeon", "raid", "skill", "rep", "breadcrumb" }) do
 			equal(same(built[field], quest[field]), true, id .. " " .. field)
 		end
+		for _, field in ipairs({ "xp", "need", "flags" }) do
+			equal(same(built[field], quest[field]), true, id .. " " .. field)
+		end
+		-- Each objective area on the same map, though the quest's zone may have moved (a withheld start's).
+		equal(#(built.obj or {}), #(quest.obj or {}), id .. " obj")
+		for i, spot in ipairs(quest.obj or {}) do
+			local now = built.obj[i]
+			local moved = { now[1], now[2], now[3], now[4], now[5] or built.zone }
+			equal(same(moved, { spot[1], spot[2], spot[3], spot[4], spot[5] or quest.zone }), true, id .. " obj " .. i)
+		end
 		-- The mirror lists a spawn under every map the bundled data places it on (Melor Stonehoof, in Thunder Bluff and
 		-- on the Barrens map over it), and a quest takes the one on its zone's map: the same spawn and town, another map.
 		for _, field in ipairs({ "start", "finish" }) do
@@ -193,6 +203,9 @@ fake.npcs[bundled.quests[unplaced].finish.npc].spawns = { [90003] = { { 50, 50 }
 -- under a party instance (the Deadmines, 36).
 assert(bundled.quests[8053].raid and not bundled.quests[8053].dungeon and not bundled.instances[36].raid)
 fake.quests[8053].zoneOrSort = fake.zones.instances[36]
+-- Filed in another zone (Riverpaw Gnoll Bounty, Elwynn's, in Westfall), its objective areas still name Elwynn.
+assert(bundled.quests[11].zone == 1429 and bundled.quests[11].obj[1][5] == nil)
+fake.quests[11].zoneOrSort = 1436
 -- A quest the bundled data lacks is left out: nothing says what else gates it.
 fake.quests[999998] = { name = "Unknown", questLevel = 5, requiredLevel = 1, startedBy = { { 197 } } }
 
@@ -225,6 +238,13 @@ equal(quests[unplaced].finish ~= bundled.quests[unplaced].finish, true, "a copy 
 equal(quests[999998], nil, "a quest the bundled data lacks")
 equal(quests[8053].dungeon, 36, "a raid's quest QuestieDB files in a party instance: that instance")
 equal(quests[8053].raid, true, "and still a raid's")
+equal(quests[11].zone, 1436, "a quest QuestieDB files in another zone")
+for i, spot in ipairs(bundled.quests[11].obj) do
+	local now = quests[11].obj[i]
+	equal(same(now, { spot[1], spot[2], spot[3], spot[4], 1429 }), true, "its objective area " .. i .. " names Elwynn")
+end
+equal(same(quests[11].need, bundled.quests[11].need), true, "its objectives stay bundled")
+equal(quests[11].xp, bundled.quests[11].xp, "its XP stays bundled")
 
 -- The build runs a slice a frame from login, 2 ms each, on the bundled data until the swap; then one rebuild.
 do

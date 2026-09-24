@@ -5,11 +5,12 @@ local _, ns = ...
      milliseconds a frame. The bundled data serves until then, and for good when QuestieDB is absent or fails a
      check. QuestieDB gives each quest its title, levels, races, classes, zone, givers and their spawns,
      prerequisites, exclusive quests, chain, breadcrumb target and skill and reputation gates. The rest stays
-     bundled: towns, maps, NPC roles, instances, crossings and elite quests, and whatever QuestieDB leaves out (a
-     level, a dungeon, a giver's place, a breadcrumb target). Only the bundled data's quests are read, and a start
-     only where the bundled data has one: its lack is a gate, an event or an event-only giver, none of which
-     QuestieDB says. A start is also withheld whenever QuestieDB names a requirement the planner cannot check.
-     Nothing of Questie's is shipped: this reads the installed addon at runtime. ]]
+     bundled: towns, maps, NPC roles, instances, crossings, elite quests, each quest's objectives, their areas, XP and
+     flags, and whatever QuestieDB leaves out (a level, a dungeon, a giver's place, a breadcrumb target). Only the
+     bundled data's quests are read, and a start only where the bundled data has one: its lack is a gate, an event or
+     an event-only giver, none of which QuestieDB says. A start is also withheld whenever QuestieDB names a
+     requirement the planner cannot check. Nothing of Questie's is shipped: this reads the installed addon at
+     runtime. ]]
 
 local ADDON = "QuestieDB"
 local CONTRACT = 2
@@ -333,6 +334,18 @@ local function Build(lib, zones, bundled, yield)
 				quest.dungeon, quest.raid = instance, bundled.instances[instance].raid or old.raid
 			else
 				quest.dungeon, quest.raid = old.dungeon, old.raid
+			end
+			-- Objectives, their areas, XP and flags stay bundled (an area leaves out its map when it is the bundled zone,
+			-- so it names that map once QuestieDB files the quest elsewhere); a dungeon's quest has no areas.
+			quest.xp, quest.flags = old.xp, old.flags
+			if old.obj and not quest.dungeon then
+				quest.need, quest.obj = old.need, old.obj
+				if quest.zone ~= old.zone then
+					quest.obj = {}
+					for i, spot in ipairs(old.obj) do
+						quest.obj[i] = spot[5] and spot or { spot[1], spot[2], spot[3], spot[4], old.zone }
+					end
+				end
 			end
 			local start = quest.start
 			if start and quest.classes and start.npc then
