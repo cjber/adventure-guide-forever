@@ -846,6 +846,21 @@ end
 local twice = Model.Plan(towns, trainee, {}, {}, Choose("zone:1")).steps
 equal(#twice, 3, "trainer: a route through two trainers' towns")
 equal(#Trainers(twice), 1, "trainer: stops to train once")
+-- A trainer's stop ahead of its town leaves the card the town's reason.
+local stopTown = { quests = {}, zones = academy.zones, maps = academy.maps, continents = academy.continents }
+stopTown.hubs, stopTown.npcs = academy.hubs, academy.npcs
+for id = 1, 3 do
+	stopTown.quests[id] = quest(0.5 + id / 1000)
+	stopTown.quests[id].start.hub = 5
+end
+local ahead = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.6, y = 0.5 }
+ahead.train = trainee.train
+local stopCard = Model.Plan(stopTown, ahead, {}, {}, Choose("zone:1")).journeys[1]
+equal(
+	stopCard.steps[1].kind .. "|" .. tostring(stopCard.reason),
+	"trainer|Crossroads needs hands",
+	"trainer: the town keeps its reason"
+)
 academy.hubs = nil
 equal(Model.TownName(academy, academy.npcs[902].place), "Home", "town: the map's name without a flight master")
 equal(

@@ -169,9 +169,9 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
   - **Reason (roadmap #3).** A zone card (story or next zone) takes one reason in the world's voice, the first that
     applies: "Continues a story you started"; "3 quests will soon turn grey" (two or more of its pickups grey at the
     next level, never at the level cap); "A chain begins with Gryan Stoutmantle" (the chain's lead giver); "Sentinel
-    Hill needs hands" (the first stop's town has a flight-master name, cut before its ", zone", and 3 or more
-    pickups). Otherwise the plain line: "Begins a new story", "For level N", or none. Only names the data has; the chapter's row keeps
-    "Begins a new story" or "Continues a story you started".
+    Hill needs hands" (the first quest stop's town, past a trainer's stop, has a flight-master name, cut before its
+    ", zone", and 3 or more pickups). Otherwise the plain line: "Begins a new story", "For level N", or none. Only
+    names the data has; the chapter's row keeps "Begins a new story" or "Continues a story you started".
   - **Group badge.** A 12x12 `questlog-questtypeicon-group` sits at line 3's right edge when any quest needs a
     group. Dungeon cards, whose kind icon says so already, do not get it.
   - **Tooltip.** Whole cards now have one as well (§2.9).

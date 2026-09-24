@@ -1330,9 +1330,9 @@ end
 
 -- A zone card's reason in the world's voice (roadmap #3), the first that applies: a story the player started, at least
 -- GREY_REASON_MIN of its quests going grey at the next level (never at the cap), the giver who begins its chain, then
--- its first stop's town (its flight master's name, before the zone) with HANDS_MIN quests or more to pick up. Nil when
--- none applies; the caller falls back to its plain line. Only names the data has: a chain's giver, a town's flight
--- master.
+-- its first quest stop's town (its flight master's name, before the zone) with HANDS_MIN quests or more to pick up.
+-- Nil when none applies; the caller falls back to its plain line. Only names the data has: a chain's giver, a town's
+-- flight master.
 local GREY_REASON_MIN, HANDS_MIN = 2, 3
 ---@param journey AGFJourney
 ---@param chain? {continues: boolean, giver?: string}
@@ -1354,7 +1354,11 @@ local function WorldReason(data, log, player, journey, chain)
 	elseif chain and chain.giver then
 		return L.REASON_CHAIN_GIVER:format(chain.giver)
 	end
-	local first = journey.steps[1]
+	-- The first stop with quests: a trainer's stop (roadmap #5) ahead of its town never takes the town's reason.
+	local first
+	for _, step in ipairs(journey.steps) do
+		first = first or (step.kind ~= "trainer" and step or nil)
+	end
 	local town = first and first.hub and data.hubs and data.hubs[first.hub]
 	if town and #(first.pickups or {}) >= HANDS_MIN then
 		return L.REASON_HANDS:format((town.name:match("^(.-),") or town.name))
