@@ -24,7 +24,8 @@
 ---@field group? integer exclusive group: completing one member closes the others
 ---@field next? integer the chain's follow-up
 ---@field repeatable? boolean
----@field dungeon? integer uiMapID of the instance when the objectives are inside one
+---@field dungeon? integer instance Map.ID (not a uiMapID) when the quest is filed under a dungeon or raid
+---@field raid? boolean the instance is a raid
 ---@field elite? boolean group quest
 
 ---@class AGFData
@@ -32,6 +33,7 @@
 ---@field source string where the data came from, for /agf audit
 ---@field quests table<integer, AGFQuest>
 ---@field zones table<integer, {name: string, min: integer, max: integer}> uiMapID -> zone name and level range
+---@field instances table<integer, {name: string}> instance Map.ID -> its English name, for every quest's `dungeon`
 ---@field maps table<integer, AGFMapCentre> uiMapID -> where the map sits in the world, for every map a place uses
 ---@field continents table<integer, AGFContinentShift> continent -> its place on the Azeroth world map
 ---@field crossings AGFCrossing[] every boat and zeppelin between two continents

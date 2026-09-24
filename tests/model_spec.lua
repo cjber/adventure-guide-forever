@@ -380,6 +380,16 @@ for id, q in pairs(ns.Data.quests) do
 	end
 end
 equal(count > 3000, true, "full dataset loaded")
+-- F15: quests filed under a dungeon or raid carry its instance Map.ID, and every such instance is named.
+local flagged, raids = 0, 0
+for _, q in pairs(ns.Data.quests) do
+	if q.dungeon then
+		flagged, raids = flagged + 1, raids + (q.raid and 1 or 0)
+		assert(ns.Data.instances[q.dungeon].name ~= "", q.title)
+	end
+end
+equal(flagged, 223, "dungeon and raid quests flagged")
+equal(raids, 90, "raid quests flagged")
 
 -- Story against an independent walk over every chain head in the data (F4 acceptance): a head is a quest with a
 -- `next` that no quest's `next` names. The walker recurses where Model.Story loops, and asserts each total rule

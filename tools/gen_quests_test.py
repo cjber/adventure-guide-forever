@@ -7,6 +7,7 @@ from gen_quests import (
     crossings,
     faction,
     geometry,
+    instance_index,
     parse_values,
     prerequisite_index,
     prerequisites,
@@ -141,6 +142,29 @@ class CrossingTest(unittest.TestCase):
         # A dock no flight master stands near serves nobody; a continent off the world map is left out.
         self.assertEqual(crossings([boat], path, taxis[:1], {0, 1}), [])
         self.assertEqual(crossings([boat], path, taxis, {0}), [])
+
+
+class InstanceTest(unittest.TestCase):
+    def test_area_to_instance(self):
+        # The Deadmines' area 1581 sits on Map 36, a party instance; Molten Core's 2717 on 409, a raid; Elwynn
+        # Forest's 12 on the Eastern Kingdoms, which is no instance.
+        areas = [
+            {"ID": "1581", "ContinentID": "36"},
+            {"ID": "2717", "ContinentID": "409"},
+            {"ID": "12", "ContinentID": "0"},
+        ]
+        maps = [
+            {"ID": "36", "MapName_lang": "Deadmines", "InstanceType": "1"},
+            {"ID": "409", "MapName_lang": "Molten Core", "InstanceType": "2"},
+            {"ID": "0", "MapName_lang": "Eastern Kingdoms", "InstanceType": "0"},
+        ]
+        self.assertEqual(
+            instance_index(areas, maps),
+            (
+                {1581: 36, 2717: 409},
+                {36: {"name": "Deadmines", "raid": False}, 409: {"name": "Molten Core", "raid": True}},
+            ),
+        )
 
 
 if __name__ == "__main__":
