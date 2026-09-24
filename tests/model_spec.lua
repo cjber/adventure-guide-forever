@@ -344,6 +344,64 @@ for id, q in pairs(ns.Data.quests) do
 	end
 end
 equal(count > 3000, true, "full dataset loaded")
+
+-- Story against an independent walk over every chain head in the data (F4 acceptance): a head is a quest with a
+-- `next` that no quest's `next` names. The walker recurses where Model.Story loops, and asserts each total rule
+-- on its own: no total on a chain that touches a dangling `next`, a `preAny` or a multi-`pre`.
+local quests, named, heads = ns.Data.quests, {}, {}
+for _, q in pairs(quests) do
+	if q.next then
+		named[q.next] = true
+	end
+end
+for id, q in pairs(quests) do
+	if q.next and not named[id] then
+		heads[#heads + 1] = id
+	end
+end
+table.sort(heads)
+local function Chain(id, members, seen)
+	local q = quests[id]
+	if not q then
+		return members, "dangles"
+	elseif seen[id] then
+		return members, "loops"
+	end
+	seen[id], members[#members + 1] = true, id
+	if q.preAny or (q.pre and #q.pre > 1) then
+		local rest = Chain(q.next, members, seen)
+		return rest, "gated"
+	end
+	if not q.next then
+		return members, nil
+	end
+	return Chain(q.next, members, seen)
+end
+-- Pinned: the plan's pre-check estimated about 499 and 316; these are the design's three rules applied exactly.
+local totals, textOnly = 0, 0
+for _, head in ipairs(heads) do
+	local members, flaw = Chain(head, {}, {})
+	story = Model.Story(ns.Data, head)
+	if #members < 2 then
+		equal(story, nil, "walk: a head whose next dangles at once is no story " .. head)
+	else
+		equal(story.chapter, 1, "walk: a head is chapter 1 " .. head)
+		equal(table.concat(story.members, " "), table.concat(members, " "), "walk: members " .. head)
+		equal(story.total, (not flaw) and #members or nil, "walk: total " .. head .. " " .. tostring(flaw))
+		totals, textOnly = totals + (story.total and 1 or 0), textOnly + (story.total and 0 or 1)
+		for index, id in ipairs(members) do
+			local member = Model.Story(ns.Data, id)
+			if member and index > 1 then
+				checks = checks + 1
+				assert(member.chapter == index and member.members[1] == head, "walk: chapter of " .. id)
+			end
+		end
+	end
+end
+equal(#heads, 815, "walk: chain heads in the data")
+equal(totals, 581, "walk: heads whose total the data proves")
+equal(textOnly, 226, "walk: heads shown as a chapter only")
+equal(#heads - totals - textOnly, 8, "walk: heads whose next dangles at once")
 player.map, player.x, player.y = 1413, 0.52, 0.3
 local baseline = Model.Plan(ns.Data, player, {}, {}, prefs())
 equal(#baseline.steps >= 3, true, "level 18 Horde route offers at least three steps")
