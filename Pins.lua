@@ -29,10 +29,7 @@ end
 ---@param tooltip GameTooltip
 local function AddClickLine(tooltip)
 	local name = ns.Integrations.Provider()
-	GameTooltip_AddInstructionLine(
-		tooltip,
-		name and ("Click to travel with %s"):format(name) or "Click to set a waypoint"
-	)
+	GameTooltip_AddInstructionLine(tooltip, name and ns.L.CLICK_TRAVEL:format(name) or ns.L.CLICK_WAYPOINT)
 end
 
 -- A step's lines (docs/design.md §2.9), shared by its ring and its row in the guide: the title numbered as the route
@@ -42,7 +39,7 @@ end
 ---@param index number
 ---@param travel? string
 function Pins.StepTooltip(tooltip, step, index, travel)
-	GameTooltip_SetTitle(tooltip, ("%d. %s"):format(index, step.title))
+	GameTooltip_SetTitle(tooltip, ns.L.STEP_NUMBERED:format(index, step.title))
 	if step.chapter then
 		GameTooltip_AddNormalLine(tooltip, step.chapter)
 	end
@@ -175,7 +172,7 @@ function AdventureGuideForeverGiverPinMixin:OnMouseEnter()
 		local quest = ns.Data.quests[id]
 		local level = quest.level == -1 and UnitLevel("player") or quest.level
 		local title = C_QuestLog.GetTitleForQuestID(id) or quest.title
-		GameTooltip_AddNormalLine(GameTooltip, ("[%d] %s"):format(level, title))
+		GameTooltip_AddNormalLine(GameTooltip, ns.L.QUEST_LEVEL:format(level, title))
 	end
 	AddClickLine(GameTooltip)
 	GameTooltip:Show()

@@ -459,11 +459,11 @@ local function LogSteps(data, player, log, prefs)
 					steps[#steps + 1] = Step(
 						"turnin",
 						"turnin:" .. id,
-						"Turn in: " .. entry.title,
+						ns.L.TURN_IN:format(entry.title),
 						place,
 						id,
 						optional,
-						"ready to hand in"
+						ns.L.READY_TO_HAND_IN
 					)
 				else
 					local kind = group and "dungeon" or "objective"
@@ -477,11 +477,11 @@ local function LogSteps(data, player, log, prefs)
 					if existing then
 						existing.quests[#existing.quests + 1] = id
 						existing.optional = existing.optional or optional or nil
-						existing.reason = #existing.quests .. " quests here"
+						existing.reason = ns.L.QUESTS_HERE:format(#existing.quests)
 						existing.detail = existing.reason
 					else
 						local step =
-							Step(kind, "objective:" .. id, entry.title, place, id, optional, "quests in progress")
+							Step(kind, "objective:" .. id, entry.title, place, id, optional, ns.L.QUESTS_IN_PROGRESS)
 						objectives[#objectives + 1] = step
 						steps[#steps + 1] = step
 					end
@@ -506,7 +506,7 @@ local function PickupSteps(data, player, eligible, zone, hubs, steps)
 			local chain = quest.pre or quest.preAny
 			if step then
 				step.quests[#step.quests + 1] = id
-				step.reason = #step.quests .. " quests here"
+				step.reason = ns.L.QUESTS_HERE:format(#step.quests)
 				step.detail = step.reason
 				step.optional = step.optional or Optional(quest, quest.level, player) or nil
 			else
@@ -514,11 +514,11 @@ local function PickupSteps(data, player, eligible, zone, hubs, steps)
 				step = Step(
 					kind,
 					key,
-					"Pick up quests: " .. place.name,
+					ns.L.PICK_UP:format(place.name),
 					place,
 					id,
 					Optional(quest, quest.level, player),
-					chain and ns.L.CONTINUES_STORY or "near your level"
+					chain and ns.L.CONTINUES_STORY or ns.L.NEAR_YOUR_LEVEL
 				)
 				pickups[key] = step
 				steps[#steps + 1] = step

@@ -133,7 +133,7 @@ local function CreateRow(parent)
 	row.Selected:SetAllPoints()
 
 	row.SkipButton = CreateRowIcon(row, "common-icon-redx", function()
-		return "Skip this step for now"
+		return ns.L.SKIP_STEP
 	end, function(step)
 		ns.Skip(step.key, step.title)
 	end)
@@ -160,7 +160,7 @@ local function CreateRow(parent)
 	row.Detail:SetWordWrap(false)
 	row.Tag = row:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
 	row.Tag:SetPoint("LEFT", row.Detail, "RIGHT", 6, 0)
-	row.Tag:SetText("optional")
+	row.Tag:SetText(ns.L.OPTIONAL)
 
 	-- The ring's lines; a row after step 1 asks Shortest Path for its travel line once, on hover.
 	row:SetScript("OnEnter", function(self)
@@ -377,15 +377,15 @@ local function BuildSettingsMenu(_, menu)
 			ns.Invalidate()
 		end)
 	end
-	Pref("Quests", "quests")
-	Pref("Dungeons", "dungeons")
-	Setting("Show map pins", "showMapPins")
+	Pref(ns.L.MENU_QUESTS, "quests")
+	Pref(ns.L.MENU_DUNGEONS, "dungeons")
+	Setting(ns.L.MENU_MAP_PINS, "showMapPins")
 	-- Givers draw only with map pins on, so the box is grayed until they are (the menu polls a function).
-	Setting("Show quest givers", "showQuestGivers"):SetEnabled(function()
+	Setting(ns.L.MENU_GIVERS, "showQuestGivers"):SetEnabled(function()
 		return ns.Setting("showMapPins")
 	end)
-	Setting("Show in objective tracker", "showTracker")
-	menu:CreateButton("More settings", function()
+	Setting(ns.L.MENU_TRACKER, "showTracker")
+	menu:CreateButton(ns.L.MENU_MORE_SETTINGS, function()
 		if ns.OpenSettings then
 			ns.OpenSettings()
 		end
@@ -649,7 +649,7 @@ local function LayoutJourneys(route)
 		skippedButton:SetPoint("TOPLEFT", 10, -top)
 		top = top + SKIPPED_HEIGHT + CARD_GAP
 	end
-	countText:SetText(("Steps: %d"):format(#route.steps))
+	countText:SetText(ns.L.STEP_COUNT:format(#route.steps))
 	list:SetHeight(top)
 	content:SetHeight(LIST_TOP + top + PAD)
 	return searching, found
@@ -672,7 +672,7 @@ function Refresh()
 
 	-- Go follows the chosen journey, which the search hides: it waits until the search is cleared.
 	local provider = ns.Integrations.Provider()
-	goButton:SetText(provider and ("Go (%s)"):format(provider) or "Set waypoint")
+	goButton:SetText(provider and ns.L.GO_WITH:format(provider) or ns.L.SET_WAYPOINT)
 	goButton:SetEnabled(route.steps[1] ~= nil and not searching)
 	stopButton:SetShown(ns.Integrations.Owns())
 end

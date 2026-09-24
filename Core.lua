@@ -93,6 +93,40 @@ ns.L = {
 	NEXT = "Next: %s",
 	RESUME = "Where you left off: %s",
 	STORY_COMPLETE = "Story complete",
+	TRACKER_HEADER = "Adventure Guide",
+	TRACKER_UNATTACHED = "couldn't add a section to the objective tracker; please report with /agf audit.",
+	DUMP_SAVED = "layout saved. Type /reload, then send "
+		.. "WTF\\Account\\<account>\\SavedVariables\\AdventureGuideForever.lua",
+	-- Steps (Model.lua): a title and a reason.
+	TURN_IN = "Turn in: %s",
+	READY_TO_HAND_IN = "ready to hand in",
+	QUESTS_IN_PROGRESS = "quests in progress",
+	QUESTS_HERE = "%d quests here",
+	PICK_UP = "Pick up quests: %s",
+	NEAR_YOUR_LEVEL = "near your level",
+	-- The guide and the map.
+	SKIP_STEP = "Skip this step for now",
+	OPTIONAL = "optional",
+	STEP_COUNT = "Steps: %d",
+	GO_WITH = "Go (%s)",
+	SET_WAYPOINT = "Set waypoint",
+	CLICK_TRAVEL = "Click to travel with %s",
+	CLICK_WAYPOINT = "Click to set a waypoint",
+	STEP_NUMBERED = "%d. %s",
+	QUEST_LEVEL = "[%d] %s",
+	-- The guide's settings menu, then the addon's settings page.
+	MENU_QUESTS = "Quests",
+	MENU_DUNGEONS = "Dungeons",
+	MENU_MAP_PINS = "Show map pins",
+	MENU_GIVERS = "Show quest givers",
+	MENU_TRACKER = "Show in objective tracker",
+	MENU_MORE_SETTINGS = "More settings",
+	SETTING_TRACKER = "Show tracker section",
+	SETTING_TRACKER_TOOLTIP = 'A short "Adventure Guide" section above your quests in the objective tracker, for the '
+		.. "current step.",
+	SETTING_MAP_PINS = "Show route pins on the map",
+	SETTING_GIVERS = "Show quest givers on the map",
+	SETTING_DUNGEONS_DEFAULT = "Include dungeons by default",
 }
 local L = ns.L
 

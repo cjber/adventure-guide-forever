@@ -18,7 +18,7 @@ local STORY_COMPLETE = "story-complete"
 local finished
 
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
-local ModuleMixin = { headerText = "Adventure Guide", blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
+local ModuleMixin = { headerText = ns.L.TRACKER_HEADER, blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
 
 ---@param _block AGFTrackerBlock the header's own block; CurrentStep() is used instead since it's always current
 ---@param mouseButton string
@@ -127,7 +127,7 @@ end
 
 local function WarnIfUnattached()
 	if module and ObjectiveTrackerManager:GetContainerForModule(module) == nil then
-		ns.Print("couldn't add a section to the objective tracker; please report with /agf audit.")
+		ns.Print(ns.L.TRACKER_UNATTACHED)
 	end
 end
 

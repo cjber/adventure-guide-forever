@@ -169,7 +169,7 @@ function ns.Dump()
 		route = route,
 		frames = Frames(),
 	}
-	ns.Print("layout saved. Type /reload, then send WTF\\Account\\<account>\\SavedVariables\\AdventureGuideForever.lua")
+	ns.Print(ns.L.DUMP_SAVED)
 end
 
 -- isInitialLogin is true only on a session's first PLAYER_ENTERING_WORLD, so one event is enough.

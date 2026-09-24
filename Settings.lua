@@ -26,14 +26,10 @@ function ns.RegisterSettings()
 		return Settings.CreateCheckbox(category, setting, tooltip)
 	end
 
-	Checkbox(
-		"showTracker",
-		"Show tracker section",
-		'A short "Adventure Guide" section above your quests in the objective tracker, for the current step.'
-	)
-	Checkbox("showMapPins", "Show route pins on the map", ns.L.SETTING_MAP_PINS_TOOLTIP)
-	Checkbox("showQuestGivers", "Show quest givers on the map", ns.L.SETTING_GIVERS_TOOLTIP)
-	Checkbox("includeDungeonsDefault", "Include dungeons by default", ns.L.SETTING_DUNGEONS_DEFAULT_TOOLTIP)
+	Checkbox("showTracker", ns.L.SETTING_TRACKER, ns.L.SETTING_TRACKER_TOOLTIP)
+	Checkbox("showMapPins", ns.L.SETTING_MAP_PINS, ns.L.SETTING_MAP_PINS_TOOLTIP)
+	Checkbox("showQuestGivers", ns.L.SETTING_GIVERS, ns.L.SETTING_GIVERS_TOOLTIP)
+	Checkbox("includeDungeonsDefault", ns.L.SETTING_DUNGEONS_DEFAULT, ns.L.SETTING_DUNGEONS_DEFAULT_TOOLTIP)
 	Checkbox("titleStartsRoute", ns.L.SETTING_TITLE_ROUTE, ns.L.SETTING_TITLE_ROUTE_TOOLTIP)
 	local track = Checkbox("trackRouteQuests", ns.L.SETTING_TRACK_ROUTE, ns.L.SETTING_TRACK_ROUTE_TOOLTIP)
 	local untrack = Checkbox("untrackOthers", ns.L.SETTING_UNTRACK_OTHERS, ns.L.SETTING_UNTRACK_OTHERS_TOOLTIP)

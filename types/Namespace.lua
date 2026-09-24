@@ -280,6 +280,35 @@
 ---@field NEXT string format: the step after the tracker's
 ---@field RESUME string format: the reason saved with step 1 last session
 ---@field STORY_COMPLETE string the tracker header that glows when a proven chain's last quest is handed in
+---@field TRACKER_HEADER string
+---@field TRACKER_UNATTACHED string
+---@field DUMP_SAVED string
+---@field TURN_IN string format: quest title
+---@field READY_TO_HAND_IN string
+---@field QUESTS_IN_PROGRESS string
+---@field QUESTS_HERE string format: quest count
+---@field PICK_UP string format: place name
+---@field NEAR_YOUR_LEVEL string
+---@field SKIP_STEP string
+---@field OPTIONAL string
+---@field STEP_COUNT string format: step count
+---@field GO_WITH string format: travel addon name
+---@field SET_WAYPOINT string
+---@field CLICK_TRAVEL string format: travel addon name
+---@field CLICK_WAYPOINT string
+---@field STEP_NUMBERED string format: route index, step title
+---@field QUEST_LEVEL string format: quest level, quest title
+---@field MENU_QUESTS string
+---@field MENU_DUNGEONS string
+---@field MENU_MAP_PINS string
+---@field MENU_GIVERS string
+---@field MENU_TRACKER string
+---@field MENU_MORE_SETTINGS string
+---@field SETTING_TRACKER string
+---@field SETTING_TRACKER_TOOLTIP string
+---@field SETTING_MAP_PINS string
+---@field SETTING_GIVERS string
+---@field SETTING_DUNGEONS_DEFAULT string
 ---@field SETTING_MAP_PINS_TOOLTIP string
 ---@field SETTING_GIVERS_TOOLTIP string
 ---@field SETTING_DUNGEONS_DEFAULT_TOOLTIP string
