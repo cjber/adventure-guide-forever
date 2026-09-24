@@ -1781,6 +1781,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(Starts(), 1, label .. ": the route starts when combat ends")
 	equal(Queued(), 0, label .. ": and the footer stops waiting")
+	equal(h.ns.Prefs().guided, card.journey.key, label .. ": recorded as the chosen journey's route")
 
 	h.SetCombat(true)
 	h.Click(Card("compact"))
@@ -1791,6 +1792,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(Starts(), 1, label .. ": a choice cleared in combat starts nothing")
 	equal(Queued(), 0, label .. ": nor waits")
+	equal(h.ns.Prefs().guided, nil, label .. ": and no route is recorded")
 
 	h.ns.SetSetting("titleStartsRoute", false)
 	h.Click(Card("full"))

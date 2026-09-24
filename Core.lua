@@ -241,6 +241,9 @@ local function LoadCharDB()
 	if last ~= nil and not (type(last) == "table" and type(last.key) == "string" and type(last.reason) == "string") then
 		loaded.last = nil
 	end
+	if loaded.guided ~= nil and type(loaded.guided) ~= "string" then
+		loaded.guided = nil
+	end
 	local waypoint = loaded.waypoint
 	if
 		waypoint ~= nil
@@ -528,6 +531,68 @@ end
 function ns.Settling()
 	return pendingRebuild or travelPending
 end
+
+--[[ Choosing and starting a journey (docs/design.md §2.10): the cards, the tracker, the menus and the map's rings all
+     come through here, so every route AGF starts runs on the chosen journey, and prefs.guided records which. ]]
+
+-- A start waiting for the rebuild that has the chosen journey's steps, or for combat's end: Shortest Path refuses every
+-- route in combat, and the rebuild PLAYER_REGEN_ENABLED brings (afterCombat) runs it.
+local pendingStart = false
+
+-- Chooses `key`, or none. With `start` its route starts on the rebuild that has its steps. Leaving the journey whose
+-- route AGF started stops that route, unless the new choice's start replaces it; never anyone else's.
+---@param key? string
+---@param start? boolean
+function ns.Choose(key, start)
+	local prefs = ns.Prefs()
+	local guided = prefs.guided
+	prefs.journey = key
+	pendingStart = key ~= nil and start == true
+	if guided and guided ~= key and not pendingStart then
+		ns.Integrations.Cancel()
+	end
+	ns.Invalidate()
+end
+
+-- Guidance along the chosen journey from `step`, its first by default. With none chosen, the route's own journey (the
+-- first card, which the tracker follows) is chosen first. With Shortest Path loaded a start in combat waits for
+-- combat's end. True when something now guides the player, or the start waits.
+---@param step? AGFStep
+---@return boolean
+function ns.StartRoute(step)
+	local route, prefs = ns.Route(), ns.Prefs()
+	if not route.journey then
+		return false
+	end
+	if not route.chosen then
+		prefs.journey = route.journey
+		ns.Invalidate()
+	end
+	if InCombatLockdown() and ns.Integrations.Provider() then
+		pendingStart = true
+		return true
+	end
+	pendingStart = false
+	step = step or route.steps[1]
+	if step and ns.Integrations.Navigate(step) then
+		prefs.guided = route.journey
+		return true
+	end
+	return false
+end
+
+-- A start is waiting for combat to end.
+---@return boolean
+function ns.StartPending()
+	return pendingStart
+end
+
+-- Registered before any view's listener, so the footer already reads the route as started.
+ns.OnRouteChange(function()
+	if pendingStart and not InCombatLockdown() and ns.Route().chosen then
+		ns.StartRoute()
+	end
+end)
 
 --[[ Slash command and audit ]]
 

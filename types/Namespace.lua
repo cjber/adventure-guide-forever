@@ -94,6 +94,7 @@
 ---@field skipped table<string, boolean> step keys skipped this session
 ---@field last? {key: string, reason: string} step 1 at the last rebuild, for the next login's resume line
 ---@field waypoint? {map: integer, x: number, y: number} the native waypoint the last Go set, while it may still be ours
+---@field guided? string the key of the chosen journey whose route AGF started, while that guidance should run
 
 -- "hub" is a town's stop (its pickups and agreeing hand-ins), "turnin" a hand-in at the client's waypoint, and
 -- "objective" or "dungeon" (a group quest) the log's quests under way.
@@ -434,6 +435,9 @@
 ---@field Route fun(): AGFRoute the current route, rebuilt lazily when state or prefs change
 ---@field Invalidate fun() mark the route stale and notify views
 ---@field OnRouteChange fun(callback: fun())
+---@field Choose fun(key?: string, start?: boolean) choose a journey, or none; `start` sets off on the rebuild with its steps
+---@field StartRoute fun(step?: AGFStep): boolean guidance along the chosen journey (choosing the route's own when none is); waits out combat with Shortest Path
+---@field StartPending fun(): boolean a start waits for combat's end
 ---@field Settling fun(): boolean a rebuild or step 1's travel line is due, whose frames take no card estimate
 ---@field PanelShown? fun(): boolean whether the guide is open, set once Blizzard_WorldMap has loaded
 ---@field Skip fun(key: string, title: string) hide a step for this session; the menu offers it back by its title

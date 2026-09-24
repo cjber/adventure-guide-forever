@@ -377,6 +377,8 @@ function Integrations.Navigate(step)
 			steps[1] = step
 		end
 		if api.NavigateRoute(OWNER, stops) then
+			-- Whatever this guides, ns.StartRoute says whether it is the chosen journey's.
+			ns.Prefs().guided = nil
 			guided = steps
 			ns.Pins.Refresh()
 			NotifyGuidance()
@@ -396,7 +398,7 @@ function Integrations.Navigate(step)
 	C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(step.map, step.x, step.y))
 	C_SuperTrack.SetSuperTrackedUserWaypoint(true)
 	-- Saved per character, so Stop still knows the waypoint as ours after a /reload.
-	ns.Prefs().waypoint = { map = step.map, x = step.x, y = step.y }
+	ns.Prefs().waypoint, ns.Prefs().guided = { map = step.map, x = step.x, y = step.y }, nil
 	NotifyGuidance()
 	return true
 end
@@ -426,6 +428,7 @@ end
 
 -- Stop: ends only what Go started. Shortest Path's journey by our name, and the native waypoint only while it is ours.
 function Integrations.Cancel()
+	ns.Prefs().guided = nil
 	local api = SPF()
 	if api and api.Cancel(OWNER) then
 		ns.Pins.Refresh()

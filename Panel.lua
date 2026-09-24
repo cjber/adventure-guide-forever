@@ -78,9 +78,6 @@ local hintText
 local queuedText
 ---@type Button?
 local stopButton
--- A choice made with the setting on whose route has yet to start: it waits out combat (Shortest Path refuses every
--- route then) and starts on the rebuild combat's end brings (Core's afterCombat).
-local pendingStart = false
 ---@type AGFSearchRow[]
 local results = {}
 ---@type Frame?
@@ -323,30 +320,23 @@ local function BuildJourneys(parent, below)
 	list:SetPoint("RIGHT", parent, "RIGHT", -PAD, 0)
 	for index = 1, ns.Model.MAX_JOURNEYS do
 		local card = CreateFrame("Button", nil, list, "AdventureGuideForeverJourneyCardTemplate") --[[@as AGFJourneyCard]]
-		-- Choosing a journey shows its route and turns the map to it, and with the setting on starts it (StartPending,
+		-- Choosing a journey shows its route and turns the map to it, and with the setting on starts it (ns.Choose,
 		-- once the rebuild has its steps). The map turns before the invalidation, so its redraw reads the route as it
 		-- is and the one rebuild waits a frame. The chosen card is a toggle: clicking it again chooses none, every card
-		-- is whole again and, with the setting on, the route it started stops (never anyone else's).
+		-- is whole again and the route it started stops (never anyone else's).
 		card:SetScript("OnClick", function(self)
 			local journey = self.journey
 			if not journey then
 				return
 			end
-			local starts = ns.Setting("titleStartsRoute")
 			if self.state == "chosen" then
-				ns.Prefs().journey = nil
-				pendingStart = false
-				if starts then
-					ns.Integrations.Cancel()
-				end
+				ns.Choose(nil)
 			else
-				ns.Prefs().journey = journey.key
-				pendingStart = starts
 				WorldMapFrame:SetMapID(journey.map)
+				ns.Choose(journey.key, ns.Setting("titleStartsRoute"))
 			end
 			-- Its tooltip spoke for the state the click just left.
 			GameTooltip_Hide()
-			ns.Invalidate()
 		end)
 		card:HookScript("OnEnter", CardTooltip)
 		card:HookScript("OnLeave", GameTooltip_Hide)
@@ -869,7 +859,7 @@ function Refresh()
 	emptyText:SetText((not ready and L.LOADING) or (searching and L.SEARCH_NONE) or L.NOTHING_NEARBY)
 	emptyText:SetShown(not ready or (searching and found == 0) or (not searching and #route.journeys == 0))
 
-	queuedText:SetShown(pendingStart and InCombatLockdown())
+	queuedText:SetShown(ns.StartPending() and InCombatLockdown())
 	stopButton:SetShown(ns.Integrations.Owns())
 end
 
@@ -932,19 +922,6 @@ local function CreateTabs()
 	guideTab:SetChecked(false)
 	if questsTab then
 		questsTab:SetChecked(true)
-	end
-end
-
--- The chosen card's route starts on the rebuild after the choice, which has its steps; in combat it stays pending until
--- the rebuild combat's end brings. Registered before Refresh, so the footer already reads the route as started.
-local function StartPending()
-	if not pendingStart or InCombatLockdown() then
-		return
-	end
-	pendingStart = false
-	local route = ns.Route()
-	if ns.Setting("titleStartsRoute") and route.chosen and route.steps[1] then
-		ns.Integrations.Navigate(route.steps[1])
 	end
 end
 
@@ -1014,7 +991,6 @@ local function Attach()
 			ShowGuide(false)
 		end
 	end)
-	ns.OnRouteChange(StartPending)
 	ns.OnRouteChange(Refresh)
 	ns.Integrations.OnGuidanceChange(Refresh)
 	ns.Integrations.OnTravelChange(Refresh)
