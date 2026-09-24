@@ -15,12 +15,12 @@ local pinsByKey = {}
 -- (roadmap #24), who is told where and never shown.
 -- While the guide is open the rings preview the chosen journey whatever the switch says (F3): choosing a card is
 -- looking at its route. With none chosen the guide lists no steps, so it previews none: rings numbered for a card
--- that isn't pressed would read as a choice made. Either way they step aside while Shortest Path guides, since it
--- numbers its stops itself.
+-- that isn't pressed would read as a choice made, and the switch draws none either, as the tracker lists no step.
+-- Either way they step aside while Shortest Path guides, since it numbers its stops itself.
 ---@return boolean
 local function RingsShown()
-	local preview = ns.PanelShown ~= nil and ns.PanelShown() and ns.Route().chosen
-	return (preview or ns.Setting("showMapPins")) and not ns.Integrations.Guiding() and not ns.Setting("wanderer")
+	local shown = ns.Route().chosen and (ns.PanelShown ~= nil and ns.PanelShown() or ns.Setting("showMapPins"))
+	return shown and not ns.Integrations.Guiding() and not ns.Setting("wanderer")
 end
 
 -- Givers need both switches, and stay while Shortest Path guides: it draws no givers of its own.

@@ -376,7 +376,9 @@ no layer at all.
 ```
 
 - **Preview.** With no card chosen the open guide previews no rings: rings numbered for a card that is not lit
-  would read as a choice made (with `showMapPins` on they still show the first card's route, as the tracker does).
+  would read as a choice made, and with `showMapPins` on there are none either, as the tracker lists no step. The
+  choice going, however it goes, stops what AGF guides too (Core.lua's `wasChosen` listener): none chosen draws
+  nothing of ours, and a route the player started in SPF stays.
   Selecting a card turns the map to that journey's first zone (`WorldMapFrame:SetMapID`) and draws
   only its rings. Hovering a step row flashes its ring (`Pins.Ping`, Pins.lua:184-188).
 - **Layering.** A route ring marks "your destination", so it takes the stock level of the user-waypoint pin,

@@ -835,6 +835,22 @@ ns.OnRouteChange(function()
 	end
 end)
 
+-- No journey chosen draws nothing (docs/design.md §2.2): however the choice went (a click, Not interested, Stop, the
+-- journey ending or leaving the cards), what AGF guides stops with it. Only ours: Cancel ends Shortest Path's journey
+-- by our name and the waypoint only while it sits where Go put it. Judged on full builds, as Ended is: combat's cheap
+-- one can drop a card it will bring back.
+local wasChosen = false
+ns.OnRouteChange(function()
+	if InCombatLockdown() then
+		return
+	end
+	local chosen = ns.Route().chosen
+	if wasChosen and not chosen and ns.Integrations.Owns() then
+		ns.Integrations.Cancel()
+	end
+	wasChosen = chosen
+end)
+
 -- Shortest Path's journeys end with the session, so a /reload or login brings back the route AGF had started for the
 -- chosen journey (prefs.guided), once, on the first full build that has its steps. Not over someone else's journey,
 -- which then keeps the way; and a Shortest Path that declines is asked again on the next full build. The native
