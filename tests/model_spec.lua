@@ -429,7 +429,7 @@ equal(count > 3000, true, "full dataset loaded")
 local quests, named, heads = ns.Data.quests, {}, {}
 for _, q in pairs(quests) do
 	if q.next then
-		named[q.next] = true
+		named[q.next] = (named[q.next] or 0) + 1
 	end
 end
 for id, q in pairs(quests) do
@@ -467,11 +467,17 @@ for _, head in ipairs(heads) do
 		equal(table.concat(story.members, " "), table.concat(members, " "), "walk: members " .. head)
 		equal(story.total, (not flaw) and #members or nil, "walk: total " .. head .. " " .. tostring(flaw))
 		totals, textOnly = totals + (story.total and 1 or 0), textOnly + (story.total and 0 or 1)
-		for index, id in ipairs(members) do
+		-- A later member has its own story unless the way back to the head forks: two quests name it as next.
+		local forked = false
+		for index = 2, #members do
+			local id = members[index]
 			local member = Model.Story(ns.Data, id)
-			if member and index > 1 then
-				checks = checks + 1
-				assert(member.chapter == index and member.members[1] == head, "walk: chapter of " .. id)
+			forked = forked or named[id] > 1
+			checks = checks + 1
+			if forked then
+				assert(member == nil, "walk: no chapter past a fork " .. id)
+			else
+				assert(member and member.chapter == index and member.members[1] == head, "walk: chapter of " .. id)
 			end
 		end
 	end
