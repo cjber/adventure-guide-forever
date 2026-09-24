@@ -890,6 +890,7 @@ Nothing below has been validated in game yet.
     of Fire" ticks "Only until you take Call of Fire", and once Kranal Fiss's Call of Fire is in the log the
     breadcrumb's pickup leaves the route and its line turns red. With QuestieDB, a level-12 paladin is offered Tome of
     Divinity at the class trainer.
+21. Raids (§2.1): a level-60 character on Yojamba Isle with Dungeons on sees no Paragons of Power pickup on any card.
 
 ## 9. Open questions that need client probes
 
