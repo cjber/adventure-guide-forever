@@ -33,6 +33,11 @@ local KIND_ICONS = {
 	nextzone = "QuestNormal",
 	dungeon = "questlog-questtypeicon-dungeon",
 }
+-- Something new (docs/design.md §2.12): the Adventure Guide's own "new" mark (CSV:2024) on a card the character
+-- hasn't been offered before, over its ring's top-right, or beside a one-line row's "+"; its micro button's alert
+-- (CSV:2025) on the tab.
+local NEW_MARK, NEW_SIZE, NEW_COMPACT = "adventureguide-icon-whatsnew", 24, 18
+local TAB_PIP = "adventureguide-microbutton-alert"
 -- The chosen card keeps this art and is lit instead: the renown card's pressed art is drawn a few pixels over, which
 -- reads as the card slipping out of line.
 local CARD_ART = "ui-journeys-renown-button"
@@ -54,6 +59,8 @@ local panel
 local guideTab
 ---@type AGFTabButton?
 local questsTab
+---@type Texture?
+local tabPip
 ---@type AGFRouteRow[]
 local rows = {}
 ---@type AGFJourneyCard[]
@@ -260,6 +267,7 @@ end
 ---@field journey? AGFJourney
 ---@field state? "full"|"chosen"|"compact"
 ---@field Caps Texture[]
+---@field New Texture
 
 -- One search result: the quest and where it starts, and for a locked one a lock and why (docs/design.md §2.4).
 ---@class AGFSearchRow : Frame
@@ -367,6 +375,8 @@ local function BuildJourneys(parent, below)
 			texture:SetPoint(cap[3])
 			card.Caps[#card.Caps + 1] = texture
 		end
+		card.New = card:CreateTexture(nil, "OVERLAY", nil, 2)
+		card.New:SetAtlas(NEW_MARK)
 		cards[index] = card
 	end
 	track = CreateFrame("Frame", nil, list)
@@ -663,6 +673,15 @@ local function RefreshCard(card, journey, state)
 	card.IconFrame.Icon:SetSize(compact and COMPACT_ICON or CARD_ICON, compact and COMPACT_ICON or CARD_ICON)
 	for _, cap in ipairs(card.Caps) do
 		cap:SetShown(compact)
+	end
+	card.New:SetShown(ns.Moments.IsNew(journey.key))
+	card.New:ClearAllPoints()
+	if compact then
+		card.New:SetSize(NEW_COMPACT, NEW_COMPACT)
+		card.New:SetPoint("RIGHT", -ROW_CAPS[2][2], 0)
+	else
+		card.New:SetSize(NEW_SIZE, NEW_SIZE)
+		card.New:SetPoint("CENTER", card.IconFrame, "TOPRIGHT", -4, -4)
 	end
 	card.IconFrame.Icon:SetAtlas(KIND_ICONS[journey.kind])
 	card.Title:SetText(journey.title)
@@ -990,6 +1009,11 @@ local function CreateTabs()
 	end)
 	guideTab.Icon:SetAtlas("islands-queue-prop-compass")
 	guideTab.Icon:SetSize(30, 30)
+	tabPip = guideTab:CreateTexture(nil, "OVERLAY")
+	tabPip:SetAtlas(TAB_PIP)
+	tabPip:SetSize(20, 20)
+	tabPip:SetPoint("CENTER", guideTab, "TOPRIGHT", -8, -8)
+	tabPip:SetShown(ns.Moments.Unseen())
 	if QuestMapFrameOverrides.questTabHidden then
 		questsTab = CreateTab("AdventureGuideForeverQuestsTab", QUESTS_LABEL, function()
 			ShowGuide(false)
@@ -1033,6 +1057,9 @@ local function Attach()
 		end
 	end
 	panel:HookScript("OnShow", QueueCards)
+	-- Something new: seen once the guide shows; its cards' marks go when it closes.
+	panel:HookScript("OnShow", ns.Moments.Opened)
+	panel:HookScript("OnHide", ns.Moments.Closed)
 	ns.OnRouteChange(QueueCards)
 	BuildContent(panel)
 	-- The footer's Stop follows Shortest Path ending our journey and the player clearing or moving the waypoint through
@@ -1062,6 +1089,11 @@ local function Attach()
 	ns.Integrations.OnTravelChange(Refresh)
 	ns.Integrations.OnCardTravel(Refresh)
 	ns.Asides.OnChange(Refresh)
+	ns.Moments.OnChange(function()
+		---@cast tabPip -?
+		tabPip:SetShown(ns.Moments.Unseen())
+		Refresh()
+	end)
 
 	function ns.PanelShown()
 		return panel:IsVisible()

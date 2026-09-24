@@ -177,6 +177,8 @@ ns.L = {
 	UNLISTED = 'This land has stories the guide doesn\'t know yet; look for the "!" over quest givers.',
 	-- The tracker's one line while no journey is chosen: a story's title, then its reason or chapter.
 	STORY_HOOK = "%s · %s",
+	-- Something new (docs/design.md §2.12): the tracker's line for a journey card the character hasn't been offered.
+	MOMENT = "%s is now for your level",
 }
 local L = ns.L
 
@@ -609,13 +611,14 @@ end
 local travelPending = false
 
 -- Skipped when an invalidation landed since the rebuild: ns.Route() would rebuild in this frame too, and the
--- pending rebuild queues its own refresh. The asides are asked in this frame too. The cards wait for this frame and
--- ask from the next.
+-- pending rebuild queues its own refresh. The asides are asked in this frame too, then Moments compares what is
+-- offered. The cards wait for this frame and ask from the next.
 local function RefreshTravel()
 	travelPending = false
 	if not pendingRebuild then
 		ns.Integrations.RefreshTravel()
 		ns.Asides.Refresh()
+		ns.Moments.Observe()
 		ns.Integrations.ResumeCards()
 	end
 end

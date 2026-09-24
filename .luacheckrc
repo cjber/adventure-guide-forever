@@ -87,6 +87,8 @@ read_globals = {
 	"SOUNDKIT",
 	"tContains",
 	"UIParent",
+	-- Moments.lua
+	"AddonCompartmentFrame",
 	-- Settings.lua
 	"Settings",
 	-- Dump.lua: frames Panel.lua and Tracker.lua create by name

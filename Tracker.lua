@@ -21,8 +21,11 @@ local ASIDE = "aside"
 -- With no journey chosen (docs/design.md §2.5), the one line in place of the step's when there is no aside: the top
 -- story's hook, whose click chooses it as its card's does.
 local HOOK = "hook"
+-- Something new (Moments.lua, docs/design.md §2.12): "Duskwood is now for your level", glowing once, until the guide
+-- opens; a click opens it.
+local MOMENT = "moment"
 -- Headers that are not the step's: its click and hover never act on them.
-local NOT_STEP = { [STORY_COMPLETE] = true, [ASIDE] = true, [HOOK] = true, [JOURNEY_COMPLETE] = true }
+local NOT_STEP = { [STORY_COMPLETE] = true, [ASIDE] = true, [HOOK] = true, [JOURNEY_COMPLETE] = true, [MOMENT] = true }
 -- A town's NPC line names this many, then counts the rest.
 local NAMED_GIVERS = 2
 -- Set by a turn-in that ends a story: the quest, then the first step 1 the route shows without it. The header stays
@@ -86,7 +89,7 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 		end
 		return
 	elseif NOT_STEP[block.id] then
-		if block.id == JOURNEY_COMPLETE and mouseButton ~= "RightButton" and ns.OpenPanel then
+		if (block.id == JOURNEY_COMPLETE or block.id == MOMENT) and mouseButton ~= "RightButton" and ns.OpenPanel then
 			ns.OpenPanel()
 		end
 		return
@@ -145,13 +148,21 @@ local function LayoutLine(module)
 	return module:LayoutBlock(block)
 end
 
--- One quiet line (LayoutLine), then, once a journey is chosen, one block for the current step (docs/design.md §2.5,
--- docs/plan.md §7.4): its place (a town's counts), why it is next (a town's NPCs) and the travel line as objective
--- lines, then what follows it, undashed. Nothing is laid out (an empty, self-hiding module) when the setting is off,
--- or there's nothing to say.
+-- One quiet line (LayoutLine), something new (Moments.Line) under it, then, once a journey is chosen, one block for
+-- the current step (docs/design.md §2.5, docs/plan.md §7.4): its place (a town's counts), why it is next (a town's
+-- NPCs) and the travel line as objective lines, then what follows it, undashed. Nothing is laid out (an empty,
+-- self-hiding module) when the setting is off, or there's nothing to say.
 function ModuleMixin:LayoutContents()
 	if not ns.Setting("showTracker") or not LayoutLine(self) then
 		return
+	end
+	local moment = ns.Moments.Line()
+	if moment then
+		local block = self:GetBlock(MOMENT)
+		block:SetHeader(moment)
+		if not self:LayoutBlock(block) then
+			return
+		end
 	end
 	if finished then
 		local block = self:GetBlock(STORY_COMPLETE)
@@ -290,6 +301,22 @@ function ns.OnJourneyComplete()
 	Refresh()
 end
 
+-- Something new: the moment's line glows for a journey, the aside's own line for an aside; no sound.
+---@param journey boolean
+---@param aside boolean
+function ns.OnMoment(journey, aside)
+	if not (module and ns.Setting("showTracker")) then
+		return
+	end
+	if journey then
+		module:SetNeedsFanfare(MOMENT)
+	end
+	if aside then
+		module:SetNeedsFanfare(ASIDE)
+	end
+	Refresh()
+end
+
 -- The first rebuild whose step 1 isn't the quest just handed in names the step the header stands over.
 local function OnRouteChange()
 	if journeyDone then
@@ -311,3 +338,4 @@ Register()
 ns.OnRouteChange(OnRouteChange)
 ns.Integrations.OnTravelChange(Refresh)
 ns.Asides.OnChange(Refresh)
+ns.Moments.OnChange(Refresh)
