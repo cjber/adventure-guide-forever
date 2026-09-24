@@ -97,64 +97,98 @@ local function check(ok, message)
 	end
 end
 
-local worstRebuild, worstTravel = 0, 0
-for _, level in ipairs({ 1, 10, 20, 30, 40, 50, 60 }) do
-	for _, profile in ipairs(SIDES) do
-		local at = profile.at[level] or SHARED[level]
-		local label = ("%s %d"):format(profile.faction, level)
-		local h = harness.load({
-			spf = "v1",
-			completed = Completed(profile.side, level),
-			player = {
-				level = level,
-				faction = profile.faction,
-				raceID = profile.raceID,
-				classID = profile.classID,
-				map = at[1],
-				x = at[2],
-				y = at[3],
-			},
-		})
-		local api, model = h.G.ShortestPathForever.API, CostModel()
-		for _, name in ipairs({ "Estimate", "EstimateDetail" }) do
-			local original = api[name]
-			if original then
-				api[name] = function(...)
-					model.charge(...)
-					return original(...) -- multi-value: the wrapper is transparent
-				end
+local worstRebuild, worstTravel, worstSlice, profiles = 0, 0, 0, 0
+
+-- QuestieDB's build (QuestieSource.lua) on the real clock: each frame's slice, timed as the timer that runs it.
+local function Slices(h)
+	h.G.debugprofilestop = function()
+		return os.clock() * 1000
+	end
+	local after = h.G.C_Timer.After
+	h.G.C_Timer.After = function(delay, fn)
+		local source = debug.getinfo(fn, "S").source
+		after(delay, function()
+			local started = os.clock()
+			fn()
+			if source:find("QuestieSource") then
+				worstSlice = math.max(worstSlice, (os.clock() - started) * 1000)
+			end
+		end)
+	end
+end
+
+local function Profile(profile, level, questiedb)
+	local at = profile.at[level] or SHARED[level]
+	local label = ("%s %d%s"):format(profile.faction, level, questiedb and " QuestieDB" or "")
+	profiles = profiles + 1
+	local h = harness.load({
+		spf = "v1",
+		completed = Completed(profile.side, level),
+		player = {
+			level = level,
+			faction = profile.faction,
+			raceID = profile.raceID,
+			classID = profile.classID,
+			map = at[1],
+			x = at[2],
+			y = at[3],
+		},
+		questiedb = questiedb,
+		setup = questiedb and Slices,
+	})
+	check(not questiedb or h.ns.QuestieStatus.state == "questie", label .. ": QuestieDB's quests not in use")
+	local api, model = h.G.ShortestPathForever.API, CostModel()
+	for _, name in ipairs({ "Estimate", "EstimateDetail" }) do
+		local original = api[name]
+		if original then
+			api[name] = function(...)
+				model.charge(...)
+				return original(...) -- multi-value: the wrapper is transparent
 			end
 		end
-		h.ns.OpenPanel()
-		h.flush()
-		local created = h.counts.CreateFrame
-		local rebuild, travel, steps = {}, {}, #h.ns.Route().steps
-		for sample = 1, SAMPLES do
-			model.reset()
-			model.now = sample * 60
-			h.ns.Invalidate()
-			local started = os.clock()
-			h.tick()
-			rebuild[sample] = (os.clock() - started) * 1000
-			check(model.calls == 0, label .. ": the rebuild frame asked Shortest Path " .. model.calls .. " times")
-			local asked = model.calls
-			started = os.clock()
-			h.tick()
-			travel[sample] = (os.clock() - started) * 1000 + model.ms
-			check(model.calls - asked <= 1, label .. ": the travel frame asked " .. (model.calls - asked) .. " times")
-			check(h.tick() == 0, label .. ": a third frame ran")
-		end
-		check(h.counts.CreateFrame == created, label .. ": frames created after the first render")
-		check(#h.errors == 0, label .. ": errors\n" .. table.concat(h.errors, "\n"))
-		worstRebuild, worstTravel = math.max(worstRebuild, Max(rebuild)), math.max(worstTravel, Max(travel))
-		lines[#lines + 1] = ("%-14s %d steps  rebuild %.3f / %.3f ms  travel %.3f / %.3f ms (modelled, median / max)"):format(
-			label,
-			steps,
-			Median(rebuild),
-			Max(rebuild),
-			Median(travel),
-			Max(travel)
-		)
+	end
+	h.ns.OpenPanel()
+	h.flush()
+	local created = h.counts.CreateFrame
+	local rebuild, travel, steps = {}, {}, #h.ns.Route().steps
+	for sample = 1, SAMPLES do
+		model.reset()
+		model.now = sample * 60
+		h.ns.Invalidate()
+		local started = os.clock()
+		h.tick()
+		rebuild[sample] = (os.clock() - started) * 1000
+		check(model.calls == 0, label .. ": the rebuild frame asked Shortest Path " .. model.calls .. " times")
+		local asked = model.calls
+		started = os.clock()
+		h.tick()
+		travel[sample] = (os.clock() - started) * 1000 + model.ms
+		check(model.calls - asked <= 1, label .. ": the travel frame asked " .. (model.calls - asked) .. " times")
+		check(h.tick() == 0, label .. ": a third frame ran")
+	end
+	check(h.counts.CreateFrame == created, label .. ": frames created after the first render")
+	check(#h.errors == 0, label .. ": errors\n" .. table.concat(h.errors, "\n"))
+	worstRebuild, worstTravel = math.max(worstRebuild, Max(rebuild)), math.max(worstTravel, Max(travel))
+	lines[#lines + 1] = ("%-14s %d steps  rebuild %.3f / %.3f ms  travel %.3f / %.3f ms (modelled, median / max)"):format(
+		label,
+		steps,
+		Median(rebuild),
+		Max(rebuild),
+		Median(travel),
+		Max(travel)
+	)
+end
+
+for _, level in ipairs({ 1, 10, 20, 30, 40, 50, 60 }) do
+	for _, profile in ipairs(SIDES) do
+		Profile(profile, level)
+	end
+end
+-- The same frames on QuestieDB's quests, converted from a synthetic mirror of the bundled data (the harness's).
+local mirror = harness.questieMirror(data)
+for _, level in ipairs({ 10, 40 }) do
+	for _, profile in ipairs(SIDES) do
+		Profile(profile, level, mirror)
 	end
 end
 
@@ -162,13 +196,16 @@ print(table.concat(lines, "\n"))
 if strict then
 	check(worstRebuild < BUDGET_MS, ("rebuild frame max %.3f ms is over %d ms"):format(worstRebuild, BUDGET_MS))
 	check(worstTravel < BUDGET_MS, ("travel frame max %.3f ms is over %d ms"):format(worstTravel, BUDGET_MS))
+	check(worstSlice < BUDGET_MS, ("QuestieDB build slice max %.3f ms is over %d ms"):format(worstSlice, BUDGET_MS))
 end
 assert(#failures == 0, table.concat(failures, "\n"))
 print(
-	("plan_bench: 14 profiles x %d samples; worst rebuild %.3f ms, worst travel %.3f ms%s"):format(
+	("plan_bench: %d profiles x %d samples; worst rebuild %.3f ms, travel %.3f ms, QuestieDB slice %.3f ms%s"):format(
+		profiles,
 		SAMPLES,
 		worstRebuild,
 		worstTravel,
+		worstSlice,
 		strict and " (budget checked)" or ""
 	)
 )
