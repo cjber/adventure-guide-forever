@@ -864,8 +864,13 @@ local function ZoneJourney(data, player, eligible, zone, index, prefs, mapName, 
 	if #steps == 0 then
 		return nil, quests
 	end
+	-- The lead only when Build kept it: a skipped chapter leaves the card to the zone's count.
+	local kept
+	for _, step in ipairs(steps) do
+		kept = kept or step == lead
+	end
 	local subline = Count(ns.L.QUESTS_NEAR_ONE, ns.L.QUESTS_NEAR, quests)
-	return { map = steps[1].map, steps = steps, subline = subline }, quests, lead
+	return { map = steps[1].map, steps = steps, subline = subline }, quests, kept and lead or nil
 end
 
 -- The zone's story (docs/design.md §2.3): of the chains the player can take up in `zone` now, one they have already
