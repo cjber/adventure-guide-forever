@@ -412,6 +412,9 @@ Invariants:
    Never in combat, on a taxi or off the map. Without Shortest Path the waypoint moves to step 1 instead, quietly.
 5. **Nothing starts on its own,** except the restore after a `/reload` or login (once, on the first full build out
    of combat, never over someone else's journey) and the extension of a route that arrived to steps it never had.
+   While the player stands in step 1's town (within 100 yd of its point) with steps after it, Shortest Path is handed
+   the town alone: it arrives there and draws no way out of town before its quests are taken, and the route goes on
+   once the town is done or the player walks out.
 6. **Losing something is never silent.** A turn-in that ends the chosen journey glows "Journey complete" in the
    tracker; a route that stopped says "Route paused" in the footer.
 7. **Endings are judged on full builds only,** out of combat, once the completed quests have loaded.

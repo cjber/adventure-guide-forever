@@ -373,11 +373,30 @@ local function Stops(steps)
 	return stops
 end
 
--- Hands Shortest Path `steps` as one numbered journey; true when it took them.
+-- What Shortest Path is handed of `steps`: all of them, except while the player stands in step 1's town (within the
+-- town linkage of its point, the quest there nearest the player) with more steps after it. Then the town alone, so
+-- Shortest Path arrives there and draws no way out of town while the stock "!" and "?" marks show its givers; the
+-- journey goes on once the town is done (Follow).
+---@param steps (AGFStep|AGFGiver)[]
+---@return (AGFStep|AGFGiver)[]
+local function Hand(steps)
+	local first = steps[1] --[[@as AGFStep?]]
+	if first and first.spots and #steps > 1 then
+		local player = ns.State.Player()
+		local yards = player.map and ns.Model.Yards(ns.Data, player --[[@as AGFStep]], first)
+		if yards and yards <= LINK then
+			return { first }
+		end
+	end
+	return steps
+end
+
+-- Hands Shortest Path `steps` as one numbered journey (Hand); true when it took them.
 ---@param api AGFSPFAPI
 ---@param steps (AGFStep|AGFGiver)[]
 ---@return boolean
 local function Send(api, steps)
+	steps = Hand(steps)
 	if
 		not api.NavigateRoute(OWNER, Stops(steps --[[@as AGFStep[] ]]))
 	then
@@ -608,14 +627,19 @@ local function Follow()
 	if not api then
 		return
 	end
-	local index = api.CurrentStop(OWNER)
+	local index, hand = api.CurrentStop(OWNER), Hand(route.steps)
+	-- Shortest Path heading past the town the player stands in, with work left there: the town alone again.
+	local leaving = #hand < #route.steps and guided[index] ~= nil and guided[index].key ~= hand[1].key
 	if index then
 		if
-			Integrations.Guiding() and Integrations.Stale(guided --[[@as AGFStep[] ]], index, route.steps, Far)
+			Integrations.Guiding()
+			and (
+				leaving or Integrations.Stale(guided --[[@as AGFStep[] ]], index, route.steps, Far)
+			)
 		then
 			Send(api, route.steps)
 		end
-	elseif arrived and Unhanded(route.steps) then
+	elseif arrived and Unhanded(hand) then
 		Send(api, route.steps)
 	end
 end

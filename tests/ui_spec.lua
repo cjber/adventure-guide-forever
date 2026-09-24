@@ -262,6 +262,8 @@ do
 	h.SetCombat(false)
 	h.flush()
 	equal(h.spf.NavigateRoute, 3, "follow: once, when combat ends")
+	-- Standing in step 1's town, the Crossroads, with steps after it: the town alone, so no way out of town is drawn.
+	equal(#h.spfRoute.stops, 1, "follow: in step 1's town, the town alone")
 	h.onTaxi = true
 	Moved(h, 1413, 0.46, 0.79)
 	equal(h.spf.NavigateRoute, 3, "follow: nothing in the air")
@@ -269,16 +271,37 @@ do
 	Moved(h, nil, nil, nil)
 	equal(h.spf.NavigateRoute, 3, "follow: nothing off the map")
 	Moved(h, 1413, 0.5223, 0.3101)
-	h.spfAdvance()
+	h.spfEnd("arrived")
+	Moved(h, 1413, 0.5224, 0.3101)
+	equal(h.spf.NavigateRoute, 3, "follow: arrived in the town, its work still there: nothing")
 	Moved(h, 1413, 0.46, 0.79)
-	equal(h.spf.NavigateRoute, 3, "follow: arrived, step 1 is the stop it heads for: nothing")
+	equal(h.spf.NavigateRoute, 4, "follow: out of the town, the journey goes on")
+	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: every step")
+	h.spfAdvance()
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 3, "follow: step 1 the stop it just reached: nothing")
+	equal(h.spf.NavigateRoute, 4, "follow: heading for the town it stands in: nothing")
 	h.spfOther()
 	Moved(h, 1413, 0.46, 0.79)
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 3, "follow: another journey replaced ours: nothing")
+	equal(h.spf.NavigateRoute, 4, "follow: another journey replaced ours: nothing")
 	clean(h, "follow")
+
+	-- Started outside the town, every step is handed; Shortest Path reaching the town moves on at once, and the player
+	-- in it with work left gets the town alone again, so the minimap draws no way out before its quests are taken.
+	h = Load("ended")
+	Moved(h, 1413, 0.5383, 0.3101)
+	h.ns.StartRoute()
+	h.flush()
+	local steps = #h.ns.Route().steps
+	equal(#h.spfRoute.stops, steps, "follow, town: started outside it, every step")
+	h.spfAdvance()
+	Moved(h, 1413, 0.5223, 0.3101)
+	equal(h.spf.NavigateRoute, 2, "follow, town: reached, Shortest Path moved on: the town alone again")
+	equal(#h.spfRoute.stops, 1, "follow, town: just the town")
+	h.spfEnd("arrived")
+	Moved(h, 1413, 0.5224, 0.3101)
+	equal(h.spf.NavigateRoute, 2, "follow, town: arrived, its work left: nothing")
+	clean(h, "follow, town")
 
 	-- Without Shortest Path, the waypoint Go set for the chosen journey moves to its new step 1; on a map that refuses
 	-- one it stays, with no error line; one the player moved is theirs and never touched.
@@ -409,6 +432,9 @@ do
 		if at then
 			local last = handed[#handed]
 			h.MovePlayer(last.map, last.x, last.y)
+		else
+			-- Out of the Crossroads, where the route starts as the town alone: its last stop is not where it ends.
+			h.MovePlayer(1413, 0.46, 0.79)
 		end
 		how(h)
 		h.fire("SUPER_TRACKING_CHANGED")
@@ -443,6 +469,11 @@ do
 	local h = Ending("ended", Arrive, true)
 	h.log[#h.log + 1] = { id = 846, title = "Fresh", level = 14, complete = false, map = 1413, x = 0.2, y = 0.2 }
 	h.fire("QUEST_LOG_UPDATE")
+	h.flush()
+	-- It arrived at the Crossroads, where the town's work waits first; stepping out, the journey goes on.
+	equal(h.spf.NavigateRoute, 1, "ended, arrived: nothing while the town it stands in has work")
+	h.MovePlayer(1413, 0.46, 0.79)
+	h.ns.Invalidate()
 	h.flush()
 	equal(h.spf.NavigateRoute, 2, "ended, arrived: a new step extends the route")
 	equal(h.ns.Integrations.Arrived(), false, "ended, arrived: which guides again")
