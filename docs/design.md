@@ -81,7 +81,8 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   - the three 64 px zone-art cards, `SetZoneArt` and the veil / "Best fit" band (Panel.lua:126-178). The map beside the list already shows the zone.
   - the XP bar (Panel.lua:329-356). The stock XP bar already shows this.
   - "Why these?" (Panel.lua:430-443). Each row now gives its own reason, and "why not" moves to search.
-- The quest/dungeon chips move into the cog's settings menu. The cog stays the settings entry and is not reused for anything else.
+- The quest/dungeon chips move into the cog's settings menu. Dungeons holds back only an instance's quests (a quest
+  with `dungeon`); an outdoor elite (Hogger) is a zone's quest under Quests, shown optional with the group badge.
 - **None chosen** is the default (a fresh character, a card clicked again, or a saved choice whose card is no longer
   offered): every card whole in order, no step rows, the hint "Choose a journey to see its steps." under them, and
   nothing guides. The route still falls back to the first card

@@ -360,14 +360,15 @@ local function Rank(data, ids, level)
 end
 
 -- One eligibility pass for two levels: the player's, and `ahead` levels on for the next-zone card. A level reaches
--- eligibility only through a quest's minimum, so what opens at level + ahead holds everything open now.
+-- eligibility only through a quest's minimum, so what opens at level + ahead holds everything open now. Only an
+-- instance's quests wait behind Dungeons: an outdoor elite is a zone's quest, optional and badged for a group.
 local function Choices(data, player, completed, log, index, prefs, ahead)
 	local eligible, later, target = {}, {}, player.level + (ahead or 0)
 	for _, id in ipairs(index.ids) do
 		local quest = data.quests[id]
-		local group = quest.elite or quest.dungeon
+		local instance = quest.dungeon ~= nil
 		if
-			((group and prefs.dungeons) or (not group and prefs.quests))
+			((instance and prefs.dungeons) or (not instance and prefs.quests))
 			and Eligible(data, player, completed, log, id, index.groups, target)
 		then
 			later[#later + 1] = id

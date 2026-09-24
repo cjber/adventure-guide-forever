@@ -41,7 +41,7 @@ ns.L = {
 	SEARCH_NONE = "No quests match your search.",
 	SETTING_MAP_PINS_TOOLTIP = "The route's numbered steps on the world map while their zone is shown, and quest "
 		.. "givers when those are on too. The open guide previews its route either way.",
-	SETTING_DUNGEONS_DEFAULT_TOOLTIP = "Suggest dungeon and group quests for a character the first time you open "
+	SETTING_DUNGEONS_DEFAULT_TOOLTIP = "Suggest dungeon quests for a character the first time you open "
 		.. "the guide. Change it any time from the guide's settings menu.",
 	SETTING_GIVERS_TOOLTIP = 'A "!" on the world map over everyone with a quest you can take now. '
 		.. "Needs route pins on the map as well.",

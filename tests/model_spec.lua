@@ -261,11 +261,17 @@ equal(Model.Plan(withFinish, player, {}, unknown, prefs()).steps[1].x, 0.6, "bun
 
 local special = { quests = { [1] = quest(), [2] = quest(0.9) }, zones = data.zones }
 special.quests[1].elite, special.quests[2].dungeon = true, 99
-equal(#Model.Plan(special, player, {}, {}, prefs()).steps, 0, "group quests opt in")
+-- Roadmap #16: an outdoor elite is a zone's quest (optional, badged); only an instance's quest waits behind Dungeons.
+local outdoor = Model.Plan(special, player, {}, {}, prefs())
+equal(#outdoor.steps, 1, "an outdoor elite shows with dungeons off, the instance quest does not")
+equal(outdoor.steps[1].quests[1], 1, "and it is the elite")
+equal(outdoor.steps[1].group, 1, "badged for a group")
+equal(outdoor.steps[1].optional, true, "and optional")
 local dungeon = prefs()
 dungeon.quests, dungeon.dungeons = false, true
 local groups = Model.Plan(special, player, {}, {}, dungeon)
-equal(#groups.steps, 2, "dungeon-only activity")
+equal(#groups.steps, 1, "dungeon-only activity holds the instance quest alone")
+equal(groups.steps[1].quests[1], 2, "not the outdoor elite")
 equal(groups.steps[1].group, 1, "a group quest counts in its town")
 equal(groups.steps[1].optional, true, "group optional marker")
 
