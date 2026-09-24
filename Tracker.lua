@@ -48,7 +48,9 @@ function ModuleMixin:LayoutContents()
 		block:AddObjective(line, step.place)
 	end
 	local resume = ns.Resume(step)
-	local reason = resume and ns.L.RESUME:format(resume) or step.kind ~= "turnin" and step.reason
+	-- Mid-line, a reason that is a sentence of its own ("Continues a story you started") loses its capital.
+	local reason = resume and ns.L.RESUME:format((resume:gsub("^%u", string.lower)))
+		or step.kind ~= "turnin" and step.reason
 	if reason then
 		line = line + 1
 		block:AddObjective(line, reason)

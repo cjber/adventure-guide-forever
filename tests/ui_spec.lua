@@ -686,6 +686,19 @@ do
 	local h = Login({})
 	equal(Resumed(h), 1, "resume: a login with a matching key shows the line")
 	equal(TrackerLines(h)[1], "Where you left off: finishes a story", "resume: in place of the reason")
+	local capital = harness.load({
+		charDB = { last = { key = saved.key, reason = "Continues a story you started" } },
+		completed = { 844 },
+		log = {
+			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
+		},
+	})
+	equal(
+		TrackerLines(capital)[1],
+		"Where you left off: continues a story you started",
+		"resume: sentence case mid-line"
+	)
+	clean(capital, "resume: sentence case")
 	local first = h.ns.Route().steps[1]
 	h.ns.Skip(first.key, first.title)
 	h.flush()
