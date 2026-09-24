@@ -1737,7 +1737,8 @@ end
 do
 	local kept = Load(false, nil, { journey = "story:1413" })
 	equal(kept.ns.Route().chosen, true, "saves: a saved card stays chosen")
-	equal(kept.ns.Route().journey, "story:1413", "saves: the same card")
+	equal(kept.ns.Route().journey, "zone:1413", "saves: the same card, under the one key a zone's journey has")
+	equal(Load(false, nil, { journey = "nextzone:1442" }).ns.Prefs().journey, "zone:1442", "saves: a next zone too")
 	local gone = Load(false, nil, { journey = "dungeon:36" })
 	equal(gone.ns.Route().chosen, false, "saves: a card no longer offered is none chosen")
 	equal(gone.G.AdventureGuideForeverCharDB.journey, "dungeon:36", "saves: kept, should it come back")
@@ -1945,7 +1946,7 @@ end
 -- the story card's towns with Shortest Path loaded (their counts, and step 1's minutes), as tests/scenes.lua draws it.
 do
 	local json, diff = dofile("tests/json.lua"), dofile("tests/dump_diff.lua")
-	local h = Load("v1", nil, { journey = "story:1413" })
+	local h = Load("v1", nil, { journey = "zone:1413" })
 	h.ns.OpenPanel()
 	h.flush()
 	local panel = h.G.AdventureGuideForeverPanel

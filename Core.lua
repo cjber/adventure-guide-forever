@@ -233,6 +233,10 @@ local function LoadCharDB()
 	if loaded.journey ~= nil and type(loaded.journey) ~= "string" then
 		loaded.journey = nil
 	end
+	-- One key names a zone's journey, whether it shows as the zone's story or as heading there (docs/design.md §2.10).
+	if loaded.journey then
+		loaded.journey = loaded.journey:gsub("^story:", "zone:"):gsub("^nextzone:", "zone:")
+	end
 	local last = loaded.last
 	if last ~= nil and not (type(last) == "table" and type(last.key) == "string" and type(last.reason) == "string") then
 		loaded.last = nil

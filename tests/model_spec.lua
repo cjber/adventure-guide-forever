@@ -132,9 +132,9 @@ for _, step in ipairs(route.steps) do
 	equal(#(step.pickups or {}), 0, "carry holds no pickups: " .. step.key)
 end
 equal(Has(route.steps, "turnin:100"), 1, "the turn-in is carried")
-options.journey = "story:1"
+options.journey = "zone:1"
 route = Model.Plan(data, player, {}, log, options)
-equal(route.journey, "story:1", "the chosen card")
+equal(route.journey, "zone:1", "the chosen card")
 equal(route.chosen, true, "and it is a choice")
 equal(route.journeys[2].title, "Zone story", "the story is named after its zone")
 equal(route.journeys[2].subline, "9 quests near your level", "the story counts its quests")
@@ -191,20 +191,20 @@ local function Kinds(journeys)
 	return table.concat(kinds, " ")
 end
 local later = Model.Plan(Ahead(5), player, {}, {}, prefs())
-equal(Kinds(later.journeys), "story:1 nextzone:2", "the next zone after the story")
+equal(Kinds(later.journeys), "zone:1 zone:2", "the next zone after the story")
 equal(later.journeys[2].title, "Head to There", "named for its zone")
 equal(later.journeys[2].reason, "For level 20", "the level it fits under the name")
 local capped = { level = 18, maxLevel = 19, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
 equal(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys[2].reason, "For level 19", "never past the cap")
 capped.maxLevel = 18
-equal(Kinds(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys), "story:1", "and none at the cap")
+equal(Kinds(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys), "zone:1", "and none at the cap")
 local standing = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 2, x = 0.5, y = 0.5 }
-equal(Kinds(Model.Plan(Ahead(5), standing, {}, {}, prefs()).journeys), "story:1", "never the zone the player is in")
-equal(Kinds(Model.Plan(Ahead(4), player, {}, {}, prefs()).journeys), "story:1", "four quests are too few")
-equal(Kinds(Model.Plan(Ahead(5, 20), player, {}, {}, prefs()).journeys), "story:1", "only quests open now count")
+equal(Kinds(Model.Plan(Ahead(5), standing, {}, {}, prefs()).journeys), "zone:1", "never the zone the player is in")
+equal(Kinds(Model.Plan(Ahead(4), player, {}, {}, prefs()).journeys), "zone:1", "four quests are too few")
+equal(Kinds(Model.Plan(Ahead(5, 20), player, {}, {}, prefs()).journeys), "zone:1", "only quests open now count")
 -- At 22 There fits both now and two levels on; the next zone is never the story's own, and Here holds too few.
 local later22 = { level = 22, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
-equal(Kinds(Model.Plan(Ahead(5), later22, {}, {}, prefs()).journeys), "story:2", "never the story's own zone")
+equal(Kinds(Model.Plan(Ahead(5), later22, {}, {}, prefs()).journeys), "zone:2", "never the story's own zone")
 
 local hub = { quests = { [1] = quest(0.1), [2] = quest(0.11), [3] = quest(0.09) }, zones = data.zones }
 hub.quests[1].start.hub, hub.quests[2].start.hub = 7, 7
@@ -242,7 +242,7 @@ for id = 1, 4 do
 	zones.quests[id].level = 17 + id
 	zones.zones[id] = { name = "Zone " .. id, min = 10, max = 25 }
 end
-equal(Model.Plan(zones, player, {}, {}, prefs()).journeys[1].key, "story:1", "the story is the best level fit's")
+equal(Model.Plan(zones, player, {}, {}, prefs()).journeys[1].key, "zone:1", "the story is the best level fit's")
 -- One cost in yards (F12): this continent by distance, then across the ocean, then a map with no geometry.
 local tiers = { quests = {}, zones = data.zones, maps = {}, continents = { [0] = { x = 50000, y = 0 }, [1] = {} } }
 tiers.continents[1] = { x = 0, y = 0 }
@@ -420,7 +420,7 @@ local function Carried()
 end
 local visitor = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.3, y = 0.5 }
 local townPrefs = prefs()
-townPrefs.dungeons, townPrefs.journey = true, "story:1"
+townPrefs.dungeons, townPrefs.journey = true, "zone:1"
 local town = Town()
 local toured = Model.Plan(town, visitor, {}, Carried(), townPrefs)
 local stop = toured.steps[1]
@@ -452,7 +452,7 @@ equal(carriedCard.steps[1].detail, "2 to hand in", "town: and count as hand-ins"
 equal(carriedCard.subline, "3 ready to hand in", "town: the carry card counts every hand-in")
 -- A skip is the card's own: the carry card's town and the story card's are different stops.
 local townSkip = prefs()
-townSkip.dungeons, townSkip.journey = true, "story:1"
+townSkip.dungeons, townSkip.journey = true, "zone:1"
 townSkip.skipped[carriedCard.steps[1].key] = true
 local skippedTown = Model.Plan(town, visitor, {}, Carried(), townSkip)
 equal(skippedTown.steps[1] and skippedTown.steps[1].key, "hub:5", "skip: the carry card's town leaves the story's")

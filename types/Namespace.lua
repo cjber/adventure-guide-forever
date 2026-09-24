@@ -144,7 +144,7 @@
 -- One card in the guide (docs/design.md §2.2): only steps the player can take now.
 ---@class AGFJourney
 ---@field kind AGFJourneyKind
----@field key string stable identity for prefs.journey: "carry", "story:<uiMapID>", "dungeon:<Map.ID>" or "nextzone:<uiMapID>"
+---@field key string stable identity for prefs.journey: "carry", "zone:<uiMapID>" (a zone's story or next-zone card alike) or "dungeon:<Map.ID>"
 ---@field title string e.g. "Finish what you carry" or "Westfall story"
 ---@field subline string e.g. "3 ready to hand in, 1 in progress"
 ---@field reason? string why this journey, when there is an honest answer

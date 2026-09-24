@@ -81,7 +81,7 @@ end
 local out = {}
 
 -- The lead image: the story card's towns, with Shortest Path's minutes on step 1 (ui_spec's golden layout).
-local STORY = "story:1413"
+local STORY = "zone:1413"
 local h = Load("v1", false, false, STORY)
 out.panel = Panel(h, "panel")
 h.providers[1]:RefreshAllData()

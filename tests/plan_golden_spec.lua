@@ -101,7 +101,7 @@ for _, fixture in ipairs(characters.list) do
 			end
 			equal(quests >= 5, true, label .. ": at least 5 quests there now")
 			for _, other in ipairs(route.journeys) do
-				equal(other.key ~= "story:" .. map, true, label .. ": another zone than the story's")
+				equal(other == journey or other.key ~= journey.key, true, label .. ": another zone than the story's")
 			end
 		end
 	end

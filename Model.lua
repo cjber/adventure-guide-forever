@@ -1198,7 +1198,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	end
 	if story then
 		local name = ZoneName(data, zone, mapName)
-		story.kind, story.key = "story", "story:" .. zone
+		story.kind, story.key = "story", "zone:" .. zone
 		story.title = L.JOURNEY_STORY:format(name)
 		-- With a chain, the card tells its chapter in place of the zone's count, and its step says so on the map.
 		if chain and lead then
@@ -1220,7 +1220,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 		if map ~= zone and map ~= player.map then
 			local nextZone, quests = ZoneJourney(data, player, completed, log, ready, eligible, map, prefs, mapName)
 			if nextZone and quests >= NEXT_ZONE_PICKUPS and #journeys < Model.MAX_JOURNEYS then
-				nextZone.kind, nextZone.key = "nextzone", "nextzone:" .. map
+				nextZone.kind, nextZone.key = "nextzone", "zone:" .. map
 				local name = ZoneName(data, map, mapName)
 				nextZone.title = L.JOURNEY_NEXT_ZONE:format(name)
 				nextZone.reason = L.NEXT_ZONE_LEVEL:format(player.level + levels)
