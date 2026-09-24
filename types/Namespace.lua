@@ -471,7 +471,6 @@
 
 -- The IDs Forever's DB2 tables have and Classic Era's lack, at the pinned builds.
 ---@class AGFForever
----@field era string the Classic Era build the diff ran against
 ---@field quests table<integer, integer[]> uiMapID -> the added quests whose QuestPOIBlob sits on it; the rest have no zone
 ---@field areas table<integer, true> the added AreaTable IDs
 

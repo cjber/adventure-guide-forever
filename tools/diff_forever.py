@@ -47,7 +47,6 @@ def render(zones, areas):
         "local _, ns = ...",
         "-- stylua: ignore",
         "ns.Data.forever = {",
-        f'\tera = "{ERA}",',
         "\tquests = {",
     ]
     lines.extend(f"\t\t[{ui_map}] = {{ {', '.join(map(str, ids))} }}," for ui_map, ids in zones.items())

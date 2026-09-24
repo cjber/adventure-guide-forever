@@ -694,8 +694,7 @@ equal(raids, 90, "raid quests flagged")
 
 -- Honest coverage (#23): a log quest the data lacks, or a quest Forever added on this map that the data lacks.
 do
-	local known =
-		{ quests = { [1] = quest(0.5, 0.5, 9) }, forever = { era = "", quests = { [7] = { 1 } }, areas = {} } }
+	local known = { quests = { [1] = quest(0.5, 0.5, 9) }, forever = { quests = { [7] = { 1 } }, areas = {} } }
 	equal(Model.Unlisted(known, 7, {}, { [1] = {} }), false, "unlisted: every quest known")
 	equal(Model.Unlisted(known, 7, {}, { [2] = {} }), true, "unlisted: a log quest the data lacks")
 	equal(Model.Unlisted({ quests = {} }, 7, {}, {}), false, "unlisted: no Forever slice loaded")
