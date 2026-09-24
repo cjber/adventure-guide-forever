@@ -478,6 +478,10 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 | 20 | Start another addon's Shortest Path journey (or your own from its map), then hover a folded row | The tooltip adds "Replaces your current journey."; clicking replaces it; clearing the chosen card afterwards never cancels a journey AGF did not start | SHOT tooltip |
 | 21 | Pull a mob, click a card mid-fight, then finish the fight | The card is chosen at once and the footer reads "The route starts when combat ends"; when combat ends Shortest Path starts it and the line goes. No error, no taint | SHOT panel, TAINT |
 | 22 | In Settings > AddOns turn off "Choosing a journey starts the route", then choose and clear cards | Choosing only previews; clearing stops nothing; the tracker title no longer starts the route; the row menu's Go still does | SHOT panel |
+| 23 | Human at level 16-18, choose the Redridge next-zone card (Batch F1) | Lakeshire is one step titled "Lakeshire, Redridge" with "N to pick up", not 4 steps; Gath'Ilzogg's group quest is in it, with no separate step; Shortest Path ends at the Lakeshire giver nearest the previous stop | SHOT panel + map, SV |
+| 24 | Carry a finished quest handed in at a town the story card visits, and open the guide | That town's step reads "1 to hand in, N to pick up", and right-click > Show quest opens the finished quest. The carry card holds it as the same town; alone there it reads "Turn in: …" with the town under it in the tracker | SHOT panel + tracker |
+| 24b | Carry a finished quest whose client waypoint is not at the data's ender (a moved or Forever-only ender) | It stays its own "Turn in: …" step at the client's waypoint, with no NPC line | SHOT tracker |
+| 24c | Take a quest from a town step in combat, then hand one in | The town stays, recounted ("N to pick up" one fewer); it goes only once nothing is left | SHOT panel |
 
 ## 6. Commit plan (each commit signed with `git commit -S`, one idea, about 50 lines)
 
