@@ -1,5 +1,5 @@
-# The data generators are standard-library scripts run by hand and by
-# refresh-data.yml on the runner's system python3.
+# The data generators and CI helpers are standard-library scripts run on the
+# system python3.
 line-length = 120
 target-version = "py310"
 
