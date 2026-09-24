@@ -149,6 +149,15 @@ function GameTooltip_AddErrorLine(tooltip, text) end
 ---@param text string
 function GameTooltip_AddDisabledLine(tooltip, text) end
 function GameTooltip_Hide() end
+---@param tooltip GameTooltip
+---@param text string
+---@param color ColorMixin
+function GameTooltip_AddColoredLine(tooltip, text, color) end
+
+-- UIParent.lua: the quest log's colour for a quest of `level` at the player's level (QuestDifficultyColors).
+---@param level integer
+---@return {r: number, g: number, b: number}
+function GetQuestDifficultyColor(level) end
 
 ---@class AGFUiMapPointFactory
 ---@field CreateFromCoordinates fun(uiMapID: integer, x: number, y: number, z?: number): UiMapPoint

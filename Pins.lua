@@ -34,8 +34,53 @@ local function AddClickLine(tooltip)
 	GameTooltip_AddInstructionLine(tooltip, name and ns.L.CLICK_TRAVEL:format(name) or ns.L.CLICK_WAYPOINT)
 end
 
+-- The map's own marks, inline: a hand-in's "?", a pickup's "!", and the quest log's group tag.
+local HAND_IN_ICON = "|A:questturnin:14:14|a "
+local PICK_UP_ICON = "|A:questnormal:14:14|a "
+local GROUP_ICON = " |A:questlog-questtypeicon-group:12:12|a"
+-- A town's quests listed in its tooltip; the rest are counted.
+local HUB_QUEST_LINES = 8
+
+-- One line per quest at a town, under the NPC it is handed to or taken from, in the stop's order (hand-ins first, then
+-- by level, docs/plan.md §7.3), each coloured as the quest log colours its level.
+---@param tooltip GameTooltip
+---@param step AGFStep
+local function HubQuests(tooltip, step)
+	local handin, shown = {}, 0
+	for _, id in ipairs(step.handins or {}) do
+		handin[id] = true
+	end
+	for _, giver in ipairs(step.givers or {}) do
+		local named = false
+		for _, id in ipairs(step.quests) do
+			local spot, quest = step.spots and step.spots[id], ns.Data.quests[id]
+			if quest and spot and spot.name == giver then
+				if shown == HUB_QUEST_LINES then
+					GameTooltip_AddHighlightLine(tooltip, ns.L.HUB_MORE_QUESTS:format(#step.quests - shown))
+					return
+				end
+				if not named then
+					GameTooltip_AddNormalLine(tooltip, giver)
+					named = true
+				end
+				shown = shown + 1
+				local level = quest.level == -1 and UnitLevel("player") or quest.level
+				local title = ns.State.QuestTitle(id) or quest.title
+				local text = handin[id] and HAND_IN_ICON .. title
+					or PICK_UP_ICON .. ns.L.QUEST_LEVEL:format(level, title)
+				local color = GetQuestDifficultyColor(level)
+				GameTooltip_AddColoredLine(
+					tooltip,
+					text .. ((quest.elite or quest.dungeon or quest.raid) and GROUP_ICON or ""),
+					CreateColor(color.r, color.g, color.b)
+				)
+			end
+		end
+	end
+end
+
 -- A step's lines (docs/design.md §2.9), shared by its ring and its row in the guide: the title numbered as the route
--- numbers it, the chapter, the travel line when there is one, and why it is on the route.
+-- numbers it, the chapter, the travel line when there is one, why it is on the route, and a town's quests by NPC.
 ---@param tooltip GameTooltip
 ---@param step AGFStep
 ---@param index number
@@ -49,6 +94,9 @@ function Pins.StepTooltip(tooltip, step, index, travel)
 		GameTooltip_AddHighlightLine(tooltip, travel)
 	end
 	GameTooltip_AddHighlightLine(tooltip, step.reason)
+	if step.kind == "hub" then
+		HubQuests(tooltip, step)
+	end
 end
 
 local provider = CreateFromMixins(MapCanvasDataProviderMixin) --[[@as AGFMapProvider]]

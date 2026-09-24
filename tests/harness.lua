@@ -1061,7 +1061,7 @@ function harness.load(options)
 	G.GameTooltip:Hide()
 	function G.GameTooltip:SetOwner(owner, anchor)
 		self.owner, self.anchor = owner, anchor
-		h.tooltip = {}
+		h.tooltip, h.tooltipColors = {}, {}
 	end
 	for kind, name in pairs({
 		title = "GameTooltip_SetTitle",
@@ -1074,6 +1074,37 @@ function harness.load(options)
 		G[name] = function(_, text)
 			h.tooltip[#h.tooltip + 1] = kind .. ": " .. tostring(text)
 		end
+	end
+	-- A coloured line records its colour as well, for tools/screenshots.py.
+	h.tooltipColors = {}
+	G.GameTooltip_AddColoredLine = function(_, text, color)
+		h.tooltip[#h.tooltip + 1] = "colored: " .. tostring(text)
+		h.tooltipColors[#h.tooltip] = { color:GetRGB() } -- multi-value: r, g, b
+	end
+	G.CreateColor = function(r, g, b, a)
+		return {
+			r = r,
+			g = g,
+			b = b,
+			a = a,
+			GetRGB = function(self)
+				return self.r, self.g, self.b -- multi-value: the three channels, as ColorMixin returns them
+			end,
+		}
+	end
+	-- UIParent.lua GetRelativeDifficultyColor's bands, with QuestDifficultyColors' values; grey is Model.IsGray's.
+	G.GetQuestDifficultyColor = function(level)
+		local difference = level - player.level
+		if difference >= 5 then
+			return { r = 1, g = 0.1, b = 0.1 }
+		elseif difference >= 3 then
+			return { r = 1, g = 0.5, b = 0.25 }
+		elseif difference >= -2 then
+			return { r = 1, g = 1, b = 0 }
+		elseif h.ns.Model.IsGray(level, player.level) then
+			return { r = 0.5, g = 0.5, b = 0.5 }
+		end
+		return { r = 0.25, g = 0.75, b = 0.25 }
 	end
 	G.GameTooltip_Hide = function()
 		G.GameTooltip:Hide()

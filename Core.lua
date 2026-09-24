@@ -120,6 +120,8 @@ ns.L = {
 	PICK_UP = "Pick up quests: %s",
 	HUB_HAND_IN = "%d to hand in",
 	HUB_PICK_UP = "%d to pick up",
+	-- A town's tooltip lists its first quests and counts the rest.
+	HUB_MORE_QUESTS = "And %d more",
 	PLACE = "%s, %s",
 	NEAR_YOUR_LEVEL = "near your level",
 	-- The guide and the map.

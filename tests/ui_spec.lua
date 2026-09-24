@@ -236,6 +236,8 @@ for _, spf in ipairs({ false, "v1" }) do
 	local expected = { "title: 1. Turn in: The Zhevra" }
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
 	expected[#expected + 1] = "highlight: Opens the next chapter here"
+	expected[#expected + 1] = "normal: Sergra Darkthorn"
+	expected[#expected + 1] = "colored: |A:questturnin:14:14|a The Zhevra"
 	expected[#expected + 1] = click
 	same(h.tooltip, expected, label .. ": ring tooltip")
 	equal(ring.Glow:IsShown(), true, label .. ": hover glow")
@@ -889,6 +891,63 @@ do
 		"group icon: a row without one keeps the tag on its detail"
 	)
 	clean(h, "detail width")
+end
+
+-- A town's tooltip (plan §7.4), from its row and its ring alike: after the reason, each NPC and its quests, hand-ins
+-- first, each coloured by the stock difficulty colour, 8 at most and the rest counted; the click line stays last.
+do
+	local h = Load(false, PINS_ON)
+	local ns = h.ns
+	ns.Prefs().journey = ns.Route().journeys[2].key
+	ns.Invalidate()
+	h.flush()
+	ns.OpenPanel()
+	h.flush()
+	local step = ns.Route().steps[1]
+	equal(#step.quests, 9, "hub tooltip: Crossroads has 9 quests")
+	local rows = Shown(h, function(frame)
+		return frame.SkipButton ~= nil
+	end)
+	h.Hover(rows[1])
+	local lines, colors = h.tooltip, h.tooltipColors
+	equal(lines[1], "title: 1. Crossroads, The Barrens", "hub tooltip: the numbered town")
+	equal(lines[2], "highlight: " .. step.reason, "hub tooltip: the reason")
+	equal(lines[3], "normal: Sergra Darkthorn", "hub tooltip: the hand-in's NPC first")
+	equal(lines[4], "colored: |A:questturnin:14:14|a The Zhevra", "hub tooltip: a hand-in has the turn-in mark")
+	equal(lines[6], "colored: |A:questnormal:14:14|a [13] Raptor Thieves", "hub tooltip: a pickup has its level")
+	local quests, npcs = 0, 0
+	for index, line in ipairs(lines) do
+		if line:find("^colored: ") then
+			quests = quests + 1
+			local level = tonumber(line:match("%[(%d+)%]")) or 13
+			local expected = h.G.GetQuestDifficultyColor(level)
+			same(colors[index], { expected.r, expected.g, expected.b }, "hub tooltip: line " .. index .. "'s colour")
+		end
+		npcs = npcs + (line:find("^normal: ") and 1 or 0)
+	end
+	equal(quests, 8, "hub tooltip: 8 quest lines")
+	equal(npcs, 7, "hub tooltip: one line per NPC shown")
+	equal(lines[#lines], "highlight: And 1 more", "hub tooltip: the rest counted")
+	same(colors[12], { 1, 1, 0 }, "hub tooltip: a quest 2 over the player is yellow")
+
+	-- The ring's tooltip lists the same, then the click line.
+	h.providers[1]:RefreshAllData()
+	local ring = h.pins.AdventureGuideForeverPinTemplate[1]
+	equal(ring.step.key, step.key, "hub tooltip: ring 1 is the town")
+	h.Hover(ring)
+	equal(h.tooltip[#h.tooltip - 1], "highlight: And 1 more", "hub tooltip: the ring's quests")
+	equal(h.tooltip[#h.tooltip], "instruction: Click to set a waypoint", "hub tooltip: the click line last")
+
+	-- A group quest carries the quest log's group tag.
+	ns.Data.quests[step.quests[1]].elite = true
+	h.Hover(rows[1])
+	equal(
+		h.tooltip[4],
+		"colored: |A:questturnin:14:14|a The Zhevra |A:questlog-questtypeicon-group:12:12|a",
+		"hub tooltip: group"
+	)
+	ns.Data.quests[step.quests[1]].elite = nil
+	clean(h, "hub tooltip")
 end
 
 -- A town is titled by its name, so step 1 of the story (Crossroads) shows its reason: The Zhevra opens its next
