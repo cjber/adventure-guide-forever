@@ -499,6 +499,35 @@ do
 		return count
 	end
 	equal(Says(h, h.ns.L.NOTHING_NEARBY), 0, "guide: no empty line beside the cards")
+
+	-- F4: the chosen story shows its chapter track, one square per proven chapter, and never a later chapter's title.
+	local story = route.journeys[2]
+	h.ns.Prefs().journey = story.key
+	h.ns.Invalidate()
+	h.flush()
+	local chain, squares, texts = story.story, {}, {}
+	equal(chain and chain.total, 5, "story: the fixture's chain is proven at 5")
+	for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverPanel, h.Describe)) do
+		if entry.atlas and entry.atlas:match("^ui%-journeys%-delve%-level%-square") then
+			squares[#squares + 1] = entry.atlas
+		end
+		texts[#texts + 1] = entry.text
+	end
+	equal(#squares, chain.total, "story: a square per chapter")
+	equal(squares[1], "ui-journeys-delve-level-square-grey", "story: chapter 1 is still to do")
+	local rendered, later = table.concat(texts, "\n"), 0
+	for index = chain.chapter + 1, #chain.members do
+		later = later + (rendered:find(h.ns.Data.quests[chain.members[index]].title, 1, true) and 1 or 0)
+	end
+	equal(later, 0, "story: no later chapter's title is drawn")
+	h.ns.Prefs().journey = "carry"
+	h.ns.Invalidate()
+	h.flush()
+	local after = 0
+	for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverPanel, h.Describe)) do
+		after = after + ((entry.atlas or ""):match("^ui%-journeys%-delve") and 1 or 0)
+	end
+	equal(after, 0, "story: no track under another card")
 	clean(h, "guide")
 
 	local none = harness.load({ player = { level = 70 } })

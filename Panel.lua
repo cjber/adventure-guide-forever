@@ -18,6 +18,9 @@ local KIND_ICONS = {
 	dungeon = "questlog-questtypeicon-group",
 }
 local CARD_ART, CARD_ART_CHOSEN = "ui-journeys-renown-button", "ui-journeys-renown-button-pressed"
+-- The chapter track (docs/design.md §2.3): Blizzard's delve squares at 12px, with their meanings kept
+-- (RewardTrackTemplates.lua:427-436): done, the one most recently finished in green, the rest grey.
+local TRACK_MAX, SQUARE, SQUARE_GAP = 8, 12, 3
 -- The quest log's own geometry: a 29px search bar above the list, a 40px footer below it for the Go button.
 local TOP_BAR = 29
 local FOOTER = 40
@@ -46,6 +49,10 @@ local Refresh
 local emptyText
 ---@type Button?
 local goButton
+---@type Frame?
+local track
+---@type Texture[]
+local squares = {}
 
 ---@param step AGFStep
 local function FocusStep(step)
@@ -208,6 +215,14 @@ local function BuildJourneys(parent, below)
 		end)
 		cards[index] = card
 	end
+	track = CreateFrame("Frame", nil, list)
+	track:SetSize(TRACK_MAX * (SQUARE + SQUARE_GAP), SQUARE)
+	for index = 1, TRACK_MAX do
+		local square = track:CreateTexture(nil, "ARTWORK")
+		square:SetSize(SQUARE, SQUARE)
+		square:SetPoint("LEFT", (index - 1) * (SQUARE + SQUARE_GAP), 0)
+		squares[index] = square
+	end
 	for index = 1, ns.Model.MAX_STEPS do
 		rows[index] = CreateRow(list)
 	end
@@ -357,6 +372,32 @@ local function RefreshCard(card, journey, chosen)
 	card:UpdateHighlightForState()
 end
 
+-- The story's squares under its card, from `top` down, when the data proves the chain's length and it is 8 or fewer;
+-- otherwise the card's "Chapter N" says all there is. Squares only: the card's subline already names the chapter.
+---@param journey AGFJourney
+---@param top number
+---@return number top below the track
+local function LayoutTrack(journey, top)
+	---@cast track -?
+	local story = journey.story
+	local total = story and story.total
+	local shown = total ~= nil and total <= TRACK_MAX
+	track:SetShown(shown)
+	if not (story and shown) then
+		return top
+	end
+	for index, square in ipairs(squares) do
+		square:SetShown(index <= total)
+		square:SetAtlas(
+			(index >= story.chapter and "ui-journeys-delve-level-square-grey")
+				or (index == story.chapter - 1 and "ui-journeys-delve-level-square-green")
+				or "ui-journeys-delve-level-square"
+		)
+	end
+	track:SetPoint("TOPLEFT", 14, -top)
+	return top + SQUARE + CARD_GAP
+end
+
 -- The chosen card's rows, from `top` down; they keep their route number while the search hides the others.
 ---@param route AGFRoute
 ---@param query string
@@ -402,12 +443,15 @@ local function LayoutJourneys(route)
 			card:SetPoint("TOP", list, "TOP", 0, -top)
 			top = top + CARD_HEIGHT + CARD_GAP
 			if journey.key == route.journey then
+				top = LayoutTrack(journey, top)
 				top, shown = LayoutRows(route, query, top)
 				top = top + CARD_GAP
 			end
 		end
 	end
 	if not route.journey then
+		---@cast track -?
+		track:Hide()
 		LayoutRows(route, query, top)
 		top = 40
 	end
