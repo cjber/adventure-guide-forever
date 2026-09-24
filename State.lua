@@ -139,19 +139,25 @@ local function Rest()
 	return GetXPExhaustion() or 0, xpMax, IsResting() == true
 end
 
+-- The player's map and point on it; each nil where the client places them nowhere (an instance).
+---@return integer? map
+---@return number? x
+---@return number? y
+function State.Where()
+	local bestMap = C_Map.GetBestMapForUnit("player")
+	local position = bestMap and C_Map.GetPlayerMapPosition(bestMap, "player")
+	if not position then
+		return nil, nil, nil
+	end
+	local x, y = position:GetXY()
+	return bestMap, x, y
+end
+
 ---@return AGFPlayer
 function State.Player()
 	local englishFaction = UnitFactionGroup("player")
 	local side = englishFaction == "Horde" and 2 or 1
-
-	local map, x, y
-	local bestMap = C_Map.GetBestMapForUnit("player")
-	if bestMap then
-		local position = C_Map.GetPlayerMapPosition(bestMap, "player")
-		if position then
-			map, x, y = bestMap, position:GetXY()
-		end
-	end
+	local map, x, y = State.Where()
 
 	local rested, xpMax, resting = Rest()
 	return {

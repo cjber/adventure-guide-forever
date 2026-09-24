@@ -772,11 +772,24 @@ function harness.load(options)
 		After = function(_, fn)
 			timers[#timers + 1] = fn
 		end,
-		NewTicker = function()
+		NewTicker = function(_, fn)
 			h.counts.tickers = h.counts.tickers + 1
-			return { Cancel = noop }
+			local ticker = { fn = fn }
+			function ticker.Cancel()
+				h.ticking[ticker] = nil
+			end
+			h.ticking[ticker] = true
+			return ticker
 		end,
 	}
+	-- The tickers still running, each with its `fn`.
+	h.ticking = {}
+	-- Runs each running ticker once, as its period passing would.
+	function h.tickers()
+		for ticker in pairs(h.ticking) do
+			h.call(ticker.fn)
+		end
+	end
 	-- Runs one frame: the timers queued now, not the ones they queue. Returns how many ran.
 	function h.tick()
 		local due = timers

@@ -587,6 +587,43 @@ local function BuildRoute()
 	)
 end
 
+-- The "you're here" head (docs/design.md §4.3): the route is rebuilt on events, never as the player moves, save that
+-- walking into an open area the route goes to later makes it the head. Checked every HERE_EVERY seconds only while
+-- they move (PLAYER_STARTED_MOVING to PLAYER_STOPPED_MOVING), so nothing runs while they stand still, and once per area
+-- entered.
+local HERE_EVERY = 2
+---@type {Cancel: fun(self)}?
+local walking
+---@type string?
+local hereKey
+local function Walked()
+	if InCombatLockdown() then
+		return
+	end
+	local map, x, y = ns.State.Where()
+	local steps = cachedRoute.steps
+	local index = ns.Model.Here(ns.Data, { map = map, x = x, y = y }, steps)
+	local key = index and index > 1 and steps[index].key or nil
+	if key and key ~= hereKey then
+		ns.Invalidate()
+	end
+	hereKey = key
+end
+local moving = CreateFrame("Frame")
+moving:SetScript("OnEvent", function(_, event)
+	if event == "PLAYER_STARTED_MOVING" then
+		walking = walking or C_Timer.NewTicker(HERE_EVERY, Walked)
+	elseif walking then
+		walking:Cancel()
+		walking = nil
+		Walked()
+	end
+end)
+-- By feature detection, as State's optional events: without them the head moves on the next event's rebuild.
+for _, event in ipairs({ "PLAYER_STARTED_MOVING", "PLAYER_STOPPED_MOVING" }) do
+	pcall(moving.RegisterEvent, moving, event)
+end
+
 -- A spell learned (or a new level's) changes what the trainer stop says, or ends it: rebuild when the answer moved.
 local spellbook = CreateFrame("Frame")
 spellbook:SetScript("OnEvent", function()

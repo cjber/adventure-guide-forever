@@ -336,6 +336,33 @@ do
 	equal(h.spf.NavigateRoute, 4, "follow: another journey replaced ours: nothing")
 	clean(h, "follow")
 
+	-- The "you're here" head (design §4.3): checked every 2 s only while the player moves, and a rebuild only on
+	-- walking into an open area the route reaches later, once.
+	h = Load("ended")
+	h.log[#h.log + 1] = { id = 887, title = "Southsea Freebooters", level = 14, complete = false }
+	h.log[#h.log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
+	h.fire("QUEST_LOG_UPDATE")
+	h.flush()
+	equal(h.ns.Route().steps[1].key ~= "area:887:0", true, "here: the area is later while the player is in town")
+	h.fire("PLAYER_STARTED_MOVING")
+	equal(next(h.ticking) ~= nil, true, "here: moving checks")
+	local builds = h.modelCalls.Journeys
+	h.tickers()
+	h.flush()
+	equal(h.modelCalls.Journeys, builds, "here: no rebuild while the player is in no area")
+	h.MovePlayer(1413, 0.64, 0.46)
+	h.tickers()
+	h.flush()
+	equal(h.ns.Route().steps[1].key, "area:887:0", "here: walking into the area makes it step 1")
+	builds = h.modelCalls.Journeys
+	h.tickers()
+	h.flush()
+	equal(h.modelCalls.Journeys, builds, "here: once")
+	h.fire("PLAYER_STOPPED_MOVING")
+	h.flush()
+	equal(next(h.ticking), nil, "here: standing still checks nothing")
+	clean(h, "here")
+
 	-- Started outside the town, every step is handed; Shortest Path reaching the town moves on at once, and the player
 	-- in it with work left gets the town alone again, so the minimap draws no way out before its quests are taken.
 	h = Load("ended")

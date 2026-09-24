@@ -248,6 +248,7 @@
 
 ---@class AGFState
 ---@field Player fun(): AGFPlayer
+---@field Where fun(): integer?, number?, number? the player's map and point on it; nil where the client places them nowhere
 ---@field Completed fun(): table<integer, boolean>
 ---@field Log fun(): table<integer, AGFLogQuest>
 ---@field OnChange fun(callback: fun())
