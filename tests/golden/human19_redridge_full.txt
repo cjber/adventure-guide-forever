@@ -9,8 +9,8 @@ card (chosen) | zone:1433 | Redridge Mountains story | 1 ready to hand in, 10 in
   step 7 | area:92:6 | Redridge Goulash | 1433 0.4840,0.4070 | quests in progress | 62 yd | 92/6
   step 8 | area:125:4 | The Lost Tools | 1433 0.3640,0.5460 | 2 quests here | 157 yd | 125/4 127/4
   step 9 | area:20:4 | Blackrock Menace | 1433 0.2710,0.1090 | quests in progress | 134 yd | 20/4
-card | carry | Finish what you carry | 4 ready to hand in, 1 in progress | - | map 1430
-  step 1 | area:116:6 | Dry Times | 1430 0.1290,0.3860 | quests in progress | 0 yd | 116/6
+card | carry | Finish what you carry | 4 ready to hand in, 1 in progress | - | map 1431
+  step 1 | area:116:6 | Dry Times | 1431 0.7370,0.4410 | quests in progress | 0 yd | 116/6
   step 2 | area:116:7 | Dry Times | 1429 0.4400,0.6570 | quests in progress | 0 yd | 116/7
   step 3 | town:60 | Turn in: The Price of Shoes | 1429 0.4171,0.6554 | Opens the next chapter here | then 119
   step 4 | town:69 | Turn in: Messenger to Stormwind | 1453 0.6917,0.8271 | Opens the next chapter here | then 121
