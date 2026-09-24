@@ -976,7 +976,7 @@ function Refresh()
 
 	local ready = ns.State.Ready()
 	local searching, found = LayoutJourneys(route)
-	emptyText:SetText((not ready and L.LOADING) or (searching and L.SEARCH_NONE) or L.NOTHING_NEARBY)
+	emptyText:SetText((not ready and L.LOADING) or (searching and L.SEARCH_NONE) or L.NO_JOURNEY)
 	emptyText:SetShown(not ready or (searching and found == 0) or (not searching and #route.journeys == 0))
 
 	local queued = ns.StartPending() and InCombatLockdown()

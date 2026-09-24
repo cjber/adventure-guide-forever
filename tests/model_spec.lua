@@ -277,7 +277,8 @@ for id = 1, 5 do
 end
 local delve = Choose("dungeon:36")
 delve.quests, delve.dungeons = false, true
-equal(Kinds(Model.Plan(halls, player, {}, {}, prefs()).journeys), "", "chosen: dungeons off, no card")
+-- Roadmap #21: with no zone ahead and no story, dungeons off still leaves the dungeon card, not nothing.
+equal(Kinds(Model.Plan(halls, player, {}, {}, prefs()).journeys), "dungeon:48", "stranded: dungeons off, a card")
 delve.journey = nil
 equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:48", "chosen: unchosen, the most quests")
 delve.journey = "dungeon:36"
@@ -285,6 +286,85 @@ equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "c
 -- Not interested (roadmap #17) in the busier instance: the other takes its card.
 delve.journey, delve.notInterested = nil, { ["dungeon:48"] = { title = "Many" } }
 equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "not interested: the next dungeon")
+
+do
+	-- Roadmap #15: the dungeon card's reason counts the log's quests that end inside, and only those.
+	local function Inside(entries)
+		for _, journey in ipairs(Model.Plan(halls, player, {}, entries, delve).journeys) do
+			if journey.key == "dungeon:36" then
+				return journey.reason
+			end
+		end
+	end
+	delve.notInterested = nil
+	halls.quests[6], halls.quests[7], halls.quests[8] = quest(0.6, 0.5), quest(0.7, 0.5), quest(0.8, 0.5)
+	halls.quests[6].dungeon, halls.quests[7].dungeon, halls.quests[8].raid, halls.quests[8].dungeon = 36, 36, true, 36
+	delve.journey = "dungeon:36"
+	equal(Inside({}), nil, "inside: none carried, no reason")
+	equal(Inside({ [6] = { id = 6, level = 18 } }), "1 of your quests ends inside Few", "inside: one")
+	equal(
+		Inside({
+			[6] = { id = 6, level = 18 },
+			[7] = { id = 7, level = 18 },
+			[8] = { id = 8, level = 18 },
+			[3] = { id = 3 },
+		}),
+		"2 of your quests end inside Few",
+		"inside: two, never a raid's or another dungeon's"
+	)
+	halls.quests[6], halls.quests[7], halls.quests[8], delve.journey = nil, nil, nil, nil
+
+	-- Roadmap #21: at the cap there is no next zone, so the dungeon card comes without the Dungeons toggle and a chain
+	-- that leads into an instance is a story. Here holds the story; on a map with no zone, 50 leads to 51 inside the Hall.
+	local function Stranded()
+		local fixture = Ahead(5)
+		fixture.instances = { [36] = { name = "Hall" } }
+		fixture.quests[50], fixture.quests[51] = quest(0.2, 0.5, 3), quest(0.3, 0.5, 3)
+		fixture.quests[50].next, fixture.quests[51].pre, fixture.quests[51].dungeon = 51, { 50 }, 36
+		fixture.quests[52] = quest(0.4, 0.5, 3)
+		fixture.quests[52].dungeon = 36
+		return fixture
+	end
+	local atCap = { level = 18, maxLevel = 18, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
+	local stranded = Model.Plan(Stranded(), atCap, {}, {}, prefs())
+	equal(Kinds(stranded.journeys), "zone:1 dungeon:36 chain:50", "at the cap: the dungeon and the way in, toggle off")
+	equal(stranded.stranded, true, "at the cap: stranded")
+	local way = stranded.journeys[3]
+	equal(way.kind .. " · " .. way.title, "story · The way into Hall", "the way in: a story named for the instance")
+	equal(way.subline .. " · " .. way.reason, "Chapter 1 of 2 · Begins a new story", "the way in: its chapter")
+	local onward = Model.Plan(Stranded(), atCap, { [50] = true }, {}, prefs())
+	equal(Kinds(onward.journeys), "zone:1 dungeon:36 chain:50", "the way in: its next chapter is inside")
+	equal(onward.journeys[3].reason, "Continues a story you started", "the way in: continues")
+	equal(onward.journeys[2].subline, "2 quests for this dungeon", "at the cap: every instance quest open now")
+	local roomy = Model.Plan(Stranded(), player, {}, {}, prefs())
+	equal(Kinds(roomy.journeys), "zone:1 zone:2", "below the cap with a next zone: neither")
+	equal(roomy.stranded, nil, "below the cap: not stranded")
+	equal(
+		Kinds(Model.Plan(Stranded(), player, {}, {}, Choose("chain:50")).journeys),
+		"zone:1 chain:50 zone:2",
+		"chosen"
+	)
+	local wayOff = prefs()
+	wayOff.notInterested = { ["chain:50"] = "The way into Hall" }
+	equal(
+		Kinds(Model.Plan(Stranded(), atCap, {}, {}, wayOff).journeys),
+		"zone:1 dungeon:36",
+		"not interested: the way in"
+	)
+	local unnamed = Stranded()
+	unnamed.instances = {}
+	equal(
+		Kinds(Model.Plan(unnamed, atCap, {}, {}, prefs()).journeys),
+		"zone:1",
+		"an instance the data can't name: neither"
+	)
+	-- The story's own chain is never offered twice: in Here, 1 leads to 2 inside the Hall.
+	local ownChain = Stranded()
+	ownChain.quests[1].next, ownChain.quests[2].pre, ownChain.quests[2].dungeon = 2, { 1 }, 36
+	local told = Model.Plan(ownChain, atCap, {}, {}, prefs())
+	equal(Kinds(told.journeys), "zone:1 dungeon:36 chain:50", "the story's chain: the story's alone")
+	equal(told.journeys[1].subline, "Chapter 1 of 2", "the story's chain: it leads the story")
+end
 
 -- The diversions (roadmap R4): carry and the story keep their slots; the calling, a dungeon and the next zone share the
 -- rest, the one whose newest quest opened at the highest level first, then in that order on a tie. Here's story holds
@@ -1174,18 +1254,22 @@ for _, fixture in ipairs(characters.list) do
 end
 equal(fixtures >= 5, true, "why: five fixtures or more")
 
--- F15: a dungeon card only with dungeons on, and never a step that is not an eligible giver's data place.
+-- F15: a dungeon card only with dungeons on or no next zone (roadmap #21: human60, at the cap), and never a step that
+-- is not an eligible giver's data place.
 local function Valid(place)
 	return place and place.map > 0 and place.x >= 0 and place.x <= 1 and place.y >= 0 and place.y <= 1
 end
-local cards, placeless, offCards = 0, 0, 0
+local cards, placeless, offCards, strandedCards = 0, 0, 0, 0
 for _, fixture in ipairs(characters.list) do
 	local who, done, carried, cardPrefs = characters.Resolve(ns.Data, fixture)
 	for _, dungeons in ipairs({ true, false }) do
 		cardPrefs.dungeons = dungeons
-		for _, journey in ipairs(Model.Plan(ns.Data, who, done, carried, cardPrefs).journeys) do
+		local planned = Model.Plan(ns.Data, who, done, carried, cardPrefs)
+		for _, journey in ipairs(planned.journeys) do
 			if journey.kind == "dungeon" then
-				cards, offCards = cards + 1, offCards + (dungeons and 0 or 1)
+				local off = dungeons and 0 or 1
+				cards, offCards = cards + 1, offCards + (planned.stranded and 0 or off)
+				strandedCards = strandedCards + (planned.stranded and off or 0)
 				for _, step in ipairs(journey.steps) do
 					for _, id in ipairs(step.quests) do
 						local given = ns.Data.quests[id]
@@ -1202,6 +1286,7 @@ end
 equal(cards > 0, true, "dungeon card: offered to a fixture with dungeons on")
 equal(placeless, 0, "dungeon card: every step an eligible giver with a data place")
 equal(offCards, 0, "dungeon card: none with dungeons off")
+equal(strandedCards > 0, true, "dungeon card: at the cap even with dungeons off")
 -- The Deadmines card's title: the client's name when it has one (Spanish here), the data's when it answers nil.
 local function DeadminesTitle(clientName)
 	for _, fixture in ipairs(characters.list) do

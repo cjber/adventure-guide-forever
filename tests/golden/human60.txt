@@ -10,3 +10,5 @@ card | calling | Your calling | Chapter 1 of 4 | Your class trainer has a task: 
   step 1 | hub:134 | Pick up quests: Deliana | 1455 0.4353,0.5264 | near your level
   step 2 | hub:78 | Pick up quests: Wu Shen | 1453 0.8056,0.5987 | Begins a new story
   step 3 | hub:31 | Pick up quests: Fallen Hero of the Horde | 1419 0.5277,0.0294 | near your level
+card | dungeon:329 | Stratholme | 4 quests for this dungeon | - | map 1423
+  step 1 | hub:229 | Light's Hope Chapel, Eastern Plaguelands | 1423 0.7163,0.5009 | 4 to pick up

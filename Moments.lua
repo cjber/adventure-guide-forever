@@ -52,8 +52,8 @@ local function Seen()
 end
 
 -- "Duskwood is now for your level": a zone by the client's name, a dungeon by its card's. Your calling says what it
--- offers ("A task for your class: Call of Water"), since it is no place to be the level for; a battleground is open
--- ("Warsong Gulch is open to you"), from a level on.
+-- offers ("A task for your class: Call of Water"), and a way into an instance that it is open, since neither is a
+-- place to be the level for; a battleground is open too ("Warsong Gulch is open to you"), from a level on.
 ---@param journey AGFJourney
 ---@return string
 local function Text(journey)
@@ -61,6 +61,8 @@ local function Text(journey)
 		return journey.reason
 	elseif journey.kind == "battleground" then
 		return L.BATTLEGROUND_OPEN:format(journey.title)
+	elseif journey.key:find("^chain:") then
+		return L.MOMENT_OPEN:format(journey.title)
 	end
 	local zone = tonumber(journey.key:match("^zone:(%d+)$"))
 	local name = zone and (ns.State.MapName(zone) or ns.Data.zones[zone].name) or journey.title

@@ -146,7 +146,7 @@
 -- One card in the guide (docs/design.md §2.2): only steps the player can take now.
 ---@class AGFJourney
 ---@field kind AGFJourneyKind
----@field key string stable identity for prefs.journey: "carry", "zone:<uiMapID>" (a zone's story or next-zone card alike), "dungeon:<Map.ID>", "calling" or "battleground:<BattlemasterList ID>"
+---@field key string stable identity for prefs.journey: "carry", "zone:<uiMapID>" (a zone's story or next-zone card alike), "dungeon:<Map.ID>", "calling", "chain:<questID>" (a way into an instance, by its chain's first quest) or "battleground:<BattlemasterList ID>"
 ---@field title string e.g. "Finish what you carry" or "Westfall story"
 ---@field subline string e.g. "3 ready to hand in, 1 in progress"
 ---@field reason? string why this journey, when there is an honest answer
@@ -159,9 +159,10 @@
 ---@field group? integer how many of its quests are elite, dungeon or raid (the sum of its steps' `group`)
 
 ---@class AGFRoute
----@field journeys AGFJourney[] at most 3: carry, the zone's story, then the diversions (calling, dungeon, battleground, next zone) newest first
+---@field journeys AGFJourney[] at most 3: carry, the zone's story, then the diversions (calling, dungeon, a way into an instance, battleground, next zone) newest first
 ---@field journey? string the key of the journey whose steps these are: the chosen one, else the first
 ---@field chosen boolean the player chose `journey`; false while the route falls back to the first card
+---@field stranded? true no next zone (roadmap #21): the dungeon card came whatever the Dungeons toggle says
 ---@field steps AGFStep[] that journey's steps, never more than MAX_STEPS
 ---@field skipped? table<string, boolean> the skipped keys a full build still had a step for; nil after the combat one
 
@@ -185,7 +186,7 @@
 ---@field Search fun(data: AGFData, player: AGFPlayer, query: string, title?: fun(questID: integer): string?): integer[] up to 10 quest IDs whose title holds `query`, by title
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
 ---@field Story fun(data: AGFData, questID: integer): AGFStory? the chain the quest belongs to; nil when it is in none, or the way back forks
----@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?)): AGFJourney[]
+---@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?)): AGFJourney[], boolean
 ---@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?)): AGFRoute
 ---@field Yards fun(data: AGFData, a: {map: integer, x: number, y: number}, b: {map: integer, x: number, y: number}): number? yards between two places on one continent the data places; nil otherwise
 ---@field Refresh fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, last: AGFRoute, mapName?: fun(map: integer): string?): AGFRoute the cheap in-combat rebuild: the log's steps fresh, the rest from `last`
@@ -402,6 +403,9 @@
 ---@field NEXT_ZONE_LEVEL string format: the level the next zone fits
 ---@field DUNGEON_QUESTS string format: quest count
 ---@field DUNGEON_QUESTS_ONE string
+---@field DUNGEON_INSIDE string format: count of the log's quests filed under the instance, its name
+---@field DUNGEON_INSIDE_ONE string format: the instance's name
+---@field JOURNEY_INTO string format: the instance a chain leads into
 ---@field CARRY_READY string format: count of finished quests whose hand-in is on this continent
 ---@field CARRY_IN_PROGRESS string format: count
 ---@field CARRY_AWAY string format: count of finished quests whose hand-in is across an ocean
@@ -412,7 +416,7 @@
 ---@field CHAPTER string format: chapter; the chain's length unproven
 ---@field CONTINUES_STORY string
 ---@field BEGINS_STORY string
----@field NOTHING_NEARBY string the guide with no journey
+---@field NO_JOURNEY string the guide with no journey
 ---@field WHY_NO_START string the one line for a quest whose start the generator suppressed
 ---@field WHY_DONE string
 ---@field WHY_IN_LOG string
@@ -653,6 +657,7 @@
 
 ---@class AGFStrings
 ---@field MOMENT string format: the tracker's line for a new journey: its zone's or dungeon's name
+---@field MOMENT_OPEN string format: the tracker's line for a new way into an instance: the card's title
 
 -- QuestieDB as a quest source (QuestieSource.lua, docs/design.md §2.14).
 

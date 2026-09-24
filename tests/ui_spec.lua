@@ -468,6 +468,15 @@ do
 	equal(h.ns.Prefs().journey, "calling", "filtered calling: the choice kept")
 	clean(h, "filtered calling")
 
+	-- Roadmap #21: with no next zone Dungeons hides nothing, so a chosen dungeon that went has ended; below the cap
+	-- the toggle keeps it.
+	for _, case in ipairs({ { 70, nil, "at the cap" }, { 18, "dungeon:1", "below the cap" } }) do
+		h = harness.load({ player = { level = case[1] }, charDB = { journey = "dungeon:1", dungeons = false } })
+		h.flush()
+		equal(h.ns.Prefs().journey, case[2], "dungeon gone, " .. case[3])
+		clean(h, "dungeon gone, " .. case[3])
+	end
+
 	h = harness.load({ charDB = { journey = "carry" }, completedPending = true })
 	h.flush()
 	equal(h.ns.Prefs().journey, "carry", "ends: nothing before the completed quests load")
@@ -1884,7 +1893,7 @@ do
 		end
 		return count
 	end
-	equal(Says(h, h.ns.L.NOTHING_NEARBY), 0, "guide: no empty line beside the cards")
+	equal(Says(h, h.ns.L.NO_JOURNEY), 0, "guide: no empty line beside the cards")
 
 	-- F4: the chosen story shows its chapter track, one square per proven chapter, and never a later chapter's title.
 	local story = route.journeys[2]
@@ -1991,13 +2000,25 @@ do
 	equal(#Results(), 0, "search: cleared")
 	clean(h, "guide")
 
-	local none = harness.load({ player = { level = 70 } })
+	-- Roadmap #21: past the cap with quests and dungeons off, the dungeon card and a way into an instance still show.
+	local capped = harness.load({ player = { level = 70 } })
+	capped.ns.Prefs().quests = false
+	capped.ns.Invalidate()
+	capped.ns.OpenPanel()
+	capped.flush()
+	equal(#capped.ns.Route().journeys, 2, "guide: at the cap, never nothing")
+	equal(Says(capped, "Stratholme"), 1, "guide: the dungeon card, toggle off")
+	equal(Says(capped, capped.ns.L.JOURNEY_INTO:format("Scholomance")), 1, "guide: the way in, as a story")
+	equal(Says(capped, capped.ns.L.NO_JOURNEY), 0, "guide: no empty line")
+	clean(capped, "guide: at the cap")
+
+	local none = harness.load({ player = { level = 1 } })
 	none.ns.Prefs().quests = false
 	none.ns.Invalidate()
 	none.ns.OpenPanel()
 	none.flush()
 	equal(#none.ns.Route().journeys, 0, "guide: nothing fits")
-	equal(Says(none, none.ns.L.NOTHING_NEARBY), 1, "guide: says so, and where to look")
+	equal(Says(none, none.ns.L.NO_JOURNEY), 1, "guide: says so, and where to look")
 	clean(none, "guide: empty")
 end
 
