@@ -1689,6 +1689,14 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 		end
 		equal(boats > 0 and boats < #Cards(), true, label .. ": a short subline names the boat, a long one doesn't")
 	end
+	-- Opened in a rebuild's frame, after it: step 1's travel frame is still its own, whatever order the frames run in.
+	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+	h.flush()
+	h.player.x = h.player.x + 0.01
+	h.ns.Invalidate()
+	h.tick()
+	h.ns.OpenPanel()
+	equal(Frames(), spf and "1 1 1 1" or "0", label .. ": opened in the rebuild's frame, one estimate a frame")
 	clean(h, label)
 end
 

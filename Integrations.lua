@@ -202,8 +202,10 @@ function Integrations.OnTravelChange(fn)
 end
 
 -- Each card's travel (docs/plan.md §7.4), keyed by its journey and first stop. While the guide is open and out of
--- combat, one estimate a frame asks Shortest Path, never in a rebuild's frame or step 1's travel frame (ns.Settling);
--- in combat the last answers stand. The chosen card's first stop is step 1's, which Shortest Path has cached for 5 s.
+-- combat, one estimate a frame asks Shortest Path, never in a rebuild's frame or step 1's travel frame: while one is
+-- due (ns.Settling) the chain stops, and step 1's travel frame starts it again (ResumeCards), whatever order the
+-- frame's timers run in. In combat the last answers stand. The chosen card's first stop is step 1's, which Shortest
+-- Path has cached for 5 s.
 ---@type table<string, AGFCardTravel>
 local cardTravel = {}
 ---@type AGFJourney[]
@@ -227,14 +229,19 @@ end
 
 local NextCard
 
--- A fight holds the queue; its end asks for the rest. Registered only while cards wait, so no event runs otherwise.
-local afterCombat = CreateFrame("Frame")
-afterCombat:SetScript("OnEvent", function(self)
-	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+-- The next queued card asks a frame on, unless a chain already will.
+local function Chain()
 	if cardQueue[1] and not chained then
 		chained = true
 		C_Timer.After(0, NextCard)
 	end
+end
+
+-- A fight holds the queue; its end asks for the rest. Registered only while cards wait, so no event runs otherwise.
+local afterCombat = CreateFrame("Frame")
+afterCombat:SetScript("OnEvent", function(self)
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	Chain()
 end)
 
 function NextCard()
@@ -245,9 +252,11 @@ function NextCard()
 	elseif InCombatLockdown() then
 		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return
+	elseif ns.Settling() then
+		return
 	end
 	-- The queue may have emptied since this frame was asked for: a route with nothing new to fetch.
-	local journey = not ns.Settling() and table.remove(cardQueue, 1)
+	local journey = table.remove(cardQueue, 1)
 	if journey then
 		local line, minutes, crossing = Fetch(journey.steps[1])
 		cardTravel[CardKey(journey)] = { line = line, minutes = minutes, crossing = crossing, from = Here() }
@@ -255,10 +264,7 @@ function NextCard()
 			fn()
 		end
 	end
-	if cardQueue[1] then
-		chained = true
-		C_Timer.After(0, NextCard)
-	end
+	Chain()
 end
 
 -- The cards now shown (a new route, or the guide opening): answers for cards no longer shown go, and up to 3 cards
@@ -279,9 +285,15 @@ function Integrations.RefreshCards(journeys)
 		end
 	end
 	cardTravel = kept
-	if cardQueue[1] and SPF() and not chained then
-		chained = true
-		C_Timer.After(0, NextCard)
+	if SPF() and not ns.Settling() then
+		Chain()
+	end
+end
+
+-- Step 1's travel frame is over (Core): the queued cards ask from the next frame.
+function Integrations.ResumeCards()
+	if SPF() then
+		Chain()
 	end
 end
 

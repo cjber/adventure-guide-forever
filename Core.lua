@@ -489,11 +489,12 @@ end
 local travelPending = false
 
 -- Skipped when an invalidation landed since the rebuild: ns.Route() would rebuild in this frame too, and the
--- pending rebuild queues its own refresh.
+-- pending rebuild queues its own refresh. The cards wait for this frame and ask from the next.
 local function RefreshTravel()
 	travelPending = false
 	if not pendingRebuild then
 		ns.Integrations.RefreshTravel()
+		ns.Integrations.ResumeCards()
 	end
 end
 

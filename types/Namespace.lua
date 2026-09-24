@@ -264,7 +264,8 @@
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")
 ---@field Trainable fun(): AGFTFSpell[]? Tweaks Forever's trainable spells; nil without a v1 Tweaks Forever or its answer
 ---@field Trainer fun(): string? the trainer line's count ("3 new spells") as last fetched, nil with nothing to train
----@field RefreshCards fun(journeys: AGFJourney[]) the cards shown: drops other answers, asks for up to 3 missing, one a frame
+---@field RefreshCards fun(journeys: AGFJourney[]) the cards shown: drops other answers, asks for up to 3 stale, one a frame
+---@field ResumeCards fun() step 1's travel frame is over: the queued cards ask from the next frame
 ---@field CardTravel fun(journey: AGFJourney): AGFCardTravel? a card's last answer, without asking again
 ---@field OnCardTravel fun(callback: fun()) called as each card's answer arrives
 
