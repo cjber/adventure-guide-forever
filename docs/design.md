@@ -414,10 +414,12 @@ Skipped submenu on its own.
 Step skips stay session-only. The menu has no auto-go.
 
 **Not interested (roadmap #17).** A journey card's right-click (not the carry card's: what the player carries is
-theirs) opens its title and "Not interested". That saves `charDB.notInterested[key] = title` for this character, so
-the card stays gone across sessions; the planner offers the next best zone or dungeon in its place, and a choice of it
-ends as a click on its card would. "Skipped (n)" (under the cards, in the step menu and in the cog) counts these after
-the session's step skips and offers each back with "Show again: <title>". The card's tooltip ends with "Right-click if
+theirs) opens its title and "Not interested". That saves `charDB.notInterested[key] = {title, chosen}` for this
+character, so the card stays gone across sessions; the planner offers the next best zone or dungeon in its place, and a
+choice of it ends as a click on its card would. "Skipped (n)" (under the cards, in the step menu and in the cog) counts
+these after the session's step skips and offers each back with "Show again: <title>". `chosen` records that the
+journey was the chosen one, so Show again chooses it again, after a `/reload` or a login too. A saved bare title (the
+shape before `chosen` was kept) loads as a journey that was not chosen. The card's tooltip ends with "Right-click if
 you're not interested".
 
 ### 2.9 Tooltips
@@ -878,6 +880,8 @@ Nothing below has been validated in game yet.
 18. QuestieDB (§2.14): with it loaded, `/agf audit` names "QuestieDB <version>" a few seconds after login with no
     hitch, and the cards, rings and town stops match the bundled run; with it disabled, or Questie alone without it,
     the audit names the bundled data and why.
+19. Not interested (§2.8) on the chosen journey, then `/reload`: the cog's "Skipped (1)" → "Show again: <title>"
+    brings its card back chosen, with its steps; on a journey that was not chosen it only brings the card back.
 
 ## 9. Open questions that need client probes
 

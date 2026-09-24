@@ -1380,13 +1380,30 @@ end
 -- "Not interested" (roadmap #17): a journey card's right-click hides it on this character, the choice of it ends, and
 -- Skipped (n) under the cards and in the cog lists it with Show again. The carry card has no menu.
 do
-	local h =
-		Load(false, nil, { journey = "carry", notInterested = { ["zone:1"] = 5, [2] = "x", ["zone:9"] = "Kept" } })
+	local h = Load(false, nil, {
+		journey = "carry",
+		notInterested = {
+			["zone:1"] = 5,
+			[2] = "x",
+			["zone:3"] = { chosen = true },
+			["zone:9"] = "Kept",
+			["zone:8"] = { title = "Chosen", chosen = true, extra = 1 },
+		},
+	})
 	local ns = h.ns
 	local kept = ns.Prefs().notInterested
-	equal(kept["zone:1"] == nil and kept[2] == nil, true, "not interested: a malformed saved entry is dropped")
-	equal(kept["zone:9"], "Kept", "not interested: a good one stays")
+	equal(
+		kept["zone:1"] == nil and kept[2] == nil and kept["zone:3"] == nil,
+		true,
+		"not interested: a malformed saved entry is dropped"
+	)
+	same(kept["zone:9"], { title = "Kept" }, "not interested: a saved title alone is a journey that was not chosen")
+	same(kept["zone:8"], { title = "Chosen", chosen = true }, "not interested: a good one stays")
 	ns.Unskip("zone:9")
+	equal(ns.Prefs().journey, "carry", "not interested: Show again of one not chosen chooses nothing")
+	ns.Unskip("zone:8")
+	equal(ns.Prefs().journey, "zone:8", "not interested: Show again of a saved choice chooses it")
+	ns.Choose("carry")
 	ns.OpenPanel()
 	h.flush()
 	local function Card(kind)
@@ -1414,7 +1431,11 @@ do
 		"not interested: the tooltip over its card speaks for the journey that takes its place"
 	)
 	equal(h.ns.Integrations.Owns(), false, "not interested: and its route stops")
-	equal(h.G.AdventureGuideForeverCharDB.notInterested[story.key], story.title, "not interested: saved per character")
+	same(
+		h.G.AdventureGuideForeverCharDB.notInterested[story.key],
+		{ title = story.title, chosen = true },
+		"not interested: saved per character, with the choice it ended"
+	)
 	for _, journey in ipairs(ns.Route().journeys) do
 		equal(journey.key ~= story.key, true, "not interested: its card is gone")
 	end
@@ -1443,6 +1464,18 @@ do
 	end
 	equal(back, true, "not interested: and its card returns")
 	clean(h, "not interested")
+	-- After a /reload, Show again still chooses the journey the Not interested ended.
+	h.menu = nil
+	h.Click(Card("story"), "RightButton")
+	h.menu.entries[2].onClick()
+	h.flush()
+	local saved = h.G.AdventureGuideForeverCharDB
+	equal(saved.journey, nil, "not interested: the choice ends before the /reload")
+	local reloaded = Load(false, nil, saved)
+	reloaded.ns.Unskip(story.key)
+	reloaded.flush()
+	equal(reloaded.ns.Prefs().journey, story.key, "not interested: Show again after a /reload chooses it again")
+	clean(reloaded, "not interested: reloaded")
 end
 -- A skipped step the route no longer has (the quest turned in anyway) leaves Skipped (n); one it still has stays.
 do

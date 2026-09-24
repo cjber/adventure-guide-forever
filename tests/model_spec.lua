@@ -196,7 +196,7 @@ equal(later.journeys[2].title, "Head to There", "named for its zone")
 equal(later.journeys[2].reason, "For level 20", "the level it fits under the name")
 -- "Not interested" (roadmap #17): a zone so marked is never a card, chosen or not, and the next best takes its place.
 local uninterested = prefs()
-uninterested.notInterested = { ["zone:1"] = "Here story" }
+uninterested.notInterested = { ["zone:1"] = { title = "Here story" } }
 equal(
 	Kinds(Model.Plan(Ahead(5), player, {}, {}, uninterested).journeys),
 	"zone:2",
@@ -204,7 +204,7 @@ equal(
 )
 uninterested.journey = "zone:1"
 equal(Kinds(Model.Plan(Ahead(5), player, {}, {}, uninterested).journeys), "zone:2", "not interested: even when chosen")
-uninterested.notInterested = { ["zone:2"] = "Head to There" }
+uninterested.notInterested = { ["zone:2"] = { title = "Head to There" } }
 equal(Kinds(Model.Plan(Ahead(5), player, {}, {}, uninterested).journeys), "zone:1", "not interested: no next zone")
 local wasOffered = Model.Plan(Ahead(5), player, {}, {}, prefs())
 equal(
@@ -276,7 +276,7 @@ equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:48", "c
 delve.journey = "dungeon:36"
 equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "chosen: the chosen instance stays")
 -- Not interested (roadmap #17) in the busier instance: the other takes its card.
-delve.journey, delve.notInterested = nil, { ["dungeon:48"] = "Many" }
+delve.journey, delve.notInterested = nil, { ["dungeon:48"] = { title = "Many" } }
 equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "not interested: the next dungeon")
 
 -- The diversions (roadmap R4): carry and the story keep their slots; the calling, a dungeon and the next zone share the
@@ -381,7 +381,7 @@ local other = Diversions(10, 10, 10)
 other.quests[11].classes = 1
 equal(Calling(other), nil, "calling: another class's quest")
 local nothanks = prefs()
-nothanks.notInterested = { calling = "Your calling" }
+nothanks.notInterested = { calling = { title = "Your calling" } }
 equal(Calling(Diversions(10, 10, 10), nil, nothanks), nil, "calling: not interested")
 local noquests = prefs()
 noquests.quests = false

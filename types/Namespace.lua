@@ -508,8 +508,12 @@
 ---@field NOT_INTERESTED string a journey card's menu: hide it on this character
 ---@field RIGHT_CLICK_NOT_INTERESTED string a journey card's tooltip: its right-click
 
+---@class AGFNotInterested
+---@field title string the title Show again names the journey by
+---@field chosen? boolean it was the chosen journey: Show again chooses it again
+
 ---@class AGFPrefs
----@field notInterested table<string, string> journey keys this character is not interested in -> the title Show again names
+---@field notInterested table<string, AGFNotInterested> journey keys this character is not interested in
 
 ---@class AGFNamespace
 ---@field NotInterested fun(key: string, title: string) hide a journey on this character until Show again; a choice of it ends
