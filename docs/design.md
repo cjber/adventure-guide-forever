@@ -116,8 +116,8 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   never beside the search's results. `Model.Unlisted` decides. The added quests come from `Data/Forever.lua`, which
   `tools/diff_forever.py` generates: the QuestV2 IDs Forever's build has and Classic Era 1.15.9.69722 lacks, each placed
   on the zone maps its `QuestPOIBlob` rows name. Only 26 of the 1795 added quests have a blob, so the zone half is
-  narrow; a quest with no blob has no zone and is left out. The slice also lists the 160 added AreaTable IDs for later
-  exploration work; TaxiNodes and Map diffs are printed only.
+  narrow; a quest with no blob has no zone and is left out. The slice also lists the 160 added AreaTable IDs, which
+  put an unexplored area first (§2.11), and the added lands (§2.11); TaxiNodes and Map diffs are printed only.
 - Fit: with a card chosen the three cards take 148 px (was 270), so the list holds between two and three more 46 px
   step rows before it scrolls.
 
@@ -535,6 +535,26 @@ aside shown changes. The first provider's answer the player has not skipped or t
   `class` mark (CSV:1321), from Tweaks Forever's `TrainableSpells`, asked again on `SPELLS_CHANGED`. Its place is the
   nearest trainer who teaches the spells (§2.12); without one (a class and side the data has no trainer for, or no
   place for the player) it is text only: "Visit your class trainer · 3 new spells".
+- **New lands (roadmap #14).** "Riverglades · For levels 36-44" with the minimap's `flightmaster` mark (CSV:1330),
+  key `land:<uiMapID>`: a zone map Forever added (`tools/diff_forever.py` `lands`) whose range holds the player's
+  level, never before it or after (no teaser). The range is the least and greatest non-zero
+  `AreaTable.ExplorationLevel` of the land's areas and their children, so a land whose areas are all 0 (Mount Hyjal,
+  Shen'dralas) is never one. Its place is the first Forever-added flight master on the land that serves the player's
+  side (TaxiNodes Flags; Rog'mar for the Horde, Farholde Keep for the Alliance), projected as a quest giver is. A
+  land with none for the side says nothing: Zephras Isle (3-12) has no flight master the data places, and nothing
+  says how to reach it. It retires once the client reports any of the land explored, and never shows while the
+  player stands in it. The name is the client's (`C_Map.GetMapInfo`), else the data's.
+- **Unexplored nearby (roadmap #13).** "You haven't seen Thorn Hill yet" with the guide tab's compass, key `explore`
+  (Not interested ends every area), text only: no place, no ring, no waypoint. The areas are the zone map's
+  `WorldMapOverlay` rows with a texture (`Data.overlays`, `tools/gen_quests.py` `overlays`), each named by its first
+  AreaTable row, left out at ExplorationLevel 0. The client reports an explored overlay by its offset
+  (`C_MapExplorationInfo.GetExploredMapTextures`, probe `explore`: 7 of Darkshore's 9 at level 18, matching the
+  data's offsets), so the aside names one of the player's zone the client doesn't report, at most two levels above
+  them: an area Forever added first, then the nearest by its hit rectangle's centre (never shown or pointed at),
+  then the lowest area ID. The name is the client's (`C_Map.GetAreaInfo`), else the data's. `MAP_EXPLORATION_UPDATED`
+  (the client's "Discovered") asks the providers again at once, so the line moves on or goes.
+- **Order.** The trainer, a new land, then the zone's area: `Hints/Explore.lua` registers after `Asides.lua`. Without
+  `C_MapExplorationInfo` neither exploration aside says anything.
 
 ### 2.12 Trainers (roadmap R3, #5)
 
@@ -627,7 +647,7 @@ cache that did, Integrations' town places, is keyed on it).
 | Travel | `Fly to Sentinel Hill · 6 min` · `Boat to Auberdine · 2 min wait` · `Fly to Astranaar · new flight path` · `About 4 min away` · card: `6 min` · `15 min by boat` · `15 min by zeppelin` |
 | Why-not | `Requires level 14` · `Completed: The Forgotten Heirloom` · `Requires one of: A, B` · `Horde only` · `Warriors only` · `You chose X instead` · `The guide can't tell where this starts` · `You've done this` · `In your quest log` · `Repeatable quests aren't suggested` |
 | Tracker | `Where you left off: finishes a story` · `Next: The Ruins of Stardust` · `Story complete` · `Westfall story · Begins a new story` |
-| Asides | `Visit your class trainer in Stormwind · 3 new spells` · `Visit your class trainer · 3 new spells` |
+| Asides | `Visit your class trainer in Stormwind · 3 new spells` · `Visit your class trainer · 3 new spells` · `Riverglades · For levels 36-44` · `You haven't seen Thorn Hill yet` |
 | Trainer stop | `Train in Stormwind` · `3 new spells` · `1 new spell` |
 | Buttons, menu | `Go` (menus only) · `Stop` · `Show quest` · `Skip for now` · `Not interested` · `Skipped (2)` · `Show again: <title>` · `Choose another journey` |
 | Instructions | `Click to travel with Shortest Path` · `Click to set a waypoint` · `Click to choose this journey` · `Replaces your current journey.` |
@@ -655,7 +675,7 @@ cache that did, Integrations' town places, is keyed on it).
 | 15 | One `L` table for all copy | Should | Localisation groundwork. The strings are inline English today. |
 | 16 | "New in Forever" tag (`adventureguide-icon-whatsnew`, CSV:2024) on quests already in the log only | Could | Needs the generator to emit the IDs missing from CMaNGOS (count unverified). Never on cards or recommendations. |
 | 17 | Dungeon card | Could | Blocked: `dungeon` is set on 0 quests (agf.md) and the EJ is absent (PROBE). Needs a generator fix plus a TF `DungeonEntrance` API. |
-| 18 | Discovery hint: one unexplored area named as text | Could | Needs a LegacyForever API that does not exist. Text only, never a ring. |
+| 18 | Discovery hint: one unexplored area named as text | Could | Built as roadmap #13 (§2.11) from `C_MapExplorationInfo` and the map's overlays, with no LegacyForever API. Text only, never a ring. |
 | 19 | "Visit your class trainer" step from Tweaks Forever's `TrainableSpells` (§5.2), feature-detected | Should | The client lists no `FutureSpell` entries (probe `spellbook2`), so only Tweaks Forever's trainer data can tell. The aside goes to the nearest trainer who teaches the spells, and a chosen route may stop to train in a town it passes (§2.12). |
 | 20 | Hubs: one stop per town, named from flight masters (plan §7.2) | Must | A Redridge route spent 4 of 9 steps in Lakeshire, and their rings merged into one. |
 | 21 | Level-aware selection and in-stop order for carried quests (plan §7.3) | Must | The user asked for quests picked up to be ordered by level distance. Travel still orders the route. |
@@ -795,7 +815,7 @@ Not requested:
 
 | Sibling | Contract | Why not |
 |---|---|---|
-| LegacyForever (formerly LegacyHere) | none | It has no public API (origin/main ea0fb8c; the PROBE `legacy` scan shows only `LegacyForever*` mixins and DB). Its data has 0 quest criteria (siblings.md §3), so no quest can be honestly tagged, and percentages are Legacy's domain. It returns only if Could #18 is promoted, as `Objectives(uiMapID)` with no percent. |
+| LegacyForever (formerly LegacyHere) | none | It has no public API (origin/main ea0fb8c; the PROBE `legacy` scan shows only `LegacyForever*` mixins and DB). Its data has 0 quest criteria (siblings.md §3), so no quest can be honestly tagged, and percentages are Legacy's domain. Could #18 needed none: the client's own exploration API serves it (§2.11). |
 | TweaksForever | `TweaksForever.API.TrainableSpells()` (TF PR #45, `version = 1`), for Should #19 and the trainer stop (§2.12) | Returns fresh `{spellID, name, level, cost?, line, lineID}` tables for the trainer spells the player's level allows and they haven't learned, or nil before login and in combat. AGF checks `type(api.TrainableSpells) == "function"` where it uses it, and treats nil as "no step this rebuild". The zone table is still baked at generation time (siblings.md §4); `DungeonEntrance` is needed only for Could #17. AGF never re-sorts the stock tracker, which TF's "Nearest quests first" owns. A public `DungeonEntrance(mapID)` is a follow-up (plan §7.5). |
 | WorkOrdersForever | none | It messages agents, and has no gameplay data or API. |
 | SkillUpForever | none | Profession steps are out of scope for a quest journal. |
@@ -873,6 +893,13 @@ Nothing below has been validated in game yet.
 18. QuestieDB (§2.14): with it loaded, `/agf audit` names "QuestieDB <version>" a few seconds after login with no
     hitch, and the cards, rings and town stops match the bundled run; with it disabled, or Questie alone without it,
     the audit names the bundled data and why.
+19. Unexplored nearby (§2.11): in a zone with an area not yet explored, "You haven't seen <area> yet" shows with the
+    compass and no ring, in the client's name for the area; discovering it replaces the line with the next area, or
+    removes it, without a `/reload`; Not interested ends every area. `/dump C_MapExplorationInfo.GetExploredMapTextures`
+    on a map never visited returns nothing (not every overlay).
+20. New lands (§2.11, level 36-44 only, so after launch): a character in range who has never been to Riverglades sees
+    "Riverglades · For levels 36-44" with the flight master mark; Go routes to Rog'mar (Horde) or Farholde Keep
+    (Alliance); entering Riverglades removes it, and it stays gone after leaving. A character below 36 never sees it.
 
 ## 9. Open questions that need client probes
 
