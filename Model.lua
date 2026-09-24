@@ -787,9 +787,6 @@ end
 -- A stop the player only hands in at: a turn-in, or a town with hand-ins and nothing to pick up. Never a trainer's.
 ---@param step AGFStep
 local function HandInOnly(step)
-	if step.kind == "trainer" then
-		return false
-	end
 	return step.kind == "turnin" or (step.kind == "hub" and #step.pickups == 0)
 end
 

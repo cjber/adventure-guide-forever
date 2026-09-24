@@ -167,7 +167,7 @@ UiMapPoint = nil
 ---@type {API: table?}? read only through Integrations.lua SPF(), which checks it against AGFSPFAPI
 ShortestPathForever = nil
 
----@type {API: table?}? read only through Integrations.Trainable(), which checks it against AGFTFAPI
+---@type {API: table?}? read only through Integrations.Training(), which checks it against AGFTFAPI
 TweaksForever = nil
 
 ---@class AGFSettingsSetting
