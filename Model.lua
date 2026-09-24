@@ -2533,7 +2533,7 @@ local function DungeonJourney(data, player, completed, log, eligible, prefs, map
 	for _, step in ipairs(TrainerSteps(data, player, prefs, "dungeon:" .. best)) do
 		candidates[#candidates + 1] = step
 	end
-	local steps = Build(data, player, completed, log, candidates, prefs, mapName)
+	local steps = Within(data, player, completed, log, Build(data, player, completed, log, candidates, prefs, mapName))
 	if #steps == 0 then
 		return nil
 	end
