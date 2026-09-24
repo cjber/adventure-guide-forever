@@ -18,16 +18,22 @@ local function ClassBit()
 end
 
 ---@type table<integer, integer>
-local skills = {}
+local skills, caps = {}, {}
+local primaries = 0
 
--- Every learned skill line's rank by SkillLine ID, read again on SKILL_LINES_CHANGED. Forever has no global
--- GetSkillLineInfo; C_SkillInfo lists only the lines the character has, so an unlearned one is absent (rank 0).
+local PROFESSION = 11 -- SkillLine.CategoryID of a profession, which takes a slot; secondary skills (9) take none
+
+-- Every learned skill line's rank and cap by SkillLine ID, and how many professions the character has, read again on
+-- SKILL_LINES_CHANGED. Forever has no global GetSkillLineInfo; C_SkillInfo lists only the lines the character has,
+-- so an unlearned one is absent (rank 0).
 local function LoadSkills()
-	skills = {}
+	skills, caps, primaries = {}, {}, 0
 	for index = 1, C_SkillInfo.GetNumSkillLines() do
 		local info = C_SkillInfo.GetSkillLineInfo(index)
 		if info and not info.isHeader and info.skillID then
 			skills[info.skillID] = info.rank
+			caps[info.skillID] = info.maxRank
+			primaries = primaries + (info.skillLineCategoryID == PROFESSION and 1 or 0)
 		end
 	end
 end
@@ -114,6 +120,8 @@ function State.Player()
 		x = x,
 		y = y,
 		skills = skills,
+		caps = caps,
+		primaries = primaries,
 		reputation = State.Reputation,
 	}
 end

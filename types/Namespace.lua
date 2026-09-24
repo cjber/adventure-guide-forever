@@ -685,3 +685,8 @@
 
 ---@class AGFData
 ---@field professions? table<integer, AGFProfession> SkillLine ID -> its trainers' ranks, for each line a trainer here teaches
+
+
+---@class AGFPlayer
+---@field caps? table<integer, integer> learned skill line -> its rank's cap (C_SkillInfo maxRank)
+---@field primaries? integer how many professions (SkillLine category 11) the character has; nil when unknown
