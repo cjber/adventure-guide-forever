@@ -25,6 +25,7 @@ Pillow and wowmock are imported inside the render functions only: CI runs the re
 import importlib.metadata
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -675,9 +676,9 @@ def quest_log(ui, data, rects, scene, pins=()):
 
 # ------------------------------------------------------------------------------ Shortest Path's route (map scene)
 
-# The Shortest Path Forever build the map scene draws (the same sha tests/contract_spec.lua pins); its geometry is
-# SPF's own Path.FindSync, run by LuaJIT in an extracted copy (docs/plan.md §1.3).
-SPF_SHA = "39d9a986d423557ab13039b45732d0c9dd12bf02"
+# The Shortest Path Forever build the map scene draws: the sha tests/contract_spec.lua pins, read from it as CI does,
+# so the two never drift. Its geometry is SPF's own Path.FindSync, run by LuaJIT in an extracted copy (plan §1.3).
+SPF_SHA = re.search(r'^local SPF_SHA = "(\w+)"$', (ROOT / "tests/contract_spec.lua").read_text(), re.M)[1]
 SPF_TARBALL = f"https://codeload.github.com/cjber/shortest-path-forever/tar.gz/{SPF_SHA}"
 SPF_CACHE = ROOT / "tools/.cache" / f"spf-{SPF_SHA}"
 # Route.lua: THICKNESS 2 over UNDER_THICKNESS 4 at UNDER_ALPHA .5; walks are DOT 4 breadcrumbs every SPACING 9, each
