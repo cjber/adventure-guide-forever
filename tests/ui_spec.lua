@@ -2446,7 +2446,7 @@ end
 
 -- A choice in combat, when Shortest Path refuses every route: the card is chosen at once and its route starts on the
 -- rebuild combat's end brings, while the footer says it waits. A choice cleared before then starts nothing. With the
--- setting off a choice starts nothing and clearing it stops nothing.
+-- setting off a choice starts nothing, yet clearing it still stops what a Go started meanwhile: none chosen draws none.
 for _, spf in ipairs({ false, "v1" }) do
 	local label = "combat choice: " .. (spf or "no Shortest Path")
 	local h = Load(spf, nil, false)
@@ -2499,8 +2499,50 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.ns.Integrations.Navigate(h.ns.Route().steps[1])
 	h.Click(Card("chosen"))
 	h.flush()
-	equal(h.ns.Integrations.Owns(), true, label .. ": and clearing it stops nothing")
+	equal(h.ns.Integrations.Owns(), false, label .. ": and clearing it stops what a Go started")
 	clean(h, label)
+end
+
+-- No journey chosen draws nothing (design §2.2), however the choice went: the rings go, even with the map pins on, and
+-- whatever of ours guides stops, a Go that left no record of the journey included. A route the player started in
+-- Shortest Path is theirs and stays.
+for _, spf in ipairs({ false, "v1" }) do
+	local label = "cleared: " .. (spf or "no Shortest Path")
+	local h = Load(spf, PINS_ON)
+	h.ns.OpenPanel()
+	h.flush()
+	local function Rings()
+		return #(h.pins.AdventureGuideForeverPinTemplate or {})
+	end
+	equal(Rings() > 0, true, label .. ": the chosen journey's rings")
+	-- A Go that recorded no journey (prefs.guided), as an aside's or a giver's does.
+	h.ns.Integrations.Navigate(h.ns.Route().steps[1])
+	h.flush()
+	equal(h.ns.Prefs().guided, nil, label .. ": no journey recorded")
+	equal(StopButton(h):IsShown(), true, label .. ": Stop offered")
+	h.ns.Choose(nil)
+	h.flush()
+	equal(h.ns.Integrations.Owns(), false, label .. ": nothing of ours guides")
+	if spf then
+		equal(h.spf.Cancel, 1, label .. ": our route cancelled")
+		equal(h.spfRoute, nil, label .. ": and gone")
+	else
+		equal(h.counts.ClearUserWaypoint, 1, label .. ": our waypoint cleared")
+	end
+	equal(Rings(), 0, label .. ": no rings, map pins on or not")
+	equal(StopButton(h):IsShown(), false, label .. ": Stop hides")
+	same(h.tracker.layoutOrder, { "hook" }, label .. ": the tracker's one line")
+	clean(h, label)
+end
+do
+	local h = Load("v1", PINS_ON)
+	h.flush()
+	h.spfOther()
+	h.ns.Choose(nil)
+	h.flush()
+	equal(h.spf.Cancel, 0, "cleared, player's route: nothing cancelled")
+	equal(h.spfRoute and h.spfRoute.owner, "Player", "cleared, player's route: it keeps guiding")
+	clean(h, "cleared, player's route")
 end
 
 -- The preview follows the guide's visibility, not only its tab: collapsing the quest sidebar hides the guide and
@@ -2551,7 +2593,6 @@ end
 do
 	local SPELL = { name = "Lightning Bolt", level = 14, line = "Elemental", lineID = 375, general = false }
 	local THREE = { SPELL, SPELL, SPELL }
-	local rings0
 	for _, case in ipairs({
 		{ label = "no Tweaks Forever", lines = 0 },
 		{ label = "no answer", tf = {}, lines = 0 },
@@ -2614,17 +2655,9 @@ do
 		equal(shown, case.text, label .. ": the tracker's line")
 		-- With no journey chosen it is the tracker's one line, in place of the story's hook.
 		same(h.tracker.layoutOrder, { case.text and "aside" or "hook" }, label .. ": the tracker's only line")
-		-- An aside, not a step: no ring for it, and its tracker title goes to the trainer as its Go does.
-		local steps, rings = {}, 0
-		for _, step in ipairs(h.ns.Route().steps) do
-			steps[step] = true
-		end
-		for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
-			equal(steps[pin.step] or false, true, label .. ": every ring is a route step's")
-			rings = rings + 1
-		end
-		rings0 = rings0 or rings
-		equal(rings > 0 and rings == rings0, true, label .. ": as many rings as without Tweaks Forever")
+		-- An aside, not a step: no ring for it (and none for the cards, with none chosen), and its tracker title goes
+		-- to the trainer as its Go does.
+		equal(#(h.pins.AdventureGuideForeverPinTemplate or {}), 0, label .. ": no rings")
 		local waypoints, routes = h.counts.SetUserWaypoint, h.spf.Navigate + h.spf.NavigateRoute
 		if block then
 			h.tracker:OnBlockHeaderClick(block, "LeftButton")
