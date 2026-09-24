@@ -23,10 +23,11 @@
 ---@field pre? integer[] all must be completed first
 ---@field preAny? integer[] one of these must be completed first
 ---@field group? integer exclusive group: completing one member closes the others
+---@field breadcrumb? integer the quest this breadcrumb leads to: open only while that is neither done nor in the log
 ---@field next? integer the chain's follow-up
 ---@field repeatable? boolean
 ---@field dungeon? integer instance Map.ID (not a uiMapID) when the quest is filed under a dungeon or raid
----@field raid? boolean the instance is a raid
+---@field raid? boolean a raid's quest: its instance is a raid, or it is typed Raid wherever it is filed
 ---@field elite? boolean group quest
 
 ---@class AGFData
@@ -422,6 +423,7 @@
 ---@field WHY_COMPLETED string format: the prerequisite's title
 ---@field WHY_ONE_OF string format: the titles, joined
 ---@field WHY_CHOSE string format: the exclusive sibling's title
+---@field WHY_BREADCRUMB string format: the title of the quest a breadcrumb leads to
 ---@field WHY_EARLIER_QUEST string a prerequisite the data has no title for
 ---@field WHY_RACES string format: race names, joined (the client's ITEM_RACES_ALLOWED)
 ---@field WHY_CLASSES string format: class names, joined (the client's ITEM_CLASSES_ALLOWED)
@@ -508,8 +510,12 @@
 ---@field NOT_INTERESTED string a journey card's menu: hide it on this character
 ---@field RIGHT_CLICK_NOT_INTERESTED string a journey card's tooltip: its right-click
 
+---@class AGFNotInterested
+---@field title string the title Show again names the journey by
+---@field chosen? boolean it was the chosen journey: Show again chooses it again
+
 ---@class AGFPrefs
----@field notInterested table<string, string> journey keys this character is not interested in -> the title Show again names
+---@field notInterested table<string, AGFNotInterested> journey keys this character is not interested in
 
 ---@class AGFNamespace
 ---@field NotInterested fun(key: string, title: string) hide a journey on this character until Show again; a choice of it ends

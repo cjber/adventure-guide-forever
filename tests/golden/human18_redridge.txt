@@ -3,10 +3,10 @@ card (chosen) | zone:1433 | Redridge Mountains story | Chapter 1 of 3 | A chain 
   step 1 | hub:61 | Lakeshire, Redridge | 1433 0.2490,0.4445 | Begins a new story
   step 2 | hub:56 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
 card | zone:1439 | Head to Darkshore | 16 quests near your level | Auberdine needs hands | map 1439
-  step 1 | hub:450 | Auberdine, Darkshore | 1439 0.3574,0.4371 | 12 to pick up
-  step 2 | hub:435 | Pick up quests: Kerlonian Evershade | 1439 0.4440,0.7643 | near your level
-  step 3 | hub:429 | Pick up quests: Therylune | 1439 0.3864,0.8733 | near your level
-  step 4 | hub:427 | Pick up quests: Sentinel Aynasha | 1439 0.4594,0.9029 | near your level
-  step 5 | hub:467 | Pick up quests: Gelkak Gyromast | 1439 0.5666,0.1348 | near your level
+  step 1 | hub:452 | Auberdine, Darkshore | 1439 0.3574,0.4371 | 12 to pick up
+  step 2 | hub:437 | Pick up quests: Kerlonian Evershade | 1439 0.4440,0.7643 | near your level
+  step 3 | hub:431 | Pick up quests: Therylune | 1439 0.3864,0.8733 | near your level
+  step 4 | hub:429 | Pick up quests: Sentinel Aynasha | 1439 0.4594,0.9029 | near your level
+  step 5 | hub:469 | Pick up quests: Gelkak Gyromast | 1439 0.5666,0.1348 | near your level
 card | dungeon:36 | Deadmines | 3 quests for this dungeon | - | map 1453
   step 1 | hub:80 | Wilder Thistlenettle | 1453 0.7031,0.4082 | 3 to pick up

@@ -81,6 +81,7 @@ ns.L = {
 	WHY_COMPLETED = "Completed: %s",
 	WHY_ONE_OF = "Requires one of: %s",
 	WHY_CHOSE = "You chose %s instead",
+	WHY_BREADCRUMB = "Only until you take %s",
 	WHY_EARLIER_QUEST = "an earlier quest",
 	-- Skill and reputation gates (roadmap #8): a skill line and its rank; a standing (the client's word) and a faction.
 	WHY_SKILL = "Requires %s %d",
@@ -248,9 +249,6 @@ local sessionSkipped = {}
 -- The same steps in the order they were skipped, with the titles the menu offers them back by.
 ---@type AGFSkipped[]
 local skippedOrder = {}
--- The chosen journey a "Not interested" ended this session: Show again chooses it again.
----@type string?
-local dismissedChoice
 
 ---@param msg string
 function ns.Print(msg)
@@ -279,10 +277,14 @@ local function LoadCharDB()
 			loaded[key] = type(value) == "table" and {} or value
 		end
 	end
-	-- Journeys marked "Not interested": key -> the title Show again names it by.
-	for key, title in pairs(loaded.notInterested) do
-		if type(key) ~= "string" or type(title) ~= "string" then
+	-- Journeys marked "Not interested": key -> the title Show again names it by, and whether it ended the choice of it.
+	-- A bare title is the older shape, from before `chosen` was kept: a journey that was not chosen.
+	for key, entry in pairs(loaded.notInterested) do
+		entry = type(entry) == "string" and { title = entry } or entry
+		if type(key) ~= "string" or type(entry) ~= "table" or type(entry.title) ~= "string" then
 			loaded.notInterested[key] = nil
+		else
+			loaded.notInterested[key] = { title = entry.title, chosen = entry.chosen == true or nil }
 		end
 	end
 	-- The zone picked in the old "Where next?" cards: nothing offers that choice any more, so none is kept.
@@ -360,14 +362,13 @@ function ns.Skip(key, title)
 end
 
 -- "Not interested" (roadmap #17): the journey `key` is left out on this character until Show again, and a choice of it
--- ends, as a click on its card would; Show again this session chooses it again.
+-- ends, as a click on its card would; Show again chooses it again, after a /reload too.
 ---@param key string
 ---@param title string
 function ns.NotInterested(key, title)
 	local prefs = ns.Prefs()
-	prefs.notInterested[key] = title
+	prefs.notInterested[key] = { title = title, chosen = prefs.journey == key or nil }
 	if prefs.journey == key then
-		dismissedChoice = key
 		ns.Choose(nil)
 	else
 		ns.Invalidate()
@@ -381,7 +382,8 @@ function ns.Unskip(key)
 		ns.Asides.Restore(aside)
 		return
 	end
-	local chosen = ns.Prefs().notInterested[key] ~= nil and key == dismissedChoice
+	local dismissed = ns.Prefs().notInterested[key]
+	local chosen = dismissed ~= nil and dismissed.chosen
 	ns.Prefs().notInterested[key] = nil
 	sessionSkipped[key] = nil
 	for index, skipped in ipairs(skippedOrder) do
@@ -391,7 +393,6 @@ function ns.Unskip(key)
 		end
 	end
 	if chosen then
-		dismissedChoice = nil
 		ns.Choose(key, ns.Setting("titleStartsRoute"))
 		return
 	end
@@ -406,8 +407,8 @@ function ns.Skipped()
 	for index, skipped in ipairs(skippedOrder) do
 		all[index] = skipped
 	end
-	for key, title in pairs(ns.Prefs().notInterested) do
-		journeys[#journeys + 1] = { key = key, title = title }
+	for key, dismissed in pairs(ns.Prefs().notInterested) do
+		journeys[#journeys + 1] = { key = key, title = dismissed.title }
 	end
 	table.sort(journeys, function(a, b)
 		if a.title ~= b.title then

@@ -98,6 +98,13 @@ local exclusive = { quests = { [1] = a, [2] = b }, zones = data.zones }
 equal(Model.Eligible(exclusive, player, { [2] = true }, {}, 1), false, "completed exclusive sibling")
 equal(Model.Eligible(exclusive, player, {}, { [2] = {} }, 1), false, "active exclusive sibling")
 equal(#Model.Plan(exclusive, player, {}, {}, prefs()).steps[1].quests, 1, "recommend one exclusive choice")
+-- A breadcrumb is open only while the quest it leads to is neither done nor in the log.
+local crumb = { quests = { [1] = quest(), [2] = quest(0.2, 0.2) }, zones = data.zones }
+crumb.quests[1].breadcrumb = 2
+equal(Model.Eligible(crumb, player, {}, {}, 1), true, "breadcrumb: open before its target")
+equal(Model.Eligible(crumb, player, { [2] = true }, {}, 1), false, "breadcrumb: closed once its target is done")
+equal(Model.Eligible(crumb, player, {}, { [2] = {} }, 1), false, "breadcrumb: closed while its target is in the log")
+equal(#Model.Plan(crumb, player, {}, {}, prefs()).steps, 2, "breadcrumb: a pickup beside its target's")
 
 data = { quests = {}, zones = {} }
 for id = 1, 8 do
@@ -196,7 +203,7 @@ equal(later.journeys[2].title, "Head to There", "named for its zone")
 equal(later.journeys[2].reason, "For level 20", "the level it fits under the name")
 -- "Not interested" (roadmap #17): a zone so marked is never a card, chosen or not, and the next best takes its place.
 local uninterested = prefs()
-uninterested.notInterested = { ["zone:1"] = "Here story" }
+uninterested.notInterested = { ["zone:1"] = { title = "Here story" } }
 equal(
 	Kinds(Model.Plan(Ahead(5), player, {}, {}, uninterested).journeys),
 	"zone:2",
@@ -204,7 +211,7 @@ equal(
 )
 uninterested.journey = "zone:1"
 equal(Kinds(Model.Plan(Ahead(5), player, {}, {}, uninterested).journeys), "zone:2", "not interested: even when chosen")
-uninterested.notInterested = { ["zone:2"] = "Head to There" }
+uninterested.notInterested = { ["zone:2"] = { title = "Head to There" } }
 equal(Kinds(Model.Plan(Ahead(5), player, {}, {}, uninterested).journeys), "zone:1", "not interested: no next zone")
 local wasOffered = Model.Plan(Ahead(5), player, {}, {}, prefs())
 equal(
@@ -276,7 +283,7 @@ equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:48", "c
 delve.journey = "dungeon:36"
 equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "chosen: the chosen instance stays")
 -- Not interested (roadmap #17) in the busier instance: the other takes its card.
-delve.journey, delve.notInterested = nil, { ["dungeon:48"] = "Many" }
+delve.journey, delve.notInterested = nil, { ["dungeon:48"] = { title = "Many" } }
 equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "not interested: the next dungeon")
 
 -- The diversions (roadmap R4): carry and the story keep their slots; the calling, a dungeon and the next zone share the
@@ -350,11 +357,38 @@ equal(Calling(several), nil, "calling: a quest for every class but one is no cal
 local raid = Diversions(10, 10, 10)
 raid.quests[11].dungeon, raid.quests[11].raid = 36, true
 equal(Calling(raid, nil, both), nil, "calling: never a raid's quest")
+-- No zone card offers a raid's quest either (F15), outdoors or in, whatever it's filed under, nor ranks a zone by one.
+local function Offered(journeys, id)
+	for _, journey in ipairs(journeys) do
+		for _, step in ipairs(journey.steps) do
+			for _, questID in ipairs(step.quests) do
+				if questID == id then
+					return journey.key
+				end
+			end
+		end
+	end
+end
+local raidQuests = Diversions(10, 10, 10)
+raidQuests.quests[12], raidQuests.quests[13] = quest(0.95, 0.5), quest(0.95, 0.5, 2)
+raidQuests.quests[12].dungeon, raidQuests.quests[12].raid = 36, true
+raidQuests.quests[13].elite, raidQuests.quests[13].raid = true, true
+local raidPlan = Model.Plan(raidQuests, player, {}, {}, both).journeys
+equal(Offered(raidPlan, 12), nil, "raid: never on the story, filed under an instance")
+equal(Offered(raidPlan, 13), nil, "raid: nor on the next zone, typed a raid outdoors")
+equal(Offered(raidPlan, 1), "zone:1", "raid: the story's own quests stay")
+local raidOnly = { quests = {}, zones = Ahead(0).zones }
+for id = 1, 6 do
+	raidOnly.quests[id] = quest(id / 10, 0.5, 2)
+	raidOnly.quests[id].raid = id > 1
+end
+raidOnly.quests[7] = quest(0.5, 0.5)
+equal(Kinds(Model.Plan(raidOnly, player, {}, {}, both).journeys), "zone:1", "raid: never ranks a zone")
 local other = Diversions(10, 10, 10)
 other.quests[11].classes = 1
 equal(Calling(other), nil, "calling: another class's quest")
 local nothanks = prefs()
-nothanks.notInterested = { calling = "Your calling" }
+nothanks.notInterested = { calling = { title = "Your calling" } }
 equal(Calling(Diversions(10, 10, 10), nil, nothanks), nil, "calling: not interested")
 local noquests = prefs()
 noquests.quests = false
@@ -1003,6 +1037,25 @@ for _, q in pairs(ns.Data.quests) do
 end
 equal(flagged, 223, "dungeon and raid quests flagged")
 equal(raids, 90, "raid quests flagged")
+-- A raid's quest filed outdoors (typed Raid): Zul'Gurub's Paragons of Power, given on Yojamba Isle, are on no card for
+-- a level-60 paladin standing there, dungeons on or off.
+do
+	local typed = 0
+	for _, q in pairs(ns.Data.quests) do
+		typed = typed + ((q.raid and not q.dungeon) and 1 or 0)
+	end
+	equal(typed, 83, "raid quests filed outdoors")
+	equal(ns.Data.quests[8053].raid and not ns.Data.quests[8053].dungeon, true, "Paragons of Power: a raid's, outdoors")
+	local yojamba = { level = 60, maxLevel = 60, side = 1, raceBit = 1, classBit = 2, map = 1434, x = 0.15, y = 0.15 }
+	for _, dungeons in ipairs({ false, true }) do
+		local choices = prefs()
+		choices.dungeons = dungeons
+		local journeys = Model.Plan(ns.Data, yojamba, {}, {}, choices).journeys
+		for id = 8053, 8079 do
+			equal(Offered(journeys, id), nil, "Paragons of Power: never offered " .. id)
+		end
+	end
+end
 
 -- Honest coverage (#23): a log quest the data lacks, or a quest Forever added on this map that the data lacks.
 do
@@ -1203,6 +1256,22 @@ equal(
 	"+ Horde only | + Requires level 10 | - Classes: Warrior | + Completed: First | + Requires one of: First, Second",
 	"why: classes and prerequisites"
 )
+custom.quests[1].classes, custom.quests[1].pre, custom.quests[1].preAny, custom.quests[1].breadcrumb = nil, nil, nil, 2
+equal(
+	Texts(Model.Why(custom, player, {}, {}, 1)),
+	"+ Horde only | + Requires level 10 | + Only until you take First",
+	"why: breadcrumb"
+)
+equal(
+	Texts(Model.Why(custom, player, {}, { [2] = {} }, 1)),
+	"+ Horde only | + Requires level 10 | - Only until you take First",
+	"why: taken"
+)
+-- Call of Fire (1522), an orc shaman's breadcrumb from Searn Firewarder to Kranal Fiss's Call of Fire (1524).
+local shaman = { level = 10, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1454, x = 0.38, y = 0.38 }
+equal(ns.Data.quests[1522].breadcrumb, 1524, "Call of Fire: a breadcrumb")
+equal(Model.Eligible(ns.Data, shaman, {}, {}, 1522), true, "Call of Fire: open")
+equal(Model.Eligible(ns.Data, shaman, {}, { [1524] = {} }, 1522), false, "Call of Fire: closed by its target")
 custom = { quests = custom.quests, zones = {} } -- a new data table: the index of groups is memoised per data
 custom.quests[2].start, custom.quests[1].group, custom.quests[3].group = nil, 5, 5
 equal(Texts(Model.Why(custom, player, {}, {}, 2)), "- The guide can't tell where this starts", "why: one line")

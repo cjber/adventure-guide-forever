@@ -1845,6 +1845,7 @@ function harness.questieMirror(data)
 			preQuestSingle = quest.preAny,
 			exclusiveTo = exclusive[1] and exclusive or nil,
 			nextQuestInChain = quest.next,
+			breadcrumbForQuestId = quest.breadcrumb,
 			specialFlags = quest.repeatable and 1 or 0,
 			requiredSkill = quest.skill and { quest.skill.id, quest.skill.value },
 			requiredMinRep = quest.rep and quest.rep.min and { quest.rep.faction, quest.rep.min },

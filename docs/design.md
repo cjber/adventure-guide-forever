@@ -83,7 +83,11 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   - "Why these?" (Panel.lua:430-443). Each row now gives its own reason, and "why not" moves to search.
 - The quest/dungeon chips move into the cog's settings menu. Dungeons holds back only an instance's quests (a quest
   with `dungeon`); an outdoor elite (Hogger) is a zone's quest under Quests, shown optional with the group badge.
-  Being optional, it never picks the zone: zones are ranked by their other quests.
+  Being optional, it never picks the zone: zones are ranked by their other quests. A raid's quest (`raid`) is on
+  no card at all, neither a zone's nor the dungeon card, and never ranks or picks a zone: a raid is not a step a
+  short route can hold. The generator flags a quest filed in a raid instance, and one of CMaNGOS Type 62 or 88
+  (QuestInfo Raid) wherever it is filed: Zul'Gurub's Paragons of Power are filed under the outdoor Zul'Gurub area and
+  given on Yojamba Isle, yet ask for the raid's drops, so only their type says so (83 such quests at the pin).
 - **None chosen** is the default (a fresh character, a card clicked again, or a saved choice whose card is no longer
   offered): every card whole in order, no step rows, the hint "Choose a journey to see its steps." under them, and
   nothing guides. The route still falls back to the first card (`route.chosen` false), but the tracker shows no
@@ -252,6 +256,9 @@ player's side. Eligible matches show as normal rows. Ineligible matches show why
   - `side`;
   - `races` and `classes`;
   - exclusive `group` ("You chose X instead");
+  - `breadcrumb`, the quest a breadcrumb leads to ("Only until you take X"): open only while that quest is neither
+    completed nor in the log. The generator emits CMaNGOS `BreadcrumbForQuestId` (wago's QuestV2 export has no such
+    column) and withholds the start when the target is not in QuestV2 (124 breadcrumb starts at the pin);
   - `skill` ("Requires Tailoring 150") and `rep` ("Requires Friendly with Timbermaw Hold", "Only while below
     Revered with Argent Dawn"; "Depends on your standing with X" when the value falls between ranks), in the
     client's names for the skill line, faction and standing (`FACTION_STANDING_LABEL1-8`) when it has them;
@@ -410,10 +417,12 @@ Skipped submenu on its own.
 Step skips stay session-only. The menu has no auto-go.
 
 **Not interested (roadmap #17).** A journey card's right-click (not the carry card's: what the player carries is
-theirs) opens its title and "Not interested". That saves `charDB.notInterested[key] = title` for this character, so
-the card stays gone across sessions; the planner offers the next best zone or dungeon in its place, and a choice of it
-ends as a click on its card would. "Skipped (n)" (under the cards, in the step menu and in the cog) counts these after
-the session's step skips and offers each back with "Show again: <title>". The card's tooltip ends with "Right-click if
+theirs) opens its title and "Not interested". That saves `charDB.notInterested[key] = {title, chosen}` for this
+character, so the card stays gone across sessions; the planner offers the next best zone or dungeon in its place, and a
+choice of it ends as a click on its card would. "Skipped (n)" (under the cards, in the step menu and in the cog) counts
+these after the session's step skips and offers each back with "Show again: <title>". `chosen` records that the
+journey was the chosen one, so Show again chooses it again, after a `/reload` or a login too. A saved bare title (the
+shape before `chosen` was kept) loads as a journey that was not chosen. The card's tooltip ends with "Right-click if
 you're not interested".
 
 ### 2.9 Tooltips
@@ -587,14 +596,16 @@ cache that did, Integrations' town places, is keyed on it).
 
 - **From QuestieDB:** title, levels, races, classes, zone (area to parent zone to uiMap), each start and finish from its
   NPCs' and objects' spawns (quest zone first, then the giver's usual map), prerequisites, exclusive quests (merged
-  into one group per connected set), chain, repeatable, skill and reputation gates.
+  into one group per connected set), chain, breadcrumb target (else the bundled one), repeatable, skill and
+  reputation gates.
 - **Still bundled:** zones, maps, continents, crossings, towns (a place joins the nearest bundled town place within
-  100 yd), hub names, NPC roles, instances and elite; and what QuestieDB leaves out: a level of -1 (it scales), a
+  100 yd), hub names, NPC roles, instances, elite and a raid's quest (a quest typed Raid stays one wherever QuestieDB
+  files it); and what QuestieDB leaves out: a level of -1 (it scales), a
   missing minimum level, a dungeon it files outside an instance, and the place of a giver none of whose spawns it
   places when the bundled data names the same NPC.
 - **Withheld start:** any quest the bundled data lacks, or whose bundled start it withholds (nothing says what else
   gates it: the generator's Method, condition and event gates, and givers CMaNGOS spawns only for an event, which
-  QuestieDB lists as ordinary spawns); a prerequisite or exclusive quest outside the data; and `parentQuest`, `breadcrumbForQuestId`, `requiredSpell`, `requiredSpecialization`,
+  QuestieDB lists as ordinary spawns); a prerequisite, exclusive quest or breadcrumb target outside the data; and `parentQuest`, `requiredSpell`, `requiredSpecialization`,
   `requiredMaxLevel` below the cap, `availableUntilCompleted`, `availableStartingWith`, `requiredRanks`,
   `disabledByQuest`, flags 1024 or 16384, or a gate on a skill line or faction the data doesn't name.
 - **Fallback:** any failed check or read keeps the bundled data; `/agf audit` names the source and the reason.
@@ -873,6 +884,13 @@ Nothing below has been validated in game yet.
 18. QuestieDB (§2.14): with it loaded, `/agf audit` names "QuestieDB <version>" a few seconds after login with no
     hitch, and the cards, rings and town stops match the bundled run; with it disabled, or Questie alone without it,
     the audit names the bundled data and why.
+19. Not interested (§2.8) on the chosen journey, then `/reload`: the cog's "Skipped (1)" → "Show again: <title>"
+    brings its card back chosen, with its steps; on a journey that was not chosen it only brings the card back.
+20. Breadcrumbs (§2.4): a level-10 orc shaman in Durotar is offered Call of Fire at Searn Firewarder; searching "Call
+    of Fire" ticks "Only until you take Call of Fire", and once Kranal Fiss's Call of Fire is in the log the
+    breadcrumb's pickup leaves the route and its line turns red. With QuestieDB, a level-12 paladin is offered Tome of
+    Divinity at the class trainer.
+21. Raids (§2.1): a level-60 character on Yojamba Isle with Dungeons on sees no Paragons of Power pickup on any card.
 
 ## 9. Open questions that need client probes
 

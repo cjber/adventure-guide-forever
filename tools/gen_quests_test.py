@@ -13,6 +13,7 @@ from gen_quests import (
     gate_names,
     geometry,
     hub_names,
+    instance_fields,
     instance_index,
     nearest_hub,
     parse_values,
@@ -221,6 +222,21 @@ class InstanceTest(unittest.TestCase):
                 {36: {"name": "Deadmines", "raid": False}, 409: {"name": "Molten Core", "raid": True}},
             ),
         )
+
+    def test_raid_by_instance_or_type(self):
+        instance_of = {1581: 36, 2717: 409}
+        instances = {36: {"name": "Deadmines", "raid": False}, 409: {"name": "Molten Core", "raid": True}}
+
+        def fields(zone, kind=0):
+            return instance_fields({"ZoneOrSort": zone, "Type": kind}, instance_of, instances)
+
+        self.assertEqual(fields(1581), {"dungeon": 36})
+        self.assertEqual(fields(2717), {"dungeon": 409, "raid": True})
+        # Paragons of Power: filed under the outdoor Zul'Gurub area (19), typed Raid.
+        self.assertEqual(fields(19, 62), {"raid": True})
+        self.assertEqual(fields(1581, 62), {"dungeon": 36, "raid": True})
+        self.assertEqual(fields(19, 81), {})
+        self.assertEqual(fields(-141), {})
 
 
 class HubTest(unittest.TestCase):
