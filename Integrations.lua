@@ -354,9 +354,11 @@ local function Stops(steps)
 	return stops
 end
 
--- Every quest start and finish in each town, by hub, built on first use.
----@type table<integer, AGFPlace[]>?
-local hubPlaces
+-- Every quest start and finish in each town, by hub, built on first use of each ns.Data (QuestieSource.lua swaps it).
+---@type table<integer, AGFPlace[]>
+local hubPlaces = {}
+---@type AGFData?
+local hubPlacesOf
 
 -- The player stands in `step`'s town: within the town linkage of any of its quests' places, the extent the generator
 -- drew the town by, whatever work is left there. A town the generator could not place is its point alone.
@@ -366,8 +368,8 @@ local hubPlaces
 local function InTown(player, step)
 	local places = { step }
 	if step.hub then
-		if not hubPlaces then
-			hubPlaces = {}
+		if hubPlacesOf ~= ns.Data then
+			hubPlaces, hubPlacesOf = {}, ns.Data
 			for _, quest in pairs(ns.Data.quests) do
 				for _, place in ipairs({ quest.start or false, quest.finish or false }) do
 					if place and place.hub then
