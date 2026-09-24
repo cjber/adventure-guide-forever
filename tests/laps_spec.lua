@@ -3,7 +3,7 @@
 -- quest giver near their level, with an older history done and a random log under a random log limit. Every card they
 -- are offered, chosen, is walked in order as a player would play it: a new quest's objectives never before its pickup,
 -- a hand-in only once its objectives are done, the log never past its limit, one quest of an exclusive group at most,
--- and every step on a point the data has. AGF_LAPS_SEED picks another set of characters.
+-- and every step on a point the data has, for several seeds of characters; AGF_LAPS_SEED runs one seed alone.
 local ns = {}
 assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
 -- Core.lua for ns.L, the planner's copy; its load-time hooks into the client are stubbed, since only the copy is read.
@@ -21,8 +21,11 @@ setfenv(
 core("AdventureGuideForever", ns)
 assert(loadfile("Model.lua"))("AdventureGuideForever", ns)
 local Model, data = ns.Model, ns.Data
-local SEED, CHARACTERS = tonumber(os.getenv("AGF_LAPS_SEED")) or 4, 150
-math.randomseed(SEED)
+-- Several sets of characters by default: one seed alone let seed-dependent failures through.
+local SEEDS, CHARACTERS = { tonumber(os.getenv("AGF_LAPS_SEED")) }, 150
+if #SEEDS == 0 then
+	SEEDS = { 4, 2, 3, 5, 6, 9, 12, 99 }
+end
 
 -- The data's places, keyed to 4 places: a step's point must be one of them.
 local places = {}
@@ -258,13 +261,13 @@ local function Stability(where, player, completed, log, held, prefs)
 end
 
 local plans, started = 0, os.clock()
-for character = 1, CHARACTERS do
+local function Play(seed, character)
 	local player, completed, log, held = Character()
 	local prefs = { quests = true, dungeons = false, skipped = {} }
 	local route = Model.Plan(data, player, completed, log, prefs)
 	plans = plans + 1
 	local where = ("seed %d, character %d (level %d at %s)"):format(
-		SEED,
+		seed,
 		character,
 		player.level,
 		Key(player.map, player.x, player.y)
@@ -285,6 +288,12 @@ for character = 1, CHARACTERS do
 	prefs.journey = nil
 	Stability(where, player, completed, log, held, prefs)
 	plans = plans + 4
+end
+for _, seed in ipairs(SEEDS) do
+	math.randomseed(seed)
+	for character = 1, CHARACTERS do
+		Play(seed, character)
+	end
 end
 
 for index = 1, math.min(10, #failures) do

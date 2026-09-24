@@ -43,6 +43,7 @@ ns.L = {
 	CARRY_READY = "%d ready to hand in",
 	CARRY_IN_PROGRESS = "%d in progress",
 	CARRY_AWAY = "%d to hand in across the sea",
+	LATER_LAPS = "%d of them on later laps",
 	LIST_SEPARATOR = ", ",
 	QUESTS_NEAR = "%d quests near your level",
 	QUESTS_NEAR_ONE = "1 quest near your level",

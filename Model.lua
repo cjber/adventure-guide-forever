@@ -2730,25 +2730,30 @@ local function Pickups(data, player, completed, log, ready, eligible, belongs, k
 	for _, step in ipairs(steps) do
 		kept = kept or step == lead
 	end
-	local L, parts = ns.L, {}
-	if held and laps then
-		-- The card counts only the log quests its laps take; carry counts the rest.
-		local drawn = {}
-		for _, step in ipairs(steps) do
-			for _, id in ipairs(step.handins or (step.kind ~= "trainer" and step.quests) or {}) do
-				drawn[id] = held[id]
-			end
-		end
-		held = drawn
-	end
+	local L, parts, holds = ns.L, {}, nil
 	if held then
+		-- The card counts every log quest it holds on its zone, those its laps take later too; carry holds the rest.
 		local finished, away, underway = Tally(data, player, log, held, prefs)
 		parts[#parts + 1] = finished + away > 0 and L.CARRY_READY:format(finished + away) or nil
 		parts[#parts + 1] = underway > 0 and L.CARRY_IN_PROGRESS:format(underway) or nil
+		local drawn, later = {}, 0
+		for _, step in ipairs(steps) do
+			for _, id in ipairs(step.handins or (step.kind ~= "trainer" and step.quests) or {}) do
+				drawn[id] = true
+			end
+		end
+		holds = {}
+		for id, step in pairs(held) do
+			holds[id] = true
+			later = later + ((drawn[id] or (step and prefs.skipped[step.key])) and 0 or 1)
+		end
+		parts[#parts + 1] = later > 0 and #parts > 0 and L.LATER_LAPS:format(later) or nil
 	end
 	parts[#parts + 1] = (quests > 0 or #parts == 0) and Count(L.QUESTS_NEAR_ONE, L.QUESTS_NEAR, quests) or nil
 	local subline = table.concat(parts, L.LIST_SEPARATOR)
-	return { map = steps[1].map, steps = steps, subline = subline, count = subline }, quests, kept and lead or nil
+	return { map = steps[1].map, steps = steps, subline = subline, count = subline, holds = holds },
+		quests,
+		kept and lead or nil
 end
 
 -- The dungeon card's instance (F15): while dungeons are `open` (on, or no next zone: roadmap #21), the party instance
@@ -2797,7 +2802,7 @@ local function DungeonJourney(data, player, completed, log, eligible, prefs, map
 	for _, step in ipairs(TrainerSteps(data, player, prefs, "dungeon:" .. best)) do
 		candidates[#candidates + 1] = step
 	end
-	local steps = Build(data, player, completed, log, candidates, prefs, mapName)
+	local steps = Within(data, player, completed, log, Build(data, player, completed, log, candidates, prefs, mapName))
 	if #steps == 0 then
 		return nil
 	end
@@ -3216,15 +3221,11 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			break
 		end
 	end
-	-- Carry holds the log's quests the story's steps leave for a later lap, as the in-combat rebuild does.
-	local drawn = {}
-	for _, step in ipairs(told and told.steps or {}) do
-		for _, id in ipairs(step.handins or (step.kind ~= "trainer" and step.quests) or {}) do
-			drawn[id] = true
-		end
-	end
-	journeys[#journeys + 1] = Carry(data, player, completed, log, ready, prefs, mapName, false, function(id, place)
-		return not (drawn[id] and OnZone(data, zone, id, place))
+	-- Carry (Loose ends) holds the log's quests off the story's zone, as the in-combat rebuild does: the story holds
+	-- those on it, a later lap's too.
+	local holds = told and told.holds or {}
+	journeys[#journeys + 1] = Carry(data, player, completed, log, ready, prefs, mapName, false, function(id)
+		return not holds[id]
 	end)
 	-- The diversions (roadmap R4) share the slots carry and the story leave: each offers itself with how many quests it
 	-- holds and the level its newest one opened at, and the newest since then is built first, so a level just gained or
@@ -3521,23 +3522,23 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 		end
 		return copy
 	end
-	-- The story's log quests stay on it; one taken on its zone since, or finished there, joins carry until the full
-	-- build.
-	local journeys, dismissed, zone, told = {}, prefs.notInterested or {}, nil, {}
+	-- The story's log quests stay on it; one taken on its zone since, or finished for a lap the story doesn't draw yet,
+	-- joins carry until the full build.
+	local journeys, dismissed, told, drawn = {}, prefs.notInterested or {}, {}, {}
 	for _, journey in ipairs(last.journeys) do
 		local kept = journey.kind ~= "carry" and not dismissed[journey.key] and Retained(journey, Prune) or nil
-		if kept and kept.kind == "story" and kept.key:match("^zone:") then
-			zone = tonumber(kept.key:match("%d+"))
+		if kept and kept.kind == "story" then
+			told = kept.holds or told
 			for _, step in ipairs(kept.steps) do
 				for _, id in ipairs(step.handins or (step.kind ~= "trainer" and step.quests) or {}) do
-					told[id] = true
+					drawn[id] = true
 				end
 			end
 		end
 		journeys[#journeys + 1] = kept
 	end
-	local carry = Carry(data, player, completed, log, Ready(data, log), prefs, mapName, true, function(id, place)
-		return not (told[id] and OnZone(data, zone, id, place))
+	local carry = Carry(data, player, completed, log, Ready(data, log), prefs, mapName, true, function(id)
+		return not told[id] or (log[id].complete and not drawn[id])
 	end)
 	if carry then
 		table.insert(journeys, (journeys[1] and journeys[1].kind == "story") and 2 or 1, carry)
