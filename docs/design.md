@@ -111,8 +111,8 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
 - **What a card may offer.** A card only ever holds eligible, recommendable steps. It never shows a lock, never shows "opens at level N", and never marks something new-in-Forever or of unknown location. Locked quests appear only in search (§2.4).
 - **Card kinds** (three at most, only those that have steps):
   1. **Finish what you carry**: log turn-ins and objectives.
-  2. **The zone story**: the best eligible chain in the chosen zone.
-  3. **Next zone**: `Model.Zones` for `level + 2`, shown only when it differs from the current zone.
+  2. **The zone story**: the best eligible chain in the zone the player's level fits best.
+  3. **Next zone**: the zone that ranks first for `level + 2` in the same eligibility pass (`Choices` in `Model.Journeys`), shown only when it differs from the story's zone and the player's own and has at least 5 quests to take now.
 
 ### 2.3 Zone story chapters
 
