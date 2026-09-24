@@ -7,9 +7,12 @@ local ROW_HEIGHT = 44
 local ROW_GAP = 2
 local CARD_HEIGHT = 86
 local CARD_GAP = 4
--- A card not chosen while another is (docs/design.md §2.2): the same renown art as one line, 288x28, its ring 24px
--- round the 14px kind icon, so the three read as one set and the chosen card's steps start near the top.
-local COMPACT_HEIGHT, COMPACT_RING, COMPACT_ICON = 28, 24, 14
+-- A card not chosen while another is (docs/design.md §2.2): the Settings list's collapsible category header, its "+"
+-- saying the row opens, at its own 26px height (ROW_ART the tiling middle, ROW_CAPS the caps at their atlas size),
+-- with the kind icon alone, so nothing is squashed and the chosen card's steps start near the top.
+local COMPACT_HEIGHT, COMPACT_ICON = 26, 16
+local ROW_ART = "_options_listexpand_middle"
+local ROW_CAPS = { { "options_listexpand_left", 12, "LEFT" }, { "options_listexpand_right", 28, "RIGHT" } }
 local CARD_RING, CARD_ICON = 46, 18
 -- Under the cards while none is chosen.
 local HINT_HEIGHT = 14
@@ -22,7 +25,9 @@ local KIND_ICONS = {
 	nextzone = "QuestNormal",
 	dungeon = "questlog-questtypeicon-dungeon",
 }
-local CARD_ART, CARD_ART_CHOSEN = "ui-journeys-renown-button", "ui-journeys-renown-button-pressed"
+-- The chosen card keeps this art and is lit instead: the renown card's pressed art is drawn a few pixels over, which
+-- reads as the card slipping out of line.
+local CARD_ART = "ui-journeys-renown-button"
 -- The chapter track (docs/design.md §2.3): Blizzard's delve squares at 12px, with their meanings kept
 -- (RewardTrackTemplates.lua:427-436): done, the one most recently finished in green, the rest grey.
 local TRACK_MAX, SQUARE, SQUARE_GAP = 8, 12, 3
@@ -231,6 +236,7 @@ end
 ---@field UpdateHighlightForState fun(self: AGFJourneyCard)
 ---@field journey? AGFJourney
 ---@field state? "full"|"chosen"|"compact"
+---@field Caps Texture[]
 
 -- One search result: the quest and where it starts, and for a locked one a lock and why (docs/design.md §2.4).
 ---@class AGFSearchRow : Frame
@@ -301,7 +307,7 @@ local function BuildJourneys(parent, below)
 		local card = CreateFrame("Button", nil, list, "AdventureGuideForeverJourneyCardTemplate") --[[@as AGFJourneyCard]]
 		-- Choosing a journey shows its route and turns the map to it; it never starts guidance, only Go does. The map
 		-- turns before the invalidation, so its redraw reads the route as it is and the one rebuild waits a frame.
-		-- The chosen card is a pressed toggle: clicking it again chooses none, and every card is whole again.
+		-- The chosen card is a toggle: clicking it again chooses none, and every card is whole again.
 		card:SetScript("OnClick", function(self)
 			local journey = self.journey
 			if not journey then
@@ -336,6 +342,14 @@ local function BuildJourneys(parent, below)
 			GameTooltip:Show()
 		end)
 		card:HookScript("OnLeave", GameTooltip_Hide)
+		card.Caps = {}
+		for _, cap in ipairs(ROW_CAPS) do
+			local texture = card:CreateTexture(nil, "OVERLAY")
+			texture:SetAtlas(cap[1])
+			texture:SetSize(cap[2], COMPACT_HEIGHT)
+			texture:SetPoint(cap[3])
+			card.Caps[#card.Caps + 1] = texture
+		end
 		cards[index] = card
 	end
 	track = CreateFrame("Frame", nil, list)
@@ -509,7 +523,7 @@ local function RefreshRow(row, step, index)
 	row.Selected:SetShown(index == 1)
 end
 
--- `state`: "full" (none chosen), "chosen" (full and pressed) or "compact" (another is chosen: title only).
+-- `state`: "full" (none chosen), "chosen" (full and lit) or "compact" (another is chosen: icon and title only).
 ---@param card AGFJourneyCard
 ---@param journey AGFJourney
 ---@param state "full"|"chosen"|"compact"
@@ -518,10 +532,14 @@ local function RefreshCard(card, journey, state)
 	local compact, chosen = state == "compact", state == "chosen"
 	card.journey, card.state = journey, state
 	card:SetHeight(compact and COMPACT_HEIGHT or CARD_HEIGHT)
-	local ring = compact and COMPACT_RING or CARD_RING
+	local ring = compact and COMPACT_ICON or CARD_RING
 	card.IconFrame:SetSize(ring, ring)
-	card.IconFrame:SetPoint("LEFT", compact and 10 or 15, 0)
+	card.IconFrame:SetPoint("LEFT", compact and 12 or 15, 0)
+	card.IconFrame.Border:SetShown(not compact)
 	card.IconFrame.Icon:SetSize(compact and COMPACT_ICON or CARD_ICON, compact and COMPACT_ICON or CARD_ICON)
+	for _, cap in ipairs(card.Caps) do
+		cap:SetShown(compact)
+	end
 	card.IconFrame.Icon:SetAtlas(KIND_ICONS[journey.kind])
 	card.Title:SetText(journey.title)
 	card.Title:ClearAllPoints()
@@ -534,10 +552,13 @@ local function RefreshCard(card, journey, state)
 	card.Reason:SetShown(not compact)
 	card.Subline:SetText(journey.subline)
 	card.Reason:SetText(journey.reason or "")
-	card.NormalTexture:SetAtlas(chosen and CARD_ART_CHOSEN or CARD_ART)
+	-- The pushed art is the normal art, so a press moves nothing; the highlight follows it (AlphaHighlightButton).
+	local art = compact and ROW_ART or CARD_ART
+	card.NormalTexture:SetAtlas(art)
+	card.PushedTexture:SetAtlas(art)
 	card:UpdateHighlightForState()
-	-- The pressed art alone reads as the same brown card in game: the chosen card also keeps its hover highlight
-	-- (its own art, added) lit, the way a stock list keeps its selected row lit.
+	-- The chosen card keeps its hover highlight (its own art, added) lit, the way a stock list keeps its selected row
+	-- lit, and never moves.
 	if chosen then
 		card:LockHighlight()
 	else

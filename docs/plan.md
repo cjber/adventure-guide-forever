@@ -472,7 +472,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 | 14 | Stand idle 60 s with the tab closed, then `/agf dump` and `/reload` | SV: 0 AGF frames with `onUpdate = true` | SV |
 | 15 | Pull a mob with the tab open, loot a quest item mid-fight | No rebuild hitch in combat; the cards refresh once after combat | SV, TAINT |
 | 16 | On a character that never chose a card (or click the chosen card again), open the Adventure tab | Every card whole, "Choose a journey to see its steps." under them, Steps: 0, Go greyed, no rings on the map; the tracker still shows a step | SHOT panel + map |
-| 17 | Click the second card, then hover each one-line row | The other two fold to 28 px rows above it; the chosen card is pressed and lit with its steps right under it; each row's tooltip has its subline and reason | SHOT panel |
+| 17 | Click the second card, then hover each one-line row | The other two fold to 26 px header rows with a "+" above it, nothing squashed; the chosen card is lit, not shifted, with its steps right under it; each row's tooltip has its subline and reason | SHOT panel |
 | 18 | Click a one-line row, then the chosen card | The row becomes the whole pressed card over its steps and the old one folds; clicking the chosen card unfolds all three and the map stays put | SHOT panel |
 | 19 | Choose a card, `/reload` | The same card is still chosen and folded the same way | SHOT panel |
 

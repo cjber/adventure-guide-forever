@@ -1047,32 +1047,31 @@ do
 	clean(h, "card")
 end
 
--- The guide (F2): at most three cards. The chosen one is pressed, 288x86 with a 46x46 ring and followed by its steps;
--- the others sit above it as one-line 288x28 rows with a 24x24 ring, in the dumped layout the client's own dump is
--- compared with.
+-- The guide (F2): at most three cards. The chosen one is lit, never moved, 288x86 with a 46x46 ring and followed by
+-- its steps; the others sit above it as one-line 288x26 header rows with a 16x16 icon and no ring, in the dumped
+-- layout the client's own dump is compared with.
 do
 	local h = Load(false)
 	h.ns.OpenPanel()
 	h.flush()
-	local route, full, compact, pressed, lit = h.ns.Route(), 0, 0, 0, 0
+	local route, full, compact, lit = h.ns.Route(), 0, 0, 0
 	local sizes = {}
 	for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverPanel, h.Describe)) do
 		if entry.path:match("%.Button%[%d%]$") and entry.size and entry.size[1] == 288 then
 			sizes[entry.path] = entry.size[2]
 			full = full + (entry.size[2] == 86 and 1 or 0)
-			compact = compact + (entry.size[2] == 28 and 1 or 0)
+			compact = compact + (entry.size[2] == 26 and 1 or 0)
 			lit = lit + (entry.highlightLocked and 1 or 0)
 		elseif entry.path:match("%.IconFrame$") then
-			local ring = sizes[entry.path:gsub("%.IconFrame$", "")] == 86 and "46x46" or "24x24"
+			local ring = sizes[entry.path:gsub("%.IconFrame$", "")] == 86 and "46x46" or "16x16"
 			equal(("%dx%d"):format(entry.size[1], entry.size[2]), ring, "guide: " .. entry.path .. " is " .. ring)
-		elseif entry.path:match("NormalTexture$") and entry.atlas == "ui-journeys-renown-button-pressed" then
-			pressed = pressed + 1
+		elseif entry.atlas == "ui-journeys-renown-button-pressed" then
+			error("guide: the pressed art is drawn off true, so no card shows it: " .. entry.path)
 		end
 	end
 	equal(full + compact, #route.journeys, "guide: a card per journey")
 	equal(#route.journeys, 3, "guide: the fixture has three cards")
 	equal(full, 1, "guide: only the chosen card is whole")
-	equal(pressed, 1, "guide: only the chosen card is pressed")
 	equal(lit, 1, "guide: and only it stays lit, so it reads as chosen in game")
 	local rows = Shown(h, function(frame)
 		return frame.SkipButton ~= nil
@@ -1306,7 +1305,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#(h.pins.AdventureGuideForeverPinTemplate or {}), 0, label .. ": no rings previewed")
 	equal(goButton:IsEnabled(), false, label .. ": Go waits for a choice")
 	for _, card in ipairs(Cards()) do
-		equal(card.NormalTexture:GetAtlas(), "ui-journeys-renown-button", label .. ": no card pressed")
+		equal(card.highlightLocked == true, false, label .. ": no card lit")
 	end
 
 	-- A compact row's tooltip keeps the card's lines.
@@ -1315,8 +1314,14 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(h.ns.Route().journey, story.key, label .. ": a click chooses")
 	equal(h.G.AdventureGuideForeverCharDB.journey, story.key, label .. ": and is saved")
-	equal(Heights(), "28 28 86", label .. ": the others fold above the chosen card")
+	equal(Heights(), "26 26 86", label .. ": the others fold above the chosen card")
 	equal(Cards()[3].journey.key, story.key, label .. ": the chosen card last, over its steps")
+	-- The chosen card is lit, not pressed: its art, pressed or not, is the card's own, so nothing moves.
+	local chosenCard = Cards()[3]
+	equal(chosenCard.highlightLocked, true, label .. ": the chosen card stays lit")
+	equal(chosenCard.NormalTexture:GetAtlas(), "ui-journeys-renown-button", label .. ": in its own art")
+	equal(chosenCard.PushedTexture:GetAtlas(), "ui-journeys-renown-button", label .. ": a press moves nothing")
+	equal(Cards()[1].PushedTexture:GetAtlas(), Cards()[1].NormalTexture:GetAtlas(), label .. ": nor on a row")
 	equal(Rows(), #h.ns.Route().steps, label .. ": its steps listed")
 	equal(Hint(), 0, label .. ": no hint")
 	equal(goButton:IsEnabled(), true, label .. ": Go follows the choice")
@@ -1335,7 +1340,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Click(nextZone)
 	h.flush()
 	equal(h.ns.Route().journey, key, label .. ": a row chooses its card")
-	equal(Heights(), "28 28 86", label .. ": still one whole card")
+	equal(Heights(), "26 26 86", label .. ": still one whole card")
 	equal(Cards()[3].journey.key, key, label .. ": the new choice over the steps")
 
 	-- The chosen card again: none chosen, every card whole, and the map stays where it was.

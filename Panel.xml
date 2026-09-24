@@ -17,11 +17,12 @@
 	<!-- A journey card: Blizzard's renown card (Blizzard_Journeys.xml:5-107, RenownCardButtonTemplate) at 0.77 scale,
 	     its art and radial ring kept, the kind's quest-log icon in the ring, and a title, a count and a reason beside
 	     it. AlphaHighlightButtonTemplate's OnLoad copies NormalTexture's atlas into the highlight, so the art is set
-	     here, before the card is ever shown. The chosen card swaps in the pressed art from Panel.lua. -->
+	     here, before the card is ever shown. Its pushed art is the same card: the renown pressed art is drawn off
+	     true, so neither a press nor the chosen card ever moves. -->
 	<Button name="AdventureGuideForeverJourneyCardTemplate" inherits="AlphaHighlightButtonTemplate" virtual="true">
 		<Size x="288" y="86"/>
 		<NormalTexture parentKey="NormalTexture" atlas="ui-journeys-renown-button"/>
-		<PushedTexture parentKey="PushedTexture" atlas="ui-journeys-renown-button-pressed"/>
+		<PushedTexture parentKey="PushedTexture" atlas="ui-journeys-renown-button"/>
 		<Frames>
 			<Frame parentKey="IconFrame">
 				<Size x="46" y="46"/>

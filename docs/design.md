@@ -55,9 +55,9 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
 |  Choose a journey to see its steps.           |  GameFontDisableSmall hint; Go disabled, Steps: 0
 |                                               |
 |  --- after choosing the story: ---            |
-| [(?) Finish what you carry                  ] |  the others, one line each: 288x28, 2 px apart
-| [(!) Head to Darkshore                      ] |
-| +===========================================+ |  the chosen card, whole and pressed (-pressed art),
+| [(?) Finish what you carry                +] |  the others, one line each: 288x26, 2 px apart
+| [(!) Head to Darkshore                    +] |
+| +===========================================+ |  the chosen card, whole and lit (its own art),
 | | (S)  Westfall story                       | |    4 px under the rows
 | | ( )  Chapter 2 of 4                       | |
 | +===========================================+ |
@@ -82,16 +82,16 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   Go disabled, since the guide shows no step for it to start. The route still falls back to the first card
   (`route.chosen` false), so the tracker keeps a next step and its title click still sets off along it: there the
   step is on screen. A stale saved key stays saved and is chosen again should its card come back.
-- **One chosen:** the others fold to one-line rows above it, in their order, and it sits whole and pressed right over
-  its track and step rows. Its steps start at the same place whichever card it is (two rows, 62 px, then the card),
+- **One chosen:** the others fold to one-line rows above it, in their order, and it sits whole and lit right over
+  its track and step rows. Its steps start at the same place whichever card it is (two rows, 58 px, then the card),
   and no card sits between a card and its steps, which the old order did (a middle card's steps pushed the last card
-  below the fold). A row chooses its card; the chosen card is a pressed toggle, and clicking it again chooses none.
+  below the fold). A row chooses its card; the chosen card is a toggle, and clicking it again chooses none.
   No animation: the quest log's own headers fold at once, and a height tween would need an OnUpdate.
 - Selecting a card sets `prefs.journey` and rebuilds the route. It never starts guidance. **Go** is the only way to
   start.
 - **Stop** appears only while AGF owns the guidance. That means SPF's `CurrentStop(OWNER)` is non-nil, or the
   native user waypoint is still the one AGF set (§5.1).
-- Fit: with a card chosen the three cards take 152 px (was 270), so the list holds between two and three more 46 px
+- Fit: with a card chosen the three cards take 148 px (was 270), so the list holds between two and three more 46 px
   step rows before it scrolls.
 
 ### 2.2 Journey card
@@ -102,7 +102,7 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
 
 ```
 +------------------------------------------+  NormalTexture ui-journeys-renown-button (CSV:15677, 374x112 -> 288x86)
-|  .--.                                    |  PushedTexture / selected: ui-journeys-renown-button-pressed (CSV:15676)
+|  .--.                                    |  selected: the same art, highlight locked (never the -pressed art)
 | ( S  )  Westfall story                   |  title: GameFontNormalMed2 (gold), LEFT of IconFrame RIGHT +5,+5 (xml:90-95)
 |  '--'   Chapter 2 of 4                   |  subline: GameFontHighlightSmall (white) under the title
 |         Continues a story you started    |  reason: GameFontHighlightSmall
@@ -111,11 +111,18 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
   Icon 18x18 at CENTER; hover inherits AlphaHighlightButtonTemplate (SharedUIPanelTemplates.xml:1587)
 ```
 
-- **One-line row** (another card is chosen): the same button and the same `ui-journeys-renown-button` art at
-  288x28, so the set reads as one; the ring 24x24 at LEFT x=10 round a 14x14 kind icon, the title
-  (GameFontNormalMed2) at the ring's RIGHT +6, no subline or reason. Its tooltip has the title, subline and reason,
-  so nothing is lost. The chosen card's tooltip says "Click again to see every journey". Pooled: the three card
-  buttons are resized in place, no frame is made per refresh.
+- **One-line row** (another card is chosen): the Settings list's collapsible category header in three slices at its
+  own 26 px height, `options_listexpand_left` (12x26), `_options_listexpand_middle` (tiled) and
+  `options_listexpand_right` (28x26, its "+"), 288x26 in all, with the 16x16 kind icon at LEFT x=12 and no ring, and
+  the title (GameFontNormalMed2) at the icon's RIGHT +6. Its tooltip has the title, subline and reason, so nothing is
+  lost. The chosen card's tooltip says "Click again to see every journey". Pooled: the three card buttons are
+  resized in place, no frame is made per refresh.
+  - Why this art: it is a stock single-line row drawn at native height with a "+" that says it opens; the renown
+    card squeezed to 28 px pinched its frame, `friendslist-categorybutton` read as a second heavy card and
+    `collections-slotheader` too faint to read as a button.
+- **Chosen card:** the card's own `ui-journeys-renown-button` with its highlight locked, never
+  `ui-journeys-renown-button-pressed`, which is drawn a few pixels off true; its pushed art is the same atlas, so
+  neither a press nor the choice moves any art, text or icon.
 - **Kind icons** follow Blizzard's `QUEST_TAG_ATLAS` (`BLZ/Blizzard_FrameXMLBase/Constants.lua:514-527`):
 
   | Card kind | Icon | Mock label |
@@ -253,7 +260,7 @@ While SPF is guiding, AGF's rings hide, because SPF draws its own stops (Pins.lu
         adventureguide-ring (CSV:1189) + services-number-1..9 (CSV:1645-1653), hover UI-QuestPoi-InnerGlow (CSV:10079)
 ```
 
-- **Preview.** With no card chosen the open guide previews no rings: rings numbered for a card that is not pressed
+- **Preview.** With no card chosen the open guide previews no rings: rings numbered for a card that is not lit
   would read as a choice made (with `showMapPins` on they still show the first card's route, as the tracker does).
   Selecting a card turns the map to that journey's first zone (`WorldMapFrame:SetMapID`) and draws
   only its rings. Hovering a step row flashes its ring (`Pins.Ping`, Pins.lua:184-188). Nothing moves until Go.
