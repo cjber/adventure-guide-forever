@@ -10,6 +10,7 @@ from gen_quests import (
     crossings,
     faction,
     flight_masters,
+    gate_names,
     geometry,
     hub_names,
     instance_index,
@@ -19,6 +20,7 @@ from gen_quests import (
     prerequisites,
     project,
     reaction,
+    requirements,
     roles,
     skill_steps,
     town_hubs,
@@ -65,6 +67,48 @@ class PrerequisiteTest(unittest.TestCase):
         self.assertEqual(self.resolve([(3, 99, 0, 0)], 3), ([], [], True))
         rows = [(1, 0, 4, -7), (2, 0, 4, -7), (3, 0, 4, 0), (4, 0, 0, 0)]
         self.assertEqual(self.resolve(rows, 4), ([], [], True))
+
+
+class GateTest(unittest.TestCase):
+    NAMES = gate_names(
+        [
+            {"ID": "197", "CategoryID": "11", "DisplayName_lang": "Tailoring"},
+            {"ID": "356", "CategoryID": "9", "DisplayName_lang": "Fishing"},
+            {"ID": "43", "CategoryID": "6", "DisplayName_lang": "Swords"},
+        ],
+        [
+            {"ID": "576", "Name_lang": "Timbermaw Hold", "ReputationIndex": "35"},
+            {"ID": "529", "Name_lang": "Argent Dawn", "ReputationIndex": "13"},
+            {"ID": "169", "Name_lang": "Steamwheedle Cartel", "ReputationIndex": "-1"},
+        ],
+    )
+
+    @classmethod
+    def gates(cls, skill=(0, 0), low=(0, 0), high=(0, 0)):
+        row = dict(
+            zip(("RequiredSkill", "RequiredSkillValue"), skill, strict=True),
+            **dict(zip(("RequiredMinRepFaction", "RequiredMinRepValue"), low, strict=True)),
+            **dict(zip(("RequiredMaxRepFaction", "RequiredMaxRepValue"), high, strict=True)),
+        )
+        return requirements(row, *cls.NAMES)
+
+    def test_names(self):
+        self.assertEqual(self.NAMES, ({197: "Tailoring", 356: "Fishing"}, {576: "Timbermaw Hold", 529: "Argent Dawn"}))
+
+    def test_skill(self):
+        self.assertEqual(self.gates(skill=(197, 150)), {"skill": {"id": 197, "value": 150}})
+        # Player::SatisfyQuestSkill: an unlearned line's rank 0 is never below 0, so a value of 0 asks nothing.
+        self.assertEqual(self.gates(skill=(356, 0)), {})
+        self.assertIsNone(self.gates(skill=(43, 1)), "a weapon skill is no profession")
+
+    def test_reputation(self):
+        self.assertEqual(self.gates(low=(576, 3000)), {"rep": {"faction": 576, "min": 3000}})
+        both = self.gates(low=(529, 9000), high=(529, 20999))
+        self.assertEqual(both, {"rep": {"faction": 529, "min": 9000, "max": 20999}})
+        self.assertEqual(self.gates(high=(576, 0)), {"rep": {"faction": 576, "max": 0}})
+        self.assertIsNone(self.gates(low=(576, 3000), high=(529, 9000)), "two factions")
+        self.assertIsNone(self.gates(low=(169, 3000)), "a faction with no reputation")
+        self.assertEqual(self.gates(), {})
 
 
 class ProjectionTest(unittest.TestCase):

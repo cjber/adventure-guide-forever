@@ -163,6 +163,42 @@ local function MaskNames(mask, lookup, english)
 	return table.concat(names, ns.L.LIST_SEPARATOR)
 end
 
+-- Reputation standings in the data's and the client's scale (0 starts Neutral), each rank's first point in reaction
+-- order 1 Hated to 8 Exalted, and their English names (the client's FACTION_STANDING_LABEL1-8 otherwise).
+local THRESHOLDS = { -42000, -6000, -3000, 0, 3000, 9000, 21000, 42000 }
+local STANDINGS = { "Hated", "Hostile", "Unfriendly", "Neutral", "Friendly", "Honored", "Revered", "Exalted" }
+
+-- The reaction whose rank starts at exactly `value`; nil between ranks.
+local function Reaction(value)
+	for reaction, threshold in ipairs(THRESHOLDS) do
+		if threshold == value then
+			return reaction
+		end
+	end
+	return nil
+end
+
+-- A reputation line: "Requires Friendly with X", "Only while below Exalted with X" (a maximum below a rank's first
+-- point, or one short of it), or a plain line naming the faction when the value falls between ranks.
+---@param names? AGFWhyNames
+local function RepText(data, rep, key, names)
+	local L = ns.L
+	local faction = (names and names.faction and names.faction(rep.faction))
+		or (data.factions and data.factions[rep.faction] and data.factions[rep.faction].name)
+		or ""
+	local reaction
+	if key == "repMin" then
+		reaction = Reaction(rep.min)
+	else
+		reaction = Reaction(rep.max) or Reaction(rep.max + 1)
+	end
+	if not reaction then
+		return L.WHY_REPUTATION:format(faction)
+	end
+	local standing = (names and names.standing and names.standing(reaction)) or STANDINGS[reaction]
+	return (key == "repMin" and L.WHY_REP_MIN or L.WHY_REP_BELOW):format(standing, faction)
+end
+
 ---@param names? AGFWhyNames
 local function Title(data, id, names)
 	local quest = data.quests[id]
@@ -191,6 +227,13 @@ local function WhyText(data, key, arg, names)
 		return L.WHY_ONE_OF:format(table.concat(titles, L.LIST_SEPARATOR))
 	elseif key == "group" then
 		return L.WHY_CHOSE:format(Title(data, arg, names))
+	elseif key == "skill" then
+		local name = (names and names.skill and names.skill(arg.id))
+			or (data.skills and data.skills[arg.id] and data.skills[arg.id].name)
+			or ""
+		return L.WHY_SKILL:format(name, arg.value)
+	elseif key == "repMin" or key == "repMax" then
+		return RepText(data, arg, key, names)
 	end
 	return L[key]
 end
@@ -245,6 +288,24 @@ local function Check(data, player, completed, log, id, groups, level, lines, nam
 	met = HasBit(quest.classes, player.classBit)
 	if not met or (lines and not Covers(quest.classes, ALL_CLASSES)) then
 		if not Line(data, lines, met, "classes", quest.classes, names) then
+			return false
+		end
+	end
+	-- A skill line the player hasn't learned has rank 0; a faction the client gives no standing for (the other side's)
+	-- meets neither a minimum nor a maximum, since the data can't say where it stands.
+	local skill = quest.skill
+	if skill then
+		met = ((player.skills and player.skills[skill.id]) or 0) >= skill.value
+		if not Line(data, lines, met, "skill", skill, names) then
+			return false
+		end
+	end
+	local rep = quest.rep
+	if rep then
+		local standing = player.reputation and player.reputation(rep.faction)
+		if rep.min and not Line(data, lines, standing ~= nil and standing >= rep.min, "repMin", rep, names) then
+			return false
+		elseif rep.max and not Line(data, lines, standing ~= nil and standing < rep.max, "repMax", rep, names) then
 			return false
 		end
 	end
