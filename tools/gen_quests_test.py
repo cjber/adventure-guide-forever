@@ -302,6 +302,7 @@ class NpcTest(unittest.TestCase):
                 self.template(2, 16, kind=2),  # ranks of two skills
                 self.template(4732, 16, kind=1, race=1),
                 self.template(543, 16, kind=3, klass=3),
+                self.template(2485, 16, klass=8),  # a portal trainer: spells from level 20 only
                 self.template(3, 16, klass=0),  # a weapon master
                 self.template(4, 16, klass=4),  # teaches only behind a condition
                 self.template(6929, 128 | 1),
@@ -309,7 +310,7 @@ class NpcTest(unittest.TestCase):
                 self.template(5, 4),
             ],
             "npc_trainer": [
-                self.taught(198, 10, 4),
+                self.taught(198, 10, 1),
                 self.taught(198, 11, 6),
                 self.taught(5499, 2275, 5),
                 self.taught(5499, 2280, 10),
@@ -319,10 +320,12 @@ class NpcTest(unittest.TestCase):
                 self.taught(2, 2372),
                 self.taught(4732, 33389, 40),
                 self.taught(543, 20),
+                self.taught(2485, 32, 20),
+                self.taught(2485, 33, 40),
                 self.taught(3, 21),
                 self.taught(4, 22, 10, condition=7),
             ],
-            "npc_trainer_template": [self.taught(9, 30, 60), self.taught(9, 31, 20)],
+            "npc_trainer_template": [self.taught(9, 30, 60), self.taught(9, 31, 1)],
             "battlemaster_entry": [{"entry": 347, "bg_template": 1}],
         }
         steps = {2275: (171, 1), 2280: (171, 2), 2372: (182, 1)}
@@ -333,6 +336,7 @@ class NpcTest(unittest.TestCase):
                 347: {"bg": 1},
                 543: {"pet": True},
                 4732: {"riding": True, "race": 1},
+                2485: {"class": 8, "upto": 40, "from": 20},
                 5497: {"class": 8, "upto": 60},
                 5499: {"skill": 171, "rank": 2},
                 6929: {"inn": True},

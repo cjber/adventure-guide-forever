@@ -555,7 +555,8 @@ aside shown changes. The first provider's answer the player has not skipped or t
 | 23 | Route rings above quest POIs (SPF and AGF, §2.6) | Must | A merged stop ring drew under the super-tracked "?". |
 
 **NPC roles (`Data.npcs`, roadmap R2).** The generator emits class trainers (with the class, and `upto`, the highest
-level they teach, so a starting-area trainer is told apart), hunter pet trainers, riding trainers (with
+level they teach, so a starting-area trainer is told apart, and `from`, the lowest, when above 1, so a trainer of
+only part of the class's spells, a mage's portal trainer, is too), hunter pet trainers, riding trainers (with
 CMaNGOS's TrainerRace), profession trainers (skill line and the highest rank taught: the SKILL_STEP effect of a
 taught spell in wago SpellEffect, on a SkillLine profession or secondary skill), battlemasters
 (`battlemaster_entry`) and innkeepers, from the pinned CMaNGOS dump.

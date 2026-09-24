@@ -475,6 +475,7 @@
 ---@field place AGFPlace a non-seasonal spawn; within 100 yards of a quest place, its `hub` and that town's usual map
 ---@field class? integer class trainer: the class ID it trains (1 Warrior ... 11 Druid)
 ---@field upto? integer class trainer: the highest level among the spells it teaches (6 for a starting-area trainer)
+---@field from? integer class trainer: the lowest level among them, when above 1 (a mage's portal trainer's 20)
 ---@field pet? boolean hunter pet trainer
 ---@field riding? boolean riding trainer
 ---@field race? integer riding trainer: the race ID it teaches (CMaNGOS TrainerRace), when it names one
