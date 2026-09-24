@@ -551,10 +551,12 @@ local function Describe(data, log, player, step)
 end
 
 -- A town where a hand-in opens the next chapter of its chain says so, when the data proves that chapter starts in the
--- same town and Check proves it open once the hand-in is done. It is never added as a pickup before the turn-in: it
--- comes with the rebuild after QUEST_TURNED_IN. Nothing is said when the data cannot prove it.
+-- same town and Check proves it shut now and open once the hand-in is done (the data's `next` alone is display-only).
+-- It is never added as a pickup before the turn-in: it comes with the rebuild after QUEST_TURNED_IN. Nothing is said
+-- when the data cannot prove it.
 ---@param step AGFStep
 local function Opens(data, player, completed, log, step)
+	local groups = Index(data).groups
 	for _, id in ipairs(step.hub and step.handins or {}) do
 		local nextID = data.quests[id] and data.quests[id].next
 		local follow = nextID and data.quests[nextID]
@@ -563,7 +565,8 @@ local function Opens(data, player, completed, log, step)
 			follow
 			and follow.start
 			and follow.start.hub == step.hub
-			and Eligible(data, player, after, log, nextID, Index(data).groups)
+			and not Eligible(data, player, completed, log, nextID, groups)
+			and Eligible(data, player, after, log, nextID, groups)
 		then
 			step.reason = ns.L.OPENS_CHAPTER_HERE
 			step.detail = #step.quests == 1 and step.reason or step.detail

@@ -535,6 +535,11 @@ chained.quests[30].races, chained.quests[30].start = nil, nil
 chainPlan = Model.Plan(chained, visitor, {}, handing, townPrefs)
 equal(chainPlan.steps[1].reason, "1 to hand in, 4 to pick up", "chain: nothing said when the next chapter has no start")
 equal(chainPlan.journeys[1].steps[1].detail, "ready to hand in", "chain: nor on the carry card")
+-- The data's `next` is display-only: a next chapter already open without the hand-in is not one it opens.
+chained.quests[30].start, chained.quests[30].pre = quest(0.52, 0.5).start, nil
+chained.quests[30].start.hub = 5
+stop = Model.Plan(chained, visitor, {}, handing, townPrefs).steps[1]
+equal(stop.reason, "1 to hand in, 5 to pick up", "chain: nothing said when the hand-in does not gate the next chapter")
 -- One quest keeps the single step's title.
 town.quests[2], town.quests[3], town.quests[4] = nil, nil, nil
 town = { quests = town.quests, zones = town.zones, maps = town.maps, continents = town.continents, hubs = town.hubs }
