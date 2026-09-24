@@ -3,6 +3,7 @@ local _, ns = ...
 
 local PIN_TEMPLATE = "AdventureGuideForeverPinTemplate"
 local GIVER_TEMPLATE = "AdventureGuideForeverGiverPinTemplate"
+local AREA_TEMPLATE = "AdventureGuideForeverAreaPinTemplate"
 
 ---@class AGFPinsModule
 local Pins = {}
@@ -42,11 +43,31 @@ local GROUP_ICON = " |A:questlog-questtypeicon-group:12:12|a"
 -- A town's quests listed in its tooltip; the rest are counted.
 local HUB_QUEST_LINES = 8
 
--- One line per quest at a town, under the NPC it is handed to or taken from, in the stop's order (hand-ins first, then
--- by level, docs/plan.md §7.3), each coloured as the quest log colours its level.
+-- A quest's line, coloured as the quest log colours its level: the map's mark, the title (with its level when
+-- `levelled`) and the group tag. A quest the data lacks (Forever's own) is the player's level, titled by the client.
+---@param tooltip GameTooltip
+---@param id integer
+---@param mark string
+---@param levelled boolean
+local function QuestLine(tooltip, id, mark, levelled)
+	local quest = ns.Data.quests[id]
+	local level = (not quest or quest.level == -1) and UnitLevel("player") or quest.level
+	local title = ns.State.QuestTitle(id) or (quest and quest.title) or ""
+	local color = GetQuestDifficultyColor(level)
+	GameTooltip_AddColoredLine(
+		tooltip,
+		mark
+			.. (levelled and ns.L.QUEST_LEVEL:format(level, title) or title)
+			.. ((quest and (quest.elite or quest.dungeon or quest.raid)) and GROUP_ICON or ""),
+		CreateColor(color.r, color.g, color.b)
+	)
+end
+
+-- One line per quest at a town, under the NPC it is handed to or taken from, in the town's order (hand-ins first, then
+-- by level, docs/plan.md §7.3).
 ---@param tooltip GameTooltip
 ---@param step AGFStep
-local function HubQuests(tooltip, step)
+local function TownQuests(tooltip, step)
 	local handin, shown = {}, 0
 	for _, id in ipairs(step.handins or {}) do
 		handin[id] = true
@@ -65,23 +86,34 @@ local function HubQuests(tooltip, step)
 					named = true
 				end
 				shown = shown + 1
-				local level = quest.level == -1 and UnitLevel("player") or quest.level
-				local title = ns.State.QuestTitle(id) or quest.title
-				local text = handin[id] and HAND_IN_ICON .. title
-					or PICK_UP_ICON .. ns.L.QUEST_LEVEL:format(level, title)
-				local color = GetQuestDifficultyColor(level)
-				GameTooltip_AddColoredLine(
-					tooltip,
-					text .. ((quest.elite or quest.dungeon or quest.raid) and GROUP_ICON or ""),
-					CreateColor(color.r, color.g, color.b)
-				)
+				QuestLine(tooltip, id, handin[id] and HAND_IN_ICON or PICK_UP_ICON, not handin[id])
 			end
 		end
 	end
 end
 
+-- An area's quests, each with its open objectives done there as the quest log words them: the client's words, else
+-- its count so far. An objective the client's count can't be matched to shows under its quest with no line.
+---@param tooltip GameTooltip
+---@param step AGFStep
+local function AreaObjectives(tooltip, step)
+	local last
+	for _, objective in ipairs(step.objectives or {}) do
+		if objective.id ~= last then
+			QuestLine(tooltip, objective.id, "", false)
+			last = objective.id
+		end
+		local line = objective.text and ns.L.OBJECTIVE_LINE:format(objective.text)
+			or (objective.have and objective.need and ns.L.OBJECTIVE_COUNT:format(objective.have, objective.need))
+		if line then
+			GameTooltip_AddHighlightLine(tooltip, line)
+		end
+	end
+end
+
 -- A step's lines (docs/design.md §2.9), shared by its ring and its row in the guide: the title numbered as the route
--- numbers it, the chapter, the travel line when there is one, why it is on the route, and a town's quests by NPC.
+-- numbers it, the chapter, the travel line when there is one, why it is on the route, a town's quests by NPC, and an
+-- area's objectives.
 ---@param tooltip GameTooltip
 ---@param step AGFStep
 ---@param index number
@@ -95,9 +127,10 @@ function Pins.StepTooltip(tooltip, step, index, travel)
 		GameTooltip_AddHighlightLine(tooltip, travel)
 	end
 	GameTooltip_AddHighlightLine(tooltip, step.reason)
-	if step.kind == "hub" then
-		HubQuests(tooltip, step)
+	if step.kind == "town" then
+		TownQuests(tooltip, step)
 	end
+	AreaObjectives(tooltip, step)
 end
 
 local provider = CreateFromMixins(MapCanvasDataProviderMixin) --[[@as AGFMapProvider]]
@@ -105,6 +138,7 @@ local provider = CreateFromMixins(MapCanvasDataProviderMixin) --[[@as AGFMapProv
 function provider:RemoveAllData()
 	self:GetMap():RemoveAllPinsByTemplate(PIN_TEMPLATE)
 	self:GetMap():RemoveAllPinsByTemplate(GIVER_TEMPLATE)
+	self:GetMap():RemoveAllPinsByTemplate(AREA_TEMPLATE)
 	pinsByKey = {}
 end
 
@@ -145,6 +179,14 @@ function provider:RefreshAllData()
 	AddGivers(self:GetMap(), mapID)
 	if not RingsShown() then
 		return
+	end
+	-- Each area's ring first, under the numbered pins: its radius in yards over the map's size in yards, when the data
+	-- has the map's size.
+	local size = ns.Data.maps and ns.Data.maps[mapID]
+	for _, step in ipairs(size and ns.Route().steps or {}) do
+		if step.map == mapID and step.objectives and (step.r or 0) > 0 then
+			self:GetMap():AcquirePin(AREA_TEMPLATE, step, 2 * step.r / size.sx, 2 * step.r / size.sy)
+		end
 	end
 	for index, step in ipairs(ns.Route().steps) do
 		if step.map == mapID then
@@ -195,6 +237,26 @@ function AdventureGuideForeverPinMixin:OnClick(button)
 	if button == "LeftButton" and self.step then
 		ns.StartRoute(self.step)
 	end
+end
+
+---@class AGFAreaPinFrame : AGFMapPinMixin
+AdventureGuideForeverAreaPinMixin = CreateFromMixins(MapCanvasPinMixin)
+
+-- Scaled with the terrain, as Shortest Path's route and the stock quest blobs are, so the ring keeps its area's size
+-- at every zoom.
+function AdventureGuideForeverAreaPinMixin:OnLoad()
+	self:UseFrameLevelType("PIN_FRAME_LEVEL_QUEST_BLOB")
+	self:SetIgnoreGlobalPinScale(true)
+	self:SetScaleStyle(AM_PIN_SCALE_STYLE_WITH_TERRAIN)
+end
+
+---@param step AGFStep
+---@param width number the ring's diameter as a share of the map's width
+---@param height number and of its height
+function AdventureGuideForeverAreaPinMixin:OnAcquired(step, width, height)
+	local canvas = self:GetMap():GetCanvas()
+	self:SetSize(width * canvas:GetWidth(), height * canvas:GetHeight())
+	self:SetPosition(step.x, step.y)
 end
 
 ---@class AGFGiverPinFrame : AGFMapPinMixin

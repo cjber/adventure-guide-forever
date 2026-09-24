@@ -55,7 +55,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	equal(h.G.ShortestPathForever ~= nil, spf ~= false, label .. ": Shortest Path global")
 	equal(h.G.TweaksForever, nil, label .. ": no Tweaks Forever")
 	equal(h.G.LegacyForever, nil, label .. ": no Legacy Forever")
-	equal(h.ns.Route().steps[1].key, "hub:349", label .. ": the hand-in leads the route")
+	equal(h.ns.Route().steps[1].key, "town:349", label .. ": the hand-in leads the route")
 
 	-- Blizzard's displayMode is never written, whatever the player clicks (Panel.lua ShowGuide).
 	local panel, questsFrame = h.G.AdventureGuideForeverPanel, h.questMap.QuestsFrame
@@ -115,8 +115,8 @@ end
 do
 	local h = Load(false)
 	local show = h.ns.ShowQuest
-	equal(show({ kind = "dungeon", key = "objective:843", quests = { 843 } }), true, "a group quest in the log opens")
-	local town = { kind = "hub", key = "hub:349", quests = { 843 }, pickups = { 843 }, handins = {} }
+	equal(show({ kind = "dungeon", key = "area:843:0", quests = { 843 } }), true, "a group quest in the log opens")
+	local town = { kind = "town", key = "town:349", quests = { 843 }, pickups = { 843 }, handins = {} }
 	equal(show(town), false, "a group pickup does not")
 	town.quests, town.pickups, town.handins = { 845, 843 }, { 843 }, { 845 }
 	equal(show(town), true, "a town with a hand-in opens it")
@@ -130,7 +130,7 @@ do
 		local quests = {}
 		for _, step in ipairs(h.ns.Route().steps) do
 			-- A town's log quests are its hand-ins; its pickups are not in the log.
-			for _, questID in ipairs(step.kind == "hub" and step.handins or step.quests) do
+			for _, questID in ipairs(step.kind == "town" and step.handins or step.quests) do
 				quests[#quests + 1] = questID
 			end
 		end
@@ -301,7 +301,7 @@ do
 	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: every step")
 	-- Shortest Path moves on stop by stop until it heads for the Crossroads, then the player reaches it.
 	for _, step in ipairs(h.ns.Route().steps) do
-		if step.key == "hub:349" then
+		if step.key == "town:349" then
 			break
 		end
 		h.spfAdvance()
@@ -839,7 +839,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Live(), 0, label .. ": RemoveAllData leaves no pins")
 
 	-- Design §2.8's menu for a town holding a log quest; Stop only once Go runs, Show quest never in combat.
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["hub:349"], "RightButton")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:349"], "RightButton")
 	local menu = {
 		"title: Crossroads, The Barrens",
 		"button: Go",
@@ -850,12 +850,69 @@ for _, spf in ipairs({ false, "v1" }) do
 	same(h.MenuLines(), menu, label .. ": tracker menu")
 	ns.Integrations.Navigate(ns.Route().steps[1])
 	h.SetCombat(true)
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["hub:349"], "RightButton")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:349"], "RightButton")
 	h.SetCombat(false)
 	menu[3] = "button: Stop"
 	same(h.MenuLines(), menu, label .. ": tracker menu while Go guides, in combat")
 	ns.Integrations.Cancel()
 	clean(h, label .. ": pins")
+end
+
+-- An area step on the map (design §4.4): a ring the size of its area under the numbered pins, scaled with the terrain
+-- (no mouse: an in-game check); its tooltip lists each open objective under its quest in the client's words, else
+-- its count.
+do
+	local h = harness.load({
+		db = PINS_ON,
+		charDB = { journey = "zone:1413" },
+		completed = { 844 },
+		log = {
+			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
+			{
+				id = 843,
+				title = "Gann's Reclamation",
+				level = 23,
+				complete = false,
+				objectives = {
+					{ type = "monster", done = false, have = 7, need = 15, text = "Bael'dun Excavator slain: 7/15" },
+					{ type = "monster", done = false, have = 2, need = 5, text = "" },
+					{ type = "item", done = true, have = 1, need = 1, text = "Resonite Crystal: 1/1" },
+				},
+			},
+		},
+	})
+	h.G.OpenQuestLog()
+	h.flush()
+	h.providers[1]:RefreshAllData()
+	local index, step
+	for i, candidate in ipairs(h.ns.Route().steps) do
+		index, step = candidate.key == "area:843:0" and i or index, candidate.key == "area:843:0" and candidate or step
+	end
+	equal(step and step.kind, "area", "area ring: Gann's Reclamation is an area step")
+	local rings = h.pins.AdventureGuideForeverAreaPinTemplate or {}
+	equal(#rings, 1, "area ring: one ring, for the one area with a radius")
+	local ring = rings[1]
+	equal(ring.frameLevelType, "PIN_FRAME_LEVEL_QUEST_BLOB", "area ring: under the marks, as the quest blobs are")
+	equal(ring.scaleStyle, h.G.AM_PIN_SCALE_STYLE_WITH_TERRAIN, "area ring: scaled with the terrain")
+	local map = h.ns.Data.maps[1413]
+	equal(math.floor(ring:GetWidth() + 0.5), math.floor(2 * step.r / map.sx * 1000 + 0.5), "area ring: its area's size")
+	equal(ring.x .. "," .. ring.y, step.x .. "," .. step.y, "area ring: at the step")
+	local pin
+	for _, candidate in ipairs(h.pins.AdventureGuideForeverPinTemplate) do
+		pin = candidate.step == step and candidate or pin
+	end
+	h.Hover(pin)
+	local expected = {
+		"title: " .. index .. ". Gann's Reclamation",
+		"highlight: quests in progress",
+		"colored: Gann's Reclamation",
+		"highlight: - Bael'dun Excavator slain: 7/15",
+		"highlight: - 2/5",
+	}
+	same({ unpack(h.tooltip, 1, #expected) }, expected, "area ring: the pin's tooltip counts what is left")
+	equal(h.tooltip[#expected + 1], "instruction: Click to set a waypoint", "area ring: the done objective left out")
+	pin:OnMouseLeave()
+	clean(h, "area ring")
 end
 
 -- F1, the map budget: a fresh install draws no mark with the tab closed; opted in, at most 9 rings and exactly the
@@ -1086,7 +1143,7 @@ do
 		end
 	end
 	equal(keys["turnin:843"], "carry", "combat: a quest finished mid-fight is ready to hand in")
-	equal(keys["objective:843"], nil, "combat: its objective step is gone")
+	equal(keys["area:843:0"], nil, "combat: its objective step is gone")
 	equal(cards[1].key, story.key, "combat: the story stays first")
 	equal(#cards[1].steps, #story.steps - 1, "combat: less only that step")
 	equal(h.counts.tickers, 0, "combat: no timer waits for the fight to end")
@@ -1517,7 +1574,7 @@ do
 	local ns = h.ns
 	h.flush()
 	-- A town's step stays while the town offers anything, so the gone step here is the objective's.
-	ns.Skip("objective:843", "Gann's Reclamation")
+	ns.Skip("area:843:0", "Gann's Reclamation")
 	h.flush()
 	local other = ns.Route().steps[1]
 	ns.Skip(other.key, other.title)
@@ -1529,7 +1586,7 @@ do
 	h.flush()
 	equal(#ns.Skipped(), 1, "skipped, pruned: the turned-in quest leaves")
 	equal(ns.Skipped()[1].key, other.key, "skipped, pruned: the other stays")
-	equal(ns.Prefs().skipped["objective:843"], nil, "skipped, pruned: and is no longer skipped")
+	equal(ns.Prefs().skipped["area:843:0"], nil, "skipped, pruned: and is no longer skipped")
 	clean(h, "skipped, pruned")
 end
 
@@ -1701,7 +1758,7 @@ do
 	end
 	local session = Load(false)
 	local saved = session.G.AdventureGuideForeverCharDB.last
-	equal(saved and saved.key, "hub:349", "resume: each rebuild saves step 1")
+	equal(saved and saved.key, "town:349", "resume: each rebuild saves step 1")
 	equal(Resumed(session), 0, "resume: nothing saved, nothing to resume")
 	local function Login(options)
 		options.charDB = { journey = "zone:1413", last = { key = saved.key, reason = "finishes a story" } }
@@ -1746,7 +1803,7 @@ do
 
 	local reload = Login({ initialLogin = false })
 	equal(Resumed(reload), 0, "resume: a /reload shows none")
-	saved.key = "hub:0"
+	saved.key = "town:0"
 	local stale = Login({})
 	equal(Resumed(stale), 0, "resume: a stale key shows none")
 	clean(reload, "resume: reload")
@@ -2655,7 +2712,7 @@ do
 		if case.text then
 			equal(h.spfRoute.stops[1].title, "Swart", label .. ": named for the trainer")
 		end
-		equal(h.ns.Route().steps[1].key, "hub:349", label .. ": the route is unchanged")
+		equal(h.ns.Route().steps[1].key, "town:349", label .. ": the route is unchanged")
 		-- A spell learned at the trainer shortens the line at once.
 		if case.tf and case.tf.spells == THREE then
 			case.tf.spells = { SPELL }
@@ -2726,7 +2783,7 @@ do
 	tf.spells = nil
 	h.fire("SPELLS_CHANGED")
 	h.flush()
-	equal(h.ns.Route().steps[1].kind, "hub", label .. ": learned, no stop")
+	equal(h.ns.Route().steps[1].kind, "town", label .. ": learned, no stop")
 	clean(h, label)
 end
 

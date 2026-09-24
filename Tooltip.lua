@@ -11,8 +11,8 @@ local journey
 ---@type table<integer, true>
 local npcs = {}
 
--- A town stop's quests stand where its spots are; a turn-in is handed to the quest's finish NPC. An objective or
--- dungeon step visits no NPC.
+-- A town's quests stand where its spots are; a turn-in is handed to the quest's finish NPC. An area or dungeon step
+-- visits no NPC.
 local function Gather()
 	local route = ns.Route()
 	journey, npcs = nil, {}

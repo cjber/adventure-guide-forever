@@ -994,7 +994,7 @@ function harness.load(options)
 					local objectives = {}
 					for index, objective in ipairs(entry.objectives or {}) do
 						objectives[index] = {
-							text = "",
+							text = objective.text or "",
 							type = objective.type,
 							finished = objective.done,
 							numFulfilled = objective.have,
@@ -1469,7 +1469,20 @@ function harness.load(options)
 		end,
 		SetScalingLimits = noop,
 		ApplyCurrentScale = noop,
+		SetIgnoreGlobalPinScale = function(self, ignore)
+			self.ignoresGlobalScale = ignore
+		end,
+		SetScaleStyle = function(self, style)
+			self.scaleStyle = style
+		end,
 	}
+	G.AM_PIN_SCALE_STYLE_WITH_TERRAIN = 3
+	-- The map's canvas: the 1000 x 700 frame SetPosition places pins on.
+	local canvas = NewRegion("Frame", nil, map)
+	canvas:SetSize(1000, 700)
+	function map:GetCanvas()
+		return canvas
+	end
 	G.ToggleWorldMap = function()
 		map:SetShown(not map:IsShown())
 	end

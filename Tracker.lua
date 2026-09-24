@@ -186,11 +186,11 @@ function ModuleMixin:LayoutContents()
 	local block = self:GetBlock(step.key)
 	block:SetHeader(step.title)
 	local line = 0
-	local town = step.kind == "hub" and #step.quests > 1
+	local town = step.kind == "town" and #step.quests > 1
 	-- A town's header is its name, so its counts come first. One quest's stop says where it is instead: "NPC, zone",
 	-- the place alone when it already names the zone, the zone alone when there is no place. A lone quest in a town
 	-- names its giver, not the town (design §2.5). No line repeats the header.
-	local place = (step.kind == "hub" and #step.quests == 1) and step.spots[step.quests[1]].name or step.place
+	local place = (step.kind == "town" and #step.quests == 1) and step.spots[step.quests[1]].name or step.place
 	if place and step.zone and not place:find(step.zone, 1, true) then
 		place = L.PLACE:format(place, step.zone)
 	end
@@ -201,7 +201,7 @@ function ModuleMixin:LayoutContents()
 	end
 	local resume = ns.Resume(step)
 	-- A lone hand-in, a turn-in or a town's, is titled "Turn in: …", which already says it is ready.
-	local handIn = step.kind == "turnin" or (step.kind == "hub" and #step.quests == 1 and #step.handins == 1)
+	local handIn = step.kind == "turnin" or (step.kind == "town" and #step.quests == 1 and #step.handins == 1)
 	-- Mid-line, a reason that is a sentence of its own ("Continues a story you started") loses its capital.
 	local reason = resume and L.RESUME:format((resume:gsub("^%u", string.lower))) or not handIn and step.reason
 	-- A town's reason is its counts unless something more is true there; then who to see takes the line.

@@ -181,6 +181,9 @@ ns.L = {
 	CLICK_WAYPOINT = "Click to set a waypoint",
 	STEP_NUMBERED = "%d. %s",
 	QUEST_LEVEL = "[%d] %s",
+	-- An area's tooltip: each open objective under its quest, in the client's words, else its count.
+	OBJECTIVE_LINE = "- %s",
+	OBJECTIVE_COUNT = "- %d/%d",
 	-- The guide's settings menu, then the addon's settings page.
 	MENU_QUESTS = "Quests",
 	MENU_DUNGEONS = "Dungeons",
@@ -472,15 +475,15 @@ function ns.Skipped()
 	return all
 end
 
--- The step's quests in the log: a town's hand-ins, or every quest of a turn-in or objectives (a group quest under
--- way is a "dungeon" step); a town's pickups never are.
+-- The step's quests in the log: a town's hand-ins, or every quest of a turn-in or an area (a group quest's is a
+-- "dungeon" step); a town's pickups never are.
 ---@param step AGFStep
 ---@return integer[]
 local function LogQuests(step)
-	if step.kind == "hub" then
+	if step.kind == "town" then
 		return step.handins or {}
 	end
-	return (step.kind == "turnin" or step.kind == "objective" or step.kind == "dungeon") and step.quests or {}
+	return (step.kind == "turnin" or step.kind == "area" or step.kind == "dungeon") and step.quests or {}
 end
 
 ---@param step AGFStep
