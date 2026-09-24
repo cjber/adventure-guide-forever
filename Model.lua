@@ -380,7 +380,7 @@ local function Choices(data, player, completed, log, index, prefs, ahead)
 		local quest = data.quests[id]
 		local group = quest.elite or quest.dungeon
 		if
-			(not prefs or (group and prefs.dungeons) or (not group and prefs.quests))
+			((group and prefs.dungeons) or (not group and prefs.quests))
 			and Eligible(data, player, completed, log, id, index.groups, target)
 		then
 			later[#later + 1] = id
