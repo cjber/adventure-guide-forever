@@ -20,6 +20,7 @@ State.lua
 Integrations.lua
 QuestieSource.lua
 Asides.lua
+PvP.lua
 Moments.lua
 Menu.lua
 Pins.lua

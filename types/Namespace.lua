@@ -99,7 +99,7 @@
 
 -- "hub" is a town's stop (its pickups and agreeing hand-ins), "turnin" a hand-in at the client's waypoint, and
 -- "objective" or "dungeon" (a group quest) the log's quests under way.
----@alias AGFStepKind "hub"|"turnin"|"objective"|"dungeon"|"trainer"
+---@alias AGFStepKind "hub"|"turnin"|"objective"|"dungeon"|"trainer"|"battlemaster"
 
 ---@class AGFStep
 ---@field key string stable identity for skips and the resume line, e.g. "hub:61" or "turnin:4581"
@@ -134,7 +134,7 @@
 ---@field title string NPC or object name
 ---@field quests integer[] quest IDs it offers the player now, ascending
 
----@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"|"calling"
+---@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"|"calling"|"battleground"
 
 -- A quest's place in its chain (Model.Story): the data's `next` links from the chain's head. Later members are IDs
 -- only, so no later chapter's title is ever drawn.
@@ -146,7 +146,7 @@
 -- One card in the guide (docs/design.md §2.2): only steps the player can take now.
 ---@class AGFJourney
 ---@field kind AGFJourneyKind
----@field key string stable identity for prefs.journey: "carry", "zone:<uiMapID>" (a zone's story or next-zone card alike), "dungeon:<Map.ID>" or "calling"
+---@field key string stable identity for prefs.journey: "carry", "zone:<uiMapID>" (a zone's story or next-zone card alike), "dungeon:<Map.ID>", "calling" or "battleground:<BattlemasterList ID>"
 ---@field title string e.g. "Finish what you carry" or "Westfall story"
 ---@field subline string e.g. "3 ready to hand in, 1 in progress"
 ---@field reason? string why this journey, when there is an honest answer
@@ -159,7 +159,7 @@
 ---@field group? integer how many of its quests are elite, dungeon or raid (the sum of its steps' `group`)
 
 ---@class AGFRoute
----@field journeys AGFJourney[] at most 3: carry, the zone's story, then the diversions (calling, dungeon, next zone) newest first
+---@field journeys AGFJourney[] at most 3: carry, the zone's story, then the diversions (calling, dungeon, battleground, next zone) newest first
 ---@field journey? string the key of the journey whose steps these are: the chosen one, else the first
 ---@field chosen boolean the player chose `journey`; false while the route falls back to the first card
 ---@field steps AGFStep[] that journey's steps, never more than MAX_STEPS
@@ -675,3 +675,41 @@
 ---@field QUESTIE_FIELD string format: the entity or field it lacks
 ---@field QUESTIE_ZONES string
 ---@field QUESTIE_FAILED string format: the error
+
+-- Stream 3a "PvP" (roadmap #12, #28, docs/design.md §2.15) and unspent talent points (#25).
+
+-- A battleground open to the player (State.Battlegrounds, from C_PvP.GetLevelUpBattlegrounds).
+---@class AGFBattleground
+---@field id integer its BattlemasterList ID, which AGFNpc.bg shares (2 Warsong Gulch, 3 Arathi Basin)
+---@field name string the client's name for it
+---@field level integer the level it opened at
+
+---@class AGFPlayer
+---@field battlegrounds? AGFBattleground[] open to the player, the newest first; the opt-in card's choices
+
+---@class AGFPrefs
+---@field battlegrounds? boolean the opt-in Battlegrounds card (the guide's cog), off by default
+---@field battled? integer the highest level this character has stood in a battleground at: the aside's acted on
+
+---@class AGFModel
+---@field Battlemaster fun(data: AGFData, player: AGFPlayer, bg: integer): AGFNpc?, integer? the nearest battlemaster of the player's side for battleground `bg`, and its creature entry; nil when the data places none or the player has no place
+
+---@class AGFState
+---@field Battlegrounds fun(): AGFBattleground[] open to the player, the newest first; empty without C_PvP.GetLevelUpBattlegrounds
+
+---@class AGFAside
+---@field renew? integer how often its provider found it news again (a talent point gained): a Skip for now holds while it is unchanged
+---@field texture? integer|string a client texture (a reward's icon) drawn in place of `icon`, which stays the fallback
+
+---@class AGFAsides
+---@field RefreshOn fun(event: string) ask the providers again on the event, when the client has it
+
+---@class AGFStrings
+---@field BATTLEGROUND_OPEN string format: a battleground's name; the aside, and the new card's tracker line
+---@field BATTLEGROUND_SUBLINE string the Battlegrounds card's subline
+---@field BATTLEMASTER_IN string format: the battlemaster's town; the step's title and the card's reason
+---@field BATTLEMASTER_QUEUE string format: the battleground's name; the battlemaster step's reason
+---@field MENU_BATTLEGROUNDS string the guide's cog: the opt-in Battlegrounds card
+---@field PVP_RANK_REWARD string format: the next rank with a reward, and the reward's description
+---@field TALENT_POINTS string format: how many talent points wait to be spent
+---@field TALENT_POINT string the same for one

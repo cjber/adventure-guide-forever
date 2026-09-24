@@ -911,25 +911,45 @@ local function Teaches(npc, player, level)
 		and npc.upto >= level
 end
 
--- The nearest trainer who teaches the player's spells to train (Teaches), by the route's own cost, so across an ocean
--- it runs through the side's docks; the lowest NPC ID on a tie. Nil when the data places none, or cannot measure from
--- the player (no place for them).
+-- The nearest NPC `fits` takes, by the route's own cost, so across an ocean it runs through the side's docks; the
+-- lowest NPC ID on a tie. Nil when the data places none, or cannot measure from the player (no place for them).
 ---@param player AGFPlayer
----@param level integer the highest level among the spells to train
----@return AGFNpc?
-function Model.Trainer(data, player, level)
+---@param fits fun(npc: AGFNpc): boolean
+---@return AGFNpc?, integer? npc its creature entry
+local function Nearest(data, player, fits)
 	local docks = Docks(data, player.side)
 	local origin = Position(data, player, docks)
 	local best, bestCost, bestID
 	for id, npc in pairs(data.npcs or {}) do
-		if Teaches(npc, player, level) then
+		if fits(npc) then
 			local cost = Cost(origin, Position(data, npc.place, docks))
 			if cost < UNKNOWN and (not best or cost < bestCost or (cost == bestCost and id < bestID)) then
 				best, bestCost, bestID = npc, cost, id
 			end
 		end
 	end
-	return best
+	return best, bestID
+end
+
+-- The nearest trainer who teaches the player's spells to train (Teaches).
+---@param player AGFPlayer
+---@param level integer the highest level among the spells to train
+---@return AGFNpc?
+function Model.Trainer(data, player, level)
+	return (Nearest(data, player, function(npc)
+		return Teaches(npc, player, level)
+	end))
+end
+
+-- Roadmap #12: the nearest battlemaster of the player's side for battleground `bg` (a BattlemasterList ID, which
+-- CMaNGOS's bg_template shares), by the route's cost; nil where the data places none (Darkspear Islands).
+---@param player AGFPlayer
+---@param bg integer
+---@return AGFNpc?, integer? npc its creature entry
+function Model.Battlemaster(data, player, bg)
+	return Nearest(data, player, function(npc)
+		return npc.bg == bg and HasBit(npc.side, player.side)
+	end) -- multi-value: the NPC and its entry
 end
 
 -- The chosen journey's trainer stops (roadmap #5): with spells to train, one per town among the trainers who teach
@@ -1579,9 +1599,70 @@ local function Newest(data, eligible, belongs)
 	return count, opened
 end
 
--- The diversions' order on a tie in newness (roadmap R4): the calling, then the dungeon the player asked for, then the
--- next zone.
-local DIVERSION_ORDER = { calling = 1, dungeon = 2, nextzone = 3 }
+-- The diversions' order on a tie in newness (roadmap R4): the calling, then the dungeon and the battleground the player
+-- asked for, then the next zone.
+local DIVERSION_ORDER = { calling = 1, dungeon = 2, battleground = 3, nextzone = 4 }
+
+-- Roadmap #12, opt-in: a battleground open to the player (player.battlegrounds, newest first) as a diversion whose card
+-- has one step, its nearest battlemaster: the chosen battleground while it is still open, else the newest one the data
+-- places a battlemaster for and the player is interested in. None where the data places none, so a card never points
+-- at coordinates the data lacks; none either while its step is skipped, which Skipped (n) then keeps.
+---@param prefs AGFPrefs
+---@param mapName? fun(map: integer): string?
+local function Battleground(data, player, prefs, mapName)
+	local L, dismissed, open = ns.L, prefs.notInterested or {}, {}
+	for _, bg in ipairs(player.battlegrounds or {}) do
+		local key = "battleground:" .. bg.id
+		if not dismissed[key] then
+			table.insert(open, key == prefs.journey and 1 or #open + 1, bg)
+		end
+	end
+	for _, bg in ipairs(open) do
+		local npc, id = Model.Battlemaster(data, player, bg.id)
+		if npc and id then
+			local key, place = "battlemaster:" .. id, npc.place
+			if prefs.skipped and prefs.skipped[key] then
+				if skippedSeen then
+					skippedSeen[key] = true
+				end
+				return nil
+			end
+			local reason = L.BATTLEMASTER_QUEUE:format(bg.name)
+			local step = {
+				kind = "battlemaster",
+				key = key,
+				hub = place.hub,
+				title = L.BATTLEMASTER_IN:format(Model.TownName(data, place, mapName)),
+				detail = reason,
+				reason = reason,
+				quests = {},
+				map = place.map,
+				x = place.x,
+				y = place.y,
+				place = place.name,
+			}
+			Locate(data, step, mapName)
+			local journey = {
+				kind = "battleground",
+				key = "battleground:" .. bg.id,
+				title = bg.name,
+				subline = L.BATTLEGROUND_SUBLINE,
+				reason = step.title,
+				map = step.map,
+				steps = { step },
+			}
+			return {
+				kind = "battleground",
+				key = journey.key,
+				opened = bg.level,
+				quests = 0,
+				build = function()
+					return journey
+				end,
+			}
+		end
+	end
+end
 
 ---@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
 ---@param instanceName? fun(id: integer): string? the client's name for an instance Map.ID; the data's otherwise
@@ -1709,6 +1790,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			return nextZone
 		end, NEXT_ZONE_PICKUPS)
 	end
+	diversions[#diversions + 1] = prefs.battlegrounds and Battleground(data, player, prefs, mapName) or nil
 	table.sort(diversions, function(a, b)
 		if a.opened ~= b.opened then
 			return a.opened > b.opened
@@ -1824,8 +1906,8 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 	local function Prune(step)
 		if skipped[step.key] then
 			return nil
-		elseif step.kind == "trainer" then
-			return step -- nothing is learned in a fight
+		elseif step.kind == "trainer" or step.kind == "battlemaster" then
+			return step -- nothing is learned, and no battleground opens, in a fight
 		end
 		local pickups, handins = Keep(step.pickups, Open), Keep(step.handins, Carried)
 		if #pickups + #handins == #step.quests then

@@ -25,6 +25,9 @@ It looks like it came with the game: a tab in the quest log beside Quests, cards
 - **Quest details**: clicking a quest from your log, in the guide or the tracker, opens Blizzard's own quest page. Nothing opens in combat.
 - **Dungeons when you ask**: turn on *Dungeons* in the guide's settings menu and a card offers the dungeon with the most quests you can take, routed to their quest givers. Outdoor elite quests stay on the zone cards, marked optional with the group badge. Raids are never suggested. Quests in your log always show, whatever the filters.
 - **Class trainer**: with Tweaks Forever loaded, "Visit your class trainer in Orgrimmar · 3 new spells" appears above the cards and in the tracker when you have spells to train. It names the town of the nearest trainer of your class and faction who teaches them, and clicking it routes there. A chosen journey that passes that town adds a "Train in Orgrimmar" stop. The line's red X skips it for the session. Right-click it for *Not interested*, which *Skipped* in the cog can undo. Hunter pet trainers and riding are not covered.
+- **Talent points**: "You have 1 talent point to spend" shows above the cards and in the tracker while points wait. Skipping it holds until you gain the next point.
+- **Battlegrounds**: when a battleground opens to you, a line says so ("Warsong Gulch is open to you") and clicking it routes to the nearest battlemaster of your side. It goes once you have played a battleground. Turn on *Battlegrounds* in the cog for a card that routes to the battlemaster.
+- **PvP rank**: with rank points, a line shows your next rank's reward with its icon, as the character pane does.
 - **Something new**: when a level or a new zone brings a journey you haven't been offered, the tracker says so once ("Duskwood is now for your level"); new spells at your trainer light up its line the same way. The Adventure tab and the addon compartment get Blizzard's alert pip, and the new card is marked. Opening the tab clears them; nothing opens by itself.
 - **Map pins and quest givers**, off by default: numbered route pins, and the game's "!" over everyone with a quest you can take now. Turn them on under *Show map pins* and *Show quest givers*.
 - **Skip for now** hides a step until your next `/reload`. Right-click a journey card for *Not interested*, which hides it on this character. *Skipped (n)*, under the steps and in the cog, brings either back.
@@ -40,7 +43,7 @@ Install it from CurseForge or Wago Addons, or download the zip from [Releases](h
 - `/agf` or `/adventureguide` opens the guide on the world map, as does the addon compartment on the minimap.
 - `/agf audit` compares the quest data with the game and says where it came from.
 - `/agf dump` saves the guide's layout for a bug report; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua`.
-- The cog on the tab holds *Quests*, *Dungeons*, the map pins, the tracker and anything skipped. The rest is under *Settings > AddOns > Adventure Guide*, including whether choosing a journey or clicking the tracker title starts the route.
+- The cog on the tab holds *Quests*, *Dungeons*, *Battlegrounds*, the map pins, the tracker and anything skipped. The rest is under *Settings > AddOns > Adventure Guide*, including whether choosing a journey or clicking the tracker title starts the route.
 
 ## Where the quests come from
 
