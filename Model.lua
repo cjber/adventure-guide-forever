@@ -1126,11 +1126,11 @@ local function DungeonJourney(data, player, completed, log, eligible, prefs, map
 	if not (prefs.dungeons and data.instances) then
 		return nil
 	end
-	local counts, best = {}, nil
+	local counts, best, dismissed = {}, nil, prefs.notInterested or {}
 	for _, id in ipairs(eligible) do
 		local quest = data.quests[id]
 		local instance = not quest.raid and quest.dungeon
-		if instance and data.instances[instance] then
+		if instance and data.instances[instance] and not dismissed["dungeon:" .. instance] then
 			counts[instance] = (counts[instance] or 0) + 1
 		end
 	end
@@ -1285,18 +1285,28 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	-- has a step, whatever would offer it now.
 	local chosen = prefs.journey or ""
 	local chosenZone, chosenDungeon = tonumber(chosen:match("^zone:(%d+)$")), tonumber(chosen:match("^dungeon:(%d+)$"))
+	-- A zone the player is not interested in (roadmap #17) is never a card, chosen or not: the next best takes its place.
+	local dismissed = prefs.notInterested or {}
+	local function Open(map)
+		return map ~= nil and not dismissed["zone:" .. map]
+	end
+	chosenZone = Open(chosenZone) and chosenZone or nil
 	local journeys = { Carry(data, player, completed, log, ready, prefs, mapName) }
 	-- The story: the zone the player stands in when it is among the three their level fits now or two levels on (the
 	-- next zone's, which is never the zone they are in), or is the chosen zone, so heading to a zone becomes its story
 	-- on arrival; otherwise, or when it has no step (a capital), the zone the level fits best.
-	local zone, tries, here = zones[1], { zones[1] }, chosenZone ~= nil and chosenZone == player.map
+	local best
+	for _, map in ipairs(zones) do
+		best = best or (Open(map) and map or nil)
+	end
+	local zone, tries, here = best, { best }, chosenZone ~= nil and chosenZone == player.map
 	for _, map in ipairs(zones) do
 		here = here or map == player.map
 	end
 	for _, map in ipairs(ahead or {}) do
 		here = here or map == player.map
 	end
-	if here and player.map ~= zones[1] then
+	if here and player.map ~= best and Open(player.map) then
 		table.insert(tries, 1, player.map)
 	end
 	for _, map in ipairs(tries) do
@@ -1314,7 +1324,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	-- and already has enough the player can take now; or the chosen zone, while it has a step.
 	local nextMap = chosenZone ~= zone and chosenZone or nil
 	for _, map in ipairs(not nextMap and ahead or {}) do
-		if map ~= zone and map ~= player.map then
+		if map ~= zone and map ~= player.map and Open(map) then
 			nextMap = #journeys < Model.MAX_JOURNEYS and map or nil
 			break
 		end
@@ -1462,9 +1472,11 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 		end
 		return copy
 	end
-	local journeys = { Carry(data, player, completed, log, Ready(data, log), prefs, mapName, true) }
+	local journeys, dismissed =
+		{ Carry(data, player, completed, log, Ready(data, log), prefs, mapName, true) }, prefs.notInterested or {}
 	for _, journey in ipairs(last.journeys) do
-		journeys[#journeys + 1] = journey.kind ~= "carry" and Retained(journey, Prune) or nil
+		journeys[#journeys + 1] = journey.kind ~= "carry" and not dismissed[journey.key] and Retained(journey, Prune)
+			or nil
 	end
 	-- A carry card the last build lacked pushes out the last card not chosen, as the full build would leave it out.
 	Cap(journeys, prefs.journey)

@@ -83,6 +83,9 @@ ns.L = {
 	SKIP = "Skip for now",
 	SKIPPED = "Skipped (%d)",
 	SHOW_AGAIN = "Show again: %s",
+	-- A journey card's right-click (roadmap #17): hidden on this character until Show again.
+	NOT_INTERESTED = "Not interested",
+	RIGHT_CLICK_NOT_INTERESTED = "Right-click if you're not interested",
 	CHOOSE_JOURNEY = "Choose another journey",
 	-- With no card chosen every card is whole and no steps show (docs/design.md §2.2); the chosen card toggles back.
 	CHOOSE_TO_SEE_STEPS = "Choose a journey to see its steps.",
@@ -196,6 +199,7 @@ ns.DEFAULTS = DEFAULTS
 local PREFS_DEFAULTS = {
 	quests = true,
 	dungeons = false,
+	notInterested = {},
 }
 
 ---@type table<string, any>?
@@ -235,6 +239,12 @@ local function LoadCharDB()
 	for key, value in pairs(PREFS_DEFAULTS) do
 		if key ~= "dungeons" and type(loaded[key]) ~= type(value) then
 			loaded[key] = type(value) == "table" and {} or value
+		end
+	end
+	-- Journeys marked "Not interested": key -> the title Show again names it by.
+	for key, title in pairs(loaded.notInterested) do
+		if type(key) ~= "string" or type(title) ~= "string" then
+			loaded.notInterested[key] = nil
 		end
 	end
 	-- The zone picked in the old "Where next?" cards: nothing offers that choice any more, so none is kept.
@@ -296,7 +306,7 @@ end
 
 ---@return AGFPrefs
 function ns.Prefs()
-	charDB = charDB or { quests = true, dungeons = false }
+	charDB = charDB or { quests = true, dungeons = false, notInterested = {} }
 	charDB.skipped = sessionSkipped
 	return charDB
 end
@@ -311,8 +321,23 @@ function ns.Skip(key, title)
 	ns.Invalidate()
 end
 
+-- "Not interested" (roadmap #17): the journey `key` is left out on this character until Show again, and a choice of it
+-- ends, as a click on its card would.
+---@param key string
+---@param title string
+function ns.NotInterested(key, title)
+	local prefs = ns.Prefs()
+	prefs.notInterested[key] = title
+	if prefs.journey == key then
+		ns.Choose(nil)
+	else
+		ns.Invalidate()
+	end
+end
+
 ---@param key string
 function ns.Unskip(key)
+	ns.Prefs().notInterested[key] = nil
 	sessionSkipped[key] = nil
 	for index, skipped in ipairs(skippedOrder) do
 		if skipped.key == key then
@@ -323,9 +348,27 @@ function ns.Unskip(key)
 	ns.Invalidate()
 end
 
+-- This session's skipped steps in the order they were skipped, then the journeys this character is not interested in,
+-- by title.
 ---@return AGFSkipped[]
 function ns.Skipped()
-	return skippedOrder
+	local all, journeys = {}, {}
+	for index, skipped in ipairs(skippedOrder) do
+		all[index] = skipped
+	end
+	for key, title in pairs(ns.Prefs().notInterested) do
+		journeys[#journeys + 1] = { key = key, title = title }
+	end
+	table.sort(journeys, function(a, b)
+		if a.title ~= b.title then
+			return a.title < b.title
+		end
+		return a.key < b.key
+	end)
+	for _, journey in ipairs(journeys) do
+		all[#all + 1] = journey
+	end
+	return all
 end
 
 -- The step's quests in the log: a town's hand-ins, or every quest of a turn-in or objectives (a group quest under

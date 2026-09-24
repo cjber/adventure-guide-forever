@@ -8,7 +8,8 @@ local L = ns.L
 local Menu = {}
 ns.Menu = Menu
 
--- "Show again: <title>" for each step skipped this session, in the order they were skipped.
+-- "Show again: <title>" for each step skipped this session, in the order they were skipped, then each journey this
+-- character is not interested in.
 ---@param description SharedMenuDescriptionProxy
 function Menu.Skipped(description)
 	for _, skipped in ipairs(ns.Skipped()) do
@@ -62,6 +63,20 @@ function Menu.Step(root, step)
 	if ns.OpenPanel then
 		root:CreateButton(L.CHOOSE_JOURNEY, ns.OpenPanel)
 	end
+end
+
+-- A journey card's right-click (roadmap #17): its title and "Not interested". What the player carries is theirs, so
+-- the carry card has no menu.
+---@param owner Region
+---@param journey AGFJourney
+function Menu.Journey(owner, journey)
+	MenuUtil.CreateContextMenu(owner, function(_, root)
+		root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_JOURNEY")
+		root:CreateTitle(journey.title)
+		root:CreateButton(L.NOT_INTERESTED, function()
+			ns.NotInterested(journey.key, journey.title)
+		end)
+	end)
 end
 
 ---@param owner Region

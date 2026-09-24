@@ -359,7 +359,14 @@ Skipped submenu on its own.
 +-----------------------------+
 ```
 
-Skips stay session-only (Core.lua:32-35). The menu has no auto-go.
+Step skips stay session-only. The menu has no auto-go.
+
+**Not interested (roadmap #17).** A journey card's right-click (not the carry card's: what the player carries is
+theirs) opens its title and "Not interested". That saves `charDB.notInterested[key] = title` for this character, so
+the card stays gone across sessions; the planner offers the next best zone or dungeon in its place, and a choice of it
+ends as a click on its card would. "Skipped (n)" (under the cards, in the step menu and in the cog) counts these after
+the session's step skips and offers each back with "Show again: <title>". The card's tooltip ends with "Right-click if
+you're not interested".
 
 ### 2.9 Tooltips
 
@@ -477,7 +484,7 @@ route. Skipping every step of a chosen journey ends it the same way, quietly.
 | Travel | `Fly to Sentinel Hill · 6 min` · `Boat to Auberdine · 2 min wait` · `Fly to Astranaar · new flight path` · `About 4 min away` · card: `6 min` · `15 min by boat` · `15 min by zeppelin` |
 | Why-not | `Requires level 14` · `Completed: The Forgotten Heirloom` · `Requires one of: A, B` · `Horde only` · `Warriors only` · `You chose X instead` · `The guide can't tell where this starts` · `You've done this` · `In your quest log` · `Repeatable quests aren't suggested` |
 | Tracker | `Where you left off: finishes a story` · `Next: The Ruins of Stardust` · `Story complete` |
-| Buttons, menu | `Go` (menus only) · `Stop` · `Show quest` · `Skip for now` · `Skipped (2)` · `Show again: <title>` · `Choose another journey` |
+| Buttons, menu | `Go` (menus only) · `Stop` · `Show quest` · `Skip for now` · `Not interested` · `Skipped (2)` · `Show again: <title>` · `Choose another journey` |
 | Instructions | `Click to travel with Shortest Path` · `Click to set a waypoint` · `Click to choose this journey` · `Replaces your current journey.` |
 | Empty | `Nothing nearby fits your level.` |
 

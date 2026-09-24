@@ -453,8 +453,8 @@
 ---@field Settling fun(): boolean a rebuild or step 1's travel line is due, whose frames take no card estimate
 ---@field PanelShown? fun(): boolean whether the guide is open, set once Blizzard_WorldMap has loaded
 ---@field Skip fun(key: string, title: string) hide a step for this session; the menu offers it back by its title
----@field Unskip fun(key: string)
----@field Skipped fun(): AGFSkipped[] this session's skipped steps, in the order they were skipped
+---@field Unskip fun(key: string) Show again: a skipped step or a journey not wanted
+---@field Skipped fun(): AGFSkipped[] this session's skipped steps in skip order, then the journeys not wanted, by title
 ---@field Resume fun(step: AGFStep): string? the reason saved last session, while the resume line stands for this step
 ---@field InLog fun(step: AGFStep): boolean the step is a quest in the player's log (a turn-in or its objectives)
 ---@field Menu AGFMenuModule
@@ -472,3 +472,11 @@
 ---@field REASON_GREY string format: how many of a zone card's pickups turn grey at the next level
 ---@field REASON_CHAIN_GIVER string format: the giver who begins the card's chain
 ---@field REASON_HANDS string format: the first stop's town, by its flight master's name
+---@field NOT_INTERESTED string a journey card's menu: hide it on this character
+---@field RIGHT_CLICK_NOT_INTERESTED string a journey card's tooltip: its right-click
+
+---@class AGFPrefs
+---@field notInterested table<string, string> journey keys this character is not interested in -> the title Show again names
+
+---@class AGFNamespace
+---@field NotInterested fun(key: string, title: string) hide a journey on this character until Show again; a choice of it ends

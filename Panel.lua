@@ -322,10 +322,18 @@ local function BuildJourneys(parent, below)
 		-- once the rebuild has its steps). The map turns before the invalidation, so its redraw reads the route as it
 		-- is and the one rebuild waits a frame. The chosen card is a toggle: clicking it again chooses none, every card
 		-- is whole again and the route it started stops (never anyone else's); while its route is paused, the click
-		-- resumes it instead.
-		card:SetScript("OnClick", function(self)
+		-- resumes it instead. Right-click offers "Not interested", except on what the player carries.
+		card:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+		card:SetScript("OnClick", function(self, mouseButton)
 			local journey = self.journey
 			if not journey then
+				return
+			end
+			if mouseButton == "RightButton" then
+				if journey.kind ~= "carry" then
+					GameTooltip_Hide()
+					ns.Menu.Journey(self, journey)
+				end
 				return
 			end
 			if self.state == "chosen" and ns.Paused() then
@@ -431,6 +439,11 @@ local function BuildSettingsMenu(_, menu)
 		return ns.Setting("showMapPins")
 	end)
 	Setting(ns.L.MENU_TRACKER, "showTracker")
+	-- Skipped steps and journeys not wanted (roadmap #17), each with Show again.
+	local skipped = #ns.Skipped()
+	if skipped > 0 then
+		ns.Menu.Skipped(menu:CreateButton(ns.L.SKIPPED:format(skipped)))
+	end
 	menu:CreateButton(ns.L.MENU_MORE_SETTINGS, function()
 		if ns.OpenSettings then
 			ns.OpenSettings()
@@ -568,6 +581,9 @@ function CardTooltip(card)
 	end
 	if (resumes or not chosen and starts) and ns.Integrations.ReplacesJourney() then
 		GameTooltip_AddInstructionLine(GameTooltip, L.REPLACES_JOURNEY)
+	end
+	if journey.kind ~= "carry" then
+		GameTooltip_AddInstructionLine(GameTooltip, L.RIGHT_CLICK_NOT_INTERESTED)
 	end
 	GameTooltip:Show()
 end

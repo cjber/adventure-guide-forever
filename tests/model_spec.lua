@@ -194,6 +194,24 @@ local later = Model.Plan(Ahead(5), player, {}, {}, prefs())
 equal(Kinds(later.journeys), "zone:1 zone:2", "the next zone after the story")
 equal(later.journeys[2].title, "Head to There", "named for its zone")
 equal(later.journeys[2].reason, "For level 20", "the level it fits under the name")
+-- "Not interested" (roadmap #17): a zone so marked is never a card, chosen or not, and the next best takes its place.
+local uninterested = prefs()
+uninterested.notInterested = { ["zone:1"] = "Here story" }
+equal(
+	Kinds(Model.Plan(Ahead(5), player, {}, {}, uninterested).journeys),
+	"zone:2",
+	"not interested: the next zone steps up"
+)
+uninterested.journey = "zone:1"
+equal(Kinds(Model.Plan(Ahead(5), player, {}, {}, uninterested).journeys), "zone:2", "not interested: even when chosen")
+uninterested.notInterested = { ["zone:2"] = "Head to There" }
+equal(Kinds(Model.Plan(Ahead(5), player, {}, {}, uninterested).journeys), "zone:1", "not interested: no next zone")
+local wasOffered = Model.Plan(Ahead(5), player, {}, {}, prefs())
+equal(
+	Kinds(Model.Refresh(Ahead(5), player, {}, {}, uninterested, wasOffered).journeys),
+	"zone:1",
+	"not interested: in combat"
+)
 local capped = { level = 18, maxLevel = 19, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
 equal(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys[2].reason, "For level 19", "never past the cap")
 capped.maxLevel = 18
