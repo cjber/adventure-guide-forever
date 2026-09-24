@@ -49,8 +49,8 @@ ns.L = {
 	SETTING_TITLE_ROUTE_TOOLTIP = "Clicking the current step's title in the objective tracker also sets off along the "
 		.. "route, with Shortest Path Forever when it's loaded and a map waypoint otherwise.",
 	SETTING_TRACK_ROUTE = "Clicking the tracker title tracks the route's quests",
-	SETTING_TRACK_ROUTE_TOOLTIP = "Every quest on the route that's in your log joins the objective tracker, in route "
-		.. "order, up to the tracker's limit.",
+	SETTING_TRACK_ROUTE_TOOLTIP = "Every quest on the route that's in your log joins the objective tracker, up to "
+		.. "the tracker's limit.",
 	SETTING_UNTRACK_OTHERS = "Stop tracking other quests",
 	SETTING_UNTRACK_OTHERS_TOOLTIP = "The same click stops tracking every quest that isn't on the route. Needs the "
 		.. "route's quests tracked as well.",
@@ -307,8 +307,9 @@ function ns.ShowQuest(step)
 	return true
 end
 
--- The route's quests in the log join the objective tracker in route order; the client refuses any past its watch
--- limit. With untrackOthers, every other tracked quest leaves first, which also makes room.
+-- The route's quests in the log join the objective tracker; the client refuses any past its watch limit, and sorts
+-- the watches itself (by distance, on each zone change), so no order is kept. With untrackOthers, every other
+-- tracked quest leaves first, which also makes room.
 function ns.TrackRouteQuests()
 	local onRoute, order = {}, {}
 	for _, step in ipairs(ns.Route().steps) do

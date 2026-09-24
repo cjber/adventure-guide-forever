@@ -132,7 +132,7 @@ do
 	equal(h.spf.NavigateRoute, 1, "the title starts the route")
 	equal(h.watched[1], 99, "the player's own tracked quest stays")
 	equal(RouteQuests(h), "845 843", "the route holds both log quests")
-	equal(table.concat(h.watched, " ", 2), RouteQuests(h), "the route's quests join it, in route order")
+	equal(table.concat(h.watched, " ", 2), RouteQuests(h), "the route's quests join it")
 	ClickTitle(h)
 	equal(table.concat(h.watched, " ", 2), RouteQuests(h), "a second click tracks nothing twice")
 	clean(h, "title click")
@@ -164,6 +164,9 @@ do
 	end
 	equal(byKey.untrackOthers.parent, "trackRouteQuests", "untrackOthers hangs under the tracking setting")
 	equal(byKey.untrackOthers.enabled(), false, "and is greyed while it is off")
+	-- The client re-sorts its watches by distance on every zone change (Blizzard_ObjectiveTracker.lua
+	-- SortQuestWatches), so the tooltip promises no order it cannot keep.
+	equal(byKey.trackRouteQuests.tooltip:find("order") ~= nil, false, "the tracking tooltip promises no order")
 	clean(h, "title click settings")
 end
 
