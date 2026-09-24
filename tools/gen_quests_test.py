@@ -592,10 +592,12 @@ class ObjectiveTest(unittest.TestCase):
     def test_unknown_objindex_values_dropped(self):
         indices = (-1, 0, 4, 9, 10, 11, 12, 13, 16)
         tables = {
-            "quest_poi": [{"questId": 1, "poiId": i, "objIndex": o, "mapId": 0} for i, o in enumerate(indices)],
+            "quest_poi": [
+                {"questId": 1, "poiId": i, "objIndex": o, "mapId": 0, "mapAreaId": 0} for i, o in enumerate(indices)
+            ],
             "quest_poi_points": [{"questId": 1, "poiId": i, "x": 5, "y": 5} for i in range(len(indices))],
         }
-        self.assertEqual([slot for slot, _, _ in quest_shapes(tables)[1]], [0, 4, EXPLORE])
+        self.assertEqual([slot for slot, _, _, _ in quest_shapes(tables)[1]], [0, 4, EXPLORE])
 
     def test_a_spawn_area_is_a_real_spawn(self):
         # Two camps 400 yd apart, and a spawn on the next map; the bigger camp first, at its middle spawn.
@@ -607,12 +609,26 @@ class ObjectiveTest(unittest.TestCase):
 
     def test_objective_areas(self):
         square = [(100, 100), (200, 100), (200, 200), (100, 200)]
-        shapes = [(0, 0, square)] * 5 + [(4, 0, [(x, y - 700) for x, y in square]), (7, 0, square)]
+        shapes = [(0, 0, square, 0)] * 5 + [(4, 0, [(x, y - 700) for x, y in square], 0), (7, 0, square, 0)]
         found = {0: [], 4: [], 5: self.spawns((800, 800)), 6: []}
-        areas = objective_areas({0: 10, 4: 1, 5: 2, 6: 1}, shapes, found, self.WORLD, {1429}, 1429)
+        areas = objective_areas({0: 10, 4: 1, 5: 2, 6: 1}, shapes, found, self.WORLD, {1429}, 1429, {})
         # Slot 0: its shape, at most AREAS times; slot 4: its shape on the next map, which it names; slot 5: its spawn;
         # slot 6 has neither; slot 7's shape is no objective of the quest's.
         self.assertEqual(areas, [[0, 850, 850, 71]] * AREAS + [[4, 550, 850, 71, 1436], [5, 200, 200, 0]])
+
+    def test_an_area_is_on_the_quests_zone_then_the_map_blizzard_names(self):
+        # 1430 spans both zones, so it is never the smallest map holding a point.
+        world = {0: [*self.WORLD[0], zone_map(1430, (0, -1000, -500, 1000, 1000, 500))]}
+        square = [(100, 100), (200, 100), (200, 200), (100, 200)]
+        shapes = [(0, 0, square, 30), (4, 0, [(x, y - 700) for x, y in square], 34)]
+        slots = {0: 1, 4: 1}
+        # Filed under a subzone with no map: the quest's zone still holds slot 0, whatever map its shape names.
+        self.assertEqual(
+            objective_areas(slots, shapes, {}, world, set(), 1429, {30: {1430}, 34: {1430}}),
+            [[0, 850, 850, 71], [4, 775, 850, 71, 1430]],
+        )
+        # A shape whose WorldMapArea is unknown goes on the smallest map that holds it.
+        self.assertEqual(objective_areas(slots, shapes, {}, world, set(), 1429, {})[1], [4, 550, 850, 71, 1436])
 
 
 class DataTest(unittest.TestCase):
