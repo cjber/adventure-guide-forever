@@ -324,11 +324,19 @@ local function NotifyGuidance()
 	end
 end
 
--- True while Shortest Path is walking one of our multi-stop routes; it draws the numbered stops itself then.
+-- True while Shortest Path holds one of our multi-stop routes, guiding it or not.
+---@param api? AGFSPFAPI
+---@return boolean
+local function Ours(api)
+	return api ~= nil and api.CurrentStop(OWNER) ~= nil
+end
+
+-- True while Shortest Path is walking one of our multi-stop routes; it draws the numbered stops itself then. With its
+-- "Guide me" off (Active false) the route is held, not guided: it draws nothing, so the rings come back.
 ---@return boolean
 function Integrations.Guiding()
 	local api = SPF()
-	return api ~= nil and api.CurrentStop(OWNER) ~= nil
+	return api ~= nil and Ours(api) and (type(api.Active) ~= "function" or api.Active() == true)
 end
 
 -- Go would replace a journey someone else started: the player's own, or another addon's (docs/design.md §2.9). Only
@@ -426,7 +434,7 @@ function Integrations.Navigate(step)
 	-- Shortest Path refuses every route in combat, which is no sign it cannot plan this one: a journey an earlier Go
 	-- started keeps guiding, and without one the waypoint takes the step as for any refusal.
 	if api and InCombatLockdown() then
-		if Integrations.Guiding() then
+		if Ours(api) then
 			return false
 		end
 		api = nil
@@ -480,8 +488,9 @@ end
 
 ---@return boolean
 function Integrations.Owns()
+	-- A held route is still ours to stop.
 	local owns = OwnsWaypoint()
-	return owns or Integrations.Guiding()
+	return owns or Ours(SPF())
 end
 
 -- Stop: ends only what Go started. Shortest Path's journey by our name, and the native waypoint only while it is ours.

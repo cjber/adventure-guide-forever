@@ -847,6 +847,24 @@ do
 	h.flush()
 	equal(stop:IsShown(), false, "stop, Shortest Path: hidden once CurrentStop is nil")
 	clean(h, "stop, Shortest Path")
+
+	-- Held, its "Guide me" off: the journey stays ours to stop, but nothing walks it, so the rings come back, and a
+	-- click in combat sets no waypoint over it.
+	h = Load("v1+", PINS_ON)
+	h.ns.StartRoute()
+	h.flush()
+	equal(h.ns.Integrations.Guiding(), true, "held: guiding before")
+	h.spfHeld = true
+	h.ns.Invalidate()
+	h.flush()
+	equal(h.ns.Integrations.Guiding(), false, "held: not guiding")
+	equal(h.ns.Integrations.Owns(), true, "held: still ours to stop")
+	equal(#h.ns.Integrations.Guided(), 0, "held: no stops it walks")
+	h.SetCombat(true)
+	equal(h.ns.Integrations.Navigate(h.ns.Route().steps[1]), false, "held, combat: Go waits")
+	equal(h.counts.SetUserWaypoint, 0, "held, combat: no waypoint over it")
+	h.SetCombat(false)
+	clean(h, "held")
 end
 
 -- The step menu (design §2.8) from a step row, and "Skipped (n)": hidden at 0, it counts the session's skips and

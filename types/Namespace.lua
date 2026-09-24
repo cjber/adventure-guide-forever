@@ -260,8 +260,8 @@
 ---@field OnGuidanceChange fun(callback: fun()) called after every Go that guides and every Stop
 ---@field ReplacesJourney fun(): boolean Go would replace a Shortest Path journey someone else started (needs Active)
 ---@field Cancel fun() Stop: cancels our Shortest Path journey, and clears the native waypoint only while it is ours
----@field Owns fun(): boolean Go's guidance is still running: our Shortest Path journey, or the waypoint Go set
----@field Guiding fun(): boolean Shortest Path is walking our multi-stop route and draws its own numbered stops
+---@field Owns fun(): boolean Go's guidance is still running: our Shortest Path journey (guided or held), or the waypoint Go set
+---@field Guiding fun(): boolean Shortest Path is walking our multi-stop route and draws its own numbered stops; held (its "Guide me" off) is not guiding
 ---@field Guided fun(): (AGFStep|AGFGiver)[] the stops it walks, while it guides; empty otherwise
 ---@field Stale fun(handed: AGFStep[], index: integer, steps: AGFStep[], far?: fun(a: AGFStep, b: AGFStep): boolean): boolean the guidance handed to Shortest Path no longer matches the journey's steps
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")
