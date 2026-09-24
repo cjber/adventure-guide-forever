@@ -1143,6 +1143,30 @@ function harness.load(options)
 	G.GameTooltip_Hide = function()
 		G.GameTooltip:Hide()
 	end
+	-- Unit tooltips: TooltipDataProcessor's post calls, run by h.HoverUnit on the unit's GUID (UnitGUID).
+	G.Enum = { TooltipDataType = { Unit = 2 } }
+	local postCalls, guids = {}, {}
+	G.TooltipDataProcessor = {
+		AddTooltipPostCall = function(kind, fn)
+			postCalls[kind] = postCalls[kind] or {}
+			table.insert(postCalls[kind], fn)
+		end,
+	}
+	G.UnitGUID = function(unit)
+		return guids[unit]
+	end
+	function G.GameTooltip:GetUnit()
+		return self.unitName, self.unit
+	end
+	-- The mouseover unit's tooltip, as the client builds it for `guid`; its lines land in h.tooltip.
+	function h.HoverUnit(guid)
+		G.GameTooltip:SetOwner(G.UIParent, "ANCHOR_CURSOR")
+		G.GameTooltip.unitName, G.GameTooltip.unit, guids.mouseover = "Unit", "mouseover", guid
+		for _, fn in ipairs(postCalls[G.Enum.TooltipDataType.Unit] or {}) do
+			h.call(fn, G.GameTooltip, { type = G.Enum.TooltipDataType.Unit, guid = guid })
+		end
+		G.GameTooltip:Show()
+	end
 	h.flashes = 0
 	G.UIFrameFlash = function()
 		h.flashes = h.flashes + 1

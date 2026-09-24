@@ -617,3 +617,10 @@
 ---@field CALLING_QUESTS_ONE string the same for one
 ---@field CALLING_TRAINER string format: the lead class quest's title, when the data proves its giver trains the player's class
 ---@field CALLING_TASK string format: the lead class quest's title, from any other giver
+-- Stream 2e "NPC tooltip line" (roadmap #19, Tooltip.lua, docs/design.md §2.9).
+
+---@class AGFPlace
+---@field npc? integer the creature entry of an NPC giver, the ID in its UnitGUID; nil for an object
+
+---@class AGFStrings
+---@field NPC_JOURNEY string format: the chosen journey's title, on a unit tooltip of an NPC its steps visit

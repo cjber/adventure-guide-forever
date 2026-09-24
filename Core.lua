@@ -192,6 +192,8 @@ ns.L = {
 	CALLING_QUESTS_ONE = "1 quest for your class",
 	CALLING_TRAINER = "Your class trainer has a task: %s",
 	CALLING_TASK = "A task for your class: %s",
+	-- A unit tooltip's line on an NPC the chosen journey visits: its title.
+	NPC_JOURNEY = "Adventure guide: %s",
 }
 local L = ns.L
 

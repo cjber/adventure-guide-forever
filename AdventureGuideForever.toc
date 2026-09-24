@@ -24,5 +24,6 @@ Pins.lua
 Panel.xml
 Panel.lua
 Tracker.lua
+Tooltip.lua
 Settings.lua
 Dump.lua

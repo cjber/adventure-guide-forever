@@ -516,6 +516,14 @@ def pick(spawn, zone_maps, home):
     return {"map": ui_map, "x": round(x, 4), "y": round(y, 4), "name": spawn["name"]}
 
 
+def quest_place(spawn, zone_maps, home):
+    """A quest's start or finish at `spawn`: `pick`'s place, plus `npc`, the creature entry, for an NPC (an object's
+    entry is no unit's, so it has none)."""
+    place = pick(spawn, zone_maps, home)
+    kind, entry = spawn["entry"]
+    return {**place, "npc": entry} if kind == "creature" else place
+
+
 def faction(mask):
     return 3 if mask == 0 else (1 if mask & 77 else 0) + (2 if mask & 178 else 0)
 
@@ -731,7 +739,7 @@ def generate(
         zone_maps = areas.get(row["ZoneOrSort"], set())
         for suffix, target in (("questrelation", "start"), ("involvedrelation", "finish")):
             candidates = [
-                (pick(spawn, zone_maps, home.get(spawn["entry"])), spawn["entry"])
+                (quest_place(spawn, zone_maps, home.get(spawn["entry"])), spawn["entry"])
                 for kind in ("creature", "gameobject")
                 for spawn in locations[kind, suffix].get(qid, ())
             ]
@@ -871,6 +879,7 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, gate
         "-- Item starters and spawns without zone-level coordinates have no start; no objective coordinates invented.",
         f"-- hub: the town a start or finish stands in, by single linkage at {LINK} yd, split again past {CAP} yd.",
         f"-- hubs: a town's name is its flight master's (TaxiNodes) within {NAME_REACH} yd of a giver; no other name.",
+        "-- npc: a creature giver's entry, the ID in its UnitGUID; an object giver has none.",
         "-- npcs: class, pet, riding and profession trainers, battlemasters and innkeepers (creature_template",
         "-- NpcFlags, TrainerType, npc_trainer, battlemaster_entry); rank: the highest SKILL_STEP spell taught of a",
         "-- SkillLine profession or secondary skill (SpellEffect); side: every side FactionTemplate.EnemyGroup is",
