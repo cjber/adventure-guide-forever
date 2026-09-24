@@ -847,12 +847,12 @@ for _, spf in ipairs({ false, "v1" }) do
 	local label = "tracker: " .. (spf or "no Shortest Path")
 	local h = Load(spf)
 	local steps = h.ns.Route().steps
-	local expected = {}
+	local expected = { "Crossroads, The Barrens" }
 	expected[#expected + 1] = spf and "About 6 min away" or nil
 	expected[#expected + 1] = "Next: " .. steps[2].title .. " (no dash)"
 	local lines, block = TrackerLines(h)
 	equal(block.header, steps[1].title, label .. ": step 1's title heads the block")
-	same(lines, expected, label .. ": a turn-in's header is its reason; travel, next")
+	same(lines, expected, label .. ": a turn-in's header is its reason; its town, travel, next")
 	clean(h, label)
 end
 -- A town is titled by its name, so step 1 of the story (Crossroads) shows only its counts.
@@ -894,7 +894,7 @@ do
 	end
 	local h = Login({})
 	equal(Resumed(h), 1, "resume: a login with a matching key shows the line")
-	equal(TrackerLines(h)[1], "Where you left off: finishes a story", "resume: in place of the reason")
+	equal(TrackerLines(h)[2], "Where you left off: finishes a story", "resume: in place of the reason, after the town")
 	local capital = harness.load({
 		charDB = { last = { key = saved.key, reason = "Continues a story you started" } },
 		completed = { 844 },
@@ -903,7 +903,7 @@ do
 		},
 	})
 	equal(
-		TrackerLines(capital)[1],
+		TrackerLines(capital)[2],
 		"Where you left off: continues a story you started",
 		"resume: sentence case mid-line"
 	)

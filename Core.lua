@@ -119,6 +119,7 @@ ns.L = {
 	PICK_UP = "Pick up quests: %s",
 	HUB_HAND_IN = "%d to hand in",
 	HUB_PICK_UP = "%d to pick up",
+	PLACE = "%s, %s",
 	NEAR_YOUR_LEVEL = "near your level",
 	-- The guide and the map.
 	SKIP_STEP = "Skip this step for now",

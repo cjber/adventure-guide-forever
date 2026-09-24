@@ -418,7 +418,6 @@ local function Step(kind, key, title, place, id, optional, reason)
 		map = place.map,
 		x = place.x,
 		y = place.y,
-		place = place.name,
 		optional = optional or nil,
 	}
 end
@@ -489,7 +488,13 @@ local function Describe(data, log, step)
 			group = group + ((quest and (quest.elite or quest.dungeon or quest.raid)) and 1 or 0)
 		end
 	end
+	local busiest = givers[1]
+	for _, name in ipairs(givers) do
+		busiest = counts[name] > counts[busiest] and name or busiest
+	end
+	local town = step.hub and data.hubs and data.hubs[step.hub]
 	step.quests, step.givers, step.group = quests, givers, group
+	step.place = town and town.name or busiest
 	if #quests == 1 then
 		local id, quest = quests[1], data.quests[quests[1]]
 		if #step.handins == 1 then
@@ -500,12 +505,7 @@ local function Describe(data, log, step)
 			step.reason = (quest.pre or quest.preAny) and L.CONTINUES_STORY or L.NEAR_YOUR_LEVEL
 		end
 	else
-		local busiest = givers[1]
-		for _, name in ipairs(givers) do
-			busiest = counts[name] > counts[busiest] and name or busiest
-		end
-		local town = step.hub and data.hubs and data.hubs[step.hub]
-		step.title = town and town.name or busiest
+		step.title = step.place
 		local parts = {}
 		parts[#parts + 1] = #step.handins > 0 and L.HUB_HAND_IN:format(#step.handins) or nil
 		parts[#parts + 1] = #step.pickups > 0 and L.HUB_PICK_UP:format(#step.pickups) or nil
@@ -669,6 +669,26 @@ local function Ready(data, log)
 		end
 	end
 	return ready
+end
+
+-- Where a step is, for its "NPC, zone" line: the zone is the client's name for its map, the data's otherwise. A turn-in
+-- names the data's finish NPC only while its point is within AGREE of that finish; a town named itself in Describe.
+---@param step AGFStep
+---@param mapName? fun(map: integer): string?
+local function Locate(data, step, mapName)
+	step.zone = (mapName and mapName(step.map)) or (data.maps and data.maps[step.map] and data.maps[step.map].name)
+	if step.kind == "turnin" then
+		local quest = data.quests[step.quests[1]]
+		local finish = quest and quest.finish
+		local here, there = Position(data, step), finish and Position(data, finish)
+		local agree = here
+			and there
+			and here.known
+			and there.known
+			and here.continent == there.continent
+			and Yards(here, there) <= AGREE
+		step.place = agree and finish.name or nil
+	end
 end
 
 -- A stop the player only hands in at: a turn-in, or a town with hand-ins and nothing to pick up.
@@ -889,6 +909,7 @@ local function Build(data, player, log, candidates, prefs, mapName, cheap, lead,
 			end
 			step.map, step.x, step.y = best.map, best.x, best.y
 		end
+		Locate(data, step, mapName)
 		from = Position(data, step, docks)
 	end
 	return steps
@@ -1229,6 +1250,7 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 		if not here then
 			local spot = copy.spots[copy.quests[1]]
 			copy.map, copy.x, copy.y = spot.map, spot.x, spot.y
+			Locate(data, copy, mapName)
 		end
 		return copy
 	end

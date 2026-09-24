@@ -115,7 +115,8 @@
 ---@field map integer
 ---@field x number
 ---@field y number
----@field place? string NPC/object or area name
+---@field place? string the town's name, else its busiest giver; a turn-in's NPC only where its waypoint agrees
+---@field zone? string the client's name for `map`, else the data's
 ---@field optional? boolean elite/group or outside the player's level band
 ---@field chapter? string the story card's chapter line, on the step that takes the chain up
 
@@ -328,6 +329,7 @@
 ---@field PICK_UP string format: place name
 ---@field HUB_HAND_IN string format: a town stop's hand-in count
 ---@field HUB_PICK_UP string format: a town stop's pickup count
+---@field PLACE string format: a step's place (NPC or town), its zone
 ---@field NEAR_YOUR_LEVEL string
 ---@field SKIP_STEP string
 ---@field OPTIONAL string

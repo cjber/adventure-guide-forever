@@ -437,6 +437,33 @@ equal(Has(carriedCard.steps, "turnin:12"), 1, "town: a waypoint 350 yd from the 
 equal(carriedCard.steps[1].key, "hub:5", "town: the carry card's agreeing hand-ins share the town's stop")
 equal(carriedCard.steps[1].detail, "2 to hand in", "town: and count as hand-ins")
 equal(carriedCard.subline, "3 ready to hand in", "town: the carry card counts every hand-in")
+-- Each step's place and zone, for the "NPC, zone" line: the town's name, else its busiest giver; a turn-in names the
+-- data's NPC only where its waypoint agrees with the data's finish; the zone is the client's map name, else the data's.
+equal(stop.place, "Lakeshire, Redridge", "place: a unnamedPlan town")
+equal(stop.zone, "Zone", "place: the data's map name without the client's")
+local far
+for _, step in ipairs(carriedCard.steps) do
+	far = step.key == "turnin:12" and step or far
+end
+equal(far and far.place, nil, "place: no NPC for a waypoint away from the data's finish")
+local unnamed = Town()
+unnamed.hubs = nil
+unnamed.quests[13] = quest(0.9, 0.9)
+unnamed.quests[13].finish = { map = 1, x = 0.7, y = 0.5, name = "Verner" }
+local ledger = Carried()
+ledger[13] = { id = 13, title = "Thirteen", complete = true, level = 18, map = 1, x = 0.7, y = 0.55 }
+local client = function(map)
+	return map == 1 and "Les Carmines" or nil
+end
+local unnamedPlan = Model.Plan(unnamed, visitor, {}, ledger, townPrefs, client)
+equal(unnamedPlan.steps[1].place, "Marris", "place: an unnamed town's busiest giver")
+equal(unnamedPlan.steps[1].title, "Marris", "place: who titles the town")
+equal(unnamedPlan.steps[1].zone, "Les Carmines", "place: the client's map name first")
+local agreed
+for _, step in ipairs(unnamedPlan.journeys[1].steps) do
+	agreed = step.key == "turnin:13" and step or agreed
+end
+equal(agreed and agreed.place, "Verner", "place: a turn-in 50 yd from the data's finish names its NPC")
 -- In combat a pickup taken and a quest handed in leave the town, which stays while it holds any.
 local fight = Carried()
 local takenHere = { id = 1, title = "Quest", complete = false, level = 18 }
