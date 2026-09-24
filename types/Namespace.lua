@@ -127,6 +127,13 @@
 
 ---@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"
 
+-- A quest's place in its chain (Model.Story): the data's `next` links from the chain's head. Later members are IDs
+-- only, so no later chapter's title is ever drawn.
+---@class AGFStory
+---@field chapter integer this quest's place in the chain, from 1
+---@field total? integer the chain's length, only when the data proves where it ends
+---@field members integer[] the chain's quest IDs in order, the head first
+
 -- One card in the guide (docs/design.md §2.2): only steps the player can take now.
 ---@class AGFJourney
 ---@field kind AGFJourneyKind
@@ -149,6 +156,7 @@
 ---@field IsGray fun(questLevel: integer, playerLevel: integer): boolean
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
+---@field Story fun(data: AGFData, questID: integer): AGFStory? the chain the quest belongs to; nil when it is in none, or the way back forks
 ---@field Zones fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>): AGFZoneChoice[]
 ---@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: fun(map: integer): string?): AGFJourney[], AGFZoneChoice[], integer?
 ---@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: fun(map: integer): string?): AGFRoute

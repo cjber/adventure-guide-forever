@@ -85,6 +85,67 @@ local function Index(data)
 	return index
 end
 
+-- Stories (docs/design.md §2.3): the chain a quest belongs to, from the data's `next` links, which nothing else reads.
+-- `prev[id]` is the one quest whose `next` is id, or false when several lead into it. Memoized like Index.
+---@class AGFChains
+---@field prev table<integer, integer|false>
+---@field stories table<integer, AGFStory|false>
+---@type table<AGFData, AGFChains>
+local chains = setmetatable({}, { __mode = "k" })
+
+-- Walks back to the chain's head, then forward along `next`. No story when the way back forks (which head's
+-- chapter count would it be?) or loops, or when the chain is one quest. The total is shown only when the data proves
+-- it: every member has at most one `pre` and no `preAny`, and the walk ends on a quest in the data with no `next`.
+---@return AGFStory?
+local function Walk(data, prev, questID)
+	local head, seen = questID, { [questID] = true }
+	while prev[head] ~= nil do
+		local before = prev[head]
+		if not before or seen[before] then
+			return nil
+		end
+		head, seen[before] = before, true
+	end
+	local members, proven, chapter, id = {}, true, nil, head
+	seen = {}
+	while id do
+		local quest = data.quests[id]
+		if not quest or seen[id] then
+			proven = false -- a `next` that dangles or loops: the end is unknown
+			break
+		end
+		seen[id], members[#members + 1] = true, id
+		chapter = id == questID and #members or chapter
+		proven = proven and not quest.preAny and #(quest.pre or {}) <= 1
+		id = quest.next
+	end
+	if #members < 2 or not chapter then
+		return nil
+	end
+	return { chapter = chapter, total = proven and #members or nil, members = members }
+end
+
+---@return AGFStory?
+function Model.Story(data, questID)
+	local memo = chains[data]
+	if not memo then
+		memo = { prev = {}, stories = {} }
+		for _, id in ipairs(Index(data).ids) do
+			local nextID = data.quests[id].next
+			if nextID then
+				memo.prev[nextID] = memo.prev[nextID] == nil and id or false
+			end
+		end
+		chains[data] = memo
+	end
+	local story = memo.stories[questID]
+	if story == nil then
+		story = data.quests[questID] and Walk(data, memo.prev, questID) or false
+		memo.stories[questID] = story
+	end
+	return story or nil
+end
+
 -- `level` stands in for the player's own (the next-zone card asks what opens two levels on).
 local function Eligible(data, player, completed, log, id, groups, level)
 	local quest = data.quests[id]

@@ -309,6 +309,31 @@ local near = { quests = { [1] = quest(0.9), [2] = quest(0.4, 0.5, 8) }, zones = 
 near.quests[2].zone = 1
 equal(Model.Plan(near, player, {}, {}, prefs()).steps[1].map, 1, "the player's own map first")
 
+-- Stories (F4): a chain from `next`, with a total only when the data proves where it ends.
+local tale = { quests = {}, zones = data.zones }
+for id = 1, 10 do
+	tale.quests[id] = quest()
+end
+tale.quests[1].next, tale.quests[2].next = 2, 3 -- 1 > 2 > 3: proven
+tale.quests[4].next, tale.quests[5].next = 5, 99 -- 4 > 5 > (missing)
+tale.quests[6].next, tale.quests[7].next, tale.quests[8].next = 8, 8, 9 -- 6 and 7 both lead into 8 > 9
+tale.quests[2].pre = { 1 }
+local story = Model.Story(tale, 2)
+equal(story and story.chapter, 2, "story: the chapter")
+equal(story and story.total, 3, "story: a proven total")
+equal(story and table.concat(story.members, " "), "1 2 3", "story: members from the head")
+equal(Model.Story(tale, 2), story, "story: memoised")
+equal(Model.Story(tale, 5).total, nil, "story: a dangling next proves no end")
+equal(Model.Story(tale, 5).chapter, 2, "story: but the chapter stands")
+equal(Model.Story(tale, 8), nil, "story: no chapter where the way back forks")
+equal(Model.Story(tale, 9), nil, "story: nor after it")
+equal(Model.Story(tale, 6).total, 3, "story: each head walks its own way through")
+equal(Model.Story(tale, 10), nil, "story: a lone quest is no story")
+equal(Model.Story(tale, 99), nil, "story: nor a quest the data lacks")
+tale.quests[3].preAny = { 1, 4 }
+tale = { quests = tale.quests, zones = tale.zones } -- a new data table: the memo is per data
+equal(Model.Story(tale, 1).total, nil, "story: a preAny member proves nothing")
+
 assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
 local count = 0
 for id, q in pairs(ns.Data.quests) do
