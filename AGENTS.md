@@ -12,9 +12,11 @@ ruff format --check tools && ruff check tools
 luacheck .
 tools/typecheck.sh
 for s in tests/*_spec.lua; do luajit "$s" || exit 1; done
+SIFT='sift[treesitter] @ git+https://github.com/agent-labs-dev/sift@5f6949e653d009056e9ce12554f9248be6e03c80'
+uvx --from "$SIFT" sift check && uvx --from "$SIFT" sift agents check   # local only: sift is private
 ```
 
-The same gate CI runs, plus actionlint, zizmor and gitleaks on the workflows and history.
+The same gate CI runs, except sift until its public release, plus actionlint, zizmor and gitleaks on the workflows and history.
 
 ## Layout
 
