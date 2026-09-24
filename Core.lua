@@ -169,6 +169,8 @@ ns.L = {
 	-- Asides (docs/design.md §2.11): each one's menu turns it down for this character; the cog brings it back.
 	NOT_INTERESTED = "Not interested",
 	NOT_INTERESTED_COUNT = "Not interested (%d)",
+	-- The tracker's one line while no journey is chosen: a story's title, then its reason or chapter.
+	STORY_HOOK = "%s · %s",
 }
 local L = ns.L
 

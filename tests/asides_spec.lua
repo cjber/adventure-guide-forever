@@ -1,6 +1,6 @@
 -- Run from the repository root: luajit tests/asides_spec.lua
 -- The asides channel (Asides.lua, docs/design.md §2.11) through tests/harness.lua: providers, one aside per surface,
--- Skip, Not interested and Go.
+-- Skip, Not interested, Go, and the tracker's one line while no journey is chosen.
 local harness = dofile("tests/harness.lua")
 local checks = 0
 
@@ -200,6 +200,37 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(starts(), before + 2, label .. ": so does the tracker's")
 	clean(h, label)
+end
+
+-- No journey chosen (design §2.5): the tracker's one line is the aside, else the top story's hook; no step shows.
+do
+	local h = Load(false, {})
+	local provider = Provider(h, A)
+	Settle(h)
+	equal(h.ns.Route().chosen, false, "ambient: none chosen")
+	same(h.tracker.layoutOrder, { "aside" }, "ambient: the aside alone")
+	provider.aside = nil
+	Settle(h)
+	same(h.tracker.layoutOrder, { "hook" }, "ambient: else the hook")
+	local story
+	for _, journey in ipairs(h.ns.Route().journeys) do
+		story = story or (journey.kind == "story" and journey)
+	end
+	equal(
+		h.tracker.liveBlocks.hook.header,
+		story.title .. " · " .. (story.reason or story.subline),
+		"ambient: its hook"
+	)
+	-- Its menu is the tracker's, with no step.
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks.hook, "RightButton")
+	equal(h.MenuLines()[1], "title: " .. h.ns.TITLE, "ambient: the tracker's menu")
+	h.ns.Choose(story.key)
+	h.flush()
+	same(h.tracker.layoutOrder, { h.ns.Route().steps[1].key }, "ambient: a choice brings the step")
+	h.ns.Choose(nil)
+	h.flush()
+	same(h.tracker.layoutOrder, { "hook" }, "ambient: none again, the hook again")
+	clean(h, "ambient")
 end
 
 print(("asides_spec: %d checks passed"):format(checks))

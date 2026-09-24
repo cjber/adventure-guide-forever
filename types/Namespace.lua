@@ -494,3 +494,4 @@
 ---@class AGFStrings
 ---@field NOT_INTERESTED string an aside's menu entry: hide it for this character
 ---@field NOT_INTERESTED_COUNT string format: the cog's submenu of turned-down asides, by count
+---@field STORY_HOOK string format: the tracker's one line with no journey chosen: a story's title, its reason or subline
