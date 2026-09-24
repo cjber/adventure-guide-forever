@@ -388,7 +388,53 @@ which counts towns, not steps (§1).
 When `SPF.Active()` exists and reports another journey running, every way to start the route warns with "Replaces
 your current journey.": a card or row another click would choose (while choosing starts the route), the menus' Go
 and the tracker title. The chosen card's tooltip, while AGF's route runs, reads "Click again to stop the route and
-see every journey"
+see every journey"; while it is paused (§2.10), "Click to resume the route", with the warning when another journey
+runs.
+
+### 2.10 A journey's lifecycle
+
+A **choice** (`prefs.journey`, one card) is kept apart from **guidance** (`prefs.guided`, the key of the chosen
+journey whose route AGF started). Choosing, starting and ending all live in Core (`ns.Choose`, `ns.StartRoute`), so
+the cards, the tracker title, the menus and the map's rings behave the same, with the guide open or closed.
+
+Keys: `carry`, `zone:<map>` for a zone's story and its next-zone card alike (so heading to a zone becomes its story
+on arrival), and `dungeon:<instance>`. `LoadCharDB` migrates the old `story:` and `nextzone:` keys once.
+
+Invariants:
+
+1. **Offer rules only gate new choices.** A chosen journey is built while it has a step, whatever would offer it
+   now, and keeps its slot when a new card pushes one out.
+2. **The story is the zone you stand in** when it fits (top 3 now, or two levels on), or when it is the chosen zone.
+3. **Only a chosen journey is guided.** The tracker title chooses the journey it follows before starting it.
+4. **Guidance follows the journey.** On each rebuild and on the frame after Shortest Path's super-tracking events,
+   `Integrations.Stale` sends the route again, once, when a stop it has yet to reach left the steps, step 1 is neither
+   the stop it heads for nor the one just reached, or step 1's point moved more than 100 yd (the town linkage).
+   Never in combat, on a taxi or off the map. Without Shortest Path the waypoint moves to step 1 instead, quietly.
+5. **Nothing starts on its own,** except the restore after a `/reload` or login (once, on the first full build out
+   of combat, never over someone else's journey) and the extension of a route that arrived to steps it never had.
+6. **Losing something is never silent.** A turn-in that ends the chosen journey glows "Journey complete" in the
+   tracker; a route that stopped says "Route paused" in the footer.
+7. **Endings are judged on full builds only,** out of combat, once the completed quests have loaded.
+
+Guidance states:
+
+| State | Test | Card click | Footer |
+|---|---|---|---|
+| Idle | nothing of ours | chooses | |
+| Pending | a start waits for combat | clears the choice | "The route starts when combat ends" |
+| Guiding | `CurrentStop` and `Active()` | stops it and clears the choice | Stop |
+| Held | `CurrentStop`, `Active()` false ("Guide me" off) | stops it and clears the choice; the rings come back | Stop |
+| Paused | chosen, `guided` (or cleared or replaced), no route | resumes it (so does the tracker title) | "Route paused. Click the journey to resume." |
+| Arrived | ended at its last stop | clears the choice | |
+
+An end is classified by Shortest Path's `API.Ended(owner)` when present ("arrived", "cleared", "replaced",
+"cancelled"). Without it: another journey running means replaced, standing within 100 yd of the last stop means
+arrived, and anything else means cleared. Arrived keeps `guided`; cleared and replaced forget it, so nothing sends
+the route again until the card resumes it.
+
+A chosen journey the full build no longer has ends: its route is cancelled and the choice cleared, so the cards are
+whole again. A Quests or Dungeons filter keeps the key (the player's own toggle can bring it back) but stops the
+route. Skipping every step of a chosen journey ends it the same way, quietly.
 
 ## 3. Copy style sheet
 
@@ -627,6 +673,8 @@ Nothing below has been validated in game yet.
     Tweaks Forever, nothing changes.
 11. Batch F (plan §7.10): Lakeshire is one stop; a stop ring draws over a super-tracked "?"; the cards show minutes
     and the hub line; the footer's Stop goes as soon as Shortest Path ends the journey.
+12. Batch G (plan §8.2): a chosen journey lasts through travel, turn-ins and `/reload`, and a paused route resumes
+    from its card or the tracker title.
 
 ## 9. Open questions that need client probes
 

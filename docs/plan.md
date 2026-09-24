@@ -788,6 +788,59 @@ The public API does not change, so `contract_spec`'s `SPF_SHA` moves only at the
 | 30 | A single-giver step in the tracker | The place line reads "NPC, zone" in the client's language for the zone | SHOT tracker |
 | 31 | Carry a quest one level from grey and one red quest | The grey-risk quest's stop comes earlier. The red one is optional and dimmed. The stock tracker's order (Tweaks Forever "Nearest quests first") is untouched | SHOT panel + tracker |
 
+## 8. Batch G: journeys that last
+
+The bug: choosing "Head to Redridge Mountains" and travelling there dropped the card to "none chosen", and the
+Darkshore story still showed. The cause was structural: the choice was only as stable as the offer rules, and
+guidance was fire-and-forget. Design §2.10 is the model. The user overrode the footer Go: the chosen card and the
+tracker title resume a paused route instead.
+
+### 8.1 Commits (AGF `cb/journeys`)
+
+1. `fix(settings): rows register through the secure delegate`
+2. `refactor(model): one zone:<map> key for a zone's story or next-zone card`
+3. `fix(model): a chosen journey stays while it has steps`
+4. `feat(model): the story is the zone you stand in when it fits`
+5. `refactor(core): choosing and starting a journey live in Core`
+6. `feat(tracker): the title click chooses the journey it starts`
+7. `feat(integrations): guidance follows the chosen journey`
+8. `fix(integrations): a held route is ours but not guided`
+9. `feat(core): a chosen journey that runs out ends cleanly`
+10. `feat(tracker): "Journey complete" after a turn-in ends the chosen journey`
+11. `feat(core): our route comes back after a /reload or login`
+12. `feat(integrations): tell an arrived route from a cleared or replaced one`
+13. `feat(panel): the chosen card resumes a paused route`
+14. `feat(integrations): the native waypoint follows step 1`
+15. `docs: batch G, journeys that last`
+16. `test(contract): Shortest Path's Ended, at ee2346b`
+
+Deferred (could): the dungeon card holding its instance's log quests (C11), a zone journey's objectives (C14b),
+hysteresis on the story zone (C2), a tracker tooltip naming the journey it follows (C33).
+
+Open probes: P1 (whether every end of our route fires `SUPER_TRACKING_CHANGED` or `USER_WAYPOINT_UPDATED` in time;
+the next rebuild is the fallback), P3 (`NavigateRoute` at the first full build after a `/reload`), P4 (the native
+waypoint on arrival, per character), P5 (the player's map at sea). P2 (telling an end apart) is answered by
+Shortest Path's `API.Ended`.
+
+### 8.2 `/reload` checks
+
+| # | Action | What to see |
+|---|---|---|
+| 32 | Choose "Head to Redridge Mountains" in Elwynn, then travel into Redridge | The card becomes "Redridge Mountains story", still lit. Shortest Path keeps walking to Lakeshire |
+| 33 | In Redridge at a fitting level, open the guide | The story is Redridge, not another zone |
+| 34 | With a next zone chosen, pick up a quest elsewhere | The carry card appears, and the chosen card stays |
+| 35 | Take every quest at a town without walking up to the stop's giver | Shortest Path moves on to the next stop within a rebuild |
+| 36 | Choose a card, `/reload`, then log out and back in | The route runs again both times. After Stop and a `/reload`, it does not (P3) |
+| 37 | Clear the journey in Shortest Path's tracker | The footer reads "Route paused. Click the journey to resume." at once (P1). The card stays lit, and its tooltip says "Click to resume the route". A click on it, or on the tracker title, resumes the route |
+| 38 | Start your own Shortest Path journey over ours, then hover the chosen card | "Click to resume the route" and "Replaces your current journey." |
+| 39 | Turn off "Guide me" in Shortest Path | AGF's rings return, Stop still shows, and there is no "Route paused" |
+| 40 | Hand in the last carried quest with carry chosen | "Journey complete" glows once, with no stage-end sound, and the cards are whole again. A click on it opens the guide |
+| 41 | Hearth away mid-route, and take a flight back | No re-send in the air. One re-send on landing if step 1 changed |
+| 42 | Without Shortest Path, finish step 1 | The waypoint moves to the new step 1 (P4) |
+| 43 | Die and run back across a zone line | The choice and the route are unchanged |
+| 44 | Turn Dungeons off with the dungeon card chosen and guided | The route stops. Turning Dungeons back on brings the card back, chosen |
+| 45 | Open Options, search "Adventure" and toggle a setting in combat | No "blocked" or taint message (the settings rows) |
+
 ## Review dispositions
 
 Every blocker and major in `plan-review.md` is applied above. Minor findings are applied except as noted:
