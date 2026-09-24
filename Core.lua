@@ -115,10 +115,14 @@ ns.L = {
 	NOT_INTERESTED = "Not interested",
 	RIGHT_CLICK_NOT_INTERESTED = "Right-click if you're not interested",
 	CHOOSE_JOURNEY = "Choose another journey",
-	-- With no card chosen every card is whole and no steps show (docs/design.md §2.2); the chosen card toggles back.
-	CHOOSE_TO_SEE_STEPS = "Choose a journey to see its steps.",
-	SHOW_EVERY_JOURNEY = "Click again to see every journey",
-	STOP_AND_SHOW_EVERY_JOURNEY = "Click again to stop the route and see every journey",
+	-- A step's quest ruled out on this character (docs/design.md §2.18): it stays in the log, off every route.
+	NOT_THIS_QUEST = "Not this quest",
+	-- A quest the route leaves out joins it with a shift-click, in the search or on the map, and leaves the same way.
+	SHIFT_ADD = "Shift-click to add it to your route",
+	SHIFT_REMOVE = "Shift-click to take it off your route",
+	-- With no card chosen the guide draws the first (docs/design.md §2.2); the chosen card toggles back to that.
+	CLEAR_CHOICE = "Click again to let the guide choose",
+	STOP_AND_CLEAR_CHOICE = "Click again to stop the route and let the guide choose",
 	-- The chosen journey's route stopped (cleared, replaced or refused): its card and the tracker title resume it.
 	CLICK_TO_RESUME = "Click to resume the route",
 	ROUTE_PAUSED = "Route paused. Click the journey to resume.",
@@ -209,8 +213,6 @@ ns.L = {
 	-- Honest coverage (docs/design.md §2.1): the "!" over a giver marks the quests the guide can't list; Forever
 	-- draws no givers on the map (§9 probe `questoffer`).
 	UNLISTED = 'This land has stories the guide doesn\'t know yet; look for the "!" over quest givers.',
-	-- The tracker's one line while no journey is chosen: a story's title, then its reason or chapter.
-	STORY_HOOK = "%s · %s",
 	-- Stream 2b "Trainers" (roadmap #5): the trainer aside names the nearest trainer's town when the data places one,
 	-- and a chosen journey's route may stop there.
 	TRAINER_IN = "Visit your class trainer in %s",

@@ -70,7 +70,8 @@ do
 	equal(#h.errors, 0, "log: errors\n" .. table.concat(h.errors, "\n"))
 end
 
--- The zone's story: its pickups' givers, in towns beyond the first; choosing none takes the line away.
+-- The zone's story: its pickups' givers, in towns beyond the first; choosing none keeps the line, as the guide draws
+-- the first card on its own.
 do
 	local h = Load({ journey = "zone:1413" })
 	local line = { "normal: Adventure guide: The Barrens story" }
@@ -80,7 +81,7 @@ do
 	h.ns.Choose(nil)
 	h.flush()
 	equal(h.ns.Route().chosen, false, "none chosen")
-	same(Lines(h, Creature(THORK)), {}, "none chosen: no line")
+	same(Lines(h, Creature(THORK)), line, "none chosen: the first card's line")
 	equal(#h.errors, 0, "story: errors\n" .. table.concat(h.errors, "\n"))
 end
 
@@ -96,11 +97,11 @@ do
 	equal(#h.errors, 0, "turn-in: errors\n" .. table.concat(h.errors, "\n"))
 end
 
--- No journey chosen on login: no NPC says anything.
+-- No journey chosen on login: the first card's NPCs say so all the same.
 do
 	local h = Load(nil)
 	equal(h.ns.Route().chosen, false, "login: none chosen")
-	same(Lines(h, Creature(SERGRA)), {}, "login: no line")
+	same(Lines(h, Creature(SERGRA)), { "normal: Adventure guide: The Barrens story" }, "login: the first card's")
 	equal(#h.errors, 0, "login: errors\n" .. table.concat(h.errors, "\n"))
 end
 

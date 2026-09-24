@@ -119,7 +119,7 @@
 ---@class AGFPrefs
 ---@field quests boolean
 ---@field dungeons boolean
----@field journey? string key of the journey card the player chose; nil (or gone) = none chosen, every card whole
+---@field journey? string key of the journey card the player chose; nil (or gone) = none chosen, the first card drawn
 ---@field skipped table<string, boolean> step keys skipped this session
 ---@field last? {key: string, reason: string} step 1 at the last rebuild, for the next login's resume line
 ---@field waypoint? {map: integer, x: number, y: number} the native waypoint the last Go set, while it may still be ours
@@ -377,9 +377,8 @@
 ---@field SKIPPED string format: how many steps are skipped this session
 ---@field SHOW_AGAIN string format: a skipped step's title
 ---@field CHOOSE_JOURNEY string opens the guide
----@field CHOOSE_TO_SEE_STEPS string under the cards while none is chosen
----@field SHOW_EVERY_JOURNEY string the chosen card's tooltip: clicking it again chooses none
----@field STOP_AND_SHOW_EVERY_JOURNEY string the same while the route it started runs, which the click stops
+---@field CLEAR_CHOICE string the chosen card's tooltip: clicking it again lets the guide choose
+---@field STOP_AND_CLEAR_CHOICE string the same while the route it started runs, which the click stops
 ---@field CLICK_TO_RESUME string the chosen card's tooltip while its route is paused: the click resumes it
 ---@field ROUTE_PAUSED string the footer line while the chosen journey's route is paused
 ---@field HUB_MORE string format: a card's first stop, how many stops follow it
@@ -592,6 +591,9 @@
 ---@field LOG_FULL string format: the log-full note's count of quests the player could drop
 ---@field LOG_FULL_ONE string the same for one quest
 ---@field LOG_FULL_LIST string the log-full note's tooltip, over the quests' titles
+---@field NOT_THIS_QUEST string a step's menu: drop one of its quests on this character
+---@field SHIFT_ADD string a quest giver's or search result's tooltip: its shift-click adds the quests
+---@field SHIFT_REMOVE string the same once they are added: its shift-click takes them off
 
 ---@class AGFPrefs
 ---@field pinned table<integer, true> quests the player added by shift-click: in the route past the ratio cut
@@ -625,9 +627,6 @@
 
 ---@class AGFPrefs
 ---@field asides? table<string, string> the asides this character turned down (Not interested): key -> the text it had
-
----@class AGFStrings
----@field STORY_HOOK string format: the tracker's one line with no journey chosen: a story's title, its reason or subline
 
 -- Stream 2c: skill- and reputation-gated quests (roadmap #8, docs/design.md §2.4).
 

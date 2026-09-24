@@ -14,13 +14,12 @@ local pinsByKey = {}
 
 -- One switch over every mark AGF draws (design §2.6): nothing unless showMapPins is on, and nothing for a wanderer
 -- (roadmap #24), who is told where and never shown.
--- While the guide is open the rings preview the chosen journey whatever the switch says (F3): choosing a card is
--- looking at its route. With none chosen the guide lists no steps, so it previews none: rings numbered for a card
--- that isn't pressed would read as a choice made. Either way they step aside while Shortest Path guides, since it
--- numbers its stops itself.
+-- While the guide is open the rings preview the route it shows whatever the switch says (F3): the chosen journey's,
+-- else the first card's, which the guide draws on its own (docs/design.md §2.2). Either way they step aside while
+-- Shortest Path guides, since it numbers its stops itself.
 ---@return boolean
 local function RingsShown()
-	local preview = ns.PanelShown ~= nil and ns.PanelShown() and ns.Route().chosen
+	local preview = ns.PanelShown ~= nil and ns.PanelShown()
 	return (preview or ns.Setting("showMapPins")) and not ns.Integrations.Guiding() and not ns.Setting("wanderer")
 end
 
@@ -181,11 +180,11 @@ function provider:RefreshAllData()
 		return
 	end
 	-- Each area's ring first, under the numbered pins: its radius in yards over the map's size in yards, when the data
-	-- has the map's size.
+	-- has the map's size. The head's ring is full; the rest fade, as later stops do.
 	local size = ns.Data.maps and ns.Data.maps[mapID]
-	for _, step in ipairs(size and ns.Route().steps or {}) do
+	for index, step in ipairs(size and ns.Route().steps or {}) do
 		if step.map == mapID and step.objectives and (step.r or 0) > 0 then
-			self:GetMap():AcquirePin(AREA_TEMPLATE, step, 2 * step.r / size.sx, 2 * step.r / size.sy)
+			self:GetMap():AcquirePin(AREA_TEMPLATE, step, 2 * step.r / size.sx, 2 * step.r / size.sy, index == 1)
 		end
 	end
 	for index, step in ipairs(ns.Route().steps) do
@@ -250,13 +249,18 @@ function AdventureGuideForeverAreaPinMixin:OnLoad()
 	self:SetScaleStyle(AM_PIN_SCALE_STYLE_WITH_TERRAIN)
 end
 
+-- A later ring's share of the head's: faint enough that the head's reads first where rings overlap.
+local LATER_RING = 0.5
+
 ---@param step AGFStep
 ---@param width number the ring's diameter as a share of the map's width
 ---@param height number and of its height
-function AdventureGuideForeverAreaPinMixin:OnAcquired(step, width, height)
+---@param head boolean step 1's ring
+function AdventureGuideForeverAreaPinMixin:OnAcquired(step, width, height, head)
 	local canvas = self:GetMap():GetCanvas()
 	self:SetSize(width * canvas:GetWidth(), height * canvas:GetHeight())
 	self:SetPosition(step.x, step.y)
+	self:SetAlpha(head and 1 or LATER_RING)
 end
 
 ---@class AGFGiverPinFrame : AGFMapPinMixin
@@ -290,6 +294,7 @@ function AdventureGuideForeverGiverPinMixin:OnMouseEnter()
 		GameTooltip_AddNormalLine(GameTooltip, ns.L.QUEST_LEVEL:format(level, title))
 	end
 	AddClickLine(GameTooltip)
+	GameTooltip_AddInstructionLine(GameTooltip, ns.Pinned(giver.quests) and ns.L.SHIFT_REMOVE or ns.L.SHIFT_ADD)
 	GameTooltip:Show()
 end
 
@@ -298,8 +303,12 @@ function AdventureGuideForeverGiverPinMixin:OnMouseLeave()
 	GameTooltip:Hide()
 end
 
+-- A shift-click adds the giver's quests to the route (docs/design.md §2.18), or takes them off.
 function AdventureGuideForeverGiverPinMixin:OnClick(button)
-	if button == "LeftButton" and self.giver then
+	if button == "LeftButton" and self.giver and IsShiftKeyDown() then
+		ns.TogglePinned(self.giver.quests)
+		GameTooltip:Hide()
+	elseif button == "LeftButton" and self.giver then
 		ns.Integrations.Navigate(self.giver)
 	end
 end

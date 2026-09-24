@@ -895,6 +895,15 @@ function harness.load(options)
 	G.InCombatLockdown = function()
 		return h.combat
 	end
+	-- Shift held while `fn` runs: a shift-click.
+	G.IsShiftKeyDown = function()
+		return h.shift == true
+	end
+	function h.Shift(fn)
+		h.shift = true
+		fn()
+		h.shift = false
+	end
 	-- Entering or leaving combat fires the same events the client does.
 	function h.SetCombat(on)
 		h.combat = on

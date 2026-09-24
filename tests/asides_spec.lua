@@ -220,34 +220,21 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label)
 end
 
--- No journey chosen (design §2.5): the tracker's one line is the aside, else the top story's hook; no step shows.
+-- No journey chosen (design §2.5): the guide draws the first card on its own, so the aside sits over its step.
 do
 	local h = Load(false, {})
 	local provider = Provider(h, A)
 	Settle(h)
-	equal(h.ns.Route().chosen, false, "ambient: none chosen")
-	same(h.tracker.layoutOrder, { "aside" }, "ambient: the aside alone")
+	local route = h.ns.Route()
+	equal(route.chosen, false, "ambient: none chosen")
+	same(h.tracker.layoutOrder, { "aside", route.steps[1].key }, "ambient: the aside, then the first card's step")
 	provider.aside = nil
 	Settle(h)
-	same(h.tracker.layoutOrder, { "hook" }, "ambient: else the hook")
-	local story
-	for _, journey in ipairs(h.ns.Route().journeys) do
-		story = story or (journey.kind == "story" and journey)
-	end
-	equal(
-		h.tracker.liveBlocks.hook.header,
-		story.title .. " · " .. (story.reason or story.subline),
-		"ambient: its hook"
-	)
-	-- Its menu is the tracker's, with no step.
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks.hook, "RightButton")
-	equal(h.MenuLines()[1], "title: " .. h.ns.TITLE, "ambient: the tracker's menu")
-	h.ns.Choose(story.key)
+	same(h.tracker.layoutOrder, { route.steps[1].key }, "ambient: else the step alone")
+	-- Its title's click chooses that card.
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[route.steps[1].key], "LeftButton")
 	h.flush()
-	same(h.tracker.layoutOrder, { h.ns.Route().steps[1].key }, "ambient: a choice brings the step")
-	h.ns.Choose(nil)
-	h.flush()
-	same(h.tracker.layoutOrder, { "hook" }, "ambient: none again, the hook again")
+	equal(h.ns.Route().chosen and h.ns.Route().journey, route.journey, "ambient: the click chooses the first card")
 	clean(h, "ambient")
 end
 

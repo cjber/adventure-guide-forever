@@ -1,11 +1,12 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
--- The NPC tooltip line (docs/design.md §2.9): a giver or ender the chosen journey's steps visit says so on its unit
+-- The NPC tooltip line (docs/design.md §2.9): a giver or ender the shown journey's steps visit says so on its unit
 -- tooltip. The NPCs are gathered on each route change, so a hover only reads; the line is the tooltip's own, added
 -- after the client's (TooltipDataProcessor), and touches no secure frame, in combat or out.
 
--- The chosen journey's title, and the creature entries its steps visit; nil and empty while none is chosen.
+-- The shown journey's title (the chosen one, else the first card, which the guide draws on its own), and the creature
+-- entries its steps visit; nil and empty with no card.
 ---@type string?
 local journey
 ---@type table<integer, true>
@@ -16,9 +17,6 @@ local npcs = {}
 local function Gather()
 	local route = ns.Route()
 	journey, npcs = nil, {}
-	if not route.chosen then
-		return
-	end
 	for _, card in ipairs(route.journeys) do
 		journey = card.key == route.journey and card.title or journey
 	end

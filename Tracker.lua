@@ -18,14 +18,11 @@ local JOURNEY_COMPLETE = "journey-complete"
 -- The aside (Asides.lua): one line, a block of its own. Its click goes to its place when it has one; right-click is its
 -- menu.
 local ASIDE = "aside"
--- With no journey chosen (docs/design.md §2.5), the one line in place of the step's when there is no aside: the top
--- story's hook, whose click chooses it as its card's does.
-local HOOK = "hook"
 -- Something new (Moments.lua, docs/design.md §2.13): "Duskwood is now for your level", glowing once, until the guide
 -- opens; a click opens it.
 local MOMENT = "moment"
 -- Headers that are not the step's: its click and hover never act on them.
-local NOT_STEP = { [STORY_COMPLETE] = true, [ASIDE] = true, [HOOK] = true, [JOURNEY_COMPLETE] = true, [MOMENT] = true }
+local NOT_STEP = { [STORY_COMPLETE] = true, [ASIDE] = true, [JOURNEY_COMPLETE] = true, [MOMENT] = true }
 -- A town's NPC line names this many, then counts the rest.
 local NAMED_GIVERS = 2
 -- Set by a turn-in that ends a story: the quest, then the first step 1 the route shows without it. The header stays
@@ -50,42 +47,16 @@ end
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
 local ModuleMixin = { headerText = L.TRACKER_HEADER, blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
 
--- The story the hook line names: the top story card, else the top card.
----@return AGFJourney?
-local function Hook()
-	local journeys = ns.Route().journeys
-	for _, journey in ipairs(journeys) do
-		if journey.kind == "story" then
-			return journey
-		end
-	end
-	return journeys[1]
-end
-
----@param hook AGFJourney
----@return string
-local function HookText(hook)
-	return L.STORY_HOOK:format(hook.title, hook.reason or hook.subline)
-end
-
----@param block AGFTrackerBlock the header's own block: the aside's goes to its place, the hook's chooses its journey,
----the journey's end opens the guide and the story's does nothing; for the step's, CurrentStep() is used since it's
----always current
+---@param block AGFTrackerBlock the header's own block: the aside's goes to its place, the journey's end opens the guide
+---and the story's does nothing; for the step's, CurrentStep() is used since it's always current
 ---@param mouseButton string
 function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
-	local aside, hook = ns.Asides.Current(), Hook()
+	local aside = ns.Asides.Current()
 	if block.id == ASIDE and aside then
 		if mouseButton == "RightButton" then
 			ns.Asides.Open(self:GetContextMenuParent(), "MENU_ADVENTURE_GUIDE_FOREVER_ASIDE", aside)
 		else
 			ns.Asides.Go(aside)
-		end
-		return
-	elseif block.id == HOOK and hook then
-		if mouseButton == "RightButton" then
-			ns.Menu.Open(self:GetContextMenuParent(), "MENU_ADVENTURE_GUIDE_FOREVER_TRACKER")
-		else
-			ns.Choose(hook.key, ns.Setting("titleStartsRoute"))
 		end
 		return
 	elseif NOT_STEP[block.id] then
@@ -99,7 +70,7 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 		if step and ns.Setting("trackRouteQuests") then
 			ns.TrackRouteQuests()
 		end
-		-- The step shows only for a chosen journey (design §2.5), so this starts that journey's route.
+		-- The step is the chosen journey's, else the first card's, which this chooses (ns.StartRoute).
 		if step and ns.Setting("titleStartsRoute") then
 			ns.StartRoute()
 		end
@@ -112,16 +83,15 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 	ns.Menu.Open(self:GetContextMenuParent(), "MENU_ADVENTURE_GUIDE_FOREVER_TRACKER", CurrentStep())
 end
 
--- The title's click starts the route when the setting says so, as the hook's does and an aside's with a place, so
--- each warns as Go does.
+-- The title's click starts the route when the setting says so, as an aside's with a place does, so each warns as Go
+-- does.
 ---@param block AGFTrackerBlock
 function ModuleMixin:OnBlockHeaderEnter(block)
 	if not ns.Integrations.ReplacesJourney() then
 		return
 	end
-	local step, aside, hook = CurrentStep(), ns.Asides.Current(), Hook()
+	local step, aside = CurrentStep(), ns.Asides.Current()
 	local title = (block.id == ASIDE and aside and aside.place and aside.text)
-		or (block.id == HOOK and hook and ns.Setting("titleStartsRoute") and HookText(hook))
 		or (not NOT_STEP[block.id] and step and ns.Setting("titleStartsRoute") and step.title)
 	if title then
 		GameTooltip:SetOwner(block, "ANCHOR_RIGHT")
@@ -134,23 +104,23 @@ function ModuleMixin:OnBlockHeaderLeave()
 	GameTooltip:Hide()
 end
 
--- The aside's line, or with no journey chosen and no aside the top story's hook; nothing else while none is chosen.
+-- The aside's line, when there is one.
 ---@param module AGFTrackerModule
 ---@return boolean laid out, or nothing to lay out
 local function LayoutLine(module)
-	local aside, hook = ns.Asides.Current(), not ns.Route().chosen and Hook()
-	local id = aside and ASIDE or hook and HOOK
-	if not id then
+	local aside = ns.Asides.Current()
+	if not aside then
 		return true
 	end
-	local block = module:GetBlock(id)
-	block:SetHeader(aside and aside.text or HookText(hook --[[@as AGFJourney]]))
+	local block = module:GetBlock(ASIDE)
+	block:SetHeader(aside.text)
 	return module:LayoutBlock(block)
 end
 
--- One quiet line (LayoutLine), something new (Moments.Line) under it, then, once a journey is chosen, one block for
--- the current step (docs/design.md §2.5, docs/plan.md §7.4): its place (a town's counts), why it is next (a town's
--- NPCs) and the travel line as objective lines, then what follows it, undashed. Nothing is laid out (an empty,
+-- One quiet line (LayoutLine), something new (Moments.Line) under it, then one block for the current step of the
+-- chosen journey, else of the first card, which the guide draws on its own (docs/design.md §2.5, docs/plan.md §7.4):
+-- its place (a town's counts), why it is next (a town's NPCs) and the travel line as objective lines, then what
+-- follows it, undashed. Nothing is laid out (an empty,
 -- self-hiding module) when the setting is off, or there's nothing to say.
 function ModuleMixin:LayoutContents()
 	if not ns.Setting("showTracker") or not LayoutLine(self) then
@@ -179,7 +149,7 @@ function ModuleMixin:LayoutContents()
 			return
 		end
 	end
-	local step = ns.Route().chosen and CurrentStep()
+	local step = CurrentStep()
 	if not step then
 		return
 	end

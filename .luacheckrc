@@ -87,6 +87,7 @@ read_globals = {
 	"QuestMapFrameOverrides",
 	"QUESTS_LABEL",
 	"GameTooltip_Hide",
+	"IsShiftKeyDown",
 	-- Tooltip.lua
 	"TooltipDataProcessor",
 	"Enum",
