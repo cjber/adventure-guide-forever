@@ -152,6 +152,9 @@
 ---@field steps AGFStep[] never more than MAX_STEPS, in route order
 ---@field story? AGFStory the story card's chain, when the zone has one the player can take up now
 ---@field count? string a zone card's count of quests, the story card's subline once its chapter is skipped
+---@field hub? string its first stop's place, else that stop's title: the card's line 3 when it has no reason
+---@field more? integer how many stops follow the first (Model.Journeys sets it and `group` once the card is built)
+---@field group? integer how many of its quests are elite, dungeon or raid (the sum of its steps' `group`)
 
 ---@class AGFRoute
 ---@field journeys AGFJourney[] at most 3: carry, the zone's story, a dungeon, the next zone

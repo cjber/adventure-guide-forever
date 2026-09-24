@@ -432,6 +432,18 @@ equal(table.concat(stop.quests, " "), "10 11 1 2 3 4", "town: hand-ins first, th
 equal(table.concat(stop.givers, " "), "Marris Osgood", "town: its givers, once each")
 equal(stop.group, 1, "town: the elite quest needs a group")
 equal(stop.x, 0.5, "town: its point is the giver nearest the player, never a centre")
+-- The card's hub line and group count (docs/plan.md §7.4): its first stop's place and the stops after it.
+local function Chosen(plan)
+	for _, journey in ipairs(plan.journeys) do
+		if journey.key == plan.journey then
+			return journey
+		end
+	end
+end
+local townCard = Chosen(toured)
+equal(townCard.hub, "Lakeshire, Redridge", "card: the hub line names its first stop's place")
+equal(townCard.more, #townCard.steps - 1, "card: and counts the stops after it")
+equal(townCard.group, 1, "card: the elite quest needs a group")
 local carriedCard = toured.journeys[1]
 equal(Has(carriedCard.steps, "turnin:12"), 1, "town: a waypoint 350 yd from the data's finish stays a turn-in")
 equal(carriedCard.steps[1].key, "hub:5", "town: the carry card's agreeing hand-ins share the town's stop")
@@ -474,6 +486,9 @@ equal(stop and stop.key, "hub:5", "town, combat: the stop stays")
 equal(stop and stop.detail, "1 to hand in, 3 to pick up", "town, combat: recounted")
 equal(stop and table.concat(stop.quests, " "), "11 2 3 4", "town, combat: less what went")
 equal(stop and stop.x, 0.58, "town, combat: the point leaves a giver with nothing left")
+local grouped = Carried()
+grouped[4] = takenHere
+equal(Chosen(Model.Refresh(town, visitor, {}, grouped, townPrefs, toured)).group, 0, "card, combat: recounts its group")
 equal(toured.steps[1].detail, "2 to hand in, 4 to pick up", "town, combat: the last build is untouched")
 local emptied = Model.Refresh(
 	town,

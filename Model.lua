@@ -1157,6 +1157,18 @@ local function ZoneStory(data, completed, eligible, zone)
 	return best, bestID, continues
 end
 
+-- A card's hub line and group count (docs/plan.md §7.4): its first stop's place, how many stops follow it, and how
+-- many of its quests need a group.
+---@param journey AGFJourney
+local function Summarise(journey)
+	local first, group = journey.steps[1], 0
+	for _, step in ipairs(journey.steps) do
+		group = group + (step.group or 0)
+	end
+	journey.hub = first and (first.place or first.title)
+	journey.more, journey.group = #journey.steps - 1, group
+end
+
 ---@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
 ---@param instanceName? fun(id: integer): string? the client's name for an instance Map.ID; the data's otherwise
 function Model.Journeys(data, player, completed, log, prefs, mapName, instanceName)
@@ -1206,6 +1218,9 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			end
 			break
 		end
+	end
+	for _, journey in ipairs(journeys) do
+		Summarise(journey --[[@as AGFJourney]])
 	end
 	return journeys
 end
@@ -1280,6 +1295,7 @@ local function Retained(journey, prune)
 	if chapterGone then
 		copy.story, copy.reason, copy.subline = nil, nil, journey.count
 	end
+	Summarise(copy --[[@as AGFJourney]])
 	return copy --[[@as AGFJourney]]
 end
 
