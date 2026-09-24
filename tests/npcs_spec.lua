@@ -69,7 +69,6 @@ end
 equal(count > 400, true, "NPC count")
 
 -- A quest place's `npc`: the creature entry of an NPC giver, never an object's.
-local quests = ns.Data.quests
 equal(quests[7].start.npc, 197, "Marshal McBride starts Kobold Camp Cleanup")
 equal(quests[6].finish.npc, 823, "Deputy Willem finishes Bounty on Garrick Padfoot")
 equal(quests[45].start.npc, nil, "a half-eaten body is an object")
