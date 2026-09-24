@@ -143,6 +143,10 @@ for _, fixture in ipairs(characters.list) do
 		local last = route.steps[#route.steps]
 		equal(changes, 1, "ne21_crosszone: exactly one continent change")
 		equal(last.key, "turnin:168", "ne21_crosszone: the Stormwind turn-in is last")
+		-- F15: 168 is a Deadmines quest, flagged and not elite, so a dungeon quest you carry shows with dungeons off.
+		local deadmines = data.quests[168]
+		equal(deadmines.dungeon == 36 and not deadmines.elite, true, "ne21_crosszone: 168 is flagged, not elite")
+		equal(prefs.dungeons, false, "ne21_crosszone: with dungeons off")
 		equal(last.reason, "Hand in when you're in Stormwind City", "ne21_crosszone: the far turn-in says where")
 		-- The in-game audit: the far turn-in is finished but not ready here, and the card says each fact once.
 		equal(route.journeys[1].subline, "3 ready to hand in", "ne21_crosszone: ready counts this continent only")
