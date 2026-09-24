@@ -170,6 +170,15 @@ for _, fixture in ipairs(characters.list) do
 	-- Deterministic: a second build of the same state gives the same text.
 	local again = Model.Plan(data, player, completed, log, prefs)
 	equal(Render(fixture, again), text, fixture.name .. ": rebuild")
+	-- The in-combat rebuild keeps three cards at most: a quest looted mid-fight brings a carry card the last build
+	-- lacked, and the last card, chosen or not, makes way as the full build would.
+	local last = route.journeys[#route.journeys]
+	local fight = { [168] = { id = 168, title = "Collecting Memories", level = 18, complete = true } }
+	prefs.journey = last and last.key
+	local refreshed = Model.Refresh(data, player, fight, prefs, route)
+	prefs.journey = nil
+	equal(#refreshed.journeys <= 3, true, fixture.name .. ": at most three cards in combat")
+	equal(refreshed.journeys[1].key, "carry", fixture.name .. ": the new carry card first")
 end
 
 print(("plan_golden_spec: %d checks passed; %d fixtures"):format(checks, #characters.list))

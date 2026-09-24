@@ -1036,7 +1036,8 @@ function Model.Refresh(data, player, log, prefs, last, mapName)
 	local journeys = { Carry(data, player, log, prefs, mapName, true) }
 	for _, journey in ipairs(last.journeys) do
 		local kept = journey.kind ~= "carry" and Unskipped(journey, prefs.skipped or {})
-		if kept then
+		-- A carry card the last build lacked pushes out the last card, as the full build would leave it out.
+		if kept and #journeys < MAX_JOURNEYS then
 			journeys[#journeys + 1] = kept
 		end
 	end
