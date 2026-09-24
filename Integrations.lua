@@ -373,20 +373,51 @@ local function Stops(steps)
 	return stops
 end
 
--- What Shortest Path is handed of `steps`: all of them, except while the player stands in step 1's town (within the
--- town linkage of its point, the quest there nearest the player) with more steps after it. Then the town alone, so
+-- Every quest start and finish in each town, by hub, built on first use.
+---@type table<integer, AGFPlace[]>?
+local hubPlaces
+
+-- The player stands in `step`'s town: within the town linkage of any of its quests' places, the extent the generator
+-- drew the town by, whatever work is left there. A town the generator could not place is its point alone.
+---@param player AGFPlayer
+---@param step AGFStep
+---@return boolean
+local function InTown(player, step)
+	local places = { step }
+	if step.hub then
+		if not hubPlaces then
+			hubPlaces = {}
+			for _, quest in pairs(ns.Data.quests) do
+				for _, place in ipairs({ quest.start or false, quest.finish or false }) do
+					if place and place.hub then
+						hubPlaces[place.hub] = hubPlaces[place.hub] or {}
+						table.insert(hubPlaces[place.hub], place)
+					end
+				end
+			end
+		end
+		places = hubPlaces[step.hub] or places
+	end
+	for _, place in ipairs(places) do
+		local yards = ns.Model.Yards(ns.Data, player --[[@as AGFStep]], place --[[@as AGFStep]])
+		if yards and yards <= LINK then
+			return true
+		end
+	end
+	return false
+end
+
+-- What Shortest Path is handed of `steps`: all of them, except while the player stands in step 1's town (InTown)
+-- with more steps after it. Then the town alone, so
 -- Shortest Path arrives there and draws no way out of town while the stock "!" and "?" marks show its givers; the
 -- journey goes on once the town is done (Follow).
 ---@param steps (AGFStep|AGFGiver)[]
 ---@return (AGFStep|AGFGiver)[]
 local function Hand(steps)
 	local first = steps[1] --[[@as AGFStep?]]
-	if first and first.spots and #steps > 1 then
-		local player = ns.State.Player()
-		local yards = player.map and ns.Model.Yards(ns.Data, player --[[@as AGFStep]], first)
-		if yards and yards <= LINK then
-			return { first }
-		end
+	local player = ns.State.Player()
+	if first and first.spots and #steps > 1 and player.map and InTown(player, first) then
+		return { first }
 	end
 	return steps
 end

@@ -303,6 +303,28 @@ do
 	equal(h.spf.NavigateRoute, 2, "follow, town: arrived, its work left: nothing")
 	clean(h, "follow, town")
 
+	-- The town is as wide as its quests' places, not its point: by the giver farthest from the point, still in it.
+	h = Load("ended")
+	local town = h.ns.Route().steps[1]
+	---@type AGFPlace?
+	local far, farYards = nil, 0
+	for _, quest in pairs(h.ns.Data.quests) do
+		for _, place in ipairs({ quest.start or false, quest.finish or false }) do
+			local yards = place and place.hub == town.hub and h.ns.Model.Yards(h.ns.Data, town, place)
+			if yards and yards > farYards then
+				far, farYards = place, yards
+			end
+		end
+	end
+	equal(farYards > 100, true, "follow, town wide: a giver past the linkage from its point")
+	---@cast far -?
+	Moved(h, far.map, far.x, far.y)
+	equal(h.ns.Route().steps[1].key, town.key, "follow, town wide: the town still step 1")
+	h.ns.StartRoute()
+	h.flush()
+	equal(#h.spfRoute.stops, 1, "follow, town wide: by that giver, the town alone")
+	clean(h, "follow, town wide")
+
 	-- Without Shortest Path, the waypoint Go set for the chosen journey moves to its new step 1; on a map that refuses
 	-- one it stays, with no error line; one the player moved is theirs and never touched.
 	h = Load(false)
