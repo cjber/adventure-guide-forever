@@ -466,3 +466,21 @@
 ---@field TrackRouteQuests fun() track the route's log quests; with untrackOthers, stop tracking the rest
 ---@field DumpLayout fun(root: Frame, describe?: fun(region: Region, entry: AGFDumpEntry)): AGFDumpEntry[]
 ---@field Dump fun() /agf dump: save the layout, route and frames in AdventureGuideForeverDB.dump
+
+-- NPC roles (tools/gen_quests.py `roles`): where trainers, battlemasters and innkeepers stand. No consumer yet.
+
+---@class AGFData
+---@field npcs table<integer, AGFNpc> creature entry -> its roles, side and place; only NPCs the data places and sides
+
+---@class AGFNpc
+---@field side integer the sides it is not hostile to (FactionTemplate.EnemyGroup): 1 Alliance, 2 Horde, 3 both
+---@field place AGFPlace a non-seasonal spawn; `hub` when a quest place stands within 100 yards
+---@field class? integer class trainer: the class ID it trains (1 Warrior ... 11 Druid)
+---@field upto? integer class trainer: the highest level among the spells it teaches (6 for a starting-area trainer)
+---@field pet? boolean hunter pet trainer
+---@field riding? boolean riding trainer
+---@field race? integer riding trainer: the race ID it teaches (CMaNGOS TrainerRace), when it names one
+---@field skill? integer profession trainer: its skill line ID
+---@field rank? integer profession trainer: the highest rank it teaches, 1 Apprentice to 4 Artisan (SpellEffect SKILL_STEP)
+---@field bg? integer battlemaster: its battleground (CMaNGOS battlemaster_entry.bg_template: 1 AV, 2 WSG, 3 AB)
+---@field inn? boolean innkeeper

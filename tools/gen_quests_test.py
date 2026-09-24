@@ -13,10 +13,14 @@ from gen_quests import (
     geometry,
     hub_names,
     instance_index,
+    nearest_hub,
     parse_values,
     prerequisite_index,
     prerequisites,
     project,
+    reaction,
+    roles,
+    skill_steps,
     town_hubs,
     world_point,
 )
@@ -258,6 +262,93 @@ class HubNameTest(unittest.TestCase):
         self.assertEqual(hub_names(hubs, nodes), {1: {"name": "At a giver"}})
         self.assertEqual(hub_names(hubs, nodes[:3]), {1: {"name": "Near side"}})
         self.assertEqual(hub_names(hubs[2:], [(1, 0, 0, 0, "At a giver")]), {})
+
+
+class NpcTest(unittest.TestCase):
+    @staticmethod
+    def template(entry, flags, kind=0, klass=0, race=0, template=0):
+        return {
+            "Entry": entry,
+            "NpcFlags": flags,
+            "TrainerType": kind,
+            "TrainerClass": klass,
+            "TrainerRace": race,
+            "TrainerTemplateId": template,
+        }
+
+    @staticmethod
+    def taught(entry, spell, level=0, condition=0):
+        return {"entry": entry, "spell": spell, "reqlevel": level, "condition_id": condition}
+
+    def test_skill_steps(self):
+        # Journeyman Alchemy's teaching spell 2280 at 1.60.1.69913: LEARN_SPELL (36), then SKILL_STEP (44) rank 2.
+        effects = [
+            {"SpellID": "2280", "Effect": "36", "EffectMiscValue_0": "0", "EffectBasePointsF": "25"},
+            {"SpellID": "2280", "Effect": "44", "EffectMiscValue_0": "171", "EffectBasePointsF": "2"},
+        ]
+        self.assertEqual(skill_steps(effects), {2280: (171, 2)})
+
+    def test_roles(self):
+        tables = {
+            "creature_template": [
+                self.template(5497, 16 | 2, klass=8, template=9),  # a mage trainer, spells from a template
+                self.template(198, 16, klass=8),  # a starting-area mage trainer
+                self.template(5499, 16, kind=2),  # an alchemy trainer: Apprentice and Journeyman
+                self.template(1, 16, kind=2),  # a profession trainer with no rank spell
+                self.template(2, 16, kind=2),  # ranks of two skills
+                self.template(4732, 16, kind=1, race=1),
+                self.template(543, 16, kind=3, klass=3),
+                self.template(3, 16, klass=0),  # a weapon master
+                self.template(4, 16, klass=4),  # teaches only behind a condition
+                self.template(6929, 128 | 1),
+                self.template(347, 2048),
+                self.template(5, 4),
+            ],
+            "npc_trainer": [
+                self.taught(198, 10, 4),
+                self.taught(198, 11, 6),
+                self.taught(5499, 2275, 5),
+                self.taught(5499, 2280, 10),
+                self.taught(5499, 99),
+                self.taught(1, 99),
+                self.taught(2, 2275),
+                self.taught(2, 2372),
+                self.taught(4732, 33389, 40),
+                self.taught(543, 20),
+                self.taught(3, 21),
+                self.taught(4, 22, 10, condition=7),
+            ],
+            "npc_trainer_template": [self.taught(9, 30, 60), self.taught(9, 31, 20)],
+            "battlemaster_entry": [{"entry": 347, "bg_template": 1}],
+        }
+        steps = {2275: (171, 1), 2280: (171, 2), 2372: (182, 1)}
+        self.assertEqual(
+            roles(tables, steps),
+            {
+                198: {"class": 8, "upto": 6},
+                347: {"bg": 1},
+                543: {"pet": True},
+                4732: {"riding": True, "race": 1},
+                5497: {"class": 8, "upto": 60},
+                5499: {"skill": 171, "rank": 2},
+                6929: {"inn": True},
+            },
+        )
+
+    def test_reaction(self):
+        # FactionTemplate.EnemyGroup at 1.60.1.69913: 12 Stormwind 4, 85 Orgrimmar 2, 120 Booty Bay 0; 12 and 10
+        # add bit 8 (monsters); 1 is hostile to every player. A template the DB2 lacks has no side.
+        self.assertEqual(
+            [reaction(r and {"EnemyGroup": r}) for r in ("4", "2", "0", "12", "10", "1", None)],
+            [1, 2, 3, 1, 2, 0, 0],
+        )
+
+    def test_nearest_hub(self):
+        grid = {(0, 0, 0): [(10, 10, 1), (60, 10, 2)], (0, 1, 0): [(150, 10, 3)], (1, 0, 0): [(0, 0, 4)]}
+        self.assertEqual(nearest_hub((0, 40, 10), grid), 2)
+        self.assertEqual(nearest_hub((0, 150 + LINK, 10), grid), 3)
+        self.assertIsNone(nearest_hub((0, 151 + LINK, 10), grid))
+        self.assertIsNone(nearest_hub((2, 0, 0), grid))
 
 
 if __name__ == "__main__":

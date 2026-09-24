@@ -88,6 +88,9 @@ TABLES = {
     "gameobject_questrelation",
     "creature_involvedrelation",
     "gameobject_involvedrelation",
+    "npc_trainer",
+    "npc_trainer_template",
+    "battlemaster_entry",
 }
 TOKEN = re.compile(r"\s*('(?:[^'\\]|\\.|'')*'|NULL|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?|[(),;])", re.DOTALL)
 ESCAPES = {"0": "\0", "n": "\n", "r": "\r", "t": "\t", "b": "\b", "Z": "\x1a"}
@@ -446,37 +449,42 @@ def hub_names(hubs, nodes):
     return names
 
 
-def places(tables, world):
-    """Every spawn of a quest giver or ender, with each zone map whose rectangle contains it.
+def spawns(tables, kind, wanted, world):
+    """Every spawn of the `wanted` entries of `kind`, with each zone map whose rectangle contains it.
 
-    Zone rectangles overlap (Durotar's covers the eastern Barrens), so the map is chosen per quest
-    in `pick`, not here.
+    Zone rectangles overlap (Durotar's covers the eastern Barrens), so the map is chosen in `pick`, not here.
     """
+    names = {r.get("Entry", r.get("entry")): r.get("Name", r.get("name")) for r in tables[f"{kind}_template"]}
+    # A positive event spawns the row only while that event (Midsummer, Hallow's End...) runs.
+    seasonal = {r["guid"] for r in tables[f"game_event_{kind}"] if r["event"] > 0}
+    result = defaultdict(list)
+    for spawn in tables[kind]:
+        entry = spawn["id"]
+        if entry not in wanted or not names.get(entry) or spawn["guid"] in seasonal:
+            continue
+        options = []
+        for row in world[spawn["map"]]:
+            xy = project(row, spawn["position_x"], spawn["position_y"], spawn["position_z"])
+            if xy is not None:
+                area = (float(row["Region_3"]) - float(row["Region_0"])) * (
+                    float(row["Region_4"]) - float(row["Region_1"])
+                )
+                options.append((area, int(row["OrderIndex"]), int(row["UiMapID"]), xy))
+        if options:
+            result[entry].append({"entry": (kind, entry), "name": names[entry], "options": sorted(options)})
+    return result
+
+
+def places(tables, world):
+    """Every spawn of a quest giver or ender, by quest; the map is chosen per quest in `pick`."""
     result = {}
     for kind in ("creature", "gameobject"):
         wanted = {r["id"] for suffix in ("questrelation", "involvedrelation") for r in tables[f"{kind}_{suffix}"]}
-        names = {r.get("Entry", r.get("entry")): r.get("Name", r.get("name")) for r in tables[f"{kind}_template"]}
-        # A positive event spawns the row only while that event (Midsummer, Hallow's End...) runs.
-        seasonal = {r["guid"] for r in tables[f"game_event_{kind}"] if r["event"] > 0}
-        spawns = defaultdict(list)
-        for spawn in tables[kind]:
-            entry = spawn["id"]
-            if entry not in wanted or not names.get(entry) or spawn["guid"] in seasonal:
-                continue
-            options = []
-            for row in world[spawn["map"]]:
-                xy = project(row, spawn["position_x"], spawn["position_y"], spawn["position_z"])
-                if xy is not None:
-                    area = (float(row["Region_3"]) - float(row["Region_0"])) * (
-                        float(row["Region_4"]) - float(row["Region_1"])
-                    )
-                    options.append((area, int(row["OrderIndex"]), int(row["UiMapID"]), xy))
-            if options:
-                spawns[entry].append({"entry": (kind, entry), "name": names[entry], "options": sorted(options)})
+        found = spawns(tables, kind, wanted, world)
         for suffix in ("questrelation", "involvedrelation"):
             relations = defaultdict(list)
             for relation in tables[f"{kind}_{suffix}"]:
-                relations[relation["quest"]].extend(spawns[relation["id"]])
+                relations[relation["quest"]].extend(found[relation["id"]])
             result[kind, suffix] = relations
     return result
 
@@ -523,7 +531,115 @@ def instance_index(area_rows, map_rows):
     return by_area, names
 
 
-def generate(tables, ui_maps, assignments, valid_ids, path_nodes, taxi_nodes, area_rows, map_rows):
+TRAINER, INNKEEPER = 16, 128  # creature_template NpcFlags (CMaNGOS UNIT_NPC_FLAG_TRAINER, _INNKEEPER)
+SKILL_STEP = 44  # SpellEffect.Effect: teaches rank EffectBasePointsF of skill line EffectMiscValue_0
+
+
+def skill_steps(effects):
+    """Each rank-granting spell (a SKILL_STEP effect): its (skill line, rank), rank 1 Apprentice to 4 Artisan."""
+    return {
+        int(r["SpellID"]): (int(r["EffectMiscValue_0"]), int(float(r["EffectBasePointsF"])))
+        for r in effects
+        if int(r["Effect"]) == SKILL_STEP
+    }
+
+
+def roles(tables, steps):
+    """Each role NPC's fields: `class` and `upto` (its highest spell's level) for a class trainer, `pet` for a hunter
+    pet trainer, `riding` and its `race` for a riding trainer, `skill` and `rank` (the highest rank it teaches) for a
+    profession trainer, `bg` (battlemaster_entry.bg_template) for a battlemaster, `inn` for an innkeeper.
+
+    A trainer teaches its npc_trainer rows plus its TrainerTemplateId's npc_trainer_template rows, less any behind a
+    condition. One that teaches nothing, a profession trainer with no rank spell or ranks of several skills, and a
+    TrainerType 0 trainer with no class (weapon masters and the like) are no trainer here.
+    """
+    taught, templates = defaultdict(list), defaultdict(list)
+    for row in tables["npc_trainer"]:
+        if not row["condition_id"]:
+            taught[row["entry"]].append(row)
+    for row in tables["npc_trainer_template"]:
+        if not row["condition_id"]:
+            templates[row["entry"]].append(row)
+    battles = {r["entry"]: r["bg_template"] for r in tables["battlemaster_entry"]}
+    result = {}
+    for row in sorted(tables["creature_template"], key=lambda r: r["Entry"]):
+        entry, kind, fields = row["Entry"], row["TrainerType"], {}
+        spells = taught[entry] + (templates[row["TrainerTemplateId"]] if row["TrainerTemplateId"] else [])
+        if row["NpcFlags"] & TRAINER and spells:
+            if kind == 0 and row["TrainerClass"]:
+                fields.update({"class": row["TrainerClass"], "upto": max(s["reqlevel"] for s in spells)})
+            elif kind == 1:
+                fields["riding"] = True
+                if row["TrainerRace"]:
+                    fields["race"] = row["TrainerRace"]
+            elif kind == 2:
+                ranks = {steps[s["spell"]] for s in spells if s["spell"] in steps}
+                if len({skill for skill, _ in ranks}) == 1:
+                    fields.update(zip(("skill", "rank"), max(ranks), strict=True))
+            elif kind == 3:
+                fields["pet"] = True
+        if entry in battles:
+            fields["bg"] = battles[entry]
+        if row["NpcFlags"] & INNKEEPER:
+            fields["inn"] = True
+        if fields:
+            result[entry] = fields
+    return result
+
+
+def reaction(template):
+    """The sides an NPC of this FactionTemplate serves: 1 Alliance, 2 Horde, 3 both, 0 none or unknown.
+
+    EnemyGroup bit 2 is the Alliance, 4 the Horde, 1 every player; an NPC is usable by a side it is not hostile to.
+    The template's own Enemies_N list names reputations (the Stormpike Guard, the Defilers), not sides.
+    """
+    if not template:
+        return 0
+    enemies = int(template["EnemyGroup"])
+    return 0 if enemies & 1 else (0 if enemies & 2 else 1) | (0 if enemies & 4 else 2)
+
+
+def nearest_hub(point, members):
+    """The hub of the quest place nearest `point` (continent, x, y) within LINK yards, or None. `members` maps a
+    (continent, cell x, cell y) grid cell of LINK yards to its places as (x, y, hub).
+    """
+    continent, x, y = point
+    cx, cy = math.floor(x / LINK), math.floor(y / LINK)
+    near = [
+        (math.dist((x, y), (mx, my)), hub)
+        for dx in (-1, 0, 1)
+        for dy in (-1, 0, 1)
+        for mx, my, hub in members.get((continent, cx + dx, cy + dy), ())
+    ]
+    best = min((n for n in near if n[0] <= LINK), default=None)
+    return None if best is None else best[1]
+
+
+def role_npcs(tables, world, faction_rows, effects, quest_maps, counts):
+    """Each role NPC (`roles`) with its side (`reaction`) and place: a spawn projected as a quest giver's is, the
+    smallest map the quests use first (Talonbranch Glade is Felwood, not the Mount Hyjal map over it). Several spawns
+    give the least place, as several givers of one quest do.
+    """
+    factions = {int(r["ID"]): r for r in faction_rows}
+    template_faction = {r["Entry"]: r["Faction"] for r in tables["creature_template"]}
+    role = roles(tables, skill_steps(effects))
+    found = spawns(tables, "creature", role.keys(), world)
+    npcs = {}
+    for entry, fields in role.items():
+        side = reaction(factions.get(template_faction[entry]))
+        candidates = [pick(spawn, quest_maps, None) for spawn in found[entry]]
+        if not side or not candidates:
+            counts["dropped NPC: no side" if candidates else "dropped NPC: no zone-map spawn"] += 1
+            continue
+        place = min(candidates, key=lambda p: (p["map"], p["name"], p["x"], p["y"]))
+        npcs[entry] = {**fields, "side": side, "place": place}
+    counts["NPCs"] = len(npcs)
+    return npcs
+
+
+def generate(
+    tables, ui_maps, assignments, valid_ids, path_nodes, taxi_nodes, area_rows, map_rows, faction_rows, effects
+):
     maps, world, areas = map_indexes(ui_maps, assignments)
     instance_of, instances = instance_index(area_rows, map_rows)
     locations = places(tables, world)
@@ -614,6 +730,8 @@ def generate(tables, ui_maps, assignments, valid_ids, path_nodes, taxi_nodes, ar
         emitted[qid] = quest
     zones = {m: {"name": maps[m]["Name_lang"], "min": low, "max": high} for m, (low, high) in sorted(PUBLISHED.items())}
     wanted = {q[k]["map"] for q in emitted.values() for k in ("start", "finish") if k in q} | zones.keys()
+    npcs = role_npcs(tables, world, faction_rows, effects, wanted, counts)
+    wanted |= {npc["place"]["map"] for npc in npcs.values()}
     centres = geometry(assignments, wanted, {m: row["Name_lang"] for m, row in maps.items()})
     counts["maps without a centre"] = len(wanted - centres.keys())
     points = {}
@@ -627,6 +745,17 @@ def generate(tables, ui_maps, assignments, valid_ids, path_nodes, taxi_nodes, ar
         for place in (quest[k] for k in ("start", "finish") if k in quest):
             if (key := (place["map"], place["x"], place["y"])) in hub_of:
                 place["hub"] = hub_of[key]
+    grid = defaultdict(list)
+    for hub, (continent, members) in enumerate(hubs, 1):
+        for x, y, _ in members:
+            grid[continent, math.floor(x / LINK), math.floor(y / LINK)].append((x, y, hub))
+    for npc in npcs.values():
+        place = npc["place"]
+        if (centre := centres.get(place["map"])) and (
+            hub := nearest_hub((centre["continent"], *world_point(centre, place)), grid)
+        ) is not None:
+            place["hub"] = hub
+    counts["NPCs in a hub"] = sum("hub" in npc["place"] for npc in npcs.values())
     names = defaultdict(set)
     for quest in emitted.values():
         for place in (quest[k] for k in ("start", "finish") if "hub" in quest.get(k, {})):
@@ -642,7 +771,7 @@ def generate(tables, ui_maps, assignments, valid_ids, path_nodes, taxi_nodes, ar
     counts["ocean crossings"] = len(ferries)
     used = {q["dungeon"] for q in emitted.values() if "dungeon" in q}
     named = {m: {"name": instances[m]["name"]} for m in sorted(used)}
-    return emitted, zones, named, centres, shifts, ferries, towns, counts
+    return emitted, zones, named, centres, shifts, ferries, towns, npcs, counts
 
 
 def lua(value):
@@ -660,11 +789,12 @@ def lua(value):
     return str(value)
 
 
-def render(quests, zones, instances, centres, shifts, ferries, towns):
+def render(quests, zones, instances, centres, shifts, ferries, towns, npcs):
     lines = [
         "-- Generated by tools/gen_quests.py — do not edit.",
         f"-- CMaNGOS classic-db (GPL-3.0), pinned: {CLASSICDB_URL}",
-        "-- wago.tools UiMap, UiMapAssignment, QuestV2, TaxiPathNode, TaxiNodes, AreaTable, Map:",
+        "-- wago.tools UiMap, UiMapAssignment, QuestV2, TaxiPathNode, TaxiNodes, AreaTable, Map, FactionTemplate,",
+        "-- SpellEffect:",
         f"-- https://wago.tools/db2/QuestV2/csv?build={BUILD}",
         f"-- Published zone ranges (tweaks-forever/tools/gen_zonelevels.py): {ZONE_SOURCE}",
         "-- Prev > 0: completed; Prev < 0: unknown, no pickup. NextQuestId contributes reverse prerequisites.",
@@ -673,6 +803,10 @@ def render(quests, zones, instances, centres, shifts, ferries, towns):
         "-- Item starters and spawns without zone-level coordinates have no start; no objective coordinates invented.",
         f"-- hub: the town a start or finish stands in, by single linkage at {LINK} yd, split again past {CAP} yd.",
         f"-- hubs: a town's name is its flight master's (TaxiNodes) within {NAME_REACH} yd of a giver; no other name.",
+        "-- npcs: class, pet, riding and profession trainers, battlemasters and innkeepers (creature_template",
+        "-- NpcFlags, TrainerType, npc_trainer, battlemaster_entry); rank: the highest SKILL_STEP spell taught",
+        "-- (SpellEffect); side: every side FactionTemplate.EnemyGroup is not hostile to; place: a non-seasonal spawn,",
+        f"-- as quest givers'; hub: the nearest quest place's within {LINK} yd. No side or zone-map spawn: left out.",
         "---@type string, AGFNamespace",
         "local _, ns = ...",
         "---@type AGFData",
@@ -693,6 +827,8 @@ def render(quests, zones, instances, centres, shifts, ferries, towns):
     lines.extend(f"\t\t{lua(ferry)}," for ferry in ferries)
     lines.extend(["\t},", "\thubs = {"])
     lines.extend(f"\t\t[{hub}] = {lua(town)}," for hub, town in sorted(towns.items()))
+    lines.extend(["\t},", "\tnpcs = {"])
+    lines.extend(f"\t\t[{entry}] = {lua(npc)}," for entry, npc in sorted(npcs.items()))
     lines.extend(["\t},", "\tquests = {"])
     lines.extend(f"\t\t[{qid}] = {lua(quest)}," for qid, quest in sorted(quests.items()))
     return "\n".join(lines + ["\t},", "}", ""])
@@ -707,7 +843,7 @@ def main():
     content = download(CLASSICDB_URL, f"classicdb-{CLASSICDB_COMMIT[:7]}.sql.gz", **options)
     with gzip.open(io.BytesIO(content), "rt", encoding="utf-8") as dump:
         tables = read_tables(dump)
-    quests, zones, instances, centres, shifts, ferries, towns, counts = generate(
+    quests, zones, instances, centres, shifts, ferries, towns, npcs, counts = generate(
         tables,
         db2("UiMap", ("ID", "Name_lang", "Type"), **options),
         db2("UiMapAssignment", ("ID", "UiMapID", "MapID", "AreaID", "Region_0", "Region_5", "UiMin_0"), **options),
@@ -731,15 +867,17 @@ def main():
         ),
         db2("AreaTable", ("ID", "ContinentID"), **options),
         db2("Map", ("ID", "MapName_lang", "InstanceType"), **options),
+        db2("FactionTemplate", ("ID", "EnemyGroup"), **options),
+        db2("SpellEffect", ("SpellID", "Effect", "EffectMiscValue_0", "EffectBasePointsF"), **options),
     )
     if not quests or not counts["with start"]:
         raise ValueError("No usable quests; leaving existing output untouched")
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(render(quests, zones, instances, centres, shifts, ferries, towns), encoding="utf-8")
+    OUTPUT.write_text(render(quests, zones, instances, centres, shifts, ferries, towns, npcs), encoding="utf-8")
     for name, count in sorted(counts.items()):
         print(f"{name}: {count}")
     print(
-        f"Wrote {len(quests)} quests, {len(zones)} zones, {len(centres)} map centres: "
+        f"Wrote {len(quests)} quests, {len(zones)} zones, {len(centres)} map centres, {len(npcs)} NPCs: "
         f"{OUTPUT.relative_to(ROOT)} ({OUTPUT.stat().st_size:,} bytes)"
     )
 
