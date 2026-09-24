@@ -483,6 +483,20 @@ local function LayoutRows(route, top, hidden)
 	return top
 end
 
+-- The client's title, asked for once when it has none cached; the search redraws as titles arrive (Attach).
+---@type table<integer, boolean>
+local requested = {}
+---@param questID integer
+---@return string?
+local function QuestTitle(questID)
+	local title = ns.State.QuestTitle(questID)
+	if not title and not requested[questID] then
+		requested[questID] = true
+		C_QuestLog.RequestLoadQuestByID(questID)
+	end
+	return title
+end
+
 -- One result from `top` down. A quest the player can take now is a plain row; a locked one gets the lock and its
 -- lines, unmet first. No ring and no Go: the search only explains.
 ---@param row AGFSearchRow
@@ -491,7 +505,7 @@ end
 ---@return number top below it
 local function RefreshResult(row, id, top)
 	local state, data = ns.State, ns.Data
-	local names = { title = state.QuestTitle, race = state.RaceName, class = state.ClassName }
+	local names = { title = QuestTitle, race = state.RaceName, class = state.ClassName }
 	local why = ns.Model.Why(data, state.Player(), state.Completed(), state.Log(), id, names)
 	local shown = {}
 	for _, met in ipairs({ false, true }) do
@@ -509,7 +523,7 @@ local function RefreshResult(row, id, top)
 	local quest = data.quests[id]
 	local map = quest.zone or (quest.start and quest.start.map)
 	local zone = map and (data.zones[map] or data.maps[map])
-	row.Title:SetText(state.QuestTitle(id) or quest.title)
+	row.Title:SetText(QuestTitle(id) or quest.title)
 	row.Zone:SetText(map and (state.MapName(map) or (zone and zone.name)) or "")
 	row.Lock:SetShown(shown[1] ~= nil)
 	for index, line in ipairs(row.Lines) do
@@ -686,6 +700,12 @@ local function Attach()
 	panel:HookScript("OnShow", ns.Pins.Refresh)
 	panel:HookScript("OnHide", ns.Pins.Refresh)
 	BuildContent(panel)
+	panel:RegisterEvent("QUEST_DATA_LOAD_RESULT")
+	panel:SetScript("OnEvent", function(_, _, questID)
+		if requested[questID] then
+			Refresh()
+		end
+	end)
 	CreateTabs()
 
 	EventRegistry:RegisterCallback("QuestLog.SetDisplayMode", function()

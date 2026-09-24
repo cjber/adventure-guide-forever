@@ -904,6 +904,7 @@ function harness.load(options)
 
 	-- Quest log and completion: `log` entries are {id, title, level, complete, map, x, y}.
 	local log = options.log or {}
+	h.titleRequests = {}
 	G.C_QuestLog = {
 		GetAllCompletedQuestIDs = function()
 			return options.completed or {}
@@ -931,6 +932,9 @@ function harness.load(options)
 			end
 		end,
 		GetTitleForQuestID = noop,
+		RequestLoadQuestByID = function(questID)
+			h.titleRequests[#h.titleRequests + 1] = questID
+		end,
 	}
 	-- No client names for races and classes: Model.Why's English stands in, as on a client that lacks them.
 	G.C_CreatureInfo = { GetRaceInfo = noop, GetClassInfo = noop }

@@ -611,6 +611,18 @@ do
 	equal(#Results(), 0, "search: none while completed quests load")
 	equal(Says(h, h.ns.L.LOADING), 1, "search: which it says")
 	h.ns.State.Ready = ready
+	-- Uncached titles are asked for once each, and the results redraw as one arrives.
+	local asked = #h.titleRequests
+	equal(asked > 0, true, "search: asks for uncached titles")
+	local fire = h.ns.Model.Search(h.ns.Data, h.ns.State.Player(), "Call of")[1]
+	h.Type(search, "Call of ")
+	equal(#h.titleRequests, asked, "search: once each")
+	h.G.C_QuestLog.GetTitleForQuestID = function(questID)
+		return questID == fire and "Call of Aardvarks" or nil
+	end
+	h.fire("QUEST_DATA_LOAD_RESULT", fire, true)
+	equal(Says(h, "Call of Aardvarks"), 1, "search: a title that arrives is shown")
+	h.G.C_QuestLog.GetTitleForQuestID = function() end
 	h.Type(search, "no such quest")
 	equal(#Results(), 0, "search: nothing found")
 	equal(Says(h, h.ns.L.SEARCH_NONE), 1, "search: says so")
