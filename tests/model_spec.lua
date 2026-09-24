@@ -443,6 +443,8 @@ do
 		"3 quests will soon turn grey",
 		"voice: grey risk before a town"
 	)
+	-- At the level cap no quest turns grey: there is no next level.
+	equal(Voice(Town(3, 48), nil, sentinel, 60).reason, "Sentinel Hill needs hands", "voice: no grey risk at the cap")
 	local lone = Town(3, 14)
 	lone[2].level, lone[3].level = 20, 20
 	equal(Voice(lone, nil, sentinel, 20).reason, "Sentinel Hill needs hands", "voice: one going grey is not enough")

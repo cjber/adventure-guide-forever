@@ -1196,9 +1196,10 @@ local function Summarise(journey)
 end
 
 -- A zone card's reason in the world's voice (roadmap #3), the first that applies: a story the player started, at least
--- GREY_REASON_MIN of its quests going grey at the next level, the giver who begins its chain, then its first stop's
--- town (its flight master's name, before the zone) with HANDS_MIN quests or more to pick up. Nil when none applies;
--- the caller falls back to its plain line. Only names the data has: a chain's giver, a town's flight master.
+-- GREY_REASON_MIN of its quests going grey at the next level (never at the cap), the giver who begins its chain, then
+-- its first stop's town (its flight master's name, before the zone) with HANDS_MIN quests or more to pick up. Nil when
+-- none applies; the caller falls back to its plain line. Only names the data has: a chain's giver, a town's flight
+-- master.
 local GREY_REASON_MIN, HANDS_MIN = 2, 3
 ---@param journey AGFJourney
 ---@param chain? {continues: boolean, giver?: string}
@@ -1208,8 +1209,9 @@ local function WorldReason(data, log, player, journey, chain)
 	if chain and chain.continues then
 		return L.CONTINUES_STORY
 	end
+	-- At the level cap there is no next level, so nothing is about to turn grey.
 	local grey = 0
-	for _, step in ipairs(journey.steps) do
+	for _, step in ipairs(player.level < player.maxLevel and journey.steps or {}) do
 		for _, id in ipairs(step.pickups or {}) do
 			grey = grey + (GreyRisk(QuestLevel(data, log, player, id), player) and 1 or 0)
 		end
