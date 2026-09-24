@@ -99,8 +99,10 @@ read_globals = {
 	"UIParent",
 	-- Moments.lua
 	"AddonCompartmentFrame",
-	-- Asides.lua (roadmap #25), read with a nil check
+	-- Asides.lua and PvP.lua (roadmap #12, #25), each read with a nil check
 	"GetNumUnspentTalents",
+	"C_PvP",
+	"IsInInstance",
 	-- Settings.lua
 	"Settings",
 	-- Dump.lua: frames Panel.lua and Tracker.lua create by name

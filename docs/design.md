@@ -537,7 +537,8 @@ aside shown changes. The first provider's answer the player has not skipped or t
   place for the player) it is text only: "Visit your class trainer · 3 new spells". Unspent talent points (#25):
   "You have 2 talent points to spend" with the Legion `minortalents-icon-book` (CSV:388, the atlas's one square
   talent mark), from `GetNumUnspentTalents` (R5 found it; `UnitCharacterPoints` is missing on Forever), while any wait,
-  asked again on `CHARACTER_POINTS_CHANGED`; no API, no line.
+  asked again on `CHARACTER_POINTS_CHANGED`; no API, no line. Then a battleground open to
+  you (§2.15). Providers are asked in that order, the TOC's.
 - **News again.** A provider may give `renew`, how often the aside became news (a talent point gained): Skip for now
   holds only while it is unchanged, so each new point brings the line back once. An event a provider needs is
   registered through `Asides.RefreshOn`, which skips one the client lacks.
@@ -606,6 +607,27 @@ cache that did, Integrations' town places, is keyed on it).
 - **Fallback:** any failed check or read keeps the bundled data; `/agf audit` names the source and the reason.
   Questie and QuestieDB carry no licence, so the repo, specs and goldens hold none of their code, types or data; the
   specs use a synthetic stand-in, mostly a mirror of the bundled data (`harness.questieMirror`).
+
+### 2.15 PvP (roadmap #12)
+
+`PvP.lua`, after `Asides.lua` in the TOC, gives an aside; the opt-in card is the planner's.
+
+- **Open to you.** Only `C_PvP.GetLevelUpBattlegrounds(level)` says which battlegrounds are open: each level up to
+  the player's is asked once (R5: Warsong Gulch at 10, Arathi Basin at 20, Darkspear Islands at 30). `canEnter` gates
+  nothing, since R5 found it false for all three at level 19. A battleground behind a condition (Battle for
+  Blackrock) or with no levels (Battle for Gilneas) is on no list, so neither shows falsely. No API, nothing shows.
+- **The aside.** "Warsong Gulch is open to you" with the minimap's `battlemaster` mark (CSV:1319), for the newest open
+  battleground, until the character stands in a battleground (`IsInInstance` names "pvp") at a level at or past the
+  one it opened at: `charDB.battled` keeps the highest such level, so the next battleground to open brings the next
+  line. Its place is the nearest battlemaster of the player's side the data has (CMaNGOS `battlemaster_entry`, whose
+  `bg_template` is the BattlemasterList ID the API gives); Darkspear Islands has none, so its line is text only.
+- **The Battlegrounds card.** Opt-in: *Battlegrounds* in the cog, per character, off by default. The card is the
+  newest open battleground the data places a battlemaster for and the player is interested in (the chosen one while
+  it is open), titled by the client's name, "A battleground open to you", with one step, "Battlemaster in
+  Crossroads" ("Queue for Warsong Gulch"; `kind = "battlemaster"`, key `battlemaster:<npc>`, no quests), which combat's
+  cheap rebuild keeps. It is a diversion (R4) as new as the level the battleground opened at, after the dungeon on a
+  tie; the chosen one keeps its slot. A new card's moment reads "Arathi Basin is open to you". The stock queue is
+  never opened: Forever has no `TogglePVPFrame` (R5).
 
 ## 3. Copy style sheet
 
@@ -882,6 +904,11 @@ Nothing below has been validated in game yet.
 19. Talent points (§2.11): a level that brings a point shows "You have 1 talent point to spend" above the cards and
     in the tracker, with the talents book and no ring; spending it removes the line at once; after Skip for now, the
     next level's point brings it back. Confirms `GetNumUnspentTalents` counts Forever's points (R5 read 0 at 19).
+20. Battlegrounds (§2.15): at 10 or more, "Warsong Gulch is open to you" with the battlemaster mark, and its click
+    goes to the nearest battlemaster of your side. Entering a battleground ends it for good (`IsInInstance` naming
+    "pvp" there is unprobed). *Battlegrounds* in the cog is off; ticked, with the card chosen, the step rings the
+    battlemaster, and unticking hides the card but keeps the choice. At 30, "Darkspear Islands is open to you" is
+    text only; Battle for Blackrock and Battle for Gilneas never show.
 
 ## 9. Open questions that need client probes
 

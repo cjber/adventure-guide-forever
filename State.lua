@@ -90,6 +90,39 @@ function State.StandingName(reaction)
 	return type(label) == "string" and label or nil
 end
 
+-- The battlegrounds that open at each level, as the client lists them (C_PvP.GetLevelUpBattlegrounds: Warsong Gulch at
+-- 10, Arathi Basin at 20, Darkspear Islands at 30 in the probe); they never change, so each level is asked once.
+---@type table<integer, LevelUpBattlegroundInfo[]>
+local opensAt = {}
+
+-- Roadmap #12: every battleground open to the player, the newest first (then by ID), each at the level it opened. Only
+-- the client's level-up list says so: the probe found `canEnter` false for all three at level 19, so it gates nothing,
+-- and a battleground behind a condition (Battle for Blackrock) or with no levels (Battle for Gilneas) is on no list.
+-- Empty on a client without the API.
+---@return AGFBattleground[]
+function State.Battlegrounds()
+	local pvp, open, seen = C_PvP, {}, {}
+	if not (pvp and pvp.GetLevelUpBattlegrounds) then
+		return open
+	end
+	for level = 1, UnitLevel("player") do
+		opensAt[level] = opensAt[level] or pvp.GetLevelUpBattlegrounds(level) or {}
+		for _, info in ipairs(opensAt[level]) do
+			if not seen[info.id] then
+				seen[info.id] = true
+				open[#open + 1] = { id = info.id, name = info.name, level = level }
+			end
+		end
+	end
+	table.sort(open, function(a, b)
+		if a.level ~= b.level then
+			return a.level > b.level
+		end
+		return a.id < b.id
+	end)
+	return open
+end
+
 ---@return AGFPlayer
 function State.Player()
 	local englishFaction = UnitFactionGroup("player")
@@ -115,6 +148,7 @@ function State.Player()
 		y = y,
 		skills = skills,
 		reputation = State.Reputation,
+		battlegrounds = State.Battlegrounds(),
 	}
 end
 

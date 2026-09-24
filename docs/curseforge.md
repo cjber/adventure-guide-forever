@@ -19,6 +19,7 @@ It looks like it came with the game: a tab in the quest log beside Quests, cards
 - **Dungeons when you ask**: a card for the dungeon with the most quests you can take, routed to their givers. Outdoor elite quests stay on the zone cards, marked optional. Raids are never suggested.
 - **Class trainer**: with Tweaks Forever, a line tells you when you have new spells to train and names the town of your nearest trainer. Click it to go there. A chosen journey through that town stops there to train. Skip it for now, or say you're not interested.
 - **Talent points**: a line while you have talent points to spend.
+- **Battlegrounds**: a line when a battleground opens to you, routed to a battlemaster; turn on *Battlegrounds* for a card.
 - **Something new**: when a level or a new zone brings a journey you haven't seen, the tracker says so once and the Adventure tab gets an alert pip. Nothing opens by itself.
 - **Map pins and quest givers** are off by default. Turn them on in the guide's settings menu.
 

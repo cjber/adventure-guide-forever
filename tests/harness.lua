@@ -1035,12 +1035,28 @@ function harness.load(options)
 		end,
 	}
 
-	-- Unspent talent points, only when a spec gives options.talents (the count; a spec edits h.talents), so by
-	-- default the client lacks GetNumUnspentTalents.
-	h.talents = options.talents
+	-- PvP and talents, each only when a spec gives it, so by default the client lacks the API: options.battlegrounds
+	-- maps a level to the {id, name} list C_PvP.GetLevelUpBattlegrounds gives there (h.levelUpAsks counts the asks);
+	-- options.talents is the unspent count; options.instanceType what IsInInstance names. A spec edits h.talents and
+	-- h.instanceType.
+	if options.battlegrounds then
+		h.levelUpAsks = 0
+		G.C_PvP = {
+			GetLevelUpBattlegrounds = function(level)
+				h.levelUpAsks = h.levelUpAsks + 1
+				return options.battlegrounds[level] or {}
+			end,
+		}
+	end
+	h.talents, h.instanceType = options.talents, options.instanceType
 	if options.talents then
 		G.GetNumUnspentTalents = function()
 			return h.talents
+		end
+	end
+	if options.instanceType then
+		G.IsInInstance = function()
+			return h.instanceType ~= "none", h.instanceType
 		end
 	end
 
