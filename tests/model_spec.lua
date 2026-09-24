@@ -484,6 +484,19 @@ local emptied = Model.Refresh(
 	toured
 )
 equal(#emptied.steps, 0, "town, combat: an empty town goes")
+-- Within a town: hand-ins first, then a quest grey at the next level, then nearest the player's level, then by ID; the
+-- givers and the hand-in Show quest opens follow that order.
+local levelled = Town()
+levelled.quests[1].level, levelled.quests[2].level, levelled.quests[4].level = 20, 13, 17
+local ledgered = Carried()
+ledgered[11].level = 13
+stop = Model.Plan(levelled, visitor, {}, ledgered, townPrefs).steps[1]
+equal(table.concat(stop.quests, " "), "11 10 2 3 4 1", "town order: hand-ins, grey soon, level distance, ID")
+equal(table.concat(stop.givers, " "), "Marris Osgood", "town order: givers as their quests come")
+equal(stop.handins[1], 11, "town order: Show quest opens the hand-in grey soonest")
+stop = Model.Plan(levelled, visitor, {}, {}, townPrefs).steps[1]
+equal(table.concat(stop.quests, " "), "2 3 4 1", "town order: pickups only")
+equal(table.concat(stop.givers, " "), "Marris Osgood", "town order: the grey-soon quest's giver first")
 -- One quest keeps the single step's title.
 town.quests[2], town.quests[3], town.quests[4] = nil, nil, nil
 town = { quests = town.quests, zones = town.zones, maps = town.maps, continents = town.continents, hubs = town.hubs }

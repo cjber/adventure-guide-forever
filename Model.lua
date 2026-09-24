@@ -405,6 +405,18 @@ function Model.Givers(data, player, completed, log, mapID)
 	return givers
 end
 
+-- A quest's level for its colour: the log's, the data's otherwise; a scaling quest (-1) is the player's own.
+local function QuestLevel(data, log, player, id)
+	local entry, quest = log[id], data.quests[id]
+	local level = (entry and entry.level) or (quest and quest.level)
+	return (level and level > 0) and level or player.level
+end
+
+-- Not grey now, grey at the next level: the stock colours' last chance.
+local function GreyRisk(level, player)
+	return not Model.IsGray(level, player.level) and Model.IsGray(level, player.level + 1)
+end
+
 local function Optional(quest, level, player)
 	return (quest and (quest.elite or quest.dungeon) and true)
 		or level > player.level + 2
@@ -472,14 +484,34 @@ local function Join(stop, list, id, place, optional)
 	stop.optional = stop.optional or optional or nil
 end
 
--- A hub stop's quests (hand-ins first, then by ID), givers, group count, title and detail, from its pickups and
--- hand-ins. One quest keeps the single step's title; several take the town's name, else their busiest giver's.
+-- A hub stop's quests, givers, group count, title and detail, from its pickups and hand-ins. The quests go hand-ins
+-- first, then those grey at the next level, then nearest the player's level, then by ID (docs/plan.md §7.3); the givers
+-- and the quest ShowQuest opens follow that order. One quest keeps the single step's title; several take the town's
+-- name, else their busiest giver's.
 ---@param step AGFStep
 ---@param log table<integer, AGFLogQuest>
-local function Describe(data, log, step)
+local function Describe(data, log, player, step)
 	local L = ns.L
-	table.sort(step.handins)
-	table.sort(step.pickups)
+	local handin, risk, distance = {}, {}, {}
+	for _, list in ipairs({ step.handins, step.pickups }) do
+		for _, id in ipairs(list) do
+			local level = QuestLevel(data, log, player, id)
+			handin[id], risk[id], distance[id] =
+				list == step.handins, GreyRisk(level, player), math.abs(level - player.level)
+		end
+	end
+	local function Before(a, b)
+		if handin[a] ~= handin[b] then
+			return handin[a]
+		elseif risk[a] ~= risk[b] then
+			return risk[a]
+		elseif distance[a] ~= distance[b] then
+			return distance[a] < distance[b]
+		end
+		return a < b
+	end
+	table.sort(step.handins, Before)
+	table.sort(step.pickups, Before)
 	local quests, givers, counts, group = {}, {}, {}, 0
 	for _, list in ipairs({ step.handins, step.pickups }) do
 		for _, id in ipairs(list) do
@@ -805,13 +837,6 @@ local function Order(selected, origin, where, away, cheap)
 	return steps
 end
 
--- A quest's level for its colour: the log's, the data's otherwise; a scaling quest (-1) is the player's own.
-local function QuestLevel(data, log, player, id)
-	local entry, quest = log[id], data.quests[id]
-	local level = (entry and entry.level) or (quest and quest.level)
-	return (level and level > 0) and level or player.level
-end
-
 -- A step's worth in yards (VALUE_* above), so selection weighs it against the reach. Only a step placed in yards has
 -- one: a map the data cannot place is measured in map units, where yards mean nothing.
 ---@param step AGFStep
@@ -819,7 +844,7 @@ local function Value(data, log, player, step)
 	local risk, weak = false, true
 	for _, id in ipairs(step.quests) do
 		local level = QuestLevel(data, log, player, id)
-		risk = risk or (not Model.IsGray(level, player.level) and Model.IsGray(level, player.level + 1))
+		risk = risk or GreyRisk(level, player)
 		weak = weak and (level - player.level >= RED or Optional(data.quests[id], level, player))
 	end
 	local handins = step.handins and #step.handins or (step.kind == "turnin" and 1 or 0)
@@ -892,7 +917,7 @@ local function Build(data, player, log, candidates, prefs, mapName, cheap, lead,
 	end
 	for _, step in ipairs(selected) do
 		if step.kind == "hub" then
-			Describe(data, log, step)
+			Describe(data, log, player, step)
 		end
 	end
 
@@ -1268,7 +1293,7 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 		end
 		local copy = Copy(step) --[[@as AGFStep]]
 		copy.pickups, copy.handins = pickups, handins
-		Describe(data, log, copy)
+		Describe(data, log, player, copy)
 		-- A point whose giver has nothing left moves to the first quest's place.
 		local here = false
 		for _, id in ipairs(copy.quests) do

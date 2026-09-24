@@ -10,4 +10,4 @@ card | nextzone:1432 | Head to Loch Modan | 10 quests near your level | For leve
   step 3 | hub:137 | Mountaineer Stormpike | 1432 0.2476,0.1840 | 2 to pick up
   step 4 | hub:126 | Pick up quests: Bingles Blastenheimer | 1432 0.6356,0.4792 | near your level
   step 5 | hub:117 | Pick up quests: Prospector Ironband | 1432 0.6593,0.6562 | near your level
-  step 6 | hub:118 | Daryl the Youngling | 1432 0.8176,0.6166 | 2 to pick up
+  step 6 | hub:118 | Marek Ironheart | 1432 0.8176,0.6166 | 2 to pick up

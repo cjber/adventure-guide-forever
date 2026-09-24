@@ -11,7 +11,7 @@ card | story:1413 | The Barrens story | Chapter 1 of 5 | Begins a new story | ma
   step 6 | hub:314 | Pick up quests: Gilthares Firebough | 1413 0.6196,0.5496 | near your level
   step 7 | hub:309 | Camp Taurajo, The Barrens | 1413 0.4510,0.5768 | 2 to pick up
 card | nextzone:1442 | Head to Stonetalon Mountains | 11 quests near your level | For level 20 | map 1442
-  step 1 | hub:355 | Seereth Stonebreak | 1442 0.8593,0.9789 | 2 to pick up
+  step 1 | hub:355 | Makaba Flathoof | 1442 0.8593,0.9789 | 2 to pick up
   step 2 | hub:357 | Xen'Zilla | 1442 0.7325,0.9489 | 2 to pick up
   step 3 | hub:360 | Pick up quests: Kaya Flathoof | 1442 0.7348,0.8559 | near your level
   step 4 | hub:371 | Sun Rock Retreat, Stonetalon Mountains | 1442 0.4722,0.6404 | 3 to pick up
