@@ -10,7 +10,18 @@ Each version's entry is also its release notes on GitHub, CurseForge and Wago.
 
 ## [Unreleased]
 
-- **Added** an Adventure Guide tab on the world map's quest log. It suggests up to nine next steps for your level: quests to hand in, quests to pick up, and objectives to finish. You can pick the zone, choose whether dungeon quests count, and pin or skip steps.
-- **Added** an Adventure Guide section at the top of the objective tracker, showing the current step and the one after it.
-- **Added** numbered map pins for the route, and a *Go* button that hands the rest of the route to Shortest Path Forever as one numbered journey, or sets a waypoint without it.
-- **Added** the game's "!" on the world map over every quest giver with a quest you can take now. Hover one for its quests, or click to travel there. Turn it off under *Show quest givers*.
+The first release: a few journeys to choose from on the world map, each with a reason, and a short route for the one you pick.
+
+- **An Adventure Guide tab on the world map's quest log** offers up to three journeys: finish the quests you carry, follow a zone's story, or head to the next zone with enough quests for your level. Only the journey you pick shows its steps, up to nine, so you choose where to go rather than being handed a list.
+- **Zone stories read as chapters.** A chain shows "Chapter 2 of 4" only when the quest data proves how long it is, and never names a later chapter, so the story is not spoiled. Finishing a story of known length glows the tracker once and plays the game's stage-end sound.
+- **Choosing a journey moves nothing until you press Go.** The map turns to the journey's zone and previews its numbered steps. Go hands the steps from there on to Shortest Path Forever as one journey, or sets the game's own waypoint without it, or when Shortest Path can't plan the trip. Go warns you first if it would replace another addon's journey.
+- **Stop only removes what the guide set.** A waypoint you placed or moved yourself survives Stop, even after a `/reload`.
+- **Routes cross the sea at most once.** Steps are ordered by distance, a far turn-in never pushes out a nearby pickup, and a quest to hand in on another continent waits at the end with "Hand in when you're in Stormwind City".
+- **Search shows why a quest isn't offered.** Type three letters or more and each match lists what the data says it needs, ticked when you meet it: level, earlier quests, race, class or faction.
+- **An Adventure Guide section in the objective tracker** shows the current step, how you'll travel there with Shortest Path Forever ("Fly to Sentinel Hill · 6 min"), and the step after. Click its title to start the route and track the route's quests; right-click for Go, Skip for now or another journey. The first login of a session shows where you left off.
+- **Clicking a quest from your log** in the guide or the tracker opens Blizzard's own quest details, never in combat.
+- **Dungeon quests only when you ask.** Turn on *Dungeons* in the guide's settings menu and a card offers the dungeon with the most quests you can take, routed to their quest givers. Raids are never suggested. Quests already in your log always show, whatever the filters.
+- **Visit your class trainer** appears above the steps when Tweaks Forever says you have new spells to train. It has no map mark, because the data has no trainer locations.
+- **The map stays yours.** With the tab closed the guide draws nothing on the world map. Route pins and a "!" over every quest giver with a quest you can take now are opt-in under *Show map pins* and *Show quest givers*.
+- **Skip for now** hides a step until your next `/reload`; *Skipped (n)* under the steps brings one back.
+- **A quest the data can't check is never suggested,** and a step never points at a place the data doesn't have. Quest and zone names come from the game, in your language.
