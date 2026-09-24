@@ -9,7 +9,6 @@
 ---@field y number
 ---@field name string NPC or object name
 ---@field hub? integer the town it stands in (tools/gen_quests.py town_hubs); nil when its map has no world rectangle
----@field r? number a quest's objective area only (Model.lua Area): its radius in yards, 0 for a single point
 
 ---@class AGFQuest
 ---@field title string English title from the source data; the client's own title wins when cached
@@ -110,6 +109,7 @@
 -- One objective of a logged quest as the client counts it.
 ---@class AGFLogObjective
 ---@field type string "monster", "object", "item", "event", or another kind the data has no slot for
+---@field text string the client's words for it with its count, e.g. "Redridge Gnoll slain: 3/10"; may be empty
 ---@field done boolean
 ---@field have integer
 ---@field need integer
@@ -123,12 +123,32 @@
 ---@field waypoint? {map: integer, x: number, y: number} the native waypoint the last Go set, while it may still be ours
 ---@field guided? string the key of the chosen journey whose route AGF started, while that guidance should run
 
--- "hub" is a town's stop (its pickups and agreeing hand-ins), "turnin" a hand-in at the client's waypoint, and
--- "objective" or "dungeon" (a group quest) the log's quests under way.
----@alias AGFStepKind "hub"|"turnin"|"objective"|"dungeon"|"trainer"|"battlemaster"
+-- "town" is a visit to a town (its pickups and agreeing hand-ins), "turnin" a hand-in anywhere else, and "area" or
+-- "dungeon" (a group quest's) where the log's quests under way are done.
+---@alias AGFStepKind "town"|"turnin"|"area"|"dungeon"|"trainer"|"battlemaster"
+
+-- Where a quest under way is done next (Model.lua Nodes): one open objective's area, or the client's point for the
+-- quest with every open objective.
+---@class AGFNode
+---@field map integer
+---@field x number
+---@field y number
+---@field r number its radius in yards, 0 for a single point
+---@field slot integer the data's need slot of its first objective; 0 when none is known
+---@field objectives AGFAreaObjective[]
+
+-- One open objective an area step holds. `finish` is the town the quest is handed in at, which a route visits after.
+---@class AGFAreaObjective
+---@field id integer the quest
+---@field slot integer the data's need slot
+---@field have? integer the client's count, when its objectives line up with the data's slots
+---@field need? integer the count it needs, the client's else the data's
+---@field text? string the client's words for it, when they line up and it has any
+---@field finish? string the town key ("town:<hub>") of the quest's hand-in, when the data has one
 
 ---@class AGFStep
----@field key string stable identity for skips and the resume line, e.g. "hub:61" or "turnin:4581"
+---@field key string stable identity for skips and the resume line: "town:<hub>", "area:<quest>:<slot>" (its first
+--- objective's), "turnin:<quest>" or "trainer:<npc>"
 ---@field kind AGFStepKind
 ---@field title string e.g. "Turn in: Bathran's Hair", "Pick up quests: Guard Parker" or "Lakeshire, Redridge"
 ---@field detail string grey second line, e.g. "2 to hand in, 4 to pick up"
@@ -137,6 +157,8 @@
 ---@field hub? integer a town's hub (AGFPlace.hub); nil for a town the generator could not place
 ---@field pickups? integer[] a town's eligible quests this card wants there, ascending
 ---@field handins? integer[] a town's finished log quests handed in there, ascending
+---@field follow? integer[] the chapters a town's hand-ins open there (Model.lua Opens), picked up after them
+---@field objectives? AGFAreaObjective[] an area's open objectives, by quest and slot
 ---@field givers? string[] a town's distinct NPC and object names, in `quests` order
 ---@field group? integer how many of a town's quests are elite, dungeon or raid
 ---@field spots? table<integer, AGFPlace> a town's quest ID -> its start or finish there; the point is one of them
@@ -146,7 +168,7 @@
 ---@field place? string the town's name, else its busiest giver; a turn-in's NPC only where its waypoint agrees; a trainer's NPC
 ---@field zone? string the client's name for `map`, else the data's
 ---@field optional? boolean elite/group or outside the player's level band
----@field r? number an objective step's radius in yards: its area's, 0 for a point
+---@field r? number an area's radius in yards, wide enough for all its objectives; 0 for a point
 ---@field chapter? string the story card's chapter line, on the step that takes the chain up
 
 ---@class AGFSkipped
@@ -404,6 +426,8 @@
 ---@field CLICK_WAYPOINT string
 ---@field STEP_NUMBERED string format: route index, step title
 ---@field QUEST_LEVEL string format: quest level, quest title
+---@field OBJECTIVE_LINE string format: the client's words for an open objective, with its count
+---@field OBJECTIVE_COUNT string format: an open objective's count so far, the count it needs
 ---@field MENU_QUESTS string
 ---@field MENU_DUNGEONS string
 ---@field MENU_MAP_PINS string

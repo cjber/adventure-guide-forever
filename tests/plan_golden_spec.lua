@@ -51,13 +51,23 @@ local function Render(fixture, route)
 			journey.reason or "-",
 			journey.map
 		)
+		-- An area adds its ring and objectives (quest/slot); a town the chapters that follow its hand-ins.
 		for index, step in ipairs(journey.steps) do
-			lines[#lines + 1] = ("  step %d | %s | %s | %s | %s"):format(
+			local extra = {}
+			for _, objective in ipairs(step.objectives or {}) do
+				extra[#extra + 1] = objective.id .. "/" .. objective.slot
+			end
+			for _, id in ipairs(step.follow or {}) do
+				extra[#extra + 1] = "then " .. id
+			end
+			lines[#lines + 1] = ("  step %d | %s | %s | %s | %s%s%s"):format(
 				index,
 				step.key,
 				step.title,
 				Place(step.map, step.x, step.y),
-				step.reason
+				step.reason,
+				step.objectives and (" | %d yd"):format(step.r + 0.5) or "",
+				#extra > 0 and " | " .. table.concat(extra, " ") or ""
 			)
 		end
 	end
@@ -141,7 +151,7 @@ for _, fixture in ipairs(characters.list) do
 		local story, areas = route.journeys[1], 0
 		equal(story.key, "zone:1433", "human19_redridge_full: Redridge is card 1")
 		for _, step in ipairs(story.steps) do
-			if step.kind == "objective" or step.kind == "dungeon" then
+			if step.kind == "area" or step.kind == "dungeon" then
 				areas = areas + 1
 				equal(step.map, 1433, "human19_redridge_full: " .. step.key .. " is on Redridge")
 				local placed = false

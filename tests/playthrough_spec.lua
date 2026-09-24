@@ -170,7 +170,7 @@ for _, race in ipairs(RACES) do
 							end
 						end
 					end
-					if step.kind == "objective" or step.kind == "dungeon" then
+					if step.kind == "area" or step.kind == "dungeon" then
 						for _, id in ipairs(step.quests) do
 							if log[id] then
 								Finished(log, id)

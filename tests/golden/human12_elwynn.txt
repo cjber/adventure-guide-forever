@@ -1,10 +1,10 @@
 # human12_elwynn: level 12, side 1, at 1429 0.4200,0.6500
 card (chosen) | zone:1439 | Darkshore story | Chapter 1 of 4 | A chain begins with Thundris Windweaver | map 1439
-  step 1 | hub:452 | Auberdine, Darkshore | 1439 0.3610,0.4493 | Begins a new story
-  step 2 | hub:449 | Pick up quests: Sentinel Tysha Moonblade | 1439 0.4030,0.5973 | near your level
+  step 1 | town:452 | Auberdine, Darkshore | 1439 0.3610,0.4493 | Begins a new story
+  step 2 | town:449 | Pick up quests: Sentinel Tysha Moonblade | 1439 0.4030,0.5973 | near your level
 card | calling | Your calling | Chapter 2 of 4 | A task for your class: Bartleby the Drunk | map 1453
-  step 1 | hub:80 | Pick up quests: Harry Burlguard | 1453 0.7713,0.5326 | Continues a story you started
+  step 1 | town:80 | Pick up quests: Harry Burlguard | 1453 0.7713,0.5326 | Continues a story you started
 card | zone:1432 | Head to Loch Modan | 5 quests near your level | For level 14 | map 1432
-  step 1 | hub:112 | Mountaineer Cobbleflint | 1432 0.2207,0.7313 | 2 to pick up
-  step 2 | hub:123 | Thelsamar, Loch Modan | 1432 0.3483,0.4928 | 2 to pick up
-  step 3 | hub:137 | Pick up quests: Mountaineer Stormpike | 1432 0.2476,0.1840 | near your level
+  step 1 | town:112 | Mountaineer Cobbleflint | 1432 0.2207,0.7313 | 2 to pick up
+  step 2 | town:123 | Thelsamar, Loch Modan | 1432 0.3483,0.4928 | 2 to pick up
+  step 3 | town:137 | Pick up quests: Mountaineer Stormpike | 1432 0.2476,0.1840 | near your level

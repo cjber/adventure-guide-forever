@@ -281,13 +281,14 @@ local function LoadPoints(log)
 end
 
 -- The client's objectives for a quest, in its order: each one's type ("monster", "object", "item", "event", ...),
--- whether it is done, and its count.
+-- its words, whether it is done, and its count.
 ---@return AGFLogObjective[]
 local function Objectives(questID)
 	local objectives = {}
 	for index, info in ipairs(C_QuestLog.GetQuestObjectives(questID) or {}) do
 		objectives[index] = {
 			type = info.type,
+			text = info.text or "",
 			done = info.finished == true,
 			have = info.numFulfilled or 0,
 			need = info.numRequired or 0,

@@ -538,18 +538,19 @@ local function Hub(place)
 	return place.hub and tostring(place.hub) or string.format("%d:%.4f:%.4f", place.map, place.x, place.y)
 end
 
--- The stop for `place`'s town among `stops` (by key), made and added to `steps` when the town has none yet. Its point
--- is the first quest's place until Build moves it to the giver nearest the route. `prefix` keeps the carry card's
--- towns ("handin:") apart from the other cards' ("hub:"), so a skip on one card never empties a town on another.
+-- The visit to `place`'s town among `stops` (by key), made and added to `steps` when the card has none yet, with quest
+-- `id` added to its `list` ("handins" or "pickups"), which `place` finishes or starts. Every card keys a town the same
+-- way, so a town skipped is skipped wherever it shows. Its point is the first quest's place until Build moves it to
+-- the giver nearest the route. `follow` holds the chapters its hand-ins open there (Opens).
 ---@param place AGFPlace
----@param prefix string
+---@param list "handins"|"pickups"
 ---@return AGFStep
-local function HubStop(stops, steps, place, prefix)
-	local key = prefix .. Hub(place)
-	local stop = stops[key]
-	if not stop then
-		stop = {
-			kind = "hub",
+local function Visit(stops, steps, place, list, id)
+	local key = "town:" .. Hub(place)
+	local town = stops[key]
+	if not town then
+		town = {
+			kind = "town",
 			key = key,
 			hub = place.hub,
 			title = "",
@@ -558,6 +559,7 @@ local function HubStop(stops, steps, place, prefix)
 			quests = {},
 			pickups = {},
 			handins = {},
+			follow = {},
 			givers = {},
 			group = 0,
 			spots = {},
@@ -565,20 +567,16 @@ local function HubStop(stops, steps, place, prefix)
 			x = place.x,
 			y = place.y,
 		}
-		stops[key] = stop
-		steps[#steps + 1] = stop
+		stops[key] = town
+		steps[#steps + 1] = town
 	end
-	return stop
+	town[list][#town[list] + 1] = id
+	town.quests[#town.quests + 1] = id
+	town.spots[id] = place
+	return town
 end
 
--- Adds quest `id`, which `place` starts or finishes, to a stop's `list` (its pickups or hand-ins).
-local function Join(stop, list, id, place)
-	list[#list + 1] = id
-	stop.quests[#stop.quests + 1] = id
-	stop.spots[id] = place
-end
-
--- A hub stop's quests, givers, group count, title and detail, from its pickups and hand-ins; it is optional only when
+-- A town's quests, givers, group count, title and detail, from its pickups and hand-ins; it is optional only when
 -- every quest there is. The quests go hand-ins
 -- first, then those grey at the next level, then nearest the player's level, then by ID (docs/plan.md §7.3); the givers
 -- and the quest ShowQuest opens follow that order. One quest keeps the single step's title; several take the town's
@@ -653,28 +651,31 @@ local function Describe(data, log, player, step)
 	step.detail = step.reason
 end
 
--- A town where a hand-in opens the next chapter of its chain says so, when the data proves that chapter starts in the
--- same town and Check proves it shut now and open once the hand-in is done (the data's `next` alone is display-only).
--- It is never added as a pickup before the turn-in: it comes with the rebuild after QUEST_TURNED_IN. Nothing is said
--- when the data cannot prove it.
+-- A town's `follow`: the next chapters its hand-ins open there, when the data proves each starts in the same town and
+-- Check proves it shut now and open once the hand-in is done (the data's `next` alone is display-only). The town then
+-- says so. A follow-up is never added as a pickup before the turn-in: it comes with the rebuild after QUEST_TURNED_IN,
+-- and `follow` tells a route the hand-in comes first. Nothing is said when the data cannot prove it.
 ---@param step AGFStep
 local function Opens(data, player, completed, log, step)
-	local groups = Index(data).groups
+	local groups, follow = Index(data).groups, {}
 	for _, id in ipairs(step.hub and step.handins or {}) do
 		local nextID = data.quests[id] and data.quests[id].next
-		local follow = nextID and data.quests[nextID]
+		local quest = nextID and data.quests[nextID]
 		local after = setmetatable({ [id] = true }, { __index = completed })
 		if
-			follow
-			and follow.start
-			and follow.start.hub == step.hub
+			quest
+			and quest.start
+			and quest.start.hub == step.hub
 			and not Eligible(data, player, completed, log, nextID, groups)
 			and Eligible(data, player, after, log, nextID, groups)
 		then
-			step.reason = ns.L.OPENS_CHAPTER_HERE
-			step.detail = #step.quests == 1 and step.reason or step.detail
-			return
+			follow[#follow + 1] = nextID
 		end
+	end
+	step.follow = follow
+	if #follow > 0 then
+		step.reason = ns.L.OPENS_CHAPTER_HERE
+		step.detail = #step.quests == 1 and step.reason or step.detail
 	end
 end
 
@@ -682,11 +683,12 @@ end
 -- use takes 0-3, a collect 4-7, an explore 16.
 local SLOTS = { monster = { 0, 3 }, object = { 0, 3 }, item = { 4, 7 }, event = { 16, 16 } }
 
--- The data's need slots still open for a quest under way. The client's objectives line up with the slots only when it
--- lists as many as the data needs and each kind fills a slot of its own; otherwise every slot counts as open.
+-- The data's need slots still open for a quest under way, each to the client's objective for it. The client's
+-- objectives line up with the slots only when it lists as many as the data needs and each kind fills a slot of its
+-- own; otherwise every slot counts as open, to `true`, and the second return is false.
 ---@param quest AGFQuest
 ---@param entry AGFLogQuest
----@return table<integer, boolean>
+---@return table<integer, AGFLogObjective|true>, boolean aligned
 local function OpenSlots(quest, entry)
 	local slots, open = {}, {}
 	for slot in pairs(quest.need or {}) do
@@ -694,7 +696,7 @@ local function OpenSlots(quest, entry)
 	end
 	local objectives = entry.objectives
 	if not objectives or #objectives ~= #slots then
-		return open
+		return open, false
 	end
 	table.sort(slots)
 	local aligned, used = {}, {}
@@ -706,87 +708,130 @@ local function OpenSlots(quest, entry)
 			end
 		end
 		if not slot then
-			return open
+			return open, false
 		end
-		used[slot], aligned[slot] = true, not objective.done
+		used[slot], aligned[slot] = true, (not objective.done) and objective or nil
 	end
-	return aligned
+	return aligned, true
 end
 
--- Where a quest under way is done next in the data: the first area (the generator orders them) of its lowest open
--- slot, with its radius. Nil when the data places none.
----@param quest AGFQuest
+-- One open objective of a quest under way: the client's count and words for it when its objectives line up with the
+-- data's slots (`counted`), the data's count otherwise, and the town it is handed in at, which a route visits after.
+---@param quest? AGFQuest
 ---@param entry AGFLogQuest
-local function Area(quest, entry)
-	local open, best = OpenSlots(quest, entry), nil
-	for _, area in ipairs(quest.obj or {}) do
-		if open[area[1]] and (not best or area[1] < best[1]) then
-			best = area
-		end
-	end
-	local map = best and (best[5] or quest.zone)
-	if not (best and map) then
-		return nil
-	end
-	return { map = map, x = best[2] / 1000, y = best[3] / 1000, r = best[4] }
+---@param slot integer
+---@param counted AGFLogObjective|true|nil
+---@return AGFAreaObjective
+local function Objective(quest, entry, slot, counted)
+	local client = counted ~= true and counted or nil
+	local finish = quest and quest.finish
+	return {
+		id = entry.id,
+		slot = slot,
+		have = client and client.have,
+		need = client and client.need or (quest and quest.need and quest.need[slot]),
+		text = client and client.text ~= "" and client.text or nil,
+		finish = (finish and ValidPlace(finish)) and "town:" .. Hub(finish) or nil,
+	}
 end
 
--- Where a log quest is done next. Finished, its hand-in: the client's waypoint, else the data's finish. Under way, a
--- waypoint when the client gives one (the live client gives none), else the client's point for it on the map, else
--- the data's area for its first open objective. Nil when nothing places it.
+-- Where a quest under way is done next, in slot order: each open objective the data places, at its first area (the
+-- generator orders them) with its radius. The client's point for the quest stands in for them all when its objectives
+-- don't line up with the data's slots or the data places none of the open ones, and the client's waypoint (the live
+-- client gives one only once finished) before anything. Empty when nothing places it.
 ---@param entry AGFLogQuest
-local function LogPlace(data, entry)
+---@return AGFNode[]
+local function Nodes(data, entry)
 	local quest = data.quests[entry.id]
-	if ValidPlace(entry) then
-		return entry
-	elseif entry.complete then
-		return quest and quest.finish
-	elseif ValidPlace(entry.poi) then
-		return entry.poi
+	local open, aligned, slots, nodes = {}, false, {}, {}
+	if quest then
+		open, aligned = OpenSlots(quest, entry)
 	end
-	return quest and Area(quest, entry)
+	for slot in pairs(open) do
+		slots[#slots + 1] = slot
+	end
+	table.sort(slots)
+	for _, slot in ipairs(ValidPlace(entry) and {} or slots) do
+		local best
+		for _, area in ipairs(quest.obj or {}) do
+			best = best or (area[1] == slot and area or nil)
+		end
+		local map = best and (best[5] or quest.zone)
+		if map then
+			nodes[#nodes + 1] = {
+				map = map,
+				x = best[2] / 1000,
+				y = best[3] / 1000,
+				r = best[4],
+				slot = slot,
+				objectives = { Objective(quest, entry, slot, open[slot]) },
+			}
+		end
+	end
+	if #nodes > 0 and (aligned or not ValidPlace(entry.poi)) then
+		return nodes
+	end
+	local point = ValidPlace(entry) and entry or ValidPlace(entry.poi) and entry.poi or nil
+	if not point then
+		return nodes
+	end
+	local objectives = {}
+	for _, slot in ipairs(slots) do
+		objectives[#objectives + 1] = Objective(quest, entry, slot, open[slot])
+	end
+	return { { map = point.map, x = point.x, y = point.y, r = 0, slot = slots[1] or 0, objectives = objectives } }
 end
 
--- Objective steps merge when their areas nearly touch: the yards between their points within both radii (0 for a
+-- An area's reason: how many quests are done there.
+---@param area AGFStep
+local function Tell(area)
+	area.reason = #area.quests == 1 and ns.L.QUESTS_IN_PROGRESS or ns.L.QUESTS_HERE:format(#area.quests)
+	area.detail = area.reason
+end
+
+-- Objective nodes share an area when theirs nearly touch: the yards between their points within both radii (0 for a
 -- single point or the client's point) and AREA_GAP. On a map the data places nowhere, CLOSE in map units.
 local AREA_GAP = 60
 
+---@param a AGFNode
+---@param b AGFNode
 local function Near(data, a, b)
 	local yards = Model.Yards(data, a, b)
 	if yards then
-		return yards <= (a.r or 0) + (b.r or 0) + AREA_GAP
+		return yards <= a.r + b.r + AREA_GAP
 	end
 	return Distance(a, b) <= CLOSE
 end
 
 -- The log quests a card holds, as steps added to `steps`, and the card's count of them. The quest and dungeon prefs
 -- choose what to pick up; a quest already carried always shows, whatever its kind. A finished quest in `ready` (the
--- data and the client agree where it is handed in) joins its town's stop in `stops`, the stops the card's pickups
--- share; any other finished quest is a turn-in at its place. A quest under way is an objective step at its place,
--- merged with those nearby (Near). One nothing places has no step, and still counts: `held` maps every quest the card
--- holds to its step, or false.
+-- data and the client agree where it is handed in) joins its town's visit in `stops`, the towns the card's pickups
+-- share; any other finished quest is a turn-in at its hand-in. A quest under way is done in areas (Nodes), each merged
+-- with the nearby ones of its kind (Near) into one visit keyed by its first quest and slot, its ring wide enough for
+-- them all. One nothing places has no step, and still counts: `held` maps every quest the card holds to its first
+-- step, or false.
 ---@param ready table<integer, AGFPlace>
 ---@param belongs fun(id: integer, place?: table): boolean which log quests the card holds, by where they are done next
----@param prefix string "handin:" on the carry card; "hub:" on a zone's, whose towns its pickups share (HubStop)
 ---@return table<integer, AGFStep|false> held
-local function LogSteps(data, player, log, ready, belongs, prefix, stops, steps)
-	local ids, objectives, held = {}, {}, {}
+local function LogSteps(data, player, log, ready, belongs, stops, steps)
+	local ids, areas, anchors, held = {}, {}, {}, {}
 	for id in pairs(log) do
 		ids[#ids + 1] = id
 	end
 	table.sort(ids)
 	for _, id in ipairs(ids) do
 		local entry, quest = log[id], data.quests[id]
+		local nodes = entry.complete and {} or Nodes(data, entry)
 		---@type AGFPlace?
-		local place = ready[id] or LogPlace(data, entry)
+		local place = ready[id]
+			or (entry.complete and (ValidPlace(entry) and entry or quest and quest.finish))
+			or nodes[1]
 		place = ValidPlace(place) and place or nil
 		if belongs(id, place) then
 			held[id] = false
 			local optional = Optional(quest, entry.level, player)
 			if ready[id] then
-				local stop = HubStop(stops, steps, ready[id], prefix)
-				Join(stop, stop.handins, id, ready[id])
-				held[id] = stop
+				held[id] = Visit(stops, steps, ready[id], "handins", id)
 			elseif place and entry.complete then
 				steps[#steps + 1] = Step(
 					"turnin",
@@ -798,32 +843,37 @@ local function LogSteps(data, player, log, ready, belongs, prefix, stops, steps)
 					ns.L.READY_TO_HAND_IN
 				)
 				held[id] = steps[#steps]
-			elseif place then
-				local kind = (quest and (quest.elite or quest.dungeon)) and "dungeon" or "objective"
-				local existing
-				for _, step in ipairs(objectives) do
-					existing = existing or (step.kind == kind and Near(data, step, place) and step or nil)
+			end
+			local kind = (quest and (quest.elite or quest.dungeon)) and "dungeon" or "area"
+			for _, node in ipairs(place and nodes or {}) do
+				local area
+				for _, step in ipairs(areas) do
+					area = area or (step.kind == kind and Near(data, anchors[step], node) and step or nil)
 				end
-				if existing then
-					existing.quests[#existing.quests + 1] = id
-					existing.optional = existing.optional and optional or nil
-					existing.reason = ns.L.QUESTS_HERE:format(#existing.quests)
-					existing.detail = existing.reason
+				if area then
+					area.quests[#area.quests + 1] = area.quests[#area.quests] ~= id and id or nil
+					area.optional = area.optional and optional or nil
 				else
-					existing = Step(kind, "objective:" .. id, entry.title, place, id, optional, ns.L.QUESTS_IN_PROGRESS)
-					existing.r = place.r or 0
-					objectives[#objectives + 1] = existing
-					steps[#steps + 1] = existing
+					area = Step(kind, ("area:%d:%d"):format(id, node.slot), entry.title, node, id, optional, "")
+					area.objectives, area.r, anchors[area] = {}, node.r, node
+					areas[#areas + 1], steps[#steps + 1] = area, area
 				end
-				held[id] = existing
+				for _, objective in ipairs(node.objectives) do
+					area.objectives[#area.objectives + 1] = objective
+				end
+				area.r = math.max(area.r, (Model.Yards(data, area, node) or 0) + node.r)
+				held[id] = held[id] or area
 			end
 		end
+	end
+	for _, area in ipairs(areas) do
+		Tell(area)
 	end
 	return held
 end
 
--- One stop per town of the eligible quests `wanted` accepts; a group quest joins its town's stop like any other.
--- `stops` holds the towns the card already has (LogSteps' hand-ins), which a pickup there joins.
+-- One visit per town of the eligible quests `wanted` accepts; a group quest joins its town's like any other. `stops`
+-- holds the towns the card already has (LogSteps' hand-ins), which a pickup there joins.
 ---@param wanted fun(quest: AGFQuest): boolean
 local function PickupSteps(data, eligible, wanted, steps, stops)
 	local chosenGroups = {}
@@ -834,8 +884,7 @@ local function PickupSteps(data, eligible, wanted, steps, stops)
 			if quest.group then
 				chosenGroups[quest.group] = true
 			end
-			local stop = HubStop(stops, steps, quest.start, "hub:")
-			Join(stop, stop.pickups, id, quest.start)
+			Visit(stops, steps, quest.start, "pickups", id)
 		end
 	end
 end
@@ -963,7 +1012,7 @@ end
 -- A stop the player only hands in at: a turn-in, or a town with hand-ins and nothing to pick up. Never a trainer's.
 ---@param step AGFStep
 local function HandInOnly(step)
-	return step.kind == "turnin" or (step.kind == "hub" and #step.pickups == 0)
+	return step.kind == "turnin" or (step.kind == "town" and #step.pickups == 0)
 end
 
 ---@param a AGFPosition?
@@ -1415,7 +1464,7 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, c
 		join(selected)
 	end
 	for _, step in ipairs(selected) do
-		if step.kind == "hub" then
+		if step.kind == "town" then
 			Describe(data, log, player, step)
 			Opens(data, player, completed, log, step)
 		elseif step.kind == "trainer" then
@@ -1517,7 +1566,7 @@ end
 ---@param elsewhere fun(id: integer, place?: table): boolean
 local function Carry(data, player, completed, log, ready, prefs, mapName, cheap, elsewhere)
 	local candidates = TrainerSteps(data, player, prefs, "carry")
-	local held = LogSteps(data, player, log, ready, elsewhere, "handin:", {}, candidates)
+	local held = LogSteps(data, player, log, ready, elsewhere, {}, candidates)
 	local steps = Build(data, player, completed, log, candidates, prefs, mapName, cheap)
 	if #steps == 0 then
 		return nil
@@ -1548,16 +1597,16 @@ local function HandIns(ready)
 	return function(selected)
 		local towns, ids = {}, {}
 		for _, step in ipairs(selected) do
-			towns[step.key] = step.kind == "hub" and step or nil
+			towns[step.key] = step.kind == "town" and step or nil
 		end
 		for id in pairs(ready) do
 			ids[#ids + 1] = id
 		end
 		table.sort(ids)
 		for _, id in ipairs(ids) do
-			local town = towns["hub:" .. Hub(ready[id])]
+			local town = towns["town:" .. Hub(ready[id])]
 			if town and not town.spots[id] then
-				Join(town, town.handins, id, ready[id])
+				Visit(towns, selected, ready[id], "handins", id)
 			end
 		end
 	end
@@ -1589,7 +1638,7 @@ local function Pickups(data, player, completed, log, ready, eligible, belongs, k
 	if zone and prefs.quests then
 		held = LogSteps(data, player, log, ready, function(id, place)
 			return OnZone(data, zone, id, place)
-		end, "hub:", stops, candidates)
+		end, stops, candidates)
 	end
 	PickupSteps(data, eligible, belongs, candidates, stops)
 	for _, step in ipairs(TrainerSteps(data, player, prefs, key)) do
@@ -2309,10 +2358,10 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 		if not step.pickups then
 			-- A log step: its quests still carried, less an objective finished in the fight, which carry hands in.
 			-- Objectives ticked short of that wait for the full build.
-			local area = step.kind == "objective" or step.kind == "dungeon"
-			local quests = Keep(step.quests, function(id)
-				return log[id] ~= nil and not (area and log[id].complete)
-			end)
+			local function Carrying(id)
+				return log[id] ~= nil and not (step.objectives and log[id].complete)
+			end
+			local quests = Keep(step.quests, Carrying)
 			if #quests == #step.quests then
 				return step
 			elseif #quests == 0 then
@@ -2320,6 +2369,13 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 			end
 			local copy = Copy(step) --[[@as AGFStep]]
 			copy.quests = quests
+			if step.objectives then
+				copy.objectives = {}
+				for _, objective in ipairs(step.objectives) do
+					copy.objectives[#copy.objectives + 1] = Carrying(objective.id) and objective or nil
+				end
+				Tell(copy)
+			end
 			return copy
 		end
 		local pickups, handins = Keep(step.pickups, Open), Keep(step.handins, Carried)

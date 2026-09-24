@@ -1,14 +1,14 @@
 # human60: level 60, side 1, at 1423 0.8100,0.5800
 card (chosen) | zone:1423 | Eastern Plaguelands story | Chapter 1 of 2 | A chain begins with Caretaker Alen | map 1423
-  step 1 | hub:229 | Light's Hope Chapel, Eastern Plaguelands | 1423 0.7151,0.4966 | 8 to pick up
-  step 2 | hub:226 | Light's Hope Chapel, Eastern Plaguelands | 1423 0.6993,0.5372 | Begins a new story
-  step 3 | hub:213 | Pick up quests: Torn Scroll | 1423 0.2290,0.7295 | near your level
-  step 4 | hub:234 | Pick up quests: Augustus the Touched | 1423 0.1135,0.2637 | near your level
-  step 5 | hub:233 | Tirion Fordring | 1423 0.0516,0.3557 | 3 to pick up
-  step 6 | hub:201 | Pick up quests: Marlene Redpath | 1416 0.8860,0.2067 | near your level
+  step 1 | town:229 | Light's Hope Chapel, Eastern Plaguelands | 1423 0.7151,0.4966 | 8 to pick up
+  step 2 | town:226 | Light's Hope Chapel, Eastern Plaguelands | 1423 0.6993,0.5372 | Begins a new story
+  step 3 | town:213 | Pick up quests: Torn Scroll | 1423 0.2290,0.7295 | near your level
+  step 4 | town:234 | Pick up quests: Augustus the Touched | 1423 0.1135,0.2637 | near your level
+  step 5 | town:233 | Tirion Fordring | 1423 0.0516,0.3557 | 3 to pick up
+  step 6 | town:201 | Pick up quests: Marlene Redpath | 1416 0.8860,0.2067 | near your level
 card | calling | Your calling | Chapter 1 of 4 | Your class trainer has a task: A Troubled Spirit | map 1455
-  step 1 | hub:134 | Pick up quests: Deliana | 1455 0.4353,0.5264 | near your level
-  step 2 | hub:78 | Pick up quests: Wu Shen | 1453 0.8056,0.5987 | Begins a new story
-  step 3 | hub:31 | Pick up quests: Fallen Hero of the Horde | 1419 0.5277,0.0294 | near your level
+  step 1 | town:134 | Pick up quests: Deliana | 1455 0.4353,0.5264 | near your level
+  step 2 | town:78 | Pick up quests: Wu Shen | 1453 0.8056,0.5987 | Begins a new story
+  step 3 | town:31 | Pick up quests: Fallen Hero of the Horde | 1419 0.5277,0.0294 | near your level
 card | dungeon:329 | Stratholme | 4 quests for this dungeon | - | map 1423
-  step 1 | hub:229 | Light's Hope Chapel, Eastern Plaguelands | 1423 0.7163,0.5009 | 4 to pick up
+  step 1 | town:229 | Light's Hope Chapel, Eastern Plaguelands | 1423 0.7163,0.5009 | 4 to pick up

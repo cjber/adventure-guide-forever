@@ -608,8 +608,8 @@ Rejected sources: `UiMapAssignment` has only whole-map rows, with no subzone rec
 Forever is also unproven.
 
 **Model** (`Model.lua`):
-- **Stop.** A card holds at most one stop per hub: `key = "hub:" .. id` (`"handin:" .. id` on the carry card, so a
-  skip on one card never empties the town on another), `kind = "hub"`. A hub stop carries:
+- **Stop.** A card holds at most one visit per town: `key = "town:" .. hub`, `kind = "town"`, the same key on every
+  card, so skipping a town skips it wherever it shows. A town visit carries:
   - `pickups`: the card's eligible quests there;
   - `handins`: complete log quests whose data `finish.hub` is this hub;
   - `quests`: all of them;
@@ -633,7 +633,11 @@ Forever is also unproven.
   - `step.zone` is the map's name from the client by ID, falling back to the data's, as `ZoneName` does now.
 - **Detail.** `HUB_HAND_IN` "%d to hand in" and `HUB_PICK_UP` "%d to pick up", joined by `LIST_SEPARATOR`. A zero
   part is left out.
-- **Objective steps** (the live waypoint) are unchanged.
+- **Area steps** (`kind = "area"`, or `"dungeon"` for a group quest) hold the log's quests under way: one node per
+  open objective at the data's first area for its slot (the client's quest point when the objectives don't line up),
+  merged when `Yards < r_a + r_b + 60`. The key is `area:<quest>:<slot>` of its first node; `objectives` carries each
+  one's have/need and the town it is handed in at, and `r` covers them all. A town's `follow` lists the chapters its
+  hand-ins open there.
 - **Identity.**
   - `ns.InLog` tests `step.handins` or the objective kind, not the key prefix.
   - `ShowQuest` opens the first log quest.
