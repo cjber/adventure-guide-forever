@@ -603,6 +603,14 @@ do
 	h.Hover(suppressed)
 	equal(table.concat(h.tooltip, "\n"), "title: Call of Fire\nerror: " .. h.ns.L.WHY_NO_START, "search: tooltip")
 	equal(#Lines(assert(open, "search: a quest open now")), 0, "search: an open quest has nothing to explain")
+	local ready = h.ns.State.Ready
+	h.ns.State.Ready = function()
+		return false
+	end
+	h.Type(search, "Call of")
+	equal(#Results(), 0, "search: none while completed quests load")
+	equal(Says(h, h.ns.L.LOADING), 1, "search: which it says")
+	h.ns.State.Ready = ready
 	h.Type(search, "no such quest")
 	equal(#Results(), 0, "search: nothing found")
 	equal(Says(h, h.ns.L.SEARCH_NONE), 1, "search: says so")

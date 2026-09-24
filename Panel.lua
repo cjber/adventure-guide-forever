@@ -558,7 +558,8 @@ local function LayoutJourneys(route)
 	local query = strtrim(searchBox:GetText())
 	-- Characters, not bytes: a character is one byte that doesn't continue a UTF-8 sequence.
 	local _, characters = query:gsub("[^\128-\191]", "")
-	local searching = characters >= SEARCH_MIN
+	-- Not before completion data loads: every chain quest would read as locked.
+	local searching = characters >= SEARCH_MIN and ns.State.Ready()
 	local top, found = LayoutResults(searching and query or nil)
 	track:Hide()
 	for index, card in ipairs(cards) do
