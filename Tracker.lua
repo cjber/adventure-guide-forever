@@ -41,14 +41,18 @@ function ModuleMixin:LayoutContents()
 	end
 	local block = self:GetBlock(step.key)
 	block:SetHeader(step.title)
+	-- No line repeats the header: a pickup's title already names its NPC, and a turn-in's is its reason.
 	local line = 0
-	if step.place then
+	if step.place and not step.title:find(step.place, 1, true) then
 		line = line + 1
 		block:AddObjective(line, step.place)
 	end
-	line = line + 1
 	local resume = ns.Resume(step)
-	block:AddObjective(line, resume and ns.L.RESUME:format(resume) or step.reason)
+	local reason = resume and ns.L.RESUME:format(resume) or step.kind ~= "turnin" and step.reason
+	if reason then
+		line = line + 1
+		block:AddObjective(line, reason)
+	end
 	local travel = ns.Integrations.Travel(step)
 	if travel then
 		line = line + 1

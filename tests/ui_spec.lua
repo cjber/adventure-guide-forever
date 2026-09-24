@@ -640,14 +640,24 @@ for _, spf in ipairs({ false, "v1" }) do
 	local h = Load(spf)
 	local steps = h.ns.Route().steps
 	local expected = {}
-	expected[#expected + 1] = steps[1].place
-	expected[#expected + 1] = steps[1].reason
 	expected[#expected + 1] = spf and "About 6 min away" or nil
 	expected[#expected + 1] = "Next: " .. steps[2].title .. " (no dash)"
 	local lines, block = TrackerLines(h)
 	equal(block.header, steps[1].title, label .. ": step 1's title heads the block")
-	same(lines, expected, label .. ": place, reason, travel, next")
+	same(lines, expected, label .. ": a turn-in's header is its reason; travel, next")
 	clean(h, label)
+end
+-- A pickup's place is its title's NPC and an objective's has none, so step 1 of the story shows only its reason.
+do
+	local h = Load(false)
+	local ns = h.ns
+	ns.Prefs().journey = ns.Route().journeys[2].key
+	ns.Invalidate()
+	h.flush()
+	local step = ns.Route().steps[1]
+	equal(step.place ~= nil and step.title:find(step.place, 1, true) ~= nil, true, "tracker, pickup: titled by place")
+	equal(TrackerLines(h)[1], step.reason, "tracker, pickup: the reason, never the place again")
+	clean(h, "tracker, pickup")
 end
 
 -- F8, the resume line: a login shows "Where you left off" once, when last session's step 1 is still step 1; a
