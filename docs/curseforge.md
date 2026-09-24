@@ -4,9 +4,9 @@ Levelling guides tell you exactly what to do, in order. I wanted something loose
 
 It looks like it came with the game: a tab in the quest log beside Quests, cards drawn with retail's Journeys art, the game's own objective tracker, and Blizzard's quest details when you click a quest. With the tab closed it draws nothing on your map. It works with Shortest Path Forever for travel, and loads alongside Questie or RestedXP, though their routes may overlap.
 
-![The Barrens on the world map with the Adventure Guide tab open: the chosen card for the quests you carry with its two steps listed and ringed on the map, and the zone story and next zone folded to one-line rows above it](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png)
+![The Barrens on the world map with the Adventure Guide tab open: the chosen Barrens story card with its seven stops listed and ringed on the map, towns such as Crossroads with their counts (1 to hand in, 8 to pick up, 6 min), and the other journeys folded to one-line rows above it](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png)
 
-![The objective tracker's Adventure Guide section: Turn in: The Zhevra, About 6 min away, Next: Gann's Reclamation](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png)
+![The objective tracker's Adventure Guide section: Crossroads, The Barrens, 1 to hand in, 8 to pick up, Opens the next chapter here, About 6 min away, Next: Regthar Deathgate](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png)
 
 ## Features
 

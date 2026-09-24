@@ -12,7 +12,7 @@ Levelling guides tell you exactly what to do, in order. I wanted something loose
 
 It looks like it came with the game: a tab in the quest log beside Quests, cards drawn with retail's Journeys art, the game's own map pins and objective tracker, and Blizzard's quest details when you click a quest. With the tab closed it draws nothing on your map.
 
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png" width="640" alt="The Barrens on the world map with the Adventure Guide tab open: the chosen card for the quests you carry with its two steps listed and ringed on the map, and the zone story and next zone folded to one-line rows above it"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png" width="640" alt="The Barrens on the world map with the Adventure Guide tab open: the chosen Barrens story card with its seven stops listed and ringed on the map, towns such as Crossroads with their counts (1 to hand in, 8 to pick up, 6 min), and the other journeys folded to one-line rows above it"></p>
 
 ## Features
 
@@ -28,7 +28,7 @@ It looks like it came with the game: a tab in the quest log beside Quests, cards
 - **Map pins and quest givers**, off by default: numbered route pins, and the game's "!" over everyone with a quest you can take now. Turn them on under *Show map pins* and *Show quest givers*.
 - **Skip for now** hides a step until your next `/reload`; *Skipped (n)* under the steps brings one back.
 
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png" width="400" alt="The objective tracker's Adventure Guide section: Turn in: The Zhevra, About 6 min away, Next: Gann's Reclamation"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png" width="400" alt="The objective tracker's Adventure Guide section: Crossroads, The Barrens, 1 to hand in, 8 to pick up, Opens the next chapter here, About 6 min away, Next: Regthar Deathgate"></p>
 
 ## Install
 

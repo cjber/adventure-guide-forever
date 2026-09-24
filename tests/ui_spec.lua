@@ -1706,10 +1706,11 @@ do
 	end
 end
 
--- The golden layout: any change to what the guide draws shows as a reviewable diff of tests/golden/layout.json.
+-- The golden layout: any change to what the guide draws shows as a reviewable diff of tests/golden/layout.json. It is
+-- the story card's towns with Shortest Path loaded (their counts, and step 1's minutes), as tests/scenes.lua draws it.
 do
 	local json, diff = dofile("tests/json.lua"), dofile("tests/dump_diff.lua")
-	local h = Load(false)
+	local h = Load("v1", nil, { journey = "story:1413" })
 	h.ns.OpenPanel()
 	h.flush()
 	local panel = h.G.AdventureGuideForeverPanel

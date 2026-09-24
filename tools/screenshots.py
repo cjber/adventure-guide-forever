@@ -974,7 +974,13 @@ def render(out):
 
     canvas, frame = map_frame(ui, art, False, hover)
     colours = {"title": wm.WHITE, "highlight": wm.WHITE, "normal": wm.NORMAL, "instruction": GREEN}
-    tip = wm.tooltip(ui, [wm.TooltipLine(line["text"], colours[line["kind"]]) for line in data["tooltip"]["lines"]])
+    tip = wm.tooltip(
+        ui,
+        [
+            wm.TooltipLine(line["text"], tuple(line["color"]) if line.get("color") else colours[line["kind"]])
+            for line in data["tooltip"]["lines"]
+        ],
+    )
     pin = data["tooltip"]["pins"][hovered]
     px, py = map_point(frame, pin["x"], pin["y"])
     # ANCHOR_RIGHT: the tooltip's BOTTOMLEFT at the pin's TOPRIGHT.
