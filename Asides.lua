@@ -53,12 +53,20 @@ end
 
 ---@return AGFAside?
 function Asides.Current()
-	local declined = Declined()
 	for _, aside in ipairs(answers) do
-		if not (skipped[aside.key] == (aside.renew or true) or declined[aside.key]) then
+		if Asides.Wanted(aside.key, aside.renew) then
 			return aside
 		end
 	end
+end
+
+-- The player has neither skipped this key this session nor turned it down: a provider with several candidates offers
+-- the first they still want. A skip holds only while the aside's `renew` is the one it had then.
+---@param key string
+---@param renew integer?
+---@return boolean
+function Asides.Wanted(key, renew)
+	return not (skipped[key] == (renew or true) or Declined()[key])
 end
 
 -- Every provider's last answer, skipped or not, in registration order (Moments.lua's seen set).
@@ -97,6 +105,7 @@ function Asides.Refresh()
 	end
 end
 
+-- Skip and Not interested ask the providers again, so one with several candidates offers its next (Wanted).
 ---@param key string
 function Asides.Skip(key)
 	local renew = true
@@ -105,6 +114,7 @@ function Asides.Skip(key)
 	end
 	skipped[key] = renew
 	Notify()
+	Asides.Refresh()
 end
 
 -- Asks the providers again on `event`, when the client has it: an unknown event is an error on RegisterEvent, and an
@@ -120,6 +130,7 @@ end
 function Asides.Decline(aside)
 	Declined()[aside.key] = aside.text
 	Notify()
+	Asides.Refresh()
 end
 
 -- The turned-down asides, by text, for Show again: its provider's answer now, else the text it had when turned down.

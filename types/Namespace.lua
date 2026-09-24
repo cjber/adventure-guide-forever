@@ -481,7 +481,7 @@
 ---@field riding? boolean riding trainer
 ---@field race? integer riding trainer: the race ID it teaches (CMaNGOS TrainerRace), when it names one
 ---@field skill? integer profession trainer: its skill line ID
----@field rank? integer profession trainer: the highest rank it teaches, 1 Apprentice to 4 Artisan (SpellEffect SKILL_STEP)
+---@field ranks? integer[] profession trainer: each rank it teaches, ascending, 1 Apprentice to 4 Artisan (SpellEffect SKILL_STEP)
 ---@field bg? integer battlemaster: its battleground (CMaNGOS battlemaster_entry.bg_template: 1 AV, 2 WSG, 3 AB)
 ---@field inn? boolean innkeeper
 
@@ -713,3 +713,55 @@
 ---@field PVP_RANK_REWARD string format: the next rank with a reward, and the reward's description
 ---@field TALENT_POINTS string format: how many talent points wait to be spent
 ---@field TALENT_POINT string the same for one
+
+--[[ Stream 3b "Professions" (roadmap #9, Hints/Profession.lua, docs/design.md §2.16) ]]
+
+-- A rank a trainer teaches and what its rank spell asks (npc_trainer reqlevel, reqskillvalue; the most any asks).
+---@class AGFProfessionRank
+---@field rank integer 1 Apprentice to 4 Artisan
+---@field level integer
+---@field skill integer
+
+---@class AGFProfession
+---@field name string SkillLine.DisplayName_lang (English), for a line the character has not learned
+---@field secondary? boolean a secondary skill (First Aid, Cooking, Fishing), which takes no profession slot
+---@field ranks AGFProfessionRank[] ascending; a rank no trainer teaches (from a book or quest) is absent
+
+---@class AGFData
+---@field professions? table<integer, AGFProfession> SkillLine ID -> its trainers' ranks, for each line a trainer here teaches
+
+-- One reason to visit a profession trainer, in Model.Profession's order: "cap" a learned line at its rank's cap whose
+-- next rank the player can train now, "slot" a free profession slot, "learn" a secondary skill they lack.
+---@alias AGFProfessionNudgeKind "cap"|"slot"|"learn"
+
+---@class AGFProfessionNudge
+---@field key string the aside's: "profession:<skill>:<rank>", or "profession:slot"
+---@field kind AGFProfessionNudgeKind
+---@field rank integer the rank to train: the next for a cap, 1 (Apprentice) otherwise
+---@field skill? integer the line, for a cap or a secondary skill
+---@field skills? integer[] a free slot: the professions the player lacks and can learn now
+---@field npc? AGFNpc the nearest trainer of that rank the data places for the player; nil when none
+
+---@class AGFPlayer
+---@field caps? table<integer, integer> learned skill line -> its rank's cap (C_SkillInfo maxRank)
+---@field primaries? integer how many professions (SkillLine category 11) the character has; nil when unknown
+
+---@class AGFModel
+---@field Profession fun(data: AGFData, player: AGFPlayer, wanted?: fun(key: string): boolean): AGFProfessionNudge? the first nudge `wanted` takes, with its nearest trainer
+
+---@class AGFAsides
+---@field Wanted fun(key: string, renew?: integer): boolean neither skipped this session (at this `renew`) nor turned down: a provider offers the first it still wants
+
+---@class AGFStrings
+---@field PROFESSION_CAP string format: a line's name, its rank and its cap
+---@field PROFESSION_RANK_IN string format: the next rank's name and the nearest trainer's town
+---@field PROFESSION_RANK string format: the next rank's name, without a trainer the data places
+---@field PROFESSION_SLOT string a free profession slot
+---@field PROFESSION_SLOT_IN string format: the nearest profession trainer's town
+---@field PROFESSION_LEARN_IN string format: a secondary skill's name and the nearest trainer's town
+---@field PROFESSION_LEARN string format: a secondary skill's name, without a trainer the data places
+---@field PROFESSION_LINE string format: the lead, then where to train
+---@field PROFESSION_RANK_1 string
+---@field PROFESSION_RANK_2 string
+---@field PROFESSION_RANK_3 string
+---@field PROFESSION_RANK_4 string

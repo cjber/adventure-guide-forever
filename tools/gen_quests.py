@@ -558,7 +558,8 @@ def instance_fields(row, instance_of, instances):
 
 TRAINER, INNKEEPER = 16, 128  # creature_template NpcFlags (CMaNGOS UNIT_NPC_FLAG_TRAINER, _INNKEEPER)
 SKILL_STEP = 44  # SpellEffect.Effect: teaches rank EffectBasePointsF of skill line EffectMiscValue_0
-PROFESSIONS = {9, 11}  # SkillLine.CategoryID: secondary skills (First Aid, Cooking, Fishing), professions
+SECONDARY = 9  # SkillLine.CategoryID: secondary skills (First Aid, Cooking, Fishing, and riding and racial lines)
+PROFESSIONS = {SECONDARY, 11}  # SkillLine.CategoryID: secondary skills and professions
 
 
 def skill_steps(effects, skill_lines):
@@ -606,16 +607,9 @@ def requirements(row, skills, factions):
     return fields
 
 
-def roles(tables, steps):
-    """Each role NPC's fields: `class` and `upto` (its highest spell's level) for a class trainer, and `from` (its
-    lowest) when that is above 1, so a trainer of only part of the class's spells (a mage's portals) is told apart;
-    `pet` for a hunter pet trainer, `riding` and its `race` for a riding trainer, `skill` and `rank` (the highest rank
-    it teaches) for a profession trainer, `bg` (battlemaster_entry.bg_template) for a battlemaster, `inn` for an
-    innkeeper.
-
-    A trainer teaches its npc_trainer rows plus its TrainerTemplateId's npc_trainer_template rows, less any behind a
-    condition. One that teaches nothing, a profession trainer with no rank spell or ranks of several skills, and a
-    TrainerType 0 trainer with no class (weapon masters and the like) are no trainer here.
+def trainer_spells(tables):
+    """Each trainer's spells: its npc_trainer rows plus its TrainerTemplateId's npc_trainer_template rows, less any
+    behind a condition, by creature entry.
     """
     taught, templates = defaultdict(list), defaultdict(list)
     for row in tables["npc_trainer"]:
@@ -624,14 +618,30 @@ def roles(tables, steps):
     for row in tables["npc_trainer_template"]:
         if not row["condition_id"]:
             templates[row["entry"]].append(row)
+    return {
+        row["Entry"]: taught[row["Entry"]] + (templates[row["TrainerTemplateId"]] if row["TrainerTemplateId"] else [])
+        for row in tables["creature_template"]
+    }
+
+
+def roles(tables, steps, spells):
+    """Each role NPC's fields: `class` and `upto` (its highest spell's level) for a class trainer, and `from` (its
+    lowest) when that is above 1, so a trainer of only part of the class's spells (a mage's portals) is told apart;
+    `pet` for a hunter pet trainer, `riding` and its `race` for a riding trainer, `skill` and `ranks` (each rank it
+    teaches, ascending: a Journeyman-only trainer teaches no Apprentice) for a profession trainer, `bg`
+    (battlemaster_entry.bg_template) for a battlemaster, `inn` for an innkeeper.
+
+    A trainer teaches its `trainer_spells`. One that teaches nothing, a profession trainer with no rank spell or ranks
+    of several skills, and a TrainerType 0 trainer with no class (weapon masters and the like) are no trainer here.
+    """
     battles = {r["entry"]: r["bg_template"] for r in tables["battlemaster_entry"]}
     result = {}
     for row in sorted(tables["creature_template"], key=lambda r: r["Entry"]):
         entry, kind, fields = row["Entry"], row["TrainerType"], {}
-        spells = taught[entry] + (templates[row["TrainerTemplateId"]] if row["TrainerTemplateId"] else [])
-        if row["NpcFlags"] & TRAINER and spells:
+        taught = spells[entry]
+        if row["NpcFlags"] & TRAINER and taught:
             if kind == 0 and row["TrainerClass"]:
-                levels = [s["reqlevel"] for s in spells]
+                levels = [s["reqlevel"] for s in taught]
                 fields.update({"class": row["TrainerClass"], "upto": max(levels)})
                 if min(levels) > 1:
                     fields["from"] = min(levels)
@@ -640,9 +650,9 @@ def roles(tables, steps):
                 if row["TrainerRace"]:
                     fields["race"] = row["TrainerRace"]
             elif kind == 2:
-                ranks = {steps[s["spell"]] for s in spells if s["spell"] in steps}
+                ranks = {steps[s["spell"]] for s in taught if s["spell"] in steps}
                 if len({skill for skill, _ in ranks}) == 1:
-                    fields.update(zip(("skill", "rank"), max(ranks), strict=True))
+                    fields.update({"skill": min(ranks)[0], "ranks": sorted(rank for _, rank in ranks)})
             elif kind == 3:
                 fields["pet"] = True
         if entry in battles:
@@ -652,6 +662,34 @@ def roles(tables, steps):
         if fields:
             result[entry] = fields
     return result
+
+
+def professions(npcs, steps, spells, skill_lines, counts):
+    """Each skill line an emitted profession trainer teaches: its `name` (SkillLine.DisplayName_lang), `secondary`
+    for a secondary skill (CategoryID 9: First Aid, Cooking, Fishing), and `ranks`, ascending, each rank a trainer
+    teaches with the `level` and `skill` (npc_trainer reqlevel and reqskillvalue) its rank spell asks. Where trainers
+    ask differently, the most any asks, so a rank is never offered before every trainer would teach it. A rank no
+    trainer teaches (Expert Cooking comes from a book) is absent.
+    """
+    lines = {int(r["ID"]): r for r in skill_lines}
+    asks = defaultdict(dict)
+    for entry, npc in npcs.items():
+        for row in spells[entry] if "skill" in npc else ():
+            skill, rank = steps.get(row["spell"], (None, None))
+            if skill == npc["skill"]:
+                need = (row["reqlevel"], row["reqskillvalue"])
+                known = asks[skill].setdefault(rank, need)
+                if known != need:
+                    counts["profession ranks asked differently"] += 1
+                    asks[skill][rank] = tuple(map(max, known, need))
+    return {
+        skill: {
+            "name": lines[skill]["DisplayName_lang"],
+            **({"secondary": True} if int(lines[skill]["CategoryID"]) == SECONDARY else {}),
+            "ranks": [{"rank": r, "level": asks[skill][r][0], "skill": asks[skill][r][1]} for r in sorted(asks[skill])],
+        }
+        for skill in sorted(asks)
+    }
 
 
 def reaction(template):
@@ -734,7 +772,8 @@ def generate(
     home = homes(locations, quests, areas)
     incoming, groups = prerequisite_index(quests)
     seasonal = {r["quest"] for r in tables["game_event_quest"]}
-    role = roles(tables, skill_steps(effects, skill_lines))
+    steps, spells = skill_steps(effects, skill_lines), trainer_spells(tables)
+    role = roles(tables, steps, spells)
     trains = {("creature", entry): fields["class"] for entry, fields in role.items() if "class" in fields}
     emitted, counts = {}, Counter()
     for qid, row in sorted(quests.items()):
@@ -864,11 +903,12 @@ def generate(
     }
     skills = {q["skill"]["id"] for q in emitted.values() if "skill" in q}
     factions = {q["rep"]["faction"] for q in emitted.values() if "rep" in q}
-    gates = {
+    lookups = {
         "skills": {s: {"name": skill_names[s]} for s in skills},
         "factions": {f: {"name": faction_names[f]} for f in factions},
+        "professions": professions(npcs, steps, spells, skill_lines, counts),
     }
-    return emitted, zones, named, centres, shifts, ferries, towns, npcs, gates, counts
+    return emitted, zones, named, centres, shifts, ferries, towns, npcs, lookups, counts
 
 
 def lua(value):
@@ -886,7 +926,7 @@ def lua(value):
     return str(value)
 
 
-def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, gates):
+def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, lookups):
     lines = [
         "-- Generated by tools/gen_quests.py — do not edit.",
         f"-- CMaNGOS classic-db (GPL-3.0), pinned: {CLASSICDB_URL}",
@@ -902,13 +942,14 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, gate
         f"-- hubs: a town's name is its flight master's (TaxiNodes) within {NAME_REACH} yd of a giver; no other name.",
         "-- npc: a creature giver's entry, the ID in its UnitGUID; an object giver has none.",
         "-- npcs: class, pet, riding and profession trainers, battlemasters and innkeepers (creature_template",
-        "-- NpcFlags, TrainerType, npc_trainer, battlemaster_entry); rank: the highest SKILL_STEP spell taught of a",
+        "-- NpcFlags, TrainerType, npc_trainer, battlemaster_entry); ranks: each SKILL_STEP spell taught of a",
         "-- SkillLine profession or secondary skill (SpellEffect); side: every side FactionTemplate.EnemyGroup is",
         "-- not hostile to; place: a non-seasonal spawn, as quest givers'. Within",
         f"-- {LINK} yd of a quest place: its hub, on the map most of the hub's places use; else the smallest map.",
         "-- No side or zone-map spawn: left out.",
         "-- skill, rep: RequiredSkill/Value and RequiredMin/MaxRep, as Player::SatisfyQuestSkill and",
         "-- SatisfyQuestReputation check them; skills and factions: the names of those a quest here needs.",
+        "-- professions: each skill line a trainer here teaches, its ranks' npc_trainer reqlevel and reqskillvalue.",
         "-- trainer: a class quest's giver who trains a class (creature_template TrainerClass): that class.",
         "-- breadcrumb: BreadcrumbForQuestId, the quest a breadcrumb leads to; it is open only while that is neither",
         "-- completed nor in the log, and has no start when that is not in QuestV2.",
@@ -936,9 +977,9 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, gate
     lines.extend(f"\t\t[{hub}] = {lua(town)}," for hub, town in sorted(towns.items()))
     lines.extend(["\t},", "\tnpcs = {"])
     lines.extend(f"\t\t[{entry}] = {lua(npc)}," for entry, npc in sorted(npcs.items()))
-    for name in ("skills", "factions"):
+    for name in ("skills", "factions", "professions"):
         lines.extend(["\t},", f"\t{name} = {{"])
-        lines.extend(f"\t\t[{key}] = {lua(value)}," for key, value in sorted(gates[name].items()))
+        lines.extend(f"\t\t[{key}] = {lua(value)}," for key, value in sorted(lookups[name].items()))
     lines.extend(["\t},", "\tquests = {"])
     lines.extend(f"\t\t[{qid}] = {lua(quest)}," for qid, quest in sorted(quests.items()))
     return "\n".join(lines + ["\t},", "}", ""])
@@ -953,7 +994,7 @@ def main():
     content = download(CLASSICDB_URL, f"classicdb-{CLASSICDB_COMMIT[:7]}.sql.gz", **options)
     with gzip.open(io.BytesIO(content), "rt", encoding="utf-8") as dump:
         tables = read_tables(dump)
-    quests, zones, instances, centres, shifts, ferries, towns, npcs, gates, counts = generate(
+    quests, zones, instances, centres, shifts, ferries, towns, npcs, lookups, counts = generate(
         tables,
         db2("UiMap", ("ID", "Name_lang", "Type"), **options),
         db2("UiMapAssignment", ("ID", "UiMapID", "MapID", "AreaID", "Region_0", "Region_5", "UiMin_0"), **options),
@@ -985,7 +1026,9 @@ def main():
     if not quests or not counts["with start"]:
         raise ValueError("No usable quests; leaving existing output untouched")
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(render(quests, zones, instances, centres, shifts, ferries, towns, npcs, gates), encoding="utf-8")
+    OUTPUT.write_text(
+        render(quests, zones, instances, centres, shifts, ferries, towns, npcs, lookups), encoding="utf-8"
+    )
     for name, count in sorted(counts.items()):
         print(f"{name}: {count}")
     print(

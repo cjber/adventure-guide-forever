@@ -1007,11 +1007,30 @@ function harness.load(options)
 	}
 	-- No client names for races and classes: Model.Why's English stands in, as on a client that lacks them.
 	G.C_CreatureInfo = { GetRaceInfo = noop, GetClassInfo = noop }
-	-- Skill lines and standings: options.skills is {skillID, name, rank} entries, the lines the character has, and
-	-- options.reputation maps a faction ID to {name, currentStanding}; a spec edits h.skills and h.reputation.
-	h.skills, h.reputation = options.skills or {}, options.reputation or {}
+	-- Skill lines and standings: options.skills is {skillID, name, rank, maxRank?, category?} entries, the lines the
+	-- character has (maxRank defaults to 300, no next rank; category to 11, a profession's), and options.reputation
+	-- maps a faction ID to {name, currentStanding}; a spec edits h.skills and h.reputation. Without options.skills the
+	-- character has two professions and every secondary skill at rank 1, lines whose ranks open no quest the scenes
+	-- reach (Enchanting and Engineering gate only at 200, First Aid at 225), so the profession aside says nothing.
+	h.skills = options.skills
+		or {
+			{ skillID = 333, name = "Enchanting", rank = 1, maxRank = 75 },
+			{ skillID = 202, name = "Engineering", rank = 1, maxRank = 75 },
+			{ skillID = 129, name = "First Aid", rank = 1, maxRank = 75, category = 9 },
+			{ skillID = 185, name = "Cooking", rank = 1, maxRank = 75, category = 9 },
+			{ skillID = 356, name = "Fishing", rank = 1, maxRank = 75, category = 9 },
+		}
+	h.reputation = options.reputation or {}
 	local function SkillInfo(entry)
-		return entry and { skillID = entry.skillID, name = entry.name, rank = entry.rank, isHeader = false }
+		return entry
+			and {
+				skillID = entry.skillID,
+				name = entry.name,
+				rank = entry.rank,
+				maxRank = entry.maxRank or 300,
+				skillLineCategoryID = entry.category or 11,
+				isHeader = false,
+			}
 	end
 	G.C_SkillInfo = {
 		GetNumSkillLines = function()

@@ -952,6 +952,107 @@ function Model.Battlemaster(data, player, bg)
 	end) -- multi-value: the NPC and its entry
 end
 
+--[[ Roadmap #9: where to go next for a profession. SkillUp Forever keeps recipes and skill-ups; this only names the
+     trainer of the next rank, a free profession slot and a secondary skill not yet learned. ]]
+
+local RANK_SKILL = 75 -- a rank's cap per step: CMaNGOS Spell::EffectSkillStep sets the cap to 75 times the rank
+local PROFESSION_SLOTS = 2 -- CMaNGOS MaxPrimaryTradeSkill's default: two professions; secondary skills take none
+
+-- A rank of the line the player can train now: a trainer teaches it (Data.professions), and they have the level and
+-- the skill its rank spell asks.
+---@param player AGFPlayer
+---@param skill integer
+---@param rank integer
+---@return boolean
+local function Trainable(data, player, skill, rank)
+	for _, entry in ipairs(data.professions[skill].ranks) do
+		if entry.rank == rank then
+			return player.level >= entry.level and ((player.skills or {})[skill] or 0) >= entry.skill
+		end
+	end
+	return false
+end
+
+-- A profession trainer of the player's side who teaches this rank of this line.
+---@param npc AGFNpc
+---@param player AGFPlayer
+local function TeachesRank(npc, player, skill, rank)
+	if npc.skill ~= skill or not HasBit(npc.side, player.side) then
+		return false
+	end
+	for _, taught in ipairs(npc.ranks) do
+		if taught == rank then
+			return true
+		end
+	end
+	return false
+end
+
+-- Every nudge the player's skills call for, in order: a learned line at its rank's cap whose next rank they can train
+-- now, then a free profession slot while a profession they lack is one they can learn now, then each secondary skill
+-- they lack and can learn now; lines by ID. A player with no `primaries` (no client count) has no slot nudge.
+---@param player AGFPlayer
+---@return AGFProfessionNudge[]
+local function Nudges(data, player)
+	local ids, nudges = {}, {}
+	for id in pairs(data.professions or {}) do
+		ids[#ids + 1] = id
+	end
+	table.sort(ids)
+	local skills, caps = player.skills or {}, player.caps or {}
+	for _, id in ipairs(ids) do
+		local rank, cap = skills[id], caps[id]
+		local upcoming = rank and cap and rank >= cap and cap % RANK_SKILL == 0 and cap / RANK_SKILL + 1
+		if upcoming and Trainable(data, player, id, upcoming) then
+			local key = ("profession:%d:%d"):format(id, upcoming)
+			nudges[#nudges + 1] = { key = key, kind = "cap", skill = id, rank = upcoming }
+		end
+	end
+	-- The lines the player lacks and can learn now: professions under false, secondary skills under true.
+	local open = { [false] = {}, [true] = {} }
+	for _, id in ipairs(ids) do
+		local secondary = data.professions[id].secondary == true
+		if not skills[id] and Trainable(data, player, id, 1) then
+			open[secondary][#open[secondary] + 1] = id
+		end
+	end
+	if player.primaries and player.primaries < PROFESSION_SLOTS and #open[false] > 0 then
+		nudges[#nudges + 1] = { key = "profession:slot", kind = "slot", rank = 1, skills = open[false] }
+	end
+	for _, id in ipairs(open[true]) do
+		nudges[#nudges + 1] = { key = ("profession:%d:1"):format(id), kind = "learn", skill = id, rank = 1 }
+	end
+	return nudges
+end
+
+-- Roadmap #9: the first nudge `wanted` takes (every one, without it) that a trainer of the player's side teaches, with
+-- the nearest such trainer; for a free slot, of any profession it lists. Its `npc` is nil when the data cannot measure
+-- from the player (no place for them); a rank only the other side's trainers teach is no nudge.
+---@param player AGFPlayer
+---@param wanted? fun(key: string): boolean
+---@return AGFProfessionNudge?
+function Model.Profession(data, player, wanted)
+	for _, nudge in ipairs(Nudges(data, player)) do
+		local lines = nudge.skills or { nudge.skill }
+		local function Teacher(npc)
+			for _, skill in ipairs(lines) do
+				if TeachesRank(npc, player, skill, nudge.rank) then
+					return true
+				end
+			end
+			return false
+		end
+		if not wanted or wanted(nudge.key) then
+			for _, npc in pairs(data.npcs or {}) do
+				if Teacher(npc) then
+					nudge.npc = (Nearest(data, player, Teacher))
+					return nudge
+				end
+			end
+		end
+	end
+end
+
 -- The chosen journey's trainer stops (roadmap #5): with spells to train, one per town among the trainers who teach
 -- them, the lowest NPC ID in each. Build takes one only after a stop in its town (Open), so none is a detour. A trainer
 -- the data puts in no town is never a stop; the aside still names them.

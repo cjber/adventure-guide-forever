@@ -546,11 +546,13 @@ aside shown changes. The first provider's answer the player has not skipped or t
   place for the player) it is text only: "Visit your class trainer · 3 new spells". Unspent talent points (#25):
   "You have 2 talent points to spend" with the Legion `minortalents-icon-book` (CSV:388, the atlas's one square
   talent mark), from `GetNumUnspentTalents` (R5 found it; `UnitCharacterPoints` is missing on Forever), while any wait,
-  asked again on `CHARACTER_POINTS_CHANGED`; no API, no line. Then a battleground open to you and the next PvP rank's
-  reward (§2.15). Providers are asked in that order, the TOC's.
+  asked again on `CHARACTER_POINTS_CHANGED`; no API, no line. Then the profession aside (§2.16), then a battleground
+  open to you and the next PvP rank's reward (§2.15). Providers are asked in that order, the TOC's.
 - **News again.** A provider may give `renew`, how often the aside became news (a talent point gained): Skip for now
   holds only while it is unchanged, so each new point brings the line back once. An event a provider needs is
   registered through `Asides.RefreshOn`, which skips one the client lacks.
+- **Several candidates.** A provider with several offers the first the player still wants (`Asides.Wanted`), and Skip
+  for now and Not interested ask the providers again, so the next one shows at once.
 
 ### 2.12 Trainers (roadmap R3, #5)
 
@@ -621,7 +623,7 @@ cache that did, Integrations' town places, is keyed on it).
 
 ### 2.15 PvP (roadmap #12, #28)
 
-`PvP.lua`, after `Asides.lua` in the TOC, gives two asides; the opt-in card is the planner's.
+`PvP.lua`, after `Hints/Profession.lua` in the TOC, gives two asides; the opt-in card is the planner's.
 
 - **Open to you.** Only `C_PvP.GetLevelUpBattlegrounds(level)` says which battlegrounds are open: each level up to
   the player's is asked once (R5: Warsong Gulch at 10, Arathi Basin at 20, Darkspear Islands at 30). `canEnter` gates
@@ -644,6 +646,32 @@ cache that did, Integrations' town places, is keyed on it).
   first of them with a description, as the character pane's next-reward rows show them. The icon is a texture, so an
   aside may give `texture`, drawn in place of its atlas. No probe reached `GetMajorFactionProgressionInfo`: without it,
   nothing shows. Asked again on `PLAYER_PVP_RANK_CHANGED` and `MAJOR_FACTION_RENOWN_LEVEL_CHANGED`.
+
+### 2.16 Professions (roadmap #9)
+
+Only where to go next: SkillUp Forever keeps recipes, skill-up colours and its levelling route. `Hints/Profession.lua`,
+after `Asides.lua` in the TOC, registers the profession aside, after the class trainer's. `Model.Profession` gives the
+first of these the player still wants:
+
+- **Rank cap.** A learned line at its rank's cap whose next rank they can train now: "Your Mining has reached 75 of 75
+  · Journeyman training in Durotar". The cap is C_SkillInfo's `maxRank`; its rank is the cap over 75 (CMaNGOS
+  `Spell::EffectSkillStep` sets the cap to 75 times the rank), and a cap off that scale says nothing. The next rank
+  must be one a trainer teaches (`Data.professions`: Expert Cooking and Fishing come from books, so 150 of 150 says
+  nothing) and the player must have the level and skill its rank spell asks (`npc_trainer` reqlevel, reqskillvalue).
+- **Free slot.** Fewer than two professions (C_SkillInfo's `skillLineCategoryID` 11; two is CMaNGOS
+  MaxPrimaryTradeSkill's default) while one they lack is one they can learn now: "A profession slot is free ·
+  trainers in Crossroads", at the nearest trainer of any such profession's Apprentice rank.
+- **Secondary skill.** First Aid, Cooking or Fishing not learned, once the player has its Apprentice level: "You can
+  learn Fishing in Crossroads", the name from the data (English) since the client names only learned lines.
+
+Each goes to the nearest trainer of the player's side who teaches that rank (`Data.npcs` `ranks`), by the route's
+cost (§4.1), with the minimap's `profession` mark (CSV:1322). A rank only the other side's trainers teach (Artisan
+Fishing is Katoom the Angler's, Horde) is no nudge; with no place for the player the line is text only ("Journeyman
+training is open to you", "A profession slot is free"). The keys are `profession:<skill>:<rank>` and
+`profession:slot`. `SKILL_LINES_CHANGED` asks the providers again a frame later, only when a profession line's rank or
+cap, or the count of professions, moved; a weapon skill-up asks nothing. SkillUp Forever has no public API (its
+`NextRanks` is local to its Route.lua), so AGF reads its own copy of the CMaNGOS trainer rows; `IsSpellKnown` on the
+rank spells is not needed, since the cap already says which rank is known.
 
 ## 3. Copy style sheet
 
@@ -709,9 +737,11 @@ cache that did, Integrations' town places, is keyed on it).
 **NPC roles (`Data.npcs`, roadmap R2).** The generator emits class trainers (with the class, and `upto`, the highest
 level they teach, so a starting-area trainer is told apart, and `from`, the lowest, when above 1, so a trainer of
 only part of the class's spells, a mage's portal trainer, is too), hunter pet trainers, riding trainers (with
-CMaNGOS's TrainerRace), profession trainers (skill line and the highest rank taught: the SKILL_STEP effect of a
-taught spell in wago SpellEffect, on a SkillLine profession or secondary skill), battlemasters
-(`battlemaster_entry`) and innkeepers, from the pinned CMaNGOS dump.
+CMaNGOS's TrainerRace), profession trainers (skill line and each rank taught: the SKILL_STEP effect of a
+taught spell in wago SpellEffect, on a SkillLine profession or secondary skill; a Journeyman-only trainer teaches no
+Apprentice), battlemasters (`battlemaster_entry`) and innkeepers, from the pinned CMaNGOS dump. `Data.professions`
+gives each line those trainers teach its name, whether it is a secondary skill, and each taught rank's `npc_trainer`
+reqlevel and reqskillvalue (the most any trainer asks).
 The side is every side the FactionTemplate's EnemyGroup is not hostile to. The place is a non-seasonal spawn
 projected as a quest giver's is. Within 100 yards of a quest place it takes that place's hub and the map most of
 the hub's quest places use, since zone rectangles overhang (Astranaar is Ashenvale, not Stonetalon); elsewhere it
@@ -842,7 +872,7 @@ Not requested:
 | LegacyForever (formerly LegacyHere) | none | It has no public API (origin/main ea0fb8c; the PROBE `legacy` scan shows only `LegacyForever*` mixins and DB). Its data has 0 quest criteria (siblings.md §3), so no quest can be honestly tagged, and percentages are Legacy's domain. It returns only if Could #18 is promoted, as `Objectives(uiMapID)` with no percent. |
 | TweaksForever | `TweaksForever.API.TrainableSpells()` (TF PR #45, `version = 1`), for Should #19 and the trainer stop (§2.12) | Returns fresh `{spellID, name, level, cost?, line, lineID}` tables for the trainer spells the player's level allows and they haven't learned, or nil before login and in combat. AGF checks `type(api.TrainableSpells) == "function"` where it uses it, and treats nil as "no step this rebuild". The zone table is still baked at generation time (siblings.md §4); `DungeonEntrance` is needed only for Could #17. AGF never re-sorts the stock tracker, which TF's "Nearest quests first" owns. A public `DungeonEntrance(mapID)` is a follow-up (plan §7.5). |
 | WorkOrdersForever | none | It messages agents, and has no gameplay data or API. |
-| SkillUpForever | none | Profession steps are out of scope for a quest journal. |
+| SkillUpForever | none | It has no public API. The profession aside (§2.16) names only the next rank's trainer, a free slot and an unlearned secondary skill, from AGF's own CMaNGOS trainer rows; recipes, skill-ups and levelling routes stay SkillUp's. |
 
 ## 6. Known flight paths: decision
 
@@ -935,6 +965,13 @@ Nothing below has been validated in game yet.
 24. PvP rank (§2.15): a character with rank points sees "Rank N · <reward>" with the reward's icon, matching the
     character pane's next-reward row; one with none sees nothing, and no error shows where
     `C_MajorFactions.GetMajorFactionProgressionInfo` is missing.
+25. Professions (§2.16): `C_SkillInfo` reports professions and secondary skills by their base SkillLine IDs (186
+    Mining, not Forever's 2946), with `maxRank` 75/150/225/300 and `skillLineCategoryID` 11 for a profession. A
+    character with Mining at 75 of 75 and level 10 sees "Your Mining has reached 75 of 75 · Journeyman training in
+    <town>" with the profession mark, above the cards and in the tracker; its click goes to that trainer, and
+    learning Journeyman removes the line without a `/reload`. A character with one profession sees "A profession
+    slot is free · trainers in <town>"; one with two professions and no Cooking at level 5 or more sees "You can
+    learn Cooking in <town>". Skip for now moves on to the next at once; a weapon skill-up changes nothing.
 
 ## 9. Open questions that need client probes
 
