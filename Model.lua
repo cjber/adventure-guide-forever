@@ -36,6 +36,10 @@ local function HasBit(mask, bit)
 	return not mask or mask == 0 or (bit > 0 and math.floor(mask / bit) % 2 == 1)
 end
 
+local function Count(one, many, count)
+	return count == 1 and one or many:format(count)
+end
+
 local function Distance(a, b)
 	if not ValidPlace(a) or a.map ~= b.map then
 		return 1000000
@@ -497,6 +501,12 @@ end
 ---@param log table<integer, AGFLogQuest>
 local function Describe(data, log, player, step)
 	local L = ns.L
+	-- A trainer's stop (roadmap #5) has no quests: its reason is the spells waiting there.
+	if step.kind == "trainer" then
+		step.reason = Count(L.TRAINER_SPELL, L.TRAINER_SPELLS, player.train.count)
+		step.detail = step.reason
+		return
+	end
 	local handin, risk, distance, optional = {}, {}, {}, true
 	for _, list in ipairs({ step.handins, step.pickups }) do
 		for _, id in ipairs(list) do
@@ -752,12 +762,15 @@ local function Ready(data, log)
 end
 
 -- Where a step is, for its "NPC, zone" line: the zone is the client's name for its map, the data's otherwise. A turn-in
--- names the data's finish NPC only while its point is within AGREE of that finish; a town named itself in Describe.
+-- names the data's finish NPC only while its point is within AGREE of that finish; a town named itself in Describe; a
+-- trainer's stop is titled by its town.
 ---@param step AGFStep
 ---@param mapName? fun(map: integer): string?
 local function Locate(data, step, mapName)
 	step.zone = (mapName and mapName(step.map)) or (data.maps and data.maps[step.map] and data.maps[step.map].name)
-	if step.kind == "turnin" then
+	if step.kind == "trainer" then
+		step.title = ns.L.TRAIN_IN:format(Model.TownName(data, step, mapName))
+	elseif step.kind == "turnin" then
 		local quest = data.quests[step.quests[1]]
 		local finish = quest and quest.finish
 		local here, there = Position(data, step), finish and Position(data, finish)
@@ -771,9 +784,12 @@ local function Locate(data, step, mapName)
 	end
 end
 
--- A stop the player only hands in at: a turn-in, or a town with hand-ins and nothing to pick up.
+-- A stop the player only hands in at: a turn-in, or a town with hand-ins and nothing to pick up. Never a trainer's.
 ---@param step AGFStep
 local function HandInOnly(step)
+	if step.kind == "trainer" then
+		return false
+	end
 	return step.kind == "turnin" or (step.kind == "hub" and #step.pickups == 0)
 end
 
@@ -795,6 +811,92 @@ local function Cost(a, b)
 	end
 	-- No boat for this side between them: the straight line across the sea, as before the docks were known.
 	return CROSSING + (best or Yards(a, b))
+end
+
+-- A town's name for the player: its flight master's town (before ", zone"), else the client's name for its map, else
+-- the data's. Only names the data has.
+---@param data AGFData
+---@param place {map: integer, hub?: integer}
+---@param mapName? fun(map: integer): string?
+---@return string
+function Model.TownName(data, place, mapName)
+	local town = data.hubs and place.hub and data.hubs[place.hub] or nil
+	if town then
+		return (town.name:match("^(.-),") or town.name)
+	end
+	return (mapName and mapName(place.map)) or data.maps[place.map].name
+end
+
+-- Roadmap #5: a class trainer who teaches the player's spells to train, the highest of them at `level`. Of the player's
+-- class and side, teaching the class's list from its start (no `from`: a portal trainer teaches only part of it) up to
+-- at least `level` (a starting-area trainer stops at 6).
+---@param npc AGFNpc
+local function Teaches(npc, player, level)
+	return npc.class ~= nil
+		and player.classBit > 0
+		and HasBit(player.classBit, 2 ^ (npc.class - 1))
+		and HasBit(npc.side, player.side)
+		and npc.from == nil
+		and npc.upto >= level
+end
+
+-- The nearest trainer who teaches the player's spells to train (Teaches), by the route's own cost, so across an ocean
+-- it runs through the side's docks; the lowest NPC ID on a tie. Nil when the data places none, or cannot measure from
+-- the player (no place for them).
+---@param player AGFPlayer
+---@param level integer the highest level among the spells to train
+---@return AGFNpc?
+function Model.Trainer(data, player, level)
+	local docks = Docks(data, player.side)
+	local origin = Position(data, player, docks)
+	local best, bestCost, bestID
+	for id, npc in pairs(data.npcs or {}) do
+		if Teaches(npc, player, level) then
+			local cost = Cost(origin, Position(data, npc.place, docks))
+			if cost < UNKNOWN and (not best or cost < bestCost or (cost == bestCost and id < bestID)) then
+				best, bestCost, bestID = npc, cost, id
+			end
+		end
+	end
+	return best
+end
+
+-- The chosen journey's trainer stops (roadmap #5): with spells to train, one per town among the trainers who teach
+-- them, the lowest NPC ID in each. Build takes one only after a stop in its town (Open), so none is a detour. A trainer
+-- the data puts in no town is never a stop; the aside still names them.
+---@param prefs AGFPrefs
+---@param key string the journey's key
+---@return AGFStep[]
+local function TrainerSteps(data, player, prefs, key)
+	local train, steps = prefs.journey == key and player.train, {}
+	if not train then
+		return steps
+	end
+	local ids, towns = {}, {}
+	for id, npc in pairs(data.npcs or {}) do
+		ids[#ids + 1] = npc.place.hub and Teaches(npc, player, train.level) and id or nil
+	end
+	table.sort(ids)
+	for _, id in ipairs(ids) do
+		local place = data.npcs[id].place
+		if not towns[place.hub] then
+			towns[place.hub] = true
+			steps[#steps + 1] = {
+				kind = "trainer",
+				key = "trainer:" .. id,
+				hub = place.hub,
+				title = "",
+				detail = "",
+				reason = "",
+				quests = {},
+				map = place.map,
+				x = place.x,
+				y = place.y,
+				place = place.name,
+			}
+		end
+	end
+	return steps
 end
 
 -- Nearest neighbour from `from`; TwoOpt then removes crossings with that start fixed and the end open.
@@ -881,10 +983,17 @@ local function Order(selected, origin, where, away, cheap)
 	return steps
 end
 
+-- A step with no quests is worth what its kind says, never VALUE_WEAK: training waits for nothing, as a hand-in does.
+local KIND_VALUE = { trainer = VALUE_HAND_IN }
+
 -- A step's worth in yards (VALUE_* above), so selection weighs it against the reach. Only a step placed in yards has
 -- one: a map the data cannot place is measured in map units, where yards mean nothing.
 ---@param step AGFStep
 local function Value(data, log, player, step)
+	local worth = KIND_VALUE[step.kind]
+	if worth then
+		return worth
+	end
 	-- A finished quest waits for nothing, so a stop with a hand-in is never weak.
 	local handins = step.handins and #step.handins or (step.kind == "turnin" and 1 or 0)
 	local risk, weak = false, handins == 0
@@ -926,6 +1035,12 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, c
 	-- dropping it for whichever key sorts first.
 	local measured = origin ~= nil and origin.known
 	local reach, value, chosen, selected = {}, {}, {}, {}
+	-- A trainer's stop (roadmap #5) opens only once a stop in its town is chosen, its hub or within the town linkage
+	-- (AGREE) of it, and one at most: the route stops to train only where it passes anyway.
+	local near, trained = {}, false
+	local function Open(step)
+		return step.kind ~= "trainer" or (near[step] and not trained)
+	end
 	for _, step in ipairs(pool) do
 		local cost = Cost(origin, where[step])
 		reach[step] = (not measured and cost >= UNKNOWN and HandInOnly(step)) and 0 or cost
@@ -934,9 +1049,17 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, c
 	local function Take(step)
 		chosen[step] = true
 		selected[#selected + 1] = step
+		trained = trained or step.kind == "trainer"
 		for _, other in ipairs(pool) do
 			if not chosen[other] then
-				reach[other] = math.min(reach[other], Cost(where[step], where[other]))
+				local cost = Cost(where[step], where[other])
+				reach[other] = math.min(reach[other], cost)
+				near[other] = near[other]
+					or (
+						other.kind == "trainer"
+						and step.kind ~= "trainer"
+						and ((step.hub ~= nil and step.hub == other.hub) or cost <= AGREE)
+					)
 			end
 		end
 	end
@@ -948,7 +1071,11 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, c
 		local best, bestKey
 		for _, step in ipairs(pool) do
 			local key = reach[step] - value[step]
-			if not chosen[step] and (not best or key < bestKey or (key == bestKey and step.key < best.key)) then
+			if
+				not chosen[step]
+				and Open(step)
+				and (not best or key < bestKey or (key == bestKey and step.key < best.key))
+			then
 				best, bestKey = step, key
 			end
 		end
@@ -964,6 +1091,8 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, c
 		if step.kind == "hub" then
 			Describe(data, log, player, step)
 			Opens(data, player, completed, log, step)
+		elseif step.kind == "trainer" then
+			Describe(data, log, player, step)
 		end
 	end
 
@@ -1018,10 +1147,6 @@ end
 local NEXT_ZONE_AHEAD = 2 -- levels: the next zone is the one that fits the player two levels on
 local NEXT_ZONE_PICKUPS = 5 -- eligible quests there, or the card is too thin to offer (docs/plan.md §1.5)
 
-local function Count(one, many, count)
-	return count == 1 and one or many:format(count)
-end
-
 local function ZoneName(data, map, mapName)
 	return (mapName and mapName(map)) or data.zones[map].name
 end
@@ -1031,7 +1156,11 @@ end
 ---@param ready table<integer, AGFPlace>
 local function Carry(data, player, completed, log, ready, prefs, mapName, cheap)
 	local carried = LogSteps(data, player, log, ready)
-	local steps = Build(data, player, completed, log, carried, prefs, mapName, cheap)
+	local candidates = TrainerSteps(data, player, prefs, "carry")
+	for _, step in ipairs(carried) do
+		candidates[#candidates + 1] = step
+	end
+	local steps = Build(data, player, completed, log, candidates, prefs, mapName, cheap)
 	if #steps == 0 then
 		return nil
 	end
@@ -1099,6 +1228,9 @@ local function ZoneJourney(data, player, completed, log, ready, eligible, zone, 
 	PickupSteps(data, eligible, function(quest)
 		return (quest.zone or quest.start.map) == zone
 	end, candidates)
+	for _, step in ipairs(TrainerSteps(data, player, prefs, "zone:" .. zone)) do
+		candidates[#candidates + 1] = step
+	end
 	for _, step in ipairs(candidates) do
 		for _, id in ipairs(step.quests) do
 			lead = id == leadID and step or lead
@@ -1148,6 +1280,9 @@ local function DungeonJourney(data, player, completed, log, eligible, prefs, map
 	PickupSteps(data, eligible, function(quest)
 		return quest.dungeon == best and not quest.raid
 	end, candidates)
+	for _, step in ipairs(TrainerSteps(data, player, prefs, "dungeon:" .. best)) do
+		candidates[#candidates + 1] = step
+	end
 	local steps = Build(data, player, completed, log, candidates, prefs, mapName)
 	if #steps == 0 then
 		return nil
@@ -1451,6 +1586,8 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 	local function Prune(step)
 		if skipped[step.key] then
 			return nil
+		elseif step.kind == "trainer" then
+			return step -- nothing is learned in a fight
 		end
 		local pickups, handins = Keep(step.pickups, Open), Keep(step.handins, Carried)
 		if #pickups + #handins == #step.quests then
