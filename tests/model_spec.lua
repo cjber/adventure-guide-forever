@@ -205,6 +205,34 @@ equal(Kinds(Model.Plan(Ahead(5, 20), player, {}, {}, prefs()).journeys), "zone:1
 -- At 22 There fits both now and two levels on; the next zone is never the story's own, and Here holds too few.
 local later22 = { level = 22, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
 equal(Kinds(Model.Plan(Ahead(5), later22, {}, {}, prefs()).journeys), "zone:2", "never the story's own zone")
+-- The offer rules only gate new choices (design §2.10): a chosen zone stays while it has a step.
+local function Choose(key)
+	local chosen = prefs()
+	chosen.journey = key
+	return chosen
+end
+equal(Kinds(Model.Plan(Ahead(4), player, {}, {}, Choose("zone:2")).journeys), "zone:1 zone:2", "chosen: under 5 quests")
+local arrived = Model.Plan(Ahead(4), standing, {}, {}, Choose("zone:2"))
+equal(Kinds(arrived.journeys), "zone:2", "chosen: standing in the zone it heads to")
+equal(arrived.journeys[1].title, "There story", "chosen: which is now the zone's story")
+equal(arrived.chosen, true, "chosen: and still chosen")
+local away22 = { level = 22, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 3, x = 0.5, y = 0.5 }
+local kept22 = Model.Plan(Ahead(5), away22, {}, {}, Choose("zone:1")).journeys
+equal(Kinds(kept22), "zone:2 zone:1", "chosen: a level-up keeps the chosen zone")
+equal(kept22[2].title, "Head to Here", "chosen: heading there")
+-- The chosen dungeon stays with its instance while it has pickups, whichever has the most.
+local halls = { quests = {}, zones = data.zones, instances = { [36] = { name = "Few" }, [48] = { name = "Many" } } }
+for id = 1, 5 do
+	halls.quests[id] = quest(id / 10, 0.5)
+	halls.quests[id].dungeon = id <= 2 and 36 or 48
+end
+local delve = Choose("dungeon:36")
+delve.quests, delve.dungeons = false, true
+equal(Kinds(Model.Plan(halls, player, {}, {}, prefs()).journeys), "", "chosen: dungeons off, no card")
+delve.journey = nil
+equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:48", "chosen: unchosen, the most quests")
+delve.journey = "dungeon:36"
+equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "chosen: the chosen instance stays")
 
 local hub = { quests = { [1] = quest(0.1), [2] = quest(0.11), [3] = quest(0.09) }, zones = data.zones }
 hub.quests[1].start.hub, hub.quests[2].start.hub = 7, 7

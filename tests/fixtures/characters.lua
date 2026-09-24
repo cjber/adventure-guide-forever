@@ -90,6 +90,20 @@ characters.list = {
 		prefs = { dungeons = true },
 	},
 	{
+		-- human18_westfall after choosing "Head to Redridge Mountains" and walking into Lakeshire: the choice stays,
+		-- now as the zone's story (docs/design.md §2.10).
+		name = "human18_redridge",
+		level = 18,
+		side = 1,
+		raceBit = 1,
+		classBit = 1,
+		map = 1433,
+		x = 0.2600,
+		y = 0.4500,
+		completed = { zones = { 1429 } },
+		prefs = { dungeons = true, journey = "zone:1433" },
+	},
+	{
 		-- A level-60 human warrior at Light's Hope Chapel with nothing completed: the end-game zones only.
 		name = "human60",
 		level = 60,

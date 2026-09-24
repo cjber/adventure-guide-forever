@@ -75,7 +75,9 @@ for _, fixture in ipairs(characters.list) do
 	-- F2: at most three journeys, each with at least one step the player can take now. The standing rules hold on
 	-- every card: nothing ineligible is suggested, and no step points where the data has no place.
 	equal(#route.journeys <= Model.MAX_JOURNEYS, true, fixture.name .. ": at most three cards")
-	equal(route.journey, route.journeys[1] and route.journeys[1].key, fixture.name .. ": the first card is chosen")
+	-- The saved choice while its card is built, the first card otherwise.
+	local first = route.journeys[1] and route.journeys[1].key
+	equal(route.journey, prefs.journey or first, fixture.name .. ": the chosen card, else the first")
 	for _, journey in ipairs(route.journeys) do
 		local label = fixture.name .. ": " .. journey.key
 		equal(#journey.steps >= 1 and #journey.steps <= Model.MAX_STEPS, true, label .. ": 1 to 9 steps")
@@ -175,14 +177,17 @@ for _, fixture in ipairs(characters.list) do
 	local again = Model.Plan(data, player, completed, log, prefs)
 	equal(Render(fixture, again), text, fixture.name .. ": rebuild")
 	-- The in-combat rebuild keeps three cards at most: a quest looted mid-fight brings a carry card the last build
-	-- lacked, and the last card, chosen or not, makes way as the full build would.
-	local last = route.journeys[#route.journeys]
+	-- lacked, and the last card not chosen makes way, as the full build leaves it out (design §2.10).
+	local saved, last = prefs.journey, route.journeys[#route.journeys]
 	local fight = { [168] = { id = 168, title = "Collecting Memories", level = 18, complete = true } }
 	prefs.journey = last and last.key
 	local refreshed = Model.Refresh(data, player, completed, fight, prefs, route)
-	prefs.journey = nil
+	local full = Model.Plan(data, player, completed, fight, prefs)
 	equal(#refreshed.journeys <= Model.MAX_JOURNEYS, true, fixture.name .. ": at most three cards in combat")
 	equal(refreshed.journeys[1].key, "carry", fixture.name .. ": the new carry card first")
+	equal(refreshed.journey, prefs.journey, fixture.name .. ": the chosen last card keeps its slot in combat")
+	equal(full.journey == prefs.journey and full.chosen, last ~= nil, fixture.name .. ": and in the full build")
+	prefs.journey = saved
 end
 
 print(("plan_golden_spec: %d checks passed; %d fixtures"):format(checks, #characters.list))
