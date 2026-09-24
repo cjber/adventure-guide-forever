@@ -66,10 +66,13 @@ local emptyText
 local trainerText
 ---@type FontString?
 local hintText
----@type Button?
-local goButton
+---@type FontString?
+local queuedText
 ---@type Button?
 local stopButton
+-- A choice made with the setting on whose route has yet to start: it waits out combat (Shortest Path refuses every
+-- route then) and starts on the rebuild combat's end brings (Core's afterCombat).
+local pendingStart = false
 ---@type AGFSearchRow[]
 local results = {}
 ---@type Frame?
@@ -305,18 +308,25 @@ local function BuildJourneys(parent, below)
 	list:SetPoint("RIGHT", parent, "RIGHT", -PAD, 0)
 	for index = 1, ns.Model.MAX_JOURNEYS do
 		local card = CreateFrame("Button", nil, list, "AdventureGuideForeverJourneyCardTemplate") --[[@as AGFJourneyCard]]
-		-- Choosing a journey shows its route and turns the map to it; it never starts guidance, only Go does. The map
-		-- turns before the invalidation, so its redraw reads the route as it is and the one rebuild waits a frame.
-		-- The chosen card is a toggle: clicking it again chooses none, and every card is whole again.
+		-- Choosing a journey shows its route and turns the map to it, and with the setting on starts it (StartPending,
+		-- once the rebuild has its steps). The map turns before the invalidation, so its redraw reads the route as it
+		-- is and the one rebuild waits a frame. The chosen card is a toggle: clicking it again chooses none, every card
+		-- is whole again and, with the setting on, the route it started stops (never anyone else's).
 		card:SetScript("OnClick", function(self)
 			local journey = self.journey
 			if not journey then
 				return
 			end
+			local starts = ns.Setting("titleStartsRoute")
 			if self.state == "chosen" then
 				ns.Prefs().journey = nil
+				pendingStart = false
+				if starts then
+					ns.Integrations.Cancel()
+				end
 			else
 				ns.Prefs().journey = journey.key
+				pendingStart = starts
 				WorldMapFrame:SetMapID(journey.map)
 			end
 			-- Its tooltip spoke for the state the click just left.
@@ -324,9 +334,12 @@ local function BuildJourneys(parent, below)
 			ns.Invalidate()
 		end)
 		-- A one-line card keeps what it no longer shows in its tooltip; the chosen one says how to see them all again.
+		-- A card whose click would replace someone else's journey warns first, as Go did (docs/design.md §2.9).
 		card:HookScript("OnEnter", function(self)
 			local journey = self.journey
-			if not journey or self.state == "full" then
+			local starts = ns.Setting("titleStartsRoute")
+			local warns = self.state ~= "chosen" and starts and ns.Integrations.ReplacesJourney()
+			if not journey or (self.state == "full" and not warns) then
 				return
 			end
 			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -336,8 +349,15 @@ local function BuildJourneys(parent, below)
 				if journey.reason then
 					GameTooltip_AddHighlightLine(GameTooltip, journey.reason)
 				end
-			else
-				GameTooltip_AddInstructionLine(GameTooltip, L.SHOW_EVERY_JOURNEY)
+			elseif self.state == "chosen" then
+				local stops = starts and ns.Integrations.Owns()
+				GameTooltip_AddInstructionLine(
+					GameTooltip,
+					stops and L.STOP_AND_SHOW_EVERY_JOURNEY or L.SHOW_EVERY_JOURNEY
+				)
+			end
+			if warns then
+				GameTooltip_AddInstructionLine(GameTooltip, L.REPLACES_JOURNEY)
 			end
 			GameTooltip:Show()
 		end)
@@ -393,24 +413,11 @@ end
 
 ---@param parent Frame
 local function BuildFooter(parent)
-	goButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate") --[[@as Button]]
-	goButton:SetSize(190, 26)
-	goButton:SetPoint("BOTTOMLEFT", PAD, 8)
-	goButton:SetScript("OnClick", function()
-		local step = ns.Route().steps[1]
-		if step then
-			ns.Integrations.Navigate(step)
-		end
-	end)
-	goButton:SetScript("OnEnter", function(self)
-		if ns.Integrations.ReplacesJourney() then
-			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-			ns.Menu.GoWarning(GameTooltip, self:GetText())
-			GameTooltip:Show()
-		end
-	end)
-	goButton:SetScript("OnLeave", GameTooltip_Hide)
-	-- Shown only while Go's guidance runs (design §2.1): it never stops what the player or another addon started.
+	-- No Go: choosing a card starts its route. A choice made in combat says it waits, so it never reads as failed.
+	queuedText = parent:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+	queuedText:SetPoint("BOTTOMLEFT", PAD, 15)
+	queuedText:SetText(L.STARTS_AFTER_COMBAT)
+	-- Shown only while our guidance runs (design §2.1): it never stops what the player or another addon started.
 	stopButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate") --[[@as Button]]
 	stopButton:SetSize(90, 26)
 	stopButton:SetPoint("BOTTOMRIGHT", -PAD, 8)
@@ -776,7 +783,7 @@ function Refresh()
 	end
 	-- BuildContent() always sets every upvalue below before Attach() registers this listener.
 	---@cast emptyText -?
-	---@cast goButton -?
+	---@cast queuedText -?
 	---@cast stopButton -?
 	local route = ns.Route()
 
@@ -785,11 +792,7 @@ function Refresh()
 	emptyText:SetText((not ready and L.LOADING) or (searching and L.SEARCH_NONE) or L.NOTHING_NEARBY)
 	emptyText:SetShown(not ready or (searching and found == 0) or (not searching and #route.journeys == 0))
 
-	-- Go follows the chosen journey, which the search hides: it waits until the search is cleared. With none chosen
-	-- the guide shows no step for it to start, so it waits for a choice (the hint under the cards says so).
-	local provider = ns.Integrations.Provider()
-	goButton:SetText(provider and ns.L.GO_WITH:format(provider) or ns.L.SET_WAYPOINT)
-	goButton:SetEnabled(route.chosen and route.steps[1] ~= nil and not searching)
+	queuedText:SetShown(pendingStart and InCombatLockdown())
 	stopButton:SetShown(ns.Integrations.Owns())
 end
 
@@ -855,6 +858,19 @@ local function CreateTabs()
 	end
 end
 
+-- The chosen card's route starts on the rebuild after the choice, which has its steps; in combat it stays pending until
+-- the rebuild combat's end brings. Registered before Refresh, so the footer already reads the route as started.
+local function StartPending()
+	if not pendingStart or InCombatLockdown() then
+		return
+	end
+	pendingStart = false
+	local route = ns.Route()
+	if ns.Setting("titleStartsRoute") and route.chosen and route.steps[1] then
+		ns.Integrations.Navigate(route.steps[1])
+	end
+end
+
 local function Attach()
 	local map = QuestMapFrame
 	panel = CreateFrame("Frame", "AdventureGuideForeverPanel", map)
@@ -894,6 +910,7 @@ local function Attach()
 			ShowGuide(false)
 		end
 	end)
+	ns.OnRouteChange(StartPending)
 	ns.OnRouteChange(Refresh)
 	ns.Integrations.OnGuidanceChange(Refresh)
 	ns.Integrations.OnTravelChange(Refresh)

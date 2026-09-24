@@ -288,6 +288,7 @@
 ---@field CHOOSE_JOURNEY string opens the guide
 ---@field CHOOSE_TO_SEE_STEPS string under the cards while none is chosen
 ---@field SHOW_EVERY_JOURNEY string the chosen card's tooltip: clicking it again chooses none
+---@field STOP_AND_SHOW_EVERY_JOURNEY string the same while the route it started runs, which the click stops
 ---@field TRAVEL string format: a leg ("Fly to X"), minutes until it arrives
 ---@field TRAVEL_ABOUT string format: minutes; the line from a Shortest Path with Estimate only
 ---@field TRAVEL_NEW_FLIGHT_PATH string appended when a walk leg reaches an undiscovered flight master
@@ -319,9 +320,8 @@
 ---@field SKIP_STEP string
 ---@field OPTIONAL string
 ---@field STEP_COUNT string format: step count
----@field GO_WITH string format: travel addon name
 ---@field SHORTEST_PATH string
----@field SET_WAYPOINT string
+---@field STARTS_AFTER_COMBAT string the footer while a choice made in combat waits to start its route
 ---@field CLICK_TRAVEL string format: travel addon name
 ---@field CLICK_WAYPOINT string
 ---@field STEP_NUMBERED string format: route index, step title

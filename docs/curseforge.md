@@ -12,7 +12,7 @@ It looks like it came with the game: a tab in the quest log beside Quests, cards
 
 - **Journeys**: up to three cards. Finish the quests you carry, follow a zone's story, or head to the next zone once it has enough quests near your level. Pick one and it shows its steps, up to nine.
 - **Stories as chapters**: "Chapter 2 of 4" only when the data proves the chain's length. Later chapters are never named.
-- **Select, then Go**: choosing a card previews its steps on the map and starts nothing. *Go* hands the route to Shortest Path Forever, boats and flight paths included, or sets the game's own waypoint. *Stop* never removes a waypoint you placed yourself.
+- **Choose and go**: choosing a card previews its steps on the map and hands the route to Shortest Path Forever, boats and flight paths included, or sets the game's own waypoint. A setting makes choosing preview only. *Stop* never removes a waypoint you placed yourself.
 - **Routes by distance** cross the sea at most once; a turn-in on the other continent waits until you are there.
 - **Why not?**: search a quest and see what it needs, ticked when you meet it.
 - **Objective tracker section** above your quests with the current step, how you'll get there, and the next one. Click the title to start the route; right-click to skip a step or pick another journey.

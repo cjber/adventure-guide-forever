@@ -282,7 +282,7 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 
 **F3 Select, then Go (Must)**
 - **Files:** `Panel.lua` (card `OnClick` sets `prefs.journey`, calls `ns.Invalidate()` and `WorldMapFrame:SetMapID(journey.map)`) · `Pins.lua` (shows the selected journey's rings while the panel is shown).
-- **Acceptance:** "Choosing a journey moves nothing until Go" → `ui_spec`: 5 card clicks give `SetUserWaypoint` 0, `Navigate`/`NavigateRoute` 0, ≤ 1 `Estimate`/`EstimateDetail` per click (the step-1 travel line), `SetMapID` 5, and rings == the selected steps on that map. Closing the tab with pins off gives 0 pins.
+- **Acceptance:** "Choosing a journey moves nothing until Go" → `ui_spec`: 5 card clicks give `SetUserWaypoint` 0, `Navigate`/`NavigateRoute` 0, ≤ 1 `Estimate`/`EstimateDetail` per click (the step-1 travel line), `SetMapID` 5, and rings == the selected steps on that map. Closing the tab with pins off gives 0 pins. **Changed (auto-start):** that spec now runs with `titleStartsRoute` off; with it on (the default) a choice starts the route on its rebuild, a choice in combat waits for `PLAYER_REGEN_ENABLED`, and clearing the choice cancels only AGF's route (the none-chosen and combat-choice specs). The footer Go is gone.
 
 **F4 Zone stories (Must)**
 - **Files:** `Model.lua` (`Model.Story(data, questID)`, memoised in a weak table keyed by data, the same way as `Index`) · `Panel.lua` (the chapter track: 12x12 squares, text-only when longer than 8).
@@ -453,16 +453,16 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 | 1 | First login on a new level-1 character, SPF enabled | The tracker shows the Adventure Guide section. No "Where you left off" line (no saved key) | SHOT tracker, SV |
 | 2 | Open the map, then the Adventure tab | 1 to 3 cards at 0.77-scale renown art with a clean border and hover highlight | SHOT panel, SV (`luajit tests/dump_diff.lua` vs `layout.json`) |
 | 3 | Close the tab, and look at the zone map | 0 AGF rings and 0 "!" (pins off by default) | SHOT map |
-| 4 | Reopen the tab and select card 2 | The map turns to the journey's zone. Only its rings are shown, and no waypoint is set | SHOT map + panel |
+| 4 | Reopen the tab and select card 2 | The map turns to the journey's zone, only its rings are shown, and Shortest Path starts the route from step 1 | SHOT map + panel |
 | 5 | Type `red linen` in search | Why-not lines: red unmet, ticked grey met, no Go on locked quests | SHOT panel |
 | 6 | Click a log quest in the tracker, then enter combat (attack a training dummy or a mob) and click again | Blizzard's details open and the guide closes. In combat nothing opens | SHOT, TAINT (expect 0 AGF lines) |
-| 7 | Set your own map waypoint, press Go with SPF disabled (`/disable ShortestPathForever`, `/reload`), then move the waypoint by hand and press Stop | Your own waypoint survives Stop. The tracker has no travel line | SHOT map, SV |
-| 7b | Press Go without SPF, `/reload`, press Stop | Stop is still offered, and clears AGF's waypoint | SHOT map |
-| 7c | With SPF enabled, press Go on a step SPF cannot route (e.g. inside a city with no navmesh) | The native waypoint appears instead of nothing | SHOT map |
-| 7e | With the guide open, right-click step row 1 and choose Go, then right-click the tracker and choose Stop | The footer's Stop appears after Go and goes after Stop | SHOT panel |
+| 7 | Set your own map waypoint, choose a card with SPF disabled (`/disable ShortestPathForever`, `/reload`), then move the waypoint by hand and press Stop | Your own waypoint survives Stop. The tracker has no travel line | SHOT map, SV |
+| 7b | Choose a card without SPF, `/reload`, press Stop | Stop is still offered, and clears AGF's waypoint | SHOT map |
+| 7c | With SPF enabled, choose Go from the row menu on a step SPF cannot route (e.g. inside a city with no navmesh) | The native waypoint appears instead of nothing | SHOT map |
+| 7e | With the setting off, choose a card, right-click step row 1 and choose Go, then right-click the tracker and choose Stop | The footer's Stop appears after Go and goes after Stop | SHOT panel |
 | 7f | Track one quest not on the route, then left-click the tracker title; repeat with "Stop tracking other quests" on, then with both title settings off | Shortest Path draws the route and the route's log quests join the tracker, the other quest stays; with the opt-in only the route's quests are tracked; with both off only the quest details open. In Settings, "Stop tracking other quests" is greyed while tracking is off | SHOT tracker |
-| 7d | As a night elf in Darkshore carrying a finished Stormwind quest, open the guide and press Go | The route stays on Kalimdor, crosses once, and ends with "Hand in when you're in Stormwind City"; SPF (with PR #29) draws the boat, not dots over the sea | SHOT map (Azeroth view), SV |
-| 8 | With SPF enabled (the release with `EstimateDetail`), press Go | The tracker reads "Fly to … · N min" or, for a short trip, "Walk to … · N min". On an SPF build without `EstimateDetail` it reads "About N min away"; on v1.1.0 there is no line | SHOT tracker |
+| 7d | As a night elf in Darkshore carrying a finished Stormwind quest, open the guide and choose the carry card | The route stays on Kalimdor, crosses once, and ends with "Hand in when you're in Stormwind City"; SPF (with PR #29) draws the boat, not dots over the sea | SHOT map (Azeroth view), SV |
+| 8 | With SPF enabled (the release with `EstimateDetail`), choose a card | The tracker reads "Fly to … · N min" or, for a short trip, "Walk to … · N min". On an SPF build without `EstimateDetail` it reads "About N min away"; on v1.1.0 there is no line | SHOT tracker |
 | 9 | Hand in the last quest of a chain the panel showed as "Chapter N of N" | "Story complete", the header glows once, and the stage-end sound plays. No toast | SHOT tracker (right after the turn-in), SV |
 | 10 | `/reload` | No resume line appears | SHOT tracker |
 | 11 | Log out, then log in to the same character | "Where you left off: …" appears once, and it goes after the next route change | SHOT tracker, SV |
@@ -471,10 +471,13 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 | 13 | Level up (or ding during the test) | The cards rebuild once. No error, and no frame flicker | SV (`dump.route` changes), TAINT |
 | 14 | Stand idle 60 s with the tab closed, then `/agf dump` and `/reload` | SV: 0 AGF frames with `onUpdate = true` | SV |
 | 15 | Pull a mob with the tab open, loot a quest item mid-fight | No rebuild hitch in combat; the cards refresh once after combat | SV, TAINT |
-| 16 | On a character that never chose a card (or click the chosen card again), open the Adventure tab | Every card whole, "Choose a journey to see its steps." under them, Steps: 0, Go greyed, no rings on the map; the tracker still shows a step | SHOT panel + map |
+| 16 | On a character that never chose a card (or click the chosen card again), open the Adventure tab | Every card whole, "Choose a journey to see its steps." under them, Steps: 0, no Go button, nothing guides and no rings on the map; the tracker still shows a step | SHOT panel + map |
 | 17 | Click the second card, then hover each one-line row | The other two fold to 26 px header rows with a "+" above it, nothing squashed; the chosen card is lit, not shifted, with its steps right under it; each row's tooltip has its subline and reason | SHOT panel |
-| 18 | Click a one-line row, then the chosen card | The row becomes the whole pressed card over its steps and the old one folds; clicking the chosen card unfolds all three and the map stays put | SHOT panel |
+| 18 | Click a one-line row, then the chosen card | The row becomes the whole lit card over its steps, the old one folds and Shortest Path switches to the new route; clicking the chosen card unfolds all three, stops the route and the map stays put | SHOT panel + map |
 | 19 | Choose a card, `/reload` | The same card is still chosen and folded the same way | SHOT panel |
+| 20 | Start another addon's Shortest Path journey (or your own from its map), then hover a folded row | The tooltip adds "Replaces your current journey."; clicking replaces it; clearing the chosen card afterwards never cancels a journey AGF did not start | SHOT tooltip |
+| 21 | Pull a mob, click a card mid-fight, then finish the fight | The card is chosen at once and the footer reads "The route starts when combat ends"; when combat ends Shortest Path starts it and the line goes. No error, no taint | SHOT panel, TAINT |
+| 22 | In Settings > AddOns turn off "Choosing a journey starts the route", then choose and clear cards | Choosing only previews; clearing stops nothing; the tracker title no longer starts the route; the row menu's Go still does | SHOT panel |
 
 ## 6. Commit plan (each commit signed with `git commit -S`, one idea, about 50 lines)
 

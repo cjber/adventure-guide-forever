@@ -592,8 +592,8 @@ do
 end
 
 -- F13: while someone else's Shortest Path journey runs, each way to start the route warns once before replacing it:
--- the footer's Go, the step menu's Go and the tracker title (while it starts the route). Our own journey, or a
--- Shortest Path without Active, warns of nothing.
+-- a card another click would choose (while choosing starts the route), the step menu's Go and the tracker title (the
+-- same setting). Our own journey, or a Shortest Path without Active, warns of nothing.
 local function Warnings(h)
 	local warning, counts = "instruction: " .. h.ns.L.REPLACES_JOURNEY, {}
 	local function Count()
@@ -604,8 +604,8 @@ local function Warnings(h)
 		counts[#counts + 1] = count
 	end
 	h.tooltip = {}
-	h.Hover(h.Find(function(frame)
-		return frame.stockTemplate == "UIPanelButtonTemplate"
+	h.Hover(Shown(h, function(frame)
+		return frame.state == "compact"
 	end)[1])
 	Count()
 	h.tooltip = {}
@@ -630,19 +630,26 @@ for _, spf in ipairs({ "v1", "v1+" }) do
 	equal(Warnings(h), spf == "v1+" and "1 1 1" or "0 0 0", spf .. ": another addon's journey")
 	ns.SetSetting("titleStartsRoute", false)
 	h.flush()
-	equal(Warnings(h), spf == "v1+" and "1 1 0" or "0 0 0", spf .. ": a title that doesn't start the route")
+	equal(Warnings(h), spf == "v1+" and "0 1 0" or "0 0 0", spf .. ": a choice that doesn't start the route")
 	ns.Integrations.Navigate(ns.Route().steps[1])
 	equal(Warnings(h), "0 0 0", spf .. ": our own journey")
 	clean(h, spf .. ": replace warning")
 end
 
--- F7, Stop: it ends only what Go started. The native waypoint is ours while it sits where Go put it, across a
+-- F7, Stop: it ends only what we started. The native waypoint is ours while it sits where we put it, across a
 -- /reload; one the player moved is theirs. Shortest Path's journey is cancelled by our name, and Stop shows only while
 -- one of them runs.
 local function StopButton(h)
 	return h.Find(function(frame)
 		return frame.stockTemplate == "UIPanelButtonTemplate" and frame.text == h.ns.L.STOP
 	end)[1]
+end
+-- Choosing another journey, which starts its route once the rebuild has its steps.
+local function ChooseOther(h)
+	h.Click(Shown(h, function(frame)
+		return frame.state == "compact"
+	end)[1])
+	h.flush()
 end
 do
 	local h = Load(false)
@@ -659,10 +666,8 @@ do
 	equal(h.counts.ClearUserWaypoint, 0, "stop: so Stop leaves it")
 	equal(h.waypoint ~= nil, true, "stop: it is still there")
 	equal(ns.Prefs().waypoint, nil, "stop: and ours is forgotten")
-	h.Click(h.Find(function(frame)
-		return frame.stockTemplate == "UIPanelButtonTemplate"
-	end)[1])
-	equal(stop:IsShown(), true, "stop: shown after Go")
+	ChooseOther(h)
+	equal(stop:IsShown(), true, "stop: shown after a choice")
 	h.Click(stop)
 	equal(h.counts.ClearUserWaypoint, 1, "stop: clears the waypoint Go set")
 	equal(h.superTracked, false, "stop: and stops tracking it")
@@ -670,9 +675,7 @@ do
 	clean(h, "stop")
 
 	-- A /reload: the client keeps the waypoint, the character's saved variables remember it was ours.
-	h.Click(h.Find(function(frame)
-		return frame.stockTemplate == "UIPanelButtonTemplate"
-	end)[1])
+	ChooseOther(h)
 	local reloaded = harness.load({
 		charDB = h.G.AdventureGuideForeverCharDB,
 		waypoint = h.waypoint,
@@ -714,9 +717,7 @@ do
 	ns.OpenPanel()
 	h.flush()
 	local stop = StopButton(h)
-	h.Click(h.Find(function(frame)
-		return frame.stockTemplate == "UIPanelButtonTemplate"
-	end)[1])
+	ChooseOther(h)
 	equal(stop:IsShown(), true, "stop, Shortest Path: shown while it walks our journey")
 	h.Click(stop)
 	equal(h.spf.Cancel, 1, "stop, Shortest Path: cancels our journey once")
@@ -759,14 +760,15 @@ do
 	same(h.MenuLines(), {
 		"title: " .. first.title,
 		"button: Go",
+		"button: Stop",
 		"button: Skip for now",
 		"button: Choose another journey",
-	}, "step menu: a pickup has no Show quest")
+	}, "step menu: a pickup has no Show quest; choosing started the route, which Stop ends")
 	local skipped = h.Find(function(frame)
 		return frame.text ~= nil and frame.text:match("^Skipped")
 	end)
 	equal(#skipped, 0, "skipped: no button at 0")
-	h.menu.entries[3].onClick()
+	h.menu.entries[4].onClick()
 	h.flush()
 	h.Click(Rows()[1].SkipButton)
 	h.flush()
@@ -779,6 +781,7 @@ do
 	same(h.MenuLines(), {
 		"title: " .. ns.Route().steps[1].title,
 		"button: Go",
+		"button: Stop",
 		"button: Skip for now",
 		"button: Skipped (2)",
 		submenu[1],
@@ -1134,9 +1137,6 @@ do
 		end
 		return out
 	end
-	local goButton = h.Find(function(frame)
-		return frame.stockTemplate == "UIPanelButtonTemplate"
-	end)[1]
 	h.Type(search, "ca")
 	equal(#Results(), 0, "search: two characters keep the cards")
 	h.Type(search, "\231\139\188\231\139\188") -- two CJK characters, six bytes
@@ -1152,7 +1152,6 @@ do
 	equal(#Shown(h, function(frame)
 		return frame.SkipButton ~= nil
 	end), 0, "search: and their steps")
-	equal(goButton:IsEnabled(), false, "search: no Go")
 	local lines = Lines(assert(suppressed, "search: Call of Fire, whose start the data suppresses"))
 	equal(#lines, 1, "search: a suppressed start shows exactly 1 line")
 	equal(lines[1], h.ns.L.WHY_NO_START, "search: saying the guide can't tell where it starts")
@@ -1185,7 +1184,6 @@ do
 	equal(Says(h, h.ns.L.SEARCH_NONE), 1, "search: says so")
 	h.Type(search, "")
 	equal(#Results(), 0, "search: cleared")
-	equal(goButton:IsEnabled(), true, "search: Go is back")
 	clean(h, "guide")
 
 	local none = harness.load({ player = { level = 70 } })
@@ -1198,11 +1196,11 @@ do
 	clean(none, "guide: empty")
 end
 
--- F3, select then Go: choosing a journey moves nothing until Go; it turns the map to the journey and its rings
--- preview it while the guide is open, even with map pins off. Closing the guide takes them away.
+-- F3, select: with the setting that starts the route off, choosing a journey starts nothing; it turns the map to the
+-- journey and its rings preview it while the guide is open, even with map pins off. Closing the guide takes them away.
 for _, spf in ipairs({ false, "v1" }) do
 	local label = "select: " .. (spf or "no Shortest Path")
-	local h = Load(spf)
+	local h = Load(spf, { titleStartsRoute = false })
 	h.ns.OpenPanel()
 	h.flush()
 	local function Cards()
@@ -1250,9 +1248,10 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label)
 end
 
--- None chosen (docs/design.md §2.2): a fresh character sees every card whole, no steps, no rings and the hint, and Go
--- waits for a choice while the tracker still follows the first card. Choosing one folds the others into one-line rows
--- above it, each keeping its lines in a tooltip; a row chooses its card, and the chosen card toggles back to none.
+-- None chosen (docs/design.md §2.2): a fresh character sees every card whole, no steps, no rings and the hint, and
+-- nothing guides while the tracker still follows the first card. Choosing one starts its route and folds the others
+-- into one-line rows above it, each keeping its lines in a tooltip; a row chooses its card and starts its route in
+-- place of the first, and the chosen card toggles back to none, stopping the route it started.
 for _, spf in ipairs({ false, "v1" }) do
 	local label = "none chosen: " .. (spf or "no Shortest Path")
 	local h = Load(spf, nil, false)
@@ -1292,9 +1291,13 @@ for _, spf in ipairs({ false, "v1" }) do
 	local function Hint()
 		return Says(h.ns.L.CHOOSE_TO_SEE_STEPS)
 	end
-	local goButton = h.Find(function(frame)
-		return frame.stockTemplate == "UIPanelButtonTemplate"
-	end)[1]
+	-- Every start: Shortest Path's routes, or the native waypoints without it.
+	local function Starts()
+		return h.spf and h.spf.NavigateRoute or h.counts.SetUserWaypoint
+	end
+	local function Stops()
+		return h.spf and h.spf.Cancel or h.counts.ClearUserWaypoint
+	end
 	equal(route.chosen, false, label .. ": nothing chosen")
 	equal(route.journey, "carry", label .. ": the route falls back to the first card")
 	equal(h.tracker.liveBlocks[route.steps[1].key] ~= nil, true, label .. ": which the tracker still follows")
@@ -1303,7 +1306,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Hint(), 1, label .. ": the hint under the cards")
 	equal(Says(h.ns.L.STEP_COUNT:format(0)), 1, label .. ": and no steps counted")
 	equal(#(h.pins.AdventureGuideForeverPinTemplate or {}), 0, label .. ": no rings previewed")
-	equal(goButton:IsEnabled(), false, label .. ": Go waits for a choice")
+	equal(Starts(), 0, label .. ": nothing guides")
 	for _, card in ipairs(Cards()) do
 		equal(card.highlightLocked == true, false, label .. ": no card lit")
 	end
@@ -1311,8 +1314,11 @@ for _, spf in ipairs({ false, "v1" }) do
 	-- A compact row's tooltip keeps the card's lines.
 	local story = Cards()[2].journey
 	h.Click(Cards()[2])
+	equal(Starts(), 0, label .. ": the route waits for the rebuild with its steps")
 	h.flush()
 	equal(h.ns.Route().journey, story.key, label .. ": a click chooses")
+	equal(Starts(), 1, label .. ": and starts its route")
+	equal(h.ns.Integrations.Owns(), true, label .. ": ours, which Stop ends")
 	equal(h.G.AdventureGuideForeverCharDB.journey, story.key, label .. ": and is saved")
 	equal(Heights(), "26 26 86", label .. ": the others fold above the chosen card")
 	equal(Cards()[3].journey.key, story.key, label .. ": the chosen card last, over its steps")
@@ -1324,7 +1330,6 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Cards()[1].PushedTexture:GetAtlas(), Cards()[1].NormalTexture:GetAtlas(), label .. ": nor on a row")
 	equal(Rows(), #h.ns.Route().steps, label .. ": its steps listed")
 	equal(Hint(), 0, label .. ": no hint")
-	equal(goButton:IsEnabled(), true, label .. ": Go follows the choice")
 	local nextZone = Cards()[2]
 	h.Hover(nextZone)
 	local tip = table.concat(h.tooltip, "\n")
@@ -1333,25 +1338,32 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(tip:find(nextZone.journey.reason, 1, true) ~= nil, true, label .. ": and its reason")
 	h.Hover(Cards()[3])
 	tip = table.concat(h.tooltip, "\n")
-	equal(tip:find(h.ns.L.SHOW_EVERY_JOURNEY, 1, true) ~= nil, true, label .. ": the chosen card says how back")
+	equal(
+		tip:find(h.ns.L.STOP_AND_SHOW_EVERY_JOURNEY, 1, true) ~= nil,
+		true,
+		label .. ": the chosen card says how back, and that it stops the route"
+	)
 
 	-- A row chooses its card; the one chosen before folds in its place.
 	local key = nextZone.journey.key
 	h.Click(nextZone)
 	h.flush()
 	equal(h.ns.Route().journey, key, label .. ": a row chooses its card")
+	equal(Starts(), 2, label .. ": and starts its route in place of the first")
 	equal(Heights(), "26 26 86", label .. ": still one whole card")
 	equal(Cards()[3].journey.key, key, label .. ": the new choice over the steps")
 
 	-- The chosen card again: none chosen, every card whole, and the map stays where it was.
-	local maps = h.counts.SetMapID
+	local maps, stops = h.counts.SetMapID, Stops()
 	h.Click(Cards()[3])
 	h.flush()
+	equal(Stops() - stops, 1, label .. ": clearing the choice stops our route")
+	equal(h.ns.Integrations.Owns(), false, label .. ": so nothing of ours guides")
+	equal(Starts(), 2, label .. ": and nothing new starts")
 	equal(h.ns.Route().chosen, false, label .. ": clicking the chosen card chooses none")
 	equal(h.G.AdventureGuideForeverCharDB.journey, nil, label .. ": and saves none")
 	equal(h.counts.SetMapID, maps, label .. ": without turning the map")
 	equal(Heights(), "86 86 86", label .. ": every card whole again")
-	equal(goButton:IsEnabled(), false, label .. ": Go waits again")
 	clean(h, label)
 end
 
@@ -1365,6 +1377,63 @@ do
 	equal(gone.G.AdventureGuideForeverCharDB.journey, "dungeon:36", "saves: kept, should it come back")
 	clean(kept, "saves: kept")
 	clean(gone, "saves: gone")
+end
+
+-- A choice in combat, when Shortest Path refuses every route: the card is chosen at once and its route starts on the
+-- rebuild combat's end brings, while the footer says it waits. A choice cleared before then starts nothing. With the
+-- setting off a choice starts nothing and clearing it stops nothing.
+for _, spf in ipairs({ false, "v1" }) do
+	local label = "combat choice: " .. (spf or "no Shortest Path")
+	local h = Load(spf, nil, false)
+	h.ns.OpenPanel()
+	h.flush()
+	local function Queued()
+		local count = 0
+		for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverPanel, h.Describe)) do
+			count = count + (entry.text == h.ns.L.STARTS_AFTER_COMBAT and 1 or 0)
+		end
+		return count
+	end
+	local function Starts()
+		return h.spf and h.spf.NavigateRoute or h.counts.SetUserWaypoint
+	end
+	local function Card(state)
+		return Shown(h, function(frame)
+			return frame.IconFrame ~= nil and frame.state == state
+		end)[1]
+	end
+	equal(Queued(), 0, label .. ": nothing waits")
+	h.SetCombat(true)
+	local card = Card("full")
+	h.Click(card)
+	h.flush()
+	equal(h.ns.Route().journey, card.journey.key, label .. ": the card is chosen at once")
+	equal(Starts(), 0, label .. ": its route waits for combat's end")
+	equal(Queued(), 1, label .. ": which the footer says")
+	h.SetCombat(false)
+	h.flush()
+	equal(Starts(), 1, label .. ": the route starts when combat ends")
+	equal(Queued(), 0, label .. ": and the footer stops waiting")
+
+	h.SetCombat(true)
+	h.Click(Card("compact"))
+	h.flush()
+	h.Click(Card("chosen"))
+	h.flush()
+	h.SetCombat(false)
+	h.flush()
+	equal(Starts(), 1, label .. ": a choice cleared in combat starts nothing")
+	equal(Queued(), 0, label .. ": nor waits")
+
+	h.ns.SetSetting("titleStartsRoute", false)
+	h.Click(Card("full"))
+	h.flush()
+	equal(Starts(), 1, label .. ": with the setting off a choice only chooses")
+	h.ns.Integrations.Navigate(h.ns.Route().steps[1])
+	h.Click(Card("chosen"))
+	h.flush()
+	equal(h.ns.Integrations.Owns(), true, label .. ": and clearing it stops nothing")
+	clean(h, label)
 end
 
 -- The preview follows the guide's visibility, not only its tab: collapsing the quest sidebar hides the guide and

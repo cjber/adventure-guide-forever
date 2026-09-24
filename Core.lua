@@ -45,9 +45,10 @@ ns.L = {
 		.. "the guide. Change it any time from the guide's settings menu.",
 	SETTING_GIVERS_TOOLTIP = 'A "!" on the world map over everyone with a quest you can take now. '
 		.. "Needs route pins on the map as well.",
-	SETTING_TITLE_ROUTE = "Clicking the tracker title starts the route",
-	SETTING_TITLE_ROUTE_TOOLTIP = "Clicking the current step's title in the objective tracker also sets off along the "
-		.. "route, with Shortest Path Forever when it's loaded and a map waypoint otherwise.",
+	SETTING_TITLE_ROUTE = "Choosing a journey starts the route",
+	SETTING_TITLE_ROUTE_TOOLTIP = "Choosing a journey in the guide, or clicking the current step's title in the "
+		.. "objective tracker, sets off along the route, with Shortest Path Forever when it's loaded and a map "
+		.. "waypoint otherwise. Clicking the chosen journey again stops it.",
 	SETTING_TRACK_ROUTE = "Clicking the tracker title tracks the route's quests",
 	SETTING_TRACK_ROUTE_TOOLTIP = "Every quest on the route that's in your log joins the objective tracker, up to "
 		.. "the tracker's limit.",
@@ -82,6 +83,7 @@ ns.L = {
 	-- With no card chosen every card is whole and no steps show (docs/design.md §2.2); the chosen card toggles back.
 	CHOOSE_TO_SEE_STEPS = "Choose a journey to see its steps.",
 	SHOW_EVERY_JOURNEY = "Click again to see every journey",
+	STOP_AND_SHOW_EVERY_JOURNEY = "Click again to stop the route and see every journey",
 	-- The travel line (docs/design.md §2.5): Shortest Path's own verbs (its JourneySteps.lua VERB), so both addons
 	-- name a leg alike.
 	TRAVEL = "%s · %d min",
@@ -120,10 +122,9 @@ ns.L = {
 	SKIP_STEP = "Skip this step for now",
 	OPTIONAL = "optional",
 	STEP_COUNT = "Steps: %d",
-	GO_WITH = "Go (%s)",
-	-- The travel provider's name, for GO_WITH and CLICK_TRAVEL.
+	-- The travel provider's name, for CLICK_TRAVEL.
 	SHORTEST_PATH = "Shortest Path",
-	SET_WAYPOINT = "Set waypoint",
+	STARTS_AFTER_COMBAT = "The route starts when combat ends",
 	CLICK_TRAVEL = "Click to travel with %s",
 	CLICK_WAYPOINT = "Click to set a waypoint",
 	STEP_NUMBERED = "%d. %s",
@@ -153,6 +154,8 @@ local DEFAULTS = {
 	showMapPins = false,
 	showQuestGivers = false,
 	includeDungeonsDefault = false,
+	-- Choosing a journey starts its route too; the key keeps the name it had when only the tracker title did, so a
+	-- saved choice carries over.
 	titleStartsRoute = true,
 	trackRouteQuests = true,
 	-- Opt-in: it throws away the player's own choice of tracked quests.

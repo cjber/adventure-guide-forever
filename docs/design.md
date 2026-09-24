@@ -52,7 +52,7 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
 | | ( )  3 quests ready to hand in            | |
 | +-------------------------------------------+ |
 |  ... the story and next-zone cards, likewise   |
-|  Choose a journey to see its steps.           |  GameFontDisableSmall hint; Go disabled, Steps: 0
+|  Choose a journey to see its steps.           |  GameFontDisableSmall hint; Steps: 0, nothing guides
 |                                               |
 |  --- after choosing the story: ---            |
 | [(?) Finish what you carry                +] |  the others, one line each: 288x26, 2 px apart
@@ -68,7 +68,8 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
 |  3 Red Linen Goods                            |    optional rows at alpha 0.6
 |  Skipped (2)                                  |  GameFontNormalSmall text button, hidden at 0
 |-----------------------------------------------|
-| [          Go          ]          [  Stop  ]  |  40 px footer: UIPanelButtonTemplate 190x26 / 90x26
+|  The route starts when combat ends  [  Stop  ]  |  40 px footer: GameFontNormalSmall, only while a
+|                                               |    choice waits out combat; UIPanelButtonTemplate 90x26
 +-----------------------------------------------+
 ```
 
@@ -79,7 +80,7 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
 - The quest/dungeon chips move into the cog's settings menu. The cog stays the settings entry and is not reused for anything else.
 - **None chosen** is the default (a fresh character, a card clicked again, or a saved choice whose card is no longer
   offered): every card whole in order, no step rows, the hint "Choose a journey to see its steps." under them, and
-  Go disabled, since the guide shows no step for it to start. The route still falls back to the first card
+  nothing guides. The route still falls back to the first card
   (`route.chosen` false), so the tracker keeps a next step and its title click still sets off along it: there the
   step is on screen. A stale saved key stays saved and is chosen again should its card come back.
 - **One chosen:** the others fold to one-line rows above it, in their order, and it sits whole and lit right over
@@ -87,8 +88,19 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   and no card sits between a card and its steps, which the old order did (a middle card's steps pushed the last card
   below the fold). A row chooses its card; the chosen card is a toggle, and clicking it again chooses none.
   No animation: the quest log's own headers fold at once, and a height tween would need an OnUpdate.
-- Selecting a card sets `prefs.journey` and rebuilds the route. It never starts guidance. **Go** is the only way to
-  start.
+- **Choosing starts the route.** Selecting a card (whole or a row) sets `prefs.journey`, rebuilds the route and, on
+  the rebuild that has its steps, hands them to `Integrations.Navigate`: SPF's journey, or the native waypoint
+  without it. There is no Go button: choosing is already the commitment, and a second click to start the same route
+  was a step with no decision in it. Without SPF the waypoint is placed too, since Stop and clearing the choice still
+  clear only a waypoint where AGF put it. Clicking the chosen card again chooses none and stops AGF's route (never
+  anyone else's), so the lit card and the guidance never disagree.
+- The setting "Choosing a journey starts the route" (key `titleStartsRoute`, default on, kept from when it covered
+  only the tracker title) governs both the card and the tracker title: one preference for "a pick starts guidance",
+  and a player who turned the title click off keeps that choice here. Off, a card only chooses and clearing it stops
+  nothing; the step row menu's and the tracker menu's Go still start the route.
+- **In combat** a choice still chooses at once. SPF refuses every route in combat, so the start waits for the
+  rebuild `PLAYER_REGEN_ENABLED` brings (Core's combat deferral, no OnUpdate), and the footer reads "The route starts
+  when combat ends" meanwhile, so the wait reads as queued, not failed. Clearing the choice first cancels it.
 - **Stop** appears only while AGF owns the guidance. That means SPF's `CurrentStop(OWNER)` is non-nil, or the
   native user waypoint is still the one AGF set (§5.1).
 - Fit: with a card chosen the three cards take 148 px (was 270), so the list holds between two and three more 46 px
@@ -263,7 +275,7 @@ While SPF is guiding, AGF's rings hide, because SPF draws its own stops (Pins.lu
 - **Preview.** With no card chosen the open guide previews no rings: rings numbered for a card that is not lit
   would read as a choice made (with `showMapPins` on they still show the first card's route, as the tracker does).
   Selecting a card turns the map to that journey's first zone (`WorldMapFrame:SetMapID`) and draws
-  only its rings. Hovering a step row flashes its ring (`Pins.Ping`, Pins.lua:184-188). Nothing moves until Go.
+  only its rings. Hovering a step row flashes its ring (`Pins.Ping`, Pins.lua:184-188).
 - **One switch.** `showMapPins` (Core.lua:12) becomes the single control for every AGF layer, and its default
   changes to off (opt-in). `AddGivers` moves under that check: today it runs first (Pins.lua:83-86), so givers
   bypass the switch. `showQuestGivers` (Core.lua:13) defaults to off. This is a default change, not a bug fix,
@@ -327,7 +339,10 @@ Map ring / step row                         Journey card
 +--------------------------------------+    +--------------------------------------+
 ```
 
-When `SPF.Active()` exists and reports another journey running, Go's tooltip adds "Replaces your current journey."
+When `SPF.Active()` exists and reports another journey running, every way to start the route warns with "Replaces
+your current journey.": a card or row another click would choose (while choosing starts the route), the menus' Go
+and the tracker title. The chosen card's tooltip, while AGF's route runs, reads "Click again to stop the route and
+see every journey"
 
 ## 3. Copy style sheet
 
@@ -353,7 +368,7 @@ When `SPF.Active()` exists and reports another journey running, Go's tooltip add
 | Travel | `Fly to Sentinel Hill · 6 min` · `Boat to Auberdine · 2 min wait` · `Fly to Astranaar · new flight path` · `About 4 min away` |
 | Why-not | `Requires level 14` · `Completed: The Forgotten Heirloom` · `Requires one of: A, B` · `Horde only` · `Warriors only` · `You chose X instead` · `The guide can't tell where this starts` · `You've done this` · `In your quest log` · `Repeatable quests aren't suggested` |
 | Tracker | `Where you left off: finishes a story` · `Next: The Ruins of Stardust` · `Story complete` |
-| Buttons, menu | `Go` · `Stop` · `Show quest` · `Skip for now` · `Skipped (2)` · `Show again: <title>` · `Choose another journey` |
+| Buttons, menu | `Go` (menus only) · `Stop` · `Show quest` · `Skip for now` · `Skipped (2)` · `Show again: <title>` · `Choose another journey` |
 | Instructions | `Click to travel with Shortest Path` · `Click to set a waypoint` · `Click to choose this journey` · `Replaces your current journey.` |
 | Empty | `Nothing nearby fits your level.` |
 
@@ -363,7 +378,7 @@ When `SPF.Active()` exists and reports another journey running, Go's tooltip add
 |---|---|---|---|
 | 1 | Map budget: one `showMapPins` switch, off by default, over every layer; givers move under it and default off; spec-tested caps | Must | Map clutter is players' top complaint (games.md pain point 1: Questie #6916, Reddit 1s12dc2). Today the giver "!" draws even with pins off (Pins.lua:83-86). This change needs no new art. |
 | 2 | Journey cards, at most 3, replacing zone cards, XP bar and "Why these?" | Must | A few choices, each with a reason (pain points 2 and 8). Uses three stock card atlases, and the EJ is not required. |
-| 3 | Select-then-Go, with the rings preview while the tab is open | Must | The player sees the shape of the evening before committing, and nothing acts on their behalf (pain point 2). |
+| 3 | Choosing a journey starts it (a setting, default on), with the rings preview while the tab is open | Must | One click from a choice to the road; the player who wants to look first turns the setting off, and nothing replaces someone else's journey without a warning (pain point 2). |
 | 4 | Zone stories: `Model.Story` from `pre` and `next`, conservative totals, later titles withheld | Must | Wires the unread `next` (1604 quests, agf.md). Stories, not errands. |
 | 5 | `Model.Why` extracted from `Eligible`, plus search-as-why-not | Must | Answers "Am I even eligible?" (Reddit 1wjxhx9), and cannot drift from the planner. |
 | 6 | Row or tracker click opens Blizzard quest details (log quests, out of combat) | Must | Quest text stays Blizzard's (pain point 6). Low cost. |

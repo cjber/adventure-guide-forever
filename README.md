@@ -18,7 +18,7 @@ It looks like it came with the game: a tab in the quest log beside Quests, cards
 
 - **Journeys**: up to three cards on the Adventure Guide tab. *Finish what you carry* counts what is ready to hand in and in progress; *Westfall story* follows the zone's quest chain; *Head to Darkshore* ("For level 14") suggests the next zone once it has at least five quests near your level. Pick one and it shows its steps, up to nine.
 - **Stories as chapters**: a chain reads "Chapter 2 of 4" only when the quest data proves its length, and "Chapter 2" otherwise. Later chapters are never named. Finishing a story of known length glows the tracker once and plays the game's stage-end sound.
-- **Select, then Go**: choosing a card turns the map to its zone and previews its numbered steps, but starts nothing. *Go* hands the steps from there on to Shortest Path Forever as one journey, or sets the game's own waypoint without it. *Stop* only removes what the guide set, so a waypoint you moved yourself stays.
+- **Choose and go**: choosing a card turns the map to its zone, previews its numbered steps and hands them to Shortest Path Forever as one journey, or sets the game's own waypoint without it. In combat it starts once the fight ends. Clicking the chosen card again, or *Stop*, removes only what the guide set, so a waypoint you moved yourself stays. A setting turns this off, so choosing only previews.
 - **Routes by distance**: steps are ordered by where they are, cross the sea at most once, and a turn-in on the other continent waits at the end with "Hand in when you're in Stormwind City".
 - **Why not?**: type three letters or more in *Search quests* and each match lists what the data says it needs (level, earlier quests, race, class, faction), ticked when you meet it.
 - **Objective tracker section** above your quests: the current step, how you'll get there with Shortest Path Forever ("Fly to Sentinel Hill · 6 min"), and the step after. Click the title to start the route and track its quests; right-click for *Go*, *Show quest*, *Skip for now* or another journey. After a login, when step 1 is still the step you stopped on, it says "Where you left off".
@@ -39,7 +39,7 @@ Install it from CurseForge or Wago Addons, or download the zip from [Releases](h
 - `/agf` or `/adventureguide` opens the guide on the world map, as does the addon compartment on the minimap.
 - `/agf audit` compares the bundled quest data with the game.
 - `/agf dump` saves the guide's layout for a bug report; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua`.
-- The cog on the tab holds *Quests*, *Dungeons*, the map pins and the tracker. The rest is under *Settings > AddOns > Adventure Guide*, including what clicking the tracker title does.
+- The cog on the tab holds *Quests*, *Dungeons*, the map pins and the tracker. The rest is under *Settings > AddOns > Adventure Guide*, including whether choosing a journey or clicking the tracker title starts the route.
 
 ## Where the quests come from
 
@@ -49,7 +49,7 @@ A quest the data cannot place, or whose requirements it cannot check, is never s
 
 ## Works alongside
 
-- **Shortest Path Forever** plans the travel for *Go* and gives the tracker its travel line. Without it, *Go* sets a waypoint and there is no travel line.
+- **Shortest Path Forever** plans the travel when you choose a journey and gives the tracker its travel line. Without it, choosing sets a waypoint and there is no travel line.
 - **Tweaks Forever** tells the guide when you have class spells to train.
 - **Questie**, **RestedXP** and other guides: the guide still works with them loaded, but the routes may overlap. Turn off *Show tracker section* in the settings if you follow another guide.
 

@@ -1074,27 +1074,6 @@
         14.00
       ],
       "type": "Button"
-    },
-    {
-      "anchors": [
-        {
-          "point": "BOTTOMLEFT",
-          "relativePoint": "BOTTOMLEFT",
-          "relativeTo": "AdventureGuideForeverPanel",
-          "x": 8.00,
-          "y": 8.00
-        }
-      ],
-      "disabled": false,
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Button[1]",
-      "size": [
-        190.00,
-        26.00
-      ],
-      "stockTemplate": "UIPanelButtonTemplate",
-      "text": "Set waypoint",
-      "type": "Button"
     }
   ]
 }
