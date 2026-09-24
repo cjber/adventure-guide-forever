@@ -168,6 +168,11 @@ do
 	for _, entry in ipairs(h.settings) do
 		byKey[entry.key] = entry
 	end
+	-- Every row goes in through the secure delegate, in page order; none from addon code, which taints the search.
+	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
+	equal(#h.settings, 7, "every row is registered through Settings.RegisterInitializer")
+	equal(h.settings[1].key .. " " .. h.settings[7].key, "showTracker untrackOthers", "in page order")
+	equal(h.settings[7].category, h.ns.TITLE, "on the addon's page")
 	equal(byKey.untrackOthers.parent, "trackRouteQuests", "untrackOthers hangs under the tracking setting")
 	equal(byKey.untrackOthers.enabled(), false, "and is greyed while it is off")
 	-- The client re-sorts its watches by distance on every zone change (Blizzard_ObjectiveTracker.lua

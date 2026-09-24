@@ -1181,7 +1181,7 @@ function harness.load(options)
 	end
 
 	-- Settings > AddOns.
-	h.settings = {}
+	h.settings, h.taintedRows = {}, 0
 	G.Settings = {
 		VarType = { Boolean = "boolean" },
 		RegisterVerticalLayoutCategory = function(name)
@@ -1198,15 +1198,27 @@ function harness.load(options)
 			end
 			return { key = key, SetValueChangedCallback = noop }
 		end,
-		CreateCheckbox = function(_, setting, tooltip)
-			local entry = { key = setting.key, tooltip = tooltip }
-			h.settings[#h.settings + 1] = entry
+		-- Inserting a row from addon code taints the settings search (Blizzard_Settings.lua:383-396): a restricted
+		-- button in its results is then blocked and blamed on the addon. h.taintedRows counts each one.
+		CreateCheckbox = function()
+			h.taintedRows = h.taintedRows + 1
+		end,
+		CreateDropdown = function()
+			h.taintedRows = h.taintedRows + 1
+		end,
+		CreateCheckboxInitializer = function(setting, _, tooltip)
 			return {
 				key = setting.key,
-				SetParentInitializer = function(_, parent, predicate)
-					entry.parent, entry.enabled = parent.key, predicate
+				tooltip = tooltip,
+				SetParentInitializer = function(self, parent, predicate)
+					self.parent, self.enabled = parent.key, predicate
 				end,
 			}
+		end,
+		-- The secure delegate's path: the row as it was when registered, in order.
+		RegisterInitializer = function(category, initializer)
+			initializer.category = category.name
+			h.settings[#h.settings + 1] = initializer
 		end,
 		RegisterAddOnCategory = noop,
 		OpenToCategory = noop,
