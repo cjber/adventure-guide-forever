@@ -208,15 +208,19 @@
 -- the sha tests/contract_spec.lua pins; that spec fails on any drift. Integrations.lua's REQUIRED lists exactly
 -- the non-optional functions. Descriptions go after `--` so the type is the whole first token. The members a
 -- Shortest Path before 1.2 lacks are optional here, and checked where they are used.
----@alias AGFSPFMode "walk"|"flight"|"boat"|"zeppelin"|"lift"|"tram"|"portal"|"passage"
+---@alias AGFSPFMode "walk"|"flight"|"boat"|"zeppelin"|"lift"|"tram"|"portal"|"passage"|"teleport"
 ---@alias AGFSPFNoRoute "combat"|"invalid"|"unreachable" -- why an estimate has no answer
 ---@alias AGFSPFEnded "arrived"|"cleared"|"replaced"|"cancelled" -- reached the last stop; the player cleared it; another journey took over; the owner's own Cancel
+
+-- What stands at a stop; Shortest Path draws the game's own mark for it on the stop's pin.
+---@alias AGFSPFStopKind "pickup"|"turnin"|"objective"|"trainer"|"innkeeper"|"flightmaster"|"battlemaster"|"dungeon"|"boat"|"zeppelin"|"lift"|"tram"|"portal"
 
 ---@class AGFSPFStop
 ---@field map integer -- uiMapID
 ---@field x number -- normalized 0-1
 ---@field y number -- normalized 0-1
 ---@field title? string
+---@field kind? AGFSPFStopKind -- a Shortest Path before kinds ignores it
 
 ---@class AGFSPFLeg
 ---@field mode AGFSPFMode
@@ -232,7 +236,7 @@
 ---@class AGFSPFAPI
 ---@field version integer -- AGF accepts exactly 1
 ---@field Estimate fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): number?, AGFSPFNoRoute? -- travel seconds; nil comes with the reason
----@field Navigate fun(owner: string, map: integer, x: number, y: number, title?: string): boolean -- starts or replaces guidance
+---@field Navigate fun(owner: string, map: integer, x: number, y: number, title?: string, kind?: AGFSPFStopKind): boolean -- starts or replaces guidance
 ---@field NavigateRoute fun(owner: string, stops: AGFSPFStop[]): boolean -- 1-64 stops in order
 ---@field CurrentStop fun(owner: string): integer? -- nil unless owner owns the active journey
 ---@field Cancel fun(owner: string): boolean -- true only when this owner's journey was cancelled
@@ -255,6 +259,7 @@
 ---@field TrainableSpells fun(): AGFTFSpell[]? the spells the player's level allows and they haven't learned; nil before login and in combat
 
 ---@class AGFIntegrations
+---@field Kind fun(step: AGFStep|AGFGiver): AGFSPFStopKind? what Shortest Path is told stands at a stop: a town's "?" where a hand-in is its point, else its "!"
 ---@field TravelLine fun(step: AGFStep): string? asks Shortest Path now, at most one call: "Fly to X · N min" from EstimateDetail, "About N min away" from Estimate, nil without either or an answer
 ---@field RefreshTravel fun() refetches step 1's line; Core runs it in the frame after each rebuild
 ---@field Travel fun(step: AGFStep): string? the last line fetched for this step, without asking again
