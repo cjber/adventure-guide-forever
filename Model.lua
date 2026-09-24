@@ -10,7 +10,8 @@ ns.Model = Model
 local GREEN_RANGE = { 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 10, 11, 12 }
 local CLOSE = 0.03 * 0.03
 -- What a stop is worth against the yards to reach it (docs/plan.md §7.3): each quest there (at most 8), a quest that
--- goes grey at the next level, each hand-in, and a stop where every quest is red or optional, which waits.
+-- goes grey at the next level, each hand-in, and a stop with no hand-in where every quest is red or optional, which
+-- waits.
 local VALUE_QUEST, VALUE_QUESTS_MAX, VALUE_GREY_RISK, VALUE_HAND_IN, VALUE_WEAK = 40, 8, 150, 60, -300
 local RED = 5 -- levels above the player: the stock red
 
@@ -868,13 +869,14 @@ end
 -- one: a map the data cannot place is measured in map units, where yards mean nothing.
 ---@param step AGFStep
 local function Value(data, log, player, step)
-	local risk, weak = false, true
+	-- A finished quest waits for nothing, so a stop with a hand-in is never weak.
+	local handins = step.handins and #step.handins or (step.kind == "turnin" and 1 or 0)
+	local risk, weak = false, handins == 0
 	for _, id in ipairs(step.quests) do
 		local level = QuestLevel(data, log, player, id)
 		risk = risk or GreyRisk(level, player)
 		weak = weak and (level - player.level >= RED or Optional(data.quests[id], level, player))
 	end
-	local handins = step.handins and #step.handins or (step.kind == "turnin" and 1 or 0)
 	return VALUE_QUEST * math.min(#step.quests, VALUE_QUESTS_MAX)
 		+ (risk and VALUE_GREY_RISK or 0)
 		+ VALUE_HAND_IN * handins

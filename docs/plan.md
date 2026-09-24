@@ -650,7 +650,7 @@ Forever is also unproven.
   - normal;
   - red: `diff >= 5`.
 - **Selection.** `Build`'s greedy key becomes `reach - VALUE`, with
-  `VALUE = 40 yd × min(#quests, 8) + 150 yd × greyRisk + 60 yd × #handins - 300 yd × (every quest red or optional)`.
+  `VALUE = 40 yd × min(#quests, 8) + 150 yd × greyRisk + 60 yd × #handins - 300 yd × (no hand-in, every quest red or optional)`.
   Tune the constants against the goldens, and review the golden diff in the commit message. `Order` and 2-opt stay
   on travel alone, so the route never zigzags for value.
 - **Within a stop**, list hand-ins first, then grey-risk, then by `|diff|`, then by ID. This order feeds the

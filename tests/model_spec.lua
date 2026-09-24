@@ -603,6 +603,18 @@ equal(
 	"objective:21",
 	"value: a quest grey at the next level goes before an equidistant one"
 )
+-- A finished quest waits for nothing: a grey hand-in keeps its worth and goes before a nearer objective.
+local finishing = {
+	[30] = { id = 30, title = "Grey, done", complete = true, level = 10, map = 1, x = 0.4, y = 0.5 },
+	[31] = { id = 31, title = "Under way", complete = false, level = 18, map = 1, x = 0.35, y = 0.5 },
+}
+equal(
+	Only(1, function()
+		return Model.Plan(Field(), visitor, {}, finishing, prefs()).journeys[1].steps
+	end),
+	"turnin:30",
+	"value: a grey hand-in is never weak"
+)
 local red = Field()
 red.quests[1], red.quests[2], red.quests[3] = quest(0.32, 0.5), quest(0.45, 0.5), quest(0.15, 0.5)
 red.quests[1].level = 23
