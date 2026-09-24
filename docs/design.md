@@ -18,8 +18,10 @@ Forever pillars (Blizzard, *What's Next* panel recap):
 - **The world as the main character.** The map remains Blizzard's map. When the Adventure tab is closed, AGF draws
   nothing on it unless the player opts in. Steps are named after places and people ("Sentinel Hill needs hands"),
   not XP.
-- **The journey before the destination.** The player chooses from at most three journeys. Until they do, the guide
-  draws the first card's steps on its own, so a new character has a route without a click; a choice overrides it.
+- **The journey before the destination.** The player chooses from a handful of journeys (six at most): the story
+  where they are, the zones they could head to next, and a dungeon or their calling when one fits. Until they do, the
+  guide draws the first card's steps on its own, so a new character has a route without a click; a choice overrides
+  it.
   Chains read as a zone's chapters, with later chapter titles left unrevealed. There are no percentages, XP/hour figures or step counters.
   The one exception is the card's hub line ("Lakeshire, Redridge and 2 more stops"). The user asked for it, and it
   counts towns, not progress (plan §7.4).
@@ -124,8 +126,8 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   on the zone maps its `QuestPOIBlob` rows name. Only 26 of the 1795 added quests have a blob, so the zone half is
   narrow; a quest with no blob has no zone and is left out. The slice also lists the 160 added AreaTable IDs, which
   put an unexplored area first (§2.11), and the added lands (§2.11); TaxiNodes and Map diffs are printed only.
-- Fit: with a card chosen the three cards take 148 px (was 270), so the list holds between two and three more 46 px
-  step rows before it scrolls.
+- Fit: the shown card takes 86 px and each other card a 28 px row, so with five others the cards take 226 px and
+  the shown card's step rows scroll below them; the panel's room holds the cards rather than leaving it empty.
 
 ### 2.2 Journey card
 
@@ -148,8 +150,8 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
   own 26 px height, `options_listexpand_left` (12x26), `_options_listexpand_middle` (tiled) and
   `options_listexpand_right` (28x26, its "+"), 288x26 in all, with the 16x16 kind icon at LEFT x=12 and no ring, and
   the title (GameFontNormalMed2) at the icon's RIGHT +6. Its tooltip has the title, subline and reason, so nothing is
-  lost. The chosen card's tooltip says "Click again to let the guide choose". Pooled: the three card buttons are
-  resized in place, no frame is made per refresh.
+  lost. The chosen card's tooltip says "Click again to let the guide choose". Pooled: the six card buttons
+  (`Model.MAX_JOURNEYS`) are resized in place, no frame is made per refresh.
   - Why this art: it is a stock single-line row drawn at native height with a "+" that says it opens; the renown
     card squeezed to 28 px pinched its frame, `friendslist-categorybutton` read as a second heavy card and
     `collections-slotheader` too faint to read as a button.
@@ -186,15 +188,21 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
   - **Tooltip.** Whole cards now have one as well (§2.9).
 - **Fonts.** Blizzard sets the name in white `GameFontHighlightMed2` over a gold `GameFontNormalMed2` subline. AGF deliberately reverses this, to follow the house rule of a gold header over white body text.
 - **What a card may offer.** A card only ever holds eligible, recommendable steps. It never shows a lock, never shows "opens at level N", and never marks something new-in-Forever or of unknown location (§2.13's mark says new to the character). Locked quests appear only in search (§2.4).
-- **Card kinds** (three at most, only those that have steps). Carry and the story keep their fixed slots; the
-  diversions share what is left (roadmap R4):
-  1. **The zone story**: the best eligible chain in the zone the player's level fits best, or the zone they stand in
+- **Card kinds** (`Model.MAX_JOURNEYS`, six, at most; only those that have steps). The story, carry and the zones
+  to head to keep their slots, in that order; the diversions share what is left (roadmap R4):
+  1. **The zone story**: the best eligible chain in the zone that ranks first now (below), or the zone they stand in
      while its quests are theirs to take or carry. It also holds the log's quests done next on its map: hand-ins
      share its towns' stops, and quests under way are steps at the client's point for them, else the data's area
      for their first open objective. Its subline counts them first.
   2. **Loose ends**: the log's turn-ins and objectives the story does not hold, and the quests the player added
      (§2.18) that no zone card holds; its subline counts those as "N you added".
-  3. **Diversions**, newest first:
+  3. **Zones to head to** ("Head to Duskwood"), up to three, best ranked first: the zones that rank for `level + 2`
+     in the same eligibility pass (`Choices` in `Model.Journeys`), or for the level itself at the cap. Each is another
+     zone than the story's and the one the player stands in, one whose range the player hasn't outgrown (their level
+     is at most its top), with at least 5 quests there two levels on and 3 of them open now, so a zone just come into
+     range (Duskwood at 19, with 4) is offered. Its reason is "For level N" while it is among the three that rank
+     best two levels on; never at the cap.
+  4. **Diversions**, newest first:
      - **Your calling** (roadmap #7): the class quests the player can take now, as one card: a `classes` mask of the
        player's class alone (Vile Familiars, every Horde class's but the warlock's, is a starting quest), never a
        raid's. It leads with a chain as the story does (§2.3), else the lowest quest ID. Its reason names that quest:
@@ -210,13 +218,23 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
        Scholomance", its chapter as the subline, "Begins a new story" or "Continues a story you started". The data
        never says a chain is an attunement, only that it goes inside, so the card says no more. The story's own chain
        is never offered twice. Key `chain:<first quest>`.
-     - **Next zone**: the zone that ranks first for `level + 2` in the same eligibility pass (`Choices` in
-       `Model.Journeys`), shown only when it differs from the story's zone and the player's own and has at least 5
-       quests to take now.
+     - **Battleground** (opt-in, §2.15).
+- **Zone ranking.** `Rank` scores each zone with a quest open (lowest first), from the data's quests and the client's
+  zone levels (`data.zones[map].min`/`max`):
+  - **Quest fit** leads: the mean of each quest's distance from the level, doubled past two levels up.
+  - **The zone's range**: 2 a level outside it; up to 1 less in its lower half, which the player has just entered;
+    up to 3 more in its top fifth, where what is left is cleanup that the story's laps and Loose ends already hold.
+    At 19 Duskwood (18-30) and the Wetlands (20-30) outrank Westfall and Darkshore (10-20), though those hold more.
+  - **Density**: 0.25 less a quest, for up to 8, so a zone with enough for a lap edges ahead.
+  - **Distance** from the player to the zone's middle, at a like fit: 1 a 4000 yd on their own continent, up to 1.5;
+    3 on another. Nothing when the data can't place the player (an instance), so the ranking never guesses.
 - **Which diversion.** Each is ranked by the level its newest quest opened at (the highest `min` among its quests
   open now), highest first, so a level just gained or a bracket just opened takes the slot and an older one yields
-  as the player levels on. A tie goes calling, dungeon, a way in, next zone. It is stateless: nothing is remembered
-  between sessions. Only as many are built as there are free slots, plus the chosen one, which always keeps its slot.
+  as the player levels on. A tie goes calling, dungeon, a way in, battleground. It is stateless: nothing is
+  remembered between sessions. Only as many are built as there are free slots, plus the chosen one, which always
+  keeps its slot.
+- **Budget.** Only card 1 and the chosen card plan laps (§4.3); every other card is Build's short route over its
+  towns, about 0.1 ms a card, so six cards keep the rebuild inside its 3 ms frame.
 - **No next zone** (roadmap #21): at the level cap, or when no zone is ahead and no story was built, the guide never
   ends on "nothing fits". The dungeon card comes whatever the Dungeons toggle says (its eligibility pass then takes in
   the instance quests the toggle holds back), and a way into an instance may take a slot. The route carries
@@ -507,9 +525,9 @@ Invariants:
 
 1. **Offer rules only gate new choices.** A chosen journey is built while it has a step, whatever would offer it
    now, and keeps its slot when a new card pushes one out.
-2. **The story is the zone you stand in** when it fits (top 3 now, or two levels on), when your level is within its
-   range and it has a quest open now that is not an outdoor elite (a zone whose quests you have mostly taken up ranks
-   low, yet is still where you are adventuring), or when it is the chosen zone.
+2. **The story is the zone you stand in** when it fits (in the top 3 of the ranking now, or two levels on), when
+   your level is within its range and it has a quest open now that is not an outdoor elite (a zone whose quests you
+   have mostly taken up ranks low, yet is still where you are adventuring), or when it is the chosen zone.
 3. **Only a chosen journey is guided.** With none chosen the guide, tracker and map draw the first card's steps
    (auto-start, §2.1), but nothing guides until the player chooses or asks for Go; the tracker title, a card or a
    ring chooses the card it shows.
@@ -1091,6 +1109,9 @@ Nothing below has been validated in game yet.
     one in another zone shows on Loose ends as "1 you added". With the log two short of full, the first card reads
     "Log nearly full: N you could drop" and its tooltip names them; nothing is abandoned. Later area rings are
     fainter than step 1's.
+33. More choices (§2.2): a level-19 Alliance character in Redridge with its quests taken on sees Redridge's story,
+    Loose ends, "Head to Wetlands" and "Head to Duskwood", and at most six cards with no empty space under them; each
+    one-line row chooses its card, and the empty-panel line shows only when there is no card at all.
 
 ## 9. Open questions that need client probes
 
