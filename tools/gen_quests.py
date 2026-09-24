@@ -721,7 +721,7 @@ def generate(
     seasonal = {r["quest"] for r in tables["game_event_quest"]}
     role = roles(tables, skill_steps(effects, skill_lines))
     trains = {("creature", entry): fields["class"] for entry, fields in role.items() if "class" in fields}
-    emitted, counts = {}, Counter()
+    emitted, counts, suppressed, events = {}, Counter(), [], []
     for qid, row in sorted(quests.items()):
         if qid not in valid_ids:
             counts["dropped: not in QuestV2"] += 1
@@ -790,12 +790,15 @@ def generate(
         )
         if unknown or any(p not in valid_ids for p in pre + pre_any):
             quest.pop("start", None)
+            suppressed.append(qid)
             counts["suppressed pickup: unknown prerequisite"] += 1
         elif qid in seasonal:
             quest.pop("start", None)
+            events.append(qid)
             counts["suppressed pickup: event quest"] += 1
         elif gated or not quest["side"] or not quest["title"] or quest["level"] == 0:
             quest.pop("start", None)
+            suppressed.append(qid)
             counts["suppressed pickup: unsupported eligibility"] += 1
         elif needs and "start" in quest:
             quest.update(needs)
@@ -840,12 +843,16 @@ def generate(
     ferries = crossings(tables["gameobject_template"], path_nodes, taxi_nodes, shifts.keys())
     counts["ocean crossings"] = len(ferries)
     used = {q["dungeon"] for q in emitted.values() if "dungeon" in q}
-    named = {m: {"name": instances[m]["name"]} for m in sorted(used)}
+    named = {
+        m: {"name": instances[m]["name"], **({"raid": True} if instances[m]["raid"] else {})} for m in sorted(used)
+    }
     skills = {q["skill"]["id"] for q in emitted.values() if "skill" in q}
     factions = {q["rep"]["faction"] for q in emitted.values() if "rep" in q}
     gates = {
         "skills": {s: {"name": skill_names[s]} for s in skills},
         "factions": {f: {"name": faction_names[f]} for f in factions},
+        "suppressed": suppressed,
+        "seasonal": events,
     }
     return emitted, zones, named, centres, shifts, ferries, towns, npcs, gates, counts
 
@@ -889,6 +896,8 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, gate
         "-- skill, rep: RequiredSkill/Value and RequiredMin/MaxRep, as Player::SatisfyQuestSkill and",
         "-- SatisfyQuestReputation check them; skills and factions: the names of those a quest here needs.",
         "-- trainer: a class quest's giver who trains a class (creature_template TrainerClass): that class.",
+        "-- suppressed, seasonal: the quests whose start is withheld for an eligibility this data cannot hold, and",
+        "-- for a world event, so another quest source (QuestieSource.lua) withholds the same starts.",
         "---@type string, AGFNamespace",
         "local _, ns = ...",
         "---@type AGFData",
@@ -914,6 +923,10 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, gate
     for name in ("skills", "factions"):
         lines.extend(["\t},", f"\t{name} = {{"])
         lines.extend(f"\t\t[{key}] = {lua(value)}," for key, value in sorted(gates[name].items()))
+    for name in ("suppressed", "seasonal"):
+        ids = gates[name]
+        lines.extend(["\t},", f"\t{name} = {{"])
+        lines.extend("\t\t" + ", ".join(map(str, ids[i : i + 20])) + "," for i in range(0, len(ids), 20))
     lines.extend(["\t},", "\tquests = {"])
     lines.extend(f"\t\t[{qid}] = {lua(quest)}," for qid, quest in sorted(quests.items()))
     return "\n".join(lines + ["\t},", "}", ""])

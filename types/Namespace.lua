@@ -34,7 +34,7 @@
 ---@field source string where the data came from, for /agf audit
 ---@field quests table<integer, AGFQuest>
 ---@field zones table<integer, {name: string, min: integer, max: integer}> uiMapID -> zone name and level range
----@field instances table<integer, {name: string}> instance Map.ID -> its English name, for every quest's `dungeon`
+---@field instances table<integer, {name: string, raid?: boolean}> instance Map.ID -> its English name and whether it is a raid, for every quest's `dungeon`
 ---@field maps table<integer, AGFMapCentre> uiMapID -> where the map sits in the world, for every map a place uses
 ---@field continents table<integer, AGFContinentShift> continent -> its place on the Azeroth world map
 ---@field crossings AGFCrossing[] every boat and zeppelin between two continents
@@ -647,3 +647,9 @@
 
 ---@class AGFStrings
 ---@field MOMENT string format: the tracker's line for a new journey: its zone's or dungeon's name
+
+-- The starts tools/gen_quests.py withholds, by reason, for another quest source to withhold too.
+
+---@class AGFData
+---@field suppressed? integer[] quests whose start the bundled data withholds for an eligibility it cannot hold
+---@field seasonal? integer[] quests whose start the bundled data withholds for a world event
