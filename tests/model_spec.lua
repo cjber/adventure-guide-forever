@@ -334,6 +334,35 @@ tale.quests[3].preAny = { 1, 4 }
 tale = { quests = tale.quests, zones = tale.zones } -- a new data table: the memo is per data
 equal(Model.Story(tale, 1).total, nil, "story: a preAny member proves nothing")
 
+-- The story card (F4): the zone's chain the player can take up, its chapter in place of the count, and the step
+-- that takes it up says so; one already started comes before one to begin.
+local saga = { quests = {}, zones = data.zones }
+for id = 1, 5 do
+	saga.quests[id] = quest(id / 10, 0.5)
+end
+saga.quests[1].next, saga.quests[2].next, saga.quests[2].pre, saga.quests[3].pre = 2, 3, { 1 }, { 2 }
+saga.quests[4].next = 5
+local card = Model.Plan(saga, player, {}, {}, prefs()).journeys[1]
+equal(card.subline, "Chapter 1 of 3", "story card: the longer chain to begin")
+equal(card.reason, "Begins a new story", "story card: begins")
+card = Model.Plan(saga, player, { [1] = true }, {}, prefs()).journeys[1]
+equal(card.subline, "Chapter 2 of 3", "story card: a started chain first")
+equal(card.reason, "Continues a story you started", "story card: continues")
+equal(card.story.chapter, 2, "story card: carries its chain")
+local lead
+for _, step in ipairs(card.steps) do
+	lead = step.quests[1] == 2 and step or lead
+end
+equal(lead and lead.chapter, "Chapter 2 of 3", "story card: its step tells the chapter")
+equal(lead and lead.reason, "Continues a story you started", "story card: and why")
+saga = { quests = saga.quests, zones = saga.zones } -- a new data table: Story's memo is per data
+saga.quests[3].next = 99
+equal(
+	Model.Plan(saga, player, { [1] = true }, {}, { quests = true, skipped = {} }).journeys[1].subline,
+	"Chapter 2",
+	"story card: no total unproven"
+)
+
 assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
 local count = 0
 for id, q in pairs(ns.Data.quests) do

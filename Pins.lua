@@ -40,6 +40,9 @@ end
 ---@param index number
 local function AddPinTooltip(tooltip, step, index)
 	GameTooltip_SetTitle(tooltip, ("%d. %s"):format(index, step.title))
+	if step.chapter then
+		GameTooltip_AddNormalLine(tooltip, step.chapter)
+	end
 	GameTooltip_AddHighlightLine(tooltip, step.detail)
 	local travel = ns.Integrations.Travel(step)
 	if travel then

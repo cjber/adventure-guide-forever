@@ -4,16 +4,16 @@ card (chosen) | carry | Finish what you carry | 4 quests ready to hand in | Read
   step 2 | turnin:948 | Turn in: Onu | 1439 0.4355,0.7629 | ready to hand in
   step 3 | turnin:967 | Turn in: The Tower of Althalaxx | 1440 0.2620,0.3870 | ready to hand in
   step 4 | turnin:168 | Turn in: Collecting Memories | 1453 0.7031,0.4082 | Hand in when you're in Stormwind City
-card | story:1433 | A Redridge Mountains story | 16 quests near your level | - | map 1433
-  step 1 | pickup:1433:0.2330:0.1255 | Pick up quests: Corporal Keeshan | 1433 0.2330,0.1255 | near your level
-  step 2 | pickup:1433:0.2140:0.4396 | Pick up quests: Barkeep Daniels | 1433 0.2140,0.4396 | 3 quests here
-  step 3 | pickup:1433:0.2264:0.4738 | Pick up quests: Dockmaster Baren | 1433 0.2264,0.4738 | 2 quests here
-  step 4 | pickup:1433:0.2463:0.4426 | Pick up quests: Bailiff Conacher | 1433 0.2463,0.4426 | near your level
-  step 5 | pickup:1433:0.2589:0.4727 | Pick up quests: Verner Osgood | 1433 0.2589,0.4727 | near your level
-  step 6 | pickup:1433:0.2842:0.4897 | Pick up quests: Marshal Marris | 1433 0.2842,0.4897 | 2 quests here
-  step 7 | pickup:1433:0.2645:0.5785 | Pick up quests: Guard Howe | 1433 0.2645,0.5785 | near your level
-  step 8 | pickup:1433:0.2298:0.5204 | Pick up quests: Shawn | 1433 0.2423,0.5364 | near your level
-  step 9 | pickup:1433:0.1677:0.4633 | Pick up quests: Martie Jainrose | 1433 0.1677,0.4633 | 2 quests here
+card | story:1433 | A Redridge Mountains story | Chapter 1 of 3 | Begins a new story | map 1433
+  step 1 | pickup:1433:0.2140:0.4396 | Pick up quests: Barkeep Daniels | 1433 0.2140,0.4396 | Begins a new story
+  step 2 | pickup:1433:0.2264:0.4738 | Pick up quests: Dockmaster Baren | 1433 0.2264,0.4738 | 2 quests here
+  step 3 | pickup:1433:0.2463:0.4426 | Pick up quests: Bailiff Conacher | 1433 0.2463,0.4426 | near your level
+  step 4 | pickup:1433:0.2589:0.4727 | Pick up quests: Verner Osgood | 1433 0.2589,0.4727 | near your level
+  step 5 | pickup:1433:0.2842:0.4897 | Pick up quests: Marshal Marris | 1433 0.2842,0.4897 | 2 quests here
+  step 6 | pickup:1433:0.2645:0.5785 | Pick up quests: Guard Howe | 1433 0.2645,0.5785 | near your level
+  step 7 | pickup:1433:0.2298:0.5204 | Pick up quests: Shawn | 1433 0.2423,0.5364 | near your level
+  step 8 | pickup:1433:0.1677:0.4633 | Pick up quests: Martie Jainrose | 1433 0.1677,0.4633 | 2 quests here
+  step 9 | pickup:1433:0.1019:0.7146 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
 card | nextzone:1431 | Head to Duskwood at 23 | 9 quests near your level | - | map 1431
   step 1 | pickup:1431:0.0778:0.3407 | Pick up quests: Sven Yorgen | 1431 0.0778,0.3407 | 2 quests here
   step 2 | pickup:1431:0.1838:0.5637 | Pick up quests: Jitters | 1431 0.1838,0.5637 | near your level

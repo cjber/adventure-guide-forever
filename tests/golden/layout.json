@@ -537,7 +537,7 @@
         212.00,
         14.00
       ],
-      "text": "23 quests near your level",
+      "text": "Chapter 1 of 5",
       "type": "FontString",
       "wordWrap": false
     },
@@ -559,7 +559,7 @@
         212.00,
         14.00
       ],
-      "text": "",
+      "text": "Begins a new story",
       "type": "FontString",
       "wordWrap": false
     },

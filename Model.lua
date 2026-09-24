@@ -388,7 +388,7 @@ local function PickupSteps(data, player, eligible, zone, hubs, steps, pins)
 					place,
 					id,
 					Optional(quest, quest.level, player),
-					chain and "continues chain" or "near your level"
+					chain and ns.L.CONTINUES_STORY or "near your level"
 				)
 				pickups[key] = step
 				steps[#steps + 1] = step
@@ -566,8 +566,9 @@ local function Order(selected, origin, where, away, cheap)
 	return steps
 end
 
--- Chooses up to MAX_STEPS of `candidates` and orders them from the player (docs/design.md §4.1).
-local function Build(data, player, candidates, prefs, mapName, cheap)
+-- Chooses up to MAX_STEPS of `candidates` and orders them from the player (docs/design.md §4.1). `lead`, the story
+-- card's chapter, is always chosen, but ordered by cost like the rest.
+local function Build(data, player, candidates, prefs, mapName, cheap, lead)
 	local byKey, pool, where, docks = {}, {}, {}, Docks(data, player.side)
 	for _, step in ipairs(candidates) do
 		if not (prefs.skipped and prefs.skipped[step.key]) then
@@ -598,6 +599,9 @@ local function Build(data, player, candidates, prefs, mapName, cheap)
 				reach[other] = math.min(reach[other], Cost(where[step], where[other]))
 			end
 		end
+	end
+	if lead and byKey[lead.key] then
+		Take(lead)
 	end
 	for _, key in ipairs(prefs.pinned or {}) do
 		local step = byKey[key]
@@ -694,19 +698,45 @@ local function Carry(data, player, log, prefs, mapName, cheap)
 end
 
 -- A zone's pickups as one journey (kind, key and title are the caller's), and how many eligible quests it holds.
-local function ZoneJourney(data, player, eligible, zone, index, prefs, mapName, pins)
-	local candidates, quests = {}, 0
+-- The step that offers `leadID` is always among them.
+local function ZoneJourney(data, player, eligible, zone, index, prefs, mapName, pins, leadID)
+	local candidates, quests, lead = {}, 0, nil
 	for _, id in ipairs(eligible) do
 		local quest = data.quests[id]
 		quests = quests + ((quest.zone or quest.start.map) == zone and 1 or 0)
 	end
 	PickupSteps(data, player, eligible, zone, index.hubs, candidates, pins)
-	local steps = Build(data, player, candidates, prefs, mapName)
+	for _, step in ipairs(candidates) do
+		for _, id in ipairs(step.quests) do
+			lead = id == leadID and step or lead
+		end
+	end
+	local steps = Build(data, player, candidates, prefs, mapName, false, lead)
 	if #steps == 0 then
 		return nil, quests
 	end
 	local subline = Count(ns.L.QUESTS_NEAR_ONE, ns.L.QUESTS_NEAR, quests)
-	return { map = steps[1].map, steps = steps, subline = subline }, quests
+	return { map = steps[1].map, steps = steps, subline = subline }, quests, lead
+end
+
+-- The zone's story (docs/design.md §2.3): of the chains the player can take up in `zone` now, one they have already
+-- started before one they would begin, then the longest proven one, then the lowest quest ID. A chapter whose chain
+-- was begun elsewhere, with the chapter before it not done, has no honest reason to offer, so it is never the story.
+---@return AGFStory?, integer?, boolean? the chain, the quest that takes it up, and whether it continues one
+local function ZoneStory(data, completed, eligible, zone)
+	local best, bestID, bestRank, continues
+	for _, id in ipairs(eligible) do
+		local quest = data.quests[id]
+		local story = (quest.zone or quest.start.map) == zone and Model.Story(data, id)
+		local started = story and story.chapter > 1 and completed[story.members[story.chapter - 1]] == true
+		if story and (started or story.chapter == 1) then
+			local rank = (started and 0 or 1000) - (story.total or 0)
+			if not bestRank or rank < bestRank then
+				best, bestID, bestRank, continues = story, id, rank, started
+			end
+		end
+	end
+	return best, bestID, continues
 end
 
 ---@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
@@ -719,10 +749,23 @@ function Model.Journeys(data, player, completed, log, prefs, mapName)
 	-- The zone the player's level fits best, named after it. Model.Story (F4) makes it the chapter of a chain; until
 	-- then it holds the zone's pickups, as the route did.
 	local zone = zones[1] and zones[1].map
-	local story = zone and ZoneJourney(data, player, eligible, zone, index, prefs, mapName, prefs.pinned or {})
+	local chain, chainID, continues
+	if zone then
+		chain, chainID, continues = ZoneStory(data, completed, eligible, zone)
+	end
+	local story, _, lead = ZoneJourney(data, player, eligible, zone, index, prefs, mapName, prefs.pinned or {}, chainID)
 	if story then
+		local name = ZoneName(data, zone, mapName)
 		story.kind, story.key = "story", "story:" .. zone
-		story.title = L.JOURNEY_STORY:format(ZoneName(data, zone, mapName))
+		story.title = L.JOURNEY_STORY:format(name)
+		-- With a chain, the card tells its chapter in place of the zone's count, and its step says so on the map.
+		if chain and lead then
+			story.story = chain
+			story.subline = chain.total and L.CHAPTER_OF:format(chain.chapter, chain.total)
+				or L.CHAPTER:format(chain.chapter)
+			story.reason = continues and L.CONTINUES_STORY or L.BEGINS_STORY
+			lead.chapter, lead.reason = story.subline, story.reason
+		end
 		journeys[#journeys + 1] = story
 	end
 	-- The zone that fits two levels on, when it is another zone than the story's and the one the player stands in,

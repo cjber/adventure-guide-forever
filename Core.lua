@@ -26,6 +26,11 @@ ns.L = {
 	QUESTS_NEAR = "%d quests near your level",
 	QUESTS_NEAR_ONE = "1 quest near your level",
 	READY_TO_HAND_IN = "Ready to hand in",
+	-- Stories (docs/design.md §2.3): a total only when the data proves it, never a later chapter's title.
+	CHAPTER_OF = "Chapter %d of %d",
+	CHAPTER = "Chapter %d",
+	CONTINUES_STORY = "Continues a story you started",
+	BEGINS_STORY = "Begins a new story",
 	NOTHING_NEARBY = "Nothing nearby fits your level.",
 	LOADING = "Loading your completed quests...",
 	SETTING_MAP_PINS_TOOLTIP = "The route's numbered steps on the world map while their zone is shown, and quest "

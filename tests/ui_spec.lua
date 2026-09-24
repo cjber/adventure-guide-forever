@@ -156,6 +156,21 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#h.tooltip, #giverPin.giver.quests + 2, label .. ": a giver tooltip line per quest")
 	equal(h.tooltip[#h.tooltip], click, label .. ": giver tooltip instruction")
 
+	-- The story card's step tells its chapter under the title (design §2.9).
+	h.map:SetMapID(1413)
+	ns.Prefs().journey = ns.Route().journeys[2].key
+	ns.Invalidate()
+	h.flush()
+	local chapter
+	for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate) do
+		chapter = pin.step.chapter and pin or chapter
+	end
+	h.Hover(chapter)
+	equal(h.tooltip[2], "normal: Chapter 1 of 5", label .. ": the story's ring tells its chapter")
+	ns.Prefs().journey = nil
+	ns.Invalidate()
+	h.flush()
+
 	provider:RemoveAllData()
 	equal(Live(), 0, label .. ": RemoveAllData leaves no pins")
 

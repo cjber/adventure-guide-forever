@@ -108,6 +108,7 @@
 ---@field place? string NPC/object or area name
 ---@field optional? boolean elite/group or outside the player's level band
 ---@field pinned? boolean
+---@field chapter? string the story card's chapter line, on the step that takes the chain up
 
 -- A quest giver drawn as a "!" on the world map.
 ---@class AGFGiver
@@ -143,6 +144,7 @@
 ---@field reason? string why this journey, when there is an honest answer
 ---@field map integer where its first step is: choosing the card turns the world map there
 ---@field steps AGFStep[] never more than MAX_STEPS, in route order
+---@field story? AGFStory the story card's chain, when the zone has one the player can take up now
 
 ---@class AGFRoute
 ---@field journeys AGFJourney[] at most 3: carry, the zone's story, the next zone
@@ -239,6 +241,10 @@
 ---@field QUESTS_NEAR string format: count
 ---@field QUESTS_NEAR_ONE string
 ---@field READY_TO_HAND_IN string
+---@field CHAPTER_OF string format: chapter, total
+---@field CHAPTER string format: chapter; the chain's length unproven
+---@field CONTINUES_STORY string
+---@field BEGINS_STORY string
 ---@field NOTHING_NEARBY string the guide with no journey
 ---@field LOADING string the guide before the completed quests arrive
 

@@ -1,4 +1,4 @@
 # human60: level 60, side 1, at 1423 0.8100,0.5800
-card (chosen) | story:1451 | A Silithus story | 8 quests near your level | - | map 1451
-  step 1 | pickup:1451:0.5161:0.3863 | Pick up quests: Beetix Ficklespragg | 1451 0.5161,0.3863 | 4 quests here
+card (chosen) | story:1451 | A Silithus story | Chapter 1 of 4 | Begins a new story | map 1451
+  step 1 | pickup:1451:0.5161:0.3863 | Pick up quests: Beetix Ficklespragg | 1451 0.5161,0.3863 | Begins a new story
   step 2 | pickup:1451:0.4945:0.3645 | Pick up quests: Baristolth of the Shifting Sands | 1451 0.4945,0.3645 | 4 quests here
