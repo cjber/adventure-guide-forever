@@ -186,8 +186,9 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
   3. **Diversions**, newest first:
      - **Your calling** (roadmap #7): the class quests the player can take now, as one card: a `classes` mask of the
        player's class alone (Vile Familiars, every Horde class's but the warlock's, is a starting quest), never a
-       raid's. It leads with a chain as the story does (§2.3), else the lowest quest ID. Its reason names that quest: "Your class trainer has a task: Call of Earth" only when the data proves its giver trains the
-       player's class (`start.trainer`, from CMaNGOS TrainerClass), else "A task for your class: Call of Earth".
+       raid's. It leads with a chain as the story does (§2.3), else the lowest quest ID. Its reason names that quest:
+       "Your class trainer has a task: Call of Earth" only when the data proves its giver trains the player's class
+       (`start.trainer`, from CMaNGOS TrainerClass), else "A task for your class: Call of Earth".
      - **Dungeon** (Dungeons on): the party instance with the most quests open now.
      - **Next zone**: the zone that ranks first for `level + 2` in the same eligibility pass (`Choices` in
        `Model.Journeys`), shown only when it differs from the story's zone and the player's own and has at least 5
