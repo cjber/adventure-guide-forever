@@ -796,18 +796,19 @@ Every blocker and major in `plan-review.md` is applied above. Minor findings are
   skipped or crowded-out chapter (in and out of combat), a pinned chapter's pin, the chapter row's detail, Why's
   self-rival line, the forked-member walk check, group quests in the log opening details, search before completed
   quests load, the byte-length search minimum, and title loads for shown results. Deferred:
-  - The pin tooltip prints `detail` and `reason` together for every step, not only the chapter's; pins go in F9 (36).
+  - **Resolved (§7.6):** the pin tooltip printed `detail` and `reason` together for every step; `StepTooltip` no longer
+    prints detail.
   - Search matches a quest the client has not cached by the data's English title. Only shown rows and their Why
     lines ask `RequestLoadQuestByID`; asking for every quest on each keystroke would flood the server.
   - `string.lower` folds ASCII only, so Cyrillic titles match case-sensitively; the client has no UTF-8 lower.
 - **Batch C (32-37) review:** fixed in their own `fix(...)` commits: the footer's Stop after the menu's Go and
   Stop, a skipped step the route no longer has, tracker lines that repeated the header, the resume line's capital,
   Choices' prefs-less branch, and design §2.2's `Model.Zones`. Deferred:
-  - The footer's Stop still waits for the next redraw when Shortest Path ends our journey itself or the player moves
-    or clears the waypoint: API v1 has no callback, and `USER_WAYPOINT_UPDATED` is unproven on Forever (an
-    unknown event errors in `RegisterEvent`), so it needs a probe first. Opening the guide redraws it.
-  - Design §2.5's place line is "NPC, zone" (closed in Batch F3); it was still the bare name, and a log turn-in placed by
-    `GetNextWaypoint` has no NPC name at all. The zone needs the map name in the step, a change of its own.
+  - **Resolved (§7.6):** the footer's Stop waited for the next redraw when Shortest Path ended our journey or the
+    player moved or cleared the waypoint. `SUPER_TRACKING_CHANGED` and `USER_WAYPOINT_UPDATED` are proven on Forever
+    (released SPF and Blizzard's `SuperTrackedFrame.lua` register both); the footer redraws a frame after either.
+  - **Resolved (§7.6):** design §2.5's place line is "NPC, zone" (F1 model, F3 tracker); a log turn-in placed by
+    `GetNextWaypoint` names its NPC only where its waypoint agrees with the data's finish.
 - **Batch D (38-45, F16) review:** fixed in their own `fix(...)` commits: the in-combat rebuild's fourth card (it
   now keeps `Model.MAX_JOURNEYS`, which the panel shares), the empty line over the trainer line, the "Story
   complete" header acting as the step's, the trainer spec's vacuous ring check, `TweaksForever` in `OptionalDeps`,

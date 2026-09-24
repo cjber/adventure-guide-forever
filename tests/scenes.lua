@@ -22,16 +22,19 @@ local loaded = {}
 -- `optIn` turns on the marks a player opts into (both are off by default); the panel and search scenes, the store
 -- page's lead images, keep the defaults, so they show only the rings the open guide previews.
 -- The character chose the carry card before, as ui_spec's has, or `journey`; `fresh` has chosen nothing yet.
-local function Load(spf, optIn, fresh, journey)
+-- `carried` adds a finished quest to the log.
+local function Load(spf, optIn, fresh, journey, carried)
+	local log = {
+		{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
+		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
+	}
+	log[#log + 1] = carried
 	local h = harness.load({
 		spf = spf or nil,
 		db = optIn and { showMapPins = true, showQuestGivers = true } or nil,
 		charDB = not fresh and { journey = journey or "carry" } or nil,
 		completed = { 844 },
-		log = {
-			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
-			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
-		},
+		log = log,
 	})
 	loaded[#loaded + 1] = h
 	return h
@@ -85,8 +88,19 @@ h.providers[1]:RefreshAllData()
 out.panel.pins = Pins(h)
 out.panel.map = h.map:GetMapID()
 
--- A character with no card chosen: every card whole, no steps and no rings, the hint under the cards.
-h = Load(false, false, true)
+-- A character with no card chosen: every card whole, no steps and no rings, the hint under the cards. With Shortest
+-- Path's minutes on each card, and a finished group quest, Counterattack!, handed in at Regthar Deathgate's camp, so
+-- the carry card's hub line has the group tag beside it.
+local COUNTERATTACK =
+	{ id = 4021, title = "Counterattack!", level = 20, complete = true, map = 1413, x = 0.4534, y = 0.2841 }
+h = Load("v1+", false, true, nil, COUNTERATTACK)
+-- The stub's one flight leg takes longer the farther the stop, so each card reads its own minutes.
+local detail = h.G.ShortestPathForever.API.EstimateDetail
+h.G.ShortestPathForever.API.EstimateDetail = function(fromMap, fromX, fromY, toMap, toX, toY)
+	local far = toMap == fromMap and math.sqrt((toX - fromX) ^ 2 + (toY - fromY) ^ 2) or 0.4
+	h.spfSeconds = math.floor(far * 1500) + 60
+	return detail(fromMap, fromX, fromY, toMap, toX, toY) -- multi-value: the stub's detail and its reason
+end
 out.journeys = Panel(h, "journeys")
 h.providers[1]:RefreshAllData()
 out.journeys.pins = Pins(h)
