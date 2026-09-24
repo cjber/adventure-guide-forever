@@ -1,4 +1,4 @@
--- shortest-path-forever 84f57927cc087d1450a6875839701bd07ed3514e:types/API.lua
+-- shortest-path-forever 1a70828f0f76e664ec601caafd9bec21f20ba121:types/API.lua
 ---@meta
 
 -- Public addon-to-addon interface. Coordinates are uiMapID and normalized 0-1 x/y, not world yards.
