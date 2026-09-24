@@ -449,6 +449,51 @@ function ns.Resume(step)
 	return resume and resume.key == step.key and resume.reason or nil
 end
 
+-- A quest was handed in since the last full build: a chosen journey that ends there was completed, not abandoned.
+local turnedIn = false
+
+-- QUEST_TURNED_IN, from State.lua: latched for the ending below, then the chapter-end fanfare.
+---@param questID integer
+function ns.TurnedIn(questID)
+	turnedIn = true
+	if ns.OnTurnIn then
+		ns.OnTurnIn(questID)
+	end
+end
+
+-- The chosen journey's key a filter hides (Quests or Dungeons off in the cog): the player's own toggle can bring it
+-- back, so the choice is kept.
+---@param key string
+---@param prefs AGFPrefs
+---@return boolean
+local function Filtered(key, prefs)
+	return (key:find("^dungeon:") ~= nil and not prefs.dungeons) or (key:find("^zone:") ~= nil and not prefs.quests)
+end
+
+local pendingStart = false
+
+-- A chosen journey the full build no longer has ends (docs/design.md §2.10): its route stops, and the choice is
+-- cleared, so the cards are whole again; after a turn-in the tracker says it is complete. A filter keeps the key but
+-- stops the route. Judged only on full builds: combat's cheap one keeps the last journeys.
+---@param route AGFRoute
+local function Ended(route)
+	local prefs, completed = ns.Prefs(), turnedIn
+	turnedIn = false
+	local key = prefs.journey
+	if not key or route.chosen then
+		return
+	end
+	if not Filtered(key, prefs) then
+		prefs.journey, pendingStart = nil, false
+		if completed and ns.OnJourneyComplete then
+			ns.OnJourneyComplete()
+		end
+	end
+	if prefs.guided == key then
+		ns.Integrations.Cancel()
+	end
+end
+
 local function Rebuild()
 	pendingRebuild = false
 	if not ns.State.Ready() then
@@ -458,6 +503,9 @@ local function Rebuild()
 	end
 	cachedRoute = BuildRoute()
 	dirty = false
+	if not InCombatLockdown() then
+		Ended(cachedRoute)
+	end
 	-- A skipped step the full build no longer finds (turned in, abandoned) leaves Skipped (n): Show again would
 	-- bring nothing back.
 	local seen = cachedRoute.skipped
@@ -535,9 +583,9 @@ end
 --[[ Choosing and starting a journey (docs/design.md §2.10): the cards, the tracker, the menus and the map's rings all
      come through here, so every route AGF starts runs on the chosen journey, and prefs.guided records which. ]]
 
--- A start waiting for the rebuild that has the chosen journey's steps, or for combat's end: Shortest Path refuses every
--- route in combat, and the rebuild PLAYER_REGEN_ENABLED brings (afterCombat) runs it.
-local pendingStart = false
+-- pendingStart (above, for the ending): a start waiting for the rebuild that has the chosen journey's steps, or for
+-- combat's end. Shortest Path refuses every route in combat, and the rebuild PLAYER_REGEN_ENABLED brings (afterCombat)
+-- runs it.
 
 -- Chooses `key`, or none. With `start` its route starts on the rebuild that has its steps. Leaving the journey whose
 -- route AGF started stops that route, unless the new choice's start replaces it; never anyone else's.

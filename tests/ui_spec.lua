@@ -284,6 +284,67 @@ do
 	equal(h.spf.NavigateRoute, 1, "follow: a route not the journey's stays as handed")
 end
 
+-- A chosen journey the full build no longer has ends (design §2.10): its route stops and the cards are whole again,
+-- "complete" only after a turn-in. A filter keeps the choice but stops the route; nothing ends before the completed
+-- quests load, or in combat.
+do
+	local function Started(spf, charDB)
+		local h = Load(spf, nil, charDB)
+		h.ns.StartRoute()
+		h.flush()
+		h.completes = 0
+		h.ns.OnJourneyComplete = function()
+			h.completes = h.completes + 1
+		end
+		return h
+	end
+	local function Emptied(h, event, id)
+		for index = #h.log, 1, -1 do
+			table.remove(h.log, index)
+		end
+		h.fire(event, id)
+		h.flush()
+	end
+	for _, case in ipairs({ { "QUEST_TURNED_IN", 845, 1, "turned in" }, { "QUEST_LOG_UPDATE", nil, 0, "abandoned" } }) do
+		local h, label = Started("v1"), "ends, " .. case[4]
+		equal(h.ns.Prefs().guided, "carry", label .. ": guided before")
+		Emptied(h, case[1], case[2])
+		equal(h.ns.Prefs().journey, nil, label .. ": the choice is cleared")
+		equal(h.ns.Prefs().guided, nil, label .. ": and its guidance")
+		equal(h.spf.Cancel, 1, label .. ": our route cancelled once")
+		equal(h.ns.Route().chosen, false, label .. ": the cards whole again")
+		equal(h.completes, case[3], label .. ": complete only after a turn-in")
+		clean(h, label)
+	end
+
+	local h = Started("v1")
+	h.SetCombat(true)
+	Emptied(h, "QUEST_LOG_UPDATE")
+	equal(h.ns.Prefs().journey, "carry", "ends: not in combat")
+	equal(h.spf.Cancel, 0, "ends: nothing cancelled in combat")
+	h.SetCombat(false)
+	h.flush()
+	equal(h.ns.Prefs().journey, nil, "ends: on the full build combat's end brings")
+	clean(h, "ends, combat")
+
+	h = Started(false)
+	Emptied(h, "QUEST_LOG_UPDATE")
+	equal(h.counts.ClearUserWaypoint, 1, "ends, no Shortest Path: the waypoint Go set is cleared")
+
+	h = Started("v1", { journey = "zone:1413" })
+	equal(h.ns.Prefs().guided, "zone:1413", "filtered: guided before")
+	h.ns.Prefs().quests = false
+	h.ns.Invalidate()
+	h.flush()
+	equal(h.ns.Prefs().journey, "zone:1413", "filtered: the choice kept, should the toggle bring it back")
+	equal(h.spf.Cancel, 1, "filtered: our route cancelled")
+	clean(h, "filtered")
+
+	h = harness.load({ charDB = { journey = "carry" }, completedPending = true })
+	h.flush()
+	equal(h.ns.Prefs().journey, "carry", "ends: nothing before the completed quests load")
+end
+
 -- WFA-13: nothing runs per frame while idle, and a refresh reuses the frames it has.
 local function IdleUpdates(h)
 	local busy = 0
@@ -799,10 +860,8 @@ do
 		waypoint = h.waypoint,
 		initialLogin = false,
 		completed = { 844 },
+		log = { { id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 } },
 	})
-	-- No log after the reload, so no carry card: the story is chosen for the row menu below.
-	reloaded.ns.Prefs().journey = reloaded.ns.Route().journeys[1].key
-	reloaded.ns.Invalidate()
 	reloaded.ns.OpenPanel()
 	reloaded.flush()
 	equal(StopButton(reloaded):IsShown(), true, "stop: still offered after a /reload")

@@ -189,9 +189,7 @@ events:SetScript("OnEvent", function(_, event, arg)
 		end
 	elseif event == "QUEST_TURNED_IN" and arg then
 		completed[arg] = true
-		if ns.OnTurnIn then
-			ns.OnTurnIn(arg)
-		end
+		ns.TurnedIn(arg)
 	end
 	Coalesce()
 end)
