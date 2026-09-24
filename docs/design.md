@@ -66,8 +66,8 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
 | | ( )  Chapter 2 of 4                       | |
 | +===========================================+ |
 |    [#][#][ ][ ]                               |  chapter track (2.3)
-|  1 Gryan Stoutmantle          Sentinel Hill   |  step rows, 44 px each, 9 at most
-|      Fly to Sentinel Hill · 6 min             |    GameFontHighlightSmall
+|  1 Sentinel Hill, Westfall                    |  step rows, 44 px each, 9 at most; a town is titled by its name
+|      2 to hand in, 3 to pick up · 6 min       |    GameFontHighlightSmall: the counts, step 1 adds its minutes
 |  2 The Defias Brotherhood                     |
 |  3 Red Linen Goods                            |    optional rows at alpha 0.6
 |  Skipped (2)                                  |  GameFontNormalSmall text button, hidden at 0
