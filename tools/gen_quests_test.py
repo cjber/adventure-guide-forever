@@ -18,6 +18,7 @@ from gen_quests import (
     prerequisite_index,
     prerequisites,
     project,
+    quest_place,
     reaction,
     roles,
     skill_steps,
@@ -353,6 +354,20 @@ class NpcTest(unittest.TestCase):
         self.assertEqual(nearest_hub((0, 150 + LINK, 10), grid), 3)
         self.assertIsNone(nearest_hub((0, 151 + LINK, 10), grid))
         self.assertIsNone(nearest_hub((2, 0, 0), grid))
+
+
+class QuestPlaceTest(unittest.TestCase):
+    def spawn(self, kind):
+        return {"entry": (kind, 823), "name": "Deputy Willem", "options": [(1.0, 0, 1429, (0.48171, 0.42939))]}
+
+    def test_an_npc_giver_keeps_its_creature_entry(self):
+        self.assertEqual(
+            quest_place(self.spawn("creature"), {1429}, None),
+            {"map": 1429, "x": 0.4817, "y": 0.4294, "name": "Deputy Willem", "npc": 823},
+        )
+
+    def test_an_object_has_no_npc(self):
+        self.assertNotIn("npc", quest_place(self.spawn("gameobject"), {1429}, None))
 
 
 if __name__ == "__main__":

@@ -541,3 +541,8 @@
 
 ---@class AGFStrings
 ---@field STORY_HOOK string format: the tracker's one line with no journey chosen: a story's title, its reason or subline
+
+-- Stream 2e "NPC tooltip line" (roadmap #19, Tooltip.lua, docs/design.md §2.9).
+
+---@class AGFPlace
+---@field npc? integer the creature entry of an NPC giver, the ID in its UnitGUID; nil for an object
