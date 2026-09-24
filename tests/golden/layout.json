@@ -370,7 +370,7 @@
         212.00,
         14.00
       ],
-      "text": "1 quest ready to hand in",
+      "text": "1 ready to hand in, 1 in progress",
       "type": "FontString",
       "wordWrap": false
     },
@@ -392,7 +392,7 @@
         212.00,
         14.00
       ],
-      "text": "Ready to hand in",
+      "text": "",
       "type": "FontString",
       "wordWrap": false
     },

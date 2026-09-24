@@ -675,23 +675,31 @@ local function Carry(data, player, log, prefs, mapName, cheap)
 	if #steps == 0 then
 		return nil
 	end
-	local L, ready, underway = ns.L, 0, 0
+	-- A finished quest whose hand-in is across an ocean is not ready yet: the reason line counts those, so no fact
+	-- is told twice on the card.
+	local L, ready, underway, away, here = ns.L, 0, 0, 0, Position(data, player)
 	for _, step in ipairs(carried) do
 		if not prefs.skipped[step.key] then
-			if step.kind == "turnin" then
-				ready = ready + 1
-			else
+			local there = Position(data, step)
+			if step.kind ~= "turnin" then
 				underway = underway + #step.quests
+			elseif here and there and here.known and there.known and here.continent ~= there.continent then
+				away = away + 1
+			else
+				ready = ready + 1
 			end
 		end
 	end
+	local parts = {}
+	parts[#parts + 1] = ready > 0 and L.CARRY_READY:format(ready) or nil
+	parts[#parts + 1] = underway > 0 and L.CARRY_IN_PROGRESS:format(underway) or nil
+	local farther = away > 0 and L.CARRY_AWAY:format(away) or nil
 	return {
 		kind = "carry",
 		key = "carry",
 		title = L.JOURNEY_CARRY,
-		subline = ready > 0 and Count(L.CARRY_READY_ONE, L.CARRY_READY, ready)
-			or Count(L.CARRY_IN_PROGRESS_ONE, L.CARRY_IN_PROGRESS, underway),
-		reason = steps[1].kind == "turnin" and L.READY_TO_HAND_IN or nil,
+		subline = #parts > 0 and table.concat(parts, L.LIST_SEPARATOR) or farther,
+		reason = #parts > 0 and farther or nil,
 		map = steps[1].map,
 		steps = steps,
 	}

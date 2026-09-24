@@ -144,6 +144,9 @@ for _, fixture in ipairs(characters.list) do
 		equal(changes, 1, "ne21_crosszone: exactly one continent change")
 		equal(last.key, "turnin:168", "ne21_crosszone: the Stormwind turn-in is last")
 		equal(last.reason, "Hand in when you're in Stormwind City", "ne21_crosszone: the far turn-in says where")
+		-- The in-game audit: the far turn-in is finished but not ready here, and the card says each fact once.
+		equal(route.journeys[1].subline, "3 ready to hand in", "ne21_crosszone: ready counts this continent only")
+		equal(route.journeys[1].reason, "1 to hand in across the sea", "ne21_crosszone: the far one apart")
 		equal(
 			Model.Plan(data, player, completed, log, prefs, function()
 				return "Hurlevent"

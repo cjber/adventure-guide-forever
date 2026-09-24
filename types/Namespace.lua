@@ -140,7 +140,7 @@
 ---@field kind AGFJourneyKind
 ---@field key string stable identity for prefs.journey: "carry", "story:<uiMapID>" or "nextzone:<uiMapID>"
 ---@field title string e.g. "Finish what you carry" or "A Westfall story"
----@field subline string e.g. "3 quests ready to hand in"
+---@field subline string e.g. "3 ready to hand in, 1 in progress"
 ---@field reason? string why this journey, when there is an honest answer
 ---@field map integer where its first step is: choosing the card turns the world map there
 ---@field steps AGFStep[] never more than MAX_STEPS, in route order
@@ -234,13 +234,12 @@
 ---@field JOURNEY_CARRY string
 ---@field JOURNEY_STORY string format: zone name
 ---@field JOURNEY_NEXT_ZONE string format: zone name, the level it fits
----@field CARRY_READY string format: count
----@field CARRY_READY_ONE string
+---@field CARRY_READY string format: count of finished quests whose hand-in is on this continent
 ---@field CARRY_IN_PROGRESS string format: count
----@field CARRY_IN_PROGRESS_ONE string
+---@field CARRY_AWAY string format: count of finished quests whose hand-in is across an ocean
+---@field LIST_SEPARATOR string between the parts of one line
 ---@field QUESTS_NEAR string format: count
 ---@field QUESTS_NEAR_ONE string
----@field READY_TO_HAND_IN string
 ---@field CHAPTER_OF string format: chapter, total
 ---@field CHAPTER string format: chapter; the chain's length unproven
 ---@field CONTINUES_STORY string

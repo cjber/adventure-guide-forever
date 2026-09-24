@@ -1,5 +1,5 @@
 # orc18_barrens: level 18, side 2, at 1413 0.5200,0.3000
-card (chosen) | carry | Finish what you carry | 1 quest ready to hand in | Ready to hand in | map 1413
+card (chosen) | carry | Finish what you carry | 1 ready to hand in, 1 in progress | - | map 1413
   step 1 | turnin:845 | Turn in: The Zhevra | 1413 0.5223,0.3101 | ready to hand in
   step 2 | objective:843 | Gann's Reclamation | 1413 0.4600,0.8000 | quests in progress
 card | story:1413 | A The Barrens story | Chapter 1 of 5 | Begins a new story | map 1413

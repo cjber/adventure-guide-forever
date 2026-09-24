@@ -19,13 +19,13 @@ ns.L = {
 	JOURNEY_CARRY = "Finish what you carry",
 	JOURNEY_STORY = "A %s story",
 	JOURNEY_NEXT_ZONE = "Head to %s at %d",
-	CARRY_READY = "%d quests ready to hand in",
-	CARRY_READY_ONE = "1 quest ready to hand in",
-	CARRY_IN_PROGRESS = "%d quests in progress",
-	CARRY_IN_PROGRESS_ONE = "1 quest in progress",
+	-- The carry card's counts, joined when several apply: "3 ready to hand in, 1 in progress".
+	CARRY_READY = "%d ready to hand in",
+	CARRY_IN_PROGRESS = "%d in progress",
+	CARRY_AWAY = "%d to hand in across the sea",
+	LIST_SEPARATOR = ", ",
 	QUESTS_NEAR = "%d quests near your level",
 	QUESTS_NEAR_ONE = "1 quest near your level",
-	READY_TO_HAND_IN = "Ready to hand in",
 	-- Stories (docs/design.md §2.3): a total only when the data proves it, never a later chapter's title.
 	CHAPTER_OF = "Chapter %d of %d",
 	CHAPTER = "Chapter %d",

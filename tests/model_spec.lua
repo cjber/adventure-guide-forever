@@ -123,7 +123,7 @@ local function Has(steps, key)
 end
 equal(route.journey, "carry", "carry is the first card")
 equal(#route.journeys, 2, "carry and the zone's story")
-equal(route.journeys[1].subline, "1 quest ready to hand in", "carry counts what is ready")
+equal(route.journeys[1].subline, "1 ready to hand in, 2 in progress", "carry counts what is ready, then the rest")
 equal(route.journeys[1].reason, nil, "no reason unless a turn-in leads")
 equal(route.journeys[1].map, route.steps[1].map, "a card turns the map to its first step")
 for _, step in ipairs(route.steps) do
@@ -281,7 +281,8 @@ local shore = { quests = {}, zones = data.zones, maps = tiers.maps, continents =
 local full = Model.Plan(shore, player, {}, Objectives(9), prefs())
 equal(#full.steps, Model.MAX_STEPS, "nine near objectives")
 equal(Has(full.steps, "turnin:200"), 0, "the far turn-in waits for a free slot")
-equal(full.journeys[1].subline, "1 quest ready to hand in", "but carry still counts it")
+equal(full.journeys[1].subline, "9 in progress", "carry counts the near objectives")
+equal(full.journeys[1].reason, "1 to hand in across the sea", "and the far turn-in, never as ready")
 local room = Model.Plan(shore, player, {}, Objectives(8), prefs())
 equal(room.steps[Model.MAX_STEPS].key, "turnin:200", "with room, the far turn-in comes last")
 equal(room.steps[Model.MAX_STEPS].reason, "Hand in when you're in Far Shore", "and says where")
@@ -295,7 +296,8 @@ local lost = {
 }
 local blind = Model.Plan(shore, lost, {}, Objectives(9), prefs())
 equal(blind.steps[1].key, "turnin:200", "without a position the turn-in leads")
-equal(blind.journeys[1].reason, "Ready to hand in", "and gives the card its reason")
+equal(blind.journeys[1].subline, "1 ready to hand in, 9 in progress", "unplaced, the turn-in counts as ready")
+equal(blind.journeys[1].reason, nil, "and the card repeats nothing")
 equal(#blind.steps, Model.MAX_STEPS, "and the objectives still fill the route")
 -- Over the sea the route lands where the side's boat docks, not at the far shore's nearest point (F12).
 local ferry = { quests = { quest(0.1, 0.5, 9), quest(0.9, 0.5, 9) }, zones = data.zones, maps = tiers.maps }
