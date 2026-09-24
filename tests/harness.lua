@@ -1033,7 +1033,7 @@ function harness.load(options)
 		-- The client's names for the fixture's zones, so the panel reads as in game; "Map <id>" elsewhere, which no
 		-- data name matches, so a spec can tell the client's name from the data's.
 		GetMapInfo = function(mapID)
-			local names = { [1413] = "The Barrens", [1442] = "Stonetalon Mountains" }
+			local names = { [1411] = "Durotar", [1413] = "The Barrens", [1442] = "Stonetalon Mountains" }
 			return { mapID = mapID, name = names[mapID] or "Map " .. mapID }
 		end,
 		SetUserWaypoint = function(point)

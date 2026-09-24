@@ -125,7 +125,7 @@ ns.L = {
 	STORY_COMPLETE = "Story complete",
 	JOURNEY_COMPLETE = "Journey complete",
 	CHOOSE_NEXT = "Choose your next journey",
-	-- The trainer aside (docs/plan.md F16): text only.
+	-- The trainer aside (docs/plan.md F16).
 	TRAINER = "Visit your class trainer",
 	TRAINER_SPELLS = "%d new spells",
 	TRAINER_SPELL = "1 new spell",
@@ -177,6 +177,10 @@ ns.L = {
 	UNLISTED = 'This land has stories the guide doesn\'t know yet; look for the "!" over quest givers.',
 	-- The tracker's one line while no journey is chosen: a story's title, then its reason or chapter.
 	STORY_HOOK = "%s · %s",
+	-- Stream 2b "Trainers" (roadmap #5): the trainer aside names the nearest trainer's town when the data places one,
+	-- and a chosen journey's route may stop there.
+	TRAINER_IN = "Visit your class trainer in %s",
+	TRAIN_IN = "Train in %s",
 }
 local L = ns.L
 
@@ -457,32 +461,36 @@ afterCombat:SetScript("OnEvent", function(self)
 	ns.Invalidate()
 end)
 
+-- The spells to train the last full build took (roadmap #5), asked of Tweaks Forever only while a journey is chosen,
+-- the only route that stops to train; combat's cheap rebuild keeps them, as Tweaks Forever has no answer in a fight.
+---@type AGFTraining?
+local training
+
 -- In combat only the cheap rebuild runs (the log's steps; the rest as the last full build left them), and the full
 -- one waits for PLAYER_REGEN_ENABLED: looting a quest item mid-fight must not cost a frame.
 local function BuildRoute()
-	local state = ns.State
+	local state, prefs, player = ns.State, ns.Prefs(), ns.State.Player()
 	if InCombatLockdown() then
 		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
-		return ns.Model.Refresh(
-			ns.Data,
-			state.Player(),
-			state.Completed(),
-			state.Log(),
-			ns.Prefs(),
-			cachedRoute,
-			state.MapName
-		)
+		player.train = training
+		return ns.Model.Refresh(ns.Data, player, state.Completed(), state.Log(), prefs, cachedRoute, state.MapName)
 	end
-	return ns.Model.Plan(
-		ns.Data,
-		state.Player(),
-		state.Completed(),
-		state.Log(),
-		ns.Prefs(),
-		state.MapName,
-		state.InstanceName
-	)
+	training = prefs.journey and ns.Integrations.Training() or nil
+	player.train = training
+	return ns.Model.Plan(ns.Data, player, state.Completed(), state.Log(), prefs, state.MapName, state.InstanceName)
 end
+
+-- A spell learned (or a new level's) changes what the trainer stop says, or ends it: rebuild when the answer moved.
+local spellbook = CreateFrame("Frame")
+spellbook:SetScript("OnEvent", function()
+	if not ns.Prefs().journey or InCombatLockdown() then
+		return
+	end
+	local now = ns.Integrations.Training()
+	if (now and now.count) ~= (training and training.count) or (now and now.level) ~= (training and training.level) then
+		ns.Invalidate()
+	end
+end)
 
 -- The resume line (docs/design.md §2.5). A login sets the latch; the first rebuild with a step 1 compares it once with
 -- the step saved last session, and the line lasts until step 1 changes. A /reload never sets the latch.
@@ -817,6 +825,7 @@ EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	LoadDB()
 	LoadCharDB()
 	ns.State.OnChange(ns.Invalidate)
+	spellbook:RegisterEvent("SPELLS_CHANGED")
 	ns.State.OnInitialLogin(function()
 		resumeLatch = true
 	end)

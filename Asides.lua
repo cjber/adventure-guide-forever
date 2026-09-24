@@ -152,18 +152,20 @@ function Asides.Open(owner, tag, aside)
 	end)
 end
 
---[[ The first provider: the class trainer (docs/plan.md F16), from Tweaks Forever's spells to train. Text only: the
-     data has no trainer's place. ]]
+--[[ The first provider: the class trainer (docs/plan.md F16), from Tweaks Forever's spells to train, at the nearest
+     trainer who teaches them (roadmap #5, Model.Trainer); text only when the data places none. ]]
 
 Asides.Register(function()
-	local spells = ns.Integrations.Trainable()
-	local count = spells and #spells or 0
-	if count == 0 then
+	local training = ns.Integrations.Training()
+	if not training then
 		return nil
 	end
+	local count = training.count
 	local spellCount = count == 1 and L.TRAINER_SPELL or L.TRAINER_SPELLS:format(count)
+	local npc = ns.Model.Trainer(ns.Data, ns.State.Player(), training.level)
+	local who = npc and L.TRAINER_IN:format(ns.Model.TownName(ns.Data, npc.place, ns.State.MapName)) or L.TRAINER
 	-- The minimap's class trainer mark (CSV:1321).
-	return { key = "trainer", text = L.TRAINER_LINE:format(L.TRAINER, spellCount), icon = "class" }
+	return { key = "trainer", text = L.TRAINER_LINE:format(who, spellCount), icon = "class", place = npc and npc.place }
 end)
 
 -- A spell learned at the trainer shortens the line at once.

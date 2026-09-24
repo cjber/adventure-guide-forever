@@ -2456,8 +2456,9 @@ do
 	clean(h, "cog")
 end
 
--- F16, the first aside (Asides.lua): with spells to train, one text-only trainer line in the guide and the tracker;
--- otherwise none. Four Tweaks Forever profiles: absent, no answer yet, nothing to train, and three spells.
+-- F16, the first aside (Asides.lua): with spells to train, one trainer line in the guide and the tracker, at the
+-- nearest trainer who teaches them (roadmap #5); otherwise none. Four Tweaks Forever profiles: absent, no answer yet,
+-- nothing to train, and three spells.
 do
 	local SPELL = { name = "Lightning Bolt", level = 14, line = "Elemental", lineID = 375, general = false }
 	local THREE = { SPELL, SPELL, SPELL }
@@ -2470,7 +2471,8 @@ do
 			label = "three spells",
 			tf = { spells = THREE },
 			lines = 1,
-			text = "Visit your class trainer · 3 new spells",
+			-- Swart in Razor Hill, a town with no flight master: the zone names it.
+			text = "Visit your class trainer in Durotar · 3 new spells",
 		},
 	}) do
 		local label = "trainer, " .. case.label
@@ -2523,7 +2525,7 @@ do
 		equal(shown, case.text, label .. ": the tracker's line")
 		-- With no journey chosen it is the tracker's one line, in place of the story's hook.
 		same(h.tracker.layoutOrder, { case.text and "aside" or "hook" }, label .. ": the tracker's only line")
-		-- Text only: no ring for it, and its tracker title neither guides nor sets a waypoint.
+		-- An aside, not a step: no ring for it, and its tracker title goes to the trainer as its Go does.
 		local steps, rings = {}, 0
 		for _, step in ipairs(h.ns.Route().steps) do
 			steps[step] = true
@@ -2541,18 +2543,66 @@ do
 			h.flush()
 		end
 		equal(h.counts.SetUserWaypoint - waypoints, 0, label .. ": no waypoint")
-		equal(h.spf.Navigate + h.spf.NavigateRoute - routes, 0, label .. ": no guidance")
+		equal(h.spf.Navigate + h.spf.NavigateRoute - routes, case.text and 1 or 0, label .. ": guidance to the trainer")
+		if case.text then
+			equal(h.spfRoute.stops[1].title, "Swart", label .. ": named for the trainer")
+		end
 		equal(h.ns.Route().steps[1].key, "handin:346", label .. ": the route is unchanged")
 		-- A spell learned at the trainer shortens the line at once.
 		if case.tf and case.tf.spells == THREE then
 			case.tf.spells = { SPELL }
 			h.fire("SPELLS_CHANGED")
 			h.flush()
-			equal(h.tracker.liveBlocks.aside.header, "Visit your class trainer · 1 new spell", label .. ": one left")
+			equal(
+				h.tracker.liveBlocks.aside.header,
+				"Visit your class trainer in Durotar · 1 new spell",
+				label .. ": one left"
+			)
 			case.tf.spells = THREE
 		end
 		clean(h, label)
 	end
+end
+
+-- Roadmap #5: a chosen journey passing a trainer who teaches the spells to train stops there, a step like any other:
+-- the tracker, a ring, Go. Learning the spell (SPELLS_CHANGED) ends the stop. A level-8 troll rogue in Razor Hill.
+do
+	local label = "trainer stop"
+	local spells = { { spellID = 1, name = "Sprint", level = 8, line = "Combat", lineID = 38, general = false } }
+	local tf = { spells = spells }
+	local h = harness.load({
+		spf = "v1",
+		db = PINS_ON,
+		tf = tf,
+		player = { level = 8, map = 1411, x = 0.52, y = 0.43, classID = 4, raceID = 8 },
+		charDB = { journey = "zone:1411" },
+	})
+	h.ns.OpenPanel()
+	h.flush()
+	local step = h.ns.Route().steps[1]
+	equal(step.key, "trainer:3170", label .. ": the route's first stop")
+	same({ h.tracker.liveBlocks[step.key].header, unpack((TrackerLines(h))) }, {
+		"Train in Durotar",
+		"Kaplak, Durotar",
+		"1 new spell",
+		"About 6 min away",
+		"Next: " .. h.ns.Route().steps[2].title .. " (no dash)",
+	}, label .. ": the tracker")
+	local ringed = false
+	for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
+		ringed = ringed or pin.step == step
+	end
+	equal(ringed, true, label .. ": its ring")
+	local routes = h.spf.NavigateRoute
+	h.ns.StartRoute(step)
+	h.flush()
+	equal(h.spf.NavigateRoute - routes, 1, label .. ": Go")
+	equal(h.spfRoute.stops[1].title, "Train in Durotar", label .. ": to the trainer")
+	tf.spells = nil
+	h.fire("SPELLS_CHANGED")
+	h.flush()
+	equal(h.ns.Route().steps[1].kind, "hub", label .. ": learned, no stop")
+	clean(h, label)
 end
 
 -- The golden layout: any change to what the guide draws shows as a reviewable diff of tests/golden/layout.json. It is
