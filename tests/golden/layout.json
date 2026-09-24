@@ -529,7 +529,7 @@
           "point": "TOPRIGHT",
           "relativePoint": "BOTTOMRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[2].ScrollFrame[1].scrollChild.Frame[2].Button[2].Title",
-          "x": 0.00,
+          "x": -8.00,
           "y": -2.00
         }
       ],

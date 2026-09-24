@@ -17,8 +17,9 @@ local COMPACT_HEIGHT, COMPACT_ICON = 26, 16
 local ROW_ART = "_options_listexpand_middle"
 local ROW_CAPS = { { "options_listexpand_left", 12, "LEFT" }, { "options_listexpand_right", 28, "RIGHT" } }
 local CARD_RING, CARD_ICON = 46, 18
--- A card's text column: its title, subline and reason are this wide.
-local CARD_TEXT = 212
+-- A card's text column: its title, subline and reason are this wide. The minutes and group tag at its right sit this
+-- far inside it, clear of the card's bevel (Panel.xml).
+local CARD_TEXT, CARD_INSET = 212, 8
 -- Under the cards while none is chosen.
 local HINT_HEIGHT = 14
 -- The scroll child above the cards: the header 4px down and 34px tall, then 6px to the first card.
@@ -621,7 +622,8 @@ local function RefreshCard(card, journey, state)
 		local crossing = travel.crossing
 		local long = (crossing == "boat" and L.CARD_BY_BOAT) or (crossing == "zeppelin" and L.CARD_BY_ZEPPELIN)
 		card.Travel:SetText((long or L.CARD_MINUTES):format(minutes))
-		if long and card.Subline:GetUnboundedStringWidth() + 6 + card.Travel:GetUnboundedStringWidth() > CARD_TEXT then
+		local room = CARD_TEXT - CARD_INSET - 6 - card.Subline:GetUnboundedStringWidth()
+		if long and card.Travel:GetUnboundedStringWidth() > room then
 			card.Travel:SetText(L.CARD_MINUTES:format(minutes))
 		end
 		card.Subline:SetPoint("RIGHT", card.Travel, "LEFT", -6, 0)

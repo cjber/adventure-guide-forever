@@ -1642,7 +1642,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 		local boats = 0
 		for _, card in ipairs(Cards()) do
 			local long = L.CARD_BY_BOAT:format(6)
-			local fits = card.Subline:GetUnboundedStringWidth() + 6 + #long * 6 <= 212
+			local fits = card.Subline:GetUnboundedStringWidth() + 6 + #long * 6 <= 212 - 8
 			equal(card.Travel:GetText(), fits and long or L.CARD_MINUTES:format(6), label .. ": " .. card.journey.key)
 			boats = boats + (fits and 1 or 0)
 		end
