@@ -207,6 +207,9 @@ ns.L = {
 	NPC_JOURNEY = "Adventure guide: %s",
 	-- Something new (docs/design.md §2.13): the tracker's line for a journey card the character hasn't been offered.
 	MOMENT = "%s is now for your level",
+	-- Exploration and new lands (roadmap #13 and #14): a land Forever added and its levels; an area not yet seen.
+	NEW_LAND = "%s · For levels %d-%d",
+	UNEXPLORED = "You haven't seen %s yet",
 }
 local L = ns.L
 

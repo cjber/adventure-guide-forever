@@ -99,6 +99,8 @@ read_globals = {
 	"UIParent",
 	-- Moments.lua
 	"AddonCompartmentFrame",
+	-- Hints/Explore.lua
+	"C_MapExplorationInfo",
 	-- Settings.lua
 	"Settings",
 	-- Dump.lua: frames Panel.lua and Tracker.lua create by name
