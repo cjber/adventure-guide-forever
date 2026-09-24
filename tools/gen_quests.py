@@ -584,9 +584,11 @@ def requirements(row, skills, factions):
 
 
 def roles(tables, steps):
-    """Each role NPC's fields: `class` and `upto` (its highest spell's level) for a class trainer, `pet` for a hunter
-    pet trainer, `riding` and its `race` for a riding trainer, `skill` and `rank` (the highest rank it teaches) for a
-    profession trainer, `bg` (battlemaster_entry.bg_template) for a battlemaster, `inn` for an innkeeper.
+    """Each role NPC's fields: `class` and `upto` (its highest spell's level) for a class trainer, and `from` (its
+    lowest) when that is above 1, so a trainer of only part of the class's spells (a mage's portals) is told apart;
+    `pet` for a hunter pet trainer, `riding` and its `race` for a riding trainer, `skill` and `rank` (the highest rank
+    it teaches) for a profession trainer, `bg` (battlemaster_entry.bg_template) for a battlemaster, `inn` for an
+    innkeeper.
 
     A trainer teaches its npc_trainer rows plus its TrainerTemplateId's npc_trainer_template rows, less any behind a
     condition. One that teaches nothing, a profession trainer with no rank spell or ranks of several skills, and a
@@ -606,7 +608,10 @@ def roles(tables, steps):
         spells = taught[entry] + (templates[row["TrainerTemplateId"]] if row["TrainerTemplateId"] else [])
         if row["NpcFlags"] & TRAINER and spells:
             if kind == 0 and row["TrainerClass"]:
-                fields.update({"class": row["TrainerClass"], "upto": max(s["reqlevel"] for s in spells)})
+                levels = [s["reqlevel"] for s in spells]
+                fields.update({"class": row["TrainerClass"], "upto": max(levels)})
+                if min(levels) > 1:
+                    fields["from"] = min(levels)
             elif kind == 1:
                 fields["riding"] = True
                 if row["TrainerRace"]:

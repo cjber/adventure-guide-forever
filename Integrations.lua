@@ -121,15 +121,24 @@ function Integrations.TravelLine(step)
 end
 
 -- Tweaks Forever's spells to train (F16), from its API.lua when a version 1 is loaded, for the trainer aside
--- (Asides.lua).
----@return AGFTFSpell[]?
-function Integrations.Trainable()
+-- (Asides.lua) and a chosen journey's trainer stop (roadmap #5): how many, and the highest level among them. Nil
+-- without Tweaks Forever or its answer, and with nothing to train.
+---@return AGFTraining?
+function Integrations.Training()
 	local api = TweaksForever and TweaksForever.API
 	if type(api) ~= "table" or api.version ~= 1 or type(api.TrainableSpells) ~= "function" then
 		return nil
 	end
 	---@cast api AGFTFAPI
-	return api.TrainableSpells()
+	local spells = api.TrainableSpells()
+	if not spells or #spells == 0 then
+		return nil
+	end
+	local level = 0
+	for _, spell in ipairs(spells) do
+		level = math.max(level, spell.level)
+	end
+	return { count = #spells, level = level }
 end
 
 local function NotifyTravel()

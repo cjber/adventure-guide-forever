@@ -13,6 +13,7 @@ end
 for _, case in ipairs({
 	{ 5497, { class = 8, upto = 60, side = 1 }, 1453, "Jennea Cannon" }, -- Stormwind mage trainer
 	{ 198, { class = 8, upto = 6, side = 1 }, 1429, "Khelden Bremen" }, -- Northshire's: novice spells only
+	{ 2485, { class = 8, upto = 40, from = 20, side = 1 }, 1453, "Larimaine Purdue" }, -- Stormwind's portal trainer
 	{ 6929, { inn = true, side = 2 }, 1454, "Innkeeper Gryshka" }, -- Orgrimmar
 	{ 295, { inn = true, side = 1 }, 1429, "Innkeeper Farley" }, -- Goldshire
 	{ 347, { bg = 1, side = 2 }, 1458, "Grizzle Halfmane" }, -- Alterac Valley battlemaster
@@ -48,6 +49,7 @@ for id, npc in pairs(npcs) do
 	equal(npc.side >= 1 and npc.side <= 3, true, id .. " side")
 	equal(npc.skill == nil, npc.rank == nil, id .. " skill and rank together")
 	equal(npc.class == nil, npc.upto == nil, id .. " class and upto together")
+	equal(npc.from == nil or (npc.class ~= nil and npc.from > 1 and npc.from <= npc.upto), true, id .. " from")
 	equal(npc.rank == nil or (npc.rank >= 1 and npc.rank <= 4), true, id .. " rank")
 	local place = npc.place
 	equal(maps[place.map] ~= nil, true, id .. " map has a centre")

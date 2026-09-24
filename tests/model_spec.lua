@@ -766,6 +766,111 @@ equal(#RedSteps(), 3, "value: and is still on a route with room for it")
 local city = { quests = { [1] = quest(0.5, 0.5, 9) }, zones = data.zones }
 equal(#Model.Plan(city, player, {}, {}, prefs()).journeys, 0, "story card: none without a zone")
 
+-- Roadmap #5 (R3): a chosen journey's route stops to train only in a town it passes anyway (a stop's hub, or within
+-- 100 yards of one), once, at a trainer who teaches the player's spells to train; the step has no quests.
+local academy = {
+	quests = {},
+	zones = data.zones,
+	maps = tiers.maps,
+	continents = tiers.continents,
+	hubs = { [5] = { name = "Crossroads, The Barrens" } },
+	npcs = {
+		[900] = { class = 7, upto = 60, side = 2, place = { map = 1, x = 0.52, y = 0.5, name = "Trainer", hub = 5 } },
+		[901] = { class = 7, upto = 60, side = 2, place = { map = 1, x = 0.53, y = 0.5, name = "Neighbour", hub = 5 } },
+		[902] = { class = 7, upto = 60, side = 2, place = { map = 1, x = 0.2, y = 0.5, name = "Elsewhere", hub = 6 } },
+		[903] = { class = 7, upto = 60, side = 2, place = { map = 1, x = 0.45, y = 0.5, name = "Townless" } },
+		[904] = {
+			class = 7,
+			upto = 60,
+			from = 20,
+			side = 2,
+			place = { map = 1, x = 0.5, y = 0.5, name = "Portals", hub = 5 },
+		},
+		[905] = { class = 7, upto = 6, side = 2, place = { map = 1, x = 0.5, y = 0.5, name = "Novices", hub = 5 } },
+		[906] = { class = 8, upto = 60, side = 2, place = { map = 1, x = 0.5, y = 0.5, name = "Mage", hub = 5 } },
+		[907] = { class = 7, upto = 60, side = 1, place = { map = 1, x = 0.5, y = 0.5, name = "Alliance", hub = 5 } },
+	},
+}
+for id = 1, 3 do
+	academy.quests[id] = quest(0.5 + id / 1000)
+	academy.quests[id].start.hub = 5
+end
+local trainee = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.3, y = 0.5 }
+trainee.train = { count = 2, level = 18 }
+local function Trainers(steps)
+	local found = {}
+	for _, step in ipairs(steps) do
+		found[#found + 1] = step.kind == "trainer" and step or nil
+	end
+	return found
+end
+local schooled = Model.Plan(academy, trainee, {}, {}, Choose("zone:1"))
+local lesson = Trainers(schooled.steps)
+equal(#lesson, 1, "trainer: one stop, in the town the route passes")
+equal(lesson[1].key, "trainer:900", "trainer: the town's first trainer who teaches the spells")
+equal(lesson[1].title, "Train in Crossroads", "trainer: titled by its town")
+equal(lesson[1].reason .. "|" .. lesson[1].detail, "2 new spells|2 new spells", "trainer: the spells waiting")
+equal(lesson[1].place .. "|" .. lesson[1].zone, "Trainer|Home", "trainer: the NPC and the zone")
+equal(#lesson[1].quests, 0, "trainer: no quests")
+equal(#schooled.steps, 2, "trainer: beside the town's stop")
+equal(#Trainers(Model.Plan(academy, trainee, {}, {}, prefs()).steps), 0, "trainer: no journey chosen, no stop")
+equal(#Trainers(Model.Plan(academy, player, {}, {}, Choose("zone:1")).steps), 0, "trainer: nothing to train")
+local skipTrainer = Choose("zone:1")
+skipTrainer.skipped["trainer:900"] = true
+equal(#Trainers(Model.Plan(academy, trainee, {}, {}, skipTrainer).steps), 0, "trainer: skipped, none")
+-- Without the two, the town's others teach portals only, novices only, another class, or the other side.
+local taught = { academy.npcs[900], academy.npcs[901] }
+academy.npcs[900], academy.npcs[901], trainee.train.level = nil, nil, 7
+equal(#Trainers(Model.Plan(academy, trainee, {}, {}, Choose("zone:1")).steps), 0, "trainer: none teaches the spells")
+academy.npcs[900], academy.npcs[901] = taught[1], taught[2]
+trainee.train.count = 1
+equal(Trainers(Model.Plan(academy, trainee, {}, {}, Choose("zone:1")).steps)[1].reason, "1 new spell", "trainer: one")
+local sparring = Model.Refresh(academy, trainee, {}, {}, Choose("zone:1"), schooled)
+equal(#Trainers(sparring.steps), 1, "trainer: combat's cheap rebuild keeps the stop")
+-- Another town's cluster (Razor Hill is several hubs), but within the town linkage (100 yards) of the stop: near.
+for id = 1, 3 do
+	academy.quests[id].start.hub = 7
+end
+equal(#Trainers(Model.Plan(academy, trainee, {}, {}, Choose("zone:1")).steps), 1, "trainer: a stop 20 yards off")
+for id = 1, 3 do
+	academy.quests[id].start.x = 0.65 + id / 1000
+end
+equal(#Trainers(Model.Plan(academy, trainee, {}, {}, Choose("zone:1")).steps), 0, "trainer: never a detour")
+-- A route through two trainers' towns stops to train once.
+local towns = { quests = {}, zones = academy.zones, maps = academy.maps, continents = academy.continents }
+towns.hubs, towns.npcs = academy.hubs, academy.npcs
+for id, place in ipairs({ { 0.501, 5 }, { 0.502, 5 }, { 0.201, 6 }, { 0.202, 6 } }) do
+	towns.quests[id] = quest(place[1])
+	towns.quests[id].start.hub = place[2]
+end
+local twice = Model.Plan(towns, trainee, {}, {}, Choose("zone:1")).steps
+equal(#twice, 3, "trainer: a route through two trainers' towns")
+equal(#Trainers(twice), 1, "trainer: stops to train once")
+-- A trainer's stop ahead of its town leaves the card the town's reason.
+local stopTown = { quests = {}, zones = academy.zones, maps = academy.maps, continents = academy.continents }
+stopTown.hubs, stopTown.npcs = academy.hubs, academy.npcs
+for id = 1, 3 do
+	stopTown.quests[id] = quest(0.5 + id / 1000)
+	stopTown.quests[id].start.hub = 5
+end
+local ahead = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.6, y = 0.5 }
+ahead.train = trainee.train
+local stopCard = Model.Plan(stopTown, ahead, {}, {}, Choose("zone:1")).journeys[1]
+equal(
+	stopCard.steps[1].kind .. "|" .. tostring(stopCard.reason),
+	"trainer|Crossroads needs hands",
+	"trainer: the town keeps its reason"
+)
+academy.hubs = nil
+equal(Model.TownName(academy, academy.npcs[902].place), "Home", "town: the map's name without a flight master")
+equal(
+	Model.TownName(academy, academy.npcs[902].place, function()
+		return "Client"
+	end),
+	"Client",
+	"town: the client's name first"
+)
+
 assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
 local count = 0
 for id, q in pairs(ns.Data.quests) do
@@ -1103,6 +1208,19 @@ local found = Model.Search(wolves, player, "WOLF", function(id)
 end)
 equal(table.concat(found, " "), "12 14 1 2 3 4 6 7 8 9", "search: side, order and limit")
 equal(#Model.Search(wolves, player, "wolf."), 0, "search: plain, not a pattern")
+-- Roadmap #5: the nearest trainer who teaches the spells, from Data.npcs, by the route's cost.
+local function Nearest(side, classBit, map, x, y, level)
+	local npc = Model.Trainer(ns.Data, { side = side, classBit = classBit, map = map, x = x, y = y }, level)
+	return npc and npc.place.name or "none"
+end
+equal(Nearest(2, 64, 1413, 0.52, 0.3, 18), "Swart", "trainer: a Crossroads shaman's is in Razor Hill")
+equal(Nearest(1, 128, 1453, 0.5038, 0.8599, 20), "Jennea Cannon", "trainer: never the portal trainer beside you")
+equal(Nearest(1, 128, 1429, 0.49, 0.4, 4), "Khelden Bremen", "trainer: Northshire's teaches novices")
+equal(Nearest(1, 128, 1429, 0.49, 0.4, 8), "Zaldimar Wefhellt", "trainer: and no one past level 6")
+equal(Nearest(2, 2, 1413, 0.52, 0.3, 20), "none", "trainer: the data has no Horde paladin trainer")
+equal(Nearest(2, 0, 1413, 0.52, 0.3, 20), "none", "trainer: no class, none")
+equal(Model.Trainer(ns.Data, { side = 2, classBit = 64 }, 18), nil, "trainer: no place to measure from, none")
+
 player.map, player.x, player.y = 1413, 0.52, 0.3
 local baseline = Model.Plan(ns.Data, player, {}, {}, prefs())
 equal(#baseline.steps >= 3, true, "level 18 Horde route offers at least three steps")

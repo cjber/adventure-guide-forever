@@ -98,7 +98,7 @@
 
 -- "hub" is a town's stop (its pickups and agreeing hand-ins), "turnin" a hand-in at the client's waypoint, and
 -- "objective" or "dungeon" (a group quest) the log's quests under way.
----@alias AGFStepKind "hub"|"turnin"|"objective"|"dungeon"
+---@alias AGFStepKind "hub"|"turnin"|"objective"|"dungeon"|"trainer"
 
 ---@class AGFStep
 ---@field key string stable identity for skips and the resume line, e.g. "hub:61" or "turnin:4581"
@@ -116,7 +116,7 @@
 ---@field map integer
 ---@field x number
 ---@field y number
----@field place? string the town's name, else its busiest giver; a turn-in's NPC only where its waypoint agrees
+---@field place? string the town's name, else its busiest giver; a turn-in's NPC only where its waypoint agrees; a trainer's NPC
 ---@field zone? string the client's name for `map`, else the data's
 ---@field optional? boolean elite/group or outside the player's level band
 ---@field chapter? string the story card's chapter line, on the step that takes the chain up
@@ -270,7 +270,6 @@
 ---@field Restore fun(steps: AGFStep[]): boolean hands Shortest Path the chosen journey's steps again after a /reload; never the waypoint
 ---@field Stale fun(handed: AGFStep[], index: integer, steps: AGFStep[], far?: fun(a: AGFStep, b: AGFStep): boolean): boolean the guidance handed to Shortest Path no longer matches the journey's steps
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")
----@field Trainable fun(): AGFTFSpell[]? Tweaks Forever's trainable spells; nil without a v1 Tweaks Forever or its answer
 ---@field RefreshCards fun(journeys: AGFJourney[]) the cards shown: drops other answers, asks for up to 3 stale, one a frame
 ---@field ResumeCards fun() step 1's travel frame is over: the queued cards ask from the next frame
 ---@field CardTravel fun(journey: AGFJourney): AGFCardTravel? a card's last answer, without asking again
@@ -465,7 +464,7 @@
 ---@field DumpLayout fun(root: Frame, describe?: fun(region: Region, entry: AGFDumpEntry)): AGFDumpEntry[]
 ---@field Dump fun() /agf dump: save the layout, route and frames in AdventureGuideForeverDB.dump
 
--- NPC roles (tools/gen_quests.py `roles`): where trainers, battlemasters and innkeepers stand. No consumer yet.
+-- NPC roles (tools/gen_quests.py `roles`): where trainers, battlemasters and innkeepers stand.
 
 ---@class AGFData
 ---@field npcs table<integer, AGFNpc> creature entry -> its roles, side and place; only NPCs the data places and sides
@@ -475,6 +474,7 @@
 ---@field place AGFPlace a non-seasonal spawn; within 100 yards of a quest place, its `hub` and that town's usual map
 ---@field class? integer class trainer: the class ID it trains (1 Warrior ... 11 Druid)
 ---@field upto? integer class trainer: the highest level among the spells it teaches (6 for a starting-area trainer)
+---@field from? integer class trainer: the lowest level among them, when above 1 (a mage's portal trainer's 20)
 ---@field pet? boolean hunter pet trainer
 ---@field riding? boolean riding trainer
 ---@field race? integer riding trainer: the race ID it teaches (CMaNGOS TrainerRace), when it names one
@@ -585,3 +585,24 @@
 ---@field WHY_REP_MIN string format: the standing and the faction a quest needs
 ---@field WHY_REP_BELOW string format: the standing a quest closes at, and the faction
 ---@field WHY_REPUTATION string format: a faction whose required value falls between standings
+
+-- Stream 2b "Trainers" (roadmap R3, #5): a step with no quests, and the class trainer's place.
+
+-- Tweaks Forever's spells to train, as the planner and the trainer aside take them.
+---@class AGFTraining
+---@field count integer how many spells wait
+---@field level integer the highest level among them, which the trainer must teach up to
+
+---@class AGFPlayer
+---@field train? AGFTraining set by Core while a journey is chosen: its route may stop at a trainer
+
+---@class AGFModel
+---@field Trainer fun(data: AGFData, player: AGFPlayer, level: integer): AGFNpc? the nearest class trainer of the player's class and side who teaches from level 1 up to `level`; nil when the data has none or the player has no place
+---@field TownName fun(data: AGFData, place: {map: integer, hub?: integer}, mapName?: fun(map: integer): string?): string the hub's flight-master town, else the map's name
+
+---@class AGFIntegrations
+---@field Training fun(): AGFTraining? Tweaks Forever's spells to train, counted; nil without a v1 Tweaks Forever, its answer, or a spell to train
+
+---@class AGFStrings
+---@field TRAINER_IN string format: the trainer aside's lead with the nearest trainer's town
+---@field TRAIN_IN string format: a trainer step's title, its town

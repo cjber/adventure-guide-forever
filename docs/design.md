@@ -169,9 +169,9 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
   - **Reason (roadmap #3).** A zone card (story or next zone) takes one reason in the world's voice, the first that
     applies: "Continues a story you started"; "3 quests will soon turn grey" (two or more of its pickups grey at the
     next level, never at the level cap); "A chain begins with Gryan Stoutmantle" (the chain's lead giver); "Sentinel
-    Hill needs hands" (the first stop's town has a flight-master name, cut before its ", zone", and 3 or more
-    pickups). Otherwise the plain line: "Begins a new story", "For level N", or none. Only names the data has; the chapter's row keeps
-    "Begins a new story" or "Continues a story you started".
+    Hill needs hands" (the first quest stop's town, past a trainer's stop, has a flight-master name, cut before its
+    ", zone", and 3 or more pickups). Otherwise the plain line: "Begins a new story", "For level N", or none. Only
+    names the data has; the chapter's row keeps "Begins a new story" or "Continues a story you started".
   - **Group badge.** A 12x12 `questlog-questtypeicon-group` sits at line 3's right edge when any quest needs a
     group. Dungeon cards, whose kind icon says so already, do not get it.
   - **Tooltip.** Whole cards now have one as well (§2.9).
@@ -493,7 +493,7 @@ route. Skipping every step of a chosen journey ends it the same way, quietly.
 
 An aside is a one-line hint beside the journeys, never a route: `Asides.lua`, after `Integrations.lua` in the TOC.
 Each domain registers a provider returning at most one `{key, text, icon, place?}`: `icon` an atlas the CSV has,
-`place` only a place from the data (none today). Providers are asked in step 1's travel frame after each rebuild
+`place` only a place from the data. Providers are asked in step 1's travel frame after each rebuild
 (Core), never in a rebuild's frame and never in combat, when the last answers stand; views redraw only when the
 aside shown changes. The first provider's answer the player has not skipped or turned down is the aside.
 
@@ -504,9 +504,30 @@ aside shown changes. The first provider's answer the player has not skipped or t
   "Show again: <text>", its provider's text now when it still answers, else the saved one.
 - **Clicks.** Right-click on either line is its menu (Go with a place, Skip for now, Not interested). Left-click goes
   to its place, as a step's Go does (§5.1), and does nothing without one.
-- **Providers.** The class trainer (F16): "Visit your class trainer · 3 new spells" with the minimap's `class`
-  mark (CSV:1321), from Tweaks Forever's `TrainableSpells`, asked again on `SPELLS_CHANGED`; text only, since the
-  data has no trainer's place.
+- **Providers.** The class trainer (F16): "Visit your class trainer in Stormwind · 3 new spells" with the minimap's
+  `class` mark (CSV:1321), from Tweaks Forever's `TrainableSpells`, asked again on `SPELLS_CHANGED`. Its place is the
+  nearest trainer who teaches the spells (§2.12); without one (a class and side the data has no trainer for, or no
+  place for the player) it is text only: "Visit your class trainer · 3 new spells".
+
+### 2.12 Trainers (roadmap R3, #5)
+
+- **Who teaches.** A `Data.npcs` class trainer of the player's class and side whose list starts at level 1 (no
+  `from`: a mage's portal trainer teaches only portals) and reaches the highest level among Tweaks Forever's spells
+  to train (`upto`: a starting-area trainer stops at 6). CMaNGOS lists no Forever-only trainer, so a class and side it
+  has none for (a Horde paladin) stays text only. `Model.Trainer` takes the nearest by the route's cost (§4.1).
+- **Town name.** The hub's flight-master town before ", zone"; a town with none (Razor Hill, Goldshire) takes the
+  zone's name from the client, since no proper source names it.
+- **A stop on the chosen route.** Only while a journey is chosen and there are spells to train. The candidates are
+  one step per town (`kind = "trainer"`, key `trainer:<npc>`, no quests), and Build opens one only after it has
+  chosen a stop in the trainer's hub or within 100 yards of it (the town linkage), and one at most: the route never
+  detours to train. Its title is "Train in <town>", its reason "3 new spells", its place line "NPC, zone". It is worth a
+  hand-in in selection (never weak), is never a hand-in-only stop, and survives combat's cheap rebuild. Core asks
+  Tweaks Forever at the full rebuild only while a journey is chosen, and rebuilds on `SPELLS_CHANGED` when the answer
+  moved, so a spell learned ends the stop.
+- **Not built.** Hunter pet trainers: no signal says a pet has something to learn (Tweaks Forever's list is the
+  player's spells). "You can learn to ride" (#20): at the pinned build SpellLevels gives Apprentice Riding (33388)
+  BaseLevel and SpellLevel 0, and SkillLineAbility (line 762) and SkillRaceClassInfo no level, so the data cannot
+  say when it opens; the riding trainers CMaNGOS has teach the old per-race mounts, not 33388.
 
 ## 3. Copy style sheet
 
@@ -534,7 +555,8 @@ aside shown changes. The first provider's answer the player has not skipped or t
 | Travel | `Fly to Sentinel Hill · 6 min` · `Boat to Auberdine · 2 min wait` · `Fly to Astranaar · new flight path` · `About 4 min away` · card: `6 min` · `15 min by boat` · `15 min by zeppelin` |
 | Why-not | `Requires level 14` · `Completed: The Forgotten Heirloom` · `Requires one of: A, B` · `Horde only` · `Warriors only` · `You chose X instead` · `The guide can't tell where this starts` · `You've done this` · `In your quest log` · `Repeatable quests aren't suggested` |
 | Tracker | `Where you left off: finishes a story` · `Next: The Ruins of Stardust` · `Story complete` · `Westfall story · Begins a new story` |
-| Asides | `Visit your class trainer · 3 new spells` |
+| Asides | `Visit your class trainer in Stormwind · 3 new spells` · `Visit your class trainer · 3 new spells` |
+| Trainer stop | `Train in Stormwind` · `3 new spells` · `1 new spell` |
 | Buttons, menu | `Go` (menus only) · `Stop` · `Show quest` · `Skip for now` · `Not interested` · `Skipped (2)` · `Show again: <title>` · `Choose another journey` |
 | Instructions | `Click to travel with Shortest Path` · `Click to set a waypoint` · `Click to choose this journey` · `Replaces your current journey.` |
 | Empty | `Nothing nearby fits your level.` |
@@ -562,14 +584,15 @@ aside shown changes. The first provider's answer the player has not skipped or t
 | 16 | "New in Forever" tag (`adventureguide-icon-whatsnew`, CSV:2024) on quests already in the log only | Could | Needs the generator to emit the IDs missing from CMaNGOS (count unverified). Never on cards or recommendations. |
 | 17 | Dungeon card | Could | Blocked: `dungeon` is set on 0 quests (agf.md) and the EJ is absent (PROBE). Needs a generator fix plus a TF `DungeonEntrance` API. |
 | 18 | Discovery hint: one unexplored area named as text | Could | Needs a LegacyForever API that does not exist. Text only, never a ring. |
-| 19 | "Visit your class trainer" step from Tweaks Forever's `TrainableSpells` (§5.2), feature-detected | Should | The client lists no `FutureSpell` entries (probe `spellbook2`), so only Tweaks Forever's trainer data can tell. `Data.npcs` now places trainers (below), but nothing reads it yet, so the step is text only: no ring, no Go. |
+| 19 | "Visit your class trainer" step from Tweaks Forever's `TrainableSpells` (§5.2), feature-detected | Should | The client lists no `FutureSpell` entries (probe `spellbook2`), so only Tweaks Forever's trainer data can tell. The aside goes to the nearest trainer who teaches the spells, and a chosen route may stop to train in a town it passes (§2.12). |
 | 20 | Hubs: one stop per town, named from flight masters (plan §7.2) | Must | A Redridge route spent 4 of 9 steps in Lakeshire, and their rings merged into one. |
 | 21 | Level-aware selection and in-stop order for carried quests (plan §7.3) | Must | The user asked for quests picked up to be ordered by level distance. Travel still orders the route. |
 | 22 | Card minutes, hub line, group badge, and tooltips on whole cards (plan §7.4) | Should | The honest cost of a choice at a glance, with no percentages. |
 | 23 | Route rings above quest POIs (SPF and AGF, §2.6) | Must | A merged stop ring drew under the super-tracked "?". |
 
 **NPC roles (`Data.npcs`, roadmap R2).** The generator emits class trainers (with the class, and `upto`, the highest
-level they teach, so a starting-area trainer is told apart), hunter pet trainers, riding trainers (with
+level they teach, so a starting-area trainer is told apart, and `from`, the lowest, when above 1, so a trainer of
+only part of the class's spells, a mage's portal trainer, is too), hunter pet trainers, riding trainers (with
 CMaNGOS's TrainerRace), profession trainers (skill line and the highest rank taught: the SKILL_STEP effect of a
 taught spell in wago SpellEffect, on a SkillLine profession or secondary skill), battlemasters
 (`battlemaster_entry`) and innkeepers, from the pinned CMaNGOS dump.
@@ -599,7 +622,8 @@ takes the smallest map the quests use. NPCs never renumber or merge towns. An NP
   - more for each of a stop's quests;
   - more for a quest one level from grey;
   - more for each hand-in;
-  - less when every quest is red or optional.
+  - less when every quest is red or optional;
+  - a stop with no quests is worth what its kind says: a trainer's, one hand-in.
 
   The order itself stays on travel alone. Within a stop, hand-ins come first, then grey risk, then closeness to the
   player's level.
@@ -700,7 +724,7 @@ Not requested:
 | Sibling | Contract | Why not |
 |---|---|---|
 | LegacyForever (formerly LegacyHere) | none | It has no public API (origin/main ea0fb8c; the PROBE `legacy` scan shows only `LegacyForever*` mixins and DB). Its data has 0 quest criteria (siblings.md §3), so no quest can be honestly tagged, and percentages are Legacy's domain. It returns only if Could #18 is promoted, as `Objectives(uiMapID)` with no percent. |
-| TweaksForever | `TweaksForever.API.TrainableSpells()` (TF PR #45, `version = 1`), for Should #19 only | Returns fresh `{spellID, name, level, cost?, line, lineID}` tables for the trainer spells the player's level allows and they haven't learned, or nil before login and in combat. AGF checks `type(api.TrainableSpells) == "function"` where it uses it, and treats nil as "no step this rebuild". The zone table is still baked at generation time (siblings.md §4); `DungeonEntrance` is needed only for Could #17. AGF never re-sorts the stock tracker, which TF's "Nearest quests first" owns. A public `DungeonEntrance(mapID)` is a follow-up (plan §7.5). |
+| TweaksForever | `TweaksForever.API.TrainableSpells()` (TF PR #45, `version = 1`), for Should #19 and the trainer stop (§2.12) | Returns fresh `{spellID, name, level, cost?, line, lineID}` tables for the trainer spells the player's level allows and they haven't learned, or nil before login and in combat. AGF checks `type(api.TrainableSpells) == "function"` where it uses it, and treats nil as "no step this rebuild". The zone table is still baked at generation time (siblings.md §4); `DungeonEntrance` is needed only for Could #17. AGF never re-sorts the stock tracker, which TF's "Nearest quests first" owns. A public `DungeonEntrance(mapID)` is a follow-up (plan §7.5). |
 | WorkOrdersForever | none | It messages agents, and has no gameplay data or API. |
 | SkillUpForever | none | Profession steps are out of scope for a quest journal. |
 
@@ -753,9 +777,10 @@ Nothing below has been validated in game yet.
 8. When SPF declines a route (Go returns false), the native waypoint appears instead.
 9. With a turn-in on another continent, the route stays on this continent first, crosses once, and ends with that
    turn-in ("Hand in when you're in <zone>").
-10. With Tweaks Forever (PR #45) loaded and spells to train, "Visit your class trainer · N new spells" shows above
-    the cards and in the tracker with the class trainer mark and no ring; its X, Skip for now and Not interested
-    hide it, and the cog's "Skipped (1)" brings it back. Without Tweaks Forever, nothing changes.
+10. With Tweaks Forever (PR #45) loaded and spells to train, "Visit your class trainer in <town> · N new spells"
+    shows above the cards and in the tracker with the class trainer mark and no ring; its click goes to the nearest
+    trainer; its X, Skip for now and Not interested hide it, and the cog's "Skipped (1)" brings it back. Without
+    Tweaks Forever, nothing changes.
 11. With no journey chosen the tracker shows one line (the aside, else the story's hook) and no step; its click
     chooses the story and the full step block appears.
 12. Batch F (plan §7.10): Lakeshire is one stop; a stop ring draws over a super-tracked "?"; the cards show minutes
@@ -766,6 +791,8 @@ Nothing below has been validated in game yet.
     past that rank; on an unlearned line it is unmet. A reputation-gated quest reads "Requires Friendly with …" in
     the client's words and ticks once the standing is reached; learning a rank or gaining the standing opens it
     without a `/reload`.
+15. Trainers (§2.12): with spells to train and a journey chosen whose route passes the trainer's town, a "Train in
+    <town>" stop shows with a ring and Go; training the spells removes it at once.
 
 ## 9. Open questions that need client probes
 
