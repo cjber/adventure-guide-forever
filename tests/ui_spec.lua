@@ -935,6 +935,21 @@ do
 	local block = h.tracker.liveBlocks["story-complete"]
 	equal(block.header, "Story complete", "fanfare: the header")
 	equal(h.tracker.layoutOrder[1], "story-complete", "fanfare: above the steps")
+	-- The header is not the step's: clicking it neither guides, opens the guide nor opens the step's menu.
+	local waypoints, opened, menus = h.counts.SetUserWaypoint, 0, 0
+	local openPanel, openMenu = ns.OpenPanel, ns.Menu.Open
+	ns.OpenPanel = function()
+		opened = opened + 1
+	end
+	ns.Menu.Open = function()
+		menus = menus + 1
+	end
+	h.tracker:OnBlockHeaderClick(block, "LeftButton")
+	h.tracker:OnBlockHeaderClick(block, "RightButton")
+	h.flush()
+	ns.OpenPanel, ns.Menu.Open = openPanel, openMenu
+	equal(h.counts.SetUserWaypoint - waypoints, 0, "fanfare: the header sets no waypoint")
+	equal(opened + menus, 0, "fanfare: nor opens the guide or the step's menu")
 	h.tracker:MarkDirty()
 	equal(#h.fanfares, 1, "fanfare: a later layout doesn't glow again")
 	equal(h.tracker.layoutOrder[1], "story-complete", "fanfare: and still shows the header")

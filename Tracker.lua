@@ -12,8 +12,10 @@ end
 
 -- The chapter end (docs/design.md §2.7): Blizzard's anim block glows a header once when its key needs a fanfare.
 local STORY_COMPLETE = "story-complete"
--- The trainer line (F16): a block of its own, text only; the step's click and hover never act on it.
+-- The trainer line (F16): a block of its own, text only.
 local TRAINER = "trainer"
+-- Headers that are not the step's: its click and hover never act on them.
+local NOT_STEP = { [STORY_COMPLETE] = true, [TRAINER] = true }
 -- Set by a turn-in that ends a story: the quest, then the first step 1 the route shows without it. The header stays
 -- above the steps until step 1 moves on from that.
 ---@type {quest: integer, key?: string}?
@@ -22,11 +24,11 @@ local finished
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
 local ModuleMixin = { headerText = ns.L.TRACKER_HEADER, blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
 
----@param block AGFTrackerBlock the header's own block: the trainer's does nothing; for the step's, CurrentStep()
----is used since it's always current
+---@param block AGFTrackerBlock the header's own block: the trainer's and the story's end do nothing; for the step's,
+---CurrentStep() is used since it's always current
 ---@param mouseButton string
 function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
-	if block.id == TRAINER then
+	if NOT_STEP[block.id] then
 		return
 	end
 	if mouseButton ~= "RightButton" then
@@ -50,7 +52,7 @@ end
 ---@param block AGFTrackerBlock
 function ModuleMixin:OnBlockHeaderEnter(block)
 	local step = CurrentStep()
-	if block.id ~= TRAINER and step and ns.Setting("titleStartsRoute") and ns.Integrations.ReplacesJourney() then
+	if not NOT_STEP[block.id] and step and ns.Setting("titleStartsRoute") and ns.Integrations.ReplacesJourney() then
 		GameTooltip:SetOwner(block, "ANCHOR_RIGHT")
 		ns.Menu.GoWarning(GameTooltip, step.title)
 		GameTooltip:Show()
