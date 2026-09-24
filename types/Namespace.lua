@@ -273,6 +273,7 @@
 ---@field line? string the travel line, as TravelLine gives it
 ---@field minutes? integer the whole trip
 ---@field crossing? AGFSPFMode "boat" or "zeppelin" when the way takes one
+---@field from? string where the player stood when it was asked ("map:x:y")
 
 -- One region in a layout dump (Dump.lua): plain data, so it survives SavedVariables and JSON.
 ---@class AGFDumpAnchor

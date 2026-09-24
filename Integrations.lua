@@ -218,6 +218,13 @@ local function CardKey(journey)
 	return journey.key .. ":" .. journey.steps[1].key
 end
 
+-- Where the player stands, so a card's answer knows where it was asked from.
+---@return string?
+local function Here()
+	local player = ns.State.Player()
+	return player.map and player.x and player.y and string.format("%d:%.4f:%.4f", player.map, player.x, player.y) or nil
+end
+
 local function NextCard()
 	chained = false
 	if not (ns.PanelShown and ns.PanelShown()) or InCombatLockdown() then
@@ -228,7 +235,7 @@ local function NextCard()
 	local journey = not ns.Settling() and table.remove(cardQueue, 1)
 	if journey then
 		local line, minutes, crossing = Fetch(journey.steps[1])
-		cardTravel[CardKey(journey)] = { line = line, minutes = minutes, crossing = crossing }
+		cardTravel[CardKey(journey)] = { line = line, minutes = minutes, crossing = crossing, from = Here() }
 		for _, fn in ipairs(cardListeners) do
 			fn()
 		end
@@ -239,16 +246,19 @@ local function NextCard()
 	end
 end
 
--- The cards now shown: answers for cards no longer shown go, and up to 3 cards without one queue, a frame each.
+-- The cards now shown (a new route, or the guide opening): answers for cards no longer shown go, and up to 3 cards
+-- queue, a frame each, when they have no minutes or the player has moved since they asked, as step 1 asks again with
+-- each route; a card's last answer stands until the new one.
 ---@param journeys AGFJourney[]
 function Integrations.RefreshCards(journeys)
-	local kept = {}
+	local kept, here = {}, Here()
 	cardQueue = {}
 	for _, journey in ipairs(journeys) do
 		local key = journey.steps[1] and CardKey(journey)
 		if key then
 			kept[key] = cardTravel[key]
-			if not kept[key] and #cardQueue < ns.Model.MAX_JOURNEYS then
+			local fresh = kept[key] and kept[key].minutes and kept[key].from == here
+			if not fresh and #cardQueue < ns.Model.MAX_JOURNEYS then
 				cardQueue[#cardQueue + 1] = journey
 			end
 		end

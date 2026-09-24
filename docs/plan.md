@@ -674,8 +674,9 @@ Forever is also unproven.
 - **Travel fetch.** Only while the panel is shown and out of combat, one `EstimateDetail` (falling back to
   `Estimate`) runs per frame, in a `C_Timer.After(0)` chain over the shown cards' `steps[1]`. That is at most 3
   calls. The fetch starts on the panel's `OnShow` and on each route change, never in the rebuild frame, and after
-  `RefreshTravel`'s own frame. Results are cached by `journey.key .. step.key`, and entries go when the route
-  changes. The chosen card's first stop equals `RefreshTravel`'s, so it is a hit in SPF's 5 s cache. One cold call
+  `RefreshTravel`'s own frame. Results are cached by `journey.key .. step.key`, with where the player stood when
+  they were asked. A route change or reopening asks again for each shown card that has no minutes or that the
+  player has moved away from; the last answer stands until the new one arrives. The chosen card's first stop equals `RefreshTravel`'s, so it is a hit in SPF's 5 s cache. One cold call
   costs about 2.45 ms, so one per frame keeps the 3 ms budget. SPF needs no batch API.
 - **Step rows** keep their look:
   - The title is the hub name.

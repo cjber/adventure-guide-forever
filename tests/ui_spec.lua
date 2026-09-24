@@ -1605,6 +1605,38 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 		end
 	end
 	equal(shown, spf and #journeys or 0, label .. ": minutes on every card with an answer")
+	-- Once the player moves, the next route asks again, so a card's minutes are never older than step 1's; standing
+	-- still, it asks nothing new; and no empty answer sticks.
+	if spf then
+		h.spfSeconds = 120
+		local still = Calls()
+		h.ns.Invalidate()
+		h.flush()
+		equal(Calls() - still, 1, label .. ": standing still, only step 1 asks again")
+		h.player.x = h.player.x + 0.01
+		h.ns.Invalidate()
+		h.flush()
+		for _, journey in ipairs(h.ns.Route().journeys) do
+			local travel = integrations.CardTravel(journey)
+			equal(travel and travel.minutes, 2, label .. ": " .. journey.key .. " asks again once the player moves")
+		end
+		h.spfSeconds, h.player.x = 360, h.player.x - 0.01
+		h.ns.Invalidate()
+		h.flush()
+	end
+	if spf == "v1+" then
+		h.spfLegs, h.player.x = false, h.player.x + 0.01
+		h.ns.Invalidate()
+		h.flush()
+		equal(Cached(), 0, label .. ": no route, no minutes")
+		h.spfLegs = nil
+		h.ns.Invalidate()
+		h.flush()
+		equal(Cached(), #journeys, label .. ": an empty answer is asked again, standing still")
+		h.player.x = h.player.x - 0.01
+		h.ns.Invalidate()
+		h.flush()
+	end
 	-- A queue emptied before its frame asks nothing.
 	integrations.RefreshCards({})
 	integrations.RefreshCards(journeys)
