@@ -483,6 +483,53 @@ for _, fixture in ipairs(characters.list) do
 	end
 end
 equal(fixtures >= 5, true, "why: five fixtures or more")
+
+-- F15: a dungeon card only with dungeons on, and never a step that is not an eligible giver's data place.
+local function Valid(place)
+	return place and place.map > 0 and place.x >= 0 and place.x <= 1 and place.y >= 0 and place.y <= 1
+end
+local cards, placeless, offCards = 0, 0, 0
+for _, fixture in ipairs(characters.list) do
+	local who, done, carried, cardPrefs = characters.Resolve(ns.Data, fixture)
+	for _, dungeons in ipairs({ true, false }) do
+		cardPrefs.dungeons = dungeons
+		for _, journey in ipairs(Model.Plan(ns.Data, who, done, carried, cardPrefs).journeys) do
+			if journey.kind == "dungeon" then
+				cards, offCards = cards + 1, offCards + (dungeons and 0 or 1)
+				for _, step in ipairs(journey.steps) do
+					for _, id in ipairs(step.quests) do
+						local given = ns.Data.quests[id]
+						local fine = Valid(given.start)
+							and not given.raid
+							and Model.Eligible(ns.Data, who, done, carried, id)
+						placeless = placeless + (fine and 0 or 1)
+					end
+				end
+			end
+		end
+	end
+end
+equal(cards > 0, true, "dungeon card: offered to a fixture with dungeons on")
+equal(placeless, 0, "dungeon card: every step an eligible giver with a data place")
+equal(offCards, 0, "dungeon card: none with dungeons off")
+-- The Deadmines card's title: the client's name when it has one (Spanish here), the data's when it answers nil.
+local function DeadminesTitle(clientName)
+	for _, fixture in ipairs(characters.list) do
+		if fixture.name == "human18_westfall" then
+			local who, done, carried, cardPrefs = characters.Resolve(ns.Data, fixture)
+			local planned = Model.Plan(ns.Data, who, done, carried, cardPrefs, nil, function()
+				return clientName
+			end)
+			for _, journey in ipairs(planned.journeys) do
+				if journey.key == "dungeon:36" then
+					return journey.title
+				end
+			end
+		end
+	end
+end
+equal(DeadminesTitle("Las Minas de la Muerte"), "Las Minas de la Muerte", "dungeon card: the client's name first")
+equal(DeadminesTitle(nil), "Deadmines", "dungeon card: the data's name otherwise")
 equal(mismatches, 0, "why: Eligible == every Why line met, for every quest and fixture")
 
 -- The lines themselves: the design's copy, the client's names first, a suppressed start alone.

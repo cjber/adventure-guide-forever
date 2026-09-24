@@ -999,6 +999,10 @@ function harness.load(options)
 
 	-- Maps and waypoints: the user waypoint is a value store, with every call counted.
 	h.counts.SetUserWaypoint, h.counts.ClearUserWaypoint, h.noWaypoint = 0, 0, {}
+	-- The client names an instance Map.ID; a headless client knows none, as it answers for an unknown one.
+	G.GetRealZoneText = function()
+		return ""
+	end
 	G.C_Map = {
 		GetBestMapForUnit = function()
 			return player.map

@@ -15,7 +15,7 @@ local KIND_ICONS = {
 	carry = "questlog-questtypeicon-quest",
 	story = "questlog-questtypeicon-story",
 	nextzone = "QuestNormal",
-	dungeon = "questlog-questtypeicon-group",
+	dungeon = "questlog-questtypeicon-dungeon",
 }
 local CARD_ART, CARD_ART_CHOSEN = "ui-journeys-renown-button", "ui-journeys-renown-button-pressed"
 -- The chapter track (docs/design.md §2.3): Blizzard's delve squares at 12px, with their meanings kept

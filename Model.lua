@@ -491,13 +491,15 @@ local function LogSteps(data, player, log)
 	return steps
 end
 
-local function PickupSteps(data, player, eligible, zone, hubs, steps)
+-- One step per giver of the eligible quests `wanted` accepts.
+---@param wanted fun(quest: AGFQuest): boolean
+local function PickupSteps(data, player, eligible, wanted, hubs, steps)
 	local pickups, chosenGroups = {}, {}
 	for _, id in ipairs(eligible) do
 		local quest = data.quests[id]
 		local kind = (quest.elite or quest.dungeon) and "dungeon" or "pickup"
 		local key = kind .. ":" .. hubs[id]
-		if (quest.zone or quest.start.map) == zone and not (quest.group and chosenGroups[quest.group]) then
+		if wanted(quest) and not (quest.group and chosenGroups[quest.group]) then
 			if quest.group then
 				chosenGroups[quest.group] = true
 			end
@@ -784,6 +786,7 @@ end
 
 -- The journey cards (docs/design.md §2.2): at most three, each holding only steps the player can take now.
 local NEXT_ZONE_AHEAD = 2 -- levels: the next zone is the one that fits the player two levels on
+local MAX_JOURNEYS = 3 -- docs/design.md §2.2
 local NEXT_ZONE_PICKUPS = 5 -- eligible quests there, or the card is too thin to offer (docs/plan.md §1.5)
 
 local function Count(one, many, count)
@@ -840,7 +843,9 @@ local function ZoneJourney(data, player, eligible, zone, index, prefs, mapName, 
 		local quest = data.quests[id]
 		quests = quests + ((quest.zone or quest.start.map) == zone and 1 or 0)
 	end
-	PickupSteps(data, player, eligible, zone, index.hubs, candidates)
+	PickupSteps(data, player, eligible, function(quest)
+		return (quest.zone or quest.start.map) == zone
+	end, index.hubs, candidates)
 	for _, step in ipairs(candidates) do
 		for _, id in ipairs(step.quests) do
 			lead = id == leadID and step or lead
@@ -857,6 +862,50 @@ local function ZoneJourney(data, player, eligible, zone, index, prefs, mapName, 
 	end
 	local subline = Count(ns.L.QUESTS_NEAR_ONE, ns.L.QUESTS_NEAR, quests)
 	return { map = steps[1].map, steps = steps, subline = subline, count = subline }, quests, kept and lead or nil
+end
+
+-- The dungeon card (F15): with dungeons on, the party instance with the most quests the player can take now (the
+-- lowest Map.ID on a tie), its steps the givers of those quests. Raids are never offered. Named by the client, in the
+-- player's language, and by the data otherwise; an instance the data doesn't name gets no card.
+---@param instanceName? fun(id: integer): string?
+local function DungeonJourney(data, player, eligible, index, prefs, mapName, instanceName)
+	if not (prefs.dungeons and data.instances) then
+		return nil
+	end
+	local counts, best = {}, nil
+	for _, id in ipairs(eligible) do
+		local quest = data.quests[id]
+		local instance = not quest.raid and quest.dungeon
+		if instance and data.instances[instance] then
+			counts[instance] = (counts[instance] or 0) + 1
+		end
+	end
+	for instance, count in pairs(counts) do
+		if not best or count > counts[best] or (count == counts[best] and instance < best) then
+			best = instance
+		end
+	end
+	if not best then
+		return nil
+	end
+	local candidates = {}
+	PickupSteps(data, player, eligible, function(quest)
+		return quest.dungeon == best and not quest.raid
+	end, index.hubs, candidates)
+	local steps = Build(data, player, candidates, prefs, mapName)
+	if #steps == 0 then
+		return nil
+	end
+	local name = instanceName and instanceName(best) or data.instances[best].name
+	local subline = Count(ns.L.DUNGEON_QUESTS_ONE, ns.L.DUNGEON_QUESTS, counts[best])
+	return {
+		kind = "dungeon",
+		key = "dungeon:" .. best,
+		title = name,
+		subline = subline,
+		map = steps[1].map,
+		steps = steps,
+	}
 end
 
 -- The zone's story (docs/design.md §2.3): of the chains the player can take up in `zone` now, one they have already
@@ -880,7 +929,8 @@ local function ZoneStory(data, completed, eligible, zone)
 end
 
 ---@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
-function Model.Journeys(data, player, completed, log, prefs, mapName)
+---@param instanceName? fun(id: integer): string? the client's name for an instance Map.ID; the data's otherwise
+function Model.Journeys(data, player, completed, log, prefs, mapName, instanceName)
 	local index, L = Index(data), ns.L
 	-- Never past the level cap: a player at it has no next zone to head for.
 	local levels = math.min(NEXT_ZONE_AHEAD, player.maxLevel - player.level)
@@ -910,12 +960,14 @@ function Model.Journeys(data, player, completed, log, prefs, mapName)
 		end
 		journeys[#journeys + 1] = story
 	end
+	-- A player who turned dungeons on asked for this card, so it comes before the next zone's.
+	journeys[#journeys + 1] = DungeonJourney(data, player, eligible, index, prefs, mapName, instanceName)
 	-- The zone that fits two levels on, when it is another zone than the story's and the one the player stands in,
 	-- and already has enough the player can take now.
 	for _, map in ipairs(ahead or {}) do
 		if map ~= zone and map ~= player.map then
 			local nextZone, quests = ZoneJourney(data, player, eligible, map, index, prefs, mapName)
-			if nextZone and quests >= NEXT_ZONE_PICKUPS then
+			if nextZone and quests >= NEXT_ZONE_PICKUPS and #journeys < MAX_JOURNEYS then
 				nextZone.kind, nextZone.key = "nextzone", "nextzone:" .. map
 				local name = ZoneName(data, map, mapName)
 				nextZone.title = L.JOURNEY_NEXT_ZONE:format(name, player.level + levels)
@@ -941,9 +993,10 @@ local function Route(journeys, prefs)
 end
 
 ---@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
-function Model.Plan(data, player, completed, log, prefs, mapName)
+---@param instanceName? fun(id: integer): string? the client's name for an instance Map.ID; the data's otherwise
+function Model.Plan(data, player, completed, log, prefs, mapName, instanceName)
 	skippedSeen = {}
-	local route = Route(Model.Journeys(data, player, completed, log, prefs, mapName), prefs)
+	local route = Route(Model.Journeys(data, player, completed, log, prefs, mapName, instanceName), prefs)
 	route.skipped, skippedSeen = skippedSeen, nil
 	return route
 end

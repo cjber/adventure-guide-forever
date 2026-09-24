@@ -44,6 +44,7 @@ read_globals = {
 	"UnitFactionGroup",
 	"UnitLevel",
 	"GetMaxPlayerLevel",
+	"GetRealZoneText",
 	"C_Map",
 	"C_QuestLog",
 	"C_CreatureInfo",

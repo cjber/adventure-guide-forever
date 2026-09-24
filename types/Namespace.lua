@@ -133,7 +133,7 @@
 -- One card in the guide (docs/design.md §2.2): only steps the player can take now.
 ---@class AGFJourney
 ---@field kind AGFJourneyKind
----@field key string stable identity for prefs.journey: "carry", "story:<uiMapID>" or "nextzone:<uiMapID>"
+---@field key string stable identity for prefs.journey: "carry", "story:<uiMapID>", "dungeon:<Map.ID>" or "nextzone:<uiMapID>"
 ---@field title string e.g. "Finish what you carry" or "A Westfall story"
 ---@field subline string e.g. "3 ready to hand in, 1 in progress"
 ---@field reason? string why this journey, when there is an honest answer
@@ -143,7 +143,7 @@
 ---@field count? string a zone card's count of quests, the story card's subline once its chapter is skipped
 
 ---@class AGFRoute
----@field journeys AGFJourney[] at most 3: carry, the zone's story, the next zone
+---@field journeys AGFJourney[] at most 3: carry, the zone's story, a dungeon, the next zone
 ---@field journey? string the chosen journey's key
 ---@field steps AGFStep[] the chosen journey's steps, never more than MAX_STEPS
 ---@field skipped? table<string, boolean> the skipped keys a full build still had a step for; nil after the combat one
@@ -167,8 +167,8 @@
 ---@field Search fun(data: AGFData, player: AGFPlayer, query: string, title?: fun(questID: integer): string?): integer[] up to 10 quest IDs whose title holds `query`, by title
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
 ---@field Story fun(data: AGFData, questID: integer): AGFStory? the chain the quest belongs to; nil when it is in none, or the way back forks
----@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: fun(map: integer): string?): AGFJourney[]
----@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: fun(map: integer): string?): AGFRoute
+---@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?)): AGFJourney[]
+---@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?)): AGFRoute
 ---@field Refresh fun(data: AGFData, player: AGFPlayer, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, last: AGFRoute, mapName?: fun(map: integer): string?): AGFRoute the cheap in-combat rebuild: the log's steps fresh, the rest from `last`
 
 ---@class AGFState
@@ -179,6 +179,7 @@
 ---@field OnInitialLogin fun(callback: fun()) called on a login's PLAYER_ENTERING_WORLD, never on a /reload
 ---@field Ready fun(): boolean completion data has loaded
 ---@field MapName fun(map: integer): string? the client's localised map name, nil when it has none
+---@field InstanceName fun(id: integer): string? the client's localised name for an instance Map.ID, nil when it has none
 ---@field QuestTitle fun(questID: integer): string? the client's cached title, nil until it has one
 ---@field RaceName fun(raceID: integer): string?
 ---@field ClassName fun(classID: integer): string?
@@ -323,6 +324,8 @@
 ---@field JOURNEY_CARRY string
 ---@field JOURNEY_STORY string format: zone name
 ---@field JOURNEY_NEXT_ZONE string format: zone name, the level it fits
+---@field DUNGEON_QUESTS string format: quest count
+---@field DUNGEON_QUESTS_ONE string
 ---@field CARRY_READY string format: count of finished quests whose hand-in is on this continent
 ---@field CARRY_IN_PROGRESS string format: count
 ---@field CARRY_AWAY string format: count of finished quests whose hand-in is across an ocean

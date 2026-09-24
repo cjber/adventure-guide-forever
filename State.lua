@@ -51,6 +51,14 @@ function State.MapName(map)
 	return info and info.name ~= "" and info.name or nil
 end
 
+-- The client's name for an instance Map.ID (a dungeon card's title), in the player's language; nil when it has none.
+---@param id integer
+---@return string?
+function State.InstanceName(id)
+	local name = GetRealZoneText(id)
+	return name ~= "" and name or nil
+end
+
 -- The client's title for a quest in the player's language, when it has it cached; nil otherwise, for the data's.
 ---@param questID integer
 ---@return string?

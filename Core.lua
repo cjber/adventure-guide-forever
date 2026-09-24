@@ -19,6 +19,8 @@ ns.L = {
 	JOURNEY_CARRY = "Finish what you carry",
 	JOURNEY_STORY = "A %s story",
 	JOURNEY_NEXT_ZONE = "Head to %s at %d",
+	DUNGEON_QUESTS = "%d quests for this dungeon",
+	DUNGEON_QUESTS_ONE = "1 quest for this dungeon",
 	-- The carry card's counts, joined when several apply: "3 ready to hand in, 1 in progress".
 	CARRY_READY = "%d ready to hand in",
 	CARRY_IN_PROGRESS = "%d in progress",
@@ -348,7 +350,15 @@ local function BuildRoute()
 		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return ns.Model.Refresh(ns.Data, state.Player(), state.Log(), ns.Prefs(), cachedRoute, state.MapName)
 	end
-	return ns.Model.Plan(ns.Data, state.Player(), state.Completed(), state.Log(), ns.Prefs(), state.MapName)
+	return ns.Model.Plan(
+		ns.Data,
+		state.Player(),
+		state.Completed(),
+		state.Log(),
+		ns.Prefs(),
+		state.MapName,
+		state.InstanceName
+	)
 end
 
 -- The resume line (docs/design.md §2.5). A login sets the latch; the first rebuild with a step 1 compares it once with

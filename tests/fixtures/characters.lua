@@ -77,6 +77,19 @@ characters.list = {
 		},
 	},
 	{
+		-- F15: a human warrior at Sentinel Hill with Elwynn Forest done and dungeons on, for the Deadmines card.
+		name = "human18_westfall",
+		level = 18,
+		side = 1,
+		raceBit = 1,
+		classBit = 1,
+		map = 1436,
+		x = 0.5600,
+		y = 0.4700,
+		completed = { zones = { 1429 } },
+		prefs = { dungeons = true },
+	},
+	{
 		-- A level-60 human warrior at Light's Hope Chapel with nothing completed: the end-game zones only.
 		name = "human60",
 		level = 60,
