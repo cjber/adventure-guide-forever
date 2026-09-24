@@ -538,6 +538,240 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 46. `docs: CHANGELOG prose for the journeys release`
 47. `docs: README and store page per WFA-10/11, with screenshots`
 
+## 7. Batch F: hubs and features
+
+Measured on 2026-09-24 against `f2c8963` (AGF) and `c905e0a` (SPF `cb/api-detail`). The style stays as it is:
+every surface below reuses a font, atlas or template that is already on screen.
+
+### 7.1 Goals
+
+1. **A stop is a town.** One stop per hub merges its hand-ins and pickups ("Lakeshire, Redridge · 2 to hand in, 4
+   to pick up"). Shortest Path takes the player to the hub's nearest giver, and the stock "!" and "?" marks cover
+   the last yards. Today a Redridge route spends 4 of 9 steps in Lakeshire (Guard Parker, Shawn, Marshal Marris,
+   Verner Osgood), and their rings pile into one merged ring.
+2. **The quests the player carries are ordered with sense.** Level distance (grey risk, red), hand-ins and chains
+   weigh against travel. Only AGF's own panel and tracker section are ordered. The stock tracker is never
+   re-sorted, because Tweaks Forever's "Nearest quests first" owns that.
+3. **Cards tell the cost of a choice** without percentages or XP: minutes from Shortest Path, the first hub and
+   how many more stops, and how many quests need a group.
+4. **Fix the ring layering.** Shortest Path's stop ring must draw over the stock "?" POI.
+5. **Close the open items** that have a proven fix (§7.6).
+
+### 7.2 Hubs: algorithm and sources
+
+**Generator** (`tools/gen_quests.py`; `Data/Quests.lua` is regenerated, never hand-edited):
+1. Take every start and finish spawn as a world point `(continent, wx, wy)`, using the `maps` rectangles that
+   `places()` already uses.
+2. Per continent, run single-linkage union-find at `LINK = 100` yd. Cluster in world coordinates, not per UI map,
+   because 30 hubs span two maps.
+3. Any component wider than `CAP = 400` yd is split again at `LINK - 10`, recursively. Only the capitals exceed the
+   cap (Stormwind 548, Ironforge 496, Undercity 362 after the split). A single cut at 60 yd split Darkshire's
+   crier from the town, so the cut is recursive, not global.
+4. Hub IDs are deterministic: order by `(continent, min wx, min wy)`. The generator emits `hub = <id>` on each
+   quest's `start` and `finish`.
+5. **Names come only from flight masters.** Read `TaxiNodes` from the build already pinned: add the columns
+   `ID, Name_lang, ConditionID, VisibilityConditionID, MountCreatureID_0, MountCreatureID_1` to the existing
+   `db2("TaxiNodes", …)` call. No new table and no pin bump. Mirror SPF's node filter
+   (`shortest-path-forever/tools/gen_transit.py:259-280`):
+   - `Flags & 3`, or node 3275;
+   - `ContinentID` in 0, 1 or 2991;
+   - no `zzOLD` or `Quest ` names;
+   - both conditions 0;
+   - a mount set;
+   - not in SPF's `RESTRICTED_NODES`, which are copied with a comment naming their source.
+
+   The nearest node within `NAME_REACH = 150` yd of any member names the hub, and ties go to the lower node ID.
+   `hubs = { [id] = { name = "Lakeshire, Redridge" } }` is emitted for named hubs only. The name is stored
+   verbatim, with no string splitting. The prototype named 54 of the 108 hubs that have 3 or more NPCs. Towns with
+   no flight master, such as Goldshire and Razor Hill, stay unnamed. That is honest: the data has no name for
+   them.
+6. `tools/gen_quests_test.py` covers linkage, the cap re-split, the naming filter, and ID stability.
+7. The runtime cost is zero. `Index()` stops clustering, and `CLOSE` goes except where objectives use it. The data
+   grows by about 40 KB.
+
+Rejected sources: `UiMapAssignment` has only whole-map rows, with no subzone rectangles. CMaNGOS
+`areatrigger_tavern` names are developer comments. `C_TaxiMap` is barred by design §6. Its localisation on
+Forever is also unproven.
+
+**Model** (`Model.lua`):
+- **Stop.** A card holds at most one stop per hub: `key = "hub:" .. id`, `kind = "hub"`. A hub stop carries:
+  - `pickups`: the card's eligible quests there;
+  - `handins`: complete log quests whose data `finish.hub` is this hub;
+  - `quests`: all of them;
+  - `givers`: distinct NPC names, in list order;
+  - `group`: the number of those quests that are `elite`, `dungeon` or `raid`.
+
+  A dungeon pickup at the same hub joins the stop. It no longer makes a second step.
+- **Hand-ins join a hub** only when the live `GetNextWaypoint` lies within `LINK` (100 yd) of the data's
+  `quest.finish`. The data and the client then agree on the place. Otherwise the step stays a standalone
+  `turnin:<id>` at the live waypoint, as it is today. Only stops that are already selected gain hand-ins, so a
+  hand-in never adds a stop to a story or next-zone card. The carry card is built from hand-ins and gets hub stops
+  too.
+- **The point is a real giver**, never a centroid. Selection costs a hub from its first quest's place (the lowest
+  quest ID). After `Order`, the point moves to the stop's giver nearest the previous stop, or nearest the player
+  for stop 1. That is at most about 20 places, so it is cheap.
+- **Title and place.**
+  - A stop with one quest keeps today's title: `TURN_IN`, the quest title, or `PICK_UP` for a lone giver.
+  - A stop with several quests takes the hub's name. An unnamed hub takes the name of the giver with the most of
+    the stop's quests.
+  - `step.place` is the hub name, else that NPC.
+  - `step.zone` is the map's name from the client by ID, falling back to the data's, as `ZoneName` does now.
+- **Detail.** `HUB_HAND_IN` "%d to hand in" and `HUB_PICK_UP` "%d to pick up", joined by `LIST_SEPARATOR`. A zero
+  part is left out.
+- **Objective steps** (the live waypoint) are unchanged.
+- **Identity.**
+  - `ns.InLog` tests `step.handins` or the objective kind, not the key prefix.
+  - `ShowQuest` opens the first log quest.
+  - `Retained`/`Refresh` prune gone quests from a stop and recount it. A stop is dropped only when it is empty.
+  - Skips are session-only, and `prefs.journey` is keyed by card, so nothing that persists breaks. Once, the resume
+    line will not match a pre-hub key.
+
+### 7.3 Ordering what the player carries
+
+- **Level classes**, using the stock colours through `Model.IsGray` (CMaNGOS `GREEN_RANGE`), with
+  `diff = questLevel - playerLevel`:
+  - grey;
+  - grey-risk: not grey now, grey at `level + 1`;
+  - normal;
+  - red: `diff >= 5`.
+- **Selection.** `Build`'s greedy key becomes `reach - VALUE`, with
+  `VALUE = 40 yd × min(#quests, 8) + 150 yd × greyRisk + 60 yd × #handins - 300 yd × (every quest red or optional)`.
+  Tune the constants against the goldens, and review the golden diff in the commit message. `Order` and 2-opt stay
+  on travel alone, so the route never zigzags for value.
+- **Within a stop**, list hand-ins first, then grey-risk, then by `|diff|`, then by ID. This order feeds the
+  tooltip, the tracker's NPC line and the `ShowQuest` target.
+- **Chains.** A hand-in whose `next` starts at the same hub gets the reason `OPENS_CHAPTER_HERE` "Opens the next
+  chapter here". This applies only when `Check` over `completed ∪ {id}` proves the follow-up eligible, and nothing
+  is said otherwise. The follow-up's pickup appears only after the turn-in rebuild, so nothing that cannot be
+  established is recommended.
+- **Incomplete quests without a client waypoint** stay a count in the carry subline. Objective areas from spawns
+  are deferred (§7.7).
+
+### 7.4 Card detail (no percentages, XP or step counters; the hub count is the user's approved exception)
+
+| Line | Content | Copy |
+|---|---|---|
+| 2 (subline row) | The subline as it is, plus a new right-aligned `Travel` FontString (GameFontHighlightSmall). The subline truncates before the minutes do | `CARD_MINUTES` "%d min"; with a boat or zeppelin leg and room in 212 px: `CARD_BY_BOAT` "%d min by boat", `CARD_BY_ZEPPELIN` "%d min by zeppelin". Hidden when unknown |
+| 3 (reason row) | The journey's reason, else the hub line | `HUB_MORE` "%s and %d more stops", `HUB_MORE_ONE` "%s and 1 more stop", or the bare place |
+| 3, right | A 12x12 `questlog-questtypeicon-group` badge when any quest needs a group (not on dungeon cards) | — |
+| Tooltip (whole cards and one-line rows) | Title, subline, reason, hub line (if not on line 3), full `DetailLine` travel, group line, then an instruction | `GROUP_ONE` "1 needs a group", `GROUP_MANY` "%d need a group", `CLICK_TO_CHOOSE` "Click to choose this journey" |
+
+- **Travel fetch.** Only while the panel is shown and out of combat, one `EstimateDetail` (falling back to
+  `Estimate`) runs per frame, in a `C_Timer.After(0)` chain over the shown cards' `steps[1]`. That is at most 3
+  calls. The fetch starts on the panel's `OnShow` and on each route change, never in the rebuild frame, and after
+  `RefreshTravel`'s own frame. Results are cached by `journey.key .. step.key`, and entries go when the route
+  changes. The chosen card's first stop equals `RefreshTravel`'s, so it is a hit in SPF's 5 s cache. One cold call
+  costs about 2.45 ms, so one per frame keeps the 3 ms budget. SPF needs no batch API.
+- **Step rows** keep their look:
+  - The title is the hub name.
+  - The detail holds the counts.
+  - Row 1 appends the minutes with `TRAVEL` "%s · %d min", instead of replacing the detail with the verb line. The
+    verb line moves to the tooltip.
+  - The detail FontString gets a width cap, `min(unbounded, 230 - tag)`. Today it has no right anchor and runs past
+    the row.
+- **Hub tooltip** (step row and map ring; `Pins.StepTooltip`):
+  - `STEP_NUMBERED` title, then the chapter, travel and reason as today.
+  - Then one block per giver: the NPC name (`AddNormalLine`), then its quests. Each quest line is
+    `|A:questturnin:14:14|a` or `|A:questnormal:14:14|a` plus `QUEST_LEVEL` "[%d] %s", coloured by the stock
+    `GetQuestDifficultyColor`, with a group icon suffix where needed.
+  - At most 8 quest lines, then `HUB_MORE_QUESTS` "And %d more".
+- **Tracker** for a hub stop:
+  - The header is the hub name.
+  - "- 2 to hand in, 4 to pick up".
+  - "- Marshal Marris, Verner Osgood and 2 more" (`HUB_NPCS_MORE`, at most 2 names). The reason takes this line's
+    place when it is not the count.
+  - The travel line, then Next.
+  - A single-quest stop shows design §2.5's place line, `PLACE` "%s, %s" (NPC, zone). This closes the Batch C
+    deferral.
+
+### 7.5 Integrations
+
+| Addon | Decision | Reason |
+|---|---|---|
+| Shortest Path Forever | **Chosen**: per-card minutes (`EstimateDetail`), hub stops routed by `NavigateRoute`, stop rings above quest POIs (SPF fix), and the footer following SPF's end of a journey through the super-tracking events SPF itself uses | The public v1 API covers all of it, and no API change is needed |
+| Tweaks Forever | **Kept**: the trainer line (`TrainableSpells`, TF PR #45) is unchanged. **Respected**: AGF never re-sorts the stock tracker | `QuestDistance.lua` owns the stock tracker order, so two sorters would fight |
+| Tweaks Forever dungeon entrances | **Follow-up** | They are TF-internal (`ns.DungeonEntrances`). A public `DungeonEntrance(mapID)` would let the dungeon card end at the door. AGF does not copy TF's data |
+| SkillUp Forever | **Rejected** | It has no public API and no trainer locations. Profession steps are out of scope (design §5.2) |
+| Legacy Forever | **Rejected** | It has no public API and no per-quest criteria. The discovery hint waits for `Objectives(uiMapID)` |
+| Work Orders Forever | **Rejected** | It messages agents, and has no gameplay data or API |
+| Hearthstone in estimates | **Rejected** | SPF has no hearth edge, and `GetBindLocation` gives a name only. That is an SPF follow-up |
+
+### 7.6 Open items
+
+| Item | Decision |
+|---|---|
+| Place line "NPC, zone" (§2.5) | **Fixed** in F1 (the model) and F3 (the tracker) |
+| Footer Stop lags when SPF ends the journey | **Fixed**. `SUPER_TRACKING_CHANGED` and `USER_WAYPOINT_UPDATED` are proven on Forever: released SPF registers both (`Journey.lua:1393-1394`), and so does Blizzard's `SuperTrackedFrame.lua:14`. While the panel is shown, the handler redraws the footer on the next frame (`C_Timer.After(0)`), after SPF's own handler. No OnUpdate |
+| Pin tooltip prints detail and reason | **Closed**. `StepTooltip` no longer prints detail |
+| Ring under the stock "?" | **Fixed** in SPF (§7.9). AGF's preview ring moves from `AREA_POI` to `WAYPOINT_LOCATION`. Givers stay at `AREA_POI` |
+| Search: uncached English title, ASCII `lower` | **Deferred**. Loading every title floods the server, and the client has no UTF-8 lower |
+| `lint_copy` misses returned literals | **Deferred**. There are 0 live cases, and a rule would flag internal keys. Revisit if hub code returns copy |
+| Questline API | **Deferred**. It is nil on Forever (probe `questline`) |
+
+### 7.7 Dropped or deferred in this batch
+
+- Objective areas from CMaNGOS spawns (`ReqCreatureOrGOId` with spawn tables): a generator follow-up, and larger than this batch.
+- Localised hub names: the generator data is enUS, and `C_TaxiMap` is barred. English, like the data's zone fallback.
+- `CARRY_TOO_HIGH` on the carry card: the difficulty colour in the tooltip already says it.
+- The folded row face gains nothing. Its tooltip carries the detail, and minutes would truncate long titles.
+- An SPF journey callback, `EstimateMany`, and a hearth edge: YAGNI (design §7). The events and the per-frame chain cover the need.
+
+### 7.8 Commits (AGF `cb/journeys`)
+
+**F1: hubs (data and model)**
+48. `feat(gen): town hubs in world yards on every start and finish`
+49. `feat(gen): hub names from flight masters in TaxiNodes`
+50. `refactor(model): hubs come from the data, not map-unit clusters`
+51. `feat(model): one stop per hub merges hand-ins and pickups` (reviewed golden rewrite)
+52. `feat(model): a step's place and zone for the "NPC, zone" line`
+
+**F2: ordering**
+53. `feat(model): selection weighs quests, grey risk and hand-ins against travel` (goldens, strict bench)
+54. `feat(model): a stop lists hand-ins first, then by level distance`
+55. `feat(model): a hand-in that opens the next chapter here says so`
+
+**F3: hub surfaces**
+56. `fix(panel): step detail truncates instead of running past the row`
+57. `feat(panel): hub rows show their counts, with minutes on row 1`
+58. `feat(pins): hub tooltip lists each giver's quests, coloured by level`
+59. `feat(tracker): hub lines and the NPC, zone place line`
+60. `fix(pins): preview rings draw above quest marks`
+61. `docs(screenshots): hub rows, tooltip and tracker`
+
+**F4: cards and Shortest Path**
+62. `feat(model): a journey's hub line and group count`
+63. `feat(panel): card line 3 falls back to the hub line, with a group badge`
+64. `feat(panel): tooltips on whole cards`
+65. `feat(integrations): card minutes, one estimate per frame while the guide is open`
+66. `fix(panel): footer Stop follows Shortest Path's super-tracking events`
+67. `docs: screenshots, CHANGELOG and closed deferrals for batch F`
+
+### 7.9 Shortest Path Forever (`cb/api-detail`)
+
+1. `fix(route): stop rings draw above quest POIs`: `PIN_FRAME_LEVEL_WAYPOINT_LOCATION` (311) replaces
+   `SUPER_TRACKED_CONTENT` (306), which is under `SUPER_TRACKED_QUEST` (307). The later stops' fade moves from the
+   frame to the texture and numerals, so the 0.75 disc still covers what lies beneath.
+2. `test(walk_sim): a flip compares endpoints within a yard`
+3. `test(tracker_ui): legs carry depart and arrive; the header holds still on tick`
+4. `refactor(journey): drop player-height branches` (`UnitPosition` z is always 0; `Path` floors stay)
+5. `docs(api): cost comment describes per-frame estimates`
+
+The public API does not change, so `contract_spec`'s `SPF_SHA` moves only at the SPF merge, as §4 says.
+
+### 7.10 `/reload` checks
+
+| # | Action | What to see | Capture |
+|---|---|---|---|
+| 23 | Human at level 16 in Redridge, open the guide and choose the next-zone card | Lakeshire is one stop, "Lakeshire, Redridge", with "N to pick up". It is not 4 steps. Its tooltip lists each NPC's quests in their difficulty colours | SHOT panel + tooltip, SV |
+| 24 | Carry a finished Lakeshire quest and choose the story card | The Lakeshire stop reads "1 to hand in, N to pick up". The tracker shows the NPC line | SHOT panel + tracker |
+| 25 | Super-track a quest whose "?" sits under a Shortest Path stop in Redridge | The ring and its disc draw over the "?". A faded later stop still covers it | SHOT map |
+| 26 | With SPF enabled, open the guide on a character with a card across the sea (e.g. Darkshore from Westfall); then open it in combat | Each card shows "N min", and "N min by boat" where it fits; no visible hitch on open. In combat no minutes are fetched, and earlier ones stay | SHOT panel |
+| 27 | Hover a whole card and a one-line row | The title, subline, reason, hub line, travel, "1 needs a group" where it applies, and "Click to choose this journey" | SHOT tooltip |
+| 28 | Let Shortest Path finish or cancel AGF's journey, or clear the waypoint by hand, with the guide open | The footer's Stop goes at once | SHOT panel |
+| 29 | Pins on, no SPF guiding, look at a zone with quest marks | AGF preview rings draw over the stock "!" and "?". Givers stay under them | SHOT map |
+| 30 | A single-giver step in the tracker | The place line reads "NPC, zone" in the client's language for the zone | SHOT tracker |
+| 31 | Carry a quest one level from grey and one red quest | The grey-risk quest's stop comes earlier. The red one is optional and dimmed. The stock tracker's order (Tweaks Forever "Nearest quests first") is untouched | SHOT panel + tracker |
+
 ## Review dispositions
 
 Every blocker and major in `plan-review.md` is applied above. Minor findings are applied except as noted:

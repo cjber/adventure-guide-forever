@@ -20,6 +20,10 @@ Forever pillars (Blizzard, *What's Next* panel recap):
   not XP.
 - **The journey before the destination.** The player chooses from at most three journeys. Chains read as a zone's
   chapters, with later chapter titles left unrevealed. There are no percentages, XP/hour figures or step counters.
+  The one exception is the card's hub line ("Lakeshire, Redridge and 2 more stops"). The user asked for it, and it
+  counts towns, not progress (plan §7.4).
+- **A stop is a town.** One stop per hub (plan §7.2) merges its hand-ins and pickups. The route leads to the
+  hub's nearest giver, and the stock "!" and "?" marks cover the last yards.
 - **Approachable and familiar.** The guide lives in the quest log tab and the objective tracker, both stock frames.
   Quest text is Blizzard's own details page. Leaving the plan is normal: Stop and Skip always work, and the route
   rebuilds from the live quest log.
@@ -116,8 +120,8 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
 +------------------------------------------+  NormalTexture ui-journeys-renown-button (CSV:15677, 374x112 -> 288x86)
 |  .--.                                    |  selected: the same art, highlight locked (never the -pressed art)
 | ( S  )  Westfall story                   |  title: GameFontNormalMed2 (gold), LEFT of IconFrame RIGHT +5,+5 (xml:90-95)
-|  '--'   Chapter 2 of 4                   |  subline: GameFontHighlightSmall (white) under the title
-|         Continues a story you started    |  reason: GameFontHighlightSmall
+|  '--'   Chapter 2 of 4            6 min  |  subline: GameFontHighlightSmall (white) under the title;
+|         Continues a story you started [g]|    minutes right-aligned; reason, else the hub line; [g] group
 +------------------------------------------+
   IconFrame 46x46 at LEFT x=15 (Blizzard 60x60 at x=20, xml:24-28); border ui-journeys-renown-radial-bar (CSV:16221)
   Icon 18x18 at CENTER; hover inherits AlphaHighlightButtonTemplate (SharedUIPanelTemplates.xml:1587)
@@ -144,6 +148,16 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
   | Next zone | `QuestNormal` (CSV:1360), the same "!" the map uses | `(!)` |
   | Group quest (elite) | `questlog-questtypeicon-group` (CSV:9388) | — |
 
+- **Card detail (batch F, plan §7.4).** No new line and no new art:
+  - **Travel.** Line 2's right edge shows the minutes from the player to the journey's first stop: "6 min", or "15
+    min by boat" when a crossing leg exists and it fits. The subline truncates first.
+  - **Fetching.** The minutes are fetched only while the tab is shown and out of combat, one Shortest Path
+    estimate per frame. They are never fetched in the rebuild. Without SPF, or with no answer, the minutes are
+    left out.
+  - **Line 3.** It shows the journey's reason, or else the hub line: "Lakeshire, Redridge and 2 more stops".
+  - **Group badge.** A 12x12 `questlog-questtypeicon-group` sits at line 3's right edge when any quest needs a
+    group. Dungeon cards, whose kind icon says so already, do not get it.
+  - **Tooltip.** Whole cards now have one as well (§2.9).
 - **Fonts.** Blizzard sets the name in white `GameFontHighlightMed2` over a gold `GameFontNormalMed2` subline. AGF deliberately reverses this, to follow the house rule of a gold header over white body text.
 - **What a card may offer.** A card only ever holds eligible, recommendable steps. It never shows a lock, never shows "opens at level N", and never marks something new-in-Forever or of unknown location. Locked quests appear only in search (§2.4).
 - **Card kinds** (three at most, only those that have steps):
@@ -230,7 +244,18 @@ ADVENTURE GUIDE                                 module header (template)
    - Where you left off: finishes a story       reason; prefix only on the first login layout
    - Fly to Astranaar · 4 min                   travel line (§5.1), omitted when unknown
    Next: The Ruins of Stardust                  OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE
+
+   Lakeshire, Redridge                          a hub stop (plan §7.4): header = hub name
+   - 2 to hand in, 4 to pick up                 counts
+   - Marshal Marris, Verner Osgood and 2 more   givers, at most 2 names; a real reason replaces it
+   - Fly to Lakeshire · 6 min                   travel
 ```
+
+- **Place line.** A stop with one giver reads "NPC, zone". The zone name comes from the client by map ID, with the
+  data's name as the fallback. A turn-in placed by `GetNextWaypoint` uses the data's finish NPC only when that NPC
+  is within the hub; otherwise it shows the zone alone.
+- **Order.** Only this section and the panel are ordered by AGF. The stock quest tracker's order is never touched,
+  because Tweaks Forever's "Nearest quests first" owns it.
 
 - **Resume line.** `charDB.last = {key, reason}` is saved on each rebuild.
   - The line is added only on `PLAYER_ENTERING_WORLD` with `isInitialLogin` true, and only when `charDB.last.key` equals the *live* step 1 after the rebuild. A stale key shows nothing.
@@ -276,6 +301,11 @@ While SPF is guiding, AGF's rings hide, because SPF draws its own stops (Pins.lu
   would read as a choice made (with `showMapPins` on they still show the first card's route, as the tracker does).
   Selecting a card turns the map to that journey's first zone (`WorldMapFrame:SetMapID`) and draws
   only its rings. Hovering a step row flashes its ring (`Pins.Ping`, Pins.lua:184-188).
+- **Layering.** A route ring marks "your destination", so it takes the stock level of the user-waypoint pin,
+  `PIN_FRAME_LEVEL_WAYPOINT_LOCATION`. That is above every quest "!" and "?", including the super-tracked one.
+  AGF's preview ring uses this level, and SPF's stop ring does too (plan §7.9). Givers stay at `AREA_POI`, below
+  the stock marks. A faded later stop fades its ring and number, not its disc, so a POI never shows through.
+- **One ring per town.** A hub is one stop (plan §7.2), so a town no longer piles several rings into one.
 - **One switch.** `showMapPins` (Core.lua:12) becomes the single control for every AGF layer, and its default
   changes to off (opt-in). `AddGivers` moves under that check: today it runs first (Pins.lua:83-86), so givers
   bypass the switch. `showQuestGivers` (Core.lua:13) defaults to off. This is a default change, not a bug fix,
@@ -334,10 +364,26 @@ Map ring / step row                         Journey card
 | 2. The Defias Brotherhood            |    | Westfall story                       |  SetTitle (gold)
 | Chapter 2 of 4                       |    | Chapter 2 of 4                       |  AddNormalLine (gold)
 | Fly to Sentinel Hill · 6 min         |    | Continues a story you started        |  AddHighlightLine (white)
-| Continues a story you started        |    | 5 steps                              |  AddHighlightLine
+| Continues a story you started        |    | Sentinel Hill and 2 more stops       |  AddHighlightLine (hub line)
+|                                      |    | Fly to Sentinel Hill · 6 min         |  AddHighlightLine (travel)
+|                                      |    | 1 needs a group                      |  AddHighlightLine
 | Click to travel with Shortest Path   |    | Click to choose this journey         |  AddInstructionLine (green)
 +--------------------------------------+    +--------------------------------------+
+
+Hub stop (row and ring)
++--------------------------------------+
+| 3. Lakeshire, Redridge               |  SetTitle
+| Fly to Lakeshire · 6 min             |  AddHighlightLine (travel, on hover)
+| Marshal Marris                       |  AddNormalLine per giver
+| (?) Solomon's Law                    |  AddHighlightLine per quest, questturnin / questnormal icon,
+| (!) [18] Redridge Goulash            |    coloured by GetQuestDifficultyColor; group icon suffix
+| And 3 more                           |  after 8 quest lines
+| Click to travel with Shortest Path   |  AddInstructionLine
++--------------------------------------+
 ```
+
+The journey card tooltip now shows on whole cards and on one-line rows. Its "5 steps" line became the hub line,
+which counts towns, not steps (§1).
 
 When `SPF.Active()` exists and reports another journey running, every way to start the route warns with "Replaces
 your current journey.": a card or row another click would choose (while choosing starts the route), the menus' Go
@@ -364,8 +410,10 @@ see every journey"
 |---|---|
 | Card titles | `Finish what you carry` · `Westfall story` · `Head to Darkshore` |
 | Card sublines | `3 quests ready to hand in` · `Chapter 2 of 4` · `Chapter 2` · `11 quests near your level` |
-| Reasons | `Continues a story you started` · `Begins a Westfall story` · `Ready to hand in` · `Sentinel Hill needs hands` · `Better with others` · `For level 14` |
-| Travel | `Fly to Sentinel Hill · 6 min` · `Boat to Auberdine · 2 min wait` · `Fly to Astranaar · new flight path` · `About 4 min away` |
+| Reasons | `Continues a story you started` · `Begins a Westfall story` · `Ready to hand in` · `Sentinel Hill needs hands` · `Better with others` · `For level 14` · `Opens the next chapter here` |
+| Card line 3, tooltip | `Lakeshire, Redridge and 2 more stops` · `Lakeshire, Redridge and 1 more stop` · `1 needs a group` · `3 need a group` |
+| Hub stops | `Lakeshire, Redridge` · `2 to hand in, 4 to pick up` · `Marshal Marris, Verner Osgood and 2 more` · `Guard Parker, Redridge Mountains` · `And 3 more` |
+| Travel | `Fly to Sentinel Hill · 6 min` · `Boat to Auberdine · 2 min wait` · `Fly to Astranaar · new flight path` · `About 4 min away` · card: `6 min` · `15 min by boat` · `15 min by zeppelin` |
 | Why-not | `Requires level 14` · `Completed: The Forgotten Heirloom` · `Requires one of: A, B` · `Horde only` · `Warriors only` · `You chose X instead` · `The guide can't tell where this starts` · `You've done this` · `In your quest log` · `Repeatable quests aren't suggested` |
 | Tracker | `Where you left off: finishes a story` · `Next: The Ruins of Stardust` · `Story complete` |
 | Buttons, menu | `Go` (menus only) · `Stop` · `Show quest` · `Skip for now` · `Skipped (2)` · `Show again: <title>` · `Choose another journey` |
@@ -395,6 +443,10 @@ see every journey"
 | 17 | Dungeon card | Could | Blocked: `dungeon` is set on 0 quests (agf.md) and the EJ is absent (PROBE). Needs a generator fix plus a TF `DungeonEntrance` API. |
 | 18 | Discovery hint: one unexplored area named as text | Could | Needs a LegacyForever API that does not exist. Text only, never a ring. |
 | 19 | "Visit your class trainer" step from Tweaks Forever's `TrainableSpells` (§5.2), feature-detected | Should | The client lists no `FutureSpell` entries (probe `spellbook2`), so only Tweaks Forever's trainer data can tell. The data has no trainer coordinates, so the step is text only: no ring, no Go. |
+| 20 | Hubs: one stop per town, named from flight masters (plan §7.2) | Must | A Redridge route spent 4 of 9 steps in Lakeshire, and their rings merged into one. |
+| 21 | Level-aware selection and in-stop order for carried quests (plan §7.3) | Must | The user asked for quests picked up to be ordered by level distance. Travel still orders the route. |
+| 22 | Card minutes, hub line, group badge, and tooltips on whole cards (plan §7.4) | Should | The honest cost of a choice at a glance, with no percentages. |
+| 23 | Route rings above quest POIs (SPF and AGF, §2.6) | Must | A merged stop ring drew under the super-tracked "?". |
 
 ### 4.1 Route ordering (#12)
 
@@ -413,6 +465,14 @@ see every journey"
 - **Order.** Nearest neighbour from the player, grouped by continent so the route crosses at most once (the
   player's continent first), then 2-opt on the same cost. A turn-in on another continent is kept but goes last,
   with the reason "Hand in when you're in <zone>".
+- **Value (batch F, plan §7.3).** Selection subtracts a value from the reach, in yards:
+  - more for each of a stop's quests;
+  - more for a quest one level from grey;
+  - more for each hand-in;
+  - less when every quest is red or optional.
+
+  The order itself stays on travel alone. Within a stop, hand-ins come first, then grey risk, then closeness to the
+  player's level.
 - **Unchanged.** A quest whose eligibility the data cannot establish is never a candidate, and every step keeps
   the data's coordinates.
 
@@ -509,7 +569,8 @@ Not requested:
 | Sibling | Contract | Why not |
 |---|---|---|
 | LegacyForever (formerly LegacyHere) | none | It has no public API (origin/main ea0fb8c; the PROBE `legacy` scan shows only `LegacyForever*` mixins and DB). Its data has 0 quest criteria (siblings.md §3), so no quest can be honestly tagged, and percentages are Legacy's domain. It returns only if Could #18 is promoted, as `Objectives(uiMapID)` with no percent. |
-| TweaksForever | `TweaksForever.API.TrainableSpells()` (TF PR #45, `version = 1`), for Should #19 only | Returns fresh `{spellID, name, level, cost?, line, lineID}` tables for the trainer spells the player's level allows and they haven't learned, or nil before login and in combat. AGF checks `type(api.TrainableSpells) == "function"` where it uses it, and treats nil as "no step this rebuild". The zone table is still baked at generation time (siblings.md §4); `DungeonEntrance` is needed only for Could #17. |
+| TweaksForever | `TweaksForever.API.TrainableSpells()` (TF PR #45, `version = 1`), for Should #19 only | Returns fresh `{spellID, name, level, cost?, line, lineID}` tables for the trainer spells the player's level allows and they haven't learned, or nil before login and in combat. AGF checks `type(api.TrainableSpells) == "function"` where it uses it, and treats nil as "no step this rebuild". The zone table is still baked at generation time (siblings.md §4); `DungeonEntrance` is needed only for Could #17. AGF never re-sorts the stock tracker, which TF's "Nearest quests first" owns. A public `DungeonEntrance(mapID)` is a follow-up (plan §7.5). |
+| WorkOrdersForever | none | It messages agents, and has no gameplay data or API. |
 | SkillUpForever | none | Profession steps are out of scope for a quest journal. |
 
 ## 6. Known flight paths: decision
@@ -540,6 +601,12 @@ nodes". There is no separate known-flight-paths API.
 - **Weekly bounties.** A progress treadmill, and against the pillars.
 - **Bundled quest text.** Uncached quests have no text (PROBE `questtext`: `HaveQuestData` false for 5892 and 7). Blizzard's details page shows log quests.
 - **SkillUp steps; TF `ZoneRange` / `IsActive`; SPF `RegisterCallback` / `EstimateMany` / stop metadata.** YAGNI (§5).
+  The card minutes take one estimate per frame instead, and the footer follows `SUPER_TRACKING_CHANGED` /
+  `USER_WAYPOINT_UPDATED`, which SPF itself registers on Forever.
+- **Localised hub names.** `TaxiNodes` in the generator is enUS, and reading `C_TaxiMap` is barred (§6).
+- **Hearthstone in travel estimates.** SPF has no hearth edge, and `GetBindLocation` gives only a name.
+- **Hub names for towns with no flight master** (Goldshire, Razor Hill). No proper source names them, so these
+  towns take their lead NPC's name instead.
 - **Hardcore-aware routing.** Future note: when `C_GameRules.IsHardcoreActive()` is true (false in PROBE), drop optional elite steps from cards.
 
 ## 8. `/reload` checks for the PR
@@ -558,6 +625,8 @@ Nothing below has been validated in game yet.
    turn-in ("Hand in when you're in <zone>").
 10. With Tweaks Forever (PR #45) loaded and spells to train, "Visit your class trainer" shows with no ring; without
     Tweaks Forever, nothing changes.
+11. Batch F (plan §7.10): Lakeshire is one stop; a stop ring draws over a super-tracked "?"; the cards show minutes
+    and the hub line; the footer's Stop goes as soon as Shortest Path ends the journey.
 
 ## 9. Open questions that need client probes
 
