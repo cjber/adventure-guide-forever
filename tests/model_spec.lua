@@ -364,6 +364,11 @@ equal(
 	"Chapter 2",
 	"story card: no total unproven"
 )
+-- No zone the level fits (a city's quests only): a pinned pickup there makes no story card, and no error.
+local city = { quests = { [1] = quest(0.5, 0.5, 9) }, zones = data.zones }
+local cityPins = prefs()
+cityPins.pinned = { "pickup:9:0.5000:0.5000" }
+equal(#Model.Plan(city, player, {}, {}, cityPins).journeys, 0, "story card: none without a zone, pins or not")
 
 assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
 local count = 0

@@ -898,11 +898,11 @@ function Model.Journeys(data, player, completed, log, prefs, mapName)
 	-- The zone the player's level fits best, named after it. Model.Story (F4) makes it the chapter of a chain; until
 	-- then it holds the zone's pickups, as the route did.
 	local zone = zones[1] and zones[1].map
-	local chain, chainID, continues
+	local chain, chainID, continues, story, lead, _
 	if zone then
 		chain, chainID, continues = ZoneStory(data, completed, eligible, zone)
+		story, _, lead = ZoneJourney(data, player, eligible, zone, index, prefs, mapName, prefs.pinned or {}, chainID)
 	end
-	local story, _, lead = ZoneJourney(data, player, eligible, zone, index, prefs, mapName, prefs.pinned or {}, chainID)
 	if story then
 		local name = ZoneName(data, zone, mapName)
 		story.kind, story.key = "story", "story:" .. zone
