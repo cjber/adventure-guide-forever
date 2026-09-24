@@ -9,6 +9,7 @@ function ns.RegisterSettings()
 	---@param key string
 	---@param name string
 	---@param tooltip string
+	---@return AGFSettingsInitializer
 	local function Checkbox(key, name, tooltip)
 		local setting = Settings.RegisterAddOnSetting(
 			category,
@@ -22,7 +23,7 @@ function ns.RegisterSettings()
 		setting:SetValueChangedCallback(function(_, value)
 			ns.SetSetting(key, value)
 		end)
-		Settings.CreateCheckbox(category, setting, tooltip)
+		return Settings.CreateCheckbox(category, setting, tooltip)
 	end
 
 	Checkbox(
@@ -33,6 +34,12 @@ function ns.RegisterSettings()
 	Checkbox("showMapPins", "Show route pins on the map", ns.L.SETTING_MAP_PINS_TOOLTIP)
 	Checkbox("showQuestGivers", "Show quest givers on the map", ns.L.SETTING_GIVERS_TOOLTIP)
 	Checkbox("includeDungeonsDefault", "Include dungeons by default", ns.L.SETTING_DUNGEONS_DEFAULT_TOOLTIP)
+	Checkbox("titleStartsRoute", ns.L.SETTING_TITLE_ROUTE, ns.L.SETTING_TITLE_ROUTE_TOOLTIP)
+	local track = Checkbox("trackRouteQuests", ns.L.SETTING_TRACK_ROUTE, ns.L.SETTING_TRACK_ROUTE_TOOLTIP)
+	local untrack = Checkbox("untrackOthers", ns.L.SETTING_UNTRACK_OTHERS, ns.L.SETTING_UNTRACK_OTHERS_TOOLTIP)
+	untrack:SetParentInitializer(track, function()
+		return ns.Setting("trackRouteQuests")
+	end)
 
 	Settings.RegisterAddOnCategory(category)
 	function ns.OpenSettings()

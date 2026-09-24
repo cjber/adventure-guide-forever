@@ -911,6 +911,7 @@ function harness.load(options)
 	-- Quest log and completion: `log` entries are {id, title, level, complete, map, x, y}.
 	local log = options.log or {}
 	h.titleRequests = {}
+	h.watched = options.watched or {}
 	G.C_QuestLog = {
 		GetAllCompletedQuestIDs = function()
 			if h.completedPending then
@@ -941,6 +942,34 @@ function harness.load(options)
 			end
 		end,
 		GetTitleForQuestID = noop,
+		-- Tracked quests, in order: options.watched seeds them; the client's limit is 25.
+		GetNumQuestWatches = function()
+			return #h.watched
+		end,
+		GetQuestIDForQuestWatchIndex = function(index)
+			return h.watched[index]
+		end,
+		AddQuestWatch = function(questID)
+			for _, watched in ipairs(h.watched) do
+				if watched == questID then
+					return false
+				end
+			end
+			if #h.watched >= 25 then
+				return false
+			end
+			h.watched[#h.watched + 1] = questID
+			return true
+		end,
+		RemoveQuestWatch = function(questID)
+			for index, watched in ipairs(h.watched) do
+				if watched == questID then
+					table.remove(h.watched, index)
+					return true
+				end
+			end
+			return false
+		end,
 		RequestLoadQuestByID = function(questID)
 			h.titleRequests[#h.titleRequests + 1] = questID
 		end,
@@ -1106,7 +1135,14 @@ function harness.load(options)
 			return { key = key, SetValueChangedCallback = noop }
 		end,
 		CreateCheckbox = function(_, setting, tooltip)
-			h.settings[#h.settings + 1] = { key = setting.key, tooltip = tooltip }
+			local entry = { key = setting.key, tooltip = tooltip }
+			h.settings[#h.settings + 1] = entry
+			return {
+				key = setting.key,
+				SetParentInitializer = function(_, parent, predicate)
+					entry.parent, entry.enabled = parent.key, predicate
+				end,
+			}
 		end,
 		RegisterAddOnCategory = noop,
 		OpenToCategory = noop,

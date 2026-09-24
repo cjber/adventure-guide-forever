@@ -106,6 +106,57 @@ do
 	equal(table.concat(h.questDetails, " "), "843", "the details opened once")
 end
 
+-- The tracker title sets off along the route and tracks its quests; each part has its own setting, and untracking
+-- the player's other quests is opt-in.
+do
+	local function RouteQuests(h)
+		local quests = {}
+		for _, step in ipairs(h.ns.Route().steps) do
+			if h.ns.InLog(step) then
+				for _, questID in ipairs(step.quests) do
+					quests[#quests + 1] = questID
+				end
+			end
+		end
+		return table.concat(quests, " ")
+	end
+	local function ClickTitle(h)
+		local step = h.ns.Route().steps[1]
+		h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[step.key], "LeftButton")
+		h.flush()
+	end
+
+	local h = Load("v1")
+	h.watched[1] = 99
+	ClickTitle(h)
+	equal(h.spf.NavigateRoute, 1, "the title starts the route")
+	equal(h.watched[1], 99, "the player's own tracked quest stays")
+	equal(RouteQuests(h), "845 843", "the route holds both log quests")
+	equal(table.concat(h.watched, " ", 2), RouteQuests(h), "the route's quests join it, in route order")
+	ClickTitle(h)
+	equal(table.concat(h.watched, " ", 2), RouteQuests(h), "a second click tracks nothing twice")
+	clean(h, "title click")
+
+	h = Load("v1", { untrackOthers = true })
+	h.watched[1] = 99
+	ClickTitle(h)
+	equal(table.concat(h.watched, " "), RouteQuests(h), "untrackOthers leaves only the route's quests")
+
+	h = Load("v1", { titleStartsRoute = false, trackRouteQuests = false, untrackOthers = true })
+	h.watched[1] = 99
+	ClickTitle(h)
+	equal(h.spf.NavigateRoute, 0, "the route setting off: no route")
+	equal(table.concat(h.watched, " "), "99", "the tracking setting off: the tracked quests are untouched")
+
+	local byKey = {}
+	for _, entry in ipairs(h.settings) do
+		byKey[entry.key] = entry
+	end
+	equal(byKey.untrackOthers.parent, "trackRouteQuests", "untrackOthers hangs under the tracking setting")
+	equal(byKey.untrackOthers.enabled(), false, "and is greyed while it is off")
+	clean(h, "title click settings")
+end
+
 -- WFA-13: nothing runs per frame while idle, and a refresh reuses the frames it has.
 local function IdleUpdates(h)
 	local busy = 0

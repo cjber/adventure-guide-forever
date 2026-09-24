@@ -251,6 +251,12 @@
 ---@field SETTING_MAP_PINS_TOOLTIP string
 ---@field SETTING_GIVERS_TOOLTIP string
 ---@field SETTING_DUNGEONS_DEFAULT_TOOLTIP string
+---@field SETTING_TITLE_ROUTE string
+---@field SETTING_TITLE_ROUTE_TOOLTIP string
+---@field SETTING_TRACK_ROUTE string
+---@field SETTING_TRACK_ROUTE_TOOLTIP string
+---@field SETTING_UNTRACK_OTHERS string
+---@field SETTING_UNTRACK_OTHERS_TOOLTIP string
 ---@field JOURNEY_CARRY string
 ---@field JOURNEY_STORY string format: zone name
 ---@field JOURNEY_NEXT_ZONE string format: zone name, the level it fits
@@ -304,5 +310,6 @@
 ---@field InLog fun(step: AGFStep): boolean the step is a quest in the player's log (a turn-in or its objectives)
 ---@field Menu AGFMenuModule
 ---@field ShowQuest fun(step: AGFStep): boolean open a log step's quest in Blizzard's details; false for other steps or in combat
+---@field TrackRouteQuests fun() track the route's log quests in route order; with untrackOthers, stop tracking the rest
 ---@field DumpLayout fun(root: Frame, describe?: fun(region: Region, entry: AGFDumpEntry)): AGFDumpEntry[]
 ---@field Dump fun() /agf dump: save the layout, route and frames in AdventureGuideForeverDB.dump

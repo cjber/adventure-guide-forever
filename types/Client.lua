@@ -160,13 +160,16 @@ ShortestPathForever = nil
 
 ---@class AGFSettingsSetting
 ---@field SetValueChangedCallback fun(self: AGFSettingsSetting, callback: fun(setting: AGFSettingsSetting, value: boolean))
+-- A checkbox's row (Blizzard_Settings_Shared SettingsListElementInitializer); a child is greyed while predicate is false.
+---@class AGFSettingsInitializer
+---@field SetParentInitializer fun(self: AGFSettingsInitializer, parent: AGFSettingsInitializer, predicate: fun(): boolean)
 ---@class AGFSettingsCategory
 ---@field GetID fun(self: AGFSettingsCategory): integer
 ---@class AGFSettingsModule
 ---@field VarType {Boolean: string}
 ---@field RegisterVerticalLayoutCategory fun(name: string): AGFSettingsCategory
 ---@field RegisterAddOnSetting fun(category: AGFSettingsCategory, variable: string, key: string, storage: table, variableType: string, name: string, default: boolean): AGFSettingsSetting
----@field CreateCheckbox fun(category: AGFSettingsCategory, setting: AGFSettingsSetting, tooltip?: string)
+---@field CreateCheckbox fun(category: AGFSettingsCategory, setting: AGFSettingsSetting, tooltip?: string): AGFSettingsInitializer
 ---@field RegisterAddOnCategory fun(category: AGFSettingsCategory)
 ---@field OpenToCategory fun(categoryID: integer)
 ---@type AGFSettingsModule

@@ -41,6 +41,15 @@ ns.L = {
 		.. "the guide. Change it any time from the guide's settings menu.",
 	SETTING_GIVERS_TOOLTIP = 'A "!" on the world map over everyone with a quest you can take now. '
 		.. "Needs route pins on the map as well.",
+	SETTING_TITLE_ROUTE = "Clicking the tracker title starts the route",
+	SETTING_TITLE_ROUTE_TOOLTIP = "Clicking the current step's title in the objective tracker also sets off along the "
+		.. "route, with Shortest Path Forever when it's loaded and a map waypoint otherwise.",
+	SETTING_TRACK_ROUTE = "Clicking the tracker title tracks the route's quests",
+	SETTING_TRACK_ROUTE_TOOLTIP = "Every quest on the route that's in your log joins the objective tracker, in route "
+		.. "order, up to the tracker's limit.",
+	SETTING_UNTRACK_OTHERS = "Stop tracking other quests",
+	SETTING_UNTRACK_OTHERS_TOOLTIP = "The same click stops tracking every quest that isn't on the route. Needs the "
+		.. "route's quests tracked as well.",
 	-- Why-not (docs/design.md §2.4): what the data says a quest needs, one line per requirement.
 	WHY_NO_START = "The guide can't tell where this starts",
 	WHY_DONE = "You've done this",
@@ -80,6 +89,10 @@ local DEFAULTS = {
 	showMapPins = false,
 	showQuestGivers = false,
 	includeDungeonsDefault = false,
+	titleStartsRoute = true,
+	trackRouteQuests = true,
+	-- Opt-in: it throws away the player's own choice of tracked quests.
+	untrackOthers = false,
 }
 ns.DEFAULTS = DEFAULTS
 
@@ -231,6 +244,33 @@ function ns.ShowQuest(step)
 	OpenQuestLog()
 	QuestMapFrame_ShowQuestDetails(step.quests[1])
 	return true
+end
+
+-- The route's quests in the log join the objective tracker in route order; the client refuses any past its watch
+-- limit. With untrackOthers, every other tracked quest leaves first, which also makes room.
+function ns.TrackRouteQuests()
+	local onRoute, order = {}, {}
+	for _, step in ipairs(ns.Route().steps) do
+		if ns.InLog(step) then
+			for _, questID in ipairs(step.quests) do
+				if not onRoute[questID] then
+					onRoute[questID] = true
+					order[#order + 1] = questID
+				end
+			end
+		end
+	end
+	if ns.Setting("untrackOthers") then
+		for index = C_QuestLog.GetNumQuestWatches(), 1, -1 do
+			local questID = C_QuestLog.GetQuestIDForQuestWatchIndex(index)
+			if questID and not onRoute[questID] then
+				C_QuestLog.RemoveQuestWatch(questID)
+			end
+		end
+	end
+	for _, questID in ipairs(order) do
+		C_QuestLog.AddQuestWatch(questID)
+	end
 end
 
 --[[ Route: rebuilt lazily, with invalidations from events/prefs coalesced onto one
