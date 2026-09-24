@@ -250,7 +250,8 @@ player's side. Eligible matches show as normal rows. Ineligible matches show why
   a weapon skill, a faction with no reputation, or two factions stays suppressed. At runtime State reads ranks from
   `C_SkillInfo` (the global `GetSkillLineInfo` is missing on Forever; an unlearned line is rank 0) again on
   `SKILL_LINES_CHANGED`, and standings from `C_Reputation.GetFactionDataByID`; a faction it gives none for (the
-  other side's) meets neither bound. `UPDATE_FACTION` rebuilds.
+  other side's) meets neither bound. `UPDATE_FACTION` or `SKILL_LINES_CHANGED` rebuilds only when a rank or
+  standing a gate names moved, not on every weapon skill-up or reputation kill.
 - **Not covered.** Quests whose start the generator suppressed (gen_quests.py `generate`) get only the "can't
   tell" line.
 - **No ring, no Go.** A locked or unknown quest never gets a map ring or a Go button.

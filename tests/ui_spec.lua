@@ -2687,6 +2687,16 @@ do
 	h.fire("UPDATE_FACTION")
 	h.flush()
 	equal(h.modelCalls.Plan > plans, true, label .. ": a standing change rebuilds")
+	plans = h.modelCalls.Plan
+	h.fire("UPDATE_FACTION")
+	h.skills[2] = { skillID = 43, name = "Swords", rank = 11 }
+	h.fire("SKILL_LINES_CHANGED")
+	h.flush()
+	equal(h.modelCalls.Plan, plans, label .. ": no gated standing or rank moved, no rebuild")
+	h.skills[1].rank = 151
+	h.fire("SKILL_LINES_CHANGED")
+	h.flush()
+	equal(h.modelCalls.Plan > plans, true, label .. ": a gated rank moved")
 	h.reputation[576].currentStanding = 2999
 	h.Type(
 		h.Find(function(frame)

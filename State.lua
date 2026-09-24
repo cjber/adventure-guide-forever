@@ -46,6 +46,27 @@ function State.Reputation(factionID)
 	return info and info.currentStanding or nil
 end
 
+-- The ranks and standings the data's gates name, as last read. SKILL_LINES_CHANGED fires on every weapon skill-up
+-- and UPDATE_FACTION on every reputation kill; one that moves no gated line or faction rebuilds nothing.
+---@type table<string, integer|false>
+local gated = {}
+
+---@return boolean
+local function GatesMoved()
+	local moved = false
+	for id in pairs(ns.Data.skills or {}) do
+		local rank = skills[id] or 0
+		moved = moved or gated["skill" .. id] ~= rank
+		gated["skill" .. id] = rank
+	end
+	for id in pairs(ns.Data.factions or {}) do
+		local standing = State.Reputation(id) or false
+		moved = moved or gated["rep" .. id] ~= standing
+		gated["rep" .. id] = standing
+	end
+	return moved
+end
+
 -- The client's names for a skill line the character has, a faction it gives a standing for, and a standing
 -- (1 Hated to 8 Exalted), for the why-not lines; nil when it has none.
 ---@param skillLineID integer
@@ -230,7 +251,7 @@ events:RegisterEvent("QUEST_LOG_UPDATE")
 events:RegisterEvent("QUEST_TURNED_IN")
 events:RegisterEvent("PLAYER_LEVEL_UP")
 events:RegisterEvent("ZONE_CHANGED_NEW_AREA")
--- A skill rank or a standing changed: skill- and reputation-gated quests may open or close (roadmap #8).
+-- A skill rank or a standing changed: skill- and reputation-gated quests may open or close (roadmap #8, GatesMoved).
 events:RegisterEvent("SKILL_LINES_CHANGED")
 events:RegisterEvent("UPDATE_FACTION")
 -- The first argument is PLAYER_ENTERING_WORLD's isInitialLogin, and QUEST_TURNED_IN's questID.
@@ -240,13 +261,19 @@ events:SetScript("OnEvent", function(_, event, arg)
 			ready = true
 		end
 		LoadSkills()
+		GatesMoved()
 		if arg == true then
 			for _, fn in ipairs(loginListeners) do
 				fn()
 			end
 		end
-	elseif event == "SKILL_LINES_CHANGED" then
-		LoadSkills()
+	elseif event == "SKILL_LINES_CHANGED" or event == "UPDATE_FACTION" then
+		if event == "SKILL_LINES_CHANGED" then
+			LoadSkills()
+		end
+		if not GatesMoved() then
+			return
+		end
 	elseif event == "QUEST_TURNED_IN" and arg then
 		completed[arg] = true
 		ns.TurnedIn(arg)
