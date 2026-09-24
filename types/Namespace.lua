@@ -541,3 +541,8 @@
 
 ---@class AGFStrings
 ---@field STORY_HOOK string format: the tracker's one line with no journey chosen: a story's title, its reason or subline
+
+--[[ Stream 2a: the diversion slot and your calling (roadmap R4, #7) ]]
+
+---@class AGFPlace
+---@field trainer? integer a class quest's start only: the class its giver trains (1 Warrior ... 11 Druid)

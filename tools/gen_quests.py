@@ -618,7 +618,7 @@ def nearest_hub(point, grid):
     return None if best is None else best[1]
 
 
-def role_npcs(tables, world, faction_rows, effects, skill_lines, grid, town_maps, maps, counts):
+def role_npcs(tables, world, faction_rows, role, grid, town_maps, maps, counts):
     """Each role NPC (`roles`) with its side (`reaction`) and place: a spawn projected as a quest giver's is. Within
     LINK yards of a quest place it takes that place's hub and the map most of the hub's quest places use (Astranaar
     is Ashenvale, not the Stonetalon map that overhangs it; `town_maps` ranks each hub's maps). Elsewhere it takes the
@@ -627,7 +627,6 @@ def role_npcs(tables, world, faction_rows, effects, skill_lines, grid, town_maps
     """
     factions = {int(r["ID"]): r for r in faction_rows}
     template_faction = {r["Entry"]: r["Faction"] for r in tables["creature_template"]}
-    role = roles(tables, skill_steps(effects, skill_lines))
     found = spawns(tables, "creature", role.keys(), world)
     npcs = {}
     for entry, fields in role.items():
@@ -669,6 +668,8 @@ def generate(
     home = homes(locations, quests, areas)
     incoming, groups = prerequisite_index(quests)
     seasonal = {r["quest"] for r in tables["game_event_quest"]}
+    role = roles(tables, skill_steps(effects, skill_lines))
+    trains = {("creature", entry): fields["class"] for entry, fields in role.items() if "class" in fields}
     emitted, counts = {}, Counter()
     for qid, row in sorted(quests.items()):
         if qid not in valid_ids:
@@ -687,14 +688,20 @@ def generate(
         zone_maps = areas.get(row["ZoneOrSort"], set())
         for suffix, target in (("questrelation", "start"), ("involvedrelation", "finish")):
             candidates = [
-                pick(spawn, zone_maps, home.get(spawn["entry"]))
+                (pick(spawn, zone_maps, home.get(spawn["entry"])), spawn["entry"])
                 for kind in ("creature", "gameobject")
                 for spawn in locations[kind, suffix].get(qid, ())
             ]
             if candidates:
-                quest[target] = min(
-                    candidates, key=lambda p: (p["map"] not in zone_maps, p["map"], p["name"], p["x"], p["y"])
+                place, entry = min(
+                    candidates,
+                    key=lambda c: (c[0]["map"] not in zone_maps, c[0]["map"], c[0]["name"], c[0]["x"], c[0]["y"]),
                 )
+                # A class quest's giver who is a class trainer: the class it trains, so a card can say so.
+                if target == "start" and row["RequiredClasses"] and entry in trains:
+                    place["trainer"] = trains[entry]
+                    counts["class quests from a class trainer"] += 1
+                quest[target] = place
         if zone := sorted(zone_maps & PUBLISHED.keys()):
             quest["zone"] = zone[0]
         elif place := quest.get("start", quest.get("finish")):
@@ -771,7 +778,7 @@ def generate(
             grid[continent, math.floor(x / LINK), math.floor(y / LINK)].append((x, y, hub))
             votes[hub][ui_map] += 1
     town_maps = {hub: sorted(counter, key=lambda m: (-counter[m], m)) for hub, counter in votes.items()}
-    npcs = role_npcs(tables, world, faction_rows, effects, skill_lines, grid, town_maps, centres.keys(), counts)
+    npcs = role_npcs(tables, world, faction_rows, role, grid, town_maps, centres.keys(), counts)
     names = defaultdict(set)
     for quest in emitted.values():
         for place in (quest[k] for k in ("start", "finish") if "hub" in quest.get(k, {})):
@@ -825,6 +832,7 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs):
         "-- not hostile to; place: a non-seasonal spawn, as quest givers'. Within",
         f"-- {LINK} yd of a quest place: its hub, on the map most of the hub's places use; else the smallest map.",
         "-- No side or zone-map spawn: left out.",
+        "-- trainer: a class quest's giver who trains a class (creature_template TrainerClass): that class.",
         "---@type string, AGFNamespace",
         "local _, ns = ...",
         "---@type AGFData",

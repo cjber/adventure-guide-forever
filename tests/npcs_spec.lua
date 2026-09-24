@@ -36,6 +36,17 @@ equal(npcs[6929].place.hub ~= nil, true, "Gryshka stands in an Orgrimmar hub")
 equal(npcs[5497].place.hub, npcs[5499].place.hub, "Stormwind's Mage Quarter trainers share a hub")
 equal(npcs[2737], nil, "Durtham Greldon teaches CMaNGOS's old Lockpicking line, no profession")
 
+-- A class quest's start names the class its giver trains, only when the giver is a class trainer.
+local quests = ns.Data.quests
+equal(quests[1638].start.trainer, 1, "Lyria Du Lac trains warriors")
+equal(quests[1920].start.trainer, 8, "Jennea Cannon trains mages")
+equal(quests[1639].start.trainer, nil, "Harry Burlguard is no trainer")
+for id, quest in pairs(quests) do
+	local trainer = quest.start and quest.start.trainer
+	equal(trainer == nil or quest.classes ~= nil, true, id .. " trainer only on a class quest")
+	equal(quest.finish == nil or quest.finish.trainer == nil, true, id .. " never on a finish")
+end
+
 local ROLES = { "class", "pet", "riding", "skill", "bg", "inn" }
 local count = 0
 for id, npc in pairs(npcs) do
