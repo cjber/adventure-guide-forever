@@ -133,7 +133,7 @@
 ---@field title string NPC or object name
 ---@field quests integer[] quest IDs it offers the player now, ascending
 
----@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"
+---@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"|"calling"
 
 -- A quest's place in its chain (Model.Story): the data's `next` links from the chain's head. Later members are IDs
 -- only, so no later chapter's title is ever drawn.
@@ -145,7 +145,7 @@
 -- One card in the guide (docs/design.md §2.2): only steps the player can take now.
 ---@class AGFJourney
 ---@field kind AGFJourneyKind
----@field key string stable identity for prefs.journey: "carry", "zone:<uiMapID>" (a zone's story or next-zone card alike) or "dungeon:<Map.ID>"
+---@field key string stable identity for prefs.journey: "carry", "zone:<uiMapID>" (a zone's story or next-zone card alike), "dungeon:<Map.ID>" or "calling"
 ---@field title string e.g. "Finish what you carry" or "Westfall story"
 ---@field subline string e.g. "3 ready to hand in, 1 in progress"
 ---@field reason? string why this journey, when there is an honest answer
@@ -158,7 +158,7 @@
 ---@field group? integer how many of its quests are elite, dungeon or raid (the sum of its steps' `group`)
 
 ---@class AGFRoute
----@field journeys AGFJourney[] at most 3: carry, the zone's story, a dungeon, the next zone
+---@field journeys AGFJourney[] at most 3: carry, the zone's story, then the diversions (calling, dungeon, next zone) newest first
 ---@field journey? string the key of the journey whose steps these are: the chosen one, else the first
 ---@field chosen boolean the player chose `journey`; false while the route falls back to the first card
 ---@field steps AGFStep[] that journey's steps, never more than MAX_STEPS
@@ -546,3 +546,10 @@
 
 ---@class AGFPlace
 ---@field trainer? integer a class quest's start only: the class its giver trains (1 Warrior ... 11 Druid)
+
+---@class AGFStrings
+---@field JOURNEY_CALLING string the calling card's title
+---@field CALLING_QUESTS string format: how many class quests the player can take now
+---@field CALLING_QUESTS_ONE string the same for one
+---@field CALLING_TRAINER string format: the lead class quest's title, when the data proves its giver trains the player's class
+---@field CALLING_TASK string format: the lead class quest's title, from any other giver

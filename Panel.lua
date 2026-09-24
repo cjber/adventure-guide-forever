@@ -26,12 +26,14 @@ local HINT_HEIGHT = 14
 local UNLISTED_HEIGHT = 26
 -- The scroll child above the cards: the header 4px down and 34px tall, then 6px to the first card.
 local LIST_TOP = 4 + 34 + 6
--- Blizzard's QUEST_TAG_ATLAS icons (Blizzard_FrameXMLBase/Constants.lua:514-527); the next zone gets the map's "!".
+-- Blizzard's QUEST_TAG_ATLAS icons (Blizzard_FrameXMLBase/Constants.lua:514-527); the next zone gets the map's "!",
+-- the calling the quest log's class icon from the same sheet (CSV:9385).
 local KIND_ICONS = {
 	carry = "questlog-questtypeicon-quest",
 	story = "questlog-questtypeicon-story",
 	nextzone = "QuestNormal",
 	dungeon = "questlog-questtypeicon-dungeon",
+	calling = "questlog-questtypeicon-class",
 }
 -- The chosen card keeps this art and is lit instead: the renown card's pressed art is drawn a few pixels over, which
 -- reads as the card slipping out of line.

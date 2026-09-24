@@ -260,6 +260,93 @@ equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "c
 delve.journey, delve.notInterested = nil, { ["dungeon:48"] = "Many" }
 equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "not interested: the next dungeon")
 
+-- The diversions (roadmap R4): carry and the story keep their slots; the calling, a dungeon and the next zone share the
+-- rest, the one whose newest quest opened at the highest level first, then in that order on a tie. Here's story holds
+-- 1-3; There holds 4-8 (the next zone); the Hall 9-10 and the calling 11 are on a map with no zone of their own.
+local function Diversions(nextMin, hallMin, callingMin)
+	local fixture = { quests = {}, zones = Ahead(0).zones, instances = { [36] = { name = "Hall" } } }
+	for id = 1, 3 do
+		fixture.quests[id] = quest(id / 10, 0.5)
+	end
+	for id = 4, 8 do
+		fixture.quests[id] = quest(id / 10, 0.5, 2)
+		fixture.quests[id].level = 20
+	end
+	fixture.quests[8].min = nextMin
+	for id = 9, 10 do
+		fixture.quests[id] = quest(id / 20, 0.5, 3)
+		fixture.quests[id].dungeon, fixture.quests[id].min = 36, hallMin
+	end
+	fixture.quests[11] = quest(0.9, 0.5, 3)
+	fixture.quests[11].classes, fixture.quests[11].min = 64, callingMin
+	fixture.quests[100] = quest()
+	return fixture
+end
+local both = prefs()
+both.dungeons = true
+local inLog = { [100] = { id = 100, title = "Carried", level = 18, complete = true, map = 1, x = 0.5, y = 0.5 } }
+local function Diverted(fixture, choices, entries)
+	return Kinds(Model.Plan(fixture, player, {}, entries or {}, choices).journeys)
+end
+equal(Diverted(Diversions(10, 10, 10), both), "zone:1 calling dungeon:36", "diversions: a tie, the calling first")
+equal(Diverted(Diversions(18, 10, 10), both), "zone:1 zone:2 calling", "diversions: the newest first")
+equal(Diverted(Diversions(18, 10, 10), both, inLog), "carry zone:1 zone:2", "diversions: carry leaves one slot")
+equal(Diverted(Diversions(16, 17, 10), both, inLog), "carry zone:1 dungeon:36", "diversions: a dungeon just opened")
+equal(Diverted(Diversions(16, 17, 18), both, inLog), "carry zone:1 calling", "diversions: a calling just opened")
+local hall = prefs()
+hall.dungeons, hall.journey = true, "dungeon:36"
+equal(Diverted(Diversions(18, 10, 10), hall, inLog), "carry zone:1 dungeon:36", "diversions: the chosen one stays")
+equal(Diverted(Diversions(18, 10, 10), prefs(), inLog), "carry zone:1 zone:2", "diversions: dungeons off")
+local combat = Model.Plan(Diversions(10, 10, 18), player, {}, {}, both)
+equal(
+	Kinds(Model.Refresh(Diversions(10, 10, 18), player, {}, inLog, both, combat).journeys),
+	"carry zone:1 calling",
+	"diversions: in combat a new carry card pushes out the last"
+)
+
+-- Your calling (roadmap #7): the class quests open now as one card, its reason naming the quest it leads with.
+local function Calling(fixture, completed, choices)
+	for _, journey in ipairs(Model.Plan(fixture, player, completed or {}, {}, choices or prefs()).journeys) do
+		if journey.kind == "calling" then
+			return journey
+		end
+	end
+end
+local task = Calling(Diversions(10, 10, 10))
+equal(task.key, "calling", "calling: its key")
+equal(task.title, "Your calling", "calling: its title")
+equal(task.subline, "1 quest for your class", "calling: counts its quests")
+equal(task.reason, "A task for your class: Quest", "calling: from a giver the data doesn't call a trainer")
+local trained = Diversions(10, 10, 10)
+trained.quests[11].start.trainer = 7
+equal(Calling(trained).reason, "Your class trainer has a task: Quest", "calling: the player's class trainer")
+trained.quests[11].start.trainer = 1
+equal(Calling(trained).reason, "A task for your class: Quest", "calling: another class's trainer is no trainer here")
+local every = Diversions(10, 10, 10)
+every.quests[11].classes = 1 + 2 + 4 + 8 + 16 + 64 + 128 + 256 + 1024
+equal(Calling(every), nil, "calling: a quest for every class is no calling")
+local other = Diversions(10, 10, 10)
+other.quests[11].classes = 1
+equal(Calling(other), nil, "calling: another class's quest")
+local nothanks = prefs()
+nothanks.notInterested = { calling = "Your calling" }
+equal(Calling(Diversions(10, 10, 10), nil, nothanks), nil, "calling: not interested")
+local noquests = prefs()
+noquests.quests = false
+equal(Calling(Diversions(10, 10, 10), nil, noquests), nil, "calling: quests off")
+-- Chapters follow the story rules (docs/design.md §2.3).
+local chain = Diversions(10, 10, 10)
+chain.quests[11].next = 12
+chain.quests[12] = quest(0.8, 0.5, 3)
+chain.quests[12].classes, chain.quests[12].pre = 64, { 11 }
+local begun = Calling(chain)
+equal(begun.subline, "Chapter 1 of 2", "calling: a chain's chapter")
+equal(begun.story and begun.story.chapter, 1, "calling: its track")
+equal(begun.steps[1].reason, "Begins a new story", "calling: its step begins the chain")
+local went = Calling(chain, { [11] = true })
+equal(went.subline, "Chapter 2 of 2", "calling: the next chapter")
+equal(went.steps[1].reason, "Continues a story you started", "calling: and continues it")
+
 local hub = { quests = { [1] = quest(0.1), [2] = quest(0.11), [3] = quest(0.09) }, zones = data.zones }
 hub.quests[1].start.hub, hub.quests[2].start.hub = 7, 7
 local before = Model.Plan(hub, player, {}, {}, prefs()).steps[1]
