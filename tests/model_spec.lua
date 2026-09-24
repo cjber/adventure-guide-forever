@@ -370,6 +370,31 @@ skipLead.skipped["pickup:1:0.4000:0.5000"] = true
 card = Model.Plan(saga, player, {}, {}, skipLead).journeys[1]
 equal(card.subline, "3 quests near your level", "story card: a skipped chapter is no chapter")
 equal(card.story == nil and card.reason == nil, true, "story card: nor its chain or reason")
+-- A pinned chapter stays pinned, and pins come before it: with a full route of pins the card falls back.
+local pinLead = prefs()
+pinLead.pinned = { "pickup:1:0.4000:0.5000" }
+card = Model.Plan(saga, player, {}, {}, pinLead).journeys[1]
+equal(card.subline, "Chapter 1 of 2", "story card: a pinned chapter")
+for _, step in ipairs(card.steps) do
+	lead = step.chapter and step or lead
+end
+equal(lead.pinned, true, "story card: keeps its pin")
+local crowd = { quests = {}, zones = saga.zones }
+local crowdPins = prefs()
+for id, q in pairs(saga.quests) do
+	crowd.quests[id] = q
+end
+for id = 11, 11 + Model.MAX_STEPS - 1 do
+	crowd.quests[id] = quest((id - 10) / 10, 0.9)
+	crowdPins.pinned[#crowdPins.pinned + 1] = ("pickup:1:%.4f:0.9000"):format((id - 10) / 10)
+end
+card = Model.Plan(crowd, player, {}, {}, crowdPins).journeys[1]
+local pinnedSteps = 0
+for _, step in ipairs(card.steps) do
+	pinnedSteps = pinnedSteps + (step.pinned and 1 or 0)
+end
+equal(pinnedSteps, Model.MAX_STEPS, "story card: every pin kept ahead of the chapter")
+equal(card.story, nil, "story card: which then claims no chain")
 -- The same in combat, where the cheap rebuild keeps the last card less the skipped step.
 card = Model.Refresh(saga, player, {}, skipLead, Model.Plan(saga, player, {}, {}, prefs())).journeys[1]
 equal(card.subline, "3 quests near your level", "story card: a chapter skipped in combat is no chapter")

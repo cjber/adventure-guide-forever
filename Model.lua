@@ -708,7 +708,7 @@ local function Order(selected, origin, where, away, cheap)
 end
 
 -- Chooses up to MAX_STEPS of `candidates` and orders them from the player (docs/design.md §4.1). `lead`, the story
--- card's chapter, is always chosen, but ordered by cost like the rest.
+-- card's chapter, is chosen next after the pinned steps (keeping its pin when it has one), ordered by cost like the rest.
 local function Build(data, player, candidates, prefs, mapName, cheap, lead)
 	local byKey, pool, where, docks = {}, {}, {}, Docks(data, player.side)
 	for _, step in ipairs(candidates) do
@@ -741,14 +741,14 @@ local function Build(data, player, candidates, prefs, mapName, cheap, lead)
 			end
 		end
 	end
-	if lead and byKey[lead.key] then
-		Take(lead)
-	end
 	for _, key in ipairs(prefs.pinned or {}) do
 		local step = byKey[key]
 		if step and not chosen[step] and #selected < Model.MAX_STEPS then
 			Take(step, true)
 		end
+	end
+	if lead and byKey[lead.key] and not chosen[lead] and #selected < Model.MAX_STEPS then
+		Take(lead)
 	end
 	while #selected < Model.MAX_STEPS do
 		local best
