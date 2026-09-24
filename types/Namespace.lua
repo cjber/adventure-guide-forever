@@ -271,7 +271,6 @@
 ---@field Stale fun(handed: AGFStep[], index: integer, steps: AGFStep[], far?: fun(a: AGFStep, b: AGFStep): boolean): boolean the guidance handed to Shortest Path no longer matches the journey's steps
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")
 ---@field Trainable fun(): AGFTFSpell[]? Tweaks Forever's trainable spells; nil without a v1 Tweaks Forever or its answer
----@field Trainer fun(): string? the trainer line's count ("3 new spells") as last fetched, nil with nothing to train
 ---@field RefreshCards fun(journeys: AGFJourney[]) the cards shown: drops other answers, asks for up to 3 stale, one a frame
 ---@field ResumeCards fun() step 1's travel frame is over: the queued cards ask from the next frame
 ---@field CardTravel fun(journey: AGFJourney): AGFCardTravel? a card's last answer, without asking again
@@ -514,3 +513,31 @@
 
 ---@class AGFNamespace
 ---@field NotInterested fun(key: string, title: string) hide a journey on this character until Show again; a choice of it ends
+
+-- Asides (Asides.lua, docs/design.md §2.11): one-line hints beside the journeys, never a route.
+---@class AGFAside
+---@field key string stable identity for Skip and Not interested, e.g. "trainer"
+---@field text string the whole line, in the game's voice
+---@field icon string an atlas the Forever client has (a row of the atlas CSV)
+---@field place? AGFPlace where Go takes the player: only a place from the data
+
+---@class AGFAsides
+---@field Register fun(provider: fun(): AGFAside?) a domain's provider, asked in step 1's travel frame and never in combat; earlier ones win
+---@field Refresh fun() asks every provider again, out of combat; listeners hear only when the shown aside changes
+---@field Current fun(): AGFAside? the first answer neither skipped this session nor turned down for this character
+---@field OnChange fun(callback: fun())
+---@field Skip fun(key: string) hide it until the next session
+---@field Decline fun(aside: AGFAside) Not interested: hide it for this character, remembering its text
+---@field Declined fun(): {key: string, text: string}[] the turned-down asides, by text, for Show again: its provider's answer now, else the saved text
+---@field Restore fun(key: string) Show again: undo a Decline
+---@field Go fun(aside: AGFAside): boolean to its place, as Integrations.Navigate; false without one
+---@field Open fun(owner: Region, tag: string, aside: AGFAside) its menu: Go with a place, Skip, Not interested
+
+---@class AGFNamespace
+---@field Asides AGFAsides
+
+---@class AGFPrefs
+---@field asides? table<string, string> the asides this character turned down (Not interested): key -> the text it had
+
+---@class AGFStrings
+---@field STORY_HOOK string format: the tracker's one line with no journey chosen: a story's title, its reason or subline

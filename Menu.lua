@@ -9,8 +9,8 @@ local Menu = {}
 ns.Menu = Menu
 
 -- "Show again: <title>" for each step skipped this session, in the order they were skipped, then each journey this
--- character is not interested in.
----@param description SharedMenuDescriptionProxy
+-- character is not interested in, then each aside it turned down.
+---@param description SharedMenuDescriptionProxy|AGFMenu
 function Menu.Skipped(description)
 	for _, skipped in ipairs(ns.Skipped()) do
 		description:CreateButton(L.SHOW_AGAIN:format(skipped.title), function()

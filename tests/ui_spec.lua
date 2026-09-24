@@ -166,21 +166,26 @@ do
 	h.SetCombat(false)
 	clean(h, "title click in combat")
 
-	-- With none chosen the title chooses the journey it follows (design §2.10); in combat it waits, as a card does,
-	-- and Shortest Path starts it once combat ends, with no waypoint meanwhile.
+	-- With none chosen the tracker's one line is the top story's hook (design §2.5), and its click chooses that story
+	-- as its card does; in combat the start waits, and Shortest Path starts it once combat ends, with no waypoint
+	-- meanwhile.
+	local function ClickHook(loaded)
+		loaded.tracker:OnBlockHeaderClick(loaded.tracker.liveBlocks.hook, "LeftButton")
+		loaded.flush()
+	end
 	h = Load("v1", nil, false)
-	equal(h.ns.Route().chosen, false, "none chosen: the tracker follows the first card")
-	local follows = h.ns.Route().journey
+	equal(h.ns.Route().chosen, false, "none chosen: nothing chosen yet")
+	equal(h.tracker.liveBlocks[h.ns.Route().steps[1].key], nil, "none chosen: no step in the tracker")
 	h.SetCombat(true)
-	ClickTitle(h)
-	equal(h.ns.Prefs().journey, follows, "none chosen: the title chooses the journey it follows")
+	ClickHook(h)
+	equal(h.ns.Prefs().journey, "zone:1413", "none chosen: the hook chooses its story")
 	equal(h.spf.NavigateRoute + h.counts.SetUserWaypoint, 0, "none chosen: in combat nothing starts yet")
 	h.SetCombat(false)
 	h.flush()
 	equal(h.spf.NavigateRoute, 1, "none chosen: the route starts once combat ends")
 	equal(h.counts.SetUserWaypoint, 0, "none chosen: and no waypoint was set")
-	equal(h.ns.Prefs().guided, follows, "none chosen: recorded as the chosen journey's route")
-	clean(h, "title click chooses")
+	equal(h.ns.Prefs().guided, "zone:1413", "none chosen: recorded as the chosen journey's route")
+	clean(h, "hook click chooses")
 
 	h = Load("v1", { trackRouteQuests = true, untrackOthers = true })
 	h.watched[1] = 99
@@ -192,8 +197,9 @@ do
 	ClickTitle(h)
 	equal(h.spf.NavigateRoute, 0, "the route setting off: no route")
 	local unset = Load("v1", { titleStartsRoute = false }, false)
-	ClickTitle(unset)
-	equal(unset.ns.Prefs().journey, nil, "the route setting off: the title chooses nothing")
+	ClickHook(unset)
+	equal(unset.ns.Prefs().journey, "zone:1413", "the route setting off: the hook still chooses, as a card does")
+	equal(unset.spf.NavigateRoute, 0, "the route setting off: and starts nothing")
 	equal(table.concat(h.watched, " "), "99", "the tracking setting off: the tracked quests are untouched")
 
 	local byKey = {}
@@ -408,7 +414,8 @@ do
 	Emptied(h, "QUEST_TURNED_IN", 845)
 	local block = h.tracker.liveBlocks["journey-complete"]
 	equal(block and block.header, "Journey complete", "journey complete: the header")
-	equal(h.tracker.layoutOrder[1], "journey-complete", "journey complete: above the steps")
+	-- None is chosen now: the tracker's one line, the story's hook, then the header, and no step.
+	same(h.tracker.layoutOrder, { "hook", "journey-complete" }, "journey complete: under the hook, no step")
 	same(h.fanfares, { "journey-complete" }, "journey complete: glows once")
 	equal(#h.sounds, 0, "journey complete: no stage-end sound")
 	local opened, openPanel = 0, h.ns.OpenPanel
@@ -421,7 +428,7 @@ do
 	equal(h.spf.NavigateRoute, 1, "journey complete: and starts nothing")
 	h.ns.Invalidate()
 	h.flush()
-	equal(h.tracker.layoutOrder[1], h.ns.Route().steps[1].key, "journey complete: gone on the next route change")
+	same(h.tracker.layoutOrder, { "hook" }, "journey complete: gone on the next route change")
 
 	h = Started("v1")
 	h.SetCombat(true)
@@ -1596,7 +1603,7 @@ do
 end
 
 -- F8, the resume line: a login shows "Where you left off" once, when last session's step 1 is still step 1; a
--- /reload, a stale key or a route change shows none.
+-- /reload, a stale key or a route change shows none. The step shows only once a journey is chosen, so each has one.
 do
 	local function Resumed(h)
 		local count = 0
@@ -1610,7 +1617,7 @@ do
 	equal(saved and saved.key, "handin:346", "resume: each rebuild saves step 1")
 	equal(Resumed(session), 0, "resume: nothing saved, nothing to resume")
 	local function Login(options)
-		options.charDB = { last = { key = saved.key, reason = "finishes a story" } }
+		options.charDB = { journey = "carry", last = { key = saved.key, reason = "finishes a story" } }
 		options.completed = { 844 }
 		options.log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
@@ -1622,7 +1629,7 @@ do
 	equal(Resumed(h), 1, "resume: a login with a matching key shows the line")
 	equal(TrackerLines(h)[2], "Where you left off: finishes a story", "resume: in place of the reason, after the town")
 	local capital = harness.load({
-		charDB = { last = { key = saved.key, reason = "Continues a story you started" } },
+		charDB = { journey = "carry", last = { key = saved.key, reason = "Continues a story you started" } },
 		completed = { 844 },
 		log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
@@ -1982,9 +1989,9 @@ for _, spf in ipairs({ false, "v1" }) do
 end
 
 -- None chosen (docs/design.md §2.2): a fresh character sees every card whole, no steps, no rings and the hint, and
--- nothing guides while the tracker still follows the first card. Choosing one starts its route and folds the others
--- into one-line rows above it, each keeping its lines in a tooltip; a row chooses its card and starts its route in
--- place of the first, and the chosen card toggles back to none, stopping the route it started.
+-- nothing guides; the tracker has one line, the story's hook, and no step (design §2.5). Choosing one starts its route
+-- and folds the others into one-line rows above it, each keeping its lines in a tooltip; a row chooses its card and
+-- starts its route in place of the first, and the chosen card toggles back to none, stopping the route it started.
 for _, spf in ipairs({ false, "v1" }) do
 	local label = "none chosen: " .. (spf or "no Shortest Path")
 	local h = Load(spf, nil, false)
@@ -2033,7 +2040,11 @@ for _, spf in ipairs({ false, "v1" }) do
 	end
 	equal(route.chosen, false, label .. ": nothing chosen")
 	equal(route.journey, "carry", label .. ": the route falls back to the first card")
-	equal(h.tracker.liveBlocks[route.steps[1].key] ~= nil, true, label .. ": which the tracker still follows")
+	same(h.tracker.layoutOrder, { "hook" }, label .. ": the tracker's one line")
+	equal(route.journeys[2].kind, "story", label .. ": a story card")
+	local hook = route.journeys[2].title .. " · " .. (route.journeys[2].reason or route.journeys[2].subline)
+	equal(h.tracker.liveBlocks.hook.header, hook, label .. ": the story's title and its hook")
+	equal(#h.tracker.liveBlocks.hook.order, 0, label .. ": one line, the header alone")
 	equal(Heights(), "86 86 86", label .. ": every card whole")
 	equal(Rows(), 0, label .. ": no steps listed")
 	equal(Hint(), 1, label .. ": the hint under the cards")
@@ -2445,8 +2456,8 @@ do
 	clean(h, "cog")
 end
 
--- F16: with spells to train, one text-only trainer line in the guide and the tracker; otherwise none. Four Tweaks
--- Forever profiles: absent, no answer yet, nothing to train, and three spells.
+-- F16, the first aside (Asides.lua): with spells to train, one text-only trainer line in the guide and the tracker;
+-- otherwise none. Four Tweaks Forever profiles: absent, no answer yet, nothing to train, and three spells.
 do
 	local SPELL = { name = "Lightning Bolt", level = 14, line = "Elemental", lineID = 375, general = false }
 	local THREE = { SPELL, SPELL, SPELL }
@@ -2507,9 +2518,11 @@ do
 		h.ns.Invalidate()
 		h.flush()
 		equal(lines[1], case.text, label .. ": the panel's line")
-		local block = h.tracker.liveBlocks.trainer
-		local shown = block and block.used and block.lines[1] or nil
-		equal(shown, case.text and "3 new spells", label .. ": the tracker's line")
+		local block = h.tracker.liveBlocks.aside
+		local shown = block and block.used and block.header or nil
+		equal(shown, case.text, label .. ": the tracker's line")
+		-- With no journey chosen it is the tracker's one line, in place of the story's hook.
+		same(h.tracker.layoutOrder, { case.text and "aside" or "hook" }, label .. ": the tracker's only line")
 		-- Text only: no ring for it, and its tracker title neither guides nor sets a waypoint.
 		local steps, rings = {}, 0
 		for _, step in ipairs(h.ns.Route().steps) do
@@ -2535,7 +2548,7 @@ do
 			case.tf.spells = { SPELL }
 			h.fire("SPELLS_CHANGED")
 			h.flush()
-			equal(h.tracker.liveBlocks.trainer.lines[1], "1 new spell", label .. ": one left")
+			equal(h.tracker.liveBlocks.aside.header, "Visit your class trainer · 1 new spell", label .. ": one left")
 			case.tf.spells = THREE
 		end
 		clean(h, label)

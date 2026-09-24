@@ -45,7 +45,7 @@ local SEARCH_MIN, SEARCH_ROWS, WHY_LINES, RESULT_HEIGHT, WHY_HEIGHT = 3, 10, 6, 
 -- The quest log's own geometry: a 29px search bar above the list, a 40px footer below it for the Go button.
 local TOP_BAR = 29
 local SKIPPED_HEIGHT = 16
-local TRAINER_HEIGHT = 14
+local ASIDE_HEIGHT = 14
 local FOOTER = 40
 
 ---@type Frame?
@@ -70,8 +70,8 @@ local Refresh
 local CardTooltip
 ---@type FontString?
 local emptyText
----@type FontString?
-local trainerText
+---@type AGFAsideLine?
+local asideLine
 ---@type FontString?
 local hintText
 ---@type FontString?
@@ -109,6 +109,12 @@ local function ShowTooltip(owner, lines)
 	end
 	GameTooltip:Show()
 end
+
+-- The aside's line above the cards.
+---@class AGFAsideLine : Button
+---@field Icon Texture
+---@field Text FontString
+---@field Skip Button
 
 ---@class AGFRouteRow : Button
 ---@field Selected Texture
@@ -400,10 +406,55 @@ local function BuildJourneys(parent, below)
 	unlistedText:SetPoint("RIGHT", -10, 0)
 	unlistedText:SetJustifyH("LEFT")
 	unlistedText:SetText(L.UNLISTED)
-	-- The trainer line (F16) above the cards: text only, since the data has no trainer's place.
-	trainerText = list:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-	trainerText:SetPoint("RIGHT", -10, 0)
-	trainerText:SetJustifyH("LEFT")
+	-- The aside (Asides.lua) above the cards: its icon, its line and a row's skip. Its click goes to its place when it
+	-- has one; right-click is its menu.
+	asideLine = CreateFrame("Button", nil, list) --[[@as AGFAsideLine]]
+	asideLine:SetHeight(ASIDE_HEIGHT)
+	asideLine:SetPoint("RIGHT", -10, 0)
+	asideLine.Icon = asideLine:CreateTexture(nil, "ARTWORK")
+	asideLine.Icon:SetSize(ASIDE_HEIGHT, ASIDE_HEIGHT)
+	asideLine.Icon:SetPoint("LEFT")
+	asideLine.Skip = CreateFrame("Button", nil, asideLine) --[[@as Button]]
+	asideLine.Skip:SetSize(ASIDE_HEIGHT, ASIDE_HEIGHT)
+	asideLine.Skip:SetPoint("RIGHT")
+	asideLine.Skip:SetNormalAtlas("common-icon-redx")
+	asideLine.Skip:SetHighlightAtlas("common-icon-redx", "ADD")
+	asideLine.Skip:SetScript("OnClick", function()
+		local aside = ns.Asides.Current()
+		if aside then
+			ns.Asides.Skip(aside.key)
+		end
+	end)
+	asideLine.Skip:SetScript("OnEnter", function(self)
+		ShowTooltip(self, { L.SKIP })
+	end)
+	asideLine.Skip:SetScript("OnLeave", GameTooltip_Hide)
+	asideLine.Text = asideLine:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+	asideLine.Text:SetPoint("LEFT", asideLine.Icon, "RIGHT", 4, 0)
+	asideLine.Text:SetPoint("RIGHT", asideLine.Skip, "LEFT", -4, 0)
+	asideLine.Text:SetJustifyH("LEFT")
+	asideLine.Text:SetWordWrap(false)
+	asideLine:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	asideLine:SetScript("OnClick", function(self, mouseButton)
+		local aside = ns.Asides.Current()
+		if aside and mouseButton == "RightButton" then
+			ns.Asides.Open(self, "MENU_ADVENTURE_GUIDE_FOREVER_ASIDE", aside)
+		elseif aside then
+			ns.Asides.Go(aside)
+		end
+	end)
+	-- A long line is cut short, so its tooltip has it whole, and says where a click goes when it goes anywhere.
+	asideLine:SetScript("OnEnter", function(self)
+		local aside = ns.Asides.Current()
+		if not aside then
+			return
+		end
+		local provider = ns.Integrations.Provider()
+		local lines = { aside.text }
+		lines[2] = aside.place and (provider and L.CLICK_TRAVEL:format(provider) or L.CLICK_WAYPOINT) or nil
+		ShowTooltip(self, lines)
+	end)
+	asideLine:SetScript("OnLeave", GameTooltip_Hide)
 end
 
 ---@param parent Frame
@@ -447,7 +498,7 @@ local function BuildSettingsMenu(_, menu)
 		return ns.Setting("showMapPins")
 	end)
 	Setting(ns.L.MENU_TRACKER, "showTracker")
-	-- Skipped steps and journeys not wanted (roadmap #17), each with Show again.
+	-- Skipped steps, journeys not wanted (roadmap #17) and asides turned down, each with Show again.
 	local skipped = #ns.Skipped()
 	if skipped > 0 then
 		ns.Menu.Skipped(menu:CreateButton(ns.L.SKIPPED:format(skipped)))
@@ -805,17 +856,18 @@ local function LayoutJourneys(route)
 	local searching = characters >= SEARCH_MIN and ns.State.Ready()
 	local top, found = LayoutResults(searching and query or nil)
 	track:Hide()
-	---@cast trainerText -?
-	local trainer = not searching and ns.Integrations.Trainer() or nil
-	trainerText:SetShown(trainer ~= nil)
-	if trainer then
-		trainerText:SetText(L.TRAINER_LINE:format(L.TRAINER, trainer))
-		trainerText:SetPoint("TOPLEFT", 10, -top)
-		top = top + TRAINER_HEIGHT + CARD_GAP
+	---@cast asideLine -?
+	local aside = not searching and ns.Asides.Current() or nil
+	asideLine:SetShown(aside ~= nil)
+	if aside then
+		asideLine.Icon:SetAtlas(aside.icon)
+		asideLine.Text:SetText(aside.text)
+		asideLine:SetPoint("TOPLEFT", 10, -top)
+		top = top + ASIDE_HEIGHT + CARD_GAP
 	end
-	-- The empty line goes under the trainer line, never over it; the search's results, when it has any, hide it.
+	-- The empty line goes under the aside, never over it; the search's results, when it has any, hide it.
 	---@cast emptyText -?
-	local emptyTop = trainer and TRAINER_HEIGHT + CARD_GAP or 0
+	local emptyTop = aside and ASIDE_HEIGHT + CARD_GAP or 0
 	emptyText:SetPoint("TOPLEFT", 10, -emptyTop - 8)
 	local chosen = not searching and route.chosen
 	local chosenCard, chosenJourney, compactRows = nil, nil, 0
@@ -1009,6 +1061,7 @@ local function Attach()
 	ns.Integrations.OnGuidanceChange(Refresh)
 	ns.Integrations.OnTravelChange(Refresh)
 	ns.Integrations.OnCardTravel(Refresh)
+	ns.Asides.OnChange(Refresh)
 
 	function ns.PanelShown()
 		return panel:IsVisible()

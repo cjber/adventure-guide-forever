@@ -18,6 +18,7 @@ Core.lua
 Model.lua
 State.lua
 Integrations.lua
+Asides.lua
 Menu.lua
 Pins.lua
 Panel.xml

@@ -86,9 +86,9 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   Being optional, it never picks the zone: zones are ranked by their other quests.
 - **None chosen** is the default (a fresh character, a card clicked again, or a saved choice whose card is no longer
   offered): every card whole in order, no step rows, the hint "Choose a journey to see its steps." under them, and
-  nothing guides. The route still falls back to the first card
-  (`route.chosen` false), so the tracker keeps a next step and its title click still sets off along it: there the
-  step is on screen. A stale saved key stays saved and is chosen again should its card come back.
+  nothing guides. The route still falls back to the first card (`route.chosen` false), but the tracker shows no
+  step until a journey is chosen, only its one quiet line (§2.5). A stale saved key stays saved and is chosen again
+  should its card come back.
 - **One chosen:** the others fold to one-line rows above it, in their order, and it sits whole and lit right over
   its track and step rows. Its steps start at the same place whichever card it is (two rows, 58 px, then the card),
   and no card sits between a card and its steps, which the old order did (a middle card's steps pushed the last card
@@ -268,6 +268,12 @@ ADVENTURE GUIDE                                 module header (template)
    - Fly to Lakeshire · 6 min                   travel
 ```
 
+- **One quiet line first.** The aside (§2.11) when there is one, as a block whose header is its whole line.
+- **No journey chosen.** The tracker shows that one line and nothing else: the aside, else the top story's hook
+  ("Westfall story · Begins a new story": the first story card's title, then its reason or subline; the
+  first card when no story is offered). Its click chooses that journey as its card does, starting the route with
+  "Choosing a journey starts the route"; right-click is the tracker menu. The step block, with its "Next:" line,
+  appears only once a journey is chosen, and a fanfare header sits under the line.
 - **Place line.** A stop with one giver reads "NPC, zone". The zone name comes from the client by map ID, with the
   data's name as the fallback. A turn-in placed by `GetNextWaypoint` uses the data's finish NPC only when that NPC
   is within the hub; otherwise it shows the zone alone.
@@ -431,7 +437,8 @@ Invariants:
 1. **Offer rules only gate new choices.** A chosen journey is built while it has a step, whatever would offer it
    now, and keeps its slot when a new card pushes one out.
 2. **The story is the zone you stand in** when it fits (top 3 now, or two levels on), or when it is the chosen zone.
-3. **Only a chosen journey is guided.** The tracker title chooses the journey it follows before starting it.
+3. **Only a chosen journey is guided.** The tracker shows a step only for a chosen journey; with none, its hook line
+   chooses one (§2.5).
 4. **Guidance follows the journey.** On each rebuild and on the frame after Shortest Path's super-tracking events,
    `Integrations.Stale` sends the route again, once, when a stop it has yet to reach left the steps, step 1 is neither
    the stop it heads for nor the one just reached, or step 1's point moved more than 100 yd (the town linkage).
@@ -468,6 +475,25 @@ A chosen journey the full build no longer has ends: its route is cancelled and t
 whole again. A Quests or Dungeons filter keeps the key (the player's own toggle can bring it back) but stops the
 route. Skipping every step of a chosen journey ends it the same way, quietly.
 
+### 2.11 Asides
+
+An aside is a one-line hint beside the journeys, never a route: `Asides.lua`, after `Integrations.lua` in the TOC.
+Each domain registers a provider returning at most one `{key, text, icon, place?}`: `icon` an atlas the CSV has,
+`place` only a place from the data (none today). Providers are asked in step 1's travel frame after each rebuild
+(Core), never in a rebuild's frame and never in combat, when the last answers stand; views redraw only when the
+aside shown changes. The first provider's answer the player has not skipped or turned down is the aside.
+
+- **Two surfaces at most.** One line above the cards (icon, `GameFontNormal` text, a row's `common-icon-redx`
+  skip), hidden while searching, and the tracker's line (§2.5). Both show the same aside.
+- **Skip for now** hides it for the session: the line's red X, or its menu. **Not interested** hides it for the
+  character (`charDB.asides[key]` = its text); the cog's "Skipped (n)" submenu, shared with skipped journeys, offers each back as
+  "Show again: <text>", its provider's text now when it still answers, else the saved one.
+- **Clicks.** Right-click on either line is its menu (Go with a place, Skip for now, Not interested). Left-click goes
+  to its place, as a step's Go does (§5.1), and does nothing without one.
+- **Providers.** The class trainer (F16): "Visit your class trainer · 3 new spells" with the minimap's `class`
+  mark (CSV:1321), from Tweaks Forever's `TrainableSpells`, asked again on `SPELLS_CHANGED`; text only, since the
+  data has no trainer's place.
+
 ## 3. Copy style sheet
 
 - Sentence case. No exclamation marks. Digits for numbers. "·" as the separator.
@@ -493,7 +519,8 @@ route. Skipping every step of a chosen journey ends it the same way, quietly.
 | Hub stops | `Lakeshire, Redridge` · `2 to hand in, 4 to pick up` · `Marshal Marris, Verner Osgood and 2 more` · `Guard Parker, Redridge Mountains` · `And 3 more` |
 | Travel | `Fly to Sentinel Hill · 6 min` · `Boat to Auberdine · 2 min wait` · `Fly to Astranaar · new flight path` · `About 4 min away` · card: `6 min` · `15 min by boat` · `15 min by zeppelin` |
 | Why-not | `Requires level 14` · `Completed: The Forgotten Heirloom` · `Requires one of: A, B` · `Horde only` · `Warriors only` · `You chose X instead` · `The guide can't tell where this starts` · `You've done this` · `In your quest log` · `Repeatable quests aren't suggested` |
-| Tracker | `Where you left off: finishes a story` · `Next: The Ruins of Stardust` · `Story complete` |
+| Tracker | `Where you left off: finishes a story` · `Next: The Ruins of Stardust` · `Story complete` · `Westfall story · Begins a new story` |
+| Asides | `Visit your class trainer · 3 new spells` |
 | Buttons, menu | `Go` (menus only) · `Stop` · `Show quest` · `Skip for now` · `Not interested` · `Skipped (2)` · `Show again: <title>` · `Choose another journey` |
 | Instructions | `Click to travel with Shortest Path` · `Click to set a waypoint` · `Click to choose this journey` · `Replaces your current journey.` |
 | Empty | `Nothing nearby fits your level.` |
@@ -713,11 +740,14 @@ Nothing below has been validated in game yet.
 8. When SPF declines a route (Go returns false), the native waypoint appears instead.
 9. With a turn-in on another continent, the route stays on this continent first, crosses once, and ends with that
    turn-in ("Hand in when you're in <zone>").
-10. With Tweaks Forever (PR #45) loaded and spells to train, "Visit your class trainer" shows with no ring; without
-    Tweaks Forever, nothing changes.
-11. Batch F (plan §7.10): Lakeshire is one stop; a stop ring draws over a super-tracked "?"; the cards show minutes
+10. With Tweaks Forever (PR #45) loaded and spells to train, "Visit your class trainer · N new spells" shows above
+    the cards and in the tracker with the class trainer mark and no ring; its X, Skip for now and Not interested
+    hide it, and the cog's "Skipped (1)" brings it back. Without Tweaks Forever, nothing changes.
+11. With no journey chosen the tracker shows one line (the aside, else the story's hook) and no step; its click
+    chooses the story and the full step block appears.
+12. Batch F (plan §7.10): Lakeshire is one stop; a stop ring draws over a super-tracked "?"; the cards show minutes
     and the hub line; the footer's Stop goes as soon as Shortest Path ends the journey.
-12. Batch G (plan §8.2): a chosen journey lasts through travel, turn-ins and `/reload`, and a paused route resumes
+13. Batch G (plan §8.2): a chosen journey lasts through travel, turn-ins and `/reload`, and a paused route resumes
     from its card or the tracker title.
 
 ## 9. Open questions that need client probes

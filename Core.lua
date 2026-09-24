@@ -125,7 +125,7 @@ ns.L = {
 	STORY_COMPLETE = "Story complete",
 	JOURNEY_COMPLETE = "Journey complete",
 	CHOOSE_NEXT = "Choose your next journey",
-	-- The trainer line (docs/plan.md F16): text only, above the steps.
+	-- The trainer aside (docs/plan.md F16): text only.
 	TRAINER = "Visit your class trainer",
 	TRAINER_SPELLS = "%d new spells",
 	TRAINER_SPELL = "1 new spell",
@@ -175,6 +175,8 @@ ns.L = {
 	-- Honest coverage (docs/design.md §2.1): the "!" over a giver marks the quests the guide can't list; Forever
 	-- draws no givers on the map (§9 probe `questoffer`).
 	UNLISTED = 'This land has stories the guide doesn\'t know yet; look for the "!" over quest givers.',
+	-- The tracker's one line while no journey is chosen: a story's title, then its reason or chapter.
+	STORY_HOOK = "%s · %s",
 }
 local L = ns.L
 
@@ -340,6 +342,11 @@ end
 
 ---@param key string
 function ns.Unskip(key)
+	local aside = key:match("^aside:(.+)$")
+	if aside then
+		ns.Asides.Restore(aside)
+		return
+	end
 	ns.Prefs().notInterested[key] = nil
 	sessionSkipped[key] = nil
 	for index, skipped in ipairs(skippedOrder) do
@@ -352,7 +359,7 @@ function ns.Unskip(key)
 end
 
 -- This session's skipped steps in the order they were skipped, then the journeys this character is not interested in,
--- by title.
+-- by title, then the asides it turned down (keyed "aside:<key>", named by their text).
 ---@return AGFSkipped[]
 function ns.Skipped()
 	local all, journeys = {}, {}
@@ -370,6 +377,9 @@ function ns.Skipped()
 	end)
 	for _, journey in ipairs(journeys) do
 		all[#all + 1] = journey
+	end
+	for _, aside in ipairs(ns.Asides.Declined()) do
+		all[#all + 1] = { key = "aside:" .. aside.key, title = aside.text }
 	end
 	return all
 end
@@ -599,11 +609,13 @@ end
 local travelPending = false
 
 -- Skipped when an invalidation landed since the rebuild: ns.Route() would rebuild in this frame too, and the
--- pending rebuild queues its own refresh. The cards wait for this frame and ask from the next.
+-- pending rebuild queues its own refresh. The asides are asked in this frame too. The cards wait for this frame and
+-- ask from the next.
 local function RefreshTravel()
 	travelPending = false
 	if not pendingRebuild then
 		ns.Integrations.RefreshTravel()
+		ns.Asides.Refresh()
 		ns.Integrations.ResumeCards()
 	end
 end
@@ -658,7 +670,7 @@ function ns.Choose(key, start)
 end
 
 -- Guidance along the chosen journey from `step`, its first by default. With none chosen, the route's own journey (the
--- first card, which the tracker follows) is chosen first. With Shortest Path loaded a start in combat waits for
+-- first card) is chosen first. With Shortest Path loaded a start in combat waits for
 -- combat's end. True when something now guides the player, or the start waits.
 ---@param step? AGFStep
 ---@return boolean
