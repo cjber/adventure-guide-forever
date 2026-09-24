@@ -697,15 +697,3 @@
 
 ---@class AGFData
 ---@field overlays? table<integer, AGFOverlay[]> zone uiMapID -> its explorable areas
-
----@class AGFExplore
----@field Explored fun(map: integer): table<string, true>? the map's explored overlays by "ox:oy"; nil without C_MapExplorationInfo
----@field Unexplored fun(data: AGFData, player: AGFPlayer, explored: table<string, true>): AGFOverlay? the area to suggest on the player's map
----@field NewLand fun(data: AGFData, player: AGFPlayer, explored: fun(map: integer): table<string, true>?): integer?, AGFLand?, AGFLandTaxi? the land to suggest, and where Go takes the player
-
----@class AGFNamespace
----@field Explore AGFExplore
-
----@class AGFStrings
----@field NEW_LAND string format: the land's name, its least and greatest level
----@field UNEXPLORED string format: the area's name
