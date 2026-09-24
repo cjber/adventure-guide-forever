@@ -160,6 +160,7 @@ function State.Player()
 		resting = resting,
 		level = UnitLevel("player"),
 		maxLevel = GetMaxPlayerLevel(),
+		logMax = C_QuestLog.GetMaxNumQuestsCanAccept(),
 		side = side,
 		raceBit = RaceBit(),
 		classBit = ClassBit(),

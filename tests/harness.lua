@@ -967,6 +967,10 @@ function harness.load(options)
 		GetNumQuestLogEntries = function()
 			return #log
 		end,
+		-- The quests the log may hold: options.logMax, else the 40 of the Forever log the design's probe saw full.
+		GetMaxNumQuestsCanAccept = function()
+			return options.logMax or 40
+		end,
 		GetInfo = function(index)
 			local entry = log[index]
 			return entry and { questID = entry.id, title = entry.title, level = entry.level, isHeader = false }

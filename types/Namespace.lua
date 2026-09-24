@@ -89,6 +89,7 @@
 ---@class AGFPlayer
 ---@field level integer
 ---@field maxLevel integer the level cap
+---@field logMax? integer the quests the log may hold (C_QuestLog.GetMaxNumQuestsCanAccept); no limit when nil
 ---@field side integer 1 Alliance, 2 Horde
 ---@field raceBit integer
 ---@field classBit integer
