@@ -238,3 +238,26 @@ AdventureGuideForeverTab = nil
 AdventureGuideForeverQuestsTab = nil
 ---@type AGFTrackerModule?
 AdventureGuideForeverObjectiveTracker = nil
+
+-- Forever's skill lines (probe R5, 1.60.1): the global GetNumSkillLines and GetSkillLineInfo are missing; these
+-- answer for the lines the character has, and GetSkillLineInfoByID is nil for an unlearned one.
+---@class AGFSkillLineInfo
+---@field skillID integer SkillLine ID
+---@field name string
+---@field rank integer
+---@field maxRank integer
+---@field skillLineCategoryID integer
+---@field isHeader boolean
+
+C_SkillInfo = {}
+
+---@return integer
+function C_SkillInfo.GetNumSkillLines() end
+
+---@param index integer
+---@return AGFSkillLineInfo?
+function C_SkillInfo.GetSkillLineInfo(index) end
+
+---@param skillLineID integer
+---@return AGFSkillLineInfo?
+function C_SkillInfo.GetSkillLineInfoByID(skillLineID) end
