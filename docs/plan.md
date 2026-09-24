@@ -489,6 +489,9 @@ Each block lists: files · types (`types/Namespace.lua`) · data · atlases · c
 | 27 | Carry a finished Lakeshire quest and choose the story card (§7.10 row 24) | The stop reads "1 to hand in, N to pick up". The tracker shows the counts, then "NPC, NPC and N more" (or the reason, when it says more), the travel line and Next | SHOT panel + tracker |
 | 28 | Pins on, no SPF guiding, look at a zone with quest marks; super-track a quest whose "?" sits under a ring (§7.10 row 29) | AGF's rings draw over the stock "!" and "?", the super-tracked one included. Givers stay under them | SHOT map |
 | 29 | A single-giver step in the tracker (§7.10 row 30) | The place line reads "NPC, zone" with the client's zone name | SHOT tracker |
+| 30 | With SPF, open the guide on a character with a card across the sea (e.g. Darkshore from Westfall); then open it in combat (Batch F4, §7.10 row 26) | Each card shows "N min" at its subline's right, "N min by boat" where it fits; a card with no reason reads "Town and N more stops", with the group tag where a quest needs a group (not on the dungeon card); no hitch on opening. In combat nothing is fetched and earlier minutes stay | SHOT panel |
+| 31 | Hover a whole card and a one-line row (§7.10 row 27) | Title, subline, reason, the hub line (when line 3 holds the reason or the row is folded), the travel line, "1 needs a group" where it applies, then "Click to choose this journey" (the chosen card: "Click again to ...") | SHOT tooltip |
+| 32 | With the guide open, let Shortest Path finish or cancel AGF's journey, or clear the waypoint by hand (§7.10 row 28) | The footer's Stop goes at once, with no reopen | SHOT panel |
 
 ## 6. Commit plan (each commit signed with `git commit -S`, one idea, about 50 lines)
 
