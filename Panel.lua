@@ -637,6 +637,10 @@ local function LayoutJourneys(route)
 		trainerText:SetPoint("TOPLEFT", 10, -top)
 		top = top + TRAINER_HEIGHT + CARD_GAP
 	end
+	-- The empty line goes under the trainer line, never over it; the search's results, when it has any, hide it.
+	---@cast emptyText -?
+	local emptyTop = trainer and TRAINER_HEIGHT + CARD_GAP or 0
+	emptyText:SetPoint("TOPLEFT", 10, -emptyTop - 8)
 	for index, card in ipairs(cards) do
 		local journey = not searching and route.journeys[index] or nil
 		card:SetShown(journey ~= nil)
@@ -652,7 +656,7 @@ local function LayoutJourneys(route)
 	end
 	if searching or not route.journey then
 		LayoutRows(route, top, true)
-		top = math.max(top, 40)
+		top = math.max(top, emptyTop + 40)
 	end
 	local skipped = not searching and #ns.Skipped() or 0
 	---@cast skippedButton -?

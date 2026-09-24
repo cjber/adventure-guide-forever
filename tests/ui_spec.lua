@@ -1294,6 +1294,27 @@ do
 			end
 		end
 		equal(#lines, case.lines, label .. ": panel lines")
+		-- While completion data loads, the loading line sits under the trainer line, not over it.
+		local ready = h.ns.State.Ready
+		h.ns.State.Ready = function()
+			return false
+		end
+		h.ns.Invalidate()
+		h.flush()
+		local trainerY, emptyY
+		for _, frame in ipairs(h.frames) do
+			for _, region in ipairs(frame.regions or {}) do
+				local text = region:GetObjectType() == "FontString" and region:IsVisible() and region:GetText()
+				local _, _, _, _, y = region:GetPoint(1)
+				trainerY = text and text:find("class trainer", 1, true) and y or trainerY
+				emptyY = text == h.ns.L.LOADING and y or emptyY
+			end
+		end
+		equal(emptyY ~= nil, true, label .. ": the loading line")
+		equal(emptyY <= (trainerY and trainerY - 14 or -8), true, label .. ": the loading line under the trainer's")
+		h.ns.State.Ready = ready
+		h.ns.Invalidate()
+		h.flush()
 		equal(lines[1], case.text, label .. ": the panel's line")
 		local block = h.tracker.liveBlocks.trainer
 		local shown = block and block.used and block.lines[1] or nil
