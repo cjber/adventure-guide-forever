@@ -1037,8 +1037,8 @@ function harness.load(options)
 
 	-- PvP and talents, each only when a spec gives it, so by default the client lacks the API: options.battlegrounds
 	-- maps a level to the {id, name} list C_PvP.GetLevelUpBattlegrounds gives there (h.levelUpAsks counts the asks);
-	-- options.talents is the unspent count; options.instanceType what IsInInstance names. A spec edits h.talents and
-	-- h.instanceType.
+	-- options.rank is {info, rewards} for C_MajorFactions (rewards: rank -> reward list); options.talents is the unspent
+	-- count; options.instanceType what IsInInstance names. A spec edits h.rank, h.talents and h.instanceType.
 	if options.battlegrounds then
 		h.levelUpAsks = 0
 		G.C_PvP = {
@@ -1048,7 +1048,17 @@ function harness.load(options)
 			end,
 		}
 	end
-	h.talents, h.instanceType = options.talents, options.instanceType
+	h.rank, h.talents, h.instanceType = options.rank, options.talents, options.instanceType
+	if options.rank then
+		G.C_MajorFactions = {
+			GetMajorFactionProgressionInfo = function(id)
+				return id == 2800 and h.rank.info or nil
+			end,
+			GetRenownRewardsForLevel = function(id, rank)
+				return id == 2800 and h.rank.rewards[rank] or {}
+			end,
+		}
+	end
 	if options.talents then
 		G.GetNumUnspentTalents = function()
 			return h.talents

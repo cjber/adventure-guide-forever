@@ -77,6 +77,7 @@ local function Seen(aside)
 				aside.key,
 				aside.text,
 				aside.icon,
+				aside.texture or "",
 				place and ("%d:%.4f:%.4f"):format(place.map, place.x, place.y) or "",
 			}, "\n")
 		or ""

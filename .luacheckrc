@@ -99,9 +99,10 @@ read_globals = {
 	"UIParent",
 	-- Moments.lua
 	"AddonCompartmentFrame",
-	-- Asides.lua and PvP.lua (roadmap #12, #25), each read with a nil check
+	-- Asides.lua and PvP.lua (roadmap #12, #25, #28), each read with a nil check
 	"GetNumUnspentTalents",
 	"C_PvP",
+	"C_MajorFactions",
 	"IsInInstance",
 	-- Settings.lua
 	"Settings",

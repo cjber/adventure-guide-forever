@@ -895,7 +895,11 @@ local function LayoutJourneys(route)
 	local aside = not searching and ns.Asides.Current() or nil
 	asideLine:SetShown(aside ~= nil)
 	if aside then
-		asideLine.Icon:SetAtlas(aside.icon)
+		if aside.texture then
+			asideLine.Icon:SetTexture(aside.texture)
+		else
+			asideLine.Icon:SetAtlas(aside.icon)
+		end
 		asideLine.Text:SetText(aside.text)
 		asideLine:SetPoint("TOPLEFT", 10, -top)
 		top = top + ASIDE_HEIGHT + CARD_GAP

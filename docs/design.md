@@ -537,8 +537,8 @@ aside shown changes. The first provider's answer the player has not skipped or t
   place for the player) it is text only: "Visit your class trainer · 3 new spells". Unspent talent points (#25):
   "You have 2 talent points to spend" with the Legion `minortalents-icon-book` (CSV:388, the atlas's one square
   talent mark), from `GetNumUnspentTalents` (R5 found it; `UnitCharacterPoints` is missing on Forever), while any wait,
-  asked again on `CHARACTER_POINTS_CHANGED`; no API, no line. Then a battleground open to
-  you (§2.15). Providers are asked in that order, the TOC's.
+  asked again on `CHARACTER_POINTS_CHANGED`; no API, no line. Then a battleground open to you and the next PvP rank's
+  reward (§2.15). Providers are asked in that order, the TOC's.
 - **News again.** A provider may give `renew`, how often the aside became news (a talent point gained): Skip for now
   holds only while it is unchanged, so each new point brings the line back once. An event a provider needs is
   registered through `Asides.RefreshOn`, which skips one the client lacks.
@@ -608,9 +608,9 @@ cache that did, Integrations' town places, is keyed on it).
   Questie and QuestieDB carry no licence, so the repo, specs and goldens hold none of their code, types or data; the
   specs use a synthetic stand-in, mostly a mirror of the bundled data (`harness.questieMirror`).
 
-### 2.15 PvP (roadmap #12)
+### 2.15 PvP (roadmap #12, #28)
 
-`PvP.lua`, after `Asides.lua` in the TOC, gives an aside; the opt-in card is the planner's.
+`PvP.lua`, after `Asides.lua` in the TOC, gives two asides; the opt-in card is the planner's.
 
 - **Open to you.** Only `C_PvP.GetLevelUpBattlegrounds(level)` says which battlegrounds are open: each level up to
   the player's is asked once (R5: Warsong Gulch at 10, Arathi Basin at 20, Darkspear Islands at 30). `canEnter` gates
@@ -628,6 +628,11 @@ cache that did, Integrations' town places, is keyed on it).
   cheap rebuild keeps. It is a diversion (R4) as new as the level the battleground opened at, after the dungeon on a
   tie; the chosen one keeps its slot. A new card's moment reads "Arathi Basin is open to you". The stock queue is
   never opened: Forever has no `TogglePVPFrame` (R5).
+- **The next rank's reward (#28).** For a character with rank points (major faction 2800, Camelot's
+  `PVPRankFrame.lua`): "Rank 7 · <description>" with the reward's own icon, for the next rank with rewards and the
+  first of them with a description, as the character pane's next-reward rows show them. The icon is a texture, so an
+  aside may give `texture`, drawn in place of its atlas. No probe reached `GetMajorFactionProgressionInfo`: without it,
+  nothing shows. Asked again on `PLAYER_PVP_RANK_CHANGED` and `MAJOR_FACTION_RENOWN_LEVEL_CHANGED`.
 
 ## 3. Copy style sheet
 
@@ -909,6 +914,9 @@ Nothing below has been validated in game yet.
     "pvp" there is unprobed). *Battlegrounds* in the cog is off; ticked, with the card chosen, the step rings the
     battlemaster, and unticking hides the card but keeps the choice. At 30, "Darkspear Islands is open to you" is
     text only; Battle for Blackrock and Battle for Gilneas never show.
+21. PvP rank (§2.15): a character with rank points sees "Rank N · <reward>" with the reward's icon, matching the
+    character pane's next-reward row; one with none sees nothing, and no error shows where
+    `C_MajorFactions.GetMajorFactionProgressionInfo` is missing.
 
 ## 9. Open questions that need client probes
 

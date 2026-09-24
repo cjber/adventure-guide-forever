@@ -670,7 +670,7 @@
 ---@field QUESTIE_ZONES string
 ---@field QUESTIE_FAILED string format: the error
 
--- Stream 3a "PvP" (roadmap #12, docs/design.md §2.15) and unspent talent points (#25).
+-- Stream 3a "PvP" (roadmap #12, #28, docs/design.md §2.15) and unspent talent points (#25).
 
 -- A battleground open to the player (State.Battlegrounds, from C_PvP.GetLevelUpBattlegrounds).
 ---@class AGFBattleground
@@ -693,6 +693,7 @@
 
 ---@class AGFAside
 ---@field renew? integer how often its provider found it news again (a talent point gained): a Skip for now holds while it is unchanged
+---@field texture? integer|string a client texture (a reward's icon) drawn in place of `icon`, which stays the fallback
 
 ---@class AGFAsides
 ---@field RefreshOn fun(event: string) ask the providers again on the event, when the client has it
@@ -703,5 +704,6 @@
 ---@field BATTLEMASTER_IN string format: the battlemaster's town; the step's title and the card's reason
 ---@field BATTLEMASTER_QUEUE string format: the battleground's name; the battlemaster step's reason
 ---@field MENU_BATTLEGROUNDS string the guide's cog: the opt-in Battlegrounds card
+---@field PVP_RANK_REWARD string format: the next rank with a reward, and the reward's description
 ---@field TALENT_POINTS string format: how many talent points wait to be spent
 ---@field TALENT_POINT string the same for one

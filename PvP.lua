@@ -3,8 +3,8 @@ local _, ns = ...
 local L = ns.L
 local Asides = ns.Asides
 
---[[ PvP (docs/design.md §2.15): a battleground open to the player (roadmap #12), as an
-     aside. The opt-in Battlegrounds card is the planner's (Model.lua). ]]
+--[[ PvP (docs/design.md §2.15): a battleground open to the player (roadmap #12) and the next PvP rank's reward (#28),
+     each an aside. The opt-in Battlegrounds card is the planner's (Model.lua). ]]
 
 -- The highest level this character has stood in a battleground at (charDB.battled); 0 when never, or unreadable.
 ---@return integer
@@ -47,3 +47,40 @@ instance:SetScript("OnEvent", function()
 		Asides.Refresh()
 	end
 end)
+
+-- Camelot's PvP rank track is major faction 2800 (Blizzard_UIPanels_Game/Camelot/PVPRankFrame.lua).
+local RANK_FACTION = 2800
+
+-- "Rank 6 · <reward>": the next rank with rewards, and the first of them with a description, in its own words and
+-- with its icon, as the character pane's "next reward" rows show them. Only for a character with rank points, and
+-- only where the client has C_MajorFactions' progression calls, which the probe did not reach.
+Asides.Register(function()
+	local factions = C_MajorFactions
+	if not (factions and factions.GetMajorFactionProgressionInfo and factions.GetRenownRewardsForLevel) then
+		return nil
+	end
+	local info = factions.GetMajorFactionProgressionInfo(RANK_FACTION)
+	local rank = info and info.renownLevel or 0
+	if not info or (rank <= 0 and (info.renownReputationEarned or 0) <= 0) then
+		return nil
+	end
+	for level = rank + 1, info.maxLevel or rank do
+		local rewards = factions.GetRenownRewardsForLevel(RANK_FACTION, level) or {}
+		for _, reward in ipairs(rewards) do
+			if reward.description then
+				return {
+					key = "pvprank",
+					text = L.PVP_RANK_REWARD:format(level, reward.description),
+					-- The minimap's battlemaster mark stands in for a reward with no icon.
+					icon = "battlemaster",
+					texture = reward.icon,
+				}
+			end
+		end
+		if #rewards > 0 then
+			return nil
+		end
+	end
+end)
+Asides.RefreshOn("PLAYER_PVP_RANK_CHANGED")
+Asides.RefreshOn("MAJOR_FACTION_RENOWN_LEVEL_CHANGED")

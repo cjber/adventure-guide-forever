@@ -207,13 +207,14 @@ ns.L = {
 	NPC_JOURNEY = "Adventure guide: %s",
 	-- Something new (docs/design.md §2.13): the tracker's line for a journey card the character hasn't been offered.
 	MOMENT = "%s is now for your level",
-	-- Stream 3a "PvP" (roadmap #12, docs/design.md §2.15): a battleground open to the player, as an aside and as the
-	-- opt-in card, which goes to a battlemaster.
+	-- Stream 3a "PvP" (roadmap #12, #28, docs/design.md §2.15): a battleground open to the player, as an aside and as
+	-- the opt-in card, which goes to a battlemaster; the next PvP rank's reward, in its own words.
 	BATTLEGROUND_OPEN = "%s is open to you",
 	BATTLEGROUND_SUBLINE = "A battleground open to you",
 	BATTLEMASTER_IN = "Battlemaster in %s",
 	BATTLEMASTER_QUEUE = "Queue for %s",
 	MENU_BATTLEGROUNDS = "Battlegrounds",
+	PVP_RANK_REWARD = "Rank %d · %s",
 	-- Unspent talent points (roadmap #25).
 	TALENT_POINTS = "You have %d talent points to spend",
 	TALENT_POINT = "You have 1 talent point to spend",

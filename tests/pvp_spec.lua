@@ -1,6 +1,6 @@
 -- Run from the repository root: luajit tests/pvp_spec.lua
 -- PvP (docs/design.md §2.15): the opt-in Battlegrounds card in the planner, then through tests/harness.lua the
--- battleground aside, and a client without the API.
+-- battleground aside, the next PvP rank's reward, and a client without either API.
 local harness = dofile("tests/harness.lua")
 local checks = 0
 
@@ -225,7 +225,42 @@ do
 	clean(h, "moment")
 end
 
--- A client without C_PvP or IsInInstance: no line, no card, no error.
+-- The next PvP rank's reward, in its own words and with its own icon, for a character with rank points.
+do
+	local rank = {
+		info = { renownLevel = 5, renownReputationEarned = 10, renownLevelThreshold = 100, maxLevel = 14 },
+		rewards = { [7] = { { icon = 135000 }, { icon = 136000, description = "Knight's tabard" } } },
+	}
+	local h = Load({ rank = rank })
+	Settle(h)
+	local aside = h.ns.Asides.Current()
+	equal(aside.key .. "|" .. aside.text, "pvprank|Rank 7 · Knight's tabard", "rank: the next reward")
+	equal(aside.texture, 136000, "rank: its icon")
+	h.ns.OpenPanel()
+	Settle(h)
+	local line = h.Find(function(frame)
+		return frame.Skip ~= nil and frame.Icon ~= nil and frame:IsVisible()
+	end)[1]
+	equal(line.Icon.file, 136000, "rank: drawn as a texture")
+	-- The next rank with rewards speaks for them all, as the character pane does: none described, no line.
+	rank.rewards[6] = { { icon = 135000 } }
+	Settle(h)
+	equal(h.ns.Asides.Current(), nil, "rank: the next rewards have no description")
+	rank.rewards[6] = nil
+	rank.info = { renownLevel = 0, renownReputationEarned = 0, renownLevelThreshold = 100, maxLevel = 14 }
+	Settle(h)
+	equal(h.ns.Asides.Current(), nil, "rank: no rank points, no line")
+	rank.info.renownReputationEarned = 1
+	rank.rewards[1] = { { icon = 134000, description = "A title" } }
+	Settle(h)
+	equal(h.ns.Asides.Current().text, "Rank 1 · A title", "rank: the first rank's")
+	rank.info.renownLevel, rank.info.maxLevel = 14, 14
+	Settle(h)
+	equal(h.ns.Asides.Current(), nil, "rank: none past the season's last")
+	clean(h, "rank")
+end
+
+-- A client without C_PvP, C_MajorFactions or IsInInstance: no line, no card, no error.
 do
 	local h = Load({ charDB = { journey = "carry", battlegrounds = true } })
 	Settle(h)
