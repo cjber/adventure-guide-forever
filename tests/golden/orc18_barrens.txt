@@ -2,20 +2,16 @@
 card (chosen) | carry | Finish what you carry | 1 ready to hand in, 1 in progress | - | map 1413
   step 1 | handin:349 | Turn in: The Zhevra | 1413 0.5223,0.3101 | Opens the next chapter here
   step 2 | objective:843 | Gann's Reclamation | 1413 0.4600,0.8000 | quests in progress
-card | zone:1413 | The Barrens story | Chapter 1 of 5 | 2 quests will soon turn grey | map 1413
+card | zone:1413 | The Barrens story | Chapter 1 of 4 | 2 quests will soon turn grey | map 1413
   step 1 | hub:349 | Crossroads, The Barrens | 1413 0.5193,0.3032 | Opens the next chapter here
   step 2 | hub:356 | Regthar Deathgate | 1413 0.4534,0.2841 | 2 to pick up
   step 3 | hub:385 | Pick up quests: Kadrak | 1413 0.4812,0.0542 | near your level
   step 4 | hub:382 | Pick up quests: Wizzlecrank's Shredder | 1413 0.5652,0.0745 | near your level
   step 5 | hub:340 | Ratchet, The Barrens | 1413 0.6268,0.3623 | Begins a new story
   step 6 | hub:317 | Pick up quests: Gilthares Firebough | 1413 0.6196,0.5496 | near your level
-  step 7 | hub:312 | Camp Taurajo, The Barrens | 1413 0.4510,0.5768 | 2 to pick up
-card | zone:1442 | Head to Stonetalon Mountains | 12 quests near your level | For level 20 | map 1442
+card | zone:1442 | Head to Stonetalon Mountains | 7 quests near your level | For level 20 | map 1442
   step 1 | hub:358 | Makaba Flathoof | 1442 0.8593,0.9789 | 2 to pick up
   step 2 | hub:360 | Xen'Zilla | 1442 0.7325,0.9489 | 2 to pick up
   step 3 | hub:363 | Pick up quests: Kaya Flathoof | 1442 0.7348,0.8559 | near your level
-  step 4 | hub:371 | Pick up quests: Wanted Poster: Besseleth | 1442 0.5906,0.7571 | near your level
-  step 5 | hub:374 | Sun Rock Retreat, Stonetalon Mountains | 1442 0.4722,0.6404 | 3 to pick up
-  step 6 | hub:377 | Pick up quests: Ziz Fizziks | 1442 0.5899,0.6260 | near your level
-  step 7 | hub:378 | Pick up quests: Piznik | 1442 0.7187,0.6000 | near your level
-  step 8 | hub:394 | Pick up quests: Zor Lonetree | 1454 0.3893,0.3840 | near your level
+  step 4 | hub:374 | Pick up quests: Mor'rogal | 1442 0.4722,0.6404 | near your level
+  step 5 | hub:394 | Pick up quests: Zor Lonetree | 1454 0.3893,0.3840 | near your level

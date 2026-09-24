@@ -823,11 +823,14 @@ takes the smallest map the quests use. NPCs never renumber or merge towns. An NP
   - more for each of a stop's quests;
   - more for a quest one level from grey;
   - more for each hand-in;
-  - less when every quest is red or optional;
+  - less when every quest is optional (more than two levels up, elite, or in an instance);
   - a stop with no quests is worth what its kind says: a trainer's, one hand-in.
 
   The order itself stays on travel alone. Within a stop, hand-ins come first, then grey risk, then closeness to the
   player's level.
+- **Orange and red.** A quest three or more levels up (the stock orange or red) is never a pickup, though its
+  minimum allows it: too hard alone. At 19, Missing In Action (25) waits in a Blackrock camp. The map's
+  quest-giver "!" still shows it, as the game does.
 - **Unchanged.** A quest whose eligibility the data cannot establish is never a candidate, and every step keeps
   the data's coordinates.
 

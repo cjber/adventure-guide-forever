@@ -212,7 +212,7 @@ function AdventureGuideForeverGiverPinMixin:OnAcquired(giver)
 	self:ApplyCurrentScale()
 end
 
--- The client's own title and level win when the quest is cached, as in the guide's rows.
+-- The client's own title wins when the quest is cached; the level is the bundled one.
 function AdventureGuideForeverGiverPinMixin:OnMouseEnter()
 	local giver = self.giver
 	if not giver then

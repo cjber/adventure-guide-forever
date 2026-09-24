@@ -222,9 +222,7 @@ function ModuleMixin:LayoutContents()
 		line = line + 1
 		block:AddObjective(line, L.NEXT:format(nextStep.title), nil, nil, OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE)
 	end
-	if not self:LayoutBlock(block) then
-		return
-	end
+	self:LayoutBlock(block)
 end
 
 ---@type AGFTrackerModule?
