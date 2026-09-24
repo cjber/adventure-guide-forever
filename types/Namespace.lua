@@ -669,3 +669,23 @@
 ---@field QUESTIE_FIELD string format: the entity or field it lacks
 ---@field QUESTIE_ZONES string
 ---@field QUESTIE_FAILED string format: the error
+
+-- Stream 3e "Rest and pacing" (roadmap #11, docs/design.md §2.15).
+
+---@class AGFPlayer
+---@field rested? integer rested XP (GetXPExhaustion, 0 with none); nil where the player's rest is unknown
+---@field xpMax? integer the XP the level needs (UnitXPMax), when the client gives it
+---@field resting? boolean in an inn or a city (IsResting): the last stop's rest line is ticked off
+
+-- What Model.RestLow reads of the player: an AGFPlayer, or State's own read of the rest.
+---@class AGFRest
+---@field level integer
+---@field maxLevel integer
+---@field rested? integer
+---@field xpMax? integer
+
+---@class AGFModel
+---@field RestLow fun(player: AGFRest): boolean rested XP under one bubble (a twentieth of the level), below the cap; false when unknown
+
+---@class AGFStrings
+---@field REST_HERE string the route's last stop, when rest is low and an innkeeper of the player's side stands there

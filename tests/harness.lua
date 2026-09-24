@@ -119,6 +119,8 @@ function harness.load(options)
 		map = 1413,
 		x = 0.52,
 		y = 0.30,
+		rested = 5000,
+		xpMax = 10000,
 	}
 	for key, value in pairs(options.player or {}) do
 		player[key] = value
@@ -933,6 +935,17 @@ function harness.load(options)
 	end
 	G.UnitClass = function()
 		return "Class", "CLASS", player.classID
+	end
+	-- Rest (roadmap #11): a spec sets player.rested (false for none: the client gives nil), player.xpMax and
+	-- player.resting; by default the bar is half rested, so no route ends at an inn.
+	G.GetXPExhaustion = function()
+		return player.rested or nil
+	end
+	G.UnitXPMax = function()
+		return player.xpMax
+	end
+	G.IsResting = function()
+		return player.resting == true
 	end
 	function h.MovePlayer(map, x, y)
 		player.map, player.x, player.y = map, x, y

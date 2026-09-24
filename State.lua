@@ -90,6 +90,16 @@ function State.StandingName(reaction)
 	return type(label) == "string" and label or nil
 end
 
+-- Rested XP (roadmap #11): GetXPExhaustion is nil with none, and IsResting is true in an inn or a city. The level's XP
+-- only when the client has UnitXPMax, which the Forever probes never asked about.
+---@return integer rested
+---@return integer? xpMax
+---@return boolean resting
+local function Rest()
+	local xpMax = UnitXPMax and UnitXPMax("player") or nil
+	return GetXPExhaustion() or 0, xpMax, IsResting() == true
+end
+
 ---@return AGFPlayer
 function State.Player()
 	local englishFaction = UnitFactionGroup("player")
@@ -104,7 +114,11 @@ function State.Player()
 		end
 	end
 
+	local rested, xpMax, resting = Rest()
 	return {
+		rested = rested,
+		xpMax = xpMax,
+		resting = resting,
 		level = UnitLevel("player"),
 		maxLevel = GetMaxPlayerLevel(),
 		side = side,
@@ -209,6 +223,26 @@ function State.Log()
 	return log
 end
 
+-- Whether the last stop's rest line would change (Model.RestLow, and resting ticks it): XP and rest events fire on
+-- every kill and every rested tick, and only a flip rebuilds anything.
+---@type integer?
+local restWas
+
+---@return boolean
+local function RestMoved()
+	local rested, xpMax, resting = Rest()
+	local low = ns.Model.RestLow({
+		level = UnitLevel("player"),
+		maxLevel = GetMaxPlayerLevel(),
+		rested = rested,
+		xpMax = xpMax,
+	})
+	local now = (low and 1 or 0) + (resting and 2 or 0)
+	local moved = now ~= restWas
+	restWas = now
+	return moved
+end
+
 ---@type fun()[]
 local listeners = {}
 ---@type fun()[]
@@ -254,6 +288,11 @@ events:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 -- A skill rank or a standing changed: skill- and reputation-gated quests may open or close (roadmap #8, GatesMoved).
 events:RegisterEvent("SKILL_LINES_CHANGED")
 events:RegisterEvent("UPDATE_FACTION")
+-- Rest and XP (roadmap #11), by feature detection: the Forever probes never registered these, and the client raises
+-- on an event it lacks, so one it refuses just leaves the rest line to the next rebuild.
+for _, event in ipairs({ "PLAYER_UPDATE_RESTING", "UPDATE_EXHAUSTION", "PLAYER_XP_UPDATE" }) do
+	pcall(events.RegisterEvent, events, event)
+end
 -- The first argument is PLAYER_ENTERING_WORLD's isInitialLogin, and QUEST_TURNED_IN's questID.
 events:SetScript("OnEvent", function(_, event, arg)
 	if event == "PLAYER_ENTERING_WORLD" then
@@ -262,6 +301,7 @@ events:SetScript("OnEvent", function(_, event, arg)
 		end
 		LoadSkills()
 		GatesMoved()
+		RestMoved()
 		if arg == true then
 			for _, fn in ipairs(loginListeners) do
 				fn()
@@ -272,6 +312,10 @@ events:SetScript("OnEvent", function(_, event, arg)
 			LoadSkills()
 		end
 		if not GatesMoved() then
+			return
+		end
+	elseif event == "PLAYER_UPDATE_RESTING" or event == "UPDATE_EXHAUSTION" or event == "PLAYER_XP_UPDATE" then
+		if not RestMoved() then
 			return
 		end
 	elseif event == "QUEST_TURNED_IN" and arg then

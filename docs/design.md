@@ -601,6 +601,17 @@ cache that did, Integrations' town places, is keyed on it).
   Questie and QuestieDB carry no licence, so the repo, specs and goldens hold none of their code, types or data; the
   specs use a synthetic stand-in, mostly a mirror of the bundled data (`harness.questieMirror`).
 
+### 2.15 Rest and pacing (roadmap #11)
+
+- **Rest at the inn (#11).** State reads `GetXPExhaustion()` (0 when nil), `UnitXPMax("player")` when the client has
+  it, and `IsResting()`. Rest is low under one bubble (a twentieth of the level's XP: a night at an inn), or at none
+  when there is no bar to measure by; never at the cap, and never when the rest is unknown (a spec's player, so the
+  goldens keep their reasons). Then each journey's last stop whose town has an innkeeper of the player's side
+  (`Data.npcs` `inn`: its hub, or within 100 yards) reads "Rest at the inn here" in place of its reason; its detail
+  stays. It is a reason, never a step, so it moves no route. Resting (an inn or a city) ticks it off, and the stop's
+  own reason is back. `PLAYER_UPDATE_RESTING`, `UPDATE_EXHAUSTION` and `PLAYER_XP_UPDATE` are registered by
+  feature detection and rebuild only when low or resting flips. Combat's cheap rebuild keeps the last build's line.
+
 ## 3. Copy style sheet
 
 - Sentence case. No exclamation marks. Digits for numbers. "·" as the separator.
@@ -873,6 +884,11 @@ Nothing below has been validated in game yet.
 18. QuestieDB (§2.14): with it loaded, `/agf audit` names "QuestieDB <version>" a few seconds after login with no
     hitch, and the cards, rings and town stops match the bundled run; with it disabled, or Questie alone without it,
     the audit names the bundled data and why.
+19. Rest (§2.15): with little rested XP, a route whose last town has an inn ends "Rest at the inn here" on its
+    ring's tooltip, and in the tracker once that stop is next; stepping into the inn clears it without a
+    `/reload`, and no Lua error is logged at login (the rest events are registered by feature detection). `UnitXPMax`
+    and the three events were never probed on Forever: with any missing, the line shows only at no rest at all, or
+    waits for the next rebuild.
 
 ## 9. Open questions that need client probes
 

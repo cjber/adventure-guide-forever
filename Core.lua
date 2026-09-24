@@ -207,6 +207,8 @@ ns.L = {
 	NPC_JOURNEY = "Adventure guide: %s",
 	-- Something new (docs/design.md §2.13): the tracker's line for a journey card the character hasn't been offered.
 	MOMENT = "%s is now for your level",
+	-- Roadmap #11: the route's last stop, when rested XP is low and an innkeeper stands there.
+	REST_HERE = "Rest at the inn here",
 }
 local L = ns.L
 

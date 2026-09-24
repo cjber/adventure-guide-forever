@@ -983,6 +983,65 @@ equal(
 	"town: the client's name first"
 )
 
+-- Roadmap #11: rested XP under one bubble (a twentieth of the level's XP) and an innkeeper of the player's side in the
+-- last stop's town (its hub, or within 100 yards): that stop's reason is the inn. Resting ticks it off; unknown rest,
+-- the cap, plenty of rest or no inn there leave the stop's own reason.
+do
+	local function Weary(fields)
+		local weary = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.3, y = 0.5 }
+		weary.rested, weary.xpMax = 0, 10000
+		for key, value in pairs(fields or {}) do
+			weary[key] = value ~= false and value or nil
+		end
+		return weary
+	end
+	equal(Model.RestLow(Weary()), true, "rest: none is low")
+	equal(Model.RestLow(Weary({ rested = 499 })), true, "rest: under a bubble is low")
+	equal(Model.RestLow(Weary({ rested = 500 })), false, "rest: a bubble is enough")
+	equal(Model.RestLow(Weary({ rested = 1, xpMax = false })), false, "rest: some, with no bar to measure it by")
+	equal(Model.RestLow(Weary({ rested = 0, xpMax = false })), true, "rest: none, with no bar")
+	equal(Model.RestLow(Weary({ rested = false })), false, "rest: unknown is never low")
+	equal(Model.RestLow(Weary({ level = 60 })), false, "rest: nothing to rest for at the cap")
+	local inns = {
+		quests = {},
+		zones = data.zones,
+		maps = tiers.maps,
+		continents = tiers.continents,
+		hubs = { [5] = { name = "Crossroads, The Barrens" }, [6] = { name = "Camp Taurajo, The Barrens" } },
+		npcs = {
+			[950] = { inn = true, side = 2, place = { map = 1, x = 0.54, y = 0.5, name = "Innkeeper", hub = 5 } },
+		},
+	}
+	for id, place in ipairs({ { 0.401, 6 }, { 0.501, 5 }, { 0.502, 5 } }) do
+		inns.quests[id] = quest(place[1])
+		inns.quests[id].start.hub = place[2]
+	end
+	local REST = "Rest at the inn here"
+	local function Ends(traveller)
+		return Model.Plan(inns, traveller, {}, {}, Choose("zone:1")).steps
+	end
+	local plain = Ends(Weary({ rested = 5000 }))
+	equal(#plain, 2, "rest: two towns")
+	equal(plain[2].hub, 5, "rest: the inn's town last")
+	local firstReason, lastReason = plain[1].reason, plain[2].reason
+	local weary = Ends(Weary())
+	equal(weary[1].reason, firstReason, "rest: the first stop keeps its reason")
+	equal(weary[2].reason, REST, "rest: the last stop's reason is the inn")
+	equal(weary[2].detail, plain[2].detail, "rest: its detail stays")
+	equal(#weary, 2, "rest: a reason, never a step")
+	equal(Ends(Weary({ resting = true }))[2].reason, lastReason, "rest: resting ticks it off")
+	equal(Ends(Weary({ rested = false }))[2].reason, lastReason, "rest: unknown rest, no line")
+	equal(Ends(Weary({ maxLevel = 18 }))[2].reason, lastReason, "rest: the cap")
+	inns.npcs[950].side = 1
+	equal(Ends(Weary())[2].reason, lastReason, "rest: the other side's innkeeper")
+	inns.npcs[950].side, inns.npcs[950].place.hub = 3, nil
+	equal(Ends(Weary())[2].reason, REST, "rest: no hub, within the town linkage")
+	inns.npcs[950].place.x = 0.7
+	equal(Ends(Weary())[2].reason, lastReason, "rest: no hub, too far")
+	inns.npcs[950].place.x, inns.npcs[950].place.hub = 0.4, 6
+	equal(Ends(Weary())[2].reason, lastReason, "rest: an inn only on the way is no ending")
+end
+
 assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
 local count = 0
 for id, q in pairs(ns.Data.quests) do

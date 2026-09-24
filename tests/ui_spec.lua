@@ -2806,4 +2806,45 @@ do
 	clean(h, label)
 end
 
+-- Roadmap #11: with no rest the route ends at the inn its last town has; stepping into an inn ticks it off, and a
+-- rest or XP event that moves nothing rebuilds nothing.
+do
+	local h = harness.load({
+		player = { rested = false },
+		charDB = { journey = "zone:1413" },
+		completed = { 844 },
+		log = {
+			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
+			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
+		},
+	})
+	h.flush()
+	local REST = h.ns.L.REST_HERE
+	local function Last()
+		local steps = h.ns.Route().steps
+		return steps[#steps].reason
+	end
+	equal(Last(), REST, "rest: no rest, the route ends at an inn")
+	local builds = h.modelCalls.Journeys
+	h.fire("UPDATE_EXHAUSTION")
+	h.fire("PLAYER_XP_UPDATE", "player")
+	h.flush()
+	equal(h.modelCalls.Journeys - builds, 0, "rest: an event that moves nothing rebuilds nothing")
+	h.player.resting = true
+	h.fire("PLAYER_UPDATE_RESTING")
+	h.flush()
+	equal(h.modelCalls.Journeys - builds, 1, "rest: resting rebuilds once")
+	equal(Last() ~= REST, true, "rest: resting ticks it off")
+	h.player.resting, h.player.rested = false, 5000
+	h.fire("PLAYER_UPDATE_RESTING")
+	h.fire("UPDATE_EXHAUSTION")
+	h.flush()
+	equal(Last() ~= REST, true, "rest: rested, no line")
+	h.player.rested = 100
+	h.fire("PLAYER_XP_UPDATE", "player")
+	h.flush()
+	equal(Last(), REST, "rest: XP that spends the rest brings it back")
+	clean(h, "rest")
+end
+
 print(("ui_spec: %d checks passed"):format(checks))
