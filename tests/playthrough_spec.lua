@@ -1,11 +1,10 @@
 -- Run from the repository root: luajit tests/playthrough_spec.lua
 -- Every race and class Classic allows plays levels 1 to 60 on the planner's own advice (design §5.2): at each level
--- it takes card 1's route, picking up, finishing objectives and handing in as the steps say, then levels up and
--- drops what went grey. Four things a player should never see are flagged: an empty guide while quests they can
--- take exist, an orange or red pickup, a story that flips back to a zone it left (A, B, A), and a step on a point
--- the data does not have. It reports the counts and passes; AGF_PLAYTHROUGH_STRICT=1 fails on any flag, which the
--- auto-picking planner (PR 4) is to meet. AGF_PLAYTHROUGH_TRACE="Human class 1" prints that character's card 1
--- each round.
+-- it takes card 1's route, one lap a level, picking up, finishing objectives and handing in finished quests as the
+-- steps say, then levels up and drops what went grey. Four things a player should never see fail it: an empty guide
+-- while quests they can take exist, an orange or red pickup, a story that flips back to a zone it left (A, B, A),
+-- and a step on a point the data does not have. It reports the quests handed in and the yards walked a level.
+-- AGF_PLAYTHROUGH_TRACE="Human class 1" prints that character's card 1 each round.
 local ns = {}
 assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
 -- Core.lua for ns.L, the planner's copy; its load-time hooks into the client are stubbed, since only the copy is read.
@@ -23,7 +22,7 @@ setfenv(
 core("AdventureGuideForever", ns)
 assert(loadfile("Model.lua"))("AdventureGuideForever", ns)
 local Model, data = ns.Model, ns.Data
-local strict, trace = os.getenv("AGF_PLAYTHROUGH_STRICT") == "1", os.getenv("AGF_PLAYTHROUGH_TRACE")
+local trace = os.getenv("AGF_PLAYTHROUGH_TRACE")
 
 -- Classic's races (ID, side, where level 1 stands) and the classes each may be (class IDs).
 local RACES = {
@@ -36,7 +35,8 @@ local RACES = {
 	{ "Gnome", 7, 1, { 1426, 0.29, 0.71 }, { 1, 4, 8, 9 } },
 	{ "Troll", 8, 2, { 1411, 0.52, 0.68 }, { 1, 3, 4, 5, 7, 8 } },
 }
-local LOG_SIZE, ROUNDS, ORANGE, RED = 20, 2, 3, 5
+-- A round is card 1's whole route, a lap (town, its areas, back): one a level, since a lap does a level's quests.
+local LOG_SIZE, ROUNDS, ORANGE, RED = 20, 1, 3, 5
 
 -- The data's places, keyed to 4 places: a step's point must be one of them.
 local places = {}
@@ -92,7 +92,7 @@ local function Finished(log, id)
 	end
 end
 
-local plans, started, characters, handed, lowest = 0, os.clock(), 0, 0, math.huge
+local plans, started, characters, handed, lowest, walked = 0, os.clock(), 0, 0, math.huge, 0
 for _, race in ipairs(RACES) do
 	local name, raceID, side, at, classes = race[1], race[2], race[3], race[4], race[5]
 	for _, classID in ipairs(classes) do
@@ -106,6 +106,7 @@ for _, race in ipairs(RACES) do
 			map = at[1],
 			x = at[2],
 			y = at[3],
+			logMax = LOG_SIZE,
 		}
 		local completed, log, held, stories = {}, {}, 0, {}
 		characters = characters + 1
@@ -155,8 +156,11 @@ for _, race in ipairs(RACES) do
 				end
 				-- Card 1's route, as the steps say.
 				for _, step in ipairs(card and card.steps or {}) do
+					if trace and label:find(trace, 1, true) then
+						print("", step.key, step.map, step.x, step.y, table.concat(step.quests, ","))
+					end
 					for _, id in ipairs(step.handins or {}) do
-						if log[id] then
+						if log[id] and log[id].complete then
 							log[id], completed[id], held = nil, true, held - 1
 						end
 					end
@@ -183,6 +187,7 @@ for _, race in ipairs(RACES) do
 							end
 						end
 					end
+					walked = walked + (Model.Yards(data, player, step) or 0)
 					player.map, player.x, player.y = step.map, step.x, step.y
 				end
 			end
@@ -205,20 +210,14 @@ for _, kind in ipairs({ "empty", "orange", "red", "flip", "unplaced" }) do
 	end
 end
 print(
-	("playthrough: %d characters handed in %d quests each on average, %d at least"):format(
+	("playthrough: %d characters handed in %d quests each on average, %d at least, walking %d yards a level"):format(
 		characters,
 		handed / characters,
-		lowest
+		lowest,
+		walked / characters / 60
 	)
 )
-print(
-	("playthrough_spec: %d plans in %.1f s; %d flags%s"):format(
-		plans,
-		os.clock() - started,
-		total,
-		strict and "" or " (expected until PR 4; AGF_PLAYTHROUGH_STRICT=1 fails on them)"
-	)
-)
-if strict and total > 0 then
+print(("playthrough_spec: %d plans in %.1f s; %d flags"):format(plans, os.clock() - started, total))
+if total > 0 then
 	os.exit(1)
 end
