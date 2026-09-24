@@ -919,6 +919,8 @@ function Model.Journeys(data, player, completed, log, prefs, mapName)
 				or L.CHAPTER:format(chain.chapter)
 			story.reason = continues and L.CONTINUES_STORY or L.BEGINS_STORY
 			lead.chapter, lead.reason = story.subline, story.reason
+			-- A lone quest's detail is its reason, so the row never says the chain continues under a card that begins it.
+			lead.detail = #lead.quests == 1 and story.reason or lead.detail
 		end
 		journeys[#journeys + 1] = story
 	end

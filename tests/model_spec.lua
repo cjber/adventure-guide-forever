@@ -399,6 +399,13 @@ equal(card.story, nil, "story card: which then claims no chain")
 card = Model.Refresh(saga, player, {}, skipLead, Model.Plan(saga, player, {}, {}, prefs())).journeys[1]
 equal(card.subline, "3 quests near your level", "story card: a chapter skipped in combat is no chapter")
 equal(card.story == nil and card.reason == nil, true, "story card: nor its chain or reason, in combat")
+-- A chapter 1 with a prerequisite of its own begins its story on the card and on its row alike.
+local sequel = { quests = { [1] = quest(0.1), [2] = quest(0.2), [3] = quest(0.3) }, zones = data.zones }
+sequel.quests[2].pre, sequel.quests[2].next, sequel.quests[3].pre = { 1 }, 3, { 2 }
+card = Model.Plan(sequel, player, { [1] = true }, {}, prefs()).journeys[1]
+equal(card.reason, "Begins a new story", "story card: a chapter 1 after another quest begins")
+equal(card.steps[1].detail, "Begins a new story", "story card: and its row says the same")
+
 -- No zone the level fits (a city's quests only): a pinned pickup there makes no story card, and no error.
 local city = { quests = { [1] = quest(0.5, 0.5, 9) }, zones = data.zones }
 local cityPins = prefs()
