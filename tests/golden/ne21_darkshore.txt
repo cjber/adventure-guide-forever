@@ -1,5 +1,5 @@
 # ne21_darkshore: level 21, side 1, at 1439 0.3700,0.4400
-card (chosen) | story:1433 | A Redridge Mountains story | Chapter 1 of 3 | Begins a new story | map 1433
+card (chosen) | story:1433 | Redridge Mountains story | Chapter 1 of 3 | Begins a new story | map 1433
   step 1 | pickup:1433:0.2140:0.4396 | Pick up quests: Barkeep Daniels | 1433 0.2140,0.4396 | Begins a new story
   step 2 | pickup:1433:0.2264:0.4738 | Pick up quests: Dockmaster Baren | 1433 0.2264,0.4738 | 2 quests here
   step 3 | pickup:1433:0.2463:0.4426 | Pick up quests: Bailiff Conacher | 1433 0.2463,0.4426 | near your level

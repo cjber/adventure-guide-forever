@@ -134,7 +134,7 @@
 ---@class AGFJourney
 ---@field kind AGFJourneyKind
 ---@field key string stable identity for prefs.journey: "carry", "story:<uiMapID>", "dungeon:<Map.ID>" or "nextzone:<uiMapID>"
----@field title string e.g. "Finish what you carry" or "A Westfall story"
+---@field title string e.g. "Finish what you carry" or "Westfall story"
 ---@field subline string e.g. "3 ready to hand in, 1 in progress"
 ---@field reason? string why this journey, when there is an honest answer
 ---@field map integer where its first step is: choosing the card turns the world map there

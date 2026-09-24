@@ -1,5 +1,5 @@
 # ne23_darkshore: level 23, side 1, at 1439 0.3700,0.4400
-card (chosen) | story:1433 | A Redridge Mountains story | Chapter 1 of 2 | Begins a new story | map 1433
+card (chosen) | story:1433 | Redridge Mountains story | Chapter 1 of 2 | Begins a new story | map 1433
   step 1 | pickup:1433:0.2330:0.1255 | Pick up quests: Corporal Keeshan | 1433 0.2330,0.1255 | near your level
   step 2 | pickup:1433:0.2463:0.4426 | Pick up quests: Bailiff Conacher | 1433 0.2463,0.4426 | near your level
   step 3 | pickup:1433:0.2842:0.4897 | Pick up quests: Marshal Marris | 1433 0.2842,0.4897 | Begins a new story

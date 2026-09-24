@@ -52,7 +52,7 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
 | | ( )  3 quests ready to hand in            | |
 | +-------------------------------------------+ |
 | +===========================================+ |  card 2, selected (-pressed art)
-| | (S)  A Westfall story                     | |
+| | (S)  Westfall story                       | |
 | | ( )  Chapter 2 of 4                       | |
 | +===========================================+ |
 |    [#][#][ ][ ]                               |  chapter track (2.3)
@@ -90,7 +90,7 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
 ```
 +------------------------------------------+  NormalTexture ui-journeys-renown-button (CSV:15677, 374x112 -> 288x86)
 |  .--.                                    |  PushedTexture / selected: ui-journeys-renown-button-pressed (CSV:15676)
-| ( S  )  A Westfall story                 |  title: GameFontNormalMed2 (gold), LEFT of IconFrame RIGHT +5,+5 (xml:90-95)
+| ( S  )  Westfall story                   |  title: GameFontNormalMed2 (gold), LEFT of IconFrame RIGHT +5,+5 (xml:90-95)
 |  '--'   Chapter 2 of 4                   |  subline: GameFontHighlightSmall (white) under the title
 |         Continues a story you started    |  reason: GameFontHighlightSmall
 +------------------------------------------+
@@ -141,7 +141,7 @@ display-only, as the generator says (tools/gen_quests.py:5); eligibility never r
 
   Otherwise the text is just "Chapter N", with no squares and no "?". Tracks longer than 8 show text only.
 - **Unrevealed titles.** Future chapter titles are never shown. The step rows list only steps the player can take now.
-- **Headings.** Stories are named after the zone ("A Westfall story"). The data has no questline names, and AGF never invents one.
+- **Headings.** Stories are named after the zone ("Westfall story"). The data has no questline names, and AGF never invents one.
 
 ### 2.4 Why-not view (search)
 
@@ -292,7 +292,7 @@ as today (Pins.lua).
 ```
 Map ring / step row                         Journey card
 +--------------------------------------+    +--------------------------------------+
-| 2. The Defias Brotherhood            |    | A Westfall story                     |  SetTitle (gold)
+| 2. The Defias Brotherhood            |    | Westfall story                       |  SetTitle (gold)
 | Chapter 2 of 4                       |    | Chapter 2 of 4                       |  AddNormalLine (gold)
 | Fly to Sentinel Hill · 6 min         |    | Continues a story you started        |  AddHighlightLine (white)
 | Continues a story you started        |    | 5 steps                              |  AddHighlightLine
@@ -320,7 +320,7 @@ When `SPF.Active()` exists and reports another journey running, Go's tooltip add
 
 | Where | Example |
 |---|---|
-| Card titles | `Finish what you carry` · `A Westfall story` · `Head to Darkshore at 14` |
+| Card titles | `Finish what you carry` · `Westfall story` · `Head to Darkshore at 14` |
 | Card sublines | `3 quests ready to hand in` · `Chapter 2 of 4` · `Chapter 2` · `11 quests near your level` |
 | Reasons | `Continues a story you started` · `Begins a Westfall story` · `Ready to hand in` · `Sentinel Hill needs hands` · `Better with others` |
 | Travel | `Fly to Sentinel Hill · 6 min` · `Boat to Auberdine · 2 min wait` · `Fly to Astranaar · new flight path` · `About 4 min away` |

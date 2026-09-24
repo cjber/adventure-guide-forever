@@ -4,7 +4,7 @@ card (chosen) | carry | Finish what you carry | 3 ready to hand in | 1 to hand i
   step 2 | turnin:948 | Turn in: Onu | 1439 0.4355,0.7629 | ready to hand in
   step 3 | turnin:967 | Turn in: The Tower of Althalaxx | 1440 0.2620,0.3870 | ready to hand in
   step 4 | turnin:168 | Turn in: Collecting Memories | 1453 0.7031,0.4082 | Hand in when you're in Stormwind City
-card | story:1433 | A Redridge Mountains story | Chapter 1 of 3 | Begins a new story | map 1433
+card | story:1433 | Redridge Mountains story | Chapter 1 of 3 | Begins a new story | map 1433
   step 1 | pickup:1433:0.2140:0.4396 | Pick up quests: Barkeep Daniels | 1433 0.2140,0.4396 | Begins a new story
   step 2 | pickup:1433:0.2264:0.4738 | Pick up quests: Dockmaster Baren | 1433 0.2264,0.4738 | 2 quests here
   step 3 | pickup:1433:0.2463:0.4426 | Pick up quests: Bailiff Conacher | 1433 0.2463,0.4426 | near your level

@@ -2,7 +2,7 @@
 card (chosen) | carry | Finish what you carry | 1 ready to hand in, 1 in progress | - | map 1413
   step 1 | turnin:845 | Turn in: The Zhevra | 1413 0.5223,0.3101 | ready to hand in
   step 2 | objective:843 | Gann's Reclamation | 1413 0.4600,0.8000 | quests in progress
-card | story:1413 | A The Barrens story | Chapter 1 of 5 | Begins a new story | map 1413
+card | story:1413 | The Barrens story | Chapter 1 of 5 | Begins a new story | map 1413
   step 1 | pickup:1413:0.5223:0.3101 | Pick up quests: Apothecary Helbrim | 1413 0.5144,0.3015 | 8 quests here
   step 2 | pickup:1413:0.4534:0.2841 | Pick up quests: Regthar Deathgate | 1413 0.4534,0.2841 | 2 quests here
   step 3 | pickup:1413:0.4812:0.0542 | Pick up quests: Kadrak | 1413 0.4812,0.0542 | near your level

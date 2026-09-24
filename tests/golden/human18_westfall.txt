@@ -1,5 +1,5 @@
 # human18_westfall: level 18, side 1, at 1436 0.5600,0.4700
-card (chosen) | story:1439 | A Darkshore story | Chapter 1 of 5 | Begins a new story | map 1439
+card (chosen) | story:1439 | Darkshore story | Chapter 1 of 5 | Begins a new story | map 1439
   step 1 | pickup:1439:0.3664:0.4626 | Pick up quests: Gubber Blump | 1439 0.3610,0.4493 | 3 quests here
   step 2 | pickup:1439:0.3744:0.4184 | Pick up quests: Archaeologist Hollee | 1439 0.3744,0.4184 | Begins a new story
   step 3 | pickup:1439:0.4355:0.7629 | Pick up quests: Kerlonian Evershade | 1439 0.4440,0.7643 | near your level

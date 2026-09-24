@@ -133,7 +133,7 @@ equal(Has(route.steps, "turnin:100"), 1, "the turn-in is carried")
 options.journey = "story:1"
 route = Model.Plan(data, player, {}, log, options)
 equal(route.journey, "story:1", "the chosen card")
-equal(route.journeys[2].title, "A Zone story", "the story is named after its zone")
+equal(route.journeys[2].title, "Zone story", "the story is named after its zone")
 equal(route.journeys[2].subline, "9 quests near your level", "the story counts its quests")
 equal(#route.steps, 8, "one step per giver")
 equal(route.steps[1].quests[1], 5, "the nearest step first")

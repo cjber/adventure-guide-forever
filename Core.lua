@@ -17,7 +17,7 @@ ns.L = {
 	HAND_IN_WHEN = "Hand in when you're in %s",
 	-- Journey cards (docs/design.md §2.2 and §3): a title, a subline that counts, and a reason when there is one.
 	JOURNEY_CARRY = "Finish what you carry",
-	JOURNEY_STORY = "A %s story",
+	JOURNEY_STORY = "%s story",
 	JOURNEY_NEXT_ZONE = "Head to %s at %d",
 	DUNGEON_QUESTS = "%d quests for this dungeon",
 	DUNGEON_QUESTS_ONE = "1 quest for this dungeon",
