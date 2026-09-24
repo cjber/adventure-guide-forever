@@ -538,3 +538,11 @@ Every blocker and major in `plan-review.md` is applied above. Minor findings are
 - **#28 (ranges):** the review's corrected ranges were themselves off. Panel 208-217 is `AGFRouteRow`'s annotations, not zone-card code, so the zone cards are 114-206. Pins `RefreshAllData` ends at 94, not 92. The plan uses the re-measured ranges.
 - **#8 (cross-map ranking):** took the offline option (zone centres from `UiMapAssignment`), not capped SPF estimates, so the rebuild frame keeps 0 SPF calls.
 - **#15 `questline`:** even if present, v1 keeps the conservative rule; adopting the API is a follow-up, so it does not block F4.
+- **Batch B (26-31) review:** fixed in their own `fix(...)` commits: the unguarded story card with no zone, a
+  skipped or crowded-out chapter (in and out of combat), a pinned chapter's pin, the chapter row's detail, Why's
+  self-rival line, the forked-member walk check, group quests in the log opening details, search before completed
+  quests load, the byte-length search minimum, and title loads for shown results. Deferred:
+  - The pin tooltip prints `detail` and `reason` together for every step, not only the chapter's; pins go in F9 (36).
+  - Search matches a quest the client has not cached by the data's English title. Only shown rows and their Why
+    lines ask `RequestLoadQuestByID`; asking for every quest on each keystroke would flood the server.
+  - `string.lower` folds ASCII only, so Cyrillic titles match case-sensitively; the client has no UTF-8 lower.
