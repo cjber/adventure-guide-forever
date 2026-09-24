@@ -49,8 +49,9 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 		if step and ns.Setting("trackRouteQuests") then
 			ns.TrackRouteQuests()
 		end
+		-- Choosing is the commitment, as on a card: with none chosen, the journey the tracker follows is chosen first.
 		if step and ns.Setting("titleStartsRoute") then
-			ns.Integrations.Navigate(step)
+			ns.StartRoute()
 		end
 		-- The step's quest when the log has it, the guide otherwise.
 		if not (step and ns.ShowQuest(step)) and ns.OpenPanel then

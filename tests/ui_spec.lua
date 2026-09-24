@@ -153,6 +153,22 @@ do
 	h.SetCombat(false)
 	clean(h, "title click in combat")
 
+	-- With none chosen the title chooses the journey it follows (design §2.10); in combat it waits, as a card does,
+	-- and Shortest Path starts it once combat ends, with no waypoint meanwhile.
+	h = Load("v1", nil, false)
+	equal(h.ns.Route().chosen, false, "none chosen: the tracker follows the first card")
+	local follows = h.ns.Route().journey
+	h.SetCombat(true)
+	ClickTitle(h)
+	equal(h.ns.Prefs().journey, follows, "none chosen: the title chooses the journey it follows")
+	equal(h.spf.NavigateRoute + h.counts.SetUserWaypoint, 0, "none chosen: in combat nothing starts yet")
+	h.SetCombat(false)
+	h.flush()
+	equal(h.spf.NavigateRoute, 1, "none chosen: the route starts once combat ends")
+	equal(h.counts.SetUserWaypoint, 0, "none chosen: and no waypoint was set")
+	equal(h.ns.Prefs().guided, follows, "none chosen: recorded as the chosen journey's route")
+	clean(h, "title click chooses")
+
 	h = Load("v1", { untrackOthers = true })
 	h.watched[1] = 99
 	ClickTitle(h)
@@ -162,6 +178,9 @@ do
 	h.watched[1] = 99
 	ClickTitle(h)
 	equal(h.spf.NavigateRoute, 0, "the route setting off: no route")
+	local unset = Load("v1", { titleStartsRoute = false }, false)
+	ClickTitle(unset)
+	equal(unset.ns.Prefs().journey, nil, "the route setting off: the title chooses nothing")
 	equal(table.concat(h.watched, " "), "99", "the tracking setting off: the tracked quests are untouched")
 
 	local byKey = {}

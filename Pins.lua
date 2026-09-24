@@ -192,7 +192,7 @@ end
 
 function AdventureGuideForeverPinMixin:OnClick(button)
 	if button == "LeftButton" and self.step then
-		ns.Integrations.Navigate(self.step)
+		ns.StartRoute(self.step)
 	end
 end
 

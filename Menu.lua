@@ -33,7 +33,7 @@ function Menu.Step(root, step)
 	root:CreateTitle(step and step.title or ns.TITLE)
 	if step then
 		local go = root:CreateButton(L.GO, function()
-			ns.Integrations.Navigate(step)
+			ns.StartRoute(step)
 		end)
 		if ns.Integrations.ReplacesJourney() then
 			go:SetTooltip(function(tooltip)
