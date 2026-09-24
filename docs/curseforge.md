@@ -31,3 +31,5 @@ A quest the data can't check is never suggested, so Forever's own new quests onl
 Early days, feedback welcome.
 
 Source and issues: https://github.com/cjber/adventure-guide-forever · GPL-3.0-or-later
+
+Quest data derives from CMaNGOS classic-db (GPL-3.0). World of Warcraft is a trademark of Blizzard Entertainment; this addon is not affiliated with Blizzard.

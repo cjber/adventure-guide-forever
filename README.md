@@ -66,4 +66,10 @@ See `AGENTS.md` for the full gate.
 
 ## Licence
 
-GPL-3.0-or-later. Quest data derives from [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-2.0-or-later).
+GPL-3.0-or-later. Quest data derives from [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0),
+map, flight and dungeon tables from the Forever client's own data via [wago.tools](https://wago.tools), and zone level
+ranges from [Warcraft Wiki](https://warcraft.wiki.gg/wiki/Zones_by_level_(original)). The addon bundles no data from
+Questie or Wowhead.
+
+World of Warcraft and its content are trademarks and copyrights of Blizzard Entertainment. This addon is free, and
+is not affiliated with or endorsed by Blizzard.
