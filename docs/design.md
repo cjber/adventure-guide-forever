@@ -535,6 +535,8 @@ aside shown changes. The first provider's answer the player has not skipped or t
   `class` mark (CSV:1321), from Tweaks Forever's `TrainableSpells`, asked again on `SPELLS_CHANGED`. Its place is the
   nearest trainer who teaches the spells (§2.12); without one (a class and side the data has no trainer for, or no
   place for the player) it is text only: "Visit your class trainer · 3 new spells".
+  Then the profession aside (§2.15). A provider with several candidates offers the first the player still wants
+  (`Asides.Wanted`), and Skip for now and Not interested ask the providers again, so the next one shows at once.
 
 ### 2.12 Trainers (roadmap R3, #5)
 
@@ -600,6 +602,32 @@ cache that did, Integrations' town places, is keyed on it).
 - **Fallback:** any failed check or read keeps the bundled data; `/agf audit` names the source and the reason.
   Questie and QuestieDB carry no licence, so the repo, specs and goldens hold none of their code, types or data; the
   specs use a synthetic stand-in, mostly a mirror of the bundled data (`harness.questieMirror`).
+
+### 2.15 Professions (roadmap #9)
+
+Only where to go next: SkillUp Forever keeps recipes, skill-up colours and its levelling route. `Hints/Profession.lua`,
+after `Asides.lua` in the TOC, registers the profession aside, after the class trainer's. `Model.Profession` gives the
+first of these the player still wants:
+
+- **Rank cap.** A learned line at its rank's cap whose next rank they can train now: "Your Mining has reached 75 of 75
+  · Journeyman training in Durotar". The cap is C_SkillInfo's `maxRank`; its rank is the cap over 75 (CMaNGOS
+  `Spell::EffectSkillStep` sets the cap to 75 times the rank), and a cap off that scale says nothing. The next rank
+  must be one a trainer teaches (`Data.professions`: Expert Cooking and Fishing come from books, so 150 of 150 says
+  nothing) and the player must have the level and skill its rank spell asks (`npc_trainer` reqlevel, reqskillvalue).
+- **Free slot.** Fewer than two professions (C_SkillInfo's `skillLineCategoryID` 11; two is CMaNGOS
+  MaxPrimaryTradeSkill's default) while one they lack is one they can learn now: "A profession slot is free ·
+  trainers in Crossroads", at the nearest trainer of any such profession's Apprentice rank.
+- **Secondary skill.** First Aid, Cooking or Fishing not learned, once the player has its Apprentice level: "You can
+  learn Fishing in Crossroads", the name from the data (English) since the client names only learned lines.
+
+Each goes to the nearest trainer of the player's side who teaches that rank (`Data.npcs` `ranks`), by the route's
+cost (§4.1), with the minimap's `profession` mark (CSV:1322). A rank only the other side's trainers teach (Artisan
+Fishing is Katoom the Angler's, Horde) is no nudge; with no place for the player the line is text only ("Journeyman
+training is open to you", "A profession slot is free"). The keys are `profession:<skill>:<rank>` and
+`profession:slot`. `SKILL_LINES_CHANGED` asks the providers again a frame later, only when a profession line's rank or
+cap, or the count of professions, moved; a weapon skill-up asks nothing. SkillUp Forever has no public API (its
+`NextRanks` is local to its Route.lua), so AGF reads its own copy of the CMaNGOS trainer rows; `IsSpellKnown` on the
+rank spells is not needed, since the cap already says which rank is known.
 
 ## 3. Copy style sheet
 
@@ -800,7 +828,7 @@ Not requested:
 | LegacyForever (formerly LegacyHere) | none | It has no public API (origin/main ea0fb8c; the PROBE `legacy` scan shows only `LegacyForever*` mixins and DB). Its data has 0 quest criteria (siblings.md §3), so no quest can be honestly tagged, and percentages are Legacy's domain. It returns only if Could #18 is promoted, as `Objectives(uiMapID)` with no percent. |
 | TweaksForever | `TweaksForever.API.TrainableSpells()` (TF PR #45, `version = 1`), for Should #19 and the trainer stop (§2.12) | Returns fresh `{spellID, name, level, cost?, line, lineID}` tables for the trainer spells the player's level allows and they haven't learned, or nil before login and in combat. AGF checks `type(api.TrainableSpells) == "function"` where it uses it, and treats nil as "no step this rebuild". The zone table is still baked at generation time (siblings.md §4); `DungeonEntrance` is needed only for Could #17. AGF never re-sorts the stock tracker, which TF's "Nearest quests first" owns. A public `DungeonEntrance(mapID)` is a follow-up (plan §7.5). |
 | WorkOrdersForever | none | It messages agents, and has no gameplay data or API. |
-| SkillUpForever | none | Profession steps are out of scope for a quest journal. |
+| SkillUpForever | none | It has no public API. The profession aside (§2.15) names only the next rank's trainer, a free slot and an unlearned secondary skill, from AGF's own CMaNGOS trainer rows; recipes, skill-ups and levelling routes stay SkillUp's. |
 
 ## 6. Known flight paths: decision
 
@@ -875,6 +903,13 @@ Nothing below has been validated in game yet.
 18. QuestieDB (§2.14): with it loaded, `/agf audit` names "QuestieDB <version>" a few seconds after login with no
     hitch, and the cards, rings and town stops match the bundled run; with it disabled, or Questie alone without it,
     the audit names the bundled data and why.
+19. Professions (§2.15): `C_SkillInfo` reports professions and secondary skills by their base SkillLine IDs (186
+    Mining, not Forever's 2946), with `maxRank` 75/150/225/300 and `skillLineCategoryID` 11 for a profession. A
+    character with Mining at 75 of 75 and level 10 sees "Your Mining has reached 75 of 75 · Journeyman training in
+    <town>" with the profession mark, above the cards and in the tracker; its click goes to that trainer, and
+    learning Journeyman removes the line without a `/reload`. A character with one profession sees "A profession
+    slot is free · trainers in <town>"; one with two professions and no Cooking at level 5 or more sees "You can
+    learn Cooking in <town>". Skip for now moves on to the next at once; a weapon skill-up changes nothing.
 
 ## 9. Open questions that need client probes
 

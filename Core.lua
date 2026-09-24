@@ -207,6 +207,19 @@ ns.L = {
 	NPC_JOURNEY = "Adventure guide: %s",
 	-- Something new (docs/design.md §2.13): the tracker's line for a journey card the character hasn't been offered.
 	MOMENT = "%s is now for your level",
+	-- Stream 3b "Professions" (roadmap #9, docs/design.md §2.15): the profession aside, its lead then where to train.
+	PROFESSION_CAP = "Your %s has reached %d of %d",
+	PROFESSION_RANK_IN = "%s training in %s",
+	PROFESSION_RANK = "%s training is open to you",
+	PROFESSION_SLOT = "A profession slot is free",
+	PROFESSION_SLOT_IN = "trainers in %s",
+	PROFESSION_LEARN_IN = "You can learn %s in %s",
+	PROFESSION_LEARN = "You can learn %s",
+	PROFESSION_LINE = "%s · %s",
+	PROFESSION_RANK_1 = "Apprentice",
+	PROFESSION_RANK_2 = "Journeyman",
+	PROFESSION_RANK_3 = "Expert",
+	PROFESSION_RANK_4 = "Artisan",
 }
 local L = ns.L
 
