@@ -648,12 +648,6 @@
 ---@class AGFStrings
 ---@field MOMENT string format: the tracker's line for a new journey: its zone's or dungeon's name
 
--- The starts tools/gen_quests.py withholds, by reason, for another quest source to withhold too.
-
----@class AGFData
----@field suppressed? integer[] quests whose start the bundled data withholds for an eligibility it cannot hold
----@field seasonal? integer[] quests whose start the bundled data withholds for a world event
-
 -- QuestieDB as a quest source (QuestieSource.lua, docs/design.md §2.14).
 
 ---@class AGFQuestieStatus
