@@ -191,6 +191,41 @@ h.flush()
 h.providers[1]:RefreshAllData()
 out.map = { stops = stops, pins = Pins(h), player = { map = h.player.map, x = h.player.x, y = h.player.y } }
 
+-- The Adventure Guide window (docs/design.md §2.19) after the layout pass, as Panel() does for the panel: rects in,
+-- then the refresh its next show would do.
+local function Window(each, scene, tab)
+	each.ns.OpenWindow()
+	each.flush()
+	local window = each.G.AdventureGuideForeverWindow
+	if tab then
+		each.Click(window.Tabs[tab])
+		each.flush()
+	end
+	each.SetRects(window, input.rects[scene] or {})
+	window:Hide()
+	window:Show()
+	each.flush()
+	return { layout = each.ns.DumpLayout(window, each.Describe) }
+end
+
+-- The Journeys tab for the lead image's character: nothing chosen, the story featured, both asides in Today.
+h = Load("v1", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, {
+	tf = { spells = { SPELL, SPELL, SPELL } },
+	talents = 1,
+})
+out.window = Window(h, "window")
+
+-- The Professions tab, SkillUp Forever loaded: the leatherworker's card, steps and reagents, the picker for two;
+-- the same asides above.
+local skillup = dofile("tests/fixtures/skillup.lua")
+h = Load("v1", false, false, STORY, nil, {
+	tf = { spells = { SPELL, SPELL, SPELL } },
+	talents = 1,
+	skillup = { professions = { skillup.LEATHERWORKING, skillup.TAILORING } },
+	items = skillup.ITEMS,
+})
+out.window_professions = Window(h, "window_professions", 2)
+
 out.errors = {}
 for _, each in ipairs(loaded) do
 	for _, err in ipairs(each.errors) do

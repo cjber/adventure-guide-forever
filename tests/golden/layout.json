@@ -252,6 +252,26 @@
     {
       "anchors": [
         {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[1]",
+          "x": -4.00,
+          "y": 0.00
+        }
+      ],
+      "highlightAtlas": "RedButton-Highlight",
+      "normalAtlas": "RedButton-Expand",
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[1].Button[2]",
+      "size": [
+        22.00,
+        22.00
+      ],
+      "type": "Button"
+    },
+    {
+      "anchors": [
+        {
           "point": "TOPLEFT",
           "relativePoint": "BOTTOMLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[1]",

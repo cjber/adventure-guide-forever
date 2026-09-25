@@ -842,6 +842,38 @@ The player steers the route a quest at a time, per character, and the guide only
   unfinished quests the data knows that are dropped, grey, placed nowhere the data has, or on another continent.
   Advice only: nothing is abandoned, and a finished quest is never listed.
 
+### 2.19 The Adventure Guide window
+
+The guide on its own, away from the world map, for a player who wants the whole picture without the map open.
+
+- **Frame.** `PortraitFrameTemplate`, 800 by 496, the compass in the portrait, titled "Adventure Guide" with
+  "<zone> · level N" under it. An `InsetFrameTemplate` from (4, -60) to (-4, 5) holds `UI-EJ-Classic`. It is
+  movable, clamped to the screen, closes on Escape (`UISpecialFrames`) and keeps its place and tab in
+  `db.window`. No search box: the map tab's search stays where the quests are.
+- **Opening.** `/agf` or `/agf window`, a left-click on the addon compartment (a right-click opens the map tab as
+  before), the expand arrow in the map tab's header, and the key binding (`Bindings.xml`). Shift-J is set once per
+  account, only when nothing uses it and the addon has no key yet, out of combat, and saved to the current binding
+  set with a chat line saying so; a player who clears it is never offered it again.
+- **Tabs.** `PanelTabButtonTemplate` under the frame; a tab is one `Window.AddTab{key, label, Build, Refresh,
+  Muted}` call. A tab with nothing to show keeps its place and stays clickable, its label grey and its tooltip
+  saying why.
+- **Today.** Up to four asides (§2.9 onwards) along the top of the inset, each a ring and its line, clicked and
+  right-clicked as on the map tab.
+- **Journeys.** The overview (§2.1) at the window's size: the first card featured over its zone's map with the
+  "Suggested" tag, its counts, a bar only when there is progress, and *Show on Map*, which picks the card as a
+  click does, starts or resumes the route, and opens the map on step 1; its next three steps beside it; up to four
+  other cards in a row below. Clicks and tooltips are the map tab's, through the same `ns.Choose`, so both show
+  the same route.
+- **Professions.** SkillUp Forever's `API.Professions()` (version 1 or later), read through `Integrations.lua` and
+  copied, never written. One profession at a time, the picker's rings at the top right when there are two or
+  more: its recipe art, rank to cap with the bar, the next five recipes in their difficulty colour with what they
+  cost to train, its next three steps (a click asks SkillUp for the waypoint when it has one) and up to eight
+  reagents, then *Open Recipes*. Without SkillUp the tab reads "Your next skill-ups come from SkillUp Forever.
+  Install it and they show here."; with an older SkillUp it asks to update it; with no crafting profession it says
+  there is none to level.
+- **Cost.** Built on first open. While hidden it listens to nothing and redraws nothing; shown, it redraws on the
+  route, the asides and the few profession events, once a frame at most.
+
 ## 3. Copy style sheet
 
 - Sentence case. No exclamation marks. Digits for numbers. "·" as the separator.
@@ -1228,6 +1260,16 @@ Nothing below has been validated in game yet.
     card's next town with its explored and unexplored areas alike; the ring and kind badge draw over the art, never
     under it. A city (Orgrimmar, Stormwind) or dungeon card keeps the plain ring with its kind icon centred. Opening
     and closing the tab again redraws nothing visibly (no flicker).
+40. Window (§2.19): on a fresh account Shift-J opens the window, a chat line says so once, and *Key Bindings >
+    Adventure Guide* lists it; on an account where Shift-J was taken, it stays as it was. `/agf`, the compartment's
+    left-click and the map header's arrow open it; the compartment's right-click opens the map tab; Escape closes
+    it; dragged, it reopens where it was after `/reload`.
+41. Window, Journeys: the frame, the tabs and the EJ art look like the stock Adventure Guide; the featured card's map,
+    rim and fade match `docs/screenshots/window.png`; clicking a lower card picks it on the map tab too; *Show on Map*
+    opens the map on step 1 and starts the route.
+42. Window, Professions: with SkillUp Forever loaded the card, recipes, steps and reagents fill; a step with a
+    waypoint sets it; *Open Recipes* opens the profession window; the picker switches professions and remembers.
+    With SkillUp disabled the tab is grey, its tooltip and the empty text say to install it, and it still opens.
 
 ## 9. Open questions that need client probes
 

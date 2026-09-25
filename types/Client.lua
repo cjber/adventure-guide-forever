@@ -220,9 +220,24 @@ Settings = nil
 -- Blizzard_ObjectiveTrackerModule.lua:634: the block with this id plays its fanfare at the next layout.
 ---@field SetNeedsFanfare fun(self: ObjectiveTrackerModuleTemplate, key: string)
 
--- Blizzard_SharedXML/Mainline/SoundKitConstants.lua:125 (UI_SCENARIO_STAGE_END = 31757).
----@type {UI_SCENARIO_STAGE_END: integer}
+-- Blizzard_SharedXML/Mainline/SoundKitConstants.lua:125 (UI_SCENARIO_STAGE_END = 31757), and the character
+-- frame's open, close and tab sounds the Adventure Guide window plays (839, 840, 841).
+---@type {UI_SCENARIO_STAGE_END: integer, IG_CHARACTER_INFO_OPEN: integer, IG_CHARACTER_INFO_CLOSE: integer, IG_CHARACTER_INFO_TAB: integer}
 SOUNDKIT = nil
+
+-- Blizzard_SharedXML/Mainline/SharedUIPanelTemplates.lua: a frame's PanelTabButtonTemplate tabs, anchored in a row
+-- after the first, and the selected one (disabled, as the stock tabs show it).
+---@param frame Frame
+---@param numTabs integer
+function PanelTemplates_SetNumTabs(frame, numTabs) end
+
+---@param frame Frame
+---@param id integer
+function PanelTemplates_SetTab(frame, id) end
+
+-- Blizzard_UIParent/UIParent.lua: names of the frames Escape closes.
+---@type string[]
+UISpecialFrames = nil
 
 ---@type {SetModuleContainer: fun(self: any, module: ObjectiveTrackerModuleTemplate, container: Frame), GetContainerForModule: fun(self: any, module: ObjectiveTrackerModuleTemplate): Frame?, AddContainer: fun(self: any, container: Frame)}
 ObjectiveTrackerManager = nil

@@ -10,7 +10,7 @@
 ## SavedVariables: AdventureGuideForeverDB
 ## SavedVariablesPerCharacter: AdventureGuideForeverCharDB
 ## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick
-## OptionalDeps: ShortestPathForever, QuestieDB
+## OptionalDeps: ShortestPathForever, QuestieDB, SkillUpForever
 
 Data\Quests.lua
 Data\Forever.lua
@@ -27,9 +27,13 @@ Hints\Explore.lua
 Moments.lua
 Menu.lua
 Pins.lua
+Overview.lua
 Panel.xml
 ZoneIcon.lua
 Panel.lua
+Window.lua
+WindowJourneys.lua
+WindowProfessions.lua
 Tracker.lua
 Tooltip.lua
 Settings.lua

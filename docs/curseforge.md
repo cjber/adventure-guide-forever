@@ -2,9 +2,15 @@ Where to go next, for your level, as a tab in the world map's own quest log.
 
 Levelling guides tell you exactly what to do, in order, as fast as possible. I wanted something looser. From your level, the quests you have finished and the ones in your log, Adventure Guide Forever offers a few journeys to choose from, each with a reason, and a short route for the one you pick.
 
-It looks like it came with the game: a tab in the quest log beside Quests, cards drawn with retail's Journeys art, the game's own objective tracker, and Blizzard's quest details when you click a quest. With the tab closed it draws nothing on your map. It works with Shortest Path Forever for travel, and loads alongside Questie or RestedXP, though their routes may overlap.
+It looks like it came with the game: a tab in the quest log beside Quests, cards drawn with retail's Journeys art, the game's own objective tracker, and Blizzard's quest details when you click a quest. With the tab closed it draws nothing on your map. Shift-J opens the same guide in a window of its own. It works with Shortest Path Forever for travel, and loads alongside Questie or RestedXP, though their routes may overlap.
 
 ![The Barrens on the world map with the Adventure Guide tab open on its overview: the header reads The Barrens, level 18, under it the class trainer and talent asides, The Barrens story featured with a round map of the zone, 2 ready to hand in and 1 in progress over its first three steps, then Loose ends and Head to Stonetalon Mountains side by side](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png)
+
+Or in its own window, with a Professions tab when SkillUp Forever is loaded:
+
+![The Adventure Guide window on its Journeys tab: the class trainer and talent lines along the top, The Barrens story featured over a piece of its zone map with Show on Map, its next three steps beside it, then Loose ends and Head to Stonetalon Mountains below](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window.png)
+
+![The Professions tab with SkillUp Forever loaded: Leatherworking 142 to 150, its next two recipes, three next steps and the reagents to gather, with a picker for Tailoring at the top right](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_professions.png)
 
 The tracker keeps the step you are on in view, above your quests:
 
@@ -12,6 +18,8 @@ The tracker keeps the step you are on in view, above your quests:
 
 ## Features
 
+- **Its own window**: `/agf`, Shift-J or the addon compartment. The same journeys and lines as the map tab, and picking a card in one picks it in the other. *Show on Map* takes you to the first step.
+- **Professions tab**: with SkillUp Forever, your next recipes, steps and reagents for each crafting profession.
 - **Journeys**: up to six cards. Tie up the loose ends in your log, follow a zone's story, pick one of the zones that just came into range for your level, or take up your class quests. Until you pick one, the tab shows the suggested card with its first steps and the others two across, each with a round piece of its zone's map; pick one for its full route, up to nine steps.
 - **Stories as chapters**: "Chapter 2 of 4" only when the data proves the chain's length. Later chapters are never named.
 - **Choose and go**: choosing a card previews its steps on the map and hands the route to Shortest Path Forever, boats and flight paths included, or sets the game's own waypoint. In a quest's area the waypoint steps aside until you're done there, and Shortest Path Forever keeps showing the way on. A setting makes choosing preview only. The back arrow brings back the overview. *Stop* never removes a waypoint you placed yourself.
@@ -32,7 +40,7 @@ Uses QuestieDB (installed with Questie) for its quest data when present, shortly
 
 ## Usage
 
-- `/agf` or `/adventureguide` opens the guide on the world map.
+- `/agf`, `/adventureguide` or Shift-J opens the Adventure Guide window; right-click the addon compartment for the world map tab.
 - `/agf audit` checks the quest data against the game and says where it came from.
 - Options: the cog on the tab, and *Settings > AddOns > Adventure Guide*.
 

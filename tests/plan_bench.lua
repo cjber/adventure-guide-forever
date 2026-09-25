@@ -198,6 +198,18 @@ local function Profile(profile, level, questiedb, full)
 			end
 		end
 	end
+	-- The Adventure Guide window, built and closed: it redraws only while shown, so no rebuild frame reaches its tabs.
+	h.ns.OpenWindow()
+	h.flush()
+	h.G.AdventureGuideForeverWindow:Hide()
+	local windowRefreshes = 0
+	for _, tab in ipairs(h.ns.Window.Tabs()) do
+		local refresh = tab.Refresh
+		tab.Refresh = function(content)
+			windowRefreshes = windowRefreshes + 1
+			refresh(content)
+		end
+	end
 	h.ns.OpenPanel()
 	h.flush()
 	local created = h.counts.CreateFrame
@@ -224,6 +236,7 @@ local function Profile(profile, level, questiedb, full)
 		check(h.tick() == 0, label .. ": a third frame ran")
 	end
 	check(h.counts.CreateFrame == created, label .. ": frames created after the first render")
+	check(windowRefreshes == 0, label .. ": the closed window redrew " .. windowRefreshes .. " times")
 	check(not full or #h.log == LOG_SIZE, label .. ": a log of " .. #h.log)
 	check(#h.errors == 0, label .. ": errors\n" .. table.concat(h.errors, "\n"))
 	worstRebuild, worstTravel = math.max(worstRebuild, Max(rebuild)), math.max(worstTravel, Max(travel))
