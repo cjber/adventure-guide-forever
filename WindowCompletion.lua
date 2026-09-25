@@ -71,7 +71,7 @@ local picked
 local function Muted()
 	local state = ns.Providers.LegacyState()
 	if state == "missing" then
-		return L.LEGACY_MISSING
+		return ns.Companions.Hint("LegacyForever") or L.LEGACY_ABSENT
 	elseif state == "outdated" then
 		return L.LEGACY_OUTDATED
 	end

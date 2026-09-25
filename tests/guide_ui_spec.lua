@@ -485,7 +485,8 @@ do
 	equal(ns.Route().steps[1].key, second, "panel drag: applied")
 	equal(Texts(h, panel)[L.ORDER_CUSTOM], 1, "panel: custom order line")
 	h.Hover(panelRows[1])
-	equal(h.tooltip[#h.tooltip], "instruction: " .. L.ORDER_DRAG, "panel: drag instruction")
+	equal(h.tooltip[#h.tooltip - 1], "instruction: " .. L.ORDER_DRAG, "panel: drag instruction")
+	equal(h.tooltip[#h.tooltip], "instruction: " .. L.SPF_MISSING, "panel: then the Shortest Path hint")
 	local reset2 = Visible(h, panel, function(frame)
 		return frame.text == L.ORDER_RESET
 	end)[1]

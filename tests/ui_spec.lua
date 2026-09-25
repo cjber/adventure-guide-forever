@@ -272,7 +272,7 @@ do
 	end
 	-- Every row goes in through the secure delegate, in page order; none from addon code, which taints the search.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 10, "every row is registered through Settings.RegisterInitializer")
+	equal(#h.settings, 12, "every row is registered through Settings.RegisterInitializer")
 	equal(
 		h.settings[1].key .. " " .. h.settings[2].key .. " " .. h.settings[3].key,
 		"showTracker wanderer followQuest",
@@ -2118,8 +2118,9 @@ do
 	end
 	equal(quests, 8, "hub tooltip: 8 quest lines")
 	equal(npcs, 7, "hub tooltip: one line per NPC shown")
-	equal(lines[#lines - 1], "highlight: And 1 more", "hub tooltip: the rest counted")
-	equal(lines[#lines], "instruction: " .. ns.L.ORDER_DRAG, "hub tooltip: then how to reorder")
+	equal(lines[#lines - 2], "highlight: And 1 more", "hub tooltip: the rest counted")
+	equal(lines[#lines - 1], "instruction: " .. ns.L.ORDER_DRAG, "hub tooltip: then how to reorder")
+	equal(lines[#lines], "instruction: " .. ns.L.SPF_MISSING, "hub tooltip: then the Shortest Path hint")
 	same(colors[12], { 1, 1, 0 }, "hub tooltip: a quest 2 over the player is yellow")
 
 	-- The ring's tooltip lists the same, then the click line.

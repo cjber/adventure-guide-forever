@@ -1934,12 +1934,22 @@ function harness.load(options)
 		h.clock = h.clock + h.clockStep
 		return h.clock
 	end
+	-- An addon is loaded when it has metadata or its global (every companion's global is its folder name);
+	-- options.installed names addons on disk but not loaded (turned off); options.version is this addon's TOC version.
+	h.installed = options.installed or {}
+	h.metadata[ADDON] = { Version = options.version }
+	local function Loaded(addon)
+		return addon ~= ADDON and (h.metadata[addon] ~= nil or G[addon] ~= nil)
+	end
 	G.C_AddOns = {
 		GetAddOnMetadata = function(addon, field)
 			return h.metadata[addon] and h.metadata[addon][field]
 		end,
 		IsAddOnLoaded = function(addon)
-			return h.metadata[addon] ~= nil, h.metadata[addon] ~= nil
+			return Loaded(addon), Loaded(addon)
+		end,
+		DoesAddOnExist = function(addon)
+			return Loaded(addon) or h.installed[addon] == true
 		end,
 	}
 	if options.questiedb then
