@@ -371,4 +371,20 @@ ns.L = {
 	STEP_WORK = "Complete %s · %s",
 	STEP_TOWN = "Visit %s: %s",
 	STEP_BATTLEMASTER = "Visit the battlemaster in %s",
+	-- After an update (WhatsNew): the version, then WHATS_NEW.
+	UPDATED_TO = "updated to %s. %s",
+	SETTING_WHATS_NEW = "Tell me what's new after an update",
+	SETTING_WHATS_NEW_TOOLTIP = "One line in chat the first time you log in after the guide updates.",
+	-- Companion hints (Companions.lua): what another Forever addon would add here, while it isn't loaded.
+	SETTING_COMPANIONS = "Suggest companion addons",
+	SETTING_COMPANIONS_TOOLTIP = "A short line where another Forever addon would fill a tab or a route step, while "
+		.. "that addon isn't installed or enabled.",
+	SPF_MISSING = "Install Shortest Path Forever for walked routes and boat times.",
+	SPF_DISABLED = "Enable Shortest Path Forever for walked routes and boat times.",
+	SKILLUP_DISABLED = "Your next skill-ups come from SkillUp Forever. Enable it and they show here.",
+	SKILLUP_ABSENT = "Your next skill-ups come from SkillUp Forever.",
+	LEGACY_DISABLED = "Enable Legacy Forever to see your completion progress.",
+	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
+	-- The one chat line after an update to this version (ns.WhatsNew): the headline of its CHANGELOG entry.
+	WHATS_NEW = "Ready for translation, and the tabs point you to the companion addons that fill them.",
 }

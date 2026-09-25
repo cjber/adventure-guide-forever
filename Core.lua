@@ -25,6 +25,10 @@ local DEFAULTS = {
 	wanderer = false,
 	-- Walking into the quest area the route leads to selects its quest, so the map draws its blue area (Focus.lua).
 	followQuest = true,
+	-- One chat line after an update (WhatsNew).
+	whatsNew = true,
+	-- A line where a missing companion addon would fill a tab or a route step (Companions.lua).
+	suggestCompanions = true,
 }
 ns.DEFAULTS = DEFAULTS
 
@@ -909,4 +913,20 @@ EventUtil.ContinueOnAddOnLoaded(addonName, function()
 		resumeLatch = true
 	end)
 	ns.RegisterSettings()
+	EventUtil.ContinueAfterAllEvents(ns.WhatsNew, "PLAYER_LOGIN")
 end)
+
+-- After an update, one chat line says what changed. Never on a first install (no version seen yet, which is also
+-- every login on a client that doesn't load saved variables), nor in a dev checkout, whose TOC version the packager
+-- hasn't filled in. `lastVersion` is a record, not a setting, so it has no default.
+function ns.WhatsNew()
+	local version = C_AddOns.GetAddOnMetadata(addonName, "Version")
+	if not db or type(version) ~= "string" or version == "" or version:sub(1, 1) == "@" then
+		return
+	end
+	local seen = db.lastVersion
+	db.lastVersion = version
+	if type(seen) == "string" and seen ~= version and ns.Setting("whatsNew") then
+		ns.Print(L.UPDATED_TO:format(version, L.WHATS_NEW))
+	end
+end

@@ -26,6 +26,7 @@ Sound.lua
 State.lua
 Focus.lua
 Integrations.lua
+Companions.lua
 Providers.lua
 QuestieSource.lua
 Asides.lua

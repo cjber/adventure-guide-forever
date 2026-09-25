@@ -45,6 +45,8 @@ function ns.RegisterSettings()
 		track,
 		untrack,
 		Checkbox("stepSound", ns.L.SETTING_STEP_SOUND, ns.L.SETTING_STEP_SOUND_TOOLTIP),
+		Checkbox("suggestCompanions", ns.L.SETTING_COMPANIONS, ns.L.SETTING_COMPANIONS_TOOLTIP),
+		Checkbox("whatsNew", ns.L.SETTING_WHATS_NEW, ns.L.SETTING_WHATS_NEW_TOOLTIP),
 	}) do
 		Settings.RegisterInitializer(category, initializer)
 	end

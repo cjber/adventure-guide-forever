@@ -103,7 +103,7 @@ local emptyText
 local function Muted()
 	local state = Integrations.SkillUpState()
 	if state == "missing" then
-		return L.SKILLUP_MISSING
+		return ns.Companions.Hint("SkillUpForever") or L.SKILLUP_ABSENT
 	elseif state == "outdated" then
 		return L.SKILLUP_OUTDATED
 	elseif #Integrations.Professions() == 0 then
