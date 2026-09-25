@@ -27,7 +27,7 @@ ns.L = {
 	HELP_DUMP = "/agf dump - save the guide's layout for a bug report",
 	HAND_IN_WHEN = "Hand in when you're in %s",
 	-- Journey cards (docs/design.md §2.2 and §3): a title, a subline that counts, and a reason when there is one.
-	JOURNEY_CARRY = "Finish what you carry",
+	JOURNEY_CARRY = "Loose ends",
 	JOURNEY_STORY = "%s story",
 	JOURNEY_NEXT_ZONE = "Head to %s",
 	-- The next zone's level goes under its name, so a long zone name never cuts it off.
@@ -43,6 +43,13 @@ ns.L = {
 	CARRY_READY = "%d ready to hand in",
 	CARRY_IN_PROGRESS = "%d in progress",
 	CARRY_AWAY = "%d to hand in across the sea",
+	-- Quests the player added with a shift-click that no zone card holds.
+	CARRY_ADDED = "%d you added",
+	-- The log nearly full (docs/design.md §2.18): card 1's line 3 counts what could go, and its tooltip lists them.
+	LOG_FULL = "Log nearly full: %d you could drop",
+	LOG_FULL_ONE = "Log nearly full: 1 you could drop",
+	LOG_FULL_LIST = "To make room in your log, you could drop:",
+	LATER_LAPS = "%d of them on later laps",
 	LIST_SEPARATOR = ", ",
 	QUESTS_NEAR = "%d quests near your level",
 	QUESTS_NEAR_ONE = "1 quest near your level",
@@ -109,10 +116,14 @@ ns.L = {
 	NOT_INTERESTED = "Not interested",
 	RIGHT_CLICK_NOT_INTERESTED = "Right-click if you're not interested",
 	CHOOSE_JOURNEY = "Choose another journey",
-	-- With no card chosen every card is whole and no steps show (docs/design.md §2.2); the chosen card toggles back.
-	CHOOSE_TO_SEE_STEPS = "Choose a journey to see its steps.",
-	SHOW_EVERY_JOURNEY = "Click again to see every journey",
-	STOP_AND_SHOW_EVERY_JOURNEY = "Click again to stop the route and see every journey",
+	-- A step's quest ruled out on this character (docs/design.md §2.18): it stays in the log, off every route.
+	NOT_THIS_QUEST = "Not this quest",
+	-- A quest the route leaves out joins it with a shift-click, in the search or on the map, and leaves the same way.
+	SHIFT_ADD = "Shift-click to add it to your route",
+	SHIFT_REMOVE = "Shift-click to take it off your route",
+	-- With no card chosen the guide draws the first (docs/design.md §2.2); the chosen card toggles back to that.
+	CLEAR_CHOICE = "Click again to let the guide choose",
+	STOP_AND_CLEAR_CHOICE = "Click again to stop the route and let the guide choose",
 	-- The chosen journey's route stopped (cleared, replaced or refused): its card and the tracker title resume it.
 	CLICK_TO_RESUME = "Click to resume the route",
 	ROUTE_PAUSED = "Route paused. Click the journey to resume.",
@@ -159,6 +170,9 @@ ns.L = {
 	-- Steps (Model.lua): a title and a reason.
 	TURN_IN = "Turn in: %s",
 	READY_TO_HAND_IN = "ready to hand in",
+	-- A hand-in the route comes back for once the quest's objectives are done, and an area of a quest picked up first.
+	HAND_IN_WHEN_DONE = "once it's done",
+	AFTER_PICK_UP = "after you pick it up",
 	OPENS_CHAPTER_HERE = "Opens the next chapter here",
 	QUESTS_IN_PROGRESS = "quests in progress",
 	QUESTS_HERE = "%d quests here",
@@ -181,6 +195,9 @@ ns.L = {
 	CLICK_WAYPOINT = "Click to set a waypoint",
 	STEP_NUMBERED = "%d. %s",
 	QUEST_LEVEL = "[%d] %s",
+	-- An area's tooltip: each open objective under its quest, in the client's words, else its count.
+	OBJECTIVE_LINE = "- %s",
+	OBJECTIVE_COUNT = "- %d/%d",
 	-- The guide's settings menu, then the addon's settings page.
 	MENU_QUESTS = "Quests",
 	MENU_DUNGEONS = "Dungeons",
@@ -197,8 +214,6 @@ ns.L = {
 	-- Honest coverage (docs/design.md §2.1): the "!" over a giver marks the quests the guide can't list; Forever
 	-- draws no givers on the map (§9 probe `questoffer`).
 	UNLISTED = 'This land has stories the guide doesn\'t know yet; look for the "!" over quest givers.',
-	-- The tracker's one line while no journey is chosen: a story's title, then its reason or chapter.
-	STORY_HOOK = "%s · %s",
 	-- Stream 2b "Trainers" (roadmap #5): the trainer aside names the nearest trainer's town when the data places one,
 	-- and a chosen journey's route may stop there.
 	TRAINER_IN = "Visit your class trainer in %s",
@@ -280,6 +295,8 @@ local PREFS_DEFAULTS = {
 	-- Opt-in (roadmap #12): the Battlegrounds card.
 	battlegrounds = false,
 	notInterested = {},
+	-- Quests added to the route with a shift-click: quest ID -> true.
+	pinned = {},
 }
 
 ---@type table<string, any>?
@@ -329,6 +346,11 @@ local function LoadCharDB()
 			loaded.notInterested[key] = nil
 		else
 			loaded.notInterested[key] = { title = entry.title, chosen = entry.chosen == true or nil }
+		end
+	end
+	for id, value in pairs(loaded.pinned) do
+		if type(id) ~= "number" or value ~= true then
+			loaded.pinned[id] = nil
 		end
 	end
 	-- The zone picked in the old "Where next?" cards: nothing offers that choice any more, so none is kept.
@@ -393,7 +415,7 @@ end
 
 ---@return AGFPrefs
 function ns.Prefs()
-	charDB = charDB or { quests = true, dungeons = false, notInterested = {} }
+	charDB = charDB or { quests = true, dungeons = false, notInterested = {}, pinned = {} }
 	charDB.skipped = sessionSkipped
 	return charDB
 end
@@ -420,6 +442,42 @@ function ns.NotInterested(key, title)
 	else
 		ns.Invalidate()
 	end
+end
+
+-- "Not this quest" (docs/design.md §2.18): quest `id` leaves every route on this character, and stays in the log; the
+-- Skipped menu's Show again brings it back.
+---@param id integer
+---@param title string
+function ns.NotThisQuest(id, title)
+	ns.Prefs().pinned[id] = nil
+	ns.NotInterested("quest:" .. id, title)
+end
+
+-- Whether every quest in `ids` is on the route by the player's shift-click.
+---@param ids integer[]
+---@return boolean
+function ns.Pinned(ids)
+	local pinned = ns.Prefs().pinned
+	for _, id in ipairs(ids) do
+		if not pinned[id] then
+			return false
+		end
+	end
+	return #ids > 0
+end
+
+-- A shift-click (docs/design.md §2.18): the quests `ids` join the route whatever the planner would leave out, or leave
+-- it when they all had joined. Ruled-out quests come back too.
+---@param ids integer[]
+function ns.TogglePinned(ids)
+	local prefs, pin = ns.Prefs(), not ns.Pinned(ids)
+	for _, id in ipairs(ids) do
+		prefs.pinned[id] = pin or nil
+		if pin then
+			prefs.notInterested["quest:" .. id] = nil
+		end
+	end
+	ns.Invalidate()
 end
 
 ---@param key string
@@ -472,15 +530,23 @@ function ns.Skipped()
 	return all
 end
 
--- The step's quests in the log: a town's hand-ins, or every quest of a turn-in or objectives (a group quest under
--- way is a "dungeon" step); a town's pickups never are.
+-- The step's quests in the log: a town's hand-ins, or every quest of a turn-in or an area (a group quest's is a
+-- "dungeon" step); a town's pickups never are.
 ---@param step AGFStep
 ---@return integer[]
 local function LogQuests(step)
-	if step.kind == "hub" then
-		return step.handins or {}
+	local quests = (step.kind == "town" and step.handins)
+		or ((step.kind == "turnin" or step.kind == "area" or step.kind == "dungeon") and step.quests)
+		or {}
+	if not step.planned then
+		return quests
 	end
-	return (step.kind == "turnin" or step.kind == "objective" or step.kind == "dungeon") and step.quests or {}
+	-- A quest the route picks up first wasn't in the log when it was planned.
+	local carried = {}
+	for _, id in ipairs(quests) do
+		carried[#carried + 1] = not step.planned[id] and id or nil
+	end
+	return carried
 end
 
 ---@param step AGFStep
@@ -561,7 +627,54 @@ local function BuildRoute()
 	end
 	training = prefs.journey and ns.Integrations.Training() or nil
 	player.train = training
-	return ns.Model.Plan(ns.Data, player, state.Completed(), state.Log(), prefs, state.MapName, state.InstanceName)
+	return ns.Model.Plan(
+		ns.Data,
+		player,
+		state.Completed(),
+		state.Log(),
+		prefs,
+		state.MapName,
+		state.InstanceName,
+		cachedRoute
+	)
+end
+
+-- The "you're here" head (docs/design.md §4.2): the route is rebuilt on events, never as the player moves, save that
+-- walking into an open area the route goes to makes it the head and holds guidance there, and walking out of it
+-- (past Model.Here's margin) lets guidance go on. Checked every HERE_EVERY seconds only while they move
+-- (PLAYER_STARTED_MOVING to PLAYER_STOPPED_MOVING), so nothing runs while they stand still, and once per area entered
+-- or left.
+local HERE_EVERY = 2
+---@type {Cancel: fun(self)}?
+local walking
+---@type string?
+local hereKey
+local function Walked()
+	if InCombatLockdown() then
+		return
+	end
+	local map, x, y = ns.State.Where()
+	local steps = cachedRoute.steps
+	local index = ns.Model.Here(ns.Data, { map = map, x = x, y = y }, steps, cachedRoute.here)
+	local key = index and steps[index].key or nil
+	if key ~= hereKey and key ~= cachedRoute.here then
+		ns.Invalidate()
+	end
+	hereKey = key
+end
+local moving = CreateFrame("Frame")
+moving:SetScript("OnEvent", function(_, event)
+	if event == "PLAYER_STARTED_MOVING" then
+		walking = walking or C_Timer.NewTicker(HERE_EVERY, Walked)
+	elseif walking then
+		walking:Cancel()
+		walking = nil
+		Walked()
+	end
+end)
+-- By feature detection, as State's optional events: without them the head moves on the next event's rebuild.
+for _, event in ipairs({ "PLAYER_STARTED_MOVING", "PLAYER_STOPPED_MOVING" }) do
+	pcall(moving.RegisterEvent, moving, event)
 end
 
 -- A spell learned (or a new level's) changes what the trainer stop says, or ends it: rebuild when the answer moved.

@@ -16,6 +16,7 @@ globals = {
 	"AdventureGuideForeverCharDB",
 	"AdventureGuideForeverPinMixin",
 	"AdventureGuideForeverGiverPinMixin",
+	"AdventureGuideForeverAreaPinMixin",
 	"AdventureGuideForever_OnAddonCompartmentClick",
 	"SLASH_ADVENTUREGUIDEFOREVER1",
 	"SLASH_ADVENTUREGUIDEFOREVER2",
@@ -69,6 +70,7 @@ read_globals = {
 	"CreateFromMixins",
 	"MapCanvasDataProviderMixin",
 	"MapCanvasPinMixin",
+	"AM_PIN_SCALE_STYLE_WITH_TERRAIN",
 	"GameTooltip",
 	"GameTooltip_SetTitle",
 	"GameTooltip_AddNormalLine",
@@ -85,6 +87,7 @@ read_globals = {
 	"QuestMapFrameOverrides",
 	"QUESTS_LABEL",
 	"GameTooltip_Hide",
+	"IsShiftKeyDown",
 	-- Tooltip.lua
 	"TooltipDataProcessor",
 	"Enum",

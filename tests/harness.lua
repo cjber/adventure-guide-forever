@@ -253,6 +253,13 @@ function harness.load(options)
 	function Methods:GetAlpha()
 		return self.alpha or 1
 	end
+	function Methods:SetDesaturated(desaturated)
+		self.desaturated = desaturated
+	end
+	-- A spec puts the mouse on a frame by setting mouseOver, then runs its OnEnter/OnLeave.
+	function Methods:IsMouseOver()
+		return self.mouseOver == true
+	end
 
 	-- Anchors keep every point, normalised to the client's GetPoint form: point, relativeTo, relativePoint, x, y.
 	function Methods:SetPoint(point, a, b, c, d)
@@ -772,11 +779,24 @@ function harness.load(options)
 		After = function(_, fn)
 			timers[#timers + 1] = fn
 		end,
-		NewTicker = function()
+		NewTicker = function(_, fn)
 			h.counts.tickers = h.counts.tickers + 1
-			return { Cancel = noop }
+			local ticker = { fn = fn }
+			function ticker.Cancel()
+				h.ticking[ticker] = nil
+			end
+			h.ticking[ticker] = true
+			return ticker
 		end,
 	}
+	-- The tickers still running, each with its `fn`.
+	h.ticking = {}
+	-- Runs each running ticker once, as its period passing would.
+	function h.tickers()
+		for ticker in pairs(h.ticking) do
+			h.call(ticker.fn)
+		end
+	end
 	-- Runs one frame: the timers queued now, not the ones they queue. Returns how many ran.
 	function h.tick()
 		local due = timers
@@ -882,6 +902,15 @@ function harness.load(options)
 	G.InCombatLockdown = function()
 		return h.combat
 	end
+	-- Shift held while `fn` runs: a shift-click.
+	G.IsShiftKeyDown = function()
+		return h.shift == true
+	end
+	function h.Shift(fn)
+		h.shift = true
+		fn()
+		h.shift = false
+	end
 	-- Entering or leaving combat fires the same events the client does.
 	function h.SetCombat(on)
 		h.combat = on
@@ -951,7 +980,8 @@ function harness.load(options)
 		player.map, player.x, player.y = map, x, y
 	end
 
-	-- Quest log and completion: `log` entries are {id, title, level, complete, map, x, y}; a spec edits h.log.
+	-- Quest log and completion: `log` entries are {id, title, level, complete, map, x, y, objectives, poi}; a spec
+	-- edits h.log.
 	local log = options.log or {}
 	h.log = log
 	h.titleRequests = {}
@@ -966,6 +996,10 @@ function harness.load(options)
 		GetNumQuestLogEntries = function()
 			return #log
 		end,
+		-- The quests the log may hold: options.logMax, else the 40 of the Forever log the design's probe saw full.
+		GetMaxNumQuestsCanAccept = function()
+			return options.logMax or 40
+		end,
 		GetInfo = function(index)
 			local entry = log[index]
 			return entry and { questID = entry.id, title = entry.title, level = entry.level, isHeader = false }
@@ -978,12 +1012,43 @@ function harness.load(options)
 			end
 			return false
 		end,
+		-- As the live client: a waypoint only once the quest is finished (its turn-in).
 		GetNextWaypoint = function(questID)
 			for _, entry in ipairs(log) do
-				if entry.id == questID then
+				if entry.id == questID and entry.complete then
 					return entry.map, entry.x, entry.y
 				end
 			end
+		end,
+		-- An entry's `objectives` are {type, done, have, need}, as State.lua reads them back.
+		GetQuestObjectives = function(questID)
+			for _, entry in ipairs(log) do
+				if entry.id == questID then
+					local objectives = {}
+					for index, objective in ipairs(entry.objectives or {}) do
+						objectives[index] = {
+							text = objective.text or "",
+							type = objective.type,
+							finished = objective.done,
+							numFulfilled = objective.have,
+							numRequired = objective.need,
+						}
+					end
+					return objectives
+				end
+			end
+			return {}
+		end,
+		-- An entry's `poi` {map, x, y} is the client's point for it on that map; h.poiCalls counts the reads.
+		GetQuestsOnMap = function(uiMapID)
+			h.poiCalls = (h.poiCalls or 0) + 1
+			local quests = {}
+			for _, entry in ipairs(log) do
+				if entry.poi and entry.poi.map == uiMapID then
+					quests[#quests + 1] = { questID = entry.id, x = entry.poi.x, y = entry.poi.y }
+				end
+			end
+			return quests
 		end,
 		GetTitleForQuestID = noop,
 		-- Tracked quests, in order: options.watched seeds them; the client's limit is 25.
@@ -1437,7 +1502,20 @@ function harness.load(options)
 		end,
 		SetScalingLimits = noop,
 		ApplyCurrentScale = noop,
+		SetIgnoreGlobalPinScale = function(self, ignore)
+			self.ignoresGlobalScale = ignore
+		end,
+		SetScaleStyle = function(self, style)
+			self.scaleStyle = style
+		end,
 	}
+	G.AM_PIN_SCALE_STYLE_WITH_TERRAIN = 3
+	-- The map's canvas: the 1000 x 700 frame SetPosition places pins on.
+	local canvas = NewRegion("Frame", nil, map)
+	canvas:SetSize(1000, 700)
+	function map:GetCanvas()
+		return canvas
+	end
 	G.ToggleWorldMap = function()
 		map:SetShown(not map:IsShown())
 	end

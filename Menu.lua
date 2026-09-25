@@ -28,6 +28,34 @@ function Menu.GoWarning(tooltip, title)
 	GameTooltip_AddInstructionLine(tooltip, L.REPLACES_JOURNEY)
 end
 
+-- "Not this quest" (docs/design.md §2.18) for a step's quests: one button for a lone quest, else one per quest under
+-- it. A trainer's or battlemaster's stop has none. The quest stays in the log; Show again brings it back.
+---@param root SharedMenuDescriptionProxy
+---@param step AGFStep
+local function NotThisQuest(root, step)
+	if step.kind == "trainer" or step.kind == "battlemaster" or #step.quests == 0 then
+		return
+	end
+	local log = ns.State.Log()
+	local function Title(id)
+		local entry, quest = log[id], ns.Data.quests[id]
+		return (entry and entry.title) or (quest and quest.title) or step.title
+	end
+	if #step.quests == 1 then
+		local id = step.quests[1]
+		root:CreateButton(L.NOT_THIS_QUEST, function()
+			ns.NotThisQuest(id, Title(id))
+		end)
+		return
+	end
+	local submenu = root:CreateButton(L.NOT_THIS_QUEST)
+	for _, id in ipairs(step.quests) do
+		submenu:CreateButton(Title(id), function()
+			ns.NotThisQuest(id, Title(id))
+		end)
+	end
+end
+
 ---@param root SharedMenuDescriptionProxy
 ---@param step? AGFStep
 function Menu.Step(root, step)
@@ -55,6 +83,7 @@ function Menu.Step(root, step)
 		root:CreateButton(L.SKIP, function()
 			ns.Skip(step.key, step.title)
 		end)
+		NotThisQuest(root, step)
 	end
 	local skipped = #ns.Skipped()
 	if skipped > 0 then

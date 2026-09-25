@@ -24,6 +24,8 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 BUILD = "1.60.1.69913"
+# The last build with WorldMapArea: quest_poi's mapAreaId is one of its IDs, which UiMap replaced in 8.0.
+LEGACY_MAP_BUILD = "7.3.5.26972"
 CLASSICDB_COMMIT = "22b51464f1625f6ef6275771de1f5466c6f5d19e"
 CLASSICDB_URL = (
     f"https://raw.githubusercontent.com/cmangos/classic-db/{CLASSICDB_COMMIT}/Full_DB/ClassicDB_1_12_1_z2815.sql.gz"
@@ -91,6 +93,12 @@ TABLES = {
     "npc_trainer",
     "npc_trainer_template",
     "battlemaster_entry",
+    "quest_poi",
+    "quest_poi_points",
+    "areatrigger_involvedrelation",
+    "creature_loot_template",
+    "gameobject_loot_template",
+    "reference_loot_template",
 }
 TOKEN = re.compile(r"\s*('(?:[^'\\]|\\.|'')*'|NULL|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?|[(),;])", re.DOTALL)
 ESCAPES = {"0": "\0", "n": "\n", "r": "\r", "t": "\t", "b": "\b", "Z": "\x1a"}
@@ -463,18 +471,22 @@ def spawns(tables, kind, wanted, world):
         entry = spawn["id"]
         if entry not in wanted or not names.get(entry) or spawn["guid"] in seasonal:
             continue
-        options = []
-        for row in world[spawn["map"]]:
-            xy = project(row, spawn["position_x"], spawn["position_y"], spawn["position_z"])
-            if xy is not None:
-                area = (float(row["Region_3"]) - float(row["Region_0"])) * (
-                    float(row["Region_4"]) - float(row["Region_1"])
-                )
-                options.append((area, int(row["OrderIndex"]), int(row["UiMapID"]), xy))
-        if options:
+        if options := options_at(world[spawn["map"]], spawn["position_x"], spawn["position_y"], spawn["position_z"]):
             at = (spawn["map"], spawn["position_x"], spawn["position_y"])
-            result[entry].append({"entry": (kind, entry), "name": names[entry], "options": sorted(options), "at": at})
+            result[entry].append({"entry": (kind, entry), "name": names[entry], "options": options, "at": at})
     return result
+
+
+def options_at(rows, x, y, z=0):
+    """Each zone map of `rows` (one world map's) whose rectangle holds world point x, y, z, smallest first, as
+    (area, order, UiMap ID, projected x and y)."""
+    options = []
+    for row in rows:
+        xy = project(row, x, y, z)
+        if xy is not None:
+            area = (float(row["Region_3"]) - float(row["Region_0"])) * (float(row["Region_4"]) - float(row["Region_1"]))
+            options.append((area, int(row["OrderIndex"]), int(row["UiMapID"]), xy))
+    return sorted(options)
 
 
 def places(tables, world):
@@ -506,14 +518,24 @@ def homes(locations, quests, areas):
 
 def pick(spawn, zone_maps, home):
     """The quest's own zone first, then the giver's home zone, then the smallest containing map."""
-    options = spawn["options"]
-    chosen = (
+    _, _, ui_map, (x, y) = choose(spawn["options"], zone_maps, home)
+    return {"map": ui_map, "x": round(x, 4), "y": round(y, 4), "name": spawn["name"]}
+
+
+def choose(options, zone_maps, home=None):
+    """Of `options_at`'s maps: the quest's own zone first, then `home` (one map, or a set of them), then the
+    smallest."""
+    homes = home if isinstance(home, set) else {home}
+    return (
         next((o for o in options if o[2] in zone_maps), None)
-        or next((o for o in options if o[2] == home), None)
+        or next((o for o in options if o[2] in homes), None)
         or options[0]
     )
-    _, _, ui_map, (x, y) = chosen
-    return {"map": ui_map, "x": round(x, 4), "y": round(y, 4), "name": spawn["name"]}
+
+
+def legacy_maps(legacy_rows, areas):
+    """Each WorldMapArea ID (quest_poi's mapAreaId) to the UiMaps of its area (`map_indexes`' `areas`)."""
+    return {int(r["ID"]): areas[int(r["AreaID"])] for r in legacy_rows if int(r["AreaID"]) in areas}
 
 
 def quest_place(spawn, zone_maps, home):
@@ -522,6 +544,186 @@ def quest_place(spawn, zone_maps, home):
     place = pick(spawn, zone_maps, home)
     kind, entry = spawn["entry"]
     return {**place, "npc": entry} if kind == "creature" else place
+
+
+EXPLORE = 16  # quest_poi objIndex of an explore objective; 0-3 are ReqCreatureOrGOId1-4 and 4-7 ReqItemId1-4
+SLOTS = {*range(8), EXPLORE}  # the objIndex values kept: -1 is the turn-in, and 9-13 are of unknown meaning
+SHARE = 0.8  # r: the distance within which this share of a shape's points, or a cluster's spawns, lie
+SPAWN_LINK = 100  # yards: spawns this close stand in one fallback area
+AREAS = 3  # the most areas for one objective
+MIN_DROP = 5  # percent: an item that drops less often than this is not collected from that source
+GAMEOBJECT_LOOT = (3, 25)  # gameobject_template type whose data1 is its loot: a chest, a fishing hole
+EVENT = 2  # SpecialFlags QUEST_SPECIAL_FLAG_EXPLORATION_OR_EVENT
+
+
+def objectives(row, explore):
+    """A quest's objectives, each slot (the quest_poi objIndex numbering) to the count it needs, in slot order: a kill
+    or use target of ReqCreatureOrGOId, an item of ReqItemId other than the one the quest gives at pickup (SrcItemId: a
+    delivery, done at the turn-in), and an explore objective when an area trigger completes the quest
+    (areatrigger_involvedrelation).
+    """
+    result = {}
+    for i in range(4):
+        if row[f"ReqCreatureOrGOId{i + 1}"] and row[f"ReqCreatureOrGOCount{i + 1}"]:
+            result[i] = row[f"ReqCreatureOrGOCount{i + 1}"]
+    for i in range(4):
+        if row[f"ReqItemId{i + 1}"] not in (0, row["SrcItemId"]) and row[f"ReqItemCount{i + 1}"]:
+            result[4 + i] = row[f"ReqItemCount{i + 1}"]
+    if explore:
+        result[EXPLORE] = 1
+    return result
+
+
+def quest_flags(row, explore):
+    """`event` for a quest a script completes (SpecialFlags EXPLORATION_OR_EVENT, not an explore quest): an escort, a
+    spell cast, a summoned fight; the data cannot tell these apart. `timed`, the seconds it allows (LimitTime)."""
+    flags = {}
+    if row["SpecialFlags"] & EVENT and not explore:
+        flags["event"] = True
+    if row["LimitTime"]:
+        flags["timed"] = row["LimitTime"]
+    return flags
+
+
+def full_xp(row):
+    """The XP a quest gives a player at most 5 levels above it: CMaNGOS Quest::XPValue, RewMoneyMaxLevel / 0.6 rounded
+    up for a quest of level 1 to 60 (in whole numbers, which float32's ceilf matches). None for any other level."""
+    if 0 < row["QuestLevel"] <= 60 and row["RewMoneyMaxLevel"] > 0:
+        return -(-row["RewMoneyMaxLevel"] * 5 // 3)
+    return None
+
+
+def inside(point, polygon):
+    """Whether `point` lies inside `polygon` (even-odd rule); fewer than three vertices enclose nothing."""
+    if len(polygon) < 3:
+        return False
+    x, y = point
+    result = False
+    for (x1, y1), (x2, y2) in zip(polygon, polygon[1:] + polygon[:1], strict=True):
+        if (y1 > y) != (y2 > y) and x < x1 + (y - y1) * (x2 - x1) / (y2 - y1):
+            result = not result
+    return result
+
+
+def reach(centre, points):
+    """The distance from `centre` within which SHARE of `points` lie (nearest rank), in whole yards."""
+    distances = sorted(math.dist(centre, p) for p in points)
+    return round(distances[math.ceil(SHARE * len(distances)) - 1])
+
+
+def shape_area(points):
+    """A quest POI shape's point and reach, in world yards: the mean of its vertices when that lies inside the shape,
+    else the vertex nearest it, so the point is always the shape's."""
+    mean = (sum(x for x, _ in points) / len(points), sum(y for _, y in points) / len(points))
+    point = mean if inside(mean, points) else min(points, key=lambda p: (math.dist(p, mean), p))
+    return point, reach(point, points)
+
+
+def medoid(points):
+    """The point of `points` with the least total distance to the rest: always one of them."""
+    return min(points, key=lambda p: (sum(math.dist(p[:2], q[:2]) for q in points), p))
+
+
+def spawn_areas(found, zone):
+    """Up to AREAS areas of spawns (`spawns`' entries) on map `zone`, biggest first: each the medoid spawn of a
+    group linked at SPAWN_LINK yards, with its reach, as (x, y, r) on the map."""
+    at = {}
+    for spawn in found:
+        if option := next((o for o in spawn["options"] if o[2] == zone), None):
+            at[spawn["at"][1:]] = option[3]
+    groups = link([(x, y, xy) for (x, y), xy in sorted(at.items())], SPAWN_LINK)
+    result = []
+    for group in groups:
+        centre = medoid(group)
+        result.append((len(group), centre[2], reach(centre[:2], [p[:2] for p in group])))
+    return [(*xy, r) for _, xy, r in sorted(result, key=lambda a: (-a[0], a[1]))[:AREAS]]
+
+
+def objective_sources(tables):
+    """What to find an objective among: `credit`, the creatures whose kill counts for a creature (KillCredit1-2), and
+    `drops`, the (kind, entry) of each creature or game object that drops an item at least MIN_DROP percent of the time
+    (a grouped entry of chance 0 shares its group's), following one level of reference loot."""
+    credit = defaultdict(set)
+    for row in tables["creature_template"]:
+        for column in ("KillCredit1", "KillCredit2"):
+            if row[column]:
+                credit[row[column]].add(row["Entry"])
+    owners = {"creature": defaultdict(set), "gameobject": defaultdict(set)}
+    for row in tables["creature_template"]:
+        if row["LootId"]:
+            owners["creature"][row["LootId"]].add(row["Entry"])
+    for row in tables["gameobject_template"]:
+        if row["type"] in GAMEOBJECT_LOOT and row["data1"] > 0:
+            owners["gameobject"][row["data1"]].add(row["entry"])
+    references = defaultdict(list)
+    for row in tables["reference_loot_template"]:
+        references[row["entry"]].append(row)
+
+    def likely(row):
+        chance = abs(row["ChanceOrQuestChance"])
+        return chance >= MIN_DROP or (chance == 0 and row["groupid"] > 0)
+
+    drops = defaultdict(set)
+    for kind, loot in owners.items():
+        for row in tables[f"{kind}_loot_template"]:
+            items = references[-row["mincountOrRef"]] if row["mincountOrRef"] < 0 else [row]
+            for item in (i for i in items if likely(row) and i["mincountOrRef"] >= 0 and likely(i)):
+                drops[item["item"]] |= {(kind, entry) for entry in loot[row["entry"]]}
+    return credit, drops
+
+
+def objective_targets(row, slot, credit, drops):
+    """The (kind, entry) of whatever an objective slot is done at: its creature and those that give kill credit for
+    it, its game object, or its item's sources."""
+    if slot < 4:
+        target = row[f"ReqCreatureOrGOId{slot + 1}"]
+        if target < 0:
+            return {("gameobject", -target)}
+        return {("creature", entry) for entry in {target} | credit[target]}
+    if slot < 8:
+        return drops[row[f"ReqItemId{slot - 3}"]]
+    return set()
+
+
+def quest_shapes(tables):
+    """Each quest's quest_poi objective shapes as (slot, world map, points in world x, y, WorldMapArea ID), in poiId
+    order; a shape of an objIndex outside SLOTS is left out."""
+    points = defaultdict(list)
+    for row in tables["quest_poi_points"]:
+        points[row["questId"], row["poiId"]].append((row["x"], row["y"]))
+    result = defaultdict(list)
+    for row in sorted(tables["quest_poi"], key=lambda r: (r["questId"], r["poiId"])):
+        if row["objIndex"] in SLOTS and (shape := points[row["questId"], row["poiId"]]):
+            result[row["questId"]].append((row["objIndex"], row["mapId"], shape, row["mapAreaId"]))
+    return result
+
+
+def objective_areas(slots, shapes, found, world, zone_maps, zone, legacy):
+    """Where a quest's objectives are done, as [i, x, y, r] or [i, x, y, r, map]: `i` the slot, x and y on the map in
+    thousandths, r in yards; the map is left out when it is `zone`, the quest's zone.
+
+    Each quest_poi shape (Blizzard's objective area, (slot, world map, points, WorldMapArea ID)) of one of the quest's
+    `slots` gives its `shape_area`, on `zone` or one of the quest's zone maps where one holds it, else on the map its
+    WorldMapArea names (`legacy`), else the smallest (`choose`); shapes on the quest's own maps come first, then the
+    widest. A slot without a shape falls back to `spawn_areas` of its `found` spawns on `zone`. A slot keeps at most
+    AREAS areas, and one with neither source has none.
+    """
+    own = zone_maps | {zone} if zone is not None else zone_maps
+    placed = defaultdict(list)
+    for slot, world_map, points, area_map in shapes:
+        (x, y), r = shape_area(points)
+        if slot in slots and (options := options_at(world[world_map], x, y)):
+            _, _, ui_map, (px, py) = choose(options, own, legacy.get(area_map, set()))
+            placed[slot].append((ui_map not in own, -r, ui_map, px, py, r))
+    areas = []
+    for slot in slots:
+        if placed[slot]:
+            chosen = [a[2:] for a in sorted(placed[slot])[:AREAS]]
+        else:
+            chosen = [(zone, x, y, r) for x, y, r in spawn_areas(found[slot], zone)] if zone is not None else []
+        for ui_map, x, y, r in chosen:
+            areas.append([slot, round(x * 1000), round(y * 1000), r] + ([] if ui_map == zone else [ui_map]))
+    return areas
 
 
 def faction(mask):
@@ -813,8 +1015,10 @@ def generate(
     reputations,
     map_art,
     overlay_rows,
+    legacy_rows,
 ):
     maps, world, areas = map_indexes(ui_maps, assignments)
+    legacy = legacy_maps(legacy_rows, areas)
     skill_names, faction_names = gate_names(skill_lines, reputations)
     instance_of, instances = instance_index(area_rows, map_rows)
     locations = places(tables, world)
@@ -825,6 +1029,19 @@ def generate(
     steps, spells = skill_steps(effects, skill_lines), trainer_spells(tables)
     role = roles(tables, steps, spells)
     trains = {("creature", entry): fields["class"] for entry, fields in role.items() if "class" in fields}
+    explores = {r["quest"] for r in tables["areatrigger_involvedrelation"]}
+    shapes = quest_shapes(tables)
+    credit, drops = objective_sources(tables)
+    wanted = defaultdict(set)
+    for qid in quests.keys() & valid_ids:
+        for slot in objectives(quests[qid], qid in explores):
+            for kind, entry in objective_targets(quests[qid], slot, credit, drops):
+                wanted[kind].add(entry)
+    located = {
+        (kind, entry): found
+        for kind in ("creature", "gameobject")
+        for entry, found in spawns(tables, kind, wanted[kind], world).items()
+    }
     emitted, counts = {}, Counter()
     for qid, row in sorted(quests.items()):
         if qid not in valid_ids:
@@ -911,6 +1128,32 @@ def generate(
         counts["with start"] += "start" in quest
         counts["with finish"] += "finish" in quest
         counts["repeatable"] += bool(quest.get("repeatable"))
+        # xp values a pickup; a quest in the log is finished whatever it is worth.
+        if "start" in quest and (xp := full_xp(row)):
+            quest["xp"] = xp
+        # A dungeon's objectives are inside it, and a lap never goes there: they have no areas. need goes with every
+        # other quest's objectives, placed or not, so the planner can tell a quest with none to do from one it cannot
+        # place, which it never picks up for the player.
+        slots = objectives(row, qid in explores)
+        if slots and "dungeon" not in quest:
+            found = {
+                slot: [
+                    s for target in sorted(objective_targets(row, slot, credit, drops)) for s in located.get(target, ())
+                ]
+                for slot in slots
+            }
+            quest["need"] = slots
+            if spots := objective_areas(slots, shapes[qid], found, world, zone_maps, quest.get("zone"), legacy):
+                quest["obj"] = spots
+            open_world = (
+                "start" in quest and quest.get("zone") in PUBLISHED and not quest.get("repeatable") and not elite
+            )
+            for scope in ("", "open-world ") if open_world else ("",):
+                counts[f"{scope}quests with objectives"] += 1
+                counts[f"{scope}quests with an objective area"] += bool(spots)
+                counts[f"{scope}quests with every objective placed"] += slots.keys() <= {a[0] for a in spots}
+        if flags := quest_flags(row, qid in explores):
+            quest["flags"] = flags
         emitted[qid] = quest
     zones = {m: {"name": maps[m]["Name_lang"], "min": low, "max": high} for m, (low, high) in sorted(PUBLISHED.items())}
     wanted = {q[k]["map"] for q in emitted.values() for k in ("start", "finish") if k in q} | zones.keys()
@@ -971,7 +1214,7 @@ def lua(value):
     if isinstance(value, bool):
         return "true" if value else "false"
     if isinstance(value, dict):
-        return "{ " + ", ".join(f"{k} = {lua(v)}" for k, v in value.items()) + " }"
+        return "{ " + ", ".join(f"{f'[{k}]' if isinstance(k, int) else k} = {lua(v)}" for k, v in value.items()) + " }"
     if isinstance(value, list):
         return "{ " + ", ".join(lua(v) for v in value) + " }"
     if value is None:
@@ -990,7 +1233,7 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, look
         "-- Prev > 0: completed; Prev < 0: unknown, no pickup. NextQuestId contributes reverse prerequisites.",
         "-- Positive exclusive groups close siblings; negative predecessor groups expand to pre (all completed).",
         "-- NextQuestInChain is display-only. Complex alternatives and unsupported gates have no start.",
-        "-- Item starters and spawns without zone-level coordinates have no start; no objective coordinates invented.",
+        "-- Item starters and spawns without zone-level coordinates have no start.",
         f"-- hub: the town a start or finish stands in, by single linkage at {LINK} yd, split again past {CAP} yd.",
         f"-- hubs: a town's name is its flight master's (TaxiNodes) within {NAME_REACH} yd of a giver; no other name.",
         "-- npc: a creature giver's entry, the ID in its UnitGUID; an object giver has none.",
@@ -1010,6 +1253,18 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, look
         f"-- raid, or of Type {' or '.join(map(str, RAID_TYPES))} (a raid's quest wherever it is filed).",
         "-- overlays: a zone map's explorable areas (WorldMapOverlay with a texture, one per offset; AreaTable name",
         "-- and ExplorationLevel, never 0); ox, oy: the offset GetExploredMapTextures returns; x, y: nearness only.",
+        "-- need: each objective's count by quest_poi objIndex slot (0-3 ReqCreatureOrGOCount, 4-7 ReqItemCount,",
+        "-- 16 an areatrigger_involvedrelation explore), leaving out the item SrcItemId gives; never for a dungeon's.",
+        "-- obj: where each is done, as { slot, x, y, r[, map] }: x, y in thousandths of the map (the quest's zone",
+        "-- unless given), r the yards holding 80% of the source. The source is Blizzard's quest_poi shape: its",
+        "-- vertex mean when that lies inside it, else its nearest vertex. With no shape, the biggest groups of the",
+        "-- objective's spawns in its quest's zone (the creature, its KillCredit, the object, or what drops the item",
+        f"-- at {MIN_DROP}%+), linked at {SPAWN_LINK} yd: each group's medoid, a real spawn. At most {AREAS} per",
+        "-- objective; none for a dungeon quest; objIndex 9-13 (meaning unknown) is left out.",
+        "-- xp: a start's full XP, as the core's Quest::XPValue: RewMoneyMaxLevel / 0.6 rounded up (the dump has no",
+        "-- RewXP), for level 1-60 only.",
+        "-- flags: event, a script completes it: an escort, a cast, a fight (SpecialFlags 2 without an area trigger);",
+        "-- timed, the seconds it allows (LimitTime).",
         "---@type string, AGFNamespace",
         "local _, ns = ...",
         "---@type AGFData",
@@ -1089,6 +1344,7 @@ def main():
             + ("HitRectTop", "HitRectBottom", "HitRectLeft", "HitRectRight", "AreaID_0"),
             **options,
         ),
+        db2("WorldMapArea", ("ID", "AreaID"), build=LEGACY_MAP_BUILD, **options),
     )
     if not quests or not counts["with start"]:
         raise ValueError("No usable quests; leaving existing output untouched")

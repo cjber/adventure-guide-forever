@@ -29,6 +29,23 @@
 ---@field dungeon? integer instance Map.ID (not a uiMapID) when the quest is filed under a dungeon or raid
 ---@field raid? boolean a raid's quest: its instance is a raid, or it is typed Raid wherever it is filed
 ---@field elite? boolean group quest
+---@field xp? integer the XP it gives a player at most 5 levels above it (Quest::XPValue); only with a start
+---@field need? table<integer, integer> objective slot -> the count it needs: 0-3 kill or use, 4-7 collect, 16 explore;
+--- every objective, placed in obj or not; never for a dungeon quest
+---@field obj? AGFObjectiveArea[] where the objectives are done, at most 3 each; never for a dungeon quest; with need
+---@field flags? AGFQuestFlags
+
+--- Where one objective is done: Blizzard's quest POI shape, else a group of its spawns (tools/gen_quests.py).
+---@class AGFObjectiveArea
+---@field [1] integer the objective's slot, a key of the quest's need
+---@field [2] integer map x in thousandths
+---@field [3] integer map y in thousandths
+---@field [4] integer yards from x, y holding 80% of the shape's points or the group's spawns
+---@field [5] integer? the uiMapID x, y are on when it is not the quest's zone
+
+---@class AGFQuestFlags
+---@field event? true a script completes it: an escort, a spell cast or a summoned fight
+---@field timed? integer the seconds it allows
 
 ---@class AGFData
 ---@field build string client build the data was generated for
@@ -72,6 +89,7 @@
 ---@class AGFPlayer
 ---@field level integer
 ---@field maxLevel integer the level cap
+---@field logMax? integer the quests the log may hold (C_QuestLog.GetMaxNumQuestsCanAccept); no limit when nil
 ---@field side integer 1 Alliance, 2 Horde
 ---@field raceBit integer
 ---@field classBit integer
@@ -84,25 +102,55 @@
 ---@field title string
 ---@field complete boolean ready to hand in
 ---@field level integer
----@field map? integer where to go next (objective area or turn-in), from C_QuestLog waypoints
+---@field map? integer where to go next, from C_QuestLog.GetNextWaypoint: the live client gives one only once finished
 ---@field x? number
 ---@field y? number
+---@field objectives? AGFLogObjective[] the client's objectives, in its order (C_QuestLog.GetQuestObjectives)
+---@field poi? {map: integer, x: number, y: number} the client's point for the quest (C_QuestLog.GetQuestsOnMap)
+
+-- One objective of a logged quest as the client counts it.
+---@class AGFLogObjective
+---@field type string "monster", "object", "item", "event", or another kind the data has no slot for
+---@field text string the client's words for it with its count, e.g. "Redridge Gnoll slain: 3/10"; may be empty
+---@field done boolean
+---@field have integer
+---@field need integer
 
 ---@class AGFPrefs
 ---@field quests boolean
 ---@field dungeons boolean
----@field journey? string key of the journey card the player chose; nil (or gone) = none chosen, every card whole
+---@field journey? string key of the journey card the player chose; nil (or gone) = none chosen, the first card drawn
 ---@field skipped table<string, boolean> step keys skipped this session
 ---@field last? {key: string, reason: string} step 1 at the last rebuild, for the next login's resume line
 ---@field waypoint? {map: integer, x: number, y: number} the native waypoint the last Go set, while it may still be ours
 ---@field guided? string the key of the chosen journey whose route AGF started, while that guidance should run
 
--- "hub" is a town's stop (its pickups and agreeing hand-ins), "turnin" a hand-in at the client's waypoint, and
--- "objective" or "dungeon" (a group quest) the log's quests under way.
----@alias AGFStepKind "hub"|"turnin"|"objective"|"dungeon"|"trainer"|"battlemaster"
+-- "town" is a visit to a town (its pickups and agreeing hand-ins), "turnin" a hand-in anywhere else, and "area" or
+-- "dungeon" (a group quest's) where the log's quests under way are done.
+---@alias AGFStepKind "town"|"turnin"|"area"|"dungeon"|"trainer"|"battlemaster"
+
+-- Where a quest under way is done next (Model.lua Nodes): one open objective's area, or the client's point for the
+-- quest with every open objective.
+---@class AGFNode
+---@field map integer
+---@field x number
+---@field y number
+---@field r number its radius in yards, 0 for a single point
+---@field slot integer the data's need slot of its first objective; 0 when none is known
+---@field objectives AGFAreaObjective[]
+
+-- One open objective an area step holds. `finish` is the town the quest is handed in at, which a route visits after.
+---@class AGFAreaObjective
+---@field id integer the quest
+---@field slot integer the data's need slot
+---@field have? integer the client's count, when its objectives line up with the data's slots
+---@field need? integer the count it needs, the client's else the data's
+---@field text? string the client's words for it, when they line up and it has any
+---@field finish? string the town key ("town:<hub>") of the quest's hand-in, when the data has one
 
 ---@class AGFStep
----@field key string stable identity for skips and the resume line, e.g. "hub:61" or "turnin:4581"
+---@field key string stable identity for skips and the resume line: "town:<hub>", "area:<quest>:<slot>" (its first
+--- objective's), "turnin:<quest>" or "trainer:<npc>"
 ---@field kind AGFStepKind
 ---@field title string e.g. "Turn in: Bathran's Hair", "Pick up quests: Guard Parker" or "Lakeshire, Redridge"
 ---@field detail string grey second line, e.g. "2 to hand in, 4 to pick up"
@@ -111,6 +159,8 @@
 ---@field hub? integer a town's hub (AGFPlace.hub); nil for a town the generator could not place
 ---@field pickups? integer[] a town's eligible quests this card wants there, ascending
 ---@field handins? integer[] a town's finished log quests handed in there, ascending
+---@field follow? integer[] the chapters a town's hand-ins open there (Model.lua Opens), picked up after them
+---@field objectives? AGFAreaObjective[] an area's open objectives, by quest and slot
 ---@field givers? string[] a town's distinct NPC and object names, in `quests` order
 ---@field group? integer how many of a town's quests are elite, dungeon or raid
 ---@field spots? table<integer, AGFPlace> a town's quest ID -> its start or finish there; the point is one of them
@@ -120,7 +170,13 @@
 ---@field place? string the town's name, else its busiest giver; a turn-in's NPC only where its waypoint agrees; a trainer's NPC
 ---@field zone? string the client's name for `map`, else the data's
 ---@field optional? boolean elite/group or outside the player's level band
+---@field r? number an area's radius in yards, wide enough for all its objectives; 0 for a point
+---@field planned? table<integer, true> the quests on it the route picks up first, not in the log yet (Model.lua Laps)
+---@field returns? table<integer, true> a town's hand-ins the route comes back for once their objectives are done
 ---@field chapter? string the story card's chapter line, on the step that takes the chain up
+---@field shapes? AGFNode[] an area's objective nodes, each its own ring, merged into it
+---@field ring? {map: integer, x: number, y: number} an area's middle, where its ring is drawn; its point is where the player enters it
+---@field here? true step 1 is the area the player stands in, objectives open: nothing guides to it or past it
 
 ---@class AGFSkipped
 ---@field key string
@@ -133,6 +189,7 @@
 ---@field y number
 ---@field title string NPC or object name
 ---@field quests integer[] quest IDs it offers the player now, ascending
+---@field adds integer[] those a shift-click puts on the route: none orange or red
 
 ---@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"|"calling"|"battleground"
 
@@ -147,7 +204,7 @@
 ---@class AGFJourney
 ---@field kind AGFJourneyKind
 ---@field key string stable identity for prefs.journey: "carry", "zone:<uiMapID>" (a zone's story or next-zone card alike), "dungeon:<Map.ID>", "calling", "chain:<questID>" (a way into an instance, by its chain's first quest) or "battleground:<BattlemasterList ID>"
----@field title string e.g. "Finish what you carry" or "Westfall story"
+---@field title string e.g. "Loose ends" or "Westfall story"
 ---@field subline string e.g. "3 ready to hand in, 1 in progress"
 ---@field reason? string why this journey, when there is an honest answer
 ---@field map integer where its first step is: choosing the card turns the world map there
@@ -157,14 +214,23 @@
 ---@field hub? string its first stop's place, else that stop's title: the card's line 3 when it has no reason
 ---@field more? integer how many stops follow the first (Model.Journeys sets it and `group` once the card is built)
 ---@field group? integer how many of its quests are elite, dungeon or raid (the sum of its steps' `group`)
+---@field drop? integer[] the first card's log-full note: the log's quests the guide would let go, by ID, when 2 or fewer slots are free
+---@field holds? table<integer, true> a zone story's log quests on its zone, a later lap's too: carry (Loose ends) holds the rest
 
 ---@class AGFRoute
----@field journeys AGFJourney[] at most 3: carry, the zone's story, then the diversions (calling, dungeon, a way into an instance, battleground, next zone) newest first
+---@field journeys AGFJourney[] at most 3: the zone's story, carry, then the diversions (calling, dungeon, a way into an instance, battleground, next zone) newest first
 ---@field journey? string the key of the journey whose steps these are: the chosen one, else the first
 ---@field chosen boolean the player chose `journey`; false while the route falls back to the first card
 ---@field stranded? true no next zone (roadmap #21): the dungeon card came whatever the Dungeons toggle says
 ---@field steps AGFStep[] that journey's steps, never more than MAX_STEPS
 ---@field skipped? table<string, boolean> the skipped keys a full build still had a step for; nil after the combat one
+---@field orders? table<string, AGFOrder> each card's committed order by journey key, which the next build keeps to
+---@field here? string the key of the area the player stood in (step 1's `here`), which the next build lets go only past HERE_MARGIN
+
+-- A card's committed order (docs/design.md §4.3): its steps' identities in order (Model.lua Idents), and the quests
+-- its route picks up, which keep their slots in the log on the next build.
+---@class AGFOrder: string[]
+---@field picked? table<integer, true>
 
 -- One requirement in the why-not view (Model.Why).
 ---@class AGFWhyLine
@@ -181,18 +247,21 @@
 ---@field MAX_STEPS integer
 ---@field MAX_JOURNEYS integer the cards a route holds and the panel draws
 ---@field IsGray fun(questLevel: integer, playerLevel: integer): boolean
+---@field Hard fun(quest: AGFQuest, player: AGFPlayer): boolean orange or red: no route takes it
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
 ---@field Why fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer, names?: AGFWhyNames): AGFWhyLine[] every requirement, met or not; eligible exactly when all are met
 ---@field Search fun(data: AGFData, player: AGFPlayer, query: string, title?: fun(questID: integer): string?): integer[] up to 10 quest IDs whose title holds `query`, by title
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
 ---@field Story fun(data: AGFData, questID: integer): AGFStory? the chain the quest belongs to; nil when it is in none, or the way back forks
 ---@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?)): AGFJourney[], boolean
----@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?)): AGFRoute
+---@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?), last?: AGFRoute): AGFRoute
+---@field Here fun(data: AGFData, where?: {map?: integer, x?: number, y?: number}, steps: AGFStep[], held?: string): integer? the open area step `where` stands in: the head when it is one, else the first; `held`, the key of the one stood in last, lets go past a margin
 ---@field Yards fun(data: AGFData, a: {map: integer, x: number, y: number}, b: {map: integer, x: number, y: number}): number? yards between two places on one continent the data places; nil otherwise
 ---@field Refresh fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, last: AGFRoute, mapName?: fun(map: integer): string?): AGFRoute the cheap in-combat rebuild: the log's steps fresh, the rest from `last`
 
 ---@class AGFState
 ---@field Player fun(): AGFPlayer
+---@field Where fun(): integer?, number?, number? the player's map and point on it; nil where the client places them nowhere
 ---@field Completed fun(): table<integer, boolean>
 ---@field Log fun(): table<integer, AGFLogQuest>
 ---@field OnChange fun(callback: fun())
@@ -325,9 +394,8 @@
 ---@field SKIPPED string format: how many steps are skipped this session
 ---@field SHOW_AGAIN string format: a skipped step's title
 ---@field CHOOSE_JOURNEY string opens the guide
----@field CHOOSE_TO_SEE_STEPS string under the cards while none is chosen
----@field SHOW_EVERY_JOURNEY string the chosen card's tooltip: clicking it again chooses none
----@field STOP_AND_SHOW_EVERY_JOURNEY string the same while the route it started runs, which the click stops
+---@field CLEAR_CHOICE string the chosen card's tooltip: clicking it again lets the guide choose
+---@field STOP_AND_CLEAR_CHOICE string the same while the route it started runs, which the click stops
 ---@field CLICK_TO_RESUME string the chosen card's tooltip while its route is paused: the click resumes it
 ---@field ROUTE_PAUSED string the footer line while the chosen journey's route is paused
 ---@field HUB_MORE string format: a card's first stop, how many stops follow it
@@ -382,6 +450,8 @@
 ---@field CLICK_WAYPOINT string
 ---@field STEP_NUMBERED string format: route index, step title
 ---@field QUEST_LEVEL string format: quest level, quest title
+---@field OBJECTIVE_LINE string format: the client's words for an open objective, with its count
+---@field OBJECTIVE_COUNT string format: an open objective's count so far, the count it needs
 ---@field MENU_QUESTS string
 ---@field MENU_DUNGEONS string
 ---@field MENU_MAP_PINS string
@@ -412,8 +482,11 @@
 ---@field DUNGEON_INSIDE_ONE string format: the instance's name
 ---@field JOURNEY_INTO string format: the instance a chain leads into
 ---@field CARRY_READY string format: count of finished quests whose hand-in is on this continent
+---@field HAND_IN_WHEN_DONE string a lap's return visit's reason for its one hand-in, a quest the lap does first
+---@field AFTER_PICK_UP string an area's reason for its one quest, which the lap picks up first
 ---@field CARRY_IN_PROGRESS string format: count
 ---@field CARRY_AWAY string format: count of finished quests whose hand-in is across an ocean
+---@field LATER_LAPS string format: count of a story's log quests its later laps take
 ---@field LIST_SEPARATOR string between the parts of one line
 ---@field QUESTS_NEAR string format: count
 ---@field QUESTS_NEAR_ONE string
@@ -524,10 +597,29 @@
 ---@field chosen? boolean it was the chosen journey: Show again chooses it again
 
 ---@class AGFPrefs
----@field notInterested table<string, AGFNotInterested> journey keys this character is not interested in
+---@field notInterested table<string, AGFNotInterested> journey keys this character is not interested in, and "quest:<id>" for each quest dropped by "Not this quest"
 
 ---@class AGFNamespace
 ---@field NotInterested fun(key: string, title: string) hide a journey on this character until Show again; a choice of it ends
+
+-- Choice (docs/design.md §2.18): quests the player drops or adds, and the log-full note.
+
+---@class AGFStrings
+---@field CARRY_ADDED string format: count of quests the player added that Loose ends holds
+---@field LOG_FULL string format: the log-full note's count of quests the player could drop
+---@field LOG_FULL_ONE string the same for one quest
+---@field LOG_FULL_LIST string the log-full note's tooltip, over the quests' titles
+---@field NOT_THIS_QUEST string a step's menu: drop one of its quests on this character
+---@field SHIFT_ADD string a quest giver's or search result's tooltip: its shift-click adds the quests
+---@field SHIFT_REMOVE string the same once they are added: its shift-click takes them off
+
+---@class AGFPrefs
+---@field pinned table<integer, true> quests the player added by shift-click: in the route past the ratio cut
+
+---@class AGFNamespace
+---@field NotThisQuest fun(id: integer, title: string) drop a quest on this character until Show again; it stays in the log
+---@field Pinned fun(ids: integer[]): boolean every one is added, and there is at least one
+---@field TogglePinned fun(ids: integer[]) add them all, or take them all off when every one is added
 
 -- Asides (Asides.lua, docs/design.md §2.11): one-line hints beside the journeys, never a route.
 ---@class AGFAside
@@ -553,9 +645,6 @@
 
 ---@class AGFPrefs
 ---@field asides? table<string, string> the asides this character turned down (Not interested): key -> the text it had
-
----@class AGFStrings
----@field STORY_HOOK string format: the tracker's one line with no journey chosen: a story's title, its reason or subline
 
 -- Stream 2c: skill- and reputation-gated quests (roadmap #8, docs/design.md §2.4).
 

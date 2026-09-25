@@ -21,18 +21,18 @@ local loaded = {}
 -- ui_spec's level-18 orc shaman in The Barrens: one quest ready to hand in, one under way.
 -- `optIn` turns on the marks a player opts into (both are off by default); the panel and search scenes, the store
 -- page's lead images, keep the defaults, so they show only the rings the open guide previews.
--- The character chose the carry card before, as ui_spec's has, or `journey`; `fresh` has chosen nothing yet.
+-- The character chose the Barrens story before, as ui_spec's has, or `journey`; `fresh` has chosen nothing yet.
 -- `carried` adds a finished quest to the log.
 local function Load(spf, optIn, fresh, journey, carried)
 	local log = {
 		{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
-		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
+		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 	}
 	log[#log + 1] = carried
 	local h = harness.load({
 		spf = spf or nil,
 		db = optIn and { showMapPins = true, showQuestGivers = true } or nil,
-		charDB = not fresh and { journey = journey or "carry" } or nil,
+		charDB = not fresh and { journey = journey or "zone:1413" } or nil,
 		completed = { 844 },
 		log = log,
 	})
@@ -58,9 +58,16 @@ local function Panel(h, scene)
 	}
 end
 
+-- Drawn in this order: the area rings under the givers, the givers under the numbered rings.
+local PIN_TEMPLATES = {
+	"AdventureGuideForeverAreaPinTemplate",
+	"AdventureGuideForeverGiverPinTemplate",
+	"AdventureGuideForeverPinTemplate",
+}
+
 local function Pins(h)
 	local pins = {}
-	for _, template in ipairs({ "AdventureGuideForeverGiverPinTemplate", "AdventureGuideForeverPinTemplate" }) do
+	for _, template in ipairs(PIN_TEMPLATES) do
 		for _, pin in ipairs(h.pins[template] or {}) do
 			pins[#pins + 1] = { template = template, x = pin.x, y = pin.y, layout = h.ns.DumpLayout(pin, h.Describe) }
 		end
@@ -90,7 +97,7 @@ out.panel.map = h.map:GetMapID()
 
 -- A character with no card chosen: every card whole, no steps and no rings, the hint under the cards. With Shortest
 -- Path's minutes on each card, and a finished group quest, Counterattack!, handed in at Regthar Deathgate's camp, so
--- the carry card's hub line has the group tag beside it.
+-- the story card, which holds the log's Barrens quests, has the group tag beside its hub line.
 local COUNTERATTACK =
 	{ id = 4021, title = "Counterattack!", level = 20, complete = true, map = 1413, x = 0.4534, y = 0.2841 }
 h = Load("v1+", false, true, nil, COUNTERATTACK)
@@ -113,8 +120,8 @@ end)[1]
 h.Type(search, QUERY)
 out.search = Panel(h, "search")
 
--- With Shortest Path loaded, on the story card: a town ring's tooltip and the tracker's town lines; then, on the carry
--- card, the tracker's menu and the route handed to Shortest Path.
+-- With Shortest Path loaded, on the story card: a town ring's tooltip, the tracker's town lines and menu, and the
+-- route handed to Shortest Path.
 h = Load("v1", true, false, STORY)
 h.G.OpenQuestLog()
 h.flush()
@@ -126,7 +133,9 @@ h.Hover(ring)
 out.tooltip = {
 	lines = Tooltip(h),
 	pins = Pins(h),
-	hovered = #(h.pins.AdventureGuideForeverGiverPinTemplate or {}) + HOVERED,
+	hovered = #(h.pins.AdventureGuideForeverAreaPinTemplate or {})
+		+ #(h.pins.AdventureGuideForeverGiverPinTemplate or {})
+		+ HOVERED,
 }
 ring:OnMouseLeave()
 
@@ -142,9 +151,6 @@ for index, id in ipairs(module.layoutOrder) do
 	blocks[index] = { header = block.header, lines = lines }
 end
 out.tracker = { header = module.Header.Text:GetText(), blocks = blocks }
-h.ns.Prefs().journey = "carry"
-h.ns.Invalidate()
-h.flush()
 module:OnBlockHeaderClick(module.liveBlocks[module.layoutOrder[1]], "RightButton")
 local entries = {}
 for index, entry in ipairs(h.menu.entries) do
@@ -158,6 +164,10 @@ api.NavigateRoute = function(owner, route)
 	stops = route
 	return NavigateRoute(owner, route)
 end
+-- Just out of the Crossroads, so Shortest Path is handed every step, not the town the player stands in alone.
+h.MovePlayer(1413, 0.52, 0.36)
+h.ns.Invalidate()
+h.flush()
 h.ns.Integrations.Navigate(h.ns.Route().steps[1])
 h.flush()
 h.providers[1]:RefreshAllData()

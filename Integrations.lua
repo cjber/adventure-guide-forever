@@ -251,9 +251,9 @@ function NextCard()
 	Chain()
 end
 
--- The cards now shown (a new route, or the guide opening): answers for cards no longer shown go, and up to 3 cards
--- queue, a frame each, when they have no minutes or the player has moved since they asked, as step 1 asks again with
--- each route; a card's last answer stands until the new one.
+-- The cards now shown (a new route, or the guide opening): answers for cards no longer shown go, and every card
+-- (MAX_JOURNEYS) queues, a frame each, when it has no minutes or the player has moved since it asked, as step 1 asks
+-- again with each route; a card's last answer stands until the new one.
 ---@param journeys AGFJourney[]
 function Integrations.RefreshCards(journeys)
 	local kept, here = {}, Here()
@@ -349,7 +349,7 @@ local LINK = 100
 ---@type table<AGFStepKind, AGFSPFStopKind>
 local KINDS = {
 	turnin = "turnin",
-	objective = "objective",
+	area = "objective",
 	dungeon = "dungeon",
 	trainer = "trainer",
 	battlemaster = "battlemaster",
@@ -360,7 +360,7 @@ local KINDS = {
 ---@return AGFSPFStopKind?
 function Integrations.Kind(step)
 	local kind = step.kind --[[@as AGFStepKind?]]
-	if kind and kind ~= "hub" then
+	if kind and kind ~= "town" then
 		return KINDS[kind]
 	end
 	for _, id in ipairs(step.handins or {}) do
@@ -433,16 +433,28 @@ local function Hand(steps)
 	return steps
 end
 
--- Hands Shortest Path `steps` as one numbered journey (Hand); true when it took them.
+-- "You're here" (docs/design.md §4.2): while the player stands in step 1's area with its objectives open, nothing
+-- guides, neither a waypoint nor a Shortest Path route into it or on past it. Guidance stays on, so Stop shows, and
+-- Follow hands the route on once the area is done or left.
+local holding = false
+---@type fun(api?: AGFSPFAPI)
+local Hold
+
+-- Hands Shortest Path `steps` as one numbered journey (Hand); true when it took them. Nothing while step 1 is the
+-- area the player stands in (Hold).
 ---@param api AGFSPFAPI
 ---@param steps (AGFStep|AGFGiver)[]
 ---@return boolean
 local function Send(api, steps)
+	if steps[1] and steps[1].here then
+		Hold(api)
+		return true
+	end
 	steps = Hand(steps)
 	if not api.NavigateRoute(OWNER, Stops(steps)) then
 		return false
 	end
-	guided, ours, arrived, stopped = steps, true, false, nil
+	guided, ours, arrived, stopped, holding = steps, true, false, nil, false
 	ns.Pins.Refresh()
 	NotifyGuidance()
 	return true
@@ -531,7 +543,10 @@ function Integrations.Navigate(step)
 			return true
 		end
 	end
-	if not C_Map.CanSetUserWaypointOnMap(step.map) then
+	if step.here then
+		Hold(api)
+		return true
+	elseif not C_Map.CanSetUserWaypointOnMap(step.map) then
 		-- The red line the world map shows when a pin can't go on a map, so Go never fails silently. Any journey an
 		-- earlier Go started keeps guiding: a failed Go changes nothing.
 		UIErrorsFrame:AddExternalErrorMessage(ns.L.NO_WAYPOINT)
@@ -545,6 +560,7 @@ function Integrations.Navigate(step)
 	C_SuperTrack.SetSuperTrackedUserWaypoint(true)
 	-- Saved per character, so Stop still knows the waypoint as ours after a /reload.
 	ns.Prefs().waypoint, ns.Prefs().guided = { map = step.map, x = step.x, y = step.y }, nil
+	holding = false
 	NotifyGuidance()
 	return true
 end
@@ -566,16 +582,32 @@ local function OwnsWaypoint()
 	return same
 end
 
+---@param api? AGFSPFAPI
+function Hold(api)
+	if api and Ours(api) and api.Cancel(OWNER) then
+		ns.Pins.Refresh()
+	end
+	if OwnsWaypoint() then
+		C_Map.ClearUserWaypoint()
+		C_SuperTrack.SetSuperTrackedUserWaypoint(false)
+	end
+	guided, ours, arrived, ns.Prefs().waypoint = {}, false, false, nil
+	if not holding then
+		holding = true
+		NotifyGuidance()
+	end
+end
+
 ---@return boolean
 function Integrations.Owns()
-	-- A held route is still ours to stop.
+	-- A held route is still ours to stop, and so is guidance holding in the area the player stands in.
 	local owns = OwnsWaypoint()
-	return owns or Ours(SPF())
+	return owns or holding or Ours(SPF())
 end
 
 -- Stop: ends only what Go started. Shortest Path's journey by our name, and the native waypoint only while it is ours.
 function Integrations.Cancel()
-	ns.Prefs().guided, ours, arrived, stopped = nil, false, false, nil
+	ns.Prefs().guided, ours, arrived, stopped, holding = nil, false, false, nil, false
 	local api = SPF()
 	if api and api.Cancel(OWNER) then
 		ns.Pins.Refresh()
@@ -649,12 +681,26 @@ local function Follow()
 	if api then
 		Watch(api)
 	end
+	if holding and not (route.chosen and prefs.guided == route.journey) then
+		holding = false
+		NotifyGuidance()
+	end
 	if not (route.chosen and prefs.guided == route.journey and ns.State.Player().map) then
 		return
 	elseif InCombatLockdown() or UnitOnTaxi("player") then
 		return
 	end
 	local first, saved = route.steps[1], prefs.waypoint
+	if first and first.here then
+		Hold(api)
+		return
+	elseif holding then
+		-- The area done or left: the route goes on from its new step 1, as Go would start it.
+		holding = false
+		ns.StartRoute()
+		NotifyGuidance()
+		return
+	end
 	-- The native waypoint Go set for the chosen journey moves to its new step 1, quietly: where the client allows no
 	-- pin it stays, with no error line, since the player asked for nothing just now.
 	if first and saved and OwnsWaypoint() then

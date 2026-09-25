@@ -1,15 +1,17 @@
 # human18_westfall: level 18, side 1, at 1436 0.5600,0.4700
 card (chosen) | zone:1436 | Westfall story | Chapter 1 of 5 | A chain begins with Gryan Stoutmantle | map 1436
-  step 1 | hub:45 | Pick up quests: Farmer Saldean | 1436 0.5604,0.3123 | near your level
-  step 2 | hub:51 | Pick up quests: Verna Furlbrow | 1436 0.5992,0.1942 | near your level
-  step 3 | hub:37 | Sentinel Hill, Westfall | 1436 0.5633,0.4752 | Begins a new story
-  step 4 | hub:30 | Pick up quests: Scout Galiaan | 1436 0.5398,0.5298 | near your level
-  step 5 | hub:16 | Captain Grayson | 1436 0.3001,0.8602 | 3 to pick up
-card | zone:1439 | Head to Darkshore | 16 quests near your level | Auberdine needs hands | map 1439
-  step 1 | hub:452 | Auberdine, Darkshore | 1439 0.3574,0.4371 | 12 to pick up
-  step 2 | hub:437 | Pick up quests: Kerlonian Evershade | 1439 0.4440,0.7643 | near your level
-  step 3 | hub:431 | Pick up quests: Therylune | 1439 0.3864,0.8733 | near your level
-  step 4 | hub:429 | Pick up quests: Sentinel Aynasha | 1439 0.4594,0.9029 | near your level
-  step 5 | hub:469 | Pick up quests: Gelkak Gyromast | 1439 0.5666,0.1348 | near your level
+  step 1 | town:37 | Pick up quests: Gryan Stoutmantle | 1436 0.5633,0.4752 | Begins a new story
+  step 2 | town:30 | Pick up quests: Scout Galiaan | 1436 0.5398,0.5298 | near your level
+  step 3 | area:153:4 | Red Leather Bandanas | 1436 0.4761,0.2736 | after you pick it up | 141 yd | 153/4
+  step 4 | town:30:2 | Turn in: Red Leather Bandanas | 1436 0.5398,0.5298 | once it's done
+  step 5 | town:45 | Pick up quests: Farmer Saldean | 1436 0.5604,0.3123 | near your level
+card | zone:1433 | Head to Redridge Mountains | 8 quests near your level | For level 20 | map 1433
+  step 1 | town:56 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
+  step 2 | town:61 | Lakeshire, Redridge | 1433 0.2423,0.5364 | 7 to pick up
+card | zone:1440 | Head to Ashenvale | 3 quests near your level | Astranaar needs hands | map 1440
+  step 1 | town:405 | Astranaar, Ashenvale | 1440 0.3662,0.4958 | 3 to pick up
+card | zone:1413 | Head to The Barrens | 7 quests near your level | Ratchet needs hands | map 1413
+  step 1 | town:340 | Ratchet, The Barrens | 1413 0.6335,0.3845 | 6 to pick up
+  step 2 | town:382 | Pick up quests: Wizzlecrank's Shredder | 1413 0.5652,0.0745 | near your level
 card | dungeon:36 | Deadmines | 3 quests for this dungeon | - | map 1453
-  step 1 | hub:80 | Wilder Thistlenettle | 1453 0.7031,0.4082 | 3 to pick up
+  step 1 | town:80 | Wilder Thistlenettle | 1453 0.7031,0.4082 | 3 to pick up

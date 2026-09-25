@@ -637,13 +637,21 @@ def map_point(rects, x, y):
     return mx + x * mw, my + y * mh
 
 
+AREA_TEMPLATE = "AdventureGuideForeverAreaPinTemplate"
+HARNESS_CANVAS = (1000, 700)  # tests/harness.lua's map canvas, which MapCanvasPinMixin.SetPosition places pins on
+
+
 def draw_pins(canvas, rects, pins, hovered=None):
     """The addon's map pins from their dumps, each centred on its map position at 26 units (SetScalingLimits gives
-    1.0 at the map's minimum zoom); `hovered` (an index into pins) draws that pin's highlight."""
+    1.0 at the map's minimum zoom); `hovered` (an index into pins) draws that pin's highlight. An area's ring scales
+    with the terrain: its size is in the harness canvas's units (HARNESS_CANVAS), which span the map."""
     for index, pin in enumerate(pins):
         root = pin["layout"][0]
         cx, cy = map_point(rects, pin["x"], pin["y"])
         width, height = root.get("size") or (26, 26)
+        if pin["template"] == AREA_TEMPLATE:
+            _, _, mw, mh = rects["map"]
+            width, height = width / HARNESS_CANVAS[0] * mw, height / HARNESS_CANVAS[1] * mh
         known = {root["path"]: (cx - width / 2, cy - height / 2, width, height)}
         placed = layout_rects(canvas.ui, pin["layout"], known)
         Layout(pin["layout"], placed, [root["path"]] if index == hovered else ()).draw(canvas)

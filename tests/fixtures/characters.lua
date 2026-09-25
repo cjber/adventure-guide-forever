@@ -30,8 +30,8 @@ characters.list = {
 	},
 	{
 		-- ne21_darkshore carrying finished quests with turn-ins on three kinds of map: Darkshore (947, 948), the next
-		-- zone over (967, Ashenvale) and another continent (168, Stormwind). The log gives no waypoint, so each
-		-- turn-in is the data's `finish`.
+		-- zone over (967, Ashenvale) and another continent (168, Stormwind), who chose to finish what they carry. The
+		-- log gives no waypoint, so each turn-in is the data's `finish`.
 		name = "ne21_crosszone",
 		level = 21,
 		side = 1,
@@ -47,6 +47,7 @@ characters.list = {
 			{ id = 967, title = "The Tower of Althalaxx", level = 18, complete = true },
 			{ id = 168, title = "Collecting Memories", level = 18, complete = true },
 		},
+		prefs = { journey = "carry" },
 	},
 	{
 		-- A human warrior in Goldshire who finished Elwynn Forest.
@@ -61,7 +62,8 @@ characters.list = {
 		completed = { zones = { 1429 } },
 	},
 	{
-		-- The probe's level-18 orc shaman at the Crossroads, as ui_spec loads it: one hand-in, one quest under way.
+		-- The probe's level-18 orc shaman at the Crossroads, as ui_spec loads it: one hand-in, one quest under way. The
+		-- client gives no waypoint for the quest under way, so its place is the data's objective area.
 		name = "orc18_barrens",
 		level = 18,
 		side = 2,
@@ -73,7 +75,7 @@ characters.list = {
 		completed = { ids = { 844 } },
 		log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
-			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false, map = 1413, x = 0.46, y = 0.8 },
+			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 		},
 	},
 	{
@@ -102,6 +104,66 @@ characters.list = {
 		y = 0.4500,
 		completed = { zones = { 1429 } },
 		prefs = { dungeons = true, journey = "zone:1433" },
+	},
+	{
+		-- The user's report: a level-19 dwarf paladin on Redridge's west shore with the zone's quests taken on (39/40 in
+		-- game; these are the log's Redridge and nearby entries). The five deliveries are finished, so the client gives
+		-- their turn-in waypoints; the rest are under way, which the client gives no waypoint for. Assessing the Threat
+		-- has its first objective done.
+		name = "human19_redridge_full",
+		level = 19,
+		side = 1,
+		raceBit = 4,
+		classBit = 2,
+		map = 1433,
+		x = 0.1580,
+		y = 0.5660,
+		-- 39 of 40 in game: one slot left, as there.
+		logMax = 17,
+		completed = { zones = { 1426, 1432 }, ids = { 65, 244 } },
+		log = {
+			{ id = 116, title = "Dry Times", level = 15, complete = false },
+			{ id = 129, title = "A Free Lunch", level = 15, complete = true, map = 1433, x = 0.1019, y = 0.7146 },
+			{ id = 180, title = "Wanted: Lieutenant Fangore", level = 26, complete = false },
+			{ id = 127, title = "Selling Fish", level = 21, complete = false },
+			{
+				id = 120,
+				title = "Messenger to Stormwind",
+				level = 14,
+				complete = true,
+				map = 1453,
+				x = 0.6917,
+				y = 0.8271,
+			},
+			{ id = 91, title = "Solomon's Law", level = 23, complete = false },
+			{ id = 169, title = "Wanted: Gath'Ilzogg", level = 26, complete = false },
+			{ id = 3741, title = "Hilary's Necklace", level = 15, complete = false },
+			{ id = 125, title = "The Lost Tools", level = 16, complete = false },
+			{ id = 118, title = "The Price of Shoes", level = 18, complete = true, map = 1429, x = 0.4171, y = 0.6554 },
+			{ id = 1097, title = "Elmore's Task", level = 15, complete = true, map = 1453, x = 0.5972, y = 0.3378 },
+			{ id = 20, title = "Blackrock Menace", level = 21, complete = false },
+			{ id = 92, title = "Redridge Goulash", level = 18, complete = false },
+			{ id = 34, title = "An Unwelcome Guest", level = 24, complete = false },
+			{
+				id = 132,
+				title = "The Defias Brotherhood",
+				level = 18,
+				complete = true,
+				map = 1436,
+				x = 0.5633,
+				y = 0.4752,
+			},
+			{
+				id = 246,
+				title = "Assessing the Threat",
+				level = 17,
+				complete = false,
+				objectives = {
+					{ type = "monster", done = true, have = 10, need = 10 },
+					{ type = "monster", done = false, have = 2, need = 6 },
+				},
+			},
+		},
 	},
 	{
 		-- A level-60 human warrior at Light's Hope Chapel with nothing completed: the end-game zones only.
@@ -154,6 +216,7 @@ function characters.Resolve(data, fixture)
 		map = fixture.map,
 		x = fixture.x,
 		y = fixture.y,
+		logMax = fixture.logMax, -- nil: no limit
 	}
 	local log = {}
 	for _, entry in ipairs(fixture.log or {}) do
@@ -165,6 +228,8 @@ function characters.Resolve(data, fixture)
 			map = entry.map,
 			x = entry.x,
 			y = entry.y,
+			objectives = entry.objectives,
+			poi = entry.poi,
 		}
 	end
 	local prefs = { quests = true, dungeons = false, skipped = {} }

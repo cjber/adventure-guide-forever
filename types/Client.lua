@@ -121,8 +121,14 @@ MapCanvasDataProviderMixin = nil
 ---@field SetPosition fun(self: AGFMapPinMixin, x: number, y: number)
 ---@field SetScalingLimits fun(self: AGFMapPinMixin, style: number, minScale: number, maxScale: number)
 ---@field ApplyCurrentScale fun(self: AGFMapPinMixin)
+---@field SetIgnoreGlobalPinScale fun(self: AGFMapPinMixin, ignore: boolean)
+---@field SetScaleStyle fun(self: AGFMapPinMixin, style: number)
 ---@type AGFMapPinMixin
 MapCanvasPinMixin = nil
+
+-- A pin that scales with the map's terrain, as the quest blobs do (MapCanvasPinMixin:ApplyCurrentScale).
+---@type number
+AM_PIN_SCALE_STYLE_WITH_TERRAIN = nil
 
 ---@class AGFWorldMapFrame : Frame
 ---@field SetMapID fun(self: AGFWorldMapFrame, mapID: integer)
@@ -131,6 +137,7 @@ MapCanvasPinMixin = nil
 ---@field AcquirePin fun(self: AGFWorldMapFrame, template: string, ...: any): AGFPinFrame
 ---@field RemoveAllPinsByTemplate fun(self: AGFWorldMapFrame, template: string)
 ---@field EnumeratePinsByTemplate fun(self: AGFWorldMapFrame, template: string): fun(): AGFPinFrame?
+---@field GetCanvas fun(self: AGFWorldMapFrame): Frame
 ---@type AGFWorldMapFrame
 WorldMapFrame = nil
 

@@ -120,7 +120,33 @@ do -- Missing In Action at 19: open from its minimum, but red, so never offered;
 	equal(offered[1], true, "a yellow quest, two levels up, is offered")
 	equal(offered[2], nil, "a red quest is never offered")
 	equal(offered[3], nil, "nor an orange one: too hard alone")
-	equal(#Model.Givers(camp, player, {}, {}, 1), 3, "their givers still show on the map")
+	local shown = Model.Givers(camp, player, {}, {}, 1)
+	equal(#shown, 3, "their givers still show on the map")
+	for _, giver in ipairs(shown) do
+		equal(
+			#giver.adds,
+			giver.title == "Quest giver" and 1 or 0,
+			"a shift-click adds none orange or red: " .. giver.title
+		)
+	end
+	-- Pinned (a shift-click, or an older save): a grey quest comes back, an orange or red one never does.
+	local grey = quest(0.5, 0.2)
+	grey.level = 1
+	local pinnedCamp = { quests = { [1] = fits, [2] = red, [3] = orange, [4] = grey }, zones = data.zones }
+	local pinned = prefs()
+	pinned.pinned = { [2] = true, [3] = true, [4] = true }
+	offered = {}
+	for _, journey in ipairs(Model.Plan(pinnedCamp, player, {}, {}, pinned).journeys) do
+		pinned.journey = journey.key
+		for _, step in ipairs(Model.Plan(pinnedCamp, player, {}, {}, pinned).steps) do
+			for _, id in ipairs(step.quests) do
+				offered[id] = true
+			end
+		end
+	end
+	equal(offered[4], true, "pinned: a grey quest is offered")
+	equal(offered[2], nil, "pinned: a red quest never is")
+	equal(offered[3], nil, "pinned: nor an orange one")
 end
 
 data = { quests = {}, zones = {} }
@@ -131,12 +157,13 @@ data.zones[1] = { name = "Zone", min = 10, max = 20 }
 data.quests[9] = quest(0.11, 0.5)
 data.quests[1].start.hub, data.quests[9].start.hub = 1, 1 -- one town by the data's hub, never by distance alone
 local log = {
-	[100] = { id = 100, title = "Finished", complete = true, level = 18, map = 1, x = 0.9, y = 0.9 },
-	[101] = { id = 101, title = "Unfinished", complete = false, level = 18, map = 1, x = 0.52, y = 0.5 },
-	[102] = { id = 102, title = "Nearby", complete = false, level = 18, map = 1, x = 0.53, y = 0.5 },
+	[100] = { id = 100, title = "Finished", complete = true, level = 18, map = 2, x = 0.9, y = 0.9 },
+	[101] = { id = 101, title = "Unfinished", complete = false, level = 18, map = 2, x = 0.52, y = 0.5 },
+	[102] = { id = 102, title = "Nearby", complete = false, level = 18, map = 2, x = 0.53, y = 0.5 },
 	[103] = { id = 103, title = "Unknown location", complete = false, level = 18 },
 }
--- Journeys (F2) are disjoint: carry holds the log, the zone's story its pickups; the first card is chosen by default.
+-- Journeys (F2) are disjoint: the zone's story leads with its pickups and the log's quests done on its map, carry
+-- follows with the rest of the log (here all on another map); the first card is the route while none is chosen.
 local options = prefs()
 local route = Model.Plan(data, player, {}, log, options)
 local function Has(steps, key)
@@ -146,29 +173,33 @@ local function Has(steps, key)
 	end
 	return count
 end
-equal(route.journey, "carry", "carry is the first card")
+equal(route.journey, "zone:1", "the story is the first card")
 equal(route.chosen, false, "with none chosen the route is the first card's, not a choice")
-equal(#route.journeys, 2, "carry and the zone's story")
-equal(route.journeys[1].subline, "1 ready to hand in, 2 in progress", "carry counts what is ready, then the rest")
-equal(route.journeys[1].reason, nil, "no reason unless a turn-in leads")
-equal(route.journeys[1].map, route.steps[1].map, "a card turns the map to its first step")
-for _, step in ipairs(route.steps) do
-	equal(#(step.pickups or {}), 0, "carry holds no pickups: " .. step.key)
+equal(#route.journeys, 2, "the zone's story and carry")
+do
+	local carry = route.journeys[2]
+	equal(carry.key, "carry", "carry follows the story")
+	equal(carry.subline, "1 ready to hand in, 3 in progress", "carry counts every quest, placed or not")
+	equal(carry.reason, nil, "no reason unless a turn-in leads")
+	equal(carry.map, carry.steps[1].map, "a card turns the map to its first step")
+	for _, step in ipairs(carry.steps) do
+		equal(#(step.pickups or {}), 0, "carry holds no pickups: " .. step.key)
+	end
+	equal(Has(carry.steps, "turnin:100"), 1, "the turn-in is carried")
 end
-equal(Has(route.steps, "turnin:100"), 1, "the turn-in is carried")
 options.journey = "zone:1"
 route = Model.Plan(data, player, {}, log, options)
 equal(route.journey, "zone:1", "the chosen card")
 equal(route.chosen, true, "and it is a choice")
-equal(route.journeys[2].title, "Zone story", "the story is named after its zone")
-equal(route.journeys[2].subline, "9 quests near your level", "the story counts its quests")
+equal(route.journeys[1].title, "Zone story", "the story is named after its zone")
+equal(route.journeys[1].subline, "9 quests near your level", "the story counts its quests")
 equal(#route.steps, 8, "one step per giver")
 equal(route.steps[1].quests[1], 5, "the nearest step first")
 for _, step in ipairs(route.steps) do
-	equal(step.kind == "hub" and #step.handins == 0, true, "the story holds pickups only")
+	equal(step.kind == "town" and #step.handins == 0, true, "the story holds no log quest off its map")
 end
 options.journey = "gone"
-equal(Model.Plan(data, player, {}, log, options).journey, "carry", "a vanished choice falls back to the first card")
+equal(Model.Plan(data, player, {}, log, options).journey, "zone:1", "a vanished choice falls back to the first card")
 equal(Model.Plan(data, player, {}, log, options).chosen, false, "and reads as none chosen")
 local empty = prefs()
 empty.quests = false
@@ -178,10 +209,12 @@ equal(carriedOnly[1] and carriedOnly[1].key, "carry", "the carry card stays with
 -- F15: a group quest in the log is never hidden by the dungeon filter, finished or under way.
 data.quests[100], data.quests[101] = quest(), quest()
 data.quests[100].elite, data.quests[101].dungeon = true, 36
-local kept = Model.Plan(data, player, {}, log, prefs())
-equal(kept.journey, "carry", "carry is chosen")
-equal(Has(kept.steps, "turnin:100"), 1, "an elite turn-in shows with dungeons off")
-equal(Has(kept.steps, "objective:101"), 1, "a dungeon quest under way shows with dungeons off")
+do
+	local kept = Model.Plan(data, player, {}, log, prefs()).journeys[2]
+	equal(kept.key, "carry", "carry holds them")
+	equal(Has(kept.steps, "turnin:100"), 1, "an elite turn-in shows with dungeons off")
+	equal(Has(kept.steps, "area:101:0"), 1, "a dungeon quest under way shows with dungeons off")
+end
 data.quests[100], data.quests[101] = nil, nil
 local skip = prefs()
 for _, step in ipairs(Model.Plan(data, player, {}, {}, prefs()).steps) do
@@ -192,7 +225,8 @@ for _, journey in ipairs(Model.Plan(data, player, {}, log, skip).journeys) do
 		equal(skip.skipped[step.key], nil, "skipped steps removed")
 	end
 end
--- The next-zone card: the zone that fits two levels on, when it is another zone with at least 5 quests open now.
+-- The next-zone cards: the zones that fit two levels on, when another zone with at least 5 quests there then and 3 open
+-- now.
 -- Here has three quests at 18; There, which fits 20, has `count` at 20, the last opening at `min`.
 local function Ahead(count, min)
 	local zones = { [1] = { name = "Here", min = 16, max = 20 }, [2] = { name = "There", min = 20, max = 24 } }
@@ -238,8 +272,11 @@ equal(
 )
 local capped = { level = 18, maxLevel = 19, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
 equal(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys[2].reason, "For level 19", "never past the cap")
+-- At the cap the zones that fit now are still there to head to, with no level to name.
 capped.maxLevel = 18
-equal(Kinds(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys), "zone:1", "and none at the cap")
+local capCards = Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys
+equal(Kinds(capCards), "zone:1 zone:2", "at the cap, the zones that fit now")
+equal(capCards[2].reason, nil, "and no level past the cap")
 local standing = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 2, x = 0.5, y = 0.5 }
 -- Standing in There, which fits too, makes it the story (design §2.10), and the next zone is never the zone you are in.
 equal(Kinds(Model.Plan(Ahead(5), standing, {}, {}, prefs()).journeys), "zone:2", "the story is the zone you stand in")
@@ -265,7 +302,10 @@ equal(Kinds(Model.Plan(mostlyTaken, inTaken, {}, {}, prefs()).journeys):match("z
 local capital = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 9, x = 0.5, y = 0.5 }
 equal(Kinds(Model.Plan(Ahead(5), capital, {}, {}, prefs()).journeys), "zone:1 zone:2", "a zone with none: level fit")
 equal(Kinds(Model.Plan(Ahead(4), player, {}, {}, prefs()).journeys), "zone:1", "four quests are too few")
-equal(Kinds(Model.Plan(Ahead(5, 20), player, {}, {}, prefs()).journeys), "zone:1", "only quests open now count")
+equal(Kinds(Model.Plan(Ahead(5, 20), player, {}, {}, prefs()).journeys), "zone:1 zone:2", "4 open now, 5 at 20")
+local thin = Ahead(5, 20)
+thin.quests[6].min, thin.quests[7].min = 20, 20
+equal(Kinds(Model.Plan(thin, player, {}, {}, prefs()).journeys), "zone:1", "2 open now are too few")
 -- At 22 There fits both now and two levels on; the next zone is never the story's own, and Here holds too few.
 local later22 = { level = 22, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 3, x = 0.5, y = 0.5 }
 equal(Kinds(Model.Plan(Ahead(5), later22, {}, {}, prefs()).journeys), "zone:2", "never the story's own zone")
@@ -331,8 +371,9 @@ do
 	)
 	halls.quests[6], halls.quests[7], halls.quests[8], delve.journey = nil, nil, nil, nil
 
-	-- Roadmap #21: at the cap there is no next zone, so the dungeon card comes without the Dungeons toggle and a chain
-	-- that leads into an instance is a story. Here holds the story; on a map with no zone, 50 leads to 51 inside the Hall.
+	-- Roadmap #21: at the cap there is no level ahead, so the dungeon card comes without the Dungeons toggle and a chain
+	-- that leads into an instance is a story, after the zones that fit now. Here holds the story; on a map with no zone,
+	-- 50 leads to 51 inside the Hall.
 	local function Stranded()
 		local fixture = Ahead(5)
 		fixture.instances = { [36] = { name = "Hall" } }
@@ -344,48 +385,53 @@ do
 	end
 	local atCap = { level = 18, maxLevel = 18, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
 	local stranded = Model.Plan(Stranded(), atCap, {}, {}, prefs())
-	equal(Kinds(stranded.journeys), "zone:1 dungeon:36 chain:50", "at the cap: the dungeon and the way in, toggle off")
+	equal(
+		Kinds(stranded.journeys),
+		"zone:1 zone:2 dungeon:36 chain:50",
+		"at the cap: the dungeon and the way in, toggle off"
+	)
 	equal(stranded.stranded, true, "at the cap: stranded")
-	local way = stranded.journeys[3]
+	local way = stranded.journeys[4]
 	equal(way.kind .. " · " .. way.title, "story · The way into Hall", "the way in: a story named for the instance")
 	equal(way.subline .. " · " .. way.reason, "Chapter 1 of 2 · Begins a new story", "the way in: its chapter")
 	local onward = Model.Plan(Stranded(), atCap, { [50] = true }, {}, prefs())
-	equal(Kinds(onward.journeys), "zone:1 dungeon:36 chain:50", "the way in: its next chapter is inside")
-	equal(onward.journeys[3].reason, "Continues a story you started", "the way in: continues")
-	equal(onward.journeys[2].subline, "2 quests for this dungeon", "at the cap: every instance quest open now")
+	equal(Kinds(onward.journeys), "zone:1 zone:2 dungeon:36 chain:50", "the way in: its next chapter is inside")
+	equal(onward.journeys[4].reason, "Continues a story you started", "the way in: continues")
+	equal(onward.journeys[3].subline, "2 quests for this dungeon", "at the cap: every instance quest open now")
 	local roomy = Model.Plan(Stranded(), player, {}, {}, prefs())
 	equal(Kinds(roomy.journeys), "zone:1 zone:2", "below the cap with a next zone: neither")
 	equal(roomy.stranded, nil, "below the cap: not stranded")
 	equal(
 		Kinds(Model.Plan(Stranded(), player, {}, {}, Choose("chain:50")).journeys),
-		"zone:1 chain:50 zone:2",
+		"zone:1 zone:2 chain:50",
 		"chosen"
 	)
 	local wayOff = prefs()
 	wayOff.notInterested = { ["chain:50"] = "The way into Hall" }
 	equal(
 		Kinds(Model.Plan(Stranded(), atCap, {}, {}, wayOff).journeys),
-		"zone:1 dungeon:36",
+		"zone:1 zone:2 dungeon:36",
 		"not interested: the way in"
 	)
 	local unnamed = Stranded()
 	unnamed.instances = {}
 	equal(
 		Kinds(Model.Plan(unnamed, atCap, {}, {}, prefs()).journeys),
-		"zone:1",
+		"zone:1 zone:2",
 		"an instance the data can't name: neither"
 	)
 	-- The story's own chain is never offered twice: in Here, 1 leads to 2 inside the Hall.
 	local ownChain = Stranded()
 	ownChain.quests[1].next, ownChain.quests[2].pre, ownChain.quests[2].dungeon = 2, { 1 }, 36
 	local told = Model.Plan(ownChain, atCap, {}, {}, prefs())
-	equal(Kinds(told.journeys), "zone:1 dungeon:36 chain:50", "the story's chain: the story's alone")
+	equal(Kinds(told.journeys), "zone:1 zone:2 dungeon:36 chain:50", "the story's chain: the story's alone")
 	equal(told.journeys[1].subline, "Chapter 1 of 2", "the story's chain: it leads the story")
 end
 
--- The diversions (roadmap R4): carry and the story keep their slots; the calling, a dungeon and the next zone share the
--- rest, the one whose newest quest opened at the highest level first, then in that order on a tie. Here's story holds
--- 1-3; There holds 4-8 (the next zone); the Hall 9-10 and the calling 11 are on a map with no zone of their own.
+-- The diversions (roadmap R4): the story, carry and the zones to head to keep their slots; the calling, a dungeon and a
+-- battleground share the rest, the one whose newest quest opened at the highest level first, then in that order on a
+-- tie. Here's story holds 1-3; There holds 4-8 (a zone to head to); the Hall 9-10 and the calling 11 are on a map with
+-- no zone of their own. Four cards here, so one slot is left to share.
 local function Diversions(nextMin, hallMin, callingMin)
 	local fixture = { quests = {}, zones = Ahead(0).zones, instances = { [36] = { name = "Hall" } } }
 	for id = 1, 3 do
@@ -407,25 +453,40 @@ local function Diversions(nextMin, hallMin, callingMin)
 end
 local both = prefs()
 both.dungeons = true
-local inLog = { [100] = { id = 100, title = "Carried", level = 18, complete = true, map = 1, x = 0.5, y = 0.5 } }
+local inLog = { [100] = { id = 100, title = "Carried", level = 18, complete = true, map = 3, x = 0.5, y = 0.5 } }
 local function Diverted(fixture, choices, entries)
 	return Kinds(Model.Plan(fixture, player, {}, entries or {}, choices).journeys)
 end
-equal(Diverted(Diversions(10, 10, 10), both), "zone:1 calling dungeon:36", "diversions: a tie, the calling first")
-equal(Diverted(Diversions(18, 10, 10), both), "zone:1 zone:2 calling", "diversions: the newest first")
-equal(Diverted(Diversions(18, 10, 10), both, inLog), "carry zone:1 zone:2", "diversions: carry leaves one slot")
-equal(Diverted(Diversions(16, 17, 10), both, inLog), "carry zone:1 dungeon:36", "diversions: a dungeon just opened")
-equal(Diverted(Diversions(16, 17, 18), both, inLog), "carry zone:1 calling", "diversions: a calling just opened")
+local sixCards = Model.MAX_JOURNEYS
+Model.MAX_JOURNEYS = 4
+equal(
+	Diverted(Diversions(10, 10, 10), both),
+	"zone:1 zone:2 calling dungeon:36",
+	"diversions: a tie, the calling first"
+)
+equal(Diverted(Diversions(18, 10, 10), both), "zone:1 zone:2 calling dungeon:36", "diversions: after the zones")
+equal(Diverted(Diversions(18, 10, 10), both, inLog), "zone:1 carry zone:2 calling", "diversions: carry leaves one slot")
+equal(
+	Diverted(Diversions(16, 17, 10), both, inLog),
+	"zone:1 carry zone:2 dungeon:36",
+	"diversions: a dungeon just opened"
+)
+equal(Diverted(Diversions(16, 17, 18), both, inLog), "zone:1 carry zone:2 calling", "diversions: a calling just opened")
 local hall = prefs()
 hall.dungeons, hall.journey = true, "dungeon:36"
-equal(Diverted(Diversions(18, 10, 10), hall, inLog), "carry zone:1 dungeon:36", "diversions: the chosen one stays")
-equal(Diverted(Diversions(18, 10, 10), prefs(), inLog), "carry zone:1 zone:2", "diversions: dungeons off")
+equal(
+	Diverted(Diversions(18, 10, 10), hall, inLog),
+	"zone:1 carry zone:2 dungeon:36",
+	"diversions: the chosen one stays"
+)
+equal(Diverted(Diversions(18, 10, 10), prefs(), inLog), "zone:1 carry zone:2 calling", "diversions: dungeons off")
 local combat = Model.Plan(Diversions(10, 10, 18), player, {}, {}, both)
 equal(
 	Kinds(Model.Refresh(Diversions(10, 10, 18), player, {}, inLog, both, combat).journeys),
-	"carry zone:1 calling",
+	"zone:1 carry zone:2 calling",
 	"diversions: in combat a new carry card pushes out the last"
 )
+Model.MAX_JOURNEYS = sixCards
 
 -- Your calling (roadmap #7): the class quests open now as one card, its reason naming the quest it leads with.
 local function Calling(fixture, completed, choices)
@@ -510,18 +571,196 @@ local after = Model.Plan(hub, player, { [1] = true }, {}, prefs()).steps[1]
 equal(#before.quests, 2, "one step per town")
 equal(before.reason, "2 to pick up", "a town counts what it offers")
 equal(before.title, "Quest giver", "an unnamed town takes its busiest giver's name")
-equal(before.kind, "hub", "a town is a hub stop")
+equal(before.kind, "town", "a town is a visit")
 equal(#Model.Plan(hub, player, {}, {}, prefs()).steps, 2, "a giver nearby in no town of theirs is a step of its own")
-equal(before.key, after.key, "hub key survives quest completion")
+equal(before.key, after.key, "a town's key survives quest completion")
 equal(after.x, 0.11, "remaining known starter used")
 local objectives = Model.Plan({ quests = {}, zones = {} }, player, {}, log, prefs())
 equal(#objectives.steps, 2, "nearby objectives grouped; missing location omitted")
-equal(#objectives.steps[1].quests, 2, "objective cluster membership, nearest first")
+do
+	local cluster
+	for _, step in ipairs(objectives.steps) do
+		cluster = cluster or (step.key == "area:101:0" and step or nil)
+	end
+	equal(cluster and #cluster.quests, 2, "objective cluster membership, lowest ID's key")
+	equal(cluster and cluster.kind, "area", "an area visit")
+end
 local withFinish = { quests = { [103] = quest() }, zones = data.zones }
 local unknown = { [103] = log[103] }
 equal(#Model.Plan(withFinish, player, {}, unknown, prefs()).steps, 0, "starter never becomes objective")
 unknown[103].complete = true
 equal(Model.Plan(withFinish, player, {}, unknown, prefs()).steps[1].x, 0.6, "bundled turn-in fallback")
+
+-- A quest under way (the live client gives it no waypoint) is done at the data's area for each open objective: the
+-- client's objectives fill the data's need slots by type, kills and uses 0-3, collects 4-7, explores 16, each kind in
+-- order, trusted only when the counts agree. The client's point for the quest stands in when they don't, or the data
+-- places no open objective. Nothing placed, it has no step and still counts.
+do
+	local areas = { quests = { [1] = quest(), [2] = quest(), [3] = quest() }, zones = data.zones }
+	areas.quests[1].need = { [0] = 5, [4] = 3 }
+	areas.quests[1].obj = { { 0, 200, 300, 40 }, { 4, 700, 800, 0 }, { 4, 710, 810, 0, 2 } }
+	areas.quests[2].need, areas.quests[2].obj = { [16] = 1 }, { { 16, 400, 400, 0 } }
+	local function At(entry, id)
+		local underway = { [id or 1] = entry }
+		entry.id, entry.title, entry.level, entry.complete = id or 1, "Under way", 18, false
+		for _, journey in
+			ipairs(Model.Plan(areas, player, { [1] = true, [2] = true, [3] = true }, underway, prefs()).journeys)
+		do
+			for _, step in ipairs(journey.steps) do
+				if step.quests[1] == (id or 1) then
+					return ("%d %.3f,%.3f"):format(step.map, step.x, step.y), journey, step
+				end
+			end
+		end
+	end
+	local kill, collect, event, unslotted =
+		{ type = "monster", done = true, have = 5, need = 5 },
+		{ type = "item", done = false, have = 1, need = 3 },
+		{ type = "event", done = false, have = 0, need = 1 },
+		{ type = "log", done = false, have = 0, need = 1 }
+	local where, _, first = At({})
+	equal(where, "1 0.200,0.300", "area: the lowest open slot's first area, with no objectives read")
+	equal(first.key, "area:1:0", "area: keyed by its first quest and slot")
+	equal(first.r, 40, "area: its ring is its area's")
+	equal(At({ objectives = { collect, kill } }), "1 0.700,0.800", "area: the kill done, the collect's first area")
+	equal(At({ objectives = { kill } }), "1 0.200,0.300", "area: counts that disagree leave every slot open")
+	equal(At({ objectives = { unslotted, kill } }), "1 0.200,0.300", "area: a type with no slot leaves every slot open")
+	equal(At({ objectives = { event } }, 2), "1 0.400,0.400", "area: an explore fills slot 16")
+	equal(
+		At({ objectives = { collect, kill }, poi = { map = 1, x = 0.3, y = 0.6 } }),
+		"1 0.700,0.800",
+		"area: objectives that line up keep the data's area over the client's point"
+	)
+	equal(
+		At({ objectives = { kill }, poi = { map = 1, x = 0.3, y = 0.6 } }),
+		"1 0.300,0.600",
+		"area: the client's point wins when they don't"
+	)
+	equal(At({ map = 1, x = 0.9, y = 0.1 }), "1 0.900,0.100", "area: as does a waypoint, when the client gives one")
+	local _, journey = At({}, 3)
+	equal(journey, nil, "area: a quest the data places nowhere has no step")
+end
+
+-- Each open objective is an area visit of its own, and areas that nearly touch merge, the lowest quest's and slot's
+-- key naming the visit and its ring wide enough for all of them. Each objective keeps the client's count and words when
+-- they line up, and the town its quest is handed in at.
+do
+	local fields = { quests = { [1] = quest(), [2] = quest(), [3] = quest() }, zones = data.zones }
+	fields.maps = { [1] = { name = "Zone", continent = 0, cx = 0, cy = 0, sx = 1000, sy = 1000 } }
+	fields.continents = { [0] = { x = 0, y = 0 } }
+	fields.quests[1].need = { [0] = 8, [4] = 5 }
+	fields.quests[1].obj = { { 0, 200, 500, 40 }, { 4, 700, 500, 30 } }
+	fields.quests[1].finish = { map = 1, x = 0.6, y = 0.5, name = "Ender", hub = 9 }
+	fields.quests[2].need, fields.quests[2].obj = { [0] = 10 }, { { 0, 250, 500, 30 } } -- 50 yd from 1's kills
+	fields.quests[3].need, fields.quests[3].obj = { [4] = 4 }, { { 4, 350, 500, 0 } } -- 150 yd off: its own
+	local kill = { type = "monster", done = false, have = 3, need = 8, text = "Gnoll slain: 3/8" }
+	local loot = { type = "item", done = false, have = 1, need = 5, text = "" }
+	local carried = {
+		[1] = { id = 1, title = "Both", level = 18, complete = false, objectives = { kill, loot } },
+		[2] = { id = 2, title = "Near", level = 18, complete = false },
+		[3] = { id = 3, title = "Apart", level = 18, complete = false },
+	}
+	local done = { [1] = true, [2] = true, [3] = true }
+	local plan = Model.Plan(fields, player, done, carried, prefs())
+	-- A lap goes out once: an area of a later lap waits on the story, which counts its quest.
+	local byKey = {}
+	for _, journey in ipairs(plan.journeys) do
+		for _, step in ipairs(journey.steps) do
+			byKey[step.key] = byKey[step.key] or step
+		end
+	end
+	local shared, loots = byKey["area:1:0"], byKey["area:1:4"]
+	local apart = Model.Plan(fields, player, done, { [3] = carried[3] }, prefs()).steps[1]
+	equal(shared and shared.kind, "area", "areas: the kills, an area visit")
+	equal(shared and table.concat(shared.quests, " "), "1 2", "areas: the nearby quest joins it")
+	equal(shared and shared.reason, "2 quests here", "areas: counts its quests")
+	equal(shared and #shared.objectives, 2, "areas: one objective each")
+	local mine, theirs = shared.objectives[1], shared.objectives[2]
+	equal(mine.id .. " " .. mine.slot .. " " .. mine.have .. "/" .. mine.need, "1 0 3/8", "areas: the client's count")
+	equal(mine.text, "Gnoll slain: 3/8", "areas: and its words")
+	equal(mine.finish, "town:9", "areas: the town it is handed in at")
+	equal(theirs.id .. " " .. tostring(theirs.have) .. "/" .. theirs.need, "2 nil/10", "areas: else the data's count")
+	equal(theirs.finish, "town:1:0.6000:0.5000", "areas: a hand-in in no town is a town of its own")
+	equal(math.floor(shared.r + 0.5), 80, "areas: the ring covers both, 50 yd off with 30 yd of its own")
+	equal(loots and loots.quests[1], 1, "areas: the collect, another visit for the same quest")
+	equal(loots and loots.objectives[1].text, nil, "areas: no empty words")
+	equal(apart and apart.key, "area:3:4", "areas: a quest 150 yd off is its own visit")
+	equal(apart and apart.r, 0, "areas: a single point's ring")
+	-- The story's lap takes 1 and 2, and 3 waits for the lap after: the story counts all three, and no carry card.
+	local counts = {}
+	for _, journey in ipairs(plan.journeys) do
+		counts[#counts + 1] = journey.subline
+	end
+	equal(table.concat(counts, " | "), "3 in progress, 1 of them on later laps", "areas: the story counts each quest")
+	-- In combat an area keeps its objectives of the quests still carried, and recounts.
+	local fought = { [1] = carried[1], [3] = carried[3] }
+	local refreshed = Model.Refresh(fields, player, done, fought, prefs(), plan)
+	local kept
+	for _, step in ipairs(refreshed.journeys[1].steps) do
+		kept = step.key == "area:1:0" and step or kept
+	end
+	equal(kept and #kept.objectives, 1, "areas, combat: the objective of a quest gone goes")
+	equal(kept and kept.reason, "quests in progress", "areas, combat: recounted")
+	equal(#shared.objectives, 2, "areas, combat: the last build is untouched")
+end
+
+-- An area step's point is where the player enters it (design §4.2): ENTER (10) yd inside the ring of its shape nearest
+-- them, never the middle, so a long area starts at its near end; its ring keeps the middle. Standing in it, it is
+-- "you're here", and the next build lets it go only 30 yd past its ring.
+do
+	local strip = { quests = { [1] = quest() }, zones = data.zones }
+	strip.maps = { [1] = { name = "Zone", continent = 0, cx = 0, cy = 0, sx = 1000, sy = 1000 } }
+	strip.continents = { [0] = { x = 0, y = 0 } }
+	-- Two spots 150 yd apart, 100 yd each: one area, long from west to east, its ring round the first.
+	strip.quests[1].need = { [0] = 8, [4] = 5 }
+	strip.quests[1].obj = { { 0, 400, 500, 100 }, { 4, 550, 500, 100 } }
+	local carried = { [1] = { id = 1, title = "Strip", level = 18, complete = false } }
+	local function Head(x, last)
+		local at = { map = 1, x = x, y = 0.5 }
+		for name, value in pairs(player) do
+			at[name] = at[name] == nil and value or at[name]
+		end
+		local built = Model.Plan(strip, at, { [1] = true }, carried, prefs(), nil, nil, last)
+		return built.steps[1], built
+	end
+	local east = Head(0.9)
+	equal(east.key, "area:1:0", "entry: the area leads")
+	equal(("%.3f %.3f"):format(east.ring.x, east.ring.y), "0.400 0.500", "entry: its ring round its middle")
+	equal(("%.3f %.3f"):format(east.x, east.y), "0.640 0.500", "entry: from the east, the east end's edge")
+	equal(east.here, nil, "entry: outside, not here")
+	equal(("%.3f"):format(Head(0.1).x), "0.310", "entry: from the west, the west end's edge")
+	local inside, held = Head(0.45)
+	equal(inside.here, true, "entry: inside, you're here")
+	equal(held.here, "area:1:0", "entry: which the route keeps for the next build")
+	equal(Head(0.13, held).here, true, "entry: 20 yd past the ring, still here")
+	equal(Head(0.13).here, nil, "entry: there fresh, not")
+	equal(Head(0.11, held).here, nil, "entry: 40 yd past it, let go")
+end
+
+-- The zone the player stands in leads when they carry its quests, though nothing is left there to pick up and another
+-- zone's pickups rank better; carry holds the rest of the log.
+do
+	local world = {
+		quests = {},
+		zones = { [1] = { name = "Here", min = 15, max = 25 }, [2] = { name = "There", min = 17, max = 19 } },
+	}
+	for id = 1, 6 do
+		world.quests[id] = quest(id / 10, 0.5, id <= 3 and 1 or 2)
+		world.quests[id].need, world.quests[id].obj = { [0] = 1 }, { { 0, id * 100, 500, 0 } }
+	end
+	world.quests[7] = quest(0.5, 0.5, 3)
+	local carried, done = {}, { [1] = true, [2] = true, [3] = true }
+	for _, id in ipairs({ 1, 2, 3, 7 }) do
+		carried[id], done[id] = { id = id, title = "Carried", level = 18, complete = false }, nil
+	end
+	local here = Model.Plan(world, player, done, carried, prefs())
+	equal(here.journeys[1].key, "zone:1", "standing: the zone you carry quests in is card 1")
+	equal(here.journeys[1].subline, "3 in progress", "standing: its card counts them")
+	equal(here.journeys[2] and here.journeys[2].key, nil, "standing: nothing else placed, no carry card")
+	carried[7].complete = true
+	here = Model.Plan(world, player, done, carried, prefs())
+	equal(here.journeys[2] and here.journeys[2].subline, "1 ready to hand in", "standing: carry holds the rest")
+end
 
 local special = { quests = { [1] = quest(), [2] = quest(0.9), [3] = quest(0.1) }, zones = data.zones }
 special.quests[1].elite, special.quests[2].dungeon = true, 99
@@ -609,9 +848,9 @@ local ferry = { quests = { quest(0.1, 0.5, 9), quest(0.9, 0.5, 9) }, zones = dat
 ferry.quests[1].zone, ferry.quests[2].zone, ferry.continents = 1, 1, tiers.continents
 local dock = { continent = 0, x = 10, y = -400 } -- Far Shore's east end: map x 0.9
 ferry.crossings = { { transport = 1, side = 2, a = { continent = 1, x = 0, y = 0 }, b = dock } }
-equal(Model.Plan(ferry, player, {}, {}, prefs()).steps[1].key, "hub:9:0.9000:0.5000", "lands at the dock")
+equal(Model.Plan(ferry, player, {}, {}, prefs()).steps[1].key, "town:9:0.9000:0.5000", "lands at the dock")
 ferry.crossings[1].side = 1
-equal(Model.Plan(ferry, player, {}, {}, prefs()).steps[1].key, "hub:9:0.1000:0.5000", "another side's boat")
+equal(Model.Plan(ferry, player, {}, {}, prefs()).steps[1].key, "town:9:0.1000:0.5000", "another side's boat")
 local near = { quests = { [1] = quest(0.9), [2] = quest(0.4, 0.5, 8) }, zones = data.zones, maps = tiers.maps }
 near.quests[2].zone = 1
 equal(Model.Plan(near, player, {}, {}, prefs()).steps[1].map, 1, "the player's own map first")
@@ -731,7 +970,7 @@ do
 end
 -- Skipping the chapter's pickup leaves the card to the zone's count: no step on it takes the chain up.
 local skipLead = prefs()
-skipLead.skipped["hub:1:0.4000:0.5000"] = true
+skipLead.skipped["town:1:0.4000:0.5000"] = true
 card = Model.Plan(saga, player, {}, {}, skipLead).journeys[1]
 equal(card.subline, "3 quests near your level", "story card: a skipped chapter is no chapter")
 equal(card.story == nil and card.reason == nil, true, "story card: nor its chain or reason")
@@ -752,8 +991,8 @@ for _, journey in ipairs(fought.journeys) do
 end
 equal(offered[4], nil, "combat rebuild: a quest taken mid-fight is no longer a pickup")
 equal(offered[1], true, "combat rebuild: the other pickups stay")
-equal(fought.journeys[1].kind, "carry", "combat rebuild: the taken quest is carried")
-equal(fought.journeys[2].story, nil, "combat rebuild: the taken chapter takes its chain with it")
+equal(fought.journeys[2].kind, "carry", "combat rebuild: the taken quest is carried until the full build")
+equal(fought.journeys[1].story, nil, "combat rebuild: the taken chapter takes its chain with it")
 -- A chapter 1 with a prerequisite of its own begins its story on the card and on its row alike.
 local sequel = { quests = { [1] = quest(0.1), [2] = quest(0.2), [3] = quest(0.3) }, zones = data.zones }
 sequel.quests[2].pre, sequel.quests[2].next, sequel.quests[3].pre = { 1 }, 3, { 2 }
@@ -762,7 +1001,8 @@ equal(card.reason, "A chain begins with Quest giver", "story card: a chapter 1 a
 equal(card.steps[1].detail, "Begins a new story", "story card: and its row says it begins too")
 
 -- Towns (docs/plan.md §7.2): one stop per hub merges its pickups and the hand-ins whose live waypoint agrees with the
--- data's finish, titled by the town's flight master; a waypoint elsewhere stays a turn-in of its own.
+-- data's finish, titled by the town's flight master; a waypoint elsewhere stays a turn-in of its own. The log's quests
+-- here are handed in on the story's zone, so its card holds them: there is no carry card.
 local function Town()
 	local town = {
 		quests = {},
@@ -795,8 +1035,8 @@ townPrefs.dungeons, townPrefs.journey = true, "zone:1"
 local town = Town()
 local toured = Model.Plan(town, visitor, {}, Carried(), townPrefs)
 local stop = toured.steps[1]
-equal(#toured.steps, 1, "town: one stop for the town")
-equal(stop.key, "hub:5", "town: keyed by its hub")
+equal(#toured.steps, 2, "town: one stop for the town, the far turn-in apart")
+equal(stop.key, "town:5", "town: keyed by its hub")
 equal(stop.detail, "2 to hand in, 4 to pick up", "town: counts both")
 equal(stop.title, "Lakeshire, Redridge", "town: named by its flight master")
 equal(table.concat(stop.quests, " "), "10 11 1 2 3 4", "town: hand-ins first, then by ID")
@@ -816,28 +1056,21 @@ local townCard = Chosen(toured)
 equal(townCard.hub, "Lakeshire, Redridge", "card: the hub line names its first stop's place")
 equal(townCard.more, #townCard.steps - 1, "card: and counts the stops after it")
 equal(townCard.group, 1, "card: the elite quest needs a group")
-local carriedCard = toured.journeys[1]
-equal(Has(carriedCard.steps, "turnin:12"), 1, "town: a waypoint 350 yd from the data's finish stays a turn-in")
-equal(carriedCard.steps[1].key, "handin:5", "town: the carry card's agreeing hand-ins share the town's stop")
-equal(carriedCard.steps[1].detail, "2 to hand in", "town: and count as hand-ins")
-equal(carriedCard.subline, "3 ready to hand in", "town: the carry card counts every hand-in")
--- A skip is the card's own: the carry card's town and the story card's are different stops.
+equal(Has(toured.steps, "turnin:12"), 1, "town: a waypoint 350 yd from the data's finish stays a turn-in")
+equal(#toured.journeys, 1, "town: no carry card, the story holds the log")
+equal(townCard.subline, "3 ready to hand in, 4 quests near your level", "town: the story counts every hand-in first")
+-- Skipping the town takes its hand-ins with it, from the route and the count.
 local townSkip = prefs()
-townSkip.dungeons, townSkip.journey = true, "zone:1"
-townSkip.skipped[carriedCard.steps[1].key] = true
+townSkip.dungeons, townSkip.journey, townSkip.skipped = true, "zone:1", { ["town:5"] = true }
 local skippedTown = Model.Plan(town, visitor, {}, Carried(), townSkip)
-equal(skippedTown.steps[1] and skippedTown.steps[1].key, "hub:5", "skip: the carry card's town leaves the story's")
-equal(skippedTown.steps[1].detail, "2 to hand in, 4 to pick up", "skip: with its hand-ins")
-townSkip.skipped = { ["hub:5"] = true }
-skippedTown = Model.Plan(town, visitor, {}, Carried(), townSkip)
-equal(skippedTown.journeys[1].steps[1].key, carriedCard.steps[1].key, "skip: the story's town leaves the carry card's")
-equal(skippedTown.journeys[1].subline, "3 ready to hand in", "skip: and its count")
+equal(skippedTown.steps[1] and skippedTown.steps[1].key, "turnin:12", "skip: the far turn-in is left")
+equal(Chosen(skippedTown).subline, "1 ready to hand in, 4 quests near your level", "skip: and its count")
 -- Each step's place and zone, for the "NPC, zone" line: the town's name, else its busiest giver; a turn-in names the
 -- data's NPC only where its waypoint agrees with the data's finish; the zone is the client's map name, else the data's.
 equal(stop.place, "Lakeshire, Redridge", "place: a unnamedPlan town")
 equal(stop.zone, "Zone", "place: the data's map name without the client's")
 local far
-for _, step in ipairs(carriedCard.steps) do
+for _, step in ipairs(toured.steps) do
 	far = step.key == "turnin:12" and step or far
 end
 equal(far and far.place, nil, "place: no NPC for a waypoint away from the data's finish")
@@ -865,7 +1098,7 @@ local takenHere = { id = 1, title = "Quest", complete = false, level = 18 }
 fight[10], fight[1] = nil, takenHere
 local foughtHere = Model.Refresh(town, visitor, { [10] = true }, fight, townPrefs, toured)
 stop = foughtHere.steps[1]
-equal(stop and stop.key, "hub:5", "town, combat: the stop stays")
+equal(stop and stop.key, "town:5", "town, combat: the stop stays")
 equal(stop and stop.detail, "1 to hand in, 3 to pick up", "town, combat: recounted")
 equal(stop and table.concat(stop.quests, " "), "11 2 3 4", "town, combat: less what went")
 equal(stop and stop.x, 0.58, "town, combat: the point leaves a giver with nothing left")
@@ -916,17 +1149,15 @@ stop = chainPlan.steps[1]
 equal(stop.reason, "Opens the next chapter here", "chain: the town says the hand-in opens the next chapter")
 equal(stop.detail, "1 to hand in, 4 to pick up", "chain: and still counts its quests")
 equal(table.concat(stop.pickups, " "), "1 2 3 4", "chain: the next chapter is no pickup before the turn-in")
-local lone = chainPlan.journeys[1].steps[1]
-equal(lone.key, "handin:5", "chain: the carry card's town")
-equal(lone.detail, "Opens the next chapter here", "chain: a lone hand-in's row says it")
+equal(table.concat(stop.follow, " "), "30", "chain: the town follows its hand-in with the chapter it opens")
 chained.quests[30].races = 1 -- Human only; the visitor is an Orc
 stop = Model.Plan(chained, visitor, {}, handing, townPrefs).steps[1]
 equal(stop.reason, "1 to hand in, 4 to pick up", "chain: nothing said when the next chapter is not the player's")
+equal(#stop.follow, 0, "chain: and nothing follows")
 -- A next chapter the data gives no start (an item starts it) opens nowhere the town can claim.
 chained.quests[30].races, chained.quests[30].start = nil, nil
 chainPlan = Model.Plan(chained, visitor, {}, handing, townPrefs)
 equal(chainPlan.steps[1].reason, "1 to hand in, 4 to pick up", "chain: nothing said when the next chapter has no start")
-equal(chainPlan.journeys[1].steps[1].detail, "ready to hand in", "chain: nor on the carry card")
 -- The data's `next` is display-only: a next chapter already open without the hand-in is not one it opens.
 chained.quests[30].start, chained.quests[30].pre = quest(0.52, 0.5).start, nil
 chained.quests[30].start.hub = 5
@@ -968,11 +1199,11 @@ end
 local function FieldSteps()
 	return Model.Plan(field, visitor, {}, {}, prefs()).steps
 end
-equal(Only(1, FieldSteps), "hub:3", "value: a slightly farther five-quest town beats a nearer lone quest")
+equal(Only(1, FieldSteps), "town:3", "value: a slightly farther five-quest town beats a nearer lone quest")
 for id = 2, 6 do
 	field.quests[id].start.x = 0.7
 end
-equal(Only(1, FieldSteps), "hub:1:0.3500:0.5000", "value: but not one 400 yd away")
+equal(Only(1, FieldSteps), "town:1:0.3500:0.5000", "value: but not one 400 yd away")
 local carrying = {
 	[20] = { id = 20, title = "Normal", complete = false, level = 18, map = 1, x = 0.2, y = 0.5 },
 	[21] = { id = 21, title = "Grey soon", complete = false, level = 13, map = 1, x = 0.4, y = 0.5 },
@@ -981,7 +1212,7 @@ equal(
 	Only(1, function()
 		return Model.Plan(Field(), visitor, {}, carrying, prefs()).journeys[1].steps
 	end),
-	"objective:21",
+	"area:21:0",
 	"value: a quest grey at the next level goes before an equidistant one"
 )
 -- A finished quest waits for nothing: a grey hand-in keeps its worth and goes before a nearer objective.
@@ -1004,6 +1235,50 @@ local function RedSteps()
 end
 equal(Only(2, RedSteps):find("0.3200", 1, true), nil, "value: a red quest is never first, though nearest")
 equal(#RedSteps(), 2, "value: nor on the route at all")
+
+-- Laps (docs/design.md §4.2): the story's town hands out its quests, the lap goes out to their areas and comes back to
+-- hand them in, a second visit keyed ":2". A quest worth far less per yard than the town's others waits, and the log's
+-- limit caps the pickups, the best worth per yard first.
+do
+	local lapped = {
+		quests = {},
+		zones = data.zones,
+		maps = { [1] = { name = "Zone", continent = 0, cx = 0, cy = 0, sx = 1000, sy = 1000 } },
+		continents = { [0] = { x = 0, y = 0 } },
+		hubs = { [5] = { name = "Lakeshire, Redridge" } },
+	}
+	for id, spot in ipairs({ { 560, 500 }, { 500, 600 }, { 470, 600 }, { 900, 900 } }) do
+		local given = quest(0.5, 0.5)
+		given.start.hub, given.finish = 5, { map = 1, x = 0.5, y = 0.5, name = "Quest giver", hub = 5 }
+		given.xp, given.need, given.obj = 1000 - id * 10, { [0] = 5 }, { { 0, spot[1], spot[2], 20 } }
+		lapped.quests[id] = given
+	end
+	lapped.quests[4].xp = 100 -- 550 yd off for a tenth of the XP
+	local walker = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.45, y = 0.5 }
+	local function Keys(steps)
+		local keys = {}
+		for _, step in ipairs(steps) do
+			keys[#keys + 1] = step.key
+		end
+		return table.concat(keys, " ")
+	end
+	local steps = Model.Plan(lapped, walker, {}, {}, Choose("zone:1")).steps
+	equal(steps[1].key, "town:5", "laps: the town first")
+	equal(table.concat(steps[1].pickups, " "), "1 2 3", "laps: its quests, less the one worth little per yard")
+	equal(steps[#steps].key, "town:5:2", "laps: back to the town, a second visit")
+	equal(table.concat(steps[#steps].handins, " "), "1 2 3", "laps: handing in what the lap did")
+	equal(steps[#steps].reason, "3 to hand in", "laps: counted as hand-ins")
+	equal(Keys(steps), "town:5 area:2:0 area:1:0 town:5:2", "laps: the town, the areas (2 and 3's merged), the town")
+	walker.logMax = 2
+	steps = Model.Plan(lapped, walker, {}, {}, Choose("zone:1")).steps
+	-- 2 and 3 share an area, so each costs less than 1.
+	equal(table.concat(steps[1].pickups, " "), "2 3", "laps, full log: as many as the log takes, best per yard")
+	equal(Keys(steps), "town:5 area:2:0 town:5:2", "laps, full log: only their area")
+	local held = { [9] = { id = 9, title = "Held", level = 18, complete = false } }
+	walker.logMax = 1
+	steps = Model.Plan(lapped, walker, {}, held, Choose("zone:1")).steps
+	equal(steps[1] and steps[1].pickups and #steps[1].pickups, nil, "laps, log full: nothing to pick up")
+end
 
 -- No zone the level fits (a city's quests only): no story card, and no error.
 local city = { quests = { [1] = quest(0.5, 0.5, 9) }, zones = data.zones }
@@ -1569,6 +1844,125 @@ equal(Nearest(2, 2, 1413, 0.52, 0.3, 20), "none", "trainer: the data has no Hord
 equal(Nearest(2, 0, 1413, 0.52, 0.3, 20), "none", "trainer: no class, none")
 equal(Model.Trainer(ns.Data, { side = 2, classBit = 64 }, 18), nil, "trainer: no place to measure from, none")
 
+-- Not this quest, pins and the log-full note (docs/design.md §2.18), on the real data at 18 in The Barrens.
+do
+	player.map, player.x, player.y = 1413, 0.52, 0.3
+	local function Holds(steps, id)
+		for _, step in ipairs(steps) do
+			for _, held in ipairs(step.quests) do
+				if held == id then
+					return true
+				end
+			end
+		end
+		return false
+	end
+	local function Choice(extra)
+		local p = prefs()
+		p.notInterested, p.pinned = {}, {}
+		for key, value in pairs(extra or {}) do
+			p[key] = value
+		end
+		return p
+	end
+	local plan = Model.Plan(ns.Data, player, {}, {}, Choice())
+	local first = plan.steps[1].quests[1]
+	equal(first ~= nil, true, "not this quest: the route leads with a quest")
+	-- Dropped: off every card's steps.
+	local dropped = Choice({ notInterested = { ["quest:" .. first] = { title = "Dropped" } } })
+	for _, journey in ipairs(Model.Plan(ns.Data, player, {}, {}, dropped).journeys) do
+		dropped.journey = journey.key
+		equal(
+			Holds(Model.Plan(ns.Data, player, {}, {}, dropped).steps, first),
+			false,
+			"not this quest: " .. journey.key
+		)
+	end
+	-- In the log it is left there, and no step leads to it.
+	local logged =
+		{ [first] = { id = first, title = "Dropped", level = ns.Data.quests[first].level, complete = false } }
+	dropped.journey = nil
+	for _, journey in ipairs(Model.Plan(ns.Data, player, {}, logged, dropped).journeys) do
+		dropped.journey = journey.key
+		equal(Holds(Model.Plan(ns.Data, player, {}, logged, dropped).steps, first), false, "not this quest, in the log")
+	end
+	-- A pinned quest in another zone, which no card offers, is on Loose ends.
+	local away
+	for id, candidate in pairs(ns.Data.quests) do
+		if
+			not away
+			and candidate.start
+			and candidate.start.map ~= 1413
+			and not (candidate.dungeon or candidate.raid)
+			and candidate.min <= player.level
+			and candidate.level - player.level < 3
+			and Model.Eligible(ns.Data, player, {}, {}, id)
+			and not Holds(plan.steps, id)
+		then
+			local carried = false
+			for _, journey in ipairs(plan.journeys) do
+				local p = Choice({ journey = journey.key })
+				carried = carried or Holds(Model.Plan(ns.Data, player, {}, {}, p).steps, id)
+			end
+			away = not carried and id or nil
+		end
+	end
+	equal(away ~= nil, true, "pin: a quest no card holds")
+	local pinned = Choice({ pinned = { [away] = true }, journey = "carry" })
+	local carry = Model.Plan(ns.Data, player, {}, {}, pinned)
+	equal(carry.journey, "carry", "pin: on Loose ends")
+	equal(Holds(carry.steps, away), true, "pin: which leads to it")
+	pinned.notInterested["quest:" .. away] = { title = "Dropped" }
+	equal(Holds(Model.Plan(ns.Data, player, {}, {}, pinned).steps, away), false, "pin: never a dropped one")
+	-- A pinned quest the story's cut left out is in its route, past the cut.
+	local cut
+	for id, candidate in pairs(ns.Data.quests) do
+		if
+			not cut
+			and candidate.start
+			and candidate.start.map == 1413
+			and not (candidate.dungeon or candidate.raid)
+			and candidate.min <= player.level
+			and candidate.level - player.level < 3
+			and Model.Eligible(ns.Data, player, {}, {}, id)
+			and not Holds(plan.steps, id)
+		then
+			cut = id
+		end
+	end
+	equal(cut ~= nil, true, "pin: a story quest the cut left out")
+	local led = Model.Plan(ns.Data, player, {}, {}, Choice({ pinned = { [cut] = true } }))
+	equal(led.journey, plan.journey, "pin: the same card leads")
+	equal(Holds(led.steps, cut), true, "pin: and its route has the pinned quest")
+	-- The log-full note: nil with room, else the log's quests the guide would let go, sorted.
+	local grey, crowded = {}, {}
+	for id, candidate in pairs(ns.Data.quests) do
+		if
+			#grey < 3
+			and candidate.side ~= 1
+			and candidate.level > 0
+			and candidate.level <= 5
+			and candidate.start
+			and candidate.finish
+		then
+			grey[#grey + 1] = id
+		end
+	end
+	table.sort(grey)
+	for _, id in ipairs(grey) do
+		crowded[id] = { id = id, title = ns.Data.quests[id].title, level = ns.Data.quests[id].level, complete = false }
+	end
+	player.logMax = 20
+	equal(Model.Plan(ns.Data, player, {}, crowded, Choice()).journeys[1].drop, nil, "log full: room, no note")
+	player.logMax = #grey + 2
+	local drop = Model.Plan(ns.Data, player, {}, crowded, Choice()).journeys[1].drop
+	equal(drop and table.concat(drop, " "), table.concat(grey, " "), "log full: the grey quests, sorted")
+	crowded[grey[1]].complete = true
+	drop = Model.Plan(ns.Data, player, {}, crowded, Choice()).journeys[1].drop
+	equal(drop and drop[1], grey[2], "log full: never a finished quest")
+	player.logMax = nil
+end
+
 player.map, player.x, player.y = 1413, 0.52, 0.3
 local baseline = Model.Plan(ns.Data, player, {}, {}, prefs())
 equal(#baseline.steps >= 3, true, "level 18 Horde route offers at least three steps")
@@ -1576,6 +1970,11 @@ local signature = {}
 for _, step in ipairs(baseline.steps) do
 	signature[#signature + 1] = step.key
 end
+-- The game runs plain Lua 5.1, so this times the planner, not LuaJIT's code cache: Ubuntu's LuaJIT
+-- keeps 512 KB of machine code, too little for the whole spec, and flushes every few Plans once full.
+-- plan_bench's -joff run is the frame budget.
+jit.opt.start("maxmcode=4096")
+jit.flush()
 for _ = 1, 100 do
 	Model.Plan(ns.Data, player, {}, {}, prefs())
 end

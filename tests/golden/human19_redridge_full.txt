@@ -1,0 +1,23 @@
+# human19_redridge_full: level 19, side 1, at 1433 0.1580,0.5660
+card (chosen) | zone:1433 | Redridge Mountains story | 1 ready to hand in, 10 in progress, 5 of them on later laps | - | map 1433
+  step 1 | area:3741:4 | Hilary's Necklace | 1433 0.2320,0.5390 | quests in progress | 200 yd | 3741/4
+  step 2 | town:56 | Turn in: A Free Lunch | 1433 0.1019,0.7146 | Opens the next chapter here | then 130
+  step 3 | area:92:4 | Redridge Goulash | 1433 0.1800,0.7248 | 2 quests here | 199 yd | 92/4 246/1
+  step 4 | area:34:4 | An Unwelcome Guest | 1433 0.1100,0.4930 | quests in progress | 0 yd | 34/4
+  step 5 | town:61 | Lakeshire, Redridge | 1433 0.1677,0.4633 | 3 to hand in
+  step 6 | area:169:4 | Wanted: Gath'Ilzogg | 1433 0.6450,0.5580 | quests in progress | 0 yd | 169/4
+card | carry | Loose ends | 4 ready to hand in, 1 in progress | - | map 1431
+  step 1 | area:116:6 | Dry Times | 1431 0.7370,0.4410 | quests in progress | 0 yd | 116/6
+  step 2 | area:116:7 | Dry Times | 1429 0.4400,0.6570 | quests in progress | 0 yd | 116/7
+  step 3 | town:60 | Turn in: The Price of Shoes | 1429 0.4171,0.6554 | Opens the next chapter here | then 119
+  step 4 | town:69 | Turn in: Messenger to Stormwind | 1453 0.6917,0.8271 | Opens the next chapter here | then 121
+  step 5 | town:80 | Turn in: Elmore's Task | 1453 0.5972,0.3378 | ready to hand in
+  step 6 | area:116:5 | Dry Times | 1453 0.6000,0.7700 | quests in progress | 0 yd | 116/5
+  step 7 | town:37 | Turn in: The Defias Brotherhood | 1436 0.5633,0.4752 | Opens the next chapter here | then 135
+  step 8 | area:116:4 | Dry Times | 1436 0.4590,0.7910 | quests in progress | 0 yd | 116/4
+card | zone:1437 | Head to Wetlands | 4 quests near your level | For level 21 | map 1432
+  step 1 | town:123 | Pick up quests: Mountaineer Kadrell | 1432 0.3417,0.4784 | near your level
+card | zone:1431 | Head to Duskwood | 4 quests near your level | For level 21 | map 1431
+  step 1 | town:32 | Pick up quests: Elaine Carevin | 1431 0.7534,0.4875 | near your level
+card | zone:1440 | Head to Ashenvale | 6 quests near your level | - | map 1440
+  step 1 | town:418 | Pick up quests: Talen | 1440 0.1479,0.3129 | near your level
