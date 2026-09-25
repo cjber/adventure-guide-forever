@@ -20,8 +20,8 @@ Forever pillars (Blizzard, *What's Next* panel recap):
   not XP.
 - **The journey before the destination.** The player chooses from a handful of journeys (six at most): the story
   where they are, the zones they could head to next, and a dungeon or their calling when one fits. Until they do, the
-  guide draws the first card's steps on its own, so a new character has a route without a click; a choice overrides
-  it.
+  tab is an overview of every card, and the tracker and map draw the first card's steps on their own, so a new
+  character has a route without a click; a choice overrides it.
   Chains read as a zone's chapters, with later chapter titles left unrevealed. There are no percentages, XP/hour figures or step counters.
   The one exception is the card's hub line ("Lakeshire, Redridge and 2 more stops"). The user asked for it, and it
   counts towns, not progress (plan §7.4).
@@ -60,14 +60,31 @@ tabs (`BLZ/Blizzard_UIPanels_Game/Camelot/QuestMapFrameOverrides.lua:3-6`; PROBE
 inside the existing `ScrollFrameTemplate` (Panel.lua:510).
 
 ```
-+-----------------------------------------------+  308 px pane (QuestMapFrame.xml:648)
++-----------------------------------------------+  none chosen: the overview
+| [Search quests..........................] [*] |
+|-----------------------------------------------|
+|  (t) Visit your class trainer in Orgrimmar    |  the aside, as with one chosen
+| +===========================================+ |  every card whole, unlit, in the route's order
+| | (S)  Westfall story                       | |
+| | ( )  Chapter 2 of 4                6 min  | |
+| |      Continues a story you started        | |
+| +===========================================+ |
+|         - Sentinel Hill, Westfall             |  its first 3 steps, GameFontHighlightSmall, 13 px
+|         - The Defias Brotherhood              |    each, under its text column (x 67), a dash each
+|         - Red Linen Goods                     |    (never a number: those are the chosen card's)
+| +===========================================+ |  10 px on to the next card
+| | (?)  Loose ends                           | |
+|  ...                                          |  scrolls; no chapter track and no step rows
++-----------------------------------------------+
+
++-----------------------------------------------+  308 px pane (QuestMapFrame.xml:648): one chosen
 | [Search quests..........................] [*] |  29 px top bar: SearchBoxTemplate across the width
 |-----------------------------------------------|    (no step count, §1), settings cog
 | [(?) Loose ends                           +] |  the others, one line each: 288x26, 2 px apart
 | [(!) Head to Darkshore                    +] |
-| +===========================================+ |  the shown card, whole, 4 px under the rows: the
-| | (S)  Westfall story                       | |    chosen one (lit, its own art), else the first
-| | ( )  Chapter 2 of 4                       | |    card, unlit
+| +===========================================+ |  the chosen card, whole and lit (its own art),
+| | (S)  Westfall story                       | |    4 px under the rows
+| | ( )  Chapter 2 of 4                       | |
 | +===========================================+ |
 |    [#][#][ ][ ]                               |  chapter track (2.3)
 |  1 Sentinel Hill, Westfall                    |  step rows, 44 px each, 9 at most; a town is titled by its name
@@ -93,12 +110,17 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   (QuestInfo Raid) wherever it is filed: Zul'Gurub's Paragons of Power are filed under the outdoor Zul'Gurub area and
   given on Yojamba Isle, yet ask for the raid's drops, so only their type says so (83 such quests at the pin).
 - **None chosen** is the default (a fresh character, the back arrow, or a saved choice whose card is no longer
-  offered). The guide draws the first card's steps on its own (auto-start): the route falls back to the first card
-  (`route.chosen` false), which sits whole but unlit over its track and step rows, the others as one-line rows above
-  it, and the tracker, the map preview and the NPC line all follow it. Nothing guides until the player asks: a card
-  or row click, the tracker title, a ring's click or Go. A click on the first card, or on a ring of its route,
-  chooses it. A stale saved key stays saved and is chosen again should its card come back.
-- **One chosen:** the others fold to one-line rows above it, in their order, and it sits whole and lit right over
+  offered), and the tab is the **overview**: the aside, then every card whole and unlit in the route's order (icon,
+  title, subline with its minutes, line 3 and its tags, as §2.2), each over a preview of its first 3 steps
+  (`journey.steps`), one `GameFontHighlightSmall` line each, "- Sentinel Hill, Westfall", optional ones at alpha 0.6.
+  The dash is the tracker's: numbers belong to the chosen card's rows and rings. No chapter track and no step rows;
+  the overview scrolls. It replaced the first card drawn whole over its steps with the others as rows, which looked
+  the same as the chosen view whenever the chosen card was the first, so the back arrow seemed to do nothing.
+  Behind it the route still falls back to the first card (`route.chosen` false, auto-start), and the tracker, the
+  map preview (§2.6) and the NPC line follow that card as before: kept, since the overview lists it first and a
+  click on its ring or the tracker title chooses it. Nothing guides until the player asks: a card click, the tracker
+  title, a ring's click or Go. A stale saved key stays saved and is chosen again should its card come back.
+- **One chosen** (a click on any card in the overview): the others fold to one-line rows above it, in their order, and it sits whole and lit right over
   its track and step rows. Its steps start at the same place whichever card it is (two rows, 58 px, then the card),
   and no card sits between a card and its steps, which the old order did (a middle card's steps pushed the last card
   below the fold). A row chooses its card. The chosen card is no toggle: a click on it turns the map to it again,
@@ -106,9 +128,8 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
 - **Back to all suggestions.** While a card is chosen the header shows the game's back arrow,
   `common-icon-backarrow` (CSV:4624, as Forever's character creation draws it on its Back button), 22x22 at the
   header's left, the compass moved 20 px right of it. Its tooltip is "All suggestions", adding "Also stops the
-  route" while AGF's route runs. A click, or a right-click anywhere on the header, chooses none: the guide draws
-  the first card again with the others as rows above it, and the route AGF started stops, as for any cleared
-  choice. With none chosen the arrow is hidden and the header's right-click does nothing.
+  route" while AGF's route runs. A click, or a right-click anywhere on the header, chooses none: the guide shows the
+  overview again, and the route AGF started stops, as for any cleared choice. With none chosen the arrow is hidden and the header's right-click does nothing.
   No animation: the quest log's own headers fold at once, and a height tween would need an OnUpdate.
 - **Choosing starts the route.** Selecting a card (whole or a row) sets `prefs.journey`, rebuilds the route and, on
   the rebuild that has its steps, hands them to `Integrations.Navigate`: SPF's journey, or the native waypoint
@@ -134,8 +155,9 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   on the zone maps its `QuestPOIBlob` rows name. Only 26 of the 1795 added quests have a blob, so the zone half is
   narrow; a quest with no blob has no zone and is left out. The slice also lists the 160 added AreaTable IDs, which
   put an unexplored area first (§2.11), and the added lands (§2.11); TaxiNodes and Map diffs are printed only.
-- Fit: the shown card takes 86 px and each other card a 28 px row, so with five others the cards take 226 px and
-  the shown card's step rows scroll below them; the panel's room holds the cards rather than leaving it empty.
+- Fit: with one chosen, it takes 86 px and each other card a 28 px row, so with five others the cards take 226 px
+  and its step rows scroll below them. The overview takes 135 px a card (86, 3 lines of 13, 10 px on), so two or
+  three show at once and six scroll.
 
 ### 2.2 Journey card
 
@@ -154,7 +176,7 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
   Icon 18x18 at CENTER; hover inherits AlphaHighlightButtonTemplate (SharedUIPanelTemplates.xml:1587)
 ```
 
-- **One-line row** (another card is shown): the Settings list's collapsible category header in three slices at its
+- **One-line row** (another card is chosen): the Settings list's collapsible category header in three slices at its
   own 26 px height, `options_listexpand_left` (12x26), `_options_listexpand_middle` (tiled) and
   `options_listexpand_right` (28x26, its "+"), 288x26 in all, with the 16x16 kind icon at LEFT x=12 and no ring, and
   the title (GameFontNormalMed2) at the icon's RIGHT +6. Its tooltip has the title, subline and reason, so nothing is
@@ -408,8 +430,8 @@ no layer at all.
         adventureguide-ring (CSV:1189) + services-number-1..9 (CSV:1645-1653), hover UI-QuestPoi-InnerGlow (CSV:10079)
 ```
 
-- **Preview.** The open guide previews the shown card's rings: the chosen card's, else the first card's, which the
-  guide draws on its own (§2.1); a ring's click chooses that card. Selecting a card turns the map to that journey's
+- **Preview.** The open guide previews the chosen card's rings, else the first card's, which the guide draws on its
+  own behind the overview (§2.1); a ring's click chooses that card. Selecting a card turns the map to that journey's
   first zone (`WorldMapFrame:SetMapID`) and draws only its rings. Hovering a step row flashes its ring (`Pins.Ping`,
   Pins.lua:184-188).
 - **Areas** (a quest's objective area): AGF draws no disc over one. The game's own objective mark shows the area,
@@ -417,8 +439,8 @@ no layer at all.
   hid the map (no stock call shows that shape unhovered on Classic Era: `C_SuperTrack.SetSuperTrackedQuestID` is
   retail's, and super-tracking would take the arrow from the waypoint). An area step's number sits where the route
   enters it (§4.2); while the player stands in step 1's area it has no number.
-  The choice going, however it goes, stops what AGF guides (Core.lua's `wasChosen` listener): the first card is
-  previewed again, nothing guides until a click, and a route the player started in SPF stays.
+  The choice going, however it goes, stops what AGF guides (Core.lua's `wasChosen` listener): the overview shows and
+  the first card is previewed again, nothing guides until a click, and a route the player started in SPF stays.
 - **Layering.** A route ring marks "your destination", so it takes the stock level of the user-waypoint pin,
   `PIN_FRAME_LEVEL_WAYPOINT_LOCATION`. That is above every quest "!" and "?", including the super-tracked one.
   AGF's preview ring uses this level, and SPF's stop ring does too (plan §7.9). Givers stay at `AREA_POI`, below
@@ -581,7 +603,7 @@ arrived, and anything else means cleared. Arrived keeps `guided`; cleared and re
 the route again until the card resumes it.
 
 A chosen journey the full build no longer has ends: its route is cancelled and the choice cleared, so the guide
-draws the first card again. A Quests or Dungeons filter keeps the key (the player's own toggle can bring it back) but stops the
+shows the overview again. A Quests or Dungeons filter keeps the key (the player's own toggle can bring it back) but stops the
 route; Quests covers `zone:` and `chain:` keys and `calling`, Dungeons `dungeon:` keys, except with no next zone,
 when Dungeons hides nothing. Skipping every step of a chosen journey ends it the same way, quietly.
 
@@ -1073,9 +1095,10 @@ Nothing below has been validated in game yet.
     shows above the cards and in the tracker with the class trainer mark and no ring; its click goes to the nearest
     trainer; its X, Skip for now and Not interested hide it, and the cog's "Skipped (1)" brings it back. Without
     Tweaks Forever, nothing changes.
-11. With no journey chosen the guide draws the first card whole over its steps, unlit, with its rings on the map and
-    its step 1 in the tracker, and nothing guides; the tracker title or a ring's click chooses that card and starts
-    its route.
+11. With no journey chosen the tab is the overview: every card whole and unlit, each with its counts, minutes and
+    its first 2 or 3 steps under it in small white text (an optional one faded), no chapter squares and no numbered
+    rows, scrolling when there are more cards than fit. The first card's rings are on the map and its step 1 in the
+    tracker, and nothing guides; the tracker title or a ring's click chooses that card and starts its route.
 12. Batch F (plan §7.10): Lakeshire is one stop; a stop ring draws over a super-tracked "?"; the cards show minutes
     and the hub line; the footer's Stop goes as soon as Shortest Path ends the journey.
 13. Batch G (plan §8.2): a chosen journey lasts through travel, turn-ins and `/reload`, and a paused route resumes
@@ -1161,9 +1184,13 @@ Nothing below has been validated in game yet.
 36. Back (§2.1): with nothing chosen the header shows no arrow. Choose a card: the game's yellow back arrow shows
     left of the compass, crisp at 22 px, and lights on hover; its tooltip reads "All suggestions" and "Also stops
     the route". Clicking the lit card keeps the route running and only turns the map to it. The arrow (and, after
-    choosing again, a right-click on the header) unlights the card, draws the first card whole with the others as
-    rows, stops Shortest Path's route or AGF's waypoint, and hides the arrow; the footer's Stop still stops the
+    choosing again, a right-click on the header) unlights the card, shows the overview of every card whole, stops Shortest Path's route or AGF's waypoint, and hides the arrow; the footer's Stop still stops the
     route as before.
+37. Overview (§2.1): from the overview, clicking the second or third card lights it over its numbered steps with the
+    others folded to rows above, turns the map to it and starts its route; the back arrow returns to the overview
+    (every card whole again, no arrow). The previews read cleanly beside the cards (no clipping at the right edge, no
+    overlap with the next card), and scrolling reaches the last card and "Skipped (n)". `/agf dump` with the Barrens
+    story chosen, then `luajit tests/dump_diff.lua` on the saved variables, reports no differences.
 
 ## 9. Open questions that need client probes
 

@@ -975,13 +975,13 @@ def render(out):
     data, rects = layout_pass(ui, ("panel", "journeys", "search"), known_frames(frame))
     images = {}
 
-    canvas, _ = quest_log(ui, data, rects, "panel", data["panel"]["pins"])
+    # The lead image: no card chosen yet, the overview of every card whole over its first steps.
+    canvas, _ = quest_log(ui, data, rects, "journeys", data["journeys"]["pins"])
     images["panel"] = wm.scene(ui, [(canvas, 0, 0)])
 
-    # No card chosen yet: every card whole, and no rings, since the guide lists no steps.
-    canvas, frame = quest_log(ui, data, rects, "journeys", data["journeys"]["pins"])
-    qx, qy, qw, qh = frame["quests"]
-    images["journeys"] = wm.scene(ui, [(crop(canvas, qx - 3, qy - 30, qw + 3 + 64, qh + 30 + 22), 0, 0)])
+    # The Barrens story chosen: lit over its numbered steps, their rings on the map, the others folded above it.
+    canvas, _ = quest_log(ui, data, rects, "panel", data["panel"]["pins"])
+    images["chosen"] = wm.scene(ui, [(canvas, 0, 0)])
 
     canvas, frame = quest_log(ui, data, rects, "search", data["panel"]["pins"])
     qx, qy, qw, qh = frame["quests"]

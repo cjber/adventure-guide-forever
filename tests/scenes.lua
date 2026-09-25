@@ -86,7 +86,7 @@ end
 
 local out = {}
 
--- The lead image: the story card's towns, with Shortest Path's minutes on step 1 (ui_spec's golden layout).
+-- The chosen view: the story card's towns, with Shortest Path's minutes on step 1 (ui_spec's golden layout).
 local STORY = "zone:1413"
 local h = Load("v1", false, false, STORY)
 out.panel = Panel(h, "panel")
@@ -94,7 +94,8 @@ h.providers[1]:RefreshAllData()
 out.panel.pins = Pins(h)
 out.panel.map = h.map:GetMapID()
 
--- A character with no card chosen: every card whole, no steps and no rings, the hint under the cards. With Shortest
+-- The lead image, a character with no card chosen: the overview, every card whole over its first steps, the hint under
+-- the cards, and the first card's rings, which the guide previews on its own (docs/design.md §2.6). With Shortest
 -- Path's minutes on each card, and a finished group quest, Counterattack!, handed in at Regthar Deathgate's camp, so
 -- the story card, which holds the log's Barrens quests, has the group tag beside its hub line.
 local COUNTERATTACK =

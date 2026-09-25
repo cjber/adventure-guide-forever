@@ -20,6 +20,9 @@ local CARD_RING, CARD_ICON = 46, 18
 -- A card's text column: its title, subline and reason are this wide. The minutes and group tag at its right sit this
 -- far inside it, clear of the card's bevel (Panel.xml).
 local CARD_TEXT, CARD_INSET = 212, 8
+-- The overview (docs/design.md §2.1): each card whole over its first steps, a line each of GameFontHighlightSmall under
+-- its text column, then a wider gap to the next card, as the Adventure Guide spaces its entries.
+local PREVIEW_STEPS, PREVIEW_HEIGHT, PREVIEW_LEFT, OVERVIEW_GAP = 3, 13, 15 + CARD_RING + 6, 10
 -- The honest-coverage line under the cards: two lines of GameFontDisableSmall.
 local UNLISTED_HEIGHT = 26
 -- The scroll child above the cards: the header 4px down and 34px tall, then 6px to the first card.
@@ -261,8 +264,8 @@ local function CreateRow(parent)
 	return row
 end
 
--- Back to every suggestion: clears the choice, so the guide draws the first card again with the others as rows above
--- it (docs/design.md §2.2), and stops the route AGF started for it, as any cleared choice does (ns.Choose).
+-- Back to every suggestion: clears the choice, so the guide shows the overview again, every card whole over its first
+-- steps (docs/design.md §2.1), and stops the route AGF started for it, as any cleared choice does (ns.Choose).
 local function Back()
 	if ns.Route().chosen then
 		GameTooltip_Hide()
@@ -330,6 +333,7 @@ end
 ---@field state? "shown"|"chosen"|"compact"
 ---@field Caps Texture[]
 ---@field New Texture
+---@field Preview FontString[] its first steps under it, in the overview
 
 -- One search result: the quest and where it starts, and for a locked one a lock and why (docs/design.md §2.4). One
 -- open now joins the route with a shift-click, and wears the tradeskill favourite's star while it does (§2.18); an
@@ -458,6 +462,15 @@ local function BuildJourneys(parent, below)
 		end
 		card.New = card:CreateTexture(nil, "OVERLAY", nil, 2)
 		card.New:SetAtlas(NEW_MARK)
+		card.Preview = {}
+		for line = 1, PREVIEW_STEPS do
+			local text = card:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+			text:SetPoint("TOPLEFT", card, "BOTTOMLEFT", PREVIEW_LEFT, -(line - 1) * PREVIEW_HEIGHT)
+			text:SetPoint("RIGHT", card, "RIGHT", -CARD_INSET, 0)
+			text:SetJustifyH("LEFT")
+			text:SetWordWrap(false)
+			card.Preview[line] = text
+		end
 		cards[index] = card
 	end
 	track = CreateFrame("Frame", nil, list)
@@ -758,12 +771,12 @@ function CardTooltip(card)
 	GameTooltip:Show()
 end
 
--- `state`: "shown" (whole: the guide drew it with none chosen), "chosen" (whole and lit) or "compact" (another is
--- shown: icon and title only).
+-- `state`: "shown" (whole over its first steps: the overview, none chosen), "chosen" (whole and lit) or "compact"
+-- (another is chosen: icon and title only).
 ---@param card AGFJourneyCard
 ---@param journey AGFJourney
 ---@param state "shown"|"chosen"|"compact"
----@return number height
+---@return number height with its preview
 local function RefreshCard(card, journey, state)
 	local compact, chosen = state == "compact", state == "chosen"
 	card.journey, card.state = journey, state
@@ -837,7 +850,17 @@ local function RefreshCard(card, journey, state)
 	if GameTooltip:IsOwned(card) then
 		CardTooltip(card)
 	end
-	return compact and COMPACT_HEIGHT or CARD_HEIGHT
+	-- In the overview its first steps, faded as their rows fade when optional.
+	local previewed = state == "shown" and math.min(#journey.steps, PREVIEW_STEPS) or 0
+	for index, line in ipairs(card.Preview) do
+		local step = index <= previewed and journey.steps[index] or nil
+		line:SetShown(step ~= nil)
+		if step then
+			line:SetText(L.PREVIEW_STEP:format(step.title))
+			line:SetAlpha(step.optional and 0.6 or 1)
+		end
+	end
+	return compact and COMPACT_HEIGHT or CARD_HEIGHT + previewed * PREVIEW_HEIGHT
 end
 
 -- The story's squares under its card, from `top` down, when the data proves the chain's length and it is 8 or fewer;
@@ -972,10 +995,10 @@ local function LayoutResults(query)
 	return top, #found
 end
 
--- The others first as one-line rows in their order, then the shown card (the chosen one, else the first, which the
--- guide draws on its own: docs/design.md §2.2) with its track and rows, so its steps start at the same place whichever
--- card it is and no card sits between them. Or the search's results. The scroll child's height is summed, not
--- measured, so it is right before the client has laid anything out.
+-- With none chosen, the overview: every card whole over its first steps, in order (docs/design.md §2.1). With one
+-- chosen, the others first as one-line rows in their order, then the chosen card with its track and rows, so its steps
+-- start at the same place whichever card it is and no card sits between them (§2.2). Or the search's results. The
+-- scroll child's height is summed, not measured, so it is right before the client has laid anything out.
 ---@param route AGFRoute
 ---@return boolean searching
 ---@return integer found
@@ -1008,28 +1031,37 @@ local function LayoutJourneys(route)
 	---@cast emptyText -?
 	local emptyTop = aside and ASIDE_HEIGHT + CARD_GAP or 0
 	emptyText:SetPoint("TOPLEFT", 10, -emptyTop - 8)
-	local shownCard, shownJourney, compactRows = nil, nil, 0
+	local chosen = nil
+	for _, journey in ipairs(route.chosen and not searching and route.journeys or {}) do
+		chosen = journey.key == route.journey and journey or chosen
+	end
+	local shownCard, compactRows, overview = nil, 0, 0
 	for index, card in ipairs(cards) do
 		local journey = not searching and route.journeys[index] or nil
 		card:SetShown(journey ~= nil)
-		if journey and journey.key == route.journey then
-			shownCard, shownJourney = card, journey
-		elseif journey then
+		if journey and journey == chosen then
+			shownCard = card
+		elseif journey and chosen then
 			card:SetPoint("TOP", list, "TOP", 0, -top)
 			top = top + RefreshCard(card, journey, "compact") + ROW_GAP
 			compactRows = compactRows + 1
+		elseif journey then
+			card:SetPoint("TOP", list, "TOP", 0, -top)
+			top = top + RefreshCard(card, journey, "shown") + OVERVIEW_GAP
+			overview = overview + 1
 		end
 	end
-	if shownCard and shownJourney then
-		-- The one-line rows sit a row's gap apart, and a card's gap above the shown card.
+	if shownCard and chosen then
+		-- The one-line rows sit a row's gap apart, and a card's gap above the chosen card.
 		top = top + (compactRows > 0 and CARD_GAP - ROW_GAP or 0)
-		RefreshCard(shownCard, shownJourney, route.chosen and "chosen" or "shown")
+		RefreshCard(shownCard, chosen, "chosen")
 		shownCard:SetPoint("TOP", list, "TOP", 0, -top)
-		top = LayoutTrack(shownJourney, top + CARD_HEIGHT + CARD_GAP)
+		top = LayoutTrack(chosen, top + CARD_HEIGHT + CARD_GAP)
 		top = LayoutRows(route, top) + CARD_GAP
 	else
+		-- The overview lists no route rows: each card's own lines say where it goes.
 		LayoutRows(route, top, true)
-		top = math.max(top, emptyTop + 40)
+		top = overview > 0 and top - OVERVIEW_GAP + CARD_GAP or math.max(top, emptyTop + 40)
 	end
 	-- Honest coverage: quests here the data lacks, so the cards can't be every story.
 	---@cast unlistedText -?

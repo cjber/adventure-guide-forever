@@ -394,7 +394,7 @@
 ---@field SKIPPED string format: how many steps are skipped this session
 ---@field SHOW_AGAIN string format: a skipped step's title
 ---@field CHOOSE_JOURNEY string opens the guide
----@field ALL_SUGGESTIONS string the header's back arrow tooltip: it chooses none, so the guide draws every card again
+---@field ALL_SUGGESTIONS string the header's back arrow tooltip: it chooses none, so the guide shows the overview again
 ---@field BACK_STOPS_ROUTE string the back arrow's tooltip while AGF's route runs, which going back stops
 ---@field BACK_TO_ALL string the chosen card's tooltip: the back arrow goes back to every card
 ---@field CLICK_TO_RESUME string the chosen card's tooltip while its route is paused: the click resumes it
@@ -451,6 +451,7 @@
 ---@field CLICK_WAYPOINT string
 ---@field STEP_NUMBERED string format: route index, step title
 ---@field QUEST_LEVEL string format: quest level, quest title
+---@field PREVIEW_STEP string format: a step's title, under its card in the overview
 ---@field OBJECTIVE_LINE string format: the client's words for an open objective, with its count
 ---@field OBJECTIVE_COUNT string format: an open objective's count so far, the count it needs
 ---@field MENU_QUESTS string

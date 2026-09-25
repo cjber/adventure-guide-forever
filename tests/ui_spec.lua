@@ -2479,11 +2479,12 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label)
 end
 
--- None chosen (docs/design.md §2.1): a fresh character sees the first card whole over its steps, the others
--- folded into one-line rows above it, and nothing guides until asked; the tracker shows that card's step (design §2.5).
--- Choosing one starts its route in its place, each row keeping its lines in a tooltip; a row chooses its card and
--- starts its route in place of the first. The chosen card is no toggle: the header's back arrow, shown only while a
--- card is chosen, goes back to none and stops the route it started, as a right-click on the header does.
+-- None chosen (docs/design.md §2.1): a fresh character sees the overview, every card whole over its first steps and
+-- no route rows, and nothing guides until asked; the tracker shows the first card's step (design §2.5). A click on a
+-- card chooses it and starts its route: the others fold into one-line rows above it, each keeping its lines in a
+-- tooltip, and it sits lit over its steps; a row chooses its card and starts its route in its place. The chosen card
+-- is no toggle: the header's back arrow, shown only while a card is chosen, goes back to the overview and stops the
+-- route it started, as a right-click on the header does.
 for _, spf in ipairs({ false, "v1" }) do
 	local label = "none chosen: " .. (spf or "no Shortest Path")
 	local h = Load(spf, nil, false, true)
@@ -2537,9 +2538,37 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(route.journey, "zone:1413", label .. ": the route falls back to the first card")
 	same(h.tracker.layoutOrder, { route.steps[1].key }, label .. ": the tracker shows the first card's step")
 	equal(route.journeys[1].kind, "story", label .. ": a story card")
-	equal(Heights(), "26 26 86", label .. ": the first card whole, the others folded above it")
-	equal(Cards()[3].journey, route.journeys[1], label .. ": the first card over its steps")
-	equal(Rows(), #route.steps, label .. ": its steps listed")
+	-- Each card's first steps under it, as a dash each, never a number: only the chosen card's rows are numbered.
+	local function Previews()
+		local shown = {}
+		for _, card in ipairs(Cards()) do
+			local lines = {}
+			for index, line in ipairs(card.Preview) do
+				lines[index] = line:IsShown() and line:GetText() or nil
+			end
+			shown[#shown + 1] = table.concat(lines, "|")
+		end
+		return table.concat(shown, " / ")
+	end
+	local function Expected()
+		local wanted = {}
+		for index, journey in ipairs(h.ns.Route().journeys) do
+			local lines = {}
+			for step = 1, math.min(#journey.steps, 3) do
+				lines[step] = h.ns.L.PREVIEW_STEP:format(journey.steps[step].title)
+			end
+			wanted[index] = table.concat(lines, "|")
+		end
+		return table.concat(wanted, " / ")
+	end
+	equal(Heights(), "86 86 86", label .. ": the overview, every card whole")
+	for index, card in ipairs(Cards()) do
+		equal(card.journey, route.journeys[index], label .. ": in the route's order")
+		equal(card.state, "shown", label .. ": none chosen or folded")
+	end
+	equal(Previews(), Expected(), label .. ": each over its first steps")
+	equal(Previews():find("|", 1, true) ~= nil, true, label .. ": a card previews more than one step")
+	equal(Rows(), 0, label .. ": and no route rows")
 	equal(Says("Steps: 0"), 0, label .. ": and no step counter (docs/design.md §1)")
 	equal(Starts(), 0, label .. ": nothing guides")
 	for _, card in ipairs(Cards()) do
@@ -2611,6 +2640,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(h.G.AdventureGuideForeverCharDB.journey, story.key, label .. ": and is saved")
 	equal(Heights(), "26 26 86", label .. ": the others fold above the chosen card")
 	equal(Cards()[3].journey.key, story.key, label .. ": the chosen card last, over its steps")
+	equal(Previews(), " /  / ", label .. ": no card previews its steps")
 	-- The chosen card is lit, not pressed: its art, pressed or not, is the card's own, so nothing moves.
 	local chosenCard = Cards()[3]
 	equal(chosenCard.highlightLocked, true, label .. ": the chosen card stays lit")
@@ -2667,9 +2697,27 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(h.ns.Route().chosen, false, label .. ": the back arrow chooses none")
 	equal(h.G.AdventureGuideForeverCharDB.journey, nil, label .. ": and saves none")
 	equal(h.counts.SetMapID, maps, label .. ": without turning the map")
-	equal(Heights(), "26 26 86", label .. ": the first card whole again")
-	equal(Cards()[3].journey.key, h.ns.Route().journeys[1].key, label .. ": over its steps")
+	equal(Heights(), "86 86 86", label .. ": the overview again, every card whole")
+	equal(Cards()[1].journey.key, h.ns.Route().journeys[1].key, label .. ": in order")
+	equal(Previews(), Expected(), label .. ": over their first steps")
+	equal(Rows(), 0, label .. ": with no route rows")
+	for _, card in ipairs(Cards()) do
+		equal(card.highlightLocked == true, false, label .. ": and no card lit")
+	end
 	equal(Back(), nil, label .. ": and the back arrow goes")
+
+	-- Any card in the overview chooses itself, lit over its own steps; back returns to the overview.
+	local second = Cards()[2].journey
+	h.Click(Cards()[2])
+	h.flush()
+	equal(h.ns.Route().chosen and h.ns.Route().journey, second.key, label .. ": the overview's second card chooses it")
+	equal(Heights(), "26 26 86", label .. ": the others fold above it")
+	equal(Cards()[3].journey.key, second.key, label .. ": lit over its steps")
+	equal(Rows(), #h.ns.Route().steps, label .. ": which are listed")
+	h.Click(Back())
+	h.flush()
+	equal(h.ns.Route().chosen, false, label .. ": and back again")
+	equal(Heights(), "86 86 86", label .. ": to the overview")
 
 	-- A right-click on the header goes back too, and does nothing with none chosen.
 	local header = back:GetParent()
@@ -2740,8 +2788,8 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 			equal(beside, card.Travel, label .. ": and the subline stops short of them")
 		end
 	end
-	-- A folded row keeps them for its tooltip; only the whole card shows them.
-	equal(shown, spf and 1 or 0, label .. ": minutes on the whole card with an answer")
+	-- None chosen, every card is whole in the overview and shows them; a folded row keeps them for its tooltip.
+	equal(shown, spf and #journeys or 0, label .. ": minutes on every whole card with an answer")
 	-- Once the player moves, the next route asks again, so a card's minutes are never older than step 1's; standing
 	-- still, it asks nothing new; and no empty answer sticks.
 	if spf then
@@ -3289,11 +3337,12 @@ do
 		local line = Line(h.ns.L.UNLISTED)
 		equal(line and 1 or 0, case.lines, label .. ": the line")
 		if line then
-			-- The lowest of the list's other rows: the shown card's last step.
+			-- The lowest of the list's other rows: the chosen card's last step, or the overview's last card.
 			local list, lowest = line.path:match("^(.*)%.FontString%[%d+%]$"), 0
 			for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverPanel, h.Describe)) do
 				local anchor = entry.anchors and entry.anchors[1]
-				if entry ~= line and anchor and anchor.point == "TOPLEFT" and anchor.relativeTo == list then
+				local top = anchor and (anchor.point == "TOPLEFT" or anchor.point == "TOP")
+				if entry ~= line and top and anchor.relativeTo == list then
 					lowest = math.min(lowest, anchor.y)
 				end
 			end
