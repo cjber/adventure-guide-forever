@@ -179,14 +179,15 @@ do
 	-- Each stop tells Shortest Path what stands there, so its pin shows the game's own mark rather than hiding it.
 	for index, stop in ipairs(h.spfRoute.stops) do
 		equal(stop.kind, h.ns.Integrations.Kind(h.ns.Route().steps[index]), "stop " .. index .. "'s kind")
+		equal(stop.kind ~= nil, true, "stop " .. index .. " shows what stands there")
 	end
 	local Kind = h.ns.Integrations.Kind
 	local here, there = { map = 1429, x = 0.4, y = 0.5 }, { map = 1429, x = 0.6, y = 0.5 }
 	equal(Kind({ kind = "turnin" } --[[@as AGFStep]]), "turnin", "kind: a hand-in")
-	equal(Kind({ kind = "objective" } --[[@as AGFStep]]), "objective", "kind: an objective")
+	equal(Kind({ kind = "area" } --[[@as AGFStep]]), "objective", "kind: an objective area")
 	equal(Kind({ kind = "trainer" } --[[@as AGFStep]]), "trainer", "kind: a trainer")
 	equal(Kind({ map = 1429, x = 0.1, y = 0.1, title = "Giver", quests = { 1 } }), "pickup", "kind: a giver")
-	local town = { kind = "hub", map = here.map, x = here.x, y = here.y, handins = { 7 }, spots = { [7] = here } }
+	local town = { kind = "town", map = here.map, x = here.x, y = here.y, handins = { 7 }, spots = { [7] = here } }
 	equal(Kind(town --[[@as AGFStep]]), "turnin", "kind: a town whose point is a hand-in")
 	town.spots[7] = there
 	equal(Kind(town --[[@as AGFStep]]), "pickup", "kind: a town whose point is a giver")

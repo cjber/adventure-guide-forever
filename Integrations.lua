@@ -349,7 +349,7 @@ local LINK = 100
 ---@type table<AGFStepKind, AGFSPFStopKind>
 local KINDS = {
 	turnin = "turnin",
-	objective = "objective",
+	area = "objective",
 	dungeon = "dungeon",
 	trainer = "trainer",
 	battlemaster = "battlemaster",
@@ -360,7 +360,7 @@ local KINDS = {
 ---@return AGFSPFStopKind?
 function Integrations.Kind(step)
 	local kind = step.kind --[[@as AGFStepKind?]]
-	if kind and kind ~= "hub" then
+	if kind and kind ~= "town" then
 		return KINDS[kind]
 	end
 	for _, id in ipairs(step.handins or {}) do
