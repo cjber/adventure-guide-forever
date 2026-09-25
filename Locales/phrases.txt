@@ -1,3 +1,12 @@
+-- Adventure Guide Forever's lines, to translate. Copy this file to Locales/deDE.lua (or esES, esMX, frFR, itIT,
+-- koKR, ptBR, ruRU, zhCN, zhTW), change "deDE" below to match, translate the text on the right of each line and
+-- keep the %d and %s in it. Delete a line you leave in English. Then add the file to AdventureGuideForever.toc,
+-- after Locales\enUS.lua. Regenerate with: python3 tools/phrases.py > Locales/phrases.txt
+local _, ns = ...
+if GetLocale() ~= "deDE" then
+	return
+end
+local L = ns.L
 L["AFTER_PICK_UP"] = "after you pick it up"
 L["ALL_SUGGESTIONS"] = "All suggestions"
 L["AUDIT_BUILD"] = "data from build %s, client build %s.%s"

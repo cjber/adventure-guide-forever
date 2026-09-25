@@ -1,8 +1,8 @@
-"""What goes to CurseForge: literal lines under their keys, never a GlobalString the client already translates."""
+"""What the translation template holds: literal lines under their keys, never a GlobalString the client translates."""
 
 import unittest
 
-from phrases import phrases, render
+from phrases import HEADER, phrases, render
 
 
 class PhrasesTests(unittest.TestCase):
@@ -19,7 +19,7 @@ class PhrasesTests(unittest.TestCase):
 L["B"] = "joined across lines"
 L["D"] = "WTF\\Account"
 """
-        self.assertEqual(render(phrases(source)), expected)
+        self.assertEqual(render(phrases(source)), HEADER + expected)
 
 
 if __name__ == "__main__":

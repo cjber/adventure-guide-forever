@@ -10,7 +10,7 @@ Each version's entry is also its release notes on GitHub, CurseForge and Wago.
 
 ## [Unreleased]
 
-- **Ready for translation.** Every line the guide writes itself can now be translated on the CurseForge project's Localization page, and each release picks up what translators have done. Anything not yet translated stays in English.
+- **Ready for translation.** Every line the guide writes itself now lives in one file, so a translation is one copied template in the Locales folder on GitHub. Anything not yet translated stays in English.
 
 ## [0.1.1] - 2026-09-25
 

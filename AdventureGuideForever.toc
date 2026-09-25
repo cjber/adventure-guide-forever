@@ -15,7 +15,6 @@
 ## OptionalDeps: ShortestPathForever, QuestieDB, SkillUpForever, LegacyForever, TweaksForever
 
 Locales\enUS.lua
-Locales\Translations.lua
 Data\Quests.lua
 Data\Forever.lua
 Data\ZoneArt.lua

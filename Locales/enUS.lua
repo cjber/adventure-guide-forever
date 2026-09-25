@@ -2,8 +2,8 @@
 local _, ns = ...
 
 -- Every line the player reads, in one table: new copy lands here, so one place holds the game's voice (WFA-6).
--- These are the English lines; Locales/Translations.lua replaces the ones CurseForge's translators have done, so
--- a line nobody has translated yet stays in English. Format strings keep their specifiers.
+-- These are the English lines; a translation (Locales/<locale>.lua, after this file in the TOC) replaces the ones it
+-- has, so a line nobody has translated yet stays in English. Format strings keep their specifiers.
 ---@type AGFStrings
 ns.L = {
 	-- The addon's name wherever the game shows it: the window, the map tab, its settings page and chat. Only WoW: Forever
