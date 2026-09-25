@@ -6,7 +6,8 @@
 -- map it resolved from the previous run) and `mapArt` (each zone's base tiles, as C_Map.GetMapArtLayerTextures gives
 -- them in game). With no input the panel is exactly tests/golden/layout.json, which
 -- screenshots.py checks.
-local harness, json = dofile("tests/harness.lua"), dofile("tests/json.lua")
+-- TEMPORARY: tests/harness.lua once guide batch 4 merges.
+local harness, json = dofile("tests/ui_stubs.lua"), dofile("tests/json.lua")
 local QUERY = "Call of"
 
 local input = { rects = {} }
@@ -225,6 +226,213 @@ h = Load("v1", false, false, STORY, nil, {
 	items = skillup.ITEMS,
 })
 out.window_professions = Window(h, "window_professions", 2)
+
+--[[ Guide batch 4's window scenes. Each sets what the model slice answers (Session.lua, Order.lua, PvP.Data,
+     Providers.lua) on ns itself, so a scene draws the same before and after that slice merges. ]]
+
+-- `state`: pvp, legacy ("ready"|"missing"|"outdated"), completion, entrance (a point, or why there is none), session
+-- (Session.Info()), minutes, custom (the order is the player's).
+local function Answers(each, state)
+	local ns = each.ns
+	ns.PvP.Data = function()
+		return state.pvp or { rank = { state = "unavailable" }, battlegrounds = {}, available = false }
+	end
+	ns.Providers.LegacyState = function()
+		return state.legacy or "missing"
+	end
+	ns.Providers.Completion = function()
+		return state.completion or { state = state.legacy or "missing", zones = {} }
+	end
+	ns.Providers.DungeonEntrance = function()
+		if type(state.entrance) == "table" then
+			return state.entrance
+		end
+		return nil, state.entrance or "missing"
+	end
+	ns.Session.Get = function()
+		return state.minutes or 0
+	end
+	ns.Session.Info = function()
+		return state.session or { minutes = 0, pending = false, empty = false, trimmed = false }
+	end
+	ns.Order.IsCustom = function()
+		return state.custom == true
+	end
+	ns.Order.CanMove = function()
+		return true
+	end
+end
+
+-- The model slice's step kinds, and a town's checklist from its own givers: a giver a line, what it takes and hands
+-- back counted, the first one done.
+local function Kinds(route)
+	local L = h.ns.L
+	for _, step in ipairs(route.steps) do
+		if step.kind == "town" then
+			local handin, pickups, checklist = {}, {}, {}
+			for _, id in ipairs(step.handins or {}) do
+				handin[id] = true
+			end
+			for _, id in ipairs(step.quests) do
+				pickups[#pickups + 1] = not handin[id] and id or nil
+			end
+			for index, giver in ipairs(step.givers or {}) do
+				local take, give = 0, 0
+				for _, id in ipairs(step.quests) do
+					if step.spots and step.spots[id] and step.spots[id].name == giver then
+						take, give = take + (handin[id] and 0 or 1), give + (handin[id] and 1 or 0)
+					end
+				end
+				checklist[index] = {
+					key = giver,
+					name = giver,
+					text = L.TOWN_GIVER:format(giver, L.TOWN_COUNTS:format(take, give)),
+					done = index == 1,
+					skipped = false,
+				}
+			end
+			step.verb, step.pickups, step.checklist = "town", pickups, checklist
+		else
+			step.verb = step.verb or "objective"
+		end
+	end
+end
+
+local ASIDES = {
+	tf = { spells = { SPELL, SPELL, SPELL } },
+	talents = 1,
+}
+
+-- The PvP tab: a rank on its way to the next, the tabard it brings, and the battlegrounds open at 25 (Warsong Gulch's
+-- battlemaster in Orgrimmar, Arathi Basin's with no place the data knows).
+h = Load("v1", false, false, STORY, nil, { player = { level = 25 } })
+Answers(h, {
+	pvp = {
+		available = true,
+		rank = {
+			state = "ranked",
+			level = 2,
+			earned = 1450,
+			threshold = 2500,
+			reward = { level = 3, text = "The Horde Tabard" },
+		},
+		battlegrounds = {
+			{ id = 489, name = "Warsong Gulch", level = 10, npc = 3890, place = { map = 1454, x = 0.79, y = 0.3 } },
+			{ id = 529, name = "Arathi Basin", level = 20 },
+		},
+	},
+})
+out.window_pvp = Window(h, "window_pvp", 3)
+
+-- The Completion tab, Legacy Forever loaded: The Barrens featured with its categories, its next three objectives, and
+-- the next zones as cards.
+local function Zone(map, name, done, total, categories, targets)
+	return {
+		map = map,
+		name = name,
+		summary = {
+			name = name,
+			done = done,
+			total = total,
+			pending = 0,
+			questsStatus = "ready",
+			complete = false,
+			categories = categories,
+		},
+		targets = targets or {},
+	}
+end
+local function Category(key, done, total, scope)
+	return { key = key, scope = scope or "character", done = done, total = total, pending = 0, complete = done == total }
+end
+h = Load("v1", false, false, STORY)
+Answers(h, {
+	legacy = "ready",
+	completion = {
+		state = "ready",
+		zones = {
+			Zone(1413, "The Barrens", 41, 96, {
+				Category("areas", 14, 22),
+				Category("taxis", 2, 2, "account"),
+				Category("dungeons", 0, 1),
+				Category("reputations", 1, 2),
+				Category("quests", 24, 69),
+			}, {
+				{
+					key = "explore:Lushwater Oasis",
+					text = "Explore Lushwater Oasis",
+					kind = "explore",
+					place = { map = 1413, x = 0.47, y = 0.38 },
+				},
+				{
+					key = "instance:43",
+					text = "Wailing Caverns",
+					kind = "instance",
+					place = { map = 1413, x = 0.46, y = 0.36 },
+				},
+				{ key = "kill:Kolkar", text = "Kolkar Centaur", kind = "kill", quantity = 6, required = 10 },
+			}),
+			Zone(1442, "Stonetalon Mountains", 3, 58, { Category("areas", 1, 15), Category("quests", 2, 43) }),
+			Zone(1411, "Durotar", 52, 60, { Category("areas", 12, 12), Category("quests", 40, 48) }),
+		},
+	},
+})
+out.window_completion = Window(h, "window_completion", 4)
+
+-- Neither Tweaks Forever nor Legacy Forever loaded: Ragefire Chasm chosen, its Go to entrance greyed with the note,
+-- and the Completion tab's label grey.
+h = Load("v1", false, false, "dungeon:389", nil, { charDB = { journey = "dungeon:389", dungeons = true } })
+Answers(h, { entrance = "missing" })
+out.window_missing = Window(h, "window_missing")
+
+-- Today with more than fits: three chips and "+2 more", the hearth among them.
+h = Load("v1", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, {
+	tf = ASIDES.tf,
+	talents = ASIDES.talents,
+	setup = function(each)
+		for _, aside in ipairs({
+			{
+				key = "hearth",
+				text = each.ns.L.SET_HEARTH:format("Crossroads"),
+				icon = "innkeeper",
+				place = { map = 1413, x = 0.5145, y = 0.2975 },
+			},
+			{
+				key = "firstaid",
+				text = "Learn First Aid in Orgrimmar",
+				icon = "profession",
+				place = { map = 1454, x = 0.34, y = 0.84 },
+			},
+			{
+				key = "fishing",
+				text = "Learn Fishing in Orgrimmar",
+				icon = "profession",
+				place = { map = 1454, x = 0.69, y = 0.3 },
+			},
+		}) do
+			each.ns.Asides.Register(function()
+				return aside
+			end)
+		end
+	end,
+})
+Answers(h, {})
+out.window_today = Window(h, "window_today")
+
+-- A 30-minute session: the steps that fit, and about how long they take.
+h = Load("v1", false, false, STORY, nil, ASIDES)
+Answers(h, { minutes = 30, session = { minutes = 30, seconds = 1490, pending = false, empty = false, trimmed = true } })
+out.window_session = Window(h, "window_session")
+
+-- A 15-minute session nothing whole fits in.
+h = Load("v1", false, false, STORY, nil, ASIDES)
+Answers(h, { minutes = 15, session = { minutes = 15, pending = false, empty = true, trimmed = true } })
+out.window_empty = Window(h, "window_empty")
+
+-- The player's own order: the Your order tag, the way back, the kinds' badges and the Crossroads' checklist.
+h = Load("v1", false, false, STORY, nil, { tf = ASIDES.tf, talents = ASIDES.talents, decorate = Kinds })
+Answers(h, { custom = true })
+out.window_order = Window(h, "window_order")
 
 out.errors = {}
 for _, each in ipairs(loaded) do

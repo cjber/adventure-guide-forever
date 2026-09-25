@@ -6,6 +6,7 @@ manual-changelog:
 
 ignore:
   - AGENTS.md
+  - INTERFACES.md
   - .release-notes.md
   - tools
   - types

@@ -5,14 +5,22 @@ local Window, Overview = ns.Window, ns.Overview
 
 -- The window's Journeys tab (docs/design.md §2.19): the panel's overview at the window's size. The card the route
 -- follows is featured over its zone's map with its next steps beside it, and the others run four across under the
--- divider. The cards, steps and Show on Map choose and guide exactly as the panel's do.
+-- divider. The cards, steps and Show on Map choose and guide exactly as the panel's do. Over the steps, how long the
+-- player has (Session.lua); under them, how long it should take and, while the order is the player's own, the way back
+-- to the suggested one (§2.20). A dungeon card has Go to entrance, from Tweaks Forever.
 
 local FEATURED_WIDTH, FEATURED_HEIGHT, FEATURED_SPAN, FEATURED_RING = 440, 178, 640, 44
-local STEP_ROWS, STEP_GAP, STEP_HEAD = 3, 5, 18
+local STEP_ROWS, ROW_HEIGHT, STEP_GAP, STEP_HEAD, STEP_FOOT = 3, 44, 4, 18, 14
 local COLUMNS, GRID_GAP, GRID_SPAN, GRID_RING, GRID_PAD = 4, 10, 320, 30, 14
 local DIVIDER_GAP = 8
-local BUTTON_WIDTH, BUTTON_HEIGHT = 104, 22
+local BUTTON_WIDTH, BUTTON_HEIGHT, ENTRANCE_WIDTH = 104, 22, 112
 local BAR_LABEL_GAP = 8
+-- The session picker (a stock WowStyle1 dropdown, 25 high as MenuTemplates.xml makes it) at the steps' top right,
+-- raised level with the heading so it clears row 1: No limit, then minutes.
+local SESSION_WIDTH, SESSION_HEIGHT, SESSION_RAISE = 96, 25, 8
+local SESSIONS = { 0, 15, 30, 60 }
+-- A town's checklist lines sit under its row, in from the ring.
+local CHECK_LEFT = 40
 
 ---@class AGFWindowJourneyCard : AGFWindowCard, AGFCardButton
 ---@field Icon AGFRingIcon
@@ -23,8 +31,10 @@ local BAR_LABEL_GAP = 8
 ---@field Foot FontString
 ---@field Bar AGFProgressBar
 ---@field ShowButton? Button
+---@field EntranceButton Button
+---@field Note? FontString why Go to entrance is greyed, on the featured card
 
----@class AGFWindowStepRow : AGFWindowRow
+---@class AGFWindowStepRow : AGFWindowRow, AGFDraggableRow
 ---@field step? AGFStep
 ---@field index? integer
 
@@ -32,6 +42,8 @@ local BAR_LABEL_GAP = 8
 local featured
 ---@type AGFWindowStepRow[]
 local rows = {}
+---@type AGFCheckLine[]
+local checks = {}
 ---@type AGFWindowJourneyCard[]
 local grid = {}
 ---@type FontString
@@ -40,6 +52,14 @@ local heading
 local divider
 ---@type FontString
 local emptyText
+---@type AGFDropdown
+local session
+---@type FontString
+local sessionText
+---@type FontString
+local sessionEmpty
+---@type Button
+local resetButton
 
 local LEFT, TOP = Window.LEFT, Window.TOP
 local WIDTH = Window.INSET_WIDTH - LEFT - Window.RIGHT
@@ -48,7 +68,7 @@ local GRID_WIDTH = (WIDTH - (COLUMNS - 1) * GRID_GAP) / COLUMNS
 local GRID_HEIGHT = Window.INSET_HEIGHT - 12 - GRID_TOP
 local STEPS_LEFT = LEFT + FEATURED_WIDTH + 12
 local STEPS_WIDTH = WIDTH - FEATURED_WIDTH - 12
-local ROW_HEIGHT = (FEATURED_HEIGHT - STEP_HEAD - (STEP_ROWS - 1) * STEP_GAP) / STEP_ROWS
+local STEPS_BOTTOM = TOP + FEATURED_HEIGHT - STEP_FOOT - 2
 
 -- Show on Map: the featured card's first step on the world map, choosing the card first as its click would, or
 -- resuming its paused route.
@@ -69,6 +89,23 @@ local function ShowOnMap(card)
 	end
 end
 
+-- Go to entrance: Tweaks Forever's point for the card's instance, as a waypoint; the card is not chosen by it.
+---@param card AGFWindowJourneyCard
+---@param parent Frame
+---@return Button
+local function CreateEntranceButton(card, parent)
+	local button = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate") --[[@as Button]]
+	button:SetSize(ENTRANCE_WIDTH, BUTTON_HEIGHT)
+	button:SetText(L.GO_TO_ENTRANCE)
+	button:SetScript("OnClick", function()
+		local instance = card.journey and Overview.Entrance(card.journey)
+		if instance then
+			ns.Providers.GoToEntrance(instance)
+		end
+	end)
+	return button
+end
+
 ---@param parent Frame
 ---@param isFeatured boolean
 ---@return AGFWindowJourneyCard
@@ -85,6 +122,7 @@ local function CreateCard(parent, isFeatured)
 	card.Foot = content:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
 	card.Foot:SetJustifyH(isFeatured and "RIGHT" or "LEFT")
 	card.Foot:SetWordWrap(false)
+	card.EntranceButton = CreateEntranceButton(card, content)
 	if isFeatured then
 		local left = 18 + ring + 14
 		card.Icon:SetPoint("TOPLEFT", 18, -18)
@@ -113,6 +151,14 @@ local function CreateCard(parent, isFeatured)
 		end)
 		card.ShowButton = button
 		card.Foot:SetPoint("RIGHT", button, "LEFT", -BAR_LABEL_GAP, 0)
+		card.EntranceButton:SetPoint("RIGHT", button, "LEFT", -6, 0)
+		-- Two short lines at most, left of the greyed button.
+		card.Note = content:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+		card.Note:SetPoint("RIGHT", card.EntranceButton, "LEFT", -BAR_LABEL_GAP, 0)
+		card.Note:SetWidth(FEATURED_WIDTH - 36 - BUTTON_WIDTH - ENTRANCE_WIDTH - 6 - BAR_LABEL_GAP)
+		card.Note:SetJustifyH("RIGHT")
+		card.Note:SetWordWrap(true)
+		card.Note:SetMaxLines(2)
 	else
 		card.Icon:SetPoint("TOPLEFT", GRID_PAD, -GRID_PAD)
 		-- Wrapped, never cut: up to three lines beside the ring, centred on it.
@@ -128,6 +174,7 @@ local function CreateCard(parent, isFeatured)
 			text:SetJustifyH("LEFT")
 			text:SetWordWrap(true)
 		end
+		card.EntranceButton:SetPoint("BOTTOMRIGHT", -GRID_PAD + 4, GRID_PAD - 6)
 	end
 	card:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	card:SetScript("OnClick", Overview.CardClick)
@@ -136,10 +183,12 @@ local function CreateCard(parent, isFeatured)
 	return card
 end
 
--- The card's zone map round its next town, its kind in the ring, its title.
+-- The card's zone map round its next town, its kind in the ring, its title, and a dungeon's Go to entrance: greyed
+-- while Tweaks Forever can't say where the entrance is. Returns why, for the featured card to say.
 ---@param card AGFWindowJourneyCard
 ---@param journey AGFJourney
 ---@param span number
+---@return string? note
 local function RefreshCard(card, journey, span)
 	card.journey, card.state = journey, "shown"
 	local step = Overview.IconStep(journey)
@@ -155,15 +204,25 @@ local function RefreshCard(card, journey, span)
 	)
 	Window.SetRingIcon(card.Icon, Overview.KIND_ICONS[journey.kind])
 	card.Title:SetText(journey.title)
+	local instance, point, note = Overview.Entrance(journey)
+	card.EntranceButton:SetShown(instance ~= nil)
+	card.EntranceButton:SetEnabled(point ~= nil and not ns.Setting("wanderer"))
 	Overview.RefreshCardTooltip(card)
+	return note
 end
 
 ---@param journey AGFJourney
-local function RefreshFeatured(journey)
-	RefreshCard(featured, journey, FEATURED_SPAN)
+---@param custom boolean the player's own order
+local function RefreshFeatured(journey, custom)
+	local note = RefreshCard(featured, journey, FEATURED_SPAN)
+	local tag = featured.Tag --[[@as FontString]]
+	tag:SetText(custom and L.ORDER_CUSTOM or L.SUGGESTED)
 	featured.Reason:SetText(Overview.DropLine(journey) or journey.reason or Overview.HubLine(journey) or "")
 	local counts = featured.Counts --[[@as FontString]]
 	counts:SetText(Overview.Counts(journey))
+	local notes = featured.Note --[[@as FontString]]
+	notes:SetShown(note ~= nil)
+	notes:SetText(note or "")
 	local value, label = Overview.Progress(journey)
 	featured.Foot:SetShown(value ~= nil)
 	if value then
@@ -211,12 +270,27 @@ local function CreateStepRow(parent)
 		if not step then
 			return
 		elseif mouseButton == "RightButton" then
-			ns.Menu.Open(self, "MENU_ADVENTURE_GUIDE_FOREVER_STEP", step)
+			Overview.StepMenu(self, step, self.index)
 		elseif not ns.ShowQuest(step) then
 			Overview.ShowOnMap(step)
 		end
 	end)
+	Overview.Draggable(row, rows, Window.Refresh)
 	return row
+end
+
+-- The session picker's menu: a radio a length, the player's choice ticked (Session.lua keeps it per character).
+---@param root SharedMenuDescriptionProxy
+local function SessionMenu(_, root)
+	root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_SESSION")
+	root:CreateTitle(L.SESSION_LABEL)
+	for _, minutes in ipairs(SESSIONS) do
+		root:CreateRadio(minutes == 0 and L.SESSION_UNLIMITED or L.SESSION_MINUTES:format(minutes), function()
+			return ns.Session.Get() == minutes
+		end, function()
+			ns.Session.Set(minutes)
+		end, minutes)
+	end
 end
 
 ---@param content Frame
@@ -225,11 +299,36 @@ local function Build(content)
 	featured:SetPoint("TOPLEFT", LEFT, -TOP)
 	heading = Window.Heading(content, L.NEXT_STEPS)
 	heading:SetPoint("TOPLEFT", STEPS_LEFT + 2, -TOP)
+	session = CreateFrame("DropdownButton", nil, content, "WowStyle1DropdownTemplate") --[[@as AGFDropdown]]
+	session:SetSize(SESSION_WIDTH, SESSION_HEIGHT)
+	session:SetPoint("TOPRIGHT", content, "TOPLEFT", STEPS_LEFT + STEPS_WIDTH, -(TOP - SESSION_RAISE))
+	session:SetupMenu(SessionMenu)
+	session:HookScript("OnEnter", function(self)
+		ns.Overview.ShowTooltip(self, { L.SESSION_LABEL })
+	end)
+	session:HookScript("OnLeave", GameTooltip_Hide)
 	for index = 1, STEP_ROWS do
-		local row = CreateStepRow(content)
-		row:SetPoint("TOPLEFT", STEPS_LEFT, -(TOP + STEP_HEAD + (index - 1) * (ROW_HEIGHT + STEP_GAP)))
-		rows[index] = row
+		rows[index] = CreateStepRow(content)
 	end
+	sessionEmpty = content:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+	sessionEmpty:SetPoint("TOPLEFT", STEPS_LEFT + 4, -(TOP + STEP_HEAD + 8))
+	sessionEmpty:SetWidth(STEPS_WIDTH - 8)
+	sessionEmpty:SetJustifyH("LEFT")
+	sessionEmpty:SetText(L.SESSION_EMPTY)
+	sessionText = content:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+	sessionText:SetPoint("TOPLEFT", STEPS_LEFT + 2, -(STEPS_BOTTOM + 4))
+	sessionText:SetJustifyH("LEFT")
+	-- Back to suggested order: a small gold text button, as the panel's Skipped (n).
+	resetButton = CreateFrame("Button", nil, content) --[[@as Button]]
+	resetButton:SetHeight(STEP_FOOT)
+	resetButton:SetNormalFontObject("GameFontNormalSmall")
+	resetButton:SetHighlightFontObject("GameFontHighlightSmall")
+	resetButton:SetText(L.ORDER_RESET)
+	resetButton:SetWidth(resetButton:GetTextWidth() + 4)
+	resetButton:SetPoint("TOPRIGHT", content, "TOPLEFT", STEPS_LEFT + STEPS_WIDTH, -(STEPS_BOTTOM + 2))
+	resetButton:SetScript("OnClick", function()
+		ns.Order.Reset()
+	end)
 	divider = content:CreateTexture(nil, "ARTWORK")
 	divider:SetAtlas("UI-Journeys-Renown-divider")
 	divider:SetSize(WIDTH, 10)
@@ -245,27 +344,72 @@ local function Build(content)
 	emptyText:SetJustifyH("LEFT")
 end
 
-local function Refresh()
+-- The steps beside the featured card, each town's checklist under its row, as many as fit above the footer.
+---@param content Frame
+---@param steps AGFStep[]
+local function RefreshSteps(content, steps)
+	local top, check = TOP + STEP_HEAD, 1
+	for index, row in ipairs(rows) do
+		local step = steps[index]
+		local fits = step ~= nil and top + ROW_HEIGHT <= STEPS_BOTTOM
+		row:SetShown(fits)
+		row.step, row.index = fits and step or nil, fits and index or nil
+		if fits then
+			---@cast step -?
+			row:SetPoint("TOPLEFT", STEPS_LEFT, -top)
+			Window.SetStepRow(row, index, step.title, step.detail, step)
+			row:SetAlpha(step.optional and 0.6 or 1)
+			top = top + ROW_HEIGHT
+			if step.checklist then
+				top, check = Overview.LayoutChecklist(
+					checks,
+					check,
+					content,
+					step,
+					STEPS_LEFT + CHECK_LEFT,
+					top + 2,
+					STEPS_WIDTH - CHECK_LEFT - 8,
+					STEPS_BOTTOM
+				)
+			end
+			top = top + STEP_GAP
+		end
+	end
+	Overview.HideChecklist(checks, check)
+end
+
+---@param content Frame
+local function Refresh(content)
 	local route = ns.Route()
 	local first, others = Overview.Split(route)
 	local ready = ns.State.Ready()
+	-- The featured card is the chosen journey's: the one its session and order belong to.
+	local chosen = first ~= nil and route.chosen and first.key == route.journey
+	local info = ns.Session.Info()
+	local empty = chosen and info.empty
+	local custom = chosen and ns.Order.IsCustom()
 	emptyText:SetShown(first == nil)
 	emptyText:SetText(ready and L.NO_JOURNEY or L.LOADING)
 	featured:SetShown(first ~= nil)
-	heading:SetShown(first ~= nil and #route.steps > 0)
+	heading:SetShown(first ~= nil)
+	session:SetShown(first ~= nil)
+	session:GenerateMenu()
 	divider:SetShown(first ~= nil and #others > 0)
 	if first then
-		RefreshFeatured(first)
+		RefreshFeatured(first, custom)
 	end
-	for index, row in ipairs(rows) do
-		local step = first and route.steps[index] or nil
-		row:SetShown(step ~= nil)
-		if step then
-			row.step, row.index = step, index
-			Window.SetStepRow(row, index, step.title, step.detail)
-			row:SetAlpha(step.optional and 0.6 or 1)
-		end
+	sessionEmpty:SetShown(empty)
+	RefreshSteps(content, (first and not empty) and route.steps or {})
+	-- How long the steps should take, a heuristic: "About 25 min".
+	local line
+	if chosen and info.pending then
+		line = L.SESSION_PENDING
+	elseif chosen and info.seconds then
+		line = L.SESSION_ABOUT:format(math.ceil(info.seconds / 60))
 	end
+	sessionText:SetShown(line ~= nil)
+	sessionText:SetText(line or "")
+	resetButton:SetShown(custom)
 	for index, card in ipairs(grid) do
 		local journey = others[index]
 		card:SetShown(journey ~= nil)
