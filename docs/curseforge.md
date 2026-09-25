@@ -6,6 +6,10 @@ Shortest Path Forever handles travel when installed. If you follow Questie or an
 
 Choose a journey without leaving the world map's quest log.
 
+![Shortest Path Forever's route to the first stop](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/map.png)
+
+Pick one and Shortest Path Forever walks you to each stop in turn.
+
 ![The Adventure Guide window](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window.png)
 
 The same journeys have their own window, with the next three steps beside the suggested one.

@@ -780,6 +780,15 @@ PLAYER_ARROW = 27  # the player pin's arrow, as wowmock's NOTES measure it again
 GREEN = (0.1, 1.0, 0.1)  # GREEN_FONT_COLOR, what GameTooltip_AddInstructionLine uses
 
 
+def explored_art(ui, map_id):
+    """A uiMap's base art with every WorldMapOverlay drawn, as a character who has explored the whole zone sees it;
+    the base art alone is the unexplored parchment."""
+    art = wm.map_art(ui, map_id)
+    for overlay in wm.map_overlays(ui, map_id):
+        wm.draw_overlay(ui, art, overlay.offset_x, overlay.offset_y, overlay.width, overlay.height, overlay.tiles)
+    return art
+
+
 def map_frame(ui, map_image, quest_log, on_map=None):
     """WorldMapFrame minimized as wowmock.world_map_frame draws it, with the quest log shown or not. Shown, the frame
     is QUEST_LOG_WIDTH wider (QuestLogOwnerMixin:SetDisplayState), the canvas container keeps its width (the title
@@ -888,7 +897,7 @@ PLAYER = {"x": 0.52, "y": 0.30}  # tests/harness.lua's player position in The Ba
 def quest_log(ui, data, rects, scene, pins=()):
     """The world map with the quest log open on the guide's tab: `scene`'s panel dump in the quest pane, the tabs,
     and the map's pins."""
-    art = wm.map_art(ui, data["panel"]["map"])
+    art = explored_art(ui, data["panel"]["map"])
 
     def on_map(canvas, frame_rects):
         draw_pins(canvas, frame_rects, pins)
@@ -1127,7 +1136,7 @@ def shortest_path(ui, data):
         goal_pins(canvas, stops, marks)
         draw_player(canvas, rects, player)
 
-    canvas, _ = map_frame(ui, wm.map_art(ui, map_id), False, on_map)
+    canvas, _ = map_frame(ui, explored_art(ui, map_id), False, on_map)
     return canvas, len(walk)
 
 
@@ -1189,7 +1198,7 @@ def render(out):
     qx, qy, qw, qh = frame["quests"]
     images["search"] = wm.scene(ui, [(crop(canvas, qx - 3, qy - 30, qw + 3 + 64, qh + 30 + 22), 0, 0)])
 
-    art = wm.map_art(ui, data["panel"]["map"])
+    art = explored_art(ui, data["panel"]["map"])
     canvas, _ = shortest_path(ui, data)
     images["map"] = wm.scene(ui, [(canvas, 0, 0)])
 
