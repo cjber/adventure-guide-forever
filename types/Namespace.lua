@@ -621,6 +621,8 @@
 ---@field Unlisted fun(data: AGFData, map?: integer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>): boolean the log holds a quest the data lacks, or Forever added quests on `map` the data lacks and the player hasn't finished
 
 ---@class AGFStrings
+---@field MORE_IN_GUIDE string
+---@field MORE_IN_GUIDE_KEY string
 ---@field UNLISTED string the panel's honest-coverage line
 
 -- Stream 1a "Tone" (roadmap #3, #17).

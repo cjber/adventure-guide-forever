@@ -223,6 +223,8 @@ ns.L = {
 	SETTING_DUNGEONS_DEFAULT = "Include dungeons by default",
 	-- Honest coverage (docs/design.md §2.1): the "!" over a giver marks the quests the guide can't list; Forever
 	-- draws no givers on the map (§9 probe `questoffer`).
+	MORE_IN_GUIDE = "More in the Adventure Guide",
+	MORE_IN_GUIDE_KEY = "More in the Adventure Guide (%s)",
 	UNLISTED = 'This land has stories the guide doesn\'t know yet; look for the "!" over quest givers.',
 	-- Stream 2b "Trainers" (roadmap #5): the trainer aside names the nearest trainer's town when the data places one,
 	-- and a chosen journey's route may stop there.

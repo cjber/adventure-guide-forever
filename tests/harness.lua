@@ -239,6 +239,19 @@ function harness.load(options)
 	function Methods:GetParent()
 		return self.parent
 	end
+	function Methods:SetParent(parent)
+		local previous = self.parent
+		if previous then
+			for index, child in ipairs(previous.childFrames) do
+				if child == self then
+					table.remove(previous.childFrames, index)
+					break
+				end
+			end
+		end
+		self.parent = parent
+		parent.childFrames[#parent.childFrames + 1] = self
+	end
 	function Methods:GetParentKey()
 		return self.parentKey
 	end
@@ -898,6 +911,10 @@ function harness.load(options)
 	G.CreateFrame = function(objectType, name, parent, template)
 		h.counts.CreateFrame = h.counts.CreateFrame + 1
 		local frame = NewRegion(objectType, name, parent)
+		-- The map sidebar starts laid out; screenshots feed its measured rect back on later passes.
+		if name == "AdventureGuideForeverPanel" then
+			frame.rect = { 0, 0, 306, 535 }
+		end
 		if template then
 			Instantiate(frame, template)
 		end
@@ -1083,6 +1100,9 @@ function harness.load(options)
 	G.UISpecialFrames = {}
 	-- Key bindings: h.bindings maps a key to its action ("" when free); h.savedBindings counts SaveBindings calls.
 	h.bindings, h.savedBindings = options.bindings or {}, {}
+	G.GetBindingText = function(key)
+		return (key:gsub("SHIFT%-", "Shift-"):gsub("CTRL%-", "Ctrl-"):gsub("ALT%-", "Alt-"))
+	end
 	G.GetBindingAction = function(key)
 		return h.bindings[key] or ""
 	end

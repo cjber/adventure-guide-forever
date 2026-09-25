@@ -1182,12 +1182,20 @@ def render(out):
     ui = wm.Ui(scale=SCALE)
     _, frame = map_frame(ui, wm.Image.new("RGBA", (1002, 668)), True)
     known = known_frames(frame) | {WINDOW: (WINDOW_MARGIN, WINDOW_MARGIN, *WINDOW_SIZE)}
-    data, rects = layout_pass(ui, ("panel", "journeys", "search", *WINDOWS), known)
+    data, rects = layout_pass(
+        ui, ("panel", "journeys", "journeys_four", "journeys_overflow", "search", *WINDOWS), known
+    )
     images = {}
 
-    # The lead image: no card chosen yet, the overview of every card whole over its first steps.
+    # The lead image: no card chosen yet, compact rows with no scrollbar.
     canvas, _ = quest_log(ui, data, rects, "journeys", data["journeys"]["pins"])
     images["panel"] = wm.scene(ui, [(canvas, 0, 0)])
+
+    # The panel on its own: four journeys, and an overflow link in a shorter sidebar.
+    for name, scene in (("panel_four", "journeys_four"), ("panel_overflow", "journeys_overflow")):
+        canvas, _ = quest_log(ui, data, rects, scene)
+        x, y, width, height = rects[scene]["AdventureGuideForeverPanel"]
+        images[name] = wm.scene(ui, [(crop(canvas, x - 6, y - 6, width + 12, height + 12), 0, 0)])
 
     # The Barrens story chosen: lit over its numbered steps, their rings on the map, the others folded above it.
     canvas, _ = quest_log(ui, data, rects, "panel", data["panel"]["pins"])

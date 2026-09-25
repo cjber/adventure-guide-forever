@@ -55,10 +55,16 @@ end
 
 -- The guide's panel after the layout pass: rects in, OnSizeChanged run, then the refresh the client's next frame
 -- would do with the laid-out sizes.
-local function Panel(h, scene)
+local function Panel(h, scene, height)
 	h.ns.OpenPanel()
 	h.flush()
 	local panel = h.G.AdventureGuideForeverPanel
+	if height then
+		panel:ClearAllPoints()
+		panel:SetPoint("TOPLEFT", h.G.QuestMapFrame.ContentsAnchor)
+		panel:SetPoint("TOPRIGHT", h.G.QuestMapFrame.ContentsAnchor, -22, 0)
+		panel:SetHeight(height)
+	end
 	h.SetRects(panel, input.rects[scene] or {})
 	h.ns.OpenPanel()
 	h.flush()
@@ -107,8 +113,8 @@ h.providers[1]:RefreshAllData()
 out.panel.pins = Pins(h)
 out.panel.map = h.map:GetMapID()
 
--- The lead image, a character with no card chosen: the overview (docs/design.md §2.2), the story featured over its
--- first steps and the others two across, both asides above them, and the first card's rings, which the guide previews
+-- The lead image, a character with no card chosen: compact journey rows (docs/design.md §2.2),
+-- both asides above them, and the first card's rings, which the guide previews
 -- on its own (§2.6). Two finished quests: Counterattack!, handed in at Regthar Deathgate's camp, so the story card
 -- counts two ready, and Hidden Enemies, handed in at Orgrimmar, so Loose ends has one. Tweaks Forever has three spells
 -- to train and a talent point waits, so both asides show.
@@ -131,6 +137,14 @@ end
 out.journeys = Panel(h, "journeys")
 h.providers[1]:RefreshAllData()
 out.journeys.pins = Pins(h)
+
+-- Four choices with dungeons enabled, then the same overview in a shorter map sidebar.
+h.ns.Prefs().dungeons = true
+h.ns.NotInterested("zone:1421", h.ns.State.MapName(1421))
+h.ns.Invalidate()
+h.flush()
+out.journeys_four = Panel(h, "journeys_four")
+out.journeys_overflow = Panel(h, "journeys_overflow", 330)
 
 -- The search: the Call of quests a level-18 orc shaman sees, the locked ones saying why.
 h = Load(false, false, false, STORY)

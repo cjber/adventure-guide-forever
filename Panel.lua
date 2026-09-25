@@ -29,7 +29,8 @@ local CARD_RING, CARD_ICON = 46, 18
 local CARD_TEXT, CARD_INSET = 212, 8
 -- The honest-coverage line under the cards: two lines of GameFontDisableSmall.
 local UNLISTED_HEIGHT = 26
--- The scroll child above the cards: the header 4px down and 34px tall, then 6px to the first card.
+local EMPTY_HEIGHT = 40
+-- The content above the cards: the header 4px down and 34px tall, then 6px to the first card.
 local LIST_TOP = 4 + 34 + 6
 -- Something new (docs/design.md §2.13): the Adventure Guide's own "new" mark (CSV:2024) on a card the character
 -- hasn't been offered before, over its ring's top-right, or beside a one-line row's "+"; its micro button's alert
@@ -48,25 +49,17 @@ local SEARCH_MIN, SEARCH_ROWS, WHY_LINES, RESULT_HEIGHT, WHY_HEIGHT = 3, 10, 6, 
 -- The quest log's own geometry: a 29px search bar above the list, a 40px footer below it for the Go button.
 local TOP_BAR = 29
 local SKIPPED_HEIGHT = 16
--- A step's kind badge (Overview.CreateBadge): on a row's 26 ring, and on a preview's 18.
-local BADGE, BADGE_OUT, PREVIEW_BADGE = 14, 3, 10
+-- A step's kind badge (Overview.CreateBadge) on its 26 ring.
+local BADGE, BADGE_OUT = 14, 3
 local ORDER_HEIGHT, SESSION_EMPTY_HEIGHT, CHECK_LEFT = 16, 30, 46
 local ASIDE_HEIGHT, ASIDE_GAP = 14, 2
 local FOOTER = 40
--- The overview (docs/design.md §2.2), with no card chosen: the first card featured over its first steps, then the
--- others two across. Every card there is the Journeys renown card, its art drawn ART_BLEED outside the button, since
--- the atlas keeps an empty margin about that wide, and sliced so its rim keeps its width at any size.
-local OVERVIEW_WIDTH, ART_BLEED, ART_SLICE = 288, 6, 12
-local FEATURED_HEIGHT, FEATURED_ICON, FEATURED_BADGE, FEATURED_SPAN = 82, 40, 16, 420
-local PREVIEW_ROWS, PREVIEW_HEIGHT, PREVIEW_TEXT = 3, 22, 27
-local DIVIDER_HEIGHT = 10
-local GRID_GAP, GRID_HEIGHT, GRID_ICON, GRID_BADGE, GRID_SPAN = 5, 92, 30, 13, 240
-local GRID_WIDTH = (OVERVIEW_WIDTH - GRID_GAP) / 2
--- A grid card's text sits GRID_INSET in from its rim: the title beside the icon, the reason under both, the footer
--- on the bottom inset.
-local GRID_INSET, GRID_TOP, GRID_TITLE_X, GRID_FOOT = 14, 12, 14 + 30 + 9, 92 - 12 - 10
--- GameFontNormal's line height.
-local TITLE_LINE = 13
+-- The map overview uses compact full-width rows. The renown atlas has a 6px empty margin;
+-- slicing its rim keeps the same card art at this shorter height.
+local ART_BLEED, ART_SLICE = 6, 12
+local OVERVIEW_WIDTH = 288 -- The chosen journey's checklist width.
+local OVERVIEW_HEIGHT, OVERVIEW_GAP, OVERVIEW_ICON, OVERVIEW_BADGE, OVERVIEW_SPAN = 64, 4, 30, 13, 240
+local OVERVIEW_INSET, OVERVIEW_TEXT = 12, 54
 
 ---@type Frame?
 local panel
@@ -93,15 +86,18 @@ local emptyText
 -- One line per aside the player still wants (Asides.All), from the top of the list.
 ---@type AGFAsideLine[]
 local asideLines = {}
--- The overview (docs/design.md §2.2): the featured card, its first steps, the divider and the other cards.
----@type AGFOverviewCard?
-local featured
----@type AGFPreviewRow[]
-local previews = {}
----@type Texture?
-local divider
 ---@type AGFOverviewCard[]
-local gridCards = {}
+local overviewCards = {}
+---@type Button
+local moreButton
+---@type FontString
+local moreText
+---@type Frame
+local viewport
+---@type AGFScrollFrame?
+local scroll
+---@type Frame?
+local scrollContent
 -- The header's title, and the player's zone and level under it in the overview.
 ---@type FontString?
 local headerTitle
@@ -261,52 +257,7 @@ local function CreateRow(parent)
 	return row
 end
 
--- One of the first card's steps under it in the overview: the chosen view's row made small, the Classic pet list's
--- art at 22 tall with the ring, number and title on one line and the detail after it, and the same tooltip, click
--- and menu. No skip: the step menu has it.
----@class AGFPreviewRow : Button
----@field Ring Texture
----@field Number Texture
----@field Title FontString
----@field Detail FontString
----@field Kind Texture
----@field step? AGFStep
----@field index? integer
-
----@param parent Frame
----@return AGFPreviewRow
-local function CreatePreview(parent)
-	local row = CreateFrame("Button", nil, parent) --[[@as AGFPreviewRow]]
-	row:SetSize(OVERVIEW_WIDTH, PREVIEW_HEIGHT)
-	local background = row:CreateTexture(nil, "BACKGROUND")
-	background:SetAtlas("PetList-ButtonBackground")
-	background:SetAllPoints()
-	row:SetHighlightAtlas("PetList-ButtonHighlight")
-	row.Ring = row:CreateTexture(nil, "ARTWORK")
-	row.Ring:SetAtlas("adventureguide-ring")
-	row.Ring:SetSize(18, 18)
-	row.Ring:SetPoint("TOPLEFT", 4, -2)
-	row.Number = row:CreateTexture(nil, "OVERLAY")
-	row.Number:SetSize(15, 17.5)
-	row.Number:SetPoint("CENTER", row.Ring)
-	row.Title = row:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-	row.Title:SetPoint("TOPLEFT", PREVIEW_TEXT, -5)
-	row.Title:SetJustifyH("LEFT")
-	row.Title:SetWordWrap(false)
-	row.Detail = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-	row.Detail:SetPoint("BOTTOMLEFT", row.Title, "BOTTOMRIGHT", 5, 0)
-	row.Detail:SetJustifyH("LEFT")
-	row.Detail:SetWordWrap(false)
-	row:SetScript("OnEnter", RowEnter)
-	row:SetScript("OnLeave", GameTooltip_Hide)
-	row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-	row:SetScript("OnClick", RowClick)
-	row.Kind = Overview.CreateBadge(row, row.Ring, PREVIEW_BADGE, 2)
-	return row
-end
-
--- Back to every suggestion: clears the choice, so the guide draws the first card again with the others as rows above
--- it (docs/design.md §2.2), and stops the route AGF started for it, as any cleared choice does (ns.Choose).
+-- Back to every suggestion: clears the choice and stops the route AGF started for it (ns.Choose).
 local function Back()
 	if ns.Route().chosen then
 		GameTooltip_Hide()
@@ -379,6 +330,7 @@ end
 ---@class AGFCardButton : Button
 ---@field journey? AGFJourney
 ---@field state? "shown"|"chosen"|"compact"
+---@field detail? string the map overview row's full detail
 
 -- AdventureGuideForeverJourneyCardTemplate (Panel.xml).
 ---@class AGFJourneyCard : AGFCardButton
@@ -530,25 +482,19 @@ local function CreateAsideLine(parent)
 	return line
 end
 
--- A card in the overview (docs/design.md §2.2): the renown card's art round a zone icon, its title, its reason and,
--- featured, its counts and "Suggested"; in the grid, a footer. The renown bar only where a journey has come some way.
 ---@class AGFOverviewCard : AGFCardButton
 ---@field Icon AGFZoneIcon
 ---@field New Texture
 ---@field Title FontString
 ---@field Reason FontString
----@field Counts? FontString the featured card's
----@field Tag? FontString the featured card's
----@field Foot? FontString a grid card's
+---@field Foot FontString
 ---@field Bar AGFProgressBar
 
 ---@param parent Frame
----@param isFeatured boolean
 ---@return AGFOverviewCard
-local function CreateOverviewCard(parent, isFeatured)
+local function CreateOverviewCard(parent)
 	local card = CreateFrame("Button", nil, parent) --[[@as AGFOverviewCard]]
-	card:SetSize(isFeatured and OVERVIEW_WIDTH or GRID_WIDTH, isFeatured and FEATURED_HEIGHT or GRID_HEIGHT)
-	-- The renown art, and its highlight: the same art added.
+	card:SetHeight(OVERVIEW_HEIGHT)
 	for _, layer in ipairs({ "BACKGROUND", "HIGHLIGHT" }) do
 		local art = card:CreateTexture(nil, layer)
 		art:SetAtlas(CARD_ART)
@@ -560,70 +506,57 @@ local function CreateOverviewCard(parent, isFeatured)
 			art:SetAlpha(0.4)
 		end
 	end
-	local size = isFeatured and FEATURED_ICON or GRID_ICON
-	card.Icon = ns.ZoneIcon.Create(card, size, isFeatured and FEATURED_BADGE or GRID_BADGE)
-	card.Icon:SetPoint("TOPLEFT", isFeatured and 18 or GRID_INSET, isFeatured and -14 or -GRID_TOP)
+	card.Icon = ns.ZoneIcon.Create(card, OVERVIEW_ICON, OVERVIEW_BADGE)
+	card.Icon:SetPoint("TOPLEFT", OVERVIEW_INSET, -14)
 	card.New = card.Icon.Border:CreateTexture(nil, "OVERLAY", nil, 2)
 	card.New:SetAtlas(NEW_MARK)
-	card.New:SetSize(isFeatured and NEW_SIZE or NEW_COMPACT, isFeatured and NEW_SIZE or NEW_COMPACT)
+	card.New:SetSize(NEW_COMPACT, NEW_COMPACT)
 	card.New:SetPoint("CENTER", card.Icon, "TOPRIGHT", -2, -2)
 	card.Bar = CreateBar(card)
-	if isFeatured then
-		local left = 18 + FEATURED_ICON + 16
-		card.Tag = card:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-		card.Tag:SetPoint("TOPRIGHT", -16, -13)
-		card.Tag:SetText(L.SUGGESTED)
-		card.Title = card:CreateFontString(nil, "ARTWORK", "GameFontNormalMed2")
-		card.Title:SetPoint("TOPLEFT", left, -13)
-		card.Title:SetPoint("RIGHT", card.Tag, "LEFT", -6, 0)
-		card.Reason = card:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-		card.Reason:SetPoint("TOPLEFT", left, -31)
-		card.Reason:SetPoint("RIGHT", -16, 0)
-		card.Counts = card:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-		card.Counts:SetPoint("TOPLEFT", left, -47)
-		card.Counts:SetPoint("RIGHT", -14, 0)
-		for _, text in ipairs({ card.Title, card.Reason, card.Counts }) do
-			text:SetJustifyH("LEFT")
-			text:SetWordWrap(false)
-		end
-	else
-		-- Wrapped, never cut: a title of three lines leaves the reason one.
-		card.Title = card:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-		card.Title:SetPoint("TOPLEFT", GRID_TITLE_X, -GRID_TOP)
-		card.Title:SetWidth(GRID_WIDTH - GRID_TITLE_X - GRID_INSET)
-		card.Title:SetMaxLines(3)
-		card.Reason = card:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-		card.Reason:SetWidth(GRID_WIDTH - 2 * GRID_INSET)
-		for _, text in ipairs({ card.Title, card.Reason }) do
-			text:SetJustifyH("LEFT")
-			text:SetWordWrap(true)
-		end
-		card.Foot = card:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-		card.Foot:SetJustifyH("LEFT")
-		card.Foot:SetWordWrap(false)
+	card.Title = card:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+	card.Title:SetPoint("TOPLEFT", OVERVIEW_TEXT, -10)
+	card.Title:SetPoint("RIGHT", -OVERVIEW_INSET, 0)
+	card.Reason = card:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	card.Reason:SetPoint("TOPLEFT", OVERVIEW_TEXT, -27)
+	card.Reason:SetPoint("RIGHT", -OVERVIEW_INSET, 0)
+	card.Foot = card:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+	card.Foot:SetPoint("TOPRIGHT", -OVERVIEW_INSET, -44)
+	card.Foot:SetJustifyH("RIGHT")
+	for _, text in ipairs({ card.Title, card.Reason, card.Foot }) do
+		text:SetWordWrap(false)
+		text:SetMaxLines(1)
 	end
+	card.Title:SetJustifyH("LEFT")
+	card.Reason:SetJustifyH("LEFT")
 	card:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	card:SetScript("OnClick", CardClick)
-	card:SetScript("OnEnter", function(self)
-		CardTooltip(self)
-	end)
+	card:SetScript("OnEnter", CardTooltip)
 	card:SetScript("OnLeave", GameTooltip_Hide)
 	return card
 end
 
--- The overview under the asides: the featured card, its first steps, the divider and the grid.
 ---@param parent Frame
 local function BuildOverview(parent)
-	featured = CreateOverviewCard(parent, true)
-	for index = 1, PREVIEW_ROWS do
-		previews[index] = CreatePreview(parent)
+	for index = 1, ns.Model.MAX_JOURNEYS do
+		overviewCards[index] = CreateOverviewCard(parent)
 	end
-	divider = parent:CreateTexture(nil, "ARTWORK")
-	divider:SetAtlas("UI-Journeys-Renown-divider")
-	divider:SetSize(OVERVIEW_WIDTH, DIVIDER_HEIGHT)
-	for index = 1, ns.Model.MAX_JOURNEYS - 1 do
-		gridCards[index] = CreateOverviewCard(parent, false)
-	end
+	moreButton = CreateFrame("Button", nil, parent) --[[@as Button]]
+	moreButton:SetHeight(OVERVIEW_HEIGHT)
+	moreText = moreButton:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+	local text = moreText
+	text:SetPoint("LEFT", OVERVIEW_INSET, 0)
+	text:SetPoint("RIGHT", -OVERVIEW_INSET, 0)
+	text:SetJustifyH("LEFT")
+	text:SetWordWrap(false)
+	text:SetMaxLines(1)
+	moreButton:SetScript("OnClick", function()
+		ns.OpenWindow()
+		ns.Window.Select(1)
+	end)
+	moreButton:SetScript("OnEnter", function(self)
+		ShowTooltip(self, { moreText:GetText() })
+	end)
+	moreButton:SetScript("OnLeave", GameTooltip_Hide)
 end
 
 -- The cards, and the chosen card's step rows under it; the list lays them out from its top.
@@ -781,34 +714,48 @@ local function BuildTopBar(panelFrame)
 	cog:SetupMenu(BuildSettingsMenu)
 end
 
--- Everything between the top bar and the footer scrolls, with the quest log's own scroll bar and offsets.
----@param panelFrame Frame
----@return Frame
-local function BuildScroll(panelFrame)
-	local body = CreateFrame("Frame", nil, panelFrame)
-	body:SetPoint("TOPLEFT", 0, -TOP_BAR)
-	body:SetPoint("BOTTOMRIGHT")
-	CreateFrame("Frame", nil, body, "QuestLogBorderFrameTemplate")
-
-	local scroll = CreateFrame("ScrollFrame", nil, body, "ScrollFrameTemplate") --[[@as AGFScrollFrame]]
-	scroll:SetPoint("TOPLEFT")
-	scroll:SetPoint("BOTTOMRIGHT", 0, FOOTER)
-	scroll.ScrollBar:ClearAllPoints()
-	scroll.ScrollBar:SetPoint("TOPLEFT", scroll, "TOPRIGHT", 8, 2)
-	scroll.ScrollBar:SetPoint("BOTTOMLEFT", scroll, "BOTTOMRIGHT", 8, -4)
-	local child = CreateFrame("Frame", nil, scroll)
-	child:SetSize(1, 1)
-	scroll:SetScrollChild(child)
-	scroll:SetScript("OnSizeChanged", function(_, width)
-		child:SetWidth(width)
-	end)
-	return child
+-- Only the chosen journey and search retain the quest log's scrolling behavior. The overview's
+-- content is parented directly to the viewport, with no ScrollFrame or scrollbar in its view.
+---@param scrolling boolean
+local function SetScrolling(scrolling)
+	---@cast content -?
+	if scrolling and not scroll then
+		scroll = CreateFrame("ScrollFrame", nil, viewport, "ScrollFrameTemplate") --[[@as AGFScrollFrame]]
+		scroll:SetAllPoints()
+		scroll.ScrollBar:ClearAllPoints()
+		scroll.ScrollBar:SetPoint("TOPLEFT", scroll, "TOPRIGHT", 8, 2)
+		scroll.ScrollBar:SetPoint("BOTTOMLEFT", scroll, "BOTTOMRIGHT", 8, -4)
+		scrollContent = CreateFrame("Frame", nil, scroll)
+		scroll:SetScrollChild(scrollContent)
+		scroll:SetScript("OnSizeChanged", function(_, width)
+			scrollContent:SetWidth(width)
+		end)
+	end
+	local parent = scrolling and scrollContent or viewport
+	if content:GetParent() ~= parent then
+		content:SetParent(parent)
+		content:ClearAllPoints()
+		content:SetPoint("TOPLEFT")
+		content:SetPoint("RIGHT")
+	end
+	if scroll then
+		scroll:SetShown(scrolling)
+	end
 end
 
 ---@param panelFrame Frame
 local function BuildContent(panelFrame)
 	BuildTopBar(panelFrame)
-	content = BuildScroll(panelFrame)
+	local body = CreateFrame("Frame", nil, panelFrame)
+	body:SetPoint("TOPLEFT", 0, -TOP_BAR)
+	body:SetPoint("BOTTOMRIGHT")
+	CreateFrame("Frame", nil, body, "QuestLogBorderFrameTemplate")
+	viewport = CreateFrame("Frame", nil, body)
+	viewport:SetPoint("TOPLEFT")
+	viewport:SetPoint("BOTTOMRIGHT", 0, FOOTER)
+	content = CreateFrame("Frame", nil, viewport)
+	content:SetPoint("TOPLEFT")
+	content:SetPoint("RIGHT")
 	local header = BuildHeader(content)
 	BuildJourneys(content, header)
 	BuildFooter(panelFrame)
@@ -1093,151 +1040,90 @@ local function RefreshIcon(card, journey, span)
 	card.New:SetShown(ns.Moments.IsNew(journey.key))
 end
 
--- The featured card: its title, its reason, then its counts with the map's marks, else its subline.
 ---@param card AGFOverviewCard
 ---@param journey AGFJourney
-local function RefreshFeatured(card, journey)
+---@param width number
+local function RefreshOverviewCard(card, journey, width)
 	card.journey, card.state = journey, "shown"
-	RefreshIcon(card, journey, FEATURED_SPAN)
+	card:SetWidth(width)
+	RefreshIcon(card, journey, OVERVIEW_SPAN)
 	card.Title:SetText(journey.title)
-	card.Reason:SetText(DropLine(journey) or journey.reason or HubLine(journey) or "")
-	local counts = card.Counts --[[@as FontString]]
-	counts:SetText(Overview.Counts(journey))
-	local value = Progress(journey)
-	if value then
-		SetBar(card.Bar, 16, FEATURED_HEIGHT - 19, OVERVIEW_WIDTH - 32, value)
-	else
-		card.Bar:Hide()
-	end
-	Overview.RefreshCardTooltip(card)
-end
-
--- A grid card: its title in up to three lines beside the icon, its reason under both in what room is left, and the
--- footer on the bottom inset, after the bar when the journey has come some way.
----@param card AGFOverviewCard
----@param journey AGFJourney
-local function RefreshGrid(card, journey)
-	card.journey, card.state = journey, "shown"
-	RefreshIcon(card, journey, GRID_SPAN)
-	card.Title:SetText(journey.title)
-	local lines = math.min(math.max(card.Title:GetNumLines(), 1), 3)
 	local value, label = Progress(journey)
 	local foot = label or (journey.level and L.NEXT_ZONE_LEVEL:format(journey.level)) or Stops(journey)
 	local reason = journey.reason ~= foot and journey.reason or nil
-	card.Reason:SetText(DropLine(journey) or reason or HubLine(journey) or journey.subline)
-	card.Reason:SetMaxLines(lines >= 3 and 1 or 2)
-	card.Reason:ClearAllPoints()
-	card.Reason:SetPoint("TOPLEFT", GRID_INSET, -math.max(GRID_TOP + lines * TITLE_LINE + 4, GRID_TOP + GRID_ICON + 3))
-	local footer = card.Foot --[[@as FontString]]
-	footer:SetText(foot)
-	footer:ClearAllPoints()
-	if value then
-		footer:SetPoint("TOPRIGHT", -GRID_INSET, -GRID_FOOT)
-		local width = GRID_WIDTH - 2 * GRID_INSET - footer:GetUnboundedStringWidth() - 6
-		SetBar(card.Bar, GRID_INSET, GRID_FOOT + 2, width, value)
+	card.detail = DropLine(journey) or reason or HubLine(journey) or journey.subline
+	card.Reason:SetText(card.detail)
+	card.Foot:SetText(foot)
+	card.Foot:SetWidth(width - OVERVIEW_TEXT - OVERVIEW_INSET)
+	local room = width - OVERVIEW_TEXT - OVERVIEW_INSET - card.Foot:GetUnboundedStringWidth() - 8
+	if value and room > 0 then
+		SetBar(card.Bar, OVERVIEW_TEXT, 46, math.min(room, 60), value)
 	else
-		footer:SetPoint("TOPLEFT", GRID_INSET, -GRID_FOOT)
 		card.Bar:Hide()
 	end
 	Overview.RefreshCardTooltip(card)
 end
 
--- One step under the featured card: its title, then as much of its detail as fits after it.
----@param row AGFPreviewRow
----@param step AGFStep
----@param index integer
-local function RefreshPreview(row, step, index)
-	row.step, row.index = step, index
-	row.Number:SetAtlas("services-number-" .. index)
-	row.Title:SetText(step.title)
-	local room = OVERVIEW_WIDTH - PREVIEW_TEXT - 6
-	local title = math.min(row.Title:GetUnboundedStringWidth(), room)
-	row.Title:SetWidth(title)
-	row.Detail:SetText(step.detail)
-	local left = room - title - 5
-	row.Detail:SetShown(left >= 30)
-	row.Detail:SetWidth(math.max(math.min(row.Detail:GetUnboundedStringWidth(), left), 0))
-	row:SetAlpha(step.optional and 0.6 or 1)
-	Overview.SetVerbIcon(row.Kind, step)
-end
-
--- With no card chosen (docs/design.md §2.2): the first card featured with its first steps, the divider, then the
--- others two across, from `top` down; `shown` false hides it all. The first card is the one the route follows, so
--- its steps are the route's.
 ---@param route AGFRoute
 ---@param top number
 ---@param shown boolean
----@return number top below the last card
-local function LayoutOverview(route, top, shown)
-	---@cast featured -?
-	---@cast divider -?
+---@param bottom number
+---@return number
+local function LayoutOverview(route, top, shown, bottom)
+	---@cast panel -?
 	---@cast list -?
-	local first, others = nil, {}
-	if shown then
-		first, others = Overview.Split(route)
-	end
-	featured:SetShown(first ~= nil)
-	divider:SetShown(first ~= nil and #others > 0)
-	for index, row in ipairs(previews) do
-		local step = first and route.steps[index] or nil
-		row:SetShown(step ~= nil)
-		if step then
-			RefreshPreview(row, step, index)
-			row:SetPoint("TOP", list, "TOP", 0, -(top + FEATURED_HEIGHT + 3 + (index - 1) * (PREVIEW_HEIGHT + ROW_GAP)))
+	local slots = shown and math.max(0, math.floor((bottom - top + OVERVIEW_GAP) / (OVERVIEW_HEIGHT + OVERVIEW_GAP)))
+		or 0
+	local overflow = shown and #route.journeys > slots
+	local count = math.min(#route.journeys, math.max(0, slots - (overflow and 1 or 0)))
+	local width = math.max(0, panel:GetWidth() - 2 * PAD)
+	for index, card in ipairs(overviewCards) do
+		card:SetShown(index <= count)
+		if index <= count then
+			RefreshOverviewCard(card, route.journeys[index], width)
+			card:SetPoint("TOPLEFT", 0, -top)
+			top = top + OVERVIEW_HEIGHT + OVERVIEW_GAP
 		end
 	end
-	for index, card in ipairs(gridCards) do
-		card:SetShown(first ~= nil and others[index] ~= nil)
+	moreButton:SetShown(overflow and slots > 0)
+	if overflow and slots > 0 then
+		local key = GetBindingKey("ADVENTUREGUIDEFOREVER_WINDOW")
+		local keyText = key and GetBindingText(key, "KEY_")
+		moreText:SetText(keyText and L.MORE_IN_GUIDE_KEY:format(keyText) or L.MORE_IN_GUIDE)
+		moreButton:SetWidth(width)
+		moreButton:SetPoint("TOPLEFT", 0, -top)
+		top = top + OVERVIEW_HEIGHT + OVERVIEW_GAP
 	end
-	if not first then
-		return top
-	end
-	RefreshFeatured(featured, first)
-	featured:SetPoint("TOP", list, "TOP", 0, -top)
-	top = top + FEATURED_HEIGHT + 3 + math.min(#route.steps, PREVIEW_ROWS) * (PREVIEW_HEIGHT + ROW_GAP)
-	if #others == 0 then
-		return top + CARD_GAP
-	end
-	divider:SetPoint("TOP", list, "TOP", 0, -top)
-	top = top + DIVIDER_HEIGHT
-	for index, journey in ipairs(others) do
-		local card = gridCards[index]
-		local column, row = (index - 1) % 2, math.floor((index - 1) / 2)
-		RefreshGrid(card, journey)
-		card:SetPoint(
-			"TOPLEFT",
-			list,
-			"TOP",
-			-OVERVIEW_WIDTH / 2 + column * (GRID_WIDTH + GRID_GAP),
-			-(top + row * (GRID_HEIGHT + GRID_GAP))
-		)
-	end
-	return top + math.ceil(#others / 2) * (GRID_HEIGHT + GRID_GAP) - GRID_GAP + CARD_GAP
+	return top
 end
 
--- The others first as one-line rows in their order, then the shown card (the chosen one, else the first, which the
--- guide draws on its own: docs/design.md §2.2) with its track and rows, so its steps start at the same place whichever
--- card it is and no card sits between them. Or the search's results. The scroll child's height is summed, not
--- measured, so it is right before the client has laid anything out.
+-- The overview fits whole rows in the viewport. A chosen journey keeps the other cards folded
+-- above its steps; its scroll height and the search's are summed before the client lays them out.
 ---@param route AGFRoute
 ---@return boolean searching
 ---@return integer found
+---@return boolean emptyFits
 local function LayoutJourneys(route)
 	---@cast searchBox -?
 	---@cast list -?
 	---@cast content -?
 	---@cast track -?
+	---@cast panel -?
 	local query = strtrim(searchBox:GetText())
 	-- Characters, not bytes: a character is one byte that doesn't continue a UTF-8 sequence.
 	local _, characters = query:gsub("[^\128-\191]", "")
 	-- Not before completion data loads: every chain quest would read as locked.
 	local searching = characters >= SEARCH_MIN and ns.State.Ready()
+	local scrolling = searching or route.chosen
+	SetScrolling(scrolling)
+	local bottom = scrolling and math.huge or math.max(0, panel:GetHeight() - TOP_BAR - FOOTER - LIST_TOP - PAD)
 	local top, found = LayoutResults(searching and query or nil)
 	track:Hide()
 	-- Every aside the player still wants, a line each (docs/design.md §2.11).
 	local asides = not searching and ns.Asides.All() or {}
 	for index = 1, math.max(#asides, #asideLines) do
-		local aside = asides[index]
+		local reserve = not scrolling and (#route.journeys > 0 and OVERVIEW_HEIGHT or EMPTY_HEIGHT) + CARD_GAP or 0
+		local aside = top + ASIDE_HEIGHT + CARD_GAP + reserve <= bottom and asides[index] or nil
 		local line = asideLines[index] or CreateAsideLine(list)
 		asideLines[index] = line
 		line.aside = aside
@@ -1253,12 +1139,13 @@ local function LayoutJourneys(route)
 			top = top + ASIDE_HEIGHT + ASIDE_GAP
 		end
 	end
-	top = top + (#asides > 0 and CARD_GAP - ASIDE_GAP or 0)
+	top = top + (top > 0 and #asides > 0 and CARD_GAP - ASIDE_GAP or 0)
 	-- The empty line goes under the asides, never over them; the search's results, when it has any, hide it.
 	---@cast emptyText -?
 	local emptyTop = #asides > 0 and top or 0
 	emptyText:SetPoint("TOPLEFT", 10, -emptyTop - 8)
-	top = LayoutOverview(route, top, not searching and not route.chosen)
+	emptyText:SetMaxLines(scrolling and 0 or 2)
+	top = LayoutOverview(route, top, not scrolling, bottom)
 	local shownCard, shownJourney, compactRows = nil, nil, 0
 	for index, card in ipairs(cards) do
 		local journey = not searching and route.chosen and route.journeys[index] or nil
@@ -1280,18 +1167,20 @@ local function LayoutJourneys(route)
 		top = LayoutRows(route, top) + CARD_GAP
 	else
 		LayoutRows(route, top, true)
-		top = math.max(top, emptyTop + 40)
+		top = math.min(bottom, math.max(top, emptyTop + EMPTY_HEIGHT))
 	end
 	-- Honest coverage: quests here the data lacks, so the cards can't be every story.
 	---@cast unlistedText -?
 	local state = ns.State
 	local unlisted = not searching and ns.Model.Unlisted(ns.Data, state.Player().map, state.Completed(), state.Log())
+	unlistedText:SetMaxLines(scrolling and 0 or 2)
+	unlisted = unlisted and top + UNLISTED_HEIGHT <= bottom
 	unlistedText:SetShown(unlisted)
 	if unlisted then
 		unlistedText:SetPoint("TOPLEFT", 10, -top)
 		top = top + UNLISTED_HEIGHT + CARD_GAP
 	end
-	local skipped = not searching and #ns.Skipped() or 0
+	local skipped = not searching and top + SKIPPED_HEIGHT <= bottom and #ns.Skipped() or 0
 	---@cast skippedButton -?
 	skippedButton:SetShown(skipped > 0)
 	if skipped > 0 then
@@ -1302,7 +1191,10 @@ local function LayoutJourneys(route)
 	end
 	list:SetHeight(top)
 	content:SetHeight(LIST_TOP + top + PAD)
-	return searching, found
+	if scrolling and scrollContent then
+		scrollContent:SetSize(panel:GetWidth(), LIST_TOP + top + PAD)
+	end
+	return searching, found, emptyTop + EMPTY_HEIGHT <= bottom
 end
 
 function Refresh()
@@ -1316,9 +1208,11 @@ function Refresh()
 	local route = ns.Route()
 
 	local ready = ns.State.Ready()
-	local searching, found = LayoutJourneys(route)
+	local searching, found, emptyFits = LayoutJourneys(route)
 	emptyText:SetText((not ready and L.LOADING) or (searching and L.SEARCH_NONE) or L.NO_JOURNEY)
-	emptyText:SetShown(not ready or (searching and found == 0) or (not searching and #route.journeys == 0))
+	emptyText:SetShown(
+		emptyFits and (not ready or (searching and found == 0) or (not searching and #route.journeys == 0))
+	)
 
 	local queued = ns.StartPending() and InCombatLockdown()
 	queuedText:SetText(queued and L.STARTS_AFTER_COMBAT or L.ROUTE_PAUSED)
@@ -1442,11 +1336,13 @@ local function Attach()
 	panel:HookScript("OnHide", ns.Moments.Closed)
 	ns.OnRouteChange(QueueCards)
 	BuildContent(panel)
+	panel:SetScript("OnSizeChanged", Refresh)
 	-- The footer's Stop follows Shortest Path ending our journey and the player clearing or moving the waypoint through
 	-- Integrations.OnGuidanceChange (below), on the frame after the super-tracking events.
 	panel:RegisterEvent("QUEST_DATA_LOAD_RESULT")
-	panel:SetScript("OnEvent", function(_, _, questID)
-		if requested[questID] then
+	panel:RegisterEvent("UPDATE_BINDINGS")
+	panel:SetScript("OnEvent", function(_, event, questID)
+		if event == "UPDATE_BINDINGS" or requested[questID] then
 			Refresh()
 		end
 	end)

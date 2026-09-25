@@ -128,6 +128,7 @@ read_globals = {
 	"PanelTemplates_SetTab",
 	"GetBindingAction",
 	"GetBindingKey",
+	"GetBindingText",
 	"SetBinding",
 	"SaveBindings",
 	"GetCurrentBindingSet",

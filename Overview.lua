@@ -43,7 +43,7 @@ local function ShowTooltip(owner, lines)
 end
 
 -- A step row's lines: the ring's; a row after step 1 asks Shortest Path for its travel line once, on hover.
----@param self AGFRouteRow|AGFPreviewRow
+---@param self AGFRouteRow
 local function RowEnter(self)
 	local step, index = self.step, self.index
 	if not (step and index) then
@@ -270,7 +270,7 @@ local function HideChecklist(pool, from)
 end
 
 -- A quest in the log opens its details; any other step turns the map to it. Right-click is the step menu and order.
----@param self AGFRouteRow|AGFPreviewRow
+---@param self AGFRouteRow
 ---@param mouseButton string
 local function RowClick(self, mouseButton)
 	if not self.step then
@@ -375,8 +375,11 @@ local function CardTooltip(card)
 		GameTooltip_AddHighlightLine(GameTooltip, journey.reason)
 	end
 	local hub = HubLine(journey)
-	if hub and (journey.reason or journey.drop or card.state == "compact") then
+	if hub and (journey.reason or journey.drop or card.state == "compact" or card.detail == hub) then
 		GameTooltip_AddHighlightLine(GameTooltip, hub)
+	end
+	if card.detail and card.detail ~= journey.reason and card.detail ~= journey.subline and card.detail ~= hub then
+		GameTooltip_AddHighlightLine(GameTooltip, card.detail)
 	end
 	local travel = ns.Integrations.CardTravel(journey)
 	if travel and travel.line then
