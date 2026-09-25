@@ -1114,7 +1114,9 @@
 ---@field COMPLETION_LOADING string
 ---@field COMPLETION_UNAVAILABLE string
 ---@field COMPLETION_COUNTS string
----@field COMPLETION_PENDING string
+---@field COMPLETION_NOT_KNOWN string format: items Legacy Forever can't check yet
+---@field COMPLETION_NOT_KNOWN_TAXIS string format: the same, all flight paths, with how to check them
+---@field COMPLETION_NOT_KNOWN_QUESTS string format: the same, all quests, with what they wait on
 ---@field COMPLETION_ACCOUNT string
 ---@field COMPLETION_GO string
 ---@field COMPLETION_NO_LOCATION string

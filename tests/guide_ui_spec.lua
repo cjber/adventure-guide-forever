@@ -207,7 +207,7 @@ do
 	equal(window.Tabs[4].normalFont, "GameFontNormalSmall", "ready: the label is gold")
 	equal(texts["The Barrens"] ~= nil, true, "ready: the player's zone featured")
 	equal(texts[L.COMPLETION_COUNTS:format(7, 20)], 1, "ready: its overall count")
-	equal(texts[L.COMPLETION_PENDING:format(1)] ~= nil, true, "ready: pending counted apart")
+	equal(texts[L.COMPLETION_NOT_KNOWN:format(1)] ~= nil, true, "ready: what Legacy can't check, in words")
 	equal(texts["Explore the Crossroads"], 1, "ready: a target")
 	equal(texts[L.COMPLETION_COUNTS:format(2, 5) .. L.SEPARATOR .. L.COMPLETION_NO_LOCATION], 1, "ready: no place")
 	local rows = Visible(h, window, function(frame)
@@ -226,6 +226,29 @@ do
 	h.Click(other)
 	h.flush()
 	equal(Texts(h)[L.COMPLETION_COUNTS:format(1, 20)], 1, "ready: its click features it")
+
+	-- A fresh character's flight paths: none known yet reads as words and Legacy's hint, never
+	-- "0/0 · 1 pending"; a category that knows some adds the rest in words.
+	local fresh = legacy.summaries[1442]
+	fresh.pending, fresh.categories =
+		1, {
+			{ key = "areas", scope = "character", done = 1, total = 5, pending = 0, complete = false },
+			{ key = "taxis", scope = "character", done = 0, total = 0, pending = 1, complete = false },
+		}
+	Redraw(h)
+	texts = Texts(h)
+	equal(texts[L.COMPLETION_NOT_KNOWN_TAXIS:format(1)], 1, "not known: the zone line says how to check them")
+	equal(texts[L.COMPLETION_CATEGORY_TAXIS .. "  " .. L.COMPLETION_NOT_KNOWN:format(1)], 1, "not known: no 0/0")
+	fresh.pending, fresh.categories[1].done, fresh.categories[1].total, fresh.categories[1].pending = 3, 3, 5, 2
+	Redraw(h)
+	texts = Texts(h)
+	equal(texts[L.COMPLETION_NOT_KNOWN:format(3)], 1, "not known, two categories: no one hint")
+	local areas = L.COMPLETION_COUNTS:format(3, 5) .. L.SEPARATOR .. L.COMPLETION_NOT_KNOWN:format(2)
+	equal(
+		texts[L.COMPLETION_CATEGORY_AREAS .. "  " .. areas],
+		1,
+		"not known: the counts it has, then the rest in words"
+	)
 
 	legacy.summaries[1442].categories = {}
 	legacy.targets[1442] = {}
