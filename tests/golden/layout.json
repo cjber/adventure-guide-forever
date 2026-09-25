@@ -200,7 +200,7 @@
           "point": "LEFT",
           "relativePoint": "LEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[1]",
-          "x": 2.00,
+          "x": 22.00,
           "y": 0.00
         }
       ],
@@ -228,6 +228,26 @@
       "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[1].FontString[1]",
       "text": "Adventure Guide",
       "type": "FontString"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[1]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "highlightAtlas": "common-icon-backarrow",
+      "normalAtlas": "common-icon-backarrow",
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[1].Button[1]",
+      "size": [
+        22.00,
+        22.00
+      ],
+      "type": "Button"
     },
     {
       "anchors": [
