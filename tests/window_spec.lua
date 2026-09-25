@@ -340,6 +340,10 @@ do
 	equal(table.concat(h.skillup.navigate[1], ","), "165,1", "present: its skill line and index")
 	h.Hover(rows[1])
 	equal(h.tooltip[#h.tooltip], "instruction: " .. L.CLICK_WAYPOINT_STEP, "present: the step says so")
+	-- Closing the window fires no OnLeave: the row's tooltip goes with it.
+	h.G.AdventureGuideForeverWindow:Hide()
+	equal(h.G.GameTooltip:IsShown(), false, "present: closing the window takes the row's tooltip")
+	h.G.AdventureGuideForeverWindow:Show()
 	local open = h.Find(function(frame)
 		return frame:IsVisible() and frame.text == L.OPEN_RECIPES
 	end)[1]

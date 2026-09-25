@@ -207,6 +207,8 @@ function AdventureGuideForeverPinMixin:OnAcquired(step, index)
 	self:SetPosition(step.x, step.y)
 	self:SetScalingLimits(1, 1.0, 1.2)
 	self:ApplyCurrentScale()
+	-- Closing the map hides the pin without an OnMouseLeave.
+	self:SetScript("OnHide", self.OnMouseLeave)
 end
 
 function AdventureGuideForeverPinMixin:OnMouseEnter()
@@ -221,7 +223,9 @@ end
 
 function AdventureGuideForeverPinMixin:OnMouseLeave()
 	self.Glow:Hide()
-	GameTooltip:Hide()
+	if GameTooltip:GetOwner() == self then
+		GameTooltip:Hide()
+	end
 end
 
 function AdventureGuideForeverPinMixin:OnClick(button)
@@ -243,6 +247,8 @@ function AdventureGuideForeverGiverPinMixin:OnAcquired(giver)
 	self:SetPosition(giver.x, giver.y)
 	self:SetScalingLimits(1, 1.0, 1.2)
 	self:ApplyCurrentScale()
+	-- Closing the map hides the pin without an OnMouseLeave.
+	self:SetScript("OnHide", self.OnMouseLeave)
 end
 
 -- The client's own title wins when the quest is cached; the level is the bundled one.
@@ -269,7 +275,9 @@ end
 
 function AdventureGuideForeverGiverPinMixin:OnMouseLeave()
 	self.Glow:Hide()
-	GameTooltip:Hide()
+	if GameTooltip:GetOwner() == self then
+		GameTooltip:Hide()
+	end
 end
 
 -- A shift-click adds the giver's quests to the route (docs/design.md §2.18), or takes them off: those not orange or

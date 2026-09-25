@@ -946,6 +946,11 @@ for _, spf in ipairs({ false, "v1" }) do
 	local giverPin = h.pins.AdventureGuideForeverGiverPinTemplate[1]
 	equal(giverPin.frameLevelType, "PIN_FRAME_LEVEL_AREA_POI", label .. ": givers at the area POI level")
 	h.Hover(giverPin)
+	-- Closing the map fires no OnMouseLeave: the pin's own OnHide takes its tooltip.
+	h.G.ToggleWorldMap()
+	equal(h.G.GameTooltip:IsShown(), false, label .. ": closing the map takes a hovered giver's tooltip")
+	h.G.ToggleWorldMap()
+	h.Hover(giverPin)
 	equal(h.tooltip[1], "title: " .. giverPin.giver.title, label .. ": giver tooltip title")
 	equal(#h.tooltip, #giverPin.giver.quests + 3, label .. ": a giver tooltip line per quest")
 	equal(h.tooltip[#h.tooltip - 1], click, label .. ": giver tooltip instruction")
@@ -1821,8 +1826,22 @@ do
 		true,
 		"not interested: the tooltip over its card speaks for the journey that takes its place"
 	)
+	-- Closing the map fires no OnLeave: the card's tooltip goes with the panel, and a rebuild while the map is closed
+	-- leaves it gone. Another addon's tooltip stays.
+	h.G.ToggleWorldMap()
+	equal(h.G.GameTooltip:IsShown(), false, "closing the map: the hovered card's tooltip goes with it")
 	ns.Unskip(gone.key)
 	ns.Choose(story.key)
+	h.flush()
+	equal(h.G.GameTooltip:IsShown(), false, "closing the map: a rebuild does not bring the card's tooltip back")
+	h.G.ToggleWorldMap()
+	h.flush()
+	h.G.GameTooltip:SetOwner(h.G.UIParent, "ANCHOR_CURSOR")
+	h.G.GameTooltip:Show()
+	h.G.ToggleWorldMap()
+	equal(h.G.GameTooltip:IsShown(), true, "closing the map: another addon's tooltip stays")
+	h.G.GameTooltip:Hide()
+	h.G.ToggleWorldMap()
 	h.flush()
 	clean(h, "not interested")
 	-- After a /reload, Show again still chooses the journey the Not interested ended.

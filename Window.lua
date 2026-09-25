@@ -472,6 +472,7 @@ local function Build()
 		Refresh()
 	end)
 	frame:SetScript("OnHide", function(self)
+		ns.Overview.HideTooltipWithin(self)
 		for _, event in ipairs(EVENTS) do
 			self:UnregisterEvent(event)
 		end
