@@ -320,7 +320,6 @@ ns.L = {
 	COMPLETION_UNAVAILABLE = "Completion progress is unavailable here.",
 	COMPLETION_COUNTS = "%d/%d",
 	COMPLETION_PENDING = "%d pending",
-	COMPLETION_CHARACTER = "Character",
 	COMPLETION_ACCOUNT = "Account",
 	COMPLETION_GO = "Go to objective",
 	COMPLETION_NO_LOCATION = "Location unknown",
@@ -353,10 +352,11 @@ ns.L = {
 	ORDER_NEXT = "Do this next",
 	ORDER_RESET = "Back to suggested order",
 	ORDER_CUSTOM = "Your order",
-	ORDER_SUGGESTED = "Suggested",
 	TOWN_SKIP_GIVER = "Skip this giver",
 	TOWN_GIVER = "%s: %s",
-	TOWN_COUNTS = "pick up %d, turn in %d",
+	TOWN_COUNTS = "Pick up %d, turn in %d",
+	TOWN_PICKUPS = "Pick up %d",
+	TOWN_HANDINS = "Turn in %d",
 	TODAY_MORE = "+%d more",
 	STOP_MORE = "+%d",
 	STOP_VISIT = "Stop %d: %s",
@@ -518,10 +518,24 @@ local function LoadCharDB()
 			and type(session.journey) == "string"
 			and type(session.minutes) == "number"
 			and type(session.keys) == "table"
+			and (session.members == nil or type(session.members) == "table")
+			and (session.visits == nil or type(session.visits) == "table")
 			and (session.seconds == nil or type(session.seconds) == "number")
 		)
 	then
 		loaded.sessionCommit = nil
+	end
+	if loaded.sessionCommit then
+		for _, members in pairs(session.members or {}) do
+			if type(members) ~= "table" then
+				loaded.sessionCommit = nil
+			end
+		end
+		for action, key in pairs(session.visits or {}) do
+			if type(action) ~= "string" or type(key) ~= "string" then
+				loaded.sessionCommit = nil
+			end
+		end
 	end
 	-- The defaults loop above guarantees every AGFPrefs field except `skipped`, which ns.Prefs()
 	-- always sets before returning; nothing else reads charDB directly.
@@ -1134,8 +1148,8 @@ end
 -- Registered before any view's listener, so the footer already reads the route as started.
 ns.OnRouteChange(function()
 	local route = ns.Route()
-	if route.chosen and #route.steps == 0 and ns.Integrations.Owns() then
-		local waiting = ns.Session.Info().pending and ns.Prefs().guided == route.journey
+	if route.chosen and #route.steps == 0 and ns.Prefs().guided == route.journey and ns.Integrations.Owns() then
+		local waiting = ns.Session.Info().pending
 		ns.Integrations.Cancel()
 		pendingStart = pendingStart or waiting
 	end

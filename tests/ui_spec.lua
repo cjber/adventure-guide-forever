@@ -988,7 +988,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Hover(ring)
 	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. Step 1 is the Crossroads, where The
 	-- Zhevra opens its next chapter, handed in before the town's pickups.
-	local expected = { "title: 1. Visit Crossroads, The Barrens: pick up 7, turn in 1" }
+	local expected = { "title: 1. Visit Crossroads, The Barrens: Pick up 5, turn in 1" }
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
 	expected[#expected + 1] = "highlight: Opens the next chapter here"
 	expected[#expected + 1] = "normal: Sergra Darkthorn"
@@ -1054,7 +1054,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	-- Design §2.8's menu for a town holding a log quest; Stop only once Go runs, Show quest never in combat.
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:349"], "RightButton")
 	local menu = {
-		"title: Visit Crossroads, The Barrens: pick up 7, turn in 1",
+		"title: Visit Crossroads, The Barrens: Pick up 5, turn in 1",
 		"button: Go",
 		"button: Show quest",
 		"button: Skip for now",
@@ -2027,7 +2027,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	local label = "tracker: " .. (spf or "no Shortest Path")
 	local h = Load(spf)
 	local steps = h.ns.Route().steps
-	local expected = { "1 to hand in, 7 to pick up", "Opens the next chapter here" }
+	local expected = { "1 to hand in, 5 to pick up", "Opens the next chapter here" }
 	for _, giver in ipairs(steps[1].checklist) do
 		expected[#expected + 1] = giver.text
 	end
@@ -2101,7 +2101,7 @@ do
 	end)
 	h.Hover(rows[1])
 	local lines, colors = h.tooltip, h.tooltipColors
-	equal(lines[1], "title: 1. Visit Crossroads, The Barrens: pick up 8, turn in 1", "hub tooltip: the numbered town")
+	equal(lines[1], "title: 1. Visit Crossroads, The Barrens: Pick up 8, turn in 1", "hub tooltip: the numbered town")
 	equal(lines[2], "highlight: " .. step.reason, "hub tooltip: the reason")
 	equal(lines[3], "normal: Sergra Darkthorn", "hub tooltip: the hand-in's NPC first")
 	equal(lines[4], "colored: |A:questturnin:14:14|a The Zhevra", "hub tooltip: a hand-in has the turn-in mark")
@@ -2153,8 +2153,8 @@ do
 	h.flush()
 	local steps = ns.Route().steps
 	local step = steps[1]
-	equal(step.title, "Visit Crossroads, The Barrens: pick up 7, turn in 1", "tracker, town: town and actions")
-	equal(step.detail, "1 to hand in, 7 to pick up", "tracker, town: the hand-in joins the pickups")
+	equal(step.title, "Visit Crossroads, The Barrens: Pick up 5, turn in 1", "tracker, town: town and actions")
+	equal(step.detail, "1 to hand in, 5 to pick up", "tracker, town: the hand-in joins the pickups")
 	local expected = { step.detail, "Opens the next chapter here" }
 	for _, giver in ipairs(step.checklist) do
 		expected[#expected + 1] = giver.text
@@ -2164,7 +2164,7 @@ do
 
 	step.reason = step.detail
 	h.tracker:MarkDirty()
-	expected[2] = "Sergra Darkthorn, Gazrog and 5 more"
+	expected[2] = "Sergra Darkthorn, Gazrog and 4 more"
 	same(TrackerLines(h), expected, "tracker, town: its NPCs, two named")
 	step.givers = { "Sergra Darkthorn", "Gazrog" }
 	h.tracker:MarkDirty()
@@ -2276,7 +2276,7 @@ do
 	equal(#h.sounds + #h.fanfares, 0, "fanfare: none for an unproven end or a middle chapter")
 	h.fire("QUEST_TURNED_IN", last)
 	h.flush()
-	same(h.sounds, {}, "fanfare: the client turn-in sound suppresses our sound")
+	same(h.sounds, { h.G.SOUNDKIT.UI_SCENARIO_STAGE_END }, "fanfare: a proven story end plays its sound")
 	same(h.fanfares, { "story-complete" }, "fanfare: the header glows once")
 	local block = h.tracker.liveBlocks["story-complete"]
 	equal(block.header, "Story complete", "fanfare: the header")

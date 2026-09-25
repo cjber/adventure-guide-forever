@@ -9,12 +9,12 @@ function Sound.ClientEvent()
 	suppressUntil = GetTime() + 1
 end
 
-function Sound.Complete(key)
+function Sound.Complete(key, story)
 	if played[key] then
 		return
 	end
 	played[key] = true
-	if GetTime() >= suppressUntil and ns.Setting("stepSound") then
+	if (story or GetTime() >= suppressUntil) and ns.Setting("stepSound") then
 		PlaySound(SOUNDKIT.UI_SCENARIO_STAGE_END)
 	end
 end

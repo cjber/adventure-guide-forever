@@ -1044,6 +1044,7 @@
 ---@field minutes integer
 ---@field keys table<string, boolean>
 ---@field members? table<string, table<string, boolean>>
+---@field visits? table<string, string> town pickup/hand-in action to committed visit identity
 ---@field seconds? number
 ---@class AGFSessionInfo
 ---@field minutes integer
@@ -1072,7 +1073,7 @@
 ---@field Reset fun()
 ---@field IsCustom fun(): boolean
 ---@field SkipGiver fun(stepKey: string, giverKey: string): boolean
----@field SkippedQuests fun(): table<integer, true>
+---@field SkippedQuests fun(seen?: table<string, boolean>): table<integer, true>
 ---@field IsGiverSkipped fun(stepKey: string, giverKey: string): boolean
 ---@field Dependencies fun(steps: AGFStep[]): table<integer, table<integer, boolean>>
 ---@field Valid fun(steps: AGFStep[], cap?: integer, log?: table<integer, AGFLogQuest>): boolean
@@ -1081,7 +1082,7 @@
 
 ---@class AGFSound
 ---@field ClientEvent fun()
----@field Complete fun(key: string)
+---@field Complete fun(key: string, story?: boolean)
 ---@field Observe fun(previous: AGFRoute, current: AGFRoute, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, trained?: boolean)
 ---@class AGFHearth
 ---@field Advice fun(data: AGFData, player: AGFPlayer, steps: AGFStep[], bind?: string, locale?: string): AGFAside?
@@ -1113,7 +1114,6 @@
 ---@field COMPLETION_UNAVAILABLE string
 ---@field COMPLETION_COUNTS string
 ---@field COMPLETION_PENDING string
----@field COMPLETION_CHARACTER string
 ---@field COMPLETION_ACCOUNT string
 ---@field COMPLETION_GO string
 ---@field COMPLETION_NO_LOCATION string
@@ -1146,9 +1146,10 @@
 ---@field ORDER_NEXT string
 ---@field ORDER_RESET string
 ---@field ORDER_CUSTOM string
----@field ORDER_SUGGESTED string
 ---@field TOWN_SKIP_GIVER string
 ---@field TOWN_GIVER string
+---@field TOWN_PICKUPS string
+---@field TOWN_HANDINS string
 ---@field TOWN_COUNTS string
 ---@field TODAY_MORE string
 ---@field STOP_MORE string

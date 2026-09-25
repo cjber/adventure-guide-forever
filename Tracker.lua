@@ -255,7 +255,7 @@ local function Refresh()
 end
 
 -- Only a chain whose end the data proves (Model.Story's total) is ever called complete; the sound plays with the
--- glow, never without the tracker section to show it.
+-- glow even during the client's turn-in sound (design §2.7), never without the tracker section to show it.
 ---@param questID integer
 function ns.OnTurnIn(questID)
 	local story = ns.Data.quests[questID] and ns.Model.Story(ns.Data, questID)
@@ -264,11 +264,11 @@ function ns.OnTurnIn(questID)
 	end
 	finished = { quest = questID }
 	module:SetNeedsFanfare(STORY_COMPLETE)
-	ns.Sound.Complete("story:" .. questID)
+	ns.Sound.Complete("story:" .. questID, true)
 	Refresh()
 end
 
--- The fanfare without the sound, which only a story's end plays (OnTurnIn, in the same turn-in).
+-- Journey completion adds only the visual fanfare; step and story sounds are handled separately.
 function ns.OnJourneyComplete()
 	if not (module and ns.Setting("showTracker")) then
 		return

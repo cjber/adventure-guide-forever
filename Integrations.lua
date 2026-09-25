@@ -624,7 +624,12 @@ function Integrations.CurrentStep()
 		return nil
 	end
 	if sent then
-		return sent --[[@as AGFStep]]
+		for _, step in ipairs(ns.Route().steps) do
+			if step.key == sent.key then
+				return step
+			end
+		end
+		return nil
 	end
 	return ns.Route().steps[1]
 end

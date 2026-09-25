@@ -565,7 +565,6 @@ local function HideTooltipWithin(root)
 end
 
 Overview.KIND_ICONS = KIND_ICONS
-Overview.CHECK_HEIGHT = CHECK_HEIGHT
 Overview.SetVerbIcon = SetVerbIcon
 Overview.CreateBadge = CreateBadge
 Overview.StepMenu = StepMenu

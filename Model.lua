@@ -37,6 +37,12 @@ local function HasBit(mask, bit)
 	return not mask or mask == 0 or (bit > 0 and math.floor(mask / bit) % 2 == 1)
 end
 
+Model.HasBit = HasBit
+
+function Model.Handins(step)
+	return step.handins or (step.kind == "turnin" and step.quests) or NONE
+end
+
 local function Count(one, many, count)
 	return count == 1 and one or many:format(count)
 end
@@ -400,11 +406,14 @@ end
 -- planner's loops over every quest never build a key.
 ---@type table<integer, true>
 local droppedIDs = {}
+-- The skipped keys a full build still found among its candidates (Model.Plan); nil outside one.
+---@type table<string, boolean>?
+local skippedSeen
 
 ---@param prefs AGFPrefs
 local function ReadDropped(prefs)
 	droppedIDs = {}
-	for id in pairs(ns.Order and ns.Order.SkippedQuests() or NONE) do
+	for id in pairs(ns.Order and ns.Order.SkippedQuests(skippedSeen) or NONE) do
 		droppedIDs[id] = true
 	end
 	for key in pairs(prefs.notInterested or NONE) do
@@ -1543,10 +1552,6 @@ local function Value(data, log, player, step)
 		+ (weak and VALUE_WEAK or 0)
 end
 
--- The skipped keys a full build still found among its candidates (Model.Plan); nil outside one.
----@type table<string, boolean>?
-local skippedSeen
-
 -- Each card's committed order (docs/design.md §4.2), by journey key: a full build reads the last route's and records
 -- its own (Model.Plan); nil outside one.
 ---@type table<string, AGFOrder>?
@@ -2206,7 +2211,6 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	-- The new quests each town hands out, and their objective nodes.
 	local picks, ids, nodes, offered = {}, {}, {}, {}
 	for _, town in ipairs(towns) do
-		offered[town.key] = { unpack(town.pickups) }
 		local pickups = {}
 		for _, id in ipairs(town.pickups) do
 			-- One the player added (shift-click) goes whatever its kind, as the lead does.
@@ -2275,6 +2279,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 			end
 		end
 		Trim(town, town.handins, pickups)
+		offered[town.key] = pickups
 	end
 	for index = #areas, 1, -1 do
 		if skipped[areas[index].key] then
@@ -3563,6 +3568,15 @@ local function Battleground(data, player, prefs, mapName)
 	end
 end
 
+local function TownCounts(pickups, handins)
+	if pickups == 0 then
+		return ns.L.TOWN_HANDINS:format(handins)
+	elseif handins == 0 then
+		return ns.L.TOWN_PICKUPS:format(pickups)
+	end
+	return ns.L.TOWN_COUNTS:format(pickups, handins)
+end
+
 -- A checklist keeps completed givers until the visit ends, while its arrow follows real remaining locations.
 function Model.TownChecklist(data, player, completed, log, step, previous)
 	local rows, byKey = {}, {}
@@ -3620,7 +3634,7 @@ function Model.TownChecklist(data, player, completed, log, step, previous)
 		end
 		row.skipped = ns.Order ~= nil and ns.Order.IsGiverSkipped(step.orderKey or step.key, row.key)
 		row.done = done or row.skipped
-		row.text = ns.L.TOWN_GIVER:format(row.name, ns.L.TOWN_COUNTS:format(#row.pickups, #row.handins))
+		row.text = ns.L.TOWN_GIVER:format(row.name, TownCounts(#row.pickups, #row.handins))
 		complete = complete and row.done
 		if not row.done then
 			local yards = Model.Yards(data, player, row.place)
@@ -3649,8 +3663,7 @@ function Model.StepTitle(data, log, step)
 			step.title = (step.verb == "turnin" and L.TURN_IN or L.STEP_PICKUP):format(Quest(step.quests[1]))
 		else
 			step.verb = "town"
-			step.title =
-				L.STEP_TOWN:format(step.place or step.zone or "", L.TOWN_COUNTS:format(#step.pickups, #step.handins))
+			step.title = L.STEP_TOWN:format(step.place or step.zone or "", TownCounts(#step.pickups, #step.handins))
 		end
 	elseif step.kind == "area" or step.kind == "dungeon" then
 		step.verb = "objective"
@@ -3702,8 +3715,26 @@ local function PreviousVisit(step, previous, used)
 	return best
 end
 
-local function FinishRoute(data, player, completed, log, route, last)
+-- Town numbering changes after accepting its pickups; a saved session identifies each action independently.
+local function CommittedVisit(step, commit, used)
+	local best, score, matches = nil, nil, {}
+	for _, list in ipairs(step.kind == "town" and { "pickups", "handins" } or NONE) do
+		for _, id in ipairs(step[list]) do
+			local key = commit.visits[list .. ":" .. id]
+			if key and not used[key] then
+				matches[key] = (matches[key] or 0) + 1
+				if not score or matches[key] > score then
+					best, score = key, matches[key]
+				end
+			end
+		end
+	end
+	return best
+end
+
+local function FinishRoute(data, player, completed, log, route, last, prefs)
 	local previous = {}
+	local commit = prefs.sessionCommit
 	for _, card in ipairs(last and last.journeys or {}) do
 		previous[card.key] = card.steps
 	end
@@ -3717,7 +3748,13 @@ local function FinishRoute(data, player, completed, log, route, last)
 			end
 			---@cast step AGFStep
 			local old = PreviousVisit(step, previous[card.key], used)
-			step.orderKey = old and old.orderKey or identities[index]
+			local saved = commit
+				and commit.journey == card.key
+				and commit.minutes == prefs.sessionMinutes
+				and commit.visits
+				and CommittedVisit(step, commit, used)
+			step.orderKey = old and old.orderKey or saved or identities[index]
+			used[step.orderKey] = true
 			if step.kind == "town" then
 				Model.TownChecklist(data, player, completed, log, step, old)
 			end
@@ -4009,7 +4046,7 @@ function Model.Plan(data, player, completed, log, prefs, mapName, instanceName, 
 	local route = Route(journeys, prefs)
 	route.skipped, skippedSeen, route.stranded = skippedSeen, nil, stranded or nil
 	route.orders, committedOrders, planDocks, heldHere = committedOrders, nil, nil, nil
-	FinishRoute(data, player, completed, log, route, last)
+	FinishRoute(data, player, completed, log, route, last, prefs)
 	local head = route.steps[1]
 	route.here = head and head.here and head.key or nil
 	return route
@@ -4174,7 +4211,7 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 	Cap(journeys, prefs.journey)
 	local route = Route(journeys, prefs)
 	route.stranded, route.orders = last.stranded, last.orders
-	FinishRoute(data, player, completed, log, route, last)
+	FinishRoute(data, player, completed, log, route, last, prefs)
 	return route
 end
 

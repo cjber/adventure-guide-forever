@@ -33,11 +33,7 @@ function Hearth.Advice(data, player, steps, bind, locale)
 	end
 	local best, bestID, distance
 	for id, npc in pairs(data.npcs or {}) do
-		if
-			npc.inn
-			and npc.place.hub == target.hub
-			and (not npc.side or npc.side == 0 or math.floor(npc.side / player.side) % 2 == 1)
-		then
+		if npc.inn and npc.place.hub == target.hub and ns.Model.HasBit(npc.side, player.side) then
 			local yards = ns.Model.Yards(data, player, npc.place) or ns.Model.Yards(data, target, npc.place)
 			if yards and (not best or yards < distance or (yards == distance and id < bestID)) then
 				best, bestID, distance = npc, id, yards

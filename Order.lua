@@ -3,7 +3,7 @@ local _, ns = ...
 ---@class AGFOrderModule
 local Order = {}
 ns.Order = Order
-local skippedGivers, skippedQuests = {}, {}
+local skippedQuests = {}
 
 -- Dependencies are between complete stops: a town can never be split to make a move fit.
 function Order.Dependencies(steps)
@@ -17,7 +17,7 @@ function Order.Dependencies(steps)
 			work[objective.id] = work[objective.id] or {}
 			work[objective.id][index] = true
 		end
-		for _, id in ipairs(step.handins or (step.kind == "turnin" and step.quests) or {}) do
+		for _, id in ipairs(ns.Model.Handins(step)) do
 			hands[id] = index
 		end
 	end
@@ -47,7 +47,7 @@ local function Occupied(log)
 end
 
 local function After(step, occupied)
-	local hands = step.handins or (step.kind == "turnin" and step.quests) or {}
+	local hands = ns.Model.Handins(step)
 	return occupied - #hands + #(step.pickups or {})
 end
 
@@ -113,11 +113,6 @@ function Order.Apply(route, prefs)
 			for index, step in ipairs(card.steps) do
 				step.here = index == 1 and here == 1 or nil
 			end
-			local kept = {}
-			for _, step in ipairs(card.steps) do
-				kept[#kept + 1] = step.orderKey or step.key
-			end
-			prefs.customOrders[card.key] = kept
 		end
 		if route.journey == card.key then
 			route.steps = card.steps
@@ -204,12 +199,25 @@ function Order.Reset()
 	Changed()
 end
 
-function Order.SkippedQuests()
-	return skippedQuests
+function Order.SkippedQuests(seen)
+	local quests, skipped = {}, ns.Prefs().skipped
+	for key, ids in pairs(skippedQuests) do
+		if skipped[key] then
+			if seen then
+				seen[key] = true
+			end
+			for _, id in ipairs(ids) do
+				quests[id] = true
+			end
+		else
+			skippedQuests[key] = nil
+		end
+	end
+	return quests
 end
 
 function Order.IsGiverSkipped(stepKey, giverKey)
-	return skippedGivers[stepKey] ~= nil and skippedGivers[stepKey][giverKey] == true
+	return ns.Prefs().skipped["giver:" .. stepKey .. ":" .. giverKey] == true
 end
 
 function Order.SkipGiver(stepKey, giverKey)
@@ -218,15 +226,16 @@ function Order.SkipGiver(stepKey, giverKey)
 			for _, giver in ipairs(step.checklist or {}) do
 				if giver.key == giverKey and not giver.done then
 					local visit = step.orderKey or stepKey
-					skippedGivers[visit] = skippedGivers[visit] or {}
-					skippedGivers[visit][giverKey] = true
+					local key = "giver:" .. visit .. ":" .. giverKey
+					local ids = {}
 					for _, id in ipairs(giver.pickups) do
-						skippedQuests[id] = true
+						ids[#ids + 1] = id
 					end
 					for _, id in ipairs(giver.handins) do
-						skippedQuests[id] = true
+						ids[#ids + 1] = id
 					end
-					ns.Invalidate()
+					skippedQuests[key] = ids
+					ns.Skip(key, giver.text)
 					return true
 				end
 			end

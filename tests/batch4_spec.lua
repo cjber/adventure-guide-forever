@@ -205,7 +205,7 @@ do
 	eq(nextTown.complete, true, "all givers complete")
 	M.StepTitle(data, {}, town)
 	eq(town.verb, "town")
-	eq(town.title, "Visit Town: pick up 1, turn in 1")
+	eq(town.title, "Visit Town: Pick up 1, turn in 1")
 	local area = step("a", "area", { 1 })
 	area.objectives = { { id = 1, slot = 4, type = "item", text = "0/6 Gooey Spider Leg" } }
 	M.StepTitle(data, {}, area)

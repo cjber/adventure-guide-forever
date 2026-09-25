@@ -36,13 +36,16 @@ local EJ_LEFT, EJ_TOP, EJ_RIGHT, EJ_BOTTOM, EJ_RIM = 1, 439, 175, 535, 8
 -- The Suggested Content icon recipe: the icon cut to a circle on a dark disc inside the Adventure Guide's ring; an
 -- atlas icon is inset so its own margin doesn't show.
 local RING_SCALE, ATLAS_INSET = 1.4, 0.16
--- The events SkillUp Forever rebuilds its answers on, and an item's name or icon arriving.
+-- SkillUp's answers, item data and the character's PvP rank progress.
 local EVENTS = {
 	"SKILL_LINES_CHANGED",
 	"BAG_UPDATE_DELAYED",
 	"NEW_RECIPE_LEARNED",
 	"TRADE_SKILL_LIST_UPDATE",
 	"ITEM_DATA_LOAD_RESULT",
+	"PLAYER_PVP_RANK_CHANGED",
+	"MAJOR_FACTION_RENOWN_LEVEL_CHANGED",
+	"UPDATE_FACTION",
 }
 
 ---@class AGFWindowTab

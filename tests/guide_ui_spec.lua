@@ -480,12 +480,13 @@ do
 	local h = Load({ completed = completed, db = { showMapPins = true } })
 	local ns, L = h.ns, h.ns.L
 	local original = ns.Route().steps[1]
-	local done, skipped = original.checklist[1], original.checklist[2]
+	local done = original.checklist[1]
 	for _, id in ipairs(done.pickups) do
 		h.log[#h.log + 1] = { id = id, title = ns.Data.quests[id].title, complete = false }
 	end
 	h.fire("QUEST_LOG_UPDATE")
 	h.flush()
+	local skipped = ns.Route().steps[1].checklist[2]
 	equal(ns.Order.SkipGiver(original.key, skipped.key), true, "checklist: skip a real giver")
 	h.flush()
 	local window = Open(h)

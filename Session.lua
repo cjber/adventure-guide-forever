@@ -57,7 +57,7 @@ function Session.Prefix(steps, seconds, budget)
 		for _, objective in ipairs(step.objectives or {}) do
 			work[objective.id] = index
 		end
-		for _, id in ipairs(step.handins or (step.kind == "turnin" and step.quests) or {}) do
+		for _, id in ipairs(ns.Model.Handins(step)) do
 			handin[id] = index
 		end
 	end
@@ -95,7 +95,7 @@ end
 
 local function Commit(pending)
 	local endpoint, seconds = Session.Prefix(pending.steps, pending.seconds, pending.minutes * 60)
-	local keys, members = {}, {}
+	local keys, members, visits = {}, {}, {}
 	for index = 1, endpoint do
 		local step = pending.steps[index]
 		local key = step.orderKey or step.key
@@ -106,12 +106,20 @@ local function Commit(pending)
 		for _, objective in ipairs(step.objectives or {}) do
 			members[key][objective.id .. ":" .. objective.slot] = true
 		end
+		if step.kind == "town" then
+			for _, list in ipairs({ "pickups", "handins" }) do
+				for _, id in ipairs(step[list]) do
+					visits[list .. ":" .. id] = key
+				end
+			end
+		end
 	end
 	ns.Prefs().sessionCommit = {
 		journey = pending.journey,
 		minutes = pending.minutes,
 		keys = keys,
 		members = members,
+		visits = visits,
 		seconds = endpoint > 0 and seconds or nil,
 	}
 	job = nil
