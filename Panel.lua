@@ -875,9 +875,7 @@ local function RefreshCard(card, journey, state)
 		card:UnlockHighlight()
 	end
 	-- A card under the pointer can change journey (Not interested, a rebuild): its tooltip speaks for the new one.
-	if GameTooltip:IsOwned(card) then
-		CardTooltip(card)
-	end
+	Overview.RefreshCardTooltip(card)
 	return compact and COMPACT_HEIGHT or CARD_HEIGHT
 end
 
@@ -1038,9 +1036,7 @@ local function RefreshFeatured(card, journey)
 	else
 		card.Bar:Hide()
 	end
-	if GameTooltip:IsOwned(card) then
-		CardTooltip(card)
-	end
+	Overview.RefreshCardTooltip(card)
 end
 
 -- A grid card: its title in up to three lines beside the icon, its reason under both in what room is left, and the
@@ -1070,9 +1066,7 @@ local function RefreshGrid(card, journey)
 		footer:SetPoint("TOPLEFT", GRID_INSET, -GRID_FOOT)
 		card.Bar:Hide()
 	end
-	if GameTooltip:IsOwned(card) then
-		CardTooltip(card)
-	end
+	Overview.RefreshCardTooltip(card)
 end
 
 -- One step under the featured card: its title, then as much of its detail as fits after it.
@@ -1361,6 +1355,7 @@ local function Attach()
 	-- and the map closing all come through here.
 	panel:HookScript("OnShow", ns.Pins.Refresh)
 	panel:HookScript("OnHide", ns.Pins.Refresh)
+	panel:HookScript("OnHide", Overview.HideTooltipWithin)
 	-- The cards' minutes, while the guide is open: on opening it and on each new route.
 	local function QueueCards()
 		if panel:IsShown() then

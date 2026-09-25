@@ -298,6 +298,30 @@ local function SetBar(bar, x, y, width, value, height)
 	bar:Show()
 end
 
+-- A rebuild redraws a hovered card's tooltip only while the card is on screen and the tooltip still up: a card that
+-- closed with the map or window has no OnLeave to clear its ownership, and redrawing it would leave the tooltip
+-- floating where the card was.
+---@param card AGFCardButton
+local function RefreshCardTooltip(card)
+	if card:IsVisible() and GameTooltip:IsShown() and GameTooltip:IsOwned(card) then
+		CardTooltip(card)
+	end
+end
+
+-- Hiding a frame fires no OnLeave on the one under the pointer, so the tooltip goes when it belongs to `root` or
+-- anything inside it; another addon's tooltip stays.
+---@param root Frame
+local function HideTooltipWithin(root)
+	local owner = GameTooltip:GetOwner()
+	while owner do
+		if owner == root then
+			GameTooltip:Hide()
+			return
+		end
+		owner = owner:GetParent()
+	end
+end
+
 Overview.KIND_ICONS = KIND_ICONS
 Overview.CreateBar = CreateBar
 Overview.SetBar = SetBar
@@ -308,6 +332,8 @@ Overview.RowEnter = RowEnter
 Overview.RowClick = RowClick
 Overview.CardClick = CardClick
 Overview.CardTooltip = CardTooltip
+Overview.RefreshCardTooltip = RefreshCardTooltip
+Overview.HideTooltipWithin = HideTooltipWithin
 Overview.HubLine = HubLine
 Overview.DropLine = DropLine
 Overview.Progress = Progress

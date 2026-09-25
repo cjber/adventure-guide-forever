@@ -155,9 +155,7 @@ local function RefreshCard(card, journey, span)
 	)
 	Window.SetRingIcon(card.Icon, Overview.KIND_ICONS[journey.kind])
 	card.Title:SetText(journey.title)
-	if GameTooltip:IsOwned(card) then
-		Overview.CardTooltip(card)
-	end
+	Overview.RefreshCardTooltip(card)
 end
 
 ---@param journey AGFJourney

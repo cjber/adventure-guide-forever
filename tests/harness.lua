@@ -1409,6 +1409,9 @@ function harness.load(options)
 		self.owner, self.anchor = owner, anchor
 		h.tooltip, h.tooltipColors = {}, {}
 	end
+	function G.GameTooltip:GetOwner()
+		return self.owner
+	end
 	function G.GameTooltip:IsOwned(owner)
 		return self:IsShown() and self.owner == owner
 	end
