@@ -24,6 +24,8 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 BUILD = "1.60.1.69913"
+# The last build with WorldMapArea: quest_poi's mapAreaId is one of its IDs, which UiMap replaced in 8.0.
+LEGACY_MAP_BUILD = "7.3.5.26972"
 CLASSICDB_COMMIT = "22b51464f1625f6ef6275771de1f5466c6f5d19e"
 CLASSICDB_URL = (
     f"https://raw.githubusercontent.com/cmangos/classic-db/{CLASSICDB_COMMIT}/Full_DB/ClassicDB_1_12_1_z2815.sql.gz"
@@ -521,12 +523,19 @@ def pick(spawn, zone_maps, home):
 
 
 def choose(options, zone_maps, home=None):
-    """Of `options_at`'s maps: the quest's own zone first, then `home`, then the smallest."""
+    """Of `options_at`'s maps: the quest's own zone first, then `home` (one map, or a set of them), then the
+    smallest."""
+    homes = home if isinstance(home, set) else {home}
     return (
         next((o for o in options if o[2] in zone_maps), None)
-        or next((o for o in options if o[2] == home), None)
+        or next((o for o in options if o[2] in homes), None)
         or options[0]
     )
+
+
+def legacy_maps(legacy_rows, areas):
+    """Each WorldMapArea ID (quest_poi's mapAreaId) to the UiMaps of its area (`map_indexes`' `areas`)."""
+    return {int(r["ID"]): areas[int(r["AreaID"])] for r in legacy_rows if int(r["AreaID"]) in areas}
 
 
 def quest_place(spawn, zone_maps, home):
@@ -677,33 +686,35 @@ def objective_targets(row, slot, credit, drops):
 
 
 def quest_shapes(tables):
-    """Each quest's quest_poi objective shapes as (slot, world map, points in world x, y), in poiId order; a shape of
-    an objIndex outside SLOTS is left out."""
+    """Each quest's quest_poi objective shapes as (slot, world map, points in world x, y, WorldMapArea ID), in poiId
+    order; a shape of an objIndex outside SLOTS is left out."""
     points = defaultdict(list)
     for row in tables["quest_poi_points"]:
         points[row["questId"], row["poiId"]].append((row["x"], row["y"]))
     result = defaultdict(list)
     for row in sorted(tables["quest_poi"], key=lambda r: (r["questId"], r["poiId"])):
         if row["objIndex"] in SLOTS and (shape := points[row["questId"], row["poiId"]]):
-            result[row["questId"]].append((row["objIndex"], row["mapId"], shape))
+            result[row["questId"]].append((row["objIndex"], row["mapId"], shape, row["mapAreaId"]))
     return result
 
 
-def objective_areas(slots, shapes, found, world, zone_maps, zone):
+def objective_areas(slots, shapes, found, world, zone_maps, zone, legacy):
     """Where a quest's objectives are done, as [i, x, y, r] or [i, x, y, r, map]: `i` the slot, x and y on the map in
     thousandths, r in yards; the map is left out when it is `zone`, the quest's zone.
 
-    Each quest_poi shape (Blizzard's objective area, (slot, world map, points)) of one of the quest's `slots` gives
-    its `shape_area`, on one of the quest's zone maps where one holds it (`choose`); those shapes come first, then the
+    Each quest_poi shape (Blizzard's objective area, (slot, world map, points, WorldMapArea ID)) of one of the quest's
+    `slots` gives its `shape_area`, on `zone` or one of the quest's zone maps where one holds it, else on the map its
+    WorldMapArea names (`legacy`), else the smallest (`choose`); shapes on the quest's own maps come first, then the
     widest. A slot without a shape falls back to `spawn_areas` of its `found` spawns on `zone`. A slot keeps at most
     AREAS areas, and one with neither source has none.
     """
+    own = zone_maps | {zone} if zone is not None else zone_maps
     placed = defaultdict(list)
-    for slot, world_map, points in shapes:
+    for slot, world_map, points, area_map in shapes:
         (x, y), r = shape_area(points)
         if slot in slots and (options := options_at(world[world_map], x, y)):
-            _, _, ui_map, (px, py) = choose(options, zone_maps)
-            placed[slot].append((ui_map not in zone_maps, -r, ui_map, px, py, r))
+            _, _, ui_map, (px, py) = choose(options, own, legacy.get(area_map, set()))
+            placed[slot].append((ui_map not in own, -r, ui_map, px, py, r))
     areas = []
     for slot in slots:
         if placed[slot]:
@@ -1004,8 +1015,10 @@ def generate(
     reputations,
     map_art,
     overlay_rows,
+    legacy_rows,
 ):
     maps, world, areas = map_indexes(ui_maps, assignments)
+    legacy = legacy_maps(legacy_rows, areas)
     skill_names, faction_names = gate_names(skill_lines, reputations)
     instance_of, instances = instance_index(area_rows, map_rows)
     locations = places(tables, world)
@@ -1130,7 +1143,7 @@ def generate(
                 for slot in slots
             }
             quest["need"] = slots
-            if spots := objective_areas(slots, shapes[qid], found, world, zone_maps, quest.get("zone")):
+            if spots := objective_areas(slots, shapes[qid], found, world, zone_maps, quest.get("zone"), legacy):
                 quest["obj"] = spots
             open_world = (
                 "start" in quest and quest.get("zone") in PUBLISHED and not quest.get("repeatable") and not elite
@@ -1331,6 +1344,7 @@ def main():
             + ("HitRectTop", "HitRectBottom", "HitRectLeft", "HitRectRight", "AreaID_0"),
             **options,
         ),
+        db2("WorldMapArea", ("ID", "AreaID"), build=LEGACY_MAP_BUILD, **options),
     )
     if not quests or not counts["with start"]:
         raise ValueError("No usable quests; leaving existing output untouched")

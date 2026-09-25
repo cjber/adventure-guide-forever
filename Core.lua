@@ -49,6 +49,7 @@ ns.L = {
 	LOG_FULL = "Log nearly full: %d you could drop",
 	LOG_FULL_ONE = "Log nearly full: 1 you could drop",
 	LOG_FULL_LIST = "To make room in your log, you could drop:",
+	LATER_LAPS = "%d of them on later laps",
 	LIST_SEPARATOR = ", ",
 	QUESTS_NEAR = "%d quests near your level",
 	QUESTS_NEAR_ONE = "1 quest near your level",

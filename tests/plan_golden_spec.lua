@@ -153,14 +153,14 @@ for _, fixture in ipairs(characters.list) do
 	if fixture.name == "human19_redridge_full" then
 		local story, areas = route.journeys[1], 0
 		equal(story.key, "zone:1433", "human19_redridge_full: Redridge is card 1")
-		-- The story goes out one lap; carry holds the areas of the laps after it.
-		local steps = {}
+		-- The story goes out one lap and counts the laps after it; carry (Loose ends) holds nothing on Redridge.
 		for _, journey in ipairs(route.journeys) do
-			for _, step in ipairs(journey.steps) do
-				steps[#steps + 1] = (journey == story or step.map == 1433) and step or nil
+			for _, step in ipairs(journey.kind == "carry" and journey.steps or {}) do
+				equal(step.map ~= 1433, true, "human19_redridge_full: carry's " .. step.key .. " is off Redridge")
 			end
 		end
-		for _, step in ipairs(steps) do
+		equal(story.subline:match("(%d+) of them on later laps") ~= nil, true, "human19_redridge_full: later laps")
+		for _, step in ipairs(story.steps) do
 			if step.kind == "area" or step.kind == "dungeon" then
 				areas = areas + 1
 				equal(step.map, 1433, "human19_redridge_full: " .. step.key .. " is on Redridge")
@@ -178,7 +178,7 @@ for _, fixture in ipairs(characters.list) do
 				equal(placed, true, "human19_redridge_full: " .. step.key .. " is at a data objective area")
 			end
 		end
-		equal(areas >= 5, true, "human19_redridge_full: the quests under way are area steps")
+		equal(areas >= 4, true, "human19_redridge_full: the quests under way are area steps")
 		-- "Why is Duskwood not suggested at all?": it has just come into range (18-30) next door, so it is a zone to
 		-- head to, as is the Wetlands; Westfall and Darkshore, at the top of theirs, are not.
 		local offered = {}

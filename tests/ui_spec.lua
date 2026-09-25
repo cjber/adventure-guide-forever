@@ -963,10 +963,13 @@ end
 -- (no mouse: an in-game check); its tooltip lists each open objective under its quest in the client's words, else
 -- its count.
 do
-	-- Gann's Reclamation is a later lap's on the story (Ratchet's leads), so carry holds it.
+	-- With the Barrens story ruled out, Gann's Reclamation is off every zone loop, so carry (Loose ends) holds it.
 	local h = harness.load({
 		db = PINS_ON,
-		charDB = { journey = "carry" },
+		charDB = {
+			journey = "carry",
+			notInterested = { ["zone:1413"] = { title = "The Barrens story" } },
+		},
 		completed = { 844 },
 		log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
@@ -1240,8 +1243,8 @@ do
 	h.flush()
 	equal(h.modelCalls.Journeys - before, 0, "combat: no full build in combat")
 	equal(ns.Route().journey, "zone:1413", "combat: the chosen card holds")
-	-- A quest finished mid-fight: carry, fresh from the log, hands it in. Gann's is a later lap's on the story
-	-- (Ratchet's leads), so the story, which never held it, keeps every step.
+	-- A quest finished mid-fight: carry, fresh from the log, hands it in. Gann's waits for a later lap on the story
+	-- (Ratchet's leads), so the story, which never drew it, keeps every step.
 	local keys, cards = {}, ns.Route().journeys
 	for _, journey in ipairs(cards) do
 		for _, step in ipairs(journey.steps) do
