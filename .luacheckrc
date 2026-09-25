@@ -5,6 +5,8 @@ exclude_files = {
 	".types/**",
 	"types/**",
 	".release/**",
+	-- Agent worktrees: whole copies of the repo, untracked.
+	".claude/**",
 	"tests/golden/**",
 	-- Shortest Path's own types, vendored byte for byte for tests/contract_spec.lua.
 	"tests/fixtures/spf_types_API.lua",

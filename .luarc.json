@@ -10,7 +10,8 @@
     "tests",
     "tools",
     ".sift",
-    ".release"
+    ".release",
+    ".claude"
   ],
   "workspace.checkThirdParty": false,
   "workspace.maxPreload": 10000,
