@@ -523,7 +523,8 @@ local function CreateBar(parent)
 end
 
 -- The bar `width` wide at (x, y) in its card, filled to `value` (0-1]; a scaled frame's offsets and size are in its
--- own units.
+-- own units. An empty bar hides its fill: the client takes a width of 0 as unset, and the fill, anchored by its left
+-- edge only, would then draw at its atlas's own width, far past the bar.
 ---@param bar AGFProgressBar
 ---@param x number
 ---@param y number
@@ -536,7 +537,11 @@ local function SetBar(bar, x, y, width, value, height)
 	bar:SetWidth(width / scale)
 	bar:ClearAllPoints()
 	bar:SetPoint("TOPLEFT", x / scale, -y / scale)
-	bar.Fill:SetWidth(width / scale * math.min(value, 1))
+	local fill = width / scale * math.min(value, 1)
+	bar.Fill:SetShown(fill > 0)
+	if fill > 0 then
+		bar.Fill:SetWidth(fill)
+	end
 	bar:Show()
 end
 
