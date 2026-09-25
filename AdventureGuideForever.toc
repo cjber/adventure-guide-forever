@@ -10,21 +10,26 @@
 ## SavedVariables: AdventureGuideForeverDB
 ## SavedVariablesPerCharacter: AdventureGuideForeverCharDB
 ## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick
-## OptionalDeps: ShortestPathForever, QuestieDB, SkillUpForever
+## OptionalDeps: ShortestPathForever, QuestieDB, SkillUpForever, LegacyForever, TweaksForever
 
 Data\Quests.lua
 Data\Forever.lua
 Data\ZoneArt.lua
 Core.lua
 Model.lua
+Order.lua
+Session.lua
+Sound.lua
 State.lua
 Focus.lua
 Integrations.lua
+Providers.lua
 QuestieSource.lua
 Asides.lua
 Hints\Profession.lua
 PvP.lua
 Hints\Explore.lua
+Hints\Hearth.lua
 Moments.lua
 Menu.lua
 Pins.lua
@@ -35,6 +40,8 @@ Panel.lua
 Window.lua
 WindowJourneys.lua
 WindowProfessions.lua
+WindowPvP.lua
+WindowCompletion.lua
 Tracker.lua
 Tooltip.lua
 Settings.lua

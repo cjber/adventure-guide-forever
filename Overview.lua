@@ -43,7 +43,7 @@ local function ShowTooltip(owner, lines)
 end
 
 -- A step row's lines: the ring's; a row after step 1 asks Shortest Path for its travel line once, on hover.
----@param self AGFRouteRow|AGFPreviewRow
+---@param self AGFRouteRow
 local function RowEnter(self)
 	local step, index = self.step, self.index
 	if not (step and index) then
@@ -52,18 +52,232 @@ local function RowEnter(self)
 	local travel = index == 1 and ns.Integrations.Travel(step) or ns.Integrations.TravelLine(step)
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	ns.Pins.StepTooltip(GameTooltip, step, index, travel)
+	-- The chosen journey's rows drag into another order (docs/design.md §2.20).
+	if ns.Route().chosen then
+		GameTooltip_AddInstructionLine(GameTooltip, L.ORDER_DRAG)
+	end
 	GameTooltip:Show()
 end
 
--- A quest in the log opens its details; any other step turns the map to it. Right-click is the step menu.
----@param self AGFRouteRow|AGFPreviewRow
+-- The step's kind at a glance (docs/design.md §2.9), the map's own marks: a pickup's "!", a hand-in's "?", an
+-- objective's mark (a dungeon's work too), and the minimap tracking menu's trainer and battlemaster. A town reads as
+-- its pickups when it has any, else its hand-ins. Nil for a step the model gave no verb.
+local VERB_ATLAS = {
+	pickup = "QuestNormal",
+	turnin = "QuestTurnin",
+	objective = "questobjective",
+	battlemaster = "battlemaster",
+}
+local TRAINER_FILE = "Interface\\Minimap\\Tracking\\Class"
+
+---@param step AGFStep
+---@return string? atlas
+---@return string? file
+local function VerbIcon(step)
+	local verb = step.verb
+	if verb == "town" then
+		return (step.pickups and #step.pickups > 0) and VERB_ATLAS.pickup or VERB_ATLAS.turnin
+	elseif verb == "trainer" then
+		return nil, TRAINER_FILE
+	end
+	return verb and VERB_ATLAS[verb] or nil
+end
+
+-- The kind's mark on `texture`, hidden when the step has none.
+---@param texture Texture
+---@param step AGFStep
+local function SetVerbIcon(texture, step)
+	local atlas, file = VerbIcon(step)
+	if atlas then
+		texture:SetAtlas(atlas)
+	elseif file then
+		texture:SetTexture(file)
+	end
+	texture:SetShown(atlas ~= nil or file ~= nil)
+end
+
+-- A step's badge: the kind's mark over its ring's lower right, `size` wide and `out` past the ring's edge, as Shortest
+-- Path badges a numbered stop (its Route.lua: BADGE_SIZE 16, BADGE_OFFSET 4 on a 22 ring).
+---@param parent Frame
+---@param ring Region
+---@param size number
+---@param out number
+---@return Texture
+local function CreateBadge(parent, ring, size, out)
+	local badge = parent:CreateTexture(nil, "OVERLAY", nil, 1)
+	badge:SetSize(size, size)
+	badge:SetPoint("BOTTOMRIGHT", ring, "BOTTOMRIGHT", out, -out)
+	badge:Hide()
+	return badge
+end
+
+--[[ Reordering the chosen journey (docs/design.md §2.20): the right-click menu's Do this next, sooner and later, and a
+     drag from one row onto another with the stock move cursor. Order.lua says which moves keep the route whole; a
+     row it would not take is dimmed while the drag lasts, and nothing moves but the step dragged. ]]
+
+local DRAG_CURSOR = "Interface\\CURSOR\\UI-Cursor-Move"
+local DIMMED = 0.35
+
+-- After the step menu (Menu.lua), the chosen journey's order: each move greyed where Order.lua refuses it, the way
+-- back while the order is the player's, and a town's givers still to see, a skip each.
+---@param root SharedMenuDescriptionProxy
+---@param step AGFStep
+---@param index? integer
+local function OrderEntries(root, step, index)
+	local Order = ns.Order
+	if not (index and ns.Route().chosen) then
+		return
+	end
+	root:CreateDivider()
+	for _, move in ipairs({ { L.ORDER_NEXT, 1 }, { L.ORDER_SOONER, index - 1 }, { L.ORDER_LATER, index + 1 } }) do
+		local to = move[2]
+		local button = root:CreateButton(move[1], function()
+			Order.Move(index, to)
+		end)
+		button:SetEnabled(to >= 1 and Order.CanMove(index, to))
+	end
+	if Order.IsCustom() then
+		root:CreateButton(L.ORDER_RESET, Order.Reset)
+	end
+	local open = {}
+	for _, giver in ipairs(step.checklist or {}) do
+		open[#open + 1] = not (giver.done or giver.skipped) and giver or nil
+	end
+	if #open > 0 then
+		local skip = root:CreateButton(L.TOWN_SKIP_GIVER)
+		for _, giver in ipairs(open) do
+			skip:CreateButton(giver.name, function()
+				Order.SkipGiver(step.key, giver.key)
+			end)
+		end
+	end
+end
+
+-- A step row's right-click: the step menu, then its order.
+---@param owner Region
+---@param step AGFStep
+---@param index? integer
+local function StepMenu(owner, step, index)
+	MenuUtil.CreateContextMenu(owner, function(_, root)
+		root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_STEP")
+		ns.Menu.Step(root, step)
+		OrderEntries(root, step, index)
+	end)
+end
+
+---@class AGFDraggableRow : Button
+---@field step? AGFStep
+---@field index? integer
+
+-- Lets a row of `rows` be dragged onto another; `redraw` puts every row's own alpha back once the drag ends.
+---@param row AGFDraggableRow
+---@param rows AGFDraggableRow[]
+---@param redraw fun()
+local function Draggable(row, rows, redraw)
+	row:RegisterForDrag("LeftButton")
+	row:SetScript("OnDragStart", function(self)
+		if not (self.index and ns.Route().chosen) then
+			return
+		end
+		GameTooltip_Hide()
+		SetCursor(DRAG_CURSOR)
+		for _, other in ipairs(rows) do
+			if other ~= self and other.index and other:IsShown() and not ns.Order.CanMove(self.index, other.index) then
+				other:SetAlpha(DIMMED)
+			end
+		end
+	end)
+	row:SetScript("OnDragStop", function(self)
+		ResetCursor()
+		local target
+		for _, other in ipairs(rows) do
+			if other ~= self and other.index and other:IsShown() and other:IsMouseOver() then
+				target = other
+			end
+		end
+		redraw()
+		if self.index and target and ns.Order.CanMove(self.index, target.index) then
+			ns.Order.Move(self.index, target.index)
+		end
+	end)
+end
+
+--[[ A town's checklist (docs/design.md §2.9): a line a giver under the town's row, ticked once done as the tracker
+     ticks an objective; a giver skipped for now greys out with no tick. ]]
+
+local CHECK_HEIGHT, CHECK_ICON = 14, 12
+
+---@class AGFCheckLine : Frame
+---@field Tick Texture
+---@field Text FontString
+
+---@param parent Frame
+---@return AGFCheckLine
+local function CreateCheckLine(parent)
+	local line = CreateFrame("Frame", nil, parent) --[[@as AGFCheckLine]]
+	line:SetHeight(CHECK_HEIGHT)
+	line.Tick = line:CreateTexture(nil, "ARTWORK")
+	line.Tick:SetSize(CHECK_ICON, CHECK_ICON)
+	line.Tick:SetPoint("LEFT")
+	line.Text = line:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	line.Text:SetPoint("LEFT", CHECK_ICON + 4, 0)
+	line.Text:SetPoint("RIGHT")
+	line.Text:SetJustifyH("LEFT")
+	line.Text:SetWordWrap(false)
+	return line
+end
+
+-- `step`'s checklist in `pool`'s lines from `first` on (made as needed on `parent`), from `top` down, `left` in and
+-- `width` wide, while a line ends above `bottom`. Returns the top under the last line and the next free line.
+---@param pool AGFCheckLine[]
+---@param first integer
+---@param parent Frame
+---@param step AGFStep
+---@param left number
+---@param top number
+---@param width number
+---@param bottom? number
+---@return number top
+---@return integer next
+local function LayoutChecklist(pool, first, parent, step, left, top, width, bottom)
+	local index = first
+	for _, giver in ipairs(step.checklist or {}) do
+		if bottom and top + CHECK_HEIGHT > bottom then
+			break
+		end
+		local line = pool[index] or CreateCheckLine(parent)
+		pool[index] = line
+		line:SetWidth(width)
+		line:SetPoint("TOPLEFT", left, -top)
+		line.Tick:SetAtlas(giver.done and "UI-QuestTracker-Tracker-Check" or "UI-QuestTracker-Objective-Nub")
+		line.Tick:SetAlpha(giver.skipped and 0.4 or 1)
+		line.Text:SetText(giver.text)
+		local shade = (giver.done or giver.skipped) and 0.6 or 0.9
+		line.Text:SetTextColor(shade, shade, shade)
+		line:Show()
+		top, index = top + CHECK_HEIGHT, index + 1
+	end
+	return top, index
+end
+
+-- Hides `pool`'s lines from `from` on.
+---@param pool AGFCheckLine[]
+---@param from integer
+local function HideChecklist(pool, from)
+	for index = from, #pool do
+		pool[index]:Hide()
+	end
+end
+
+-- A quest in the log opens its details; any other step turns the map to it. Right-click is the step menu and order.
+---@param self AGFRouteRow
 ---@param mouseButton string
 local function RowClick(self, mouseButton)
 	if not self.step then
 		return
 	end
 	if mouseButton == "RightButton" then
-		ns.Menu.Open(self, "MENU_ADVENTURE_GUIDE_FOREVER_STEP", self.step)
+		StepMenu(self, self.step, self.index)
 	elseif not ns.ShowQuest(self.step) then
 		FocusStep(self.step)
 	end
@@ -121,6 +335,27 @@ local function DropLine(journey)
 	return (drop == 1 and L.LOG_FULL_ONE) or (drop > 1 and L.LOG_FULL:format(drop)) or nil
 end
 
+-- The dungeon card's way in (docs/design.md §2.19): Tweaks Forever's entrance for its instance (a Map.ID), else the
+-- line saying why there is none. Nil for any other card.
+---@param journey AGFJourney
+---@return integer? instance
+---@return AGFPoint? point
+---@return string? note
+local function Entrance(journey)
+	local instance = journey.kind == "dungeon" and tonumber(journey.key:match("^dungeon:(%d+)$"))
+	if not instance then
+		return nil
+	end
+	local point, reason = ns.Providers.DungeonEntrance(instance)
+	local note = not point
+		and (
+			(reason == "missing" and L.TWEAKS_MISSING)
+			or (reason == "outdated" and L.TWEAKS_OUTDATED)
+			or L.ENTRANCE_UNKNOWN
+		)
+	return instance, point, note or nil
+end
+
 -- Every card's tooltip, whole or one-line (docs/plan.md §7.4): its lines, the hub line when line 3 holds the reason
 -- or is folded away, how many quests need a group, the quests the log-full note means, then what a click does. The
 -- chosen card points to the back arrow; a card whose click would replace someone else's journey warns
@@ -140,8 +375,11 @@ local function CardTooltip(card)
 		GameTooltip_AddHighlightLine(GameTooltip, journey.reason)
 	end
 	local hub = HubLine(journey)
-	if hub and (journey.reason or journey.drop or card.state == "compact") then
+	if hub and (journey.reason or journey.drop or card.state == "compact" or card.detail == hub) then
 		GameTooltip_AddHighlightLine(GameTooltip, hub)
+	end
+	if card.detail and card.detail ~= journey.reason and card.detail ~= journey.subline and card.detail ~= hub then
+		GameTooltip_AddHighlightLine(GameTooltip, card.detail)
 	end
 	local travel = ns.Integrations.CardTravel(journey)
 	if travel and travel.line then
@@ -150,6 +388,10 @@ local function CardTooltip(card)
 	local group = journey.group or 0
 	if group > 0 then
 		GameTooltip_AddHighlightLine(GameTooltip, group == 1 and L.GROUP_ONE or L.GROUP_MANY:format(group))
+	end
+	local _, _, note = Entrance(journey)
+	if note then
+		GameTooltip_AddNormalLine(GameTooltip, note)
 	end
 	if journey.drop then
 		local log = ns.State.Log()
@@ -323,6 +565,13 @@ local function HideTooltipWithin(root)
 end
 
 Overview.KIND_ICONS = KIND_ICONS
+Overview.SetVerbIcon = SetVerbIcon
+Overview.CreateBadge = CreateBadge
+Overview.StepMenu = StepMenu
+Overview.Draggable = Draggable
+Overview.LayoutChecklist = LayoutChecklist
+Overview.HideChecklist = HideChecklist
+Overview.Entrance = Entrance
 Overview.CreateBar = CreateBar
 Overview.SetBar = SetBar
 Overview.FocusStep = FocusStep

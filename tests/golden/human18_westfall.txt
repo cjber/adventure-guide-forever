@@ -1,17 +1,17 @@
 # human18_westfall: level 18, side 1, at 1436 0.5600,0.4700
 card (chosen) | zone:1436 | Westfall story | Chapter 1 of 5 | A chain begins with Gryan Stoutmantle | map 1436
-  step 1 | town:37 | Pick up quests: Gryan Stoutmantle | 1436 0.5633,0.4752 | Begins a new story
-  step 2 | town:30 | Pick up quests: Scout Galiaan | 1436 0.5398,0.5298 | near your level
-  step 3 | area:153:4 | Red Leather Bandanas | 1436 0.4761,0.2736 | after you pick it up | 141 yd | 153/4
+  step 1 | town:37 | Pick up: The Defias Brotherhood | 1436 0.5633,0.4752 | Begins a new story
+  step 2 | town:30 | Pick up: Red Leather Bandanas | 1436 0.5398,0.5298 | near your level
+  step 3 | area:153:4 | Complete objectives · Red Leather Bandanas | 1436 0.4761,0.2736 | after you pick it up | 141 yd | 153/4
   step 4 | town:30:2 | Turn in: Red Leather Bandanas | 1436 0.5398,0.5298 | once it's done
-  step 5 | town:45 | Pick up quests: Farmer Saldean | 1436 0.5604,0.3123 | near your level
+  step 5 | town:45 | Pick up: The Killing Fields | 1436 0.5604,0.3123 | near your level
 card | zone:1433 | Head to Redridge Mountains | 8 quests near your level | For level 20 | map 1433
-  step 1 | town:56 | Pick up quests: Guard Parker | 1433 0.1019,0.7146 | near your level
-  step 2 | town:61 | Lakeshire, Redridge | 1433 0.2423,0.5364 | 7 to pick up
+  step 1 | town:56 | Pick up: Encroaching Gnolls | 1433 0.1019,0.7146 | near your level
+  step 2 | town:61 | Visit Lakeshire, Redridge: Pick up 7 | 1433 0.1759,0.4384 | 7 to pick up
 card | zone:1440 | Head to Ashenvale | 3 quests near your level | Astranaar needs hands | map 1440
-  step 1 | town:405 | Astranaar, Ashenvale | 1440 0.3662,0.4958 | 3 to pick up
+  step 1 | town:405 | Visit Astranaar, Ashenvale: Pick up 3 | 1440 0.3577,0.4910 | 3 to pick up
 card | zone:1413 | Head to The Barrens | 7 quests near your level | Ratchet needs hands | map 1413
-  step 1 | town:340 | Ratchet, The Barrens | 1413 0.6335,0.3845 | 6 to pick up
-  step 2 | town:382 | Pick up quests: Wizzlecrank's Shredder | 1413 0.5652,0.0745 | near your level
+  step 1 | town:340 | Visit Ratchet, The Barrens: Pick up 6 | 1413 0.6237,0.3762 | 6 to pick up
+  step 2 | town:382 | Pick up: Ignition | 1413 0.5652,0.0745 | near your level
 card | dungeon:36 | Deadmines | 3 quests for this dungeon | - | map 1453
-  step 1 | town:80 | Wilder Thistlenettle | 1453 0.7031,0.4082 | 3 to pick up
+  step 1 | town:80 | Visit Wilder Thistlenettle: Pick up 3 | 1453 0.7031,0.4082 | 3 to pick up

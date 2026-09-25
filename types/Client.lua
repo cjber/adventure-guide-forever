@@ -27,6 +27,8 @@ EventRegistry = {}
 
 ---@type fun(region: Region, fadeInTime: number, fadeOutTime: number, flashDuration: number, showWhenDone: boolean)
 UIFrameFlash = nil
+---@type fun(frame: Region)
+UIFrameFlashStop = nil
 
 -- Blizzard_Minimap Mainline/AddonCompartment.xml: the minimap's addon compartment button; absent where the flavour
 -- doesn't load it, so read with a nil check.
@@ -73,6 +75,7 @@ OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 3
 ---@field SetEnabled fun(self: AGFMenuElement, isEnabled: boolean|fun(): boolean)
 
 ---@class AGFDropdown : Frame
+---@field GenerateMenu fun(self: AGFDropdown)
 ---@field SetupMenu fun(self: AGFDropdown, generator: fun(owner: AGFDropdown, root: AGFMenu))
 
 -- ScrollFrameTemplate: ScrollFrame_OnLoad attaches a MinimalScrollBar as ScrollBar.
@@ -120,6 +123,7 @@ MapCanvasDataProviderMixin = nil
 ---@field UseFrameLevelType fun(self: AGFMapPinMixin, frameLevelType: string)
 ---@field SetPosition fun(self: AGFMapPinMixin, x: number, y: number)
 ---@field SetScalingLimits fun(self: AGFMapPinMixin, style: number, minScale: number, maxScale: number)
+---@field SetIgnoreGlobalPinScale fun(self: AGFMapPinMixin, ignore: boolean)
 ---@field ApplyCurrentScale fun(self: AGFMapPinMixin)
 ---@type AGFMapPinMixin
 MapCanvasPinMixin = nil

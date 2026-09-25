@@ -1,14 +1,14 @@
 # orc18_barrens: level 18, side 2, at 1413 0.5200,0.3000
 card (chosen) | zone:1413 | The Barrens story | Chapter 1 of 4 | 2 quests will soon turn grey | map 1413
-  step 1 | town:349 | Crossroads, The Barrens | 1413 0.5193,0.3032 | Opens the next chapter here | then 903
-  step 2 | town:340 | Ratchet, The Barrens | 1413 0.6268,0.3623 | Begins a new story
-  step 3 | area:887:0 | Southsea Freebooters | 1413 0.6359,0.4294 | 2 quests here | 221 yd | 887/0 887/1 895/4
-  step 4 | area:896:4 | Miner's Fortune | 1413 0.6070,0.0636 | after you pick it up | 184 yd | 896/4
-  step 5 | town:340:2 | Ratchet, The Barrens | 1413 0.6268,0.3623 | Opens the next chapter here | then 890
-  step 6 | town:356 | Regthar Deathgate | 1413 0.4534,0.2841 | 2 to pick up
+  step 1 | town:349 | Visit Crossroads, The Barrens: Pick up 5, turn in 1 | 1413 0.5193,0.3032 | Opens the next chapter here | then 903
+  step 2 | town:340 | Visit Ratchet, The Barrens: Pick up 5 | 1413 0.6268,0.3623 | Begins a new story
+  step 3 | area:887:0 | Complete objectives · Southsea Freebooters | 1413 0.6359,0.4294 | 2 quests here | 221 yd | 887/0 887/1 895/4
+  step 4 | area:896:4 | Complete objectives · Miner's Fortune | 1413 0.6070,0.0636 | after you pick it up | 184 yd | 896/4
+  step 5 | town:340:2 | Visit Ratchet, The Barrens: Turn in 3 | 1413 0.6268,0.3623 | Opens the next chapter here | then 890
+  step 6 | town:356 | Visit Regthar Deathgate: Pick up 2 | 1413 0.4534,0.2841 | 2 to pick up
 card | zone:1442 | Head to Stonetalon Mountains | 7 quests near your level | For level 20 | map 1442
-  step 1 | town:358 | Makaba Flathoof | 1442 0.8593,0.9789 | 2 to pick up
-  step 2 | town:360 | Xen'Zilla | 1442 0.7325,0.9489 | 2 to pick up
-  step 3 | town:363 | Pick up quests: Kaya Flathoof | 1442 0.7348,0.8559 | near your level
-  step 4 | town:374 | Pick up quests: Mor'rogal | 1442 0.4722,0.6404 | near your level
-  step 5 | town:394 | Pick up quests: Zor Lonetree | 1454 0.3893,0.3840 | near your level
+  step 1 | town:358 | Visit Makaba Flathoof: Pick up 2 | 1442 0.8593,0.9789 | 2 to pick up
+  step 2 | town:360 | Visit Xen'Zilla: Pick up 2 | 1442 0.7325,0.9489 | 2 to pick up
+  step 3 | town:363 | Pick up: Protect Kaya | 1442 0.7348,0.8559 | near your level
+  step 4 | town:374 | Pick up: Boulderslide Ravine | 1442 0.4722,0.6404 | near your level
+  step 5 | town:394 | Pick up: The Spirits of Stonetalon | 1454 0.3893,0.3840 | near your level

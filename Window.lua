@@ -20,6 +20,10 @@ local INSET_TOP, INSET_BOTTOM = 60, 5
 local RIGHT = 30
 -- The Today strip: up to four asides across the art's top band, a ringed icon and its line.
 local TODAY_MAX, TODAY_TOP, TODAY_LEFT, TODAY_RING = 4, 4, 18, 26
+-- More asides than chips: the last slot is a stock button that lists the rest in a menu.
+local MORE_WIDTH, MORE_HEIGHT = 90, 22
+-- A step row's kind badge on its 26 ring, Shortest Path's 16-on-22 scaled down; an icon row's ring.
+local BADGE, BADGE_OUT, ICON_ROW_RING = 14, 3, 26
 -- Where a tab's content starts in the inset, under the Today strip.
 Window.TOP, Window.LEFT, Window.RIGHT = 50, 14, RIGHT
 Window.INSET_WIDTH, Window.INSET_HEIGHT = WIDTH - 8, HEIGHT - INSET_TOP - INSET_BOTTOM
@@ -32,13 +36,16 @@ local EJ_LEFT, EJ_TOP, EJ_RIGHT, EJ_BOTTOM, EJ_RIM = 1, 439, 175, 535, 8
 -- The Suggested Content icon recipe: the icon cut to a circle on a dark disc inside the Adventure Guide's ring; an
 -- atlas icon is inset so its own margin doesn't show.
 local RING_SCALE, ATLAS_INSET = 1.4, 0.16
--- The events SkillUp Forever rebuilds its answers on, and an item's name or icon arriving.
+-- SkillUp's answers, item data and the character's PvP rank progress.
 local EVENTS = {
 	"SKILL_LINES_CHANGED",
 	"BAG_UPDATE_DELAYED",
 	"NEW_RECIPE_LEARNED",
 	"TRADE_SKILL_LIST_UPDATE",
 	"ITEM_DATA_LOAD_RESULT",
+	"PLAYER_PVP_RANK_CHANGED",
+	"MAJOR_FACTION_RENOWN_LEVEL_CHANGED",
+	"UPDATE_FACTION",
 }
 
 ---@class AGFWindowTab
@@ -201,10 +208,12 @@ end
 ---@field Selected Texture
 ---@field Ring Texture
 ---@field Number Texture
+---@field Kind Texture the step's kind, badged on the ring
 ---@field Title FontString
 ---@field Detail FontString
 
--- A numbered step on the right of a card: the route rows' art (Panel.lua), the ring and number at 26.
+-- A numbered step on the right of a card: the route rows' art (Panel.lua), the ring and number at 26, the step's
+-- kind badged on the ring.
 ---@param parent Frame
 ---@param height number
 ---@return AGFWindowRow
@@ -225,6 +234,7 @@ function Window.CreateStepRow(parent, height)
 	row.Number = row:CreateTexture(nil, "OVERLAY")
 	row.Number:SetSize(22, 25)
 	row.Number:SetPoint("CENTER", row.Ring, "CENTER", 0, 0)
+	row.Kind = ns.Overview.CreateBadge(row, row.Ring, BADGE, BADGE_OUT)
 	row.Title = row:CreateFontString(nil, "ARTWORK", "GameFontNormalMed3")
 	row.Title:SetPoint("BOTTOMLEFT", row, "LEFT", 40, 1)
 	row.Title:SetPoint("RIGHT", -8, 0)
@@ -243,11 +253,80 @@ end
 ---@param index integer
 ---@param title string
 ---@param detail? string
-function Window.SetStepRow(row, index, title, detail)
+---@param step? AGFStep a route step, for its kind's badge
+function Window.SetStepRow(row, index, title, detail, step)
 	row.Number:SetAtlas("services-number-" .. index)
 	row.Title:SetText(title)
 	row.Detail:SetText(detail or "")
 	row.Selected:SetShown(index == 1)
+	if step then
+		ns.Overview.SetVerbIcon(row.Kind, step)
+	else
+		row.Kind:Hide()
+	end
+end
+
+---@class AGFWindowIconRow : Button
+---@field Icon AGFRingIcon
+---@field Title FontString
+---@field Detail FontString
+
+-- A row with a ringed icon in place of a number (a battleground, a Legacy objective), in the step rows' art.
+---@param parent Frame
+---@param height number
+---@return AGFWindowIconRow
+function Window.CreateIconRow(parent, height)
+	local row = CreateFrame("Button", nil, parent) --[[@as AGFWindowIconRow]]
+	row:SetHeight(height)
+	local background = row:CreateTexture(nil, "BACKGROUND")
+	background:SetAtlas("PetList-ButtonBackground")
+	background:SetAllPoints()
+	row:SetHighlightAtlas("PetList-ButtonHighlight")
+	row.Icon = Window.CreateRingIcon(row, ICON_ROW_RING)
+	row.Icon:SetPoint("LEFT", 8, 0)
+	row.Title = row:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+	row.Title:SetPoint("BOTTOMLEFT", row, "LEFT", 42, 1)
+	row.Title:SetPoint("RIGHT", -8, 0)
+	row.Detail = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	row.Detail:SetPoint("TOPLEFT", row, "LEFT", 42, -3)
+	row.Detail:SetPoint("RIGHT", -8, 0)
+	row.Detail:SetTextColor(0.8, 0.8, 0.8)
+	for _, text in ipairs({ row.Title, row.Detail }) do
+		text:SetJustifyH("LEFT")
+		text:SetWordWrap(false)
+	end
+	return row
+end
+
+-- A tab's calm page while it has nothing to show (SkillUp, Legacy Forever or rank data missing): its art dimmed
+-- behind one centred line.
+---@class AGFWindowEmpty
+---@field Art Texture
+---@field Text FontString
+
+---@param parent Frame
+---@param atlas string
+---@return AGFWindowEmpty
+function Window.CreateEmpty(parent, atlas)
+	local width = Window.INSET_WIDTH - Window.LEFT - Window.RIGHT
+	local art = parent:CreateTexture(nil, "ARTWORK")
+	art:SetAtlas(atlas)
+	art:SetPoint("TOPLEFT", Window.LEFT, -Window.TOP)
+	art:SetSize(width, Window.INSET_HEIGHT - 12 - Window.TOP)
+	art:SetAlpha(0.35)
+	local text = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	text:SetPoint("CENTER", art, "CENTER", 0, 0)
+	text:SetWidth(width - 120)
+	text:SetJustifyH("CENTER")
+	return { Art = art, Text = text }
+end
+
+---@param empty AGFWindowEmpty
+---@param line? string shown while set
+function Window.SetEmpty(empty, line)
+	empty.Art:SetShown(line ~= nil)
+	empty.Text:SetShown(line ~= nil)
+	empty.Text:SetText(line or "")
 end
 
 -- A tab's heading over a column: "Next steps", "Reagents".
@@ -309,10 +388,63 @@ local function CreateChip(parent, width)
 	return chip
 end
 
+-- The aside's icon inline, for its menu entry.
+---@param aside AGFAside
+---@return string
+local function AsideMarkup(aside)
+	local texture = aside.texture
+	if type(texture) == "number" then
+		return ("|T%d:14:14|t "):format(texture)
+	end
+	return ("|A:%s:14:14|a "):format(texture or aside.icon)
+end
+
+---@class AGFTodayMore : Button
+---@field asides? AGFAside[]
+
+---@type AGFTodayMore?
+local more
+
+-- "+2 more" in the last slot: a menu of the asides the chips leave out, each going where its chip would.
+---@param inset Frame
+---@param width number
+---@return AGFTodayMore
+local function CreateMore(inset, width)
+	local button = CreateFrame("Button", nil, inset, "UIPanelButtonTemplate") --[[@as AGFTodayMore]]
+	button:SetSize(MORE_WIDTH, MORE_HEIGHT)
+	button:SetPoint("LEFT", inset, "TOPLEFT", TODAY_LEFT + (TODAY_MAX - 1) * width, -(TODAY_TOP + 18))
+	button:SetScript("OnClick", function(self)
+		MenuUtil.CreateContextMenu(self, function(_, root)
+			root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_TODAY")
+			for _, aside in ipairs(self.asides or {}) do
+				local entry = root:CreateButton(AsideMarkup(aside) .. aside.text, function()
+					ns.Asides.Go(aside)
+				end)
+				entry:SetEnabled(aside.place ~= nil and not ns.Setting("wanderer"))
+			end
+		end)
+	end)
+	return button
+end
+
 ---@param inset Frame
 local function RefreshToday(inset)
-	local asides = ns.Asides.All()
+	local all = ns.Asides.All()
 	local width = (Window.INSET_WIDTH - TODAY_LEFT - RIGHT) / TODAY_MAX
+	local overflow = #all > TODAY_MAX
+	local asides, rest = {}, {}
+	for index, aside in ipairs(all) do
+		local list = (overflow and index >= TODAY_MAX) and rest or asides
+		list[#list + 1] = aside
+	end
+	if overflow and not more then
+		more = CreateMore(inset, width)
+	end
+	if more then
+		more.asides = rest
+		more:SetShown(overflow)
+		more:SetText(L.TODAY_MORE:format(#rest))
+	end
 	for index = 1, TODAY_MAX do
 		local aside = asides[index]
 		local chip = chips[index]
@@ -469,6 +601,8 @@ local function Build()
 		end
 		PlaySound(SOUNDKIT.IG_CHARACTER_INFO_OPEN)
 		ns.Moments.Opened()
+		-- Legacy Forever is listened to only while the window shows (Providers.lua).
+		ns.Providers.SetShown(true)
 		Refresh()
 	end)
 	frame:SetScript("OnHide", function(self)
@@ -476,6 +610,7 @@ local function Build()
 		for _, event in ipairs(EVENTS) do
 			self:UnregisterEvent(event)
 		end
+		ns.Providers.SetShown(false)
 		PlaySound(SOUNDKIT.IG_CHARACTER_INFO_CLOSE)
 		if not (ns.PanelShown and ns.PanelShown()) then
 			ns.Moments.Closed()
@@ -486,6 +621,7 @@ local function Build()
 	ns.Asides.OnChange(Refresh)
 	ns.Moments.OnChange(Refresh)
 	ns.Integrations.OnGuidanceChange(Refresh)
+	ns.Providers.OnChange(Refresh)
 	local saved = ns.WindowDB().tab
 	for index, tab in ipairs(tabs) do
 		if tab.key == saved then

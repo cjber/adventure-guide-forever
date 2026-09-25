@@ -172,6 +172,7 @@ function harness.load(options)
 		SetJustifyH = "justifyH",
 		SetMaxLines = "maxLines",
 		SetTexCoord = "texCoord",
+		SetVertexColor = "vertexColor",
 		SetTextureSliceMargins = "slice",
 		SetWordWrap = "wordWrap",
 	}) do
@@ -209,6 +210,17 @@ function harness.load(options)
 		return region
 	end
 
+	function Methods:SetHitRectInsets(left, right, top, bottom)
+		self.hitRectInsets = { left, right, top, bottom }
+	end
+
+	G.SetCursor = function(cursor)
+		h.cursor = cursor
+	end
+	G.ResetCursor = function()
+		h.cursor = nil
+	end
+
 	function Methods:GetObjectType()
 		return self.objectType
 	end
@@ -227,6 +239,19 @@ function harness.load(options)
 	end
 	function Methods:GetParent()
 		return self.parent
+	end
+	function Methods:SetParent(parent)
+		local previous = self.parent
+		if previous then
+			for index, child in ipairs(previous.childFrames) do
+				if child == self then
+					table.remove(previous.childFrames, index)
+					break
+				end
+			end
+		end
+		self.parent = parent
+		parent.childFrames[#parent.childFrames + 1] = self
 	end
 	function Methods:GetParentKey()
 		return self.parentKey
@@ -648,6 +673,21 @@ function harness.load(options)
 	end
 
 	local STOCK = {
+		-- Blizzard_Menu/Mainline/MenuTemplates.xml: selected radio label in the stock Text innard.
+		WowStyle1DropdownTemplate = function(frame)
+			frame:SetSize(120, 25)
+			Internal("FontString", frame, "Text")
+			function frame.GenerateMenu(self)
+				local saved = h.menu
+				local root = h.OpenMenu(self)
+				h.menu = saved
+				for _, entry in ipairs(root.entries) do
+					if entry.kind == "radio" and entry.isSelected(entry.data) then
+						self.Text:SetText(entry.text)
+					end
+				end
+			end
+		end,
 		-- Mainline/SharedUIPanelTemplates.xml:1587 and .lua:1763: the highlight is the normal art, or the pushed art
 		-- while the mouse is down.
 		AlphaHighlightButtonTemplate = function(frame)
@@ -872,6 +912,10 @@ function harness.load(options)
 	G.CreateFrame = function(objectType, name, parent, template)
 		h.counts.CreateFrame = h.counts.CreateFrame + 1
 		local frame = NewRegion(objectType, name, parent)
+		-- The map sidebar starts laid out; screenshots feed its measured rect back on later passes.
+		if name == "AdventureGuideForeverPanel" then
+			frame.rect = { 0, 0, 306, 535 }
+		end
 		if template then
 			Instantiate(frame, template)
 		end
@@ -1057,6 +1101,9 @@ function harness.load(options)
 	G.UISpecialFrames = {}
 	-- Key bindings: h.bindings maps a key to its action ("" when free); h.savedBindings counts SaveBindings calls.
 	h.bindings, h.savedBindings = options.bindings or {}, {}
+	G.GetBindingText = function(key)
+		return (key:gsub("SHIFT%-", "Shift-"):gsub("CTRL%-", "Ctrl-"):gsub("ALT%-", "Alt-"))
+	end
 	G.GetBindingAction = function(key)
 		return h.bindings[key] or ""
 	end
@@ -1495,8 +1542,16 @@ function harness.load(options)
 		G.GameTooltip:Show()
 	end
 	h.flashes = 0
-	G.UIFrameFlash = function()
+	G.UIFrameFlash = function(frame, _, _, _, showWhenDone)
 		h.flashes = h.flashes + 1
+		frame.flashing, frame.showWhenDone = true, showWhenDone
+		frame:SetAlpha(0)
+		frame:Show()
+	end
+	G.UIFrameFlashStop = function(frame)
+		frame.flashing = nil
+		frame:SetAlpha(1)
+		frame:SetShown(frame.showWhenDone)
 	end
 
 	-- Menus: a recording root. Each entry is {kind, text, onClick?, entries} so submenus nest.
@@ -1524,6 +1579,14 @@ function harness.load(options)
 	function DescriptionMethods:CreateCheckbox(text, isSelected, setSelected)
 		local entry = Add(self, Description("checkbox", text))
 		entry.isSelected, entry.onClick = isSelected, setSelected
+		return entry
+	end
+	function DescriptionMethods:CreateRadio(text, isSelected, setSelected, data)
+		local entry = Add(self, Description("radio", text))
+		entry.isSelected, entry.data = isSelected, data
+		entry.onClick = function()
+			return setSelected(data)
+		end
 		return entry
 	end
 	-- MenuUtil.lua:293: the menu calls it with GameTooltip on hover; h.HoverEntry does the same.
@@ -1693,7 +1756,12 @@ function harness.load(options)
 			self.x, self.y = x, y
 			self:SetPoint("CENTER", map, "TOPLEFT", x * 1000, -y * 700)
 		end,
-		SetScalingLimits = noop,
+		SetScalingLimits = function(self, style, minScale, maxScale)
+			self.scalingLimits = { style, minScale, maxScale }
+		end,
+		SetIgnoreGlobalPinScale = function(self, ignore)
+			self.ignoreGlobalPinScale = ignore
+		end,
 		ApplyCurrentScale = noop,
 	}
 	-- The map's canvas: the 1000 x 700 frame SetPosition places pins on.
@@ -1976,6 +2044,56 @@ function harness.load(options)
 		}
 	end
 
+	h.time = 100
+	G.GetTime = function()
+		return h.time
+	end
+	player.bind = options.bind
+	G.GetBindLocation = function()
+		return player.bind
+	end
+	G.GetLocale = function()
+		return options.locale or "enUS"
+	end
+	if options.entrances then
+		G.TweaksForever = G.TweaksForever or { API = { version = 1 } }
+		G.TweaksForever.API.DungeonEntrance = function(id)
+			return options.entrances[id]
+		end
+	end
+	if options.legacy then
+		local fake, subscribers = options.legacy, {}
+		h.legacy = { subscriptions = 0, navigations = {} }
+		G.LegacyForever = {
+			API = {
+				version = fake.version or 1,
+				ZoneSummary = function(zoneMap)
+					return (fake.summaries or {})[zoneMap], fake.error
+				end,
+				Targets = function(zoneMap)
+					return (fake.targets or {})[zoneMap] or {}, fake.error
+				end,
+				Navigate = function(zoneMap, key)
+					h.legacy.navigations[#h.legacy.navigations + 1] = { map = zoneMap, key = key }
+					return fake.navigateError == nil, fake.navigateError
+				end,
+				Subscribe = function(callback)
+					subscribers[callback] = true
+					h.legacy.subscriptions = h.legacy.subscriptions + 1
+					return function()
+						subscribers[callback] = nil
+						h.legacy.subscriptions = h.legacy.subscriptions - 1
+					end
+				end,
+			},
+		}
+		function h.legacyChanged()
+			for callback in pairs(subscribers) do
+				callback()
+			end
+		end
+	end
+
 	-- SkillUp Forever (its API.lua, version 1): options.skillup.professions is what Professions answers, the same
 	-- table each call as SkillUp's cache is; options.skillup.version overrides 1, and options.skillup.noAPI stands for
 	-- a SkillUp too old to have one. h.skillup records Navigate and OpenRecipes calls. No options.skillup is no
@@ -2028,6 +2146,15 @@ function harness.load(options)
 				h.modelCalls[name] = h.modelCalls[name] + 1
 				return original(...) -- multi-value: the wrapper is transparent
 			end
+		end
+	end
+	-- Rendering fixtures can decorate the real route without replacing the model modules.
+	if options.decorate then
+		local route = h.ns.Route
+		h.ns.Route = function()
+			local built = route()
+			options.decorate(built)
+			return built
 		end
 	end
 	-- options.setup(h) runs before the client's load events: a /reload into combat, or into someone else's journey.
@@ -2100,6 +2227,7 @@ function harness.load(options)
 		"subLevel",
 		"texCoord",
 		"textColor",
+		"vertexColor",
 		"wordWrap",
 	}
 	function h.Describe(region, entry)

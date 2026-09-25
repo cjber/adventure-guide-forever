@@ -123,22 +123,22 @@ end
 -- Tweaks Forever's spells to train (F16), from its API.lua when a version 1 is loaded, for the trainer aside
 -- (Asides.lua) and a chosen journey's trainer stop (roadmap #5): how many, and the highest level among them. Nil
 -- without Tweaks Forever or its answer, and with nothing to train.
----@return AGFTraining?
+---@return AGFTraining?, boolean known
 function Integrations.Training()
 	local api = TweaksForever and TweaksForever.API
 	if type(api) ~= "table" or api.version ~= 1 or type(api.TrainableSpells) ~= "function" then
-		return nil
+		return nil, false
 	end
 	---@cast api AGFTFAPI
 	local spells = api.TrainableSpells()
 	if not spells or #spells == 0 then
-		return nil
+		return nil, spells ~= nil
 	end
 	local level = 0
 	for _, spell in ipairs(spells) do
 		level = math.max(level, spell.level)
 	end
-	return { count = #spells, level = level }
+	return { count = #spells, level = level }, true
 end
 
 -- SkillUp Forever's API (version 1), for the window's Professions tab: "ready" when every call the tab makes is
@@ -284,7 +284,7 @@ local NextCard
 
 -- The next queued card asks a frame on, unless a chain already will.
 local function Chain()
-	if cardQueue[1] and not chained then
+	if (cardQueue[1] or ns.Session.PendingWork()) and not chained then
 		chained = true
 		C_Timer.After(0, NextCard)
 	end
@@ -299,7 +299,7 @@ end)
 
 function NextCard()
 	chained = false
-	if not (ns.PanelShown and ns.PanelShown()) then
+	if not ns.Session.PendingWork() and not (ns.PanelShown and ns.PanelShown()) then
 		cardQueue = {}
 		return
 	elseif InCombatLockdown() then
@@ -309,6 +309,13 @@ function NextCard()
 		return
 	end
 	-- The queue may have emptied since this frame was asked for: a route with nothing new to fetch.
+	if ns.Session.PendingWork() then
+		local api = SPF()
+		if api and ns.Session.NextEstimate(api) then
+			Chain()
+		end
+		return
+	end
 	local journey = table.remove(cardQueue, 1)
 	if journey then
 		local line, minutes, crossing = Fetch(journey.steps[1])
@@ -428,6 +435,9 @@ local KINDS = {
 ---@param step AGFStep|AGFGiver
 ---@return AGFSPFStopKind?
 function Integrations.Kind(step)
+	if step.verb == "objective" then
+		return "objective"
+	end
 	local kind = step.kind --[[@as AGFStepKind?]]
 	if kind and kind ~= "town" then
 		return KINDS[kind]
@@ -588,7 +598,7 @@ end
 ---@return boolean
 local function Far(a, b)
 	local yards = ns.Model.Yards(ns.Data, a, b)
-	return yards ~= nil and yards > LINK
+	return (a.checklist ~= nil and (a.map ~= b.map or a.x ~= b.x or a.y ~= b.y)) or (yards ~= nil and yards > LINK)
 end
 
 -- Hands Shortest Path the chosen journey's steps again, as they were started (Core's restore after a /reload). Never
@@ -603,6 +613,25 @@ end
 ---@return (AGFStep|AGFGiver)[]
 function Integrations.Guided()
 	return Integrations.Guiding() and guided or {}
+end
+
+-- Resolve the exact stop handed to SPF, including a route which starts after an occupied objective area.
+function Integrations.CurrentStep()
+	local api = SPF()
+	local index = api and Integrations.Guiding() and api.CurrentStop(OWNER)
+	local sent = index and guided[index]
+	if sent and not sent.key then
+		return nil
+	end
+	if sent then
+		for _, step in ipairs(ns.Route().steps) do
+			if step.key == sent.key then
+				return step
+			end
+		end
+		return nil
+	end
+	return ns.Route().steps[1]
 end
 
 -- With Shortest Path, the step and every step after it become one numbered journey. When it declines (it returns

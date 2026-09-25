@@ -44,6 +44,7 @@ function ns.RegisterSettings()
 		Checkbox("titleStartsRoute", ns.L.SETTING_TITLE_ROUTE, ns.L.SETTING_TITLE_ROUTE_TOOLTIP),
 		track,
 		untrack,
+		Checkbox("stepSound", ns.L.SETTING_STEP_SOUND, ns.L.SETTING_STEP_SOUND_TOOLTIP),
 	}) do
 		Settings.RegisterInitializer(category, initializer)
 	end

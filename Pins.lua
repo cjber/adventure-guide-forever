@@ -3,6 +3,10 @@ local _, ns = ...
 
 local PIN_TEMPLATE = "AdventureGuideForeverPinTemplate"
 local GIVER_TEMPLATE = "AdventureGuideForeverGiverPinTemplate"
+-- Shortest Path's stock quest POI (StopPin.lua): yellow numerals, with later stops faded over an opaque silhouette.
+local NUMERAL_CELL, NUMERAL_YELLOW, NUMERALS_PER_ROW, MAX_NUMERAL = 0.125, 0.5, 8, 25
+local LATER_STOP_ALPHA = 0.55
+local BADGE_SIZE, BADGE_OFFSET = 16, 4
 
 ---@class AGFPinsModule
 local Pins = {}
@@ -179,49 +183,133 @@ function provider:RefreshAllData()
 	end
 	-- A numbered pin at each step's point, but none for the area the player stands in: they are there (§4.2). An area
 	-- draws nothing more: the game's own objective mark and its hover shape show where its objectives are.
+	-- A place the route comes back to (a town's second lap) keeps one ring, numbered for its first visit, with a "+N"
+	-- for the rest and every visit in its tooltip (docs/design.md §2.9).
+	---@type table<string, AGFPinVisit[]>
+	local places, order = {}, {}
 	for index, step in ipairs(ns.Route().steps) do
 		if step.map == mapID and not step.here then
-			---@type AGFPinFrame
-			local pin = self:GetMap():AcquirePin(PIN_TEMPLATE, step, index)
-			pinsByKey[step.key] = pin
+			local place = step.key
+			for _, other in ipairs(order) do
+				local first = places[other][1].step
+				if
+					first.key == step.key
+					or (first.kind == "town" and step.kind == "town" and first.hub and first.hub == step.hub)
+					or (first.x == step.x and first.y == step.y)
+				then
+					place = other
+					break
+				end
+			end
+			if not places[place] then
+				places[place] = {}
+				order[#order + 1] = place
+			end
+			table.insert(places[place], { step = step, index = index })
+		end
+	end
+	for _, place in ipairs(order) do
+		local visits = places[place]
+		---@type AGFPinFrame
+		local pin = self:GetMap():AcquirePin(PIN_TEMPLATE, visits[1].step, visits[1].index, visits)
+		for _, visit in ipairs(visits) do
+			pinsByKey[visit.step.key] = pin
 		end
 	end
 end
 
+---@class AGFPinVisit
+---@field step AGFStep
+---@field index number
+
+-- The step's kind (a pickup, a hand-in, an objective...) as a small badge on the ring's lower right, as Shortest
+-- Path badges its own stops; made on first use.
+---@param pin AGFPinFrame
+---@return Texture
+local function Badge(pin)
+	if not pin.Badge then
+		pin.Badge = pin:CreateTexture(nil, "OVERLAY", nil, 1)
+		pin.Badge:SetSize(BADGE_SIZE, BADGE_SIZE)
+		pin.Badge:SetPoint("BOTTOMRIGHT", BADGE_OFFSET, -BADGE_OFFSET)
+		pin.More = pin:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+		pin.More:SetPoint("BOTTOMRIGHT", BADGE_OFFSET, -BADGE_OFFSET)
+	end
+	return pin.Badge
+end
+
 ---@class AGFPinFrame : AGFMapPinMixin
+---@field Disc Texture
 ---@field Icon Texture
 ---@field Number Texture
+---@field NumberText FontString
 ---@field Glow Texture
+---@field Badge? Texture
+---@field More? FontString
 ---@field step? AGFStep
 ---@field index? number
+---@field visits? AGFPinVisit[]
 AdventureGuideForeverPinMixin = CreateFromMixins(MapCanvasPinMixin)
 
 ---@param step AGFStep
 ---@param index number
-function AdventureGuideForeverPinMixin:OnAcquired(step, index)
+---@param visits? AGFPinVisit[]
+function AdventureGuideForeverPinMixin:OnAcquired(step, index, visits)
 	-- The stock user waypoint's level (WaypointLocationDataProvider), above every quest "!" and "?", the super-tracked
 	-- one's included (Blizzard_WorldMap.lua:291-311); givers stay at AREA_POI, under both.
 	self:UseFrameLevelType("PIN_FRAME_LEVEL_WAYPOINT_LOCATION")
-	self.step, self.index = step, index
-	self.Number:SetAtlas("services-number-" .. index)
+	self.step, self.index, self.visits = step, index, visits
+	self.Disc:SetVertexColor(0, 0, 0)
+	local numeral = index <= MAX_NUMERAL
+	self.Number:SetShown(numeral)
+	self.NumberText:SetText(not numeral and tostring(index) or "")
+	if numeral then
+		local left = (index - 1) % NUMERALS_PER_ROW * NUMERAL_CELL
+		local top = NUMERAL_YELLOW + math.floor((index - 1) / NUMERALS_PER_ROW) * NUMERAL_CELL
+		self.Number:SetTexCoord(left, left + NUMERAL_CELL, top, top + NUMERAL_CELL)
+	end
+	local badge = Badge(self)
+	ns.Overview.SetVerbIcon(badge, step)
+	local more = visits and #visits > 1 and #visits - 1 or 0
+	self.More:SetShown(more > 0)
+	if more > 0 then
+		self.More:SetText(ns.L.STOP_MORE:format(more))
+		badge:Hide()
+	end
+	local alpha = index > 1 and LATER_STOP_ALPHA or 1
+	self.Icon:SetAlpha(alpha)
+	self.Number:SetAlpha(alpha)
+	self.NumberText:SetAlpha(alpha)
+	badge:SetAlpha(alpha)
+	self.More:SetAlpha(alpha)
+	-- The badge or count hangs past the button; the pin takes the clicks it gets.
+	local corner = (badge:IsShown() or more > 0) and -BADGE_OFFSET or 0
+	self:SetHitRectInsets(0, corner, 0, corner)
 	self:SetPosition(step.x, step.y)
-	self:SetScalingLimits(1, 1.0, 1.2)
+	self:SetIgnoreGlobalPinScale(true)
+	self:SetScalingLimits(1, 1, 1)
 	self:ApplyCurrentScale()
 	-- Closing the map hides the pin without an OnMouseLeave.
 	self:SetScript("OnHide", self.OnMouseLeave)
 end
 
 function AdventureGuideForeverPinMixin:OnMouseEnter()
+	UIFrameFlashStop(self.Glow)
 	self.Glow:Show()
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	if self.step and self.index then
 		Pins.StepTooltip(GameTooltip, self.step, self.index, ns.Integrations.Travel(self.step))
+		if self.visits and #self.visits > 1 then
+			for _, visit in ipairs(self.visits) do
+				GameTooltip_AddNormalLine(GameTooltip, ns.L.STOP_VISIT:format(visit.index, visit.step.title))
+			end
+		end
 		AddClickLine(GameTooltip)
 	end
 	GameTooltip:Show()
 end
 
 function AdventureGuideForeverPinMixin:OnMouseLeave()
+	UIFrameFlashStop(self.Glow)
 	self.Glow:Hide()
 	if GameTooltip:GetOwner() == self then
 		GameTooltip:Hide()
@@ -300,7 +388,8 @@ end
 function Pins.Ping(key)
 	local pin = pinsByKey[key]
 	if pin then
-		UIFrameFlash(pin.Icon, 0.2, 0.2, 1.2, true)
+		-- Flashing the button itself would leave a later stop at full opacity when UIFrameFlash resets its alpha.
+		UIFrameFlash(pin.Glow, 0.2, 0.2, 1.2, GameTooltip:GetOwner() == pin)
 	end
 end
 

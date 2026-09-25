@@ -55,10 +55,16 @@ end
 
 -- The guide's panel after the layout pass: rects in, OnSizeChanged run, then the refresh the client's next frame
 -- would do with the laid-out sizes.
-local function Panel(h, scene)
+local function Panel(h, scene, height)
 	h.ns.OpenPanel()
 	h.flush()
 	local panel = h.G.AdventureGuideForeverPanel
+	if height then
+		panel:ClearAllPoints()
+		panel:SetPoint("TOPLEFT", h.G.QuestMapFrame.ContentsAnchor)
+		panel:SetPoint("TOPRIGHT", h.G.QuestMapFrame.ContentsAnchor, -22, 0)
+		panel:SetHeight(height)
+	end
 	h.SetRects(panel, input.rects[scene] or {})
 	h.ns.OpenPanel()
 	h.flush()
@@ -107,8 +113,8 @@ h.providers[1]:RefreshAllData()
 out.panel.pins = Pins(h)
 out.panel.map = h.map:GetMapID()
 
--- The lead image, a character with no card chosen: the overview (docs/design.md §2.2), the story featured over its
--- first steps and the others two across, both asides above them, and the first card's rings, which the guide previews
+-- The lead image, a character with no card chosen: compact journey rows (docs/design.md §2.2),
+-- both asides above them, and the first card's rings, which the guide previews
 -- on its own (§2.6). Two finished quests: Counterattack!, handed in at Regthar Deathgate's camp, so the story card
 -- counts two ready, and Hidden Enemies, handed in at Orgrimmar, so Loose ends has one. Tweaks Forever has three spells
 -- to train and a talent point waits, so both asides show.
@@ -131,6 +137,14 @@ end
 out.journeys = Panel(h, "journeys")
 h.providers[1]:RefreshAllData()
 out.journeys.pins = Pins(h)
+
+-- Four choices with dungeons enabled, then the same overview in a shorter map sidebar.
+h.ns.Prefs().dungeons = true
+h.ns.NotInterested("zone:1421", h.ns.State.MapName(1421))
+h.ns.Invalidate()
+h.flush()
+out.journeys_four = Panel(h, "journeys_four")
+out.journeys_overflow = Panel(h, "journeys_overflow", 330)
 
 -- The search: the Call of quests a level-18 orc shaman sees, the locked ones saying why.
 h = Load(false, false, false, STORY)
@@ -225,6 +239,141 @@ h = Load("v1", false, false, STORY, nil, {
 	items = skillup.ITEMS,
 })
 out.window_professions = Window(h, "window_professions", 2)
+
+local ASIDES = {
+	tf = { spells = { SPELL, SPELL, SPELL } },
+	talents = 1,
+}
+
+-- The PvP tab: client rank progress and every unlocked battleground; Darkspear Islands has no known battlemaster.
+h = Load("v1", false, false, STORY, nil, {
+	player = { level = 30 },
+	battlegrounds = {
+		[10] = { { id = 2, name = "Warsong Gulch" } },
+		[30] = { { id = 1157, name = "Darkspear Islands" } },
+	},
+	rank = {
+		info = { renownLevel = 2, renownReputationEarned = 1450, renownLevelThreshold = 2500, maxLevel = 14 },
+		rewards = { [3] = { { description = "The Horde Tabard" } } },
+	},
+})
+out.window_pvp = Window(h, "window_pvp", 3)
+
+-- The Completion tab, Legacy Forever loaded: The Barrens featured with its categories, its next three objectives, and
+-- the next zones as cards.
+local function Zone(map, name, done, total, categories, targets)
+	return {
+		map = map,
+		name = name,
+		summary = {
+			name = name,
+			done = done,
+			total = total,
+			pending = 0,
+			questsStatus = "ready",
+			complete = false,
+			categories = categories,
+		},
+		targets = targets or {},
+	}
+end
+local function Category(key, done, total, scope)
+	return { key = key, scope = scope or "character", done = done, total = total, pending = 0, complete = done == total }
+end
+local legacy = { summaries = {}, targets = {} }
+for _, zone in ipairs({
+	Zone(1413, "The Barrens", 41, 96, {
+		Category("areas", 14, 22),
+		Category("taxis", 2, 2, "account"),
+		Category("dungeons", 0, 1),
+		Category("reputations", 1, 2),
+		Category("quests", 24, 69),
+	}, {
+		{
+			key = "explore:Lushwater Oasis",
+			text = "Explore Lushwater Oasis",
+			kind = "explore",
+			place = { map = 1413, x = 0.47, y = 0.38 },
+		},
+		{
+			key = "instance:43",
+			text = "Wailing Caverns",
+			kind = "instance",
+			place = { map = 1413, x = 0.46, y = 0.36 },
+		},
+		{ key = "kill:Kolkar", text = "Kolkar Centaur", kind = "kill", quantity = 6, required = 10 },
+	}),
+	Zone(1442, "Stonetalon Mountains", 3, 58, { Category("areas", 1, 15), Category("quests", 2, 43) }),
+	Zone(1411, "Durotar", 52, 60, { Category("areas", 12, 12), Category("quests", 40, 48) }),
+}) do
+	legacy.summaries[zone.map], legacy.targets[zone.map] = zone.summary, zone.targets
+end
+h = Load("v1", false, false, STORY, nil, { legacy = legacy })
+out.window_completion = Window(h, "window_completion", 4)
+
+-- Neither Tweaks Forever nor Legacy Forever loaded: Ragefire Chasm chosen, its Go to entrance greyed with the note,
+-- and the Completion tab's label grey.
+h = Load("v1", false, false, "dungeon:389", nil, { charDB = { journey = "dungeon:389", dungeons = true } })
+out.window_missing = Window(h, "window_missing")
+
+-- Today with more than fits: three chips and "+2 more", the hearth among them.
+h = Load("v1", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, {
+	tf = ASIDES.tf,
+	talents = ASIDES.talents,
+	setup = function(each)
+		for _, aside in ipairs({
+			{
+				key = "hearth",
+				text = each.ns.L.SET_HEARTH:format("Crossroads"),
+				icon = "innkeeper",
+				place = { map = 1413, x = 0.5145, y = 0.2975 },
+			},
+			{
+				key = "firstaid",
+				text = "Learn First Aid in Orgrimmar",
+				icon = "profession",
+				place = { map = 1454, x = 0.34, y = 0.84 },
+			},
+			{
+				key = "fishing",
+				text = "Learn Fishing in Orgrimmar",
+				icon = "profession",
+				place = { map = 1454, x = 0.69, y = 0.3 },
+			},
+		}) do
+			each.ns.Asides.Register(function()
+				return aside
+			end)
+		end
+	end,
+})
+out.window_today = Window(h, "window_today")
+
+-- A real off-zone hand-in fits 30 minutes, including the provider's travel estimate.
+h = Load("v1", false, false, "carry", { HIDDEN_ENEMIES }, ASIDES)
+h.spfSeconds = 1480
+h.ns.Session.Set(30)
+h.flush()
+out.window_session = Window(h, "window_session")
+
+-- The same whole task does not fit 15 minutes.
+h = Load("v1", false, false, "carry", { HIDDEN_ENEMIES }, ASIDES)
+h.spfSeconds = 1480
+h.ns.Session.Set(15)
+h.flush()
+out.window_empty = Window(h, "window_empty")
+
+-- The player's actual custom order and retained giver checklist after accepting one giver's quests.
+h = Load("v1", false, false, STORY, nil, ASIDES)
+assert(h.ns.Order.Move(2, 1))
+h.flush()
+local giver = h.ns.Route().steps[1].checklist[1]
+for _, id in ipairs(giver.pickups) do
+	h.log[#h.log + 1] = { id = id, title = h.ns.Data.quests[id].title, complete = false }
+end
+h.fire("QUEST_LOG_UPDATE")
+h.flush()
+out.window_order = Window(h, "window_order")
 
 out.errors = {}
 for _, each in ipairs(loaded) do

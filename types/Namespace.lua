@@ -621,6 +621,8 @@
 ---@field Unlisted fun(data: AGFData, map?: integer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>): boolean the log holds a quest the data lacks, or Forever added quests on `map` the data lacks and the player hasn't finished
 
 ---@class AGFStrings
+---@field MORE_IN_GUIDE string
+---@field MORE_IN_GUIDE_KEY string
 ---@field UNLISTED string the panel's honest-coverage line
 
 -- Stream 1a "Tone" (roadmap #3, #17).
@@ -746,7 +748,7 @@
 ---@field TownName fun(data: AGFData, place: {map: integer, hub?: integer}, mapName?: fun(map: integer): string?): string the hub's flight-master town, else the map's name
 
 ---@class AGFIntegrations
----@field Training fun(): AGFTraining? Tweaks Forever's spells to train, counted; nil without a v1 Tweaks Forever, its answer, or a spell to train
+---@field Training fun(): AGFTraining?, boolean Tweaks Forever's spells to train, counted; nil without a v1 Tweaks Forever, its answer, or a spell to train
 
 ---@class AGFStrings
 ---@field TRAINER_IN string format: the trainer aside's lead with the nearest trainer's town
@@ -1016,3 +1018,152 @@
 ---@field SKILLUP_MISSING string the Professions tab without SkillUp Forever
 ---@field SKILLUP_OUTDATED string the Professions tab with a SkillUp Forever too old for its API
 ---@field SKILLUP_NONE string the Professions tab with no crafting profession to level
+
+---@class AGFTownGiver
+---@field key string
+---@field name string
+---@field text string
+---@field pickups integer[]
+---@field handins integer[]
+---@field done boolean
+---@field skipped boolean
+---@field place AGFPlace
+
+---@class AGFStep
+---@field verb? "pickup"|"turnin"|"objective"|"town"|"trainer"|"battlemaster"
+---@field orderKey? string stable identity of this visit, distinguishing repeat visits at a town
+---@field questTitle? string undecorated objective quest title
+---@field checklist? AGFTownGiver[]
+---@field complete? boolean
+
+---@class AGFAreaObjective
+---@field type? string
+
+---@class AGFSessionCommit
+---@field journey string
+---@field minutes integer
+---@field keys table<string, boolean>
+---@field members? table<string, table<string, boolean>>
+---@field visits? table<string, string> town pickup/hand-in action to committed visit identity
+---@field seconds? number
+---@class AGFSessionInfo
+---@field minutes integer
+---@field seconds? number
+---@field pending boolean
+---@field empty boolean
+---@field trimmed boolean
+---@class AGFPrefs
+---@field customOrders? table<string, string[]>
+---@field sessionMinutes? integer
+---@field sessionCommit? AGFSessionCommit
+
+---@class AGFSession
+---@field Get fun(): integer
+---@field Set fun(minutes: integer)
+---@field Info fun(): AGFSessionInfo
+---@field Work fun(step: AGFStep): number?
+---@field Prefix fun(steps: AGFStep[], seconds: table<integer, number>, budget: number): integer, number
+---@field Apply fun(route: AGFRoute): AGFRoute
+---@field PendingWork fun(): boolean
+---@field NextEstimate fun(api: AGFSPFAPI): boolean
+
+---@class AGFOrderModule
+---@field CanMove fun(from: integer, to: integer): boolean
+---@field Move fun(from: integer, to: integer): boolean
+---@field Reset fun()
+---@field IsCustom fun(): boolean
+---@field SkipGiver fun(stepKey: string, giverKey: string): boolean
+---@field SkippedQuests fun(seen?: table<string, boolean>): table<integer, true>
+---@field IsGiverSkipped fun(stepKey: string, giverKey: string): boolean
+---@field Dependencies fun(steps: AGFStep[]): table<integer, table<integer, boolean>>
+---@field Valid fun(steps: AGFStep[], cap?: integer, log?: table<integer, AGFLogQuest>): boolean
+---@field Merge fun(steps: AGFStep[], keys?: string[], cap?: integer, log?: table<integer, AGFLogQuest>): AGFStep[]
+---@field Apply fun(route: AGFRoute, prefs: AGFPrefs)
+
+---@class AGFSound
+---@field ClientEvent fun()
+---@field Complete fun(key: string, story?: boolean)
+---@field Observe fun(previous: AGFRoute, current: AGFRoute, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, trained?: boolean)
+---@class AGFHearth
+---@field Advice fun(data: AGFData, player: AGFPlayer, steps: AGFStep[], bind?: string, locale?: string): AGFAside?
+
+---@class AGFModel
+---@field TownChecklist fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, step: AGFStep, previous?: AGFStep)
+---@field StepTitle fun(data: AGFData, log: table<integer, AGFLogQuest>, step: AGFStep)
+---@class AGFIntegrations
+---@field CurrentStep fun(): AGFStep?
+---@class AGFNamespace
+---@field Providers AGFProviders
+---@field PvP AGFPvP
+---@field Session AGFSession
+---@field Order AGFOrderModule
+---@field Sound AGFSound
+---@field Hearth AGFHearth
+
+---@class AGFStrings
+---@field TAB_PVP string
+---@field TAB_COMPLETION string
+---@field GO_TO_ENTRANCE string
+---@field TWEAKS_MISSING string
+---@field TWEAKS_OUTDATED string
+---@field ENTRANCE_UNKNOWN string
+---@field LEGACY_MISSING string
+---@field LEGACY_OUTDATED string
+---@field COMPLETION_EMPTY string
+---@field COMPLETION_LOADING string
+---@field COMPLETION_UNAVAILABLE string
+---@field COMPLETION_COUNTS string
+---@field COMPLETION_PENDING string
+---@field COMPLETION_ACCOUNT string
+---@field COMPLETION_GO string
+---@field COMPLETION_NO_LOCATION string
+---@field COMPLETION_CATEGORY_AREAS string
+---@field COMPLETION_CATEGORY_TAXIS string
+---@field COMPLETION_CATEGORY_DUNGEONS string
+---@field COMPLETION_CATEGORY_RAIDS string
+---@field COMPLETION_CATEGORY_LEGACY string
+---@field COMPLETION_CATEGORY_REPUTATIONS string
+---@field COMPLETION_CATEGORY_QUESTS string
+---@field PVP_RANK string
+---@field PVP_RANK_POINTS string
+---@field PVP_UNRANKED string
+---@field PVP_CAPPED string
+---@field PVP_UNAVAILABLE string
+---@field PVP_NO_BATTLEGROUNDS string
+---@field PVP_NO_BATTLEMASTER string
+---@field PVP_BATTLEGROUND_LEVEL string
+---@field PVP_GO_BATTLEMASTER string
+---@field PVP_NEXT_REWARD string
+---@field SESSION_LABEL string
+---@field SESSION_UNLIMITED string
+---@field SESSION_MINUTES string
+---@field SESSION_ABOUT string
+---@field SESSION_EMPTY string
+---@field SESSION_PENDING string
+---@field ORDER_DRAG string
+---@field ORDER_SOONER string
+---@field ORDER_LATER string
+---@field ORDER_NEXT string
+---@field ORDER_RESET string
+---@field ORDER_CUSTOM string
+---@field TOWN_SKIP_GIVER string
+---@field TOWN_GIVER string
+---@field TOWN_PICKUPS string
+---@field TOWN_HANDINS string
+---@field TOWN_COUNTS string
+---@field TODAY_MORE string
+---@field STOP_MORE string
+---@field STOP_VISIT string
+---@field SET_HEARTH string
+---@field SETTING_STEP_SOUND string
+---@field SETTING_STEP_SOUND_TOOLTIP string
+---@field STEP_PICKUP string
+---@field STEP_OBJECTIVE string
+---@field STEP_COLLECT string
+---@field STEP_DEFEAT string
+---@field STEP_WORK string
+---@field STEP_TOWN string
+---@field STEP_BATTLEMASTER string
+
+---@class AGFModel
+---@field ObjectiveDone fun(data: AGFData, entry?: AGFLogQuest, slot: integer): boolean

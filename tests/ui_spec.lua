@@ -14,6 +14,19 @@ local function same(actual, expected, label)
 	equal(table.concat(actual, "\n"), table.concat(expected, "\n"), label)
 end
 
+-- The route's places: a ring each, a town the route comes back to sharing its first visit's (docs/design.md §2.9).
+local function Places(route)
+	local seen, count = {}, 0
+	for _, step in ipairs(route.steps) do
+		local place = step.kind == "town" and step.hub and (step.map .. ":town:" .. step.hub)
+			or (step.map .. ":" .. step.x .. ":" .. step.y)
+		if not seen[place] then
+			seen[place], count = true, count + 1
+		end
+	end
+	return count
+end
+
 -- A step menu's lines with "Not this quest" (design §2.18) after "Skip for now": one button for a lone quest, else
 -- one per quest under it, titled as the log titles it.
 local function WithNotThisQuest(ns, step, lines)
@@ -27,6 +40,18 @@ local function WithNotThisQuest(ns, step, lines)
 			for _, id in ipairs(step.quests) do
 				local entry = ns.State.Log()[id]
 				out[#out + 1] = "  button: " .. ((entry and entry.title) or ns.Data.quests[id].title)
+			end
+		end
+		if line == "button: " .. ns.L.ORDER_LATER then
+			local added = false
+			for _, giver in ipairs(step.checklist or {}) do
+				if not giver.done then
+					if not added then
+						out[#out + 1] = "button: " .. ns.L.TOWN_SKIP_GIVER
+						added = true
+					end
+					out[#out + 1] = "  button: " .. giver.name
+				end
 			end
 		end
 	end
@@ -247,7 +272,7 @@ do
 	end
 	-- Every row goes in through the secure delegate, in page order; none from addon code, which taints the search.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 9, "every row is registered through Settings.RegisterInitializer")
+	equal(#h.settings, 10, "every row is registered through Settings.RegisterInitializer")
 	equal(
 		h.settings[1].key .. " " .. h.settings[2].key .. " " .. h.settings[3].key,
 		"showTracker wanderer followQuest",
@@ -319,7 +344,7 @@ do
 	h.flush()
 	equal(h.ns.Prefs().guided, "zone:1413", "follow: the chosen journey's route")
 	equal(h.spf.NavigateRoute, 1, "follow: started once")
-	Moved(h, 1413, 0.5223, 0.3101)
+	Moved(h, h.player.map, h.player.x, h.player.y)
 	equal(h.spf.NavigateRoute, 1, "follow: a rebuild that changes nothing sends nothing")
 	-- Southsea Freebooters and Baron Longshore picked up in Ratchet and the player in their area's ring: it is step 1
 	-- before the Crossroads the route heads for, so the way changed.
@@ -374,11 +399,11 @@ do
 		h.spfAdvance()
 	end
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 4, "follow: heading for the town it stands in: nothing")
+	equal(h.spf.NavigateRoute, 5, "follow: retarget the nearest remaining giver in town")
 	h.spfOther()
 	Moved(h, 1413, 0.46, 0.79)
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 4, "follow: another journey replaced ours: nothing")
+	equal(h.spf.NavigateRoute, 5, "follow: another journey replaced ours: nothing")
 	clean(h, "follow")
 
 	-- The "you're here" head (design §4.2): checked every 2 s only while the player moves, and a rebuild only on
@@ -930,7 +955,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		h.flush()
 	end
 	equal(h.counts.CreateFrame - created, 0, label .. ": frames created by 10 refreshes")
-	equal(#h.pins.AdventureGuideForeverPinTemplate, #h.ns.Route().steps, label .. ": the refreshes drew the route")
+	equal(#h.pins.AdventureGuideForeverPinTemplate, Places(h.ns.Route()), label .. ": the refreshes drew the route")
 	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
 	h.flush()
 	equal(IdleUpdates(h), 0, label .. ": per-frame work once the guide is closed")
@@ -953,16 +978,17 @@ for _, spf in ipairs({ false, "v1" }) do
 	local first = Live()
 	provider:RefreshAllData()
 	equal(Live(), first, label .. ": a second refresh keeps the pin count")
-	equal(#h.pins.AdventureGuideForeverPinTemplate, #ns.Route().steps, label .. ": one ring per step on this map")
+	equal(#h.pins.AdventureGuideForeverPinTemplate, Places(ns.Route()), label .. ": one ring per place on this map")
 
 	local ring = h.pins.AdventureGuideForeverPinTemplate[1]
-	equal(ring.Number:GetAtlas(), "services-number-1", label .. ": the ring's numeral")
+	equal(ring.Number.file, "Interface\\WorldMap\\UI-QuestPoi-NumberIcons", label .. ": the stock quest numeral")
+	same(ring.Number.texCoord, { 0, 0.125, 0.5, 0.625 }, label .. ": yellow numeral 1")
 	-- Rings draw above the stock quest marks; givers stay under them (Blizzard_WorldMap.lua:291-311).
 	equal(ring.frameLevelType, "PIN_FRAME_LEVEL_WAYPOINT_LOCATION", label .. ": rings at the user waypoint's level")
 	h.Hover(ring)
 	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. Step 1 is the Crossroads, where The
 	-- Zhevra opens its next chapter, handed in before the town's pickups.
-	local expected = { "title: 1. Crossroads, The Barrens" }
+	local expected = { "title: 1. Visit Crossroads, The Barrens: Pick up 5, turn in 1" }
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
 	expected[#expected + 1] = "highlight: Opens the next chapter here"
 	expected[#expected + 1] = "normal: Sergra Darkthorn"
@@ -1028,7 +1054,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	-- Design §2.8's menu for a town holding a log quest; Stop only once Go runs, Show quest never in combat.
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:349"], "RightButton")
 	local menu = {
-		"title: Crossroads, The Barrens",
+		"title: Visit Crossroads, The Barrens: Pick up 5, turn in 1",
 		"button: Go",
 		"button: Show quest",
 		"button: Skip for now",
@@ -1047,6 +1073,65 @@ for _, spf in ipairs({ false, "v1" }) do
 	)
 	ns.Integrations.Cancel()
 	clean(h, label .. ": pins")
+end
+
+-- A pooled stop can change from a later shared pin to the current stop, and cross the numeric texture's limit.
+do
+	local h = Load(false, PINS_ON)
+	h.G.OpenQuestLog()
+	h.flush()
+	local pin = h.pins.AdventureGuideForeverPinTemplate[1]
+	local step = pin.step
+	local visits = { { step = step, index = 25 }, { step = step, index = 26 } }
+	pin:OnAcquired(step, 25, visits)
+	equal(pin:GetWidth(), 20, "POI: fixed 20-unit button")
+	equal(pin.ignoreGlobalPinScale, true, "POI: ignores the global pin scale")
+	same(pin.scalingLimits, { 1, 1, 1 }, "POI: unchanged by map zoom")
+	equal(pin.Icon:GetAtlas(), "UI-QuestPoi-QuestNumber", "POI: stock button")
+	equal(pin.Disc:GetAtlas(), pin.Icon:GetAtlas(), "POI: silhouette follows the stock art")
+	same(pin.Disc.vertexColor, { 0, 0, 0 }, "POI: black silhouette")
+	equal(pin.Disc:GetAlpha(), 1, "POI: faded stops keep an opaque silhouette")
+	for _, region in ipairs({ pin.Icon, pin.Number, pin.NumberText, pin.Badge, pin.More }) do
+		equal(region:GetAlpha(), 0.55, "POI: later stop fades every foreground part")
+	end
+	for _, region in ipairs({ pin.Disc, pin.Icon, pin.Number, pin.Glow }) do
+		same({ region:GetSize() }, { 32, 32 }, "POI: stock 32-unit art") -- multi-value: width and height
+	end
+	same(pin.Number.texCoord, { 0, 0.125, 0.875, 1 }, "POI: final yellow numeral")
+	equal(pin.Badge:IsShown(), false, "POI: count replaces the kind badge")
+	equal(pin.More:GetText(), "+1", "POI: shared stop count")
+	equal(pin.More.font, "NumberFontNormal", "POI: stock item count font")
+	local point, _, _, x, y = pin.More:GetPoint(1)
+	same({ point, x, y }, { "BOTTOMRIGHT", 4, -4 }, "POI: count takes the badge corner")
+	h.ns.Pins.Ping(step.key)
+	equal(pin.Glow.flashing, true, "POI: the glow flashes when the guide pings a stop")
+	h.G.UIFrameFlashStop(pin.Glow)
+	equal(pin.Icon:GetAlpha(), 0.55, "POI: a completed ping preserves the later stop's fade")
+	h.ns.Pins.Ping(step.key)
+	pin:OnMouseEnter()
+	equal(pin.Glow.flashing, nil, "POI: hover takes over from the ping")
+	equal(pin.Glow:IsShown(), true, "POI: hover restores the steady glow")
+	h.ns.Pins.Ping(step.key)
+	pin:OnMouseLeave()
+	equal(pin.Glow.flashing, nil, "POI: leaving cancels the ping before the pin is reused")
+	equal(pin.Glow:IsShown(), false, "POI: leaving clears the glow")
+	pin:OnAcquired(step, 26)
+	equal(pin.Number:IsShown(), false, "POI: no texture cell after 25")
+	equal(pin.NumberText:GetText(), "26", "POI: font fallback after 25")
+	equal(pin.NumberText.font, "GameFontNormal", "POI: stock fallback font")
+	equal(pin.More:IsShown(), false, "POI: reused lone stop loses its count")
+	equal(pin.Badge:IsShown(), true, "POI: reused lone stop restores its kind")
+	pin:OnAcquired(step, 1)
+	equal(pin.Number:IsShown(), true, "POI: reused current stop restores its numeral")
+	equal(pin.NumberText:GetText(), "", "POI: reused current stop clears its fallback")
+	for _, region in ipairs({ pin.Icon, pin.Number, pin.NumberText, pin.Badge, pin.More }) do
+		equal(region:GetAlpha(), 1, "POI: reused current stop restores full strength")
+	end
+	pin:OnAcquired({ x = step.x, y = step.y }, 9)
+	same(pin.Number.texCoord, { 0, 0.125, 0.625, 0.75 }, "POI: yellow numerals wrap to the next row")
+	equal(pin.Badge:IsShown(), false, "POI: an unmarked stop loses its badge")
+	same(pin.hitRectInsets, { 0, 0, 0, 0 }, "POI: an unmarked stop restores the plain hit rect")
+	clean(h, "POI reuse")
 end
 
 -- An area step on the map (design §2.6): its numbered pin where the route enters it and nothing more, since the
@@ -1099,7 +1184,7 @@ do
 	end
 	h.Hover(pin)
 	local expected = {
-		"title: " .. index .. ". Gann's Reclamation",
+		"title: " .. index .. ". Defeat Bael'dun Excavator slain: 7/15 · Gann's Reclamation",
 		"highlight: quests in progress",
 		"colored: Gann's Reclamation",
 		"highlight: - Bael'dun Excavator slain: 7/15",
@@ -1138,7 +1223,7 @@ for _, case in ipairs({
 	h.flush()
 	local rings = #h.pins.AdventureGuideForeverPinTemplate
 	equal(rings <= ns.Model.MAX_STEPS, true, label .. ": at most 9 rings")
-	equal(rings, case.db.showMapPins and #ns.Route().steps or 0, label .. ": a ring per step, only with pins on")
+	equal(rings, case.db.showMapPins and Places(ns.Route()) or 0, label .. ": a ring per place, only with pins on")
 	h.map:SetMapID(1442)
 	local givers = #ns.Model.Givers(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), 1442)
 	equal(givers > 0, true, label .. ": Stonetalon has givers")
@@ -1625,6 +1710,11 @@ do
 			"button: Show quest",
 			"button: Skip for now",
 			"button: Choose another journey",
+			-- The chosen journey's order (docs/design.md §2.20).
+			"divider",
+			"button: " .. ns.L.ORDER_NEXT,
+			"button: " .. ns.L.ORDER_SOONER,
+			"button: " .. ns.L.ORDER_LATER,
 		}),
 		"step menu: a town with a hand-in shows it; choosing started the route, which Stop ends"
 	)
@@ -1666,6 +1756,10 @@ do
 			submenu[1],
 			submenu[2],
 			"button: Choose another journey",
+			"divider",
+			"button: " .. ns.L.ORDER_NEXT,
+			"button: " .. ns.L.ORDER_SOONER,
+			"button: " .. ns.L.ORDER_LATER,
 		}),
 		"step menu: the Skipped submenu"
 	)
@@ -1809,7 +1903,7 @@ do
 	-- The choice ended, so the overview shows, the chosen view's card with it gone.
 	equal(hovered:IsVisible(), false, "not interested: the chosen card goes with its choice")
 	local featured = Shown(h, function(frame)
-		return frame.Tag ~= nil and frame.journey ~= nil
+		return frame.Icon ~= nil and frame.Icon.Clip ~= nil and frame.journey ~= nil
 	end)[1]
 	equal(featured ~= nil and featured.journey.key ~= story.key, true, "not interested: the overview, without it")
 	equal(h.ns.Integrations.Owns(), false, "not interested: and its route stops")
@@ -1849,7 +1943,7 @@ do
 	ns.Choose(nil)
 	h.flush()
 	local over = Shown(h, function(frame)
-		return frame.Tag ~= nil and frame.journey ~= nil
+		return frame.Icon ~= nil and frame.Icon.Clip ~= nil and frame.journey ~= nil
 	end)[1]
 	local gone = over.journey
 	h.Click(over, "RightButton")
@@ -1934,6 +2028,9 @@ for _, spf in ipairs({ false, "v1" }) do
 	local h = Load(spf)
 	local steps = h.ns.Route().steps
 	local expected = { "1 to hand in, 5 to pick up", "Opens the next chapter here" }
+	for _, giver in ipairs(steps[1].checklist) do
+		expected[#expected + 1] = giver.text
+	end
 	expected[#expected + 1] = spf and "About 6 min away" or nil
 	expected[#expected + 1] = "Next: " .. steps[2].title .. " (no dash)"
 	local lines, block = TrackerLines(h)
@@ -2004,7 +2101,7 @@ do
 	end)
 	h.Hover(rows[1])
 	local lines, colors = h.tooltip, h.tooltipColors
-	equal(lines[1], "title: 1. Crossroads, The Barrens", "hub tooltip: the numbered town")
+	equal(lines[1], "title: 1. Visit Crossroads, The Barrens: Pick up 8, turn in 1", "hub tooltip: the numbered town")
 	equal(lines[2], "highlight: " .. step.reason, "hub tooltip: the reason")
 	equal(lines[3], "normal: Sergra Darkthorn", "hub tooltip: the hand-in's NPC first")
 	equal(lines[4], "colored: |A:questturnin:14:14|a The Zhevra", "hub tooltip: a hand-in has the turn-in mark")
@@ -2021,7 +2118,8 @@ do
 	end
 	equal(quests, 8, "hub tooltip: 8 quest lines")
 	equal(npcs, 7, "hub tooltip: one line per NPC shown")
-	equal(lines[#lines], "highlight: And 1 more", "hub tooltip: the rest counted")
+	equal(lines[#lines - 1], "highlight: And 1 more", "hub tooltip: the rest counted")
+	equal(lines[#lines], "instruction: " .. ns.L.ORDER_DRAG, "hub tooltip: then how to reorder")
 	same(colors[12], { 1, 1, 0 }, "hub tooltip: a quest 2 over the player is yellow")
 
 	-- The ring's tooltip lists the same, then the click line.
@@ -2055,21 +2153,19 @@ do
 	h.flush()
 	local steps = ns.Route().steps
 	local step = steps[1]
-	equal(step.title, "Crossroads, The Barrens", "tracker, town: titled by its flight master")
+	equal(step.title, "Visit Crossroads, The Barrens: Pick up 5, turn in 1", "tracker, town: town and actions")
 	equal(step.detail, "1 to hand in, 5 to pick up", "tracker, town: the hand-in joins the pickups")
-	same(TrackerLines(h), {
-		step.detail,
-		"Opens the next chapter here",
-		"Next: " .. steps[2].title .. " (no dash)",
-	}, "tracker, town: its counts, then its reason, never the place again")
+	local expected = { step.detail, "Opens the next chapter here" }
+	for _, giver in ipairs(step.checklist) do
+		expected[#expected + 1] = giver.text
+	end
+	expected[#expected + 1] = "Next: " .. steps[2].title .. " (no dash)"
+	same(TrackerLines(h), expected, "tracker, town: counts, reason, checklist and next")
 
 	step.reason = step.detail
 	h.tracker:MarkDirty()
-	same(TrackerLines(h), {
-		step.detail,
-		"Sergra Darkthorn, Gazrog and 4 more",
-		"Next: " .. steps[2].title .. " (no dash)",
-	}, "tracker, town: its NPCs, two named")
+	expected[2] = "Sergra Darkthorn, Gazrog and 4 more"
+	same(TrackerLines(h), expected, "tracker, town: its NPCs, two named")
 	step.givers = { "Sergra Darkthorn", "Gazrog" }
 	h.tracker:MarkDirty()
 	equal(TrackerLines(h)[2], "Sergra Darkthorn, Gazrog", "tracker, town: two NPCs, both named")
@@ -2084,7 +2180,8 @@ do
 		h.flush()
 	end
 	step = ns.Route().steps[1]
-	local npc = step.title:match("^Pick up quests: (.+)$")
+	local npc = step.kind == "town" and #step.quests == 1 and step.spots[step.quests[1]].name
+	equal(step.title:find("^Pick up: ") ~= nil, true, "tracker: pickup title names its action")
 	equal(npc ~= nil, true, "tracker, one quest: a town of one leads, " .. step.title)
 	equal(TrackerLines(h)[1], npc .. ", The Barrens", "tracker, one quest: NPC, zone")
 	clean(h, "tracker, town")
@@ -2179,7 +2276,7 @@ do
 	equal(#h.sounds + #h.fanfares, 0, "fanfare: none for an unproven end or a middle chapter")
 	h.fire("QUEST_TURNED_IN", last)
 	h.flush()
-	same(h.sounds, { 31757 }, "fanfare: the stage-end sound, once")
+	same(h.sounds, { h.G.SOUNDKIT.UI_SCENARIO_STAGE_END }, "fanfare: a proven story end plays its sound")
 	same(h.fanfares, { "story-complete" }, "fanfare: the header glows once")
 	local block = h.tracker.liveBlocks["story-complete"]
 	equal(block.header, "Story complete", "fanfare: the header")
@@ -2535,9 +2632,12 @@ for _, spf in ipairs({ false, "v1" }) do
 		for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
 			rings[#rings + 1] = pin.step.key
 		end
+		-- A place the route comes back to keeps its first visit's ring.
+		local seen = {}
 		for _, step in ipairs(route.steps) do
-			if step.map == journey.map then
-				expected[#expected + 1] = step.key
+			local place = step.x .. ":" .. step.y
+			if step.map == journey.map and not seen[place] then
+				expected[#expected + 1], seen[place] = step.key, true
 			end
 		end
 		equal(table.concat(rings, " "), table.concat(expected, " "), label .. ": click " .. click .. " rings")
@@ -2553,8 +2653,8 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label)
 end
 
--- None chosen (docs/design.md §2.2): a fresh character sees the overview, the first card featured over its first
--- three steps and the others two across under a divider, no route rows, and nothing guides until asked; the tracker
+-- None chosen (docs/design.md §2.2): a fresh character sees compact full-width journey rows,
+-- no route rows, and nothing guides until asked; the tracker
 -- shows the first card's step (design §2.5). A click on any card chooses it and starts its route: the others fold into
 -- one-line rows above it, each keeping its lines in a tooltip, and it sits lit over its steps; a row chooses its card
 -- and starts its route in its place. The chosen card is no toggle: the header's back arrow, shown only while a card is
@@ -2583,7 +2683,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		end
 		return table.concat(heights, " ")
 	end
-	-- The overview's cards: the featured one, then the grid in reading order.
+	-- The overview's cards in reading order.
 	local function Overview()
 		local shown = Shown(h, function(frame)
 			return frame.Icon ~= nil and frame.Icon.Clip ~= nil and frame.journey ~= nil
@@ -2613,13 +2713,6 @@ for _, spf in ipairs({ false, "v1" }) do
 		end
 		return table.concat(lines, "|")
 	end
-	local function Expected()
-		local lines = {}
-		for index = 1, math.min(#h.ns.Route().steps, 3) do
-			lines[index] = h.ns.Route().steps[index].title
-		end
-		return table.concat(lines, "|")
-	end
 	-- The dump holds only what is shown.
 	local function Says(text)
 		local count = 0
@@ -2645,7 +2738,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(route.journey, "zone:1413", label .. ": the route falls back to the first card")
 	same(h.tracker.layoutOrder, { route.steps[1].key }, label .. ": the tracker shows the first card's step")
 	equal(route.journeys[1].kind, "story", label .. ": a story card")
-	equal(#route.journeys >= 3, true, label .. ": a grid under the featured card")
+	equal(#route.journeys >= 3, true, label .. ": several journey rows")
 	equal(Heights(), "", label .. ": none of the chosen view's cards")
 	local cards = Overview()
 	equal(#cards, #route.journeys, label .. ": every card in the overview")
@@ -2655,13 +2748,11 @@ for _, spf in ipairs({ false, "v1" }) do
 		equal(card.highlightLocked == true, false, label .. ": no card lit")
 	end
 	local first = cards[1]
-	equal(first:GetHeight(), 82, label .. ": the featured card")
-	equal(first.Tag:GetText(), L.SUGGESTED, label .. ": tagged")
-	equal(cards[2]:GetHeight(), 92, label .. ": the grid's cards")
-	equal(cards[2]:GetWidth() * 2 + 5, first:GetWidth(), label .. ": two across the featured card's width")
-	equal(select(5, cards[2]:GetPoint(1)), select(5, cards[3]:GetPoint(1)), label .. ": side by side") -- multi-value: y
-	equal(Previews(), Expected(), label .. ": the featured card's first steps under it")
-	equal(Previews():find("|", 1, true) ~= nil, true, label .. ": more than one")
+	equal(first:GetHeight(), 64, label .. ": compact first row")
+	equal(cards[2]:GetHeight(), 64, label .. ": matching journey rows")
+	equal(cards[2]:GetWidth(), first:GetWidth(), label .. ": full width")
+	equal(select(5, cards[2]:GetPoint(1)) > select(5, cards[3]:GetPoint(1)), true, label .. ": one column")
+	equal(Previews(), "", label .. ": no steps before choosing")
 	equal(Rows(), 0, label .. ": and no route rows")
 	equal(Says("Steps: 0"), 0, label .. ": and no step counter (docs/design.md §1)")
 	equal(
@@ -2670,26 +2761,16 @@ for _, spf in ipairs({ false, "v1" }) do
 		label .. ": where the player is, by the title"
 	)
 	equal(Starts(), 0, label .. ": nothing guides")
-	-- The featured card's counts, with the map's marks: the story's zone holds one ready quest and one under way.
 	local story = first.journey
 	equal(story.ready, 1, label .. ": the story holds a ready quest")
-	equal(
-		first.Counts:GetText(),
-		"|A:QuestTurnin:12:12|a "
-			.. L.CARRY_READY:format(1)
-			.. "  |A:QuestNormal:12:12|a "
-			.. L.CARRY_IN_PROGRESS:format(story.underway),
-		label .. ": its counts"
-	)
-	-- Line 2 is the reason, else the first stop and how many follow; a grid card's footer the level it fits, else
-	-- how far it has come, else its stops.
+	-- Detail, then the progress, level or stop count on a compact third line.
 	local function Hub(journey)
 		local more = journey.more
 		return (more > 1 and L.HUB_MORE:format(journey.hub, more))
 			or (more == 1 and L.HUB_MORE_ONE:format(journey.hub))
 			or journey.hub
 	end
-	equal(first.Reason:GetText(), story.reason or Hub(story), label .. ": the featured card's reason")
+	equal(first.Reason:GetText(), story.reason or Hub(story), label .. ": the first row's reason")
 	local levelled, carried = 0, 0
 	for index = 2, #cards do
 		local card, journey = cards[index], cards[index].journey
@@ -2710,18 +2791,17 @@ for _, spf in ipairs({ false, "v1" }) do
 	end
 	equal(carried, 1, label .. ": the Loose ends card")
 	equal(levelled > 0, true, label .. ": a zone to head to")
-	-- A title wraps, never cut: three lines leave the reason one, under the title.
-	local grid = cards[2]
-	local title = grid.journey.title
-	grid.journey.title = "Head to Stonetalon Mountains"
+	local longCard = cards[2]
+	local title = longCard.journey.title
+	longCard.journey.title = "Head to Stonetalon Mountains"
 	h.ns.OpenPanel()
-	equal(grid.Title:GetNumLines(), 3, label .. ": a long title takes three lines")
-	equal(grid.Reason.maxLines, 1, label .. ": the reason one")
-	equal(select(5, grid.Reason:GetPoint(1)), -(12 + 3 * 13 + 4), label .. ": under the title") -- multi-value: y
-	grid.journey.title = title
+	equal(longCard.Title:GetNumLines(), 1, label .. ": a long title stays on one line")
+	equal(longCard.Title.wordWrap, false, label .. ": titles never wrap")
+	equal(longCard.Title.maxLines, 1, label .. ": titles have one line")
+	equal(longCard.Reason.wordWrap, false, label .. ": details never wrap")
+	equal(longCard.Reason.maxLines, 1, label .. ": details have one line")
+	longCard.journey.title = title
 	h.ns.OpenPanel()
-	equal(grid.Reason.maxLines, 2, label .. ": two lines under a shorter title")
-	equal(select(5, grid.Reason:GetPoint(1)), -(12 + 30 + 3), label .. ": under the icon") -- multi-value: y
 	-- The zone icons: the zone's art cut round by the circle mask in a clipping frame, the ring over it and the kind
 	-- as a badge; built once, not on every refresh; the plain ring where the data has no art.
 	local icon = first.Icon
@@ -2768,6 +2848,8 @@ for _, spf in ipairs({ false, "v1" }) do
 		local expected = { "title: " .. journey.title, "normal: " .. journey.subline }
 		if journey.reason then
 			expected[#expected + 1] = "highlight: " .. journey.reason
+		end
+		if journey.reason or card.detail == Hub(journey) then
 			expected[#expected + 1] = "highlight: " .. Hub(journey)
 		end
 		local travel = h.ns.Integrations.CardTravel(journey)
@@ -2780,7 +2862,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		same(h.tooltip, expected, label .. ": " .. journey.key .. "'s tooltip")
 	end
 
-	-- The featured card chooses itself, lit over its steps; the others fold above it.
+	-- The first row chooses itself, lit over its steps; the others fold above it.
 	h.Click(Overview()[1])
 	equal(Starts(), 0, label .. ": the route waits for the rebuild with its steps")
 	h.flush()
@@ -2855,15 +2937,15 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Heights(), "", label .. ": the overview again")
 	equal(#Overview(), #h.ns.Route().journeys, label .. ": every card")
 	equal(Overview()[1].journey.key, h.ns.Route().journeys[1].key, label .. ": in order")
-	equal(Previews(), Expected(), label .. ": over the first card's first steps")
+	equal(Previews(), "", label .. ": no steps until choosing again")
 	equal(Rows(), 0, label .. ": with no route rows")
 	equal(Back(), nil, label .. ": and the back arrow goes")
 
-	-- A grid card chooses itself, lit over its own steps; back returns to the overview.
+	-- Another row chooses itself, lit over its own steps; back returns to the overview.
 	local second = Overview()[2].journey
 	h.Click(Overview()[2])
 	h.flush()
-	equal(h.ns.Route().chosen and h.ns.Route().journey, second.key, label .. ": a grid card chooses it")
+	equal(h.ns.Route().chosen and h.ns.Route().journey, second.key, label .. ": a row chooses it")
 	equal(Heights(), "26 26 86", label .. ": the others fold above it")
 	equal(Cards()[3].journey.key, second.key, label .. ": lit over its steps")
 	equal(Rows(), #h.ns.Route().steps, label .. ": which are listed")
@@ -3118,7 +3200,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	local function Card(state)
 		return Shown(h, function(frame)
 			-- The overview's cards and the chosen view's alike.
-			return (frame.IconFrame ~= nil or frame.Tag ~= nil) and frame.state == state
+			return (frame.IconFrame ~= nil or (frame.Icon ~= nil and frame.Icon.Clip ~= nil)) and frame.state == state
 		end)[1]
 	end
 	local function Back()

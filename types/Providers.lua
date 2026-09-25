@@ -1,0 +1,75 @@
+---@meta
+---@class AGFPoint
+---@field map integer
+---@field x number
+---@field y number
+
+---@alias LFCategory "areas"|"taxis"|"dungeons"|"raids"|"legacy"|"reputations"|"quests"
+---@class LFCounts
+---@field done integer
+---@field total integer
+---@field pending integer
+---@field complete boolean
+---@class LFCategorySummary: LFCounts
+---@field key LFCategory
+---@field scope "character"|"account"
+---@class LFZoneSummary: LFCounts
+---@field map integer
+---@field name string
+---@field categories LFCategorySummary[]
+---@field questsStatus "disabled"|"ready"|"loading"|"missing"|"unsupported"
+---@class LFTarget
+---@field key string
+---@field text string
+---@field kind "explore"|"instance"|"kill"|"quest"|"reputation"
+---@field achievementID integer
+---@field criteriaID integer
+---@field quantity? number
+---@field required? number
+---@field place? AGFPoint
+---@class LFAPI
+---@field version integer
+---@field ZoneSummary fun(map: integer): LFZoneSummary?, string?
+---@field Targets fun(map: integer, limit: integer): LFTarget[]?, string?
+---@field Navigate fun(map: integer, key: string): boolean, string?
+---@field Subscribe fun(callback: fun()): fun()
+---@type {API?: LFAPI}?
+LegacyForever = nil
+
+---@class AGFCompletionZone
+---@field map integer
+---@field name string
+---@field summary? LFZoneSummary
+---@field targets LFTarget[]
+---@field error? string
+---@class AGFCompletionData
+---@field state "ready"|"missing"|"outdated"
+---@field zones AGFCompletionZone[]
+---@class AGFProviders
+---@field LegacyState fun(): "ready"|"missing"|"outdated"
+---@field Completion fun(): AGFCompletionData
+---@field NavigateCompletion fun(map: integer, key: string): boolean, string?
+---@field SetShown fun(shown: boolean)
+---@field OnChange fun(callback: fun())
+---@field DungeonEntrance fun(instanceID: integer): AGFPoint?, string?
+---@field GoToEntrance fun(instanceID: integer): boolean, string?
+
+---@class AGFPvPRank
+---@field state "unavailable"|"unranked"|"ranked"|"capped"
+---@field level? integer
+---@field earned? number
+---@field threshold? number
+---@field maxLevel? integer
+---@field reward? {level: integer, text: string, icon?: number}
+---@class AGFPvPBattle
+---@field id integer
+---@field name string
+---@field level integer
+---@field npc? integer
+---@field place? AGFPlace
+---@class AGFPvP
+---@field Data fun(): {rank: AGFPvPRank, battlegrounds: AGFPvPBattle[], available: boolean}
+---@field Go fun(id: integer): boolean
+
+---@class AGFTFAPI
+---@field DungeonEntrance? fun(instanceID: integer): AGFPoint?

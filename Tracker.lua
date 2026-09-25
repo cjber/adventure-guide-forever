@@ -8,7 +8,7 @@ local UI_ORDER = -4
 
 ---@return AGFStep?
 local function CurrentStep()
-	return ns.Route().steps[1]
+	return ns.Integrations.CurrentStep()
 end
 
 -- The chapter end (docs/design.md §2.7): Blizzard's anim block glows a header once when its key needs a fanfare.
@@ -155,6 +155,11 @@ function ModuleMixin:LayoutContents()
 	end
 	local block = self:GetBlock(step.key)
 	block:SetHeader(step.title)
+	if ns.Integrations.Guiding() then
+		block:AddObjective(1, step.reason)
+		self:LayoutBlock(block)
+		return
+	end
 	local line = 0
 	local town = step.kind == "town" and #step.quests > 1
 	-- A town's header is its name, so its counts come first. One quest's stop says where it is instead: "NPC, zone",
@@ -181,6 +186,10 @@ function ModuleMixin:LayoutContents()
 	if reason then
 		line = line + 1
 		block:AddObjective(line, reason)
+	end
+	for _, giver in ipairs(step.checklist or {}) do
+		line = line + 1
+		block:AddObjective(line, giver.text, nil, giver.done)
 	end
 	local travel = ns.Integrations.Travel(step)
 	if travel then
@@ -246,7 +255,7 @@ local function Refresh()
 end
 
 -- Only a chain whose end the data proves (Model.Story's total) is ever called complete; the sound plays with the
--- glow, never without the tracker section to show it.
+-- glow even during the client's turn-in sound (design §2.7), never without the tracker section to show it.
 ---@param questID integer
 function ns.OnTurnIn(questID)
 	local story = ns.Data.quests[questID] and ns.Model.Story(ns.Data, questID)
@@ -255,11 +264,11 @@ function ns.OnTurnIn(questID)
 	end
 	finished = { quest = questID }
 	module:SetNeedsFanfare(STORY_COMPLETE)
-	PlaySound(SOUNDKIT.UI_SCENARIO_STAGE_END)
+	ns.Sound.Complete("story:" .. questID, true)
 	Refresh()
 end
 
--- The fanfare without the sound, which only a story's end plays (OnTurnIn, in the same turn-in).
+-- Journey completion adds only the visual fanfare; step and story sounds are handled separately.
 function ns.OnJourneyComplete()
 	if not (module and ns.Setting("showTracker")) then
 		return
@@ -305,5 +314,6 @@ end
 Register()
 ns.OnRouteChange(OnRouteChange)
 ns.Integrations.OnTravelChange(Refresh)
+ns.Integrations.OnGuidanceChange(Refresh)
 ns.Asides.OnChange(Refresh)
 ns.Moments.OnChange(Refresh)

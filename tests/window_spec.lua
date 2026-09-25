@@ -60,14 +60,14 @@ do
 	for index, tab in ipairs(h.ns.Window.Tabs()) do
 		keys[index] = tab.key
 	end
-	equal(table.concat(keys, ","), "journeys,professions", "registry: one entry a tab, in TOC order")
+	equal(table.concat(keys, ","), "journeys,professions,pvp,completion", "registry: one entry a tab, in TOC order")
 	local window = Open(h)
 	clean(h, "open")
 	equal(window:IsShown(), true, "open: shown")
 	equal(window.stockTemplate, "PortraitFrameTemplate", "a portrait frame")
 	equal(window.TitleText:GetText(), h.ns.TITLE, "its title")
 	equal(h.G.UISpecialFrames[1], "AdventureGuideForeverWindow", "Escape closes it")
-	equal(#window.Tabs, 2, "a tab button a registered tab")
+	equal(#window.Tabs, 4, "a tab button a registered tab")
 	equal(window.Tabs[1]:GetText(), L.TAB_JOURNEYS, "tab 1 label")
 	equal(window.Tabs[2]:GetText(), L.TAB_PROFESSIONS, "tab 2 label")
 	local point, relativeTo, relativePoint, x, y = window.Tabs[1]:GetPoint(1)
@@ -183,9 +183,13 @@ do
 	for index = 1, math.min(#others, 4) do
 		equal(texts[others[index].title], 1, "grid card " .. index)
 	end
-	for index = 1, math.min(#route.steps, 3) do
-		equal(texts[route.steps[index].title] ~= nil, true, "step row " .. index)
-	end
+	local steps = h.Find(function(frame)
+		return frame:IsVisible() and frame.Kind ~= nil and frame.step ~= nil
+	end)
+	equal(#steps, 1, "the real town checklist fills the available step area")
+	equal(steps[1].step, route.steps[1], "the visible row is the route head")
+	equal(texts[route.steps[1].title], 1, "the head's title")
+	equal(texts[route.steps[1].checklist[1].text], 1, "its first giver appears below it")
 	for _, aside in ipairs(ns.Asides.All()) do
 		equal(texts[aside.text], 1, "Today: " .. aside.key)
 	end

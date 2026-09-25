@@ -36,9 +36,8 @@ commit the PNGs it rewrites in `docs/screenshots/`; two runs give byte-identical
 
 - Lua 5.1 in the game's sandbox: no `require`. The client loads the files `AdventureGuideForever.toc`
   lists, in that order, each receiving `local addonName, ns = ...`; a new file goes in the TOC or never runs.
-- The specs are a headless harness with stubbed client APIs. Anything they cannot reach (the map tab,
-  pins, menus, the tracker) is checked in game: list those checks in the PR as `/reload` tests for the
-  user. Never drive the game client.
+- The specs use stubbed client APIs. The agent runs in-game checks in `_classic_beta_` via `/cua-driver`:
+  one driver at a time, never while cjber is playing — ask first. List them in the PR as `/reload` tests.
 - Host globals go in `.luacheckrc`; LuaLS gets WoW APIs from the pinned Ketho annotations. Add missing
   Forever/integration APIs with real types in `types/`, never `diagnostics.globals`. Addon contracts live
   in `types/Namespace.lua`.
