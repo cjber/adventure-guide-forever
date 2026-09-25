@@ -12,6 +12,7 @@ ignore:
   - types
   - tests
   - docs
+  - Locales/phrases.txt
   - media/icon.svg
   - media/icon-400.png
   - stylua.toml

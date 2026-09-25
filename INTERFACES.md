@@ -43,7 +43,7 @@ All functions use dot calls. Existing interfaces remain available. New tables ar
 - `step.complete?: boolean` true only when every checklist giver is done/skipped. Completed towns leave the route. Giver text is preformatted; UI may use its done flag for a stock tick.
 - `ns.Integrations.CurrentStep() -> AGFStep?` resolves the current owned SPF stop when active, otherwise the route head; tracker uses it too.
 
-## Copy keys (all in Core.lua ns.L)
+## Copy keys (all in Locales/enUS.lua ns.L)
 
 `TAB_PVP`, `TAB_COMPLETION`, `GO_TO_ENTRANCE`, `TWEAKS_MISSING`, `TWEAKS_OUTDATED`, `ENTRANCE_UNKNOWN`, `LEGACY_MISSING`, `LEGACY_OUTDATED`, `COMPLETION_EMPTY`, `COMPLETION_LOADING`, `COMPLETION_UNAVAILABLE`, `COMPLETION_COUNTS` (%d/%d), `COMPLETION_PENDING` (%d), `COMPLETION_ACCOUNT`, `COMPLETION_GO`, `COMPLETION_NO_LOCATION`, `COMPLETION_CATEGORY_AREAS`, `COMPLETION_CATEGORY_TAXIS`, `COMPLETION_CATEGORY_DUNGEONS`, `COMPLETION_CATEGORY_RAIDS`, `COMPLETION_CATEGORY_LEGACY`, `COMPLETION_CATEGORY_REPUTATIONS`, `COMPLETION_CATEGORY_QUESTS`.
 
