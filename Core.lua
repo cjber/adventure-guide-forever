@@ -639,7 +639,7 @@ local function BuildRoute()
 	)
 end
 
--- The "you're here" head (docs/design.md §4.3): the route is rebuilt on events, never as the player moves, save that
+-- The "you're here" head (docs/design.md §4.2): the route is rebuilt on events, never as the player moves, save that
 -- walking into an open area the route goes to makes it the head and holds guidance there, and walking out of it
 -- (past Model.Here's margin) lets guidance go on. Checked every HERE_EVERY seconds only while they move
 -- (PLAYER_STARTED_MOVING to PLAYER_STOPPED_MOVING), so nothing runs while they stand still, and once per area entered

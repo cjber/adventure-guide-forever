@@ -704,7 +704,7 @@ do
 	equal(#shared.objectives, 2, "areas, combat: the last build is untouched")
 end
 
--- An area step's point is where the player enters it (design §4.3): ENTER (10) yd inside the ring of its shape nearest
+-- An area step's point is where the player enters it (design §4.2): ENTER (10) yd inside the ring of its shape nearest
 -- them, never the middle, so a long area starts at its near end; its ring keeps the middle. Standing in it, it is
 -- "you're here", and the next build lets it go only 30 yd past its ring.
 do
@@ -1236,7 +1236,7 @@ end
 equal(Only(2, RedSteps):find("0.3200", 1, true), nil, "value: a red quest is never first, though nearest")
 equal(#RedSteps(), 2, "value: nor on the route at all")
 
--- Laps (docs/design.md §4.3): the story's town hands out its quests, the lap goes out to their areas and comes back to
+-- Laps (docs/design.md §4.2): the story's town hands out its quests, the lap goes out to their areas and comes back to
 -- hand them in, a second visit keyed ":2". A quest worth far less per yard than the town's others waits, and the log's
 -- limit caps the pickups, the best worth per yard first.
 do

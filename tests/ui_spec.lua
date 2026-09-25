@@ -298,7 +298,7 @@ do
 		h.ns.Invalidate()
 		h.flush()
 	end
-	-- A rebuild far from the route keeps it (design §4.3): the player moving is no reason to change the way.
+	-- A rebuild far from the route keeps it (design §4.2): the player moving is no reason to change the way.
 	local h = Load("ended")
 	local function Keys()
 		local keys = {}
@@ -327,7 +327,7 @@ do
 	Moved(h, 1413, 0.64, 0.46)
 	local head = h.ns.Route().steps[1]
 	equal(head.key, "area:887:0", "follow: the area the player stands in leads")
-	-- "You're here" (design §4.3): the objectives are theirs to do, so nothing guides into the area or past it.
+	-- "You're here" (design §4.2): the objectives are theirs to do, so nothing guides into the area or past it.
 	equal(head.here, true, "follow: you're here")
 	equal(h.spf.NavigateRoute, 1, "follow: in step 1's area, nothing sent")
 	equal(h.spfRoute, nil, "follow: and the route into it and on past it is gone")
@@ -371,7 +371,7 @@ do
 	equal(h.spf.NavigateRoute, 3, "follow: another journey replaced ours: nothing")
 	clean(h, "follow")
 
-	-- The "you're here" head (design §4.3): checked every 2 s only while the player moves, and a rebuild only on
+	-- The "you're here" head (design §4.2): checked every 2 s only while the player moves, and a rebuild only on
 	-- walking into an open area the route reaches later, once.
 	h = Load("ended")
 	h.log[#h.log + 1] = { id = 887, title = "Southsea Freebooters", level = 14, complete = false }
@@ -994,7 +994,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label .. ": pins")
 end
 
--- An area step on the map (design §4.4): a ring the size of its area under the numbered pins, scaled with the terrain
+-- An area step on the map (design §2.6): a ring the size of its area under the numbered pins, scaled with the terrain
 -- (no mouse: an in-game check); its tooltip lists each open objective under its quest in the client's words, else
 -- its count.
 do
@@ -1038,7 +1038,7 @@ do
 	local map = h.ns.Data.maps[1413]
 	equal(math.floor(ring:GetWidth() + 0.5), math.floor(2 * step.r / map.sx * 1000 + 0.5), "area ring: its area's size")
 	equal(ring.x .. "," .. ring.y, step.ring.x .. "," .. step.ring.y, "area ring: round the area's middle")
-	-- The step's point, and its pin, is where the player enters the ring from the stop before (design §4.3).
+	-- The step's point, and its pin, is where the player enters the ring from the stop before (design §4.2).
 	local yards = h.ns.Model.Yards(h.ns.Data, step, step.ring)
 	equal(yards ~= nil and yards > 0 and yards <= step.r, true, "area ring: its pin on the way in, inside the ring")
 	local pin

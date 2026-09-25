@@ -188,7 +188,7 @@ function provider:RefreshAllData()
 			self:GetMap():AcquirePin(AREA_TEMPLATE, ring, 2 * step.r / size.sx, 2 * step.r / size.sy, index == 1)
 		end
 	end
-	-- A numbered pin at each step's point, but none for the area the player stands in: they are there (§4.3).
+	-- A numbered pin at each step's point, but none for the area the player stands in: they are there (§4.2).
 	for index, step in ipairs(ns.Route().steps) do
 		if step.map == mapID and not step.here then
 			---@type AGFPinFrame

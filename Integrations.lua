@@ -433,7 +433,7 @@ local function Hand(steps)
 	return steps
 end
 
--- "You're here" (docs/design.md §4.3): while the player stands in step 1's area with its objectives open, nothing
+-- "You're here" (docs/design.md §4.2): while the player stands in step 1's area with its objectives open, nothing
 -- guides, neither a waypoint nor a Shortest Path route into it or on past it. Guidance stays on, so Stop shows, and
 -- Follow hands the route on once the area is done or left.
 local holding = false

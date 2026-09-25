@@ -1,5 +1,5 @@
 -- Run from the repository root: luajit tests/laps_spec.lua
--- The lap route's invariants (docs/design.md §4.3) on random characters over the real data: each stands at a random
+-- The lap route's invariants (docs/design.md §4.2) on random characters over the real data: each stands at a random
 -- quest giver near their level, with an older history done and a random log under a random log limit. Every card they
 -- are offered, chosen, is walked in order as a player would play it: a new quest's objectives never before its pickup,
 -- a hand-in only once its objectives are done, the log never past its limit, one quest of an exclusive group at most,
@@ -193,7 +193,7 @@ local function Keys(route, key)
 	return table.concat(keys, " ")
 end
 
--- Whether the player stands where step 1 is, which leads whatever the committed order (docs/design.md §4.3): a town
+-- Whether the player stands where step 1 is, which leads whatever the committed order (docs/design.md §4.2): a town
 -- with a giver or hand-in within 100 yd, else an open area's ring.
 local function Standing(player, route)
 	local head = route.steps[1]
@@ -206,7 +206,7 @@ local function Standing(player, route)
 	return head ~= nil and Model.Here(data, player, route.steps) == 1
 end
 
--- Stability (docs/design.md §4.3, §5.5) on the chosen card: a rebuild with nothing changed gives the same route; one
+-- Stability (docs/design.md §4.2) on the chosen card: a rebuild with nothing changed gives the same route; one
 -- after the player walked to a later step, or took up a quest the route does not hold, keeps step 1 unless the player
 -- stands where another leads; and each such route still walks in order.
 local stable = { same = 0, walked = 0, added = 0, fronted = 0 }

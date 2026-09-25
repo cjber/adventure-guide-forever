@@ -236,7 +236,7 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
   as the player levels on. A tie goes calling, dungeon, a way in, battleground. It is stateless: nothing is
   remembered between sessions. Only as many are built as there are free slots, plus the chosen one, which always
   keeps its slot.
-- **Budget.** Only card 1 and the chosen card plan laps (§4.3); every other card is Build's short route over its
+- **Budget.** Only card 1 and the chosen card plan laps (§4.2); every other card is Build's short route over its
   towns, about 0.1 ms a card, so six cards keep the rebuild inside its 3 ms frame.
 - **No next zone** (roadmap #21): at the level cap, or when no zone is ahead and no story was built, the guide never
   ends on "nothing fits". The dungeon card comes whatever the Dungeons toggle says (its eligibility pass then takes in
@@ -407,7 +407,7 @@ no layer at all.
   Pins.lua:184-188).
 - **Area rings** (a quest's objective area, sized to it): step 1's is drawn whole, and every later one at half
   alpha, so the next place reads first where rings overlap. The ring stays on the area's middle; its number sits
-  where the route enters it (§4.1). While the player stands in step 1's area it has no number, only its ring.
+  where the route enters it (§4.2). While the player stands in step 1's area it has no number, only its ring.
   The choice going, however it goes, stops what AGF guides (Core.lua's `wasChosen` listener): the first card is
   previewed again, nothing guides until a click, and a route the player started in SPF stays.
 - **Layering.** A route ring marks "your destination", so it takes the stock level of the user-waypoint pin,
@@ -891,11 +891,25 @@ takes the smallest map the quests use. NPCs never renumber or merge towns. An NP
   quest-giver "!" still shows it, as the game does.
 - **The player's choices (§2.18).** A dropped quest is never a candidate. An added quest always is while eligible:
   it passes the lap's filters and the ratio cut, but not the orange/red rule or the log's room.
-- **Entry point.** An objective area's step points where the route enters it, not at its middle: on the edge of its
-  nearest part (an area is the union of its places' circles), 10 yd in, facing the previous stop or the player.
-  A long, thin area is entered at its near end.
 - **Unchanged.** A quest whose eligibility the data cannot establish is never a candidate, and every step keeps
   the data's coordinates.
+
+### 4.2 Laps
+
+Card 1 and the chosen card are routed as a player running a guide goes (`Model.Laps`); every other card keeps
+Build's route, so a rebuild stays inside its frame budget.
+- **A lap.** Pick up in town, clear the objective areas out one side of it, come back and hand in: about a quarter
+  of an hour's travel and work. A lap takes up a new quest only when no script or timer ends it and the data places
+  each of its objectives; one worth less than half its town's XP per yard waits for a later lap.
+- **Checked in order.** A quest's objectives never come before its pickup, its hand-in never before all of them, and
+  the log never goes past the client's limit.
+- **Steady.** Each card's order is committed for the session (`route.orders`): its lap goes on until it ends, and a
+  fresh order replaces it only when it saves 15% and 200 yd.
+- **Entry point.** An objective area's step points where the route enters it, not at its middle: on the edge of its
+  nearest part (an area is the union of its places' circles), 10 yd in, facing the previous stop or the player.
+  A long, thin area is entered at its near end. The ring stays on the area's middle.
+- **You're here.** The town (within 100 yd) or open area the player stands in leads. Standing in step 1's area,
+  nothing guides: no waypoint and no Shortest Path route until the area is done or they walk 30 yd out of it.
 
 Contents of the sweep (#9):
 - delete `prefs.legacy` and `prefs.professions` (Core.lua:23-24, types/Namespace.lua:58-59, the spec);
@@ -1125,7 +1139,7 @@ Nothing below has been validated in game yet.
 33. More choices (§2.2): a level-19 Alliance character in Redridge with its quests taken on sees Redridge's story,
     Loose ends, "Head to Wetlands" and "Head to Duskwood", and at most six cards with no empty space under them; each
     one-line row chooses its card, and the empty-panel line shows only when there is no card at all.
-34. Areas (§4.1): with an objective area next, the waypoint and Shortest Path's line end at its near edge, not its
+34. Areas (§4.2): with an objective area next, the waypoint and Shortest Path's line end at its near edge, not its
     middle. Walking into the area clears the waypoint and stops the Shortest Path route; the ring stays, with no
     number, and the tracker shows the counts. Walking 30 yd out brings the waypoint back, and finishing the area
     moves on to the next stop.

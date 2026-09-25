@@ -1142,7 +1142,7 @@ local function Cost(a, b)
 	return CostTo(a, b.x, b.y, b.continent, b.known)
 end
 
--- An area's point is where the player enters it (docs/design.md §4.3): on the ring of its shape nearest `from` (the
+-- An area's point is where the player enters it (docs/design.md §4.2): on the ring of its shape nearest `from` (the
 -- stop before it, or the player), ENTER yards inside so arriving there is standing in it, never its middle. A long
 -- area so starts at its near end. Its ring keeps the middle (`ring`). Where `from` is inside a shape already, or the
 -- data cannot measure the way, the point stays the middle.
@@ -1534,7 +1534,7 @@ end
 ---@type table<string, boolean>?
 local skippedSeen
 
--- Each card's committed order (docs/design.md §4.3), by journey key: a full build reads the last route's and records
+-- Each card's committed order (docs/design.md §4.2), by journey key: a full build reads the last route's and records
 -- its own (Model.Plan); nil outside one.
 ---@type table<string, AGFOrder>?
 local committedOrders
@@ -1676,7 +1676,7 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, c
 	return steps
 end
 
---[[ Laps (docs/design.md §4.3): the route of card 1 and of the chosen card as a player running a guide goes: pick up
+--[[ Laps (docs/design.md §4.2): the route of card 1 and of the chosen card as a player running a guide goes: pick up
      in town, clear the objective areas out one side of it, come back and hand in. Every other card keeps Build's route,
      so a rebuild stays inside its frame budget. ]]
 
@@ -1704,7 +1704,7 @@ local function Worth(quest, level)
 	return quest.xp * (over <= 5 and 1 or over >= 10 and 0.1 or 1 - (over - 5) * 0.2)
 end
 
--- Whether a lap may take up a new quest for the player (docs/design.md §4.2, §4.5): not one a script completes or a
+-- Whether a lap may take up a new quest for the player (docs/design.md §4.2): not one a script completes or a
 -- timer ends, and each of its objectives in an area the data has. A quest with none (a talk or delivery quest) needs
 -- only its pickup and hand-in.
 ---@param quest AGFQuest
@@ -2027,7 +2027,7 @@ local function Recommit(route, rank)
 	return held
 end
 
--- The route in the card's committed order (docs/design.md §4.3), so a rebuild never shuffles what the player follows:
+-- The route in the card's committed order (docs/design.md §4.2), so a rebuild never shuffles what the player follows:
 -- the steps the order holds keep their places, each new one goes where it adds the fewest yards after the head, and
 -- the fresh order (`plain`, after the same head) replaces it only when that saves SETTLE_SHARE of the rest and
 -- SETTLE_YARDS. A route that shares no step with the order (its lap ended), or whose steps the order cannot hold, is
@@ -2088,7 +2088,7 @@ local function Stabilise(route, plain, rank, holds, at, origin, settle)
 	return was - now >= math.max(SETTLE_SHARE * was, SETTLE_YARDS) and alt or kept
 end
 
--- The open area the player stands in (docs/design.md §4.3): the head when it is one, else the first on the route. An
+-- The open area the player stands in (docs/design.md §4.2): the head when it is one, else the first on the route. An
 -- area with a quest the route picks up first is not open yet. Inside is within its ring; the area they stood in
 -- (`held`, its key) lets go only past HERE_MARGIN more, so its edge never flickers. Nil when they stand in none.
 local HERE_MARGIN = 30
@@ -2110,7 +2110,7 @@ function Model.Here(data, where, steps, held)
 	return nil
 end
 
--- The lap route (docs/design.md §4.3), or nil when the player's place is unknown, where Build's route stands. The
+-- The lap route (docs/design.md §4.2), or nil when the player's place is unknown, where Build's route stands. The
 -- card's towns hand out their quests and take the finished ones; each new quest is done in areas of the data's (merged
 -- with the log's), and one whose XP per yard falls below KEEP of its town's mean waits. Each quest's stops are laps
 -- around the town it goes back to (its pickup town when new, else its hand-in's when a lap reaches it), cut by Sweep.
@@ -2688,8 +2688,8 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	Front(inTown)
 	local here = not inTown[route[1]] and Model.Here(data, player, route, heldHere)
 	local standsIn = here and route[here]
-	if here and here > 1 then
-		Front({ [route[here]] = true })
+	if standsIn and here > 1 then
+		Front({ [standsIn] = true })
 	end
 	-- "You're here": the area they stand in, leading, is theirs to clear; nothing guides to it or on past it.
 	if standsIn and route[1] == standsIn then
@@ -3562,7 +3562,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	-- another zone than the story's and the one the player stands in, whose range the player hasn't outgrown, with
 	-- NEXT_ZONE_PICKUPS quests there at that level and NEXT_ZONE_NOW of them open now; and the chosen zone while it has
 	-- a step, in its place or last. Only NEXT_ZONES are built, with Build's route: laps are for card 1 and the chosen
-	-- card alone (§4.3).
+	-- card alone (§4.2).
 	local open, headed, zoneCards = {}, chosenZone ~= zone and chosenZone or nil, 0
 	for _, id in ipairs(eligible) do
 		local quest = data.quests[id]
