@@ -10,6 +10,9 @@ Each version's entry is also its release notes on GitHub, CurseForge and Wago.
 
 ## [Unreleased]
 
+- **The guide tells you which companion addon fills a gap.** A route step's tooltip says to install Shortest Path Forever for walked routes and boat times, and the Professions and Completion tabs name SkillUp Forever and Legacy Forever. When one is installed but turned off, it says to enable it instead. *Suggest companion addons* in the settings hides these lines.
+- **One line in chat after an update** says what changed, the first time you log in on the new version. Never on a first install; *Tell me what's new after an update* turns it off.
+
 ## [0.1.1] - 2026-09-25
 
 - **An empty progress bar stays in its card.** The PvP tab's rank points bar at 0, and a Completion zone with nothing done yet, drew their bar across the whole window; they now show an empty bar where it belongs.

@@ -3,6 +3,8 @@ local addonName, ns = ...
 
 -- Only WoW: Forever loads this addon, so in game it is simply the Adventure Guide.
 ns.TITLE = "Adventure Guide"
+-- The one chat line after an update to this version (ns.WhatsNew): the headline of its CHANGELOG entry.
+ns.WHATS_NEW = "The guide now tells you which companion addon would fill in a tab or a route step."
 
 -- Every line the player reads, in one table: new copy lands here from the start, so one place holds the
 -- game's voice (WFA-6) and a later locale only has to replace values. Format strings keep their specifiers.
@@ -370,6 +372,20 @@ ns.L = {
 	STEP_WORK = "Complete %s · %s",
 	STEP_TOWN = "Visit %s: %s",
 	STEP_BATTLEMASTER = "Visit the battlemaster in %s",
+	-- After an update (WhatsNew): the version, then ns.WHATS_NEW.
+	UPDATED_TO = "updated to %s. %s",
+	SETTING_WHATS_NEW = "Tell me what's new after an update",
+	SETTING_WHATS_NEW_TOOLTIP = "One line in chat the first time you log in after the guide updates.",
+	-- Companion hints (Companions.lua): what another Forever addon would add here, while it isn't loaded.
+	SETTING_COMPANIONS = "Suggest companion addons",
+	SETTING_COMPANIONS_TOOLTIP = "A short line where another Forever addon would fill a tab or a route step, while "
+		.. "that addon isn't installed or enabled.",
+	SPF_MISSING = "Install Shortest Path Forever for walked routes and boat times.",
+	SPF_DISABLED = "Enable Shortest Path Forever for walked routes and boat times.",
+	SKILLUP_DISABLED = "Your next skill-ups come from SkillUp Forever. Enable it and they show here.",
+	SKILLUP_ABSENT = "Your next skill-ups come from SkillUp Forever.",
+	LEGACY_DISABLED = "Enable Legacy Forever to see your completion progress.",
+	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
 }
 local L = ns.L
 
@@ -394,6 +410,10 @@ local DEFAULTS = {
 	wanderer = false,
 	-- Walking into the quest area the route leads to selects its quest, so the map draws its blue area (Focus.lua).
 	followQuest = true,
+	-- One chat line after an update (WhatsNew).
+	whatsNew = true,
+	-- A line where a missing companion addon would fill a tab or a route step (Companions.lua).
+	suggestCompanions = true,
 }
 ns.DEFAULTS = DEFAULTS
 
@@ -1278,4 +1298,20 @@ EventUtil.ContinueOnAddOnLoaded(addonName, function()
 		resumeLatch = true
 	end)
 	ns.RegisterSettings()
+	EventUtil.ContinueAfterAllEvents(ns.WhatsNew, "PLAYER_LOGIN")
 end)
+
+-- After an update, one chat line says what changed. Never on a first install (no version seen yet, which is also
+-- every login on a client that doesn't load saved variables), nor in a dev checkout, whose TOC version the packager
+-- hasn't filled in. `lastVersion` is a record, not a setting, so it has no default.
+function ns.WhatsNew()
+	local version = C_AddOns.GetAddOnMetadata(addonName, "Version")
+	if not db or type(version) ~= "string" or version == "" or version:sub(1, 1) == "@" then
+		return
+	end
+	local seen = db.lastVersion
+	db.lastVersion = version
+	if type(seen) == "string" and seen ~= version and ns.Setting("whatsNew") then
+		ns.Print(L.UPDATED_TO:format(version, ns.WHATS_NEW))
+	end
+end

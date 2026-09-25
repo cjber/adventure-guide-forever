@@ -56,6 +56,11 @@ local function RowEnter(self)
 	if ns.Route().chosen then
 		GameTooltip_AddInstructionLine(GameTooltip, L.ORDER_DRAG)
 	end
+	-- Without Shortest Path a step is a waypoint as the crow flies; a wanderer wants neither.
+	local hint = not ns.Setting("wanderer") and ns.Companions.Hint("ShortestPathForever")
+	if hint then
+		GameTooltip_AddInstructionLine(GameTooltip, hint)
+	end
 	GameTooltip:Show()
 end
 

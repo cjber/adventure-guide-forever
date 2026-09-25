@@ -1164,6 +1164,28 @@
 ---@field STEP_WORK string
 ---@field STEP_TOWN string
 ---@field STEP_BATTLEMASTER string
+---@field UPDATED_TO string format: the version, then ns.WHATS_NEW
+---@field SETTING_WHATS_NEW string
+---@field SETTING_WHATS_NEW_TOOLTIP string
+---@field SETTING_COMPANIONS string
+---@field SETTING_COMPANIONS_TOOLTIP string
+---@field SPF_MISSING string a route step's tooltip without Shortest Path Forever installed
+---@field SPF_DISABLED string a route step's tooltip with Shortest Path Forever installed but not enabled
+---@field SKILLUP_DISABLED string the Professions tab with SkillUp Forever installed but not enabled
+---@field SKILLUP_ABSENT string the Professions tab without SkillUp Forever, companion hints off
+---@field LEGACY_DISABLED string the Completion tab with Legacy Forever installed but not enabled
+---@field LEGACY_ABSENT string the Completion tab without Legacy Forever, companion hints off
+
+---@alias AGFCompanionState "loaded"|"disabled"|"missing"
+
+---@class AGFCompanions
+---@field State fun(addon: string): AGFCompanionState loaded, installed but not loaded, or not installed
+---@field Hint fun(addon: string): string? the line naming what the companion adds, while it isn't loaded and hints are on
+
+---@class AGFNamespace
+---@field WHATS_NEW string this version's headline, printed once after an update
+---@field WhatsNew fun() on login: print WHATS_NEW once if the version changed since the last one seen
+---@field Companions AGFCompanions
 
 ---@class AGFModel
 ---@field ObjectiveDone fun(data: AGFData, entry?: AGFLogQuest, slot: integer): boolean
