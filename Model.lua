@@ -886,9 +886,10 @@ local function Gather(data, areas, anchors, steps, node, id, title, kind, option
 		area.optional = area.optional and optional or nil
 	else
 		area = Step(kind, ("area:%d:%d"):format(id, node.slot), title, node, id, optional, "")
-		area.objectives, area.r, anchors[area] = {}, node.r, node
+		area.objectives, area.r, area.shapes, anchors[area] = {}, node.r, {}, node
 		areas[#areas + 1], steps[#steps + 1] = area, area
 	end
+	area.shapes[#area.shapes + 1] = node
 	if planned then
 		area.planned = area.planned or {}
 		area.planned[id] = true
@@ -1139,6 +1140,38 @@ local function Cost(a, b)
 		return UNKNOWN
 	end
 	return CostTo(a, b.x, b.y, b.continent, b.known)
+end
+
+-- An area's point is where the player enters it (docs/design.md §4.3): on the ring of its shape nearest `from` (the
+-- stop before it, or the player), ENTER yards inside so arriving there is standing in it, never its middle. A long
+-- area so starts at its near end. Its ring keeps the middle (`ring`). Where `from` is inside a shape already, or the
+-- data cannot measure the way, the point stays the middle.
+local ENTER = 10
+---@param step AGFStep
+---@param from? AGFPosition
+local function Enter(data, step, from)
+	step.ring = { map = step.map, x = step.x, y = step.y }
+	if not (from and from.known) then
+		return
+	end
+	local best, bestGap, bestX, bestY
+	for _, shape in ipairs(step.shapes or NONE) do
+		local x, y, continent, known = Point(data, shape)
+		if known and continent == from.continent then
+			local gap = math.sqrt((from.x - x) ^ 2 + (from.y - y) ^ 2) - shape.r
+			if not best or gap < bestGap then
+				best, bestGap, bestX, bestY = shape, gap, x, y
+			end
+		end
+	end
+	local map = best and data.maps[best.map]
+	if not (map and bestGap > 0) then
+		return
+	end
+	local share = (best.r - math.min(ENTER, best.r / 2)) / (bestGap + best.r)
+	step.map = best.map
+	step.x = math.min(math.max(best.x + (from.x - bestX) * share / map.sx, 0), 1)
+	step.y = math.min(math.max(best.y + (from.y - bestY) * share / map.sy, 0), 1)
 end
 
 -- Whether the data places both on the Azeroth map, on different continents.
@@ -1506,6 +1539,10 @@ local skippedSeen
 ---@type table<string, AGFOrder>?
 local committedOrders
 
+-- The key of the area the player stood in at the last build (AGFRoute.here), for Model.Here's margin; nil outside one.
+---@type string?
+local heldHere
+
 -- Chooses up to MAX_STEPS of `candidates` and orders them from the player (docs/design.md §4.1). `lead`, the story
 -- card's chapter, is chosen first, then ordered by cost like the rest. `join` adds to the chosen steps (hand-ins to
 -- their towns) before they are described and ordered, so it never adds a step. `log` titles the hand-ins.
@@ -1630,6 +1667,8 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, c
 				end
 			end
 			step.map, step.x, step.y = best.map, best.x, best.y
+		elseif step.objectives then
+			Enter(data, step, from)
 		end
 		Locate(data, step, mapName)
 		from = Position(data, step, docks)
@@ -2050,18 +2089,21 @@ local function Stabilise(route, plain, rank, holds, at, origin, settle)
 end
 
 -- The open area the player stands in (docs/design.md §4.3): the head when it is one, else the first on the route. An
--- area with a quest the route picks up first is not open yet. Nil when they stand in none.
+-- area with a quest the route picks up first is not open yet. Inside is within its ring; the area they stood in
+-- (`held`, its key) lets go only past HERE_MARGIN more, so its edge never flickers. Nil when they stand in none.
+local HERE_MARGIN = 30
 ---@param where? {map?: integer, x?: number, y?: number}
 ---@param steps AGFStep[]
+---@param held? string
 ---@return integer?
-function Model.Here(data, where, steps)
+function Model.Here(data, where, steps, held)
 	if not ValidPlace(where) then
 		return nil
 	end
 	---@cast where {map: integer, x: number, y: number}
 	for index, step in ipairs(steps) do
-		local yards = step.kind == "area" and not step.planned and Model.Yards(data, where, step)
-		if yards and yards <= (step.r or 0) then
+		local yards = step.kind == "area" and not step.planned and Model.Yards(data, where, step.ring or step)
+		if yards and yards <= (step.r or 0) + (step.key == held and HERE_MARGIN or 0) then
 			return index
 		end
 	end
@@ -2644,9 +2686,14 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 		inTown[step] = step.kind ~= "area" and step.hub ~= nil and Cost(origin, At(step)) <= HERE or nil
 	end
 	Front(inTown)
-	local here = not inTown[route[1]] and Model.Here(data, player, route)
+	local here = not inTown[route[1]] and Model.Here(data, player, route, heldHere)
+	local standsIn = here and route[here]
 	if here and here > 1 then
 		Front({ [route[here]] = true })
+	end
+	-- "You're here": the area they stand in, leading, is theirs to clear; nothing guides to it or on past it.
+	if standsIn and route[1] == standsIn then
+		standsIn.here = true
 	end
 	-- The order is committed before the visits merge, so the next build, which splits them again, keeps to it.
 	local order = committedOrders and card and Idents(route) --[[@as AGFOrder?]]
@@ -2720,6 +2767,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 			step.map, step.x, step.y = best.map, best.x, best.y
 		elseif step.objectives then
 			Tell(step)
+			Enter(data, step, not step.here and from or nil)
 		elseif step.kind == "trainer" then
 			Describe(data, log, player, step)
 		end
@@ -3697,14 +3745,16 @@ end
 ---@param instanceName? fun(id: integer): string? the client's name for an instance Map.ID; the data's otherwise
 ---@param last? AGFRoute the route before, whose committed orders (`orders`) this one keeps to
 function Model.Plan(data, player, completed, log, prefs, mapName, instanceName, last)
-	skippedSeen, committedOrders, planDocks = {}, {}, { data = data }
+	skippedSeen, committedOrders, planDocks, heldHere = {}, {}, { data = data }, last and last.here
 	for key, order in pairs(last and last.orders or NONE) do
 		committedOrders[key] = order
 	end
 	local journeys, stranded = Model.Journeys(data, player, completed, log, prefs, mapName, instanceName)
 	local route = Route(journeys, prefs)
 	route.skipped, skippedSeen, route.stranded = skippedSeen, nil, stranded or nil
-	route.orders, committedOrders, planDocks = committedOrders, nil, nil
+	route.orders, committedOrders, planDocks, heldHere = committedOrders, nil, nil, nil
+	local head = route.steps[1]
+	route.here = head and head.here and head.key or nil
 	return route
 end
 

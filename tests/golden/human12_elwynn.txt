@@ -1,8 +1,8 @@
 # human12_elwynn: level 12, side 1, at 1429 0.4200,0.6500
 card (chosen) | zone:1436 | Westfall story | Chapter 1 of 4 | A chain begins with Quartermaster Lewis | map 1436
   step 1 | town:37 | Sentinel Hill, Westfall | 1436 0.5700,0.4717 | Begins a new story
-  step 2 | area:12:0 | The People's Militia | 1436 0.4630,0.2210 | after you pick it up | 141 yd | 12/0 12/1
-  step 3 | area:102:4 | Patrolling Westfall | 1436 0.6140,0.7400 | after you pick it up | 183 yd | 102/4
+  step 2 | area:12:0 | The People's Militia | 1436 0.4832,0.2683 | after you pick it up | 141 yd | 12/0 12/1
+  step 3 | area:102:4 | Patrolling Westfall | 1436 0.5950,0.6715 | after you pick it up | 183 yd | 102/4
   step 4 | town:37:2 | Sentinel Hill, Westfall | 1436 0.5642,0.4762 | Opens the next chapter here | then 13
   step 5 | town:45 | Pick up quests: Salma Saldean | 1436 0.5642,0.3052 | near your level
 card | zone:1432 | Head to Loch Modan | 5 quests near your level | For level 14 | map 1432

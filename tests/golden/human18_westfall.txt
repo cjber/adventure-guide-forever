@@ -2,7 +2,7 @@
 card (chosen) | zone:1436 | Westfall story | Chapter 1 of 5 | A chain begins with Gryan Stoutmantle | map 1436
   step 1 | town:37 | Pick up quests: Gryan Stoutmantle | 1436 0.5633,0.4752 | Begins a new story
   step 2 | town:30 | Pick up quests: Scout Galiaan | 1436 0.5398,0.5298 | near your level
-  step 3 | area:153:4 | Red Leather Bandanas | 1436 0.4630,0.2210 | after you pick it up | 141 yd | 153/4
+  step 3 | area:153:4 | Red Leather Bandanas | 1436 0.4761,0.2736 | after you pick it up | 141 yd | 153/4
   step 4 | town:30:2 | Turn in: Red Leather Bandanas | 1436 0.5398,0.5298 | once it's done
   step 5 | town:45 | Pick up quests: Farmer Saldean | 1436 0.5604,0.3123 | near your level
 card | zone:1433 | Head to Redridge Mountains | 8 quests near your level | For level 20 | map 1433

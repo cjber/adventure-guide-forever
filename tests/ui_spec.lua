@@ -325,31 +325,36 @@ do
 	h.flush()
 	equal(h.spf.NavigateRoute, 1, "follow: a pickup ahead of step 1 sends nothing")
 	Moved(h, 1413, 0.64, 0.46)
-	equal(h.ns.Route().steps[1].key, "area:887:0", "follow: the area the player stands in leads")
-	equal(h.spf.NavigateRoute, 2, "follow: step 1 elsewhere, sent again once")
-	equal(h.spfRoute.stops[1].x, h.ns.Route().steps[1].x, "follow: from the new step 1")
+	local head = h.ns.Route().steps[1]
+	equal(head.key, "area:887:0", "follow: the area the player stands in leads")
+	-- "You're here" (design §4.3): the objectives are theirs to do, so nothing guides into the area or past it.
+	equal(head.here, true, "follow: you're here")
+	equal(h.spf.NavigateRoute, 1, "follow: in step 1's area, nothing sent")
+	equal(h.spfRoute, nil, "follow: and the route into it and on past it is gone")
+	equal(h.ns.Integrations.Owns(), true, "follow: guidance holds, so Stop still shows")
 	Moved(h, 1413, 0.64, 0.47)
-	equal(h.spf.NavigateRoute, 2, "follow: and not again while it matches")
+	equal(h.spf.NavigateRoute, 1, "follow: nothing while the player is in it")
 	h.SetCombat(true)
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 2, "follow: nothing in combat")
+	equal(h.spf.NavigateRoute, 1, "follow: nothing in combat")
 	h.SetCombat(false)
 	h.flush()
-	equal(h.spf.NavigateRoute, 3, "follow: once, when combat ends")
+	equal(h.spf.NavigateRoute, 2, "follow: out of the area, once combat ends, the route goes on")
+	equal(h.ns.Prefs().guided, "zone:1413", "follow: still the chosen journey's")
 	-- Standing in step 1's town, the Crossroads, with steps after it: the town alone, so no way out of town is drawn.
 	equal(#h.spfRoute.stops, 1, "follow: in step 1's town, the town alone")
 	h.onTaxi = true
 	Moved(h, 1413, 0.46, 0.79)
-	equal(h.spf.NavigateRoute, 3, "follow: nothing in the air")
+	equal(h.spf.NavigateRoute, 2, "follow: nothing in the air")
 	h.onTaxi = false
 	Moved(h, nil, nil, nil)
-	equal(h.spf.NavigateRoute, 3, "follow: nothing off the map")
+	equal(h.spf.NavigateRoute, 2, "follow: nothing off the map")
 	Moved(h, 1413, 0.5223, 0.3101)
 	h.spfEnd("arrived")
 	Moved(h, 1413, 0.5224, 0.3101)
-	equal(h.spf.NavigateRoute, 3, "follow: arrived in the town, its work still there: nothing")
+	equal(h.spf.NavigateRoute, 2, "follow: arrived in the town, its work still there: nothing")
 	Moved(h, 1413, 0.46, 0.79)
-	equal(h.spf.NavigateRoute, 4, "follow: out of the town, the journey goes on")
+	equal(h.spf.NavigateRoute, 3, "follow: out of the town, the journey goes on")
 	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: every step")
 	-- Shortest Path moves on stop by stop until it heads for the Crossroads, then the player reaches it.
 	for _, step in ipairs(h.ns.Route().steps) do
@@ -359,11 +364,11 @@ do
 		h.spfAdvance()
 	end
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 4, "follow: heading for the town it stands in: nothing")
+	equal(h.spf.NavigateRoute, 3, "follow: heading for the town it stands in: nothing")
 	h.spfOther()
 	Moved(h, 1413, 0.46, 0.79)
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 4, "follow: another journey replaced ours: nothing")
+	equal(h.spf.NavigateRoute, 3, "follow: another journey replaced ours: nothing")
 	clean(h, "follow")
 
 	-- The "you're here" head (design §4.3): checked every 2 s only while the player moves, and a rebuild only on
@@ -392,6 +397,36 @@ do
 	h.flush()
 	equal(next(h.ticking), nil, "here: standing still checks nothing")
 	clean(h, "here")
+
+	-- Without Shortest Path, Go in the area the player stands in sets no waypoint, and walking out puts it on step 1.
+	h = Load(false, PINS_ON)
+	h.log[#h.log + 1] = { id = 887, title = "Southsea Freebooters", level = 14, complete = false }
+	h.log[#h.log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
+	Moved(h, 1413, 0.64, 0.46)
+	local standing = h.ns.Route().steps[1]
+	equal(standing.here, true, "here, waypoint: in the area")
+	h.G.OpenQuestLog()
+	h.map:SetMapID(1413)
+	h.flush()
+	h.providers[1]:RefreshAllData()
+	local numbered = false
+	for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
+		numbered = numbered or pin.step == standing
+	end
+	equal(numbered, false, "here, waypoint: no numbered pin where the player is")
+	equal(#(h.pins.AdventureGuideForeverAreaPinTemplate or {}) > 0, true, "here, waypoint: its ring still drawn")
+	equal(h.pins.AdventureGuideForeverAreaPinTemplate[1]:GetAlpha(), 1, "here, waypoint: whole, as step 1's")
+	h.ns.StartRoute()
+	h.flush()
+	equal(h.counts.SetUserWaypoint or 0, 0, "here, waypoint: Go sets none")
+	equal(h.ns.Integrations.Owns(), true, "here, waypoint: guidance holds")
+	Moved(h, 1413, 0.46, 0.79)
+	local leftFor = h.ns.Route().steps[1]
+	equal(leftFor.here, nil, "here, waypoint: out of it")
+	equal(h.counts.SetUserWaypoint, 1, "here, waypoint: the route goes on")
+	local point = h.G.C_Map.GetUserWaypoint()
+	equal(point and point.position.x, leftFor.x, "here, waypoint: at step 1")
+	clean(h, "here, waypoint")
 
 	-- Started outside the town, every step is handed; Shortest Path reaching the town moves on at once, and the player
 	-- in it with work left gets the town alone again, so the minimap draws no way out before its quests are taken.
@@ -1002,7 +1037,10 @@ do
 	equal(ring.scaleStyle, h.G.AM_PIN_SCALE_STYLE_WITH_TERRAIN, "area ring: scaled with the terrain")
 	local map = h.ns.Data.maps[1413]
 	equal(math.floor(ring:GetWidth() + 0.5), math.floor(2 * step.r / map.sx * 1000 + 0.5), "area ring: its area's size")
-	equal(ring.x .. "," .. ring.y, step.x .. "," .. step.y, "area ring: at the step")
+	equal(ring.x .. "," .. ring.y, step.ring.x .. "," .. step.ring.y, "area ring: round the area's middle")
+	-- The step's point, and its pin, is where the player enters the ring from the stop before (design §4.3).
+	local yards = h.ns.Model.Yards(h.ns.Data, step, step.ring)
+	equal(yards ~= nil and yards > 0 and yards <= step.r, true, "area ring: its pin on the way in, inside the ring")
 	local pin
 	for _, candidate in ipairs(h.pins.AdventureGuideForeverPinTemplate) do
 		pin = candidate.step == step and candidate or pin

@@ -57,6 +57,25 @@ for _, npc in pairs(data.npcs or {}) do
 end
 table.sort(givers)
 
+-- A step's point is a place the data has, or, for an area, where the player enters it: inside the ring of one of its
+-- shapes, each centred on a place the data has, with the ring's middle one too (Model.lua Enter).
+local function Placed(step)
+	if places[Key(step.map, step.x, step.y)] then
+		return true
+	end
+	local ring = step.ring
+	if not (ring and places[Key(ring.map, ring.x, ring.y)]) then
+		return false
+	end
+	for _, shape in ipairs(step.shapes or {}) do
+		local yards = Model.Yards(data, step, shape)
+		if places[Key(shape.map, shape.x, shape.y)] and yards and yards <= shape.r then
+			return true
+		end
+	end
+	return false
+end
+
 local checks, failures = 0, {}
 local function check(ok, text)
 	checks = checks + 1
@@ -127,7 +146,7 @@ local function Walk(where, steps, player, completed, log, held)
 	end
 	for index, step in ipairs(steps) do
 		local label = ("%s, step %d %s"):format(where, index, step.key)
-		check(places[Key(step.map, step.x, step.y)], label .. ": a point the data has")
+		check(Placed(step), label .. ": a point the data has")
 		for _, id in ipairs(step.kind == "town" and step.handins or {}) do
 			local entry = log[id]
 			check(entry or picked[id], label .. ": hands in " .. id .. ", carried or picked up")

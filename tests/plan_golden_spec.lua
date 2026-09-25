@@ -173,18 +173,25 @@ for _, fixture in ipairs(characters.list) do
 			if step.kind == "area" or step.kind == "dungeon" then
 				areas = areas + 1
 				equal(step.map, 1433, "human19_redridge_full: " .. step.key .. " is on Redridge")
-				local placed = false
+				-- Its ring round a data objective area, and its point, where the player enters, inside that ring.
+				local placed, ring = false, step.ring or step
 				for _, id in ipairs(step.quests) do
 					for _, area in ipairs(data.quests[id].obj or {}) do
 						placed = placed
 							or (
-								(area[5] or data.quests[id].zone) == step.map
-								and area[2] / 1000 == step.x
-								and area[3] / 1000 == step.y
+								(area[5] or data.quests[id].zone) == ring.map
+								and area[2] / 1000 == ring.x
+								and area[3] / 1000 == ring.y
 							)
 					end
 				end
 				equal(placed, true, "human19_redridge_full: " .. step.key .. " is at a data objective area")
+				local yards = Model.Yards(data, step, ring)
+				equal(
+					yards ~= nil and yards <= step.r,
+					true,
+					"human19_redridge_full: " .. step.key .. " enters its ring"
+				)
 			end
 		end
 		equal(areas >= 4, true, "human19_redridge_full: the quests under way are area steps")

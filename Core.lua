@@ -640,9 +640,10 @@ local function BuildRoute()
 end
 
 -- The "you're here" head (docs/design.md §4.3): the route is rebuilt on events, never as the player moves, save that
--- walking into an open area the route goes to later makes it the head. Checked every HERE_EVERY seconds only while
--- they move (PLAYER_STARTED_MOVING to PLAYER_STOPPED_MOVING), so nothing runs while they stand still, and once per area
--- entered.
+-- walking into an open area the route goes to makes it the head and holds guidance there, and walking out of it
+-- (past Model.Here's margin) lets guidance go on. Checked every HERE_EVERY seconds only while they move
+-- (PLAYER_STARTED_MOVING to PLAYER_STOPPED_MOVING), so nothing runs while they stand still, and once per area entered
+-- or left.
 local HERE_EVERY = 2
 ---@type {Cancel: fun(self)}?
 local walking
@@ -654,9 +655,9 @@ local function Walked()
 	end
 	local map, x, y = ns.State.Where()
 	local steps = cachedRoute.steps
-	local index = ns.Model.Here(ns.Data, { map = map, x = x, y = y }, steps)
-	local key = index and index > 1 and steps[index].key or nil
-	if key and key ~= hereKey then
+	local index = ns.Model.Here(ns.Data, { map = map, x = x, y = y }, steps, cachedRoute.here)
+	local key = index and steps[index].key or nil
+	if key ~= hereKey and key ~= cachedRoute.here then
 		ns.Invalidate()
 	end
 	hereKey = key

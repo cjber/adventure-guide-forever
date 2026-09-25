@@ -179,16 +179,18 @@ function provider:RefreshAllData()
 	if not RingsShown() then
 		return
 	end
-	-- Each area's ring first, under the numbered pins: its radius in yards over the map's size in yards, when the data
-	-- has the map's size. The head's ring is full; the rest fade, as later stops do.
+	-- Each area's ring first, under the numbered pins, round its middle: its radius in yards over the map's size in
+	-- yards, when the data has the map's size. The head's ring is full; the rest fade, as later stops do.
 	local size = ns.Data.maps and ns.Data.maps[mapID]
 	for index, step in ipairs(size and ns.Route().steps or {}) do
-		if step.map == mapID and step.objectives and (step.r or 0) > 0 then
-			self:GetMap():AcquirePin(AREA_TEMPLATE, step, 2 * step.r / size.sx, 2 * step.r / size.sy, index == 1)
+		local ring = step.ring or step
+		if ring.map == mapID and step.objectives and (step.r or 0) > 0 then
+			self:GetMap():AcquirePin(AREA_TEMPLATE, ring, 2 * step.r / size.sx, 2 * step.r / size.sy, index == 1)
 		end
 	end
+	-- A numbered pin at each step's point, but none for the area the player stands in: they are there (§4.3).
 	for index, step in ipairs(ns.Route().steps) do
-		if step.map == mapID then
+		if step.map == mapID and not step.here then
 			---@type AGFPinFrame
 			local pin = self:GetMap():AcquirePin(PIN_TEMPLATE, step, index)
 			pinsByKey[step.key] = pin
@@ -252,14 +254,14 @@ end
 -- A later ring's share of the head's: faint enough that the head's reads first where rings overlap.
 local LATER_RING = 0.5
 
----@param step AGFStep
+---@param ring {x: number, y: number} the ring's middle
 ---@param width number the ring's diameter as a share of the map's width
 ---@param height number and of its height
 ---@param head boolean step 1's ring
-function AdventureGuideForeverAreaPinMixin:OnAcquired(step, width, height, head)
+function AdventureGuideForeverAreaPinMixin:OnAcquired(ring, width, height, head)
 	local canvas = self:GetMap():GetCanvas()
 	self:SetSize(width * canvas:GetWidth(), height * canvas:GetHeight())
-	self:SetPosition(step.x, step.y)
+	self:SetPosition(ring.x, ring.y)
 	self:SetAlpha(head and 1 or LATER_RING)
 end
 

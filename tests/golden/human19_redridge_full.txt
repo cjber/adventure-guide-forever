@@ -2,7 +2,7 @@
 card (chosen) | zone:1433 | Redridge Mountains story | 1 ready to hand in, 10 in progress, 5 of them on later laps | - | map 1433
   step 1 | area:3741:4 | Hilary's Necklace | 1433 0.2320,0.5390 | quests in progress | 200 yd | 3741/4
   step 2 | town:56 | Turn in: A Free Lunch | 1433 0.1019,0.7146 | Opens the next chapter here | then 130
-  step 3 | area:92:4 | Redridge Goulash | 1433 0.2580,0.7350 | 2 quests here | 199 yd | 92/4 246/1
+  step 3 | area:92:4 | Redridge Goulash | 1433 0.1800,0.7248 | 2 quests here | 199 yd | 92/4 246/1
   step 4 | area:34:4 | An Unwelcome Guest | 1433 0.1100,0.4930 | quests in progress | 0 yd | 34/4
   step 5 | town:61 | Lakeshire, Redridge | 1433 0.1677,0.4633 | 3 to hand in
   step 6 | area:169:4 | Wanted: Gath'Ilzogg | 1433 0.6450,0.5580 | quests in progress | 0 yd | 169/4

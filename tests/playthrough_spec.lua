@@ -63,6 +63,25 @@ for _, npc in pairs(data.npcs or {}) do
 	Add(npc.place)
 end
 
+-- A step's point is a place the data has, or, for an area, where the player enters it: inside the ring of one of its
+-- shapes, each centred on a place the data has, with the ring's middle one too (Model.lua Enter).
+local function Placed(step)
+	if places[Key(step.map, step.x, step.y)] then
+		return true
+	end
+	local ring = step.ring
+	if not (ring and places[Key(ring.map, ring.x, ring.y)]) then
+		return false
+	end
+	for _, shape in ipairs(step.shapes or {}) do
+		local yards = Model.Yards(data, step, shape)
+		if places[Key(shape.map, shape.x, shape.y)] and yards and yards <= shape.r then
+			return true
+		end
+	end
+	return false
+end
+
 local flags = { empty = {}, orange = {}, red = {}, flip = {}, unplaced = {}, dropped = {}, zones = {} }
 local function Flag(kind, text)
 	local list = flags[kind]
@@ -215,7 +234,7 @@ local function Play(race, classID, chooser)
 							Flag("dropped", ("%s: %s holds %d"):format(where, step.key, id))
 						end
 					end
-					if not places[Key(step.map, step.x, step.y)] then
+					if not Placed(step) then
 						Flag("unplaced", ("%s: %s %s"):format(where, step.key, Key(step.map, step.x, step.y)))
 					end
 					for _, id in ipairs(step.pickups or {}) do

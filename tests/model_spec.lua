@@ -704,6 +704,39 @@ do
 	equal(#shared.objectives, 2, "areas, combat: the last build is untouched")
 end
 
+-- An area step's point is where the player enters it (design §4.3): ENTER (10) yd inside the ring of its shape nearest
+-- them, never the middle, so a long area starts at its near end; its ring keeps the middle. Standing in it, it is
+-- "you're here", and the next build lets it go only 30 yd past its ring.
+do
+	local strip = { quests = { [1] = quest() }, zones = data.zones }
+	strip.maps = { [1] = { name = "Zone", continent = 0, cx = 0, cy = 0, sx = 1000, sy = 1000 } }
+	strip.continents = { [0] = { x = 0, y = 0 } }
+	-- Two spots 150 yd apart, 100 yd each: one area, long from west to east, its ring round the first.
+	strip.quests[1].need = { [0] = 8, [4] = 5 }
+	strip.quests[1].obj = { { 0, 400, 500, 100 }, { 4, 550, 500, 100 } }
+	local carried = { [1] = { id = 1, title = "Strip", level = 18, complete = false } }
+	local function Head(x, last)
+		local at = { map = 1, x = x, y = 0.5 }
+		for name, value in pairs(player) do
+			at[name] = at[name] == nil and value or at[name]
+		end
+		local built = Model.Plan(strip, at, { [1] = true }, carried, prefs(), nil, nil, last)
+		return built.steps[1], built
+	end
+	local east = Head(0.9)
+	equal(east.key, "area:1:0", "entry: the area leads")
+	equal(("%.3f %.3f"):format(east.ring.x, east.ring.y), "0.400 0.500", "entry: its ring round its middle")
+	equal(("%.3f %.3f"):format(east.x, east.y), "0.640 0.500", "entry: from the east, the east end's edge")
+	equal(east.here, nil, "entry: outside, not here")
+	equal(("%.3f"):format(Head(0.1).x), "0.310", "entry: from the west, the west end's edge")
+	local inside, held = Head(0.45)
+	equal(inside.here, true, "entry: inside, you're here")
+	equal(held.here, "area:1:0", "entry: which the route keeps for the next build")
+	equal(Head(0.13, held).here, true, "entry: 20 yd past the ring, still here")
+	equal(Head(0.13).here, nil, "entry: there fresh, not")
+	equal(Head(0.11, held).here, nil, "entry: 40 yd past it, let go")
+end
+
 -- The zone the player stands in leads when they carry its quests, though nothing is left there to pick up and another
 -- zone's pickups rank better; carry holds the rest of the log.
 do

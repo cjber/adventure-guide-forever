@@ -174,6 +174,9 @@
 ---@field planned? table<integer, true> the quests on it the route picks up first, not in the log yet (Model.lua Laps)
 ---@field returns? table<integer, true> a town's hand-ins the route comes back for once their objectives are done
 ---@field chapter? string the story card's chapter line, on the step that takes the chain up
+---@field shapes? AGFNode[] an area's objective nodes, each its own ring, merged into it
+---@field ring? {map: integer, x: number, y: number} an area's middle, where its ring is drawn; its point is where the player enters it
+---@field here? true step 1 is the area the player stands in, objectives open: nothing guides to it or past it
 
 ---@class AGFSkipped
 ---@field key string
@@ -222,6 +225,7 @@
 ---@field steps AGFStep[] that journey's steps, never more than MAX_STEPS
 ---@field skipped? table<string, boolean> the skipped keys a full build still had a step for; nil after the combat one
 ---@field orders? table<string, AGFOrder> each card's committed order by journey key, which the next build keeps to
+---@field here? string the key of the area the player stood in (step 1's `here`), which the next build lets go only past HERE_MARGIN
 
 -- A card's committed order (docs/design.md §4.3): its steps' identities in order (Model.lua Idents), and the quests
 -- its route picks up, which keep their slots in the log on the next build.
@@ -251,7 +255,7 @@
 ---@field Story fun(data: AGFData, questID: integer): AGFStory? the chain the quest belongs to; nil when it is in none, or the way back forks
 ---@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?)): AGFJourney[], boolean
 ---@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?), last?: AGFRoute): AGFRoute
----@field Here fun(data: AGFData, where?: {map?: integer, x?: number, y?: number}, steps: AGFStep[]): integer? the open area step `where` stands in: the head when it is one, else the first
+---@field Here fun(data: AGFData, where?: {map?: integer, x?: number, y?: number}, steps: AGFStep[], held?: string): integer? the open area step `where` stands in: the head when it is one, else the first; `held`, the key of the one stood in last, lets go past a margin
 ---@field Yards fun(data: AGFData, a: {map: integer, x: number, y: number}, b: {map: integer, x: number, y: number}): number? yards between two places on one continent the data places; nil otherwise
 ---@field Refresh fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, last: AGFRoute, mapName?: fun(map: integer): string?): AGFRoute the cheap in-combat rebuild: the log's steps fresh, the rest from `last`
 
