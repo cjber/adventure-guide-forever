@@ -196,8 +196,8 @@ api.NavigateRoute = function(owner, route)
 	stops = route
 	return NavigateRoute(owner, route)
 end
--- Just out of the Crossroads, so Shortest Path is handed every step, not the town the player stands in alone.
-h.MovePlayer(1413, 0.52, 0.36)
+-- At Camp Taurajo, so Shortest Path walks the road north to the first stop and is handed every step after it.
+h.MovePlayer(1413, 0.45, 0.6)
 h.ns.Invalidate()
 h.flush()
 h.ns.Integrations.Navigate(h.ns.Route().steps[1])
