@@ -60,7 +60,7 @@ do
 	equal(#lines, 1, "new version: one line")
 	equal(
 		lines[1],
-		"|cff33ff99" .. h.ns.TITLE .. "|r " .. h.ns.L.UPDATED_TO:format("0.2.0", h.ns.WHATS_NEW),
+		"|cff33ff99" .. h.ns.TITLE .. "|r " .. h.ns.L.UPDATED_TO:format("0.2.0", h.ns.L.WHATS_NEW),
 		"new version: the title, the version and the headline"
 	)
 	equal(h.G.AdventureGuideForeverDB.lastVersion, "0.2.0", "new version: now seen")

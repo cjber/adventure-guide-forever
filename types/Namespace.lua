@@ -390,6 +390,7 @@
 ---@field stockTemplate? string headless only: the stock template the harness frame stands in for
 
 ---@class AGFStrings every line the player reads (ns.L); format strings keep their specifiers
+---@field TITLE string the addon's name in the window title, map tab, settings page and chat
 ---@field AUDIT_BUILD string format: data build, client version, client build
 ---@field AUDIT_COUNTS string format: bundled, eligible and completed counts
 ---@field AUDIT_NOT_READY string
@@ -1164,7 +1165,8 @@
 ---@field STEP_WORK string
 ---@field STEP_TOWN string
 ---@field STEP_BATTLEMASTER string
----@field UPDATED_TO string format: the version, then ns.WHATS_NEW
+---@field UPDATED_TO string format: the version, then WHATS_NEW
+---@field WHATS_NEW string this version's headline, printed once after an update
 ---@field SETTING_WHATS_NEW string
 ---@field SETTING_WHATS_NEW_TOOLTIP string
 ---@field SETTING_COMPANIONS string
@@ -1183,7 +1185,6 @@
 ---@field Hint fun(addon: string): string? the line naming what the companion adds, while it isn't loaded and hints are on
 
 ---@class AGFNamespace
----@field WHATS_NEW string this version's headline, printed once after an update
 ---@field WhatsNew fun() on login: print WHATS_NEW once if the version changed since the last one seen
 ---@field Companions AGFCompanions
 

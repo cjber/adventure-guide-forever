@@ -10,6 +10,7 @@ Each version's entry is also its release notes on GitHub, CurseForge and Wago.
 
 ## [Unreleased]
 
+- **Ready for translation.** Every line the guide writes itself now lives in one file, so a translation is one copied template in the Locales folder on GitHub. Anything not yet translated stays in English.
 - **The guide tells you which companion addon fills a gap.** A route step's tooltip says to install Shortest Path Forever for walked routes and boat times, and the Professions and Completion tabs name SkillUp Forever and Legacy Forever. When one is installed but turned off, it says to enable it instead. *Suggest companion addons* in the settings hides these lines.
 - **One line in chat after an update** says what changed, the first time you log in on the new version. Never on a first install; *Tell me what's new after an update* turns it off.
 

@@ -1,6 +1,7 @@
 -- Run from the repository root: luajit tests/model_spec.lua
 local ns = {}
--- Core.lua for ns.L, the planner's copy; its load-time hooks into the client are stubbed, since only the copy is read.
+-- Locales/enUS.lua for ns.L, the planner's copy, then Core.lua with its load-time hooks into the client stubbed.
+assert(loadfile("Locales/enUS.lua"))("AdventureGuideForever", ns)
 local core = assert(loadfile("Core.lua"))
 setfenv(
 	core,
