@@ -253,6 +253,13 @@ function harness.load(options)
 	function Methods:GetAlpha()
 		return self.alpha or 1
 	end
+	function Methods:SetDesaturated(desaturated)
+		self.desaturated = desaturated
+	end
+	-- A spec puts the mouse on a frame by setting mouseOver, then runs its OnEnter/OnLeave.
+	function Methods:IsMouseOver()
+		return self.mouseOver == true
+	end
 
 	-- Anchors keep every point, normalised to the client's GetPoint form: point, relativeTo, relativePoint, x, y.
 	function Methods:SetPoint(point, a, b, c, d)

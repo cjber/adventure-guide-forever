@@ -118,10 +118,13 @@ local function ShowTooltip(owner, lines)
 end
 
 -- The aside's line above the cards.
+---@class AGFSkipButton : Button
+---@field Icon Texture the X, shaded apart from the highlight
+
 ---@class AGFAsideLine : Button
 ---@field Icon Texture
 ---@field Text FontString
----@field Skip Button
+---@field Skip AGFSkipButton
 
 ---@class AGFRouteRow : Button
 ---@field Selected Texture
@@ -131,7 +134,7 @@ end
 ---@field Detail FontString
 ---@field Group Texture
 ---@field Tag FontString
----@field SkipButton Button
+---@field SkipButton AGFSkipButton
 ---@field step? AGFStep
 ---@field index? integer
 
@@ -139,11 +142,13 @@ end
 ---@param atlas string
 ---@param tip fun(): string
 ---@param action fun(step: AGFStep)
----@return Button
+---@return AGFSkipButton
 local function CreateRowIcon(row, atlas, tip, action)
-	local button = CreateFrame("Button", nil, row)
+	local button = CreateFrame("Button", nil, row) --[[@as AGFSkipButton]]
 	button:SetSize(18, 18)
-	button:SetNormalAtlas(atlas)
+	button.Icon = button:CreateTexture(nil, "ARTWORK")
+	button.Icon:SetAtlas(atlas)
+	button.Icon:SetAllPoints()
 	button:SetHighlightAtlas(atlas, "ADD")
 	button:SetScript("OnClick", function()
 		if row.step then
@@ -155,6 +160,24 @@ local function CreateRowIcon(row, atlas, tip, action)
 	end)
 	button:SetScript("OnLeave", GameTooltip_Hide)
 	return button
+end
+
+-- A red X at rest reads as an error, so a skip shows only while its line is under the mouse: grey, then red once the
+-- mouse is on it, as the stock lists do. Right-click keeps the same skip in the menu.
+---@param button AGFSkipButton
+---@param line Frame
+local function HoverOnly(button, line)
+	local function Shade()
+		local on = button:IsMouseOver()
+		button:SetAlpha((on or line:IsMouseOver()) and 1 or 0)
+		button.Icon:SetDesaturated(not on)
+		button.Icon:SetAlpha(on and 1 or 0.6)
+	end
+	Shade()
+	line:HookScript("OnEnter", Shade)
+	line:HookScript("OnLeave", Shade)
+	button:HookScript("OnEnter", Shade)
+	button:HookScript("OnLeave", Shade)
 end
 
 ---@param parent Frame
@@ -229,6 +252,7 @@ local function CreateRow(parent)
 			FocusStep(self.step)
 		end
 	end)
+	HoverOnly(row.SkipButton, row)
 	return row
 end
 
@@ -438,10 +462,12 @@ local function BuildJourneys(parent, below)
 	asideLine.Icon = asideLine:CreateTexture(nil, "ARTWORK")
 	asideLine.Icon:SetSize(ASIDE_HEIGHT, ASIDE_HEIGHT)
 	asideLine.Icon:SetPoint("LEFT")
-	asideLine.Skip = CreateFrame("Button", nil, asideLine) --[[@as Button]]
+	asideLine.Skip = CreateFrame("Button", nil, asideLine) --[[@as AGFSkipButton]]
 	asideLine.Skip:SetSize(ASIDE_HEIGHT, ASIDE_HEIGHT)
 	asideLine.Skip:SetPoint("RIGHT")
-	asideLine.Skip:SetNormalAtlas("common-icon-redx")
+	asideLine.Skip.Icon = asideLine.Skip:CreateTexture(nil, "ARTWORK")
+	asideLine.Skip.Icon:SetAtlas("common-icon-redx")
+	asideLine.Skip.Icon:SetAllPoints()
 	asideLine.Skip:SetHighlightAtlas("common-icon-redx", "ADD")
 	asideLine.Skip:SetScript("OnClick", function()
 		local aside = ns.Asides.Current()
@@ -482,6 +508,7 @@ local function BuildJourneys(parent, below)
 		ShowTooltip(self, lines)
 	end)
 	asideLine:SetScript("OnLeave", GameTooltip_Hide)
+	HoverOnly(asideLine.Skip, asideLine)
 end
 
 ---@param parent Frame

@@ -1544,7 +1544,20 @@ do
 	equal(#skipped, 0, "skipped: no button at 0")
 	h.menu.entries[5].onClick()
 	h.flush()
-	h.Click(Rows()[1].SkipButton)
+	local row = Rows()[1]
+	local skip = row.SkipButton
+	equal(skip:GetAlpha(), 0, "skip X: hidden while its row is not under the mouse")
+	row.mouseOver = true
+	row:GetScript("OnEnter")(row)
+	equal(skip:GetAlpha(), 1, "skip X: shows on the row's hover")
+	equal(skip.Icon.desaturated, true, "skip X: grey on the row's hover, never a red mark at rest")
+	skip.mouseOver = true
+	skip:GetScript("OnEnter")(skip)
+	equal(skip.Icon.desaturated, false, "skip X: red with the mouse on it")
+	skip.mouseOver, row.mouseOver = false, false
+	skip:GetScript("OnLeave")(skip)
+	equal(skip:GetAlpha(), 0, "skip X: hidden again once the mouse leaves")
+	h.Click(skip)
 	h.flush()
 	local button = Shown(h, function(frame)
 		return frame.text == "Skipped (2)"
