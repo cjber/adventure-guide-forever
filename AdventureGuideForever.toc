@@ -18,6 +18,7 @@ Data\ZoneArt.lua
 Core.lua
 Model.lua
 State.lua
+Focus.lua
 Integrations.lua
 QuestieSource.lua
 Asides.lua

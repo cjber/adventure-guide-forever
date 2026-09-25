@@ -382,6 +382,50 @@ do
 	end
 end
 
+-- Standing in the worgs' ground north of Raven Hill with Wolves at Our Heels (226) under way and Jitters' Growling Gut
+-- (5) ready at Chef Grual in Darkshire, the lap goes on from the area to Lars, west, who takes the wolves: not east to
+-- Darkshire and back across the zone first (cjber's route, 2026-09-25). Darkshire's hand-in waits for a lap that
+-- passes it.
+do
+	local player = {
+		level = 19,
+		maxLevel = 60,
+		side = 1,
+		raceBit = 4,
+		classBit = 64,
+		map = 1431,
+		x = 0.331,
+		y = 0.235,
+		logMax = 20,
+	}
+	local log, completed = {}, {}
+	for _, id in ipairs({ 226, 991, 1008, 1054, 971, 1275 }) do
+		log[id] = { id = id, title = data.quests[id].title, level = data.quests[id].level, complete = false }
+	end
+	log[5] = { id = 5, title = data.quests[5].title, level = data.quests[5].level, complete = true }
+	log[5].map, log[5].x, log[5].y = 1431, 0.7375, 0.4348
+	local done = { [1426] = true, [1429] = true, [1432] = true, [1433] = true, [1436] = true, [1439] = true }
+	for id, quest in pairs(data.quests) do
+		if (quest.side == 1 or quest.side == 3) and done[quest.zone] and not log[id] then
+			completed[id] = true
+		end
+	end
+	local prefs = { quests = true, dungeons = false, skipped = {}, journey = "zone:1431" }
+	local steps
+	for _, journey in ipairs(Model.Plan(data, player, completed, log, prefs).journeys) do
+		steps = journey.key == prefs.journey and journey.steps or steps
+	end
+	local where = "in the worgs' ground"
+	check(steps ~= nil and steps[1].key == "area:226:0" and steps[1].here == true, where .. ": the area leads")
+	local lars, darkshire
+	for index, step in ipairs(steps or {}) do
+		lars = lars or (step.key == "town:41" and index or nil)
+		darkshire = darkshire or (step.key == "town:32" and index or nil)
+	end
+	check(lars == 2, where .. ": Lars takes the wolves next")
+	check(not darkshire or darkshire > lars, where .. ": Darkshire only after Lars")
+end
+
 for index = 1, math.min(10, #failures) do
 	print("  " .. failures[index])
 end

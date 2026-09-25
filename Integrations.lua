@@ -216,13 +216,14 @@ local function NotifyTravel()
 end
 
 -- In combat Shortest Path has no answer to give, so the last line stands and nothing is asked (docs/design.md §2.5).
+-- The area the player stands in has none: they are there, and a walk to its middle is no way to go.
 function Integrations.RefreshTravel()
 	if InCombatLockdown() then
 		return
 	end
 	local step = ns.Route().steps[1]
 	local line, minutes
-	if step then
+	if step and not step.here then
 		line, minutes = Fetch(step)
 	end
 	local changed = (travel and travel.key) ~= (step and step.key)

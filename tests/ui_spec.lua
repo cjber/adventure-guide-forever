@@ -247,10 +247,14 @@ do
 	end
 	-- Every row goes in through the secure delegate, in page order; none from addon code, which taints the search.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 8, "every row is registered through Settings.RegisterInitializer")
-	equal(h.settings[1].key .. " " .. h.settings[2].key, "showTracker wanderer", "in page order")
-	equal(h.settings[8].key, "untrackOthers", "in page order, to the last")
-	equal(h.settings[8].category, h.ns.TITLE, "on the addon's page")
+	equal(#h.settings, 9, "every row is registered through Settings.RegisterInitializer")
+	equal(
+		h.settings[1].key .. " " .. h.settings[2].key .. " " .. h.settings[3].key,
+		"showTracker wanderer followQuest",
+		"in page order"
+	)
+	equal(h.settings[9].key, "untrackOthers", "in page order, to the last")
+	equal(h.settings[9].category, h.ns.TITLE, "on the addon's page")
 	equal(byKey.untrackOthers.parent, "trackRouteQuests", "untrackOthers hangs under the tracking setting")
 	equal(byKey.untrackOthers.enabled(), false, "and is greyed while it is off")
 	-- The client re-sorts its watches by distance on every zone change (Blizzard_ObjectiveTracker.lua
@@ -403,6 +407,37 @@ do
 	h.flush()
 	equal(next(h.ticking), nil, "here: standing still checks nothing")
 	clean(h, "here")
+
+	-- Following the quest worked on (Focus.lua): walking into step 1's area selects its quest, so the map draws its
+	-- blue area; walking out clears it. Never over the player's own selection.
+	h = Load("ended")
+	h.log[#h.log + 1] = { id = 887, title = "Southsea Freebooters", level = 14, complete = false }
+	h.log[#h.log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
+	h.fire("QUEST_LOG_UPDATE")
+	h.flush()
+	equal(h.superTrackedQuest, 0, "focus: nothing selected outside the area")
+	Moved(h, 1413, 0.64, 0.46)
+	equal(h.ns.Route().steps[1].here, true, "focus: in step 1's area")
+	equal(h.superTrackedQuest, 887, "focus: its quest selected")
+	equal(h.ns.Prefs().focus, 887, "focus: kept as AGF's")
+	-- They are there: no "Walk to <zone>" line to the area's middle.
+	equal(h.ns.Integrations.Travel(h.ns.Route().steps[1]), nil, "focus: no travel line in the area")
+	local selected = h.counts.SetSuperTrackedQuestID
+	Moved(h, 1413, 0.64, 0.47)
+	equal(h.counts.SetSuperTrackedQuestID, selected, "focus: once, on walking in")
+	Moved(h, 1413, 0.5223, 0.3101)
+	equal(h.superTrackedQuest, 0, "focus: walking out clears it")
+	equal(h.ns.Prefs().focus, nil, "focus: forgotten")
+	h.superTrackedQuest = 843
+	Moved(h, 1413, 0.64, 0.46)
+	equal(h.superTrackedQuest, 843, "focus: the player's own selection stays")
+	Moved(h, 1413, 0.5223, 0.3101)
+	equal(h.superTrackedQuest, 843, "focus: and stays on walking out")
+	h.superTrackedQuest = 0
+	h.ns.SetSetting("followQuest", false)
+	Moved(h, 1413, 0.64, 0.46)
+	equal(h.superTrackedQuest, 0, "focus: the setting off selects nothing")
+	clean(h, "focus")
 
 	-- Without Shortest Path, Go in the area the player stands in sets no waypoint, and walking out puts it on step 1.
 	h = Load(false, PINS_ON)

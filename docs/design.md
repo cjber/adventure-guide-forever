@@ -462,9 +462,12 @@ no layer at all.
   Pins.lua:184-188).
 - **Areas** (a quest's objective area): AGF draws no disc over one. The game's own objective mark shows the area,
   and hovering it draws the area's true shape, where a disc round its middle covered ground no objective is on and
-  hid the map (no stock call shows that shape unhovered on Classic Era: `C_SuperTrack.SetSuperTrackedQuestID` is
-  retail's, and super-tracking would take the arrow from the waypoint). An area step's number sits where the route
-  enters it (§4.2); while the player stands in step 1's area it has no number.
+  hid the map. Walking into step 1's area selects its quest the stock way (`C_SuperTrack.SetSuperTrackedQuestID`,
+  in Forever's 1.60.1 API and not protected), so the map draws the game's own blue area where the player works
+  (Focus.lua, the "Follow the quest you're working on" setting, on by default): only on walking in, never over a
+  quest the player selected, and cleared on walking out or finishing the area while the selection is still AGF's.
+  An area step's number sits where the route enters it (§4.2); while the player stands in step 1's area it has no
+  number.
   The choice going, however it goes, stops what AGF guides (Core.lua's `wasChosen` listener): the overview shows and
   the first card is previewed again, nothing guides until a click, and a route the player started in SPF stays.
 - **Layering.** A route ring marks "your destination", so it takes the stock level of the user-waypoint pin,
@@ -989,7 +992,10 @@ Card 1 and the chosen card are routed as a player running a guide goes (`Model.L
 Build's route, so a rebuild stays inside its frame budget.
 - **A lap.** Pick up in town, clear the objective areas out one side of it, come back and hand in: about a quarter
   of an hour's travel and work. A lap takes up a new quest only when no script or timer ends it and the data places
-  each of its objectives; one worth less than half its town's XP per yard waits for a later lap.
+  each of its objectives; one worth less than half its town's XP per yard waits for a later lap. A finished quest
+  handed in within half a lap of the lap's town comes along from a later lap, except that the lap the player stands
+  in (its area leads) takes a hand-in-only stop only when it adds no more yards there than to its own lap: in
+  Duskwood's worg ground the lap goes on west to Lars, not east to Darkshire and back first.
 - **Checked in order.** A quest's objectives never come before its pickup, its hand-in never before all of them, and
   the log never goes past the client's limit.
 - **Steady.** Each card's order is committed for the session (`route.orders`): its lap goes on until it ends, and a
@@ -1001,7 +1007,8 @@ Build's route, so a rebuild stays inside its frame budget.
   data's objective circles, not a ring merged round them. Standing in step 1's area, nothing guides to it: no
   waypoint, and Shortest Path is handed only the stops after it, so its line from the area to step 2 and its dots on
   through the rest still show, numbered from 1. Without Shortest Path the later stops keep their numbered rings.
-  The whole route is handed again once the area is done or they walk 30 yd out of it.
+  The whole route is handed again once the area is done or they walk 30 yd out of it. Step 1 has no travel line
+  then: they are there.
 
 Contents of the sweep (#9):
 - delete `prefs.legacy` and `prefs.professions` (Core.lua:23-24, types/Namespace.lua:58-59, the spec);
@@ -1270,6 +1277,11 @@ Nothing below has been validated in game yet.
 42. Window, Professions: with SkillUp Forever loaded the card, recipes, steps and reagents fill; a step with a
     waypoint sets it; *Open Recipes* opens the profession window; the picker switches professions and remembers.
     With SkillUp disabled the tab is grey, its tooltip and the empty text say to install it, and it still opens.
+43. Following the quest (§2.6, §4.2): in Duskwood with Wolves at Our Heels under way, walk onto the worgs' ground
+    north of Raven Hill. The quest is selected and the map draws its blue area; the tracker has no "Walk to Duskwood"
+    line; Shortest Path's way on goes west to Lars, not east to Darkshire. Walk 30 yd out: the selection clears.
+    Select another quest yourself, walk in again: yours stays. Turn off "Follow the quest you're working on": nothing
+    is selected.
 
 ## 9. Open questions that need client probes
 
