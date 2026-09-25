@@ -220,7 +220,12 @@
 ---@field stranded? true no next zone (roadmap #21): the dungeon card came whatever the Dungeons toggle says
 ---@field steps AGFStep[] that journey's steps, never more than MAX_STEPS
 ---@field skipped? table<string, boolean> the skipped keys a full build still had a step for; nil after the combat one
----@field orders? table<string, string[]> each card's committed order by journey key (Model.lua Idents), which the next build keeps to
+---@field orders? table<string, AGFOrder> each card's committed order by journey key, which the next build keeps to
+
+-- A card's committed order (docs/design.md §4.3): its steps' identities in order (Model.lua Idents), and the quests
+-- its route picks up, which keep their slots in the log on the next build.
+---@class AGFOrder: string[]
+---@field picked? table<integer, true>
 
 -- One requirement in the why-not view (Model.Why).
 ---@class AGFWhyLine

@@ -220,11 +220,13 @@ local function Stability(where, player, completed, log, held, prefs)
 	end
 	-- A quest of the zone the route holds nowhere, taken up while the log has room for it and every pickup on the
 	-- route, so the log's limit changes nothing.
+	-- Nor the quest a breadcrumb on the route leads to, which takes the breadcrumb off it.
 	local on, picks = {}, 0
 	for _, journey in ipairs(first.journeys) do
 		for _, step in ipairs(journey.steps) do
 			for _, id in ipairs(step.quests) do
 				on[id] = true
+				on[data.quests[id].breadcrumb or id] = true
 			end
 		end
 	end
