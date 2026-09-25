@@ -190,7 +190,11 @@ function provider:RefreshAllData()
 			local place = step.key
 			for _, other in ipairs(order) do
 				local first = places[other][1].step
-				if first.key == step.key or (first.x == step.x and first.y == step.y) then
+				if
+					first.key == step.key
+					or (first.kind == "town" and step.kind == "town" and first.hub and first.hub == step.hub)
+					or (first.x == step.x and first.y == step.y)
+				then
 					place = other
 					break
 				end

@@ -147,7 +147,10 @@ end
 
 function Order.CanMove(from, to)
 	local route = ns.Route()
-	local moved = route.chosen and Moved(route.steps, from, to)
+	if not route.chosen then
+		return false
+	end
+	local moved = Moved(route.steps, from, to)
 	return moved ~= nil and Order.Valid(moved, ns.State.Player().logMax, ns.State.Log())
 end
 

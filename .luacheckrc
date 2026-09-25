@@ -94,6 +94,8 @@ read_globals = {
 	"QUESTS_LABEL",
 	"GameTooltip_Hide",
 	"IsShiftKeyDown",
+	"SetCursor",
+	"ResetCursor",
 	-- Tooltip.lua
 	"TooltipDataProcessor",
 	"Enum",

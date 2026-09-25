@@ -1,7 +1,7 @@
 -- Run from the repository root: luajit tests/pvp_spec.lua
 -- PvP (docs/design.md §2.15): the opt-in Battlegrounds card in the planner, then through tests/harness.lua the
 -- battleground aside, the next PvP rank's reward, and a client without either API.
-local harness = dofile("tests/ui_stubs.lua") -- TEMPORARY: tests/harness.lua once guide batch 4 merges
+local harness = dofile("tests/harness.lua")
 local checks = 0
 
 local function equal(actual, expected, label)

@@ -209,6 +209,17 @@ function harness.load(options)
 		return region
 	end
 
+	function Methods:SetHitRectInsets(left, right, top, bottom)
+		self.hitRectInsets = { left, right, top, bottom }
+	end
+
+	G.SetCursor = function(cursor)
+		h.cursor = cursor
+	end
+	G.ResetCursor = function()
+		h.cursor = nil
+	end
+
 	function Methods:GetObjectType()
 		return self.objectType
 	end
@@ -648,6 +659,21 @@ function harness.load(options)
 	end
 
 	local STOCK = {
+		-- Blizzard_Menu/Mainline/MenuTemplates.xml: selected radio label in the stock Text innard.
+		WowStyle1DropdownTemplate = function(frame)
+			frame:SetSize(120, 25)
+			Internal("FontString", frame, "Text")
+			function frame.GenerateMenu(self)
+				local saved = h.menu
+				local root = h.OpenMenu(self)
+				h.menu = saved
+				for _, entry in ipairs(root.entries) do
+					if entry.kind == "radio" and entry.isSelected(entry.data) then
+						self.Text:SetText(entry.text)
+					end
+				end
+			end
+		end,
 		-- Mainline/SharedUIPanelTemplates.xml:1587 and .lua:1763: the highlight is the normal art, or the pushed art
 		-- while the mouse is down.
 		AlphaHighlightButtonTemplate = function(frame)
@@ -1526,6 +1552,14 @@ function harness.load(options)
 		entry.isSelected, entry.onClick = isSelected, setSelected
 		return entry
 	end
+	function DescriptionMethods:CreateRadio(text, isSelected, setSelected, data)
+		local entry = Add(self, Description("radio", text))
+		entry.isSelected, entry.data = isSelected, data
+		entry.onClick = function()
+			return setSelected(data)
+		end
+		return entry
+	end
 	-- MenuUtil.lua:293: the menu calls it with GameTooltip on hover; h.HoverEntry does the same.
 	function DescriptionMethods:SetTooltip(tooltip)
 		self.tooltip = tooltip
@@ -2078,6 +2112,15 @@ function harness.load(options)
 				h.modelCalls[name] = h.modelCalls[name] + 1
 				return original(...) -- multi-value: the wrapper is transparent
 			end
+		end
+	end
+	-- Rendering fixtures can decorate the real route without replacing the model modules.
+	if options.decorate then
+		local route = h.ns.Route
+		h.ns.Route = function()
+			local built = route()
+			options.decorate(built)
+			return built
 		end
 	end
 	-- options.setup(h) runs before the client's load events: a /reload into combat, or into someone else's journey.

@@ -40,6 +40,8 @@ Panel.lua
 Window.lua
 WindowJourneys.lua
 WindowProfessions.lua
+WindowPvP.lua
+WindowCompletion.lua
 Tracker.lua
 Tooltip.lua
 Settings.lua

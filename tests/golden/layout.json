@@ -165,7 +165,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild",
       "size": [
         1.00,
-        468.00
+        700.00
       ],
       "type": "Frame"
     },
@@ -290,7 +290,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
       "size": [
         0.00,
-        416.00
+        648.00
       ],
       "type": "Frame"
     },
@@ -855,7 +855,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[7].Title",
-      "text": "Crossroads, The Barrens",
+      "text": "Visit Crossroads, The Barrens: pick up 7, turn in 1",
       "type": "FontString",
       "wordWrap": false
     },
@@ -877,9 +877,29 @@
         210.00,
         0.00
       ],
-      "text": "1 to hand in, 5 to pick up · 6 min",
+      "text": "1 to hand in, 7 to pick up · 6 min",
       "type": "FontString",
       "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "BOTTOMRIGHT",
+          "relativePoint": "BOTTOMRIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[7].Ring",
+          "x": 3.00,
+          "y": -3.00
+        }
+      ],
+      "atlas": "QuestNormal",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[7].Kind",
+      "size": [
+        14.00,
+        14.00
+      ],
+      "subLevel": 1.00,
+      "type": "Texture"
     },
     {
       "alpha": 0.00,
@@ -931,14 +951,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
           "x": 6.00,
-          "y": -182.00
+          "y": -282.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
           "x": -6.00,
-          "y": -182.00
+          "y": -282.00
         }
       ],
       "highlightAtlas": "PetList-ButtonHighlight",
@@ -1031,7 +1051,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[8].Title",
-      "text": "Ratchet, The Barrens",
+      "text": "Visit Ratchet, The Barrens: pick up 7, turn in 0",
       "type": "FontString",
       "wordWrap": false
     },
@@ -1053,9 +1073,29 @@
         72.00,
         0.00
       ],
-      "text": "5 to pick up",
+      "text": "7 to pick up",
       "type": "FontString",
       "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "BOTTOMRIGHT",
+          "relativePoint": "BOTTOMRIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[8].Ring",
+          "x": 3.00,
+          "y": -3.00
+        }
+      ],
+      "atlas": "QuestNormal",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[8].Kind",
+      "size": [
+        14.00,
+        14.00
+      ],
+      "subLevel": 1.00,
+      "type": "Texture"
     },
     {
       "alpha": 0.00,
@@ -1107,14 +1147,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
           "x": 6.00,
-          "y": -228.00
+          "y": -414.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
           "x": -6.00,
-          "y": -228.00
+          "y": -414.00
         }
       ],
       "highlightAtlas": "PetList-ButtonHighlight",
@@ -1207,7 +1247,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[9].Title",
-      "text": "Southsea Freebooters",
+      "text": "Complete objectives · Southsea Freebooters",
       "type": "FontString",
       "wordWrap": false
     },
@@ -1232,6 +1272,26 @@
       "text": "2 quests here",
       "type": "FontString",
       "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "BOTTOMRIGHT",
+          "relativePoint": "BOTTOMRIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[9].Ring",
+          "x": 3.00,
+          "y": -3.00
+        }
+      ],
+      "atlas": "questobjective",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[9].Kind",
+      "size": [
+        14.00,
+        14.00
+      ],
+      "subLevel": 1.00,
+      "type": "Texture"
     },
     {
       "alpha": 0.00,
@@ -1283,14 +1343,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
           "x": 6.00,
-          "y": -274.00
+          "y": -460.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
           "x": -6.00,
-          "y": -274.00
+          "y": -460.00
         }
       ],
       "highlightAtlas": "PetList-ButtonHighlight",
@@ -1383,7 +1443,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[10].Title",
-      "text": "Miner's Fortune",
+      "text": "Complete objectives · Miner's Fortune",
       "type": "FontString",
       "wordWrap": false
     },
@@ -1408,6 +1468,26 @@
       "text": "after you pick it up",
       "type": "FontString",
       "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "BOTTOMRIGHT",
+          "relativePoint": "BOTTOMRIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[10].Ring",
+          "x": 3.00,
+          "y": -3.00
+        }
+      ],
+      "atlas": "questobjective",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[10].Kind",
+      "size": [
+        14.00,
+        14.00
+      ],
+      "subLevel": 1.00,
+      "type": "Texture"
     },
     {
       "alpha": 0.00,
@@ -1459,14 +1539,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
           "x": 6.00,
-          "y": -320.00
+          "y": -506.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
           "x": -6.00,
-          "y": -320.00
+          "y": -506.00
         }
       ],
       "highlightAtlas": "PetList-ButtonHighlight",
@@ -1559,7 +1639,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[11].Title",
-      "text": "Ratchet, The Barrens",
+      "text": "Visit Ratchet, The Barrens: pick up 0, turn in 3",
       "type": "FontString",
       "wordWrap": false
     },
@@ -1584,6 +1664,26 @@
       "text": "3 to hand in",
       "type": "FontString",
       "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "BOTTOMRIGHT",
+          "relativePoint": "BOTTOMRIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[11].Ring",
+          "x": 3.00,
+          "y": -3.00
+        }
+      ],
+      "atlas": "QuestTurnin",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[11].Kind",
+      "size": [
+        14.00,
+        14.00
+      ],
+      "subLevel": 1.00,
+      "type": "Texture"
     },
     {
       "alpha": 0.00,
@@ -1635,14 +1735,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
           "x": 6.00,
-          "y": -366.00
+          "y": -582.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
           "x": -6.00,
-          "y": -366.00
+          "y": -582.00
         }
       ],
       "highlightAtlas": "PetList-ButtonHighlight",
@@ -1735,7 +1835,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[12].Title",
-      "text": "Regthar Deathgate",
+      "text": "Visit Regthar Deathgate: pick up 2, turn in 0",
       "type": "FontString",
       "wordWrap": false
     },
@@ -1760,6 +1860,26 @@
       "text": "2 to pick up",
       "type": "FontString",
       "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "BOTTOMRIGHT",
+          "relativePoint": "BOTTOMRIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[12].Ring",
+          "x": 3.00,
+          "y": -3.00
+        }
+      ],
+      "atlas": "QuestNormal",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[12].Kind",
+      "size": [
+        14.00,
+        14.00
+      ],
+      "subLevel": 1.00,
+      "type": "Texture"
     },
     {
       "alpha": 0.00,
@@ -1803,6 +1923,1078 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Button[12].SkipButton.Icon",
       "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
+          "x": 46.00,
+          "y": -182.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[13]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[13]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[13].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[13]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[13]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[13].Text",
+      "text": "Gazrog: pick up 1, turn in 0",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
+          "x": 46.00,
+          "y": -196.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[14]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[14]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[14].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[14]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[14]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[14].Text",
+      "text": "Tonga Runetotem: pick up 1, turn in 0",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
+          "x": 46.00,
+          "y": -210.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[15]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[15]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[15].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[15]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[15]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[15].Text",
+      "text": "Thork: pick up 1, turn in 0",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
+          "x": 46.00,
+          "y": -224.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[16]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[16]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[16].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[16]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[16]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[16].Text",
+      "text": "Mankrik: pick up 2, turn in 0",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
+          "x": 46.00,
+          "y": -238.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[17]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[17]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[17].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[17]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[17]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[17].Text",
+      "text": "Apothecary Helbrim: pick up 1, turn in 0",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
+          "x": 46.00,
+          "y": -252.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[18]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[18]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[18].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[18]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[18]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[18].Text",
+      "text": "Darsok Swiftdagger: pick up 1, turn in 0",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
+          "x": 46.00,
+          "y": -266.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[19]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[19]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[19].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[19]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[19]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[19].Text",
+      "text": "Sergra Darkthorn: pick up 0, turn in 1",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
+          "x": 46.00,
+          "y": -328.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[20]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[20]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[20].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[20]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[20]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[20].Text",
+      "text": "Mebok Mizzyrix: pick up 2, turn in 0",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
+          "x": 46.00,
+          "y": -342.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[21]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[21]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[21].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[21]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[21]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[21].Text",
+      "text": "Wharfmaster Dizzywig: pick up 1, turn in 0",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
+          "x": 46.00,
+          "y": -356.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[22]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[22]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[22].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[22]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[22]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[22].Text",
+      "text": "Captain Thalo'thas Brightsun: pick up 1, turn in 0",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
+          "x": 46.00,
+          "y": -370.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[23]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[23]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[23].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[23]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[23]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[23].Text",
+      "text": "WANTED: pick up 1, turn in 0",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
+          "x": 46.00,
+          "y": -384.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[24]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[24]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[24].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[24]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[24]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[24].Text",
+      "text": "Gazlowe: pick up 1, turn in 0",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
+          "x": 46.00,
+          "y": -398.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[25]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[25]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[25].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[25]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[25]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[25].Text",
+      "text": "Sputtervalve: pick up 1, turn in 0",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
+          "x": 46.00,
+          "y": -552.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[26]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[26]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[26].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[26]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[26]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[26].Text",
+      "text": "Wharfmaster Dizzywig: pick up 0, turn in 1",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
+          "x": 46.00,
+          "y": -566.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[27]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[27]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[27].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[27]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[27]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[27].Text",
+      "text": "Gazlowe: pick up 0, turn in 2",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2]",
+          "x": 46.00,
+          "y": -628.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[28]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[28]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[28].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[28]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[28]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].ScrollFrame[1].scrollChild.Frame[2].Frame[28].Text",
+      "text": "Regthar Deathgate: pick up 2, turn in 0",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
     }
   ]
 }

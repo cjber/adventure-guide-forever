@@ -146,11 +146,11 @@ local function RefreshRank(rank)
 	if ranked then
 		card.Title:SetText(L.PVP_RANK:format(rank.level))
 	else
-		card.Title:SetText(rank.state == "unranked" and L.PVP_UNRANKED or L.TAB_PVP)
+		local title = rank.state == "unranked" and L.PVP_UNRANKED or L.TAB_PVP
+		card.Title:SetText(title)
 	end
-	card.Range:SetText(
-		(rank.state == "capped" and L.PVP_CAPPED) or (rank.state == "unavailable" and L.PVP_UNAVAILABLE) or ""
-	)
+	local range = (rank.state == "capped" and L.PVP_CAPPED) or (rank.state == "unavailable" and L.PVP_UNAVAILABLE) or ""
+	card.Range:SetText(range)
 	local earned, threshold = rank.earned, rank.threshold
 	local points = rank.state ~= "capped" and earned ~= nil and threshold ~= nil and threshold > 0
 	card.BarLabel:SetShown(points)

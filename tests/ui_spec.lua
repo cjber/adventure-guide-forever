@@ -1,6 +1,6 @@
 -- Run from the repository root: luajit tests/ui_spec.lua
 -- Headless UI checks (docs/plan.md §1.1) through tests/harness.lua. What they cannot reach is a /reload check.
-local harness = dofile("tests/ui_stubs.lua") -- TEMPORARY: tests/harness.lua once guide batch 4 merges
+local harness = dofile("tests/harness.lua")
 local checks = 0
 
 local function equal(actual, expected, label)
@@ -18,7 +18,8 @@ end
 local function Places(route)
 	local seen, count = {}, 0
 	for _, step in ipairs(route.steps) do
-		local place = step.map .. ":" .. step.x .. ":" .. step.y
+		local place = step.kind == "town" and step.hub and (step.map .. ":town:" .. step.hub)
+			or (step.map .. ":" .. step.x .. ":" .. step.y)
 		if not seen[place] then
 			seen[place], count = true, count + 1
 		end
@@ -39,6 +40,18 @@ local function WithNotThisQuest(ns, step, lines)
 			for _, id in ipairs(step.quests) do
 				local entry = ns.State.Log()[id]
 				out[#out + 1] = "  button: " .. ((entry and entry.title) or ns.Data.quests[id].title)
+			end
+		end
+		if line == "button: " .. ns.L.ORDER_LATER then
+			local added = false
+			for _, giver in ipairs(step.checklist or {}) do
+				if not giver.done then
+					if not added then
+						out[#out + 1] = "button: " .. ns.L.TOWN_SKIP_GIVER
+						added = true
+					end
+					out[#out + 1] = "  button: " .. giver.name
+				end
 			end
 		end
 	end
@@ -974,7 +987,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Hover(ring)
 	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. Step 1 is the Crossroads, where The
 	-- Zhevra opens its next chapter, handed in before the town's pickups.
-	local expected = { "title: 1. Crossroads, The Barrens: pick up 7, turn in 1" }
+	local expected = { "title: 1. Visit Crossroads, The Barrens: pick up 7, turn in 1" }
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
 	expected[#expected + 1] = "highlight: Opens the next chapter here"
 	expected[#expected + 1] = "normal: Sergra Darkthorn"
@@ -1040,7 +1053,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	-- Design §2.8's menu for a town holding a log quest; Stop only once Go runs, Show quest never in combat.
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:349"], "RightButton")
 	local menu = {
-		"title: Crossroads, The Barrens: pick up 7, turn in 1",
+		"title: Visit Crossroads, The Barrens: pick up 7, turn in 1",
 		"button: Go",
 		"button: Show quest",
 		"button: Skip for now",
@@ -2028,7 +2041,7 @@ do
 	end)
 	h.Hover(rows[1])
 	local lines, colors = h.tooltip, h.tooltipColors
-	equal(lines[1], "title: 1. Crossroads, The Barrens: pick up 8, turn in 1", "hub tooltip: the numbered town")
+	equal(lines[1], "title: 1. Visit Crossroads, The Barrens: pick up 8, turn in 1", "hub tooltip: the numbered town")
 	equal(lines[2], "highlight: " .. step.reason, "hub tooltip: the reason")
 	equal(lines[3], "normal: Sergra Darkthorn", "hub tooltip: the hand-in's NPC first")
 	equal(lines[4], "colored: |A:questturnin:14:14|a The Zhevra", "hub tooltip: a hand-in has the turn-in mark")
@@ -2080,7 +2093,7 @@ do
 	h.flush()
 	local steps = ns.Route().steps
 	local step = steps[1]
-	equal(step.title, "Crossroads, The Barrens: pick up 7, turn in 1", "tracker, town: town and actions")
+	equal(step.title, "Visit Crossroads, The Barrens: pick up 7, turn in 1", "tracker, town: town and actions")
 	equal(step.detail, "1 to hand in, 7 to pick up", "tracker, town: the hand-in joins the pickups")
 	local expected = { step.detail, "Opens the next chapter here" }
 	for _, giver in ipairs(step.checklist) do

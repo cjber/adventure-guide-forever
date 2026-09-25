@@ -1138,6 +1138,7 @@
 ---@field SESSION_ABOUT string
 ---@field SESSION_EMPTY string
 ---@field SESSION_PENDING string
+---@field ORDER_DRAG string
 ---@field ORDER_SOONER string
 ---@field ORDER_LATER string
 ---@field ORDER_NEXT string
@@ -1148,6 +1149,7 @@
 ---@field TOWN_GIVER string
 ---@field TOWN_COUNTS string
 ---@field TODAY_MORE string
+---@field STOP_MORE string
 ---@field STOP_VISIT string
 ---@field SET_HEARTH string
 ---@field SETTING_STEP_SOUND string

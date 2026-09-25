@@ -118,6 +118,9 @@ end
 
 local h = harness.load({})
 local M, O, S = h.ns.Model, h.ns.Order, h.ns.Session
+eq(O.CanMove(1, 2), false, "unchosen journey cannot move")
+eq(O.Move(1, 2), false, "unchosen move is refused without changing preferences")
+eq(h.ns.Prefs().customOrders, nil, "refused move does not persist an order")
 local pick, work, hand, extra =
 	step("pick", "town", { 1 }), step("work", "area", { 1 }), step("hand", "town", { 1 }), step("extra", "trainer")
 pick.pickups, pick.handins = { 1 }, {}
@@ -202,7 +205,7 @@ do
 	eq(nextTown.complete, true, "all givers complete")
 	M.StepTitle(data, {}, town)
 	eq(town.verb, "town")
-	eq(town.title, "Town: pick up 1, turn in 1")
+	eq(town.title, "Visit Town: pick up 1, turn in 1")
 	local area = step("a", "area", { 1 })
 	area.objectives = { { id = 1, slot = 4, type = "item", text = "0/6 Gooey Spider Leg" } }
 	M.StepTitle(data, {}, area)

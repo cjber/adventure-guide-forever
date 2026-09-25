@@ -73,6 +73,7 @@ OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 3
 ---@field SetEnabled fun(self: AGFMenuElement, isEnabled: boolean|fun(): boolean)
 
 ---@class AGFDropdown : Frame
+---@field GenerateMenu fun(self: AGFDropdown)
 ---@field SetupMenu fun(self: AGFDropdown, generator: fun(owner: AGFDropdown, root: AGFMenu))
 
 -- ScrollFrameTemplate: ScrollFrame_OnLoad attaches a MinimalScrollBar as ScrollBar.

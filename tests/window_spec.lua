@@ -2,7 +2,7 @@
 -- The Adventure Guide window (Window.lua, WindowJourneys.lua, WindowProfessions.lua) through tests/harness.lua: its
 -- tabs, how it opens, the key it offers once, what the Journeys tab draws from the route, and SkillUp Forever's
 -- adapter present, missing and too old. What the harness cannot reach is a /reload check.
-local harness = dofile("tests/ui_stubs.lua") -- TEMPORARY: tests/harness.lua once guide batch 4 merges
+local harness = dofile("tests/harness.lua")
 local checks = 0
 
 local function equal(actual, expected, label)
@@ -183,9 +183,13 @@ do
 	for index = 1, math.min(#others, 4) do
 		equal(texts[others[index].title], 1, "grid card " .. index)
 	end
-	for index = 1, math.min(#route.steps, 3) do
-		equal(texts[route.steps[index].title] ~= nil, true, "step row " .. index)
-	end
+	local steps = h.Find(function(frame)
+		return frame:IsVisible() and frame.Kind ~= nil and frame.step ~= nil
+	end)
+	equal(#steps, 1, "the real town checklist fills the available step area")
+	equal(steps[1].step, route.steps[1], "the visible row is the route head")
+	equal(texts[route.steps[1].title], 1, "the head's title")
+	equal(texts[route.steps[1].checklist[1].text], 1, "its first giver appears below it")
 	for _, aside in ipairs(ns.Asides.All()) do
 		equal(texts[aside.text], 1, "Today: " .. aside.key)
 	end

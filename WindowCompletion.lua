@@ -209,7 +209,10 @@ local function RefreshCard(card, zone, isFeatured)
 			if category.scope == "account" then
 				line = line .. L.SEPARATOR .. L.COMPLETION_ACCOUNT
 			end
-			card.Categories[shown]:SetText(category.complete and line .. " " .. DONE_MARK or line)
+			if category.complete then
+				line = line .. " " .. DONE_MARK
+			end
+			card.Categories[shown]:SetText(line)
 			card.Categories[shown]:Show()
 		end
 	end

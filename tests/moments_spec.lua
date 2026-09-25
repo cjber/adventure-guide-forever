@@ -2,7 +2,7 @@
 -- Something new (Moments.lua, docs/design.md §2.13) through tests/harness.lua: the seen set, a level or a zone that
 -- brings a journey or an aside the character hasn't been offered, the tracker's glow, the card's mark, the pips, and
 -- what clears them.
-local harness = dofile("tests/ui_stubs.lua") -- TEMPORARY: tests/harness.lua once guide batch 4 merges
+local harness = dofile("tests/harness.lua")
 local checks = 0
 
 local function equal(actual, expected, label)
