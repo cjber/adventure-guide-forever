@@ -1909,6 +1909,11 @@ local signature = {}
 for _, step in ipairs(baseline.steps) do
 	signature[#signature + 1] = step.key
 end
+-- The game runs plain Lua 5.1, so this times the planner, not LuaJIT's code cache: Ubuntu's LuaJIT
+-- keeps 512 KB of machine code, too little for the whole spec, and flushes every few Plans once full.
+-- plan_bench's -joff run is the frame budget.
+jit.opt.start("maxmcode=4096")
+jit.flush()
 for _ = 1, 100 do
 	Model.Plan(ns.Data, player, {}, {}, prefs())
 end
