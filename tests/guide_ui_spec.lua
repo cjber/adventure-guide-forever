@@ -556,6 +556,7 @@ do
 	equal(revisit ~= nil, true, "ring: Ratchet visited twice")
 	equal(revisit.visits[1].step.x ~= revisit.visits[2].step.x, true, "ring: different remaining givers")
 	equal(revisit.More:GetText(), L.STOP_MORE:format(1), "ring: +1")
+	equal(revisit.Badge:IsShown(), false, "ring: shared stops wear the count instead of a kind")
 	equal(#pins, #route - 1, "ring: one ring for both visits")
 	equal(revisit.visits[1].step.hub, revisit.visits[2].step.hub, "ring: real town identity")
 	h.Hover(revisit)

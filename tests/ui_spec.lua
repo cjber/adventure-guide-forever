@@ -981,7 +981,8 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#h.pins.AdventureGuideForeverPinTemplate, Places(ns.Route()), label .. ": one ring per place on this map")
 
 	local ring = h.pins.AdventureGuideForeverPinTemplate[1]
-	equal(ring.Number:GetAtlas(), "services-number-1", label .. ": the ring's numeral")
+	equal(ring.Number.file, "Interface\\WorldMap\\UI-QuestPoi-NumberIcons", label .. ": the stock quest numeral")
+	same(ring.Number.texCoord, { 0, 0.125, 0.5, 0.625 }, label .. ": yellow numeral 1")
 	-- Rings draw above the stock quest marks; givers stay under them (Blizzard_WorldMap.lua:291-311).
 	equal(ring.frameLevelType, "PIN_FRAME_LEVEL_WAYPOINT_LOCATION", label .. ": rings at the user waypoint's level")
 	h.Hover(ring)
@@ -1072,6 +1073,65 @@ for _, spf in ipairs({ false, "v1" }) do
 	)
 	ns.Integrations.Cancel()
 	clean(h, label .. ": pins")
+end
+
+-- A pooled stop can change from a later shared pin to the current stop, and cross the numeric texture's limit.
+do
+	local h = Load(false, PINS_ON)
+	h.G.OpenQuestLog()
+	h.flush()
+	local pin = h.pins.AdventureGuideForeverPinTemplate[1]
+	local step = pin.step
+	local visits = { { step = step, index = 25 }, { step = step, index = 26 } }
+	pin:OnAcquired(step, 25, visits)
+	equal(pin:GetWidth(), 20, "POI: fixed 20-unit button")
+	equal(pin.ignoreGlobalPinScale, true, "POI: ignores the global pin scale")
+	same(pin.scalingLimits, { 1, 1, 1 }, "POI: unchanged by map zoom")
+	equal(pin.Icon:GetAtlas(), "UI-QuestPoi-QuestNumber", "POI: stock button")
+	equal(pin.Disc:GetAtlas(), pin.Icon:GetAtlas(), "POI: silhouette follows the stock art")
+	same(pin.Disc.vertexColor, { 0, 0, 0 }, "POI: black silhouette")
+	equal(pin.Disc:GetAlpha(), 1, "POI: faded stops keep an opaque silhouette")
+	for _, region in ipairs({ pin.Icon, pin.Number, pin.NumberText, pin.Badge, pin.More }) do
+		equal(region:GetAlpha(), 0.55, "POI: later stop fades every foreground part")
+	end
+	for _, region in ipairs({ pin.Disc, pin.Icon, pin.Number, pin.Glow }) do
+		same({ region:GetSize() }, { 32, 32 }, "POI: stock 32-unit art") -- multi-value: width and height
+	end
+	same(pin.Number.texCoord, { 0, 0.125, 0.875, 1 }, "POI: final yellow numeral")
+	equal(pin.Badge:IsShown(), false, "POI: count replaces the kind badge")
+	equal(pin.More:GetText(), "+1", "POI: shared stop count")
+	equal(pin.More.font, "NumberFontNormal", "POI: stock item count font")
+	local point, _, _, x, y = pin.More:GetPoint(1)
+	same({ point, x, y }, { "BOTTOMRIGHT", 4, -4 }, "POI: count takes the badge corner")
+	h.ns.Pins.Ping(step.key)
+	equal(pin.Glow.flashing, true, "POI: the glow flashes when the guide pings a stop")
+	h.G.UIFrameFlashStop(pin.Glow)
+	equal(pin.Icon:GetAlpha(), 0.55, "POI: a completed ping preserves the later stop's fade")
+	h.ns.Pins.Ping(step.key)
+	pin:OnMouseEnter()
+	equal(pin.Glow.flashing, nil, "POI: hover takes over from the ping")
+	equal(pin.Glow:IsShown(), true, "POI: hover restores the steady glow")
+	h.ns.Pins.Ping(step.key)
+	pin:OnMouseLeave()
+	equal(pin.Glow.flashing, nil, "POI: leaving cancels the ping before the pin is reused")
+	equal(pin.Glow:IsShown(), false, "POI: leaving clears the glow")
+	pin:OnAcquired(step, 26)
+	equal(pin.Number:IsShown(), false, "POI: no texture cell after 25")
+	equal(pin.NumberText:GetText(), "26", "POI: font fallback after 25")
+	equal(pin.NumberText.font, "GameFontNormal", "POI: stock fallback font")
+	equal(pin.More:IsShown(), false, "POI: reused lone stop loses its count")
+	equal(pin.Badge:IsShown(), true, "POI: reused lone stop restores its kind")
+	pin:OnAcquired(step, 1)
+	equal(pin.Number:IsShown(), true, "POI: reused current stop restores its numeral")
+	equal(pin.NumberText:GetText(), "", "POI: reused current stop clears its fallback")
+	for _, region in ipairs({ pin.Icon, pin.Number, pin.NumberText, pin.Badge, pin.More }) do
+		equal(region:GetAlpha(), 1, "POI: reused current stop restores full strength")
+	end
+	pin:OnAcquired({ x = step.x, y = step.y }, 9)
+	same(pin.Number.texCoord, { 0, 0.125, 0.625, 0.75 }, "POI: yellow numerals wrap to the next row")
+	equal(pin.Badge:IsShown(), false, "POI: an unmarked stop loses its badge")
+	same(pin.hitRectInsets, { 0, 0, 0, 0 }, "POI: an unmarked stop restores the plain hit rect")
+	clean(h, "POI reuse")
 end
 
 -- An area step on the map (design §2.6): its numbered pin where the route enters it and nothing more, since the

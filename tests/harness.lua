@@ -172,6 +172,7 @@ function harness.load(options)
 		SetJustifyH = "justifyH",
 		SetMaxLines = "maxLines",
 		SetTexCoord = "texCoord",
+		SetVertexColor = "vertexColor",
 		SetTextureSliceMargins = "slice",
 		SetWordWrap = "wordWrap",
 	}) do
@@ -1541,8 +1542,16 @@ function harness.load(options)
 		G.GameTooltip:Show()
 	end
 	h.flashes = 0
-	G.UIFrameFlash = function()
+	G.UIFrameFlash = function(frame, _, _, _, showWhenDone)
 		h.flashes = h.flashes + 1
+		frame.flashing, frame.showWhenDone = true, showWhenDone
+		frame:SetAlpha(0)
+		frame:Show()
+	end
+	G.UIFrameFlashStop = function(frame)
+		frame.flashing = nil
+		frame:SetAlpha(1)
+		frame:SetShown(frame.showWhenDone)
 	end
 
 	-- Menus: a recording root. Each entry is {kind, text, onClick?, entries} so submenus nest.
@@ -1747,7 +1756,12 @@ function harness.load(options)
 			self.x, self.y = x, y
 			self:SetPoint("CENTER", map, "TOPLEFT", x * 1000, -y * 700)
 		end,
-		SetScalingLimits = noop,
+		SetScalingLimits = function(self, style, minScale, maxScale)
+			self.scalingLimits = { style, minScale, maxScale }
+		end,
+		SetIgnoreGlobalPinScale = function(self, ignore)
+			self.ignoreGlobalPinScale = ignore
+		end,
 		ApplyCurrentScale = noop,
 	}
 	-- The map's canvas: the 1000 x 700 frame SetPosition places pins on.
@@ -2213,6 +2227,7 @@ function harness.load(options)
 		"subLevel",
 		"texCoord",
 		"textColor",
+		"vertexColor",
 		"wordWrap",
 	}
 	function h.Describe(region, entry)

@@ -88,6 +88,7 @@ read_globals = {
 	"GetQuestDifficultyColor",
 	"CreateColor",
 	"UIFrameFlash",
+	"UIFrameFlashStop",
 	"EventRegistry",
 	"QuestMapFrame",
 	"QuestMapFrameOverrides",

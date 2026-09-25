@@ -609,6 +609,8 @@ def draw_texture(canvas, entry, rect, alpha, scale=1, mask=None):
     """A texture in its rect. An atlas keeps its slice margins (the atlas's, else SetTextureSliceMargins') at its
     frame's `scale`; `mask` is (MaskTexture entry, rect) for one AddMaskTexture put on it."""
     ui, (x, y, w, h) = canvas.ui, rect
+    r, g, b, *vertex_alpha = entry.get("vertexColor") or (1, 1, 1)
+    tint = (r, g, b, alpha * (vertex_alpha[0] if vertex_alpha else 1))
     target = ui.canvas(canvas.width, canvas.height) if entry.get("maskFile") or mask else canvas
     blend = entry.get("alphaMode") or "BLEND"
     if entry.get("atlas"):
@@ -619,16 +621,16 @@ def draw_texture(canvas, entry, rect, alpha, scale=1, mask=None):
             # The margins keep their size in the frame's own units: drawn at that size, then scaled with the frame.
             full = ui.canvas(w / scale, h / scale)
             full.draw(art, 0, 0, w / scale, h / scale)
-            target.draw(full.image, x, y, w, h, (1, 1, 1, alpha), blend)
+            target.draw(full.image, x, y, w, h, tint, blend)
         else:
-            target.draw(art, x, y, w, h, (1, 1, 1, alpha), blend)
+            target.draw(art, x, y, w, h, tint, blend)
     elif entry.get("file") is not None:
         if entry.get("gradient"):
             sys.exit(f"{entry['path']}: SetGradient on a file texture: draw it in draw_texture")
         image = texture(ui, entry["file"])
         if entry.get("texCoord"):
             image = wm.crop_coords(image, *entry["texCoord"])
-        target.draw(image, x, y, w, h, (1, 1, 1, alpha), blend)
+        target.draw(image, x, y, w, h, tint, blend)
     elif entry.get("color") and entry.get("gradient"):
         target.draw(gradient(entry["color"], entry["gradient"]), x, y, w, h, (1, 1, 1, alpha), blend)
     elif entry.get("color"):
@@ -832,12 +834,12 @@ def map_point(rects, x, y):
 
 
 def draw_pins(canvas, rects, pins, hovered=None):
-    """The addon's map pins from their dumps, each centred on its map position at 26 units (SetScalingLimits gives
-    1.0 at the map's minimum zoom); `hovered` (an index into pins) draws that pin's highlight."""
+    """The addon's map pins from their dumps, centred on their map positions at a fixed scale of 1;
+    `hovered` (an index into pins) draws that pin's highlight."""
     for index, pin in enumerate(pins):
         root = pin["layout"][0]
         cx, cy = map_point(rects, pin["x"], pin["y"])
-        width, height = root.get("size") or (26, 26)
+        width, height = root["size"]
         known = {root["path"]: (cx - width / 2, cy - height / 2, width, height)}
         placed = layout_rects(canvas.ui, pin["layout"], known)
         Layout(pin["layout"], placed, [root["path"]] if index == hovered else ()).draw(canvas)
@@ -899,9 +901,9 @@ def quest_log(ui, data, rects, scene, pins=()):
 
 # ------------------------------------------------------------------------------ Shortest Path's route (map scene)
 
-# The Shortest Path Forever build the map scene draws: the sha tests/contract_spec.lua pins, read from it as CI does,
-# so the two never drift. Its geometry is SPF's own Path.FindSync, run by LuaJIT in an extracted copy (plan §1.3).
-SPF_SHA = re.search(r'^local SPF_SHA = "(\w+)"$', (ROOT / "tests/contract_spec.lua").read_text(), re.M)[1]
+# SPF #52's stock quest POIs. Its geometry is SPF's own Path.FindSync, run by LuaJIT in an extracted copy (plan §1.3).
+# The API contract fixture keeps its independent compatibility pin in tests/contract_spec.lua.
+SPF_SHA = "061f0b1041f85d02084c25a27edbbf3db3ae7ec7"
 SPF_TARBALL = f"https://codeload.github.com/cjber/shortest-path-forever/tar.gz/{SPF_SHA}"
 SPF_CACHE = ROOT / "tools/.cache" / f"spf-{SPF_SHA}"
 # Route.lua: THICKNESS 2 over UNDER_THICKNESS 4 at UNDER_ALPHA .5; walks are DOT 4 breadcrumbs every SPACING 9, each
@@ -1009,34 +1011,39 @@ def spf_walks(ui, legs):
     return json.loads(result.stdout)
 
 
-def breadcrumbs(canvas, rects, lines):
+def breadcrumbs(canvas, rects, lines, marks):
     """Route.lua's walk: breadcrumbs every SPF_SPACING along each polyline (normalised map points), the distance
     carried across its bends, each dot over a larger dark rim, every rim beneath every dot (ARTWORK -1)."""
     import math
 
     dots = []
-    for line in lines:
+    for index, line in enumerate(lines):
         points = [map_point(rects, x, y) for x, y in line]
         walked = 0.0
         for (ax, ay), (bx, by) in zip(points, points[1:], strict=False):
             length = math.hypot(bx - ax, by - ay)
             distance = math.ceil(walked / SPF_SPACING) * SPF_SPACING - walked
             while length and distance <= length:
-                dots.append((ax + (bx - ax) * distance / length, ay + (by - ay) * distance / length))
+                x, y = ax + (bx - ax) * distance / length, ay + (by - ay) * distance / length
+                # Route.lua: a 10-unit stop radius, a 2-unit gap, and the dot's radius plus rim.
+                margin = 10 + 2 + SPF_DOT / 2 + SPF_RIM
+                if all((x - cx) ** 2 + (y - cy) ** 2 >= margin**2 for cx, cy, _ in marks):
+                    dots.append((x, y, 0.4 if index else 1))
                 distance += SPF_SPACING
             walked += length
     k = canvas.ui.scale
     for radius, color in ((SPF_DOT / 2 + SPF_RIM, SPF_UNDER), (SPF_DOT / 2, (*wm.NORMAL, 1))):
         layer = wm.Image.new("RGBA", canvas.image.size)
         draw = wm.ImageDraw.Draw(layer)
-        for x, y in dots:
+        for x, y, alpha in dots:
             draw.ellipse(
-                ((x - radius) * k, (y - radius) * k, (x + radius) * k, (y + radius) * k), fill=wm.rgba255(color)
+                ((x - radius) * k, (y - radius) * k, (x + radius) * k, (y + radius) * k),
+                fill=wm.rgba255((*color[:3], color[3] * alpha)),
             )
         canvas.image.alpha_composite(layer)
 
 
-# A stop's kind as SPF's Looks.lua draws it: the game's own mark, 18 across inside the ring.
+# A stop's kind as SPF's Looks.lua draws it, fitted within a 16-unit badge.
 STOP_ATLASES = {
     "pickup": "QuestNormal",
     "turnin": "QuestTurnin",
@@ -1050,26 +1057,56 @@ STOP_FILES = {
 }
 
 
-def goal_pins(canvas, rects, stops):
-    """SPF's numbered stop pins (Map.xml:23, GoalPinMixin:OnAcquired): 26x26, a black .75 disc 22x22 cut round by
-    TempPortraitAlphaMask, the adventureguide-ring over it and services-number-N 22x25 at the centre. A stop with a
-    kind wears its mark in the ring instead, with no disc, its number in NumberFontNormalSmall at the ring's foot."""
+def stop_groups(rects, stops):
+    """Map.lua's OverlapGroups with StopPin.lua's 20-unit button and the map's 0.8 overlap factor."""
+    points = [map_point(rects, stop["x"], stop["y"]) for stop in stops]
+    groups = []
+    for number, (x, y) in enumerate(points):
+        touching = [
+            group for group in groups if any(abs(x - points[i][0]) < 16 and abs(y - points[i][1]) < 16 for i in group)
+        ]
+        for group in touching:
+            groups.remove(group)
+        groups.append(sorted([number, *(i for group in touching for i in group)]))
+    marks = []
+    for group in sorted(groups):
+        # Route.lua: the current stop stays put; later shared buttons sit at their group's middle.
+        x, y = points[0] if group[0] == 0 else (sum(points[i][a] for i in group) / len(group) for a in (0, 1))
+        marks.append((x, y, group))
+    return marks
+
+
+def goal_pins(canvas, stops, marks):
+    """SPF #52's StopPin.lua and Map.xml: the stock 32-unit quest disc, yellow numeral and corner badge/count.
+    Later foreground art fades to 0.55 over an opaque black silhouette."""
     ui = canvas.ui
-    for number, stop in enumerate(stops, 1):
-        cx, cy = map_point(rects, stop["x"], stop["y"])
-        kind = stop.get("kind")
-        if kind in STOP_ATLASES or kind in STOP_FILES:
+    button = ui.atlas("UI-QuestPoi-QuestNumber")
+    numerals = ui.texture("interface/worldmap/ui-questpoi-numbericons.blp")
+    for cx, cy, group in marks:
+        number, alpha = group[0] + 1, 0.55 if group[0] else 1
+        canvas.draw(button, cx - 16, cy - 16, 32, 32, (0, 0, 0, 1))
+        canvas.draw(button, cx - 16, cy - 16, 32, 32, (1, 1, 1, alpha))
+        if number <= 25:
+            left, top = (number - 1) % 8 * 0.125, 0.5 + (number - 1) // 8 * 0.125
+            numeral = wm.crop_coords(numerals, left, left + 0.125, top, top + 0.125)
+            canvas.draw(numeral, cx - 16, cy - 16, 32, 32, (1, 1, 1, alpha))
+        else:
+            draw_font_string(canvas, {"text": str(number), "font": "GameFontNormal"}, (cx - 16, cy - 16, 32, 32), alpha)
+        kind = stops[group[0]].get("kind")
+        if len(group) > 1:
+            text, face = f"+{len(group) - 1}", font("NumberFontNormal")
+            width = canvas.text_width(text, face)
+            draw_font_string(
+                canvas,
+                {"text": text, "font": "NumberFontNormal"},
+                (cx + 14 - width, cy + 14 - face.height, width, face.height),
+                alpha,
+            )
+        elif kind in STOP_ATLASES or kind in STOP_FILES:
             art = ui.atlas(STOP_ATLASES[kind]) if kind in STOP_ATLASES else texture(ui, STOP_FILES[kind])
-            canvas.draw(art, cx - 9, cy - 9, 18, 18)
-            canvas.draw(ui.atlas("adventureguide-ring"), cx - 13, cy - 13, 26, 26)
-            canvas.text(cx + 9 - 10, cy + 9 - 6, str(number), font("NumberFontNormalSmall"), justify="CENTER", width=20)
-            continue
-        disc = ui.canvas(canvas.width, canvas.height)
-        disc.fill(cx - 11, cy - 11, 22, 22, (0, 0, 0, 0.75))
-        disc.mask(ui.texture("interface/characterframe/tempportraitalphamask.blp"), cx - 11, cy - 11, 22, 22)
-        canvas.paste(disc, 0, 0)
-        canvas.draw(ui.atlas("adventureguide-ring"), cx - 13, cy - 13, 26, 26)
-        canvas.draw(ui.atlas(f"services-number-{number}"), cx - 11, cy - 12.5, 22, 25)
+            scale = 16 / max(art.width, art.height)
+            width, height = art.width * scale, art.height * scale
+            canvas.draw(art, cx + 14 - width, cy + 14 - height, width, height, (1, 1, 1, alpha))
 
 
 def shortest_path(ui, data):
@@ -1083,8 +1120,9 @@ def shortest_path(ui, data):
     preview = [(stop["x"], stop["y"]) for stop in stops]
 
     def on_map(canvas, rects):
-        breadcrumbs(canvas, rects, [current, preview])
-        goal_pins(canvas, rects, stops)
+        marks = stop_groups(rects, stops)
+        breadcrumbs(canvas, rects, [current, preview], marks)
+        goal_pins(canvas, stops, marks)
         draw_player(canvas, rects, player)
 
     canvas, _ = map_frame(ui, wm.map_art(ui, map_id), False, on_map)
@@ -1227,7 +1265,8 @@ def render(out):
     pin = data["tooltip"]["pins"][hovered]
     px, py = map_point(frame, pin["x"], pin["y"])
     # ANCHOR_RIGHT: the tooltip's BOTTOMLEFT at the pin's TOPRIGHT.
-    tip_x, tip_y = px + 13, py - 13 - tip.height
+    pin_width, pin_height = pin["layout"][0]["size"]
+    tip_x, tip_y = px + pin_width / 2, py - pin_height / 2 - tip.height
     left, top = px - 120, tip_y - 30
     shot = crop(canvas, left, top, tip_x + tip.width + 40 - left, py + 90 - top)
     images["tooltip"] = wm.scene(ui, [(shot, 0, 0), (tip, tip_x - left, tip_y - top)])

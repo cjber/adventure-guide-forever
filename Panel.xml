@@ -82,49 +82,47 @@
 		</Layers>
 	</Button>
 	<Frame name="AdventureGuideForeverPinTemplate" mixin="AdventureGuideForeverPinMixin" enableMouse="true" virtual="true">
-		<Size x="26" y="26"/>
+		<Size x="20" y="20"/>
 		<Layers>
-			<!-- The panel's numbered ring, so a map pin reads as the same step as its route row. A dark disc, cut round
-			     with the stock portrait mask, keeps the number legible over bright map art. -->
+			<!-- The stock quest POI, as Shortest Path's StopPin.lua draws it: 32-unit art on a 20-unit button.
+			     Its black silhouette stays opaque beneath faded later stops. -->
 			<Layer level="BACKGROUND">
-				<Texture parentKey="Disc">
-					<Size x="22" y="22"/>
+				<Texture parentKey="Disc" atlas="UI-QuestPoi-QuestNumber">
+					<Size x="32" y="32"/>
 					<Anchors>
 						<Anchor point="CENTER"/>
 					</Anchors>
-					<Color r="0" g="0" b="0" a="0.75"/>
 				</Texture>
-				<MaskTexture parentKey="DiscMask" file="Interface\CharacterFrame\TempPortraitAlphaMask" hWrapMode="CLAMPTOBLACKADDITIVE" vWrapMode="CLAMPTOBLACKADDITIVE">
-					<Anchors>
-						<Anchor point="TOPLEFT" relativeKey="$parent.Disc"/>
-						<Anchor point="BOTTOMRIGHT" relativeKey="$parent.Disc"/>
-					</Anchors>
-					<MaskedTextures>
-						<MaskedTexture childKey="Disc"/>
-					</MaskedTextures>
-				</MaskTexture>
 			</Layer>
 			<Layer level="ARTWORK">
-				<Texture parentKey="Icon" atlas="adventureguide-ring" setAllPoints="true"/>
+				<Texture parentKey="Icon" atlas="UI-QuestPoi-QuestNumber">
+					<Size x="32" y="32"/>
+					<Anchors>
+						<Anchor point="CENTER"/>
+					</Anchors>
+				</Texture>
 			</Layer>
-			<Layer level="OVERLAY">
-				<!-- Blizzard's bevelled gold numerals, each drawn centred in its own atlas box, so the digit sits exactly in
-				     the ring whatever its width. Sized so the digit is about 11px tall. -->
-				<Texture parentKey="Number">
-					<Size x="22" y="25"/>
+			<Layer level="ARTWORK" textureSubLevel="1">
+				<Texture parentKey="Number" file="Interface\WorldMap\UI-QuestPoi-NumberIcons">
+					<Size x="32" y="32"/>
 					<Anchors>
 						<Anchor point="CENTER"/>
 					</Anchors>
 				</Texture>
 			</Layer>
 			<!-- The quest POI's own hover glow, over the ring; shown from OnMouseEnter since a Frame has no highlight state. -->
-			<Layer level="ARTWORK" textureSubLevel="1">
+			<Layer level="OVERLAY">
 				<Texture parentKey="Glow" atlas="UI-QuestPoi-InnerGlow" alphaMode="ADD" hidden="true">
-					<Size x="30" y="30"/>
+					<Size x="32" y="32"/>
 					<Anchors>
 						<Anchor point="CENTER"/>
 					</Anchors>
 				</Texture>
+				<FontString parentKey="NumberText" inherits="GameFontNormal">
+					<Anchors>
+						<Anchor point="CENTER"/>
+					</Anchors>
+				</FontString>
 			</Layer>
 		</Layers>
 		<!-- No OnEnter/OnLeave scripts: MapCanvas asserts a new pin has none and wires OnMouseEnter/OnMouseLeave itself. -->
