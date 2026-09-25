@@ -260,7 +260,8 @@ h = Load("v1", false, false, STORY, nil, {
 out.window_pvp = Window(h, "window_pvp", 3)
 
 -- The Completion tab, Legacy Forever loaded: The Barrens featured with its categories, its next three objectives, and
--- the next zones as cards.
+-- the next zones as cards. Stonetalon has nothing done, so the shot holds an empty bar: the client lays a 0-wide fill
+-- out at its atlas's width, and this renderer does too (#33).
 local function Zone(map, name, done, total, categories, targets)
 	return {
 		map = map,
@@ -303,7 +304,7 @@ for _, zone in ipairs({
 		},
 		{ key = "kill:Kolkar", text = "Kolkar Centaur", kind = "kill", quantity = 6, required = 10 },
 	}),
-	Zone(1442, "Stonetalon Mountains", 3, 58, { Category("areas", 1, 15), Category("quests", 2, 43) }),
+	Zone(1442, "Stonetalon Mountains", 0, 58, { Category("areas", 0, 15), Category("quests", 0, 43) }),
 	Zone(1411, "Durotar", 52, 60, { Category("areas", 12, 12), Category("quests", 40, 48) }),
 }) do
 	legacy.summaries[zone.map], legacy.targets[zone.map] = zone.summary, zone.targets
