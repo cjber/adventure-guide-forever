@@ -3,7 +3,6 @@ local _, ns = ...
 
 local PIN_TEMPLATE = "AdventureGuideForeverPinTemplate"
 local GIVER_TEMPLATE = "AdventureGuideForeverGiverPinTemplate"
-local AREA_TEMPLATE = "AdventureGuideForeverAreaPinTemplate"
 
 ---@class AGFPinsModule
 local Pins = {}
@@ -137,7 +136,6 @@ local provider = CreateFromMixins(MapCanvasDataProviderMixin) --[[@as AGFMapProv
 function provider:RemoveAllData()
 	self:GetMap():RemoveAllPinsByTemplate(PIN_TEMPLATE)
 	self:GetMap():RemoveAllPinsByTemplate(GIVER_TEMPLATE)
-	self:GetMap():RemoveAllPinsByTemplate(AREA_TEMPLATE)
 	pinsByKey = {}
 end
 
@@ -179,16 +177,8 @@ function provider:RefreshAllData()
 	if not RingsShown() then
 		return
 	end
-	-- Each area's ring first, under the numbered pins, round its middle: its radius in yards over the map's size in
-	-- yards, when the data has the map's size. The head's ring is full; the rest fade, as later stops do.
-	local size = ns.Data.maps and ns.Data.maps[mapID]
-	for index, step in ipairs(size and ns.Route().steps or {}) do
-		local ring = step.ring or step
-		if ring.map == mapID and step.objectives and (step.r or 0) > 0 then
-			self:GetMap():AcquirePin(AREA_TEMPLATE, ring, 2 * step.r / size.sx, 2 * step.r / size.sy, index == 1)
-		end
-	end
-	-- A numbered pin at each step's point, but none for the area the player stands in: they are there (§4.2).
+	-- A numbered pin at each step's point, but none for the area the player stands in: they are there (§4.2). An area
+	-- draws nothing more: the game's own objective mark and its hover shape show where its objectives are.
 	for index, step in ipairs(ns.Route().steps) do
 		if step.map == mapID and not step.here then
 			---@type AGFPinFrame
@@ -238,31 +228,6 @@ function AdventureGuideForeverPinMixin:OnClick(button)
 	if button == "LeftButton" and self.step then
 		ns.StartRoute(self.step)
 	end
-end
-
----@class AGFAreaPinFrame : AGFMapPinMixin
-AdventureGuideForeverAreaPinMixin = CreateFromMixins(MapCanvasPinMixin)
-
--- Scaled with the terrain, as Shortest Path's route and the stock quest blobs are, so the ring keeps its area's size
--- at every zoom.
-function AdventureGuideForeverAreaPinMixin:OnLoad()
-	self:UseFrameLevelType("PIN_FRAME_LEVEL_QUEST_BLOB")
-	self:SetIgnoreGlobalPinScale(true)
-	self:SetScaleStyle(AM_PIN_SCALE_STYLE_WITH_TERRAIN)
-end
-
--- A later ring's share of the head's: faint enough that the head's reads first where rings overlap.
-local LATER_RING = 0.5
-
----@param ring {x: number, y: number} the ring's middle
----@param width number the ring's diameter as a share of the map's width
----@param height number and of its height
----@param head boolean step 1's ring
-function AdventureGuideForeverAreaPinMixin:OnAcquired(ring, width, height, head)
-	local canvas = self:GetMap():GetCanvas()
-	self:SetSize(width * canvas:GetWidth(), height * canvas:GetHeight())
-	self:SetPosition(ring.x, ring.y)
-	self:SetAlpha(head and 1 or LATER_RING)
 end
 
 ---@class AGFGiverPinFrame : AGFMapPinMixin

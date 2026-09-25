@@ -327,34 +327,40 @@ do
 	Moved(h, 1413, 0.64, 0.46)
 	local head = h.ns.Route().steps[1]
 	equal(head.key, "area:887:0", "follow: the area the player stands in leads")
-	-- "You're here" (design §4.2): the objectives are theirs to do, so nothing guides into the area or past it.
+	-- "You're here" (design §4.2): the objectives are theirs to do, so nothing guides into the area, but Shortest
+	-- Path still draws the way on from it: the stops after it, handed once.
 	equal(head.here, true, "follow: you're here")
-	equal(h.spf.NavigateRoute, 1, "follow: in step 1's area, nothing sent")
-	equal(h.spfRoute, nil, "follow: and the route into it and on past it is gone")
+	equal(h.spf.NavigateRoute, 2, "follow: in step 1's area, the stops after it sent")
+	local onward = h.ns.Route().steps
+	equal(#h.spfRoute.stops, #onward - 1, "follow: every stop but the area")
+	equal(h.spfRoute.stops[1].x, onward[2].x, "follow: from step 2 on")
+	for _, stop in ipairs(h.spfRoute.stops) do
+		equal(stop.x == head.x and stop.y == head.y, false, "follow: never the area the player stands in")
+	end
 	equal(h.ns.Integrations.Owns(), true, "follow: guidance holds, so Stop still shows")
 	Moved(h, 1413, 0.64, 0.47)
-	equal(h.spf.NavigateRoute, 1, "follow: nothing while the player is in it")
+	equal(h.spf.NavigateRoute, 2, "follow: nothing again while the player is in it")
 	h.SetCombat(true)
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 1, "follow: nothing in combat")
+	equal(h.spf.NavigateRoute, 2, "follow: nothing in combat")
 	h.SetCombat(false)
 	h.flush()
-	equal(h.spf.NavigateRoute, 2, "follow: out of the area, once combat ends, the route goes on")
+	equal(h.spf.NavigateRoute, 3, "follow: out of the area, once combat ends, the route goes on")
 	equal(h.ns.Prefs().guided, "zone:1413", "follow: still the chosen journey's")
 	-- Standing in step 1's town, the Crossroads, with steps after it: the town alone, so no way out of town is drawn.
 	equal(#h.spfRoute.stops, 1, "follow: in step 1's town, the town alone")
 	h.onTaxi = true
 	Moved(h, 1413, 0.46, 0.79)
-	equal(h.spf.NavigateRoute, 2, "follow: nothing in the air")
+	equal(h.spf.NavigateRoute, 3, "follow: nothing in the air")
 	h.onTaxi = false
 	Moved(h, nil, nil, nil)
-	equal(h.spf.NavigateRoute, 2, "follow: nothing off the map")
+	equal(h.spf.NavigateRoute, 3, "follow: nothing off the map")
 	Moved(h, 1413, 0.5223, 0.3101)
 	h.spfEnd("arrived")
 	Moved(h, 1413, 0.5224, 0.3101)
-	equal(h.spf.NavigateRoute, 2, "follow: arrived in the town, its work still there: nothing")
+	equal(h.spf.NavigateRoute, 3, "follow: arrived in the town, its work still there: nothing")
 	Moved(h, 1413, 0.46, 0.79)
-	equal(h.spf.NavigateRoute, 3, "follow: out of the town, the journey goes on")
+	equal(h.spf.NavigateRoute, 4, "follow: out of the town, the journey goes on")
 	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: every step")
 	-- Shortest Path moves on stop by stop until it heads for the Crossroads, then the player reaches it.
 	for _, step in ipairs(h.ns.Route().steps) do
@@ -364,11 +370,11 @@ do
 		h.spfAdvance()
 	end
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 3, "follow: heading for the town it stands in: nothing")
+	equal(h.spf.NavigateRoute, 4, "follow: heading for the town it stands in: nothing")
 	h.spfOther()
 	Moved(h, 1413, 0.46, 0.79)
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 3, "follow: another journey replaced ours: nothing")
+	equal(h.spf.NavigateRoute, 4, "follow: another journey replaced ours: nothing")
 	clean(h, "follow")
 
 	-- The "you're here" head (design §4.2): checked every 2 s only while the player moves, and a rebuild only on
@@ -414,8 +420,11 @@ do
 		numbered = numbered or pin.step == standing
 	end
 	equal(numbered, false, "here, waypoint: no numbered pin where the player is")
-	equal(#(h.pins.AdventureGuideForeverAreaPinTemplate or {}) > 0, true, "here, waypoint: its ring still drawn")
-	equal(h.pins.AdventureGuideForeverAreaPinTemplate[1]:GetAlpha(), 1, "here, waypoint: whole, as step 1's")
+	local later = false
+	for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
+		later = later or pin.step == h.ns.Route().steps[2]
+	end
+	equal(later, true, "here, waypoint: the stops after it keep theirs")
 	h.ns.StartRoute()
 	h.flush()
 	equal(h.counts.SetUserWaypoint or 0, 0, "here, waypoint: Go sets none")
@@ -1000,9 +1009,9 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label .. ": pins")
 end
 
--- An area step on the map (design §2.6): a ring the size of its area under the numbered pins, scaled with the terrain
--- (no mouse: an in-game check); its tooltip lists each open objective under its quest in the client's words, else
--- its count.
+-- An area step on the map (design §2.6): its numbered pin where the route enters it and nothing more, since the
+-- game's own objective mark shows the area; its tooltip lists each open objective under its quest in the client's
+-- words, else its count.
 do
 	-- With the Barrens story ruled out, Gann's Reclamation is off every zone loop, so carry (Loose ends) holds it.
 	local h = harness.load({
@@ -1034,19 +1043,16 @@ do
 	for i, candidate in ipairs(h.ns.Route().steps) do
 		index, step = candidate.key == "area:843:0" and i or index, candidate.key == "area:843:0" and candidate or step
 	end
-	equal(step and step.kind, "area", "area ring: Gann's Reclamation is an area step")
-	local rings = h.pins.AdventureGuideForeverAreaPinTemplate or {}
-	equal(#rings, 1, "area ring: one ring, for the one area with a radius")
-	local ring = rings[1]
-	equal(ring.frameLevelType, "PIN_FRAME_LEVEL_QUEST_BLOB", "area ring: under the marks, as the quest blobs are")
-	equal(ring:GetAlpha(), index == 1 and 1 or 0.5, "area ring: step 1's ring whole, a later stop's faded")
-	equal(ring.scaleStyle, h.G.AM_PIN_SCALE_STYLE_WITH_TERRAIN, "area ring: scaled with the terrain")
-	local map = h.ns.Data.maps[1413]
-	equal(math.floor(ring:GetWidth() + 0.5), math.floor(2 * step.r / map.sx * 1000 + 0.5), "area ring: its area's size")
-	equal(ring.x .. "," .. ring.y, step.ring.x .. "," .. step.ring.y, "area ring: round the area's middle")
-	-- The step's point, and its pin, is where the player enters the ring from the stop before (design §4.2).
+	equal(step and step.kind, "area", "area step: Gann's Reclamation is an area step")
+	equal(h.pins.AdventureGuideForeverAreaPinTemplate, nil, "area step: no disc of ours over the area")
+	-- The step's point, and its pin, is where the player enters one of its shapes from the stop before (design §4.2).
+	local inside = false
+	for _, shape in ipairs(step.shapes) do
+		local yards = h.ns.Model.Yards(h.ns.Data, step, shape)
+		inside = inside or (yards ~= nil and yards <= shape.r)
+	end
 	local yards = h.ns.Model.Yards(h.ns.Data, step, step.ring)
-	equal(yards ~= nil and yards > 0 and yards <= step.r, true, "area ring: its pin on the way in, inside the ring")
+	equal(inside and yards > 0, true, "area step: its pin on the way in, inside a shape")
 	local pin
 	for _, candidate in ipairs(h.pins.AdventureGuideForeverPinTemplate) do
 		pin = candidate.step == step and candidate or pin
@@ -1059,10 +1065,10 @@ do
 		"highlight: - Bael'dun Excavator slain: 7/15",
 		"highlight: - 2/5",
 	}
-	same({ unpack(h.tooltip, 1, #expected) }, expected, "area ring: the pin's tooltip counts what is left")
-	equal(h.tooltip[#expected + 1], "instruction: Click to set a waypoint", "area ring: the done objective left out")
+	same({ unpack(h.tooltip, 1, #expected) }, expected, "area step: the pin's tooltip counts what is left")
+	equal(h.tooltip[#expected + 1], "instruction: Click to set a waypoint", "area step: the done objective left out")
 	pin:OnMouseLeave()
-	clean(h, "area ring")
+	clean(h, "area step")
 end
 
 -- F1, the map budget: a fresh install draws no mark with the tab closed; opted in, at most 9 rings and exactly the
@@ -2946,21 +2952,6 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(h.ns.Integrations.Owns(), false, label .. ": and clearing it stops what a Go started")
 	clean(h, label)
-end
-
--- Rings past step 1 fade (design §2.6): the story's areas come after its towns, so each is at half.
-do
-	local h = Load(false, PINS_ON)
-	h.ns.OpenPanel()
-	h.flush()
-	h.providers[1]:RefreshAllData()
-	local rings = h.pins.AdventureGuideForeverAreaPinTemplate or {}
-	equal(h.ns.Route().steps[1].kind, "town", "ring fade: step 1 is a town")
-	equal(#rings > 1, true, "ring fade: later areas have rings")
-	for _, ring in ipairs(rings) do
-		equal(ring:GetAlpha(), 0.5, "ring fade: each faded")
-	end
-	clean(h, "ring fade")
 end
 
 -- The choice going, however it went, stops whatever of ours guides (design §2.6), a Go that left no record of the

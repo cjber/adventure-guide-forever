@@ -8,7 +8,6 @@ local _, ns = ...
 local PIN_TEMPLATES = {
 	"AdventureGuideForeverPinTemplate",
 	"AdventureGuideForeverGiverPinTemplate",
-	"AdventureGuideForeverAreaPinTemplate",
 }
 
 -- The key a parent holds a region under: its XML parentKey, else the first field (by name) that holds it.

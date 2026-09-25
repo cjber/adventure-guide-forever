@@ -58,9 +58,8 @@ local function Panel(h, scene)
 	}
 end
 
--- Drawn in this order: the area rings under the givers, the givers under the numbered rings.
+-- Drawn in this order: the givers under the numbered rings.
 local PIN_TEMPLATES = {
-	"AdventureGuideForeverAreaPinTemplate",
 	"AdventureGuideForeverGiverPinTemplate",
 	"AdventureGuideForeverPinTemplate",
 }
@@ -133,9 +132,7 @@ h.Hover(ring)
 out.tooltip = {
 	lines = Tooltip(h),
 	pins = Pins(h),
-	hovered = #(h.pins.AdventureGuideForeverAreaPinTemplate or {})
-		+ #(h.pins.AdventureGuideForeverGiverPinTemplate or {})
-		+ HOVERED,
+	hovered = #(h.pins.AdventureGuideForeverGiverPinTemplate or {}) + HOVERED,
 }
 ring:OnMouseLeave()
 

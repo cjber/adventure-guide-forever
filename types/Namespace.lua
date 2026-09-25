@@ -175,8 +175,8 @@
 ---@field returns? table<integer, true> a town's hand-ins the route comes back for once their objectives are done
 ---@field chapter? string the story card's chapter line, on the step that takes the chain up
 ---@field shapes? AGFNode[] an area's objective nodes, each its own ring, merged into it
----@field ring? {map: integer, x: number, y: number} an area's middle, where its ring is drawn; its point is where the player enters it
----@field here? true step 1 is the area the player stands in, objectives open: nothing guides to it or past it
+---@field ring? {map: integer, x: number, y: number} an area's middle, its first objective place; its point is where the player enters it
+---@field here? true step 1 is the area the player stands in, objectives open: nothing guides to it, only on past it
 
 ---@class AGFSkipped
 ---@field key string

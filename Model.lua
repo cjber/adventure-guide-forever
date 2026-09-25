@@ -2088,9 +2088,26 @@ local function Stabilise(route, plain, rank, holds, at, origin, settle)
 	return was - now >= math.max(SETTLE_SHARE * was, SETTLE_YARDS) and alt or kept
 end
 
+-- Whether `where` stands in area `step`, `margin` yards past its edge: within one of its shapes, the data's objective
+-- circles, never the ring merged round them, which covers ground no objective is on. One with no shapes is its point.
+---@param where {map: integer, x: number, y: number}
+---@param step AGFStep
+---@param margin number
+---@return boolean
+local function InArea(data, where, step, margin)
+	for _, shape in ipairs(step.shapes or { { map = step.map, x = step.x, y = step.y, r = 0 } }) do
+		local yards = Model.Yards(data, where, shape)
+		if yards and yards <= shape.r + margin then
+			return true
+		end
+	end
+	return false
+end
+
 -- The open area the player stands in (docs/design.md §4.2): the head when it is one, else the first on the route. An
--- area with a quest the route picks up first is not open yet. Inside is within its ring; the area they stood in
--- (`held`, its key) lets go only past HERE_MARGIN more, so its edge never flickers. Nil when they stand in none.
+-- area with a quest the route picks up first is not open yet. Inside is within one of its shapes (InArea); the area
+-- they stood in (`held`, its key) lets go only past HERE_MARGIN more, so its edge never flickers. Nil when they stand
+-- in none.
 local HERE_MARGIN = 30
 ---@param where? {map?: integer, x?: number, y?: number}
 ---@param steps AGFStep[]
@@ -2102,8 +2119,11 @@ function Model.Here(data, where, steps, held)
 	end
 	---@cast where {map: integer, x: number, y: number}
 	for index, step in ipairs(steps) do
-		local yards = step.kind == "area" and not step.planned and Model.Yards(data, where, step.ring or step)
-		if yards and yards <= (step.r or 0) + (step.key == held and HERE_MARGIN or 0) then
+		if
+			step.kind == "area"
+			and not step.planned
+			and InArea(data, where, step, step.key == held and HERE_MARGIN or 0)
+		then
 			return index
 		end
 	end
@@ -2380,8 +2400,8 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	local standing
 	for _, lap in ipairs(laps) do
 		for _, stop in ipairs(lap.stops) do
-			local yards = stop.kind == "area" and not stop.planned and Model.Yards(data, player, stop)
-			standing = standing or (yards and yards <= (stop.r or 0) and lap) or nil
+			local inside = stop.kind == "area" and not stop.planned and InArea(data, player, stop, 0)
+			standing = standing or (inside and lap) or nil
 		end
 	end
 	-- The lap under way goes on until it ends: the one out to the area first in the committed order is the only one
@@ -2691,7 +2711,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	if standsIn and here > 1 then
 		Front({ [standsIn] = true })
 	end
-	-- "You're here": the area they stand in, leading, is theirs to clear; nothing guides to it or on past it.
+	-- "You're here": the area they stand in, leading, is theirs to clear; nothing guides to it, only on from it.
 	if standsIn and route[1] == standsIn then
 		standsIn.here = true
 	end

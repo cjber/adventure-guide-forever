@@ -705,8 +705,8 @@ do
 end
 
 -- An area step's point is where the player enters it (design §4.2): ENTER (10) yd inside the ring of its shape nearest
--- them, never the middle, so a long area starts at its near end; its ring keeps the middle. Standing in it, it is
--- "you're here", and the next build lets it go only 30 yd past its ring.
+-- them, never the middle, so a long area starts at its near end; its ring keeps the middle. Standing in one of its
+-- shapes, it is "you're here", and the next build lets it go only 30 yd past that shape.
 do
 	local strip = { quests = { [1] = quest() }, zones = data.zones }
 	strip.maps = { [1] = { name = "Zone", continent = 0, cx = 0, cy = 0, sx = 1000, sy = 1000 } }
@@ -715,8 +715,8 @@ do
 	strip.quests[1].need = { [0] = 8, [4] = 5 }
 	strip.quests[1].obj = { { 0, 400, 500, 100 }, { 4, 550, 500, 100 } }
 	local carried = { [1] = { id = 1, title = "Strip", level = 18, complete = false } }
-	local function Head(x, last)
-		local at = { map = 1, x = x, y = 0.5 }
+	local function Head(x, last, y)
+		local at = { map = 1, x = x, y = y or 0.5 }
 		for name, value in pairs(player) do
 			at[name] = at[name] == nil and value or at[name]
 		end
@@ -732,9 +732,11 @@ do
 	local inside, held = Head(0.45)
 	equal(inside.here, true, "entry: inside, you're here")
 	equal(held.here, "area:1:0", "entry: which the route keeps for the next build")
-	equal(Head(0.13, held).here, true, "entry: 20 yd past the ring, still here")
-	equal(Head(0.13).here, nil, "entry: there fresh, not")
-	equal(Head(0.11, held).here, nil, "entry: 40 yd past it, let go")
+	equal(Head(0.28, held).here, true, "entry: 20 yd past the west shape, still here")
+	equal(Head(0.28).here, nil, "entry: there fresh, not")
+	equal(Head(0.26, held).here, nil, "entry: 40 yd past it, let go")
+	-- 200 yd north of the west spot: inside the ring merged round both, but on no objective's ground.
+	equal(Head(0.4, nil, 0.3).here, nil, "entry: in the merged ring, off every shape, not here")
 end
 
 -- The zone the player stands in leads when they carry its quests, though nothing is left there to pick up and another

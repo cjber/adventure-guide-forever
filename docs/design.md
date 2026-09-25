@@ -36,7 +36,7 @@ Forever pillars (Blizzard, *What's Next* panel recap):
 - **A steady route.** The route rebuilds on events (a quest taken, an objective done, a hand-in, a zone, a skip or a
   choice), never because the player walked. Each card keeps its order for the session (`route.orders`): its lap goes
   on until it ends, a new step goes where it adds the fewest yards, and a new order replaces it only when it saves
-  15% and 200 yd. The town or open area ring the player stands in leads; walking into a ring is checked every 2 s
+  15% and 200 yd. The town or open area the player stands in leads; walking into one is checked every 2 s
   only while the player moves. Leaving an area the player stands in takes 30 yd past its edge, so its border
   does not flicker.
 
@@ -412,9 +412,11 @@ no layer at all.
   guide draws on its own (§2.1); a ring's click chooses that card. Selecting a card turns the map to that journey's
   first zone (`WorldMapFrame:SetMapID`) and draws only its rings. Hovering a step row flashes its ring (`Pins.Ping`,
   Pins.lua:184-188).
-- **Area rings** (a quest's objective area, sized to it): step 1's is drawn whole, and every later one at half
-  alpha, so the next place reads first where rings overlap. The ring stays on the area's middle; its number sits
-  where the route enters it (§4.2). While the player stands in step 1's area it has no number, only its ring.
+- **Areas** (a quest's objective area): AGF draws no disc over one. The game's own objective mark shows the area,
+  and hovering it draws the area's true shape, where a disc round its middle covered ground no objective is on and
+  hid the map (no stock call shows that shape unhovered on Classic Era: `C_SuperTrack.SetSuperTrackedQuestID` is
+  retail's, and super-tracking would take the arrow from the waypoint). An area step's number sits where the route
+  enters it (§4.2); while the player stands in step 1's area it has no number.
   The choice going, however it goes, stops what AGF guides (Core.lua's `wasChosen` listener): the first card is
   previewed again, nothing guides until a click, and a route the player started in SPF stays.
 - **Layering.** A route ring marks "your destination", so it takes the stock level of the user-waypoint pin,
@@ -913,9 +915,12 @@ Build's route, so a rebuild stays inside its frame budget.
   fresh order replaces it only when it saves 15% and 200 yd.
 - **Entry point.** An objective area's step points where the route enters it, not at its middle: on the edge of its
   nearest part (an area is the union of its places' circles), 10 yd in, facing the previous stop or the player.
-  A long, thin area is entered at its near end. The ring stays on the area's middle.
-- **You're here.** The town (within 100 yd) or open area the player stands in leads. Standing in step 1's area,
-  nothing guides: no waypoint and no Shortest Path route until the area is done or they walk 30 yd out of it.
+  A long, thin area is entered at its near end.
+- **You're here.** The town (within 100 yd) or open area the player stands in leads: inside one of its shapes, the
+  data's objective circles, not a ring merged round them. Standing in step 1's area, nothing guides to it: no
+  waypoint, and Shortest Path is handed only the stops after it, so its line from the area to step 2 and its dots on
+  through the rest still show, numbered from 1. Without Shortest Path the later stops keep their numbered rings.
+  The whole route is handed again once the area is done or they walk 30 yd out of it.
 
 Contents of the sweep (#9):
 - delete `prefs.legacy` and `prefs.professions` (Core.lua:23-24, types/Namespace.lua:58-59, the spec);
@@ -1140,14 +1145,16 @@ Nothing below has been validated in game yet.
     "Skipped (1)" → "Show again" brings it back, also after `/reload`. Shift-clicking a "!" giver (pins and givers
     on) or an open search result adds its quests (the result wears a star) and a second shift-click takes them off;
     one in another zone shows on Loose ends as "1 you added". With the log two short of full, the first card reads
-    "Log nearly full: N you could drop" and its tooltip names them; nothing is abandoned. Later area rings are
-    fainter than step 1's.
+    "Log nearly full: N you could drop" and its tooltip names them; nothing is abandoned.
 33. More choices (§2.2): a level-19 Alliance character in Redridge with its quests taken on sees Redridge's story,
     Loose ends, "Head to Wetlands" and "Head to Duskwood", and at most six cards with no empty space under them; each
     one-line row chooses its card, and the empty-panel line shows only when there is no card at all.
 34. Areas (§4.2): with an objective area next, the waypoint and Shortest Path's line end at its near edge, not its
-    middle. Walking into the area clears the waypoint and stops the Shortest Path route; the ring stays, with no
-    number, and the tracker shows the counts. Walking 30 yd out brings the waypoint back, and finishing the area
+    middle, and no yellow disc covers the area: only the game's own objective mark, whose hover shows its shape.
+    Walking into the area (onto its objectives' ground, not just near its middle) clears the waypoint, and Shortest
+    Path's route no longer points into it but goes on from it: its line to step 2 and its dotted stops after, with
+    no stop on the area; without Shortest Path, steps 2 on keep their numbers and step 1 has none. The tracker shows
+    the counts. Walking 30 yd out brings the waypoint or the whole Shortest Path route back, and finishing the area
     moves on to the next stop.
 35. Adding (§2.18): shift-clicking a giver whose only quests are orange or red adds nothing, and its tooltip has no
     shift line. Heading on (§2.2): at 18 in Westfall, "Head to Redridge" comes before "Head to Ashenvale".
