@@ -385,4 +385,19 @@ do
 	clean(one, "one profession")
 end
 
+-- An empty bar (the PvP tab's 0 rank points, a zone with nothing done) hides its fill: the client reads a width of 0
+-- as unset and would draw the left-anchored fill at its atlas's width, across the window.
+do
+	local h = Load()
+	local Overview = h.ns.Overview
+	local bar = Overview.CreateBar(h.G.UIParent)
+	Overview.SetBar(bar, 18, 76, 200, 0)
+	equal(bar:IsShown(), true, "empty bar: the bar shows")
+	equal(bar.Fill:IsShown(), false, "empty bar: its fill does not")
+	Overview.SetBar(bar, 18, 76, 200, 0.5)
+	equal(bar.Fill:IsShown(), true, "half bar: its fill shows")
+	equal(bar.Fill:GetWidth() > 0, true, "half bar: with a width")
+	clean(h, "empty bar")
+end
+
 print(("window_spec: %d checks passed"):format(checks))
