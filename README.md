@@ -10,12 +10,16 @@ Where to go next, for your level, inside WoW: Forever's world map.<br>
 
 Levelling guides tell you exactly what to do, in order, as fast as possible. I wanted something looser. From your level, the quests you have finished and the ones in your log, this addon offers a few journeys to choose from, each with a reason, and a short route for the one you pick.
 
-It looks like it came with the game: a tab in the quest log beside Quests, cards drawn with retail's Journeys art, the game's own map pins and objective tracker, and Blizzard's quest details when you click a quest. With the tab closed it draws nothing on your map.
+It looks like it came with the game: a tab in the quest log beside Quests, cards drawn with retail's Journeys art, the game's own map pins and objective tracker, and Blizzard's quest details when you click a quest. With the tab closed it draws nothing on your map. Press Shift-J and the same guide opens in a window of its own, like the Adventure Guide in later expansions.
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png" width="640" alt="The Barrens on the world map with the Adventure Guide tab open on its overview: the header reads The Barrens, level 18, under it the class trainer and talent asides, The Barrens story featured with a round map of the zone, 2 ready to hand in and 1 in progress over its first three steps, then Loose ends and Head to Stonetalon Mountains side by side"></p>
 
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window.png" width="640" alt="The Adventure Guide window on its Journeys tab: the class trainer and talent lines along the top, The Barrens story featured over a piece of its zone map with Show on Map, its next three steps beside it, then Loose ends and Head to Stonetalon Mountains below"></p>
+
 ## Features
 
+- **Its own window**: `/agf`, Shift-J (if the key is free when you first log in) or a left-click on the addon compartment opens the Adventure Guide window: the same journeys, the suggested one with its next three steps and *Show on Map*, the lines for your trainer and talents along the top. Picking a card there picks it on the map too. The arrow in the guide's header on the map opens it as well.
+- **Professions tab**: with SkillUp Forever loaded, the window's second tab shows your next skill-ups for each crafting profession: the recipes to make, the steps to get there (click one for a waypoint) and the reagents you still need. Without it the tab says where they come from.
 - **Journeys**: up to six cards on the Adventure Guide tab. *Loose ends* counts what is ready to hand in, what is in progress and anything you added yourself; *Westfall story* follows the zone's quest chain; *Head to Duskwood* ("For level 21") and up to two more suggest the zones you've just come into range for, nearest first, once they have enough quests near your level; *Your calling* gathers your class quests ("Your class trainer has a task: The Hunter's Path"). A dungeon and your calling take the slots left, the one whose quests opened most recently first. Each card gives one reason from the quest data, such as "A chain begins with Gryan Stoutmantle", "Sentinel Hill needs hands" or "3 quests will soon turn grey". Until you pick one, the tab is an overview: the suggested card on top with a round piece of its zone's map, what is ready and in progress, and its first three steps, then the others two across, each with its own map and a line on how far along it is. Click a card to pick it, and its steps show in full, up to nine, with the other cards folded above it.
 - **Stories as chapters**: a chain reads "Chapter 2 of 4" only when the quest data proves its length, and "Chapter 2" otherwise. Later chapters are never named. Finishing a story of known length glows the tracker once and plays the game's stage-end sound.
 - **Choose and go**: choosing a card turns the map to its zone, previews its numbered steps and hands them to Shortest Path Forever as one journey, or sets the game's own waypoint without it. In combat it starts once the fight ends. The back arrow above the cards (or a right-click on the guide's title) brings back the overview. *Stop*, or going back, removes only what the guide set, so a waypoint you moved yourself stays. Once you're in a quest's area the waypoint steps aside until you're done there, and Shortest Path Forever keeps showing the way on to the next stops. A setting turns this off, so choosing only previews.
@@ -43,7 +47,7 @@ Install it from CurseForge or Wago Addons, or download the zip from [Releases](h
 
 ## Usage
 
-- `/agf` or `/adventureguide` opens the guide on the world map, as does the addon compartment on the minimap.
+- `/agf` or `/adventureguide` opens the Adventure Guide window, as do Shift-J (change it under *Key Bindings*) and a left-click on the addon compartment. A right-click on the compartment opens the guide on the world map.
 - `/agf audit` compares the quest data with the game and says where it came from.
 - `/agf dump` saves the guide's layout for a bug report; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua`.
 - The cog on the tab holds *Quests*, *Dungeons*, *Battlegrounds*, the map pins, the tracker and anything skipped. The rest is under *Settings > AddOns > Adventure Guide*, including whether choosing a journey or clicking the tracker title starts the route.
@@ -60,6 +64,7 @@ A quest the data cannot place, or whose requirements it cannot check, is never s
 
 - **Shortest Path Forever** plans the travel when you choose a journey and gives the tracker its travel line. Without it, choosing sets a waypoint and there is no travel line.
 - **Tweaks Forever** tells the guide when you have class spells to train.
+- **SkillUp Forever** fills the window's Professions tab.
 - **QuestieDB** (with Questie, or alone) supplies the quest data when loaded; see above.
 - **Questie**, **RestedXP** and other guides: the guide still works with them loaded, but the routes may overlap. Turn off *Show tracker section* in the settings if you follow another guide.
 

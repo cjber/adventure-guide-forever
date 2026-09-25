@@ -595,6 +595,14 @@
 ---@class AGFZoneIconModule
 ---@field Create fun(parent: Frame, size: number, badge: number): AGFZoneIcon a round zone icon, its art `size` across and the kind badge `badge`
 ---@field Set fun(icon: AGFZoneIcon, atlas: string, map?: integer, x?: number, y?: number, span: number) the zone's art round (x, y), `span` map pixels across; the plain ring with `atlas` centred when there is none
+---@field CreateBackdrop fun(parent: Frame): AGFZoneBackdrop a card's rectangular zone art, for the Adventure Guide window
+---@field SetBackdrop fun(backdrop: AGFZoneBackdrop, width: number, height: number, map?: integer, x?: number, y?: number, span: number): boolean the zone's art round (x, y) in width x height, `span` map pixels across; false and hidden when there is none
+
+---@class AGFZoneBackdrop : Frame
+---@field Clip Frame
+---@field Art AGFZoneIconArt
+---@field width number
+---@field key? string the zone and window drawn
 
 ---@class AGFNamespace
 ---@field ZoneIcon AGFZoneIconModule
@@ -949,3 +957,50 @@
 ---@field REST_HERE string the route's last stop, when rest is low and an innkeeper of the player's side stands there
 ---@field SETTING_WANDERER string hint strength: Wanderer names places and sets no waypoint, route or map mark
 ---@field SETTING_WANDERER_TOOLTIP string
+
+-- The Adventure Guide window (Window.lua, WindowJourneys.lua, WindowProfessions.lua; docs/design.md §2.19).
+
+-- The window's account-wide state in AdventureGuideForeverDB.window.
+---@class AGFWindowDB
+---@field position? {point: string, relativePoint: string, x: number, y: number} where the player left it
+---@field tab? string the key of the tab last shown
+---@field profession? integer the skill line the Professions tab last showed
+---@field keyOffered? boolean Shift-J was offered once (Window.OfferKey), taken or not
+
+---@class AGFNamespace
+---@field Overview AGFOverview
+---@field Window AGFWindow
+---@field WindowDB fun(): AGFWindowDB the window's saved state; an empty table before the save file loads
+---@field OpenWindow fun() builds the window the first time, then shows it
+---@field ToggleWindow fun() the key binding's and the addon compartment's left-click
+---@field WindowShown fun(): boolean
+
+---@class AGFStrings
+---@field TAB_JOURNEYS string
+---@field TAB_PROFESSIONS string
+---@field OPEN_IN_WINDOW string the panel header's button tooltip
+---@field BINDING_TOGGLE_WINDOW string the key binding's name
+---@field BINDING_SET string the chat line when Shift-J is set as the window's key
+---@field SHOW_ON_MAP string
+---@field NEXT_STEPS string
+---@field OPEN_RECIPES string
+---@field NEXT_RECIPES string
+---@field REAGENTS string
+---@field FROM_SKILLUP string the profession card's source tag
+---@field PROFESSION_RANGE string format: from rank, to rank
+---@field PROFESSION_RANGE_TITLE string format: rank, cap, the rank's title
+---@field PROFESSION_BAR string format: rank, cap
+---@field SEPARATOR string between the parts of a detail line
+---@field RECIPE_COUNT string format: the recipe, how many crafts
+---@field RECIPE_TRAIN_AT string format: the skill a recipe is trained at
+---@field RECIPE_LEARNED string
+---@field REAGENT_NEED string format: how many, the reagent
+---@field REAGENT_HAVE string format: how many the bags and bank hold
+---@field REAGENT_VENDOR string
+---@field REAGENT_CRAFT string
+---@field REAGENT_GATHER string
+---@field REAGENT_AUCTION string
+---@field CLICK_WAYPOINT_STEP string a profession step's tooltip, when SkillUp can route to it
+---@field SKILLUP_MISSING string the Professions tab without SkillUp Forever
+---@field SKILLUP_OUTDATED string the Professions tab with a SkillUp Forever too old for its API
+---@field SKILLUP_NONE string the Professions tab with no crafting profession to level

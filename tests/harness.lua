@@ -149,14 +149,24 @@ function harness.load(options)
 	for _, name in ipairs({
 		"EnableMouse",
 		"RegisterForClicks",
+		"RegisterForDrag",
+		"SetClampedToScreen",
+		"SetDontSavePosition",
 		"SetMaxLetters",
+		"SetMovable",
 		"SetShadowOffset",
+		"SetToplevel",
+		"StartMoving",
+		"StopMovingOrSizing",
 	}) do
 		Methods[name] = noop
 	end
 	-- Setters no spec reads but tools/screenshots.py draws: each stores its arguments under `field` for h.Describe.
 	for name, field in pairs({
 		SetBlendMode = "alphaMode",
+		SetDisabledFontObject = "disabledFont",
+		SetPushedAtlas = "pushedAtlas",
+		SetTextColor = "textColor",
 		SetClipsChildren = "clipsChildren",
 		SetHighlightFontObject = "highlightFont",
 		SetJustifyH = "justifyH",
@@ -455,6 +465,22 @@ function harness.load(options)
 	function Methods:SetHighlightAtlas(atlas)
 		self.highlightAtlas = atlas
 	end
+	function Methods:Enable()
+		self.disabled = false
+	end
+	function Methods:Disable()
+		self.disabled = true
+	end
+	function Methods:SetID(id)
+		self.id = id
+	end
+	function Methods:GetID()
+		return self.id or 0
+	end
+	-- Texture:SetGradient's colours, kept as plain numbers for tools/screenshots.py.
+	function Methods:SetGradient(orientation, from, to)
+		self.gradient = { orientation, { from.r, from.g, from.b, from.a or 1 }, { to.r, to.g, to.b, to.a or 1 } }
+	end
 	function Methods:SetNormalFontObject(font)
 		self.normalFont = font
 	end
@@ -645,6 +671,45 @@ function harness.load(options)
 			Internal("Texture", frame, "Icon")
 		end,
 		ObjectiveTrackerModuleTemplate = TrackerModule,
+		-- Mainline/SharedUIPanelTemplates.xml:566-662: the portrait's container is a real child (level 400) so a dump
+		-- has the portrait the addon sets and what it adds there; the title and close button are stock innards.
+		PortraitFrameTemplate = function(frame)
+			local container = NewRegion("Frame", nil, frame)
+			container.parentKey, frame.PortraitContainer, container.level = "PortraitContainer", container, 400
+			container:SetSize(1, 1)
+			container:SetPoint("TOPLEFT")
+			local portrait = container:CreateTexture(nil, "OVERLAY")
+			portrait.parentKey, container.portrait = "portrait", portrait
+			portrait:SetSize(62, 62)
+			portrait:SetPoint("TOPLEFT", -5, 7)
+			local mask = container:CreateMaskTexture(nil, "OVERLAY")
+			mask.parentKey, container.CircleMask = "CircleMask", mask
+			mask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask")
+			mask:SetPoint("TOPLEFT", portrait, "TOPLEFT", 2, 0)
+			mask:SetPoint("BOTTOMRIGHT", portrait, "BOTTOMRIGHT", -2, 4)
+			portrait:AddMaskTexture(mask)
+			Internal("FontString", frame, "TitleText")
+			frame.TitleContainer = { TitleText = frame.TitleText }
+			Internal("Button", frame, "CloseButton")
+			frame.SetTitle = function(self, title)
+				self.TitleText:SetText(title)
+			end
+			frame.GetPortrait = function(self)
+				return self.PortraitContainer.portrait
+			end
+		end,
+		-- Mainline/SharedUIPanelTemplates.xml (InsetFrameTemplate): the marble Bg and the inner NineSlice.
+		InsetFrameTemplate = function(frame)
+			Internal("Texture", frame, "Bg")
+			Internal("Frame", frame, "NineSlice")
+		end,
+		-- Mainline/SharedUIPanelTemplates.xml:932: parentArray="Tabs", its label the ButtonText.
+		PanelTabButtonTemplate = function(frame)
+			Internal("FontString", frame, "Text")
+			local parent = frame.parent
+			parent.Tabs = parent.Tabs or {}
+			parent.Tabs[#parent.Tabs + 1] = frame
+		end,
 	}
 
 	local ApplyTemplate
@@ -974,6 +1039,70 @@ function harness.load(options)
 		end,
 	}
 	G.SlashCmdList = {}
+	-- Mainline/SharedUIPanelTemplates.lua:439-640: tab i > 1 after tab i - 1, and the selected tab disabled.
+	G.PanelTemplates_SetNumTabs = function(frame, count)
+		frame.numTabs = count
+		for index = 2, count do
+			frame.Tabs[index]:SetPoint("TOPLEFT", frame.Tabs[index - 1], "TOPRIGHT", 3, 0)
+		end
+	end
+	G.PanelTemplates_SetTab = function(frame, id)
+		frame.selectedTab = id
+		for index = 1, frame.numTabs do
+			local tab = frame.Tabs[index]
+			tab.disabled = index == id
+			tab.disabledFont = index == id and "GameFontHighlightSmall" or tab.disabledFont
+		end
+	end
+	G.UISpecialFrames = {}
+	-- Key bindings: h.bindings maps a key to its action ("" when free); h.savedBindings counts SaveBindings calls.
+	h.bindings, h.savedBindings = options.bindings or {}, {}
+	G.GetBindingAction = function(key)
+		return h.bindings[key] or ""
+	end
+	G.GetBindingKey = function(action)
+		for key, bound in pairs(h.bindings) do
+			if bound == action then
+				return key
+			end
+		end
+	end
+	G.SetBinding = function(key, action)
+		h.bindings[key] = action
+		return true
+	end
+	G.GetCurrentBindingSet = function()
+		return 1
+	end
+	G.SaveBindings = function(set)
+		h.savedBindings[#h.savedBindings + 1] = set
+	end
+	-- C_CurrencyInfo.GetCoinTextureString (Blizzard_SharedXML/FormattingUtil.lua): copper as coins; plain here, since no
+	-- spec reads the icons.
+	G.C_CurrencyInfo = G.C_CurrencyInfo or {}
+	G.C_CurrencyInfo.GetCoinTextureString = function(copper)
+		local gold, silver, rest = math.floor(copper / 10000), math.floor(copper / 100) % 100, copper % 100
+		local parts = {}
+		parts[#parts + 1] = gold > 0 and gold .. "g" or nil
+		parts[#parts + 1] = silver > 0 and silver .. "s" or nil
+		parts[#parts + 1] = (rest > 0 or #parts == 0) and rest .. "c" or nil
+		return table.concat(parts, " ")
+	end
+	-- Items and spells: options.items maps an item ID to {name, icon}; anything else has neither yet.
+	local items = options.items or {}
+	G.C_Item = {
+		GetItemNameByID = function(itemID)
+			return items[itemID] and items[itemID].name
+		end,
+		GetItemIconByID = function(itemID)
+			return items[itemID] and items[itemID].icon
+		end,
+	}
+	G.C_Spell = {
+		GetSpellTexture = function()
+			return nil
+		end,
+	}
 	function h.Slash(message)
 		h.call(G.SlashCmdList.ADVENTUREGUIDEFOREVER, message)
 	end
@@ -1602,7 +1731,12 @@ function harness.load(options)
 	end
 
 	-- Sounds are recorded by kit ID (Blizzard_SharedXML/Mainline/SoundKitConstants.lua:125).
-	G.SOUNDKIT = { UI_SCENARIO_STAGE_END = 31757 }
+	G.SOUNDKIT = {
+		UI_SCENARIO_STAGE_END = 31757,
+		IG_CHARACTER_INFO_OPEN = 839,
+		IG_CHARACTER_INFO_CLOSE = 840,
+		IG_CHARACTER_INFO_TAB = 841,
+	}
 	G.PlaySound = function(kit)
 		h.sounds[#h.sounds + 1] = kit
 		return true
@@ -1726,6 +1860,9 @@ function harness.load(options)
 		GetAddOnMetadata = function(addon, field)
 			return h.metadata[addon] and h.metadata[addon][field]
 		end,
+		IsAddOnLoaded = function(addon)
+			return h.metadata[addon] ~= nil, h.metadata[addon] ~= nil
+		end,
 	}
 	if options.questiedb then
 		local fake = options.questiedb
@@ -1827,6 +1964,33 @@ function harness.load(options)
 		}
 	end
 
+	-- SkillUp Forever (its API.lua, version 1): options.skillup.professions is what Professions answers, the same
+	-- table each call as SkillUp's cache is; options.skillup.version overrides 1, and options.skillup.noAPI stands for
+	-- a SkillUp too old to have one. h.skillup records Navigate and OpenRecipes calls. No options.skillup is no
+	-- SkillUp Forever.
+	if options.skillup then
+		local fake = options.skillup
+		h.skillup = { navigate = {}, open = {} }
+		h.metadata.SkillUpForever = { Version = "test" }
+		G.SkillUpForever = fake.noAPI and {}
+			or {
+				API = {
+					version = fake.version or 1,
+					Professions = function()
+						return fake.professions or {}
+					end,
+					Navigate = function(skillLineID, stepIndex)
+						h.skillup.navigate[#h.skillup.navigate + 1] = { skillLineID, stepIndex }
+						return true
+					end,
+					OpenRecipes = function(skillLineID)
+						h.skillup.open[#h.skillup.open + 1] = skillLineID
+						return true
+					end,
+				},
+			}
+	end
+
 	--[[ Load the addon: the TOC's files in order, each given (addonName, ns) ]]
 
 	G.AdventureGuideForeverDB, G.AdventureGuideForeverCharDB = options.db, options.charDB
@@ -1907,6 +2071,7 @@ function harness.load(options)
 		"color",
 		"disabled",
 		"file",
+		"gradient",
 		"highlightAtlas",
 		"highlightFont",
 		"highlightLocked",
@@ -1922,6 +2087,7 @@ function harness.load(options)
 		"slice",
 		"subLevel",
 		"texCoord",
+		"textColor",
 		"wordWrap",
 	}
 	function h.Describe(region, entry)

@@ -20,6 +20,10 @@ globals = {
 	"SLASH_ADVENTUREGUIDEFOREVER1",
 	"SLASH_ADVENTUREGUIDEFOREVER2",
 	"SlashCmdList",
+	-- Window.lua: the key binding (Bindings.xml) and its names on the Key Bindings page
+	"AdventureGuideForever_ToggleWindow",
+	"BINDING_HEADER_ADVENTUREGUIDEFOREVER",
+	"BINDING_NAME_ADVENTUREGUIDEFOREVER_WINDOW",
 }
 
 read_globals = {
@@ -112,6 +116,19 @@ read_globals = {
 	"C_MapExplorationInfo",
 	-- Settings.lua
 	"Settings",
+	-- Window.lua and its tabs
+	"UISpecialFrames",
+	"PanelTemplates_SetNumTabs",
+	"PanelTemplates_SetTab",
+	"GetBindingAction",
+	"GetBindingKey",
+	"SetBinding",
+	"SaveBindings",
+	"GetCurrentBindingSet",
+	"SkillUpForever",
+	"C_Item",
+	"C_Spell",
+	"C_CurrencyInfo",
 	-- Dump.lua: frames Panel.lua and Tracker.lua create by name
 	"AdventureGuideForeverPanel",
 	"AdventureGuideForeverTab",

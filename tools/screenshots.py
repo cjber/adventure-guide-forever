@@ -251,6 +251,8 @@ def load_wowmock():
         wm.FONTS.setdefault("GameFontRedSmall", wm.Font(wm.FRIZQT, 10, (1.0, 0.1, 0.1), (1, -1)))
         # NumberFontNormalSmall: NumberFont_OutlineThick_Mono_Small (ARIALN at 12, outlined) in white.
         wm.FONTS.setdefault("NumberFontNormalSmall", wm.Font(wm.ARIALN, 12, (1, 1, 1), None, True))
+        # GameFontNormalHuge: SystemFont_Huge1 (FRIZQT at 20, shadowed) in gold.
+        wm.FONTS.setdefault("GameFontNormalHuge", wm.Font(wm.FRIZQT, 20, wm.NORMAL, (1, -1)))
     return wm
 
 
@@ -374,7 +376,7 @@ def draw_panel_button(canvas, entry, rect, layer):
         canvas.text(x, y, entry["text"], face, justify="CENTER", width=w, box_height=h)
 
 
-def tab_size(ui):
+def tab_size(ui, entry):
     """LargeSideTabButtonTemplate's size (SidePanelTabButtonMixin, Mainline/SharedUIPanelTemplates.lua:309):
     common-sidetab's width by its height less 5."""
     art = ui.atlas("common-sidetab")
@@ -425,7 +427,66 @@ def draw_scroll_frame(canvas, entry, rect, layer, child_height=None):
     wm.minimal_scrollbar(canvas, left, top, points["BOTTOMLEFT"][1] - top, visible, 0)
 
 
-# name: (draw(canvas, entry, rect, layer), its <Size> or None, its own <Anchors> or None, frameLevel)
+def draw_portrait_frame(canvas, entry, rect, layer):
+    """PortraitFrameTemplate (Blizzard_SharedXML/Mainline/PortraitFrame.xml): the rock Bg tiled TOPLEFT (2, -21) to
+    BOTTOMRIGHT (-2, 2) and the TopTileStreaks 43 high at TOPLEFT (6, -21) to TOPRIGHT (-2, -21) under everything;
+    after the frame's children (the addon's PortraitContainer is one), the metal NineSlice (frameLevel 500), the
+    TitleText and the CloseButton, as wowmock.portrait_frame_art draws them."""
+    ui, (x, y, w, h) = canvas.ui, rect
+    if layer == "BACKGROUND":
+        rock = ui.texture("interface/framegeneral/ui-background-rock.blp")
+        wm.tiled(canvas, rock, x + 2, y + 21, w - 4, h - 23, rock.width / ui.scale, rock.height / ui.scale)
+        canvas.draw(ui.atlas("_UI-Frame-TopTileStreaks"), x + 6, y + 21, w - 8, 43)
+    elif layer == "AFTER":
+        canvas.nine_slice(wm.PORTRAIT_FRAME_TEMPLATE_LAYOUT, x, y, w, h)
+        title = entry.get("stock", {}).get("TitleText", {}).get("text") or ""
+        canvas.text(x + 58, y + 1 + 5, title, font("GameFontNormal"), justify="CENTER", width=w - 58 - 24)
+        canvas.draw(ui.atlas("RedButton-Exit"), x + w - 2 - 24, y - 1, 24, 24)
+
+
+def draw_inset_frame(canvas, entry, rect, layer):
+    """InsetFrameTemplate (Mainline/SharedUIPanelTemplates.xml): the marble Bg tiled TOPLEFT (2, -2) to BOTTOMRIGHT
+    (-2, 2) at BACKGROUND -6, under the addon's own art, and the inner NineSlice over it."""
+    ui, (x, y, w, h) = canvas.ui, rect
+    if layer == "BACKGROUND":
+        marble = ui.texture("interface/framegeneral/ui-background-marble.blp")
+        wm.tiled(canvas, marble, x + 2, y + 2, w - 4, h - 4, marble.width / ui.scale, marble.height / ui.scale)
+    elif layer == "FRAME":
+        canvas.nine_slice(wm.INSET_FRAME_LAYOUT, x, y, w, h)
+
+
+def panel_tab_font(entry):
+    """The selected tab is disabled (PanelTemplates_SelectTab) and takes GameFontHighlightSmall; the others their
+    normal font (the addon greys a tab with nothing to show)."""
+    return font("GameFontHighlightSmall" if entry.get("disabled") else entry.get("normalFont") or "GameFontNormalSmall")
+
+
+def panel_tab_size(ui, entry):
+    """PanelTabButtonMixin:OnShow's TabResize: the text's width plus 20, at least the caps', 32 high."""
+    caps = ui.atlas("uiframe-tab-left").width + ui.atlas("uiframe-tab-right").width
+    return max(ui.canvas(1, 1).text_width(entry.get("text") or "", panel_tab_font(entry)) + 20, caps), 32
+
+
+def draw_panel_tab(canvas, entry, rect, layer):
+    """PanelTabButtonTemplate (Mainline/SharedUIPanelTemplates.xml:932), as wowmock.panel_tabs draws one: the
+    uiframe-activetab art while selected, else uiframe-tab, and the label at CENTER (0, -3) selected, else (0, 2)."""
+    ui, (x, y, w, _) = canvas.ui, rect
+    active = entry.get("disabled")
+    if layer == "BACKGROUND":
+        prefix = "uiframe-activetab" if active else "uiframe-tab"
+        left, right = ui.atlas(f"{prefix}-left"), ui.atlas(f"{prefix}-right")
+        left_x = x + (-1 if active else -3)
+        right_x = x + w + (8 if active else 7) - right.width
+        canvas.draw(left, left_x, y)
+        canvas.draw(right, right_x, y)
+        middle = ui.atlas(f"_{prefix}-center")
+        canvas.draw(middle, left_x + left.width, y, right_x - left_x - left.width, middle.height)
+    elif layer == "TEXT" and entry.get("text"):
+        top = y + 16 - 5 + (3 if active else -2)
+        canvas.text(x, top, entry["text"], panel_tab_font(entry), justify="CENTER", width=w, box_height=10)
+
+
+# name: (draw(canvas, entry, rect, layer), its <Size> by (ui, entry) or None, its own <Anchors> or None, frameLevel)
 def draw_alpha_highlight(canvas, entry, rect, layer):
     """AlphaHighlightButtonTemplate (Mainline/SharedUIPanelTemplates.xml:1587): no art of its own; its NormalTexture
     and PushedTexture are the button's regions, and its highlight (the same atlas, added) shows only under the mouse,
@@ -435,7 +496,10 @@ def draw_alpha_highlight(canvas, entry, rect, layer):
 STOCK = {
     "AlphaHighlightButtonTemplate": (draw_alpha_highlight, None, None, 0),
     "InputBoxVisualTemplate": (draw_input_box, None, None, 0),
+    "InsetFrameTemplate": (draw_inset_frame, None, None, 0),
     "LargeSideTabButtonTemplate": (draw_side_tab, tab_size, None, 0),
+    "PanelTabButtonTemplate": (draw_panel_tab, panel_tab_size, None, 0),
+    "PortraitFrameTemplate": (draw_portrait_frame, None, None, 0),
     "QuestLogBorderFrameTemplate": (
         draw_quest_log_border,
         None,
@@ -444,8 +508,8 @@ STOCK = {
     ),
     "ScrollFrameTemplate": (draw_scroll_frame, None, None, 0),
     "SearchBoxTemplate": (draw_search_box, None, None, 0),
-    "UIPanelButtonTemplate": (draw_panel_button, lambda ui: (40, 22), None, 0),
-    "UIPanelIconDropdownButtonTemplate": (draw_icon_dropdown, lambda ui: (15, 16), None, 0),
+    "UIPanelButtonTemplate": (draw_panel_button, lambda ui, entry: (40, 22), None, 0),
+    "UIPanelIconDropdownButtonTemplate": (draw_icon_dropdown, lambda ui, entry: (15, 16), None, 0),
 }
 
 
@@ -478,7 +542,7 @@ def layout_rects(ui, entries, known):
             return art.width, art.height
         recipe = stock(entry)
         if recipe and recipe[1]:
-            return recipe[1](ui)
+            return recipe[1](ui, entry)
         return 0, 0
 
     def defaults(entry):
@@ -506,6 +570,23 @@ def text_measures(ui, entries, rects):
     return measures
 
 
+def gradient(color, spec):
+    """Texture:SetGradient on a colour texture: its colour times the vertex colours, `minColor` to `maxColor` left
+    to right (HORIZONTAL) or bottom to top (VERTICAL), as a 256-step strip the draw stretches."""
+    orientation, low, high = spec
+    steps = [
+        tuple(round(255 * c * (lo + (hi - lo) * i / 255)) for c, lo, hi in zip(color, low, high, strict=True))
+        for i in range(256)
+    ]
+    if orientation == "HORIZONTAL":
+        image = wm.Image.new("RGBA", (256, 1))
+        image.putdata(steps)
+    else:
+        image = wm.Image.new("RGBA", (1, 256))
+        image.putdata(steps[::-1])
+    return image
+
+
 def draw_texture(canvas, entry, rect, alpha, scale=1, mask=None):
     """A texture in its rect. An atlas keeps its slice margins (the atlas's, else SetTextureSliceMargins') at its
     frame's `scale`; `mask` is (MaskTexture entry, rect) for one AddMaskTexture put on it."""
@@ -524,10 +605,14 @@ def draw_texture(canvas, entry, rect, alpha, scale=1, mask=None):
         else:
             target.draw(art, x, y, w, h, (1, 1, 1, alpha), blend)
     elif entry.get("file") is not None:
+        if entry.get("gradient"):
+            sys.exit(f"{entry['path']}: SetGradient on a file texture: draw it in draw_texture")
         image = texture(ui, entry["file"])
         if entry.get("texCoord"):
             image = wm.crop_coords(image, *entry["texCoord"])
         target.draw(image, x, y, w, h, (1, 1, 1, alpha), blend)
+    elif entry.get("color") and entry.get("gradient"):
+        target.draw(gradient(entry["color"], entry["gradient"]), x, y, w, h, (1, 1, 1, alpha), blend)
     elif entry.get("color"):
         r, g, b, a = entry["color"]
         target.fill(x, y, w, h, (r, g, b, a * alpha))
@@ -553,7 +638,10 @@ def draw_font_string(canvas, entry, rect, alpha):
     top = y + (h - face.height * len(lines)) / 2
     target = canvas.ui.canvas(canvas.width, canvas.height) if alpha < 1 else canvas
     for index, line in enumerate(lines):
-        target.text(x, top + index * face.height, line, face, justify=entry.get("justifyH") or "CENTER", width=w)
+        colour = tuple(entry["textColor"][:3]) if entry.get("textColor") else None
+        target.text(
+            x, top + index * face.height, line, face, colour, justify=entry.get("justifyH") or "CENTER", width=w
+        )
     if target is not canvas:
         target.image = wm.tint(target.image, (1, 1, 1, alpha))
         canvas.paste(target, 0, 0)
@@ -656,6 +744,7 @@ class Layout:
                 canvas.image = before
             else:
                 self.frame(canvas, kid, alpha)
+        art("AFTER")
         if entry.get("clipsChildren"):
             before.paste(canvas.image.crop(box), box[:2])
             canvas.image = before
@@ -756,6 +845,11 @@ def known_frames(rects):
 
 # ---------------------------------------------------------------------------------------------- the scenes
 
+WINDOW = "AdventureGuideForeverWindow"
+WINDOW_SIZE = (800, 496)  # Window.lua's WIDTH and HEIGHT
+WINDOW_MARGIN = 20  # the metal corners overhang the frame by up to 16
+WINDOW_TABS = 30  # the tabs hang below the frame
+WINDOWS = ("window", "window_professions")
 PLAYER = {"x": 0.52, "y": 0.30}  # tests/harness.lua's player position in The Barrens
 
 
@@ -1059,7 +1153,8 @@ def render(out):
         print(f"warning: Pillow {version}, not the pinned {PILLOW}: the PNGs may not match byte for byte")
     ui = wm.Ui(scale=SCALE)
     _, frame = map_frame(ui, wm.Image.new("RGBA", (1002, 668)), True)
-    data, rects = layout_pass(ui, ("panel", "journeys", "search"), known_frames(frame))
+    known = known_frames(frame) | {WINDOW: (WINDOW_MARGIN, WINDOW_MARGIN, *WINDOW_SIZE)}
+    data, rects = layout_pass(ui, ("panel", "journeys", "search", *WINDOWS), known)
     images = {}
 
     # The lead image: no card chosen yet, the overview of every card whole over its first steps.
@@ -1115,6 +1210,13 @@ def render(out):
     # A right-click on the block header: Blizzard_Menu opens the menu with its TOPLEFT at the cursor.
     fx, fy, _, _ = menu_rects["menu"]
     images["menu"] = wm.scene(ui, [(canvas, 0, 0), (menu, bx + 60 - fx, by + 8 - fy)])
+
+    # The Adventure Guide window (docs/design.md §2.19) on each of its tabs.
+    for scene in WINDOWS:
+        width, height = WINDOW_SIZE
+        canvas = ui.canvas(width + 2 * WINDOW_MARGIN, height + 2 * WINDOW_MARGIN + WINDOW_TABS)
+        Layout(data[scene]["layout"], rects[scene]).draw(canvas)
+        images[scene] = wm.scene(ui, [(canvas, 0, 0)])
 
     (out / "_compare").mkdir(parents=True, exist_ok=True)
     written = []

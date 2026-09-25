@@ -22,7 +22,7 @@ ns.L = {
 	QUESTIE_FIELD = "it lacks %s",
 	QUESTIE_ZONES = "it lacks its zone tables",
 	QUESTIE_FAILED = "reading it failed (%s)",
-	HELP_OPEN = "open the world map and use the Adventure Guide tab.",
+	HELP_OPEN = "/agf - open the Adventure Guide window; it is also a tab on the world map's quest log.",
 	HELP_AUDIT = "/agf audit - check the quest data against the game",
 	HELP_DUMP = "/agf dump - save the guide's layout for a bug report",
 	HAND_IN_WHEN = "Hand in when you're in %s",
@@ -273,6 +273,35 @@ ns.L = {
 	SETTING_WANDERER = "Wanderer: name places only",
 	SETTING_WANDERER_TOOLTIP = "The guide names where to go next and leaves the way to you: no waypoint, no route "
 		.. "with Shortest Path Forever and no marks on the map.",
+	-- The Adventure Guide window (Window.lua): its tabs, the Today strip, the featured card and the Professions tab.
+	TAB_JOURNEYS = "Journeys",
+	TAB_PROFESSIONS = "Professions",
+	OPEN_IN_WINDOW = "Open in window",
+	BINDING_TOGGLE_WINDOW = "Toggle the Adventure Guide window",
+	BINDING_SET = "Shift-J now opens the Adventure Guide window. Change it under Key Bindings.",
+	SHOW_ON_MAP = "Show on Map",
+	NEXT_STEPS = "Next steps",
+	OPEN_RECIPES = "Open Recipes",
+	NEXT_RECIPES = "Next recipes",
+	REAGENTS = "Reagents",
+	FROM_SKILLUP = "from SkillUp Forever",
+	PROFESSION_RANGE = "%d to %d",
+	PROFESSION_RANGE_TITLE = "%d to %d · %s",
+	PROFESSION_BAR = "%d/%d",
+	SEPARATOR = " · ",
+	RECIPE_COUNT = "%s  ×%d",
+	RECIPE_TRAIN_AT = "train at %d",
+	RECIPE_LEARNED = "learned",
+	REAGENT_NEED = "%d %s",
+	REAGENT_HAVE = "You have %d",
+	REAGENT_VENDOR = "Buy from a vendor",
+	REAGENT_CRAFT = "Craft it",
+	REAGENT_GATHER = "Gather it",
+	REAGENT_AUCTION = "Auction house",
+	CLICK_WAYPOINT_STEP = "Click to set a waypoint",
+	SKILLUP_MISSING = "Your next skill-ups come from SkillUp Forever. Install it and they show here.",
+	SKILLUP_OUTDATED = "Your next skill-ups come from SkillUp Forever. Update it and they show here.",
+	SKILLUP_NONE = "No crafting professions to level. Learn one at a trainer and it shows here.",
 }
 local L = ns.L
 
@@ -421,6 +450,19 @@ function ns.SetSetting(key, value)
 	end
 	-- Rebuilds the route (cheap) and wakes listeners (Panel/Pins/Tracker) to redraw with the new setting.
 	ns.Invalidate()
+end
+
+-- The Adventure Guide window's own account-wide state (Window.lua): where it was left, its tab, and whether the
+-- default key was offered. Not a setting: nothing rebuilds when it changes.
+---@return AGFWindowDB
+function ns.WindowDB()
+	if not db then
+		return {}
+	end
+	if type(db.window) ~= "table" then
+		db.window = {}
+	end
+	return db.window
 end
 
 ---@return AGFPrefs
@@ -1042,10 +1084,8 @@ SlashCmdList.ADVENTUREGUIDEFOREVER = function(msg)
 		Audit()
 	elseif command == "dump" then
 		ns.Dump()
-	elseif command == "" then
-		if ns.OpenPanel then
-			ns.OpenPanel()
-		end
+	elseif command == "" or command == "window" then
+		ns.OpenWindow()
 	else
 		ns.Print(L.HELP_OPEN)
 		ns.Print(L.HELP_AUDIT)
@@ -1053,7 +1093,14 @@ SlashCmdList.ADVENTUREGUIDEFOREVER = function(msg)
 	end
 end
 
-function AdventureGuideForever_OnAddonCompartmentClick()
+-- Left-click toggles the window; any other click opens the guide on the world map, as every click once did.
+---@param _ string the addon's name
+---@param mouseButton? string
+function AdventureGuideForever_OnAddonCompartmentClick(_, mouseButton)
+	if mouseButton == nil or mouseButton == "LeftButton" then
+		ns.ToggleWindow()
+		return
+	end
 	if not WorldMapFrame:IsShown() then
 		ToggleWorldMap()
 	end
