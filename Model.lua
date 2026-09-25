@@ -14,6 +14,7 @@ local CLOSE = 0.03 * 0.03
 -- waits.
 local VALUE_QUEST, VALUE_QUESTS_MAX, VALUE_GREY_RISK, VALUE_HAND_IN, VALUE_WEAK = 40, 8, 150, 60, -300
 local ORANGE = 3 -- levels above the player: the stock orange, where a quest gets hard alone
+local NONE = {} -- an empty list for the hot loops to walk without allocating one; never written
 
 function Model.IsGray(questLevel, playerLevel)
 	local range = GREEN_RANGE[math.min(#GREEN_RANGE, math.floor(playerLevel / 5) + 1)] or 4
@@ -51,6 +52,8 @@ end
 ---@class AGFIndex
 ---@field ids integer[]
 ---@field groups table<integer, integer[]>
+---@field sides table<integer, integer[]> by side, the IDs a player of it could ever take: its own side's or both
+---sides', with a start the data places, not repeatable (Check's first lines)
 ---@type table<AGFData, AGFIndex>
 local indexes = setmetatable({}, { __mode = "k" })
 
@@ -59,7 +62,7 @@ local function Index(data)
 	if index then
 		return index
 	end
-	index = { ids = {}, groups = {} }
+	index = { ids = {}, groups = {}, sides = { {}, {} } }
 	for id in pairs(data.quests) do
 		index.ids[#index.ids + 1] = id
 	end
@@ -70,6 +73,9 @@ local function Index(data)
 			local group = index.groups[quest.group] or {}
 			index.groups[quest.group] = group
 			group[#group + 1] = id
+		end
+		for side, ids in ipairs(ValidPlace(quest.start) and not quest.repeatable and index.sides or NONE) do
+			ids[#ids + 1] = (quest.side == 3 or quest.side == side) and id or nil
 		end
 	end
 	indexes[data] = index
@@ -107,7 +113,7 @@ local function Walk(data, prev, questID)
 		end
 		seen[id], members[#members + 1] = true, id
 		chapter = id == questID and #members or chapter
-		proven = proven and not quest.preAny and #(quest.pre or {}) <= 1
+		proven = proven and not quest.preAny and #(quest.pre or NONE) <= 1
 		id = quest.next
 	end
 	if #members < 2 or not chapter then
@@ -315,7 +321,7 @@ local function Check(data, player, completed, log, id, groups, level, lines, nam
 			return false
 		end
 	end
-	for _, pre in ipairs(quest.pre or {}) do
+	for _, pre in ipairs(quest.pre or NONE) do
 		met = pre > 0 and completed[pre] == true
 		if (lines or not met) and not Line(data, lines, met, "pre", pre, names) then
 			return false
@@ -330,7 +336,7 @@ local function Check(data, player, completed, log, id, groups, level, lines, nam
 			return false
 		end
 	end
-	for _, other in ipairs((quest.group and groups[quest.group]) or {}) do
+	for _, other in ipairs((quest.group and groups[quest.group]) or NONE) do
 		if other ~= id and (completed[other] or log[other]) and not Line(data, lines, false, "group", other, names) then
 			return false
 		end
@@ -398,7 +404,7 @@ local droppedIDs = {}
 ---@param prefs AGFPrefs
 local function ReadDropped(prefs)
 	droppedIDs = {}
-	for key in pairs(prefs.notInterested or {}) do
+	for key in pairs(prefs.notInterested or NONE) do
 		local id = type(key) == "string" and tonumber(key:match("^quest:(%d+)$"))
 		if id then
 			droppedIDs[id] = true
@@ -481,15 +487,18 @@ end
 ---@param far fun(map: integer): number
 local function Choices(data, player, completed, log, index, prefs, ahead, far)
 	local eligible, later, target, ranked, pinned = {}, {}, player.level + (ahead or 0), {}, prefs.pinned or {}
-	for id in pairs(prefs.quests and log or {}) do
+	for id in pairs(prefs.quests and log or NONE) do
 		ranked[#ranked + 1] = data.quests[id] and not Dropped(id) and id or nil
 	end
 	table.sort(ranked)
-	for _, id in ipairs(index.ids) do
+	for _, id in ipairs(index.sides[player.side] or index.ids) do
 		local quest = data.quests[id]
 		local instance = quest.dungeon ~= nil
+		-- The level and completion first: Eligible would say no to most for them, at more cost.
 		if
-			((instance and prefs.dungeons) or (not instance and prefs.quests))
+			quest.min <= target
+			and not completed[id]
+			and ((instance and prefs.dungeons) or (not instance and prefs.quests))
 			and not Dropped(id)
 			and Eligible(data, player, completed, log, id, index.groups, target)
 		then
@@ -623,6 +632,14 @@ end
 -- first, then those grey at the next level, then nearest the player's level, then by ID (docs/plan.md §7.3); the givers
 -- and the quest ShowQuest opens follow that order. One quest keeps the single step's title; several take the town's
 -- name, else their busiest giver's.
+-- Describe's sort key per quest ID, reused across calls: hand-in first, then grey at the next level, then the level
+-- gap, then the ID, packed into one exact number.
+---@type table<integer, number>
+local describeOrder = {}
+local function DescribeBefore(a, b)
+	return describeOrder[a] < describeOrder[b]
+end
+
 ---@param step AGFStep
 ---@param log table<integer, AGFLogQuest>
 local function Describe(data, log, player, step)
@@ -633,31 +650,22 @@ local function Describe(data, log, player, step)
 		step.detail = step.reason
 		return
 	end
-	local handin, risk, distance, optional = {}, {}, {}, true
-	for _, list in ipairs({ step.handins, step.pickups }) do
-		for _, id in ipairs(list) do
+	local optional, handins, pickups = true, step.handins or NONE, step.pickups or NONE
+	for pass = 1, 2 do
+		for _, id in ipairs(pass == 1 and handins or pickups) do
 			local level = QuestLevel(data, log, player, id)
-			handin[id], risk[id], distance[id] =
-				list == step.handins, GreyRisk(level, player), math.abs(level - player.level)
+			describeOrder[id] = ((pass - 1) * 2 + (GreyRisk(level, player) and 0 or 1)) * 2 ^ 40
+				+ math.abs(level - player.level) * 2 ^ 32
+				+ id
 			optional = optional and Optional(data.quests[id], level, player)
 		end
 	end
 	step.optional = optional or nil
-	local function Before(a, b)
-		if handin[a] ~= handin[b] then
-			return handin[a]
-		elseif risk[a] ~= risk[b] then
-			return risk[a]
-		elseif distance[a] ~= distance[b] then
-			return distance[a] < distance[b]
-		end
-		return a < b
-	end
-	table.sort(step.handins, Before)
-	table.sort(step.pickups, Before)
+	table.sort(step.handins, DescribeBefore)
+	table.sort(step.pickups, DescribeBefore)
 	local quests, givers, counts, group = {}, {}, {}, 0
-	for _, list in ipairs({ step.handins, step.pickups }) do
-		for _, id in ipairs(list) do
+	for pass = 1, 2 do
+		for _, id in ipairs(pass == 1 and handins or pickups) do
 			quests[#quests + 1] = id
 			local name, quest = step.spots[id].name, data.quests[id]
 			if not counts[name] then
@@ -685,10 +693,9 @@ local function Describe(data, log, player, step)
 		end
 	else
 		step.title = step.place
-		local parts = {}
-		parts[#parts + 1] = #step.handins > 0 and L.HUB_HAND_IN:format(#step.handins) or nil
-		parts[#parts + 1] = #step.pickups > 0 and L.HUB_PICK_UP:format(#step.pickups) or nil
-		step.reason = table.concat(parts, L.LIST_SEPARATOR)
+		local handing = #step.handins > 0 and L.HUB_HAND_IN:format(#step.handins) or nil
+		local picking = #step.pickups > 0 and L.HUB_PICK_UP:format(#step.pickups) or nil
+		step.reason = handing and picking and handing .. L.LIST_SEPARATOR .. picking or handing or picking or ""
 	end
 	step.detail = step.reason
 end
@@ -700,7 +707,7 @@ end
 ---@param step AGFStep
 local function Opens(data, player, completed, log, step)
 	local groups, follow = Index(data).groups, {}
-	for _, id in ipairs(step.hub and step.handins or {}) do
+	for _, id in ipairs(step.hub and step.handins or NONE) do
 		local nextID = data.quests[id] and data.quests[id].next
 		local quest = nextID and data.quests[nextID]
 		local after = setmetatable({ [id] = true }, { __index = completed })
@@ -733,7 +740,7 @@ local SLOTS = { monster = { 0, 3 }, object = { 0, 3 }, item = { 4, 7 }, event = 
 ---@return table<integer, AGFLogObjective|true>, boolean aligned
 local function OpenSlots(quest, entry)
 	local slots, open = {}, {}
-	for slot in pairs(quest.need or {}) do
+	for slot in pairs(quest.need or NONE) do
 		slots[#slots + 1], open[slot] = slot, true
 	end
 	local objectives = entry.objectives
@@ -744,7 +751,7 @@ local function OpenSlots(quest, entry)
 	local aligned, used = {}, {}
 	for _, objective in ipairs(objectives) do
 		local range, slot = SLOTS[objective.type], nil
-		for _, candidate in ipairs(range and slots or {}) do
+		for _, candidate in ipairs(range and slots or NONE) do
 			if not slot and not used[candidate] and candidate >= range[1] and candidate <= range[2] then
 				slot = candidate
 			end
@@ -793,9 +800,9 @@ local function Nodes(data, entry)
 		slots[#slots + 1] = slot
 	end
 	table.sort(slots)
-	for _, slot in ipairs(ValidPlace(entry) and {} or slots) do
+	for _, slot in ipairs(ValidPlace(entry) and NONE or slots) do
 		local best
-		for _, area in ipairs(quest.obj or {}) do
+		for _, area in ipairs(quest.obj or NONE) do
 			best = best or (area[1] == slot and area or nil)
 		end
 		local map = best and (best[5] or quest.zone)
@@ -931,7 +938,7 @@ local function LogSteps(data, player, log, ready, belongs, stops, steps, plan)
 				held[id] = steps[#steps]
 			end
 			local kind = (quest and (quest.elite or quest.dungeon)) and "dungeon" or "area"
-			for _, node in ipairs(place and nodes or {}) do
+			for _, node in ipairs(place and nodes or NONE) do
 				local area =
 					Gather(data, plan.areas, plan.anchors, steps, node, id, entry.title, kind, optional, Touches)
 				held[id] = held[id] or area
@@ -985,39 +992,54 @@ local UNKNOWN = 1000000 -- no way to measure: dearer than any crossing, so it ne
 ---@field leave {x: number, y: number}
 ---@field land {x: number, y: number}
 
----@return AGFPosition?
-local function Position(data, place, docks)
+-- A place's point in its frame, without a table: x, y, continent and whether the data places it on the Azeroth map.
+---@return number?, number, integer|string, boolean
+local function Point(data, place)
 	if not ValidPlace(place) then
-		return nil
+		return nil, 0, "", false
 	end
 	local map = data.maps and data.maps[place.map]
 	local shift = map and data.continents and data.continents[map.continent]
 	if not shift then
-		return { x = place.x, y = place.y, continent = "map " .. place.map, known = false }
+		return place.x, place.y, "map " .. place.map, false
 	end
-	return {
-		x = shift.x - map.cy + (place.x - 0.5) * map.sx,
-		y = shift.y - map.cx + (place.y - 0.5) * map.sy,
-		continent = map.continent,
-		known = true,
-		docks = docks,
-	}
+	return shift.x - map.cy + (place.x - 0.5) * map.sx, shift.y - map.cx + (place.y - 0.5) * map.sy, map.continent, true
 end
+
+---@return AGFPosition?
+local function Position(data, place, docks)
+	local x, y, continent, known = Point(data, place)
+	if not x then
+		return nil
+	end
+	return { x = x, y = y, continent = continent, known = known, docks = known and docks or nil }
+end
+
+-- Docks by side for the Plan under way (its `data`), so its cards share one list; nil outside a Plan.
+---@type {data: AGFData, [integer]: AGFFrameCrossing[]}?
+local planDocks
 
 -- Both directions of every crossing `side` may take whose continents the data places on the Azeroth map.
 ---@return AGFFrameCrossing[]
 local function Docks(data, side)
+	local kept = planDocks and planDocks.data == data and planDocks[side]
+	if kept then
+		return kept
+	end
 	local docks = {}
 	local function Frame(dock)
 		local shift = data.continents and data.continents[dock.continent]
 		return shift and { x = shift.x - dock.y, y = shift.y - dock.x }
 	end
-	for _, crossing in ipairs(data.crossings or {}) do
+	for _, crossing in ipairs(data.crossings or NONE) do
 		local a, b = Frame(crossing.a), Frame(crossing.b)
 		if a and b and HasBit(crossing.side, side) then
 			docks[#docks + 1] = { from = crossing.a.continent, to = crossing.b.continent, leave = a, land = b }
 			docks[#docks + 1] = { from = crossing.b.continent, to = crossing.a.continent, leave = b, land = a }
 		end
+	end
+	if planDocks and planDocks.data == data then
+		planDocks[side] = docks
 	end
 	return docks
 end
@@ -1032,9 +1054,10 @@ end
 ---@param b {map: integer, x: number, y: number}
 ---@return number?
 function Model.Yards(data, a, b)
-	local here, there = Position(data, a), Position(data, b)
-	if here and there and here.known and there.known and here.continent == there.continent then
-		return Yards(here, there)
+	local ax, ay, here, aKnown = Point(data, a)
+	local bx, by, there, bKnown = Point(data, b)
+	if aKnown and bKnown and here == there then
+		return math.sqrt((ax - bx) ^ 2 + (ay - by) ^ 2)
 	end
 end
 
@@ -1049,9 +1072,9 @@ local function Ready(data, log)
 		local quest = not Dropped(id) and data.quests[id]
 		local finish = entry.complete and quest and quest.finish
 		if finish and finish.hub then
-			local live, there = Position(data, entry), Position(data, finish)
-			if live and there and live.known and there.known and live.continent == there.continent then
-				ready[id] = Yards(live, there) <= AGREE and finish or nil
+			local yards = Model.Yards(data, entry, finish)
+			if yards then
+				ready[id] = yards <= AGREE and finish or nil
 			end
 		end
 	end
@@ -1070,14 +1093,8 @@ local function Locate(data, step, mapName)
 	elseif step.kind == "turnin" then
 		local quest = data.quests[step.quests[1]]
 		local finish = quest and quest.finish
-		local here, there = Position(data, step), finish and Position(data, finish)
-		local agree = here
-			and there
-			and here.known
-			and there.known
-			and here.continent == there.continent
-			and Yards(here, there) <= AGREE
-		step.place = agree and finish.name or nil
+		local yards = finish and Model.Yards(data, step, finish)
+		step.place = yards and yards <= AGREE and finish.name or nil
 	end
 end
 
@@ -1088,23 +1105,39 @@ local function HandInOnly(step)
 end
 
 ---@param a AGFPosition?
----@param b AGFPosition?
-local function Cost(a, b)
-	if not (a and b) or (a.continent ~= b.continent and not (a.known and b.known)) then
+local function CostTo(a, bx, by, bContinent, bKnown)
+	if not (a and bx) or (a.continent ~= bContinent and not (a.known and bKnown)) then
 		return UNKNOWN
 	end
-	if a.continent == b.continent then
-		return Yards(a, b)
+	local straight = math.sqrt((a.x - bx) ^ 2 + (a.y - by) ^ 2)
+	if a.continent == bContinent then
+		return straight
 	end
 	local best
-	for _, dock in ipairs(a.docks or {}) do
-		if dock.from == a.continent and dock.to == b.continent then
-			local via = Yards(a, dock.leave) + Yards(dock.land, b)
+	for _, dock in ipairs(a.docks or NONE) do
+		if dock.from == a.continent and dock.to == bContinent then
+			local via = Yards(a, dock.leave) + math.sqrt((dock.land.x - bx) ^ 2 + (dock.land.y - by) ^ 2)
 			best = (best and best < via) and best or via
 		end
 	end
 	-- No boat for this side between them: the straight line across the sea, as before the docks were known.
-	return CROSSING + (best or Yards(a, b))
+	return CROSSING + (best or straight)
+end
+
+---@param a AGFPosition?
+---@param b AGFPosition?
+local function Cost(a, b)
+	if not b then
+		return UNKNOWN
+	end
+	return CostTo(a, b.x, b.y, b.continent, b.known)
+end
+
+-- Whether the data places both on the Azeroth map, on different continents.
+local function Oversea(data, a, b)
+	local _, _, here, aKnown = Point(data, a)
+	local _, _, there, bKnown = Point(data, b)
+	return aKnown and bKnown and here ~= there
 end
 
 -- A town's name for the player: its flight master's town (before ", zone"), else the client's name for its map, else
@@ -1143,7 +1176,7 @@ local function Nearest(data, player, fits)
 	local docks = Docks(data, player.side)
 	local origin = Position(data, player, docks)
 	local best, bestCost, bestID
-	for id, npc in pairs(data.npcs or {}) do
+	for id, npc in pairs(data.npcs or NONE) do
 		if fits(npc) then
 			local cost = Cost(origin, Position(data, npc.place, docks))
 			if cost < UNKNOWN and (not best or cost < bestCost or (cost == bestCost and id < bestID)) then
@@ -1190,7 +1223,7 @@ local PROFESSION_SLOTS = 2 -- CMaNGOS MaxPrimaryTradeSkill's default: two profes
 local function Trainable(data, player, skill, rank)
 	for _, entry in ipairs(data.professions[skill].ranks) do
 		if entry.rank == rank then
-			return player.level >= entry.level and ((player.skills or {})[skill] or 0) >= entry.skill
+			return player.level >= entry.level and ((player.skills or NONE)[skill] or 0) >= entry.skill
 		end
 	end
 	return false
@@ -1218,7 +1251,7 @@ end
 ---@return AGFProfessionNudge[]
 local function Nudges(data, player)
 	local ids, nudges = {}, {}
-	for id in pairs(data.professions or {}) do
+	for id in pairs(data.professions or NONE) do
 		ids[#ids + 1] = id
 	end
 	table.sort(ids)
@@ -1266,7 +1299,7 @@ function Model.Profession(data, player, wanted)
 			return false
 		end
 		if not wanted or wanted(nudge.key) then
-			for _, npc in pairs(data.npcs or {}) do
+			for _, npc in pairs(data.npcs or NONE) do
 				if Teacher(npc) then
 					nudge.npc = (Nearest(data, player, Teacher))
 					return nudge
@@ -1298,7 +1331,7 @@ local function Rest(data, player, steps)
 	if not last or player.resting or not Model.RestLow(player) then
 		return
 	end
-	for _, npc in pairs(data.npcs or {}) do
+	for _, npc in pairs(data.npcs or NONE) do
 		if npc.inn and HasBit(npc.side, player.side) then
 			local yards = Model.Yards(data, last, npc.place)
 			if (last.hub ~= nil and npc.place.hub == last.hub) or (yards ~= nil and yards <= AGREE) then
@@ -1321,7 +1354,7 @@ local function TrainerSteps(data, player, prefs, key)
 		return steps
 	end
 	local ids, towns = {}, {}
-	for id, npc in pairs(data.npcs or {}) do
+	for id, npc in pairs(data.npcs or NONE) do
 		ids[#ids + 1] = npc.place.hub and Teaches(npc, player, train.level) and id or nil
 	end
 	table.sort(ids)
@@ -1583,7 +1616,7 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, c
 		if step.spots then
 			local best, bestCost
 			for _, id in ipairs(step.quests) do
-				local cost = Cost(from, Position(data, step.spots[id], docks))
+				local cost = CostTo(from, Point(data, step.spots[id])) -- multi-value: the spot's point
 				if not best or cost < bestCost then
 					best, bestCost = step.spots[id], cost
 				end
@@ -1633,9 +1666,9 @@ local function Pickable(quest)
 	if flags and (flags.event or flags.timed) then
 		return false
 	end
-	for slot in pairs(quest.need or {}) do
+	for slot in pairs(quest.need or NONE) do
 		local placed = false
-		for _, area in ipairs(quest.obj or {}) do
+		for _, area in ipairs(quest.obj or NONE) do
 			placed = placed or area[1] == slot
 		end
 		if not placed then
@@ -1651,14 +1684,14 @@ end
 ---@return AGFNode[]
 local function Planned(quest, id)
 	local slots, nodes = {}, {}
-	for slot in pairs(quest.need or {}) do
+	for slot in pairs(quest.need or NONE) do
 		slots[#slots + 1] = slot
 	end
 	table.sort(slots)
 	local finish = ValidPlace(quest.finish) and "town:" .. Hub(quest.finish) or nil
 	for _, slot in ipairs(slots) do
 		local best
-		for _, area in ipairs(quest.obj or {}) do
+		for _, area in ipairs(quest.obj or NONE) do
 			best = best or (area[1] == slot and area or nil)
 		end
 		local node = best
@@ -2051,7 +2084,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 		return nil
 	end
 	local rank = {}
-	for index, ident in ipairs(committedOrders and committedOrders[card] or {}) do
+	for index, ident in ipairs(committedOrders and committedOrders[card] or NONE) do
 		rank[ident] = index
 	end
 	local skipped, where, pinned = prefs.skipped or {}, {}, prefs.pinned or {}
@@ -2105,7 +2138,12 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 
 	-- Each new quest's worth against its detour: out to each of its nodes from the nearest of its town, the log's areas
 	-- and the other new nodes, and back, with the work there and the talk.
-	local ratio, sums, counts = {}, {}, {}
+	local ratio, sums, counts, all, owner = {}, {}, {}, {}, {}
+	for _, id in ipairs(ids) do
+		for _, node in ipairs(nodes[id]) do
+			all[#all + 1], owner[node] = node, id
+		end
+	end
 	for _, id in ipairs(ids) do
 		local quest, town = data.quests[id], picks[id]
 		local worth = Worth(quest, player.level)
@@ -2117,10 +2155,12 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 				for _, area in ipairs(areas) do
 					nearest = math.min(nearest, Gap(At(area), area.r, p, node.r))
 				end
-				for _, other in ipairs(ids) do
-					for _, near in ipairs(other ~= id and nodes[other] or {}) do
-						nearest = math.min(nearest, Gap(At(near), near.r, p, node.r))
+				-- Nothing is nearer than touching, so the search stops there.
+				for _, near in ipairs(all) do
+					if nearest == 0 then
+						break
 					end
+					nearest = owner[near] ~= id and math.min(nearest, Gap(At(near), near.r, p, node.r)) or nearest
 				end
 				yards = yards + 2 * nearest + node.objectives[1].need * WORK_YARDS
 			end
@@ -2167,7 +2207,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	for _, area in ipairs(areas) do
 		Tell(area)
 		local best = rank[area.key] and area.key or nil
-		for _, objective in ipairs(best and {} or area.objectives) do
+		for _, objective in ipairs(best and NONE or area.objectives) do
 			local key = ("area:%d:%d"):format(objective.id, objective.slot)
 			if rank[key] and not named[key] and (not best or rank[key] < rank[best]) then
 				best = key
@@ -2218,7 +2258,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 		-- A lap hands in only what it does: not an outdoor elite, whose work waits for a group, nor a lead whose work
 		-- the data places nowhere.
 		local quest = data.quests[id]
-		local planned = not quest.elite and (#nodes[id] > 0 or next(quest.need or {}) == nil)
+		local planned = not quest.elite and (#nodes[id] > 0 or next(quest.need or NONE) == nil)
 		if town and planned and ValidPlace(finish) and "town:" .. Hub(finish) == town.key then
 			table.insert(anchors[town.key].hands, id)
 		end
@@ -2262,7 +2302,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 		local anchor
 		if step.kind == "trainer" then
 			anchor = not trained and step.hub and anchors["town:" .. step.hub] or nil
-			for _, near in ipairs(not (anchor or trained) and list or {}) do
+			for _, near in ipairs(not (anchor or trained) and list or NONE) do
 				local cost = near.key ~= "" and near.pos and Cost(near.pos, At(step)) or UNKNOWN
 				anchor = anchor or (cost <= AGREE and near or nil)
 			end
@@ -2307,7 +2347,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	end
 	-- Its last area in the committed order: a town the order visits before it is one the lap under way takes in.
 	local ends = first
-	for _, stop in ipairs(underway and underway.stops or {}) do
+	for _, stop in ipairs(underway and underway.stops or NONE) do
 		ends = math.max(ends, stop.kind == "area" and rank[stop.key] or 0)
 	end
 	-- The town the player stands in comes first, whatever leads: its trainer, hand-ins and pickups are a word away. So
@@ -2410,7 +2450,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 		anchor.visited = anchor.visited or open ~= nil
 		local after, closing, closes = {}, {}, {}
 		for _, stop in ipairs(best.stops) do
-			for _, objective in ipairs(stop.objectives or {}) do
+			for _, objective in ipairs(stop.objectives or NONE) do
 				done[objective.id] = (done[objective.id] or 0) + 1
 				after[stop] = after[stop] or (open ~= nil and picks[objective.id] == open)
 			end
@@ -2472,7 +2512,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	local function Verify(steps)
 		local have, did, checked, left, owed = {}, {}, {}, count, 0
 		for _, step in ipairs(steps) do
-			for _, id in ipairs(step.kind == "town" and step.pickups or {}) do
+			for _, id in ipairs(step.kind == "town" and step.pickups or NONE) do
 				owed = owed + (picked[id] and 1 or 0)
 			end
 		end
@@ -2530,12 +2570,12 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	local function Holds(steps)
 		local have, did, total, left = {}, {}, {}, count
 		for _, step in ipairs(steps) do
-			for _, objective in ipairs(step.objectives or {}) do
+			for _, objective in ipairs(step.objectives or NONE) do
 				total[objective.id] = (total[objective.id] or 0) + 1
 			end
 		end
 		for _, step in ipairs(steps) do
-			for _, id in ipairs(step.handins or (step.kind == "turnin" and step.quests) or {}) do
+			for _, id in ipairs(step.handins or (step.kind == "turnin" and step.quests) or NONE) do
 				if
 					not (log[id] or have[id])
 					or (step.returns and step.returns[id] and (did[id] or 0) < (total[id] or 0))
@@ -2544,13 +2584,13 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 				end
 				left = left - 1
 			end
-			for _, id in ipairs(step.pickups or {}) do
+			for _, id in ipairs(step.pickups or NONE) do
 				have[id], left = true, left + 1
 				if left > cap then
 					return false
 				end
 			end
-			for _, objective in ipairs(step.objectives or {}) do
+			for _, objective in ipairs(step.objectives or NONE) do
 				local id = objective.id
 				if not (log[id] or have[id]) then
 					return false
@@ -2620,7 +2660,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 					end
 				end
 				for _, name in ipairs({ "planned", "returns" }) do
-					for id in pairs(b[name] or {}) do
+					for id in pairs(b[name] or NONE) do
 						a[name] = a[name] or {}
 						a[name][id] = true
 					end
@@ -2648,7 +2688,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	if order then
 		order.picked = {}
 		for _, step in ipairs(route) do
-			for _, id in ipairs(step.kind == "town" and step.pickups or {}) do
+			for _, id in ipairs(step.kind == "town" and step.pickups or NONE) do
 				order.picked[id] = true
 			end
 		end
@@ -2664,7 +2704,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 			Opens(data, player, completed, log, step)
 			local best, bestCost
 			for _, id in ipairs(step.quests) do
-				local cost = Cost(from, Position(data, step.spots[id], docks))
+				local cost = CostTo(from, Point(data, step.spots[id])) -- multi-value: the spot's point
 				if not best or cost < bestCost then
 					best, bestCost = step.spots[id], cost
 				end
@@ -2690,13 +2730,20 @@ local FITS = 3 -- the zones "that fit": the first this many of a ranking, where 
 local ZONE_AWAY = 3 -- a zone's cost on another continent than the player's (Rank)
 local ZONE_YARDS, ZONE_NEAR = 4000, 1.5 -- one a this many yards to a zone's middle on the player's own, at most this
 
+-- Each zone's middle, placed once (Far).
+---@type table<AGFData, table<integer, AGFPosition|false>>
+local middles = setmetatable({}, { __mode = "k" })
+
 -- A zone's distance cost from the player for Rank: none when the data cannot place them both, so the ranking never
 -- guesses.
 ---@return fun(map: integer): number
 local function Far(data, player)
 	local here = Position(data, player)
+	local kept = middles[data] or {}
+	middles[data] = kept
 	return function(map)
-		local there = here and here.known and Position(data, { map = map, x = 0.5, y = 0.5 })
+		kept[map] = kept[map] or Position(data, { map = map, x = 0.5, y = 0.5 }) or false
+		local there = here and here.known and kept[map] or nil
 		if not (here and there and there.known) then
 			return 0
 		elseif there.continent ~= here.continent then
@@ -2727,13 +2774,12 @@ end
 ---@param held table<integer, AGFStep|false>
 ---@return integer finished, integer away, integer underway
 local function Tally(data, player, log, held, prefs)
-	local finished, away, underway, here = 0, 0, 0, Position(data, player)
+	local finished, away, underway = 0, 0, 0
 	for id, step in pairs(held) do
 		if not (step and prefs.skipped[step.key]) then
-			local there = step and Position(data, step)
 			if not log[id].complete then
 				underway = underway + 1
-			elseif here and there and here.known and there.known and here.continent ~= there.continent then
+			elseif step and Oversea(data, player, step) then
 				away = away + 1
 			else
 				finished = finished + 1
@@ -2756,16 +2802,14 @@ local function Droppable(data, player, log)
 	if not player.logMax or player.logMax - count > LOG_ROOM then
 		return nil
 	end
-	local here = Position(data, player)
 	for id, entry in pairs(log) do
 		if data.quests[id] and not entry.complete then
 			local place = Nodes(data, entry)[1]
-			local there = place and Position(data, place)
 			if
 				Dropped(id)
 				or Model.IsGray(QuestLevel(data, log, player, id), player.level)
 				or not place
-				or (here and there and here.known and there.known and here.continent ~= there.continent)
+				or Oversea(data, player, place)
 			then
 				ids[#ids + 1] = id
 			end
@@ -2810,7 +2854,7 @@ end
 ---@return integer[]
 local function Added(data, player, completed, log, prefs, elsewhere)
 	local ids, groups = {}, Index(data).groups
-	for id in pairs(prefs.quests and prefs.pinned or {}) do
+	for id in pairs(prefs.quests and prefs.pinned or NONE) do
 		local quest = data.quests[id]
 		if
 			quest
@@ -2963,7 +3007,7 @@ local function Pickups(data, player, completed, log, ready, eligible, belongs, k
 		parts[#parts + 1] = underway > 0 and L.CARRY_IN_PROGRESS:format(underway) or nil
 		local drawn, later = {}, 0
 		for _, step in ipairs(steps) do
-			for _, id in ipairs(step.handins or (step.kind ~= "trainer" and step.quests) or {}) do
+			for _, id in ipairs(step.handins or (step.kind ~= "trainer" and step.quests) or NONE) do
 				drawn[id] = true
 			end
 		end
@@ -3144,8 +3188,8 @@ local function WorldReason(data, log, player, journey, chain)
 	end
 	-- At the level cap there is no next level, so nothing is about to turn grey.
 	local grey = 0
-	for _, step in ipairs(player.level < player.maxLevel and journey.steps or {}) do
-		for _, id in ipairs(step.pickups or {}) do
+	for _, step in ipairs(player.level < player.maxLevel and journey.steps or NONE) do
+		for _, id in ipairs(step.pickups or NONE) do
 			grey = grey + (GreyRisk(QuestLevel(data, log, player, id), player) and 1 or 0)
 		end
 	end
@@ -3242,7 +3286,7 @@ local function CallingJourney(data, player, completed, log, ready, eligible, pre
 	local laps = prefs.journey == "calling"
 	local L, belongs = ns.L, ForClass(player.classBit)
 	local chain, leadID, continues = Lead(data, completed, eligible, belongs)
-	for _, id in ipairs(leadID and {} or eligible) do
+	for _, id in ipairs(leadID and NONE or eligible) do
 		leadID = leadID or (belongs(data.quests[id]) and id or nil)
 	end
 	local calling, quests, lead =
@@ -3324,7 +3368,7 @@ local DIVERSION_ORDER = { calling = 1, dungeon = 2, chain = 3, battleground = 4 
 ---@param mapName? fun(map: integer): string?
 local function Battleground(data, player, prefs, mapName)
 	local L, dismissed, open = ns.L, prefs.notInterested or {}, {}
-	for _, bg in ipairs(player.battlegrounds or {}) do
+	for _, bg in ipairs(player.battlegrounds or NONE) do
 		local key = "battleground:" .. bg.id
 		if not dismissed[key] then
 			table.insert(open, key == prefs.journey and 1 or #open + 1, bg)
@@ -3415,7 +3459,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	-- optional, and no card offers a raid's.
 	local band = data.zones[player.map]
 	if band and band.min <= player.level and player.level <= band.max then
-		for _, id in ipairs(here and {} or eligible) do
+		for _, id in ipairs(here and NONE or eligible) do
 			local quest = data.quests[id]
 			here = here or (not quest.elite and not quest.raid and (quest.zone or quest.start.map) == player.map)
 		end
@@ -3644,14 +3688,14 @@ end
 ---@param instanceName? fun(id: integer): string? the client's name for an instance Map.ID; the data's otherwise
 ---@param last? AGFRoute the route before, whose committed orders (`orders`) this one keeps to
 function Model.Plan(data, player, completed, log, prefs, mapName, instanceName, last)
-	skippedSeen, committedOrders = {}, {}
-	for key, order in pairs(last and last.orders or {}) do
+	skippedSeen, committedOrders, planDocks = {}, {}, { data = data }
+	for key, order in pairs(last and last.orders or NONE) do
 		committedOrders[key] = order
 	end
 	local journeys, stranded = Model.Journeys(data, player, completed, log, prefs, mapName, instanceName)
 	local route = Route(journeys, prefs)
 	route.skipped, skippedSeen, route.stranded = skippedSeen, nil, stranded or nil
-	route.orders, committedOrders = committedOrders, nil
+	route.orders, committedOrders, planDocks = committedOrders, nil, nil
 	return route
 end
 
@@ -3676,7 +3720,7 @@ local function Retained(journey, prune)
 		local kept = prune(step)
 		changed = changed or kept ~= step
 		local chapterKept = false
-		for _, id in ipairs(kept and kept.quests or {}) do
+		for _, id in ipairs(kept and kept.quests or NONE) do
 			chapterKept = chapterKept or id == chapterID
 		end
 		if step.chapter and not chapterKept then
@@ -3793,7 +3837,7 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 			zone = tonumber(kept.key:match("^zone:(%d+)$"))
 			told = kept.holds or told
 			for _, step in ipairs(kept.steps) do
-				for _, id in ipairs(step.handins or (step.kind ~= "trainer" and step.quests) or {}) do
+				for _, id in ipairs(step.handins or (step.kind ~= "trainer" and step.quests) or NONE) do
 					drawn[id] = true
 				end
 			end
