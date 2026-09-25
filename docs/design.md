@@ -226,8 +226,10 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
     up to 3 more in its top fifth, where what is left is cleanup that the story's laps and Loose ends already hold.
     At 19 Duskwood (18-30) and the Wetlands (20-30) outrank Westfall and Darkshore (10-20), though those hold more.
   - **Density**: 0.25 less a quest, for up to 8, so a zone with enough for a lap edges ahead.
-  - **Distance** from the player to the zone's middle, at a like fit: 1 a 4000 yd on their own continent, up to 1.5;
-    3 on another. Nothing when the data can't place the player (an instance), so the ranking never guesses.
+  - **Distance** from the player to the zone's middle, at a like fit: 1 a 4000 yd on their own continent, up to 1.5.
+    On another it is the whole way through their side's docks, the crossing included (§4.1), so a zone next door
+    beats one overseas unless it fits clearly worse: at 18 in Westfall, Redridge comes before Ashenvale. Nothing when
+    the data can't place the player (an instance), so the ranking never guesses.
 - **Which diversion.** Each is ranked by the level its newest quest opened at (the highest `min` among its quests
   open now), highest first, so a level just gained or a bracket just opened takes the slot and an older one yields
   as the player levels on. A tie goes calling, dungeon, a way in, battleground. It is stateless: nothing is

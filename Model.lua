@@ -2735,7 +2735,6 @@ local NEXT_ZONES = 3 -- zone cards besides the story's, best ranked first
 local NEXT_ZONE_PICKUPS = 5 -- quests there two levels on, or the card is too thin to offer (docs/plan.md §1.5)...
 local NEXT_ZONE_NOW = 3 -- ...of which this many open now: a zone the player has just come of age for is offered early
 local FITS = 3 -- the zones "that fit": the first this many of a ranking, where the zone the player stands in is theirs
-local ZONE_AWAY = 3 -- a zone's cost on another continent than the player's (Rank)
 local ZONE_YARDS, ZONE_NEAR = 4000, 1.5 -- one a this many yards to a zone's middle on the player's own, at most this
 
 -- Each zone's middle, placed once (Far).
@@ -2743,10 +2742,11 @@ local ZONE_YARDS, ZONE_NEAR = 4000, 1.5 -- one a this many yards to a zone's mid
 local middles = setmetatable({}, { __mode = "k" })
 
 -- A zone's distance cost from the player for Rank: none when the data cannot place them both, so the ranking never
--- guesses.
+-- guesses. On their own continent it stops at ZONE_NEAR; across an ocean it is the whole way, through the docks
+-- their side sails from (Cost), so a zone next door beats one overseas unless it fits clearly worse.
 ---@return fun(map: integer): number
 local function Far(data, player)
-	local here = Position(data, player)
+	local here = Position(data, player, Docks(data, player.side))
 	local kept = middles[data] or {}
 	middles[data] = kept
 	return function(map)
@@ -2755,7 +2755,7 @@ local function Far(data, player)
 		if not (here and there and there.known) then
 			return 0
 		elseif there.continent ~= here.continent then
-			return ZONE_AWAY
+			return Cost(here, there) / ZONE_YARDS
 		end
 		return math.min(Yards(here, there) / ZONE_YARDS, ZONE_NEAR)
 	end

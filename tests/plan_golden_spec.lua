@@ -137,6 +137,15 @@ for _, fixture in ipairs(characters.list) do
 		equal(route.journeys[1].key, "zone:1440", "ne21_crosszone: Ashenvale's story, beside Darkshore")
 	end
 
+	-- Redridge, next door with 8 quests, is offered before Ashenvale, a boat away with 3: overseas costs the crossing.
+	if fixture.name == "human18_westfall" then
+		local at = {}
+		for index, journey in ipairs(route.journeys) do
+			at[journey.key] = index
+		end
+		equal(at["zone:1433"] < at["zone:1440"], true, "human18_westfall: Redridge before Ashenvale")
+	end
+
 	-- The reported case (design §2.10): standing in Redridge, where the level fits two levels on, the story is
 	-- Redridge's whether or not it was chosen, never Darkshore's.
 	if fixture.name == "human18_redridge" then
