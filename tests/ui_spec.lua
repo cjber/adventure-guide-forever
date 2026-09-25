@@ -1,6 +1,6 @@
 -- Run from the repository root: luajit tests/ui_spec.lua
 -- Headless UI checks (docs/plan.md §1.1) through tests/harness.lua. What they cannot reach is a /reload check.
-local harness = dofile("tests/harness.lua")
+local harness = dofile("tests/ui_stubs.lua") -- TEMPORARY: tests/harness.lua once guide batch 4 merges
 local checks = 0
 
 local function equal(actual, expected, label)
@@ -12,6 +12,18 @@ end
 
 local function same(actual, expected, label)
 	equal(table.concat(actual, "\n"), table.concat(expected, "\n"), label)
+end
+
+-- The route's places: a ring each, a town the route comes back to sharing its first visit's (docs/design.md §2.9).
+local function Places(route)
+	local seen, count = {}, 0
+	for _, step in ipairs(route.steps) do
+		local place = step.map .. ":" .. step.x .. ":" .. step.y
+		if not seen[place] then
+			seen[place], count = true, count + 1
+		end
+	end
+	return count
 end
 
 -- A step menu's lines with "Not this quest" (design §2.18) after "Skip for now": one button for a lone quest, else
@@ -930,7 +942,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		h.flush()
 	end
 	equal(h.counts.CreateFrame - created, 0, label .. ": frames created by 10 refreshes")
-	equal(#h.pins.AdventureGuideForeverPinTemplate, #h.ns.Route().steps, label .. ": the refreshes drew the route")
+	equal(#h.pins.AdventureGuideForeverPinTemplate, Places(h.ns.Route()), label .. ": the refreshes drew the route")
 	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
 	h.flush()
 	equal(IdleUpdates(h), 0, label .. ": per-frame work once the guide is closed")
@@ -953,7 +965,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	local first = Live()
 	provider:RefreshAllData()
 	equal(Live(), first, label .. ": a second refresh keeps the pin count")
-	equal(#h.pins.AdventureGuideForeverPinTemplate, #ns.Route().steps, label .. ": one ring per step on this map")
+	equal(#h.pins.AdventureGuideForeverPinTemplate, Places(ns.Route()), label .. ": one ring per place on this map")
 
 	local ring = h.pins.AdventureGuideForeverPinTemplate[1]
 	equal(ring.Number:GetAtlas(), "services-number-1", label .. ": the ring's numeral")
@@ -1138,7 +1150,7 @@ for _, case in ipairs({
 	h.flush()
 	local rings = #h.pins.AdventureGuideForeverPinTemplate
 	equal(rings <= ns.Model.MAX_STEPS, true, label .. ": at most 9 rings")
-	equal(rings, case.db.showMapPins and #ns.Route().steps or 0, label .. ": a ring per step, only with pins on")
+	equal(rings, case.db.showMapPins and Places(ns.Route()) or 0, label .. ": a ring per place, only with pins on")
 	h.map:SetMapID(1442)
 	local givers = #ns.Model.Givers(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), 1442)
 	equal(givers > 0, true, label .. ": Stonetalon has givers")
@@ -1625,6 +1637,11 @@ do
 			"button: Show quest",
 			"button: Skip for now",
 			"button: Choose another journey",
+			-- The chosen journey's order (docs/design.md §2.20).
+			"divider",
+			"button: " .. ns.L.ORDER_NEXT,
+			"button: " .. ns.L.ORDER_SOONER,
+			"button: " .. ns.L.ORDER_LATER,
 		}),
 		"step menu: a town with a hand-in shows it; choosing started the route, which Stop ends"
 	)
@@ -1666,6 +1683,10 @@ do
 			submenu[1],
 			submenu[2],
 			"button: Choose another journey",
+			"divider",
+			"button: " .. ns.L.ORDER_NEXT,
+			"button: " .. ns.L.ORDER_SOONER,
+			"button: " .. ns.L.ORDER_LATER,
 		}),
 		"step menu: the Skipped submenu"
 	)
@@ -2021,7 +2042,8 @@ do
 	end
 	equal(quests, 8, "hub tooltip: 8 quest lines")
 	equal(npcs, 7, "hub tooltip: one line per NPC shown")
-	equal(lines[#lines], "highlight: And 1 more", "hub tooltip: the rest counted")
+	equal(lines[#lines - 1], "highlight: And 1 more", "hub tooltip: the rest counted")
+	equal(lines[#lines], "instruction: " .. ns.L.ORDER_DRAG, "hub tooltip: then how to reorder")
 	same(colors[12], { 1, 1, 0 }, "hub tooltip: a quest 2 over the player is yellow")
 
 	-- The ring's tooltip lists the same, then the click line.
@@ -2535,9 +2557,12 @@ for _, spf in ipairs({ false, "v1" }) do
 		for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
 			rings[#rings + 1] = pin.step.key
 		end
+		-- A place the route comes back to keeps its first visit's ring.
+		local seen = {}
 		for _, step in ipairs(route.steps) do
-			if step.map == journey.map then
-				expected[#expected + 1] = step.key
+			local place = step.x .. ":" .. step.y
+			if step.map == journey.map and not seen[place] then
+				expected[#expected + 1], seen[place] = step.key, true
 			end
 		end
 		equal(table.concat(rings, " "), table.concat(expected, " "), label .. ": click " .. click .. " rings")

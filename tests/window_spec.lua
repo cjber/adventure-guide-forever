@@ -2,7 +2,7 @@
 -- The Adventure Guide window (Window.lua, WindowJourneys.lua, WindowProfessions.lua) through tests/harness.lua: its
 -- tabs, how it opens, the key it offers once, what the Journeys tab draws from the route, and SkillUp Forever's
 -- adapter present, missing and too old. What the harness cannot reach is a /reload check.
-local harness = dofile("tests/harness.lua")
+local harness = dofile("tests/ui_stubs.lua") -- TEMPORARY: tests/harness.lua once guide batch 4 merges
 local checks = 0
 
 local function equal(actual, expected, label)
@@ -60,14 +60,14 @@ do
 	for index, tab in ipairs(h.ns.Window.Tabs()) do
 		keys[index] = tab.key
 	end
-	equal(table.concat(keys, ","), "journeys,professions", "registry: one entry a tab, in TOC order")
+	equal(table.concat(keys, ","), "journeys,professions,pvp,completion", "registry: one entry a tab, in TOC order")
 	local window = Open(h)
 	clean(h, "open")
 	equal(window:IsShown(), true, "open: shown")
 	equal(window.stockTemplate, "PortraitFrameTemplate", "a portrait frame")
 	equal(window.TitleText:GetText(), h.ns.TITLE, "its title")
 	equal(h.G.UISpecialFrames[1], "AdventureGuideForeverWindow", "Escape closes it")
-	equal(#window.Tabs, 2, "a tab button a registered tab")
+	equal(#window.Tabs, 4, "a tab button a registered tab")
 	equal(window.Tabs[1]:GetText(), L.TAB_JOURNEYS, "tab 1 label")
 	equal(window.Tabs[2]:GetText(), L.TAB_PROFESSIONS, "tab 2 label")
 	local point, relativeTo, relativePoint, x, y = window.Tabs[1]:GetPoint(1)

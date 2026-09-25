@@ -861,7 +861,16 @@ The guide on its own, away from the world map, for a player who wants the whole 
   Muted}` call. A tab with nothing to show keeps its place and stays clickable, its label grey and its tooltip
   saying why.
 - **Today.** Up to four asides (§2.9 onwards) along the top of the inset, each a ring and its line, clicked and
-  right-clicked as on the map tab.
+  right-clicked as on the map tab. With five or more, three chips and a stock `UIPanelButtonTemplate` "+2 more" in
+  the last slot, whose context menu lists the rest; an entry goes where its chip would, greyed when it has no place.
+  Setting your hearth is one of them (Hints/Hearth.lua).
+- **Session.** A stock `WowStyle1DropdownTemplate` at the steps' top right: No limit, 15, 30 or 60 minutes, as
+  radios under "Time for this journey". Session.lua trims the route to the whole tasks that fit; under the steps
+  "About 25 min" (only when it has an estimate), and "No complete task fits this session." in their place when
+  none does. Only the chosen journey has a session.
+- **Go to entrance.** A dungeon card's button beside *Show on Map*, sending Tweaks Forever's entrance for its
+  instance to Shortest Path or the waypoint. Greyed, with the reason beside it and in the tooltip, when Tweaks
+  Forever is missing or too old, or has no entrance for the instance. It never changes which quests the card offers.
 - **Journeys.** The overview (§2.1) at the window's size: the first card featured over its zone's map with the
   "Suggested" tag, its counts, a bar only when there is progress, and *Show on Map*, which picks the card as a
   click does, starts or resumes the route, and opens the map on step 1; its next three steps beside it; up to four
@@ -874,8 +883,38 @@ The guide on its own, away from the world map, for a player who wants the whole 
   reagents, then *Open Recipes*. Without SkillUp the tab reads "Your next skill-ups come from SkillUp Forever.
   Install it and they show here."; with an older SkillUp it asks to update it; with no crafting profession it says
   there is none to level.
+- **PvP.** Over the battleground queue's own art for your side: your rank's badge, "Rank 2" (or Unranked, or
+  "Highest rank reached"), the rank points bar and the next reward, as the character pane's rank tab reads them. On
+  the right every battleground open at your level, with the nearest battlemaster of your side; a click goes there,
+  and one the data has no battlemaster for says so and goes nowhere. No honour, match count or queue time: the
+  client gives none.
+- **Completion.** Legacy Forever's API (version 1 or later) for your zone and the next ones on your journeys, at
+  most four: the zone over its map with each category's count ("Flight paths 2/2 · Account" ticked when done),
+  pending counted apart and never as done, the overall bar, its next three objectives (a click asks Legacy for the
+  waypoint; one with no place says "Location unknown"), and the other zones as cards that feature on a click.
+  Without Legacy the tab stays, greyed, and says to install it; an older Legacy, to update it. Subscribed only
+  while the window is shown.
 - **Cost.** Built on first open. While hidden it listens to nothing and redraws nothing; shown, it redraws on the
-  route, the asides and the few profession events, once a frame at most.
+  route, the asides, Legacy's changes and the few profession events, once a frame at most.
+
+### 2.20 Your order
+
+The suggested order is distance (§4.1), but the player can change it for the chosen journey.
+
+- **Moves.** Right-click a step (map tab or window) for *Do this next*, *Do this sooner* and *Do this later* after
+  the step menu, each greyed where Order.lua says the route would break (a hand-in before its pickup, past the log's
+  room). Or drag a row onto another with the stock move cursor: rows it can't land on dim while the drag lasts, and
+  a drop there does nothing. Row tooltips end "Drag to change the order".
+- **Showing it.** The chosen card's tag reads "Your order" in place of "Suggested", and "Back to suggested order", a
+  small gold text button under the steps (over them on the map tab) and the last menu entry, shows only while the
+  order is yours.
+- **Town checklist.** A town's row lists its givers under it, a line each ("Thork: pick up 2, turn in 0"), ticked
+  with the tracker's check once done and faded when skipped. *Skip this giver* in the town's menu skips one still
+  open for this visit.
+- **Kinds.** Each step's ring carries its kind at the lower right, the map's own marks: "!" for a pickup (or a town
+  with any), "?" for a hand-in, the objective mark, the tracking menu's trainer and battlemaster.
+- **Revisits.** A place the route comes back to keeps one map ring, numbered for its first visit, with "+1" at its
+  corner and a "Stop 5: Ratchet, The Barrens" line a visit in its tooltip.
 
 ## 3. Copy style sheet
 
@@ -1282,6 +1321,21 @@ Nothing below has been validated in game yet.
     line; Shortest Path's way on goes west to Lars, not east to Darkshire. Walk 30 yd out: the selection clears.
     Select another quest yourself, walk in again: yours stays. Turn off "Follow the quest you're working on": nothing
     is selected.
+44. Window, PvP (§2.19): the badge, bar and reward match the character pane's rank tab; a battleground row with a
+    battlemaster sets the waypoint; the art matches your side.
+45. Window, Completion: with Legacy Forever loaded the counts match Legacy's own window, a target click sets its
+    waypoint, and the numbers change while the window is open. Disable Legacy: the tab greys, stays clickable, and
+    says to install it.
+46. Go to entrance: on a Ragefire Chasm card with Tweaks Forever loaded the button routes to the entrance; without
+    it the button greys and the note says to install it.
+47. Today: with five asides, "+2 more" opens a menu in the stock style whose entries route like the chips.
+48. Session: the dropdown looks like the stock one, ticks the length picked, trims the steps, and "About N min"
+    matches; a length nothing fits shows the empty line.
+49. Your order (§2.20): drag a row with the move cursor, refused rows dim, the drop reorders the steps on both the
+    map tab and the window, the tag reads "Your order", and "Back to suggested order" restores it. The step menu's
+    three moves grey where refused. Dragging does nothing on the overview.
+50. Kinds and checklist: each ring's badge sits at its lower right, as Shortest Path's stops do; a town's givers tick
+    off as you hand in; a revisited town's map ring shows "+1" and both visits in its tooltip.
 
 ## 9. Open questions that need client probes
 

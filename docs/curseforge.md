@@ -12,6 +12,10 @@ Or in its own window, with a Professions tab when SkillUp Forever is loaded:
 
 ![The Professions tab with SkillUp Forever loaded: Leatherworking 142 to 150, its next two recipes, three next steps and the reagents to gather, with a picker for Tailoring at the top right](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_professions.png)
 
+![The Completion tab with Legacy Forever loaded: The Barrens over its map with areas, flight paths, dungeons, reputations and quests counted, its next three objectives beside it, and Stonetalon Mountains and Durotar as cards below](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_completion.png)
+
+![The Barrens story in your own order: the card tagged Your order, Crossroads as step 1 with its quest givers listed under it, Sergra Darkthorn ticked, and Back to suggested order under the steps](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_order.png)
+
 The tracker keeps the step you are on in view, above your quests:
 
 ![The objective tracker's Adventure Guide section: Crossroads, The Barrens, 1 to hand in, 8 to pick up, Opens the next chapter here, About 6 min away, Next: Regthar Deathgate](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png)
@@ -20,6 +24,11 @@ The tracker keeps the step you are on in view, above your quests:
 
 - **Its own window**: `/agf`, Shift-J or the addon compartment. The same journeys and lines as the map tab, and picking a card in one picks it in the other. *Show on Map* takes you to the first step.
 - **Professions tab**: with SkillUp Forever, your next recipes, steps and reagents for each crafting profession.
+- **PvP tab**: your rank, its next reward, and the battlegrounds open to you with the nearest battlemaster.
+- **Completion tab**: with Legacy Forever, how much of your zone you've done and what's next there.
+- **Session length**: 15, 30 or 60 minutes, and the route keeps what you can finish in that time.
+- **Your order**: drag steps around, or right-click for *Do this next*. The guide greys out moves that would break the route, and a town's step ticks off each quest giver there.
+- **Go to entrance**: with Tweaks Forever, a dungeon card takes you to the way in.
 - **Journeys**: up to six cards. Tie up the loose ends in your log, follow a zone's story, pick one of the zones that just came into range for your level, or take up your class quests. Until you pick one, the tab shows the suggested card with its first steps and the others two across, each with a round piece of its zone's map; pick one for its full route, up to nine steps.
 - **Stories as chapters**: "Chapter 2 of 4" only when the data proves the chain's length. Later chapters are never named.
 - **Choose and go**: choosing a card previews its steps on the map and hands the route to Shortest Path Forever, boats and flight paths included, or sets the game's own waypoint. In a quest's area the waypoint steps aside until you're done there, and Shortest Path Forever keeps showing the way on. A setting makes choosing preview only. The back arrow brings back the overview. *Stop* never removes a waypoint you placed yourself.

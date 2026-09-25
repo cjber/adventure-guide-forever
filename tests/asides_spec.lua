@@ -1,7 +1,7 @@
 -- Run from the repository root: luajit tests/asides_spec.lua
 -- The asides channel (Asides.lua, docs/design.md §2.11) through tests/harness.lua: providers, one aside per surface,
 -- Skip, Not interested, Go, and the tracker's one line while no journey is chosen.
-local harness = dofile("tests/harness.lua")
+local harness = dofile("tests/ui_stubs.lua") -- TEMPORARY: tests/harness.lua once guide batch 4 merges
 local checks = 0
 
 local function equal(actual, expected, label)

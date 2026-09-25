@@ -339,6 +339,23 @@ def draw_icon_dropdown(canvas, entry, rect, layer):
         canvas.draw(icon, x + (w - icon.width) / 2, y + (h - icon.height) / 2)
 
 
+def draw_dropdown(canvas, entry, rect, layer):
+    """WowStyle1DropdownTemplate (Blizzard_Menu/Mainline/MenuTemplates.xml:3): 120x25; common-dropdown-textholder
+    from TOPLEFT (-8, 7) to BOTTOMRIGHT (8, -9) (BACKGROUND); common-dropdown-a-button at its atlas size at RIGHT
+    (1, -3), and Text (GameFontHighlight, 10 high, justifyH LEFT) from TOPLEFT (8, -8) to the arrow's LEFT (OVERLAY)."""
+    ui, (x, y, w, h) = canvas.ui, rect
+    if layer == "BACKGROUND":
+        canvas.draw(ui.atlas("common-dropdown-textholder"), x - 8, y - 7, w + 16, h + 16)
+    elif layer == "OVERLAY":
+        arrow = ui.atlas("common-dropdown-a-button")
+        ax, ay = x + w + 1 - arrow.width, y + h / 2 + 3 - arrow.height / 2
+        canvas.draw(arrow, ax, ay)
+        text = ((entry.get("stock") or {}).get("Text") or {}).get("text")
+        if text:
+            face = button_font(entry, "GameFontHighlight", "GameFontHighlight", "GameFontDisable")
+            canvas.text(x + 8, y + 8, cut(canvas, text, face, ax - x - 8), face, box_height=10)
+
+
 def draw_quest_log_border(canvas, entry, rect, layer):
     """QuestLogBorderFrameTemplate (Blizzard_UIPanels_Game/Mainline/QuestMapFrame.xml:287): TOPLEFT (-3, 7) to
     BOTTOMRIGHT (3, -6) of its parent at frameLevel 100; questlog-frame over all of it (BORDER) and
@@ -510,6 +527,7 @@ STOCK = {
     "SearchBoxTemplate": (draw_search_box, None, None, 0),
     "UIPanelButtonTemplate": (draw_panel_button, lambda ui, entry: (40, 22), None, 0),
     "UIPanelIconDropdownButtonTemplate": (draw_icon_dropdown, lambda ui, entry: (15, 16), None, 0),
+    "WowStyle1DropdownTemplate": (draw_dropdown, lambda ui, entry: (120, 25), None, 0),
 }
 
 
@@ -849,7 +867,17 @@ WINDOW = "AdventureGuideForeverWindow"
 WINDOW_SIZE = (800, 496)  # Window.lua's WIDTH and HEIGHT
 WINDOW_MARGIN = 20  # the metal corners overhang the frame by up to 16
 WINDOW_TABS = 30  # the tabs hang below the frame
-WINDOWS = ("window", "window_professions")
+WINDOWS = (
+    "window",
+    "window_professions",
+    "window_pvp",
+    "window_completion",
+    "window_missing",
+    "window_today",
+    "window_session",
+    "window_empty",
+    "window_order",
+)
 PLAYER = {"x": 0.52, "y": 0.30}  # tests/harness.lua's player position in The Barrens
 
 

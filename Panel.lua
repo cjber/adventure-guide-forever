@@ -48,6 +48,9 @@ local SEARCH_MIN, SEARCH_ROWS, WHY_LINES, RESULT_HEIGHT, WHY_HEIGHT = 3, 10, 6, 
 -- The quest log's own geometry: a 29px search bar above the list, a 40px footer below it for the Go button.
 local TOP_BAR = 29
 local SKIPPED_HEIGHT = 16
+-- A step's kind badge (Overview.CreateBadge): on a row's 26 ring, and on a preview's 18.
+local BADGE, BADGE_OUT, PREVIEW_BADGE = 14, 3, 10
+local ORDER_HEIGHT, SESSION_EMPTY_HEIGHT, CHECK_LEFT = 16, 30, 46
 local ASIDE_HEIGHT, ASIDE_GAP = 14, 2
 local FOOTER = 40
 -- The overview (docs/design.md §2.2), with no card chosen: the first card featured over its first steps, then the
@@ -123,6 +126,15 @@ local track
 local skippedButton
 ---@type Texture[]
 local squares = {}
+-- The chosen journey's order line over its rows while the order is the player's (docs/design.md §2.20).
+---@type Frame
+local orderLine
+-- The empty session's line in place of the rows.
+---@type FontString
+local sessionEmpty
+-- The town checklist's lines under their rows.
+---@type AGFCheckLine[]
+local checks = {}
 
 -- The aside's line above the cards.
 ---@class AGFSkipButton : Button
@@ -134,7 +146,7 @@ local squares = {}
 ---@field Skip AGFSkipButton
 ---@field aside? AGFAside the aside it draws
 
----@class AGFRouteRow : Button
+---@class AGFRouteRow : Button, AGFDraggableRow
 ---@field Selected Texture
 ---@field Ring Texture
 ---@field Number Texture
@@ -143,6 +155,7 @@ local squares = {}
 ---@field Group Texture
 ---@field Tag FontString
 ---@field SkipButton AGFSkipButton
+---@field Kind Texture the step's kind, badged on its ring
 ---@field step? AGFStep
 ---@field index? integer
 
@@ -241,6 +254,10 @@ local function CreateRow(parent)
 	row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	row:SetScript("OnClick", RowClick)
 	HoverOnly(row.SkipButton, row)
+	row.Kind = Overview.CreateBadge(row, row.Ring, BADGE, BADGE_OUT)
+	Overview.Draggable(row, rows, function()
+		Refresh()
+	end)
 	return row
 end
 
@@ -252,6 +269,7 @@ end
 ---@field Number Texture
 ---@field Title FontString
 ---@field Detail FontString
+---@field Kind Texture
 ---@field step? AGFStep
 ---@field index? integer
 
@@ -283,6 +301,7 @@ local function CreatePreview(parent)
 	row:SetScript("OnLeave", GameTooltip_Hide)
 	row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	row:SetScript("OnClick", RowClick)
+	row.Kind = Overview.CreateBadge(row, row.Ring, PREVIEW_BADGE, 2)
 	return row
 end
 
@@ -646,6 +665,27 @@ local function BuildJourneys(parent, below)
 	for index = 1, SEARCH_ROWS do
 		results[index] = CreateResult(list)
 	end
+	-- "Your order" over the chosen journey's rows while the player has moved one, and the way back as a small gold
+	-- text button (docs/design.md §2.20).
+	orderLine = CreateFrame("Frame", nil, list)
+	orderLine:SetHeight(ORDER_HEIGHT)
+	local tag = orderLine:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+	tag:SetPoint("LEFT", 4, 0)
+	tag:SetText(L.ORDER_CUSTOM)
+	local reset = CreateFrame("Button", nil, orderLine) --[[@as Button]]
+	reset:SetHeight(ORDER_HEIGHT)
+	reset:SetNormalFontObject("GameFontNormalSmall")
+	reset:SetHighlightFontObject("GameFontHighlightSmall")
+	reset:SetText(L.ORDER_RESET)
+	reset:SetWidth(reset:GetTextWidth() + 4)
+	reset:SetPoint("RIGHT", -4, 0)
+	reset:SetScript("OnClick", function()
+		ns.Order.Reset()
+	end)
+	sessionEmpty = list:CreateFontString(nil, "ARTWORK", "GameFontDisable")
+	sessionEmpty:SetPoint("RIGHT", -10, 0)
+	sessionEmpty:SetJustifyH("LEFT")
+	sessionEmpty:SetText(L.SESSION_EMPTY)
 	-- "Skipped (n)" under the cards (design §2.1), a small gold text button that opens the Skipped submenu on its own.
 	skippedButton = CreateFrame("Button", nil, list) --[[@as Button]]
 	skippedButton:SetHeight(SKIPPED_HEIGHT)
@@ -797,6 +837,7 @@ local function RefreshRow(row, step, index)
 	row.Detail:SetWidth(math.min(row.Detail:GetUnboundedStringWidth(), room))
 	row:SetAlpha(step.optional and 0.6 or 1)
 	row.Selected:SetShown(index == 1)
+	Overview.SetVerbIcon(row.Kind, step)
 end
 
 -- `state`: "shown" (whole: the guide drew it with none chosen), "chosen" (whole and lit) or "compact" (another is
@@ -905,12 +946,30 @@ local function LayoutTrack(journey, top)
 	return top + SQUARE + CARD_GAP
 end
 
--- The shown card's rows, from `top` down; `hidden` (a search, or no card) hides them all.
+-- The shown card's rows, from `top` down, each town's checklist under its row; over them the order line while the
+-- chosen journey's order is the player's, or in their place the empty session's line. `hidden` (a search, or no
+-- card) hides them all.
 ---@param route AGFRoute
 ---@param top number
 ---@param hidden? boolean
 ---@return number top below the last row shown
 local function LayoutRows(route, top, hidden)
+	---@cast orderLine -?
+	---@cast sessionEmpty -?
+	local custom = not hidden and route.chosen and ns.Order.IsCustom()
+	orderLine:SetShown(custom)
+	if custom then
+		orderLine:SetPoint("TOPLEFT", 6, -top)
+		orderLine:SetPoint("TOPRIGHT", -6, -top)
+		top = top + ORDER_HEIGHT + ROW_GAP
+	end
+	local empty = not hidden and route.chosen and ns.Session.Info().empty
+	sessionEmpty:SetShown(empty)
+	if empty then
+		sessionEmpty:SetPoint("TOPLEFT", 10, -(top + 4))
+		top = top + SESSION_EMPTY_HEIGHT
+	end
+	local check = 1
 	for index, row in ipairs(rows) do
 		---@type AGFStep?
 		local step = not hidden and route.steps[index] or nil
@@ -921,8 +980,22 @@ local function LayoutRows(route, top, hidden)
 			row:SetPoint("TOPLEFT", 6, -top)
 			row:SetPoint("TOPRIGHT", -6, -top)
 			top = top + ROW_HEIGHT + ROW_GAP
+			if step.checklist then
+				---@cast list -?
+				top, check = Overview.LayoutChecklist(
+					checks,
+					check,
+					list,
+					step,
+					CHECK_LEFT,
+					top,
+					OVERVIEW_WIDTH - CHECK_LEFT - 6
+				)
+				top = top + ROW_GAP
+			end
 		end
 	end
+	Overview.HideChecklist(checks, check)
 	return top
 end
 
@@ -1085,6 +1158,7 @@ local function RefreshPreview(row, step, index)
 	row.Detail:SetShown(left >= 30)
 	row.Detail:SetWidth(math.max(math.min(row.Detail:GetUnboundedStringWidth(), left), 0))
 	row:SetAlpha(step.optional and 0.6 or 1)
+	Overview.SetVerbIcon(row.Kind, step)
 end
 
 -- With no card chosen (docs/design.md §2.2): the first card featured with its first steps, the divider, then the
