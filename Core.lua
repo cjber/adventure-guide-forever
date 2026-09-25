@@ -121,7 +121,8 @@ ns.L = {
 	-- A quest the route leaves out joins it with a shift-click, in the search or on the map, and leaves the same way.
 	SHIFT_ADD = "Shift-click to add it to your route",
 	SHIFT_REMOVE = "Shift-click to take it off your route",
-	-- With no card chosen the guide draws the first (docs/design.md §2.2); the header's back arrow goes back to that.
+	-- With no card chosen the guide shows every card whole (docs/design.md §2.1); the header's back arrow goes back to
+	-- that overview.
 	ALL_SUGGESTIONS = "All suggestions",
 	BACK_STOPS_ROUTE = "Also stops the route",
 	BACK_TO_ALL = "Click the back arrow to see all suggestions",
@@ -198,6 +199,14 @@ ns.L = {
 	QUEST_LEVEL = "[%d] %s",
 	-- An area's tooltip: each open objective under its quest, in the client's words, else its count.
 	OBJECTIVE_LINE = "- %s",
+	-- The overview (docs/design.md §2.2): where the player is under the title, the first card's tag, and the other
+	-- cards' footers: how far a journey has come, else how many stops it has.
+	OVERVIEW_WHERE = "%s · level %d",
+	SUGGESTED = "Suggested",
+	READY_OF = "%d of %d ready",
+	CHAPTERS_DONE = "%d of %d done",
+	STOPS_ONE = "1 stop",
+	STOPS = "%d stops",
 	OBJECTIVE_COUNT = "- %d/%d",
 	-- The guide's settings menu, then the addon's settings page.
 	MENU_QUESTS = "Quests",

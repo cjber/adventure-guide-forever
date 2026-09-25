@@ -3,8 +3,8 @@ local _, ns = ...
 local L = ns.L
 
 -- Asides (docs/design.md §2.11): one-line hints beside the journeys, never a route. Each domain registers a provider
--- that gives at most one; the first provider's the player has neither skipped this session nor turned down is the
--- aside, drawn above the cards and as the tracker's line. Providers are asked in step 1's travel frame (Core), never
+-- that gives at most one. Every one the player has neither skipped this session nor turned down is drawn above the
+-- cards, and the first of them is the tracker's line. Providers are asked in step 1's travel frame (Core), never
 -- in a rebuild's, and not in combat, when the last answers stand.
 ---@class AGFAsidesModule : AGFAsides
 local Asides = {}
@@ -60,6 +60,18 @@ function Asides.Current()
 	end
 end
 
+-- Every answer the player still wants, in registration order: the panel's lines (docs/design.md §2.11).
+---@return AGFAside[]
+function Asides.All()
+	local shown = {}
+	for _, aside in ipairs(answers) do
+		if Asides.Wanted(aside.key, aside.renew) then
+			shown[#shown + 1] = aside
+		end
+	end
+	return shown
+end
+
 -- The player has neither skipped this key this session nor turned it down: a provider with several candidates offers
 -- the first they still want. A skip holds only while the aside's `renew` is the one it had then.
 ---@param key string
@@ -91,16 +103,26 @@ local function Seen(aside)
 		or ""
 end
 
+-- What the player sees of every aside shown: the panel's lines, the first of them the tracker's.
+---@return string
+local function SeenAll()
+	local seen = {}
+	for index, aside in ipairs(Asides.All()) do
+		seen[index] = Seen(aside)
+	end
+	return table.concat(seen, "\n\n")
+end
+
 function Asides.Refresh()
 	if InCombatLockdown() then
 		return
 	end
-	local before = Seen(Asides.Current())
+	local before = SeenAll()
 	answers = {}
 	for _, provider in ipairs(providers) do
 		answers[#answers + 1] = provider()
 	end
-	if Seen(Asides.Current()) ~= before then
+	if SeenAll() ~= before then
 		Notify()
 	end
 end

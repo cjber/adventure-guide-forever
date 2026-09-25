@@ -20,8 +20,9 @@ Forever pillars (Blizzard, *What's Next* panel recap):
   not XP.
 - **The journey before the destination.** The player chooses from a handful of journeys (six at most): the story
   where they are, the zones they could head to next, and a dungeon or their calling when one fits. Until they do, the
-  guide draws the first card's steps on its own, so a new character has a route without a click; a choice overrides
-  it.
+  tab is an overview (the first card featured over its first steps, the rest two across), and the tracker and map
+  draw the first card's steps on their own, so a new
+  character has a route without a click; a choice overrides it.
   Chains read as a zone's chapters, with later chapter titles left unrevealed. There are no percentages, XP/hour figures or step counters.
   The one exception is the card's hub line ("Lakeshire, Redridge and 2 more stops"). The user asked for it, and it
   counts towns, not progress (plan §7.4).
@@ -60,14 +61,37 @@ tabs (`BLZ/Blizzard_UIPanels_Game/Camelot/QuestMapFrameOverrides.lua:3-6`; PROBE
 inside the existing `ScrollFrameTemplate` (Panel.lua:510).
 
 ```
-+-----------------------------------------------+  308 px pane (QuestMapFrame.xml:648)
++-----------------------------------------------+  none chosen: the overview
+| (c)          Adventure Guide                  |  header: the title, and under it the player's zone
+|             The Barrens · level 18            |    and level (GameFontHighlightSmall)
+|-----------------------------------------------|
+|  (t) Visit your class trainer in Durotar      |  every aside the player still wants, 16 px apart
+|  (t) You have 1 talent point to spend         |
+| +===========================================+ |  featured: 288x82, the renown art 6 px outside, sliced 12
+| | (map)  The Barrens story        Suggested | |  zone icon 40 across, ring 1.4x, kind badge 16
+| |  (S)   2 quests will soon turn grey       | |  title GameFontNormalMed2, the reason, then the counts
+| |        ? 2 ready to hand in  ! 1 in prog. | |    with the map's own marks; a 7 px bar on real progress
+| +===========================================+ |
+| (1) Crossroads, The Barrens  1 to hand in,... |  its first 3 steps: 288x22 pet-list rows, ring 18, the
+| (2) Turn in: Counterattack!  ready to hand in |    number, title and detail on one line, 24 px apart
+| (3) Ratchet, The Barrens  5 to pick up        |
+|  ---------------------------------------      |  divider, 10 px
+| +-------------------+ +-------------------+   |  the others two across: 141.5x92, 5 px apart
+| |(map) Loose ends   | |(map) Head to      |   |    icon 30, badge 13; title up to 2 lines (3 when the
+| | (?)               | | (!)  Stonetalon   |   |    reason gives way), never clipped
+| | Orgrimmar, Durotar| | Makaba Flathoof...|   |    reason up to 2 lines
+| | [==]   1 of 1 ready| | For level 20      |   |    footer: a bar and "N of M ready", "For level N",
+| +-------------------+ +-------------------+   |      or the stop count
++-----------------------------------------------+
+
++-----------------------------------------------+  308 px pane (QuestMapFrame.xml:648): one chosen
 | [Search quests..........................] [*] |  29 px top bar: SearchBoxTemplate across the width
 |-----------------------------------------------|    (no step count, §1), settings cog
 | [(?) Loose ends                           +] |  the others, one line each: 288x26, 2 px apart
 | [(!) Head to Darkshore                    +] |
-| +===========================================+ |  the shown card, whole, 4 px under the rows: the
-| | (S)  Westfall story                       | |    chosen one (lit, its own art), else the first
-| | ( )  Chapter 2 of 4                       | |    card, unlit
+| +===========================================+ |  the chosen card, whole and lit (its own art),
+| | (S)  Westfall story                       | |    4 px under the rows
+| | ( )  Chapter 2 of 4                       | |
 | +===========================================+ |
 |    [#][#][ ][ ]                               |  chapter track (2.3)
 |  1 Sentinel Hill, Westfall                    |  step rows, 44 px each, 9 at most; a town is titled by its name
@@ -93,12 +117,36 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   (QuestInfo Raid) wherever it is filed: Zul'Gurub's Paragons of Power are filed under the outdoor Zul'Gurub area and
   given on Yojamba Isle, yet ask for the raid's drops, so only their type says so (83 such quests at the pin).
 - **None chosen** is the default (a fresh character, the back arrow, or a saved choice whose card is no longer
-  offered). The guide draws the first card's steps on its own (auto-start): the route falls back to the first card
-  (`route.chosen` false), which sits whole but unlit over its track and step rows, the others as one-line rows above
-  it, and the tracker, the map preview and the NPC line all follow it. Nothing guides until the player asks: a card
-  or row click, the tracker title, a ring's click or Go. A click on the first card, or on a ring of its route,
-  chooses it. A stale saved key stays saved and is chosen again should its card come back.
-- **One chosen:** the others fold to one-line rows above it, in their order, and it sits whole and lit right over
+  offered), and the tab is the **overview**, cjber's pick of the mocks (A3). The header gains a subline, "The
+  Barrens · level 18", the player's zone and level. Every aside the player still wants shows, not only the first
+  (the tracker keeps one line). Then the **featured** card: the route's card (the first shown when its key is not
+  among them), tagged "Suggested", with its title, its reason and its counts ("? 2 ready to hand in", "! 1 in
+  progress", the map's own turn-in and quest marks), and a 7 px bar only on real progress: a story past chapter 1 of
+  a known length ("1 of 4 done"), or loose ends with something ready ("1 of 3 ready"). Under it its first 3 steps
+  (`journey.steps`) as small pet-list rows with the ring, number, title and detail, the chosen rows' tooltip, click
+  and menu. A divider, then the other cards **two across** (141.5x92, 5 px apart): the zone icon, the title beside
+  it on up to 2 lines (3 when the reason drops to 1) and never cut, the reason under both on up to 2 lines, and a
+  footer: the bar with "N of M ready", else the next zone's "For level N", else the stop count ("3 stops"). A reason
+  equal to the footer is left out. A click on any card chooses it. No minutes here: they belong to the chosen card.
+  Every card in the overview is the renown card's art, drawn 6 px outside the button (the atlas's empty margin)
+  and sliced at 12 so its rim keeps its width at both sizes.
+  It replaced every card whole over a dash list of its steps, which gave each card the same weight and scrolled
+  after two; before that, the first card drawn whole over its steps with the others as rows looked
+  the same as the chosen view whenever the chosen card was the first, so the back arrow seemed to do nothing.
+- **Zone icons** (ZoneIcon.lua): the Suggested Content recipe, the zone's own map cut round
+  (`CircleMaskScalable` on every tile, the whole clipped with `SetClipsChildren`) inside `adventureguide-ring` at
+  1.4x, the kind icon as a badge at its bottom-right. The base is `C_Map.GetMapArtLayerTextures(uiMapID, 1)`, the
+  12 tiles the client gives; over it every overlay `Data/ZoneArt.lua` has, explored or not (generated by
+  `tools/gen_zoneart.py` from the pinned wago `UiMapArt`/`WorldMapOverlay`/`WorldMapOverlayTile` tables: 40 zones,
+  525 overlays, 22 KB). The window is 420 map pixels across on the featured card, 240 on the grid, centred on the
+  card's first town on its map (else its first step) and kept 20 px inside the art. Only the tiles the window
+  touches are drawn, and an unchanged window builds nothing. A card with no map, a city or dungeon the data has no
+  art for, or a client that gives fewer than 12 tiles keeps the plain ring with the kind icon centred in it.
+  Behind it the route still falls back to the first card (`route.chosen` false, auto-start), and the tracker, the
+  map preview (§2.6) and the NPC line follow that card as before: kept, since the overview lists it first and a
+  click on its ring or the tracker title chooses it. Nothing guides until the player asks: a card click, the tracker
+  title, a ring's click or Go. A stale saved key stays saved and is chosen again should its card come back.
+- **One chosen** (a click on any card in the overview): the others fold to one-line rows above it, in their order, and it sits whole and lit right over
   its track and step rows. Its steps start at the same place whichever card it is (two rows, 58 px, then the card),
   and no card sits between a card and its steps, which the old order did (a middle card's steps pushed the last card
   below the fold). A row chooses its card. The chosen card is no toggle: a click on it turns the map to it again,
@@ -106,9 +154,8 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
 - **Back to all suggestions.** While a card is chosen the header shows the game's back arrow,
   `common-icon-backarrow` (CSV:4624, as Forever's character creation draws it on its Back button), 22x22 at the
   header's left, the compass moved 20 px right of it. Its tooltip is "All suggestions", adding "Also stops the
-  route" while AGF's route runs. A click, or a right-click anywhere on the header, chooses none: the guide draws
-  the first card again with the others as rows above it, and the route AGF started stops, as for any cleared
-  choice. With none chosen the arrow is hidden and the header's right-click does nothing.
+  route" while AGF's route runs. A click, or a right-click anywhere on the header, chooses none: the guide shows the
+  overview again, and the route AGF started stops, as for any cleared choice. With none chosen the arrow is hidden and the header's right-click does nothing.
   No animation: the quest log's own headers fold at once, and a height tween would need an OnUpdate.
 - **Choosing starts the route.** Selecting a card (whole or a row) sets `prefs.journey`, rebuilds the route and, on
   the rebuild that has its steps, hands them to `Integrations.Navigate`: SPF's journey, or the native waypoint
@@ -134,8 +181,9 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   on the zone maps its `QuestPOIBlob` rows name. Only 26 of the 1795 added quests have a blob, so the zone half is
   narrow; a quest with no blob has no zone and is left out. The slice also lists the 160 added AreaTable IDs, which
   put an unexplored area first (§2.11), and the added lands (§2.11); TaxiNodes and Map diffs are printed only.
-- Fit: the shown card takes 86 px and each other card a 28 px row, so with five others the cards take 226 px and
-  the shown card's step rows scroll below them; the panel's room holds the cards rather than leaving it empty.
+- Fit: with one chosen, it takes 86 px and each other card a 28 px row, so with five others the cards take 226 px
+  and its step rows scroll below them. The overview takes 167 px for the featured card, its 3 steps and the divider,
+  then 97 px a grid row: six cards take 453 px, so they fit whole under one or two asides.
 
 ### 2.2 Journey card
 
@@ -154,7 +202,7 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
   Icon 18x18 at CENTER; hover inherits AlphaHighlightButtonTemplate (SharedUIPanelTemplates.xml:1587)
 ```
 
-- **One-line row** (another card is shown): the Settings list's collapsible category header in three slices at its
+- **One-line row** (another card is chosen): the Settings list's collapsible category header in three slices at its
   own 26 px height, `options_listexpand_left` (12x26), `_options_listexpand_middle` (tiled) and
   `options_listexpand_right` (28x26, its "+"), 288x26 in all, with the 16x16 kind icon at LEFT x=12 and no ring, and
   the title (GameFontNormalMed2) at the icon's RIGHT +6. Its tooltip has the title, subline and reason, so nothing is
@@ -408,8 +456,8 @@ no layer at all.
         adventureguide-ring (CSV:1189) + services-number-1..9 (CSV:1645-1653), hover UI-QuestPoi-InnerGlow (CSV:10079)
 ```
 
-- **Preview.** The open guide previews the shown card's rings: the chosen card's, else the first card's, which the
-  guide draws on its own (§2.1); a ring's click chooses that card. Selecting a card turns the map to that journey's
+- **Preview.** The open guide previews the chosen card's rings, else the first card's, which the guide draws on its
+  own behind the overview (§2.1); a ring's click chooses that card. Selecting a card turns the map to that journey's
   first zone (`WorldMapFrame:SetMapID`) and draws only its rings. Hovering a step row flashes its ring (`Pins.Ping`,
   Pins.lua:184-188).
 - **Areas** (a quest's objective area): AGF draws no disc over one. The game's own objective mark shows the area,
@@ -417,8 +465,8 @@ no layer at all.
   hid the map (no stock call shows that shape unhovered on Classic Era: `C_SuperTrack.SetSuperTrackedQuestID` is
   retail's, and super-tracking would take the arrow from the waypoint). An area step's number sits where the route
   enters it (§4.2); while the player stands in step 1's area it has no number.
-  The choice going, however it goes, stops what AGF guides (Core.lua's `wasChosen` listener): the first card is
-  previewed again, nothing guides until a click, and a route the player started in SPF stays.
+  The choice going, however it goes, stops what AGF guides (Core.lua's `wasChosen` listener): the overview shows and
+  the first card is previewed again, nothing guides until a click, and a route the player started in SPF stays.
 - **Layering.** A route ring marks "your destination", so it takes the stock level of the user-waypoint pin,
   `PIN_FRAME_LEVEL_WAYPOINT_LOCATION`. That is above every quest "!" and "?", including the super-tracked one.
   AGF's preview ring uses this level, and SPF's stop ring does too (plan §7.9). Givers stay at `AREA_POI`, below
@@ -581,7 +629,7 @@ arrived, and anything else means cleared. Arrived keeps `guided`; cleared and re
 the route again until the card resumes it.
 
 A chosen journey the full build no longer has ends: its route is cancelled and the choice cleared, so the guide
-draws the first card again. A Quests or Dungeons filter keeps the key (the player's own toggle can bring it back) but stops the
+shows the overview again. A Quests or Dungeons filter keeps the key (the player's own toggle can bring it back) but stops the
 route; Quests covers `zone:` and `chain:` keys and `calling`, Dungeons `dungeon:` keys, except with no next zone,
 when Dungeons hides nothing. Skipping every step of a chosen journey ends it the same way, quietly.
 
@@ -591,10 +639,11 @@ An aside is a one-line hint beside the journeys, never a route: `Asides.lua`, af
 Each domain registers a provider returning at most one `{key, text, icon, place?}`: `icon` an atlas the CSV has,
 `place` only a place from the data. Providers are asked in step 1's travel frame after each rebuild
 (Core), never in a rebuild's frame and never in combat, when the last answers stand; views redraw only when the
-aside shown changes. The first provider's answer the player has not skipped or turned down is the aside.
+asides shown change. Each provider's answer the player has not skipped or turned down is an aside (`Asides.All`),
+in the providers' order; the first is the tracker's.
 
-- **Two surfaces at most.** One line above the cards (icon, `GameFontNormal` text, a row's `common-icon-redx`
-  skip), hidden while searching, and the tracker's line (§2.5). Both show the same aside.
+- **Two surfaces.** Above the cards, one line per aside, 16 px apart (icon, `GameFontNormal` text, a row's
+  `common-icon-redx` skip), hidden while searching; and the tracker's one line (§2.5), the first of them.
 - **Skip for now** hides it for the session: the line's red X, or its menu. **Not interested** hides it for the
   character (`charDB.asides[key]` = its text); the cog's "Skipped (n)" submenu, shared with skipped journeys, offers each back as
   "Show again: <text>", its provider's text now when it still answers, else the saved one.
@@ -1073,9 +1122,10 @@ Nothing below has been validated in game yet.
     shows above the cards and in the tracker with the class trainer mark and no ring; its click goes to the nearest
     trainer; its X, Skip for now and Not interested hide it, and the cog's "Skipped (1)" brings it back. Without
     Tweaks Forever, nothing changes.
-11. With no journey chosen the guide draws the first card whole over its steps, unlit, with its rings on the map and
-    its step 1 in the tracker, and nothing guides; the tracker title or a ring's click chooses that card and starts
-    its route.
+11. With no journey chosen the tab is the overview: the header reads "<zone> · level N" under its title, every
+    aside shows, the first card is featured ("Suggested", its counts with the "?" and "!" marks) over its first 3
+    steps as small numbered rows, and the others sit two across under a divider, with no chapter squares. The first card's rings are on the map and its step 1 in the
+    tracker, and nothing guides; the tracker title or a ring's click chooses that card and starts its route.
 12. Batch F (plan §7.10): Lakeshire is one stop; a stop ring draws over a super-tracked "?"; the cards show minutes
     and the hub line; the footer's Stop goes as soon as Shortest Path ends the journey.
 13. Batch G (plan §8.2): a chosen journey lasts through travel, turn-ins and `/reload`, and a paused route resumes
@@ -1161,9 +1211,23 @@ Nothing below has been validated in game yet.
 36. Back (§2.1): with nothing chosen the header shows no arrow. Choose a card: the game's yellow back arrow shows
     left of the compass, crisp at 22 px, and lights on hover; its tooltip reads "All suggestions" and "Also stops
     the route". Clicking the lit card keeps the route running and only turns the map to it. The arrow (and, after
-    choosing again, a right-click on the header) unlights the card, draws the first card whole with the others as
-    rows, stops Shortest Path's route or AGF's waypoint, and hides the arrow; the footer's Stop still stops the
+    choosing again, a right-click on the header) unlights the card, shows the overview again, stops Shortest Path's route or AGF's waypoint, and hides the arrow; the footer's Stop still stops the
     route as before.
+37. Overview (§2.1): from the overview, clicking the second or third card lights it over its numbered steps with the
+    others folded to rows above, turns the map to it and starts its route; the back arrow returns to the overview
+    (the featured card and the grid again, no arrow). The previews read cleanly beside the cards (no clipping at the right edge, no
+    overlap with the next card), and scrolling reaches the last card and "Skipped (n)". `/agf dump` with the Barrens
+    story chosen, then `luajit tests/dump_diff.lua` on the saved variables, reports no differences.
+38. Overview cards (§2.1): the renown art's rim is the same width on the featured card and the small ones (the
+    slice margins hold), with no stretched corners; hovering a card lights it softly. A grid title that needs 2 lines
+    ("Head to Stonetalon Mountains") wraps beside its icon and is never cut; its reason sits under it. The 7 px bar
+    draws its frame and a fill matching "1 of 3 ready" (Loose ends with one quest done), and a story past chapter 1
+    shows "N of M done".
+39. Zone icons (§2.1): in The Barrens, Westfall or Elwynn the featured icon shows the zone's own map, round (the
+    CircleMaskScalable mask, no square corners), nothing drawn outside the ring (SetClipsChildren), centred near the
+    card's next town with its explored and unexplored areas alike; the ring and kind badge draw over the art, never
+    under it. A city (Orgrimmar, Stormwind) or dungeon card keeps the plain ring with its kind icon centred. Opening
+    and closing the tab again redraws nothing visibly (no flicker).
 
 ## 9. Open questions that need client probes
 

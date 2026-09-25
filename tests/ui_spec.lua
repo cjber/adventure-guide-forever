@@ -1766,11 +1766,12 @@ do
 	h.menu.entries[2].onClick()
 	h.flush()
 	equal(ns.Prefs().journey, nil, "not interested: the choice of it ends")
-	equal(
-		hovered.journey.key ~= story.key and h.tooltip[1] == "title: " .. hovered.journey.title,
-		true,
-		"not interested: the tooltip over its card speaks for the journey that takes its place"
-	)
+	-- The choice ended, so the overview shows, the chosen view's card with it gone.
+	equal(hovered:IsVisible(), false, "not interested: the chosen card goes with its choice")
+	local featured = Shown(h, function(frame)
+		return frame.Tag ~= nil and frame.journey ~= nil
+	end)[1]
+	equal(featured ~= nil and featured.journey.key ~= story.key, true, "not interested: the overview, without it")
 	equal(h.ns.Integrations.Owns(), false, "not interested: and its route stops")
 	same(
 		h.G.AdventureGuideForeverCharDB.notInterested[story.key],
@@ -1804,6 +1805,25 @@ do
 		back = back or journey.key == story.key
 	end
 	equal(back, true, "not interested: and its card returns")
+	-- From the overview: the card under the pointer takes the next journey, and its tooltip speaks for it.
+	ns.Choose(nil)
+	h.flush()
+	local over = Shown(h, function(frame)
+		return frame.Tag ~= nil and frame.journey ~= nil
+	end)[1]
+	local gone = over.journey
+	h.Click(over, "RightButton")
+	h.Hover(over)
+	h.menu.entries[2].onClick()
+	h.flush()
+	equal(
+		over.journey.key ~= gone.key and h.tooltip[1] == "title: " .. over.journey.title,
+		true,
+		"not interested: the tooltip over its card speaks for the journey that takes its place"
+	)
+	ns.Unskip(gone.key)
+	ns.Choose(story.key)
+	h.flush()
 	clean(h, "not interested")
 	-- After a /reload, Show again still chooses the journey the Not interested ended.
 	h.menu = nil
@@ -2479,18 +2499,20 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label)
 end
 
--- None chosen (docs/design.md §2.1): a fresh character sees the first card whole over its steps, the others
--- folded into one-line rows above it, and nothing guides until asked; the tracker shows that card's step (design §2.5).
--- Choosing one starts its route in its place, each row keeping its lines in a tooltip; a row chooses its card and
--- starts its route in place of the first. The chosen card is no toggle: the header's back arrow, shown only while a
--- card is chosen, goes back to none and stops the route it started, as a right-click on the header does.
+-- None chosen (docs/design.md §2.2): a fresh character sees the overview, the first card featured over its first
+-- three steps and the others two across under a divider, no route rows, and nothing guides until asked; the tracker
+-- shows the first card's step (design §2.5). A click on any card chooses it and starts its route: the others fold into
+-- one-line rows above it, each keeping its lines in a tooltip, and it sits lit over its steps; a row chooses its card
+-- and starts its route in its place. The chosen card is no toggle: the header's back arrow, shown only while a card is
+-- chosen, goes back to the overview and stops the route it started, as a right-click on the header does.
 for _, spf in ipairs({ false, "v1" }) do
 	local label = "none chosen: " .. (spf or "no Shortest Path")
 	local h = Load(spf, nil, false, true)
 	h.ns.OpenPanel()
 	h.flush()
 	local route = h.ns.Route()
-	-- Top to bottom as laid out, not in pool order.
+	local L = h.ns.L
+	-- The chosen view's cards, top to bottom as laid out, not in pool order.
 	local function Cards()
 		local shown = Shown(h, function(frame)
 			return frame.IconFrame ~= nil and frame.journey ~= nil
@@ -2507,10 +2529,42 @@ for _, spf in ipairs({ false, "v1" }) do
 		end
 		return table.concat(heights, " ")
 	end
+	-- The overview's cards: the featured one, then the grid in reading order.
+	local function Overview()
+		local shown = Shown(h, function(frame)
+			return frame.Icon ~= nil and frame.Icon.Clip ~= nil and frame.journey ~= nil
+		end)
+		local function Place(card)
+			local _, _, _, x, y = card:GetPoint(1)
+			return -y * 1000 + x
+		end
+		table.sort(shown, function(a, b)
+			return Place(a) < Place(b)
+		end)
+		return shown
+	end
 	local function Rows()
 		return #Shown(h, function(frame)
 			return frame.SkipButton ~= nil
 		end)
+	end
+	local function Previews()
+		local lines = {}
+		for _, row in
+			ipairs(Shown(h, function(frame)
+				return frame.Ring ~= nil and frame.SkipButton == nil and frame.step ~= nil
+			end))
+		do
+			lines[row.index] = row.Title:GetText()
+		end
+		return table.concat(lines, "|")
+	end
+	local function Expected()
+		local lines = {}
+		for index = 1, math.min(#h.ns.Route().steps, 3) do
+			lines[index] = h.ns.Route().steps[index].title
+		end
+		return table.concat(lines, "|")
 	end
 	-- The dump holds only what is shown.
 	local function Says(text)
@@ -2537,54 +2591,129 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(route.journey, "zone:1413", label .. ": the route falls back to the first card")
 	same(h.tracker.layoutOrder, { route.steps[1].key }, label .. ": the tracker shows the first card's step")
 	equal(route.journeys[1].kind, "story", label .. ": a story card")
-	equal(Heights(), "26 26 86", label .. ": the first card whole, the others folded above it")
-	equal(Cards()[3].journey, route.journeys[1], label .. ": the first card over its steps")
-	equal(Rows(), #route.steps, label .. ": its steps listed")
-	equal(Says("Steps: 0"), 0, label .. ": and no step counter (docs/design.md §1)")
-	equal(Starts(), 0, label .. ": nothing guides")
-	for _, card in ipairs(Cards()) do
+	equal(#route.journeys >= 3, true, label .. ": a grid under the featured card")
+	equal(Heights(), "", label .. ": none of the chosen view's cards")
+	local cards = Overview()
+	equal(#cards, #route.journeys, label .. ": every card in the overview")
+	for index, card in ipairs(cards) do
+		equal(card.journey, route.journeys[index], label .. ": in the route's order")
+		equal(card.state, "shown", label .. ": none chosen or folded")
 		equal(card.highlightLocked == true, false, label .. ": no card lit")
 	end
-	-- Line 3 is the reason, else the first stop and how many follow; the group tag sits at its right (docs/plan.md
-	-- §7.4), never on the dungeon card, whose icon says as much.
-	local L, hubLines = h.ns.L, 0
+	local first = cards[1]
+	equal(first:GetHeight(), 82, label .. ": the featured card")
+	equal(first.Tag:GetText(), L.SUGGESTED, label .. ": tagged")
+	equal(cards[2]:GetHeight(), 92, label .. ": the grid's cards")
+	equal(cards[2]:GetWidth() * 2 + 5, first:GetWidth(), label .. ": two across the featured card's width")
+	equal(select(5, cards[2]:GetPoint(1)), select(5, cards[3]:GetPoint(1)), label .. ": side by side") -- multi-value: y
+	equal(Previews(), Expected(), label .. ": the featured card's first steps under it")
+	equal(Previews():find("|", 1, true) ~= nil, true, label .. ": more than one")
+	equal(Rows(), 0, label .. ": and no route rows")
+	equal(Says("Steps: 0"), 0, label .. ": and no step counter (docs/design.md §1)")
+	equal(
+		Says(L.OVERVIEW_WHERE:format("The Barrens", h.player.level)),
+		1,
+		label .. ": where the player is, by the title"
+	)
+	equal(Starts(), 0, label .. ": nothing guides")
+	-- The featured card's counts, with the map's marks: the story's zone holds one ready quest and one under way.
+	local story = first.journey
+	equal(story.ready, 1, label .. ": the story holds a ready quest")
+	equal(
+		first.Counts:GetText(),
+		"|A:QuestTurnin:12:12|a "
+			.. L.CARRY_READY:format(1)
+			.. "  |A:QuestNormal:12:12|a "
+			.. L.CARRY_IN_PROGRESS:format(story.underway),
+		label .. ": its counts"
+	)
+	-- Line 2 is the reason, else the first stop and how many follow; a grid card's footer the level it fits, else
+	-- how far it has come, else its stops.
 	local function Hub(journey)
 		local more = journey.more
 		return (more > 1 and L.HUB_MORE:format(journey.hub, more))
 			or (more == 1 and L.HUB_MORE_ONE:format(journey.hub))
 			or journey.hub
 	end
-	for _, card in ipairs(Cards()) do
-		local journey = card.journey
-		equal(card.Reason:GetText(), journey.reason or Hub(journey), label .. ": " .. journey.key .. " line 3")
-		hubLines = hubLines + (journey.reason and 0 or 1)
-		equal(
-			card.Group:IsShown(),
-			card.state ~= "compact" and journey.group > 0 and journey.kind ~= "dungeon",
-			label .. ": " .. journey.key .. " tag"
-		)
+	equal(first.Reason:GetText(), story.reason or Hub(story), label .. ": the featured card's reason")
+	local levelled, carried = 0, 0
+	for index = 2, #cards do
+		local card, journey = cards[index], cards[index].journey
+		local foot = card.Foot:GetText()
+		if journey.kind == "carry" then
+			carried = carried + 1
+			local total = journey.ready + journey.underway
+			equal(foot, L.READY_OF:format(journey.ready, total), label .. ": Loose ends counts what is ready")
+			equal(card.Bar:IsShown(), journey.ready > 0, label .. ": and its bar")
+			equal(card.Bar.Fill:GetWidth() > 0, true, label .. ": never empty")
+		elseif journey.level then
+			levelled = levelled + 1
+			equal(foot, L.NEXT_ZONE_LEVEL:format(journey.level), label .. ": " .. journey.key .. " the level it fits")
+			equal(card.Bar:IsShown(), false, label .. ": " .. journey.key .. " no bar")
+		end
+		local reason = journey.reason ~= foot and journey.reason or nil
+		equal(card.Reason:GetText(), reason or Hub(journey), label .. ": " .. journey.key .. " reason")
 	end
-	equal(hubLines > 0, true, label .. ": a card without a reason shows its hub line")
-	local tagged = Cards()[3]
-	tagged.journey.group = 2
+	equal(carried, 1, label .. ": the Loose ends card")
+	equal(levelled > 0, true, label .. ": a zone to head to")
+	-- A title wraps, never cut: three lines leave the reason one, under the title.
+	local grid = cards[2]
+	local title = grid.journey.title
+	grid.journey.title = "Head to Stonetalon Mountains"
 	h.ns.OpenPanel()
-	equal(tagged.Group:IsShown(), true, label .. ": a group quest tags the card")
-	local _, beside = tagged.Reason:GetPoint(2)
-	equal(beside, tagged.Group, label .. ": and line 3 stops short of the tag")
-	tagged.journey.group = 0
+	equal(grid.Title:GetNumLines(), 3, label .. ": a long title takes three lines")
+	equal(grid.Reason.maxLines, 1, label .. ": the reason one")
+	equal(select(5, grid.Reason:GetPoint(1)), -(12 + 3 * 13 + 4), label .. ": under the title") -- multi-value: y
+	grid.journey.title = title
 	h.ns.OpenPanel()
-	equal(tagged.Reason:GetNumPoints(), 1, label .. ": without one line 3 runs its full width")
-	-- A card's tooltip (plan §7.4): its lines, the hub line when line 3 holds the reason or is folded away, the group
-	-- line, and what a click does.
-	for _, card in ipairs(Cards()) do
+	equal(grid.Reason.maxLines, 2, label .. ": two lines under a shorter title")
+	equal(select(5, grid.Reason:GetPoint(1)), -(12 + 30 + 3), label .. ": under the icon") -- multi-value: y
+	-- The zone icons: the zone's art cut round by the circle mask in a clipping frame, the ring over it and the kind
+	-- as a badge; built once, not on every refresh; the plain ring where the data has no art.
+	local icon = first.Icon
+	equal(icon.Clip:IsShown(), true, label .. ": the story's zone art")
+	equal(icon.Clip.clipsChildren, true, label .. ": clipped")
+	equal(icon.Art.Mask:GetAtlas(), "CircleMaskScalable", label .. ": round")
+	local tiles = 0
+	for _, pool in ipairs({ icon.Art.base, icon.Art.overlays }) do
+		for _, texture in ipairs(pool) do
+			if texture:IsShown() then
+				tiles = tiles + 1
+				equal(texture.masks[1], icon.Art.Mask, label .. ": every tile masked")
+			end
+		end
+	end
+	equal(tiles > 1 and #icon.Art.overlays > 0, true, label .. ": base tiles and overlays")
+	equal(icon.Ring:GetAtlas(), "adventureguide-ring", label .. ": in the ring")
+	equal(icon.Kind:GetAtlas(), "questlog-questtypeicon-story", label .. ": the kind as a badge")
+	local sets = 0
+	for _, texture in ipairs(icon.Art.base) do
+		local set = texture.SetTexture
+		texture.SetTexture = function(...)
+			sets = sets + 1
+			return set(...)
+		end
+	end
+	h.ns.OpenPanel()
+	h.ns.Invalidate()
+	h.flush()
+	equal(sets, 0, label .. ": the art builds once")
+	local art = h.ns.Data.zoneArt
+	h.ns.Data.zoneArt = {}
+	h.ns.OpenPanel()
+	equal(icon.Clip:IsShown(), false, label .. ": no art in the data, no art drawn")
+	equal(select(4, icon.Kind:GetPoint(1)), 0, label .. ": the kind centred in the plain ring") -- multi-value: x
+	h.ns.Data.zoneArt = art
+	h.ns.OpenPanel()
+	equal(icon.Clip:IsShown(), true, label .. ": and back")
+	-- An overview card's tooltip (plan §7.4): its lines, the hub line when line 2 holds the reason, and what a click
+	-- does.
+	for _, card in ipairs(Overview()) do
 		local journey = card.journey
-		journey.group = 1
 		h.Hover(card)
 		local expected = { "title: " .. journey.title, "normal: " .. journey.subline }
 		if journey.reason then
 			expected[#expected + 1] = "highlight: " .. journey.reason
-		end
-		if journey.reason or card.state == "compact" then
 			expected[#expected + 1] = "highlight: " .. Hub(journey)
 		end
 		local travel = h.ns.Integrations.CardTravel(journey)
@@ -2592,23 +2721,22 @@ for _, spf in ipairs({ false, "v1" }) do
 		if travel and travel.line then
 			expected[#expected + 1] = "highlight: " .. travel.line
 		end
-		expected[#expected + 1] = "highlight: " .. L.GROUP_ONE
 		expected[#expected + 1] = "instruction: " .. L.CLICK_TO_CHOOSE
 		expected[#expected + 1] = journey.kind ~= "carry" and "instruction: " .. L.RIGHT_CLICK_NOT_INTERESTED or nil
 		same(h.tooltip, expected, label .. ": " .. journey.key .. "'s tooltip")
-		journey.group = 0
 	end
-	h.ns.OpenPanel()
 
-	-- A compact row's tooltip keeps the card's lines.
-	local story = Cards()[1].journey
-	h.Click(Cards()[1])
+	-- The featured card chooses itself, lit over its steps; the others fold above it.
+	h.Click(Overview()[1])
 	equal(Starts(), 0, label .. ": the route waits for the rebuild with its steps")
 	h.flush()
 	equal(h.ns.Route().journey, story.key, label .. ": a click chooses")
 	equal(Starts(), 1, label .. ": and starts its route")
 	equal(h.ns.Integrations.Owns(), true, label .. ": ours, which Stop ends")
 	equal(h.G.AdventureGuideForeverCharDB.journey, story.key, label .. ": and is saved")
+	equal(#Overview(), 0, label .. ": the overview gives way")
+	equal(Previews(), "", label .. ": with its steps")
+	equal(Says(L.OVERVIEW_WHERE:format("The Barrens", h.player.level)), 0, label .. ": and the line by the title")
 	equal(Heights(), "26 26 86", label .. ": the others fold above the chosen card")
 	equal(Cards()[3].journey.key, story.key, label .. ": the chosen card last, over its steps")
 	-- The chosen card is lit, not pressed: its art, pressed or not, is the card's own, so nothing moves.
@@ -2618,7 +2746,10 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(chosenCard.PushedTexture:GetAtlas(), "ui-journeys-renown-button", label .. ": a press moves nothing")
 	equal(Cards()[1].PushedTexture:GetAtlas(), Cards()[1].NormalTexture:GetAtlas(), label .. ": nor on a row")
 	equal(Rows(), #h.ns.Route().steps, label .. ": its steps listed")
-	local nextZone = Cards()[2]
+	local nextZone
+	for _, card in ipairs(Cards()) do
+		nextZone = nextZone or (card.journey.kind == "nextzone" and card or nil)
+	end
 	h.Hover(nextZone)
 	local tip = table.concat(h.tooltip, "\n")
 	equal(tip:find(nextZone.journey.title, 1, true) ~= nil, true, label .. ": the row's tooltip has its title")
@@ -2657,7 +2788,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Starts(), 2, label .. ": without starting again")
 	equal(h.counts.SetMapID, maps + 1, label .. ": the map turns to it")
 
-	-- The back arrow: none chosen, the first card drawn again, and the map stays where it was.
+	-- The back arrow: none chosen, the overview again, and the map stays where it was.
 	maps = h.counts.SetMapID
 	h.Click(Back())
 	h.flush()
@@ -2667,15 +2798,31 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(h.ns.Route().chosen, false, label .. ": the back arrow chooses none")
 	equal(h.G.AdventureGuideForeverCharDB.journey, nil, label .. ": and saves none")
 	equal(h.counts.SetMapID, maps, label .. ": without turning the map")
-	equal(Heights(), "26 26 86", label .. ": the first card whole again")
-	equal(Cards()[3].journey.key, h.ns.Route().journeys[1].key, label .. ": over its steps")
+	equal(Heights(), "", label .. ": the overview again")
+	equal(#Overview(), #h.ns.Route().journeys, label .. ": every card")
+	equal(Overview()[1].journey.key, h.ns.Route().journeys[1].key, label .. ": in order")
+	equal(Previews(), Expected(), label .. ": over the first card's first steps")
+	equal(Rows(), 0, label .. ": with no route rows")
 	equal(Back(), nil, label .. ": and the back arrow goes")
+
+	-- A grid card chooses itself, lit over its own steps; back returns to the overview.
+	local second = Overview()[2].journey
+	h.Click(Overview()[2])
+	h.flush()
+	equal(h.ns.Route().chosen and h.ns.Route().journey, second.key, label .. ": a grid card chooses it")
+	equal(Heights(), "26 26 86", label .. ": the others fold above it")
+	equal(Cards()[3].journey.key, second.key, label .. ": lit over its steps")
+	equal(Rows(), #h.ns.Route().steps, label .. ": which are listed")
+	h.Click(Back())
+	h.flush()
+	equal(h.ns.Route().chosen, false, label .. ": and back again")
+	equal(#Overview(), #h.ns.Route().journeys, label .. ": to the overview")
 
 	-- A right-click on the header goes back too, and does nothing with none chosen.
 	local header = back:GetParent()
 	h.call(header.scripts.OnMouseUp, header, "RightButton")
 	equal(h.ns.Route().chosen, false, label .. ": a right-click on the header with none chosen does nothing")
-	h.Click(Cards()[1])
+	h.Click(Overview()[1])
 	h.flush()
 	equal(h.ns.Route().chosen, true, label .. ": chosen again")
 	h.call(header.scripts.OnMouseUp, header, "LeftButton")
@@ -2730,6 +2877,11 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	h.ns.Invalidate()
 	equal(Frames(), spf and "0 1 1 1 1" or "0 0", label .. ": one estimate a frame, none in the rebuild's")
 	equal(Cached(), spf and #journeys or 0, label .. ": each card answered")
+	-- None chosen, the overview's cards leave them to their tooltips; chosen, the whole card shows them and a folded
+	-- row keeps them for its tooltip.
+	equal(#Cards(), 0, label .. ": the overview has no minutes")
+	h.ns.Choose(journeys[1].key)
+	h.flush()
 	local shown = 0
 	for _, card in ipairs(Cards()) do
 		local travel = integrations.CardTravel(card.journey)
@@ -2740,8 +2892,9 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 			equal(beside, card.Travel, label .. ": and the subline stops short of them")
 		end
 	end
-	-- A folded row keeps them for its tooltip; only the whole card shows them.
 	equal(shown, spf and 1 or 0, label .. ": minutes on the whole card with an answer")
+	h.ns.Choose(nil)
+	h.flush()
 	-- Once the player moves, the next route asks again, so a card's minutes are never older than step 1's; standing
 	-- still, it asks nothing new; and no empty answer sticks.
 	if spf then
@@ -2910,7 +3063,8 @@ for _, spf in ipairs({ false, "v1" }) do
 	end
 	local function Card(state)
 		return Shown(h, function(frame)
-			return frame.IconFrame ~= nil and frame.state == state
+			-- The overview's cards and the chosen view's alike.
+			return (frame.IconFrame ~= nil or frame.Tag ~= nil) and frame.state == state
 		end)[1]
 	end
 	local function Back()
@@ -3289,11 +3443,12 @@ do
 		local line = Line(h.ns.L.UNLISTED)
 		equal(line and 1 or 0, case.lines, label .. ": the line")
 		if line then
-			-- The lowest of the list's other rows: the shown card's last step.
+			-- The lowest of the list's other rows: the chosen card's last step, or the overview's last card.
 			local list, lowest = line.path:match("^(.*)%.FontString%[%d+%]$"), 0
 			for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverPanel, h.Describe)) do
 				local anchor = entry.anchors and entry.anchors[1]
-				if entry ~= line and anchor and anchor.point == "TOPLEFT" and anchor.relativeTo == list then
+				local top = anchor and (anchor.point == "TOPLEFT" or anchor.point == "TOP")
+				if entry ~= line and top and anchor.relativeTo == list then
 					lowest = math.min(lowest, anchor.y)
 				end
 			end

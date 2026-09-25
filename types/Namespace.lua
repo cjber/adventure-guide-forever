@@ -215,6 +215,9 @@
 ---@field more? integer how many stops follow the first (Model.Journeys sets it and `group` once the card is built)
 ---@field group? integer how many of its quests are elite, dungeon or raid (the sum of its steps' `group`)
 ---@field drop? integer[] the first card's log-full note: the log's quests the guide would let go, by ID, when 2 or fewer slots are free
+---@field ready? integer the log's quests it holds that are ready to hand in (Loose ends and a zone story)
+---@field underway? integer the log's quests it holds that are still in progress
+---@field level? integer a zone to head to: the level it fits, while it ranks among those that fit two levels on
 ---@field holds? table<integer, true> a zone story's log quests on its zone, a later lap's too: carry (Loose ends) holds the rest
 
 ---@class AGFRoute
@@ -394,7 +397,7 @@
 ---@field SKIPPED string format: how many steps are skipped this session
 ---@field SHOW_AGAIN string format: a skipped step's title
 ---@field CHOOSE_JOURNEY string opens the guide
----@field ALL_SUGGESTIONS string the header's back arrow tooltip: it chooses none, so the guide draws every card again
+---@field ALL_SUGGESTIONS string the header's back arrow tooltip: it chooses none, so the guide shows the overview again
 ---@field BACK_STOPS_ROUTE string the back arrow's tooltip while AGF's route runs, which going back stops
 ---@field BACK_TO_ALL string the chosen card's tooltip: the back arrow goes back to every card
 ---@field CLICK_TO_RESUME string the chosen card's tooltip while its route is paused: the click resumes it
@@ -451,6 +454,12 @@
 ---@field CLICK_WAYPOINT string
 ---@field STEP_NUMBERED string format: route index, step title
 ---@field QUEST_LEVEL string format: quest level, quest title
+---@field OVERVIEW_WHERE string format: the overview's line under the title, the player's zone and level
+---@field SUGGESTED string the overview's first card's tag
+---@field READY_OF string format: a Loose ends card's footer in the overview, ready of all it holds
+---@field CHAPTERS_DONE string format: a story card's footer in the overview, chapters done of the chain's
+---@field STOPS_ONE string a card's footer in the overview when it has one stop
+---@field STOPS string format: the same for several
 ---@field OBJECTIVE_LINE string format: the client's words for an open objective, with its count
 ---@field OBJECTIVE_COUNT string format: an open objective's count so far, the count it needs
 ---@field MENU_QUESTS string
@@ -578,6 +587,18 @@
 ---@class AGFData
 ---@field forever? AGFForever nil where only Data/Quests.lua is loaded (the planner specs and bench)
 
+--[[ The overview's round zone icons (tools/gen_zoneart.py, Data/ZoneArt.lua, docs/design.md §2.2) ]]
+
+---@class AGFData
+---@field zoneArt? table<integer, integer[][]> uiMapID -> its world-map overlays, each { offsetX, offsetY, width, height, tile FileDataIDs row-major }; nil where only Data/Quests.lua is loaded
+
+---@class AGFZoneIconModule
+---@field Create fun(parent: Frame, size: number, badge: number): AGFZoneIcon a round zone icon, its art `size` across and the kind badge `badge`
+---@field Set fun(icon: AGFZoneIcon, atlas: string, map?: integer, x?: number, y?: number, span: number) the zone's art round (x, y), `span` map pixels across; the plain ring with `atlas` centred when there is none
+
+---@class AGFNamespace
+---@field ZoneIcon AGFZoneIconModule
+
 ---@class AGFModel
 ---@field Unlisted fun(data: AGFData, map?: integer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>): boolean the log holds a quest the data lacks, or Forever added quests on `map` the data lacks and the player hasn't finished
 
@@ -633,6 +654,7 @@
 ---@field Register fun(provider: fun(): AGFAside?) a domain's provider, asked in step 1's travel frame and never in combat; earlier ones win
 ---@field Refresh fun() asks every provider again, out of combat; listeners hear only when the shown aside changes
 ---@field Current fun(): AGFAside? the first answer neither skipped this session nor turned down for this character
+---@field All fun(): AGFAside[] every answer neither skipped this session nor turned down, in registration order: the panel's lines
 ---@field OnChange fun(callback: fun())
 ---@field Skip fun(key: string) hide it until the next session
 ---@field Decline fun(aside: AGFAside) Not interested: hide it for this character, remembering its text

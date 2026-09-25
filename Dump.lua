@@ -96,7 +96,8 @@ function ns.DumpLayout(root, describe)
 		if width > 0 or height > 0 then
 			entry.size = { width, height }
 		end
-		if region:IsObjectType("Texture") then
+		-- A mask's atlas too: the zone icons' circle (ZoneIcon.lua).
+		if region:IsObjectType("Texture") or region:IsObjectType("MaskTexture") then
 			entry.atlas = (region --[[@as Texture]]):GetAtlas()
 		elseif region:IsObjectType("FontString") then
 			local text = region --[[@as FontString]]
