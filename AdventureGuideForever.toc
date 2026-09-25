@@ -14,6 +14,7 @@
 ## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick
 ## OptionalDeps: ShortestPathForever, QuestieDB, SkillUpForever, LegacyForever, TweaksForever
 
+Locales\enUS.lua
 Data\Quests.lua
 Data\Forever.lua
 Data\ZoneArt.lua

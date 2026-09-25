@@ -59,6 +59,12 @@ class CallTests(unittest.TestCase):
             'block:AddObjective(1, "Turn in")',
             'GameTooltip_SetTitle(tooltip, "Title")',
             'GameTooltip_AddNormalLine(tooltip, ("[%d] %s"):format(level, title))',
+            'ns.Print("layout saved")',
+            'tooltip:AddLine("Right-click to skip")',
+            'Settings.RegisterVerticalLayoutCategory("Adventure Guide")',
+            'Settings.RegisterAddOnSetting(category, "AGF_x", "x", db, Settings.VarType.Boolean, "Show pins", true)',
+            'Settings.CreateCheckboxInitializer(setting, nil, "Shows the pins")',
+            'DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99Adventure Guide|r " .. msg)',
         ]:
             self.assertEqual(len(literal_calls(tokens(source))), 1, source)
 
@@ -71,6 +77,9 @@ class CallTests(unittest.TestCase):
             'menu:CreateButton(ns.L.MORE, function() ns.Setting("showTracker") end)',
             "GameTooltip_Hide()",
             'print("SetText(\\"not a call\\")")',
+            'DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99" .. ns.L.TITLE .. "|r " .. msg)',
+            'label:SetText("|A:questturnin:14:14|a ")',
+            'Settings.RegisterAddOnSetting(category, "AGF_x", "x", db, Settings.VarType.Boolean, ns.L.PINS, true)',
         ]:
             self.assertEqual(literal_calls(tokens(source)), [], source)
 

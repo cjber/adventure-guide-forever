@@ -390,6 +390,7 @@
 ---@field stockTemplate? string headless only: the stock template the harness frame stands in for
 
 ---@class AGFStrings every line the player reads (ns.L); format strings keep their specifiers
+---@field TITLE string the addon's name in the window title, map tab, settings page and chat
 ---@field AUDIT_BUILD string format: data build, client version, client build
 ---@field AUDIT_COUNTS string format: bundled, eligible and completed counts
 ---@field AUDIT_NOT_READY string
