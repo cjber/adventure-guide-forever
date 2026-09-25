@@ -10,6 +10,8 @@ Each version's entry is also its release notes on GitHub, CurseForge and Wago.
 
 ## [Unreleased]
 
+- **Completion says what it can't check yet in words.** A fresh character's flight paths read "Flight paths  1 not known yet" rather than "0/0 · 1 pending", and the zone's line says how to find out, in Legacy Forever's own words: "Open a flight master on this continent to check these."
+
 ## [0.1.1] - 2026-09-25
 
 - **An empty progress bar stays in its card.** The PvP tab's rank points bar at 0, and a Completion zone with nothing done yet, drew their bar across the whole window; they now show an empty bar where it belongs.

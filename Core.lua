@@ -319,7 +319,10 @@ ns.L = {
 	COMPLETION_LOADING = "Loading completion progress…",
 	COMPLETION_UNAVAILABLE = "Completion progress is unavailable here.",
 	COMPLETION_COUNTS = "%d/%d",
-	COMPLETION_PENDING = "%d pending",
+	-- Legacy Forever's own words for items it can't check yet, with its hint when one category holds them all.
+	COMPLETION_NOT_KNOWN = "%d not known yet",
+	COMPLETION_NOT_KNOWN_TAXIS = "%d not known yet. Open a flight master on this continent to check these.",
+	COMPLETION_NOT_KNOWN_QUESTS = "%d not known yet. Waiting for Questie and your quest log.",
 	COMPLETION_ACCOUNT = "Account",
 	COMPLETION_GO = "Go to objective",
 	COMPLETION_NO_LOCATION = "Location unknown",
