@@ -10,6 +10,10 @@ Each version's entry is also its release notes on GitHub, CurseForge and Wago.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-09-25
+
+- **An empty progress bar stays in its card.** The PvP tab's rank points bar at 0, and a Completion zone with nothing done yet, drew their bar across the whole window; they now show an empty bar where it belongs.
+
 ## [0.1.0] - 2026-09-25
 
 The first release: a few journeys to choose from on the world map, each with a reason, and a short route for the one you pick.
