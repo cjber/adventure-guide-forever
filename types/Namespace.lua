@@ -394,8 +394,9 @@
 ---@field SKIPPED string format: how many steps are skipped this session
 ---@field SHOW_AGAIN string format: a skipped step's title
 ---@field CHOOSE_JOURNEY string opens the guide
----@field CLEAR_CHOICE string the chosen card's tooltip: clicking it again lets the guide choose
----@field STOP_AND_CLEAR_CHOICE string the same while the route it started runs, which the click stops
+---@field ALL_SUGGESTIONS string the header's back arrow tooltip: it chooses none, so the guide draws every card again
+---@field BACK_STOPS_ROUTE string the back arrow's tooltip while AGF's route runs, which going back stops
+---@field BACK_TO_ALL string the chosen card's tooltip: the back arrow goes back to every card
 ---@field CLICK_TO_RESUME string the chosen card's tooltip while its route is paused: the click resumes it
 ---@field ROUTE_PAUSED string the footer line while the chosen journey's route is paused
 ---@field HUB_MORE string format: a card's first stop, how many stops follow it

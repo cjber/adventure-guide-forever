@@ -87,6 +87,11 @@ local unlistedText
 local queuedText
 ---@type Button?
 local stopButton
+-- The header's back arrow, and the compass it pushes aside while a card is chosen.
+---@type Button?
+local backButton
+---@type Texture?
+local compass
 ---@type AGFSearchRow[]
 local results = {}
 ---@type Frame?
@@ -256,6 +261,15 @@ local function CreateRow(parent)
 	return row
 end
 
+-- Back to every suggestion: clears the choice, so the guide draws the first card again with the others as rows above
+-- it (docs/design.md §2.2), and stops the route AGF started for it, as any cleared choice does (ns.Choose).
+local function Back()
+	if ns.Route().chosen then
+		GameTooltip_Hide()
+		ns.Choose(nil)
+	end
+end
+
 ---@param parent Frame
 ---@return Frame
 local function BuildHeader(parent)
@@ -263,7 +277,31 @@ local function BuildHeader(parent)
 	header:SetPoint("TOPLEFT", PAD, -4)
 	header:SetPoint("RIGHT", -PAD, 0)
 	header:SetHeight(34)
-	local compass = header:CreateTexture(nil, "ARTWORK")
+	-- The game's own back arrow (CSV:4624), as Forever's character creation draws on its Back button; shown only while
+	-- a card is chosen (Refresh). A right-click anywhere on the header goes back too.
+	backButton = CreateFrame("Button", nil, header) --[[@as Button]]
+	backButton:SetSize(22, 22)
+	backButton:SetPoint("LEFT", 0, 0)
+	backButton:SetNormalAtlas("common-icon-backarrow")
+	backButton:SetHighlightAtlas("common-icon-backarrow", "ADD")
+	backButton:SetScript("OnClick", Back)
+	backButton:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip_SetTitle(GameTooltip, L.ALL_SUGGESTIONS)
+		if ns.Integrations.Owns() then
+			GameTooltip_AddNormalLine(GameTooltip, L.BACK_STOPS_ROUTE)
+		end
+		GameTooltip:Show()
+	end)
+	backButton:SetScript("OnLeave", GameTooltip_Hide)
+	backButton:Hide()
+	header:EnableMouse(true)
+	header:SetScript("OnMouseUp", function(_, mouseButton)
+		if mouseButton == "RightButton" then
+			Back()
+		end
+	end)
+	compass = header:CreateTexture(nil, "ARTWORK")
 	compass:SetAtlas("islands-queue-prop-compass")
 	compass:SetSize(30, 30)
 	compass:SetPoint("LEFT", 2, 0)
@@ -381,9 +419,9 @@ local function BuildJourneys(parent, below)
 		-- Choosing a journey shows its route and turns the map to it, and with the setting on starts it (ns.Choose,
 		-- once the rebuild has its steps). The map turns before the invalidation, so its redraw reads the route as it
 		-- is and the one rebuild waits a frame. The card the guide drew on its own is chosen the same way. The chosen
-		-- card is a toggle: clicking it again chooses none, the guide draws the first card again and the route it
-		-- started stops (never anyone else's); while its route is paused, the click resumes it instead. Right-click
-		-- offers "Not interested", except on what the player carries.
+		-- card is no toggle: the header's back arrow goes back to every suggestion and the footer's Stop stops the
+		-- route, so a click on it only turns the map to it again, or resumes its route while that is paused.
+		-- Right-click offers "Not interested", except on what the player carries.
 		card:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 		card:SetScript("OnClick", function(self, mouseButton)
 			local journey = self.journey
@@ -400,7 +438,7 @@ local function BuildJourneys(parent, below)
 			if self.state == "chosen" and ns.Paused() then
 				ns.StartRoute()
 			elseif self.state == "chosen" then
-				ns.Choose(nil)
+				WorldMapFrame:SetMapID(journey.map)
 			else
 				WorldMapFrame:SetMapID(journey.map)
 				ns.Choose(journey.key, ns.Setting("titleStartsRoute"))
@@ -666,7 +704,7 @@ end
 
 -- Every card's tooltip, whole or one-line (docs/plan.md §7.4): its lines, the hub line when line 3 holds the reason
 -- or is folded away, how many quests need a group, the quests the log-full note means, then what a click does. The
--- chosen card says how to go back to the guide's choice; a card whose click would replace someone else's journey warns
+-- chosen card points to the back arrow; a card whose click would replace someone else's journey warns
 -- first, as Go did (docs/design.md §2.9).
 ---@param card AGFJourneyCard
 function CardTooltip(card)
@@ -707,9 +745,9 @@ function CardTooltip(card)
 		GameTooltip_AddInstructionLine(GameTooltip, L.CLICK_TO_CHOOSE)
 	elseif resumes then
 		GameTooltip_AddInstructionLine(GameTooltip, L.CLICK_TO_RESUME)
-	else
-		local stops = starts and ns.Integrations.Owns()
-		GameTooltip_AddInstructionLine(GameTooltip, stops and L.STOP_AND_CLEAR_CHOICE or L.CLEAR_CHOICE)
+	end
+	if chosen then
+		GameTooltip_AddInstructionLine(GameTooltip, L.BACK_TO_ALL)
 	end
 	if (resumes or not chosen and starts) and ns.Integrations.ReplacesJourney() then
 		GameTooltip_AddInstructionLine(GameTooltip, L.REPLACES_JOURNEY)
@@ -1035,6 +1073,10 @@ function Refresh()
 	queuedText:SetText(queued and L.STARTS_AFTER_COMBAT or L.ROUTE_PAUSED)
 	queuedText:SetShown(queued or ns.Paused())
 	stopButton:SetShown(ns.Integrations.Owns())
+	---@cast backButton -?
+	---@cast compass -?
+	backButton:SetShown(route.chosen)
+	compass:SetPoint("LEFT", route.chosen and 22 or 2, 0)
 end
 
 -- Blizzard's displayMode and TabButtons are never written: the guide lays over the quest log

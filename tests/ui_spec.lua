@@ -679,8 +679,8 @@ do
 end
 
 -- No Go (design §2.10): while the chosen journey's route is paused (cleared in Shortest Path, replaced, refused), its
--- card resumes it, says so, and the footer says how; while the route runs, the card stops it and chooses none. Our
--- own Stop, a route that arrived, or the setting off pause nothing.
+-- card resumes it, says so, and the footer says how; while the route runs, a click on it stops nothing and its tooltip
+-- points to the back arrow. Our own Stop, a route that arrived, or the setting off pause nothing.
 do
 	local L
 	local function Chosen(h)
@@ -718,7 +718,11 @@ do
 	local h = Opened("ended")
 	equal(h.ns.Paused(), false, "paused: not while it guides")
 	equal(Hint(h), false, "paused: no hint while it guides")
-	equal(Tip(h):find(L.STOP_AND_CLEAR_CHOICE, 1, true) ~= nil, true, "paused: guiding, the click stops")
+	equal(Tip(h):find(L.BACK_TO_ALL, 1, true) ~= nil, true, "paused: guiding, the tooltip points to the back arrow")
+	h.Click(Chosen(h))
+	h.flush()
+	equal(h.ns.Integrations.Owns(), true, "paused: guiding, the click stops nothing")
+	equal(h.ns.Prefs().journey, "zone:1413", "paused: guiding, and keeps the choice")
 
 	h = Opened("ended", nil, function(cleared)
 		cleared.spfEnd("cleared")
@@ -735,7 +739,9 @@ do
 	equal(Hint(h), false, "paused: the hint goes")
 	h.Click(Chosen(h))
 	h.flush()
-	equal(h.ns.Prefs().journey, nil, "paused: once resumed, the next click chooses none")
+	equal(h.ns.Prefs().journey, "zone:1413", "paused: once resumed, the next click keeps the choice")
+	equal(h.ns.Integrations.Owns(), true, "paused: and the route")
+	equal(h.spf.NavigateRoute, 2, "paused: without starting it again")
 	clean(h, "paused")
 
 	h = Opened("ended", nil, function(replaced)
@@ -790,7 +796,7 @@ do
 	local routes = h.spf.NavigateRoute
 	h.Click(Chosen(h))
 	h.flush()
-	equal(h.ns.Prefs().journey, nil, "not paused: the click chooses none")
+	equal(h.ns.Prefs().journey, "zone:1413", "not paused: the click keeps the choice")
 	equal(h.spf.NavigateRoute, routes, "not paused: and starts nothing")
 end
 
@@ -2470,7 +2476,8 @@ end
 -- None chosen (docs/design.md §2.1): a fresh character sees the first card whole over its steps, the others
 -- folded into one-line rows above it, and nothing guides until asked; the tracker shows that card's step (design §2.5).
 -- Choosing one starts its route in its place, each row keeping its lines in a tooltip; a row chooses its card and
--- starts its route in place of the first, and the chosen card toggles back to none, stopping the route it started.
+-- starts its route in place of the first. The chosen card is no toggle: the header's back arrow, shown only while a
+-- card is chosen, goes back to none and stops the route it started, as a right-click on the header does.
 for _, spf in ipairs({ false, "v1" }) do
 	local label = "none chosen: " .. (spf or "no Shortest Path")
 	local h = Load(spf, nil, false, true)
@@ -2514,7 +2521,13 @@ for _, spf in ipairs({ false, "v1" }) do
 	local function Stops()
 		return h.spf and h.spf.Cancel or h.counts.ClearUserWaypoint
 	end
+	local function Back()
+		return Shown(h, function(frame)
+			return frame.normalAtlas == "common-icon-backarrow"
+		end)[1]
+	end
 	equal(route.chosen, false, label .. ": nothing chosen")
+	equal(Back(), nil, label .. ": no back arrow with nothing chosen")
 	equal(route.journey, "zone:1413", label .. ": the route falls back to the first card")
 	same(h.tracker.layoutOrder, { route.steps[1].key }, label .. ": the tracker shows the first card's step")
 	equal(route.journeys[1].kind, "story", label .. ": a story card")
@@ -2609,10 +2622,14 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(tip:find(L.CLICK_TO_CHOOSE, 1, true) ~= nil, true, label .. ": and what a click does")
 	h.Hover(Cards()[3])
 	tip = table.concat(h.tooltip, "\n")
-	equal(
-		tip:find(h.ns.L.STOP_AND_CLEAR_CHOICE, 1, true) ~= nil,
-		true,
-		label .. ": the chosen card says how back, and that it stops the route"
+	equal(tip:find(L.BACK_TO_ALL, 1, true) ~= nil, true, label .. ": the chosen card points to the back arrow")
+	local back = Back()
+	equal(back ~= nil, true, label .. ": the back arrow shows while a card is chosen")
+	h.Hover(back)
+	same(
+		h.tooltip,
+		{ "title: " .. L.ALL_SUGGESTIONS, "normal: " .. L.BACK_STOPS_ROUTE },
+		label .. ": its tooltip, and that it stops our route"
 	)
 
 	-- A row chooses its card; the one chosen before folds in its place.
@@ -2624,18 +2641,43 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Heights(), "26 26 86", label .. ": still one whole card")
 	equal(Cards()[3].journey.key, key, label .. ": the new choice over the steps")
 
-	-- The chosen card again: none chosen, the first card drawn again, and the map stays where it was.
+	-- The chosen card again: nothing changes but the map, which turns to it.
 	local maps, stops = h.counts.SetMapID, Stops()
 	h.Click(Cards()[3])
 	h.flush()
-	equal(Stops() - stops, 1, label .. ": clearing the choice stops our route")
+	equal(h.ns.Route().journey, key, label .. ": clicking the chosen card keeps it")
+	equal(Stops(), stops, label .. ": and stops nothing")
+	equal(h.ns.Integrations.Owns(), true, label .. ": so the route runs on")
+	equal(Starts(), 2, label .. ": without starting again")
+	equal(h.counts.SetMapID, maps + 1, label .. ": the map turns to it")
+
+	-- The back arrow: none chosen, the first card drawn again, and the map stays where it was.
+	maps = h.counts.SetMapID
+	h.Click(Back())
+	h.flush()
+	equal(Stops() - stops, 1, label .. ": going back stops our route")
 	equal(h.ns.Integrations.Owns(), false, label .. ": so nothing of ours guides")
 	equal(Starts(), 2, label .. ": and nothing new starts")
-	equal(h.ns.Route().chosen, false, label .. ": clicking the chosen card chooses none")
+	equal(h.ns.Route().chosen, false, label .. ": the back arrow chooses none")
 	equal(h.G.AdventureGuideForeverCharDB.journey, nil, label .. ": and saves none")
 	equal(h.counts.SetMapID, maps, label .. ": without turning the map")
 	equal(Heights(), "26 26 86", label .. ": the first card whole again")
 	equal(Cards()[3].journey.key, h.ns.Route().journeys[1].key, label .. ": over its steps")
+	equal(Back(), nil, label .. ": and the back arrow goes")
+
+	-- A right-click on the header goes back too, and does nothing with none chosen.
+	local header = back:GetParent()
+	h.call(header.scripts.OnMouseUp, header, "RightButton")
+	equal(h.ns.Route().chosen, false, label .. ": a right-click on the header with none chosen does nothing")
+	h.Click(Cards()[1])
+	h.flush()
+	equal(h.ns.Route().chosen, true, label .. ": chosen again")
+	h.call(header.scripts.OnMouseUp, header, "LeftButton")
+	equal(h.ns.Route().chosen, true, label .. ": a left-click on the header keeps it")
+	h.call(header.scripts.OnMouseUp, header, "RightButton")
+	h.flush()
+	equal(h.ns.Route().chosen, false, label .. ": a right-click on the header goes back")
+	equal(Back(), nil, label .. ": its arrow gone")
 	clean(h, label)
 end
 
@@ -2865,6 +2907,11 @@ for _, spf in ipairs({ false, "v1" }) do
 			return frame.IconFrame ~= nil and frame.state == state
 		end)[1]
 	end
+	local function Back()
+		h.Click(Shown(h, function(frame)
+			return frame.normalAtlas == "common-icon-backarrow"
+		end)[1])
+	end
 	equal(Queued(), 0, label .. ": nothing waits")
 	h.SetCombat(true)
 	local card = Card("shown")
@@ -2882,7 +2929,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.SetCombat(true)
 	h.Click(Card("compact"))
 	h.flush()
-	h.Click(Card("chosen"))
+	Back()
 	h.flush()
 	h.SetCombat(false)
 	h.flush()
@@ -2895,7 +2942,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(Starts(), 1, label .. ": with the setting off a choice only chooses")
 	h.ns.Integrations.Navigate(h.ns.Route().steps[1])
-	h.Click(Card("chosen"))
+	Back()
 	h.flush()
 	equal(h.ns.Integrations.Owns(), false, label .. ": and clearing it stops what a Go started")
 	clean(h, label)

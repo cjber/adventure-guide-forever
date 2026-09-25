@@ -92,7 +92,7 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
   short route can hold. The generator flags a quest filed in a raid instance, and one of CMaNGOS Type 62 or 88
   (QuestInfo Raid) wherever it is filed: Zul'Gurub's Paragons of Power are filed under the outdoor Zul'Gurub area and
   given on Yojamba Isle, yet ask for the raid's drops, so only their type says so (83 such quests at the pin).
-- **None chosen** is the default (a fresh character, a card clicked again, or a saved choice whose card is no longer
+- **None chosen** is the default (a fresh character, the back arrow, or a saved choice whose card is no longer
   offered). The guide draws the first card's steps on its own (auto-start): the route falls back to the first card
   (`route.chosen` false), which sits whole but unlit over its track and step rows, the others as one-line rows above
   it, and the tracker, the map preview and the NPC line all follow it. Nothing guides until the player asks: a card
@@ -101,14 +101,21 @@ inside the existing `ScrollFrameTemplate` (Panel.lua:510).
 - **One chosen:** the others fold to one-line rows above it, in their order, and it sits whole and lit right over
   its track and step rows. Its steps start at the same place whichever card it is (two rows, 58 px, then the card),
   and no card sits between a card and its steps, which the old order did (a middle card's steps pushed the last card
-  below the fold). A row chooses its card; the chosen card is a toggle, and clicking it again lets the guide choose.
+  below the fold). A row chooses its card. The chosen card is no toggle: a click on it turns the map to it again,
+  or resumes its route while that is paused (§2.10), and nothing more.
+- **Back to all suggestions.** While a card is chosen the header shows the game's back arrow,
+  `common-icon-backarrow` (CSV:4624, as Forever's character creation draws it on its Back button), 22x22 at the
+  header's left, the compass moved 20 px right of it. Its tooltip is "All suggestions", adding "Also stops the
+  route" while AGF's route runs. A click, or a right-click anywhere on the header, chooses none: the guide draws
+  the first card again with the others as rows above it, and the route AGF started stops, as for any cleared
+  choice. With none chosen the arrow is hidden and the header's right-click does nothing.
   No animation: the quest log's own headers fold at once, and a height tween would need an OnUpdate.
 - **Choosing starts the route.** Selecting a card (whole or a row) sets `prefs.journey`, rebuilds the route and, on
   the rebuild that has its steps, hands them to `Integrations.Navigate`: SPF's journey, or the native waypoint
   without it. There is no Go button: choosing is already the commitment, and a second click to start the same route
   was a step with no decision in it. Without SPF the waypoint is placed too, since Stop and clearing the choice still
-  clear only a waypoint where AGF put it. Clicking the chosen card again chooses none and stops AGF's route (never
-  anyone else's), so the lit card and the guidance never disagree.
+  clear only a waypoint where AGF put it. The back arrow chooses none and stops AGF's route (never anyone else's),
+  so the lit card and the guidance never disagree.
 - The setting "Choosing a journey starts the route" (key `titleStartsRoute`, default on, kept from when it covered
   only the tracker title) governs both the card and the tracker title: one preference for "a pick starts guidance",
   and a player who turned the title click off keeps that choice here. Off, a card only chooses and clearing it stops
@@ -151,7 +158,7 @@ lines 367-380: `addonLoaded` false, `EncounterJournal` false, `numTiers` 0).
   own 26 px height, `options_listexpand_left` (12x26), `_options_listexpand_middle` (tiled) and
   `options_listexpand_right` (28x26, its "+"), 288x26 in all, with the 16x16 kind icon at LEFT x=12 and no ring, and
   the title (GameFontNormalMed2) at the icon's RIGHT +6. Its tooltip has the title, subline and reason, so nothing is
-  lost. The chosen card's tooltip says "Click again to let the guide choose". Pooled: the six card buttons
+  lost. The chosen card's tooltip says "Click the back arrow to see all suggestions". Pooled: the six card buttons
   (`Model.MAX_JOURNEYS`) are resized in place, no frame is made per refresh.
   - Why this art: it is a stock single-line row drawn at native height with a "+" that says it opens; the renown
     card squeezed to 28 px pinched its frame, `friendslist-categorybutton` read as a second heavy card and
@@ -506,9 +513,8 @@ which counts towns, not steps (§1).
 
 When `SPF.Active()` exists and reports another journey running, every way to start the route warns with "Replaces
 your current journey.": a card or row another click would choose (while choosing starts the route), the menus' Go
-and the tracker title. The chosen card's tooltip, while AGF's route runs, reads "Click again to stop the route and
-let the guide choose"; while it is paused (§2.10), "Click to resume the route", with the warning when another journey
-runs.
+and the tracker title. The chosen card's tooltip reads "Click the back arrow to see all suggestions"; while its route is paused (§2.10), it
+first says "Click to resume the route", with the warning when another journey runs.
 
 **NPC line (roadmap #19, `Tooltip.lua`).** Hovering an NPC the shown journey's steps visit adds one
 `AddNormalLine` to the unit tooltip: "Adventure guide: <journey title>". The NPCs are a town stop's givers and enders
@@ -554,18 +560,18 @@ Invariants:
 
 Guidance states:
 
-| State | Test | Card click | Footer |
+| State | Test | Chosen card click (the back arrow always clears the choice) | Footer |
 |---|---|---|---|
 | Idle | nothing of ours | chooses | |
-| Pending | a start waits for combat | clears the choice | "The route starts when combat ends" |
-| Guiding | `CurrentStop` and `Active()` | stops it and clears the choice | Stop |
-| Held | `CurrentStop`, `Active()` false ("Guide me" off) | stops it and clears the choice; the rings come back | Stop |
-| Here | guiding, the player stands in step 1's objective area: no waypoint, no Shortest Path route | stops it and clears the choice | Stop |
+| Pending | a start waits for combat | turns the map to it | "The route starts when combat ends" |
+| Guiding | `CurrentStop` and `Active()` | turns the map to it | Stop |
+| Held | `CurrentStop`, `Active()` false ("Guide me" off) | turns the map to it | Stop |
+| Here | guiding, the player stands in step 1's objective area: no waypoint, no Shortest Path route | turns the map to it | Stop |
 | Paused | chosen, `guided` (or cleared or replaced), no route | resumes it (so does the tracker title) | "Route paused. Click the journey to resume." |
-| Arrived | ended at its last stop | clears the choice | |
+| Arrived | ended at its last stop | turns the map to it | |
 
-Stop, in the footer or a step's menu, does what a click on the guided card does: the route stops and the choice
-clears, so no journey is left chosen with nothing to resume it.
+Stop, in the footer or a step's menu, does what the back arrow does while the route runs: the route stops and the
+choice clears, so no journey is left chosen with nothing to resume it.
 
 An end is classified by Shortest Path's `API.Ended(owner)` when present ("arrived", "cleared", "replaced",
 "cancelled"). Without it: another journey running means replaced, standing within 100 yd of the last stop means
@@ -814,7 +820,7 @@ The player steers the route a quest at a time, per character, and the guide only
 | Asides | `Visit your class trainer in Stormwind · 3 new spells` · `Visit your class trainer · 3 new spells` · `Riverglades · For levels 36-44` · `You haven't seen Thorn Hill yet` |
 | Trainer stop | `Train in Stormwind` · `3 new spells` · `1 new spell` |
 | Buttons, menu | `Go` (menus only) · `Stop` · `Show quest` · `Skip for now` · `Not this quest` · `Not interested` · `Skipped (2)` · `Show again: <title>` · `Choose another journey` |
-| Instructions | `Click to travel with Shortest Path` · `Click to set a waypoint` · `Click to choose this journey` · `Click again to let the guide choose` · `Shift-click to add it to your route` · `Shift-click to take it off your route` · `Replaces your current journey.` |
+| Instructions | `Click to travel with Shortest Path` · `Click to set a waypoint` · `Click to choose this journey` · `Click the back arrow to see all suggestions` · `Shift-click to add it to your route` · `Shift-click to take it off your route` · `Replaces your current journey.` |
 | Dungeon, way in | `2 of your quests end inside Wailing Caverns` · `1 of your quests ends inside Wailing Caverns` · `The way into Scholomance` · `The way into Scholomance is open to you` |
 | Empty | `The guide has no journey for you here; look for the "!" over quest givers.` |
 | Coverage | `This land has stories the guide doesn't know yet; look for the "!" over quest givers.` |
@@ -1145,6 +1151,12 @@ Nothing below has been validated in game yet.
     moves on to the next stop.
 35. Adding (§2.18): shift-clicking a giver whose only quests are orange or red adds nothing, and its tooltip has no
     shift line. Heading on (§2.2): at 18 in Westfall, "Head to Redridge" comes before "Head to Ashenvale".
+36. Back (§2.1): with nothing chosen the header shows no arrow. Choose a card: the game's yellow back arrow shows
+    left of the compass, crisp at 22 px, and lights on hover; its tooltip reads "All suggestions" and "Also stops
+    the route". Clicking the lit card keeps the route running and only turns the map to it. The arrow (and, after
+    choosing again, a right-click on the header) unlights the card, draws the first card whole with the others as
+    rows, stops Shortest Path's route or AGF's waypoint, and hides the arrow; the footer's Stop still stops the
+    route as before.
 
 ## 9. Open questions that need client probes
 

@@ -121,9 +121,10 @@ ns.L = {
 	-- A quest the route leaves out joins it with a shift-click, in the search or on the map, and leaves the same way.
 	SHIFT_ADD = "Shift-click to add it to your route",
 	SHIFT_REMOVE = "Shift-click to take it off your route",
-	-- With no card chosen the guide draws the first (docs/design.md §2.2); the chosen card toggles back to that.
-	CLEAR_CHOICE = "Click again to let the guide choose",
-	STOP_AND_CLEAR_CHOICE = "Click again to stop the route and let the guide choose",
+	-- With no card chosen the guide draws the first (docs/design.md §2.2); the header's back arrow goes back to that.
+	ALL_SUGGESTIONS = "All suggestions",
+	BACK_STOPS_ROUTE = "Also stops the route",
+	BACK_TO_ALL = "Click the back arrow to see all suggestions",
 	-- The chosen journey's route stopped (cleared, replaced or refused): its card and the tracker title resume it.
 	CLICK_TO_RESUME = "Click to resume the route",
 	ROUTE_PAUSED = "Route paused. Click the journey to resume.",
@@ -911,7 +912,7 @@ function ns.StartRoute(step)
 	return false
 end
 
--- The player's Stop, from the footer or a step's menu: what a click on the guided card does, so no journey is left
+-- The player's Stop, from the footer or a step's menu: what the back arrow does while it runs, so no journey is left
 -- chosen with nothing to resume it.
 function ns.Stop()
 	ns.Integrations.Cancel()
