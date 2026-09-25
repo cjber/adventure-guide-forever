@@ -390,6 +390,7 @@
 ---@field stockTemplate? string headless only: the stock template the harness frame stands in for
 
 ---@class AGFStrings every line the player reads (ns.L); format strings keep their specifiers
+---@field TITLE string the addon's name in the window title, map tab, settings page and chat
 ---@field AUDIT_BUILD string format: data build, client version, client build
 ---@field AUDIT_COUNTS string format: bundled, eligible and completed counts
 ---@field AUDIT_NOT_READY string
@@ -1113,7 +1114,9 @@
 ---@field COMPLETION_LOADING string
 ---@field COMPLETION_UNAVAILABLE string
 ---@field COMPLETION_COUNTS string
----@field COMPLETION_PENDING string
+---@field COMPLETION_NOT_KNOWN string format: items Legacy Forever can't check yet
+---@field COMPLETION_NOT_KNOWN_TAXIS string format: the same, all flight paths, with how to check them
+---@field COMPLETION_NOT_KNOWN_QUESTS string format: the same, all quests, with what they wait on
 ---@field COMPLETION_ACCOUNT string
 ---@field COMPLETION_GO string
 ---@field COMPLETION_NO_LOCATION string
@@ -1164,6 +1167,28 @@
 ---@field STEP_WORK string
 ---@field STEP_TOWN string
 ---@field STEP_BATTLEMASTER string
+---@field UPDATED_TO string format: the version, then WHATS_NEW
+---@field WHATS_NEW string this version's headline, printed once after an update
+---@field SETTING_WHATS_NEW string
+---@field SETTING_WHATS_NEW_TOOLTIP string
+---@field SETTING_COMPANIONS string
+---@field SETTING_COMPANIONS_TOOLTIP string
+---@field SPF_MISSING string a route step's tooltip without Shortest Path Forever installed
+---@field SPF_DISABLED string a route step's tooltip with Shortest Path Forever installed but not enabled
+---@field SKILLUP_DISABLED string the Professions tab with SkillUp Forever installed but not enabled
+---@field SKILLUP_ABSENT string the Professions tab without SkillUp Forever, companion hints off
+---@field LEGACY_DISABLED string the Completion tab with Legacy Forever installed but not enabled
+---@field LEGACY_ABSENT string the Completion tab without Legacy Forever, companion hints off
+
+---@alias AGFCompanionState "loaded"|"disabled"|"missing"
+
+---@class AGFCompanions
+---@field State fun(addon: string): AGFCompanionState loaded, installed but not loaded, or not installed
+---@field Hint fun(addon: string): string? the line naming what the companion adds, while it isn't loaded and hints are on
+
+---@class AGFNamespace
+---@field WhatsNew fun() on login: print WHATS_NEW once if the version changed since the last one seen
+---@field Companions AGFCompanions
 
 ---@class AGFModel
 ---@field ObjectiveDone fun(data: AGFData, entry?: AGFLogQuest, slot: integer): boolean

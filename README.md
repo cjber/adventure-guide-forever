@@ -62,6 +62,8 @@ Download the zip from [Releases](https://github.com/cjber/adventure-guide-foreve
 
 Shift-J opens the window if the key was free at first login; change it under Key Bindings. Left-click the addon compartment for the window, or right-click for the map tab. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including starting routes on selection and tracking their quests.
 
+Translations are welcome as a pull request, or pasted into an issue, on GitHub: see the [Locales folder](https://github.com/cjber/adventure-guide-forever/tree/main/Locales).
+
 ## Where the quests come from
 
 Bundled data comes from CMaNGOS Classic and the Forever client's tables. An installed, compatible QuestieDB supplies quest requirements and givers instead; bundled locations still limit what the guide can offer. Finished quests come from the game.

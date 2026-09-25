@@ -71,18 +71,40 @@ local picked
 local function Muted()
 	local state = ns.Providers.LegacyState()
 	if state == "missing" then
-		return L.LEGACY_MISSING
+		return ns.Companions.Hint("LegacyForever") or L.LEGACY_ABSENT
 	elseif state == "outdated" then
 		return L.LEGACY_OUTDATED
 	end
 end
 
--- "3/5", or with its pending share: "3/5 · 2 pending". Pending is never counted done.
+-- "3/5", or with what Legacy can't check yet: "3/5 · 2 not known yet", or only that when it knows none of them, never
+-- "0/0". Pending is never counted done.
 ---@param counts LFCounts
 ---@return string
 local function CountLine(counts)
+	local unknown = counts.pending > 0 and L.COMPLETION_NOT_KNOWN:format(counts.pending) or nil
+	if counts.total == 0 and unknown then
+		return unknown
+	end
 	local line = L.COMPLETION_COUNTS:format(counts.done, counts.total)
-	return counts.pending > 0 and line .. L.SEPARATOR .. L.COMPLETION_PENDING:format(counts.pending) or line
+	return unknown and line .. L.SEPARATOR .. unknown or line
+end
+
+-- Legacy Forever's hint (its PENDING_HINTS) for a category's unchecked items, by the category they all belong to.
+local NOT_KNOWN_HINTED = { taxis = L.COMPLETION_NOT_KNOWN_TAXIS, quests = L.COMPLETION_NOT_KNOWN_QUESTS }
+
+-- "2 not known yet", with how to check them when they are all one category's: a fresh character's flight paths.
+---@param summary LFZoneSummary
+---@return string
+local function NotKnownLine(summary)
+	for _, category in ipairs(summary.categories) do
+		if category.pending == summary.pending then
+			return (NOT_KNOWN_HINTED[category.key] or L.COMPLETION_NOT_KNOWN):format(summary.pending)
+		elseif category.pending > 0 then
+			break
+		end
+	end
+	return L.COMPLETION_NOT_KNOWN:format(summary.pending)
 end
 
 -- The zone's line under its name: why Legacy has no counts for it, else what is still waiting on data.
@@ -97,7 +119,7 @@ local function ZoneLine(zone)
 	elseif summary.questsStatus == "loading" then
 		return L.COMPLETION_LOADING
 	end
-	return summary.pending > 0 and L.COMPLETION_PENDING:format(summary.pending) or ""
+	return summary.pending > 0 and NotKnownLine(summary) or ""
 end
 
 ---@param parent Frame

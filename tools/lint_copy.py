@@ -9,9 +9,27 @@ from lint_multivalue import Token, runtime_files, tokenize
 # A percent sign is only ever a format specifier; "%%" would print one.
 STRAY_PERCENT = re.compile(r"%(?![-0-9.]*[dsfgi])|%%")
 BANNED_WORDS = re.compile(r"\b(?:XP|fastest|fast|optimal|you must)\b", re.IGNORECASE)
-# The call, and which argument (1-based, top level) is the text the player reads.
-TEXT_ARGUMENT = {"SetText": 1, "CreateButton": 1, "AddObjective": 2}
+# The call, and which argument (1-based, top level) is the text the player reads: frames, menus, the tracker, chat
+# and the Settings page's category, checkbox names and tooltips.
+TEXT_ARGUMENT = {
+    "SetText": 1,
+    "SetFormattedText": 1,
+    "SetTitle": 1,
+    "CreateButton": 1,
+    "CreateCheckbox": 1,
+    "CreateTitle": 1,
+    "AddObjective": 2,
+    "AddLine": 1,
+    "AddDoubleLine": 1,
+    "AddMessage": 1,
+    "Print": 1,
+    "RegisterVerticalLayoutCategory": 1,
+    "RegisterAddOnSetting": 6,
+    "CreateCheckboxInitializer": 3,
+}
 TOOLTIP_PREFIX = "GameTooltip_"
+# Colour codes, atlas and texture markup carry no words, so a literal of only those is not copy.
+MARKUP = re.compile(r"\|c[0-9a-fA-F]{8}|\|r|\|A[^|]*\|a|\|T[^|]*\|t")
 ESCAPES = {"n": "\n", "t": "\t", "\\": "\\", '"': '"', "'": "'"}
 
 
@@ -85,7 +103,7 @@ def strings_table(tokens: list[Token]) -> list[tuple[int, str, str]]:
 
 
 def literal_calls(tokens: list[Token]) -> list[tuple[int, str]]:
-    """(line, call) for each non-empty string literal in a call's text argument."""
+    """(line, call) for each string literal with words in it in a call's text argument."""
     hits = []
     for index, token in enumerate(tokens[:-1]):
         if token.kind != "name" or tokens[index + 1].text != "(":
@@ -96,7 +114,7 @@ def literal_calls(tokens: list[Token]) -> list[tuple[int, str]]:
         arguments = split(tokens[index + 2 : matching(tokens, index + 1)], ",")
         if len(arguments) >= position:
             for part in arguments[position - 1]:
-                if part.kind == "string" and unquote(part.text):
+                if part.kind == "string" and re.search(r"[^\W\d_]", MARKUP.sub("", unquote(part.text))):
                     hits.append((part.line, token.text))
     return hits
 
@@ -116,7 +134,7 @@ def main() -> int:
     args.add_argument("files", nargs="*", type=Path)
     root = Path(__file__).resolve().parent.parent
     files = args.parse_args().files or [p for p in runtime_files(root) if p.parent.name != "Data"]
-    report = check(root / "Core.lua", files)
+    report = check(root / "Locales" / "enUS.lua", files)
     print("\n".join(report) or "copy: no literals outside L, no banned tokens in L")
     return int(bool(report))
 

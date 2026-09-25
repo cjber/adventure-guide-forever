@@ -18,6 +18,7 @@ end
 --[[ The card (Model.lua, roadmap #12): a battleground open to the player, whose one step is its battlemaster ]]
 
 local ns = {}
+assert(loadfile("Locales/enUS.lua"))("AdventureGuideForever", ns)
 local core = assert(loadfile("Core.lua"))
 setfenv(
 	core,
