@@ -768,7 +768,7 @@ local function RefreshRow(row, step, index)
 	row.index = index
 	row.Number:SetAtlas("services-number-" .. index)
 	row.Title:SetText(step.title)
-	-- Step 1 adds how long it takes when Shortest Path knows (docs/plan.md §7.4); its tooltip gives the way.
+	-- Step 1 adds how long it takes when Shortest Path knows; its tooltip gives the way.
 	local minutes = index == 1 and ns.Integrations.TravelMinutes(step)
 	row.Detail:SetText(minutes and L.TRAVEL:format(step.detail, minutes) or step.detail)
 	local group = (step.group or 0) > 0

@@ -1,8 +1,6 @@
 -- Headless client for the UI specs. `harness.load(options)` loads AdventureGuideForever.toc in order into a fresh
 -- global environment, against stubs of only the client API the addon calls, and returns a handle to drive it.
--- Forked from wow-handoff's scratch/harness2.lua (frame, texture and font-string stubs, visibilityChanged,
--- animationGroup, the tracker module's block stubs), without its Shortest Path parts. Paths are relative to the
--- repository root: run the specs from there.
+-- Paths are relative to the repository root: run the specs from there.
 local harness = {}
 
 local ADDON = "AdventureGuideForever"

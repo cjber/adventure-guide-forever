@@ -9,7 +9,7 @@ ns.Model = Model
 -- CMaNGOS mangos-classic/src/game/Tools/Formulas.h, GetQuestGreenRange (quest, not creature XP).
 local GREEN_RANGE = { 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 10, 11, 12 }
 local CLOSE = 0.03 * 0.03
--- What a stop is worth against the yards to reach it (docs/plan.md §7.3): each quest there (at most 8), a quest that
+-- What a stop is worth against the yards to reach it: each quest there (at most 8), a quest that
 -- goes grey at the next level, each hand-in, and a stop with no hand-in where every quest is red or optional, which
 -- waits.
 local VALUE_QUEST, VALUE_QUESTS_MAX, VALUE_GREY_RISK, VALUE_HAND_IN, VALUE_WEAK = 40, 8, 150, 60, -300
@@ -649,7 +649,7 @@ end
 
 -- A town's quests, givers, group count, title and detail, from its pickups and hand-ins; it is optional only when
 -- every quest there is. The quests go hand-ins
--- first, then those grey at the next level, then nearest the player's level, then by ID (docs/plan.md §7.3); the givers
+-- first, then those grey at the next level, then nearest the player's level, then by ID; the givers
 -- and the quest ShowQuest opens follow that order. One quest keeps the single step's title; several take the town's
 -- name, else their busiest giver's.
 -- Describe's sort key per quest ID, reused across calls: hand-in first, then grey at the next level, then the level
@@ -2858,7 +2858,7 @@ end
 -- The journey cards (docs/design.md §2.2): at most MAX_JOURNEYS, each holding only steps the player can take now.
 local NEXT_ZONE_AHEAD = 2 -- levels: the next zones are those that fit the player two levels on
 local NEXT_ZONES = 3 -- zone cards besides the story's, best ranked first
-local NEXT_ZONE_PICKUPS = 5 -- quests there two levels on, or the card is too thin to offer (docs/plan.md §1.5)...
+local NEXT_ZONE_PICKUPS = 5 -- quests there two levels on, or the card is too thin to offer...
 local NEXT_ZONE_NOW = 3 -- ...of which this many open now: a zone the player has just come of age for is offered early
 local FITS = 3 -- the zones "that fit": the first this many of a ranking, where the zone the player stands in is theirs
 local ZONE_YARDS, ZONE_NEAR = 4000, 1.5 -- one a this many yards to a zone's middle on the player's own, at most this
@@ -3307,7 +3307,7 @@ local function Lead(data, completed, eligible, belongs)
 	return best, bestID, continues
 end
 
--- A card's hub line and group count (docs/plan.md §7.4): its first stop's place, how many stops follow it, and how
+-- A card's hub line and group count: its first stop's place, how many stops follow it, and how
 -- many of its quests need a group.
 ---@param journey AGFJourney
 local function Summarise(journey)

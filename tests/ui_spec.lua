@@ -1,5 +1,5 @@
 -- Run from the repository root: luajit tests/ui_spec.lua
--- Headless UI checks (docs/plan.md §1.1) through tests/harness.lua. What they cannot reach is a /reload check.
+-- Headless UI checks through tests/harness.lua. What they cannot reach is a /reload check.
 local harness = dofile("tests/harness.lua")
 local checks = 0
 
@@ -1397,7 +1397,7 @@ do
 	equal(h.ns.Integrations.TravelLine(h.ns.Route().steps[1]), nil, "travel line: none without Shortest Path")
 end
 
--- The combat rule (docs/plan.md §1.1 assert 6): in combat a rebuild runs only the cheap path, which still shows the
+-- The combat rule: in combat a rebuild runs only the cheap path, which still shows the
 -- log's news, and the full build runs once, when combat ends. No timer: PLAYER_REGEN_ENABLED brings it.
 do
 	local log = {
@@ -2970,7 +2970,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label)
 end
 
--- Card minutes (docs/plan.md §7.4): while the guide is open, one Shortest Path estimate a frame over the shown cards,
+-- Card minutes: while the guide is open, one Shortest Path estimate a frame over the shown cards,
 -- none in the rebuild's frame, none in step 1's travel frame beyond its own, none in combat (the last answers stand),
 -- none with the guide closed and none without Shortest Path. A boat names itself where the subline leaves room.
 for _, spf in ipairs({ false, "v1", "v1+" }) do

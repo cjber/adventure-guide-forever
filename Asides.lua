@@ -216,7 +216,7 @@ function Asides.Open(owner, tag, aside)
 	end)
 end
 
---[[ The first provider: the class trainer (docs/plan.md F16), from Tweaks Forever's spells to train, at the nearest
+--[[ The first provider: the class trainer, from Tweaks Forever's spells to train, at the nearest
      trainer who teaches them (roadmap #5, Model.Trainer); text only when the data places none. ]]
 
 Asides.Register(function()

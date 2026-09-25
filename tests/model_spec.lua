@@ -1002,7 +1002,7 @@ card = Model.Plan(sequel, player, { [1] = true }, {}, prefs()).journeys[1]
 equal(card.reason, "A chain begins with Quest giver", "story card: a chapter 1 after another quest begins")
 equal(card.steps[1].detail, "Begins a new story", "story card: and its row says it begins too")
 
--- Towns (docs/plan.md §7.2): one stop per hub merges its pickups and the hand-ins whose live waypoint agrees with the
+-- Towns: one stop per hub merges its pickups and the hand-ins whose live waypoint agrees with the
 -- data's finish, titled by the town's flight master; a waypoint elsewhere stays a turn-in of its own. The log's quests
 -- here are handed in on the story's zone, so its card holds them: there is no carry card.
 local function Town()
@@ -1046,7 +1046,7 @@ equal(table.concat(stop.givers, " "), "Marris Osgood", "town: its givers, once e
 equal(stop.group, 1, "town: the elite quest needs a group")
 equal(stop.optional, nil, "town: one elite quest never dims the whole town")
 equal(stop.x, 0.5, "town: its point is the giver nearest the player, never a centre")
--- The card's hub line and group count (docs/plan.md §7.4): its first stop's place and the stops after it.
+-- The card's hub line and group count: its first stop's place and the stops after it.
 local function Chosen(plan)
 	for _, journey in ipairs(plan.journeys) do
 		if journey.key == plan.journey then
@@ -1171,7 +1171,7 @@ town = { quests = town.quests, zones = town.zones, maps = town.maps, continents 
 stop = Model.Plan(town, visitor, {}, {}, townPrefs).steps[1]
 equal(stop.title, "Pick up: Quest", "town: a lone pickup names its quest")
 
--- Selection weighs worth against travel (docs/plan.md §7.3); with one step to choose, the worth decides which.
+-- Selection weighs worth against travel; with one step to choose, the worth decides which.
 local function Field()
 	return {
 		quests = {},

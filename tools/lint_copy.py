@@ -1,4 +1,4 @@
-"""Keep the player's copy in ns.L, and keep ns.L free of the words the design bans (docs/plan.md F14)."""
+"""Keep the player's copy in ns.L, and keep ns.L free of the words the design bans."""
 
 import argparse
 import re

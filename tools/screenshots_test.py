@@ -96,7 +96,8 @@ class Stock(unittest.TestCase):
 
 
 @unittest.skipUnless(
-    importlib.util.find_spec("PIL") and (screenshots.WOWMOCK / "wowmock.py").is_file(), "Pillow or wowmock missing"
+    importlib.util.find_spec("PIL") and screenshots.WOWMOCK and (screenshots.WOWMOCK / "wowmock.py").is_file(),
+    "Pillow or wowmock missing",
 )
 class Render(unittest.TestCase):
     def test_wowmock_loads_the_fonts_the_addon_uses(self):

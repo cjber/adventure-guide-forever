@@ -129,7 +129,7 @@ ns.L = {
 	-- The chosen journey's route stopped (cleared, replaced or refused): its card and the tracker title resume it.
 	CLICK_TO_RESUME = "Click to resume the route",
 	ROUTE_PAUSED = "Route paused. Click the journey to resume.",
-	-- A card's third line when it has no reason (docs/plan.md §7.4): its first stop, then how many follow.
+	-- A card's third line when it has no reason: its first stop, then how many follow.
 	HUB_MORE = "%s and %d more stops",
 	HUB_MORE_ONE = "%s and 1 more stop",
 	-- A card's minutes from Shortest Path, naming a crossing when the subline leaves room.
@@ -160,7 +160,7 @@ ns.L = {
 	STORY_COMPLETE = "Story complete",
 	JOURNEY_COMPLETE = "Journey complete",
 	CHOOSE_NEXT = "Choose your next journey",
-	-- The trainer aside (docs/plan.md F16).
+	-- The trainer aside.
 	TRAINER = "Visit your class trainer",
 	TRAINER_SPELLS = "%d new spells",
 	TRAINER_SPELL = "1 new spell",

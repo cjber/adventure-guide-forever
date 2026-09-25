@@ -6,6 +6,7 @@
 ## Category: Quests
 ## X-License: GPL-3.0-or-later
 ## X-Website: https://github.com/cjber/adventure-guide-forever
+# Add X-Curse-Project-ID and X-Wago-ID here after the store projects exist.
 ## IconTexture: Interface\AddOns\AdventureGuideForever\media\Icon
 ## SavedVariables: AdventureGuideForeverDB
 ## SavedVariablesPerCharacter: AdventureGuideForeverCharDB

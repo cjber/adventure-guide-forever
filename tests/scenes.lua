@@ -1,5 +1,5 @@
 -- Run from the repository root: luajit tests/scenes.lua [input.json]
--- What tools/screenshots.py draws, taken from the addon through tests/harness.lua (docs/plan.md §1.3), so no AGF
+-- What tools/screenshots.py draws, taken from the addon through tests/harness.lua, so no AGF
 -- text or layout is retyped in Python. Not a spec: it checks nothing and prints one JSON object.
 --
 -- input.json comes from screenshots.py's layout pass: `rects` (per scene, a path -> {left, bottom, width, height}
