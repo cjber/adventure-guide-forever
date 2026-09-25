@@ -2,6 +2,10 @@ I wanted a levelling guide that left me room to wander. Adventure Guide Forever 
 
 Shortest Path Forever handles travel when installed. If you follow Questie or another guide, you can hide AGF's tracker in settings; their routes may overlap.
 
+![Choosing a journey and following its route](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif)
+
+Choose a journey, see its steps on the map and follow the route, then the window's Professions and Completion tabs.
+
 ![Adventure Guide beside The Barrens map](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png)
 
 Choose a journey without leaving the world map's quest log.
@@ -47,5 +51,7 @@ The bundled quest data covers Classic quests. Forever's new quests are only cons
 `/agf` or `/adventureguide` opens the window. Shift-J does too if that key was free at first login. Left-click the addon compartment for the window; right-click for the map tab. Options are in the guide's cog and Settings > AddOns > Adventure Guide.
 
 For a missing quest, include `/agf audit` output in a bug report. Early days, feedback welcome.
+
+Works alongside [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting routes and [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion. All optional.
 
 Source code and issues: [github.com/cjber/adventure-guide-forever](https://github.com/cjber/adventure-guide-forever). Licence: GPL-3.0-or-later.

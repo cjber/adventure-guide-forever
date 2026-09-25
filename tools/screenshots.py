@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Render docs/screenshots/*.png from what the addon draws headlessly, with the WoW: Forever client's own art.
+"""Render docs/screenshots/*.png and demo.gif from what the addon draws headlessly, with the WoW: Forever
+client's own art.
 
     WOWMOCK=/path/to/wow-mock-screenshots python3 tools/screenshots.py
 
@@ -24,6 +25,7 @@ Pillow and wowmock are imported inside the render functions only: CI runs the re
 
 import dataclasses
 import importlib.metadata
+import io
 import json
 import os
 import re
@@ -1166,6 +1168,55 @@ def manifest(paths):
     (OUT / "manifest.txt").write_text("\n".join(lines) + "\n")
 
 
+DEMO_SIZE = (960, 640)  # the GIF's pixels: the README shows it at 640 wide, so text stays sharp on a 1.5x screen
+DEMO_SCENES = (  # (image, seconds held): pick a journey, see its route, then the window's tabs
+    ("panel", 1.2),
+    ("chosen", 1.8),
+    ("map", 1.6),
+    ("window", 1.2),
+    ("window_professions", 1.0),
+    ("window_completion", 1.4),
+)
+DEMO_FADE = (5, 60)  # crossfade frames and milliseconds per frame
+DEMO_LIMIT = 3_000_000
+
+
+def demo(ui, images):
+    """docs/screenshots/demo.gif: the stills above in order, each fitted to one frame. Two stills of the same frame
+    (the map before and after choosing, the window's tabs) crossfade, so only the part that changes moves and the
+    GIF stores just that; the others cut. Holds are single long frames on one shared palette, so two runs match."""
+    width, height = DEMO_SIZE
+    stills = []
+    for name, seconds in DEMO_SCENES:
+        frame = wm.backdrop(ui, width, height).image.convert("RGB")
+        image = images[name].image.convert("RGB")
+        fit = min(frame.width / image.width, frame.height / image.height)
+        size = (round(image.width * fit), round(image.height * fit))
+        offset = ((frame.width - size[0]) // 2, (frame.height - size[1]) // 2)
+        frame.paste(image.resize(size, wm.Image.Resampling.LANCZOS), offset)
+        stills.append((frame.resize(DEMO_SIZE, wm.Image.Resampling.LANCZOS), round(seconds * 1000), image.size))
+    frames, durations = [], []
+    fades, step = DEMO_FADE
+    for index, (still, hold, size) in enumerate(stills):
+        frames.append(still)
+        durations.append(hold)
+        following, _, following_size = stills[(index + 1) % len(stills)]
+        if following_size == size:
+            for fade in range(1, fades + 1):
+                frames.append(wm.Image.blend(still, following, fade / (fades + 1)))
+                durations.append(step)
+    sheet = wm.Image.new("RGB", (width, height * len(stills)))
+    for index, (still, _, _) in enumerate(stills):
+        sheet.paste(still, (0, height * index))
+    palette = sheet.quantize(colors=256, method=wm.Image.Quantize.MEDIANCUT)
+    indexed = [frame.quantize(palette=palette, dither=wm.Image.Dither.NONE) for frame in frames]
+    buffer = io.BytesIO()
+    indexed[0].save(buffer, format="GIF", save_all=True, append_images=indexed[1:], duration=durations, loop=0)
+    content = buffer.getvalue()
+    assert len(content) <= DEMO_LIMIT, f"demo.gif is {len(content):,} bytes, over {DEMO_LIMIT:,}"
+    return content
+
+
 def render(out):
     """Every scene into `out`; returns the written paths."""
     load_wowmock()
@@ -1254,6 +1305,9 @@ def render(out):
         path = out / f"{name}.png"
         image.save(path)
         written.append(path)
+    path = out / "demo.gif"
+    path.write_bytes(demo(ui, images))
+    written.append(path)
     manifest(written)
     return written
 

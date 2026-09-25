@@ -12,6 +12,10 @@ I wanted a levelling guide that left me room to wander. From your level, finishe
 
 Shortest Path Forever handles travel when installed. If you follow Questie or another guide, you can hide AGF's tracker in settings; their routes may overlap.
 
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif" width="640" alt="Choosing a journey and following its route"></p>
+
+<p align="center">Choose a journey, see its steps on the map and follow the route, then the window's Professions and Completion tabs.</p>
+
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png" width="640" alt="Adventure Guide beside The Barrens map"></p>
 
 <p align="center">Choose a journey from the world map's quest log. The rows fit the panel; more choices open in the guide's window.</p>
@@ -66,7 +70,7 @@ Forever's new quests are only considered once they are in your log. The guide ne
 
 ## Works alongside
 
-All optional: [Shortest Path Forever](https://github.com/cjber/shortest-path-forever) for travel, [Tweaks Forever](https://github.com/cjber/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://github.com/cjber/skillup-forever) for crafting routes, [Legacy Forever](https://github.com/cjber/legacy-forever) for completion, and [QuestieDB](https://github.com/Questie/QuestieDB) for quest data. QuestieDB works alone or with Questie. AGF's tracker has its own switch when you prefer another guide.
+All optional: [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting routes, [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion, and [QuestieDB](https://github.com/Questie/QuestieDB) for quest data. QuestieDB works alone or with Questie. AGF's tracker has its own switch when you prefer another guide.
 
 ## Development
 
