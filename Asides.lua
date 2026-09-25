@@ -162,7 +162,14 @@ end
 function Asides.Go(aside)
 	local place = aside.place
 	return place ~= nil
-		and ns.Integrations.Navigate({ map = place.map, x = place.x, y = place.y, title = place.name, quests = {} })
+		and ns.Integrations.Navigate({
+			map = place.map,
+			x = place.x,
+			y = place.y,
+			title = place.name,
+			quests = {},
+			adds = {},
+		})
 end
 
 -- The aside's menu, for its line in the guide and in the tracker.

@@ -186,6 +186,7 @@
 ---@field y number
 ---@field title string NPC or object name
 ---@field quests integer[] quest IDs it offers the player now, ascending
+---@field adds integer[] those a shift-click puts on the route: none orange or red
 
 ---@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"|"calling"|"battleground"
 
@@ -242,6 +243,7 @@
 ---@field MAX_STEPS integer
 ---@field MAX_JOURNEYS integer the cards a route holds and the panel draws
 ---@field IsGray fun(questLevel: integer, playerLevel: integer): boolean
+---@field Hard fun(quest: AGFQuest, player: AGFPlayer): boolean orange or red: no route takes it
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
 ---@field Why fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer, names?: AGFWhyNames): AGFWhyLine[] every requirement, met or not; eligible exactly when all are met
 ---@field Search fun(data: AGFData, player: AGFPlayer, query: string, title?: fun(questID: integer): string?): integer[] up to 10 quest IDs whose title holds `query`, by title

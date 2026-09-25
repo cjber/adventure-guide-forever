@@ -294,7 +294,8 @@ end
 ---@field New Texture
 
 -- One search result: the quest and where it starts, and for a locked one a lock and why (docs/design.md §2.4). One
--- open now joins the route with a shift-click, and wears the tradeskill favourite's star while it does (§2.18).
+-- open now joins the route with a shift-click, and wears the tradeskill favourite's star while it does (§2.18); an
+-- orange or red one, which no route takes, does not (`open` false).
 ---@class AGFSearchRow : Frame
 ---@field Lock Texture
 ---@field Star Texture
@@ -878,7 +879,8 @@ local function RefreshResult(row, id, top)
 		faction = state.FactionName,
 		standing = state.StandingName,
 	}
-	local why = ns.Model.Why(data, state.Player(), state.Completed(), state.Log(), id, names)
+	local player = state.Player()
+	local why = ns.Model.Why(data, player, state.Completed(), state.Log(), id, names)
 	local shown = {}
 	for _, met in ipairs({ false, true }) do
 		for _, line in ipairs(why) do
@@ -891,7 +893,8 @@ local function RefreshResult(row, id, top)
 	if not (shown[1] and not shown[1].met) then
 		shown = {}
 	end
-	row.why, row.id, row.open = shown, id, shown[1] == nil
+	row.why, row.id = shown, id
+	row.open = shown[1] == nil and not ns.Model.Hard(data.quests[id], player)
 	row.Star:SetShown(row.open and ns.Pinned({ id }))
 	local quest = data.quests[id]
 	local map = quest.zone or (quest.start and quest.start.map)

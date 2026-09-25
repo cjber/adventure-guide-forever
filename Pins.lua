@@ -294,7 +294,9 @@ function AdventureGuideForeverGiverPinMixin:OnMouseEnter()
 		GameTooltip_AddNormalLine(GameTooltip, ns.L.QUEST_LEVEL:format(level, title))
 	end
 	AddClickLine(GameTooltip)
-	GameTooltip_AddInstructionLine(GameTooltip, ns.Pinned(giver.quests) and ns.L.SHIFT_REMOVE or ns.L.SHIFT_ADD)
+	if #giver.adds > 0 then
+		GameTooltip_AddInstructionLine(GameTooltip, ns.Pinned(giver.adds) and ns.L.SHIFT_REMOVE or ns.L.SHIFT_ADD)
+	end
 	GameTooltip:Show()
 end
 
@@ -303,10 +305,13 @@ function AdventureGuideForeverGiverPinMixin:OnMouseLeave()
 	GameTooltip:Hide()
 end
 
--- A shift-click adds the giver's quests to the route (docs/design.md §2.18), or takes them off.
+-- A shift-click adds the giver's quests to the route (docs/design.md §2.18), or takes them off: those not orange or
+-- red, which no route takes.
 function AdventureGuideForeverGiverPinMixin:OnClick(button)
 	if button == "LeftButton" and self.giver and IsShiftKeyDown() then
-		ns.TogglePinned(self.giver.quests)
+		if #self.giver.adds > 0 then
+			ns.TogglePinned(self.giver.adds)
+		end
 		GameTooltip:Hide()
 	elseif button == "LeftButton" and self.giver then
 		ns.Integrations.Navigate(self.giver)

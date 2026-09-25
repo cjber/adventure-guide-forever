@@ -907,7 +907,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Shift(function()
 		giverPin:OnClick("LeftButton")
 	end)
-	equal(ns.Pinned(giver.quests), true, label .. ": a shift-click adds the giver's quests")
+	equal(ns.Pinned(giver.adds), true, label .. ": a shift-click adds the giver's quests")
 	equal(h.counts.SetUserWaypoint + (h.spf and h.spf.NavigateRoute or 0), navigated, label .. ": and goes nowhere")
 	h.Hover(giverPin)
 	equal(h.tooltip[#h.tooltip], "instruction: " .. ns.L.SHIFT_REMOVE, label .. ": then offers to take them off")
@@ -2308,6 +2308,25 @@ do
 	h.Type(search, "Call of Water")
 	ShiftUp(suppressed, true)
 	equal(next(h.ns.Prefs().pinned), nil, "search: a locked quest is never added")
+	-- Nor an orange or red one open now, which no route takes: no shift-click line, and a shift-click adds nothing.
+	local player, hardID = h.ns.State.Player(), nil
+	for id, quest in pairs(h.ns.Data.quests) do
+		if
+			(hardID == nil or id < hardID)
+			and h.ns.Model.Hard(quest, player)
+			and h.ns.Model.Eligible(h.ns.Data, player, h.ns.State.Completed(), h.ns.State.Log(), id)
+			and #h.ns.Model.Search(h.ns.Data, player, quest.title) == 1
+		then
+			hardID = id
+		end
+	end
+	h.Type(search, h.ns.Data.quests[assert(hardID, "search: an orange quest open now")].title)
+	local hard = Results()[1]
+	equal(#Lines(hard), 0, "search: an orange quest is open")
+	h.Hover(hard)
+	equal(h.tooltip[#h.tooltip]:find("^instruction: "), nil, "search: an orange quest offers no shift-click")
+	ShiftUp(hard, true)
+	equal(next(h.ns.Prefs().pinned), nil, "search: nor is it added")
 	h.Type(search, "Call of")
 	local ready = h.ns.State.Ready
 	h.ns.State.Ready = function()

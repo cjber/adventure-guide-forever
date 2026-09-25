@@ -768,7 +768,8 @@ The player steers the route a quest at a time, per character, and the guide only
 - **Adding a quest.** A shift-click on a quest giver's "!" or on an open search result (§2.4) adds its quests
   (`charDB.pinned[id] = true`); a second shift-click takes them off. Their tooltips say which it will do. An added
   quest skips the lap's filters (a timed or event quest, an objective the data does not place) and the ratio cut, so
-  it is on the route whenever it is eligible; eligibility and the orange/red rule (§4.1) still apply. One on the
+  it is on the route whenever it is eligible; eligibility and the orange/red rule (§4.1) still apply. So a shift-click
+  never adds an orange or red quest: a giver's leaves those out, and such a search result offers none. One on the
   story's map joins the story; one elsewhere is on Loose ends, within the log's room. A search result it added
   wears the tradeskill favourite's star (`tradeskills-star`). Dropping a quest takes it off; adding one forgets a
   drop.

@@ -477,13 +477,21 @@ local function Rank(data, ids, level, far)
 	return choices, quests
 end
 
+-- Orange or red: ORANGE levels above the player or more, too hard alone, so no route takes it, added or not.
+---@param quest AGFQuest
+---@param player AGFPlayer
+function Model.Hard(quest, player)
+	return quest.level - player.level >= ORANGE
+end
+local Hard = Model.Hard
+
 -- One eligibility pass for two levels: the player's, and `ahead` levels on for the next-zone cards. A level reaches
 -- eligibility only through a quest's minimum, so what opens at level + ahead holds everything open now. Only an
 -- instance's quests wait behind Dungeons: an outdoor elite is a zone's quest, optional and badged for a group. An
 -- orange or red quest (ORANGE levels up or more) is never offered, though its minimum allows it: too hard alone. The
 -- zones that fit now also count the log's quests the data has, as a pickup each: a zone the player has taken on is
 -- where they are adventuring, though little is left there to pick up. A quest the player ruled out (Dropped) counts
--- nowhere; one they added (shift-click, `prefs.pinned`) is offered once open whatever its colour.
+-- nowhere; one they added (shift-click, `prefs.pinned`) is offered once open even grey, but never orange or red.
 ---@param far fun(map: integer): number
 local function Choices(data, player, completed, log, index, prefs, ahead, far)
 	local eligible, later, target, ranked, pinned = {}, {}, player.level + (ahead or 0), {}, prefs.pinned or {}
@@ -505,10 +513,8 @@ local function Choices(data, player, completed, log, index, prefs, ahead, far)
 			later[#later + 1] = id
 			if
 				quest.min <= player.level
-				and (
-					pinned[id]
-					or (not Model.IsGray(quest.level, player.level) and quest.level - player.level < ORANGE)
-				)
+				and (pinned[id] or not Model.IsGray(quest.level, player.level))
+				and not Hard(quest, player)
 			then
 				eligible[#eligible + 1] = id
 				ranked[#ranked + 1] = id
@@ -523,7 +529,8 @@ local function Choices(data, player, completed, log, index, prefs, ahead, far)
 end
 
 -- Every quest giver on `mapID` with a quest the player can take now, one entry per NPC or object, like the
--- game's own "!". Gray quests stay hidden, as the game hides them unless low-level tracking is on.
+-- game's own "!". Gray quests stay hidden, as the game hides them unless low-level tracking is on. An orange or red
+-- quest shows but is not among the giver's `adds`, since no route takes it.
 ---@return AGFGiver[]
 function Model.Givers(data, player, completed, log, mapID)
 	local index, byPlace, givers = Index(data), {}, {}
@@ -539,11 +546,12 @@ function Model.Givers(data, player, completed, log, mapID)
 			local key = string.format("%s:%.4f:%.4f", start.name, start.x, start.y)
 			local giver = byPlace[key]
 			if not giver then
-				giver = { map = mapID, x = start.x, y = start.y, title = start.name, quests = {} }
+				giver = { map = mapID, x = start.x, y = start.y, title = start.name, quests = {}, adds = {} }
 				byPlace[key] = giver
 				givers[#givers + 1] = giver
 			end
 			giver.quests[#giver.quests + 1] = id
+			giver.adds[#giver.adds + 1] = not Hard(quest, player) and id or nil
 		end
 	end
 	return givers
@@ -2848,8 +2856,8 @@ local function Within(data, player, completed, log, steps)
 	return kept
 end
 
--- The quests the player added (shift-click, `prefs.pinned`) that no zone card holds: open now, not ruled out, and not
--- an instance's or a raid's, which only the dungeon card offers. By ID.
+-- The quests the player added (shift-click, `prefs.pinned`) that no zone card holds: open now, not ruled out, not
+-- orange or red, and not an instance's or a raid's, which only the dungeon card offers. By ID.
 ---@param elsewhere fun(quest: AGFQuest): boolean
 ---@return integer[]
 local function Added(data, player, completed, log, prefs, elsewhere)
@@ -2859,6 +2867,7 @@ local function Added(data, player, completed, log, prefs, elsewhere)
 		if
 			quest
 			and not (quest.dungeon or quest.raid)
+			and not Hard(quest, player)
 			and not Dropped(id)
 			and elsewhere(quest)
 			and Eligible(data, player, completed, log, id, groups)

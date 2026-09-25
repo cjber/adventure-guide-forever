@@ -120,7 +120,33 @@ do -- Missing In Action at 19: open from its minimum, but red, so never offered;
 	equal(offered[1], true, "a yellow quest, two levels up, is offered")
 	equal(offered[2], nil, "a red quest is never offered")
 	equal(offered[3], nil, "nor an orange one: too hard alone")
-	equal(#Model.Givers(camp, player, {}, {}, 1), 3, "their givers still show on the map")
+	local shown = Model.Givers(camp, player, {}, {}, 1)
+	equal(#shown, 3, "their givers still show on the map")
+	for _, giver in ipairs(shown) do
+		equal(
+			#giver.adds,
+			giver.title == "Quest giver" and 1 or 0,
+			"a shift-click adds none orange or red: " .. giver.title
+		)
+	end
+	-- Pinned (a shift-click, or an older save): a grey quest comes back, an orange or red one never does.
+	local grey = quest(0.5, 0.2)
+	grey.level = 1
+	local pinnedCamp = { quests = { [1] = fits, [2] = red, [3] = orange, [4] = grey }, zones = data.zones }
+	local pinned = prefs()
+	pinned.pinned = { [2] = true, [3] = true, [4] = true }
+	offered = {}
+	for _, journey in ipairs(Model.Plan(pinnedCamp, player, {}, {}, pinned).journeys) do
+		pinned.journey = journey.key
+		for _, step in ipairs(Model.Plan(pinnedCamp, player, {}, {}, pinned).steps) do
+			for _, id in ipairs(step.quests) do
+				offered[id] = true
+			end
+		end
+	end
+	equal(offered[4], true, "pinned: a grey quest is offered")
+	equal(offered[2], nil, "pinned: a red quest never is")
+	equal(offered[3], nil, "pinned: nor an orange one")
 end
 
 data = { quests = {}, zones = {} }
@@ -1836,6 +1862,7 @@ do
 			and candidate.start.map ~= 1413
 			and not (candidate.dungeon or candidate.raid)
 			and candidate.min <= player.level
+			and candidate.level - player.level < 3
 			and Model.Eligible(ns.Data, player, {}, {}, id)
 			and not Holds(plan.steps, id)
 		then
@@ -1863,6 +1890,7 @@ do
 			and candidate.start.map == 1413
 			and not (candidate.dungeon or candidate.raid)
 			and candidate.min <= player.level
+			and candidate.level - player.level < 3
 			and Model.Eligible(ns.Data, player, {}, {}, id)
 			and not Holds(plan.steps, id)
 		then
