@@ -1,4 +1,4 @@
--- Run from the repository root: luajit -joff tests/plan_bench.lua (docs/plan.md §1.4)
+-- Run from the repository root: luajit -joff tests/plan_bench.lua
 -- Times the real rebuild through tests/harness.lua, frame by frame, with -joff standing in for the client's plain
 -- Lua 5.1. Shortest Path is a counted cost model, not a sleep: its cache semantics (API.lua:9,166-181: origin rounded
 -- to 1e-4 plus the exact destination, 256 slots, 5 s TTL) on a fake clock, charging 2.45 ms per miss (a cold estimate,

@@ -356,7 +356,7 @@ local function Entrance(journey)
 	return instance, point, note or nil
 end
 
--- Every card's tooltip, whole or one-line (docs/plan.md §7.4): its lines, the hub line when line 3 holds the reason
+-- Every card's tooltip, whole or one-line: its lines, the hub line when line 3 holds the reason
 -- or is folded away, how many quests need a group, the quests the log-full note means, then what a click does. The
 -- chosen card points to the back arrow; a card whose click would replace someone else's journey warns
 -- first, as Go did (docs/design.md §2.9).

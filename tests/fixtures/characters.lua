@@ -1,4 +1,4 @@
--- Fixed characters for the golden routes (docs/plan.md §1.5). Each is plain data: level, side (1 Alliance,
+-- Fixed characters for the golden routes. Each is plain data: level, side (1 Alliance,
 -- 2 Horde), race and class bits as State.lua builds them (1 << (ID - 1)), a map position, completed quests as
 -- rules plus explicit IDs, a quest log and prefs. `Resolve` turns one into the planner's arguments.
 local characters = {}

@@ -347,7 +347,7 @@ def crossings(templates, path_nodes, taxi_nodes, wanted):
     return result
 
 
-LINK = 100  # yards: two givers this close stand in one town (docs/plan.md §7.2)
+LINK = 100  # yards: two givers this close stand in one town
 CAP = 400  # yards: a town wider than this is split again at a shorter link (only the capitals are)
 
 

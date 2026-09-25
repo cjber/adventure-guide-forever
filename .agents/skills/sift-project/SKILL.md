@@ -41,7 +41,7 @@ client: `tests/model_spec.lua` loads `Model.lua` and `Data/Quests.lua` with `loa
 | Live roots | `rg -n 'hooksecurefunc|RegisterEvent|RegisterCallback|SetScript|AddDataProvider|AddTooltipPostCall|SLASH_|SlashCmdList' -g '*.lua'` | — |
 | Shared-table members | the `ns-defined`/`ns-once` commands in sift's `languages/lua.md` | the `ns\.` pattern has no word boundary, so `options.zone`/`options.pinned` in the spec match; nested tables (`Model.*`, `ns.Integrations.*`) need their own `rg -n 'Model\.Name'` search |
 | Clones | `npx -y jscpd@4 --silent --min-lines 6 --ignore "Data/**,.types/**,**/.cache/**" .` | — (0 clones on 2026-09-24) |
-| Standards | `SIFT_STANDARDS_PATH=/home/cjber/skills python3 <sift>/scripts/agents.py standards` | without the variable the `wow-forever-addon` pack does not resolve (AGENTS.md links it by URL, which the helper never fetches) |
+| Standards | `python3 .sift/agents.py standards` | resolves the pinned pack declared in AGENTS.md; `SIFT_STANDARDS_PATH` can override it with a local standards directory |
 
 ## Live roots
 

@@ -19,7 +19,8 @@ python3 .sift/gate.py --base origin/main && python3 .sift/agents.py check
 The same gate CI runs, plus actionlint, zizmor and gitleaks on the workflows and history. After a change to the
 planner or the rebuild, also run `AGF_BENCH_STRICT=1 luajit -joff tests/plan_bench.lua` (the 3 ms frame budget;
 local only, since shared runners flake). `AGF_UPDATE_GOLDEN=1` rewrites the golden files in `tests/golden/`.
-After a UI change, run `python3 tools/screenshots.py` (WFA-9; local only: it needs Pillow and wago.tools) and
+After a UI change, set `WOWMOCK` to the installed wow-mock-screenshots library directory and run
+`python3 tools/screenshots.py` (WFA-9; local only: it needs Pillow and wago.tools) and
 commit the PNGs it rewrites in `docs/screenshots/`; two runs give byte-identical files.
 
 ## Layout
@@ -31,13 +32,14 @@ commit the PNGs it rewrites in `docs/screenshots/`; two runs give byte-identical
 - `Integrations.lua` — Shortest Path Forever's public API when loaded, the native waypoint otherwise.
 - `Dump.lua` — `/agf dump` saves the drawn layout to the saved variables for `tests/dump_diff.lua`.
 - `docs/curseforge.md` — the store description, pasted into CurseForge and Wago by hand.
+- `docs/design.md` — the brief contracts referenced by the source and headless specs.
 
 ## Rules
 
 - Lua 5.1 in the game's sandbox: no `require`. The client loads the files `AdventureGuideForever.toc`
   lists, in that order, each receiving `local addonName, ns = ...`; a new file goes in the TOC or never runs.
-- The specs use stubbed client APIs. The agent runs in-game checks in `_classic_beta_` via `/cua-driver`:
-  one driver at a time, never while cjber is playing — ask first. List them in the PR as `/reload` tests.
+- The specs use stubbed client APIs. Agents never launch or drive the game. List checks that need
+  the client in the PR as `/reload` tests for the user.
 - Host globals go in `.luacheckrc`; LuaLS gets WoW APIs from the pinned Ketho annotations. Add missing
   Forever/integration APIs with real types in `types/`, never `diagnostics.globals`. Addon contracts live
   in `types/Namespace.lua`.

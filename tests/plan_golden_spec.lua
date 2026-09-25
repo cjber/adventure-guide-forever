@@ -1,5 +1,5 @@
 -- Run from the repository root: luajit tests/plan_golden_spec.lua
--- Golden routes (docs/plan.md §1.5): each fixed character's journey cards and their steps, written as text in
+-- Golden routes: each fixed character's journey cards and their steps, written as text in
 -- tests/golden/<fixture>.txt, so every model change shows as a reviewable diff. AGF_UPDATE_GOLDEN=1 rewrites them.
 local ns = {}
 assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)

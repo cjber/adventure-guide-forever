@@ -66,7 +66,7 @@ local function QuestLine(tooltip, id, mark, levelled)
 end
 
 -- One line per quest at a town, under the NPC it is handed to or taken from, in the town's order (hand-ins first, then
--- by level, docs/plan.md §7.3).
+-- by level).
 ---@param tooltip GameTooltip
 ---@param step AGFStep
 local function TownQuests(tooltip, step)

@@ -55,7 +55,7 @@ end
 
 -- The first leg that isn't a walk, and the minutes until it arrives; a trip on foot names where it ends, the step's
 -- town when it has one (Shortest Path names only the zone). A new flight path on the way, and a wait of a minute or
--- more for the chosen leg, are added (docs/plan.md F10).
+-- more for the chosen leg, are added.
 ---@param detail AGFSPFDetail
 ---@param step AGFStep
 ---@return string?
@@ -254,7 +254,7 @@ function Integrations.OnTravelChange(fn)
 	travelListeners[#travelListeners + 1] = fn
 end
 
--- Each card's travel (docs/plan.md §7.4), keyed by its journey and first stop. While the guide is open and out of
+-- Each card's travel, keyed by its journey and first stop. While the guide is open and out of
 -- combat, one estimate a frame asks Shortest Path, never in a rebuild's frame or step 1's travel frame: while one is
 -- due (ns.Settling) the chain stops, and step 1's travel frame starts it again (ResumeCards), whatever order the
 -- frame's timers run in. In combat the last answers stand. The chosen card's first stop is step 1's, which Shortest

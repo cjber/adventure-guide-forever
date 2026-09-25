@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Render docs/screenshots/*.png from what the addon draws headlessly, with the WoW: Forever client's own art.
 
-    python3 tools/screenshots.py            # WOWMOCK=/path/to/wow-mock-screenshots overrides the skill's copy
+    WOWMOCK=/path/to/wow-mock-screenshots python3 tools/screenshots.py
 
 WFA-9: the store and README screenshots come from this script, never from a capture. The panel is
-tests/golden/layout.json (docs/plan.md §1.3); every other scene is read from the addon by tests/scenes.lua through
+tests/golden/layout.json; every other scene is read from the addon by tests/scenes.lua through
 the same harness, so no AGF text or layout is retyped here. Stock templates produce no regions headlessly, so each
 one the dumps name has a recipe below citing its Blizzard XML; an unknown stockTemplate fails the run. The frames
 around the addon (the world map, the tracker, the tooltip and the menu) are wowmock's (the wow-mock-screenshots
@@ -35,7 +35,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs/screenshots"
 GOLDEN = ROOT / "tests/golden/layout.json"
-WOWMOCK = Path(os.environ.get("WOWMOCK", Path.home() / ".claude/skills/wow-mock-screenshots"))
+WOWMOCK = Path(os.environ["WOWMOCK"]).expanduser() if os.environ.get("WOWMOCK") else None
 PILLOW = "12.3.0"
 SCALE = 2
 LAYOUT_PASSES = 8
@@ -236,6 +236,8 @@ wm = None  # wowmock, imported by load_wowmock(): the resolver above and its tes
 def load_wowmock():
     global wm
     if wm is None:
+        if WOWMOCK is None:
+            sys.exit("Set WOWMOCK to the directory containing wowmock.py from the wow-mock-screenshots library")
         if not (WOWMOCK / "wowmock.py").is_file():
             sys.exit(f"wowmock.py not found in {WOWMOCK}; set WOWMOCK to the wow-mock-screenshots skill")
         sys.path.insert(0, str(WOWMOCK))
@@ -532,8 +534,8 @@ STOCK = {
 
 
 def stock(entry):
-    """The recipe for a dumped frame's stock template; one the script has none for fails the run (docs/plan.md
-    §1.3), so a new template is drawn from its XML rather than left out."""
+    """The recipe for a dumped frame's stock template; one the script has none for fails the run,
+    so a new template is drawn from its XML rather than left out."""
     name = entry.get("stockTemplate")
     if name is None:
         return None
@@ -1129,68 +1131,12 @@ def shortest_path(ui, data):
     return canvas, len(walk)
 
 
-# ------------------------------------------------------------------------------------ manifest and montages
-
-# Each scene beside a sibling addon's in-game capture of the same kind of frame (docs/plan.md §1.3): the sha,
-# repository and path of every reference. panel.png has no quest-log sibling; SkillUp's window is the nearest
-# stock side-tabbed panel. The last number is the capture's pixels per UI unit, measured on it (SkillUp's 55-unit
-# side tab is 62 px wide; Legacy's 260-unit tracker header is 322 px), so each mock is scaled to match.
-REFERENCES = {
-    "menu": ("legacy-forever", "8afee98cff5fdb4cb58aab462c78ed51dfa3b030", "docs/screenshots/menu.png", 1.24),
-    "map": ("legacy-forever", "8afee98cff5fdb4cb58aab462c78ed51dfa3b030", "docs/screenshots/map.png", 1.24),
-    "tracker": ("legacy-forever", "8afee98cff5fdb4cb58aab462c78ed51dfa3b030", "docs/screenshots/tracker.png", 1.24),
-    "tooltip": ("skillup-forever", "be1163841baccc76e2bb63e64da5245f41445e62", "docs/screenshots/tooltip.png", 1.13),
-    "panel": ("skillup-forever", "be1163841baccc76e2bb63e64da5245f41445e62", "docs/screenshots/window.png", 1.13),
-}
-
-
-def reference(repository, sha, path):
-    """A reference PNG's bytes: `git show` from a sibling clone, else raw.githubusercontent.com."""
-    import urllib.request
-
-    for clone in (ROOT.parent / repository, sibling(repository)):
-        if clone is None:
-            continue
-        result = subprocess.run(["git", "-C", str(clone), "show", f"{sha}:{path}"], capture_output=True)
-        if result.returncode == 0:
-            return result.stdout
-    url = f"https://raw.githubusercontent.com/cjber/{repository}/{sha}/{path}"
-    with urllib.request.urlopen(url, timeout=120) as response:
-        return response.read()
-
-
 def sibling(repository):
     """A clone beside this repository's main worktree, when this checkout is a linked worktree."""
     common = subprocess.run(["git", "rev-parse", "--git-common-dir"], cwd=ROOT, capture_output=True, text=True)
     if common.returncode:
         return None
     return (ROOT / common.stdout.strip()).resolve().parent.parent / repository
-
-
-def montage(ui, mock_path, name, repository, sha, path, scale):
-    """The mock (scaled to the capture's `scale`) and its reference side by side, each labelled."""
-    import io
-
-    mock = wm.Image.open(mock_path).convert("RGBA")
-    size = (round(mock.width * scale / SCALE), round(mock.height * scale / SCALE))
-    mock = mock.resize(size, wm.Image.LANCZOS)
-    ref = wm.Image.open(io.BytesIO(reference(repository, sha, path))).convert("RGBA")
-    pad, label = 16, 24
-    width = pad * 3 + mock.width + ref.width
-    height = pad * 2 + label + max(mock.height, ref.height)
-    sheet = wm.Image.new("RGBA", (width, height), (20, 21, 24, 255))
-    draw = wm.ImageDraw.Draw(sheet)
-    face = wm.ImageFont.truetype(io.BytesIO(ui.wago.file(ui.wago.fdid(wm.FRIZQT))), 14)
-    captions = (
-        f"Adventure Guide Forever {name}.png (mock, {scale} px/unit)",
-        f"{repository} {sha[:7]} {Path(path).name} (in game)",
-    )
-    x = pad
-    for image, caption in zip((mock, ref), captions, strict=True):
-        draw.text((x, pad), caption, font=face, fill=(255, 210, 0, 255))
-        sheet.alpha_composite(image, (x, pad + label))
-        x += image.width + pad
-    return sheet
 
 
 def sha256(path):
@@ -1293,16 +1239,12 @@ def render(out):
         Layout(data[scene]["layout"], rects[scene]).draw(canvas)
         images[scene] = wm.scene(ui, [(canvas, 0, 0)])
 
-    (out / "_compare").mkdir(parents=True, exist_ok=True)
+    out.mkdir(parents=True, exist_ok=True)
     written = []
     for name, image in images.items():
         path = out / f"{name}.png"
         image.save(path)
         written.append(path)
-    for name, (repository, sha, path, scale) in sorted(REFERENCES.items()):
-        target = out / "_compare" / f"{name}.png"
-        montage(ui, out / f"{name}.png", name, repository, sha, path, scale).save(target, optimize=True)
-        written.append(target)
     manifest(written)
     return written
 
