@@ -434,20 +434,44 @@ local function Hand(steps)
 end
 
 -- "You're here" (docs/design.md §4.2): while the player stands in step 1's area with its objectives open, nothing
--- guides, neither a waypoint nor a Shortest Path route into it or on past it. Guidance stays on, so Stop shows, and
--- Follow hands the route on once the area is done or left.
+-- guides to it: no waypoint, and Shortest Path is handed only the stops after it (Onward), so its route on from the
+-- area still shows. Guidance stays on, so Stop shows, and Follow hands the whole route again once the area is done
+-- or left.
 local holding = false
 ---@type fun(api?: AGFSPFAPI)
 local Hold
 
--- Hands Shortest Path `steps` as one numbered journey (Hand); true when it took them. Nothing while step 1 is the
--- area the player stands in (Hold).
+-- The steps after the area the player stands in, when step 1 is one; nil otherwise.
+---@param steps (AGFStep|AGFGiver)[]
+---@return (AGFStep|AGFGiver)[]?
+local function Onward(steps)
+	if not (steps[1] and steps[1].here) then
+		return nil
+	end
+	local onward = {}
+	for index = 2, #steps do
+		onward[index - 1] = steps[index]
+	end
+	return onward
+end
+
+-- Hands Shortest Path `steps` as one numbered journey (Hand); true when it took them. While step 1 is the area the
+-- player stands in, the stops after it alone (Onward), holding on step 1 (Hold) whether Shortest Path takes them
+-- or not.
 ---@param api AGFSPFAPI
 ---@param steps (AGFStep|AGFGiver)[]
 ---@return boolean
 local function Send(api, steps)
-	if steps[1] and steps[1].here then
-		Hold(api)
+	local onward = Onward(steps)
+	if onward then
+		local hand = onward[1] and Hand(onward)
+		if hand and api.NavigateRoute(OWNER, Stops(hand)) then
+			Hold()
+			guided, ours, stopped = hand, true, nil
+			ns.Pins.Refresh()
+		else
+			Hold(api)
+		end
 		return true
 	end
 	steps = Hand(steps)
@@ -691,8 +715,22 @@ local function Follow()
 		return
 	end
 	local first, saved = route.steps[1], prefs.waypoint
-	if first and first.here then
-		Hold(api)
+	local onward = Onward(route.steps)
+	if onward then
+		-- Shortest Path goes on with the stops after the area: sent on walking in, again as they change, and while
+		-- it holds none of ours that it did not see through.
+		local index = api and api.CurrentStop(OWNER)
+		if not api then
+			Hold()
+		elseif
+			not holding
+			or (
+				index and Integrations.Stale(guided --[[@as AGFStep[] ]], index, onward, Far)
+			)
+			or (not index and not arrived and onward[1])
+		then
+			Send(api, route.steps)
+		end
 		return
 	elseif holding then
 		-- The area done or left: the route goes on from its new step 1, as Go would start it.

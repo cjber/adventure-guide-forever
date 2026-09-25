@@ -81,23 +81,6 @@
 			</Layer>
 		</Layers>
 	</Button>
-	<!-- An area step's ring: a disc the size of its area in the stock quest text's gold, faint enough that the map shows
-	     through, cut round with the stock portrait mask, under the quest marks like the stock quest blobs. It takes no
-	     mouse, so the marks and the map under it stay clickable. -->
-	<Frame name="AdventureGuideForeverAreaPinTemplate" mixin="AdventureGuideForeverAreaPinMixin" virtual="true">
-		<Layers>
-			<Layer level="BACKGROUND">
-				<Texture parentKey="Fill" setAllPoints="true">
-					<Color r="1" g="0.82" b="0" a="0.2"/>
-				</Texture>
-				<MaskTexture parentKey="FillMask" file="Interface\CharacterFrame\TempPortraitAlphaMask" hWrapMode="CLAMPTOBLACKADDITIVE" vWrapMode="CLAMPTOBLACKADDITIVE" setAllPoints="true">
-					<MaskedTextures>
-						<MaskedTexture childKey="Fill"/>
-					</MaskedTextures>
-				</MaskTexture>
-			</Layer>
-		</Layers>
-	</Frame>
 	<Frame name="AdventureGuideForeverPinTemplate" mixin="AdventureGuideForeverPinMixin" enableMouse="true" virtual="true">
 		<Size x="26" y="26"/>
 		<Layers>

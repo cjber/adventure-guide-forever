@@ -14,7 +14,7 @@ The tracker keeps the step you are on in view, above your quests:
 
 - **Journeys**: up to six cards. Tie up the loose ends in your log, follow a zone's story, pick one of the zones that just came into range for your level, or take up your class quests. The first card's steps show until you pick another, up to nine.
 - **Stories as chapters**: "Chapter 2 of 4" only when the data proves the chain's length. Later chapters are never named.
-- **Choose and go**: choosing a card previews its steps on the map and hands the route to Shortest Path Forever, boats and flight paths included, or sets the game's own waypoint. In a quest's area the waypoint steps aside until you're done there. A setting makes choosing preview only. The back arrow brings back all suggestions. *Stop* never removes a waypoint you placed yourself.
+- **Choose and go**: choosing a card previews its steps on the map and hands the route to Shortest Path Forever, boats and flight paths included, or sets the game's own waypoint. In a quest's area the waypoint steps aside until you're done there, and Shortest Path Forever keeps showing the way on. A setting makes choosing preview only. The back arrow brings back all suggestions. *Stop* never removes a waypoint you placed yourself.
 - **Routes by distance** cross the sea at most once; a turn-in on the other continent waits until you are there.
 - **Why not?**: search a quest and see what it needs, ticked when you meet it.
 - **Objective tracker section** above your quests: the current step, how you'll get there, and the next one. Click the title to start the route; right-click to skip a step or pick another journey. Right-click a card if you are not interested in it.
