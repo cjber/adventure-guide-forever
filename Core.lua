@@ -273,6 +273,9 @@ ns.L = {
 	SETTING_WANDERER = "Wanderer: name places only",
 	SETTING_WANDERER_TOOLTIP = "The guide names where to go next and leaves the way to you: no waypoint, no route "
 		.. "with Shortest Path Forever and no marks on the map.",
+	SETTING_FOLLOW_QUEST = "Follow the quest you're working on",
+	SETTING_FOLLOW_QUEST_TOOLTIP = "When you walk into the area of the quest the route leads to, the guide selects "
+		.. "that quest so the map shows its area. It never changes a quest you selected yourself.",
 	-- The Adventure Guide window (Window.lua): its tabs, the Today strip, the featured card and the Professions tab.
 	TAB_JOURNEYS = "Journeys",
 	TAB_PROFESSIONS = "Professions",
@@ -323,6 +326,8 @@ local DEFAULTS = {
 	untrackOthers = false,
 	-- Roadmap #24: hint strength, Guide (false) or Wanderer (true), which gates every waypoint, route and map mark.
 	wanderer = false,
+	-- Walking into the quest area the route leads to selects its quest, so the map draws its blue area (Focus.lua).
+	followQuest = true,
 }
 ns.DEFAULTS = DEFAULTS
 
@@ -407,6 +412,9 @@ local function LoadCharDB()
 	end
 	if loaded.guided ~= nil and type(loaded.guided) ~= "string" then
 		loaded.guided = nil
+	end
+	if loaded.focus ~= nil and type(loaded.focus) ~= "number" then
+		loaded.focus = nil
 	end
 	local waypoint = loaded.waypoint
 	if

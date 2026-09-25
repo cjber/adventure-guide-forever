@@ -124,6 +124,15 @@
 ---@field last? {key: string, reason: string} step 1 at the last rebuild, for the next login's resume line
 ---@field waypoint? {map: integer, x: number, y: number} the native waypoint the last Go set, while it may still be ours
 ---@field guided? string the key of the chosen journey whose route AGF started, while that guidance should run
+---@field focus? integer the quest AGF selected on walking into its area (Focus.lua), while that selection is still AGF's
+
+-- What Focus.Next keeps between looks: the area step 1 was, and the quest AGF selected.
+---@class AGFFocusState
+---@field area? string
+---@field quest? integer
+
+---@class AGFFocus
+---@field Next fun(state: AGFFocusState, here?: {key: string, quests: integer[]}, current?: integer, enabled: boolean): integer?
 
 -- "town" is a visit to a town (its pickups and agreeing hand-ins), "turnin" a hand-in anywhere else, and "area" or
 -- "dungeon" (a group quest's) where the log's quests under way are done.
@@ -530,6 +539,7 @@
 ---@field Model AGFModel
 ---@field State AGFState
 ---@field Integrations AGFIntegrations
+---@field Focus AGFFocus
 ---@field Print fun(msg: string)
 ---@field Setting fun(key: string): any
 ---@field SetSetting fun(key: string, value: any)
@@ -957,6 +967,8 @@
 ---@field REST_HERE string the route's last stop, when rest is low and an innkeeper of the player's side stands there
 ---@field SETTING_WANDERER string hint strength: Wanderer names places and sets no waypoint, route or map mark
 ---@field SETTING_WANDERER_TOOLTIP string
+---@field SETTING_FOLLOW_QUEST string walking into the route's quest area selects the quest (Focus.lua)
+---@field SETTING_FOLLOW_QUEST_TOOLTIP string
 
 -- The Adventure Guide window (Window.lua, WindowJourneys.lua, WindowProfessions.lua; docs/design.md §2.19).
 

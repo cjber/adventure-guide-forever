@@ -2494,11 +2494,41 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 		used[best] = true
 		-- A finished quest waits for nothing, so one handed in within half a lap of this lap's town comes along from a
 		-- later lap: a hand-in-only stop, or the hand-ins of a town whose own lap comes later, split from its pickups.
+		-- The lap the player stands in goes on from its area, which leads (Front), so a hand-in-only stop comes along
+		-- only when it adds no more to that lap than to its own: the player is never sent across the zone and back for
+		-- a hand-in its own lap passes by (Duskwood: from the worgs west of Raven Hill, not to Darkshire and back to
+		-- Lars first).
 		local home = best.anchor.pos or from
+		-- The yards `stop` adds to `lap`'s loop out of `town`: its cheapest insertion between two of the loop's points,
+		-- or there and back from its only one.
+		local function Detour(lap, stop, town)
+			local points, p, r = {}, At(stop), stop.r or 0
+			points[1] = town and { pos = town, r = 0 } or nil
+			for _, other in ipairs(lap.stops) do
+				points[#points + 1] = other ~= stop and { pos = At(other), r = other.r or 0 } or nil
+			end
+			if #points == 1 then
+				return 2 * Gap(points[1].pos, points[1].r, p, r)
+			end
+			local cheapest = UNKNOWN
+			for i = 1, #points - 1 do
+				for j = i + 1, #points do
+					local a, b = points[i], points[j]
+					local added = Gap(a.pos, a.r, p, r) + Gap(p, r, b.pos, b.r) - Gap(a.pos, a.r, b.pos, b.r)
+					cheapest = math.min(cheapest, added)
+				end
+			end
+			return cheapest
+		end
 		for _, lap in ipairs(laps) do
 			for index = used[lap] and 0 or #lap.stops, 1, -1 do
 				local stop = lap.stops[index]
-				if HandInOnly(stop) and stop.kind ~= "trainer" and Cost(home, At(stop)) <= LAP_YARDS / 2 then
+				if
+					HandInOnly(stop)
+					and stop.kind ~= "trainer"
+					and Cost(home, At(stop)) <= LAP_YARDS / 2
+					and (best ~= standing or Detour(best, stop, home) <= Detour(lap, stop, lap.anchor.pos))
+				then
 					best.stops[#best.stops + 1] = table.remove(lap.stops, index)
 				end
 			end

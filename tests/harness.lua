@@ -1396,9 +1396,18 @@ function harness.load(options)
 			return { uiMapID = map, position = { x = x, y = y } }
 		end,
 	}
+	-- The selected quest: 0 when none, as the client returns it.
+	h.superTrackedQuest = 0
 	G.C_SuperTrack = {
 		SetSuperTrackedUserWaypoint = function(on)
 			h.superTracked = on
+		end,
+		GetSuperTrackedQuestID = function()
+			return h.superTrackedQuest
+		end,
+		SetSuperTrackedQuestID = function(questID)
+			h.counts.SetSuperTrackedQuestID = (h.counts.SetSuperTrackedQuestID or 0) + 1
+			h.superTrackedQuest = questID
 		end,
 	}
 
