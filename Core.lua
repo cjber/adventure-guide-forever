@@ -199,9 +199,14 @@ ns.L = {
 	QUEST_LEVEL = "[%d] %s",
 	-- An area's tooltip: each open objective under its quest, in the client's words, else its count.
 	OBJECTIVE_LINE = "- %s",
-	-- One of a card's first steps under it in the overview (docs/design.md §2.1): the tracker's dash, not a number,
-	-- which is the chosen card's rows and rings.
-	PREVIEW_STEP = "- %s",
+	-- The overview (docs/design.md §2.2): where the player is under the title, the first card's tag, and the other
+	-- cards' footers: how far a journey has come, else how many stops it has.
+	OVERVIEW_WHERE = "%s · level %d",
+	SUGGESTED = "Suggested",
+	READY_OF = "%d of %d ready",
+	CHAPTERS_DONE = "%d of %d done",
+	STOPS_ONE = "1 stop",
+	STOPS = "%d stops",
 	OBJECTIVE_COUNT = "- %d/%d",
 	-- The guide's settings menu, then the addon's settings page.
 	MENU_QUESTS = "Quests",

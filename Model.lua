@@ -2983,6 +2983,8 @@ local function Carry(data, player, completed, log, ready, prefs, mapName, cheap,
 		reason = #parts > 0 and farther or nil,
 		map = steps[1].map,
 		steps = steps,
+		ready = finished,
+		underway = underway,
 	}
 end
 
@@ -3076,11 +3078,13 @@ local function Pickups(data, player, completed, log, ready, eligible, belongs, k
 	for _, step in ipairs(steps) do
 		kept = kept or step == lead
 	end
-	local L, parts, holds = ns.L, {}, nil
+	local L, parts, holds, handIn, underway = ns.L, {}, nil, nil, nil
 	if held then
 		-- The card counts every log quest it holds on its zone, those its laps take later too; carry holds the rest.
-		local finished, away, underway = Tally(data, player, log, held, prefs)
-		parts[#parts + 1] = finished + away > 0 and L.CARRY_READY:format(finished + away) or nil
+		local finished, away
+		finished, away, underway = Tally(data, player, log, held, prefs)
+		handIn = finished + away
+		parts[#parts + 1] = handIn > 0 and L.CARRY_READY:format(handIn) or nil
 		parts[#parts + 1] = underway > 0 and L.CARRY_IN_PROGRESS:format(underway) or nil
 		local drawn, later = {}, 0
 		for _, step in ipairs(steps) do
@@ -3097,7 +3101,15 @@ local function Pickups(data, player, completed, log, ready, eligible, belongs, k
 	end
 	parts[#parts + 1] = (quests > 0 or #parts == 0) and Count(L.QUESTS_NEAR_ONE, L.QUESTS_NEAR, quests) or nil
 	local subline = table.concat(parts, L.LIST_SEPARATOR)
-	return { map = steps[1].map, steps = steps, subline = subline, count = subline, holds = holds },
+	return {
+		map = steps[1].map,
+		steps = steps,
+		subline = subline,
+		count = subline,
+		holds = holds,
+		ready = handIn,
+		underway = underway,
+	},
 		quests,
 		kept and lead or nil
 end
@@ -3618,8 +3630,9 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 		for place = 1, math.min(FITS, #fitting) do
 			fits = fits or fitting[place] == map
 		end
+		nextZone.level = fits and player.level + levels or nil
 		nextZone.reason = WorldReason(data, log, player, nextZone --[[@as AGFJourney]])
-			or (fits and L.NEXT_ZONE_LEVEL:format(player.level + levels) or nil)
+			or (nextZone.level and L.NEXT_ZONE_LEVEL:format(nextZone.level) or nil)
 		return nextZone
 	end
 	local offered = false

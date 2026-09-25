@@ -22,6 +22,7 @@ machine that pinned it, so the freeze is importlib.metadata's, limited to what t
 Pillow and wowmock are imported inside the render functions only: CI runs the resolver's tests without Pillow.
 """
 
+import dataclasses
 import importlib.metadata
 import json
 import os
@@ -58,10 +59,29 @@ def parent_path(path):
     return path.rsplit(".", 1)[0] if "." in path else None
 
 
-def explicit_size(entry):
-    """The size set with SetSize/SetWidth/SetHeight; 0 is unset, as GetSize(true) reports it."""
+def explicit_size(entry, scale=1):
+    """The size set with SetSize/SetWidth/SetHeight; 0 is unset, as GetSize(true) reports it. `scale` is the
+    region's effective scale: its size is in its own units."""
     width, height = entry.get("size") or (0, 0)
-    return width or None, height or None
+    return (width * scale if width else None), (height * scale if height else None)
+
+
+def effective_scales(entries):
+    """Each region's effective scale (Frame:SetScale down the tree): what its offsets and sizes are multiplied by."""
+    own = {entry["path"]: entry.get("scale") or 1 for entry in entries}
+    scales = {}
+
+    def effective(path):
+        if path not in scales:
+            parent = parent_path(path)
+            while parent is not None and parent not in own:
+                parent = parent_path(parent)
+            scales[path] = own.get(path, 1) * (effective(parent) if parent else 1)
+        return scales[path]
+
+    for path in own:
+        effective(path)
+    return scales
 
 
 def resolve(entries, known, intrinsic=None, defaults=None):
@@ -76,6 +96,7 @@ def resolve(entries, known, intrinsic=None, defaults=None):
     for a region the dump shows with none (a stock template's own <Anchors>). A region with no anchors at all
     is not drawn, as in the client, and maps to None."""
     by_path = {entry["path"]: entry for entry in entries}
+    scales = effective_scales(entries)
     rects = dict(known)
     visiting = set()
 
@@ -107,10 +128,10 @@ def resolve(entries, known, intrinsic=None, defaults=None):
             fx, fy = POINTS[anchor["point"]]
             rx, ry = POINTS[anchor["relativePoint"]]
             left, top, width, height = relative
-            horizontal[fx] = left + rx * width + anchor["x"]
-            vertical[fy] = top + ry * height - anchor["y"]
+            horizontal[fx] = left + rx * width + anchor["x"] * scales[path]
+            vertical[fy] = top + ry * height - anchor["y"] * scales[path]
         if anchors and placed:
-            width, height = explicit_size(entry)
+            width, height = explicit_size(entry, scales[path])
 
             def fallback(index, laid_width=None):
                 return (intrinsic(entry, laid_width) if intrinsic else (0, 0))[index]
@@ -138,10 +159,16 @@ def scroll_child_anchors(entry):
 
 def lua_rects(rects, widths=None):
     """Rects for h.SetRects: {left, bottom, width, height} with y growing upwards, as the client's edges are, and a
-    font string's text width in the client's font fifth (its GetUnboundedStringWidth)."""
+    font string's text width in the client's font fifth (its GetUnboundedStringWidth), the lines it wraps to in its
+    rect sixth when given as a pair (its GetNumLines)."""
     widths = widths or {}
+
+    def measured(path):
+        value = widths.get(path)
+        return [] if value is None else list(value) if isinstance(value, (list, tuple)) else [value]
+
     return {
-        path: [left, -(top + height), width, height] + ([widths[path]] if path in widths else [])
+        path: [left, -(top + height), width, height] + measured(path)
         for path, rect in rects.items()
         if rect is not None
         for left, top, width, height in [rect]
@@ -175,15 +202,30 @@ def layout_pass(ui, scenes, known):
     golden = json.loads(GOLDEN.read_text())["layout"]
     if data["panel"]["layout"] != golden:
         sys.exit("tests/scenes.lua's panel differs from tests/golden/layout.json: update its fixture to ui_spec's")
-    inputs = {"rects": {}}
+    inputs = {"rects": {}, "mapArt": map_tiles(ui)}
     for _ in range(LAYOUT_PASSES):
         data = run_scenes(inputs)
         rects = {scene: layout_rects(ui, data[scene]["layout"], known) for scene in scenes}
-        fed = {scene: lua_rects(rects[scene], text_widths(ui, data[scene]["layout"])) for scene in scenes}
+        fed = {
+            scene: lua_rects(rects[scene], text_measures(ui, data[scene]["layout"], rects[scene])) for scene in scenes
+        }
         if fed == inputs["rects"]:
             return data, rects
         inputs["rects"] = fed
     sys.exit(f"the layout did not settle in {LAYOUT_PASSES} passes")
+
+
+def map_tiles(ui):
+    """C_Map.GetMapArtLayerTextures(uiMap, 1) for every zone Data/ZoneArt.lua has: its base art's UiMapArtTile files,
+    row-major, as the client gives them; the harness makes some up without."""
+    zones = re.findall(r"^\t\[(\d+)\] = \{$", (ROOT / "Data/ZoneArt.lua").read_text(), re.M)
+    tiles = {}
+    for zone in zones:
+        art = wm.map_art_id(ui, int(zone))
+        rows = [r for r in ui.table("UiMapArtTile").values() if r["UiMapArtID"] == art and r["LayerIndex"] == "0"]
+        rows.sort(key=lambda r: (int(r["RowIndex"]), int(r["ColIndex"])))
+        tiles[zone] = [int(r["FileDataID"]) for r in rows]
+    return tiles
 
 
 # ------------------------------------------------------------------------------------------ art and fonts
@@ -222,15 +264,26 @@ def texture(ui, ref):
     return ui.texture(int(ref) if isinstance(ref, (int, float)) else ref.replace("\\", "/").lower() + ".blp")
 
 
-def fit_text(canvas, text, face, width, wrap):
-    """A FontString's lines in `width`: one line cut with '...' under SetWordWrap(false), else word-wrapped."""
+def fit_text(canvas, text, face, width, wrap, max_lines=None):
+    """A FontString's lines in `width`: one line cut with '...' under SetWordWrap(false), else word-wrapped, the last
+    of SetMaxLines' lines cut with '...' when more would follow."""
     if width <= 0 or canvas.text_width(text, face) <= width + 0.5:
         return [text]
     if wrap is False:
-        while text and canvas.text_width(text + "...", face) > width:
-            text = text[:-1]
-        return [text + "..."]
-    return wm.wrap_text(canvas, text, face, width)
+        return [cut(canvas, text, face, width)]
+    lines = wm.wrap_text(canvas, text, face, width)
+    if max_lines and len(lines) > max_lines:
+        lines = lines[: max_lines - 1] + [cut(canvas, " ".join(lines[max_lines - 1 :]), face, width)]
+    return lines
+
+
+def cut(canvas, text, face, width):
+    """One line cut short with '...' to fit `width`."""
+    if canvas.text_width(text, face) <= width + 0.5:
+        return text
+    while text and canvas.text_width(text + "...", face) > width:
+        text = text[:-1]
+    return text + "..."
 
 
 # ------------------------------------------------------------------------------------ stock-template recipes
@@ -417,7 +470,8 @@ def layout_rects(ui, entries, known):
         if entry["type"] == "FontString":
             text = entry.get("text") or ""
             face = font(entry["font"])
-            lines = fit_text(measure, text, face, width, entry.get("wordWrap")) if text and width else [text]
+            wrap, most = entry.get("wordWrap"), entry.get("maxLines")
+            lines = fit_text(measure, text, face, width, wrap, most) if text and width else [text]
             return (measure.text_width(text, face) if text else 0), face.height * len(lines)
         if entry.get("atlas"):
             art = ui.atlas(entry["atlas"])
@@ -437,22 +491,38 @@ def layout_rects(ui, entries, known):
     return resolve(entries, known, intrinsic, defaults)
 
 
-def text_widths(ui, entries):
-    """Each font string's text width in the client's font, whatever width it is laid out in."""
+def text_measures(ui, entries, rects):
+    """Each font string's text width in the client's font, whatever width it is laid out in, and the lines it wraps
+    to in the width it is laid out in."""
     measure = ui.canvas(1, 1)
-    return {
-        entry["path"]: measure.text_width(entry["text"], font(entry["font"]))
-        for entry in entries
-        if entry["type"] == "FontString" and entry.get("text")
-    }
+    measures = {}
+    for entry in entries:
+        if entry["type"] == "FontString" and entry.get("text"):
+            face = font(entry["font"])
+            rect = rects.get(entry["path"])
+            width = rect[2] if rect else 0
+            lines = fit_text(measure, entry["text"], face, width, entry.get("wordWrap"), entry.get("maxLines"))
+            measures[entry["path"]] = [measure.text_width(entry["text"], face), len(lines)]
+    return measures
 
 
-def draw_texture(canvas, entry, rect, alpha):
+def draw_texture(canvas, entry, rect, alpha, scale=1, mask=None):
+    """A texture in its rect. An atlas keeps its slice margins (the atlas's, else SetTextureSliceMargins') at its
+    frame's `scale`; `mask` is (MaskTexture entry, rect) for one AddMaskTexture put on it."""
     ui, (x, y, w, h) = canvas.ui, rect
-    target = ui.canvas(canvas.width, canvas.height) if entry.get("maskFile") else canvas
+    target = ui.canvas(canvas.width, canvas.height) if entry.get("maskFile") or mask else canvas
     blend = entry.get("alphaMode") or "BLEND"
     if entry.get("atlas"):
-        target.draw(ui.atlas(entry["atlas"]), x, y, w, h, (1, 1, 1, alpha), blend)
+        art = ui.atlas(entry["atlas"])
+        if entry.get("slice"):
+            art = dataclasses.replace(art, slice=tuple(entry["slice"]))
+        if art.slice and scale != 1:
+            # The margins keep their size in the frame's own units: drawn at that size, then scaled with the frame.
+            full = ui.canvas(w / scale, h / scale)
+            full.draw(art, 0, 0, w / scale, h / scale)
+            target.draw(full.image, x, y, w, h, (1, 1, 1, alpha), blend)
+        else:
+            target.draw(art, x, y, w, h, (1, 1, 1, alpha), blend)
     elif entry.get("file") is not None:
         image = texture(ui, entry["file"])
         if entry.get("texCoord"):
@@ -461,8 +531,13 @@ def draw_texture(canvas, entry, rect, alpha):
     elif entry.get("color"):
         r, g, b, a = entry["color"]
         target.fill(x, y, w, h, (r, g, b, a * alpha))
-    if target is not canvas:
+    if entry.get("maskFile"):
         target.mask(texture(ui, entry["maskFile"]), x, y, w, h)
+    if mask:
+        mask_entry, (mx, my, mw, mh) = mask
+        image = ui.atlas(mask_entry["atlas"]).image if mask_entry.get("atlas") else texture(ui, mask_entry["file"])
+        target.mask(image, mx, my, mw, mh)
+    if target is not canvas:
         canvas.paste(target, 0, 0)
 
 
@@ -474,7 +549,7 @@ def draw_font_string(canvas, entry, rect, alpha):
         return
     x, y, w, h = rect
     face = font(entry["font"])
-    lines = fit_text(canvas, text, face, w, entry.get("wordWrap"))
+    lines = fit_text(canvas, text, face, w, entry.get("wordWrap"), entry.get("maxLines"))
     top = y + (h - face.height * len(lines)) / 2
     target = canvas.ui.canvas(canvas.width, canvas.height) if alpha < 1 else canvas
     for index, line in enumerate(lines):
@@ -495,6 +570,7 @@ class Layout:
     def __init__(self, entries, rects, highlighted=()):
         self.rects = rects
         self.highlighted = set(highlighted)
+        self.scales = effective_scales(entries)
         paths = {entry["path"] for entry in entries}
         self.children, self.roots = {}, []
         for entry in entries:
@@ -527,6 +603,13 @@ class Layout:
         child = next((kid for kid in kids if kid["path"].endswith(".scrollChild")), None)
         child_height = self.rects[child["path"]][3] if child and self.rects.get(child["path"]) else None
         lit = entry.get("highlightLocked") or entry["path"] in self.highlighted
+        # A texture's AddMaskTexture: the frame's MaskTexture (ZoneIcon.lua has one per frame).
+        masks = [kid for kid in kids if kid["type"] == "MaskTexture" and self.rects.get(kid["path"])]
+        mask = (masks[0], self.rects[masks[0]["path"]]) if masks else None
+        if entry.get("clipsChildren"):
+            # SetClipsChildren: what the frame and its children draw outside its rect is put back as it was.
+            box = tuple(canvas.px(v) for v in (rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]))
+            before = canvas.image.copy()
 
         def art(layer):
             if recipe:
@@ -550,7 +633,8 @@ class Layout:
                     continue
                 region_alpha = alpha * region.get("alpha", 1)
                 if region["type"] == "Texture":
-                    draw_texture(canvas, region, region_rect, region_alpha)
+                    masked = mask if region.get("masked") else None
+                    draw_texture(canvas, region, region_rect, region_alpha, self.scales[region["path"]], masked)
                 else:
                     draw_font_string(canvas, region, region_rect, region_alpha)
         art("TEXT")
@@ -572,6 +656,9 @@ class Layout:
                 canvas.image = before
             else:
                 self.frame(canvas, kid, alpha)
+        if entry.get("clipsChildren"):
+            before.paste(canvas.image.crop(box), box[:2])
+            canvas.image = before
 
 
 # ---------------------------------------------------------------------------------------- the stock frames

@@ -3,7 +3,8 @@
 -- text or layout is retyped in Python. Not a spec: it checks nothing and prints one JSON object.
 --
 -- input.json comes from screenshots.py's layout pass: `rects` (per scene, a path -> {left, bottom, width, height}
--- map it resolved from the previous run). With no input the panel is exactly tests/golden/layout.json, which
+-- map it resolved from the previous run) and `mapArt` (each zone's base tiles, as C_Map.GetMapArtLayerTextures gives
+-- them in game). With no input the panel is exactly tests/golden/layout.json, which
 -- screenshots.py checks.
 local harness, json = dofile("tests/harness.lua"), dofile("tests/json.lua")
 local QUERY = "Call of"
@@ -22,21 +23,33 @@ local loaded = {}
 -- `optIn` turns on the marks a player opts into (both are off by default); the panel and search scenes, the store
 -- page's lead images, keep the defaults, so they show only the rings the open guide previews.
 -- The character chose the Barrens story before, as ui_spec's has, or `journey`; `fresh` has chosen nothing yet.
--- `carried` adds a finished quest to the log.
-local function Load(spf, optIn, fresh, journey, carried)
+-- `carried` adds finished quests to the log; `extra` adds harness options (Tweaks Forever, talent points).
+local function Load(spf, optIn, fresh, journey, carried, extra)
 	local log = {
 		{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
 		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 	}
-	log[#log + 1] = carried
-	local h = harness.load({
+	for _, quest in ipairs(carried or {}) do
+		log[#log + 1] = quest
+	end
+	local options = {
 		spf = spf or nil,
 		db = optIn and { showMapPins = true, showQuestGivers = true } or nil,
 		charDB = not fresh and { journey = journey or "zone:1413" } or nil,
 		completed = { 844 },
 		log = log,
-	})
+	}
+	for key, value in pairs(extra or {}) do
+		options[key] = value
+	end
+	local h = harness.load(options)
 	loaded[#loaded + 1] = h
+	if input.mapArt then
+		h.mapArt = {}
+		for map, tiles in pairs(input.mapArt) do
+			h.mapArt[tonumber(map)] = tiles
+		end
+	end
 	return h
 end
 
@@ -94,13 +107,20 @@ h.providers[1]:RefreshAllData()
 out.panel.pins = Pins(h)
 out.panel.map = h.map:GetMapID()
 
--- The lead image, a character with no card chosen: the overview, every card whole over its first steps, the hint under
--- the cards, and the first card's rings, which the guide previews on its own (docs/design.md §2.6). With Shortest
--- Path's minutes on each card, and a finished group quest, Counterattack!, handed in at Regthar Deathgate's camp, so
--- the story card, which holds the log's Barrens quests, has the group tag beside its hub line.
+-- The lead image, a character with no card chosen: the overview (docs/design.md §2.2), the story featured over its
+-- first steps and the others two across, both asides above them, and the first card's rings, which the guide previews
+-- on its own (§2.6). Two finished quests: Counterattack!, handed in at Regthar Deathgate's camp, so the story card
+-- counts two ready, and Hidden Enemies, handed in at Orgrimmar, so Loose ends has one. Tweaks Forever has three spells
+-- to train and a talent point waits, so both asides show.
 local COUNTERATTACK =
 	{ id = 4021, title = "Counterattack!", level = 20, complete = true, map = 1413, x = 0.4534, y = 0.2841 }
-h = Load("v1+", false, true, nil, COUNTERATTACK)
+local HIDDEN_ENEMIES =
+	{ id = 5729, title = "Hidden Enemies", level = 15, complete = true, map = 1454, x = 0.4947, y = 0.5059 }
+local SPELL = { name = "Lightning Bolt", level = 18, line = "Elemental", lineID = 375, general = false }
+h = Load("v1+", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, {
+	tf = { spells = { SPELL, SPELL, SPELL } },
+	talents = 1,
+})
 -- The stub's one flight leg takes longer the farther the stop, so each card reads its own minutes.
 local detail = h.G.ShortestPathForever.API.EstimateDetail
 h.G.ShortestPathForever.API.EstimateDetail = function(fromMap, fromX, fromY, toMap, toX, toY)

@@ -64,6 +64,19 @@ class Resolve(unittest.TestCase):
         with self.assertRaises(ValueError):
             screenshots.resolve(entries, ROOT)
 
+    def test_a_scaled_frame_scales_its_offsets_and_size_and_its_children(self):
+        entries = [
+            entry("bar", [anchor("TOPLEFT", x=36, y=-18)], (100, 18), scale=0.5),
+            entry("bar.fill", [anchor("TOPLEFT", "bar")], (40, 18)),
+        ]
+        rects = screenshots.resolve(entries, ROOT)
+        self.assertEqual(rects["bar"], (18, 9, 50, 9))
+        self.assertEqual(rects["bar.fill"], (18, 9, 20, 9))
+
+    def test_lua_rects_carry_line_counts(self):
+        rects = screenshots.lua_rects({"t": (0, 0, 5, 6)}, {"t": [12.5, 2]})
+        self.assertEqual(rects, {"t": [0, -6, 5, 6, 12.5, 2]})
+
     def test_lua_rects_flip_y(self):
         self.assertEqual(screenshots.lua_rects({"a": (10, 20, 30, 40), "b": None}), {"a": [10, -60, 30, 40]})
 

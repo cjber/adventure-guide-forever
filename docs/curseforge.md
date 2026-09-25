@@ -4,7 +4,7 @@ Levelling guides tell you exactly what to do, in order, as fast as possible. I w
 
 It looks like it came with the game: a tab in the quest log beside Quests, cards drawn with retail's Journeys art, the game's own objective tracker, and Blizzard's quest details when you click a quest. With the tab closed it draws nothing on your map. It works with Shortest Path Forever for travel, and loads alongside Questie or RestedXP, though their routes may overlap.
 
-![The Barrens on the world map with the Adventure Guide tab open on its overview: The Barrens story (Chapter 1 of 4, 2 min, 2 quests will soon turn grey) and Head to Stonetalon Mountains (7 quests near your level, 11 min, For level 20), each card whole with its first three steps under it](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png)
+![The Barrens on the world map with the Adventure Guide tab open on its overview: the header reads The Barrens, level 18, under it the class trainer and talent asides, The Barrens story featured with a round map of the zone, 2 ready to hand in and 1 in progress over its first three steps, then Loose ends and Head to Stonetalon Mountains side by side](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png)
 
 The tracker keeps the step you are on in view, above your quests:
 
@@ -12,7 +12,7 @@ The tracker keeps the step you are on in view, above your quests:
 
 ## Features
 
-- **Journeys**: up to six cards. Tie up the loose ends in your log, follow a zone's story, pick one of the zones that just came into range for your level, or take up your class quests. Until you pick one, the tab shows every card whole with its first steps; pick one for its full route, up to nine steps.
+- **Journeys**: up to six cards. Tie up the loose ends in your log, follow a zone's story, pick one of the zones that just came into range for your level, or take up your class quests. Until you pick one, the tab shows the suggested card with its first steps and the others two across, each with a round piece of its zone's map; pick one for its full route, up to nine steps.
 - **Stories as chapters**: "Chapter 2 of 4" only when the data proves the chain's length. Later chapters are never named.
 - **Choose and go**: choosing a card previews its steps on the map and hands the route to Shortest Path Forever, boats and flight paths included, or sets the game's own waypoint. In a quest's area the waypoint steps aside until you're done there, and Shortest Path Forever keeps showing the way on. A setting makes choosing preview only. The back arrow brings back the overview. *Stop* never removes a waypoint you placed yourself.
 - **Routes by distance** cross the sea at most once; a turn-in on the other continent waits until you are there.

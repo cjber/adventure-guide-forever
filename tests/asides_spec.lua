@@ -54,28 +54,44 @@ local function Opened(h)
 	Settle(h)
 end
 
--- The aside's line above the cards, while it shows.
+-- A line's top: its TOPLEFT anchor's y offset.
+local function Top(line)
+	for index = 1, line:GetNumPoints() do
+		local point, _, _, _, y = line:GetPoint(index)
+		if point == "TOPLEFT" then
+			return y
+		end
+	end
+end
+
+-- The asides' lines above the cards, top to bottom, while they show.
 local function Line(h)
-	return h.Find(function(frame)
+	local lines = h.Find(function(frame)
 		return frame.Skip ~= nil and frame.Icon ~= nil and frame:IsVisible()
 	end)
+	table.sort(lines, function(a, b)
+		return Top(a) > Top(b)
+	end)
+	return lines
 end
 
 local A = { key = "a", text = "A thing to do", icon = "class" }
 local B = { key = "b", text = "Another thing", icon = "profession" }
 
--- One aside for each surface, the first provider's; the harness has no Tweaks Forever, so the trainer gives none.
+-- Every aside in the guide, a line each in the providers' order, and the first in the tracker; the harness has no
+-- Tweaks Forever, so the trainer gives none.
 do
 	local h = Load(false)
 	Provider(h, A)
 	Provider(h, B)
 	Opened(h)
 	local lines = Line(h)
-	equal(#lines, 1, "one line in the guide")
-	equal(lines[1].Text:GetText(), A.text, "the first provider's")
+	equal(#lines, 2, "a line each in the guide")
+	equal(lines[1].Text:GetText(), A.text, "the first provider's first")
 	equal(lines[1].Icon:GetAtlas(), A.icon, "with its icon")
-	local _, _, _, _, y = lines[1]:GetPoint(1)
-	equal(y, 0, "above the cards")
+	equal(lines[2].Text:GetText(), B.text, "then the next")
+	equal(Top(lines[1]), 0, "above the cards")
+	equal(Top(lines[2]), -16, "a line under the other")
 	local step = h.ns.Route().steps[1]
 	same(h.tracker.layoutOrder, { "aside", step.key }, "one line in the tracker, above the chosen journey's step")
 	equal(h.tracker.liveBlocks.aside.header, A.text, "the same aside")
@@ -84,6 +100,7 @@ do
 	-- Skip for now, from the line's own button: the next provider's shows, and the next session has it again.
 	h.Click(lines[1].Skip)
 	h.flush()
+	equal(#Line(h), 1, "skip: its line goes")
 	equal(Line(h)[1].Text:GetText(), B.text, "skip: the next aside")
 	equal(h.tracker.liveBlocks.aside.header, B.text, "skip: in the tracker too")
 	local again = Load(false, h.G.AdventureGuideForeverCharDB)

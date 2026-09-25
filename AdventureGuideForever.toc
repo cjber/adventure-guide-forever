@@ -14,6 +14,7 @@
 
 Data\Quests.lua
 Data\Forever.lua
+Data\ZoneArt.lua
 Core.lua
 Model.lua
 State.lua
@@ -27,6 +28,7 @@ Moments.lua
 Menu.lua
 Pins.lua
 Panel.xml
+ZoneIcon.lua
 Panel.lua
 Tracker.lua
 Tooltip.lua

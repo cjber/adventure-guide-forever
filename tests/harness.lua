@@ -156,9 +156,13 @@ function harness.load(options)
 	end
 	-- Setters no spec reads but tools/screenshots.py draws: each stores its arguments under `field` for h.Describe.
 	for name, field in pairs({
+		SetBlendMode = "alphaMode",
+		SetClipsChildren = "clipsChildren",
 		SetHighlightFontObject = "highlightFont",
 		SetJustifyH = "justifyH",
+		SetMaxLines = "maxLines",
 		SetTexCoord = "texCoord",
+		SetTextureSliceMargins = "slice",
 		SetWordWrap = "wordWrap",
 	}) do
 		Methods[name] = function(self, first, ...)
@@ -342,6 +346,19 @@ function harness.load(options)
 	function Methods:GetEffectiveScale()
 		return 1
 	end
+	function Methods:SetScale(scale)
+		self.scale = scale
+	end
+	function Methods:GetScale()
+		return self.scale or 1
+	end
+	-- A texture masked by a MaskTexture: tools/screenshots.py masks it with its frame's mask.
+	function Methods:AddMaskTexture(mask)
+		assert(mask.objectType == "MaskTexture", "AddMaskTexture takes a MaskTexture")
+		self.masks = self.masks or {}
+		self.masks[#self.masks + 1] = mask
+		self.masked = true
+	end
 
 	-- Frames.
 	function Methods:SetScript(scriptType, fn)
@@ -383,9 +400,9 @@ function harness.load(options)
 	function Methods:GetFrameLevel()
 		return self.level or 0
 	end
-	function Methods:CreateTexture(name, layer)
+	function Methods:CreateTexture(name, layer, _, subLevel)
 		local texture = NewRegion("Texture", name, self)
-		texture.layer = layer
+		texture.layer, texture.subLevel = layer, subLevel
 		return texture
 	end
 	function Methods:CreateMaskTexture(name, layer)
@@ -490,6 +507,28 @@ function harness.load(options)
 	Methods.GetTextWidth = Methods.GetStringWidth
 	function Methods:GetStringHeight()
 		return 12
+	end
+	-- The lines the text wraps to: as the layout pass counted them in the client's font, else each word's estimate
+	-- wrapped greedily in the width set; at most SetMaxLines'.
+	function Methods:GetNumLines()
+		local measured, text = self.measured, self.text or ""
+		local lines = measured and measured.text == text and measured.lines
+		local width = self.rect and self.rect[3] or self.width
+		if not lines then
+			lines = 1
+			if self.wordWrap ~= false and width and width > 0 then
+				local used = 0
+				for word in text:gmatch("%S+") do
+					local size = #word * 6
+					if used > 0 and used + 6 + size > width then
+						lines, used = lines + 1, size
+					else
+						used = used + (used > 0 and 6 or 0) + size
+					end
+				end
+			end
+		end
+		return math.min(lines, self.maxLines and self.maxLines > 0 and self.maxLines or lines)
 	end
 	function Methods:SetFontObject(font)
 		self.font = font
@@ -1197,6 +1236,19 @@ function harness.load(options)
 			local names = { [1411] = "Durotar", [1413] = "The Barrens", [1442] = "Stonetalon Mountains" }
 			return { mapID = mapID, name = names[mapID] or "Map " .. mapID }
 		end,
+		-- A zone's base art (C_Map.GetMapArtLayerTextures): h.mapArt[map] when a scene gives the real tiles, else
+		-- twelve made-up FileDataIDs, the 4x3 tiles of a zone's 1002x668 canvas.
+		GetMapArtLayerTextures = function(mapID, layer)
+			assert(layer == 1, "the zone art has one layer")
+			if h.mapArt and h.mapArt[mapID] then
+				return h.mapArt[mapID]
+			end
+			local tiles = {}
+			for index = 1, 12 do
+				tiles[index] = mapID * 100 + index
+			end
+			return tiles
+		end,
 		SetUserWaypoint = function(point)
 			h.counts.SetUserWaypoint = h.counts.SetUserWaypoint + 1
 			h.waypoint = point
@@ -1851,6 +1903,7 @@ function harness.load(options)
 		"activeAtlas",
 		"alphaMode",
 		"checked",
+		"clipsChildren",
 		"color",
 		"disabled",
 		"file",
@@ -1861,8 +1914,12 @@ function harness.load(options)
 		"justifyH",
 		"layer",
 		"maskFile",
+		"masked",
+		"maxLines",
 		"normalAtlas",
 		"normalFont",
+		"scale",
+		"slice",
 		"subLevel",
 		"texCoord",
 		"wordWrap",
@@ -1903,7 +1960,7 @@ function harness.load(options)
 			if rect then
 				local old = region.rect
 				region.rect = rect
-				region.measured = rect[5] and { text = entry.text, width = rect[5] } or nil
+				region.measured = rect[5] and { text = entry.text, width = rect[5], lines = rect[6] } or nil
 				local script = region.scripts and region.scripts.OnSizeChanged
 				if script and not (old and old[3] == rect[3] and old[4] == rect[4]) then
 					h.call(script, region, rect[3], rect[4])
