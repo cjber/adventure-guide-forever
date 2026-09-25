@@ -267,6 +267,54 @@ for _, level in ipairs({ 10, 40 }) do
 	end
 end
 
+-- Cold Legacy reads return pending immediately, including while the guide is hidden. Session legs share
+-- the travel scheduler; showing either guide must not cause a second SPF estimate in the same frame.
+for _, shown in ipairs({ false, true }) do
+	local h = harness.load({
+		spf = "ended",
+		legacy = { error = "loading" },
+		charDB = { journey = "zone:1413" },
+		completed = { 844 },
+		log = { { id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 } },
+	})
+	if shown then
+		h.ns.OpenWindow()
+	end
+	h.flush()
+	local api, model = h.G.ShortestPathForever.API, CostModel()
+	for _, name in ipairs({ "Estimate", "EstimateDetail" }) do
+		local original = api[name]
+		api[name] = function(...)
+			model.charge(...)
+			return original(...) -- multi-value: preserve the provider's refusal reason
+		end
+	end
+	local samples = {}
+	for sample = 1, SAMPLES do
+		model.reset()
+		model.now = sample * 60
+		local started = os.clock()
+		local completion = h.ns.Providers.Completion()
+		check(completion.zones[1].error == "loading", "cold provider must preserve pending")
+		samples[sample] = (os.clock() - started) * 1000
+		h.ns.Session.Set(sample % 2 == 0 and 30 or 15)
+		for _ = 1, 30 do
+			local asked = model.calls
+			local ran = h.tick()
+			check(model.calls - asked <= 1, "session/card travel must share one SPF call per frame")
+			if ran == 0 then
+				break
+			end
+		end
+	end
+	check(#h.errors == 0, "session benchmark errors: " .. table.concat(h.errors, "\n"))
+	lines[#lines + 1] = ("Legacy cold, window %s: %.3f / %.3f ms (median / max)"):format(
+		shown and "shown" or "hidden",
+		Median(samples),
+		Max(samples)
+	)
+end
+
 print(table.concat(lines, "\n"))
 if strict then
 	check(worstRebuild < BUDGET_MS, ("rebuild frame max %.3f ms is over %d ms"):format(worstRebuild, BUDGET_MS))

@@ -62,6 +62,10 @@ read_globals = {
 	-- Integrations.lua
 	"ShortestPathForever",
 	"TweaksForever",
+	"LegacyForever",
+	"GetBindLocation",
+	"GetLocale",
+	"GetTime",
 	"UiMapPoint",
 	"C_SuperTrack",
 	"UIErrorsFrame",

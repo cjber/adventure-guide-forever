@@ -247,7 +247,7 @@ do
 	end
 	-- Every row goes in through the secure delegate, in page order; none from addon code, which taints the search.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 9, "every row is registered through Settings.RegisterInitializer")
+	equal(#h.settings, 10, "every row is registered through Settings.RegisterInitializer")
 	equal(
 		h.settings[1].key .. " " .. h.settings[2].key .. " " .. h.settings[3].key,
 		"showTracker wanderer followQuest",
@@ -319,7 +319,7 @@ do
 	h.flush()
 	equal(h.ns.Prefs().guided, "zone:1413", "follow: the chosen journey's route")
 	equal(h.spf.NavigateRoute, 1, "follow: started once")
-	Moved(h, 1413, 0.5223, 0.3101)
+	Moved(h, h.player.map, h.player.x, h.player.y)
 	equal(h.spf.NavigateRoute, 1, "follow: a rebuild that changes nothing sends nothing")
 	-- Southsea Freebooters and Baron Longshore picked up in Ratchet and the player in their area's ring: it is step 1
 	-- before the Crossroads the route heads for, so the way changed.
@@ -374,11 +374,11 @@ do
 		h.spfAdvance()
 	end
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 4, "follow: heading for the town it stands in: nothing")
+	equal(h.spf.NavigateRoute, 5, "follow: retarget the nearest remaining giver in town")
 	h.spfOther()
 	Moved(h, 1413, 0.46, 0.79)
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 4, "follow: another journey replaced ours: nothing")
+	equal(h.spf.NavigateRoute, 5, "follow: another journey replaced ours: nothing")
 	clean(h, "follow")
 
 	-- The "you're here" head (design §4.2): checked every 2 s only while the player moves, and a rebuild only on
@@ -962,7 +962,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Hover(ring)
 	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. Step 1 is the Crossroads, where The
 	-- Zhevra opens its next chapter, handed in before the town's pickups.
-	local expected = { "title: 1. Crossroads, The Barrens" }
+	local expected = { "title: 1. Crossroads, The Barrens: pick up 7, turn in 1" }
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
 	expected[#expected + 1] = "highlight: Opens the next chapter here"
 	expected[#expected + 1] = "normal: Sergra Darkthorn"
@@ -1028,7 +1028,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	-- Design §2.8's menu for a town holding a log quest; Stop only once Go runs, Show quest never in combat.
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:349"], "RightButton")
 	local menu = {
-		"title: Crossroads, The Barrens",
+		"title: Crossroads, The Barrens: pick up 7, turn in 1",
 		"button: Go",
 		"button: Show quest",
 		"button: Skip for now",
@@ -1099,7 +1099,7 @@ do
 	end
 	h.Hover(pin)
 	local expected = {
-		"title: " .. index .. ". Gann's Reclamation",
+		"title: " .. index .. ". Defeat Bael'dun Excavator slain: 7/15 · Gann's Reclamation",
 		"highlight: quests in progress",
 		"colored: Gann's Reclamation",
 		"highlight: - Bael'dun Excavator slain: 7/15",
@@ -1933,7 +1933,10 @@ for _, spf in ipairs({ false, "v1" }) do
 	local label = "tracker: " .. (spf or "no Shortest Path")
 	local h = Load(spf)
 	local steps = h.ns.Route().steps
-	local expected = { "1 to hand in, 5 to pick up", "Opens the next chapter here" }
+	local expected = { "1 to hand in, 7 to pick up", "Opens the next chapter here" }
+	for _, giver in ipairs(steps[1].checklist) do
+		expected[#expected + 1] = giver.text
+	end
 	expected[#expected + 1] = spf and "About 6 min away" or nil
 	expected[#expected + 1] = "Next: " .. steps[2].title .. " (no dash)"
 	local lines, block = TrackerLines(h)
@@ -2004,7 +2007,7 @@ do
 	end)
 	h.Hover(rows[1])
 	local lines, colors = h.tooltip, h.tooltipColors
-	equal(lines[1], "title: 1. Crossroads, The Barrens", "hub tooltip: the numbered town")
+	equal(lines[1], "title: 1. Crossroads, The Barrens: pick up 8, turn in 1", "hub tooltip: the numbered town")
 	equal(lines[2], "highlight: " .. step.reason, "hub tooltip: the reason")
 	equal(lines[3], "normal: Sergra Darkthorn", "hub tooltip: the hand-in's NPC first")
 	equal(lines[4], "colored: |A:questturnin:14:14|a The Zhevra", "hub tooltip: a hand-in has the turn-in mark")
@@ -2055,21 +2058,19 @@ do
 	h.flush()
 	local steps = ns.Route().steps
 	local step = steps[1]
-	equal(step.title, "Crossroads, The Barrens", "tracker, town: titled by its flight master")
-	equal(step.detail, "1 to hand in, 5 to pick up", "tracker, town: the hand-in joins the pickups")
-	same(TrackerLines(h), {
-		step.detail,
-		"Opens the next chapter here",
-		"Next: " .. steps[2].title .. " (no dash)",
-	}, "tracker, town: its counts, then its reason, never the place again")
+	equal(step.title, "Crossroads, The Barrens: pick up 7, turn in 1", "tracker, town: town and actions")
+	equal(step.detail, "1 to hand in, 7 to pick up", "tracker, town: the hand-in joins the pickups")
+	local expected = { step.detail, "Opens the next chapter here" }
+	for _, giver in ipairs(step.checklist) do
+		expected[#expected + 1] = giver.text
+	end
+	expected[#expected + 1] = "Next: " .. steps[2].title .. " (no dash)"
+	same(TrackerLines(h), expected, "tracker, town: counts, reason, checklist and next")
 
 	step.reason = step.detail
 	h.tracker:MarkDirty()
-	same(TrackerLines(h), {
-		step.detail,
-		"Sergra Darkthorn, Gazrog and 4 more",
-		"Next: " .. steps[2].title .. " (no dash)",
-	}, "tracker, town: its NPCs, two named")
+	expected[2] = "Sergra Darkthorn, Gazrog and 5 more"
+	same(TrackerLines(h), expected, "tracker, town: its NPCs, two named")
 	step.givers = { "Sergra Darkthorn", "Gazrog" }
 	h.tracker:MarkDirty()
 	equal(TrackerLines(h)[2], "Sergra Darkthorn, Gazrog", "tracker, town: two NPCs, both named")
@@ -2084,7 +2085,8 @@ do
 		h.flush()
 	end
 	step = ns.Route().steps[1]
-	local npc = step.title:match("^Pick up quests: (.+)$")
+	local npc = step.kind == "town" and #step.quests == 1 and step.spots[step.quests[1]].name
+	equal(step.title:find("^Pick up: ") ~= nil, true, "tracker: pickup title names its action")
 	equal(npc ~= nil, true, "tracker, one quest: a town of one leads, " .. step.title)
 	equal(TrackerLines(h)[1], npc .. ", The Barrens", "tracker, one quest: NPC, zone")
 	clean(h, "tracker, town")
@@ -2179,7 +2181,7 @@ do
 	equal(#h.sounds + #h.fanfares, 0, "fanfare: none for an unproven end or a middle chapter")
 	h.fire("QUEST_TURNED_IN", last)
 	h.flush()
-	same(h.sounds, { 31757 }, "fanfare: the stage-end sound, once")
+	same(h.sounds, {}, "fanfare: the client turn-in sound suppresses our sound")
 	same(h.fanfares, { "story-complete" }, "fanfare: the header glows once")
 	local block = h.tracker.liveBlocks["story-complete"]
 	equal(block.header, "Story complete", "fanfare: the header")

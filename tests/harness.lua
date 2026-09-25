@@ -1976,6 +1976,56 @@ function harness.load(options)
 		}
 	end
 
+	h.time = 100
+	G.GetTime = function()
+		return h.time
+	end
+	player.bind = options.bind
+	G.GetBindLocation = function()
+		return player.bind
+	end
+	G.GetLocale = function()
+		return options.locale or "enUS"
+	end
+	if options.entrances then
+		G.TweaksForever = G.TweaksForever or { API = { version = 1 } }
+		G.TweaksForever.API.DungeonEntrance = function(id)
+			return options.entrances[id]
+		end
+	end
+	if options.legacy then
+		local fake, subscribers = options.legacy, {}
+		h.legacy = { subscriptions = 0, navigations = {} }
+		G.LegacyForever = {
+			API = {
+				version = fake.version or 1,
+				ZoneSummary = function(zoneMap)
+					return (fake.summaries or {})[zoneMap], fake.error
+				end,
+				Targets = function(zoneMap)
+					return (fake.targets or {})[zoneMap] or {}, fake.error
+				end,
+				Navigate = function(zoneMap, key)
+					h.legacy.navigations[#h.legacy.navigations + 1] = { map = zoneMap, key = key }
+					return fake.navigateError == nil, fake.navigateError
+				end,
+				Subscribe = function(callback)
+					subscribers[callback] = true
+					h.legacy.subscriptions = h.legacy.subscriptions + 1
+					return function()
+						subscribers[callback] = nil
+						h.legacy.subscriptions = h.legacy.subscriptions - 1
+					end
+				end,
+			},
+		}
+		function h.legacyChanged()
+			for callback in pairs(subscribers) do
+				callback()
+			end
+		end
+	end
+
 	-- SkillUp Forever (its API.lua, version 1): options.skillup.professions is what Professions answers, the same
 	-- table each call as SkillUp's cache is; options.skillup.version overrides 1, and options.skillup.noAPI stands for
 	-- a SkillUp too old to have one. h.skillup records Navigate and OpenRecipes calls. No options.skillup is no

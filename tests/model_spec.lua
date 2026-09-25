@@ -570,7 +570,7 @@ local before = Model.Plan(hub, player, {}, {}, prefs()).steps[1]
 local after = Model.Plan(hub, player, { [1] = true }, {}, prefs()).steps[1]
 equal(#before.quests, 2, "one step per town")
 equal(before.reason, "2 to pick up", "a town counts what it offers")
-equal(before.title, "Quest giver", "an unnamed town takes its busiest giver's name")
+equal(before.title, "Quest giver: pick up 2, turn in 0", "an unnamed town takes its busiest giver's name")
 equal(before.kind, "town", "a town is a visit")
 equal(#Model.Plan(hub, player, {}, {}, prefs()).steps, 2, "a giver nearby in no town of theirs is a step of its own")
 equal(before.key, after.key, "a town's key survives quest completion")
@@ -1040,7 +1040,7 @@ local stop = toured.steps[1]
 equal(#toured.steps, 2, "town: one stop for the town, the far turn-in apart")
 equal(stop.key, "town:5", "town: keyed by its hub")
 equal(stop.detail, "2 to hand in, 4 to pick up", "town: counts both")
-equal(stop.title, "Lakeshire, Redridge", "town: named by its flight master")
+equal(stop.title, "Lakeshire, Redridge: pick up 4, turn in 2", "town: named by its flight master")
 equal(table.concat(stop.quests, " "), "10 11 1 2 3 4", "town: hand-ins first, then by ID")
 equal(table.concat(stop.givers, " "), "Marris Osgood", "town: its givers, once each")
 equal(stop.group, 1, "town: the elite quest needs a group")
@@ -1087,7 +1087,7 @@ local client = function(map)
 end
 local unnamedPlan = Model.Plan(unnamed, visitor, {}, ledger, townPrefs, client)
 equal(unnamedPlan.steps[1].place, "Marris", "place: an unnamed town's busiest giver")
-equal(unnamedPlan.steps[1].title, "Marris", "place: who titles the town")
+equal(unnamedPlan.steps[1].title, "Marris: pick up 4, turn in 2", "place: who titles the town")
 equal(unnamedPlan.steps[1].zone, "Les Carmines", "place: the client's map name first")
 local agreed
 for _, step in ipairs(unnamedPlan.journeys[1].steps) do
@@ -1103,7 +1103,7 @@ stop = foughtHere.steps[1]
 equal(stop and stop.key, "town:5", "town, combat: the stop stays")
 equal(stop and stop.detail, "1 to hand in, 3 to pick up", "town, combat: recounted")
 equal(stop and table.concat(stop.quests, " "), "11 2 3 4", "town, combat: less what went")
-equal(stop and stop.x, 0.58, "town, combat: the point leaves a giver with nothing left")
+equal(stop and stop.x, 0.52, "town, combat: the point moves to the nearest remaining giver")
 local grouped = Carried()
 grouped[4] = takenHere
 equal(Chosen(Model.Refresh(town, visitor, {}, grouped, townPrefs, toured)).group, 0, "card, combat: recounts its group")
@@ -1169,7 +1169,7 @@ equal(stop.reason, "1 to hand in, 5 to pick up", "chain: nothing said when the h
 town.quests[2], town.quests[3], town.quests[4] = nil, nil, nil
 town = { quests = town.quests, zones = town.zones, maps = town.maps, continents = town.continents, hubs = town.hubs }
 stop = Model.Plan(town, visitor, {}, {}, townPrefs).steps[1]
-equal(stop.title, "Pick up quests: Osgood", "town: a lone pickup keeps its title")
+equal(stop.title, "Pick up: Quest", "town: a lone pickup names its quest")
 
 -- Selection weighs worth against travel (docs/plan.md §7.3); with one step to choose, the worth decides which.
 local function Field()
@@ -1266,7 +1266,11 @@ do
 	end
 	local steps = Model.Plan(lapped, walker, {}, {}, Choose("zone:1")).steps
 	equal(steps[1].key, "town:5", "laps: the town first")
-	equal(table.concat(steps[1].pickups, " "), "1 2 3", "laps: its quests, less the one worth little per yard")
+	equal(
+		table.concat(steps[1].pickups, " "),
+		"1 2 3 4",
+		"laps: collect every eligible town pickup while the log has room"
+	)
 	equal(steps[#steps].key, "town:5:2", "laps: back to the town, a second visit")
 	equal(table.concat(steps[#steps].handins, " "), "1 2 3", "laps: handing in what the lap did")
 	equal(steps[#steps].reason, "3 to hand in", "laps: counted as hand-ins")

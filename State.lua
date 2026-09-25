@@ -289,10 +289,16 @@ end
 
 -- The client's objectives for a quest, in its order: each one's type ("monster", "object", "item", "event", ...),
 -- its words, whether it is done, and its count.
+local objectiveDone = {}
 ---@return AGFLogObjective[]
 local function Objectives(questID)
-	local objectives = {}
+	local objectives, done = {}, {}
+	local previous = objectiveDone[questID]
 	for index, info in ipairs(C_QuestLog.GetQuestObjectives(questID) or {}) do
+		done[index] = info.finished == true
+		if previous and done[index] and not previous[index] then
+			ns.Sound.ClientEvent()
+		end
 		objectives[index] = {
 			type = info.type,
 			text = info.text or "",
@@ -301,6 +307,7 @@ local function Objectives(questID)
 			need = info.numRequired or 0,
 		}
 	end
+	objectiveDone[questID] = done
 	return objectives
 end
 
@@ -402,7 +409,13 @@ events:RegisterEvent("UPDATE_FACTION")
 -- Rest and XP (roadmap #11), by feature detection: the Forever probes never registered these, and the client raises
 -- on an event it lacks, so one it refuses just leaves the rest line to the next rebuild.
 -- QUEST_POI_UPDATE moves the client's quest points (LoadPoints).
-for _, event in ipairs({ "PLAYER_UPDATE_RESTING", "UPDATE_EXHAUSTION", "PLAYER_XP_UPDATE", "QUEST_POI_UPDATE" }) do
+for _, event in ipairs({
+	"PLAYER_UPDATE_RESTING",
+	"UPDATE_EXHAUSTION",
+	"PLAYER_XP_UPDATE",
+	"QUEST_POI_UPDATE",
+	"QUEST_WATCH_UPDATE",
+}) do
 	pcall(events.RegisterEvent, events, event)
 end
 -- The first argument is PLAYER_ENTERING_WORLD's isInitialLogin, and QUEST_TURNED_IN's questID.
@@ -415,6 +428,11 @@ local KEEPS_POINTS = {
 	PLAYER_XP_UPDATE = true,
 }
 events:SetScript("OnEvent", function(_, event, arg)
+	if event == "QUEST_TURNED_IN" then
+		ns.Sound.ClientEvent()
+	elseif event == "QUEST_WATCH_UPDATE" and arg and C_QuestLog.IsComplete(arg) then
+		ns.Sound.ClientEvent()
+	end
 	pointsStale = pointsStale or not KEEPS_POINTS[event]
 	if event == "PLAYER_ENTERING_WORLD" then
 		if not ready and LoadCompleted() then

@@ -305,6 +305,67 @@ ns.L = {
 	SKILLUP_MISSING = "Your next skill-ups come from SkillUp Forever. Install it and they show here.",
 	SKILLUP_OUTDATED = "Your next skill-ups come from SkillUp Forever. Update it and they show here.",
 	SKILLUP_NONE = "No crafting professions to level. Learn one at a trainer and it shows here.",
+	TAB_PVP = "PvP",
+	TAB_COMPLETION = "Completion",
+	GO_TO_ENTRANCE = "Go to entrance",
+	TWEAKS_MISSING = "Install Tweaks Forever to find dungeon entrances.",
+	TWEAKS_OUTDATED = "Update Tweaks Forever to find dungeon entrances.",
+	ENTRANCE_UNKNOWN = "The entrance location is unknown.",
+	LEGACY_MISSING = "Install Legacy Forever to see your completion progress.",
+	LEGACY_OUTDATED = "Update Legacy Forever to see your completion progress.",
+	COMPLETION_EMPTY = "No completion categories are available here.",
+	COMPLETION_LOADING = "Loading completion progress…",
+	COMPLETION_UNAVAILABLE = "Completion progress is unavailable here.",
+	COMPLETION_COUNTS = "%d/%d",
+	COMPLETION_PENDING = "%d pending",
+	COMPLETION_CHARACTER = "Character",
+	COMPLETION_ACCOUNT = "Account",
+	COMPLETION_GO = "Go to objective",
+	COMPLETION_NO_LOCATION = "Location unknown",
+	COMPLETION_CATEGORY_AREAS = "Areas",
+	COMPLETION_CATEGORY_TAXIS = "Flight paths",
+	COMPLETION_CATEGORY_DUNGEONS = "Dungeons",
+	COMPLETION_CATEGORY_RAIDS = "Raids",
+	COMPLETION_CATEGORY_LEGACY = "Legacy",
+	COMPLETION_CATEGORY_REPUTATIONS = "Reputations",
+	COMPLETION_CATEGORY_QUESTS = "Quests",
+	PVP_RANK = "Rank %d",
+	PVP_RANK_POINTS = "%d/%d rank points",
+	PVP_UNRANKED = "Unranked",
+	PVP_CAPPED = "Highest rank reached",
+	PVP_UNAVAILABLE = "Rank progress is unavailable.",
+	PVP_NO_BATTLEGROUNDS = "No battlegrounds are available at your level.",
+	PVP_NO_BATTLEMASTER = "No known battlemaster location",
+	PVP_BATTLEGROUND_LEVEL = "From level %d",
+	PVP_GO_BATTLEMASTER = "Go to battlemaster",
+	PVP_NEXT_REWARD = "Next reward: rank %d · %s",
+	SESSION_LABEL = "Time for this journey",
+	SESSION_UNLIMITED = "No limit",
+	SESSION_MINUTES = "%d min",
+	SESSION_ABOUT = "About %d min",
+	SESSION_EMPTY = "No complete task fits this session.",
+	SESSION_PENDING = "Estimating this session…",
+	ORDER_SOONER = "Do this sooner",
+	ORDER_LATER = "Do this later",
+	ORDER_NEXT = "Do this next",
+	ORDER_RESET = "Back to suggested order",
+	ORDER_CUSTOM = "Your order",
+	ORDER_SUGGESTED = "Suggested",
+	TOWN_SKIP_GIVER = "Skip this giver",
+	TOWN_GIVER = "%s: %s",
+	TOWN_COUNTS = "pick up %d, turn in %d",
+	TODAY_MORE = "+%d more",
+	STOP_VISIT = "Stop %d: %s",
+	SET_HEARTH = "Set your hearth in %s",
+	SETTING_STEP_SOUND = "Play a sound when a step is done",
+	SETTING_STEP_SOUND_TOOLTIP = "Play a short sound once when you finish a route step.",
+	STEP_PICKUP = "Pick up: %s",
+	STEP_OBJECTIVE = "Complete objectives · %s",
+	STEP_COLLECT = "Collect %s · %s",
+	STEP_DEFEAT = "Defeat %s · %s",
+	STEP_WORK = "Complete %s · %s",
+	STEP_TOWN = "%s: %s",
+	STEP_BATTLEMASTER = "Visit the battlemaster in %s",
 }
 local L = ns.L
 
@@ -313,6 +374,7 @@ local L = ns.L
 ---@type table<string, boolean>
 local DEFAULTS = {
 	showTracker = true,
+	stepSound = true,
 	-- Opt-in: with the Adventure tab closed the map shows no Adventure Guide mark unless the player asks for them.
 	showMapPins = false,
 	showQuestGivers = false,
@@ -427,6 +489,35 @@ local function LoadCharDB()
 		)
 	then
 		loaded.waypoint = nil
+	end
+	if type(loaded.customOrders) ~= "table" then
+		loaded.customOrders = nil
+	end
+	for key, order in pairs(loaded.customOrders or {}) do
+		if type(key) ~= "string" or type(order) ~= "table" then
+			loaded.customOrders[key] = nil
+		else
+			local keys, seen = {}, {}
+			for _, value in ipairs(order) do
+				if type(value) == "string" and not seen[value] then
+					keys[#keys + 1], seen[value] = value, true
+				end
+			end
+			loaded.customOrders[key] = keys
+		end
+	end
+	local session = loaded.sessionCommit
+	if
+		session ~= nil
+		and not (
+			type(session) == "table"
+			and type(session.journey) == "string"
+			and type(session.minutes) == "number"
+			and type(session.keys) == "table"
+			and (session.seconds == nil or type(session.seconds) == "number")
+		)
+	then
+		loaded.sessionCommit = nil
 	end
 	-- The defaults loop above guarantees every AGFPrefs field except `skipped`, which ns.Prefs()
 	-- always sets before returning; nothing else reads charDB directly.
@@ -659,6 +750,7 @@ end
 
 ---@type AGFRoute
 local cachedRoute = { journeys = {}, chosen = false, steps = {} }
+local rawRoute = cachedRoute
 local dirty = true
 local pendingRebuild = false
 ---@type fun()[]
@@ -675,27 +767,38 @@ end)
 -- the only route that stops to train; combat's cheap rebuild keeps them, as Tweaks Forever has no answer in a fight.
 ---@type AGFTraining?
 local training
+local trained = false
+---@type table<integer, AGFLogQuest>
+local buildLog = {}
 
 -- In combat only the cheap rebuild runs (the log's steps; the rest as the last full build left them), and the full
 -- one waits for PLAYER_REGEN_ENABLED: looting a quest item mid-fight must not cost a frame.
 local function BuildRoute()
 	local state, prefs, player = ns.State, ns.Prefs(), ns.State.Player()
+	buildLog = state.Log()
 	if InCombatLockdown() then
+		trained = false
 		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
 		player.train = training
-		return ns.Model.Refresh(ns.Data, player, state.Completed(), state.Log(), prefs, cachedRoute, state.MapName)
+		return ns.Model.Refresh(ns.Data, player, state.Completed(), buildLog, prefs, rawRoute, state.MapName)
 	end
-	training = prefs.journey and ns.Integrations.Training() or nil
+	local previous, known = training, false
+	if prefs.journey then
+		training, known = ns.Integrations.Training()
+	else
+		training = nil
+	end
+	trained = previous ~= nil and known and training == nil
 	player.train = training
 	return ns.Model.Plan(
 		ns.Data,
 		player,
 		state.Completed(),
-		state.Log(),
+		buildLog,
 		prefs,
 		state.MapName,
 		state.InstanceName,
-		cachedRoute
+		rawRoute
 	)
 end
 
@@ -715,6 +818,19 @@ local function Walked()
 	end
 	local map, x, y = ns.State.Where()
 	local steps = cachedRoute.steps
+	local first = steps[1]
+	if first and first.checklist and map and x and y then
+		local nearest, distance
+		for _, giver in ipairs(first.checklist) do
+			local yards = not giver.done and ns.Model.Yards(ns.Data, { map = map, x = x, y = y }, giver.place)
+			if yards and (not distance or yards < distance) then
+				nearest, distance = giver.place, yards
+			end
+		end
+		if nearest and (nearest.map ~= first.map or nearest.x ~= first.x or nearest.y ~= first.y) then
+			ns.Invalidate()
+		end
+	end
 	local index = ns.Model.Here(ns.Data, { map = map, x = x, y = y }, steps, cachedRoute.here)
 	local key = index and steps[index].key or nil
 	if key ~= hereKey and key ~= cachedRoute.here then
@@ -835,10 +951,14 @@ local function Rebuild()
 		cachedRoute = { journeys = {}, chosen = false, steps = {} }
 		return
 	end
-	cachedRoute = BuildRoute()
+	local previous = cachedRoute
+	rawRoute = BuildRoute()
+	ns.Order.Apply(rawRoute, ns.Prefs())
+	ns.Sound.Observe(previous, rawRoute, ns.State.Completed(), buildLog, trained)
+	cachedRoute = ns.Session.Apply(rawRoute)
 	dirty = false
 	if not InCombatLockdown() then
-		Ended(cachedRoute)
+		Ended(rawRoute)
 	end
 	-- A skipped step the full build no longer finds (turned in, abandoned) leaves Skipped (n): Show again would
 	-- bring nothing back.
@@ -929,6 +1049,9 @@ end
 ---@param key? string
 ---@param start? boolean
 function ns.Choose(key, start)
+	if ns.Prefs().journey ~= key then
+		ns.Prefs().sessionCommit = nil
+	end
 	local prefs = ns.Prefs()
 	local guided = prefs.guided
 	prefs.journey = key
@@ -958,6 +1081,9 @@ function ns.StartRoute(step)
 	if ns.Setting("wanderer") then
 		pendingStart = false
 		return false
+	elseif ns.Session.Info().pending then
+		pendingStart = true
+		return true
 	elseif InCombatLockdown() and ns.Integrations.Provider() then
 		pendingStart = true
 		return true
@@ -1003,6 +1129,12 @@ end
 
 -- Registered before any view's listener, so the footer already reads the route as started.
 ns.OnRouteChange(function()
+	local route = ns.Route()
+	if route.chosen and #route.steps == 0 and ns.Integrations.Owns() then
+		local waiting = ns.Session.Info().pending and ns.Prefs().guided == route.journey
+		ns.Integrations.Cancel()
+		pendingStart = pendingStart or waiting
+	end
 	if pendingStart and not InCombatLockdown() and ns.Route().chosen then
 		ns.StartRoute()
 	end

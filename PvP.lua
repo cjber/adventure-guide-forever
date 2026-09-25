@@ -84,3 +84,77 @@ Asides.Register(function()
 end)
 Asides.RefreshOn("PLAYER_PVP_RANK_CHANGED")
 Asides.RefreshOn("MAJOR_FACTION_RENOWN_LEVEL_CHANGED")
+
+---@class AGFPvP
+local PvP = {}
+ns.PvP = PvP
+
+function PvP.Data()
+	local player = ns.State.Player()
+	local result = {
+		rank = { state = "unavailable" },
+		battlegrounds = {},
+		available = C_PvP ~= nil and type(C_PvP.GetLevelUpBattlegrounds) == "function",
+	}
+	local factions = C_MajorFactions
+	local info = factions
+		and factions.GetMajorFactionProgressionInfo
+		and factions.GetMajorFactionProgressionInfo(RANK_FACTION)
+	if info and type(info.renownLevel) == "number" then
+		local level = info.renownLevel
+		result.rank = {
+			level = level,
+			earned = info.renownReputationEarned,
+			threshold = info.renownLevelThreshold,
+			maxLevel = info.maxLevel,
+			state = info.maxLevel and level >= info.maxLevel and "capped" or level == 0 and "unranked" or "ranked",
+		}
+		if factions.GetRenownRewardsForLevel then
+			for nextLevel = level + 1, info.maxLevel or level do
+				local rewards = factions.GetRenownRewardsForLevel(RANK_FACTION, nextLevel) or {}
+				for _, reward in ipairs(rewards) do
+					if reward.description then
+						result.rank.reward = { level = nextLevel, text = reward.description, icon = reward.icon }
+						break
+					end
+				end
+				if #rewards > 0 then
+					break
+				end
+			end
+		end
+	end
+	for _, bg in ipairs(player.battlegrounds) do
+		local npc, id = ns.Model.Battlemaster(ns.Data, player, bg.id)
+		local place
+		if npc then
+			place = {}
+			for key, value in pairs(npc.place) do
+				place[key] = value
+			end
+		end
+		result.battlegrounds[#result.battlegrounds + 1] =
+			{ id = bg.id, name = bg.name, level = bg.level, npc = id, place = place }
+	end
+	return result
+end
+
+function PvP.Go(id)
+	for _, bg in ipairs(PvP.Data().battlegrounds) do
+		if bg.id == id and bg.place then
+			return ns.Integrations.Navigate({
+				kind = "battlemaster",
+				verb = "battlemaster",
+				key = "battlemaster:" .. bg.npc,
+				map = bg.place.map,
+				x = bg.place.x,
+				y = bg.place.y,
+				quests = {},
+				title = L.BATTLEMASTER_QUEUE:format(bg.name),
+				detail = "",
+				reason = "",
+			})
+		end
+	end
+	return false
+end
