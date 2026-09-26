@@ -130,6 +130,7 @@ end
 -- Skip and Not interested ask the providers again, so one with several candidates offers its next (Wanted).
 ---@param key string
 function Asides.Skip(key)
+	---@type integer|true
 	local renew = true
 	for _, aside in ipairs(answers) do
 		renew = aside.key == key and aside.renew or renew

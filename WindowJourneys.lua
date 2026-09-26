@@ -12,7 +12,6 @@ local Window, Overview = ns.Window, ns.Overview
 local FEATURED_WIDTH, FEATURED_HEIGHT, FEATURED_SPAN, FEATURED_RING = 440, 178, 640, 44
 local STEP_ROWS, ROW_HEIGHT, STEP_GAP, STEP_HEAD, STEP_FOOT = 3, 44, 4, 18, 14
 local COLUMNS, GRID_GAP, GRID_SPAN, GRID_RING, GRID_PAD = 4, 10, 320, 30, 14
-local DIVIDER_GAP = 8
 local BUTTON_WIDTH, BUTTON_HEIGHT, ENTRANCE_WIDTH = 104, 22, 112
 local BAR_LABEL_GAP = 8
 -- The session picker (a stock WowStyle1 dropdown, 25 high as MenuTemplates.xml makes it) at the steps' top right,
@@ -63,7 +62,7 @@ local resetButton
 
 local LEFT, TOP = Window.LEFT, Window.TOP
 local WIDTH = Window.INSET_WIDTH - LEFT - Window.RIGHT
-local GRID_TOP = TOP + FEATURED_HEIGHT + DIVIDER_GAP + 14
+local GRID_TOP = TOP + FEATURED_HEIGHT + Window.DIVIDER_SPAN
 local GRID_WIDTH = (WIDTH - (COLUMNS - 1) * GRID_GAP) / COLUMNS
 local GRID_HEIGHT = Window.INSET_HEIGHT - 12 - GRID_TOP
 local STEPS_LEFT = LEFT + FEATURED_WIDTH + 12
@@ -329,10 +328,7 @@ local function Build(content)
 	resetButton:SetScript("OnClick", function()
 		ns.Order.Reset()
 	end)
-	divider = content:CreateTexture(nil, "ARTWORK")
-	divider:SetAtlas("UI-Journeys-Renown-divider")
-	divider:SetSize(WIDTH, 10)
-	divider:SetPoint("TOPLEFT", LEFT, -(TOP + FEATURED_HEIGHT + DIVIDER_GAP))
+	divider = Window.CreateDivider(content, TOP + FEATURED_HEIGHT)
 	for index = 1, COLUMNS do
 		local card = CreateCard(content, false)
 		card:SetPoint("TOPLEFT", LEFT + (index - 1) * (GRID_WIDTH + GRID_GAP), -GRID_TOP)

@@ -37,6 +37,7 @@ Hints\Hearth.lua
 Moments.lua
 Menu.lua
 Pins.lua
+Art.lua
 Overview.lua
 Panel.xml
 ZoneIcon.lua

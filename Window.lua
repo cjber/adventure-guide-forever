@@ -1,6 +1,7 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 local L = ns.L
+local Art = ns.Art
 
 --[[ The Adventure Guide window (docs/design.md §2.19): the guide on its own, away from the world map, built as the
      Encounter Journal is (Blizzard_EncounterJournal.xml:1333): PortraitFrameTemplate 800x496, an InsetFrameTemplate
@@ -27,6 +28,12 @@ local BADGE, BADGE_OUT, ICON_ROW_RING = 14, 3, 26
 -- Where a tab's content starts in the inset, under the Today strip.
 Window.TOP, Window.LEFT, Window.RIGHT = 50, 14, RIGHT
 Window.INSET_WIDTH, Window.INSET_HEIGHT = WIDTH - 8, HEIGHT - INSET_TOP - INSET_BOTTOM
+-- The renown divider (UI-Journeys-Renown-divider, 733x16) under a tab's featured card, across the tab at its own
+-- aspect: DIVIDER_GAP below the card, the grid DIVIDER_SPAN below it.
+local DIVIDER_ATLAS, DIVIDER_GAP = "UI-Journeys-Renown-divider", 4
+local DIVIDER_WIDTH = Window.INSET_WIDTH - Window.LEFT - Window.RIGHT
+local DIVIDER_HEIGHT = DIVIDER_WIDTH * 16 / 733
+Window.DIVIDER_SPAN = DIVIDER_GAP + math.ceil(DIVIDER_HEIGHT) + 1
 -- The key the window offers once, when nothing else has it.
 local KEY, BINDING = "SHIFT-J", "ADVENTUREGUIDEFOREVER_WINDOW"
 -- The Encounter Journal's dungeon button (UI-EJ-DungeonButton-Up, file 522972): pixels 1,439 to 175,535 of the 512 x
@@ -107,7 +114,7 @@ function Window.CreateRingIcon(parent, size)
 	return ring
 end
 
--- An atlas (inset) or a file icon (whole) in the ring.
+-- An atlas (inset, at its own aspect) or a file icon (whole: a square icon) in the ring.
 ---@param ring AGFRingIcon
 ---@param icon string|integer
 function Window.SetRingIcon(ring, icon)
@@ -117,10 +124,9 @@ function Window.SetRingIcon(ring, icon)
 		ring.Icon:SetAllPoints()
 	else
 		---@cast icon string
-		local inset = ring.size * ATLAS_INSET
-		ring.Icon:SetAtlas(icon)
-		ring.Icon:SetPoint("TOPLEFT", inset, -inset)
-		ring.Icon:SetPoint("BOTTOMRIGHT", -inset, inset)
+		local box = ring.size * (1 - 2 * ATLAS_INSET)
+		Art.Fit(ring.Icon, icon, box, box)
+		ring.Icon:SetPoint("CENTER")
 	end
 end
 
@@ -128,6 +134,7 @@ end
 ---@field Fill Texture
 ---@field Art? AGFZoneBackdrop
 ---@field Picture Texture a still picture in place of the zone art (a profession's)
+---@field Highlight Texture its hover
 ---@field Shade Texture
 ---@field Fade Texture
 ---@field Rim Texture[] the nine pieces of the rim, row by row
@@ -178,8 +185,20 @@ function Window.CreateCard(parent, zoneArt)
 			card.Rim[#card.Rim + 1] = piece
 		end
 	end
-	card:SetHighlightAtlas("PetList-ButtonHighlight", "ADD")
+	-- The hover: the pet list highlight's blue, added faintly, since its art would stretch across a card.
+	card.Highlight = card:CreateTexture(nil, "HIGHLIGHT")
+	card.Highlight:SetColorTexture(0.35, 0.5, 1, 0.15)
+	card.Highlight:SetBlendMode("ADD")
+	card.Highlight:SetAllPoints(card.Fill)
 	return card
+end
+
+-- The card's still picture over its whole fill at the picture's own aspect, cropped evenly; after Window.SizeCard.
+---@param card AGFWindowCard
+---@param atlas string
+function Window.SetPicture(card, atlas)
+	local width, height = card:GetSize()
+	Art.Cover(card.Picture, atlas, width - 4, height - 4)
 end
 
 -- Sizes a card: `width` by `height`, its rim placed piece by piece, the fade over `fade` of its width.
@@ -205,10 +224,10 @@ function Window.SizeCard(card, width, height, fade)
 end
 
 ---@class AGFWindowRow : Button
----@field Selected Texture
+---@field Selected AGFArtSlice
 ---@field Ring Texture
 ---@field Number Texture
----@field Kind Texture the step's kind, badged on the ring
+---@field Kind AGFBadge the step's kind, badged on the ring
 ---@field Title FontString
 ---@field Detail FontString
 
@@ -220,19 +239,12 @@ end
 function Window.CreateStepRow(parent, height)
 	local row = CreateFrame("Button", nil, parent) --[[@as AGFWindowRow]]
 	row:SetHeight(height)
-	local background = row:CreateTexture(nil, "BACKGROUND")
-	background:SetAtlas("PetList-ButtonBackground")
-	background:SetAllPoints()
-	row:SetHighlightAtlas("PetList-ButtonHighlight")
-	row.Selected = row:CreateTexture(nil, "OVERLAY")
-	row.Selected:SetAtlas("PetList-ButtonSelect")
-	row.Selected:SetAllPoints()
+	row.Selected = Art.RowArt(row, true) --[[@as AGFArtSlice]]
 	row.Ring = row:CreateTexture(nil, "ARTWORK")
 	row.Ring:SetAtlas("adventureguide-ring")
 	row.Ring:SetSize(26, 26)
 	row.Ring:SetPoint("LEFT", 6, 0)
 	row.Number = row:CreateTexture(nil, "OVERLAY")
-	row.Number:SetSize(22, 25)
 	row.Number:SetPoint("CENTER", row.Ring, "CENTER", 0, 0)
 	row.Kind = ns.Overview.CreateBadge(row, row.Ring, BADGE, BADGE_OUT)
 	row.Title = row:CreateFontString(nil, "ARTWORK", "GameFontNormalMed3")
@@ -255,10 +267,10 @@ end
 ---@param detail? string
 ---@param step? AGFStep a route step, for its kind's badge
 function Window.SetStepRow(row, index, title, detail, step)
-	row.Number:SetAtlas("services-number-" .. index)
+	Art.SetNumber(row.Number, index)
 	row.Title:SetText(title)
 	row.Detail:SetText(detail or "")
-	row.Selected:SetShown(index == 1)
+	Art.SetSliceShown(row.Selected, index == 1)
 	if step then
 		ns.Overview.SetVerbIcon(row.Kind, step)
 	else
@@ -278,10 +290,7 @@ end
 function Window.CreateIconRow(parent, height)
 	local row = CreateFrame("Button", nil, parent) --[[@as AGFWindowIconRow]]
 	row:SetHeight(height)
-	local background = row:CreateTexture(nil, "BACKGROUND")
-	background:SetAtlas("PetList-ButtonBackground")
-	background:SetAllPoints()
-	row:SetHighlightAtlas("PetList-ButtonHighlight")
+	Art.RowArt(row)
 	row.Icon = Window.CreateRingIcon(row, ICON_ROW_RING)
 	row.Icon:SetPoint("LEFT", 8, 0)
 	row.Title = row:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -299,7 +308,7 @@ function Window.CreateIconRow(parent, height)
 end
 
 -- A tab's calm page while it has nothing to show (SkillUp, Legacy Forever or rank data missing): its art dimmed
--- behind one centred line.
+-- behind one centred line, covering the page at its own aspect.
 ---@class AGFWindowEmpty
 ---@field Art Texture
 ---@field Text FontString
@@ -309,10 +318,11 @@ end
 ---@return AGFWindowEmpty
 function Window.CreateEmpty(parent, atlas)
 	local width = Window.INSET_WIDTH - Window.LEFT - Window.RIGHT
+	local height = Window.INSET_HEIGHT - 12 - Window.TOP
 	local art = parent:CreateTexture(nil, "ARTWORK")
-	art:SetAtlas(atlas)
+	Art.Cover(art, atlas, width, height)
 	art:SetPoint("TOPLEFT", Window.LEFT, -Window.TOP)
-	art:SetSize(width, Window.INSET_HEIGHT - 12 - Window.TOP)
+	art:SetSize(width, height)
 	art:SetAlpha(0.35)
 	local text = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	text:SetPoint("CENTER", art, "CENTER", 0, 0)
@@ -327,6 +337,17 @@ function Window.SetEmpty(empty, line)
 	empty.Art:SetShown(line ~= nil)
 	empty.Text:SetShown(line ~= nil)
 	empty.Text:SetText(line or "")
+end
+
+-- The divider under a featured card whose bottom is `below` from the tab's top.
+---@param parent Frame
+---@param below number
+---@return Texture
+function Window.CreateDivider(parent, below)
+	local divider = parent:CreateTexture(nil, "ARTWORK")
+	Art.Fit(divider, DIVIDER_ATLAS, DIVIDER_WIDTH, DIVIDER_HEIGHT)
+	divider:SetPoint("TOPLEFT", Window.LEFT, -(below + DIVIDER_GAP))
+	return divider
 end
 
 -- A tab's heading over a column: "Next steps", "Reagents".
@@ -396,7 +417,7 @@ local function AsideMarkup(aside)
 	if type(texture) == "number" then
 		return ("|T%d:14:14|t "):format(texture)
 	end
-	return ("|A:%s:14:14|a "):format(texture or aside.icon)
+	return Art.Markup(texture --[[@as string?]] or aside.icon, 14) .. " "
 end
 
 ---@class AGFTodayMore : Button
@@ -552,9 +573,9 @@ local function Build()
 	inset:SetPoint("BOTTOMRIGHT", -4, INSET_BOTTOM)
 	frame.Inset = inset
 	local art = inset:CreateTexture(nil, "BACKGROUND", nil, 1)
-	art:SetAtlas("UI-EJ-Classic")
 	art:SetPoint("TOPLEFT", 3, -1)
 	art:SetPoint("BOTTOMRIGHT", -3, 1)
+	Art.CoverFrame(inset, art, "UI-EJ-Classic", 6, 2)
 	for index, tab in ipairs(tabs) do
 		local content = CreateFrame("Frame", nil, frame)
 		content:SetAllPoints(inset)

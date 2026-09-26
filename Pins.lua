@@ -225,12 +225,10 @@ end
 -- The step's kind (a pickup, a hand-in, an objective...) as a small badge on the ring's lower right, as Shortest
 -- Path badges its own stops; made on first use.
 ---@param pin AGFPinFrame
----@return Texture
+---@return AGFBadge
 local function Badge(pin)
 	if not pin.Badge then
-		pin.Badge = pin:CreateTexture(nil, "OVERLAY", nil, 1)
-		pin.Badge:SetSize(BADGE_SIZE, BADGE_SIZE)
-		pin.Badge:SetPoint("BOTTOMRIGHT", BADGE_OFFSET, -BADGE_OFFSET)
+		pin.Badge = ns.Overview.CreateBadge(pin, pin, BADGE_SIZE, BADGE_OFFSET)
 		pin.More = pin:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
 		pin.More:SetPoint("BOTTOMRIGHT", BADGE_OFFSET, -BADGE_OFFSET)
 	end
@@ -243,7 +241,7 @@ end
 ---@field Number Texture
 ---@field NumberText FontString
 ---@field Glow Texture
----@field Badge? Texture
+---@field Badge? AGFBadge
 ---@field More? FontString
 ---@field step? AGFStep
 ---@field index? number
