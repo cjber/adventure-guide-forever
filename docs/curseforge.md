@@ -1,6 +1,6 @@
 I wanted a levelling guide that left me room to wander. Adventure Guide Forever offers a few journeys from your level and quest log, with a short route for the one you pick. It looks like it came with the game: a tab beside Quests, retail's Journeys cards and the game's own objective tracker.
 
-Shortest Path Forever handles travel when installed. If you follow Questie or another guide, you can hide AGF's tracker in settings; their routes may overlap.
+Shortest Path Forever handles travel when installed. With Questie installed, the guide takes quest givers and requirements from Questie's database and sits alongside its map pins. If you'd rather follow another guide's route, you can hide the guide's tracker in settings.
 
 ![Choosing a journey and following its route](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif)
 
