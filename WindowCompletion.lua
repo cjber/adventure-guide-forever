@@ -13,7 +13,7 @@ local FEATURED_WIDTH, FEATURED_HEIGHT, FEATURED_SPAN, RING = 440, 178, 900, 44
 local CATEGORY_TOP, CATEGORY_PITCH, CATEGORY_COLUMNS = 72, 16, 2
 local TARGET_ROWS, TARGET_HEIGHT, TARGET_PITCH, HEAD = 3, 44, 49, 18
 local COLUMNS, GRID_GAP, GRID_SPAN, GRID_RING, GRID_PAD = 4, 10, 900, 30, 14
-local DIVIDER_GAP, BAR_GAP = 8, 8
+local BAR_GAP = 8
 local LEGACY_ICON = "Legacy-Rewards-Tracker-Icon"
 local DONE_MARK = "|A:UI-QuestTracker-Tracker-Check:12:12|a"
 -- Legacy's categories in its own order, and each target kind's mark.
@@ -28,7 +28,7 @@ local TARGET_ICONS = {
 
 local LEFT, TOP = Window.LEFT, Window.TOP
 local WIDTH = Window.INSET_WIDTH - LEFT - Window.RIGHT
-local GRID_TOP = TOP + FEATURED_HEIGHT + DIVIDER_GAP + 14
+local GRID_TOP = TOP + FEATURED_HEIGHT + Window.DIVIDER_SPAN
 local GRID_WIDTH = (WIDTH - (COLUMNS - 1) * GRID_GAP) / COLUMNS
 local GRID_HEIGHT = Window.INSET_HEIGHT - 12 - GRID_TOP
 local SIDE_LEFT = LEFT + FEATURED_WIDTH + 12
@@ -161,7 +161,7 @@ local function CreateCard(parent, isFeatured)
 		end
 		card.Foot:SetPoint("TOPRIGHT", -18, -(FEATURED_HEIGHT - 41))
 		card.Foot:SetJustifyH("RIGHT")
-		card:SetHighlightAtlas("")
+		card.Highlight:Hide()
 	else
 		card.Title:SetPoint("LEFT", card.Icon, "RIGHT", 10, 0)
 		card.Title:SetWidth(GRID_WIDTH - GRID_PAD * 2 - ring - 10)
@@ -288,10 +288,7 @@ local function Build(content)
 	noTargets:SetPoint("TOPLEFT", SIDE_LEFT + 4, -(TOP + HEAD + 8))
 	noTargets:SetWidth(SIDE_WIDTH - 8)
 	noTargets:SetJustifyH("LEFT")
-	divider = content:CreateTexture(nil, "ARTWORK")
-	divider:SetAtlas("UI-Journeys-Renown-divider")
-	divider:SetSize(WIDTH, 10)
-	divider:SetPoint("TOPLEFT", LEFT, -(TOP + FEATURED_HEIGHT + DIVIDER_GAP))
+	divider = Window.CreateDivider(content, TOP + FEATURED_HEIGHT)
 	for index = 1, COLUMNS - 1 do
 		local card = CreateCard(content, false)
 		card:SetPoint("TOPLEFT", LEFT + (index - 1) * (GRID_WIDTH + GRID_GAP), -GRID_TOP)

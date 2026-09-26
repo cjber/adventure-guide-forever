@@ -570,7 +570,8 @@ do
 	equal(ring.Badge:GetAtlas(), "QuestNormal", "ring: the kind's badge")
 	equal(ring.Badge:GetWidth(), 16, "ring: badge 16 wide, as Shortest Path's")
 	local point, _, _, x, y = ring.Badge:GetPoint(1)
-	equal(("%s %d %d"):format(point, x, y), "BOTTOMRIGHT 4 -4", "ring: hung past the ring")
+	-- Centred in its 16 square, which hangs 4 past the ring's lower right.
+	equal(("%s %d %d"):format(point, x, y), "CENTER -4 4", "ring: hung past the ring")
 	equal(ring.hitRectInsets[4], -4, "ring: the badge takes clicks")
 	equal(ring.More:IsShown(), #ring.visits > 1, "ring: only revisits have a count")
 	local route = h.ns.Route().steps
@@ -599,7 +600,8 @@ end
 -- Every verb's icon, including kinds that do not occur together in a single route.
 do
 	local h = Load()
-	local texture = h.G.CreateFrame("Frame"):CreateTexture()
+	local frame = h.G.CreateFrame("Frame")
+	local texture = h.ns.Overview.CreateBadge(frame, frame, 14, 3)
 	for _, case in ipairs({
 		{ "town", "QuestNormal", { 1 } },
 		{ "town", "QuestTurnin", {} },

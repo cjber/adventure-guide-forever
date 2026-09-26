@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Art keeps its shape.** Icons, pictures and row backgrounds are drawn at their own proportions instead of squeezed to fit: the Legacy icon on a Completion card is round in its ring again, step rows and progress bars repeat their middle rather than stretching it, and a card's picture is cropped to the card. Hovering a window card now lights it with a faint blue.
+
 ## [0.2.0] - 2026-09-25
 
 - **Ready for translation.** Every line the guide writes itself now lives in one file, so a translation is one copied template in the Locales folder on GitHub. Anything not yet translated stays in English.

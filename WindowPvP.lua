@@ -90,7 +90,7 @@ local function Build(content)
 	card:SetPoint("TOPLEFT", LEFT, -TOP)
 	card.Shade:Hide()
 	card.Picture:Show()
-	card:SetHighlightAtlas("")
+	card.Highlight:Hide()
 	local inner = CreateFrame("Frame", nil, card)
 	inner:SetAllPoints()
 	inner:SetFrameLevel(card:GetFrameLevel() + 5)
@@ -138,7 +138,7 @@ end
 local function RefreshRank(rank)
 	local side = ns.State.Player().side
 	local ranked = (rank.state == "ranked" or rank.state == "capped") and rank.level ~= nil and rank.level > 0
-	card.Picture:SetAtlas(side == 1 and "pvpqueue-background-casual-alliance" or "pvpqueue-background-casual-horde")
+	Window.SetPicture(card, side == 1 and "pvpqueue-background-casual-alliance" or "pvpqueue-background-casual-horde")
 	Window.SetRingIcon(
 		card.Icon,
 		ranked and BADGE_FIRST + rank.level - 1 or (side == 1 and BADGE_ALLIANCE or BADGE_HORDE)

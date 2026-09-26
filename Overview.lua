@@ -88,30 +88,36 @@ local function VerbIcon(step)
 	return verb and VERB_ATLAS[verb] or nil
 end
 
--- The kind's mark on `texture`, hidden when the step has none.
----@param texture Texture
+---@class AGFBadge : Texture
+---@field box number the square the mark fits in
+
+-- The kind's mark on `badge` at its own aspect, hidden when the step has none. The trainer's file is a square icon.
+---@param badge AGFBadge
 ---@param step AGFStep
-local function SetVerbIcon(texture, step)
+local function SetVerbIcon(badge, step)
 	local atlas, file = VerbIcon(step)
 	if atlas then
-		texture:SetAtlas(atlas)
+		ns.Art.Fit(badge, atlas, badge.box, badge.box)
 	elseif file then
-		texture:SetTexture(file)
+		badge:SetTexture(file)
+		badge:SetSize(badge.box, badge.box)
 	end
-	texture:SetShown(atlas ~= nil or file ~= nil)
+	badge:SetShown(atlas ~= nil or file ~= nil)
 end
 
--- A step's badge: the kind's mark over its ring's lower right, `size` wide and `out` past the ring's edge, as Shortest
--- Path badges a numbered stop (its Route.lua: BADGE_SIZE 16, BADGE_OFFSET 4 on a 22 ring).
+-- A step's badge: the kind's mark over its ring's lower right, in a `size` square `out` past the ring's edge, as
+-- Shortest Path badges a numbered stop (its Route.lua: BADGE_SIZE 16, BADGE_OFFSET 4 on a 22 ring); centred in that
+-- square, so a mark narrower than it stays in place.
 ---@param parent Frame
 ---@param ring Region
 ---@param size number
 ---@param out number
----@return Texture
+---@return AGFBadge
 local function CreateBadge(parent, ring, size, out)
-	local badge = parent:CreateTexture(nil, "OVERLAY", nil, 1)
+	local badge = parent:CreateTexture(nil, "OVERLAY", nil, 1) --[[@as AGFBadge]]
+	badge.box = size
 	badge:SetSize(size, size)
-	badge:SetPoint("BOTTOMRIGHT", ring, "BOTTOMRIGHT", out, -out)
+	badge:SetPoint("CENTER", ring, "BOTTOMRIGHT", out - size / 2, size / 2 - out)
 	badge:Hide()
 	return badge
 end
@@ -503,10 +509,14 @@ local function ShowOnMap(step)
 end
 
 -- The Journeys renown bar is 18 tall at its own scale, too tall for a card: its frame is scaled to draw it 7 tall.
-local BAR_HEIGHT, BAR_ART = 7, 18
+-- Its art (335x18) is a three-slice at that scale, its caps the atlas's own 11-pixel slice margins round the rounded
+-- ends; the fill is the whole bar's width of its own art, clipped to the progress. The fill runs dark green, then
+-- brightens from pixel 120 to 250: its left cap takes all of that, so only the even bright run after it repeats.
+local BAR_HEIGHT, BAR_ART, BAR_CAP, FILL_CAP = 7, 18, 11, 250
 
 ---@class AGFProgressBar : Frame
----@field Fill Texture
+---@field Fill Frame the clip, as wide as the progress
+---@field FillArt Frame the fill's art, the bar's width
 
 ---@param parent Frame
 ---@return AGFProgressBar
@@ -514,22 +524,26 @@ local function CreateBar(parent)
 	local bar = CreateFrame("Frame", nil, parent) --[[@as AGFProgressBar]]
 	bar:SetScale(BAR_HEIGHT / BAR_ART)
 	bar:SetHeight(BAR_ART)
-	local back = bar:CreateTexture(nil, "BACKGROUND")
-	back:SetAtlas("UI-Journeys-renown-progressbar-BG")
-	back:SetAllPoints()
-	bar.Fill = bar:CreateTexture(nil, "ARTWORK")
-	bar.Fill:SetAtlas("UI-Journeys-renown-progressbar-fill")
+	ns.Art.Slice(bar, "UI-Journeys-renown-progressbar-BG", "BACKGROUND", BAR_CAP, BAR_CAP)
+	bar.Fill = CreateFrame("Frame", nil, bar)
+	bar.Fill:SetFrameLevel(bar:GetFrameLevel() + 1)
 	bar.Fill:SetPoint("TOPLEFT")
 	bar.Fill:SetPoint("BOTTOMLEFT")
-	local rim = bar:CreateTexture(nil, "OVERLAY")
-	rim:SetAtlas("UI-Journeys-renown-progressbar-frame")
+	bar.Fill:SetClipsChildren(true)
+	bar.FillArt = CreateFrame("Frame", nil, bar.Fill)
+	bar.FillArt:SetPoint("TOPLEFT")
+	bar.FillArt:SetHeight(BAR_ART)
+	ns.Art.Slice(bar.FillArt, "UI-Journeys-renown-progressbar-fill", "ARTWORK", FILL_CAP, BAR_CAP)
+	local rim = CreateFrame("Frame", nil, bar)
+	rim:SetFrameLevel(bar:GetFrameLevel() + 2)
 	rim:SetAllPoints()
+	ns.Art.Slice(rim, "UI-Journeys-renown-progressbar-frame", "OVERLAY", BAR_CAP, BAR_CAP)
 	return bar
 end
 
 -- The bar `width` wide at (x, y) in its card, filled to `value` (0-1]; a scaled frame's offsets and size are in its
--- own units. An empty bar hides its fill: the client takes a width of 0 as unset, and the fill, anchored by its left
--- edge only, would then draw at its atlas's own width, far past the bar.
+-- own units. An empty bar hides its fill: the client takes a width of 0 as unset, and the fill's clip, anchored by its
+-- left edge only, would then show the whole fill.
 ---@param bar AGFProgressBar
 ---@param x number
 ---@param y number
@@ -540,6 +554,7 @@ local function SetBar(bar, x, y, width, value, height)
 	local scale = (height or BAR_HEIGHT) / BAR_ART
 	bar:SetScale(scale)
 	bar:SetWidth(width / scale)
+	bar.FillArt:SetWidth(width / scale)
 	bar:ClearAllPoints()
 	bar:SetPoint("TOPLEFT", x / scale, -y / scale)
 	local fill = width / scale * math.min(value, 1)

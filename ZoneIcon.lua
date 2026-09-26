@@ -169,14 +169,13 @@ function ZoneIcon.Set(icon, atlas, map, x, y, span)
 	local overlays = map and ns.Data.zoneArt and ns.Data.zoneArt[map] or nil
 	local base = map and overlays and x and y and C_Map.GetMapArtLayerTextures(map, 1) or nil
 	local drawn = base ~= nil and #base >= TILES
-	icon.Kind:SetAtlas(atlas)
 	icon.Kind:ClearAllPoints()
 	if drawn then
-		icon.Kind:SetSize(icon.badge, icon.badge)
+		ns.Art.Fit(icon.Kind, atlas, icon.badge, icon.badge)
 		icon.Kind:SetPoint("CENTER", icon, "BOTTOMRIGHT", -2, 2)
 	else
 		local centred = math.floor(icon.size * 0.45)
-		icon.Kind:SetSize(centred, centred)
+		ns.Art.Fit(icon.Kind, atlas, centred, centred)
 		icon.Kind:SetPoint("CENTER")
 	end
 	icon.Clip:SetShown(drawn)

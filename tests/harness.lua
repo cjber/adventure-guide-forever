@@ -352,9 +352,20 @@ function harness.load(options)
 	function Methods:SetHeight(height)
 		self.height = height
 	end
+	-- A laid-out rect is in UIParent's units; a size is in the region's own, so a scaled frame's is the rect's over its
+	-- scale, as in the client.
+	local function OwnScale(region)
+		local scale = 1
+		while region do
+			scale = scale * (region.scale or 1)
+			region = region.parent
+		end
+		return scale
+	end
 	function Methods:GetSize(explicit)
 		if self.rect and not explicit then
-			return self.rect[3], self.rect[4]
+			local scale = OwnScale(self)
+			return self.rect[3] / scale, self.rect[4] / scale
 		end
 		return self.width or 0, self.height or 0
 	end
@@ -517,12 +528,16 @@ function harness.load(options)
 	-- Textures.
 	function Methods:SetAtlas(atlas, useAtlasSize)
 		self.atlas, self.useAtlasSize, self.file, self.color = atlas, useAtlasSize == true, nil, nil
+		self.texCoord = nil
 	end
 	function Methods:GetAtlas()
 		return self.atlas
 	end
 	function Methods:SetTexture(file)
-		self.file, self.atlas = file, nil
+		self.file, self.atlas, self.texCoord = file, nil, nil
+		if type(file) == "string" and file:sub(1, #h.SHEET) == h.SHEET then
+			self.file, self.atlas = nil, file:sub(#h.SHEET + 1)
+		end
 	end
 	function Methods:SetColorTexture(r, g, b, a)
 		self.color, self.atlas = { r, g, b, a }, nil
@@ -1133,6 +1148,53 @@ function harness.load(options)
 		parts[#parts + 1] = (rest > 0 or #parts == 0) and rest .. "c" or nil
 		return table.concat(parts, " ")
 	end
+	-- C_Texture.GetAtlasInfo for the atlases AGF draws that aren't square, at their native sizes (wago.tools
+	-- UiTextureAtlasMember; the Legacy ones from Forever's own set); any other is unknown, and Art takes it as square.
+	-- Each atlas fills its own sheet here, so a texCoord in the dump is within the atlas, and the sheet stands for the
+	-- atlas: SetTexture of it records the atlas, as tools/screenshots.py draws it.
+	local ATLAS_SIZES = {
+		["petlist-buttonbackground"] = { 209, 46 },
+		["petlist-buttonhighlight"] = { 209, 46 },
+		["petlist-buttonselect"] = { 209, 46 },
+		["ui-journeys-renown-progressbar-bg"] = { 335, 18 },
+		["ui-journeys-renown-progressbar-fill"] = { 335, 18 },
+		["ui-journeys-renown-progressbar-frame"] = { 335, 18 },
+		["ui-journeys-renown-divider"] = { 733, 16 },
+		["ui-journeys-renown-button"] = { 374, 112 },
+		["tradeskills-star"] = { 20, 19 },
+		["redbutton-expand"] = { 18, 19 },
+		["minortalents-icon-book"] = { 40, 38 },
+		["legacy-rewards-tracker-icon"] = { 108, 155 },
+		["legacy-tree-frame-points-icon"] = { 50, 73 },
+		["legacy-tree-frame-background"] = { 813, 510 },
+		["pvpqueue-background-casual-alliance"] = { 387, 291 },
+		["pvpqueue-background-casual-horde"] = { 387, 291 },
+		["professions-recipe-background"] = { 675, 548 },
+		["ui-ej-classic"] = { 786, 425 },
+		["questlog-main-background"] = { 307, 510 },
+		["islands-queue-prop-compass"] = { 300, 297 },
+		["adventureguide-ring"] = { 94, 95 },
+	}
+	h.SHEET = "atlas:"
+	G.C_Texture = {
+		GetAtlasInfo = function(atlas)
+			local name = atlas:lower()
+			local size = ATLAS_SIZES[name]
+				or (name:match("^services%-number%-%d+$") and { 71, 79 })
+				or (name:match("^professions%-recipe%-background%-") and { 675, 548 })
+			if size then
+				return {
+					width = size[1],
+					height = size[2],
+					leftTexCoord = 0,
+					rightTexCoord = 1,
+					topTexCoord = 0,
+					bottomTexCoord = 1,
+					filename = h.SHEET .. atlas,
+				}
+			end
+		end,
+	}
 	-- Items and spells: options.items maps an item ID to {name, icon}; anything else has neither yet.
 	local items = options.items or {}
 	G.C_Item = {
@@ -2277,7 +2339,7 @@ function harness.load(options)
 				region.measured = rect[5] and { text = entry.text, width = rect[5], lines = rect[6] } or nil
 				local script = region.scripts and region.scripts.OnSizeChanged
 				if script and not (old and old[3] == rect[3] and old[4] == rect[4]) then
-					h.call(script, region, rect[3], rect[4])
+					h.call(script, region, region:GetSize())
 				end
 			end
 		end)

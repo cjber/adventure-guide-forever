@@ -56,6 +56,7 @@ read_globals = {
 	"UnitXPMax",
 	"GetRealZoneText",
 	"C_Map",
+	"C_Texture",
 	"C_QuestLog",
 	"C_CreatureInfo",
 	"C_SkillInfo",

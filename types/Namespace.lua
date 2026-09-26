@@ -983,6 +983,7 @@
 ---@field keyOffered? boolean Shift-J was offered once (Window.OfferKey), taken or not
 
 ---@class AGFNamespace
+---@field Art AGFArt atlases at their native aspect (Art.lua)
 ---@field Overview AGFOverview
 ---@field Window AGFWindow
 ---@field WindowDB fun(): AGFWindowDB the window's saved state; an empty table before the save file loads

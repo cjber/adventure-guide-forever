@@ -1,6 +1,7 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 local L = ns.L
+local Art = ns.Art
 local Overview = ns.Overview
 local KIND_ICONS, ShowTooltip = Overview.KIND_ICONS, Overview.ShowTooltip
 local RowEnter, RowClick, CardClick, CardTooltip =
@@ -143,7 +144,7 @@ local checks = {}
 ---@field aside? AGFAside the aside it draws
 
 ---@class AGFRouteRow : Button, AGFDraggableRow
----@field Selected Texture
+---@field Selected AGFArtSlice
 ---@field Ring Texture
 ---@field Number Texture
 ---@field Title FontString
@@ -151,21 +152,22 @@ local checks = {}
 ---@field Group Texture
 ---@field Tag FontString
 ---@field SkipButton AGFSkipButton
----@field Kind Texture the step's kind, badged on its ring
+---@field Kind AGFBadge the step's kind, badged on its ring
 ---@field step? AGFStep
 ---@field index? integer
 
 ---@param row AGFRouteRow
----@param atlas string
+---@param atlas string a square icon, so the button's highlight is the icon itself
+---@param size number
 ---@param tip fun(): string
 ---@param action fun(step: AGFStep)
 ---@return AGFSkipButton
-local function CreateRowIcon(row, atlas, tip, action)
+local function CreateRowIcon(row, atlas, size, tip, action)
 	local button = CreateFrame("Button", nil, row) --[[@as AGFSkipButton]]
-	button:SetSize(18, 18)
+	button:SetSize(size, size)
 	button.Icon = button:CreateTexture(nil, "ARTWORK")
-	button.Icon:SetAtlas(atlas)
-	button.Icon:SetAllPoints()
+	Art.Fit(button.Icon, atlas, size, size)
+	button.Icon:SetPoint("CENTER")
 	button:SetHighlightAtlas(atlas, "ADD")
 	button:SetScript("OnClick", function()
 		if row.step then
@@ -203,20 +205,13 @@ local function CreateRow(parent)
 	local row = CreateFrame("Button", nil, parent) --[[@as AGFRouteRow]]
 	row:SetHeight(ROW_HEIGHT)
 	-- The Classic mount and pet collection list rows: background, hover and selected art.
-	local background = row:CreateTexture(nil, "BACKGROUND")
-	background:SetAtlas("PetList-ButtonBackground")
-	background:SetAllPoints()
-	row:SetHighlightAtlas("PetList-ButtonHighlight")
-	row.Selected = row:CreateTexture(nil, "OVERLAY")
-	row.Selected:SetAtlas("PetList-ButtonSelect")
-	row.Selected:SetAllPoints()
+	row.Selected = ns.Window.RowArt(row, true) --[[@as AGFArtSlice]]
 
-	row.SkipButton = CreateRowIcon(row, "common-icon-redx", function()
+	row.SkipButton = CreateRowIcon(row, "common-icon-redx", 14, function()
 		return ns.L.SKIP_STEP
 	end, function(step)
 		ns.Skip(step.key, step.title)
 	end)
-	row.SkipButton:SetSize(14, 14)
 	row.SkipButton:SetPoint("TOPRIGHT", -6, -7)
 
 	row.Ring = row:CreateTexture(nil, "ARTWORK")
@@ -224,7 +219,6 @@ local function CreateRow(parent)
 	row.Ring:SetSize(26, 26)
 	row.Ring:SetPoint("LEFT", 6, 0)
 	row.Number = row:CreateTexture(nil, "OVERLAY")
-	row.Number:SetSize(22, 25)
 	row.Number:SetPoint("CENTER", row.Ring)
 
 	row.Title = row:CreateFontString(nil, "ARTWORK", "GameFontNormalMed3")
@@ -298,7 +292,8 @@ local function BuildHeader(parent)
 	end)
 	-- The guide in its own window (Window.lua): the map frame's maximize art at 22, mirroring the compass at the left.
 	local expand = CreateFrame("Button", nil, header)
-	expand:SetSize(22, 22)
+	-- 22 high at the art's own 18x19.
+	expand:SetSize(22 * 18 / 19, 22)
 	expand:SetPoint("RIGHT", -4, 0)
 	expand:SetNormalAtlas("RedButton-Expand")
 	expand:SetPushedAtlas("RedButton-Expand-Pressed")
@@ -371,8 +366,7 @@ local function CreateResult(parent)
 	row.Lock:SetSize(18, 18)
 	row.Lock:SetPoint("TOPLEFT", 4, -2)
 	row.Star = row:CreateTexture(nil, "ARTWORK")
-	row.Star:SetAtlas("tradeskills-star")
-	row.Star:SetSize(14, 13)
+	Art.Fit(row.Star, "tradeskills-star", 14, 14)
 	row.Star:SetPoint("TOPRIGHT", -4, -5)
 	row.Zone = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 	row.Zone:SetPoint("TOPRIGHT", -22, -6)
@@ -766,7 +760,7 @@ end
 ---@param index integer
 local function RefreshRow(row, step, index)
 	row.index = index
-	row.Number:SetAtlas("services-number-" .. index)
+	ns.Window.SetNumber(row.Number, index)
 	row.Title:SetText(step.title)
 	-- Step 1 adds how long it takes when Shortest Path knows; its tooltip gives the way.
 	local minutes = index == 1 and ns.Integrations.TravelMinutes(step)
@@ -783,7 +777,7 @@ local function RefreshRow(row, step, index)
 		- (row.Tag:IsShown() and row.Tag:GetUnboundedStringWidth() + (group and 4 or 6) or 0)
 	row.Detail:SetWidth(math.min(row.Detail:GetUnboundedStringWidth(), room))
 	row:SetAlpha(step.optional and 0.6 or 1)
-	row.Selected:SetShown(index == 1)
+	Art.SetSliceShown(row.Selected, index == 1)
 	Overview.SetVerbIcon(row.Kind, step)
 end
 
@@ -801,7 +795,6 @@ local function RefreshCard(card, journey, state)
 	card.IconFrame:SetSize(ring, ring)
 	card.IconFrame:SetPoint("LEFT", compact and 12 or 15, 0)
 	card.IconFrame.Border:SetShown(not compact)
-	card.IconFrame.Icon:SetSize(compact and COMPACT_ICON or CARD_ICON, compact and COMPACT_ICON or CARD_ICON)
 	for _, cap in ipairs(card.Caps) do
 		cap:SetShown(compact)
 	end
@@ -814,7 +807,8 @@ local function RefreshCard(card, journey, state)
 		card.New:SetSize(NEW_SIZE, NEW_SIZE)
 		card.New:SetPoint("CENTER", card.IconFrame, "TOPRIGHT", -4, -4)
 	end
-	card.IconFrame.Icon:SetAtlas(KIND_ICONS[journey.kind])
+	local icon = compact and COMPACT_ICON or CARD_ICON
+	Art.Fit(card.IconFrame.Icon, KIND_ICONS[journey.kind], icon, icon)
 	card.Title:SetText(journey.title)
 	card.Title:ClearAllPoints()
 	if compact then
@@ -1131,8 +1125,9 @@ local function LayoutJourneys(route)
 		if aside then
 			if aside.texture then
 				line.Icon:SetTexture(aside.texture)
+				line.Icon:SetSize(ASIDE_HEIGHT, ASIDE_HEIGHT)
 			else
-				line.Icon:SetAtlas(aside.icon)
+				Art.Fit(line.Icon, aside.icon, ASIDE_HEIGHT, ASIDE_HEIGHT)
 			end
 			line.Text:SetText(aside.text)
 			line:SetPoint("TOPLEFT", 10, -top)
@@ -1312,7 +1307,6 @@ local function Attach()
 	panel:SetPoint("BOTTOMRIGHT", map.ContentsAnchor, -22, 0)
 	-- The quest list's own background and gold frame, so the guide reads as another page of the same log.
 	local background = panel:CreateTexture(nil, "BACKGROUND")
-	background:SetAtlas("QuestLog-main-background")
 	background:SetPoint("TOPLEFT", 0, -TOP_BAR)
 	background:SetPoint("BOTTOMRIGHT")
 	-- Above the quest details view, which is not one of the content frames ShowGuide hides.
@@ -1337,6 +1331,7 @@ local function Attach()
 	ns.OnRouteChange(QueueCards)
 	BuildContent(panel)
 	panel:SetScript("OnSizeChanged", Refresh)
+	Art.CoverFrame(panel, background, "QuestLog-main-background", 0, TOP_BAR)
 	-- The footer's Stop follows Shortest Path ending our journey and the player clearing or moving the waypoint through
 	-- Integrations.OnGuidanceChange (below), on the frame after the super-tracking events.
 	panel:RegisterEvent("QUEST_DATA_LOAD_RESULT")

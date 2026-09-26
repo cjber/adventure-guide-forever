@@ -51,6 +51,7 @@ commit the PNGs it rewrites in `docs/screenshots/`; two runs give byte-identical
   in `types/Namespace.lua`.
 - A final `select(...)` argument, table element or return must be parenthesised, or carry a trailing
   `-- multi-value: reason` when expansion is intentional.
+- Never stretch art: an icon, atlas or texture is drawn at its native aspect (size it from `C_Texture.GetAtlasInfo`, fit inside the box); only nine-slice pieces stretch by design.
 - Commits are signed (`git commit -S`) with the personal email.
 - Quality: load `.agents/skills/sift-project/SKILL.md` before cleanup, dead-code or refactoring work.
 - A quest whose eligibility the data cannot establish is never recommended, and a step never points at

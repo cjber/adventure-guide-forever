@@ -210,7 +210,7 @@ end
 ---@param content Frame
 local function Build(content)
 	emptyArt = content:CreateTexture(nil, "ARTWORK")
-	emptyArt:SetAtlas("Professions-Recipe-Background")
+	ns.Art.Cover(emptyArt, "Professions-Recipe-Background", WIDTH, HEIGHT)
 	emptyArt:SetPoint("TOPLEFT", LEFT, -TOP)
 	emptyArt:SetSize(WIDTH, HEIGHT)
 	emptyArt:SetAlpha(0.35)
@@ -225,7 +225,7 @@ local function Build(content)
 	card.Shade:Hide()
 	card.Fade:SetGradient("HORIZONTAL", CreateColor(0, 0, 0, 0.55), CreateColor(0, 0, 0, 0))
 	card.Picture:Show()
-	card:SetHighlightAtlas("")
+	card.Highlight:Hide()
 	local inner = CreateFrame("Frame", nil, card)
 	inner:SetAllPoints()
 	inner:SetFrameLevel(card:GetFrameLevel() + 5)
@@ -334,7 +334,7 @@ end
 local function RefreshCard(profession)
 	card.profession = profession
 	local art = ART[profession.skillLineID]
-	card.Picture:SetAtlas(art and "Professions-Recipe-Background-" .. art or "Professions-Recipe-Background")
+	Window.SetPicture(card, art and "Professions-Recipe-Background-" .. art or "Professions-Recipe-Background")
 	Window.SetRingIcon(card.Icon, profession.icon)
 	card.Title:SetText(profession.name)
 	card.Range:SetText(

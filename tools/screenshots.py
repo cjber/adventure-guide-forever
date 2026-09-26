@@ -195,6 +195,17 @@ def run_scenes(inputs=None):
     return data
 
 
+def two_places(value):
+    """`value` with every number as tests/golden/layout.json writes it ("%.2f"), for comparing a run with it."""
+    if isinstance(value, dict):
+        return {key: two_places(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [two_places(item) for item in value]
+    if isinstance(value, float | int) and not isinstance(value, bool):
+        return float(f"{value:.2f}")
+    return value
+
+
 def layout_pass(ui, scenes, known):
     """The client's layout, emulated: rects resolved from a run's dumps go back into the next run (h.SetRects runs
     the addon's OnSizeChanged, then the refresh re-lays the rows) until nothing moves, as the client settles over
@@ -202,7 +213,7 @@ def layout_pass(ui, scenes, known):
     fixture cannot drift from ui_spec's. Returns the settled run and each scene's rects."""
     data = run_scenes()
     golden = json.loads(GOLDEN.read_text())["layout"]
-    if data["panel"]["layout"] != golden:
+    if two_places(data["panel"]["layout"]) != golden:
         sys.exit("tests/scenes.lua's panel differs from tests/golden/layout.json: update its fixture to ui_spec's")
     inputs = {"rects": {}, "mapArt": map_tiles(ui)}
     for _ in range(LAYOUT_PASSES):
@@ -621,7 +632,10 @@ def draw_texture(canvas, entry, rect, alpha, scale=1, mask=None):
         art = ui.atlas(entry["atlas"])
         if entry.get("slice"):
             art = dataclasses.replace(art, slice=tuple(entry["slice"]))
-        if art.slice and scale != 1:
+        if entry.get("texCoord"):
+            # Art.lua's crops and slices: the harness gives each atlas its own whole sheet, so the coords are within it.
+            target.draw(wm.crop_coords(art.image, *entry["texCoord"]), x, y, w, h, tint, blend)
+        elif art.slice and scale != 1:
             # The margins keep their size in the frame's own units: drawn at that size, then scaled with the frame.
             full = ui.canvas(w / scale, h / scale)
             full.draw(art, 0, 0, w / scale, h / scale)
