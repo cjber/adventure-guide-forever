@@ -10,7 +10,7 @@ A few places to go next in WoW: Forever, in a guide that looks like it came with
 
 I wanted a levelling guide that left me room to wander. From your level, finished quests and quest log, Adventure Guide Forever offers a few journeys, each with a reason, and a short route for the one you pick. It uses the quest log's side tab, retail's Journeys art and the game's own objective tracker. Clicking a quest in your log opens Blizzard's quest details.
 
-Shortest Path Forever handles travel when installed. If you follow Questie or another guide, you can hide AGF's tracker in settings; their routes may overlap.
+Shortest Path Forever handles travel when installed. With Questie installed, the guide takes quest givers and requirements from Questie's database and sits alongside its map pins. If you'd rather follow another guide's route, you can hide the guide's tracker in settings.
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif" width="640" alt="Choosing a journey and following its route"></p>
 
@@ -66,13 +66,13 @@ Translations are welcome as a pull request, or pasted into an issue, on GitHub: 
 
 ## Where the quests come from
 
-Bundled data comes from CMaNGOS Classic and the Forever client's tables. An installed, compatible QuestieDB supplies quest requirements and givers instead; bundled locations still limit what the guide can offer. Finished quests come from the game.
+Bundled data comes from CMaNGOS Classic and the Forever client's tables. With [Questie](https://www.curseforge.com/wow/addons/questie) installed (or just its QuestieDB addon), Questie's database supplies quest requirements and givers instead; bundled locations still limit what the guide can offer. Finished quests come from the game.
 
 Forever's new quests are only considered once they are in your log. The guide never recommends a quest whose eligibility it cannot establish or points at a location it does not have. This is not a complete levelling walkthrough.
 
 ## Works alongside
 
-All optional: [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting routes, [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion, and [QuestieDB](https://github.com/Questie/QuestieDB) for quest data. QuestieDB works alone or with Questie. AGF's tracker has its own switch when you prefer another guide.
+All optional: [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting routes, [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion, and [Questie](https://www.curseforge.com/wow/addons/questie) for quest data (its [QuestieDB](https://github.com/Questie/QuestieDB/releases) addon on its own works too). The guide's tracker has its own switch when you prefer another guide.
 
 ## Development
 
