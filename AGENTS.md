@@ -13,8 +13,12 @@ luacheck .
 tools/typecheck.sh
 for s in tests/*_spec.lua; do luajit "$s" || exit 1; done
 luajit -joff tests/plan_bench.lua
+python3 tools/changelog.py --check
 python3 .sift/gate.py --base origin/main && python3 .sift/agents.py check
 ```
+
+Every version needs a `CHANGELOG.md` entry (prose, bold-lead bullets) before its `v*` tag: the release publishes
+it as the notes on GitHub, CurseForge and Wago.
 
 The same gate CI runs, plus actionlint, zizmor and gitleaks on the workflows and history. After a change to the
 planner or the rebuild, also run `AGF_BENCH_STRICT=1 luajit -joff tests/plan_bench.lua` (the 3 ms frame budget;

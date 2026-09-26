@@ -4,9 +4,10 @@ What changed in each release, in the terms someone levelling a character would n
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). The entries are prose rather than bare
-Added/Fixed lists.
+Added/Fixed lists: what matters about a release is why the guide now sends you somewhere different.
 
-Each version's entry is also its release notes on GitHub, CurseForge and Wago.
+Each version's entry is also its release notes on GitHub, CurseForge and Wago. Older entries are kept
+verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
@@ -23,8 +24,7 @@ Each version's entry is also its release notes on GitHub, CurseForge and Wago.
 
 ## [0.1.0] - 2026-09-25
 
-The first release: a few journeys to choose from on the world map, each with a reason, and a short route for the one you pick.
-
+- **The first release: a few journeys to choose from on the world map, each with a reason, and a short route for the one you pick.** I wanted the game to suggest what to do next without handing me a fixed guide.
 - **An Adventure Guide tab on the world map's quest log** offers up to six journeys: finish the quests you carry, follow a zone's story, or head to the next zone with enough quests for your level. The chosen journey shows its steps, up to nine, so you choose where to go rather than being handed a list. The same journeys open in their own window with `/agf`.
 - **The map's journey cards fit on one page.** Compact full-width rows keep titles and details on one line, with the full text on hover. Smaller maps offer a link to the Adventure Guide window for the remaining journeys; the overview no longer scrolls.
 - **Zone stories read as chapters.** A chain shows "Chapter 2 of 4" only when the quest data proves how long it is, and never names a later chapter, so the story is not spoiled. Finishing a story of known length glows the tracker once and plays the game's stage-end sound.
@@ -46,4 +46,10 @@ The first release: a few journeys to choose from on the world map, each with a r
 - **Put the steps in your own order.** Drag one onto another, or right-click for *Do this next*, *Do this sooner* or *Do this later*. Moves that would break the route are greyed out, the card says "Your order", and *Back to suggested order* undoes it.
 - **A town lists its quest givers** under its step, ticked as you finish with each; right-click the town to skip one. Each step's ring shows what it is: a "!" to pick up, a "?" to hand in, the objective mark, a trainer or a battlemaster. A town the route comes back to keeps one map ring with "+1".
 - **Go to entrance** on a dungeon card takes you to the way in when Tweaks Forever knows it. The window's Today line shows three and "+2 more" when there's more, including setting your hearth.
+- **The window opens with Shift-J** the first time, when nothing else has that key, and a line in chat says so. Change it under *Key Bindings*.
+- **The Professions tab reads SkillUp Forever:** your next recipes in their difficulty colours with the training fee, the next steps and the reagents to buy. With two crafting professions a picker switches between them; without SkillUp the tab greys and says why.
+- **Other things to do show above the steps.** "You have 2 talent points to spend" while any are; a profession rank at its cap, naming the next rank's trainer, or a free profession slot; "You haven't seen" an area of the zone yet; and, when your rested XP is low, a route that ends "Rest at the inn here".
+- **No quest three or more levels up is offered.** At 19 in Redridge the story no longer sends you into a Blackrock camp for a level 25 quest. The map's "!" still shows those givers, as the game does.
+- **A breadcrumb is offered only until you take the quest it leads to,** and its card says so.
+- **QuestieDB supplies the quest data when it is loaded,** on its own or with Questie. The bundled data fills what it leaves out, and nothing from Questie ships with the addon.
 - **A quest the data can't check is never suggested,** and a step never points at a place the data doesn't have. Quest and zone names come from the game, in your language.
