@@ -184,3 +184,25 @@ function Art.SetSliceShown(slice, shown)
 		slice.pieces[index]:SetShown(shown)
 	end
 end
+
+-- The rows' art (the Classic pet list's, 209x46) as a three-slice: caps past its 10-pixel bevel and glow.
+local ROW_CAP = 12
+
+-- The route rows' art across `row` (Panel.lua's and the window's): its background, and its hover in the HIGHLIGHT
+-- layer, which a button shows under the mouse; with `withSelected`, the selected art over them. Here rather than in
+-- Window.lua because Panel.lua, which loads first, builds its rows as soon as the world map is loaded.
+---@param row Button
+---@param withSelected? boolean
+---@return AGFArtSlice? selected
+function Art.RowArt(row, withSelected)
+	Art.Slice(row, "PetList-ButtonBackground", "BACKGROUND", ROW_CAP, ROW_CAP)
+	Art.Slice(row, "PetList-ButtonHighlight", "HIGHLIGHT", ROW_CAP, ROW_CAP)
+	return withSelected and Art.Slice(row, "PetList-ButtonSelect", "OVERLAY", ROW_CAP, ROW_CAP) or nil
+end
+
+-- A step's number on its ring: services-number-N at its aspect in the 22x25 the rows give it.
+---@param texture Texture
+---@param index integer
+function Art.SetNumber(texture, index)
+	Art.Fit(texture, "services-number-" .. index, 22, 25)
+end

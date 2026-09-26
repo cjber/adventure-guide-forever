@@ -205,7 +205,7 @@ local function CreateRow(parent)
 	local row = CreateFrame("Button", nil, parent) --[[@as AGFRouteRow]]
 	row:SetHeight(ROW_HEIGHT)
 	-- The Classic mount and pet collection list rows: background, hover and selected art.
-	row.Selected = ns.Window.RowArt(row, true) --[[@as AGFArtSlice]]
+	row.Selected = ns.Art.RowArt(row, true) --[[@as AGFArtSlice]]
 
 	row.SkipButton = CreateRowIcon(row, "common-icon-redx", 14, function()
 		return ns.L.SKIP_STEP
@@ -760,7 +760,7 @@ end
 ---@param index integer
 local function RefreshRow(row, step, index)
 	row.index = index
-	ns.Window.SetNumber(row.Number, index)
+	ns.Art.SetNumber(row.Number, index)
 	row.Title:SetText(step.title)
 	-- Step 1 adds how long it takes when Shortest Path knows; its tooltip gives the way.
 	local minutes = index == 1 and ns.Integrations.TravelMinutes(step)

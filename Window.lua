@@ -25,8 +25,6 @@ local TODAY_MAX, TODAY_TOP, TODAY_LEFT, TODAY_RING = 4, 4, 18, 26
 local MORE_WIDTH, MORE_HEIGHT = 90, 22
 -- A step row's kind badge on its 26 ring, Shortest Path's 16-on-22 scaled down; an icon row's ring.
 local BADGE, BADGE_OUT, ICON_ROW_RING = 14, 3, 26
--- The rows' art (the Classic pet list's, 209x46) as a three-slice: caps past its 10-pixel bevel and glow.
-local ROW_CAP = 12
 -- Where a tab's content starts in the inset, under the Today strip.
 Window.TOP, Window.LEFT, Window.RIGHT = 50, 14, RIGHT
 Window.INSET_WIDTH, Window.INSET_HEIGHT = WIDTH - 8, HEIGHT - INSET_TOP - INSET_BOTTOM
@@ -130,24 +128,6 @@ function Window.SetRingIcon(ring, icon)
 		Art.Fit(ring.Icon, icon, box, box)
 		ring.Icon:SetPoint("CENTER")
 	end
-end
-
--- The route rows' art across `row` (Panel.lua and the window's): its background, and its hover in the HIGHLIGHT
--- layer, which a button shows under the mouse; with `withSelected`, the selected art over them.
----@param row Button
----@param withSelected? boolean
----@return AGFArtSlice? selected
-function Window.RowArt(row, withSelected)
-	Art.Slice(row, "PetList-ButtonBackground", "BACKGROUND", ROW_CAP, ROW_CAP)
-	Art.Slice(row, "PetList-ButtonHighlight", "HIGHLIGHT", ROW_CAP, ROW_CAP)
-	return withSelected and Art.Slice(row, "PetList-ButtonSelect", "OVERLAY", ROW_CAP, ROW_CAP) or nil
-end
-
--- A step's number on its ring: services-number-N at its aspect in the 22x25 the rows give it.
----@param texture Texture
----@param index integer
-function Window.SetNumber(texture, index)
-	Art.Fit(texture, "services-number-" .. index, 22, 25)
 end
 
 ---@class AGFWindowCard : Button
@@ -259,7 +239,7 @@ end
 function Window.CreateStepRow(parent, height)
 	local row = CreateFrame("Button", nil, parent) --[[@as AGFWindowRow]]
 	row:SetHeight(height)
-	row.Selected = Window.RowArt(row, true) --[[@as AGFArtSlice]]
+	row.Selected = Art.RowArt(row, true) --[[@as AGFArtSlice]]
 	row.Ring = row:CreateTexture(nil, "ARTWORK")
 	row.Ring:SetAtlas("adventureguide-ring")
 	row.Ring:SetSize(26, 26)
@@ -287,7 +267,7 @@ end
 ---@param detail? string
 ---@param step? AGFStep a route step, for its kind's badge
 function Window.SetStepRow(row, index, title, detail, step)
-	Window.SetNumber(row.Number, index)
+	Art.SetNumber(row.Number, index)
 	row.Title:SetText(title)
 	row.Detail:SetText(detail or "")
 	Art.SetSliceShown(row.Selected, index == 1)
@@ -310,7 +290,7 @@ end
 function Window.CreateIconRow(parent, height)
 	local row = CreateFrame("Button", nil, parent) --[[@as AGFWindowIconRow]]
 	row:SetHeight(height)
-	Window.RowArt(row)
+	Art.RowArt(row)
 	row.Icon = Window.CreateRingIcon(row, ICON_ROW_RING)
 	row.Icon:SetPoint("LEFT", 8, 0)
 	row.Title = row:CreateFontString(nil, "ARTWORK", "GameFontNormal")
