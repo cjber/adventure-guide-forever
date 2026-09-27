@@ -538,6 +538,7 @@
 ---@field SEARCH_NONE string a search that finds no quest
 
 ---@class AGFNamespace
+---@field DungeonBosses table<integer, AGFDungeonBoss[]>
 ---@field TITLE string
 ---@field L AGFStrings
 ---@field Data AGFData

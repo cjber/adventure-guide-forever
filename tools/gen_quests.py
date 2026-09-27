@@ -223,12 +223,12 @@ def parse_values(text):
     raise ValueError("Truncated SQL VALUES")
 
 
-def read_tables(lines):
+def read_tables(lines, required=TABLES):
     columns, tables, current = {}, defaultdict(list), None
     for line in lines:
         create = re.match(r"CREATE TABLE `(\w+)`", line)
         if create:
-            current = create[1] if create[1] in TABLES else None
+            current = create[1] if create[1] in required else None
             if current:
                 columns[current] = []
         elif current and (column := re.match(r"\s+`([^`]+)`", line)):
@@ -237,11 +237,11 @@ def read_tables(lines):
             current = None
         elif insert := re.match(r"INSERT INTO `(\w+)` VALUES ", line):
             table = insert[1]
-            if table in TABLES:
+            if table in required:
                 for values in parse_values(line[insert.end() :]):
                     tables[table].append(dict(zip(columns[table], values, strict=True)))
-    if TABLES - tables.keys():
-        raise ValueError(f"Missing SQL tables: {sorted(TABLES - tables.keys())}")
+    if required - tables.keys():
+        raise ValueError(f"Missing SQL tables: {sorted(required - tables.keys())}")
     return tables
 
 

@@ -393,25 +393,41 @@ function Dungeons.Source(yield)
 	return source
 end
 
----@param source AGFDungeonSource
+---@param source? AGFDungeonSource
 ---@param instance integer
 ---@param journal? AGFDungeonBoss[]
 ---@return AGFDungeonBoss[]
 function Dungeons.Bosses(source, instance, journal)
-	if not (source.curated and source.curated[instance]) and journal then
-		local rows = {}
-		for _, encounter in ipairs(journal) do
+	if source and source.curated and source.curated[instance] then
+		return source.bosses[instance] or {}
+	end
+	local canonical = journal or ns.DungeonBosses[instance]
+	if canonical then
+		local rows, seen = {}, {}
+		for _, encounter in ipairs(canonical) do
 			local matches = {}
-			for _, npc in pairs(source.npcs and source.npcs[instance] or {}) do
-				if npc.name == encounter.name then
+			for _, npc in pairs(source and source.npcs and source.npcs[instance] or {}) do
+				if
+					(encounter.journal and npc.name == encounter.name)
+					or (not encounter.journal and npc.id == encounter.id)
+				then
 					matches[#matches + 1] = npc
 				end
 			end
-			rows[#rows + 1] = #matches == 1 and matches[1] or encounter
+			local boss = #matches == 1 and matches[1] or encounter
+			rows[#rows + 1] = boss
+			if not boss.journal then
+				seen[boss.id] = true
+			end
+		end
+		for _, boss in ipairs(source and source.bosses[instance] or {}) do
+			if not seen[boss.id] then
+				rows[#rows + 1] = boss
+			end
 		end
 		return rows
 	end
-	return source.bosses[instance] or {}
+	return source and source.bosses[instance] or {}
 end
 
 local requestedLoot = {}

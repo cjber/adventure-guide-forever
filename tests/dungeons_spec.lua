@@ -489,7 +489,7 @@ local emptySource = harness.load({ questiedb = fake })
 emptySource.ns.Window.OpenDungeon(389)
 emptySource.flush()
 emptySource.Click(Button(emptySource, emptySource.ns.L.DUNGEON_BOSSES_TAB))
-equal(Texts(emptySource)[emptySource.ns.L.DUNGEON_NO_BOSSES], true, "loaded source with no enemies explains AtlasLoot")
+equal(Texts(emptySource)["Jergosh the Invoker"], true, "empty optional source retains the Classic boss baseline")
 equal(Texts(emptySource)[emptySource.ns.L.DUNGEON_NEEDS_QUESTIE], nil, "loaded source is never reported missing")
 equal(#filteredUI.errors, 0, "restricted prep UI has no errors")
 data.quests[1] = original

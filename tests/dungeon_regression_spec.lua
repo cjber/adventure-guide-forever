@@ -57,6 +57,27 @@ for id, instance in pairs(h.ns.Data.instances) do
 		h.Click(button)
 		h.flush()
 		assert(h.ns.Dungeons.Planned(id), "planning must persist for " .. id)
+		local bosses = h.ns.Dungeons.Bosses(nil, id)
+		assert(#bosses > 0, "standalone boss coverage for " .. id)
+		for _, frame in ipairs(h.frames) do
+			if
+				frame:IsObjectType("Button")
+				and frame:IsVisible()
+				and (
+					frame:GetText() == h.ns.L.DUNGEON_BOSSES_TAB
+					or frame.Text and frame.Text:GetText() == h.ns.L.DUNGEON_BOSSES_TAB
+				)
+			then
+				h.Click(frame)
+				break
+			end
+		end
+		h.flush()
+		local visible = false
+		for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)) do
+			visible = visible or entry.text == bosses[1].name
+		end
+		assert(visible, "standalone boss panel for " .. id)
 		planned[#planned + 1] = id
 	end
 end
