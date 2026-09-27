@@ -252,7 +252,7 @@ def map_indexes(ui_maps, assignments):
             continue
         if int(row["AreaID"]):
             areas[int(row["AreaID"])].add(ui_map)
-        if int(maps[ui_map]["Type"]) == 3 and int(row["WMODoodadPlacementID"]) == 0:
+        if int(maps[ui_map]["Type"]) == UIMAP_ZONE and int(row["WMODoodadPlacementID"]) == 0:
             world[int(row["MapID"])].append(row)
     return maps, world, areas
 
@@ -294,7 +294,7 @@ def continents(ui_maps, assignments, wanted):
     yards, with map x and y growing the same way as on a zone map. Only a continent with exactly one whole-continent
     row on one world map is emitted.
     """
-    world_maps = {int(r["ID"]) for r in ui_maps if int(r["Type"]) == 1}
+    world_maps = {int(r["ID"]) for r in ui_maps if int(r["Type"]) == UIMAP_WORLD}
     rows = defaultdict(list)
     for row in assignments:
         if int(row["UiMapID"]) in world_maps and int(row["WMODoodadPlacementID"]) == 0:
@@ -332,7 +332,7 @@ def crossings(templates, path_nodes, taxi_nodes, wanted):
         for node in taxi_nodes:
             near = (float(node["Pos_0"]) - dock["x"]) ** 2 + (float(node["Pos_1"]) - dock["y"]) ** 2
             if int(node["ContinentID"]) == dock["continent"] and near <= DOCK_REACH**2:
-                mask |= int(node["Flags"]) & 3
+                mask |= int(node["Flags"]) & TAXI_SIDES
         return mask
 
     result = []
@@ -416,6 +416,8 @@ NAME_REACH = 150  # yards from a town's nearest giver to the flight master that 
 # Plaguewood towers' flights depend on PvP control, so neither is a town's flight master for every player.
 RESTRICTED_NODES = {62, 63, 84, 85, 86, 87}
 # What `flight_masters` reads.
+UIMAP_WORLD, UIMAP_ZONE = 1, 3  # UiMap.Type: a world map, a zone map
+TAXI_SIDES = 3  # TaxiNodes.Flags side bits: 1 Alliance, 2 Horde
 TAXI_COLUMNS = ("ID", "Name_lang", "ContinentID", "Pos_0", "Pos_1", "Flags", "ConditionID", "VisibilityConditionID")
 TAXI_COLUMNS += ("MountCreatureID_0", "MountCreatureID_1")
 
@@ -430,7 +432,7 @@ def flight_masters(taxi_nodes):
         node, name = int(row["ID"]), row["Name_lang"]
         if (
             node in RESTRICTED_NODES
-            or (not int(row["Flags"]) & 3 and node != 3275)
+            or (not int(row["Flags"]) & TAXI_SIDES and node != 3275)
             or int(row["ContinentID"]) not in (0, 1, 2991)
             or "zzOLD" in name
             or name.startswith("Quest ")
@@ -751,6 +753,13 @@ def instance_index(area_rows, map_rows):
 
 
 RAID_TYPES = (62, 88)  # quest_template Type (QuestInfo): Raid, Raid (10)
+ELITE_TYPES = (1, 81, *RAID_TYPES)  # quest_template Type: Elite, Dungeon and the raid types
+# quest_template SpecialFlags and QuestFlags bits (CMaNGOS QuestSpecialFlags, QuestFlags).
+SPECIAL_REPEATABLE = 1  # QUEST_SPECIAL_FLAG_REPEATABLE
+FLAG_RAID = 64  # QUEST_FLAGS_RAID: a group quest the client lists as a raid's
+FLAG_AUTO_REWARDED = 1024  # QUEST_FLAGS_AUTO_REWARDED: completed with no turn-in
+FLAG_DAILY, FLAG_WEEKLY = 4096, 32768  # QUEST_FLAGS_DAILY, QUEST_FLAGS_WEEKLY
+FLAG_UNAVAILABLE = 16384  # QUEST_FLAGS_UNAVAILABLE: not offered to players
 
 
 def instance_fields(row, instance_of, instances):
@@ -974,7 +983,7 @@ def overlays(ui_maps, map_art, overlay_rows, area_rows):
     an area whose level is 0 is never suggested, so it is left out. `x`, `y` are the hit rectangle's centre on the
     map, for which is nearer only: never a place.
     """
-    zones = {int(r["ID"]) for r in ui_maps if int(r["Type"]) == 3}
+    zones = {int(r["ID"]) for r in ui_maps if int(r["Type"]) == UIMAP_ZONE}
     maps_of = defaultdict(set)
     for row in map_art:
         if int(row["UiMapID"]) in zones and int(row["PhaseID"]) == 0:
@@ -1099,9 +1108,9 @@ def generate(
             quest["breadcrumb"] = crumb
         if following := row["NextQuestInChain"] or max(0, row["NextQuestId"]):
             quest["next"] = following
-        if row["SpecialFlags"] & 1 or row["QuestFlags"] & (4096 | 32768):
+        if row["SpecialFlags"] & SPECIAL_REPEATABLE or row["QuestFlags"] & (FLAG_DAILY | FLAG_WEEKLY):
             quest["repeatable"] = True
-        elite = row["Type"] in (1, 62, 81, 88) or row["SuggestedPlayers"] > 1 or row["QuestFlags"] & 64
+        elite = row["Type"] in ELITE_TYPES or row["SuggestedPlayers"] > 1 or row["QuestFlags"] & FLAG_RAID
         if elite:
             quest["elite"] = True
         # ZoneOrSort names the area a quest is filed under; an area inside an instance names its Map.ID.
@@ -1119,7 +1128,7 @@ def generate(
             or row["RequiredCondition"]
             or row["MaxLevel"] not in (0, 255)
             or row["Method"] != 2
-            or row["QuestFlags"] & (1024 | 16384)
+            or row["QuestFlags"] & (FLAG_AUTO_REWARDED | FLAG_UNAVAILABLE)
         )
         if unknown or any(p not in valid_ids for p in pre + pre_any) or (crumb and crumb not in valid_ids):
             quest.pop("start", None)
@@ -1238,6 +1247,7 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, look
         "-- wago.tools UiMap, UiMapAssignment, QuestV2, TaxiPathNode, TaxiNodes, AreaTable, Map, FactionTemplate,",
         "-- SpellEffect, SkillLine, Faction, UiMapXMapArt, WorldMapOverlay:",
         f"-- https://wago.tools/db2/QuestV2/csv?build={BUILD}",
+        f"-- wago.tools WorldMapArea at {LEGACY_MAP_BUILD}, the last build with it (quest_poi's mapAreaId).",
         f"-- Published zone ranges (tweaks-forever/tools/gen_zonelevels.py): {ZONE_SOURCE}",
         "-- Prev > 0: completed; Prev < 0: unknown, no pickup. NextQuestId contributes reverse prerequisites.",
         "-- Positive exclusive groups close siblings; negative predecessor groups expand to pre (all completed).",

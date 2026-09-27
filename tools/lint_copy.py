@@ -82,25 +82,33 @@ def split(tokens: list[Token], separator: str) -> list[list[Token]]:
     return pieces
 
 
-def strings_table(tokens: list[Token]) -> list[tuple[int, str, str]]:
-    """(line, key, value) for each alternative of each ns.L entry; "a" .. "b" joins, "X or 'b'" gives 'b'."""
+def ns_l_entries(tokens: list[Token]) -> list[tuple[Token, list[Token]]]:
+    """(key, value tokens) for each entry of the ns.L = { ... } table; raises on a missing table or an entry not shaped
+    NAME = value."""
     texts = [t.text for t in tokens]
     for index in range(len(texts) - 4):
         if texts[index : index + 5] == ["ns", ".", "L", "=", "{"]:
             break
     else:
         raise ValueError("no ns.L = { ... } table")
-    body = tokens[index + 5 : matching(tokens, index + 4)]
     entries = []
-    for entry in split(body, ","):
+    for entry in split(tokens[index + 5 : matching(tokens, index + 4)], ","):
         if not entry:
             continue
         if len(entry) < 3 or entry[0].kind != "name" or entry[1].text != "=":
             raise ValueError(f"{entry[0].line}: an ns.L entry not shaped NAME = value; the copy checks cannot read it")
-        for alternative in split(entry[2:], "or"):
+        entries.append((entry[0], entry[2:]))
+    return entries
+
+
+def strings_table(tokens: list[Token]) -> list[tuple[int, str, str]]:
+    """(line, key, value) for each alternative of each ns.L entry; "a" .. "b" joins, "X or 'b'" gives 'b'."""
+    entries = []
+    for key, value in ns_l_entries(tokens):
+        for alternative in split(value, "or"):
             literals = [unquote(t.text) for t in alternative if t.kind == "string"]
             if literals:
-                entries.append((entry[0].line, entry[0].text, "".join(literals)))
+                entries.append((key.line, key.text, "".join(literals)))
     return entries
 
 

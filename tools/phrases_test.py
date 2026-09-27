@@ -21,6 +21,12 @@ L["D"] = "WTF\\Account"
 """
         self.assertEqual(render(phrases(source)), HEADER + expected)
 
+    def test_unreadable(self):
+        # The same walker as the copy lint (lint_copy.ns_l_entries): a missing table or a bracketed key fails loudly.
+        for source in ('local L = { A = "a" }', 'ns.L = { ["A"] = "a" }'):
+            with self.assertRaises(ValueError, msg=source):
+                phrases(source)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -300,6 +300,9 @@ def cut(canvas, text, face, width):
 # ------------------------------------------------------------------------------------ stock-template recipes
 
 LAYERS = ("BACKGROUND", "BORDER", "ARTWORK", "OVERLAY", "HIGHLIGHT")
+# Every phase a stock recipe is drawn in: the draw layers, then its text, then its frame (before the children) and
+# after the children. A recipe's `layer` is always one of these; screenshots_test.py checks the file's comparisons.
+PHASES = (*LAYERS, "TEXT", "FRAME", "AFTER")
 
 
 def input_border(canvas, x, y, w, h):
@@ -732,6 +735,8 @@ class Layout:
             before = canvas.image.copy()
 
         def art(layer):
+            if layer not in PHASES:
+                raise ValueError(f"unknown drawing phase {layer!r}")
             if recipe:
                 if recipe[0] is draw_scroll_frame:
                     draw_scroll_frame(canvas, entry, rect, layer, child_height)
