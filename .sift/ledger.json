@@ -1752,10 +1752,11 @@
       "what": "An AreaTable row whose ContinentID has no Map row is treated as open world (InstanceType 0), so its quests get no `dungeon` field and keep objectives/areas and a start",
       "why": "Unknown instance status is guessed as 'not an instance' rather than left out or counted; if the Map export ever lacks an instance map, dungeon quests would be recommended as outdoor work with no log line (generate() only counts flagged dungeons). Raise, or count 'areas on an unknown Map' in counts. Could not verify against the current Map export (not in the local cache).",
       "confidence": "low",
-      "status": "bug",
-      "reason": "BUG: Cached-source regeneration matches committed Data/Quests.lua, but removing only Map 36 in memory makes generate() succeed with quests 167/168 retaining starts and gaining outdoor objective areas instead of dungeon=36, without a missing-map diagnostic. The complete exports contain 24 orphan areas unused by quests; those harmless rows do not justify this fallback for quest-referenced areas.",
+      "status": "fixed",
+      "reason": "an area on a map with no Map row is unknown, and a quest filed there fails the generator; Data/Quests.lua regenerates byte-identical",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: silent fallback on missing source rows; regression test in tools/gen_quests_test.py"
     },
     {
       "id": "7a3c80dfd5",

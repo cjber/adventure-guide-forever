@@ -734,12 +734,16 @@ def faction(mask):
 
 
 def instance_index(area_rows, map_rows):
-    """Each area inside a dungeon (InstanceType 1) or raid (2): its instance Map.ID; and each such map's name."""
+    """Each area inside a dungeon (InstanceType 1) or raid (2): its instance Map.ID, or None when its map has no Map
+    row, so whether it is an instance is unknown; and each instance map's name."""
     kinds = {int(r["ID"]): (int(r["InstanceType"]), r["MapName_lang"]) for r in map_rows}
     by_area, names = {}, {}
     for row in area_rows:
         map_id = int(row["ContinentID"])
-        kind, name = kinds.get(map_id, (0, ""))
+        if map_id not in kinds:
+            by_area[int(row["ID"])] = None
+            continue
+        kind, name = kinds[map_id]
         if kind in (1, 2):
             by_area[int(row["ID"])] = map_id
             names[map_id] = {"name": name, "raid": kind == 2}
@@ -754,6 +758,8 @@ def instance_fields(row, instance_of, instances):
     it is filed. Zul'Gurub's Paragons of Power are filed under the outdoor Zul'Gurub area and given on Yojamba Isle,
     yet each asks for the raid's drops: only their Type says so."""
     fields = {}
+    if row["ZoneOrSort"] in instance_of and instance_of[row["ZoneOrSort"]] is None:
+        raise ValueError(f"quest {row['entry']}: area {row['ZoneOrSort']} lies on a map with no Map row")
     if (instance := instance_of.get(row["ZoneOrSort"])) is not None:
         fields["dungeon"] = instance
     if row["Type"] in RAID_TYPES or (instance is not None and instances[instance]["raid"]):
