@@ -29,7 +29,6 @@ local CHECK_LEFT = 40
 ---@field Tag? FontString
 ---@field Foot FontString
 ---@field Bar AGFProgressBar
----@field ShowButton? Button
 ---@field EntranceButton Button
 ---@field Note? FontString why Go to entrance is greyed, on the featured card
 
@@ -148,7 +147,6 @@ local function CreateCard(parent, isFeatured)
 		button:SetScript("OnClick", function()
 			ShowOnMap(card)
 		end)
-		card.ShowButton = button
 		card.Foot:SetPoint("RIGHT", button, "LEFT", -BAR_LABEL_GAP, 0)
 		card.EntranceButton:SetPoint("RIGHT", button, "LEFT", -6, 0)
 		-- Two short lines at most, left of the greyed button.
