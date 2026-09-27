@@ -1109,6 +1109,7 @@
 ---@field LEGACY_MISSING string
 ---@field LEGACY_OUTDATED string
 ---@field COMPLETION_EMPTY string
+---@field COMPLETION_DONE string
 ---@field COMPLETION_LOADING string
 ---@field COMPLETION_UNAVAILABLE string
 ---@field COMPLETION_COUNTS string

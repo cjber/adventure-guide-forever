@@ -256,6 +256,13 @@ class InstanceTest(unittest.TestCase):
         self.assertEqual(fields(19, 81), {})
         self.assertEqual(fields(-141), {})
 
+    def test_area_on_an_unknown_map(self):
+        # Deadmines' 1581 with Map 36 missing: whether it is an instance is unknown, so a quest filed there fails.
+        instance_of, instances = instance_index([{"ID": "1581", "ContinentID": "36"}], [])
+        self.assertEqual(instance_of, {1581: None})
+        with self.assertRaises(ValueError):
+            instance_fields({"entry": 167, "ZoneOrSort": 1581, "Type": 0}, instance_of, instances)
+
 
 class HubTest(unittest.TestCase):
     @staticmethod

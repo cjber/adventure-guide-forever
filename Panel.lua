@@ -327,6 +327,7 @@ end
 ---@field journey? AGFJourney
 ---@field state? "shown"|"chosen"|"compact"
 ---@field detail? string the map overview row's full detail
+---@field noBack? true the window's: every card stays in view, so there is no back arrow to point to
 
 -- AdventureGuideForeverJourneyCardTemplate (Panel.xml).
 ---@class AGFJourneyCard : AGFCardButton

@@ -369,7 +369,7 @@ end
 
 -- Every card's tooltip, whole or one-line: its lines, the hub line when line 3 holds the reason
 -- or is folded away, how many quests need a group, the quests the log-full note means, then what a click does. The
--- chosen card points to the back arrow; a card whose click would replace someone else's journey warns
+-- map's chosen card points to the back arrow; a card whose click would replace someone else's journey warns
 -- first (docs/design.md §2.9).
 ---@param card AGFCardButton
 local function CardTooltip(card)
@@ -418,7 +418,7 @@ local function CardTooltip(card)
 	elseif resumes then
 		GameTooltip_AddInstructionLine(GameTooltip, L.CLICK_TO_RESUME)
 	end
-	if chosen then
+	if chosen and not card.noBack then
 		GameTooltip_AddInstructionLine(GameTooltip, L.BACK_TO_ALL)
 	end
 	if (resumes or not chosen and starts) and ns.Integrations.ReplacesJourney() then

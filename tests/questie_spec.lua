@@ -166,6 +166,9 @@ local GATED = {
 	{ 39, "preQuestSingle", { -40 } },
 	{ 40, "requiredMinRep", { 99999, 3000 } },
 	{ 46, "questFlags", 1024 },
+	-- A race or class mask present but unreadable is no proof the player may take it.
+	{ 9, "requiredRaces", "unreadable" },
+	{ 12, "requiredClasses", "unreadable" },
 }
 for _, case in ipairs(GATED) do
 	assert(bundled.quests[case[1]].start, case[1] .. " has a bundled start")

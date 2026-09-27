@@ -384,10 +384,11 @@
       "what": "BUG (player copy, proposal): WHATS_NEW is 0.2.0's headline but the released version is 0.2.1",
       "why": "The comment above says it is 'the headline of its CHANGELOG entry' for this version, and Core.lua:930 prints it as 'updated to <version>. <WHATS_NEW>'. CHANGELOG.md 0.2.1's headline is 'Art keeps its shape.', so a 0.2.1 update announces the 0.2.0 features. Owner writes the new line; tools/changelog.py --check does not guard this pairing (could).",
       "confidence": "high",
-      "status": "bug",
-      "reason": "BUG: The headless harness reproduces an upgrade from 0.2.0 to 0.2.1 announcing the old translation/companion headline, and v0.2.1 contains that same WHATS_NEW value. CHANGELOG.md describes art fixes for 0.2.1; this is incorrect live update output, not exempt historical release notes, and the corrected player-facing wording needs the owner.",
+      "status": "fixed",
+      "reason": "WHATS_NEW describes 0.2.1; tests/locales_spec.lua fails when it does not open with the top CHANGELOG release's headline",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: copy tied to a release; regression check in tests/locales_spec.lua"
     },
     {
       "id": "4857465fe5",
@@ -762,10 +763,11 @@
       "what": "A quest's zone (`quest.zone or quest.start.map`) and the 'counts toward a zone' filter are restated at Model.lua:454-460 (Rank), 3076 (InZone), 3813 (Journeys, here) and 3861 (Journeys, open). Canonical: Rank's filter as a QuestZone(quest)/PicksZone(quest) helper.",
       "why": "The comment at 3807 says 'As in the ranking, only a quest that isn't an outdoor elite or a raid's', but the code excludes every elite (`not quest.elite`) while Rank excludes only outdoor elites (`quest.elite and not quest.dungeon`) and grey quests; 3861 excludes raids only. The comment/code mismatch at 3813 is drift, the rest may be intentional but nothing states it.",
       "confidence": "medium",
-      "status": "bug",
-      "reason": "BUG: A headless fixture with the current zone ranked fourth retains its story for a solo quest but loses it for an eligible dungeon elite, although Rank accepts both; matching Rank's elite predicate restores the story and passes model_spec.lua. This confirms the narrower here-filter drift; InZone and open intentionally count optional pickups and must retain their different filters.",
+      "status": "fixed",
+      "reason": "the here-filter excludes outdoor elites only, as Rank does, so a dungeon elite keeps the zone's story",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: parallel predicate drift; regression checks in tests/model_spec.lua"
     },
     {
       "id": "d02da73d21",
@@ -1086,10 +1088,11 @@
       "what": "BUG: the giver pin's quest line (Pins.lua:341-360) re-implements QuestLine (Pins.lua:54-66) in the same file, and calls C_QuestLog.GetTitleForQuestID directly instead of ns.State.QuestTitle. Canonical: QuestLine(GameTooltip, id, \"\", true).",
       "why": "State.QuestTitle (State.lua:203-206) exists because the client returns \"\" for an uncached title; `\"\" or quest.title` is \"\", so an uncached giver quest shows \"[12] \" with no title, whereas QuestLine falls back to the data's title. The copy also drops the difficulty colour and the group tag QuestLine adds; no comment says the giver tooltip should differ, and the comment above it (\"The client's own title wins when the quest is cached; the level is the bundled one\") describes QuestLine's behaviour.",
       "confidence": "medium",
-      "status": "bug",
-      "reason": "BUG: With GetTitleForQuestID stubbed to \"\", the headless harness renders giver quest 1062 as \"[19] \" while QuestLine renders \"[19] Goblin Invaders\"; Model.Givers neither checks nor loads cached titles. QuestLine also accepts a tooltip, mark and level toggle, handles missing quest data, and adds difficulty colour/group tags, but none prevents reuse with GameTooltip, \"\", true or justifies the divergent title fallback.",
+      "status": "fixed",
+      "reason": "the giver line takes State.QuestTitle, which reads the client's empty title as none, so the data's title shows",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: parallel copy of QuestLine's title fallback; regression check in tests/ui_spec.lua"
     },
     {
       "id": "844876b5b4",
@@ -1151,10 +1154,11 @@
       "what": "BUG: An invalid Questie race or class mask becomes 0, silently removing the eligibility restriction.",
       "why": "Fit checks the API contract and field names, not per-quest values (QuestieSource.lua:82-106). A present nonnumeric mask therefore reaches this fallback. Side(0) returns both factions and lines 321-322 discard zero masks; Model.lua:295-310 then accepts the missing restriction. A read-only reproduction through tests/harness.lua used questieMirror of the bundled data and changed only quest 5 requiredRaces from 77 to \"unreadable\". For the default level-18 Horde player, Model.Eligible(data, player, {}, {}, 5) changed from false to true; the quest retained its start, QuestieStatus stayed \"questie\", reason was nil, and h.errors was empty. This violates docs/design.md:8 (unproven eligibility is never recommended). Distinguish legitimate absent/unrestricted masks from present values that cannot be decoded; withhold that quest start or reject the source with a reason. The reproduction uses synthetic malformed input, not an observed installed QuestieDB failure.",
       "confidence": "high",
-      "status": "bug",
-      "reason": "BUG: QuestieDB\u2019s [numeric normalizer](https://github.com/Questie/QuestieDB/blob/365537a340473291f5af3b7a53a5eca94e2a5f1a/src/meta/normalize.lua#L262-L266) preserves malformed non-nil values, and its runtime correction registry and GetAll pass them through. A scratch run using those upstream components made quest 5 eligible after replacing either a restrictive race or class mask with \"unreadable\", retaining its start with no status reason or errors; this violates docs/design.md \u00a71 (synthetic malformed input, not an observed installed-data failure).",
+      "status": "fixed",
+      "reason": "a present race or class mask that is not a number withholds the quest's start, as other unreadable requirements do",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: silent fallback on unreadable input; regression cases in tests/questie_spec.lua GATED"
     },
     {
       "id": "0901c7631c",
@@ -1363,10 +1367,11 @@
       "what": "BUG: an empty target list defaults to a false no-categories message whenever a summary exists",
       "why": "The label is shown whenever zone.targets is empty (line 302), but summary presence unconditionally selects COMPLETION_EMPTY, whose text is No completion categories are available here (Locales/enUS.lua:319). Providers.Completion (Providers.lua:103-125) preserves categories independently of targets, so a fully completed zone can have category counts and no unfinished targets. A read-only harness probe supplied a valid completed areas category with done=total=5 and targets={}; the visible window simultaneously rendered Areas 5/5 with a check mark, the overall 5/5 count, and the no-categories message. Select the empty-target explanation from category availability, completion and loading/error state instead. Any new player-facing copy is a proposal for the owner.",
       "confidence": "high",
-      "status": "bug",
-      "reason": "BUG: Legacy Forever's API.lua preserves completed categories while Model.ZoneObjectives excludes completed targets; a scratch probe using that real API through Providers.lua and WindowCompletion.lua rendered Dungeons 1/1 alongside the false no-categories message. No lens exemption or Settled entry applies; any new player-facing wording requires an owner proposal.",
+      "status": "fixed",
+      "reason": "an empty target list shows the zone's own line, and Nothing left to do here. for a complete zone; no categories only when there are none",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: silent fallback to the wrong message; regression check in tests/guide_ui_spec.lua"
     },
     {
       "id": "3bf0c50868",
@@ -1390,10 +1395,11 @@
       "what": "BUG: WindowJourneys.lua:192 always labels the selected journey \"shown\", drifting from Panel.lua:1159 and the canonical chosen-card behavior in Overview.CardClick (Overview.lua:304-323).",
       "why": "WindowJourneys.lua:179-180 attaches the shared CardClick/CardTooltip handlers, but RefreshCard never sets \"chosen\" even when Refresh computes chosen=true at line 383. Panel supplies \"chosen\" for the active journey. Overview.CardClick uses that state to refocus an already-running journey without calling ns.Choose, or resume it when paused; \"shown\" instead calls ns.Choose(key, titleStartsRoute). With the default titleStartsRoute=true, Core.lua:712 and 791-792 restart guidance through StartRoute. A read-only stdin LuaJIT reproduction using tests/harness.lua, spf=\"v1+\", completed={844}, and log quests 845 (complete) and 843 selected the route and then clicked its visible window card: route.chosen=true, card.state=\"shown\", ns.Choose called once, and NavigateRoute increased 1 -> 2. Clicking the map panel chosen card immediately afterward left NavigateRoute at 2; the harness reported zero errors. The same state also makes the selected window card tooltip say CLICK_TO_CHOOSE. The window intentionally keeps the large-card layout, but that visual choice should not change the shared click/tooltip contract. Found while comparing the parallel map/window implementations; fixing this changes behavior and is not a cleanup-only edit.",
       "confidence": "high",
-      "status": "bug",
-      "reason": "BUG: With zone:1442 already chosen, clicking its window card reset navigation from stop 2 to stop 1 and added a NavigateRoute call in the v1, v1+ and ended harness profiles, while Show on Map and the chosen Panel card preserved stop 2. WindowJourneys.lua:192 supplies \"shown\" to the shared handlers despite the actual selection; changing only the in-memory state to \"chosen\" prevented the restart.",
+      "status": "fixed",
+      "reason": "window cards take the chosen state for the chosen journey, as the map panel's do, so a second click never restarts guidance",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: parallel card-state drift; regression checks in tests/window_spec.lua"
     },
     {
       "id": "7459ba678f",
@@ -1442,10 +1448,11 @@
       "what": "BUG: profession step clicks invoke navigation in Wanderer mode",
       "why": "Found while tracing the click guard: it checks profession, step and nav, but not the no-guidance setting. Its only production callee, Integrations.SkillUpNavigate (Integrations.lua:200-203), calls SkillUpForever.API.Navigate directly and bypasses the wanderer guard in Integrations.Navigate at 644. The contract in docs/design.md:35 and Locales/enUS.lua:277-278 promises no waypoint or Shortest Path route; WindowPvP.lua:62 and Providers.lua:136 enforce that for the other tabs. A read-only harness probe using db.wanderer=true and tests/fixtures/skillup.lua showed the waypoint tooltip, clicked a navigable profession row, and recorded one SkillUp Navigate call. Gate this action and its tooltip on Wanderer mode. User-facing wording changes are proposals only.",
       "confidence": "high",
-      "status": "bug",
-      "reason": "BUG: With stubbed profession/location data, loading SkillUp's real API.lua:317 and Sources.lua:180 (local commit f58d343) into the harness reproduced a C_Map.SetUserWaypoint call and the waypoint instruction while wanderer=true. Neither WindowProfessions.lua:187-201 nor Integrations.SkillUpNavigate checks Wanderer, and SkillUp supplies no downstream guard, violating docs/design.md \u00a72.17 and the setting's no-guidance contract.",
+      "status": "fixed",
+      "reason": "profession step clicks and their click line check Wanderer mode, as the PvP rows do",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: missing setting guard on one surface; regression checks in tests/window_spec.lua"
     },
     {
       "id": "4b95a5743f",
@@ -1752,10 +1759,11 @@
       "what": "An AreaTable row whose ContinentID has no Map row is treated as open world (InstanceType 0), so its quests get no `dungeon` field and keep objectives/areas and a start",
       "why": "Unknown instance status is guessed as 'not an instance' rather than left out or counted; if the Map export ever lacks an instance map, dungeon quests would be recommended as outdoor work with no log line (generate() only counts flagged dungeons). Raise, or count 'areas on an unknown Map' in counts. Could not verify against the current Map export (not in the local cache).",
       "confidence": "low",
-      "status": "bug",
-      "reason": "BUG: Cached-source regeneration matches committed Data/Quests.lua, but removing only Map 36 in memory makes generate() succeed with quests 167/168 retaining starts and gaining outdoor objective areas instead of dungeon=36, without a missing-map diagnostic. The complete exports contain 24 orphan areas unused by quests; those harmless rows do not justify this fallback for quest-referenced areas.",
+      "status": "fixed",
+      "reason": "an area on a map with no Map row is unknown, and a quest filed there fails the generator; Data/Quests.lua regenerates byte-identical",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: silent fallback on missing source rows; regression test in tools/gen_quests_test.py"
     },
     {
       "id": "7a3c80dfd5",
@@ -1819,10 +1827,11 @@
       "what": "The copy gate silently skips any ns.L entry not shaped `NAME = value` (e.g. a bracketed key `[\"B\"] = \"...\"`), so its banned-word, stray-percent and \"?\" checks never run on it and the gate still passes",
       "why": "Verified: strings_table(tokenize('ns.L = { A = \"ok\", [\"B\"] = \"the fastest route\" }')) returns only A; the banned 'fastest' passes unreported. Lua allows the bracketed form, so the gate would pass on a shape it cannot read. phrases.py:41 has the same skip, so the same entry would also drop out of Locales/phrases.txt without warning. Raising ValueError on an unrecognised entry shape, as strings_table already does for a missing table, makes the gate fail instead. No such entry exists in Locales/enUS.lua today.",
       "confidence": "medium",
-      "status": "bug",
-      "reason": "BUG: In a /tmp copy, [\"WHY_RACES\"] = ITEM_RACES_ALLOWED or \"the fastest route %s\" passed tools/lint_copy.py, while the equivalent bare key was rejected. The translation template stayed byte-identical and tests/locales_spec.lua, StyLua and luacheck passed; tests/locales_spec.lua:56 explicitly excludes WHY_RACES from template coverage, leaving this bypass undetected.",
+      "status": "fixed",
+      "reason": "strings_table raises on an ns.L entry not shaped NAME = value",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: silent fallback on unreadable input; regression test in tools/lint_copy_test.py"
     },
     {
       "id": "3df567d333",

@@ -300,7 +300,7 @@ end
 local function RefreshTargets(zone)
 	local list = zone.targets
 	noTargets:SetShown(#list == 0)
-	noTargets:SetText(zone.summary and L.COMPLETION_EMPTY or ZoneLine(zone))
+	noTargets:SetText(zone.summary and zone.summary.complete and L.COMPLETION_DONE or ZoneLine(zone))
 	for index, row in ipairs(targets) do
 		local target = list[index]
 		row.zone, row.target = zone, target

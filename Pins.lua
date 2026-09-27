@@ -349,7 +349,7 @@ function AdventureGuideForeverGiverPinMixin:OnMouseEnter()
 	for _, id in ipairs(giver.quests) do
 		local quest = ns.Data.quests[id]
 		local level = quest.level == -1 and UnitLevel("player") or quest.level
-		local title = C_QuestLog.GetTitleForQuestID(id) or quest.title
+		local title = ns.State.QuestTitle(id) or quest.title
 		GameTooltip_AddNormalLine(GameTooltip, ns.L.QUEST_LEVEL:format(level, title))
 	end
 	AddClickLine(GameTooltip)

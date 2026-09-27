@@ -317,6 +317,7 @@ ns.L = {
 	LEGACY_MISSING = "Install Legacy Forever to see your completion progress.",
 	LEGACY_OUTDATED = "Update Legacy Forever to see your completion progress.",
 	COMPLETION_EMPTY = "No completion categories are available here.",
+	COMPLETION_DONE = "Nothing left to do here.",
 	COMPLETION_LOADING = "Loading completion progress…",
 	COMPLETION_UNAVAILABLE = "Completion progress is unavailable here.",
 	COMPLETION_COUNTS = "%d/%d",
@@ -388,6 +389,7 @@ ns.L = {
 	SKILLUP_ABSENT = "Your next skill-ups come from SkillUp Forever.",
 	LEGACY_DISABLED = "Enable Legacy Forever to see your completion progress.",
 	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
-	-- The one chat line after an update to this version (ns.WhatsNew): the headline of its CHANGELOG entry.
-	WHATS_NEW = "Ready for translation, and the tabs point you to the companion addons that fill them.",
+	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
+	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
+	WHATS_NEW = "Art keeps its shape: icons, pictures and row backgrounds are no longer squeezed to fit.",
 }
