@@ -62,7 +62,7 @@ commit the PNGs it rewrites in `docs/screenshots/`; two runs give byte-identical
 
 ## Standards
 
-- `wow-forever-addon` — https://github.com/cjber/skills/tree/c587d4c74fcc27c97f73f2f7cb3d70cccebeb34e/wow-forever-addon (UI look,
+- `wow-forever-addon` — https://github.com/cjber/skills/tree/38f085e8a1025413d4a7031ab957cd5f2280a120/wow-forever-addon (UI look,
   icon, README and store page, CI and release requirements shared by every WoW: Forever addon)
 
 ## Waivers
