@@ -64,3 +64,8 @@ commit the PNGs it rewrites in `docs/screenshots/`; two runs give byte-identical
 
 - `wow-forever-addon` — https://github.com/cjber/skills/tree/c587d4c74fcc27c97f73f2f7cb3d70cccebeb34e/wow-forever-addon (UI look,
   icon, README and store page, CI and release requirements shared by every WoW: Forever addon)
+
+## Waivers
+
+- WFA-3: the map-pin, quest-giver and tracker toggles stay in the guide's cog as well as Settings > AddOns, as
+  quick switches next to the map (owner decision 2026-09-27).
