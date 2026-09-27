@@ -399,7 +399,17 @@ end
 ---@return AGFDungeonBoss[]
 function Dungeons.Bosses(source, instance, journal)
 	if source and source.curated and source.curated[instance] then
-		return source.bosses[instance] or {}
+		local rows, seen = {}, {}
+		for _, boss in ipairs(source.bosses[instance] or {}) do
+			rows[#rows + 1] = boss
+			seen[boss.id] = true
+		end
+		for _, boss in ipairs(ns.DungeonBosses[instance] or {}) do
+			if not seen[boss.id] then
+				rows[#rows + 1] = boss
+			end
+		end
+		return rows
 	end
 	local canonical = journal or ns.DungeonBosses[instance]
 	if canonical then

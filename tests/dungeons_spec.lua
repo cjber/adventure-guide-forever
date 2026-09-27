@@ -610,3 +610,22 @@ local standalone = harness.load({ items = { [999904] = { name = "Test drop", qua
 standalone.G.AtlasLoot = loot.G.AtlasLoot
 equal(standalone.ns.Dungeons.Source(noop) ~= nil, true, "AtlasLoot works without QuestieDB")
 print(("dungeons_spec: %d checks passed"):format(checks))
+
+for instance, baseline in pairs(h.ns.DungeonBosses) do
+	local known = baseline[1]
+	local atlasBoss = { id = known.id, name = "Localized encounter", low = 99, high = 99 }
+	local partialAtlas = { curated = { [instance] = true }, bosses = { [instance] = { atlasBoss } } }
+	local complete = D.Bosses(partialAtlas, instance)
+	equal(#complete, #baseline, "partial AtlasLoot retains every bundled encounter")
+	equal(complete[1], atlasBoss, "AtlasLoot order and localized details retained")
+	equal(#partialAtlas.bosses[instance], 1, "display merge does not mutate provider data")
+	local seen = {}
+	for _, boss in ipairs(complete) do
+		equal(seen[boss.id], nil, "one row per boss NPC")
+		seen[boss.id] = true
+	end
+	for _, boss in ipairs(baseline) do
+		equal(seen[boss.id], true, "boss without listed loot remains visible")
+	end
+end
+print("dungeons: partial AtlasLoot coverage verified across all Classic instances")

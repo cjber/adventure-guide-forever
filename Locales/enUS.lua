@@ -447,5 +447,5 @@ ns.L = {
 	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "Boss lists work without extra addons. AtlasLoot still adds its richer encounter and loot records.",
+	WHATS_NEW = "Bosses without listed loot stay visible. The bundled database fills gaps in AtlasLoot's encounter lists.",
 }
