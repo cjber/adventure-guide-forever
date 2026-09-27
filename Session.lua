@@ -6,13 +6,25 @@ ns.Session = Session
 local info = { pending = false, empty = false }
 local job
 
+-- The session lengths the picker offers, in minutes: 0 is no limit.
+Session.LENGTHS = { 0, 15, 30, 60 }
+
+local function Offered(minutes)
+	for _, length in ipairs(Session.LENGTHS) do
+		if minutes == length then
+			return true
+		end
+	end
+	return false
+end
+
 function Session.Get()
 	local minutes = ns.Prefs().sessionMinutes
-	return (minutes == 15 or minutes == 30 or minutes == 60) and minutes or 0
+	return Offered(minutes) and minutes or 0
 end
 
 function Session.Set(minutes)
-	if minutes ~= 0 and minutes ~= 15 and minutes ~= 30 and minutes ~= 60 then
+	if not Offered(minutes) then
 		return
 	end
 	if Session.Get() == minutes then
@@ -39,7 +51,7 @@ function Session.Work(step)
 	end
 	local seconds = 0
 	for _, objective in ipairs(step.objectives) do
-		if objective.slot == 16 or not objective.need then
+		if objective.slot == ns.Model.EXPLORE_SLOT or not objective.need then
 			return nil
 		end
 		seconds = seconds + math.max(0, objective.need - (objective.have or 0)) * 4

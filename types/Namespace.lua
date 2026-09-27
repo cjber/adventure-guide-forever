@@ -168,7 +168,6 @@
 ---@field hub? integer a town's hub (AGFPlace.hub); nil for a town the generator could not place
 ---@field pickups? integer[] a town's eligible quests this card wants there, ascending
 ---@field handins? integer[] a town's finished log quests handed in there, ascending
----@field follow? integer[] the chapters a town's hand-ins open there (Model.lua Opens), picked up after them
 ---@field objectives? AGFAreaObjective[] an area's open objectives, by quest and slot
 ---@field givers? string[] a town's distinct NPC and object names, in `quests` order
 ---@field group? integer how many of a town's quests are elite, dungeon or raid
@@ -259,6 +258,8 @@
 ---@field MAX_STEPS integer
 ---@field MAX_JOURNEYS integer the cards a route holds and the panel draws
 ---@field IsGray fun(questLevel: integer, playerLevel: integer): boolean
+---@field EXPLORE_SLOT integer the data's need slot for an explore objective (tools/gen_quests.py)
+---@field ValidPlace fun(place?: {map?: integer, x?: number, y?: number}): boolean? true when `place` has a positive map and x, y in 0..1
 ---@field Hard fun(quest: AGFQuest, player: AGFPlayer): boolean orange or red: no route takes it
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
 ---@field Why fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer, names?: AGFWhyNames): AGFWhyLine[] every requirement, met or not; eligible exactly when all are met
@@ -280,6 +281,7 @@
 ---@field OnInitialLogin fun(callback: fun()) called on a login's PLAYER_ENTERING_WORLD, never on a /reload
 ---@field Ready fun(): boolean completion data has loaded
 ---@field MapName fun(map: integer): string? the client's localised map name, nil when it has none
+---@field ZoneName fun(map: integer, data?: AGFData): string? the client's name for the map, else the bundled data's zone or map name
 ---@field InstanceName fun(id: integer): string? the client's localised name for an instance Map.ID, nil when it has none
 ---@field QuestTitle fun(questID: integer): string? the client's cached title, nil until it has one
 ---@field RaceName fun(raceID: integer): string?
@@ -441,7 +443,6 @@
 ---@field TRAINER_SPELLS string format: spell count
 ---@field TRAINER_SPELL string
 ---@field TRAINER_LINE string format: TRAINER, then the spell count
----@field TRACKER_HEADER string
 ---@field TRACKER_UNATTACHED string
 ---@field DUMP_SAVED string
 ---@field TURN_IN string format: quest title
@@ -1057,6 +1058,7 @@
 ---@field sessionCommit? AGFSessionCommit
 
 ---@class AGFSession
+---@field LENGTHS integer[] the session lengths the picker offers, in minutes; 0 is no limit
 ---@field Get fun(): integer
 ---@field Set fun(minutes: integer)
 ---@field Info fun(): AGFSessionInfo

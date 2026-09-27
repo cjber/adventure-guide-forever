@@ -206,3 +206,30 @@ end
 function Art.SetNumber(texture, index)
 	Art.Fit(texture, "services-number-" .. index, 22, 25)
 end
+
+-- The Suggested Content ring icon: art masked to a circle (CircleMaskScalable) inside the Adventure Guide's ring,
+-- which is drawn this much larger than the art it frames.
+local RING_SCALE = 1.4
+
+-- The circle mask for a ring icon's art, over `anchor` (the frame itself by default).
+---@param frame Frame
+---@param anchor? Frame
+---@return MaskTexture
+function Art.RingMask(frame, anchor)
+	local mask = frame:CreateMaskTexture()
+	mask:SetAtlas("CircleMaskScalable")
+	mask:SetAllPoints(anchor or frame)
+	return mask
+end
+
+-- The ring round a `size`-wide ring icon, centred on `frame` and over its art.
+---@param frame Frame
+---@param size number
+---@return Texture
+function Art.Ring(frame, size)
+	local ring = frame:CreateTexture(nil, "OVERLAY")
+	ring:SetAtlas("adventureguide-ring")
+	ring:SetSize(size * RING_SCALE, size * RING_SCALE)
+	ring:SetPoint("CENTER")
+	return ring
+end

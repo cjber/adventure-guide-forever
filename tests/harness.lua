@@ -2321,6 +2321,74 @@ function harness.load(options)
 	return h
 end
 
+-- The planner alone, for the model specs: Locales/enUS.lua for ns.L, the planner's copy, then Core.lua with its
+-- load-time hooks into the client stubbed, then Model.lua, all into `ns` (which may already hold the data).
+---@param ns table
+---@return AGFModel
+function harness.model(ns)
+	assert(loadfile("Locales/enUS.lua"))(ADDON, ns)
+	local core = assert(loadfile("Core.lua"))
+	setfenv(
+		core,
+		setmetatable({
+			EventUtil = { ContinueOnAddOnLoaded = function() end },
+			SlashCmdList = {},
+			CreateFrame = function()
+				return { SetScript = function() end }
+			end,
+		}, { __index = _G })
+	)
+	core(ADDON, ns)
+	assert(loadfile("Model.lua"))(ADDON, ns)
+	return ns.Model
+end
+
+-- Whether a step stands on a point `data` has: a place the data has (keyed to 4 places), or, for an area, where the
+-- player enters it: inside the ring of one of its shapes, each centred on a place the data has, with the ring's middle
+-- one too (Model.lua Enter). The second return is the key a point is indexed by, for a spec's messages.
+---@param data AGFData
+---@param Model AGFModel
+---@return fun(step: AGFStep): boolean placed
+---@return fun(map?: integer, x?: number, y?: number): string key
+function harness.placement(data, Model)
+	local places = {}
+	local function Key(map, x, y)
+		return ("%d:%.4f:%.4f"):format(map or 0, x or -1, y or -1)
+	end
+	local function Add(place)
+		if place and place.map then
+			places[Key(place.map, place.x, place.y)] = true
+		end
+	end
+	for _, quest in pairs(data.quests) do
+		Add(quest.start)
+		Add(quest.finish)
+		for _, area in ipairs(quest.obj or {}) do
+			places[Key(area[5] or quest.zone, area[2] / 1000, area[3] / 1000)] = true
+		end
+	end
+	for _, npc in pairs(data.npcs or {}) do
+		Add(npc.place)
+	end
+	local function Placed(step)
+		if places[Key(step.map, step.x, step.y)] then
+			return true
+		end
+		local ring = step.ring
+		if not (ring and places[Key(ring.map, ring.x, ring.y)]) then
+			return false
+		end
+		for _, shape in ipairs(step.shapes or {}) do
+			local yards = Model.Yards(data, step, shape)
+			if places[Key(shape.map, shape.x, shape.y)] and yards and yards <= shape.r then
+				return true
+			end
+		end
+		return false
+	end
+	return Placed, Key
+end
+
 -- A synthetic QuestieDB (harness.load's options.questiedb) that says what `data` says: each map is its own area, a
 -- dungeon quest's area sits in its instance, and a place's NPC or object gives or takes the quest there. From the
 -- bundled data only, so none of Questie's data is copied.

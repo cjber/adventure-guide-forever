@@ -17,16 +17,9 @@ local function Copy(value)
 	return result
 end
 
+-- A companion's point is used only when it is a table the planner would place (Model.ValidPlace).
 local function Point(point)
-	return type(point) == "table"
-		and type(point.map) == "number"
-		and point.map > 0
-		and type(point.x) == "number"
-		and point.x >= 0
-		and point.x <= 1
-		and type(point.y) == "number"
-		and point.y >= 0
-		and point.y <= 1
+	return type(point) == "table" and ns.Model.ValidPlace(point) == true
 end
 
 local function Legacy()

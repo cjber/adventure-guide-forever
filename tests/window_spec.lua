@@ -196,6 +196,18 @@ do
 	equal(#ns.Asides.All() >= 2, true, "Today: the trainer and the talents")
 	local player = ns.State.Player()
 	equal(window.Subtitle:GetText(), L.OVERVIEW_WHERE:format("The Barrens", player.level), "where and what level")
+	-- A map the client has no name for takes the data's, a zone's or else a map's (Orgrimmar is only a map there).
+	local getMapInfo = h.G.C_Map.GetMapInfo
+	h.G.C_Map.GetMapInfo = function() end
+	equal(ns.State.ZoneName(1413), "The Barrens", "no client name: the data's zone")
+	equal(ns.State.ZoneName(1454), "Orgrimmar", "no client name: the data's map")
+	h.player.map = 1454
+	window:Hide()
+	Open(h)
+	equal(window.Subtitle:GetText(), L.OVERVIEW_WHERE:format("Orgrimmar", player.level), "where: the data's name")
+	h.player.map, h.G.C_Map.GetMapInfo = 1413, getMapInfo
+	window:Hide()
+	Open(h)
 
 	-- A grid card chooses its journey as the panel's does, and both redraw from the same route.
 	local card = h.Find(function(frame)

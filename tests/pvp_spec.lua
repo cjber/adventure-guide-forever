@@ -18,20 +18,7 @@ end
 --[[ The card (Model.lua, roadmap #12): a battleground open to the player, whose one step is its battlemaster ]]
 
 local ns = {}
-assert(loadfile("Locales/enUS.lua"))("AdventureGuideForever", ns)
-local core = assert(loadfile("Core.lua"))
-setfenv(
-	core,
-	setmetatable({
-		EventUtil = { ContinueOnAddOnLoaded = function() end },
-		SlashCmdList = {},
-		CreateFrame = function()
-			return { SetScript = function() end }
-		end,
-	}, { __index = _G })
-)
-core("AdventureGuideForever", ns)
-assert(loadfile("Model.lua"))("AdventureGuideForever", ns)
+harness.model(ns)
 local Model = ns.Model
 
 local arena = {

@@ -10,8 +10,23 @@ local function equal(actual, expected, label)
 	end
 end
 
+-- A table's array part in order, then its keyed fields by name, as one string.
+local function Flat(value)
+	if type(value) ~= "table" then
+		return tostring(value)
+	end
+	local fields = {}
+	for key, field in pairs(value) do
+		if not (type(key) == "number" and key >= 1 and key <= #value and key % 1 == 0) then
+			fields[#fields + 1] = tostring(key) .. " = " .. tostring(field)
+		end
+	end
+	table.sort(fields)
+	return table.concat(value, "\n") .. (#fields > 0 and "\n{" .. table.concat(fields, ", ") .. "}" or "")
+end
+
 local function same(actual, expected, label)
-	equal(table.concat(actual, "\n"), table.concat(expected, "\n"), label)
+	equal(Flat(actual), Flat(expected), label)
 end
 
 -- The route's places: a ring each, a town the route comes back to sharing its first visit's (docs/design.md §2.9).
