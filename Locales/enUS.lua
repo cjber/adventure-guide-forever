@@ -28,11 +28,15 @@ ns.L = {
 	HELP_DUMP = "/agf dump - save the guide's layout for a bug report",
 	HAND_IN_WHEN = "Hand in when you're in %s",
 	-- Journey cards (docs/design.md §2.2 and §3): a title, a subline that counts, and a reason when there is one.
-	JOURNEY_CARRY = "Loose ends",
+	PREVIOUS_PAGE = "Previous",
+	NEXT_PAGE = "Next",
+	JOURNEY_PAGE = "%d / %d",
+	JOURNEY_CARRY = "Quests in your log",
+	CARRY_EXPLANATION = "Turn-ins and unfinished objectives outside the main zone story, "
+		.. "plus quests you added to the route.",
 	JOURNEY_STORY = "%s story",
 	JOURNEY_NEXT_ZONE = "Head to %s",
 	-- The next zone's level goes under its name, so a long zone name never cuts it off.
-	NEXT_ZONE_LEVEL = "For level %d",
 	DUNGEON_QUESTS = "%d quests for this dungeon",
 	DUNGEON_QUESTS_ONE = "1 quest for this dungeon",
 	-- The dungeon card's reason: the log's quests filed under its instance, counted.
@@ -223,8 +227,6 @@ ns.L = {
 	SETTING_DUNGEONS_DEFAULT = "Include dungeons by default",
 	-- Honest coverage (docs/design.md §2.1): the "!" over a giver marks the quests the guide can't list; Forever
 	-- draws no givers on the map.
-	MORE_IN_GUIDE = "More in the Adventure Guide",
-	MORE_IN_GUIDE_KEY = "More in the Adventure Guide (%s)",
 	UNLISTED = 'This land has stories the guide doesn\'t know yet; look for the "!" over quest givers.',
 	-- Trainers: the trainer aside names the nearest trainer's town when the data places one,
 	-- and a chosen journey's route may stop there.
@@ -318,7 +320,7 @@ ns.L = {
 	DUNGEON_IN_LOG = "In log",
 	DUNGEON_PICKUP = "Pick up",
 	DUNGEON_PRE = "Pre-quest",
-	DUNGEON_UNAVAILABLE = "Requirements not met",
+	DUNGEON_UNAVAILABLE = "Locked",
 	DUNGEON_LEVEL = "Level %d",
 	DUNGEON_MAP = "Map",
 	DUNGEON_ALTERNATIVE = "One option",
@@ -333,7 +335,6 @@ ns.L = {
 	DUNGEON_REMAINING_XP = "%s experience remaining",
 	DUNGEON_ENTRANCE_AT = "%s · Entrance %.1f, %.1f",
 	DUNGEON_PLAN = "Plan to run",
-	DUNGEON_PLANNED = "Planned · Clear",
 	DUNGEON_START_JOURNEY = "Start journey",
 	DUNGEON_OPEN_PAGE = "Dungeon guide",
 	DUNGEON_BOSS = "Boss",
@@ -341,12 +342,20 @@ ns.L = {
 	DUNGEON_RARE_ELITE = "Rare elite",
 	DUNGEON_ELITE = "Elite",
 	DUNGEON_DROP = "Drops from enemies in this dungeon",
+	DUNGEON_NO_FACTION_QUESTS = "This dungeon has no quests for your faction.",
+	DUNGEON_NO_CHARACTER_QUESTS = "This dungeon has no quests for your character.",
+	DUNGEON_NO_PREP = "No preparations listed for this dungeon.",
+	DUNGEON_HOSTILE_LEVELS = "%s · Hostile",
+	DUNGEON_HOSTILE_ENTRANCE = "Entrance in enemy territory",
+	DUNGEON_OBJECTIVES = "Objectives",
 	DUNGEON_NO_QUESTS = "No dungeon quests in the current source.",
-	DUNGEON_NEEDS_QUESTIE = "Needs QuestieDB",
+	DUNGEON_NEEDS_QUESTIE = "Needs QuestieDB or AtlasLoot",
 	DUNGEON_LOADING = "Reading dungeon details…",
 	DUNGEON_SOURCE_FAILED = "Dungeon details could not be read.",
 	DUNGEON_NO_RECORDS = "No records for this dungeon.",
-	DUNGEON_ELITES_TAB = "Elites",
+	DUNGEON_NO_BOSSES = "No boss data found. Install AtlasLoot for complete encounter details.",
+	DUNGEON_ITEM_REQUIRED_LEVEL = "Requires level %d",
+	DUNGEON_TRASH = "Trash",
 	DUNGEON_DROPPED_BY = "Dropped by %s",
 	DUNGEON_WANDERER = "Wanderer mode leaves the way to you. Turn it off in settings to use map directions.",
 	DUNGEON_SHOW_GIVER = "Show giver on map",
@@ -411,7 +420,6 @@ ns.L = {
 	TOWN_PICKUPS = "Pick up %d",
 	TOWN_HANDINS = "Turn in %d",
 	TODAY_MORE = "+%d more",
-	STOP_MORE = "+%d",
 	STOP_VISIT = "Stop %d: %s",
 	SET_HEARTH = "Set your hearth in %s",
 	SETTING_STEP_SOUND = "Play a sound when a step is done",
@@ -439,5 +447,5 @@ ns.L = {
 	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "Dungeon plans survive without available prep quests. AtlasLoot boss records now load across locales.",
+	WHATS_NEW = "Easier work before harder detours. All destinations are visible, with clearer dungeon loot.",
 }

@@ -1,9 +1,8 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 ---@class AGFModel
--- Nine steps: the stock numerals (services-number-1..9) that label each step stop at 9. Six journeys (design §2.2): the
--- story, Loose ends, three zones to head to and a diversion, in the room the panel has; it builds as many cards.
-local Model = { MAX_STEPS = 9, MAX_JOURNEYS = 6 }
+-- Nine steps: the stock numerals (services-number-1..9) that label each step stop at 9.
+local Model = { MAX_STEPS = 9 }
 ns.Model = Model
 
 -- CMaNGOS mangos-classic/src/game/Tools/Formulas.h, GetQuestGreenRange (quest, not creature XP).
@@ -269,7 +268,7 @@ end
 -- The one eligibility check (docs/design.md §2.4). The planner passes no `lines` and it stops at the first unmet
 -- requirement; Why passes `lines` and gets every requirement as a line. So the two never disagree: a quest is
 -- eligible exactly when every line is met. A met line that says nothing (level 1, a whole side's races, every
--- class) is left out. `level` stands in for the player's own (the next-zone card asks what opens two levels on).
+-- class) is left out. `level` optionally overrides the player's own level.
 local function Check(data, player, completed, log, id, groups, level, lines, names)
 	local quest = data.quests[id]
 	if not quest then
@@ -432,23 +431,18 @@ local function Dropped(id)
 	return droppedIDs[id] == true
 end
 
--- How a zone ranks (docs/design.md §2.2), lowest first. Quest fit leads: each quest's distance from the level, doubled
--- past two levels up. The zone's range (the client's zone levels, `data.zones`) comes next: two a level outside it, up
--- to one less in the lower half the player has just entered, and up to three more in its top fifth, where what is left
--- is cleanup the story's laps and Loose ends already hold. A zone with more quests edges ahead, up to eight of them; at
--- a like fit the nearer one does (`far`).
+-- Useful green quests cost no more than yellow ones. Zone range, available work and travel break ties.
 local ZONE_OUTSIDE = 2 -- a level outside the zone's range
 local ZONE_FRESH = 2 -- the lower half: this less, times how far short of its middle the level is
 local ZONE_TOP, ZONE_CLEANUP = 0.8, 3 -- the top fifth: up to this more, at the zone's last level
 local ZONE_QUEST, ZONE_QUESTS = 0.25, 8 -- this less a quest, for this many at most
 
--- The maps of the zones that fit `level` for the quests `ids`, best first, and how many of those quests each holds. An
+-- The maps of the zones that fit `level` for the quests `ids`, best first. An
 -- outdoor elite is optional: it rides along on its zone's cards but never picks the zone a solo player is
 -- sent to. A raid's quest, which no card offers, never picks one either. `far` is a zone's distance cost from the
 -- player (Journeys' Far).
 ---@param far fun(map: integer): number
 ---@return integer[] maps
----@return table<integer, integer> quests
 local function Rank(data, ids, level, far)
 	local choices, scores, quests = {}, {}, {}
 	for _, id in ipairs(ids) do
@@ -459,6 +453,7 @@ local function Rank(data, ids, level, far)
 			zone
 			and not quest.raid
 			and not Model.IsGray(quest.level, level)
+			and quest.level - level < ORANGE
 			and not (quest.elite and not quest.dungeon)
 		then
 			if not quests[map] then
@@ -466,7 +461,7 @@ local function Rank(data, ids, level, far)
 			end
 			quests[map] = quests[map] + 1
 			local questLevel = quest.level == -1 and level or quest.level
-			scores[map] = scores[map] + math.abs(questLevel - level) + math.max(0, questLevel - level - 2)
+			scores[map] = scores[map] + math.max(0, questLevel - level)
 		end
 	end
 	for _, map in ipairs(choices) do
@@ -488,7 +483,7 @@ local function Rank(data, ids, level, far)
 		end
 		return a < b
 	end)
-	return choices, quests
+	return choices
 end
 
 -- Orange or red: ORANGE levels above the player or more, too hard alone, so no route takes it, added or not.
@@ -499,16 +494,11 @@ function Model.Hard(quest, player)
 end
 local Hard = Model.Hard
 
--- One eligibility pass for two levels: the player's, and `ahead` levels on for the next-zone cards. A level reaches
--- eligibility only through a quest's minimum, so what opens at level + ahead holds everything open now. Only an
--- instance's quests wait behind Dungeons: an outdoor elite is a zone's quest, optional and badged for a group. An
--- orange or red quest (ORANGE levels up or more) is never offered, though its minimum allows it: too hard alone. The
--- zones that fit now also count the log's quests the data has, as a pickup each: a zone the player has taken on is
--- where they are adventuring, though little is left there to pick up. A quest the player ruled out (Dropped) counts
--- nowhere; one they added (shift-click, `prefs.pinned`) is offered once open even grey, but never orange or red.
+-- Current-level choices include useful green/yellow quests and explicitly pinned grey quests.
+-- Existing log quests also contribute to zone ranking; orange/red pickups never do.
 ---@param far fun(map: integer): number
-local function Choices(data, player, completed, log, index, prefs, ahead, far)
-	local eligible, later, target, ranked, pinned = {}, {}, player.level + (ahead or 0), {}, prefs.pinned or {}
+local function Choices(data, player, completed, log, index, prefs, far)
+	local eligible, ranked, pinned = {}, {}, prefs.pinned or {}
 	for id in pairs(prefs.quests and log or NONE) do
 		ranked[#ranked + 1] = data.quests[id] and not Dropped(id) and id or nil
 	end
@@ -518,28 +508,20 @@ local function Choices(data, player, completed, log, index, prefs, ahead, far)
 		local instance = quest.dungeon ~= nil
 		-- The level and completion first: Eligible would say no to most for them, at more cost.
 		if
-			quest.min <= target
+			quest.min <= player.level
 			and not completed[id]
 			and ((instance and prefs.dungeons) or (not instance and prefs.quests))
 			and not Dropped(id)
-			and Eligible(data, player, completed, log, id, index.groups, target)
+			and Eligible(data, player, completed, log, id, index.groups)
 		then
-			later[#later + 1] = id
-			if
-				quest.min <= player.level
-				and (pinned[id] or not Model.IsGray(quest.level, player.level))
-				and not Hard(quest, player)
-			then
+			if (pinned[id] or not Model.IsGray(quest.level, player.level)) and not Hard(quest, player) then
 				eligible[#eligible + 1] = id
 				ranked[#ranked + 1] = id
 			end
 		end
 	end
 	local zones = Rank(data, ranked, player.level, far)
-	if not ahead then
-		return zones, eligible
-	end
-	return zones, eligible, Rank(data, later, target, far) -- multi-value: the zones ahead and their quests
+	return zones, eligible
 end
 
 -- Every quest giver on `mapID` with a quest the player can take now, one entry per NPC or object, like the
@@ -1716,6 +1698,12 @@ local LAP_STOPS = Model.MAX_STEPS - 3 -- a lap's stops, so the town before, the 
 local WORK_YARDS = 4 * RUN -- one count of an objective (a kill, an item): about four seconds' work
 local TALK_YARDS = 10 * RUN -- a quest's pickup and its hand-in
 local HERE = 100 -- yards: a town (a hub) this near the player is the one they stand in, visited before any lap
+-- A conservative work estimate, not measured kill times: above-level objectives take longer and need more recovery.
+local function WorkFactor(level, player)
+	local above = math.max(0, level - player.level)
+	return 1 + above * above * 0.5
+end
+
 local KEEP = 0.5 -- a new quest worth less than this share of its town's mean XP per yard waits for a later lap
 
 -- The XP `quest` gives at `level`: CMaNGOS Quest::XPValue, whole up to 5 levels above the quest, then 0.8, 0.6, 0.4 and
@@ -1884,15 +1872,17 @@ end
 
 -- The work at a stop in yards: each count still to do in an area, a talk anywhere else.
 ---@param step AGFStep
-local function Work(step)
+local function Work(step, data, log, player)
 	if not step.objectives then
-		return TALK_YARDS
+		return TALK_YARDS, 0
 	end
-	local work = 0
+	local work, extra = 0, 0
 	for _, objective in ipairs(step.objectives) do
-		work = work + math.max(1, (objective.need or 1) - (objective.have or 0)) * WORK_YARDS
+		local base = math.max(1, (objective.need or 1) - (objective.have or 0)) * WORK_YARDS
+		local cost = base * WorkFactor(QuestLevel(data, log, player, objective.id), player)
+		work, extra = work + cost, extra + cost - base
 	end
-	return work
+	return work, extra
 end
 
 ---@class AGFAnchor
@@ -1915,7 +1905,7 @@ end
 ---@param anchor AGFAnchor
 ---@param at fun(step: AGFStep): AGFPosition?
 ---@return AGFLap[]
-local function Sweep(anchor, at)
+local function Sweep(anchor, at, work)
 	local stops, angle, home = anchor.stops, {}, anchor.pos
 	for _, step in ipairs(stops) do
 		local p = at(step)
@@ -1949,7 +1939,7 @@ local function Sweep(anchor, at)
 				best, where = delta, i
 			end
 		end
-		if not lap or (#lap.stops >= size or spent + best + Work(step) > LAP_YARDS) then
+		if not lap or (#lap.stops >= size or spent + best + work[step] > LAP_YARDS) then
 			lap = { key = ("%s:%d"):format(anchor.key, #laps + 1), anchor = anchor, stops = {} }
 			laps[#laps + 1], loop, where = lap, {}, 1
 			best = home and p and 2 * Gap(home, 0, p, r) or UNKNOWN
@@ -1957,7 +1947,7 @@ local function Sweep(anchor, at)
 		end
 		table.insert(loop, where, step)
 		lap.stops[#lap.stops + 1] = step
-		spent = spent + best + Work(step)
+		spent = spent + best + work[step]
 	end
 	return laps
 end
@@ -2248,7 +2238,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 					end
 					nearest = owner[near] ~= id and math.min(nearest, Gap(At(near), near.r, p, node.r)) or nearest
 				end
-				yards = yards + 2 * nearest + node.objectives[1].need * WORK_YARDS
+				yards = yards + 2 * nearest + node.objectives[1].need * WORK_YARDS * WorkFactor(quest.level, player)
 			end
 			ratio[id] = worth / yards
 			sums[town], counts[town] = (sums[town] or 0) + ratio[id], (counts[town] or 0) + 1
@@ -2401,9 +2391,12 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	end
 
 	-- The laps, the one that leads first, and more while none has gone out to an area.
-	local laps = {}
+	local laps, work, extra = {}, {}, {}
 	for _, anchor in ipairs(list) do
-		local cut = Sweep(anchor, At)
+		for _, step in ipairs(anchor.stops) do
+			work[step], extra[step] = Work(step, data, log, player)
+		end
+		local cut = Sweep(anchor, At, work)
 		if #cut == 0 and anchor.open then
 			cut[1] = { key = anchor.key .. ":1", anchor = anchor, stops = {} }
 		end
@@ -2486,11 +2479,14 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 			if not used[lap] and (open or #lap.stops > 0) and not waits then
 				local reach = open and Cost(from, At(open)) or UNKNOWN
 				local value = open and Value(data, log, player, open) or 0
+				local effort, quests = 0, 0
 				for _, stop in ipairs(lap.stops) do
 					reach = math.min(reach, Gap(from, 0, At(stop), stop.r or 0))
 					value = value + VALUE_QUEST * #stop.quests
+					effort, quests = effort + extra[stop], quests + #stop.quests
 				end
-				local score = held and held - UNKNOWN * UNKNOWN or reach - value
+				local score = held and held - UNKNOWN * UNKNOWN
+					or reach + (lap == standing and 0 or effort / math.max(1, quests)) - value
 				if not best or score < bestScore or (score == bestScore and lap.key < best.key) then
 					best, bestScore = lap, score
 				end
@@ -2854,11 +2850,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	return route
 end
 
--- The journey cards (docs/design.md §2.2): at most MAX_JOURNEYS, each holding only steps the player can take now.
-local NEXT_ZONE_AHEAD = 2 -- levels: the next zones are those that fit the player two levels on
-local NEXT_ZONES = 3 -- zone cards besides the story's, best ranked first
-local NEXT_ZONE_PICKUPS = 5 -- quests there two levels on, or the card is too thin to offer...
-local NEXT_ZONE_NOW = 3 -- ...of which this many open now: a zone the player has just come of age for is offered early
+-- The journey cards (docs/design.md §2.2), each holding only steps the player can take now.
 local FITS = 3 -- the zones "that fit": the first this many of a ranking, where the zone the player stands in is theirs
 -- A rank point per ZONE_YARDS yards to a zone's middle on the player's own continent, at most ZONE_NEAR.
 local ZONE_YARDS, ZONE_NEAR = 4000, 1.5
@@ -3474,20 +3466,6 @@ local function WayIn(data, into, chain, step, continues, instanceName)
 	return into
 end
 
--- At most MAX_JOURNEYS cards: the last one not chosen makes way, so the chosen journey always keeps its slot.
----@param journeys AGFJourney[]
----@param chosen? string
-local function Cap(journeys, chosen)
-	while #journeys > Model.MAX_JOURNEYS do
-		for index = #journeys, 1, -1 do
-			if journeys[index].key ~= chosen then
-				table.remove(journeys, index)
-				break
-			end
-		end
-	end
-end
-
 -- How many of the eligible quests `belongs` keeps, and the highest level any of them opened at (its newest quest's
 -- minimum); nil when it keeps none.
 ---@param belongs fun(quest: AGFQuest): boolean
@@ -3777,10 +3755,7 @@ end
 function Model.Journeys(data, player, completed, log, prefs, mapName, instanceName)
 	ReadDropped(prefs)
 	local index, L = Index(data), ns.L
-	-- Never past the level cap: a player at it has no next zone to head for.
-	local levels = math.min(NEXT_ZONE_AHEAD, player.maxLevel - player.level)
-	local zones, eligible, ahead, aheadQuests =
-		Choices(data, player, completed, log, index, prefs, levels > 0 and levels or nil, Far(data, player))
+	local zones, eligible = Choices(data, player, completed, log, index, prefs, Far(data, player))
 	local ready = Ready(data, log)
 	-- The offer rules below only gate new choices (docs/design.md §2.10): a chosen zone or dungeon is built while it
 	-- has a step, whatever would offer it now.
@@ -3794,11 +3769,8 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	end
 	chosenZone = Open(chosenZone) and chosenZone or nil
 	local journeys = {}
-	-- The story: the zone the player stands in when it is among the three their level fits now or two levels on (the
-	-- next zone's, which is never the zone they are in), when their level is within its range and it has a quest they
-	-- can take or carry (a zone whose quests they have taken up is still where they are adventuring), or is the chosen
-	-- zone, so heading to a zone becomes its story on arrival; otherwise, or when it has no step (a capital), the zone
-	-- the level fits best. It comes first, holding the log's quests on its zone; carry follows with the rest.
+	-- Keep the current zone when it has useful work or was chosen; otherwise lead with the best-fitting zone.
+	-- The story holds its log quests, followed by the remaining quests in the log.
 	local best
 	for _, map in ipairs(zones) do
 		best = best or (Open(map) and map or nil)
@@ -3828,7 +3800,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 				)
 		end
 	end
-	for _, ranking in ipairs({ zones, ahead or {} }) do
+	for _, ranking in ipairs({ zones }) do
 		for place = 1, math.min(FITS, #ranking) do
 			here = here or ranking[place] == player.map
 		end
@@ -3855,19 +3827,9 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	journeys[#journeys + 1] = Carry(data, player, completed, log, ready, prefs, mapName, false, function(id)
 		return not holds[id]
 	end, added)
-	-- The zones to head to (docs/design.md §2.2), best ranked first: two levels on, or now at the level cap. Each is
-	-- another zone than the story's and the one the player stands in, whose range the player hasn't outgrown, with
-	-- NEXT_ZONE_PICKUPS quests there at that level and NEXT_ZONE_NOW of them open now; and the chosen zone while it has
-	-- a step, in its place or last. Only NEXT_ZONES are built, with Build's route: laps are for card 1 and the chosen
-	-- card alone (§4.2).
-	local open, headed, zoneCards = {}, chosenZone ~= zone and chosenZone or nil, 0
-	for _, id in ipairs(eligible) do
-		local quest = data.quests[id]
-		local map = not quest.raid and (quest.zone or quest.start.map)
-		if map then
-			open[map] = (open[map] or 0) + 1
-		end
-	end
+	-- Every zone with a useful pickup is an option, ranked for the player's level now.
+	-- The current story already has a card; chosen zones stay while they have a step.
+	local headed = chosenZone ~= zone and chosenZone or nil
 	local function NextZone(map)
 		local key = "zone:" .. map
 		local nextZone = Pickups(
@@ -3890,35 +3852,17 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 		end
 		nextZone.kind, nextZone.key = "nextzone", key
 		nextZone.title = L.JOURNEY_NEXT_ZONE:format(ZoneName(data, map, mapName))
-		-- The level it fits, while it is among the zones that fit two levels on.
-		local fits, fitting = false, ahead or {}
-		for place = 1, math.min(FITS, #fitting) do
-			fits = fits or fitting[place] == map
-		end
-		nextZone.level = fits and player.level + levels or nil
 		nextZone.reason = WorldReason(data, log, player, nextZone --[[@as AGFJourney]])
-			or (nextZone.level and L.NEXT_ZONE_LEVEL:format(nextZone.level) or nil)
 		return nextZone
 	end
 	local offered = false
-	for _, map in ipairs(ahead or zones) do
+	for _, map in ipairs(zones) do
 		local mine = map == chosenZone
 		if map ~= zone and (mine or (map ~= player.map and Open(map))) then
-			headed = headed or map
-			local enough = (ahead and aheadQuests or {})[map] or open[map] or 0
-			-- Never a zone the player has outgrown: what is left there is cleanup, which Loose ends holds.
-			if
-				mine
-				or (
-					player.level <= data.zones[map].max
-					and zoneCards < NEXT_ZONES
-					and enough >= NEXT_ZONE_PICKUPS
-					and (open[map] or 0) >= NEXT_ZONE_NOW
-				)
-			then
-				local card = NextZone(map)
-				journeys[#journeys + 1] = card
-				zoneCards, offered = zoneCards + (card and 1 or 0), offered or mine
+			local card = NextZone(map)
+			journeys[#journeys + 1] = card
+			if card then
+				headed, offered = headed or map, offered or mine
 			end
 		end
 	end
@@ -3940,10 +3884,10 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			return CallingJourney(data, player, completed, log, ready, eligible, prefs, mapName)
 		end)
 	end
-	-- No next zone: at the level cap, or with none ahead and no story here. The dungeon card is offered
+	-- No next zone: at the level cap, or with no alternative and no story here. The dungeon card is offered
 	-- then whatever the Dungeons toggle says, and a chain that leads into an instance shows as a story, so the guide
 	-- never ends on "nothing fits".
-	local stranded = levels <= 0 or not (headed or told)
+	local stranded = player.level >= player.maxLevel or not (headed or told)
 	local pool = (stranded and not prefs.dungeons) and WithInstances(data, player, completed, log, index, eligible)
 		or eligible
 	local instance = BestDungeon(data, pool, prefs, prefs.dungeons or stranded, chosenDungeon)
@@ -4007,11 +3951,8 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 		return DIVERSION_ORDER[a.kind] < DIVERSION_ORDER[b.kind]
 	end)
 	for _, diversion in ipairs(diversions) do
-		if #journeys < Model.MAX_JOURNEYS or diversion.key == prefs.journey then
-			journeys[#journeys + 1] = diversion.build(diversion.quests)
-		end
+		journeys[#journeys + 1] = diversion.build(diversion.quests)
 	end
-	Cap(journeys, prefs.journey)
 	for _, journey in ipairs(journeys) do
 		Summarise(journey --[[@as AGFJourney]])
 		Rest(data, player, journey.steps)
@@ -4213,7 +4154,6 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 		table.insert(journeys, (journeys[1] and journeys[1].kind == "story") and 2 or 1, carry)
 	end
 	-- A carry card the last build lacked pushes out the last card not chosen, as the full build would leave it out.
-	Cap(journeys, prefs.journey)
 	local route = Route(journeys, prefs)
 	route.stranded, route.orders = last.stranded, last.orders
 	FinishRoute(data, player, completed, log, route, last, prefs)

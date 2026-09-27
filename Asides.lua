@@ -185,7 +185,7 @@ end
 function Asides.Go(aside)
 	local place = aside.place
 	return place ~= nil
-		and ns.Integrations.Navigate({
+		and ns.Integrations.ShowOnMap({
 			map = place.map,
 			x = place.x,
 			y = place.y,

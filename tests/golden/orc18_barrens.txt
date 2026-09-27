@@ -6,9 +6,18 @@ card (chosen) | zone:1413 | The Barrens story | Chapter 1 of 4 | 2 quests will s
   step 4 | area:896:4 | Complete objectives · Miner's Fortune | 1413 0.6070,0.0636 | after you pick it up | 184 yd | 896/4
   step 5 | town:340:2 | Visit Ratchet, The Barrens: Turn in 3 | 1413 0.6268,0.3623 | Opens the next chapter here
   step 6 | town:356 | Visit Regthar Deathgate: Pick up 2 | 1413 0.4534,0.2841 | 2 to pick up
-card | zone:1442 | Head to Stonetalon Mountains | 7 quests near your level | For level 20 | map 1442
+card | zone:1442 | Head to Stonetalon Mountains | 7 quests near your level | - | map 1442
   step 1 | town:358 | Visit Makaba Flathoof: Pick up 2 | 1442 0.8593,0.9789 | 2 to pick up
   step 2 | town:360 | Visit Xen'Zilla: Pick up 2 | 1442 0.7325,0.9489 | 2 to pick up
   step 3 | town:363 | Pick up: Protect Kaya | 1442 0.7348,0.8559 | near your level
   step 4 | town:374 | Pick up: Boulderslide Ravine | 1442 0.4722,0.6404 | near your level
   step 5 | town:394 | Pick up: The Spirits of Stonetalon | 1454 0.3893,0.3840 | near your level
+card | zone:1440 | Head to Ashenvale | 1 quest near your level | - | map 1440
+  step 1 | town:416 | Pick up: Naga at the Zoram Strand | 1440 0.1169,0.3491 | near your level
+card | zone:1421 | Head to Silverpine Forest | 3 quests near your level | - | map 1421
+  step 1 | town:193 | Visit The Sepulcher, Silverpine Forest: Pick up 2 | 1421 0.4342,0.4086 | 2 to pick up
+  step 2 | town:172 | Pick up: Pyrewood Ambush | 1421 0.4650,0.7439 | near your level
+card | zone:1433 | Head to Redridge Mountains | 1 quest near your level | - | map 1433
+  step 1 | town:61 | Pick up: Hilary's Necklace | 1433 0.2423,0.5364 | near your level
+card | zone:1436 | Head to Westfall | 3 quests near your level | - | map 1436
+  step 1 | town:16 | Visit Captain Grayson: Pick up 3 | 1436 0.3001,0.8602 | 3 to pick up

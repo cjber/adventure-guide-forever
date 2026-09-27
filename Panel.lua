@@ -90,10 +90,6 @@ local emptyText
 local asideLines = {}
 ---@type AGFOverviewCard[]
 local overviewCards = {}
----@type Button
-local moreButton
----@type FontString
-local moreText
 ---@type Frame
 local viewport
 ---@type AGFScrollFrame?
@@ -240,7 +236,7 @@ local function CreateRow(parent)
 	row.Tag:SetText(ns.L.OPTIONAL)
 
 	row:SetScript("OnEnter", RowEnter)
-	row:SetScript("OnLeave", GameTooltip_Hide)
+	row:SetScript("OnLeave", ns.Overview.RowLeave)
 	row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	row:SetScript("OnClick", RowClick)
 	HoverOnly(row.SkipButton, row)
@@ -407,7 +403,7 @@ local function CreateResult(parent)
 		end
 		GameTooltip:Show()
 	end)
-	row:SetScript("OnLeave", GameTooltip_Hide)
+	row:SetScript("OnLeave", ns.Overview.RowLeave)
 	row:SetScript("OnMouseUp", function(self, mouseButton)
 		if mouseButton == "LeftButton" and IsShiftKeyDown() and self.open and self.id then
 			ns.TogglePinned({ self.id })
@@ -522,28 +518,24 @@ local function CreateOverviewCard(parent)
 	return card
 end
 
----@param parent Frame
-local function BuildOverview(parent)
-	for index = 1, ns.Model.MAX_JOURNEYS do
-		overviewCards[index] = CreateOverviewCard(parent)
+-- Allocate cards only when a newly available destination needs one.
+local function CreateJourneyCard()
+	local card = CreateFrame("Button", nil, list, "AdventureGuideForeverJourneyCardTemplate") --[[@as AGFJourneyCard]]
+	card:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	card:SetScript("OnClick", CardClick)
+	card:HookScript("OnEnter", CardTooltip)
+	card:HookScript("OnLeave", GameTooltip_Hide)
+	card.Caps = {}
+	for _, cap in ipairs(ROW_CAPS) do
+		local texture = card:CreateTexture(nil, "OVERLAY")
+		texture:SetAtlas(cap[1])
+		texture:SetSize(cap[2], COMPACT_HEIGHT)
+		texture:SetPoint(cap[3])
+		card.Caps[#card.Caps + 1] = texture
 	end
-	moreButton = CreateFrame("Button", nil, parent) --[[@as Button]]
-	moreButton:SetHeight(OVERVIEW_HEIGHT)
-	moreText = moreButton:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-	local text = moreText
-	text:SetPoint("LEFT", OVERVIEW_INSET, 0)
-	text:SetPoint("RIGHT", -OVERVIEW_INSET, 0)
-	text:SetJustifyH("LEFT")
-	text:SetWordWrap(false)
-	text:SetMaxLines(1)
-	moreButton:SetScript("OnClick", function()
-		ns.OpenWindow()
-		ns.Window.Select(1)
-	end)
-	moreButton:SetScript("OnEnter", function(self)
-		ShowTooltip(self, { moreText:GetText() })
-	end)
-	moreButton:SetScript("OnLeave", GameTooltip_Hide)
+	card.New = card:CreateTexture(nil, "OVERLAY", nil, 2)
+	card.New:SetAtlas(NEW_MARK)
+	return card
 end
 
 -- The cards, and the chosen card's step rows under it; the list lays them out from its top.
@@ -553,24 +545,6 @@ local function BuildJourneys(parent, below)
 	list = CreateFrame("Frame", nil, parent)
 	list:SetPoint("TOPLEFT", below, "BOTTOMLEFT", 0, -6)
 	list:SetPoint("RIGHT", parent, "RIGHT", -PAD, 0)
-	for index = 1, ns.Model.MAX_JOURNEYS do
-		local card = CreateFrame("Button", nil, list, "AdventureGuideForeverJourneyCardTemplate") --[[@as AGFJourneyCard]]
-		card:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-		card:SetScript("OnClick", CardClick)
-		card:HookScript("OnEnter", CardTooltip)
-		card:HookScript("OnLeave", GameTooltip_Hide)
-		card.Caps = {}
-		for _, cap in ipairs(ROW_CAPS) do
-			local texture = card:CreateTexture(nil, "OVERLAY")
-			texture:SetAtlas(cap[1])
-			texture:SetSize(cap[2], COMPACT_HEIGHT)
-			texture:SetPoint(cap[3])
-			card.Caps[#card.Caps + 1] = texture
-		end
-		card.New = card:CreateTexture(nil, "OVERLAY", nil, 2)
-		card.New:SetAtlas(NEW_MARK)
-		cards[index] = card
-	end
 	track = CreateFrame("Frame", nil, list)
 	track:SetSize(TRACK_MAX * (SQUARE + SQUARE_GAP), SQUARE)
 	for index = 1, TRACK_MAX do
@@ -625,7 +599,6 @@ local function BuildJourneys(parent, below)
 	unlistedText:SetPoint("RIGHT", -10, 0)
 	unlistedText:SetJustifyH("LEFT")
 	unlistedText:SetText(L.UNLISTED)
-	BuildOverview(list)
 end
 
 ---@param parent Frame
@@ -700,12 +673,10 @@ local function BuildTopBar(panelFrame)
 	cog:SetupMenu(BuildSettingsMenu)
 end
 
--- Only the chosen journey and search retain the quest log's scrolling behavior. The overview's
--- content is parented directly to the viewport, with no ScrollFrame or scrollbar in its view.
----@param scrolling boolean
-local function SetScrolling(scrolling)
+-- Every view uses the quest log's scrolling behaviour so no available destination is hidden.
+local function EnsureScroll()
 	---@cast content -?
-	if scrolling and not scroll then
+	if not scroll then
 		scroll = CreateFrame("ScrollFrame", nil, viewport, "ScrollFrameTemplate") --[[@as AGFScrollFrame]]
 		scroll:SetAllPoints()
 		scroll.ScrollBar:ClearAllPoints()
@@ -717,15 +688,12 @@ local function SetScrolling(scrolling)
 			scrollContent:SetWidth(width)
 		end)
 	end
-	local parent = scrolling and scrollContent or viewport
+	local parent = scrollContent
 	if content:GetParent() ~= parent then
 		content:SetParent(parent)
 		content:ClearAllPoints()
 		content:SetPoint("TOPLEFT")
 		content:SetPoint("RIGHT")
-	end
-	if scroll then
-		scroll:SetShown(scrolling)
 	end
 end
 
@@ -1034,7 +1002,7 @@ local function RefreshOverviewCard(card, journey, width)
 	RefreshIcon(card, journey, OVERVIEW_SPAN)
 	card.Title:SetText(journey.title)
 	local value, label = Progress(journey)
-	local foot = label or (journey.level and L.NEXT_ZONE_LEVEL:format(journey.level)) or Stops(journey)
+	local foot = label or Stops(journey)
 	local reason = journey.reason ~= foot and journey.reason or nil
 	card.detail = DropLine(journey) or reason or HubLine(journey) or journey.subline
 	card.Reason:SetText(card.detail)
@@ -1052,42 +1020,30 @@ end
 ---@param route AGFRoute
 ---@param top number
 ---@param shown boolean
----@param bottom number
 ---@return number
-local function LayoutOverview(route, top, shown, bottom)
+local function LayoutOverview(route, top, shown)
 	---@cast panel -?
 	---@cast list -?
-	local slots = shown and math.max(0, math.floor((bottom - top + OVERVIEW_GAP) / (OVERVIEW_HEIGHT + OVERVIEW_GAP)))
-		or 0
-	local overflow = shown and #route.journeys > slots
-	local count = math.min(#route.journeys, math.max(0, slots - (overflow and 1 or 0)))
 	local width = math.max(0, panel:GetWidth() - 2 * PAD)
-	for index, card in ipairs(overviewCards) do
-		card:SetShown(index <= count)
-		if index <= count then
-			RefreshOverviewCard(card, route.journeys[index], width)
+	for index = 1, math.max(#route.journeys, #overviewCards) do
+		local card = overviewCards[index] or CreateOverviewCard(list)
+		overviewCards[index] = card
+		local journey = shown and route.journeys[index] or nil
+		card:SetShown(journey ~= nil)
+		if journey then
+			RefreshOverviewCard(card, journey, width)
 			card:SetPoint("TOPLEFT", 0, -top)
 			top = top + OVERVIEW_HEIGHT + OVERVIEW_GAP
 		end
 	end
-	moreButton:SetShown(overflow and slots > 0)
-	if overflow and slots > 0 then
-		local key = GetBindingKey("ADVENTUREGUIDEFOREVER_WINDOW")
-		local keyText = key and GetBindingText(key, "KEY_")
-		moreText:SetText(keyText and L.MORE_IN_GUIDE_KEY:format(keyText) or L.MORE_IN_GUIDE)
-		moreButton:SetWidth(width)
-		moreButton:SetPoint("TOPLEFT", 0, -top)
-		top = top + OVERVIEW_HEIGHT + OVERVIEW_GAP
-	end
 	return top
 end
 
--- The overview fits whole rows in the viewport. A chosen journey keeps the other cards folded
+-- The overview scrolls through every option. A chosen journey keeps the other cards folded
 -- above its steps; its scroll height and the search's are summed before the client lays them out.
 ---@param route AGFRoute
 ---@return boolean searching
 ---@return integer found
----@return boolean emptyFits
 local function LayoutJourneys(route)
 	---@cast searchBox -?
 	---@cast list -?
@@ -1099,16 +1055,13 @@ local function LayoutJourneys(route)
 	local _, characters = query:gsub("[^\128-\191]", "")
 	-- Not before completion data loads: every chain quest would read as locked.
 	local searching = characters >= SEARCH_MIN and ns.State.Ready()
-	local scrolling = searching or route.chosen
-	SetScrolling(scrolling)
-	local bottom = scrolling and math.huge or math.max(0, panel:GetHeight() - TOP_BAR - FOOTER - LIST_TOP - PAD)
+	EnsureScroll()
 	local top, found = LayoutResults(searching and query or nil)
 	track:Hide()
 	-- Every aside the player still wants, a line each (docs/design.md §2.11).
 	local asides = not searching and ns.Asides.All() or {}
 	for index = 1, math.max(#asides, #asideLines) do
-		local reserve = not scrolling and (#route.journeys > 0 and OVERVIEW_HEIGHT or EMPTY_HEIGHT) + CARD_GAP or 0
-		local aside = top + ASIDE_HEIGHT + CARD_GAP + reserve <= bottom and asides[index] or nil
+		local aside = asides[index]
 		local line = asideLines[index] or CreateAsideLine(list)
 		asideLines[index] = line
 		line.aside = aside
@@ -1130,10 +1083,12 @@ local function LayoutJourneys(route)
 	---@cast emptyText -?
 	local emptyTop = #asides > 0 and top or 0
 	emptyText:SetPoint("TOPLEFT", 10, -emptyTop - 8)
-	emptyText:SetMaxLines(scrolling and 0 or 2)
-	top = LayoutOverview(route, top, not scrolling, bottom)
+	emptyText:SetMaxLines(0)
+	top = LayoutOverview(route, top, not searching and not route.chosen)
 	local shownCard, shownJourney, compactRows = nil, nil, 0
-	for index, card in ipairs(cards) do
+	for index = 1, math.max(#route.journeys, #cards) do
+		local card = cards[index] or CreateJourneyCard()
+		cards[index] = card
 		local journey = not searching and route.chosen and route.journeys[index] or nil
 		card:SetShown(journey ~= nil)
 		if journey and journey.key == route.journey then
@@ -1153,20 +1108,19 @@ local function LayoutJourneys(route)
 		top = LayoutRows(route, top) + CARD_GAP
 	else
 		LayoutRows(route, top, true)
-		top = math.min(bottom, math.max(top, emptyTop + EMPTY_HEIGHT))
+		top = math.max(top, emptyTop + EMPTY_HEIGHT)
 	end
 	-- Honest coverage: quests here the data lacks, so the cards can't be every story.
 	---@cast unlistedText -?
 	local state = ns.State
 	local unlisted = not searching and ns.Model.Unlisted(ns.Data, state.Player().map, state.Completed(), state.Log())
-	unlistedText:SetMaxLines(scrolling and 0 or 2)
-	unlisted = unlisted and top + UNLISTED_HEIGHT <= bottom
+	unlistedText:SetMaxLines(0)
 	unlistedText:SetShown(unlisted)
 	if unlisted then
 		unlistedText:SetPoint("TOPLEFT", 10, -top)
 		top = top + UNLISTED_HEIGHT + CARD_GAP
 	end
-	local skipped = not searching and top + SKIPPED_HEIGHT <= bottom and #ns.Skipped() or 0
+	local skipped = not searching and #ns.Skipped() or 0
 	---@cast skippedButton -?
 	skippedButton:SetShown(skipped > 0)
 	if skipped > 0 then
@@ -1177,10 +1131,10 @@ local function LayoutJourneys(route)
 	end
 	list:SetHeight(top)
 	content:SetHeight(LIST_TOP + top + PAD)
-	if scrolling and scrollContent then
+	if scrollContent then
 		scrollContent:SetSize(panel:GetWidth(), LIST_TOP + top + PAD)
 	end
-	return searching, found, emptyTop + EMPTY_HEIGHT <= bottom
+	return searching, found
 end
 
 function Refresh()
@@ -1194,11 +1148,9 @@ function Refresh()
 	local route = ns.Route()
 
 	local ready = ns.State.Ready()
-	local searching, found, emptyFits = LayoutJourneys(route)
+	local searching, found = LayoutJourneys(route)
 	emptyText:SetText((not ready and L.LOADING) or (searching and L.SEARCH_NONE) or L.NO_JOURNEY)
-	emptyText:SetShown(
-		emptyFits and (not ready or (searching and found == 0) or (not searching and #route.journeys == 0))
-	)
+	emptyText:SetShown(not ready or (searching and found == 0) or (not searching and #route.journeys == 0))
 
 	local queued = ns.StartPending() and InCombatLockdown()
 	queuedText:SetText(queued and L.STARTS_AFTER_COMBAT or L.ROUTE_PAUSED)

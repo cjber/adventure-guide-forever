@@ -58,12 +58,20 @@ local sessionText
 local sessionEmpty
 ---@type Button
 local resetButton
+local page = 1
+local Refresh
+---@type Button
+local previousPage
+---@type Button
+local nextPage
+---@type FontString
+local pageText
 
 local LEFT, TOP = Window.LEFT, Window.TOP
 local WIDTH = Window.INSET_WIDTH - LEFT - Window.RIGHT
 local GRID_TOP = TOP + FEATURED_HEIGHT + Window.DIVIDER_SPAN
 local GRID_WIDTH = (WIDTH - (COLUMNS - 1) * GRID_GAP) / COLUMNS
-local GRID_HEIGHT = Window.INSET_HEIGHT - 12 - GRID_TOP
+local GRID_HEIGHT = Window.INSET_HEIGHT - 40 - GRID_TOP
 local STEPS_LEFT = LEFT + FEATURED_WIDTH + 12
 local STEPS_WIDTH = WIDTH - FEATURED_WIDTH - 12
 local STEPS_BOTTOM = TOP + FEATURED_HEIGHT - STEP_FOOT - 2
@@ -250,7 +258,7 @@ end
 local function RefreshGrid(card, journey)
 	RefreshCard(card, journey, GRID_SPAN)
 	local value, label = Overview.Progress(journey)
-	local foot = label or (journey.level and L.NEXT_ZONE_LEVEL:format(journey.level)) or Overview.Stops(journey)
+	local foot = label or Overview.Stops(journey)
 	local reason = journey.reason ~= foot and journey.reason or nil
 	card.Reason:SetText(Overview.DropLine(journey) or reason or Overview.HubLine(journey) or journey.subline)
 	card.Foot:SetText(foot)
@@ -272,7 +280,7 @@ local function CreateStepRow(parent)
 	local row = Window.CreateStepRow(parent, ROW_HEIGHT) --[[@as AGFWindowStepRow]]
 	row:SetWidth(STEPS_WIDTH)
 	row:SetScript("OnEnter", Overview.RowEnter)
-	row:SetScript("OnLeave", GameTooltip_Hide)
+	row:SetScript("OnLeave", ns.Overview.RowLeave)
 	row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	-- As the panel's rows, but a step not in the log opens the map to it: the window has no map under it.
 	row:SetScript("OnClick", function(self, mouseButton)
@@ -345,6 +353,24 @@ local function Build(content)
 		card:SetPoint("TOPLEFT", LEFT + (index - 1) * (GRID_WIDTH + GRID_GAP), -GRID_TOP)
 		grid[index] = card
 	end
+	previousPage = CreateFrame("Button", nil, content, "UIPanelButtonTemplate") --[[@as Button]]
+	previousPage:SetSize(90, 22)
+	previousPage:SetPoint("BOTTOMLEFT", LEFT, 8)
+	previousPage:SetText(L.PREVIOUS_PAGE)
+	previousPage:SetScript("OnClick", function()
+		page = math.max(1, page - 1)
+		Refresh(content)
+	end)
+	nextPage = CreateFrame("Button", nil, content, "UIPanelButtonTemplate") --[[@as Button]]
+	nextPage:SetSize(90, 22)
+	nextPage:SetPoint("BOTTOMRIGHT", -Window.RIGHT, 8)
+	nextPage:SetText(L.NEXT_PAGE)
+	nextPage:SetScript("OnClick", function()
+		page = page + 1
+		Refresh(content)
+	end)
+	pageText = content:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	pageText:SetPoint("BOTTOM", 0, 13)
 	emptyText = content:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 	emptyText:SetPoint("TOPLEFT", LEFT + 4, -(TOP + 8))
 	emptyText:SetWidth(WIDTH - 8)
@@ -386,7 +412,7 @@ local function RefreshSteps(content, steps)
 end
 
 ---@param content Frame
-local function Refresh(content)
+Refresh = function(content)
 	local route = ns.Route()
 	local first, others = Overview.Split(route)
 	local ready = ns.State.Ready()
@@ -417,8 +443,16 @@ local function Refresh(content)
 	sessionText:SetShown(line ~= nil)
 	sessionText:SetText(line or "")
 	resetButton:SetShown(custom)
+	local pages = math.max(1, math.ceil(#others / COLUMNS))
+	page = math.min(page, pages)
+	previousPage:SetShown(pages > 1)
+	nextPage:SetShown(pages > 1)
+	pageText:SetShown(pages > 1)
+	previousPage:SetEnabled(page > 1)
+	nextPage:SetEnabled(page < pages)
+	pageText:SetText(L.JOURNEY_PAGE:format(page, pages))
 	for index, card in ipairs(grid) do
-		local journey = others[index]
+		local journey = others[(page - 1) * COLUMNS + index]
 		card:SetShown(journey ~= nil)
 		if journey then
 			RefreshGrid(card, journey)

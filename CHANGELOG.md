@@ -11,6 +11,20 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-28
+
+- **Easier work before harder detours.** Route estimates account for above-level objectives and the counts still left to finish, while keeping useful green and yellow quests available.
+
+- **Every useful destination is visible.** The home view scrolls through all offered journeys, and the window pages through them. Recommendations use your current level and keep useful green and yellow quests, including Redridge and Loch Modan at level 19.
+- **Quest routes read more clearly.** Quests in your log replaces Loose ends, with an explanation in its tooltip. Blue route rings keep their pickup, objective or turn-in badge even when several stops overlap.
+- **Loot shows its rarity and type.** Item names use their rarity colour, with equipment type, slot and required level underneath. Missing boss records explain the optional AtlasLoot source.
+
+- **Show on map opens the map and marks the spot.** Dungeon givers, prep steps and entrances now open the right zone and pulse the destination. Hovering a map control lights its pin; combat keeps the route without opening the map.
+
+- **Dungeon loot is grouped by boss, with trash at the end.** Items appear once, world drops and junk stay out, and AtlasLoot supplies its boss order when installed. The Today strip's extra suggestions use a small text control.
+
+- **The dungeon guide is easier to read.** Quests your faction, race or class cannot do stay out of the list. Planning is a checkbox, quest rows are tighter, and the details and Today hints have room to breathe.
+
 ## [0.2.4] - 2026-09-27
 
 - **Dungeon plans survive without available prep quests.** Planning a run is saved separately from choosing its quest route. AtlasLoot encounters load through its locale-independent difficulty identifier.

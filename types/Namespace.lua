@@ -226,11 +226,10 @@
 ---@field drop? integer[] the first card's log-full note: the log's quests the guide would let go, by ID, when 2 or fewer slots are free
 ---@field ready? integer the log's quests it holds that are ready to hand in (Loose ends and a zone story)
 ---@field underway? integer the log's quests it holds that are still in progress
----@field level? integer a zone to head to: the level it fits, while it ranks among those that fit two levels on
 ---@field holds? table<integer, true> a zone story's log quests on its zone, a later lap's too: carry (Loose ends) holds the rest
 
 ---@class AGFRoute
----@field journeys AGFJourney[] at most Model.MAX_JOURNEYS (6): the zone's story, carry, then the diversions (calling, dungeon, a way into an instance, battleground, next zone) newest first
+---@field journeys AGFJourney[] all available options: the zone's story, carry, then the diversions (calling, dungeon, a way into an instance, battleground, next zone) newest first
 ---@field journey? string the key of the journey whose steps these are: the chosen one, else the first
 ---@field chosen boolean the player chose `journey`; false while the route falls back to the first card
 ---@field stranded? true no next zone (roadmap #21): the dungeon card came whatever the Dungeons toggle says
@@ -257,7 +256,6 @@
 
 ---@class AGFModel
 ---@field MAX_STEPS integer
----@field MAX_JOURNEYS integer the cards a route holds and the panel draws
 ---@field IsGray fun(questLevel: integer, playerLevel: integer): boolean
 ---@field EXPLORE_SLOT integer the data's need slot for an explore objective (tools/gen_quests.py)
 ---@field ValidPlace fun(place?: {map?: integer, x?: number, y?: number}): boolean? true when `place` has a positive map and x, y in 0..1
@@ -349,6 +347,7 @@
 ---@field Travel fun(step: AGFStep): string? the last line fetched for this step, without asking again
 ---@field TravelMinutes fun(step: AGFStep): integer? the whole trip's minutes, fetched with that line
 ---@field OnTravelChange fun(callback: fun())
+---@field ShowOnMap fun(step: AGFStep|AGFGiver): boolean route, open its zone and ping the destination
 ---@field Navigate fun(step: AGFStep|AGFGiver): boolean route there with Shortest Path, else (declined or absent) the native waypoint where the map allows one; true when something now guides
 ---@field OnGuidanceChange fun(callback: fun()) called after every Go that guides and every Stop
 ---@field ReplacesJourney fun(): boolean Go would replace a Shortest Path journey someone else started (needs Active)
@@ -361,7 +360,7 @@
 ---@field Restore fun(steps: AGFStep[]): boolean hands Shortest Path the chosen journey's steps again after a /reload; never the waypoint
 ---@field Stale fun(handed: AGFStep[], index: integer, steps: AGFStep[], far?: fun(a: AGFStep, b: AGFStep): boolean): boolean the guidance handed to Shortest Path no longer matches the journey's steps
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")
----@field RefreshCards fun(journeys: AGFJourney[]) the cards shown: drops other answers, asks for up to Model.MAX_JOURNEYS stale, one a frame
+---@field RefreshCards fun(journeys: AGFJourney[]) the cards shown: drops other answers, asks for stale destinations, one a frame
 ---@field ResumeCards fun() step 1's travel frame is over: the queued cards ask from the next frame
 ---@field CardTravel fun(journey: AGFJourney): AGFCardTravel? a card's last answer, without asking again
 ---@field OnCardTravel fun(callback: fun()) called as each card's answer arrives
@@ -494,10 +493,13 @@
 ---@field SETTING_TRACK_ROUTE_TOOLTIP string
 ---@field SETTING_UNTRACK_OTHERS string
 ---@field SETTING_UNTRACK_OTHERS_TOOLTIP string
+---@field PREVIOUS_PAGE string
+---@field NEXT_PAGE string
+---@field JOURNEY_PAGE string
 ---@field JOURNEY_CARRY string
+---@field CARRY_EXPLANATION string
 ---@field JOURNEY_STORY string format: zone name
 ---@field JOURNEY_NEXT_ZONE string format: zone name
----@field NEXT_ZONE_LEVEL string format: the level the next zone fits
 ---@field DUNGEON_QUESTS string format: quest count
 ---@field DUNGEON_QUESTS_ONE string
 ---@field DUNGEON_INSIDE string format: count of the log's quests filed under the instance, its name
@@ -624,8 +626,6 @@
 ---@field Unlisted fun(data: AGFData, map?: integer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>): boolean the log holds a quest the data lacks, or Forever added quests on `map` the data lacks and the player hasn't finished
 
 ---@class AGFStrings
----@field MORE_IN_GUIDE string
----@field MORE_IN_GUIDE_KEY string
 ---@field UNLISTED string the panel's honest-coverage line
 
 -- Stream 1a "Tone" (roadmap #3, #17).
@@ -1157,7 +1157,6 @@
 ---@field TOWN_HANDINS string
 ---@field TOWN_COUNTS string
 ---@field TODAY_MORE string
----@field STOP_MORE string
 ---@field STOP_VISIT string
 ---@field SET_HEARTH string
 ---@field SETTING_STEP_SOUND string
@@ -1218,6 +1217,9 @@
 ---@field low? integer recommended minimum level
 ---@field high? integer recommended maximum level
 ---@field suitable boolean
+---@field hostile boolean
+---@field excludedFaction integer
+---@field excludedCharacter integer
 
 ---@class AGFDungeonQuest
 ---@field id integer
@@ -1240,6 +1242,7 @@
 ---@field xp number proven remaining XP at the current level; alternatives counted once
 
 ---@class AGFDungeonBoss
+---@field journal? boolean id is an Encounter Journal encounter, not an NPC
 ---@field id integer
 ---@field name string
 ---@field rank integer 1 elite, 2 rare elite, 3 boss; never infer bosses from names
@@ -1247,16 +1250,16 @@
 ---@field high? integer
 
 ---@class AGFDungeonItem
----@field startQuest? integer
 ---@field id integer
 ---@field name string
 ---@field droppers? AGFDungeonBoss[] known droppers in this instance
----@field bossDrop? boolean at least one known rank-3 dropper
+---@field startQuest? boolean starts a quest
 
 ---@class AGFDungeonSource
----@field curated? table<integer, boolean>
+---@field npcs? table<integer, table<integer, AGFDungeonBoss>>
 ---@field worldDrops? table<integer, boolean>
----@field starts? table<integer, integer>
+---@field starts? table<integer, boolean>
+---@field curated? table<integer, boolean>
 ---@field entrances? table<integer, AGFPoint>
 ---@field bosses table<integer, AGFDungeonBoss[]>
 ---@field loot table<integer, AGFDungeonItem[]>
@@ -1300,7 +1303,6 @@
 ---@field DUNGEON_REMAINING_XP string
 ---@field DUNGEON_ENTRANCE_AT string
 ---@field DUNGEON_PLAN string
----@field DUNGEON_PLANNED string
 ---@field DUNGEON_START_JOURNEY string
 ---@field DUNGEON_OPEN_PAGE string
 ---@field DUNGEON_BOSS string
@@ -1308,12 +1310,20 @@
 ---@field DUNGEON_RARE_ELITE string
 ---@field DUNGEON_ELITE string
 ---@field DUNGEON_DROP string
+---@field DUNGEON_NO_FACTION_QUESTS string
+---@field DUNGEON_NO_CHARACTER_QUESTS string
+---@field DUNGEON_NO_PREP string
+---@field DUNGEON_HOSTILE_LEVELS string
+---@field DUNGEON_HOSTILE_ENTRANCE string
+---@field DUNGEON_OBJECTIVES string
 ---@field DUNGEON_NO_QUESTS string
 ---@field DUNGEON_NEEDS_QUESTIE string
 ---@field DUNGEON_LOADING string
 ---@field DUNGEON_SOURCE_FAILED string
 ---@field DUNGEON_NO_RECORDS string
----@field DUNGEON_ELITES_TAB string
+---@field DUNGEON_NO_BOSSES string
+---@field DUNGEON_ITEM_REQUIRED_LEVEL string
+---@field DUNGEON_TRASH string
 ---@field DUNGEON_DROPPED_BY string
 ---@field DUNGEON_WANDERER string
 ---@field DUNGEON_SHOW_GIVER string

@@ -39,7 +39,9 @@ OUT = ROOT / "docs/screenshots"
 GOLDEN = ROOT / "tests/golden/layout.json"
 WOWMOCK = Path(os.environ["WOWMOCK"]).expanduser() if os.environ.get("WOWMOCK") else None
 PILLOW = "12.3.0"
-SCALE = 2
+# Match the owner's 960 px / 800 UI-unit window. FreeType BASIC advances are pixel-hinted:
+# measuring at 2x then shrinking gives different widths and hides client wrapping/truncation.
+SCALE = 1.2
 LAYOUT_PASSES = 8
 
 # ------------------------------------------------------------------------------ anchors to rects (no Pillow)
@@ -557,6 +559,15 @@ def draw_collapse_button(canvas, entry, rect, layer):
             canvas.draw(art, x + (w - art.width) / 2, y + (h - art.height) / 2)
 
 
+def draw_check_button(canvas, entry, rect, layer):
+    """Shared/Button/CheckButtonTemplates.xml: UICheckButtonArtTemplate's square Up and Check textures.
+    Text is a template FontString, dumped by the harness at its XML anchor."""
+    if layer == "ARTWORK":
+        canvas.draw(texture(canvas.ui, "Interface/Buttons/UI-CheckBox-Up"), *rect)
+        if entry.get("checked"):
+            canvas.draw(texture(canvas.ui, "Interface/Buttons/UI-CheckBox-Check"), *rect)
+
+
 def draw_alpha_highlight(canvas, entry, rect, layer):
     """AlphaHighlightButtonTemplate (Mainline/SharedUIPanelTemplates.xml:1587): no art of its own; its NormalTexture
     and PushedTexture are the button's regions, and its highlight (the same atlas, added) shows only under the mouse,
@@ -565,6 +576,7 @@ def draw_alpha_highlight(canvas, entry, rect, layer):
 
 # name: (draw(canvas, entry, rect, layer), its <Size> by (ui, entry) or None, its own <Anchors> or None, frameLevel)
 STOCK = {
+    "UICheckButtonTemplate": (draw_check_button, lambda ui, entry: (32, 32), None, 0),
     "TabSystemTopButtonTemplate": (draw_top_tab, None, None, 0),
     "CollapseButtonTemplate": (draw_collapse_button, None, None, 0),
     "AlphaHighlightButtonTemplate": (draw_alpha_highlight, None, None, 0),
@@ -610,7 +622,9 @@ def layout_rects(ui, entries, known):
             face = font(entry["font"])
             wrap, most = entry.get("wordWrap"), entry.get("maxLines")
             lines = fit_text(measure, text, face, width, wrap, most) if text and width else [text]
-            return (measure.text_width(text, face) if text else 0), face.height * len(lines)
+            return (measure.text_width(text, face) if text else 0), face.height * len(lines) + (
+                entry.get("spacing") or 0
+            ) * (len(lines) - 1)
         if entry.get("atlas"):
             art = ui.atlas(entry["atlas"])
             return art.width, art.height
@@ -671,6 +685,8 @@ def draw_texture(canvas, entry, rect, alpha, scale=1, mask=None):
     blend = entry.get("alphaMode") or "BLEND"
     if entry.get("atlas"):
         art = ui.atlas(entry["atlas"])
+        if entry.get("desaturated"):
+            art = dataclasses.replace(art, image=art.image.convert("LA").convert("RGBA"))
         if entry.get("slice"):
             art = dataclasses.replace(art, slice=tuple(entry["slice"]))
         if entry.get("texCoord"):
@@ -687,6 +703,8 @@ def draw_texture(canvas, entry, rect, alpha, scale=1, mask=None):
         if entry.get("gradient"):
             sys.exit(f"{entry['path']}: SetGradient on a file texture: draw it in draw_texture")
         image = texture(ui, entry["file"])
+        if entry.get("desaturated"):
+            image = image.convert("LA").convert("RGBA")
         if entry.get("texCoord"):
             image = wm.crop_coords(image, *entry["texCoord"])
         target.draw(image, x, y, w, h, tint, blend)
@@ -714,12 +732,18 @@ def draw_font_string(canvas, entry, rect, alpha):
     x, y, w, h = rect
     face = font(entry["font"])
     lines = fit_text(canvas, text, face, w, entry.get("wordWrap"), entry.get("maxLines"))
-    top = y + (h - face.height * len(lines)) / 2
+    top = y + (h - face.height * len(lines) - (entry.get("spacing") or 0) * (len(lines) - 1)) / 2
     target = canvas.ui.canvas(canvas.width, canvas.height) if alpha < 1 else canvas
     for index, line in enumerate(lines):
         colour = tuple(entry["textColor"][:3]) if entry.get("textColor") else None
         target.text(
-            x, top + index * face.height, line, face, colour, justify=entry.get("justifyH") or "CENTER", width=w
+            x,
+            top + index * (face.height + (entry.get("spacing") or 0)),
+            line,
+            face,
+            colour,
+            justify=entry.get("justifyH") or "CENTER",
+            width=w,
         )
     if target is not canvas:
         target.image = wm.tint(target.image, (1, 1, 1, alpha))
@@ -941,6 +965,8 @@ WINDOW_MARGIN = 20  # the metal corners overhang the frame by up to 16
 WINDOW_TABS = 30  # the tabs hang below the frame
 WINDOWS = (
     "dungeons",
+    "dungeons_live",
+    "dungeons_empty",
     "dungeons_prep",
     "dungeons_bosses",
     "dungeons_loot",
@@ -1151,7 +1177,7 @@ def stop_groups(rects, stops):
 
 
 def goal_pins(canvas, stops, marks):
-    """SPF #52's StopPin.lua and Map.xml: the stock 32-unit quest disc, yellow numeral and corner badge/count.
+    """SPF StopPin.lua and Map.xml: blue-tinted stock quest disc, numeral and action badge.
     Later foreground art fades to 0.55 over an opaque black silhouette."""
     ui = canvas.ui
     button = ui.atlas("UI-QuestPoi-QuestNumber")
@@ -1159,24 +1185,15 @@ def goal_pins(canvas, stops, marks):
     for cx, cy, group in marks:
         number, alpha = group[0] + 1, 0.55 if group[0] else 1
         canvas.draw(button, cx - 16, cy - 16, 32, 32, (0, 0, 0, 1))
-        canvas.draw(button, cx - 16, cy - 16, 32, 32, (1, 1, 1, alpha))
+        canvas.draw(button.image.convert("LA").convert("RGBA"), cx - 16, cy - 16, 32, 32, (0.6, 0.85, 1, alpha))
         if number <= 25:
             left, top = (number - 1) % 8 * 0.125, 0.5 + (number - 1) // 8 * 0.125
             numeral = wm.crop_coords(numerals, left, left + 0.125, top, top + 0.125)
-            canvas.draw(numeral, cx - 16, cy - 16, 32, 32, (1, 1, 1, alpha))
+            canvas.draw(numeral.convert("LA").convert("RGBA"), cx - 16, cy - 16, 32, 32, (0.6, 0.85, 1, alpha))
         else:
             draw_font_string(canvas, {"text": str(number), "font": "GameFontNormal"}, (cx - 16, cy - 16, 32, 32), alpha)
         kind = stops[group[0]].get("kind")
-        if len(group) > 1:
-            text, face = f"+{len(group) - 1}", font("NumberFontNormal")
-            width = canvas.text_width(text, face)
-            draw_font_string(
-                canvas,
-                {"text": text, "font": "NumberFontNormal"},
-                (cx + 14 - width, cy + 14 - face.height, width, face.height),
-                alpha,
-            )
-        elif kind in STOP_ATLASES or kind in STOP_FILES:
+        if kind in STOP_ATLASES or kind in STOP_FILES:
             art = ui.atlas(STOP_ATLASES[kind]) if kind in STOP_ATLASES else texture(ui, STOP_FILES[kind])
             scale = 16 / max(art.width, art.height)
             width, height = art.width * scale, art.height * scale
@@ -1238,7 +1255,7 @@ DEMO_SCENES = (  # (image, seconds held): pick a journey, see its route, then th
     ("window_professions", 1.0),
     ("window_completion", 1.4),
 )
-DEMO_FADE = (5, 60)  # crossfade frames and milliseconds per frame
+DEMO_FADE = (4, 75)  # crossfade frames and milliseconds per frame
 DEMO_LIMIT = 3_000_000
 
 

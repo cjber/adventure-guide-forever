@@ -503,7 +503,7 @@ function ns.ReadDungeonSource(yield)
 	end
 	local fields = {
 		Npc = { "name", "rank", "spawns", "minLevel", "maxLevel" },
-		Item = { "name", "npcDrops", "questRewards" },
+		Item = { "name", "npcDrops", "questRewards", "startQuest" },
 	}
 	for kind, keys in pairs(fields) do
 		local reader = lib[kind]
@@ -518,14 +518,23 @@ function ns.ReadDungeonSource(yield)
 			end
 		end
 	end
-	local result = { bosses = {}, loot = {}, rewards = {}, objectives = {}, entrances = {} }
+	local result = {
+		bosses = {},
+		loot = {},
+		rewards = {},
+		objectives = {},
+		entrances = {},
+		npcs = {},
+		worldDrops = {},
+		starts = {},
+	}
 	local zoneDB = lib.Support.Get("ZoneDB")
 	local dungeons = zoneDB and zoneDB.private and zoneDB.private.dungeons or {}
 	local instanceOf, npcInstances, npcInfo = {}, {}, {}
 	for instance, area in pairs(zones.instances) do
 		if ns.Data.instances[instance] and not ns.Data.instances[instance].raid then
 			instanceOf[area] = instance
-			result.bosses[instance], result.loot[instance] = {}, {}
+			result.bosses[instance], result.loot[instance], result.npcs[instance] = {}, {}, {}
 			local dungeon = dungeons[area]
 			if type(dungeon) == "table" then
 				for _, alias in ipairs(type(dungeon[2]) == "table" and dungeon[2] or {}) do
@@ -548,58 +557,55 @@ function ns.ReadDungeonSource(yield)
 	for _, id in ipairs(lib.Npc.GetAllIds()) do
 		local values = lib.Npc.GetAll(id, fields.Npc)
 		if values and type(values[1]) == "string" and type(values[3]) == "table" then
-			local instances = {}
+			local instance, outside
 			for area, spots in pairs(values[3]) do
-				local parent = zones.parentOverride[area] or zones.parent[area]
-				local instance = instanceOf[area] or (parent and instanceOf[parent])
-				if instance and type(spots) == "table" and next(spots) then
-					instances[instance] = true
+				if type(spots) == "table" and next(spots) then
+					local parent = zones.parentOverride[area] or zones.parent[area]
+					local here = instanceOf[area] or (parent and instanceOf[parent])
+					outside = outside or not here or (instance and instance ~= here)
+					instance = here or instance
 				end
 				yield()
 			end
-			if next(instances) then
-				npcInstances[id] = instances
-				npcInfo[id] = { id = id, name = values[1], rank = type(values[2]) == "number" and values[2] or 0 }
-				for instance in pairs(instances) do
-					if values[2] == 1 or values[2] == 2 or values[2] == 3 then
-						table.insert(result.bosses[instance], {
-							id = id,
-							name = values[1],
-							rank = values[2],
-							low = values[4],
-							high = values[5],
-						})
-					end
+			if instance and not outside then
+				npcInstances[id] = instance
+				local npc = { id = id, name = values[1], rank = values[2] or 0, low = values[4], high = values[5] }
+				npcInfo[id], result.npcs[instance][id] = npc, npc
+				-- Elite rank alone is not evidence of an encounter. Curated AtlasLoot/EJ bosses augment this later.
+				if npc.rank == 3 then
+					table.insert(result.bosses[instance], npc)
 				end
 			end
 		end
 		yield()
 	end
+	local seen = {}
 	for _, id in ipairs(lib.Item.GetAllIds()) do
-		local values = lib.Item.GetAll(id, fields.Item)
+		local values = not seen[id] and lib.Item.GetAll(id, fields.Item)
+		seen[id] = true
 		if values and type(values[1]) == "string" then
-			local instances = {}
+			local instance, outside
+			local droppers, known = {}, {}
 			for _, npc in ipairs(type(values[2]) == "table" and values[2] or {}) do
-				for instance in pairs(npcInstances[npc] or {}) do
-					instances[instance] = instances[instance] or {}
-					instances[instance][npc] = npcInfo[npc]
+				local here = npcInstances[npc]
+				outside = outside or not here or (instance and instance ~= here)
+				instance = here or instance
+				if here and not known[npc] then
+					known[npc] = true
+					droppers[#droppers + 1] = npcInfo[npc]
 				end
 				yield()
 			end
-			local item = { id = id, name = values[1] }
-			for instance, known in pairs(instances) do
-				local droppers, bossDrop = {}, false
-				for _, npc in pairs(known) do
-					droppers[#droppers + 1] = npc
-					bossDrop = bossDrop or npc.rank == 3
-				end
+			local item =
+				{ id = id, name = values[1], startQuest = type(values[4]) == "number" and values[4] > 0 or nil }
+			result.worldDrops[id] = outside or nil
+			result.starts[id] = item.startQuest
+			if instance and not outside then
 				table.sort(droppers, function(a, b)
 					return a.id < b.id
 				end)
-				table.insert(
-					result.loot[instance],
-					{ id = id, name = item.name, droppers = droppers, bossDrop = bossDrop }
-				)
+				item.droppers = droppers
+				table.insert(result.loot[instance], item)
 			end
 			for _, quest in ipairs(type(values[3]) == "table" and values[3] or {}) do
 				if ns.Data.quests[quest] then
@@ -611,14 +617,13 @@ function ns.ReadDungeonSource(yield)
 		end
 		yield()
 	end
-	for _, items in pairs(result.loot) do
-		table.sort(items, function(a, b)
-			if a.bossDrop ~= b.bossDrop then
-				return a.bossDrop
+	for _, rows in pairs(result.bosses) do
+		table.sort(rows, function(a, b)
+			if (a.low or 0) ~= (b.low or 0) then
+				return (a.low or 0) < (b.low or 0)
 			end
 			return a.id < b.id
 		end)
-		yield()
 	end
 	local keys = lib.Meta.QuestMeta.questKeys
 	if keys.objectivesText then

@@ -1,7 +1,6 @@
 # Dungeon sources
 
-The Dungeons tab uses instance Map.IDs, never dungeon-name matching. No third-party guide code,
-text or data is bundled. QuestieDB and AtlasLoot are optional runtime sources.
+The Dungeons tab uses instance Map.IDs, never dungeon-name matching. QuestieDB and AtlasLoot are optional runtime sources; no third-party guide code or data is bundled.
 
 | Source | Pin / result | Use |
 | --- | --- | --- |
@@ -44,12 +43,32 @@ the header uses existing `Data/ZoneArt.lua` tiles around the known entrance. Bot
 The [QuestieDB API](https://github.com/Questie/QuestieDB/blob/365537a340473291f5af3b7a53a5eca94e2a5f1a/docs/api.md)
 provides sorted, shared `GetAllIds` arrays and detached `GetAll` rows. The adapter yields between records,
 checks field metadata, and publishes only a complete snapshot. The pinned NPC metadata has creature rank
-but no dungeon-boss flag. Rank 3 is labelled Boss, 1 Elite and 2 Rare elite; dungeon bosses can share rank 1
-with ordinary elites. The fallback tab is therefore titled Elites, with no explanatory footnote. Client
-journal results retain Bosses. Loot comes from `npcDrops` with spawns in the instance area, names those
-NPCs and sorts known rank-3 boss drops first; rewards come from item `questRewards`. That relation cannot establish which rewards
-are choices. Icons and item tooltips come from the client by item ID. Objective text is Questie's runtime
-`objectivesText`; accepted quests fall back to GetQuestLogQuestText and absent text is omitted. Entrance gates do not establish every locked door's key.
+but no dungeon-boss flag. Only rank 3 proves a boss by itself; ordinary rank-1 elites are not listed as
+bosses. Explicit client journal encounters can identify matching local NPCs in journal order. AtlasLoot's
+curated encounter list takes precedence when available. Without either, the fallback may omit bosses
+whose only classification is elite; it does not invent a boss list.
+
+Loot is deduplicated by item ID. Every dropper must have known spawns exclusively in the same instance;
+unknown, outdoor or multi-instance droppers exclude the item, including when AtlasLoot also lists it.
+The client supplies rarity: green and better survive, as do QuestieDB `startQuest` items of any rarity.
+Uncached rarity waits for item data. Boss headings follow encounter order (otherwise level), and a final
+Trash heading collects remaining local drops. Shared drops appear once, under the first matching boss.
+Rewards still come from `questRewards`; the relation cannot establish which rewards are choices.
+Icons and item tooltips come from the client. Objectives use runtime `objectivesText`, falling back to
+GetQuestLogQuestText for accepted quests. Entrance gates do not establish every locked door's key.
+
+[AtlasLoot Classic Forever 1.1.2](https://www.curseforge.com/wow/addons/atlasloot-forever/files/8984349)
+was published for 1.60.1 on 2026-09-26. The publisher lists GPLv2. Its package and
+[upstream Classic source](https://github.com/Hoizame/AtlasLootClassic) expose
+`AtlasLoot.ItemDB:Get("AtlasLootClassic_DungeonsAndRaids")`: instance tables have `InstanceID`,
+`LevelRange` and ordered `items`; encounter groups have `npcID`, `name`, `Level`, and item rows at the
+module's `GetDifficultyByName("NORMAL")` key. Row slot 2 is the item ID. NPC IDs may be arrays. Wings
+sharing an instance merge by recommended level, preserving each wing's encounter order. Only encounter
+and localized Trash groups are read; quests, sets and other extra lists are excluded. AGF optionally
+loads the installed dungeon module on demand out of combat. It never changes AtlasLoot's selection or
+bundles its data. With AtlasLoot alone, uncached rarity remains hidden and low-quality quest starters
+need QuestieDB to establish that exception. The runtime adapter is also compatible with the inspected
+Classic/Era layout; future schema changes fall back to QuestieDB.
 
 QuestieDB's `ZoneDB.private.dungeons` supplies alternate instance area IDs and already-converted Forever
 entrance percentages. The adapter uses only points on maps AGF places and validates them before use. It
@@ -61,7 +80,7 @@ and [CollapseButtonTemplate](https://github.com/Gethe/wow-ui-source/blob/bd2470a
 the latter used by QuestLogHeaderTemplate. AGF centres every sub-tab label on the same baseline.
 Screenshot runtime fixtures are independently derived from the pinned CMaNGOS source and client Item icons,
 with synthetic instance spawn positions used only for membership. They live under tests, which is never packaged;
-no Questie data has been copied. The five scenes cover quests, prep, ranked enemies, loot and missing QuestieDB.
+no Questie data has been copied. Scenes cover quests, prep, bosses, grouped loot, absent sources, empty data and the owner's Alliance Darkshore state.
 
 The generator resolves unhinted overlapping outdoor maps using terrain area IDs from the same pinned
 client build. CMaNGOS spawn rows have world coordinates but no area/zone column. The old smallest-rectangle
@@ -80,3 +99,9 @@ localized display name and the stable short identifier `n`; `GetDifficultyByName
 resolve that registration key. Regression fixtures exercise localized names and the `n` contract.
 Dungeon plans are character preferences independent of an eligible quest journey: a dungeon with no
 available preparation quests can still be planned. Existing selected dungeon journeys migrate once.
+
+Map reveal uses Forever's stock `MapPinPingTemplate` from SharedMapPoiTemplates.xml, through AGF's
+existing data provider and a private inherited template in Panel.xml. It acquires at
+`PIN_FRAME_LEVEL_QUEST_PING`, plays two loops at fractional zone coordinates, and releases on refresh.
+Explicit destination controls route through Integrations, then OpenWorldMap/SetMapID; combat skips the
+panel calls. Matching AGF pins flash on click and glow during map-control hover.

@@ -344,26 +344,27 @@ do
 	local all = h.ns.Asides.All()
 	equal(#all, 5, "overflow: five asides")
 	local texts = Texts(h)
-	for index = 1, 3 do
+	for index = 1, 2 do
 		equal(texts[all[index].text], 1, "overflow: chip " .. index)
 	end
 	equal(texts[all[4].text], nil, "overflow: the fourth goes in the menu")
 	local more = Visible(h, window, function(frame)
-		return frame.text == L.TODAY_MORE:format(2)
+		return frame.text == L.TODAY_MORE:format(3)
 	end)[1]
-	equal(more ~= nil, true, "overflow: +2 more in the last slot")
-	equal(more.stockTemplate, "UIPanelButtonTemplate", "overflow: a stock button")
+	equal(more ~= nil, true, "overflow: +3 more in the last slot")
+	equal(more.normalFont, "GameFontNormalSmall", "overflow: a quiet stock text control")
 	h.Click(more)
 	equal(h.menu.tag, "MENU_ADVENTURE_GUIDE_FOREVER_TODAY", "overflow: its menu")
-	equal(#h.menu.entries, 2, "overflow: an entry each")
-	equal(h.menu.entries[1]:IsEnabled(), false, "overflow: an aside with no place is greyed")
-	h.menu.entries[2].onClick()
+	equal(#h.menu.entries, 3, "overflow: an entry each")
+	equal(h.menu.entries[2]:IsEnabled(), false, "overflow: an aside with no place is greyed")
+	h.menu.entries[3].onClick()
 	equal(h.waypoint.uiMapID, 1454, "overflow: an entry goes as its chip would")
 	h.ns.Asides.Decline(all[5])
 	h.ns.Asides.Decline(all[4])
+	h.ns.Asides.Decline(all[3])
 	h.flush()
 	h.ns.Window.Refresh()
-	equal(more:IsShown(), false, "four fit: no overflow")
+	equal(more:IsShown(), false, "two fit: no overflow")
 	clean(h, "today")
 end
 
@@ -581,7 +582,7 @@ do
 	-- Centred in its 16 square, which hangs 4 past the ring's lower right.
 	equal(("%s %d %d"):format(point, x, y), "CENTER -4 4", "ring: hung past the ring")
 	equal(ring.hitRectInsets[4], -4, "ring: the badge takes clicks")
-	equal(ring.More:IsShown(), #ring.visits > 1, "ring: only revisits have a count")
+	equal(ring.More, nil, "ring: icons only in the corner")
 	local route = h.ns.Route().steps
 	local revisit
 	for _, pin in ipairs(pins) do
@@ -589,8 +590,8 @@ do
 	end
 	equal(revisit ~= nil, true, "ring: Ratchet visited twice")
 	equal(revisit.visits[1].step.x ~= revisit.visits[2].step.x, true, "ring: different remaining givers")
-	equal(revisit.More:GetText(), L.STOP_MORE:format(1), "ring: +1")
-	equal(revisit.Badge:IsShown(), false, "ring: shared stops wear the count instead of a kind")
+	equal(revisit.More, nil, "ring: no +1 text")
+	equal(revisit.Badge:IsShown(), true, "ring: shared stops keep their kind")
 	equal(#pins, #route - 1, "ring: one ring for both visits")
 	equal(revisit.visits[1].step.hub, revisit.visits[2].step.hub, "ring: real town identity")
 	h.Hover(revisit)
