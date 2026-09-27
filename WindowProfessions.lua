@@ -182,9 +182,10 @@ end
 local function CreateStep(parent)
 	local row = Window.CreateStepRow(parent, STEP_HEIGHT) --[[@as AGFProfessionStepRow]]
 	row:SetWidth(SIDE_WIDTH)
-	-- A vendor or trainer SkillUp can route to: its waypoint, through Shortest Path, TomTom or the map's pin.
+	-- A vendor or trainer SkillUp can route to: its waypoint, through Shortest Path, TomTom or the map's pin; never a
+	-- wanderer's (docs/design.md §2.17).
 	row:SetScript("OnClick", function(self)
-		if self.profession and self.step and self.step.nav then
+		if self.profession and self.step and self.step.nav and not ns.Setting("wanderer") then
 			Integrations.SkillUpNavigate(self.profession.skillLineID, self.index --[[@as integer]])
 		end
 	end)
@@ -198,7 +199,7 @@ local function CreateStep(parent)
 		if step.detail then
 			GameTooltip_AddNormalLine(GameTooltip, step.detail)
 		end
-		if step.nav then
+		if step.nav and not ns.Setting("wanderer") then
 			GameTooltip_AddInstructionLine(GameTooltip, L.CLICK_WAYPOINT_STEP)
 		end
 		GameTooltip:Show()

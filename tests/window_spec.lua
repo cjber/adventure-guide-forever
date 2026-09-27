@@ -360,6 +360,13 @@ do
 	equal(table.concat(h.skillup.navigate[1], ","), "165,1", "present: its skill line and index")
 	h.Hover(rows[1])
 	equal(h.tooltip[#h.tooltip], "instruction: " .. L.CLICK_WAYPOINT_STEP, "present: the step says so")
+	-- A wanderer is never taken there (docs/design.md §2.17): no click line, and a click goes nowhere.
+	ns.SetSetting("wanderer", true)
+	h.Click(rows[1])
+	equal(#h.skillup.navigate, 1, "wanderer: a step's click goes nowhere")
+	h.Hover(rows[1])
+	equal(h.tooltip[#h.tooltip] ~= "instruction: " .. L.CLICK_WAYPOINT_STEP, true, "wanderer: no click line")
+	ns.SetSetting("wanderer", false)
 	-- Closing the window fires no OnLeave: the row's tooltip goes with it.
 	h.G.AdventureGuideForeverWindow:Hide()
 	equal(h.G.GameTooltip:IsShown(), false, "present: closing the window takes the row's tooltip")

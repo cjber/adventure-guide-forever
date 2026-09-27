@@ -1448,10 +1448,11 @@
       "what": "BUG: profession step clicks invoke navigation in Wanderer mode",
       "why": "Found while tracing the click guard: it checks profession, step and nav, but not the no-guidance setting. Its only production callee, Integrations.SkillUpNavigate (Integrations.lua:200-203), calls SkillUpForever.API.Navigate directly and bypasses the wanderer guard in Integrations.Navigate at 644. The contract in docs/design.md:35 and Locales/enUS.lua:277-278 promises no waypoint or Shortest Path route; WindowPvP.lua:62 and Providers.lua:136 enforce that for the other tabs. A read-only harness probe using db.wanderer=true and tests/fixtures/skillup.lua showed the waypoint tooltip, clicked a navigable profession row, and recorded one SkillUp Navigate call. Gate this action and its tooltip on Wanderer mode. User-facing wording changes are proposals only.",
       "confidence": "high",
-      "status": "bug",
-      "reason": "BUG: With stubbed profession/location data, loading SkillUp's real API.lua:317 and Sources.lua:180 (local commit f58d343) into the harness reproduced a C_Map.SetUserWaypoint call and the waypoint instruction while wanderer=true. Neither WindowProfessions.lua:187-201 nor Integrations.SkillUpNavigate checks Wanderer, and SkillUp supplies no downstream guard, violating docs/design.md \u00a72.17 and the setting's no-guidance contract.",
+      "status": "fixed",
+      "reason": "profession step clicks and their click line check Wanderer mode, as the PvP rows do",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: missing setting guard on one surface; regression checks in tests/window_spec.lua"
     },
     {
       "id": "4b95a5743f",
