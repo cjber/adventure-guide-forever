@@ -388,6 +388,7 @@ ns.L = {
 	SKILLUP_ABSENT = "Your next skill-ups come from SkillUp Forever.",
 	LEGACY_DISABLED = "Enable Legacy Forever to see your completion progress.",
 	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
-	-- The one chat line after an update to this version (ns.WhatsNew): the headline of its CHANGELOG entry.
-	WHATS_NEW = "Ready for translation, and the tabs point you to the companion addons that fill them.",
+	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
+	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
+	WHATS_NEW = "Art keeps its shape: icons, pictures and row backgrounds are no longer squeezed to fit.",
 }

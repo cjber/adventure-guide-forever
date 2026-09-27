@@ -83,4 +83,9 @@ for name in files:lines() do
 end
 files:close()
 
+-- WHATS_NEW is the newest release's news: it opens with the first headline of CHANGELOG.md's top versioned entry, so
+-- a release that forgets to rewrite it fails here instead of announcing the last release's features.
+local newest = Read("CHANGELOG.md"):match("\n## %[?%d+%.%d+%.%d+%]? %- [^\n]*\n+%- %*%*(.-)%.?%*%*")
+equal(english.WHATS_NEW:sub(1, #newest), newest, "WHATS_NEW opens with the newest release's headline")
+
 print(("locales_spec: %d checks passed"):format(checks))

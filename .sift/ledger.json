@@ -384,10 +384,11 @@
       "what": "BUG (player copy, proposal): WHATS_NEW is 0.2.0's headline but the released version is 0.2.1",
       "why": "The comment above says it is 'the headline of its CHANGELOG entry' for this version, and Core.lua:930 prints it as 'updated to <version>. <WHATS_NEW>'. CHANGELOG.md 0.2.1's headline is 'Art keeps its shape.', so a 0.2.1 update announces the 0.2.0 features. Owner writes the new line; tools/changelog.py --check does not guard this pairing (could).",
       "confidence": "high",
-      "status": "bug",
-      "reason": "BUG: The headless harness reproduces an upgrade from 0.2.0 to 0.2.1 announcing the old translation/companion headline, and v0.2.1 contains that same WHATS_NEW value. CHANGELOG.md describes art fixes for 0.2.1; this is incorrect live update output, not exempt historical release notes, and the corrected player-facing wording needs the owner.",
+      "status": "fixed",
+      "reason": "WHATS_NEW describes 0.2.1; tests/locales_spec.lua fails when it does not open with the top CHANGELOG release's headline",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: copy tied to a release; regression check in tests/locales_spec.lua"
     },
     {
       "id": "4857465fe5",
