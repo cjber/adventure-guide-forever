@@ -317,6 +317,7 @@ ns.L = {
 	LEGACY_MISSING = "Install Legacy Forever to see your completion progress.",
 	LEGACY_OUTDATED = "Update Legacy Forever to see your completion progress.",
 	COMPLETION_EMPTY = "No completion categories are available here.",
+	COMPLETION_DONE = "Nothing left to do here.",
 	COMPLETION_LOADING = "Loading completion progress…",
 	COMPLETION_UNAVAILABLE = "Completion progress is unavailable here.",
 	COMPLETION_COUNTS = "%d/%d",

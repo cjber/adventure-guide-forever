@@ -250,8 +250,16 @@ do
 		"not known: the counts it has, then the rest in words"
 	)
 
-	legacy.summaries[1442].categories = {}
+	-- A zone with everything done has its categories and no target left: it says so, never "no categories".
+	fresh.done, fresh.total, fresh.pending, fresh.complete, fresh.categories =
+		5, 5, 0, true, { { key = "areas", scope = "character", done = 5, total = 5, pending = 0, complete = true } }
 	legacy.targets[1442] = {}
+	Redraw(h)
+	texts = Texts(h)
+	equal(texts[L.COMPLETION_EMPTY], nil, "all done: never says there are no categories")
+	equal(texts[L.COMPLETION_DONE], 1, "all done: says there is nothing left")
+
+	legacy.summaries[1442].categories = {}
 	equal(h.legacy.subscriptions, 1, "shown: subscribed to Legacy")
 	h.legacyChanged()
 	h.flush()

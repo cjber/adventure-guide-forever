@@ -1367,10 +1367,11 @@
       "what": "BUG: an empty target list defaults to a false no-categories message whenever a summary exists",
       "why": "The label is shown whenever zone.targets is empty (line 302), but summary presence unconditionally selects COMPLETION_EMPTY, whose text is No completion categories are available here (Locales/enUS.lua:319). Providers.Completion (Providers.lua:103-125) preserves categories independently of targets, so a fully completed zone can have category counts and no unfinished targets. A read-only harness probe supplied a valid completed areas category with done=total=5 and targets={}; the visible window simultaneously rendered Areas 5/5 with a check mark, the overall 5/5 count, and the no-categories message. Select the empty-target explanation from category availability, completion and loading/error state instead. Any new player-facing copy is a proposal for the owner.",
       "confidence": "high",
-      "status": "bug",
-      "reason": "BUG: Legacy Forever's API.lua preserves completed categories while Model.ZoneObjectives excludes completed targets; a scratch probe using that real API through Providers.lua and WindowCompletion.lua rendered Dungeons 1/1 alongside the false no-categories message. No lens exemption or Settled entry applies; any new player-facing wording requires an owner proposal.",
+      "status": "fixed",
+      "reason": "an empty target list shows the zone's own line, and Nothing left to do here. for a complete zone; no categories only when there are none",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: silent fallback to the wrong message; regression check in tests/guide_ui_spec.lua"
     },
     {
       "id": "3bf0c50868",
