@@ -16,7 +16,7 @@ Pick one and Shortest Path Forever walks you to each stop in turn.
 
 ![The Adventure Guide window](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window.png)
 
-The same journeys have their own window, with the next three steps beside the suggested one.
+The same journeys have their own window, the featured one with its next steps beside it.
 
 ![The Professions tab](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_professions.png)
 
@@ -37,7 +37,7 @@ Your current stop and the one after it sit above your quests.
 ## Features
 
 - **Journeys.** Finish loose ends, follow a zone's story, head somewhere suited to your level or pick up class quests. Each card says why it fits. Dungeon and battleground journeys are opt-in.
-- **Choose and go.** Picking a journey starts its route with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop clears only the guidance AGF owns.
+- **Choose and go.** Picking a journey starts its route with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop clears only the route the guide started; a waypoint you set yourself stays.
 - **Your order.** Drag steps or use their right-click menu. Moves that put a hand-in before its pickup are greyed out. Towns list their quest givers, ticked as you finish with them.
 - **Time to play.** Pick 15, 30 or 60 minutes to shorten the route using rough travel and quest-time estimates.
 - **Stories and search.** Chapters show their length only when the data proves it. Search a quest to see which requirements you meet and what is missing.
@@ -50,7 +50,7 @@ The bundled quest data covers Classic quests. Forever's new quests are only cons
 
 `/agf` or `/adventureguide` opens the window. Shift-J does too if that key was free at first login. Left-click the addon compartment for the window; right-click for the map tab. Options are in the guide's cog and Settings > AddOns > Adventure Guide.
 
-Translations are welcome as a pull request, or pasted into an issue, on GitHub: see the [Locales folder](https://github.com/cjber/adventure-guide-forever/tree/main/Locales).
+Translations are welcome on GitHub: see the [Locales folder](https://github.com/cjber/adventure-guide-forever/tree/main/Locales).
 
 For a missing quest, include `/agf audit` output in a bug report. Early days, feedback welcome.
 

@@ -11,6 +11,11 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **The window names the zone you're in even where the game has no name for it.** The line under the title falls back to the guide's own zone and map names, as search already did.
+- **A quest objective the data places off its map is never a step.** A quest under way whose objective area lay outside its zone could send a route off the edge; that objective is now left out, as it already was for new quests.
+- **The objective tracker's heading follows a translation.** It uses the guide's name, so a translated title shows there too.
+- **The *Include dungeons by default* tooltip says when it applies:** the first time you log in on a character with the guide installed.
+
 ## [0.2.2] - 2026-09-27
 
 - **Clicking the journey you already chose in the window no longer restarts it.** The route stays on the stop you'd reached, as it does on the map; a paused route resumes.
