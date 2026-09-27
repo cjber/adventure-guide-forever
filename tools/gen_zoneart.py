@@ -6,21 +6,17 @@ only once explored (C_MapExplorationInfo), so an icon of a zone not yet seen wou
 from the pinned build's DB2 on wago.tools, cached in tools/.cache like gen_quests.py's sources: every WorldMapOverlay
 with a texture and no player condition on the zone's art (UiMapXMapArt, phase 0), its tiles (WorldMapOverlayTile,
 layer 0) in row-major order. Only the zones Data/Quests.lua has, and only those whose art is the 1002x668 canvas of
-256-pixel tiles the addon lays out (docs/design.md §2.2).
+256-pixel tiles the addon lays out.
 """
 
-import argparse
-import csv
 import re
-import sys
-import urllib.error
 from collections import defaultdict
 
-from gen_quests import BUILD, ROOT, db2
+from gen_quests import BUILD, CANVAS, ROOT, db2, run, source_options
 
 OUTPUT = ROOT / "Data" / "ZoneArt.lua"
 QUESTS = ROOT / "Data" / "Quests.lua"
-CANVAS, TILE = (1002, 668), 256
+TILE = 256
 
 
 def quest_zones(text):
@@ -91,11 +87,7 @@ def render(art):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--refresh", action="store_true", help="redownload the pinned sources")
-    mode.add_argument("--offline", action="store_true", help="require cached sources")
-    options = vars(parser.parse_args())
+    options = source_options(__doc__)
     zones = quest_zones(QUESTS.read_text(encoding="utf-8"))
     art = zone_art(
         set(zones),
@@ -122,7 +114,4 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except (OSError, ValueError, KeyError, csv.Error, urllib.error.URLError) as error:
-        sys.exit(f"gen_zoneart: {error}")
+    run(main, "gen_zoneart")

@@ -6,22 +6,15 @@ and Era's lacks is one Forever added: no hand-kept list, no ID threshold. Data/F
 addon reads (docs/design.md §2.1, honest coverage); the other tables are only printed, for the roadmap's later work.
 """
 
-import argparse
-import csv
-import sys
-import urllib.error
 from collections import defaultdict
 
-from gen_quests import BUILD, ROOT, db2, flight_masters, lua, project
+from gen_quests import BUILD, ROOT, TAXI_COLUMNS, db2, flight_masters, lua, project, run, source_options
 
 ERA = "1.15.9.69722"
 OUTPUT = ROOT / "Data" / "Forever.lua"
-# Printed only: the IDs that later work starts from.
+# Each table's added IDs are printed in full.
 REPORTED = ("TaxiNodes", "Map")
 AREAS_PER_LINE = 6
-# What `flight_masters` reads.
-TAXI_COLUMNS = ("ID", "Name_lang", "ContinentID", "Pos_0", "Pos_1", "Flags", "ConditionID", "VisibilityConditionID")
-TAXI_COLUMNS += ("MountCreatureID_0", "MountCreatureID_1")
 
 
 def added(forever, era):
@@ -110,11 +103,7 @@ def render(zones, areas, new_lands):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--refresh", action="store_true", help="redownload the pinned sources")
-    mode.add_argument("--offline", action="store_true", help="require cached sources")
-    options = vars(parser.parse_args())
+    options = source_options(__doc__)
 
     def both(name, columns=("ID",)):
         return added(db2(name, columns, **options), db2(name, columns, build=ERA, **options))
@@ -147,7 +136,4 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except (OSError, ValueError, KeyError, csv.Error, urllib.error.URLError) as error:
-        sys.exit(f"diff_forever: {error}")
+    run(main, "diff_forever")

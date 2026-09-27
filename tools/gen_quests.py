@@ -415,6 +415,9 @@ NAME_REACH = 150  # yards from a town's nearest giver to the flight master that 
 # Copied from shortest-path-forever/tools/gen_transit.py RESTRICTED_NODES: Nighthaven is druid-only, and the
 # Plaguewood towers' flights depend on PvP control, so neither is a town's flight master for every player.
 RESTRICTED_NODES = {62, 63, 84, 85, 86, 87}
+# What `flight_masters` reads.
+TAXI_COLUMNS = ("ID", "Name_lang", "ContinentID", "Pos_0", "Pos_1", "Flags", "ConditionID", "VisibilityConditionID")
+TAXI_COLUMNS += ("MountCreatureID_0", "MountCreatureID_1")
 
 
 def flight_masters(taxi_nodes):
@@ -1300,12 +1303,25 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, look
     return "\n".join(lines + ["\t},", "}", ""])
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+def source_options(description):
+    """`download()`'s keyword arguments from the command line: --refresh or --offline."""
+    parser = argparse.ArgumentParser(description=description)
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--refresh", action="store_true", help="redownload the pinned sources")
     mode.add_argument("--offline", action="store_true", help="require cached sources")
-    options = vars(parser.parse_args())
+    return vars(parser.parse_args())
+
+
+def run(main, name):
+    """Run a generator's main, turning a source or data error into a one-line exit."""
+    try:
+        main()
+    except (OSError, ValueError, KeyError, csv.Error, urllib.error.URLError) as error:
+        sys.exit(f"{name}: {error}")
+
+
+def main():
+    options = source_options(__doc__)
     content = download(CLASSICDB_URL, f"classicdb-{CLASSICDB_COMMIT[:7]}.sql.gz", **options)
     with gzip.open(io.BytesIO(content), "rt", encoding="utf-8") as dump:
         tables = read_tables(dump)
@@ -1315,22 +1331,7 @@ def main():
         db2("UiMapAssignment", ("ID", "UiMapID", "MapID", "AreaID", "Region_0", "Region_5", "UiMin_0"), **options),
         {int(r["ID"]) for r in db2("QuestV2", ("ID",), **options)},
         db2("TaxiPathNode", ("PathID", "NodeIndex", "ContinentID", "Loc_0", "Loc_1", "Delay"), **options),
-        db2(
-            "TaxiNodes",
-            (
-                "ID",
-                "Name_lang",
-                "ContinentID",
-                "Pos_0",
-                "Pos_1",
-                "Flags",
-                "ConditionID",
-                "VisibilityConditionID",
-                "MountCreatureID_0",
-                "MountCreatureID_1",
-            ),
-            **options,
-        ),
+        db2("TaxiNodes", TAXI_COLUMNS, **options),
         db2("AreaTable", ("ID", "ContinentID", "AreaName_lang", "ExplorationLevel"), **options),
         db2("Map", ("ID", "MapName_lang", "InstanceType"), **options),
         db2("FactionTemplate", ("ID", "EnemyGroup"), **options),
@@ -1361,7 +1362,4 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except (OSError, ValueError, KeyError, csv.Error, urllib.error.URLError) as error:
-        sys.exit(f"gen_quests: {error}")
+    run(main, "gen_quests")
