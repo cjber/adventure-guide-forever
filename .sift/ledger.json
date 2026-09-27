@@ -763,10 +763,11 @@
       "what": "A quest's zone (`quest.zone or quest.start.map`) and the 'counts toward a zone' filter are restated at Model.lua:454-460 (Rank), 3076 (InZone), 3813 (Journeys, here) and 3861 (Journeys, open). Canonical: Rank's filter as a QuestZone(quest)/PicksZone(quest) helper.",
       "why": "The comment at 3807 says 'As in the ranking, only a quest that isn't an outdoor elite or a raid's', but the code excludes every elite (`not quest.elite`) while Rank excludes only outdoor elites (`quest.elite and not quest.dungeon`) and grey quests; 3861 excludes raids only. The comment/code mismatch at 3813 is drift, the rest may be intentional but nothing states it.",
       "confidence": "medium",
-      "status": "bug",
-      "reason": "BUG: A headless fixture with the current zone ranked fourth retains its story for a solo quest but loses it for an eligible dungeon elite, although Rank accepts both; matching Rank's elite predicate restores the story and passes model_spec.lua. This confirms the narrower here-filter drift; InZone and open intentionally count optional pickups and must retain their different filters.",
+      "status": "fixed",
+      "reason": "the here-filter excludes outdoor elites only, as Rank does, so a dungeon elite keeps the zone's story",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: parallel predicate drift; regression checks in tests/model_spec.lua"
     },
     {
       "id": "d02da73d21",

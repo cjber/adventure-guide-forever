@@ -298,6 +298,23 @@ equal(
 	"zone:3 ",
 	"in range: its story"
 )
+-- As in the ranking, a dungeon's elite quest filed under the zone makes it theirs too; only an outdoor elite does not.
+mostlyTaken.instances = { [36] = { name = "Hall" } }
+mostlyTaken.quests[20].elite, mostlyTaken.quests[20].dungeon = true, 36
+local delving = prefs()
+delving.dungeons = true
+equal(
+	Kinds(Model.Plan(mostlyTaken, inTaken, {}, {}, delving).journeys):match("^zone:3 "),
+	"zone:3 ",
+	"in range: a dungeon elite keeps its story"
+)
+mostlyTaken.quests[20].dungeon = nil
+equal(
+	Kinds(Model.Plan(mostlyTaken, inTaken, {}, {}, delving).journeys):match("zone:3"),
+	nil,
+	"in range: an outdoor elite does not"
+)
+mostlyTaken.quests[20].elite, mostlyTaken.instances = nil, nil
 inTaken.level = 20
 equal(Kinds(Model.Plan(mostlyTaken, inTaken, {}, {}, prefs()).journeys):match("zone:3"), nil, "past its range: not")
 local capital = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 9, x = 0.5, y = 0.5 }

@@ -3803,13 +3803,18 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 		best = best or (Open(map) and map or nil)
 	end
 	local zone, tries, here = best, { best }, chosenZone ~= nil and chosenZone == player.map
-	-- As in the ranking, only a quest that isn't an outdoor elite or a raid's makes the zone the player's: an elite is
-	-- optional, and no card offers a raid's.
+	-- As in the ranking, only a quest that isn't an outdoor elite or a raid's makes the zone the player's: an outdoor
+	-- elite is optional, and no card offers a raid's.
 	local band = data.zones[player.map]
 	if band and band.min <= player.level and player.level <= band.max then
 		for _, id in ipairs(here and NONE or eligible) do
 			local quest = data.quests[id]
-			here = here or (not quest.elite and not quest.raid and (quest.zone or quest.start.map) == player.map)
+			here = here
+				or (
+					not (quest.elite and not quest.dungeon)
+					and not quest.raid
+					and (quest.zone or quest.start.map) == player.map
+				)
 		end
 		for id in pairs((here or not prefs.quests) and {} or log) do
 			local quest = not Dropped(id) and data.quests[id] or nil
