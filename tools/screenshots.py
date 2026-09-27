@@ -159,18 +159,12 @@ def scroll_child_anchors(entry):
     return []
 
 
-def lua_rects(rects, widths=None):
+def lua_rects(rects, widths):
     """Rects for h.SetRects: {left, bottom, width, height} with y growing upwards, as the client's edges are, and a
     font string's text width in the client's font fifth (its GetUnboundedStringWidth), the lines it wraps to in its
-    rect sixth when given as a pair (its GetNumLines)."""
-    widths = widths or {}
-
-    def measured(path):
-        value = widths.get(path)
-        return [] if value is None else list(value) if isinstance(value, (list, tuple)) else [value]
-
+    rect sixth (its GetNumLines)."""
     return {
-        path: [left, -(top + height), width, height] + measured(path)
+        path: [left, -(top + height), width, height] + list(widths.get(path, ()))
         for path, rect in rects.items()
         if rect is not None
         for left, top, width, height in [rect]
