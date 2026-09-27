@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-09-27
+
 - **Clicking the journey you already chose in the window no longer restarts it.** The route stays on the stop you'd reached, as it does on the map; a paused route resumes.
 - **Wanderer mode means no waypoints on the Professions tab too.** A trainer or vendor step no longer sets one when clicked, and its tooltip stops offering to.
 - **A zone you've finished says so.** The Completion tab's Next steps read "No completion categories are available here." once everything was done; it now reads "Nothing left to do here."
