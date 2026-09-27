@@ -11,6 +11,13 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Clicking the journey you already chose in the window no longer restarts it.** The route stays on the stop you'd reached, as it does on the map; a paused route resumes.
+- **Wanderer mode means no waypoints on the Professions tab too.** A trainer or vendor step no longer sets one when clicked, and its tooltip stops offering to.
+- **A zone you've finished says so.** The Completion tab's Next steps read "No completion categories are available here." once everything was done; it now reads "Nothing left to do here."
+- **A quest giver's tooltip always names its quests.** A quest the game hadn't loaded yet showed as "[12]" with no title.
+- **The zone you're standing in stays your story when its quests lead into its dungeon.** Dungeon quests counted for picking zones but not for keeping the one you're in.
+- **A quest QuestieDB can't say is for your race or class isn't offered.** An unreadable restriction used to count as none.
+
 ## [0.2.1] - 2026-09-26
 
 - **Art keeps its shape.** Icons, pictures and row backgrounds are drawn at their own proportions instead of squeezed to fit: the Legacy icon on a Completion card is round in its ring again, step rows and progress bars repeat their middle rather than stretching it, and a card's picture is cropped to the card. Hovering a window card now lights it with a faint blue.
