@@ -572,7 +572,7 @@ function Draw()
 	)
 	entrance:SetEnabled(point ~= nil and not ns.Setting("wanderer"))
 	local key = "dungeon:" .. dungeon.id
-	plan:SetText(ns.Prefs().journey == key and L.DUNGEON_PLANNED or L.DUNGEON_PLAN)
+	plan:SetText(Dungeons.Planned(dungeon.id) and L.DUNGEON_PLANNED or L.DUNGEON_PLAN)
 	local offered = false
 	for _, card in ipairs(ns.Route().journeys) do
 		offered = offered or card.key == key
@@ -594,7 +594,8 @@ function Draw()
 	quests.frame:SetShown(view == "quests")
 	other.frame:SetShown(view ~= "quests")
 	other.rowHeight = view == "prep" and ROW_H or 44
-	subTabs[3]:SetText(not bosses and source and L.DUNGEON_ELITES_TAB or L.DUNGEON_BOSSES_TAB)
+	local curated = source and source.curated and source.curated[dungeon.id] and source.bosses[dungeon.id]
+	subTabs[3]:SetText(not bosses and not curated and source and L.DUNGEON_ELITES_TAB or L.DUNGEON_BOSSES_TAB)
 	for index, key_ in ipairs({ "quests", "prep", "bosses", "loot" }) do
 		local muted = (key_ == "bosses" and not bosses and not source) or (key_ == "loot" and not source)
 		subTabs[index]:SetTabSelected(key_ == view)
@@ -614,28 +615,34 @@ function Draw()
 		SetList(other, PrepRows())
 	else
 		local rows = {}
-		local known = view == "bosses" and (bosses or (source and source.bosses[dungeon.id]))
-			or (source and source.loot[dungeon.id])
-		for _, entry in ipairs(known or {}) do
-			local rank = entry.rank == 3 and L.DUNGEON_BOSS
-				or entry.rank == 2 and L.DUNGEON_RARE_ELITE
-				or L.DUNGEON_ELITE
-			if entry.low and entry.high and entry.low > 0 and entry.high >= entry.low then
-				local levels = entry.low == entry.high and L.DUNGEON_LEVEL:format(entry.low)
-					or L.DUNGEON_ENEMY_LEVELS:format(entry.low, entry.high)
-				rank = rank .. L.SEPARATOR .. levels
+		local known
+		if view == "bosses" then
+			---@type AGFDungeonBoss[]?
+			local encounters = curated or bosses or (source and source.bosses[dungeon.id])
+			known = encounters ~= nil
+			for _, entry in ipairs(encounters or {}) do
+				local rank = entry.rank == 3 and L.DUNGEON_BOSS
+					or entry.rank == 2 and L.DUNGEON_RARE_ELITE
+					or L.DUNGEON_ELITE
+				if entry.low and entry.high and entry.low > 0 and entry.high >= entry.low then
+					local levels = entry.low == entry.high and L.DUNGEON_LEVEL:format(entry.low)
+						or L.DUNGEON_ENEMY_LEVELS:format(entry.low, entry.high)
+					rank = rank .. L.SEPARATOR .. levels
+				end
+				rows[#rows + 1] = { title = entry.name, info = rank }
 			end
-			local names = {}
-			for _, npc in ipairs(entry.droppers or {}) do
-				names[#names + 1] = npc.name
+		else
+			local loot = source and source.loot[dungeon.id]
+			known = loot ~= nil
+			for _, entry in ipairs(loot or {}) do
+				local names = {}
+				for _, npc in ipairs(entry.droppers or {}) do
+					names[#names + 1] = npc.name
+				end
+				local drop = #names > 0 and L.DUNGEON_DROPPED_BY:format(table.concat(names, L.LIST_SEPARATOR))
+					or L.DUNGEON_DROP
+				rows[#rows + 1] = { title = entry.name, info = drop, item = entry.id }
 			end
-			local drop = #names > 0 and L.DUNGEON_DROPPED_BY:format(table.concat(names, L.LIST_SEPARATOR))
-				or L.DUNGEON_DROP
-			rows[#rows + 1] = {
-				title = entry.name,
-				info = view == "bosses" and rank or drop,
-				item = view == "loot" and entry.id or nil,
-			}
 		end
 		SetList(other, rows)
 		if not known then
@@ -718,7 +725,7 @@ function Refresh()
 		end
 		Draw()
 		if not sourceRead then
-			source = ns.ReadDungeonSource(yield)
+			source = Dungeons.Source(yield)
 			sourceRead = true
 			Draw()
 		end
@@ -826,14 +833,7 @@ local function BuildContents(parent)
 	summary = Text(inner, "", 14, 53, PAGE_W - 28)
 	plan = Button(inner, L.DUNGEON_PLAN, 12, 69, 150, function()
 		if page then
-			local key = "dungeon:" .. page.dungeon.id
-			if ns.Prefs().journey == key then
-				ns.Choose(nil)
-			else
-				ns.Prefs().dungeons = true
-				ns.Prefs().notInterested[key] = nil
-				ns.Choose(key, false)
-			end
+			Dungeons.SetPlanned(page.dungeon.id, not Dungeons.Planned(page.dungeon.id))
 		end
 	end)
 	entrance = Button(inner, L.GO_TO_ENTRANCE, PAGE_W - 132, 69, 120, function()

@@ -117,6 +117,7 @@
 ---@field need integer
 
 ---@class AGFPrefs
+---@field plannedDungeons table<integer, boolean>
 ---@field quests boolean
 ---@field dungeons boolean
 ---@field journey? string key of the journey card the player chose; nil (or gone) = none chosen, the first card drawn
@@ -1246,12 +1247,16 @@
 ---@field high? integer
 
 ---@class AGFDungeonItem
+---@field startQuest? integer
 ---@field id integer
 ---@field name string
 ---@field droppers? AGFDungeonBoss[] known droppers in this instance
 ---@field bossDrop? boolean at least one known rank-3 dropper
 
 ---@class AGFDungeonSource
+---@field curated? table<integer, boolean>
+---@field worldDrops? table<integer, boolean>
+---@field starts? table<integer, integer>
 ---@field entrances? table<integer, AGFPoint>
 ---@field bosses table<integer, AGFDungeonBoss[]>
 ---@field loot table<integer, AGFDungeonItem[]>

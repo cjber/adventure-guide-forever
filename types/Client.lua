@@ -184,7 +184,9 @@ TweaksForever = nil
 ---@field SetValueChangedCallback fun(self: AGFSettingsSetting, callback: fun(setting: AGFSettingsSetting, value: boolean))
 -- A checkbox's row (Blizzard_Settings_Shared SettingsListElementInitializer); a child is greyed while predicate is false.
 ---@class AGFSettingsInitializer
----@field SetParentInitializer fun(self: AGFSettingsInitializer, parent: AGFSettingsInitializer, predicate: fun(): boolean)
+---@field Indent fun(self: AGFSettingsInitializer)
+---@field AddEvaluateStateCVar fun(self: AGFSettingsInitializer, variable: string)
+---@field AddModifyPredicate fun(self: AGFSettingsInitializer, predicate: fun(): boolean)
 ---@class AGFSettingsCategory
 ---@field GetID fun(self: AGFSettingsCategory): integer
 ---@class AGFSettingsModule
@@ -320,3 +322,6 @@ AdventureGuideForeverWindow = nil
 ---@class AGFCollapseButton : Button
 ---@field Icon Texture
 ---@field UpdateCollapsedState fun(self: AGFCollapseButton, collapsed: boolean)
+
+---@type table?
+AtlasLoot = nil

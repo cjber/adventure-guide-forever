@@ -11,6 +11,11 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-09-27
+
+- **Dungeon plans survive without available prep quests.** Planning a run is saved separately from choosing its quest route. AtlasLoot encounters load through its locale-independent difficulty identifier.
+- **Tracker initialization avoids native method hooks.** Load-order tests and complete Lua coverage checks now run before publishing.
+
 - **A route keeps its place after a rebuild.** Hand-ins still free space before the same town's pickups, and the next town's work waits for its own lap.
 
 - **Quest givers stay on the right map where zones overlap.** Nalpak and Ebru now point to the Wailing Caverns cave in The Barrens, with the same correction applied to other affected givers and trainers.

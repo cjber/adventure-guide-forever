@@ -35,6 +35,7 @@ ns.DEFAULTS = DEFAULTS
 -- Per-character prefs (AGFPrefs). `dungeons` seeds from the account-wide default the first
 -- time this character is seen; every other key is a plain default merged in on load.
 local PREFS_DEFAULTS = {
+	plannedDungeons = {},
 	quests = true,
 	dungeons = false,
 	-- Opt-in (roadmap #12): the Battlegrounds card.
@@ -74,6 +75,7 @@ end
 
 local function LoadCharDB()
 	local loaded = type(AdventureGuideForeverCharDB) == "table" and AdventureGuideForeverCharDB or {}
+	local migratePlan = type(loaded.plannedDungeons) ~= "table"
 	-- First time this character is seen: honour the account-wide default instead of PREFS_DEFAULTS.dungeons.
 	if loaded.dungeons == nil then
 		loaded.dungeons = db and db.includeDungeonsDefault or false
@@ -106,6 +108,12 @@ local function LoadCharDB()
 	-- One key names a zone's journey, whether it shows as the zone's story or as heading there (docs/design.md §2.10).
 	if loaded.journey then
 		loaded.journey = loaded.journey:gsub("^story:", "zone:"):gsub("^nextzone:", "zone:")
+		if migratePlan then
+			local instance = tonumber(loaded.journey:match("^dungeon:(%d+)$"))
+			if instance then
+				loaded.plannedDungeons[instance] = true
+			end
+		end
 	end
 	local last = loaded.last
 	if last ~= nil and not (type(last) == "table" and type(last.key) == "string" and type(last.reason) == "string") then

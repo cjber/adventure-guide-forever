@@ -277,6 +277,94 @@ function Dungeons.Journal(instance, yield)
 	return #rows > 0 and rows or nil, journal, icon
 end
 
+-- AtlasLoot's normal instance pages, read in their encounter order. Its optional module is load-on-demand.
+-- No data or source from AtlasLoot is bundled (docs/dungeon-sources.md).
+---@param yield fun()
+---@return AGFDungeonSource?
+function Dungeons.Source(yield)
+	local source = ns.ReadDungeonSource(yield)
+	local atlas = AtlasLoot
+	if not (atlas and atlas.ItemDB and type(atlas.ItemDB.Get) == "function") then
+		return source
+	end
+	local moduleName = "AtlasLootClassic_DungeonsAndRaids"
+	if not atlas.ItemDB:Get(moduleName) and not InCombatLockdown() and C_AddOns.DoesAddOnExist(moduleName) then
+		C_AddOns.LoadAddOn(moduleName)
+	end
+	local module = atlas.ItemDB:Get(moduleName)
+	local normal = module and type(module.GetDifficultyByName) == "function" and module:GetDifficultyByName("n")
+	if not module or not normal then
+		return source
+	end
+	local pages = {}
+	for key, entry in pairs(module) do
+		if type(entry) == "table" and entry.InstanceID and type(entry.items) == "table" then
+			pages[#pages + 1] = { key = key, entry = entry }
+		end
+	end
+	table.sort(pages, function(a, b)
+		local aLevel, bLevel =
+			a.entry.LevelRange and a.entry.LevelRange[2] or 0, b.entry.LevelRange and b.entry.LevelRange[2] or 0
+		return aLevel < bLevel or (aLevel == bLevel and a.key < b.key)
+	end)
+	local curated = {}
+	for _, page in ipairs(pages) do
+		local entry = page.entry
+		local instance = type(entry) == "table" and entry.InstanceID
+		if
+			instance
+			and ns.Data.instances[instance]
+			and not ns.Data.instances[instance].raid
+			and type(entry.items) == "table"
+		then
+			source = source or { bosses = {}, loot = {}, rewards = {}, objectives = {}, entrances = {} }
+			local current = curated[instance] or { bosses = {}, items = {}, seen = {} }
+			curated[instance] = current
+			local bosses, items, seen = current.bosses, current.items, current.seen
+			for _, group in ipairs(entry.items) do
+				local ids = type(group.npcID) == "table" and group.npcID or { group.npcID }
+				local npc = not group.ExtraList and type(ids[1]) == "number" and ids[1]
+				local trash = group.ExtraList
+					and atlas.Locales
+					and (group.name == atlas.Locales["Trash"] or group.name == atlas.Locales["Trash Mobs"])
+				if not group.IgnoreAsSource and (npc or trash) then
+					local boss
+					if npc and type(group.name) == "string" then
+						local level = type(group.Level) == "number" and group.Level or nil
+						boss = { id = npc, name = group.name, rank = 3, low = level, high = level }
+						bosses[#bosses + 1] = boss
+					end
+					for _, drop in ipairs(type(group[normal]) == "table" and group[normal] or {}) do
+						local id = type(drop) == "table" and drop[2]
+						if
+							type(id) == "number"
+							and id > 0
+							and not seen[id]
+							and not (source.worldDrops and source.worldDrops[id])
+						then
+							seen[id] = true
+							items[#items + 1] = {
+								id = id,
+								name = "",
+								droppers = boss and { boss } or {},
+								startQuest = source.starts and source.starts[id],
+							}
+						end
+					end
+				end
+				yield()
+			end
+			if #bosses > 0 then
+				source.bosses[instance], source.loot[instance] = bosses, items
+				source.curated = source.curated or {}
+				source.curated[instance] = true
+			end
+		end
+		yield()
+	end
+	return source
+end
+
 ---@param instance integer
 ---@param source? AGFDungeonSource
 ---@return AGFPoint?
@@ -347,4 +435,32 @@ function Dungeons.ChainPosition(data, id, selected)
 			end
 		end
 	end
+end
+
+-- Planning is persistent even when the character has no eligible preparation quests.
+---@param instance integer
+---@return boolean
+function Dungeons.Planned(instance)
+	return ns.Prefs().plannedDungeons[instance] == true
+end
+
+---@param instance integer
+---@param planned boolean
+function Dungeons.SetPlanned(instance, planned)
+	local prefs, key = ns.Prefs(), "dungeon:" .. instance
+	prefs.plannedDungeons[instance] = planned or nil
+	if planned then
+		prefs.dungeons = true
+		prefs.notInterested[key] = nil
+		for _, card in ipairs(ns.Route().journeys) do
+			if card.key == key then
+				ns.Choose(key, false)
+				return
+			end
+		end
+	elseif prefs.journey == key then
+		ns.Choose(nil)
+		return
+	end
+	ns.Invalidate()
 end

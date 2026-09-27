@@ -1775,8 +1775,17 @@ function harness.load(options)
 			return {
 				key = setting.key,
 				tooltip = tooltip,
-				SetParentInitializer = function(self, parent, predicate)
-					self.parent, self.enabled = parent.key, predicate
+				SetParentInitializer = function()
+					error("native settings parent links taint search")
+				end,
+				Indent = function(self)
+					self.indented = true
+				end,
+				AddEvaluateStateCVar = function(self, variable)
+					self.evaluateCVar = variable
+				end,
+				AddModifyPredicate = function(self, predicate)
+					self.enabled = predicate
 				end,
 			}
 		end,

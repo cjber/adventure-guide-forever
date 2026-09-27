@@ -1,7 +1,7 @@
 # Dungeon sources
 
 The Dungeons tab uses instance Map.IDs, never dungeon-name matching. No third-party guide code,
-text or data is used. QuestieDB is an optional runtime source; none of its data is bundled.
+text or data is bundled. QuestieDB and AtlasLoot are optional runtime sources.
 
 | Source | Pin / result | Use |
 | --- | --- | --- |
@@ -73,3 +73,10 @@ The binary layout follows the [CMaNGOS extractor](https://github.com/cmangos/man
 terrain downloads are generator cache files and are not packaged.
 The rebuild moved 77 NPCs off map edges they had been projected onto, including Nalpak and Ebru at the
 Wailing Caverns cave.
+
+AtlasLoot's installed `AtlasLootClassic_DungeonsAndRaids` module supplies encounter order and loot by
+`InstanceID`. The reader loads that module outside combat. `ItemDB:AddDifficulty("NORMAL")` stores the
+localized display name and the stable short identifier `n`; `GetDifficultyByName("NORMAL")` does not
+resolve that registration key. Regression fixtures exercise localized names and the `n` contract.
+Dungeon plans are character preferences independent of an eligible quest journey: a dungeon with no
+available preparation quests can still be planned. Existing selected dungeon journeys migrate once.

@@ -439,5 +439,5 @@ ns.L = {
 	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "The window names the zone you're in even where the game has no name for it.",
+	WHATS_NEW = "Dungeon plans survive without available prep quests. AtlasLoot boss records now load across locales.",
 }

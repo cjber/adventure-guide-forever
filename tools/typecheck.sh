@@ -22,6 +22,8 @@ if [[ "$(lua-language-server --version)" != 3.19.1 ]]; then
 fi
 
 python3 -m unittest discover -s tools -p '*_test.py'
+python3 -m tools.lint_taint
+python3 tools/typecheck_coverage.py
 python3 tools/lint_multivalue.py
 python3 tools/lint_copy.py
 python3 tools/phrases.py --check
