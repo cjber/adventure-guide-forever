@@ -29,6 +29,7 @@ local CHECK_LEFT = 40
 ---@field Foot FontString
 ---@field Bar AGFProgressBar
 ---@field EntranceButton Button
+---@field DungeonButton Button
 ---@field Note? FontString why Go to entrance is greyed, on the featured card
 
 ---@class AGFWindowStepRow : AGFWindowRow, AGFDraggableRow
@@ -120,6 +121,16 @@ local function CreateCard(parent, isFeatured)
 	card.Foot:SetJustifyH(isFeatured and "RIGHT" or "LEFT")
 	card.Foot:SetWordWrap(false)
 	card.EntranceButton = CreateEntranceButton(card, content)
+	card.DungeonButton = CreateFrame("Button", nil, content, "UIPanelButtonTemplate") --[[@as Button]]
+	card.DungeonButton:SetSize(112, BUTTON_HEIGHT)
+	card.DungeonButton:SetText(L.DUNGEON_OPEN_PAGE)
+	card.DungeonButton:SetPoint("BOTTOMLEFT", 12, isFeatured and 2 or 28)
+	card.DungeonButton:SetScript("OnClick", function()
+		local instance = card.journey and Overview.Entrance(card.journey)
+		if instance then
+			Window.OpenDungeon(instance)
+		end
+	end)
 	if isFeatured then
 		local left = 18 + ring + 14
 		card.Icon:SetPoint("TOPLEFT", 18, -18)
@@ -204,6 +215,7 @@ local function RefreshCard(card, journey, span)
 	card.Title:SetText(journey.title)
 	local instance, point, note = Overview.Entrance(journey)
 	card.EntranceButton:SetShown(instance ~= nil)
+	card.DungeonButton:SetShown(instance ~= nil)
 	card.EntranceButton:SetEnabled(point ~= nil and not ns.Setting("wanderer"))
 	Overview.RefreshCardTooltip(card)
 	return note

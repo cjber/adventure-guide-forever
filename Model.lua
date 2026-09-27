@@ -1721,7 +1721,7 @@ local KEEP = 0.5 -- a new quest worth less than this share of its town's mean XP
 -- The XP `quest` gives at `level`: CMaNGOS Quest::XPValue, whole up to 5 levels above the quest, then 0.8, 0.6, 0.4 and
 -- 0.2 of it, and 0.1 from 10 levels on. Nil where the data has none (a scaling quest's).
 ---@param quest AGFQuest
-local function Worth(quest, level)
+function Model.QuestXP(quest, level)
 	if not quest.xp or quest.level < 1 then
 		return nil
 	end
@@ -1991,13 +1991,17 @@ end
 -- split from its pickups by the last build is one again.
 ---@param route AGFStep[]
 ---@param rank table<string, integer>
----@return table<integer, integer>
+---@return table<integer, number>
 local function Ranks(route, rank)
 	local idents, ranks, claimed = Idents(route), {}, {}
 	for index, ident in ipairs(idents) do
 		ranks[index], claimed[ident] = rank[ident], true
 	end
 	for index, step in ipairs(route) do
+		-- A newly split hand-in stays before the combined visit's pickups, which need the freed log slots.
+		if step.kind == "town" and not step.returns and #step.pickups == 0 and not ranks[index] and rank[step.key] then
+			ranks[index] = rank[step.key] - 0.5
+		end
 		local back = step.kind == "town" and #step.handins > 0 and idents[index] == step.key and step.key .. "<"
 		if back and rank[back] and not claimed[back] and rank[back] < (ranks[index] or math.huge) then
 			ranks[index], claimed[back] = rank[back], true
@@ -2228,7 +2232,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	end
 	for _, id in ipairs(ids) do
 		local quest, town = data.quests[id], picks[id]
-		local worth = Worth(quest, player.level)
+		local worth = Model.QuestXP(quest, player.level)
 		if worth then
 			local yards = TALK_YARDS
 			for _, node in ipairs(nodes[id]) do
@@ -2665,7 +2669,8 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 				local objectives, quests = {}, {}
 				for _, objective in ipairs(step.objectives) do
 					local id = objective.id
-					if (log[id] and not log[id].complete) or have[id] then
+					-- Recommit may move the next town ahead of fresh merged areas; its work still waits for its own lap.
+					if (log[id] and not log[id].complete) or (have[id] and picks[id] ~= nextTown) then
 						objectives[#objectives + 1], did[id] = objective, (did[id] or 0) + 1
 						quests[#quests + 1] = quests[#quests] ~= id and id or nil
 					end

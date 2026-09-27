@@ -5,6 +5,7 @@
 
 -- An entity reader: LibQuestieDB.Quest, .Npc or .Object.
 ---@class AGFQuestieEntity
+---@field GetAllIds fun(): integer[]
 ---@field GetAll fun(id: integer, keys: string[]): table? the fields in `keys` order, with `n`; nil for an unknown ID
 
 ---@class AGFQuestieDB
@@ -13,6 +14,7 @@
 ---@field Quest AGFQuestieEntity
 ---@field Npc AGFQuestieEntity
 ---@field Object AGFQuestieEntity
+---@field Item AGFQuestieEntity
 ---@field Support {Get: fun(module: string): table?} Get("ZoneDB"): its zone tables, some as Lua source
 
 -- ZoneDB's tables as QuestieSource.lua reads them: area ID -> uiMapID, subzone -> zone, instance Map.ID -> area.

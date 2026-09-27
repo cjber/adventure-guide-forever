@@ -266,7 +266,7 @@ local function Build(lib, zones, bundled, yield)
 		return giver
 	end
 	-- Where a quest starts or ends among its givers' spawns: in its zone first, then on the giver's usual map, then
-	-- the lowest map, name and point (tools/gen_quests.py pick). An item giver has no place. A giver QuestieDB can't
+	-- the lowest map, name and point. An item giver has no place. A giver QuestieDB can't
 	-- place keeps the bundled place when the bundled data names the same NPC.
 	local function Place(by, zone, old)
 		local best, bestKey
@@ -491,3 +491,150 @@ local function Start()
 end
 
 EventUtil.ContinueAfterAllEvents(Start, "PLAYER_LOGIN")
+
+-- Optional dungeon details are read only by the visible dungeon tab. Like the quest adapter, this takes a
+-- yielding caller and publishes a complete snapshot. GetAllIds is the contract's shared, read-only ID list.
+---@param yield fun()
+---@return AGFDungeonSource?
+function ns.ReadDungeonSource(yield)
+	local lib, _, zones = Fit()
+	if not lib or not zones then
+		return nil
+	end
+	local fields = {
+		Npc = { "name", "rank", "spawns", "minLevel", "maxLevel" },
+		Item = { "name", "npcDrops", "questRewards" },
+	}
+	for kind, keys in pairs(fields) do
+		local reader = lib[kind]
+		local meta = lib.Meta[kind .. "Meta"]
+		local schema = meta and meta[kind == "Npc" and "npcKeys" or "itemKeys"]
+		if not (reader and type(reader.GetAllIds) == "function" and type(reader.GetAll) == "function" and schema) then
+			return nil
+		end
+		for _, key in ipairs(keys) do
+			if not schema[key] then
+				return nil
+			end
+		end
+	end
+	local result = { bosses = {}, loot = {}, rewards = {}, objectives = {}, entrances = {} }
+	local zoneDB = lib.Support.Get("ZoneDB")
+	local dungeons = zoneDB and zoneDB.private and zoneDB.private.dungeons or {}
+	local instanceOf, npcInstances, npcInfo = {}, {}, {}
+	for instance, area in pairs(zones.instances) do
+		if ns.Data.instances[instance] and not ns.Data.instances[instance].raid then
+			instanceOf[area] = instance
+			result.bosses[instance], result.loot[instance] = {}, {}
+			local dungeon = dungeons[area]
+			if type(dungeon) == "table" then
+				for _, alias in ipairs(type(dungeon[2]) == "table" and dungeon[2] or {}) do
+					instanceOf[alias] = instance
+				end
+				-- Forever's support points are already converted; applying EraToForever again would move them.
+				for _, spot in ipairs(type(dungeon[4]) == "table" and dungeon[4] or {}) do
+					local map = zones.areaOverride[spot[1]] or zones.area[spot[1]]
+					local x, y = spot[2], spot[3]
+					if map and ns.Data.maps[map] and type(x) == "number" and type(y) == "number" then
+						local point = { map = map, x = x / 100, y = y / 100 }
+						if ns.Model.ValidPlace(point) and not result.entrances[instance] then
+							result.entrances[instance] = point
+						end
+					end
+				end
+			end
+		end
+	end
+	for _, id in ipairs(lib.Npc.GetAllIds()) do
+		local values = lib.Npc.GetAll(id, fields.Npc)
+		if values and type(values[1]) == "string" and type(values[3]) == "table" then
+			local instances = {}
+			for area, spots in pairs(values[3]) do
+				local parent = zones.parentOverride[area] or zones.parent[area]
+				local instance = instanceOf[area] or (parent and instanceOf[parent])
+				if instance and type(spots) == "table" and next(spots) then
+					instances[instance] = true
+				end
+				yield()
+			end
+			if next(instances) then
+				npcInstances[id] = instances
+				npcInfo[id] = { id = id, name = values[1], rank = type(values[2]) == "number" and values[2] or 0 }
+				for instance in pairs(instances) do
+					if values[2] == 1 or values[2] == 2 or values[2] == 3 then
+						table.insert(result.bosses[instance], {
+							id = id,
+							name = values[1],
+							rank = values[2],
+							low = values[4],
+							high = values[5],
+						})
+					end
+				end
+			end
+		end
+		yield()
+	end
+	for _, id in ipairs(lib.Item.GetAllIds()) do
+		local values = lib.Item.GetAll(id, fields.Item)
+		if values and type(values[1]) == "string" then
+			local instances = {}
+			for _, npc in ipairs(type(values[2]) == "table" and values[2] or {}) do
+				for instance in pairs(npcInstances[npc] or {}) do
+					instances[instance] = instances[instance] or {}
+					instances[instance][npc] = npcInfo[npc]
+				end
+				yield()
+			end
+			local item = { id = id, name = values[1] }
+			for instance, known in pairs(instances) do
+				local droppers, bossDrop = {}, false
+				for _, npc in pairs(known) do
+					droppers[#droppers + 1] = npc
+					bossDrop = bossDrop or npc.rank == 3
+				end
+				table.sort(droppers, function(a, b)
+					return a.id < b.id
+				end)
+				table.insert(
+					result.loot[instance],
+					{ id = id, name = item.name, droppers = droppers, bossDrop = bossDrop }
+				)
+			end
+			for _, quest in ipairs(type(values[3]) == "table" and values[3] or {}) do
+				if ns.Data.quests[quest] then
+					result.rewards[quest] = result.rewards[quest] or {}
+					table.insert(result.rewards[quest], item)
+				end
+				yield()
+			end
+		end
+		yield()
+	end
+	for _, items in pairs(result.loot) do
+		table.sort(items, function(a, b)
+			if a.bossDrop ~= b.bossDrop then
+				return a.bossDrop
+			end
+			return a.id < b.id
+		end)
+		yield()
+	end
+	local keys = lib.Meta.QuestMeta.questKeys
+	if keys.objectivesText then
+		for id in pairs(ns.Data.quests) do
+			local values = lib.Quest.GetAll(id, { "objectivesText" })
+			if values and type(values[1]) == "table" then
+				local lines = {}
+				for _, line in ipairs(values[1]) do
+					if type(line) == "string" then
+						lines[#lines + 1] = line
+					end
+				end
+				result.objectives[id] = table.concat(lines, "\n")
+			end
+			yield()
+		end
+	end
+	return result
+end

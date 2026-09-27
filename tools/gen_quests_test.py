@@ -1,6 +1,7 @@
 """Pure generator checks: python3 -m unittest discover -s tools -p '*_test.py'."""
 
 import re
+import struct
 import unittest
 from collections import Counter
 
@@ -11,8 +12,10 @@ from gen_quests import (
     LINK,
     NAME_REACH,
     OUTPUT,
+    SpawnAreas,
     continents,
     crossings,
+    entrance_requirements,
     faction,
     flight_masters,
     full_xp,
@@ -42,10 +45,30 @@ from gen_quests import (
     shape_area,
     skill_steps,
     spawn_areas,
+    terrain_cells,
     town_hubs,
     trainer_spells,
     world_point,
 )
+
+
+class EntrancesTest(unittest.TestCase):
+    def test_alternative_items_and_unknown_conditions_stay_explicit(self):
+        rows = [
+            dict(
+                id=1,
+                target_map=33,
+                required_level=10,
+                required_item=7,
+                required_item2=8,
+                required_quest_done=9,
+                condition_id=4,
+            )
+        ]
+        result = entrance_requirements(rows, {33: {"raid": False}})
+        self.assertEqual(result, {33: [{"trigger": 1, "level": 10, "items": [7, 8], "quest": 9, "conditional": True}]})
+        self.assertEqual(entrance_requirements(rows, {33: {"raid": True}}), {})
+        self.assertEqual(entrance_requirements(rows, {}), {})
 
 
 class ParsingTest(unittest.TestCase):
@@ -494,12 +517,65 @@ class QuestPlaceTest(unittest.TestCase):
 
     def test_an_npc_giver_keeps_its_creature_entry(self):
         self.assertEqual(
-            quest_place(self.spawn("creature"), {1429}, None),
+            quest_place(self.spawn("creature"), {1429}, None, lambda _: set()),
             {"map": 1429, "x": 0.4817, "y": 0.4294, "name": "Deputy Willem", "npc": 823},
         )
 
     def test_an_object_has_no_npc(self):
-        self.assertNotIn("npc", quest_place(self.spawn("gameobject"), {1429}, None))
+        self.assertNotIn("npc", quest_place(self.spawn("gameobject"), {1429}, None, lambda _: set()))
+
+    def test_nalpak_uses_terrain_area_instead_of_the_smallest_rectangle(self):
+        # Pinned CMaNGOS spawn 14989 and client UiMapAssignment rectangles. MCNK (13,7) in Kalimdor
+        # tile (35,33), root ADT 785560, names area 17 (The Barrens), despite the Durotar overlap.
+        rows = []
+        for ui_map, bounds in [
+            (1411, (-1716.666626, -7249.999512, -1e6, 1808.333252, -1962.499878, 1e6)),
+            (1413, (-5143.75, -7510.416504, -1e6, 1612.499878, 2622.916504, 1e6)),
+        ]:
+            row = GeometryTest.row(ui_map, 1, bounds)
+            row.update(OrderIndex="0", UiMin_0="0", UiMin_1="0", UiMax_0="1", UiMax_1="1")
+            rows.append(row)
+        spawn = {
+            "entry": ("creature", 5767),
+            "name": "Nalpak",
+            "at": (1, -796.8, -2037.08),
+            "options": options_at(rows, -796.8, -2037.08, 96.8029),
+        }
+        self.assertEqual(spawn["options"][0][2], 1411)
+        resolver = SpawnAreas([], [], {17: {1413}}, {})
+        resolver.tiles = lambda _: {(35, 33): 785560}
+        resolver.cells = lambda _: {(13, 7): 17}
+        self.assertEqual(
+            quest_place(spawn, set(), None, resolver),
+            {"map": 1413, "x": 0.4599, "y": 0.3566, "name": "Nalpak", "npc": 5767},
+        )
+        resolver.cells = lambda _: {(13, 7): 999}
+        self.assertIsNone(quest_place(spawn, set(), None, resolver))
+        resolver.cells = lambda _: {(13, 7): 18}
+        resolver.parents[18] = 17
+        self.assertEqual(quest_place(spawn, set(), None, resolver)["map"], 1413)
+        # Established zone hints still work; a missing tile never becomes a guessed outdoor point.
+        self.assertEqual(quest_place(spawn, {1413}, None, lambda _: set())["map"], 1413)
+        resolver.tiles = lambda _: {}
+        self.assertIsNone(quest_place(spawn, set(), None, resolver))
+
+    def test_capital_rectangle_keeps_indoor_givers_off_the_terrain_below(self):
+        resolver = SpawnAreas([], [{"ID": "1497", "ParentAreaID": "0", "Flags_0": "256"}], {1497: {1458}}, {})
+        spawn = self.spawn("creature")
+        spawn["options"] = [(1, 0, 1458, (0.5, 0.5)), (2, 0, 1420, (0.6, 0.6))]
+        self.assertEqual(quest_place(spawn, set(), None, resolver)["map"], 1458)
+        # Two remaining candidate maps are still ambiguous and must never become a destination.
+        self.assertIsNone(quest_place(spawn, set(), None, lambda _: {1458, 1420}))
+
+    def test_client_terrain_cell_headers_and_truncation(self):
+        body = bytearray(128)
+        struct.pack_into("<3I", body, 0, 0, 13, 7)
+        struct.pack_into("<I", body, 52, 17)
+        data = struct.pack("<4sI", b"KNCM", len(body)) + body
+        self.assertEqual(terrain_cells(data), {(13, 7): 17})
+        for broken in (data[:-1], data[:4], data + data):
+            with self.assertRaises(ValueError):
+                terrain_cells(broken)
 
 
 class OverlayTest(unittest.TestCase):
@@ -642,8 +718,8 @@ class DataTest(unittest.TestCase):
     """The committed Data/Quests.lua."""
 
     TEXT = OUTPUT.read_text(encoding="utf-8")
-    # Before objectives, XP and flags it was 1,179,151 bytes; need for every quest's objectives adds 11 KB of it.
-    BOUND = 1_179_151 + 150_000
+    # Objectives, XP and flags fit in 150 KB above the original size; entrance gates add under 2.5 KB.
+    BOUND = 1_179_151 + 150_000 + 2_500
 
     def test_size(self):
         self.assertLess(len(self.TEXT.encode()), self.BOUND)

@@ -240,6 +240,64 @@ h = Load("v1", false, false, STORY, nil, {
 })
 out.window_professions = Window(h, "window_professions", 2)
 
+-- The optional runtime adapter is exercised with independently sourced, non-shipping fixtures.
+local dungeonFixture = dofile("tests/fixtures/dungeons.lua")
+local mirror = harness.questieMirror(h.ns.Data)
+for id, npc in pairs(dungeonFixture.npcs) do
+	mirror.npcs[id] = npc
+end
+mirror.items = dungeonFixture.items
+for id, text in pairs(dungeonFixture.objectives) do
+	mirror.quests[id].objectivesText = { text }
+end
+mirror.zones.dungeons = { [100043] = { "Wailing Caverns", {}, 1413, { { 1413, 46, 36 } } } }
+h = Load("v1", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, {
+	tf = { spells = { SPELL, SPELL, SPELL } },
+	talents = 1,
+	questiedb = mirror,
+	items = dungeonFixture.client,
+})
+h.ns.WindowDB().dungeon = 43
+Window(h, "dungeons", 5)
+for _, row in
+	ipairs(h.Find(function(frame)
+		return frame:IsVisible() and frame.value and frame.value.quest and frame.value.quest.id == 1486
+	end))
+do
+	h.Click(row)
+end
+out.dungeons = Window(h, "dungeons", 5)
+for _, view in ipairs({ "prep", "bosses", "loot" }) do
+	local label = view == "bosses" and h.ns.L.DUNGEON_ELITES_TAB or h.ns.L["DUNGEON_" .. view:upper() .. "_TAB"]
+	for _, tab in
+		ipairs(h.Find(function(frame)
+			return frame:IsVisible()
+				and frame.stockTemplate == "TabSystemTopButtonTemplate"
+				and frame:GetText() == label
+		end))
+	do
+		h.Click(tab)
+	end
+	out["dungeons_" .. view] = Window(h, "dungeons_" .. view, 5)
+end
+h = Load("v1", false, true, nil, nil, {
+	tf = { spells = { SPELL, SPELL, SPELL } },
+	talents = 1,
+	entrances = { [43] = { map = 1413, x = 0.46, y = 0.36 } },
+})
+h.ns.WindowDB().dungeon = 43
+Window(h, "dungeons_bosses_missing", 5)
+for _, tab in
+	ipairs(h.Find(function(frame)
+		return frame:IsVisible()
+			and frame.stockTemplate == "TabSystemTopButtonTemplate"
+			and frame:GetText() == h.ns.L.DUNGEON_BOSSES_TAB
+	end))
+do
+	h.Click(tab)
+end
+out.dungeons_bosses_missing = Window(h, "dungeons_bosses_missing", 5)
+
 local ASIDES = {
 	tf = { spells = { SPELL, SPELL, SPELL } },
 	talents = 1,

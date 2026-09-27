@@ -152,6 +152,7 @@ function harness.load(options)
 		"SetDontSavePosition",
 		"SetMaxLetters",
 		"SetMovable",
+		"SetMotionScriptsWhileDisabled",
 		"SetShadowOffset",
 		"SetToplevel",
 		"StartMoving",
@@ -450,6 +451,15 @@ function harness.load(options)
 		self.animationGroups[#self.animationGroups + 1] = group
 		return group
 	end
+	function Methods:GetVerticalScroll()
+		return self.verticalScroll or 0
+	end
+	function Methods:SetVerticalScroll(value)
+		self.verticalScroll = value
+		if self.scripts.OnVerticalScroll then
+			self.scripts.OnVerticalScroll(self, value)
+		end
+	end
 	function Methods:SetScrollChild(child)
 		self.scrollChild = child
 	end
@@ -495,6 +505,13 @@ function harness.load(options)
 	function Methods:SetNormalFontObject(font)
 		self.normalFont = font
 	end
+	function Methods:SetNormalTexture(file)
+		if not self.NormalTexture then
+			self.NormalTexture = self:CreateTexture(nil, "ARTWORK")
+			self.NormalTexture:SetAllPoints()
+		end
+		self.NormalTexture:SetTexture(file)
+	end
 	function Methods:LockHighlight()
 		self.highlightLocked = true
 	end
@@ -535,6 +552,12 @@ function harness.load(options)
 			return self.text or ""
 		end
 		return self.text
+	end
+	function Methods:GetStringHeight()
+		if self.text == "" then
+			return 0
+		end
+		return self.rect and self.rect[4] or (self.font == "GameFontNormal" and 12 or 10)
 	end
 	function Methods:GetStringWidth()
 		return #(self.text or "") * 6
@@ -729,6 +752,21 @@ function harness.load(options)
 		InsetFrameTemplate = function(frame)
 			Internal("Texture", frame, "Bg")
 			Internal("Frame", frame, "NineSlice")
+		end,
+		-- Shared/TabSystem/TabSystemTemplates.xml: the top-tab art and selected font.
+		TabSystemTopButtonTemplate = function(frame)
+			Internal("FontString", frame, "Text")
+			frame.HandleRotation = noop
+			frame.SetTabSelected = function(self, selected)
+				self:SetEnabled(not selected)
+				self:SetNormalFontObject(selected and "GameFontHighlightSmall" or "GameFontNormalSmall")
+			end
+		end,
+		CollapseButtonTemplate = function(frame)
+			Internal("Texture", frame, "Icon")
+			frame.UpdateCollapsedState = function(self, collapsed)
+				self.Icon:SetAtlas(collapsed and "common-button-list-plus" or "common-button-list-minus", true)
+			end
 		end,
 		-- Mainline/SharedUIPanelTemplates.xml:932: parentArray="Tabs", its label the ButtonText.
 		PanelTabButtonTemplate = function(frame)
@@ -1071,6 +1109,18 @@ function harness.load(options)
 	}
 	G.SlashCmdList = {}
 	-- Mainline/SharedUIPanelTemplates.lua:439-640: tab i > 1 after tab i - 1, and the selected tab disabled.
+	G.PanelTemplates_TabResize = function() end
+	G.PanelTemplates_SelectTab = function(tab)
+		tab.disabled = true
+	end
+	G.PanelTemplates_DeselectTab = function(tab)
+		tab.disabled = false
+	end
+	G.geterrorhandler = function()
+		return function(message)
+			h.errors[#h.errors + 1] = message
+		end
+	end
 	G.PanelTemplates_SetNumTabs = function(frame, count)
 		frame.numTabs = count
 		for index = 2, count do
@@ -1171,7 +1221,11 @@ function harness.load(options)
 	}
 	-- Items and spells: options.items maps an item ID to {name, icon}; anything else has neither yet.
 	local items = options.items or {}
+	h.itemRequests = {}
 	G.C_Item = {
+		RequestLoadItemDataByID = function(id)
+			h.itemRequests[id] = (h.itemRequests[id] or 0) + 1
+		end,
 		GetItemNameByID = function(itemID)
 			return items[itemID] and items[itemID].name
 		end,
@@ -1235,7 +1289,28 @@ function harness.load(options)
 	h.log = log
 	h.titleRequests = {}
 	h.watched = options.watched or {}
+	G.GetQuestLogQuestText = function(index)
+		local quest = log[index]
+		return quest and quest.description, quest and quest.objectiveText
+	end
+	G.BreakUpLargeNumbers = function(value)
+		local text = tostring(value)
+		while true do
+			local changed
+			text, changed = text:gsub("^(%d+)(%d%d%d)", "%1,%2")
+			if changed == 0 then
+				return text
+			end
+		end
+	end
 	G.C_QuestLog = {
+		GetLogIndexForQuestID = function(id)
+			for index, quest in ipairs(log) do
+				if quest.id == id then
+					return index
+				end
+			end
+		end,
 		GetAllCompletedQuestIDs = function()
 			if h.completedPending then
 				return nil
@@ -1443,7 +1518,12 @@ function harness.load(options)
 		-- The client's names for the fixture's zones, so the panel reads as in game; "Map <id>" elsewhere, which no
 		-- data name matches, so a spec can tell the client's name from the data's.
 		GetMapInfo = function(mapID)
-			local names = { [1411] = "Durotar", [1413] = "The Barrens", [1442] = "Stonetalon Mountains" }
+			local names = {
+				[1411] = "Durotar",
+				[1413] = "The Barrens",
+				[1442] = "Stonetalon Mountains",
+				[1456] = "Thunder Bluff",
+			}
 			return { mapID = mapID, name = names[mapID] or "Map " .. mapID }
 		end,
 		-- A zone's base art (C_Map.GetMapArtLayerTextures): h.mapArt[map] when a scene gives the real tiles, else
@@ -1501,6 +1581,9 @@ function harness.load(options)
 	end
 	function G.GameTooltip:GetOwner()
 		return self.owner
+	end
+	function G.GameTooltip:SetItemByID(id)
+		h.tooltip[#h.tooltip + 1] = "item: " .. id
 	end
 	function G.GameTooltip:IsOwned(owner)
 		return self:IsShown() and self.owner == owner
@@ -2002,6 +2085,14 @@ function harness.load(options)
 		end
 		local function Entity(rows)
 			return {
+				GetAllIds = function()
+					local ids = {}
+					for id in pairs(rows or {}) do
+						ids[#ids + 1] = id
+					end
+					table.sort(ids)
+					return ids
+				end,
 				GetAll = function(id, keys)
 					local row = rows and rows[id]
 					if not row then
@@ -2038,10 +2129,12 @@ function harness.load(options)
 				QuestMeta = { questKeys = keys },
 				NpcMeta = { npcKeys = keys },
 				ObjectMeta = { objectKeys = keys },
+				ItemMeta = { itemKeys = keys },
 			},
 			Quest = Entity(fake.quests),
 			Npc = Entity(fake.npcs),
 			Object = Entity(fake.objects),
+			Item = Entity(fake.items),
 			Support = {
 				Get = function(name)
 					if name ~= "ZoneDB" or fake.noZones then
@@ -2049,6 +2142,7 @@ function harness.load(options)
 					end
 					return {
 						private = {
+							dungeons = Copy(zones.dungeons or {}),
 							areaIdToUiMapId = Source(zones.area),
 							areaIdToUiMapIdOverride = Source(zones.areaOverride),
 							subZoneToParentZone = Source(zones.parent),
