@@ -1819,10 +1819,11 @@
       "what": "The copy gate silently skips any ns.L entry not shaped `NAME = value` (e.g. a bracketed key `[\"B\"] = \"...\"`), so its banned-word, stray-percent and \"?\" checks never run on it and the gate still passes",
       "why": "Verified: strings_table(tokenize('ns.L = { A = \"ok\", [\"B\"] = \"the fastest route\" }')) returns only A; the banned 'fastest' passes unreported. Lua allows the bracketed form, so the gate would pass on a shape it cannot read. phrases.py:41 has the same skip, so the same entry would also drop out of Locales/phrases.txt without warning. Raising ValueError on an unrecognised entry shape, as strings_table already does for a missing table, makes the gate fail instead. No such entry exists in Locales/enUS.lua today.",
       "confidence": "medium",
-      "status": "bug",
-      "reason": "BUG: In a /tmp copy, [\"WHY_RACES\"] = ITEM_RACES_ALLOWED or \"the fastest route %s\" passed tools/lint_copy.py, while the equivalent bare key was rejected. The translation template stayed byte-identical and tests/locales_spec.lua, StyLua and luacheck passed; tests/locales_spec.lua:56 explicitly excludes WHY_RACES from template coverage, leaving this bypass undetected.",
+      "status": "fixed",
+      "reason": "strings_table raises on an ns.L entry not shaped NAME = value",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: silent fallback on unreadable input; regression test in tools/lint_copy_test.py"
     },
     {
       "id": "3df567d333",

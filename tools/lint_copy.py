@@ -93,8 +93,10 @@ def strings_table(tokens: list[Token]) -> list[tuple[int, str, str]]:
     body = tokens[index + 5 : matching(tokens, index + 4)]
     entries = []
     for entry in split(body, ","):
-        if len(entry) < 3 or entry[1].text != "=":
+        if not entry:
             continue
+        if len(entry) < 3 or entry[0].kind != "name" or entry[1].text != "=":
+            raise ValueError(f"{entry[0].line}: an ns.L entry not shaped NAME = value; the copy checks cannot read it")
         for alternative in split(entry[2:], "or"):
             literals = [unquote(t.text) for t in alternative if t.kind == "string"]
             if literals:
