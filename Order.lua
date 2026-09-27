@@ -106,7 +106,7 @@ function Order.Apply(route, prefs)
 	end
 	local player, log = ns.State.Player(), ns.State.Log()
 	for _, card in ipairs(route.journeys) do
-		local keys = prefs.customOrders and prefs.customOrders[card.key]
+		local keys = prefs.customOrders[card.key]
 		if keys then
 			card.steps = Order.Merge(card.steps, keys, player.logMax, log)
 			local here = ns.Model.Here(ns.Data, player, card.steps)

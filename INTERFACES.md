@@ -24,7 +24,7 @@ All functions use dot calls. Existing interfaces remain available. New tables ar
 
 - `ns.Session.Get() -> integer` = 0 (No limit), 15, 30, 60.
 - `ns.Session.Set(minutes: integer)` persists per character and resets the committed endpoint.
-- `ns.Session.Info() -> {minutes: integer, seconds?: number, pending: boolean, empty: boolean, trimmed: boolean}`; seconds is heuristic travel + work; show `SESSION_ABOUT` using `math.ceil(seconds / 60)` only when present.
+- `ns.Session.Info() -> {seconds?: number, pending: boolean, empty: boolean}`; seconds is heuristic travel + work; show `SESSION_ABOUT` using `math.ceil(seconds / 60)` only when present.
 - `ns.Route().steps` and the chosen journey's `steps` already contain the session result. Render directly; no UI-side trimming. Journey selection survives empty sessions. Order changes do not refill the session; duration/journey changes do.
 
 ## Order.lua
