@@ -1395,10 +1395,11 @@
       "what": "BUG: WindowJourneys.lua:192 always labels the selected journey \"shown\", drifting from Panel.lua:1159 and the canonical chosen-card behavior in Overview.CardClick (Overview.lua:304-323).",
       "why": "WindowJourneys.lua:179-180 attaches the shared CardClick/CardTooltip handlers, but RefreshCard never sets \"chosen\" even when Refresh computes chosen=true at line 383. Panel supplies \"chosen\" for the active journey. Overview.CardClick uses that state to refocus an already-running journey without calling ns.Choose, or resume it when paused; \"shown\" instead calls ns.Choose(key, titleStartsRoute). With the default titleStartsRoute=true, Core.lua:712 and 791-792 restart guidance through StartRoute. A read-only stdin LuaJIT reproduction using tests/harness.lua, spf=\"v1+\", completed={844}, and log quests 845 (complete) and 843 selected the route and then clicked its visible window card: route.chosen=true, card.state=\"shown\", ns.Choose called once, and NavigateRoute increased 1 -> 2. Clicking the map panel chosen card immediately afterward left NavigateRoute at 2; the harness reported zero errors. The same state also makes the selected window card tooltip say CLICK_TO_CHOOSE. The window intentionally keeps the large-card layout, but that visual choice should not change the shared click/tooltip contract. Found while comparing the parallel map/window implementations; fixing this changes behavior and is not a cleanup-only edit.",
       "confidence": "high",
-      "status": "bug",
-      "reason": "BUG: With zone:1442 already chosen, clicking its window card reset navigation from stop 2 to stop 1 and added a NavigateRoute call in the v1, v1+ and ended harness profiles, while Show on Map and the chosen Panel card preserved stop 2. WindowJourneys.lua:192 supplies \"shown\" to the shared handlers despite the actual selection; changing only the in-memory state to \"chosen\" prevented the restart.",
+      "status": "fixed",
+      "reason": "window cards take the chosen state for the chosen journey, as the map panel's do, so a second click never restarts guidance",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: parallel card-state drift; regression checks in tests/window_spec.lua"
     },
     {
       "id": "7459ba678f",

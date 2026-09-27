@@ -207,6 +207,22 @@ do
 	equal(ns.Prefs().journey, others[1].key, "the click chooses it")
 	equal(ns.Route().journey, others[1].key, "the route follows it")
 	equal(Texts(h)[others[1].title], 1, "the window redraws with it")
+	-- Its card is the chosen one now: a second click turns the map to it again but never restarts its route.
+	local again = h.Find(function(frame)
+		return frame:IsVisible() and frame.journey and frame.journey.key == others[1].key and frame.Art ~= nil
+	end)[1]
+	equal(again.state, "chosen", "the chosen journey's card is chosen")
+	h.Hover(again)
+	local lines = {}
+	for _, line in ipairs(h.tooltip) do
+		lines[line] = true
+	end
+	equal(lines["instruction: " .. L.CLICK_TO_CHOOSE], nil, "its tooltip doesn't offer to choose it")
+	equal(lines["instruction: " .. L.BACK_TO_ALL], nil, "nor points to a back arrow the window lacks")
+	local navigations = h.spf.NavigateRoute
+	h.Click(again)
+	h.flush()
+	equal(h.spf.NavigateRoute, navigations, "a second click doesn't restart the route")
 	ns.OpenPanel()
 	h.flush()
 	local chosen = h.Find(function(frame)

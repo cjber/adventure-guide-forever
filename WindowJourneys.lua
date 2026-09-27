@@ -174,6 +174,7 @@ local function CreateCard(parent, isFeatured)
 		card.EntranceButton:SetPoint("BOTTOMRIGHT", -GRID_PAD + 4, GRID_PAD - 6)
 	end
 	card:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+	card.noBack = true
 	card:SetScript("OnClick", Overview.CardClick)
 	card:SetScript("OnEnter", Overview.CardTooltip)
 	card:SetScript("OnLeave", GameTooltip_Hide)
@@ -187,7 +188,8 @@ end
 ---@param span number
 ---@return string? note
 local function RefreshCard(card, journey, span)
-	card.journey, card.state = journey, "shown"
+	local route = ns.Route()
+	card.journey, card.state = journey, route.chosen and route.journey == journey.key and "chosen" or "shown"
 	local step = Overview.IconStep(journey)
 	local width, height = card:GetSize(true)
 	ns.ZoneIcon.SetBackdrop(
