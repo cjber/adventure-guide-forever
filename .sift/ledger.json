@@ -1088,10 +1088,11 @@
       "what": "BUG: the giver pin's quest line (Pins.lua:341-360) re-implements QuestLine (Pins.lua:54-66) in the same file, and calls C_QuestLog.GetTitleForQuestID directly instead of ns.State.QuestTitle. Canonical: QuestLine(GameTooltip, id, \"\", true).",
       "why": "State.QuestTitle (State.lua:203-206) exists because the client returns \"\" for an uncached title; `\"\" or quest.title` is \"\", so an uncached giver quest shows \"[12] \" with no title, whereas QuestLine falls back to the data's title. The copy also drops the difficulty colour and the group tag QuestLine adds; no comment says the giver tooltip should differ, and the comment above it (\"The client's own title wins when the quest is cached; the level is the bundled one\") describes QuestLine's behaviour.",
       "confidence": "medium",
-      "status": "bug",
-      "reason": "BUG: With GetTitleForQuestID stubbed to \"\", the headless harness renders giver quest 1062 as \"[19] \" while QuestLine renders \"[19] Goblin Invaders\"; Model.Givers neither checks nor loads cached titles. QuestLine also accepts a tooltip, mark and level toggle, handles missing quest data, and adds difficulty colour/group tags, but none prevents reuse with GameTooltip, \"\", true or justifies the divergent title fallback.",
+      "status": "fixed",
+      "reason": "the giver line takes State.QuestTitle, which reads the client's empty title as none, so the data's title shows",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: parallel copy of QuestLine's title fallback; regression check in tests/ui_spec.lua"
     },
     {
       "id": "844876b5b4",

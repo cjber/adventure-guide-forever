@@ -1016,6 +1016,23 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#h.tooltip, #giverPin.giver.quests + 3, label .. ": a giver tooltip line per quest")
 	equal(h.tooltip[#h.tooltip - 1], click, label .. ": giver tooltip instruction")
 	equal(h.tooltip[#h.tooltip], "instruction: " .. ns.L.SHIFT_ADD, label .. ": and the shift-click's")
+	-- The client answers "" for a title it hasn't cached: the line falls back to the data's title.
+	local titleFor = h.G.C_QuestLog.GetTitleForQuestID
+	h.G.C_QuestLog.GetTitleForQuestID = function()
+		return ""
+	end
+	h.Hover(giverPin)
+	local uncached = ns.Data.quests[giverPin.giver.quests[1]]
+	equal(
+		h.tooltip[2],
+		"normal: "
+			.. ns.L.QUEST_LEVEL:format(
+				uncached.level == -1 and h.G.UnitLevel("player") or uncached.level,
+				uncached.title
+			),
+		label .. ": an uncached title reads the data's"
+	)
+	h.G.C_QuestLog.GetTitleForQuestID = titleFor
 	-- A shift-click adds the giver's quests to the route (design §2.18), and a second takes them off.
 	-- Pinning puts the quests on the route, so the redraw can hand this pin another giver: the click keeps its own.
 	local navigated = h.counts.SetUserWaypoint + (h.spf and h.spf.NavigateRoute or 0)
