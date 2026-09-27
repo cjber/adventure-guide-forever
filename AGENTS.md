@@ -69,3 +69,12 @@ commit the PNGs it rewrites in `docs/screenshots/`; two runs give byte-identical
 
 - WFA-3: the map-pin, quest-giver and tracker toggles stay in the guide's cog as well as Settings > AddOns, as
   quick switches next to the map (owner decision 2026-09-27).
+
+## Secure UI regression checks
+
+`tools/typecheck.sh` checks the TOC/XML load graph, LuaLS coverage and `tools/lint_taint.py`.
+Do not hook Blizzard object methods: use events, `HookScript` or a supported callback registry.
+Register tracker sections after `PLAYER_ENTERING_WORLD` and `VARIABLES_LOADED`, deferred one frame
+so Blizzard finishes its own initialization. This supersedes WFA-5's AddContainer hook guidance.
+A `taint-ok` exception must identify an addon-owned object or a verified safe contract; it cannot
+excuse hooking a native frame. Test event ordering and reuse, not just method existence.

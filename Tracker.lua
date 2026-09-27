@@ -208,14 +208,8 @@ end
 
 ---@param trackerModule AGFTrackerModule
 local function Attach(trackerModule)
-	ObjectiveTrackerManager:SetModuleContainer(trackerModule, ObjectiveTrackerFrame)
-end
-
----@param _ table
----@param container Frame
-local function OnContainerAdded(_, container)
-	if container == ObjectiveTrackerFrame and module then
-		Attach(module)
+	if ObjectiveTrackerManager:GetContainerForModule(trackerModule) ~= ObjectiveTrackerFrame then
+		ObjectiveTrackerManager:SetModuleContainer(trackerModule, ObjectiveTrackerFrame)
 	end
 end
 
@@ -236,9 +230,11 @@ local function Register()
 	Mixin(module, ModuleMixin)
 	module:SetHeader(ModuleMixin.headerText)
 	module.uiOrder = UI_ORDER
-	hooksecurefunc(ObjectiveTrackerManager, "AddContainer", OnContainerAdded)
 	Attach(module)
 	EventUtil.ContinueAfterAllEvents(function()
+		C_Timer.After(0, function()
+			Attach(module)
+		end)
 		C_Timer.After(5, WarnIfUnattached)
 	end, "PLAYER_ENTERING_WORLD", "VARIABLES_LOADED")
 end

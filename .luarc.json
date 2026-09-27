@@ -57,5 +57,6 @@
   },
   "type.checkTableShape": true,
   "type.weakUnionCheck": false,
-  "type.weakNilCheck": false
+  "type.weakNilCheck": false,
+  "workspace.useGitIgnore": false
 }

@@ -295,7 +295,8 @@ do
 	)
 	equal(h.settings[9].key, "untrackOthers", "in page order, to the last")
 	equal(h.settings[9].category, h.ns.TITLE, "on the addon's page")
-	equal(byKey.untrackOthers.parent, "trackRouteQuests", "untrackOthers hangs under the tracking setting")
+	equal(byKey.untrackOthers.indented, true, "untrackOthers is indented under tracking")
+	equal(byKey.untrackOthers.evaluateCVar, "AdventureGuideForever_trackRouteQuests", "parent changes reevaluate child")
 	equal(byKey.untrackOthers.enabled(), false, "and is greyed while it is off")
 	-- The client re-sorts its watches by distance on every zone change (Blizzard_ObjectiveTracker.lua
 	-- SortQuestWatches), so the tooltip promises no order it cannot keep.

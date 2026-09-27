@@ -5,7 +5,7 @@ local _, ns = ...
 -- short enough here that it doesn't need one of its own. Every row goes in through Settings.RegisterInitializer, which
 -- inserts it from Blizzard's secure delegate: Settings.CreateCheckbox inserts from our code instead, and the settings
 -- search reads every layout, so a restricted button in its results (Social's Discord Sign In) was blocked and blamed
--- on us. The parent link and its predicate are only read when a row is drawn, so they are set before registering.
+-- on us. Child rows use an indent and value predicate, without a link into the shared search layout.
 function ns.RegisterSettings()
 	local category = Settings.RegisterVerticalLayoutCategory(ns.TITLE)
 
@@ -31,7 +31,9 @@ function ns.RegisterSettings()
 
 	local track = Checkbox("trackRouteQuests", ns.L.SETTING_TRACK_ROUTE, ns.L.SETTING_TRACK_ROUTE_TOOLTIP)
 	local untrack = Checkbox("untrackOthers", ns.L.SETTING_UNTRACK_OTHERS, ns.L.SETTING_UNTRACK_OTHERS_TOOLTIP)
-	untrack:SetParentInitializer(track, function()
+	untrack:Indent()
+	untrack:AddEvaluateStateCVar("AdventureGuideForever_trackRouteQuests")
+	untrack:AddModifyPredicate(function()
 		return ns.Setting("trackRouteQuests")
 	end)
 	for _, initializer in ipairs({

@@ -53,7 +53,7 @@ UI (window, panel, pins, tracker, settings) headlessly. What needs the client it
 - `ns.*` — the shared addon table; search all files for `ns.Name`, not the local file.
 - `## SavedVariables: AdventureGuideForeverDB`, `## SavedVariablesPerCharacter: AdventureGuideForeverCharDB` — keys in `Core.lua` `DEFAULTS` may hold data written by older versions.
 - `## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick` and `SLASH_ADVENTUREGUIDEFOREVER1/2` — called by the client by name.
-- `hooksecurefunc(ObjectiveTrackerManager, "AddContainer")`, `EventRegistry:RegisterCallback("QuestLog.SetDisplayMode")`, `WorldMapFrame:AddDataProvider`, `TooltipDataProcessor.AddTooltipPostCall` — host callbacks.
+- `EventUtil.ContinueAfterAllEvents`, `EventRegistry:RegisterCallback("QuestLog.SetDisplayMode")`, `WorldMapFrame:AddDataProvider`, `TooltipDataProcessor.AddTooltipPostCall` — host callbacks.
 - Optional integrations (`## OptionalDeps: ShortestPathForever, QuestieDB, SkillUpForever, LegacyForever, TweaksForever`) — code guarded by `ShortestPathForever.API`, `SkillUpForever.API` and the other suite addons (`Integrations.lua`, `Companions.lua`) is live only with that addon installed; QuestieDB, when loaded and fit, supplies the quests (`QuestieSource.lua`).
 - `hooksecurefunc("QuestMapFrame_ShowQuestDetails")`, `EventUtil.ContinueOnAddOnLoaded("Blizzard_WorldMap")` — host callbacks.
 - Methods the host calls by name: the map provider's `RefreshAllData`/`RemoveAllData`; the pin mixins' `OnAcquired`/`OnMouseEnter`/`OnMouseLeave`/`OnClick` (bound through `mixin=` in `Panel.xml`); the tracker module's `LayoutContents`/`OnBlockHeaderClick`.
@@ -114,3 +114,5 @@ it or it has not recurred in two audits.
 
 - Rules: none yet (no repeated pattern a tool could recognise without judgment).
 - Lenses: none yet.
+
+The type gate also runs `python3 -m tools.lint_taint` and `python3 tools/typecheck_coverage.py`: native-method hooks, shared UI-state writes and omitted runtime type coverage fail CI. Tracker initialization follows both native load events, deferred one frame; AddContainer hooks are retired.
