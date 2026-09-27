@@ -11,6 +11,12 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **A route keeps its place after a rebuild.** Hand-ins still free space before the same town's pickups, and the next town's work waits for its own lap.
+
+- **Quest givers stay on the right map where zones overlap.** Nalpak and Ebru now point to the Wailing Caverns cave in The Barrens, with the same correction applied to other affected givers and trainers.
+
+- **Plan a dungeon from the guide.** The Dungeons tab lists quests, earlier steps and entrance requirements, with a link to the dungeon journey. QuestieDB adds rewards, enemy ranks and drops when installed; unknown requirements never become pickup suggestions.
+
 ## [0.2.3] - 2026-09-27
 
 - **The window names the zone you're in even where the game has no name for it.** The line under the title falls back to the guide's own zone and map names, as search already did.

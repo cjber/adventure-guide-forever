@@ -29,6 +29,14 @@ globals = {
 }
 
 read_globals = {
+	"C_EncounterJournal",
+	"EJ_GetEncounterInfoByIndex",
+	"EJ_GetInstanceInfo",
+	"PanelTemplates_SelectTab",
+	"PanelTemplates_DeselectTab",
+	"PanelTemplates_TabResize",
+	"geterrorhandler",
+	"AdventureGuideForeverWindow",
 	-- Core.lua
 	"DEFAULT_CHAT_FRAME",
 	"C_Timer",
@@ -89,6 +97,9 @@ read_globals = {
 	"GameTooltip_AddDisabledLine",
 	"GameTooltip_AddColoredLine",
 	"GetQuestDifficultyColor",
+	"GetQuestLogQuestText",
+	"BreakUpLargeNumbers",
+	"GetLFGDungeonInfo",
 	"CreateColor",
 	"UIFrameFlash",
 	"UIFrameFlashStop",

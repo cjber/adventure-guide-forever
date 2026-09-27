@@ -299,3 +299,24 @@ TooltipDataProcessor = nil
 ---@param majorFactionID integer
 ---@return AGFMajorFactionProgressionInfo?
 function C_MajorFactions.GetMajorFactionProgressionInfo(majorFactionID) end
+
+-- SharedUIPanelTemplates.lua; these functions operate on the stock PanelTabButtonTemplate.
+---@param tab Button
+function PanelTemplates_SelectTab(tab) end
+---@param tab Button
+function PanelTemplates_DeselectTab(tab) end
+---@param tab Button
+---@param padding number
+function PanelTemplates_TabResize(tab, padding) end
+
+---@type AGFWindowFrame?
+AdventureGuideForeverWindow = nil
+
+---@class AGFTopTab : Button
+---@field Text FontString
+---@field HandleRotation fun(self: AGFTopTab)
+---@field SetTabSelected fun(self: AGFTopTab, selected: boolean)
+
+---@class AGFCollapseButton : Button
+---@field Icon Texture
+---@field UpdateCollapsedState fun(self: AGFCollapseButton, collapsed: boolean)

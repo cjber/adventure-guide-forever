@@ -10,7 +10,7 @@ A few places to go next in WoW: Forever, in a guide that looks like it came with
 
 I wanted a levelling guide that left me room to wander. From your level, finished quests and quest log, Adventure Guide Forever offers a few journeys, each with a reason, and a short route for the one you pick. It uses the quest log's side tab, retail's Journeys art and the game's own objective tracker. Clicking a quest in your log opens Blizzard's quest details.
 
-Shortest Path Forever handles travel when installed. With Questie installed, the guide takes quest givers and requirements from Questie's database and sits alongside its map pins. If you'd rather follow another guide's route, you can hide the guide's tracker in settings.
+Shortest Path Forever handles travel when installed. QuestieDB supplies quest givers and requirements when installed; the standalone addon is enough. The guide sits alongside Questie's map pins. If you'd rather follow another guide's route, you can hide the guide's tracker in settings.
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif" width="640" alt="Choosing a journey and following its route"></p>
 
@@ -28,7 +28,13 @@ Shortest Path Forever handles travel when installed. With Questie installed, the
 
 <p align="center">The same journeys in their own window, the featured one with its next steps beside it.</p>
 
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/dungeons.png" width="640" alt="The Dungeons tab"></p>
+
+<p align="center">Pick a dungeon, see which quests you can take and find their givers before entering.</p>
+
 ## Features
+
+- **Dungeons.** Browse dungeon quests, check what needs picking up before you go and plan a journey to their givers. QuestieDB supplies rewards, enemy ranks and drops. Without it, those extra details stay greyed out. Entrance directions come from QuestieDB or Tweaks Forever.
 
 - **Journeys.** Up to six choices: loose ends from your log, a zone's story, nearby zones suited to your level and class quests. Dungeon and battleground journeys are opt-in. Each card gives a reason to go; choose one to see its route.
 - **Choose and go.** Picking a journey starts guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop and the back arrow clear only the route the guide started; a waypoint you set yourself stays.

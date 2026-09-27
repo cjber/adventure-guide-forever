@@ -16,5 +16,5 @@ card | calling | Your calling | Chapter 1 of 4 | Your class trainer has a task: 
   step 3 | town:31 | Pick up: Warrior Kinship | 1419 0.5277,0.0294 | near your level
 card | dungeon:329 | Stratholme | 4 quests for this dungeon | - | map 1423
   step 1 | town:229 | Visit Light's Hope Chapel, Eastern Plaguelands: Pick up 4 | 1423 0.7163,0.5009 | 4 to pick up
-card | chain:5382 | The way into Scholomance | Chapter 1 of 3 | Begins a new story | map 1425
-  step 1 | town:204 | Pick up: Doctor Theolen Krastinov, the Butcher | 1425 0.2669,0.0830 | Begins a new story
+card | chain:5382 | The way into Scholomance | Chapter 1 of 3 | Begins a new story | map 1422
+  step 1 | town:204 | Pick up: Doctor Theolen Krastinov, the Butcher | 1422 0.7022,0.7371 | Begins a new story

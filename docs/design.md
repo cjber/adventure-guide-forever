@@ -39,6 +39,52 @@ abandons quests.
   providers. Assign Shift-J once, only if neither it nor the window already has a binding.
 - **2.20 Your order.** Reordering must preserve quest dependencies. Suggested order remains recoverable.
 
+- **2.21 Dungeons.** A window tab below the shared Today strip, with a level-sorted dungeon list, featured
+  header and Quests / Prep / Bosses / Loot pages. Remember the instance Map.ID in window state. Plan to run
+  selects the existing dungeon journey and enables the existing dungeon preference; no parallel plan state.
+  Journey cards link back to the dungeon page. Build on first show, slice source reads at 1 ms, cancel on hide,
+  reuse visible rows, and cache a complete optional-source snapshot until the quest data changes.
+
+  Quest statuses use `Model.Eligible`; completed and accepted quests are identified separately. Unproven
+  requirements remain visible without a pickup recommendation. Expanded steps show prerequisites, including
+  alternatives, with no claim that every alternative is required. Only proven giver coordinates are navigable,
+  revalidated on click through Integrations. Explicit giver navigation is available for locked and earlier quests;
+  Map controls are hidden without coordinates. Wanderer mode disables them with an explanatory tooltip. Quest experience uses the planner's level adjustment, counting
+  accepted quests and chains provable at the current level, excluding completed quests and counting exclusive
+  alternatives once. Unknown experience contributes nothing. Recommended levels use a valid client LFG range, falling back to
+  the generator's published Classic dungeon ranges; sorting and every list subtitle use that same range.
+  Entry requirements stay in the header and Prep. Range text uses the client's quest difficulty colour for the
+  nearest level in the range, with a tooltip explaining yellow, orange/red and green/grey. Titles remain white.
+
+  Prep derives outside pickups and prerequisite chains from quest records. Each generated entrance keeps its
+  level, alternative items, completed-quest gate and unsupported-condition flag. Teleport destinations are inside
+  the instance and are never used as outdoor waypoints. QuestieDB's Forever entrance points supply those,
+  with Tweaks Forever as the fallback. Door keys absent from
+  these sources are not invented or described as unnecessary.
+
+  QuestieDB is read only through QuestieSource's contract-checked runtime layer. Nothing derived from it is
+  shipped. NPC rank and instance-area spawns identify the fallback enemy list; ordinary elites are labelled
+  explicitly, not promoted to bosses. That fallback tab is titled Elites because creature rank does not identify
+  dungeon bosses; client journal encounters retain Bosses. Item `npcDrops` supplies loot, names known droppers
+  in that instance and puts rank-3 boss drops first. `questRewards` supplies reward icons;
+  that inverse relation does not distinguish choices from guaranteed rewards, so the UI says Rewards.
+  Missing optional data greys its page with Needs QuestieDB. The standalone addon suffices.
+  Objective text comes from that snapshot, then the accepted quest's client log; otherwise it is omitted.
+  Place names use the hub, client map name or bundled map name; an unknown place leaves the NPC alone.
+  Experience uses BreakUpLargeNumbers. No internal IDs or missing-value placeholders enter player text.
+
+  Top sub-tabs use TabSystemTopButtonTemplate on a common baseline; chains use the quest log's
+  CollapseButtonTemplate. Quest statuses occupy a right-aligned column; known reward icons have their own row.
+  Details flow from title and level/experience through objective, start/end NPCs, rewards and a proven linear
+  chain position. The scrollable body keeps the giver button fixed at the bottom. Item icons remain square,
+  tooltips use GameTooltip, and the stock divider keeps its atlas aspect.
+
+  Client journal instance IDs and encounters win when available, queried with an explicit instance ID so the
+  player's journal selection is untouched. Client dungeon icons are square, as the EJ instance button draws
+  them; otherwise the header uses the entrance zone's existing map art at native aspect. Source findings and
+  pins are recorded in [dungeon-sources.md](dungeon-sources.md). The layout is included in `/agf dump` and
+  `docs/screenshots/dungeons.png`.
+
 ## 3. Copy
 
 Use short, plain player language and the game's names. Unknown values stay absent. Public descriptions

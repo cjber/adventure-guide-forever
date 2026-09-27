@@ -52,7 +52,7 @@
 ---@field source string where the data came from, for /agf audit
 ---@field quests table<integer, AGFQuest>
 ---@field zones table<integer, {name: string, min: integer, max: integer}> uiMapID -> zone name and level range
----@field instances table<integer, {name: string, raid?: boolean}> instance Map.ID -> its English name and whether it is a raid, for every quest's `dungeon`
+---@field instances table<integer, AGFInstance> instance Map.ID -> its English name and whether it is a raid, for each quest's `dungeon` and each supported dungeon entrance
 ---@field maps table<integer, AGFMapCentre> uiMapID -> where the map sits in the world, for every map a place uses
 ---@field continents table<integer, AGFContinentShift> continent -> its place on the Azeroth world map
 ---@field crossings AGFCrossing[] every boat and zeppelin between two continents
@@ -1193,3 +1193,130 @@
 
 ---@class AGFModel
 ---@field ObjectiveDone fun(data: AGFData, entry?: AGFLogQuest, slot: integer): boolean
+
+---@class AGFEntranceGate
+---@field trigger integer
+---@field level integer
+---@field items? integer[] alternatives; possession of either satisfies the item gate
+---@field quest? integer
+---@field conditional? boolean server condition the addon cannot establish
+
+---@class AGFInstance
+---@field lfg? integer LFGDungeons.ID for client recommended levels
+---@field name string
+---@field raid? boolean
+---@field entrances? AGFEntranceGate[]
+---@field low? integer published recommended level
+---@field high? integer published recommended level
+
+---@class AGFDungeon
+---@field id integer
+---@field name string
+---@field quests integer[]
+---@field minimum? integer entrance level, not a recommended level
+---@field low? integer recommended minimum level
+---@field high? integer recommended maximum level
+---@field suitable boolean
+
+---@class AGFDungeonQuest
+---@field id integer
+---@field title string
+---@field status string
+---@field level? integer
+---@field requiredLevel? integer
+---@field xp? number
+---@field place? AGFPlace known giver coordinates; explicit browsing is independent of pickup eligibility
+
+---@class AGFDungeonPrep
+---@field kind string
+---@field quest? AGFDungeonQuest
+---@field gate? AGFEntranceGate
+
+---@class AGFDungeonPage
+---@field dungeon AGFDungeon
+---@field quests AGFDungeonQuest[]
+---@field prep AGFDungeonPrep[]
+---@field xp number proven remaining XP at the current level; alternatives counted once
+
+---@class AGFDungeonBoss
+---@field id integer
+---@field name string
+---@field rank integer 1 elite, 2 rare elite, 3 boss; never infer bosses from names
+---@field low? integer
+---@field high? integer
+
+---@class AGFDungeonItem
+---@field id integer
+---@field name string
+---@field droppers? AGFDungeonBoss[] known droppers in this instance
+---@field bossDrop? boolean at least one known rank-3 dropper
+
+---@class AGFDungeonSource
+---@field entrances? table<integer, AGFPoint>
+---@field bosses table<integer, AGFDungeonBoss[]>
+---@field loot table<integer, AGFDungeonItem[]>
+---@field rewards table<integer, AGFDungeonItem[]>
+---@field objectives table<integer, string>
+
+---@class AGFModel
+---@field QuestXP fun(quest: AGFQuest, level: integer): number?
+
+---@class AGFNamespace
+---@field Dungeons AGFDungeons
+---@field ReadDungeonSource fun(yield: fun()): AGFDungeonSource?
+
+---@class AGFWindowDB
+---@field dungeon? integer last selected instance Map.ID
+
+---@class AGFStrings
+---@field TAB_DUNGEONS string
+---@field DUNGEON_QUESTS_TAB string
+---@field DUNGEON_PREP_TAB string
+---@field DUNGEON_BOSSES_TAB string
+---@field DUNGEON_LOOT_TAB string
+---@field DUNGEON_QUEST_LEVELS string
+---@field DUNGEON_ENTRY_LEVEL string
+---@field DUNGEON_DONE string
+---@field DUNGEON_IN_LOG string
+---@field DUNGEON_PICKUP string
+---@field DUNGEON_PRE string
+---@field DUNGEON_UNAVAILABLE string
+---@field DUNGEON_LEVEL string
+---@field DUNGEON_MAP string
+---@field DUNGEON_ALTERNATIVE string
+---@field DUNGEON_PRE_ELSEWHERE string
+---@field DUNGEON_OUTSIDE string
+---@field DUNGEON_REQUIRES_ITEM string
+---@field DUNGEON_OR string
+---@field DUNGEON_GATE_UNKNOWN string
+---@field DUNGEON_ENTRANCE_REQUIREMENTS string
+---@field DUNGEON_QUEST_LEVEL string
+---@field DUNGEON_XP string
+---@field DUNGEON_REMAINING_XP string
+---@field DUNGEON_ENTRANCE_AT string
+---@field DUNGEON_PLAN string
+---@field DUNGEON_PLANNED string
+---@field DUNGEON_START_JOURNEY string
+---@field DUNGEON_OPEN_PAGE string
+---@field DUNGEON_BOSS string
+---@field DUNGEON_ENEMY_LEVELS string
+---@field DUNGEON_RARE_ELITE string
+---@field DUNGEON_ELITE string
+---@field DUNGEON_DROP string
+---@field DUNGEON_NO_QUESTS string
+---@field DUNGEON_NEEDS_QUESTIE string
+---@field DUNGEON_LOADING string
+---@field DUNGEON_SOURCE_FAILED string
+---@field DUNGEON_NO_RECORDS string
+---@field DUNGEON_ELITES_TAB string
+---@field DUNGEON_DROPPED_BY string
+---@field DUNGEON_WANDERER string
+---@field DUNGEON_SHOW_GIVER string
+---@field DUNGEON_REWARDS string
+---@field DUNGEON_START string
+---@field DUNGEON_END string
+---@field DUNGEON_PART string
+---@field DUNGEON_LEVEL_TOOLTIP string
+
+---@class AGFWindow
+---@field OpenDungeon fun(instance: integer)

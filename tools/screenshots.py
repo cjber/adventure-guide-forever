@@ -515,6 +515,48 @@ def draw_panel_tab(canvas, entry, rect, layer):
         canvas.text(x, top, entry["text"], panel_tab_font(entry), justify="CENTER", width=w, box_height=10)
 
 
+def draw_top_tab(canvas, entry, rect, layer):
+    """Shared/TabSystem/TabSystemTemplates.xml's TabSystemTopButtonTemplate: HandleRotation rotates each cap
+    and anchors the art to the same bottom edge. AGF centres all labels on one baseline."""
+    ui, (x, y, w, h) = canvas.ui, rect
+    active = entry.get("disabled")
+    if layer == "BACKGROUND":
+        prefix = "uiframe-activetab" if active else "uiframe-tab"
+        left, right = ui.atlas(f"{prefix}-left"), ui.atlas(f"{prefix}-right")
+        left_x = x - (7 if active else 6)
+        right_x = x + w - left.width
+        canvas.draw(right.image.rotate(180), left_x, y + h - right.height, right.width, right.height)
+        canvas.draw(left.image.rotate(180), right_x, y + h - left.height, left.width, left.height)
+        middle = ui.atlas(f"_{prefix}-center")
+        canvas.draw(
+            middle.image.rotate(180),
+            left_x + right.width,
+            y + h - middle.height,
+            right_x - left_x - right.width,
+            middle.height,
+        )
+    elif layer == "TEXT":
+        canvas.text(
+            x,
+            y + h / 2 - 5,
+            entry.get("text") or "",
+            font(entry.get("normalFont") or "GameFontNormalSmall"),
+            justify="CENTER",
+            width=w,
+            box_height=10,
+        )
+
+
+def draw_collapse_button(canvas, entry, rect, layer):
+    """ListTemplates.xml CollapseButtonTemplate, used by QuestLogHeaderTemplate: native plus/minus centred."""
+    if layer == "ARTWORK":
+        x, y, w, h = rect
+        atlas = entry.get("stock", {}).get("Icon", {}).get("atlas")
+        if atlas:
+            art = canvas.ui.atlas(atlas)
+            canvas.draw(art, x + (w - art.width) / 2, y + (h - art.height) / 2)
+
+
 def draw_alpha_highlight(canvas, entry, rect, layer):
     """AlphaHighlightButtonTemplate (Mainline/SharedUIPanelTemplates.xml:1587): no art of its own; its NormalTexture
     and PushedTexture are the button's regions, and its highlight (the same atlas, added) shows only under the mouse,
@@ -523,6 +565,8 @@ def draw_alpha_highlight(canvas, entry, rect, layer):
 
 # name: (draw(canvas, entry, rect, layer), its <Size> by (ui, entry) or None, its own <Anchors> or None, frameLevel)
 STOCK = {
+    "TabSystemTopButtonTemplate": (draw_top_tab, None, None, 0),
+    "CollapseButtonTemplate": (draw_collapse_button, None, None, 0),
     "AlphaHighlightButtonTemplate": (draw_alpha_highlight, None, None, 0),
     "InputBoxVisualTemplate": (draw_input_box, None, None, 0),
     "InsetFrameTemplate": (draw_inset_frame, None, None, 0),
@@ -896,6 +940,11 @@ WINDOW_SIZE = (800, 496)  # Window.lua's WIDTH and HEIGHT
 WINDOW_MARGIN = 20  # the metal corners overhang the frame by up to 16
 WINDOW_TABS = 30  # the tabs hang below the frame
 WINDOWS = (
+    "dungeons",
+    "dungeons_prep",
+    "dungeons_bosses",
+    "dungeons_loot",
+    "dungeons_bosses_missing",
     "window",
     "window_professions",
     "window_pvp",

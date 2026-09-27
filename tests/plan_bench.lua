@@ -327,8 +327,50 @@ for _, shown in ipairs({ false, true }) do
 	)
 end
 
+-- The visible dungeon page, cold and cached; source reads use the same coroutine slice as the live tab.
+local worstDungeon = 0
+for _, instance in ipairs({ 43, 230, 429 }) do
+	local h = harness.load({ questiedb = mirror, player = { level = 60 } })
+	h.G.debugprofilestop = function()
+		return os.clock() * 1000
+	end
+	h.ns.OpenWindow()
+	h.flush()
+	local reads, original = 0, h.ns.ReadDungeonSource
+	h.ns.ReadDungeonSource = function(yield)
+		reads = reads + 1
+		return original(yield)
+	end
+	local frames = {}
+	for _ = 1, 2 do
+		local opened = os.clock()
+		h.ns.Window.OpenDungeon(instance)
+		frames[#frames + 1] = (os.clock() - opened) * 1000
+		for _ = 1, 1000 do
+			local started = os.clock()
+			local ran = h.tick()
+			frames[#frames + 1] = (os.clock() - started) * 1000
+			if ran == 0 then
+				break
+			end
+		end
+	end
+	h.G.AdventureGuideForeverWindow:Hide()
+	h.ns.Window.Refresh()
+	h.flush()
+	check(reads == 1, "dungeon source read once across page shows")
+	check(#h.errors == 0, "dungeon benchmark errors: " .. table.concat(h.errors, "\n"))
+	worstDungeon = math.max(worstDungeon, Max(frames))
+	lines[#lines + 1] = ("Dungeon %d frames: %.3f / %.3f ms (median / max)"):format(
+		instance,
+		Median(frames),
+		Max(frames)
+	)
+end
+
 print(table.concat(lines, "\n"))
 if strict then
+	check(worstDungeon < BUDGET_MS, ("dungeon frame max %.3f ms is over %d ms"):format(worstDungeon, BUDGET_MS))
 	check(worstRebuild < BUDGET_MS, ("rebuild frame max %.3f ms is over %d ms"):format(worstRebuild, BUDGET_MS))
 	check(worstTravel < BUDGET_MS, ("travel frame max %.3f ms is over %d ms"):format(worstTravel, BUDGET_MS))
 	check(worstSession < BUDGET_MS, ("session frame max %.3f ms is over %d ms"):format(worstSession, BUDGET_MS))

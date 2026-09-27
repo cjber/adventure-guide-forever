@@ -29,6 +29,7 @@ Integrations.lua
 Companions.lua
 Providers.lua
 QuestieSource.lua
+Dungeons.lua
 Asides.lua
 Hints\Profession.lua
 PvP.lua
@@ -47,6 +48,7 @@ WindowJourneys.lua
 WindowProfessions.lua
 WindowPvP.lua
 WindowCompletion.lua
+WindowDungeons.lua
 Tracker.lua
 Tooltip.lua
 Settings.lua

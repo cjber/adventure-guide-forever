@@ -94,14 +94,19 @@ function Menu.Step(root, step)
 	end
 end
 
--- A journey card's right-click (roadmap #17): its title and "Not interested". What the player carries is theirs, so
--- the carry card has no menu.
+-- A journey card's right-click: its dungeon page and "Not interested". The carry card has no menu.
 ---@param owner Region
 ---@param journey AGFJourney
 function Menu.Journey(owner, journey)
 	MenuUtil.CreateContextMenu(owner, function(_, root)
 		root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_JOURNEY")
 		root:CreateTitle(journey.title)
+		local instance = journey.kind == "dungeon" and tonumber(journey.key:match("^dungeon:(%d+)$"))
+		if instance then
+			root:CreateButton(L.DUNGEON_OPEN_PAGE, function()
+				ns.Window.OpenDungeon(instance)
+			end)
+		end
 		root:CreateButton(L.NOT_INTERESTED, function()
 			ns.NotInterested(journey.key, journey.title)
 		end)

@@ -17,6 +17,7 @@ import io
 import json
 import math
 import re
+import struct
 import sys
 import urllib.error
 import urllib.request
@@ -33,6 +34,53 @@ CLASSICDB_URL = (
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / "tools" / ".cache"
 OUTPUT = ROOT / "Data" / "Quests.lua"
+# Published dungeon ranges, following the zone generator's published-range fallback.
+# LFGDungeons 1.60.1.69913 has MapID=0 and no usable min/max range (see docs/dungeon-sources.md).
+# Wowhead, Classic Dungeons Overview, 2024-11-22, "WoW Classic Instances by Level":
+# https://www.wowhead.com/classic/guide/classic-dungeons-overview
+DUNGEON_LEVELS = {
+    389: (13, 18),
+    43: (15, 25),
+    36: (18, 23),
+    33: (22, 30),
+    34: (22, 30),
+    48: (24, 32),
+    90: (29, 38),
+    47: (30, 40),
+    189: (26, 45),
+    129: (40, 50),
+    70: (42, 52),
+    209: (44, 54),
+    349: (46, 55),
+    109: (50, 60),
+    230: (52, 60),
+    229: (55, 60),
+    289: (58, 60),
+    329: (58, 60),
+    429: (58, 60),
+}
+# Stable LFGDungeons IDs in the pinned build; MapID is zero, so names are never matched at runtime.
+DUNGEON_LFG = {
+    43: 1,
+    289: 2,
+    389: 3,
+    36: 5,
+    33: 7,
+    48: 9,
+    34: 11,
+    90: 13,
+    47: 15,
+    189: 17,
+    129: 19,
+    70: 21,
+    209: 23,
+    349: 25,
+    109: 27,
+    230: 29,
+    229: 31,
+    429: 33,
+    329: 39,
+}
 ZONE_SOURCE = "https://warcraft.wiki.gg/wiki/Zones_by_level_(original)"
 # Same published ranges as tweaks-forever/tools/gen_zonelevels.py. Cities have no range.
 PUBLISHED = {
@@ -96,6 +144,7 @@ TABLES = {
     "quest_poi",
     "quest_poi_points",
     "areatrigger_involvedrelation",
+    "areatrigger_teleport",
     "creature_loot_template",
     "gameobject_loot_template",
     "reference_loot_template",
@@ -462,6 +511,99 @@ def hub_names(hubs, nodes):
     return names
 
 
+def chunks(data):
+    """WDT/ADT top-level chunks; reject a truncated client file instead of guessing its area."""
+    offset = 0
+    while offset < len(data):
+        if offset + 8 > len(data):
+            raise ValueError("Truncated terrain chunk header")
+        tag, size = struct.unpack_from("<4sI", data, offset)
+        end = offset + 8 + size
+        if end > len(data):
+            raise ValueError("Truncated terrain chunk")
+        yield tag, data[offset + 8 : end]
+        offset = end
+
+
+def terrain_cells(data):
+    """MCNK's ix/iy and areaid (header offset 52), as CMaNGOS's map extractor reads them."""
+    cells = {}
+    for tag, body in chunks(data):
+        if tag == b"KNCM":
+            if len(body) < 128:
+                raise ValueError("Truncated MCNK header")
+            x, y = struct.unpack_from("<2I", body, 4)
+            if not (x < 16 and y < 16) or (x, y) in cells:
+                raise ValueError("Invalid terrain cell index")
+            cells[x, y] = struct.unpack_from("<I", body, 52)[0]
+    return cells
+
+
+class SpawnAreas:
+    """Resolve unhinted overlapping outdoor maps through the pinned client's terrain area and AreaTable parents.
+
+    Capital maps keep their explicit client rectangles: terrain below indoor Ironforge/Undercity names the
+    surrounding outdoor zone, not the WMO's area. No terrain inference overrides a known quest/home zone.
+    """
+
+    def __init__(self, map_rows, area_rows, areas, options):
+        self.maps = {int(r["ID"]): int(r["WdtFileDataID"]) for r in map_rows}
+        self.parents = {int(r["ID"]): int(r["ParentAreaID"]) for r in area_rows}
+        self.areas = areas
+        self.capitals = {
+            ui_map for r in area_rows if int(r["Flags_0"]) & 0x100 for ui_map in areas.get(int(r["ID"]), ())
+        }
+        self.options = options
+        self.tile_cache = {}
+        self.cell_cache = {}
+
+    def file(self, fdid):
+        return download(
+            f"https://wago.tools/api/casc/{fdid}?download&build={BUILD}",
+            f"terrain-{BUILD}-{fdid}.bin",
+            **self.options,
+        )
+
+    def tiles(self, world):
+        if world in self.tile_cache:
+            return self.tile_cache[world]
+        fdid = self.maps.get(world)
+        if not fdid:
+            return {}
+        maid = next((body for tag, body in chunks(self.file(fdid)) if tag == b"DIAM"), None)
+        if maid is None:
+            return {}
+        if len(maid) != 64 * 64 * 32:
+            raise ValueError("Invalid WDT MAID size")
+        self.tile_cache[world] = {
+            (x, y): struct.unpack_from("<I", maid, (y * 64 + x) * 32)[0] for y in range(64) for x in range(64)
+        }
+        return self.tile_cache[world]
+
+    def cells(self, fdid):
+        if fdid not in self.cell_cache:
+            self.cell_cache[fdid] = terrain_cells(self.file(fdid))
+        return self.cell_cache[fdid]
+
+    def __call__(self, spawn):
+        candidates = {o[2] for o in spawn["options"]}
+        if capital := candidates & self.capitals:
+            return capital
+        world, north, west = spawn["at"]
+        x, y = 32 - west / (1600 / 3), 32 - north / (1600 / 3)
+        fdid = self.tiles(world).get((math.floor(x), math.floor(y)))
+        if not fdid:
+            return set()
+        area = self.cells(fdid).get((math.floor(x * 16) % 16, math.floor(y * 16) % 16))
+        seen = set()
+        while area and area not in seen:
+            seen.add(area)
+            if matches := candidates & self.areas.get(area, set()):
+                return matches
+            area = self.parents.get(area)
+        return set()
+
+
 def spawns(tables, kind, wanted, world):
     """Every spawn of the `wanted` entries of `kind`, with each zone map whose rectangle contains it.
 
@@ -521,9 +663,21 @@ def homes(locations, quests, areas):
     return {entry: max(sorted(counter), key=counter.__getitem__) for entry, counter in votes.items()}
 
 
-def pick(spawn, zone_maps, home):
-    """The quest's own zone first, then the giver's home zone, then the smallest containing map."""
-    _, _, ui_map, (x, y) = choose(spawn["options"], zone_maps, home)
+def pick(spawn, zone_maps, home, area_at):
+    """Prefer an established quest/home zone; resolve an unhinted overlap by area, never rectangle size."""
+    options = spawn["options"]
+    homes_ = home if isinstance(home, set) else {home}
+    known = next((o for o in options if o[2] in zone_maps), None) or next((o for o in options if o[2] in homes_), None)
+    if known is None:
+        candidates = {o[2] for o in options}
+        if len(candidates) > 1:
+            candidates = area_at(spawn)
+        if len(candidates) != 1:
+            return None
+        known = next((o for o in options if o[2] in candidates), None)
+    if known is None:
+        return None
+    _, _, ui_map, (x, y) = known
     return {"map": ui_map, "x": round(x, 4), "y": round(y, 4), "name": spawn["name"]}
 
 
@@ -543,10 +697,12 @@ def legacy_maps(legacy_rows, areas):
     return {int(r["ID"]): areas[int(r["AreaID"])] for r in legacy_rows if int(r["AreaID"]) in areas}
 
 
-def quest_place(spawn, zone_maps, home):
+def quest_place(spawn, zone_maps, home, area_at):
     """A quest's start or finish at `spawn`: `pick`'s place, plus `npc`, the creature entry, for an NPC (an object's
     entry is no unit's, so it has none)."""
-    place = pick(spawn, zone_maps, home)
+    place = pick(spawn, zone_maps, home, area_at)
+    if place is None:
+        return None
     kind, entry = spawn["entry"]
     return {**place, "npc": entry} if kind == "creature" else place
 
@@ -752,6 +908,29 @@ def instance_index(area_rows, map_rows):
     return by_area, names
 
 
+def entrance_requirements(rows, instances):
+    """Keep each entrance's gates separately: item/item2 are alternatives, as AreaTrigger.cpp checks them.
+
+    The trigger's target is inside the instance, not an outdoor entrance waypoint. A condition_id cannot be
+    evaluated by the addon and must stay explicit. No server status text or invented key requirements.
+    """
+    result = defaultdict(list)
+    for row in sorted(rows, key=lambda r: r["id"]):
+        instance = row["target_map"]
+        if instance not in instances or instances[instance]["raid"]:
+            continue
+        entry = {"trigger": row["id"], "level": row["required_level"]}
+        items = [row[key] for key in ("required_item", "required_item2") if row[key]]
+        if items:
+            entry["items"] = items
+        if row["required_quest_done"]:
+            entry["quest"] = row["required_quest_done"]
+        if row["condition_id"]:
+            entry["conditional"] = True
+        result[instance].append(entry)
+    return dict(result)
+
+
 RAID_TYPES = (62, 88)  # quest_template Type (QuestInfo): Raid, Raid (10)
 ELITE_TYPES = (1, 81, *RAID_TYPES)  # quest_template Type: Elite, Dungeon and the raid types
 # quest_template SpecialFlags and QuestFlags bits (CMaNGOS QuestSpecialFlags, QuestFlags).
@@ -940,12 +1119,12 @@ def nearest_hub(point, grid):
     return None if best is None else best[1]
 
 
-def role_npcs(tables, world, faction_rows, role, grid, town_maps, maps, counts):
+def role_npcs(tables, world, faction_rows, role, grid, town_maps, maps, counts, area_at):
     """Each role NPC (`roles`) with its side (`reaction`) and place: a spawn projected as a quest giver's is. Within
     LINK yards of a quest place it takes that place's hub and the map most of the hub's quest places use (Astranaar
-    is Ashenvale, not the Stonetalon map that overhangs it; `town_maps` ranks each hub's maps). Elsewhere it takes the
-    smallest of `maps` it stands in (Talonbranch Glade is Felwood, not the Mount Hyjal map over it). Several spawns
-    give the least place, as several givers of one quest do.
+    is Ashenvale, not the Stonetalon map that overhangs it; `town_maps` ranks each hub's maps). Elsewhere `pick`
+    resolves overlapping maps through the client's terrain area. Several proven spawns give the least place,
+    as several givers of one quest do.
     """
     factions = {int(r["ID"]): r for r in faction_rows}
     template_faction = {r["Entry"]: r["Faction"] for r in tables["creature_template"]}
@@ -958,8 +1137,9 @@ def role_npcs(tables, world, faction_rows, role, grid, town_maps, maps, counts):
             if options := [o for o in spawn["options"] if o[2] in maps]:
                 hub = nearest_hub(spawn["at"], grid)
                 home = next((m for m in town_maps.get(hub, ()) if any(o[2] == m for o in options)), None)
-                place = pick({**spawn, "options": options}, (), home)
-                candidates.append(place if hub is None else {**place, "hub": hub})
+                place = pick({**spawn, "options": options}, (), home, area_at)
+                if place is not None:
+                    candidates.append(place if hub is None else {**place, "hub": hub})
         if not side or not candidates:
             counts["dropped NPC: no side" if candidates else "dropped NPC: no zone-map spawn"] += 1
             continue
@@ -1034,8 +1214,10 @@ def generate(
     map_art,
     overlay_rows,
     legacy_rows,
+    source_options_,
 ):
     maps, world, areas = map_indexes(ui_maps, assignments)
+    area_at = SpawnAreas(map_rows, area_rows, areas, source_options_)
     legacy = legacy_maps(legacy_rows, areas)
     skill_names, faction_names = gate_names(skill_lines, reputations)
     instance_of, instances = instance_index(area_rows, map_rows)
@@ -1078,9 +1260,10 @@ def generate(
         zone_maps = areas.get(row["ZoneOrSort"], set())
         for suffix, target in (("questrelation", "start"), ("involvedrelation", "finish")):
             candidates = [
-                (quest_place(spawn, zone_maps, home.get(spawn["entry"])), spawn["entry"])
+                (place, spawn["entry"])
                 for kind in ("creature", "gameobject")
                 for spawn in locations[kind, suffix].get(qid, ())
+                if (place := quest_place(spawn, zone_maps, home.get(spawn["entry"]), area_at)) is not None
             ]
             if candidates:
                 place, entry = min(
@@ -1194,7 +1377,7 @@ def generate(
             grid[continent, math.floor(x / LINK), math.floor(y / LINK)].append((x, y, hub))
             votes[hub][ui_map] += 1
     town_maps = {hub: sorted(counter, key=lambda m: (-counter[m], m)) for hub, counter in votes.items()}
-    npcs = role_npcs(tables, world, faction_rows, role, grid, town_maps, centres.keys(), counts)
+    npcs = role_npcs(tables, world, faction_rows, role, grid, town_maps, centres.keys(), counts, area_at)
     names = defaultdict(set)
     for quest in emitted.values():
         for place in (quest[k] for k in ("start", "finish") if "hub" in quest.get(k, {})):
@@ -1208,10 +1391,17 @@ def generate(
     counts["continents off the world map"] = len({c["continent"] for c in centres.values()} - shifts.keys())
     ferries = crossings(tables["gameobject_template"], path_nodes, taxi_nodes, shifts.keys())
     counts["ocean crossings"] = len(ferries)
-    used = {q["dungeon"] for q in emitted.values() if "dungeon" in q}
+    entrances = entrance_requirements(tables["areatrigger_teleport"], instances)
+    used = {q["dungeon"] for q in emitted.values() if "dungeon" in q} | entrances.keys()
     named = {
         m: {"name": instances[m]["name"], **({"raid": True} if instances[m]["raid"] else {})} for m in sorted(used)
     }
+    for instance, levels in DUNGEON_LEVELS.items():
+        if instance in named:
+            named[instance]["low"], named[instance]["high"] = levels
+            named[instance]["lfg"] = DUNGEON_LFG[instance]
+    for instance, requirements_ in entrances.items():
+        named[instance]["entrances"] = requirements_
     skills = {q["skill"]["id"] for q in emitted.values() if "skill" in q}
     factions = {q["rep"]["faction"] for q in emitted.values() if "rep" in q}
     lookups = {
@@ -1247,6 +1437,7 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, look
         "-- wago.tools UiMap, UiMapAssignment, QuestV2, TaxiPathNode, TaxiNodes, AreaTable, Map, FactionTemplate,",
         "-- SpellEffect, SkillLine, Faction, UiMapXMapArt, WorldMapOverlay:",
         f"-- https://wago.tools/db2/QuestV2/csv?build={BUILD}",
+        "-- Pinned client WDT/ADT terrain area IDs disambiguate unhinted outdoor giver maps.",
         f"-- wago.tools WorldMapArea at {LEGACY_MAP_BUILD}, the last build with it (quest_poi's mapAreaId).",
         f"-- Published zone ranges (tweaks-forever/tools/gen_zonelevels.py): {ZONE_SOURCE}",
         "-- Prev > 0: completed; Prev < 0: unknown, no pickup. NextQuestId contributes reverse prerequisites.",
@@ -1294,7 +1485,14 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, look
         "\tzones = {",
     ]
     lines.extend(f"\t\t[{qid}] = {lua(zone)}," for qid, zone in sorted(zones.items()))
-    lines.extend(["\t},", "\tinstances = {"])
+    lines.extend(
+        [
+            "\t},",
+            "\t-- Entrance gates: alternate items, completed quest and unsupported conditions; "
+            "never outdoor waypoints.",
+            "\tinstances = {",
+        ]
+    )
     lines.extend(f"\t\t[{map_id}] = {lua(instance)}," for map_id, instance in sorted(instances.items()))
     lines.extend(["\t},", "\tmaps = {"])
     lines.extend(f"\t\t[{ui_map}] = {lua(centre)}," for ui_map, centre in sorted(centres.items()))
@@ -1348,8 +1546,12 @@ def main():
         {int(r["ID"]) for r in db2("QuestV2", ("ID",), **options)},
         db2("TaxiPathNode", ("PathID", "NodeIndex", "ContinentID", "Loc_0", "Loc_1", "Delay"), **options),
         db2("TaxiNodes", TAXI_COLUMNS, **options),
-        db2("AreaTable", ("ID", "ContinentID", "AreaName_lang", "ExplorationLevel"), **options),
-        db2("Map", ("ID", "MapName_lang", "InstanceType"), **options),
+        db2(
+            "AreaTable",
+            ("ID", "ContinentID", "AreaName_lang", "ExplorationLevel", "ParentAreaID", "Flags_0"),
+            **options,
+        ),
+        db2("Map", ("ID", "MapName_lang", "InstanceType", "WdtFileDataID"), **options),
         db2("FactionTemplate", ("ID", "EnemyGroup"), **options),
         db2("SpellEffect", ("SpellID", "Effect", "EffectMiscValue_0", "EffectBasePointsF"), **options),
         db2("SkillLine", ("ID", "CategoryID", "DisplayName_lang"), **options),
@@ -1362,6 +1564,7 @@ def main():
             **options,
         ),
         db2("WorldMapArea", ("ID", "AreaID"), build=LEGACY_MAP_BUILD, **options),
+        options,
     )
     if not quests or not counts["with start"]:
         raise ValueError("No usable quests; leaving existing output untouched")

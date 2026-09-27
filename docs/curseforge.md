@@ -1,6 +1,6 @@
 I wanted a levelling guide that left me room to wander. Adventure Guide Forever offers a few journeys from your level and quest log, with a short route for the one you pick. It looks like it came with the game: a tab beside Quests, retail's Journeys cards and the game's own objective tracker.
 
-Shortest Path Forever handles travel when installed. With Questie installed, the guide takes quest givers and requirements from Questie's database and sits alongside its map pins. If you'd rather follow another guide's route, you can hide the guide's tracker in settings.
+Shortest Path Forever handles travel when installed. QuestieDB supplies quest givers and requirements when installed; the standalone addon is enough. The guide sits alongside Questie's map pins. If you'd rather follow another guide's route, you can hide the guide's tracker in settings.
 
 ![Choosing a journey and following its route](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif)
 
@@ -34,7 +34,13 @@ Move steps around; quest givers tick off as you finish with them.
 
 Your current stop and the one after it sit above your quests.
 
+![The Dungeons tab](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/dungeons.png)
+
+Check the quests and their earlier steps before heading to the entrance.
+
 ## Features
+
+- **Dungeons.** Browse dungeon quests, check what needs picking up before you go and plan a journey to their givers. QuestieDB supplies rewards, enemy ranks and drops. Without it, those extra details stay greyed out. Entrance directions come from QuestieDB or Tweaks Forever.
 
 - **Journeys.** Finish loose ends, follow a zone's story, head somewhere suited to your level or pick up class quests. Each card says why it fits. Dungeon and battleground journeys are opt-in.
 - **Choose and go.** Picking a journey starts its route with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop clears only the route the guide started; a waypoint you set yourself stays.
