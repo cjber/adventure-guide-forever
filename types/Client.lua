@@ -16,7 +16,7 @@
 ---@class AGFPinsModule
 ---@field Ping fun(key: string) flash the numbered pin for a step, if it's on the shown map.
 
----@type table<string, Frame>
+---@type {AddMessage: fun(self: table, text: string)}
 DEFAULT_CHAT_FRAME = nil
 
 ---@type {ContinueOnAddOnLoaded: fun(name: string, callback: fun()), ContinueAfterAllEvents: fun(callback: fun(), ...: string)}

@@ -6,11 +6,6 @@ local L = ns.L
 -- next free slot.
 local UI_ORDER = -4
 
----@return AGFStep?
-local function CurrentStep()
-	return ns.Integrations.CurrentStep()
-end
-
 -- The chapter end (docs/design.md §2.7): Blizzard's anim block glows a header once when its key needs a fanfare.
 local STORY_COMPLETE = "story-complete"
 -- A turn-in ended the chosen journey (docs/design.md §2.10): the same glow once, and a click opens the guide.
@@ -48,7 +43,7 @@ end
 local ModuleMixin = { headerText = L.TRACKER_HEADER, blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
 
 ---@param block AGFTrackerBlock the header's own block: the aside's goes to its place, the journey's end opens the guide
----and the story's does nothing; for the step's, CurrentStep() is used since it's always current
+---and the story's does nothing; for the step's, ns.Integrations.CurrentStep() is used since it's always current
 ---@param mouseButton string
 function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 	local aside = ns.Asides.Current()
@@ -66,7 +61,7 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 		return
 	end
 	if mouseButton ~= "RightButton" then
-		local step = CurrentStep()
+		local step = ns.Integrations.CurrentStep()
 		if step and ns.Setting("trackRouteQuests") then
 			ns.TrackRouteQuests()
 		end
@@ -80,7 +75,7 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 		end
 		return
 	end
-	ns.Menu.Open(self:GetContextMenuParent(), "MENU_ADVENTURE_GUIDE_FOREVER_TRACKER", CurrentStep())
+	ns.Menu.Open(self:GetContextMenuParent(), "MENU_ADVENTURE_GUIDE_FOREVER_TRACKER", ns.Integrations.CurrentStep())
 end
 
 -- The title's click starts the route when the setting says so, as an aside's with a place does, so each warns as Go
@@ -90,7 +85,7 @@ function ModuleMixin:OnBlockHeaderEnter(block)
 	if not ns.Integrations.ReplacesJourney() then
 		return
 	end
-	local step, aside = CurrentStep(), ns.Asides.Current()
+	local step, aside = ns.Integrations.CurrentStep(), ns.Asides.Current()
 	local title = (block.id == ASIDE and aside and aside.place and aside.text)
 		or (not NOT_STEP[block.id] and step and ns.Setting("titleStartsRoute") and step.title)
 	if title then
@@ -149,7 +144,7 @@ function ModuleMixin:LayoutContents()
 			return
 		end
 	end
-	local step = CurrentStep()
+	local step = ns.Integrations.CurrentStep()
 	if not step then
 		return
 	end
@@ -299,7 +294,7 @@ local function OnRouteChange()
 	if journeyDone then
 		journeyDone = not journeyDone.seen and { seen = true } or nil
 	end
-	local step = CurrentStep()
+	local step = ns.Integrations.CurrentStep()
 	if finished and not (step and tContains(step.quests, finished.quest)) then
 		local key = step and step.key or ""
 		if finished.key == nil then

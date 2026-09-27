@@ -230,7 +230,7 @@
 ---@field holds? table<integer, true> a zone story's log quests on its zone, a later lap's too: carry (Loose ends) holds the rest
 
 ---@class AGFRoute
----@field journeys AGFJourney[] at most 3: the zone's story, carry, then the diversions (calling, dungeon, a way into an instance, battleground, next zone) newest first
+---@field journeys AGFJourney[] at most Model.MAX_JOURNEYS (6): the zone's story, carry, then the diversions (calling, dungeon, a way into an instance, battleground, next zone) newest first
 ---@field journey? string the key of the journey whose steps these are: the chosen one, else the first
 ---@field chosen boolean the player chose `journey`; false while the route falls back to the first card
 ---@field stranded? true no next zone (roadmap #21): the dungeon card came whatever the Dungeons toggle says
@@ -358,7 +358,7 @@
 ---@field Restore fun(steps: AGFStep[]): boolean hands Shortest Path the chosen journey's steps again after a /reload; never the waypoint
 ---@field Stale fun(handed: AGFStep[], index: integer, steps: AGFStep[], far?: fun(a: AGFStep, b: AGFStep): boolean): boolean the guidance handed to Shortest Path no longer matches the journey's steps
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")
----@field RefreshCards fun(journeys: AGFJourney[]) the cards shown: drops other answers, asks for up to 3 stale, one a frame
+---@field RefreshCards fun(journeys: AGFJourney[]) the cards shown: drops other answers, asks for up to Model.MAX_JOURNEYS stale, one a frame
 ---@field ResumeCards fun() step 1's travel frame is over: the queued cards ask from the next frame
 ---@field CardTravel fun(journey: AGFJourney): AGFCardTravel? a card's last answer, without asking again
 ---@field OnCardTravel fun(callback: fun()) called as each card's answer arrives
@@ -722,7 +722,6 @@
 ---@field standing? fun(reaction: integer): string? 1 Hated to 8 Exalted
 
 ---@class AGFState
----@field Skills fun(): table<integer, integer> learned skill line -> rank (C_SkillInfo), read again on SKILL_LINES_CHANGED
 ---@field Reputation fun(factionID: integer): integer? C_Reputation's currentStanding; nil for a faction it gives none for
 ---@field SkillName fun(skillLineID: integer): string? the client's name for a learned skill line
 ---@field FactionName fun(factionID: integer): string?
@@ -1049,11 +1048,9 @@
 ---@field visits? table<string, string> town pickup/hand-in action to committed visit identity
 ---@field seconds? number
 ---@class AGFSessionInfo
----@field minutes integer
 ---@field seconds? number
 ---@field pending boolean
 ---@field empty boolean
----@field trimmed boolean
 ---@class AGFPrefs
 ---@field customOrders? table<string, string[]>
 ---@field sessionMinutes? integer

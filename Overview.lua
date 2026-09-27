@@ -370,7 +370,7 @@ end
 -- Every card's tooltip, whole or one-line: its lines, the hub line when line 3 holds the reason
 -- or is folded away, how many quests need a group, the quests the log-full note means, then what a click does. The
 -- chosen card points to the back arrow; a card whose click would replace someone else's journey warns
--- first, as Go did (docs/design.md §2.9).
+-- first (docs/design.md §2.9).
 ---@param card AGFCardButton
 local function CardTooltip(card)
 	local journey = card.journey
@@ -458,7 +458,7 @@ local function IconStep(journey)
 	return journey.steps[1]
 end
 
--- A grid card's footer when it has come no way: the level a zone to head to fits, else how many stops it has.
+-- A grid card's footer when it has come no way: how many stops it has.
 ---@param journey AGFJourney
 ---@return string
 local function Stops(journey)
@@ -549,9 +549,8 @@ end
 ---@param y number
 ---@param width number
 ---@param value number
----@param height? number drawn this tall, BAR_HEIGHT by default
-local function SetBar(bar, x, y, width, value, height)
-	local scale = (height or BAR_HEIGHT) / BAR_ART
+local function SetBar(bar, x, y, width, value)
+	local scale = BAR_HEIGHT / BAR_ART
 	bar:SetScale(scale)
 	bar:SetWidth(width / scale)
 	bar.FillArt:SetWidth(width / scale)
@@ -599,7 +598,6 @@ Overview.HideChecklist = HideChecklist
 Overview.Entrance = Entrance
 Overview.CreateBar = CreateBar
 Overview.SetBar = SetBar
-Overview.FocusStep = FocusStep
 Overview.ShowOnMap = ShowOnMap
 Overview.ShowTooltip = ShowTooltip
 Overview.RowEnter = RowEnter

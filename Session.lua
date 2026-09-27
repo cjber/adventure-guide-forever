@@ -3,7 +3,7 @@ local _, ns = ...
 ---@class AGFSession
 local Session = {}
 ns.Session = Session
-local info = { minutes = 0, pending = false, empty = false, trimmed = false }
+local info = { pending = false, empty = false }
 local job
 
 function Session.Get()
@@ -24,11 +24,9 @@ end
 
 function Session.Info()
 	return {
-		minutes = info.minutes,
 		seconds = info.seconds,
 		pending = info.pending,
 		empty = info.empty,
-		trimmed = info.trimmed,
 	}
 end
 
@@ -157,7 +155,7 @@ end
 
 function Session.Apply(route)
 	local minutes, prefs = Session.Get(), ns.Prefs()
-	info = { minutes = minutes, pending = false, empty = false, trimmed = false }
+	info = { pending = false, empty = false }
 	if not route.chosen or minutes == 0 then
 		job = nil
 		return route
@@ -238,7 +236,7 @@ function Session.Apply(route)
 		end
 	end
 	info.seconds = commit and commit.journey == route.journey and commit.seconds or nil
-	info.empty, info.trimmed = not info.pending and #steps == 0, #steps < #route.steps
+	info.empty = not info.pending and #steps == 0
 	local result = {}
 	for key, value in pairs(route) do
 		result[key] = value

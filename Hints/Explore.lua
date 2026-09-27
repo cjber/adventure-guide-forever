@@ -2,9 +2,9 @@
 local _, ns = ...
 local L = ns.L
 
--- Exploration and new lands (roadmap #13 and #14, docs/design.md §2.11): two asides after the trainer's. A land
--- Forever added that fits the player's level, with Go to its flight master for their side; else an area of the zone
--- they stand in that they haven't seen, as text only. Both read what the player has explored from the client
+-- Exploration and new lands (docs/design.md §2.11): two asides after the trainer's. A land Forever added that fits
+-- the player's level, with Go to its flight master for their side; and an area of the zone they stand in that they
+-- haven't seen, as text only. Both read what the player has explored from the client
 -- (C_MapExplorationInfo.GetExploredMapTextures, probe `explore`); without it neither says anything.
 ---@class AGFExploreModule : AGFExplore
 local Explore = {}

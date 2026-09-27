@@ -375,26 +375,14 @@ function harness.load(options)
 	function Methods:GetHeight()
 		return (select(2, self:GetSize()))
 	end
-	function Methods:GetLeft()
-		return self.rect and self.rect[1]
-	end
 	function Methods:GetBottom()
 		return self.rect and self.rect[2]
-	end
-	function Methods:GetRight()
-		return self.rect and self.rect[1] + self.rect[3]
 	end
 	function Methods:GetTop()
 		return self.rect and self.rect[2] + self.rect[4]
 	end
-	function Methods:GetEffectiveScale()
-		return 1
-	end
 	function Methods:SetScale(scale)
 		self.scale = scale
-	end
-	function Methods:GetScale()
-		return self.scale or 1
 	end
 	-- A texture masked by a MaskTexture: tools/screenshots.py masks it with its frame's mask.
 	function Methods:AddMaskTexture(mask)
@@ -419,9 +407,6 @@ function harness.load(options)
 			end
 			fn(...)
 		end
-	end
-	function Methods:HasScript()
-		return true
 	end
 	function Methods:RegisterEvent(event)
 		self.events = self.events or {}
@@ -459,11 +444,6 @@ function harness.load(options)
 		text.layer, text.font = layer, font
 		return text
 	end
-	function Methods:CreateLine(name, layer)
-		local line = NewRegion("Line", name, self)
-		line.layer = layer
-		return line
-	end
 	function Methods:CreateAnimationGroup()
 		local group = animationGroup(self)
 		self.animationGroups = self.animationGroups or {}
@@ -481,9 +461,6 @@ function harness.load(options)
 	end
 	function Methods:SetChecked(checked)
 		self.checked = checked
-	end
-	function Methods:GetChecked()
-		return self.checked == true
 	end
 
 	-- Buttons.
@@ -569,9 +546,6 @@ function harness.load(options)
 	end
 	-- A button's label, as wide as a font string's.
 	Methods.GetTextWidth = Methods.GetStringWidth
-	function Methods:GetStringHeight()
-		return 12
-	end
 	-- The lines the text wraps to: as the layout pass counted them in the client's font, else each word's estimate
 	-- wrapped greedily in the width set; at most SetMaxLines'.
 	function Methods:GetNumLines()

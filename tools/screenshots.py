@@ -159,18 +159,12 @@ def scroll_child_anchors(entry):
     return []
 
 
-def lua_rects(rects, widths=None):
+def lua_rects(rects, widths):
     """Rects for h.SetRects: {left, bottom, width, height} with y growing upwards, as the client's edges are, and a
     font string's text width in the client's font fifth (its GetUnboundedStringWidth), the lines it wraps to in its
-    rect sixth when given as a pair (its GetNumLines)."""
-    widths = widths or {}
-
-    def measured(path):
-        value = widths.get(path)
-        return [] if value is None else list(value) if isinstance(value, (list, tuple)) else [value]
-
+    rect sixth (its GetNumLines)."""
     return {
-        path: [left, -(top + height), width, height] + measured(path)
+        path: [left, -(top + height), width, height] + list(widths.get(path, ()))
         for path, rect in rects.items()
         if rect is not None
         for left, top, width, height in [rect]
@@ -518,13 +512,13 @@ def draw_panel_tab(canvas, entry, rect, layer):
         canvas.text(x, top, entry["text"], panel_tab_font(entry), justify="CENTER", width=w, box_height=10)
 
 
-# name: (draw(canvas, entry, rect, layer), its <Size> by (ui, entry) or None, its own <Anchors> or None, frameLevel)
 def draw_alpha_highlight(canvas, entry, rect, layer):
     """AlphaHighlightButtonTemplate (Mainline/SharedUIPanelTemplates.xml:1587): no art of its own; its NormalTexture
     and PushedTexture are the button's regions, and its highlight (the same atlas, added) shows only under the mouse,
     which no scene holds."""
 
 
+# name: (draw(canvas, entry, rect, layer), its <Size> by (ui, entry) or None, its own <Anchors> or None, frameLevel)
 STOCK = {
     "AlphaHighlightButtonTemplate": (draw_alpha_highlight, None, None, 0),
     "InputBoxVisualTemplate": (draw_input_box, None, None, 0),
@@ -928,7 +922,7 @@ def quest_log(ui, data, rects, scene, pins=()):
 
 # ------------------------------------------------------------------------------ Shortest Path's route (map scene)
 
-# SPF #52's stock quest POIs. Its geometry is SPF's own Path.FindSync, run by LuaJIT in an extracted copy (plan §1.3).
+# SPF #52's stock quest POIs. Its geometry is SPF's own Path.FindSync, run by LuaJIT in an extracted copy.
 # The API contract fixture keeps its independent compatibility pin in tests/contract_spec.lua.
 SPF_SHA = "061f0b1041f85d02084c25a27edbbf3db3ae7ec7"
 SPF_TARBALL = f"https://codeload.github.com/cjber/shortest-path-forever/tar.gz/{SPF_SHA}"
@@ -963,7 +957,6 @@ def spf_sources():
     `git archive`, else from GitHub's tarball of the sha."""
     if (SPF_CACHE / "Path.lua").is_file():
         return SPF_CACHE
-    import io
     import tarfile
     import urllib.request
 
@@ -1153,7 +1146,7 @@ def shortest_path(ui, data):
         draw_player(canvas, rects, player)
 
     canvas, _ = map_frame(ui, explored_art(ui, map_id), False, on_map)
-    return canvas, len(walk)
+    return canvas
 
 
 def sibling(repository):
@@ -1264,7 +1257,7 @@ def render(out):
     images["search"] = wm.scene(ui, [(crop(canvas, qx - 3, qy - 30, qw + 3 + 64, qh + 30 + 22), 0, 0)])
 
     art = explored_art(ui, data["panel"]["map"])
-    canvas, _ = shortest_path(ui, data)
+    canvas = shortest_path(ui, data)
     images["map"] = wm.scene(ui, [(canvas, 0, 0)])
 
     hovered = data["tooltip"]["hovered"] - 1

@@ -47,7 +47,8 @@ local TRACK_MAX, SQUARE, SQUARE_GAP = 8, 12, 3
 -- The search (docs/design.md §2.4): 3 characters or more put up to 10 quests in place of the cards; a locked one lists
 -- why, unmet lines first, up to 6 (its tooltip has them all).
 local SEARCH_MIN, SEARCH_ROWS, WHY_LINES, RESULT_HEIGHT, WHY_HEIGHT = 3, 10, 6, 24, 14
--- The quest log's own geometry: a 29px search bar above the list, a 40px footer below it for the Go button.
+-- The quest log's own geometry: a 29px search bar above the list, a 40px footer below it for the Stop button
+-- and the paused line.
 local TOP_BAR = 29
 local SKIPPED_HEIGHT = 16
 -- A step's kind badge (Overview.CreateBadge) on its 26 ring.
@@ -613,7 +614,7 @@ local function BuildJourneys(parent, below)
 	sessionEmpty:SetPoint("RIGHT", -10, 0)
 	sessionEmpty:SetJustifyH("LEFT")
 	sessionEmpty:SetText(L.SESSION_EMPTY)
-	-- "Skipped (n)" under the cards (design §2.1), a small gold text button that opens the Skipped submenu on its own.
+	-- "Skipped (n)" under the cards (design §2.18), a small gold text button that opens the Skipped submenu on its own.
 	skippedButton = CreateFrame("Button", nil, list) --[[@as Button]]
 	skippedButton:SetHeight(SKIPPED_HEIGHT)
 	skippedButton:SetNormalFontObject("GameFontNormalSmall")
@@ -641,7 +642,7 @@ local function BuildFooter(parent)
 	-- a route that stopped says its card resumes it.
 	queuedText = parent:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
 	queuedText:SetPoint("BOTTOMLEFT", PAD, 15)
-	-- Shown only while our guidance runs (design §2.1): it never stops what the player or another addon started.
+	-- Shown only while our guidance runs (design §2.10): it never stops what the player or another addon started.
 	stopButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate") --[[@as Button]]
 	stopButton:SetSize(90, 26)
 	stopButton:SetPoint("BOTTOMRIGHT", -PAD, 8)
@@ -689,8 +690,7 @@ local function BuildSettingsMenu(_, menu)
 	end)
 end
 
--- The quest log's top bar: a search box for any quest across its width, and the settings cog. No step count
--- (docs/design.md §1).
+-- The quest log's top bar: a search box for any quest across its width, and the settings cog. No step count.
 ---@param panelFrame Frame
 local function BuildTopBar(panelFrame)
 	searchBox = CreateFrame("EditBox", nil, panelFrame, "SearchBoxTemplate") --[[@as AGFSearchBox]]
