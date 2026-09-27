@@ -312,7 +312,10 @@ local function Build(lib, zones, bundled, yield)
 			for index, field in ipairs(QUEST_FIELDS) do
 				v[field] = values[index]
 			end
-			local races, classes = tonumber(v.requiredRaces) or 0, tonumber(v.requiredClasses) or 0
+			-- An absent mask is no restriction; one present but unreadable withholds the start (docs/design.md §1).
+			local races, classes = tonumber(v.requiredRaces or 0), tonumber(v.requiredClasses or 0)
+			local unreadable = not (races and classes)
+			races, classes = races or 0, classes or 0
 			local quest = {
 				title = type(v.name) == "string" and v.name or old.title,
 				level = tonumber(v.questLevel) or 0,
@@ -355,7 +358,7 @@ local function Build(lib, zones, bundled, yield)
 				start.trainer = trainer or (npc and npc.class) or nil
 			end
 			-- Prerequisites: every one of the group, and one of the singles (a lone single joins the group).
-			local unknown = false
+			local unknown = unreadable
 			local pre, preAny = {}, {}
 			local group = type(v.preQuestGroup) == "table" and v.preQuestGroup or {}
 			local single = type(v.preQuestSingle) == "table" and v.preQuestSingle or {}

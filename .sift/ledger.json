@@ -1154,10 +1154,11 @@
       "what": "BUG: An invalid Questie race or class mask becomes 0, silently removing the eligibility restriction.",
       "why": "Fit checks the API contract and field names, not per-quest values (QuestieSource.lua:82-106). A present nonnumeric mask therefore reaches this fallback. Side(0) returns both factions and lines 321-322 discard zero masks; Model.lua:295-310 then accepts the missing restriction. A read-only reproduction through tests/harness.lua used questieMirror of the bundled data and changed only quest 5 requiredRaces from 77 to \"unreadable\". For the default level-18 Horde player, Model.Eligible(data, player, {}, {}, 5) changed from false to true; the quest retained its start, QuestieStatus stayed \"questie\", reason was nil, and h.errors was empty. This violates docs/design.md:8 (unproven eligibility is never recommended). Distinguish legitimate absent/unrestricted masks from present values that cannot be decoded; withhold that quest start or reject the source with a reason. The reproduction uses synthetic malformed input, not an observed installed QuestieDB failure.",
       "confidence": "high",
-      "status": "bug",
-      "reason": "BUG: QuestieDB\u2019s [numeric normalizer](https://github.com/Questie/QuestieDB/blob/365537a340473291f5af3b7a53a5eca94e2a5f1a/src/meta/normalize.lua#L262-L266) preserves malformed non-nil values, and its runtime correction registry and GetAll pass them through. A scratch run using those upstream components made quest 5 eligible after replacing either a restrictive race or class mask with \"unreadable\", retaining its start with no status reason or errors; this violates docs/design.md \u00a71 (synthetic malformed input, not an observed installed-data failure).",
+      "status": "fixed",
+      "reason": "a present race or class mask that is not a number withholds the quest's start, as other unreadable requirements do",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: silent fallback on unreadable input; regression cases in tests/questie_spec.lua GATED"
     },
     {
       "id": "0901c7631c",
