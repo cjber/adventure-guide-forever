@@ -3,6 +3,7 @@
 -- wago.tools UiMap, UiMapAssignment, QuestV2, TaxiPathNode, TaxiNodes, AreaTable, Map, FactionTemplate,
 -- SpellEffect, SkillLine, Faction, UiMapXMapArt, WorldMapOverlay:
 -- https://wago.tools/db2/QuestV2/csv?build=1.60.1.69913
+-- wago.tools WorldMapArea at 7.3.5.26972, the last build with it (quest_poi's mapAreaId).
 -- Published zone ranges (tweaks-forever/tools/gen_zonelevels.py): https://warcraft.wiki.gg/wiki/Zones_by_level_(original)
 -- Prev > 0: completed; Prev < 0: unknown, no pickup. NextQuestId contributes reverse prerequisites.
 -- Positive exclusive groups close siblings; negative predecessor groups expand to pre (all completed).

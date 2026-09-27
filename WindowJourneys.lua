@@ -17,7 +17,6 @@ local BAR_LABEL_GAP = 8
 -- The session picker (a stock WowStyle1 dropdown, 25 high as MenuTemplates.xml makes it) at the steps' top right,
 -- raised level with the heading so it clears row 1: No limit, then minutes.
 local SESSION_WIDTH, SESSION_HEIGHT, SESSION_RAISE = 96, 25, 8
-local SESSIONS = { 0, 15, 30, 60 }
 -- A town's checklist lines sit under its row, in from the ring.
 local CHECK_LEFT = 40
 
@@ -283,7 +282,7 @@ end
 local function SessionMenu(_, root)
 	root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_SESSION")
 	root:CreateTitle(L.SESSION_LABEL)
-	for _, minutes in ipairs(SESSIONS) do
+	for _, minutes in ipairs(ns.Session.LENGTHS) do
 		root:CreateRadio(minutes == 0 and L.SESSION_UNLIMITED or L.SESSION_MINUTES:format(minutes), function()
 			return ns.Session.Get() == minutes
 		end, function()

@@ -14,8 +14,6 @@ ns.ZoneIcon = ZoneIcon
 -- The zone art canvas the generator keeps (tools/gen_zoneart.py): 1002x668 map pixels of 256-pixel tiles, 4 across.
 local ART_WIDTH, ART_HEIGHT, TILE, COLUMNS, TILES = 1002, 668, 256, 4, 12
 local EDGE = 20
--- The ring is drawn this much larger than the art it frames, as the mock's recipe has it.
-local RING_SCALE = 1.4
 
 ---@class AGFZoneIcon : Frame
 ---@field Clip Frame
@@ -142,18 +140,13 @@ function ZoneIcon.Create(parent, size, badge)
 	icon.Clip:SetClipsChildren(true)
 	local art = CreateFrame("Frame", nil, icon.Clip) --[[@as AGFZoneIconArt]]
 	art.base, art.overlays = {}, {}
-	art.Mask = art:CreateMaskTexture()
-	art.Mask:SetAtlas("CircleMaskScalable")
-	art.Mask:SetAllPoints(icon.Clip)
+	art.Mask = ns.Art.RingMask(art, icon.Clip)
 	icon.Art = art
 	-- Over the art, whichever frame level the client gives the clip.
 	icon.Border = CreateFrame("Frame", nil, icon)
 	icon.Border:SetAllPoints()
 	icon.Border:SetFrameLevel(icon:GetFrameLevel() + 3)
-	icon.Ring = icon.Border:CreateTexture(nil, "OVERLAY")
-	icon.Ring:SetAtlas("adventureguide-ring")
-	icon.Ring:SetSize(size * RING_SCALE, size * RING_SCALE)
-	icon.Ring:SetPoint("CENTER")
+	icon.Ring = ns.Art.Ring(icon.Border, size)
 	icon.Kind = icon.Border:CreateTexture(nil, "OVERLAY", nil, 1)
 	return icon
 end

@@ -219,7 +219,13 @@ end
 
 ---@return AGFPrefs
 function ns.Prefs()
-	charDB = charDB or { quests = true, dungeons = false, notInterested = {}, pinned = {} }
+	if not charDB then
+		local prefs = {}
+		for key, value in pairs(PREFS_DEFAULTS) do
+			prefs[key] = type(value) == "table" and {} or value
+		end
+		charDB = prefs --[[@as AGFPrefs]]
+	end
 	charDB.skipped = sessionSkipped
 	return charDB
 end

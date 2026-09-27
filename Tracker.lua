@@ -40,7 +40,7 @@ local function Givers(givers)
 end
 
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
-local ModuleMixin = { headerText = L.TRACKER_HEADER, blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
+local ModuleMixin = { headerText = L.TITLE, blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
 
 ---@param block AGFTrackerBlock the header's own block: the aside's goes to its place, the journey's end opens the guide
 ---and the story's does nothing; for the step's, ns.Integrations.CurrentStep() is used since it's always current

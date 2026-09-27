@@ -184,6 +184,17 @@ function State.MapName(map)
 	return info and info.name ~= "" and info.name or nil
 end
 
+-- A map's name: the client's, else the bundled data's zone or map name (`data`, ns.Data by default); nil when none has
+-- one.
+---@param map integer
+---@param data? AGFData
+---@return string?
+function State.ZoneName(map, data)
+	data = data or ns.Data
+	local known = data.zones[map] or data.maps[map]
+	return State.MapName(map) or (known and known.name)
+end
+
 -- The client's name for an instance Map.ID (a dungeon card's title), in the player's language; nil when it has none.
 ---@param id integer
 ---@return string?

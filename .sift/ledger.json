@@ -9,8 +9,8 @@
       "what": "The project profile repeatedly uses em-dash prose separators",
       "why": "This opening paragraph uses U+2014 between independent clauses; the same form occurs in the title, live-root bullets and risk-order list. It is a standalone tell under the assigned copy-slop lens. Use a period after no require and colons for path/name descriptions; preserve commands, names and facts. Table cells containing a dash as a no-value marker are not this finding.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Replace the em-dash separators in the sift project skill with colons? It is agent-read instruction text, so the audit does not rewrite its wording.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: wontfix: agent-only docs keep their em-dash separators",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -117,8 +117,8 @@
       "what": "WFA-20: generated files outside Data/ are not marked linguist-generated",
       "why": "WFA-20 requires generated data files marked linguist-generated so their diffs collapse. Locales/phrases.txt is written by tools/phrases.py (AGENTS.md: `python3 tools/phrases.py > Locales/phrases.txt`), tests/golden/*.txt and tests/golden/layout.json by AGF_UPDATE_GOLDEN=1, and docs/screenshots/manifest.txt by tools/screenshots.py manifest(); all are tracked (git ls-files) and none matches the one pattern. Fix: add `Locales/phrases.txt linguist-generated=true`, `tests/golden/** linguist-generated=true` and `docs/screenshots/manifest.txt linguist-generated=true`, and widen the comment above.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Mark Locales/phrases.txt, tests/golden/* and docs/screenshots/manifest.txt linguist-generated in .gitattributes (WFA-20)? A repository-config change outside the audit closed set.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: done; the quoted .gitattributes line stays and the linguist-generated lines were added below it (the ledger refuses fixed while the quote exists)",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -130,8 +130,8 @@
       "what": "The Layout list uses em dashes as separators",
       "why": "The Layout bullets at lines 32-41 and Standards entry at line 64 use U+2014 in plain Markdown. The assigned lens counts a dash independently; these are prose separators, not literal identifiers or ranges, and no scoped convention prescribes this punctuation. Use a colon after each path or standard name; keep the specific technical facts. The bold-lead changelog convention is unrelated and should remain.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Replace the em-dash separators in the AGENTS.md Layout list with colons? AGENTS.md is agent-read instruction text the audit may correct only for facts.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: wontfix: agent-only docs keep their em-dash separators",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -156,10 +156,11 @@
       "what": "ns.Prefs()'s pre-load fallback restates PREFS_DEFAULTS (Core.lua:37) by hand and has already drifted",
       "why": "PREFS_DEFAULTS has quests, dungeons, battlegrounds, notInterested, pinned; the literal at Core.lua:222 omits battlegrounds. Adding a pref to PREFS_DEFAULTS will not reach this copy. Canonical home: PREFS_DEFAULTS (build the fallback from it, copying the table values). Drift is accidental (battlegrounds nil reads falsy like false today, so no visible bug yet).",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Build ns.Prefs()'s pre-load fallback from PREFS_DEFAULTS (Core.lua:37)? The copy lacks battlegrounds, so unifying turns nil into false before ADDON_LOADED: a (falsy-equal) behaviour change the closed set does not allow without the owner.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: ns.Prefs() fallback built from PREFS_DEFAULTS"
     },
     {
       "id": "6aa7b7a61d",
@@ -169,8 +170,8 @@
       "what": "Core.lua (932 lines) holds five separable responsibilities: SavedVariables load/migration and settings/prefs accessors (7-235); skip / not-interested / pin bookkeeping (227-335); route cache, invalidation and rebuild scheduling with the 'here' walker, resume latch and spellbook watch (337-691); journey choose/start/stop/pause/restore state machine (693-829); slash command, audit, compartment click and WhatsNew (831-932)",
       "why": "They meet only through ns.* calls plus the shared locals pendingStart (route and journey sections) and sessionSkipped/skippedOrder (prefs and rebuild). Proposed split: DB.lua (DEFAULTS, LoadDB/LoadCharDB, Setting/SetSetting/WindowDB/Prefs, skip/not-interested/pin), Journey.lua (Choose/StartRoute/Stop/Paused/restore listeners, owning pendingStart with Ended), Core.lua keeping the route cache; slash/audit/WhatsNew to a small Commands.lua. TOC order must keep DB before Core. Not to be performed in the audit.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "DECIDE: Should persistence, journey lifecycle and command handling move into DB.lua, Journey.lua and Commands.lua in a separate reviewed change? Commit c51abfb changed window persistence and command/compartment handling without changing routing, supporting independent responsibilities; the split must also account for WhatsNew's private db access and initialization/listener ordering.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: deferred: do when that file is next substantially changed",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -277,8 +278,8 @@
       "what": "The interface record uses em-dash title and date separators",
       "why": "The title and the two dated CHANGE paragraphs at lines 58 and 60 use U+2014 as plain-text separators. This is a standalone tell under the assigned lens, not a numeric range or diagram. Use parentheses for the frozen date and colons for dated change notes. Preserve the historical interface decisions; the finding does not claim those dated notes are stale.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Replace the em-dash title and date separators in INTERFACES.md? Pure style; the owner decides the house style for dev docs.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: wontfix: agent-only docs keep their em-dash separators",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -331,8 +332,8 @@
       "what": "Integrations.lua (907 lines) mixes: Shortest Path travel-line fetch (8-121, 212-255); Tweaks Forever training (123-142); SkillUp Forever API wrapper (144-210); card-travel estimate queue (257-370); guidance state machine over SPF and the native waypoint (372-907)",
       "why": "AGENTS.md describes the file as 'Shortest Path Forever's public API when loaded, the native waypoint otherwise'; the Tweaks and SkillUp wrappers belong with Providers.lua, which already probes Tweaks and Legacy (see the companion-probe finding), and the card queue is a scheduler with its own combat frame and listeners. Proposed split: Tweaks/SkillUp to Providers.lua; travel line + card queue to Travel.lua; guidance stays in Integrations.lua. Not to be performed in the audit.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "DECIDE: Should Training/SkillUp move to Providers.lua and travel formatting plus the card/session estimate queue move to Travel.lua, leaving guidance in Integrations.lua? Core.lua:440 and 659-662, WindowProfessions.lua:391, and Session.lua:133 consume these separately; the adapters, estimate caches/queue, and guidance state are independent responsibilities, with shared SPF access but no TOC constraint forcing one file.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: deferred: do when that file is next substantially changed",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -398,10 +399,11 @@
       "what": "ellipsis character U+2026 (also SESSION_PENDING, line 352) while LOADING (line 67) uses '...'",
       "why": "Player copy, proposal: pick one form across the file (the game's own strings use '...'), e.g. 'Loading completion progress...' and 'Estimating this session...'.",
       "confidence": "low",
-      "status": "decide",
-      "reason": "DECIDE: Should COMPLETION_LOADING and SESSION_PENDING use three periods to match LOADING? WindowCompletion.lua and WindowJourneys.lua display these addon-authored strings directly, and no documented project style exception prescribes U+2026, which the copy-slop lens explicitly flags on its own.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: copy judgment; phrases.txt regenerated"
     },
     {
       "id": "503ca52acf",
@@ -438,10 +440,11 @@
       "what": "TRACKER_HEADER restates TITLE (\"Adventure Guide\"), the key whose comment says it is the addon's name wherever the game shows it",
       "why": "Tracker.lua:48 is the only user; TITLE (Core.lua:5 ns.TITLE) already covers every other surface of the addon's name, and SETTING_TRACKER_TOOLTIP names the section '\"Adventure Guide\"'. A translation of TITLE would leave the tracker header English unless the translator finds the second key. Proposal only: use L.TITLE in Tracker.lua, unless the tracker is meant to be renamable separately (no comment says so).",
       "confidence": "low",
-      "status": "decide",
-      "reason": "DECIDE: Should the tracker header share TITLE, or be independently translatable? Locales/enUS.lua:11 and :169 contain identical standalone names differing only in key and consumer; no constraint requires separate wording, and a headless TITLE-only translation changed ns.TITLE while Tracker.lua:48 kept the header English.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: TRACKER_HEADER key removed, Tracker uses L.TITLE"
     },
     {
       "id": "d2d449ec8e",
@@ -451,10 +454,11 @@
       "what": "player copy (proposal): 'the first time you open the guide' does not match when the default applies",
       "why": "Core.lua:77-79 LoadCharDB seeds `dungeons` from includeDungeonsDefault on ADDON_LOADED the first time the character logs in with the addon, whether or not the guide is ever opened. Suggest 'for a character the first time it logs in with the guide'.",
       "confidence": "low",
-      "status": "decide",
-      "reason": "DECIDE: Should the tooltip describe initialization when the addon first loads for a character? A headless run confirmed Core.lua:909 seeds dungeons during ADDON_LOADED before opening the guide; changing includeDungeonsDefault before first opening both guide surfaces leaves the seeded choice unchanged, for both true and false defaults.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: copy judgment in Locales/enUS.lua"
     },
     {
       "id": "1311b7be53",
@@ -546,8 +550,8 @@
       "what": "Refresh's `drawn` set (Model.lua:4192-4196) copies Pickups' (Model.lua:3147-3152): the log quests a story card's steps draw. Canonical: one Drawn(steps) helper next to Pickups.",
       "why": "Both decide which held log quests the story shows now versus later laps; Pickups uses it for the LATER_LAPS count, Refresh for which finished quests move to carry in combat. If a new step kind (battlemaster, say) must be excluded like trainer, the in-combat and full builds would disagree about carry. Expression is identical; no stated reason for two copies.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Share one Drawn(steps) helper between Pickups and Refresh? It touches the planner hot path and needs the strict frame-budget bench; owner call on churn in Model.lua.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: wontfix: planner hot path, not worth the churn",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -573,8 +577,8 @@
       "what": "AGFStep.ring, written by Enter, is test-only: no production file reads it; delete it (and its types/Namespace.lua:187 field) with the spec checks that read it",
       "why": "rg '\\.ring\\b' outside tests finds only this write; readers are tests/laps_spec.lua:67, playthrough_spec.lua:73, ui_spec.lua:1179, plan_golden_spec.lua:178, model_spec.lua:729. Pins.lua draws rings from step.r/step.shapes, not step.ring; no string key [\"ring\"], XML or Dump.lua path reads it; not persisted.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Delete test-only AGFStep.ring? Five specs (laps, playthrough, plan_golden, model, ui) validate entry placement against it, so removing it means rewriting those validators; owner call whether it stays as a test seam.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: wontfix: keep AGFStep.ring as a test seam",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -627,8 +631,8 @@
       "what": "Model.lua (4239 lines) holds at least eight separable responsibilities: eligibility/Why/Story/Search (19-431), zone ranking and givers (433-570), step construction and town description (572-1000), geometry and travel cost (Point/Position/Docks/Cost/Yards/Enter, 1002-1204), NPC nudges (trainers, battlemasters, professions, rest, 1206-1444), Build routing (1446-1695), laps and committed-order stabilisation (1697-2856; Laps alone is ~690 lines, 2168-2856, with a dozen closures), journey cards (2858-3570), and presentation decoration (TownChecklist/StepTitle/FinishRoute, 3571-3771, which set verbs and localized titles and call ns.Order back). Proposed split, not performed: Geometry.lua (Point..Oversea, Model.Yards, Model.TownName), Eligibility.lua (Index..Model.Search), Laps.lua (Worth..Laps with Sequence/Sweep/Stabilise), Nudges.lua (Teaches..Rest), with Model.lua keeping cards and Plan/Refresh; and Laps' inner passes (anchors, lap pick, Verify/Holds, visit merge) as named locals.",
       "why": "The parts change for different reasons (data geometry, eligibility rules, route heuristics, card copy) and the duplication found in this audit (Build/Laps finishing pass, Nodes/Planned, Holds vs Order.Valid, Optional vs Hard) sits across those seams. Each new file must go into AdventureGuideForever.toc before Model.lua's dependents and into tests/model_spec.lua/laps_spec.lua's loadfile lists; the FinishRoute block also creates a Model->Order dependency (Model.lua:416, 3610) on a file loaded after it. Removing the duplicates first would shrink the file but not remove the need for the split.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "DECIDE: Should eligibility/search, travel geometry and NPC advice move into dedicated modules, leaving route/card orchestration in Model.lua? Independent callers in Panel.lua:974/1017, PvP.lua:128 and Hints/Profession.lua:21 demonstrate separate responsibilities, and AdventureGuideForever.toc supports separate modules; the deferred ns.Order calls are safe but do not require a single file.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: deferred: do when that file is next substantially changed",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -682,10 +686,11 @@
       "what": "AGFStep.follow (the stored list, also initialised in Visit and reset on the split town at Model.lua:2561) is test-only: nothing in production reads it; delete the field and the spec assertions/golden output that read it (Opens keeps using its local `follow` for the reason line)",
       "why": "rg '\\.follow\\b|follow =' finds writers only in Model.lua (633, 744, 2561) and readers only in tests/model_spec.lua:1155/1159 and tests/plan_golden_spec.lua:65. The comment above Opens says `follow` 'tells a route the hand-in comes first', but Laps/Build/Sequence/Holds never read it; Tracker, Pins, Panel, Dump, Integrations and XML do not either (searched for .follow and [\"follow\"]). Not persisted (steps are rebuilt, not saved).",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Delete test-only AGFStep.follow? Removing it rewrites the tests/golden files and its Opens comment claims a route reader that does not exist, so the owner should say whether a reader was planned.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: field removed from the AGFStep type; goldens regenerated"
     },
     {
       "id": "90a0adba69",
@@ -709,8 +714,8 @@
       "what": "Journey keys (\"zone:<map>\", \"dungeon:<id>\", \"chain:<quest>\", \"battleground:<id>\", \"calling\", \"carry\") are built by concatenation at Model.lua:3189, 3218, 3235, 3391, 3401, 3468, 3519, 3551, 3793, 3867, 3963, 3975 and PvP.lua:26, and parsed by pattern at Model.lua:3788, 3952, 4190, Providers.lua:96, Overview.lua:356, Moments.lua:64/67 and Core.lua:108, 571-573; step keys likewise (\"town:\" .. Hub at Model.lua:620, 813, 1756, 2333, 2351, 3063 and \"town:\" .. step.hub at 2393; \"area:%d:%d\" at 910 and 2300; \"giver:\" at Order.lua:220 and 229).",
       "why": "No builder/parser pair: the formats exist only in a types/Namespace.lua comment, so a typo in any prefix or pattern (or a key that bypasses Hub, as 2393 does) is found by no checker. These keys persist in prefs (journey, notInterested, skipped, customOrders), so they are a wire format, but it is parsed at ~10 read sites rather than once at the boundary. PvP.lua:26 also reuses the \"battleground:\" namespace for an aside key.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Introduce one journey-key builder/parser (zone:, dungeon:, chain:, battleground:, calling, carry, quest:, aside:) and typed instance/zone fields on AGFJourney, replacing ~20 bare-string sites across Model, Core, Moments, Providers and Overview? A design change beyond the closed set.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: deferred: do when that file is next substantially changed",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -777,10 +782,11 @@
       "what": "Planned (Model.lua:1750-1774) re-implements Nodes' slot-to-area decoding (Model.lua:829-849): the first `quest.obj` area per slot and the node {map = best[5] or quest.zone, x = best[2]/1000, y = best[3]/1000, r = best[4]}; Pickable (1734-1742) is a third walk of the same 'first area for a slot' search. Its comment says 'as Nodes does'. Canonical: one FirstArea(quest, slot)/AreaNode(quest, slot) helper.",
       "why": "The generator's packed area tuple format ({slot, x*1000, y*1000, r, map}) is decoded in two places. Drift already: Planned drops a node unless ValidPlace (coords in 0..1), while Nodes keeps any node whose map is non-nil without range-checking x/y, so a lap's pickup and a log quest under way can disagree on the same bad row (AGENTS.md: a step never points at coordinates the data does not have).",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Share one objective-area decoder between Nodes and Planned? They have drifted (Planned range-checks coordinates, Nodes does not), so the owner must choose which validation the shared helper keeps.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: one AreaNode, range-checked; model_spec off-map area check"
     },
     {
       "id": "e57eff18d4",
@@ -859,8 +865,8 @@
       "what": "Two implementations of 'may this route be walked in order': Order.Valid/Order.Dependencies (Order.lua:9-68, also used by Session.lua:197) and Model.lua's Holds (Model.lua:2689-2721). Canonical: one checker (Model, since it is the headless planner; Order would call it).",
       "why": "Both enforce pickup before objectives before hand-in and the log cap (occupied - hand-ins + pickups). Drift: Holds rejects a hand-in whose quest is neither in the log nor picked up earlier, and only makes a lap's `returns` hand-ins wait for objectives; Order.Valid makes every hand-in wait for all its objective steps but never checks log membership, and checks the cap per step rather than per pickup. A player's manual move can thus produce an order the planner itself would reject (and vice versa).",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "DECIDE: Which rules should a shared Model checker preserve: Order.Valid's all-hand-in dependencies or Holds' returns-only dependencies and log-membership checks? Both implement pickup/capacity policy without an import constraint, but substituting Holds for Order.Valid in /tmp fails tests/batch4_spec.lua:132 ('work before turn-in: expected false, got true'); all 660 fixture comparisons agree, so the claimed live-move bug remains unproven.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: wontfix: Order.Valid and Holds differ deliberately; no live bug proven",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -899,8 +905,8 @@
       "what": "HideTooltipWithin hand-walks the owner's parent chain; the client ships DoesAncestryInclude(ancestry, frame) (Blizzard_SharedXMLBase/FrameUtil.lua:193 in the 1.60.1.69913 UI source) which does exactly this walk.",
       "why": "Same behaviour: `if DoesAncestryInclude(root, GameTooltip:GetOwner()) then GameTooltip:Hide() end` (it returns false for a nil frame). Needs DoesAncestryInclude added to .luacheckrc read_globals if not already known.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "swap to client DoesAncestryInclude needs a new harness stub and .luacheckrc read_global, and equivalence rests on client source not checkable headlessly; owner call",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: wontfix: own helper is tested; client equivalent unproven headlessly",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -982,8 +988,8 @@
       "what": "Panel.lua (1380 lines) mixes separable responsibilities: widget builders for the quest-log page (rows, header, aside lines, overview cards, journeys, footer, 159-756); settings cog menu (652-709); card/row/track layout (758-941); quest search (CreateResult 347-417, QuestTitle/RefreshResult/LayoutResults 943-1026, with its own QUEST_DATA_LOAD_RESULT bookkeeping); overview cards (1028-1092); the LayoutJourneys orchestrator (1100-1193, ~95 lines, a dozen branches); and quest-log integration (ShowGuide, tabs, Attach, 1236-1380).",
       "why": "The search is the cleanest split: CreateResult, QuestTitle, RefreshResult, LayoutResults and the `requested` table touch the rest of the panel only through a parent frame and a `top` offset, and share nothing with the journey cards; it could live in PanelSearch.lua exporting Create/Layout. The settings cog menu (BuildSettingsMenu) belongs with Menu.lua/Settings.lua. The remaining panel (builders + layout + tab attach) is one coherent page. Removing the duplicates above (step row, aside line) also shrinks it.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "DECIDE: Should quest-search rendering and title-request state move to PanelSearch.lua, and BuildSettingsMenu to Menu.lua? A /tmp extraction preserved panel event dispatch through a request lookup and passed all 1,458 UI and 147 window checks, demonstrating an independent search boundary; BuildSettingsMenu likewise uses namespace services without panel layout state.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: deferred: do when that file is next substantially changed",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -995,10 +1001,11 @@
       "what": "The aside line's skip button (Panel.lua:430-445) is built by hand, beside CreateRowIcon (Panel.lua:165-182), which builds the step row's skip button from the same atlas the same way (square button, icon, ADD highlight, OnClick, one-line tooltip, GameTooltip_Hide). Canonical: CreateRowIcon, with its action taking the owner rather than row.step.",
       "why": "Drift already present: CreateRowIcon sizes the X with Art.Fit (the never-stretch rule), the aside copy with SetAllPoints. common-icon-redx is 256x256 so nothing stretches today, but the aside copy is the one that would stretch if the atlas or box changed. The tooltip texts (L.SKIP vs L.SKIP_STEP) are the only intended difference and are already a parameter of CreateRowIcon.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Build the aside skip button with CreateRowIcon? The copies differ in art fitting (SetAllPoints vs Art.Fit), so unifying changes what is drawn and needs a /reload check.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: CreateRowIcon builds both skip buttons with Art.Fit"
     },
     {
       "id": "dafd6db3fe",
@@ -1008,8 +1015,8 @@
       "what": "The expand button's width hard-codes RedButton-Expand's 18x19 aspect instead of reading it from C_Texture.GetAtlasInfo as Art.lua's Aspect does (Art.Fit/Art.Markup). A small exported Art.Aspect (or an Art helper for button atlases) would keep the never-stretch sizing in one place.",
       "why": "The numbers match the atlas today (UiTextureAtlasMember 1.60.1.69913: redbutton-expand 18x19), so no stretch now; the hard-coded aspect would not follow an atlas change the way every Art.Fit caller does. Window.lua:37 (DIVIDER_HEIGHT = DIVIDER_WIDTH * 16 / 733) is the same pattern.",
       "confidence": "low",
-      "status": "decide",
-      "reason": "needs a new exported Art.Aspect (API addition) since Art.Fit sizes a texture, not a Button; pixel-identical today, owner call",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: wontfix: pixel-identical, no gain",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -1035,10 +1042,11 @@
       "what": "The map-name fallback (client name, else the data's) is inlined four times: Panel.lua:992-994 (search result, which also tries data.maps), Panel.lua:1224 (header), Window.lua:661 (identical to Panel.lua:1224) and Moments.lua:68 (no nil guard on Data.zones). Canonical: State.MapName, or a helper next to it that applies the data fallback once.",
       "why": "The copies have already drifted: only the search result consults data.maps, so a map known only there gets a name in search results but not in the header subtitle; Moments indexes ns.Data.zones[zone].name without the `or {}` guard the others use.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "DECIDE: Should both header subtitles adopt search's client \u2192 Data.zones \u2192 Data.maps fallback when the client has no name? A headless probe with bundled Orgrimmar (1454) leaves the window subtitle blank while search displays Orgrimmar; Moments' zone-key input explains its different guard, but unifying the header/search policies would change displayed text.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: State.ZoneName; window_spec data-name subtitle check"
     },
     {
       "id": "f172e27cf6",
@@ -1062,8 +1070,8 @@
       "what": "The numbered step row is built twice: Panel.lua CreateRow (204-252) + RefreshRow (761-782) and Window.lua Window.CreateStepRow (238-264) + Window.SetStepRow (271-282). Both do Art.RowArt(row, true), a 26px adventureguide-ring at LEFT 6, the number centred on it, Overview.CreateBadge(row, ring, 14, 3), GameFontNormalMed3 title / GameFontHighlightSmall detail, then Art.SetNumber + Art.SetSliceShown(index == 1) + Overview.SetVerbIcon. BADGE, BADGE_OUT = 14, 3 is defined in both (Panel.lua:54, Window.lua:26). Canonical: a shared step-row base in Art.lua or Overview.lua (both load before Panel.lua, as Art.RowArt already does for the same reason), which Panel extends with skip/group/tag/drag.",
       "why": "Window.lua's comment says it copies \"the route rows' art (Panel.lua), the ring and number at 26\". Differences: the text anchors (Panel top-anchors title/detail; Window centres them on the row) and Panel's extras (skip, group icon, optional tag, drag) are intentional; the duplicated ring size, ring offset, badge geometry and refresh sequence are not, and a change to the ring or badge must be made in both.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Share one numbered step-row builder between Panel.lua and Window.lua (ring, numeral, BADGE constants)? A UI refactor across two surfaces verified only in game.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: deferred: do when that file is next substantially changed",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -1075,8 +1083,8 @@
       "what": "The aside's click and tooltip are written twice: Panel.lua:452-473 (CreateAsideLine OnClick/OnEnter) and Window.lua:384-409 (CreateChip OnClick/OnEnter). The \"click travels with <provider> / sets a waypoint\" line is a third copy in Pins.lua:36-39 (AddClickLine). Canonical home: ns.Asides (it already owns Go/Open), e.g. Asides.Click(owner, aside, button) and Asides.Tooltip(owner, aside), with the click hint shared with Pins.",
       "why": "Window.lua's copy is commented \"As the panel's aside line\"; the two bodies are token-for-token identical (right-click opens MENU_ADVENTURE_GUIDE_FOREVER_ASIDE, else Asides.Go; the tooltip takes the aside text plus the provider/waypoint hint unless wanderer). A change to the hint rule (e.g. hiding it when the aside has no reachable place) has to land in both. Pins.AddClickLine differs only by skipping the wanderer check, which is intentional there because pins are hidden for a wanderer.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Move the aside click and tooltip handlers shared by Panel.lua and Window.lua into ns.Asides? A UI refactor that needs a /reload check of both surfaces.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: deferred: do when that file is next substantially changed",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -1115,8 +1123,8 @@
       "what": "Providers.lua:20-30 duplicates Model.lua:24-35 coordinate validation; expose the canonical predicate from Model.lua and share it.",
       "why": "Both predicates require a positive numeric map and numeric x/y within [0,1], defining the same valid AGF destination. Model.ValidPlace is currently local and used throughout planning, including eligibility at Model.lua:275 and position conversion at Model.lua:1029. Providers.Point separately applies the same rule to Legacy target places at Providers.lua:121 and Tweaks dungeon entrances at Providers.lua:156. The only difference is intentional boundary handling: Providers first requires a table, while Model assumes a table-or-nil input. Retain that provider guard when sharing the numeric validation. These are production copies, with Model.lua loaded before Providers.lua in the TOC; tests repeat the contract as assertions, not as another production implementation. Changes to accepted coordinates must currently be made in both predicates.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Expose Model's coordinate validation (e.g. Model.ValidPlace) and use it from Providers.lua? Adds a new public member to Model, a contract change for the owner.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: done; Providers.Point stays as the table guard and now calls Model.ValidPlace (the ledger refuses fixed while the quote exists)",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -1128,8 +1136,8 @@
       "what": "Providers.lua:9-18 hand-rolls the platform CopyTable deep-copy helper for completion summaries and targets.",
       "why": "The project already loads Blizzard SharedXML and its pinned WoW API source (.types/vscode-wow-api/Annotations/Core/FrameXML/Blizzard_SharedXML/TableUtil.lua:164-175, revision pinned by tools/typecheck.sh) provides CopyTable with the same recursive value-copy behavior. Providers calls its custom copy at lines 106 and 120 to detach external summary/category/target tables, as tests/batch4_spec.lua:49-54 require. A read-only Lua comparison confirmed that both implementations detach nested tables and leave the source untouched. Preserve the deliberate nil/scalar pass-through: Copy(nil) returns nil, whereas CopyTable(nil) errors, so the optional ZoneSummary result needs a guard. No new dependency is needed; using the host helper also requires its luacheck declaration and a harness stub. Model.lua:4055 is a separate shallow-copy helper and is not an equivalent replacement.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Replace Providers.lua's deep copy with the client CopyTable? It needs a wrapper for scalar/nil pass-through and a harness stub, and CopyTable's presence on the Forever client is unproven headlessly.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: wontfix: own helper is tested; client equivalent unproven headlessly",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -1141,10 +1149,11 @@
       "what": "PvP.lua:67-84 and PvP.lua:113-124 independently select the next rank reward; make one local reward selector in PvP.lua canonical for the aside and PvP.Data.",
       "why": "Both loops query faction 2800 from the current rank through maxLevel, skip empty reward levels, select the first reward with a description, and stop at the first nonempty reward level even if none has a description. The aside converts that result to localized text and a texture, while PvP.Data returns level/text/icon for WindowPvP.lua:166-172. The aside intentionally suppresses the hint before any rank points; the tab intentionally still previews a reward for an unranked character (tests/pvp_spec.lua:254-259 versus tests/batch4_spec.lua:89-108). Preserve that visibility difference outside the shared selector. The underlying selection policy is identical and any correction currently needs both loops updated. Whole-repository searches found these two production GetRenownRewardsForLevel loops; the headless copies are API stubs. pvp_spec passed 59 checks and batch4_spec passed 127.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Extract one PvP rank-reward selector used by the aside and the PvP tab? A behaviour-preserving refactor was shown in /tmp, but it adds a new helper across two feature paths; owner call.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: PvP.lua NextReward shared by aside and tab"
     },
     {
       "id": "6756a2b9d8",
@@ -1181,10 +1190,11 @@
       "what": "PROPOSAL: The window caption promises three steps beside the suggested journey",
       "why": "WindowJourneys.lua:13 creates at most three rows, but RefreshSteps (:347-375) displays only rows fitting above STEPS_BOTTOM and inserts town-checklist lines between them. It can therefore show fewer than three. Refresh (:381-398) also features the chosen journey when one is selected, not always the suggested one. docs/curseforge.md:19 repeats the same claim. Propose changing both captions to say the window shows the selected journey and the next steps that fit; user-facing copy is an owner decision.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "DECIDE: Should README.md:29 and docs/curseforge.md:19 describe next steps beside the featured journey instead of promising three beside the suggested one? docs/screenshots/window.png shows only one numbered step, and luajit tests/window_spec.lua passes 147 checks, including the one-row layout and switching to a chosen journey.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: store and README copy judgment; check_copy.py"
     },
     {
       "id": "8bcb249497",
@@ -1194,8 +1204,8 @@
       "what": "PROPOSAL: The author footer uses middle-dot separators",
       "why": "This line contains three U+00B7 separators in Markdown source, a standalone tell under the assigned copy-slop lens. The separators are not code, a diagram or a quotation, and the scoped project conventions do not prescribe them. Propose commas or separate links while preserving all names and URLs; published README copy remains an owner decision.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "DECIDE: Should README.md:89 replace its three U+00B7 separators with commas or separate links? They are literal Markdown separators, explicitly sufficient under copy-slop, with no applicable quotation, code or prescribed-style exception.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: wontfix: middle dots are the house style",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -1207,10 +1217,11 @@
       "what": "WFA-6 (proposal, README copy): the internal abbreviation 'AGF' in a Features bullet",
       "why": "WFA-6 forbids jargon and internal names in player copy; 'AGF' is never introduced in README.md and reads as an internal name. Proposed: '... Stop and the back arrow remove only what the guide started, leaving a waypoint you moved yourself alone.' Copy change is a proposal.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "DECIDE: Replace 'AGF' with 'the guide' in README.md:34? The full README never introduces that abbreviation, Locales/enUS.lua:11 names the UI 'Adventure Guide', and WFA-6 forbids internal names in player copy; neither AGENTS.md nor Settled provides an exception.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: store and README copy judgment; check_copy.py"
     },
     {
       "id": "be00feb5a5",
@@ -1220,8 +1231,8 @@
       "what": "WFA-3: options live in two places, the panel's cog menu and the Settings > AddOns page, with three settings duplicated in both",
       "why": "WFA-3 requires options in one place: a Settings > AddOns page, or a menu on the addon's own UI only when every option is about that UI. Settings.lua registers showTracker, showMapPins and showQuestGivers as Settings rows (lines 38, 41, 42), and Panel.lua BuildSettingsMenu (674-679) toggles the same three keys again, alongside per-character filters (quests/dungeons/battlegrounds) that exist only in the cog. Not every option is about the panel (trackRouteQuests, untrackOthers, whatsNew), so the Settings page is the one place. Fix (a decision, it changes the UI and this copy): drop the duplicated rows from one surface (e.g. the cog keeps the journey filters, Skipped and 'More settings', or the filters move to the Settings page) and update this line. Also: neither /agf nor the compartment opens the options page (Core.lua 880-903); see notes.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "DECIDE: Should the three duplicated toggles live only on the Settings > AddOns page, with the cog retaining journey actions? A headless harness run confirmed that Panel.lua's showMapPins/showQuestGivers/showTracker controls change the same saved values registered by Settings.lua; its More settings link does not eliminate the duplication, and neither the tweaks-forever/Settings.lua reference nor AGENTS.md supplies an exception to WFA-3.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: wontfix (owner decision): the map-pin, quest-giver and tracker toggles stay in the cog as well as Settings, quick switches next to the map; WFA-3 waiver in AGENTS.md",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -1247,10 +1258,11 @@
       "what": "The explore objective slot is the magic number 16 here; Model.lua:753 defines it in SLOTS (event = { 16, 16 }), and tools/gen_quests.py assigns it.",
       "why": "The slot layout (0-3 kill/use, 4-7 collect, 16 explore) is a closed set known to the program; a generator change to the explore slot would update SLOTS but leave Session estimating explore objectives as 4 s counts. Export the slot from Model (e.g. Model.EXPLORE_SLOT) and compare against it.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Expose Model's explore slot (SLOTS event 16) as a named constant for Session.Work? Model.lua's SLOTS is file-local, so there is no existing constant to reuse.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: Model.EXPLORE_SLOT"
     },
     {
       "id": "79ff791adf",
@@ -1260,10 +1272,11 @@
       "what": "The closed set of session lengths {0, 15, 30, 60} is restated as literals in Session.Get (Session.lua:11) and Session.Set (Session.lua:15), while WindowJourneys.lua:20 holds it as SESSIONS = { 0, 15, 30, 60 } for the menu.",
       "why": "Three copies of one set; adding a 45-minute option to the menu's table would show a radio that Session.Set silently ignores and Session.Get maps back to 0. The set belongs on Session (e.g. Session.LENGTHS) with WindowJourneys reading it.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Define the session lengths {0, 15, 30, 60} once and use them in Session.Get/Set and WindowJourneys SESSIONS? Adds a new shared constant.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: fixed on owner decision, no rule applies"
     },
     {
       "id": "dbdc2030e3",
@@ -1409,8 +1422,8 @@
       "what": "Journey-card text selection is duplicated in WindowJourneys.lua:241-245 and Panel.lua:1045-1050; Overview.lua, which already owns Progress/Stops/DropLine/HubLine, is the canonical home for this shared rule.",
       "why": "Both views apply exactly the same policy to the same AGFJourney: footer = progress label, else next-zone level, else stops; omit a reason equal to that footer; then select drop advice, distinct reason, hub line, or subline. WindowJourneys calls the exported Overview helpers while Panel uses local aliases of them. Panel intentionally saves the resulting detail for its tooltip and the two views intentionally position bars differently; those rendering differences do not explain duplicating the text-selection rule. A change to its priority or duplicate-line suppression must land in both production copies. Whole-repository search found these two production implementations and a corresponding assertion in tests/ui_spec.lua:2790 (test evidence, not a third production copy).",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Move journey-card footer/detail text selection shared by WindowJourneys.lua and Panel.lua into Overview? A UI refactor verified only in game.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: deferred: do when that file is next substantially changed",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -1462,10 +1475,11 @@
       "what": "The empty-page implementation at WindowProfessions.lua:212-220 and 393-395 duplicates Window.lua:319-339; Window.CreateEmpty/Window.SetEmpty are the canonical shared helpers.",
       "why": "The widths and heights at WindowProfessions.lua:45-47 are the same expressions as Window.CreateEmpty. Both build the same covered atlas at LEFT/TOP with alpha 0.35, the same OVERLAY/GameFontHighlight text centred on it, width minus 120, and identical visibility/text updates. The only differences are the professions atlas (already a helper argument), local variable names, and storing the regions separately rather than in AGFWindowEmpty; none is a behavioral divergence. WindowPvP.lua:87,192 and WindowCompletion.lua:277,325 already use those helpers. Repository-wide searches found no other consumer of the professions emptyArt/emptyText locals. Any empty-page layout or visibility fix currently needs to be repeated here.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Replace WindowProfessions' own empty page with Window.CreateEmpty/SetEmpty? Layout dumps matched headlessly, but it is a UI change that needs a /reload check.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: Window.CreateEmpty/SetEmpty"
     },
     {
       "id": "c6318658f4",
@@ -1475,10 +1489,11 @@
       "what": "The Suggested Content ring recipe (CircleMaskScalable-masked art inside adventureguide-ring drawn RING_SCALE = 1.4 larger) is built in ZoneIcon.Create (ZoneIcon.lua:136-159) and Window.CreateRingIcon (Window.lua:95-115), each with its own RING_SCALE = 1.4 (ZoneIcon.lua:18, Window.lua:48). Canonical: one constant/ring builder (Art.lua loads before both).",
       "why": "Both comments name the same recipe (\"as the mock's recipe has it\" / \"The Suggested Content icon recipe\"). Differences: ZoneIcon puts the ring on a raised Border frame over a clipped map, Window puts a dark disc under a masked icon; those layers are intentional, the ring atlas, scale and mask are the shared part that would drift.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Share one masked-ring builder (RING_SCALE 1.4) between ZoneIcon.lua and Window.CreateRingIcon? A UI refactor verified only in game.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: Art.RingMask and Art.Ring"
     },
     {
       "id": "f741933e8e",
@@ -1488,10 +1503,11 @@
       "what": "WFA-6 (proposal, store copy): the internal abbreviation 'AGF' appears in player-facing copy, never introduced",
       "why": "WFA-6: copy talks to the player in the game's voice, no jargon or internal names. 'AGF' is the codebase's name for the addon (it appears nowhere else in the store page or Locales/enUS.lua), and 'the guidance AGF owns' is internal phrasing. Proposed: 'Stop clears only the route the guide started; a waypoint you set yourself stays.' Store copy is pasted by hand, so this is a decide item, not an audit edit.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "DECIDE: Should the store sentence say 'Stop clears only the route the guide started; a waypoint you moved yourself stays'? WFA-6 forbids internal names, but docs/curseforge.md:40 uses unexplained 'AGF' where Locales/enUS.lua:11 uses 'Adventure Guide'; the documented /agf command does not introduce that prose name, Integrations.Cancel and tests/ui_spec.lua support the replacement, and no waiver, Settled entry or deterministic copy rule covers it.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: store and README copy judgment; check_copy.py"
     },
     {
       "id": "15b8fdbca4",
@@ -1613,10 +1629,11 @@
       "what": "The model bootstrap is copied in tests/model_spec.lua:4-17, tests/plan_golden_spec.lua:7-20, tests/playthrough_spec.lua:15-28, tests/laps_spec.lua:10-23 and tests/pvp_spec.lua:21-34; consolidate it in one model-only loader in tests/harness.lua.",
       "why": "All five blocks are byte-identical: they load the locale, give Core the same EventUtil/SlashCmdList/CreateFrame stubs through setfenv, then load Model into the supplied namespace. A change to Core load-time dependencies requires the same support-code fix in all five. The intentional differences are outside that block: golden/playthrough/laps load real quest data first, model_spec loads it later after synthetic tests, and pvp_spec uses its arena fixture. Preserve those choices at the call sites. tests/harness.lua:91 and 2196-2240 currently provide only the full TOC/client loader, including model wrappers, login events and a rebuild; that loader is not a drop-in replacement. The canonical home should be a separate model-only helper there, taking the existing namespace, extracted from tests/model_spec.lua:4-17. Repository-wide searches found exactly these five bootstrap copies, with no existing model-only loader or deliberate divergence between them.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Move the model bootstrap duplicated in five specs into tests/harness.lua? Test refactor; owner call on harness surface.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: harness.model and harness.placement"
     },
     {
       "id": "fef63eae0e",
@@ -1626,10 +1643,11 @@
       "what": "tests/laps_spec.lua:63-79 duplicates tests/playthrough_spec.lua:69-85 and its placement index; make one shared test-side validator in tests/harness.lua the canonical home.",
       "why": "Both validators are byte-identical and enforce the same data-placement contract: a direct indexed point, or an indexed ring centre plus an indexed shape containing the step according to Model.Yards. Their Key/Add helpers and index construction also encode the same four-decimal keys, quest start/finish places, objective map fallback and NPC places (laps:32-59; playthrough:47-65). Laps additionally collects random-character givers and exclusive groups in its quest loop; that is intentional fixture setup and can stay separate. Their callers differ only in how they generate routes (laps Walk at line 150 versus playthrough at line 238), not in what makes a point valid. A correction to rounding, objective placement or area-entry validation must therefore land in both copies. Whole-repository searches found no third Placed implementation or equivalent harness helper. Extract the existing playthrough validator/index into shared test support and have both suites call it, keeping it independent of production placement logic.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Share the placement validator duplicated between tests/laps_spec.lua and tests/playthrough_spec.lua via tests/harness.lua? Test refactor; owner call.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: harness.model and harness.placement"
     },
     {
       "id": "06d7ef9c8d",
@@ -1652,8 +1670,8 @@
       "what": "Saved-state assertions compare keyed tables as arrays, so they ignore title, chosen and extra fields.",
       "why": "The same helper at tests/ui_spec.lua:13-15 compares table.concat results. Both keyed records in these assertions have no array entries, so both sides become the empty string regardless of their fields. The same misuse occurs at tests/ui_spec.lua:1910-1914. Whole-repository searches (excluding the prohibited audit history) traced the records to Core.lua:88-94 and Core.lua:243 and found no other assertion checking the normalized saved titles. Proof without changing files: intercepted loadfile(\"Core.lua\") and compiled an in-memory copy replacing title = entry.title in LoadCharDB with title = \"CORRUPTED\". All 1458 ui_spec checks still passed (149 Core chunks loaded with the mutation), as they did without the mutation. The later Unskip/menu assertions cover restoring the choice and freshly dismissed entries, but do not catch corrupted titles loaded from saved variables. Assert the keyed fields directly or use a structural comparison; these calls currently miss the persistence contract they claim to check.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Make tests/ui_spec.lua same() compare keyed fields (title, chosen) as well as array order? A verifier showed wrong expectations still pass; strengthening a test is outside the closed set.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: done; the quoted assertions stay; same() now compares keyed fields (the ledger refuses fixed while the quote exists)",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -1720,8 +1738,8 @@
       "what": "gen_quests.py (1367 lines) is both the quest generator and the shared library of the other data scripts: source fetching (BUILD, ROOT, CACHE, download, db2: 26-133), a mysqldump parser (103-196), map projection/geometry (231-310, 354-356), transports (313-347), town clustering and naming (350-457), spawn placement (460-546), objectives (549-726), gates/instances (729-809), trainers/NPCs (761-952), overlays (955-1000), a 205-line generate() (1003-1207), the Lua serializer lua() (1210-1222), render and main. diff_forever.py and gen_zoneart.py import BUILD, ROOT, db2, flight_masters, lua, project from it.",
       "why": "The helpers the three scripts share (wago.tools fetch/cache with the pinned BUILD, lua(), project(), flight_masters and the shared CLI) would live cleanly in a small tools module (e.g. tools/wago.py) that all three import, leaving gen_quests.py as the quest generator only; this is also the natural home for the duplicated CLI/TAXI_COLUMNS/CANVAS findings. generate() itself could split into quest records vs. world lookups (hubs, npcs, crossings, overlays). Proposal only; a split moves code and belongs in its own change.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Split gen_quests.py so the shared fetch/cache, projection, flight-master and Lua-serialiser helpers live in a common tools module (e.g. tools/wago.py)? A scratch extraction passed all 51 generator tests; the split is a design choice beyond the closed set.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: deferred: do when that file is next substantially changed",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -1733,10 +1751,11 @@
       "what": "quest_template Type codes are bare numbers: elite restates (1, 62, 81, 88) inline while RAID_TYPES = (62, 88) (line 746) names two of the same members; QuestFlags 64/1024/4096/16384/32768 and SpecialFlags 1 (lines 1093, 1113) are likewise unnamed, unlike EVENT, TRAINER, INNKEEPER, SKILL_STEP which the file names.",
       "why": "The raid members of the elite set are a second copy of RAID_TYPES: a change to what counts as a raid type lands in one place only. Elite = (1 Elite, 81 Dungeon) + RAID_TYPES would keep them tied, and naming the QuestFlags bits follows the file's own convention.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Name the quest_template Type codes and QuestFlags bits (elite = (1, 62, 81, 88) restates RAID_TYPES) as constants? No existing constant covers them all, so this adds names rather than reusing one.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: named constants in tools/gen_quests.py"
     },
     {
       "id": "369786a439",
@@ -1746,10 +1765,11 @@
       "what": "UiMap.Type (1 world, 2 continent, 3 zone) and the TaxiNodes side mask (Flags & 3: 1 Alliance, 2 Horde) are compared as literals at several read sites across files: Type == 3 at gen_quests.py:255, 968 and diff_forever.py:52; Type == 1 at gen_quests.py:297; Flags & 3 at gen_quests.py:335, 430 and diff_forever.py:57.",
       "why": "These are DB2 wire values, but they are read repeatedly rather than converted once, in two scripts; a single named constant in gen_quests.py (which diff_forever already imports from) would make every zone-map / side check findable by one search. Low-stakes: the values are stable in the client data.",
       "confidence": "low",
-      "status": "decide",
-      "reason": "Name UiMap.Type (1 world, 3 zone) and the TaxiNodes side mask (Flags & 3) as shared constants in gen_quests.py for gen_quests and diff_forever? Adding new names is outside the audit closed set.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: named constants in tools/gen_quests.py"
     },
     {
       "id": "485d6f7c85",
@@ -1773,8 +1793,8 @@
       "what": "The provenance header written into Data/Quests.lua lists the wago.tools tables at BUILD but omits WorldMapArea, which generate() also reads (at LEGACY_MAP_BUILD 7.3.5.26972)",
       "why": "main() line 1347 loads db2(\"WorldMapArea\", ..., build=LEGACY_MAP_BUILD) and legacy_maps() uses it to place quest_poi shapes (objective_areas); the header claims to list the sources yet names neither the table nor its different build. Add e.g. \"-- WorldMapArea at {LEGACY_MAP_BUILD} (quest_poi mapAreaId).\"",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Add WorldMapArea at LEGACY_MAP_BUILD to the provenance header render() writes into Data/Quests.lua? The header omits a source generate() reads; fixing it means regenerating Data/Quests.lua from the pinned cache (verifier dismissed only on lens: it is generated-comment text, not docs).",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: done; the quoted header line stays; a WorldMapArea line was added after it (the ledger refuses fixed while the quote exists)",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },
@@ -1841,10 +1861,11 @@
       "what": "phrases.phrases (tools/phrases.py:35-46) re-implements locating and walking the ns.L table that lint_copy.strings_table (tools/lint_copy.py:85-102) already does: find the `ns . L = {` token run, take the body up to matching(), split on ',', skip entries without '='. Canonical home: lint_copy (phrases already imports matching/split/unquote from it); expose one helper yielding (key token, value tokens) per ns.L entry and let each caller apply its own value rule.",
       "why": "Both parse Locales/enUS.lua's ns.L with the same five-token search and the same entry filter, copied line for line. Differences: (1) a missing table raises ValueError('no ns.L = { ... } table') in lint_copy but a bare StopIteration in phrases (accidental drift); (2) value handling differs on purpose: lint_copy splits on 'or' and joins every literal of each alternative (so it lints both sides of `GLOBAL or \"x\"` and nested tables), phrases requires every '..' piece to be a single string literal (so GlobalString fallbacks are left out of the template). Only the table-location and entry-walk part is duplicated; a change to how ns.L is declared (e.g. `local L = {}` then `ns.L = L`) must land in both.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Share one ns.L entry walker between lint_copy.strings_table and phrases.phrases? The unification changes phrases.py's missing-table failure from a bare StopIteration to lint_copy's ValueError, and the closed set forbids changing error types, so the owner must approve.",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
       "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
+      "updated": "2026-09-27",
+      "guard": "lens-only: lint_copy.ns_l_entries; phrases_test test_unreadable"
     },
     {
       "id": "3bb28bad10",
@@ -1963,8 +1984,8 @@
       "what": "Layout.frame passes the pseudo-layers \"TEXT\", \"FRAME\" and \"AFTER\" (tools/screenshots.py:766, 771, 785) to every stock recipe, which compares them by literal (406, 450, 472, 486, 516); unlike the real draw layers they are in no constant (LAYERS at 308 lists only BACKGROUND..HIGHLIGHT).",
       "why": "The set is closed and internal (not a dump wire format): a recipe comparing against a misspelt pseudo-layer silently draws nothing, and the set of phases a recipe may handle cannot be enumerated from one place. A module-level tuple (e.g. PHASES = (*LAYERS, \"TEXT\", \"FRAME\", \"AFTER\")) or named constants would make it searchable. Low impact: a typo would show as a missing element in the rendered PNG diff.",
       "confidence": "low",
-      "status": "decide",
-      "reason": "Add the TEXT/FRAME/AFTER pseudo-layers to a named constant alongside LAYERS in screenshots.py so a misspelt phase fails loudly? A verifier showed a TEXX typo silently draws nothing; the fix adds validation, which changes behaviour.",
+      "status": "dismissed",
+      "reason": "owner-delegated 2026-09-27: done; the pseudo-layers stay; PHASES names them, art() rejects others and screenshots_test checks every comparison (the ledger refuses fixed while the quote exists)",
       "first_seen": "2026-09-27",
       "updated": "2026-09-27"
     },

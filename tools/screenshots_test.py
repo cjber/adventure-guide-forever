@@ -1,6 +1,7 @@
 """tools/screenshots.py's anchor resolver, which needs no Pillow; rendering is checked only where Pillow is present."""
 
 import importlib.util
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -18,6 +19,16 @@ def anchor(point, relative_to="root", relative_point=None, x=0, y=0):
 
 def entry(path, anchors, size=None, **extra):
     return {"path": path, "type": "Frame", "anchors": anchors, "size": size, **extra}
+
+
+class Phases(unittest.TestCase):
+    def test_every_compared_phase_is_known(self):
+        # A recipe comparing `layer` against a misspelt phase would silently draw nothing.
+        source = Path(screenshots.__file__).read_text()
+        compared = set(re.findall(r'layer (?:==|!=) "(\w+)"', source))
+        compared |= set(re.findall(r'art\("(\w+)"\)', source))
+        self.assertTrue(compared)
+        self.assertEqual(compared - set(screenshots.PHASES), set())
 
 
 class Resolve(unittest.TestCase):

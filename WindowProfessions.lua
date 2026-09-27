@@ -93,10 +93,8 @@ local stepsHeading
 ---@type FontString
 local reagentsHeading
 -- The calm page for a missing or outdated SkillUp, or nothing to level: the art dimmed and one line.
----@type Texture
-local emptyArt
----@type FontString
-local emptyText
+---@type AGFWindowEmpty
+local empty
 
 -- The line the tab gives while it has no profession to show: why, and what would fill it.
 ---@return string?
@@ -210,15 +208,7 @@ end
 
 ---@param content Frame
 local function Build(content)
-	emptyArt = content:CreateTexture(nil, "ARTWORK")
-	ns.Art.Cover(emptyArt, "Professions-Recipe-Background", WIDTH, HEIGHT)
-	emptyArt:SetPoint("TOPLEFT", LEFT, -TOP)
-	emptyArt:SetSize(WIDTH, HEIGHT)
-	emptyArt:SetAlpha(0.35)
-	emptyText = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-	emptyText:SetPoint("CENTER", emptyArt, "CENTER", 0, 0)
-	emptyText:SetWidth(WIDTH - 120)
-	emptyText:SetJustifyH("CENTER")
+	empty = Window.CreateEmpty(content, "Professions-Recipe-Background")
 
 	card = Window.CreateCard(content, false) --[[@as AGFProfessionCard]]
 	Window.SizeCard(card, CARD_WIDTH, HEIGHT, 0.8)
@@ -391,9 +381,7 @@ end
 local function Refresh(content)
 	local professions = Integrations.Professions()
 	local muted = Muted()
-	emptyArt:SetShown(muted ~= nil)
-	emptyText:SetShown(muted ~= nil)
-	emptyText:SetText(muted or "")
+	Window.SetEmpty(empty, muted)
 	card:SetShown(muted == nil)
 	stepsHeading:SetShown(false)
 	reagentsHeading:SetShown(false)

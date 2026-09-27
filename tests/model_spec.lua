@@ -1,20 +1,6 @@
 -- Run from the repository root: luajit tests/model_spec.lua
 local ns = {}
--- Locales/enUS.lua for ns.L, the planner's copy, then Core.lua with its load-time hooks into the client stubbed.
-assert(loadfile("Locales/enUS.lua"))("AdventureGuideForever", ns)
-local core = assert(loadfile("Core.lua"))
-setfenv(
-	core,
-	setmetatable({
-		EventUtil = { ContinueOnAddOnLoaded = function() end },
-		SlashCmdList = {},
-		CreateFrame = function()
-			return { SetScript = function() end }
-		end,
-	}, { __index = _G })
-)
-core("AdventureGuideForever", ns)
-assert(loadfile("Model.lua"))("AdventureGuideForever", ns)
+dofile("tests/harness.lua").model(ns)
 local Model, checks = ns.Model, 0
 local function equal(actual, expected, label)
 	checks = checks + 1
@@ -657,6 +643,15 @@ do
 	equal(At({ map = 1, x = 0.9, y = 0.1 }), "1 0.900,0.100", "area: as does a waypoint, when the client gives one")
 	local _, journey = At({}, 3)
 	equal(journey, nil, "area: a quest the data places nowhere has no step")
+	-- An area off its map (x past 1) is no place: the quest's other objectives still lead, that one never does.
+	areas.quests[3].need, areas.quests[3].obj = { [0] = 1, [4] = 1 }, { { 0, 200, 300, 0 }, { 4, 1500, 300, 0 } }
+	local off, offLog = 0, { [3] = { id = 3, title = "Off the map", level = 18, complete = false } }
+	for _, offRoute in ipairs(Model.Plan(areas, player, { [1] = true, [2] = true }, offLog, prefs()).journeys) do
+		for _, step in ipairs(offRoute.steps) do
+			off = off + ((step.x < 0 or step.x > 1 or step.y < 0 or step.y > 1) and 1 or 0)
+		end
+	end
+	equal(off, 0, "area: no step points off its map")
 end
 
 -- Each open objective is an area visit of its own, and areas that nearly touch merge, the lowest quest's and slot's
@@ -1169,11 +1164,9 @@ stop = chainPlan.steps[1]
 equal(stop.reason, "Opens the next chapter here", "chain: the town says the hand-in opens the next chapter")
 equal(stop.detail, "1 to hand in, 4 to pick up", "chain: and still counts its quests")
 equal(table.concat(stop.pickups, " "), "1 2 3 4", "chain: the next chapter is no pickup before the turn-in")
-equal(table.concat(stop.follow, " "), "30", "chain: the town follows its hand-in with the chapter it opens")
 chained.quests[30].races = 1 -- Human only; the visitor is an Orc
 stop = Model.Plan(chained, visitor, {}, handing, townPrefs).steps[1]
 equal(stop.reason, "1 to hand in, 4 to pick up", "chain: nothing said when the next chapter is not the player's")
-equal(#stop.follow, 0, "chain: and nothing follows")
 -- A next chapter the data gives no start (an item starts it) opens nowhere the town can claim.
 chained.quests[30].races, chained.quests[30].start = nil, nil
 chainPlan = Model.Plan(chained, visitor, {}, handing, townPrefs)

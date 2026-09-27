@@ -3,21 +3,7 @@
 -- tests/golden/<fixture>.txt, so every model change shows as a reviewable diff. AGF_UPDATE_GOLDEN=1 rewrites them.
 local ns = {}
 assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
--- Locales/enUS.lua for ns.L, the planner's copy, then Core.lua with its load-time hooks into the client stubbed.
-assert(loadfile("Locales/enUS.lua"))("AdventureGuideForever", ns)
-local core = assert(loadfile("Core.lua"))
-setfenv(
-	core,
-	setmetatable({
-		EventUtil = { ContinueOnAddOnLoaded = function() end },
-		SlashCmdList = {},
-		CreateFrame = function()
-			return { SetScript = function() end }
-		end,
-	}, { __index = _G })
-)
-core("AdventureGuideForever", ns)
-assert(loadfile("Model.lua"))("AdventureGuideForever", ns)
+dofile("tests/harness.lua").model(ns)
 local characters = dofile("tests/fixtures/characters.lua")
 local Model, data, checks = ns.Model, ns.Data, 0
 local update = os.getenv("AGF_UPDATE_GOLDEN") == "1"
@@ -56,14 +42,11 @@ local function Render(fixture, route)
 		if journey.drop then
 			lines[#lines + 1] = "  drop | " .. table.concat(journey.drop, " ")
 		end
-		-- An area adds its ring and objectives (quest/slot); a town the chapters that follow its hand-ins.
+		-- An area adds its ring and objectives (quest/slot).
 		for index, step in ipairs(journey.steps) do
 			local extra = {}
 			for _, objective in ipairs(step.objectives or {}) do
 				extra[#extra + 1] = objective.id .. "/" .. objective.slot
-			end
-			for _, id in ipairs(step.follow or {}) do
-				extra[#extra + 1] = "then " .. id
 			end
 			lines[#lines + 1] = ("  step %d | %s | %s | %s | %s%s%s"):format(
 				index,

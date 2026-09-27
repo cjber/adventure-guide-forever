@@ -51,6 +51,28 @@ end)
 -- Camelot's PvP rank track is major faction 2800 (Blizzard_UIPanels_Game/Camelot/PVPRankFrame.lua).
 local RANK_FACTION = 2800
 
+-- The next rank reward above `rank`: the first rank past it with rewards, and the first of those with a description.
+-- Nil when that rank's rewards have none, or no rank up to `maxLevel` has any. The aside and the PvP tab both show it.
+---@param factions table C_MajorFactions
+---@param rank integer
+---@param maxLevel? integer
+---@return integer? level
+---@return table? reward
+local function NextReward(factions, rank, maxLevel)
+	for level = rank + 1, maxLevel or rank do
+		local rewards = factions.GetRenownRewardsForLevel(RANK_FACTION, level) or {}
+		for _, reward in ipairs(rewards) do
+			if reward.description then
+				return level, reward
+			end
+		end
+		if #rewards > 0 then
+			return nil
+		end
+	end
+	return nil
+end
+
 -- "Rank 6 · <reward>": the next rank with rewards, and the first of them with a description, in its own words and
 -- with its icon, as the character pane's "next reward" rows show them. Only for a character with rank points, and
 -- only where the client has C_MajorFactions' progression calls, which the probe did not reach.
@@ -64,23 +86,17 @@ Asides.Register(function()
 	if not info or (rank <= 0 and (info.renownReputationEarned or 0) <= 0) then
 		return nil
 	end
-	for level = rank + 1, info.maxLevel or rank do
-		local rewards = factions.GetRenownRewardsForLevel(RANK_FACTION, level) or {}
-		for _, reward in ipairs(rewards) do
-			if reward.description then
-				return {
-					key = "pvprank",
-					text = L.PVP_RANK_REWARD:format(level, reward.description),
-					-- The minimap's battlemaster mark stands in for a reward with no icon.
-					icon = "battlemaster",
-					texture = reward.icon,
-				}
-			end
-		end
-		if #rewards > 0 then
-			return nil
-		end
+	local level, reward = NextReward(factions, rank, info.maxLevel)
+	if not reward then
+		return nil
 	end
+	return {
+		key = "pvprank",
+		text = L.PVP_RANK_REWARD:format(level, reward.description),
+		-- The minimap's battlemaster mark stands in for a reward with no icon.
+		icon = "battlemaster",
+		texture = reward.icon,
+	}
 end)
 Asides.RefreshOn("PLAYER_PVP_RANK_CHANGED")
 Asides.RefreshOn("MAJOR_FACTION_RENOWN_LEVEL_CHANGED")
@@ -110,17 +126,9 @@ function PvP.Data()
 			state = info.maxLevel and level >= info.maxLevel and "capped" or level == 0 and "unranked" or "ranked",
 		}
 		if factions.GetRenownRewardsForLevel then
-			for nextLevel = level + 1, info.maxLevel or level do
-				local rewards = factions.GetRenownRewardsForLevel(RANK_FACTION, nextLevel) or {}
-				for _, reward in ipairs(rewards) do
-					if reward.description then
-						result.rank.reward = { level = nextLevel, text = reward.description, icon = reward.icon }
-						break
-					end
-				end
-				if #rewards > 0 then
-					break
-				end
+			local nextLevel, reward = NextReward(factions, level, info.maxLevel)
+			if reward then
+				result.rank.reward = { level = nextLevel, text = reward.description, icon = reward.icon }
 			end
 		end
 	end

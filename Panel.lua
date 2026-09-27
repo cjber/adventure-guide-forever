@@ -157,24 +157,21 @@ local checks = {}
 ---@field step? AGFStep
 ---@field index? integer
 
----@param row AGFRouteRow
+-- A row's or an aside line's icon button (the skip X), its art fitted to the box (Art.Fit, never stretched).
+---@param parent Frame
 ---@param atlas string a square icon, so the button's highlight is the icon itself
 ---@param size number
 ---@param tip fun(): string
----@param action fun(step: AGFStep)
+---@param action fun() what a click does
 ---@return AGFSkipButton
-local function CreateRowIcon(row, atlas, size, tip, action)
-	local button = CreateFrame("Button", nil, row) --[[@as AGFSkipButton]]
+local function CreateRowIcon(parent, atlas, size, tip, action)
+	local button = CreateFrame("Button", nil, parent) --[[@as AGFSkipButton]]
 	button:SetSize(size, size)
 	button.Icon = button:CreateTexture(nil, "ARTWORK")
 	Art.Fit(button.Icon, atlas, size, size)
 	button.Icon:SetPoint("CENTER")
 	button:SetHighlightAtlas(atlas, "ADD")
-	button:SetScript("OnClick", function()
-		if row.step then
-			action(row.step)
-		end
-	end)
+	button:SetScript("OnClick", action)
 	button:SetScript("OnEnter", function(self)
 		ShowTooltip(self, { tip() })
 	end)
@@ -210,8 +207,10 @@ local function CreateRow(parent)
 
 	row.SkipButton = CreateRowIcon(row, "common-icon-redx", 14, function()
 		return ns.L.SKIP_STEP
-	end, function(step)
-		ns.Skip(step.key, step.title)
+	end, function()
+		if row.step then
+			ns.Skip(row.step.key, row.step.title)
+		end
 	end)
 	row.SkipButton:SetPoint("TOPRIGHT", -6, -7)
 
@@ -429,22 +428,14 @@ local function CreateAsideLine(parent)
 	line.Icon = line:CreateTexture(nil, "ARTWORK")
 	line.Icon:SetSize(ASIDE_HEIGHT, ASIDE_HEIGHT)
 	line.Icon:SetPoint("LEFT")
-	line.Skip = CreateFrame("Button", nil, line) --[[@as AGFSkipButton]]
-	line.Skip:SetSize(ASIDE_HEIGHT, ASIDE_HEIGHT)
-	line.Skip:SetPoint("RIGHT")
-	line.Skip.Icon = line.Skip:CreateTexture(nil, "ARTWORK")
-	line.Skip.Icon:SetAtlas("common-icon-redx")
-	line.Skip.Icon:SetAllPoints()
-	line.Skip:SetHighlightAtlas("common-icon-redx", "ADD")
-	line.Skip:SetScript("OnClick", function()
+	line.Skip = CreateRowIcon(line, "common-icon-redx", ASIDE_HEIGHT, function()
+		return L.SKIP
+	end, function()
 		if line.aside then
 			ns.Asides.Skip(line.aside.key)
 		end
 	end)
-	line.Skip:SetScript("OnEnter", function(self)
-		ShowTooltip(self, { L.SKIP })
-	end)
-	line.Skip:SetScript("OnLeave", GameTooltip_Hide)
+	line.Skip:SetPoint("RIGHT")
 	line.Text = line:CreateFontString(nil, "ARTWORK", "GameFontNormal")
 	line.Text:SetPoint("LEFT", line.Icon, "RIGHT", 4, 0)
 	line.Text:SetPoint("RIGHT", line.Skip, "LEFT", -4, 0)
@@ -990,9 +981,8 @@ local function RefreshResult(row, id, top)
 	row.Star:SetShown(row.open and ns.Pinned({ id }))
 	local quest = data.quests[id]
 	local map = quest.zone or (quest.start and quest.start.map)
-	local zone = map and (data.zones[map] or data.maps[map])
 	row.Title:SetText(QuestTitle(id) or quest.title)
-	row.Zone:SetText(map and (state.MapName(map) or (zone and zone.name)) or "")
+	row.Zone:SetText(map and state.ZoneName(map, data) or "")
 	row.Lock:SetShown(shown[1] ~= nil)
 	for index, line in ipairs(row.Lines) do
 		local entry = shown[index]
@@ -1222,7 +1212,7 @@ function Refresh()
 	---@cast headerTitle -?
 	---@cast subtitle -?
 	local player = ns.State.Player()
-	local zone = player.map and (ns.State.MapName(player.map) or (ns.Data.zones[player.map] or {}).name)
+	local zone = player.map and ns.State.ZoneName(player.map)
 	local where = not route.chosen and zone ~= nil
 	subtitle:SetShown(where)
 	subtitle:SetText(where and L.OVERVIEW_WHERE:format(zone, player.level) or "")

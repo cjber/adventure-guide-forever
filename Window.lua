@@ -42,7 +42,7 @@ local EJ_FILE, EJ_SHEET_W, EJ_SHEET_H = 522972, 512, 1024
 local EJ_LEFT, EJ_TOP, EJ_RIGHT, EJ_BOTTOM, EJ_RIM = 1, 439, 175, 535, 8
 -- The Suggested Content icon recipe: the icon cut to a circle on a dark disc inside the Adventure Guide's ring; an
 -- atlas icon is inset so its own margin doesn't show.
-local RING_SCALE, ATLAS_INSET = 1.4, 0.16
+local ATLAS_INSET = 0.16
 -- SkillUp's answers, item data and the character's PvP rank progress.
 local EVENTS = {
 	"SKILL_LINES_CHANGED",
@@ -98,19 +98,14 @@ function Window.CreateRingIcon(parent, size)
 	local ring = CreateFrame("Frame", nil, parent) --[[@as AGFRingIcon]]
 	ring:SetSize(size, size)
 	ring.size = size
-	ring.Mask = ring:CreateMaskTexture()
-	ring.Mask:SetAtlas("CircleMaskScalable")
-	ring.Mask:SetAllPoints()
+	ring.Mask = Art.RingMask(ring)
 	ring.Disc = ring:CreateTexture(nil, "BACKGROUND")
 	ring.Disc:SetColorTexture(0.05, 0.04, 0.03, 1)
 	ring.Disc:SetAllPoints()
 	ring.Disc:AddMaskTexture(ring.Mask)
 	ring.Icon = ring:CreateTexture(nil, "ARTWORK")
 	ring.Icon:AddMaskTexture(ring.Mask)
-	ring.Ring = ring:CreateTexture(nil, "OVERLAY")
-	ring.Ring:SetAtlas("adventureguide-ring")
-	ring.Ring:SetSize(size * RING_SCALE, size * RING_SCALE)
-	ring.Ring:SetPoint("CENTER")
+	ring.Ring = Art.Ring(ring, size)
 	return ring
 end
 
@@ -658,7 +653,7 @@ function Refresh()
 		return
 	end
 	local player = ns.State.Player()
-	local zone = player.map and (ns.State.MapName(player.map) or (ns.Data.zones[player.map] or {}).name)
+	local zone = player.map and ns.State.ZoneName(player.map)
 	frame.Subtitle:SetText(zone and L.OVERVIEW_WHERE:format(zone, player.level) or "")
 	RefreshToday(frame.Inset)
 	for index, tab in ipairs(tabs) do

@@ -33,6 +33,8 @@ local function ValidPlace(place)
 		and place.y <= 1
 end
 
+Model.ValidPlace = ValidPlace
+
 local function HasBit(mask, bit)
 	return not mask or mask == 0 or (bit > 0 and math.floor(mask / bit) % 2 == 1)
 end
@@ -612,7 +614,7 @@ end
 -- The visit to `place`'s town among `stops` (by key), made and added to `steps` when the card has none yet, with quest
 -- `id` added to its `list` ("handins" or "pickups"), which `place` finishes or starts. Every card keys a town the same
 -- way, so a town skipped is skipped wherever it shows. Its point is the first quest's place until Build moves it to
--- the giver nearest the route. `follow` holds the chapters its hand-ins open there (Opens).
+-- the giver nearest the route.
 ---@param place AGFPlace
 ---@param list "handins"|"pickups"
 ---@return AGFStep
@@ -630,7 +632,6 @@ local function Visit(stops, steps, place, list, id)
 			quests = {},
 			pickups = {},
 			handins = {},
-			follow = {},
 			givers = {},
 			group = 0,
 			spots = {},
@@ -718,13 +719,13 @@ local function Describe(data, log, player, step)
 	step.detail = step.reason
 end
 
--- A town's `follow`: the next chapters its hand-ins open there, when the data proves each starts in the same town and
--- Check proves it shut now and open once the hand-in is done (the data's `next` alone is display-only). The town then
--- says so. A follow-up is never added as a pickup before the turn-in: it comes with the rebuild after QUEST_TURNED_IN,
--- and `follow` tells a route the hand-in comes first. Nothing is said when the data cannot prove it.
+-- A town says when its hand-ins open the next chapter there: the data proves the chapter starts in the same town and
+-- Check proves it shut now and open once the hand-in is done (the data's `next` alone is display-only). A follow-up is
+-- never added as a pickup before the turn-in: it comes with the rebuild after QUEST_TURNED_IN. Nothing is said when
+-- the data cannot prove it.
 ---@param step AGFStep
 local function Opens(data, player, completed, log, step)
-	local groups, follow = Index(data).groups, {}
+	local groups, opens = Index(data).groups, false
 	for _, id in ipairs(step.hub and step.handins or NONE) do
 		local nextID = data.quests[id] and data.quests[id].next
 		local quest = nextID and data.quests[nextID]
@@ -736,11 +737,10 @@ local function Opens(data, player, completed, log, step)
 			and not Eligible(data, player, completed, log, nextID, groups)
 			and Eligible(data, player, after, log, nextID, groups)
 		then
-			follow[#follow + 1] = nextID
+			opens = true
 		end
 	end
-	step.follow = follow
-	if #follow > 0 then
+	if opens then
 		step.reason = ns.L.OPENS_CHAPTER_HERE
 		step.detail = #step.quests == 1 and step.reason or step.detail
 	end
@@ -748,7 +748,9 @@ end
 
 -- The data's need slots each client objective type fills, each kind in slot order (tools/gen_quests.py): a kill or
 -- use takes 0-3, a collect 4-7, an explore 16.
-local SLOTS = { monster = { 0, 3 }, object = { 0, 3 }, item = { 4, 7 }, event = { 16, 16 } }
+local EXPLORE_SLOT = 16
+local SLOTS = { monster = { 0, 3 }, object = { 0, 3 }, item = { 4, 7 }, event = { EXPLORE_SLOT, EXPLORE_SLOT } }
+Model.EXPLORE_SLOT = EXPLORE_SLOT
 
 -- The data's need slots still open for a quest under way, each to the client's objective for it. The client's
 -- objectives line up with the slots only when it lists as many as the data needs and each kind fills a slot of its
@@ -812,6 +814,27 @@ local function Objective(quest, entry, slot, counted)
 	}
 end
 
+-- Quest `quest`'s node for objective `slot`: its first area for the slot (the generator orders them) with its radius,
+-- counting `objective`. Nil when the data has no area for the slot or its place is not a valid one.
+---@param quest AGFQuest
+---@return AGFNode?
+local function AreaNode(quest, slot, objective)
+	for _, area in ipairs(quest.obj or NONE) do
+		if area[1] == slot then
+			local node = {
+				map = area[5] or quest.zone or 0, -- 0: no map, which ValidPlace refuses
+				x = area[2] / 1000,
+				y = area[3] / 1000,
+				r = area[4],
+				slot = slot,
+				objectives = { objective },
+			}
+			return ValidPlace(node) and node or nil
+		end
+	end
+	return nil
+end
+
 -- Where a quest under way is done next, in slot order: each open objective the data places, at its first area (the
 -- generator orders them) with its radius. The client's point for the quest stands in for them all when its objectives
 -- don't line up with the data's slots or the data places none of the open ones, and the client's waypoint (the live
@@ -829,21 +852,7 @@ local function Nodes(data, entry)
 	end
 	table.sort(slots)
 	for _, slot in ipairs(ValidPlace(entry) and NONE or slots) do
-		local best
-		for _, area in ipairs(quest.obj or NONE) do
-			best = best or (area[1] == slot and area or nil)
-		end
-		local map = best and (best[5] or quest.zone)
-		if map then
-			nodes[#nodes + 1] = {
-				map = map,
-				x = best[2] / 1000,
-				y = best[3] / 1000,
-				r = best[4],
-				slot = slot,
-				objectives = { Objective(quest, entry, slot, open[slot]) },
-			}
-		end
+		nodes[#nodes + 1] = AreaNode(quest, slot, Objective(quest, entry, slot, open[slot]))
 	end
 	if #nodes > 0 and (aligned or not ValidPlace(entry.poi)) then
 		return nodes
@@ -1741,7 +1750,7 @@ local function Pickable(quest)
 	return true
 end
 
--- A new quest's objective nodes, one for each slot at its first area (as Nodes does for a quest under way), each
+-- A new quest's objective nodes, one for each slot at its first area (AreaNode, as for a quest under way), each
 -- counting the data's need.
 ---@param quest AGFQuest
 ---@return AGFNode[]
@@ -1753,20 +1762,7 @@ local function Planned(quest, id)
 	table.sort(slots)
 	local finish = ValidPlace(quest.finish) and "town:" .. Hub(quest.finish) or nil
 	for _, slot in ipairs(slots) do
-		local best
-		for _, area in ipairs(quest.obj or NONE) do
-			best = best or (area[1] == slot and area or nil)
-		end
-		local node = best
-			and {
-				map = best[5] or quest.zone,
-				x = best[2] / 1000,
-				y = best[3] / 1000,
-				r = best[4],
-				slot = slot,
-				objectives = { { id = id, slot = slot, need = quest.need[slot], finish = finish } },
-			}
-		nodes[#nodes + 1] = ValidPlace(node) and node or nil
+		nodes[#nodes + 1] = AreaNode(quest, slot, { id = id, slot = slot, need = quest.need[slot], finish = finish })
 	end
 	return nodes
 end
@@ -2556,7 +2552,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 					fields[key] = value
 				end
 				local split = fields --[[@as AGFStep]]
-				split.follow, split.givers = {}, {}
+				split.givers = {}
 				Trim(split, town.handins, {})
 				Trim(town, {}, town.pickups)
 				best.stops[#best.stops + 1] = split

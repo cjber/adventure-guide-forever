@@ -11,21 +11,7 @@
 -- AGF_PLAYTHROUGH_TRACE="Human class 1" prints that character's card 1 each round.
 local ns = {}
 assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
--- Locales/enUS.lua for ns.L, the planner's copy, then Core.lua with its load-time hooks into the client stubbed.
-assert(loadfile("Locales/enUS.lua"))("AdventureGuideForever", ns)
-local core = assert(loadfile("Core.lua"))
-setfenv(
-	core,
-	setmetatable({
-		EventUtil = { ContinueOnAddOnLoaded = function() end },
-		SlashCmdList = {},
-		CreateFrame = function()
-			return { SetScript = function() end }
-		end,
-	}, { __index = _G })
-)
-core("AdventureGuideForever", ns)
-assert(loadfile("Model.lua"))("AdventureGuideForever", ns)
+dofile("tests/harness.lua").model(ns)
 local Model, data = ns.Model, ns.Data
 local trace = os.getenv("AGF_PLAYTHROUGH_TRACE")
 
@@ -43,45 +29,8 @@ local RACES = {
 -- A round is card 1's whole route, a lap (town, its areas, back): one a level, since a lap does a level's quests.
 local LOG_SIZE, ROUNDS, ORANGE, RED = 20, 1, 3, 5
 
--- The data's places, keyed to 4 places: a step's point must be one of them.
-local places = {}
-local function Key(map, x, y)
-	return ("%d:%.4f:%.4f"):format(map or 0, x or -1, y or -1)
-end
-local function Add(place)
-	if place and place.map then
-		places[Key(place.map, place.x, place.y)] = true
-	end
-end
-for _, quest in pairs(data.quests) do
-	Add(quest.start)
-	Add(quest.finish)
-	for _, area in ipairs(quest.obj or {}) do
-		places[Key(area[5] or quest.zone, area[2] / 1000, area[3] / 1000)] = true
-	end
-end
-for _, npc in pairs(data.npcs or {}) do
-	Add(npc.place)
-end
-
--- A step's point is a place the data has, or, for an area, where the player enters it: inside the ring of one of its
--- shapes, each centred on a place the data has, with the ring's middle one too (Model.lua Enter).
-local function Placed(step)
-	if places[Key(step.map, step.x, step.y)] then
-		return true
-	end
-	local ring = step.ring
-	if not (ring and places[Key(ring.map, ring.x, ring.y)]) then
-		return false
-	end
-	for _, shape in ipairs(step.shapes or {}) do
-		local yards = Model.Yards(data, step, shape)
-		if places[Key(shape.map, shape.x, shape.y)] and yards and yards <= shape.r then
-			return true
-		end
-	end
-	return false
-end
+-- A step's point is a place the data has, or where the player enters an area the data has (tests/harness.lua).
+local Placed, Key = dofile("tests/harness.lua").placement(data, Model)
 
 local flags = { empty = {}, orange = {}, red = {}, flip = {}, unplaced = {}, dropped = {}, zones = {} }
 local function Flag(kind, text)

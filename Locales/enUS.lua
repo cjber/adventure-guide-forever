@@ -6,8 +6,8 @@ local _, ns = ...
 -- has, so a line nobody has translated yet stays in English. Format strings keep their specifiers.
 ---@type AGFStrings
 ns.L = {
-	-- The addon's name wherever the game shows it: the window, the map tab, its settings page and chat. Only WoW: Forever
-	-- loads this addon, so in game it is simply the Adventure Guide.
+	-- The addon's name wherever the game shows it: the window, the map tab, the objective tracker, its settings page and
+	-- chat. Only WoW: Forever loads this addon, so in game it is simply the Adventure Guide.
 	TITLE = "Adventure Guide",
 	AUDIT_BUILD = "data from build %s, client build %s.%s",
 	AUDIT_COUNTS = "%d quests in the data, %d eligible now, %d completed known",
@@ -69,8 +69,8 @@ ns.L = {
 	SEARCH_NONE = "No quests match your search.",
 	SETTING_MAP_PINS_TOOLTIP = "The route's numbered steps on the world map while their zone is shown, and quest "
 		.. "givers when those are on too. The open guide previews its route either way.",
-	SETTING_DUNGEONS_DEFAULT_TOOLTIP = "Suggest dungeon quests for a character the first time you open "
-		.. "the guide. Change it any time from the guide's settings menu.",
+	SETTING_DUNGEONS_DEFAULT_TOOLTIP = "Suggest dungeon quests on a character from the first time you log in on it "
+		.. "with the guide installed. Change it any time from the guide's settings menu.",
 	SETTING_GIVERS_TOOLTIP = 'A "!" on the world map over everyone with a quest you can take now. '
 		.. "Needs route pins on the map as well.",
 	SETTING_TITLE_ROUTE = "Choosing a journey starts the route",
@@ -166,7 +166,6 @@ ns.L = {
 	TRAINER_SPELLS = "%d new spells",
 	TRAINER_SPELL = "1 new spell",
 	TRAINER_LINE = "%s · %s",
-	TRACKER_HEADER = "Adventure Guide",
 	TRACKER_UNATTACHED = "couldn't add a section to the objective tracker; please report with /agf audit.",
 	DUMP_SAVED = "layout saved. Type /reload, then send "
 		.. "WTF\\Account\\<account>\\SavedVariables\\AdventureGuideForever.lua",
@@ -318,7 +317,7 @@ ns.L = {
 	LEGACY_OUTDATED = "Update Legacy Forever to see your completion progress.",
 	COMPLETION_EMPTY = "No completion categories are available here.",
 	COMPLETION_DONE = "Nothing left to do here.",
-	COMPLETION_LOADING = "Loading completion progress…",
+	COMPLETION_LOADING = "Loading completion progress...",
 	COMPLETION_UNAVAILABLE = "Completion progress is unavailable here.",
 	COMPLETION_COUNTS = "%d/%d",
 	-- Legacy Forever's own words for items it can't check yet, with its hint when one category holds them all.
@@ -350,7 +349,7 @@ ns.L = {
 	SESSION_MINUTES = "%d min",
 	SESSION_ABOUT = "About %d min",
 	SESSION_EMPTY = "No complete task fits this session.",
-	SESSION_PENDING = "Estimating this session…",
+	SESSION_PENDING = "Estimating this session...",
 	ORDER_DRAG = "Drag to change the order",
 	ORDER_SOONER = "Do this sooner",
 	ORDER_LATER = "Do this later",

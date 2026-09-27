@@ -10,7 +10,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from lint_copy import matching, split, unquote
+from lint_copy import ns_l_entries, split, unquote
 from lint_multivalue import tokenize
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -33,16 +33,11 @@ KEYWORD = "@" + "localization"
 
 def phrases(source: str) -> dict[str, str]:
     """KEY -> English line for each ns.L entry made only of string literals ("a" .. "b" joined)."""
-    tokens = tokenize(source)[0]
-    texts = [t.text for t in tokens]
-    start = next(i for i in range(len(texts) - 4) if texts[i : i + 5] == ["ns", ".", "L", "=", "{"])
     found = {}
-    for entry in split(tokens[start + 5 : matching(tokens, start + 4)], ","):
-        if len(entry) < 3 or entry[1].text != "=":
-            continue
-        value = split(entry[2:], "..")
+    for key, tokens in ns_l_entries(tokenize(source)[0]):
+        value = split(tokens, "..")
         if all(len(part) == 1 and part[0].kind == "string" for part in value):
-            found[entry[0].text] = "".join(unquote(part[0].text) for part in value)
+            found[key.text] = "".join(unquote(part[0].text) for part in value)
     return found
 
 

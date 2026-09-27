@@ -26,12 +26,12 @@ Shortest Path Forever handles travel when installed. With Questie installed, the
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window.png" width="640" alt="The Adventure Guide window"></p>
 
-<p align="center">The same journeys in their own window, with the next three steps beside the suggested one.</p>
+<p align="center">The same journeys in their own window, the featured one with its next steps beside it.</p>
 
 ## Features
 
 - **Journeys.** Up to six choices: loose ends from your log, a zone's story, nearby zones suited to your level and class quests. Dungeon and battleground journeys are opt-in. Each card gives a reason to go; choose one to see its route.
-- **Choose and go.** Picking a journey starts guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop and the back arrow remove only the guidance AGF owns, leaving a waypoint you moved yourself alone.
+- **Choose and go.** Picking a journey starts guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop and the back arrow clear only the route the guide started; a waypoint you set yourself stays.
 - **A route that stays with you.** The chosen journey survives new quests, travel and a reload. Town stops group pickups and hand-ins, with a checklist of quest givers. The tracker shows the current stop and the next one.
 - **Your order.** Drag steps or right-click for *Do this next*, *Do this sooner* or *Do this later*. Moves that break quest order are greyed out. *Back to suggested order* restores the plan.
 - **Time to play.** Choose 15, 30 or 60 minutes to shorten the route using rough travel and quest-time estimates. Leave it at *No limit* for the full route.

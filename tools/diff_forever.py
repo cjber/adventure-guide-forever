@@ -8,7 +8,19 @@ addon reads (docs/design.md §2.1, honest coverage); the other tables are only p
 
 from collections import defaultdict
 
-from gen_quests import BUILD, ROOT, TAXI_COLUMNS, db2, flight_masters, lua, project, run, source_options
+from gen_quests import (
+    BUILD,
+    ROOT,
+    TAXI_COLUMNS,
+    TAXI_SIDES,
+    UIMAP_ZONE,
+    db2,
+    flight_masters,
+    lua,
+    project,
+    run,
+    source_options,
+)
 
 ERA = "1.15.9.69722"
 OUTPUT = ROOT / "Data" / "Forever.lua"
@@ -42,12 +54,12 @@ def lands(maps, assignments, area_rows, taxi_nodes, added_nodes):
     side (TaxiNodes Flags 1 Alliance, 2 Horde) and stands on the map, projected as a quest giver is, by node ID: the
     map's rectangle overhangs its neighbours' older flight masters (Lakeshire, Kargath).
     """
-    zones = {int(r["ID"]): r["Name_lang"] for r in maps if int(r["Type"]) == 3}
+    zones = {int(r["ID"]): r["Name_lang"] for r in maps if int(r["Type"]) == UIMAP_ZONE}
     children = defaultdict(list)
     for row in area_rows:
         children[int(row["ParentAreaID"])].append(row)
     by_id = {int(r["ID"]): r for r in area_rows}
-    nodes = {int(r["ID"]): int(r["Flags"]) & 3 for r in taxi_nodes}
+    nodes = {int(r["ID"]): int(r["Flags"]) & TAXI_SIDES for r in taxi_nodes}
     result = {}
     for ui_map, name in sorted(zones.items()):
         rows = [r for r in assignments if int(r["UiMapID"]) == ui_map]
