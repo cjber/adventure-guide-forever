@@ -38,11 +38,6 @@ local function LoadSkills()
 	end
 end
 
----@return table<integer, integer>
-function State.Skills()
-	return skills
-end
-
 -- The player's reputation with a faction on the data's scale (0 starts Neutral, 3000 Friendly, 42000 Exalted);
 -- nil when the client gives none, as for the other side's factions.
 ---@param factionID integer

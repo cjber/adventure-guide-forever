@@ -35,10 +35,10 @@ ns.L = {
 	NEXT_ZONE_LEVEL = "For level %d",
 	DUNGEON_QUESTS = "%d quests for this dungeon",
 	DUNGEON_QUESTS_ONE = "1 quest for this dungeon",
-	-- The dungeon card's reason (roadmap #15): the log's quests filed under its instance, counted.
+	-- The dungeon card's reason: the log's quests filed under its instance, counted.
 	DUNGEON_INSIDE = "%d of your quests end inside %s",
 	DUNGEON_INSIDE_ONE = "1 of your quests ends inside %s",
-	-- A chain that leads into an instance, a story when there is no next zone (roadmap #21): the instance's name.
+	-- A chain that leads into an instance, a story when there is no next zone: the instance's name.
 	JOURNEY_INTO = "The way into %s",
 	-- The carry card's counts, joined when several apply: "3 ready to hand in, 1 in progress".
 	CARRY_READY = "%d ready to hand in",
@@ -59,7 +59,7 @@ ns.L = {
 	CHAPTER = "Chapter %d",
 	CONTINUES_STORY = "Continues a story you started",
 	BEGINS_STORY = "Begins a new story",
-	-- A zone card's reason in the world's voice (roadmap #3): a chain's giver, a town by its flight master's name.
+	-- A zone card's reason in the world's voice: a chain's giver, a town by its flight master's name.
 	REASON_GREY = "%d quests will soon turn grey",
 	REASON_CHAIN_GIVER = "A chain begins with %s",
 	REASON_HANDS = "%s needs hands",
@@ -96,7 +96,7 @@ ns.L = {
 	WHY_CHOSE = "You chose %s instead",
 	WHY_BREADCRUMB = "Only until you take %s",
 	WHY_EARLIER_QUEST = "an earlier quest",
-	-- Skill and reputation gates (roadmap #8): a skill line and its rank; a standing (the client's word) and a faction.
+	-- Skill and reputation gates: a skill line and its rank; a standing (the client's word) and a faction.
 	WHY_SKILL = "Requires %s %d",
 	WHY_REP_MIN = "Requires %s with %s",
 	WHY_REP_BELOW = "Only while below %s with %s",
@@ -113,7 +113,7 @@ ns.L = {
 	SKIP = "Skip for now",
 	SKIPPED = "Skipped (%d)",
 	SHOW_AGAIN = "Show again: %s",
-	-- A journey card's right-click (roadmap #17): hidden on this character until Show again.
+	-- A journey card's right-click: hidden on this character until Show again.
 	NOT_INTERESTED = "Not interested",
 	RIGHT_CLICK_NOT_INTERESTED = "Right-click if you're not interested",
 	CHOOSE_JOURNEY = "Choose another journey",
@@ -223,15 +223,15 @@ ns.L = {
 	SETTING_GIVERS = "Show quest givers on the map",
 	SETTING_DUNGEONS_DEFAULT = "Include dungeons by default",
 	-- Honest coverage (docs/design.md §2.1): the "!" over a giver marks the quests the guide can't list; Forever
-	-- draws no givers on the map (§9 probe `questoffer`).
+	-- draws no givers on the map.
 	MORE_IN_GUIDE = "More in the Adventure Guide",
 	MORE_IN_GUIDE_KEY = "More in the Adventure Guide (%s)",
 	UNLISTED = 'This land has stories the guide doesn\'t know yet; look for the "!" over quest givers.',
-	-- Stream 2b "Trainers" (roadmap #5): the trainer aside names the nearest trainer's town when the data places one,
+	-- Trainers: the trainer aside names the nearest trainer's town when the data places one,
 	-- and a chosen journey's route may stop there.
 	TRAINER_IN = "Visit your class trainer in %s",
 	TRAIN_IN = "Train in %s",
-	-- Your calling (roadmap #7, docs/design.md §2.2): the class quests open now; the trainer only when the data says so.
+	-- Your calling (docs/design.md §2.2): the class quests open now; the trainer only when the data says so.
 	JOURNEY_CALLING = "Your calling",
 	CALLING_QUESTS = "%d quests for your class",
 	CALLING_QUESTS_ONE = "1 quest for your class",
@@ -241,7 +241,7 @@ ns.L = {
 	NPC_JOURNEY = "Adventure guide: %s",
 	-- Something new (docs/design.md §2.13): the tracker's line for a journey card the character hasn't been offered.
 	MOMENT = "%s is now for your level",
-	-- Stream 3a "PvP" (roadmap #12, #28, docs/design.md §2.15): a battleground open to the player, as an aside and as
+	-- PvP (docs/design.md §2.15): a battleground open to the player, as an aside and as
 	-- the opt-in card, which goes to a battlemaster; the next PvP rank's reward, in its own words.
 	BATTLEGROUND_OPEN = "%s is open to you",
 	BATTLEGROUND_SUBLINE = "A battleground open to you",
@@ -249,10 +249,10 @@ ns.L = {
 	BATTLEMASTER_QUEUE = "Queue for %s",
 	MENU_BATTLEGROUNDS = "Battlegrounds",
 	PVP_RANK_REWARD = "Rank %d · %s",
-	-- Unspent talent points (roadmap #25).
+	-- Unspent talent points.
 	TALENT_POINTS = "You have %d talent points to spend",
 	TALENT_POINT = "You have 1 talent point to spend",
-	-- Stream 3b "Professions" (roadmap #9, docs/design.md §2.16): the profession aside, its lead then where to train.
+	-- Professions (docs/design.md §2.16): the profession aside, its lead then where to train.
 	PROFESSION_CAP = "Your %s has reached %d of %d",
 	PROFESSION_RANK_IN = "%s training in %s",
 	PROFESSION_RANK = "%s training is open to you",
@@ -265,10 +265,10 @@ ns.L = {
 	PROFESSION_RANK_2 = "Journeyman",
 	PROFESSION_RANK_3 = "Expert",
 	PROFESSION_RANK_4 = "Artisan",
-	-- Exploration and new lands (roadmap #13 and #14): a land Forever added and its levels; an area not yet seen.
+	-- Exploration and new lands: a land Forever added and its levels; an area not yet seen.
 	NEW_LAND = "%s · For levels %d-%d",
 	UNEXPLORED = "You haven't seen %s yet",
-	-- A way into an instance is no place to be the level for (roadmap #21).
+	-- A way into an instance is no place to be the level for.
 	MOMENT_OPEN = "%s is open to you",
 	-- Roadmap #11: the route's last stop, when rested XP is low and an innkeeper stands there.
 	REST_HERE = "Rest at the inn here",

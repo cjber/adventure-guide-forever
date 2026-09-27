@@ -270,8 +270,8 @@ function ns.Pinned(ids)
 	return #ids > 0
 end
 
--- A shift-click (docs/design.md §2.18): the quests `ids` join the route whatever the planner would leave out, or leave
--- it when they all had joined. Ruled-out quests come back too.
+-- A shift-click (docs/design.md §2.18): the quests `ids` join the route once open, even grey but never orange or red,
+-- or leave it when they all had joined. Ruled-out quests come back too.
 ---@param ids integer[]
 function ns.TogglePinned(ids)
 	local prefs, pin = ns.Prefs(), not ns.Pinned(ids)
@@ -793,7 +793,7 @@ ns.OnRouteChange(function()
 	end
 end)
 
--- No journey chosen draws nothing (docs/design.md §2.2): however the choice went (a click, Not interested, Stop, the
+-- No journey chosen draws nothing (docs/design.md §2.10): however the choice went (a click, Not interested, Stop, the
 -- journey ending or leaving the cards), what AGF guides stops with it. Only ours: Cancel ends Shortest Path's journey
 -- by our name and the waypoint only while it sits where Go put it. Judged on full builds, as Ended is: combat's cheap
 -- one can drop a card it will bring back.
@@ -886,7 +886,7 @@ SlashCmdList.ADVENTUREGUIDEFOREVER = function(msg)
 	end
 end
 
--- Left-click toggles the window; any other click opens the guide on the world map, as every click once did.
+-- Left-click toggles the window; any other click opens the guide on the world map.
 ---@param _ string the addon's name
 ---@param mouseButton? string
 function AdventureGuideForever_OnAddonCompartmentClick(_, mouseButton)

@@ -3613,8 +3613,8 @@ do
 		reputation = { [576] = { name = "Timbermaw Hold", currentStanding = 2999 } },
 	})
 	local State = h.ns.State
-	equal(State.Skills()[197], 75, label .. ": a learned line's rank")
-	equal(State.Skills()[186], nil, label .. ": no unlearned line")
+	equal(State.Player().skills[197], 75, label .. ": a learned line's rank")
+	equal(State.Player().skills[186], nil, label .. ": no unlearned line")
 	h.skills[1].rank = 150
 	h.fire("SKILL_LINES_CHANGED")
 	equal(State.Player().skills[197], 150, label .. ": read again when the lines change")

@@ -151,7 +151,7 @@ local function SkillUp()
 	local addon = SkillUpForever
 	local api = type(addon) == "table" and addon.API or nil
 	if type(api) ~= "table" then
-		local loaded = C_AddOns.IsAddOnLoaded ~= nil and (C_AddOns.IsAddOnLoaded("SkillUpForever"))
+		local loaded = C_AddOns.IsAddOnLoaded("SkillUpForever")
 		return nil, (addon ~= nil or loaded) and "outdated" or "missing"
 	end
 	if type(api.version) ~= "number" or api.version < 1 then
@@ -742,9 +742,6 @@ function Integrations.Cancel()
 	NotifyGuidance()
 end
 
--- Guidance follows the chosen journey (docs/design.md §2.10): on each rebuild, a route AGF started for the chosen
--- journey that no longer matches its steps is sent again, at most once. Never in combat (Shortest Path refuses), in
--- the air, where the player's position is unknown (at sea, in an instance), or while Shortest Path isn't guiding it.
 -- Why our journey ended: Shortest Path's Ended when it has it; otherwise guessed. Another journey running replaced
 -- it, the player standing within the town linkage of its last stop arrived, and anything else was cleared.
 ---@param api AGFSPFAPI

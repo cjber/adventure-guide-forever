@@ -722,7 +722,6 @@
 ---@field standing? fun(reaction: integer): string? 1 Hated to 8 Exalted
 
 ---@class AGFState
----@field Skills fun(): table<integer, integer> learned skill line -> rank (C_SkillInfo), read again on SKILL_LINES_CHANGED
 ---@field Reputation fun(factionID: integer): integer? C_Reputation's currentStanding; nil for a faction it gives none for
 ---@field SkillName fun(skillLineID: integer): string? the client's name for a learned skill line
 ---@field FactionName fun(factionID: integer): string?
