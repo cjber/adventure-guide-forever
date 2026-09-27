@@ -21,7 +21,7 @@ local function clean(h, label)
 end
 
 -- ui_spec's level-18 orc shaman in The Barrens, nothing chosen: its cards are The Barrens' story and Stonetalon
--- Mountains; at 22 the next zone is map 1440 instead.
+-- Mountains and Ashenvale; Hillsbrad becomes useful at level 19.
 local function Load(charDB)
 	return harness.load({ charDB = charDB or {}, completed = { 844 }, log = {} })
 end
@@ -68,8 +68,8 @@ equal(#h.fanfares, 0, "first look: no glow")
 equal(select(1, Pips(h)), false, "first look: no pip on the tab")
 equal(select(2, Pips(h)), false, "first look: nor on the compartment")
 
--- A level that brings nothing new says nothing.
-LevelUp(h, 19)
+-- Repeated level notification without new choices says nothing.
+LevelUp(h, 18)
 equal(#h.fanfares, 0, "same cards: no glow")
 equal(Tracker(h), nil, "same cards: no line")
 
@@ -77,11 +77,11 @@ equal(Tracker(h), nil, "same cards: no line")
 -- compartment, and the card's mark. Nothing opens.
 LevelUp(h, 22)
 same(h.fanfares, { "moment" }, "new zone: the line glows once")
-equal(Tracker(h), "Map 1440 is now for your level", "new zone: named by the client")
+equal(Tracker(h), "Hillsbrad Foothills is now for your level", "new zone: named by the client")
 equal(h.G.AdventureGuideForeverPanel:IsShown(), false, "new zone: nothing opens")
 equal(select(1, Pips(h)), true, "new zone: the tab's pip")
 equal(select(2, Pips(h)), true, "new zone: the compartment's pip")
-equal(seen["zone:1440"], true, "new zone: now seen")
+equal(seen["zone:1424"], true, "new zone: now seen")
 equal(seen["zone:1442"], true, "new zone: the zone it replaced stays seen")
 h.tracker:MarkDirty()
 same(h.fanfares, { "moment" }, "new zone: glows once, not on every layout")
@@ -93,14 +93,14 @@ equal(h.G.AdventureGuideForeverPanel:IsVisible(), true, "click: the guide opens"
 equal(select(1, Pips(h)), false, "opened: the tab's pip goes")
 equal(select(2, Pips(h)), false, "opened: the compartment's pip goes")
 equal(Tracker(h), nil, "opened: the line goes")
-equal(Marked(h, "zone:1440"), true, "opened: the new card is marked")
+equal(Marked(h, "zone:1424"), true, "opened: the new card is marked")
 equal(Marked(h, "zone:1413"), false, "opened: the others are not")
 
 -- Closing the guide takes the marks away; a zone change that brings nothing new leaves them away.
 h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
 h.ns.OpenPanel()
 h.flush()
-equal(Marked(h, "zone:1440"), false, "closed: the mark goes")
+equal(Marked(h, "zone:1424"), false, "closed: the mark goes")
 h.fire("ZONE_CHANGED_NEW_AREA")
 h.flush()
 equal(#h.fanfares, 1, "zone change, nothing new: no glow")
@@ -113,7 +113,7 @@ h.flush()
 LevelUp(h, 22)
 equal(#h.fanfares, 0, "guide open: no glow")
 equal(select(1, Pips(h)), false, "guide open: no pip")
-equal(Marked(h, "zone:1440"), true, "guide open: the card is marked")
+equal(Marked(h, "zone:1424"), true, "guide open: the card is marked")
 clean(h, "guide open")
 
 -- A saved seen set: the same level-up on the next session finds nothing new.
@@ -149,7 +149,13 @@ clean(h, "combat")
 -- An aside no provider gave before: its own line glows, with the pips, and no moment line. One that stops being
 -- given leaves the seen set, so it is new again when it comes back. Hillsbrad, a zone to head to from level 20, is
 -- turned down so the line level 20 brings is the calling's.
-h = Load({ notInterested = { ["zone:1424"] = "Head to Hillsbrad Foothills" } })
+h = Load({
+	notInterested = {
+		["zone:1424"] = "Head to Hillsbrad Foothills",
+		["zone:1411"] = "Durotar",
+		["zone:1412"] = "Mulgore",
+	},
+})
 local provider = {}
 h.ns.Asides.Register(function()
 	return provider.aside
@@ -182,13 +188,13 @@ LevelUp(h, 21)
 same(h.fanfares, { "aside", "moment", "aside", "aside" }, "trained, then a level: new again")
 clean(h, "aside")
 
--- A zone entered that brings a card the character hasn't been offered: Westfall, among the zones level 18 fits.
+-- Entering an already offered zone does not repeat the announcement.
 h = Load()
 h.player.map = 1436
 h.fire("ZONE_CHANGED_NEW_AREA")
 h.flush()
-same(h.fanfares, { "moment" }, "new zone entered: the line glows")
-equal(Tracker(h), "Map 1436 is now for your level", "new zone entered: its line")
+same(h.fanfares, {}, "known zone entered: no repeated glow")
+equal(Tracker(h), nil, "known zone entered: no repeated line")
 clean(h, "zone entered")
 
 -- With the tracker section off, the card and the pips still say it; nothing glows.

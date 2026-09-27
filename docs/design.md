@@ -12,7 +12,7 @@ abandons quests.
 
 - **2.1 Map tab.** The overview fits without scrolling; overflow opens the window. Chosen steps and
   search can scroll. Quest-giver marks and route pins are opt-in.
-- **2.2 Journey cards.** Offer up to six eligible journeys. A choice shows at most nine steps.
+- **2.2 Journey cards.** Offer every eligible journey for the current level; the home view scrolls and the window grid pages through them. Prefer useful green/yellow quests; exclude orange/red pickups. A choice shows at most nine steps.
   Give each card a reason and only known travel estimates.
 - **2.3 Chapters.** Show a total only for a proven chain. Never reveal later chapter titles.
 - **2.4 Search.** Share eligibility checks with the planner. Explain missing requirements; locked
@@ -45,15 +45,21 @@ abandons quests.
   Journey cards link back to the dungeon page. Build on first show, slice source reads at 1 ms, cancel on hide,
   reuse visible rows, and cache a complete optional-source snapshot until the quest data changes.
 
-  Quest statuses use `Model.Eligible`; completed and accepted quests are identified separately. Unproven
-  requirements remain visible without a pickup recommendation. Expanded steps show prerequisites, including
+  Quest statuses use `Model.Eligible`; completed and accepted quests are identified separately. Known faction, race and class exclusions are omitted from quests, Prep and expanded prerequisites.
+  A faction-only empty page explains why. Other unproven requirements remain visible as Locked, without a
+  pickup recommendation. Expanded steps show prerequisites, including
   alternatives, with no claim that every alternative is required. Only proven giver coordinates are navigable,
-  revalidated on click through Integrations. Explicit giver navigation is available for locked and earlier quests;
+  revalidated on click through Integrations. Explicit map actions set the existing SPF/native route, open the
+  destination zone with OpenWorldMap/SetMapID and play the stock map ping twice. Combat skips opening or
+  changing the map but retains navigation. Journey/step map actions and other explicit place buttons share
+  the reveal helper; automatic route maintenance never opens panels. Matching AGF pins flash on click and
+  glow on map-control hover, with the corresponding row highlighted. Explicit giver navigation is available for locked and earlier quests;
   Map controls are hidden without coordinates. Wanderer mode disables them with an explanatory tooltip. Quest experience uses the planner's level adjustment, counting
   accepted quests and chains provable at the current level, excluding completed quests and counting exclusive
   alternatives once. Unknown experience contributes nothing. Recommended levels use a valid client LFG range, falling back to
   the generator's published Classic dungeon ranges; sorting and every list subtitle use that same range.
-  Entry requirements stay in the header and Prep. Range text uses the client's quest difficulty colour for the
+  Entry requirements stay in the header and Prep. Enemy-capital entrances remain browsable, marked Hostile and excluded from automatic level-fit selection.
+  Other range text uses the client's quest difficulty colour for the
   nearest level in the range, with a tooltip explaining yellow, orange/red and green/grey. Titles remain white.
 
   Prep derives outside pickups and prerequisite chains from quest records. Each generated entrance keeps its
@@ -63,27 +69,33 @@ abandons quests.
   these sources are not invented or described as unnecessary.
 
   QuestieDB is read only through QuestieSource's contract-checked runtime layer. Nothing derived from it is
-  shipped. NPC rank and instance-area spawns identify the fallback enemy list; ordinary elites are labelled
-  explicitly, not promoted to bosses. That fallback tab is titled Elites because creature rank does not identify
-  dungeon bosses; client journal encounters retain Bosses. Item `npcDrops` supplies loot, names known droppers
-  in that instance and puts rank-3 boss drops first. `questRewards` supplies reward icons;
-  that inverse relation does not distinguish choices from guaranteed rewards, so the UI says Rewards.
-  Missing optional data greys its page with Needs QuestieDB. The standalone addon suffices.
+  shipped. Bosses lists only rank-3 NPCs or explicit AtlasLoot/client journal encounters, never every elite.
+  AtlasLoot's installed normal-difficulty pages supply curated encounter order and drops; wings merge by level.
+  QuestieDB is the fallback. Loot has one row per item ID, boss headings with known levels, and final Trash.
+  Any outside/unknown dropper excludes an item. Client rarity excludes grey/white items except proven quest
+  starters; uncached rarity waits for item data. Shared drops belong to the first matching boss.
+  `questRewards` supplies reward icons without claiming which are choices. Neither optional source present
+  shows Needs QuestieDB or AtlasLoot; known empty data shows the empty state. Runtime reads bundle no data.
   Objective text comes from that snapshot, then the accepted quest's client log; otherwise it is omitted.
   Place names use the hub, client map name or bundled map name; an unknown place leaves the NPC alone.
   Experience uses BreakUpLargeNumbers. No internal IDs or missing-value placeholders enter player text.
 
   Top sub-tabs use TabSystemTopButtonTemplate on a common baseline; chains use the quest log's
-  CollapseButtonTemplate. Quest statuses occupy a right-aligned column; known reward icons have their own row.
-  Details flow from title and level/experience through objective, start/end NPCs, rewards and a proven linear
-  chain position. The scrollable body keeps the giver button fixed at the bottom. Item icons remain square,
+  CollapseButtonTemplate. The header has title, location and a single meta line (entry level and positive remaining XP),
+  with a stock Plan to run checkbox and padded action row inside its border. It does not repeat the list's range.
+  Sub-tabs meet the content inset. Quest rows are a uniform 38 units: expand at left, title and short status
+  in separate columns, giver/place below. Full titles, alternative prerequisites and unmet requirements live in
+  the row tooltip; rewards and giver navigation live in the detail inset, with compact Map controls on expanded chain steps.
+  Details use a header font, an Objectives heading, spaced wrapping text without an objective line cap, start/end
+  NPCs (one line when identical), a Rewards heading and a proven linear chain position. The scrollable body keeps the giver button fixed at the bottom. Item icons remain square,
   tooltips use GameTooltip, and the stock divider keeps its atlas aspect.
 
   Client journal instance IDs and encounters win when available, queried with an explicit instance ID so the
   player's journal selection is untouched. Client dungeon icons are square, as the EJ instance button draws
   them; otherwise the header uses the entrance zone's existing map art at native aspect. Source findings and
   pins are recorded in [dungeon-sources.md](dungeon-sources.md). The layout is included in `/agf dump` and
-  `docs/screenshots/dungeons.png`.
+  `docs/screenshots/dungeons*.png`, including the owner's Alliance level 19 Darkshore/Ragefire regression.
+  The shared Today strip shows two wide hints, with the rest in a small stock-font More menu control on every tab.
 
 ## 3. Copy
 

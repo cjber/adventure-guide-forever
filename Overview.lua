@@ -23,12 +23,7 @@ local KIND_ICONS = {
 
 ---@param step AGFStep
 local function FocusStep(step)
-	WorldMapFrame:SetMapID(step.map)
-	-- The map's data providers (Pins.lua among them) refresh in response to SetMapID; wait a
-	-- frame so the pin exists before it's asked to flash.
-	C_Timer.After(0, function()
-		ns.Pins.Ping(step.key)
-	end)
+	ns.Pins.Reveal(step)
 end
 
 ---@param owner Frame
@@ -42,6 +37,12 @@ local function ShowTooltip(owner, lines)
 	GameTooltip:Show()
 end
 
+---@param self AGFRouteRow
+function Overview.RowLeave(self)
+	ns.Pins.Highlight(self.step, false)
+	GameTooltip_Hide()
+end
+
 -- A step row's lines: the ring's; a row after step 1 asks Shortest Path for its travel line once, on hover.
 ---@param self AGFRouteRow
 local function RowEnter(self)
@@ -49,6 +50,7 @@ local function RowEnter(self)
 	if not (step and index) then
 		return
 	end
+	ns.Pins.Highlight(step, true)
 	local travel = index == 1 and ns.Integrations.Travel(step) or ns.Integrations.TravelLine(step)
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	ns.Pins.StepTooltip(GameTooltip, step, index, travel)
@@ -396,6 +398,9 @@ local function CardTooltip(card)
 	if travel and travel.line then
 		GameTooltip_AddHighlightLine(GameTooltip, travel.line)
 	end
+	if journey.kind == "carry" then
+		GameTooltip_AddNormalLine(GameTooltip, L.CARRY_EXPLANATION)
+	end
 	local group = journey.group or 0
 	if group > 0 then
 		GameTooltip_AddHighlightLine(GameTooltip, group == 1 and L.GROUP_ONE or L.GROUP_MANY:format(group))
@@ -502,9 +507,6 @@ end
 -- A step on the world map: the map opens when it is closed, then turns to the step and flashes its ring.
 ---@param step AGFStep
 local function ShowOnMap(step)
-	if not WorldMapFrame:IsShown() then
-		ToggleWorldMap()
-	end
 	FocusStep(step)
 end
 

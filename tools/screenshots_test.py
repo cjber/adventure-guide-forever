@@ -107,6 +107,29 @@ class Stock(unittest.TestCase):
     "Pillow or wowmock missing",
 )
 class Render(unittest.TestCase):
+    def test_wrapped_objective_spacing_matches_its_laid_out_height(self):
+        wm = screenshots.load_wowmock()
+        ui = wm.Ui(scale=screenshots.SCALE)
+        objective = entry(
+            "objective",
+            [anchor("TOPLEFT")],
+            (90, 0),
+            type="FontString",
+            font="GameFontHighlightSmall",
+            text="Search Orgrimmar for Ragefire Chasm, then kill the troggs.",
+            spacing=3,
+        )
+        rect = screenshots.layout_rects(ui, [objective], ROOT)["objective"]
+        measures = screenshots.text_measures(ui, [objective], {"objective": rect})
+        lines = measures["objective"][1]
+        self.assertGreater(lines, 1)
+        self.assertEqual(rect[3], 10 * lines + 3 * (lines - 1))
+        canvas = ui.canvas(100, 100)
+        positions = []
+        canvas.text = lambda x, y, *args, **kwargs: positions.append(y)
+        screenshots.draw_font_string(canvas, objective, rect, 1)
+        self.assertEqual(positions, [13 * index for index in range(lines)])
+
     def test_wowmock_loads_the_fonts_the_addon_uses(self):
         wm = screenshots.load_wowmock()
         for name in ("GameFontNormalMed2", "GameFontNormalMed3", "GameFontDisable", "GameFontHighlightSmall"):

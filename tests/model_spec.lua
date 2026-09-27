@@ -238,7 +238,7 @@ end
 local later = Model.Plan(Ahead(5), player, {}, {}, prefs())
 equal(Kinds(later.journeys), "zone:1 zone:2", "the next zone after the story")
 equal(later.journeys[2].title, "Head to There", "named for its zone")
-equal(later.journeys[2].reason, "For level 20", "the level it fits under the name")
+equal(later.journeys[2].reason, nil, "offered for the current level, no future-level label")
 -- "Not interested" (roadmap #17): a zone so marked is never a card, chosen or not, and the next best takes its place.
 local uninterested = prefs()
 uninterested.notInterested = { ["zone:1"] = { title = "Here story" } }
@@ -258,7 +258,7 @@ equal(
 	"not interested: in combat"
 )
 local capped = { level = 18, maxLevel = 19, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
-equal(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys[2].reason, "For level 19", "never past the cap")
+equal(Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys[2].reason, nil, "no future-level label near cap")
 -- At the cap the zones that fit now are still there to head to, with no level to name.
 capped.maxLevel = 18
 local capCards = Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys
@@ -266,7 +266,11 @@ equal(Kinds(capCards), "zone:1 zone:2", "at the cap, the zones that fit now")
 equal(capCards[2].reason, nil, "and no level past the cap")
 local standing = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 2, x = 0.5, y = 0.5 }
 -- Standing in There, which fits too, makes it the story (design §2.10), and the next zone is never the zone you are in.
-equal(Kinds(Model.Plan(Ahead(5), standing, {}, {}, prefs()).journeys), "zone:2", "the story is the zone you stand in")
+equal(
+	Kinds(Model.Plan(Ahead(5), standing, {}, {}, prefs()).journeys),
+	"zone:2 zone:1",
+	"the story is the zone you stand in"
+)
 -- A zone within the player's level range stays their story while they stand in it, though most of its quests are
 -- already taken up and it ranks below the three that fit best.
 local mostlyTaken = Ahead(5)
@@ -305,14 +309,14 @@ inTaken.level = 20
 equal(Kinds(Model.Plan(mostlyTaken, inTaken, {}, {}, prefs()).journeys):match("zone:3"), nil, "past its range: not")
 local capital = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 9, x = 0.5, y = 0.5 }
 equal(Kinds(Model.Plan(Ahead(5), capital, {}, {}, prefs()).journeys), "zone:1 zone:2", "a zone with none: level fit")
-equal(Kinds(Model.Plan(Ahead(4), player, {}, {}, prefs()).journeys), "zone:1", "four quests are too few")
+equal(Kinds(Model.Plan(Ahead(4), player, {}, {}, prefs()).journeys), "zone:1 zone:2", "four quests are a useful option")
 equal(Kinds(Model.Plan(Ahead(5, 20), player, {}, {}, prefs()).journeys), "zone:1 zone:2", "4 open now, 5 at 20")
 local thin = Ahead(5, 20)
 thin.quests[6].min, thin.quests[7].min = 20, 20
-equal(Kinds(Model.Plan(thin, player, {}, {}, prefs()).journeys), "zone:1", "2 open now are too few")
+equal(Kinds(Model.Plan(thin, player, {}, {}, prefs()).journeys), "zone:1 zone:2", "two open now are a useful option")
 -- At 22 There fits both now and two levels on; the next zone is never the story's own, and Here holds too few.
 local later22 = { level = 22, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 3, x = 0.5, y = 0.5 }
-equal(Kinds(Model.Plan(Ahead(5), later22, {}, {}, prefs()).journeys), "zone:2", "never the story's own zone")
+equal(Kinds(Model.Plan(Ahead(5), later22, {}, {}, prefs()).journeys), "zone:2 zone:1", "never the story's own zone")
 later22.map = 1
 equal(Kinds(Model.Plan(Ahead(5), later22, {}, {}, prefs()).journeys), "zone:1 zone:2", "in Here, There is next")
 -- The offer rules only gate new choices (design §2.10): a chosen zone stays while it has a step.
@@ -323,7 +327,7 @@ local function Choose(key)
 end
 equal(Kinds(Model.Plan(Ahead(4), player, {}, {}, Choose("zone:2")).journeys), "zone:1 zone:2", "chosen: under 5 quests")
 local arrived = Model.Plan(Ahead(4), standing, {}, {}, Choose("zone:2"))
-equal(Kinds(arrived.journeys), "zone:2", "chosen: standing in the zone it heads to")
+equal(Kinds(arrived.journeys), "zone:2 zone:1", "chosen: standing in the zone it heads to")
 equal(arrived.journeys[1].title, "There story", "chosen: which is now the zone's story")
 equal(arrived.chosen, true, "chosen: and still chosen")
 local away22 = { level = 22, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 3, x = 0.5, y = 0.5 }
@@ -461,36 +465,41 @@ local inLog = { [100] = { id = 100, title = "Carried", level = 18, complete = tr
 local function Diverted(fixture, choices, entries)
 	return Kinds(Model.Plan(fixture, player, {}, entries or {}, choices).journeys)
 end
-local sixCards = Model.MAX_JOURNEYS
-Model.MAX_JOURNEYS = 4
 equal(
 	Diverted(Diversions(10, 10, 10), both),
 	"zone:1 zone:2 calling dungeon:36",
 	"diversions: a tie, the calling first"
 )
 equal(Diverted(Diversions(18, 10, 10), both), "zone:1 zone:2 calling dungeon:36", "diversions: after the zones")
-equal(Diverted(Diversions(18, 10, 10), both, inLog), "zone:1 carry zone:2 calling", "diversions: carry leaves one slot")
+equal(
+	Diverted(Diversions(18, 10, 10), both, inLog),
+	"zone:1 carry zone:2 calling dungeon:36",
+	"diversions: carry does not hide other choices"
+)
 equal(
 	Diverted(Diversions(16, 17, 10), both, inLog),
-	"zone:1 carry zone:2 dungeon:36",
+	"zone:1 carry zone:2 dungeon:36 calling",
 	"diversions: a dungeon just opened"
 )
-equal(Diverted(Diversions(16, 17, 18), both, inLog), "zone:1 carry zone:2 calling", "diversions: a calling just opened")
+equal(
+	Diverted(Diversions(16, 17, 18), both, inLog),
+	"zone:1 carry zone:2 calling dungeon:36",
+	"diversions: a calling just opened"
+)
 local hall = prefs()
 hall.dungeons, hall.journey = true, "dungeon:36"
 equal(
 	Diverted(Diversions(18, 10, 10), hall, inLog),
-	"zone:1 carry zone:2 dungeon:36",
+	"zone:1 carry zone:2 calling dungeon:36",
 	"diversions: the chosen one stays"
 )
 equal(Diverted(Diversions(18, 10, 10), prefs(), inLog), "zone:1 carry zone:2 calling", "diversions: dungeons off")
 local combat = Model.Plan(Diversions(10, 10, 18), player, {}, {}, both)
 equal(
 	Kinds(Model.Refresh(Diversions(10, 10, 18), player, {}, inLog, both, combat).journeys),
-	"zone:1 carry zone:2 calling",
-	"diversions: in combat a new carry card pushes out the last"
+	"zone:1 carry zone:2 calling dungeon:36",
+	"diversions: in combat a new carry card preserves other options"
 )
-Model.MAX_JOURNEYS = sixCards
 
 -- Your calling (roadmap #7): the class quests open now as one card, its reason naming the quest it leads with.
 local function Calling(fixture, completed, choices)
@@ -545,7 +554,11 @@ for id = 1, 6 do
 	raidOnly.quests[id].raid = id > 1
 end
 raidOnly.quests[7] = quest(0.5, 0.5)
-equal(Kinds(Model.Plan(raidOnly, player, {}, {}, both).journeys), "zone:1", "raid: never ranks a zone")
+equal(
+	Kinds(Model.Plan(raidOnly, player, {}, {}, both).journeys),
+	"zone:1 zone:2",
+	"raid: the single non-raid quest still offers its zone"
+)
 local other = Diversions(10, 10, 10)
 other.quests[11].classes = 1
 equal(Calling(other), nil, "calling: another class's quest")
@@ -771,7 +784,11 @@ do
 	local here = Model.Plan(world, player, done, carried, prefs())
 	equal(here.journeys[1].key, "zone:1", "standing: the zone you carry quests in is card 1")
 	equal(here.journeys[1].subline, "3 in progress", "standing: its card counts them")
-	equal(here.journeys[2] and here.journeys[2].key, nil, "standing: nothing else placed, no carry card")
+	equal(
+		here.journeys[2] and here.journeys[2].key,
+		"zone:2",
+		"standing: the other zone remains available without a carry card"
+	)
 	carried[7].complete = true
 	here = Model.Plan(world, player, done, carried, prefs())
 	equal(here.journeys[2] and here.journeys[2].subline, "1 ready to hand in", "standing: carry holds the rest")
@@ -1977,6 +1994,24 @@ do
 end
 
 player.map, player.x, player.y = 1413, 0.52, 0.3
+-- Level 19 should see lower-zone green quests as well as current yellow quests, beyond six cards.
+do
+	local nineteen = { level = 19, maxLevel = 60, side = 1, raceBit = 8, classBit = 4, map = 1439, x = 0.4, y = 0.4 }
+	local nineteenRoute = Model.Plan(ns.Data, nineteen, {}, {}, prefs())
+	local nineteenOffered = {}
+	for _, journey in ipairs(nineteenRoute.journeys) do
+		nineteenOffered[journey.key] = true
+		for _, step in ipairs(journey.steps) do
+			for _, id in ipairs(step.pickups or {}) do
+				equal(Model.Hard(ns.Data.quests[id], nineteen), false, "level 19: never orange/red pickups")
+			end
+		end
+	end
+	equal(nineteenOffered["zone:1433"], true, "level 19: Redridge offered")
+	equal(nineteenOffered["zone:1432"], true, "level 19: Loch Modan offered")
+	equal(#nineteenRoute.journeys > 6, true, "level 19: all useful destinations remain accessible")
+end
+
 local baseline = Model.Plan(ns.Data, player, {}, {}, prefs())
 equal(#baseline.steps >= 3, true, "level 18 Horde route offers at least three steps")
 local signature = {}

@@ -19,9 +19,9 @@ local WIDTH, HEIGHT = 800, 496
 local INSET_TOP, INSET_BOTTOM = 60, 5
 -- The tier art's dark right strip, where the Encounter Journal keeps its scroll bar, stays clear.
 local RIGHT = 30
--- The Today strip: up to four asides across the art's top band, a ringed icon and its line.
-local TODAY_MAX, TODAY_TOP, TODAY_LEFT, TODAY_RING = 4, 4, 18, 26
--- More asides than chips: the last slot is a stock button that lists the rest in a menu.
+-- The Today strip: up to two asides across the art's top band, a ringed icon and its line.
+local TODAY_MAX, TODAY_TOP, TODAY_LEFT, TODAY_RING = 2, 4, 18, 26
+-- More asides than chips: a stock button at the right that lists the rest in a menu.
 local MORE_WIDTH, MORE_HEIGHT = 90, 22
 -- A step row's kind badge on its 26 ring, Shortest Path's 16-on-22 scaled down; an icon row's ring.
 local BADGE, BADGE_OUT, ICON_ROW_RING = 14, 3, 26
@@ -421,14 +421,15 @@ end
 ---@type AGFTodayMore?
 local more
 
--- "+2 more" in the last slot: a menu of the asides the chips leave out, each going where its chip would.
+-- "+2 more" at the right: a menu of the asides the chips leave out, each going where its chip would.
 ---@param inset Frame
----@param width number
 ---@return AGFTodayMore
-local function CreateMore(inset, width)
-	local button = CreateFrame("Button", nil, inset, "UIPanelButtonTemplate") --[[@as AGFTodayMore]]
+local function CreateMore(inset)
+	local button = CreateFrame("Button", nil, inset) --[[@as AGFTodayMore]]
+	button:SetNormalFontObject("GameFontNormalSmall")
+	button:SetHighlightFontObject("GameFontHighlightSmall")
 	button:SetSize(MORE_WIDTH, MORE_HEIGHT)
-	button:SetPoint("LEFT", inset, "TOPLEFT", TODAY_LEFT + (TODAY_MAX - 1) * width, -(TODAY_TOP + 18))
+	button:SetPoint("RIGHT", inset, "TOPRIGHT", -RIGHT, -(TODAY_TOP + 18))
 	button:SetScript("OnClick", function(self)
 		MenuUtil.CreateContextMenu(self, function(_, root)
 			root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_TODAY")
@@ -446,15 +447,15 @@ end
 ---@param inset Frame
 local function RefreshToday(inset)
 	local all = ns.Asides.All()
-	local width = (Window.INSET_WIDTH - TODAY_LEFT - RIGHT) / TODAY_MAX
 	local overflow = #all > TODAY_MAX
+	local width = (Window.INSET_WIDTH - TODAY_LEFT - RIGHT - (overflow and MORE_WIDTH + 12 or 0)) / TODAY_MAX
 	local asides, rest = {}, {}
 	for index, aside in ipairs(all) do
-		local list = (overflow and index >= TODAY_MAX) and rest or asides
+		local list = (overflow and index > TODAY_MAX) and rest or asides
 		list[#list + 1] = aside
 	end
 	if overflow and not more then
-		more = CreateMore(inset, width)
+		more = CreateMore(inset)
 	end
 	if more then
 		more.asides = rest
@@ -466,10 +467,13 @@ local function RefreshToday(inset)
 		local chip = chips[index]
 		if aside and not chip then
 			chip = CreateChip(inset, width)
-			chip:SetPoint("TOPLEFT", TODAY_LEFT + (index - 1) * width, -TODAY_TOP)
 			chips[index] = chip
 		end
 		if chip then
+			chip:SetWidth(width)
+			chip.Text:SetWidth(width - TODAY_RING - 14)
+			chip:ClearAllPoints()
+			chip:SetPoint("TOPLEFT", TODAY_LEFT + (index - 1) * width, -TODAY_TOP)
 			chip.aside = aside
 			chip:SetShown(aside ~= nil)
 			if aside then

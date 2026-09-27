@@ -12,7 +12,7 @@
 ## SavedVariables: AdventureGuideForeverDB
 ## SavedVariablesPerCharacter: AdventureGuideForeverCharDB
 ## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick
-## OptionalDeps: AtlasLootClassic, ShortestPathForever, QuestieDB, SkillUpForever, LegacyForever, TweaksForever
+## OptionalDeps: AtlasLootClassic, AtlasLootClassic_DungeonsAndRaids, ShortestPathForever, QuestieDB, SkillUpForever, LegacyForever, TweaksForever
 
 Locales\enUS.lua
 Data\Quests.lua

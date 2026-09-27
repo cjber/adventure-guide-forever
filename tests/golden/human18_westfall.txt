@@ -5,14 +5,32 @@ card (chosen) | zone:1436 | Westfall story | Chapter 1 of 5 | A chain begins wit
   step 3 | area:153:4 | Complete objectives · Red Leather Bandanas | 1436 0.4761,0.2736 | after you pick it up | 141 yd | 153/4
   step 4 | town:30:2 | Turn in: Red Leather Bandanas | 1436 0.5398,0.5298 | once it's done
   step 5 | town:45 | Pick up: The Killing Fields | 1436 0.5604,0.3123 | near your level
-card | zone:1433 | Head to Redridge Mountains | 8 quests near your level | For level 20 | map 1433
+card | zone:1433 | Head to Redridge Mountains | 8 quests near your level | - | map 1433
   step 1 | town:56 | Pick up: Encroaching Gnolls | 1433 0.1019,0.7146 | near your level
   step 2 | town:61 | Visit Lakeshire, Redridge: Pick up 7 | 1433 0.1759,0.4384 | 7 to pick up
-card | zone:1440 | Head to Ashenvale | 3 quests near your level | Astranaar needs hands | map 1440
-  step 1 | town:405 | Visit Astranaar, Ashenvale: Pick up 3 | 1440 0.3577,0.4910 | 3 to pick up
+card | zone:1432 | Head to Loch Modan | 11 quests near your level | Thelsamar needs hands | map 1432
+  step 1 | town:123 | Visit Thelsamar, Loch Modan: Pick up 3 | 1432 0.3417,0.4784 | 3 to pick up
+  step 2 | town:137 | Visit Mountaineer Stormpike: Pick up 2 | 1432 0.2476,0.1840 | 2 to pick up
+  step 3 | town:139 | Pick up: A Dark Threat Looms | 1432 0.4605,0.1361 | near your level
+  step 4 | town:125 | Pick up: Bingles' Missing Supplies | 1432 0.6356,0.4792 | near your level
+  step 5 | town:116 | Visit Magmar Fellhew: Pick up 2 | 1432 0.6490,0.6666 | 2 to pick up
+  step 6 | town:117 | Visit Daryl the Youngling: Pick up 2 | 1432 0.8347,0.6546 | 2 to pick up
+card | zone:1431 | Head to Duskwood | 2 quests near your level | - | map 1431
+  step 1 | town:28 | Pick up: Jitters' Growling Gut | 1431 0.1838,0.5637 | near your level
+  step 2 | town:32 | Pick up: Raven Hill | 1431 0.7534,0.4875 | near your level
 card | zone:1413 | Head to The Barrens | 9 quests near your level | Ratchet needs hands | map 1413
   step 1 | town:340 | Visit Ratchet, The Barrens: Pick up 7 | 1413 0.6237,0.3762 | 7 to pick up
   step 2 | town:344 | Pick up: Deviate Hides | 1413 0.4599,0.3566 | near your level
   step 3 | town:382 | Pick up: Ignition | 1413 0.5652,0.0745 | near your level
+card | zone:1439 | Head to Darkshore | 16 quests near your level | Auberdine needs hands | map 1439
+  step 1 | town:452 | Visit Auberdine, Darkshore: Pick up 12 | 1439 0.3662,0.4559 | 12 to pick up
+  step 2 | town:437 | Pick up: The Sleeper Has Awakened | 1439 0.4440,0.7643 | near your level
+  step 3 | town:431 | Pick up: Therylune's Escape | 1439 0.3864,0.8733 | near your level
+  step 4 | town:429 | Pick up: One Shot. One Kill. | 1439 0.4594,0.9029 | near your level
+  step 5 | town:469 | Pick up: Gyromast's Retrieval | 1439 0.5666,0.1348 | near your level
+card | zone:1440 | Head to Ashenvale | 3 quests near your level | Astranaar needs hands | map 1440
+  step 1 | town:405 | Visit Astranaar, Ashenvale: Pick up 3 | 1440 0.3577,0.4910 | 3 to pick up
+card | zone:1437 | Head to Wetlands | 1 quest near your level | - | map 1437
+  step 1 | town:147 | Pick up: Fiora Longears | 1437 0.0996,0.5796 | near your level
 card | dungeon:36 | Deadmines | 3 quests for this dungeon | - | map 1453
   step 1 | town:80 | Visit Wilder Thistlenettle: Pick up 3 | 1453 0.7031,0.4082 | 3 to pick up

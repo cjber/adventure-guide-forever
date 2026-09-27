@@ -14,7 +14,6 @@ exclude_files = {
 ignore = { "212/_.*", "212/self" } -- unused args prefixed with _, and self on mixin handlers
 
 globals = {
-	"AtlasLoot",
 	"AdventureGuideForeverDB",
 	"AdventureGuideForeverCharDB",
 	"AdventureGuideForeverPinMixin",
@@ -30,6 +29,9 @@ globals = {
 }
 
 read_globals = {
+	"NORMAL_FONT_COLOR",
+	"OpenWorldMap",
+	"AtlasLoot",
 	"C_EncounterJournal",
 	"EJ_GetEncounterInfoByIndex",
 	"EJ_GetInstanceInfo",

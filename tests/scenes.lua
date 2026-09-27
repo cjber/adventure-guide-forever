@@ -257,6 +257,18 @@ h = Load("v1", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, {
 	questiedb = mirror,
 	items = dungeonFixture.client,
 })
+local encounters = { 3671, 3653, 3670, 3674, 3673 }
+h.G.C_EncounterJournal = {
+	GetInstanceForGameMap = function(id)
+		return id == 43 and 99 or 0
+	end,
+}
+h.G.EJ_GetEncounterInfoByIndex = function(index, instance)
+	local npc = instance == 99 and dungeonFixture.npcs[encounters[index]]
+	if npc then
+		return npc.name, "", encounters[index]
+	end
+end
 h.ns.WindowDB().dungeon = 43
 Window(h, "dungeons", 5)
 for _, row in
@@ -268,7 +280,7 @@ do
 end
 out.dungeons = Window(h, "dungeons", 5)
 for _, view in ipairs({ "prep", "bosses", "loot" }) do
-	local label = view == "bosses" and h.ns.L.DUNGEON_ELITES_TAB or h.ns.L["DUNGEON_" .. view:upper() .. "_TAB"]
+	local label = view == "bosses" and h.ns.L.DUNGEON_BOSSES_TAB or h.ns.L["DUNGEON_" .. view:upper() .. "_TAB"]
 	for _, tab in
 		ipairs(h.Find(function(frame)
 			return frame:IsVisible()
@@ -297,6 +309,48 @@ do
 	h.Click(tab)
 end
 out.dungeons_bosses_missing = Window(h, "dungeons_bosses_missing", 5)
+
+-- Owner's live regression: Alliance level 19 in Darkshore, browsing Horde-only Ragefire quests.
+-- Character selection in the beta client confirms a dwarf shaman.
+h = Load("v1", false, true, nil, nil, {
+	player = { level = 19, faction = "Alliance", raceID = 3, classID = 7, map = 1439 },
+	log = {},
+	completed = {},
+	tf = { spells = { SPELL, SPELL, SPELL, SPELL, SPELL, SPELL, SPELL } },
+	skills = { { skillID = 356, name = "Fishing", rank = 75, maxRank = 75, category = 9 } },
+	battlegrounds = { [10] = { { id = 2, name = "Warsong Gulch" } } },
+	questiedb = mirror,
+	entrances = { [389] = { map = 1454, x = 0.526, y = 0.49 } },
+})
+h.G.C_Map.GetMapInfo = function(map)
+	local record = h.ns.Data.maps[map] or h.ns.Data.zones[map]
+	return record and { name = record.name, mapType = 3 }
+end
+h.G.C_MapExplorationInfo = {
+	GetExploredMapTextures = function(map)
+		local seen = {}
+		for _, overlay in ipairs(h.ns.Data.overlays[map] or {}) do
+			if overlay.name ~= "Ruins of Mathystra" then
+				seen[#seen + 1] = { offsetX = overlay.ox, offsetY = overlay.oy, fileDataIDs = {} }
+			end
+		end
+		return seen
+	end,
+}
+h.ns.Invalidate()
+h.flush()
+h.ns.WindowDB().dungeon = 389
+out.dungeons_live = Window(h, "dungeons_live", 5)
+for _, tab in
+	ipairs(h.Find(function(frame)
+		return frame:IsVisible()
+			and frame.stockTemplate == "TabSystemTopButtonTemplate"
+			and frame:GetText() == h.ns.L.DUNGEON_BOSSES_TAB
+	end))
+do
+	h.Click(tab)
+end
+out.dungeons_empty = Window(h, "dungeons_empty", 5)
 
 local ASIDES = {
 	tf = { spells = { SPELL, SPELL, SPELL } },

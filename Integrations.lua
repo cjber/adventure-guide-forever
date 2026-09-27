@@ -328,7 +328,7 @@ function NextCard()
 end
 
 -- The cards now shown (a new route, or the guide opening): answers for cards no longer shown go, and every card
--- (MAX_JOURNEYS) queues, a frame each, when it has no minutes or the player has moved since it asked, as step 1 asks
+-- queues, a frame each, when it has no minutes or the player has moved since it asked, as step 1 asks
 -- again with each route; a card's last answer stands until the new one.
 ---@param journeys AGFJourney[]
 function Integrations.RefreshCards(journeys)
@@ -339,7 +339,7 @@ function Integrations.RefreshCards(journeys)
 		if key then
 			kept[key] = cardTravel[key]
 			local fresh = kept[key] and kept[key].minutes and kept[key].from == here
-			if not fresh and #cardQueue < ns.Model.MAX_JOURNEYS then
+			if not fresh then
 				cardQueue[#cardQueue + 1] = journey
 			end
 		end
@@ -641,7 +641,7 @@ end
 ---@param step AGFStep|AGFGiver
 ---@return boolean
 function Integrations.Navigate(step)
-	if ns.Setting("wanderer") then
+	if ns.Setting("wanderer") or not ns.Model.ValidPlace(step) then
 		return false
 	end
 	local api = SPF()
@@ -685,6 +685,18 @@ function Integrations.Navigate(step)
 	holding = false
 	NotifyGuidance()
 	return true
+end
+
+-- Explicit place buttons reveal their destination; automatic route maintenance never opens a panel.
+---@param step AGFStep|AGFGiver
+---@return boolean
+function Integrations.ShowOnMap(step)
+	if ns.Setting("wanderer") or not ns.Model.ValidPlace(step) then
+		return false
+	end
+	local routed = Integrations.Navigate(step)
+	ns.Pins.Reveal(step)
+	return routed
 end
 
 -- The native waypoint is ours while it is still where Go put it (x and y within 1e-4); once the player moves or clears

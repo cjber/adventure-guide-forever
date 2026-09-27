@@ -8,6 +8,22 @@ local L, Model = ns.L, ns.Model
 local Dungeons = {}
 ns.Dungeons = Dungeons
 
+-- Permanent character restrictions only. Other unproven requirements stay visible as locked.
+---@param quest? AGFQuest
+---@param player AGFPlayer
+---@return boolean
+function Dungeons.ForCharacter(quest, player)
+	return not quest
+		or (
+			(quest.side ~= 1 and quest.side ~= 2 or quest.side == player.side)
+			and (player.raceBit == 0 or Model.HasBit(quest.races, player.raceBit))
+			and (player.classBit == 0 or Model.HasBit(quest.classes, player.classBit))
+		)
+end
+
+-- The entrances are inside faction capitals: Orgrimmar and Stormwind, respectively.
+local CAPITAL_DUNGEONS = { [389] = 2, [34] = 1 }
+
 ---@param data AGFData
 ---@param player AGFPlayer
 ---@param yield fun()
@@ -21,6 +37,9 @@ function Dungeons.List(data, player, yield)
 				name = instance.name,
 				quests = {},
 				suitable = false,
+				hostile = CAPITAL_DUNGEONS[id] ~= nil and CAPITAL_DUNGEONS[id] ~= player.side,
+				excludedFaction = 0,
+				excludedCharacter = 0,
 				low = instance.low,
 				high = instance.high,
 			}
@@ -39,7 +58,13 @@ function Dungeons.List(data, player, yield)
 	for id, quest in pairs(data.quests) do
 		local entry = quest.dungeon and byID[quest.dungeon]
 		if entry and not quest.raid then
-			entry.quests[#entry.quests + 1] = id
+			if Dungeons.ForCharacter(quest, player) then
+				entry.quests[#entry.quests + 1] = id
+			elseif (quest.side == 1 or quest.side == 2) and quest.side ~= player.side then
+				entry.excludedFaction = entry.excludedFaction + 1
+			else
+				entry.excludedCharacter = entry.excludedCharacter + 1
+			end
 		end
 		yield()
 	end
@@ -48,7 +73,10 @@ function Dungeons.List(data, player, yield)
 			local qa, qb = data.quests[a], data.quests[b]
 			return qa.level < qb.level or (qa.level == qb.level and a < b)
 		end)
-		entry.suitable = entry.low ~= nil and player.level >= entry.low and player.level <= entry.high
+		entry.suitable = not entry.hostile
+			and entry.low ~= nil
+			and player.level >= entry.low
+			and player.level <= entry.high
 	end
 	table.sort(list, function(a, b)
 		local al, bl = a.low or math.huge, b.low or math.huge
@@ -148,7 +176,7 @@ function Dungeons.Page(data, player, completed, log, dungeon, yield)
 		end
 		prepared[id] = true
 		local quest = data.quests[id]
-		if quest and quest.start and data.maps[quest.start.map] then
+		if quest and Dungeons.ForCharacter(quest, player) and quest.start and data.maps[quest.start.map] then
 			page.prep[#page.prep + 1] = { kind = kind, quest = Dungeons.Quest(data, player, completed, log, id) }
 		end
 	end
@@ -231,10 +259,10 @@ end
 function Dungeons.Go(id)
 	local row = Dungeons.Quest(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), id)
 	local place = row.place
-	if not place then
+	if not place or not Dungeons.ForCharacter(ns.Data.quests[id], ns.State.Player()) then
 		return false
 	end
-	return ns.Integrations.Navigate({
+	return ns.Integrations.ShowOnMap({
 		map = place.map,
 		x = place.x,
 		y = place.y,
@@ -265,7 +293,7 @@ function Dungeons.Journal(instance, yield)
 		if not name or name == "" or not id then
 			break
 		end
-		rows[#rows + 1] = { id = id, name = name, rank = 3 }
+		rows[#rows + 1] = { id = id, name = name, rank = 3, journal = true }
 		index = index + 1
 		yield()
 	end
@@ -365,6 +393,101 @@ function Dungeons.Source(yield)
 	return source
 end
 
+---@param source AGFDungeonSource
+---@param instance integer
+---@param journal? AGFDungeonBoss[]
+---@return AGFDungeonBoss[]
+function Dungeons.Bosses(source, instance, journal)
+	if not (source.curated and source.curated[instance]) and journal then
+		local rows = {}
+		for _, encounter in ipairs(journal) do
+			local matches = {}
+			for _, npc in pairs(source.npcs and source.npcs[instance] or {}) do
+				if npc.name == encounter.name then
+					matches[#matches + 1] = npc
+				end
+			end
+			rows[#rows + 1] = #matches == 1 and matches[1] or encounter
+		end
+		return rows
+	end
+	return source.bosses[instance] or {}
+end
+
+local requestedLoot = {}
+---@param source AGFDungeonSource
+---@param instance integer
+---@param bosses AGFDungeonBoss[]
+---@return table[]
+function Dungeons.LootRows(source, instance, bosses)
+	local groups, order, seen = {}, {}, {}
+	for _, boss in ipairs(bosses) do
+		if not boss.journal then
+			groups[boss.id] = { boss = boss, items = {} }
+			order[#order + 1] = groups[boss.id]
+		end
+	end
+	local trash = { items = {} }
+	order[#order + 1] = trash
+	for _, item in ipairs(source.loot[instance] or {}) do
+		local quality = C_Item.GetItemQualityByID(item.id)
+		local name = C_Item.GetItemNameByID(item.id)
+		if (not quality or not name) and not requestedLoot[item.id] then
+			requestedLoot[item.id] = true
+			C_Item.RequestLoadItemDataByID(item.id)
+		end
+		if not seen[item.id] and (item.startQuest or (quality and quality >= 2)) then
+			seen[item.id] = true
+			local group = trash
+			for _, boss in ipairs(bosses) do
+				for _, npc in ipairs(item.droppers or {}) do
+					if not boss.journal and npc.id == boss.id and group == trash then
+						group = groups[boss.id]
+					end
+				end
+			end
+			local itemName, itemQuality, requiredLevel, itemType, itemSubType, equipSlot
+			if C_Item.GetItemInfo then
+				local itemInfo = { C_Item.GetItemInfo(item.id) }
+				itemName, itemQuality, requiredLevel, itemType, itemSubType, equipSlot =
+					itemInfo[1], itemInfo[3], itemInfo[5], itemInfo[6], itemInfo[7], itemInfo[9]
+			end
+			local meta = {}
+			if itemType and itemType ~= "" then
+				meta[#meta + 1] = itemSubType and itemType .. L.SEPARATOR .. itemSubType or itemType
+			end
+			equipSlot = equipSlot and _G[equipSlot] or equipSlot
+			if equipSlot and equipSlot ~= "" and equipSlot ~= "INVTYPE_NON EQUIP" then
+				meta[#meta + 1] = equipSlot
+			end
+			if requiredLevel and requiredLevel > 0 then
+				meta[#meta + 1] = L.DUNGEON_ITEM_REQUIRED_LEVEL:format(requiredLevel)
+			end
+			group.items[#group.items + 1] = {
+				title = itemName or name or item.name,
+				item = item.id,
+				quality = itemQuality or quality,
+				info = table.concat(meta, L.SEPARATOR),
+			}
+		end
+	end
+	local rows = {}
+	for _, group in ipairs(order) do
+		if #group.items > 0 then
+			local boss = group.boss
+			rows[#rows + 1] = {
+				title = boss and boss.name or ns.L.DUNGEON_TRASH,
+				heading = true,
+				info = boss and boss.low and boss.low > 0 and ns.L.DUNGEON_LEVEL:format(boss.low) or "",
+			}
+			for _, item in ipairs(group.items) do
+				rows[#rows + 1] = item
+			end
+		end
+	end
+	return rows
+end
+
 ---@param instance integer
 ---@param source? AGFDungeonSource
 ---@return AGFPoint?
@@ -381,7 +504,7 @@ function Dungeons.GoEntrance(instance, source)
 	if not point then
 		return false
 	end
-	return ns.Integrations.Navigate({
+	return ns.Integrations.ShowOnMap({
 		map = point.map,
 		x = point.x,
 		y = point.y,

@@ -201,7 +201,12 @@ end
 do
 	local charDB = {
 		battlegrounds = true,
-		notInterested = { calling = "Your calling", ["zone:1424"] = "Head to Hillsbrad Foothills" },
+		notInterested = {
+			calling = "Your calling",
+			["zone:1424"] = "Head to Hillsbrad Foothills",
+			["zone:1411"] = "Durotar",
+			["zone:1412"] = "Mulgore",
+		},
 	}
 	local h = harness.load({ battlegrounds = OPENS, charDB = charDB, completed = { 844 }, log = {} })
 	h.player.level = 19

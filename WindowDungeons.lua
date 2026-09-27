@@ -5,10 +5,11 @@ local L, Window, Dungeons = ns.L, ns.Window, ns.Dungeons
 -- §2.21: the shared EJ frame, featured card and divider; fixed columns and recycled scrolling rows.
 -- Work belongs to the visible page. Hiding it cancels its coroutine before any more source reads or drawing.
 local LEFT, TOP = Window.LEFT, Window.TOP
-local LIST_W, GAP, HEADER_H = 168, 18, 92
+local LIST_W, GAP, HEADER_H = 168, 28, 100
 local RIGHT_X = LEFT + LIST_W + GAP
 local PAGE_W = Window.INSET_WIDTH - Window.RIGHT - RIGHT_X
-local BODY_Y, BODY_H, QUEST_W = TOP + HEADER_H + 42, 222, 282
+local BODY_Y, BODY_H, QUEST_W = TOP + HEADER_H + 38, 222, 272
+local DETAIL_H = BODY_H - 52
 local ROW_H, LIST_H, SLICE_MS = 52, 42, 1
 ---@type Frame
 local content
@@ -19,13 +20,17 @@ local dungeonIcon
 ---@type FontString
 local title, location, summary, note
 ---@type Button
-local entrance, plan, journey
+local entrance, journey
+---@class AGFDungeonPlan : CheckButton
+---@field Text FontString
+---@type AGFDungeonPlan
+local plan
 ---@type AGFWindowEmpty
 local empty
 ---@type Frame
 local detail
 ---@type FontString
-local detailTitle, detailInfo, detailGiver, detailEnd, detailObjective, detailRewards, detailChain
+local detailTitle, detailInfo, detailGiver, detailEnd, detailObjective, detailObjectives, detailRewards, detailChain
 ---@type Frame
 local detailBody
 ---@type AGFScrollFrame
@@ -92,14 +97,31 @@ local function Button(parent, label, x, y, width, action)
 end
 
 ---@param button Button
-local function MapTooltip(button)
+---@param place? fun(): AGFPoint|AGFPlace?
+---@param row? Button
+local function MapTooltip(button, place, row)
+	local function Leave()
+		if place then
+			ns.Pins.Highlight(place(), false)
+		end
+		if row then
+			row:UnlockHighlight()
+		end
+		GameTooltip_Hide()
+	end
 	button:SetMotionScriptsWhileDisabled(true)
 	button:SetScript("OnEnter", function()
 		if ns.Setting("wanderer") then
 			ns.Overview.ShowTooltip(button, { L.DUNGEON_WANDERER })
+		elseif place then
+			ns.Pins.Highlight(place(), true)
+			if row then
+				row:LockHighlight()
+			end
 		end
 	end)
-	button:SetScript("OnLeave", GameTooltip_Hide)
+	button:SetScript("OnLeave", Leave)
+	button:SetScript("OnHide", Leave)
 end
 
 ---@class AGFDungeonRow : Button
@@ -109,7 +131,6 @@ end
 ---@field Selected AGFArtSlice
 ---@field Map Button
 ---@field Expand AGFCollapseButton
----@field Rewards Texture[]
 ---@field ItemIcon Texture
 ---@field value? table
 
@@ -172,17 +193,9 @@ local function List(parent, x, y, width, height, rowHeight, paint, click)
 	for index = 1, math.ceil(height / rowHeight) + 1 do
 		local row = CreateFrame("Button", nil, child) --[[@as AGFDungeonRow]]
 		row:SetSize(width, rowHeight - 2)
-		row.Rewards = {}
-		for slot = 1, 3 do
-			local icon = row:CreateTexture(nil, "ARTWORK")
-			icon:SetSize(16, 16)
-			icon:SetPoint("BOTTOMLEFT", 8 + (slot - 1) * 20, 3)
-			icon:Hide()
-			row.Rewards[slot] = icon
-		end
 		row.ItemIcon = row:CreateTexture(nil, "ARTWORK")
-		row.ItemIcon:SetSize(28, 28)
-		row.ItemIcon:SetPoint("TOPLEFT", 8, -8)
+		row.ItemIcon:SetSize(24, 24)
+		row.ItemIcon:SetPoint("TOPLEFT", 8, -5)
 		row.ItemIcon:Hide()
 		row.Selected = ns.Art.RowArt(row, true) --[[@as AGFArtSlice]]
 		row.Title = Text(row, "", 8, 5, width - 16, "GameFontNormal")
@@ -199,7 +212,7 @@ local function List(parent, x, y, width, height, rowHeight, paint, click)
 		MapTooltip(row.Map)
 		row.Expand = CreateFrame("Button", nil, row, "CollapseButtonTemplate") --[[@as AGFCollapseButton]]
 		row.Expand:SetSize(20, 20)
-		row.Expand:SetPoint("BOTTOMRIGHT", -4, 2)
+		row.Expand:SetPoint("TOPLEFT", 3, -2)
 		row.Expand:SetScript("OnClick", function()
 			if row.value and row.value.quest then
 				local id = row.value.quest.id
@@ -290,32 +303,46 @@ end
 ---@param value table
 local function PaintQuest(row, value)
 	local quest = value.quest
-	local items = source and source.rewards[quest.id] or {}
-	for index, texture in ipairs(row.Rewards) do
-		local item = not value.chain and items[index]
-		local icon = item and ItemIcon(item.id)
-		texture:SetShown(icon ~= nil)
-		if icon then
-			texture:SetTexture(icon)
-		end
-	end
 	row.Title:SetText((ns.State.QuestTitle(quest.id) or quest.title))
 	row.Title:ClearAllPoints()
-	row.Title:SetPoint("TOPLEFT", value.chain and 18 or 8, -5)
-	row.Info:SetText((value.alternative and L.DUNGEON_ALTERNATIVE .. L.SEPARATOR or "") .. Status(quest))
+	row.Title:SetPoint("TOPLEFT", value.chain and 34 or 24, -5)
+	row.Info:SetText(Status(quest))
 	row.Giver:SetText(Giver(quest))
-	row.Title:SetWidth(QUEST_W - 110)
+	row.Title:SetWidth(QUEST_W - (value.chain and 34 or 24) - 74 - 16)
 	row.Info:ClearAllPoints()
 	row.Info:SetPoint("TOPRIGHT", -8, -7)
-	row.Info:SetWidth(98)
+	row.Info:SetWidth(74)
 	row.Info:SetJustifyH("RIGHT")
 	row.Giver:ClearAllPoints()
-	row.Giver:SetPoint("TOPLEFT", value.chain and 18 or 8, -21)
-	row.Giver:SetWidth(QUEST_W - 24)
-	row.Map:SetShown(value.chain == true and quest.place ~= nil)
+	row.Giver:SetPoint("TOPLEFT", value.chain and 34 or 24, -21)
+	row.Giver:SetWidth(QUEST_W - (value.chain and 34 or 24) - 8)
+	row.Map:SetShown(value.chain and quest.place ~= nil)
+	row.Map:ClearAllPoints()
+	row.Map:SetPoint("TOPRIGHT", -4, -18)
+	row.Map:SetHeight(18)
+	if value.chain and quest.place then
+		row.Giver:SetWidth(QUEST_W - 34 - 58)
+	end
+	MapTooltip(row.Map, function()
+		return quest.place
+	end, row)
 	row.Map:SetEnabled(quest.place ~= nil and not ns.Setting("wanderer"))
 	row.Expand:SetShown(not value.chain and #Dungeons.Chain(ns.Data, quest.id, function() end) > 1)
 	row.Expand:UpdateCollapsedState(not expanded[quest.id])
+	row:SetScript("OnEnter", function()
+		local lines = { row.Title:GetText(), Status(quest), Giver(quest) }
+		if value.alternative then
+			lines[#lines + 1] = L.DUNGEON_ALTERNATIVE
+		end
+		for _, reason in
+			ipairs(ns.Model.Why(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), quest.id))
+		do
+			if not reason.met then
+				lines[#lines + 1] = reason.text
+			end
+		end
+		ns.Overview.ShowTooltip(row, lines)
+	end)
 	ns.Art.SetSliceShown(row.Selected, selectedQuest == quest.id)
 end
 
@@ -335,7 +362,7 @@ local function QuestRows()
 				end
 			end
 			for _, id in ipairs(chain) do
-				if id ~= quest.id then
+				if id ~= quest.id and Dungeons.ForCharacter(ns.Data.quests[id], ns.State.Player()) then
 					values[#values + 1] = {
 						quest = Dungeons.Quest(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), id),
 						chain = true,
@@ -367,9 +394,31 @@ local function PaintOther(row, value)
 	row.Info:SetPoint("TOPLEFT", icon and 44 or 8, -21)
 	row.Giver:SetPoint("TOPLEFT", icon and 44 or 8, -35)
 	row.Title:SetText(value.title)
+	row.Title:SetFontObject(value.heading and "GameFontNormal" or "GameFontHighlight")
+	---@type table<integer, { r: number, g: number, b: number }>
+	local qualityColors = rawget(_G, "ITEM_QUALITY_COLORS")
+	local color = value.item and qualityColors and qualityColors[value.quality]
+	if color then
+		row.Title:SetTextColor(color.r, color.g, color.b)
+	else
+		row.Title:SetTextColor(1, 1, 1)
+	end
+	row:EnableMouse(not value.heading)
+	row:SetScript("OnEnter", function()
+		if value.item then
+			GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
+			GameTooltip:SetItemByID(value.item)
+			GameTooltip:Show()
+		else
+			ns.Overview.ShowTooltip(row, { value.title, value.info or "", value.giver or "" })
+		end
+	end)
 	row.Info:SetText(value.info or "")
 	row.Giver:SetText(value.giver or "")
 	local point = value.entrance and Dungeons.Entrance(instance, source) or value.quest and value.quest.place
+	MapTooltip(row.Map, function()
+		return point
+	end, row)
 	row.Map:SetShown(point ~= nil)
 	row.Map:SetEnabled(not ns.Setting("wanderer"))
 	row.Map:SetScript("OnClick", function()
@@ -463,14 +512,14 @@ local function DrawDetail()
 	if not quest then
 		return
 	end
-	local cursor = 5
+	local cursor = 0
 	local function Line(label, text)
 		label:SetText(text)
 		label:SetShown(text ~= "")
 		if text ~= "" then
 			label:ClearAllPoints()
 			label:SetPoint("TOPLEFT", 0, -cursor)
-			cursor = cursor + label:GetStringHeight() + 6
+			cursor = cursor + label:GetStringHeight() + 4
 		end
 	end
 	Line(detailTitle, ns.State.QuestTitle(quest.id) or quest.title)
@@ -478,16 +527,21 @@ local function DrawDetail()
 	if quest.level and quest.level > 0 then
 		info[#info + 1] = L.DUNGEON_QUEST_LEVEL:format(quest.level)
 	end
-	if quest.xp then
+	if quest.xp and quest.xp > 0 then
 		info[#info + 1] = L.DUNGEON_XP:format(BreakUpLargeNumbers(quest.xp))
 	end
 	Line(detailInfo, table.concat(info, L.SEPARATOR))
 	local objective = Dungeons.Objective(quest.id, source)
+	if objective then
+		cursor = cursor + 6
+	end
+	Line(detailObjectives, objective and L.DUNGEON_OBJECTIVES or "")
 	Line(detailObjective, objective or "")
+	cursor = cursor + 6
 	local record = ns.Data.quests[quest.id]
 	local start, finish = Place(record and record.start), Place(record and record.finish)
 	Line(detailGiver, start ~= "" and L.DUNGEON_START:format(start) or "")
-	Line(detailEnd, finish ~= "" and L.DUNGEON_END:format(finish) or "")
+	Line(detailEnd, finish ~= "" and finish ~= start and L.DUNGEON_END:format(finish) or "")
 	local items = source and source.rewards[quest.id] or {}
 	detailDivider:SetShown(#items > 0)
 	if #items > 0 then
@@ -522,8 +576,8 @@ local function DrawDetail()
 		end
 	end
 	Line(detailChain, part and L.DUNGEON_PART:format(part, total) or "")
-	detailBody:SetHeight(math.max(BODY_H - 32, cursor))
-	detailScroll.ScrollBar:SetShown(cursor > BODY_H - 32)
+	detailBody:SetHeight(math.max(DETAIL_H, cursor))
+	detailScroll.ScrollBar:SetShown(cursor > DETAIL_H)
 	detail:SetScript("OnEnter", function()
 		local lines = {}
 		if objective then
@@ -538,6 +592,9 @@ local function DrawDetail()
 			ns.Overview.ShowTooltip(detail, lines)
 		end
 	end)
+	MapTooltip(giver, function()
+		return quest.place
+	end, nil)
 	giver:SetShown(quest.place ~= nil)
 	giver:SetEnabled(not ns.Setting("wanderer"))
 end
@@ -554,13 +611,17 @@ function Draw()
 	location:SetText(
 		point and L.DUNGEON_ENTRANCE_AT:format(ns.State.ZoneName(point.map) or "", point.x * 100, point.y * 100) or ""
 	)
-	local minimum = dungeon.minimum
-			and dungeon.minimum > 0
-			and L.SEPARATOR .. L.DUNGEON_ENTRY_LEVEL:format(dungeon.minimum)
-		or ""
-	summary:SetText(
-		Range(dungeon) .. minimum .. L.SEPARATOR .. L.DUNGEON_REMAINING_XP:format(BreakUpLargeNumbers(page.xp))
-	)
+	local meta = {}
+	if dungeon.minimum and dungeon.minimum > 0 then
+		meta[#meta + 1] = L.DUNGEON_ENTRY_LEVEL:format(dungeon.minimum)
+	end
+	if page.xp > 0 then
+		meta[#meta + 1] = L.DUNGEON_REMAINING_XP:format(BreakUpLargeNumbers(page.xp))
+	end
+	if dungeon.hostile then
+		meta[#meta + 1] = L.DUNGEON_HOSTILE_ENTRANCE
+	end
+	summary:SetText(table.concat(meta, L.SEPARATOR))
 	ns.ZoneIcon.SetBackdrop(
 		header.Art,
 		PAGE_W - 4,
@@ -570,9 +631,13 @@ function Draw()
 		point and point.y,
 		900
 	)
+	MapTooltip(entrance, function()
+		return point
+	end, nil)
+	entrance:SetShown(point ~= nil)
 	entrance:SetEnabled(point ~= nil and not ns.Setting("wanderer"))
 	local key = "dungeon:" .. dungeon.id
-	plan:SetText(Dungeons.Planned(dungeon.id) and L.DUNGEON_PLANNED or L.DUNGEON_PLAN)
+	plan:SetChecked(Dungeons.Planned(dungeon.id))
 	local offered = false
 	for _, card in ipairs(ns.Route().journeys) do
 		offered = offered or card.key == key
@@ -594,8 +659,7 @@ function Draw()
 	quests.frame:SetShown(view == "quests")
 	other.frame:SetShown(view ~= "quests")
 	other.rowHeight = view == "prep" and ROW_H or 44
-	local curated = source and source.curated and source.curated[dungeon.id] and source.bosses[dungeon.id]
-	subTabs[3]:SetText(not bosses and not curated and source and L.DUNGEON_ELITES_TAB or L.DUNGEON_BOSSES_TAB)
+	subTabs[3]:SetText(L.DUNGEON_BOSSES_TAB)
 	for index, key_ in ipairs({ "quests", "prep", "bosses", "loot" }) do
 		local muted = (key_ == "bosses" and not bosses and not source) or (key_ == "loot" and not source)
 		subTabs[index]:SetTabSelected(key_ == view)
@@ -609,39 +673,39 @@ function Draw()
 	if view == "quests" then
 		SetList(quests, QuestRows())
 		if #page.quests == 0 then
-			note:SetText(L.DUNGEON_NO_QUESTS)
+			Window.SetEmpty(
+				empty,
+				dungeon.excludedCharacter > 0 and L.DUNGEON_NO_CHARACTER_QUESTS
+					or dungeon.excludedFaction > 0 and L.DUNGEON_NO_FACTION_QUESTS
+					or L.DUNGEON_NO_QUESTS
+			)
+			note:SetText("")
 		end
 	elseif view == "prep" then
-		SetList(other, PrepRows())
+		local rows = PrepRows()
+		SetList(other, rows)
+		if #rows == 0 then
+			Window.SetEmpty(empty, L.DUNGEON_NO_PREP)
+		end
 	else
 		local rows = {}
 		local known
 		if view == "bosses" then
-			---@type AGFDungeonBoss[]?
-			local encounters = curated or bosses or (source and source.bosses[dungeon.id])
-			known = encounters ~= nil
-			for _, entry in ipairs(encounters or {}) do
-				local rank = entry.rank == 3 and L.DUNGEON_BOSS
-					or entry.rank == 2 and L.DUNGEON_RARE_ELITE
-					or L.DUNGEON_ELITE
-				if entry.low and entry.high and entry.low > 0 and entry.high >= entry.low then
-					local levels = entry.low == entry.high and L.DUNGEON_LEVEL:format(entry.low)
-						or L.DUNGEON_ENEMY_LEVELS:format(entry.low, entry.high)
-					rank = rank .. L.SEPARATOR .. levels
-				end
-				rows[#rows + 1] = { title = entry.name, info = rank }
-			end
+			known = source and Dungeons.Bosses(source, dungeon.id, bosses) or bosses
 		else
-			local loot = source and source.loot[dungeon.id]
-			known = loot ~= nil
-			for _, entry in ipairs(loot or {}) do
-				local names = {}
-				for _, npc in ipairs(entry.droppers or {}) do
-					names[#names + 1] = npc.name
-				end
-				local drop = #names > 0 and L.DUNGEON_DROPPED_BY:format(table.concat(names, L.LIST_SEPARATOR))
-					or L.DUNGEON_DROP
-				rows[#rows + 1] = { title = entry.name, info = drop, item = entry.id }
+			known = source and source.loot[dungeon.id]
+		end
+		if source and not known then
+			known = {}
+		end
+		if view == "loot" and source then
+			rows = Dungeons.LootRows(source, dungeon.id, Dungeons.Bosses(source, dungeon.id, bosses))
+		else
+			for _, entry in ipairs(known or {}) do
+				rows[#rows + 1] = {
+					title = entry.name,
+					info = entry.low and entry.low > 0 and L.DUNGEON_LEVEL:format(entry.low) or L.DUNGEON_BOSS,
+				}
 			end
 		end
 		SetList(other, rows)
@@ -652,7 +716,7 @@ function Draw()
 			)
 			note:SetText("")
 		elseif #rows == 0 then
-			Window.SetEmpty(empty, L.DUNGEON_NO_RECORDS)
+			Window.SetEmpty(empty, view == "bosses" and L.DUNGEON_NO_BOSSES or L.DUNGEON_NO_RECORDS)
 			note:SetText("")
 		end
 	end
@@ -720,9 +784,11 @@ function Refresh()
 		page = Dungeons.Page(ns.Data, player, ns.State.Completed(), ns.State.Log(), dungeon, yield)
 		local _
 		bosses, _, journalIcon = Dungeons.Journal(dungeon.id, yield)
-		if not selectedQuest then
-			selectedQuest = dungeon.quests[1]
+		local selected = selectedQuest and ns.Data.quests[selectedQuest]
+		if #page.quests == 0 or (selectedQuest and (not selected or not Dungeons.ForCharacter(selected, player))) then
+			selectedQuest = nil
 		end
+		selectedQuest = selectedQuest or dungeon.quests[1]
 		Draw()
 		if not sourceRead then
 			source = Dungeons.Source(yield)
@@ -733,35 +799,35 @@ function Refresh()
 end
 
 local function BuildDetail()
-	detail = CreateFrame("Frame", nil, content)
+	detail = CreateFrame("Frame", nil, content, "InsetFrameTemplate") --[[@as Frame]]
 	detail:SetPoint("TOPLEFT", RIGHT_X + QUEST_W + GAP, -BODY_Y)
 	local width = PAGE_W - QUEST_W - GAP
 	detail:SetSize(width, BODY_H)
 	detail:EnableMouse(true)
 	detail:SetScript("OnLeave", GameTooltip_Hide)
 	detailScroll = CreateFrame("ScrollFrame", nil, detail, "ScrollFrameTemplate") --[[@as AGFScrollFrame]]
-	detailScroll:SetPoint("TOPLEFT")
-	detailScroll:SetSize(width - 12, BODY_H - 32)
+	detailScroll:SetPoint("TOPLEFT", 10, -10)
+	detailScroll:SetSize(width - 32, DETAIL_H)
 	detailScroll.ScrollBar:ClearAllPoints()
 	detailScroll.ScrollBar:SetPoint("TOPLEFT", detailScroll, "TOPRIGHT", 3, 0)
 	detailScroll.ScrollBar:SetPoint("BOTTOMLEFT", detailScroll, "BOTTOMRIGHT", 3, 0)
 	detailBody = CreateFrame("Frame", nil, detailScroll)
-	detailBody:SetSize(width - 12, BODY_H - 32)
+	detailBody:SetSize(width - 32, DETAIL_H)
 	detailScroll:SetScrollChild(detailBody)
-	detailTitle = Text(detailBody, "", 0, 5, width - 12, "GameFontNormal")
-	detailTitle:SetMaxLines(2)
-	detailInfo = Text(detailBody, "", 0, 0, width - 12)
-	detailObjective = Text(detailBody, "", 0, 0, width - 12)
-	detailObjective:SetMaxLines(4)
-	detailGiver = Text(detailBody, "", 0, 0, width - 12)
+	detailTitle = Text(detailBody, "", 0, 0, width - 32, "GameFontNormalLarge")
+	detailInfo = Text(detailBody, "", 0, 0, width - 32)
+	detailObjective = Text(detailBody, "", 0, 0, width - 32)
+	detailObjective:SetSpacing(3)
+	detailObjectives = Text(detailBody, "", 0, 0, width - 32, "GameFontNormal")
+	detailGiver = Text(detailBody, "", 0, 0, width - 32)
 	detailGiver:SetMaxLines(2)
-	detailEnd = Text(detailBody, "", 0, 0, width - 12)
+	detailEnd = Text(detailBody, "", 0, 0, width - 32)
 	detailEnd:SetMaxLines(2)
 	detailDivider = detailBody:CreateTexture(nil, "ARTWORK")
-	ns.Art.Fit(detailDivider, "UI-Journeys-Renown-divider", width - 12, 6)
-	detailRewards = Text(detailBody, "", 0, 0, width - 12, "GameFontNormalSmall")
-	detailChain = Text(detailBody, "", 0, 0, width - 12, "GameFontDisableSmall")
-	giver = Button(detail, L.DUNGEON_SHOW_GIVER, 0, BODY_H - 22, width, function()
+	ns.Art.Fit(detailDivider, "UI-Journeys-Renown-divider", width - 32, 6)
+	detailRewards = Text(detailBody, "", 0, 0, width - 32, "GameFontNormal")
+	detailChain = Text(detailBody, "", 0, 0, width - 32, "GameFontDisableSmall")
+	giver = Button(detail, L.DUNGEON_SHOW_GIVER, 10, BODY_H - 32, width - 20, function()
 		if selectedQuest then
 			Dungeons.Go(selectedQuest)
 		end
@@ -781,9 +847,13 @@ local function BuildContents(parent)
 	content:SetScript("OnHide", function()
 		generation = generation + 1
 	end)
-	empty = Window.CreateEmpty(content, "UI-EJ-Classic")
+	local body = CreateFrame("Frame", nil, content, "InsetFrameTemplate") --[[@as Frame]]
+	body:SetPoint("TOPLEFT", RIGHT_X - 4, -(BODY_Y - 4))
+	body:SetSize(PAGE_W + 8, BODY_H + 8)
+	body:SetFrameLevel(content:GetFrameLevel())
+	empty = Window.CreateEmpty(body, "UI-EJ-Classic")
 	empty.Art:ClearAllPoints()
-	empty.Art:SetPoint("TOPLEFT", RIGHT_X, -BODY_Y)
+	empty.Art:SetPoint("TOPLEFT", 4, -4)
 	empty.Art:SetSize(PAGE_W, BODY_H)
 	ns.Art.Cover(empty.Art, "UI-EJ-Classic", PAGE_W, BODY_H)
 	empty.Text:SetWidth(PAGE_W - 60)
@@ -792,20 +862,25 @@ local function BuildContents(parent)
 	heading:SetPoint("TOPLEFT", LEFT + 8, -TOP)
 	list = List(content, LEFT, TOP + 22, LIST_W, 338, LIST_H, function(row, value)
 		row.Title:SetText(ns.State.InstanceName(value.id) or value.name)
-		row.Info:SetText(Range(value --[[@as AGFDungeon]]))
+		local range = Range(value --[[@as AGFDungeon]])
+		row.Info:SetText(value.hostile and L.DUNGEON_HOSTILE_LEVELS:format(range) or range)
 		row.Giver:SetText("")
 		row.Title:SetFontObject("GameFontHighlight")
 		if value.low then
 			local player = ns.State.Player()
 			local level = math.max(value.low, math.min(player.level, value.high))
 			local color = GetQuestDifficultyColor(level)
-			row.Info:SetTextColor(color.r, color.g, color.b)
+			if value.hostile then
+				row.Info:SetTextColor(0.5, 0.5, 0.5)
+			else
+				row.Info:SetTextColor(color.r, color.g, color.b)
+			end
 		end
 		row:SetScript("OnEnter", function()
 			ns.Overview.ShowTooltip(row, {
 				row.Title:GetText(),
 				Range(value --[[@as AGFDungeon]]),
-				L.DUNGEON_LEVEL_TOOLTIP,
+				value.hostile and L.DUNGEON_HOSTILE_ENTRANCE or L.DUNGEON_LEVEL_TOOLTIP,
 			})
 		end)
 		row.Map:Hide()
@@ -830,34 +905,36 @@ local function BuildContents(parent)
 	title:SetWordWrap(false)
 	location = Text(inner, "", 62, 35, PAGE_W - 76)
 	location:SetWordWrap(false)
-	summary = Text(inner, "", 14, 53, PAGE_W - 28)
-	plan = Button(inner, L.DUNGEON_PLAN, 12, 69, 150, function()
+	summary = Text(inner, "", 62, 51, PAGE_W - 76)
+	plan = CreateFrame("CheckButton", nil, inner, "UICheckButtonTemplate") --[[@as AGFDungeonPlan]]
+	plan:SetPoint("TOPLEFT", 10, -68)
+	plan:SetSize(24, 24)
+	plan:SetHitRectInsets(0, -100, 0, 0)
+	plan.Text:SetText(L.DUNGEON_PLAN)
+	plan.Text:SetFontObject("GameFontNormal")
+	plan:SetScript("OnClick", function()
 		if page then
 			Dungeons.SetPlanned(page.dungeon.id, not Dungeons.Planned(page.dungeon.id))
 		end
 	end)
-	entrance = Button(inner, L.GO_TO_ENTRANCE, PAGE_W - 132, 69, 120, function()
+	entrance = Button(inner, L.GO_TO_ENTRANCE, PAGE_W - 136, 69, 124, function()
 		if page then
 			Dungeons.GoEntrance(page.dungeon.id, source)
 		end
 	end)
 	MapTooltip(entrance)
-	journey = Button(inner, L.DUNGEON_START_JOURNEY, 170, 69, 150, function()
+	journey = Button(inner, L.DUNGEON_START_JOURNEY, 144, 69, 124, function()
 		if page then
 			ns.Choose("dungeon:" .. page.dungeon.id, true)
 		end
 	end)
-	local divider = Window.CreateDivider(content, TOP + HEADER_H)
-	divider:ClearAllPoints()
-	divider:SetPoint("BOTTOMLEFT", content, "TOPLEFT", RIGHT_X, -BODY_Y)
-	ns.Art.Fit(divider, "UI-Journeys-Renown-divider", PAGE_W, 16)
 	for index, label in ipairs({ L.DUNGEON_QUESTS_TAB, L.DUNGEON_PREP_TAB, L.DUNGEON_BOSSES_TAB, L.DUNGEON_LOOT_TAB }) do
 		local key = ({ "quests", "prep", "bosses", "loot" })[index]
 		local tab = CreateFrame("Button", nil, content, "TabSystemTopButtonTemplate") --[[@as AGFTopTab]]
 		tab:SetText(label)
 		tab:SetSize(78, 32)
 		tab:HandleRotation()
-		tab:SetPoint("TOPLEFT", RIGHT_X + 6 + (index - 1) * 86, -(BODY_Y - 36))
+		tab:SetPoint("BOTTOMLEFT", body, "TOPLEFT", 8 + (index - 1) * 82, 0)
 		tab:SetScript("OnEnter", function()
 			if (key == "bosses" and not bosses and not source) or (key == "loot" and not source) then
 				ns.Overview.ShowTooltip(tab, {
@@ -876,10 +953,10 @@ local function BuildContents(parent)
 		subTabs[index] = tab
 	end
 	note = Text(content, "", RIGHT_X + 8, BODY_Y + BODY_H + 2, PAGE_W - 16, "GameFontDisableSmall")
-	quests = List(content, RIGHT_X, BODY_Y, QUEST_W, BODY_H, 58, PaintQuest, function(value)
+	quests = List(content, RIGHT_X, BODY_Y, QUEST_W, BODY_H, 38, PaintQuest, function(value)
 		SelectQuest(value.quest.id)
 	end)
-	other = List(content, RIGHT_X, BODY_Y, PAGE_W - 12, BODY_H, 44, PaintOther, function(value)
+	other = List(content, RIGHT_X, BODY_Y, PAGE_W - 12, BODY_H, 36, PaintOther, function(value)
 		if value.item then
 			GameTooltip:SetOwner(other.frame, "ANCHOR_RIGHT")
 			GameTooltip:SetItemByID(value.item)

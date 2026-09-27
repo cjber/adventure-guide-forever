@@ -4,12 +4,67 @@ card (chosen) | zone:1423 | Eastern Plaguelands story | Chapter 1 of 2 | A chain
   step 2 | area:6021:4 | Complete objectives · Zaeldarr the Outcast | 1423 0.4974,0.5887 | after you pick it up | 1244 yd | 6021/4
   step 3 | town:226:2 | Turn in: Zaeldarr the Outcast | 1423 0.6993,0.5372 | once it's done
   step 4 | town:233 | Visit Tirion Fordring: Pick up 3 | 1423 0.0516,0.3557 | 3 to pick up
-card | zone:1451 | Head to Silithus | 11 quests near your level | Cenarion Hold needs hands | map 1451
-  step 1 | town:258 | Visit Cenarion Hold, Silithus: Pick up 11 | 1451 0.4945,0.3645 | 11 to pick up
+card | zone:1422 | Head to Western Plaguelands | 6 quests near your level | - | map 1422
+  step 1 | town:212 | Pick up: The Wildlife Suffers Too | 1422 0.5373,0.6466 | near your level
+  step 2 | town:197 | Visit Chillwind Camp, Western Plaguelands: Pick up 2 | 1422 0.4342,0.8483 | 2 to pick up
+  step 3 | town:210 | Pick up: A Matter of Time | 1422 0.3946,0.6676 | near your level
+  step 4 | town:219 | Pick up: Better Late Than Never | 1422 0.3840,0.5405 | near your level
+  step 5 | town:231 | Pick up: Unfinished Business | 1422 0.5192,0.2806 | near your level
 card | zone:1452 | Head to Winterspring | 10 quests near your level | - | map 1452
   step 1 | town:453 | Pick up: Threat of the Winterfall | 1452 0.3127,0.4516 | near your level
   step 2 | town:463 | Visit Jaron Stoneshaper: Pick up 2 | 1452 0.5214,0.3043 | 2 to pick up
   step 3 | town:455 | Visit Everlook, Winterspring: Pick up 7 | 1452 0.6192,0.3830 | 7 to pick up
+card | zone:1451 | Head to Silithus | 11 quests near your level | Cenarion Hold needs hands | map 1451
+  step 1 | town:258 | Visit Cenarion Hold, Silithus: Pick up 11 | 1451 0.4945,0.3645 | 11 to pick up
+card | zone:1428 | Head to Burning Steppes | 15 quests near your level | - | map 1428
+  step 1 | town:84 | Pick up: A Taste of Flame | 1428 0.9509,0.3156 | near your level
+  step 2 | town:81 | Visit Morgan's Vigil, Burning Steppes: Pick up 6 | 1428 0.8582,0.6895 | 6 to pick up
+  step 3 | town:88 | Visit Flame Crest, Burning Steppes: Pick up 7 | 1428 0.6606,0.2195 | 7 to pick up
+  step 4 | town:85 | Pick up: Dark Iron Legacy | 1428 0.2898,0.2892 | near your level
+card | zone:1450 | Head to Moonglade | 1 quest near your level | - | map 1450
+  step 1 | town:470 | Pick up: A Reliquary of Purity | 1450 0.5169,0.4510 | near your level
+card | zone:1419 | Head to Blasted Lands | 10 quests near your level | - | map 1419
+  step 1 | town:31 | Pick up: Warrior Kinship | 1419 0.5277,0.0294 | near your level
+  step 2 | town:25 | Visit Bloodmage Drazial: Pick up 5 | 1419 0.5055,0.1420 | 5 to pick up
+  step 3 | town:17 | Visit Kum'isha the Collector: Pick up 2 | 1419 0.5198,0.3565 | 2 to pick up
+  step 4 | town:21 | Visit Nethergarde Keep, Blasted Lands: Pick up 2 | 1419 0.6757,0.1929 | 2 to pick up
+card | zone:1448 | Head to Felwood | 8 quests near your level | - | map 1448
+  step 1 | town:457 | Pick up: Deadwood of the North | 1448 0.6477,0.0813 | near your level
+  step 2 | town:458 | Pick up: Winterfall Activity | 1448 0.6830,0.0608 | near your level
+  step 3 | town:427 | Visit Ivy Leafrunner: Pick up 4 | 1448 0.5096,0.8158 | 4 to pick up
+  step 4 | town:422 | Pick up: Timbermaw Ally | 1448 0.5093,0.8501 | near your level
+  step 5 | town:421 | Pick up: Cleansing Felwood | 1448 0.5415,0.8683 | near your level
+card | zone:1449 | Head to Un'Goro Crater | 14 quests near your level | - | map 1413
+  step 1 | town:340 | Pick up: Volcanic Activity | 1413 0.6245,0.3873 | near your level
+  step 2 | town:265 | Pick up: Crystals of Power | 1449 0.4192,0.0270 | near your level
+  step 3 | town:262 | Visit Marshal's Refuge, Un'Goro Crater: Pick up 8 | 1449 0.4362,0.0850 | 8 to pick up
+  step 4 | town:252 | Pick up: Finding the Source | 1449 0.3093,0.5044 | near your level
+  step 5 | town:248 | Pick up: It's a Secret to Everybody | 1449 0.6302,0.6860 | near your level
+  step 6 | town:247 | Visit Torwa Pathfinder: Pick up 2 | 1449 0.7164,0.7596 | 2 to pick up
+card | zone:1447 | Head to Azshara | 3 quests near your level | - | map 1447
+  step 1 | town:432 | Pick up: Kim'jael Indeed! | 1447 0.5345,0.2182 | near your level
+  step 2 | town:408 | Visit Duke Hydraxis: Pick up 2 | 1447 0.7928,0.7370 | 2 to pick up
+card | zone:1427 | Head to Searing Gorge | 10 quests near your level | - | map 1427
+  step 1 | town:101 | Pick up: Prayer to Elune | 1427 0.2957,0.2629 | near your level
+  step 2 | town:100 | Visit Thorium Point, Searing Gorge: Pick up 7 | 1427 0.3765,0.2647 | 7 to pick up
+  step 3 | town:97 | Pick up: Divine Retribution | 1427 0.3906,0.3899 | near your level
+  step 4 | town:92 | Pick up: Suntara Stones | 1427 0.6392,0.6099 | near your level
+card | zone:1425 | Head to The Hinterlands | 1 quest near your level | - | map 1425
+  step 1 | town:189 | Pick up: Skulk Rock Clean-up | 1425 0.1483,0.4457 | near your level
+card | zone:1446 | Head to Tanaris | 7 quests near your level | - | map 1446
+  step 1 | town:255 | Pick up: Yuka Screwspigot | 1446 0.6704,0.2401 | near your level
+  step 2 | town:251 | Visit Gadgetzan, Tanaris: Pick up 4 | 1446 0.5157,0.2676 | 4 to pick up
+  step 3 | town:246 | Pick up: Gahz'ridian | 1446 0.5271,0.4592 | near your level
+  step 4 | town:240 | Pick up: Tooga's Quest | 1446 0.3180,0.7415 | near your level
+card | zone:1444 | Head to Feralas | 5 quests near your level | - | map 1444
+  step 1 | town:285 | Visit Zorbin Fandazzle: Pick up 2 | 1444 0.4481,0.4342 | 2 to pick up
+  step 2 | town:282 | Visit Feathermoon, Feralas: Pick up 2 | 1444 0.3183,0.4561 | 2 to pick up
+  step 3 | town:299 | Pick up: The Giant Guardian | 1444 0.4239,0.2200 | near your level
+card | zone:1434 | Head to Stranglethorn Vale | 2 quests near your level | - | map 1434
+  step 1 | town:10 | Pick up: A Bijou for Zanza | 1434 0.1450,0.1583 | near your level
+  step 2 | town:3 | Pick up: Whiskey Slim's Lost Grog | 1434 0.2714,0.7745 | near your level
+card | zone:1438 | Head to Teldrassil | 1 quest near your level | - | map 1438
+  step 1 | town:475 | Pick up: Starfall | 1438 0.5541,0.9223 | near your level
 card | calling | Your calling | Chapter 1 of 4 | Your class trainer has a task: A Troubled Spirit | map 1455
   step 1 | town:134 | Pick up: An Earnest Proposition | 1455 0.4353,0.5264 | near your level
   step 2 | town:78 | Pick up: A Troubled Spirit | 1453 0.8056,0.5987 | Begins a new story

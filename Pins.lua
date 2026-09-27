@@ -3,7 +3,8 @@ local _, ns = ...
 
 local PIN_TEMPLATE = "AdventureGuideForeverPinTemplate"
 local GIVER_TEMPLATE = "AdventureGuideForeverGiverPinTemplate"
--- Shortest Path's stock quest POI (StopPin.lua): yellow numerals, with later stops faded over an opaque silhouette.
+local PING_TEMPLATE = "AdventureGuideForeverPingPinTemplate"
+-- The stock quest ring and numerals tinted blue; later stops fade over an opaque silhouette.
 local NUMERAL_CELL, NUMERAL_YELLOW, NUMERALS_PER_ROW, MAX_NUMERAL = 0.125, 0.5, 8, 25
 local LATER_STOP_ALPHA = 0.55
 local BADGE_SIZE, BADGE_OFFSET = 16, 4
@@ -45,22 +46,26 @@ local GROUP_ICON = " |A:questlog-questtypeicon-group:12:12|a"
 -- A town's quests listed in its tooltip; the rest are counted.
 local HUB_QUEST_LINES = 8
 
--- A quest's line, coloured as the quest log colours its level: the map's mark, the title (with its level when
--- `levelled`) and the group tag. A quest the data lacks (Forever's own) is the player's level, titled by the client.
+-- Known levels appear on pickup, objective and turn-in lines alike; uncached quests never invent a level.
 ---@param tooltip GameTooltip
 ---@param id integer
 ---@param mark string
----@param levelled boolean
-local function QuestLine(tooltip, id, mark, levelled)
+local function QuestLine(tooltip, id, mark)
 	local quest = ns.Data.quests[id]
-	local level = (not quest or quest.level == -1) and UnitLevel("player") or quest.level
+	local level = C_QuestLog.GetQuestDifficultyLevel(id)
+	if not level or level <= 0 then
+		level = quest and (quest.level == -1 and UnitLevel("player") or quest.level)
+	end
 	local title = ns.State.QuestTitle(id) or (quest and quest.title) or ""
-	local color = GetQuestDifficultyColor(level)
+	local known = level and level > 0
+	local color = known and GetQuestDifficultyColor(level) or NORMAL_FONT_COLOR
+	if known and not title:match("^%[%d+%+?%]") then
+		title = ns.L.QUEST_LEVEL:format(level, title)
+	end
+	local group = quest and (quest.elite or quest.dungeon or quest.raid)
 	GameTooltip_AddColoredLine(
 		tooltip,
-		mark
-			.. (levelled and ns.L.QUEST_LEVEL:format(level, title) or title)
-			.. ((quest and (quest.elite or quest.dungeon or quest.raid)) and GROUP_ICON or ""),
+		mark .. title .. (group and GROUP_ICON or ""),
 		CreateColor(color.r, color.g, color.b)
 	)
 end
@@ -88,7 +93,7 @@ local function TownQuests(tooltip, step)
 					named = true
 				end
 				shown = shown + 1
-				QuestLine(tooltip, id, handin[id] and HAND_IN_ICON or PICK_UP_ICON, not handin[id])
+				QuestLine(tooltip, id, handin[id] and HAND_IN_ICON or PICK_UP_ICON)
 			end
 		end
 	end
@@ -102,7 +107,7 @@ local function AreaObjectives(tooltip, step)
 	local last
 	for _, objective in ipairs(step.objectives or {}) do
 		if objective.id ~= last then
-			QuestLine(tooltip, objective.id, "", false)
+			QuestLine(tooltip, objective.id, "")
 			last = objective.id
 		end
 		local line = objective.text and ns.L.OBJECTIVE_LINE:format(objective.text)
@@ -136,10 +141,14 @@ function Pins.StepTooltip(tooltip, step, index, travel)
 end
 
 local provider = CreateFromMixins(MapCanvasDataProviderMixin) --[[@as AGFMapProvider]]
+---@type AGFMapPing?
+local ping
 
 function provider:RemoveAllData()
 	self:GetMap():RemoveAllPinsByTemplate(PIN_TEMPLATE)
 	self:GetMap():RemoveAllPinsByTemplate(GIVER_TEMPLATE)
+	self:GetMap():RemoveAllPinsByTemplate(PING_TEMPLATE)
+	ping = nil
 	pinsByKey = {}
 end
 
@@ -229,8 +238,6 @@ end
 local function Badge(pin)
 	if not pin.Badge then
 		pin.Badge = ns.Overview.CreateBadge(pin, pin, BADGE_SIZE, BADGE_OFFSET)
-		pin.More = pin:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
-		pin.More:SetPoint("BOTTOMRIGHT", BADGE_OFFSET, -BADGE_OFFSET)
 	end
 	return pin.Badge
 end
@@ -242,7 +249,6 @@ end
 ---@field NumberText FontString
 ---@field Glow Texture
 ---@field Badge? AGFBadge
----@field More? FontString
 ---@field step? AGFStep
 ---@field index? number
 ---@field visits? AGFPinVisit[]
@@ -257,6 +263,11 @@ function AdventureGuideForeverPinMixin:OnAcquired(step, index, visits)
 	self:UseFrameLevelType("PIN_FRAME_LEVEL_WAYPOINT_LOCATION")
 	self.step, self.index, self.visits = step, index, visits
 	self.Disc:SetVertexColor(0, 0, 0)
+	for _, texture in ipairs({ self.Icon, self.Number }) do
+		texture:SetDesaturated(true)
+		texture:SetVertexColor(0.6, 0.85, 1)
+	end
+	self.NumberText:SetTextColor(0.6, 0.85, 1)
 	local numeral = index <= MAX_NUMERAL
 	self.Number:SetShown(numeral)
 	self.NumberText:SetText(not numeral and tostring(index) or "")
@@ -267,20 +278,13 @@ function AdventureGuideForeverPinMixin:OnAcquired(step, index, visits)
 	end
 	local badge = Badge(self)
 	ns.Overview.SetVerbIcon(badge, step)
-	local more = visits and #visits > 1 and #visits - 1 or 0
-	self.More:SetShown(more > 0)
-	if more > 0 then
-		self.More:SetText(ns.L.STOP_MORE:format(more))
-		badge:Hide()
-	end
 	local alpha = index > 1 and LATER_STOP_ALPHA or 1
 	self.Icon:SetAlpha(alpha)
 	self.Number:SetAlpha(alpha)
 	self.NumberText:SetAlpha(alpha)
 	badge:SetAlpha(alpha)
-	self.More:SetAlpha(alpha)
-	-- The badge or count hangs past the button; the pin takes the clicks it gets.
-	local corner = (badge:IsShown() or more > 0) and -BADGE_OFFSET or 0
+	-- The badge hangs past the button; the pin takes the clicks it gets.
+	local corner = badge:IsShown() and -BADGE_OFFSET or 0
 	self:SetHitRectInsets(0, corner, 0, corner)
 	self:SetPosition(step.x, step.y)
 	self:SetIgnoreGlobalPinScale(true)
@@ -360,6 +364,7 @@ function AdventureGuideForeverGiverPinMixin:OnMouseEnter()
 end
 
 function AdventureGuideForeverGiverPinMixin:OnMouseLeave()
+	UIFrameFlashStop(self.Glow)
 	self.Glow:Hide()
 	if GameTooltip:GetOwner() == self then
 		GameTooltip:Hide()
@@ -389,6 +394,60 @@ function Pins.Ping(key)
 		-- Flashing the button itself would leave a later stop at full opacity when UIFrameFlash resets its alpha.
 		UIFrameFlash(pin.Glow, 0.2, 0.2, 1.2, GameTooltip:GetOwner() == pin)
 	end
+end
+
+---@param point AGFPoint|AGFPlace|AGFStep|AGFGiver?
+---@param shown boolean
+function Pins.Highlight(point, shown)
+	if
+		not point
+		or not ns.Model.ValidPlace(point)
+		or not WorldMapFrame:IsShown()
+		or WorldMapFrame:GetMapID() ~= point.map
+	then
+		return
+	end
+	for _, template in ipairs({ PIN_TEMPLATE, GIVER_TEMPLATE }) do
+		for pin in WorldMapFrame:EnumeratePinsByTemplate(template) do
+			local place = pin.step or (pin --[[@as AGFGiverPinFrame]]).giver
+			if place and math.abs(place.x - point.x) < 0.0001 and math.abs(place.y - point.y) < 0.0001 then
+				UIFrameFlashStop(pin.Glow)
+				pin.Glow:SetShown(shown or GameTooltip:GetOwner() == pin)
+			end
+		end
+	end
+end
+
+---@param point AGFPoint|AGFPlace|AGFStep|AGFGiver
+function Pins.Reveal(point)
+	if InCombatLockdown() or not ns.Model.ValidPlace(point) or ns.Setting("wanderer") then
+		return
+	end
+	OpenWorldMap(point.map)
+	WorldMapFrame:SetMapID(point.map)
+	C_Timer.After(0, function()
+		if not WorldMapFrame:IsShown() or WorldMapFrame:GetMapID() ~= point.map then
+			return
+		end
+		if not ping then
+			ping = WorldMapFrame:AcquirePin(PING_TEMPLATE) --[[@as AGFMapPing]]
+			ping:UseFrameLevelType("PIN_FRAME_LEVEL_QUEST_PING")
+		end
+		ping:SetNumLoops(2)
+		ping:PlayAt(point.x, point.y)
+		for _, template in ipairs({ PIN_TEMPLATE, GIVER_TEMPLATE }) do
+			for pin in WorldMapFrame:EnumeratePinsByTemplate(template) do
+				local place = pin.step or (pin --[[@as AGFGiverPinFrame]]).giver
+				if place and place.x == point.x and place.y == point.y then
+					if pin.step then
+						Pins.Ping(pin.step.key)
+					else
+						UIFrameFlash(pin.Glow, 0.2, 0.2, 1.2, GameTooltip:GetOwner() == pin)
+					end
+				end
+			end
+		end
+	end)
 end
 
 function Pins.Refresh()

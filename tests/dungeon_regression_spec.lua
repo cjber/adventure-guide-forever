@@ -42,7 +42,14 @@ for id, instance in pairs(h.ns.Data.instances) do
 		h.flush()
 		local button
 		for _, frame in ipairs(h.frames) do
-			if frame.GetText and frame:GetText() == h.ns.L.DUNGEON_PLAN and frame:IsVisible() then
+			if
+				frame:IsObjectType("Button")
+				and frame:IsVisible()
+				and (
+					frame:GetText() == h.ns.L.DUNGEON_PLAN
+					or frame.Text and frame.Text:GetText() == h.ns.L.DUNGEON_PLAN
+				)
+			then
 				button = frame
 			end
 		end

@@ -174,6 +174,7 @@ function harness.load(options)
 		SetVertexColor = "vertexColor",
 		SetTextureSliceMargins = "slice",
 		SetWordWrap = "wordWrap",
+		SetSpacing = "spacing",
 	}) do
 		Methods[name] = function(self, first, ...)
 			self[field] = select("#", ...) > 0 and { first, ... } or first -- multi-value: every argument
@@ -753,6 +754,11 @@ function harness.load(options)
 			Internal("Texture", frame, "Bg")
 			Internal("Frame", frame, "NineSlice")
 		end,
+		-- Shared/Button/CheckButtonTemplates.xml: the stock label beside the square art.
+		UICheckButtonTemplate = function(frame)
+			frame.Text = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+			frame.Text:SetPoint("LEFT", frame, "RIGHT", -2, 0)
+		end,
 		-- Shared/TabSystem/TabSystemTemplates.xml: the top-tab art and selected font.
 		TabSystemTopButtonTemplate = function(frame)
 			Internal("FontString", frame, "Text")
@@ -760,6 +766,17 @@ function harness.load(options)
 			frame.SetTabSelected = function(self, selected)
 				self:SetEnabled(not selected)
 				self:SetNormalFontObject(selected and "GameFontHighlightSmall" or "GameFontNormalSmall")
+			end
+		end,
+		MapPinPingTemplate = function(frame)
+			for key, value in pairs(G.MapCanvasPinMixin) do
+				frame[key] = value
+			end
+			function frame:SetNumLoops(loops)
+				self.loops = loops
+			end
+			function frame:PlayAt(x, y)
+				self:SetPosition(x, y)
 			end
 		end,
 		CollapseButtonTemplate = function(frame)
@@ -1229,10 +1246,36 @@ function harness.load(options)
 		GetItemNameByID = function(itemID)
 			return items[itemID] and items[itemID].name
 		end,
+		GetItemQualityByID = function(itemID)
+			return items[itemID] and items[itemID].quality
+		end,
 		GetItemIconByID = function(itemID)
 			return items[itemID] and items[itemID].icon
 		end,
+		GetItemInfo = function(itemID)
+			local item = items[itemID]
+			if not item then
+				return nil
+			end
+			return item.name,
+				item.link,
+				item.quality,
+				item.itemLevel,
+				item.requiredLevel,
+				item.itemType,
+				item.itemSubType,
+				item.maxStack,
+				item.equipSlot,
+				item.icon
+		end,
 	}
+	G.ITEM_QUALITY_COLORS = {
+		[1] = { r = 1, g = 1, b = 1 },
+		[2] = { r = 0.12, g = 1, b = 0 },
+		[3] = { r = 0, g = 0.44, b = 0.87 },
+		[4] = { r = 0.64, g = 0.21, b = 0.93 },
+	}
+	G.INVTYPE_HEAD = "Head"
 	G.C_Spell = {
 		GetSpellTexture = function()
 			return nil
@@ -1375,6 +1418,7 @@ function harness.load(options)
 			return quests
 		end,
 		GetTitleForQuestID = noop,
+		GetQuestDifficultyLevel = noop,
 		-- Tracked quests, in order: options.watched seeds them; the client's limit is 25.
 		GetNumQuestWatches = function()
 			return #h.watched
@@ -1524,7 +1568,8 @@ function harness.load(options)
 				[1442] = "Stonetalon Mountains",
 				[1456] = "Thunder Bluff",
 			}
-			return { mapID = mapID, name = names[mapID] or "Map " .. mapID }
+			local record = h.ns.Data.maps[mapID] or h.ns.Data.zones[mapID]
+			return { mapID = mapID, name = names[mapID] or record and record.name or "Map " .. mapID }
 		end,
 		-- A zone's base art (C_Map.GetMapArtLayerTextures): h.mapArt[map] when a scene gives the real tiles, else
 		-- twelve made-up FileDataIDs, the 4x3 tiles of a zone's 1002x668 canvas.
@@ -1618,6 +1663,7 @@ function harness.load(options)
 		}
 	end
 	-- UIParent.lua GetRelativeDifficultyColor's bands, with QuestDifficultyColors' values; grey is Model.IsGray's.
+	G.NORMAL_FONT_COLOR = { r = 1, g = 0.82, b = 0 }
 	G.GetQuestDifficultyColor = function(level)
 		local difference = level - player.level
 		if difference >= 5 then
@@ -1895,6 +1941,12 @@ function harness.load(options)
 	canvas:SetSize(1000, 700)
 	function map:GetCanvas()
 		return canvas
+	end
+	G.OpenWorldMap = function(mapID)
+		map:Show()
+		if mapID then
+			map:SetMapID(mapID)
+		end
 	end
 	G.ToggleWorldMap = function()
 		map:SetShown(not map:IsShown())
@@ -2375,7 +2427,9 @@ function harness.load(options)
 		"texCoord",
 		"textColor",
 		"vertexColor",
+		"desaturated",
 		"wordWrap",
+		"spacing",
 	}
 	function h.Describe(region, entry)
 		entry.stockTemplate = region.stockTemplate

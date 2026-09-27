@@ -53,6 +53,9 @@ ITEM_RACES_ALLOWED = nil
 SlashCmdList = nil
 
 ---@param uiMapID? integer
+function OpenWorldMap(uiMapID) end
+
+---@param uiMapID? integer
 function ToggleWorldMap(uiMapID) end
 
 ---@param mapID? integer
@@ -323,5 +326,10 @@ AdventureGuideForeverWindow = nil
 ---@field Icon Texture
 ---@field UpdateCollapsedState fun(self: AGFCollapseButton, collapsed: boolean)
 
----@type table?
+---@class AGFMapPing : AGFMapPinMixin
+---@field SetNumLoops fun(self: AGFMapPing, loops: integer)
+---@field PlayAt fun(self: AGFMapPing, x: number, y: number)
+
+-- AtlasLoot Classic/Era and Forever 1.1.2 expose the same runtime ItemDB layout.
+---@type { ItemDB: {Get: fun(self: table, module: string): table?}, Locales: table<string, string> }?
 AtlasLoot = nil

@@ -376,7 +376,7 @@ do
 		darkshire = darkshire or (step.key == "town:32" and index or nil)
 	end
 	check(lars == 2, where .. ": Lars takes the wolves next")
-	check(not darkshire or darkshire > lars, where .. ": Darkshire only after Lars")
+	check(not darkshire or (lars and darkshire > lars), where .. ": Darkshire only after Lars")
 end
 
 for index = 1, math.min(10, #failures) do

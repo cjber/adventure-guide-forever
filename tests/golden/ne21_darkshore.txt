@@ -5,12 +5,18 @@ card (chosen) | zone:1440 | Ashenvale story | Chapter 1 of 3 | A chain begins wi
   step 3 | area:1010:4 | Complete objectives · Bathran's Hair | 1440 0.3081,0.2458 | after you pick it up | 90 yd | 1010/4
   step 4 | town:415:2 | Turn in: Bathran's Hair | 1440 0.2644,0.3859 | once it's done
   step 5 | town:418 | Pick up: The Ancient Statuette | 1440 0.1479,0.3129 | near your level
+card | zone:1413 | Head to The Barrens | 6 quests near your level | - | map 1413
+  step 1 | town:382 | Pick up: Ignition | 1413 0.5652,0.0745 | near your level
+  step 2 | town:340 | Visit Ratchet, The Barrens: Pick up 5 | 1413 0.6237,0.3762 | 5 to pick up
 card | zone:1437 | Head to Wetlands | 7 quests near your level | Menethil Harbor needs hands | map 1437
   step 1 | town:147 | Visit Menethil Harbor, Wetlands: Pick up 3 | 1437 0.1090,0.5964 | 3 to pick up
   step 2 | town:153 | Pick up: Daily Delivery | 1437 0.4992,0.3937 | near your level
   step 3 | town:152 | Pick up: Tramping Paws | 1437 0.5637,0.4040 | near your level
   step 4 | town:144 | Pick up: The Algaz Gauntlet | 1437 0.5576,0.9181 | near your level
   step 5 | town:123 | Pick up: Report to Mountaineer Rockgar | 1432 0.3417,0.4784 | near your level
+card | zone:1442 | Head to Stonetalon Mountains | 2 quests near your level | - | map 1442
+  step 1 | town:378 | Pick up: Gerenzo's Orders | 1442 0.7187,0.6000 | near your level
+  step 2 | town:377 | Pick up: Super Reaper 6000 | 1442 0.5899,0.6260 | near your level
 card | zone:1433 | Head to Redridge Mountains | 12 quests near your level | 3 quests will soon turn grey | map 1433
   step 1 | town:61 | Visit Lakeshire, Redridge: Pick up 10 | 1433 0.2140,0.4396 | 10 to pick up
   step 2 | town:56 | Pick up: Encroaching Gnolls | 1433 0.1019,0.7146 | near your level
@@ -20,3 +26,20 @@ card | zone:1431 | Head to Duskwood | 5 quests near your level | - | map 1431
   step 2 | town:28 | Pick up: Jitters' Growling Gut | 1431 0.1838,0.5637 | near your level
   step 3 | town:24 | Pick up: Eight-Legged Menaces | 1431 0.4512,0.6703 | near your level
   step 4 | town:32 | Visit Darkshire, Duskwood: Pick up 2 | 1431 0.7534,0.4875 | 2 to pick up
+card | zone:1432 | Head to Loch Modan | 11 quests near your level | 5 quests will soon turn grey | map 1432
+  step 1 | town:137 | Pick up: Filthy Paws | 1432 0.2476,0.1840 | near your level
+  step 2 | town:123 | Visit Thelsamar, Loch Modan: Pick up 4 | 1432 0.3417,0.4784 | 4 to pick up
+  step 3 | town:139 | Pick up: A Dark Threat Looms | 1432 0.4605,0.1361 | near your level
+  step 4 | town:125 | Pick up: Bingles' Missing Supplies | 1432 0.6356,0.4792 | near your level
+  step 5 | town:116 | Visit Prospector Ironband: Pick up 2 | 1432 0.6593,0.6562 | 2 to pick up
+  step 6 | town:117 | Visit Marek Ironheart: Pick up 2 | 1432 0.8176,0.6166 | 2 to pick up
+card | zone:1436 | Head to Westfall | 6 quests near your level | 2 quests will soon turn grey | map 1436
+  step 1 | town:45 | Pick up: The Killing Fields | 1436 0.5604,0.3123 | near your level
+  step 2 | town:37 | Pick up: The Defias Brotherhood | 1436 0.5633,0.4752 | near your level
+  step 3 | town:30 | Pick up: Red Leather Bandanas | 1436 0.5398,0.5298 | near your level
+  step 4 | town:16 | Visit Captain Grayson: Pick up 3 | 1436 0.3001,0.8602 | 3 to pick up
+card | zone:1429 | Head to Elwynn Forest | 1 quest near your level | - | map 1429
+  step 1 | town:60 | Pick up: Elmore's Task | 1429 0.4171,0.6554 | near your level
+card | zone:1426 | Head to Dun Morogh | 2 quests near your level | - | map 1426
+  step 1 | town:121 | Pick up: Search for Incendicite | 1426 0.4962,0.4861 | near your level
+  step 2 | town:123 | Pick up: Stonegear's Search | 1426 0.9621,0.4540 | near your level
