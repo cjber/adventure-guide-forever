@@ -9,8 +9,9 @@ Adventure Guide Forever is a World of Warcraft addon for the WoW: Forever client
 the mainline 12.x UI/API, `## Interface: 16001`). It runs inside the game's Lua 5.1 sandbox; there is
 no `require` — the client loads the files `AdventureGuideForever.toc` lists, in that order, and each
 file receives `local addonName, ns = ...`, the addon's shared table. It ships as a zip built by the
-BigWigs packager (`.pkgmeta`) on a `v*` tag. A standard-library Python generator in `tools/` rebuilds
-`Data/Quests.lua` from a pinned CMaNGOS classic-db dump and wago.tools DB2 exports.
+BigWigs packager (`.pkgmeta`) on a `v*` tag. Standard-library Python generators in `tools/` rebuild
+`Data/Quests.lua` (`gen_quests.py`, from a pinned CMaNGOS classic-db dump and wago.tools DB2 exports),
+`Data/Forever.lua` (`diff_forever.py`) and `Data/ZoneArt.lua` (`gen_zoneart.py`).
 
 ## Gate
 
@@ -24,13 +25,16 @@ Run in order from the repository root. All must pass before and after any audit 
 | Lint (Python) | `ruff check tools` | exit 0 |
 | Types and multi-values | `tools/typecheck.sh` | LuaLS 3.19.1 reports no diagnostics; the multi-value lint and its tests pass |
 | Tests | `for s in tests/*_spec.lua; do luajit "$s" \|\| exit 1; done` | each prints `<name>_spec: N checks passed`, exit 0 |
+| Bench | `luajit -joff tests/plan_bench.lua` | exit 0; after a planner or rebuild change also `AGF_BENCH_STRICT=1` (3 ms frame budget, local only) |
+| Changelog | `python3 tools/changelog.py --check` | exit 0: every release has a `CHANGELOG.md` entry |
 | Workflows | `uvx --from actionlint-py==1.7.12.25 actionlint && uvx zizmor@1.30.1 --offline .github` | exit 0 |
 | Secrets | `gitleaks git --redact --no-banner .` | `no leaks found` |
 | Project rules | `python3 .sift/gate.py --base origin/main && python3 .sift/agents.py check` | exit 0 |
 
 CI (`.github/workflows/ci.yml`) runs all of these. The tests are a headless harness, not the game
-client: `tests/model_spec.lua` loads `Model.lua` and `Data/Quests.lua` with `loadfile`. Everything else
-(the map tab, pins, tracker, settings) is only verified in game; the in-game data check is `/agf audit`.
+client: `tests/harness.lua` stubs the client APIs and loads the TOC's files, so the specs drive the planner and the
+UI (window, panel, pins, tracker, settings) headlessly. What needs the client itself (art, fonts, host hooks) is a
+`/reload` check for the user; the in-game data check is `/agf audit`.
 
 ## Evidence
 
@@ -50,7 +54,7 @@ client: `tests/model_spec.lua` loads `Model.lua` and `Data/Quests.lua` with `loa
 - `## SavedVariables: AdventureGuideForeverDB`, `## SavedVariablesPerCharacter: AdventureGuideForeverCharDB` — keys in `Core.lua` `DEFAULTS` may hold data written by older versions.
 - `## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick` and `SLASH_ADVENTUREGUIDEFOREVER1/2` — called by the client by name.
 - `hooksecurefunc(ObjectiveTrackerManager, "AddContainer")`, `EventRegistry:RegisterCallback("QuestLog.SetDisplayMode")`, `WorldMapFrame:AddDataProvider`, `TooltipDataProcessor.AddTooltipPostCall` — host callbacks.
-- Optional integration (`## OptionalDeps: ShortestPathForever, QuestieDB`) — code guarded by `ShortestPathForever.API` is live only with that addon installed; QuestieDB, when loaded and fit, supplies the quests (`QuestieSource.lua`).
+- Optional integrations (`## OptionalDeps: ShortestPathForever, QuestieDB, SkillUpForever, LegacyForever, TweaksForever`) — code guarded by `ShortestPathForever.API`, `SkillUpForever.API` and the other suite addons (`Integrations.lua`, `Companions.lua`) is live only with that addon installed; QuestieDB, when loaded and fit, supplies the quests (`QuestieSource.lua`).
 - `hooksecurefunc("QuestMapFrame_ShowQuestDetails")`, `EventUtil.ContinueOnAddOnLoaded("Blizzard_WorldMap")` — host callbacks.
 - Methods the host calls by name: the map provider's `RefreshAllData`/`RemoveAllData`; the pin mixins' `OnAcquired`/`OnMouseEnter`/`OnMouseLeave`/`OnClick` (bound through `mixin=` in `Panel.xml`); the tracker module's `LayoutContents`/`OnBlockHeaderClick`.
 
@@ -58,7 +62,7 @@ client: `tests/model_spec.lua` loads `Model.lua` and `Data/Quests.lua` with `loa
 
 | Path | Zone | Reason |
 |---|---|---|
-| `Data/*.lua` | generated | written by `tools/gen_quests.py`; never hand-edit, fix the generator |
+| `Data/*.lua` | generated | `Quests.lua` by `tools/gen_quests.py`, `Forever.lua` by `tools/diff_forever.py`, `ZoneArt.lua` by `tools/gen_zoneart.py`; never hand-edit, fix the generator |
 | `tools/` | script | data generator, CI helpers; not shipped |
 | `tests/` | test | headless LuaJIT harness |
 | `types/` | production | LuaLS annotations only, never loaded in game; review for dead classes and stale field docs |
@@ -79,17 +83,31 @@ client: `tests/model_spec.lua` loads `Model.lua` and `Data/Quests.lua` with `loa
 
 1. `tools/` — scripts, not shipped; output is diffable.
 2. `tests/` — harness only.
-3. `Model.lua`, `Settings.lua` — pure planner / settings, the planner under test.
-4. `Pins.lua`, `Panel.lua`, `Tracker.lua`, `Tooltip.lua` — UI hooks, in-game verification only.
-5. `State.lua`, `Core.lua`, `Integrations.lua` — client state, SavedVariables and the cross-addon contract.
+3. `Model.lua`, `Order.lua`, `Session.lua`, `Settings.lua`, `Hints/*.lua` — the planner and its inputs, under the specs and the bench.
+4. `Window*.lua`, `Overview.lua`, `Panel.lua`, `Pins.lua`, `Tracker.lua`, `Tooltip.lua`, `Menu.lua`, `Art.lua`, `Asides.lua`, `Moments.lua`, `PvP.lua`, `ZoneIcon.lua`, `Focus.lua`, `Sound.lua`, `Providers.lua`, `Dump.lua` — UI and host hooks; headless specs plus `/reload` checks.
+5. `State.lua`, `Core.lua`, `Integrations.lua`, `Companions.lua`, `QuestieSource.lua`, `Locales/*.lua` — client state, SavedVariables, the cross-addon contracts and every line the player reads.
+
+## Settled
+
+Shapes that look like defects here but are not. Reviewers and verifiers read this before raising a
+finding; audits add an entry when verifiers keep dismissing the same shape for the same reason.
+
+- **Planner look-alikes**: `Model.lua`'s step builders, locators and shallow-copy loops (`TrainerSteps`/`Battleground`,
+  `Locate`/`Build`, `Describe` before and after the overseas override) read alike but take different contracts; five
+  `parallel-implementations` candidates were dismissed on the small-idiom and different-contract exclusions in the
+  2026-09-27 audit. Raise one only with a caller that needs both to change together.
 
 ## Anti-patterns
 
-- Comments and annotations left describing code a rewrite replaced — a template, function, format or
+Shapes this codebase has produced more than once and a reviewer confirmed. An audit guards a
+confirmed defect of one of these shapes with `settled:<name>`. An entry leaves when a rule enforces
+it or it has not recurred in two audits.
+
+- **Stale leftovers**: comments and annotations left describing code a rewrite replaced — a template, function, format or
   range the code no longer has (`comment-narration`/`stale-docs`; e.g. `Panel.xml` naming
   `QuestLogTabButtonTemplate`, `types/Namespace.lua` "3-5 steps"; six such in the 2026-09-24 audit).
   Grep for the old name when renaming.
-- Config copied from a sibling addon that names files this repo lacks (`dead-code`/`stale-docs`;
+- **Sibling config**: config copied from a sibling addon that names files this repo lacks (`dead-code`/`stale-docs`;
   e.g. `.pkgmeta` ignoring `PLAN.md`, `tools/ruff.toml` citing `refresh-data.yml`).
 
 ## Project rules and lenses
