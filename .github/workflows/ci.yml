@@ -17,6 +17,7 @@ jobs:
           persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install -y luajit lua-check
       - run: luacheck .
+      - run: python3 tools/gen_bosses.py --check
       - run: for spec in tests/*_spec.lua; do luajit "$spec" || exit 1; done
       # Call counts only: the 3 ms budget is AGF_BENCH_STRICT=1, run locally, since shared runners flake.
       - run: luajit -joff tests/plan_bench.lua

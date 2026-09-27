@@ -1,6 +1,13 @@
 # Dungeon sources
 
-The Dungeons tab uses instance Map.IDs, never dungeon-name matching. QuestieDB and AtlasLoot are optional runtime sources; no third-party guide code or data is bundled.
+The Dungeons tab uses instance Map.IDs, never dungeon-name matching. QuestieDB and AtlasLoot are optional runtime sources; no third-party guide code or AtlasLoot data is bundled.
+
+`Data/DungeonBosses.lua` is generated from the same pinned GPL-3.0 CMaNGOS database as the quests.
+Its 167 encounters cover all 19 Classic dungeons. `instance_dungeon_encounters` supplies instance,
+normal difficulty and order; `instance_encounters` must identify a creature-kill credit; the matching
+`creature_template` supplies the NPC ID and levels. This is a baseline, not a complete rare-spawn list
+or a claim that Classic data includes every Forever addition. AtlasLoot's curated list takes priority;
+native journal records and Questie NPC records provide runtime names and additional confirmed bosses.
 
 | Source | Pin / result | Use |
 | --- | --- | --- |
@@ -45,8 +52,8 @@ provides sorted, shared `GetAllIds` arrays and detached `GetAll` rows. The adapt
 checks field metadata, and publishes only a complete snapshot. The pinned NPC metadata has creature rank
 but no dungeon-boss flag. Only rank 3 proves a boss by itself; ordinary rank-1 elites are not listed as
 bosses. Explicit client journal encounters can identify matching local NPCs in journal order. AtlasLoot's
-curated encounter list takes precedence when available. Without either, the fallback may omit bosses
-whose only classification is elite; it does not invent a boss list.
+curated encounter list takes precedence when available. Otherwise the generated encounter baseline
+identifies Classic bosses even when their creature rank is only elite. Unidentified elites stay out.
 
 Loot is deduplicated by item ID. Every dropper must have known spawns exclusively in the same instance;
 unknown, outdoor or multi-instance droppers exclude the item, including when AtlasLoot also lists it.

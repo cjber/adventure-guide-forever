@@ -16,6 +16,7 @@
 
 Locales\enUS.lua
 Data\Quests.lua
+Data\DungeonBosses.lua
 Data\Forever.lua
 Data\ZoneArt.lua
 Core.lua

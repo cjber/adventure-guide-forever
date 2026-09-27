@@ -11,6 +11,10 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-09-28
+
+- **Boss lists work without extra addons.** A small verified Classic encounter baseline covers every dungeon. Native journal records and optional AtlasLoot enrich it; quest and loot databases remain optional.
+
 ## [0.3.0] - 2026-09-28
 
 - **Easier work before harder detours.** Route estimates account for above-level objectives and the counts still left to finish, while keeping useful green and yellow quests available.

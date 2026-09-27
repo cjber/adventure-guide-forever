@@ -661,7 +661,8 @@ function Draw()
 	other.rowHeight = view == "prep" and ROW_H or 44
 	subTabs[3]:SetText(L.DUNGEON_BOSSES_TAB)
 	for index, key_ in ipairs({ "quests", "prep", "bosses", "loot" }) do
-		local muted = (key_ == "bosses" and not bosses and not source) or (key_ == "loot" and not source)
+		local muted = (key_ == "bosses" and not bosses and not source and not ns.DungeonBosses[dungeon.id])
+			or (key_ == "loot" and not source)
 		subTabs[index]:SetTabSelected(key_ == view)
 		subTabs[index].Text:ClearAllPoints()
 		subTabs[index].Text:SetPoint("CENTER", 0, 0)
@@ -691,7 +692,7 @@ function Draw()
 		local rows = {}
 		local known
 		if view == "bosses" then
-			known = source and Dungeons.Bosses(source, dungeon.id, bosses) or bosses
+			known = Dungeons.Bosses(source, dungeon.id, bosses)
 		else
 			known = source and source.loot[dungeon.id]
 		end
