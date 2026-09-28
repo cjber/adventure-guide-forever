@@ -130,7 +130,7 @@ do
 	Opened(later)
 	equal(later.ns.Asides.Current(), nil, "declined: still after a reload")
 	local cog = later.Find(function(frame)
-		return frame.stockTemplate == "UIPanelIconDropdownButtonTemplate"
+		return frame.name == "AdventureGuideForeverSettingsButton"
 	end)[1]
 	local menu = later.OpenMenu(cog)
 	local submenu = menu.entries[#menu.entries - 1]

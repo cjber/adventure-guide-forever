@@ -1970,7 +1970,7 @@ do
 	end)[1]
 	equal(button ~= nil, true, "not interested: Skipped (1) under the cards")
 	local cog = h.Find(function(frame)
-		return frame.stockTemplate == "UIPanelIconDropdownButtonTemplate"
+		return frame.name == "AdventureGuideForeverSettingsButton"
 	end)[1]
 	local lines = h.MenuLines(h.OpenMenu(cog))
 	local listed = false
@@ -3396,7 +3396,7 @@ do
 	h.ns.OpenPanel()
 	h.flush()
 	local cog = h.Find(function(frame)
-		return frame.stockTemplate == "UIPanelIconDropdownButtonTemplate"
+		return frame.name == "AdventureGuideForeverSettingsButton"
 	end)[1]
 	local menu = h.OpenMenu(cog)
 	local byText = {}

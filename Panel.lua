@@ -587,7 +587,7 @@ local function BuildJourneys(parent, below)
 	skippedButton:SetNormalFontObject("GameFontNormalSmall")
 	skippedButton:SetHighlightFontObject("GameFontHighlightSmall")
 	skippedButton:SetScript("OnClick", function(self)
-		MenuUtil.CreateContextMenu(self, function(_, root)
+		ns.ContextMenu(self, function(_, root)
 			root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_SKIPPED")
 			ns.Menu.Skipped(root)
 		end)
@@ -616,8 +616,8 @@ local function BuildFooter(parent)
 	stopButton:SetScript("OnClick", ns.Stop)
 end
 
----@param _ AGFDropdown
----@param menu AGFMenu
+---@param _ Region
+---@param menu AGFMenuDescription
 local function BuildSettingsMenu(_, menu)
 	local function Setting(label, key)
 		return menu:CreateCheckbox(label, function()
@@ -669,9 +669,16 @@ local function BuildTopBar(panelFrame)
 		Refresh()
 	end)
 
-	local cog = CreateFrame("DropdownButton", nil, panelFrame, "UIPanelIconDropdownButtonTemplate") --[[@as AGFDropdown]]
+	local cog = CreateFrame("Button", "AdventureGuideForeverSettingsButton", panelFrame) --[[@as Button]]
 	cog:SetPoint("TOPRIGHT", 19, 25 - TOP_BAR)
-	cog:SetupMenu(BuildSettingsMenu)
+	cog:SetSize(15, 16)
+	local icon = cog:CreateTexture(nil, "ARTWORK")
+	icon:SetPoint("CENTER")
+	icon:SetAtlas("questlog-icon-setting", true)
+	cog:SetHighlightAtlas("questlog-icon-setting", "ADD")
+	cog:SetScript("OnClick", function(self)
+		ns.ContextMenu(self, BuildSettingsMenu)
+	end)
 end
 
 -- Every view uses the quest log's scrolling behaviour so no available destination is hidden.

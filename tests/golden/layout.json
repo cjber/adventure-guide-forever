@@ -91,10 +91,29 @@
           "y": -4.00
         }
       ],
+      "highlightAtlas": "questlog-icon-setting",
       "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.DropdownButton[1]",
-      "stockTemplate": "UIPanelIconDropdownButtonTemplate",
-      "type": "DropdownButton"
+      "path": "AdventureGuideForeverSettingsButton",
+      "size": [
+        15.00,
+        16.00
+      ],
+      "type": "Button"
+    },
+    {
+      "anchors": [
+        {
+          "point": "CENTER",
+          "relativePoint": "CENTER",
+          "relativeTo": "AdventureGuideForeverSettingsButton",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "questlog-icon-setting",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverSettingsButton.Texture[1]",
+      "type": "Texture"
     },
     {
       "anchors": [
