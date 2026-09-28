@@ -26,11 +26,21 @@ local host = CreateFrame("Frame", "ForeverTrackerCompanion", UIParent)
 -- placed below it after the private content has laid out. This keeps every
 -- section in one column without registering our frames with Blizzard's
 -- secure module collection.
-local _, _, nativeRelativeTo, nativeRelativePoint, nativeX, nativeY = ObjectiveTrackerFrame:GetPoint()
-nativeRelativeTo = nativeRelativeTo or UIParent
-nativeRelativePoint = nativeRelativePoint or "TOPRIGHT"
-nativeX, nativeY = nativeX or 0, nativeY or 0
-host:SetPoint("TOPRIGHT", nativeRelativeTo, nativeRelativePoint, nativeX, nativeY)
+local nativeAnchor
+local function CaptureNativeAnchor()
+	if nativeAnchor then
+		return
+	end
+	local point, relativeTo, relativePoint, x, y = ObjectiveTrackerFrame:GetPoint()
+	nativeAnchor = {
+		point = point or "TOPRIGHT",
+		relativeTo = relativeTo or UIParent,
+		relativePoint = relativePoint or "TOPRIGHT",
+		x = x or 0,
+		y = y or 0,
+	}
+end
+host:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", 0, 0)
 host:SetWidth(ObjectiveTrackerFrame:GetWidth())
 host:SetHeight(1)
 local modules, queued, ready = {}, false, false
@@ -142,6 +152,9 @@ local function Layout()
 		return a.uiOrder < b.uiOrder
 	end)
 	local available = math.max(0, (host:GetTop() or UIParent:GetHeight()) - 40)
+	-- The native frame may only receive its final Edit Mode anchor after the
+	-- player and saved variables are ready. Capture it before our first reflow.
+	CaptureNativeAnchor()
 	local width = ObjectiveTrackerFrame:GetWidth()
 	host:SetWidth(width)
 	local height = 0
@@ -160,6 +173,8 @@ local function Layout()
 	-- column upward from its saved edit-mode slot.  The offset is calculated
 	-- from the original point each pass, so repeated refreshes never drift.
 	local shift = 0
+	host:ClearAllPoints()
+	host:SetPoint("TOPRIGHT", nativeAnchor.relativeTo, nativeAnchor.relativePoint, nativeAnchor.x, nativeAnchor.y)
 	local screenHeight = UIParent:GetHeight()
 	local top = host:GetTop()
 	local nativeHeight = ObjectiveTrackerFrame:GetHeight() or 0
@@ -167,7 +182,13 @@ local function Layout()
 		shift = 24 - (top - host:GetHeight() - nativeHeight)
 	end
 	host:ClearAllPoints()
-	host:SetPoint("TOPRIGHT", nativeRelativeTo, nativeRelativePoint, nativeX, nativeY + shift)
+	host:SetPoint(
+		"TOPRIGHT",
+		nativeAnchor.relativeTo,
+		nativeAnchor.relativePoint,
+		nativeAnchor.x,
+		nativeAnchor.y + shift
+	)
 	ObjectiveTrackerFrame:ClearAllPoints()
 	ObjectiveTrackerFrame:SetPoint("TOPRIGHT", host, "BOTTOMRIGHT", 0, 0)
 end
