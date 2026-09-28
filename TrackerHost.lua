@@ -21,7 +21,16 @@ if ForeverTrackerHost then
 end
 
 local host = CreateFrame("Frame", "ForeverTrackerCompanion", UIParent)
-host:SetPoint("TOPRIGHT", ObjectiveTrackerFrame, "TOPLEFT", -12, 0)
+-- Preserve Blizzard's edit-mode placement for the combined column. The
+-- private host takes the native frame's original slot; the native frame is
+-- placed below it after the private content has laid out. This keeps every
+-- section in one column without registering our frames with Blizzard's
+-- secure module collection.
+local _, _, nativeRelativeTo, nativeRelativePoint, nativeX, nativeY = ObjectiveTrackerFrame:GetPoint()
+nativeRelativeTo = nativeRelativeTo or UIParent
+nativeRelativePoint = nativeRelativePoint or "TOPRIGHT"
+nativeX, nativeY = nativeX or 0, nativeY or 0
+host:SetPoint("TOPRIGHT", nativeRelativeTo, nativeRelativePoint, nativeX, nativeY)
 host:SetWidth(ObjectiveTrackerFrame:GetWidth())
 host:SetHeight(1)
 local modules, queued, ready = {}, false, false
@@ -147,6 +156,20 @@ local function Layout()
 		end
 	end
 	host:SetHeight(math.max(1, height))
+	-- If the combined column would run below the screen, move the whole
+	-- column upward from its saved edit-mode slot.  The offset is calculated
+	-- from the original point each pass, so repeated refreshes never drift.
+	local shift = 0
+	local screenHeight = UIParent:GetHeight()
+	local top = host:GetTop()
+	local nativeHeight = ObjectiveTrackerFrame:GetHeight() or 0
+	if screenHeight and top and top - host:GetHeight() - nativeHeight < 24 then
+		shift = 24 - (top - host:GetHeight() - nativeHeight)
+	end
+	host:ClearAllPoints()
+	host:SetPoint("TOPRIGHT", nativeRelativeTo, nativeRelativePoint, nativeX, nativeY + shift)
+	ObjectiveTrackerFrame:ClearAllPoints()
+	ObjectiveTrackerFrame:SetPoint("TOPRIGHT", host, "BOTTOMRIGHT", 0, 0)
 end
 function host.MarkDirty(_)
 	if ready and not queued then
