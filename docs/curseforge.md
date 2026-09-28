@@ -1,4 +1,4 @@
-I wanted a levelling guide that left me room to wander. Adventure Guide Forever offers a few journeys from your level and quest log, with a short route for the one you pick. It looks like it came with the game: a tab beside Quests, retail's Journeys cards and the game's own objective tracker.
+I wanted a levelling guide that left me room to wander. Adventure Guide Forever offers a few journeys from your level and quest log, with a route for the one you pick. It looks like it came with the game: a tab beside Quests, retail's Journeys cards and the game's own objective tracker.
 
 Shortest Path Forever handles travel when installed. QuestieDB is the guide's quest catalogue and Questie applies its live availability rules; Questie owns its background map markers while Adventure Guide adds route markers. Atlas and Atlas Classic WoW optionally provide dungeon interiors and legends, and AtlasLoot optionally provides encounter and loot tables. If you'd rather follow another guide's route, you can hide the guide's tracker in settings.
 
@@ -32,7 +32,7 @@ Move steps around; quest givers tick off as you finish with them.
 
 ![The Adventure Guide tracker section](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png)
 
-Your current stop and the one after it sit beside your quests.
+Your current stop and the one after it sit above your quests in the same tracker column.
 
 ![The Dungeons tab](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/dungeons.png)
 
@@ -40,7 +40,7 @@ Check the quests and their earlier steps before heading to the entrance.
 
 ![A full quest outline with current steps followed by later Questie quests](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_full_guide.png)
 
-The full guide shows ten rows per page, with current route actions first and later outline entries after them. This is a generated preview of the guide UI; the dungeon map preview is intentionally omitted because maps depend on the optional Atlas providers.
+The map panel previews up to ten steps, with current route actions first and later chain steps clearly marked. The full guide continues across pages. These images are generated previews of the guide UI.
 
 ## Features
 
