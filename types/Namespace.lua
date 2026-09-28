@@ -1176,6 +1176,8 @@
 ---@field STEP_BATTLEMASTER string
 ---@field UPDATED_TO string format: the version, then WHATS_NEW
 ---@field WHATS_NEW string this version's headline, printed once after an update
+---@field SETTING_FLOAT_WINDOW string
+---@field SETTING_FLOAT_WINDOW_TOOLTIP string
 ---@field SETTING_WHATS_NEW string
 ---@field SETTING_WHATS_NEW_TOOLTIP string
 ---@field SETTING_COMPANIONS string

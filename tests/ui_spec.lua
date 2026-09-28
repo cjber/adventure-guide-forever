@@ -287,14 +287,14 @@ do
 	end
 	-- Every row goes in through the secure delegate, in page order; none from addon code, which taints the search.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 12, "every row is registered through Settings.RegisterInitializer")
+	equal(#h.settings, 13, "every row is registered through Settings.RegisterInitializer")
 	equal(
 		h.settings[1].key .. " " .. h.settings[2].key .. " " .. h.settings[3].key,
-		"showTracker wanderer followQuest",
+		"floatWindow showTracker wanderer",
 		"in page order"
 	)
-	equal(h.settings[9].key, "untrackOthers", "in page order, to the last")
-	equal(h.settings[9].category, h.ns.TITLE, "on the addon's page")
+	equal(h.settings[10].key, "untrackOthers", "in page order, to the last")
+	equal(h.settings[10].category, h.ns.TITLE, "on the addon's page")
 	equal(byKey.untrackOthers.indented, true, "untrackOthers is indented under tracking")
 	equal(byKey.untrackOthers.evaluateCVar, "AdventureGuideForever_trackRouteQuests", "parent changes reevaluate child")
 	equal(byKey.untrackOthers.enabled(), false, "and is greyed while it is off")

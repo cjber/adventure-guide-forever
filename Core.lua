@@ -9,6 +9,7 @@ ns.TITLE = L.TITLE
 ---@type table<string, boolean>
 local DEFAULTS = {
 	showTracker = true,
+	floatWindow = false,
 	stepSound = true,
 	-- Opt-in: with the Adventure tab closed the map shows no Adventure Guide mark unless the player asks for them.
 	showMapPins = false,
@@ -204,6 +205,9 @@ function ns.SetSetting(key, value)
 		return
 	end
 	db[key] = value
+	if key == "floatWindow" then
+		ns.Window.ApplyMode()
+	end
 	-- Wandering from now: what Go started stops, as the player's Stop would.
 	if key == "wanderer" and value then
 		ns.Integrations.Cancel()
