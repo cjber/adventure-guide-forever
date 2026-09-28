@@ -27,11 +27,14 @@ local host = CreateFrame("Frame", "ForeverTrackerCompanion", UIParent)
 -- section in one column without registering our frames with Blizzard's
 -- secure module collection.
 local nativeAnchor
+local function BelowPoint(point)
+	return point:gsub("TOP", "BOTTOM")
+end
 local function CaptureNativeAnchor()
-	if nativeAnchor then
+	local point, relativeTo, relativePoint, x, y = ObjectiveTrackerFrame:GetPoint()
+	if nativeAnchor and relativeTo == host then
 		return
 	end
-	local point, relativeTo, relativePoint, x, y = ObjectiveTrackerFrame:GetPoint()
 	nativeAnchor = {
 		point = point or "TOPRIGHT",
 		relativeTo = relativeTo or UIParent,
@@ -174,23 +177,30 @@ local function Layout()
 	-- from the original point each pass, so repeated refreshes never drift.
 	local shift = 0
 	host:ClearAllPoints()
-	host:SetPoint("TOPRIGHT", nativeAnchor.relativeTo, nativeAnchor.relativePoint, nativeAnchor.x, nativeAnchor.y)
+	host:SetPoint(
+		nativeAnchor.point,
+		nativeAnchor.relativeTo,
+		nativeAnchor.relativePoint,
+		nativeAnchor.x,
+		nativeAnchor.y
+	)
 	local screenHeight = UIParent:GetHeight()
 	local top = host:GetTop()
 	local nativeHeight = ObjectiveTrackerFrame:GetHeight() or 0
 	if screenHeight and top and top - host:GetHeight() - nativeHeight < 24 then
 		shift = 24 - (top - host:GetHeight() - nativeHeight)
+		shift = math.min(shift, math.max(0, screenHeight - 24 - top))
 	end
 	host:ClearAllPoints()
 	host:SetPoint(
-		"TOPRIGHT",
+		nativeAnchor.point,
 		nativeAnchor.relativeTo,
 		nativeAnchor.relativePoint,
 		nativeAnchor.x,
 		nativeAnchor.y + shift
 	)
 	ObjectiveTrackerFrame:ClearAllPoints()
-	ObjectiveTrackerFrame:SetPoint("TOPRIGHT", host, "BOTTOMRIGHT", 0, 0)
+	ObjectiveTrackerFrame:SetPoint(nativeAnchor.point, host, BelowPoint(nativeAnchor.point), 0, 0)
 end
 function host.MarkDirty(_)
 	if ready and not queued then
