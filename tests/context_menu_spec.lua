@@ -24,6 +24,7 @@ end)
 local popup = h.G.AdventureGuideForeverContextMenu
 assert(popup)
 equal(popup:IsShown(), true, "owned menu opens")
+equal(popup:GetParent(), h.G.UIParent, "popup escapes owner scroll clipping")
 equal(popup.rows[1]:IsEnabled(), false, "title not actionable")
 equal(popup.rows[2]:IsEnabled(), false, "disabled action stays disabled")
 h.Click(popup.rows[3])
