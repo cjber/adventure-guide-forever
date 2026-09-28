@@ -51,6 +51,7 @@ WindowProfessions.lua
 WindowPvP.lua
 WindowCompletion.lua
 WindowDungeons.lua
+TrackerHost.lua
 Tracker.lua
 Tooltip.lua
 Settings.lua

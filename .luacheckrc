@@ -13,7 +13,7 @@ exclude_files = {
 }
 ignore = { "212/_.*", "212/self" } -- unused args prefixed with _, and self on mixin handlers
 
-globals = {
+globals = { "ForeverTrackerHost",
 	"AdventureGuideForeverDB",
 	"AdventureGuideForeverCharDB",
 	"AdventureGuideForeverPinMixin",
@@ -28,7 +28,7 @@ globals = {
 	"BINDING_NAME_ADVENTUREGUIDEFOREVER_WINDOW",
 }
 
-read_globals = {
+read_globals = { "CreateFramePoolCollection", "C_XMLUtil",
 	"NORMAL_FONT_COLOR",
 	"OpenWorldMap",
 	"AtlasLoot",

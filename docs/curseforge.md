@@ -32,7 +32,7 @@ Move steps around; quest givers tick off as you finish with them.
 
 ![The Adventure Guide tracker section](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png)
 
-Your current stop and the one after it sit above your quests.
+Your current stop and the one after it sit beside your quests.
 
 ![The Dungeons tab](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/dungeons.png)
 

@@ -203,18 +203,16 @@ end
 local module
 
 local function Available()
-	return ObjectiveTrackerManager and ObjectiveTrackerFrame
+	return ns.TrackerHost
 end
 
 ---@param trackerModule AGFTrackerModule
 local function Attach(trackerModule)
-	if ObjectiveTrackerManager:GetContainerForModule(trackerModule) ~= ObjectiveTrackerFrame then
-		ObjectiveTrackerManager:SetModuleContainer(trackerModule, ObjectiveTrackerFrame)
-	end
+	ns.TrackerHost.Attach(trackerModule)
 end
 
 local function WarnIfUnattached()
-	if module and ObjectiveTrackerManager:GetContainerForModule(module) == nil then
+	if module and not ns.TrackerHost.IsAttached(module) then
 		ns.Print(L.TRACKER_UNATTACHED)
 	end
 end

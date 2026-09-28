@@ -624,6 +624,16 @@ function harness.load(options)
 	local function TrackerModule(module)
 		module.liveBlocks, module.layoutOrder = {}, {}
 		Internal("FontString", Internal("Frame", module, "Header"), "Text")
+		function module:SetContainer(container)
+			self.parentContainer = container
+			self:SetParent(container)
+		end
+		function module:Update()
+			self:MarkDirty()
+		end
+		function module:GetContentsHeight()
+			return #self.layoutOrder > 0 and 25 + #self.layoutOrder * 40 or 0
+		end
 		function module:SetHeader(text)
 			self.Header.Text:SetText(text)
 		end
@@ -2011,17 +2021,20 @@ function harness.load(options)
 
 	-- The objective tracker (Blizzard_ObjectiveTrackerShared.lua:21-23).
 	G.OBJECTIVE_DASH_STYLE_SHOW, G.OBJECTIVE_DASH_STYLE_HIDE, G.OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 1, 2, 3
-	local containers = {}
 	G.ObjectiveTrackerFrame = NewRegion("Frame", "ObjectiveTrackerFrame", G.UIParent)
-	G.ObjectiveTrackerManager = {
-		SetModuleContainer = function(_, module, container)
-			containers[module] = container
+	G.ObjectiveTrackerFrame:SetSize(250, 600)
+	G.ObjectiveTrackerManager = setmetatable({}, {
+		__index = function(_, key)
+			error("addon entered native tracker manager: " .. key)
 		end,
-		GetContainerForModule = function(_, module)
-			return containers[module]
-		end,
-		AddContainer = noop,
-	}
+	})
+	G.CreateFramePoolCollection = function()
+		return {
+			GetOrCreatePool = function()
+				error("pooled native blocks require tracker_host_spec")
+			end,
+		}
+	end
 
 	-- Shortest Path Forever: absent, v1 (Estimate, Navigate, NavigateRoute, CurrentStop, Cancel), v1+ (adds
 	-- EstimateDetail and Active) or "ended" (v1+ and Ended). Each profile counts its calls per function in h.spf. One

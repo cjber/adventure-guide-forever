@@ -542,6 +542,7 @@
 ---@field SEARCH_NONE string a search that finds no quest
 
 ---@class AGFNamespace
+---@field TrackerHost ForeverTrackerHostAPI
 ---@field DungeonBosses table<integer, AGFDungeonBoss[]>
 ---@field TITLE string
 ---@field L AGFStrings
