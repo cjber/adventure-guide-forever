@@ -622,13 +622,17 @@ do
 	local route = h.ns.Route().steps
 	local revisit
 	for _, pin in ipairs(pins) do
-		revisit = (pin.visits and #pin.visits > 1) and pin or revisit
+		revisit = (pin.visits and #pin.visits > 1 and pin.visits[1].step.hub == 340) and pin or revisit
 	end
 	equal(revisit ~= nil, true, "ring: Ratchet visited twice")
 	equal(revisit.visits[1].step.x ~= revisit.visits[2].step.x, true, "ring: different remaining givers")
 	equal(revisit.More, nil, "ring: no +1 text")
 	equal(revisit.Badge:IsShown(), true, "ring: shared stops keep their kind")
-	equal(#pins, #route - 1, "ring: one ring for both visits")
+	local visitsCount = 0
+	for _, pin in ipairs(pins) do
+		visitsCount = visitsCount + #(pin.visits or {})
+	end
+	equal(visitsCount, #route, "ring: every visit belongs to one ring")
 	equal(revisit.visits[1].step.hub, revisit.visits[2].step.hub, "ring: real town identity")
 	h.Hover(revisit)
 	local visits = {}

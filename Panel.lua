@@ -73,6 +73,8 @@ local questsTab
 local tabPip
 ---@type AGFRouteRow[]
 local rows = {}
+---@type AGFGuideRow[]
+local laterRows = {}
 ---@type AGFJourneyCard[]
 local cards = {}
 ---@type Frame?
@@ -861,8 +863,9 @@ end
 ---@param route AGFRoute
 ---@param top number
 ---@param hidden? boolean
+---@param journey? AGFJourney
 ---@return number top below the last row shown
-local function LayoutRows(route, top, hidden)
+local function LayoutRows(route, top, hidden, journey)
 	---@cast orderLine -?
 	---@cast sessionEmpty -?
 	local custom = not hidden and route.chosen and ns.Order.IsCustom()
@@ -905,6 +908,45 @@ local function LayoutRows(route, top, hidden)
 		end
 	end
 	Overview.HideChecklist(checks, check)
+	local future = not hidden
+			and #route.steps < ns.Model.MAX_STEPS
+			and not empty
+			and journey
+			and ns.Window.GuideOutline(ns.Data, ns.State.Player(), ns.State.Completed(), journey, route.steps)
+		or {}
+	for index = 1, math.max(#laterRows, math.min(#future, math.max(0, ns.Model.MAX_STEPS - #route.steps))) do
+		local row = laterRows[index]
+		if not row then
+			row = ns.Window.CreateStepRow(assert(list), ROW_HEIGHT) --[[@as AGFGuideRow]]
+			row:SetEnabled(false)
+			row:SetMotionScriptsWhileDisabled(true)
+			row:SetScript("OnEnter", function(self)
+				if self.questID then
+					local quest = ns.Data.quests[self.questID]
+					ShowTooltip(self, { quest.title, L.GUIDE_OUTLINE_TOOLTIP })
+				end
+			end)
+			row:SetScript("OnLeave", GameTooltip_Hide)
+			laterRows[index] = row
+		end
+		local id = index + #route.steps <= ns.Model.MAX_STEPS and future[index] or nil
+		row.questID = id
+		row:SetShown(id ~= nil)
+		if id then
+			local quest = ns.Data.quests[id]
+			local level = quest.level == -1 and ns.State.Player().level or quest.level
+			local title = level > 0 and L.QUEST_LEVEL_TITLE:format(level, quest.title) or quest.title
+			ns.Window.SetStepRow(row, 1, title, L.GUIDE_OUTLINE)
+			row.Number:Hide()
+			row.Ring:Hide()
+			ns.Art.SetSliceShown(row.Selected, false)
+			local color = level > 0 and GetQuestDifficultyColor(level) or NORMAL_FONT_COLOR
+			row.Title:SetTextColor(color.r, color.g, color.b)
+			row:SetPoint("TOPLEFT", 6, -top)
+			row:SetPoint("TOPRIGHT", -6, -top)
+			top = top + ROW_HEIGHT + ROW_GAP
+		end
+	end
 	return top
 end
 
@@ -1047,8 +1089,7 @@ local function LayoutOverview(route, top, shown)
 	return top
 end
 
--- The overview scrolls through every option. A chosen journey keeps the other cards folded
--- above its steps; its scroll height and the search's are summed before the client lays them out.
+-- A chosen journey leads with its steps; alternative destinations stay folded below the route.
 ---@param route AGFRoute
 ---@return boolean searching
 ---@return integer found
@@ -1093,7 +1134,7 @@ local function LayoutJourneys(route)
 	emptyText:SetPoint("TOPLEFT", 10, -emptyTop - 8)
 	emptyText:SetMaxLines(0)
 	top = LayoutOverview(route, top, not searching and not route.chosen)
-	local shownCard, shownJourney, compactRows = nil, nil, 0
+	local shownCard, shownJourney = nil, nil
 	for index = 1, math.max(#route.journeys, #cards) do
 		local card = cards[index] or CreateJourneyCard()
 		cards[index] = card
@@ -1101,22 +1142,23 @@ local function LayoutJourneys(route)
 		card:SetShown(journey ~= nil)
 		if journey and journey.key == route.journey then
 			shownCard, shownJourney = card, journey
-		elseif journey then
-			card:SetPoint("TOP", list, "TOP", 0, -top)
-			top = top + RefreshCard(card, journey, "compact") + ROW_GAP
-			compactRows = compactRows + 1
 		end
 	end
 	if shownCard and shownJourney then
-		-- The one-line rows sit a row's gap apart, and a card's gap above the shown card.
-		top = top + (compactRows > 0 and CARD_GAP - ROW_GAP or 0)
 		RefreshCard(shownCard, shownJourney, route.chosen and "chosen" or "shown")
 		shownCard:SetPoint("TOP", list, "TOP", 0, -top)
 		top = LayoutTrack(shownJourney, top + CARD_HEIGHT + CARD_GAP)
-		top = LayoutRows(route, top) + CARD_GAP
+		top = LayoutRows(route, top, false, shownJourney) + CARD_GAP
 	else
 		LayoutRows(route, top, true)
 		top = math.max(top, emptyTop + EMPTY_HEIGHT)
+	end
+	for index, card in ipairs(cards) do
+		local journey = not searching and route.chosen and route.journeys[index] or nil
+		if journey and journey ~= shownJourney then
+			card:SetPoint("TOP", list, "TOP", 0, -top)
+			top = top + RefreshCard(card, journey, "compact") + ROW_GAP
+		end
 	end
 	-- Honest coverage: quests here the data lacks, so the cards can't be every story.
 	---@cast unlistedText -?

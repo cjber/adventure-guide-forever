@@ -33,9 +33,10 @@
 ---@field raid? boolean a raid's quest: its instance is a raid, or it is typed Raid wherever it is filed
 ---@field elite? boolean group quest
 ---@field xp? integer the XP it gives a player at most 5 levels above it (Quest::XPValue); only with a start
----@field need? table<integer, integer> objective slot -> the count it needs: 0-3 kill or use, 4-7 collect, 16 explore;
+---@field need? table<integer, integer> objective slot -> required count (0 means unknown until logged): 0-3 kill or use, 4-7 collect, 16 explore;
 --- every objective, placed in obj or not; never for a dungeon quest
 ---@field obj? AGFObjectiveArea[] where the objectives are done, at most 3 each; never for a dungeon quest; with need
+---@field objectivesUnknown? boolean provider has objectives that cannot be planned
 ---@field flags? AGFQuestFlags
 
 --- Where one objective is done: Blizzard's quest POI shape, else a group of its spawns (tools/gen_quests.py).
@@ -1362,7 +1363,7 @@
 ---@alias AGFYield fun()
 
 ---@class AGFNamespace
----@field QuestieObjectives fun(lib: AGFQuestieDB, objectives: table?, trigger: table?, zone: integer?, data: AGFData, mapOf: AGFMapLookup, yield: AGFYield, questID: integer): table?, AGFObjectiveArea[]?, table?
+---@field QuestieObjectives fun(lib: AGFQuestieDB, objectives: table?, trigger: table?, zone: integer?, data: AGFData, mapOf: AGFMapLookup, yield: AGFYield, questID: integer): table?, AGFObjectiveArea[]?, table?, boolean?
 
 ---@class AGFStrings
 ---@field WHY_PROVIDER string

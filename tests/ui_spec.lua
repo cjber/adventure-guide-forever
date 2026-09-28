@@ -372,16 +372,12 @@ do
 	Moved(h, 1413, 0.64, 0.46)
 	local head = h.ns.Route().steps[1]
 	equal(head.key, "area:887:0", "follow: the area the player stands in leads")
-	-- "You're here" (design §4.2): the objectives are theirs to do, so nothing guides into the area, but Shortest
-	-- Path still draws the way on from it: the stops after it, handed once.
+	-- Entering an objective area retains the current approach and all later route stops.
 	equal(head.here, true, "follow: you're here")
 	equal(h.spf.NavigateRoute, 2, "follow: in step 1's area, the stops after it sent")
 	local onward = h.ns.Route().steps
-	equal(#h.spfRoute.stops, #onward - 1, "follow: every stop but the area")
-	equal(h.spfRoute.stops[1].x, onward[2].x, "follow: from step 2 on")
-	for _, stop in ipairs(h.spfRoute.stops) do
-		equal(stop.x == head.x and stop.y == head.y, false, "follow: never the area the player stands in")
-	end
+	equal(#h.spfRoute.stops, #onward, "follow: proximity keeps every stop")
+	equal(h.spfRoute.stops[1].x, onward[1].x, "follow: current area retains its destination")
 	equal(h.ns.Integrations.Owns(), true, "follow: guidance holds, so Stop still shows")
 	Moved(h, 1413, 0.64, 0.47)
 	equal(h.spf.NavigateRoute, 2, "follow: nothing again while the player is in it")
@@ -392,8 +388,8 @@ do
 	h.flush()
 	equal(h.spf.NavigateRoute, 3, "follow: out of the area, once combat ends, the route goes on")
 	equal(h.ns.Prefs().guided, "zone:1413", "follow: still the chosen journey's")
-	-- Standing in step 1's town, the Crossroads, with steps after it: the town alone, so no way out of town is drawn.
-	equal(#h.spfRoute.stops, 1, "follow: in step 1's town, the town alone")
+	-- Standing in the Crossroads still shows the complete route.
+	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: town proximity keeps later stops")
 	h.onTaxi = true
 	Moved(h, 1413, 0.46, 0.79)
 	equal(h.spf.NavigateRoute, 3, "follow: nothing in the air")
@@ -401,9 +397,8 @@ do
 	Moved(h, nil, nil, nil)
 	equal(h.spf.NavigateRoute, 3, "follow: nothing off the map")
 	Moved(h, 1413, 0.5223, 0.3101)
-	h.spfEnd("arrived")
 	Moved(h, 1413, 0.5224, 0.3101)
-	equal(h.spf.NavigateRoute, 3, "follow: arrived in the town, its work still there: nothing")
+	equal(h.spf.NavigateRoute, 3, "follow: near the town, its complete route remains active")
 	Moved(h, 1413, 0.46, 0.79)
 	equal(h.spf.NavigateRoute, 4, "follow: out of the town, the journey goes on")
 	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: every step")
@@ -503,12 +498,12 @@ do
 	equal(later, true, "here, waypoint: the stops after it keep theirs")
 	h.ns.StartRoute()
 	h.flush()
-	equal(h.counts.SetUserWaypoint or 0, 0, "here, waypoint: Go sets none")
+	equal(h.counts.SetUserWaypoint, 1, "here, waypoint: Go retains the nearby destination")
 	equal(h.ns.Integrations.Owns(), true, "here, waypoint: guidance holds")
 	Moved(h, 1413, 0.46, 0.79)
 	local leftFor = h.ns.Route().steps[1]
 	equal(leftFor.here, nil, "here, waypoint: out of it")
-	equal(h.counts.SetUserWaypoint, 1, "here, waypoint: the route goes on")
+	equal(h.counts.SetUserWaypoint, 2, "here, waypoint: the route goes on")
 	local point = h.G.C_Map.GetUserWaypoint()
 	equal(point and point.position.x, leftFor.x, "here, waypoint: at step 1")
 	clean(h, "here, waypoint")
@@ -523,11 +518,11 @@ do
 	equal(#h.spfRoute.stops, steps, "follow, town: started outside it, every step")
 	h.spfAdvance()
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 2, "follow, town: reached, Shortest Path moved on: the town alone again")
-	equal(#h.spfRoute.stops, 1, "follow, town: just the town")
+	equal(h.spf.NavigateRoute, 1, "follow, town: reaching it never truncates the route")
+	equal(#h.spfRoute.stops, steps, "follow, town: every stop remains visible")
 	h.spfEnd("arrived")
 	Moved(h, 1413, 0.5224, 0.3101)
-	equal(h.spf.NavigateRoute, 2, "follow, town: arrived, its work left: nothing")
+	equal(h.spf.NavigateRoute, 1, "follow, town: explicit arrival does not restart unchanged guidance")
 	clean(h, "follow, town")
 
 	-- The town is as wide as its quests' places, not its point: by the giver farthest from the point, still in it.
@@ -549,7 +544,7 @@ do
 	equal(h.ns.Route().steps[1].key, town.key, "follow, town wide: the town still step 1")
 	h.ns.StartRoute()
 	h.flush()
-	equal(#h.spfRoute.stops, 1, "follow, town wide: by that giver, the town alone")
+	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow, town wide: proximity preserves the route")
 	clean(h, "follow, town wide")
 
 	-- Without Shortest Path, the waypoint Go set for the chosen journey moves to its new step 1; on a map that refuses
@@ -741,19 +736,26 @@ do
 			equal(h.ns.Prefs().guided, nil, label .. ", replaced: the guidance is forgotten")
 		end
 	end
-	-- Arrived at the last stop handed, the route has a step it never had: sent on, once.
+	-- A genuinely new stop extends an arrived route once. Keep this API contract independent of planner scoring.
 	local h = Ending("ended", Arrive, true)
-	h.log[#h.log + 1] = { id = 846, title = "Fresh", level = 14, complete = false, map = 1413, x = 0.2, y = 0.2 }
-	h.fire("QUEST_LOG_UPDATE")
+	local expanded = h.ns.Route()
+	expanded.steps[#expanded.steps + 1] = {
+		key = "area:new",
+		kind = "area",
+		title = "Fresh",
+		quests = { 846 },
+		map = 1413,
+		x = 0.2,
+		y = 0.2,
+	}
+	h.ns.Route = function()
+		return expanded
+	end
+	h.fire("SUPER_TRACKING_CHANGED")
 	h.flush()
-	-- It arrived at the Crossroads, where the town's work waits first; stepping out, the journey goes on.
-	equal(h.spf.NavigateRoute, 1, "ended, arrived: nothing while the town it stands in has work")
-	h.MovePlayer(1413, 0.46, 0.79)
-	h.ns.Invalidate()
-	h.flush()
-	equal(h.spf.NavigateRoute, 2, "ended, arrived: a new step extends the route")
+	equal(h.spf.NavigateRoute, 2, "ended, arrived: a new stop extends the route")
 	equal(h.ns.Integrations.Arrived(), false, "ended, arrived: which guides again")
-	h.ns.Invalidate()
+	h.fire("SUPER_TRACKING_CHANGED")
 	h.flush()
 	equal(h.spf.NavigateRoute, 2, "ended, arrived: once")
 	-- Our own Stop is no ending to judge.
@@ -2948,7 +2950,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		same(h.tooltip, expected, label .. ": " .. journey.key .. "'s tooltip")
 	end
 
-	-- The first row chooses itself, lit over its steps; the others fold above it.
+	-- The first row chooses itself; its steps lead and alternatives fold below.
 	h.Click(Overview()[1])
 	equal(Starts(), 0, label .. ": the route waits for the rebuild with its steps")
 	h.flush()
@@ -2959,14 +2961,14 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#Overview(), 0, label .. ": the overview gives way")
 	equal(Previews(), "", label .. ": with its steps")
 	equal(Says(L.OVERVIEW_WHERE:format("The Barrens", h.player.level)), 0, label .. ": and the line by the title")
-	equal(Heights(), "26 26 26 26 26 26 86", label .. ": the others fold above the chosen card")
-	equal(Cards()[#Cards()].journey.key, story.key, label .. ": the chosen card last, over its steps")
+	equal(Heights(), "86 26 26 26 26 26 26", label .. ": the chosen route precedes alternatives")
+	equal(Cards()[1].journey.key, story.key, label .. ": the chosen card first, over its steps")
 	-- The chosen card is lit, not pressed: its art, pressed or not, is the card's own, so nothing moves.
-	local chosenCard = Cards()[#Cards()]
+	local chosenCard = Cards()[1]
 	equal(chosenCard.highlightLocked, true, label .. ": the chosen card stays lit")
 	equal(chosenCard.NormalTexture:GetAtlas(), "ui-journeys-renown-button", label .. ": in its own art")
 	equal(chosenCard.PushedTexture:GetAtlas(), "ui-journeys-renown-button", label .. ": a press moves nothing")
-	equal(Cards()[1].PushedTexture:GetAtlas(), Cards()[1].NormalTexture:GetAtlas(), label .. ": nor on a row")
+	equal(Cards()[2].PushedTexture:GetAtlas(), Cards()[2].NormalTexture:GetAtlas(), label .. ": nor on a row")
 	equal(Rows(), #h.ns.Route().steps, label .. ": its steps listed")
 	local nextZone
 	for _, card in ipairs(Cards()) do
@@ -2999,12 +3001,12 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(h.ns.Route().journey, key, label .. ": a row chooses its card")
 	equal(Starts(), 2, label .. ": and starts its route in place of the first")
-	equal(Heights(), "26 26 26 26 26 26 86", label .. ": still one whole card")
-	equal(Cards()[#Cards()].journey.key, key, label .. ": the new choice over the steps")
+	equal(Heights(), "86 26 26 26 26 26 26", label .. ": still one whole card")
+	equal(Cards()[1].journey.key, key, label .. ": the new choice over the steps")
 
 	-- The chosen card again: nothing changes but the map, which turns to it.
 	local maps, stops = h.counts.SetMapID, Stops()
-	h.Click(Cards()[#Cards()])
+	h.Click(Cards()[1])
 	h.flush()
 	equal(h.ns.Route().journey, key, label .. ": clicking the chosen card keeps it")
 	equal(Stops(), stops, label .. ": and stops nothing")
@@ -3034,8 +3036,8 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Click(Overview()[2])
 	h.flush()
 	equal(h.ns.Route().chosen and h.ns.Route().journey, second.key, label .. ": a row chooses it")
-	equal(Heights(), "26 26 26 26 26 26 86", label .. ": the others fold above it")
-	equal(Cards()[#Cards()].journey.key, second.key, label .. ": lit over its steps")
+	equal(Heights(), "86 26 26 26 26 26 26", label .. ": alternatives fold below it")
+	equal(Cards()[1].journey.key, second.key, label .. ": lit over its steps")
 	equal(Rows(), #h.ns.Route().steps, label .. ": which are listed")
 	h.Click(Back())
 	h.flush()

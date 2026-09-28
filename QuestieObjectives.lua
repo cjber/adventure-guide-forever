@@ -11,8 +11,10 @@ local _, ns = ...
 ---@param mapOf fun(area: integer): integer?
 ---@param yield fun()
 ---@param questID integer
----@return table?, AGFObjectiveArea[]?, table?
+---@return table?, AGFObjectiveArea[]?, table?, boolean? unsupported
 function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield, questID)
+	-- Questie stores icon overrides, not required counts, in objective[3] (kill credits: [4]).
+	-- Zero retains the objective slot; the quest log supplies its actual count after pickup.
 	local need, areas, kinds = {}, {}, {}
 	local function Places(slot, lists)
 		local cells = {}
@@ -104,11 +106,10 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 	local slot = 0
 	local function KillCredits()
 		for _, objective in ipairs(objectives and objectives[5] or {}) do
-			local count = tonumber(objective[4])
-			if slot > 3 or not count or count <= 0 then
+			if slot > 3 then
 				return false
 			end
-			need[slot], kinds[slot] = count, "monster"
+			need[slot], kinds[slot] = 0, "monster"
 			local lists = {}
 			for _, id in ipairs(objective[1] or {}) do
 				Spawns("Npc", id, lists)
@@ -122,15 +123,14 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 		and lib.ObjectiveFirst.killCreditObjectiveFirst
 		and lib.ObjectiveFirst.killCreditObjectiveFirst[questID]
 	if creditFirst and not KillCredits() then
-		return nil, nil, nil
+		return nil, nil, nil, true
 	end
 	for index, kind in ipairs({ "Npc", "Object" }) do
 		for _, objective in ipairs(objectives and objectives[index] or {}) do
-			local count = tonumber(objective[3])
-			if slot > 3 or not count or count <= 0 then
-				return nil, nil, nil
+			if slot > 3 then
+				return nil, nil, nil, true
 			end
-			need[slot], kinds[slot] = count, kind == "Npc" and "monster" or "object"
+			need[slot], kinds[slot] = 0, kind == "Npc" and "monster" or "object"
 			local lists = {}
 			Spawns(kind, objective[1], lists)
 			Places(slot, lists)
@@ -139,15 +139,14 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 	end
 
 	if not creditFirst and not KillCredits() then
-		return nil, nil, nil
+		return nil, nil, nil, true
 	end
 	for index, objective in ipairs(objectives and objectives[3] or {}) do
-		local count = tonumber(objective[3])
-		if index > 4 or not count or count <= 0 then
-			return nil, nil, nil
+		if index > 4 then
+			return nil, nil, nil, true
 		end
 		slot = index + 3
-		need[slot], kinds[slot] = count, "item"
+		need[slot], kinds[slot] = 0, "item"
 		local lists = {}
 		Item(objective[1], lists, {})
 		Places(slot, lists)
@@ -157,8 +156,8 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 		Places(16, { trigger[2] })
 	end
 	-- Spell/reputation objectives have no compatible planner slots; use the client's live quest POI instead.
-	if objectives and (objectives[4] or objectives[6]) then
-		return nil, nil, nil
+	if objectives and (next(objectives[4] or {}) or next(objectives[6] or {})) then
+		return nil, nil, nil, true
 	end
 	return next(need) and need or nil, areas[1] and areas or nil, next(kinds) and kinds or nil
 end
