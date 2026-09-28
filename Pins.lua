@@ -91,9 +91,9 @@ function Pins.StopTooltip(step)
 	end
 	local lines = {}
 	for _, id in ipairs(ids) do
-		local title = Pins.QuestLineText(id)
+		local title, color = Pins.QuestLineText(id)
 		if title and title ~= "" then
-			lines[#lines + 1] = title
+			lines[#lines + 1] = color:WrapTextInColorCode(title)
 		end
 	end
 	if #lines == 0 then
@@ -106,7 +106,18 @@ function Pins.StopTooltip(step)
 	local nextQuest = nextID and ns.Data.quests[nextID]
 	if story and story.total and nextID and nextQuest and nextQuest.title then
 		local nextTitle = Pins.QuestLineText(nextID)
+		title = title
+			.. " · "
+			.. (
+				story.total and ns.L.CHAPTER_OF:format(story.chapter, story.total) or ns.L.CHAPTER:format(story.chapter)
+			)
 		title = title .. " · " .. ns.L.NEXT .. ": " .. nextTitle
+	elseif story then
+		title = title
+			.. " · "
+			.. (
+				story.total and ns.L.CHAPTER_OF:format(story.chapter, story.total) or ns.L.CHAPTER:format(story.chapter)
+			)
 	end
 	return title
 end
