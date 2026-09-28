@@ -184,6 +184,7 @@ ns.L = {
 	AFTER_PICK_UP = "after you pick it up",
 	OPENS_CHAPTER_HERE = "Opens the next chapter here",
 	QUESTS_IN_PROGRESS = "quests in progress",
+	TRACKER_QUEST = "[%d] %s",
 	QUESTS_HERE = "%d quests here",
 	PICK_UP = "Pick up quests: %s",
 	HUB_HAND_IN = "%d to hand in",

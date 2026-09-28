@@ -39,6 +39,21 @@ local function Givers(givers)
 	return L.HUB_NPCS_MORE:format(table.concat(givers, L.LIST_SEPARATOR, 1, NAMED_GIVERS), #givers - NAMED_GIVERS)
 end
 
+-- Area and dungeon steps can cover several quests. Keep the relationship
+-- visible in the addon-owned block even when the client has not supplied live
+-- quest text yet; the generated data still has the title and level.
+local function QuestLine(step, questID)
+	local log = ns.State.Log()
+	local entry = log and log[questID]
+	local quest = ns.Data.quests[questID]
+	local title = (entry and entry.title) or (quest and quest.title) or step.questTitle or step.title
+	local level = (entry and entry.level) or (quest and quest.level)
+	if not (level and level > 0) then
+		level = ns.State.Player().level
+	end
+	return L.TRACKER_QUEST:format(level, title)
+end
+
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
 local ModuleMixin = { headerText = L.TITLE, blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
 
@@ -157,6 +172,12 @@ function ModuleMixin:LayoutContents()
 	end
 	local line = 0
 	local town = step.kind == "town" and #step.quests > 1
+	if step.kind == "area" or step.kind == "dungeon" then
+		for _, questID in ipairs(step.quests) do
+			line = line + 1
+			block:AddObjective(line, QuestLine(step, questID))
+		end
+	end
 	-- A town's header is its name, so its counts come first. One quest's stop says where it is instead: "NPC, zone",
 	-- the place alone when it already names the zone, the zone alone when there is no place. A lone quest in a town
 	-- names its giver, not the town (design §2.5). No line repeats the header.
