@@ -28,7 +28,7 @@ local host = CreateFrame("Frame", "ForeverTrackerCompanion", UIParent)
 -- secure module collection.
 local nativeAnchor
 local function StackPoints(point)
-	if point == "CENTER" then
+	if point == "CENTER" or point == "TOP" or point == "BOTTOM" then
 		return "TOP", "BOTTOM"
 	end
 	local horizontal = point:find("RIGHT", 1, true) and "RIGHT" or "LEFT"
@@ -172,8 +172,17 @@ local function Layout()
 	local width = ObjectiveTrackerFrame:GetWidth()
 	MatchNativeScale()
 	host:ClearAllPoints()
-	host:SetPoint("TOPRIGHT", nativeAnchor.relativeTo, nativeAnchor.relativePoint, nativeAnchor.x, nativeAnchor.y)
-	local available = math.max(0, (host:GetTop() or UIParent:GetHeight()) - 40)
+	host:SetPoint(
+		nativeAnchor.point,
+		nativeAnchor.relativeTo,
+		nativeAnchor.relativePoint,
+		nativeAnchor.x,
+		nativeAnchor.y
+	)
+	local layoutScale = host.GetEffectiveScale and host:GetEffectiveScale() or 1
+	local layoutScreenScale = UIParent.GetEffectiveScale and UIParent:GetEffectiveScale() or layoutScale
+	local layoutMargin = 40 * layoutScreenScale / layoutScale
+	local available = math.max(0, (host:GetTop() or UIParent:GetHeight()) - layoutMargin)
 	host:SetWidth(width)
 	local height = 0
 	for _, module in ipairs(modules) do
