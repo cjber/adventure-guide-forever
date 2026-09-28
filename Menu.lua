@@ -10,7 +10,7 @@ ns.Menu = Menu
 
 -- "Show again: <title>" for each step skipped this session, in the order they were skipped, then each journey this
 -- character is not interested in, then each aside it turned down.
----@param description SharedMenuDescriptionProxy|AGFMenu
+---@param description AGFMenuDescription
 function Menu.Skipped(description)
 	for _, skipped in ipairs(ns.Skipped()) do
 		description:CreateButton(L.SHOW_AGAIN:format(skipped.title), function()
@@ -30,7 +30,7 @@ end
 
 -- "Not this quest" (docs/design.md §2.18) for a step's quests: one button for a lone quest, else one per quest under
 -- it. A trainer's or battlemaster's stop has none. The quest stays in the log; Show again brings it back.
----@param root SharedMenuDescriptionProxy
+---@param root AGFMenuDescription
 ---@param step AGFStep
 local function NotThisQuest(root, step)
 	if step.kind == "trainer" or step.kind == "battlemaster" or #step.quests == 0 then
@@ -56,7 +56,7 @@ local function NotThisQuest(root, step)
 	end
 end
 
----@param root SharedMenuDescriptionProxy
+---@param root AGFMenuDescription
 ---@param step? AGFStep
 function Menu.Step(root, step)
 	root:CreateTitle(step and step.title or ns.TITLE)
@@ -98,7 +98,7 @@ end
 ---@param owner Region
 ---@param journey AGFJourney
 function Menu.Journey(owner, journey)
-	MenuUtil.CreateContextMenu(owner, function(_, root)
+	ns.ContextMenu(owner, function(_, root)
 		root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_JOURNEY")
 		root:CreateTitle(journey.title)
 		local instance = journey.kind == "dungeon" and tonumber(journey.key:match("^dungeon:(%d+)$"))
@@ -117,7 +117,7 @@ end
 ---@param tag string
 ---@param step? AGFStep
 function Menu.Open(owner, tag, step)
-	MenuUtil.CreateContextMenu(owner, function(_, root)
+	ns.ContextMenu(owner, function(_, root)
 		root:SetTag(tag)
 		Menu.Step(root, step)
 	end)

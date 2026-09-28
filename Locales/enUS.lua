@@ -408,6 +408,16 @@ ns.L = {
 	PVP_GO_BATTLEMASTER = "Go to battlemaster",
 	PVP_NEXT_REWARD = "Next reward: rank %d · %s",
 	SESSION_LABEL = "Time for this journey",
+	GUIDE_OPEN = "View full guide",
+	GUIDE_BACK = "Back to journeys",
+	MENU_BACK = "Back",
+	MENU_CHECKED = "[x] %s",
+	MENU_UNCHECKED = "[ ] %s",
+	MENU_SUBMENU = "%s >",
+	GUIDE_OUTLINE = "Later quest · guide outline",
+	GUIDE_OUTLINE_TOOLTIP = "Quests in this area. Availability is checked before the guide recommends a pickup.",
+	GUIDE_PAGE = "%d / %d · %d next steps · %d later quests",
+	QUEST_LEVEL_TITLE = "[%d] %s",
 	SESSION_UNLIMITED = "No limit",
 	SESSION_MINUTES = "%d min",
 	SESSION_ABOUT = "About %d min",
@@ -455,4 +465,8 @@ ns.L = {
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
 	WHATS_NEW = "Open the guide as a normal window. Floating is optional; card hover follows each border.",
+	DUNGEON_MAPS_TAB = "Maps",
+	DUNGEON_MAP_BACK = "Back to dungeon",
+	DUNGEON_MAP_PAGE = "%d / %d · Atlas Classic WoW",
+	DUNGEON_MAP_MISSING = "No interior maps available. Enable Atlas and Atlas Classic WoW for maps and legends.",
 }

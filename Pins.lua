@@ -151,6 +151,7 @@ end
 local provider = CreateFromMixins(MapCanvasDataProviderMixin) --[[@as AGFMapProvider]]
 ---@type AGFMapPing?
 local ping
+local afterCombat = CreateFrame("Frame")
 
 function provider:RemoveAllData()
 	self:GetMap():RemoveAllPinsByTemplate(PIN_TEMPLATE)
@@ -189,6 +190,17 @@ end
 -- Only the steps that sit on the map currently shown: a continent view gets no pins, matching
 -- how the route already only points at zone-level maps.
 function provider:RefreshAllData()
+	-- Acquiring even an ordinary map pin changes protected mouse passthrough in this client.
+	if InCombatLockdown() then
+		for _, template in ipairs({ PIN_TEMPLATE, GIVER_TEMPLATE, PING_TEMPLATE }) do
+			for pin in self:GetMap():EnumeratePinsByTemplate(template) do
+				pin:Hide()
+			end
+		end
+		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
+	end
+	afterCombat:UnregisterEvent("PLAYER_REGEN_ENABLED")
 	self:RemoveAllData()
 	local mapID = self:GetMap():GetMapID()
 	if not mapID then
@@ -434,7 +446,7 @@ function Pins.Reveal(point)
 	OpenWorldMap(point.map)
 	WorldMapFrame:SetMapID(point.map)
 	C_Timer.After(0, function()
-		if not WorldMapFrame:IsShown() or WorldMapFrame:GetMapID() ~= point.map then
+		if InCombatLockdown() or not WorldMapFrame:IsShown() or WorldMapFrame:GetMapID() ~= point.map then
 			return
 		end
 		if not ping then
@@ -463,6 +475,11 @@ function Pins.Refresh()
 		provider:RefreshAllData()
 	end
 end
+
+afterCombat:SetScript("OnEvent", function(self)
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	Pins.Refresh()
+end)
 
 local function Attach()
 	local map = WorldMapFrame

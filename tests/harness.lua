@@ -1811,15 +1811,18 @@ function harness.load(options)
 		return Add(self, Description("divider"))
 	end
 	G.MenuUtil = {
-		CreateContextMenu = function(owner, generator)
-			h.menu = Description("root")
-			h.call(generator, owner, h.menu)
+		CreateContextMenu = function()
+			error("Blizzard_Menu.AcquireMenu can assert in Forever 70009; use the owned menu")
 		end,
 	}
 	-- Opens a DropdownButton's menu (SetupMenu) into h.menu.
 	function h.OpenMenu(dropdown)
 		h.menu = Description("root")
-		h.call(dropdown.menuGenerator, dropdown, h.menu)
+		if dropdown.menuGenerator then
+			h.call(dropdown.menuGenerator, dropdown, h.menu)
+		else
+			h.Click(dropdown)
+		end
 		return h.menu
 	end
 	-- "kind: text" per entry, a submenu's entries indented under it.
@@ -1912,6 +1915,7 @@ function harness.load(options)
 		return self.mapID
 	end
 	function map:AcquirePin(template, ...)
+		assert(not h.combat, "AcquirePin changes protected mouse passthrough in combat")
 		h.counts.AcquirePin = h.counts.AcquirePin + 1
 		pools[template] = pools[template] or {}
 		h.pins[template] = h.pins[template] or {}
@@ -2529,6 +2533,12 @@ function harness.load(options)
 			end
 		end)
 	end
+	local contextMenu = h.ns.ContextMenu
+	h.ns.ContextMenu = function(owner, generator)
+		h.menu = contextMenu(owner, generator)
+		return h.menu
+	end
+
 	return h
 end
 

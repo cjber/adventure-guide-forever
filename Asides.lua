@@ -200,7 +200,7 @@ end
 ---@param tag string
 ---@param aside AGFAside
 function Asides.Open(owner, tag, aside)
-	MenuUtil.CreateContextMenu(owner, function(_, root)
+	ns.ContextMenu(owner, function(_, root)
 		root:SetTag(tag)
 		root:CreateTitle(aside.text)
 		if aside.place and not ns.Setting("wanderer") then

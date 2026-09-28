@@ -351,12 +351,17 @@ end
 -- The visible dungeon page, cold and cached; source reads use the same coroutine slice as the live tab.
 local worstDungeon = 0
 for _, instance in ipairs({ 43, 230, 429 }) do
+	-- Keep allocations from the previous isolated harness out of this scenario's
+	-- timed frames. The client owns GC scheduling, so this does not change addon
+	-- behavior; it makes the benchmark measure the dungeon work itself.
+	collectgarbage("collect")
 	local h = harness.load({ questiedb = mirror, player = { level = 60 } })
 	h.G.debugprofilestop = function()
 		return os.clock() * 1000
 	end
 	h.ns.OpenWindow()
 	h.flush()
+	collectgarbage("collect")
 	local reads, original = 0, h.ns.ReadDungeonSource
 	h.ns.ReadDungeonSource = function(yield)
 		reads = reads + 1

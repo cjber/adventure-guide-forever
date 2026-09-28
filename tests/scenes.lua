@@ -474,6 +474,15 @@ h = Load("v1", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, {
 	end,
 })
 out.window_today = Window(h, "window_today")
+out.window_context_menu = Window(h, "window_context_menu")
+local more = assert(h.Find(function(frame)
+	return frame:IsVisible() and frame.asides
+end)[1])
+h.Click(more)
+out.window_context_menu.layout = h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)
+for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverContextMenu, h.Describe)) do
+	table.insert(out.window_context_menu.layout, entry)
+end
 
 -- A real off-zone hand-in fits 30 minutes, including the provider's travel estimate.
 h = Load("v1", false, false, "carry", { HIDDEN_ENEMIES }, ASIDES)

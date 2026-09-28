@@ -60,9 +60,10 @@ local function Distance(a, b)
 	return (a.x - b.x) ^ 2 + (a.y - b.y) ^ 2
 end
 
--- Only immutable bundled data is memoized; player/log/completion tables may change in place.
+-- Only published quest data is memoized; player/log/completion tables may change in place.
 ---@class AGFIndex
 ---@field ids integer[]
+---@field starts table<integer, integer[]> quest IDs by pickup map
 ---@field groups table<integer, integer[]>
 ---@field sides table<integer, integer[]> by side, the IDs a player of it could ever take: its own side's or both
 ---sides', with a start the data places, not repeatable (Check's first lines)
@@ -74,13 +75,18 @@ local function Index(data)
 	if index then
 		return index
 	end
-	index = { ids = {}, groups = {}, sides = { {}, {} } }
+	index = { ids = {}, groups = {}, sides = { {}, {} }, starts = {} }
 	for id in pairs(data.quests) do
 		index.ids[#index.ids + 1] = id
 	end
 	table.sort(index.ids)
 	for _, id in ipairs(index.ids) do
 		local quest = data.quests[id]
+		if quest.start and quest.start.map then
+			local mapID = quest.start.map
+			index.starts[mapID] = index.starts[mapID] or {}
+			table.insert(index.starts[mapID], id)
+		end
 		if quest.group and quest.group > 0 then
 			local group = index.groups[quest.group] or {}
 			index.groups[quest.group] = group
@@ -542,7 +548,7 @@ end
 ---@return AGFGiver[]
 function Model.Givers(data, player, completed, log, mapID)
 	local index, byPlace, givers = Index(data), {}, {}
-	for _, id in ipairs(index.ids) do
+	for _, id in ipairs(index.starts[mapID] or NONE) do
 		local quest = data.quests[id]
 		local start = quest.start
 		if

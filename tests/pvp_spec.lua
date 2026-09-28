@@ -174,7 +174,7 @@ do
 	equal(h.ns.Prefs().battlegrounds, false, "cog: off by default")
 	h.ns.OpenPanel()
 	local cog = h.Find(function(frame)
-		return frame.stockTemplate == "UIPanelIconDropdownButtonTemplate"
+		return frame.name == "AdventureGuideForeverSettingsButton"
 	end)[1]
 	local box
 	for _, entry in ipairs(h.OpenMenu(cog).entries) do

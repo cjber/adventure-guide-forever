@@ -140,6 +140,48 @@ test("A3 guidance resolves the live step", function()
 	eq(#h.errors, 0, "no refresh errors")
 end)
 
+test("A3b town tracker does not duplicate detailed giver rows", function()
+	local h = harness.load({ spf = "ended" })
+	local step = {
+		key = "town:details",
+		kind = "town",
+		quests = { 1, 2 },
+		title = "Visit Town",
+		reason = "Town",
+		detail = "Town",
+		givers = { "Mira", "Nora" },
+		checklist = { { text = "Mira: Pick up 1" }, { text = "Nora: Pick up 1" } },
+		spots = {},
+		place = "Town",
+		zone = "Zone",
+	}
+	h.ns.Integrations.Guiding = function()
+		return false
+	end
+	h.ns.Integrations.CurrentStep = function()
+		return step
+	end
+	h.ns.Integrations.Travel = function() end
+	h.ns.Route = function()
+		return { steps = { step } }
+	end
+	h.tracker:MarkDirty()
+	h.flush()
+	local block = h.tracker.liveBlocks[step.key]
+	eq(#block.order, 2, "only detailed giver rows remain")
+	eq(block.lines[1], "Mira: Pick up 1", "first giver action remains")
+	eq(block.lines[2], "Nora: Pick up 1", "second giver action remains")
+	step.checklist = nil
+	h.tracker:MarkDirty()
+	h.flush()
+	eq(block.lines[1], table.concat(step.givers, h.ns.L.LIST_SEPARATOR), "summary remains without a checklist")
+	step.checklist = { { text = "Mira: Pick up 1" } }
+	step.reason = "Continues the story"
+	h.tracker:MarkDirty()
+	h.flush()
+	eq(block.lines[1], step.reason, "meaningful story reason remains beside the checklist")
+end)
+
 test("A4 PvP progress refreshes with unchanged rewards", function()
 	local h = harness.load({
 		rank = {

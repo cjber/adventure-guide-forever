@@ -77,6 +77,31 @@ local givers = Model.Givers(offers, player, { [3] = true }, {}, 1)
 equal(#givers, 1, "one giver per NPC; gray, completed and other maps hidden")
 equal(#givers[1].quests, 2, "an NPC's quests share one giver")
 equal(givers[1].title, "Quest giver", "giver named after the NPC")
+-- The pickup-map index caches only quest placement, never mutable player progress.
+do
+	local progress, active = {}, {}
+	equal(#Model.Givers(offers, player, progress, active, 1), 2, "indexed baseline")
+	progress[3] = true
+	active[1], active[2] = {}, {}
+	equal(#Model.Givers(offers, player, progress, active, 1), 0, "indexed givers recheck in-place progress")
+	progress[3], active[1], active[2] = nil, nil, nil
+	equal(#Model.Givers(offers, player, progress, active, 1), 2, "indexed givers restore when progress changes")
+	equal(#Model.Givers(offers, player, progress, active, 947), 0, "unindexed overview has no givers")
+	local otherStart, reads = elsewhere.start, 0
+	elsewhere.start = nil
+	setmetatable(elsewhere, {
+		__index = function(_, key)
+			if key == "start" then
+				reads = reads + 1
+				return otherStart
+			end
+		end,
+	})
+	Model.Givers(offers, player, progress, active, 1)
+	equal(reads, 0, "zone redraw does not scan another map's quest placements")
+	elsewhere.start = otherStart
+	setmetatable(elsewhere, nil)
+end
 equal(Model.Eligible(gates, player, { [2] = true, [5] = true }, {}, 1), false, "missing all prerequisite")
 equal(Model.Eligible(gates, player, { [2] = true, [3] = true }, {}, 1), false, "missing any prerequisite")
 local a, b = quest(), quest()
