@@ -37,14 +37,18 @@ local function ShowTooltip(owner, lines)
 	GameTooltip:Show()
 end
 
----@param self AGFRouteRow
+---@class AGFStepHoverRow : Button
+---@field step? AGFStep
+---@field index? integer
+
+---@param self AGFStepHoverRow
 function Overview.RowLeave(self)
 	ns.Pins.Highlight(self.step, false)
 	GameTooltip_Hide()
 end
 
 -- A step row's lines: the ring's; a row after step 1 asks Shortest Path for its travel line once, on hover.
----@param self AGFRouteRow
+---@param self AGFStepHoverRow
 local function RowEnter(self)
 	local step, index = self.step, self.index
 	if not (step and index) then
@@ -283,7 +287,7 @@ local function HideChecklist(pool, from)
 end
 
 -- A quest in the log opens its details; any other step turns the map to it. Right-click is the step menu and order.
----@param self AGFRouteRow
+---@param self AGFStepHoverRow
 ---@param mouseButton string
 local function RowClick(self, mouseButton)
 	if not self.step then

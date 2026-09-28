@@ -485,6 +485,23 @@ out.window_session_picker = Window(h, "window_session_picker")
 h.Click(h.G.AdventureGuideForeverSessionPicker:GetParent())
 out.window_session_picker.layout = h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)
 
+-- Full guide: ten rows per page, future quests never become active route steps.
+h = Load("v1", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, ASIDES)
+out.window_full_guide = Window(h, "window_full_guide")
+local guideCard = assert(h.Find(function(frame)
+	return frame:IsVisible() and frame.GuideButton and frame.journey
+end)[1])
+h.Click(guideCard.GuideButton)
+out.window_full_guide.layout = h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)
+
+h = Load("v1", false, true, nil, nil, ASIDES)
+out.window_dungeon_maps = Window(h, "window_dungeon_maps", 5)
+local mapsButton = assert(h.Find(function(frame)
+	return frame:IsVisible() and frame.GetText and frame:GetText() == h.ns.L.DUNGEON_MAPS_TAB
+end)[1])
+h.Click(mapsButton)
+out.window_dungeon_maps.layout = h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)
+
 -- The same whole task does not fit 15 minutes.
 h = Load("v1", false, false, "carry", { HIDDEN_ENEMIES }, ASIDES)
 h.spfSeconds = 1480

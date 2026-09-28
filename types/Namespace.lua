@@ -1146,6 +1146,12 @@
 ---@field PVP_GO_BATTLEMASTER string
 ---@field PVP_NEXT_REWARD string
 ---@field SESSION_LABEL string
+---@field GUIDE_OPEN string
+---@field GUIDE_BACK string
+---@field GUIDE_OUTLINE string
+---@field GUIDE_OUTLINE_TOOLTIP string
+---@field GUIDE_PAGE string
+---@field QUEST_LEVEL_TITLE string
 ---@field SESSION_UNLIMITED string
 ---@field SESSION_MINUTES string
 ---@field SESSION_ABOUT string
@@ -1364,3 +1370,23 @@
 ---@class AGFStrings
 ---@field QUESTIE_ENABLE string
 ---@field QUESTIE_POLICY string
+
+---@class AGFWindow
+---@field GuideOutline fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, journey: AGFJourney, steps: AGFStep[]): integer[]
+---@field OpenGuide fun(journey: AGFJourney, parent: Frame)
+
+---@class AGFInteriorMap
+---@field key string
+---@field title string
+---@field texture string
+---@field legend string
+
+---@class AGFWindow
+---@field DungeonMaps fun(instance: integer): AGFInteriorMap[]
+---@field OpenDungeonMaps fun(instance: integer, parent: Frame)
+
+---@class AGFStrings
+---@field DUNGEON_MAPS_TAB string
+---@field DUNGEON_MAP_BACK string
+---@field DUNGEON_MAP_PAGE string
+---@field DUNGEON_MAP_MISSING string

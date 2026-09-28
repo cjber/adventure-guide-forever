@@ -979,6 +979,8 @@ WINDOWS = (
     "window_today",
     "window_session",
     "window_session_picker",
+    "window_full_guide",
+    "window_dungeon_maps",
     "window_empty",
     "window_order",
 )

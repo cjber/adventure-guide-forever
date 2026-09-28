@@ -32,6 +32,7 @@ read_globals = { "ShowUIPanel", "HideUIPanel", "CreateFramePoolCollection", "C_X
 	"NORMAL_FONT_COLOR",
 	"OpenWorldMap",
 	"AtlasLoot",
+	"AtlasMaps",
 	"C_EncounterJournal",
 	"EJ_GetEncounterInfoByIndex",
 	"EJ_GetInstanceInfo",
