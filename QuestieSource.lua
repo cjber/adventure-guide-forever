@@ -43,6 +43,10 @@ local status = { state = "unavailable" }
 ns.QuestieStatus = status
 local dungeonSourceCache, dungeonSourceLib, dungeonSourceData
 
+local function ClearDungeonSourceCache()
+	dungeonSourceCache, dungeonSourceLib, dungeonSourceData = nil, nil, nil
+end
+
 -- One of ZoneDB's tables, which QuestieDB keeps as Lua source: run with no globals, since it is only a table literal.
 ---@param source any
 ---@return table?
@@ -388,6 +392,7 @@ EventUtil.ContinueAfterAllEvents(function()
 		Questie.API.RegisterOnReady(Start)
 		if Questie.API.RegisterForQuestUpdates then
 			Questie.API.RegisterForQuestUpdates(function()
+				ClearDungeonSourceCache()
 				ns.Invalidate()
 			end)
 		end
