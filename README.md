@@ -52,7 +52,7 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png" width="400" alt="The Adventure Guide tracker section"></p>
 
-<p align="center">Your next stop sits above your quests, with travel time when Shortest Path Forever has an estimate.</p>
+<p align="center">Your next stop sits beside your quests, with travel time when Shortest Path Forever has an estimate.</p>
 
 ## Install
 

@@ -1360,7 +1360,7 @@ def render(out):
         wm.TrackerBlock(block["header"], [(line["text"], line["dash"]) for line in block["lines"]])
         for block in tracker["blocks"]
     ]
-    canvas, tracked = wm.objective_tracker(ui, [wm.TrackerModule(tracker["header"], blocks)])
+    canvas, tracked = wm.objective_tracker(ui, [wm.TrackerModule(tracker["header"], blocks)], container=False)
     images["tracker"] = wm.scene(ui, [(canvas, 0, 0)])
 
     kinds = {"title": wm.MenuTitle, "button": wm.MenuButton}

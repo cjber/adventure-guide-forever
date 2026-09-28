@@ -17,7 +17,7 @@ abandons quests.
 - **2.3 Chapters.** Show a total only for a proven chain. Never reveal later chapter titles.
 - **2.4 Search.** Share eligibility checks with the planner. Explain missing requirements; locked
   quests offer no destination.
-- **2.5 Tracker.** Show the current and next step above quests. Leave the stock quest order alone.
+- **2.5 Tracker.** Show the current and next step beside quests. Leave the stock quest order alone.
   Quest tracking is opt-in; quest details open only outside combat.
 - **2.6 Pins.** Draw only known locations and step aside while Shortest Path supplies guidance.
 - **2.7 Completion.** Announce a proven story ending once, using the game's tracker glow and sound.
