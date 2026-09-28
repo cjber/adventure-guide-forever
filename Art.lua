@@ -200,11 +200,33 @@ function Art.RowArt(row, withSelected)
 	return withSelected and Art.Slice(row, "PetList-ButtonSelect", "OVERLAY", ROW_CAP, ROW_CAP) or nil
 end
 
--- A step's number on its ring: services-number-N at its aspect in the 22x25 the rows give it.
+-- The stock atlas stops at nine; larger step numbers use the same gold as the ring.
+---@type table<Texture, FontString>
+local numberLabels = {}
 ---@param texture Texture
 ---@param index integer
 function Art.SetNumber(texture, index)
-	Art.Fit(texture, "services-number-" .. index, 22, 25)
+	local label = numberLabels[texture]
+	if index <= 9 then
+		Art.Fit(texture, "services-number-" .. index, 22, 25)
+		texture:Show()
+		if label then
+			label:Hide()
+		end
+	else
+		if not label then
+			label = texture:GetParent():CreateFontString(nil, "OVERLAY", "GameFontNormal")
+			numberLabels[texture] = label
+		end
+		label:ClearAllPoints()
+		for pointIndex = 1, texture:GetNumPoints() do
+			local point, relativeTo, relativePoint, x, y = texture:GetPoint(pointIndex)
+			label:SetPoint(point, relativeTo, relativePoint, x, y)
+		end
+		texture:Hide()
+		label:SetText(tostring(index))
+		label:Show()
+	end
 end
 
 -- The Suggested Content ring icon: art masked to a circle (CircleMaskScalable) inside the Adventure Guide's ring,

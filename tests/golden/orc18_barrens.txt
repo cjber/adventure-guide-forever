@@ -6,6 +6,10 @@ card (chosen) | zone:1413 | The Barrens story | Chapter 1 of 4 | 2 quests will s
   step 4 | area:896:4 | Complete objectives · Miner's Fortune | 1413 0.6070,0.0636 | after you pick it up | 184 yd | 896/4
   step 5 | town:340:2 | Visit Ratchet, The Barrens: Turn in 3 | 1413 0.6268,0.3623 | Opens the next chapter here
   step 6 | town:356 | Visit Regthar Deathgate: Pick up 2 | 1413 0.4534,0.2841 | 2 to pick up
+  step 7 | area:855:4 | Complete objectives · Centaur Bracers | 1413 0.5205,0.3765 | after you pick it up | 375 yd | 855/4
+  step 8 | area:850:4 | Complete objectives · Kolkar Leaders | 1413 0.4280,0.2350 | after you pick it up | 0 yd | 850/4
+  step 9 | town:356:2 | Visit Regthar Deathgate: Turn in 2 | 1413 0.4534,0.2841 | 2 to hand in
+  step 10 | area:870:16 | Complete objectives · The Forgotten Pools | 1413 0.4516,0.2392 | after you pick it up | 106 yd | 870/16
 card | zone:1442 | Head to Stonetalon Mountains | 7 quests near your level | - | map 1442
   step 1 | town:358 | Visit Makaba Flathoof: Pick up 2 | 1442 0.8593,0.9789 | 2 to pick up
   step 2 | town:360 | Visit Xen'Zilla: Pick up 2 | 1442 0.7325,0.9489 | 2 to pick up

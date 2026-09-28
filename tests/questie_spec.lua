@@ -15,7 +15,7 @@ local function Fake()
 				startedBy = { { 197 } },
 				finishedBy = { { 197 } },
 				zoneOrSort = 12,
-				objectives = { { { 800, nil, 5 } } },
+				objectives = { { { 800, nil, 0 } } },
 			},
 			[900002] = {
 				name = "Collect",
@@ -23,7 +23,7 @@ local function Fake()
 				requiredLevel = 17,
 				startedBy = { { 197 } },
 				zoneOrSort = 12,
-				objectives = { nil, nil, { { 700, nil, 3 } } },
+				objectives = { nil, nil, { { 700, nil, 4 } } },
 			},
 		},
 		npcs = {
@@ -69,15 +69,51 @@ equal(h.ns.Data.quests[7], nil, "bundled-only quest absent")
 local q = h.ns.Data.quests[900001]
 equal(q.title, "Provider-only quest", "new quest imported")
 equal(q.start.npc, 197, "new quest giver")
-equal(q.need[0], 5, "objective count")
+equal(q.need[0], 0, "zero icon does not erase an objective")
 equal(q.obj[1][5], 1429, "provider objective map")
 equal(q.obj[1][2], 500, "provider spawn")
-equal(h.ns.Data.quests[900002].need[4], 3, "item count")
+equal(h.ns.Data.quests[900002].need[4], 0, "icon override is not an item count")
 equal(h.ns.Data.quests[900002].obj[1][2], 500, "item drop location")
 local player = h.ns.State.Player()
 player.level = 20
 local Model = h.ns.Model
 equal(Model.Eligible(h.ns.Data, player, {}, {}, 900001), true, "canonical quest eligible")
+-- The provider's zero icon must produce pickup -> work -> hand-in, never a delivery shortcut.
+local replay = harness.load({
+	questiedb = Fake(),
+	setup = Policy,
+	player = { level = 20, map = 1429, x = 0.49, y = 0.42 },
+})
+local picked, worked, returned
+for index, step in ipairs(replay.ns.Route().steps) do
+	for _, id in ipairs(step.pickups or {}) do
+		if id == 900001 then
+			picked = index
+		end
+	end
+	for _, objective in ipairs(step.objectives or {}) do
+		if objective.id == 900001 then
+			worked = index
+		end
+	end
+	for _, id in ipairs(step.handins or {}) do
+		if id == 900001 then
+			returned = index
+		end
+	end
+end
+equal(picked ~= nil and worked ~= nil and returned ~= nil, true, "provider route includes all three actions")
+equal(picked < worked and worked < returned, true, "provider route cannot hand in before doing the work")
+local unsupported = Fake()
+unsupported.quests[900001].objectives = { nil, nil, nil, { { 72, 3000 } } }
+local unknown =
+	harness.load({ questiedb = unsupported, setup = Policy, player = { level = 20, map = 1429, x = 0.49, y = 0.42 } })
+equal(unknown.ns.Data.quests[900001].objectivesUnknown, true, "unsupported objective stays explicit")
+for _, step in ipairs(unknown.ns.Route().steps) do
+	for _, id in ipairs(step.pickups or {}) do
+		equal(id == 900001, false, "unsupported objective is never offered as delivery")
+	end
+end
 local calls = 0
 Policy(h, function()
 	calls = calls + 1

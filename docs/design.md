@@ -12,9 +12,9 @@ abandons quests.
 
 - **2.1 Map tab.** The overview fits without scrolling; overflow opens the window. Chosen steps and
   search can scroll. Quest-giver marks and route pins are opt-in.
-- **2.2 Journey cards.** Offer every eligible journey for the current level; the home view scrolls and the window grid pages through them. Prefer useful green/yellow quests; exclude orange/red pickups. A choice shows at most nine steps.
+- **2.2 Journey cards.** Offer every eligible journey for the current level; the home view scrolls and the window grid pages through them. Prefer useful green/yellow quests; exclude orange/red pickups. A choice shows up to ten route actions, followed by upcoming quest entries when fewer actions are available. The active route appears above alternative destinations.
   Give each card a reason and only known travel estimates.
-- **2.3 Chapters.** Show a total only for a proven chain. Never reveal later chapter titles.
+- **2.3 Chapters.** Show a total only for a proven chain. A quest tooltip may name its proven next chapter with its level.
 - **2.4 Search.** Share eligibility checks with the planner. Explain missing requirements; locked
   quests offer no destination.
 - **2.5 Tracker.** Show the current and next step beside quests. Leave the stock quest order alone.
@@ -32,7 +32,7 @@ abandons quests.
 - **2.14 QuestieDB.** Enumerate the compatible provider's complete composed quest catalogue after
   Questie's ready callback (policy corrections precede reads). No bundled-ID, giver or objective whitelist;
   provider absence/failure publishes no partial or fallback quest list. The game owns progress and live POIs;
-  QuestieDB owns records, spawns, objective counts and XP. Questie's IsDoable policy, plus minimum/maximum
+  QuestieDB owns records, spawns and XP; the live log owns objective counts. Provider objective icon fields are never treated as counts. Questie's IsDoable policy, plus minimum/maximum
   level and guide difficulty preferences, gates pickups. Without live policy, logged quests remain browsable
   but new pickups are not recommended. Route geometry and transport metadata are separate data sources.
   Questie owns background markers whenever loaded, including its visibility toggle; AGF owns route markers.
@@ -113,7 +113,7 @@ follow the shared family voice.
 - **4.1 Selection.** Prefer nearby useful work, group town visits, and cross the sea at most once.
   Keep distant hand-ins from displacing nearby pickups.
 - **4.2 Laps.** Pickups precede objectives and hand-ins. Respect quest-log capacity. Rebuild on events;
-  movement changes focus without shuffling the route. Keep work bounded per frame.
+  movement changes focus without shuffling the route. Proximity never hides or truncates guidance. Plan a bounded lookahead, then verify and merge visits before limiting the displayed actions. Keep work bounded per frame.
 - **4.3 Committed order.** Preserve the chosen sequence and visit identities across rebuilds.
   Session limits use rough estimates and retain complete planned work and returns.
 

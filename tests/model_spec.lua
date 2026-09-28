@@ -769,12 +769,12 @@ do
 	equal(loots and loots.objectives[1].text, nil, "areas: no empty words")
 	equal(apart and apart.key, "area:3:4", "areas: a quest 150 yd off is its own visit")
 	equal(apart and apart.r, 0, "areas: a single point's ring")
-	-- The story's lap takes 1 and 2, and 3 waits for the lap after: the story counts all three, and no carry card.
+	-- The extended route includes all three quests across successive laps, without a carry card.
 	local counts = {}
 	for _, journey in ipairs(plan.journeys) do
 		counts[#counts + 1] = journey.subline
 	end
-	equal(table.concat(counts, " | "), "3 in progress, 1 of them on later laps", "areas: the story counts each quest")
+	equal(table.concat(counts, " | "), "3 in progress", "areas: the story counts each quest")
 	-- In combat an area keeps its objectives of the quests still carried, and recounts.
 	local fought = { [1] = carried[1], [3] = carried[3] }
 	local refreshed = Model.Refresh(fields, player, done, fought, prefs(), plan)
@@ -900,7 +900,7 @@ for _, step in ipairs(Model.Plan(tiers, player, {}, {}, prefs()).steps) do
 end
 equal(table.concat(order, " "), "8 7 9 3", "this continent by distance, then over the sea, then no geometry")
 
--- A far turn-in never displaces a near step (F12): nine objectives here fill the route; with eight it comes last.
+-- A far turn-in never displaces near work: a full preview waits; one free slot admits it last.
 local function Objectives(count)
 	local carried = {}
 	for id = 1, count do
@@ -911,12 +911,12 @@ local function Objectives(count)
 	return carried
 end
 local shore = { quests = {}, zones = data.zones, maps = tiers.maps, continents = tiers.continents }
-local full = Model.Plan(shore, player, {}, Objectives(9), prefs())
-equal(#full.steps, Model.MAX_STEPS, "nine near objectives")
+local full = Model.Plan(shore, player, {}, Objectives(Model.MAX_STEPS), prefs())
+equal(#full.steps, Model.MAX_STEPS, "near objectives fill the preview")
 equal(Has(full.steps, "turnin:200"), 0, "the far turn-in waits for a free slot")
-equal(full.journeys[1].subline, "9 in progress", "carry counts the near objectives")
+equal(full.journeys[1].subline, Model.MAX_STEPS .. " in progress", "carry counts the near objectives")
 equal(full.journeys[1].reason, "1 to hand in across the sea", "and the far turn-in, never as ready")
-local room = Model.Plan(shore, player, {}, Objectives(8), prefs())
+local room = Model.Plan(shore, player, {}, Objectives(Model.MAX_STEPS - 1), prefs())
 equal(room.steps[Model.MAX_STEPS].key, "turnin:200", "with room, the far turn-in comes last")
 equal(room.steps[Model.MAX_STEPS].reason, "Hand in when you're in Far Shore", "and says where")
 -- In an instance the player has no position: nothing measures from them, so the turn-in leads and is never dropped.
@@ -927,9 +927,13 @@ local lost = {
 	raceBit = player.raceBit,
 	classBit = player.classBit,
 }
-local blind = Model.Plan(shore, lost, {}, Objectives(9), prefs())
+local blind = Model.Plan(shore, lost, {}, Objectives(Model.MAX_STEPS), prefs())
 equal(blind.steps[1].key, "turnin:200", "without a position the turn-in leads")
-equal(blind.journeys[1].subline, "1 ready to hand in, 9 in progress", "unplaced, the turn-in counts as ready")
+equal(
+	blind.journeys[1].subline,
+	"1 ready to hand in, " .. Model.MAX_STEPS .. " in progress",
+	"unplaced, the turn-in counts as ready"
+)
 equal(blind.journeys[1].reason, nil, "and the card repeats nothing")
 equal(#blind.steps, Model.MAX_STEPS, "and the objectives still fill the route")
 -- Over the sea the route lands where the side's boat docks, not at the far shore's nearest point (F12).

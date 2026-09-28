@@ -474,103 +474,15 @@ local function Stops(steps)
 	return stops
 end
 
--- Every quest start and finish in each town, by hub, built on first use of each ns.Data (QuestieSource.lua swaps it).
----@type table<integer, AGFPlace[]>
-local hubPlaces = {}
----@type AGFData?
-local hubPlacesOf
-
--- The player stands in `step`'s town: within the town linkage of any of its quests' places, the extent the generator
--- drew the town by, whatever work is left there. A town the generator could not place is its point alone.
----@param player AGFPlayer
----@param step AGFStep
----@return boolean
-local function InTown(player, step)
-	local places = { step }
-	if step.hub then
-		if hubPlacesOf ~= ns.Data then
-			hubPlaces, hubPlacesOf = {}, ns.Data
-			for _, quest in pairs(ns.Data.quests) do
-				for _, place in ipairs({ quest.start or false, quest.finish or false }) do
-					if place and place.hub then
-						hubPlaces[place.hub] = hubPlaces[place.hub] or {}
-						table.insert(hubPlaces[place.hub], place)
-					end
-				end
-			end
-		end
-		places = hubPlaces[step.hub] or places
-	end
-	for _, place in ipairs(places) do
-		local yards = ns.Model.Yards(ns.Data, player --[[@as AGFStep]], place --[[@as AGFStep]])
-		if yards and yards <= LINK then
-			return true
-		end
-	end
-	return false
-end
-
--- What Shortest Path is handed of `steps`: all of them, except while the player stands in step 1's town (InTown)
--- with more steps after it. Then the town alone, so
--- Shortest Path arrives there and draws no way out of town while the stock "!" and "?" marks show its givers; the
--- journey goes on once the town is done (Follow).
----@param steps (AGFStep|AGFGiver)[]
----@return (AGFStep|AGFGiver)[]
-local function Hand(steps)
-	local first = steps[1] --[[@as AGFStep?]]
-	local player = ns.State.Player()
-	if first and first.spots and #steps > 1 and player.map and InTown(player, first) then
-		return { first }
-	end
-	return steps
-end
-
--- "You're here" (docs/design.md §4.2): while the player stands in step 1's area with its objectives open, nothing
--- guides to it: no waypoint, and Shortest Path is handed only the stops after it (Onward), so its route on from the
--- area still shows. Guidance stays on, so Stop shows, and Follow hands the whole route again once the area is done
--- or left.
-local holding = false
----@type fun(api?: AGFSPFAPI)
-local Hold
-
--- The steps after the area the player stands in, when step 1 is one; nil otherwise.
----@param steps (AGFStep|AGFGiver)[]
----@return (AGFStep|AGFGiver)[]?
-local function Onward(steps)
-	if not (steps[1] and steps[1].here) then
-		return nil
-	end
-	local onward = {}
-	for index = 2, #steps do
-		onward[index - 1] = steps[index]
-	end
-	return onward
-end
-
--- Hands Shortest Path `steps` as one numbered journey (Hand); true when it took them. While step 1 is the area the
--- player stands in, the stops after it alone (Onward), holding on step 1 (Hold) whether Shortest Path takes them
--- or not.
+-- Keep the complete active route visible even while standing inside its first town or objective area.
 ---@param api AGFSPFAPI
 ---@param steps (AGFStep|AGFGiver)[]
 ---@return boolean
 local function Send(api, steps)
-	local onward = Onward(steps)
-	if onward then
-		local hand = onward[1] and Hand(onward)
-		if hand and api.NavigateRoute(OWNER, Stops(hand)) then
-			Hold()
-			guided, ours, stopped = hand, true, nil
-			ns.Pins.Refresh()
-		else
-			Hold(api)
-		end
-		return true
-	end
-	steps = Hand(steps)
 	if not api.NavigateRoute(OWNER, Stops(steps)) then
 		return false
 	end
-	guided, ours, arrived, stopped, holding = steps, true, false, nil, false
+	guided, ours, arrived, stopped = steps, true, false, nil
 	ns.Pins.Refresh()
 	NotifyGuidance()
 	return true
@@ -678,10 +590,7 @@ function Integrations.Navigate(step)
 			return true
 		end
 	end
-	if step.here then
-		Hold(api)
-		return true
-	elseif not C_Map.CanSetUserWaypointOnMap(step.map) then
+	if not C_Map.CanSetUserWaypointOnMap(step.map) then
 		-- The red line the world map shows when a pin can't go on a map, so Go never fails silently. Any journey an
 		-- earlier Go started keeps guiding: a failed Go changes nothing.
 		UIErrorsFrame:AddExternalErrorMessage(ns.L.NO_WAYPOINT)
@@ -695,7 +604,6 @@ function Integrations.Navigate(step)
 	C_SuperTrack.SetSuperTrackedUserWaypoint(true)
 	-- Saved per character, so Stop still knows the waypoint as ours after a /reload.
 	ns.Prefs().waypoint, ns.Prefs().guided = { map = step.map, x = step.x, y = step.y }, nil
-	holding = false
 	NotifyGuidance()
 	return true
 end
@@ -729,32 +637,14 @@ local function OwnsWaypoint()
 	return same
 end
 
----@param api? AGFSPFAPI
-function Hold(api)
-	if api and Ours(api) and api.Cancel(OWNER) then
-		ns.Pins.Refresh()
-	end
-	if OwnsWaypoint() then
-		C_Map.ClearUserWaypoint()
-		C_SuperTrack.SetSuperTrackedUserWaypoint(false)
-	end
-	guided, ours, arrived, ns.Prefs().waypoint = {}, false, false, nil
-	if not holding then
-		holding = true
-		NotifyGuidance()
-	end
-end
-
 ---@return boolean
 function Integrations.Owns()
-	-- A held route is still ours to stop, and so is guidance holding in the area the player stands in.
-	local owns = OwnsWaypoint()
-	return owns or holding or Ours(SPF())
+	return OwnsWaypoint() or Ours(SPF())
 end
 
 -- Stop: ends only what Go started. Shortest Path's journey by our name, and the native waypoint only while it is ours.
 function Integrations.Cancel()
-	ns.Prefs().guided, ours, arrived, stopped, holding = nil, false, false, nil, false
+	ns.Prefs().guided, ours, arrived, stopped = nil, false, false, nil
 	local api = SPF()
 	if api and api.Cancel(OWNER) then
 		ns.Pins.Refresh()
@@ -825,40 +715,12 @@ local function Follow()
 	if api then
 		Watch(api)
 	end
-	if holding and not (route.chosen and prefs.guided == route.journey) then
-		holding = false
-		NotifyGuidance()
-	end
 	if not (route.chosen and prefs.guided == route.journey and ns.State.Player().map) then
 		return
 	elseif InCombatLockdown() or UnitOnTaxi("player") then
 		return
 	end
 	local first, saved = route.steps[1], prefs.waypoint
-	local onward = Onward(route.steps)
-	if onward then
-		-- Shortest Path goes on with the stops after the area: sent on walking in, again as they change, and while
-		-- it holds none of ours that it did not see through.
-		local index = api and api.CurrentStop(OWNER)
-		if not api then
-			Hold()
-		elseif
-			not holding
-			or (
-				index and Integrations.Stale(guided --[[@as AGFStep[] ]], index, onward, Far)
-			)
-			or (not index and not arrived and onward[1])
-		then
-			Send(api, route.steps)
-		end
-		return
-	elseif holding then
-		-- The area done or left: the route goes on from its new step 1, as Go would start it.
-		holding = false
-		ns.StartRoute()
-		NotifyGuidance()
-		return
-	end
 	-- The native waypoint Go set for the chosen journey moves to its new step 1, quietly: where the client allows no
 	-- pin it stays, with no error line, since the player asked for nothing just now.
 	if first and saved and OwnsWaypoint() then
@@ -875,19 +737,17 @@ local function Follow()
 	if not api then
 		return
 	end
-	local index, hand = api.CurrentStop(OWNER), Hand(route.steps)
-	-- Shortest Path heading past the town the player stands in, with work left there: the town alone again.
-	local leaving = #hand < #route.steps and guided[index] ~= nil and guided[index].key ~= hand[1].key
+	local index = api.CurrentStop(OWNER)
 	if index then
 		if
 			Integrations.Guiding()
 			and (
-				leaving or Integrations.Stale(guided --[[@as AGFStep[] ]], index, route.steps, Far)
+				Integrations.Stale(guided --[[@as AGFStep[] ]], index, route.steps, Far)
 			)
 		then
 			Send(api, route.steps)
 		end
-	elseif arrived and Unhanded(hand) then
+	elseif arrived and Unhanded(route.steps) then
 		Send(api, route.steps)
 	end
 end

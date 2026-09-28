@@ -324,7 +324,7 @@ local function Build(lib, zones, bundled, yield)
 					start.trainer = npc and npc.class or nil
 				end
 				if not quest.dungeon then
-					quest.need, quest.obj, quest.kinds =
+					quest.need, quest.obj, quest.kinds, quest.objectivesUnknown =
 						ns.QuestieObjectives(lib, v.objectives, v.triggerEnd, quest.zone, bundled, Map, yield, id)
 				end
 				quests[id] = quest
