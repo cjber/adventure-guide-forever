@@ -74,6 +74,8 @@ equal(q.obj[1][5], 1429, "provider objective map")
 equal(q.obj[1][2], 500, "provider spawn")
 equal(h.ns.Data.quests[900002].need[4], 3, "item count")
 equal(h.ns.Data.quests[900002].obj[1][2], 500, "item drop location")
+local dungeonSource = h.ns.ReadDungeonSource(function() end)
+equal(h.ns.ReadDungeonSource(function() end), dungeonSource, "dungeon source reuses an unchanged snapshot")
 local player = h.ns.State.Player()
 player.level = 20
 local Model = h.ns.Model
