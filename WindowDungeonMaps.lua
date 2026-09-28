@@ -82,6 +82,12 @@ end
 
 local views = setmetatable({}, { __mode = "k" })
 
+local function ReadableLegendLine(line)
+	-- Atlas uses semantic colors, including near-black encounter labels. Keep
+	-- the markup structure while guaranteeing enough contrast on our dark card.
+	return line:gsub("|c%x%x%x%x%x%x%x%x", "|cffffffff")
+end
+
 local function draw(view)
 	local map = view.maps[view.selected]
 	view.heading:SetText(map and map.title or L.DUNGEON_MAPS_TAB)
@@ -114,7 +120,7 @@ local function draw(view)
 		row:SetWidth(view.legendWidth - 24)
 		row:SetJustifyH("LEFT")
 		row:SetWordWrap(true)
-		row:SetText(line)
+		row:SetText(ReadableLegendLine(line))
 		row:Show()
 		y = y + math.max(20, row:GetStringHeight() + 5)
 	end

@@ -40,7 +40,7 @@ for id, instance in pairs(ns.Data.instances) do
 		local maps = ns.Window.DungeonMaps(id)
 		equal(#maps, 1, "map for instance " .. id)
 		equal(maps[1].texture, "Interface\\AddOns\\Atlas_ClassicWoW\\Images\\" .. key, "provider artwork path")
-		equal(maps[1].legend, "|cffffffff1) Boss|r", "provider legend colours retained")
+equal(maps[1].legend, "|cffffffff1) Boss|r", "provider legend markup retained")
 		count = count + 1
 	end
 end
@@ -89,6 +89,9 @@ equal(view.mapCard.Shade:IsShown(), false, "map artwork retains provider brightn
 equal(view.mapCard.Fade:IsShown(), false, "map artwork has no decorative gradient")
 equal(view.legendCard.Shade:IsShown(), false, "legend text is not darkened by the card shade")
 equal(view.legendCard.Fade:IsShown(), false, "legend text has no decorative fade")
+view:SetMaps({ { title = "Dark legend", texture = "map", legendLines = { "|cff000000Near-black|r" } } })
+equal(view.rows[1]:GetText(), "|cffffffffNear-black|r", "dark provider legend colours are made readable")
+view:SetInstance(48)
 local firstRow = view.rows[1]
 equal(view.scroll:IsShown(), true, "short legends keep their viewport visible")
 equal(view.scroll.mouseWheelEnabled, false, "short legends do not enable scrolling")
