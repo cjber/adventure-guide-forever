@@ -82,6 +82,20 @@ function Pins.QuestLineText(id)
 	return title, color, group
 end
 
+local function ColorTitle(title, color)
+	if not color then
+		return title
+	end
+	local r, g, b = color.r, color.g, color.b
+	if color.GetRGB then
+		r, g, b = color:GetRGB()
+	end
+	if not r or not g or not b then
+		return title
+	end
+	return ("|cff%02x%02x%02x%s|r"):format(math.floor(r * 255), math.floor(g * 255), math.floor(b * 255), title)
+end
+
 ---@param step AGFStep|AGFGiver
 ---@return string?
 function Pins.StopTooltip(step)
@@ -93,7 +107,7 @@ function Pins.StopTooltip(step)
 	for _, id in ipairs(ids) do
 		local title, color = Pins.QuestLineText(id)
 		if title and title ~= "" then
-			lines[#lines + 1] = color:WrapTextInColorCode(title)
+			lines[#lines + 1] = ColorTitle(title, color)
 		end
 	end
 	if #lines == 0 then

@@ -3890,4 +3890,17 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label .. ": turned on")
 end
 
+-- Stop tooltips retain quest difficulty styling and all quests represented by a merged stop.
+do
+	local h = Load(false)
+	local tooltip = h.ns.Pins.StopTooltip({ quests = { 8, 590 } })
+	equal(type(tooltip), "string", "stop tooltip: merged quests produce text")
+	equal(tooltip:find("|cff", 1, true) ~= nil, true, "stop tooltip: difficulty color escape")
+	equal(tooltip:find("A Rogue's Deal", 1, true) ~= nil, true, "stop tooltip: first quest title")
+	equal(tooltip:find(" · ", 1, true) ~= nil, true, "stop tooltip: merged quest separator")
+	local plain = h.ns.Pins.StopTooltip({ quests = { 999999 } })
+	equal(plain, nil, "stop tooltip: unknown quest has no invented level")
+	clean(h, "stop tooltip context")
+end
+
 print(("ui_spec: %d checks passed"):format(checks))
