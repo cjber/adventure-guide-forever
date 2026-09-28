@@ -83,57 +83,29 @@ function Pins.QuestLineText(id)
 end
 
 local function ColorTitle(title, color)
-	if not color then
-		return title
-	end
-	local r, g, b = color.r, color.g, color.b
-	if color.GetRGB then
-		r, g, b = color:GetRGB()
-	end
-	if not r or not g or not b then
-		return title
-	end
-	return ("|cff%02x%02x%02x%s|r"):format(math.floor(r * 255), math.floor(g * 255), math.floor(b * 255), title)
+	return CreateColor(color.r, color.g, color.b):WrapTextInColorCode(title)
 end
 
 ---@param step AGFStep|AGFGiver
 ---@return string?
 function Pins.StopTooltip(step)
-	local ids = step.quests
-	if not ids or #ids == 0 then
-		return nil
-	end
 	local lines = {}
-	for _, id in ipairs(ids) do
+	for _, id in ipairs(step.quests or {}) do
 		local title, color = Pins.QuestLineText(id)
-		if title and title ~= "" then
+		if title ~= "" then
 			lines[#lines + 1] = ColorTitle(title, color)
+			local story = ns.Model.Story(ns.Data, id)
+			if story and story.total then
+				lines[#lines + 1] = ns.L.CHAPTER_OF:format(story.chapter, story.total)
+				local nextID = story.members[story.chapter + 1]
+				if nextID then
+					local nextTitle, nextColor = Pins.QuestLineText(nextID)
+					lines[#lines + 1] = ns.L.NEXT:format(ColorTitle(nextTitle, nextColor))
+				end
+			end
 		end
 	end
-	if #lines == 0 then
-		return nil
-	end
-	local title = table.concat(lines, " · ")
-	local id = ids[1]
-	local story = ns.Model.Story(ns.Data, id)
-	local nextID = story and story.members[story.chapter + 1]
-	local nextQuest = nextID and ns.Data.quests[nextID]
-	if story and story.total and nextID and nextQuest and nextQuest.title then
-		local nextTitle = Pins.QuestLineText(nextID)
-		title = title
-			.. " · "
-			.. (
-				story.total and ns.L.CHAPTER_OF:format(story.chapter, story.total) or ns.L.CHAPTER:format(story.chapter)
-			)
-		title = title .. " · " .. ns.L.NEXT .. ": " .. nextTitle
-	elseif story then
-		title = title
-			.. " · "
-			.. (
-				story.total and ns.L.CHAPTER_OF:format(story.chapter, story.total) or ns.L.CHAPTER:format(story.chapter)
-			)
-	end
-	return title
+	return #lines > 0 and table.concat(lines, "\n") or nil
 end
 
 -- One line per quest at a town, under the NPC it is handed to or taken from, in the town's order (hand-ins first, then

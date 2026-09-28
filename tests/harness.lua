@@ -1708,6 +1708,14 @@ function harness.load(options)
 			g = g,
 			b = b,
 			a = a,
+			WrapTextInColorCode = function(self, text)
+				return ("|cff%02x%02x%02x%s|r"):format(
+					math.floor(self.r * 255),
+					math.floor(self.g * 255),
+					math.floor(self.b * 255),
+					text
+				)
+			end,
 			GetRGB = function(self)
 				return self.r, self.g, self.b -- multi-value: the three channels, as ColorMixin returns them
 			end,
