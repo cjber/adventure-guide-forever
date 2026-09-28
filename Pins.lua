@@ -78,23 +78,35 @@ function Pins.QuestLineText(id)
 	if known and not title:match("^%[%d+%+?%]") then
 		title = ns.L.QUEST_LEVEL:format(level, title)
 	end
-	local group = quest and (quest.elite or quest.dungeon or quest.raid)
+	local group = quest and (quest.elite or quest.dungeon or quest.raid) and true or false
 	return title, color, group
 end
 
----@param step AGFStep
+---@param step AGFStep|AGFGiver
 ---@return string?
 function Pins.StopTooltip(step)
-	local id = step.quests and step.quests[1]
-	if not id then
+	local ids = step.quests
+	if not ids or #ids == 0 then
 		return nil
 	end
-	local title = Pins.QuestLineText(id)
+	local lines = {}
+	for _, id in ipairs(ids) do
+		local title = Pins.QuestLineText(id)
+		if title and title ~= "" then
+			lines[#lines + 1] = title
+		end
+	end
+	if #lines == 0 then
+		return nil
+	end
+	local title = table.concat(lines, " · ")
+	local id = ids[1]
 	local story = ns.Model.Story(ns.Data, id)
 	local nextID = story and story.members[story.chapter + 1]
 	local nextQuest = nextID and ns.Data.quests[nextID]
-	if nextQuest and nextQuest.title then
-		title = title .. " · " .. ns.L.NEXT .. ": " .. nextQuest.title
+	if story and story.total and nextID and nextQuest and nextQuest.title then
+		local nextTitle = Pins.QuestLineText(nextID)
+		title = title .. " · " .. ns.L.NEXT .. ": " .. nextTitle
 	end
 	return title
 end

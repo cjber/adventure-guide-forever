@@ -308,6 +308,7 @@
 ---@field y number -- normalized 0-1
 ---@field title? string
 ---@field kind? AGFSPFStopKind -- a Shortest Path before kinds ignores it
+---@field tooltip? string optional quest level/chain detail for the stop tooltip
 
 ---@class AGFSPFLeg
 ---@field mode AGFSPFMode
