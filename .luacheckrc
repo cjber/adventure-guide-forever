@@ -84,7 +84,7 @@ read_globals = {
 	"C_SuperTrack",
 	"UIErrorsFrame",
 	-- QuestieSource.lua
-	"LibQuestieDB",
+	"LibQuestieDB", "Questie", "QuestieLoader",
 	"C_AddOns",
 	"debugprofilestop",
 	-- Pins.lua

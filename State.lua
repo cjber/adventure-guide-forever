@@ -148,6 +148,34 @@ function State.Where()
 	return bestMap, x, y
 end
 
+-- Cache within one player snapshot only: quest/event/profession updates must re-evaluate live policy.
+local function QuestAvailability()
+	local cache = {}
+	local module
+	if
+		Questie
+		and Questie.API
+		and Questie.API.isReady
+		and QuestieLoader
+		and type(QuestieLoader.ImportModule) == "function"
+	then
+		local ok, result = pcall(QuestieLoader.ImportModule, QuestieLoader, "QuestieDB")
+		if ok and type(result) == "table" then
+			module = result
+		end
+	end
+	return function(id)
+		if cache[id] == nil then
+			local ok, available = false, false
+			if module and type(module.IsDoable) == "function" then
+				ok, available = pcall(module.IsDoable, id)
+			end
+			cache[id] = ok and available == true
+		end
+		return cache[id]
+	end
+end
+
 ---@return AGFPlayer
 function State.Player()
 	local englishFaction = UnitFactionGroup("player")
@@ -156,6 +184,7 @@ function State.Player()
 
 	local rested, xpMax, resting = Rest()
 	return {
+		questAvailable = QuestAvailability(),
 		rested = rested,
 		xpMax = xpMax,
 		resting = resting,

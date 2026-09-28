@@ -29,7 +29,13 @@ abandons quests.
 - **2.11 Asides.** Keep hints separate from routes. Unknown locations remain text only.
 - **2.12 Trainers.** Use known spells and trainer locations; add a stop only when the route passes.
 - **2.13 New suggestions.** Announce new offers quietly after a level or zone change, never by opening UI.
-- **2.14 QuestieDB.** Use a compatible installed source, with bundled data as fallback and location limit.
+- **2.14 QuestieDB.** Enumerate the compatible provider's complete composed quest catalogue after
+  Questie's ready callback (policy corrections precede reads). No bundled-ID, giver or objective whitelist;
+  provider absence/failure publishes no partial or fallback quest list. The game owns progress and live POIs;
+  QuestieDB owns records, spawns, objective counts and XP. Questie's IsDoable policy, plus minimum/maximum
+  level and guide difficulty preferences, gates pickups. Without live policy, logged quests remain browsable
+  but new pickups are not recommended. Route geometry and transport metadata are separate data sources.
+  Questie owns background markers whenever loaded, including its visibility toggle; AGF owns route markers.
 - **2.15 PvP.** Offer only battlegrounds open at the player's level; journey cards are opt-in.
 - **2.16 Professions.** Suggest only training the player qualifies for. Crafting routes come from SkillUp.
 - **2.17 Pacing.** Rest and hearth hints advise. Wanderer mode chooses without starting guidance.

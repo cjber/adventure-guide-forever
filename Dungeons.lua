@@ -289,11 +289,11 @@ function Dungeons.Journal(instance, yield)
 	end
 	local rows, index = {}, 1
 	while true do
-		local name, _, id = EJ_GetEncounterInfoByIndex(index, journal)
+		local name, description, id = EJ_GetEncounterInfoByIndex(index, journal)
 		if not name or name == "" or not id then
 			break
 		end
-		rows[#rows + 1] = { id = id, name = name, rank = 3, journal = true }
+		rows[#rows + 1] = { id = id, name = name, rank = 3, journal = true, description = description }
 		index = index + 1
 		yield()
 	end
@@ -503,6 +503,7 @@ function Dungeons.LootRows(source, instance, bosses)
 			local boss = group.boss
 			rows[#rows + 1] = {
 				title = boss and boss.name or ns.L.DUNGEON_TRASH,
+				bossID = boss and boss.id,
 				heading = true,
 				info = boss and boss.low and boss.low > 0 and ns.L.DUNGEON_LEVEL:format(boss.low) or "",
 			}

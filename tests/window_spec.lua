@@ -444,8 +444,9 @@ do
 	local h = Load()
 	local card = h.ns.Window.CreateCard(h.G.UIParent, true)
 	local highlight = card.Highlight
-	equal(highlight:GetParent():GetFrameLevel() > card.Art:GetFrameLevel(), true, "hover above map art")
+	equal(highlight:GetParent():GetFrameLevel() > card.Art.Art:GetFrameLevel(), true, "hover above map art")
 	equal(highlight.layer, "OVERLAY", "hover above cover shading")
+	equal(highlight.atlas, "ui-journeys-renown-button", "same gold hover as panel cards")
 	equal(highlight:IsShown(), false, "no initial hover")
 	card:GetScript("OnEnter")(card)
 	equal(highlight:IsShown(), false, "static card does not advertise a click")
@@ -461,6 +462,22 @@ do
 	card:GetScript("OnEnter")(card)
 	equal(highlight:IsShown(), false, "disabled card does not advertise a click")
 	clean(h, "card hover")
+end
+
+do
+	local h = Load()
+	Open(h)
+	local cards = h.Find(function(frame)
+		return frame:IsVisible() and frame.journey and frame.Highlight
+	end)
+	equal(#cards > 0, true, "real journey cards available")
+	for _, card in ipairs(cards) do
+		h.Hover(card)
+		equal(card.Highlight:IsShown(), true, "journey tooltip preserves gold hover")
+		card:GetScript("OnLeave")(card)
+		equal(card.Highlight:IsShown(), false, "journey leave clears gold hover")
+	end
+	clean(h, "journey hover")
 end
 
 print(("window_spec: %d checks passed"):format(checks))

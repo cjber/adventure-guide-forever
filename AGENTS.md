@@ -69,6 +69,8 @@ commit the PNGs it rewrites in `docs/screenshots/`; two runs give byte-identical
 
 ## Waivers
 
+- WFA-2: quest records use installed QuestieDB, with Questie supplying live pickup availability (owner decision 2026-09-28). Do not substitute a smaller bundled quest catalogue.
+
 - WFA-3: the map-pin, quest-giver and tracker toggles stay in the guide's cog as well as Settings > AddOns, as
   quick switches next to the map (owner decision 2026-09-27).
 

@@ -11,6 +11,14 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-28
+
+- **The full QuestieDB catalogue.** Quests, giver positions, objective locations and XP now come from the installed provider, without limiting it to the guide's old quest list. Questie checks live pickup availability; the game supplies progress. Enable QuestieDB and Questie for quest recommendations.
+- **One set of quest markers.** Questie owns background markers when loaded, including its hide/show switch. The guide keeps its route rings, and Tweaks keeps the native styling.
+- **Consistent gold card hover.** Journey and completion cards use the map panel’s warm gold highlight, including cards with tooltips.
+- **More useful boss lists.** Gold encounter names, difficulty-coloured levels, encounter classification and known loot counts make the list easier to scan. Click an encounter with recorded drops to open its loot group; native encounter descriptions appear on hover when available.
+- **Clear missing-data states.** Missing or incompatible providers no longer silently substitute a smaller quest catalogue. Provider startup, failures, new quest IDs and marker ownership have regression coverage.
+
 ## [0.3.3] - 2026-09-28
 
 - **Clickable cards light up on hover.** Completion zones and journey cards show their subtle highlight above the map art, so it is clear which cards you can select. Trainer and other suggestions also highlight; static information cards stay unchanged.

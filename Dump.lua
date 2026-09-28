@@ -169,6 +169,7 @@ function ns.Dump()
 	local version, build = GetBuildInfo()
 	AdventureGuideForeverDB.dump = {
 		build = version .. "." .. build,
+		questSource = ns.QuestieStatus,
 		layout = AdventureGuideForeverPanel and ns.DumpLayout(AdventureGuideForeverPanel),
 		window = AdventureGuideForeverWindow and ns.DumpLayout(AdventureGuideForeverWindow),
 		windowTab = ns.WindowDB().tab,

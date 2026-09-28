@@ -312,6 +312,13 @@ local function Check(data, player, completed, log, id, groups, level, lines, nam
 	end
 	-- A skill line the player hasn't learned has rank 0; a faction the client gives no standing for (the other side's)
 	-- meets neither a minimum nor a maximum, since the data can't say where it stands.
+	if quest.provider then
+		local available = (not quest.max or quest.max == 0 or (level or player.level) <= quest.max)
+				and player.questAvailable
+				and player.questAvailable(id)
+			or false
+		return Line(data, lines, available, "WHY_PROVIDER")
+	end
 	local skill = quest.skill
 	if skill then
 		met = ((player.skills and player.skills[skill.id]) or 0) >= skill.value
@@ -512,12 +519,12 @@ local function Choices(data, player, completed, log, index, prefs, far)
 			and not completed[id]
 			and ((instance and prefs.dungeons) or (not instance and prefs.quests))
 			and not Dropped(id)
+			and (pinned[id] or not Model.IsGray(quest.level, player.level))
+			and not Hard(quest, player)
 			and Eligible(data, player, completed, log, id, index.groups)
 		then
-			if (pinned[id] or not Model.IsGray(quest.level, player.level)) and not Hard(quest, player) then
-				eligible[#eligible + 1] = id
-				ranked[#ranked + 1] = id
-			end
+			eligible[#eligible + 1] = id
+			ranked[#ranked + 1] = id
 		end
 	end
 	local zones = Rank(data, ranked, player.level, far)
@@ -754,7 +761,13 @@ local function OpenSlots(quest, entry)
 	for _, objective in ipairs(objectives) do
 		local range, slot = SLOTS[objective.type], nil
 		for _, candidate in ipairs(range and slots or NONE) do
-			if not slot and not used[candidate] and candidate >= range[1] and candidate <= range[2] then
+			if
+				not slot
+				and not used[candidate]
+				and candidate >= range[1]
+				and candidate <= range[2]
+				and (not quest.kinds or quest.kinds[candidate] == objective.type)
+			then
 				slot = candidate
 			end
 		end

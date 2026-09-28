@@ -11,9 +11,12 @@
 ---@field hub? integer the town it stands in (tools/gen_quests.py town_hubs); nil when its map has no world rectangle
 
 ---@class AGFQuest
+---@field provider? boolean QuestieDB quest; live Questie policy decides pickup availability
+---@field kinds? table<integer, string> objective slot type
 ---@field title string English title from the source data; the client's own title wins when cached
 ---@field level integer quest level (-1 scales to the player)
 ---@field min integer minimum level to accept
+---@field max? integer maximum level to accept
 ---@field side integer 1 Alliance, 2 Horde, 3 both
 ---@field races? integer race bitmask (nil = any)
 ---@field classes? integer class bitmask (nil = any)
@@ -87,6 +90,7 @@
 
 -- What the live state tells the planner. Built by State.lua, consumed by Model.lua.
 ---@class AGFPlayer
+---@field questAvailable? fun(id: integer): boolean
 ---@field level integer
 ---@field maxLevel integer the level cap
 ---@field logMax? integer the quests the log may hold (C_QuestLog.GetMaxNumQuestsCanAccept); no limit when nil
@@ -802,7 +806,7 @@
 -- QuestieDB as a quest source (QuestieSource.lua, docs/design.md §2.14).
 
 ---@class AGFQuestieStatus
----@field state "bundled"|"building"|"questie" the quests in use: bundled, bundled while QuestieDB's are built, or QuestieDB's
+---@field state "unavailable"|"building"|"questie" provider unavailable, building, or ready
 ---@field version? string QuestieDB's version, once its quests are in use
 ---@field reason? string why QuestieDB is not used (an ns.L line); nil while it is, or before login
 
@@ -1243,6 +1247,7 @@
 ---@field xp number proven remaining XP at the current level; alternatives counted once
 
 ---@class AGFDungeonBoss
+---@field description? string
 ---@field journal? boolean id is an Encounter Journal encounter, not an NPC
 ---@field id integer
 ---@field name string
@@ -1309,6 +1314,8 @@
 ---@field DUNGEON_BOSS string
 ---@field DUNGEON_ENEMY_LEVELS string
 ---@field DUNGEON_RARE_ELITE string
+---@field DUNGEON_BOSS_LOOT string
+---@field DUNGEON_BOSS_LOOT_UNKNOWN string
 ---@field DUNGEON_ELITE string
 ---@field DUNGEON_DROP string
 ---@field DUNGEON_NO_FACTION_QUESTS string
@@ -1336,3 +1343,21 @@
 
 ---@class AGFWindow
 ---@field OpenDungeon fun(instance: integer)
+
+---@alias AGFMapLookup fun(area: integer): integer?
+---@alias AGFYield fun()
+
+---@class AGFNamespace
+---@field QuestieObjectives fun(lib: AGFQuestieDB, objectives: table?, trigger: table?, zone: integer?, data: AGFData, mapOf: AGFMapLookup, yield: AGFYield, questID: integer): table?, AGFObjectiveArea[]?, table?
+
+---@class AGFStrings
+---@field WHY_PROVIDER string
+
+---@class AGFNamespace
+---@field SourceHint fun(): string?
+---@class AGFQuestieStatus
+---@field catalogueCount? integer
+---@field questCount? integer
+---@class AGFStrings
+---@field QUESTIE_ENABLE string
+---@field QUESTIE_POLICY string

@@ -1,290 +1,176 @@
--- Run from the repository root: luajit tests/questie_spec.lua
--- QuestieDB as a quest source (QuestieSource.lua, docs/design.md §2.14) through tests/harness.lua's synthetic
--- QuestieDB: the checks that keep the bundled data, the mapping against a mirror of the bundled data, the starts it
--- withholds, and the build's frame slices and swap.
+-- Integration contract: canonical provider catalogue, live policy and startup/failure behaviour.
 local harness = dofile("tests/harness.lua")
 local checks = 0
-
 local function equal(actual, expected, label)
 	checks = checks + 1
-	if actual ~= expected then
-		error(("%s: expected %s, got %s"):format(label, tostring(expected), tostring(actual)), 2)
-	end
+	assert(actual == expected, label .. ": expected " .. tostring(expected) .. ", got " .. tostring(actual))
 end
-
-local function same(a, b)
-	if type(a) ~= "table" or type(b) ~= "table" then
-		return a == b
-	end
-	for key, value in pairs(a) do
-		if not same(value, b[key]) then
-			return false
-		end
-	end
-	for key in pairs(b) do
-		if a[key] == nil then
-			return false
-		end
-	end
-	return true
+local function Fake()
+	return {
+		quests = {
+			[900001] = {
+				name = "Provider-only quest",
+				questLevel = 20,
+				requiredLevel = 18,
+				startedBy = { { 197 } },
+				finishedBy = { { 197 } },
+				zoneOrSort = 12,
+				objectives = { { { 800, nil, 5 } } },
+			},
+			[900002] = {
+				name = "Collect",
+				questLevel = 19,
+				requiredLevel = 17,
+				startedBy = { { 197 } },
+				zoneOrSort = 12,
+				objectives = { nil, nil, { { 700, nil, 3 } } },
+			},
+		},
+		npcs = {
+			[197] = { name = "Giver", spawns = { [12] = { { 49, 42 } } }, zoneID = 12 },
+			[800] = { name = "Enemy", spawns = { [12] = { { 50, 50 }, { 50.1, 50.1 } } } },
+		},
+		items = { [700] = { npcDrops = { 800 } } },
+		objects = {},
+		zones = { area = { [12] = 1429 } },
+	}
 end
-
-local bundled = {}
-assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", bundled)
-bundled = bundled.Data
-
-local function Audit(h)
-	local from = #h.prints + 1
-	h.G.SlashCmdList.ADVENTUREGUIDEFOREVER("audit")
-	return table.concat(h.prints, "\n", from)
+local function Policy(h, available)
+	h.G.Questie = { API = {
+		isReady = true,
+		RegisterOnReady = function(fn)
+			fn()
+		end,
+	} }
+	h.G.QuestieLoader = {
+		ImportModule = function()
+			return { IsDoable = available or function()
+				return true
+			end }
+		end,
+	}
 end
-
--- Every check that fails keeps the bundled data and says why in /agf audit.
 for _, case in ipairs({
-	{ nil, "QUESTIE_ABSENT" },
+	{ false, "QUESTIE_ABSENT" },
 	{ { contract = 1 }, "QUESTIE_CONTRACT" },
 	{ { flavor = "Vanilla" }, "QUESTIE_FLAVOUR" },
-	{ { missing = "questLevel" }, "QUESTIE_FIELD", "questLevel" },
+	{ { missing = "questLevel" }, "QUESTIE_FIELD" },
 	{ { noZones = true }, "QUESTIE_ZONES" },
 }) do
-	local fake, key, arg = case[1], case[2], case[3]
-	local h = harness.load({ questiedb = fake })
-	local L = h.ns.L
-	local reason = arg and L[key]:format(arg) or L[key]
-	equal(#h.errors, 0, key .. ": errors")
-	equal(h.ns.QuestieStatus.state, "bundled", key .. ": state")
-	equal(h.ns.QuestieStatus.reason, reason, key .. ": reason")
-	equal(h.ns.Data.source:find("^CMaNGOS") ~= nil, true, key .. ": the bundled data stays")
-	local audit = Audit(h)
-	equal(audit:find(L.AUDIT_SOURCE_BUNDLED, 1, true) ~= nil, true, key .. ": audit names the bundled data")
-	equal(audit:find(L.AUDIT_QUESTIE_UNUSED:format(reason), 1, true) ~= nil, true, key .. ": audit says why")
+	local h = harness.load({ questiedb = case[1] })
+	equal(#h.errors, 0, case[2] .. " errors")
+	equal(h.ns.QuestieStatus.state, "unavailable", case[2] .. " state")
+	equal(next(h.ns.Data.quests), nil, case[2] .. " no stale fallback")
 end
-
--- A read that raises keeps the bundled data too.
-do
-	local fake = harness.questieMirror(bundled)
-	fake.quests = setmetatable({}, {
-		__index = function()
+local h = harness.load({ questiedb = Fake(), setup = Policy })
+equal(#h.errors, 0, "build errors")
+equal(h.ns.QuestieStatus.state, "questie", "provider ready")
+equal(h.ns.Data.quests[7], nil, "bundled-only quest absent")
+local q = h.ns.Data.quests[900001]
+equal(q.title, "Provider-only quest", "new quest imported")
+equal(q.start.npc, 197, "new quest giver")
+equal(q.need[0], 5, "objective count")
+equal(q.obj[1][5], 1429, "provider objective map")
+equal(q.obj[1][2], 500, "provider spawn")
+equal(h.ns.Data.quests[900002].need[4], 3, "item count")
+equal(h.ns.Data.quests[900002].obj[1][2], 500, "item drop location")
+local player = h.ns.State.Player()
+player.level = 20
+local Model = h.ns.Model
+equal(Model.Eligible(h.ns.Data, player, {}, {}, 900001), true, "canonical quest eligible")
+local calls = 0
+Policy(h, function()
+	calls = calls + 1
+	return false
+end)
+player = h.ns.State.Player()
+player.level = 20
+equal(Model.Eligible(h.ns.Data, player, {}, {}, 900001), false, "provider policy rejects unavailable quest")
+Model.Eligible(h.ns.Data, player, {}, {}, 900001)
+equal(calls, 1, "policy cached per snapshot")
+Policy(h, function()
+	error("provider failure")
+end)
+player = h.ns.State.Player()
+player.level = 20
+equal(Model.Eligible(h.ns.Data, player, {}, {}, 900001), false, "policy failure is closed")
+equal(#h.errors, 0, "policy error contained")
+local alone = harness.load({ questiedb = Fake() })
+player = alone.ns.State.Player()
+player.level = 20
+equal(
+	Model.Eligible(alone.ns.Data, player, {}, {}, 900001),
+	false,
+	"database alone cannot prove live event availability"
+)
+equal(alone.ns.Data.quests[900001].finish.npc, 197, "logged quest still has finish without policy")
+-- Questie initializes policy corrections asynchronously. Publish no old quest data while waiting.
+local ready
+local delayed = harness.load({
+	questiedb = Fake(),
+	setup = function(h2)
+		Policy(h2)
+		h2.G.Questie.API.isReady = false
+		h2.G.Questie.API.RegisterOnReady = function(fn)
+			ready = fn
+		end
+	end,
+})
+equal(next(delayed.ns.Data.quests), nil, "empty until provider ready")
+delayed.G.LibQuestieDB.Quest.GetAllIds = function()
+	return { 900002 }
+end
+delayed.G.Questie.API.isReady = true
+ready()
+delayed.flush()
+equal(delayed.ns.Data.quests[900001], nil, "snapshot taken after policy corrections")
+equal(delayed.ns.Data.quests[900002].title, "Collect", "ready callback publishes composed catalogue")
+-- A missing coordinate never inherits the bundled location for the same NPC/quest.
+local fake = Fake()
+fake.quests[7] = fake.quests[900001]
+fake.npcs[197].spawns = {}
+local unplaced = harness.load({ questiedb = fake, setup = Policy })
+equal(unplaced.ns.Data.quests[7].start, nil, "no stale coordinates")
+-- An exception leaves no partial catalogue.
+local failed = harness.load({
+	questiedb = Fake(),
+	setup = function(h2)
+		h2.G.LibQuestieDB.Quest.GetAll = function()
 			error("unreadable")
-		end,
-	})
-	local h = harness.load({ questiedb = fake })
-	equal(h.ns.QuestieStatus.state, "bundled", "a failed read: state")
-	equal(h.ns.QuestieStatus.reason:find("unreadable") ~= nil, true, "a failed read: reason")
-	equal(h.ns.Data.source:find("^CMaNGOS") ~= nil, true, "a failed read: the bundled data stays")
-end
-
--- A mirror of the bundled data converts back to it: every field of every quest. Only a quest whose bundled start was
--- withheld may differ in its zone (the generator files it by the start it then withholds), and an exclusive group of
--- one (its other members aren't Forever's) closes nothing either way.
+		end
+	end,
+})
+equal(failed.ns.QuestieStatus.state, "unavailable", "failed build")
+equal(next(failed.ns.Data.quests), nil, "failed build never publishes partial records")
+-- The full catalogue is time sliced, including provider-only IDs.
 do
-	local h = harness.load({ questiedb = harness.questieMirror(bundled) })
-	local data = h.ns.Data
-	equal(#h.errors, 0, "mirror: errors")
-	equal(h.ns.QuestieStatus.state, "questie", "mirror: state")
-	equal(data.source, "QuestieDB 0.0-test", "mirror: source")
-	equal(Audit(h):find(h.ns.L.AUDIT_SOURCE_QUESTIE:format("0.0-test"), 1, true) ~= nil, true, "mirror: audit")
-	local sizes = {}
-	for _, quest in pairs(bundled.quests) do
-		sizes[quest.group or 0] = (sizes[quest.group or 0] or 0) + 1
+	local many = Fake()
+	for id = 910000, 913000 do
+		many.quests[id] = many.quests[900001]
 	end
-	local count, members = 0, {}
-	for id, quest in pairs(bundled.quests) do
-		count = count + 1
-		local built = data.quests[id]
-		for _, field in ipairs({ "title", "level", "min", "side", "races", "classes", "pre", "preAny", "next" }) do
-			equal(same(built[field], quest[field]), true, id .. " " .. field)
-		end
-		for _, field in ipairs({ "repeatable", "elite", "dungeon", "raid", "skill", "rep", "breadcrumb" }) do
-			equal(same(built[field], quest[field]), true, id .. " " .. field)
-		end
-		for _, field in ipairs({ "xp", "need", "flags" }) do
-			equal(same(built[field], quest[field]), true, id .. " " .. field)
-		end
-		-- Each objective area on the same map, though the quest's zone may have moved (a withheld start's).
-		equal(#(built.obj or {}), #(quest.obj or {}), id .. " obj")
-		for i, spot in ipairs(quest.obj or {}) do
-			local now = built.obj[i]
-			local moved = { now[1], now[2], now[3], now[4], now[5] or built.zone }
-			equal(same(moved, { spot[1], spot[2], spot[3], spot[4], spot[5] or quest.zone }), true, id .. " obj " .. i)
-		end
-		-- The mirror lists a spawn under every map the bundled data places it on (Melor Stonehoof, in Thunder Bluff and
-		-- on the Barrens map over it), and a quest takes the one on its zone's map: the same spawn and town, another map.
-		for _, field in ipairs({ "start", "finish" }) do
-			local was, now = quest[field], built[field]
-			local moved = was ~= nil
-				and now ~= nil
-				and was.npc == now.npc
-				and was.hub ~= nil
-				and was.hub == now.hub
-				and now.map == quest.zone
-			equal(same(now, was) or moved, true, id .. " " .. field)
-		end
-		if quest.start or bundled.zones[quest.zone] then
-			equal(built.zone, quest.zone, id .. " zone")
-		end
-		if quest.group and sizes[quest.group] > 1 then
-			members[quest.group] = members[quest.group] or built.group
-			equal(built.group ~= nil and built.group == members[quest.group], true, id .. " group")
-		end
-	end
-	for id in pairs(data.quests) do
-		equal(bundled.quests[id] ~= nil, true, id .. " only the bundled data's quests")
-	end
-	equal(count > 3000, true, "mirror: quest count")
-end
-
--- One mirror, changed quest by quest: what QuestieDB says wins, and a start is withheld whenever it names a
--- requirement the planner can't check. Kobold Camp Cleanup (7) starts with Marshal McBride (197) in Northshire.
-local fake = harness.questieMirror(bundled)
-local mcBride = fake.npcs[197]
--- A subzone (a synthetic area 90001 inside Elwynn Forest's) files the quest under its parent zone.
-fake.zones.parent = { [90001] = 1429 }
-fake.quests[7].zoneOrSort = 90001
--- A spawn on a map the data doesn't place is dropped; McBride's other spawn stands.
-mcBride.spawns[90002] = { { 10, 10 } }
-fake.zones.area[90002] = 99999
--- A new giver 25 yards from McBride's door joins his town; one in Elwynn's far corner joins none.
-fake.npcs[900001] = { name = "Near", spawns = { [1429] = { { 49.2, 41.8 } } }, zoneID = 1429 }
-fake.npcs[900002] = { name = "Far", spawns = { [1429] = { { 2, 97 } } }, zoneID = 1429 }
-fake.quests[33].startedBy = { { 900001 } }
-fake.quests[18].finishedBy = { { 900002 } }
--- An item starts it: no start, as the bundled data.
-fake.quests[783].startedBy = { nil, nil, { 12345 } }
--- Exclusive quests, joined through a middle one, are one group named by the lowest ID.
-fake.quests[33].exclusiveTo = { 18 }
-fake.quests[6].exclusiveTo = { 18 }
--- Requirements the planner has no state for withhold the start; the finish stays for the log.
-local GATED = {
-	{ 5, "requiredSpell", 1234 },
-	{ 15, "requiredMaxLevel", 20 },
-	{ 21, "parentQuest", 20 },
-	{ 48, "breadcrumbForQuestId", 999999 },
-	{ 52, "breadcrumbForQuestId", -38 },
-	{ 35, "exclusiveTo", { 999999 } },
-	{ 37, "preQuestGroup", { 999999 } },
-	{ 39, "preQuestSingle", { -40 } },
-	{ 40, "requiredMinRep", { 99999, 3000 } },
-	{ 46, "questFlags", 1024 },
-	-- A race or class mask present but unreadable is no proof the player may take it.
-	{ 9, "requiredRaces", "unreadable" },
-	{ 12, "requiredClasses", "unreadable" },
-}
-for _, case in ipairs(GATED) do
-	assert(bundled.quests[case[1]].start, case[1] .. " has a bundled start")
-	fake.quests[case[1]][case[2]] = case[3]
-end
--- A breadcrumb keeps its start and names its target: QuestieDB's, else the bundled one.
-fake.quests[22].breadcrumbForQuestId = 38
-assert(bundled.quests[860].breadcrumb == 844)
-fake.quests[860].breadcrumbForQuestId = nil
--- The level cap as a maximum is none.
-fake.quests[47].requiredMaxLevel = 255
--- A start only where the bundled data has one (its lack is a gate or an event-only giver), whatever giver QuestieDB
--- names.
-local startless
-for id, quest in pairs(bundled.quests) do
-	startless = startless or (not quest.start and fake.quests[id] and id) or nil
-end
-fake.quests[startless].startedBy = { { 197 } }
--- What QuestieDB leaves out stays bundled: a level that scales with the player (-1), a minimum level, a dungeon it
--- files elsewhere, and a giver it can't place (every spawn on an area no map has).
-fake.quests[33].questLevel = -1
-fake.quests[33].requiredLevel = nil
-local dungeonQuest
-for id, quest in pairs(bundled.quests) do
-	dungeonQuest = dungeonQuest or (quest.dungeon and fake.quests[id] and id) or nil
-end
-fake.quests[dungeonQuest].zoneOrSort = 1429
-local unplaced
-for id, quest in pairs(bundled.quests) do
-	local finish = quest.finish and quest.finish.npc
-	unplaced = unplaced or (finish and finish ~= 197 and fake.quests[id] and fake.npcs[finish] and id) or nil
-end
-fake.npcs[bundled.quests[unplaced].finish.npc].spawns = { [90003] = { { 50, 50 } } }
--- A quest typed Raid (Paragons of Power, filed outdoors in the bundled data) stays a raid's though QuestieDB files it
--- under a party instance (the Deadmines, 36).
-assert(bundled.quests[8053].raid and not bundled.quests[8053].dungeon and not bundled.instances[36].raid)
-fake.quests[8053].zoneOrSort = fake.zones.instances[36]
--- Filed in another zone (Riverpaw Gnoll Bounty, Elwynn's, in Westfall), its objective areas still name Elwynn.
-assert(bundled.quests[11].zone == 1429 and bundled.quests[11].obj[1][5] == nil)
-fake.quests[11].zoneOrSort = 1436
--- A quest the bundled data lacks is left out: nothing says what else gates it.
-fake.quests[999998] = { name = "Unknown", questLevel = 5, requiredLevel = 1, startedBy = { { 197 } } }
-
-local h = harness.load({ questiedb = fake })
-local quests = h.ns.Data.quests
-equal(#h.errors, 0, "changed mirror: errors")
-equal(quests[7].zone, 1429, "a subzone's quest is its parent zone's")
-equal(same(quests[7].start, bundled.quests[7].start), true, "McBride's placed spawn")
-equal(quests[33].start.name, "Near", "the new giver")
-equal(quests[33].start.hub, bundled.quests[7].start.hub, "a giver near a town joins it")
-equal(quests[18].finish.name, "Far", "the far ender")
-equal(quests[18].finish.hub, nil, "a giver far from any town joins none")
-equal(quests[783].start, nil, "an item-started quest has no start")
-equal(quests[6].group, 6, "an exclusive group: 6")
-equal(quests[18].group, 6, "an exclusive group: 18")
-equal(quests[33].group, 6, "an exclusive group: 33")
-for _, case in ipairs(GATED) do
-	equal(quests[case[1]].start, nil, case[1] .. " " .. case[2] .. " withholds the start")
-	equal(same(quests[case[1]].finish, bundled.quests[case[1]].finish), true, case[1] .. " keeps its finish")
-end
-equal(quests[47].start ~= nil, true, "the level cap as a maximum keeps the start")
-equal(quests[22].start ~= nil and quests[22].breadcrumb, 38, "a breadcrumb keeps its start and names its target")
-equal(quests[860].start ~= nil and quests[860].breadcrumb, 844, "a breadcrumb QuestieDB doesn't name: the bundled one")
-equal(quests[startless].start, nil, "no start where the bundled data has none")
-equal(quests[33].level, bundled.quests[33].level, "a scaling level: the bundled one")
-equal(quests[33].min, bundled.quests[33].min, "no minimum: the bundled one")
-equal(quests[dungeonQuest].dungeon, bundled.quests[dungeonQuest].dungeon, "a dungeon QuestieDB files elsewhere")
-equal(same(quests[unplaced].finish, bundled.quests[unplaced].finish), true, "an unplaced giver keeps the bundled place")
-equal(quests[unplaced].finish ~= bundled.quests[unplaced].finish, true, "a copy of the bundled place")
-equal(quests[999998], nil, "a quest the bundled data lacks")
-equal(quests[8053].dungeon, 36, "a raid's quest QuestieDB files in a party instance: that instance")
-equal(quests[8053].raid, true, "and still a raid's")
-equal(quests[11].zone, 1436, "a quest QuestieDB files in another zone")
-for i, spot in ipairs(bundled.quests[11].obj) do
-	local now = quests[11].obj[i]
-	equal(same(now, { spot[1], spot[2], spot[3], spot[4], 1429 }), true, "its objective area " .. i .. " names Elwynn")
-end
-equal(same(quests[11].need, bundled.quests[11].need), true, "its objectives stay bundled")
-equal(quests[11].xp, bundled.quests[11].xp, "its XP stays bundled")
-
--- The build runs a slice a frame from login, 2 ms each, on the bundled data until the swap; then one rebuild.
-do
-	local frames, perFrame, during, invalidated = 0, {}, true, 0
-	local h2 = harness.load({
-		questiedb = harness.questieMirror(bundled),
+	local frames, reads, most = 0, 0, 0
+	local sliced = harness.load({
+		questiedb = many,
 		setup = function(h2)
 			h2.clockStep = 0.01
 			local after = h2.G.C_Timer.After
 			h2.G.C_Timer.After = function(delay, fn)
 				frames = frames + 1
+				most = math.max(most, reads)
+				reads = 0
 				return after(delay, fn)
 			end
-			local getAll = h2.G.LibQuestieDB.Quest.GetAll
+			local get = h2.G.LibQuestieDB.Quest.GetAll
 			h2.G.LibQuestieDB.Quest.GetAll = function(...)
-				perFrame[frames] = (perFrame[frames] or 0) + 1
-				during = during and h2.ns.Data.source:find("^CMaNGOS") ~= nil
-				during = during and h2.ns.QuestieStatus.state == "building"
-				return getAll(...) -- multi-value: the wrapper is transparent
-			end
-			local invalidate = h2.ns.Invalidate
-			h2.ns.Invalidate = function()
-				invalidated = invalidated + (h2.ns.QuestieStatus.state == "questie" and 1 or 0)
-				invalidate()
-			end
+				reads = reads + 1
+				return get(...)
+			end -- multi-value: transparent wrapper
 		end,
 	})
-	local slices, most = 0, 0
-	for _, count in pairs(perFrame) do
-		slices, most = slices + 1, math.max(most, count)
-	end
-	equal(#h2.errors, 0, "slices: errors")
-	equal(slices > 10, true, "slices: the build spans frames (" .. slices .. ")")
-	equal(most <= 201, true, "slices: at most 2 ms of quests a frame (" .. most .. ")")
-	equal(during, true, "slices: the bundled data serves while it builds")
-	equal(h2.ns.QuestieStatus.state, "questie", "slices: swapped")
-	equal(invalidated, 1, "slices: one invalidation after the swap")
+	equal(#sliced.errors, 0, "sliced errors")
+	equal(sliced.ns.QuestieStatus.questCount, 3003, "full catalogue count")
+	equal(sliced.ns.QuestieStatus.catalogueCount, 3003, "provider count")
+	equal(frames > 10, true, "build yields across frames")
+	equal(most <= 201, true, "quest reads within slice")
 end
-
 print(("questie_spec: %d checks passed"):format(checks))

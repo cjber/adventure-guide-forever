@@ -343,7 +343,19 @@ rewardUI.Click(Button(rewardUI, rewardUI.ns.L.DUNGEON_LOOT_TAB))
 equal(Texts(rewardUI)["Test drop"], true, "runtime loot renders")
 equal(Texts(rewardUI)["Test boss"], true, "loot grouped under named boss")
 rewardUI.Click(Button(rewardUI, rewardUI.ns.L.DUNGEON_BOSSES_TAB))
-equal(Texts(rewardUI)["Level 21"], true, "single enemy level is not a repeated range")
+local visibleBosses = rewardUI.Find(function(frame)
+	return frame:IsVisible() and frame.value and frame.value.boss
+end)
+visibleBosses[1]:GetParent():GetParent():SetVerticalScroll(8 * 52)
+local bossRows = rewardUI.Find(function(frame)
+	return frame:IsVisible() and frame.value and frame.value.boss and frame.value.title == "Test boss"
+end)
+equal(#bossRows, 1, "named boss row")
+local bossRow = bossRows[1]
+equal(bossRow.Info:GetText():find("Level 21|r", 1, true) ~= nil, true, "difficulty-coloured single level")
+equal(bossRow.Giver:GetText(), rewardUI.ns.L.DUNGEON_BOSS_LOOT:format(1), "known drop count and action")
+rewardUI.Click(bossRow)
+equal(Texts(rewardUI)["Test drop"], true, "boss click opens its loot group")
 equal(#rewardUI.errors, 0, "source-present UI and item tooltip have no errors")
 -- Browsing a giver is independent of pickup eligibility; absent coordinates hide the control.
 local mapUI = harness.load()

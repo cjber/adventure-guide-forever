@@ -27,10 +27,14 @@ local function RingsShown()
 	return (preview or ns.Setting("showMapPins")) and not ns.Integrations.Guiding() and not ns.Setting("wanderer")
 end
 
--- Givers need both switches, and stay while Shortest Path guides: it draws no givers of its own.
+-- Questie owns background quest markers when loaded, including its hide/show switch.
+-- Without it, givers stay while Shortest Path guides: it draws no givers of its own.
 ---@return boolean
 local function GiversShown()
-	return ns.Setting("showMapPins") and ns.Setting("showQuestGivers") and not ns.Setting("wanderer")
+	return not C_AddOns.IsAddOnLoaded("Questie")
+		and ns.Setting("showMapPins")
+		and ns.Setting("showQuestGivers")
+		and not ns.Setting("wanderer")
 end
 
 ---@param tooltip GameTooltip
