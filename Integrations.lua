@@ -469,7 +469,14 @@ end
 local function Stops(steps)
 	local stops = {}
 	for index, step in ipairs(steps) do
-		stops[index] = { map = step.map, x = step.x, y = step.y, title = step.title, kind = Integrations.Kind(step) }
+		stops[index] = {
+			map = step.map,
+			x = step.x,
+			y = step.y,
+			title = step.title,
+			tooltip = ns.Pins.StopTooltip(step),
+			kind = Integrations.Kind(step),
+		}
 	end
 	return stops
 end

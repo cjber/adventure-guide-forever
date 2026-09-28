@@ -55,6 +55,18 @@ local HUB_QUEST_LINES = 8
 ---@param id integer
 ---@param mark string
 local function QuestLine(tooltip, id, mark)
+	local title, color, group = Pins.QuestLineText(id)
+	GameTooltip_AddColoredLine(
+		tooltip,
+		mark .. title .. (group and GROUP_ICON or ""),
+		CreateColor(color.r, color.g, color.b)
+	)
+end
+
+-- Shared quest title/level logic for AGF tooltips and the optional Shortest Path stop detail.
+---@param id integer
+---@return string title, table color, boolean group
+function Pins.QuestLineText(id)
 	local quest = ns.Data.quests[id]
 	local level = C_QuestLog.GetQuestDifficultyLevel(id)
 	if not level or level <= 0 then
@@ -67,11 +79,24 @@ local function QuestLine(tooltip, id, mark)
 		title = ns.L.QUEST_LEVEL:format(level, title)
 	end
 	local group = quest and (quest.elite or quest.dungeon or quest.raid)
-	GameTooltip_AddColoredLine(
-		tooltip,
-		mark .. title .. (group and GROUP_ICON or ""),
-		CreateColor(color.r, color.g, color.b)
-	)
+	return title, color, group
+end
+
+---@param step AGFStep
+---@return string?
+function Pins.StopTooltip(step)
+	local id = step.quests and step.quests[1]
+	if not id then
+		return nil
+	end
+	local title = Pins.QuestLineText(id)
+	local story = ns.Model.Story(ns.Data, id)
+	local nextID = story and story.members[story.chapter + 1]
+	local nextQuest = nextID and ns.Data.quests[nextID]
+	if nextQuest and nextQuest.title then
+		title = title .. " · " .. ns.L.NEXT .. ": " .. nextQuest.title
+	end
+	return title
 end
 
 -- One line per quest at a town, under the NPC it is handed to or taken from, in the town's order (hand-ins first, then
