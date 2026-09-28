@@ -78,6 +78,15 @@ end
 ---@type AGFContextPopup?
 local popup
 local Draw
+---@type table<Frame, boolean>
+local watchedOwners = setmetatable({}, { __mode = "k" })
+
+---@param owner Frame
+local function OwnerHidden(owner)
+	if popup and popup.owner == owner then
+		popup:Hide()
+	end
+end
 
 ---@return AGFContextPopup
 local function Ensure()
@@ -192,7 +201,12 @@ function ns.ContextMenu(owner, generator)
 	local frame = Ensure()
 	frame:Hide()
 	frame.owner = owner
-	frame:SetParent(owner:GetObjectType() == "Texture" and UIParent or owner --[[@as Frame]])
+	-- Card owners can be inside a ScrollFrame; parenting to them clips the popup's rows.
+	local ownerFrame = owner --[[@as Frame]]
+	if ownerFrame.HookScript and not watchedOwners[ownerFrame] then
+		ownerFrame:HookScript("OnHide", OwnerHidden)
+		watchedOwners[ownerFrame] = true
+	end
 	frame:ClearAllPoints()
 	frame:SetPoint("TOPRIGHT", owner, "BOTTOMRIGHT", 0, -2)
 	Draw(root)
