@@ -48,10 +48,10 @@ local function QuestLine(step, questID)
 	local quest = ns.Data.quests[questID]
 	local title = (entry and entry.title) or (quest and quest.title) or step.questTitle or step.title
 	local level = (entry and entry.level) or (quest and quest.level)
-	if not (level and level > 0) then
+	if level == -1 then
 		level = ns.State.Player().level
 	end
-	return L.TRACKER_QUEST:format(level, title)
+	return level and level > 0 and L.TRACKER_QUEST:format(level, title) or title
 end
 
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate

@@ -8,13 +8,14 @@ local function noop() end
 local timers, ready, frames, releases = {}, nil, {}, {}
 local combat = false
 local parent
+local nativeAnchorPoint = "TOPRIGHT"
 local function frame()
 	local f = { width = 250, height = 0, scripts = {} }
 	function f:SetPoint(...)
 		self.point = { ... }
 	end
 	function f:GetPoint()
-		return "TOPRIGHT", parent, "TOPRIGHT", 0, -100
+		return nativeAnchorPoint, parent, nativeAnchorPoint, 0, -100
 	end
 	function f:SetWidth(value)
 		self.width = value
@@ -218,6 +219,14 @@ host:MarkDirty()
 drain()
 check(host.point[5] <= 316, "oversized column keeps its header on screen")
 check(host.scale == 1.25, "companion matches native effective scale")
+nativeAnchorPoint = "BOTTOMRIGHT"
+host:MarkDirty()
+drain()
+check(native.point[1] == "TOPRIGHT" and native.point[3] == "BOTTOMRIGHT", "bottom anchor still stacks objectives below")
+nativeAnchorPoint = "CENTER"
+host:MarkDirty()
+drain()
+check(native.point[1] == "TOP" and native.point[3] == "BOTTOM", "center anchor uses centered top stack")
 local block = first:AcquireFrame("Block")
 block.parentModule = first
 local line = block:GetLine(1)

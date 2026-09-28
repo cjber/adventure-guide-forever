@@ -27,8 +27,12 @@ local host = CreateFrame("Frame", "ForeverTrackerCompanion", UIParent)
 -- section in one column without registering our frames with Blizzard's
 -- secure module collection.
 local nativeAnchor
-local function BelowPoint(point)
-	return point:gsub("TOP", "BOTTOM")
+local function StackPoints(point)
+	if point == "CENTER" then
+		return "TOP", "BOTTOM"
+	end
+	local horizontal = point:find("RIGHT", 1, true) and "RIGHT" or "LEFT"
+	return "TOP" .. horizontal, "BOTTOM" .. horizontal
 end
 local function CaptureNativeAnchor()
 	local point, relativeTo, relativePoint, x, y = ObjectiveTrackerFrame:GetPoint()
@@ -162,12 +166,14 @@ local function Layout()
 	table.sort(modules, function(a, b)
 		return a.uiOrder < b.uiOrder
 	end)
-	local available = math.max(0, (host:GetTop() or UIParent:GetHeight()) - 40)
 	-- The native frame may only receive its final Edit Mode anchor after the
 	-- player and saved variables are ready. Capture it before our first reflow.
 	CaptureNativeAnchor()
 	local width = ObjectiveTrackerFrame:GetWidth()
 	MatchNativeScale()
+	host:ClearAllPoints()
+	host:SetPoint("TOPRIGHT", nativeAnchor.relativeTo, nativeAnchor.relativePoint, nativeAnchor.x, nativeAnchor.y)
+	local available = math.max(0, (host:GetTop() or UIParent:GetHeight()) - 40)
 	host:SetWidth(width)
 	local height = 0
 	for _, module in ipairs(modules) do
@@ -196,9 +202,13 @@ local function Layout()
 	local screenHeight = UIParent:GetHeight()
 	local top = host:GetTop()
 	local nativeHeight = ObjectiveTrackerFrame:GetHeight() or 0
-	if screenHeight and top and top - host:GetHeight() - nativeHeight < 24 then
-		shift = 24 - (top - host:GetHeight() - nativeHeight)
-		shift = math.min(shift, math.max(0, screenHeight - 24 - top))
+	local scale = host.GetEffectiveScale and host:GetEffectiveScale() or 1
+	local screenScale = UIParent.GetEffectiveScale and UIParent:GetEffectiveScale() or scale
+	local margin = 24 * screenScale / scale
+	local screen = screenHeight and screenHeight * screenScale / scale
+	if screen and top and top - host:GetHeight() - nativeHeight < margin then
+		shift = margin - (top - host:GetHeight() - nativeHeight)
+		shift = math.min(shift, math.max(0, screen - margin - top))
 	end
 	host:ClearAllPoints()
 	host:SetPoint(
@@ -209,7 +219,8 @@ local function Layout()
 		nativeAnchor.y + shift
 	)
 	ObjectiveTrackerFrame:ClearAllPoints()
-	ObjectiveTrackerFrame:SetPoint(nativeAnchor.point, host, BelowPoint(nativeAnchor.point), 0, 0)
+	local stackPoint, stackRelativePoint = StackPoints(nativeAnchor.point)
+	ObjectiveTrackerFrame:SetPoint(stackPoint, host, stackRelativePoint, 0, 0)
 end
 function host.MarkDirty(_)
 	if ready and not queued then
