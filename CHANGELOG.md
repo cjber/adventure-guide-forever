@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-09-28
+
 - **Keep town tracker steps concise.** Pickup and turn-in checklists no longer repeat the same NPC names in a separate summary. Story and resume explanations remain visible.
 
 - **Avoid the remaining guide menu crashes.** The extra hints, settings and right-click actions use the guide’s own menus, with scrolling and nested Back navigation, instead of the native menu path that asserts in Forever build 70009.
@@ -19,6 +21,9 @@ verbatim rather than rewritten as the addon moves.
 - **Browse dungeon interiors in the guide.** The Maps tab reads installed Atlas Classic WoW maps and legends, including separate wings and entrances. Maps have separate framed artwork and readable legends. While inside a supported dungeon, its interior also opens on the main map, with Back to map to return to the ordinary view. Atlas and its Classic WoW module are optional; the guide does not bundle their artwork or invent maps when they are absent.
 
 - **See beyond the current quest lap.** View full guide shows ten rows per page: your next actions followed by the area's quest outline. Follow-ups to your active quests come first, with prerequisite quests before their successors. Later quests show their level and difficulty; they become route actions only when Questie confirms availability.
+
+- **Open the guide as a normal window.** Adventure Guide now uses the game’s panel placement by default. Enable Float window in Settings to move it independently. Tweaks Forever’s Windows tab in Edit Mode can move, scale and reset either mode; switching modes waits until combat ends.
+- **Match hover to the card.** Clickable cards highlight their own border, following its shape and size instead of drawing an oversized panel-shaped overlay.
 
 ## [0.5.0] - 2026-09-28
 
