@@ -89,6 +89,7 @@ do
 	clean(h, "tabs")
 
 	-- The window remembers where it was left, and its tab, after a reload.
+	h.ns.SetSetting("floatWindow", true)
 	h.G.AdventureGuideForeverDB.window.position = { point = "TOPLEFT", relativePoint = "TOPLEFT", x = 40, y = -60 }
 	local again = Load({ db = h.G.AdventureGuideForeverDB })
 	local reopened = Open(again)
@@ -96,6 +97,42 @@ do
 	local p, _, rp, px, py = reopened:GetPoint(1)
 	equal(("%s %s %d %d"):format(p, rp, px, py), "TOPLEFT TOPLEFT 40 -60", "reload: the saved position")
 	clean(again, "reload")
+end
+
+do
+	local h = Load()
+	local window = Open(h)
+	equal(h.uiPanel, window, "normal window participates in panel management")
+	equal(window:GetAttribute("UIPanelLayout-area"), "doublewide", "normal window area")
+	equal(window.movable, false, "normal window does not drag")
+	h.Click(window.CloseButton)
+	equal(h.uiPanel, nil, "close button releases panel occupancy")
+	h.ns.OpenWindow()
+	h.ns.SetSetting("floatWindow", true)
+	equal(window:IsShown(), true, "float switch preserves visibility")
+	equal(h.uiPanel, nil, "floating releases panel occupancy")
+	equal(window:GetAttribute("UIPanelLayout-area"), nil, "floating has no panel area")
+	equal(window.movable, true, "floating is draggable")
+	h.combat = true
+	h.ns.SetSetting("floatWindow", false)
+	equal(window.movable, true, "mode change deferred during combat")
+	h.combat = false
+	h.fire("PLAYER_REGEN_ENABLED")
+	equal(h.uiPanel, window, "normal mode applies after combat")
+	equal(window.movable, false, "drag disabled after combat")
+	clean(h, "window modes")
+
+	local lazy = Load()
+	lazy.G.EventRegistry:TriggerEvent("AdventureGuideForever.EnsureWindow")
+	local preview = lazy.G.AdventureGuideForeverWindow
+	equal(preview:IsShown(), false, "Edit Mode can create guide without opening it")
+	lazy.combat = true
+	lazy.ns.OpenWindow()
+	equal(preview:IsShown(), false, "opening normal panel waits for combat end")
+	lazy.combat = false
+	lazy.fire("PLAYER_REGEN_ENABLED")
+	equal(preview:IsShown(), true, "deferred open completes")
+	clean(lazy, "lazy guide creation")
 end
 
 --[[ Opening: /agf, the addon compartment, the panel's header, the key ]]
@@ -445,8 +482,16 @@ do
 	local card = h.ns.Window.CreateCard(h.G.UIParent, true)
 	local highlight = card.Highlight
 	equal(highlight:GetParent():GetFrameLevel() > card.Art.Art:GetFrameLevel(), true, "hover above map art")
-	equal(highlight.layer, "OVERLAY", "hover above cover shading")
-	equal(highlight.atlas, "ui-journeys-renown-button", "same gold hover as panel cards")
+	equal(#card.HoverRim, 9, "hover uses the card's nine-slice border")
+	for index, glow in ipairs(card.HoverRim) do
+		equal(glow.layer, "OVERLAY", "hover above cover shading")
+		equal(select(2, glow:GetPoint(1)), card.Rim[index], "hover matches underlying rim geometry")
+		equal(
+			table.concat(glow.texCoord, ","),
+			table.concat(card.Rim[index].texCoord, ","),
+			"hover matches underlying art"
+		)
+	end
 	equal(highlight:IsShown(), false, "no initial hover")
 	card:GetScript("OnEnter")(card)
 	equal(highlight:IsShown(), false, "static card does not advertise a click")

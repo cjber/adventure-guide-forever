@@ -151,7 +151,6 @@ function harness.load(options)
 		"SetClampedToScreen",
 		"SetDontSavePosition",
 		"SetMaxLetters",
-		"SetMovable",
 		"SetMotionScriptsWhileDisabled",
 		"SetShadowOffset",
 		"SetToplevel",
@@ -164,6 +163,7 @@ function harness.load(options)
 	for name, field in pairs({
 		SetBlendMode = "alphaMode",
 		SetFrameStrata = "frameStrata",
+		SetMovable = "movable",
 		SetDisabledFontObject = "disabledFont",
 		SetPushedAtlas = "pushedAtlas",
 		SetTextColor = "textColor",
@@ -475,6 +475,13 @@ function harness.load(options)
 		self.checked = checked
 	end
 
+	function Methods:SetAttribute(key, value)
+		self.attributes = self.attributes or {}
+		self.attributes[key] = value
+	end
+	function Methods:GetAttribute(key)
+		return self.attributes and self.attributes[key]
+	end
 	-- Buttons.
 	function Methods:SetEnabled(enabled)
 		self.disabled = not enabled
@@ -1064,6 +1071,29 @@ function harness.load(options)
 		end,
 	}
 	local registry = {}
+	G.ShowUIPanel = function(frame)
+		if h.combat then
+			error("cannot manage panels in combat")
+		end
+		if frame:GetAttribute("UIPanelLayout-area") then
+			if h.uiPanel and h.uiPanel ~= frame then
+				h.uiPanel:Hide()
+			end
+			h.uiPanel = frame
+			frame:ClearAllPoints()
+			frame:SetPoint("TOPLEFT", G.UIParent, "TOPLEFT", 16, -116)
+		end
+		frame:Show()
+	end
+	G.HideUIPanel = function(frame)
+		if h.combat then
+			return
+		end
+		if h.uiPanel == frame then
+			h.uiPanel = nil
+		end
+		frame:Hide()
+	end
 	G.EventRegistry = {
 		RegisterCallback = function(_, event, callback, owner)
 			registry[event] = registry[event] or {}

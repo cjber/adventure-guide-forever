@@ -37,6 +37,7 @@ function ns.RegisterSettings()
 		return ns.Setting("trackRouteQuests")
 	end)
 	for _, initializer in ipairs({
+		Checkbox("floatWindow", ns.L.SETTING_FLOAT_WINDOW, ns.L.SETTING_FLOAT_WINDOW_TOOLTIP),
 		Checkbox("showTracker", ns.L.SETTING_TRACKER, ns.L.SETTING_TRACKER_TOOLTIP),
 		Checkbox("wanderer", ns.L.SETTING_WANDERER, ns.L.SETTING_WANDERER_TOOLTIP),
 		Checkbox("followQuest", ns.L.SETTING_FOLLOW_QUEST, ns.L.SETTING_FOLLOW_QUEST_TOOLTIP),

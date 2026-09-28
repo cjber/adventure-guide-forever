@@ -129,7 +129,8 @@ end
 ---@field Fill Texture
 ---@field Art? AGFZoneBackdrop
 ---@field Picture Texture a still picture in place of the zone art (a profession's)
----@field Highlight Texture its hover
+---@field Highlight Frame its hover, following the same nine-slice rim
+---@field HoverRim Texture[]
 ---@field Shade Texture
 ---@field Fade Texture
 ---@field Rim Texture[] the nine pieces of the rim, row by row
@@ -167,7 +168,12 @@ function Window.CreateCard(parent, zoneArt)
 	card.Fade:SetPoint("BOTTOMLEFT", card.Fill)
 	local x = { EJ_LEFT, EJ_LEFT + EJ_RIM, EJ_RIGHT - EJ_RIM, EJ_RIGHT }
 	local y = { EJ_TOP, EJ_TOP + EJ_RIM, EJ_BOTTOM - EJ_RIM, EJ_BOTTOM }
-	card.Rim = {}
+	card.Highlight = CreateFrame("Frame", nil, cover)
+	card.Highlight:SetAllPoints()
+	card.Highlight:SetFrameLevel(cover:GetFrameLevel() + 1)
+	card.Highlight:EnableMouse(false)
+	card.Highlight:Hide()
+	card.Rim, card.HoverRim = {}, {}
 	for row = 1, 3 do
 		for column = 1, 3 do
 			local piece = cover:CreateTexture(nil, "BORDER")
@@ -179,17 +185,21 @@ function Window.CreateCard(parent, zoneArt)
 				y[row + 1] / EJ_SHEET_H
 			)
 			card.Rim[#card.Rim + 1] = piece
+			local glow = card.Highlight:CreateTexture(nil, "OVERLAY")
+			glow:SetTexture(EJ_FILE)
+			glow:SetTexCoord(
+				x[column] / EJ_SHEET_W,
+				x[column + 1] / EJ_SHEET_W,
+				y[row] / EJ_SHEET_H,
+				y[row + 1] / EJ_SHEET_H
+			)
+			glow:SetAllPoints(piece)
+			glow:SetBlendMode("ADD")
+			glow:SetVertexColor(1, 0.82, 0.25)
+			glow:SetAlpha(0.8)
+			card.HoverRim[#card.HoverRim + 1] = glow
 		end
 	end
-	-- The map art lives in a child frame: a highlight on the button itself would sit underneath it.
-	card.Highlight = cover:CreateTexture(nil, "OVERLAY")
-	card.Highlight:SetAtlas("ui-journeys-renown-button")
-	card.Highlight:SetTextureSliceMargins(12, 12, 12, 12)
-	card.Highlight:SetAlpha(0.4)
-	card.Highlight:SetBlendMode("ADD")
-	card.Highlight:SetPoint("TOPLEFT", -6, 6)
-	card.Highlight:SetPoint("BOTTOMRIGHT", 6, -6)
-	card.Highlight:Hide()
 	card:HookScript("OnEnter", function(self)
 		self.Highlight:SetShown(self:IsEnabled() and self:GetScript("OnClick") ~= nil)
 	end)
@@ -534,6 +544,70 @@ local function RestorePosition()
 	end
 end
 
+local floating
+local pendingOpen = false
+local modeEvents = CreateFrame("Frame")
+
+local function ShowWindow()
+	if floating then
+		frame:Show()
+	else
+		ShowUIPanel(frame)
+	end
+end
+
+local function HideWindow()
+	if floating then
+		frame:Hide()
+	else
+		HideUIPanel(frame)
+	end
+end
+
+function Window.ApplyMode()
+	if not frame then
+		return
+	end
+	if InCombatLockdown() then
+		modeEvents:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
+	end
+	local nextFloating = ns.Setting("floatWindow")
+	if floating == nextFloating then
+		return
+	end
+	local shown = frame:IsShown()
+	if shown then
+		HideWindow()
+	end
+	floating = nextFloating
+	-- Attributes belong to this addon frame; never register in Blizzard's shared UIPanelWindows table.
+	frame:SetAttribute("UIPanelLayout-defined", true)
+	frame:SetAttribute("UIPanelLayout-area", not floating and "doublewide" or nil)
+	frame:SetAttribute("UIPanelLayout-pushable", 0)
+	frame:SetAttribute("UIPanelLayout-whileDead", true)
+	frame:SetMovable(floating)
+	if floating then
+		RestorePosition()
+	else
+		frame:ClearAllPoints()
+		frame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 16, -116)
+	end
+	if shown then
+		ShowWindow()
+	end
+	EventRegistry:TriggerEvent("AdventureGuideForever.WindowLayoutChanged", frame)
+end
+
+modeEvents:SetScript("OnEvent", function(self)
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	Window.ApplyMode()
+	if pendingOpen then
+		pendingOpen = false
+		ns.OpenWindow()
+	end
+end)
+
 -- The tab's label grey, with its tooltip saying why, while the tab has nothing of its own to show; still clickable,
 -- so its page can say the same.
 ---@param button Button
@@ -562,18 +636,24 @@ local function Build()
 	frame:SetSize(WIDTH, HEIGHT)
 	frame:SetTitle(ns.TITLE)
 	frame:SetToplevel(true)
-	frame:SetMovable(true)
 	frame:SetClampedToScreen(true)
 	frame:SetDontSavePosition(true)
 	frame:EnableMouse(true)
 	frame:RegisterForDrag("LeftButton")
-	frame:SetScript("OnDragStart", frame.StartMoving)
+	frame:SetScript("OnDragStart", function(self)
+		if floating and not InCombatLockdown() then
+			self:StartMoving()
+		end
+	end)
 	frame:SetScript("OnDragStop", function(self)
 		self:StopMovingOrSizing()
-		SavePosition()
+		if floating then
+			SavePosition()
+		end
 	end)
 	frame:Hide()
-	RestorePosition()
+	Window.ApplyMode()
+	frame.CloseButton:SetScript("OnClick", HideWindow)
 	-- Escape closes it, as it does the game's own windows.
 	table.insert(UISpecialFrames, NAME)
 	-- The compass the panel's header and tab wear, on a dark disc in the portrait's ring.
@@ -668,6 +748,7 @@ local function Build()
 	end
 	PanelTemplates_SetTab(frame, selected)
 	contents[selected]:Show()
+	EventRegistry:TriggerEvent("AdventureGuideForever.WindowCreated", frame)
 end
 
 function Refresh()
@@ -691,20 +772,31 @@ function ns.WindowShown()
 end
 
 function ns.OpenWindow()
+	if InCombatLockdown() then
+		pendingOpen = true
+		modeEvents:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
+	end
 	if not frame then
 		Build()
 	end
-	---@cast frame -?
-	frame:Show()
+	Window.ApplyMode()
+	ShowWindow()
 end
 
 function ns.ToggleWindow()
 	if frame and frame:IsShown() then
-		frame:Hide()
+		HideWindow()
 	else
 		ns.OpenWindow()
 	end
 end
+
+EventRegistry:RegisterCallback("AdventureGuideForever.EnsureWindow", function()
+	if not frame and not InCombatLockdown() then
+		Build()
+	end
+end, Window)
 
 --[[ The key binding (Bindings.xml) ]]
 

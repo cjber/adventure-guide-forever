@@ -28,7 +28,7 @@ globals = { "ForeverTrackerHost",
 	"BINDING_NAME_ADVENTUREGUIDEFOREVER_WINDOW",
 }
 
-read_globals = { "CreateFramePoolCollection", "C_XMLUtil",
+read_globals = { "ShowUIPanel", "HideUIPanel", "CreateFramePoolCollection", "C_XMLUtil",
 	"NORMAL_FONT_COLOR",
 	"OpenWorldMap",
 	"AtlasLoot",

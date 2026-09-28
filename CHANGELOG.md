@@ -11,6 +11,11 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-28
+
+- **Open the guide as a normal window.** Adventure Guide now uses the game’s panel placement by default. Enable Float window in Settings to move it independently. Tweaks Forever’s Windows tab in Edit Mode can move, scale and reset either mode; switching modes waits until combat ends.
+- **Match hover to the card.** Clickable cards highlight their own border, following its shape and size instead of drawing an oversized panel-shaped overlay.
+
 ## [0.4.3] - 2026-09-28
 
 - **Avoid the session picker crash.** The No limit control now opens an addon-owned list of session lengths, bypassing the native menu creation path that crashes Forever build 70009. Choose a length, click outside, or press Escape to close it.

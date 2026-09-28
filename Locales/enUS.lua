@@ -438,6 +438,8 @@ ns.L = {
 	STEP_BATTLEMASTER = "Visit the battlemaster in %s",
 	-- After an update (WhatsNew): the version, then WHATS_NEW.
 	UPDATED_TO = "updated to %s. %s",
+	SETTING_FLOAT_WINDOW = "Float window",
+	SETTING_FLOAT_WINDOW_TOOLTIP = "Move the guide independently of other windows. Tweaks Edit Mode also supports it.",
 	SETTING_WHATS_NEW = "Tell me what's new after an update",
 	SETTING_WHATS_NEW_TOOLTIP = "One line in chat the first time you log in after the guide updates.",
 	-- Companion hints (Companions.lua): what another Forever addon would add here, while it isn't loaded.
@@ -452,5 +454,5 @@ ns.L = {
 	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "Avoid the session picker crash. Choose session lengths from the guide’s own selector.",
+	WHATS_NEW = "Open the guide as a normal window. Floating is optional; card hover follows each border.",
 }
