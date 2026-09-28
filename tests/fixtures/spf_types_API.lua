@@ -1,4 +1,4 @@
--- shortest-path-forever 3fcb02b2f6a45a7949942cd2eb3cc209bb0d5c05:types/API.lua
+-- shortest-path-forever e2d0b8e:types/API.lua
 ---@meta
 
 -- Public addon-to-addon interface. Coordinates are uiMapID and normalized 0-1 x/y, not world yards.
@@ -18,6 +18,7 @@
 ---@field x number -- normalized 0-1
 ---@field y number -- normalized 0-1
 ---@field title? string
+---@field tooltip? string -- optional destination detail shown on the stop pin tooltip, never used as the arrow label
 ---@field kind? SPFAPIStopKind -- any other value is ignored and the stop keeps the plain pin
 
 ---@class SPFAPILeg

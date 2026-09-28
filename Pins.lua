@@ -55,6 +55,18 @@ local HUB_QUEST_LINES = 8
 ---@param id integer
 ---@param mark string
 local function QuestLine(tooltip, id, mark)
+	local title, color, group = Pins.QuestLineText(id)
+	GameTooltip_AddColoredLine(
+		tooltip,
+		mark .. title .. (group and GROUP_ICON or ""),
+		CreateColor(color.r, color.g, color.b)
+	)
+end
+
+-- Shared quest title/level logic for AGF tooltips and the optional Shortest Path stop detail.
+---@param id integer
+---@return string title, table color, boolean group
+function Pins.QuestLineText(id)
 	local quest = ns.Data.quests[id]
 	local level = C_QuestLog.GetQuestDifficultyLevel(id)
 	if not level or level <= 0 then
@@ -66,12 +78,34 @@ local function QuestLine(tooltip, id, mark)
 	if known and not title:match("^%[%d+%+?%]") then
 		title = ns.L.QUEST_LEVEL:format(level, title)
 	end
-	local group = quest and (quest.elite or quest.dungeon or quest.raid)
-	GameTooltip_AddColoredLine(
-		tooltip,
-		mark .. title .. (group and GROUP_ICON or ""),
-		CreateColor(color.r, color.g, color.b)
-	)
+	local group = quest and (quest.elite or quest.dungeon or quest.raid) and true or false
+	return title, color, group
+end
+
+local function ColorTitle(title, color)
+	return CreateColor(color.r, color.g, color.b):WrapTextInColorCode(title)
+end
+
+---@param step AGFStep|AGFGiver
+---@return string?
+function Pins.StopTooltip(step)
+	local lines = {}
+	for _, id in ipairs(step.quests or {}) do
+		local title, color = Pins.QuestLineText(id)
+		if title ~= "" then
+			lines[#lines + 1] = ColorTitle(title, color)
+			local story = ns.Model.Story(ns.Data, id)
+			if story and story.total then
+				lines[#lines + 1] = ns.L.CHAPTER_OF:format(story.chapter, story.total)
+				local nextID = story.members[story.chapter + 1]
+				if nextID then
+					local nextTitle, nextColor = Pins.QuestLineText(nextID)
+					lines[#lines + 1] = ns.L.NEXT:format(ColorTitle(nextTitle, nextColor))
+				end
+			end
+		end
+	end
+	return #lines > 0 and table.concat(lines, "\n") or nil
 end
 
 -- One line per quest at a town, under the NPC it is handed to or taken from, in the town's order (hand-ins first, then

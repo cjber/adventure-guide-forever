@@ -308,6 +308,7 @@
 ---@field y number -- normalized 0-1
 ---@field title? string
 ---@field kind? AGFSPFStopKind -- a Shortest Path before kinds ignores it
+---@field tooltip? string optional quest level/chain detail for the stop tooltip
 
 ---@class AGFSPFLeg
 ---@field mode AGFSPFMode
@@ -454,6 +455,7 @@
 ---@field READY_TO_HAND_IN string
 ---@field OPENS_CHAPTER_HERE string
 ---@field QUESTS_IN_PROGRESS string
+---@field TRACKER_QUEST string
 ---@field QUESTS_HERE string format: quest count
 ---@field PICK_UP string format: place name
 ---@field HUB_HAND_IN string format: a town stop's hand-in count

@@ -7,10 +7,15 @@ end
 local function noop() end
 local timers, ready, frames, releases = {}, nil, {}, {}
 local combat = false
+local parent
+local nativeAnchorPoint = "TOPRIGHT"
 local function frame()
 	local f = { width = 250, height = 0, scripts = {} }
 	function f:SetPoint(...)
 		self.point = { ... }
+	end
+	function f:GetPoint()
+		return nativeAnchorPoint, parent, nativeAnchorPoint, 0, -100
 	end
 	function f:SetWidth(value)
 		self.width = value
@@ -24,6 +29,12 @@ local function frame()
 	function f:GetHeight()
 		return self.height
 	end
+	function f:GetEffectiveScale()
+		return self.effectiveScale or 1
+	end
+	function f:SetScale(value)
+		self.scale = value
+	end
 	function f.GetTop(_self)
 		return 640
 	end
@@ -33,14 +44,17 @@ local function frame()
 	function f:HookScript(event, fn)
 		self.scripts[event] = fn
 	end
-	function f:SetParent(parent)
-		self.parent = parent
+	function f:SetParent(owner)
+		self.parent = owner
 	end
 	f.ClearAllPoints, f.RegisterEvent, f.Show, f.Hide = noop, noop, noop, noop
 	frames[#frames + 1] = f
 	return f
 end
-local native, parent = frame(), frame()
+local native = frame()
+parent = frame()
+parent:SetHeight(1080)
+native.effectiveScale, parent.effectiveScale = 1.25, 1
 local ns = {}
 local forbidden = setmetatable({}, {
 	__index = function(_, key)
@@ -173,6 +187,14 @@ end
 drain()
 check(first.point[5] == 0 and second.point[5] == -90, "sections follow uiOrder")
 check(second.available == 510, "remaining space follows screen geometry")
+check(
+	native.point[1] == "TOPRIGHT" and native.point[2] == host and native.point[3] == "BOTTOMRIGHT",
+	"native objectives follow private sections"
+)
+check(
+	native.point[1] == "TOPRIGHT" and native.point[2] == host and native.point[3] == "BOTTOMRIGHT",
+	"native objectives follow private sections"
+)
 check(ns.TrackerHost.IsAttached(first) and not ns.TrackerHost.IsAttached(nil), "ownership lookup")
 ns.TrackerHost.Attach(first)
 host:MarkDirty()
@@ -188,6 +210,23 @@ combat = false
 host.scripts.OnEvent(host, "PLAYER_REGEN_ENABLED")
 drain()
 check(first.updates == 3, "leaving combat flushes deferred changes")
+native:SetHeight(900)
+host:MarkDirty()
+drain()
+check(host.point[5] > -100, "combined column shifts into the visible screen")
+native:SetHeight(2000)
+host:MarkDirty()
+drain()
+check(host.point[5] <= 316, "oversized column keeps its header on screen")
+check(host.scale == 1.25, "companion matches native effective scale")
+nativeAnchorPoint = "BOTTOMRIGHT"
+host:MarkDirty()
+drain()
+check(native.point[1] == "TOPRIGHT" and native.point[3] == "BOTTOMRIGHT", "bottom anchor still stacks objectives below")
+nativeAnchorPoint = "CENTER"
+host:MarkDirty()
+drain()
+check(native.point[1] == "TOP" and native.point[3] == "BOTTOM", "center anchor uses centered top stack")
 local block = first:AcquireFrame("Block")
 block.parentModule = first
 local line = block:GetLine(1)

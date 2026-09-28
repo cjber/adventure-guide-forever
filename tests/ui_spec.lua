@@ -3890,4 +3890,49 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label .. ": turned on")
 end
 
+-- Stop tooltips retain quest difficulty styling and all quests represented by a merged stop.
+do
+	local h = Load(false)
+	local tooltip = h.ns.Pins.StopTooltip({ quests = { 8, 590 } })
+	equal(type(tooltip), "string", "stop tooltip: merged quests produce text")
+	equal(tooltip:find("|cff", 1, true) ~= nil, true, "stop tooltip: difficulty color escape")
+	equal(tooltip:find("A Rogue's Deal", 1, true) ~= nil, true, "stop tooltip: first quest title")
+	equal(tooltip:find("\n", 1, true) ~= nil, true, "stop tooltip: merged quest separator")
+	local plain = h.ns.Pins.StopTooltip({ quests = { 999999 } })
+	equal(plain, nil, "stop tooltip: unknown quest has no invented level")
+	local ns = h.ns
+	-- Separate data tables keep the real chain index cache valid between scenarios.
+	ns.Data = {
+		quests = {
+			[900001] = { title = "First chain", level = 2, next = 900002 },
+			[900002] = { title = "Harder successor", level = 20, pre = { 900001 } },
+			[900003] = { title = "Second chain", level = 3, next = 900004 },
+			[900004] = { title = "Second successor", level = 4, pre = { 900003 } },
+			[900005] = { title = "Unknown level", level = 0 },
+		},
+	}
+	local details = ns.Pins.StopTooltip({ quests = { 900001, 900003, 900005 } })
+	equal(details:find("[2] First chain", 1, true) ~= nil, true, "stop context: first known level")
+	equal(details:find("[20] Harder successor", 1, true) ~= nil, true, "stop context: successor has own level")
+	equal(details:find("Next: |cff", 1, true) ~= nil, true, "stop context: successor difficulty color")
+	equal(details:find("Second successor", 1, true) ~= nil, true, "stop context: every quest carries chain context")
+	local _, chapters = details:gsub("Chapter 1 of 2", "")
+	equal(chapters, 2, "stop context: both proven chapters")
+	equal(details:find("[0]", 1, true), nil, "stop context: unknown level omitted")
+	local final = ns.Pins.StopTooltip({ quests = { 900002 } })
+	equal(final:find("Chapter 2 of 2", 1, true) ~= nil, true, "stop context: final chapter")
+	equal(final:find("Next:", 1, true), nil, "stop context: final chapter has no successor")
+	ns.Data = {
+		quests = {
+			[900001] = { title = "Unproven chain", level = 2, next = 900002 },
+			[900002] = { title = "Ambiguous successor", level = 3, preAny = { 900001, 900003 } },
+			[900003] = { title = "Other predecessor", level = 2, next = 900002 },
+		},
+	}
+	local uncertain = ns.Pins.StopTooltip({ quests = { 900001, 900002 } })
+	equal(uncertain:find("Chapter", 1, true), nil, "stop context: no unproven chapter claim")
+	equal(uncertain:find("Next:", 1, true), nil, "stop context: no ambiguous successor claim")
+	clean(h, "stop tooltip context")
+end
+
 print(("ui_spec: %d checks passed"):format(checks))
