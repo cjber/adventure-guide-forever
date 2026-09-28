@@ -162,6 +162,10 @@ local function build(parent)
 	view.art:SetPoint("BOTTOMRIGHT", -8, 8)
 	view.legendCard = Window.CreateCard(view.panel, false)
 	view.legendCard:EnableMouse(false)
+	-- The legend is live text above the card fill; the card's decorative cover
+	-- would otherwise darken it because the scroll child is below that cover.
+	view.legendCard.Shade:Hide()
+	view.legendCard.Fade:Hide()
 	view.legendCard:SetPoint("TOPLEFT", 382, -46)
 	view.legendCard:SetPoint("RIGHT", -12, 0)
 	view.legendCard:SetHeight(360)

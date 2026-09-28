@@ -87,6 +87,8 @@ equal(panel:IsVisible(), true, "Maps tab opens interior panel")
 local view = assert(panel.DungeonMapView, "map view is exposed for its parent")
 equal(view.mapCard.Shade:IsShown(), false, "map artwork retains provider brightness")
 equal(view.mapCard.Fade:IsShown(), false, "map artwork has no decorative gradient")
+equal(view.legendCard.Shade:IsShown(), false, "legend text is not darkened by the card shade")
+equal(view.legendCard.Fade:IsShown(), false, "legend text has no decorative fade")
 local firstRow = view.rows[1]
 equal(view.scroll:IsShown(), true, "short legends keep their viewport visible")
 equal(view.scroll.mouseWheelEnabled, false, "short legends do not enable scrolling")
