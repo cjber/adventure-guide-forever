@@ -82,12 +82,6 @@ end
 
 local views = setmetatable({}, { __mode = "k" })
 
-local function ReadableLegendLine(line)
-	-- Atlas uses semantic colors, including near-black encounter labels. Keep
-	-- the markup structure while guaranteeing enough contrast on our dark card.
-	return line:gsub("|c%x%x%x%x%x%x%x%x", "|cffffffff")
-end
-
 local function draw(view)
 	local map = view.maps[view.selected]
 	view.heading:SetText(map and map.title or L.DUNGEON_MAPS_TAB)
@@ -120,7 +114,7 @@ local function draw(view)
 		row:SetWidth(view.legendWidth - 24)
 		row:SetJustifyH("LEFT")
 		row:SetWordWrap(true)
-		row:SetText(ReadableLegendLine(line))
+		row:SetText(line)
 		row:Show()
 		y = y + math.max(20, row:GetStringHeight() + 5)
 	end
@@ -161,6 +155,7 @@ local function build(parent)
 	view.mapCard:EnableMouse(false)
 	view.mapCard.Shade:Hide()
 	view.mapCard.Fade:Hide()
+	view.mapCard.Rim[5]:Hide()
 	view.mapCard:SetPoint("TOPLEFT", 12, -46)
 	Window.SizeCard(view.mapCard, 360, 360, 0.25)
 	view.art = view.mapCard:CreateTexture(nil, "ARTWORK")
@@ -172,6 +167,7 @@ local function build(parent)
 	-- would otherwise darken it because the scroll child is below that cover.
 	view.legendCard.Shade:Hide()
 	view.legendCard.Fade:Hide()
+	view.legendCard.Rim[5]:Hide()
 	view.legendCard:SetPoint("TOPLEFT", 382, -46)
 	view.legendCard:SetPoint("RIGHT", -12, 0)
 	view.legendCard:SetHeight(360)
