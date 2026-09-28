@@ -12,7 +12,7 @@
 ## SavedVariables: AdventureGuideForeverDB
 ## SavedVariablesPerCharacter: AdventureGuideForeverCharDB
 ## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick
-## OptionalDeps: AtlasLootClassic, AtlasLootClassic_DungeonsAndRaids, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever
+## OptionalDeps: Atlas, Atlas_ClassicWoW, AtlasLootClassic, AtlasLootClassic_DungeonsAndRaids, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever
 
 Locales\enUS.lua
 Data\Quests.lua
@@ -48,9 +48,12 @@ ZoneIcon.lua
 Panel.lua
 Window.lua
 WindowJourneys.lua
+WindowGuide.lua
 WindowProfessions.lua
 WindowPvP.lua
 WindowCompletion.lua
+WindowDungeonMaps.lua
+WorldDungeonMaps.lua
 WindowDungeons.lua
 TrackerHost.lua
 Tracker.lua

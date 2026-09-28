@@ -988,6 +988,16 @@ local function BuildContents(parent)
 		end)
 		subTabs[index] = tab
 	end
+	local mapsButton = CreateFrame("Button", nil, content, "TabSystemTopButtonTemplate") --[[@as AGFTopTab]]
+	mapsButton:SetText(L.DUNGEON_MAPS_TAB)
+	mapsButton:SetSize(78, 32)
+	mapsButton:HandleRotation()
+	mapsButton:SetPoint("BOTTOMLEFT", body, "TOPLEFT", 8 + 4 * 82, 0)
+	mapsButton:SetScript("OnClick", function()
+		if page then
+			Window.OpenDungeonMaps(page.dungeon.id, content)
+		end
+	end)
 	note = Text(content, "", RIGHT_X + 8, BODY_Y + BODY_H + 2, PAGE_W - 16, "GameFontDisableSmall")
 	quests = List(content, RIGHT_X, BODY_Y, QUEST_W, BODY_H, 38, PaintQuest, function(value)
 		SelectQuest(value.quest.id)
