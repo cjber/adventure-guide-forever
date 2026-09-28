@@ -40,7 +40,7 @@ for id, instance in pairs(ns.Data.instances) do
 		local maps = ns.Window.DungeonMaps(id)
 		equal(#maps, 1, "map for instance " .. id)
 		equal(maps[1].texture, "Interface\\AddOns\\Atlas_ClassicWoW\\Images\\" .. key, "provider artwork path")
-equal(maps[1].legend, "|cffffffff1) Boss|r", "provider legend markup retained")
+		equal(maps[1].legend, "|cffffffff1) Boss|r", "provider legend markup retained")
 		count = count + 1
 	end
 end
