@@ -41,11 +41,6 @@ local ENTITIES = {
 ---@type AGFQuestieStatus
 local status = { state = "unavailable" }
 ns.QuestieStatus = status
-local dungeonSourceCache, dungeonSourceLib, dungeonSourceData
-
-local function ClearDungeonSourceCache()
-	dungeonSourceCache, dungeonSourceLib, dungeonSourceData = nil, nil, nil
-end
 
 -- One of ZoneDB's tables, which QuestieDB keeps as Lua source: run with no globals, since it is only a table literal.
 ---@param source any
@@ -392,7 +387,6 @@ EventUtil.ContinueAfterAllEvents(function()
 		Questie.API.RegisterOnReady(Start)
 		if Questie.API.RegisterForQuestUpdates then
 			Questie.API.RegisterForQuestUpdates(function()
-				ClearDungeonSourceCache()
 				ns.Invalidate()
 			end)
 		end
@@ -421,11 +415,6 @@ function ns.ReadDungeonSource(yield)
 	local lib, _, zones = Fit()
 	if not lib or not zones then
 		return nil
-	end
-	-- The source is a read-only snapshot of QuestieDB plus the published AGF data. Reusing it avoids copying every
-	-- NPC and item again when the player changes dungeon tabs; a new provider identity or AGF snapshot invalidates it.
-	if dungeonSourceCache and dungeonSourceLib == lib and dungeonSourceData == ns.Data then
-		return dungeonSourceCache
 	end
 	local fields = {
 		Npc = { "name", "rank", "spawns", "minLevel", "maxLevel" },
@@ -567,6 +556,5 @@ function ns.ReadDungeonSource(yield)
 			yield()
 		end
 	end
-	dungeonSourceCache, dungeonSourceLib, dungeonSourceData = result, lib, ns.Data
 	return result
 end

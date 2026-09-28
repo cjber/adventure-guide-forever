@@ -74,30 +74,6 @@ equal(q.obj[1][5], 1429, "provider objective map")
 equal(q.obj[1][2], 500, "provider spawn")
 equal(h.ns.Data.quests[900002].need[4], 3, "item count")
 equal(h.ns.Data.quests[900002].obj[1][2], 500, "item drop location")
-local dungeonSource = h.ns.ReadDungeonSource(function() end)
-equal(h.ns.ReadDungeonSource(function() end), dungeonSource, "dungeon source reuses an unchanged snapshot")
-local update
-local watched = harness.load({
-	questiedb = Fake(),
-	setup = function(h2)
-		h2.G.Questie = {
-			API = {
-				isReady = true,
-				RegisterOnReady = function(fn)
-					fn()
-				end,
-				RegisterForQuestUpdates = function(fn)
-					update = fn
-				end,
-			},
-		}
-	end,
-})
-local beforeUpdate = watched.ns.ReadDungeonSource(function() end)
-assert(update, "Questie update callback registered")
-update()
-local afterUpdate = watched.ns.ReadDungeonSource(function() end)
-equal(afterUpdate == beforeUpdate, false, "Questie updates invalidate the dungeon source")
 local player = h.ns.State.Player()
 player.level = 20
 local Model = h.ns.Model
