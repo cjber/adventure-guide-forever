@@ -381,23 +381,59 @@ do
 	h.spfSeconds = 1480
 	local L = h.ns.L
 	local window = Open(h)
-	local picker = Visible(h, window, function(frame)
-		return frame.stockTemplate == "WowStyle1DropdownTemplate"
-	end)[1]
-	equal(picker ~= nil, true, "session: a stock dropdown")
-	equal(picker.Text:GetText(), L.SESSION_UNLIMITED, "session: No limit to start")
-	h.OpenMenu(picker)
-	same(h.MenuLines(), {
-		"title: " .. L.SESSION_LABEL,
-		"radio: " .. L.SESSION_UNLIMITED,
-		"radio: " .. L.SESSION_MINUTES:format(15),
-		"radio: " .. L.SESSION_MINUTES:format(30),
-		"radio: " .. L.SESSION_MINUTES:format(60),
-	}, "session: its lengths")
-	h.menu.entries[4].onClick()
+	local popup = h.G.AdventureGuideForeverSessionPicker
+	local picker = popup:GetParent()
+	equal(picker:GetObjectType(), "Button", "session: addon-owned button")
+	equal(picker:GetText(), L.SESSION_UNLIMITED, "session: No limit to start")
+	-- Opening must not call Blizzard_Menu: build 70009 asserts inside its native pool.
+	h.G.MenuUtil.CreateContextMenu = function()
+		error("session picker used native menu manager")
+	end
+	equal(popup:IsShown(), false, "session: choices initially hidden")
+	h.Click(picker)
+	equal(popup:IsShown(), true, "session: click opens choices")
+	local choices = Visible(h, popup, function(frame)
+		return frame:GetObjectType() == "Button"
+	end)
+	equal(#choices, 4, "session: all four lengths offered")
+	local labels = {}
+	for index, choice in ipairs(choices) do
+		labels[index] = choice:GetText()
+	end
+	local expectedLabels = {
+		L.SESSION_UNLIMITED,
+		L.SESSION_MINUTES:format(15),
+		L.SESSION_MINUTES:format(30),
+		L.SESSION_MINUTES:format(60),
+	}
+	same(labels, expectedLabels, "session: offered lengths")
+	local escaped = false
+	for _, name in ipairs(h.G.UISpecialFrames) do
+		escaped = escaped or h.G[name] == popup
+	end
+	equal(escaped, true, "session: selector registered for Escape")
+	equal(choices[1]:IsEnabled(), false, "session: current choice marked")
+	h.Click(choices[3])
+	equal(popup:IsShown(), false, "session: choice closes selector")
+	h.Click(picker)
+	equal(choices[3]:IsEnabled(), false, "session: new selection marked on reopen")
+	popup.mouseOver = true
+	h.fire("GLOBAL_MOUSE_DOWN", "LeftButton")
+	equal(popup:IsShown(), true, "session: choice press stays open until click")
+	popup.mouseOver = false
+	h.fire("GLOBAL_MOUSE_DOWN", "LeftButton")
+	equal(popup:IsShown(), false, "session: outside press dismisses")
+	h.Click(picker)
+	h.Click(picker)
+	equal(popup:IsShown(), false, "session: clicking picker again closes")
+	h.Click(picker)
+	window:Hide()
+	equal(popup:IsShown(), false, "session: closing guide dismisses selector")
+	window:Show()
+	equal(popup:IsShown(), false, "session: selector stays closed when guide reopens")
 	equal(h.ns.Session.Get(), 30, "session: a pick persists it")
 	Redraw(h)
-	equal(picker.Text:GetText(), L.SESSION_MINUTES:format(30), "session: the pick shows")
+	equal(picker:GetText(), L.SESSION_MINUTES:format(30), "session: the pick shows")
 	equal(h.ns.Session.Info().seconds, 1490, "session: real travel and work estimate")
 	equal(Texts(h)[L.SESSION_ABOUT:format(25)], 1, "session: About 25 min")
 	h.combat = true

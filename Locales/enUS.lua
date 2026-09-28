@@ -452,5 +452,5 @@ ns.L = {
 	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "Keep new quest turn-ins on the route. Follow the game’s map markers with brighter gold stops.",
+	WHATS_NEW = "Avoid the session picker crash. Choose session lengths from the guide’s own selector.",
 }

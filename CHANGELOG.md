@@ -11,6 +11,10 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-09-28
+
+- **Avoid the session picker crash.** The No limit control now opens an addon-owned list of session lengths, bypassing the native menu creation path that crashes Forever build 70009. Choose a length, click outside, or press Escape to close it.
+
 ## [0.4.2] - 2026-09-28
 
 - **Keep new quest turn-ins on the route.** Completed quests use the game's map marker when no next waypoint or QuestieDB record exists, including Dawn in the Mountains. Standalone turn-in tooltips show the known level and difficulty colour.
