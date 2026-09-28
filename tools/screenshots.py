@@ -1177,19 +1177,19 @@ def stop_groups(rects, stops):
 
 
 def goal_pins(canvas, stops, marks):
-    """SPF StopPin.lua and Map.xml: blue-tinted stock quest disc, numeral and action badge.
-    Later foreground art fades to 0.55 over an opaque black silhouette."""
+    """SPF StopPin.lua and Map.xml: warm gold stock quest disc, numeral and action badge.
+    Later foreground art fades to 0.9 over an opaque black silhouette."""
     ui = canvas.ui
     button = ui.atlas("UI-QuestPoi-QuestNumber")
     numerals = ui.texture("interface/worldmap/ui-questpoi-numbericons.blp")
     for cx, cy, group in marks:
-        number, alpha = group[0] + 1, 0.55 if group[0] else 1
+        number, alpha = group[0] + 1, 0.9 if group[0] else 1
         canvas.draw(button, cx - 16, cy - 16, 32, 32, (0, 0, 0, 1))
-        canvas.draw(button.image.convert("LA").convert("RGBA"), cx - 16, cy - 16, 32, 32, (0.6, 0.85, 1, alpha))
+        canvas.draw(button, cx - 16, cy - 16, 32, 32, (1, 0.9, 0.7, alpha))
         if number <= 25:
             left, top = (number - 1) % 8 * 0.125, 0.5 + (number - 1) // 8 * 0.125
             numeral = wm.crop_coords(numerals, left, left + 0.125, top, top + 0.125)
-            canvas.draw(numeral.convert("LA").convert("RGBA"), cx - 16, cy - 16, 32, 32, (0.6, 0.85, 1, alpha))
+            canvas.draw(numeral, cx - 16, cy - 16, 32, 32, (1, 0.9, 0.7, alpha))
         else:
             draw_font_string(canvas, {"text": str(number), "font": "GameFontNormal"}, (cx - 16, cy - 16, 32, 32), alpha)
         kind = stops[group[0]].get("kind")

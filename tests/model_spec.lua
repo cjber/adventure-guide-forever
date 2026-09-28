@@ -608,6 +608,38 @@ equal(#Model.Plan(withFinish, player, {}, unknown, prefs()).steps, 0, "starter n
 unknown[103].complete = true
 equal(Model.Plan(withFinish, player, {}, unknown, prefs()).steps[1].x, 0.6, "bundled turn-in fallback")
 
+-- Dawn in the Mountains (99158): the live client has a ready quest and map POI, but no
+-- next waypoint or QuestieDB record. It must still join its zone's route.
+do
+	local live = {
+		[99158] = {
+			id = 99158,
+			title = "Dawn in the Mountains",
+			level = 8,
+			complete = true,
+			poi = { map = 1, x = 0.577, y = 0.449 },
+		},
+	}
+	local function TurnIn()
+		local liveRoute = Model.Plan(data, player, {}, live, prefs())
+		for _, journey in ipairs(liveRoute.journeys) do
+			for _, step in ipairs(journey.steps) do
+				if step.key == "turnin:99158" then
+					return step
+				end
+			end
+		end
+	end
+	local step = TurnIn()
+	equal(step and step.x, 0.577, "new completed quest uses client map POI without a database record")
+	equal(step and step.title, "Turn in: Dawn in the Mountains", "new completed quest keeps its client title")
+	live[99158].map, live[99158].x, live[99158].y = 1, 0.65, 0.5
+	equal(TurnIn().x, 0.65, "explicit next waypoint still wins over map POI")
+	live[99158].map, live[99158].x, live[99158].y = nil, nil, nil
+	live[99158].poi.x = -1
+	equal(TurnIn(), nil, "invalid POI never becomes a route destination")
+end
+
 -- A quest under way (the live client gives it no waypoint) is done at the data's area for each open objective: the
 -- client's objectives fill the data's need slots by type, kills and uses 0-3, collects 4-7, explores 16, each kind in
 -- order, trusted only when the counts agree. The client's point for the quest stands in when they don't, or the data

@@ -11,6 +11,11 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-09-28
+
+- **Keep new quest turn-ins on the route.** Completed quests use the game's map marker when no next waypoint or QuestieDB record exists, including Dawn in the Mountains. Standalone turn-in tooltips show the known level and difficulty colour.
+- **Make route stops easier to read.** Warm gold rings replace the dim blue tint, and later stops keep their contrast and quest-action badges.
+
 ## [0.4.1] - 2026-09-28
 
 - **Separate addon tracking from Blizzard’s layout.** Addon sections now use their own frame pools and sit beside the quest tracker, avoiding the shared tracker registration implicated in Edit Mode aura errors.
