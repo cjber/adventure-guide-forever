@@ -455,6 +455,7 @@
 ---@field READY_TO_HAND_IN string
 ---@field OPENS_CHAPTER_HERE string
 ---@field QUESTS_IN_PROGRESS string
+---@field TRACKER_QUEST string
 ---@field QUESTS_HERE string format: quest count
 ---@field PICK_UP string format: place name
 ---@field HUB_HAND_IN string format: a town stop's hand-in count

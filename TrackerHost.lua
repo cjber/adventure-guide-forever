@@ -21,7 +21,41 @@ if ForeverTrackerHost then
 end
 
 local host = CreateFrame("Frame", "ForeverTrackerCompanion", UIParent)
-host:SetPoint("TOPRIGHT", ObjectiveTrackerFrame, "TOPLEFT", -12, 0)
+-- Preserve Blizzard's edit-mode placement for the combined column. The
+-- private host takes the native frame's original slot; the native frame is
+-- placed below it after the private content has laid out. This keeps every
+-- section in one column without registering our frames with Blizzard's
+-- secure module collection.
+local nativeAnchor
+local function StackPoints(point)
+	if point == "CENTER" or point == "TOP" or point == "BOTTOM" then
+		return "TOP", "BOTTOM"
+	end
+	local horizontal = point:find("RIGHT", 1, true) and "RIGHT" or "LEFT"
+	return "TOP" .. horizontal, "BOTTOM" .. horizontal
+end
+local function CaptureNativeAnchor()
+	local point, relativeTo, relativePoint, x, y = ObjectiveTrackerFrame:GetPoint()
+	if nativeAnchor and relativeTo == host then
+		return
+	end
+	nativeAnchor = {
+		point = point or "TOPRIGHT",
+		relativeTo = relativeTo or UIParent,
+		relativePoint = relativePoint or "TOPRIGHT",
+		x = x or 0,
+		y = y or 0,
+	}
+end
+host:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", 0, 0)
+local function MatchNativeScale()
+	local parentScale = UIParent.GetEffectiveScale and UIParent:GetEffectiveScale()
+	local nativeScale = ObjectiveTrackerFrame.GetEffectiveScale and ObjectiveTrackerFrame:GetEffectiveScale()
+	if parentScale and nativeScale and parentScale > 0 then
+		host:SetScale(nativeScale / parentScale)
+	end
+end
+MatchNativeScale()
 host:SetWidth(ObjectiveTrackerFrame:GetWidth())
 host:SetHeight(1)
 local modules, queued, ready = {}, false, false
@@ -132,8 +166,23 @@ local function Layout()
 	table.sort(modules, function(a, b)
 		return a.uiOrder < b.uiOrder
 	end)
-	local available = math.max(0, (host:GetTop() or UIParent:GetHeight()) - 40)
+	-- The native frame may only receive its final Edit Mode anchor after the
+	-- player and saved variables are ready. Capture it before our first reflow.
+	CaptureNativeAnchor()
 	local width = ObjectiveTrackerFrame:GetWidth()
+	MatchNativeScale()
+	host:ClearAllPoints()
+	host:SetPoint(
+		nativeAnchor.point,
+		nativeAnchor.relativeTo,
+		nativeAnchor.relativePoint,
+		nativeAnchor.x,
+		nativeAnchor.y
+	)
+	local layoutScale = host.GetEffectiveScale and host:GetEffectiveScale() or 1
+	local layoutScreenScale = UIParent.GetEffectiveScale and UIParent:GetEffectiveScale() or layoutScale
+	local layoutMargin = 40 * layoutScreenScale / layoutScale
+	local available = math.max(0, (host:GetTop() or UIParent:GetHeight()) - layoutMargin)
 	host:SetWidth(width)
 	local height = 0
 	for _, module in ipairs(modules) do
@@ -147,6 +196,40 @@ local function Layout()
 		end
 	end
 	host:SetHeight(math.max(1, height))
+	-- If the combined column would run below the screen, move the whole
+	-- column upward from its saved edit-mode slot.  The offset is calculated
+	-- from the original point each pass, so repeated refreshes never drift.
+	local shift = 0
+	host:ClearAllPoints()
+	host:SetPoint(
+		nativeAnchor.point,
+		nativeAnchor.relativeTo,
+		nativeAnchor.relativePoint,
+		nativeAnchor.x,
+		nativeAnchor.y
+	)
+	local screenHeight = UIParent:GetHeight()
+	local top = host:GetTop()
+	local nativeHeight = ObjectiveTrackerFrame:GetHeight() or 0
+	local scale = host.GetEffectiveScale and host:GetEffectiveScale() or 1
+	local screenScale = UIParent.GetEffectiveScale and UIParent:GetEffectiveScale() or scale
+	local margin = 24 * screenScale / scale
+	local screen = screenHeight and screenHeight * screenScale / scale
+	if screen and top and top - host:GetHeight() - nativeHeight < margin then
+		shift = margin - (top - host:GetHeight() - nativeHeight)
+		shift = math.min(shift, math.max(0, screen - margin - top))
+	end
+	host:ClearAllPoints()
+	host:SetPoint(
+		nativeAnchor.point,
+		nativeAnchor.relativeTo,
+		nativeAnchor.relativePoint,
+		nativeAnchor.x,
+		nativeAnchor.y + shift
+	)
+	ObjectiveTrackerFrame:ClearAllPoints()
+	local stackPoint, stackRelativePoint = StackPoints(nativeAnchor.point)
+	ObjectiveTrackerFrame:SetPoint(stackPoint, host, stackRelativePoint, 0, 0)
 end
 function host.MarkDirty(_)
 	if ready and not queued then
