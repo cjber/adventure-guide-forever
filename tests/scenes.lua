@@ -228,6 +228,12 @@ h = Load("v1", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, {
 	talents = 1,
 })
 out.window = Window(h, "window")
+local hoverCards = h.Find(function(frame)
+	return frame:IsVisible() and frame.journey and frame.Highlight
+end)
+assert(hoverCards[1], "journey hover card")
+hoverCards[1]:GetScript("OnEnter")(hoverCards[1])
+out.window.layout = h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)
 
 -- The Professions tab, SkillUp Forever loaded: the leatherworker's card, steps and reagents, the picker for two;
 -- the same asides above.

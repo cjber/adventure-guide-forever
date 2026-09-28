@@ -146,6 +146,27 @@ local worstRebuild, worstTravel, worstSlice, worstSession, profiles = 0, 0, 0, 0
 
 -- QuestieDB's build (QuestieSource.lua) on the real clock: each frame's slice, timed as the timer that runs it.
 local function Slices(h)
+	-- The synthetic provider mirrors this fixture; its policy uses the same character gates.
+	local policy = {}
+	h.G.Questie = { API = {
+		isReady = true,
+		RegisterOnReady = function(fn)
+			fn()
+		end,
+	} }
+	h.G.QuestieLoader = {
+		ImportModule = function()
+			return {
+				IsDoable = function(id)
+					if policy[id] == nil then
+						policy[id] =
+							h.ns.Model.Eligible(data, h.ns.State.Player(), h.ns.State.Completed(), h.ns.State.Log(), id)
+					end
+					return policy[id]
+				end,
+			}
+		end,
+	}
 	h.G.debugprofilestop = function()
 		return os.clock() * 1000
 	end

@@ -13,10 +13,13 @@ ns.L = {
 	AUDIT_COUNTS = "%d quests in the data, %d eligible now, %d completed known",
 	AUDIT_NOT_READY = "completed-quest data hasn't finished loading yet; the counts above may be low.",
 	-- Where the quests come from (QuestieSource.lua): QuestieDB when it is loaded and fit, the bundled data otherwise.
-	AUDIT_SOURCE_BUNDLED = "quests from the bundled data",
+	AUDIT_SOURCE_BUNDLED = "Quest data unavailable. Enable QuestieDB; enable Questie for pickup recommendations.",
 	AUDIT_SOURCE_QUESTIE = "quests from QuestieDB %s",
-	AUDIT_QUESTIE_BUILDING = "QuestieDB's quests are still loading; the bundled ones serve until then.",
+	AUDIT_QUESTIE_BUILDING = "QuestieDB's quests are still loading.",
 	AUDIT_QUESTIE_UNUSED = "QuestieDB isn't used: %s.",
+	WHY_PROVIDER = "Questie must be ready and confirm this quest is available.",
+	QUESTIE_ENABLE = "Enable QuestieDB to load quest data.",
+	QUESTIE_POLICY = "Enable Questie for available quest recommendations.",
 	QUESTIE_ABSENT = "it isn't loaded",
 	QUESTIE_CONTRACT = "its version isn't one the guide can read",
 	QUESTIE_FLAVOUR = "it isn't the WoW: Forever edition",
@@ -338,6 +341,8 @@ ns.L = {
 	DUNGEON_START_JOURNEY = "Start journey",
 	DUNGEON_OPEN_PAGE = "Dungeon guide",
 	DUNGEON_BOSS = "Boss",
+	DUNGEON_BOSS_LOOT = "View loot (%d)",
+	DUNGEON_BOSS_LOOT_UNKNOWN = "No loot recorded",
 	DUNGEON_ENEMY_LEVELS = "Levels %d–%d",
 	DUNGEON_RARE_ELITE = "Rare elite",
 	DUNGEON_ELITE = "Elite",
@@ -447,5 +452,5 @@ ns.L = {
 	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "Clickable cards light up on hover. Completion zones and journey cards are easier to spot and select.",
+	WHATS_NEW = "The full QuestieDB catalogue. Gold card hover and boss difficulty with loot links.",
 }

@@ -2330,7 +2330,17 @@ function harness.load(options)
 			if path:match("%.xml$") then
 				LoadXML(path)
 			else
-				local chunk = assert(loadfile(path))
+				-- UI/model specs use the bundled data as a deterministic fixture. Source integration specs
+				-- explicitly supply questiedb (false tests absence) and exercise the production adapter.
+				local chunk = path == "QuestieSource.lua"
+						and options.questiedb == nil
+						and function(_, ns)
+							ns.QuestieStatus = { state = "unavailable" }
+							ns.ReadDungeonSource = function()
+								return nil
+							end
+						end
+					or assert(loadfile(path))
 				setfenv(chunk, G)
 				h.call(chunk, ADDON, h.ns)
 			end

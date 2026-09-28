@@ -978,6 +978,26 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label .. ": idle")
 end
 
+-- Background markers have exactly one owner; route rings remain separate.
+do
+	local h = Load(false, PINS_ON)
+	h.G.OpenQuestLog()
+	h.flush()
+	h.map:SetMapID(1442)
+	equal(#h.pins.AdventureGuideForeverGiverPinTemplate > 0, true, "standalone giver baseline")
+	h.installed.Questie = true
+	h.providers[1]:RefreshAllData()
+	equal(#h.pins.AdventureGuideForeverGiverPinTemplate > 0, true, "disabled Questie does not claim markers")
+	h.metadata.Questie = { Version = "test" }
+	h.providers[1]:RefreshAllData()
+	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, 0, "loaded Questie owns background markers")
+	h.G.Questie = { db = { profile = { enabled = false } } }
+	h.providers[1]:RefreshAllData()
+	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, 0, "Questie hide toggle cannot reveal duplicates")
+	h.map:SetMapID(1413)
+	equal(#h.pins.AdventureGuideForeverPinTemplate > 0, true, "route markers remain with Questie")
+end
+
 -- Map pins: a refresh replaces, never adds; removal leaves none; the tooltips read as design §2.9 and the tracker
 -- menu as §2.8.
 for _, spf in ipairs({ false, "v1" }) do

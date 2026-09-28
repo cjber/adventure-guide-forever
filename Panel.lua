@@ -1114,7 +1114,10 @@ local function LayoutJourneys(route)
 	-- Honest coverage: quests here the data lacks, so the cards can't be every story.
 	---@cast unlistedText -?
 	local state = ns.State
-	local unlisted = not searching and ns.Model.Unlisted(ns.Data, state.Player().map, state.Completed(), state.Log())
+	local sourceHint = ns.SourceHint and ns.SourceHint()
+	local unlisted = not searching
+		and (sourceHint ~= nil or ns.Model.Unlisted(ns.Data, state.Player().map, state.Completed(), state.Log()))
+	unlistedText:SetText(sourceHint or L.UNLISTED)
 	unlistedText:SetMaxLines(0)
 	unlistedText:SetShown(unlisted)
 	if unlisted then

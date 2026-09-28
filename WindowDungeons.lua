@@ -394,12 +394,14 @@ local function PaintOther(row, value)
 	row.Info:SetPoint("TOPLEFT", icon and 44 or 8, -21)
 	row.Giver:SetPoint("TOPLEFT", icon and 44 or 8, -35)
 	row.Title:SetText(value.title)
-	row.Title:SetFontObject(value.heading and "GameFontNormal" or "GameFontHighlight")
+	row.Title:SetFontObject((value.heading or value.boss) and "GameFontNormal" or "GameFontHighlight")
 	---@type table<integer, { r: number, g: number, b: number }>
 	local qualityColors = rawget(_G, "ITEM_QUALITY_COLORS")
 	local color = value.item and qualityColors and qualityColors[value.quality]
 	if color then
 		row.Title:SetTextColor(color.r, color.g, color.b)
+	elseif value.boss then
+		row.Title:SetTextColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
 	else
 		row.Title:SetTextColor(1, 1, 1)
 	end
@@ -410,7 +412,7 @@ local function PaintOther(row, value)
 			GameTooltip:SetItemByID(value.item)
 			GameTooltip:Show()
 		else
-			ns.Overview.ShowTooltip(row, { value.title, value.info or "", value.giver or "" })
+			ns.Overview.ShowTooltip(row, { value.title, value.info or "", value.giver or "", value.description or "" })
 		end
 	end)
 	row.Info:SetText(value.info or "")
@@ -658,7 +660,7 @@ function Draw()
 	end
 	quests.frame:SetShown(view == "quests")
 	other.frame:SetShown(view ~= "quests")
-	other.rowHeight = view == "prep" and ROW_H or 44
+	other.rowHeight = (view == "prep" or view == "bosses") and ROW_H or 44
 	subTabs[3]:SetText(L.DUNGEON_BOSSES_TAB)
 	for index, key_ in ipairs({ "quests", "prep", "bosses", "loot" }) do
 		local muted = (key_ == "bosses" and not bosses and not source and not ns.DungeonBosses[dungeon.id])
@@ -702,10 +704,43 @@ function Draw()
 		if view == "loot" and source then
 			rows = Dungeons.LootRows(source, dungeon.id, Dungeons.Bosses(source, dungeon.id, bosses))
 		else
+			local loot = source and Dungeons.LootRows(source, dungeon.id, known or {}) or {}
 			for _, entry in ipairs(known or {}) do
+				local bossMeta = {
+					entry.rank == 1 and L.DUNGEON_ELITE or entry.rank == 2 and L.DUNGEON_RARE_ELITE or L.DUNGEON_BOSS,
+				}
+				if entry.low and entry.low > 0 then
+					local color = GetQuestDifficultyColor(entry.low)
+					local level = entry.high
+							and entry.high > entry.low
+							and L.DUNGEON_ENEMY_LEVELS:format(entry.low, entry.high)
+						or L.DUNGEON_LEVEL:format(entry.low)
+					table.insert(
+						bossMeta,
+						1,
+						("|cff%02x%02x%02x%s|r"):format(color.r * 255, color.g * 255, color.b * 255, level)
+					)
+				end
+				local count, lootIndex = 0, nil
+				for index, item in ipairs(loot) do
+					if item.heading then
+						if lootIndex then
+							break
+						end
+						if item.bossID == entry.id and not entry.journal then
+							lootIndex = index
+						end
+					elseif lootIndex then
+						count = count + 1
+					end
+				end
 				rows[#rows + 1] = {
 					title = entry.name,
-					info = entry.low and entry.low > 0 and L.DUNGEON_LEVEL:format(entry.low) or L.DUNGEON_BOSS,
+					boss = true,
+					lootIndex = lootIndex,
+					info = table.concat(bossMeta, L.SEPARATOR),
+					description = entry.description,
+					giver = count > 0 and L.DUNGEON_BOSS_LOOT:format(count) or L.DUNGEON_BOSS_LOOT_UNKNOWN,
 				}
 			end
 		end
@@ -962,6 +997,15 @@ local function BuildContents(parent)
 			GameTooltip:SetOwner(other.frame, "ANCHOR_RIGHT")
 			GameTooltip:SetItemByID(value.item)
 			GameTooltip:Show()
+		elseif value.boss and value.lootIndex then
+			view = "loot"
+			Draw()
+			other.frame:SetVerticalScroll(
+				math.min(
+					(value.lootIndex - 1) * other.rowHeight,
+					math.max(0, #other.values * other.rowHeight - other.height)
+				)
+			)
 		elseif value.quest then
 			view = "quests"
 			SelectQuest(value.quest.id)

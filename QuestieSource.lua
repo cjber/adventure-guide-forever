@@ -1,28 +1,21 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
---[[ QuestieDB, when it is loaded (docs/design.md §2.14): after login the quests are rebuilt from it a few
-     milliseconds a frame. The bundled data serves until then, and for good when QuestieDB is absent or fails a
-     check. QuestieDB gives each quest its title, levels, races, classes, zone, givers and their spawns,
-     prerequisites, exclusive quests, chain, breadcrumb target and skill and reputation gates. The rest stays
-     bundled: towns, maps, NPC roles, instances, crossings, elite quests, each quest's objectives, their areas, XP and
-     flags, and whatever QuestieDB leaves out (a level, a dungeon, a giver's place, a breadcrumb target). Only the
-     bundled data's quests are read, and a start only where the bundled data has one: its lack is a gate, an event or
-     an event-only giver, none of which QuestieDB says. A start is also withheld whenever QuestieDB names a
-     requirement the planner cannot check. Nothing of Questie's is shipped: this reads the installed addon at
-     runtime. ]]
+-- QuestieDB owns the quest catalogue. Bundled geometry still places maps and transport hubs;
+-- it never limits which quests exist. Questie supplies live availability policy (including events).
 
 local ADDON = "QuestieDB"
 local CONTRACT = 2
 local SLICE_MS = 2
 local LINK = 100 -- yards: a giver this near a bundled town's place stands in that town (tools/gen_quests.py LINK)
--- CMaNGOS quest flags: 1024 and 16384 gate the start (as tools/gen_quests.py), 4096 and 32768 make it repeatable.
-local GATED_FLAGS, REPEATABLE_FLAGS = 1024 + 16384, 4096 + 32768
+-- Daily and weekly quest flags also identify repeatable work.
+local REPEATABLE_FLAGS = 4096 + 32768
 
 local QUEST_FIELDS = {
 	"name",
 	"questLevel",
 	"requiredLevel",
+	"requiredMaxLevel",
 	"requiredRaces",
 	"requiredClasses",
 	"zoneOrSort",
@@ -30,38 +23,23 @@ local QUEST_FIELDS = {
 	"finishedBy",
 	"preQuestGroup",
 	"preQuestSingle",
-	"exclusiveTo",
 	"nextQuestInChain",
 	"breadcrumbForQuestId",
 	"questFlags",
 	"specialFlags",
-	"requiredSkill",
-	"requiredMinRep",
-	"requiredMaxRep",
+	"objectives",
+	"triggerEnd",
 }
--- A start is withheld when any of these is set (requiredMaxLevel: below the cap): the planner has no state for them.
-local GATES = {
-	"parentQuest",
-	"requiredSpell",
-	"requiredSpecialization",
-	"requiredMaxLevel",
-	"availableUntilCompleted",
-	"availableStartingWith",
-	"requiredRanks",
-	"disabledByQuest",
-}
-for _, field in ipairs(GATES) do
-	QUEST_FIELDS[#QUEST_FIELDS + 1] = field
-end
 local GIVER_FIELDS = { "name", "spawns", "zoneID" }
 local ENTITIES = {
 	{ name = "Quest", keys = "questKeys", fields = QUEST_FIELDS },
 	{ name = "Npc", keys = "npcKeys", fields = GIVER_FIELDS },
 	{ name = "Object", keys = "objectKeys", fields = GIVER_FIELDS },
+	{ name = "Item", keys = "itemKeys", fields = { "npcDrops", "objectDrops", "itemDrops" } },
 }
 
 ---@type AGFQuestieStatus
-local status = { state = "bundled" }
+local status = { state = "unavailable" }
 ns.QuestieStatus = status
 
 -- One of ZoneDB's tables, which QuestieDB keeps as Lua source: run with no globals, since it is only a table literal.
@@ -103,8 +81,11 @@ local function Fit()
 			end
 		end
 	end
+	if type(lib.Quest.GetAllIds) ~= "function" then
+		return nil, ns.L.QUESTIE_FIELD:format("Quest.GetAllIds")
+	end
 	local zoneDB = type(lib.Support) == "table" and lib.Support.Get("ZoneDB") or {}
-	local private = zoneDB["private"]
+	local private = zoneDB and zoneDB["private"]
 	if type(private) ~= "table" then
 		return nil, ns.L.QUESTIE_ZONES
 	end
@@ -266,9 +247,8 @@ local function Build(lib, zones, bundled, yield)
 		return giver
 	end
 	-- Where a quest starts or ends among its givers' spawns: in its zone first, then on the giver's usual map, then
-	-- the lowest map, name and point. An item giver has no place. A giver QuestieDB can't
-	-- place keeps the bundled place when the bundled data names the same NPC.
-	local function Place(by, zone, old)
+	-- the lowest map, name and point. An item giver or unknown spawn has no pickup waypoint.
+	local function Place(by, zone)
 		local best, bestKey
 		for index, kind in ipairs({ "Npc", "Object" }) do
 			for _, id in ipairs(type(by) == "table" and type(by[index]) == "table" and by[index] or {}) do
@@ -288,167 +268,70 @@ local function Build(lib, zones, bundled, yield)
 		end
 		if best then
 			best.hub = Hub(bundled, cells, best)
-		elseif old and old.npc and type(by) == "table" and type(by[1]) == "table" then
-			for _, id in ipairs(by[1]) do
-				if id == old.npc and not best then
-					best = {}
-					for key, value in pairs(old) do
-						best[key] = value
-					end
-				end
-			end
 		end
 		return best
 	end
 
-	local quests, exclusive, withheld = {}, {}, {}
-	for id, old in pairs(bundled.quests) do
+	local ids, quests = lib.Quest.GetAllIds(), {}
+	status.catalogueCount, status.questCount = #ids, 0
+	local xpSource = lib.Support.Get("QuestXP")
+	local xp = xpSource and xpSource.db or {}
+	for _, id in ipairs(ids) do
 		local values = lib.Quest.GetAll(id, QUEST_FIELDS)
-		if not values then
-			-- QuestieDB lacks it: the bundled quest stands.
-			quests[id] = old
-		else
+		if values then
 			local v = {}
 			for index, field in ipairs(QUEST_FIELDS) do
 				v[field] = values[index]
 			end
-			-- An absent mask is no restriction; one present but unreadable withholds the start (docs/design.md §1).
 			local races, classes = tonumber(v.requiredRaces or 0), tonumber(v.requiredClasses or 0)
-			local unreadable = not (races and classes)
-			races, classes = races or 0, classes or 0
-			local quest = {
-				title = type(v.name) == "string" and v.name or old.title,
-				level = tonumber(v.questLevel) or 0,
-				min = tonumber(v.requiredLevel) or old.min,
-				side = Side(races),
-				races = races ~= 0 and races or nil,
-				classes = classes ~= 0 and classes or nil,
-				elite = old.elite,
-			}
-			-- A level of -1 scales with the player: the bundled level.
-			quest.level = quest.level >= 0 and quest.level or old.level
-			local area = tonumber(v.zoneOrSort) or 0
-			local zone = area > 0 and Map(area) or nil
-			quest.start, quest.finish = Place(v.startedBy, zone, old.start), Place(v.finishedBy, zone, old.finish)
-			quest.zone = zone and bundled.zones[zone] and zone or (quest.start or quest.finish or {}).map
-			-- A raid's quest stays one wherever QuestieDB files it: the bundled flag also says a quest is typed Raid.
-			local instance = area > 0 and (instanceOf[area] or instanceOf[Parent(area) or false])
-			if instance and bundled.instances[instance] then
-				quest.dungeon, quest.raid = instance, bundled.instances[instance].raid or old.raid
-			else
-				quest.dungeon, quest.raid = old.dungeon, old.raid
-			end
-			-- Objectives, their areas, XP and flags stay bundled (an area leaves out its map when it is the bundled zone,
-			-- so it names that map once QuestieDB files the quest elsewhere); a dungeon's quest has no areas.
-			quest.xp, quest.flags = old.xp, old.flags
-			quest.need = not quest.dungeon and old.need or nil
-			if old.obj and not quest.dungeon then
-				quest.obj = old.obj
-				if quest.zone ~= old.zone then
-					quest.obj = {}
-					for i, spot in ipairs(old.obj) do
-						quest.obj[i] = spot[5] and spot or { spot[1], spot[2], spot[3], spot[4], old.zone }
-					end
+			local level, minimum = tonumber(v.questLevel), tonumber(v.requiredLevel)
+			if type(v.name) == "string" and races and classes and level and minimum then
+				local quest = {
+					title = v.name,
+					level = level,
+					min = minimum,
+					max = tonumber(v.requiredMaxLevel),
+					side = Side(races),
+					races = races ~= 0 and races or nil,
+					classes = classes ~= 0 and classes or nil,
+					provider = true,
+				}
+				local area = tonumber(v.zoneOrSort) or 0
+				local zone = area > 0 and Map(area) or nil
+				quest.start, quest.finish = Place(v.startedBy, zone), Place(v.finishedBy, zone)
+				quest.zone = zone or (quest.start or quest.finish or {}).map
+				local instance = area > 0 and (instanceOf[area] or instanceOf[Parent(area) or false])
+				if instance and bundled.instances[instance] then
+					quest.dungeon, quest.raid = instance, bundled.instances[instance].raid
 				end
-			end
-			local start = quest.start
-			if start and quest.classes and start.npc then
-				local npc = bundled.npcs[start.npc]
-				local trainer = old.start and old.start.npc == start.npc and old.start.trainer
-				start.trainer = trainer or (npc and npc.class) or nil
-			end
-			-- Prerequisites: every one of the group, and one of the singles (a lone single joins the group).
-			local unknown = unreadable
-			local pre, preAny = {}, {}
-			local group = type(v.preQuestGroup) == "table" and v.preQuestGroup or {}
-			local single = type(v.preQuestSingle) == "table" and v.preQuestSingle or {}
-			for _, list in ipairs({ group, single }) do
-				for _, other in ipairs(list) do
-					unknown = unknown or not bundled.quests[other]
-					table.insert((list == group or #single == 1) and pre or preAny, other)
+				local flags, special = tonumber(v.questFlags) or 0, tonumber(v.specialFlags) or 0
+				local tag = C_QuestLog.GetQuestTagInfo and C_QuestLog.GetQuestTagInfo(id)
+				quest.elite = tag and tag.tagID == 1 or nil
+				quest.raid = quest.raid or bit.band(flags, 64) ~= 0 or nil
+				quest.repeatable = (bit.band(special, 1) ~= 0 or bit.band(flags, REPEATABLE_FLAGS) ~= 0) or nil
+				quest.xp = type(xp[id]) == "table" and tonumber(xp[id][2]) or nil
+				quest.flags = bit.band(special, 2) ~= 0 and { event = true } or nil
+				local following = tonumber(v.nextQuestInChain) or 0
+				quest.next = following > 0 and following or nil
+				local breadcrumb = tonumber(v.breadcrumbForQuestId) or 0
+				quest.breadcrumb = breadcrumb > 0 and breadcrumb or nil
+				-- Preserve relationships for chain displays. Live Questie policy evaluates their full semantics.
+				quest.pre = type(v.preQuestGroup) == "table" and v.preQuestGroup or nil
+				quest.preAny = type(v.preQuestSingle) == "table" and v.preQuestSingle or nil
+				local start = quest.start
+				if start and quest.classes and start.npc then
+					local npc = bundled.npcs[start.npc]
+					start.trainer = npc and npc.class or nil
 				end
-			end
-			quest.pre, quest.preAny = pre[1] and pre or nil, preAny[1] and preAny or nil
-			for _, other in ipairs(type(v.exclusiveTo) == "table" and v.exclusiveTo or {}) do
-				if bundled.quests[other] then
-					exclusive[#exclusive + 1] = { id, other }
-				else
-					unknown = true
+				if not quest.dungeon then
+					quest.need, quest.obj, quest.kinds =
+						ns.QuestieObjectives(lib, v.objectives, v.triggerEnd, quest.zone, bundled, Map, yield, id)
 				end
+				quests[id] = quest
+				status.questCount = status.questCount + 1
 			end
-			local following = tonumber(v.nextQuestInChain) or 0
-			quest.next = following > 0 and following or nil
-			-- A breadcrumb's target, QuestieDB's else the bundled one: open only while the target is neither done nor in
-			-- the log, which only a target in the data can say.
-			local target = v.breadcrumbForQuestId
-			if target == nil or target == 0 then
-				target = old.breadcrumb
-			elseif type(target) ~= "number" or target < 0 then
-				target, unknown = nil, true
-			end
-			if target then
-				quest.breadcrumb = target
-				unknown = unknown or not bundled.quests[target]
-			end
-			local flags, special = tonumber(v.questFlags) or 0, tonumber(v.specialFlags) or 0
-			quest.repeatable = (bit.band(special, 1) ~= 0 or bit.band(flags, REPEATABLE_FLAGS) ~= 0) or nil
-			-- Skill and reputation gates, as tools/gen_quests.py requirements: only on lines and factions the data
-			-- names, and a minimum and maximum on one faction.
-			local gates, gated = {}, false
-			local skill = v.requiredSkill
-			if type(skill) == "table" and (tonumber(skill[2]) or 0) > 0 then
-				gated = gated or not (bundled.skills and bundled.skills[skill[1]])
-				gates.skill = { id = skill[1], value = skill[2] }
-			end
-			local low, high = v.requiredMinRep, v.requiredMaxRep
-			low, high = type(low) == "table" and low or nil, type(high) == "table" and high or nil
-			if low or high then
-				local faction = (low or high)[1]
-				gated = gated
-					or (low and high and low[1] ~= high[1])
-					or not (bundled.factions and bundled.factions[faction])
-				gates.rep = { faction = faction, min = low and low[2], max = high and high[2] }
-			end
-			for _, field in ipairs(GATES) do
-				local value = v[field]
-				gated = gated or (value ~= nil and value ~= 0 and not (field == "requiredMaxLevel" and value == 255))
-			end
-			if
-				unknown
-				or gated
-				or not old.start
-				or bit.band(flags, GATED_FLAGS) ~= 0
-				or quest.side == 0
-				or quest.level == 0
-			then
-				withheld[id] = true
-			elseif start then
-				quest.skill, quest.rep = gates.skill, gates.rep
-			end
-			quests[id] = quest
 		end
 		yield()
-	end
-	-- Exclusive quests close each other: each set joined through any member is one group, named by its lowest ID.
-	local root = {}
-	local function Find(id)
-		while root[id] ~= id do
-			id = root[id]
-		end
-		return id
-	end
-	for _, pair in ipairs(exclusive) do
-		local a, b = pair[1], pair[2]
-		root[a], root[b] = root[a] or a, root[b] or b
-		a, b = Find(a), Find(b)
-		root[math.max(a, b)] = math.min(a, b)
-	end
-	for id, quest in pairs(quests) do
-		yield()
-		if quest ~= bundled.quests[id] then
-			quest.group = root[id] and Find(id) or nil
-			quest.start = not withheld[id] and quest.start or nil
-		end
 	end
 	local data = { quests = quests }
 	for key, value in pairs(bundled) do
@@ -458,14 +341,22 @@ local function Build(lib, zones, bundled, yield)
 end
 
 -- Runs the build a slice a frame from login, then swaps ns.Data and rebuilds the route.
+local bundled = ns.Data
+local empty = {}
+for key, value in pairs(bundled) do
+	empty[key] = value
+end
+empty.quests, empty.source = {}, "QuestieDB unavailable"
+ns.Data = empty --[[@as AGFData]]
+
 local function Start()
 	local lib, reason, zones = Fit()
 	if not lib or not zones then
-		status.reason = reason
+		status.state, status.reason = "unavailable", reason
 		return
 	end
 	local version = C_AddOns.GetAddOnMetadata(ADDON, "Version") or "?"
-	local bundled, started = ns.Data, 0
+	local started = 0
 	local co = coroutine.create(Build)
 	local function Yield()
 		if debugprofilestop() - started >= SLICE_MS then
@@ -477,10 +368,10 @@ local function Start()
 		started = debugprofilestop()
 		local ok, result = coroutine.resume(co, lib, zones, bundled, Yield)
 		if not ok then
-			status.state, status.reason = "bundled", ns.L.QUESTIE_FAILED:format(tostring(result))
+			status.state, status.reason = "unavailable", ns.L.QUESTIE_FAILED:format(tostring(result))
 		elseif coroutine.status(co) ~= "dead" then
 			C_Timer.After(0, Step)
-		elseif ns.Data == bundled then
+		elseif ns.Data == empty then
 			result.source = ADDON .. " " .. version
 			status.state, status.version = "questie", version
 			ns.Data = result --[[@as AGFData]]
@@ -490,7 +381,31 @@ local function Start()
 	C_Timer.After(0, Step)
 end
 
-EventUtil.ContinueAfterAllEvents(Start, "PLAYER_LOGIN")
+EventUtil.ContinueAfterAllEvents(function()
+	status.state = "building"
+	if Questie and Questie.API and Questie.API.RegisterOnReady then
+		Questie.API.RegisterOnReady(Start)
+		if Questie.API.RegisterForQuestUpdates then
+			Questie.API.RegisterForQuestUpdates(function()
+				ns.Invalidate()
+			end)
+		end
+	else
+		Start()
+	end
+end, "PLAYER_LOGIN")
+
+function ns.SourceHint()
+	if status.state == "building" then
+		return ns.L.AUDIT_QUESTIE_BUILDING
+	end
+	if status.state ~= "questie" then
+		return ns.L.QUESTIE_ENABLE
+	end
+	if not (Questie and Questie.API and Questie.API.isReady) then
+		return ns.L.QUESTIE_POLICY
+	end
+end
 
 -- Optional dungeon details are read only by the visible dungeon tab. Like the quest adapter, this takes a
 -- yielding caller and publishes a complete snapshot. GetAllIds is the contract's shared, read-only ID list.

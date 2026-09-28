@@ -194,8 +194,8 @@ local function CreateCard(parent, isFeatured)
 	card:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	card.noBack = true
 	card:SetScript("OnClick", Overview.CardClick)
-	card:SetScript("OnEnter", Overview.CardTooltip)
-	card:SetScript("OnLeave", GameTooltip_Hide)
+	card:HookScript("OnEnter", Overview.CardTooltip)
+	card:HookScript("OnLeave", GameTooltip_Hide)
 	return card
 end
 
@@ -422,7 +422,7 @@ Refresh = function(content)
 	local empty = chosen and info.empty
 	local custom = chosen and ns.Order.IsCustom()
 	emptyText:SetShown(first == nil)
-	emptyText:SetText(ready and L.NO_JOURNEY or L.LOADING)
+	emptyText:SetText((ns.SourceHint and ns.SourceHint()) or (ready and L.NO_JOURNEY or L.LOADING))
 	featured:SetShown(first ~= nil)
 	heading:SetShown(first ~= nil)
 	session:SetShown(first ~= nil)

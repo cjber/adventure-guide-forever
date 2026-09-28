@@ -9,6 +9,7 @@
 ---@field GetAll fun(id: integer, keys: string[]): table? the fields in `keys` order, with `n`; nil for an unknown ID
 
 ---@class AGFQuestieDB
+---@field ObjectiveFirst? {killCreditObjectiveFirst: table<integer, boolean>}
 ---@field RequireContract fun(required: integer): boolean, string?
 ---@field Meta table<string, table<string, table<string, integer>>> e.g. Meta.QuestMeta.questKeys: field name -> index
 ---@field Quest AGFQuestieEntity
@@ -27,3 +28,8 @@
 
 ---@type AGFQuestieDB?
 LibQuestieDB = nil
+
+---@type {API: {isReady: boolean, RegisterOnReady: fun(callback: fun()), RegisterForQuestUpdates: fun(callback: fun())}}?
+Questie = nil
+---@type {ImportModule: fun(self: table, name: string): {IsDoable: fun(id: integer): boolean}}?
+QuestieLoader = nil
