@@ -163,6 +163,7 @@ function harness.load(options)
 	-- Setters no spec reads but tools/screenshots.py draws: each stores its arguments under `field` for h.Describe.
 	for name, field in pairs({
 		SetBlendMode = "alphaMode",
+		SetFrameStrata = "frameStrata",
 		SetDisabledFontObject = "disabledFont",
 		SetPushedAtlas = "pushedAtlas",
 		SetTextColor = "textColor",

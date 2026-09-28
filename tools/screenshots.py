@@ -978,6 +978,7 @@ WINDOWS = (
     "window_missing",
     "window_today",
     "window_session",
+    "window_session_picker",
     "window_empty",
     "window_order",
 )

@@ -481,6 +481,9 @@ h.spfSeconds = 1480
 h.ns.Session.Set(30)
 h.flush()
 out.window_session = Window(h, "window_session")
+out.window_session_picker = Window(h, "window_session_picker")
+h.Click(h.G.AdventureGuideForeverSessionPicker:GetParent())
+out.window_session_picker.layout = h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)
 
 -- The same whole task does not fit 15 minutes.
 h = Load("v1", false, false, "carry", { HIDDEN_ENEMIES }, ASIDES)

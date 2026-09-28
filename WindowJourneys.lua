@@ -14,8 +14,7 @@ local STEP_ROWS, ROW_HEIGHT, STEP_GAP, STEP_HEAD, STEP_FOOT = 3, 44, 4, 18, 14
 local COLUMNS, GRID_GAP, GRID_SPAN, GRID_RING, GRID_PAD = 4, 10, 320, 30, 14
 local BUTTON_WIDTH, BUTTON_HEIGHT, ENTRANCE_WIDTH = 104, 22, 112
 local BAR_LABEL_GAP = 8
--- The session picker (a stock WowStyle1 dropdown, 25 high as MenuTemplates.xml makes it) at the steps' top right,
--- raised level with the heading so it clears row 1: No limit, then minutes.
+-- The session picker sits above the first step, beside the heading.
 local SESSION_WIDTH, SESSION_HEIGHT, SESSION_RAISE = 96, 25, 8
 -- A town's checklist lines sit under its row, in from the ring.
 local CHECK_LEFT = 40
@@ -50,7 +49,7 @@ local heading
 local divider
 ---@type FontString
 local emptyText
----@type AGFDropdown
+---@type Button
 local session
 ---@type FontString
 local sessionText
@@ -297,18 +296,62 @@ local function CreateStepRow(parent)
 	return row
 end
 
--- The session picker's menu: a radio a length, the player's choice ticked (Session.lua keeps it per character).
----@param root SharedMenuDescriptionProxy
-local function SessionMenu(_, root)
-	root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_SESSION")
-	root:CreateTitle(L.SESSION_LABEL)
-	for _, minutes in ipairs(ns.Session.LENGTHS) do
-		root:CreateRadio(minutes == 0 and L.SESSION_UNLIMITED or L.SESSION_MINUTES:format(minutes), function()
-			return ns.Session.Get() == minutes
-		end, function()
+local function SessionLabel(minutes)
+	return minutes == 0 and L.SESSION_UNLIMITED or L.SESSION_MINUTES:format(minutes)
+end
+
+-- Forever build 70009 crashes in Blizzard_Menu.AcquireMenu when opening the native picker.
+-- Keep this small selector entirely in addon-owned frames, outside the native menu pool.
+---@param content Frame
+---@return Button
+local function CreateSessionPicker(content)
+	local button = CreateFrame("Button", nil, content, "UIPanelButtonTemplate") --[[@as Button]]
+	button:SetSize(SESSION_WIDTH, SESSION_HEIGHT)
+	button:SetPoint("TOPRIGHT", content, "TOPLEFT", STEPS_LEFT + STEPS_WIDTH, -(TOP - SESSION_RAISE))
+	local popup = CreateFrame("Frame", "AdventureGuideForeverSessionPicker", button)
+	popup:SetSize(144, #ns.Session.LENGTHS * 26 + 12)
+	popup:SetPoint("TOPRIGHT", button, "BOTTOMRIGHT", 0, -2)
+	popup:SetFrameStrata("DIALOG")
+	popup:EnableMouse(true)
+	local background = popup:CreateTexture(nil, "BACKGROUND")
+	background:SetAllPoints()
+	background:SetColorTexture(0.04, 0.03, 0.02, 1)
+	local choices = {}
+	for index, minutes in ipairs(ns.Session.LENGTHS) do
+		local choice = CreateFrame("Button", nil, popup, "UIPanelButtonTemplate")
+		choice:SetSize(132, 24)
+		choice:SetPoint("TOPLEFT", 6, -6 - (index - 1) * 26)
+		choice:SetText(SessionLabel(minutes))
+		choice:SetScript("OnClick", function()
+			popup:Hide()
 			ns.Session.Set(minutes)
-		end, minutes)
+			button:SetText(SessionLabel(ns.Session.Get()))
+		end)
+		choices[index] = choice
 	end
+	popup:SetScript("OnShow", function(self)
+		for index, minutes in ipairs(ns.Session.LENGTHS) do
+			choices[index]:SetEnabled(ns.Session.Get() ~= minutes)
+		end
+		self:RegisterEvent("GLOBAL_MOUSE_DOWN")
+	end)
+	popup:SetScript("OnHide", function(self)
+		self:UnregisterEvent("GLOBAL_MOUSE_DOWN")
+	end)
+	popup:SetScript("OnEvent", function(self)
+		if not self:IsMouseOver() and not button:IsMouseOver() then
+			self:Hide()
+		end
+	end)
+	popup:Hide()
+	table.insert(UISpecialFrames, "AdventureGuideForeverSessionPicker")
+	button:SetScript("OnClick", function()
+		popup:SetShown(not popup:IsShown())
+	end)
+	button:HookScript("OnHide", function()
+		popup:Hide()
+	end)
+	return button
 end
 
 ---@param content Frame
@@ -317,10 +360,7 @@ local function Build(content)
 	featured:SetPoint("TOPLEFT", LEFT, -TOP)
 	heading = Window.Heading(content, L.NEXT_STEPS)
 	heading:SetPoint("TOPLEFT", STEPS_LEFT + 2, -TOP)
-	session = CreateFrame("DropdownButton", nil, content, "WowStyle1DropdownTemplate") --[[@as AGFDropdown]]
-	session:SetSize(SESSION_WIDTH, SESSION_HEIGHT)
-	session:SetPoint("TOPRIGHT", content, "TOPLEFT", STEPS_LEFT + STEPS_WIDTH, -(TOP - SESSION_RAISE))
-	session:SetupMenu(SessionMenu)
+	session = CreateSessionPicker(content)
 	session:HookScript("OnEnter", function(self)
 		ns.Overview.ShowTooltip(self, { L.SESSION_LABEL })
 	end)
@@ -426,7 +466,7 @@ Refresh = function(content)
 	featured:SetShown(first ~= nil)
 	heading:SetShown(first ~= nil)
 	session:SetShown(first ~= nil)
-	session:GenerateMenu()
+	session:SetText(SessionLabel(ns.Session.Get()))
 	divider:SetShown(first ~= nil and #others > 0)
 	if first then
 		RefreshFeatured(first, custom)
