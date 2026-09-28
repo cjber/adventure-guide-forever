@@ -2235,11 +2235,15 @@ do
 
 	step.reason = step.detail
 	h.tracker:MarkDirty()
-	expected[2] = "Sergra Darkthorn, Gazrog and 4 more"
-	same(TrackerLines(h), expected, "tracker, town: its NPCs, two named")
+	local detailed = { step.detail }
+	for _, giver in ipairs(step.checklist) do
+		detailed[#detailed + 1] = giver.text
+	end
+	detailed[#detailed + 1] = "Next: " .. steps[2].title .. " (no dash)"
+	same(TrackerLines(h), detailed, "tracker, town: checklist suppresses duplicate giver summary")
 	step.givers = { "Sergra Darkthorn", "Gazrog" }
 	h.tracker:MarkDirty()
-	equal(TrackerLines(h)[2], "Sergra Darkthorn, Gazrog", "tracker, town: two NPCs, both named")
+	same(TrackerLines(h), detailed, "tracker, town: givers do not duplicate checklist")
 
 	-- A town with one quest: its NPC and zone, since its title names only the NPC. The towns before it are skipped.
 	for _ = 1, 6 do
