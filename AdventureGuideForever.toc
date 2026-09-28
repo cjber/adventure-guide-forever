@@ -38,6 +38,7 @@ PvP.lua
 Hints\Explore.lua
 Hints\Hearth.lua
 Moments.lua
+ContextMenu.lua
 Menu.lua
 Pins.lua
 Art.lua

@@ -977,6 +977,7 @@ WINDOWS = (
     "window_completion",
     "window_missing",
     "window_today",
+    "window_context_menu",
     "window_session",
     "window_session_picker",
     "window_full_guide",

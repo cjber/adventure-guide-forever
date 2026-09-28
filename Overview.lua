@@ -137,7 +137,7 @@ local DIMMED = 0.35
 
 -- After the step menu (Menu.lua), the chosen journey's order: each move greyed where Order.lua refuses it, the way
 -- back while the order is the player's, and a town's givers still to see, a skip each.
----@param root SharedMenuDescriptionProxy
+---@param root AGFMenuDescription
 ---@param step AGFStep
 ---@param index? integer
 local function OrderEntries(root, step, index)
@@ -175,7 +175,7 @@ end
 ---@param step AGFStep
 ---@param index? integer
 local function StepMenu(owner, step, index)
-	MenuUtil.CreateContextMenu(owner, function(_, root)
+	ns.ContextMenu(owner, function(_, root)
 		root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_STEP")
 		ns.Menu.Step(root, step)
 		OrderEntries(root, step, index)

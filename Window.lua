@@ -459,7 +459,7 @@ local function CreateMore(inset)
 	button:SetSize(MORE_WIDTH, MORE_HEIGHT)
 	button:SetPoint("RIGHT", inset, "TOPRIGHT", -RIGHT, -(TODAY_TOP + 18))
 	button:SetScript("OnClick", function(self)
-		MenuUtil.CreateContextMenu(self, function(_, root)
+		ns.ContextMenu(self, function(_, root)
 			root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_TODAY")
 			for _, aside in ipairs(self.asides or {}) do
 				local entry = root:CreateButton(AsideMarkup(aside) .. aside.text, function()

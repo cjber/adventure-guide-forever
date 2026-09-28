@@ -571,6 +571,7 @@
 ---@field Resume fun(step: AGFStep): string? the reason saved last session, while the resume line stands for this step
 ---@field InLog fun(step: AGFStep): boolean the step is a quest in the player's log (a turn-in or its objectives)
 ---@field Menu AGFMenuModule
+---@field ContextMenu fun(owner: Region, generator: fun(owner: Region, root: AGFMenuDescription)): AGFMenuDescription
 ---@field ShowQuest fun(step: AGFStep): boolean open a log step's quest in Blizzard's details; false for other steps or in combat
 ---@field TurnedIn fun(questID: integer) QUEST_TURNED_IN: latched so a chosen journey that ends there is complete, then OnTurnIn
 ---@field OnJourneyComplete? fun() a turn-in ended the chosen journey; set by Tracker.lua
@@ -1148,6 +1149,10 @@
 ---@field SESSION_LABEL string
 ---@field GUIDE_OPEN string
 ---@field GUIDE_BACK string
+---@field MENU_BACK string
+---@field MENU_CHECKED string
+---@field MENU_UNCHECKED string
+---@field MENU_SUBMENU string
 ---@field GUIDE_OUTLINE string
 ---@field GUIDE_OUTLINE_TOOLTIP string
 ---@field GUIDE_PAGE string
