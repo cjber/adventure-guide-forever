@@ -44,6 +44,14 @@ local function CaptureNativeAnchor()
 	}
 end
 host:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", 0, 0)
+local function MatchNativeScale()
+	local parentScale = UIParent.GetEffectiveScale and UIParent:GetEffectiveScale()
+	local nativeScale = ObjectiveTrackerFrame.GetEffectiveScale and ObjectiveTrackerFrame:GetEffectiveScale()
+	if parentScale and nativeScale and parentScale > 0 then
+		host:SetScale(nativeScale / parentScale)
+	end
+end
+MatchNativeScale()
 host:SetWidth(ObjectiveTrackerFrame:GetWidth())
 host:SetHeight(1)
 local modules, queued, ready = {}, false, false
@@ -159,6 +167,7 @@ local function Layout()
 	-- player and saved variables are ready. Capture it before our first reflow.
 	CaptureNativeAnchor()
 	local width = ObjectiveTrackerFrame:GetWidth()
+	MatchNativeScale()
 	host:SetWidth(width)
 	local height = 0
 	for _, module in ipairs(modules) do

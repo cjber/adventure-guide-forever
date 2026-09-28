@@ -28,6 +28,12 @@ local function frame()
 	function f:GetHeight()
 		return self.height
 	end
+	function f:GetEffectiveScale()
+		return self.effectiveScale or 1
+	end
+	function f:SetScale(value)
+		self.scale = value
+	end
 	function f.GetTop(_self)
 		return 640
 	end
@@ -47,6 +53,7 @@ end
 local native = frame()
 parent = frame()
 parent:SetHeight(1080)
+native.effectiveScale, parent.effectiveScale = 1.25, 1
 local ns = {}
 local forbidden = setmetatable({}, {
 	__index = function(_, key)
@@ -210,6 +217,7 @@ native:SetHeight(2000)
 host:MarkDirty()
 drain()
 check(host.point[5] <= 316, "oversized column keeps its header on screen")
+check(host.scale == 1.25, "companion matches native effective scale")
 local block = first:AcquireFrame("Block")
 block.parentModule = first
 local line = block:GetLine(1)
