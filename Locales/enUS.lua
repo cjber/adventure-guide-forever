@@ -467,6 +467,7 @@ ns.L = {
 	WHATS_NEW = "Open the guide as a normal window. Floating is optional; card hover follows each border.",
 	DUNGEON_MAPS_TAB = "Maps",
 	DUNGEON_MAP_BACK = "Back to dungeon",
+	DUNGEON_MAP_WORLD_BACK = "Back to map",
 	DUNGEON_MAP_PAGE = "%d / %d · Atlas Classic WoW",
 	DUNGEON_MAP_MISSING = "No interior maps available. Enable Atlas and Atlas Classic WoW for maps and legends.",
 }

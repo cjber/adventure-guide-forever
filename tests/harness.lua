@@ -465,6 +465,9 @@ function harness.load(options)
 	function Methods:SetScrollChild(child)
 		self.scrollChild = child
 	end
+	function Methods:EnableMouseWheel(enabled)
+		self.mouseWheelEnabled = enabled
+	end
 	function Methods:SetupMenu(generator)
 		self.menuGenerator = generator
 	end
@@ -1576,6 +1579,10 @@ function harness.load(options)
 		end
 	end
 
+	G.GetInstanceInfo = function()
+		return "", h.instanceType or "none", 0, "", 5, 0, false, h.instanceID or 0
+	end
+
 	-- Maps and waypoints: the user waypoint is a value store, with every call counted.
 	h.counts.SetUserWaypoint, h.counts.ClearUserWaypoint, h.noWaypoint = 0, 0, {}
 	-- The client names an instance Map.ID; a headless client knows none, as it answers for an unknown one.
@@ -1890,6 +1897,8 @@ function harness.load(options)
 
 	-- The world map: a canvas with data providers and pooled pins, counted per template.
 	local map = NewRegion("Frame", "WorldMapFrame", G.UIParent)
+	map.ScrollContainer = NewRegion("Frame", nil, map)
+	map.ScrollContainer:SetSize(830, 560)
 	map.mapID = player.map
 	map:Hide()
 	local pools = {}

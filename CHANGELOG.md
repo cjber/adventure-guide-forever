@@ -11,10 +11,12 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Keep town tracker steps concise.** Pickup and turn-in checklists no longer repeat the same NPC names in a separate summary. Story and resume explanations remain visible.
+
 - **Avoid the remaining guide menu crashes.** The extra hints, settings and right-click actions use the guide’s own menus, with scrolling and nested Back navigation, instead of the native menu path that asserts in Forever build 70009.
 - **Keep map updates safe during combat.** Guide pins wait until combat ends and then refresh the current map; delayed map pings also recheck combat. Pickup markers use a per-map quest index while checking your current progress on each redraw.
 
-- **Browse dungeon interiors in the guide.** The Maps tab reads installed Atlas Classic WoW maps and legends, including separate wings and entrances. Atlas and its Classic WoW module are optional; the guide does not bundle their artwork or invent maps when they are absent.
+- **Browse dungeon interiors in the guide.** The Maps tab reads installed Atlas Classic WoW maps and legends, including separate wings and entrances. Maps have separate framed artwork and readable legends. While inside a supported dungeon, its interior also opens on the main map, with Back to map to return to the ordinary view. Atlas and its Classic WoW module are optional; the guide does not bundle their artwork or invent maps when they are absent.
 
 - **See beyond the current quest lap.** View full guide shows ten rows per page: your next actions followed by the area's quest outline. Follow-ups to your active quests come first, with prerequisite quests before their successors. Later quests show their level and difficulty; they become route actions only when Questie confirms availability.
 

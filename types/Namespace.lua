@@ -1393,5 +1393,6 @@
 ---@class AGFStrings
 ---@field DUNGEON_MAPS_TAB string
 ---@field DUNGEON_MAP_BACK string
+---@field DUNGEON_MAP_WORLD_BACK string
 ---@field DUNGEON_MAP_PAGE string
 ---@field DUNGEON_MAP_MISSING string

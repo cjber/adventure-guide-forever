@@ -36,6 +36,7 @@ read_globals = { "ShowUIPanel", "HideUIPanel", "CreateFramePoolCollection", "C_X
 	"C_EncounterJournal",
 	"EJ_GetEncounterInfoByIndex",
 	"EJ_GetInstanceInfo",
+	"GetInstanceInfo",
 	"PanelTemplates_SelectTab",
 	"PanelTemplates_DeselectTab",
 	"PanelTemplates_TabResize",
