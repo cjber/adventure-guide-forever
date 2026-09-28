@@ -112,3 +112,9 @@ existing data provider and a private inherited template in Panel.xml. It acquire
 `PIN_FRAME_LEVEL_QUEST_PING`, plays two loops at fractional zone coordinates, and releases on refresh.
 Explicit destination controls route through Integrations, then OpenWorldMap/SetMapID; combat skips the
 panel calls. Matching AGF pins flash on click and glow during map-control hover.
+
+## Interior maps
+
+The Maps tab reads `AtlasMaps` registered by Atlas 1.53.00 and Atlas Classic WoW r109. Stable `CL_` map keys connect each Classic instance to its wings and entrances. `DungeonID` is not a reliable join: the provider assigns 35 to both Maraudon and Dire Maul West. Each map uses its provider-owned 512×512 texture at native aspect, its localized title and its coloured legend. No files are copied into the addon, no provider UI is driven, and no map or player position is inferred from modern dungeon layouts.
+
+Sources: [Atlas](https://www.curseforge.com/wow/addons/atlas), [Atlas Classic WoW](https://www.curseforge.com/wow/addons/atlas-classicwow). Enable both for interiors; AtlasLoot supplies loot, not these maps. Read-only validation against the r109 data and image files covered all 19 Classic dungeons. Maps without their provider show an explicit empty state.

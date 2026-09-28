@@ -29,6 +29,7 @@ local CHECK_LEFT = 40
 ---@field Bar AGFProgressBar
 ---@field EntranceButton Button
 ---@field DungeonButton Button
+---@field GuideButton? Button
 ---@field Note? FontString why Go to entrance is greyed, on the featured card
 
 ---@class AGFWindowStepRow : AGFWindowRow, AGFDraggableRow
@@ -139,6 +140,15 @@ local function CreateCard(parent, isFeatured)
 		end
 	end)
 	if isFeatured then
+		card.GuideButton = CreateFrame("Button", nil, content, "UIPanelButtonTemplate") --[[@as Button]]
+		card.GuideButton:SetSize(112, BUTTON_HEIGHT)
+		card.GuideButton:SetPoint("BOTTOMLEFT", 12, 2)
+		card.GuideButton:SetText(L.GUIDE_OPEN)
+		card.GuideButton:SetScript("OnClick", function()
+			if card.journey then
+				Window.OpenGuide(card.journey, assert(card:GetParent()))
+			end
+		end)
 		local left = 18 + ring + 14
 		card.Icon:SetPoint("TOPLEFT", 18, -18)
 		card.Tag = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
@@ -231,6 +241,7 @@ end
 ---@param journey AGFJourney
 ---@param custom boolean the player's own order
 local function RefreshFeatured(journey, custom)
+	featured.GuideButton:SetShown(Overview.Entrance(journey) == nil)
 	local note = RefreshCard(featured, journey, FEATURED_SPAN)
 	local tag = featured.Tag --[[@as FontString]]
 	tag:SetText(custom and L.ORDER_CUSTOM or L.SUGGESTED)
