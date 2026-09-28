@@ -4,9 +4,9 @@ local _, ns = ...
 local PIN_TEMPLATE = "AdventureGuideForeverPinTemplate"
 local GIVER_TEMPLATE = "AdventureGuideForeverGiverPinTemplate"
 local PING_TEMPLATE = "AdventureGuideForeverPingPinTemplate"
--- The stock quest ring and numerals tinted blue; later stops fade over an opaque silhouette.
+-- Warm gold route rings keep future stops readable against the map.
 local NUMERAL_CELL, NUMERAL_YELLOW, NUMERALS_PER_ROW, MAX_NUMERAL = 0.125, 0.5, 8, 25
-local LATER_STOP_ALPHA = 0.55
+local LATER_STOP_ALPHA = 0.9
 local BADGE_SIZE, BADGE_OFFSET = 16, 4
 
 ---@class AGFPinsModule
@@ -140,6 +140,10 @@ function Pins.StepTooltip(tooltip, step, index, travel)
 	GameTooltip_AddHighlightLine(tooltip, step.reason)
 	if step.kind == "town" then
 		TownQuests(tooltip, step)
+	elseif step.kind == "turnin" then
+		for _, id in ipairs(step.quests) do
+			QuestLine(tooltip, id, HAND_IN_ICON)
+		end
 	end
 	AreaObjectives(tooltip, step)
 end
@@ -196,8 +200,8 @@ function provider:RefreshAllData()
 	end
 	-- A numbered pin at each step's point, but none for the area the player stands in: they are there (§4.2). An area
 	-- draws nothing more: the game's own objective mark and its hover shape show where its objectives are.
-	-- A place the route comes back to (a town's second lap) keeps one ring, numbered for its first visit, with a "+N"
-	-- for the rest and every visit in its tooltip (docs/design.md §2.9).
+	-- A place the route comes back to keeps one ring, numbered for its first visit, with its quest-action badge
+	-- intact and every visit in its tooltip (docs/design.md §2.9).
 	---@type table<string, AGFPinVisit[]>
 	local places, order = {}, {}
 	for index, step in ipairs(ns.Route().steps) do
@@ -268,10 +272,10 @@ function AdventureGuideForeverPinMixin:OnAcquired(step, index, visits)
 	self.step, self.index, self.visits = step, index, visits
 	self.Disc:SetVertexColor(0, 0, 0)
 	for _, texture in ipairs({ self.Icon, self.Number }) do
-		texture:SetDesaturated(true)
-		texture:SetVertexColor(0.6, 0.85, 1)
+		texture:SetDesaturated(false)
+		texture:SetVertexColor(1, 0.9, 0.7)
 	end
-	self.NumberText:SetTextColor(0.6, 0.85, 1)
+	self.NumberText:SetTextColor(1, 0.82, 0.25)
 	local numeral = index <= MAX_NUMERAL
 	self.Number:SetShown(numeral)
 	self.NumberText:SetText(not numeral and tostring(index) or "")

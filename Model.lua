@@ -34,6 +34,11 @@ end
 
 Model.ValidPlace = ValidPlace
 
+-- The live map POI still places a completed Forever quest when GetNextWaypoint and QuestieDB do not.
+local function TurnInPlace(entry, quest)
+	return ValidPlace(entry) and entry or ValidPlace(entry.poi) and entry.poi or quest and quest.finish
+end
+
 local function HasBit(mask, bit)
 	return not mask or mask == 0 or (bit > 0 and math.floor(mask / bit) % 2 == 1)
 end
@@ -949,9 +954,7 @@ local function LogSteps(data, player, log, ready, belongs, stops, steps, plan)
 		local entry, quest = log[id], data.quests[id]
 		local nodes = entry.complete and {} or Nodes(data, entry)
 		---@type AGFPlace?
-		local place = ready[id]
-			or (entry.complete and (ValidPlace(entry) and entry or quest and quest.finish))
-			or nodes[1]
+		local place = ready[id] or (entry.complete and TurnInPlace(entry, quest)) or nodes[1]
 		place = ValidPlace(place) and place or nil
 		if belongs(id, place) then
 			held[id] = false
@@ -1105,7 +1108,8 @@ local function Ready(data, log)
 		local quest = not Dropped(id) and data.quests[id]
 		local finish = entry.complete and quest and quest.finish
 		if finish and finish.hub then
-			local yards = Model.Yards(data, entry, finish)
+			local point = TurnInPlace(entry, nil)
+			local yards = point and Model.Yards(data, point, finish)
 			if yards then
 				ready[id] = yards <= AGREE and finish or nil
 			end

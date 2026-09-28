@@ -1018,7 +1018,7 @@ for _, spf in ipairs({ false, "v1" }) do
 
 	local ring = h.pins.AdventureGuideForeverPinTemplate[1]
 	equal(ring.Number.file, "Interface\\WorldMap\\UI-QuestPoi-NumberIcons", label .. ": the stock quest numeral")
-	same(ring.Number.texCoord, { 0, 0.125, 0.5, 0.625 }, label .. ": stock numeral 1 tinted blue")
+	same(ring.Number.texCoord, { 0, 0.125, 0.5, 0.625 }, label .. ": stock gold numeral 1")
 	-- Rings draw above the stock quest marks; givers stay under them (Blizzard_WorldMap.lua:291-311).
 	equal(ring.frameLevelType, "PIN_FRAME_LEVEL_WAYPOINT_LOCATION", label .. ": rings at the user waypoint's level")
 	h.Hover(ring)
@@ -1145,7 +1145,7 @@ do
 	same(pin.Disc.vertexColor, { 0, 0, 0 }, "POI: black silhouette")
 	equal(pin.Disc:GetAlpha(), 1, "POI: faded stops keep an opaque silhouette")
 	for _, region in ipairs({ pin.Icon, pin.Number, pin.NumberText, pin.Badge }) do
-		equal(region:GetAlpha(), 0.55, "POI: later stop fades every foreground part")
+		equal(region:GetAlpha(), 0.9, "POI: later stop fades every foreground part")
 	end
 	for _, region in ipairs({ pin.Disc, pin.Icon, pin.Number, pin.Glow }) do
 		same({ region:GetSize() }, { 32, 32 }, "POI: stock 32-unit art") -- multi-value: width and height
@@ -1156,7 +1156,7 @@ do
 	h.ns.Pins.Ping(step.key)
 	equal(pin.Glow.flashing, true, "POI: the glow flashes when the guide pings a stop")
 	h.G.UIFrameFlashStop(pin.Glow)
-	equal(pin.Icon:GetAlpha(), 0.55, "POI: a completed ping preserves the later stop's fade")
+	equal(pin.Icon:GetAlpha(), 0.9, "POI: a completed ping preserves the later stop's fade")
 	h.ns.Pins.Ping(step.key)
 	pin:OnMouseEnter()
 	equal(pin.Glow.flashing, nil, "POI: hover takes over from the ping")
@@ -2121,6 +2121,26 @@ do
 		"group icon: a row without one keeps the tag on its detail"
 	)
 	clean(h, "detail width")
+end
+
+-- New Forever turn-ins without a provider record still show the client's level and difficulty.
+do
+	local h = Load(false)
+	h.G.C_QuestLog.GetQuestDifficultyLevel = function(id)
+		return id == 99158 and 8 or nil
+	end
+	h.ns.State.QuestTitle = function(id)
+		return id == 99158 and "Dawn in the Mountains" or nil
+	end
+	h.G.GameTooltip:SetOwner(h.G.UIParent, "ANCHOR_CURSOR")
+	h.ns.Pins.StepTooltip(
+		h.G.GameTooltip,
+		{ kind = "turnin", title = "Turn in: Dawn in the Mountains", reason = "ready to hand in", quests = { 99158 } },
+		3
+	)
+	equal(h.tooltip[3], "colored: |A:questturnin:14:14|a [8] Dawn in the Mountains", "new quest turn-in level")
+	local color = h.G.GetQuestDifficultyColor(8)
+	same(h.tooltipColors[3], { color.r, color.g, color.b }, "new quest turn-in difficulty")
 end
 
 -- A town's tooltip (plan §7.4), from its row and its ring alike: after the reason, each NPC and its quests, hand-ins
