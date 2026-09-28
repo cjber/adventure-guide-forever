@@ -235,6 +235,7 @@ end)
 
 -- A spell learned at the trainer shortens the line at once.
 Asides.RefreshOn("SPELLS_CHANGED")
+Asides.RefreshOn("PLAYER_MONEY")
 
 --[[ Unspent talent points (roadmap #25): "You have 2 talent points to spend", while any are. The probe found
      GetNumUnspentTalents on Forever and UnitCharacterPoints missing; without the former there is no line. A point

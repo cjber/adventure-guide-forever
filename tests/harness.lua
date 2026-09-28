@@ -124,6 +124,9 @@ function harness.load(options)
 		player[key] = value
 	end
 	h.player = player
+	function G.GetMoney()
+		return options.money or 1000000
+	end
 	h.completedPending = options.completedPending
 
 	-- Errors never stop the run: like the client's error handler they are collected, and specs assert none.
@@ -2292,6 +2295,9 @@ function harness.load(options)
 						copies[index] = {}
 						for key, value in pairs(spell) do
 							copies[index][key] = value
+						end
+						if copies[index].cost == nil and not options.preserveUnknownCosts then
+							copies[index].cost = 0
 						end
 					end
 					return copies

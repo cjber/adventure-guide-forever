@@ -134,6 +134,19 @@ function Integrations.Training()
 	if not spells or #spells == 0 then
 		return nil, spells ~= nil
 	end
+	-- A trainer hint is an actionable recommendation. Known fees must be
+	-- affordable; an absent fee is not safe to present as affordable.
+	local money = GetMoney()
+	local affordable = {}
+	for _, spell in ipairs(spells) do
+		if type(spell.cost) == "number" and spell.cost >= 0 and spell.cost <= money then
+			affordable[#affordable + 1] = spell
+		end
+	end
+	spells = affordable
+	if #spells == 0 then
+		return nil, true
+	end
 	local level = 0
 	for _, spell in ipairs(spells) do
 		level = math.max(level, spell.level)
