@@ -79,7 +79,9 @@ local function find(frame, text)
 end
 local window = h.G.AdventureGuideForeverWindow
 local button = assert(find(window, ns.L.DUNGEON_MAPS_TAB))
+equal(button:IsEnabled(), true, "Maps tab starts unselected")
 h.Click(button)
+equal(button:IsEnabled(), false, "Maps tab is selected while its overlay is open")
 local panel = h.G.AdventureGuideForeverDungeonMaps
 equal(panel:IsVisible(), true, "Maps tab opens interior panel")
 local view = assert(panel.DungeonMapView, "map view is exposed for its parent")
@@ -114,6 +116,7 @@ equal(view.mapCard:GetHeight() <= 146, true, "short parent bounds artwork height
 equal(view.rows[1]:GetWidth(), view.legendWidth - 24, "resize reflows legend width")
 h.Click(assert(find(panel, ns.L.DUNGEON_MAP_BACK)))
 equal(panel:IsShown(), false, "back returns to dungeon")
+equal(button:IsEnabled(), true, "Maps tab clears selection after returning")
 h.Click(button)
 equal(previous:IsEnabled(), false, "reopening resets floor")
 h.Click(window.Tabs[1])

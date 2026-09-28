@@ -45,6 +45,8 @@ local rewards = {}
 local subTabs = {}
 ---@type AGFDungeonListWidget
 local list, quests, other
+---@type AGFTopTab
+local mapsButton
 ---@type AGFDungeon[]
 local catalog = {}
 ---@type AGFDungeonPage?
@@ -660,6 +662,11 @@ function Draw()
 	end
 	quests.frame:SetShown(view == "quests")
 	other.frame:SetShown(view ~= "quests")
+	-- The maps overlay owns its selected state while visible; the dungeon detail
+	-- view must never leave the Maps tab looking selected underneath it.
+	if mapsButton then
+		mapsButton:SetTabSelected(false)
+	end
 	other.rowHeight = (view == "prep" or view == "bosses") and ROW_H or 44
 	subTabs[3]:SetText(L.DUNGEON_BOSSES_TAB)
 	for index, key_ in ipairs({ "quests", "prep", "bosses", "loot" }) do
@@ -988,13 +995,19 @@ local function BuildContents(parent)
 		end)
 		subTabs[index] = tab
 	end
-	local mapsButton = CreateFrame("Button", nil, content, "TabSystemTopButtonTemplate") --[[@as AGFTopTab]]
+	mapsButton = CreateFrame("Button", nil, content, "TabSystemTopButtonTemplate") --[[@as AGFTopTab]]
 	mapsButton:SetText(L.DUNGEON_MAPS_TAB)
 	mapsButton:SetSize(78, 32)
 	mapsButton:HandleRotation()
 	mapsButton:SetPoint("BOTTOMLEFT", body, "TOPLEFT", 8 + 4 * 82, 0)
 	mapsButton:SetScript("OnClick", function()
 		if page then
+			mapsButton:SetTabSelected(true)
+			local mapView = Window.CreateDungeonMapView(content)
+			mapView.back:SetScript("OnClick", function()
+				mapsButton:SetTabSelected(false)
+				mapView:Hide()
+			end)
 			Window.OpenDungeonMaps(page.dungeon.id, content)
 		end
 	end)
