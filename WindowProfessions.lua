@@ -294,6 +294,12 @@ local function Picked(content, professions)
 			pick:SetPoint("BOTTOMRIGHT", content, "TOPRIGHT", -12 - (index - 1) * (PICKER_SIZE + PICKER_GAP), 12)
 			pick.Icon = Window.CreateRingIcon(pick, PICKER_SIZE)
 			pick.Icon:SetAllPoints()
+			local highlight = pick.Icon:CreateTexture(nil, "OVERLAY", nil, 1)
+			highlight:SetAtlas("adventureguide-ring")
+			highlight:SetAllPoints(pick.Icon.Ring)
+			highlight:SetBlendMode("ADD")
+			highlight:SetAlpha(0.5)
+			highlight:Hide()
 			pick:SetScript("OnClick", function(self)
 				if self.profession then
 					ns.WindowDB().profession = self.profession.skillLineID
@@ -302,10 +308,17 @@ local function Picked(content, professions)
 			end)
 			pick:SetScript("OnEnter", function(self)
 				if self.profession then
+					highlight:Show()
 					ns.Overview.ShowTooltip(self, { self.profession.name })
 				end
 			end)
-			pick:SetScript("OnLeave", GameTooltip_Hide)
+			pick:SetScript("OnLeave", function()
+				highlight:Hide()
+				GameTooltip_Hide()
+			end)
+			pick:HookScript("OnHide", function()
+				highlight:Hide()
+			end)
 			picks[index] = pick
 		end
 		if pick then

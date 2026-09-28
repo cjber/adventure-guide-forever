@@ -156,6 +156,7 @@ function Window.CreateCard(parent, zoneArt)
 	local cover = CreateFrame("Frame", nil, card)
 	cover:SetAllPoints()
 	cover:SetFrameLevel(card:GetFrameLevel() + 3)
+	cover:EnableMouse(false)
 	card.Shade = cover:CreateTexture(nil, "BACKGROUND")
 	card.Shade:SetColorTexture(0, 0, 0, 0.5)
 	card.Shade:SetAllPoints(card.Fill)
@@ -180,11 +181,24 @@ function Window.CreateCard(parent, zoneArt)
 			card.Rim[#card.Rim + 1] = piece
 		end
 	end
-	-- The hover: the pet list highlight's blue, added faintly, since its art would stretch across a card.
-	card.Highlight = card:CreateTexture(nil, "HIGHLIGHT")
+	-- The map art lives in a child frame: a highlight on the button itself would sit underneath it.
+	card.Highlight = cover:CreateTexture(nil, "OVERLAY")
 	card.Highlight:SetColorTexture(0.35, 0.5, 1, 0.15)
 	card.Highlight:SetBlendMode("ADD")
 	card.Highlight:SetAllPoints(card.Fill)
+	card.Highlight:Hide()
+	card:HookScript("OnEnter", function(self)
+		self.Highlight:SetShown(self:IsEnabled() and self:GetScript("OnClick") ~= nil)
+	end)
+	card:HookScript("OnLeave", function(self)
+		self.Highlight:Hide()
+	end)
+	card:HookScript("OnHide", function(self)
+		self.Highlight:Hide()
+	end)
+	card:HookScript("OnDisable", function(self)
+		self.Highlight:Hide()
+	end)
 	return card
 end
 
@@ -369,6 +383,7 @@ end
 local function CreateChip(parent, width)
 	local chip = CreateFrame("Button", nil, parent) --[[@as AGFTodayChip]]
 	chip:SetSize(width, 36)
+	Art.Slice(chip, "PetList-ButtonHighlight", "HIGHLIGHT", 12, 12)
 	chip.Icon = Window.CreateRingIcon(chip, TODAY_RING)
 	chip.Icon:SetPoint("LEFT", 0, 0)
 	chip.Text = chip:CreateFontString(nil, "ARTWORK", "GameFontNormal")

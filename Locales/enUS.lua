@@ -447,5 +447,5 @@ ns.L = {
 	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "Bosses without listed loot stay visible. The bundled database fills gaps in AtlasLoot's encounter lists.",
+	WHATS_NEW = "Clickable cards light up on hover. Completion zones and journey cards are easier to spot and select.",
 }

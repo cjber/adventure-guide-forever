@@ -439,4 +439,28 @@ do
 	clean(h, "empty bar")
 end
 
+-- Card hover must draw over the child map-art frame, and only advertise a real click action.
+do
+	local h = Load()
+	local card = h.ns.Window.CreateCard(h.G.UIParent, true)
+	local highlight = card.Highlight
+	equal(highlight:GetParent():GetFrameLevel() > card.Art:GetFrameLevel(), true, "hover above map art")
+	equal(highlight.layer, "OVERLAY", "hover above cover shading")
+	equal(highlight:IsShown(), false, "no initial hover")
+	card:GetScript("OnEnter")(card)
+	equal(highlight:IsShown(), false, "static card does not advertise a click")
+	card:SetScript("OnClick", function() end)
+	card:GetScript("OnEnter")(card)
+	equal(highlight:IsShown(), true, "clickable card lights up")
+	card:GetScript("OnLeave")(card)
+	equal(highlight:IsShown(), false, "leaving clears hover")
+	card:GetScript("OnEnter")(card)
+	card:Hide()
+	equal(highlight:IsShown(), false, "hiding clears hover before reuse")
+	card:SetEnabled(false)
+	card:GetScript("OnEnter")(card)
+	equal(highlight:IsShown(), false, "disabled card does not advertise a click")
+	clean(h, "card hover")
+end
+
 print(("window_spec: %d checks passed"):format(checks))

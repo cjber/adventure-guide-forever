@@ -11,6 +11,10 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-09-28
+
+- **Clickable cards light up on hover.** Completion zones and journey cards show their subtle highlight above the map art, so it is clear which cards you can select. Trainer and other suggestions also highlight; static information cards stay unchanged.
+
 ## [0.3.2] - 2026-09-28
 
 - **Bosses without listed loot stay visible.** AtlasLoot still supplies encounter details and loot, while the bundled database fills missing bosses such as Oggleflint and Bazzalan in Ragefire Chasm.
