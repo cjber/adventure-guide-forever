@@ -423,6 +423,13 @@ for _, zone in ipairs({
 end
 h = Load("v1", false, false, STORY, nil, { legacy = legacy })
 out.window_completion = Window(h, "window_completion", 4)
+for _, frame in ipairs(h.frames) do
+	if frame.zone and frame.zone.map == 1442 and frame:GetScript("OnClick") then
+		frame:GetScript("OnEnter")(frame)
+		out.window_completion.layout = h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)
+		break
+	end
+end
 
 -- Neither Tweaks Forever nor Legacy Forever loaded: Ragefire Chasm chosen, its Go to entrance greyed with the note,
 -- and the Completion tab's label grey.

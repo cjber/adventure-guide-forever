@@ -421,6 +421,7 @@ local function CreateAsideLine(parent)
 	local line = CreateFrame("Button", nil, parent) --[[@as AGFAsideLine]]
 	line:SetHeight(ASIDE_HEIGHT)
 	line:SetPoint("RIGHT", -10, 0)
+	ns.Art.Slice(line, "PetList-ButtonHighlight", "HIGHLIGHT", 12, 12)
 	line.Icon = line:CreateTexture(nil, "ARTWORK")
 	line.Icon:SetSize(ASIDE_HEIGHT, ASIDE_HEIGHT)
 	line.Icon:SetPoint("LEFT")
