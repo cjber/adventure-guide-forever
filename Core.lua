@@ -439,6 +439,7 @@ end)
 ---@type AGFTraining?
 local training
 local trained = false
+local trainingEndedBySpell = false
 ---@type table<integer, AGFLogQuest>
 local buildLog = {}
 
@@ -459,7 +460,8 @@ local function BuildRoute()
 	else
 		training = nil
 	end
-	trained = previous ~= nil and known and training == nil
+	trained = trainingEndedBySpell and previous ~= nil and known and training == nil
+	trainingEndedBySpell = false
 	player.train = training
 	return ns.Model.Plan(
 		ns.Data,
@@ -526,11 +528,12 @@ end
 
 -- A spell learned (or a new level's) changes what the trainer stop says, or ends it: rebuild when the answer moved.
 local spellbook = CreateFrame("Frame")
-spellbook:SetScript("OnEvent", function()
+spellbook:SetScript("OnEvent", function(_, event)
 	if not ns.Prefs().journey or InCombatLockdown() then
 		return
 	end
 	local now = ns.Integrations.Training()
+	trainingEndedBySpell = event == "SPELLS_CHANGED" and training ~= nil and now == nil
 	if (now and now.count) ~= (training and training.count) or (now and now.level) ~= (training and training.level) then
 		ns.Invalidate()
 	end
@@ -927,6 +930,7 @@ EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	LoadCharDB()
 	ns.State.OnChange(ns.Invalidate)
 	spellbook:RegisterEvent("SPELLS_CHANGED")
+	spellbook:RegisterEvent("PLAYER_MONEY")
 	ns.State.OnInitialLogin(function()
 		resumeLatch = true
 	end)

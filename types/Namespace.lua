@@ -757,7 +757,7 @@
 ---@field TownName fun(data: AGFData, place: {map: integer, hub?: integer}, mapName?: fun(map: integer): string?): string the hub's flight-master town, else the map's name
 
 ---@class AGFIntegrations
----@field Training fun(): AGFTraining?, boolean Tweaks Forever's spells to train, counted; nil without a v1 Tweaks Forever, its answer, or a spell to train
+---@field Training fun(): AGFTraining?, boolean Tweaks Forever's affordable spells to train, counted; nil without a v1 Tweaks Forever, its answer, or an affordable spell to train
 
 ---@class AGFStrings
 ---@field TRAINER_IN string format: the trainer aside's lead with the nearest trainer's town

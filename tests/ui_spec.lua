@@ -1190,6 +1190,7 @@ end
 do
 	-- With the Barrens story ruled out, Gann's Reclamation is off every zone loop, so carry (Loose ends) holds it.
 	local h = harness.load({
+		preserveUnknownCosts = true,
 		db = PINS_ON,
 		charDB = {
 			journey = "carry",
@@ -3528,6 +3529,42 @@ do
 		end
 		clean(h, label)
 	end
+end
+
+-- Trainer recommendations must not send a character to buy spells they cannot afford.
+do
+	local h = harness.load({
+		preserveUnknownCosts = true,
+		tf = {
+			spells = {
+				{ name = "Free", level = 1, cost = 0 },
+				{ name = "Affordable", level = 2, cost = 4 },
+				{ name = "Too expensive", level = 3, cost = 5 },
+				{ name = "Unknown price", level = 4 },
+			},
+		},
+		money = 4,
+	})
+	local training, known = h.ns.Integrations.Training()
+	equal(known, true, "trainer affordability: provider known")
+	equal(training.count .. "|" .. training.level, "2|2", "trainer affordability: only affordable known fees")
+	h.G.GetMoney = function()
+		return 5
+	end
+	h.fire("PLAYER_MONEY")
+	training = h.ns.Integrations.Training()
+	equal(
+		training.count .. "|" .. training.level,
+		"3|3",
+		"trainer affordability: money change makes new spell actionable"
+	)
+	h.G.GetMoney = function()
+		return 3
+	end
+	h.fire("PLAYER_MONEY")
+	training = h.ns.Integrations.Training()
+	equal(training.count .. "|" .. training.level, "1|1", "trainer affordability: money loss keeps only free spell")
+	clean(h, "trainer affordability")
 end
 
 -- Roadmap #5: a chosen journey passing a trainer who teaches the spells to train stops there, a step like any other:

@@ -82,6 +82,7 @@ read_globals = { "ShowUIPanel", "HideUIPanel", "CreateFramePoolCollection", "C_X
 	"GetBindLocation",
 	"GetLocale",
 	"GetTime",
+	"GetMoney",
 	"UiMapPoint",
 	"C_SuperTrack",
 	"UIErrorsFrame",
