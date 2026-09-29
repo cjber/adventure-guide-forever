@@ -1,8 +1,10 @@
 -- Run from the repository root: luajit -joff tests/plan_bench.lua
 -- Times the real rebuild through tests/harness.lua, frame by frame, with -joff standing in for the client's plain
--- Lua 5.1. Shortest Path is a counted cost model, not a sleep: its cache semantics (API.lua:9,166-181: origin rounded
--- to 1e-4 plus the exact destination, 256 slots, 5 s TTL) on a fake clock, charging 2.45 ms per miss (a cold estimate,
--- API.lua:132) and 0.003 ms per hit. The cache is reset before every sample, so each one is the cold worst case.
+-- Lua 5.1. The full build is sliced across frames (Core.StepRebuild, Model.Journeys' YieldCards): a sample drives the
+-- rebuild to rest and every one of its frames is timed and must stay under the budget, not just the last. Shortest
+-- Path is a counted cost model, not a sleep: its cache semantics (API.lua:9,166-181: origin rounded to 1e-4 plus the
+-- exact destination, 256 slots, 5 s TTL) on a fake clock, charging 2.45 ms per miss (a cold estimate, API.lua:132) and
+-- 0.003 ms per hit. The cache is reset before every sample, so each one is the cold worst case.
 -- CI asserts the call counts; AGF_BENCH_STRICT=1 also asserts the 3 ms frame budget (WFA-13), which shared runners
 -- would flake.
 local harness = dofile("tests/harness.lua")
@@ -241,23 +243,45 @@ local function Profile(profile, level, questiedb, full)
 	for sample = 1, SAMPLES do
 		model.reset()
 		model.now = sample * 60
-		-- A full log's rebuild follows the log's event, so it reads the objectives and the quest points again; the
-		-- event's own frame only schedules it.
+		-- A full log's rebuild follows the log's event, so it reads the objectives and the quest points again. The
+		-- event's own frame (State coalesces it) only queues the rebuild; the sampled frames below run it. Every other
+		-- profile rebuilds from the invalidation directly.
 		if full then
 			h.fire("QUEST_LOG_UPDATE")
 			h.tick()
+		else
+			h.ns.Invalidate()
 		end
-		h.ns.Invalidate()
-		local started = os.clock()
-		h.tick()
-		rebuild[sample] = (os.clock() - started) * 1000
-		check(model.calls == 0, label .. ": the rebuild frame asked Shortest Path " .. model.calls .. " times")
-		local asked = model.calls
-		started = os.clock()
-		h.tick()
-		travel[sample] = (os.clock() - started) * 1000 + model.ms
-		check(model.calls - asked <= 1, label .. ": the travel frame asked " .. (model.calls - asked) .. " times")
-		check(h.tick() == 0, label .. ": a third frame ran")
+		-- The full build is sliced across frames (Core.StepRebuild): drive it to rest, timing every frame. A rebuild
+		-- frame asks Shortest Path nothing; each travel frame asks at most once. Its modelled cost is charged to the
+		-- frame that made the call.
+		local worstFrameRebuild, worstFrameTravel, builtFrames = 0, 0, 0
+		while h.ns.Settling() do
+			local rebuilding = h.ns.Rebuilding()
+			local callsBefore, msBefore = model.calls, model.ms
+			local started = os.clock()
+			local ran = h.tick()
+			local frameMs = (os.clock() - started) * 1000
+			if ran == 0 then
+				break
+			end
+			if rebuilding then
+				check(
+					model.calls == callsBefore,
+					label .. ": a rebuild frame asked Shortest Path " .. (model.calls - callsBefore) .. " times"
+				)
+				worstFrameRebuild = math.max(worstFrameRebuild, frameMs)
+				builtFrames = builtFrames + 1
+			else
+				check(
+					model.calls - callsBefore <= 1,
+					label .. ": a travel frame asked " .. (model.calls - callsBefore) .. " times"
+				)
+				worstFrameTravel = math.max(worstFrameTravel, frameMs + model.ms - msBefore)
+			end
+		end
+		check(builtFrames >= 1, label .. ": the build was not sliced")
+		rebuild[sample], travel[sample] = worstFrameRebuild, worstFrameTravel
 	end
 	check(h.counts.CreateFrame == created, label .. ": frames created after the first render")
 	check(windowRefreshes == 0, label .. ": the closed window redrew " .. windowRefreshes .. " times")

@@ -1022,7 +1022,7 @@ function harness.load(options)
 	end
 	-- Runs queued timers, and any they queue, the way the next frames would.
 	function h.flush()
-		for _ = 1, 100 do
+		for _ = 1, 1000 do
 			if #timers == 0 then
 				return
 			end

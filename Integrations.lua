@@ -466,7 +466,7 @@ end
 
 ---@param steps (AGFStep|AGFGiver)[]
 ---@return AGFSPFStop[]
-local function Stops(steps)
+local function Stops(steps, hold)
 	local stops = {}
 	for index, step in ipairs(steps) do
 		stops[index] = {
@@ -476,6 +476,10 @@ local function Stops(steps)
 			title = step.title,
 			tooltip = ns.Pins.StopTooltip(step),
 			kind = Integrations.Kind(step),
+			hold = hold == true
+				and step.kind ~= "trainer"
+				and step.kind ~= "battlemaster"
+				and (#(step.quests or {}) > 0 or #(step.handins or {}) > 0),
 		}
 	end
 	return stops
@@ -485,8 +489,8 @@ end
 ---@param api AGFSPFAPI
 ---@param steps (AGFStep|AGFGiver)[]
 ---@return boolean
-local function Send(api, steps)
-	if not api.NavigateRoute(OWNER, Stops(steps)) then
+local function Send(api, steps, hold)
+	if not api.NavigateRoute(OWNER, Stops(steps, hold)) then
 		return false
 	end
 	guided, ours, arrived, stopped = steps, true, false, nil
@@ -539,7 +543,7 @@ end
 ---@return boolean
 function Integrations.Restore(steps)
 	local api = SPF()
-	return api ~= nil and not InCombatLockdown() and not ns.Setting("wanderer") and Send(api, steps)
+	return api ~= nil and not InCombatLockdown() and not ns.Setting("wanderer") and Send(api, steps, true)
 end
 
 ---@return (AGFStep|AGFGiver)[]
@@ -571,8 +575,9 @@ end
 -- leaves a destination on any map the client allows one on. True when something now guides the player. A wanderer
 -- (roadmap #24) is never guided: nothing is set, and nothing is said.
 ---@param step AGFStep|AGFGiver
+---@param follow? boolean the chosen journey will replace held quest stops when progress changes
 ---@return boolean
-function Integrations.Navigate(step)
+function Integrations.Navigate(step, follow)
 	if ns.Setting("wanderer") or not ns.Model.ValidPlace(step) then
 		return false
 	end
@@ -593,7 +598,7 @@ function Integrations.Navigate(step)
 		end
 		-- Whatever this guides, ns.StartRoute says whether it is the chosen journey's.
 		ns.Prefs().guided = nil
-		if Send(api, found and steps or { step }) then
+		if Send(api, found and steps or { step }, follow and found) then
 			return true
 		end
 	end
@@ -752,10 +757,10 @@ local function Follow()
 				Integrations.Stale(guided --[[@as AGFStep[] ]], index, route.steps, Far)
 			)
 		then
-			Send(api, route.steps)
+			Send(api, route.steps, true)
 		end
 	elseif arrived and Unhanded(route.steps) then
-		Send(api, route.steps)
+		Send(api, route.steps, true)
 	end
 end
 ns.OnRouteChange(Follow)

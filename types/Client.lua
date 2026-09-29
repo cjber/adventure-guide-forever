@@ -25,6 +25,11 @@ EventUtil = {}
 ---@type {RegisterCallback: fun(self: any, event: string, callback: fun(...), owner: any), TriggerEvent: fun(self: any, event: string, ...: any)}
 EventRegistry = {}
 
+---@class EditModeManagerFrame : Frame
+---@field IsEditModeActive fun(self: EditModeManagerFrame): boolean
+---@type EditModeManagerFrame?
+EditModeManagerFrame = nil
+
 ---@type fun(region: Region, fadeInTime: number, fadeOutTime: number, flashDuration: number, showWhenDone: boolean)
 UIFrameFlash = nil
 ---@type fun(frame: Region)

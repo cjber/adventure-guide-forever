@@ -110,6 +110,39 @@ local exclusive = { quests = { [1] = a, [2] = b }, zones = data.zones }
 equal(Model.Eligible(exclusive, player, { [2] = true }, {}, 1), false, "completed exclusive sibling")
 equal(Model.Eligible(exclusive, player, {}, { [2] = {} }, 1), false, "active exclusive sibling")
 equal(#Model.Plan(exclusive, player, {}, {}, prefs()).steps[1].quests, 1, "recommend one exclusive choice")
+-- The immutable candidate cache includes the character's race and class. Reusing the same data for another
+-- character must not leak the first character's filtered shortlist.
+do
+	local gatedData = { quests = { [1] = quest(0.4, 0.4), [2] = quest(0.6, 0.6) }, zones = data.zones }
+	gatedData.quests[1].races, gatedData.quests[1].classes = 2, 64
+	gatedData.quests[2].races, gatedData.quests[2].classes = 1, 1
+	local sameDataOtherCharacter = {
+		level = player.level,
+		maxLevel = player.maxLevel,
+		side = player.side,
+		raceBit = 1,
+		classBit = 1,
+		map = player.map,
+		x = player.x,
+		y = player.y,
+	}
+	local first = Model.Plan(gatedData, player, {}, {}, prefs())
+	local second = Model.Plan(gatedData, sameDataOtherCharacter, {}, {}, prefs())
+	local function HasQuest(route, id)
+		for _, step in ipairs(route.steps) do
+			for _, questID in ipairs(step.quests or {}) do
+				if questID == id then
+					return true
+				end
+			end
+		end
+		return false
+	end
+	equal(HasQuest(first, 1), true, "candidate cache: first character keeps its race/class quest")
+	equal(HasQuest(first, 2), false, "candidate cache: first character excludes the other quest")
+	equal(HasQuest(second, 1), false, "candidate cache: second character excludes the first quest")
+	equal(HasQuest(second, 2), true, "candidate cache: second character gets its race/class quest")
+end
 -- A breadcrumb is open only while the quest it leads to is neither done nor in the log.
 local crumb = { quests = { [1] = quest(), [2] = quest(0.2, 0.2) }, zones = data.zones }
 crumb.quests[1].breadcrumb = 2
@@ -159,6 +192,27 @@ do -- Missing In Action at 19: open from its minimum, but red, so never offered;
 	equal(offered[4], true, "pinned: a grey quest is offered")
 	equal(offered[2], nil, "pinned: a red quest never is")
 	equal(offered[3], nil, "pinned: nor an orange one")
+	local unpinned = prefs()
+	local afterPin = Model.Plan(pinnedCamp, player, {}, {}, unpinned)
+	local greyStillOffered = false
+	for _, step in ipairs(afterPin.steps) do
+		for _, id in ipairs(step.quests or {}) do
+			greyStillOffered = greyStillOffered or id == 4
+		end
+	end
+	equal(greyStillOffered, false, "pinned: grey shortlist is not retained after unpinning")
+	local unknownSide = {
+		level = player.level,
+		maxLevel = player.maxLevel,
+		side = 99,
+		raceBit = player.raceBit,
+		classBit = player.classBit,
+		map = player.map,
+		x = player.x,
+		y = player.y,
+	}
+	local unknownPlan = Model.Plan(pinnedCamp, unknownSide, {}, {}, prefs())
+	equal(type(unknownPlan.journeys), "table", "choices: unknown side keeps the all-quest fallback")
 end
 
 data = { quests = {}, zones = {} }
@@ -431,6 +485,44 @@ do
 	equal(Kinds(onward.journeys), "zone:1 zone:2 dungeon:36 chain:50", "the way in: its next chapter is inside")
 	equal(onward.journeys[4].reason, "Continues a story you started", "the way in: continues")
 	equal(onward.journeys[3].subline, "2 quests for this dungeon", "at the cap: every instance quest open now")
+	-- Reuse the published-data index while character progress changes in place.
+	local indexed, completed = Stranded(), {}
+	equal(
+		Model.Plan(indexed, atCap, completed, {}, prefs()).journeys[3].subline,
+		"1 quest for this dungeon",
+		"indexed: prerequisite still locked"
+	)
+	completed[50] = true
+	equal(
+		Model.Plan(indexed, atCap, completed, {}, prefs()).journeys[3].subline,
+		"2 quests for this dungeon",
+		"indexed: prerequisite completion opens another quest"
+	)
+	completed[51], completed[52] = true, true
+	equal(
+		Kinds(Model.Plan(indexed, atCap, completed, {}, prefs()).journeys),
+		"zone:1 zone:2",
+		"indexed: completed dungeon quests disappear"
+	)
+	completed[50], completed[51], completed[52] = nil, nil, nil
+	equal(
+		Model.Plan(indexed, atCap, completed, {}, prefs()).journeys[3].subline,
+		"1 quest for this dungeon",
+		"indexed: character state is never cached"
+	)
+	-- The static dungeon subset is keyed by level: changing level must not reuse the old bracket.
+	local belowDungeon = { level = 9, maxLevel = 18, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
+	local below = Model.Plan(indexed, belowDungeon, {}, {}, prefs())
+	local belowHasDungeon = false
+	for _, journey in ipairs(below.journeys) do
+		belowHasDungeon = belowHasDungeon or journey.kind == "dungeon"
+	end
+	equal(belowHasDungeon, false, "indexed: lower level does not inherit dungeon bracket")
+	equal(
+		Model.Plan(indexed, atCap, completed, {}, prefs()).journeys[3].kind,
+		"dungeon",
+		"indexed: higher level restores dungeon bracket"
+	)
 	local roomy = Model.Plan(Stranded(), player, {}, {}, prefs())
 	equal(Kinds(roomy.journeys), "zone:1 zone:2", "below the cap with a next zone: neither")
 	equal(roomy.stranded, nil, "below the cap: not stranded")

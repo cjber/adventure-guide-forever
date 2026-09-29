@@ -220,6 +220,12 @@ do
 	for index, stop in ipairs(h.spfRoute.stops) do
 		equal(stop.kind, h.ns.Integrations.Kind(h.ns.Route().steps[index]), "stop " .. index .. "'s kind")
 		equal(stop.kind ~= nil, true, "stop " .. index .. " shows what stands there")
+		local step = h.ns.Route().steps[index]
+		equal(
+			stop.hold,
+			#(step.quests or {}) > 0 or #(step.handins or {}) > 0,
+			"stop " .. index .. " holds quest interactions"
+		)
 	end
 	local Kind = h.ns.Integrations.Kind
 	local here, there = { map = 1429, x = 0.4, y = 0.5 }, { map = 1429, x = 0.6, y = 0.5 }
@@ -1338,19 +1344,25 @@ for _, spf in ipairs({ "v1", "v1+" }) do
 	equal(h.ns.Integrations.Travel(h.ns.Route().steps[1]), line, spf .. ": step 1's travel line")
 	equal(h.ns.Integrations.Travel(h.ns.Route().steps[2]), nil, spf .. ": no line for other steps")
 	equal(Estimates() - before, 1, spf .. ": reading the line asks nothing")
-	-- An invalidation between the rebuild frame and the travel frame: the travel frame must not rebuild as well.
+	-- One Model.Plan call per rebuild, and an invalidation that lands while a rebuild is under way is coalesced into
+	-- exactly one follow-up (Core.StepRebuild). The rebuild itself is sliced across frames, so a tick is a slice, not
+	-- the whole build; only each rebuild's travel frame asks Shortest Path, once (unit F0).
 	local plan, builds = h.ns.Model.Plan, 0
 	h.ns.Model.Plan = function(...)
 		builds = builds + 1
 		return plan(...) -- multi-value: the wrapper is transparent
 	end
+	local est = Estimates()
 	h.ns.Invalidate()
-	h.tick()
-	h.ns.Invalidate()
-	h.tick()
-	equal(builds, 2, spf .. ": one build per rebuild frame, none in the skipped travel frame")
 	h.flush()
-	equal(Estimates() - before, 2, spf .. ": the second rebuild's travel frame asks once")
+	equal(builds, 1, spf .. ": one build per rebuild")
+	equal(Estimates() - est, 1, spf .. ": the rebuild's travel frame asks once")
+	h.ns.Invalidate()
+	h.tick() -- begin the next rebuild (one slice, not the whole build)
+	h.ns.Invalidate() -- lands while it is under way: one follow-up, not two builds
+	h.flush()
+	equal(builds, 3, spf .. ": the second rebuild and the one its invalidation earns")
+	equal(Estimates() - est, 2, spf .. ": the skipped travel frame asks nothing; the follow-up asks once")
 	h.ns.Model.Plan = plan
 	clean(h, spf .. ": travel")
 end
@@ -3072,17 +3084,6 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	local function Calls()
 		return h.spf and h.spf.Estimate + (h.spf.EstimateDetail or 0) or 0
 	end
-	local function Frames()
-		local perFrame = {}
-		for _ = 1, 20 do
-			local before = Calls()
-			if h.tick() == 0 then
-				break
-			end
-			perFrame[#perFrame + 1] = Calls() - before
-		end
-		return table.concat(perFrame, " ")
-	end
 	local function Cached()
 		local count = 0
 		for _, journey in ipairs(h.ns.Route().journeys) do
@@ -3101,11 +3102,28 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	-- A new route: the rebuild's frame asks nothing, step 1's frame asks for step 1 only, then a card a frame.
 	integrations.RefreshCards({})
 	h.ns.Invalidate()
-	equal(
-		Frames(),
-		spf and "0" .. string.rep(" 1", #journeys + 1) or "0 0",
-		label .. ": one estimate a frame, none in the rebuild's"
-	)
+	-- The full build is sliced across frames (Core.StepRebuild), so the rebuild spans several frames, each asking
+	-- nothing; then one estimate a frame over step 1 and the cards. Structural, so the slice count is not pinned.
+	local rebuildFrames, askedAfter = 0, 0
+	for _ = 1, 40 do
+		local before = Calls()
+		local rebuilding = h.ns.Rebuilding()
+		if h.tick() == 0 then
+			break
+		end
+		local asked = Calls() - before
+		if rebuilding then
+			equal(asked, 0, label .. ": a rebuild frame asks nothing")
+			rebuildFrames = rebuildFrames + 1
+		else
+			equal(asked, spf and 1 or 0, label .. ": a travel or card frame asks once")
+			askedAfter = askedAfter + 1
+		end
+	end
+	equal(rebuildFrames >= 1, true, label .. ": the full build is sliced across the rebuild frames")
+	if spf then
+		equal(askedAfter, #journeys + 1, label .. ": one estimate a frame over step 1 and the cards")
+	end
 	equal(Cached(), spf and #journeys or 0, label .. ": each card answered")
 	-- None chosen, the overview's cards leave them to their tooltips; chosen, the whole card shows them and a folded
 	-- row keeps them for its tooltip.
@@ -3228,11 +3246,25 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	h.ns.Invalidate()
 	h.tick()
 	h.ns.OpenPanel()
-	equal(
-		Frames(),
-		spf and string.rep("1 ", #journeys) .. "1" or "0",
-		label .. ": opened in the rebuild's frame, one estimate a frame"
-	)
+	-- The build is sliced (Core.StepRebuild): the remaining slices ask nothing, then one estimate a frame.
+	local cardFrames = 0
+	for _ = 1, 40 do
+		local frameCalls = Calls()
+		local rebuilding = h.ns.Rebuilding()
+		if h.tick() == 0 then
+			break
+		end
+		local asked = Calls() - frameCalls
+		if rebuilding then
+			equal(asked, 0, label .. ": a rebuild frame asks nothing")
+		else
+			equal(asked, spf and 1 or 0, label .. ": a card frame asks once")
+			cardFrames = cardFrames + 1
+		end
+	end
+	if spf then
+		equal(cardFrames, #journeys + 1, label .. ": opened in the rebuild's frame, one estimate a frame")
+	end
 	clean(h, label)
 end
 

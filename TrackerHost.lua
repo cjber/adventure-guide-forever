@@ -59,6 +59,8 @@ MatchNativeScale()
 host:SetWidth(ObjectiveTrackerFrame:GetWidth())
 host:SetHeight(1)
 local modules, queued, ready = {}, false, false
+local requestedNativeHeight
+local appliedNativeHeight
 local pools = CreateFramePoolCollection()
 
 local function Acquire(parent, template)
@@ -160,7 +162,11 @@ end
 
 local function Layout()
 	queued = false
-	if InCombatLockdown() then
+	if
+		InCombatLockdown()
+		-- Read the global each time, not once at load: Blizzard_EditMode is load-on-demand, so it may appear later.
+		or (EditModeManagerFrame and EditModeManagerFrame.IsEditModeActive and EditModeManagerFrame:IsEditModeActive())
+	then
 		return
 	end
 	table.sort(modules, function(a, b)
@@ -169,6 +175,9 @@ local function Layout()
 	-- The native frame may only receive its final Edit Mode anchor after the
 	-- player and saved variables are ready. Capture it before our first reflow.
 	CaptureNativeAnchor()
+	if not requestedNativeHeight and (ObjectiveTrackerFrame:GetHeight() or 0) > 0 then
+		requestedNativeHeight = ObjectiveTrackerFrame:GetHeight()
+	end
 	local width = ObjectiveTrackerFrame:GetWidth()
 	MatchNativeScale()
 	host:ClearAllPoints()
@@ -210,13 +219,12 @@ local function Layout()
 	)
 	local screenHeight = UIParent:GetHeight()
 	local top = host:GetTop()
-	local nativeHeight = ObjectiveTrackerFrame:GetHeight() or 0
 	local scale = host.GetEffectiveScale and host:GetEffectiveScale() or 1
 	local screenScale = UIParent.GetEffectiveScale and UIParent:GetEffectiveScale() or scale
 	local margin = 24 * screenScale / scale
 	local screen = screenHeight and screenHeight * screenScale / scale
-	if screen and top and top - host:GetHeight() - nativeHeight < margin then
-		shift = margin - (top - host:GetHeight() - nativeHeight)
+	if screen and top and top - host:GetHeight() < margin then
+		shift = margin - (top - host:GetHeight())
 		shift = math.min(shift, math.max(0, screen - margin - top))
 	end
 	host:ClearAllPoints()
@@ -227,10 +235,29 @@ local function Layout()
 		nativeAnchor.x,
 		nativeAnchor.y + shift
 	)
-	ObjectiveTrackerFrame:ClearAllPoints()
 	local stackPoint, stackRelativePoint = StackPoints(nativeAnchor.point)
+	ObjectiveTrackerFrame:ClearAllPoints()
 	ObjectiveTrackerFrame:SetPoint(stackPoint, host, stackRelativePoint, 0, 0)
+	local currentNativeHeight = ObjectiveTrackerFrame:GetHeight() or requestedNativeHeight
+	if
+		(appliedNativeHeight and math.abs(currentNativeHeight - appliedNativeHeight) > 0.5)
+		or (
+			not appliedNativeHeight
+			and requestedNativeHeight
+			and math.abs(currentNativeHeight - requestedNativeHeight) > 0.5
+		)
+	then
+		requestedNativeHeight = currentNativeHeight
+	end
+	local bottom = host.GetBottom and host:GetBottom() or ((host:GetTop() or 0) - host:GetHeight())
+	local remaining = math.max(1, bottom - margin)
+	local nativeHeight = math.min(requestedNativeHeight or remaining, remaining)
+	if math.abs(currentNativeHeight - nativeHeight) > 0.5 then
+		ObjectiveTrackerFrame:SetHeight(nativeHeight)
+		appliedNativeHeight = nativeHeight
+	end
 end
+
 function host.MarkDirty(_)
 	if ready and not queued then
 		queued = true
@@ -269,6 +296,24 @@ end)
 ObjectiveTrackerFrame:HookScript("OnSizeChanged", function()
 	host:MarkDirty()
 end)
+-- Edit Mode restores Blizzard's saved anchor through its public callbacks. Reflow
+-- on those events instead of polling the native frame every frame.
+if EventRegistry and EventRegistry.RegisterCallback then
+	local function OnEditModeChanged()
+		local editing = EditModeManagerFrame
+			and EditModeManagerFrame.IsEditModeActive
+			and EditModeManagerFrame:IsEditModeActive()
+		if editing then
+			host:Hide()
+		else
+			host:Show()
+		end
+		host:MarkDirty()
+	end
+	EventRegistry:RegisterCallback("EditMode.Enter", OnEditModeChanged, host)
+	EventRegistry:RegisterCallback("EditMode.Exit", OnEditModeChanged, host)
+	EventRegistry:RegisterCallback("EditMode.SavedLayouts", OnEditModeChanged, host)
+end
 ForeverTrackerHost = api -- taint-ok: addon-owned companion tracker registry
 ns.TrackerHost = api
 

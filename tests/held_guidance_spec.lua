@@ -1,0 +1,68 @@
+local harness = dofile("tests/harness.lua")
+
+local function atObjectives()
+	local h = harness.load({
+		spf = "ended",
+		charDB = { journey = "zone:1413" },
+		completed = { 844 },
+		log = {
+			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
+			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
+		},
+	})
+	h.ns.StartRoute()
+	h.flush()
+	h.log[3] = { id = 887, title = "Southsea Freebooters", level = 14, complete = false }
+	h.log[4] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
+	h.fire("QUEST_LOG_UPDATE")
+	h.flush()
+	h.MovePlayer(1413, 0.64, 0.46)
+	h.ns.Invalidate()
+	h.flush()
+	assert(h.ns.Integrations.CurrentStep().key == "area:887:0", "active guidance targets the objective area")
+	assert(h.spfRoute.stops[1].hold == true, "objective interaction holds its destination")
+	return h
+end
+
+for _, action in ipairs({ "complete", "abandon" }) do
+	local h = atObjectives()
+	local before = h.spf.NavigateRoute
+	if action == "complete" then
+		h.log[3].complete, h.log[4].complete = true, true
+	else
+		table.remove(h.log, 4)
+		table.remove(h.log, 3)
+	end
+	h.fire("QUEST_LOG_UPDATE")
+	h.flush()
+	assert(h.spf.NavigateRoute == before + 1, action .. ": replaces the held route once")
+	assert(h.ns.Integrations.CurrentStep().key ~= "area:887:0", action .. ": no longer directs back to cleared work")
+	assert(#h.errors == 0, table.concat(h.errors, "\n"))
+end
+
+local h = atObjectives()
+for _, kind in ipairs({ "trainer", "battlemaster", "explore" }) do
+	local step = { kind = kind, title = kind, map = 1413, x = 0.5, y = 0.5, quests = {}, handins = {} }
+	assert(h.ns.Integrations.Restore({ step }), "can navigate to " .. kind)
+	assert(h.spfRoute.stops[1].hold == false, kind .. ": proximity can finish a non-quest stop")
+end
+assert(#h.errors == 0, table.concat(h.errors, "\n"))
+print("held_guidance_spec: completed/abandoned objectives replace held guidance; non-quest stops remain transient")
+
+-- Standalone map/dungeon buttons have no chosen-journey progress owner.
+for _, kind in ipairs({ "giver", "town" }) do
+	local single = harness.load({ spf = "ended" })
+	local stop = {
+		kind = kind,
+		key = "standalone",
+		title = "Quest giver",
+		map = 1413,
+		x = 0.5,
+		y = 0.5,
+		quests = { 844 },
+		handins = {},
+	}
+	assert(single.ns.Integrations.Navigate(stop), "standalone navigation starts")
+	assert(single.spfRoute.stops[1].hold == false, "standalone navigation must still finish on arrival")
+	assert(single.ns.Prefs().guided == nil, "standalone destination is not owned by a chosen journey")
+end

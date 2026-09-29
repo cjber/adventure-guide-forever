@@ -424,6 +424,11 @@ local cachedRoute = { journeys = {}, chosen = false, steps = {} }
 local rawRoute = cachedRoute
 local dirty = true
 local pendingRebuild = false
+-- The rebuild coroutine (see StepRebuild): nil when no build is in flight. `invalidations` counts ns.Invalidate
+-- calls, so a build that finishes over state that changed while it ran can tell, and rebuild again.
+local rebuildCo
+local invalidations = 0
+local flightStart = 0
 ---@type fun()[]
 local routeListeners = {}
 
@@ -618,15 +623,12 @@ local function Ended(route)
 	end
 end
 
-local function Rebuild()
-	pendingRebuild = false
-	if not ns.State.Ready() then
-		-- Completed-quest data hasn't loaded yet; an empty route beats a wrong one.
-		cachedRoute = { journeys = {}, chosen = false, steps = {} }
-		return
-	end
+-- Commits a finished full build: the plan is atomic, so Order/Sound/Session/Ended and the callers all run on the
+-- frame the last slice of the rebuild finished, never on a partial route.
+---@param route AGFRoute
+local function CommitRoute(route)
 	local previous = cachedRoute
-	rawRoute = BuildRoute()
+	rawRoute = route
 	ns.Order.Apply(rawRoute, ns.Prefs())
 	ns.Sound.Observe(previous, rawRoute, ns.State.Completed(), buildLog, trained)
 	cachedRoute = ns.Session.Apply(rawRoute)
@@ -649,9 +651,23 @@ local function Rebuild()
 	Remember(cachedRoute.steps[1])
 end
 
+-- The synchronous full build: ns.Route()'s lazy path, and any caller before Core's coroutine starts. One frame, no
+-- slices, exactly as before the rebuild was sliced.
+local function Rebuild()
+	pendingRebuild = false
+	if not ns.State.Ready() then
+		-- Completed-quest data hasn't loaded yet; an empty route beats a wrong one.
+		cachedRoute = { journeys = {}, chosen = false, steps = {} }
+		return
+	end
+	CommitRoute(BuildRoute())
+end
+
 ---@return AGFRoute
 function ns.Route()
-	if dirty then
+	-- While Core's rebuild coroutine is mid-flight the route is stale on purpose: a synchronous build here would run
+	-- Model.Plan a second time over the same module state. The flight's own commit finishes it.
+	if dirty and not rebuildCo then
 		Rebuild()
 	end
 	return cachedRoute
@@ -684,31 +700,81 @@ local function RefreshTravel()
 	end
 end
 
+-- Commits the finished route, then wakes the listeners; step 1's travel line gets its own frame (RefreshTravel).
+local function FinishRebuild()
+	travelPending = true
+	NotifyRouteChange()
+	C_Timer.After(0, RefreshTravel)
+end
+
+-- One frame of the rebuild: starts the coroutine, resumes it for another slice, or commits the finished route. The
+-- coroutine yields inside Model.Journeys every few card routes (WFA-13), so a heavy full build never spends its whole
+-- cost in one frame. The route is committed only when the last slice ends; a partial build is never visible.
+local function StepRebuild()
+	if not rebuildCo then
+		-- A caller in the same frame (the map a card click turns) may have rebuilt through ns.Route() already: the
+		-- route is fresh, but the listeners still need waking, exactly as the old one-frame callback always did.
+		if not dirty then
+			pendingRebuild = false
+			FinishRebuild()
+			return
+		end
+		if not ns.State.Ready() then
+			-- Completed-quest data hasn't loaded yet; an empty route beats a wrong one.
+			pendingRebuild = false
+			cachedRoute = { journeys = {}, chosen = false, steps = {} }
+			FinishRebuild()
+			return
+		end
+		flightStart = invalidations
+		rebuildCo = coroutine.create(BuildRoute)
+	end
+	local ok, route = coroutine.resume(rebuildCo)
+	if not ok then
+		rebuildCo = nil
+		pendingRebuild = false
+		error(route, 0)
+	end
+	if coroutine.status(rebuildCo) == "suspended" then
+		-- Another slice of the same build is due next frame.
+		C_Timer.After(0, StepRebuild)
+		return
+	end
+	rebuildCo = nil
+	CommitRoute(route)
+	pendingRebuild = false
+	FinishRebuild()
+	-- A listener that invalidated during FinishRebuild's notify already set `pendingRebuild` and queued its own step,
+	-- so only queue one here when nothing else has. Without the guard two chains would resume the same coroutine,
+	-- giving a spurious extra notification and rebuild frames that run several slices.
+	if invalidations ~= flightStart and not pendingRebuild then
+		-- The player, log or prefs changed while the build ran: rebuild from the new state.
+		dirty = true
+		pendingRebuild = true
+		C_Timer.After(0, StepRebuild)
+	end
+end
+
 function ns.Invalidate()
 	dirty = true
+	invalidations = invalidations + 1
 	if pendingRebuild then
 		return
 	end
 	pendingRebuild = true
-	C_Timer.After(0, function()
-		-- A caller in the same frame (the map a card click turns) may have rebuilt through ns.Route() already.
-		if dirty then
-			Rebuild()
-		else
-			pendingRebuild = false
-		end
-		-- Set before the listeners run, so a card estimate they queue waits out step 1's frame too.
-		travelPending = true
-		NotifyRouteChange()
-		-- Step 1's travel line gets a frame of its own: at most one Shortest Path estimate, never in the rebuild's.
-		C_Timer.After(0, RefreshTravel)
-	end)
+	C_Timer.After(0, StepRebuild)
 end
 
 -- A rebuild or step 1's travel line is due: this frame or the next belongs to them, not to a card's estimate.
 ---@return boolean
 function ns.Settling()
 	return pendingRebuild or travelPending
+end
+
+-- True while a full build is being sliced across frames (the benchmark reads this to measure every rebuild frame).
+---@return boolean
+function ns.Rebuilding()
+	return pendingRebuild
 end
 
 --[[ Choosing and starting a journey (docs/design.md §2.10): the cards, the tracker, the menus and the map's rings all
@@ -764,7 +830,7 @@ function ns.StartRoute(step)
 	end
 	pendingStart = false
 	step = step or route.steps[1]
-	if step and ns.Integrations.Navigate(step) then
+	if step and ns.Integrations.Navigate(step, true) then
 		prefs.guided = route.journey
 		return true
 	end
