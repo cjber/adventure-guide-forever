@@ -9,9 +9,9 @@ from gen_quests import (
     AREAS,
     CAP,
     EXPLORE,
+    FIXTURE,
     LINK,
     NAME_REACH,
-    OUTPUT,
     SpawnAreas,
     continents,
     crossings,
@@ -715,9 +715,9 @@ class ObjectiveTest(unittest.TestCase):
 
 
 class DataTest(unittest.TestCase):
-    """The committed Data/Quests.lua."""
+    """The committed test-only quest corpus, tests/fixtures/quests.lua."""
 
-    TEXT = OUTPUT.read_text(encoding="utf-8")
+    TEXT = FIXTURE.read_text(encoding="utf-8")
     # Objectives, XP and flags fit in 150 KB above the original size; entrance gates add under 2.5 KB.
     BOUND = 1_179_151 + 150_000 + 2_500
 

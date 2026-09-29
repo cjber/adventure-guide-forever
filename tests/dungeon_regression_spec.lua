@@ -58,7 +58,8 @@ for id, instance in pairs(h.ns.Data.instances) do
 		h.flush()
 		assert(h.ns.Dungeons.Planned(id), "planning must persist for " .. id)
 		local bosses = h.ns.Dungeons.Bosses(nil, id)
-		assert(#bosses > 0, "standalone boss coverage for " .. id)
+		-- Bosses now come from AtlasLoot/native EJ only; with neither installed the list is empty, never nil.
+		assert(type(bosses) == "table", "boss list is a table for " .. id)
 		for _, frame in ipairs(h.frames) do
 			if
 				frame:IsObjectType("Button")
@@ -73,11 +74,13 @@ for id, instance in pairs(h.ns.Data.instances) do
 			end
 		end
 		h.flush()
-		local visible = false
-		for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)) do
-			visible = visible or entry.text == bosses[1].name
+		if bosses[1] then
+			local visible = false
+			for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)) do
+				visible = visible or entry.text == bosses[1].name
+			end
+			assert(visible, "standalone boss panel for " .. id)
 		end
-		assert(visible, "standalone boss panel for " .. id)
 		planned[#planned + 1] = id
 	end
 end

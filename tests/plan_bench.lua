@@ -11,9 +11,7 @@ local harness = dofile("tests/harness.lua")
 local MISS_MS, HIT_MS, BUDGET_MS, SLOTS, TTL = 2.45, 0.003, 3, 256, 5
 local SAMPLES, strict = 20, os.getenv("AGF_BENCH_STRICT") == "1"
 
-local data = {}
-assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", data)
-data = data.Data
+local data = harness.data()
 
 -- Where each level stands, per side (uiMapID, x, y), and the race and class IDs it plays.
 local SIDES = {

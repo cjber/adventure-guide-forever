@@ -1,13 +1,17 @@
 # Dungeon sources
 
-The Dungeons tab uses instance Map.IDs, never dungeon-name matching. QuestieDB and AtlasLoot are optional runtime sources; no third-party guide code or AtlasLoot data is bundled.
+The Dungeons tab uses instance Map.IDs, never dungeon-name matching. AtlasLoot, the native Encounter
+Journal and QuestieDB are optional runtime sources; no third-party guide code, AtlasLoot data or
+bundled boss table is shipped.
 
-`Data/DungeonBosses.lua` is generated from the same pinned GPL-3.0 CMaNGOS database as the quests.
-Its 167 encounters cover all 19 Classic dungeons. `instance_dungeon_encounters` supplies instance,
-normal difficulty and order; `instance_encounters` must identify a creature-kill credit; the matching
-`creature_template` supplies the NPC ID and levels. This is a baseline, not a complete rare-spawn list
-or a claim that Classic data includes every Forever addition. AtlasLoot's curated list takes priority;
-native journal records and Questie NPC records provide runtime names and additional confirmed bosses.
+Boss data comes from AtlasLoot first and the native Encounter Journal second. AtlasLoot's curated
+encounter list is authoritative when its dungeon module is installed, and explicit
+`C_EncounterJournal` / `EJ_GetEncounterInfoByIndex` records fill the gaps when it is not. Loot comes
+from AtlasLoot's curated item rows, with QuestieDB supplying runtime item-to-NPC relations where
+AtlasLoot lists none. Neither source is bundled, and when none is installed the tab shows an empty
+state instead of failing. QuestieDB can still supply runtime NPC names, item drops, rewards,
+objectives and entrance points, but it is not a bundled fallback and never overrides AtlasLoot's
+encounter order or localized names.
 
 | Source | Pin / result | Use |
 | --- | --- | --- |
@@ -52,8 +56,8 @@ provides sorted, shared `GetAllIds` arrays and detached `GetAll` rows. The adapt
 checks field metadata, and publishes only a complete snapshot. The pinned NPC metadata has creature rank
 but no dungeon-boss flag. Only rank 3 proves a boss by itself; ordinary rank-1 elites are not listed as
 bosses. Explicit client journal encounters can identify matching local NPCs in journal order. AtlasLoot's
-curated encounter list takes precedence when available. Otherwise the generated encounter baseline
-identifies Classic bosses even when their creature rank is only elite. Unidentified elites stay out.
+curated encounter list takes precedence when available; otherwise the native journal supplies the
+encounter list, and rank-3 Questie NPCs remain the final runtime fallback. Unidentified elites stay out.
 
 Loot is deduplicated by item ID. Every dropper must have known spawns exclusively in the same instance;
 unknown, outdoor or multi-instance droppers exclude the item, including when AtlasLoot also lists it.
@@ -75,7 +79,8 @@ and localized Trash groups are read; quests, sets and other extra lists are excl
 loads the installed dungeon module on demand out of combat. It never changes AtlasLoot's selection or
 bundles its data. With AtlasLoot alone, uncached rarity remains hidden and low-quality quest starters
 need QuestieDB to establish that exception. The runtime adapter is also compatible with the inspected
-Classic/Era layout; future schema changes fall back to QuestieDB.
+Classic/Era layout; future schema changes fall back to the native Encounter Journal, and QuestieDB
+still supplies loot relations where AtlasLoot lists none.
 
 QuestieDB's `ZoneDB.private.dungeons` supplies alternate instance area IDs and already-converted Forever
 entrance percentages. The adapter uses only points on maps AGF places and validates them before use. It

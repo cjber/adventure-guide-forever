@@ -8,6 +8,11 @@ local L, Model = ns.L, ns.Model
 local Dungeons = {}
 ns.Dungeons = Dungeons
 
+-- The bundled boss database is gone (docs/dungeon-sources.md). The dungeon UI still probes this
+-- field when neither AtlasLoot nor the native Encounter Journal is installed, so keep it present
+-- and empty rather than letting that probe index nil.
+ns.DungeonBosses = ns.DungeonBosses or {}
+
 -- Permanent character restrictions only. Other unproven requirements stay visible as locked.
 ---@param quest? AGFQuest
 ---@param player AGFPlayer
@@ -398,23 +403,25 @@ end
 ---@param journal? AGFDungeonBoss[]
 ---@return AGFDungeonBoss[]
 function Dungeons.Bosses(source, instance, journal)
+	-- AtlasLoot's curated encounters win, the native Encounter Journal fills the gaps, and the
+	-- runtime NPC source is the last resort. With none of them the result is empty, never an error.
+	local listed = source and source.bosses[instance] or {}
 	if source and source.curated and source.curated[instance] then
 		local rows, seen = {}, {}
-		for _, boss in ipairs(source.bosses[instance] or {}) do
+		for _, boss in ipairs(listed) do
 			rows[#rows + 1] = boss
-			seen[boss.id] = true
+			seen[boss.id], seen[boss.name] = true, true
 		end
-		for _, boss in ipairs(ns.DungeonBosses[instance] or {}) do
-			if not seen[boss.id] then
-				rows[#rows + 1] = boss
+		for _, encounter in ipairs(journal or {}) do
+			if not seen[encounter.id] and not seen[encounter.name] then
+				rows[#rows + 1] = encounter
 			end
 		end
 		return rows
 	end
-	local canonical = journal or ns.DungeonBosses[instance]
-	if canonical then
+	if journal then
 		local rows, seen = {}, {}
-		for _, encounter in ipairs(canonical) do
+		for _, encounter in ipairs(journal) do
 			local matches = {}
 			for _, npc in pairs(source and source.npcs and source.npcs[instance] or {}) do
 				if
@@ -430,14 +437,14 @@ function Dungeons.Bosses(source, instance, journal)
 				seen[boss.id] = true
 			end
 		end
-		for _, boss in ipairs(source and source.bosses[instance] or {}) do
+		for _, boss in ipairs(listed) do
 			if not seen[boss.id] then
 				rows[#rows + 1] = boss
 			end
 		end
 		return rows
 	end
-	return source and source.bosses[instance] or {}
+	return listed
 end
 
 local requestedLoot = {}

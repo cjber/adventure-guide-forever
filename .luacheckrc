@@ -165,5 +165,6 @@ read_globals = { "ShowUIPanel", "HideUIPanel", "CreateFramePoolCollection", "C_X
 }
 
 files["tests/"] = { std = "+luajit" }
-files["Data/Quests.lua"] = { max_line_length = false }
+files["Data/Geometry.lua"] = { max_line_length = false }
+files["tests/fixtures/quests.lua"] = { max_line_length = false }
 read_globals[#read_globals + 1] = "EditModeManagerFrame"

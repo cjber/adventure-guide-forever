@@ -88,6 +88,25 @@ end
 -- complete, map, x, y} entries), completed (quest IDs), player (overrides), initialLogin (default true), waypoint
 -- (the user waypoint the client kept across a /reload, a UiMapPoint), completedPending (the client has no completed
 -- quests to give until the spec sets h.completedPending to false).
+-- The test quest corpus (tests/fixtures/quests.lua). The addon no longer ships its own quest catalogue: in game,
+-- quests come from QuestieDB. The specs keep this generated corpus as their deterministic model fixture.
+-- Loaded fresh each call, never cached: specs mutate quest records, and a shared table would leak between loads.
+---@return table<integer, AGFQuest>
+function harness.fixtureQuests()
+	return assert(loadfile("tests/fixtures/quests.lua"))()
+end
+
+-- The route geometry (shipped Data/Geometry.lua) with the test quest corpus merged in: what specs that used to
+-- load Data/Quests.lua now use for the model, and the source harness.questieMirror mirrors.
+---@return AGFData
+function harness.data()
+	local ns = {}
+	assert(loadfile("Data/Geometry.lua"))(ADDON, ns)
+	local data = ns.Data
+	data.quests = harness.fixtureQuests()
+	return data
+end
+
 function harness.load(options)
 	options = options or {}
 	local G = setmetatable({}, { __index = _G })
@@ -2285,13 +2304,14 @@ function harness.load(options)
 		h.metadata.QuestieDB = { Version = fake.version or "0.0-test", ["X-Flavor"] = fake.flavor or "Forever" }
 	end
 
-	-- Tweaks Forever (its API.lua, version 1): options.tf.spells is what TrainableSpells answers (nil before login
-	-- and in combat), fresh copies each call; h.tf counts the calls. No options.tf is no Tweaks Forever.
+	-- Tweaks Forever (its API.lua, version 1 or, with options.tf.version, 2): options.tf.spells is what
+	-- TrainableSpells answers (nil before login and in combat), options.tf.trainers what v2's Trainers answers; fresh
+	-- copies each call; h.tf counts the calls. No options.tf is no Tweaks Forever.
 	if options.tf then
-		h.tf = { TrainableSpells = 0 }
+		h.tf = { TrainableSpells = 0, Trainers = 0 }
 		G.TweaksForever = {
 			API = {
-				version = 1,
+				version = options.tf.version or 1,
 				TrainableSpells = function()
 					h.tf.TrainableSpells = h.tf.TrainableSpells + 1
 					local spells = options.tf.spells
@@ -2310,6 +2330,17 @@ function harness.load(options)
 					end
 					return copies
 				end,
+				Trainers = options.tf.version and options.tf.version >= 2 and function()
+					h.tf.Trainers = h.tf.Trainers + 1
+					local copies = {}
+					for index, trainer in ipairs(options.tf.trainers or {}) do
+						copies[index] = {}
+						for key, value in pairs(trainer) do
+							copies[index][key] = value
+						end
+					end
+					return copies
+				end or nil,
 			},
 		}
 	end
@@ -2416,6 +2447,13 @@ function harness.load(options)
 				h.call(chunk, ADDON, h.ns)
 			end
 		end
+	end
+	-- The shipped Data/Geometry.lua carries no quest records; give the loaded ns.Data the test corpus so the model
+	-- specs and harness.questieMirror have one. In game QuestieSource swaps in the QuestieDB quests instead.
+	-- Any `questiedb` option means the spec drives the QuestieDB path (mirror or a broken/false stand-in): leave the
+	-- quests to QuestieSource, so the no-stale-fallback specs hold. Only a plain load gets the model corpus.
+	if h.ns.Data and options.questiedb == nil then
+		h.ns.Data.quests = harness.fixtureQuests()
 	end
 	-- Counts the model's entry points, so specs can prove what a rebuild ran.
 	for _, name in ipairs({ "Plan", "Journeys" }) do

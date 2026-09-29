@@ -2,7 +2,7 @@
 
 import unittest
 
-from gen_zoneart import quest_zones, render, tiles_needed, zone_art
+from gen_zoneart import render, tiles_needed, zone_art, zone_maps
 
 QUESTS = (
     "ns.Data = {\n\tzones = {\n\t\t[1411] = { name = 'Durotar' },\n\t\t[1413] = { name = 'The Barrens' },\n\t},\n}\n"
@@ -32,8 +32,8 @@ def tile(overlay_id, row, col, file):
 
 
 class ZoneArtTest(unittest.TestCase):
-    def test_quest_zones(self):
-        self.assertEqual(quest_zones(QUESTS), [1411, 1413])
+    def test_zone_maps(self):
+        self.assertEqual(zone_maps(QUESTS), [1411, 1413])
 
     def test_tiles_needed_rounds_up(self):
         self.assertEqual(tiles_needed(256, 256), 1)

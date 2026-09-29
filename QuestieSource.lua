@@ -5,6 +5,9 @@ local _, ns = ...
 -- it never limits which quests exist. Questie supplies live availability policy (including events).
 
 local ADDON = "QuestieDB"
+-- The contract this file was written against. QuestieDB checks a RANGE (its minSupportedContract..contractVersion),
+-- so a newer additive QuestieDB keeps working and new quests appear automatically via GetAllIds; only a rising
+-- minSupportedContract (or a removed field, caught below) makes the catalogue unavailable, and the reason is shown.
 local CONTRACT = 2
 -- Keep a full millisecond for the client's timer and frame bookkeeping: the complete callback, rather than only
 -- this coroutine, must stay below the 3 ms frame budget.
@@ -64,9 +67,11 @@ local function Fit()
 	if type(lib) ~= "table" then
 		return nil, ns.L.QUESTIE_ABSENT
 	end
-	local ok, fits = pcall(lib.RequireContract, CONTRACT)
-	if not (ok and fits) then
-		return nil, ns.L.QUESTIE_CONTRACT
+	-- Keep QuestieDB's own mismatch message (it names both versions) rather than the generic line, so the audit shows
+	-- exactly why the catalogue is unavailable.
+	local called, fits, why = pcall(lib.RequireContract, CONTRACT)
+	if not (called and fits) then
+		return nil, why or ns.L.QUESTIE_CONTRACT
 	end
 	if C_AddOns.GetAddOnMetadata(ADDON, "X-Flavor") ~= "Forever" then
 		return nil, ns.L.QUESTIE_FLAVOUR
@@ -107,6 +112,22 @@ local function Fit()
 		}
 end
 
+-- The single class a bitmask names, or nil when it names none or several.
+---@param classes integer
+---@return integer?
+local function SingleClass(classes)
+	local found
+	for class = 1, 11 do
+		if bit.band(classes, 2 ^ (class - 1)) ~= 0 then
+			if found then
+				return nil
+			end
+			found = class
+		end
+	end
+	return found
+end
+
 ---@param races integer
 ---@return integer 1 Alliance, 2 Horde, 3 both, 0 neither (tools/gen_quests.py faction)
 local function Side(races)
@@ -144,21 +165,20 @@ local function Cell(continent, x, y)
 	return continent .. ":" .. math.floor(x / LINK) .. ":" .. math.floor(y / LINK)
 end
 
--- The bundled data's town places in LINK-yard cells, so a place from QuestieDB joins the town of the nearest one.
+-- The bundled town anchors (Data/Geometry.lua `townAnchors`) in LINK-yard cells, so a place from QuestieDB joins the
+-- town of the nearest one. Route geometry, not quest data: the anchors are the distinct quest-giver town places.
 ---@param data AGFData
 ---@param yield fun()
 ---@return table<string, {x: number, y: number, hub: integer}[]>
 local function TownCells(data, yield)
 	local cells = {}
-	for _, quest in pairs(data.quests) do
+	for _, place in ipairs(data.townAnchors or {}) do
 		yield()
-		for _, place in ipairs({ quest.start or false, quest.finish or false }) do
-			local at = place and place.hub and World(data, place)
-			if place and at then
-				local key = Cell(at.continent, at.x, at.y)
-				cells[key] = cells[key] or {}
-				table.insert(cells[key], { x = at.x, y = at.y, hub = place.hub })
-			end
+		local at = place.hub and World(data, place)
+		if at then
+			local key = Cell(at.continent, at.x, at.y)
+			cells[key] = cells[key] or {}
+			table.insert(cells[key], { x = at.x, y = at.y, hub = place.hub })
 		end
 	end
 	return cells
@@ -322,8 +342,10 @@ local function Build(lib, zones, bundled, yield)
 				quest.preAny = type(v.preQuestSingle) == "table" and v.preQuestSingle or nil
 				local start = quest.start
 				if start and quest.classes and start.npc then
+					-- A class quest's giver is its class's trainer. The bundled trainer data has no entry for Forever's
+					-- extra class/race combinations, so fall back to the quest's single required class.
 					local npc = bundled.npcs[start.npc]
-					start.trainer = npc and npc.class or nil
+					start.trainer = (npc and npc.class) or SingleClass(quest.classes)
 				end
 				if not quest.dungeon then
 					quest.need, quest.obj, quest.kinds, quest.objectivesUnknown =

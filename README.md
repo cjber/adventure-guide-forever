@@ -72,7 +72,7 @@ Translations are welcome as a pull request, or pasted into an issue, on GitHub: 
 
 ## Where the quests come from
 
-Quest data comes from the installed Forever edition of QuestieDB, including quests outside the old bundled catalogue. Questie's live policy checks prerequisites, events and character restrictions. The game supplies finished quests, objective progress and cached quest details. AtlasLoot supplies curated loot tables; native journal data and the verified encounter baseline cover missing encounters. Bundled map geometry, transport and trainer records remain separate from the quest catalogue. Missing QuestieDB is shown explicitly; no smaller quest list silently replaces it.
+Quest data comes from the installed Forever edition of QuestieDB, including quests outside the old bundled catalogue. Questie's live policy checks prerequisites, events and character restrictions. The game supplies finished quests, objective progress and cached quest details. AtlasLoot supplies dungeon and raid bosses and loot; the native Encounter Journal fills gaps. Route geometry, transport and trainer records are a separate source from the quest catalogue. Missing QuestieDB is shown explicitly; no smaller quest list silently replaces it.
 
 Forever's new quests are only considered once they are in your log. The guide never recommends a quest whose eligibility it cannot establish or points at a location it does not have. This is not a complete levelling walkthrough.
 

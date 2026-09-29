@@ -10,7 +10,7 @@
 -- tenth quest by ID; a step that holds a dropped quest fails it too.
 -- AGF_PLAYTHROUGH_TRACE="Human class 1" prints that character's card 1 each round.
 local ns = {}
-assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
+ns.Data = dofile("tests/harness.lua").data()
 dofile("tests/harness.lua").model(ns)
 local Model, data = ns.Model, ns.Data
 local trace = os.getenv("AGF_PLAYTHROUGH_TRACE")
