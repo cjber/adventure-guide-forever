@@ -112,9 +112,11 @@ follow the shared family voice.
 
 ## 4. Routes
 
-- **4.1 Selection.** Prefer nearby useful work, group town visits, and cross the sea at most once.
-  Keep distant hand-ins from displacing nearby pickups.
-- **4.2 Laps.** Pickups precede objectives and hand-ins. Respect quest-log capacity. Rebuild on events;
+- **4.1 Selection.** Take the nearest action at every step: the nearest town pickup, the nearest area of
+  a quest the town handed out or the player carries, or the nearest ready hand-in. Group town visits and cross
+  the sea at most once.
+- **4.2 Laps.** A quest's objectives follow its pickup and its hand-in all of them. Respect quest-log capacity.
+  Rebuild on events;
   movement changes focus without shuffling the route. Proximity never hides or truncates guidance. Plan a bounded lookahead, then verify and merge visits before limiting the displayed actions. Keep work bounded per frame.
   An area step's point is the objective node nearest the player (a spawn group's medoid, or the generator's point
   inside the shape), so the marker sits on the work rather than on the shape's border; when the player is already

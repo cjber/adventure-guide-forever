@@ -2227,8 +2227,18 @@ do
 	local ring = h.pins.AdventureGuideForeverPinTemplate[1]
 	equal(ring.step.key, step.key, "hub tooltip: ring 1 is the town")
 	h.Hover(ring)
-	equal(h.tooltip[#h.tooltip - 1], "highlight: And 1 more", "hub tooltip: the ring's quests")
-	equal(h.tooltip[#h.tooltip], "instruction: Click to set a waypoint", "hub tooltip: the click line last")
+	-- The route comes back to Crossroads to hand in, so the ring names its two visits after the quest list.
+	local last, visits = #h.tooltip, 0
+	for index = last - 1, 1, -1 do
+		if h.tooltip[index]:find("^normal: Stop ") then
+			visits = visits + 1
+		else
+			break
+		end
+	end
+	equal(visits >= 1, true, "hub tooltip: the ring's visits")
+	equal(h.tooltip[last - visits - 1], "highlight: And 1 more", "hub tooltip: the ring's quests")
+	equal(h.tooltip[last], "instruction: Click to set a waypoint", "hub tooltip: the click line last")
 
 	-- A group quest carries the quest log's group tag.
 	ns.Data.quests[step.quests[1]].elite = true
