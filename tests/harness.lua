@@ -2304,13 +2304,14 @@ function harness.load(options)
 		h.metadata.QuestieDB = { Version = fake.version or "0.0-test", ["X-Flavor"] = fake.flavor or "Forever" }
 	end
 
-	-- Tweaks Forever (its API.lua, version 1): options.tf.spells is what TrainableSpells answers (nil before login
-	-- and in combat), fresh copies each call; h.tf counts the calls. No options.tf is no Tweaks Forever.
+	-- Tweaks Forever (its API.lua, version 1 or, with options.tf.version, 2): options.tf.spells is what
+	-- TrainableSpells answers (nil before login and in combat), options.tf.trainers what v2's Trainers answers; fresh
+	-- copies each call; h.tf counts the calls. No options.tf is no Tweaks Forever.
 	if options.tf then
-		h.tf = { TrainableSpells = 0 }
+		h.tf = { TrainableSpells = 0, Trainers = 0 }
 		G.TweaksForever = {
 			API = {
-				version = 1,
+				version = options.tf.version or 1,
 				TrainableSpells = function()
 					h.tf.TrainableSpells = h.tf.TrainableSpells + 1
 					local spells = options.tf.spells
@@ -2329,6 +2330,17 @@ function harness.load(options)
 					end
 					return copies
 				end,
+				Trainers = options.tf.version and options.tf.version >= 2 and function()
+					h.tf.Trainers = h.tf.Trainers + 1
+					local copies = {}
+					for index, trainer in ipairs(options.tf.trainers or {}) do
+						copies[index] = {}
+						for key, value in pairs(trainer) do
+							copies[index][key] = value
+						end
+					end
+					return copies
+				end or nil,
 			},
 		}
 	end

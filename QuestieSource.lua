@@ -112,6 +112,22 @@ local function Fit()
 		}
 end
 
+-- The single class a bitmask names, or nil when it names none or several.
+---@param classes integer
+---@return integer?
+local function SingleClass(classes)
+	local found
+	for class = 1, 11 do
+		if bit.band(classes, 2 ^ (class - 1)) ~= 0 then
+			if found then
+				return nil
+			end
+			found = class
+		end
+	end
+	return found
+end
+
 ---@param races integer
 ---@return integer 1 Alliance, 2 Horde, 3 both, 0 neither (tools/gen_quests.py faction)
 local function Side(races)
@@ -326,8 +342,10 @@ local function Build(lib, zones, bundled, yield)
 				quest.preAny = type(v.preQuestSingle) == "table" and v.preQuestSingle or nil
 				local start = quest.start
 				if start and quest.classes and start.npc then
+					-- A class quest's giver is its class's trainer. The bundled trainer data has no entry for Forever's
+					-- extra class/race combinations, so fall back to the quest's single required class.
 					local npc = bundled.npcs[start.npc]
-					start.trainer = npc and npc.class or nil
+					start.trainer = (npc and npc.class) or SingleClass(quest.classes)
 				end
 				if not quest.dungeon then
 					quest.need, quest.obj, quest.kinds, quest.objectivesUnknown =

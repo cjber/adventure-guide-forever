@@ -352,8 +352,23 @@
 ---@field general boolean it goes on the General tab
 
 ---@class AGFTFAPI
----@field version integer 1
+---@field version integer 1 or 2, additive
 ---@field TrainableSpells fun(): AGFTFSpell[]? the spells the player's level allows and they haven't learned; nil before login and in combat
+---@field Trainers? fun(): AGFTFTrainer[]? (version 2) the player's class trainers with their places; {} for a class with none
+
+-- The raw shape Tweaks Forever's API v2 answers with (its types/Namespace.lua TFClassTrainer); place is flat here.
+---@class AGFTFTrainer
+---@field npc integer
+---@field name string
+---@field map? integer
+---@field x? number
+---@field y? number
+
+-- One class trainer Tweaks Forever knows, with the place it projects (version 2).
+---@class AGFClassTrainer
+---@field npc integer the trainer's creature entry
+---@field name string
+---@field place? AGFPlace where the trainer stands; nil when the data places none
 
 ---@class AGFIntegrations
 ---@field Kind fun(step: AGFStep|AGFGiver): AGFSPFStopKind? what Shortest Path is told stands at a stop: a town's "?" where a hand-in is its point, else its "!"
@@ -771,7 +786,8 @@
 ---@field TownName fun(data: AGFData, place: {map: integer, hub?: integer}, mapName?: fun(map: integer): string?): string the hub's flight-master town, else the map's name
 
 ---@class AGFIntegrations
----@field Training fun(): AGFTraining?, boolean Tweaks Forever's affordable spells to train, counted; nil without a v1 Tweaks Forever, its answer, or an affordable spell to train
+---@field Training fun(): AGFTraining?, boolean Tweaks Forever's affordable spells to train, counted; nil without a v1+ Tweaks Forever, its answer, or an affordable spell to train
+---@field Trainers fun(): AGFClassTrainer[]? Tweaks Forever's class trainers with their places (API v2), for a class the bundled trainer data does not place (Forever's extra combos); nil without a v2
 
 ---@class AGFStrings
 ---@field TRAINER_IN string format: the trainer aside's lead with the nearest trainer's town
