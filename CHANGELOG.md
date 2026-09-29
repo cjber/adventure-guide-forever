@@ -20,6 +20,7 @@ verbatim rather than rewritten as the addon moves.
 - **See the next ten actions.** Routes continue across successive quest loops, with active steps above alternative destinations. Short routes show clearly labelled upcoming quests; locked quests never become navigation targets.
 - **Keep the work between pickup and turn-in.** QuestieDB objective icons are decoded correctly, preserving objective locations even when the icon value is zero. Unknown requirements are left unclaimed until the quest log supplies them.
 - **Keep nearby routes visible.** Standing near a town or inside an objective area no longer shortens the route handed to Shortest Path or clears the guide's waypoint.
+- **Stay stacked in combat.** The native quest tracker is protected in a fight and returns to its own slot, so the guide's column moves above it instead of overlapping.
 
 ## [0.6.0] - 2026-09-28
 

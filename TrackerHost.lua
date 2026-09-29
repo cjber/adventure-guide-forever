@@ -162,11 +162,27 @@ end
 
 local function Layout()
 	queued = false
-	if
-		InCombatLockdown()
-		-- Read the global each time, not once at load: Blizzard_EditMode is load-on-demand, so it may appear later.
-		or (EditModeManagerFrame and EditModeManagerFrame.IsEditModeActive and EditModeManagerFrame:IsEditModeActive())
-	then
+	if InCombatLockdown() then
+		-- The native tracker is protected: in combat it cannot be restacked below our column, and Blizzard returns it
+		-- to its saved Edit Mode slot, where our column also sits, so the two overlap. Move our column above that
+		-- slot instead (no protected call), and resume the full reflow on PLAYER_REGEN_ENABLED.
+		CaptureNativeAnchor()
+		if nativeAnchor then
+			local _, hostPoint = StackPoints(nativeAnchor.point)
+			host:SetWidth(ObjectiveTrackerFrame:GetWidth())
+			host:ClearAllPoints()
+			host:SetPoint(
+				hostPoint,
+				nativeAnchor.relativeTo,
+				nativeAnchor.relativePoint,
+				nativeAnchor.x,
+				nativeAnchor.y
+			)
+		end
+		return
+	end
+	-- Read the global each time, not once at load: Blizzard_EditMode is load-on-demand, so it may appear later.
+	if EditModeManagerFrame and EditModeManagerFrame.IsEditModeActive and EditModeManagerFrame:IsEditModeActive() then
 		return
 	end
 	table.sort(modules, function(a, b)
@@ -288,6 +304,7 @@ function api.IsAttached(module)
 	return module ~= nil and module.parentContainer == host
 end
 host:RegisterEvent("PLAYER_REGEN_ENABLED")
+host:RegisterEvent("PLAYER_REGEN_DISABLED")
 host:RegisterEvent("DISPLAY_SIZE_CHANGED")
 host:RegisterEvent("UI_SCALE_CHANGED")
 host:SetScript("OnEvent", function()
