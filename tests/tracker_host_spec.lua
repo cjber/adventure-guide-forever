@@ -267,6 +267,11 @@ combat = true
 host:MarkDirty()
 drain()
 check(first.updates == updatesBeforeDuplicateAttach + 1, "combat defers layout")
+-- In combat the protected native tracker cannot be restacked, so our column moves above its saved slot instead.
+check(
+	host.point[1] == "BOTTOMRIGHT" and host.point[2] == parent and host.point[3] == "TOPRIGHT",
+	"combat lifts our column above the native slot"
+)
 combat = false
 host.scripts.OnEvent(host, "PLAYER_REGEN_ENABLED")
 drain()
