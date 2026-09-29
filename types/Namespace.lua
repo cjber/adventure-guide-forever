@@ -374,6 +374,7 @@
 ---@field Kind fun(step: AGFStep|AGFGiver): AGFSPFStopKind? what Shortest Path is told stands at a stop: a town's "?" where a hand-in is its point, else its "!"
 ---@field TravelLine fun(step: AGFStep): string? asks Shortest Path now, at most one call: "Fly to X · N min" from EstimateDetail, "About N min away" from Estimate, nil without either or an answer
 ---@field RefreshTravel fun() refetches step 1's line; Core runs it in the frame after each rebuild
+---@field Debug fun(): string the travel line and guidance state, for /agf travel
 ---@field Travel fun(step: AGFStep): string? the last line fetched for this step, without asking again
 ---@field TravelMinutes fun(step: AGFStep): integer? the whole trip's minutes, fetched with that line
 ---@field OnTravelChange fun(callback: fun())

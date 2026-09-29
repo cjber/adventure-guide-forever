@@ -973,6 +973,8 @@ SlashCmdList.ADVENTUREGUIDEFOREVER = function(msg)
 		ns.Dump()
 	elseif command == "tracker" then
 		ns.Print(ns.TrackerHost.Debug())
+	elseif command == "travel" then
+		ns.Print(ns.Integrations.Debug())
 	elseif command == "" or command == "window" then
 		ns.OpenWindow()
 	else

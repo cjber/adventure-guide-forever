@@ -802,6 +802,31 @@ local function Follow()
 		Send(api, route.steps, true)
 	end
 end
+-- A developer diagnostic for the travel line and guidance state (/agf travel): why a step shows no Shortest Path line
+-- is otherwise invisible headlessly. Raw literals on purpose (returned, never passed straight to Print).
+---@return string
+function Integrations.Debug()
+	local step = ns.Route().steps[1]
+	local api = SPF()
+	return (
+		"spf=%s guiding=%s arrived=%s stopped=%s ours=%s guidedN=%d step1=%s here=%s "
+		.. "line=%s min=%s combat=%s taxi=%s"
+	):format(
+		tostring(api ~= nil),
+		tostring(Integrations.Guiding()),
+		tostring(arrived),
+		tostring(stopped),
+		tostring(ours),
+		#guided,
+		tostring(step and step.key),
+		tostring(step and step.here),
+		tostring(travel and travel.line),
+		tostring(travel and travel.minutes),
+		tostring(InCombatLockdown()),
+		tostring(UnitOnTaxi and UnitOnTaxi("player"))
+	)
+end
+
 ns.OnRouteChange(Follow)
 
 -- Shortest Path ending our journey and the player clearing or moving the waypoint: the super-tracking events Shortest
