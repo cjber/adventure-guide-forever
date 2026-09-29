@@ -147,7 +147,7 @@ do
 	equal(h.G.AdventureGuideForeverWindow:IsShown(), true, "/agf window opens it")
 	h.prints = {}
 	h.Slash("help")
-	equal(#h.prints, 3, "help: three lines")
+	equal(#h.prints, 4, "help: four lines")
 	equal(h.prints[1]:find(L.HELP_OPEN, 1, true) ~= nil, true, "help: /agf opens the window")
 	h.G.AdventureGuideForever_OnAddonCompartmentClick("AdventureGuideForever", "LeftButton")
 	equal(h.G.AdventureGuideForeverWindow:IsShown(), false, "compartment left-click toggles it closed")

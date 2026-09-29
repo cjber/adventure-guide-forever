@@ -29,6 +29,7 @@ ns.L = {
 	HELP_OPEN = "/agf - open the Adventure Guide window; it is also a tab on the world map's quest log.",
 	HELP_AUDIT = "/agf audit - check the quest data against the game",
 	HELP_DUMP = "/agf dump - save the guide's layout for a bug report",
+	HELP_TRACKER = "/agf tracker - print the tracker stack's anchors (for a combat overlap)",
 	HAND_IN_WHEN = "Hand in when you're in %s",
 	-- Journey cards (docs/design.md §2.2 and §3): a title, a subline that counts, and a reason when there is one.
 	PREVIOUS_PAGE = "Previous",

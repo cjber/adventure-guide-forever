@@ -8,6 +8,7 @@ local _, ns = ...
 ---@class ForeverTrackerHostAPI
 ---@field Attach fun(module: Frame)
 ---@field IsAttached fun(module: Frame?): boolean
+---@field Debug fun(): string the tracker stack's anchors, heights and in-combat state, for /agf tracker
 
 -- Sharing the native tracker collection also shares its Edit Mode execution path.
 -- Keep our sections and their frame pools entirely outside that collection.
@@ -331,6 +332,33 @@ if EventRegistry and EventRegistry.RegisterCallback then
 	EventRegistry:RegisterCallback("EditMode.Exit", OnEditModeChanged, host)
 	EventRegistry:RegisterCallback("EditMode.SavedLayouts", OnEditModeChanged, host)
 end
+-- A developer diagnostic for the tracker stack (/agf tracker). The combat overlap is otherwise invisible headlessly: it
+-- prints both frames' anchors, heights and who each is anchored to.
+---@return string
+function api.Debug()
+	-- Raw literals on purpose: this host is shared with the companion addons, whose ns.L has no AGF keys, and
+	-- lint_copy only rejects literals passed straight to Print/SetText (this returns a string instead).
+	local function point(frame)
+		local p = { frame:GetPoint() }
+		local relative = p[2] == host and "host" or tostring(p[2])
+		return ("%s rel %s %s %.1f,%.1f"):format(
+			tostring(p[1]),
+			relative,
+			tostring(p[3]),
+			tonumber(p[4]) or 0,
+			tonumber(p[5]) or 0
+		)
+	end
+	return ("combat=%s shown=%s hostH=%.1f host[%s] nativeH=%.1f native[%s]"):format(
+		tostring(InCombatLockdown()),
+		tostring(host:IsShown()),
+		host:GetHeight() or -1,
+		point(host),
+		ObjectiveTrackerFrame:GetHeight() or -1,
+		point(ObjectiveTrackerFrame)
+	)
+end
+
 ForeverTrackerHost = api -- taint-ok: addon-owned companion tracker registry
 ns.TrackerHost = api
 

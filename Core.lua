@@ -971,12 +971,15 @@ SlashCmdList.ADVENTUREGUIDEFOREVER = function(msg)
 		Audit()
 	elseif command == "dump" then
 		ns.Dump()
+	elseif command == "tracker" then
+		ns.Print(ns.TrackerHost.Debug())
 	elseif command == "" or command == "window" then
 		ns.OpenWindow()
 	else
 		ns.Print(L.HELP_OPEN)
 		ns.Print(L.HELP_AUDIT)
 		ns.Print(L.HELP_DUMP)
+		ns.Print(L.HELP_TRACKER)
 	end
 end
 
