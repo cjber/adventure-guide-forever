@@ -5,6 +5,9 @@ local _, ns = ...
 -- it never limits which quests exist. Questie supplies live availability policy (including events).
 
 local ADDON = "QuestieDB"
+-- The contract this file was written against. QuestieDB checks a RANGE (its minSupportedContract..contractVersion),
+-- so a newer additive QuestieDB keeps working and new quests appear automatically via GetAllIds; only a rising
+-- minSupportedContract (or a removed field, caught below) makes the catalogue unavailable, and the reason is shown.
 local CONTRACT = 2
 -- Keep a full millisecond for the client's timer and frame bookkeeping: the complete callback, rather than only
 -- this coroutine, must stay below the 3 ms frame budget.
@@ -64,9 +67,11 @@ local function Fit()
 	if type(lib) ~= "table" then
 		return nil, ns.L.QUESTIE_ABSENT
 	end
-	local ok, fits = pcall(lib.RequireContract, CONTRACT)
-	if not (ok and fits) then
-		return nil, ns.L.QUESTIE_CONTRACT
+	-- Keep QuestieDB's own mismatch message (it names both versions) rather than the generic line, so the audit shows
+	-- exactly why the catalogue is unavailable.
+	local called, fits, why = pcall(lib.RequireContract, CONTRACT)
+	if not (called and fits) then
+		return nil, why or ns.L.QUESTIE_CONTRACT
 	end
 	if C_AddOns.GetAddOnMetadata(ADDON, "X-Flavor") ~= "Forever" then
 		return nil, ns.L.QUESTIE_FLAVOUR
