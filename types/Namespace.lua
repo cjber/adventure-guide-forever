@@ -575,7 +575,6 @@
 ---@class AGFNamespace
 ---@field TrackerHost ForeverTrackerHostAPI
 ---@field Geometry AGFGeometry the native-geometry adapter (Geometry.lua)
----@field DungeonBosses table<integer, AGFDungeonBoss[]>
 ---@field TITLE string
 ---@field L AGFStrings
 ---@field Data AGFData
@@ -1265,6 +1264,9 @@
 ---@class AGFDungeon
 ---@field id integer
 ---@field name string
+---@field raid? boolean an instance from the raid registry
+---@field current? boolean an announced Forever raid tier
+---@field players? integer raid group size
 ---@field quests integer[]
 ---@field minimum? integer entrance level, not a recommended level
 ---@field low? integer recommended minimum level
@@ -1325,6 +1327,8 @@
 
 ---@class AGFNamespace
 ---@field Dungeons AGFDungeons
+---@field Raids AGFRaid[]
+---@field RaidByMap table<integer, AGFRaid>
 ---@field ReadDungeonSource fun(yield: fun()): AGFDungeonSource?
 
 ---@class AGFWindowDB
@@ -1332,6 +1336,11 @@
 
 ---@class AGFStrings
 ---@field TAB_DUNGEONS string
+---@field DUNGEON_LIST_DUNGEONS string
+---@field DUNGEON_LIST_RAIDS string
+---@field DUNGEON_LIST_OTHER_RAIDS string
+---@field DUNGEON_RAID_PLAYERS string
+---@field DUNGEON_RAID_TOOLTIP string
 ---@field DUNGEON_QUESTS_TAB string
 ---@field DUNGEON_PREP_TAB string
 ---@field DUNGEON_BOSSES_TAB string

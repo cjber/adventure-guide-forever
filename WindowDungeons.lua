@@ -11,6 +11,7 @@ local PAGE_W = Window.INSET_WIDTH - Window.RIGHT - RIGHT_X
 local BODY_Y, BODY_H, QUEST_W = TOP + HEADER_H + 38, 222, 272
 local DETAIL_H = BODY_H - 52
 local ROW_H, LIST_H, SLICE_MS = 52, 42, 1
+local HEADING_H = 22
 ---@type Frame
 local content
 ---@type AGFWindowCard
@@ -141,25 +142,43 @@ end
 ---@field child Frame
 ---@field rows AGFDungeonRow[]
 ---@field values table[]
+---@field tops number[]
+---@field heights number[]
 ---@field height number
 ---@field rowHeight number
+---@field headingHeight number
 ---@field width number
 ---@field paint fun(row: AGFDungeonRow, value: table)
 
 ---@param widget AGFDungeonListWidget
 local function PaintList(widget)
-	local offset = math.floor((widget.frame:GetVerticalScroll() or 0) / widget.rowHeight)
-	for index, row in ipairs(widget.rows) do
-		local position = offset + index
-		local value = widget.values[position]
-		row.value = value
-		row:SetShown(value ~= nil)
-		if value then
-			row:ClearAllPoints()
-			row:SetHeight(widget.rowHeight - 2)
-			row:SetPoint("TOPLEFT", 0, -(position - 1) * widget.rowHeight)
-			widget.paint(row, value)
+	local scroll = widget.frame:GetVerticalScroll() or 0
+	local values, tops, heights = widget.values, widget.tops, widget.heights
+	local first = 1
+	while first <= #values and tops[first] + heights[first] <= scroll do
+		first = first + 1
+	end
+	for _, row in ipairs(widget.rows) do
+		row.value = nil
+		row:Hide()
+	end
+	local bottom, rowIndex = scroll + widget.height, 0
+	for index = first, #values do
+		if tops[index] >= bottom then
+			break
 		end
+		rowIndex = rowIndex + 1
+		local row = widget.rows[rowIndex]
+		if not row then
+			break
+		end
+		local value = values[index]
+		row.value = value
+		row:ClearAllPoints()
+		row:SetHeight(heights[index] - 2)
+		row:SetPoint("TOPLEFT", 0, -tops[index])
+		row:Show()
+		widget.paint(row, value)
 	end
 end
 
@@ -187,12 +206,15 @@ local function List(parent, x, y, width, height, rowHeight, paint, click)
 		child = child,
 		rows = {},
 		values = {},
+		tops = {},
+		heights = {},
 		height = height,
 		rowHeight = rowHeight,
+		headingHeight = HEADING_H,
 		width = width,
 		paint = paint,
 	}
-	for index = 1, math.ceil(height / rowHeight) + 1 do
+	for index = 1, math.ceil(height / math.min(rowHeight, HEADING_H)) + 1 do
 		local row = CreateFrame("Button", nil, child) --[[@as AGFDungeonRow]]
 		row:SetSize(width, rowHeight - 2)
 		row.ItemIcon = row:CreateTexture(nil, "ARTWORK")
@@ -223,7 +245,7 @@ local function List(parent, x, y, width, height, rowHeight, paint, click)
 			end
 		end)
 		row:SetScript("OnClick", function()
-			if row.value then
+			if row.value and not row.value.heading then
 				click(row.value)
 			end
 		end)
@@ -244,8 +266,15 @@ end
 ---@param values table[]
 local function SetList(widget, values)
 	widget.values = values
-	widget.child:SetHeight(math.max(widget.height, #values * widget.rowHeight))
-	widget.frame.ScrollBar:SetShown(#values * widget.rowHeight > widget.height)
+	local heights, tops, total = {}, {}, 0
+	for index, value in ipairs(values) do
+		heights[index] = value.heading and widget.headingHeight or widget.rowHeight
+		tops[index] = total
+		total = total + heights[index]
+	end
+	widget.heights, widget.tops = heights, tops
+	widget.child:SetHeight(math.max(widget.height, total))
+	widget.frame.ScrollBar:SetShown(total > widget.height)
 	PaintList(widget)
 end
 
@@ -603,6 +632,43 @@ local function DrawDetail()
 	giver:SetEnabled(not ns.Setting("wanderer"))
 end
 
+-- The catalog with its section headings: dungeons, the announced Forever raids, then the client's other raid maps.
+---@return table[]
+local function CatalogRows()
+	local dungeons, current, others = {}, {}, {}
+	for _, entry in ipairs(catalog) do
+		if entry.raid then
+			if entry.current then
+				current[#current + 1] = entry
+			else
+				others[#others + 1] = entry
+			end
+		else
+			dungeons[#dungeons + 1] = entry
+		end
+	end
+	local rows = {}
+	if #dungeons > 0 then
+		rows[#rows + 1] = { heading = true, title = L.DUNGEON_LIST_DUNGEONS }
+	end
+	for _, entry in ipairs(dungeons) do
+		rows[#rows + 1] = entry
+	end
+	if #current > 0 then
+		rows[#rows + 1] = { heading = true, title = L.DUNGEON_LIST_RAIDS }
+	end
+	for _, entry in ipairs(current) do
+		rows[#rows + 1] = entry
+	end
+	if #others > 0 then
+		rows[#rows + 1] = { heading = true, title = L.DUNGEON_LIST_OTHER_RAIDS }
+	end
+	for _, entry in ipairs(others) do
+		rows[#rows + 1] = entry
+	end
+	return rows
+end
+
 function Draw()
 	if not page or not content:IsVisible() then
 		return
@@ -616,6 +682,9 @@ function Draw()
 		point and L.DUNGEON_ENTRANCE_AT:format(ns.State.ZoneName(point.map) or "", point.x * 100, point.y * 100) or ""
 	)
 	local meta = {}
+	if dungeon.raid and dungeon.players then
+		meta[#meta + 1] = L.DUNGEON_RAID_PLAYERS:format(dungeon.players)
+	end
 	if dungeon.minimum and dungeon.minimum > 0 then
 		meta[#meta + 1] = L.DUNGEON_ENTRY_LEVEL:format(dungeon.minimum)
 	end
@@ -647,15 +716,14 @@ function Draw()
 		offered = offered or card.key == key
 	end
 	journey:SetShown(offered)
-	SetList(list, catalog)
+	SetList(list, CatalogRows())
 	if listSelection ~= dungeon.id then
 		listSelection = dungeon.id
-		for index, entry in ipairs(catalog) do
+		for index, entry in ipairs(list.values) do
 			if entry.id == dungeon.id then
-				local y = (index - 1) * LIST_H
-				local top = list.frame:GetVerticalScroll() or 0
-				if y < top or y + LIST_H > top + list.height then
-					list.frame:SetVerticalScroll(math.min(y, math.max(0, #catalog * LIST_H - list.height)))
+				local y, top = list.tops[index] or 0, list.frame:GetVerticalScroll() or 0
+				if y < top or y + list.heights[index] > top + list.height then
+					list.frame:SetVerticalScroll(math.min(y, math.max(0, list.child:GetHeight() - list.height)))
 				end
 			end
 		end
@@ -670,8 +738,7 @@ function Draw()
 	other.rowHeight = (view == "prep" or view == "bosses") and ROW_H or 44
 	subTabs[3]:SetText(L.DUNGEON_BOSSES_TAB)
 	for index, key_ in ipairs({ "quests", "prep", "bosses", "loot" }) do
-		local muted = (key_ == "bosses" and not bosses and not source and not ns.DungeonBosses[dungeon.id])
-			or (key_ == "loot" and not source)
+		local muted = (key_ == "bosses" and not bosses and not source) or (key_ == "loot" and not source)
 		subTabs[index]:SetTabSelected(key_ == view)
 		subTabs[index].Text:ClearAllPoints()
 		subTabs[index].Text:SetPoint("CENTER", 0, 0)
@@ -904,11 +971,39 @@ local function BuildContents(parent)
 	local heading = Window.Heading(content, L.TAB_DUNGEONS)
 	heading:SetPoint("TOPLEFT", LEFT + 8, -TOP)
 	list = List(content, LEFT, TOP + 22, LIST_W, 338, LIST_H, function(row, value)
+		if value.heading then
+			row.Title:SetText(value.title)
+			row.Title:SetFontObject("GameFontNormal")
+			row.Title:SetTextColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
+			row.Title:ClearAllPoints()
+			row.Title:SetPoint("TOPLEFT", 8, -4)
+			row.Info:SetText("")
+			row.Giver:SetText("")
+			row.Map:Hide()
+			row.Expand:Hide()
+			row:EnableMouse(false)
+			row:SetScript("OnEnter", nil)
+			ns.Art.SetSliceShown(row.Selected, false)
+			return
+		end
 		row.Title:SetText(ns.State.InstanceName(value.id) or value.name)
-		local range = Range(value --[[@as AGFDungeon]])
-		row.Info:SetText(value.hostile and L.DUNGEON_HOSTILE_LEVELS:format(range) or range)
-		row.Giver:SetText("")
+		row.Title:ClearAllPoints()
+		row.Title:SetPoint("TOPLEFT", 8, -5)
 		row.Title:SetFontObject("GameFontHighlight")
+		if value.raid then
+			row.Title:SetTextColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
+		else
+			row.Title:SetTextColor(1, 1, 1)
+		end
+		local range = Range(value --[[@as AGFDungeon]])
+		local info = value.hostile and L.DUNGEON_HOSTILE_LEVELS:format(range) or range
+		if value.raid then
+			local size = L.DUNGEON_RAID_PLAYERS:format(value.players)
+			info = info ~= "" and size .. L.SEPARATOR .. info or size
+		end
+		row.Info:SetText(info)
+		row.Giver:SetText("")
+		row:EnableMouse(true)
 		if value.low then
 			local player = ns.State.Player()
 			local level = math.max(value.low, math.min(player.level, value.high))
@@ -918,12 +1013,15 @@ local function BuildContents(parent)
 			else
 				row.Info:SetTextColor(color.r, color.g, color.b)
 			end
+		else
+			row.Info:SetTextColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
 		end
 		row:SetScript("OnEnter", function()
 			ns.Overview.ShowTooltip(row, {
 				row.Title:GetText(),
-				Range(value --[[@as AGFDungeon]]),
-				value.hostile and L.DUNGEON_HOSTILE_ENTRANCE or L.DUNGEON_LEVEL_TOOLTIP,
+				info,
+				value.hostile and L.DUNGEON_HOSTILE_ENTRANCE
+					or (value.raid and L.DUNGEON_RAID_TOOLTIP or L.DUNGEON_LEVEL_TOOLTIP),
 			})
 		end)
 		row.Map:Hide()

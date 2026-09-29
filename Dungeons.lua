@@ -8,11 +8,6 @@ local L, Model = ns.L, ns.Model
 local Dungeons = {}
 ns.Dungeons = Dungeons
 
--- The bundled boss database is gone (docs/dungeon-sources.md). The dungeon UI still probes this
--- field when neither AtlasLoot nor the native Encounter Journal is installed, so keep it present
--- and empty rather than letting that probe index nil.
-ns.DungeonBosses = ns.DungeonBosses or {}
-
 -- Permanent character restrictions only. Other unproven requirements stay visible as locked.
 ---@param quest? AGFQuest
 ---@param player AGFPlayer
@@ -34,7 +29,7 @@ local CAPITAL_DUNGEONS = { [389] = 2, [34] = 1 }
 ---@param yield fun()
 ---@return AGFDungeon[]
 function Dungeons.List(data, player, yield)
-	local byID, list = {}, {}
+	local byID, dungeons, raids = {}, {}, {}
 	for id, instance in pairs(data.instances) do
 		if not instance.raid then
 			local entry = {
@@ -54,11 +49,34 @@ function Dungeons.List(data, player, yield)
 					entry.low, entry.high = low, high
 				end
 			end
-			byID[id], list[#list + 1] = entry, entry
+			byID[id], dungeons[#dungeons + 1] = entry, entry
 			for _, gate in ipairs(instance.entrances or {}) do
 				entry.minimum = math.min(entry.minimum or gate.level, gate.level)
 			end
 		end
+	end
+	-- Raids come from the curated registry (Raids.lua): the announced Forever tiers first, then the client's
+	-- other raid maps. A registered raid with no client Map.ID yet is not browsable.
+	for _, raid in ipairs(ns.Raids) do
+		if raid.map then
+			local instance = data.instances[raid.map]
+			local entry = {
+				id = raid.map,
+				name = instance and instance.name or raid.name,
+				raid = true,
+				current = raid.current == true,
+				players = raid.players,
+				quests = {},
+				suitable = false,
+				hostile = false,
+				excludedFaction = 0,
+				excludedCharacter = 0,
+				low = raid.low,
+				high = raid.high,
+			}
+			byID[raid.map], raids[#raids + 1] = entry, entry
+		end
+		yield()
 	end
 	for id, quest in pairs(data.quests) do
 		local entry = quest.dungeon and byID[quest.dungeon]
@@ -73,7 +91,7 @@ function Dungeons.List(data, player, yield)
 		end
 		yield()
 	end
-	for _, entry in ipairs(list) do
+	for _, entry in ipairs(dungeons) do
 		table.sort(entry.quests, function(a, b)
 			local qa, qb = data.quests[a], data.quests[b]
 			return qa.level < qb.level or (qa.level == qb.level and a < b)
@@ -83,14 +101,21 @@ function Dungeons.List(data, player, yield)
 			and player.level >= entry.low
 			and player.level <= entry.high
 	end
-	table.sort(list, function(a, b)
+	table.sort(dungeons, function(a, b)
 		local al, bl = a.low or math.huge, b.low or math.huge
 		if al == bl and (a.low ~= nil) ~= (b.low ~= nil) then
 			return a.low ~= nil
 		end
 		return al < bl or (al == bl and a.id < b.id)
 	end)
-	return list
+	for _, entry in ipairs(raids) do
+		entry.suitable = entry.low ~= nil
+			and player.level >= entry.low
+			and entry.high ~= nil
+			and player.level <= entry.high
+		dungeons[#dungeons + 1] = entry
+	end
+	return dungeons
 end
 
 ---@param data AGFData
@@ -253,7 +278,7 @@ function Dungeons.Page(data, player, completed, log, dungeon, yield)
 	for _, xp in pairs(groups) do
 		page.xp = page.xp + xp
 	end
-	for _, gate in ipairs(data.instances[dungeon.id].entrances or {}) do
+	for _, gate in ipairs((data.instances[dungeon.id] or {}).entrances or {}) do
 		page.prep[#page.prep + 1] = { kind = "entrance", gate = gate }
 	end
 	return page
@@ -344,12 +369,7 @@ function Dungeons.Source(yield)
 	for _, page in ipairs(pages) do
 		local entry = page.entry
 		local instance = type(entry) == "table" and entry.InstanceID
-		if
-			instance
-			and ns.Data.instances[instance]
-			and not ns.Data.instances[instance].raid
-			and type(entry.items) == "table"
-		then
+		if instance and (ns.Data.instances[instance] or ns.RaidByMap[instance]) and type(entry.items) == "table" then
 			source = source or { bosses = {}, loot = {}, rewards = {}, objectives = {}, entrances = {} }
 			local current = curated[instance] or { bosses = {}, items = {}, seen = {} }
 			curated[instance] = current

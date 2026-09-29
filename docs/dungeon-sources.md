@@ -24,9 +24,18 @@ encounter order or localized names.
 `tools/gen_quests.py` still owns all bundled quest data. Its entrance
 requirement list on each instance contains: level, alternative required items, completed quest and an unsupported
 condition flag. This also retains the six reachable Classic dungeon instances without bundled quests
-filed under their instance area. The catalog contains 19 dungeon instances; raids and unused maps do not
-enter it. Blackrock Spire is one Map.ID, so the source does not split its wings or claim Upper Spire is a
-five-player run. The revision adds recommended ranges and LFG IDs through that generator. The pinned
+filed under their instance area. The catalog contains 19 dungeon instances; unused maps do not enter it.
+Raids come from `Raids.lua`, a hand-written registry (not the generator): it names the announced Forever
+raid tiers first and the client's remaining raid Map.IDs after them. A registered raid enters the catalog only
+once the client carries its Map.ID, so the announced 10-player Barrow Deeps and 20-player Hyjal Summit stay
+listed in the registry until a build adds their maps, while the returning 40-player Onyxia's Lair (Map.ID 249)
+is browsable today. These three are the announced Forever launch tier
+([What's Next Panel Recap](https://news.blizzard.com/en-us/article/24303862/world-of-warcraft-forever-whats-next-panel-recap));
+launch raids need no attunement and none is claimed. The other raid Map.IDs the client still carries are not
+the announced tier and are filed under their own heading. Every raid is level 60; the group sizes and ranges
+are the registry's, not a copied Classic attunement page. Blackrock Spire is one Map.ID, so the source does not
+split its wings or claim Upper Spire is a five-player run. The revision adds recommended ranges and LFG IDs
+through that generator. The pinned
 [LFGDungeons export](https://wago.tools/db2/LFGDungeons/csv?build=1.60.1.69913) contains the Classic names,
 but their MapID is zero and it has no MinLevel/MaxLevel/TargetLevel columns. The linked
 [ContentTuning export](https://wago.tools/db2/ContentTuning/csv?build=1.60.1.69913) gives identical

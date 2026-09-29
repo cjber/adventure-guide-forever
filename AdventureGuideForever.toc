@@ -29,6 +29,7 @@ Focus.lua
 Integrations.lua
 Companions.lua
 Providers.lua
+Raids.lua
 QuestieObjectives.lua
 QuestieSource.lua
 Dungeons.lua

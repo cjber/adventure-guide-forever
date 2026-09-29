@@ -46,7 +46,9 @@ abandons quests.
 - **2.20 Your order.** Reordering must preserve quest dependencies. Suggested order remains recoverable.
 
 - **2.21 Dungeons.** A window tab below the shared Today strip, with a level-sorted dungeon list, featured
-  header and Quests / Prep / Bosses / Loot pages. Remember the instance Map.ID in window state. Plan to run
+  header and Quests / Prep / Bosses / Loot pages. The list groups dungeons, the announced Forever raids, then
+  the client's other raid instances, each raid row tagged with its group size; the raid tier and sizes come from
+  `Raids.lua` (docs/dungeon-sources.md), never from a copied Classic attunement page. Remember the instance Map.ID in window state. Plan to run
   selects the existing dungeon journey and enables the existing dungeon preference; no parallel plan state.
   Journey cards link back to the dungeon page. Build on first show, slice source reads at 1 ms, cancel on hide,
   reuse visible rows, and cache a complete optional-source snapshot until the quest data changes.

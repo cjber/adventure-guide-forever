@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Raids share the dungeon tab.** Onyxia's Lair and the other raid instances the client carries sit beside the dungeons, split into the announced Forever raids and the rest, each row showing its group size. Bosses and loot still come from AtlasLoot or the game's encounter journal, and nothing lists a boss the addon does not ship.
+
 ## [0.6.2] - 2026-09-29
 
 - **Always use the newest quests.** Quest data now comes from your installed QuestieDB and nothing else: every quest it knows, including ones outside the guide's old bundled list, and new quests after a Questie update. The addon no longer ships a quest list of its own, so a missing quest can only mean Questie is missing it too.

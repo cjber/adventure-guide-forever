@@ -85,6 +85,28 @@ for id, instance in pairs(h.ns.Data.instances) do
 	end
 end
 assert(#planned > 15, "exercise the whole Classic catalog")
+-- Raids page through the same window; with no optional source their boss list is a table, never a bundled baseline.
+for _, raid in ipairs(h.ns.Raids) do
+	if raid.map then
+		h.ns.Window.OpenDungeon(raid.map)
+		h.flush()
+		for _, frame in ipairs(h.frames) do
+			if
+				frame:IsObjectType("Button")
+				and frame:IsVisible()
+				and (
+					frame:GetText() == h.ns.L.DUNGEON_BOSSES_TAB
+					or frame.Text and frame.Text:GetText() == h.ns.L.DUNGEON_BOSSES_TAB
+				)
+			then
+				h.Click(frame)
+				break
+			end
+		end
+		h.flush()
+		assert(type(h.ns.Dungeons.Bosses(nil, raid.map)) == "table", "raid boss list is a table for " .. raid.map)
+	end
+end
 local reloaded = harness.load({ charDB = h.G.AdventureGuideForeverCharDB })
 for _, id in ipairs(planned) do
 	assert(reloaded.ns.Dungeons.Planned(id), "plans survive reload")
@@ -93,4 +115,4 @@ for _, id in ipairs(planned) do
 	assert(not h.ns.Dungeons.Planned(id))
 end
 assert(#h.errors == 0, table.concat(h.errors, "\n"))
-print("dungeon_regression_spec: localized AtlasLoot lookup and whole-catalog planning passed")
+print("dungeon_regression_spec: localized AtlasLoot lookup, raid pages and whole-catalog planning passed")
