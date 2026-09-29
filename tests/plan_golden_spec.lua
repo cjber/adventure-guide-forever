@@ -2,7 +2,7 @@
 -- Golden routes: each fixed character's journey cards and their steps, written as text in
 -- tests/golden/<fixture>.txt, so every model change shows as a reviewable diff. AGF_UPDATE_GOLDEN=1 rewrites them.
 local ns = {}
-assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
+ns.Data = dofile("tests/harness.lua").data()
 dofile("tests/harness.lua").model(ns)
 local characters = dofile("tests/fixtures/characters.lua")
 local Model, data, checks = ns.Model, ns.Data, 0

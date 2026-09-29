@@ -15,15 +15,15 @@ from collections import defaultdict
 from gen_quests import BUILD, CANVAS, ROOT, db2, run, source_options
 
 OUTPUT = ROOT / "Data" / "ZoneArt.lua"
-QUESTS = ROOT / "Data" / "Quests.lua"
+GEOMETRY = ROOT / "Data" / "Geometry.lua"
 TILE = 256
 
 
-def quest_zones(text):
-    """The uiMap IDs of Data/Quests.lua's `zones` table."""
+def zone_maps(text):
+    """The uiMap IDs of Data/Geometry.lua's `zones` table."""
     block = re.search(r"^\tzones = \{\n(.*?)^\t\},", text, re.MULTILINE | re.DOTALL)
     if not block:
-        raise ValueError("Data/Quests.lua has no zones table")
+        raise ValueError("Data/Geometry.lua has no zones table")
     return sorted(int(ui_map) for ui_map in re.findall(r"^\t\t\[(\d+)\] = ", block[1], re.MULTILINE))
 
 
@@ -88,7 +88,7 @@ def render(art):
 
 def main():
     options = source_options(__doc__)
-    zones = quest_zones(QUESTS.read_text(encoding="utf-8"))
+    zones = zone_maps(GEOMETRY.read_text(encoding="utf-8"))
     art = zone_art(
         set(zones),
         db2("UiMapXMapArt", ("ID", "UiMapID", "UiMapArtID", "PhaseID"), **options),

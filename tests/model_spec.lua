@@ -1631,7 +1631,7 @@ do
 	equal(Ends(Weary())[2].reason, lastReason, "rest: an inn only on the way is no ending")
 end
 
-assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
+ns.Data = dofile("tests/harness.lua").data()
 local count = 0
 for id, q in pairs(ns.Data.quests) do
 	count = count + 1

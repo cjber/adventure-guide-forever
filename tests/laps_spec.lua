@@ -5,7 +5,7 @@
 -- a hand-in only once its objectives are done, the log never past its limit, one quest of an exclusive group at most,
 -- and every step on a point the data has, for several seeds of characters; AGF_LAPS_SEED runs one seed alone.
 local ns = {}
-assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
+ns.Data = dofile("tests/harness.lua").data()
 dofile("tests/harness.lua").model(ns)
 local Model, data = ns.Model, ns.Data
 -- Several sets of characters by default: one seed alone let seed-dependent failures through.

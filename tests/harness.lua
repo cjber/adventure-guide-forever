@@ -88,6 +88,25 @@ end
 -- complete, map, x, y} entries), completed (quest IDs), player (overrides), initialLogin (default true), waypoint
 -- (the user waypoint the client kept across a /reload, a UiMapPoint), completedPending (the client has no completed
 -- quests to give until the spec sets h.completedPending to false).
+-- The test quest corpus (tests/fixtures/quests.lua). The addon no longer ships its own quest catalogue: in game,
+-- quests come from QuestieDB. The specs keep this generated corpus as their deterministic model fixture.
+-- Loaded fresh each call, never cached: specs mutate quest records, and a shared table would leak between loads.
+---@return table<integer, AGFQuest>
+function harness.fixtureQuests()
+	return assert(loadfile("tests/fixtures/quests.lua"))()
+end
+
+-- The route geometry (shipped Data/Geometry.lua) with the test quest corpus merged in: what specs that used to
+-- load Data/Quests.lua now use for the model, and the source harness.questieMirror mirrors.
+---@return AGFData
+function harness.data()
+	local ns = {}
+	assert(loadfile("Data/Geometry.lua"))(ADDON, ns)
+	local data = ns.Data
+	data.quests = harness.fixtureQuests()
+	return data
+end
+
 function harness.load(options)
 	options = options or {}
 	local G = setmetatable({}, { __index = _G })
@@ -2416,6 +2435,13 @@ function harness.load(options)
 				h.call(chunk, ADDON, h.ns)
 			end
 		end
+	end
+	-- The shipped Data/Geometry.lua carries no quest records; give the loaded ns.Data the test corpus so the model
+	-- specs and harness.questieMirror have one. In game QuestieSource swaps in the QuestieDB quests instead.
+	-- Any `questiedb` option means the spec drives the QuestieDB path (mirror or a broken/false stand-in): leave the
+	-- quests to QuestieSource, so the no-stale-fallback specs hold. Only a plain load gets the model corpus.
+	if h.ns.Data and options.questiedb == nil then
+		h.ns.Data.quests = harness.fixtureQuests()
 	end
 	-- Counts the model's entry points, so specs can prove what a rebuild ran.
 	for _, name in ipairs({ "Plan", "Journeys" }) do

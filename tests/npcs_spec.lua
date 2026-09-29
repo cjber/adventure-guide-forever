@@ -1,7 +1,7 @@
 -- Run from the repository root: luajit tests/npcs_spec.lua
 -- Data.npcs (tools/gen_quests.py `roles`): known NPCs by ID, and the shape every entry keeps.
 local ns = {}
-assert(loadfile("Data/Quests.lua"))("AdventureGuideForever", ns)
+ns.Data = dofile("tests/harness.lua").data()
 local npcs, maps, checks = ns.Data.npcs, ns.Data.maps, 0
 
 local function equal(actual, expected, label)

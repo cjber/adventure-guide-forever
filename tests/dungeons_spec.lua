@@ -343,10 +343,7 @@ rewardUI.Click(Button(rewardUI, rewardUI.ns.L.DUNGEON_LOOT_TAB))
 equal(Texts(rewardUI)["Test drop"], true, "runtime loot renders")
 equal(Texts(rewardUI)["Test boss"], true, "loot grouped under named boss")
 rewardUI.Click(Button(rewardUI, rewardUI.ns.L.DUNGEON_BOSSES_TAB))
-local visibleBosses = rewardUI.Find(function(frame)
-	return frame:IsVisible() and frame.value and frame.value.boss
-end)
-visibleBosses[1]:GetParent():GetParent():SetVerticalScroll(8 * 52)
+-- Bosses come from AtlasLoot/EJ now; this scene has a single named row, so no scroll is needed.
 local bossRows = rewardUI.Find(function(frame)
 	return frame:IsVisible() and frame.value and frame.value.boss and frame.value.title == "Test boss"
 end)
@@ -501,7 +498,7 @@ local emptySource = harness.load({ questiedb = fake })
 emptySource.ns.Window.OpenDungeon(389)
 emptySource.flush()
 emptySource.Click(Button(emptySource, emptySource.ns.L.DUNGEON_BOSSES_TAB))
-equal(Texts(emptySource)["Jergosh the Invoker"], true, "empty optional source retains the Classic boss baseline")
+equal(Texts(emptySource)["Jergosh the Invoker"], nil, "empty optional source has no bundled boss baseline")
 equal(Texts(emptySource)[emptySource.ns.L.DUNGEON_NEEDS_QUESTIE], nil, "loaded source is never reported missing")
 equal(#filteredUI.errors, 0, "restricted prep UI has no errors")
 data.quests[1] = original
@@ -623,21 +620,10 @@ standalone.G.AtlasLoot = loot.G.AtlasLoot
 equal(standalone.ns.Dungeons.Source(noop) ~= nil, true, "AtlasLoot works without QuestieDB")
 print(("dungeons_spec: %d checks passed"):format(checks))
 
-for instance, baseline in pairs(h.ns.DungeonBosses) do
-	local known = baseline[1]
-	local atlasBoss = { id = known.id, name = "Localized encounter", low = 99, high = 99 }
-	local partialAtlas = { curated = { [instance] = true }, bosses = { [instance] = { atlasBoss } } }
-	local complete = D.Bosses(partialAtlas, instance)
-	equal(#complete, #baseline, "partial AtlasLoot retains every bundled encounter")
-	equal(complete[1], atlasBoss, "AtlasLoot order and localized details retained")
-	equal(#partialAtlas.bosses[instance], 1, "display merge does not mutate provider data")
-	local seen = {}
-	for _, boss in ipairs(complete) do
-		equal(seen[boss.id], nil, "one row per boss NPC")
-		seen[boss.id] = true
-	end
-	for _, boss in ipairs(baseline) do
-		equal(seen[boss.id], true, "boss without listed loot remains visible")
-	end
-end
-print("dungeons: partial AtlasLoot coverage verified across all Classic instances")
+-- The bundled Classic boss baseline is gone: bosses come from AtlasLoot/EJ only, so an uncurated instance lists none.
+assert(next(h.ns.DungeonBosses) == nil, "no bundled boss baseline remains")
+local partialAtlas =
+	{ curated = { [43] = true }, bosses = { [43] = { { id = 1, name = "Localized encounter", low = 99, high = 99 } } } }
+equal(#D.Bosses(partialAtlas, 43), 1, "AtlasLoot order and localized details retained")
+equal(#partialAtlas.bosses[43], 1, "display merge does not mutate provider data")
+print("dungeons: AtlasLoot-only boss sourcing verified")

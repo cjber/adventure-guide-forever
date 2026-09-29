@@ -15,8 +15,7 @@
 ## OptionalDeps: Atlas, Atlas_ClassicWoW, AtlasLootClassic, AtlasLootClassic_DungeonsAndRaids, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever
 
 Locales\enUS.lua
-Data\Quests.lua
-Data\DungeonBosses.lua
+Data\Geometry.lua
 Data\Forever.lua
 Data\ZoneArt.lua
 Core.lua
@@ -25,6 +24,7 @@ Order.lua
 Session.lua
 Sound.lua
 State.lua
+Geometry.lua
 Focus.lua
 Integrations.lua
 Companions.lua

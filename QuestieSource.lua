@@ -144,21 +144,20 @@ local function Cell(continent, x, y)
 	return continent .. ":" .. math.floor(x / LINK) .. ":" .. math.floor(y / LINK)
 end
 
--- The bundled data's town places in LINK-yard cells, so a place from QuestieDB joins the town of the nearest one.
+-- The bundled town anchors (Data/Geometry.lua `townAnchors`) in LINK-yard cells, so a place from QuestieDB joins the
+-- town of the nearest one. Route geometry, not quest data: the anchors are the distinct quest-giver town places.
 ---@param data AGFData
 ---@param yield fun()
 ---@return table<string, {x: number, y: number, hub: integer}[]>
 local function TownCells(data, yield)
 	local cells = {}
-	for _, quest in pairs(data.quests) do
+	for _, place in ipairs(data.townAnchors or {}) do
 		yield()
-		for _, place in ipairs({ quest.start or false, quest.finish or false }) do
-			local at = place and place.hub and World(data, place)
-			if place and at then
-				local key = Cell(at.continent, at.x, at.y)
-				cells[key] = cells[key] or {}
-				table.insert(cells[key], { x = at.x, y = at.y, hub = place.hub })
-			end
+		local at = place.hub and World(data, place)
+		if at then
+			local key = Cell(at.continent, at.x, at.y)
+			cells[key] = cells[key] or {}
+			table.insert(cells[key], { x = at.x, y = at.y, hub = place.hub })
 		end
 	end
 	return cells

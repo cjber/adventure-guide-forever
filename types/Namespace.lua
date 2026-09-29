@@ -10,6 +10,13 @@
 ---@field name string NPC or object name
 ---@field hub? integer the town it stands in (tools/gen_quests.py town_hubs); nil when its map has no world rectangle
 
+-- One route-geometry town anchor: a place a quest-giver town stands on, used to cluster QuestieDB places into hubs.
+---@class AGFTownAnchor
+---@field map integer uiMapID
+---@field x number
+---@field y number
+---@field hub integer the town this anchor links to
+
 ---@class AGFQuest
 ---@field provider? boolean QuestieDB quest; live Questie policy decides pickup availability
 ---@field kinds? table<integer, string> objective slot type
@@ -61,6 +68,7 @@
 ---@field continents table<integer, AGFContinentShift> continent -> its place on the Azeroth world map
 ---@field crossings AGFCrossing[] every boat and zeppelin between two continents
 ---@field hubs table<integer, {name: string}> hub -> its flight master's name, verbatim; only for hubs with one
+---@field townAnchors AGFTownAnchor[] every distinct quest-giver town place, the route-geometry anchors TownCells clusters a QuestieDB place on
 
 -- Measures between steps on different maps without travel maths (Model.lua Cost). World coordinates are yards.
 ---@class AGFMapCentre
@@ -547,6 +555,7 @@
 
 ---@class AGFNamespace
 ---@field TrackerHost ForeverTrackerHostAPI
+---@field Geometry AGFGeometry the native-geometry adapter (Geometry.lua)
 ---@field DungeonBosses table<integer, AGFDungeonBoss[]>
 ---@field TITLE string
 ---@field L AGFStrings
