@@ -92,9 +92,17 @@ local function Load(spf, db, charDB, away)
 		log[3] =
 			{ id = AWAY, title = "Hidden Enemies", level = 15, complete = true, map = 1454, x = 0.4947, y = 0.5059 }
 	end
+	-- autoStart is off here: these specs drive every route start explicitly (the title click, Go), so the auto-start on
+	-- load would double it. tests/autostart_spec.lua covers the auto-start itself. Set after the copy: a shared db
+	-- table (PINS_ON) has already had the addon's defaults merged into it by Core.LoadDB, autoStart included.
+	local settings = {}
+	for key, value in pairs(db or {}) do
+		settings[key] = value
+	end
+	settings.autoStart = false
 	return harness.load({
 		spf = spf or nil,
-		db = db,
+		db = settings,
 		charDB = charDB ~= false and (charDB or { journey = "zone:1413" }) or nil,
 		completed = { 844 },
 		log = log,
@@ -293,13 +301,13 @@ do
 	end
 	-- Every row goes in through the secure delegate, in page order; none from addon code, which taints the search.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 13, "every row is registered through Settings.RegisterInitializer")
+	equal(#h.settings, 14, "every row is registered through Settings.RegisterInitializer")
 	equal(
 		h.settings[1].key .. " " .. h.settings[2].key .. " " .. h.settings[3].key,
 		"floatWindow showTracker wanderer",
 		"in page order"
 	)
-	equal(h.settings[10].key, "untrackOthers", "in page order, to the last")
+	equal(h.settings[11].key, "untrackOthers", "in page order, to the last")
 	equal(h.settings[10].category, h.ns.TITLE, "on the addon's page")
 	equal(byKey.untrackOthers.indented, true, "untrackOthers is indented under tracking")
 	equal(byKey.untrackOthers.evaluateCVar, "AdventureGuideForever_trackRouteQuests", "parent changes reevaluate child")
@@ -897,9 +905,12 @@ end
 -- sends it again once, on the first full build out of combat. Not over someone else's journey; a refusal sets no
 -- waypoint and asks again on the next full build; Stop, a cleared card or no saved variables (#34) restore nothing.
 do
+	-- autoStart off: this block is about restoring a route that was started before (prefs.guided), not about the
+	-- auto-start on load, which tests/autostart_spec.lua covers.
 	local function Reloaded(charDB, setup)
 		local h = harness.load({
 			spf = "v1+",
+			db = { autoStart = false },
 			charDB = charDB,
 			initialLogin = false,
 			completed = { 844 },
@@ -1199,7 +1210,8 @@ do
 	-- With the Barrens story ruled out, Gann's Reclamation is off every zone loop, so carry (Loose ends) holds it.
 	local h = harness.load({
 		preserveUnknownCosts = true,
-		db = PINS_ON,
+		-- A copy, never the shared PINS_ON table: Core.LoadDB merges the addon's defaults into whatever db it is given.
+		db = { showMapPins = true, showQuestGivers = true },
 		charDB = {
 			journey = "carry",
 			notInterested = { ["zone:1413"] = { title = "The Barrens story" } },
@@ -3478,7 +3490,7 @@ do
 		local label = "trainer, " .. case.label
 		local h = harness.load({
 			spf = "v1+",
-			db = PINS_ON,
+			db = { showMapPins = true, showQuestGivers = true, autoStart = false },
 			tf = case.tf,
 			completed = { 844 },
 			log = {
@@ -3609,7 +3621,7 @@ do
 	local tf = { spells = spells }
 	local h = harness.load({
 		spf = "v1",
-		db = PINS_ON,
+		db = { showMapPins = true, showQuestGivers = true, autoStart = false },
 		tf = tf,
 		player = { level = 8, map = 1411, x = 0.52, y = 0.43, classID = 4, raceID = 8 },
 		charDB = { journey = "zone:1411" },

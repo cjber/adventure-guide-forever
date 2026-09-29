@@ -522,6 +522,8 @@
 ---@field SETTING_DUNGEONS_DEFAULT_TOOLTIP string
 ---@field SETTING_TITLE_ROUTE string
 ---@field SETTING_TITLE_ROUTE_TOOLTIP string
+---@field SETTING_AUTO_START string
+---@field SETTING_AUTO_START_TOOLTIP string
 ---@field SETTING_TRACK_ROUTE string
 ---@field SETTING_TRACK_ROUTE_TOOLTIP string
 ---@field SETTING_UNTRACK_OTHERS string

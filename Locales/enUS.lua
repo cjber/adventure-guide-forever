@@ -85,6 +85,10 @@ ns.L = {
 	SETTING_TITLE_ROUTE_TOOLTIP = "Choosing a journey in the guide, or clicking the current step's title in the "
 		.. "objective tracker, sets off along the route, with Shortest Path Forever when it's loaded and a map "
 		.. "waypoint otherwise. Clicking the chosen journey again stops it.",
+	SETTING_AUTO_START = "Start the route automatically",
+	SETTING_AUTO_START_TOOLTIP = "The guide sends your chosen journey's route to Shortest Path as soon as it is "
+		.. "ready, so the map line is drawn on login and after a reload without pressing Go. Pressing Stop still "
+		.. "clears it until you choose a journey again.",
 	SETTING_TRACK_ROUTE = "Clicking the tracker title tracks the route's quests",
 	SETTING_TRACK_ROUTE_TOOLTIP = "Every quest on the route that's in your log joins the objective tracker, up to "
 		.. "the tracker's limit.",

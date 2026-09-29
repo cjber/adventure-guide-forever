@@ -45,6 +45,7 @@ function ns.RegisterSettings()
 		Checkbox("showQuestGivers", ns.L.SETTING_GIVERS, ns.L.SETTING_GIVERS_TOOLTIP),
 		Checkbox("includeDungeonsDefault", ns.L.SETTING_DUNGEONS_DEFAULT, ns.L.SETTING_DUNGEONS_DEFAULT_TOOLTIP),
 		Checkbox("titleStartsRoute", ns.L.SETTING_TITLE_ROUTE, ns.L.SETTING_TITLE_ROUTE_TOOLTIP),
+		Checkbox("autoStart", ns.L.SETTING_AUTO_START, ns.L.SETTING_AUTO_START_TOOLTIP),
 		track,
 		untrack,
 		Checkbox("stepSound", ns.L.SETTING_STEP_SOUND, ns.L.SETTING_STEP_SOUND_TOOLTIP),
