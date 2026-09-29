@@ -1612,7 +1612,8 @@ def main():
         f"anchors: {OUTPUT.relative_to(ROOT)} ({OUTPUT.stat().st_size:,} bytes)"
     )
     print(
-        f"Wrote the test-only {len(quests)}-quest corpus: {FIXTURE.relative_to(ROOT)} ({FIXTURE.stat().st_size:,} bytes)"
+        f"Wrote the test-only {len(quests)}-quest corpus: {FIXTURE.relative_to(ROOT)} "
+        f"({FIXTURE.stat().st_size:,} bytes)"
     )
 
 

@@ -2,7 +2,7 @@
 
 import unittest
 
-from gen_zoneart import zone_maps, render, tiles_needed, zone_art
+from gen_zoneart import render, tiles_needed, zone_art, zone_maps
 
 QUESTS = (
     "ns.Data = {\n\tzones = {\n\t\t[1411] = { name = 'Durotar' },\n\t\t[1413] = { name = 'The Barrens' },\n\t},\n}\n"
