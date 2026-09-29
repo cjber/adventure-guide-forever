@@ -465,8 +465,8 @@ ns.L = {
 	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "Do less work when suggesting quests. Rebuilds reuse quest lists for your level and faction,"
-		.. " and tracking stays in one column with the quest names behind each step.",
+	WHATS_NEW = "Always use the newest quests. Quest data now comes from your installed QuestieDB alone, and"
+		.. " dungeons from AtlasLoot, so a quest the guide misses is one Questie does not have yet.",
 	DUNGEON_MAPS_TAB = "Maps",
 	DUNGEON_MAP_BACK = "Back to dungeon",
 	DUNGEON_MAP_WORLD_BACK = "Back to map",

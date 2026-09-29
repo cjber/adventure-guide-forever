@@ -11,6 +11,13 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-09-29
+
+- **Always use the newest quests.** Quest data now comes from your installed QuestieDB and nothing else: every quest it knows, including ones outside the guide's old bundled list, and new quests after a Questie update. The addon no longer ships a quest list of its own, so a missing quest can only mean Questie is missing it too.
+- **Dungeons and raids come from AtlasLoot.** Bosses and loot come from AtlasLoot, or the game's own encounter journal where AtlasLoot has none. The guide no longer ships its own boss list to disagree with them.
+- **Sharper maps from the game.** Map, zone, instance and skill names are read from your client where it can answer, with the bundled route geometry kept for what the client cannot provide (zone level ranges, boats and zeppelins, dungeon entrances, zone art).
+- **Trainer hints for every class.** With Tweaks Forever, the guide finds your class trainer even for the extra class and race combinations Forever adds, and a class quest's giver is recognised as its trainer.
+
 ## [0.6.1] - 2026-09-29
 
 - **Do less work when suggesting quests.** Route rebuilds reuse quest lists for your level and faction, including dungeon suggestions; your progress and availability are still checked on each rebuild.
