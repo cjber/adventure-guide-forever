@@ -354,3 +354,122 @@ function Geometry.Merge(data, native)
 	end
 	return data
 end
+
+--[[ Runtime seam: overlay the client's answers onto the live data ]]
+--
+-- Everything above builds one section from an injected `api` and merges it by hand. This is the one place the addon
+-- actually calls them: Geometry.EnsureNative() reads whichever table ns.Data is at the moment the planner is about to
+-- read it (QuestieSource swaps ns.Data for its own build once QuestieDB loads), overlays only the fields the client
+-- answers, and remembers it did. It never replaces ns.Data or a section table: Merge mutates the section tables in
+-- place, and QuestieSource reuses those same section tables across its swap, so the enrichment survives the swap.
+
+-- A native number that is a real, plausibly-world-scale coordinate or length. A client that answers with a nil
+-- corner, a zero-size map or a NaN would otherwise move routing maths off the bundled geometry, so a value that
+-- fails this (or a missing one) leaves the bundled value in place.
+local WORLD_LIMIT = 1e6 -- yards: a continent shift is tens of thousands, so this only rejects absurd answers
+
+---@param value any
+---@return boolean
+local function Sane(value)
+	return type(value) == "number"
+		and value == value -- not NaN
+		and value ~= math.huge
+		and value ~= -math.huge
+		and math.abs(value) <= WORLD_LIMIT
+end
+
+-- Native map fields minus `continent`: C_Map's continent is the root uiMapID (e.g. 1414 for Kalimdor), but the data
+-- keys its `continents` shifts and its routing by the client's Map.dbc ID (0 Eastern Kingdoms, 1 Kalimdor, 30 Alterac
+-- Valley), a space no client API exposes. Overlaying native `continent` would index `data.continents` with the wrong
+-- key, so it is always dropped and the bundled value kept. World-rect fields native cannot answer sanely are dropped
+-- for the same reason. Because these fields are nil, Merge leaves the bundled ones untouched.
+---@param maps table<integer, AGFMapCentre>
+---@return table<integer, AGFMapCentre>
+local function NativeMaps(maps)
+	for _, entry in pairs(maps) do
+		entry.continent = nil
+		if not (Sane(entry.cx) and Sane(entry.cy)) then
+			entry.cx, entry.cy = nil, nil
+		end
+		if not (Sane(entry.sx) and entry.sx > 0) then
+			entry.sx = nil
+		end
+		if not (Sane(entry.sy) and entry.sy > 0) then
+			entry.sy = nil
+		end
+	end
+	return maps
+end
+
+-- Overlay one data table with every section the client can answer for the IDs that table already names. It builds
+-- only the sections the data carries, so it creates no keys the planner never reads and clobbers nothing native
+-- cannot answer (zones.min/max, instances.raid/lfg/entrances, crossings, zoneArt, hubs, townAnchors, npcs). Kept
+-- pure over `api` so the specs drive it with stubs; Geometry.EnsureNative supplies the real client.
+---@param data AGFData?
+---@param api table
+---@return AGFData?
+function Geometry.Apply(data, api)
+	if type(data) ~= "table" then
+		return data
+	end
+	local mapIDs, zoneIDs, lfgIDs, skillIDs, factionIDs = {}, {}, {}, {}, {}
+	for id in pairs(data.maps or NONE) do
+		mapIDs[#mapIDs + 1] = id
+	end
+	for id in pairs(data.zones or NONE) do
+		zoneIDs[#zoneIDs + 1] = id
+	end
+	for _, entry in pairs(data.instances or NONE) do
+		if entry.lfg then
+			lfgIDs[#lfgIDs + 1] = entry.lfg
+		end
+	end
+	for id in pairs(data.skills or NONE) do
+		skillIDs[#skillIDs + 1] = id
+	end
+	for id in pairs(data.factions or NONE) do
+		factionIDs[#factionIDs + 1] = id
+	end
+	return Geometry.Merge(data, {
+		maps = NativeMaps(Geometry.Maps(api, mapIDs)),
+		zones = Geometry.Zones(api, zoneIDs),
+		instances = Geometry.Instances(api, lfgIDs),
+		skills = Geometry.Skills(api, skillIDs),
+		factions = Geometry.Factions(api, factionIDs),
+	})
+end
+
+-- The real client surface, read through the chunk's own globals (not _G), so it resolves under the specs' setfenv.
+-- The Forever-missing globals GetNumSkillLines / GetSkillLineInfo / GetNumFactions are not named: Apply passes the
+-- data's own skill and faction IDs explicitly, and C_SkillInfo names a learned line by ID.
+---@return table
+local function ClientApi()
+	return {
+		C_Map = C_Map,
+		UiMapPoint = UiMapPoint,
+		C_SkillInfo = C_SkillInfo,
+		C_Reputation = C_Reputation,
+		GetLFGDungeonInfo = GetLFGDungeonInfo,
+		GetRealZoneText = GetRealZoneText,
+	}
+end
+
+-- data table -> true, so a swap re-applies once and a repeat call within one table's life is free. Weak keys: a
+-- table QuestieSource throws away does not pin its section tables forever.
+local applied = setmetatable({}, { __mode = "k" })
+
+-- Overlay the client onto whichever table the planner reads next, once per table. Reading ns.Data here (rather than
+-- capturing a table up front) means the overlay lands on the table actually planned from, however far QuestieSource's
+-- swap has got; a repeated call is a no-op.
+---@param data? AGFData
+---@param api? table for specs
+---@return AGFData?
+function Geometry.EnsureNative(data, api)
+	data = data or ns.Data
+	if type(data) ~= "table" or applied[data] then
+		return data
+	end
+	local result = Geometry.Apply(data, api or ClientApi())
+	applied[data] = true
+	return result
+end

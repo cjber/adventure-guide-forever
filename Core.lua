@@ -451,6 +451,13 @@ local buildLog = {}
 -- In combat only the cheap rebuild runs (the log's steps; the rest as the last full build left them), and the full
 -- one waits for PLAYER_REGEN_ENABLED: looting a quest item mid-fight must not cost a frame.
 local function BuildRoute()
+	-- Overlay the client's native map/zone/instance/skill/faction answers onto whichever ns.Data QuestieSource has
+	-- swapped in, before the planner reads it. EnsureNative is memoized per data table, so the repeated rebuilds are
+	-- free, and it only fills fields the client can answer. Guarded so the planner-only spec environment (Core.lua
+	-- loaded without Geometry.lua) still builds.
+	if ns.Geometry and ns.Geometry.EnsureNative then
+		ns.Geometry.EnsureNative()
+	end
 	local state, prefs, player = ns.State, ns.Prefs(), ns.State.Player()
 	buildLog = state.Log()
 	if InCombatLockdown() then

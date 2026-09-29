@@ -244,4 +244,152 @@ equal(Geometry.Merge(empty, {}), empty, "Merge: no native sections returns data 
 equal(Geometry.Merge(nil, native), nil, "Merge: no data is a no-op")
 equal(Geometry.Merge(data, nil), data, "Merge: no native table is a no-op")
 
+--[[ Apply / EnsureNative: the runtime seam ]]
+
+-- A client that answers for map 200 only, with a real world rectangle and the level/name sections.
+local applyApi = {
+	UiMapPoint = {
+		CreateFromCoordinates = function(mapID, x, y)
+			return { x = x, y = y, mapID = mapID }
+		end,
+	},
+	C_Map = {
+		GetMapInfo = function(mapID)
+			if mapID == 200 then
+				return { mapID = 200, name = "Client Zone", parentMapID = 0 }
+			end
+		end,
+		GetMapWorldSize = function(mapID)
+			if mapID == 200 then
+				return 500, 700
+			end
+		end,
+		GetWorldPosFromMapPos = function(mapID, pos)
+			if mapID == 200 then
+				return { x = 100 + 500 * pos.x, y = 200 + 700 * pos.y }
+			end
+		end,
+	},
+	GetLFGDungeonInfo = function(lfgID)
+		if lfgID == 7 then
+			return "Client Dungeon", 0, 0, 0, 0, 0, 13, 18
+		end
+	end,
+	GetRealZoneText = function()
+		return ""
+	end,
+	C_SkillInfo = {
+		GetSkillLineInfoByID = function(skillLineID)
+			if skillLineID == 164 then
+				return { skillID = 164, name = "Client Smithing" }
+			end
+		end,
+	},
+	C_Reputation = {
+		GetFactionDataByID = function(factionID)
+			if factionID == 72 then
+				return { factionID = 72, name = "Client Faction" }
+			end
+		end,
+	},
+}
+
+-- Bundled values for one of each section: fields native can answer (name, geometry, levels) and fields it cannot
+-- (continent, zone min/max, instance raid/lfg/entrances, and a field outside the adapter's shape).
+local function bundled()
+	return {
+		maps = {
+			[200] = { name = "Bundled Zone", continent = 0, cx = 1, cy = 2, sx = 3, sy = 4, dy = "keep" },
+			[201] = { name = "Bundled Other", continent = 0, cx = -10, cy = -20, sx = 30, sy = 40 },
+		},
+		zones = { [200] = { name = "Bundled Zone", min = 1, max = 10 } },
+		instances = { [33] = { name = "Bundled Dungeon", lfg = 7, raid = true, entrances = { { trigger = 1 } } } },
+		skills = { [164] = { name = "Bundled Smithing" } },
+		factions = { [72] = { name = "Bundled Faction" } },
+	}
+end
+
+local applied = Geometry.Apply(bundled(), applyApi)
+equal(applied.maps[200].name, "Client Zone", "Apply: native map name overlays the bundled one")
+equal(applied.maps[200].cx, 350, "Apply: native corner rect overlays bundled cx")
+equal(applied.maps[200].cy, 550, "Apply: native corner rect overlays bundled cy")
+equal(applied.maps[200].sx, 500, "Apply: native map width overlays bundled sx")
+equal(applied.maps[200].sy, 700, "Apply: native map height overlays bundled sy")
+equal(applied.maps[200].continent, 0, "Apply: native continent is dropped, the bundled Map.dbc ID stays")
+equal(applied.maps[200].dy, "keep", "Apply: a bundled map field native cannot answer survives")
+equal(applied.maps[201].name, "Bundled Other", "Apply: a map the client does not answer keeps its bundled name")
+equal(applied.maps[201].cx, -10, "Apply: a map the client does not answer keeps its bundled geometry")
+equal(applied.zones[200].name, "Client Zone", "Apply: native zone name overlays the bundled one")
+equal(applied.zones[200].min, 1, "Apply: bundled zone min survives")
+equal(applied.zones[200].max, 10, "Apply: bundled zone max survives")
+equal(applied.instances[33].name, "Client Dungeon", "Apply: native instance name overlays the bundled one")
+equal(applied.instances[33].low, 13, "Apply: native instance low level is added")
+equal(applied.instances[33].high, 18, "Apply: native instance high level is added")
+equal(applied.instances[33].raid, true, "Apply: bundled instance raid flag survives")
+equal(applied.instances[33].entrances ~= nil, true, "Apply: bundled instance entrances survive")
+equal(applied.instances[33].lfg, 7, "Apply: bundled instance lfg field survives")
+equal(applied.skills[164].name, "Client Smithing", "Apply: native skill name overlays the bundled one")
+equal(applied.factions[72].name, "Client Faction", "Apply: native faction name overlays the bundled one")
+
+-- A missing/None client answer leaves every bundled value alone.
+local untouched = Geometry.Apply(bundled(), {})
+equal(untouched.maps[200].name, "Bundled Zone", "Apply: no C_Map leaves the bundled map name")
+equal(untouched.maps[200].cx, 1, "Apply: no C_Map leaves the bundled map geometry")
+equal(untouched.zones[200].name, "Bundled Zone", "Apply: no C_Map leaves the bundled zone name")
+equal(untouched.instances[33].name, "Bundled Dungeon", "Apply: no GetLFGDungeonInfo leaves the bundled instance")
+equal(untouched.skills[164].name, "Bundled Smithing", "Apply: no C_SkillInfo leaves the bundled skill name")
+equal(untouched.factions[72].name, "Bundled Faction", "Apply: no C_Reputation leaves the bundled faction name")
+
+-- An insane native rectangle (NaN / zero / negative) is refused, so the bundled geometry stays.
+local insane = {
+	C_Map = {
+		GetMapInfo = function(mapID)
+			if mapID == 200 then
+				return { mapID = 200, name = "Client Zone", parentMapID = 0 }
+			end
+		end,
+		GetWorldPosFromMapPos = function()
+			return { x = math.huge, y = math.huge }
+		end,
+		GetMapWorldSize = function()
+			return 0, -5
+		end,
+	},
+}
+local guarded = Geometry.Apply(bundled(), insane)
+equal(guarded.maps[200].cx, 1, "Apply: an insane native cx is refused, the bundled cx stays")
+equal(guarded.maps[200].cy, 2, "Apply: an insane native cy is refused, the bundled cy stays")
+equal(guarded.maps[200].sx, 3, "Apply: a zero native width is refused, the bundled sx stays")
+equal(guarded.maps[200].sy, 4, "Apply: a negative native height is refused, the bundled sy stays")
+equal(guarded.maps[200].name, "Client Zone", "Apply: only the sane native field is taken")
+
+equal(Geometry.Apply(nil, applyApi), nil, "Apply: no data is a no-op")
+
+-- Safe to call twice: the second pass is idempotent.
+local twice = bundled()
+Geometry.Apply(twice, applyApi)
+Geometry.Apply(twice, applyApi)
+equal(twice.maps[200].name, "Client Zone", "Apply: a second call keeps the native name")
+equal(twice.maps[201].cx, -10, "Apply: a second call keeps the bundled geometry")
+
+-- EnsureNative: reads ns.Data, applies once, and is memoized per data table.
+local nsData = bundled()
+ns.Data = nsData
+equal(Geometry.EnsureNative(nil, applyApi), nsData, "EnsureNative: returns the table it enriched")
+equal(nsData.maps[200].name, "Client Zone", "EnsureNative: enriches ns.Data")
+nsData.maps[200].name = "Changed"
+Geometry.EnsureNative(nil, applyApi)
+equal(nsData.maps[200].name, "Changed", "EnsureNative: a repeat call is memoized and re-overlays nothing")
+
+-- QuestieSource swaps ns.Data for a shallow copy (its section tables shared). EnsureNative must read the table
+-- ns.Data is now, not a table captured earlier: a swap triggers one more overlay onto the new identity.
+local swapped = {}
+for key, value in pairs(nsData) do
+	swapped[key] = value
+end
+swapped.maps[200].name = "Reset By Swap"
+ns.Data = swapped
+Geometry.EnsureNative(nil, applyApi)
+equal(swapped.maps[200].name, "Client Zone", "EnsureNative: re-overlays the swapped ns.Data table")
+
 print(("geometry_spec: %d checks passed"):format(checks))
