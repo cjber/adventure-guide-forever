@@ -8,10 +8,6 @@ ns.Model = Model
 -- CMaNGOS mangos-classic/src/game/Tools/Formulas.h, GetQuestGreenRange (quest, not creature XP).
 local GREEN_RANGE = { 4, 4, 5, 5, 6, 6, 7, 7, 8, 9, 10, 11, 12 }
 local CLOSE = 0.03 * 0.03
--- What a stop is worth against the yards to reach it: each quest there (at most 8), a quest that
--- goes grey at the next level, each hand-in, and a stop with no hand-in where every quest is red or optional, which
--- waits.
-local VALUE_QUEST, VALUE_QUESTS_MAX, VALUE_GREY_RISK, VALUE_HAND_IN, VALUE_WEAK = 40, 8, 150, 60, -300
 local ORANGE = 3 -- levels above the player: the stock orange, where a quest gets hard alone
 local NONE = {} -- an empty list for the hot loops to walk without allocating one; never written
 
@@ -1539,54 +1535,53 @@ local function TrainerSteps(data, player, prefs, key)
 	return steps
 end
 
--- Nearest neighbour from `from`; TwoOpt then removes crossings with that start fixed and the end open.
-local function Path(steps, from, where)
+-- Forward-declared: the greedy order (above Gap's definition) measures the route with it.
+local Gap
+
+-- Orders `stops` greedily by nearest action (docs/design.md §4.1): from `from`, repeatedly the unvisited stop
+-- cheapest to reach, so the route is the nearest action at every step. `group` (optional) names the town or area a
+-- stop belongs to; a stop in the group the route is already in comes before the route leaves it, so nearby stops of
+-- one town are finished first and the route never zig-zags between them. A stop already placed is never revisited,
+-- and ties break by key, so a rebuild gives the same order.
+---@param from? AGFPosition
+---@param stops AGFStep[]
+---@param at fun(step: AGFStep): AGFPosition?
+---@param group? fun(step: AGFStep): unknown
+---@return AGFStep[]
+local function NearestStop(from, stops, at, group)
 	local path, left = {}, {}
-	for _, step in ipairs(steps) do
+	for _, step in ipairs(stops) do
 		left[#left + 1] = step
 	end
+	local here, was = from, nil
 	while #left > 0 do
-		local best
+		local pick, pickIndex, pickCost, pickSame
 		for index, step in ipairs(left) do
-			local cost = Cost(from, where[step])
-			if not best or cost < best.cost or (cost == best.cost and step.key < left[best.index].key) then
-				best = { index = index, cost = cost }
+			local home = group and group(step) or nil
+			local same = home ~= nil and home == was
+			local cost = Gap(here, 0, at(step), step.r or 0)
+			if
+				not pick
+				or (same ~= pickSame and same)
+				or (same == pickSame and (cost < pickCost - 1e-6 or (cost <= pickCost + 1e-6 and step.key < pick.key)))
+			then
+				pick, pickIndex, pickCost, pickSame = step, index, cost, same
 			end
 		end
-		local step = table.remove(left, best.index)
-		path[#path + 1] = step
-		from = where[step]
+		table.remove(left, pickIndex)
+		path[#path + 1] = pick
+		here, was = at(pick), group and group(pick) or nil
 	end
 	return path
 end
 
-local function TwoOpt(path, start, where)
-	local function At(index)
-		return index == 0 and start or where[path[index]]
-	end
-	local improved = true
-	while improved do
-		improved = false
-		for i = 1, #path - 1 do
-			for j = i + 1, #path do
-				local before = Cost(At(i - 1), At(i)) + (j < #path and Cost(At(j), At(j + 1)) or 0)
-				local after = Cost(At(i - 1), At(j)) + (j < #path and Cost(At(i), At(j + 1)) or 0)
-				if after < before - 1e-6 then
-					for k = 0, math.floor((j - i - 1) / 2) do
-						path[i + k], path[j - k] = path[j - k], path[i + k]
-					end
-					improved = true
-				end
-			end
-		end
-	end
-	return path
-end
+-- The greedy order is a planner primitive: the ordering specs call it directly (tests/order_spec.lua).
+Model.Nearest = NearestStop
 
 -- Groups the selected steps by continent, the player's first and the rest by how dear they are to reach, so the
--- route crosses each ocean once. In each group the turn-ins in `away` (another continent than the player's) go last.
--- `cheap` (the in-combat rebuild) keeps the nearest-neighbour order and skips 2-opt.
-local function Order(selected, origin, where, away, cheap)
+-- route crosses each ocean once. In each group the turn-ins in `away` (another continent than the player's) go last,
+-- and within a part the stops go in Nearest order, the player's nearest action at every step.
+local function Order(selected, origin, where, away)
 	local groups, byContinent = {}, {}
 	for _, step in ipairs(selected) do
 		local continent = where[step].continent
@@ -1610,42 +1605,21 @@ local function Order(selected, origin, where, away, cheap)
 		return tostring(a.continent) < tostring(b.continent)
 	end)
 	local steps, from = {}, origin
+	local function At(step)
+		return where[step]
+	end
+	local function Group(step)
+		return step.hub ~= nil and tostring(step.hub) or nil
+	end
 	for _, group in ipairs(groups) do
 		for _, part in ipairs({ group.main, group.last }) do
-			local start = from
-			local path = Path(part, start, where)
-			for _, step in ipairs(cheap and path or TwoOpt(path, start, where)) do
+			for _, step in ipairs(NearestStop(from, part, At, Group)) do
 				steps[#steps + 1] = step
 				from = where[step]
 			end
 		end
 	end
 	return steps
-end
-
--- A step with no quests is worth what its kind says, never VALUE_WEAK: training waits for nothing, as a hand-in does.
-local KIND_VALUE = { trainer = VALUE_HAND_IN }
-
--- A step's worth in yards (VALUE_* above), so selection weighs it against the reach. Only a step placed in yards has
--- one: a map the data cannot place is measured in map units, where yards mean nothing.
----@param step AGFStep
-local function Value(data, log, player, step)
-	local worth = KIND_VALUE[step.kind]
-	if worth then
-		return worth
-	end
-	-- A finished quest waits for nothing, so a stop with a hand-in is never weak.
-	local handins = step.handins and #step.handins or (step.kind == "turnin" and 1 or 0)
-	local risk, weak = false, handins == 0
-	for _, id in ipairs(step.quests) do
-		local level = QuestLevel(data, log, player, id)
-		risk = risk or GreyRisk(level, player)
-		weak = weak and Optional(data.quests[id], level, player)
-	end
-	return VALUE_QUEST * math.min(#step.quests, VALUE_QUESTS_MAX)
-		+ (risk and VALUE_GREY_RISK or 0)
-		+ VALUE_HAND_IN * handins
-		+ (weak and VALUE_WEAK or 0)
 end
 
 -- Each card's committed order (docs/design.md §4.3), by journey key: a full build reads the last route's and records
@@ -1661,7 +1635,7 @@ local heldHere
 -- card's chapter, is chosen first, then ordered by cost like the rest. `join` adds to the chosen steps (hand-ins to
 -- their towns) before they are described and ordered, so it never adds a step. `log` titles the hand-ins.
 ---@param join? fun(selected: AGFStep[])
-local function Build(data, player, completed, log, candidates, prefs, mapName, cheap, lead, join)
+local function Build(data, player, completed, log, candidates, prefs, mapName, lead, join)
 	local pool, where, docks = {}, {}, Docks(data, player.side)
 	for _, step in ipairs(candidates) do
 		if not prefs.skipped[step.key] then
@@ -1674,12 +1648,12 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, c
 	local origin = Position(data, player, docks)
 
 	-- Selection grows from the player: each pick is the step cheapest to reach from the player or any step already
-	-- picked, less its worth (Value). There is no phase, so a far turn-in never pushes out a nearby pickup.
+	-- picked, so the route is the nearest pickup, objective area or turn-in at every step (docs/design.md §4.1).
 	-- Without a known place for the player (no position in an instance, a map the data lacks) most steps cost UNKNOWN
 	-- from them. A turn-in among those leads, and the route grows from it instead of
 	-- dropping it for whichever key sorts first.
 	local measured = origin ~= nil and origin.known
-	local reach, value, chosen, selected = {}, {}, {}, {}
+	local reach, chosen, selected = {}, {}, {}
 	-- A trainer's stop opens only once a stop in its town is chosen, its hub or within the town linkage
 	-- (AGREE) of it, and one at most: the route stops to train only where it passes anyway.
 	local near, trained = {}, false
@@ -1689,7 +1663,6 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, c
 	for _, step in ipairs(pool) do
 		local cost = Cost(origin, where[step])
 		reach[step] = (not measured and cost >= UNKNOWN and HandInOnly(step)) and 0 or cost
-		value[step] = (where[step] and where[step].known) and Value(data, log, player, step) or 0
 	end
 	local function Take(step)
 		chosen[step] = true
@@ -1711,11 +1684,11 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, c
 	if lead and where[lead] then
 		Take(lead)
 	end
-	-- Each pick weighs the reach against the step's worth; Order and 2-opt then look at travel alone.
+	-- Each pick is the nearest step to the player or to any step already picked; Order then keeps the continents.
 	while #selected < Model.MAX_STEPS do
 		local best, bestKey
 		for _, step in ipairs(pool) do
-			local key = reach[step] - value[step]
+			local key = reach[step]
 			if
 				not chosen[step]
 				and Open(step)
@@ -1770,7 +1743,7 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, c
 	end
 	-- Each town's point is the place of its quest nearest the stop before it (the player, for the first): a real
 	-- giver, never a centre, so Shortest Path takes the player to the nearest door of the town.
-	local steps, from = Order(selected, start, where, away, cheap), start
+	local steps, from = Order(selected, start, where, away), start
 	for _, step in ipairs(steps) do
 		if step.spots then
 			local best, bestCost
@@ -1801,7 +1774,6 @@ end
 
 local RUN = 7 -- yards a second at a run
 local LAP_YARDS = 15 * 60 * RUN -- a lap's travel and work: about a quarter of an hour out of town and back
-local LAP_STOPS = Model.MAX_STEPS - 3 -- a lap's stops, so the town before, the town after and one more fit the numerals
 local WORK_YARDS = 4 * RUN -- one count of an objective (a kill, an item): about four seconds' work
 local TALK_YARDS = 10 * RUN -- a quest's pickup and its hand-in
 local HERE = 100 -- yards: a town (a hub) this near the player is the one they stand in, visited before any lap
@@ -1863,7 +1835,7 @@ local function Planned(quest, id)
 end
 
 -- The cost between two stops: an area is entered at its ring, so both radii come off.
-local function Gap(a, ra, b, rb)
+Gap = function(a, ra, b, rb)
 	return math.max(0, Cost(a, b) - ra - rb)
 end
 
@@ -1878,120 +1850,6 @@ local function Trim(town, handins, pickups)
 	end
 end
 
--- One lap in order from `from`: `open` (the town's visit that hands out its quests) before every stop in `after`,
--- `close` (the hand-ins) last, the rest by cheapest insertion, then or-opt (runs of up to three stops moved while that
--- saves yards and keeps `open` first). `stops` come by key and ties keep the first, so a rebuild gives the same order.
----@param stops AGFStep[]
----@param after table<AGFStep, boolean>
----@param at fun(step: AGFStep): AGFPosition?
----@return AGFStep[]
-local function Sequence(from, open, stops, close, after, at)
-	local all = {}
-	all[#all + 1] = open or nil
-	for _, step in ipairs(stops) do
-		all[#all + 1] = step
-	end
-	all[#all + 1] = close or nil
-	local cost = {}
-	for i = 0, #all do
-		local row, a, ra = {}, i == 0 and from or at(all[i]), i == 0 and 0 or (all[i].r or 0)
-		for j = 1, #all do
-			row[j] = Gap(a, ra, at(all[j]), all[j].r or 0)
-		end
-		cost[i] = row
-	end
-	local first, last = open and 1 or nil, close and #all or nil
-	local route, pending = {}, {}
-	route[#route + 1] = first
-	route[#route + 1] = last
-	for i = (open and 2 or 1), #all - (close and 1 or 0) do
-		pending[#pending + 1] = i
-	end
-	local function Leg(a, b)
-		return b and cost[a or 0][b] or 0
-	end
-	-- Where `open` stands in `path`, and whether each stop that needs it comes after it.
-	local function Feasible(path)
-		local seen = not first
-		for _, i in ipairs(path) do
-			seen = seen or i == first
-			if not seen and after[all[i]] then
-				return false
-			end
-		end
-		return true
-	end
-	while #pending > 0 do
-		local best
-		for p, i in ipairs(pending) do
-			local seen = not (first and after[all[i]])
-			for k = 1, #route + (last and 0 or 1) do
-				local prev, nextStop = route[k - 1], route[k]
-				local delta = Leg(prev, i) + Leg(i, nextStop) - Leg(prev, nextStop)
-				if seen and (not best or delta < best.delta - 1e-6) then
-					best = { p = p, k = k, delta = delta }
-				end
-				seen = seen or route[k] == first
-			end
-		end
-		table.insert(route, best.k, table.remove(pending, best.p))
-	end
-	for _ = 1, 2 do
-		local improved = false
-		for size = 1, 3 do
-			for s = 1, #route - size + 1 - (last and 1 or 0) do
-				local segment, rest = {}, {}
-				for k, i in ipairs(route) do
-					table.insert((k >= s and k < s + size) and segment or rest, i)
-				end
-				local before = Leg(route[s - 1], segment[1]) + Leg(segment[size], route[s + size])
-				local saving = before - Leg(route[s - 1], route[s + size])
-				for t = 1, #rest + (last and 0 or 1) do
-					local added = Leg(rest[t - 1], segment[1]) + Leg(segment[size], rest[t]) - Leg(rest[t - 1], rest[t])
-					if t ~= s and added < saving - 1e-6 then
-						local moved = {}
-						for k = 1, #rest + 1 do
-							if k == t then
-								for _, i in ipairs(segment) do
-									moved[#moved + 1] = i
-								end
-							end
-							moved[#moved + 1] = rest[k]
-						end
-						if Feasible(moved) then
-							route, improved = moved, true
-							break
-						end
-					end
-				end
-			end
-		end
-		if not improved then
-			break
-		end
-	end
-	local steps = {}
-	for _, i in ipairs(route) do
-		steps[#steps + 1] = all[i]
-	end
-	return steps
-end
-
--- The work at a stop in yards: each count still to do in an area, a talk anywhere else.
----@param step AGFStep
-local function Work(step, data, log, player)
-	if not step.objectives then
-		return TALK_YARDS, 0
-	end
-	local work, extra = 0, 0
-	for _, objective in ipairs(step.objectives) do
-		local base = math.max(1, (objective.need or 1) - (objective.have or 0)) * WORK_YARDS
-		local cost = base * WorkFactor(QuestLevel(data, log, player, objective.id), player)
-		work, extra = work + cost, extra + cost - base
-	end
-	return work, extra
-end
-
 ---@class AGFAnchor
 ---@field key string the town's key ("town:<hub>"), or "" for the stops no town reaches, swept around the player
 ---@field place table the town's point
@@ -2000,64 +1858,6 @@ end
 ---@field stops AGFStep[] the areas and stops its laps go out to
 ---@field hands integer[] the quests a lap hands in back there, once all their objectives are done
 ---@field visited? boolean
-
----@class AGFLap
----@field key string
----@field anchor AGFAnchor
----@field stops AGFStep[]
-
--- An anchor's stops cut into laps by sweep: by angle around its town from the widest gap between them, each lap as long
--- as its loop out and back and its work fit LAP_YARDS, its stops shared evenly among as few laps as LAP_STOPS allows;
--- a stop too far alone is a lap alone.
----@param anchor AGFAnchor
----@param at fun(step: AGFStep): AGFPosition?
----@return AGFLap[]
-local function Sweep(anchor, at, work)
-	local stops, angle, home = anchor.stops, {}, anchor.pos
-	for _, step in ipairs(stops) do
-		local p = at(step)
-		angle[step] = (home and p and p.continent == home.continent) and math.atan2(p.y - home.y, p.x - home.x) or 0
-	end
-	table.sort(stops, function(a, b)
-		if angle[a] ~= angle[b] then
-			return angle[a] < angle[b]
-		end
-		return a.key < b.key
-	end)
-	local start, widest = 1, -1
-	for i = 1, #stops > 1 and #stops or 0 do
-		local gap = (angle[stops[i]] - angle[stops[i - 1] or stops[#stops]]) % (2 * math.pi)
-		if gap > widest then
-			start, widest = i, gap
-		end
-	end
-	local laps, lap, loop, spent = {}, nil, {}, 0
-	local size = #stops > 0 and math.ceil(#stops / math.ceil(#stops / LAP_STOPS)) or 0
-	for k = 0, #stops - 1 do
-		local step = stops[(start - 1 + k) % #stops + 1]
-		local p, r = at(step), step.r or 0
-		local best, where = math.huge, 1
-		for i = 1, #loop + 1 do
-			local a, b = loop[i - 1], loop[i]
-			local pa, pb = a and at(a) or home, b and at(b) or home
-			local ra, rb = a and (a.r or 0) or 0, b and (b.r or 0) or 0
-			local delta = pa and pb and Gap(pa, ra, p, r) + Gap(p, r, pb, rb) - Gap(pa, ra, pb, rb) or UNKNOWN
-			if delta < best then
-				best, where = delta, i
-			end
-		end
-		if not lap or (#lap.stops >= size or spent + best + work[step] > LAP_YARDS) then
-			lap = { key = ("%s:%d"):format(anchor.key, #laps + 1), anchor = anchor, stops = {} }
-			laps[#laps + 1], loop, where = lap, {}, 1
-			best = home and p and 2 * Gap(home, 0, p, r) or UNKNOWN
-			spent = 0
-		end
-		table.insert(loop, where, step)
-		lap.stops[#lap.stops + 1] = step
-		spent = spent + best + work[step]
-	end
-	return laps
-end
 
 local SETTLE_SHARE = 0.15 -- a fresh order replaces the committed one only when it saves this share of the rest...
 local SETTLE_YARDS = 200 -- ...and this many yards
@@ -2244,16 +2044,17 @@ end
 
 -- The lap route (docs/design.md §4.2), or nil when the player's place is unknown, where Build's route stands. The
 -- card's towns hand out their quests and take the finished ones; each new quest is done in areas of the data's (merged
--- with the log's), and one whose XP per yard falls below KEEP of its town's mean waits. Each quest's stops are laps
--- around the town it goes back to (its pickup town when new, else its hand-in's when a lap reaches it), cut by Sweep.
--- The lap that leads (the story's chapter, else the least reach less worth) is ordered by Sequence, and another follows
--- within a bounded lookahead. The preview is cut after ordering and merging visits, so its horizon
--- stays stable across rebuilds. The route is checked in order: a quest's objectives never before its
--- pickup, its hand-in never before all of them, and the log never past the client's limit, the least XP per yard left
--- in town first. The card's committed order (`card`, its journey key) keeps the route steady: its lap goes on until it
--- ends, its towns before that lap keep their visits, and its order stands unless a fresh one is much shorter
--- (Stabilise).
--- The town or open area the player stands in leads (Model.Here). A second visit to a town is keyed "town:<hub>:2".
+-- with the log's), and one whose XP per yard falls below KEEP of its town's mean waits. The route is the player's
+-- nearest action at every step (docs/design.md §4.1): the nearest town pickup (its open), the nearest area of a quest
+-- the town handed out or the player carries, or the nearest ready hand-in. The town the player stands in, a pinned
+-- quest and the story's chapter lead where they must, and a stop in the town the route is already in, on its map and
+-- within a lap of it, is finished before the route leaves it, so a town's work is not split by a nearer rival while
+-- an objective across the zone or the sea is no reason to stay; a stop already placed is never revisited. The
+-- preview is cut after ordering and merging visits, so its horizon stays stable across rebuilds. The route is
+-- checked in order: a quest's objectives never before its pickup, its hand-in never before all of them, and the log
+-- never past the client's limit. The card's committed order (`card`, its journey key) keeps the route steady
+-- (Stabilise). The town or open area the player stands in leads (Model.Here). A second visit to a town is keyed
+-- "town:<hub>:2".
 ---@param candidates AGFStep[]
 ---@param plan AGFPlanAreas
 ---@param leadID? integer
@@ -2498,204 +2299,129 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 		table.insert(anchor and anchor.stops or {}, step)
 	end
 
-	-- The laps, the one that leads first, and more while none has gone out to an area.
-	local laps, work, extra = {}, {}, {}
+	-- The route is the player's nearest action at every step (docs/design.md §4.1): from where they are, the nearest
+	-- town pickup (its open), the nearest area of a quest the town handed out or the player carries, or the nearest
+	-- ready hand-in. A stop in the town the route is already in comes before the route leaves it, and a stop already
+	-- placed is never revisited. A quest's objectives follow its pickup and its hand-in all of them (Holds and Verify
+	-- check the route in order).
+	local route, from, done, handed = {}, origin, {}, {}
+	local reached, placed, closed, schooled = {}, {}, {}, false
+	local lastAnchor
+	-- All of a town's hand-ins ready to hand in at once, none handed in yet.
+	local function Handable(anchor)
+		for _, id in ipairs(anchor.hands) do
+			if
+				(done[id] or 0) ~= (pending[id] or 0)
+				or handed[id]
+				or not (log[id] or reached[anchor] or anchor.open == nil)
+			then
+				return false
+			end
+		end
+		return #anchor.hands > 0
+	end
+	-- The town the player stands in comes first, whatever leads: its trainer, hand-ins and pickups are a word away.
 	for _, anchor in ipairs(list) do
-		for _, step in ipairs(anchor.stops) do
-			work[step], extra[step] = Work(step, data, log, player)
-		end
-		local cut = Sweep(anchor, At, work)
-		if #cut == 0 and anchor.open then
-			cut[1] = { key = anchor.key .. ":1", anchor = anchor, stops = {} }
-		end
-		for _, lap in ipairs(cut) do
-			laps[#laps + 1] = lap
-		end
-	end
-	local route, used, from, done, handed = {}, {}, origin, {}, {}
-	local leadTown = leadID and picks[leadID]
-	local leadAnchor = leadTown and anchors[leadTown.key]
-	local standing
-	for _, lap in ipairs(laps) do
-		for _, stop in ipairs(lap.stops) do
-			local inside = stop.kind == "area" and not stop.planned and InArea(data, player, stop, 0)
-			standing = standing or (inside and lap) or nil
-		end
-	end
-	-- The lap under way goes on until it ends: the one out to the area first in the committed order is the only one
-	-- that may go out.
-	local underway, first
-	for _, lap in ipairs(laps) do
-		for _, stop in ipairs(lap.stops) do
-			local at = stop.kind == "area" and rank[stop.key]
-			if at and (not first or at < first) then
-				underway, first = lap, at
-			end
-		end
-	end
-	-- Its last area in the committed order: a town the order visits before it is one the lap under way takes in.
-	local ends = first
-	for _, stop in ipairs(underway and underway.stops or NONE) do
-		ends = math.max(ends, stop.kind == "area" and rank[stop.key] or 0)
-	end
-	-- The town the player stands in comes first, whatever leads: its trainer, hand-ins and pickups are a word away. So
-	-- does a town the committed order visits before the lap under way ends, out of another lap (only the lap under way
-	-- goes out), as it did when the player stood in it.
-	local function Before(stop, lap)
-		return lap ~= underway and (rank[Ident(stop)] or math.huge) < (ends or 0)
-	end
-	for _, lap in ipairs(laps) do
-		local goes = false
-		for index = #lap.stops, 1, -1 do
-			local stop = lap.stops[index]
-			goes = goes or stop.kind == "area"
+		for index = #anchor.stops, 1, -1 do
+			local stop = anchor.stops[index]
 			local town = (stop.kind == "town" or stop.kind == "trainer") and stop.hub
-			if town and (Cost(origin, At(stop)) <= HERE or Before(stop, lap)) then
-				route[#route + 1] = table.remove(lap.stops, index)
+			if town and Cost(origin, At(stop)) <= HERE then
+				placed[stop], lastAnchor = true, anchor
+				route[#route + 1] = table.remove(anchor.stops, index)
 			end
 		end
-		local open = not lap.anchor.visited and lap.anchor.open or nil
-		if open and open.hub and (Cost(origin, At(open)) <= HERE or (goes and Before(open, lap))) then
-			lap.anchor.visited, route[#route + 1] = true, open
+		local open = not reached[anchor] and anchor.open or nil
+		if open and open.hub and Cost(origin, At(open)) <= HERE then
+			reached[anchor], lastAnchor = true, anchor
+			route[#route + 1] = open
 		end
 	end
 	from = route[#route] and At(route[#route]) or from
-	-- The lap to take next from `from`, or nil.
-	local function Pick()
-		local best, bestScore
-		for _, lap in ipairs(laps) do
-			local anchor = lap.anchor
-			local open = not anchor.visited and anchor.open or nil
-			-- A lap to a town the committed order visits before the lap under way ends comes in that order, before it.
-			local held = open and rank[Ident(open)]
-			local goes = false
-			for _, stop in ipairs(lap.stops) do
-				local at = stop.kind ~= "area" and rank[Ident(stop)]
-				held = at and math.min(held or at, at) or held
-				goes = goes or stop.kind == "area"
-			end
-			held = lap ~= underway and held and held < (ends or math.huge) and held or nil
-			-- Until the lead's town is visited, only its lap, one that never goes out to an area, or the one whose area
-			-- the player stands in may come first; while a lap is under way, only it and those towns.
-			local waits = (
-				goes
-				and leadAnchor ~= nil
-				and not leadAnchor.visited
-				and anchor ~= leadAnchor
-				and lap ~= standing
-			) or (underway ~= nil and lap ~= underway and not held)
-			if not used[lap] and (open or #lap.stops > 0) and not waits then
-				local reach = open and Cost(from, At(open)) or UNKNOWN
-				local value = open and Value(data, log, player, open) or 0
-				local effort, quests = 0, 0
-				for _, stop in ipairs(lap.stops) do
-					reach = math.min(reach, Gap(from, 0, At(stop), stop.r or 0))
-					value = value + VALUE_QUEST * #stop.quests
-					effort, quests = effort + extra[stop], quests + #stop.quests
-				end
-				local score = held and held - UNKNOWN * UNKNOWN
-					or reach + (lap == standing and 0 or effort / math.max(1, quests)) - value
-				if not best or score < bestScore or (score == bestScore and lap.key < best.key) then
-					best, bestScore = lap, score
-				end
-			end
-		end
-		return best
-	end
-	-- Leave room for merged visits and log-capacity filtering without planning every eligible lap.
+	-- Leave room for merged visits and log-capacity filtering without planning every eligible stop.
 	while #route < Model.MAX_STEPS * 3 do
-		local best = Pick()
-		-- The lap under way that can no longer come (it waits for the lead's town, or is taken) holds nothing back.
-		if not best and underway then
-			underway = nil
-			best = Pick()
+		local pick, pickAnchor, pickKind, pickRank, pickValue, pickKey
+		-- The committed order holds every stop it has, in order (docs/design.md §4.3), so a rebuild or a move never
+		-- shuffles the route; a pinned quest (and the story's chapter) first among the rest; then the nearest action,
+		-- with a stop in the town the route is already in preferred while it is within the town linkage (AGREE).
+		local function Consider(step, anchor, cost, kind)
+			local pin, lead = false, false
+			for _, id in ipairs(step.quests or NONE) do
+				pin = pin or pinned[id] or false
+				lead = lead or id == leadID
+			end
+			local held = rank[Ident(step)]
+			-- A stop in the town the route is already in, on its map and within a lap of it, is taken before the route
+			-- leaves it: a bounded look-ahead, so a town's work is not split by a nearer rival, but an objective
+			-- across the zone or the sea is no reason to stay.
+			local place = anchor and (anchor.place or anchor.open)
+			local same = anchor ~= nil
+				and anchor == lastAnchor
+				and anchor.pos ~= nil
+				and (place == nil or place.map == nil or step.map == place.map)
+				and Cost(anchor.pos, At(step)) <= LAP_YARDS / 2
+			local value = cost
+			local pref = held and held - 6000000
+				or (pin and -5000000 or (lead and -4000000 or (same and -3000000 or 0)))
+
+			if
+				not pick
+				or pref < pickRank
+				or (
+					pref == pickRank
+					and (value < pickValue - 1e-6 or (value <= pickValue + 1e-6 and step.key < pickKey))
+				)
+			then
+				pick, pickAnchor, pickKind, pickRank, pickValue, pickKey = step, anchor, kind, pref, value, step.key
+			end
 		end
-		if not best then
+		for _, anchor in ipairs(list) do
+			if not reached[anchor] and anchor.open then
+				Consider(anchor.open, anchor, Cost(from, At(anchor.open)), "open")
+			end
+			for _, stop in ipairs(anchor.stops) do
+				-- A stop the town's own pickup opens is not a place the route can go yet.
+				if not placed[stop] and not (stop.planned and not reached[anchor]) then
+					if stop.kind ~= "trainer" or not schooled then
+						Consider(stop, anchor, Gap(from, 0, At(stop), stop.r or 0), "stop")
+					end
+				end
+			end
+			if not closed[anchor] and Handable(anchor) then
+				local cost = anchor.pos and Cost(from, anchor.pos) or UNKNOWN
+				Consider(anchor.open or anchor, anchor, cost, "close")
+			end
+		end
+		if not pick then
 			break
 		end
-		used[best] = true
-		-- A finished quest waits for nothing, so one handed in within half a lap of this lap's town comes along from a
-		-- later lap: a hand-in-only stop, or the hand-ins of a town whose own lap comes later, split from its pickups.
-		-- The lap the player stands in goes on from its area, which leads (Front), so a hand-in-only stop comes along
-		-- only when it adds no more to that lap than to its own: the player is never sent across the zone and back for
-		-- a hand-in its own lap passes by (Duskwood: from the worgs west of Raven Hill, not to Darkshire and back to
-		-- Lars first).
-		local home = best.anchor.pos or from
-		-- The yards `stop` adds to `lap`'s loop out of `town`: its cheapest insertion between two of the loop's points,
-		-- or there and back from its only one.
-		local function Detour(lap, stop, town)
-			local points, p, r = {}, At(stop), stop.r or 0
-			points[1] = town and { pos = town, r = 0 } or nil
-			for _, other in ipairs(lap.stops) do
-				points[#points + 1] = other ~= stop and { pos = At(other), r = other.r or 0 } or nil
-			end
-			if #points == 1 then
-				return 2 * Gap(points[1].pos, points[1].r, p, r)
-			end
-			local cheapest = UNKNOWN
-			for i = 1, #points - 1 do
-				for j = i + 1, #points do
-					local a, b = points[i], points[j]
-					local added = Gap(a.pos, a.r, p, r) + Gap(p, r, b.pos, b.r) - Gap(a.pos, a.r, b.pos, b.r)
-					cheapest = math.min(cheapest, added)
+		if pickKind == "close" then
+			local closes, close = {}, nil
+			for _, id in ipairs(pickAnchor.hands) do
+				if not handed[id] then
+					close = Visit(closes, {}, data.quests[id].finish, "handins", id)
+					close.returns = close.returns or {}
+					close.returns[id] = true
+					if not log[id] then
+						close.planned = close.planned or {}
+						close.planned[id] = true
+					end
+					handed[id] = true
 				end
 			end
-			return cheapest
-		end
-		for _, lap in ipairs(laps) do
-			for index = used[lap] and 0 or #lap.stops, 1, -1 do
-				local stop = lap.stops[index]
-				if
-					HandInOnly(stop)
-					and stop.kind ~= "trainer"
-					and Cost(home, At(stop)) <= LAP_YARDS / 2
-					and (best ~= standing or Detour(best, stop, home) <= Detour(lap, stop, lap.anchor.pos))
-				then
-					best.stops[#best.stops + 1] = table.remove(lap.stops, index)
-				end
+			closed[pickAnchor] = true
+			if close then
+				route[#route + 1], from, lastAnchor = close, At(close) or from, pickAnchor
 			end
-			local town = lap.anchor ~= best.anchor and not lap.anchor.visited and lap.anchor.open or nil
-			if town and #town.handins > 0 and #town.pickups > 0 and Cost(home, At(town)) <= LAP_YARDS / 2 then
-				local fields = {}
-				for key, value in pairs(town) do
-					fields[key] = value
-				end
-				local split = fields --[[@as AGFStep]]
-				split.givers = {}
-				Trim(split, town.handins, {})
-				Trim(town, {}, town.pickups)
-				best.stops[#best.stops + 1] = split
-			end
-		end
-		local anchor = best.anchor
-		local open = not anchor.visited and anchor.open or nil
-		anchor.visited = anchor.visited or open ~= nil
-		local after, closing, closes = {}, {}, {}
-		for _, stop in ipairs(best.stops) do
-			for _, objective in ipairs(stop.objectives or NONE) do
+		elseif pickKind == "open" then
+			reached[pickAnchor] = true
+			route[#route + 1], from, lastAnchor = pick, At(pick) or from, pickAnchor
+		else
+			placed[pick] = true
+			schooled = schooled or pick.kind == "trainer"
+			for _, objective in ipairs(pick.objectives or NONE) do
 				done[objective.id] = (done[objective.id] or 0) + 1
-				after[stop] = after[stop] or (open ~= nil and picks[objective.id] == open)
 			end
-		end
-		for _, id in ipairs(anchor.hands) do
-			local ready = (done[id] or 0) == (pending[id] or 0)
-			if ready and not handed[id] and (log[id] or anchor.visited) then
-				closing[#closing + 1], handed[id] = id, true
-			end
-		end
-		local close
-		for _, id in ipairs(closing) do
-			close = Visit(closes, {}, data.quests[id].finish, "handins", id)
-			close.returns = close.returns or {}
-			close.returns[id] = true
-			if not log[id] then
-				close.planned = close.planned or {}
-				close.planned[id] = true
-			end
-		end
-		for _, step in ipairs(Sequence(from, open, best.stops, close, after, At)) do
-			route[#route + 1] = step
-			from = At(step) or from
+			route[#route + 1], from, lastAnchor = pick, At(pick) or from, pickAnchor
 		end
 	end
 	for _, step in ipairs(groups) do
@@ -3088,7 +2814,7 @@ end
 ---@param ready table<integer, AGFPlace>
 ---@param elsewhere fun(id: integer, place?: table): boolean
 ---@param added integer[]
-local function Carry(data, player, completed, log, ready, prefs, mapName, cheap, elsewhere, added)
+local function Carry(data, player, completed, log, ready, prefs, mapName, elsewhere, added)
 	local candidates, stops = TrainerSteps(data, player, prefs, "carry"), {}
 	local held = LogSteps(data, player, log, ready, function(id, place)
 		return not Dropped(id) and elsewhere(id, place)
@@ -3096,7 +2822,7 @@ local function Carry(data, player, completed, log, ready, prefs, mapName, cheap,
 	PickupSteps(data, added, function()
 		return true
 	end, candidates, stops)
-	local steps = Build(data, player, completed, log, candidates, prefs, mapName, cheap)
+	local steps = Build(data, player, completed, log, candidates, prefs, mapName)
 	steps = #added > 0 and Within(data, player, completed, log, steps) or steps
 	if #steps == 0 then
 		return nil
@@ -3203,7 +2929,7 @@ local function Pickups(data, player, completed, log, ready, eligible, belongs, k
 			player,
 			completed,
 			log,
-			Build(data, player, completed, log, candidates, prefs, mapName, false, lead, HandIns(ready))
+			Build(data, player, completed, log, candidates, prefs, mapName, lead, HandIns(ready))
 		)
 	if #steps == 0 then
 		return nil, quests
@@ -3937,7 +3663,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	local added = Added(data, player, completed, log, prefs, function(quest)
 		return not onStory(quest)
 	end)
-	journeys[#journeys + 1] = Carry(data, player, completed, log, ready, prefs, mapName, false, function(id)
+	journeys[#journeys + 1] = Carry(data, player, completed, log, ready, prefs, mapName, function(id)
 		return not holds[id]
 	end, added)
 	-- Every zone with a useful pickup is an option, ranked for the player's level now.
@@ -4164,7 +3890,7 @@ end
 -- The in-combat rebuild (Core.lua): the carry journey fresh from the live log, which is what changes in a fight, after
 -- the story as the full build orders them, and every other journey as the last full build left it, less any step
 -- skipped or no longer open since. Only the retained steps' quests are checked again: no eligibility pass over the
--- data and no 2-opt, so it stays cheap; the full build runs once combat ends.
+-- data, so it stays cheap; the full build runs once combat ends.
 ---@param last AGFRoute
 function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 	ReadDropped(prefs)
@@ -4262,7 +3988,7 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 	local added = Added(data, player, completed, log, prefs, function(quest)
 		return not story(quest)
 	end)
-	local carry = Carry(data, player, completed, log, Ready(data, log), prefs, mapName, true, function(id)
+	local carry = Carry(data, player, completed, log, Ready(data, log), prefs, mapName, function(id)
 		return not told[id] or (log[id].complete and not drawn[id])
 	end, added)
 	if carry then

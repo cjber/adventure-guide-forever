@@ -1,9 +1,9 @@
 # ne21_crosszone: level 21, side 1, at 1439 0.3700,0.4400
 card | zone:1440 | Ashenvale story | Chapter 1 of 3 | A chain begins with Faldreas Goeth'Shael | map 1440
-  step 1 | turnin:967 | Turn in: The Tower of Althalaxx | 1440 0.2620,0.3870 | ready to hand in
-  step 2 | town:405 | Visit Astranaar, Ashenvale: Pick up 3 | 1440 0.3577,0.4910 | Begins a new story
-  step 3 | town:415 | Pick up: Bathran's Hair | 1440 0.2644,0.3859 | near your level
-  step 4 | area:1010:4 | Complete objectives · Bathran's Hair | 1440 0.3081,0.2458 | after you pick it up | 90 yd | 1010/4
+  step 1 | town:405 | Visit Astranaar, Ashenvale: Pick up 3 | 1440 0.3577,0.4910 | Begins a new story
+  step 2 | town:415 | Pick up: Bathran's Hair | 1440 0.2644,0.3859 | near your level
+  step 3 | turnin:967 | Turn in: The Tower of Althalaxx | 1440 0.2620,0.3870 | ready to hand in
+  step 4 | area:1010:4 | Complete objectives · Bathran's Hair | 1440 0.3079,0.2457 | after you pick it up | 90 yd | 1010/4
   step 5 | town:415:2 | Turn in: Bathran's Hair | 1440 0.2644,0.3859 | once it's done
   step 6 | town:418 | Pick up: The Ancient Statuette | 1440 0.1479,0.3129 | near your level
   step 7 | area:1007:4 | Complete objectives · The Ancient Statuette | 1440 0.1420,0.2060 | after you pick it up | 0 yd | 1007/4

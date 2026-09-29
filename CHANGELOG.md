@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Your nearest stop first.** The route is now just the nearest action at every step: the closest town to pick quests up in, the closest place to work the quests you are carrying, or the closest turn-in when one is ready. A town's work is finished before the guide moves on, so the list no longer jumps back and forth, and it never sends you back to a stop it has already placed.
+
 ## [0.6.2] - 2026-09-29
 
 - **Always use the newest quests.** Quest data now comes from your installed QuestieDB and nothing else: every quest it knows, including ones outside the guide's old bundled list, and new quests after a Questie update. The addon no longer ships a quest list of its own, so a missing quest can only mean Questie is missing it too.

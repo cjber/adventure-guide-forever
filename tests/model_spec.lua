@@ -1352,7 +1352,7 @@ town = { quests = town.quests, zones = town.zones, maps = town.maps, continents 
 stop = Model.Plan(town, visitor, {}, {}, townPrefs).steps[1]
 equal(stop.title, "Pick up: Quest", "town: a lone pickup names its quest")
 
--- Selection weighs worth against travel; with one step to choose, the worth decides which.
+-- Selection is the nearest action (docs/design.md §4.1); with one step to choose, the nearest one leads.
 local function Field()
 	return {
 		quests = {},
@@ -1382,11 +1382,11 @@ end
 local function FieldSteps()
 	return Model.Plan(field, visitor, {}, {}, prefs()).steps
 end
-equal(Only(1, FieldSteps), "town:3", "value: a slightly farther five-quest town beats a nearer lone quest")
+equal(Only(1, FieldSteps), "town:1:0.3500:0.5000", "nearest: the nearest town leads, though it holds one quest")
 for id = 2, 6 do
 	field.quests[id].start.x = 0.7
 end
-equal(Only(1, FieldSteps), "town:1:0.3500:0.5000", "value: but not one 400 yd away")
+equal(Only(1, FieldSteps), "town:1:0.3500:0.5000", "nearest: still the nearest one 400 yd away")
 local carrying = {
 	[20] = { id = 20, title = "Normal", complete = false, level = 18, map = 1, x = 0.2, y = 0.5 },
 	[21] = { id = 21, title = "Grey soon", complete = false, level = 13, map = 1, x = 0.4, y = 0.5 },
@@ -1395,10 +1395,10 @@ equal(
 	Only(1, function()
 		return Model.Plan(Field(), visitor, {}, carrying, prefs()).journeys[1].steps
 	end),
-	"area:21:0",
-	"value: a quest grey at the next level goes before an equidistant one"
+	"area:20:0",
+	"nearest: an equidistant tie goes by key, not a quest's worth"
 )
--- A finished quest waits for nothing: a grey hand-in keeps its worth and goes before a nearer objective.
+-- The nearest action wins even when a finished quest waits for nothing.
 local finishing = {
 	[30] = { id = 30, title = "Grey, done", complete = true, level = 10, map = 1, x = 0.4, y = 0.5 },
 	[31] = { id = 31, title = "Under way", complete = false, level = 18, map = 1, x = 0.35, y = 0.5 },
@@ -1407,8 +1407,8 @@ equal(
 	Only(1, function()
 		return Model.Plan(Field(), visitor, {}, finishing, prefs()).journeys[1].steps
 	end),
-	"turnin:30",
-	"value: a grey hand-in is never weak"
+	"area:31:0",
+	"nearest: the closer objective, not the farther hand-in"
 )
 local red = Field()
 red.quests[1], red.quests[2], red.quests[3] = quest(0.32, 0.5), quest(0.45, 0.5), quest(0.15, 0.5)
@@ -1416,8 +1416,8 @@ red.quests[1].level = 23
 local function RedSteps()
 	return Model.Plan(red, visitor, {}, {}, prefs()).steps
 end
-equal(Only(2, RedSteps):find("0.3200", 1, true), nil, "value: a red quest is never first, though nearest")
-equal(#RedSteps(), 2, "value: nor on the route at all")
+equal(Only(2, RedSteps):find("0.3200", 1, true), nil, "nearest: a red quest is never first, though nearest")
+equal(#RedSteps(), 2, "nearest: nor on the route at all")
 
 -- Laps (docs/design.md §4.2): the story's town hands out its quests, the lap goes out to their areas and comes back to
 -- hand them in, a second visit keyed ":2". A quest worth far less per yard than the town's others waits, and the log's
@@ -1451,7 +1451,11 @@ do
 	equal(steps[#steps].key, "town:5:2", "laps: back to the town, a second visit")
 	equal(table.concat(steps[#steps].handins, " "), "1 2 3", "laps: handing in what the lap did")
 	equal(steps[#steps].reason, "3 to hand in", "laps: counted as hand-ins")
-	equal(Keys(steps), "town:5 area:2:0 area:1:0 town:5:2", "laps: the town, the areas (2 and 3's merged), the town")
+	equal(
+		Keys(steps),
+		"town:5 area:1:0 area:2:0 town:5:2",
+		"laps: the town, its nearest areas (2 and 3's merged), the town"
+	)
 	walker.logMax = 2
 	steps = Model.Plan(lapped, walker, {}, {}, Choose("zone:1")).steps
 	-- 2 and 3 share an area, so each costs less than 1.

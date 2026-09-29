@@ -211,7 +211,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild",
       "size": [
         306.00,
-        982.00
+        980.00
       ],
       "type": "Frame"
     },
@@ -236,7 +236,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1]",
       "size": [
         0.00,
-        982.00
+        980.00
       ],
       "type": "Frame"
     },
@@ -361,7 +361,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
       "size": [
         0.00,
-        930.00
+        928.00
       ],
       "type": "Frame"
     },
@@ -1777,7 +1777,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Title",
-      "text": "Visit Ratchet, The Barrens: Turn in 3",
+      "text": "Pick up: Ignition",
       "type": "FontString",
       "wordWrap": false
     },
@@ -1796,10 +1796,10 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Detail",
       "size": [
-        72.00,
+        90.00,
         0.00
       ],
-      "text": "3 to hand in",
+      "text": "near your level",
       "type": "FontString",
       "wordWrap": false
     },
@@ -1813,7 +1813,7 @@
           "y": 4.00
         }
       ],
-      "atlas": "QuestTurnin",
+      "atlas": "QuestNormal",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Kind",
       "size": [
@@ -1871,14 +1871,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -524.00
+          "y": -510.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -524.00
+          "y": -510.00
         }
       ],
       "onUpdate": false,
@@ -2048,7 +2048,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Title",
-      "text": "Visit Regthar Deathgate: Pick up 2",
+      "text": "Complete objectives · Ignition",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2067,10 +2067,10 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Detail",
       "size": [
-        72.00,
+        78.00,
         0.00
       ],
-      "text": "2 to pick up",
+      "text": "2 quests here",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2084,7 +2084,7 @@
           "y": 4.00
         }
       ],
-      "atlas": "QuestNormal",
+      "atlas": "questobjective",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Kind",
       "size": [
@@ -2142,14 +2142,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -586.00
+          "y": -556.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -586.00
+          "y": -556.00
         }
       ],
       "onUpdate": false,
@@ -2319,7 +2319,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Title",
-      "text": "Complete objectives · Centaur Bracers",
+      "text": "Visit Ratchet, The Barrens: Turn in 4",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2338,10 +2338,10 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Detail",
       "size": [
-        120.00,
+        72.00,
         0.00
       ],
-      "text": "after you pick it up",
+      "text": "4 to hand in",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2355,7 +2355,7 @@
           "y": 4.00
         }
       ],
-      "atlas": "questobjective",
+      "atlas": "QuestTurnin",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Kind",
       "size": [
@@ -2413,14 +2413,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -632.00
+          "y": -646.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -632.00
+          "y": -646.00
         }
       ],
       "onUpdate": false,
@@ -2590,7 +2590,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Title",
-      "text": "Complete objectives · Kolkar Leaders",
+      "text": "Complete objectives · Fungal Spores",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2609,10 +2609,10 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Detail",
       "size": [
-        120.00,
+        78.00,
         0.00
       ],
-      "text": "after you pick it up",
+      "text": "2 quests here",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2684,14 +2684,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -678.00
+          "y": -692.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -678.00
+          "y": -692.00
         }
       ],
       "onUpdate": false,
@@ -2861,7 +2861,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Title",
-      "text": "Visit Regthar Deathgate: Turn in 2",
+      "text": "Complete objectives · Lost in Battle",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2880,10 +2880,10 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Detail",
       "size": [
-        72.00,
+        120.00,
         0.00
       ],
-      "text": "2 to hand in",
+      "text": "after you pick it up",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2897,7 +2897,7 @@
           "y": 4.00
         }
       ],
-      "atlas": "QuestTurnin",
+      "atlas": "questobjective",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Kind",
       "size": [
@@ -2955,14 +2955,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -740.00
+          "y": -738.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -740.00
+          "y": -738.00
         }
       ],
       "onUpdate": false,
@@ -3421,7 +3421,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -790.00
+          "y": -788.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3561,7 +3561,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -818.00
+          "y": -816.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3701,7 +3701,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -846.00
+          "y": -844.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3841,7 +3841,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -874.00
+          "y": -872.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3981,7 +3981,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -902.00
+          "y": -900.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -4909,7 +4909,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[24].Text",
-      "text": "Wharfmaster Dizzywig: Turn in 1",
+      "text": "Wizzlecrank's Shredder: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -4925,7 +4925,7 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 46.00,
-          "y": -508.00
+          "y": -602.00
         }
       ],
       "onUpdate": false,
@@ -4976,7 +4976,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[25].Text",
-      "text": "Gazlowe: Turn in 2",
+      "text": "Mebok Mizzyrix: Turn in 1",
       "textColor": [
         0.90,
         0.90,
@@ -4992,7 +4992,7 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 46.00,
-          "y": -570.00
+          "y": -616.00
         }
       ],
       "onUpdate": false,
@@ -5043,7 +5043,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[26].Text",
-      "text": "Regthar Deathgate: Pick up 2",
+      "text": "Wharfmaster Dizzywig: Turn in 1",
       "textColor": [
         0.90,
         0.90,
@@ -5059,7 +5059,7 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 46.00,
-          "y": -724.00
+          "y": -630.00
         }
       ],
       "onUpdate": false,
@@ -5110,7 +5110,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[27].Text",
-      "text": "Regthar Deathgate: Turn in 2",
+      "text": "Gazlowe: Turn in 2",
       "textColor": [
         0.90,
         0.90,
