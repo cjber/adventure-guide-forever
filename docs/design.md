@@ -116,6 +116,11 @@ follow the shared family voice.
   Keep distant hand-ins from displacing nearby pickups.
 - **4.2 Laps.** Pickups precede objectives and hand-ins. Respect quest-log capacity. Rebuild on events;
   movement changes focus without shuffling the route. Proximity never hides or truncates guidance. Plan a bounded lookahead, then verify and merge visits before limiting the displayed actions. Keep work bounded per frame.
+  An area step's point is the objective node nearest the player (a spawn group's medoid, or the generator's point
+  inside the shape), so the marker sits on the work rather than on the shape's border; when the player is already
+  inside the area the point stays the area's ring (its middle). Standing in the area step 1 leads to is "you're here":
+  its in-progress quest is selected, its travel line and numbered pin go, and the route stays on it until its
+  objectives are done (a merged visit takes only the objectives the player can work on now).
 - **4.3 Committed order.** Preserve the chosen sequence and visit identities across rebuilds.
   Session limits use rough estimates and retain complete planned work and returns.
 

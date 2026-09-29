@@ -879,9 +879,10 @@ do
 	equal(#shared.objectives, 2, "areas, combat: the last build is untouched")
 end
 
--- An area step's point is where the player enters it (design §4.2): ENTER (10) yd inside the ring of its shape nearest
--- them, never the middle, so a long area starts at its near end; its ring keeps the middle. Standing in one of its
--- shapes, it is "you're here", and the next build lets it go only 30 yd past that shape.
+-- An area step's point is the objective node nearest the player (design §4.2): each node is a place the data has, so
+-- the point sits on real work rather than on the shape's ring (which read as the area's border), and a long area starts
+-- at its near end; its ring keeps the middle. Standing in one of its shapes, it is "you're here", and the next build
+-- lets it go only 30 yd past that shape.
 do
 	local strip = { quests = { [1] = quest() }, zones = data.zones }
 	strip.maps = { [1] = { name = "Zone", continent = 0, cx = 0, cy = 0, sx = 1000, sy = 1000 } }
@@ -901,9 +902,9 @@ do
 	local east = Head(0.9)
 	equal(east.key, "area:1:0", "entry: the area leads")
 	equal(("%.3f %.3f"):format(east.ring.x, east.ring.y), "0.400 0.500", "entry: its ring round its middle")
-	equal(("%.3f %.3f"):format(east.x, east.y), "0.640 0.500", "entry: from the east, the east end's edge")
+	equal(("%.3f %.3f"):format(east.x, east.y), "0.550 0.500", "entry: from the east, the east objective's spot")
 	equal(east.here, nil, "entry: outside, not here")
-	equal(("%.3f"):format(Head(0.1).x), "0.310", "entry: from the west, the west end's edge")
+	equal(("%.3f"):format(Head(0.1).x), "0.400", "entry: from the west, the west objective's spot")
 	local inside, held = Head(0.45)
 	equal(inside.here, true, "entry: inside, you're here")
 	equal(held.here, "area:1:0", "entry: which the route keeps for the next build")

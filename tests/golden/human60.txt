@@ -1,11 +1,11 @@
 # human60: level 60, side 1, at 1423 0.8100,0.5800
 card (chosen) | zone:1423 | Eastern Plaguelands story | Chapter 1 of 2 | A chain begins with Caretaker Alen | map 1423
   step 1 | town:226 | Visit Light's Hope Chapel, Eastern Plaguelands: Pick up 2 | 1423 0.6993,0.5372 | Begins a new story
-  step 2 | area:6021:4 | Complete objectives · Zaeldarr the Outcast | 1423 0.4974,0.5887 | after you pick it up | 1244 yd | 6021/4
+  step 2 | area:6021:4 | Complete objectives · Zaeldarr the Outcast | 1423 0.3390,0.6290 | after you pick it up | 1244 yd | 6021/4
   step 3 | town:226:2 | Turn in: Zaeldarr the Outcast | 1423 0.6993,0.5372 | once it's done
   step 4 | town:233 | Visit Tirion Fordring: Pick up 3 | 1423 0.0516,0.3557 | 3 to pick up
-  step 5 | area:5543:0 | Complete objectives · Blood Tinged Skies | 1423 0.2386,0.5272 | after you pick it up | 355 yd | 5543/0
-  step 6 | area:5542:1 | Complete objectives · Demon Dogs | 1423 0.3960,0.5251 | 2 quests here | 1297 yd | 5542/1 5542/2 5544/4
+  step 5 | area:5543:0 | Complete objectives · Blood Tinged Skies | 1423 0.3070,0.5900 | after you pick it up | 355 yd | 5543/0
+  step 6 | area:5542:1 | Complete objectives · Demon Dogs | 1423 0.5480,0.5230 | 2 quests here | 1297 yd | 5542/1 5542/2 5544/4
   step 7 | town:233:2 | Visit Tirion Fordring: Turn in 2 | 1423 0.0516,0.3557 | 2 to hand in
   step 8 | town:234 | Pick up: Augustus' Receipt Book | 1423 0.1135,0.2637 | near your level
   step 9 | area:6164:4 | Complete objectives · Augustus' Receipt Book | 1423 0.1400,0.2420 | after you pick it up | 0 yd | 6164/4

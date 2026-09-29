@@ -591,7 +591,13 @@ function Integrations.Guided()
 end
 
 -- Resolve the exact stop handed to SPF, including a route which starts after an occupied objective area.
+-- Standing in the head area pins the tracker to it until its objectives are done, whatever its own stop index has
+-- advanced to: a step advances only when its state is satisfied (docs/design.md §4.2).
 function Integrations.CurrentStep()
+	local head = ns.Route().steps[1]
+	if head and head.here then
+		return head
+	end
 	local api = SPF()
 	local index = api and Integrations.Guiding() and api.CurrentStop(OWNER)
 	local sent = index and guided[index]
