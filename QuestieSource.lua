@@ -6,7 +6,9 @@ local _, ns = ...
 
 local ADDON = "QuestieDB"
 local CONTRACT = 2
-local SLICE_MS = 2
+-- Keep a full millisecond for the client's timer and frame bookkeeping: the complete callback, rather than only
+-- this coroutine, must stay below the 3 ms frame budget.
+local SLICE_MS = 1
 local LINK = 100 -- yards: a giver this near a bundled town's place stands in that town (tools/gen_quests.py LINK)
 -- Daily and weekly quest flags also identify repeatable work.
 local REPEATABLE_FLAGS = 4096 + 32768

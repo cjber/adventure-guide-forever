@@ -309,6 +309,7 @@
 ---@field title? string
 ---@field kind? AGFSPFStopKind -- a Shortest Path before kinds ignores it
 ---@field tooltip? string optional quest level/chain detail for the stop tooltip
+---@field hold? boolean keep guidance until the owner replaces the route after quest progress
 
 ---@class AGFSPFLeg
 ---@field mode AGFSPFMode
@@ -354,7 +355,7 @@
 ---@field TravelMinutes fun(step: AGFStep): integer? the whole trip's minutes, fetched with that line
 ---@field OnTravelChange fun(callback: fun())
 ---@field ShowOnMap fun(step: AGFStep|AGFGiver): boolean route, open its zone and ping the destination
----@field Navigate fun(step: AGFStep|AGFGiver): boolean route there with Shortest Path, else (declined or absent) the native waypoint where the map allows one; true when something now guides
+---@field Navigate fun(step: AGFStep|AGFGiver, follow?: boolean): boolean route there with Shortest Path, else (declined or absent) the native waypoint where the map allows one; true when something now guides
 ---@field OnGuidanceChange fun(callback: fun()) called after every Go that guides and every Stop
 ---@field ReplacesJourney fun(): boolean Go would replace a Shortest Path journey someone else started (needs Active)
 ---@field Cancel fun() Stop: cancels our Shortest Path journey, and clears the native waypoint only while it is ours
@@ -567,6 +568,7 @@
 ---@field Paused fun(): boolean the chosen journey has steps but its route stopped: its card and the tracker title resume it
 ---@field StartPending fun(): boolean a start waits for combat's end
 ---@field Settling fun(): boolean a rebuild or step 1's travel line is due, whose frames take no card estimate
+---@field Rebuilding fun(): boolean a full build is being sliced across frames (true until its last slice commits)
 ---@field PanelShown? fun(): boolean whether the guide is open, set once Blizzard_WorldMap has loaded
 ---@field Skip fun(key: string, title: string) hide a step for this session; the menu offers it back by its title
 ---@field Unskip fun(key: string) Show again: a skipped step or a journey not wanted

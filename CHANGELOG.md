@@ -11,6 +11,12 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-09-29
+
+- **Do less work when suggesting quests.** Route rebuilds reuse quest lists for your level and faction, including dungeon suggestions; your progress and availability are still checked on each rebuild.
+- **Keep tracking in one column.** Adventure Guide and companion addons sit above your quests and move together when sections expand or collapse. During Edit Mode, addon sections hide while you position the native quest tracker, then return above it.
+- **Identify the quests behind each stop.** Related quests keep their names, levels and difficulty colours in the tracker while Shortest Path handles navigation.
+- **Wait for the quest interaction.** With the updated Shortest Path, arriving near a quest giver or objective keeps the route visible until your quest progress changes.
 - **See the next ten actions.** Routes continue across successive quest loops, with active steps above alternative destinations. Short routes show clearly labelled upcoming quests; locked quests never become navigation targets.
 - **Keep the work between pickup and turn-in.** QuestieDB objective icons are decoded correctly, preserving objective locations even when the icon value is zero. Unknown requirements are left unclaimed until the quest log supplies them.
 - **Keep nearby routes visible.** Standing near a town or inside an objective area no longer shortens the route handed to Shortest Path or clears the guide's waypoint.

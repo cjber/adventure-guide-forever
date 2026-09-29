@@ -63,6 +63,9 @@ end
 -- Only published quest data is memoized; player/log/completion tables may change in place.
 ---@class AGFIndex
 ---@field ids integer[]
+---@field dungeons integer[] dungeon quest IDs in the same stable order as ids
+---@field dungeonsByLevel table<integer, integer[]> dungeon IDs that are open by level
+---@field choicesByLevel table<integer, table<string, integer[]>> non-grey quest IDs by side, level, race and class
 ---@field starts table<integer, integer[]> quest IDs by pickup map
 ---@field groups table<integer, integer[]>
 ---@field sides table<integer, integer[]> by side, the IDs a player of it could ever take: its own side's or both
@@ -75,13 +78,24 @@ local function Index(data)
 	if index then
 		return index
 	end
-	index = { ids = {}, groups = {}, sides = { {}, {} }, starts = {} }
+	index = {
+		ids = {},
+		dungeons = {},
+		dungeonsByLevel = {},
+		choicesByLevel = { {}, {} },
+		groups = {},
+		sides = { {}, {} },
+		starts = {},
+	}
 	for id in pairs(data.quests) do
 		index.ids[#index.ids + 1] = id
 	end
 	table.sort(index.ids)
 	for _, id in ipairs(index.ids) do
 		local quest = data.quests[id]
+		if quest.dungeon then
+			index.dungeons[#index.dungeons + 1] = id
+		end
 		if quest.start and quest.start.map then
 			local mapID = quest.start.map
 			index.starts[mapID] = index.starts[mapID] or {}
@@ -378,6 +392,27 @@ local function Eligible(data, player, completed, log, id, groups, level)
 	return Check(data, player, completed, log, id, groups, level)
 end
 
+-- After the immutable side/level/race/class/start filters, these quests have no other policy to evaluate. Keep the
+-- mutable completion and log checks in the caller, but avoid rewalking the full requirement checker on every rebuild.
+local function SimpleOpen(quest, player, completed, log, id)
+	return not completed[id]
+		and not log[id]
+		and (quest.side == 3 or quest.side == player.side)
+		and quest.min <= player.level
+		and not Model.IsGray(quest.level, player.level)
+		and ValidPlace(quest.start)
+		and HasBit(quest.races, player.raceBit)
+		and HasBit(quest.classes, player.classBit)
+		and not quest.repeatable
+		and not quest.provider
+		and not quest.skill
+		and not quest.rep
+		and not quest.pre
+		and not quest.preAny
+		and not quest.group
+		and not quest.breadcrumb
+end
+
 function Model.Eligible(data, player, completed, log, questID)
 	return Eligible(data, player, completed, log, questID, Index(data).groups)
 end
@@ -521,7 +556,53 @@ local function Choices(data, player, completed, log, index, prefs, far)
 		ranked[#ranked + 1] = data.quests[id] and not Dropped(id) and id or nil
 	end
 	table.sort(ranked)
-	for _, id in ipairs(index.sides[player.side] or index.ids) do
+	local sideCandidates = index.choicesByLevel[player.side]
+	if not sideCandidates then
+		sideCandidates = index.choicesByLevel[0]
+		if not sideCandidates then
+			sideCandidates = {}
+			index.choicesByLevel[0] = sideCandidates
+		end
+	end
+	local choiceKey = string.format("%d:%d:%d", player.level, player.raceBit or 0, player.classBit or 0)
+	local candidates = sideCandidates[choiceKey]
+	if not candidates then
+		candidates = {}
+		for _, id in ipairs(index.sides[player.side] or index.ids) do
+			local quest = data.quests[id]
+			if
+				quest.min <= player.level
+				and not Model.IsGray(quest.level, player.level)
+				and ValidPlace(quest.start)
+				and HasBit(quest.races, player.raceBit)
+				and HasBit(quest.classes, player.classBit)
+			then
+				candidates[#candidates + 1] = id
+			end
+		end
+		sideCandidates[choiceKey] = candidates
+	end
+	-- Pinned quests may intentionally be grey. They join the static shortlist only for this build.
+	local candidateIDs, extras = candidates, nil
+	for id in pairs(pinned) do
+		local quest = data.quests[id]
+		local sideOpen = index.sides[player.side] == nil or quest and (quest.side == 3 or quest.side == player.side)
+		if sideOpen and quest and quest.min <= player.level and Model.IsGray(quest.level, player.level) then
+			extras = extras or {}
+			extras[#extras + 1] = id
+		end
+	end
+	if extras then
+		candidateIDs = {}
+		for _, id in ipairs(candidates) do
+			candidateIDs[#candidateIDs + 1] = id
+		end
+		for _, id in ipairs(extras) do
+			candidateIDs[#candidateIDs + 1] = id
+		end
+		table.sort(candidateIDs)
+	end
+	for _, id in ipairs(candidateIDs) do
 		local quest = data.quests[id]
 		local instance = quest.dungeon ~= nil
 		-- The level and completion first: Eligible would say no to most for them, at more cost.
@@ -532,7 +613,10 @@ local function Choices(data, player, completed, log, index, prefs, far)
 			and not Dropped(id)
 			and (pinned[id] or not Model.IsGray(quest.level, player.level))
 			and not Hard(quest, player)
-			and Eligible(data, player, completed, log, id, index.groups)
+			and (
+				SimpleOpen(quest, player, completed, log, id)
+				or Eligible(data, player, completed, log, id, index.groups)
+			)
 		then
 			eligible[#eligible + 1] = id
 			ranked[#ranked + 1] = id
@@ -3239,21 +3323,32 @@ end
 ---@param eligible integer[]
 ---@return integer[]
 local function WithInstances(data, player, completed, log, index, eligible)
-	local open, pool = {}, {}
-	for _, id in ipairs(eligible) do
-		open[id] = true
+	local pool = {}
+	local eligibleIndex, dungeonIndex = 1, 1
+	local dungeons = index.dungeonsByLevel[player.level]
+	if not dungeons then
+		dungeons = {}
+		for _, id in ipairs(index.dungeons) do
+			local quest = data.quests[id]
+			if quest.min <= player.level and not Model.IsGray(quest.level, player.level) then
+				dungeons[#dungeons + 1] = id
+			end
+		end
+		index.dungeonsByLevel[player.level] = dungeons
 	end
-	for _, id in ipairs(index.ids) do
+	local eligibleCount, dungeonCount = #eligible, #dungeons
+	while eligibleIndex <= eligibleCount or dungeonIndex <= dungeonCount do
+		local eligibleID, dungeonID = eligible[eligibleIndex], dungeons[dungeonIndex]
+		local id, alreadyEligible
+		if not dungeonID or eligibleID and eligibleID < dungeonID then
+			id, alreadyEligible, eligibleIndex = eligibleID, true, eligibleIndex + 1
+		elseif not eligibleID or dungeonID < eligibleID then
+			id, dungeonIndex = dungeonID, dungeonIndex + 1
+		else
+			id, alreadyEligible, eligibleIndex, dungeonIndex = eligibleID, true, eligibleIndex + 1, dungeonIndex + 1
+		end
 		local quest = data.quests[id]
-		if
-			open[id]
-			or (
-				quest.dungeon
-				and quest.min <= player.level
-				and not Model.IsGray(quest.level, player.level)
-				and Eligible(data, player, completed, log, id, index.groups)
-			)
-		then
+		if alreadyEligible or (quest.dungeon and Eligible(data, player, completed, log, id, index.groups)) then
 			pool[#pool + 1] = id
 		end
 	end
@@ -3749,6 +3844,12 @@ local function FinishRoute(data, player, completed, log, route, last, prefs)
 	end
 end
 
+-- The full build is sliced across frames so no frame exceeds the client's budget (WFA-13): when Core runs the rebuild
+-- in a coroutine, Model.Journeys yields every this many card routes. The caller commits the route only when the last
+-- slice ends, so a partial build is never visible. Outside a coroutine (specs, ns.Route's synchronous path) nothing
+-- yields and the build is one frame.
+local YIELD_EVERY = 4
+
 ---@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
 ---@param instanceName? fun(id: integer): string? the client's name for an instance Map.ID; the data's otherwise
 ---@return AGFJourney[] journeys
@@ -3770,6 +3871,17 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	end
 	chosenZone = Open(chosenZone) and chosenZone or nil
 	local journeys = {}
+	-- One slice of the build per this many cards when running inside Core's rebuild coroutine (see YIELD_EVERY).
+	local cardsSinceYield = 0
+	local function YieldCards()
+		if coroutine.running() then
+			cardsSinceYield = cardsSinceYield + 1
+			if cardsSinceYield >= YIELD_EVERY then
+				cardsSinceYield = 0
+				coroutine.yield()
+			end
+		end
+	end
 	-- Keep the current zone when it has useful work or was chosen; otherwise lead with the best-fitting zone.
 	-- The story holds its log quests, followed by the remaining quests in the log.
 	local best
@@ -3865,6 +3977,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			if card then
 				headed, offered = headed or map, offered or mine
 			end
+			YieldCards()
 		end
 	end
 	if chosenZone and chosenZone ~= zone and not offered then
@@ -3953,6 +4066,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	end)
 	for _, diversion in ipairs(diversions) do
 		journeys[#journeys + 1] = diversion.build(diversion.quests)
+		YieldCards()
 	end
 	for _, journey in ipairs(journeys) do
 		Summarise(journey --[[@as AGFJourney]])

@@ -29,14 +29,17 @@ local function frame()
 	function f:GetHeight()
 		return self.height
 	end
+	function f:GetBottom()
+		return (self:GetTop() or 0) - self:GetHeight()
+	end
 	function f:GetEffectiveScale()
 		return self.effectiveScale or 1
 	end
 	function f:SetScale(value)
 		self.scale = value
 	end
-	function f.GetTop(_self)
-		return 640
+	function f.GetTop(self)
+		return self.top or 640
 	end
 	function f:SetScript(event, fn)
 		self.scripts[event] = fn
@@ -47,12 +50,19 @@ local function frame()
 	function f:SetParent(owner)
 		self.parent = owner
 	end
-	f.ClearAllPoints, f.RegisterEvent, f.Show, f.Hide = noop, noop, noop, noop
+	f.ClearAllPoints, f.RegisterEvent = noop, noop
+	f.Show = function(self)
+		self.shown = true
+	end
+	f.Hide = function(self)
+		self.shown = false
+	end
 	frames[#frames + 1] = f
 	return f
 end
 local native = frame()
 parent = frame()
+native.height = 300
 parent:SetHeight(1080)
 native.effectiveScale, parent.effectiveScale = 1.25, 1
 local ns = {}
@@ -61,6 +71,22 @@ local forbidden = setmetatable({}, {
 		error("native manager accessed: " .. key)
 	end,
 })
+local callbacks = {}
+local eventRegistry = {
+	RegisterCallback = function(_, event, callback, owner)
+		callbacks[event] = callbacks[event] or {}
+		callbacks[event][#callbacks[event] + 1] = { callback = callback, owner = owner }
+	end,
+	TriggerEvent = function(_, event, ...)
+		for _, entry in ipairs(callbacks[event] or {}) do
+			entry.callback(entry.owner, ...)
+		end
+	end,
+}
+local editMode = { active = false }
+function editMode:IsEditModeActive()
+	return self.active
+end
 local env
 env = setmetatable({
 	ObjectiveTrackerManager = forbidden,
@@ -80,6 +106,8 @@ env = setmetatable({
 			ready = fn
 		end,
 	},
+	EventRegistry = eventRegistry,
+	EditModeManagerFrame = editMode,
 	C_XMLUtil = {
 		GetTemplateInfo = function()
 			return { type = "Frame" }
@@ -122,6 +150,7 @@ env = setmetatable({
 		}
 	end,
 }, { __index = _G })
+env._G = env
 local nativeRoot = os.getenv("TRACKER_UI_ROOT")
 if nativeRoot then
 	env.CreateFromMixins = function(...)
@@ -153,10 +182,21 @@ if nativeRoot then
 	end
 end
 
-local function loadHost(namespace)
-	setfenv(assert(loadfile("TrackerHost.lua")), env)("Test", namespace)
+local function loadHost(namespace, path)
+	path = path or "TrackerHost.lua"
+	setfenv(assert(loadfile(path)), env)("Test", namespace)
 end
-loadHost(ns)
+local hostPaths = {}
+for path in (os.getenv("AGF_TRACKER_HOSTS") or "TrackerHost.lua"):gmatch("[^\n]+") do
+	hostPaths[#hostPaths + 1] = path
+end
+loadHost(ns, hostPaths[1])
+for index = 2, #hostPaths do
+	local joining, count = {}, #frames
+	loadHost(joining, hostPaths[index])
+	check(joining.TrackerHost == ns.TrackerHost, "companion joins the first loaded host")
+	check(#frames == count, "companion must not create a second host")
+end
 local host = frames[3]
 local function module(order)
 	local m = frame()
@@ -187,6 +227,26 @@ end
 drain()
 check(first.point[5] == 0 and second.point[5] == -90, "sections follow uiOrder")
 check(second.available == 510, "remaining space follows screen geometry")
+check(native:GetHeight() == 300, "native viewport preserves an externally sized height before clamping")
+native:SetHeight(420)
+native.scripts.OnSizeChanged(native)
+drain()
+check(native:GetHeight() == 420, "native viewport adopts an external resize before clamping")
+native:SetHeight(700)
+native.scripts.OnSizeChanged(native)
+drain()
+check(native:GetHeight() < 700, "native viewport clamps after an external resize")
+native:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 0, 0)
+eventRegistry:TriggerEvent("EditMode.SavedLayouts")
+drain()
+check(native.point[2] == host and native.point[3] == "BOTTOMRIGHT", "private host repairs native reanchor")
+editMode.active = true
+eventRegistry:TriggerEvent("EditMode.Enter")
+check(host.shown == false, "private tracker hides while Edit Mode owns native slot")
+editMode.active = false
+eventRegistry:TriggerEvent("EditMode.Exit")
+drain()
+check(host.shown == true, "private tracker returns after Edit Mode")
 check(
 	native.point[1] == "TOPRIGHT" and native.point[2] == host and native.point[3] == "BOTTOMRIGHT",
 	"native objectives follow private sections"
@@ -196,28 +256,42 @@ check(
 	"native objectives follow private sections"
 )
 check(ns.TrackerHost.IsAttached(first) and not ns.TrackerHost.IsAttached(nil), "ownership lookup")
+local updatesBeforeDuplicateAttach = first.updates
 ns.TrackerHost.Attach(first)
 host:MarkDirty()
 host:MarkDirty()
 check(#timers == 1, "dirty updates coalesce")
 drain()
-check(first.updates == 2, "duplicate attach must not duplicate sections")
+check(first.updates == updatesBeforeDuplicateAttach + 1, "duplicate attach must not duplicate sections")
 combat = true
 host:MarkDirty()
 drain()
-check(first.updates == 2, "combat defers layout")
+check(first.updates == updatesBeforeDuplicateAttach + 1, "combat defers layout")
 combat = false
 host.scripts.OnEvent(host, "PLAYER_REGEN_ENABLED")
 drain()
-check(first.updates == 3, "leaving combat flushes deferred changes")
+check(first.updates == updatesBeforeDuplicateAttach + 2, "leaving combat flushes deferred changes")
+local hostPointBeforeNativeResize = host.point[5]
 native:SetHeight(900)
 host:MarkDirty()
 drain()
-check(host.point[5] > -100, "combined column shifts into the visible screen")
-native:SetHeight(2000)
+check(host.point[5] == hostPointBeforeNativeResize, "native frame height does not move private content")
+first.GetContentsHeight = function()
+	return 700
+end
+host.top = 300
+native:SetHeight(500)
 host:MarkDirty()
 drain()
-check(host.point[5] <= 316, "oversized column keeps its header on screen")
+check(host.point[5] > 0, "oversized column shifts upward into the visible viewport")
+check(native:GetHeight() < 500, "native height is clamped to the visible remainder")
+first.GetContentsHeight = function()
+	return 80
+end
+host.top = 700
+host:MarkDirty()
+drain()
+check(native:GetHeight() <= 500, "native height remains within the visible remainder")
 check(host.scale == 1.25, "companion matches native effective scale")
 nativeAnchorPoint = "BOTTOMRIGHT"
 host:MarkDirty()

@@ -465,7 +465,8 @@ ns.L = {
 	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "Keep town tracker steps concise. Explore longer guides and Atlas maps, with safer menus and map updates.",
+	WHATS_NEW = "Do less work when suggesting quests. Rebuilds reuse quest lists for your level and faction,"
+		.. " and tracking stays in one column with the quest names behind each step.",
 	DUNGEON_MAPS_TAB = "Maps",
 	DUNGEON_MAP_BACK = "Back to dungeon",
 	DUNGEON_MAP_WORLD_BACK = "Back to map",

@@ -39,7 +39,7 @@ local function Givers(givers)
 	return L.HUB_NPCS_MORE:format(table.concat(givers, L.LIST_SEPARATOR, 1, NAMED_GIVERS), #givers - NAMED_GIVERS)
 end
 
--- Area and dungeon steps can cover several quests. Keep the relationship
+-- Steps can cover several quests. Keep the relationship
 -- visible in the addon-owned block even when the client has not supplied live
 -- quest text yet; the generated data still has the title and level.
 local function QuestLine(step, questID)
@@ -51,7 +51,11 @@ local function QuestLine(step, questID)
 	if level == -1 then
 		level = ns.State.Player().level
 	end
-	return level and level > 0 and L.TRACKER_QUEST:format(level, title) or title
+	if level and level > 0 then
+		local color = GetQuestDifficultyColor(level)
+		return CreateColor(color.r, color.g, color.b):WrapTextInColorCode(L.TRACKER_QUEST:format(level, title))
+	end
+	return title
 end
 
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
@@ -165,19 +169,20 @@ function ModuleMixin:LayoutContents()
 	end
 	local block = self:GetBlock(step.key)
 	block:SetHeader(step.title)
-	if ns.Integrations.Guiding() then
-		block:AddObjective(1, step.reason)
-		self:LayoutBlock(block)
-		return
-	end
 	local line = 0
-	local town = step.kind == "town" and #step.quests > 1
-	if step.kind == "area" or step.kind == "dungeon" then
+	local guiding = ns.Integrations.Guiding()
+	if step.kind == "area" or step.kind == "dungeon" or (guiding and #step.quests > 1) then
 		for _, questID in ipairs(step.quests) do
 			line = line + 1
 			block:AddObjective(line, QuestLine(step, questID))
 		end
 	end
+	if guiding then
+		block:AddObjective(line + 1, step.reason)
+		self:LayoutBlock(block)
+		return
+	end
+	local town = step.kind == "town" and #step.quests > 1
 	-- A town's header is its name, so its counts come first. One quest's stop says where it is instead: "NPC, zone",
 	-- the place alone when it already names the zone, the zone alone when there is no place. A lone quest in a town
 	-- names its giver, not the town (design §2.5). No line repeats the header.

@@ -254,7 +254,7 @@ do
 	eq(#h.sounds, before + 2)
 end
 
--- SPF's current stop is authoritative, and AGF contributes only one reason line.
+-- SPF's current stop is authoritative; grouped quests stay identifiable above the reason.
 do
 	local t = harness.load({
 		spf = "ended",
@@ -274,7 +274,10 @@ do
 	eq(current.title, t.spfRoute.stops[t.spfRoute.index].title)
 	local block = t.tracker.liveBlocks[current.key]
 	eq(block.header, current.title)
-	eq(#block.order, 1, "trimmed tracker")
+	local related = (current.kind == "area" or current.kind == "dungeon" or #current.quests > 1) and #current.quests
+		or 0
+	eq(#block.order, related + 1, "related quests and one reason")
+	eq(block.lines[related + 1], current.reason, "reason follows quest identities")
 	clean(t)
 end
 -- A skipped giver removes its pickups from subsequent plans and completes the visit once none remain.
