@@ -1260,11 +1260,12 @@ local function Cost(a, b)
 	return CostTo(a, b.x, b.y, b.continent, b.known)
 end
 
--- An area's point is where the player enters it (docs/design.md §4.2): on the ring of its shape nearest `from` (the
--- stop before it, or the player), ENTER yards inside so arriving there is standing in it, never its middle. A long
--- area so starts at its near end. Its ring keeps the middle (`ring`). Where `from` is inside a shape already, or the
--- data cannot measure the way, the point stays the middle.
-local ENTER = 10
+-- An area's point is the objective node nearest `from` (the stop before it, or the player): each node is a place the
+-- data has (a spawn group's medoid, or the point the generator placed inside a shape), so the route targets the work
+-- itself rather than a spot on the shape's ring, where the marker reads as the area's border. The nearest node is the
+-- near end of a long area; a node the player already stands in keeps the point on the work, not the far node. Its
+-- ring keeps the area's middle (`ring`). Where the data cannot measure the way, or the player is already inside (no
+-- `from`), the point stays the middle (the area's first node, the centroid they stand on).
 ---@param step AGFStep
 ---@param from? AGFPosition
 local function Enter(data, step, from)
@@ -1272,24 +1273,20 @@ local function Enter(data, step, from)
 	if not (from and from.known) then
 		return
 	end
-	local best, bestGap, bestX, bestY
+	local best, bestGap
 	for _, shape in ipairs(step.shapes or NONE) do
 		local x, y, continent, known = Point(data, shape)
 		if known and continent == from.continent then
 			local gap = math.sqrt((from.x - x) ^ 2 + (from.y - y) ^ 2) - shape.r
 			if not best or gap < bestGap then
-				best, bestGap, bestX, bestY = shape, gap, x, y
+				best, bestGap = shape, gap
 			end
 		end
 	end
-	local map = best and data.maps[best.map]
-	if not (map and bestGap > 0) then
+	if not (best and data.maps[best.map]) then
 		return
 	end
-	local share = (best.r - math.min(ENTER, best.r / 2)) / (bestGap + best.r)
-	step.map = best.map
-	step.x = math.min(math.max(best.x + (from.x - bestX) * share / map.sx, 0), 1)
-	step.y = math.min(math.max(best.y + (from.y - bestY) * share / map.sy, 0), 1)
+	step.map, step.x, step.y = best.map, best.x, best.y
 end
 
 -- Whether the data places both on the Azeroth map, on different continents.
@@ -2216,10 +2213,29 @@ local function InArea(data, where, step, margin)
 	return false
 end
 
--- The open area the player stands in (docs/design.md §4.2): the head when it is one, else the first on the route. An
--- area with a quest the route picks up first is not open yet. Inside is within one of its shapes (InArea); the area
--- they stood in (`held`, its key) lets go only past HERE_MARGIN more, so its edge never flickers. Nil when they stand
--- in none.
+-- Whether an area is open: it holds at least one objective the player can work on. A merged area stays open while
+-- any objective is not the pickup the route still has to make (`step.planned`), so an in-progress quest does not lose
+-- its area to a nearby quest the same step would hand out.
+---@param step AGFStep
+---@return boolean
+local function Workable(step)
+	if not step.planned then
+		return true
+	end
+	for _, objective in ipairs(step.objectives or NONE) do
+		if not step.planned[objective.id] then
+			return true
+		end
+	end
+	return false
+end
+
+-- The open area the player stands in (docs/design.md §4.2): the head when it is one, else the first on the route.
+-- An area is open while it holds an objective the player can work on; a merged-step pickup the route has yet to make
+-- does not close it (Workable). While the head is an open area it is the only area that can lead, so walking into a
+-- later area does not advance the route past objectives the player has not finished (a step advances only when its
+-- state is satisfied). Inside is within one of its shapes (InArea); the area they stood in (`held`, its key) lets go
+-- only past HERE_MARGIN more, so its edge never flickers. Nil when they stand in none.
 local HERE_MARGIN = 30
 ---@param where? {map?: integer, x?: number, y?: number}
 ---@param steps AGFStep[]
@@ -2230,10 +2246,14 @@ function Model.Here(data, where, steps, held)
 		return nil
 	end
 	---@cast where {map: integer, x: number, y: number}
+	local head = steps[1]
+	if head and head.kind == "area" and Workable(head) then
+		return InArea(data, where, head, head.key == held and HERE_MARGIN or 0) and 1 or nil
+	end
 	for index, step in ipairs(steps) do
 		if
 			step.kind == "area"
-			and not step.planned
+			and Workable(step)
 			and InArea(data, where, step, step.key == held and HERE_MARGIN or 0)
 		then
 			return index
@@ -2843,6 +2863,28 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	local here = not inTown[route[1]] and Model.Here(data, player, route, heldHere)
 	local standsIn = here and route[here]
 	if standsIn and here > 1 then
+		-- Lead with the area the player stands in. A merged area can hold both objectives the player can work on and
+		-- objectives for quests the route has yet to pick up elsewhere; the latter are not work they can do there
+		-- yet, so the leading visit keeps only the workable ones (Verify drops what the fronted order cannot reach).
+		if standsIn.planned then
+			local lead = {}
+			---@cast lead AGFStep
+			for key, value in pairs(standsIn) do
+				lead[key] = value
+			end
+			lead.objectives, lead.quests = {}, {}
+			for _, objective in ipairs(standsIn.objectives or NONE) do
+				lead.objectives[#lead.objectives + 1] = not standsIn.planned[objective.id] and objective or nil
+			end
+			for _, objective in ipairs(lead.objectives) do
+				lead.quests[#lead.quests + 1] = lead.quests[#lead.quests] ~= objective.id and objective.id or nil
+			end
+			Tell(lead)
+			for index, step in ipairs(route) do
+				route[index] = step == standsIn and lead or step
+			end
+			standsIn = lead
+		end
 		Front({ [standsIn] = true })
 	end
 	-- "You're here": the area they stand in, leading, is theirs to clear; nothing guides to it, only on from it.

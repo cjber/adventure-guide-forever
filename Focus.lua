@@ -48,6 +48,8 @@ function Focus.Next(state, here, current, enabled)
 end
 
 -- The area the chosen route's step 1 is while the player stands in it, and its quests with objectives open there.
+-- Only quests the log actually carries count: a merged area can also hold a pickup the route has yet to make, and
+-- selecting one of those would point the map at a quest the player does not have.
 ---@param route AGFRoute
 ---@return {key: string, quests: integer[]}?
 local function Here(route)
@@ -55,9 +57,11 @@ local function Here(route)
 	if not (first and first.here and first.objectives) then
 		return nil
 	end
+	local log = ns.State.Log()
 	local quests, seen = {}, {}
 	for _, objective in ipairs(first.objectives) do
-		if not seen[objective.id] then
+		local entry = log[objective.id]
+		if entry and not entry.complete and not seen[objective.id] then
 			quests[#quests + 1], seen[objective.id] = objective.id, true
 		end
 	end

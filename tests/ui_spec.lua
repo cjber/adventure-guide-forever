@@ -489,7 +489,8 @@ do
 	equal(h.superTrackedQuest, 0, "focus: the setting off selects nothing")
 	clean(h, "focus")
 
-	-- Without Shortest Path, Go in the area the player stands in sets no waypoint, and walking out puts it on step 1.
+	-- Without Shortest Path, Go sets the waypoint at the step; walking out does not move it, since the area's
+	-- objective is unfinished and its point sits on the work rather than chasing the player.
 	h = Load(false, PINS_ON)
 	h.log[#h.log + 1] = { id = 887, title = "Southsea Freebooters", level = 14, complete = false }
 	h.log[#h.log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
@@ -517,7 +518,8 @@ do
 	Moved(h, 1413, 0.46, 0.79)
 	local leftFor = h.ns.Route().steps[1]
 	equal(leftFor.here, nil, "here, waypoint: out of it")
-	equal(h.counts.SetUserWaypoint, 2, "here, waypoint: the route goes on")
+	equal(leftFor.key, standing.key, "here, waypoint: the route holds its unfinished step")
+	equal(h.counts.SetUserWaypoint, 1, "here, waypoint: the destination does not chase the player")
 	local point = h.G.C_Map.GetUserWaypoint()
 	equal(point and point.position.x, leftFor.x, "here, waypoint: at step 1")
 	clean(h, "here, waypoint")
@@ -1241,14 +1243,14 @@ do
 	end
 	equal(step and step.kind, "area", "area step: Gann's Reclamation is an area step")
 	equal(h.pins.AdventureGuideForeverAreaPinTemplate, nil, "area step: no disc of ours over the area")
-	-- The step's point, and its pin, is where the player enters one of its shapes from the stop before (design §4.2).
+	-- The step's point, and its pin, is the objective node nearest the stop before (design §4.2), a spot inside one of
+	-- its shapes rather than on the ring's border.
 	local inside = false
 	for _, shape in ipairs(step.shapes) do
 		local yards = h.ns.Model.Yards(h.ns.Data, step, shape)
 		inside = inside or (yards ~= nil and yards <= shape.r)
 	end
-	local yards = h.ns.Model.Yards(h.ns.Data, step, step.ring)
-	equal(inside and yards > 0, true, "area step: its pin on the way in, inside a shape")
+	equal(inside, true, "area step: its pin on an objective's spot, inside a shape")
 	local pin
 	for _, candidate in ipairs(h.pins.AdventureGuideForeverPinTemplate) do
 		pin = candidate.step == step and candidate or pin

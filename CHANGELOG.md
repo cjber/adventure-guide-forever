@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Stand in the area, not beside it.** When you are inside the objective area the guide is sending you to, it selects that quest and stops telling you to walk there or marking the spot, even when the same area also holds a quest you have yet to pick up. The marker now sits on the objective itself rather than on the area's edge, and the route no longer moves on to the next area while the one you are in still has objectives left.
+
 ## [0.6.2] - 2026-09-29
 
 - **Always use the newest quests.** Quest data now comes from your installed QuestieDB and nothing else: every quest it knows, including ones outside the guide's old bundled list, and new quests after a Questie update. The addon no longer ships a quest list of its own, so a missing quest can only mean Questie is missing it too.
