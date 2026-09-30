@@ -296,20 +296,64 @@ do
 	equal(unset.spf.NavigateRoute, 0, "the route setting off: and starts nothing")
 	equal(table.concat(h.watched, " "), "99", "the tracking setting off: the tracked quests are untouched")
 
-	local byKey = {}
+	local byKey, pages = {}, {}
 	for _, entry in ipairs(h.settings) do
-		byKey[entry.key] = entry
+		if entry.key then
+			byKey[entry.key] = entry
+			local group = pages[entry.category] or {}
+			pages[entry.category] = group
+			group[#group + 1] = entry.key
+		end
 	end
-	-- Every row goes in through the secure delegate, in page order; none from addon code, which taints the search.
+	-- Every row goes in through the secure delegate; none from addon code, which taints the search. The rows are
+	-- grouped into subcategories with a short index page, so no page grows tall.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 15, "every row is registered through Settings.RegisterInitializer")
+	equal(#h.settings, 19, "15 rows and 4 index buttons, all through Settings.RegisterInitializer")
+	local L = h.ns.L
 	equal(
-		h.settings[1].key .. " " .. h.settings[2].key .. " " .. h.settings[3].key,
-		"floatWindow showTracker wanderer",
-		"in page order"
+		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
+		"wanderer followQuest optimisedRoute includeDungeonsDefault titleStartsRoute autoStart stepSound",
+		"Route holds its rows in order"
 	)
-	equal(h.settings[12].key, "untrackOthers", "in page order, to the last")
-	equal(h.settings[10].category, h.ns.TITLE, "on the addon's page")
+	equal(table.concat(pages[L.SETTINGS_GROUP_MAP] or {}, " "), "showMapPins showQuestGivers", "Map holds its rows")
+	equal(
+		table.concat(pages[L.SETTINGS_GROUP_TRACKER] or {}, " "),
+		"showTracker trackRouteQuests untrackOthers",
+		"the objective tracker rows sit together, the parent first"
+	)
+	equal(
+		table.concat(pages[L.SETTINGS_GROUP_INTERFACE] or {}, " "),
+		"floatWindow suggestCompanions whatsNew",
+		"Interface holds the window, companion and update rows"
+	)
+	-- The index page's buttons are on the addon's own category, one per group, in index order, and open its subpage.
+	local buttons = {}
+	for _, entry in ipairs(h.settings) do
+		if entry.kind == "button" then
+			buttons[#buttons + 1] = entry
+		end
+	end
+	equal(#buttons, 4, "one index button per group")
+	equal(
+		buttons[1].name .. " " .. buttons[2].name .. " " .. buttons[3].name .. " " .. buttons[4].name,
+		L.SETTINGS_GROUP_ROUTE
+			.. " "
+			.. L.SETTINGS_GROUP_MAP
+			.. " "
+			.. L.SETTINGS_GROUP_TRACKER
+			.. " "
+			.. L.SETTINGS_GROUP_INTERFACE,
+		"the index lists every group in order"
+	)
+	for index, button in ipairs(buttons) do
+		equal(button.category, h.ns.TITLE, "index button " .. index .. " stays on the addon's page")
+		equal(button.addSearchTags, false, "index button " .. index .. " stays out of search")
+		equal(button.tooltip, L.SETTINGS_OPEN, "index button " .. index .. " is the Open button")
+		button.onClick()
+		equal(h.openedSettings, h.subcategories[index].GetID(), "index button " .. index .. " opens its own subpage")
+		equal(h.subcategories[index].name, button.name, "index button " .. index .. " names its subpage")
+		equal(h.subcategories[index].parent.name, h.ns.TITLE, "and the subpage hangs off the addon's page")
+	end
 	equal(byKey.untrackOthers.indented, true, "untrackOthers is indented under tracking")
 	equal(byKey.untrackOthers.evaluateCVar, "AdventureGuideForever_trackRouteQuests", "parent changes reevaluate child")
 	equal(byKey.untrackOthers.enabled(), false, "and is greyed while it is off")

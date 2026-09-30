@@ -1872,17 +1872,29 @@ function harness.load(options)
 		return lines
 	end
 
-	-- Settings > AddOns.
-	h.settings, h.taintedRows = {}, 0
+	-- Settings > AddOns: the addon's page holds index buttons, each opening a subcategory of rows.
+	h.settings, h.taintedRows, h.subcategories, h.openedSettings = {}, 0, {}, nil
+	local settingsCategory = 0
+	local function Category(name, parent)
+		settingsCategory = settingsCategory + 1
+		local id = settingsCategory
+		return {
+			name = name,
+			parent = parent,
+			GetID = function()
+				return id
+			end,
+		}
+	end
 	G.Settings = {
 		VarType = { Boolean = "boolean" },
 		RegisterVerticalLayoutCategory = function(name)
-			return {
-				name = name,
-				GetID = function()
-					return 1
-				end,
-			}
+			return Category(name)
+		end,
+		RegisterVerticalLayoutSubcategory = function(parent, name)
+			local subcategory = Category(name, parent)
+			h.subcategories[#h.subcategories + 1] = subcategory
+			return subcategory
 		end,
 		RegisterAddOnSetting = function(_, _, key, storage, _, _, default)
 			if storage[key] == nil then
@@ -1922,8 +1934,13 @@ function harness.load(options)
 			h.settings[#h.settings + 1] = initializer
 		end,
 		RegisterAddOnCategory = noop,
-		OpenToCategory = noop,
+		OpenToCategory = function(categoryID)
+			h.openedSettings = categoryID
+		end,
 	}
+	function G.CreateSettingsButtonInitializer(name, tooltip, onClick, _, addSearchTags)
+		return { kind = "button", name = name, tooltip = tooltip, onClick = onClick, addSearchTags = addSearchTags }
+	end
 
 	-- The world map: a canvas with data providers and pooled pins, counted per template.
 	local map = NewRegion("Frame", "WorldMapFrame", G.UIParent)

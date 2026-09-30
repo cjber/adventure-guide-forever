@@ -201,6 +201,7 @@ TweaksForever = nil
 ---@class AGFSettingsModule
 ---@field VarType {Boolean: string}
 ---@field RegisterVerticalLayoutCategory fun(name: string): AGFSettingsCategory
+---@field RegisterVerticalLayoutSubcategory fun(category: AGFSettingsCategory, name: string): AGFSettingsCategory
 ---@field RegisterAddOnSetting fun(category: AGFSettingsCategory, variable: string, key: string, storage: table, variableType: string, name: string, default: boolean): AGFSettingsSetting
 ---@field CreateCheckboxInitializer fun(setting: AGFSettingsSetting, options?: table, tooltip?: string): AGFSettingsInitializer
 ---@field RegisterInitializer fun(category: AGFSettingsCategory, initializer: AGFSettingsInitializer) inserts the row from Blizzard's secure delegate
@@ -208,6 +209,10 @@ TweaksForever = nil
 ---@field OpenToCategory fun(categoryID: integer)
 ---@type AGFSettingsModule
 Settings = nil
+
+-- Blizzard_Settings_Shared.lua: the index page's button; addSearchTags false keeps it out of the settings search.
+---@type fun(name: string, tooltip: string, onClick: fun(), getDisabledTooltip?: fun(), addSearchTags?: boolean): AGFSettingsInitializer
+CreateSettingsButtonInitializer = nil
 
 ---@class AGFTabButton : Button
 ---@field SetCustomOnMouseUpHandler fun(self: AGFTabButton, handler: fun(self: AGFTabButton, mouseButton: string, upInside: boolean))

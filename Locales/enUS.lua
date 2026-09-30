@@ -233,6 +233,12 @@ ns.L = {
 	MENU_GIVERS = "Show quest givers",
 	MENU_TRACKER = "Show in objective tracker",
 	MENU_MORE_SETTINGS = "More settings",
+	-- The settings page's index groups, and the index button that opens each one.
+	SETTINGS_GROUP_ROUTE = "Route",
+	SETTINGS_GROUP_MAP = "Map",
+	SETTINGS_GROUP_TRACKER = "Objective tracker",
+	SETTINGS_GROUP_INTERFACE = "Interface",
+	SETTINGS_OPEN = "Open",
 	SETTING_TRACKER = "Show tracker section",
 	SETTING_TRACKER_TOOLTIP = 'A short "Adventure Guide" section above your quests in the objective tracker, for the '
 		.. "current step.",

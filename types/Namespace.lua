@@ -516,6 +516,11 @@
 ---@field MENU_GIVERS string
 ---@field MENU_TRACKER string
 ---@field MENU_MORE_SETTINGS string
+---@field SETTINGS_GROUP_ROUTE string
+---@field SETTINGS_GROUP_MAP string
+---@field SETTINGS_GROUP_TRACKER string
+---@field SETTINGS_GROUP_INTERFACE string
+---@field SETTINGS_OPEN string
 ---@field SETTING_TRACKER string
 ---@field SETTING_TRACKER_TOOLTIP string
 ---@field SETTING_MAP_PINS string

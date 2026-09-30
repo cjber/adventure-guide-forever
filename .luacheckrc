@@ -143,6 +143,7 @@ read_globals = { "ShowUIPanel", "HideUIPanel", "CreateFramePoolCollection", "C_X
 	"C_MapExplorationInfo",
 	-- Settings.lua
 	"Settings",
+	"CreateSettingsButtonInitializer",
 	-- Window.lua and its tabs
 	"UISpecialFrames",
 	"PanelTemplates_SetNumTabs",
