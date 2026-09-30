@@ -53,5 +53,25 @@ local none = harness.load()
 equal(none.ns.Integrations.Trainers(), nil, "no Tweaks, no Trainers")
 equal(select(2, none.ns.Integrations.Training()), false, "no Tweaks, Training unknown")
 
+-- A reply with a known, affordable fee but no level cannot be placed: it is left out like an unknown fee, never
+-- passed to math.max. This is the owner crash: with a journey chosen, any rebuild (a setting click) raised here.
+local unplaced = harness.load({
+	charDB = { journey = "zone:1413" },
+	tf = {
+		version = 1,
+		spells = {
+			{ spellID = 1, name = "No level", cost = 0, line = "L", lineID = 1, general = true },
+			{ spellID = 2, name = "Placed", level = 5, cost = 0, line = "L", lineID = 1, general = true },
+		},
+	},
+})
+local placed, placedKnown = unplaced.ns.Integrations.Training()
+equal(placedKnown, true, "unplaced: the provider answered")
+equal(placed and placed.count, 1, "unplaced: a spell without a level is left out")
+equal(placed and placed.level, 5, "unplaced: the placed spell's level stands")
+unplaced.ns.OpenWindow()
+unplaced.flush()
+equal(#unplaced.errors, 0, "unplaced: a rebuild with it does not raise\n" .. table.concat(unplaced.errors, "\n"))
+
 assert(#h.errors == 0, table.concat(h.errors, "\n"))
 print(("trainer_api_spec: %d checks passed"):format(checks))
