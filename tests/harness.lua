@@ -1167,6 +1167,15 @@ function harness.load(options)
 		fn()
 		h.shift = false
 	end
+	-- Control held while `fn` runs: a ctrl-click (the addon reads no ctrl path today, so this guards the modifier).
+	G.IsControlKeyDown = function()
+		return h.ctrl == true
+	end
+	function h.Ctrl(fn)
+		h.ctrl = true
+		fn()
+		h.ctrl = false
+	end
 	-- Entering or leaving combat fires the same events the client does.
 	function h.SetCombat(on)
 		h.combat = on
@@ -1873,7 +1882,9 @@ function harness.load(options)
 	end
 
 	-- Settings > AddOns: the addon's page holds index buttons, each opening a subcategory of rows.
-	h.settings, h.taintedRows, h.subcategories, h.openedSettings = {}, 0, {}, nil
+	-- h.settings is the registered rows; h.addonSettings the setting object per row, so a spec can drive the
+	-- real value-changed callback the checkbox fires, not only ns.SetSetting.
+	h.settings, h.taintedRows, h.subcategories, h.openedSettings, h.addonSettings = {}, 0, {}, nil, {}
 	local settingsCategory = 0
 	local function Category(name, parent)
 		settingsCategory = settingsCategory + 1
@@ -1900,7 +1911,12 @@ function harness.load(options)
 			if storage[key] == nil then
 				storage[key] = default
 			end
-			return { key = key, SetValueChangedCallback = noop }
+			local setting = { key = key }
+			function setting:SetValueChangedCallback(callback)
+				self.valueChanged = callback
+			end
+			h.addonSettings[#h.addonSettings + 1] = setting
+			return setting
 		end,
 		-- Inserting a row from addon code taints the settings search (Blizzard_Settings.lua:383-396): a restricted
 		-- button in its results is then blocked and blamed on the addon. h.taintedRows counts each one.

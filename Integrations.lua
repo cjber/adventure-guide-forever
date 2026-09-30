@@ -174,11 +174,18 @@ function Integrations.Training()
 		return nil, spells ~= nil
 	end
 	-- A trainer hint is an actionable recommendation. Known fees must be
-	-- affordable; an absent fee is not safe to present as affordable.
+	-- affordable; an absent fee is not safe to present as affordable. A spell
+	-- whose level the API does not give cannot be placed either: it is left
+	-- out like an unknown fee, never passed to math.max (a rebuild would raise).
 	local money = GetMoney()
 	local affordable = {}
 	for _, spell in ipairs(spells) do
-		if type(spell.cost) == "number" and spell.cost >= 0 and spell.cost <= money then
+		if
+			type(spell.cost) == "number"
+			and spell.cost >= 0
+			and spell.cost <= money
+			and type(spell.level) == "number"
+		then
 			affordable[#affordable + 1] = spell
 		end
 	end

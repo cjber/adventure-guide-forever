@@ -16,6 +16,7 @@ verbatim rather than rewritten as the addon moves.
 - **Stand in the area, not beside it.** When you are inside the objective area the guide is sending you to, it selects that quest and stops telling you to walk there or marking the spot, even when the same area also holds a quest you have yet to pick up. The marker now sits on the objective itself rather than on the area's edge, and the route no longer moves on to the next area while the one you are in still has objectives left.
 - **Your nearest stop first.** The route is now just the nearest action at every step: the closest town to pick quests up in, the closest place to work the quests you are carrying, or the closest turn-in when one is ready. A town's work is finished before the guide moves on, so the list no longer jumps back and forth, and it never sends you back to a stop it has already placed.
 - **Pick how the route is ordered.** The nearest-action order is the default, and a new "Optimised route (beta)" checkbox on the Add-ons page switches back to the older order, which leads with a story's chapter, finishes a town's work before leaving it and keeps its earlier suggestions steady. It is experimental, so the simple order stays the default.
+- **A trainer hint never crashes the guide.** A Tweaks Forever reply the addon cannot place (a spell with no level) is left out of the next-step hint, like an unknown fee, instead of raising during a rebuild such as a settings change.
 
 ## [0.6.2] - 2026-09-29
 
