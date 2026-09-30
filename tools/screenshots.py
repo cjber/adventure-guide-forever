@@ -1017,9 +1017,16 @@ SPF_DOT, SPF_RIM, SPF_SPACING, SPF_UNDER = 4, 1, 9, (0.04, 0.04, 0.04, 0.5)
 
 SPF_PROGRAM = r"""
 local ns = {}
-local files = { "Data/Routes", "Data/Transports", "Data/Portals", "Data/Taxi", "Model", "PathGrid", "Path", "Planner" }
+local files = {
+    "Data/Routes", "Data/Transports", "Data/Portals", "Data/Taxi",
+    "Transport/Model", "Routing/PathGrid", "Routing/Path", "Routing/Planner",
+}
 for _, name in ipairs(files) do
-	assert(loadfile(name .. ".lua"))("ShortestPathForever", ns)
+	local chunk = loadfile(name .. ".lua")
+	if not chunk then
+		chunk = assert(loadfile(name:match("([^/]+)$") .. ".lua"))
+	end
+	chunk("ShortestPathForever", ns)
 end
 local walks = {}
 for index, leg in ipairs(LEGS) do

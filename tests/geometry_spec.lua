@@ -19,7 +19,7 @@ local function truthy(actual, label)
 end
 
 local ns = {}
-local chunk = assert(loadfile("Geometry.lua"))
+local chunk = assert(loadfile("Planning/Geometry.lua"))
 chunk("AdventureGuideForever", ns)
 local Geometry = ns.Geometry
 truthy(Geometry, "Geometry.lua registers ns.Geometry")

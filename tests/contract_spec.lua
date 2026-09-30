@@ -193,7 +193,10 @@ local vendored = Read("tests/fixtures/spf_types_API.lua")
 equal(vendored:match("^([^\n]*)\n"), "-- shortest-path-forever " .. SPF_SHA .. ":types/API.lua", "vendored copy's sha")
 local namespace = Read("types/Namespace.lua")
 local required = {}
-local list = assert(Read("Integrations.lua"):match("\nlocal REQUIRED = (%b{})"), "no REQUIRED in Integrations.lua")
+local list = assert(
+	Read("Integrations/Integrations.lua"):match("\nlocal REQUIRED = (%b{})"),
+	"no REQUIRED in Integrations/Integrations.lua"
+)
 for name in list:gmatch('"([%w_]+)"') do
 	required[#required + 1] = name
 end

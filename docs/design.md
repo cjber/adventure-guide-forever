@@ -48,7 +48,7 @@ abandons quests.
 - **2.21 Dungeons.** A window tab below the shared Today strip, with a level-sorted dungeon list, featured
   header and Quests / Prep / Bosses / Loot pages. The list groups dungeons, the announced Forever raids, then
   the client's other raid instances, each raid row tagged with its group size; the raid tier and sizes come from
-  `Raids.lua` (docs/dungeon-sources.md), never from a copied Classic attunement page. Remember the instance Map.ID in window state. Plan to run
+  `Integrations/Raids.lua` (docs/dungeon-sources.md), never from a copied Classic attunement page. Remember the instance Map.ID in window state. Plan to run
   selects the existing dungeon journey and enables the existing dungeon preference; no parallel plan state.
   Journey cards link back to the dungeon page. Build on first show, slice source reads at 1 ms, cancel on hide,
   reuse visible rows, and cache a complete optional-source snapshot until the quest data changes.
@@ -134,4 +134,4 @@ Tweaks can request hidden, lazy creation through `AdventureGuideForever.EnsureWi
 
 ### Full guide outline
 
-The Journeys card opens `WindowGuide.lua`, a ten-row paged view of the active lap and the zone's remaining QuestieDB catalogue. Active route steps remain the planner's responsibility. Outline entries never become navigation targets or claim pickup eligibility. Race, class, faction, completion and dungeon/repeatable filters apply; active-chain successors and useful quest levels sort first, with prerequisites before dependents. This is an adaptive zone outline, not a fixed 1–60 walkthrough. Hiding the Journeys page closes the outline.
+The Journeys card opens `UI/WindowGuide.lua`, a ten-row paged view of the active lap and the zone's remaining QuestieDB catalogue. Active route steps remain the planner's responsibility. Outline entries never become navigation targets or claim pickup eligibility. Race, class, faction, completion and dungeon/repeatable filters apply; active-chain successors and useful quest levels sort first, with prerequisites before dependents. This is an adaptive zone outline, not a fixed 1–60 walkthrough. Hiding the Journeys page closes the outline.

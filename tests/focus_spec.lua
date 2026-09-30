@@ -1,7 +1,7 @@
 -- Run from the repository root: luajit tests/focus_spec.lua
 -- Following the quest the player is working on (Focus.lua): Focus.Next's guards, one look at a time.
 local ns = { OnRouteChange = function() end }
-assert(loadfile("Focus.lua"))("AdventureGuideForever", ns)
+assert(loadfile("Planning/Focus.lua"))("AdventureGuideForever", ns)
 local Next = ns.Focus.Next
 
 local failures, checks = {}, 0

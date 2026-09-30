@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **The addon's files now follow the guide's own parts.** The planner, integrations and UI live in separate folders, while the game still loads them in the same order.
+
 ## [0.6.3] - 2026-09-30
 
 - **The tracker names your story, and every pin finds its way back.** The tracker now shows which journey it is following above the current step, and clicking that line, or right-clicking a numbered map pin past the first, sends you back along the story from its first step. While Questie is still reading its quest data, the guide holds your route and shows a quiet loading line instead of first building one from your log and swapping it out when the real quests arrive.

@@ -50,20 +50,20 @@ UI (window, panel, pins, tracker, settings) headlessly. What needs the client it
 
 ## Live roots
 
-- `AdventureGuideForever.toc` file list — loads every top-level `.lua` and `Data/*.lua`.
+- `AdventureGuideForever.toc` file list — loads runtime modules in `Core/`, `Planning/`, `Integrations/`, `UI/` and `Data/`.
 - `ns.*` — the shared addon table; search all files for `ns.Name`, not the local file.
-- `## SavedVariables: AdventureGuideForeverDB`, `## SavedVariablesPerCharacter: AdventureGuideForeverCharDB` — keys in `Core.lua` `DEFAULTS` may hold data written by older versions.
+- `## SavedVariables: AdventureGuideForeverDB`, `## SavedVariablesPerCharacter: AdventureGuideForeverCharDB` — keys in `Core/Core.lua` `DEFAULTS` may hold data written by older versions.
 - `## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick` and `SLASH_ADVENTUREGUIDEFOREVER1/2` — called by the client by name.
 - `EventUtil.ContinueAfterAllEvents`, `EventRegistry:RegisterCallback("QuestLog.SetDisplayMode")`, `WorldMapFrame:AddDataProvider`, `TooltipDataProcessor.AddTooltipPostCall` — host callbacks.
-- Optional integrations (`## OptionalDeps: ShortestPathForever, QuestieDB, SkillUpForever, LegacyForever, TweaksForever`) — code guarded by `ShortestPathForever.API`, `SkillUpForever.API` and the other suite addons (`Integrations.lua`, `Companions.lua`) is live only with that addon installed; QuestieDB, when loaded and fit, supplies the quests (`QuestieSource.lua`).
+- Optional integrations (`## OptionalDeps: ShortestPathForever, QuestieDB, SkillUpForever, LegacyForever, TweaksForever`) — code guarded by `ShortestPathForever.API`, `SkillUpForever.API` and the other suite addons (`Integrations/Integrations.lua`, `Integrations/Companions.lua`) is live only with that addon installed; QuestieDB, when loaded and fit, supplies the quests (`Integrations/QuestieSource.lua`).
 - `hooksecurefunc("QuestMapFrame_ShowQuestDetails")`, `EventUtil.ContinueOnAddOnLoaded("Blizzard_WorldMap")` — host callbacks.
-- Methods the host calls by name: the map provider's `RefreshAllData`/`RemoveAllData`; the pin mixins' `OnAcquired`/`OnMouseEnter`/`OnMouseLeave`/`OnClick` (bound through `mixin=` in `Panel.xml`); the tracker module's `LayoutContents`/`OnBlockHeaderClick`.
+- Methods the host calls by name: the map provider's `RefreshAllData`/`RemoveAllData`; the pin mixins' `OnAcquired`/`OnMouseEnter`/`OnMouseLeave`/`OnClick` (bound through `mixin=` in `UI/Panel.xml`); the tracker module's `LayoutContents`/`OnBlockHeaderClick`.
 
 ## Zones
 
 | Path | Zone | Reason |
 |---|---|---|
-| `Data/*.lua` | generated | `Geometry.lua` by `tools/gen_quests.py` (route geometry; the quest corpus is test-only), `Forever.lua` by `tools/diff_forever.py`, `ZoneArt.lua` by `tools/gen_zoneart.py`; never hand-edit, fix the generator |
+| `Data/*.lua` | generated | `Planning/Geometry.lua` by `tools/gen_quests.py` (route geometry; the quest corpus is test-only), `Forever.lua` by `tools/diff_forever.py`, `ZoneArt.lua` by `tools/gen_zoneart.py`; never hand-edit, fix the generator |
 | `tools/` | script | data generator, CI helpers; not shipped |
 | `tests/` | test | headless LuaJIT harness |
 | `types/` | production | LuaLS annotations only, never loaded in game; review for dead classes and stale field docs |
@@ -73,7 +73,7 @@ UI (window, panel, pins, tracker, settings) headlessly. What needs the client it
 
 ## Conventions
 
-- One feature per top-level file; each starts `local addonName, ns = ...` (or `local _, ns = ...`) and exports through `ns.Name`. File-private helpers are `local function`.
+- One feature per runtime file; each starts `local addonName, ns = ...` (or `local _, ns = ...`) and exports through `ns.Name`. File-private helpers are `local function`.
 - Tabs, 120 columns, double quotes (StyLua). PascalCase for functions, camelCase for locals and DB keys.
 - Unknown data is left out rather than guessed; generators raise instead of clamping bad data.
 - Comments explain *why* (client quirks, Forever beta bugs, data provenance), not what.
@@ -84,16 +84,16 @@ UI (window, panel, pins, tracker, settings) headlessly. What needs the client it
 
 1. `tools/` — scripts, not shipped; output is diffable.
 2. `tests/` — harness only.
-3. `Model.lua`, `Order.lua`, `Session.lua`, `Settings.lua`, `Hints/*.lua` — the planner and its inputs, under the specs and the bench.
-4. `Window*.lua`, `Overview.lua`, `Panel.lua`, `Pins.lua`, `Tracker.lua`, `Tooltip.lua`, `Menu.lua`, `Art.lua`, `Asides.lua`, `Moments.lua`, `PvP.lua`, `ZoneIcon.lua`, `Focus.lua`, `Sound.lua`, `Providers.lua`, `Dump.lua` — UI and host hooks; headless specs plus `/reload` checks.
-5. `State.lua`, `Core.lua`, `Integrations.lua`, `Companions.lua`, `QuestieSource.lua`, `Locales/*.lua` — client state, SavedVariables, the cross-addon contracts and every line the player reads.
+3. `Planning/Model.lua`, `Planning/Order.lua`, `Core/Session.lua`, `UI/Settings.lua`, `UI/Hints/*.lua` — the planner and its inputs, under the specs and the bench.
+4. `UI/Window*.lua`, `UI/Overview.lua`, `UI/Panel.lua`, `UI/Pins.lua`, `UI/Tracker.lua`, `UI/Tooltip.lua`, `UI/Menu.lua`, `UI/Art.lua`, `UI/Asides.lua`, `UI/Moments.lua`, `UI/PvP.lua`, `UI/ZoneIcon.lua`, `Planning/Focus.lua`, `UI/Sound.lua`, `Integrations/Providers.lua`, `UI/Dump.lua` — UI and host hooks; headless specs plus `/reload` checks.
+5. `Core/State.lua`, `Core/Core.lua`, `Integrations/Integrations.lua`, `Integrations/Companions.lua`, `Integrations/QuestieSource.lua`, `Locales/*.lua` — client state, SavedVariables, the cross-addon contracts and every line the player reads.
 
 ## Settled
 
 Shapes that look like defects here but are not. Reviewers and verifiers read this before raising a
 finding; audits add an entry when verifiers keep dismissing the same shape for the same reason.
 
-- **Planner look-alikes**: `Model.lua`'s step builders, locators and shallow-copy loops (`TrainerSteps`/`Battleground`,
+- **Planner look-alikes**: `Planning/Model.lua`'s step builders, locators and shallow-copy loops (`TrainerSteps`/`Battleground`,
   `Locate`/`Build`, `Describe` before and after the overseas override) read alike but take different contracts; five
   `parallel-implementations` candidates were dismissed on the small-idiom and different-contract exclusions in the
   2026-09-27 audit. Raise one only with a caller that needs both to change together.
@@ -105,7 +105,7 @@ confirmed defect of one of these shapes with `settled:<name>`. An entry leaves w
 it or it has not recurred in two audits.
 
 - **Stale leftovers**: comments and annotations left describing code a rewrite replaced — a template, function, format or
-  range the code no longer has (`comment-narration`/`stale-docs`; e.g. `Panel.xml` naming
+  range the code no longer has (`comment-narration`/`stale-docs`; e.g. `UI/Panel.xml` naming
   `QuestLogTabButtonTemplate`, `types/Namespace.lua` "3-5 steps"; six such in the 2026-09-24 audit).
   Grep for the old name when renaming.
 - **Sibling config**: config copied from a sibling addon that names files this repo lacks (`dead-code`/`stale-docs`;
