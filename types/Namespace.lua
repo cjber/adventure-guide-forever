@@ -587,6 +587,7 @@
 ---@class AGFNamespace
 ---@field TrackerHost ForeverTrackerHostAPI
 ---@field Geometry AGFGeometry the native-geometry adapter (Geometry.lua)
+---@field DungeonBosses table<integer, AGFDungeonBoss[]>
 ---@field TITLE string
 ---@field L AGFStrings
 ---@field Data AGFData

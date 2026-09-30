@@ -697,7 +697,7 @@ equal(#raidUI.errors, 0, "raid page has no errors")
 print(("dungeons_spec: %d checks passed"):format(checks))
 
 -- The bundled Classic boss baseline is gone: bosses come from AtlasLoot/EJ only, so an uncurated instance lists none.
-assert(h.ns.DungeonBosses == nil, "nothing references a bundled boss baseline")
+assert(next(h.ns.DungeonBosses) == nil, "no bundled boss baseline remains")
 local partialAtlas =
 	{ curated = { [43] = true }, bosses = { [43] = { { id = 1, name = "Localized encounter", low = 99, high = 99 } } } }
 equal(#D.Bosses(partialAtlas, 43), 1, "AtlasLoot order and localized details retained")

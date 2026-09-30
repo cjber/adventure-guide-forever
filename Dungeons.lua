@@ -8,6 +8,11 @@ local L, Model = ns.L, ns.Model
 local Dungeons = {}
 ns.Dungeons = Dungeons
 
+-- The bundled boss database is gone (docs/dungeon-sources.md). The dungeon UI still probes this
+-- field when neither AtlasLoot nor the native Encounter Journal is installed, so keep it present
+-- and empty rather than letting that probe index nil.
+ns.DungeonBosses = ns.DungeonBosses or {}
+
 -- Permanent character restrictions only. Other unproven requirements stay visible as locked.
 ---@param quest? AGFQuest
 ---@param player AGFPlayer
