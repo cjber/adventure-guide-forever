@@ -625,6 +625,11 @@ local autoStartBlocked = false
 local function Ended(route)
 	local prefs, completed = ns.Prefs(), turnedIn
 	turnedIn = false
+	-- QuestieSource starts after the first login events. Until it has settled, the empty/log-only route is
+	-- provisional; clearing a saved story here would make a reload lose the player's choice before Questie loads.
+	if ns.QuestieBuilding() then
+		return
+	end
 	local key = prefs.journey
 	if not key or route.chosen then
 		return
@@ -674,7 +679,11 @@ end
 -- means Questie is genuinely absent or failed, and the log's route is the only one there is.
 ---@return boolean
 function ns.QuestieBuilding()
-	return ns.QuestieStatus ~= nil and ns.QuestieStatus.state == "building"
+	return ns.QuestieStatus ~= nil
+		and (
+			ns.QuestieStatus.state == "building"
+			or (not ns.QuestieStatus.settled and Questie ~= nil and Questie.API ~= nil)
+		)
 end
 
 -- The synchronous full build: ns.Route()'s lazy path, and any caller before Core's coroutine starts. One frame, no

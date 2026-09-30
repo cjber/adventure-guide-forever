@@ -144,6 +144,8 @@ equal(alone.ns.Data.quests[900001].finish.npc, 197, "logged quest still has fini
 local ready
 local delayed = harness.load({
 	questiedb = Fake(),
+	spf = "v1",
+	charDB = { journey = "zone:1429", guided = "zone:1429" },
 	setup = function(h2)
 		Policy(h2)
 		h2.G.Questie.API.isReady = false
@@ -153,12 +155,21 @@ local delayed = harness.load({
 	end,
 })
 equal(next(delayed.ns.Data.quests), nil, "empty until provider ready")
+equal(delayed.ns.QuestieStatus.settled, false, "provider startup remains provisional before ready")
+equal(delayed.ns.QuestieBuilding(), true, "deferred provider blocks provisional route builds")
+delayed.ns.Route()
+equal(delayed.ns.Prefs().journey, "zone:1429", "saved story survives an initial route read")
+equal(delayed.spf.NavigateRoute, 0, "Questie loading does not start a provisional route")
 delayed.G.LibQuestieDB.Quest.GetAllIds = function()
 	return { 900002 }
 end
 delayed.G.Questie.API.isReady = true
+equal(delayed.ns.QuestieBuilding(), true, "provider remains blocked until its queued build starts")
 ready()
 delayed.flush()
+equal(delayed.ns.QuestieStatus.settled, true, "provider marks startup settled after ready")
+equal(delayed.ns.Route().journey, "zone:1429", "provider rebuild restores the saved story identity")
+equal(delayed.spf.NavigateRoute, 1, "restored story commits guidance once")
 equal(delayed.ns.Data.quests[900001], nil, "snapshot taken after policy corrections")
 equal(delayed.ns.Data.quests[900002].title, "Collect", "ready callback publishes composed catalogue")
 -- A missing coordinate never inherits the bundled location for the same NPC/quest.

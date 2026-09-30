@@ -44,7 +44,7 @@ local ENTITIES = {
 }
 
 ---@type AGFQuestieStatus
-local status = { state = "unavailable" }
+local status = { state = "unavailable", settled = false }
 ns.QuestieStatus = status
 
 -- One of ZoneDB's tables, which QuestieDB keeps as Lua source: run with no globals, since it is only a table literal.
@@ -384,7 +384,7 @@ end
 local function Start()
 	local lib, reason, zones = Fit()
 	if not lib or not zones then
-		status.state, status.reason = "unavailable", reason
+		status.state, status.reason, status.settled = "unavailable", reason, true
 		Settled()
 		return
 	end
@@ -401,13 +401,14 @@ local function Start()
 		started = debugprofilestop()
 		local ok, result = coroutine.resume(co, lib, zones, bundled, Yield)
 		if not ok then
-			status.state, status.reason = "unavailable", ns.L.QUESTIE_FAILED:format(tostring(result))
+			status.state, status.reason, status.settled =
+				"unavailable", ns.L.QUESTIE_FAILED:format(tostring(result)), true
 			Settled()
 		elseif coroutine.status(co) ~= "dead" then
 			C_Timer.After(0, Step)
 		elseif ns.Data == empty then
 			result.source = ADDON .. " " .. version
-			status.state, status.version = "questie", version
+			status.state, status.version, status.settled = "questie", version, true
 			ns.Data = result --[[@as AGFData]]
 			Settled()
 		end

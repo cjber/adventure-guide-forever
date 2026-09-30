@@ -8,6 +8,21 @@ ns.Integrations = Integrations
 -- Passed to Shortest Path so it can tell our journeys apart from the player's own.
 local OWNER = "AdventureGuideForever"
 
+---@return boolean
+function Integrations.ClassicGuideAvailable()
+	return C_AddOns.IsAddOnLoaded("AdventureGuideClassic") and type(SlashCmdList.ADVENTUREGUIDECLASSIC) == "function"
+end
+
+---@return boolean
+function Integrations.OpenClassicGuide()
+	if not Integrations.ClassicGuideAvailable() then
+		return false
+	end
+	local openGuide = SlashCmdList.ADVENTUREGUIDECLASSIC --[[@as fun(message: string)]]
+	openGuide("")
+	return true
+end
+
 -- The v1 members; types/Namespace.lua AGFSPFAPI is the contract, and tests/contract_spec.lua holds this list to
 -- exactly its non-optional functions. A Shortest Path missing any of them is treated as absent.
 local REQUIRED = { "Estimate", "Navigate", "NavigateRoute", "CurrentStop", "Cancel" }
@@ -120,9 +135,6 @@ function Integrations.TravelLine(step)
 	return (Fetch(step))
 end
 
--- Tweaks Forever's spells to train (F16), from its API.lua when a version 1 is loaded, for the trainer aside
--- (Asides.lua) and a chosen journey's trainer stop (roadmap #5): how many, and the highest level among them. Nil
--- without Tweaks Forever or its answer, and with nothing to train.
 -- Tweaks Forever's API when it is at least version 1 (version 2 keeps v1's members and adds Trainers), else nil.
 -- A range, not an equality, so a newer additive Tweaks Forever never silently disables the trainer hint.
 ---@return AGFTFAPI?
@@ -163,6 +175,9 @@ function Integrations.Trainers()
 	return trainers
 end
 
+-- Tweaks Forever's spells to train: how many, and the highest level among them, for the trainer aside
+-- (Asides.lua) and a chosen journey's trainer stop. Nil without Tweaks Forever or its answer, and with nothing
+-- to train.
 ---@return AGFTraining?, boolean known
 function Integrations.Training()
 	local api = Tweaks()
@@ -515,6 +530,16 @@ end
 local function Stops(steps, hold)
 	local stops = {}
 	for index, step in ipairs(steps) do
+		local radius
+		if step.kind == "area" then
+			radius = 30
+			for _, shape in ipairs(step.shapes or {}) do
+				if shape.map == step.map and shape.x == step.x and shape.y == step.y then
+					radius = math.max(radius, shape.r)
+					break
+				end
+			end
+		end
 		stops[index] = {
 			map = step.map,
 			x = step.x,
@@ -522,6 +547,7 @@ local function Stops(steps, hold)
 			title = step.title,
 			tooltip = ns.Pins.StopTooltip(step),
 			kind = Integrations.Kind(step),
+			radius = radius,
 			hold = hold == true
 				and step.kind ~= "trainer"
 				and step.kind ~= "battlemaster"

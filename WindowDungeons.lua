@@ -21,7 +21,7 @@ local dungeonIcon
 ---@type FontString
 local title, location, summary, note
 ---@type Button
-local entrance, journey
+local entrance, journey, classicGuide
 ---@class AGFDungeonPlan : CheckButton
 ---@field Text FontString
 ---@type AGFDungeonPlan
@@ -862,6 +862,9 @@ local function Run(work)
 end
 
 function Refresh()
+	if classicGuide then
+		classicGuide:SetShown(ns.Integrations.ClassicGuideAvailable())
+	end
 	if not content:IsVisible() then
 		return
 	end
@@ -970,6 +973,14 @@ local function BuildContents(parent)
 	Window.SetEmpty(empty, nil)
 	local heading = Window.Heading(content, L.TAB_DUNGEONS)
 	heading:SetPoint("TOPLEFT", LEFT + 8, -TOP)
+	classicGuide = Button(content, L.DUNGEON_CLASSIC_GUIDE, RIGHT_X + PAGE_W - 214, TOP, 214, function()
+		ns.Integrations.OpenClassicGuide()
+	end)
+	classicGuide:SetShown(ns.Integrations.ClassicGuideAvailable())
+	classicGuide:SetScript("OnEnter", function()
+		ns.Overview.ShowTooltip(classicGuide, { L.DUNGEON_CLASSIC_GUIDE_TOOLTIP })
+	end)
+	classicGuide:SetScript("OnLeave", GameTooltip_Hide)
 	list = List(content, LEFT, TOP + 22, LIST_W, 338, LIST_H, function(row, value)
 		if value.heading then
 			row.Title:SetText(value.title)

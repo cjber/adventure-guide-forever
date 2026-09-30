@@ -2477,7 +2477,7 @@ function harness.load(options)
 				local chunk = path == "QuestieSource.lua"
 						and options.questiedb == nil
 						and function(_, ns)
-							ns.QuestieStatus = { state = "unavailable" }
+							ns.QuestieStatus = { state = "unavailable", settled = true }
 							ns.ReadDungeonSource = function()
 								return nil
 							end

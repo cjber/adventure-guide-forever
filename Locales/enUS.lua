@@ -12,7 +12,7 @@ ns.L = {
 	AUDIT_BUILD = "data from build %s, client build %s.%s",
 	AUDIT_COUNTS = "%d quests in the data, %d eligible now, %d completed known",
 	AUDIT_NOT_READY = "completed-quest data hasn't finished loading yet; the counts above may be low.",
-	-- Where the quests come from (QuestieSource.lua): QuestieDB when it is loaded and fit, the bundled data otherwise.
+	-- Where the quests come from (QuestieSource.lua): the installed QuestieDB when loaded and fit; unavailable otherwise.
 	AUDIT_SOURCE_BUNDLED = "Quest data unavailable. Enable QuestieDB; enable Questie for pickup recommendations.",
 	AUDIT_SOURCE_QUESTIE = "quests from QuestieDB %s",
 	AUDIT_QUESTIE_BUILDING = "QuestieDB's quests are still loading.",
@@ -291,9 +291,9 @@ ns.L = {
 	UNEXPLORED = "You haven't seen %s yet",
 	-- A way into an instance is no place to be the level for.
 	MOMENT_OPEN = "%s is open to you",
-	-- Roadmap #11: the route's last stop, when rested XP is low and an innkeeper stands there.
+	-- The route's last stop, when rested XP is low and an innkeeper stands there (docs/design.md §2.17).
 	REST_HERE = "Rest at the inn here",
-	-- Roadmap #24: hint strength. A wanderer is told where, never taken there.
+	-- Hint strength (docs/design.md §2.17): a wanderer is told where, never taken there.
 	SETTING_WANDERER = "Wanderer: name places only",
 	SETTING_WANDERER_TOOLTIP = "The guide names where to go next and leaves the way to you: no waypoint, no route "
 		.. "with Shortest Path Forever and no marks on the map.",
@@ -372,7 +372,6 @@ ns.L = {
 	DUNGEON_ENEMY_LEVELS = "Levels %d–%d",
 	DUNGEON_RARE_ELITE = "Rare elite",
 	DUNGEON_ELITE = "Elite",
-	DUNGEON_DROP = "Drops from enemies in this dungeon",
 	DUNGEON_NO_FACTION_QUESTS = "This dungeon has no quests for your faction.",
 	DUNGEON_NO_CHARACTER_QUESTS = "This dungeon has no quests for your character.",
 	DUNGEON_NO_PREP = "No preparations listed for this dungeon.",
@@ -387,7 +386,6 @@ ns.L = {
 	DUNGEON_NO_BOSSES = "No boss data found. Install AtlasLoot for complete encounter details.",
 	DUNGEON_ITEM_REQUIRED_LEVEL = "Requires level %d",
 	DUNGEON_TRASH = "Trash",
-	DUNGEON_DROPPED_BY = "Dropped by %s",
 	DUNGEON_WANDERER = "Wanderer mode leaves the way to you. Turn it off in settings to use map directions.",
 	DUNGEON_SHOW_GIVER = "Show giver on map",
 	DUNGEON_START = "Start: %s",
@@ -490,8 +488,10 @@ ns.L = {
 	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "Always use the newest quests. Quest data now comes from your installed QuestieDB alone, and"
-		.. " dungeons from AtlasLoot, so a quest the guide misses is one Questie does not have yet.",
+	WHATS_NEW = "The tracker names your story, and every pin finds its way back. Questie loading now holds your route"
+		.. " until the newest quest data is ready.",
+	DUNGEON_CLASSIC_GUIDE = "Adventure Guide for Classic",
+	DUNGEON_CLASSIC_GUIDE_TOOLTIP = "Open Adventure Guide for Classic for boss tactics, models and loot.",
 	DUNGEON_MAPS_TAB = "Maps",
 	DUNGEON_MAP_BACK = "Back to dungeon",
 	DUNGEON_MAP_WORLD_BACK = "Back to map",

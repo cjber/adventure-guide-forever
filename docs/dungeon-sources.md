@@ -21,7 +21,7 @@ encounter order or localized names.
 | QuestieDB public API documentation | `365537a340473291f5af3b7a53a5eca94e2a5f1a`, contract 2 | Runtime NPC ranks/spawns, item drops/rewards, quest objectives and entrance points |
 | Tweaks Forever | Public API v1 | Outdoor entrance fallback, through the existing Providers adapter |
 
-`tools/gen_quests.py` still owns all bundled quest data. Its entrance
+The QuestieDB adapter owns the runtime quest source. Its entrance
 requirement list on each instance contains: level, alternative required items, completed quest and an unsupported
 condition flag. This also retains the six reachable Classic dungeon instances without bundled quests
 filed under their instance area. The catalog contains 19 dungeon instances; unused maps do not enter it.

@@ -1,6 +1,6 @@
 I wanted a levelling guide that left me room to wander. Adventure Guide Forever offers a few journeys from your level and quest log, with a route for the one you pick. It looks like it came with the game: a tab beside Quests, retail's Journeys cards and the game's own objective tracker.
 
-Shortest Path Forever handles travel when installed. QuestieDB is the guide's quest catalogue and Questie applies its live availability rules; Questie owns its background map markers while Adventure Guide adds route markers. Atlas and Atlas Classic WoW optionally provide dungeon interiors and legends, and AtlasLoot optionally provides encounter and loot tables. If you'd rather follow another guide's route, you can hide the guide's tracker in settings.
+Shortest Path Forever handles travel when installed. QuestieDB is the guide's quest catalogue and Questie applies its live availability rules; Questie owns its background map markers while Adventure Guide adds route markers. Adventure Guide for Classic can be opened directly from the Dungeons tab when enabled, for its boss tactics, models and loot. Atlas and Atlas Classic WoW optionally provide dungeon interiors and legends, and AtlasLoot optionally provides encounter and loot tables. If you'd rather follow another guide's route, you can hide the guide's tracker in settings.
 
 ![Choosing a journey and following its route](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif)
 

@@ -319,6 +319,7 @@
 ---@field kind? AGFSPFStopKind -- a Shortest Path before kinds ignores it
 ---@field tooltip? string optional quest level/chain detail for the stop tooltip
 ---@field hold? boolean keep guidance until the owner replaces the route after quest progress
+---@field radius? number yards around a held stop where travel cues pause
 
 ---@class AGFSPFLeg
 ---@field mode AGFSPFMode
@@ -372,6 +373,8 @@
 ---@field place? AGFPlace where the trainer stands; nil when the data places none
 
 ---@class AGFIntegrations
+---@field ClassicGuideAvailable fun(): boolean
+---@field OpenClassicGuide fun(): boolean
 ---@field Kind fun(step: AGFStep|AGFGiver): AGFSPFStopKind? what Shortest Path is told stands at a stop: a town's "?" where a hand-in is its point, else its "!"
 ---@field TravelLine fun(step: AGFStep): string? asks Shortest Path now, at most one call: "Fly to X · N min" from EstimateDetail, "About N min away" from Estimate, nil without either or an answer
 ---@field RefreshTravel fun() refetches step 1's line; Core runs it in the frame after each rebuild
@@ -853,6 +856,7 @@
 
 ---@class AGFQuestieStatus
 ---@field state "unavailable"|"building"|"questie" provider unavailable, building, or ready
+---@field settled boolean whether the deferred provider startup has completed
 ---@field version? string QuestieDB's version, once its quests are in use
 ---@field reason? string why QuestieDB is not used (an ns.L line); nil while it is, or before login
 
@@ -1387,7 +1391,6 @@
 ---@field DUNGEON_BOSS_LOOT string
 ---@field DUNGEON_BOSS_LOOT_UNKNOWN string
 ---@field DUNGEON_ELITE string
----@field DUNGEON_DROP string
 ---@field DUNGEON_NO_FACTION_QUESTS string
 ---@field DUNGEON_NO_CHARACTER_QUESTS string
 ---@field DUNGEON_NO_PREP string
@@ -1402,7 +1405,6 @@
 ---@field DUNGEON_NO_BOSSES string
 ---@field DUNGEON_ITEM_REQUIRED_LEVEL string
 ---@field DUNGEON_TRASH string
----@field DUNGEON_DROPPED_BY string
 ---@field DUNGEON_WANDERER string
 ---@field DUNGEON_SHOW_GIVER string
 ---@field DUNGEON_REWARDS string
@@ -1448,6 +1450,8 @@
 
 ---@class AGFStrings
 ---@field DUNGEON_MAPS_TAB string
+---@field DUNGEON_CLASSIC_GUIDE string
+---@field DUNGEON_CLASSIC_GUIDE_TOOLTIP string
 ---@field DUNGEON_MAP_BACK string
 ---@field DUNGEON_MAP_WORLD_BACK string
 ---@field DUNGEON_MAP_PAGE string

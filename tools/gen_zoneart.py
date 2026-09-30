@@ -5,8 +5,8 @@ The client gives a zone's base tiles by C_Map.GetMapArtLayerTextures, but its ov
 only once explored (C_MapExplorationInfo), so an icon of a zone not yet seen would be bare parchment. This reads them
 from the pinned build's DB2 on wago.tools, cached in tools/.cache like gen_quests.py's sources: every WorldMapOverlay
 with a texture and no player condition on the zone's art (UiMapXMapArt, phase 0), its tiles (WorldMapOverlayTile,
-layer 0) in row-major order. Only the zones Data/Quests.lua has, and only those whose art is the 1002x668 canvas of
-256-pixel tiles the addon lays out.
+layer 0) in row-major order. Only the zones represented in Data/Geometry.lua are considered, and only those whose
+art is the 1002x668 canvas of 256-pixel tiles the addon lays out.
 """
 
 import re

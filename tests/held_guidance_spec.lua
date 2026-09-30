@@ -21,6 +21,7 @@ local function atObjectives()
 	h.flush()
 	assert(h.ns.Integrations.CurrentStep().key == "area:887:0", "active guidance targets the objective area")
 	assert(h.spfRoute.stops[1].hold == true, "objective interaction holds its destination")
+	assert(h.spfRoute.stops[1].radius >= 30, "objective arrival carries its area radius to SPF")
 	return h
 end
 

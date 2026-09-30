@@ -78,7 +78,7 @@ Forever's new quests are only considered once they are in your log. The guide ne
 
 ## Works alongside
 
-QuestieDB supplies quest records, and Questie is needed for pickup recommendations. Other integrations are optional: [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting routes, [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion. The guide's tracker has its own switch when you prefer another guide.
+QuestieDB supplies quest records, and Questie is needed for pickup recommendations. The Dungeons tab can open [Adventure Guide for Classic](https://www.curseforge.com/wow/addons/adventure-guide-for-classic) when installed and enabled, for its boss tactics, models and loot. Other integrations are optional: [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting routes, [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion. The guide's tracker has its own switch when you prefer another guide.
 
 ## Development
 
