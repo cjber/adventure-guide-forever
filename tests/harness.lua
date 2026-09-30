@@ -1167,6 +1167,15 @@ function harness.load(options)
 		fn()
 		h.shift = false
 	end
+	-- Control held while `fn` runs: a ctrl-click (the addon reads no ctrl path today, so this guards the modifier).
+	G.IsControlKeyDown = function()
+		return h.ctrl == true
+	end
+	function h.Ctrl(fn)
+		h.ctrl = true
+		fn()
+		h.ctrl = false
+	end
 	-- Entering or leaving combat fires the same events the client does.
 	function h.SetCombat(on)
 		h.combat = on
@@ -1872,23 +1881,42 @@ function harness.load(options)
 		return lines
 	end
 
-	-- Settings > AddOns.
-	h.settings, h.taintedRows = {}, 0
+	-- Settings > AddOns: the addon's page holds index buttons, each opening a subcategory of rows.
+	-- h.settings is the registered rows; h.addonSettings the setting object per row, so a spec can drive the
+	-- real value-changed callback the checkbox fires, not only ns.SetSetting.
+	h.settings, h.taintedRows, h.subcategories, h.openedSettings, h.addonSettings = {}, 0, {}, nil, {}
+	local settingsCategory = 0
+	local function Category(name, parent)
+		settingsCategory = settingsCategory + 1
+		local id = settingsCategory
+		return {
+			name = name,
+			parent = parent,
+			GetID = function()
+				return id
+			end,
+		}
+	end
 	G.Settings = {
 		VarType = { Boolean = "boolean" },
 		RegisterVerticalLayoutCategory = function(name)
-			return {
-				name = name,
-				GetID = function()
-					return 1
-				end,
-			}
+			return Category(name)
+		end,
+		RegisterVerticalLayoutSubcategory = function(parent, name)
+			local subcategory = Category(name, parent)
+			h.subcategories[#h.subcategories + 1] = subcategory
+			return subcategory
 		end,
 		RegisterAddOnSetting = function(_, _, key, storage, _, _, default)
 			if storage[key] == nil then
 				storage[key] = default
 			end
-			return { key = key, SetValueChangedCallback = noop }
+			local setting = { key = key }
+			function setting:SetValueChangedCallback(callback)
+				self.valueChanged = callback
+			end
+			h.addonSettings[#h.addonSettings + 1] = setting
+			return setting
 		end,
 		-- Inserting a row from addon code taints the settings search (Blizzard_Settings.lua:383-396): a restricted
 		-- button in its results is then blocked and blamed on the addon. h.taintedRows counts each one.
@@ -1922,8 +1950,13 @@ function harness.load(options)
 			h.settings[#h.settings + 1] = initializer
 		end,
 		RegisterAddOnCategory = noop,
-		OpenToCategory = noop,
+		OpenToCategory = function(categoryID)
+			h.openedSettings = categoryID
+		end,
 	}
+	function G.CreateSettingsButtonInitializer(name, tooltip, onClick, _, addSearchTags)
+		return { kind = "button", name = name, tooltip = tooltip, onClick = onClick, addSearchTags = addSearchTags }
+	end
 
 	-- The world map: a canvas with data providers and pooled pins, counted per template.
 	local map = NewRegion("Frame", "WorldMapFrame", G.UIParent)
@@ -2422,6 +2455,13 @@ function harness.load(options)
 			}
 	end
 
+	-- The planned (beta) route order, opt-in: `planned = true` runs the legacy smarter ordering, while the default
+	-- (absent) is the nearest-action order the product ships (docs/design.md §4.1).
+	if options.planned then
+		options.db = options.db or {}
+		options.db.optimisedRoute = true
+	end
+
 	--[[ Load the addon: the TOC's files in order, each given (addonName, ns) ]]
 
 	G.AdventureGuideForeverDB, G.AdventureGuideForeverCharDB = options.db, options.charDB
@@ -2437,7 +2477,7 @@ function harness.load(options)
 				local chunk = path == "QuestieSource.lua"
 						and options.questiedb == nil
 						and function(_, ns)
-							ns.QuestieStatus = { state = "unavailable" }
+							ns.QuestieStatus = { state = "unavailable", settled = true }
 							ns.ReadDungeonSource = function()
 								return nil
 							end

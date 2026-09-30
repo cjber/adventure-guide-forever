@@ -36,8 +36,10 @@ local function quest(x, y, map)
 		finish = { map = map or 1, x = 0.6, y = 0.5, name = "Quest ender" },
 	}
 end
+-- These planner specs pin the planned (beta) ordering; the default nearest order is covered by
+-- tests/plan_golden_spec.lua and tests/route_order_spec.lua.
 local function prefs()
-	return { quests = true, dungeons = false, skipped = {} }
+	return { quests = true, dungeons = false, skipped = {}, optimisedRoute = true }
 end
 local data = {
 	build = "test",
@@ -879,9 +881,10 @@ do
 	equal(#shared.objectives, 2, "areas, combat: the last build is untouched")
 end
 
--- An area step's point is where the player enters it (design §4.2): ENTER (10) yd inside the ring of its shape nearest
--- them, never the middle, so a long area starts at its near end; its ring keeps the middle. Standing in one of its
--- shapes, it is "you're here", and the next build lets it go only 30 yd past that shape.
+-- An area step's point is the objective node nearest the player (design §4.2): each node is a place the data has, so
+-- the point sits on real work rather than on the shape's ring (which read as the area's border), and a long area starts
+-- at its near end; its ring keeps the middle. Standing in one of its shapes, it is "you're here", and the next build
+-- lets it go only 30 yd past that shape.
 do
 	local strip = { quests = { [1] = quest() }, zones = data.zones }
 	strip.maps = { [1] = { name = "Zone", continent = 0, cx = 0, cy = 0, sx = 1000, sy = 1000 } }
@@ -901,9 +904,9 @@ do
 	local east = Head(0.9)
 	equal(east.key, "area:1:0", "entry: the area leads")
 	equal(("%.3f %.3f"):format(east.ring.x, east.ring.y), "0.400 0.500", "entry: its ring round its middle")
-	equal(("%.3f %.3f"):format(east.x, east.y), "0.640 0.500", "entry: from the east, the east end's edge")
+	equal(("%.3f %.3f"):format(east.x, east.y), "0.550 0.500", "entry: from the east, the east objective's spot")
 	equal(east.here, nil, "entry: outside, not here")
-	equal(("%.3f"):format(Head(0.1).x), "0.310", "entry: from the west, the west end's edge")
+	equal(("%.3f"):format(Head(0.1).x), "0.400", "entry: from the west, the west objective's spot")
 	local inside, held = Head(0.45)
 	equal(inside.here, true, "entry: inside, you're here")
 	equal(held.here, "area:1:0", "entry: which the route keeps for the next build")
@@ -1088,8 +1091,9 @@ equal(lead and lead.chapter, "Chapter 2 of 3", "story card: its step tells the c
 equal(lead and lead.reason, "Continues a story you started", "story card: and why")
 saga = { quests = saga.quests, zones = saga.zones } -- a new data table: Story's memo is per data
 saga.quests[3].next = 99
+local sagaPrefs = { quests = true, skipped = {}, optimisedRoute = true }
 equal(
-	Model.Plan(saga, player, { [1] = true }, {}, { quests = true, skipped = {} }).journeys[1].subline,
+	Model.Plan(saga, player, { [1] = true }, {}, sagaPrefs).journeys[1].subline,
 	"Chapter 2",
 	"story card: no total unproven"
 )
@@ -1352,7 +1356,7 @@ town = { quests = town.quests, zones = town.zones, maps = town.maps, continents 
 stop = Model.Plan(town, visitor, {}, {}, townPrefs).steps[1]
 equal(stop.title, "Pick up: Quest", "town: a lone pickup names its quest")
 
--- Selection weighs worth against travel; with one step to choose, the worth decides which.
+-- Selection is the nearest action (docs/design.md §4.1); with one step to choose, the nearest one leads.
 local function Field()
 	return {
 		quests = {},
@@ -1382,11 +1386,11 @@ end
 local function FieldSteps()
 	return Model.Plan(field, visitor, {}, {}, prefs()).steps
 end
-equal(Only(1, FieldSteps), "town:3", "value: a slightly farther five-quest town beats a nearer lone quest")
+equal(Only(1, FieldSteps), "town:1:0.3500:0.5000", "nearest: the nearest town leads, though it holds one quest")
 for id = 2, 6 do
 	field.quests[id].start.x = 0.7
 end
-equal(Only(1, FieldSteps), "town:1:0.3500:0.5000", "value: but not one 400 yd away")
+equal(Only(1, FieldSteps), "town:1:0.3500:0.5000", "nearest: still the nearest one 400 yd away")
 local carrying = {
 	[20] = { id = 20, title = "Normal", complete = false, level = 18, map = 1, x = 0.2, y = 0.5 },
 	[21] = { id = 21, title = "Grey soon", complete = false, level = 13, map = 1, x = 0.4, y = 0.5 },
@@ -1395,10 +1399,10 @@ equal(
 	Only(1, function()
 		return Model.Plan(Field(), visitor, {}, carrying, prefs()).journeys[1].steps
 	end),
-	"area:21:0",
-	"value: a quest grey at the next level goes before an equidistant one"
+	"area:20:0",
+	"nearest: an equidistant tie goes by key, not a quest's worth"
 )
--- A finished quest waits for nothing: a grey hand-in keeps its worth and goes before a nearer objective.
+-- The nearest action wins even when a finished quest waits for nothing.
 local finishing = {
 	[30] = { id = 30, title = "Grey, done", complete = true, level = 10, map = 1, x = 0.4, y = 0.5 },
 	[31] = { id = 31, title = "Under way", complete = false, level = 18, map = 1, x = 0.35, y = 0.5 },
@@ -1407,8 +1411,8 @@ equal(
 	Only(1, function()
 		return Model.Plan(Field(), visitor, {}, finishing, prefs()).journeys[1].steps
 	end),
-	"turnin:30",
-	"value: a grey hand-in is never weak"
+	"area:31:0",
+	"nearest: the closer objective, not the farther hand-in"
 )
 local red = Field()
 red.quests[1], red.quests[2], red.quests[3] = quest(0.32, 0.5), quest(0.45, 0.5), quest(0.15, 0.5)
@@ -1416,8 +1420,8 @@ red.quests[1].level = 23
 local function RedSteps()
 	return Model.Plan(red, visitor, {}, {}, prefs()).steps
 end
-equal(Only(2, RedSteps):find("0.3200", 1, true), nil, "value: a red quest is never first, though nearest")
-equal(#RedSteps(), 2, "value: nor on the route at all")
+equal(Only(2, RedSteps):find("0.3200", 1, true), nil, "nearest: a red quest is never first, though nearest")
+equal(#RedSteps(), 2, "nearest: nor on the route at all")
 
 -- Laps (docs/design.md §4.2): the story's town hands out its quests, the lap goes out to their areas and comes back to
 -- hand them in, a second visit keyed ":2". A quest worth far less per yard than the town's others waits, and the log's
@@ -1451,7 +1455,11 @@ do
 	equal(steps[#steps].key, "town:5:2", "laps: back to the town, a second visit")
 	equal(table.concat(steps[#steps].handins, " "), "1 2 3", "laps: handing in what the lap did")
 	equal(steps[#steps].reason, "3 to hand in", "laps: counted as hand-ins")
-	equal(Keys(steps), "town:5 area:2:0 area:1:0 town:5:2", "laps: the town, the areas (2 and 3's merged), the town")
+	equal(
+		Keys(steps),
+		"town:5 area:1:0 area:2:0 town:5:2",
+		"laps: the town, its nearest areas (2 and 3's merged), the town"
+	)
 	walker.logMax = 2
 	steps = Model.Plan(lapped, walker, {}, {}, Choose("zone:1")).steps
 	-- 2 and 3 share an area, so each costs less than 1.

@@ -360,6 +360,10 @@ function AdventureGuideForeverPinMixin:OnMouseEnter()
 			end
 		end
 		AddClickLine(GameTooltip)
+		-- A step past the first still has a clear way back to the story's start (docs/design.md §2.5).
+		if self.index and self.index > 1 then
+			GameTooltip_AddInstructionLine(GameTooltip, ns.L.PIN_RETURN_STORY)
+		end
 	end
 	GameTooltip:Show()
 end
@@ -373,7 +377,13 @@ function AdventureGuideForeverPinMixin:OnMouseLeave()
 end
 
 function AdventureGuideForeverPinMixin:OnClick(button)
-	if button == "LeftButton" and self.step then
+	if not self.step then
+		return
+	end
+	if button == "RightButton" then
+		-- Back to the story's start: the same journey, guided from its first step (docs/design.md §2.10).
+		ns.StartRoute()
+	elseif button == "LeftButton" then
 		ns.StartRoute(self.step)
 	end
 end

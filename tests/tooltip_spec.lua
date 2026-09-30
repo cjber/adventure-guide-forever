@@ -20,6 +20,7 @@ local function Load(charDB, zhevra)
 	zhevra = zhevra or { x = 0.5223, y = 0.3101 }
 	local h = harness.load({
 		charDB = charDB,
+		planned = true,
 		completed = { 844 },
 		log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = zhevra.x, y = zhevra.y },
@@ -40,7 +41,7 @@ local function Lines(h, guid)
 	return h.tooltip
 end
 
-local SERGRA, THORK, GAZLOWE = 3338, 3429, 3391 -- The Zhevra's ender; Crossroads and Ratchet givers
+local SERGRA, THORK, LATER = 3338, 3429, 3439 -- The Zhevra's ender; Crossroads and a later-town giver
 
 -- The log's quests ride on the zone's story (they are done on its map): Sergra Darkthorn takes The Zhevra at the
 -- Crossroads; Innkeeper Gryshka in Orgrimmar is on none of its steps.
@@ -76,7 +77,7 @@ do
 	local h = Load({ journey = "zone:1413" })
 	local line = { "normal: Adventure guide: The Barrens story" }
 	same(Lines(h, Creature(THORK)), line, "story: a pickup's giver")
-	same(Lines(h, Creature(GAZLOWE)), line, "story: in a later town")
+	same(Lines(h, Creature(LATER)), line, "story: in a later town")
 	same(Lines(h, Creature(SERGRA)), line, "story: its hand-in's ender")
 	h.ns.Choose(nil)
 	h.flush()
@@ -87,7 +88,7 @@ end
 
 -- A turn-in at the client's waypoint, away from the town: the quest's finish NPC still takes it.
 do
-	local h = Load({ journey = "zone:1413" }, { x = 0.62, y = 0.38 })
+	local h = Load({ journey = "zone:1413" }, { x = 0.55, y = 0.33 })
 	local turnin
 	for _, step in ipairs(h.ns.Route().steps) do
 		turnin = turnin or (step.key == "turnin:845" and step or nil)

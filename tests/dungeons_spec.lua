@@ -52,10 +52,19 @@ data.quests[13].start = nil
 local player = { level = 20, side = 2, raceBit = 2, classBit = 64 }
 local completed, log = {}, {}
 local list = D.List(data, player, noop)
-equal(#list, 3, "catalog omits raids, retains questless dungeons")
+equal(#list, 10, "catalog lists questless dungeons and every mapped raid")
 equal(list[1].id, 47, "questless dungeon sorted by recommended level")
 equal(list[2].id, 33, "catalog sorted by known levels, then ID")
 equal(list[3].suitable, true, "recommended range includes the player")
+equal(list[4].id, 249, "the announced Onyxia's Lair leads the raids")
+equal(list[4].raid, true, "mapped raids carry the raid flag")
+equal(list[4].current, true, "the announced Forever tier is marked current")
+equal(list[4].players, 40, "raid group size comes from the registry")
+equal(list[4].name, "Onyxia's Lair", "a raid absent from the generated data keeps its registry name")
+equal(list[4].suitable, false, "a level-60 raid is not suggested to a level-20 player")
+equal(list[7].id, 409, "client-present raid maps follow the announced tier")
+equal(list[7].name, "Raid", "a generated raid keeps its data name")
+equal(list[7].current, false, "client-present raids are not the announced tier")
 local cases = {
 	[1] = "available",
 	[2] = "pre",
@@ -130,7 +139,18 @@ end
 for _, id in ipairs({ 33, 34, 36, 43, 47, 48, 70, 90, 109, 129, 189, 209, 229, 230, 289, 329, 349, 389, 429 }) do
 	equal(ids[id], true, "generated dungeon " .. id)
 end
-equal(ids[409], nil, "generated raid excluded")
+equal(ids[409], true, "a client-present raid is browsable")
+equal(ids[249], true, "Onyxia's Lair is browsable without a generated instance")
+
+-- The raid registry names the announced Forever tiers and the sizes the client maps do not carry.
+local barrow, hyjal, onyxia = h.ns.Raids[1], h.ns.Raids[2], h.ns.Raids[3]
+equal(barrow.name, "Barrow Deeps", "10-player launch raid registered")
+equal(barrow.players, 10, "Barrow Deeps group size")
+equal(hyjal.players, 20, "Hyjal Summit group size")
+equal(onyxia.players, 40, "Onyxia's Lair group size")
+equal(barrow.map, nil, "Barrow Deeps has no client map in this build")
+equal(onyxia.map, 249, "Onyxia's Lair maps to the client instance")
+equal(h.ns.RaidByMap[409].players, 40, "the registry indexes client-present raids")
 
 -- Synthetic QuestieDB rows exercise contracts; no Questie-derived data is stored in the repository.
 local fake = harness.questieMirror(h.ns.Data)
@@ -618,6 +638,62 @@ equal(#curated.loot[43], 3, "AtlasLoot drops deduped; known world drops still ex
 local standalone = harness.load({ items = { [999904] = { name = "Test drop", quality = 3 } } })
 standalone.G.AtlasLoot = loot.G.AtlasLoot
 equal(standalone.ns.Dungeons.Source(noop) ~= nil, true, "AtlasLoot works without QuestieDB")
+
+-- Raids read the same curated AtlasLoot pages, and a raid absent from the generated geometry still pages safely.
+local raidLoot = harness.load({ items = { [999910] = { name = "Raid drop", quality = 4 } } })
+raidLoot.ns.Data.instances[249] = nil
+local raidModule = {
+	GetDifficultyByName = function(_, name)
+		return name == "n" and 1
+	end,
+	Onyxia = {
+		InstanceID = 249,
+		items = {
+			{ name = "Onyxia", npcID = 10184, Level = 60, [1] = { { 1, 999910 } } },
+		},
+	},
+}
+raidLoot.G.AtlasLoot = { Locales = { Trash = "Trash" }, ItemDB = {
+	Get = function()
+		return raidModule
+	end,
+} }
+local raidSource = raidLoot.ns.Dungeons.Source(noop)
+equal(#raidSource.bosses[249], 1, "a raid's curated encounter is read")
+equal(raidSource.bosses[249][1].name, "Onyxia", "raid boss name comes from AtlasLoot")
+equal(raidSource.loot[249][1].id, 999910, "raid loot comes from AtlasLoot")
+equal(
+	raidLoot.ns.Dungeons.Bosses(raidSource, 249, nil)[1].name,
+	"Onyxia",
+	"raid boss list comes from the curated source"
+)
+local raidRows = raidLoot.ns.Dungeons.LootRows(raidSource, 249, raidSource.bosses[249])
+equal(raidRows[1].title, "Onyxia", "raid loot is grouped under the encounter")
+equal(raidRows[2].item, 999910, "raid item row")
+local raidEntry
+for _, entry in ipairs(raidLoot.ns.Dungeons.List(raidLoot.ns.Data, raidLoot.ns.State.Player(), noop)) do
+	if entry.id == 249 then
+		raidEntry = entry
+	end
+end
+assert(raidEntry, "Onyxia's Lair is in the catalog")
+equal(
+	raidLoot.ns.Dungeons.Page(raidLoot.ns.Data, raidLoot.ns.State.Player(), {}, {}, raidEntry, noop).dungeon.id,
+	249,
+	"a raid without generated geometry still pages"
+)
+
+-- The catalog splits dungeons from raids and tags the announced tier with its group size.
+local raidUI = harness.load()
+raidUI.ns.Window.OpenDungeon(249)
+raidUI.flush()
+local raidTexts = Texts(raidUI)
+equal(raidTexts["Onyxia's Lair"], true, "raid page names the instance")
+equal(raidTexts[raidUI.ns.L.DUNGEON_LIST_RAIDS], true, "announced raids get their own heading")
+equal(raidTexts[raidUI.ns.L.DUNGEON_LIST_DUNGEONS], true, "dungeons keep their heading")
+equal(raidTexts[raidUI.ns.L.DUNGEON_RAID_PLAYERS:format(40)], true, "raid group size is shown")
+raidUI.Click(Button(raidUI, raidUI.ns.L.DUNGEON_BOSSES_TAB))
+equal(#raidUI.errors, 0, "raid page has no errors")
 print(("dungeons_spec: %d checks passed"):format(checks))
 
 -- The bundled Classic boss baseline is gone: bosses come from AtlasLoot/EJ only, so an uncurated instance lists none.

@@ -12,7 +12,7 @@ ns.L = {
 	AUDIT_BUILD = "data from build %s, client build %s.%s",
 	AUDIT_COUNTS = "%d quests in the data, %d eligible now, %d completed known",
 	AUDIT_NOT_READY = "completed-quest data hasn't finished loading yet; the counts above may be low.",
-	-- Where the quests come from (QuestieSource.lua): QuestieDB when it is loaded and fit, the bundled data otherwise.
+	-- Where the quests come from (QuestieSource.lua): the installed QuestieDB when loaded and fit; unavailable otherwise.
 	AUDIT_SOURCE_BUNDLED = "Quest data unavailable. Enable QuestieDB; enable Questie for pickup recommendations.",
 	AUDIT_SOURCE_QUESTIE = "quests from QuestieDB %s",
 	AUDIT_QUESTIE_BUILDING = "QuestieDB's quests are still loading.",
@@ -29,6 +29,7 @@ ns.L = {
 	HELP_OPEN = "/agf - open the Adventure Guide window; it is also a tab on the world map's quest log.",
 	HELP_AUDIT = "/agf audit - check the quest data against the game",
 	HELP_DUMP = "/agf dump - save the guide's layout for a bug report",
+	HELP_TRACKER = "/agf tracker - print the tracker stack's anchors (for a combat overlap)",
 	HAND_IN_WHEN = "Hand in when you're in %s",
 	-- Journey cards (docs/design.md §2.2 and §3): a title, a subline that counts, and a reason when there is one.
 	PREVIOUS_PAGE = "Previous",
@@ -84,6 +85,10 @@ ns.L = {
 	SETTING_TITLE_ROUTE_TOOLTIP = "Choosing a journey in the guide, or clicking the current step's title in the "
 		.. "objective tracker, sets off along the route, with Shortest Path Forever when it's loaded and a map "
 		.. "waypoint otherwise. Clicking the chosen journey again stops it.",
+	SETTING_AUTO_START = "Start the route automatically",
+	SETTING_AUTO_START_TOOLTIP = "The guide sends your chosen journey's route to Shortest Path as soon as it is "
+		.. "ready, so the map line is drawn on login and after a reload without pressing Go. Pressing Stop still "
+		.. "clears it until you choose a journey again.",
 	SETTING_TRACK_ROUTE = "Clicking the tracker title tracks the route's quests",
 	SETTING_TRACK_ROUTE_TOOLTIP = "Every quest on the route that's in your log joins the objective tracker, up to "
 		.. "the tracker's limit.",
@@ -168,6 +173,9 @@ ns.L = {
 	STORY_COMPLETE = "Story complete",
 	JOURNEY_COMPLETE = "Journey complete",
 	CHOOSE_NEXT = "Choose your next journey",
+	-- The tracker's journey line and the wait for QuestieDB's catalogue.
+	TRACKER_ROUTE_START = "Click to route from this story's start",
+	TRACKER_LOADING = "Loading quest data...",
 	-- The trainer aside.
 	TRAINER = "Visit your class trainer",
 	TRAINER_SPELLS = "%d new spells",
@@ -203,6 +211,8 @@ ns.L = {
 	STARTS_AFTER_COMBAT = "The route starts when combat ends",
 	CLICK_TRAVEL = "Click to travel with %s",
 	CLICK_WAYPOINT = "Click to set a waypoint",
+	-- A numbered route pin past the first: how to get back to the story's start.
+	PIN_RETURN_STORY = "Right-click to route from the story's start",
 	STEP_NUMBERED = "%d. %s",
 	QUEST_LEVEL = "[%d] %s",
 	-- An area's tooltip: each open objective under its quest, in the client's words, else its count.
@@ -223,6 +233,12 @@ ns.L = {
 	MENU_GIVERS = "Show quest givers",
 	MENU_TRACKER = "Show in objective tracker",
 	MENU_MORE_SETTINGS = "More settings",
+	-- The settings page's index groups, and the index button that opens each one.
+	SETTINGS_GROUP_ROUTE = "Route",
+	SETTINGS_GROUP_MAP = "Map",
+	SETTINGS_GROUP_TRACKER = "Objective tracker",
+	SETTINGS_GROUP_INTERFACE = "Interface",
+	SETTINGS_OPEN = "Open",
 	SETTING_TRACKER = "Show tracker section",
 	SETTING_TRACKER_TOOLTIP = 'A short "Adventure Guide" section above your quests in the objective tracker, for the '
 		.. "current step.",
@@ -275,15 +291,19 @@ ns.L = {
 	UNEXPLORED = "You haven't seen %s yet",
 	-- A way into an instance is no place to be the level for.
 	MOMENT_OPEN = "%s is open to you",
-	-- Roadmap #11: the route's last stop, when rested XP is low and an innkeeper stands there.
+	-- The route's last stop, when rested XP is low and an innkeeper stands there (docs/design.md §2.17).
 	REST_HERE = "Rest at the inn here",
-	-- Roadmap #24: hint strength. A wanderer is told where, never taken there.
+	-- Hint strength (docs/design.md §2.17): a wanderer is told where, never taken there.
 	SETTING_WANDERER = "Wanderer: name places only",
 	SETTING_WANDERER_TOOLTIP = "The guide names where to go next and leaves the way to you: no waypoint, no route "
 		.. "with Shortest Path Forever and no marks on the map.",
 	SETTING_FOLLOW_QUEST = "Follow the quest you're working on",
 	SETTING_FOLLOW_QUEST_TOOLTIP = "When you walk into the area of the quest the route leads to, the guide selects "
 		.. "that quest so the map shows its area. It never changes a quest you selected yourself.",
+	SETTING_ROUTE_ORDER = "Optimised route (beta)",
+	SETTING_ROUTE_ORDER_TOOLTIP = "Off: the route is the nearest thing to do next, step by step, so it is simple "
+		.. "and predictable. On: an experimental order that leads with the story's chapter, groups a town's work and "
+		.. "keeps its earlier suggestions steady.",
 	-- The Adventure Guide window (Window.lua): its tabs, the Today strip, the featured card and the Professions tab.
 	TAB_JOURNEYS = "Journeys",
 	TAB_PROFESSIONS = "Professions",
@@ -314,6 +334,11 @@ ns.L = {
 	SKILLUP_OUTDATED = "Your next skill-ups come from SkillUp Forever. Update it and they show here.",
 	SKILLUP_NONE = "No crafting professions to level. Learn one at a trainer and it shows here.",
 	TAB_DUNGEONS = "Dungeons",
+	DUNGEON_LIST_DUNGEONS = "Dungeons",
+	DUNGEON_LIST_RAIDS = "Forever raids",
+	DUNGEON_LIST_OTHER_RAIDS = "Other raid instances",
+	DUNGEON_RAID_PLAYERS = "%d-player raid",
+	DUNGEON_RAID_TOOLTIP = "Raid instance. Bosses and loot come from AtlasLoot.",
 	DUNGEON_QUESTS_TAB = "Quests",
 	DUNGEON_PREP_TAB = "Prep",
 	DUNGEON_BOSSES_TAB = "Bosses",
@@ -347,7 +372,6 @@ ns.L = {
 	DUNGEON_ENEMY_LEVELS = "Levels %d–%d",
 	DUNGEON_RARE_ELITE = "Rare elite",
 	DUNGEON_ELITE = "Elite",
-	DUNGEON_DROP = "Drops from enemies in this dungeon",
 	DUNGEON_NO_FACTION_QUESTS = "This dungeon has no quests for your faction.",
 	DUNGEON_NO_CHARACTER_QUESTS = "This dungeon has no quests for your character.",
 	DUNGEON_NO_PREP = "No preparations listed for this dungeon.",
@@ -362,7 +386,6 @@ ns.L = {
 	DUNGEON_NO_BOSSES = "No boss data found. Install AtlasLoot for complete encounter details.",
 	DUNGEON_ITEM_REQUIRED_LEVEL = "Requires level %d",
 	DUNGEON_TRASH = "Trash",
-	DUNGEON_DROPPED_BY = "Dropped by %s",
 	DUNGEON_WANDERER = "Wanderer mode leaves the way to you. Turn it off in settings to use map directions.",
 	DUNGEON_SHOW_GIVER = "Show giver on map",
 	DUNGEON_START = "Start: %s",
@@ -465,8 +488,10 @@ ns.L = {
 	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "Always use the newest quests. Quest data now comes from your installed QuestieDB alone, and"
-		.. " dungeons from AtlasLoot, so a quest the guide misses is one Questie does not have yet.",
+	WHATS_NEW = "The tracker names your story, and every pin finds its way back. Questie loading now holds your route"
+		.. " until the newest quest data is ready.",
+	DUNGEON_CLASSIC_GUIDE = "Adventure Guide for Classic",
+	DUNGEON_CLASSIC_GUIDE_TOOLTIP = "Open Adventure Guide for Classic for boss tactics, models and loot.",
 	DUNGEON_MAPS_TAB = "Maps",
 	DUNGEON_MAP_BACK = "Back to dungeon",
 	DUNGEON_MAP_WORLD_BACK = "Back to map",

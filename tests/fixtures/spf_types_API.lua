@@ -1,4 +1,4 @@
--- shortest-path-forever f9b651cfc94658ca2eaadb29771312a372e04abe:types/API.lua
+-- shortest-path-forever cab9c3a5692217fe433c3aa4299a85b8c9fd21f1:types/API.lua
 ---@meta
 
 -- Public addon-to-addon interface. Coordinates are uiMapID and normalized 0-1 x/y, not world yards.
@@ -21,6 +21,7 @@
 ---@field tooltip? string -- optional destination detail shown on the stop pin tooltip, never used as the arrow label
 ---@field kind? SPFAPIStopKind -- any other value is ignored and the stop keeps the plain pin
 ---@field hold? boolean -- keep guidance at this stop until the caller submits an updated route
+---@field radius? number -- yards around a held stop where travel cues pause; finite and nonnegative
 
 ---@class SPFAPILeg
 ---@field mode SPFAPIMode

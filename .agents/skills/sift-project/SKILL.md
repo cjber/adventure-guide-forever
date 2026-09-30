@@ -10,8 +10,9 @@ the mainline 12.x UI/API, `## Interface: 16001`). It runs inside the game's Lua 
 no `require` — the client loads the files `AdventureGuideForever.toc` lists, in that order, and each
 file receives `local addonName, ns = ...`, the addon's shared table. It ships as a zip built by the
 BigWigs packager (`.pkgmeta`) on a `v*` tag. Standard-library Python generators in `tools/` rebuild
-`Data/Quests.lua` (`gen_quests.py`, from a pinned CMaNGOS classic-db dump and wago.tools DB2 exports),
-`Data/Forever.lua` (`diff_forever.py`) and `Data/ZoneArt.lua` (`gen_zoneart.py`).
+`Data/Geometry.lua` (`gen_quests.py`, route geometry from a pinned CMaNGOS classic-db dump and wago.tools
+DB2 exports; its quest corpus is test-only, in `tests/fixtures/quests.lua`), `Data/Forever.lua`
+(`diff_forever.py`) and `Data/ZoneArt.lua` (`gen_zoneart.py`).
 
 ## Gate
 
@@ -62,7 +63,7 @@ UI (window, panel, pins, tracker, settings) headlessly. What needs the client it
 
 | Path | Zone | Reason |
 |---|---|---|
-| `Data/*.lua` | generated | `Quests.lua` by `tools/gen_quests.py`, `Forever.lua` by `tools/diff_forever.py`, `ZoneArt.lua` by `tools/gen_zoneart.py`; never hand-edit, fix the generator |
+| `Data/*.lua` | generated | `Geometry.lua` by `tools/gen_quests.py` (route geometry; the quest corpus is test-only), `Forever.lua` by `tools/diff_forever.py`, `ZoneArt.lua` by `tools/gen_zoneart.py`; never hand-edit, fix the generator |
 | `tools/` | script | data generator, CI helpers; not shipped |
 | `tests/` | test | headless LuaJIT harness |
 | `types/` | production | LuaLS annotations only, never loaded in game; review for dead classes and stale field docs |

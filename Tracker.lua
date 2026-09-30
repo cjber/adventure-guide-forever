@@ -16,8 +16,19 @@ local ASIDE = "aside"
 -- Something new (Moments.lua, docs/design.md §2.13): "Duskwood is now for your level", glowing once, until the guide
 -- opens; a click opens it.
 local MOMENT = "moment"
+-- The journey the step belongs to (docs/design.md §2.5): its title names the story above the step, and a click routes
+-- from its start.
+local JOURNEY = "journey"
+-- The quiet wait while QuestieSource's catalogue builds (docs/design.md §2.14): a line instead of a wrong route.
+local LOADING = "loading"
 -- Headers that are not the step's: its click and hover never act on them.
-local NOT_STEP = { [STORY_COMPLETE] = true, [ASIDE] = true, [JOURNEY_COMPLETE] = true, [MOMENT] = true }
+local NOT_STEP = {
+	[STORY_COMPLETE] = true,
+	[ASIDE] = true,
+	[JOURNEY_COMPLETE] = true,
+	[MOMENT] = true,
+	[LOADING] = true,
+}
 -- A town's NPC line names this many, then counts the rest.
 local NAMED_GIVERS = 2
 -- Set by a turn-in that ends a story: the quest, then the first step 1 the route shows without it. The header stays
@@ -73,6 +84,12 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 			ns.Asides.Go(aside)
 		end
 		return
+	elseif block.id == JOURNEY then
+		-- Back to the story's start: the same journey, guided from its first step (docs/design.md §2.10).
+		if mouseButton ~= "RightButton" then
+			ns.StartRoute()
+		end
+		return
 	elseif NOT_STEP[block.id] then
 		if (block.id == JOURNEY_COMPLETE or block.id == MOMENT) and mouseButton ~= "RightButton" and ns.OpenPanel then
 			ns.OpenPanel()
@@ -101,6 +118,12 @@ end
 -- does.
 ---@param block AGFTrackerBlock
 function ModuleMixin:OnBlockHeaderEnter(block)
+	if block.id == JOURNEY then
+		GameTooltip:SetOwner(block, "ANCHOR_RIGHT")
+		GameTooltip_AddInstructionLine(GameTooltip, L.TRACKER_ROUTE_START)
+		GameTooltip:Show()
+		return
+	end
 	if not ns.Integrations.ReplacesJourney() then
 		return
 	end
@@ -165,7 +188,20 @@ function ModuleMixin:LayoutContents()
 	end
 	local step = ns.Integrations.CurrentStep()
 	if not step then
+		if ns.QuestieBuilding() then
+			local loading = self:GetBlock(LOADING)
+			loading:SetHeader(L.TRACKER_LOADING)
+			self:LayoutBlock(loading)
+		end
 		return
+	end
+	local journey = ns.CurrentJourney()
+	if journey and journey.title then
+		local header = self:GetBlock(JOURNEY)
+		header:SetHeader(journey.title)
+		if not self:LayoutBlock(header) then
+			return
+		end
 	end
 	local block = self:GetBlock(step.key)
 	block:SetHeader(step.title)

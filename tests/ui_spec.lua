@@ -92,9 +92,18 @@ local function Load(spf, db, charDB, away)
 		log[3] =
 			{ id = AWAY, title = "Hidden Enemies", level = 15, complete = true, map = 1454, x = 0.4947, y = 0.5059 }
 	end
+	-- autoStart is off here: these specs drive every route start explicitly (the title click, Go), so the auto-start on
+	-- load would double it. tests/autostart_spec.lua covers the auto-start itself. Set after the copy: a shared db
+	-- table (PINS_ON) has already had the addon's defaults merged into it by Core.LoadDB, autoStart included.
+	local settings = {}
+	for key, value in pairs(db or {}) do
+		settings[key] = value
+	end
+	settings.autoStart = false
 	return harness.load({
+		planned = true,
 		spf = spf or nil,
-		db = db,
+		db = settings,
 		charDB = charDB ~= false and (charDB or { journey = "zone:1413" }) or nil,
 		completed = { 844 },
 		log = log,
@@ -287,20 +296,64 @@ do
 	equal(unset.spf.NavigateRoute, 0, "the route setting off: and starts nothing")
 	equal(table.concat(h.watched, " "), "99", "the tracking setting off: the tracked quests are untouched")
 
-	local byKey = {}
+	local byKey, pages = {}, {}
 	for _, entry in ipairs(h.settings) do
-		byKey[entry.key] = entry
+		if entry.key then
+			byKey[entry.key] = entry
+			local group = pages[entry.category] or {}
+			pages[entry.category] = group
+			group[#group + 1] = entry.key
+		end
 	end
-	-- Every row goes in through the secure delegate, in page order; none from addon code, which taints the search.
+	-- Every row goes in through the secure delegate; none from addon code, which taints the search. The rows are
+	-- grouped into subcategories with a short index page, so no page grows tall.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 13, "every row is registered through Settings.RegisterInitializer")
+	equal(#h.settings, 19, "15 rows and 4 index buttons, all through Settings.RegisterInitializer")
+	local L = h.ns.L
 	equal(
-		h.settings[1].key .. " " .. h.settings[2].key .. " " .. h.settings[3].key,
-		"floatWindow showTracker wanderer",
-		"in page order"
+		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
+		"wanderer followQuest optimisedRoute includeDungeonsDefault titleStartsRoute autoStart stepSound",
+		"Route holds its rows in order"
 	)
-	equal(h.settings[10].key, "untrackOthers", "in page order, to the last")
-	equal(h.settings[10].category, h.ns.TITLE, "on the addon's page")
+	equal(table.concat(pages[L.SETTINGS_GROUP_MAP] or {}, " "), "showMapPins showQuestGivers", "Map holds its rows")
+	equal(
+		table.concat(pages[L.SETTINGS_GROUP_TRACKER] or {}, " "),
+		"showTracker trackRouteQuests untrackOthers",
+		"the objective tracker rows sit together, the parent first"
+	)
+	equal(
+		table.concat(pages[L.SETTINGS_GROUP_INTERFACE] or {}, " "),
+		"floatWindow suggestCompanions whatsNew",
+		"Interface holds the window, companion and update rows"
+	)
+	-- The index page's buttons are on the addon's own category, one per group, in index order, and open its subpage.
+	local buttons = {}
+	for _, entry in ipairs(h.settings) do
+		if entry.kind == "button" then
+			buttons[#buttons + 1] = entry
+		end
+	end
+	equal(#buttons, 4, "one index button per group")
+	equal(
+		buttons[1].name .. " " .. buttons[2].name .. " " .. buttons[3].name .. " " .. buttons[4].name,
+		L.SETTINGS_GROUP_ROUTE
+			.. " "
+			.. L.SETTINGS_GROUP_MAP
+			.. " "
+			.. L.SETTINGS_GROUP_TRACKER
+			.. " "
+			.. L.SETTINGS_GROUP_INTERFACE,
+		"the index lists every group in order"
+	)
+	for index, button in ipairs(buttons) do
+		equal(button.category, h.ns.TITLE, "index button " .. index .. " stays on the addon's page")
+		equal(button.addSearchTags, false, "index button " .. index .. " stays out of search")
+		equal(button.tooltip, L.SETTINGS_OPEN, "index button " .. index .. " is the Open button")
+		button.onClick()
+		equal(h.openedSettings, h.subcategories[index].GetID(), "index button " .. index .. " opens its own subpage")
+		equal(h.subcategories[index].name, button.name, "index button " .. index .. " names its subpage")
+		equal(h.subcategories[index].parent.name, h.ns.TITLE, "and the subpage hangs off the addon's page")
+	end
 	equal(byKey.untrackOthers.indented, true, "untrackOthers is indented under tracking")
 	equal(byKey.untrackOthers.evaluateCVar, "AdventureGuideForever_trackRouteQuests", "parent changes reevaluate child")
 	equal(byKey.untrackOthers.enabled(), false, "and is greyed while it is off")
@@ -481,7 +534,8 @@ do
 	equal(h.superTrackedQuest, 0, "focus: the setting off selects nothing")
 	clean(h, "focus")
 
-	-- Without Shortest Path, Go in the area the player stands in sets no waypoint, and walking out puts it on step 1.
+	-- Without Shortest Path, Go sets the waypoint at the step; walking out does not move it, since the area's
+	-- objective is unfinished and its point sits on the work rather than chasing the player.
 	h = Load(false, PINS_ON)
 	h.log[#h.log + 1] = { id = 887, title = "Southsea Freebooters", level = 14, complete = false }
 	h.log[#h.log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
@@ -509,7 +563,8 @@ do
 	Moved(h, 1413, 0.46, 0.79)
 	local leftFor = h.ns.Route().steps[1]
 	equal(leftFor.here, nil, "here, waypoint: out of it")
-	equal(h.counts.SetUserWaypoint, 2, "here, waypoint: the route goes on")
+	equal(leftFor.key, standing.key, "here, waypoint: the route holds its unfinished step")
+	equal(h.counts.SetUserWaypoint, 1, "here, waypoint: the destination does not chase the player")
 	local point = h.G.C_Map.GetUserWaypoint()
 	equal(point and point.position.x, leftFor.x, "here, waypoint: at step 1")
 	clean(h, "here, waypoint")
@@ -630,7 +685,11 @@ do
 	equal(block and block.header, "Journey complete", "journey complete: the header")
 	-- None is chosen now: the header, then the step of the first card, which the guide draws on its own.
 	local first = h.ns.Route().steps[1].key
-	same(h.tracker.layoutOrder, { "journey-complete", first }, "journey complete: over the first card's step")
+	same(
+		h.tracker.layoutOrder,
+		{ "journey-complete", "journey", first },
+		"journey complete: over the first card's step"
+	)
 	same(h.fanfares, { "journey-complete" }, "journey complete: glows once")
 	equal(#h.sounds, 0, "journey complete: no stage-end sound")
 	local opened, openPanel = 0, h.ns.OpenPanel
@@ -643,7 +702,7 @@ do
 	equal(h.spf.NavigateRoute, 1, "journey complete: and starts nothing")
 	h.ns.Invalidate()
 	h.flush()
-	same(h.tracker.layoutOrder, { first }, "journey complete: gone on the next route change")
+	same(h.tracker.layoutOrder, { "journey", first }, "journey complete: gone on the next route change")
 
 	h = Started("v1")
 	h.SetCombat(true)
@@ -671,6 +730,7 @@ do
 	-- Your calling (roadmap #7) holds quests, so the Quests toggle keeps its choice too: a level-12 orc warrior in
 	-- Durotar, whose trainer has a task.
 	h = harness.load({
+		planned = true,
 		player = { level = 12, classID = 1, map = 1411, x = 0.52, y = 0.44 },
 		charDB = { journey = "calling" },
 	})
@@ -686,13 +746,17 @@ do
 	-- Roadmap #21: with no next zone Dungeons hides nothing, so a chosen dungeon that went has ended; below the cap
 	-- the toggle keeps it.
 	for _, case in ipairs({ { 70, nil, "at the cap" }, { 18, "dungeon:1", "below the cap" } }) do
-		h = harness.load({ player = { level = case[1] }, charDB = { journey = "dungeon:1", dungeons = false } })
+		h = harness.load({
+			planned = true,
+			player = { level = case[1] },
+			charDB = { journey = "dungeon:1", dungeons = false },
+		})
 		h.flush()
 		equal(h.ns.Prefs().journey, case[2], "dungeon gone, " .. case[3])
 		clean(h, "dungeon gone, " .. case[3])
 	end
 
-	h = harness.load({ charDB = { journey = "zone:1413" }, completedPending = true })
+	h = harness.load({ planned = true, charDB = { journey = "zone:1413" }, completedPending = true })
 	h.flush()
 	equal(h.ns.Prefs().journey, "zone:1413", "ends: nothing before the completed quests load")
 end
@@ -897,9 +961,13 @@ end
 -- sends it again once, on the first full build out of combat. Not over someone else's journey; a refusal sets no
 -- waypoint and asks again on the next full build; Stop, a cleared card or no saved variables (#34) restore nothing.
 do
+	-- autoStart off: this block is about restoring a route that was started before (prefs.guided), not about the
+	-- auto-start on load, which tests/autostart_spec.lua covers.
 	local function Reloaded(charDB, setup)
 		local h = harness.load({
+			planned = true,
 			spf = "v1+",
+			db = { autoStart = false },
 			charDB = charDB,
 			initialLogin = false,
 			completed = { 844 },
@@ -1198,8 +1266,10 @@ end
 do
 	-- With the Barrens story ruled out, Gann's Reclamation is off every zone loop, so carry (Loose ends) holds it.
 	local h = harness.load({
+		planned = true,
 		preserveUnknownCosts = true,
-		db = PINS_ON,
+		-- A copy, never the shared PINS_ON table: Core.LoadDB merges the addon's defaults into whatever db it is given.
+		db = { showMapPins = true, showQuestGivers = true },
 		charDB = {
 			journey = "carry",
 			notInterested = { ["zone:1413"] = { title = "The Barrens story" } },
@@ -1229,14 +1299,14 @@ do
 	end
 	equal(step and step.kind, "area", "area step: Gann's Reclamation is an area step")
 	equal(h.pins.AdventureGuideForeverAreaPinTemplate, nil, "area step: no disc of ours over the area")
-	-- The step's point, and its pin, is where the player enters one of its shapes from the stop before (design §4.2).
+	-- The step's point, and its pin, is the objective node nearest the stop before (design §4.2), a spot inside one of
+	-- its shapes rather than on the ring's border.
 	local inside = false
 	for _, shape in ipairs(step.shapes) do
 		local yards = h.ns.Model.Yards(h.ns.Data, step, shape)
 		inside = inside or (yards ~= nil and yards <= shape.r)
 	end
-	local yards = h.ns.Model.Yards(h.ns.Data, step, step.ring)
-	equal(inside and yards > 0, true, "area step: its pin on the way in, inside a shape")
+	equal(inside, true, "area step: its pin on an objective's spot, inside a shape")
 	local pin
 	for _, candidate in ipairs(h.pins.AdventureGuideForeverPinTemplate) do
 		pin = candidate.step == step and candidate or pin
@@ -1469,7 +1539,7 @@ do
 		{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
 		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 	}
-	local h = harness.load({ completed = { 844 }, log = log })
+	local h = harness.load({ planned = true, completed = { 844 }, log = log })
 	local ns, before = h.ns, h.modelCalls.Journeys
 	local story = ns.Route().journeys[1]
 	h.SetCombat(true)
@@ -1666,6 +1736,7 @@ do
 	-- A /reload: the client keeps the waypoint, the character's saved variables remember it was ours.
 	ChooseOther(h)
 	local reloaded = harness.load({
+		planned = true,
 		charDB = h.G.AdventureGuideForeverCharDB,
 		waypoint = h.waypoint,
 		initialLogin = false,
@@ -1892,6 +1963,7 @@ end
 do
 	local grey = 788
 	local h = harness.load({
+		planned = true,
 		logMax = 4,
 		charDB = { journey = "zone:1413" },
 		completed = { 844 },
@@ -2058,7 +2130,7 @@ do
 		{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
 		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 	}
-	local h = harness.load({ completed = completed, log = log })
+	local h = harness.load({ planned = true, completed = completed, log = log })
 	local ns = h.ns
 	h.flush()
 	-- A town's step stays while the town offers anything, so the gone step here is the objective's.
@@ -2213,8 +2285,18 @@ do
 	local ring = h.pins.AdventureGuideForeverPinTemplate[1]
 	equal(ring.step.key, step.key, "hub tooltip: ring 1 is the town")
 	h.Hover(ring)
-	equal(h.tooltip[#h.tooltip - 1], "highlight: And 1 more", "hub tooltip: the ring's quests")
-	equal(h.tooltip[#h.tooltip], "instruction: Click to set a waypoint", "hub tooltip: the click line last")
+	-- The route comes back to Crossroads to hand in, so the ring names its two visits after the quest list.
+	local last, visits = #h.tooltip, 0
+	for index = last - 1, 1, -1 do
+		if h.tooltip[index]:find("^normal: Stop ") then
+			visits = visits + 1
+		else
+			break
+		end
+	end
+	equal(visits >= 1, true, "hub tooltip: the ring's visits")
+	equal(h.tooltip[last - visits - 1], "highlight: And 1 more", "hub tooltip: the ring's quests")
+	equal(h.tooltip[last], "instruction: Click to set a waypoint", "hub tooltip: the click line last")
 
 	-- A group quest carries the quest log's group tag.
 	ns.Data.quests[step.quests[1]].elite = true
@@ -2304,6 +2386,7 @@ do
 	equal(Resumed(h), 1, "resume: a login with a matching key shows the line")
 	equal(TrackerLines(h)[2], "Where you left off: finishes a story", "resume: in place of the reason, after the town")
 	local capital = harness.load({
+		planned = true,
 		charDB = { journey = "zone:1413", last = { key = saved.key, reason = "Continues a story you started" } },
 		completed = { 844 },
 		log = {
@@ -2392,7 +2475,7 @@ do
 	local first = ns.Route().steps[1]
 	ns.Skip(first.key, first.title)
 	h.flush()
-	equal(h.tracker.layoutOrder[1], ns.Route().steps[1].key, "fanfare: gone once step 1 moves on")
+	same(h.tracker.layoutOrder, { "journey", ns.Route().steps[1].key }, "fanfare: gone once step 1 moves on")
 	clean(h, "fanfare")
 
 	h = Load(false, { showTracker = false })
@@ -2407,10 +2490,10 @@ do
 	local before = #h.prints
 	h.Slash("help")
 	local L = h.ns.L
-	for index, line in ipairs({ L.HELP_OPEN, L.HELP_AUDIT, L.HELP_DUMP }) do
+	for index, line in ipairs({ L.HELP_OPEN, L.HELP_AUDIT, L.HELP_DUMP, L.HELP_TRACKER }) do
 		equal(h.prints[before + index]:sub(-#line), line, "L: help line " .. index)
 	end
-	equal(#h.prints, before + 3, "L: three help lines")
+	equal(#h.prints, before + 4, "L: four help lines")
 	-- Map names come from the client (C_Map.GetMapInfo), which the planner prefers over the data's English.
 	h.G.C_Map.GetMapInfo = function()
 		return { name = "Client Stormwind" }
@@ -2444,16 +2527,10 @@ do
 	equal(busy, 0, "dump: no frame runs an OnUpdate")
 	equal(h.counts.displayModeWrites, 0, "dump: displayMode writes")
 	clean(h, "dump")
-	equal(
-		harness.load({ db = h.G.AdventureGuideForeverDB, initialLogin = false }).G.AdventureGuideForeverDB.dump,
-		dump,
-		"dump: kept by /reload"
-	)
-	equal(
-		harness.load({ db = h.G.AdventureGuideForeverDB, initialLogin = true }).G.AdventureGuideForeverDB.dump,
-		nil,
-		"dump: dropped at login"
-	)
+	local kept = { planned = true, db = h.G.AdventureGuideForeverDB, initialLogin = false }
+	local dropped = { planned = true, db = h.G.AdventureGuideForeverDB, initialLogin = true }
+	equal(harness.load(kept).G.AdventureGuideForeverDB.dump, dump, "dump: kept by /reload")
+	equal(harness.load(dropped).G.AdventureGuideForeverDB.dump, nil, "dump: dropped at login")
 end
 
 -- The journey card template (docs/design.md §2.2): the renown card at 0.77 scale, its highlight the card's own art.
@@ -2670,7 +2747,7 @@ do
 	clean(h, "guide")
 
 	-- Roadmap #21: past the cap with quests and dungeons off, the dungeon card and a way into an instance still show.
-	local capped = harness.load({ player = { level = 70 } })
+	local capped = harness.load({ planned = true, player = { level = 70 } })
 	capped.ns.Prefs().quests = false
 	capped.ns.Invalidate()
 	capped.ns.OpenPanel()
@@ -2681,7 +2758,7 @@ do
 	equal(Says(capped, capped.ns.L.NO_JOURNEY), 0, "guide: no empty line")
 	clean(capped, "guide: at the cap")
 
-	local none = harness.load({ player = { level = 1 } })
+	local none = harness.load({ planned = true, player = { level = 1 } })
 	none.ns.Prefs().quests = false
 	none.ns.Invalidate()
 	none.ns.OpenPanel()
@@ -2829,7 +2906,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(route.chosen, false, label .. ": nothing chosen")
 	equal(Back(), nil, label .. ": no back arrow with nothing chosen")
 	equal(route.journey, "zone:1413", label .. ": the route falls back to the first card")
-	same(h.tracker.layoutOrder, { route.steps[1].key }, label .. ": the tracker shows the first card's step")
+	same(h.tracker.layoutOrder, { "journey", route.steps[1].key }, label .. ": the tracker shows the first card's step")
 	equal(route.journeys[1].kind, "story", label .. ": a story card")
 	equal(#route.journeys >= 3, true, label .. ": several journey rows")
 	equal(Heights(), "", label .. ": none of the chosen view's cards")
@@ -3477,8 +3554,9 @@ do
 	}) do
 		local label = "trainer, " .. case.label
 		local h = harness.load({
+			planned = true,
 			spf = "v1+",
-			db = PINS_ON,
+			db = { showMapPins = true, showQuestGivers = true, autoStart = false },
 			tf = case.tf,
 			completed = { 844 },
 			log = {
@@ -3524,7 +3602,7 @@ do
 		local shown = block and block.used and block.header or nil
 		equal(shown, case.text, label .. ": the tracker's line")
 		-- With no journey chosen it is the line above the first card's step.
-		local order = case.text and { "aside", "town:349" } or { "town:349" }
+		local order = case.text and { "aside", "journey", "town:349" } or { "journey", "town:349" }
 		same(h.tracker.layoutOrder, order, label .. ": the tracker's lines")
 		-- An aside, not a step: no ring for it, and its tracker title goes to the trainer as its Go does.
 		local steps, rings = {}, 0
@@ -3568,6 +3646,7 @@ end
 -- Trainer recommendations must not send a character to buy spells they cannot afford.
 do
 	local h = harness.load({
+		planned = true,
 		preserveUnknownCosts = true,
 		tf = {
 			spells = {
@@ -3608,8 +3687,9 @@ do
 	local spells = { { spellID = 1, name = "Sprint", level = 8, line = "Combat", lineID = 38, general = false } }
 	local tf = { spells = spells }
 	local h = harness.load({
+		planned = true,
 		spf = "v1",
-		db = PINS_ON,
+		db = { showMapPins = true, showQuestGivers = true, autoStart = false },
 		tf = tf,
 		player = { level = 8, map = 1411, x = 0.52, y = 0.43, classID = 4, raceID = 8 },
 		charDB = { journey = "zone:1411" },
@@ -3725,7 +3805,8 @@ do
 			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 		}
 		log[#log + 1] = case.log
-		local h = harness.load({ completed = case.completed or { 844 }, log = log, player = case.player })
+		local h =
+			harness.load({ planned = true, completed = case.completed or { 844 }, log = log, player = case.player })
 		h.ns.OpenPanel()
 		h.flush()
 		local function Line(text)
@@ -3773,6 +3854,7 @@ end
 do
 	local label = "gates"
 	local h = harness.load({
+		planned = true,
 		player = { level = 55 },
 		skills = { { skillID = 197, name = "Tailoring", rank = 75 } },
 		reputation = { [576] = { name = "Timbermaw Hold", currentStanding = 2999 } },
@@ -3833,6 +3915,7 @@ end
 -- rest or XP event that moves nothing rebuilds nothing. The carry card's one stop is a hand-in in Orgrimmar.
 do
 	local h = harness.load({
+		planned = true,
 		player = { rested = false },
 		charDB = { journey = "carry" },
 		completed = { 844 },

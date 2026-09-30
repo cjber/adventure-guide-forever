@@ -12,7 +12,7 @@
 ## SavedVariables: AdventureGuideForeverDB
 ## SavedVariablesPerCharacter: AdventureGuideForeverCharDB
 ## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick
-## OptionalDeps: Atlas, Atlas_ClassicWoW, AtlasLootClassic, AtlasLootClassic_DungeonsAndRaids, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever
+## OptionalDeps: AdventureGuideClassic, Atlas, Atlas_ClassicWoW, AtlasLootClassic, AtlasLootClassic_DungeonsAndRaids, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever
 
 Locales\enUS.lua
 Data\Geometry.lua
@@ -29,6 +29,7 @@ Focus.lua
 Integrations.lua
 Companions.lua
 Providers.lua
+Raids.lua
 QuestieObjectives.lua
 QuestieSource.lua
 Dungeons.lua

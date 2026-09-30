@@ -8,6 +8,21 @@ ns.Integrations = Integrations
 -- Passed to Shortest Path so it can tell our journeys apart from the player's own.
 local OWNER = "AdventureGuideForever"
 
+---@return boolean
+function Integrations.ClassicGuideAvailable()
+	return C_AddOns.IsAddOnLoaded("AdventureGuideClassic") and type(SlashCmdList.ADVENTUREGUIDECLASSIC) == "function"
+end
+
+---@return boolean
+function Integrations.OpenClassicGuide()
+	if not Integrations.ClassicGuideAvailable() then
+		return false
+	end
+	local openGuide = SlashCmdList.ADVENTUREGUIDECLASSIC --[[@as fun(message: string)]]
+	openGuide("")
+	return true
+end
+
 -- The v1 members; types/Namespace.lua AGFSPFAPI is the contract, and tests/contract_spec.lua holds this list to
 -- exactly its non-optional functions. A Shortest Path missing any of them is treated as absent.
 local REQUIRED = { "Estimate", "Navigate", "NavigateRoute", "CurrentStop", "Cancel" }
@@ -120,9 +135,6 @@ function Integrations.TravelLine(step)
 	return (Fetch(step))
 end
 
--- Tweaks Forever's spells to train (F16), from its API.lua when a version 1 is loaded, for the trainer aside
--- (Asides.lua) and a chosen journey's trainer stop (roadmap #5): how many, and the highest level among them. Nil
--- without Tweaks Forever or its answer, and with nothing to train.
 -- Tweaks Forever's API when it is at least version 1 (version 2 keeps v1's members and adds Trainers), else nil.
 -- A range, not an equality, so a newer additive Tweaks Forever never silently disables the trainer hint.
 ---@return AGFTFAPI?
@@ -163,6 +175,9 @@ function Integrations.Trainers()
 	return trainers
 end
 
+-- Tweaks Forever's spells to train: how many, and the highest level among them, for the trainer aside
+-- (Asides.lua) and a chosen journey's trainer stop. Nil without Tweaks Forever or its answer, and with nothing
+-- to train.
 ---@return AGFTraining?, boolean known
 function Integrations.Training()
 	local api = Tweaks()
@@ -174,11 +189,18 @@ function Integrations.Training()
 		return nil, spells ~= nil
 	end
 	-- A trainer hint is an actionable recommendation. Known fees must be
-	-- affordable; an absent fee is not safe to present as affordable.
+	-- affordable; an absent fee is not safe to present as affordable. A spell
+	-- whose level the API does not give cannot be placed either: it is left
+	-- out like an unknown fee, never passed to math.max (a rebuild would raise).
 	local money = GetMoney()
 	local affordable = {}
 	for _, spell in ipairs(spells) do
-		if type(spell.cost) == "number" and spell.cost >= 0 and spell.cost <= money then
+		if
+			type(spell.cost) == "number"
+			and spell.cost >= 0
+			and spell.cost <= money
+			and type(spell.level) == "number"
+		then
 			affordable[#affordable + 1] = spell
 		end
 	end
@@ -508,6 +530,16 @@ end
 local function Stops(steps, hold)
 	local stops = {}
 	for index, step in ipairs(steps) do
+		local radius
+		if step.kind == "area" then
+			radius = 30
+			for _, shape in ipairs(step.shapes or {}) do
+				if shape.map == step.map and shape.x == step.x and shape.y == step.y then
+					radius = math.max(radius, shape.r)
+					break
+				end
+			end
+		end
 		stops[index] = {
 			map = step.map,
 			x = step.x,
@@ -515,6 +547,7 @@ local function Stops(steps, hold)
 			title = step.title,
 			tooltip = ns.Pins.StopTooltip(step),
 			kind = Integrations.Kind(step),
+			radius = radius,
 			hold = hold == true
 				and step.kind ~= "trainer"
 				and step.kind ~= "battlemaster"
@@ -591,7 +624,13 @@ function Integrations.Guided()
 end
 
 -- Resolve the exact stop handed to SPF, including a route which starts after an occupied objective area.
+-- Standing in the head area pins the tracker to it until its objectives are done, whatever its own stop index has
+-- advanced to: a step advances only when its state is satisfied (docs/design.md §4.2).
 function Integrations.CurrentStep()
+	local head = ns.Route().steps[1]
+	if head and head.here then
+		return head
+	end
 	local api = SPF()
 	local index = api and Integrations.Guiding() and api.CurrentStop(OWNER)
 	local sent = index and guided[index]
@@ -802,6 +841,31 @@ local function Follow()
 		Send(api, route.steps, true)
 	end
 end
+-- A developer diagnostic for the travel line and guidance state (/agf travel): why a step shows no Shortest Path line
+-- is otherwise invisible headlessly. Raw literals on purpose (returned, never passed straight to Print).
+---@return string
+function Integrations.Debug()
+	local step = ns.Route().steps[1]
+	local api = SPF()
+	return (
+		"spf=%s guiding=%s arrived=%s stopped=%s ours=%s guidedN=%d step1=%s here=%s "
+		.. "line=%s min=%s combat=%s taxi=%s"
+	):format(
+		tostring(api ~= nil),
+		tostring(Integrations.Guiding()),
+		tostring(arrived),
+		tostring(stopped),
+		tostring(ours),
+		#guided,
+		tostring(step and step.key),
+		tostring(step and step.here),
+		tostring(travel and travel.line),
+		tostring(travel and travel.minutes),
+		tostring(InCombatLockdown()),
+		tostring(UnitOnTaxi and UnitOnTaxi("player"))
+	)
+end
+
 ns.OnRouteChange(Follow)
 
 -- Shortest Path ending our journey and the player clearing or moving the waypoint: the super-tracking events Shortest

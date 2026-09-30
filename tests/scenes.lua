@@ -34,7 +34,7 @@ local function Load(spf, optIn, fresh, journey, carried, extra)
 	end
 	local options = {
 		spf = spf or nil,
-		db = optIn and { showMapPins = true, showQuestGivers = true } or nil,
+		db = { autoStart = false, showMapPins = optIn or false, showQuestGivers = optIn or false },
 		charDB = not fresh and { journey = journey or "zone:1413" } or nil,
 		completed = { 844 },
 		log = log,
@@ -105,9 +105,9 @@ end
 
 local out = {}
 
--- The chosen view: the story card's towns, with Shortest Path's minutes on step 1 (ui_spec's golden layout).
+-- Match ui_spec's explicit paused, planned-order fixture for its golden layout. Other scenes use nearest-first.
 local STORY = "zone:1413"
-local h = Load("v1", false, false, STORY)
+local h = Load("v1", false, false, STORY, nil, { planned = true })
 out.panel = Panel(h, "panel")
 h.providers[1]:RefreshAllData()
 out.panel.pins = Pins(h)
@@ -183,7 +183,8 @@ for index, id in ipairs(module.layoutOrder) do
 	blocks[index] = { header = block.header, lines = lines }
 end
 out.tracker = { header = module.Header.Text:GetText(), blocks = blocks }
-module:OnBlockHeaderClick(module.liveBlocks[module.layoutOrder[1]], "RightButton")
+-- The step block is laid out last, under the journey's title, the asides and the fanfares.
+module:OnBlockHeaderClick(module.liveBlocks[module.layoutOrder[#module.layoutOrder]], "RightButton")
 local entries = {}
 for index, entry in ipairs(h.menu.entries) do
 	entries[index] = { kind = entry.kind, text = entry.text }
@@ -519,7 +520,12 @@ h.flush()
 out.window_empty = Window(h, "window_empty")
 
 -- The player's actual custom order and retained giver checklist after accepting one giver's quests.
-h = Load("v1", false, false, STORY, nil, ASIDES)
+local orderOptions = {}
+for key, value in pairs(ASIDES) do
+	orderOptions[key] = value
+end
+orderOptions.planned = true
+h = Load("v1", false, false, STORY, nil, orderOptions)
 assert(h.ns.Order.Move(2, 1))
 h.flush()
 local giver = h.ns.Route().steps[1].checklist[1]

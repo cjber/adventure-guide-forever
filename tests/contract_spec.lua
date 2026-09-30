@@ -1,7 +1,7 @@
 -- Run from the repository root: luajit tests/contract_spec.lua
 -- AGF's mirror of the Shortest Path API (types/Namespace.lua, AGFSPF*) against SPF's own types/API.lua at a pinned sha,
 -- read from the vendored tests/fixtures/spf_types_API.lua so it runs offline. CI diffs that copy against upstream.
-local SPF_SHA = "f9b651cfc94658ca2eaadb29771312a372e04abe"
+local SPF_SHA = "cab9c3a5692217fe433c3aa4299a85b8c9fd21f1"
 local checks = 0
 
 local function equal(actual, expected, label)

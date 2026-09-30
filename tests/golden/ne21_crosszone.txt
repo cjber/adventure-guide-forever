@@ -1,15 +1,15 @@
 # ne21_crosszone: level 21, side 1, at 1439 0.3700,0.4400
 card | zone:1440 | Ashenvale story | Chapter 1 of 3 | A chain begins with Faldreas Goeth'Shael | map 1440
-  step 1 | turnin:967 | Turn in: The Tower of Althalaxx | 1440 0.2620,0.3870 | ready to hand in
-  step 2 | town:405 | Visit Astranaar, Ashenvale: Pick up 3 | 1440 0.3577,0.4910 | Begins a new story
+  step 1 | town:418 | Pick up: The Ancient Statuette | 1440 0.1479,0.3129 | near your level
+  step 2 | turnin:967 | Turn in: The Tower of Althalaxx | 1440 0.2620,0.3870 | ready to hand in
   step 3 | town:415 | Pick up: Bathran's Hair | 1440 0.2644,0.3859 | near your level
-  step 4 | area:1010:4 | Complete objectives · Bathran's Hair | 1440 0.3081,0.2458 | after you pick it up | 90 yd | 1010/4
+  step 4 | area:1010:4 | Complete objectives · Bathran's Hair | 1440 0.3140,0.2270 | after you pick it up | 90 yd | 1010/4
   step 5 | town:415:2 | Turn in: Bathran's Hair | 1440 0.2644,0.3859 | once it's done
-  step 6 | town:418 | Pick up: The Ancient Statuette | 1440 0.1479,0.3129 | near your level
-  step 7 | area:1007:4 | Complete objectives · The Ancient Statuette | 1440 0.1420,0.2060 | after you pick it up | 0 yd | 1007/4
+  step 6 | town:405 | Visit Astranaar, Ashenvale: Pick up 4 | 1440 0.3467,0.4884 | Begins a new story
+  step 7 | area:1008:4 | Complete objectives · The Zoram Strand | 1440 0.1170,0.2340 | 2 quests here | 377 yd | 1008/4 1007/4
   step 8 | town:418:2 | Turn in: The Ancient Statuette | 1440 0.1479,0.3129 | once it's done
-  step 9 | town:372 | Pick up: On Guard in Stonetalon | 1442 0.5990,0.6685 | near your level
-  step 10 | town:372:2 | Turn in: On Guard in Stonetalon | 1442 0.5952,0.6715 | Opens the next chapter here
+  step 9 | town:405:2 | Turn in: The Zoram Strand | 1440 0.3467,0.4884 | once it's done
+  step 10 | town:372 | Pick up: On Guard in Stonetalon | 1442 0.5990,0.6685 | near your level
 card (chosen) | carry | Quests in your log | 2 ready to hand in | 1 to hand in across the sea | map 1439
   step 1 | turnin:947 | Turn in: Cave Mushrooms | 1439 0.3732,0.4364 | ready to hand in
   step 2 | turnin:948 | Turn in: Onu | 1439 0.4355,0.7629 | ready to hand in

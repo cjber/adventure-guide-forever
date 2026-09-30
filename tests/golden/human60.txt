@@ -1,20 +1,20 @@
 # human60: level 60, side 1, at 1423 0.8100,0.5800
 card (chosen) | zone:1423 | Eastern Plaguelands story | Chapter 1 of 2 | A chain begins with Caretaker Alen | map 1423
   step 1 | town:226 | Visit Light's Hope Chapel, Eastern Plaguelands: Pick up 2 | 1423 0.6993,0.5372 | Begins a new story
-  step 2 | area:6021:4 | Complete objectives · Zaeldarr the Outcast | 1423 0.4974,0.5887 | after you pick it up | 1244 yd | 6021/4
-  step 3 | town:226:2 | Turn in: Zaeldarr the Outcast | 1423 0.6993,0.5372 | once it's done
-  step 4 | town:233 | Visit Tirion Fordring: Pick up 3 | 1423 0.0516,0.3557 | 3 to pick up
-  step 5 | area:5543:0 | Complete objectives · Blood Tinged Skies | 1423 0.2386,0.5272 | after you pick it up | 355 yd | 5543/0
-  step 6 | area:5542:1 | Complete objectives · Demon Dogs | 1423 0.3960,0.5251 | 2 quests here | 1297 yd | 5542/1 5542/2 5544/4
-  step 7 | town:233:2 | Visit Tirion Fordring: Turn in 2 | 1423 0.0516,0.3557 | 2 to hand in
-  step 8 | town:234 | Pick up: Augustus' Receipt Book | 1423 0.1135,0.2637 | near your level
-  step 9 | area:6164:4 | Complete objectives · Augustus' Receipt Book | 1423 0.1400,0.2420 | after you pick it up | 0 yd | 6164/4
-  step 10 | town:234:2 | Turn in: Augustus' Receipt Book | 1423 0.1135,0.2637 | once it's done
+  step 2 | town:229 | Visit Light's Hope Chapel, Eastern Plaguelands: Pick up 4 | 1423 0.7151,0.4966 | 4 to pick up
+  step 3 | area:6021:4 | Complete objectives · Zaeldarr the Outcast | 1423 0.3390,0.6290 | after you pick it up | 1244 yd | 6021/4
+  step 4 | town:213 | Pick up: Hameya's Plea | 1423 0.2290,0.7295 | near your level
+  step 5 | town:233 | Visit Tirion Fordring: Pick up 3 | 1423 0.0516,0.3557 | 3 to pick up
+  step 6 | town:234 | Pick up: Augustus' Receipt Book | 1423 0.1135,0.2637 | near your level
+  step 7 | area:6164:4 | Complete objectives · Augustus' Receipt Book | 1423 0.1400,0.2420 | after you pick it up | 0 yd | 6164/4
+  step 8 | town:234:2 | Turn in: Augustus' Receipt Book | 1423 0.1135,0.2637 | once it's done
+  step 9 | area:5542:1 | Complete objectives · Demon Dogs | 1423 0.5110,0.2890 | 2 quests here | 1297 yd | 5542/1 5542/2 5544/4
+  step 10 | town:226:2 | Turn in: Zaeldarr the Outcast | 1423 0.6993,0.5372 | once it's done
 card | zone:1422 | Head to Western Plaguelands | 6 quests near your level | - | map 1422
   step 1 | town:212 | Pick up: The Wildlife Suffers Too | 1422 0.5373,0.6466 | near your level
-  step 2 | town:197 | Visit Chillwind Camp, Western Plaguelands: Pick up 2 | 1422 0.4342,0.8483 | 2 to pick up
-  step 3 | town:210 | Pick up: A Matter of Time | 1422 0.3946,0.6676 | near your level
-  step 4 | town:219 | Pick up: Better Late Than Never | 1422 0.3840,0.5405 | near your level
+  step 2 | town:210 | Pick up: A Matter of Time | 1422 0.3946,0.6676 | near your level
+  step 3 | town:219 | Pick up: Better Late Than Never | 1422 0.3840,0.5405 | near your level
+  step 4 | town:197 | Visit Chillwind Camp, Western Plaguelands: Pick up 2 | 1422 0.4342,0.8483 | 2 to pick up
   step 5 | town:231 | Pick up: Unfinished Business | 1422 0.5192,0.2806 | near your level
 card | zone:1452 | Head to Winterspring | 10 quests near your level | - | map 1452
   step 1 | town:453 | Pick up: Threat of the Winterfall | 1452 0.3127,0.4516 | near your level
@@ -50,9 +50,9 @@ card | zone:1449 | Head to Un'Goro Crater | 14 quests near your level | - | map 
 card | zone:1447 | Head to Azshara | 3 quests near your level | - | map 1447
   step 1 | town:432 | Pick up: Kim'jael Indeed! | 1447 0.5345,0.2182 | near your level
   step 2 | town:408 | Visit Duke Hydraxis: Pick up 2 | 1447 0.7928,0.7370 | 2 to pick up
-card | zone:1427 | Head to Searing Gorge | 10 quests near your level | - | map 1427
-  step 1 | town:101 | Pick up: Prayer to Elune | 1427 0.2957,0.2629 | near your level
-  step 2 | town:100 | Visit Thorium Point, Searing Gorge: Pick up 7 | 1427 0.3765,0.2647 | 7 to pick up
+card | zone:1427 | Head to Searing Gorge | 10 quests near your level | Thorium Point needs hands | map 1427
+  step 1 | town:100 | Visit Thorium Point, Searing Gorge: Pick up 7 | 1427 0.3765,0.2647 | 7 to pick up
+  step 2 | town:101 | Pick up: Prayer to Elune | 1427 0.2957,0.2629 | near your level
   step 3 | town:97 | Pick up: Divine Retribution | 1427 0.3906,0.3899 | near your level
   step 4 | town:92 | Pick up: Suntara Stones | 1427 0.6392,0.6099 | near your level
 card | zone:1425 | Head to The Hinterlands | 1 quest near your level | - | map 1425

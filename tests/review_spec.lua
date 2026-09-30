@@ -11,10 +11,13 @@ local function test(name, run)
 		failures[#failures + 1] = name .. ": " .. err
 	end
 end
+-- These session/ordering checks pin the planned (beta) ordering; the default nearest order has its own spec.
 local function fixture(ns, name)
 	for _, value in ipairs(characters.list) do
 		if value.name == name then
-			return characters.Resolve(ns.Data, value)
+			local player, completed, log, prefs = characters.Resolve(ns.Data, value)
+			prefs.optimisedRoute = true
+			return player, completed, log, prefs
 		end
 	end
 	error("Missing fixture: " .. name)

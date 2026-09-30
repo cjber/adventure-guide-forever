@@ -133,6 +133,7 @@
 ---@field plannedDungeons table<integer, boolean>
 ---@field quests boolean
 ---@field dungeons boolean
+---@field optimisedRoute? boolean the account-wide planned (beta) route order; nil/false is the nearest-action order
 ---@field journey? string key of the journey card the player chose; nil (or gone) = none chosen, the first card drawn
 ---@field skipped table<string, boolean> step keys skipped this session
 ---@field last? {key: string, reason: string} step 1 at the last rebuild, for the next login's resume line
@@ -318,6 +319,7 @@
 ---@field kind? AGFSPFStopKind -- a Shortest Path before kinds ignores it
 ---@field tooltip? string optional quest level/chain detail for the stop tooltip
 ---@field hold? boolean keep guidance until the owner replaces the route after quest progress
+---@field radius? number yards around a held stop where travel cues pause
 
 ---@class AGFSPFLeg
 ---@field mode AGFSPFMode
@@ -371,9 +373,12 @@
 ---@field place? AGFPlace where the trainer stands; nil when the data places none
 
 ---@class AGFIntegrations
+---@field ClassicGuideAvailable fun(): boolean
+---@field OpenClassicGuide fun(): boolean
 ---@field Kind fun(step: AGFStep|AGFGiver): AGFSPFStopKind? what Shortest Path is told stands at a stop: a town's "?" where a hand-in is its point, else its "!"
 ---@field TravelLine fun(step: AGFStep): string? asks Shortest Path now, at most one call: "Fly to X · N min" from EstimateDetail, "About N min away" from Estimate, nil without either or an answer
 ---@field RefreshTravel fun() refetches step 1's line; Core runs it in the frame after each rebuild
+---@field Debug fun(): string the travel line and guidance state, for /agf travel
 ---@field Travel fun(step: AGFStep): string? the last line fetched for this step, without asking again
 ---@field TravelMinutes fun(step: AGFStep): integer? the whole trip's minutes, fetched with that line
 ---@field OnTravelChange fun(callback: fun())
@@ -429,6 +434,7 @@
 ---@field HELP_OPEN string
 ---@field HELP_AUDIT string
 ---@field HELP_DUMP string
+---@field HELP_TRACKER string
 ---@field HAND_IN_WHEN string format: zone name; the reason on a turn-in the route leaves for another continent
 ---@field NO_WAYPOINT string the error Go shows when nothing can guide the player on the step's map
 ---@field GO string the step menu's entry that starts guidance
@@ -469,11 +475,13 @@
 ---@field STORY_COMPLETE string the tracker header that glows when a proven chain's last quest is handed in
 ---@field JOURNEY_COMPLETE string the tracker header that glows when a turn-in ends the chosen journey
 ---@field CHOOSE_NEXT string its line: the guide has every journey again
+---@field TRACKER_ROUTE_START string the journey line's hover instruction: route from the story's start
 ---@field TRAINER string
 ---@field TRAINER_SPELLS string format: spell count
 ---@field TRAINER_SPELL string
 ---@field TRAINER_LINE string format: TRAINER, then the spell count
 ---@field TRACKER_UNATTACHED string
+---@field TRACKER_LOADING string the tracker's quiet line while QuestieDB's catalogue builds
 ---@field DUMP_SAVED string
 ---@field TURN_IN string format: quest title
 ---@field READY_TO_HAND_IN string
@@ -494,6 +502,7 @@
 ---@field STARTS_AFTER_COMBAT string the footer while a choice made in combat waits to start its route
 ---@field CLICK_TRAVEL string format: travel addon name
 ---@field CLICK_WAYPOINT string
+---@field PIN_RETURN_STORY string a numbered pin's instruction to route from the story's start
 ---@field STEP_NUMBERED string format: route index, step title
 ---@field QUEST_LEVEL string format: quest level, quest title
 ---@field OVERVIEW_WHERE string format: the overview's line under the title, the player's zone and level
@@ -510,6 +519,11 @@
 ---@field MENU_GIVERS string
 ---@field MENU_TRACKER string
 ---@field MENU_MORE_SETTINGS string
+---@field SETTINGS_GROUP_ROUTE string
+---@field SETTINGS_GROUP_MAP string
+---@field SETTINGS_GROUP_TRACKER string
+---@field SETTINGS_GROUP_INTERFACE string
+---@field SETTINGS_OPEN string
 ---@field SETTING_TRACKER string
 ---@field SETTING_TRACKER_TOOLTIP string
 ---@field SETTING_MAP_PINS string
@@ -520,6 +534,8 @@
 ---@field SETTING_DUNGEONS_DEFAULT_TOOLTIP string
 ---@field SETTING_TITLE_ROUTE string
 ---@field SETTING_TITLE_ROUTE_TOOLTIP string
+---@field SETTING_AUTO_START string
+---@field SETTING_AUTO_START_TOOLTIP string
 ---@field SETTING_TRACK_ROUTE string
 ---@field SETTING_TRACK_ROUTE_TOOLTIP string
 ---@field SETTING_UNTRACK_OTHERS string
@@ -584,6 +600,8 @@
 ---@field SetSetting fun(key: string, value: any)
 ---@field Prefs fun(): AGFPrefs
 ---@field Route fun(): AGFRoute the current route, rebuilt lazily when state or prefs change
+---@field CurrentJourney fun(): AGFJourney? the journey the route shows (the chosen one, else the first card's)
+---@field QuestieBuilding fun(): boolean QuestieDB's catalogue is still building: the route holds and the tracker waits
 ---@field Invalidate fun() mark the route stale and notify views
 ---@field OnRouteChange fun(callback: fun())
 ---@field Choose fun(key?: string, start?: boolean) choose a journey, or none; `start` sets off on the rebuild with its steps
@@ -839,6 +857,7 @@
 
 ---@class AGFQuestieStatus
 ---@field state "unavailable"|"building"|"questie" provider unavailable, building, or ready
+---@field settled boolean whether the deferred provider startup has completed
 ---@field version? string QuestieDB's version, once its quests are in use
 ---@field reason? string why QuestieDB is not used (an ns.L line); nil while it is, or before login
 
@@ -1010,6 +1029,8 @@
 ---@field SETTING_WANDERER_TOOLTIP string
 ---@field SETTING_FOLLOW_QUEST string walking into the route's quest area selects the quest (Focus.lua)
 ---@field SETTING_FOLLOW_QUEST_TOOLTIP string
+---@field SETTING_ROUTE_ORDER string beta: the planned route order (chapter lead, town look-ahead, committed order)
+---@field SETTING_ROUTE_ORDER_TOOLTIP string
 
 -- The Adventure Guide window (Window.lua, WindowJourneys.lua, WindowProfessions.lua; docs/design.md §2.19).
 
@@ -1261,6 +1282,9 @@
 ---@class AGFDungeon
 ---@field id integer
 ---@field name string
+---@field raid? boolean an instance from the raid registry
+---@field current? boolean an announced Forever raid tier
+---@field players? integer raid group size
 ---@field quests integer[]
 ---@field minimum? integer entrance level, not a recommended level
 ---@field low? integer recommended minimum level
@@ -1321,6 +1345,8 @@
 
 ---@class AGFNamespace
 ---@field Dungeons AGFDungeons
+---@field Raids AGFRaid[]
+---@field RaidByMap table<integer, AGFRaid>
 ---@field ReadDungeonSource fun(yield: fun()): AGFDungeonSource?
 
 ---@class AGFWindowDB
@@ -1328,6 +1354,11 @@
 
 ---@class AGFStrings
 ---@field TAB_DUNGEONS string
+---@field DUNGEON_LIST_DUNGEONS string
+---@field DUNGEON_LIST_RAIDS string
+---@field DUNGEON_LIST_OTHER_RAIDS string
+---@field DUNGEON_RAID_PLAYERS string
+---@field DUNGEON_RAID_TOOLTIP string
 ---@field DUNGEON_QUESTS_TAB string
 ---@field DUNGEON_PREP_TAB string
 ---@field DUNGEON_BOSSES_TAB string
@@ -1361,7 +1392,6 @@
 ---@field DUNGEON_BOSS_LOOT string
 ---@field DUNGEON_BOSS_LOOT_UNKNOWN string
 ---@field DUNGEON_ELITE string
----@field DUNGEON_DROP string
 ---@field DUNGEON_NO_FACTION_QUESTS string
 ---@field DUNGEON_NO_CHARACTER_QUESTS string
 ---@field DUNGEON_NO_PREP string
@@ -1376,7 +1406,6 @@
 ---@field DUNGEON_NO_BOSSES string
 ---@field DUNGEON_ITEM_REQUIRED_LEVEL string
 ---@field DUNGEON_TRASH string
----@field DUNGEON_DROPPED_BY string
 ---@field DUNGEON_WANDERER string
 ---@field DUNGEON_SHOW_GIVER string
 ---@field DUNGEON_REWARDS string
@@ -1422,6 +1451,8 @@
 
 ---@class AGFStrings
 ---@field DUNGEON_MAPS_TAB string
+---@field DUNGEON_CLASSIC_GUIDE string
+---@field DUNGEON_CLASSIC_GUIDE_TOOLTIP string
 ---@field DUNGEON_MAP_BACK string
 ---@field DUNGEON_MAP_WORLD_BACK string
 ---@field DUNGEON_MAP_PAGE string

@@ -85,6 +85,28 @@ for id, instance in pairs(h.ns.Data.instances) do
 	end
 end
 assert(#planned > 15, "exercise the whole Classic catalog")
+-- Raids page through the same window; with no optional source their boss list is a table, never a bundled baseline.
+for _, raid in ipairs(h.ns.Raids) do
+	if raid.map then
+		h.ns.Window.OpenDungeon(raid.map)
+		h.flush()
+		for _, frame in ipairs(h.frames) do
+			if
+				frame:IsObjectType("Button")
+				and frame:IsVisible()
+				and (
+					frame:GetText() == h.ns.L.DUNGEON_BOSSES_TAB
+					or frame.Text and frame.Text:GetText() == h.ns.L.DUNGEON_BOSSES_TAB
+				)
+			then
+				h.Click(frame)
+				break
+			end
+		end
+		h.flush()
+		assert(type(h.ns.Dungeons.Bosses(nil, raid.map)) == "table", "raid boss list is a table for " .. raid.map)
+	end
+end
 local reloaded = harness.load({ charDB = h.G.AdventureGuideForeverCharDB })
 for _, id in ipairs(planned) do
 	assert(reloaded.ns.Dungeons.Planned(id), "plans survive reload")
@@ -93,4 +115,33 @@ for _, id in ipairs(planned) do
 	assert(not h.ns.Dungeons.Planned(id))
 end
 assert(#h.errors == 0, table.concat(h.errors, "\n"))
-print("dungeon_regression_spec: localized AtlasLoot lookup and whole-catalog planning passed")
+print("dungeon_regression_spec: localized AtlasLoot lookup, raid pages and whole-catalog planning passed")
+
+-- Hand off to the optional guide's public command without importing its data.
+local classic = harness.load()
+classic.ns.Window.OpenDungeon(43)
+classic.flush()
+local launch
+for _, frame in ipairs(classic.frames) do
+	if frame:IsObjectType("Button") and frame:GetText() == classic.ns.L.DUNGEON_CLASSIC_GUIDE then
+		launch = frame
+	end
+end
+assert(launch, "optional guide button is built")
+assert(not launch:IsShown(), "guide button stays hidden without the dependency")
+assert(not classic.ns.Integrations.OpenClassicGuide(), "absent dependency cannot launch")
+classic.metadata.AdventureGuideClassic = {}
+classic.ns.Window.OpenDungeon(43)
+classic.flush()
+assert(not launch:IsShown(), "loaded dependency without its command cannot launch")
+local calls = 0
+classic.G.SlashCmdList.ADVENTUREGUIDECLASSIC = function(message)
+	assert(message == "", "public command receives its normal home argument")
+	calls = calls + 1
+end
+classic.ns.Window.OpenDungeon(43)
+classic.flush()
+assert(launch:IsVisible(), "available dependency exposes the launch button")
+classic.Click(launch)
+assert(calls == 1, "one click invokes the public guide command once")
+assert(#classic.errors == 0, "public handoff does not raise errors")

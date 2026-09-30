@@ -46,7 +46,9 @@ abandons quests.
 - **2.20 Your order.** Reordering must preserve quest dependencies. Suggested order remains recoverable.
 
 - **2.21 Dungeons.** A window tab below the shared Today strip, with a level-sorted dungeon list, featured
-  header and Quests / Prep / Bosses / Loot pages. Remember the instance Map.ID in window state. Plan to run
+  header and Quests / Prep / Bosses / Loot pages. The list groups dungeons, the announced Forever raids, then
+  the client's other raid instances, each raid row tagged with its group size; the raid tier and sizes come from
+  `Raids.lua` (docs/dungeon-sources.md), never from a copied Classic attunement page. Remember the instance Map.ID in window state. Plan to run
   selects the existing dungeon journey and enables the existing dungeon preference; no parallel plan state.
   Journey cards link back to the dungeon page. Build on first show, slice source reads at 1 ms, cancel on hide,
   reuse visible rows, and cache a complete optional-source snapshot until the quest data changes.
@@ -110,10 +112,19 @@ follow the shared family voice.
 
 ## 4. Routes
 
-- **4.1 Selection.** Prefer nearby useful work, group town visits, and cross the sea at most once.
-  Keep distant hand-ins from displacing nearby pickups.
-- **4.2 Laps.** Pickups precede objectives and hand-ins. Respect quest-log capacity. Rebuild on events;
+- **4.1 Selection.** Take the nearest action at every step: the nearest town pickup, the nearest area of
+  a quest the town handed out or the player carries, or the nearest ready hand-in. Group town visits and cross
+  the sea at most once. This nearest order is the default; the opt-in `optimisedRoute` beta instead keeps the
+  older heuristics (the story's chapter lead, a town's-own look-ahead and the committed order), which the
+  player turns on from the Add-ons page.
+- **4.2 Laps.** A quest's objectives follow its pickup and its hand-in all of them. Respect quest-log capacity.
+  Rebuild on events;
   movement changes focus without shuffling the route. Proximity never hides or truncates guidance. Plan a bounded lookahead, then verify and merge visits before limiting the displayed actions. Keep work bounded per frame.
+  An area step's point is the objective node nearest the player (a spawn group's medoid, or the generator's point
+  inside the shape), so the marker sits on the work rather than on the shape's border; when the player is already
+  inside the area the point stays the area's ring (its middle). Standing in the area step 1 leads to is "you're here":
+  its in-progress quest is selected, its travel line and numbered pin go, and the route stays on it until its
+  objectives are done (a merged visit takes only the objectives the player can work on now).
 - **4.3 Committed order.** Preserve the chosen sequence and visit identities across rebuilds.
   Session limits use rough estimates and retain complete planned work and returns.
 
