@@ -101,6 +101,7 @@ local function Load(spf, db, charDB, away)
 	end
 	settings.autoStart = false
 	return harness.load({
+		planned = true,
 		spf = spf or nil,
 		db = settings,
 		charDB = charDB ~= false and (charDB or { journey = "zone:1413" }) or nil,
@@ -301,13 +302,13 @@ do
 	end
 	-- Every row goes in through the secure delegate, in page order; none from addon code, which taints the search.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 14, "every row is registered through Settings.RegisterInitializer")
+	equal(#h.settings, 15, "every row is registered through Settings.RegisterInitializer")
 	equal(
 		h.settings[1].key .. " " .. h.settings[2].key .. " " .. h.settings[3].key,
 		"floatWindow showTracker wanderer",
 		"in page order"
 	)
-	equal(h.settings[11].key, "untrackOthers", "in page order, to the last")
+	equal(h.settings[12].key, "untrackOthers", "in page order, to the last")
 	equal(h.settings[10].category, h.ns.TITLE, "on the addon's page")
 	equal(byKey.untrackOthers.indented, true, "untrackOthers is indented under tracking")
 	equal(byKey.untrackOthers.evaluateCVar, "AdventureGuideForever_trackRouteQuests", "parent changes reevaluate child")
@@ -681,6 +682,7 @@ do
 	-- Your calling (roadmap #7) holds quests, so the Quests toggle keeps its choice too: a level-12 orc warrior in
 	-- Durotar, whose trainer has a task.
 	h = harness.load({
+		planned = true,
 		player = { level = 12, classID = 1, map = 1411, x = 0.52, y = 0.44 },
 		charDB = { journey = "calling" },
 	})
@@ -696,13 +698,17 @@ do
 	-- Roadmap #21: with no next zone Dungeons hides nothing, so a chosen dungeon that went has ended; below the cap
 	-- the toggle keeps it.
 	for _, case in ipairs({ { 70, nil, "at the cap" }, { 18, "dungeon:1", "below the cap" } }) do
-		h = harness.load({ player = { level = case[1] }, charDB = { journey = "dungeon:1", dungeons = false } })
+		h = harness.load({
+			planned = true,
+			player = { level = case[1] },
+			charDB = { journey = "dungeon:1", dungeons = false },
+		})
 		h.flush()
 		equal(h.ns.Prefs().journey, case[2], "dungeon gone, " .. case[3])
 		clean(h, "dungeon gone, " .. case[3])
 	end
 
-	h = harness.load({ charDB = { journey = "zone:1413" }, completedPending = true })
+	h = harness.load({ planned = true, charDB = { journey = "zone:1413" }, completedPending = true })
 	h.flush()
 	equal(h.ns.Prefs().journey, "zone:1413", "ends: nothing before the completed quests load")
 end
@@ -911,6 +917,7 @@ do
 	-- auto-start on load, which tests/autostart_spec.lua covers.
 	local function Reloaded(charDB, setup)
 		local h = harness.load({
+			planned = true,
 			spf = "v1+",
 			db = { autoStart = false },
 			charDB = charDB,
@@ -1211,6 +1218,7 @@ end
 do
 	-- With the Barrens story ruled out, Gann's Reclamation is off every zone loop, so carry (Loose ends) holds it.
 	local h = harness.load({
+		planned = true,
 		preserveUnknownCosts = true,
 		-- A copy, never the shared PINS_ON table: Core.LoadDB merges the addon's defaults into whatever db it is given.
 		db = { showMapPins = true, showQuestGivers = true },
@@ -1483,7 +1491,7 @@ do
 		{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
 		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 	}
-	local h = harness.load({ completed = { 844 }, log = log })
+	local h = harness.load({ planned = true, completed = { 844 }, log = log })
 	local ns, before = h.ns, h.modelCalls.Journeys
 	local story = ns.Route().journeys[1]
 	h.SetCombat(true)
@@ -1680,6 +1688,7 @@ do
 	-- A /reload: the client keeps the waypoint, the character's saved variables remember it was ours.
 	ChooseOther(h)
 	local reloaded = harness.load({
+		planned = true,
 		charDB = h.G.AdventureGuideForeverCharDB,
 		waypoint = h.waypoint,
 		initialLogin = false,
@@ -1906,6 +1915,7 @@ end
 do
 	local grey = 788
 	local h = harness.load({
+		planned = true,
 		logMax = 4,
 		charDB = { journey = "zone:1413" },
 		completed = { 844 },
@@ -2072,7 +2082,7 @@ do
 		{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
 		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 	}
-	local h = harness.load({ completed = completed, log = log })
+	local h = harness.load({ planned = true, completed = completed, log = log })
 	local ns = h.ns
 	h.flush()
 	-- A town's step stays while the town offers anything, so the gone step here is the objective's.
@@ -2328,6 +2338,7 @@ do
 	equal(Resumed(h), 1, "resume: a login with a matching key shows the line")
 	equal(TrackerLines(h)[2], "Where you left off: finishes a story", "resume: in place of the reason, after the town")
 	local capital = harness.load({
+		planned = true,
 		charDB = { journey = "zone:1413", last = { key = saved.key, reason = "Continues a story you started" } },
 		completed = { 844 },
 		log = {
@@ -2468,16 +2479,10 @@ do
 	equal(busy, 0, "dump: no frame runs an OnUpdate")
 	equal(h.counts.displayModeWrites, 0, "dump: displayMode writes")
 	clean(h, "dump")
-	equal(
-		harness.load({ db = h.G.AdventureGuideForeverDB, initialLogin = false }).G.AdventureGuideForeverDB.dump,
-		dump,
-		"dump: kept by /reload"
-	)
-	equal(
-		harness.load({ db = h.G.AdventureGuideForeverDB, initialLogin = true }).G.AdventureGuideForeverDB.dump,
-		nil,
-		"dump: dropped at login"
-	)
+	local kept = { planned = true, db = h.G.AdventureGuideForeverDB, initialLogin = false }
+	local dropped = { planned = true, db = h.G.AdventureGuideForeverDB, initialLogin = true }
+	equal(harness.load(kept).G.AdventureGuideForeverDB.dump, dump, "dump: kept by /reload")
+	equal(harness.load(dropped).G.AdventureGuideForeverDB.dump, nil, "dump: dropped at login")
 end
 
 -- The journey card template (docs/design.md §2.2): the renown card at 0.77 scale, its highlight the card's own art.
@@ -2694,7 +2699,7 @@ do
 	clean(h, "guide")
 
 	-- Roadmap #21: past the cap with quests and dungeons off, the dungeon card and a way into an instance still show.
-	local capped = harness.load({ player = { level = 70 } })
+	local capped = harness.load({ planned = true, player = { level = 70 } })
 	capped.ns.Prefs().quests = false
 	capped.ns.Invalidate()
 	capped.ns.OpenPanel()
@@ -2705,7 +2710,7 @@ do
 	equal(Says(capped, capped.ns.L.NO_JOURNEY), 0, "guide: no empty line")
 	clean(capped, "guide: at the cap")
 
-	local none = harness.load({ player = { level = 1 } })
+	local none = harness.load({ planned = true, player = { level = 1 } })
 	none.ns.Prefs().quests = false
 	none.ns.Invalidate()
 	none.ns.OpenPanel()
@@ -3501,6 +3506,7 @@ do
 	}) do
 		local label = "trainer, " .. case.label
 		local h = harness.load({
+			planned = true,
 			spf = "v1+",
 			db = { showMapPins = true, showQuestGivers = true, autoStart = false },
 			tf = case.tf,
@@ -3592,6 +3598,7 @@ end
 -- Trainer recommendations must not send a character to buy spells they cannot afford.
 do
 	local h = harness.load({
+		planned = true,
 		preserveUnknownCosts = true,
 		tf = {
 			spells = {
@@ -3632,6 +3639,7 @@ do
 	local spells = { { spellID = 1, name = "Sprint", level = 8, line = "Combat", lineID = 38, general = false } }
 	local tf = { spells = spells }
 	local h = harness.load({
+		planned = true,
 		spf = "v1",
 		db = { showMapPins = true, showQuestGivers = true, autoStart = false },
 		tf = tf,
@@ -3749,7 +3757,8 @@ do
 			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 		}
 		log[#log + 1] = case.log
-		local h = harness.load({ completed = case.completed or { 844 }, log = log, player = case.player })
+		local h =
+			harness.load({ planned = true, completed = case.completed or { 844 }, log = log, player = case.player })
 		h.ns.OpenPanel()
 		h.flush()
 		local function Line(text)
@@ -3797,6 +3806,7 @@ end
 do
 	local label = "gates"
 	local h = harness.load({
+		planned = true,
 		player = { level = 55 },
 		skills = { { skillID = 197, name = "Tailoring", rank = 75 } },
 		reputation = { [576] = { name = "Timbermaw Hold", currentStanding = 2999 } },
@@ -3857,6 +3867,7 @@ end
 -- rest or XP event that moves nothing rebuilds nothing. The carry card's one stop is a hand-in in Orgrimmar.
 do
 	local h = harness.load({
+		planned = true,
 		player = { rested = false },
 		charDB = { journey = "carry" },
 		completed = { 844 },

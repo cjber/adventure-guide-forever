@@ -126,7 +126,7 @@ local function Play(race, classID, chooser)
 		logMax = LOG_SIZE,
 	}
 	local completed, log, held, stories, last = {}, {}, 0, {}, nil
-	local prefs = { quests = true, dungeons = false, skipped = {} }
+	local prefs = { quests = true, dungeons = false, skipped = {}, optimisedRoute = true }
 	if chooser then
 		prefs.notInterested = notInterested
 	end

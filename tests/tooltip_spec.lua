@@ -20,6 +20,7 @@ local function Load(charDB, zhevra)
 	zhevra = zhevra or { x = 0.5223, y = 0.3101 }
 	local h = harness.load({
 		charDB = charDB,
+		planned = true,
 		completed = { 844 },
 		log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = zhevra.x, y = zhevra.y },

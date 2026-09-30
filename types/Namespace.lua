@@ -133,6 +133,7 @@
 ---@field plannedDungeons table<integer, boolean>
 ---@field quests boolean
 ---@field dungeons boolean
+---@field optimisedRoute? boolean the account-wide planned (beta) route order; nil/false is the nearest-action order
 ---@field journey? string key of the journey card the player chose; nil (or gone) = none chosen, the first card drawn
 ---@field skipped table<string, boolean> step keys skipped this session
 ---@field last? {key: string, reason: string} step 1 at the last rebuild, for the next login's resume line
@@ -1013,6 +1014,8 @@
 ---@field SETTING_WANDERER_TOOLTIP string
 ---@field SETTING_FOLLOW_QUEST string walking into the route's quest area selects the quest (Focus.lua)
 ---@field SETTING_FOLLOW_QUEST_TOOLTIP string
+---@field SETTING_ROUTE_ORDER string beta: the planned route order (chapter lead, town look-ahead, committed order)
+---@field SETTING_ROUTE_ORDER_TOOLTIP string
 
 -- The Adventure Guide window (Window.lua, WindowJourneys.lua, WindowProfessions.lua; docs/design.md §2.19).
 

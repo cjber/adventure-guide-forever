@@ -1578,7 +1578,7 @@ Model.Nearest = NearestStop
 -- Groups the selected steps by continent, the player's first and the rest by how dear they are to reach, so the
 -- route crosses each ocean once. In each group the turn-ins in `away` (another continent than the player's) go last,
 -- and within a part the stops go in Nearest order, the player's nearest action at every step.
-local function Order(selected, origin, where, away)
+local function Order(selected, origin, where, away, planned)
 	local groups, byContinent = {}, {}
 	for _, step in ipairs(selected) do
 		local continent = where[step].continent
@@ -1605,8 +1605,9 @@ local function Order(selected, origin, where, away)
 	local function At(step)
 		return where[step]
 	end
+	-- The planned mode finishes a town before leaving it (Group); the nearest mode takes the nearest stop alone.
 	local function Group(step)
-		return step.hub ~= nil and tostring(step.hub) or nil
+		return planned and step.hub ~= nil and tostring(step.hub) or nil
 	end
 	for _, group in ipairs(groups) do
 		for _, part in ipairs({ group.main, group.last }) do
@@ -1678,7 +1679,8 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, l
 			end
 		end
 	end
-	if lead and where[lead] then
+	-- The planned mode chooses the story card's chapter first; the nearest mode picks purely by distance.
+	if prefs.optimisedRoute == true and lead and where[lead] then
 		Take(lead)
 	end
 	-- Each pick is the nearest step to the player or to any step already picked; Order then keeps the continents.
@@ -1740,7 +1742,7 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, l
 	end
 	-- Each town's point is the place of its quest nearest the stop before it (the player, for the first): a real
 	-- giver, never a centre, so Shortest Path takes the player to the nearest door of the town.
-	local steps, from = Order(selected, start, where, away), start
+	local steps, from = Order(selected, start, where, away, prefs.optimisedRoute == true), start
 	for _, step in ipairs(steps) do
 		if step.spots then
 			local best, bestCost
@@ -2086,6 +2088,9 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	if not (origin and origin.known) then
 		return nil
 	end
+	-- `planned` keeps the whole heuristic order (chapter lead, town look-ahead, committed order); the default
+	-- nearest mode takes the nearest actionable stop at every step.
+	local planned = prefs.optimisedRoute == true
 	local rank = {}
 	for index, ident in ipairs(committedOrders and committedOrders[card] or NONE) do
 		rank[ident] = index
@@ -2184,7 +2189,14 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	for _, town in ipairs(towns) do
 		local pickups = {}
 		for _, id in ipairs(town.pickups) do
-			if id == leadID or pinned[id] or not ratio[id] or ratio[id] >= KEEP * sums[town] / counts[town] then
+			-- The planned mode drops a pickup worth less than KEEP of its town's mean XP per yard; nearest keeps it.
+			if
+				not planned
+				or id == leadID
+				or pinned[id]
+				or not ratio[id]
+				or ratio[id] >= KEEP * sums[town] / counts[town]
+			then
 				pickups[#pickups + 1] = id
 				local quest = data.quests[id]
 				local optional = Optional(quest, QuestLevel(data, log, player, id), player)
@@ -2264,8 +2276,8 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 		-- A lap hands in only what it does: not an outdoor elite, whose work waits for a group, nor a lead whose work
 		-- the data places nowhere.
 		local quest = data.quests[id]
-		local planned = not quest.elite and (#nodes[id] > 0 or next(quest.need or NONE) == nil)
-		if town and planned and ValidPlace(finish) and "town:" .. Hub(finish) == town.key then
+		local handin = not quest.elite and (#nodes[id] > 0 or next(quest.need or NONE) == nil)
+		if town and handin and ValidPlace(finish) and "town:" .. Hub(finish) == town.key then
 			table.insert(anchors[town.key].hands, id)
 		end
 	end
@@ -2340,49 +2352,52 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 		end
 		return #anchor.hands > 0
 	end
-	-- The town the player stands in comes first, whatever leads: its trainer, hand-ins and pickups are a word away.
-	for _, anchor in ipairs(list) do
-		for index = #anchor.stops, 1, -1 do
-			local stop = anchor.stops[index]
-			local town = (stop.kind == "town" or stop.kind == "trainer") and stop.hub
-			if town and Cost(origin, At(stop)) <= HERE then
-				placed[stop], lastAnchor = true, anchor
-				route[#route + 1] = table.remove(anchor.stops, index)
+	-- The planned mode puts the town the player stands in first, whatever leads: its trainer, hand-ins and pickups are
+	-- a word away. The nearest mode lets the greedy loop take the nearest stop, which is that town when they stand in it.
+	if planned then
+		for _, anchor in ipairs(list) do
+			for index = #anchor.stops, 1, -1 do
+				local stop = anchor.stops[index]
+				local town = (stop.kind == "town" or stop.kind == "trainer") and stop.hub
+				if town and Cost(origin, At(stop)) <= HERE then
+					placed[stop], lastAnchor = true, anchor
+					route[#route + 1] = table.remove(anchor.stops, index)
+				end
+			end
+			local open = not reached[anchor] and anchor.open or nil
+			if open and open.hub and Cost(origin, At(open)) <= HERE then
+				reached[anchor], lastAnchor = true, anchor
+				route[#route + 1] = open
 			end
 		end
-		local open = not reached[anchor] and anchor.open or nil
-		if open and open.hub and Cost(origin, At(open)) <= HERE then
-			reached[anchor], lastAnchor = true, anchor
-			route[#route + 1] = open
-		end
+		from = route[#route] and At(route[#route]) or from
 	end
-	from = route[#route] and At(route[#route]) or from
 	-- Leave room for merged visits and log-capacity filtering without planning every eligible stop.
 	while #route < Model.MAX_STEPS * 3 do
 		local pick, pickAnchor, pickKind, pickRank, pickValue, pickKey
 		-- The committed order holds every stop it has, in order (docs/design.md §4.3), so a rebuild or a move never
 		-- shuffles the route; a pinned quest (and the story's chapter) first among the rest; then the nearest action,
 		-- with a stop in the town the route is already in preferred while it is within the town linkage (AGREE).
+		-- The planned mode ranks the committed order, a pinned quest and the story's chapter above plain distance, and
+		-- finishes a town the route is already in (the look-ahead). The nearest mode ranks by distance alone.
 		local function Consider(step, anchor, cost, kind)
-			local pin, lead = false, false
-			for _, id in ipairs(step.quests or NONE) do
-				pin = pin or pinned[id] or false
-				lead = lead or id == leadID
+			local pref = 0
+			if planned then
+				local pin, lead = false, false
+				for _, id in ipairs(step.quests or NONE) do
+					pin = pin or pinned[id] or false
+					lead = lead or id == leadID
+				end
+				local held = rank[Ident(step)]
+				local place = anchor and (anchor.place or anchor.open)
+				local same = anchor ~= nil
+					and anchor == lastAnchor
+					and anchor.pos ~= nil
+					and (place == nil or place.map == nil or step.map == place.map)
+					and Cost(anchor.pos, At(step)) <= LAP_YARDS / 2
+				pref = held and held - 6000000 or (pin and -5000000 or (lead and -4000000 or (same and -3000000 or 0)))
 			end
-			local held = rank[Ident(step)]
-			-- A stop in the town the route is already in, on its map and within a lap of it, is taken before the route
-			-- leaves it: a bounded look-ahead, so a town's work is not split by a nearer rival, but an objective
-			-- across the zone or the sea is no reason to stay.
-			local place = anchor and (anchor.place or anchor.open)
-			local same = anchor ~= nil
-				and anchor == lastAnchor
-				and anchor.pos ~= nil
-				and (place == nil or place.map == nil or step.map == place.map)
-				and Cost(anchor.pos, At(step)) <= LAP_YARDS / 2
 			local value = cost
-			local pref = held and held - 6000000
-				or (pin and -5000000 or (lead and -4000000 or (same and -3000000 or 0)))
-
 			if
 				not pick
 				or pref < pickRank
@@ -2569,30 +2584,65 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 			visited[step.key] = true
 		end
 	end
-	local verified, survived, plain = Verify(Recommit(route, rank)), {}, {}
-	for _, step in ipairs(verified) do
-		survived[step] = true
-	end
-	for _, step in ipairs(route) do
-		plain[#plain + 1] = survived[step] and step or nil
-	end
-	route = Stabilise(verified, plain, rank, Holds, At, origin)
-	local inTown = {}
-	for _, step in ipairs(route) do
-		local available = step.kind ~= "area" and step.hub ~= nil and Cost(origin, At(step)) <= HERE
-		for _, id in ipairs(step.handins or NONE) do
-			available = available and log[id] ~= nil and log[id].complete == true
+	local order
+	if planned then
+		local verified, survived, plain = Verify(Recommit(route, rank)), {}, {}
+		for _, step in ipairs(verified) do
+			survived[step] = true
 		end
-		inTown[step] = available or nil
-	end
-	Front(inTown)
-	local here = not inTown[route[1]] and Model.Here(data, player, route, heldHere)
-	local standsIn = here and route[here]
-	if standsIn and here > 1 then
-		-- Lead with the area the player stands in. A merged area can hold both objectives the player can work on and
-		-- objectives for quests the route has yet to pick up elsewhere; the latter are not work they can do there
-		-- yet, so the leading visit keeps only the workable ones (Verify drops what the fronted order cannot reach).
-		if standsIn.planned then
+		for _, step in ipairs(route) do
+			plain[#plain + 1] = survived[step] and step or nil
+		end
+		route = Stabilise(verified, plain, rank, Holds, At, origin)
+		local inTown = {}
+		for _, step in ipairs(route) do
+			local available = step.kind ~= "area" and step.hub ~= nil and Cost(origin, At(step)) <= HERE
+			for _, id in ipairs(step.handins or NONE) do
+				available = available and log[id] ~= nil and log[id].complete == true
+			end
+			inTown[step] = available or nil
+		end
+		Front(inTown)
+		local here = not inTown[route[1]] and Model.Here(data, player, route, heldHere)
+		local standsIn = here and route[here]
+		if standsIn and here > 1 then
+			-- Lead with the area the player stands in. A merged area can hold both objectives the player can work on and
+			-- objectives for quests the route has yet to pick up elsewhere; the latter are not work they can do there
+			-- yet, so the leading visit keeps only the workable ones (Verify drops what the fronted order cannot reach).
+			if standsIn.planned then
+				local lead = {}
+				---@cast lead AGFStep
+				for key, value in pairs(standsIn) do
+					lead[key] = value
+				end
+				lead.objectives, lead.quests = {}, {}
+				for _, objective in ipairs(standsIn.objectives or NONE) do
+					lead.objectives[#lead.objectives + 1] = not standsIn.planned[objective.id] and objective or nil
+				end
+				for _, objective in ipairs(lead.objectives) do
+					lead.quests[#lead.quests + 1] = lead.quests[#lead.quests] ~= objective.id and objective.id or nil
+				end
+				Tell(lead)
+				for index, step in ipairs(route) do
+					route[index] = step == standsIn and lead or step
+				end
+				standsIn = lead
+			end
+			Front({ [standsIn] = true })
+		end
+		-- "You're here": the area they stand in, leading, is theirs to clear; nothing guides to it, only on from it.
+		if standsIn and route[1] == standsIn then
+			standsIn.here = true
+		end
+		-- The order is committed before the visits merge, so the next build, which splits them again, keeps to it.
+		order = committedOrders and card and Idents(route) --[[@as AGFOrder?]]
+	else
+		route = Verify(route)
+		-- Nearest first already puts the area the player stands in at the head; a merged visit keeps only the work
+		-- they can do now, not objectives for quests the route has yet to pick up elsewhere.
+		local here = Model.Here(data, player, route, heldHere)
+		local standsIn = here and route[here]
+		if standsIn and here == 1 and standsIn.planned then
 			local lead = {}
 			---@cast lead AGFStep
 			for key, value in pairs(standsIn) do
@@ -2606,19 +2656,12 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 				lead.quests[#lead.quests + 1] = lead.quests[#lead.quests] ~= objective.id and objective.id or nil
 			end
 			Tell(lead)
-			for index, step in ipairs(route) do
-				route[index] = step == standsIn and lead or step
-			end
-			standsIn = lead
+			route[1], standsIn = lead, lead
 		end
-		Front({ [standsIn] = true })
+		if standsIn and route[1] == standsIn then
+			standsIn.here = true
+		end
 	end
-	-- "You're here": the area they stand in, leading, is theirs to clear; nothing guides to it, only on from it.
-	if standsIn and route[1] == standsIn then
-		standsIn.here = true
-	end
-	-- The order is committed before the visits merge, so the next build, which splits them again, keeps to it.
-	local order = committedOrders and card and Idents(route) --[[@as AGFOrder?]]
 	-- Two visits to one town in a row are one, unless the second hands in what the first handed out.
 	for index = #route, 2, -1 do
 		local a, b = route[index - 1], route[index]
@@ -2976,11 +3019,10 @@ local function Pickups(data, player, completed, log, ready, eligible, belongs, k
 	if #steps == 0 then
 		return nil, quests
 	end
-	-- The lead only when the route kept it: a skipped chapter leaves the card to the zone's count.
-	local kept
-	for _, step in ipairs(steps) do
-		kept = kept or step == lead
-	end
+	-- The chapter frames the card, not the order (docs/design.md §2.3): `lead` is the candidate step that offers the
+	-- chapter's quest. A skipped chapter leaves the card to the zone's count; under the nearest order a far chapter
+	-- pickup may fall past the shown steps, so the card still tells its chapter even when the step is not drawn.
+	local kept = lead ~= nil and not prefs.skipped[lead.key]
 	local L, parts, holds, handIn, underway = ns.L, {}, nil, nil, nil
 	if held then
 		-- The card counts every log quest it holds on its zone, those its laps take later too; carry holds the rest.

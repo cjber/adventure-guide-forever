@@ -237,7 +237,7 @@ end
 local plans, started = 0, os.clock()
 local function Play(seed, character)
 	local player, completed, log, held = Character()
-	local prefs = { quests = true, dungeons = false, skipped = {} }
+	local prefs = { quests = true, dungeons = false, skipped = {}, optimisedRoute = true }
 	local route = Model.Plan(data, player, completed, log, prefs)
 	plans = plans + 1
 	local where = ("seed %d, character %d (level %d at %s)"):format(
@@ -313,7 +313,7 @@ do
 				completed[id] = true
 			end
 		end
-		local prefs = { quests = true, dungeons = false, skipped = {}, journey = "zone:1431" }
+		local prefs = { quests = true, dungeons = false, skipped = {}, journey = "zone:1431", optimisedRoute = true }
 		local where = ("Raven Hill at level %d"):format(level)
 		local steps
 		for _, journey in ipairs(Model.Plan(data, player, completed, log, prefs).journeys) do
@@ -363,7 +363,7 @@ do
 			completed[id] = true
 		end
 	end
-	local prefs = { quests = true, dungeons = false, skipped = {}, journey = "zone:1431" }
+	local prefs = { quests = true, dungeons = false, skipped = {}, journey = "zone:1431", optimisedRoute = true }
 	local steps
 	for _, journey in ipairs(Model.Plan(data, player, completed, log, prefs).journeys) do
 		steps = journey.key == prefs.journey and journey.steps or steps

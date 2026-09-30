@@ -29,7 +29,7 @@ local SPELL = { name = "Lightning Bolt", level = 18, line = "Elemental", lineID 
 
 -- ui_spec's level-18 orc shaman in The Barrens, the story chosen unless `extra.charDB` says otherwise.
 local function Load(extra)
-	local options = { completed = { 844 }, log = LOG, charDB = { journey = "zone:1413" } }
+	local options = { completed = { 844 }, log = LOG, charDB = { journey = "zone:1413" }, planned = true }
 	for key, value in pairs(extra or {}) do
 		options[key] = value
 	end

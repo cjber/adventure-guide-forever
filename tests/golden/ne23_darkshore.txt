@@ -1,14 +1,15 @@
 # ne23_darkshore: level 23, side 1, at 1439 0.3700,0.4400
 card (chosen) | zone:1440 | Ashenvale story | Chapter 1 of 3 | A chain begins with Faldreas Goeth'Shael | map 1440
-  step 1 | town:405 | Visit Astranaar, Ashenvale: Pick up 3 | 1440 0.3577,0.4910 | Begins a new story
+  step 1 | town:418 | Pick up: The Ancient Statuette | 1440 0.1479,0.3129 | near your level
   step 2 | town:415 | Pick up: Bathran's Hair | 1440 0.2644,0.3859 | near your level
   step 3 | area:1010:4 | Complete objectives · Bathran's Hair | 1440 0.3140,0.2270 | after you pick it up | 90 yd | 1010/4
   step 4 | town:415:2 | Turn in: Bathran's Hair | 1440 0.2644,0.3859 | once it's done
-  step 5 | town:418 | Pick up: The Ancient Statuette | 1440 0.1479,0.3129 | near your level
-  step 6 | area:1007:4 | Complete objectives · The Ancient Statuette | 1440 0.1420,0.2060 | after you pick it up | 0 yd | 1007/4
-  step 7 | town:418:2 | Turn in: The Ancient Statuette | 1440 0.1479,0.3129 | once it's done
-  step 8 | town:372 | Pick up: On Guard in Stonetalon | 1442 0.5990,0.6685 | near your level
-  step 9 | town:372:2 | Turn in: On Guard in Stonetalon | 1442 0.5952,0.6715 | Opens the next chapter here
+  step 5 | town:405 | Visit Astranaar, Ashenvale: Pick up 5 | 1440 0.3467,0.4884 | Begins a new story
+  step 6 | area:1054:4 | Complete objectives · Culling the Threat | 1440 0.3960,0.3630 | after you pick it up | 0 yd | 1054/4
+  step 7 | area:1008:4 | Complete objectives · The Zoram Strand | 1440 0.1170,0.2340 | 2 quests here | 377 yd | 1008/4 1007/4
+  step 8 | town:418:2 | Turn in: The Ancient Statuette | 1440 0.1479,0.3129 | once it's done
+  step 9 | town:405:2 | Visit Astranaar, Ashenvale: Turn in 2 | 1440 0.3467,0.4884 | 2 to hand in
+  step 10 | town:372 | Pick up: On Guard in Stonetalon | 1442 0.5990,0.6685 | near your level
 card | zone:1442 | Head to Stonetalon Mountains | 2 quests near your level | - | map 1442
   step 1 | town:378 | Pick up: Gerenzo's Orders | 1442 0.7187,0.6000 | near your level
   step 2 | town:377 | Pick up: Super Reaper 6000 | 1442 0.5899,0.6260 | near your level

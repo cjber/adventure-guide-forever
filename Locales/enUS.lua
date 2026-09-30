@@ -289,6 +289,10 @@ ns.L = {
 	SETTING_FOLLOW_QUEST = "Follow the quest you're working on",
 	SETTING_FOLLOW_QUEST_TOOLTIP = "When you walk into the area of the quest the route leads to, the guide selects "
 		.. "that quest so the map shows its area. It never changes a quest you selected yourself.",
+	SETTING_ROUTE_ORDER = "Optimised route (beta)",
+	SETTING_ROUTE_ORDER_TOOLTIP = "Off: the route is the nearest thing to do next, step by step, so it is simple "
+		.. "and predictable. On: an experimental order that leads with the story's chapter, groups a town's work and "
+		.. "keeps its earlier suggestions steady.",
 	-- The Adventure Guide window (Window.lua): its tabs, the Today strip, the featured card and the Professions tab.
 	TAB_JOURNEYS = "Journeys",
 	TAB_PROFESSIONS = "Professions",

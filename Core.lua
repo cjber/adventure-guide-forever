@@ -32,6 +32,9 @@ local DEFAULTS = {
 	whatsNew = true,
 	-- A line where a missing companion addon would fill a tab or a route step (Companions.lua).
 	suggestCompanions = true,
+	-- Beta: the planned route order (chapter lead, town look-ahead, committed order); false is the simple
+	-- nearest-action order, the default (docs/design.md §4.1).
+	optimisedRoute = false,
 }
 ns.DEFAULTS = DEFAULTS
 
@@ -241,6 +244,8 @@ function ns.Prefs()
 		charDB = prefs --[[@as AGFPrefs]]
 	end
 	charDB.skipped = sessionSkipped
+	-- The account-wide route-order setting, folded into the prefs the planner reads (Model.Laps, Model.Build).
+	charDB.optimisedRoute = ns.Setting("optimisedRoute") == true
 	return charDB
 end
 

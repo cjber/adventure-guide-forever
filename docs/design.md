@@ -114,7 +114,9 @@ follow the shared family voice.
 
 - **4.1 Selection.** Take the nearest action at every step: the nearest town pickup, the nearest area of
   a quest the town handed out or the player carries, or the nearest ready hand-in. Group town visits and cross
-  the sea at most once.
+  the sea at most once. This nearest order is the default; the opt-in `optimisedRoute` beta instead keeps the
+  older heuristics (the story's chapter lead, a town's-own look-ahead and the committed order), which the
+  player turns on from the Add-ons page.
 - **4.2 Laps.** A quest's objectives follow its pickup and its hand-in all of them. Respect quest-log capacity.
   Rebuild on events;
   movement changes focus without shuffling the route. Proximity never hides or truncates guidance. Plan a bounded lookahead, then verify and merge visits before limiting the displayed actions. Keep work bounded per frame.

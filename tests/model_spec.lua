@@ -36,8 +36,10 @@ local function quest(x, y, map)
 		finish = { map = map or 1, x = 0.6, y = 0.5, name = "Quest ender" },
 	}
 end
+-- These planner specs pin the planned (beta) ordering; the default nearest order is covered by
+-- tests/plan_golden_spec.lua and tests/route_order_spec.lua.
 local function prefs()
-	return { quests = true, dungeons = false, skipped = {} }
+	return { quests = true, dungeons = false, skipped = {}, optimisedRoute = true }
 end
 local data = {
 	build = "test",
@@ -1089,8 +1091,9 @@ equal(lead and lead.chapter, "Chapter 2 of 3", "story card: its step tells the c
 equal(lead and lead.reason, "Continues a story you started", "story card: and why")
 saga = { quests = saga.quests, zones = saga.zones } -- a new data table: Story's memo is per data
 saga.quests[3].next = 99
+local sagaPrefs = { quests = true, skipped = {}, optimisedRoute = true }
 equal(
-	Model.Plan(saga, player, { [1] = true }, {}, { quests = true, skipped = {} }).journeys[1].subline,
+	Model.Plan(saga, player, { [1] = true }, {}, sagaPrefs).journeys[1].subline,
 	"Chapter 2",
 	"story card: no total unproven"
 )

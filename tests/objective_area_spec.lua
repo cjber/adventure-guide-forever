@@ -19,6 +19,7 @@ end
 -- is the next objective area the route holds.
 local h = harness.load({
 	spf = "v1",
+	planned = true,
 	db = { autoStart = false, showMapPins = true, showQuestGivers = true },
 	charDB = { journey = "zone:1420" },
 	completed = { 376 },

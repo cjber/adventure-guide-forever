@@ -2422,6 +2422,13 @@ function harness.load(options)
 			}
 	end
 
+	-- The planned (beta) route order, opt-in: `planned = true` runs the legacy smarter ordering, while the default
+	-- (absent) is the nearest-action order the product ships (docs/design.md §4.1).
+	if options.planned then
+		options.db = options.db or {}
+		options.db.optimisedRoute = true
+	end
+
 	--[[ Load the addon: the TOC's files in order, each given (addonName, ns) ]]
 
 	G.AdventureGuideForeverDB, G.AdventureGuideForeverCharDB = options.db, options.charDB
