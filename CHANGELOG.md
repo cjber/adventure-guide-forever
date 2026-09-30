@@ -11,6 +11,9 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.6.4] - 2026-09-30
+
+- **Move the shared tracker.** Turn off Attach to quest tracker in Settings to drag all Forever sections together. The position survives `/reload`.
 - **The addon's files now follow the guide's own parts.** The planner, integrations and UI live in separate folders, while the game still loads them in the same order.
 
 ## [0.6.3] - 2026-09-30

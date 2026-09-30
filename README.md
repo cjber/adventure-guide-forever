@@ -66,7 +66,7 @@ Download the zip from [Releases](https://github.com/cjber/adventure-guide-foreve
 | `/agf audit` | Compare the quest data with the game and report its source |
 | `/agf dump` | Save the drawn layout for a bug report; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua` |
 
-Shift-J opens the window if the key was free at first login; change it under Key Bindings. Left-click the addon compartment for the window, or right-click for the map tab. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including starting routes on selection and tracking their quests.
+Shift-J opens the window if the key was free at first login; change it under Key Bindings. Left-click the addon compartment for the window, or right-click for the map tab. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including starting routes on selection, tracking their quests and detaching the shared Forever tracker so you can drag it elsewhere.
 
 Translations are welcome as a pull request, or pasted into an issue, on GitHub: see the [Locales folder](https://github.com/cjber/adventure-guide-forever/tree/main/Locales).
 

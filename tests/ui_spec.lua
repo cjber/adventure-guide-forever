@@ -308,7 +308,7 @@ do
 	-- Every row goes in through the secure delegate; none from addon code, which taints the search. The rows are
 	-- grouped into subcategories with a short index page, so no page grows tall.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 19, "15 rows and 4 index buttons, all through Settings.RegisterInitializer")
+	equal(#h.settings, 20, "16 rows and 4 index buttons, all through Settings.RegisterInitializer")
 	local L = h.ns.L
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
@@ -318,7 +318,7 @@ do
 	equal(table.concat(pages[L.SETTINGS_GROUP_MAP] or {}, " "), "showMapPins showQuestGivers", "Map holds its rows")
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_TRACKER] or {}, " "),
-		"showTracker trackRouteQuests untrackOthers",
+		"attachTracker showTracker trackRouteQuests untrackOthers",
 		"the objective tracker rows sit together, the parent first"
 	)
 	equal(
@@ -357,6 +357,24 @@ do
 	equal(byKey.untrackOthers.indented, true, "untrackOthers is indented under tracking")
 	equal(byKey.untrackOthers.evaluateCVar, "AdventureGuideForever_trackRouteQuests", "parent changes reevaluate child")
 	equal(byKey.untrackOthers.enabled(), false, "and is greyed while it is off")
+	local attachSetting
+	for _, setting in ipairs(h.addonSettings) do
+		if setting.key == "attachTracker" then
+			attachSetting = setting
+		end
+	end
+	equal(attachSetting ~= nil, true, "shared tracker setting is registered")
+	equal(attachSetting.GetValue(), true, "shared tracker defaults attached")
+	h.ns.TrackerHostSettings().attached = false
+	equal(h.ns.TrackerHostSettings().attached, false, "AGF account host state retains saved false")
+	local malformed = Load("v1", { trackerHost = "bad" })
+	equal(malformed.ns.TrackerHostSettings().attached, true, "AGF account host state normalizes malformed value")
+	h.trackerHostSettings.attached = false
+	equal(attachSetting.GetValue(), false, "shared tracker reads the host owner state")
+	attachSetting:SetValue(false)
+	equal(h.trackerHostSettings.attached, false, "shared tracker setting writes shared host state")
+	attachSetting:SetValue(true)
+	equal(attachSetting.GetValue(), true, "shared tracker setting round trips attached")
 	-- The client re-sorts its watches by distance on every zone change (Blizzard_ObjectiveTracker.lua
 	-- SortQuestWatches), so the tooltip promises no order it cannot keep.
 	equal(byKey.trackRouteQuests.tooltip:find("order") ~= nil, false, "the tracking tooltip promises no order")

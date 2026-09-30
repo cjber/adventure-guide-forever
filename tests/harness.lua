@@ -1918,6 +1918,21 @@ function harness.load(options)
 			h.addonSettings[#h.addonSettings + 1] = setting
 			return setting
 		end,
+		RegisterProxySetting = function(_, variable, _, _, _default, get, set)
+			local setting = { key = variable:gsub("^AdventureGuideForever_", ""), GetValue = get }
+			function setting:SetValue(value)
+				set(value)
+				if self.valueChanged then
+					self.valueChanged(self, value)
+				end
+			end
+			function setting:SetValueChangedCallback(callback)
+				self.valueChanged = callback
+			end
+			h.addonSettings[#h.addonSettings + 1] = setting
+			return setting
+		end,
+		NotifyUpdate = function() end,
 		-- Inserting a row from addon code taints the settings search (Blizzard_Settings.lua:383-396): a restricted
 		-- button in its results is then blocked and blamed on the addon. h.taintedRows counts each one.
 		CreateCheckbox = function()
@@ -2519,6 +2534,21 @@ function harness.load(options)
 	if options.setup then
 		options.setup(h)
 	end
+	local trackerSettings = { attached = true }
+	local trackerCallbacks = {}
+	function h.ns.TrackerHost.GetSettings()
+		return trackerSettings
+	end
+	function h.ns.TrackerHost.SetAttached(value)
+		trackerSettings.attached = value
+		for _, callback in ipairs(trackerCallbacks) do
+			callback()
+		end
+	end
+	function h.ns.TrackerHost.OnAttachmentChanged(callback)
+		trackerCallbacks[#trackerCallbacks + 1] = callback
+	end
+	h.trackerHostSettings = trackerSettings
 	h.fire("ADDON_LOADED", ADDON)
 	h.fire("ADDON_LOADED", "Blizzard_WorldMap")
 	h.fire("PLAYER_LOGIN")

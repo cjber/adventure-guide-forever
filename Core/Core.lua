@@ -79,6 +79,17 @@ local function LoadDB()
 	db = loaded
 end
 
+---@return table
+function ns.TrackerHostSettings()
+	local account = assert(db)
+	if type(account.trackerHost) ~= "table" then
+		account.trackerHost = { attached = true }
+	elseif account.trackerHost.attached == nil then
+		account.trackerHost.attached = true
+	end
+	return account.trackerHost
+end
+
 local function LoadCharDB()
 	local loaded = type(AdventureGuideForeverCharDB) == "table" and AdventureGuideForeverCharDB or {}
 	local migratePlan = type(loaded.plannedDungeons) ~= "table"

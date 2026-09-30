@@ -203,6 +203,8 @@ TweaksForever = nil
 ---@field RegisterVerticalLayoutCategory fun(name: string): AGFSettingsCategory
 ---@field RegisterVerticalLayoutSubcategory fun(category: AGFSettingsCategory, name: string): AGFSettingsCategory
 ---@field RegisterAddOnSetting fun(category: AGFSettingsCategory, variable: string, key: string, storage: table, variableType: string, name: string, default: boolean): AGFSettingsSetting
+---@field RegisterProxySetting fun(category: AGFSettingsCategory, variable: string, variableType: string, name: string, default: boolean, getter: (fun(): boolean), setter: (fun(value: boolean))): AGFSettingsSetting
+---@field NotifyUpdate fun(variable: string)
 ---@field CreateCheckboxInitializer fun(setting: AGFSettingsSetting, options?: table, tooltip?: string): AGFSettingsInitializer
 ---@field RegisterInitializer fun(category: AGFSettingsCategory, initializer: AGFSettingsInitializer) inserts the row from Blizzard's secure delegate
 ---@field RegisterAddOnCategory fun(category: AGFSettingsCategory)

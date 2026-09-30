@@ -175,6 +175,8 @@ ns.L = {
 	CHOOSE_NEXT = "Choose your next journey",
 	-- The tracker's journey line and the wait for QuestieDB's catalogue.
 	TRACKER_ROUTE_START = "Click to route from this story's start",
+	TRACKER_DRAG_TITLE = "Forever tracker",
+	TRACKER_DRAG_TOOLTIP = "Drag to move",
 	TRACKER_LOADING = "Loading quest data...",
 	-- The trainer aside.
 	TRAINER = "Visit your class trainer",
@@ -240,6 +242,8 @@ ns.L = {
 	SETTINGS_GROUP_INTERFACE = "Interface",
 	SETTINGS_OPEN = "Open",
 	SETTING_TRACKER = "Show tracker section",
+	SETTING_ATTACH_TRACKER = "Attach to quest tracker",
+	SETTING_ATTACH_TRACKER_TOOLTIP = "Turn this off to drag the shared Forever tracker anywhere on screen.",
 	SETTING_TRACKER_TOOLTIP = 'A short "Adventure Guide" section above your quests in the objective tracker, for the '
 		.. "current step.",
 	SETTING_MAP_PINS = "Show route pins on the map",
@@ -488,8 +492,8 @@ ns.L = {
 	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "The tracker names your story, and every pin finds its way back. Questie loading now holds your route"
-		.. " until the newest quest data is ready.",
+	WHATS_NEW = "Move the shared tracker. Turn off Attach to quest tracker in Settings "
+		.. "to drag all Forever sections together.",
 	DUNGEON_CLASSIC_GUIDE = "Adventure Guide for Classic",
 	DUNGEON_CLASSIC_GUIDE_TOOLTIP = "Open Adventure Guide for Classic for boss tactics, models and loot.",
 	DUNGEON_MAPS_TAB = "Maps",
