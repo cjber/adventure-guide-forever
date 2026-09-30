@@ -92,7 +92,7 @@ local function NewFrame(width, height)
 end
 
 local ns = {}
-local chunk = assert(loadfile("Art.lua"))
+local chunk = assert(loadfile("UI/Art.lua"))
 setfenv(chunk, setmetatable({ C_Texture = C_Texture }, { __index = _G }))
 chunk("AdventureGuideForever", ns)
 local Art = ns.Art

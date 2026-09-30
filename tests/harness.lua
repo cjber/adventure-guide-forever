@@ -2474,7 +2474,7 @@ function harness.load(options)
 			else
 				-- UI/model specs use the bundled data as a deterministic fixture. Source integration specs
 				-- explicitly supply questiedb (false tests absence) and exercise the production adapter.
-				local chunk = path == "QuestieSource.lua"
+				local chunk = path == "Integrations/QuestieSource.lua"
 						and options.questiedb == nil
 						and function(_, ns)
 							ns.QuestieStatus = { state = "unavailable", settled = true }
@@ -2649,7 +2649,7 @@ end
 ---@return AGFModel
 function harness.model(ns)
 	assert(loadfile("Locales/enUS.lua"))(ADDON, ns)
-	local core = assert(loadfile("Core.lua"))
+	local core = assert(loadfile("Core/Core.lua"))
 	setfenv(
 		core,
 		setmetatable({
@@ -2661,7 +2661,7 @@ function harness.model(ns)
 		}, { __index = _G })
 	)
 	core(ADDON, ns)
-	assert(loadfile("Model.lua"))(ADDON, ns)
+	assert(loadfile("Planning/Model.lua"))(ADDON, ns)
 	return ns.Model
 end
 

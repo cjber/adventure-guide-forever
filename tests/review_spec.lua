@@ -73,7 +73,7 @@ test("A1 reload preserves the committed return", function()
 	local warm = ns.Model.Plan(data, player, completed, log, prefs, nil, nil, before)
 	eq(#ns.Session.Apply(warm).steps, 2, "accepted pickup leaves work and return")
 	-- A fresh Model has neither a previous route nor planner caches, as after /reload.
-	assert(loadfile("Model.lua"))("AdventureGuideForever", ns)
+	assert(loadfile("Planning/Model.lua"))("AdventureGuideForever", ns)
 	local cold = ns.Model.Plan(data, player, completed, log, prefs)
 	local limited = ns.Session.Apply(cold)
 	eq(#limited.steps, 2, "reload retains work and return")

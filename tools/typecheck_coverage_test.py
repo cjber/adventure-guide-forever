@@ -16,8 +16,8 @@ class CoverageTest(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        self.write("Addon.toc", "Core.lua\nFrames.xml\n")
-        self.write("Core.lua", "local value = 1")
+        self.write("Addon.toc", "Core/Core.lua\nFrames.xml\n")
+        self.write("Core/Core.lua", "local value = 1")
         self.write("Frames.xml", '<Ui><Include file="Nested.xml"/></Ui>')
         self.write("Nested.xml", '<Ui><Script file="Widget.lua"/></Ui>')
         self.write("Widget.lua", "local widget = {}")
@@ -78,3 +78,12 @@ class CoverageTest(unittest.TestCase):
         self.write("Forgotten.lua", "local missing = true")
         with self.assertRaisesRegex(ValueError, "not loaded"):
             self.run_gate()
+
+    def test_orphaned_grouped_runtime_file_fails(self):
+        for folder in ("Core", "Planning", "Integrations", "UI"):
+            with self.subTest(folder=folder):
+                path = self.root / folder / "Forgotten.lua"
+                self.write(str(path.relative_to(self.root)), "local missing = true")
+                with self.assertRaisesRegex(ValueError, "not loaded"):
+                    self.run_gate()
+                path.unlink()

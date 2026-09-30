@@ -25,7 +25,7 @@ The QuestieDB adapter owns the runtime quest source. Its entrance
 requirement list on each instance contains: level, alternative required items, completed quest and an unsupported
 condition flag. This also retains the six reachable Classic dungeon instances without bundled quests
 filed under their instance area. The catalog contains 19 dungeon instances; unused maps do not enter it.
-Raids come from `Raids.lua`, a hand-written registry (not the generator): it names the announced Forever
+Raids come from `Integrations/Raids.lua`, a hand-written registry (not the generator): it names the announced Forever
 raid tiers first and the client's remaining raid Map.IDs after them. A registered raid enters the catalog only
 once the client carries its Map.ID, so the announced 10-player Barrow Deeps and 20-player Hyjal Summit stay
 listed in the registry until a build adds their maps, while the returning 40-player Onyxia's Lair (Map.ID 249)
@@ -122,7 +122,7 @@ Dungeon plans are character preferences independent of an eligible quest journey
 available preparation quests can still be planned. Existing selected dungeon journeys migrate once.
 
 Map reveal uses Forever's stock `MapPinPingTemplate` from SharedMapPoiTemplates.xml, through AGF's
-existing data provider and a private inherited template in Panel.xml. It acquires at
+existing data provider and a private inherited template in UI/Panel.xml. It acquires at
 `PIN_FRAME_LEVEL_QUEST_PING`, plays two loops at fractional zone coordinates, and releases on refresh.
 Explicit destination controls route through Integrations, then OpenWorldMap/SetMapID; combat skips the
 panel calls. Matching AGF pins flash on click and glow during map-control hover.
