@@ -82,6 +82,9 @@ QuestieDB supplies quest records, and Questie is needed for pickup recommendatio
 
 ## Development
 
+Developed with AI assistance; changes are reviewed and checked with automated tests, linting and type checks and performance budgets.
+
+
 Run the full gate in [AGENTS.md](AGENTS.md#commands). It needs LuaJIT, luacheck, StyLua, LuaLS 3.19.1, Python and ruff; type checking fetches pinned WoW API annotations on first use.
 
 Screenshots use Pillow and the [wow-mock-screenshots library](https://github.com/cjber/skills/tree/main/wow-mock-screenshots). Set `WOWMOCK` to the directory containing `wowmock.py`, then run `python3 tools/screenshots.py` twice to check reproducibility.
