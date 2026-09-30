@@ -74,6 +74,29 @@ function ns.RegisterSettings()
 		{
 			"SETTINGS_GROUP_TRACKER",
 			function(subcategory)
+				---@type ForeverTrackerHostAPI
+				local host = ns.TrackerHost
+				if host and host.GetSettings and host.SetAttached and host.OnAttachmentChanged then
+					local variable = "AdventureGuideForever_attachTracker"
+					local setting = Settings.RegisterProxySetting(
+						subcategory,
+						variable,
+						Settings.VarType.Boolean,
+						ns.L.SETTING_ATTACH_TRACKER,
+						true,
+						function()
+							return host.GetSettings().attached
+						end,
+						function(value)
+							host.SetAttached(value)
+						end
+					)
+					host.OnAttachmentChanged(function()
+						Settings.NotifyUpdate(variable)
+					end)
+					local attach = Settings.CreateCheckboxInitializer(setting, nil, ns.L.SETTING_ATTACH_TRACKER_TOOLTIP)
+					Settings.RegisterInitializer(subcategory, attach)
+				end
 				local show = Checkbox(subcategory, "showTracker", ns.L.SETTING_TRACKER, ns.L.SETTING_TRACKER_TOOLTIP)
 				local track = Checkbox(
 					subcategory,

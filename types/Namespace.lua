@@ -476,6 +476,8 @@
 ---@field JOURNEY_COMPLETE string the tracker header that glows when a turn-in ends the chosen journey
 ---@field CHOOSE_NEXT string its line: the guide has every journey again
 ---@field TRACKER_ROUTE_START string the journey line's hover instruction: route from the story's start
+---@field TRACKER_DRAG_TITLE string shared tracker grip title
+---@field TRACKER_DRAG_TOOLTIP string shared tracker grip tooltip
 ---@field TRAINER string
 ---@field TRAINER_SPELLS string format: spell count
 ---@field TRAINER_SPELL string
@@ -526,6 +528,8 @@
 ---@field SETTINGS_OPEN string
 ---@field SETTING_TRACKER string
 ---@field SETTING_TRACKER_TOOLTIP string
+---@field SETTING_ATTACH_TRACKER string
+---@field SETTING_ATTACH_TRACKER_TOOLTIP string
 ---@field SETTING_MAP_PINS string
 ---@field SETTING_GIVERS string
 ---@field SETTING_DUNGEONS_DEFAULT string
@@ -584,8 +588,16 @@
 ---@field SEARCH_QUESTS string the search box's instructions
 ---@field SEARCH_NONE string a search that finds no quest
 
+---@class ForeverTrackerHostAPI
+---@field GetSettings fun(): ForeverTrackerSettings
+---@field SetAttached fun(value: boolean)
+---@field IsAttachedToQuestTracker fun(): boolean
+---@field OnAttachmentChanged fun(callback: fun(attached: boolean))
+---@field SavePosition fun(x: number, y: number)
+
 ---@class AGFNamespace
 ---@field TrackerHost ForeverTrackerHostAPI
+---@field TrackerHostSettings fun(): ForeverTrackerSettings
 ---@field Geometry AGFGeometry the native-geometry adapter (Geometry.lua)
 ---@field DungeonBosses table<integer, AGFDungeonBoss[]>
 ---@field TITLE string
@@ -1457,3 +1469,13 @@
 ---@field DUNGEON_MAP_WORLD_BACK string
 ---@field DUNGEON_MAP_PAGE string
 ---@field DUNGEON_MAP_MISSING string
+
+---@class ForeverTrackerSettings
+---@field attached boolean
+---@field x? number
+---@field y? number
+
+---@class ForeverTrackerNamespace
+---@field TrackerHost? ForeverTrackerHostAPI
+---@field TrackerHostSettings? fun(): ForeverTrackerSettings
+---@field L table<string, string>
