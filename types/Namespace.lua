@@ -472,11 +472,13 @@
 ---@field STORY_COMPLETE string the tracker header that glows when a proven chain's last quest is handed in
 ---@field JOURNEY_COMPLETE string the tracker header that glows when a turn-in ends the chosen journey
 ---@field CHOOSE_NEXT string its line: the guide has every journey again
+---@field TRACKER_ROUTE_START string the journey line's hover instruction: route from the story's start
 ---@field TRAINER string
 ---@field TRAINER_SPELLS string format: spell count
 ---@field TRAINER_SPELL string
 ---@field TRAINER_LINE string format: TRAINER, then the spell count
 ---@field TRACKER_UNATTACHED string
+---@field TRACKER_LOADING string the tracker's quiet line while QuestieDB's catalogue builds
 ---@field DUMP_SAVED string
 ---@field TURN_IN string format: quest title
 ---@field READY_TO_HAND_IN string
@@ -497,6 +499,7 @@
 ---@field STARTS_AFTER_COMBAT string the footer while a choice made in combat waits to start its route
 ---@field CLICK_TRAVEL string format: travel addon name
 ---@field CLICK_WAYPOINT string
+---@field PIN_RETURN_STORY string a numbered pin's instruction to route from the story's start
 ---@field STEP_NUMBERED string format: route index, step title
 ---@field QUEST_LEVEL string format: quest level, quest title
 ---@field OVERVIEW_WHERE string format: the overview's line under the title, the player's zone and level
@@ -588,6 +591,8 @@
 ---@field SetSetting fun(key: string, value: any)
 ---@field Prefs fun(): AGFPrefs
 ---@field Route fun(): AGFRoute the current route, rebuilt lazily when state or prefs change
+---@field CurrentJourney fun(): AGFJourney? the journey the route shows (the chosen one, else the first card's)
+---@field QuestieBuilding fun(): boolean QuestieDB's catalogue is still building: the route holds and the tracker waits
 ---@field Invalidate fun() mark the route stale and notify views
 ---@field OnRouteChange fun(callback: fun())
 ---@field Choose fun(key?: string, start?: boolean) choose a journey, or none; `start` sets off on the rebuild with its steps

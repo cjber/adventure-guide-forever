@@ -173,6 +173,9 @@ ns.L = {
 	STORY_COMPLETE = "Story complete",
 	JOURNEY_COMPLETE = "Journey complete",
 	CHOOSE_NEXT = "Choose your next journey",
+	-- The tracker's journey line and the wait for QuestieDB's catalogue.
+	TRACKER_ROUTE_START = "Click to route from this story's start",
+	TRACKER_LOADING = "Loading quest data...",
 	-- The trainer aside.
 	TRAINER = "Visit your class trainer",
 	TRAINER_SPELLS = "%d new spells",
@@ -208,6 +211,8 @@ ns.L = {
 	STARTS_AFTER_COMBAT = "The route starts when combat ends",
 	CLICK_TRAVEL = "Click to travel with %s",
 	CLICK_WAYPOINT = "Click to set a waypoint",
+	-- A numbered route pin past the first: how to get back to the story's start.
+	PIN_RETURN_STORY = "Right-click to route from the story's start",
 	STEP_NUMBERED = "%d. %s",
 	QUEST_LEVEL = "[%d] %s",
 	-- An area's tooltip: each open objective under its quest, in the client's words, else its count.

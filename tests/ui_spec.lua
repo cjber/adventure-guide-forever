@@ -641,7 +641,11 @@ do
 	equal(block and block.header, "Journey complete", "journey complete: the header")
 	-- None is chosen now: the header, then the step of the first card, which the guide draws on its own.
 	local first = h.ns.Route().steps[1].key
-	same(h.tracker.layoutOrder, { "journey-complete", first }, "journey complete: over the first card's step")
+	same(
+		h.tracker.layoutOrder,
+		{ "journey-complete", "journey", first },
+		"journey complete: over the first card's step"
+	)
 	same(h.fanfares, { "journey-complete" }, "journey complete: glows once")
 	equal(#h.sounds, 0, "journey complete: no stage-end sound")
 	local opened, openPanel = 0, h.ns.OpenPanel
@@ -654,7 +658,7 @@ do
 	equal(h.spf.NavigateRoute, 1, "journey complete: and starts nothing")
 	h.ns.Invalidate()
 	h.flush()
-	same(h.tracker.layoutOrder, { first }, "journey complete: gone on the next route change")
+	same(h.tracker.layoutOrder, { "journey", first }, "journey complete: gone on the next route change")
 
 	h = Started("v1")
 	h.SetCombat(true)
@@ -2427,7 +2431,7 @@ do
 	local first = ns.Route().steps[1]
 	ns.Skip(first.key, first.title)
 	h.flush()
-	equal(h.tracker.layoutOrder[1], ns.Route().steps[1].key, "fanfare: gone once step 1 moves on")
+	same(h.tracker.layoutOrder, { "journey", ns.Route().steps[1].key }, "fanfare: gone once step 1 moves on")
 	clean(h, "fanfare")
 
 	h = Load(false, { showTracker = false })
@@ -2858,7 +2862,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(route.chosen, false, label .. ": nothing chosen")
 	equal(Back(), nil, label .. ": no back arrow with nothing chosen")
 	equal(route.journey, "zone:1413", label .. ": the route falls back to the first card")
-	same(h.tracker.layoutOrder, { route.steps[1].key }, label .. ": the tracker shows the first card's step")
+	same(h.tracker.layoutOrder, { "journey", route.steps[1].key }, label .. ": the tracker shows the first card's step")
 	equal(route.journeys[1].kind, "story", label .. ": a story card")
 	equal(#route.journeys >= 3, true, label .. ": several journey rows")
 	equal(Heights(), "", label .. ": none of the chosen view's cards")
@@ -3554,7 +3558,7 @@ do
 		local shown = block and block.used and block.header or nil
 		equal(shown, case.text, label .. ": the tracker's line")
 		-- With no journey chosen it is the line above the first card's step.
-		local order = case.text and { "aside", "town:349" } or { "town:349" }
+		local order = case.text and { "aside", "journey", "town:349" } or { "journey", "town:349" }
 		same(h.tracker.layoutOrder, order, label .. ": the tracker's lines")
 		-- An aside, not a step: no ring for it, and its tracker title goes to the trainer as its Go does.
 		local steps, rings = {}, 0

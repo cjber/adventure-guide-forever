@@ -183,7 +183,8 @@ for index, id in ipairs(module.layoutOrder) do
 	blocks[index] = { header = block.header, lines = lines }
 end
 out.tracker = { header = module.Header.Text:GetText(), blocks = blocks }
-module:OnBlockHeaderClick(module.liveBlocks[module.layoutOrder[1]], "RightButton")
+-- The step block is laid out last, under the journey's title, the asides and the fanfares.
+module:OnBlockHeaderClick(module.liveBlocks[module.layoutOrder[#module.layoutOrder]], "RightButton")
 local entries = {}
 for index, entry in ipairs(h.menu.entries) do
 	entries[index] = { kind = entry.kind, text = entry.text }

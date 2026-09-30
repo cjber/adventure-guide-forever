@@ -668,6 +668,15 @@ local function CommitRoute(route)
 	Remember(cachedRoute.steps[1])
 end
 
+-- QuestieSource.lua swaps ns.Data for the QuestieDB catalogue once its sliced build finishes. Until then ns.Data
+-- carries no quest records (docs/design.md §2.14): a route built now would be log-only and would flip under the player
+-- when the records land, so the build and the auto-start wait and the tracker shows the loading line. "unavailable"
+-- means Questie is genuinely absent or failed, and the log's route is the only one there is.
+---@return boolean
+function ns.QuestieBuilding()
+	return ns.QuestieStatus ~= nil and ns.QuestieStatus.state == "building"
+end
+
 -- The synchronous full build: ns.Route()'s lazy path, and any caller before Core's coroutine starts. One frame, no
 -- slices, exactly as before the rebuild was sliced.
 local function Rebuild()
@@ -675,6 +684,10 @@ local function Rebuild()
 	if not ns.State.Ready() then
 		-- Completed-quest data hasn't loaded yet; an empty route beats a wrong one.
 		cachedRoute = { journeys = {}, chosen = false, steps = {} }
+		return
+	end
+	if ns.QuestieBuilding() then
+		-- The catalogue is still building: hold the route rather than build a log-only one that flips.
 		return
 	end
 	CommitRoute(BuildRoute())
@@ -688,6 +701,18 @@ function ns.Route()
 		Rebuild()
 	end
 	return cachedRoute
+end
+
+-- The journey the route is showing (the chosen one, else the first card's), for the tracker's title line and the
+-- map's way back to the story's start.
+---@return AGFJourney?
+function ns.CurrentJourney()
+	local route = ns.Route()
+	for _, journey in ipairs(route.journeys or {}) do
+		if journey.key == route.journey then
+			return journey
+		end
+	end
 end
 
 ---@param fn fun()
@@ -740,6 +765,13 @@ local function StepRebuild()
 			-- Completed-quest data hasn't loaded yet; an empty route beats a wrong one.
 			pendingRebuild = false
 			cachedRoute = { journeys = {}, chosen = false, steps = {} }
+			FinishRebuild()
+			return
+		end
+		if ns.QuestieBuilding() then
+			-- The catalogue is still building: hold the last route (or the empty one) so the display doesn't flip to a
+			-- log-only route that changes the moment the records land (docs/design.md §2.14).
+			pendingRebuild = false
 			FinishRebuild()
 			return
 		end
@@ -921,7 +953,7 @@ end)
 -- needs nothing: the client keeps it.
 local restoring = true
 ns.OnRouteChange(function()
-	if not restoring or InCombatLockdown() or not ns.State.Ready() then
+	if not restoring or InCombatLockdown() or not ns.State.Ready() or ns.QuestieBuilding() then
 		return
 	end
 	local prefs, route, integrations = ns.Prefs(), ns.Route(), ns.Integrations
