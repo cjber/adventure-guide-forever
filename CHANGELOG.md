@@ -25,6 +25,8 @@ verbatim rather than rewritten as the addon moves.
 - **Arrival cues stop at your objective area.** The quest route stays active while you work, with no direction back to the point you have already reached. Leaving the area brings directions back.
 - **Adventure Guide for Classic is optional.** Open its full dungeon and raid journal from the Dungeons tab when it is installed and enabled.
 
+- **Development disclosure.** This release was developed with AI assistance. Changes were reviewed and checked with automated tests, linting and type checks; live verification remains ongoing.
+
 ## [0.6.2] - 2026-09-29
 
 - **Always use the newest quests.** Quest data now comes from your installed QuestieDB and nothing else: every quest it knows, including ones outside the guide's old bundled list, and new quests after a Questie update. The addon no longer ships a quest list of its own, so a missing quest can only mean Questie is missing it too.
