@@ -41,7 +41,7 @@ All functions use dot calls. Existing interfaces remain available. New tables ar
 - Every model step has `step.verb = "pickup"|"turnin"|"objective"|"town"|"trainer"|"battlemaster"`; use this for icons (dungeon work uses objective icon). `step.title` is already action-led and SPF receives this title.
 - `step.checklist?: AGFTownGiver[]`, only towns; each `{key: string,name: string,text: string,pickups: integer[],handins: integer[],done: boolean,skipped: boolean,place: AGFPlace}`. One row per giver, retained/ticked through the town visit. `step.map/x/y` targets nearest remaining giver; no invented point.
 - `step.complete?: boolean` true only when every checklist giver is done/skipped. Completed towns leave the route. Giver text is preformatted; UI may use its done flag for a stock tick.
-- `ns.Integrations.CurrentStep() -> AGFStep?` resolves the current owned SPF stop when active, otherwise the route head; tracker uses it too.
+- `ns.Guidance.CurrentStep() -> AGFStep?` resolves the current owned SPF stop when active, otherwise the route head; tracker uses it too.
 
 ## Copy keys (all in Locales/enUS.lua ns.L)
 

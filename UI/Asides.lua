@@ -179,13 +179,13 @@ function Asides.Restore(key)
 	Notify()
 end
 
--- Go: to the aside's place, as a step's Go goes (Integrations.Navigate). Only a place from the data has one.
+-- Go: to the aside's place, as a step's Go goes (Guidance.Navigate). Only a place from the data has one.
 ---@param aside AGFAside
 ---@return boolean
 function Asides.Go(aside)
 	local place = aside.place
 	return place ~= nil
-		and ns.Integrations.ShowOnMap({
+		and ns.Guidance.ShowOnMap({
 			map = place.map,
 			x = place.x,
 			y = place.y,

@@ -53,7 +53,7 @@ ns.Invalidate()
 Settle()
 eq(#ns.Route().steps, 0, "committed endpoint never adds new work")
 eq(ns.Route().chosen, true, "raw chosen journey survives empty display")
-eq(ns.Integrations.Owns(), false, "empty session cancels old guidance")
+eq(ns.Guidance.Owns(), false, "empty session cancels old guidance")
 
 -- A provider refusal is unknown even where offline geometry exists.
 seconds, failure = nil, "unreachable"

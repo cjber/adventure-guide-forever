@@ -443,34 +443,12 @@ function Integrations.OnCardTravel(fn)
 	cardListeners[#cardListeners + 1] = fn
 end
 
--- Go and Stop run from the footer, the step menu and the tracker; each tells these so the footer's Stop follows.
----@type fun()[]
-local guidanceListeners = {}
-
----@param fn fun()
-function Integrations.OnGuidanceChange(fn)
-	guidanceListeners[#guidanceListeners + 1] = fn
-end
-
-local function NotifyGuidance()
-	for _, fn in ipairs(guidanceListeners) do
-		fn()
-	end
-end
-
--- True while Shortest Path holds one of our multi-stop routes, guiding it or not.
----@param api? AGFSPFAPI
----@return boolean
-local function Ours(api)
-	return api ~= nil and api.CurrentStop(OWNER) ~= nil
-end
-
 -- True while Shortest Path is walking one of our multi-stop routes; it draws the numbered stops itself then. With its
 -- "Guide me" off (Active false) the route is held, not guided: it draws nothing, so the rings come back.
 ---@return boolean
 function Integrations.Guiding()
 	local api = SPF()
-	return api ~= nil and Ours(api) and (type(api.Active) ~= "function" or api.Active() == true)
+	return api ~= nil and api.CurrentStop(OWNER) ~= nil and (type(api.Active) ~= "function" or api.Active() == true)
 end
 
 -- Go would replace a journey someone else started: the player's own, or another addon's (docs/design.md §2.9). Only
@@ -480,19 +458,6 @@ function Integrations.ReplacesJourney()
 	local api = SPF()
 	return api ~= nil and type(api.Active) == "function" and api.Active() == true and api.CurrentStop(OWNER) == nil
 end
-
--- What the last Go handed Shortest Path, which may no longer be the chosen journey's steps.
----@type (AGFStep|AGFGiver)[]
-local guided = {}
--- Shortest Path held our journey at the last look, and it ended at its last stop since.
-local ours, arrived = false, false
--- The chosen journey whose route the player cleared or another journey replaced, until something is handed again.
----@type string?
-local stopped
-
--- Yards past which a stop's point has moved (a town's point moving to its next giver): the town linkage
--- (tools/gen_quests.py LINK). Nearer, the stock "!" and "?" marks show the way.
-local LINK = 100
 
 -- What stands at a step, in Shortest Path's words, so its stop pin shows the game's own mark there rather than hiding
 -- it. A Shortest Path that predates kinds ignores them.
@@ -556,307 +521,100 @@ local function Stops(steps, hold)
 	end
 	return stops
 end
+-- The seam to whatever draws the way (Guidance.lua is its one caller): Shortest Path's journey by our name, and the
+-- client's own waypoint. Nothing here remembers what was handed or whose it is; Guidance does.
 
--- Keep the complete active route visible even while standing inside its first town or objective area.
----@param api AGFSPFAPI
+-- Hands Shortest Path the steps as one numbered journey of ours, replacing any it held. With `hold` a stop with quests
+-- stays until the journey is handed again, so standing in its first town or objective area keeps the whole route
+-- visible. False when it is absent or refuses.
 ---@param steps (AGFStep|AGFGiver)[]
+---@param hold? boolean
 ---@return boolean
-local function Send(api, steps, hold)
-	if not api.NavigateRoute(OWNER, Stops(steps, hold)) then
-		return false
-	end
-	guided, ours, arrived, stopped = steps, true, false, nil
-	ns.Pins.Refresh()
-	NotifyGuidance()
-	return true
-end
-
--- True when the guidance handed to Shortest Path no longer matches the journey (docs/design.md §2.10): a stop it has
--- yet to reach has left the steps (a town emptied, a step skipped, a quest abandoned or grey), step 1 is neither the
--- stop it heads for nor the one it just reached (the player was taken elsewhere, or a new chapter opens at another
--- town), or step 1's point has moved `far` from the stop it heads for. Later stops reordering alone is not stale.
----@param handed AGFStep[] what was last handed, in order
----@param index integer the stop Shortest Path heads for (CurrentStop)
----@param steps AGFStep[] the chosen journey's steps now
----@param far? fun(a: AGFStep, b: AGFStep): boolean
----@return boolean
-function Integrations.Stale(handed, index, steps, far)
-	local keys = {}
-	for _, step in ipairs(steps) do
-		keys[step.key] = true
-	end
-	for stop = index, #handed do
-		if not keys[handed[stop].key] then
-			return true
-		end
-	end
-	local first, current, previous = steps[1], handed[index], handed[index - 1]
-	if not first then
-		return false
-	end
-	if current and first.key == current.key then
-		return far ~= nil and far(first, current)
-	end
-	-- The town just reached, where Shortest Path has already moved on: sending it again would arrive at once.
-	return not (previous and first.key == previous.key)
-end
-
----@param a AGFStep
----@param b AGFStep
----@return boolean
-local function Far(a, b)
-	local yards = ns.Model.Yards(ns.Data, a, b)
-	return (a.checklist ~= nil and (a.map ~= b.map or a.x ~= b.x or a.y ~= b.y)) or (yards ~= nil and yards > LINK)
-end
-
--- Hands Shortest Path the chosen journey's steps again, as they were started (Core's restore after a /reload). Never
--- the waypoint: the client kept any that was ours. True when it took them.
----@param steps AGFStep[]
----@return boolean
-function Integrations.Restore(steps)
+function Integrations.Hand(steps, hold)
 	local api = SPF()
-	return api ~= nil and not InCombatLockdown() and not ns.Setting("wanderer") and Send(api, steps, true)
+	return api ~= nil and api.NavigateRoute(OWNER, Stops(steps, hold)) and true or false
 end
 
----@return (AGFStep|AGFGiver)[]
-function Integrations.Guided()
-	return Integrations.Guiding() and guided or {}
-end
-
--- Resolve the exact stop handed to SPF, including a route which starts after an occupied objective area.
--- Standing in the head area pins the tracker to it until its objectives are done, whatever its own stop index has
--- advanced to: a step advances only when its state is satisfied (docs/design.md §4.2).
-function Integrations.CurrentStep()
-	local head = ns.Route().steps[1]
-	if head and head.here then
-		return head
-	end
-	local api = SPF()
-	local index = api and Integrations.Guiding() and api.CurrentStop(OWNER)
-	local sent = index and guided[index]
-	if sent and not sent.key then
-		return nil
-	end
-	if sent then
-		for _, step in ipairs(ns.Route().steps) do
-			if step.key == sent.key then
-				return step
-			end
-		end
-		return nil
-	end
-	return ns.Route().steps[1]
-end
-
--- With Shortest Path, the step and every step after it become one numbered journey. When it declines (it returns
--- false when it cannot plan the route) or is absent, the native waypoint takes the step instead, so Go always
--- leaves a destination on any map the client allows one on. True when something now guides the player. A wanderer
--- (roadmap #24) is never guided: nothing is set, and nothing is said.
----@param step AGFStep|AGFGiver
----@param follow? boolean the chosen journey will replace held quest stops when progress changes
+-- Ends Shortest Path's journey by our name, never anyone else's. True when it ended one.
 ---@return boolean
-function Integrations.Navigate(step, follow)
-	if ns.Setting("wanderer") or not ns.Model.ValidPlace(step) then
-		return false
-	end
+function Integrations.Drop()
 	local api = SPF()
-	-- Shortest Path refuses every route in combat, which is no sign it cannot plan this one: a journey an earlier Go
-	-- started keeps guiding, and without one the waypoint takes the step as for any refusal.
-	if api and InCombatLockdown() then
-		if Ours(api) then
-			return false
-		end
-		api = nil
-	end
+	return api ~= nil and api.Cancel(OWNER) and true or false
+end
+
+-- The stop of our journey Shortest Path heads for, guiding it or not; nil when it holds none of ours.
+---@return integer?
+function Integrations.CurrentStop()
+	local api = SPF()
 	if api then
-		local steps, found = {}, false
-		for _, each in ipairs(ns.Route().steps) do
-			found = found or each == step
-			steps[#steps + 1] = found and each or nil
-		end
-		-- Whatever this guides, ns.StartRoute says whether it is the chosen journey's.
-		ns.Prefs().guided = nil
-		if Send(api, found and steps or { step }, follow and found) then
-			return true
-		end
+		return api.CurrentStop(OWNER)
 	end
-	if not C_Map.CanSetUserWaypointOnMap(step.map) then
-		-- The red line the world map shows when a pin can't go on a map, so Go never fails silently. Any journey an
-		-- earlier Go started keeps guiding: a failed Go changes nothing.
-		UIErrorsFrame:AddExternalErrorMessage(ns.L.NO_WAYPOINT)
-		return false
-	end
-	-- A refusal leaves the journey an earlier Go started drawn; the waypoint below replaces it.
-	if api and api.Cancel(OWNER) then
-		ns.Pins.Refresh()
-	end
-	C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(step.map, step.x, step.y))
-	C_SuperTrack.SetSuperTrackedUserWaypoint(true)
-	-- Saved per character, so Stop still knows the waypoint as ours after a /reload.
-	ns.Prefs().waypoint, ns.Prefs().guided = { map = step.map, x = step.x, y = step.y }, nil
-	NotifyGuidance()
-	return true
-end
-
--- Explicit place buttons reveal their destination; automatic route maintenance never opens a panel.
----@param step AGFStep|AGFGiver
----@return boolean
-function Integrations.ShowOnMap(step)
-	if ns.Setting("wanderer") or not ns.Model.ValidPlace(step) then
-		return false
-	end
-	local routed = Integrations.Navigate(step)
-	ns.Pins.Reveal(step)
-	return routed
-end
-
--- The native waypoint is ours while it is still where Go put it (x and y within 1e-4); once the player moves or clears
--- it, it is theirs, and the saved one is forgotten.
----@return boolean
-local function OwnsWaypoint()
-	local prefs = ns.Prefs()
-	local saved, point = prefs.waypoint, C_Map.GetUserWaypoint()
-	local same = saved ~= nil
-		and point ~= nil
-		and point.uiMapID == saved.map
-		and math.abs(point.position.x - saved.x) < 1e-4
-		and math.abs(point.position.y - saved.y) < 1e-4
-	if not same then
-		prefs.waypoint = nil
-	end
-	return same
-end
-
----@return boolean
-function Integrations.Owns()
-	return OwnsWaypoint() or Ours(SPF())
-end
-
--- Stop: ends only what Go started. Shortest Path's journey by our name, and the native waypoint only while it is ours.
-function Integrations.Cancel()
-	ns.Prefs().guided, ours, arrived, stopped = nil, false, false, nil
-	local api = SPF()
-	if api and api.Cancel(OWNER) then
-		ns.Pins.Refresh()
-	end
-	if OwnsWaypoint() then
-		C_Map.ClearUserWaypoint()
-		C_SuperTrack.SetSuperTrackedUserWaypoint(false)
-		ns.Prefs().waypoint = nil
-	end
-	NotifyGuidance()
 end
 
 -- Why our journey ended: Shortest Path's Ended when it has it; otherwise guessed. Another journey running replaced
--- it, the player standing within the town linkage of its last stop arrived, and anything else was cleared.
----@param api AGFSPFAPI
+-- it, the player standing within `near` yards of its last stop arrived, and anything else was cleared.
+---@param last? AGFStep|AGFGiver the last stop it was handed
+---@param near number
 ---@return string?
-local function EndReason(api)
-	if type(api.Ended) == "function" then
+function Integrations.EndReason(last, near)
+	local api = SPF()
+	if not api then
+		return nil
+	elseif type(api.Ended) == "function" then
 		return (api.Ended(OWNER))
 	elseif type(api.Active) == "function" and api.Active() then
 		return "replaced"
 	end
-	local last, player = guided[#guided], ns.State.Player()
+	local player = ns.State.Player()
 	local yards = last and player.map and ns.Model.Yards(ns.Data, player --[[@as AGFStep]], last)
-	return yards and yards <= LINK and "arrived" or "cleared"
+	return yards and yards <= near and "arrived" or "cleared"
 end
 
--- Our journey ended since the last look (docs/design.md §2.10): arriving keeps the choice's guidance, so new steps
--- extend it; the player clearing it or another journey replacing it forgets it, so nothing sends it again. Our own
--- Cancel already forgot it.
----@param api AGFSPFAPI
-local function Watch(api)
-	local now = api.CurrentStop(OWNER) ~= nil
-	if ours and not now then
-		local reason = EndReason(api)
-		if reason == "arrived" then
-			arrived = true
-		elseif reason == "cleared" or reason == "replaced" then
-			stopped, ns.Prefs().guided = ns.Prefs().guided, nil
-		end
-		ns.Pins.Refresh()
-	end
-	ours = now
-end
-
--- A step the route has that Shortest Path was never handed: arrived, the journey goes on.
----@param steps AGFStep[]
+-- The client's waypoint still sits at `place` (x and y within 1e-4): once the player moves or clears it, it does not.
+---@param place? {map: integer, x: number, y: number}
 ---@return boolean
-local function Unhanded(steps)
-	local handed = {}
-	for _, step in ipairs(guided) do
-		handed[step.key] = true
-	end
-	for _, step in ipairs(steps) do
-		if not handed[step.key] then
-			return true
-		end
-	end
-	return false
+function Integrations.WaypointAt(place)
+	local point = C_Map.GetUserWaypoint()
+	return place ~= nil
+		and point ~= nil
+		and point.uiMapID == place.map
+		and math.abs(point.position.x - place.x) < 1e-4
+		and math.abs(point.position.y - place.y) < 1e-4
 end
 
--- Guidance follows the chosen journey (docs/design.md §2.10): on each rebuild, and on the frame after Shortest Path's
--- own super-tracking events, a route AGF started for the chosen journey that no longer matches its steps is sent
--- again, at most once, and one that arrived goes on to steps it was never handed. Never in combat (Shortest Path
--- refuses), in the air, where the player's position is unknown (at sea, in an instance), or once it no longer guides.
-local function Follow()
-	local api, route, prefs = SPF(), ns.Route(), ns.Prefs()
-	if api then
-		Watch(api)
-	end
-	if not (route.chosen and prefs.guided == route.journey and ns.State.Player().map) then
-		return
-	elseif InCombatLockdown() or UnitOnTaxi("player") then
-		return
-	end
-	local first, saved = route.steps[1], prefs.waypoint
-	-- The native waypoint Go set for the chosen journey moves to its new step 1, quietly: where the client allows no
-	-- pin it stays, with no error line, since the player asked for nothing just now.
-	if first and saved and OwnsWaypoint() then
-		local moved = first.map ~= saved.map
-			or math.abs(first.x - saved.x) >= 1e-4
-			or math.abs(first.y - saved.y) >= 1e-4
-		if moved and C_Map.CanSetUserWaypointOnMap(first.map) then
-			C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(first.map, first.x, first.y))
-			prefs.waypoint = { map = first.map, x = first.x, y = first.y }
-			NotifyGuidance()
-		end
-		return
-	end
-	if not api then
-		return
-	end
-	local index = api.CurrentStop(OWNER)
-	if index then
-		if
-			Integrations.Guiding()
-			and (
-				Integrations.Stale(guided --[[@as AGFStep[] ]], index, route.steps, Far)
-			)
-		then
-			Send(api, route.steps, true)
-		end
-	elseif arrived and Unhanded(route.steps) then
-		Send(api, route.steps, true)
+---@param map integer
+---@return boolean
+function Integrations.CanWaypoint(map)
+	return C_Map.CanSetUserWaypointOnMap(map)
+end
+
+-- The client's waypoint goes to `place`; with `track` the arrow follows it, as a Go asks.
+---@param place {map: integer, x: number, y: number}
+---@param track? boolean
+function Integrations.SetWaypoint(place, track)
+	C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(place.map, place.x, place.y))
+	if track then
+		C_SuperTrack.SetSuperTrackedUserWaypoint(true)
 	end
 end
+
+function Integrations.ClearWaypoint()
+	C_Map.ClearUserWaypoint()
+	C_SuperTrack.SetSuperTrackedUserWaypoint(false)
+end
+
 -- A developer diagnostic for the travel line and guidance state (/agf travel): why a step shows no Shortest Path line
--- is otherwise invisible headlessly. Raw literals on purpose (returned, never passed straight to Print).
+-- is otherwise invisible headlessly. Raw literals on purpose (returned, never passed straight to Print). `guidance` is
+-- Guidance's own part of the line.
+---@param guidance string
 ---@return string
-function Integrations.Debug()
+function Integrations.Debug(guidance)
 	local step = ns.Route().steps[1]
 	local api = SPF()
-	return (
-		"spf=%s guiding=%s arrived=%s stopped=%s ours=%s guidedN=%d step1=%s here=%s "
-		.. "line=%s min=%s combat=%s taxi=%s"
-	):format(
+	return ("spf=%s guiding=%s %s step1=%s here=%s line=%s min=%s combat=%s taxi=%s"):format(
 		tostring(api ~= nil),
 		tostring(Integrations.Guiding()),
-		tostring(arrived),
-		tostring(stopped),
-		tostring(ours),
-		#guided,
+		guidance,
 		tostring(step and step.key),
 		tostring(step and step.here),
 		tostring(travel and travel.line),
@@ -864,36 +622,6 @@ function Integrations.Debug()
 		tostring(InCombatLockdown()),
 		tostring(UnitOnTaxi and UnitOnTaxi("player"))
 	)
-end
-
-ns.OnRouteChange(Follow)
-
--- Shortest Path ending our journey and the player clearing or moving the waypoint: the super-tracking events Shortest
--- Path itself registers. Handled on the next frame, once its own handler has run, with the guide open or closed.
-local events, eventPending = CreateFrame("Frame"), false
-events:RegisterEvent("SUPER_TRACKING_CHANGED")
-events:RegisterEvent("USER_WAYPOINT_UPDATED")
-events:SetScript("OnEvent", function()
-	if not eventPending then
-		eventPending = true
-		C_Timer.After(0, function()
-			eventPending = false
-			Follow()
-			NotifyGuidance()
-		end)
-	end
-end)
-
--- The chosen journey whose route the player cleared or another journey replaced, until something is handed again.
----@return string?
-function Integrations.Stopped()
-	return stopped
-end
-
--- Our journey reached its last stop, and nothing was handed since.
----@return boolean
-function Integrations.Arrived()
-	return arrived and not Integrations.Guiding()
 end
 
 ---@return string?

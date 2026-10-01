@@ -201,7 +201,7 @@ end
 h.MovePlayer(1413, 0.45, 0.6)
 h.ns.Invalidate()
 h.flush()
-h.ns.Integrations.Navigate(h.ns.Route().steps[1])
+h.ns.Guidance.Navigate(h.ns.Route().steps[1])
 h.flush()
 h.providers[1]:RefreshAllData()
 out.map = { stops = stops, pins = Pins(h), player = { map = h.player.map, x = h.player.x, y = h.player.y } }

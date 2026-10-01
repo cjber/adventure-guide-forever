@@ -150,13 +150,8 @@ function Order.CanMove(from, to)
 end
 
 local function Changed()
-	local guiding = ns.Prefs().guided == ns.Prefs().journey and ns.Integrations.Owns()
 	ns.Invalidate()
-	if guiding then
-		C_Timer.After(0, function()
-			ns.StartRoute()
-		end)
-	end
+	ns.Guidance.Reroute()
 end
 
 function Order.Move(from, to)
