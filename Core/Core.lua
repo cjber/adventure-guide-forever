@@ -461,11 +461,7 @@ end)
 -- the only route that stops to train; combat's cheap rebuild keeps them, as Tweaks Forever has no answer in a fight.
 ---@type AGFTraining?
 local training
-local trained = false
 local trainingEndedBySpell = false
----@type table<integer, AGFLogQuest>
-local buildLog = {}
-
 -- In combat only the cheap rebuild runs (the log's steps; the rest as the last full build left them), and the full
 -- one waits for PLAYER_REGEN_ENABLED: looting a quest item mid-fight must not cost a frame.
 local function BuildRoute()
@@ -476,33 +472,36 @@ local function BuildRoute()
 	if ns.Geometry and ns.Geometry.EnsureNative then
 		ns.Geometry.EnsureNative()
 	end
-	local state, prefs, player = ns.State, ns.Prefs(), ns.State.Player()
-	buildLog = state.Log()
-	if InCombatLockdown() then
-		trained = false
+	local state, prefs, player, combat = ns.State, ns.Prefs(), ns.State.Player(), InCombatLockdown()
+	local log, trained = state.Log(), false
+	if combat then
 		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
-		player.train = training
-		return ns.Model.Refresh(ns.Data, player, state.Completed(), buildLog, prefs, rawRoute, state.MapName)
-	end
-	local previous, known = training, false
-	if prefs.journey then
-		training, known = ns.Integrations.Training()
 	else
-		training = nil
+		local previous, known = training, false
+		if prefs.journey then
+			training, known = ns.Integrations.Training()
+		else
+			training = nil
+		end
+		trained = trainingEndedBySpell and previous ~= nil and known and training == nil
+		trainingEndedBySpell = false
 	end
-	trained = trainingEndedBySpell and previous ~= nil and known and training == nil
-	trainingEndedBySpell = false
 	player.train = training
-	return ns.Model.Plan(
-		ns.Data,
-		player,
-		state.Completed(),
-		buildLog,
-		prefs,
-		state.MapName,
-		state.InstanceName,
-		rawRoute
-	)
+	return ns.Shown.Build({
+		data = ns.Data,
+		player = player,
+		completed = state.Completed(),
+		log = log,
+		prefs = prefs,
+		mapName = state.MapName,
+		instanceName = state.InstanceName,
+		last = rawRoute,
+		combat = combat,
+		-- The step sound hears the whole route, before the session trims it.
+		observe = function(full)
+			ns.Sound.Observe(cachedRoute, full, state.Completed(), log, trained)
+		end,
+	})
 end
 
 -- The "you're here" head (docs/design.md §4.2): the route is rebuilt on events, never as the player moves, save that
@@ -599,15 +598,13 @@ function ns.Resume(step)
 	return resume and resume.key == step.key and resume.reason or nil
 end
 
--- Commits a finished full build: the plan is atomic, so Order/Sound/Session/Guidance.Ended and the callers all run on
--- the frame the last slice of the rebuild finished, never on a partial route.
----@param route AGFRoute
-local function CommitRoute(route)
-	local previous = cachedRoute
-	rawRoute = route
-	ns.Order.Apply(rawRoute, ns.Prefs())
-	ns.Sound.Observe(previous, rawRoute, ns.State.Completed(), buildLog, trained)
-	cachedRoute = ns.Session.Apply(rawRoute)
+-- Commits a finished build (Shown.Build's two routes): the plan is atomic, so its order, sound and session, then
+-- Guidance.Ended and the callers, all run on the frame the last slice of the rebuild finished, never on a partial
+-- route.
+---@param shown AGFRoute
+---@param full AGFRoute
+local function CommitRoute(shown, full)
+	cachedRoute, rawRoute = shown, full
 	dirty = false
 	if not InCombatLockdown() then
 		ns.Guidance.Ended(rawRoute)
@@ -653,7 +650,7 @@ local function Rebuild()
 		-- The catalogue is still building: hold the route rather than build a log-only one that flips.
 		return
 	end
-	CommitRoute(BuildRoute())
+	CommitRoute(BuildRoute()) -- multi-value: the shown route and the full one
 end
 
 ---@return AGFRoute
@@ -743,11 +740,11 @@ local function StepRebuild()
 		flightStart = invalidations
 		rebuildCo = coroutine.create(BuildRoute)
 	end
-	local ok, route = coroutine.resume(rebuildCo)
+	local ok, shown, full = coroutine.resume(rebuildCo)
 	if not ok then
 		rebuildCo = nil
 		pendingRebuild = false
-		error(route, 0)
+		error(shown, 0)
 	end
 	if coroutine.status(rebuildCo) == "suspended" then
 		-- Another slice of the same build is due next frame.
@@ -755,7 +752,7 @@ local function StepRebuild()
 		return
 	end
 	rebuildCo = nil
-	CommitRoute(route)
+	CommitRoute(shown, full)
 	pendingRebuild = false
 	FinishRebuild()
 	-- A listener that invalidated during FinishRebuild's notify already set `pendingRebuild` and queued its own step,

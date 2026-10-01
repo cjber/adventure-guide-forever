@@ -250,7 +250,7 @@
 ---@field stranded? true no next zone (roadmap #21): the dungeon card came whatever the Dungeons toggle says
 ---@field steps AGFStep[] that journey's steps, never more than MAX_STEPS
 ---@field skipped? table<string, boolean> the skipped keys a full build still had a step for; nil after the combat one
----@field orders? table<string, AGFOrder> each card's committed order by journey key, which the next build keeps to
+---@field orders? table<string, AGFOrder> each card's committed order by journey key, which the next build keeps to; the planner's own, read by nothing else
 ---@field here? string the key of the area the player stood in (step 1's `here`), which the next build lets go only past HERE_MARGIN
 
 -- A card's committed order (docs/design.md §4.3): its steps' identities in order (Model.lua Idents), and the quests
@@ -280,11 +280,18 @@
 ---@field Search fun(data: AGFData, player: AGFPlayer, query: string, title?: fun(questID: integer): string?): integer[] up to 10 quest IDs whose title holds `query`, by title
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
 ---@field Story fun(data: AGFData, questID: integer): AGFStory? the chain the quest belongs to; nil when it is in none, or the way back forks
----@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?)): AGFJourney[], boolean
----@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?), last?: AGFRoute): AGFRoute
+---@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?), skippedQuests?: table<string, integer[]>): AGFJourney[], boolean
+---@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?), last?: AGFRoute, inputs?: AGFPlanInputs): AGFRoute
 ---@field Here fun(data: AGFData, where?: {map?: integer, x?: number, y?: number}, steps: AGFStep[], held?: string): integer? the open area step `where` stands in: the head when it is one, else the first; `held`, the key of the one stood in last, lets go past a margin
 ---@field Yards fun(data: AGFData, a: {map: integer, x: number, y: number}, b: {map: integer, x: number, y: number}): number? yards between two places on one continent the data places; nil otherwise
----@field Refresh fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, last: AGFRoute, mapName?: fun(map: integer): string?): AGFRoute the cheap in-combat rebuild: the log's steps fresh, the rest from `last`
+---@field Refresh fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, last: AGFRoute, mapName?: (fun(map: integer): string?), inputs?: AGFPlanInputs): AGFRoute the cheap in-combat rebuild: the log's steps fresh, the rest from `last`
+
+-- What the player's order, skips and session ask of a build, as plain values (Shown.Build gathers them); Model.Plan
+-- reads no other module.
+---@class AGFPlanInputs
+---@field skippedQuests? table<string, integer[]> the quests of each skipped giver, by skipped key: no route offers them
+---@field committed? {journey: string, visits?: table<string, string>} the session's commitment: its journey's town actions keep their visit identities
+---@field forget? table<string, true> journeys whose committed order (`AGFRoute.orders`) this build lets go
 
 ---@class AGFState
 ---@field RunSpeed fun(): number last readable positive run speed, including mounts and slows
@@ -1135,7 +1142,7 @@
 ---@field minutes integer
 ---@field keys table<string, boolean>
 ---@field members? table<string, table<string, boolean>>
----@field visits? table<string, string> town pickup/hand-in action to committed visit identity
+---@field visits? table<string, string> town pickup/hand-in action to committed visit identity (Model.NoteVisits)
 ---@field seconds? number
 ---@class AGFSessionInfo
 ---@field seconds? number
@@ -1153,7 +1160,8 @@
 ---@field Info fun(): AGFSessionInfo
 ---@field Work fun(step: AGFStep): number?
 ---@field Prefix fun(steps: AGFStep[], seconds: table<integer, number>, budget: number): integer, number
----@field Apply fun(route: AGFRoute): AGFRoute
+---@field Committed fun(): AGFSessionCommit? the commitment a build keeps its visit identities to; nil once the length changed
+---@field Apply fun(route: AGFRoute, player: AGFPlayer): AGFRoute
 ---@field PendingWork fun(): boolean
 ---@field NextEstimate fun(api: AGFSPFAPI): boolean
 
@@ -1163,12 +1171,27 @@
 ---@field Reset fun()
 ---@field IsCustom fun(): boolean
 ---@field SkipGiver fun(stepKey: string, giverKey: string): boolean
----@field SkippedQuests fun(seen?: table<string, boolean>): table<integer, true>
----@field IsGiverSkipped fun(stepKey: string, giverKey: string): boolean
+---@field SkippedQuests fun(): table<string, integer[]>
 ---@field Dependencies fun(steps: AGFStep[]): table<integer, table<integer, boolean>>
 ---@field Valid fun(steps: AGFStep[], cap?: integer, log?: table<integer, AGFLogQuest>): boolean
 ---@field Merge fun(steps: AGFStep[], keys?: string[], cap?: integer, log?: table<integer, AGFLogQuest>): AGFStep[]
----@field Apply fun(route: AGFRoute, prefs: AGFPrefs)
+
+-- One build's snapshot of the player (Shown.Build): Core.lua reads the client once and every stage shares it.
+---@class AGFShownInput
+---@field data AGFData
+---@field player AGFPlayer
+---@field completed table<integer, boolean>
+---@field log table<integer, AGFLogQuest>
+---@field prefs AGFPrefs
+---@field mapName? fun(map: integer): string?
+---@field instanceName? fun(id: integer): string?
+---@field last? AGFRoute the full route of the build before
+---@field combat? boolean the cheap in-combat build (Model.Refresh), which needs `last`
+---@field observe? fun(full: AGFRoute) called with the ordered route before the session trims it
+
+---@class AGFShown
+---@field Build fun(input: AGFShownInput): AGFRoute, AGFRoute
+---@field Forget fun(journey: string)
 
 ---@class AGFSound
 ---@field ClientEvent fun()
@@ -1178,13 +1201,17 @@
 ---@field Advice fun(data: AGFData, player: AGFPlayer, steps: AGFStep[], bind?: string, locale?: string): AGFAside?
 
 ---@class AGFModel
----@field TownChecklist fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, step: AGFStep, previous?: AGFStep)
+---@field TownChecklist fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, step: AGFStep, previous?: AGFStep, skipped?: table<string, boolean>)
+---@field Visit fun(step: AGFStep): string the visit's identity: `orderKey`, else `key`
+---@field GiverSkip fun(step: AGFStep, giverKey: string): string the skipped key of one giver on a town visit
+---@field NoteVisits fun(visits: table<string, string>, step: AGFStep) records a town visit's actions under its identity, for a session's commitment
 ---@field StepTitle fun(data: AGFData, log: table<integer, AGFLogQuest>, step: AGFStep)
 ---@class AGFNamespace
 ---@field Providers AGFProviders
 ---@field PvP AGFPvP
 ---@field Session AGFSession
 ---@field Order AGFOrderModule
+---@field Shown AGFShown
 ---@field Sound AGFSound
 ---@field Hearth AGFHearth
 

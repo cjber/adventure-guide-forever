@@ -41,6 +41,8 @@ commit the PNGs it rewrites in `docs/screenshots/`; two runs give byte-identical
 - `Integrations/` — QuestieDB, companion addons and dungeon providers.
 - `UI/` — guide windows, hints, map pins, settings and the private tracker host.
 - `Planning/Model.lua` — the headless-testable planner (eligibility, zones, route); `Core/State.lua` reads the client.
+- `Planning/Shown.lua` — the route as shown: `Shown.Build` runs the planner, the player's order and the session's trim
+  over one snapshot; Core's rebuild is its one caller, and the planner reads no other module.
 - `Integrations/Integrations.lua` — Shortest Path Forever's public API when loaded, the native waypoint otherwise.
 - `Core/Guidance.lua` — the guidance lifecycle (choose, start, stop, restore, follow, end); the one writer of
   `prefs.guided` and `prefs.waypoint`.

@@ -161,18 +161,18 @@ do
 	eq(O.CanMove(4, 1), true)
 	eq(O.Move(4, 1), true)
 	eq(O.IsCustom(), true)
-	O.Apply(route, h.ns.Prefs())
-	eq(route.steps[1], extra)
+	eq(O.Merge(steps, h.ns.Prefs().customOrders.test)[1], extra)
 	O.Reset()
 	eq(O.IsCustom(), false)
 	h.ns.Prefs().sessionMinutes = 15
-	local trimmed = S.Apply(route)
+	local player = h.ns.State.Player()
+	local trimmed = S.Apply(route, player)
 	eq(trimmed.chosen, true)
 	local saved = h.ns.Prefs().sessionCommit
 	eq(saved ~= nil, true)
 	local added = step("added", "trainer")
 	route.steps = { added }
-	trimmed = S.Apply(route)
+	trimmed = S.Apply(route, player)
 	eq(#trimmed.steps, 0, "new tasks do not refill")
 	eq(trimmed.chosen, true, "empty keeps choice")
 	eq(S.Info().empty, true)
@@ -353,14 +353,15 @@ do
 	local route = { chosen = true, journey = "test", journeys = {}, steps = { work } }
 	route.journeys = { { key = "test", steps = route.steps } }
 	h.ns.Prefs().sessionMinutes, h.ns.Prefs().sessionCommit = 15, nil
-	local trimmed = S.Apply(route)
+	local player = h.ns.State.Player()
+	local trimmed = S.Apply(route, player)
 	eq(#trimmed.steps, 1, "existing carried work fits")
 	work.quests = { 1, 2 }
 	work.objectives[2] = { id = 2, slot = 0, need = 1, have = 0 }
-	eq(#S.Apply(route).steps, 0, "new merged quest does not refill the session")
+	eq(#S.Apply(route, player).steps, 0, "new merged quest does not refill the session")
 	work.quests, work.objectives[2] = { 1 }, nil
 	route.steps = { pick, work, hand }
-	eq(#S.Apply(route).steps, 0, "a new prerequisite cannot be omitted")
+	eq(#S.Apply(route, player).steps, 0, "a new prerequisite cannot be omitted")
 end
 
 -- Completion is evidenced by objectives, not merely by a vanished route row.
