@@ -109,4 +109,45 @@ ns.Order.Reset()
 Settle()
 eq(ns.Route().steps[1].key, "a")
 eq(ns.Order.IsCustom(), false)
+
+-- Without SPF, local session estimates use the live run speed, even while stationary.
+local fallback = harness.load()
+local fns = fallback.ns
+local speed, readable = 14, true
+fallback.G.GetUnitSpeed = function()
+	return 0, speed
+end
+fallback.G.canaccessvalue = function()
+	return readable
+end
+fns.Model.Yards = function()
+	return 140
+end
+fns.Model.Plan = function()
+	local localSteps = { Step("speed", 0.3) }
+	local card =
+		{ key = "speed", kind = "calling", title = "Training", subline = "Training", map = 1413, steps = localSteps }
+	return { journey = "speed", chosen = fns.Prefs().journey == "speed", steps = localSteps, journeys = { card } }
+end
+fns.Model.Refresh = fns.Model.Plan
+fns.Session.Set(15)
+fns.Choose("speed", false)
+for _ = 1, 40 do
+	fallback.tick()
+end
+eq(fns.Session.Info().seconds, 20, "stationary mounted fallback")
+speed = 3.5
+fns.Session.Set(30)
+for _ = 1, 40 do
+	fallback.tick()
+end
+eq(fns.Session.Info().seconds, 50, "slowed fallback")
+readable = false
+speed = 14
+fns.Session.Set(60)
+for _ = 1, 40 do
+	fallback.tick()
+end
+eq(fns.Session.Info().seconds, 50, "secret fallback retains readable speed")
+eq(#fallback.errors, 0, table.concat(fallback.errors, "\n"))
 print(("session_spec: %d checks passed"):format(checks))

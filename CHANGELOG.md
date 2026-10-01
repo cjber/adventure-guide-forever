@@ -11,6 +11,12 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.6.5] - 2026-10-01
+
+- **Session estimates follow your speed.** Without Shortest Path installed, local travel estimates account for mounts and slows, keeping the last readable speed when combat hides it.
+
+- **Keep guides clear of quests in combat.** Companion sections stay clear when the quest list grows during a fight. Detaching restores the quest tracker’s original Edit Mode position.
+
 ## [0.6.4] - 2026-09-30
 
 - **Move the shared tracker.** Turn off Attach to quest tracker in Settings to drag all Forever sections together. The position survives `/reload`.

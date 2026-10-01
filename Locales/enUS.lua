@@ -492,8 +492,8 @@ ns.L = {
 	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "Move the shared tracker. Turn off Attach to quest tracker in Settings "
-		.. "to drag all Forever sections together.",
+	WHATS_NEW = "Session estimates follow your speed. Without Shortest Path installed, "
+		.. "travel estimates account for mounts and slows.",
 	DUNGEON_CLASSIC_GUIDE = "Adventure Guide for Classic",
 	DUNGEON_CLASSIC_GUIDE_TOOLTIP = "Open Adventure Guide for Classic for boss tactics, models and loot.",
 	DUNGEON_MAPS_TAB = "Maps",

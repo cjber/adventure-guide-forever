@@ -406,6 +406,12 @@ function harness.load(options)
 	function Methods:GetTop()
 		return self.rect and self.rect[2] + self.rect[4]
 	end
+	function Methods:GetLeft()
+		return self.rect and self.rect[1]
+	end
+	function Methods:GetRight()
+		return self.rect and self.rect[1] + self.rect[3]
+	end
 	function Methods:SetScale(scale)
 		self.scale = scale
 	end
@@ -1366,6 +1372,12 @@ function harness.load(options)
 	NewRegion("DropdownButton", "AddonCompartmentFrame", G.UIParent)
 
 	-- The player.
+	G.GetUnitSpeed = function()
+		return 0, 7
+	end
+	G.canaccessvalue = function()
+		return true
+	end
 	G.UnitLevel = function()
 		return player.level
 	end
