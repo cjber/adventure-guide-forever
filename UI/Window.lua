@@ -537,7 +537,13 @@ local function RestorePosition()
 	---@cast frame -?
 	local position = ns.WindowDB().position
 	frame:ClearAllPoints()
-	if type(position) == "table" and type(position.point) == "string" then
+	if
+		type(position) == "table"
+		and type(position.point) == "string"
+		and type(position.relativePoint) == "string"
+		and type(position.x) == "number"
+		and type(position.y) == "number"
+	then
 		frame:SetPoint(position.point, UIParent, position.relativePoint, position.x, position.y)
 	else
 		frame:SetPoint("CENTER", UIParent, "CENTER", 0, 40)
