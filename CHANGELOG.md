@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Other addons can follow the guide.** `AdventureGuideForever.API` tells an addon which stop the tracker shows and the stops after it, with each town's hand-in and pickup counts. See `docs/api.md`.
+
 ## [0.6.5] - 2026-10-01
 
 - **Session estimates follow your speed.** Without Shortest Path installed, local travel estimates account for mounts and slows, keeping the last readable speed when combat hides it.

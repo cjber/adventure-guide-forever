@@ -723,6 +723,13 @@ function ns.Route()
 	return cachedRoute
 end
 
+-- Whether ns.Route() answers from the committed route: false while one is due or being built, when reading it would
+-- build one in the caller's frame.
+---@return boolean
+function ns.RouteSettled()
+	return not dirty and not rebuildCo and ns.State.Ready()
+end
+
 -- The journey the route is showing (the chosen one, else the first card's), for the tracker's title line and the
 -- map's way back to the story's start.
 ---@return AGFJourney?

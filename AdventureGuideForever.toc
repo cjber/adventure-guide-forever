@@ -27,6 +27,7 @@ Core\State.lua
 Planning\Geometry.lua
 Planning\Focus.lua
 Integrations\Integrations.lua
+Core\API.lua
 Integrations\Companions.lua
 Integrations\Providers.lua
 Integrations\Raids.lua
