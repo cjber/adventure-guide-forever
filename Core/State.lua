@@ -5,6 +5,17 @@ local _, ns = ...
 local State = {}
 ns.State = State
 
+local lastRunSpeed = 7
+
+---@return number
+function State.RunSpeed()
+	local _, speed = GetUnitSpeed("player")
+	if canaccessvalue(speed) and type(speed) == "number" and speed > 0 and speed < math.huge then
+		lastRunSpeed = speed
+	end
+	return lastRunSpeed
+end
+
 ---@return integer
 local function RaceBit()
 	local _, _, raceID = UnitRace("player")

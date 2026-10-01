@@ -1372,6 +1372,12 @@ function harness.load(options)
 	NewRegion("DropdownButton", "AddonCompartmentFrame", G.UIParent)
 
 	-- The player.
+	G.GetUnitSpeed = function()
+		return 0, 7
+	end
+	G.canaccessvalue = function()
+		return true
+	end
 	G.UnitLevel = function()
 		return player.level
 	end

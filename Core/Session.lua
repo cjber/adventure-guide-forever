@@ -189,12 +189,13 @@ function Session.Apply(route)
 		if #route.steps == 0 then
 			Commit(job)
 		elseif not ns.Integrations.Provider() then
+			local speed = ns.State.RunSpeed()
 			for index, step in ipairs(job.steps) do
 				local from = index == 1 and job.origin or job.steps[index - 1]
 				-- Geometry alone only establishes a local outdoor leg.
 				local yards = from.map == step.map and ns.Model.Yards(ns.Data, from, step)
 				local work = Session.Work(step)
-				job.seconds[index] = yards and work and yards / 7 + work or nil
+				job.seconds[index] = yards and work and yards / speed + work or nil
 			end
 			Commit(job)
 		else

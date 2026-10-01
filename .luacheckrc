@@ -58,6 +58,8 @@ read_globals = { "ShowUIPanel", "HideUIPanel", "CreateFramePoolCollection", "C_X
 	"InCombatLockdown",
 	"UnitOnTaxi",
 	-- State.lua
+	"GetUnitSpeed",
+	"canaccessvalue",
 	"bit",
 	"UnitRace",
 	"UnitClass",
