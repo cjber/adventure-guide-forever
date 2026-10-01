@@ -440,6 +440,10 @@ end
 ---@type AGFRoute
 local cachedRoute = { journeys = {}, chosen = false, steps = {} }
 local rawRoute = cachedRoute
+-- The player, completed quests and log the cached route was planned from (ns.Snapshot); nil while no build stands
+-- behind the route (completion data not loaded, QuestieDB's catalogue still building).
+---@type AGFSnapshot?
+local snapshot
 local dirty = true
 local pendingRebuild = false
 -- The rebuild coroutine (see StepRebuild): nil when no build is in flight. `invalidations` counts ns.Invalidate
@@ -487,10 +491,12 @@ local function BuildRoute()
 		trainingEndedBySpell = false
 	end
 	player.train = training
-	return ns.Shown.Build({
+	---@type AGFSnapshot
+	local world = { player = player, completed = state.Completed(), log = log }
+	local shown, full = ns.Shown.Build({
 		data = ns.Data,
 		player = player,
-		completed = state.Completed(),
+		completed = world.completed,
 		log = log,
 		prefs = prefs,
 		mapName = state.MapName,
@@ -498,10 +504,11 @@ local function BuildRoute()
 		last = rawRoute,
 		combat = combat,
 		-- The step sound hears the whole route, before the session trims it.
-		observe = function(full)
-			ns.Sound.Observe(cachedRoute, full, state.Completed(), log, trained)
+		observe = function(ordered)
+			ns.Sound.Observe(cachedRoute, ordered, world, trained)
 		end,
 	})
+	return shown, full, world
 end
 
 -- The "you're here" head (docs/design.md §4.2): the route is rebuilt on events, never as the player moves, save that
@@ -598,13 +605,14 @@ function ns.Resume(step)
 	return resume and resume.key == step.key and resume.reason or nil
 end
 
--- Commits a finished build (Shown.Build's two routes): the plan is atomic, so its order, sound and session, then
--- Guidance.Ended and the callers, all run on the frame the last slice of the rebuild finished, never on a partial
--- route.
+-- Commits a finished build (Shown.Build's two routes and the snapshot they were planned from): the plan is atomic,
+-- so its order, sound and session, then Guidance.Ended and the callers, all run on the frame the last slice of the
+-- rebuild finished, never on a partial route.
 ---@param shown AGFRoute
 ---@param full AGFRoute
-local function CommitRoute(shown, full)
-	cachedRoute, rawRoute = shown, full
+---@param world AGFSnapshot
+local function CommitRoute(shown, full, world)
+	cachedRoute, rawRoute, snapshot = shown, full, world
 	dirty = false
 	if not InCombatLockdown() then
 		ns.Guidance.Ended(rawRoute)
@@ -643,14 +651,15 @@ local function Rebuild()
 	pendingRebuild = false
 	if not ns.State.Ready() then
 		-- Completed-quest data hasn't loaded yet; an empty route beats a wrong one.
-		cachedRoute = { journeys = {}, chosen = false, steps = {} }
+		cachedRoute, snapshot = { journeys = {}, chosen = false, steps = {} }, nil
 		return
 	end
 	if ns.QuestieBuilding() then
 		-- The catalogue is still building: hold the route rather than build a log-only one that flips.
+		snapshot = nil
 		return
 	end
-	CommitRoute(BuildRoute()) -- multi-value: the shown route and the full one
+	CommitRoute(BuildRoute()) -- multi-value: the shown route, the full one and their snapshot
 end
 
 ---@return AGFRoute
@@ -661,6 +670,17 @@ function ns.Route()
 		Rebuild()
 	end
 	return cachedRoute
+end
+
+-- What ns.Route() was planned from: the one read of the player, the completed quests and the quest log its build
+-- took. A view drawing the route reads this, so it agrees with the steps it draws and walks no quest log of its own
+-- (every change to any of the three invalidates the route, so the next build brings the next snapshot). A fresh read
+-- while no build stands behind the route. Never written to; what is not the route's (the map the player is on now,
+-- another dungeon's quests) is still asked of ns.State.
+---@return AGFSnapshot
+function ns.Snapshot()
+	ns.Route()
+	return snapshot or { player = ns.State.Player(), completed = ns.State.Completed(), log = ns.State.Log() }
 end
 
 -- The journey the route is showing (the chosen one, else the first card's), for the tracker's title line and the
@@ -726,7 +746,7 @@ local function StepRebuild()
 		if not ns.State.Ready() then
 			-- Completed-quest data hasn't loaded yet; an empty route beats a wrong one.
 			pendingRebuild = false
-			cachedRoute = { journeys = {}, chosen = false, steps = {} }
+			cachedRoute, snapshot = { journeys = {}, chosen = false, steps = {} }, nil
 			FinishRebuild()
 			return
 		end
@@ -734,13 +754,14 @@ local function StepRebuild()
 			-- The catalogue is still building: hold the last route (or the empty one) so the display doesn't flip to a
 			-- log-only route that changes the moment the records land (docs/design.md §2.14).
 			pendingRebuild = false
+			snapshot = nil
 			FinishRebuild()
 			return
 		end
 		flightStart = invalidations
 		rebuildCo = coroutine.create(BuildRoute)
 	end
-	local ok, shown, full = coroutine.resume(rebuildCo)
+	local ok, shown, full, world = coroutine.resume(rebuildCo)
 	if not ok then
 		rebuildCo = nil
 		pendingRebuild = false
@@ -752,7 +773,7 @@ local function StepRebuild()
 		return
 	end
 	rebuildCo = nil
-	CommitRoute(shown, full)
+	CommitRoute(shown, full, world)
 	pendingRebuild = false
 	FinishRebuild()
 	-- A listener that invalidated during FinishRebuild's notify already set `pendingRebuild` and queued its own step,

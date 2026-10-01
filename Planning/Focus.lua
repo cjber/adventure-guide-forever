@@ -57,7 +57,7 @@ local function Here(route)
 	if not (first and first.here and first.objectives) then
 		return nil
 	end
-	local log = ns.State.Log()
+	local log = ns.Snapshot().log
 	local quests, seen = {}, {}
 	for _, objective in ipairs(first.objectives) do
 		local entry = log[objective.id]

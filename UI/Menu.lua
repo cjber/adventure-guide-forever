@@ -36,7 +36,7 @@ local function NotThisQuest(root, step)
 	if step.kind == "trainer" or step.kind == "battlemaster" or #step.quests == 0 then
 		return
 	end
-	local log = ns.State.Log()
+	local log = ns.Snapshot().log
 	local function Title(id)
 		local entry, quest = log[id], ns.Data.quests[id]
 		return (entry and entry.title) or (quest and quest.title) or step.title

@@ -414,7 +414,7 @@ local function CardTooltip(card)
 		GameTooltip_AddNormalLine(GameTooltip, note)
 	end
 	if journey.drop then
-		local log = ns.State.Log()
+		local log = ns.Snapshot().log
 		GameTooltip_AddNormalLine(GameTooltip, L.LOG_FULL_LIST)
 		for _, id in ipairs(journey.drop) do
 			local entry = log[id]
