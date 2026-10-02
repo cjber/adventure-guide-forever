@@ -639,6 +639,7 @@
 ---@field SetSetting fun(key: string, value: any)
 ---@field Prefs fun(): AGFPrefs
 ---@field Route fun(): AGFRoute the current route, rebuilt lazily when state or prefs change
+---@field Snapshot fun(): AGFSnapshot what the current route was planned from; a fresh read while no build stands behind it
 ---@field CurrentJourney fun(): AGFJourney? the journey the route shows (the chosen one, else the first card's)
 ---@field QuestieBuilding fun(): boolean QuestieDB's catalogue is still building: the route holds and the tracker waits
 ---@field Invalidate fun() mark the route stale and notify views
@@ -1176,6 +1177,13 @@
 ---@field Valid fun(steps: AGFStep[], cap?: integer, log?: table<integer, AGFLogQuest>): boolean
 ---@field Merge fun(steps: AGFStep[], keys?: string[], cap?: integer, log?: table<integer, AGFLogQuest>): AGFStep[]
 
+-- One rebuild's read of the client (Core.lua's BuildRoute): the route is planned from it, and it is kept beside the
+-- cached route for the views that draw that route (ns.Snapshot). Read-only.
+---@class AGFSnapshot
+---@field player AGFPlayer
+---@field completed table<integer, boolean>
+---@field log table<integer, AGFLogQuest>
+
 -- One build's snapshot of the player (Shown.Build): Core.lua reads the client once and every stage shares it.
 ---@class AGFShownInput
 ---@field data AGFData
@@ -1196,7 +1204,7 @@
 ---@class AGFSound
 ---@field ClientEvent fun()
 ---@field Complete fun(key: string, story?: boolean)
----@field Observe fun(previous: AGFRoute, current: AGFRoute, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, trained?: boolean)
+---@field Observe fun(previous: AGFRoute, current: AGFRoute, world: AGFSnapshot, trained?: boolean) the build's own snapshot, never a fresh read
 ---@class AGFHearth
 ---@field Advice fun(data: AGFData, player: AGFPlayer, steps: AGFStep[], bind?: string, locale?: string): AGFAside?
 

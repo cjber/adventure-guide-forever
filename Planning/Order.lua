@@ -126,7 +126,8 @@ function Order.CanMove(from, to)
 		return false
 	end
 	local moved = Moved(route.steps, from, to)
-	return moved ~= nil and Order.Valid(moved, ns.State.Player().logMax, ns.State.Log())
+	local world = ns.Snapshot()
+	return moved ~= nil and Order.Valid(moved, world.player.logMax, world.log)
 end
 
 local function Changed()

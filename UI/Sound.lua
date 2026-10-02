@@ -19,7 +19,8 @@ function Sound.Complete(key, story)
 	end
 end
 
-function Sound.Observe(previous, current, completed, log, trained)
+function Sound.Observe(previous, current, world, trained)
+	local completed, log = world.completed, world.log
 	if not previous.chosen or ns.Prefs().journey ~= previous.journey then
 		return
 	end
@@ -68,7 +69,7 @@ function Sound.Observe(previous, current, completed, log, trained)
 				end
 				ns.Model.TownChecklist(
 					ns.Data,
-					ns.State.Player(),
+					world.player,
 					completed,
 					log,
 					remaining --[[@as AGFStep]],

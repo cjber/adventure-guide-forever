@@ -292,9 +292,10 @@ end
 ---@param id integer
 ---@return boolean
 function Dungeons.Go(id)
-	local row = Dungeons.Quest(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), id)
+	local player = ns.State.Player()
+	local row = Dungeons.Quest(ns.Data, player, ns.State.Completed(), ns.State.Log(), id)
 	local place = row.place
-	if not place or not Dungeons.ForCharacter(ns.Data.quests[id], ns.State.Player()) then
+	if not place or not Dungeons.ForCharacter(ns.Data.quests[id], player) then
 		return false
 	end
 	return ns.Guidance.ShowOnMap({

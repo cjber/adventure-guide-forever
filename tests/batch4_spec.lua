@@ -373,7 +373,7 @@ do
 	local previous = { chosen = true, journey = "sound-test", steps = { work } }
 	local current = { chosen = true, journey = "sound-test", steps = {} }
 	local before = #h.sounds
-	h.ns.Sound.Observe(previous, current, {}, {})
+	h.ns.Sound.Observe(previous, current, { completed = {}, log = {} })
 	eq(#h.sounds, before, "abandoning does not play completion")
 	local log = {
 		[1] = {
@@ -385,8 +385,8 @@ do
 			},
 		},
 	}
-	h.ns.Sound.Observe(previous, current, {}, log)
-	h.ns.Sound.Observe(previous, current, {}, log)
+	h.ns.Sound.Observe(previous, current, { completed = {}, log = log })
+	h.ns.Sound.Observe(previous, current, { completed = {}, log = log })
 	eq(#h.sounds, before + 1, "completed area sounds once while another objective remains")
 	h.ns.Data = data
 end

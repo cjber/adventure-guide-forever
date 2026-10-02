@@ -54,13 +54,13 @@ end
 -- visible in the addon-owned block even when the client has not supplied live
 -- quest text yet; the generated data still has the title and level.
 local function QuestLine(step, questID)
-	local log = ns.State.Log()
-	local entry = log and log[questID]
+	local world = ns.Snapshot()
+	local entry = world.log[questID]
 	local quest = ns.Data.quests[questID]
 	local title = (entry and entry.title) or (quest and quest.title) or step.questTitle or step.title
 	local level = (entry and entry.level) or (quest and quest.level)
 	if level == -1 then
-		level = ns.State.Player().level
+		level = world.player.level
 	end
 	if level and level > 0 then
 		local color = GetQuestDifficultyColor(level)

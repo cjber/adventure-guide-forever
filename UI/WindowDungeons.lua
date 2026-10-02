@@ -381,10 +381,14 @@ local function QuestRows()
 	if not page then
 		return {}
 	end
+	-- One read of the player and one walk of the quest log for the whole list, taken when the first chain row needs it.
+	---@type AGFPlayer?, table<integer, AGFLogQuest>?
+	local player, log
 	local values = {}
 	for _, quest in ipairs(page.quests) do
 		values[#values + 1] = { quest = quest }
 		if expanded[quest.id] then
+			player = player or ns.State.Player()
 			local chain = Dungeons.Chain(ns.Data, quest.id, function() end)
 			local alternatives = {}
 			for _, id in ipairs(chain) do
@@ -393,9 +397,10 @@ local function QuestRows()
 				end
 			end
 			for _, id in ipairs(chain) do
-				if id ~= quest.id and Dungeons.ForCharacter(ns.Data.quests[id], ns.State.Player()) then
+				if id ~= quest.id and Dungeons.ForCharacter(ns.Data.quests[id], player) then
+					log = log or ns.State.Log()
 					values[#values + 1] = {
-						quest = Dungeons.Quest(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), id),
+						quest = Dungeons.Quest(ns.Data, player, ns.State.Completed(), log, id),
 						chain = true,
 						alternative = alternatives[id],
 					}
