@@ -9,10 +9,10 @@ local Window, Overview = ns.Window, ns.Overview
 -- click featuring one. What Legacy counts is completion, never a quest the player can take now. Without a Legacy
 -- Forever that has the API the tab stays, greyed, and says what to install.
 
-local FEATURED_WIDTH, FEATURED_HEIGHT, FEATURED_SPAN, RING = 440, 178, 900, 44
+local FEATURED_WIDTH, FEATURED_HEIGHT, SPAN, RING = 440, 178, 900, 44
 local CATEGORY_TOP, CATEGORY_PITCH, CATEGORY_COLUMNS = 72, 16, 2
 local TARGET_ROWS, TARGET_HEIGHT, TARGET_PITCH, HEAD = 3, 44, 49, 18
-local COLUMNS, GRID_GAP, GRID_SPAN, GRID_RING, GRID_PAD = 4, 10, 900, 30, 14
+local COLUMNS, GRID_GAP, GRID_RING, GRID_PAD = 4, 10, 30, 14
 local BAR_GAP = 8
 local LEGACY_ICON = "Legacy-Rewards-Tracker-Icon"
 local DONE_MARK = "|A:UI-QuestTracker-Tracker-Check:12:12|a"
@@ -193,15 +193,7 @@ end
 local function RefreshCard(card, zone, isFeatured)
 	card.zone = zone
 	local width, height = card:GetSize(true)
-	ns.ZoneIcon.SetBackdrop(
-		card.Art --[[@as AGFZoneBackdrop]],
-		width - 4,
-		height - 4,
-		zone.map,
-		0.5,
-		0.5,
-		isFeatured and FEATURED_SPAN or GRID_SPAN
-	)
+	ns.ZoneIcon.SetBackdrop(card.Art --[[@as AGFZoneBackdrop]], width - 4, height - 4, zone.map, 0.5, 0.5, SPAN)
 	card.Title:SetText(zone.name)
 	card.Reason:SetText(ZoneLine(zone))
 	local summary = zone.summary

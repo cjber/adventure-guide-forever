@@ -4,7 +4,7 @@ local _, ns = ...
 -- The raid tier registry (docs/dungeon-sources.md). WoW: Forever's announced raids are the 10-player Barrow Deeps
 -- and the 20-player Hyjal Summit, with the returning 40-player Onyxia's Lair; launch raids need no attunement.
 -- Barrow Deeps and Hyjal Summit have no client Map.ID in this build, so they stay listed here and enter the browser
--- the moment the client gains their map. The remaining raid Map.IDs the client still carries are not the announced
+-- once their rows are given a `map`. The remaining raid Map.IDs the client still carries are not the announced
 -- tier; they stay browsable under their own heading, and none of them claims a Classic attunement page.
 
 ---@class AGFRaid

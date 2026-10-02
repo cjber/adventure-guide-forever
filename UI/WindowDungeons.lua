@@ -147,12 +147,11 @@ end
 ---@field height number
 ---@field rowHeight number
 ---@field headingHeight number
----@field width number
 ---@field paint fun(row: AGFDungeonRow, value: table)
 
 ---@param widget AGFDungeonListWidget
 local function PaintList(widget)
-	local scroll = widget.frame:GetVerticalScroll() or 0
+	local scroll = widget.frame:GetVerticalScroll()
 	local values, tops, heights = widget.values, widget.tops, widget.heights
 	local first = 1
 	while first <= #values and tops[first] + heights[first] <= scroll do
@@ -211,7 +210,6 @@ local function List(parent, x, y, width, height, rowHeight, paint, click)
 		height = height,
 		rowHeight = rowHeight,
 		headingHeight = HEADING_H,
-		width = width,
 		paint = paint,
 	}
 	for index = 1, math.ceil(height / math.min(rowHeight, HEADING_H)) + 1 do
@@ -726,7 +724,7 @@ function Draw()
 		listSelection = dungeon.id
 		for index, entry in ipairs(list.values) do
 			if entry.id == dungeon.id then
-				local y, top = list.tops[index] or 0, list.frame:GetVerticalScroll() or 0
+				local y, top = list.tops[index], list.frame:GetVerticalScroll()
 				if y < top or y + list.heights[index] > top + list.height then
 					list.frame:SetVerticalScroll(math.min(y, math.max(0, list.child:GetHeight() - list.height)))
 				end
@@ -741,7 +739,6 @@ function Draw()
 		mapsButton:SetTabSelected(false)
 	end
 	other.rowHeight = (view == "prep" or view == "bosses") and ROW_H or 44
-	subTabs[3]:SetText(L.DUNGEON_BOSSES_TAB)
 	for index, key_ in ipairs({ "quests", "prep", "bosses", "loot" }) do
 		local muted = (key_ == "bosses" and not bosses and not source) or (key_ == "loot" and not source)
 		subTabs[index]:SetTabSelected(key_ == view)
