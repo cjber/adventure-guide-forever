@@ -196,7 +196,7 @@ end
 -- Every LFG dungeon ID the caller names, as {name, low, high}. GetLFGDungeonInfo returns the name first and the
 -- recommended levels 7th and 8th (same slot Dungeons.lua already reads); GetRealZoneText is the name fallback.
 -- The key is the LFG ID, not the instance Map.ID: overlay an instance by its own `.lfg` field (Merge matches those).
--- uiMapIDs omitted means none: the client exposes no list of LFG dungeons without C_LFGInfo, which this adapter
+-- lfgIDs omitted means none: the client exposes no list of LFG dungeons without C_LFGInfo, which this adapter
 -- deliberately does not pull in.
 ---@param api table
 ---@param lfgIDs? integer[]
@@ -225,9 +225,8 @@ function Geometry.Instances(api, lfgIDs)
 end
 
 -- Skill line names by SkillLine ID, as {name}, from the lines the character has (C_SkillInfo.GetNumSkillLines /
--- GetSkillLineInfo, or the Forever-missing globals GetNumSkillLines / GetSkillLineInfo) plus any IDs the caller
--- names. C_SkillInfo cannot name an unlearned line, so a quest's skill gate the character has never trained stays
--- on bundled data.
+-- GetSkillLineInfo) plus any IDs the caller names. C_SkillInfo cannot name an unlearned line, so a quest's skill
+-- gate the character has never trained stays on bundled data.
 ---@param api table
 ---@param skillLineIDs? integer[]
 ---@return table<integer, {name: string?}>
@@ -243,10 +242,8 @@ function Geometry.Skills(api, skillLineIDs)
 	local count
 	if type(skills.GetNumSkillLines) == "function" then
 		count = skills.GetNumSkillLines()
-	elseif type(api) == "table" and type(api.GetNumSkillLines) == "function" then
-		count = api.GetNumSkillLines()
 	end
-	local infoAt = skills.GetSkillLineInfo or (type(api) == "table" and api.GetSkillLineInfo)
+	local infoAt = skills.GetSkillLineInfo
 	for index = 1, type(count) == "number" and count or 0 do
 		local info = infoAt and infoAt(index)
 		if info and info.name and info.skillID and not info.isHeader then
@@ -458,9 +455,6 @@ end
 -- table QuestieSource throws away does not pin its section tables forever.
 local applied = setmetatable({}, { __mode = "k" })
 
--- Overlay the client onto whichever table the planner reads next, once per table. Reading ns.Data here (rather than
--- capturing a table up front) means the overlay lands on the table actually planned from, however far QuestieSource's
--- swap has got; a repeated call is a no-op.
 ---@param data? AGFData
 ---@param api? table for specs
 ---@return AGFData?

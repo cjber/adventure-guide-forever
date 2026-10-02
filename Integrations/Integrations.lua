@@ -620,7 +620,7 @@ function Integrations.Debug(guidance)
 		tostring(travel and travel.line),
 		tostring(travel and travel.minutes),
 		tostring(InCombatLockdown()),
-		tostring(UnitOnTaxi and UnitOnTaxi("player"))
+		tostring(UnitOnTaxi("player"))
 	)
 end
 

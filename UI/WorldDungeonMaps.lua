@@ -6,28 +6,28 @@ local host, view, button
 local enteredWorld, variablesLoaded = false, false
 local shownInstance
 
+local function hide()
+	if host then
+		host:Hide()
+		button:Hide()
+	end
+	shownInstance = nil
+end
+
 local function refresh()
 	if not enteredWorld or not variablesLoaded or not WorldMapFrame:IsShown() then
 		return
 	end
 	-- The overlay owns its frames; never create UI while the native map is locked.
 	if InCombatLockdown() then
-		if host then
-			host:Hide()
-			button:Hide()
-		end
-		shownInstance = nil
+		hide()
 		return
 	end
 	local _, instanceType, _, _, _, _, _, instance = GetInstanceInfo()
 	local current = C_Map.GetBestMapForUnit("player")
 	local available = instanceType == "party" and current and WorldMapFrame:GetMapID() == current
 	if not available then
-		if host then
-			host:Hide()
-			button:Hide()
-		end
-		shownInstance = nil
+		hide()
 		return
 	end
 	if shownInstance == instance then
@@ -35,11 +35,7 @@ local function refresh()
 	end
 	local maps = ns.Window.DungeonMaps(instance)
 	if #maps == 0 then
-		if host then
-			host:Hide()
-			button:Hide()
-		end
-		shownInstance = nil
+		hide()
 		return
 	end
 	if not host then

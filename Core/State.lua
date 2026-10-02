@@ -464,7 +464,6 @@ for _, event in ipairs({
 }) do
 	pcall(events.RegisterEvent, events, event)
 end
--- The first argument is PLAYER_ENTERING_WORLD's isInitialLogin, and QUEST_TURNED_IN's questID.
 -- The events that never move the client's quest points; every other one may.
 local KEEPS_POINTS = {
 	SKILL_LINES_CHANGED = true,
@@ -473,6 +472,7 @@ local KEEPS_POINTS = {
 	UPDATE_EXHAUSTION = true,
 	PLAYER_XP_UPDATE = true,
 }
+-- The first argument is PLAYER_ENTERING_WORLD's isInitialLogin, and QUEST_TURNED_IN's and QUEST_WATCH_UPDATE's questID.
 events:SetScript("OnEvent", function(_, event, arg)
 	if event == "QUEST_TURNED_IN" then
 		ns.Sound.ClientEvent()

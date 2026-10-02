@@ -70,8 +70,8 @@ for _, fixture in ipairs(characters.list) do
 	local player, completed, log, prefs = characters.Resolve(data, fixture)
 	local route = Model.Plan(data, player, completed, log, prefs)
 
-	-- F2: at most MAX_JOURNEYS journeys, each with at least one step the player can take now. The standing rules hold on
-	-- every card: nothing ineligible is suggested, and no step points where the data has no place.
+	-- F2: no journey is offered twice, and each has at least one step the player can take now. The standing rules hold
+	-- on every card: nothing ineligible is suggested, and no step points where the data has no place.
 	local unique = {}
 	for _, card in ipairs(route.journeys) do
 		equal(unique[card.key], nil, fixture.name .. ": no duplicate journey")
@@ -91,8 +91,7 @@ for _, fixture in ipairs(characters.list) do
 				equal(takeable, true, label .. ": " .. step.key .. " quest " .. id .. " is eligible or in the log")
 			end
 		end
-		-- The next-zone rule: another zone than the story's, one the player hasn't outgrown, with at least 3 quests
-		-- they can take now.
+		-- The next-zone rule: a zone the player hasn't outgrown, with at least one quest they can take now.
 		if journey.kind == "nextzone" then
 			local map, quests = tonumber(journey.key:match("%d+")), 0
 			for id, quest in pairs(data.quests) do
@@ -105,9 +104,6 @@ for _, fixture in ipairs(characters.list) do
 				end
 			end
 			equal(quests >= 1, true, label .. ": useful quests available now")
-			for _, other in ipairs(route.journeys) do
-				equal(other == journey or other.key ~= journey.key, true, label .. ": another zone than the story's")
-			end
 		end
 	end
 
@@ -261,9 +257,8 @@ for _, fixture in ipairs(characters.list) do
 	-- Deterministic: a second build of the same state gives the same text.
 	local again = Model.Plan(data, player, completed, log, prefs)
 	equal(Render(fixture, again), text, fixture.name .. ": rebuild")
-	-- The in-combat rebuild keeps MAX_JOURNEYS cards at most: a quest looted mid-fight brings a carry card the last build
-	-- lacked, in the story's wake as the full build orders them, and the last card not chosen makes way, as the full
-	-- build leaves it out (design §2.10).
+	-- The in-combat rebuild: a quest looted mid-fight brings a carry card the last build lacked, in the story's wake as
+	-- the full build orders them, and a chosen last card keeps its slot (design §2.10).
 	local saved, last = prefs.journey, route.journeys[#route.journeys]
 	local fight = { [168] = { id = 168, title = "Collecting Memories", level = 18, complete = true } }
 	prefs.journey = last and last.key

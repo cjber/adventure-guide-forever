@@ -132,10 +132,10 @@ local sessionEmpty
 ---@type AGFCheckLine[]
 local checks = {}
 
--- The aside's line above the cards.
 ---@class AGFSkipButton : Button
 ---@field Icon Texture the X, shaded apart from the highlight
 
+-- The aside's line above the cards.
 ---@class AGFAsideLine : Button
 ---@field Icon Texture
 ---@field Text FontString
@@ -606,8 +606,8 @@ end
 
 ---@param parent Frame
 local function BuildFooter(parent)
-	-- No Go: choosing a card starts its route. A choice made in combat says it waits, so it never reads as failed, and
-	-- a route that stopped says its card resumes it.
+	-- Choosing a card starts its route when the setting says so (Overview.CardClick). A choice made in combat says it
+	-- waits, so it never reads as failed, and a route that stopped says its card resumes it.
 	queuedText = parent:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
 	queuedText:SetPoint("BOTTOMLEFT", PAD, 15)
 	-- Shown only while our guidance runs (design §2.10): it never stops what the player or another addon started.
@@ -751,11 +751,10 @@ local function RefreshRow(row, step, index)
 	Overview.SetVerbIcon(row.Kind, step)
 end
 
--- `state`: "shown" (whole: the guide drew it with none chosen), "chosen" (whole and lit) or "compact" (another is
--- shown: icon and title only).
+-- `state`: "chosen" (whole and lit) or "compact" (another is shown: icon and title only).
 ---@param card AGFJourneyCard
 ---@param journey AGFJourney
----@param state "shown"|"chosen"|"compact"
+---@param state "chosen"|"compact"
 ---@return number height
 local function RefreshCard(card, journey, state)
 	local compact, chosen = state == "compact", state == "chosen"
@@ -1145,7 +1144,7 @@ local function LayoutJourneys(route)
 		end
 	end
 	if shownCard and shownJourney then
-		RefreshCard(shownCard, shownJourney, route.chosen and "chosen" or "shown")
+		RefreshCard(shownCard, shownJourney, "chosen")
 		shownCard:SetPoint("TOP", list, "TOP", 0, -top)
 		top = LayoutTrack(shownJourney, top + CARD_HEIGHT + CARD_GAP)
 		top = LayoutRows(route, top, false, shownJourney) + CARD_GAP

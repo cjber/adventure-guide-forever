@@ -110,7 +110,7 @@ local function Index(data)
 	return index
 end
 
--- Stories (docs/design.md §2.3): the chain a quest belongs to, from the data's `next` links, which nothing else reads.
+-- Stories (docs/design.md §2.3): the chain a quest belongs to, from the data's `next` links.
 -- `prev[id]` is the one quest whose `next` is id, or false when several lead into it. Memoized like Index.
 ---@class AGFChains
 ---@field prev table<integer, integer|false>
@@ -183,7 +183,7 @@ local ALL_CLASSES = 1 + 2 + 4 + 8 + 16 + 64 + 128 + 256 + 1024
 local function Covers(mask, bits)
 	for id = 0, 15 do
 		local bit = 2 ^ id
-		if math.floor(bits / bit) % 2 == 1 and not (not mask or mask == 0 or math.floor(mask / bit) % 2 == 1) then
+		if math.floor(bits / bit) % 2 == 1 and not HasBit(mask, bit) then
 			return false
 		end
 	end
@@ -289,8 +289,8 @@ end
 -- The one eligibility check (docs/design.md §2.4). The planner passes no `lines` and it stops at the first unmet
 -- requirement; Why passes `lines` and gets every requirement as a line. So the two never disagree: a quest is
 -- eligible exactly when every line is met. A met line that says nothing (level 1, a whole side's races, every
--- class) is left out. `level` optionally overrides the player's own level.
-local function Check(data, player, completed, log, id, groups, level, lines, names)
+-- class) is left out.
+local function Check(data, player, completed, log, id, groups, lines, names)
 	local quest = data.quests[id]
 	if not quest then
 		return false
@@ -313,7 +313,7 @@ local function Check(data, player, completed, log, id, groups, level, lines, nam
 			return false
 		end
 	end
-	met = (level or player.level) >= quest.min
+	met = player.level >= quest.min
 	if not met or (lines and quest.min > 1) then
 		if not Line(data, lines, met, "level", quest.min, names) then
 			return false
@@ -334,7 +334,7 @@ local function Check(data, player, completed, log, id, groups, level, lines, nam
 	-- A skill line the player hasn't learned has rank 0; a faction the client gives no standing for (the other side's)
 	-- meets neither a minimum nor a maximum, since the data can't say where it stands.
 	if quest.provider then
-		local available = (not quest.max or quest.max == 0 or (level or player.level) <= quest.max)
+		local available = (not quest.max or quest.max == 0 or player.level <= quest.max)
 				and player.questAvailable
 				and player.questAvailable(id)
 			or false
@@ -384,12 +384,12 @@ local function Check(data, player, completed, log, id, groups, level, lines, nam
 	return true
 end
 
-local function Eligible(data, player, completed, log, id, groups, level)
-	return Check(data, player, completed, log, id, groups, level)
+local function Eligible(data, player, completed, log, id, groups)
+	return Check(data, player, completed, log, id, groups)
 end
 
--- After the immutable side/level/race/class/start filters, these quests have no other policy to evaluate. Keep the
--- mutable completion and log checks in the caller, but avoid rewalking the full requirement checker on every rebuild.
+-- A quest with no requirement beyond completion, the log and the side/level/grey/start/race/class filters is open
+-- without rewalking the full requirement checker on every rebuild.
 local function SimpleOpen(quest, player, completed, log, id)
 	return not completed[id]
 		and not log[id]
@@ -418,7 +418,7 @@ end
 ---@return AGFWhyLine[]
 function Model.Why(data, player, completed, log, questID, names)
 	local lines = {}
-	Check(data, player, completed, log, questID, Index(data).groups, nil, lines, names)
+	Check(data, player, completed, log, questID, Index(data).groups, lines, names)
 	return lines
 end
 
@@ -607,10 +607,9 @@ local function Choices(data, player, completed, log, index, prefs, far)
 	for _, id in ipairs(candidateIDs) do
 		local quest = data.quests[id]
 		local instance = quest.dungeon ~= nil
-		-- The level and completion first: Eligible would say no to most for them, at more cost.
+		-- The completion first: Eligible would say no to most for it, at more cost.
 		if
-			quest.min <= player.level
-			and not completed[id]
+			not completed[id]
 			and ((instance and prefs.dungeons) or (not instance and prefs.quests))
 			and not Dropped(id)
 			and (pinned[id] or not Model.IsGray(quest.level, player.level))
@@ -639,7 +638,6 @@ function Model.Givers(data, player, completed, log, mapID)
 		local start = quest.start
 		if
 			start
-			and start.map == mapID
 			and not Model.IsGray(quest.level, player.level)
 			and Eligible(data, player, completed, log, id, index.groups)
 		then
@@ -1862,7 +1860,6 @@ end
 ---@field open? AGFStep the town's visit that hands out its quests and takes its finished ones
 ---@field stops AGFStep[] the areas and stops its laps go out to
 ---@field hands integer[] the quests a lap hands in back there, once all their objectives are done
----@field visited? boolean
 
 local SETTLE_SHARE = 0.15 -- a fresh order replaces the committed one only when it saves this share of the rest...
 local SETTLE_YARDS = 200 -- ...and this many yards
@@ -2383,7 +2380,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 		local pick, pickAnchor, pickKind, pickRank, pickValue, pickKey
 		-- The committed order holds every stop it has, in order (docs/design.md §4.3), so a rebuild or a move never
 		-- shuffles the route; a pinned quest (and the story's chapter) first among the rest; then the nearest action,
-		-- with a stop in the town the route is already in preferred while it is within the town linkage (AGREE).
+		-- with a stop in the town the route is already in preferred while it is within half a lap on its map.
 		-- The planned mode ranks the committed order, a pinned quest and the story's chapter above plain distance, and
 		-- finishes a town the route is already in (the look-ahead). The nearest mode ranks by distance alone.
 		local function Consider(step, anchor, cost, kind)
@@ -2403,16 +2400,12 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 					and Cost(anchor.pos, At(step)) <= LAP_YARDS / 2
 				pref = held and held - 6000000 or (pin and -5000000 or (lead and -4000000 or (same and -3000000 or 0)))
 			end
-			local value = cost
 			if
 				not pick
 				or pref < pickRank
-				or (
-					pref == pickRank
-					and (value < pickValue - 1e-6 or (value <= pickValue + 1e-6 and step.key < pickKey))
-				)
+				or (pref == pickRank and (cost < pickValue - 1e-6 or (cost <= pickValue + 1e-6 and step.key < pickKey)))
 			then
-				pick, pickAnchor, pickKind, pickRank, pickValue, pickKey = step, anchor, kind, pref, value, step.key
+				pick, pickAnchor, pickKind, pickRank, pickValue, pickKey = step, anchor, kind, pref, cost, step.key
 			end
 		end
 		for _, anchor in ipairs(list) do
@@ -3748,10 +3741,8 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 				)
 		end
 	end
-	for _, ranking in ipairs({ zones }) do
-		for place = 1, math.min(FITS, #ranking) do
-			here = here or ranking[place] == player.map
-		end
+	for place = 1, math.min(FITS, #zones) do
+		here = here or zones[place] == player.map
 	end
 	if here and player.map ~= best and Open(player.map) then
 		table.insert(tries, 1, player.map)
@@ -3818,13 +3809,12 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	if chosenZone and chosenZone ~= zone and not offered then
 		journeys[#journeys + 1] = NextZone(chosenZone)
 	end
-	-- The diversions share the slots the zones leave: each offers itself with how many quests it holds and
-	-- the level its newest one opened at, and the newest since then is built first, so a level just gained or a bracket
-	-- just opened takes the slot. Only as many are built as there are slots, and the chosen one always.
+	-- Each diversion offers itself with how many quests it holds and the level its newest one opened at, and the
+	-- newest is built first (DIVERSION_ORDER on a tie), so a level just gained or a bracket just opened leads.
 	local diversions = {}
-	local function Offer(kind, key, belongs, build, enough, from)
+	local function Offer(kind, key, belongs, build, from)
 		local quests, opened = Newest(data, from or eligible, belongs)
-		if opened and (key == prefs.journey or quests >= (enough or 1)) then
+		if opened then
 			diversions[#diversions + 1] = { kind = kind, key = key, opened = opened, quests = quests, build = build }
 		end
 	end
@@ -3843,7 +3833,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	if instance then
 		Offer("dungeon", "dungeon:" .. instance, InDungeon(instance), function(quests)
 			return DungeonJourney(data, player, completed, log, pool, prefs, mapName, instanceName, instance, quests)
-		end, nil, pool)
+		end, pool)
 	end
 	-- A way into an instance: the chain the player can take up that goes inside, when stranded or chosen,
 	-- and not the one the story already leads with.
@@ -3890,7 +3880,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			if into then
 				return WayIn(data, into, way, step, continues, instanceName)
 			end
-		end, nil, pool)
+		end, pool)
 	end
 	diversions[#diversions + 1] = prefs.battlegrounds and Battleground(data, player, prefs, mapName) or nil
 	table.sort(diversions, function(a, b)
@@ -4107,7 +4097,6 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 	if carry then
 		table.insert(journeys, (journeys[1] and journeys[1].kind == "story") and 2 or 1, carry)
 	end
-	-- A carry card the last build lacked pushes out the last card not chosen, as the full build would leave it out.
 	local route = Route(journeys, prefs)
 	route.stranded, route.orders = last.stranded, last.orders
 	FinishRoute(data, player, completed, log, route, last, prefs, inputs)
