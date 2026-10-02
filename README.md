@@ -36,7 +36,7 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 
 - **Dungeons.** Browse dungeon quests, check what needs picking up before you go and plan a journey to their givers. QuestieDB supplies rewards, enemy ranks and drops. Without it, those extra details stay greyed out. Entrance directions come from QuestieDB or Tweaks Forever.
 
-- **Journeys.** Up to six choices: loose ends from your log, a zone's story, nearby zones suited to your level and class quests. Dungeon and battleground journeys are opt-in. Each card gives a reason to go; choose one to see its route.
+- **Journeys.** Loose ends from your log, a zone's story, nearby zones suited to your level and class quests. Dungeon and battleground journeys are opt-in. Each card gives a reason to go; choose one to see its route.
 - **Choose and go.** Picking a journey starts guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop and the back arrow clear only the route the guide started; a waypoint you set yourself stays.
 - **A route that stays with you.** The chosen journey survives new quests, travel and a reload. Town stops group pickups and hand-ins, with a checklist of quest givers. The tracker shows the current stop and the next one.
 - **Your order.** Drag steps or right-click for *Do this next*, *Do this sooner* or *Do this later*. Moves that break quest order are greyed out. *Back to suggested order* restores the plan.

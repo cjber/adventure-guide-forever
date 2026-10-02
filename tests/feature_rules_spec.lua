@@ -1,3 +1,6 @@
+-- Run from the repository root: luajit tests/feature_rules_spec.lua
+-- Rules that span features: completion providers, PvP, saved order and sessions, town givers, the hearth hint,
+-- step sounds and skipped givers.
 local harness = dofile("tests/harness.lua")
 local checks = 0
 local function eq(a, b, label)
@@ -70,7 +73,7 @@ do
 	local point = P.DungeonEntrance(36)
 	point.x = 0
 	eq(P.DungeonEntrance(36).x, 0.42, "fresh entrance")
-	eq(P.GoToEntrance(36), true)
+	eq(h.ns.Dungeons.GoEntrance(36), true)
 	eq(h.waypoint.uiMapID, 1436, "entrance uses outdoor UiMapID")
 	local _, missing = P.DungeonEntrance(999)
 	eq(missing, "unknown")
@@ -320,11 +323,11 @@ do
 			journey = "zone:1440",
 			steps = {},
 			journeys = {
-				{ key = "zone:1440", kind = "story", map = 1413 },
-				{ key = "zone:1440", kind = "nextzone", map = 1440 },
-				{ key = "zone:1436", kind = "nextzone", map = 1436 },
-				{ key = "zone:1437", kind = "nextzone", map = 1437 },
-				{ key = "zone:1442", kind = "nextzone", map = 1442 },
+				{ key = "zone:1440", zone = 1440, kind = "story", map = 1413 },
+				{ key = "zone:1440", zone = 1440, kind = "nextzone", map = 1440 },
+				{ key = "zone:1436", zone = 1436, kind = "nextzone", map = 1436 },
+				{ key = "zone:1437", zone = 1437, kind = "nextzone", map = 1437 },
+				{ key = "zone:1442", zone = 1442, kind = "nextzone", map = 1442 },
 			},
 		}
 	end
@@ -401,4 +404,4 @@ do
 end
 
 clean(h)
-print(("batch4_spec: %d checks passed"):format(checks))
+print(("feature_rules_spec: %d checks passed"):format(checks))

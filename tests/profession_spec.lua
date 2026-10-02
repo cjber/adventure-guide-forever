@@ -1,5 +1,5 @@
 -- Run from the repository root: luajit tests/profession_spec.lua
--- The profession aside (roadmap #9, Hints/Profession.lua, docs/design.md §2.16) through tests/harness.lua: which nudge
+-- The profession aside (Hints/Profession.lua, docs/design.md §2.16) through tests/harness.lua: which nudge
 -- (Model.Profession), the nearest trainer of the right rank, the line's text, Skip moving on, and SKILL_LINES_CHANGED.
 local harness = dofile("tests/harness.lua")
 local checks = 0

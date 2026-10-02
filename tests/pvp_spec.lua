@@ -15,7 +15,7 @@ local function clean(h, label)
 	equal(#h.errors, 0, label .. ": errors\n" .. table.concat(h.errors, "\n"))
 end
 
---[[ The card (Model.lua, roadmap #12): a battleground open to the player, whose one step is its battlemaster ]]
+--[[ The card (Model.lua): a battleground open to the player, whose one step is its battlemaster ]]
 
 local ns = {}
 harness.model(ns)

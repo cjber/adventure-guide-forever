@@ -198,9 +198,8 @@ h.G.EJ_GetEncounterInfoByIndex = function(index, instance)
 		return "Client encounter", "", 123
 	end
 end
-local bosses, journal = D.Journal(43, noop)
+local bosses = D.Journal(43, noop)
 equal(bosses[1].name, "Client encounter", "client boss preferred")
-equal(journal, 99, "journal ID")
 equal(D.Journal(33, noop), nil, "missing journal stays absent")
 local partial = { bosses = {}, npcs = { [43] = { { id = 555, name = "Client encounter", rank = 1 } } } }
 equal(D.Bosses({ bosses = {} }, 43, bosses)[1].name, "Client encounter", "partial source preserves journal")
@@ -220,18 +219,7 @@ equal(
 )
 bosses[2] = nil
 
-local function Button(each, text)
-	for _, frame in
-		ipairs(each.Find(function(f)
-			return f:IsVisible() and (f:GetText() == text or f.Text and f.Text:GetText() == text)
-		end))
-	do
-		if frame:IsObjectType("Button") then
-			return frame
-		end
-	end
-	error("missing button " .. text)
-end
+local Button = dofile("tests/ui_helpers.lua").Button
 local function Texts(each)
 	local texts = {}
 	for _, entry in ipairs(each.ns.DumpLayout(each.G.AdventureGuideForeverWindow, each.Describe)) do

@@ -11,6 +11,12 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Boss rows jump to the right loot.** Clicking a boss in the Dungeons tab now scrolls its loot list to that boss's drops, instead of stopping short once the list has section headings.
+
+- **Scaling quests show your level.** A quest that scales to you appears in the full guide at your level with the right difficulty colour, where it used to read "[-1]" in grey.
+
+- **Completion zones always have a name.** A zone the client cannot name falls back to the guide's own zone name, and is left out when there is none, instead of showing a map number.
+
 - **A damaged save no longer breaks the guide.** A hand-edited saved file with a bad "Not interested" entry or window position is now ignored, instead of raising an error in the Skipped menu or when the window opens.
 
 ## [0.6.5] - 2026-10-01

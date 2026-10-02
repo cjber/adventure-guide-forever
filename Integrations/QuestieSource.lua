@@ -12,7 +12,7 @@ local CONTRACT = 2
 -- Keep a full millisecond for the client's timer and frame bookkeeping: the complete callback, rather than only
 -- this coroutine, must stay below the 3 ms frame budget.
 local SLICE_MS = 1
-local LINK = 100 -- yards: a giver this near a bundled town's place stands in that town (tools/gen_quests.py LINK)
+local LINK = ns.Data.townLink
 -- Daily and weekly quest flags also identify repeatable work.
 local REPEATABLE_FLAGS = 4096 + 32768
 
@@ -35,12 +35,16 @@ local QUEST_FIELDS = {
 	"objectives",
 	"triggerEnd",
 }
-local GIVER_FIELDS = { "name", "spawns", "zoneID" }
+ns.QuestieFields = {
+	spawns = { "spawns" },
+	drops = { "npcDrops", "objectDrops", "itemDrops" },
+}
+local GIVER_FIELDS = { "name", ns.QuestieFields.spawns[1], "zoneID" }
 local ENTITIES = {
 	{ name = "Quest", keys = "questKeys", fields = QUEST_FIELDS },
 	{ name = "Npc", keys = "npcKeys", fields = GIVER_FIELDS },
 	{ name = "Object", keys = "objectKeys", fields = GIVER_FIELDS },
-	{ name = "Item", keys = "itemKeys", fields = { "npcDrops", "objectDrops", "itemDrops" } },
+	{ name = "Item", keys = "itemKeys", fields = ns.QuestieFields.drops },
 }
 
 ---@type AGFQuestieStatus
@@ -60,6 +64,30 @@ local function Table(source)
 	return ok and type(value) == "table" and value or nil
 end
 
+---@param lib AGFQuestieDB
+---@param entities {name: string, keys: string, fields: string[]}[]
+---@param extraFields? table<string, string[]>
+---@return string?
+local function MissingField(lib, entities, extraFields)
+	for _, entity in ipairs(entities) do
+		local meta = lib.Meta and lib.Meta[entity.name .. "Meta"]
+		local keys, reader = meta and meta[entity.keys], lib[entity.name]
+		if type(keys) ~= "table" or type(reader) ~= "table" or type(reader.GetAll) ~= "function" then
+			return entity.name
+		end
+		if extraFields and type(reader.GetAllIds) ~= "function" then
+			return entity.name .. ".GetAllIds"
+		end
+		---@type string[]
+		local fields = extraFields and extraFields[entity.name] or entity.fields
+		for _, field in ipairs(fields) do
+			if not keys[field] then
+				return field
+			end
+		end
+	end
+end
+
 -- QuestieDB as this file reads it, or nil and why not (an ns.L line).
 ---@return AGFQuestieDB?, string?, AGFQuestieZones?
 local function Fit()
@@ -76,17 +104,9 @@ local function Fit()
 	if C_AddOns.GetAddOnMetadata(ADDON, "X-Flavor") ~= "Forever" then
 		return nil, ns.L.QUESTIE_FLAVOUR
 	end
-	for _, entity in ipairs(ENTITIES) do
-		local meta = lib.Meta and lib.Meta[entity.name .. "Meta"]
-		local keys, reader = meta and meta[entity.keys], lib[entity.name]
-		if type(keys) ~= "table" or type(reader) ~= "table" or type(reader.GetAll) ~= "function" then
-			return nil, ns.L.QUESTIE_FIELD:format(entity.name)
-		end
-		for _, field in ipairs(entity.fields) do
-			if not keys[field] then
-				return nil, ns.L.QUESTIE_FIELD:format(field)
-			end
-		end
+	local missing = MissingField(lib, ENTITIES)
+	if missing then
+		return nil, ns.L.QUESTIE_FIELD:format(missing)
 	end
 	if type(lib.Quest.GetAllIds) ~= "function" then
 		return nil, ns.L.QUESTIE_FIELD:format("Quest.GetAllIds")
@@ -454,18 +474,8 @@ function ns.ReadDungeonSource(yield)
 		Npc = { "name", "rank", "spawns", "minLevel", "maxLevel" },
 		Item = { "name", "npcDrops", "questRewards", "startQuest" },
 	}
-	for kind, keys in pairs(fields) do
-		local reader = lib[kind]
-		local meta = lib.Meta[kind .. "Meta"]
-		local schema = meta and meta[kind == "Npc" and "npcKeys" or "itemKeys"]
-		if not (reader and type(reader.GetAllIds) == "function" and type(reader.GetAll) == "function" and schema) then
-			return nil
-		end
-		for _, key in ipairs(keys) do
-			if not schema[key] then
-				return nil
-			end
-		end
+	if MissingField(lib, { ENTITIES[2], ENTITIES[4] }, fields) then
+		return nil
 	end
 	local result = {
 		bosses = {},

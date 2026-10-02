@@ -107,7 +107,7 @@ end
 ---@type table<integer, LevelUpBattlegroundInfo[]>
 local opensAt = {}
 
--- Roadmap #12: every battleground open to the player, the newest first (then by ID), each at the level it opened. Only
+-- Every battleground open to the player, the newest first (then by ID), each at the level it opened. Only
 -- the client's level-up list says so: the probe found `canEnter` false for all three at level 19, so it gates nothing,
 -- and a battleground behind a condition (Battle for Blackrock) or with no levels (Battle for Gilneas) is on no list.
 -- Empty on a client without the API.
@@ -135,7 +135,7 @@ function State.Battlegrounds()
 	return open
 end
 
--- Rested XP (roadmap #11): GetXPExhaustion is nil with none, and IsResting is true in an inn or a city. The level's XP
+-- Rested XP: GetXPExhaustion is nil with none, and IsResting is true in an inn or a city. The level's XP
 -- only when the client has UnitXPMax, which the Forever probes never asked about.
 ---@return integer rested
 ---@return integer? xpMax
@@ -449,10 +449,10 @@ events:RegisterEvent("QUEST_LOG_UPDATE")
 events:RegisterEvent("QUEST_TURNED_IN")
 events:RegisterEvent("PLAYER_LEVEL_UP")
 events:RegisterEvent("ZONE_CHANGED_NEW_AREA")
--- A skill rank or a standing changed: skill- and reputation-gated quests may open or close (roadmap #8, GatesMoved).
+-- A skill rank or a standing changed: skill- and reputation-gated quests may open or close (GatesMoved).
 events:RegisterEvent("SKILL_LINES_CHANGED")
 events:RegisterEvent("UPDATE_FACTION")
--- Rest and XP (roadmap #11), by feature detection: the Forever probes never registered these, and the client raises
+-- Rest and XP, by feature detection: the Forever probes never registered these, and the client raises
 -- on an event it lacks, so one it refuses just leaves the rest line to the next rebuild.
 -- QUEST_POI_UPDATE moves the client's quest points (LoadPoints).
 for _, event in ipairs({

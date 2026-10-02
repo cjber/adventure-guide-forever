@@ -20,11 +20,11 @@ local DEFAULTS = {
 	titleStartsRoute = true,
 	-- Start the route the guide is offering without a click, so the map line is drawn on login and after a reload.
 	autoStart = true,
-	-- Opt-in (roadmap #17): the route never takes over the player's tracked quests unasked. A saved true stays true.
+	-- Opt-in: the route never takes over the player's tracked quests unasked. A saved true stays true.
 	trackRouteQuests = false,
 	-- Opt-in: it throws away the player's own choice of tracked quests.
 	untrackOthers = false,
-	-- Roadmap #24: hint strength, Guide (false) or Wanderer (true), which gates every waypoint, route and map mark.
+	-- Hint strength, Guide (false) or Wanderer (true), which gates every waypoint, route and map mark.
 	wanderer = false,
 	-- Walking into the quest area the route leads to selects its quest, so the map draws its blue area (Focus.lua).
 	followQuest = true,
@@ -44,7 +44,7 @@ local PREFS_DEFAULTS = {
 	plannedDungeons = {},
 	quests = true,
 	dungeons = false,
-	-- Opt-in (roadmap #12): the Battlegrounds card.
+	-- Opt-in: the Battlegrounds card.
 	battlegrounds = false,
 	notInterested = {},
 	-- Quests added to the route with a shift-click: quest ID -> true.
@@ -277,7 +277,7 @@ function ns.Skip(key, title)
 	ns.Invalidate()
 end
 
--- "Not interested" (roadmap #17): the journey `key` is left out on this character until Show again, and a choice of it
+-- "Not interested": the journey `key` is left out on this character until Show again, and a choice of it
 -- ends, as a click on its card would; Show again chooses it again, after a /reload too.
 ---@param key string
 ---@param title string
@@ -468,7 +468,7 @@ afterCombat:SetScript("OnEvent", function(self)
 	ns.Invalidate()
 end)
 
--- The spells to train the last full build took (roadmap #5), asked of Tweaks Forever only while a journey is chosen,
+-- The spells to train the last full build took, asked of Tweaks Forever only while a journey is chosen,
 -- the only route that stops to train; combat's cheap rebuild keeps them, as Tweaks Forever has no answer in a fight.
 ---@type AGFTraining?
 local training
@@ -653,7 +653,7 @@ function ns.QuestieBuilding()
 end
 
 -- The synchronous full build: ns.Route()'s lazy path, and any caller before Core's coroutine starts. One frame, no
--- slices, exactly as before the rebuild was sliced.
+-- slices.
 local function Rebuild()
 	pendingRebuild = false
 	if not ns.State.Ready() then
@@ -744,7 +744,7 @@ end
 local function StepRebuild()
 	if not rebuildCo then
 		-- A caller in the same frame (the map a card click turns) may have rebuilt through ns.Route() already: the
-		-- route is fresh, but the listeners still need waking, exactly as the old one-frame callback always did.
+		-- route is fresh, but the listeners still need waking.
 		if not dirty then
 			pendingRebuild = false
 			FinishRebuild()

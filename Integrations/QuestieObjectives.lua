@@ -79,7 +79,7 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 		end
 	end
 	local function Spawns(kind, id, lists)
-		local values = lib[kind].GetAll(id, { "spawns" })
+		local values = lib[kind].GetAll(id, ns.QuestieFields.spawns)
 		if values and type(values[1]) == "table" then
 			lists[#lists + 1] = values[1]
 		end
@@ -90,7 +90,7 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 			return
 		end
 		seen[id] = true
-		local values = lib.Item.GetAll(id, { "npcDrops", "objectDrops", "itemDrops" })
+		local values = lib.Item.GetAll(id, ns.QuestieFields.drops)
 		if values then
 			for index, kind in ipairs({ "Npc", "Object" }) do
 				for _, source in ipairs(type(values[index]) == "table" and values[index] or {}) do

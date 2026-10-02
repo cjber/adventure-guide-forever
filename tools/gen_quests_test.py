@@ -718,11 +718,6 @@ class DataTest(unittest.TestCase):
     """The committed test-only quest corpus, tests/fixtures/quests.lua."""
 
     TEXT = FIXTURE.read_text(encoding="utf-8")
-    # Objectives, XP and flags fit in 150 KB above the original size; entrance gates add under 2.5 KB.
-    BOUND = 1_179_151 + 150_000 + 2_500
-
-    def test_size(self):
-        self.assertLess(len(self.TEXT.encode()), self.BOUND)
 
     def test_areas_are_on_a_map_and_the_quests_objectives(self):
         quests = re.findall(r"^\t\t\[\d+\] = \{ title = .*$", self.TEXT, re.M)

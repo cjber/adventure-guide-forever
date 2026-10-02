@@ -177,7 +177,6 @@ end
 ---@param index? integer
 local function StepMenu(owner, step, index)
 	ns.ContextMenu(owner, function(_, root)
-		root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_STEP")
 		ns.Menu.Step(root, step)
 		OrderEntries(root, step, index)
 	end)
@@ -360,7 +359,7 @@ end
 ---@return AGFPoint? point
 ---@return string? note
 local function Entrance(journey)
-	local instance = journey.kind == "dungeon" and tonumber(journey.key:match("^dungeon:(%d+)$"))
+	local instance = journey.kind == "dungeon" and journey.instance
 	if not instance then
 		return nil
 	end
@@ -441,7 +440,7 @@ local function CardTooltip(card)
 end
 
 -- How far a journey has come, when it has come some way: a story's chapters done of a chain the data proves the length
--- of, Loose ends' quests ready of all it holds. The bar's value and the grid footer's words.
+-- of, Quests in your log' quests ready of all it holds. The bar's value and the grid footer's words.
 ---@param journey AGFJourney
 ---@return number? value
 ---@return string? label

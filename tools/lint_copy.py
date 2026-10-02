@@ -4,7 +4,8 @@ import argparse
 import re
 from pathlib import Path
 
-from lint_multivalue import Token, runtime_files, tokenize
+from lint_multivalue import Token, tokenize
+from typecheck_coverage import runtime_files
 
 # A percent sign is only ever a format specifier; "%%" would print one.
 STRAY_PERCENT = re.compile(r"%(?![-0-9.]*[dsfgi])|%%")
