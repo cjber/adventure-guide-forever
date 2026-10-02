@@ -478,7 +478,7 @@ ns.L = {
 	UPDATED_TO = "updated to %s. %s",
 	SETTING_FLOAT_WINDOW = "Float window",
 	SETTING_FLOAT_WINDOW_TOOLTIP = "Move the guide independently of other windows. Tweaks Edit Mode also supports it.",
-	SETTING_WHATS_NEW = "Show what's new after updates",
+	SETTING_WHATS_NEW = "What's new after an update",
 	SETTING_WHATS_NEW_TOOLTIP = "One line in chat the first time you log in after the guide updates.",
 	-- Companion hints (Companions.lua): what another Forever addon would add here, while it isn't loaded.
 	SETTING_COMPANIONS = "Suggest companion addons",
