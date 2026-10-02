@@ -2,6 +2,30 @@
 -- CMaNGOS classic-db (GPL-3.0), pinned: https://raw.githubusercontent.com/cmangos/classic-db/22b51464f1625f6ef6275771de1f5466c6f5d19e/Full_DB/ClassicDB_1_12_1_z2815.sql.gz
 -- Test-only quest corpus: the model fixture and the test harness's QuestieDB mirror source.
 -- NOT shipped in the addon; in game, quest records come from the installed QuestieDB (QuestieSource.lua).
+-- Prev > 0: completed; Prev < 0: unknown, no pickup. NextQuestId contributes reverse prerequisites.
+-- Positive exclusive groups close siblings; negative predecessor groups expand to pre (all completed).
+-- NextQuestInChain is display-only. Complex alternatives and unsupported gates have no start.
+-- Item starters and spawns without zone-level coordinates have no start.
+-- npc: a creature giver's entry, the ID in its UnitGUID; an object giver has none.
+-- skill, rep: RequiredSkill/Value and RequiredMin/MaxRep, as Player::SatisfyQuestSkill and
+-- SatisfyQuestReputation check them.
+-- trainer: a class quest's giver who trains a class (creature_template TrainerClass): that class.
+-- breadcrumb: BreadcrumbForQuestId, the quest a breadcrumb leads to; it is open only while that is neither
+-- completed nor in the log, and has no start when that is not in QuestV2.
+-- dungeon: the instance a quest's ZoneOrSort area lies in (AreaTable, Map InstanceType); raid: filed in a
+-- raid, or of Type 62 or 88 (a raid's quest wherever it is filed).
+-- need: each objective's count by quest_poi objIndex slot (0-3 ReqCreatureOrGOCount, 4-7 ReqItemCount,
+-- 16 an areatrigger_involvedrelation explore), leaving out the item SrcItemId gives; never for a dungeon's.
+-- obj: where each is done, as { slot, x, y, r[, map] }: x, y in thousandths of the map (the quest's zone
+-- unless given), r the yards holding 80% of the source. The source is Blizzard's quest_poi shape: its
+-- vertex mean when that lies inside it, else its nearest vertex. With no shape, the biggest groups of the
+-- objective's spawns in its quest's zone (the creature, its KillCredit, the object, or what drops the item
+-- at 5%+), linked at 100 yd: each group's medoid, a real spawn. At most 3 per
+-- objective; none for a dungeon quest; objIndex 9-13 (meaning unknown) is left out.
+-- xp: a start's full XP, as the core's Quest::XPValue: RewMoneyMaxLevel / 0.6 rounded up (the dump has no
+-- RewXP), for level 1-60 only.
+-- flags: event, a script completes it: an escort, a cast, a fight (SpecialFlags 2 without an area trigger);
+-- timed, the seconds it allows (LimitTime).
 -- stylua: ignore
 local quests = {
 		[2] = { title = "Sharptalon's Claw", level = 30, min = 20, side = 2, races = 178, finish = { map = 1440, x = 0.7378, y = 0.6146, name = "Senani Thunderheart", npc = 12696, hub = 400 }, zone = 1440, pre = { 6383 }, next = 247 },
