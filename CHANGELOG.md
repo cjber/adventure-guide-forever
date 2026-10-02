@@ -11,6 +11,10 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **The tracker fills in seconds, not most of a minute.** After logging in or reloading, the guide read the quest catalogue so gently that the tracker sat on "Loading quest data..." for 40 seconds or more. It now takes a few seconds.
+
+- **The guides stay put in a fight.** In combat the game stretches its quest tracker and nudges it back on screen, which shoved the Forever sections sideways across the screen until the fight ended. They now stay stacked above the quest list.
+
 - **A damaged save no longer breaks the guide.** A hand-edited saved file with a bad "Not interested" entry or window position is now ignored, instead of raising an error in the Skipped menu or when the window opens.
 
 ## [0.6.5] - 2026-10-01
