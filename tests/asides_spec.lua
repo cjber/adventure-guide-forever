@@ -148,6 +148,16 @@ do
 	equal(menu.entries[#menu.entries - 1].text, later.ns.L.MENU_TRACKER, "cog: no submenu with none turned down")
 	clean(later, "declined, next session")
 
+	-- A damaged save: only a key with its text is a turned-down aside, so Show again still has titles to sort.
+	local damaged = Load(false, { journey = "zone:1413", asides = { a = 3, b = B.text, c = true, [5] = "five" } })
+	local names = {}
+	for index, skipped in ipairs(damaged.ns.Skipped()) do
+		names[index] = skipped.key .. "=" .. skipped.title
+	end
+	same(names, { "aside:b=" .. B.text }, "damaged asides: the good one stays")
+	equal(next(damaged.G.AdventureGuideForeverCharDB.asides, "b"), nil, "damaged asides: the rest are dropped")
+	clean(damaged, "damaged asides")
+
 	-- A search holds the guide: no line over its results.
 	local search = h.Find(function(frame)
 		return frame.stockTemplate == "SearchBoxTemplate"

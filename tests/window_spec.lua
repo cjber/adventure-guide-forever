@@ -97,6 +97,13 @@ do
 	local p, _, rp, px, py = reopened:GetPoint(1)
 	equal(("%s %s %d %d"):format(p, rp, px, py), "TOPLEFT TOPLEFT 40 -60", "reload: the saved position")
 	clean(again, "reload")
+
+	-- A saved position missing a part is no anchor: the window opens where a first open puts it.
+	h.G.AdventureGuideForeverDB.window.position = { point = "TOPLEFT", x = "40" }
+	local damaged = Load({ db = h.G.AdventureGuideForeverDB })
+	p, _, rp, px, py = Open(damaged):GetPoint(1)
+	equal(("%s %s %d %d"):format(p, rp, px, py), "CENTER CENTER 0 40", "damaged position: the default place")
+	clean(damaged, "damaged position")
 end
 
 do

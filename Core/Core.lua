@@ -117,6 +117,13 @@ local function LoadCharDB()
 			loaded.pinned[id] = nil
 		end
 	end
+	-- Asides turned down: key -> the text Show again names it by. Asides.lua makes the table; anything else in it would
+	-- reach the Skipped menu's sort as a title.
+	for key, text in pairs(type(loaded.asides) == "table" and loaded.asides or {}) do
+		if type(key) ~= "string" or type(text) ~= "string" then
+			loaded.asides[key] = nil
+		end
+	end
 	-- The zone picked in the old "Where next?" cards: nothing offers that choice any more, so none is kept.
 	loaded.zone = nil
 	if loaded.journey ~= nil and type(loaded.journey) ~= "string" then
