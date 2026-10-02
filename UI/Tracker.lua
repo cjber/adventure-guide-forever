@@ -232,7 +232,7 @@ function ModuleMixin:LayoutContents()
 		block:AddObjective(line, place)
 	end
 	local resume = ns.Resume(step)
-	-- A lone hand-in, a turn-in or a town's, is titled "Turn in: …", which already says it is ready.
+	-- A lone hand-in, a turn-in or a town's, is titled "Turn in: %s" (L.TURN_IN), which already says it is ready.
 	local handIn = step.kind == "turnin" or (step.kind == "town" and #step.quests == 1 and #step.handins == 1)
 	-- Mid-line, a reason that is a sentence of its own ("Continues a story you started") loses its capital.
 	local reason = resume and L.RESUME:format((resume:gsub("^%u", string.lower))) or (not handIn and step.reason) or nil
@@ -266,15 +266,6 @@ end
 ---@type AGFTrackerModule?
 local module
 
-local function Available()
-	return ns.TrackerHost
-end
-
----@param trackerModule AGFTrackerModule
-local function Attach(trackerModule)
-	ns.TrackerHost.Attach(trackerModule)
-end
-
 local function WarnIfUnattached()
 	if module and not ns.TrackerHost.IsAttached(module) then
 		ns.Print(L.TRACKER_UNATTACHED)
@@ -282,7 +273,7 @@ local function WarnIfUnattached()
 end
 
 local function Register()
-	if not Available() then
+	if not ns.TrackerHost then
 		return
 	end
 	local frame =
@@ -292,10 +283,10 @@ local function Register()
 	Mixin(module, ModuleMixin)
 	module:SetHeader(ModuleMixin.headerText)
 	module.uiOrder = UI_ORDER
-	Attach(module)
+	ns.TrackerHost.Attach(module)
 	EventUtil.ContinueAfterAllEvents(function()
 		C_Timer.After(0, function()
-			Attach(module)
+			ns.TrackerHost.Attach(module)
 		end)
 		C_Timer.After(5, WarnIfUnattached)
 	end, "PLAYER_ENTERING_WORLD", "VARIABLES_LOADED")

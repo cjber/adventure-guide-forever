@@ -803,8 +803,6 @@ class Layout:
             before = canvas.image.copy()
 
         def art(layer):
-            if layer not in PHASES:
-                raise ValueError(f"unknown drawing phase {layer!r}")
             if recipe:
                 if recipe[0] is draw_scroll_frame:
                     draw_scroll_frame(canvas, entry, rect, layer, child_height)

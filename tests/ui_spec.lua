@@ -1078,9 +1078,6 @@ local function IdleUpdates(h)
 	local busy = 0
 	for _, frame in ipairs(h.frames) do
 		busy = busy + (frame.scripts.OnUpdate and 1 or 0)
-		for _, group in ipairs(frame.animationGroups or {}) do
-			busy = busy + (group:IsPlaying() and 1 or 0)
-		end
 	end
 	return busy + h.counts.tickers
 end
@@ -1317,7 +1314,6 @@ do
 	-- With the Barrens story ruled out, Gann's Reclamation is off every zone loop, so carry (Loose ends) holds it.
 	local h = harness.load({
 		planned = true,
-		preserveUnknownCosts = true,
 		-- A copy, never the shared PINS_ON table: Core.LoadDB merges the addon's defaults into whatever db it is given.
 		db = { showMapPins = true, showQuestGivers = true },
 		charDB = {

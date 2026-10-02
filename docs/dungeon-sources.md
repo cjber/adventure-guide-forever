@@ -53,7 +53,7 @@ The [Forever API source](https://github.com/Gethe/wow-ui-source/blob/bd2470aed54
 still declares `C_EncounterJournal.GetInstanceForGameMap`. The tab probes it and uses
 `EJ_GetEncounterInfoByIndex(index, journalInstanceID)` when it returns a real instance. It never changes the
 player's journal selection. Journal loot APIs depend on that shared selection, so the tab's Loot page uses
-QuestieDB's explicit item-to-NPC relations instead.
+AtlasLoot's rows, or QuestieDB's explicit item-to-NPC relations, instead.
 
 [LoadingScreens](https://wago.tools/db2/LoadingScreens/csv?build=1.60.1.69913) exists, but the inspected API
 surface provides no Map.ID-to-loading-screen texture lookup. Adding an exported art table would exceed
@@ -82,7 +82,7 @@ was published for 1.60.1 on 2026-09-26. The publisher lists GPLv2. Its package a
 [upstream Classic source](https://github.com/Hoizame/AtlasLootClassic) expose
 `AtlasLoot.ItemDB:Get("AtlasLootClassic_DungeonsAndRaids")`: instance tables have `InstanceID`,
 `LevelRange` and ordered `items`; encounter groups have `npcID`, `name`, `Level`, and item rows at the
-module's `GetDifficultyByName("NORMAL")` key. Row slot 2 is the item ID. NPC IDs may be arrays. Wings
+module's `GetDifficultyByName("n")` key. Row slot 2 is the item ID. NPC IDs may be arrays. Wings
 sharing an instance merge by recommended level, preserving each wing's encounter order. Only encounter
 and localized Trash groups are read; quests, sets and other extra lists are excluded. AGF optionally
 loads the installed dungeon module on demand out of combat. It never changes AtlasLoot's selection or

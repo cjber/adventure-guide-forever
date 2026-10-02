@@ -127,6 +127,20 @@ local function Fill(icon, map, base, overlays, x, y, span, tall)
 	end
 end
 
+-- A zone's overlays and base tiles when it has art to draw round `x`, `y`: overlays in the data and every base tile
+-- from the client. Nothing otherwise.
+---@param map? integer
+---@param x? number
+---@param y? number
+---@return table? overlays, integer[]? base
+local function Drawable(map, x, y)
+	local overlays = map and ns.Data.zoneArt and ns.Data.zoneArt[map] or nil
+	local base = map and overlays and x and y and C_Map.GetMapArtLayerTextures(map, 1) or nil
+	if base ~= nil and #base >= TILES then
+		return overlays, base
+	end
+end
+
 ---@param parent Frame
 ---@param size number the art's width across
 ---@param badge number the kind icon's size at the bottom-right
@@ -159,9 +173,8 @@ end
 ---@param y? number
 ---@param span number map pixels across the window
 function ZoneIcon.Set(icon, atlas, map, x, y, span)
-	local overlays = map and ns.Data.zoneArt and ns.Data.zoneArt[map] or nil
-	local base = map and overlays and x and y and C_Map.GetMapArtLayerTextures(map, 1) or nil
-	local drawn = base ~= nil and #base >= TILES
+	local overlays, base = Drawable(map, x, y)
+	local drawn = base ~= nil
 	icon.Kind:ClearAllPoints()
 	if drawn then
 		ns.Art.Fit(icon.Kind, atlas, icon.badge, icon.badge)
@@ -211,9 +224,8 @@ end
 ---@param span number
 ---@return boolean drawn
 function ZoneIcon.SetBackdrop(backdrop, width, height, map, x, y, span)
-	local overlays = map and ns.Data.zoneArt and ns.Data.zoneArt[map] or nil
-	local base = map and overlays and x and y and C_Map.GetMapArtLayerTextures(map, 1) or nil
-	local drawn = base ~= nil and #base >= TILES
+	local overlays, base = Drawable(map, x, y)
+	local drawn = base ~= nil
 	backdrop:SetShown(drawn)
 	if not drawn then
 		backdrop.key = nil

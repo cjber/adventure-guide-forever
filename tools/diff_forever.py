@@ -3,7 +3,7 @@
 
 Both builds come from wago.tools, cached in tools/.cache like gen_quests.py's sources. An ID Forever's table has
 and Era's lacks is one Forever added: no hand-kept list, no ID threshold. Data/Forever.lua carries the slice the
-addon reads (docs/design.md §2.1, honest coverage); the other tables are only printed, for the roadmap's later work.
+addon reads; the other tables are only printed.
 """
 
 from collections import defaultdict

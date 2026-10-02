@@ -129,7 +129,7 @@ end
 ---@param parent Frame
 ---@return AGFDungeonMapView
 local function build(parent)
-	local view = { parent = parent, maps = {}, selected = 1, rows = {} }
+	local view = { maps = {}, selected = 1, rows = {} }
 	view.panel = CreateFrame("Frame", nil, parent)
 	if not _G["AdventureGuideForeverDungeonMaps"] then
 		_G["AdventureGuideForeverDungeonMaps"] = view.panel

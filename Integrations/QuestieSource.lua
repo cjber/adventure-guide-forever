@@ -92,7 +92,7 @@ local function Fit()
 		return nil, ns.L.QUESTIE_FIELD:format("Quest.GetAllIds")
 	end
 	local zoneDB = type(lib.Support) == "table" and lib.Support.Get("ZoneDB") or {}
-	local private = zoneDB and zoneDB["private"]
+	local private = zoneDB["private"]
 	if type(private) ~= "table" then
 		return nil, ns.L.QUESTIE_ZONES
 	end
@@ -370,7 +370,7 @@ local empty = {}
 for key, value in pairs(bundled) do
 	empty[key] = value
 end
-empty.quests, empty.source = {}, "QuestieDB unavailable"
+empty.quests = {}
 ns.Data = empty --[[@as AGFData]]
 
 -- Releases a route that was held for the build (Core's ns.QuestieBuilding): the catalogue either landed (the swap
@@ -407,7 +407,6 @@ local function Start()
 		elseif coroutine.status(co) ~= "dead" then
 			C_Timer.After(0, Step)
 		elseif ns.Data == empty then
-			result.source = ADDON .. " " .. version
 			status.state, status.version, status.settled = "questie", version, true
 			ns.Data = result --[[@as AGFData]]
 			Settled()

@@ -8,11 +8,6 @@ local L, Model = ns.L, ns.Model
 local Dungeons = {}
 ns.Dungeons = Dungeons
 
--- The bundled boss database is gone (docs/dungeon-sources.md). The dungeon UI still probes this
--- field when neither AtlasLoot nor the native Encounter Journal is installed, so keep it present
--- and empty rather than letting that probe index nil.
-ns.DungeonBosses = ns.DungeonBosses or {}
-
 -- Permanent character restrictions only. Other unproven requirements stay visible as locked.
 ---@param quest? AGFQuest
 ---@param player AGFPlayer
@@ -505,12 +500,9 @@ function Dungeons.LootRows(source, instance, bosses)
 					end
 				end
 			end
-			local itemName, itemQuality, requiredLevel, itemType, itemSubType, equipSlot
-			if C_Item.GetItemInfo then
-				local itemInfo = { C_Item.GetItemInfo(item.id) }
-				itemName, itemQuality, requiredLevel, itemType, itemSubType, equipSlot =
-					itemInfo[1], itemInfo[3], itemInfo[5], itemInfo[6], itemInfo[7], itemInfo[9]
-			end
+			local itemInfo = { C_Item.GetItemInfo(item.id) }
+			local itemName, itemQuality, requiredLevel, itemType, itemSubType, equipSlot =
+				itemInfo[1], itemInfo[3], itemInfo[5], itemInfo[6], itemInfo[7], itemInfo[9]
 			local meta = {}
 			if itemType and itemType ~= "" then
 				meta[#meta + 1] = itemSubType and itemType .. L.SEPARATOR .. itemSubType or itemType

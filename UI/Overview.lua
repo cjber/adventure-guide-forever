@@ -21,8 +21,9 @@ local KIND_ICONS = {
 	battleground = "battlemaster",
 }
 
+-- A step on the world map: the map opens when it is closed, then turns to the step and flashes its ring.
 ---@param step AGFStep
-local function FocusStep(step)
+local function ShowOnMap(step)
 	ns.Pins.Reveal(step)
 end
 
@@ -296,7 +297,7 @@ local function RowClick(self, mouseButton)
 	if mouseButton == "RightButton" then
 		StepMenu(self, self.step, self.index)
 	elseif not ns.ShowQuest(self.step) then
-		FocusStep(self.step)
+		ShowOnMap(self.step)
 	end
 end
 
@@ -506,12 +507,6 @@ local function Split(route)
 		first = table.remove(others, 1)
 	end
 	return first, others
-end
-
--- A step on the world map: the map opens when it is closed, then turns to the step and flashes its ring.
----@param step AGFStep
-local function ShowOnMap(step)
-	FocusStep(step)
 end
 
 -- The Journeys renown bar is 18 tall at its own scale, too tall for a card: its frame is scaled to draw it 7 tall.
