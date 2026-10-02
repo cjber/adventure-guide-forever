@@ -785,8 +785,8 @@
       "what": "Copy (Integrations/Providers.lua:9-18) is a hand-rolled recursive table copy; the client's CopyTable (Blizzard_SharedXML TableUtil.lua) does the same and can replace it.",
       "why": "CopyTable is in the pinned Ketho annotations (.types/vscode-wow-api/Annotations/Core/FrameXML/Blizzard_SharedXML/TableUtil.lua), so it is part of the mainline UI the Forever client runs; it must be confirmed on the Forever client itself, which this review could not do. rg 'CopyTable' over the repository returns nothing, so the fix also needs the global in .luacheckrc and a stub in tests/harness.lua. Behaviour to preserve: Copy returns a non-table unchanged, so Copy(summary) with a nil summary (line 99) needs a guard, since CopyTable(nil) errors. The shallow-copy loops at UI/PvP.lua:139-143 and UI/Sound.lua:64-67 are the same wheel (CopyTable(t, true)).",
       "confidence": "medium",
-      "status": "unproven",
-      "reason": "The pinned TableUtil.lua implementation matches Copy's recursive table behavior, apart from non-table inputs, but annotations do not prove CopyTable is available on the supported Forever client. Confirming requires client evidence; replacement would also touch hot file .luacheckrc.",
+      "status": "dismissed",
+      "reason": "Copy(summary) in Integrations/Providers.lua can receive nil and CopyTable(nil) raises, so the nil-safe local copy stays.",
       "first_seen": "2026-10-02",
       "updated": "2026-10-02"
     },
@@ -881,10 +881,11 @@
       "what": "A finished build whose ns.Data is no longer the `empty` placeholder is dropped with no else branch, leaving status.state at \"building\" (set at line 399); settle the status in an else branch, or drop the condition if nothing can swap ns.Data.",
       "why": "rg 'ns\\.Data = ' outside tests finds only Data/Geometry.lua:49 (load time) and lines 374 and 412 of this file, so the condition is false only when Start runs a second time (Questie.API.RegisterOnReady(Start) at line 422 calling back again). In that case Start has already set status.state = \"building\" and Step neither swaps nor resets it, so ns.QuestieBuilding() (Core/Core.lua:692-698, `state == \"building\"`) stays true: Rebuild and StepRebuild hold the route for good and ns.SourceHint keeps showing the loading line, with nothing printed. Whether Questie ever calls the ready callback twice is not established from this repository, hence low confidence.",
       "confidence": "low",
-      "status": "unproven",
-      "reason": "A second completed Start would leave status.state at building after the identity check fails, and Core.QuestieBuilding would continue blocking rebuilds. However, the repository and in-flight branch do not establish that RegisterOnReady invokes a registered callback repeatedly; its host contract or implementation is needed.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     }
   ]
 }

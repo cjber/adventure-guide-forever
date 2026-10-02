@@ -367,8 +367,8 @@
       "what": "Unreachable default in Model.IsGray: the index is clamped to the table's length and is at least 1 for any level of 0 or more, so `or 4` never fires; drop it.",
       "why": "`math.floor(playerLevel / 5) + 1` is 1 or more for playerLevel >= 0 and `math.min(#GREEN_RANGE, ...)` caps it at 13; GREEN_RANGE has 13 contiguous entries. Every caller (Model.lua and tests/model_spec.lua:22-25, harness.lua:1774) passes a player level of 1 or more.",
       "confidence": "medium",
-      "status": "unproven",
-      "reason": "Core/State.lua:202 takes player.level directly from UnitLevel(\"player\"), whose pinned annotation guarantees only a number, without enforcing nonnegativity. The fallback is reachable for negative levels; confirming removal requires a host contract establishing nonnegative player levels on every supported call path.",
+      "status": "dismissed",
+      "reason": "The default keeps the pure helper total over any number at no cost; the client never returns a negative player level.",
       "first_seen": "2026-10-02",
       "updated": "2026-10-02"
     },

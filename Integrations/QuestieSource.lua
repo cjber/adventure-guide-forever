@@ -426,7 +426,7 @@ local function Start()
 			Settled()
 		elseif coroutine.status(co) ~= "dead" then
 			C_Timer.After(0, Step)
-		elseif ns.Data == empty then
+		else
 			status.state, status.version, status.settled = "questie", version, true
 			ns.Data = result --[[@as AGFData]]
 			Settled()

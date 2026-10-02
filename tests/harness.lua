@@ -379,6 +379,9 @@ function harness.load(options)
 	function Methods:GetRight()
 		return self.rect and self.rect[1] + self.rect[3]
 	end
+	function Methods:GetEffectiveScale()
+		return self.scale or 1
+	end
 	function Methods:SetScale(scale)
 		self.scale = scale
 	end

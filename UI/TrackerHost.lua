@@ -79,8 +79,8 @@ local function CaptureNativeAnchor()
 end
 host:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", 0, 0)
 local function MatchNativeScale()
-	local parentScale = UIParent.GetEffectiveScale and UIParent:GetEffectiveScale()
-	local nativeScale = ObjectiveTrackerFrame.GetEffectiveScale and ObjectiveTrackerFrame:GetEffectiveScale()
+	local parentScale = UIParent:GetEffectiveScale()
+	local nativeScale = ObjectiveTrackerFrame:GetEffectiveScale()
 	if parentScale and nativeScale and parentScale > 0 then
 		host:SetScale(nativeScale / parentScale)
 	end
@@ -240,9 +240,9 @@ local function OverlapsMinimap()
 	end
 	local left, right, top, bottom = host:GetLeft(), host:GetRight(), host:GetTop(), host:GetBottom()
 	local ml, mr, mt, mb = minimap:GetLeft(), minimap:GetRight(), minimap:GetTop(), minimap:GetBottom()
-	local hostScale = host.GetEffectiveScale and host:GetEffectiveScale() or 1
-	local mapScale = minimap.GetEffectiveScale and minimap:GetEffectiveScale() or 1
-	local screen = UIParent.GetEffectiveScale and UIParent:GetEffectiveScale() or 1
+	local hostScale = host:GetEffectiveScale()
+	local mapScale = minimap:GetEffectiveScale()
+	local screen = UIParent:GetEffectiveScale()
 	if not (left and right and top and bottom and ml and mr and mt and mb) then
 		return false
 	end
@@ -279,8 +279,8 @@ end
 local function SidePoint(point)
 	local left, right = ObjectiveTrackerFrame:GetLeft(), ObjectiveTrackerFrame:GetRight()
 	local screen = UIParent:GetWidth()
-	local nativeScale = ObjectiveTrackerFrame.GetEffectiveScale and ObjectiveTrackerFrame:GetEffectiveScale() or 1
-	local screenScale = UIParent.GetEffectiveScale and UIParent:GetEffectiveScale() or 1
+	local nativeScale = ObjectiveTrackerFrame:GetEffectiveScale()
+	local screenScale = UIParent:GetEffectiveScale()
 	if left and right and screen and nativeScale > 0 and screenScale > 0 then
 		local nativeCenter = (left + right) * nativeScale / (2 * screenScale)
 		return nativeCenter <= screen / 2 and "LEFT" or "RIGHT"
@@ -304,9 +304,7 @@ local function LayoutModules(width, available, height)
 	end
 	host:SetHeight(math.max(1, height))
 end
-local function Layout()
-	queued = false
-	local settings = Settings()
+local function UpdateAttachment(settings)
 	local desired = settings.attached ~= false
 	if attached == nil then
 		attached = desired
@@ -342,91 +340,84 @@ local function Layout()
 		attached = desired
 	end
 	grip:SetShown(not attached)
-	if not attached then
-		MatchNativeScale()
-		local scale = host:GetEffectiveScale() / UIParent:GetEffectiveScale()
-		local screenWidth, screenHeight = UIParent:GetWidth() / scale, UIParent:GetHeight() / scale
-		local width = math.min(ObjectiveTrackerFrame:GetWidth(), screenWidth)
-		host:SetWidth(width)
-		if dragging then
-			return
-		end
-		local x, y = (settings.x or 0) / scale, (settings.y or -40) / scale
-		x = math.max(0, math.min(x, math.max(0, screenWidth - width)))
-		y = math.min(0, math.max(y, 24 - screenHeight))
-		host:ClearAllPoints()
-		host:SetPoint("TOPLEFT", UIParent, "TOPLEFT", x, y)
-		LayoutModules(width, math.max(24, screenHeight + y - 24), 24)
-		y = math.min(0, math.max(y, math.min(host:GetHeight(), screenHeight) - screenHeight))
-		host:ClearAllPoints()
-		host:SetPoint("TOPLEFT", UIParent, "TOPLEFT", x, y)
+end
+
+local function LayoutDetached(settings)
+	MatchNativeScale()
+	local scale = host:GetEffectiveScale() / UIParent:GetEffectiveScale()
+	local screenWidth, screenHeight = UIParent:GetWidth() / scale, UIParent:GetHeight() / scale
+	local width = math.min(ObjectiveTrackerFrame:GetWidth(), screenWidth)
+	host:SetWidth(width)
+	if dragging then
 		return
 	end
-	if InCombatLockdown() and attached then
-		-- The native tracker is protected: in combat it cannot be restacked below our column, and Blizzard returns it
-		-- to its saved Edit Mode slot. Move our private column above or beside the native frame, keeping clear of
-		-- the minimap, and resume the full reflow on PLAYER_REGEN_ENABLED.
-		CaptureNativeAnchor()
-		host:SetWidth(ObjectiveTrackerFrame:GetWidth())
-		host:ClearAllPoints()
-		-- Once Blizzard has restored the protected frame to its saved slot, anchor our private
-		-- column to the native frame's actual top edge. This follows CENTER/BOTTOM anchors,
-		-- offsets and UI scale without writing the protected frame. During the brief window
-		-- before that restore, the native frame still points at us; use the saved slot instead
-		-- to avoid creating an anchor cycle.
-		local point, nativeRelativeTo = ObjectiveTrackerFrame:GetPoint()
-		if nativeRelativeTo == host then
-			-- Preserve the saved slot if a legacy host-relative anchor is restored.
-			-- Moving relative to that protected child would create an anchor cycle.
-			if nativeAnchor then
-				host:SetPoint(
-					nativeAnchor.point,
-					nativeAnchor.relativeTo,
-					nativeAnchor.relativePoint,
-					nativeAnchor.x,
-					nativeAnchor.y
-				)
-			end
-		elseif point then
-			local nativePoint, hostPoint = StackPoints(point)
-			-- If there is no room above the restored tracker, use the side away from its
-			-- anchored edge. This keeps the private column visible without moving or
-			-- overlapping the protected frame.
-			local nativeTop = ObjectiveTrackerFrame:GetTop() or 0
-			local screenTop = UIParent:GetHeight() or nativeTop
-			local hostScale = host.GetEffectiveScale and host:GetEffectiveScale() or 1
-			local screenScale = UIParent.GetEffectiveScale and UIParent:GetEffectiveScale() or 1
-			local nativeScale = ObjectiveTrackerFrame.GetEffectiveScale and ObjectiveTrackerFrame:GetEffectiveScale()
-				or 1
-			local room = screenTop * screenScale - nativeTop * nativeScale
-			if room >= math.max(host:GetHeight() or 0, 1) * hostScale then
-				host:SetPoint(hostPoint, ObjectiveTrackerFrame, nativePoint, 0, 0)
-			elseif SidePoint(point) == "LEFT" then
-				host:SetPoint("TOPLEFT", ObjectiveTrackerFrame, "TOPRIGHT", 0, 0)
-			else
-				host:SetPoint("TOPRIGHT", ObjectiveTrackerFrame, "TOPLEFT", 0, 0)
-			end
-			AvoidMinimap(point)
-		elseif nativeAnchor then
-			local _, hostPoint = StackPoints(nativeAnchor.point)
+	local x, y = (settings.x or 0) / scale, (settings.y or -40) / scale
+	x = math.max(0, math.min(x, math.max(0, screenWidth - width)))
+	y = math.min(0, math.max(y, 24 - screenHeight))
+	host:ClearAllPoints()
+	host:SetPoint("TOPLEFT", UIParent, "TOPLEFT", x, y)
+	LayoutModules(width, math.max(24, screenHeight + y - 24), 24)
+	y = math.min(0, math.max(y, math.min(host:GetHeight(), screenHeight) - screenHeight))
+	host:ClearAllPoints()
+	host:SetPoint("TOPLEFT", UIParent, "TOPLEFT", x, y)
+end
+
+local function LayoutInCombat()
+	-- The native tracker is protected: in combat it cannot be restacked below our column, and Blizzard returns it
+	-- to its saved Edit Mode slot. Move our private column above or beside the native frame, keeping clear of
+	-- the minimap, and resume the full reflow on PLAYER_REGEN_ENABLED.
+	CaptureNativeAnchor()
+	host:SetWidth(ObjectiveTrackerFrame:GetWidth())
+	host:ClearAllPoints()
+	-- Once Blizzard has restored the protected frame to its saved slot, anchor our private
+	-- column to the native frame's actual top edge. This follows CENTER/BOTTOM anchors,
+	-- offsets and UI scale without writing the protected frame. During the brief window
+	-- before that restore, the native frame still points at us; use the saved slot instead
+	-- to avoid creating an anchor cycle.
+	local point, nativeRelativeTo = ObjectiveTrackerFrame:GetPoint()
+	if nativeRelativeTo == host then
+		-- Preserve the saved slot if a legacy host-relative anchor is restored.
+		-- Moving relative to that protected child would create an anchor cycle.
+		if nativeAnchor then
 			host:SetPoint(
-				hostPoint,
+				nativeAnchor.point,
 				nativeAnchor.relativeTo,
 				nativeAnchor.relativePoint,
 				nativeAnchor.x,
 				nativeAnchor.y
 			)
 		end
-		AvoidMinimap(nativeAnchor and nativeAnchor.point or "TOPRIGHT")
-		return
+	elseif point then
+		local nativePoint, hostPoint = StackPoints(point)
+		-- If there is no room above the restored tracker, use the side away from its
+		-- anchored edge. This keeps the private column visible without moving or
+		-- overlapping the protected frame.
+		local nativeTop = ObjectiveTrackerFrame:GetTop() or 0
+		local screenTop = UIParent:GetHeight() or nativeTop
+		local hostScale = host:GetEffectiveScale()
+		local screenScale = UIParent:GetEffectiveScale()
+		local nativeScale = ObjectiveTrackerFrame:GetEffectiveScale()
+		local room = screenTop * screenScale - nativeTop * nativeScale
+		if room >= math.max(host:GetHeight() or 0, 1) * hostScale then
+			host:SetPoint(hostPoint, ObjectiveTrackerFrame, nativePoint, 0, 0)
+		elseif SidePoint(point) == "LEFT" then
+			host:SetPoint("TOPLEFT", ObjectiveTrackerFrame, "TOPRIGHT", 0, 0)
+		else
+			host:SetPoint("TOPRIGHT", ObjectiveTrackerFrame, "TOPLEFT", 0, 0)
+		end
+		AvoidMinimap(point)
+	elseif nativeAnchor then
+		local _, hostPoint = StackPoints(nativeAnchor.point)
+		host:SetPoint(hostPoint, nativeAnchor.relativeTo, nativeAnchor.relativePoint, nativeAnchor.x, nativeAnchor.y)
 	end
+	AvoidMinimap(nativeAnchor and nativeAnchor.point or "TOPRIGHT")
+end
+
+local function LayoutAttached()
 	-- Read the global each time, not once at load: Blizzard_EditMode is load-on-demand, so it may appear later.
 	if EditModeManagerFrame and EditModeManagerFrame.IsEditModeActive and EditModeManagerFrame:IsEditModeActive() then
 		return
 	end
-	table.sort(modules, function(a, b)
-		return a.uiOrder < b.uiOrder
-	end)
 	-- The native frame may only receive its final Edit Mode anchor after the
 	-- player and saved variables are ready. Capture it before our first reflow.
 	CaptureNativeAnchor()
@@ -443,8 +434,8 @@ local function Layout()
 		nativeAnchor.x,
 		nativeAnchor.y
 	)
-	local layoutScale = host.GetEffectiveScale and host:GetEffectiveScale() or 1
-	local layoutScreenScale = UIParent.GetEffectiveScale and UIParent:GetEffectiveScale() or layoutScale
+	local layoutScale = host:GetEffectiveScale()
+	local layoutScreenScale = UIParent:GetEffectiveScale()
 	local layoutMargin = 40 * layoutScreenScale / layoutScale
 	local available = math.max(0, (host:GetTop() or UIParent:GetHeight()) - layoutMargin)
 	host:SetWidth(width)
@@ -463,8 +454,8 @@ local function Layout()
 	)
 	local screenHeight = UIParent:GetHeight()
 	local top = host:GetTop()
-	local scale = host.GetEffectiveScale and host:GetEffectiveScale() or 1
-	local screenScale = UIParent.GetEffectiveScale and UIParent:GetEffectiveScale() or scale
+	local scale = host:GetEffectiveScale()
+	local screenScale = UIParent:GetEffectiveScale()
 	local margin = 24 * screenScale / scale
 	local screen = screenHeight and screenHeight * screenScale / scale
 	if screen and top and top - host:GetHeight() < margin then
@@ -479,8 +470,8 @@ local function Layout()
 		nativeAnchor.x,
 		nativeAnchor.y + shift
 	)
-	local nativeScale = ObjectiveTrackerFrame.GetEffectiveScale and ObjectiveTrackerFrame:GetEffectiveScale() or 1
-	local hostScale = host.GetEffectiveScale and host:GetEffectiveScale() or 1
+	local nativeScale = ObjectiveTrackerFrame:GetEffectiveScale()
+	local hostScale = host:GetEffectiveScale()
 	local hostLeft = (host:GetLeft() or 0) * hostScale / screenScale
 	local nativeY = (host:GetBottom() or 0) * hostScale / screenScale - UIParent:GetHeight()
 	ObjectiveTrackerFrame:ClearAllPoints()
@@ -512,6 +503,21 @@ local function Layout()
 		ObjectiveTrackerFrame:SetHeight(nativeHeight)
 		appliedNativeHeight = nativeHeight
 	end
+end
+
+local function Layout()
+	queued = false
+	local settings = Settings()
+	UpdateAttachment(settings)
+	if not attached then
+		LayoutDetached(settings)
+		return
+	end
+	if InCombatLockdown() and attached then
+		LayoutInCombat()
+		return
+	end
+	LayoutAttached()
 end
 
 function host.MarkDirty(_)
@@ -619,7 +625,7 @@ function api.Debug()
 			frame:GetTop() or -1,
 			frame:GetRight() or -1,
 			frame:GetBottom() or -1,
-			frame.GetEffectiveScale and frame:GetEffectiveScale() or 1
+			frame:GetEffectiveScale()
 		)
 	end
 	return ("combat=%s shown=%s hostH=%.1f host[%s] g[%s] nativeH=%.1f native[%s] g[%s] uiS%.2f"):format(
@@ -631,7 +637,7 @@ function api.Debug()
 		ObjectiveTrackerFrame:GetHeight() or -1,
 		point(ObjectiveTrackerFrame),
 		geometry(ObjectiveTrackerFrame),
-		UIParent.GetEffectiveScale and UIParent:GetEffectiveScale() or 1
+		UIParent:GetEffectiveScale()
 	)
 end
 
