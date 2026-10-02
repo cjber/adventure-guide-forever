@@ -120,7 +120,6 @@ do
 		{ "title: " .. B.text, "button: Skip for now", "button: Not interested" },
 		"menu: no Go without a place"
 	)
-	equal(h.menu.tag, "MENU_ADVENTURE_GUIDE_FOREVER_ASIDE", "menu: its tag")
 	h.menu.entries[3].onClick()
 	h.flush()
 	equal(#Line(h), 0, "declined: no line in the guide")
@@ -232,7 +231,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks.aside, "LeftButton")
 	h.flush()
 	equal(starts(), before + 2, label .. ": so does the tracker's")
-	-- A wanderer (roadmap #24) is told the place and never taken there: no Go, no click line, and a click goes nowhere.
+	-- A wanderer is told the place and never taken there: no Go, no click line, and a click goes nowhere.
 	h.ns.SetSetting("wanderer", true)
 	Settle(h)
 	h.Click(Line(h)[1], "RightButton")
@@ -273,7 +272,7 @@ do
 	clean(h, "ambient")
 end
 
--- Unspent talent points (roadmap #25): a line while any wait; a Skip for now holds until a point is gained.
+-- Unspent talent points: a line while any wait; a Skip for now holds until a point is gained.
 do
 	local h = harness.load({ charDB = { journey = "carry" }, talents = 0 })
 	Settle(h)

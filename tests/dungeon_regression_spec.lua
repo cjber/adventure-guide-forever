@@ -1,5 +1,6 @@
 -- Contract matches AtlasLoot ItemDB:AddDifficulty: NORMAL registers a localized name and short key n.
 local harness = dofile("tests/harness.lua")
+local Button = dofile("tests/ui_helpers.lua").Button
 local function noop() end
 for _, locale in ipairs({ "Normal", "Normalmodus", "Обычный" }) do
 	local h = harness.load()
@@ -39,39 +40,13 @@ for id, instance in pairs(h.ns.Data.instances) do
 	if not instance.raid then
 		h.ns.Window.OpenDungeon(id)
 		h.flush()
-		local button
-		for _, frame in ipairs(h.frames) do
-			if
-				frame:IsObjectType("Button")
-				and frame:IsVisible()
-				and (
-					frame:GetText() == h.ns.L.DUNGEON_PLAN
-					or frame.Text and frame.Text:GetText() == h.ns.L.DUNGEON_PLAN
-				)
-			then
-				button = frame
-			end
-		end
-		assert(button, "plan button for " .. id)
-		h.Click(button)
+		h.Click(Button(h, h.ns.L.DUNGEON_PLAN))
 		h.flush()
 		assert(h.ns.Dungeons.Planned(id), "planning must persist for " .. id)
 		local bosses = h.ns.Dungeons.Bosses(nil, id)
 		-- Bosses now come from AtlasLoot/native EJ only; with neither installed the list is empty, never nil.
 		assert(type(bosses) == "table", "boss list is a table for " .. id)
-		for _, frame in ipairs(h.frames) do
-			if
-				frame:IsObjectType("Button")
-				and frame:IsVisible()
-				and (
-					frame:GetText() == h.ns.L.DUNGEON_BOSSES_TAB
-					or frame.Text and frame.Text:GetText() == h.ns.L.DUNGEON_BOSSES_TAB
-				)
-			then
-				h.Click(frame)
-				break
-			end
-		end
+		h.Click(Button(h, h.ns.L.DUNGEON_BOSSES_TAB))
 		h.flush()
 		if bosses[1] then
 			local visible = false
@@ -89,19 +64,7 @@ for _, raid in ipairs(h.ns.Raids) do
 	if raid.map then
 		h.ns.Window.OpenDungeon(raid.map)
 		h.flush()
-		for _, frame in ipairs(h.frames) do
-			if
-				frame:IsObjectType("Button")
-				and frame:IsVisible()
-				and (
-					frame:GetText() == h.ns.L.DUNGEON_BOSSES_TAB
-					or frame.Text and frame.Text:GetText() == h.ns.L.DUNGEON_BOSSES_TAB
-				)
-			then
-				h.Click(frame)
-				break
-			end
-		end
+		h.Click(Button(h, h.ns.L.DUNGEON_BOSSES_TAB))
 		h.flush()
 		assert(type(h.ns.Dungeons.Bosses(nil, raid.map)) == "table", "raid boss list is a table for " .. raid.map)
 	end

@@ -99,9 +99,8 @@ end
 ---@param journey AGFJourney
 function Menu.Journey(owner, journey)
 	ns.ContextMenu(owner, function(_, root)
-		root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_JOURNEY")
 		root:CreateTitle(journey.title)
-		local instance = journey.kind == "dungeon" and tonumber(journey.key:match("^dungeon:(%d+)$"))
+		local instance = journey.kind == "dungeon" and journey.instance
 		if instance then
 			root:CreateButton(L.DUNGEON_OPEN_PAGE, function()
 				ns.Window.OpenDungeon(instance)
@@ -114,11 +113,55 @@ function Menu.Journey(owner, journey)
 end
 
 ---@param owner Region
----@param tag string
 ---@param step? AGFStep
-function Menu.Open(owner, tag, step)
+function Menu.Open(owner, step)
 	ns.ContextMenu(owner, function(_, root)
-		root:SetTag(tag)
 		Menu.Step(root, step)
+	end)
+end
+
+---@return string
+function Menu.ClickLine()
+	local provider = ns.Integrations.Provider()
+	return provider and L.CLICK_TRAVEL:format(provider) or L.CLICK_WAYPOINT
+end
+
+---@param _ Region
+---@param menu AGFMenuDescription
+function Menu.Settings(_, menu)
+	local function Setting(label, key)
+		return menu:CreateCheckbox(label, function()
+			return ns.Setting(key)
+		end, function()
+			ns.SetSetting(key, not ns.Setting(key))
+		end)
+	end
+	local function Pref(label, key)
+		menu:CreateCheckbox(label, function()
+			return ns.Prefs()[key]
+		end, function()
+			local prefs = ns.Prefs()
+			prefs[key] = not prefs[key]
+			ns.Invalidate()
+		end)
+	end
+	Pref(ns.L.MENU_QUESTS, "quests")
+	Pref(ns.L.MENU_DUNGEONS, "dungeons")
+	Pref(ns.L.MENU_BATTLEGROUNDS, "battlegrounds")
+	Setting(ns.L.MENU_MAP_PINS, "showMapPins")
+	-- Givers draw only with map pins on, so the box is grayed until they are (the menu polls a function).
+	Setting(ns.L.MENU_GIVERS, "showQuestGivers"):SetEnabled(function()
+		return ns.Setting("showMapPins")
+	end)
+	Setting(ns.L.MENU_TRACKER, "showTracker")
+	-- Skipped steps, journeys not wanted and asides turned down, each with Show again.
+	local skipped = #ns.Skipped()
+	if skipped > 0 then
+		ns.Menu.Skipped(menu:CreateButton(ns.L.SKIPPED:format(skipped)))
+	end
+	menu:CreateButton(ns.L.MENU_MORE_SETTINGS, function()
+		if ns.OpenSettings then
+			ns.OpenSettings()
+		end
 	end)
 end

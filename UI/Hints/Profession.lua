@@ -2,7 +2,7 @@
 local _, ns = ...
 local L = ns.L
 
---[[ The profession aside (roadmap #9, docs/design.md §2.16): a learned line at its rank's cap whose next rank is open
+--[[ The profession aside (docs/design.md §2.16): a learned line at its rank's cap whose next rank is open
      ("Your Mining has reached 75 of 75 · Journeyman training in Ironforge"), else a free profession slot, else a
      secondary skill not yet learned, each at the nearest trainer of the right rank (Model.Profession); text only when
      the data places none. Only where to go: SkillUp Forever keeps recipes and skill-ups. ]]

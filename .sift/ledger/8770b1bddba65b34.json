@@ -2,6 +2,20 @@
   "schema_version": 1,
   "items": [
     {
+      "id": "390001a03d",
+      "lens": "dead-code",
+      "file": "Planning/Geometry.lua",
+      "quote": "local function Continent(api, mapID, info)",
+      "what": "Continent() and the `continent` field Geometry.Maps builds are test-only: delete the helper, the field, the `entry.continent = nil` strip in NativeMaps and the three continent checks in tests/geometry_spec.lua.",
+      "why": "Geometry.Maps has one production caller, Geometry.Apply, which wraps it in NativeMaps, and NativeMaps unconditionally sets entry.continent = nil (its comment explains the root uiMapID is the wrong key space and is 'always dropped'). So the parentMapID walk (up to 32 GetMapInfo calls per map, per data table) is computed and discarded on every production path; only tests/geometry_spec.lua:82-85 read it. rg 'Geometry\\.Maps' over code, tests and all branches: Apply and the spec only. No dynamic access to ns.Geometry members.",
+      "confidence": "medium",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
+      "first_seen": "2026-10-02",
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
+    },
+    {
       "id": "650827f00d",
       "lens": "comment-narration",
       "file": "Planning/Geometry.lua",
@@ -23,10 +37,11 @@
       "what": "Geometry.Factions' index-enumeration path (no factionIDs: GetNumFactions + GetFactionDataByIndex) is test-only; delete it and its two checks in tests/geometry_spec.lua, making factionIDs required.",
       "why": "rg 'Geometry\\.Factions' over the repo: the only production caller is Geometry.Apply, which always passes a table (factionIDs = {} at minimum), so `if factionIDs then ... return out end` always returns first. The only nil-ID call is tests/geometry_spec.lua:193. ClientApi() deliberately does not supply GetNumFactions (its own comment says so), so the path could not run in the client even if reached. Geometry is not in INTERFACES.md or any types/ public contract; no string-built access (`ns.Geometry[`), no registration; git grep over all local/remote branches finds no other caller.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Delete this member that only specs read, together with the checks that read it? It removes test coverage and part of it sits in types/Namespace.lua, which PR 81 has open.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "a197807010",
@@ -36,10 +51,11 @@
       "what": "Dangling plan reference: '(roadmap: ...)' points at a document the repository does not have, and '$C_Map' two lines down is a typo for C_Map; drop the parenthesis and the '$'.",
       "why": "`rg -il roadmap` over the tree (excluding .sift and .git) returns only source, tests and tools comments; there is no roadmap file in the root or docs/ (curseforge.md, design.md, dungeon-sources.md, quest-routing.md). The reference is an internal planning label a reader cannot follow.",
       "confidence": "low",
-      "status": "decide",
-      "reason": "Drop the 'roadmap #N' and 'Stream Nx' labels repository-wide? No file defines them, yet specs and comments cross-reference each other by them; two verifiers called that a convention and four called it residue.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "a582a9eee4",
@@ -89,10 +105,11 @@
       "what": "EnsureNative's `data` parameter is nil at every call site; drop it and read ns.Data directly, leaving EnsureNative(api).",
       "why": "rg 'EnsureNative' over the repo and all branches: Core/Core.lua:477 calls ns.Geometry.EnsureNative() with no arguments, and tests/geometry_spec.lua:378,381,392 all pass nil as data. The function's own comment says reading ns.Data here rather than a captured table is the point. Collapsed form: `function Geometry.EnsureNative(api) local data = ns.Data ...`.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Drop EnsureNative's data parameter? No shipped caller sets it, but tests/geometry_spec.lua passes nil in its place three times and Core/Core.lua, open in PR 81, holds the call.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "00ea08cdc0",
@@ -102,10 +119,11 @@
       "what": "Laps is one 660-line function (2085-2747) with eleven parameters and about fifteen nested closures over some forty locals; lift its phases into file-level functions passing an explicit lap state: pick and price pickups (2131-2212), key areas (2213-2237), build anchors (2239-2332), the greedy walk with Consider/Handable (2339-2464), Verify and Holds (2467-2565), fronting and committing (2566-2664), merge, renumber and trim visits (2665-2720), and describing the steps (2724-2745).",
       "why": "Read in full: the phases communicate through closed-over locals (towns, areas, picks, ids, nodes, ratio, sums, counts, anchors, list, pending, homes, route, from, done, handed, reached, placed, closed, schooled, lastAnchor, cap, count, picked, offered), so no phase can be tested or read alone; tests/laps_spec.lua reaches it only through Model.Plan. Verify (2474-2530) and Holds (2533-2565) are pure over (steps, log, pending, cap, count, picked, ratio, leadID) and Stabilise already takes Holds as a parameter, showing the seam. The planned and nearest branches (2588-2664) each carry a copy of the lead-area block, reported separately.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Split this module or function along the responsibilities named, in its own reviewed change? It adds files or file-level functions, which an audit may not do.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "0c11f471a2",
@@ -129,10 +147,11 @@
       "what": "Unreachable nil guards in Laps' Consider: `anchor` and `anchor.place` are never nil; read `anchor.place` directly and drop `anchor ~= nil`, `or anchor.open` and the `place == nil or place.map == nil` arm two lines down.",
       "why": "Consider's three call sites (Model.lua:2414, 2420, 2426) sit inside `for _, anchor in ipairs(list)`. Anchor (2241-2248) always sets `place` from a town step, a ValidPlace finish (2262-2264) or the player, whose place is valid because Laps returns at 2088 unless `origin.known`; AGFAnchor types `place` as a non-optional table (1854).",
       "confidence": "medium",
-      "status": "unproven",
-      "reason": "All three Consider calls pass list anchors constructed with a town, validated finish or valid player position, supporting the runtime redundancy claim. The required type-check verification after removing the guards cannot be performed under the read-only constraint, so their type-narrowing role remains unverified.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: proven by callers and the type check, then removed"
     },
     {
       "id": "1732da701f",
@@ -208,10 +227,11 @@
       "what": "Which quest counts toward a zone is written three times: Rank (499-506, canonical), InZone (2962-2966) and inline in Model.Journeys (3710-3712); the Journeys copy should be built from the same predicate (InZone plus a named 'outdoor elite' test shared with Rank).",
       "why": "Rank: `map = quest.zone or (quest.start and quest.start.map)`, `not quest.raid`, `not (quest.elite and not quest.dungeon)`. InZone: `not quest.raid and (quest.zone or quest.start.map) == zone`. Journeys 3710-3712 repeats both the outdoor-elite test and InZone's body for player.map; its comment says 'As in the ranking', so the copies are meant to agree and a change to the rule (for example how a raid or outdoor elite is treated) needs all three. Differences: Rank guards a missing quest.start, the other two index it unguarded (safe only because eligible quests have a valid start); these are drift, not design.",
       "confidence": "low",
-      "status": "decide",
-      "reason": "Unify these copies behind one helper in a reviewed refactor? The copies differ in small ways, so the shared helper is a design choice, not a mechanical move.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "7d0c88e932",
@@ -277,10 +297,11 @@
       "what": "The 'leading area keeps only the workable objectives' block exists twice inside Laps, at 2613-2625 (planned branch, canonical) and 2646-2658 (nearest branch); extract one local function (standsIn -> lead copy) that both branches call.",
       "why": "The two blocks are token-identical for 13 lines: shallow-copy standsIn, reset objectives and quests, keep objectives whose quest is not in standsIn.planned, rebuild quests de-duplicated, Tell(lead). Only the lines after differ (planned replaces the step wherever it is in route and then Fronts it; nearest writes route[1]). Both implement the same rule stated in both comments ('keeps only the work they can do now, not objectives for quests the route has yet to pick up elsewhere') and the same rule as Workable (2023-2033), so a change to what counts as workable must land in both. No difference is intentional. A third partial copy of the objective filter is Refresh's Prune (4019-4024).",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Unify these copies behind one helper in a reviewed refactor? The copies differ in small ways, so the shared helper is a design choice, not a mechanical move.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "9b5e59a1c6",
@@ -304,10 +325,11 @@
       "what": "`step.ring` is test-only: Enter writes it on every area step but no runtime file reads it; delete it with its `types/Namespace.lua` field and the spec reads, or give the map ring a reader.",
       "why": "`rg '\\.ring\\b|\"ring\"'` over the repository: one write (this line) and three reads, all in tests (tests/harness.lua:2741 `Placed`, tests/plan_golden_spec.lua:164, tests/model_spec.lua:906). No UI, pin, tracker, dump or integration file reads it, and no remote branch adds a reader (they only carry the same write). UI/Sound.lua copies steps with `pairs` but never reads the key. Not a persisted name: routes are not saved by field. Medium because docs/design.md \u00a74.2 and the comment above Enter describe the ring as the area's drawn middle, so the intended reader may be missing rather than the field surplus; tests/harness.lua `Placed` uses it to prove a moved point still sits on a data place.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Delete this member that only specs read, together with the checks that read it? It removes test coverage and part of it sits in types/Namespace.lua, which PR 81 has open.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "aa75fdde3d",
@@ -345,8 +367,8 @@
       "what": "Unreachable default in Model.IsGray: the index is clamped to the table's length and is at least 1 for any level of 0 or more, so `or 4` never fires; drop it.",
       "why": "`math.floor(playerLevel / 5) + 1` is 1 or more for playerLevel >= 0 and `math.min(#GREEN_RANGE, ...)` caps it at 13; GREEN_RANGE has 13 contiguous entries. Every caller (Model.lua and tests/model_spec.lua:22-25, harness.lua:1774) passes a player level of 1 or more.",
       "confidence": "medium",
-      "status": "unproven",
-      "reason": "Core/State.lua:202 takes player.level directly from UnitLevel(\"player\"), whose pinned annotation guarantees only a number, without enforcing nonnegativity. The fallback is reachable for negative levels; confirming removal requires a host contract establishing nonnegative player levels on every supported call path.",
+      "status": "dismissed",
+      "reason": "The default keeps the pure helper total over any number at no cost; the client never returns a negative player level.",
       "first_seen": "2026-10-02",
       "updated": "2026-10-02"
     },
@@ -372,10 +394,11 @@
       "what": "The rule 'a town's point is the place of its quest nearest the stop before it' is implemented twice, in Build (1747-1755, canonical, with the comment that states the rule) and in Laps (2729-2736); extract one function (data, step, from) both call.",
       "why": "Eight identical lines in both: loop step.quests, CostTo(from, Point(data, step.spots[id])), keep the cheapest spot, assign step.map/x/y. Both feed Shortest Path's waypoint for a town, so a change to the rule (for example skipping a giver whose quests are all done, as TownChecklist 3523-3533 already does with a third nearest-place loop) must land in both. Drift already present around them: Build advances with `from = Position(data, step, docks)` (1760, may become nil), Laps with `from = Position(data, step, docks) or from` (2744); Build guards on `step.spots`, Laps on `step.kind == \"town\"`. Neither difference is explained in a comment. Not the Locate/Build pair the project skill's Settled entry covers.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Unify these copies behind one helper in a reviewed refactor? The copies differ in small ways, so the shared helper is a design choice, not a mechanical move.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "def927612b",
@@ -413,10 +436,11 @@
       "what": "Model.lua is 4109 lines holding at least seven separable responsibilities; split it along them in its own reviewed change (eligibility and Why 1-453; zone ranking and Choices 455-652; step builders Visit/Describe/Opens/OpenSlots/Nodes/Gather/LogSteps/PickupSteps 654-1091; travel cost Point/Docks/Cost/Yards 1093-1307; trainers, professions and rest 1309-1533; route ordering Build/Order/NearestStop and Laps with Stabilise/Recommit 1535-2747; journey cards 2749-3453 and 3657-3924; step decoration TownChecklist/StepTitle/FinishRoute 3455-3655; the in-combat Refresh 3926-4086).",
       "why": "wc -l: Model.lua is 4109 lines, three times the next runtime file (UI/Panel.lua 1376). The parts separate cleanly: Check/Why/Search/Story (1-453) call nothing below them and are called from below only through Eligible; the cost layer (Point, Position, Docks, Cost, CostTo, Model.Yards) depends only on data and ValidPlace/HasBit; Nudges/Model.Profession/Model.RestLow/Model.Trainer/Model.Battlemaster use only Nearest and the cost layer; TownChecklist/StepTitle/FinishRoute touch only finished steps. The split already has precedent (Planning/Geometry.lua, Planning/Order.lua). The cost of the size shows in the duplicates reported in this run (two copies of the lead-area block and of the town-point loop inside one file). File-private upvalues shared across the parts (droppedIDs, skippedSeen, committedOrders, planDocks, heldHere, NONE) are the coupling a split has to resolve.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Split this module or function along the responsibilities named, in its own reviewed change? It adds files or file-level functions, which an audit may not do.",
+      "status": "confirmed",
+      "reason": "Applied on cb/sift-decisions; the quoted line survives the change (a split, an addition beside it or a rewritten body), so the ledger cannot record it as fixed.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "eb8b07371f",
@@ -574,10 +598,11 @@
       "what": "'Up to six choices' no longer matches the journey list, which offers every eligible journey. Propose (store-facing copy, owner decides): drop the count, e.g. 'Loose ends from your log, a zone's story, ...'.",
       "why": "docs/design.md 2.2: 'Offer every eligible journey for the current level; the home view scrolls and the window grid pages through them'. CHANGELOG 0.3.0: 'The home view scrolls through all offered journeys'. Searches of Planning/ and UI/ for a journey cap (`MAX_*`, `= 6`, 'six') find only `Model.MAX_STEPS = 10`. 'Up to six journeys' dates from the 0.1.0 entry.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Reword this store-facing line as proposed? It no longer matches what the addon does.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "be00feb5a5",
@@ -736,10 +761,11 @@
       "what": "History/ticket reference: 'roadmap #5' (and 'roadmap #25' at line 255) points at a roadmap the repository does not contain; drop the label and keep the Model.Trainer pointer.",
       "why": "rg -i 'roadmap' over the repository finds only code comments citing it (types/Namespace.lua, Core/Core.lua, Core/State.lua, Integrations/Integrations.lua, tools/, this file); docs/ holds only curseforge.md, design.md, dungeon-sources.md, quest-routing.md and README.md, AGENTS.md and .agents/ never mention a roadmap, so the number resolves to nothing a reader of the repository can open. The docs/design.md section cited beside it does resolve. The same shape recurs outside this slice (about 25 sites), so the owner may prefer one repo-wide decision: drop the labels, or say where the roadmap lives.",
       "confidence": "low",
-      "status": "decide",
-      "reason": "Drop the 'roadmap #N' and 'Stream Nx' labels repository-wide? No file defines them, yet specs and comments cross-reference each other by them; two verifiers called that a convention and four called it residue.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "119057aa02",
@@ -749,10 +775,11 @@
       "what": "A menu entry's kind is a closed set (\"root\", \"button\", \"title\", \"divider\", \"checkbox\") typed as plain string and compared by literal; type the field and New's parameter as a literal union so LuaLS checks the comparisons.",
       "why": "The values are assigned at UI/ContextMenu.lua:34, 42, 48, 54, 137, 199 and compared at :151, :157, :163, :184. With `kind string` (lines 6 and 19) a misspelt literal in any of those passes the type gate; the project's convention for closed sets is an alias (types/Namespace.lua:154 AGFStepKind, :217 AGFJourneyKind), which this field bypasses. No other file reads entry.kind (rg 'kind == \"(title|divider|checkbox)\"' matches only this file).",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Type this closed set (a LuaLS alias, a Python Literal, or a typed field) as proposed? It adds a type the audit may not invent, and part of it sits in types/Namespace.lua, which PR 81 has open.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "a1f15a869f",
@@ -762,10 +789,11 @@
       "what": "The menu tag is test-only: `Description:SetTag` stores `tag` and no shipped code reads it, so delete SetTag, the `---@field tag? string`, the seven `root:SetTag(...)` calls and the `tag` parameters of `Menu.Open` and `Asides.Open`, together with the two spec assertions on `h.menu.tag`.",
       "why": "A leftover of Blizzard_Menu, where a tag lets other addons modify a menu; the file now draws its own popup (\"Keep guide menus in our own frames\") and Draw never looks at the tag. `rg '\\.tag\\b'` over the repo: the only non-test hit on a menu is this write; readers are tests/asides_spec.lua:123 and tests/guide_ui_spec.lua:357 (through the harness wrapper of ns.ContextMenu at tests/harness.lua:2679). All three production callers of Asides.Open pass the same \"MENU_ADVENTURE_GUIDE_FOREVER_ASIDE\"; Menu.Open has one production caller (UI/Tracker.lua:114). Paths checked: dynamic dispatch (no `[key]`/`_G[` read of description fields; Draw reads kind, text, entries, isSelected, tooltip, back, onClick only); public surface and cross-addon (the popup is a plain frame, descriptions are locals never exported, INTERFACES.md, docs and README have no MENU_ADVENTURE or SetTag hit); manifests/XML (no hit in UI/Panel.xml or the TOC); data-driven (not saved, not a locale key); open work (`git grep '\\.tag\\b'` over every local and remote branch outside tests returns only this write). No hard stop applies: the name is not string-built, registered or persisted.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Delete this member that only specs read, together with the checks that read it? It removes test coverage and part of it sits in types/Namespace.lua, which PR 81 has open.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "3e40314822",
@@ -814,10 +842,11 @@
       "what": "A journey's zone or instance ID is recovered by pattern-matching its key string at every read site instead of being a typed field Model sets once; add the ID to AGFJourney (or one Model accessor) and read that.",
       "why": "rg '\\^zone:|\\^dungeon:|\\^chain:' finds the key encoding (written in Planning/Model.lua:3122, 3299, 3366, 3435) re-parsed with a literal pattern in UI/Menu.lua:104, UI/Overview.lua:362, UI/Moments.lua:64 and :67, Integrations/Providers.lua:89, UI/WindowGuide.lua:15, Core/Core.lua:129 and :622-623, and Planning/Model.lua:3675, 3825, 4061. The key is a persisted identity (prefs.journey), which is a wire format, but it is not converted once at a boundary: types/Namespace.lua AGFJourney has no zone or instance field, so each consumer carries its own copy of the pattern. A typo in one pattern, or a new key prefix, is not found by LuaLS or luacheck; the mismatch silently yields nil (no dungeon page entry, wrong moment text, zone left out of Completion).",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Type this closed set (a LuaLS alias, a Python Literal, or a typed field) as proposed? It adds a type the audit may not invent, and part of it sits in types/Namespace.lua, which PR 81 has open.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "2cb291e906",
@@ -854,37 +883,11 @@
       "what": "The aside's click dispatch and tooltip are written out in UI/Panel.lua:444-465 (CreateAsideLine) and again in UI/Window.lua:408-429 (CreateChip), with the click dispatch a third time in UI/Tracker.lua:80-86 and the click-line wording a third time in UI/Pins.lua:41-44 (AddClickLine); move one handler pair next to ns.Asides.Open/Go (UI/Asides.lua, or UI/Overview.lua which already holds what panel and window share) and have all three call it.",
       "why": "rg 'CLICK_TRAVEL|CLICK_WAYPOINT' returns UI/Panel.lua:462, UI/Window.lua:427 and UI/Pins.lua:43 with the same `provider and L.CLICK_TRAVEL:format(provider) or L.CLICK_WAYPOINT` expression; rg 'MENU_ADVENTURE_GUIDE_FOREVER_ASIDE' returns Panel.lua:447, Window.lua:412, Tracker.lua:82, each the same right-click Asides.Open / else Asides.Go branch. Panel.lua:453-465 and Window.lua:418-429 are token-identical (Window's comment says 'As the panel's aside line'). No difference between the copies is intentional: a change to the wanderer rule or the provider wording has to land in all of them.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Unify these copies behind one helper in a reviewed refactor? The copies differ in small ways, so the shared helper is a design choice, not a mechanical move.",
-      "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
-    },
-    {
-      "id": "38e533c6a9",
-      "lens": "comment-narration",
-      "file": "UI/Panel.lua",
-      "quote": "-- The aside's line above the cards.",
-      "what": "Stale, misplaced comment: it sits on `---@class AGFSkipButton` (the skip X) but describes AGFAsideLine, declared three lines later; move it onto AGFAsideLine or delete it (CreateAsideLine already carries the description).",
-      "why": "UI/Panel.lua:135-143: the comment is followed by `---@class AGFSkipButton : Button` with only an Icon field; the aside line class is `AGFAsideLine` at line 139, and line 418 documents it again ('An aside (Asides.lua) above the cards').",
-      "confidence": "medium",
-      "status": "confirmed",
-      "reason": "Fixed by a move, so the quoted line still exists and the ledger cannot record it as fixed: the comment now sits on AGFAsideLine, the class it describes.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
       "updated": "2026-10-02",
-      "guard": "settled:Stale leftovers"
-    },
-    {
-      "id": "3c8ea3107d",
-      "lens": "parallel-implementations",
-      "file": "UI/Panel.lua",
-      "quote": "\t\t\tlocal level = quest.level == -1 and ns.State.Player().level or quest.level",
-      "what": "Panel.lua:936-944 (the guide-outline rows in LayoutRows) is another copy of the quest level, '[level] title' and difficulty-colour derivation owned by Pins.QuestLineText (UI/Pins.lua:69-83); take title and colour from it.",
-      "why": "Same search as the Tracker.lua finding: rg 'level == -1' and rg 'GetQuestDifficultyColor' return Panel.lua:937/943 beside Pins.lua:73/77. The panel copy uses quest.title only (never the client's cached title), formats with L.QUEST_LEVEL_TITLE, a third key with the same '[%d] %s' value (Locales/enUS.lua:448), and falls back to NORMAL_FONT_COLOR exactly as Pins.lua:77 does. The only real difference is that it sets the colour on the font string instead of wrapping the text, which QuestLineText's separate title and colour returns already allow.",
-      "confidence": "low",
-      "status": "decide",
-      "reason": "Unify these copies behind one helper in a reviewed refactor? The copies differ in small ways, so the shared helper is a design choice, not a mechanical move.",
-      "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "guard": "lens-only: owner approved the change"
     }
   ]
 }

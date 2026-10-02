@@ -9,6 +9,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import screenshots  # noqa: E402
+import screenshots_art  # noqa: E402
+import screenshots_stock  # noqa: E402
 
 ROOT = {"root": (0, 0, 300, 200)}
 
@@ -24,11 +26,11 @@ def entry(path, anchors, size=None, **extra):
 class Phases(unittest.TestCase):
     def test_every_compared_phase_is_known(self):
         # A recipe comparing `layer` against a misspelt phase would silently draw nothing.
-        source = Path(screenshots.__file__).read_text()
+        source = Path(screenshots.__file__).read_text() + Path(screenshots_stock.__file__).read_text()
         compared = set(re.findall(r'layer (?:==|!=) "(\w+)"', source))
         compared |= set(re.findall(r'art\("(\w+)"\)', source))
         self.assertTrue(compared)
-        self.assertEqual(compared - set(screenshots.PHASES), set())
+        self.assertEqual(compared - set(screenshots_stock.PHASES), set())
 
 
 class Resolve(unittest.TestCase):
@@ -98,12 +100,12 @@ class Stock(unittest.TestCase):
             screenshots.stock(entry("a", [], stockTemplate="NoSuchTemplate"))
 
     def test_every_recipe_cites_blizzard_source(self):
-        for name, (draw, *_) in screenshots.STOCK.items():
+        for name, (draw, *_) in screenshots_stock.STOCK.items():
             self.assertRegex(draw.__doc__ or "", r"\.(xml|lua)", name)
 
 
 @unittest.skipUnless(
-    importlib.util.find_spec("PIL") and screenshots.WOWMOCK and (screenshots.WOWMOCK / "wowmock.py").is_file(),
+    importlib.util.find_spec("PIL") and screenshots_art.WOWMOCK and (screenshots_art.WOWMOCK / "wowmock.py").is_file(),
     "Pillow or wowmock missing",
 )
 class Render(unittest.TestCase):

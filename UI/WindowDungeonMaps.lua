@@ -69,7 +69,6 @@ function Window.DungeonMaps(instance)
 				key = key,
 				title = record.ZoneName[1],
 				texture = "Interface\\AddOns\\Atlas_ClassicWoW\\Images\\" .. key,
-				legend = table.concat(lines, "\n"),
 				legendLines = lines,
 			}
 		end
@@ -184,24 +183,13 @@ local function build(parent)
 	view.empty:SetPoint("CENTER")
 	view.empty:SetWidth(Window.INSET_WIDTH - 100)
 	view.empty:SetText(L.DUNGEON_MAP_MISSING)
-	view.previous = CreateFrame("Button", nil, view.panel, "UIPanelButtonTemplate")
-	view.previous:SetSize(90, 22)
-	view.previous:SetPoint("BOTTOMLEFT", 14, 8)
-	view.previous:SetText(L.PREVIOUS_PAGE)
-	view.previous:SetScript("OnClick", function()
+	view.previous, view.next, view.count = Window.CreatePager(view.panel, function()
 		view.selected = math.max(1, view.selected - 1)
 		draw(view)
-	end)
-	view.next = CreateFrame("Button", nil, view.panel, "UIPanelButtonTemplate")
-	view.next:SetSize(90, 22)
-	view.next:SetPoint("BOTTOMRIGHT", -14, 8)
-	view.next:SetText(L.NEXT_PAGE)
-	view.next:SetScript("OnClick", function()
+	end, function()
 		view.selected = math.min(#view.maps, view.selected + 1)
 		draw(view)
-	end)
-	view.count = view.panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-	view.count:SetPoint("BOTTOM", 0, 13)
+	end, true)
 	local function layout(_, width, height)
 		if width <= 0 or height <= 0 then
 			return

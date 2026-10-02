@@ -7,8 +7,15 @@ import sys
 import tempfile
 from pathlib import Path
 
+import diff_forever
+import gen_quests
+import gen_zoneart
+
 ROOT = Path(__file__).resolve().parent.parent
-DATA = ("Data/Geometry.lua", "Data/Forever.lua", "Data/ZoneArt.lua", "Locales/phrases.txt")
+DATA = tuple(
+    path.relative_to(ROOT).as_posix()
+    for path in (gen_quests.OUTPUT, gen_quests.FIXTURE, diff_forever.OUTPUT, gen_zoneart.OUTPUT)
+) + ("Locales/phrases.txt",)
 
 
 def run(root, *command):

@@ -307,3 +307,6 @@ AdventureGuideForeverWindow = nil
 -- AtlasLoot Classic/Era and Forever 1.1.2 expose the same runtime ItemDB layout.
 ---@type { ItemDB: {Get: fun(self: table, module: string): table?}, Locales: table<string, string> }?
 AtlasLoot = nil
+
+---@type table<integer, {r: number, g: number, b: number, hex: string, color: ColorMixin}>
+ITEM_QUALITY_COLORS = nil

@@ -309,7 +309,7 @@ end
 -- Explicit-instance reads do not change the player's Encounter Journal selection or loot filters.
 ---@param instance integer
 ---@param yield fun()
----@return AGFDungeonBoss[]?, integer?, integer?
+---@return AGFDungeonBoss[]?, integer?
 function Dungeons.Journal(instance, yield)
 	if not (C_EncounterJournal and C_EncounterJournal.GetInstanceForGameMap and EJ_GetEncounterInfoByIndex) then
 		return nil
@@ -333,7 +333,7 @@ function Dungeons.Journal(instance, yield)
 		local _, _, _, _, _, texture = EJ_GetInstanceInfo(journal)
 		icon = type(texture) == "number" and texture > 0 and texture or nil
 	end
-	return #rows > 0 and rows or nil, journal, icon
+	return #rows > 0 and rows or nil, icon
 end
 
 -- AtlasLoot's normal instance pages, read in their encounter order. Its optional module is load-on-demand.
@@ -468,7 +468,14 @@ function Dungeons.Bosses(source, instance, journal)
 	return listed
 end
 
-local requestedLoot = {}
+local requestedItems = {}
+---@param id integer
+function Dungeons.RequestItem(id)
+	if not requestedItems[id] then
+		requestedItems[id] = true
+		C_Item.RequestLoadItemDataByID(id)
+	end
+end
 ---@param source AGFDungeonSource
 ---@param instance integer
 ---@param bosses AGFDungeonBoss[]
@@ -486,9 +493,8 @@ function Dungeons.LootRows(source, instance, bosses)
 	for _, item in ipairs(source.loot[instance] or {}) do
 		local quality = C_Item.GetItemQualityByID(item.id)
 		local name = C_Item.GetItemNameByID(item.id)
-		if (not quality or not name) and not requestedLoot[item.id] then
-			requestedLoot[item.id] = true
-			C_Item.RequestLoadItemDataByID(item.id)
+		if not quality or not name then
+			Dungeons.RequestItem(item.id)
 		end
 		if not seen[item.id] and (item.startQuest or (quality and quality >= 2)) then
 			seen[item.id] = true
@@ -512,7 +518,7 @@ function Dungeons.LootRows(source, instance, bosses)
 				meta[#meta + 1] = equipSlot
 			end
 			if requiredLevel and requiredLevel > 0 then
-				meta[#meta + 1] = L.DUNGEON_ITEM_REQUIRED_LEVEL:format(requiredLevel)
+				meta[#meta + 1] = L.WHY_LEVEL:format(requiredLevel)
 			end
 			group.items[#group.items + 1] = {
 				title = itemName or name or item.name,

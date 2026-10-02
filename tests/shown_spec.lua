@@ -221,7 +221,7 @@ do
 	eq(#warm.steps, 2, "accepted pickup leaves work and return")
 	-- A fresh Model has neither a previous route nor planner caches, as after /reload: the saved commitment alone
 	-- names the return's visit.
-	assert(loadfile("Planning/Model.lua"))("AdventureGuideForever", ns)
+	harness.planner(ns)
 	input.last = nil
 	local cold = Shown.Build(input)
 	eq(#cold.steps, 2, "reload retains work and return")

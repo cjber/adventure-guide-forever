@@ -7,7 +7,7 @@ local Window, Integrations = ns.Window, ns.Integrations
 -- a card of its rank and next recipes over the profession's own art, its next steps and the reagents on the right.
 -- Without a SkillUp Forever that has the API (or with nothing to level) the tab stays, greyed, and says so.
 
-local CARD_WIDTH, RING, RECIPE_ROWS, RECIPE_TOP, RECIPE_PITCH = 440, 44, 5, 96, 40
+local CARD_WIDTH, RECIPE_ROWS, RECIPE_TOP, RECIPE_PITCH = Window.Cards.width, 5, 96, 40
 local STEP_ROWS, STEP_HEIGHT, STEP_PITCH, STEP_HEAD = 3, 44, 49, 18
 local REAGENT_ROWS, REAGENT_PITCH, REAGENT_ICON = 8, 22, 18
 local PICKER_SIZE, PICKER_GAP = 22, 12
@@ -42,11 +42,9 @@ local SOURCES = {
 	auction = L.REAGENT_AUCTION,
 }
 
-local LEFT, TOP = Window.LEFT, Window.TOP
-local WIDTH = Window.INSET_WIDTH - LEFT - Window.RIGHT
-local HEIGHT = Window.INSET_HEIGHT - 12 - TOP
-local SIDE_LEFT = LEFT + CARD_WIDTH + 12
-local SIDE_WIDTH = WIDTH - CARD_WIDTH - 12
+local TOP = Window.TOP
+local SIDE_LEFT = Window.Cards.sideLeft
+local SIDE_WIDTH = Window.Cards.sideWidth
 
 ---@class AGFRecipeRow : Frame
 ---@field Icon AGFRingIcon
@@ -67,13 +65,8 @@ local SIDE_WIDTH = WIDTH - CARD_WIDTH - 12
 ---@field Icon AGFRingIcon
 ---@field profession? AGFSUProfession
 
----@class AGFProfessionCard : AGFWindowCard
----@field Icon AGFRingIcon
----@field Title FontString
----@field Range FontString
+---@class AGFProfessionCard : AGFWindowPictureCard
 ---@field Tag FontString
----@field Bar AGFProgressBar
----@field BarLabel FontString
 ---@field Heading FontString
 ---@field OpenButton Button
 ---@field profession? AGFSUProfession
@@ -210,35 +203,9 @@ end
 local function Build(content)
 	empty = Window.CreateEmpty(content, "Professions-Recipe-Background")
 
-	card = Window.CreateCard(content, false) --[[@as AGFProfessionCard]]
-	Window.SizeCard(card, CARD_WIDTH, HEIGHT, 0.8)
-	card:SetPoint("TOPLEFT", LEFT, -TOP)
-	card.Shade:Hide()
+	local picture, inner = Window.CreatePictureCard(content, L.FROM_SKILLUP)
+	card = picture --[[@as AGFProfessionCard]]
 	card.Fade:SetGradient("HORIZONTAL", CreateColor(0, 0, 0, 0.55), CreateColor(0, 0, 0, 0))
-	card.Picture:Show()
-	card.Highlight:Hide()
-	local inner = CreateFrame("Frame", nil, card)
-	inner:SetAllPoints()
-	inner:SetFrameLevel(card:GetFrameLevel() + 5)
-	card.Icon = Window.CreateRingIcon(inner, RING)
-	card.Icon:SetPoint("TOPLEFT", 18, -18)
-	card.Tag = inner:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-	card.Tag:SetPoint("TOPRIGHT", -16, -16)
-	card.Tag:SetText(L.FROM_SKILLUP)
-	card.Title = inner:CreateFontString(nil, "ARTWORK", "GameFontNormalHuge")
-	card.Title:SetPoint("TOPLEFT", 18 + RING + 14, -16)
-	card.Title:SetPoint("RIGHT", card.Tag, "LEFT", -8, 0)
-	card.Range = inner:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-	card.Range:SetPoint("TOPLEFT", 18 + RING + 14, -42)
-	card.Range:SetPoint("RIGHT", -16, 0)
-	for _, text in ipairs({ card.Title, card.Range }) do
-		text:SetJustifyH("LEFT")
-		text:SetWordWrap(false)
-	end
-	card.Bar = ns.Overview.CreateBar(inner)
-	card.BarLabel = inner:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-	card.BarLabel:SetPoint("TOPRIGHT", -18, -73)
-	card.BarLabel:SetJustifyH("RIGHT")
 	card.Heading = Window.Heading(inner, L.NEXT_RECIPES)
 	card.Heading:SetPoint("TOPLEFT", 18, -RECIPE_TOP)
 	for index = 1, RECIPE_ROWS do
@@ -346,8 +313,7 @@ local function RefreshCard(profession)
 			or L.PROFESSION_RANGE:format(profession.rank, profession.maxRank)
 	)
 	card.BarLabel:SetText(L.PROFESSION_BAR:format(profession.rank, profession.maxRank))
-	local room = CARD_WIDTH - 36 - card.BarLabel:GetUnboundedStringWidth() - 8
-	ns.Overview.SetBar(card.Bar, 18, 76, room, profession.maxRank > 0 and profession.rank / profession.maxRank or 0)
+	Window.SetPictureProgress(card, profession.maxRank > 0 and profession.rank / profession.maxRank or 0)
 	card.Heading:SetShown(#profession.recipes > 0)
 	for index, row in ipairs(recipes) do
 		local recipe = profession.recipes[index]

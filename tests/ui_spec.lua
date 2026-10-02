@@ -219,7 +219,7 @@ do
 		h.flush()
 	end
 
-	-- Roadmap #17: tracking the route's quests is opt-in, so a title click leaves the player's watches alone.
+	-- Tracking the route's quests is opt-in, so a title click leaves the player's watches alone.
 	local h = Load("v1")
 	h.watched[1] = 99
 	ClickTitle(h)
@@ -378,6 +378,7 @@ do
 	equal(malformed.ns.TrackerHostSettings().attached, true, "AGF account host state normalizes malformed value")
 	h.trackerHostSettings.attached = false
 	equal(attachSetting.GetValue(), false, "shared tracker reads the host owner state")
+	h.trackerHostSettings.attached = true
 	attachSetting:SetValue(false)
 	equal(h.trackerHostSettings.attached, false, "shared tracker setting writes shared host state")
 	attachSetting:SetValue(true)
@@ -752,7 +753,7 @@ do
 	equal(h.spf.Cancel, 1, "filtered: our route cancelled")
 	clean(h, "filtered")
 
-	-- Your calling (roadmap #7) holds quests, so the Quests toggle keeps its choice too: a level-12 orc warrior in
+	-- Your calling holds quests, so the Quests toggle keeps its choice too: a level-12 orc warrior in
 	-- Durotar, whose trainer has a task.
 	h = harness.load({
 		planned = true,
@@ -768,7 +769,7 @@ do
 	equal(h.ns.Prefs().journey, "calling", "filtered calling: the choice kept")
 	clean(h, "filtered calling")
 
-	-- Roadmap #21: with no next zone Dungeons hides nothing, so a chosen dungeon that went has ended; below the cap
+	-- With no next zone Dungeons hides nothing, so a chosen dungeon that went has ended; below the cap
 	-- the toggle keeps it.
 	for _, case in ipairs({ { 70, nil, "at the cap" }, { 18, "dungeon:1", "below the cap" } }) do
 		h = harness.load({
@@ -1016,7 +1017,7 @@ end
 
 -- Shortest Path's journeys end with the session: a /reload or login with a route AGF started for the chosen journey
 -- sends it again once, on the first full build out of combat. Not over someone else's journey; a refusal sets no
--- waypoint and asks again on the next full build; Stop, a cleared card or no saved variables (#34) restore nothing.
+-- waypoint and asks again on the next full build; Stop, a cleared card or no saved variables restore nothing.
 do
 	-- autoStart off: this block is about restoring a route that was started before (prefs.guided), not about the
 	-- auto-start on load, which tests/autostart_spec.lua covers.
@@ -1318,7 +1319,7 @@ end
 -- game's own objective mark shows the area; its tooltip lists each open objective under its quest in the client's
 -- words, else its count.
 do
-	-- With the Barrens story ruled out, Gann's Reclamation is off every zone loop, so carry (Loose ends) holds it.
+	-- With the Barrens story ruled out, Gann's Reclamation is off every zone loop, so carry (Quests in your log) holds it.
 	local h = harness.load({
 		planned = true,
 		-- A copy, never the shared PINS_ON table: Core.LoadDB merges the addon's defaults into whatever db it is given.
@@ -2041,7 +2042,7 @@ do
 	clean(h, "log full")
 end
 
--- "Not interested" (roadmap #17): a journey card's right-click hides it on this character, the choice of it ends, and
+-- "Not interested": a journey card's right-click hides it on this character, the choice of it ends, and
 -- Skipped (n) under the cards and in the cog lists it with Show again. The carry card, here for the quest handed in
 -- at Orgrimmar, has no menu.
 do
@@ -2799,7 +2800,7 @@ do
 	equal(#Results(), 0, "search: cleared")
 	clean(h, "guide")
 
-	-- Roadmap #21: past the cap with quests and dungeons off, the dungeon card and a way into an instance still show.
+	-- Past the cap with quests and dungeons off, the dungeon card and a way into an instance still show.
 	local capped = harness.load({ planned = true, player = { level = 70 } })
 	capped.ns.Prefs().quests = false
 	capped.ns.Invalidate()
@@ -3001,7 +3002,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		if journey.kind == "carry" then
 			carried = carried + 1
 			local total = journey.ready + journey.underway
-			equal(foot, L.READY_OF:format(journey.ready, total), label .. ": Loose ends counts what is ready")
+			equal(foot, L.READY_OF:format(journey.ready, total), label .. ": Quests in your log counts what is ready")
 			equal(card.Bar:IsShown(), journey.ready > 0, label .. ": and its bar")
 			equal(card.Bar.Fill:GetWidth() > 0, true, label .. ": never empty")
 		elseif journey.kind == "nextzone" then
@@ -3012,7 +3013,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		local reason = journey.reason ~= foot and journey.reason or nil
 		equal(card.Reason:GetText(), reason or Hub(journey), label .. ": " .. journey.key .. " reason")
 	end
-	equal(carried, 1, label .. ": the Loose ends card")
+	equal(carried, 1, label .. ": the Quests in your log card")
 	equal(zones > 0, true, label .. ": a zone to head to")
 	local longCard = cards[2]
 	local title = longCard.journey.title
@@ -3597,7 +3598,7 @@ do
 end
 
 -- F16, the first aside (Asides.lua): with spells to train, one trainer line in the guide and the tracker, at the
--- nearest trainer who teaches them (roadmap #5); otherwise none. Four Tweaks Forever profiles: absent, no answer yet,
+-- nearest trainer who teaches them; otherwise none. Four Tweaks Forever profiles: absent, no answer yet,
 -- nothing to train, and three spells.
 do
 	local SPELL = { name = "Lightning Bolt", level = 14, line = "Elemental", lineID = 375, general = false }
@@ -3743,7 +3744,7 @@ do
 	clean(h, "trainer affordability")
 end
 
--- Roadmap #5: a chosen journey passing a trainer who teaches the spells to train stops there, a step like any other:
+-- A chosen journey passing a trainer who teaches the spells to train stops there, a step like any other:
 -- the tracker, a ring, Go. Learning the spell (SPELLS_CHANGED) ends the stop. A level-8 troll rogue in Razor Hill.
 do
 	local label = "trainer stop"
@@ -3912,7 +3913,7 @@ do
 	end
 end
 
--- Roadmap #8: State reads skill ranks from C_SkillInfo, again on SKILL_LINES_CHANGED, and standings from
+-- State reads skill ranks from C_SkillInfo, again on SKILL_LINES_CHANGED, and standings from
 -- C_Reputation; a change of either rebuilds, and the why-not search names both in the client's words.
 do
 	local label = "gates"
@@ -3974,7 +3975,7 @@ do
 	clean(h, label)
 end
 
--- Roadmap #11: with no rest the route ends at the inn its last town has; stepping into an inn ticks it off, and a
+-- With no rest the route ends at the inn its last town has; stepping into an inn ticks it off, and a
 -- rest or XP event that moves nothing rebuilds nothing. The carry card's one stop is a hand-in in Orgrimmar.
 do
 	local h = harness.load({
@@ -4015,7 +4016,7 @@ do
 	clean(h, "rest")
 end
 
--- Roadmap #24: a wanderer is told where and never taken there. The one setting gates every waypoint, Shortest Path
+-- A wanderer is told where and never taken there. The one setting gates every waypoint, Shortest Path
 -- route and map mark; choosing still chooses, and turning it on stops what Go started.
 for _, spf in ipairs({ false, "v1" }) do
 	local label = "wanderer, " .. (spf or "no Shortest Path")

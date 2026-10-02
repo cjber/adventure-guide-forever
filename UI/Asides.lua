@@ -197,11 +197,9 @@ end
 
 -- The aside's menu, for its line in the guide and in the tracker.
 ---@param owner Region
----@param tag string
 ---@param aside AGFAside
-function Asides.Open(owner, tag, aside)
+function Asides.Open(owner, aside)
 	ns.ContextMenu(owner, function(_, root)
-		root:SetTag(tag)
 		root:CreateTitle(aside.text)
 		if aside.place and not ns.Setting("wanderer") then
 			root:CreateButton(L.GO, function()
@@ -217,8 +215,30 @@ function Asides.Open(owner, tag, aside)
 	end)
 end
 
+---@param owner Region
+---@param mouseButton string
+---@param aside? AGFAside
+function Asides.Click(owner, mouseButton, aside)
+	if aside and mouseButton == "RightButton" then
+		Asides.Open(owner, aside)
+	elseif aside then
+		Asides.Go(aside)
+	end
+end
+
+---@param owner Frame
+---@param aside? AGFAside
+function Asides.Enter(owner, aside)
+	if aside then
+		ns.Overview.ShowTooltip(owner, {
+			aside.text,
+			aside.place and not ns.Setting("wanderer") and ns.Menu.ClickLine() or nil,
+		})
+	end
+end
+
 --[[ The first provider: the class trainer, from Tweaks Forever's spells to train, at the nearest
-     trainer who teaches them (roadmap #5, Model.Trainer); text only when the data places none. ]]
+     trainer who teaches them (Model.Trainer); text only when the data places none. ]]
 
 Asides.Register(function()
 	local training = ns.Integrations.Training()
@@ -252,7 +272,7 @@ end)
 Asides.RefreshOn("SPELLS_CHANGED")
 Asides.RefreshOn("PLAYER_MONEY")
 
---[[ Unspent talent points (roadmap #25): "You have 2 talent points to spend", while any are. The probe found
+--[[ Unspent talent points: "You have 2 talent points to spend", while any are. The probe found
      GetNumUnspentTalents on Forever and UnitCharacterPoints missing; without the former there is no line. A point
      gained brings it back after a Skip for now, once per new point; spending them all ends it at once. ]]
 

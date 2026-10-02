@@ -104,6 +104,9 @@ abandons quests.
   pins are recorded in [dungeon-sources.md](dungeon-sources.md). The layout is included in `/agf dump` and
   `docs/screenshots/dungeons*.png`, including the owner's Alliance level 19 Darkshore/Ragefire regression.
   The shared Today strip shows two wide hints, with the rest in a small stock-font More menu control on every tab.
+- **2.22 Addon API.** `AdventureGuideForever.API` (docs/api.md) is read-only and versioned. It copies the
+  tracker's step from the committed route and answers nil while a route is due, never building one for a caller.
+  Fields are added, never renamed or repurposed, within a version.
 
 ## 3. Copy
 
@@ -128,7 +131,7 @@ follow the shared family voice.
 - **4.3 Committed order.** Preserve the chosen sequence and visit identities across rebuilds.
   Session limits use rough estimates and retain complete planned work and returns.
 
-The guide uses `ShowUIPanel` / `HideUIPanel` by default, with `UIPanelLayout-*` attributes on its own frame only. It never registers in Blizzard’s shared `UIPanelWindows` table. `floatWindow` opts into independent placement and dragging; saved floating positions remain available when switching back. Opening and mode changes defer during combat.
+The guide uses `ShowUIPanel` / `HideUIPanel` by default, with `UIPanelLayout-*` attributes on its own frame only. It never registers in Blizzard's shared `UIPanelWindows` table. `floatWindow` opts into independent placement and dragging; saved floating positions remain available when switching back. Opening and mode changes defer during combat.
 
 Tweaks can request hidden, lazy creation through `AdventureGuideForever.EnsureWindow`. The guide emits `AdventureGuideForever.WindowCreated` after building and `AdventureGuideForever.WindowLayoutChanged` after switching modes. Tweaks owns layout overrides and scale; the guide retains normal panel occupancy or floating behavior.
 

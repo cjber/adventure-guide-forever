@@ -2,29 +2,26 @@
 local _, ns = ...
 
 -- Forever 70009 can assert in Blizzard_Menu.AcquireMenu. Keep guide menus in our own frames.
+---@alias AGFMenuEntryKind "root"|"button"|"title"|"divider"|"checkbox"
+
 ---@class AGFMenuDescription
----@field kind string
+---@field kind AGFMenuEntryKind
 ---@field text? string
 ---@field entries AGFMenuDescription[]
 ---@field onClick? fun()
 ---@field isSelected? fun(): boolean
 ---@field isEnabled? boolean|fun(): boolean
 ---@field tooltip? fun(tooltip: GameTooltip)
----@field tag? string
 ---@field parent? AGFMenuDescription
 ---@field back? AGFMenuDescription
 local Description = {}
 Description.__index = Description
 
----@param kind string
+---@param kind AGFMenuEntryKind
 ---@param text? string
 ---@return AGFMenuDescription
 local function New(kind, text)
 	return setmetatable({ kind = kind, text = text, entries = {} }, Description)
-end
-
-function Description:SetTag(tag)
-	self.tag = tag
 end
 
 ---@param text string

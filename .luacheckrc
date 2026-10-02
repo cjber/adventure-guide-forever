@@ -14,6 +14,7 @@ exclude_files = {
 ignore = { "212/_.*", "212/self" } -- unused args prefixed with _, and self on mixin handlers
 
 globals = { "ForeverTrackerHost",
+	"AdventureGuideForever",
 	"AdventureGuideForeverDB",
 	"AdventureGuideForeverCharDB",
 	"AdventureGuideForeverPinMixin",
@@ -30,15 +31,13 @@ globals = { "ForeverTrackerHost",
 
 read_globals = { "ShowUIPanel", "HideUIPanel", "CreateFramePoolCollection", "C_XMLUtil",
 	"NORMAL_FONT_COLOR",
+	"ITEM_QUALITY_COLORS",
 	"AtlasLoot",
 	"AtlasMaps",
 	"C_EncounterJournal",
 	"EJ_GetEncounterInfoByIndex",
 	"EJ_GetInstanceInfo",
 	"GetInstanceInfo",
-	"PanelTemplates_SelectTab",
-	"PanelTemplates_DeselectTab",
-	"PanelTemplates_TabResize",
 	"geterrorhandler",
 	"AdventureGuideForeverWindow",
 	-- Core.lua
@@ -122,10 +121,8 @@ read_globals = { "ShowUIPanel", "HideUIPanel", "CreateFramePoolCollection", "C_X
 	"UnitGUID",
 	-- Tracker.lua
 	"Mixin",
-	"ObjectiveTrackerManager",
 	"ObjectiveTrackerFrame",
 	"hooksecurefunc",
-	"MenuUtil",
 	"OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE",
 	"PlaySound",
 	"SOUNDKIT",
@@ -149,7 +146,6 @@ read_globals = { "ShowUIPanel", "HideUIPanel", "CreateFramePoolCollection", "C_X
 	"PanelTemplates_SetTab",
 	"GetBindingAction",
 	"GetBindingKey",
-	"GetBindingText",
 	"SetBinding",
 	"SaveBindings",
 	"GetCurrentBindingSet",

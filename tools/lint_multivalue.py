@@ -4,13 +4,21 @@ import argparse
 import re
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
+
+if __package__:
+    from .typecheck_coverage import runtime_files
+else:
+    from typecheck_coverage import runtime_files
+
+TokenKind = Literal["symbol", "name", "keyword", "number", "string"]
 
 
 @dataclass(frozen=True)
 class Token:
     text: str
     line: int
-    kind: str = "symbol"
+    kind: TokenKind = "symbol"
 
 
 class LuaSyntaxError(ValueError):
@@ -65,7 +73,9 @@ def tokenize(source: str) -> tuple[list[Token], dict[int, str]]:
             if match:
                 offset = match.end()
                 text = match[0]
-                kind = "number" if text[0].isdigit() or text[0] == "." else "keyword" if text in KEYWORDS else "name"
+                kind: TokenKind = (
+                    "number" if text[0].isdigit() or text[0] == "." else "keyword" if text in KEYWORDS else "name"
+                )
             else:
                 text = next((s for s in ("...", "..", "==", "~=", "<=", ">=") if source.startswith(s, offset)), char)
                 offset += len(text)
@@ -311,20 +321,6 @@ def check(source: str) -> list[tuple[int, str]]:
     parser.block()
     parser.take("<eof>")
     return parser.hits
-
-
-def runtime_files(root: Path) -> list[Path]:
-    # The TOC is the runtime contract, including generated data and future subfolders.
-    files = set()
-    for toc in root.glob("*.toc"):
-        for line in toc.read_text().splitlines():
-            line = line.strip()
-            # XML templates are listed too; only Lua can expand select().
-            if line.endswith(".lua") and not line.startswith("#"):
-                files.add(root / line.replace("\\", "/"))
-    if not files:
-        raise ValueError("No runtime files found in the TOC")
-    return sorted(files)
 
 
 def main() -> int:

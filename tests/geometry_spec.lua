@@ -79,10 +79,7 @@ local mapApi = {
 
 local maps = Geometry.Maps(mapApi, { 10, 11, 12, 13, 99 })
 equal(maps[10].name, "Elwynn Forest", "Maps: client name")
-equal(maps[10].continent, 10, "Maps: a root map is its own continent")
-equal(maps[11].continent, 10, "Maps: continent walks parentMapID to the top")
 equal(maps[12].name, nil, 'Maps: an empty client name is nil, not ""')
-equal(maps[12].continent, 12, "Maps: a nameless root still has a continent")
 equal(maps[99], nil, "Maps: an unknown map is left out")
 equal(maps[10].sx, 1000, "Maps: GetMapWorldSize wins for sx")
 equal(maps[10].sy, 2000, "Maps: GetMapWorldSize wins for sy")
@@ -171,9 +168,6 @@ equal(next(Geometry.Skills({})), nil, "Skills: an API without C_SkillInfo answer
 --[[ Factions ]]
 
 local factionApi = {
-	GetNumFactions = function()
-		return 2
-	end,
 	C_Reputation = {
 		GetFactionDataByID = function(factionID)
 			if factionID == 72 then
@@ -181,22 +175,13 @@ local factionApi = {
 			end
 			return nil
 		end,
-		GetFactionDataByIndex = function(index)
-			if index == 1 then
-				return { factionID = 72, name = "Stormwind" }
-			end
-			return { factionID = 76, name = "Stormwind Guard" }
-		end,
 	},
 }
 
-local allFactions = Geometry.Factions(factionApi)
-equal(allFactions[72].name, "Stormwind", "Factions: index enumeration")
-equal(allFactions[76].name, "Stormwind Guard", "Factions: every tracked faction")
 local namedFactions = Geometry.Factions(factionApi, { 72, 999 })
 equal(namedFactions[72].name, "Stormwind", "Factions: a named ID")
 equal(namedFactions[999], nil, "Factions: an unknown ID is left out")
-equal(next(Geometry.Factions({})), nil, "Factions: an API without C_Reputation answers nothing")
+equal(next(Geometry.Factions({}, { 72 })), nil, "Factions: an API without C_Reputation answers nothing")
 
 --[[ Merge ]]
 
@@ -375,10 +360,10 @@ equal(twice.maps[201].cx, -10, "Apply: a second call keeps the bundled geometry"
 -- EnsureNative: reads ns.Data, applies once, and is memoized per data table.
 local nsData = bundled()
 ns.Data = nsData
-equal(Geometry.EnsureNative(nil, applyApi), nsData, "EnsureNative: returns the table it enriched")
+equal(Geometry.EnsureNative(applyApi), nsData, "EnsureNative: returns the table it enriched")
 equal(nsData.maps[200].name, "Client Zone", "EnsureNative: enriches ns.Data")
 nsData.maps[200].name = "Changed"
-Geometry.EnsureNative(nil, applyApi)
+Geometry.EnsureNative(applyApi)
 equal(nsData.maps[200].name, "Changed", "EnsureNative: a repeat call is memoized and re-overlays nothing")
 
 -- QuestieSource swaps ns.Data for a shallow copy (its section tables shared). EnsureNative must read the table
@@ -389,7 +374,7 @@ for key, value in pairs(nsData) do
 end
 swapped.maps[200].name = "Reset By Swap"
 ns.Data = swapped
-Geometry.EnsureNative(nil, applyApi)
+Geometry.EnsureNative(applyApi)
 equal(swapped.maps[200].name, "Client Zone", "EnsureNative: re-overlays the swapped ns.Data table")
 
 print(("geometry_spec: %d checks passed"):format(checks))

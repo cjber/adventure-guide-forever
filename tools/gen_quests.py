@@ -22,6 +22,7 @@ import sys
 import urllib.error
 import urllib.request
 from collections import Counter, defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 
 BUILD = "1.60.1.69913"
@@ -1193,36 +1194,39 @@ def overlays(ui_maps, map_art, overlay_rows, area_rows):
     return result
 
 
-def generate(
+@dataclass
+class Generated:
+    quests: dict
+    zones: dict
+    instances: dict
+    centres: dict
+    shifts: dict
+    ferries: list
+    towns: dict
+    npcs: dict
+    lookups: dict
+    explorable: dict
+    counts: Counter
+
+
+def emit_quests(
     tables,
-    ui_maps,
-    assignments,
     valid_ids,
-    path_nodes,
-    taxi_nodes,
-    area_rows,
-    map_rows,
-    faction_rows,
-    effects,
-    skill_lines,
-    reputations,
-    map_art,
-    overlay_rows,
-    legacy_rows,
-    source_options_,
+    world,
+    areas,
+    area_at,
+    legacy,
+    skill_names,
+    faction_names,
+    instance_of,
+    instances,
+    locations,
+    role,
 ):
-    maps, world, areas = map_indexes(ui_maps, assignments)
-    area_at = SpawnAreas(map_rows, area_rows, areas, source_options_)
-    legacy = legacy_maps(legacy_rows, areas)
-    skill_names, faction_names = gate_names(skill_lines, reputations)
-    instance_of, instances = instance_index(area_rows, map_rows)
-    locations = places(tables, world)
     quests = {r["entry"]: r for r in tables["quest_template"]}
     home = homes(locations, quests, areas)
     incoming, groups = prerequisite_index(quests)
     seasonal = {r["quest"] for r in tables["game_event_quest"]}
-    steps, spells = skill_steps(effects, skill_lines), trainer_spells(tables)
-    role = roles(tables, steps, spells)
     trains = {("creature", entry): fields["class"] for entry, fields in role.items() if "class" in fields}
     explores = {r["quest"] for r in tables["areatrigger_involvedrelation"]}
     shapes = quest_shapes(tables)
@@ -1351,10 +1355,18 @@ def generate(
         if flags := quest_flags(row, qid in explores):
             quest["flags"] = flags
         emitted[qid] = quest
+    return emitted, counts
+
+
+def zones_and_centres(maps, assignments, emitted, counts):
     zones = {m: {"name": maps[m]["Name_lang"], "min": low, "max": high} for m, (low, high) in sorted(PUBLISHED.items())}
     wanted = {q[k]["map"] for q in emitted.values() for k in ("start", "finish") if k in q} | zones.keys()
     centres = geometry(assignments, wanted, {m: row["Name_lang"] for m, row in maps.items()})
     counts["maps without a centre"] = len(wanted - centres.keys())
+    return zones, centres
+
+
+def place_towns(emitted, centres, taxi_nodes, counts):
     points = {}
     for quest in emitted.values():
         for place in (quest[k] for k in ("start", "finish") if k in quest):
@@ -1372,7 +1384,6 @@ def generate(
             grid[continent, math.floor(x / LINK), math.floor(y / LINK)].append((x, y, hub))
             votes[hub][ui_map] += 1
     town_maps = {hub: sorted(counter, key=lambda m: (-counter[m], m)) for hub, counter in votes.items()}
-    npcs = role_npcs(tables, world, faction_rows, role, grid, town_maps, centres.keys(), counts, area_at)
     names = defaultdict(set)
     for quest in emitted.values():
         for place in (quest[k] for k in ("start", "finish") if "hub" in quest.get(k, {})):
@@ -1382,10 +1393,18 @@ def generate(
     counts["widest town hub (yards)"] = round(max(diameter(members) for _, members in hubs))
     towns = hub_names(hubs, flight_masters(taxi_nodes))
     counts["named town hubs"] = len(towns)
+    return towns, grid, town_maps
+
+
+def transport_routes(ui_maps, assignments, centres, tables, path_nodes, taxi_nodes, counts):
     shifts = continents(ui_maps, assignments, {c["continent"] for c in centres.values()})
     counts["continents off the world map"] = len({c["continent"] for c in centres.values()} - shifts.keys())
     ferries = crossings(tables["gameobject_template"], path_nodes, taxi_nodes, shifts.keys())
     counts["ocean crossings"] = len(ferries)
+    return shifts, ferries
+
+
+def named_instances(emitted, tables, instances):
     entrances = entrance_requirements(tables["areatrigger_teleport"], instances)
     used = {q["dungeon"] for q in emitted.values() if "dungeon" in q} | entrances.keys()
     named = {
@@ -1397,6 +1416,10 @@ def generate(
             named[instance]["lfg"] = DUNGEON_LFG[instance]
     for instance, requirements_ in entrances.items():
         named[instance]["entrances"] = requirements_
+    return named
+
+
+def quest_lookups(emitted, skill_names, faction_names, npcs, steps, spells, skill_lines, counts):
     skills = {q["skill"]["id"] for q in emitted.values() if "skill" in q}
     factions = {q["rep"]["faction"] for q in emitted.values() if "rep" in q}
     lookups = {
@@ -1404,10 +1427,72 @@ def generate(
         "factions": {f: {"name": faction_names[f]} for f in factions},
         "professions": professions(npcs, steps, spells, skill_lines, counts),
     }
+    return lookups
+
+
+def generate(
+    tables,
+    *,
+    ui_maps,
+    assignments,
+    valid_ids,
+    path_nodes,
+    taxi_nodes,
+    area_rows,
+    map_rows,
+    faction_rows,
+    effects,
+    skill_lines,
+    reputations,
+    map_art,
+    overlay_rows,
+    legacy_rows,
+    source_options_,
+):
+    maps, world, areas = map_indexes(ui_maps, assignments)
+    area_at = SpawnAreas(map_rows, area_rows, areas, source_options_)
+    legacy = legacy_maps(legacy_rows, areas)
+    skill_names, faction_names = gate_names(skill_lines, reputations)
+    instance_of, instances = instance_index(area_rows, map_rows)
+    locations = places(tables, world)
+    steps, spells = skill_steps(effects, skill_lines), trainer_spells(tables)
+    role = roles(tables, steps, spells)
+    emitted, counts = emit_quests(
+        tables,
+        valid_ids,
+        world,
+        areas,
+        area_at,
+        legacy,
+        skill_names,
+        faction_names,
+        instance_of,
+        instances,
+        locations,
+        role,
+    )
+    zones, centres = zones_and_centres(maps, assignments, emitted, counts)
+    towns, grid, town_maps = place_towns(emitted, centres, taxi_nodes, counts)
+    npcs = role_npcs(tables, world, faction_rows, role, grid, town_maps, centres.keys(), counts, area_at)
+    shifts, ferries = transport_routes(ui_maps, assignments, centres, tables, path_nodes, taxi_nodes, counts)
+    named = named_instances(emitted, tables, instances)
+    lookups = quest_lookups(emitted, skill_names, faction_names, npcs, steps, spells, skill_lines, counts)
     explorable = overlays(ui_maps, map_art, overlay_rows, area_rows)
     counts["explorable areas"] = sum(map(len, explorable.values()))
     counts["zone maps with explorable areas"] = len(explorable)
-    return emitted, zones, named, centres, shifts, ferries, towns, npcs, lookups, explorable, counts
+    return Generated(
+        quests=emitted,
+        zones=zones,
+        instances=named,
+        centres=centres,
+        shifts=shifts,
+        ferries=ferries,
+        towns=towns,
+        npcs=npcs,
+        lookups=lookups,
+        explorable=explorable,
+        counts=counts,
+    )
 
 
 def lua(value):
@@ -1425,9 +1510,9 @@ def lua(value):
     return str(value)
 
 
-def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, lookups, explorable):
+def render(data):
     lines = [
-        "-- Generated by tools/gen_quests.py — do not edit.",
+        "-- Generated by tools/gen_quests.py: do not edit.",
         f"-- CMaNGOS classic-db (GPL-3.0), pinned: {CLASSICDB_URL}",
         "-- wago.tools UiMap, UiMapAssignment, QuestV2, TaxiPathNode, TaxiNodes, AreaTable, Map, FactionTemplate,",
         "-- SpellEffect, SkillLine, Faction, UiMapXMapArt, WorldMapOverlay:",
@@ -1455,9 +1540,10 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, look
         "ns.Data = {",
         f"\tbuild = {lua(BUILD)},",
         f'\tsource = "CMaNGOS classic-db {CLASSICDB_COMMIT}; wago.tools {BUILD}",',
+        f"\ttownLink = {LINK},",
         "\tzones = {",
     ]
-    lines.extend(f"\t\t[{qid}] = {lua(zone)}," for qid, zone in sorted(zones.items()))
+    lines.extend(f"\t\t[{qid}] = {lua(zone)}," for qid, zone in sorted(data.zones.items()))
     lines.extend(
         [
             "\t},",
@@ -1466,27 +1552,27 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, look
             "\tinstances = {",
         ]
     )
-    lines.extend(f"\t\t[{map_id}] = {lua(instance)}," for map_id, instance in sorted(instances.items()))
+    lines.extend(f"\t\t[{map_id}] = {lua(instance)}," for map_id, instance in sorted(data.instances.items()))
     lines.extend(["\t},", "\tmaps = {"])
-    lines.extend(f"\t\t[{ui_map}] = {lua(centre)}," for ui_map, centre in sorted(centres.items()))
+    lines.extend(f"\t\t[{ui_map}] = {lua(centre)}," for ui_map, centre in sorted(data.centres.items()))
     lines.extend(["\t},", "\tcontinents = {"])
-    lines.extend(f"\t\t[{continent}] = {lua(shift)}," for continent, shift in sorted(shifts.items()))
+    lines.extend(f"\t\t[{continent}] = {lua(shift)}," for continent, shift in sorted(data.shifts.items()))
     lines.extend(["\t},", "\tcrossings = {"])
-    lines.extend(f"\t\t{lua(ferry)}," for ferry in ferries)
+    lines.extend(f"\t\t{lua(ferry)}," for ferry in data.ferries)
     lines.extend(["\t},", "\thubs = {"])
-    lines.extend(f"\t\t[{hub}] = {lua(town)}," for hub, town in sorted(towns.items()))
+    lines.extend(f"\t\t[{hub}] = {lua(town)}," for hub, town in sorted(data.towns.items()))
     lines.extend(["\t},", "\tnpcs = {"])
-    lines.extend(f"\t\t[{entry}] = {lua(npc)}," for entry, npc in sorted(npcs.items()))
+    lines.extend(f"\t\t[{entry}] = {lua(npc)}," for entry, npc in sorted(data.npcs.items()))
     for name in ("skills", "factions", "professions"):
         lines.extend(["\t},", f"\t{name} = {{"])
-        lines.extend(f"\t\t[{key}] = {lua(value)}," for key, value in sorted(lookups[name].items()))
+        lines.extend(f"\t\t[{key}] = {lua(value)}," for key, value in sorted(data.lookups[name].items()))
     lines.extend(["\t},", "\toverlays = {"])
-    for ui_map, entries in sorted(explorable.items()):
+    for ui_map, entries in sorted(data.explorable.items()):
         lines.append(f"\t\t[{ui_map}] = {{")
         lines.extend(f"\t\t\t{lua(entry)}," for entry in entries)
         lines.append("\t\t},")
     lines.extend(["\t},", "\ttownAnchors = {"])
-    lines.extend(f"\t\t{lua(anchor)}," for anchor in town_anchors(quests))
+    lines.extend(f"\t\t{lua(anchor)}," for anchor in town_anchors(data.quests))
     return "\n".join(lines + ["\t},", "}", ""])
 
 
@@ -1508,7 +1594,7 @@ def town_anchors(quests):
 def render_quests(quests):
     """The test-only quest corpus (tests/fixtures/quests.lua): the model fixture, never shipped."""
     header = [
-        "-- Generated by tools/gen_quests.py — do not edit.",
+        "-- Generated by tools/gen_quests.py: do not edit.",
         f"-- CMaNGOS classic-db (GPL-3.0), pinned: {CLASSICDB_URL}",
         "-- Test-only quest corpus: the model fixture and the test harness's QuestieDB mirror source.",
         "-- NOT shipped in the addon; in game, quest records come from the installed QuestieDB (QuestieSource.lua).",
@@ -1565,49 +1651,50 @@ def main():
     content = download(CLASSICDB_URL, f"classicdb-{CLASSICDB_COMMIT[:7]}.sql.gz", **options)
     with gzip.open(io.BytesIO(content), "rt", encoding="utf-8") as dump:
         tables = read_tables(dump)
-    quests, zones, instances, centres, shifts, ferries, towns, npcs, lookups, explorable, counts = generate(
+    data = generate(
         tables,
-        db2("UiMap", ("ID", "Name_lang", "Type"), **options),
-        db2("UiMapAssignment", ("ID", "UiMapID", "MapID", "AreaID", "Region_0", "Region_5", "UiMin_0"), **options),
-        {int(r["ID"]) for r in db2("QuestV2", ("ID",), **options)},
-        db2("TaxiPathNode", ("PathID", "NodeIndex", "ContinentID", "Loc_0", "Loc_1", "Delay"), **options),
-        db2("TaxiNodes", TAXI_COLUMNS, **options),
-        db2(
+        ui_maps=db2("UiMap", ("ID", "Name_lang", "Type"), **options),
+        assignments=db2(
+            "UiMapAssignment", ("ID", "UiMapID", "MapID", "AreaID", "Region_0", "Region_5", "UiMin_0"), **options
+        ),
+        valid_ids={int(r["ID"]) for r in db2("QuestV2", ("ID",), **options)},
+        path_nodes=db2("TaxiPathNode", ("PathID", "NodeIndex", "ContinentID", "Loc_0", "Loc_1", "Delay"), **options),
+        taxi_nodes=db2("TaxiNodes", TAXI_COLUMNS, **options),
+        area_rows=db2(
             "AreaTable",
             ("ID", "ContinentID", "AreaName_lang", "ExplorationLevel", "ParentAreaID", "Flags_0"),
             **options,
         ),
-        db2("Map", ("ID", "MapName_lang", "InstanceType", "WdtFileDataID"), **options),
-        db2("FactionTemplate", ("ID", "EnemyGroup"), **options),
-        db2("SpellEffect", ("SpellID", "Effect", "EffectMiscValue_0", "EffectBasePointsF"), **options),
-        db2("SkillLine", ("ID", "CategoryID", "DisplayName_lang"), **options),
-        db2("Faction", ("ID", "Name_lang", "ReputationIndex"), **options),
-        db2("UiMapXMapArt", ("UiMapID", "UiMapArtID", "PhaseID"), **options),
-        db2(
+        map_rows=db2("Map", ("ID", "MapName_lang", "InstanceType", "WdtFileDataID"), **options),
+        faction_rows=db2("FactionTemplate", ("ID", "EnemyGroup"), **options),
+        effects=db2("SpellEffect", ("SpellID", "Effect", "EffectMiscValue_0", "EffectBasePointsF"), **options),
+        skill_lines=db2("SkillLine", ("ID", "CategoryID", "DisplayName_lang"), **options),
+        reputations=db2("Faction", ("ID", "Name_lang", "ReputationIndex"), **options),
+        map_art=db2("UiMapXMapArt", ("UiMapID", "UiMapArtID", "PhaseID"), **options),
+        overlay_rows=db2(
             "WorldMapOverlay",
             ("ID", "UiMapArtID", "TextureWidth", "TextureHeight", "OffsetX", "OffsetY", "PlayerConditionID")
             + ("HitRectTop", "HitRectBottom", "HitRectLeft", "HitRectRight", "AreaID_0"),
             **options,
         ),
-        db2("WorldMapArea", ("ID", "AreaID"), build=LEGACY_MAP_BUILD, **options),
-        options,
+        legacy_rows=db2("WorldMapArea", ("ID", "AreaID"), build=LEGACY_MAP_BUILD, **options),
+        source_options_=options,
     )
-    if not quests or not counts["with start"]:
+    if not data.quests or not data.counts["with start"]:
         raise ValueError("No usable quests; leaving existing output untouched")
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     FIXTURE.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(
-        render(quests, zones, instances, centres, shifts, ferries, towns, npcs, lookups, explorable), encoding="utf-8"
-    )
-    FIXTURE.write_text(render_quests(quests), encoding="utf-8")
-    for name, count in sorted(counts.items()):
+    OUTPUT.write_text(render(data), encoding="utf-8")
+    FIXTURE.write_text(render_quests(data.quests), encoding="utf-8")
+    for name, count in sorted(data.counts.items()):
         print(f"{name}: {count}")
     print(
-        f"Wrote {len(zones)} zones, {len(centres)} map centres, {len(npcs)} NPCs and {len(town_anchors(quests))} town "
+        f"Wrote {len(data.zones)} zones, {len(data.centres)} map centres, {len(data.npcs)} NPCs and "
+        f"{len(town_anchors(data.quests))} town "
         f"anchors: {OUTPUT.relative_to(ROOT)} ({OUTPUT.stat().st_size:,} bytes)"
     )
     print(
-        f"Wrote the test-only {len(quests)}-quest corpus: {FIXTURE.relative_to(ROOT)} "
+        f"Wrote the test-only {len(data.quests)}-quest corpus: {FIXTURE.relative_to(ROOT)} "
         f"({FIXTURE.stat().st_size:,} bytes)"
     )
 

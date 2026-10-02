@@ -3,7 +3,7 @@ local _, ns = ...
 local L = ns.L
 local Asides = ns.Asides
 
---[[ PvP (docs/design.md §2.15): a battleground open to the player (roadmap #12) and the next PvP rank's reward (#28),
+--[[ PvP (docs/design.md §2.15): a battleground open to the player and the next PvP rank's reward,
      each an aside. The opt-in Battlegrounds card is the planner's (Model.lua). ]]
 
 -- The highest level this character has stood in a battleground at (charDB.battled); 0 when never, or unreadable.
