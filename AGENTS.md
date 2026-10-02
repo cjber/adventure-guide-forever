@@ -22,8 +22,8 @@ Every version needs a `CHANGELOG.md` entry (prose, bold-lead bullets) before its
 it as the notes on GitHub, CurseForge and Wago.
 
 The same gate CI runs, plus actionlint, zizmor and gitleaks on the workflows and history. After a change to the
-planner or the rebuild, also run `AGF_BENCH_STRICT=1 luajit -joff tests/plan_bench.lua` (the 3 ms frame budget;
-local only, since shared runners flake). `AGF_UPDATE_GOLDEN=1` rewrites the golden files in `tests/golden/`.
+planner or the rebuild, also run `AGF_BENCH_STRICT=1 luajit -joff tests/plan_bench.lua` (the 3 ms frame budget, and 7 ms for
+the once-a-login QuestieDB catalogue build; local only, since shared runners flake). `AGF_UPDATE_GOLDEN=1` rewrites the golden files in `tests/golden/`.
 After a UI change, set `WOWMOCK` to the installed wow-mock-screenshots library directory and run
 `python3 tools/screenshots.py` (WFA-9; local only: it needs Pillow and wago.tools) and
 commit the PNGs it rewrites in `docs/screenshots/`; two runs give byte-identical files.

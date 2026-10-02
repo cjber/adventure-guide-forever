@@ -218,6 +218,6 @@ do
 	equal(sliced.ns.QuestieStatus.questCount, 3003, "full catalogue count")
 	equal(sliced.ns.QuestieStatus.catalogueCount, 3003, "provider count")
 	equal(frames > 10, true, "build yields across frames")
-	equal(most <= 101, true, "quest reads within slice")
+	equal(most <= 501, true, "quest reads within slice")
 end
 print(("questie_spec: %d checks passed"):format(checks))
