@@ -157,7 +157,7 @@ out.search = Panel(h, "search")
 -- With Shortest Path loaded, on the story card: a town ring's tooltip, the tracker's town lines and menu, and the
 -- route handed to Shortest Path.
 h = Load("v1", true, false, STORY)
-h.G.OpenQuestLog()
+h.G.C_Map.OpenWorldMap()
 h.flush()
 h.providers[1]:RefreshAllData()
 -- Ring 2, Regthar Deathgate's two quests: ring 1, Crossroads, sits under the player's arrow at the fixture's position.

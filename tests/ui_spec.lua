@@ -131,8 +131,8 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	h.flush()
 	equal(panel:IsVisible(), true, label .. ": the guide opens")
 	equal(questsFrame:IsShown(), false, label .. ": the quest list steps aside")
-	-- F6: the first step, a quest in the log, opens in Blizzard's details from its row and from the tracker; in
-	-- combat the row turns the map and the tracker opens the guide instead.
+	-- F6: the first step, a quest in the log, is selected and shown on the map from its row and from the tracker,
+	-- through C_Map.OpenWorldMap alone; in combat the row turns the map and the tracker opens the guide instead.
 	local first = h.ns.Route().steps[1]
 	local function Row()
 		return Shown(h, function(frame)
@@ -141,21 +141,22 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	end
 	h.Click(Row())
 	h.flush()
-	equal(table.concat(h.questDetails, " "), tostring(first.quests[1]), label .. ": a row in the log opens the quest")
-	equal(panel:IsShown(), false, label .. ": in place of the guide")
-	h.ns.OpenPanel()
+	equal(table.concat(h.selectedQuests, " "), tostring(first.quests[1]), label .. ": a row in the log selects it")
+	equal(h.map:GetMapID(), h.G.GetQuestUiMapID(first.quests[1]), label .. ": and turns the map to its zone")
+	equal(panel:IsShown(), true, label .. ": the guide stays open")
 	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
 	equal(panel:IsShown(), false, label .. ": the Quests tab closes the guide")
 	equal(questsFrame:IsShown(), true, label .. ": the quest list is back")
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[first.key], "LeftButton")
 	h.flush()
-	equal(#h.questDetails, 2, label .. ": so does a tracker click")
+	equal(#h.selectedQuests, 2, label .. ": so does a tracker click")
+	equal(h.map:IsShown(), true, label .. ": which opens the map")
 	h.SetCombat(true)
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[first.key], "LeftButton")
 	h.flush()
 	equal(panel:IsShown(), true, label .. ": a tracker click in combat opens the guide")
 	h.Click(Row())
-	equal(#h.questDetails, 2, label .. ": no quest details in combat")
+	equal(#h.selectedQuests, 2, label .. ": no quest is shown in combat")
 	h.SetCombat(false)
 	h.flush()
 	h.ns.OpenPanel()
@@ -164,7 +165,9 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	equal(panel:IsShown(), false, label .. ": a display mode change closes the guide")
 	h.ns.OpenPanel()
 	h.G.QuestMapFrame_ShowQuestDetails(845)
-	equal(panel:IsShown(), false, label .. ": quest details close the guide")
+	equal(panel:IsShown(), false, label .. ": quest details the player opens close the guide")
+	equal(#h.questDetails, 1, label .. ": the guide never opens them itself")
+	equal(h.counts.OpenQuestLog, 0, label .. ": nor the quest log, while its sidebar is shown")
 	equal(h.counts.displayModeWrites, 0, label .. ": displayMode writes")
 	clean(h, label .. ": clicks")
 	-- The trap itself: a write raises and is counted.
@@ -178,7 +181,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	equal(h.counts.displayModeWrites, 1, label .. ": the trap counts writes")
 end
 
--- F6: a group quest in the log (a "dungeon" step) opens its details too; a group quest's pickup does not, and a town
+-- F6: a group quest in the log (a "dungeon" step) is shown too; a group quest's pickup does not, and a town
 -- opens its first hand-in.
 do
 	local h = Load(false)
@@ -188,7 +191,11 @@ do
 	equal(show(town), false, "a group pickup does not")
 	town.quests, town.pickups, town.handins = { 845, 843 }, { 843 }, { 845 }
 	equal(show(town), true, "a town with a hand-in opens it")
-	equal(table.concat(h.questDetails, " "), "843 845", "the details opened once each")
+	equal(table.concat(h.selectedQuests, " "), "843 845", "each was selected once")
+	equal(#h.questDetails, 0, "without Blizzard's details")
+	h.SetCombat(true)
+	equal(show(town), false, "nothing opens in combat")
+	h.SetCombat(false)
 end
 
 -- The tracker title sets off along the route and tracks its quests; each part has its own setting, and untracking
@@ -560,7 +567,7 @@ do
 	Moved(h, 1413, 0.64, 0.46)
 	local standing = h.ns.Route().steps[1]
 	equal(standing.here, true, "here, waypoint: in the area")
-	h.G.OpenQuestLog()
+	h.G.C_Map.OpenWorldMap()
 	h.map:SetMapID(1413)
 	h.flush()
 	h.providers[1]:RefreshAllData()
@@ -1104,7 +1111,7 @@ end
 -- Background markers have exactly one owner; route rings remain separate.
 do
 	local h = Load(false, PINS_ON)
-	h.G.OpenQuestLog()
+	h.G.C_Map.OpenWorldMap()
 	h.flush()
 	h.map:SetMapID(1442)
 	equal(#h.pins.AdventureGuideForeverGiverPinTemplate > 0, true, "standalone giver baseline")
@@ -1128,7 +1135,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	local click = spf and "instruction: Click to travel with Shortest Path" or "instruction: Click to set a waypoint"
 	local h = Load(spf, PINS_ON)
 	local provider, ns = h.providers[1], h.ns
-	h.G.OpenQuestLog()
+	h.G.C_Map.OpenWorldMap()
 	h.flush()
 	local function Live()
 		return #h.pins.AdventureGuideForeverPinTemplate + #h.pins.AdventureGuideForeverGiverPinTemplate
@@ -1167,9 +1174,9 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(giverPin.frameLevelType, "PIN_FRAME_LEVEL_AREA_POI", label .. ": givers at the area POI level")
 	h.Hover(giverPin)
 	-- Closing the map fires no OnMouseLeave: the pin's own OnHide takes its tooltip.
-	h.G.ToggleWorldMap()
+	h.map:SetShown(not h.map:IsShown())
 	equal(h.G.GameTooltip:IsShown(), false, label .. ": closing the map takes a hovered giver's tooltip")
-	h.G.ToggleWorldMap()
+	h.map:SetShown(not h.map:IsShown())
 	h.Hover(giverPin)
 	equal(h.tooltip[1], "title: " .. giverPin.giver.title, label .. ": giver tooltip title")
 	equal(#h.tooltip, #giverPin.giver.quests + 3, label .. ": a giver tooltip line per quest")
@@ -1254,7 +1261,7 @@ end
 -- A pooled stop can change from a later shared pin to the current stop, and cross the numeric texture's limit.
 do
 	local h = Load(false, PINS_ON)
-	h.G.OpenQuestLog()
+	h.G.C_Map.OpenWorldMap()
 	h.flush()
 	local pin = h.pins.AdventureGuideForeverPinTemplate[1]
 	local step = pin.step
@@ -1336,7 +1343,7 @@ do
 			},
 		},
 	})
-	h.G.OpenQuestLog()
+	h.G.C_Map.OpenWorldMap()
 	h.flush()
 	h.providers[1]:RefreshAllData()
 	local index, step
@@ -1376,7 +1383,7 @@ end
 -- the open guide's preview included, step aside while it guides.
 do
 	local h = Load(false)
-	h.G.OpenQuestLog()
+	h.G.C_Map.OpenWorldMap()
 	h.flush()
 	for _ = 1, 10 do
 		h.providers[1]:RefreshAllData()
@@ -1394,7 +1401,7 @@ for _, case in ipairs({
 	local label = "map budget, " .. case.label
 	local h = Load("v1", case.db)
 	local ns = h.ns
-	h.G.OpenQuestLog()
+	h.G.C_Map.OpenWorldMap()
 	h.flush()
 	local rings = #h.pins.AdventureGuideForeverPinTemplate
 	equal(rings <= ns.Model.MAX_STEPS, true, label .. ": at most 9 rings")
@@ -1421,7 +1428,7 @@ end
 do
 	local h = Load("v1", PINS_ON)
 	local ns = h.ns
-	h.G.OpenQuestLog()
+	h.G.C_Map.OpenWorldMap()
 	h.flush()
 	ns.Guidance.Navigate(ns.Route().steps[1])
 	local nextZone
@@ -2140,20 +2147,20 @@ do
 	)
 	-- Closing the map fires no OnLeave: the card's tooltip goes with the panel, and a rebuild while the map is closed
 	-- leaves it gone. Another addon's tooltip stays.
-	h.G.ToggleWorldMap()
+	h.map:SetShown(not h.map:IsShown())
 	equal(h.G.GameTooltip:IsShown(), false, "closing the map: the hovered card's tooltip goes with it")
 	ns.Unskip(gone.key)
 	ns.Choose(story.key)
 	h.flush()
 	equal(h.G.GameTooltip:IsShown(), false, "closing the map: a rebuild does not bring the card's tooltip back")
-	h.G.ToggleWorldMap()
+	h.map:SetShown(not h.map:IsShown())
 	h.flush()
 	h.G.GameTooltip:SetOwner(h.G.UIParent, "ANCHOR_CURSOR")
 	h.G.GameTooltip:Show()
-	h.G.ToggleWorldMap()
+	h.map:SetShown(not h.map:IsShown())
 	equal(h.G.GameTooltip:IsShown(), true, "closing the map: another addon's tooltip stays")
 	h.G.GameTooltip:Hide()
-	h.G.ToggleWorldMap()
+	h.map:SetShown(not h.map:IsShown())
 	h.flush()
 	clean(h, "not interested")
 	-- After a /reload, Show again still chooses the journey the Not interested ended.
@@ -3551,6 +3558,14 @@ do
 	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, "preview: a collapsed sidebar takes the rings away")
 	h.G.QuestMapFrame:Show()
 	equal(#h.pins.AdventureGuideForeverPinTemplate, rings, "preview: and its return brings them back")
+	-- Opening the guide leaves a shown sidebar to C_Map.OpenWorldMap, and asks for the quest log only to bring a
+	-- collapsed one back.
+	h.ns.OpenPanel()
+	equal(h.counts.OpenQuestLog, 0, "open: a shown sidebar needs no quest log call")
+	h.G.QuestMapFrame:Hide()
+	h.ns.OpenPanel()
+	equal(h.counts.OpenQuestLog, 1, "open: a collapsed sidebar is brought back")
+	equal(h.G.AdventureGuideForeverPanel:IsVisible(), true, "open: with the guide in it")
 	clean(h, "preview")
 end
 
@@ -4028,7 +4043,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(h.counts.SetUserWaypoint or 0, 0, label .. ": nor starts once combat ends")
 	equal(spf and h.spf.NavigateRoute or 0, 0, label .. ": nor hands Shortest Path a route")
-	h.G.OpenQuestLog()
+	h.G.C_Map.OpenWorldMap()
 	h.flush()
 	ns.OpenPanel()
 	h.flush()

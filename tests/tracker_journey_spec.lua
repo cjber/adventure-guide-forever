@@ -98,7 +98,7 @@ do
 	local h =
 		Barrens({ planned = true, spf = "v1", db = { showMapPins = true, showQuestGivers = true, autoStart = false } })
 	local ns = h.ns
-	h.G.OpenQuestLog()
+	h.G.C_Map.OpenWorldMap()
 	h.flush()
 	h.providers[1]:RefreshAllData()
 	local route = ns.Route()

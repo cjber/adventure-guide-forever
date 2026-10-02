@@ -42,7 +42,7 @@ equal(h.ns.Prefs().focus, 3902, "focus: kept as AGF's")
 equal(h.ns.Integrations.Travel(step), nil, "here: no travel line inside the area")
 
 -- The route's numbered pin is not drawn for the area the player stands in, but later stops keep theirs.
-h.G.OpenQuestLog()
+h.G.C_Map.OpenWorldMap()
 h.map:SetMapID(1420)
 h.flush()
 h.providers[1]:RefreshAllData()

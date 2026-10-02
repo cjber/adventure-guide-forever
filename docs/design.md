@@ -18,7 +18,7 @@ abandons quests.
 - **2.4 Search.** Share eligibility checks with the planner. Explain missing requirements; locked
   quests offer no destination.
 - **2.5 Tracker.** Show the current and next step beside quests. Leave the stock quest order alone.
-  Quest tracking is opt-in; quest details open only outside combat.
+  Quest tracking is opt-in; a step's quest opens on the map only outside combat.
 - **2.6 Pins.** Draw only known locations and step aside while Shortest Path supplies guidance.
 - **2.7 Completion.** Announce a proven story ending once, using the game's tracker glow and sound.
 - **2.8 Menus.** Share step actions between the guide and tracker.
@@ -58,7 +58,7 @@ abandons quests.
   pickup recommendation. Expanded steps show prerequisites, including
   alternatives, with no claim that every alternative is required. Only proven giver coordinates are navigable,
   revalidated on click through Integrations. Explicit map actions set the existing SPF/native route, open the
-  destination zone with OpenWorldMap/SetMapID and play the stock map ping twice. Combat skips opening or
+  destination zone with C_Map.OpenWorldMap and play the stock map ping twice. Combat skips opening or
   changing the map but retains navigation. Journey/step map actions and other explicit place buttons share
   the reveal helper; automatic route maintenance never opens panels. Matching AGF pins flash on click and
   glow on map-control hover, with the corresponding row highlighted. Explicit giver navigation is available for locked and earlier quests;

@@ -1367,8 +1367,13 @@ local function Attach()
 	end
 
 	function ns.OpenPanel()
-		-- Also brings back a collapsed quest sidebar, which hides QuestMapFrame and so the panel inside it.
-		OpenQuestLog()
+		C_Map.OpenWorldMap()
+		-- A collapsed quest sidebar or a maximized map hides QuestMapFrame and so the panel inside it. Only
+		-- OpenQuestLog brings the sidebar back, and it runs Blizzard's map layout as the addon, so it is kept to
+		-- that case.
+		if not QuestMapFrame:IsShown() then
+			OpenQuestLog() -- taint-ok: the one way to show a collapsed quest sidebar; skipped while it is shown
+		end
 		ShowGuide(true)
 	end
 end

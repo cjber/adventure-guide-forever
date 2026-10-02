@@ -447,7 +447,7 @@
 ---@field GO string the step menu's entry that starts guidance
 ---@field REPLACES_JOURNEY string Go's tooltip line while someone else's Shortest Path journey runs
 ---@field STOP string ends the guidance Go started
----@field SHOW_QUEST string opens a log quest in Blizzard's details
+---@field SHOW_QUEST string opens the map on a log quest's zone
 ---@field SKIP string hides the step for this session
 ---@field SKIPPED string format: how many steps are skipped this session
 ---@field SHOW_AGAIN string format: a skipped step's title
@@ -657,7 +657,7 @@
 ---@field InLog fun(step: AGFStep): boolean the step is a quest in the player's log (a turn-in or its objectives)
 ---@field Menu AGFMenuModule
 ---@field ContextMenu fun(owner: Region, generator: fun(owner: Region, root: AGFMenuDescription)): AGFMenuDescription
----@field ShowQuest fun(step: AGFStep): boolean open a log step's quest in Blizzard's details; false for other steps or in combat
+---@field ShowQuest fun(step: AGFStep): boolean open the map on a log step's quest and select it; false for other steps or in combat
 ---@field TurnedIn fun(questID: integer) QUEST_TURNED_IN: latched so a chosen journey that ends there is complete, then OnTurnIn
 ---@field OnJourneyComplete? fun() a turn-in ended the chosen journey; set by Tracker.lua
 ---@field OnTurnIn? fun(questID: integer) QUEST_TURNED_IN: the chapter-end fanfare when the quest ends a proven chain; set by Tracker.lua
