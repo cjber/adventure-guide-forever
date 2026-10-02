@@ -41,6 +41,7 @@ Integrations\Integrations.lua
 Integrations\Tweaks.lua
 Integrations\SkillUp.lua
 Core\Guidance.lua
+Core\API.lua
 Integrations\Companions.lua
 Integrations\Providers.lua
 Integrations\Raids.lua

@@ -642,6 +642,7 @@
 ---@field Route fun(): AGFRoute the current route, rebuilt lazily when state or prefs change
 ---@field Snapshot fun(): AGFSnapshot what the current route was planned from; a fresh read while no build stands behind it
 ---@field CurrentJourney fun(): AGFJourney? the journey the route shows (the chosen one, else the first card's)
+---@field RouteSettled fun(): boolean Route() answers from the committed route, without building one
 ---@field QuestieBuilding fun(): boolean QuestieDB's catalogue is still building: the route holds and the tracker waits
 ---@field Invalidate fun() mark the route stale and notify views
 ---@field OnRouteChange fun(callback: fun())
@@ -1773,3 +1774,24 @@
 ---@field PrepRows fun(page: AGFDungeonPage?): table[]
 ---@field CatalogRows fun(catalog: AGFDungeon[]): table[]
 ---@field BossRows fun(source: AGFDungeonSource?, instance: integer, known: AGFDungeonBoss[]): table[]
+
+-- The public surface (Core/API.lua, docs/api.md).
+---@class AGFAPIStop
+---@field map integer uiMapID
+---@field x number normalized 0-1
+---@field y number normalized 0-1
+---@field name string the town, else the step's busiest giver, zone or title
+---@field isTown boolean
+---@field handins integer quests the route hands in there
+---@field pickups integer quests the route picks up there
+
+---@class AGFAPI
+---@field version integer
+---@field CurrentStop fun(): AGFAPIStop?
+---@field NextStops fun(limit?: integer): AGFAPIStop[]?
+
+---@class AGFGlobal
+---@field API AGFAPI
+
+---@type AGFGlobal
+AdventureGuideForever = nil

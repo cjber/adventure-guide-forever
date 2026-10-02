@@ -104,6 +104,9 @@ abandons quests.
   pins are recorded in [dungeon-sources.md](dungeon-sources.md). The layout is included in `/agf dump` and
   `docs/screenshots/dungeons*.png`, including the owner's Alliance level 19 Darkshore/Ragefire regression.
   The shared Today strip shows two wide hints, with the rest in a small stock-font More menu control on every tab.
+- **2.22 Addon API.** `AdventureGuideForever.API` (docs/api.md) is read-only and versioned. It copies the
+  tracker's step from the committed route and answers nil while a route is due, never building one for a caller.
+  Fields are added, never renamed or repurposed, within a version.
 
 ## 3. Copy
 
