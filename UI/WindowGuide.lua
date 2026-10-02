@@ -12,7 +12,7 @@ local PAGE_SIZE, ROW_HEIGHT, ROW_PITCH = 10, 32, 34
 ---@param steps AGFStep[]
 ---@return integer[]
 function Window.GuideOutline(data, player, completed, journey, steps)
-	local zone = tonumber(journey.key:match("^zone:(%d+)$"))
+	local zone = journey.zone
 	if not zone then
 		return {}
 	end
@@ -150,7 +150,7 @@ local function RowEnter(row)
 		local quest = ns.Data.quests[row.questID]
 		if quest then
 			ns.Overview.ShowTooltip(row, {
-				L.QUEST_LEVEL_TITLE:format(quest.level or quest.min, quest.title),
+				(ns.Pins.QuestLineText(row.questID)),
 				L.GUIDE_OUTLINE_TOOLTIP,
 			})
 		end
@@ -190,24 +190,13 @@ local function Build(parent)
 		end)
 		rows[index] = row
 	end
-	previous = CreateFrame("Button", nil, guide, "UIPanelButtonTemplate") --[[@as Button]]
-	previous:SetSize(90, 22)
-	previous:SetPoint("BOTTOMLEFT", Window.LEFT, 8)
-	previous:SetText(L.PREVIOUS_PAGE)
-	previous:SetScript("OnClick", function()
+	previous, nextPage, count = Window.CreatePager(guide, function()
 		page = math.max(1, page - 1)
 		Refresh()
-	end)
-	nextPage = CreateFrame("Button", nil, guide, "UIPanelButtonTemplate") --[[@as Button]]
-	nextPage:SetSize(90, 22)
-	nextPage:SetPoint("BOTTOMRIGHT", -Window.RIGHT, 8)
-	nextPage:SetText(L.NEXT_PAGE)
-	nextPage:SetScript("OnClick", function()
+	end, function()
 		page = page + 1
 		Refresh()
 	end)
-	count = guide:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	count:SetPoint("BOTTOM", 0, 13)
 	guide:HookScript("OnHide", function()
 		GameTooltip_Hide()
 	end)
@@ -239,8 +228,8 @@ Refresh = function()
 	end
 	local future = Window.GuideOutline(ns.Data, ns.State.Player(), ns.State.Completed(), target, steps)
 	local total = #steps + #future
-	local pages = math.max(1, math.ceil(total / PAGE_SIZE))
-	page = math.min(page, pages)
+	local pages
+	page, pages = Window.ClampPage(page, total, PAGE_SIZE)
 	heading:SetText(target.title)
 	count:SetText(L.GUIDE_PAGE:format(page, pages, #steps, #future))
 	previous:SetEnabled(page > 1)
@@ -259,17 +248,11 @@ Refresh = function()
 			row.Ring:Show()
 			row.Title:SetTextColor(1, 0.82, 0)
 		elseif id then
-			local quest = ns.Data.quests[id]
-			Window.SetStepRow(
-				row,
-				1,
-				L.QUEST_LEVEL_TITLE:format(quest.level or quest.min, quest.title),
-				L.GUIDE_OUTLINE
-			)
+			local title, color = ns.Pins.QuestLineText(id)
+			Window.SetStepRow(row, 1, title, L.GUIDE_OUTLINE)
 			ns.Art.SetSliceShown(row.Selected, false)
 			row.Number:Hide()
 			row.Ring:Hide()
-			local color = GetQuestDifficultyColor(quest.level or quest.min)
 			row.Title:SetTextColor(color.r, color.g, color.b)
 		end
 	end

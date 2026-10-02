@@ -7,7 +7,6 @@ manual-changelog:
 # The packager already drops every dot-prefixed path, so only the rest is listed.
 ignore:
   - AGENTS.md
-  - INTERFACES.md
   - tools
   - types
   - tests

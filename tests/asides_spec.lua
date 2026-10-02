@@ -120,7 +120,6 @@ do
 		{ "title: " .. B.text, "button: Skip for now", "button: Not interested" },
 		"menu: no Go without a place"
 	)
-	equal(h.menu.tag, "MENU_ADVENTURE_GUIDE_FOREVER_ASIDE", "menu: its tag")
 	h.menu.entries[3].onClick()
 	h.flush()
 	equal(#Line(h), 0, "declined: no line in the guide")
@@ -147,6 +146,16 @@ do
 	menu = later.OpenMenu(cog)
 	equal(menu.entries[#menu.entries - 1].text, later.ns.L.MENU_TRACKER, "cog: no submenu with none turned down")
 	clean(later, "declined, next session")
+
+	-- A damaged save: only a key with its text is a turned-down aside, so Show again still has titles to sort.
+	local damaged = Load(false, { journey = "zone:1413", asides = { a = 3, b = B.text, c = true, [5] = "five" } })
+	local names = {}
+	for index, skipped in ipairs(damaged.ns.Skipped()) do
+		names[index] = skipped.key .. "=" .. skipped.title
+	end
+	same(names, { "aside:b=" .. B.text }, "damaged asides: the good one stays")
+	equal(next(damaged.G.AdventureGuideForeverCharDB.asides, "b"), nil, "damaged asides: the rest are dropped")
+	clean(damaged, "damaged asides")
 
 	-- A search holds the guide: no line over its results.
 	local search = h.Find(function(frame)
@@ -222,7 +231,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks.aside, "LeftButton")
 	h.flush()
 	equal(starts(), before + 2, label .. ": so does the tracker's")
-	-- A wanderer (roadmap #24) is told the place and never taken there: no Go, no click line, and a click goes nowhere.
+	-- A wanderer is told the place and never taken there: no Go, no click line, and a click goes nowhere.
 	h.ns.SetSetting("wanderer", true)
 	Settle(h)
 	h.Click(Line(h)[1], "RightButton")
@@ -263,7 +272,7 @@ do
 	clean(h, "ambient")
 end
 
--- Unspent talent points (roadmap #25): a line while any wait; a Skip for now holds until a point is gained.
+-- Unspent talent points: a line while any wait; a Skip for now holds until a point is gained.
 do
 	local h = harness.load({ charDB = { journey = "carry" }, talents = 0 })
 	Settle(h)

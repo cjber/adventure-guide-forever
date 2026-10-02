@@ -21,8 +21,9 @@ local KIND_ICONS = {
 	battleground = "battlemaster",
 }
 
+-- A step on the world map: the map opens when it is closed, then turns to the step and flashes its ring.
 ---@param step AGFStep
-local function FocusStep(step)
+local function ShowOnMap(step)
 	ns.Pins.Reveal(step)
 end
 
@@ -176,7 +177,6 @@ end
 ---@param index? integer
 local function StepMenu(owner, step, index)
 	ns.ContextMenu(owner, function(_, root)
-		root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_STEP")
 		ns.Menu.Step(root, step)
 		OrderEntries(root, step, index)
 	end)
@@ -296,7 +296,7 @@ local function RowClick(self, mouseButton)
 	if mouseButton == "RightButton" then
 		StepMenu(self, self.step, self.index)
 	elseif not ns.ShowQuest(self.step) then
-		FocusStep(self.step)
+		ShowOnMap(self.step)
 	end
 end
 
@@ -319,7 +319,7 @@ local function CardClick(self, mouseButton)
 		end
 		return
 	end
-	if self.state == "chosen" and ns.Paused() then
+	if self.state == "chosen" and ns.Guidance.Status() == "paused" then
 		ns.StartRoute()
 	elseif self.state == "chosen" then
 		WorldMapFrame:SetMapID(journey.map)
@@ -359,7 +359,7 @@ end
 ---@return AGFPoint? point
 ---@return string? note
 local function Entrance(journey)
-	local instance = journey.kind == "dungeon" and tonumber(journey.key:match("^dungeon:(%d+)$"))
+	local instance = journey.kind == "dungeon" and journey.instance
 	if not instance then
 		return nil
 	end
@@ -414,14 +414,14 @@ local function CardTooltip(card)
 		GameTooltip_AddNormalLine(GameTooltip, note)
 	end
 	if journey.drop then
-		local log = ns.State.Log()
+		local log = ns.Snapshot().log
 		GameTooltip_AddNormalLine(GameTooltip, L.LOG_FULL_LIST)
 		for _, id in ipairs(journey.drop) do
 			local entry = log[id]
 			GameTooltip_AddHighlightLine(GameTooltip, entry and entry.title or ns.Data.quests[id].title)
 		end
 	end
-	local resumes = chosen and ns.Paused()
+	local resumes = chosen and ns.Guidance.Status() == "paused"
 	if not chosen then
 		GameTooltip_AddInstructionLine(GameTooltip, L.CLICK_TO_CHOOSE)
 	elseif resumes then
@@ -440,7 +440,7 @@ local function CardTooltip(card)
 end
 
 -- How far a journey has come, when it has come some way: a story's chapters done of a chain the data proves the length
--- of, Loose ends' quests ready of all it holds. The bar's value and the grid footer's words.
+-- of, Quests in your log' quests ready of all it holds. The bar's value and the grid footer's words.
 ---@param journey AGFJourney
 ---@return number? value
 ---@return string? label
@@ -506,12 +506,6 @@ local function Split(route)
 		first = table.remove(others, 1)
 	end
 	return first, others
-end
-
--- A step on the world map: the map opens when it is closed, then turns to the step and flashes its ring.
----@param step AGFStep
-local function ShowOnMap(step)
-	FocusStep(step)
 end
 
 -- The Journeys renown bar is 18 tall at its own scale, too tall for a card: its frame is scaled to draw it 7 tall.

@@ -1,13 +1,13 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
--- Native-geometry adapter (roadmap: stop bundling geometry the client can answer). Every function here takes an
+-- Native-geometry adapter: the client answers what the data would otherwise bundle. Every function here takes an
 -- injected `api` table rather than reading globals, so the module loads in the client with `api` being the real
--- namespaces ($C_Map, C_SkillInfo, C_Reputation, GetLFGDungeonInfo, UiMapPoint, ...) and in the headless specs with
+-- namespaces (C_Map, C_SkillInfo, C_Reputation, GetLFGDungeonInfo, UiMapPoint, ...) and in the headless specs with
 -- stubs. Nothing is required or touched at load: a caller decides when to build a section and how to merge it.
 --
 -- What the client can answer natively, and what it cannot:
---   maps       name, continent, cx, cy, sx, sy  (C_Map.GetMapInfo / GetWorldPosFromMapPos / GetMapWorldSize)
+--   maps       name, cx, cy, sx, sy             (C_Map.GetMapInfo / GetWorldPosFromMapPos / GetMapWorldSize)
 --   zones      name only                        (level ranges have NO native API; min/max stay bundled)
 --   instances  name, low, high                  (GetLFGDungeonInfo returns 1 and 7/8; raid/entrances stay bundled)
 --   skills     name                             (C_SkillInfo lists only learned lines, so unlearned gates stay bundled)
@@ -73,30 +73,6 @@ local function XY(point)
 	return point[1], point[2]
 end
 
--- The world map a uiMapID sits under: walk parentMapID up to the top of the chain, which is the continent the data's
--- AGFContinentShift is keyed by (0 Eastern Kingdoms, 1 Kalimdor, ...). Falls back to the map's own ID when the client
--- has no parent chain, so a map always lands in some continent bucket.
----@param api table
----@param mapID integer
----@param info table
----@return integer
-local function Continent(api, mapID, info)
-	local maps = ClientMap(api)
-	if type(maps.GetMapInfo) ~= "function" then
-		return info.mapID or mapID
-	end
-	local currentID, guard = mapID, 0
-	while currentID and guard < 32 do
-		guard = guard + 1
-		local current = maps.GetMapInfo(currentID)
-		if not current or not current.parentMapID or current.parentMapID == 0 then
-			return (current and current.mapID) or info.mapID or mapID
-		end
-		currentID = current.parentMapID
-	end
-	return info.mapID or mapID
-end
-
 -- A world position for one map-space point, via GetWorldPosFromMapPos, or nil, nil where the client cannot answer.
 ---@param api table
 ---@param mapID integer
@@ -144,7 +120,7 @@ local function MapRect(api, mapID)
 	return sx, sy, cx, cy
 end
 
--- Every map the caller names, as AGFMapCentre minus the bundled fields: name, continent, cx, cy, sx, sy. uiMapIDs
+-- Every map the caller names, as AGFMapCentre minus the bundled fields: name, cx, cy, sx, sy. uiMapIDs
 -- omitted means none (the client enumerates child maps only through GetMapChildrenInfo, which the data never needs).
 ---@param api table
 ---@param uiMapIDs? integer[]
@@ -162,7 +138,6 @@ function Geometry.Maps(api, uiMapIDs)
 			local name = info.name ~= "" and info.name or nil
 			out[mapID] = {
 				name = name,
-				continent = Continent(api, mapID, info),
 				cx = cx,
 				cy = cy,
 				sx = sx,
@@ -196,7 +171,7 @@ end
 -- Every LFG dungeon ID the caller names, as {name, low, high}. GetLFGDungeonInfo returns the name first and the
 -- recommended levels 7th and 8th (same slot Dungeons.lua already reads); GetRealZoneText is the name fallback.
 -- The key is the LFG ID, not the instance Map.ID: overlay an instance by its own `.lfg` field (Merge matches those).
--- uiMapIDs omitted means none: the client exposes no list of LFG dungeons without C_LFGInfo, which this adapter
+-- lfgIDs omitted means none: the client exposes no list of LFG dungeons without C_LFGInfo, which this adapter
 -- deliberately does not pull in.
 ---@param api table
 ---@param lfgIDs? integer[]
@@ -225,9 +200,8 @@ function Geometry.Instances(api, lfgIDs)
 end
 
 -- Skill line names by SkillLine ID, as {name}, from the lines the character has (C_SkillInfo.GetNumSkillLines /
--- GetSkillLineInfo, or the Forever-missing globals GetNumSkillLines / GetSkillLineInfo) plus any IDs the caller
--- names. C_SkillInfo cannot name an unlearned line, so a quest's skill gate the character has never trained stays
--- on bundled data.
+-- GetSkillLineInfo) plus any IDs the caller names. C_SkillInfo cannot name an unlearned line, so a quest's skill
+-- gate the character has never trained stays on bundled data.
 ---@param api table
 ---@param skillLineIDs? integer[]
 ---@return table<integer, {name: string?}>
@@ -243,10 +217,8 @@ function Geometry.Skills(api, skillLineIDs)
 	local count
 	if type(skills.GetNumSkillLines) == "function" then
 		count = skills.GetNumSkillLines()
-	elseif type(api) == "table" and type(api.GetNumSkillLines) == "function" then
-		count = api.GetNumSkillLines()
 	end
-	local infoAt = skills.GetSkillLineInfo or (type(api) == "table" and api.GetSkillLineInfo)
+	local infoAt = skills.GetSkillLineInfo
 	for index = 1, type(count) == "number" and count or 0 do
 		local info = infoAt and infoAt(index)
 		if info and info.name and info.skillID and not info.isHeader then
@@ -256,10 +228,9 @@ function Geometry.Skills(api, skillLineIDs)
 	return out
 end
 
--- Faction names by Faction ID, as {name}, from C_Reputation: the IDs the caller names through
--- GetFactionDataByID, or every faction the client tracks through GetFactionDataByIndex + GetNumFactions.
+-- Faction names by Faction ID, as {name}, from C_Reputation.GetFactionDataByID for the IDs the caller names.
 ---@param api table
----@param factionIDs? integer[]
+---@param factionIDs integer[]
 ---@return table<integer, {name: string?}>
 function Geometry.Factions(api, factionIDs)
 	local out = {}
@@ -267,24 +238,10 @@ function Geometry.Factions(api, factionIDs)
 	if type(api) ~= "table" then
 		return out
 	end
-	if factionIDs then
-		for _, id in ipairs(factionIDs) do
-			local info = reputation.GetFactionDataByID and reputation.GetFactionDataByID(id)
-			if info and info.name and info.name ~= "" then
-				out[id] = { name = info.name }
-			end
-		end
-		return out
-	end
-	if type(api.GetNumFactions) ~= "function" then
-		return out
-	end
-	local count = api.GetNumFactions()
-	local infoAt = reputation.GetFactionDataByIndex
-	for index = 1, type(count) == "number" and count or 0 do
-		local info = infoAt and infoAt(index)
-		if info and info.factionID and info.name and info.name ~= "" then
-			out[info.factionID] = { name = info.name }
+	for _, id in ipairs(factionIDs) do
+		local info = reputation.GetFactionDataByID and reputation.GetFactionDataByID(id)
+		if info and info.name and info.name ~= "" then
+			out[id] = { name = info.name }
 		end
 	end
 	return out
@@ -378,16 +335,14 @@ local function Sane(value)
 		and math.abs(value) <= WORLD_LIMIT
 end
 
--- Native map fields minus `continent`: C_Map's continent is the root uiMapID (e.g. 1414 for Kalimdor), but the data
--- keys its `continents` shifts and its routing by the client's Map.dbc ID (0 Eastern Kingdoms, 1 Kalimdor, 30 Alterac
--- Valley), a space no client API exposes. Overlaying native `continent` would index `data.continents` with the wrong
--- key, so it is always dropped and the bundled value kept. World-rect fields native cannot answer sanely are dropped
--- for the same reason. Because these fields are nil, Merge leaves the bundled ones untouched.
+-- Native map fields without the world-rect answers the client cannot give sanely. Because those fields are nil,
+-- Merge leaves the bundled ones untouched. `continent` is never native: the data keys its `continents` shifts and
+-- its routing by the client's Map.dbc ID (0 Eastern Kingdoms, 1 Kalimdor, 30 Alterac Valley), a space no client
+-- API exposes, so the bundled value always stays.
 ---@param maps table<integer, AGFMapCentre>
 ---@return table<integer, AGFMapCentre>
 local function NativeMaps(maps)
 	for _, entry in pairs(maps) do
-		entry.continent = nil
 		if not (Sane(entry.cx) and Sane(entry.cy)) then
 			entry.cx, entry.cy = nil, nil
 		end
@@ -458,14 +413,10 @@ end
 -- table QuestieSource throws away does not pin its section tables forever.
 local applied = setmetatable({}, { __mode = "k" })
 
--- Overlay the client onto whichever table the planner reads next, once per table. Reading ns.Data here (rather than
--- capturing a table up front) means the overlay lands on the table actually planned from, however far QuestieSource's
--- swap has got; a repeated call is a no-op.
----@param data? AGFData
 ---@param api? table for specs
 ---@return AGFData?
-function Geometry.EnsureNative(data, api)
-	data = data or ns.Data
+function Geometry.EnsureNative(api)
+	local data = ns.Data
 	if type(data) ~= "table" or applied[data] then
 		return data
 	end

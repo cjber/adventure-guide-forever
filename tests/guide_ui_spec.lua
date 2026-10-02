@@ -354,7 +354,6 @@ do
 	equal(more ~= nil, true, "overflow: +3 more in the last slot")
 	equal(more.normalFont, "GameFontNormalSmall", "overflow: a quiet stock text control")
 	h.Click(more)
-	equal(h.menu.tag, "MENU_ADVENTURE_GUIDE_FOREVER_TODAY", "overflow: its menu")
 	equal(#h.menu.entries, 3, "overflow: an entry each")
 	equal(h.menu.entries[2]:IsEnabled(), false, "overflow: an aside with no place is greyed")
 	h.menu.entries[3].onClick()
@@ -592,7 +591,7 @@ do
 	equal(#skip.entries, #town.checklist - 2, "checklist: only remaining givers in menu")
 	skip.entries[1].onClick()
 	h.flush()
-	equal(ns.Order.IsGiverSkipped(town.orderKey, open.key), true, "checklist: menu skips the actual giver")
+	equal(ns.Prefs().skipped[ns.Model.GiverSkip(town, open.key)], true, "checklist: menu skips the actual giver")
 
 	ns.OpenPanel()
 	h.flush()

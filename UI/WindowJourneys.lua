@@ -9,9 +9,9 @@ local Window, Overview = ns.Window, ns.Overview
 -- player has (Session.lua); under them, how long it should take and, while the order is the player's own, the way back
 -- to the suggested one (§2.20). A dungeon card has Go to entrance, from Tweaks Forever.
 
-local FEATURED_WIDTH, FEATURED_HEIGHT, FEATURED_SPAN, FEATURED_RING = 440, 178, 640, 44
+local FEATURED_WIDTH, FEATURED_HEIGHT, FEATURED_SPAN = Window.Cards.width, Window.Cards.height, 640
 local STEP_ROWS, ROW_HEIGHT, STEP_GAP, STEP_HEAD, STEP_FOOT = 3, 44, 4, 18, 14
-local COLUMNS, GRID_GAP, GRID_SPAN, GRID_RING, GRID_PAD = 4, 10, 320, 30, 14
+local COLUMNS, GRID_GAP, GRID_SPAN, GRID_PAD = Window.Cards.columns, Window.Cards.gap, 320, Window.Cards.pad
 local BUTTON_WIDTH, BUTTON_HEIGHT, ENTRANCE_WIDTH = 104, 22, 112
 local BAR_LABEL_GAP = 8
 -- The session picker sits above the first step, beside the heading.
@@ -19,12 +19,8 @@ local SESSION_WIDTH, SESSION_HEIGHT, SESSION_RAISE = 96, 25, 8
 -- A town's checklist lines sit under its row, in from the ring.
 local CHECK_LEFT = 40
 
----@class AGFWindowJourneyCard : AGFWindowCard, AGFCardButton
----@field Icon AGFRingIcon
----@field Title FontString
----@field Reason FontString
+---@class AGFWindowJourneyCard : AGFWindowFeatureCard, AGFCardButton
 ---@field Counts? FontString
----@field Tag? FontString
 ---@field Foot FontString
 ---@field Bar AGFProgressBar
 ---@field EntranceButton Button
@@ -68,12 +64,12 @@ local nextPage
 local pageText
 
 local LEFT, TOP = Window.LEFT, Window.TOP
-local WIDTH = Window.INSET_WIDTH - LEFT - Window.RIGHT
-local GRID_TOP = TOP + FEATURED_HEIGHT + Window.DIVIDER_SPAN
-local GRID_WIDTH = (WIDTH - (COLUMNS - 1) * GRID_GAP) / COLUMNS
+local WIDTH = Window.Cards.available
+local GRID_TOP = Window.Cards.gridTop
+local GRID_WIDTH = Window.Cards.gridWidth
 local GRID_HEIGHT = Window.INSET_HEIGHT - 40 - GRID_TOP
-local STEPS_LEFT = LEFT + FEATURED_WIDTH + 12
-local STEPS_WIDTH = WIDTH - FEATURED_WIDTH - 12
+local STEPS_LEFT = Window.Cards.sideLeft
+local STEPS_WIDTH = Window.Cards.sideWidth
 local STEPS_BOTTOM = TOP + FEATURED_HEIGHT - STEP_FOOT - 2
 
 -- Show on Map: the featured card's first step on the world map, choosing the card first as its click would, or
@@ -86,7 +82,7 @@ local function ShowOnMap(card)
 	end
 	if not route.chosen or route.journey ~= journey.key then
 		ns.Choose(journey.key, ns.Setting("titleStartsRoute"))
-	elseif ns.Paused() then
+	elseif ns.Guidance.Status() == "paused" then
 		ns.StartRoute()
 	end
 	local step = route.steps[1]
@@ -106,7 +102,7 @@ local function CreateEntranceButton(card, parent)
 	button:SetScript("OnClick", function()
 		local instance = card.journey and Overview.Entrance(card.journey)
 		if instance then
-			ns.Providers.GoToEntrance(instance)
+			ns.Dungeons.GoEntrance(instance)
 		end
 	end)
 	return button
@@ -116,14 +112,9 @@ end
 ---@param isFeatured boolean
 ---@return AGFWindowJourneyCard
 local function CreateCard(parent, isFeatured)
-	local card = Window.CreateCard(parent, true) --[[@as AGFWindowJourneyCard]]
-	local width, height = isFeatured and FEATURED_WIDTH or GRID_WIDTH, isFeatured and FEATURED_HEIGHT or GRID_HEIGHT
-	Window.SizeCard(card, width, height, 0.75)
-	local content = CreateFrame("Frame", nil, card)
-	content:SetAllPoints()
-	content:SetFrameLevel(card:GetFrameLevel() + 5)
-	local ring = isFeatured and FEATURED_RING or GRID_RING
-	card.Icon = Window.CreateRingIcon(content, ring)
+	local feature, content = Window.CreateFeatureCard(parent, isFeatured, GRID_HEIGHT)
+	local card = feature --[[@as AGFWindowJourneyCard]]
+	local height = isFeatured and FEATURED_HEIGHT or GRID_HEIGHT
 	card.Bar = Overview.CreateBar(content)
 	card.Foot = content:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
 	card.Foot:SetJustifyH(isFeatured and "RIGHT" or "LEFT")
@@ -149,17 +140,11 @@ local function CreateCard(parent, isFeatured)
 				Window.OpenGuide(card.journey, assert(card:GetParent()))
 			end
 		end)
-		local left = 18 + ring + 14
-		card.Icon:SetPoint("TOPLEFT", 18, -18)
 		card.Tag = content:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
 		card.Tag:SetPoint("TOPRIGHT", -16, -16)
 		card.Tag:SetText(L.SUGGESTED)
 		card.Title = content:CreateFontString(nil, "ARTWORK", "GameFontNormalHuge")
-		card.Title:SetPoint("TOPLEFT", left, -16)
-		card.Title:SetPoint("RIGHT", card.Tag, "LEFT", -8, 0)
 		card.Reason = content:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-		card.Reason:SetPoint("TOPLEFT", left, -42)
-		card.Reason:SetPoint("RIGHT", -16, 0)
 		card.Counts = content:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 		card.Counts:SetPoint("TOPLEFT", 18, -(height - 64))
 		card.Counts:SetPoint("RIGHT", -18, 0)
@@ -184,22 +169,16 @@ local function CreateCard(parent, isFeatured)
 		card.Note:SetWordWrap(true)
 		card.Note:SetMaxLines(2)
 	else
-		card.Icon:SetPoint("TOPLEFT", GRID_PAD, -GRID_PAD)
 		-- Wrapped, never cut: up to three lines beside the ring, centred on it.
 		card.Title = content:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-		card.Title:SetPoint("LEFT", card.Icon, "RIGHT", 10, 0)
-		card.Title:SetWidth(GRID_WIDTH - GRID_PAD * 2 - ring - 10)
-		card.Title:SetMaxLines(3)
 		card.Reason = content:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-		card.Reason:SetPoint("TOPLEFT", GRID_PAD, -60)
-		card.Reason:SetWidth(GRID_WIDTH - 2 * GRID_PAD)
-		card.Reason:SetMaxLines(3)
 		for _, text in ipairs({ card.Title, card.Reason }) do
 			text:SetJustifyH("LEFT")
 			text:SetWordWrap(true)
 		end
 		card.EntranceButton:SetPoint("BOTTOMRIGHT", -GRID_PAD + 4, GRID_PAD - 6)
 	end
+	Window.LayoutCardHeading(card, isFeatured, 3)
 	card:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	card.noBack = true
 	card:SetScript("OnClick", Overview.CardClick)
@@ -404,24 +383,13 @@ local function Build(content)
 		card:SetPoint("TOPLEFT", LEFT + (index - 1) * (GRID_WIDTH + GRID_GAP), -GRID_TOP)
 		grid[index] = card
 	end
-	previousPage = CreateFrame("Button", nil, content, "UIPanelButtonTemplate") --[[@as Button]]
-	previousPage:SetSize(90, 22)
-	previousPage:SetPoint("BOTTOMLEFT", LEFT, 8)
-	previousPage:SetText(L.PREVIOUS_PAGE)
-	previousPage:SetScript("OnClick", function()
+	previousPage, nextPage, pageText = Window.CreatePager(content, function()
 		page = math.max(1, page - 1)
 		Refresh(content)
-	end)
-	nextPage = CreateFrame("Button", nil, content, "UIPanelButtonTemplate") --[[@as Button]]
-	nextPage:SetSize(90, 22)
-	nextPage:SetPoint("BOTTOMRIGHT", -Window.RIGHT, 8)
-	nextPage:SetText(L.NEXT_PAGE)
-	nextPage:SetScript("OnClick", function()
+	end, function()
 		page = page + 1
 		Refresh(content)
 	end)
-	pageText = content:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	pageText:SetPoint("BOTTOM", 0, 13)
 	emptyText = content:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 	emptyText:SetPoint("TOPLEFT", LEFT + 4, -(TOP + 8))
 	emptyText:SetWidth(WIDTH - 8)
@@ -494,8 +462,8 @@ Refresh = function(content)
 	sessionText:SetShown(line ~= nil)
 	sessionText:SetText(line or "")
 	resetButton:SetShown(custom)
-	local pages = math.max(1, math.ceil(#others / COLUMNS))
-	page = math.min(page, pages)
+	local pages
+	page, pages = Window.ClampPage(page, #others, COLUMNS)
 	previousPage:SetShown(pages > 1)
 	nextPage:SetShown(pages > 1)
 	pageText:SetShown(pages > 1)

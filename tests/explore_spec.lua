@@ -1,5 +1,5 @@
 -- Run from the repository root: luajit tests/explore_spec.lua
--- Exploration and new lands (Hints/Explore.lua, roadmap #13 and #14): the choice of area and land on the bundled data
+-- Exploration and new lands (Hints/Explore.lua): the choice of area and land on the bundled data
 -- and on small fixtures, then both asides through tests/harness.lua against a stubbed C_MapExplorationInfo.
 local harness = dofile("tests/harness.lua")
 local checks = 0

@@ -93,9 +93,9 @@ function Session.Prefix(steps, seconds, budget)
 	return endpoint, estimate
 end
 
-local function Signature(route)
-	local map, x, y = ns.State.Where()
-	local keys = { route.journey or "", string.format("%s:%.4f:%.4f", tostring(map), x or 0, y or 0) }
+local function Signature(route, player)
+	local keys =
+		{ route.journey or "", string.format("%s:%.4f:%.4f", tostring(player.map), player.x or 0, player.y or 0) }
 	for _, step in ipairs(route.steps) do
 		keys[#keys + 1] =
 			string.format("%s:%d:%.5f:%.5f:%s", step.key, step.map, step.x, step.y, tostring(Session.Work(step)))
@@ -103,26 +103,31 @@ local function Signature(route)
 	return table.concat(keys, "|")
 end
 
+-- The keys a step's quests and objectives take in a saved commit's members.
+---@param step AGFStep
+---@return string[]
+local function Members(step)
+	local members = {}
+	for _, id in ipairs(step.quests) do
+		members[#members + 1] = tostring(id)
+	end
+	for _, objective in ipairs(step.objectives or {}) do
+		members[#members + 1] = objective.id .. ":" .. objective.slot
+	end
+	return members
+end
+
 local function Commit(pending)
 	local endpoint, seconds = Session.Prefix(pending.steps, pending.seconds, pending.minutes * 60)
 	local keys, members, visits = {}, {}, {}
 	for index = 1, endpoint do
 		local step = pending.steps[index]
-		local key = step.orderKey or step.key
+		local key = ns.Model.Visit(step)
 		keys[key], members[key] = true, {}
-		for _, id in ipairs(step.quests) do
-			members[key][tostring(id)] = true
+		for _, member in ipairs(Members(step)) do
+			members[key][member] = true
 		end
-		for _, objective in ipairs(step.objectives or {}) do
-			members[key][objective.id .. ":" .. objective.slot] = true
-		end
-		if step.kind == "town" then
-			for _, list in ipairs({ "pickups", "handins" }) do
-				for _, id in ipairs(step[list]) do
-					visits[list .. ":" .. id] = key
-				end
-			end
-		end
+		ns.Model.NoteVisits(visits, step)
 	end
 	ns.Prefs().sessionCommit = {
 		journey = pending.journey,
@@ -165,7 +170,15 @@ function Session.NextEstimate(api)
 	return true
 end
 
-function Session.Apply(route)
+-- The commitment whose visit identities the next build keeps to (docs/design.md §4.3): none once the length changed.
+function Session.Committed()
+	local prefs = ns.Prefs()
+	local commit = prefs.sessionCommit
+	return commit and commit.minutes == prefs.sessionMinutes and commit.visits and commit or nil
+end
+
+-- `route` less what the session's commitment leaves out; `player` is the build's snapshot, where its estimates start.
+function Session.Apply(route, player)
 	local minutes, prefs = Session.Get(), ns.Prefs()
 	info = { pending = false, empty = false }
 	if not route.chosen or minutes == 0 then
@@ -174,14 +187,14 @@ function Session.Apply(route)
 	end
 	local commit = prefs.sessionCommit
 	if not commit or commit.journey ~= route.journey or commit.minutes ~= minutes then
-		local signature = Signature(route)
+		local signature = Signature(route, player)
 		if not job or job.signature ~= signature or job.minutes ~= minutes then
 			job = {
 				signature = signature,
 				journey = route.journey,
 				minutes = minutes,
 				steps = route.steps,
-				origin = ns.State.Player(),
+				origin = player,
 				seconds = {},
 				index = 1,
 			}
@@ -207,14 +220,11 @@ function Session.Apply(route)
 	if commit and commit.journey == route.journey and commit.minutes == minutes then
 		local edges = ns.Order.Dependencies(route.steps)
 		for index, step in ipairs(route.steps) do
-			local key = step.orderKey or step.key
+			local key = ns.Model.Visit(step)
 			local keep, members = commit.keys[key] == true, commit.members and commit.members[key]
 			if members then
-				for _, id in ipairs(step.quests) do
-					keep = keep and members[tostring(id)] == true
-				end
-				for _, objective in ipairs(step.objectives or {}) do
-					keep = keep and members[objective.id .. ":" .. objective.slot] == true
+				for _, member in ipairs(Members(step)) do
+					keep = keep and members[member] == true
 				end
 			end
 			for parent in pairs(edges[index]) do

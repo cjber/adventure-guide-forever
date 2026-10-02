@@ -19,7 +19,8 @@ function Sound.Complete(key, story)
 	end
 end
 
-function Sound.Observe(previous, current, completed, log, trained)
+function Sound.Observe(previous, current, world, trained)
+	local completed, log = world.completed, world.log
 	if not previous.chosen or ns.Prefs().journey ~= previous.journey then
 		return
 	end
@@ -28,10 +29,11 @@ function Sound.Observe(previous, current, completed, log, trained)
 	end
 	local present = {}
 	for _, step in ipairs(current.steps) do
-		present[step.orderKey or step.key] = true
+		present[ns.Model.Visit(step)] = true
 	end
+	local skipped = ns.Prefs().skipped
 	for _, step in ipairs(previous.steps) do
-		if not present[step.orderKey or step.key] and not ns.Prefs().skipped[step.key] then
+		if not present[ns.Model.Visit(step)] and not skipped[step.key] then
 			local done = #step.quests > 0
 			for _, id in ipairs(step.quests) do
 				local picked = false
@@ -65,11 +67,19 @@ function Sound.Observe(previous, current, completed, log, trained)
 				for key, value in pairs(step) do
 					remaining[key] = value
 				end
-				ns.Model.TownChecklist(ns.Data, ns.State.Player(), completed, log, remaining --[[@as AGFStep]], step)
+				ns.Model.TownChecklist(
+					ns.Data,
+					world.player,
+					completed,
+					log,
+					remaining --[[@as AGFStep]],
+					step,
+					skipped
+				)
 				done = remaining.complete
 			end
 			if done then
-				Sound.Complete((step.orderKey or step.key) .. ":" .. table.concat(step.quests, ","))
+				Sound.Complete(ns.Model.Visit(step) .. ":" .. table.concat(step.quests, ","))
 			end
 		end
 	end

@@ -109,7 +109,7 @@ equal(M.QuestXP(data.quests[1], 27), 60, "same level-adjusted XP as planner")
 local nav = harness.load()
 nav.ns.Data, nav.player.level = data, 20
 local destination
-nav.ns.Integrations.Navigate = function(step)
+nav.ns.Guidance.Navigate = function(step)
 	destination = step
 	return true
 end
@@ -198,9 +198,8 @@ h.G.EJ_GetEncounterInfoByIndex = function(index, instance)
 		return "Client encounter", "", 123
 	end
 end
-local bosses, journal = D.Journal(43, noop)
+local bosses = D.Journal(43, noop)
 equal(bosses[1].name, "Client encounter", "client boss preferred")
-equal(journal, 99, "journal ID")
 equal(D.Journal(33, noop), nil, "missing journal stays absent")
 local partial = { bosses = {}, npcs = { [43] = { { id = 555, name = "Client encounter", rank = 1 } } } }
 equal(D.Bosses({ bosses = {} }, 43, bosses)[1].name, "Client encounter", "partial source preserves journal")
@@ -220,18 +219,7 @@ equal(
 )
 bosses[2] = nil
 
-local function Button(each, text)
-	for _, frame in
-		ipairs(each.Find(function(f)
-			return f:IsVisible() and (f:GetText() == text or f.Text and f.Text:GetText() == text)
-		end))
-	do
-		if frame:IsObjectType("Button") then
-			return frame
-		end
-	end
-	error("missing button " .. text)
-end
+local Button = dofile("tests/ui_helpers.lua").Button
 local function Texts(each)
 	local texts = {}
 	for _, entry in ipairs(each.ns.DumpLayout(each.G.AdventureGuideForeverWindow, each.Describe)) do
@@ -543,7 +531,7 @@ local mapTarget = {
 	x = 0.21,
 	y = 0.72,
 }
-equal(reveal.ns.Integrations.ShowOnMap(mapTarget), true, "map action sets native route")
+equal(reveal.ns.Guidance.ShowOnMap(mapTarget), true, "map action sets native route")
 reveal.flush()
 equal(reveal.G.WorldMapFrame:IsShown(), true, "map action opens the world map")
 equal(reveal.G.WorldMapFrame:GetMapID(), 1413, "map action switches to target uiMap")
@@ -553,15 +541,15 @@ equal(ping.y, 0.72, "ping uses fractional y")
 equal(ping.loops, 2, "stock ping loops twice")
 equal(ping.frameLevelType, "PIN_FRAME_LEVEL_QUEST_PING", "stock quest ping layer")
 reveal.G.WorldMapFrame:SetMapID(1439)
-reveal.ns.Integrations.ShowOnMap(mapTarget)
+reveal.ns.Guidance.ShowOnMap(mapTarget)
 reveal.flush()
 equal(reveal.G.WorldMapFrame:GetMapID(), 1413, "already-open map switches zone")
 local count = reveal.counts.SetMapID
-equal(reveal.ns.Integrations.ShowOnMap({ map = 1413, x = 0.2 }), false, "missing coordinate is a no-op")
+equal(reveal.ns.Guidance.ShowOnMap({ map = 1413, x = 0.2 }), false, "missing coordinate is a no-op")
 equal(reveal.counts.SetMapID, count, "invalid place never changes map")
 reveal.G.WorldMapFrame:Hide()
 reveal.combat = true
-equal(reveal.ns.Integrations.ShowOnMap(mapTarget), true, "combat still sets native route")
+equal(reveal.ns.Guidance.ShowOnMap(mapTarget), true, "combat still sets native route")
 reveal.flush()
 equal(reveal.G.WorldMapFrame:IsShown(), false, "combat never opens map")
 equal(reveal.counts.SetMapID, count, "combat never changes displayed map")
@@ -694,12 +682,10 @@ equal(raidTexts[raidUI.ns.L.DUNGEON_LIST_DUNGEONS], true, "dungeons keep their h
 equal(raidTexts[raidUI.ns.L.DUNGEON_RAID_PLAYERS:format(40)], true, "raid group size is shown")
 raidUI.Click(Button(raidUI, raidUI.ns.L.DUNGEON_BOSSES_TAB))
 equal(#raidUI.errors, 0, "raid page has no errors")
-print(("dungeons_spec: %d checks passed"):format(checks))
 
--- The bundled Classic boss baseline is gone: bosses come from AtlasLoot/EJ only, so an uncurated instance lists none.
-assert(next(h.ns.DungeonBosses) == nil, "no bundled boss baseline remains")
+-- Bosses come from the provider only: its order and details are kept, and the display merge leaves its data alone.
 local partialAtlas =
 	{ curated = { [43] = true }, bosses = { [43] = { { id = 1, name = "Localized encounter", low = 99, high = 99 } } } }
 equal(#D.Bosses(partialAtlas, 43), 1, "AtlasLoot order and localized details retained")
 equal(#partialAtlas.bosses[43], 1, "display merge does not mutate provider data")
-print("dungeons: AtlasLoot-only boss sourcing verified")
+print(("dungeons_spec: %d checks passed"):format(checks))

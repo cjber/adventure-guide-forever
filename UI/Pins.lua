@@ -17,7 +17,7 @@ ns.Pins = Pins
 local pinsByKey = {}
 
 -- One switch over every mark AGF draws (design §2.6): nothing unless showMapPins is on, and nothing for a wanderer
--- (roadmap #24), who is told where and never shown.
+-- who is told where and never shown.
 -- While the guide is open the rings preview the route it shows whatever the switch says (F3): the chosen journey's,
 -- else the first card's, which the guide draws on its own (docs/design.md §2.2). Either way they step aside while
 -- Shortest Path guides, since it numbers its stops itself.
@@ -39,8 +39,7 @@ end
 
 ---@param tooltip GameTooltip
 local function AddClickLine(tooltip)
-	local name = ns.Integrations.Provider()
-	GameTooltip_AddInstructionLine(tooltip, name and ns.L.CLICK_TRAVEL:format(name) or ns.L.CLICK_WAYPOINT)
+	GameTooltip_AddInstructionLine(tooltip, ns.Menu.ClickLine())
 end
 
 -- The map's own marks, inline: a hand-in's "?", a pickup's "!", and the quest log's group tag.
@@ -204,7 +203,7 @@ local function AddGivers(map, mapID)
 		return
 	end
 	local routed = {}
-	for _, step in ipairs(RingsShown() and ns.Route().steps or ns.Integrations.Guided()) do
+	for _, step in ipairs(RingsShown() and ns.Route().steps or ns.Guidance.Guided()) do
 		for _, id in ipairs(step.quests) do
 			routed[id] = true
 		end
@@ -444,7 +443,37 @@ function AdventureGuideForeverGiverPinMixin:OnClick(button)
 		end
 		GameTooltip:Hide()
 	elseif button == "LeftButton" and self.giver then
-		ns.Integrations.Navigate(self.giver)
+		ns.Guidance.Navigate(self.giver)
+	end
+end
+
+---@param pin AGFPinFrame|AGFGiverPinFrame
+local function Flash(pin)
+	-- Flash the glow so resetting its alpha does not change the pin's opacity.
+	UIFrameFlash(pin.Glow, 0.2, 0.2, 1.2, GameTooltip:GetOwner() == pin)
+end
+
+---@param point AGFPoint|AGFPlace|AGFStep|AGFGiver
+---@param visit fun(pin: AGFPinFrame|AGFGiverPinFrame)
+---@param tolerance? number
+local function AtPoint(point, visit, tolerance)
+	for _, template in ipairs({ PIN_TEMPLATE, GIVER_TEMPLATE }) do
+		for pin in WorldMapFrame:EnumeratePinsByTemplate(template) do
+			local place = pin.step or (pin --[[@as AGFGiverPinFrame]]).giver
+			if
+				place
+				and (
+					(place.x == point.x and place.y == point.y)
+					or (
+						tolerance
+						and math.abs(place.x - point.x) < tolerance
+						and math.abs(place.y - point.y) < tolerance
+					)
+				)
+			then
+				visit(pin)
+			end
+		end
 	end
 end
 
@@ -455,8 +484,7 @@ end
 function Pins.Ping(key)
 	local pin = pinsByKey[key]
 	if pin then
-		-- Flashing the button itself would leave a later stop at full opacity when UIFrameFlash resets its alpha.
-		UIFrameFlash(pin.Glow, 0.2, 0.2, 1.2, GameTooltip:GetOwner() == pin)
+		Flash(pin)
 	end
 end
 
@@ -471,15 +499,10 @@ function Pins.Highlight(point, shown)
 	then
 		return
 	end
-	for _, template in ipairs({ PIN_TEMPLATE, GIVER_TEMPLATE }) do
-		for pin in WorldMapFrame:EnumeratePinsByTemplate(template) do
-			local place = pin.step or (pin --[[@as AGFGiverPinFrame]]).giver
-			if place and math.abs(place.x - point.x) < 0.0001 and math.abs(place.y - point.y) < 0.0001 then
-				UIFrameFlashStop(pin.Glow)
-				pin.Glow:SetShown(shown or GameTooltip:GetOwner() == pin)
-			end
-		end
-	end
+	AtPoint(point, function(pin)
+		UIFrameFlashStop(pin.Glow)
+		pin.Glow:SetShown(shown or GameTooltip:GetOwner() == pin)
+	end, 0.0001)
 end
 
 ---@param point AGFPoint|AGFPlace|AGFStep|AGFGiver
@@ -499,18 +522,7 @@ function Pins.Reveal(point)
 		end
 		ping:SetNumLoops(2)
 		ping:PlayAt(point.x, point.y)
-		for _, template in ipairs({ PIN_TEMPLATE, GIVER_TEMPLATE }) do
-			for pin in WorldMapFrame:EnumeratePinsByTemplate(template) do
-				local place = pin.step or (pin --[[@as AGFGiverPinFrame]]).giver
-				if place and place.x == point.x and place.y == point.y then
-					if pin.step then
-						Pins.Ping(pin.step.key)
-					else
-						UIFrameFlash(pin.Glow, 0.2, 0.2, 1.2, GameTooltip:GetOwner() == pin)
-					end
-				end
-			end
-		end
+		AtPoint(point, Flash)
 	end)
 end
 

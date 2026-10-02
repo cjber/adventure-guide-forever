@@ -212,7 +212,7 @@ do
 		h.flush()
 	end
 
-	-- Roadmap #17: tracking the route's quests is opt-in, so a title click leaves the player's watches alone.
+	-- Tracking the route's quests is opt-in, so a title click leaves the player's watches alone.
 	local h = Load("v1")
 	h.watched[1] = 99
 	ClickTitle(h)
@@ -371,6 +371,7 @@ do
 	equal(malformed.ns.TrackerHostSettings().attached, true, "AGF account host state normalizes malformed value")
 	h.trackerHostSettings.attached = false
 	equal(attachSetting.GetValue(), false, "shared tracker reads the host owner state")
+	h.trackerHostSettings.attached = true
 	attachSetting:SetValue(false)
 	equal(h.trackerHostSettings.attached, false, "shared tracker setting writes shared host state")
 	attachSetting:SetValue(true)
@@ -398,7 +399,7 @@ do
 	local function always()
 		return true
 	end
-	local Stale, handed = Load(false).ns.Integrations.Stale, S("a", "b", "c")
+	local Stale, handed = Load(false).ns.Guidance.Stale, S("a", "b", "c")
 	for _, case in ipairs({
 		{ 1, S("a", "b", "c"), never, false, "unchanged" },
 		{ 1, S("a", "c", "b"), never, false, "later stops reorder" },
@@ -455,7 +456,7 @@ do
 	local onward = h.ns.Route().steps
 	equal(#h.spfRoute.stops, #onward, "follow: proximity keeps every stop")
 	equal(h.spfRoute.stops[1].x, onward[1].x, "follow: current area retains its destination")
-	equal(h.ns.Integrations.Owns(), true, "follow: guidance holds, so Stop still shows")
+	equal(h.ns.Guidance.Owns(), true, "follow: guidance holds, so Stop still shows")
 	Moved(h, 1413, 0.64, 0.47)
 	equal(h.spf.NavigateRoute, 2, "follow: nothing again while the player is in it")
 	h.SetCombat(true)
@@ -577,7 +578,7 @@ do
 	h.ns.StartRoute()
 	h.flush()
 	equal(h.counts.SetUserWaypoint, 1, "here, waypoint: Go retains the nearby destination")
-	equal(h.ns.Integrations.Owns(), true, "here, waypoint: guidance holds")
+	equal(h.ns.Guidance.Owns(), true, "here, waypoint: guidance holds")
 	Moved(h, 1413, 0.46, 0.79)
 	local leftFor = h.ns.Route().steps[1]
 	equal(leftFor.here, nil, "here, waypoint: out of it")
@@ -636,7 +637,7 @@ do
 	local first = h.ns.Route().steps[1]
 	equal(h.counts.SetUserWaypoint, sets + 1, "waypoint follows: moved to the new step 1")
 	equal(h.waypoint.position.x .. " " .. h.waypoint.position.y, first.x .. " " .. first.y, "waypoint follows: there")
-	equal(h.ns.Integrations.Owns(), true, "waypoint follows: still ours")
+	equal(h.ns.Guidance.Owns(), true, "waypoint follows: still ours")
 	Moved(h, 1413, 0.46, 0.78)
 	equal(h.counts.SetUserWaypoint, sets + 1, "waypoint follows: once")
 	h.noWaypoint[1413] = true
@@ -652,7 +653,7 @@ do
 
 	-- A route the step menu or a giver started is not the chosen journey's: it is never sent again.
 	h = Load("ended")
-	h.ns.Integrations.Navigate(h.ns.Route().steps[1])
+	h.ns.Guidance.Navigate(h.ns.Route().steps[1])
 	h.flush()
 	Moved(h, 1413, 0.46, 0.79)
 	equal(h.spf.NavigateRoute, 1, "follow: a route not the journey's stays as handed")
@@ -745,7 +746,7 @@ do
 	equal(h.spf.Cancel, 1, "filtered: our route cancelled")
 	clean(h, "filtered")
 
-	-- Your calling (roadmap #7) holds quests, so the Quests toggle keeps its choice too: a level-12 orc warrior in
+	-- Your calling holds quests, so the Quests toggle keeps its choice too: a level-12 orc warrior in
 	-- Durotar, whose trainer has a task.
 	h = harness.load({
 		planned = true,
@@ -761,7 +762,7 @@ do
 	equal(h.ns.Prefs().journey, "calling", "filtered calling: the choice kept")
 	clean(h, "filtered calling")
 
-	-- Roadmap #21: with no next zone Dungeons hides nothing, so a chosen dungeon that went has ended; below the cap
+	-- With no next zone Dungeons hides nothing, so a chosen dungeon that went has ended; below the cap
 	-- the toggle keeps it.
 	for _, case in ipairs({ { 70, nil, "at the cap" }, { 18, "dungeon:1", "below the cap" } }) do
 		h = harness.load({
@@ -813,7 +814,7 @@ do
 		local label = "ended, " .. spf
 		local h = Ending(spf, Arrive, true)
 		equal(h.ns.Prefs().guided, "zone:1413", label .. ", arrived: the guidance is kept")
-		equal(h.ns.Integrations.Arrived(), true, label .. ", arrived: and known")
+		equal(h.ns.Guidance.Status(), "arrived", label .. ", arrived: and known")
 		h = Ending(spf, Clear, spf == "ended")
 		equal(h.ns.Prefs().guided, nil, label .. ", cleared: the guidance is forgotten")
 		h.ns.Invalidate()
@@ -842,15 +843,47 @@ do
 	h.fire("SUPER_TRACKING_CHANGED")
 	h.flush()
 	equal(h.spf.NavigateRoute, 2, "ended, arrived: a new stop extends the route")
-	equal(h.ns.Integrations.Arrived(), false, "ended, arrived: which guides again")
+	equal(h.ns.Guidance.Status() == "arrived", false, "ended, arrived: which guides again")
 	h.fire("SUPER_TRACKING_CHANGED")
 	h.flush()
 	equal(h.spf.NavigateRoute, 2, "ended, arrived: once")
 	-- Our own Stop is no ending to judge.
 	h = Ending("ended", function(stopped)
-		stopped.ns.Integrations.Cancel()
+		stopped.ns.Guidance.Cancel()
 	end)
-	equal(h.ns.Integrations.Arrived(), false, "ended, cancelled: not arrived")
+	equal(h.ns.Guidance.Status() == "arrived", false, "ended, cancelled: not arrived")
+end
+
+-- The one question the views ask (Guidance.Status), and a reorder's restart (Guidance.Reroute): only a route AGF runs
+-- for the chosen journey starts again, a frame on.
+do
+	local h = Load("ended")
+	equal(h.ns.Guidance.Status(), nil, "status: nothing chosen, nothing to tell")
+	h.ns.Guidance.Reroute()
+	h.flush()
+	equal(h.spf.NavigateRoute, 0, "reroute: nothing of ours runs, nothing starts")
+	h.ns.StartRoute()
+	h.flush()
+	equal(h.ns.Guidance.Status(), nil, "status: running")
+	equal(h.ns.Guidance.Owns(), true, "status: running is Owns")
+	h.ns.Guidance.Reroute()
+	equal(h.spf.NavigateRoute, 1, "reroute: not in the reorder's own frame")
+	h.flush()
+	equal(h.spf.NavigateRoute, 2, "reroute: the chosen journey's route starts again")
+	h.SetCombat(true)
+	equal(h.ns.StartRoute(), true, "status: a start in combat waits")
+	equal(h.ns.Guidance.Status(), "queued", "status: queued until combat ends")
+	h.SetCombat(false)
+	h.flush()
+	equal(h.ns.Guidance.Status(), nil, "status: then it runs")
+	h.spfEnd("arrived")
+	h.fire("SUPER_TRACKING_CHANGED")
+	h.flush()
+	equal(h.ns.Guidance.Status(), "arrived", "status: arrived at its last stop, not paused")
+	h.ns.Stop()
+	h.flush()
+	equal(h.ns.Guidance.Status(), nil, "status: the player's Stop leaves nothing to resume")
+	clean(h, "status")
 end
 
 -- No Go (design §2.10): while the chosen journey's route is paused (cleared in Shortest Path, replaced, refused), its
@@ -891,18 +924,18 @@ do
 	end
 
 	local h = Opened("ended")
-	equal(h.ns.Paused(), false, "paused: not while it guides")
+	equal(h.ns.Guidance.Status() == "paused", false, "paused: not while it guides")
 	equal(Hint(h), false, "paused: no hint while it guides")
 	equal(Tip(h):find(L.BACK_TO_ALL, 1, true) ~= nil, true, "paused: guiding, the tooltip points to the back arrow")
 	h.Click(Chosen(h))
 	h.flush()
-	equal(h.ns.Integrations.Owns(), true, "paused: guiding, the click stops nothing")
+	equal(h.ns.Guidance.Owns(), true, "paused: guiding, the click stops nothing")
 	equal(h.ns.Prefs().journey, "zone:1413", "paused: guiding, and keeps the choice")
 
 	h = Opened("ended", nil, function(cleared)
 		cleared.spfEnd("cleared")
 	end)
-	equal(h.ns.Paused(), true, "paused: cleared in Shortest Path")
+	equal(h.ns.Guidance.Status(), "paused", "paused: cleared in Shortest Path")
 	equal(Hint(h), true, "paused: the footer says the card resumes it")
 	equal(Tip(h):find(L.CLICK_TO_RESUME, 1, true) ~= nil, true, "paused: the tooltip says the click resumes")
 	equal(Tip(h):find(L.REPLACES_JOURNEY, 1, true), nil, "paused: nothing to replace")
@@ -915,14 +948,14 @@ do
 	h.Click(Chosen(h))
 	h.flush()
 	equal(h.ns.Prefs().journey, "zone:1413", "paused: once resumed, the next click keeps the choice")
-	equal(h.ns.Integrations.Owns(), true, "paused: and the route")
+	equal(h.ns.Guidance.Owns(), true, "paused: and the route")
 	equal(h.spf.NavigateRoute, 2, "paused: without starting it again")
 	clean(h, "paused")
 
 	h = Opened("ended", nil, function(replaced)
 		replaced.spfOther()
 	end)
-	equal(h.ns.Paused(), true, "paused: replaced by another journey")
+	equal(h.ns.Guidance.Status(), "paused", "paused: replaced by another journey")
 	equal(Tip(h):find(L.REPLACES_JOURNEY, 1, true) ~= nil, true, "paused, replaced: resuming warns first")
 
 	-- The tracker title resumes it too.
@@ -938,7 +971,7 @@ do
 			"our Stop",
 			nil,
 			function(stopped)
-				stopped.ns.Integrations.Cancel()
+				stopped.ns.Guidance.Cancel()
 			end,
 		},
 		{
@@ -959,13 +992,13 @@ do
 			"the setting off",
 			{ titleStartsRoute = false },
 			function(cleared)
-				cleared.ns.Integrations.Navigate(cleared.ns.Route().steps[1])
+				cleared.ns.Guidance.Navigate(cleared.ns.Route().steps[1])
 				cleared.spfEnd("cleared")
 			end,
 		},
 	}) do
 		h = Opened("ended", case[2], case[3])
-		equal(h.ns.Paused(), false, "not paused: " .. case[1])
+		equal(h.ns.Guidance.Status() == "paused", false, "not paused: " .. case[1])
 		equal(Hint(h), false, "not paused, " .. case[1] .. ": no hint")
 	end
 	local routes = h.spf.NavigateRoute
@@ -977,7 +1010,7 @@ end
 
 -- Shortest Path's journeys end with the session: a /reload or login with a route AGF started for the chosen journey
 -- sends it again once, on the first full build out of combat. Not over someone else's journey; a refusal sets no
--- waypoint and asks again on the next full build; Stop, a cleared card or no saved variables (#34) restore nothing.
+-- waypoint and asks again on the next full build; Stop, a cleared card or no saved variables restore nothing.
 do
 	-- autoStart off: this block is about restoring a route that was started before (prefs.guided), not about the
 	-- auto-start on load, which tests/autostart_spec.lua covers.
@@ -1046,9 +1079,6 @@ local function IdleUpdates(h)
 	local busy = 0
 	for _, frame in ipairs(h.frames) do
 		busy = busy + (frame.scripts.OnUpdate and 1 or 0)
-		for _, group in ipairs(frame.animationGroups or {}) do
-			busy = busy + (group:IsPlaying() and 1 or 0)
-		end
 	end
 	return busy + h.counts.tickers
 end
@@ -1208,7 +1238,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		"button: Choose another journey",
 	}
 	same(h.MenuLines(), WithNotThisQuest(ns, ns.Route().steps[1], menu), label .. ": tracker menu")
-	ns.Integrations.Navigate(ns.Route().steps[1])
+	ns.Guidance.Navigate(ns.Route().steps[1])
 	h.SetCombat(true)
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:349"], "RightButton")
 	h.SetCombat(false)
@@ -1218,7 +1248,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		WithNotThisQuest(ns, ns.Route().steps[1], menu),
 		label .. ": tracker menu while Go guides, in combat"
 	)
-	ns.Integrations.Cancel()
+	ns.Guidance.Cancel()
 	clean(h, label .. ": pins")
 end
 
@@ -1282,10 +1312,9 @@ end
 -- game's own objective mark shows the area; its tooltip lists each open objective under its quest in the client's
 -- words, else its count.
 do
-	-- With the Barrens story ruled out, Gann's Reclamation is off every zone loop, so carry (Loose ends) holds it.
+	-- With the Barrens story ruled out, Gann's Reclamation is off every zone loop, so carry (Quests in your log) holds it.
 	local h = harness.load({
 		planned = true,
-		preserveUnknownCosts = true,
 		-- A copy, never the shared PINS_ON table: Core.LoadDB merges the addon's defaults into whatever db it is given.
 		db = { showMapPins = true, showQuestGivers = true },
 		charDB = {
@@ -1376,7 +1405,7 @@ for _, case in ipairs({
 	equal(givers > 0, true, label .. ": Stonetalon has givers")
 	local expected = case.givers and givers or 0
 	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, expected, label .. ": givers")
-	ns.Integrations.Navigate(ns.Route().steps[1])
+	ns.Guidance.Navigate(ns.Route().steps[1])
 	equal(ns.Integrations.Guiding(), true, label .. ": Shortest Path guides")
 	h.map:SetMapID(1413)
 	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, label .. ": rings step aside while Shortest Path guides")
@@ -1395,7 +1424,7 @@ do
 	local ns = h.ns
 	h.G.OpenQuestLog()
 	h.flush()
-	ns.Integrations.Navigate(ns.Route().steps[1])
+	ns.Guidance.Navigate(ns.Route().steps[1])
 	local nextZone
 	for _, journey in ipairs(ns.Route().journeys) do
 		nextZone = nextZone or (journey.kind == "nextzone" and journey or nil)
@@ -1613,7 +1642,7 @@ do
 	equal(h.ns.Integrations.Provider(), nil, "contract: a missing required function reads as absent")
 	api.Cancel, api.version = cancel, 2
 	equal(h.ns.Integrations.Provider(), nil, "contract: another version reads as absent")
-	h.ns.Integrations.Navigate(h.ns.Route().steps[1])
+	h.ns.Guidance.Navigate(h.ns.Route().steps[1])
 	equal(h.counts.SetUserWaypoint, 1, "contract: absent falls back to the native waypoint")
 	clean(h, "contract")
 end
@@ -1632,7 +1661,7 @@ for _, case in ipairs({
 	local step = h.ns.Route().steps[1]
 	h.spfDeclines = case.declines
 	h.noWaypoint[step.map] = case.blocked
-	local guided = h.ns.Integrations.Navigate(step)
+	local guided = h.ns.Guidance.Navigate(step)
 	equal(guided, not case.blocked, case.label .. ": Navigate's answer")
 	equal(h.spf and h.spf.NavigateRoute or 0, case.routes, case.label .. ": NavigateRoute calls")
 	equal(h.counts.SetUserWaypoint, case.waypoints, case.label .. ": native waypoints")
@@ -1655,13 +1684,13 @@ end
 do
 	local h = Load("v1")
 	local step = h.ns.Route().steps[1]
-	h.ns.Integrations.Navigate(step)
+	h.ns.Guidance.Navigate(step)
 	equal(h.ns.Integrations.Guiding(), true, "declined later: the first Go guides")
 	h.spfDeclines, h.noWaypoint[step.map] = true, true
-	equal(h.ns.Integrations.Navigate(step), false, "declined later, no waypoint map: nothing new guides")
+	equal(h.ns.Guidance.Navigate(step), false, "declined later, no waypoint map: nothing new guides")
 	equal(h.spf.Cancel, 0, "declined later, no waypoint map: the earlier journey is kept")
 	h.noWaypoint[step.map], h.uiErrors = nil, {}
-	equal(h.ns.Integrations.Navigate(step), true, "declined later: the waypoint guides")
+	equal(h.ns.Guidance.Navigate(step), true, "declined later: the waypoint guides")
 	equal(h.spf.Cancel, 1, "declined later: the earlier journey is cancelled")
 	equal(h.ns.Integrations.Guiding(), false, "declined later: Shortest Path no longer guides")
 	equal(h.counts.SetUserWaypoint, 1, "declined later: the native waypoint is set")
@@ -1708,7 +1737,7 @@ for _, spf in ipairs({ "v1", "v1+" }) do
 	ns.SetSetting("titleStartsRoute", false)
 	h.flush()
 	equal(Warnings(h), spf == "v1+" and "0 1 0" or "0 0 0", spf .. ": a choice that doesn't start the route")
-	ns.Integrations.Navigate(ns.Route().steps[1])
+	ns.Guidance.Navigate(ns.Route().steps[1])
 	equal(Warnings(h), "0 0 0", spf .. ": our own journey")
 	clean(h, spf .. ": replace warning")
 end
@@ -1735,11 +1764,11 @@ do
 	h.flush()
 	local stop = StopButton(h)
 	equal(stop:IsShown(), false, "stop: hidden before Go")
-	ns.Integrations.Navigate(ns.Route().steps[1])
+	ns.Guidance.Navigate(ns.Route().steps[1])
 	local moved = h.waypoint
 	h.waypoint = { uiMapID = moved.uiMapID, position = { x = moved.position.x + 0.01, y = moved.position.y } }
-	equal(ns.Integrations.Owns(), false, "stop: a waypoint the player moved is theirs")
-	ns.Integrations.Cancel()
+	equal(ns.Guidance.Owns(), false, "stop: a waypoint the player moved is theirs")
+	ns.Guidance.Cancel()
 	equal(h.counts.ClearUserWaypoint, 0, "stop: so Stop leaves it")
 	equal(h.waypoint ~= nil, true, "stop: it is still there")
 	equal(ns.Prefs().waypoint, nil, "stop: and ours is forgotten")
@@ -1801,9 +1830,9 @@ do
 	equal(stop:IsShown(), false, "stop, Shortest Path: then hides")
 	-- As a click on the guided card: no journey is left chosen with nothing to resume it.
 	equal(ns.Prefs().journey, nil, "stop, Shortest Path: and clears the choice")
-	equal(ns.Paused(), false, "stop, Shortest Path: nothing is paused")
+	equal(ns.Guidance.Status() == "paused", false, "stop, Shortest Path: nothing is paused")
 	equal(h.counts.ClearUserWaypoint, 0, "stop, Shortest Path: no native waypoint to clear")
-	ns.Integrations.Navigate(ns.Route().steps[1])
+	ns.Guidance.Navigate(ns.Route().steps[1])
 	h.G.ShortestPathForever.API.Cancel("AdventureGuideForever")
 	ns.Invalidate()
 	h.flush()
@@ -1820,10 +1849,10 @@ do
 	h.ns.Invalidate()
 	h.flush()
 	equal(h.ns.Integrations.Guiding(), false, "held: not guiding")
-	equal(h.ns.Integrations.Owns(), true, "held: still ours to stop")
-	equal(#h.ns.Integrations.Guided(), 0, "held: no stops it walks")
+	equal(h.ns.Guidance.Owns(), true, "held: still ours to stop")
+	equal(#h.ns.Guidance.Guided(), 0, "held: no stops it walks")
 	h.SetCombat(true)
-	equal(h.ns.Integrations.Navigate(h.ns.Route().steps[1]), false, "held, combat: Go waits")
+	equal(h.ns.Guidance.Navigate(h.ns.Route().steps[1]), false, "held, combat: Go waits")
 	equal(h.counts.SetUserWaypoint, 0, "held, combat: no waypoint over it")
 	h.SetCombat(false)
 	clean(h, "held")
@@ -2006,7 +2035,7 @@ do
 	clean(h, "log full")
 end
 
--- "Not interested" (roadmap #17): a journey card's right-click hides it on this character, the choice of it ends, and
+-- "Not interested": a journey card's right-click hides it on this character, the choice of it ends, and
 -- Skipped (n) under the cards and in the cog lists it with Show again. The carry card, here for the quest handed in
 -- at Orgrimmar, has no menu.
 do
@@ -2061,7 +2090,7 @@ do
 		return frame.Icon ~= nil and frame.Icon.Clip ~= nil and frame.journey ~= nil
 	end)[1]
 	equal(featured ~= nil and featured.journey.key ~= story.key, true, "not interested: the overview, without it")
-	equal(h.ns.Integrations.Owns(), false, "not interested: and its route stops")
+	equal(h.ns.Guidance.Owns(), false, "not interested: and its route stops")
 	same(
 		h.G.AdventureGuideForeverCharDB.notInterested[story.key],
 		{ title = story.title, chosen = true },
@@ -2764,7 +2793,7 @@ do
 	equal(#Results(), 0, "search: cleared")
 	clean(h, "guide")
 
-	-- Roadmap #21: past the cap with quests and dungeons off, the dungeon card and a way into an instance still show.
+	-- Past the cap with quests and dungeons off, the dungeon card and a way into an instance still show.
 	local capped = harness.load({ planned = true, player = { level = 70 } })
 	capped.ns.Prefs().quests = false
 	capped.ns.Invalidate()
@@ -2966,7 +2995,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		if journey.kind == "carry" then
 			carried = carried + 1
 			local total = journey.ready + journey.underway
-			equal(foot, L.READY_OF:format(journey.ready, total), label .. ": Loose ends counts what is ready")
+			equal(foot, L.READY_OF:format(journey.ready, total), label .. ": Quests in your log counts what is ready")
 			equal(card.Bar:IsShown(), journey.ready > 0, label .. ": and its bar")
 			equal(card.Bar.Fill:GetWidth() > 0, true, label .. ": never empty")
 		elseif journey.kind == "nextzone" then
@@ -2977,7 +3006,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		local reason = journey.reason ~= foot and journey.reason or nil
 		equal(card.Reason:GetText(), reason or Hub(journey), label .. ": " .. journey.key .. " reason")
 	end
-	equal(carried, 1, label .. ": the Loose ends card")
+	equal(carried, 1, label .. ": the Quests in your log card")
 	equal(zones > 0, true, label .. ": a zone to head to")
 	local longCard = cards[2]
 	local title = longCard.journey.title
@@ -3063,7 +3092,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(h.ns.Route().journey, story.key, label .. ": a click chooses")
 	equal(Starts(), 1, label .. ": and starts its route")
-	equal(h.ns.Integrations.Owns(), true, label .. ": ours, which Stop ends")
+	equal(h.ns.Guidance.Owns(), true, label .. ": ours, which Stop ends")
 	equal(h.G.AdventureGuideForeverCharDB.journey, story.key, label .. ": and is saved")
 	equal(#Overview(), 0, label .. ": the overview gives way")
 	equal(Previews(), "", label .. ": with its steps")
@@ -3117,7 +3146,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(h.ns.Route().journey, key, label .. ": clicking the chosen card keeps it")
 	equal(Stops(), stops, label .. ": and stops nothing")
-	equal(h.ns.Integrations.Owns(), true, label .. ": so the route runs on")
+	equal(h.ns.Guidance.Owns(), true, label .. ": so the route runs on")
 	equal(Starts(), 2, label .. ": without starting again")
 	equal(h.counts.SetMapID, maps + 1, label .. ": the map turns to it")
 
@@ -3126,7 +3155,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Click(Back())
 	h.flush()
 	equal(Stops() - stops, 1, label .. ": going back stops our route")
-	equal(h.ns.Integrations.Owns(), false, label .. ": so nothing of ours guides")
+	equal(h.ns.Guidance.Owns(), false, label .. ": so nothing of ours guides")
 	equal(Starts(), 2, label .. ": and nothing new starts")
 	equal(h.ns.Route().chosen, false, label .. ": the back arrow chooses none")
 	equal(h.G.AdventureGuideForeverCharDB.journey, nil, label .. ": and saves none")
@@ -3371,7 +3400,7 @@ for _, spf in ipairs({ false, "v1+" }) do
 	h.ns.OpenPanel()
 	h.flush()
 	local event = spf and "SUPER_TRACKING_CHANGED" or "USER_WAYPOINT_UPDATED"
-	h.ns.Integrations.Navigate(h.ns.Route().steps[1])
+	h.ns.Guidance.Navigate(h.ns.Route().steps[1])
 	h.flush()
 	equal(StopButton(h):IsShown(), true, label .. ": Stop while ours guides")
 	if spf then
@@ -3441,10 +3470,12 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(h.ns.Route().journey, card.journey.key, label .. ": the card is chosen at once")
 	equal(Starts(), 0, label .. ": its route waits for combat's end")
 	equal(Queued(), 1, label .. ": which the footer says")
+	equal(h.ns.Guidance.Status(), "queued", label .. ": as Guidance does")
 	h.SetCombat(false)
 	h.flush()
 	equal(Starts(), 1, label .. ": the route starts when combat ends")
 	equal(Queued(), 0, label .. ": and the footer stops waiting")
+	equal(h.ns.Guidance.Status(), nil, label .. ": a running route has no status to tell")
 	equal(h.ns.Prefs().guided, card.journey.key, label .. ": recorded as the chosen journey's route")
 
 	h.SetCombat(true)
@@ -3462,10 +3493,10 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Click(Card("shown"))
 	h.flush()
 	equal(Starts(), 1, label .. ": with the setting off a choice only chooses")
-	h.ns.Integrations.Navigate(h.ns.Route().steps[1])
+	h.ns.Guidance.Navigate(h.ns.Route().steps[1])
 	Back()
 	h.flush()
-	equal(h.ns.Integrations.Owns(), false, label .. ": and clearing it stops what a Go started")
+	equal(h.ns.Guidance.Owns(), false, label .. ": and clearing it stops what a Go started")
 	clean(h, label)
 end
 
@@ -3481,13 +3512,13 @@ for _, spf in ipairs({ false, "v1" }) do
 	end
 	equal(Rings() > 0, true, label .. ": the chosen journey's rings")
 	-- A Go that recorded no journey (prefs.guided), as an aside's or a giver's does.
-	h.ns.Integrations.Navigate(h.ns.Route().steps[1])
+	h.ns.Guidance.Navigate(h.ns.Route().steps[1])
 	h.flush()
 	equal(h.ns.Prefs().guided, nil, label .. ": no journey recorded")
 	equal(StopButton(h):IsShown(), true, label .. ": Stop offered")
 	h.ns.Choose(nil)
 	h.flush()
-	equal(h.ns.Integrations.Owns(), false, label .. ": nothing of ours guides")
+	equal(h.ns.Guidance.Owns(), false, label .. ": nothing of ours guides")
 	if spf then
 		equal(h.spf.Cancel, 1, label .. ": our route cancelled")
 		equal(h.spfRoute, nil, label .. ": and gone")
@@ -3552,7 +3583,7 @@ do
 end
 
 -- F16, the first aside (Asides.lua): with spells to train, one trainer line in the guide and the tracker, at the
--- nearest trainer who teaches them (roadmap #5); otherwise none. Four Tweaks Forever profiles: absent, no answer yet,
+-- nearest trainer who teaches them; otherwise none. Four Tweaks Forever profiles: absent, no answer yet,
 -- nothing to train, and three spells.
 do
 	local SPELL = { name = "Lightning Bolt", level = 14, line = "Elemental", lineID = 375, general = false }
@@ -3698,7 +3729,7 @@ do
 	clean(h, "trainer affordability")
 end
 
--- Roadmap #5: a chosen journey passing a trainer who teaches the spells to train stops there, a step like any other:
+-- A chosen journey passing a trainer who teaches the spells to train stops there, a step like any other:
 -- the tracker, a ring, Go. Learning the spell (SPELLS_CHANGED) ends the stop. A level-8 troll rogue in Razor Hill.
 do
 	local label = "trainer stop"
@@ -3867,7 +3898,7 @@ do
 	end
 end
 
--- Roadmap #8: State reads skill ranks from C_SkillInfo, again on SKILL_LINES_CHANGED, and standings from
+-- State reads skill ranks from C_SkillInfo, again on SKILL_LINES_CHANGED, and standings from
 -- C_Reputation; a change of either rebuilds, and the why-not search names both in the client's words.
 do
 	local label = "gates"
@@ -3929,7 +3960,7 @@ do
 	clean(h, label)
 end
 
--- Roadmap #11: with no rest the route ends at the inn its last town has; stepping into an inn ticks it off, and a
+-- With no rest the route ends at the inn its last town has; stepping into an inn ticks it off, and a
 -- rest or XP event that moves nothing rebuilds nothing. The carry card's one stop is a hand-in in Orgrimmar.
 do
 	local h = harness.load({
@@ -3970,7 +4001,7 @@ do
 	clean(h, "rest")
 end
 
--- Roadmap #24: a wanderer is told where and never taken there. The one setting gates every waypoint, Shortest Path
+-- A wanderer is told where and never taken there. The one setting gates every waypoint, Shortest Path
 -- route and map mark; choosing still chooses, and turning it on stops what Go started.
 for _, spf in ipairs({ false, "v1" }) do
 	local label = "wanderer, " .. (spf or "no Shortest Path")
@@ -3980,7 +4011,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Load(spf).ns.Setting("wanderer"), false, label .. ": Guide by default")
 	local step = ns.Route().steps[1]
 	equal(ns.StartRoute(step), false, label .. ": Go guides nothing")
-	equal(ns.Integrations.Navigate(step), false, label .. ": nor does Navigate")
+	equal(ns.Guidance.Navigate(step), false, label .. ": nor does Navigate")
 	equal(h.counts.SetUserWaypoint or 0, 0, label .. ": no waypoint")
 	equal(spf and h.spf.NavigateRoute or 0, 0, label .. ": no Shortest Path route")
 	equal(#h.uiErrors, 0, label .. ": and no error line")
@@ -3988,12 +4019,12 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(h.counts.SetUserWaypoint or 0, 0, label .. ": the tracker title sets none either")
 	equal(ns.Prefs().guided, nil, label .. ": nothing recorded as guided")
-	equal(ns.Paused(), false, label .. ": so the journey never reads as paused")
+	equal(ns.Guidance.Status() == "paused", false, label .. ": so the journey never reads as paused")
 	h.SetCombat(true)
 	equal(ns.StartRoute(), false, label .. ": in combat nothing waits to start")
-	equal(ns.StartPending(), false, label .. ": no start pending")
+	equal(ns.Guidance.Status(), nil, label .. ": no start pending")
 	ns.Choose("zone:1413", true)
-	equal(ns.StartPending(), false, label .. ": a card chosen in combat waits for nothing")
+	equal(ns.Guidance.Status(), nil, label .. ": a card chosen in combat waits for nothing")
 	h.SetCombat(false)
 	h.flush()
 	equal(h.counts.SetUserWaypoint or 0, 0, label .. ": nor starts once combat ends")
@@ -4015,10 +4046,10 @@ for _, spf in ipairs({ false, "v1" }) do
 	h = Load(spf)
 	ns = h.ns
 	equal(ns.StartRoute(), true, label .. ": Guide's Go guides")
-	equal(ns.Integrations.Owns(), true, label .. ": ours")
+	equal(ns.Guidance.Owns(), true, label .. ": ours")
 	ns.SetSetting("wanderer", true)
 	h.flush()
-	equal(ns.Integrations.Owns(), false, label .. ": wandering stops it")
+	equal(ns.Guidance.Owns(), false, label .. ": wandering stops it")
 	equal(ns.Prefs().guided, nil, label .. ": and forgets it")
 	clean(h, label .. ": turned on")
 end

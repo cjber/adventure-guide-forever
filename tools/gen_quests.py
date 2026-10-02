@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate conservative Classic quest recommendations for Forever (stdlib only).
+"""Generate Forever's route geometry (Data/Geometry.lua) and a test-only Classic quest corpus (stdlib only).
 
 CMaNGOS prerequisite semantics: positive PrevQuestId requires completion; negative
 requires an active parent and is deliberately unsupported. NextQuestId contributes
@@ -22,6 +22,7 @@ import sys
 import urllib.error
 import urllib.request
 from collections import Counter, defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 
 BUILD = "1.60.1.69913"
@@ -224,12 +225,12 @@ def parse_values(text):
     raise ValueError("Truncated SQL VALUES")
 
 
-def read_tables(lines, required=TABLES):
+def read_tables(lines):
     columns, tables, current = {}, defaultdict(list), None
     for line in lines:
         create = re.match(r"CREATE TABLE `(\w+)`", line)
         if create:
-            current = create[1] if create[1] in required else None
+            current = create[1] if create[1] in TABLES else None
             if current:
                 columns[current] = []
         elif current and (column := re.match(r"\s+`([^`]+)`", line)):
@@ -238,11 +239,11 @@ def read_tables(lines, required=TABLES):
             current = None
         elif insert := re.match(r"INSERT INTO `(\w+)` VALUES ", line):
             table = insert[1]
-            if table in required:
+            if table in TABLES:
                 for values in parse_values(line[insert.end() :]):
                     tables[table].append(dict(zip(columns[table], values, strict=True)))
-    if required - tables.keys():
-        raise ValueError(f"Missing SQL tables: {sorted(required - tables.keys())}")
+    if TABLES - tables.keys():
+        raise ValueError(f"Missing SQL tables: {sorted(TABLES - tables.keys())}")
     return tables
 
 
@@ -465,7 +466,6 @@ NAME_REACH = 150  # yards from a town's nearest giver to the flight master that 
 # Copied from shortest-path-forever/tools/gen_transit.py RESTRICTED_NODES: Nighthaven is druid-only, and the
 # Plaguewood towers' flights depend on PvP control, so neither is a town's flight master for every player.
 RESTRICTED_NODES = {62, 63, 84, 85, 86, 87}
-# What `flight_masters` reads.
 UIMAP_WORLD, UIMAP_ZONE = 1, 3  # UiMap.Type: a world map, a zone map
 TAXI_SIDES = 3  # TaxiNodes.Flags side bits: 1 Alliance, 2 Horde
 TAXI_COLUMNS = ("ID", "Name_lang", "ContinentID", "Pos_0", "Pos_1", "Flags", "ConditionID", "VisibilityConditionID")
@@ -667,8 +667,7 @@ def homes(locations, quests, areas):
 def pick(spawn, zone_maps, home, area_at):
     """Prefer an established quest/home zone; resolve an unhinted overlap by area, never rectangle size."""
     options = spawn["options"]
-    homes_ = home if isinstance(home, set) else {home}
-    known = next((o for o in options if o[2] in zone_maps), None) or next((o for o in options if o[2] in homes_), None)
+    known = next((o for o in options if o[2] in zone_maps), None) or next((o for o in options if o[2] == home), None)
     if known is None:
         candidates = {o[2] for o in options}
         if len(candidates) > 1:
@@ -676,16 +675,12 @@ def pick(spawn, zone_maps, home, area_at):
         if len(candidates) != 1:
             return None
         known = next((o for o in options if o[2] in candidates), None)
-    if known is None:
-        return None
     _, _, ui_map, (x, y) = known
     return {"map": ui_map, "x": round(x, 4), "y": round(y, 4), "name": spawn["name"]}
 
 
-def choose(options, zone_maps, home=None):
-    """Of `options_at`'s maps: the quest's own zone first, then `home` (one map, or a set of them), then the
-    smallest."""
-    homes = home if isinstance(home, set) else {home}
+def choose(options, zone_maps, homes):
+    """Of `options_at`'s maps: the quest's own zone first, then one of `homes` (a set of maps), then the smallest."""
     return (
         next((o for o in options if o[2] in zone_maps), None)
         or next((o for o in options if o[2] in homes), None)
@@ -1199,36 +1194,39 @@ def overlays(ui_maps, map_art, overlay_rows, area_rows):
     return result
 
 
-def generate(
+@dataclass
+class Generated:
+    quests: dict
+    zones: dict
+    instances: dict
+    centres: dict
+    shifts: dict
+    ferries: list
+    towns: dict
+    npcs: dict
+    lookups: dict
+    explorable: dict
+    counts: Counter
+
+
+def emit_quests(
     tables,
-    ui_maps,
-    assignments,
     valid_ids,
-    path_nodes,
-    taxi_nodes,
-    area_rows,
-    map_rows,
-    faction_rows,
-    effects,
-    skill_lines,
-    reputations,
-    map_art,
-    overlay_rows,
-    legacy_rows,
-    source_options_,
+    world,
+    areas,
+    area_at,
+    legacy,
+    skill_names,
+    faction_names,
+    instance_of,
+    instances,
+    locations,
+    role,
 ):
-    maps, world, areas = map_indexes(ui_maps, assignments)
-    area_at = SpawnAreas(map_rows, area_rows, areas, source_options_)
-    legacy = legacy_maps(legacy_rows, areas)
-    skill_names, faction_names = gate_names(skill_lines, reputations)
-    instance_of, instances = instance_index(area_rows, map_rows)
-    locations = places(tables, world)
     quests = {r["entry"]: r for r in tables["quest_template"]}
     home = homes(locations, quests, areas)
     incoming, groups = prerequisite_index(quests)
     seasonal = {r["quest"] for r in tables["game_event_quest"]}
-    steps, spells = skill_steps(effects, skill_lines), trainer_spells(tables)
-    role = roles(tables, steps, spells)
     trains = {("creature", entry): fields["class"] for entry, fields in role.items() if "class" in fields}
     explores = {r["quest"] for r in tables["areatrigger_involvedrelation"]}
     shapes = quest_shapes(tables)
@@ -1357,10 +1355,18 @@ def generate(
         if flags := quest_flags(row, qid in explores):
             quest["flags"] = flags
         emitted[qid] = quest
+    return emitted, counts
+
+
+def zones_and_centres(maps, assignments, emitted, counts):
     zones = {m: {"name": maps[m]["Name_lang"], "min": low, "max": high} for m, (low, high) in sorted(PUBLISHED.items())}
     wanted = {q[k]["map"] for q in emitted.values() for k in ("start", "finish") if k in q} | zones.keys()
     centres = geometry(assignments, wanted, {m: row["Name_lang"] for m, row in maps.items()})
     counts["maps without a centre"] = len(wanted - centres.keys())
+    return zones, centres
+
+
+def place_towns(emitted, centres, taxi_nodes, counts):
     points = {}
     for quest in emitted.values():
         for place in (quest[k] for k in ("start", "finish") if k in quest):
@@ -1378,7 +1384,6 @@ def generate(
             grid[continent, math.floor(x / LINK), math.floor(y / LINK)].append((x, y, hub))
             votes[hub][ui_map] += 1
     town_maps = {hub: sorted(counter, key=lambda m: (-counter[m], m)) for hub, counter in votes.items()}
-    npcs = role_npcs(tables, world, faction_rows, role, grid, town_maps, centres.keys(), counts, area_at)
     names = defaultdict(set)
     for quest in emitted.values():
         for place in (quest[k] for k in ("start", "finish") if "hub" in quest.get(k, {})):
@@ -1388,10 +1393,18 @@ def generate(
     counts["widest town hub (yards)"] = round(max(diameter(members) for _, members in hubs))
     towns = hub_names(hubs, flight_masters(taxi_nodes))
     counts["named town hubs"] = len(towns)
+    return towns, grid, town_maps
+
+
+def transport_routes(ui_maps, assignments, centres, tables, path_nodes, taxi_nodes, counts):
     shifts = continents(ui_maps, assignments, {c["continent"] for c in centres.values()})
     counts["continents off the world map"] = len({c["continent"] for c in centres.values()} - shifts.keys())
     ferries = crossings(tables["gameobject_template"], path_nodes, taxi_nodes, shifts.keys())
     counts["ocean crossings"] = len(ferries)
+    return shifts, ferries
+
+
+def named_instances(emitted, tables, instances):
     entrances = entrance_requirements(tables["areatrigger_teleport"], instances)
     used = {q["dungeon"] for q in emitted.values() if "dungeon" in q} | entrances.keys()
     named = {
@@ -1403,6 +1416,10 @@ def generate(
             named[instance]["lfg"] = DUNGEON_LFG[instance]
     for instance, requirements_ in entrances.items():
         named[instance]["entrances"] = requirements_
+    return named
+
+
+def quest_lookups(emitted, skill_names, faction_names, npcs, steps, spells, skill_lines, counts):
     skills = {q["skill"]["id"] for q in emitted.values() if "skill" in q}
     factions = {q["rep"]["faction"] for q in emitted.values() if "rep" in q}
     lookups = {
@@ -1410,10 +1427,72 @@ def generate(
         "factions": {f: {"name": faction_names[f]} for f in factions},
         "professions": professions(npcs, steps, spells, skill_lines, counts),
     }
+    return lookups
+
+
+def generate(
+    tables,
+    *,
+    ui_maps,
+    assignments,
+    valid_ids,
+    path_nodes,
+    taxi_nodes,
+    area_rows,
+    map_rows,
+    faction_rows,
+    effects,
+    skill_lines,
+    reputations,
+    map_art,
+    overlay_rows,
+    legacy_rows,
+    source_options_,
+):
+    maps, world, areas = map_indexes(ui_maps, assignments)
+    area_at = SpawnAreas(map_rows, area_rows, areas, source_options_)
+    legacy = legacy_maps(legacy_rows, areas)
+    skill_names, faction_names = gate_names(skill_lines, reputations)
+    instance_of, instances = instance_index(area_rows, map_rows)
+    locations = places(tables, world)
+    steps, spells = skill_steps(effects, skill_lines), trainer_spells(tables)
+    role = roles(tables, steps, spells)
+    emitted, counts = emit_quests(
+        tables,
+        valid_ids,
+        world,
+        areas,
+        area_at,
+        legacy,
+        skill_names,
+        faction_names,
+        instance_of,
+        instances,
+        locations,
+        role,
+    )
+    zones, centres = zones_and_centres(maps, assignments, emitted, counts)
+    towns, grid, town_maps = place_towns(emitted, centres, taxi_nodes, counts)
+    npcs = role_npcs(tables, world, faction_rows, role, grid, town_maps, centres.keys(), counts, area_at)
+    shifts, ferries = transport_routes(ui_maps, assignments, centres, tables, path_nodes, taxi_nodes, counts)
+    named = named_instances(emitted, tables, instances)
+    lookups = quest_lookups(emitted, skill_names, faction_names, npcs, steps, spells, skill_lines, counts)
     explorable = overlays(ui_maps, map_art, overlay_rows, area_rows)
     counts["explorable areas"] = sum(map(len, explorable.values()))
     counts["zone maps with explorable areas"] = len(explorable)
-    return emitted, zones, named, centres, shifts, ferries, towns, npcs, lookups, explorable, counts
+    return Generated(
+        quests=emitted,
+        zones=zones,
+        instances=named,
+        centres=centres,
+        shifts=shifts,
+        ferries=ferries,
+        towns=towns,
+        npcs=npcs,
+        lookups=lookups,
+        explorable=explorable,
+        counts=counts,
+    )
 
 
 def lua(value):
@@ -1431,9 +1510,9 @@ def lua(value):
     return str(value)
 
 
-def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, lookups, explorable):
+def render(data):
     lines = [
-        "-- Generated by tools/gen_quests.py — do not edit.",
+        "-- Generated by tools/gen_quests.py: do not edit.",
         f"-- CMaNGOS classic-db (GPL-3.0), pinned: {CLASSICDB_URL}",
         "-- wago.tools UiMap, UiMapAssignment, QuestV2, TaxiPathNode, TaxiNodes, AreaTable, Map, FactionTemplate,",
         "-- SpellEffect, SkillLine, Faction, UiMapXMapArt, WorldMapOverlay:",
@@ -1441,41 +1520,18 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, look
         "-- Pinned client WDT/ADT terrain area IDs disambiguate unhinted outdoor giver maps.",
         f"-- wago.tools WorldMapArea at {LEGACY_MAP_BUILD}, the last build with it (quest_poi's mapAreaId).",
         f"-- Published zone ranges (tweaks-forever/tools/gen_zonelevels.py): {ZONE_SOURCE}",
-        "-- Prev > 0: completed; Prev < 0: unknown, no pickup. NextQuestId contributes reverse prerequisites.",
-        "-- Positive exclusive groups close siblings; negative predecessor groups expand to pre (all completed).",
-        "-- NextQuestInChain is display-only. Complex alternatives and unsupported gates have no start.",
-        "-- Item starters and spawns without zone-level coordinates have no start.",
         f"-- hub: the town a start or finish stands in, by single linkage at {LINK} yd, split again past {CAP} yd.",
         f"-- hubs: a town's name is its flight master's (TaxiNodes) within {NAME_REACH} yd of a giver; no other name.",
-        "-- npc: a creature giver's entry, the ID in its UnitGUID; an object giver has none.",
         "-- npcs: class, pet, riding and profession trainers, battlemasters and innkeepers (creature_template",
         "-- NpcFlags, TrainerType, npc_trainer, battlemaster_entry); ranks: each SKILL_STEP spell taught of a",
         "-- SkillLine profession or secondary skill (SpellEffect); side: every side FactionTemplate.EnemyGroup is",
         "-- not hostile to; place: a non-seasonal spawn, as quest givers'. Within",
         f"-- {LINK} yd of a quest place: its hub, on the map most of the hub's places use; else the smallest map.",
         "-- No side or zone-map spawn: left out.",
-        "-- skill, rep: RequiredSkill/Value and RequiredMin/MaxRep, as Player::SatisfyQuestSkill and",
-        "-- SatisfyQuestReputation check them; skills and factions: the names of those a quest here needs.",
+        "-- skills and factions: the names of those a quest needs.",
         "-- professions: each skill line a trainer here teaches, its ranks' npc_trainer reqlevel and reqskillvalue.",
-        "-- trainer: a class quest's giver who trains a class (creature_template TrainerClass): that class.",
-        "-- breadcrumb: BreadcrumbForQuestId, the quest a breadcrumb leads to; it is open only while that is neither",
-        "-- completed nor in the log, and has no start when that is not in QuestV2.",
-        "-- dungeon: the instance a quest's ZoneOrSort area lies in (AreaTable, Map InstanceType); raid: filed in a",
-        f"-- raid, or of Type {' or '.join(map(str, RAID_TYPES))} (a raid's quest wherever it is filed).",
         "-- overlays: a zone map's explorable areas (WorldMapOverlay with a texture, one per offset; AreaTable name",
         "-- and ExplorationLevel, never 0); ox, oy: the offset GetExploredMapTextures returns; x, y: nearness only.",
-        "-- need: each objective's count by quest_poi objIndex slot (0-3 ReqCreatureOrGOCount, 4-7 ReqItemCount,",
-        "-- 16 an areatrigger_involvedrelation explore), leaving out the item SrcItemId gives; never for a dungeon's.",
-        "-- obj: where each is done, as { slot, x, y, r[, map] }: x, y in thousandths of the map (the quest's zone",
-        "-- unless given), r the yards holding 80% of the source. The source is Blizzard's quest_poi shape: its",
-        "-- vertex mean when that lies inside it, else its nearest vertex. With no shape, the biggest groups of the",
-        "-- objective's spawns in its quest's zone (the creature, its KillCredit, the object, or what drops the item",
-        f"-- at {MIN_DROP}%+), linked at {SPAWN_LINK} yd: each group's medoid, a real spawn. At most {AREAS} per",
-        "-- objective; none for a dungeon quest; objIndex 9-13 (meaning unknown) is left out.",
-        "-- xp: a start's full XP, as the core's Quest::XPValue: RewMoneyMaxLevel / 0.6 rounded up (the dump has no",
-        "-- RewXP), for level 1-60 only.",
-        "-- flags: event, a script completes it: an escort, a cast, a fight (SpecialFlags 2 without an area trigger);",
-        "-- timed, the seconds it allows (LimitTime).",
         "---@type string, AGFNamespace",
         "local _, ns = ...",
         "---@type AGFData",
@@ -1484,9 +1540,10 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, look
         "ns.Data = {",
         f"\tbuild = {lua(BUILD)},",
         f'\tsource = "CMaNGOS classic-db {CLASSICDB_COMMIT}; wago.tools {BUILD}",',
+        f"\ttownLink = {LINK},",
         "\tzones = {",
     ]
-    lines.extend(f"\t\t[{qid}] = {lua(zone)}," for qid, zone in sorted(zones.items()))
+    lines.extend(f"\t\t[{qid}] = {lua(zone)}," for qid, zone in sorted(data.zones.items()))
     lines.extend(
         [
             "\t},",
@@ -1495,27 +1552,27 @@ def render(quests, zones, instances, centres, shifts, ferries, towns, npcs, look
             "\tinstances = {",
         ]
     )
-    lines.extend(f"\t\t[{map_id}] = {lua(instance)}," for map_id, instance in sorted(instances.items()))
+    lines.extend(f"\t\t[{map_id}] = {lua(instance)}," for map_id, instance in sorted(data.instances.items()))
     lines.extend(["\t},", "\tmaps = {"])
-    lines.extend(f"\t\t[{ui_map}] = {lua(centre)}," for ui_map, centre in sorted(centres.items()))
+    lines.extend(f"\t\t[{ui_map}] = {lua(centre)}," for ui_map, centre in sorted(data.centres.items()))
     lines.extend(["\t},", "\tcontinents = {"])
-    lines.extend(f"\t\t[{continent}] = {lua(shift)}," for continent, shift in sorted(shifts.items()))
+    lines.extend(f"\t\t[{continent}] = {lua(shift)}," for continent, shift in sorted(data.shifts.items()))
     lines.extend(["\t},", "\tcrossings = {"])
-    lines.extend(f"\t\t{lua(ferry)}," for ferry in ferries)
+    lines.extend(f"\t\t{lua(ferry)}," for ferry in data.ferries)
     lines.extend(["\t},", "\thubs = {"])
-    lines.extend(f"\t\t[{hub}] = {lua(town)}," for hub, town in sorted(towns.items()))
+    lines.extend(f"\t\t[{hub}] = {lua(town)}," for hub, town in sorted(data.towns.items()))
     lines.extend(["\t},", "\tnpcs = {"])
-    lines.extend(f"\t\t[{entry}] = {lua(npc)}," for entry, npc in sorted(npcs.items()))
+    lines.extend(f"\t\t[{entry}] = {lua(npc)}," for entry, npc in sorted(data.npcs.items()))
     for name in ("skills", "factions", "professions"):
         lines.extend(["\t},", f"\t{name} = {{"])
-        lines.extend(f"\t\t[{key}] = {lua(value)}," for key, value in sorted(lookups[name].items()))
+        lines.extend(f"\t\t[{key}] = {lua(value)}," for key, value in sorted(data.lookups[name].items()))
     lines.extend(["\t},", "\toverlays = {"])
-    for ui_map, entries in sorted(explorable.items()):
+    for ui_map, entries in sorted(data.explorable.items()):
         lines.append(f"\t\t[{ui_map}] = {{")
         lines.extend(f"\t\t\t{lua(entry)}," for entry in entries)
         lines.append("\t\t},")
     lines.extend(["\t},", "\ttownAnchors = {"])
-    lines.extend(f"\t\t{lua(anchor)}," for anchor in town_anchors(quests))
+    lines.extend(f"\t\t{lua(anchor)}," for anchor in town_anchors(data.quests))
     return "\n".join(lines + ["\t},", "}", ""])
 
 
@@ -1537,10 +1594,34 @@ def town_anchors(quests):
 def render_quests(quests):
     """The test-only quest corpus (tests/fixtures/quests.lua): the model fixture, never shipped."""
     header = [
-        "-- Generated by tools/gen_quests.py — do not edit.",
+        "-- Generated by tools/gen_quests.py: do not edit.",
         f"-- CMaNGOS classic-db (GPL-3.0), pinned: {CLASSICDB_URL}",
         "-- Test-only quest corpus: the model fixture and the test harness's QuestieDB mirror source.",
         "-- NOT shipped in the addon; in game, quest records come from the installed QuestieDB (QuestieSource.lua).",
+        "-- Prev > 0: completed; Prev < 0: unknown, no pickup. NextQuestId contributes reverse prerequisites.",
+        "-- Positive exclusive groups close siblings; negative predecessor groups expand to pre (all completed).",
+        "-- NextQuestInChain is display-only. Complex alternatives and unsupported gates have no start.",
+        "-- Item starters and spawns without zone-level coordinates have no start.",
+        "-- npc: a creature giver's entry, the ID in its UnitGUID; an object giver has none.",
+        "-- skill, rep: RequiredSkill/Value and RequiredMin/MaxRep, as Player::SatisfyQuestSkill and",
+        "-- SatisfyQuestReputation check them.",
+        "-- trainer: a class quest's giver who trains a class (creature_template TrainerClass): that class.",
+        "-- breadcrumb: BreadcrumbForQuestId, the quest a breadcrumb leads to; it is open only while that is neither",
+        "-- completed nor in the log, and has no start when that is not in QuestV2.",
+        "-- dungeon: the instance a quest's ZoneOrSort area lies in (AreaTable, Map InstanceType); raid: filed in a",
+        f"-- raid, or of Type {' or '.join(map(str, RAID_TYPES))} (a raid's quest wherever it is filed).",
+        "-- need: each objective's count by quest_poi objIndex slot (0-3 ReqCreatureOrGOCount, 4-7 ReqItemCount,",
+        "-- 16 an areatrigger_involvedrelation explore), leaving out the item SrcItemId gives; never for a dungeon's.",
+        "-- obj: where each is done, as { slot, x, y, r[, map] }: x, y in thousandths of the map (the quest's zone",
+        "-- unless given), r the yards holding 80% of the source. The source is Blizzard's quest_poi shape: its",
+        "-- vertex mean when that lies inside it, else its nearest vertex. With no shape, the biggest groups of the",
+        "-- objective's spawns in its quest's zone (the creature, its KillCredit, the object, or what drops the item",
+        f"-- at {MIN_DROP}%+), linked at {SPAWN_LINK} yd: each group's medoid, a real spawn. At most {AREAS} per",
+        "-- objective; none for a dungeon quest; objIndex 9-13 (meaning unknown) is left out.",
+        "-- xp: a start's full XP, as the core's Quest::XPValue: RewMoneyMaxLevel / 0.6 rounded up (the dump has no",
+        "-- RewXP), for level 1-60 only.",
+        "-- flags: event, a script completes it: an escort, a cast, a fight (SpecialFlags 2 without an area trigger);",
+        "-- timed, the seconds it allows (LimitTime).",
         "-- stylua: ignore",
         "local quests = {",
     ]
@@ -1570,49 +1651,50 @@ def main():
     content = download(CLASSICDB_URL, f"classicdb-{CLASSICDB_COMMIT[:7]}.sql.gz", **options)
     with gzip.open(io.BytesIO(content), "rt", encoding="utf-8") as dump:
         tables = read_tables(dump)
-    quests, zones, instances, centres, shifts, ferries, towns, npcs, lookups, explorable, counts = generate(
+    data = generate(
         tables,
-        db2("UiMap", ("ID", "Name_lang", "Type"), **options),
-        db2("UiMapAssignment", ("ID", "UiMapID", "MapID", "AreaID", "Region_0", "Region_5", "UiMin_0"), **options),
-        {int(r["ID"]) for r in db2("QuestV2", ("ID",), **options)},
-        db2("TaxiPathNode", ("PathID", "NodeIndex", "ContinentID", "Loc_0", "Loc_1", "Delay"), **options),
-        db2("TaxiNodes", TAXI_COLUMNS, **options),
-        db2(
+        ui_maps=db2("UiMap", ("ID", "Name_lang", "Type"), **options),
+        assignments=db2(
+            "UiMapAssignment", ("ID", "UiMapID", "MapID", "AreaID", "Region_0", "Region_5", "UiMin_0"), **options
+        ),
+        valid_ids={int(r["ID"]) for r in db2("QuestV2", ("ID",), **options)},
+        path_nodes=db2("TaxiPathNode", ("PathID", "NodeIndex", "ContinentID", "Loc_0", "Loc_1", "Delay"), **options),
+        taxi_nodes=db2("TaxiNodes", TAXI_COLUMNS, **options),
+        area_rows=db2(
             "AreaTable",
             ("ID", "ContinentID", "AreaName_lang", "ExplorationLevel", "ParentAreaID", "Flags_0"),
             **options,
         ),
-        db2("Map", ("ID", "MapName_lang", "InstanceType", "WdtFileDataID"), **options),
-        db2("FactionTemplate", ("ID", "EnemyGroup"), **options),
-        db2("SpellEffect", ("SpellID", "Effect", "EffectMiscValue_0", "EffectBasePointsF"), **options),
-        db2("SkillLine", ("ID", "CategoryID", "DisplayName_lang"), **options),
-        db2("Faction", ("ID", "Name_lang", "ReputationIndex"), **options),
-        db2("UiMapXMapArt", ("UiMapID", "UiMapArtID", "PhaseID"), **options),
-        db2(
+        map_rows=db2("Map", ("ID", "MapName_lang", "InstanceType", "WdtFileDataID"), **options),
+        faction_rows=db2("FactionTemplate", ("ID", "EnemyGroup"), **options),
+        effects=db2("SpellEffect", ("SpellID", "Effect", "EffectMiscValue_0", "EffectBasePointsF"), **options),
+        skill_lines=db2("SkillLine", ("ID", "CategoryID", "DisplayName_lang"), **options),
+        reputations=db2("Faction", ("ID", "Name_lang", "ReputationIndex"), **options),
+        map_art=db2("UiMapXMapArt", ("UiMapID", "UiMapArtID", "PhaseID"), **options),
+        overlay_rows=db2(
             "WorldMapOverlay",
             ("ID", "UiMapArtID", "TextureWidth", "TextureHeight", "OffsetX", "OffsetY", "PlayerConditionID")
             + ("HitRectTop", "HitRectBottom", "HitRectLeft", "HitRectRight", "AreaID_0"),
             **options,
         ),
-        db2("WorldMapArea", ("ID", "AreaID"), build=LEGACY_MAP_BUILD, **options),
-        options,
+        legacy_rows=db2("WorldMapArea", ("ID", "AreaID"), build=LEGACY_MAP_BUILD, **options),
+        source_options_=options,
     )
-    if not quests or not counts["with start"]:
+    if not data.quests or not data.counts["with start"]:
         raise ValueError("No usable quests; leaving existing output untouched")
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     FIXTURE.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(
-        render(quests, zones, instances, centres, shifts, ferries, towns, npcs, lookups, explorable), encoding="utf-8"
-    )
-    FIXTURE.write_text(render_quests(quests), encoding="utf-8")
-    for name, count in sorted(counts.items()):
+    OUTPUT.write_text(render(data), encoding="utf-8")
+    FIXTURE.write_text(render_quests(data.quests), encoding="utf-8")
+    for name, count in sorted(data.counts.items()):
         print(f"{name}: {count}")
     print(
-        f"Wrote {len(zones)} zones, {len(centres)} map centres, {len(npcs)} NPCs and {len(town_anchors(quests))} town "
+        f"Wrote {len(data.zones)} zones, {len(data.centres)} map centres, {len(data.npcs)} NPCs and "
+        f"{len(town_anchors(data.quests))} town "
         f"anchors: {OUTPUT.relative_to(ROOT)} ({OUTPUT.stat().st_size:,} bytes)"
     )
     print(
-        f"Wrote the test-only {len(quests)}-quest corpus: {FIXTURE.relative_to(ROOT)} "
+        f"Wrote the test-only {len(data.quests)}-quest corpus: {FIXTURE.relative_to(ROOT)} "
         f"({FIXTURE.stat().st_size:,} bytes)"
     )
 

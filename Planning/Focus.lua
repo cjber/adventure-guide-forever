@@ -57,7 +57,7 @@ local function Here(route)
 	if not (first and first.here and first.objectives) then
 		return nil
 	end
-	local log = ns.State.Log()
+	local log = ns.Snapshot().log
 	local quests, seen = {}, {}
 	for _, objective in ipairs(first.objectives) do
 		local entry = log[objective.id]
@@ -73,8 +73,9 @@ end
 ---@type string?
 local area
 
--- Before Integrations' own listener, so a selection cleared on walking out is gone before the route is handed on.
-ns.OnRouteChange(function()
+-- Run by Guidance on each route change, before it hands the route on, so a selection cleared on walking out is gone
+-- by then.
+function Focus.Sync()
 	local prefs = ns.Prefs()
 	local state = { area = area, quest = prefs.focus }
 	local set = Focus.Next(state, Here(ns.Route()), C_SuperTrack.GetSuperTrackedQuestID(), ns.Setting("followQuest"))
@@ -82,4 +83,4 @@ ns.OnRouteChange(function()
 	if set then
 		C_SuperTrack.SetSuperTrackedQuestID(set)
 	end
-end)
+end

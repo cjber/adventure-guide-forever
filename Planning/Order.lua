@@ -84,7 +84,7 @@ function Order.Merge(steps, keys, cap, log)
 				for parent in pairs(edges[index]) do
 					ready = ready and used[parent] == true
 				end
-				local value = priority[step.orderKey or step.key] or (#keys + index)
+				local value = priority[ns.Model.Visit(step)] or (#keys + index)
 				if ready and (not best or value < rank) then
 					best, rank = index, value
 				end
@@ -98,26 +98,6 @@ function Order.Merge(steps, keys, cap, log)
 		occupied = After(steps[best], occupied)
 	end
 	return result
-end
-
-function Order.Apply(route, prefs)
-	if not prefs.customOrders or not next(prefs.customOrders) then
-		return
-	end
-	local player, log = ns.State.Player(), ns.State.Log()
-	for _, card in ipairs(route.journeys) do
-		local keys = prefs.customOrders[card.key]
-		if keys then
-			card.steps = Order.Merge(card.steps, keys, player.logMax, log)
-			local here = ns.Model.Here(ns.Data, player, card.steps)
-			for index, step in ipairs(card.steps) do
-				step.here = index == 1 and here == 1 or nil
-			end
-		end
-		if route.journey == card.key then
-			route.steps = card.steps
-		end
-	end
 end
 
 local function Moved(steps, from, to)
@@ -146,17 +126,13 @@ function Order.CanMove(from, to)
 		return false
 	end
 	local moved = Moved(route.steps, from, to)
-	return moved ~= nil and Order.Valid(moved, ns.State.Player().logMax, ns.State.Log())
+	local world = ns.Snapshot()
+	return moved ~= nil and Order.Valid(moved, world.player.logMax, world.log)
 end
 
 local function Changed()
-	local guiding = ns.Prefs().guided == ns.Prefs().journey and ns.Integrations.Owns()
 	ns.Invalidate()
-	if guiding then
-		C_Timer.After(0, function()
-			ns.StartRoute()
-		end)
-	end
+	ns.Guidance.Reroute()
 end
 
 function Order.Move(from, to)
@@ -167,7 +143,8 @@ function Order.Move(from, to)
 	local moved = assert(Moved(route.steps, from, to))
 	local keys, present = {}, {}
 	for _, step in ipairs(moved) do
-		keys[#keys + 1], present[step.orderKey or step.key] = step.orderKey or step.key, true
+		local visit = ns.Model.Visit(step)
+		keys[#keys + 1], present[visit] = visit, true
 	end
 	for _, key in ipairs(prefs.customOrders and prefs.customOrders[route.journey] or {}) do
 		if not present[key] then
@@ -193,31 +170,19 @@ function Order.Reset()
 	if prefs.customOrders then
 		prefs.customOrders[route.journey] = nil
 	end
-	if route.orders then
-		route.orders[route.journey] = nil
-	end
+	ns.Shown.Forget(route.journey)
 	Changed()
 end
 
-function Order.SkippedQuests(seen)
-	local quests, skipped = {}, ns.Prefs().skipped
-	for key, ids in pairs(skippedQuests) do
-		if skipped[key] then
-			if seen then
-				seen[key] = true
-			end
-			for _, id in ipairs(ids) do
-				quests[id] = true
-			end
-		else
+-- The quests of each giver still skipped, by skipped key: no build offers them (Shown.Build hands them to the planner).
+function Order.SkippedQuests()
+	local skipped = ns.Prefs().skipped
+	for key in pairs(skippedQuests) do
+		if not skipped[key] then
 			skippedQuests[key] = nil
 		end
 	end
-	return quests
-end
-
-function Order.IsGiverSkipped(stepKey, giverKey)
-	return ns.Prefs().skipped["giver:" .. stepKey .. ":" .. giverKey] == true
+	return skippedQuests
 end
 
 function Order.SkipGiver(stepKey, giverKey)
@@ -225,8 +190,7 @@ function Order.SkipGiver(stepKey, giverKey)
 		if step.key == stepKey then
 			for _, giver in ipairs(step.checklist or {}) do
 				if giver.key == giverKey and not giver.done then
-					local visit = step.orderKey or stepKey
-					local key = "giver:" .. visit .. ":" .. giverKey
+					local key = ns.Model.GiverSkip(step, giverKey)
 					local ids = {}
 					for _, id in ipairs(giver.pickups) do
 						ids[#ids + 1] = id

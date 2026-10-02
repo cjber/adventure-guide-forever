@@ -73,19 +73,6 @@ function QuestMapFrame_ShowQuestDetails(questID) end
 ---@type integer
 OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 3
 
--- Blizzard_Menu's root description, as handed to a DropdownButton's SetupMenu generator.
----@class AGFMenu
----@field CreateCheckbox fun(self: AGFMenu, text: string, isSelected: (fun(): boolean), setSelected: fun()): AGFMenuElement
----@field CreateButton fun(self: AGFMenu, text: string, onClick?: fun()): AGFMenu a submenu's own description when it has no onClick
-
--- One entry's description; IsEnabled calls a function each time the open menu polls it (Blizzard_Menu/Menu.lua).
----@class AGFMenuElement
----@field SetEnabled fun(self: AGFMenuElement, isEnabled: boolean|fun(): boolean)
-
----@class AGFDropdown : Frame
----@field GenerateMenu fun(self: AGFDropdown)
----@field SetupMenu fun(self: AGFDropdown, generator: fun(owner: AGFDropdown, root: AGFMenu))
-
 -- ScrollFrameTemplate: ScrollFrame_OnLoad attaches a MinimalScrollBar as ScrollBar.
 ---@class AGFScrollFrame : ScrollFrame
 ---@field ScrollBar Frame
@@ -97,7 +84,6 @@ OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 3
 ---@field displayMode any
 
 ---@class AGFQuestMapFrame : Frame
----@field TabButtons AGFTabButton[]
 ---@field ContentFrames AGFQuestContentFrame[]
 ---@field QuestsTab Button
 ---@field MapLegendTab Button
@@ -117,8 +103,6 @@ QUESTS_LABEL = nil
 
 ---@class AGFMapProvider
 ---@field GetMap fun(self: AGFMapProvider): AGFWorldMapFrame
----@field OnAdded fun(self: AGFMapProvider, map: AGFWorldMapFrame)
----@field OnRemoved fun(self: AGFMapProvider, map: AGFWorldMapFrame)
 ---@field RefreshAllData fun(self: AGFMapProvider, fromOnShow?: boolean)
 ---@field RemoveAllData fun(self: AGFMapProvider)
 ---@type AGFMapProvider
@@ -126,8 +110,6 @@ MapCanvasDataProviderMixin = nil
 
 ---@class AGFMapPinMixin : Frame
 ---@field GetMap fun(self: AGFMapPinMixin): AGFWorldMapFrame
----@field OnLoad fun(self: AGFMapPinMixin)
----@field OnReleased fun(self: AGFMapPinMixin)
 ---@field UseFrameLevelType fun(self: AGFMapPinMixin, frameLevelType: string)
 ---@field SetPosition fun(self: AGFMapPinMixin, x: number, y: number)
 ---@field SetScalingLimits fun(self: AGFMapPinMixin, style: number, minScale: number, maxScale: number)
@@ -144,7 +126,6 @@ MapCanvasPinMixin = nil
 ---@field AcquirePin fun(self: AGFWorldMapFrame, template: string, ...: any): AGFPinFrame
 ---@field RemoveAllPinsByTemplate fun(self: AGFWorldMapFrame, template: string)
 ---@field EnumeratePinsByTemplate fun(self: AGFWorldMapFrame, template: string): fun(): AGFPinFrame?
----@field GetCanvas fun(self: AGFWorldMapFrame): Frame
 ---@type AGFWorldMapFrame
 WorldMapFrame = nil
 
@@ -186,7 +167,7 @@ UiMapPoint = nil
 ---@type {API: table?}? read only through Integrations.lua SPF(), which checks it against AGFSPFAPI
 ShortestPathForever = nil
 
----@type {API: table?}? read only through Integrations.Training(), which checks it against AGFTFAPI
+---@type {API: table?}? read through Integrations.lua and Providers.lua, each checking it against AGFTFAPI
 TweaksForever = nil
 
 ---@class AGFSettingsSetting
@@ -261,13 +242,8 @@ function PanelTemplates_SetTab(frame, id) end
 ---@type string[]
 UISpecialFrames = nil
 
----@type {SetModuleContainer: fun(self: any, module: ObjectiveTrackerModuleTemplate, container: Frame), GetContainerForModule: fun(self: any, module: ObjectiveTrackerModuleTemplate): Frame?, AddContainer: fun(self: any, container: Frame)}
-ObjectiveTrackerManager = nil
 ---@type Frame
 ObjectiveTrackerFrame = nil
-
----@type {CreateContextMenu: fun(parent: Frame, initializer: fun(owner: any, root: any))}
-MenuUtil = nil
 
 -- AGF's own named frames (CreateFrame names in Panel.lua and Tracker.lua); nil until they are built.
 ---@type Frame?
@@ -318,15 +294,6 @@ TooltipDataProcessor = nil
 ---@return AGFMajorFactionProgressionInfo?
 function C_MajorFactions.GetMajorFactionProgressionInfo(majorFactionID) end
 
--- SharedUIPanelTemplates.lua; these functions operate on the stock PanelTabButtonTemplate.
----@param tab Button
-function PanelTemplates_SelectTab(tab) end
----@param tab Button
-function PanelTemplates_DeselectTab(tab) end
----@param tab Button
----@param padding number
-function PanelTemplates_TabResize(tab, padding) end
-
 ---@type AGFWindowFrame?
 AdventureGuideForeverWindow = nil
 
@@ -346,3 +313,6 @@ AdventureGuideForeverWindow = nil
 -- AtlasLoot Classic/Era and Forever 1.1.2 expose the same runtime ItemDB layout.
 ---@type { ItemDB: {Get: fun(self: table, module: string): table?}, Locales: table<string, string> }?
 AtlasLoot = nil
+
+---@type table<integer, {r: number, g: number, b: number, hex: string, color: ColorMixin}>
+ITEM_QUALITY_COLORS = nil

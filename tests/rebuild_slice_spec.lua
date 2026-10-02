@@ -17,11 +17,11 @@ end
 -- The build is sliced: one frame starts it without finishing it, and the route is unchanged until the commit frame.
 do
 	local h = Load()
+	local previous = h.ns.Route()
 	h.ns.Invalidate()
 	assert(h.ns.Rebuilding(), "the build is in flight before its first frame")
 	assert(h.tick() >= 1, "the first slice ran")
 	assert(h.ns.Rebuilding(), "the build is still sliced after one frame")
-	local previous = h.ns.Route()
 	assert(h.ns.Route() == previous, "a partial build is not visible: the route is unchanged mid-flight")
 	h.flush()
 	assert(not h.ns.Rebuilding(), "the build settled")

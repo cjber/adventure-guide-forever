@@ -19,7 +19,7 @@ local function atObjectives()
 	h.MovePlayer(1413, 0.64, 0.46)
 	h.ns.Invalidate()
 	h.flush()
-	assert(h.ns.Integrations.CurrentStep().key == "area:887:0", "active guidance targets the objective area")
+	assert(h.ns.Guidance.CurrentStep().key == "area:887:0", "active guidance targets the objective area")
 	assert(h.spfRoute.stops[1].hold == true, "objective interaction holds its destination")
 	assert(h.spfRoute.stops[1].radius >= 30, "objective arrival carries its area radius to SPF")
 	return h
@@ -37,19 +37,17 @@ for _, action in ipairs({ "complete", "abandon" }) do
 	h.fire("QUEST_LOG_UPDATE")
 	h.flush()
 	assert(h.spf.NavigateRoute == before + 1, action .. ": replaces the held route once")
-	assert(h.ns.Integrations.CurrentStep().key ~= "area:887:0", action .. ": no longer directs back to cleared work")
+	assert(h.ns.Guidance.CurrentStep().key ~= "area:887:0", action .. ": no longer directs back to cleared work")
 	assert(#h.errors == 0, table.concat(h.errors, "\n"))
 end
 
 local h = atObjectives()
 for _, kind in ipairs({ "trainer", "battlemaster", "explore" }) do
 	local step = { kind = kind, title = kind, map = 1413, x = 0.5, y = 0.5, quests = {}, handins = {} }
-	assert(h.ns.Integrations.Restore({ step }), "can navigate to " .. kind)
+	assert(h.ns.Integrations.Hand({ step }, true), "can navigate to " .. kind)
 	assert(h.spfRoute.stops[1].hold == false, kind .. ": proximity can finish a non-quest stop")
 end
 assert(#h.errors == 0, table.concat(h.errors, "\n"))
-print("held_guidance_spec: completed/abandoned objectives replace held guidance; non-quest stops remain transient")
-
 -- Standalone map/dungeon buttons have no chosen-journey progress owner.
 for _, kind in ipairs({ "giver", "town" }) do
 	local single = harness.load({ spf = "ended" })
@@ -63,7 +61,8 @@ for _, kind in ipairs({ "giver", "town" }) do
 		quests = { 844 },
 		handins = {},
 	}
-	assert(single.ns.Integrations.Navigate(stop), "standalone navigation starts")
+	assert(single.ns.Guidance.Navigate(stop), "standalone navigation starts")
 	assert(single.spfRoute.stops[1].hold == false, "standalone navigation must still finish on arrival")
 	assert(single.ns.Prefs().guided == nil, "standalone destination is not owned by a chosen journey")
 end
+print("held_guidance_spec: completed/abandoned objectives replace held guidance; non-quest stops remain transient")

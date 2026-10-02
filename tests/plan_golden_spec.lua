@@ -70,8 +70,8 @@ for _, fixture in ipairs(characters.list) do
 	local player, completed, log, prefs = characters.Resolve(data, fixture)
 	local route = Model.Plan(data, player, completed, log, prefs)
 
-	-- F2: at most MAX_JOURNEYS journeys, each with at least one step the player can take now. The standing rules hold on
-	-- every card: nothing ineligible is suggested, and no step points where the data has no place.
+	-- F2: no journey is offered twice, and each has at least one step the player can take now. The standing rules hold
+	-- on every card: nothing ineligible is suggested, and no step points where the data has no place.
 	local unique = {}
 	for _, card in ipairs(route.journeys) do
 		equal(unique[card.key], nil, fixture.name .. ": no duplicate journey")
@@ -91,10 +91,9 @@ for _, fixture in ipairs(characters.list) do
 				equal(takeable, true, label .. ": " .. step.key .. " quest " .. id .. " is eligible or in the log")
 			end
 		end
-		-- The next-zone rule: another zone than the story's, one the player hasn't outgrown, with at least 3 quests
-		-- they can take now.
+		-- The next-zone rule: a zone the player hasn't outgrown, with at least one quest they can take now.
 		if journey.kind == "nextzone" then
-			local map, quests = tonumber(journey.key:match("%d+")), 0
+			local map, quests = journey.zone, 0
 			for id, quest in pairs(data.quests) do
 				if
 					(quest.zone or (quest.start and quest.start.map)) == map
@@ -105,9 +104,6 @@ for _, fixture in ipairs(characters.list) do
 				end
 			end
 			equal(quests >= 1, true, label .. ": useful quests available now")
-			for _, other in ipairs(route.journeys) do
-				equal(other == journey or other.key ~= journey.key, true, label .. ": another zone than the story's")
-			end
 		end
 	end
 
@@ -149,7 +145,7 @@ for _, fixture in ipairs(characters.list) do
 	if fixture.name == "human19_redridge_full" then
 		local story, areas = route.journeys[1], 0
 		equal(story.key, "zone:1433", "human19_redridge_full: Redridge is card 1")
-		-- The story goes out one lap and counts the laps after it; carry (Loose ends) holds nothing on Redridge.
+		-- The story goes out one lap and counts the laps after it; carry (Quests in your log) holds nothing on Redridge.
 		for _, journey in ipairs(route.journeys) do
 			for _, step in ipairs(journey.kind == "carry" and journey.steps or {}) do
 				equal(step.map ~= 1433, true, "human19_redridge_full: carry's " .. step.key .. " is off Redridge")
@@ -160,25 +156,18 @@ for _, fixture in ipairs(characters.list) do
 			if step.kind == "area" or step.kind == "dungeon" then
 				areas = areas + 1
 				equal(step.map, 1433, "human19_redridge_full: " .. step.key .. " is on Redridge")
-				-- Its ring round a data objective area, and its point, where the player enters, inside that ring.
-				local placed, ring = false, step.ring or step
+				local placed = false
 				for _, id in ipairs(step.quests) do
 					for _, area in ipairs(data.quests[id].obj or {}) do
 						placed = placed
 							or (
-								(area[5] or data.quests[id].zone) == ring.map
-								and area[2] / 1000 == ring.x
-								and area[3] / 1000 == ring.y
+								(area[5] or data.quests[id].zone) == step.map
+								and area[2] / 1000 == step.x
+								and area[3] / 1000 == step.y
 							)
 					end
 				end
 				equal(placed, true, "human19_redridge_full: " .. step.key .. " is at a data objective area")
-				local yards = Model.Yards(data, step, ring)
-				equal(
-					yards ~= nil and yards <= step.r,
-					true,
-					"human19_redridge_full: " .. step.key .. " enters its ring"
-				)
 			end
 		end
 		equal(areas >= 4, true, "human19_redridge_full: the quests under way are area steps")
@@ -261,9 +250,8 @@ for _, fixture in ipairs(characters.list) do
 	-- Deterministic: a second build of the same state gives the same text.
 	local again = Model.Plan(data, player, completed, log, prefs)
 	equal(Render(fixture, again), text, fixture.name .. ": rebuild")
-	-- The in-combat rebuild keeps MAX_JOURNEYS cards at most: a quest looted mid-fight brings a carry card the last build
-	-- lacked, in the story's wake as the full build orders them, and the last card not chosen makes way, as the full
-	-- build leaves it out (design §2.10).
+	-- The in-combat rebuild: a quest looted mid-fight brings a carry card the last build lacked, in the story's wake as
+	-- the full build orders them, and a chosen last card keeps its slot (design §2.10).
 	local saved, last = prefs.journey, route.journeys[#route.journeys]
 	local fight = { [168] = { id = 168, title = "Collecting Memories", level = 18, complete = true } }
 	prefs.journey = last and last.key

@@ -1,3 +1,6 @@
+-- Run from the repository root: luajit tests/regression_spec.lua
+-- One test per defect that crossed features: town offers, guidance, the tracker, PvP progress, skips, custom order,
+-- session members and sounds.
 local harness = dofile("tests/harness.lua")
 local characters = dofile("tests/fixtures/characters.lua")
 local checks, failures = 0, {}
@@ -23,7 +26,7 @@ local function fixture(ns, name)
 	error("Missing fixture: " .. name)
 end
 
-test("B1 rejected town offers", function()
+test("rejected town offers", function()
 	local ns = harness.load({}).ns
 	local player, completed, log, prefs = fixture(ns, "human18_redridge")
 	local route = ns.Model.Plan(ns.Data, player, completed, log, prefs)
@@ -42,45 +45,7 @@ test("B1 rejected town offers", function()
 	end
 end)
 
-test("A1 reload preserves the committed return", function()
-	local h = harness.load({})
-	local ns = h.ns
-	local player, completed, log, prefs = fixture(ns, "human18_redridge")
-	local data = {}
-	for key, value in pairs(ns.Data) do
-		data[key] = value
-	end
-	data.quests = { [3741] = ns.Data.quests[3741] }
-	ns.Prefs = function()
-		return prefs
-	end
-	ns.State.Player = function()
-		return player
-	end
-	ns.State.Where = function()
-		return player.map, player.x, player.y
-	end
-	prefs.sessionMinutes = 15
-	local before = ns.Model.Plan(data, player, completed, log, prefs)
-	eq(#ns.Session.Apply(before).steps, 3, "pickup, work and return fit")
-	log[3741] = {
-		id = 3741,
-		title = "Hilary's Necklace",
-		level = 15,
-		complete = false,
-		objectives = { { type = "item", numFulfilled = 0, numRequired = 1, finished = false, text = "Necklace" } },
-	}
-	local warm = ns.Model.Plan(data, player, completed, log, prefs, nil, nil, before)
-	eq(#ns.Session.Apply(warm).steps, 2, "accepted pickup leaves work and return")
-	-- A fresh Model has neither a previous route nor planner caches, as after /reload.
-	assert(loadfile("Planning/Model.lua"))("AdventureGuideForever", ns)
-	local cold = ns.Model.Plan(data, player, completed, log, prefs)
-	local limited = ns.Session.Apply(cold)
-	eq(#limited.steps, 2, "reload retains work and return")
-	eq(limited.steps[2].orderKey, before.steps[3].orderKey, "return identity survives reload")
-end)
-
-test("A2 independent guidance survives an empty session", function()
+test("independent guidance survives an empty session", function()
 	for _, spf in ipairs({ false, "ended" }) do
 		local h = harness.load({
 			spf = spf or nil,
@@ -92,15 +57,15 @@ test("A2 independent guidance survives an empty session", function()
 			entrances = { [36] = { map = 1436, x = 0.42, y = 0.71 } },
 		})
 		eq(h.ns.Session.Info().empty, true, "empty limited session")
-		eq(h.ns.Providers.GoToEntrance(36), true, "entrance guidance starts")
+		eq(h.ns.Dungeons.GoEntrance(36), true, "entrance guidance starts")
 		h.fire("QUEST_LOG_UPDATE")
 		h.flush()
-		eq(h.ns.Integrations.Owns(), true, "unrelated destination remains owned")
+		eq(h.ns.Guidance.Owns(), true, "unrelated destination remains owned")
 		eq(#h.errors, 0, "no event errors")
 	end
 end)
 
-test("A3 guidance resolves the live step", function()
+test("guidance resolves the live step", function()
 	local h = harness.load({ spf = "ended" })
 	local ns = h.ns
 	local function town(count)
@@ -133,17 +98,17 @@ test("A3 guidance resolves the live step", function()
 	end
 	ns.Choose("test", true)
 	h.flush()
-	local sent = ns.Integrations.CurrentStep()
+	local sent = ns.Guidance.CurrentStep()
 	eq(sent, live, "initial snapshot")
 	live = town(1)
 	h.fire("QUEST_LOG_UPDATE")
 	h.flush()
-	eq(ns.Integrations.CurrentStep(), live, "SPF index resolves to the live route object")
+	eq(ns.Guidance.CurrentStep(), live, "SPF index resolves to the live route object")
 	eq(h.tracker.liveBlocks[live.key].header, live.title, "tracker uses the refreshed title")
 	eq(#h.errors, 0, "no refresh errors")
 end)
 
-test("A3b town tracker does not duplicate detailed giver rows", function()
+test("town tracker does not duplicate detailed giver rows", function()
 	local h = harness.load({ spf = "ended" })
 	local step = {
 		key = "town:details",
@@ -161,7 +126,7 @@ test("A3b town tracker does not duplicate detailed giver rows", function()
 	h.ns.Integrations.Guiding = function()
 		return false
 	end
-	h.ns.Integrations.CurrentStep = function()
+	h.ns.Guidance.CurrentStep = function()
 		return step
 	end
 	h.ns.Integrations.Travel = function() end
@@ -185,7 +150,7 @@ test("A3b town tracker does not duplicate detailed giver rows", function()
 	eq(block.lines[1], step.reason, "meaningful story reason remains beside the checklist")
 end)
 
-test("A4 PvP progress refreshes with unchanged rewards", function()
+test("PvP progress refreshes with unchanged rewards", function()
 	local h = harness.load({
 		rank = {
 			info = { renownLevel = 3, renownReputationEarned = 1200, renownLevelThreshold = 3000, maxLevel = 14 },
@@ -219,7 +184,7 @@ test("A4 PvP progress refreshes with unchanged rewards", function()
 	end
 end)
 
-test("B2 skipped giver can be shown again", function()
+test("skipped giver can be shown again", function()
 	local h = harness.load({
 		charDB = { journey = "zone:1413" },
 		completed = { 844 },
@@ -233,10 +198,8 @@ test("B2 skipped giver can be shown again", function()
 	eq(#ns.Skipped(), 1, "skip is visible in Show again")
 	ns.Unskip(ns.Skipped()[1].key)
 	h.flush()
-	eq(ns.Order.IsGiverSkipped(town.orderKey, giver.key), false, "Show again clears giver skip")
-	for _, id in ipairs(giver.pickups) do
-		eq(ns.Order.SkippedQuests()[id], nil, "Show again restores pickup eligibility")
-	end
+	eq(ns.Prefs().skipped[ns.Model.GiverSkip(town, giver.key)], nil, "Show again clears giver skip")
+	eq(next(ns.Order.SkippedQuests()), nil, "Show again restores pickup eligibility")
 	eq(#ns.Skipped(), 0, "skip menu cleared")
 	town = ns.Route().steps[1]
 	local checkedHandin = false
@@ -261,29 +224,26 @@ test("B2 skipped giver can be shown again", function()
 	eq(checkedHandin, true, "fixture has a hand-in giver")
 end)
 
-test("B3 rebuilds preserve absent custom positions", function()
+test("rebuilds preserve absent custom positions", function()
 	local ns = harness.load({}).ns
 	local keys = { "b", "a", "c" }
-	local prefs = { customOrders = { test = keys } }
 	local function apply(names)
 		local steps = {}
 		for _, key in ipairs(names) do
 			steps[#steps + 1] = { key = key, kind = "trainer", quests = {} }
 		end
-		local route = { journey = "test", journeys = { { key = "test", steps = steps } } }
-		ns.Order.Apply(route, prefs)
 		local result = {}
-		for _, step in ipairs(route.steps) do
+		for _, step in ipairs(ns.Order.Merge(steps, keys)) do
 			result[#result + 1] = step.key
 		end
 		return table.concat(result, ",")
 	end
 	eq(apply({ "a", "c", "new1", "new2" }), "a,c,new1,new2", "absent step omitted")
 	eq(apply({ "a", "b", "c", "new2", "new1" }), "b,a,c,new2,new1", "returning priority and fresh suggested order")
-	eq(prefs.customOrders.test, keys, "rebuild does not write preferences")
+	eq(table.concat(keys, ","), "b,a,c", "rebuild does not write preferences")
 end)
 
-test("B4 malformed session members are rejected", function()
+test("malformed session members are rejected", function()
 	for _, members in ipairs({ 1, true, "bad", { ["town:349"] = 1 }, { ["town:349"] = "bad" } }) do
 		local h = harness.load({
 			charDB = {
@@ -307,7 +267,7 @@ test("B4 malformed session members are rejected", function()
 	end
 end)
 
-test("B5 story-end sound follows the documented fanfare", function()
+test("story-end sound follows the documented fanfare", function()
 	local h = harness.load({})
 	local ns = h.ns
 	local last
@@ -328,7 +288,7 @@ test("B5 story-end sound follows the documented fanfare", function()
 	eq(#h.sounds, 1, "ordinary step sounds remain suppressed")
 end)
 
-test("B8 shared quest and faction helpers", function()
+test("shared quest and faction helpers", function()
 	local ns = harness.load({}).ns
 	eq(ns.Model.HasBit(1, 0), false, "unknown faction cannot match a restricted NPC")
 	eq(ns.Model.HasBit(0, 0), true, "neutral NPC needs no faction")
@@ -339,7 +299,7 @@ test("B8 shared quest and faction helpers", function()
 	eq(#ns.Model.Handins({ kind = "area", quests = { 1 } }), 0, "objective work is not a hand-in")
 end)
 
-test("B9 town counts omit zeros", function()
+test("town counts omit zeros", function()
 	local ns = harness.load({}).ns
 	local town = { kind = "town", place = "Town", quests = { 1, 2 }, pickups = { 1, 2 }, handins = {} }
 	ns.Model.StepTitle({ quests = {} }, {}, town)
@@ -350,4 +310,4 @@ test("B9 town counts omit zeros", function()
 end)
 
 assert(#failures == 0, table.concat(failures, "\n"))
-print(("review_spec: %d checks passed"):format(checks))
+print(("regression_spec: %d checks passed"):format(checks))

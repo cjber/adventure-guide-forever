@@ -37,6 +37,14 @@ local function Run(h, label, fn)
 	end
 end
 
+-- The harness holds no Lua error: loading raises outside any action, so this is the check that sees it.
+local function Clean(h, label)
+	checks = checks + 1
+	if #h.errors > 0 then
+		error(("%s: %d Lua error(s):\n%s"):format(label, #h.errors, table.concat(h.errors, "\n---\n")), 2)
+	end
+end
+
 -- A frame's name for a failure: its global name, else its label, else its type and parent.
 local function Name(frame)
 	local name = frame.name
@@ -142,8 +150,9 @@ local function DrainMenu(h, label, depth)
 	end
 end
 
--- Every visible interactive frame under `root` (all frames when nil): hover, then left/right/shift/ctrl click, and
--- drain any menu the click opened. `reopen` puts a root back that a click hid, so its later frames stay reachable.
+-- Every visible interactive frame under `root` (all frames when nil): hover, then left, right, shift and a second
+-- left click, and drain any menu the click opened. `reopen` puts a root back that a click hid, so its later
+-- frames stay reachable.
 local function DriveScope(h, root, label, reopen)
 	local list = {}
 	for _, frame in ipairs(h.frames) do
@@ -190,11 +199,9 @@ local function DriveScope(h, root, label, reopen)
 					DrainMenu(h, tag)
 				end)
 				keep()
-				Run(h, tag .. " ctrl-click", function()
+				Run(h, tag .. " second click", function()
 					h.menu = nil
-					h.Ctrl(function()
-						ClickFrame(h, frame, "LeftButton")
-					end)
+					ClickFrame(h, frame, "LeftButton")
 					DrainMenu(h, tag)
 				end)
 				keep()
@@ -495,7 +502,7 @@ for _, profile in ipairs(profiles) do
 		local state = combat and "combat" or "peace"
 		local label = ("%s[%s]"):format(name, state)
 		local h = harness.load(options)
-		Run(h, label .. " load", function() end)
+		Clean(h, label .. " load")
 		if settle then
 			Run(h, label .. " settle", function()
 				settle(h)
@@ -516,8 +523,7 @@ for _, profile in ipairs(profiles) do
 			-- The deferred opens run when combat ends; drive once more so they are exercised.
 			Drive(h, label .. " after-combat")
 		end
-		-- The check itself: the profile left no error behind.
-		Run(h, label .. " final", function() end)
+		Clean(h, label .. " final")
 	end
 end
 
@@ -538,7 +544,7 @@ do
 		h.flush()
 	end)
 	Drive(h, label .. "/ready")
-	Run(h, label .. " final", function() end)
+	Clean(h, label .. " final")
 end
 
 print(

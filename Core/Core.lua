@@ -20,11 +20,11 @@ local DEFAULTS = {
 	titleStartsRoute = true,
 	-- Start the route the guide is offering without a click, so the map line is drawn on login and after a reload.
 	autoStart = true,
-	-- Opt-in (roadmap #17): the route never takes over the player's tracked quests unasked. A saved true stays true.
+	-- Opt-in: the route never takes over the player's tracked quests unasked. A saved true stays true.
 	trackRouteQuests = false,
 	-- Opt-in: it throws away the player's own choice of tracked quests.
 	untrackOthers = false,
-	-- Roadmap #24: hint strength, Guide (false) or Wanderer (true), which gates every waypoint, route and map mark.
+	-- Hint strength, Guide (false) or Wanderer (true), which gates every waypoint, route and map mark.
 	wanderer = false,
 	-- Walking into the quest area the route leads to selects its quest, so the map draws its blue area (Focus.lua).
 	followQuest = true,
@@ -44,7 +44,7 @@ local PREFS_DEFAULTS = {
 	plannedDungeons = {},
 	quests = true,
 	dungeons = false,
-	-- Opt-in (roadmap #12): the Battlegrounds card.
+	-- Opt-in: the Battlegrounds card.
 	battlegrounds = false,
 	notInterested = {},
 	-- Quests added to the route with a shift-click: quest ID -> true.
@@ -115,6 +115,13 @@ local function LoadCharDB()
 	for id, value in pairs(loaded.pinned) do
 		if type(id) ~= "number" or value ~= true then
 			loaded.pinned[id] = nil
+		end
+	end
+	-- Asides turned down: key -> the text Show again names it by. Asides.lua makes the table; anything else in it would
+	-- reach the Skipped menu's sort as a title.
+	for key, text in pairs(type(loaded.asides) == "table" and loaded.asides or {}) do
+		if type(key) ~= "string" or type(text) ~= "string" then
+			loaded.asides[key] = nil
 		end
 	end
 	-- The zone picked in the old "Where next?" cards: nothing offers that choice any more, so none is kept.
@@ -226,7 +233,7 @@ function ns.SetSetting(key, value)
 	end
 	-- Wandering from now: what Go started stops, as the player's Stop would.
 	if key == "wanderer" and value then
-		ns.Integrations.Cancel()
+		ns.Guidance.Cancel()
 	end
 	-- Rebuilds the route (cheap) and wakes listeners (Panel/Pins/Tracker) to redraw with the new setting.
 	ns.Invalidate()
@@ -270,7 +277,7 @@ function ns.Skip(key, title)
 	ns.Invalidate()
 end
 
--- "Not interested" (roadmap #17): the journey `key` is left out on this character until Show again, and a choice of it
+-- "Not interested": the journey `key` is left out on this character until Show again, and a choice of it
 -- ends, as a click on its card would; Show again chooses it again, after a /reload too.
 ---@param key string
 ---@param title string
@@ -440,6 +447,10 @@ end
 ---@type AGFRoute
 local cachedRoute = { journeys = {}, chosen = false, steps = {} }
 local rawRoute = cachedRoute
+-- The player, completed quests and log the cached route was planned from (ns.Snapshot); nil while no build stands
+-- behind the route (completion data not loaded, QuestieDB's catalogue still building).
+---@type AGFSnapshot?
+local snapshot
 local dirty = true
 local pendingRebuild = false
 -- The rebuild coroutine (see StepRebuild): nil when no build is in flight. `invalidations` counts ns.Invalidate
@@ -457,15 +468,11 @@ afterCombat:SetScript("OnEvent", function(self)
 	ns.Invalidate()
 end)
 
--- The spells to train the last full build took (roadmap #5), asked of Tweaks Forever only while a journey is chosen,
+-- The spells to train the last full build took, asked of Tweaks Forever only while a journey is chosen,
 -- the only route that stops to train; combat's cheap rebuild keeps them, as Tweaks Forever has no answer in a fight.
 ---@type AGFTraining?
 local training
-local trained = false
 local trainingEndedBySpell = false
----@type table<integer, AGFLogQuest>
-local buildLog = {}
-
 -- In combat only the cheap rebuild runs (the log's steps; the rest as the last full build left them), and the full
 -- one waits for PLAYER_REGEN_ENABLED: looting a quest item mid-fight must not cost a frame.
 local function BuildRoute()
@@ -476,33 +483,39 @@ local function BuildRoute()
 	if ns.Geometry and ns.Geometry.EnsureNative then
 		ns.Geometry.EnsureNative()
 	end
-	local state, prefs, player = ns.State, ns.Prefs(), ns.State.Player()
-	buildLog = state.Log()
-	if InCombatLockdown() then
-		trained = false
+	local state, prefs, player, combat = ns.State, ns.Prefs(), ns.State.Player(), InCombatLockdown()
+	local log, trained = state.Log(), false
+	if combat then
 		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
-		player.train = training
-		return ns.Model.Refresh(ns.Data, player, state.Completed(), buildLog, prefs, rawRoute, state.MapName)
-	end
-	local previous, known = training, false
-	if prefs.journey then
-		training, known = ns.Integrations.Training()
 	else
-		training = nil
+		local previous, known = training, false
+		if prefs.journey then
+			training, known = ns.Integrations.Training()
+		else
+			training = nil
+		end
+		trained = trainingEndedBySpell and previous ~= nil and known and training == nil
+		trainingEndedBySpell = false
 	end
-	trained = trainingEndedBySpell and previous ~= nil and known and training == nil
-	trainingEndedBySpell = false
 	player.train = training
-	return ns.Model.Plan(
-		ns.Data,
-		player,
-		state.Completed(),
-		buildLog,
-		prefs,
-		state.MapName,
-		state.InstanceName,
-		rawRoute
-	)
+	---@type AGFSnapshot
+	local world = { player = player, completed = state.Completed(), log = log }
+	local shown, full = ns.Shown.Build({
+		data = ns.Data,
+		player = player,
+		completed = world.completed,
+		log = log,
+		prefs = prefs,
+		mapName = state.MapName,
+		instanceName = state.InstanceName,
+		last = rawRoute,
+		combat = combat,
+		-- The step sound hears the whole route, before the session trims it.
+		observe = function(ordered)
+			ns.Sound.Observe(cachedRoute, ordered, world, trained)
+		end,
+	})
+	return shown, full, world
 end
 
 -- The "you're here" head (docs/design.md §4.2): the route is rebuilt on events, never as the player moves, save that
@@ -599,75 +612,17 @@ function ns.Resume(step)
 	return resume and resume.key == step.key and resume.reason or nil
 end
 
--- A quest was handed in since the last full build: a chosen journey that ends there was completed, not abandoned.
-local turnedIn = false
-
--- QUEST_TURNED_IN, from State.lua: latched for the ending below, then the chapter-end fanfare.
----@param questID integer
-function ns.TurnedIn(questID)
-	turnedIn = true
-	if ns.OnTurnIn then
-		ns.OnTurnIn(questID)
-	end
-end
-
--- The chosen journey's key a filter hides (Quests, Dungeons or Battlegrounds off in the cog): the player's own toggle
--- can bring it back, so the choice is kept. With no next zone (roadmap #21) Dungeons hides nothing, so a dungeon that
--- went ended.
----@param key string
----@param prefs AGFPrefs
----@param route AGFRoute
----@return boolean
-local function Filtered(key, prefs, route)
-	return (key:find("^dungeon:") ~= nil and not prefs.dungeons and not route.stranded)
-		or ((key:find("^zone:") ~= nil or key:find("^chain:") ~= nil or key == "calling") and not prefs.quests)
-		or (key:find("^battleground:") ~= nil and not prefs.battlegrounds)
-end
-
-local pendingStart = false
--- The player pressed Stop: a journey the autoStart (below) would otherwise start itself stays off until they choose one
--- again. Session-scoped, like the route it stops.
-local autoStartBlocked = false
-
--- A chosen journey the full build no longer has ends (docs/design.md §2.10): its route stops, and the choice is
--- cleared, so the cards are whole again; after a turn-in the tracker says it is complete. A filter keeps the key but
--- stops the route. Judged only on full builds: combat's cheap one keeps the last journeys.
----@param route AGFRoute
-local function Ended(route)
-	local prefs, completed = ns.Prefs(), turnedIn
-	turnedIn = false
-	-- QuestieSource starts after the first login events. Until it has settled, the empty/log-only route is
-	-- provisional; clearing a saved story here would make a reload lose the player's choice before Questie loads.
-	if ns.QuestieBuilding() then
-		return
-	end
-	local key = prefs.journey
-	if not key or route.chosen then
-		return
-	end
-	if not Filtered(key, prefs, route) then
-		prefs.journey, pendingStart = nil, false
-		if completed and ns.OnJourneyComplete then
-			ns.OnJourneyComplete()
-		end
-	end
-	if prefs.guided == key then
-		ns.Integrations.Cancel()
-	end
-end
-
--- Commits a finished full build: the plan is atomic, so Order/Sound/Session/Ended and the callers all run on the
--- frame the last slice of the rebuild finished, never on a partial route.
----@param route AGFRoute
-local function CommitRoute(route)
-	local previous = cachedRoute
-	rawRoute = route
-	ns.Order.Apply(rawRoute, ns.Prefs())
-	ns.Sound.Observe(previous, rawRoute, ns.State.Completed(), buildLog, trained)
-	cachedRoute = ns.Session.Apply(rawRoute)
+-- Commits a finished build (Shown.Build's two routes and the snapshot they were planned from): the plan is atomic,
+-- so its order, sound and session, then Guidance.Ended and the callers, all run on the frame the last slice of the
+-- rebuild finished, never on a partial route.
+---@param shown AGFRoute
+---@param full AGFRoute
+---@param world AGFSnapshot
+local function CommitRoute(shown, full, world)
+	cachedRoute, rawRoute, snapshot = shown, full, world
 	dirty = false
 	if not InCombatLockdown() then
-		Ended(rawRoute)
+		ns.Guidance.Ended(rawRoute)
 	end
 	-- A skipped step the full build no longer finds (turned in, abandoned) leaves Skipped (n): Show again would
 	-- bring nothing back.
@@ -698,19 +653,20 @@ function ns.QuestieBuilding()
 end
 
 -- The synchronous full build: ns.Route()'s lazy path, and any caller before Core's coroutine starts. One frame, no
--- slices, exactly as before the rebuild was sliced.
+-- slices.
 local function Rebuild()
 	pendingRebuild = false
 	if not ns.State.Ready() then
 		-- Completed-quest data hasn't loaded yet; an empty route beats a wrong one.
-		cachedRoute = { journeys = {}, chosen = false, steps = {} }
+		cachedRoute, snapshot = { journeys = {}, chosen = false, steps = {} }, nil
 		return
 	end
 	if ns.QuestieBuilding() then
 		-- The catalogue is still building: hold the route rather than build a log-only one that flips.
+		snapshot = nil
 		return
 	end
-	CommitRoute(BuildRoute())
+	CommitRoute(BuildRoute()) -- multi-value: the shown route, the full one and their snapshot
 end
 
 ---@return AGFRoute
@@ -721,6 +677,17 @@ function ns.Route()
 		Rebuild()
 	end
 	return cachedRoute
+end
+
+-- What ns.Route() was planned from: the one read of the player, the completed quests and the quest log its build
+-- took. A view drawing the route reads this, so it agrees with the steps it draws and walks no quest log of its own
+-- (every change to any of the three invalidates the route, so the next build brings the next snapshot). A fresh read
+-- while no build stands behind the route. Never written to; what is not the route's (the map the player is on now,
+-- another dungeon's quests) is still asked of ns.State.
+---@return AGFSnapshot
+function ns.Snapshot()
+	ns.Route()
+	return snapshot or { player = ns.State.Player(), completed = ns.State.Completed(), log = ns.State.Log() }
 end
 
 -- Whether ns.Route() answers from the committed route: false while one is due or being built, when reading it would
@@ -747,7 +714,9 @@ function ns.OnRouteChange(fn)
 	routeListeners[#routeListeners + 1] = fn
 end
 
+-- Guidance settles first (Guidance.lua), so every listener already reads the route as started, stopped or handed on.
 local function NotifyRouteChange()
+	ns.Guidance.RouteChanged()
 	for _, fn in ipairs(routeListeners) do
 		fn()
 	end
@@ -782,7 +751,7 @@ end
 local function StepRebuild()
 	if not rebuildCo then
 		-- A caller in the same frame (the map a card click turns) may have rebuilt through ns.Route() already: the
-		-- route is fresh, but the listeners still need waking, exactly as the old one-frame callback always did.
+		-- route is fresh, but the listeners still need waking.
 		if not dirty then
 			pendingRebuild = false
 			FinishRebuild()
@@ -791,7 +760,7 @@ local function StepRebuild()
 		if not ns.State.Ready() then
 			-- Completed-quest data hasn't loaded yet; an empty route beats a wrong one.
 			pendingRebuild = false
-			cachedRoute = { journeys = {}, chosen = false, steps = {} }
+			cachedRoute, snapshot = { journeys = {}, chosen = false, steps = {} }, nil
 			FinishRebuild()
 			return
 		end
@@ -799,17 +768,18 @@ local function StepRebuild()
 			-- The catalogue is still building: hold the last route (or the empty one) so the display doesn't flip to a
 			-- log-only route that changes the moment the records land (docs/design.md §2.14).
 			pendingRebuild = false
+			snapshot = nil
 			FinishRebuild()
 			return
 		end
 		flightStart = invalidations
 		rebuildCo = coroutine.create(BuildRoute)
 	end
-	local ok, route = coroutine.resume(rebuildCo)
+	local ok, shown, full, world = coroutine.resume(rebuildCo)
 	if not ok then
 		rebuildCo = nil
 		pendingRebuild = false
-		error(route, 0)
+		error(shown, 0)
 	end
 	if coroutine.status(rebuildCo) == "suspended" then
 		-- Another slice of the same build is due next frame.
@@ -817,7 +787,7 @@ local function StepRebuild()
 		return
 	end
 	rebuildCo = nil
-	CommitRoute(route)
+	CommitRoute(shown, full, world)
 	pendingRebuild = false
 	FinishRebuild()
 	-- A listener that invalidated during FinishRebuild's notify already set `pendingRebuild` and queued its own step,
@@ -852,166 +822,6 @@ end
 function ns.Rebuilding()
 	return pendingRebuild
 end
-
---[[ Choosing and starting a journey (docs/design.md §2.10): the cards, the tracker, the menus and the map's rings all
-     come through here, so every route AGF starts runs on the chosen journey, and prefs.guided records which. ]]
-
--- pendingStart (above, for the ending): a start waiting for the rebuild that has the chosen journey's steps, or for
--- combat's end. Shortest Path refuses every route in combat, and the rebuild PLAYER_REGEN_ENABLED brings (afterCombat)
--- runs it.
-
--- Chooses `key`, or none. With `start` its route starts on the rebuild that has its steps. Leaving the journey whose
--- route AGF started stops that route, unless the new choice's start replaces it; never anyone else's.
----@param key? string
----@param start? boolean
-function ns.Choose(key, start)
-	if ns.Prefs().journey ~= key then
-		ns.Prefs().sessionCommit = nil
-	end
-	local prefs = ns.Prefs()
-	local guided = prefs.guided
-	prefs.journey = key
-	-- A wanderer's choice starts nothing (StartRoute), so nothing waits for combat's end either.
-	pendingStart = key ~= nil and start == true and not ns.Setting("wanderer")
-	if guided and guided ~= key and not pendingStart then
-		ns.Integrations.Cancel()
-	end
-	ns.Invalidate()
-end
-
--- Guidance along the chosen journey from `step`, its first by default. With none chosen, the route's own journey (the
--- first card) is chosen first. With Shortest Path loaded a start in combat waits for
--- combat's end. True when something now guides the player, or the start waits.
----@param step? AGFStep
----@return boolean
-function ns.StartRoute(step)
-	local route, prefs = ns.Route(), ns.Prefs()
-	if not route.journey then
-		return false
-	end
-	if not route.chosen then
-		prefs.journey = route.journey
-		ns.Invalidate()
-	end
-	-- A wanderer (roadmap #24) chooses the journey and sets off on foot: nothing to start, now or after combat.
-	if ns.Setting("wanderer") then
-		pendingStart = false
-		return false
-	elseif ns.Session.Info().pending then
-		pendingStart = true
-		return true
-	elseif InCombatLockdown() and ns.Integrations.Provider() then
-		pendingStart = true
-		return true
-	end
-	pendingStart = false
-	step = step or route.steps[1]
-	if step and ns.Integrations.Navigate(step, true) then
-		prefs.guided = route.journey
-		return true
-	end
-	return false
-end
-
--- The player's Stop, from the footer or a step's menu: what the back arrow does while it runs, so no journey is left
--- chosen with nothing to resume it.
-function ns.Stop()
-	autoStartBlocked = true
-	ns.Integrations.Cancel()
-	ns.Choose(nil)
-end
-
--- A start is waiting for combat to end.
----@return boolean
-function ns.StartPending()
-	return pendingStart
-end
-
--- The route AGF started for the chosen journey stopped without the player's Stop: cleared in Shortest Path, replaced
--- by another journey, refused after a /reload, or its waypoint moved. It has steps, nothing of ours guides it and no
--- start is on its way, so its card and the tracker title resume it rather than clear the choice. A route that arrived
--- at its last stop is done, not paused.
----@return boolean
-function ns.Paused()
-	local route, integrations = ns.Route(), ns.Integrations
-	local key = route.journey
-	return route.chosen
-		and (ns.Prefs().guided == key or integrations.Stopped() == key)
-		and #route.steps > 0
-		and ns.Setting("titleStartsRoute")
-		and not pendingStart
-		and not integrations.Owns()
-		and not integrations.Arrived()
-end
-
--- Registered before any view's listener, so the footer already reads the route as started.
-ns.OnRouteChange(function()
-	local route = ns.Route()
-	if route.chosen and #route.steps == 0 and ns.Prefs().guided == route.journey and ns.Integrations.Owns() then
-		local waiting = ns.Session.Info().pending
-		ns.Integrations.Cancel()
-		pendingStart = pendingStart or waiting
-	end
-	if pendingStart and not InCombatLockdown() and ns.Route().chosen then
-		ns.StartRoute()
-	end
-end)
-
--- No journey chosen draws nothing (docs/design.md §2.10): however the choice went (a click, Not interested, Stop, the
--- journey ending or leaving the cards), what AGF guides stops with it. Only ours: Cancel ends Shortest Path's journey
--- by our name and the waypoint only while it sits where Go put it. Judged on full builds, as Ended is: combat's cheap
--- one can drop a card it will bring back.
-local wasChosen = false
-ns.OnRouteChange(function()
-	if InCombatLockdown() then
-		return
-	end
-	local chosen = ns.Route().chosen
-	if wasChosen and not chosen and ns.Integrations.Owns() then
-		ns.Integrations.Cancel()
-	end
-	wasChosen = chosen
-end)
-
--- Shortest Path's journeys end with the session, so a /reload or login brings back the route AGF had started for the
--- chosen journey (prefs.guided), once, on the first full build that has its steps. With autoStart (default on) a
--- journey the player has not started yet is started too, so the map route is drawn without a click. Never over someone
--- else's journey, never for a wanderer, and never once the player cleared the route themselves. The native waypoint
--- needs nothing: the client keeps it.
-local restoring = true
-ns.OnRouteChange(function()
-	if not restoring or InCombatLockdown() or not ns.State.Ready() or ns.QuestieBuilding() then
-		return
-	end
-	local prefs, route, integrations = ns.Prefs(), ns.Route(), ns.Integrations
-	-- Someone (this addon or the player) already holds the route: leave it be.
-	if integrations.Owns() then
-		restoring = false
-		return
-	end
-	-- The route AGF had started for the chosen journey comes back.
-	if prefs.guided and route.chosen and route.journey == prefs.guided then
-		if not integrations.Provider() or integrations.ReplacesJourney() then
-			restoring, prefs.guided = false, nil
-		elseif integrations.Restore(route.steps) then
-			restoring = false
-		end
-		return
-	end
-	-- Nothing to restore: start the offered journey, unless the player set off on foot, cleared this route, or nothing
-	-- can guide it (no Shortest Path, so no route line anyway).
-	restoring = false
-	if
-		ns.Setting("autoStart")
-		and not autoStartBlocked
-		and route.journey
-		and not ns.Setting("wanderer")
-		and integrations.Stopped() ~= route.journey
-		and integrations.Provider()
-	then
-		ns.StartRoute()
-	end
-end)
 
 --[[ Slash command and audit ]]
 
@@ -1065,7 +875,7 @@ SlashCmdList.ADVENTUREGUIDEFOREVER = function(msg)
 	elseif command == "tracker" then
 		ns.Print(ns.TrackerHost.Debug())
 	elseif command == "travel" then
-		ns.Print(ns.Integrations.Debug())
+		ns.Print(ns.Guidance.Debug())
 	elseif command == "" or command == "window" then
 		ns.OpenWindow()
 	else

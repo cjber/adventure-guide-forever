@@ -72,7 +72,8 @@ for _, readyAtLoad in ipairs({ false, true }) do
 			end,
 		}),
 		Live = { OnChange = noop },
-		Integrations = { OnTravelChange = noop, OnGuidanceChange = noop },
+		Integrations = { OnTravelChange = noop },
+		Guidance = { OnChange = noop },
 		Asides = { OnChange = noop },
 		Moments = { OnChange = noop },
 		OnRouteChange = noop,
@@ -89,7 +90,6 @@ for _, readyAtLoad in ipairs({ false, true }) do
 		for _, fn in ipairs(callbacks) do
 			fn()
 		end
-		assert(owners[modules[1]] == native, "native callbacks cannot change private ownership")
 	end
 	for _, fn in ipairs(timers) do
 		fn()

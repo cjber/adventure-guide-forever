@@ -28,37 +28,6 @@ local function IsFrame(objectType)
 	return objectType == "Frame"
 end
 
-local function animationGroup(owner)
-	local group = { owner = owner, animations = {}, plays = 0 }
-	function group:CreateAnimation(kind)
-		local animation = { kind = kind }
-		for _, key in ipairs({ "Duration", "Degrees", "FromAlpha", "ToAlpha", "Smoothing", "Order", "Target" }) do
-			animation["Set" .. key] = function(this, value)
-				this[key] = value
-			end
-		end
-		self.animations[#self.animations + 1] = animation
-		return animation
-	end
-	function group:SetLooping(value)
-		self.looping = value
-	end
-	function group:Play()
-		self.playing = true
-		self.plays = self.plays + 1
-	end
-	function group:Restart()
-		self:Play()
-	end
-	function group:Stop()
-		self.playing = false
-	end
-	function group:IsPlaying()
-		return self.playing == true
-	end
-	return group
-end
-
 -- A tiny reader for the addon's own XML: tags and attributes only, which is all Panel.xml uses.
 local function ParseXML(text)
 	text = text:gsub("<!%-%-.-%-%->", ""):gsub("<%?.-%?>", "")
@@ -84,10 +53,6 @@ local function ParseXML(text)
 	return root
 end
 
--- options: spf ("v1" or "v1+"; absent by default), db and charDB (saved variables), log ({id, title, level,
--- complete, map, x, y} entries), completed (quest IDs), player (overrides), initialLogin (default true), waypoint
--- (the user waypoint the client kept across a /reload, a UiMapPoint), completedPending (the client has no completed
--- quests to give until the spec sets h.completedPending to false).
 -- The test quest corpus (tests/fixtures/quests.lua). The addon no longer ships its own quest catalogue: in game,
 -- quests come from QuestieDB. The specs keep this generated corpus as their deterministic model fixture.
 -- Loaded fresh each call, never cached: specs mutate quest records, and a shared table would leak between loads.
@@ -96,8 +61,8 @@ function harness.fixtureQuests()
 	return assert(loadfile("tests/fixtures/quests.lua"))()
 end
 
--- The route geometry (shipped Data/Geometry.lua) with the test quest corpus merged in: what specs that used to
--- load Data/Quests.lua now use for the model, and the source harness.questieMirror mirrors.
+-- The shipped route geometry with the test quest corpus merged in: the model fixture and the source
+-- harness.questieMirror mirrors.
 ---@return AGFData
 function harness.data()
 	local ns = {}
@@ -107,6 +72,10 @@ function harness.data()
 	return data
 end
 
+-- options: spf ("v1" or "v1+"; absent by default), db and charDB (saved variables), log ({id, title, level,
+-- complete, map, x, y} entries), completed (quest IDs), player (overrides), initialLogin (default true), waypoint
+-- (the user waypoint the client kept across a /reload, a UiMapPoint), completedPending (the client has no completed
+-- quests to give until the spec sets h.completedPending to false).
 function harness.load(options)
 	options = options or {}
 	local G = setmetatable({}, { __index = _G })
@@ -161,7 +130,7 @@ function harness.load(options)
 
 	--[[ Regions ]]
 
-	-- Unlike harness2, an unknown method is an error, not a silent no-op, so a field test such as
+	-- An unknown method is an error, not a silent no-op, so a field test such as
 	-- `frame.Edge ~= nil` means what it says and each new client call is stubbed on purpose.
 	local Methods = {}
 	local regionMeta = { __index = Methods }
@@ -174,7 +143,6 @@ function harness.load(options)
 		"SetDontSavePosition",
 		"SetMaxLetters",
 		"SetMotionScriptsWhileDisabled",
-		"SetShadowOffset",
 		"SetToplevel",
 		"StartMoving",
 		"StopMovingOrSizing",
@@ -186,7 +154,6 @@ function harness.load(options)
 		SetBlendMode = "alphaMode",
 		SetFrameStrata = "frameStrata",
 		SetMovable = "movable",
-		SetDisabledFontObject = "disabledFont",
 		SetPushedAtlas = "pushedAtlas",
 		SetTextColor = "textColor",
 		SetClipsChildren = "clipsChildren",
@@ -412,6 +379,9 @@ function harness.load(options)
 	function Methods:GetRight()
 		return self.rect and self.rect[1] + self.rect[3]
 	end
+	function Methods:GetEffectiveScale()
+		return self.scale or 1
+	end
 	function Methods:SetScale(scale)
 		self.scale = scale
 	end
@@ -475,12 +445,6 @@ function harness.load(options)
 		text.layer, text.font = layer, font
 		return text
 	end
-	function Methods:CreateAnimationGroup()
-		local group = animationGroup(self)
-		self.animationGroups = self.animationGroups or {}
-		self.animationGroups[#self.animationGroups + 1] = group
-		return group
-	end
 	function Methods:GetVerticalScroll()
 		return self.verticalScroll or 0
 	end
@@ -495,9 +459,6 @@ function harness.load(options)
 	end
 	function Methods:EnableMouseWheel(enabled)
 		self.mouseWheelEnabled = enabled
-	end
-	function Methods:SetupMenu(generator)
-		self.menuGenerator = generator
 	end
 	function Methods:SetCustomOnMouseUpHandler(handler)
 		self.mouseUpHandler = handler
@@ -525,12 +486,6 @@ function harness.load(options)
 	end
 	function Methods:SetHighlightAtlas(atlas)
 		self.highlightAtlas = atlas
-	end
-	function Methods:Enable()
-		self.disabled = false
-	end
-	function Methods:Disable()
-		self.disabled = true
 	end
 	function Methods:SetID(id)
 		self.id = id
@@ -583,9 +538,6 @@ function harness.load(options)
 		if self.objectType == "EditBox" and self.scripts.OnTextChanged then
 			h.call(self.scripts.OnTextChanged, self, self.userInput == true)
 		end
-	end
-	function Methods:SetFormattedText(format, ...)
-		self:SetText(format:format(...))
 	end
 	function Methods:GetText()
 		if self.objectType == "EditBox" then
@@ -659,7 +611,7 @@ function harness.load(options)
 		return region
 	end
 
-	-- The tracker module's block stubs from harness2: a block records its header and objective lines.
+	-- The tracker module's block stubs: a block records its header and objective lines.
 	local function TrackerModule(module)
 		module.liveBlocks, module.layoutOrder = {}, {}
 		Internal("FontString", Internal("Frame", module, "Header"), "Text")
@@ -733,21 +685,6 @@ function harness.load(options)
 	end
 
 	local STOCK = {
-		-- Blizzard_Menu/Mainline/MenuTemplates.xml: selected radio label in the stock Text innard.
-		WowStyle1DropdownTemplate = function(frame)
-			frame:SetSize(120, 25)
-			Internal("FontString", frame, "Text")
-			function frame.GenerateMenu(self)
-				local saved = h.menu
-				local root = h.OpenMenu(self)
-				h.menu = saved
-				for _, entry in ipairs(root.entries) do
-					if entry.kind == "radio" and entry.isSelected(entry.data) then
-						self.Text:SetText(entry.text)
-					end
-				end
-			end
-		end,
 		-- Mainline/SharedUIPanelTemplates.xml:1587 and .lua:1763: the highlight is the normal art, or the pushed art
 		-- while the mouse is down.
 		AlphaHighlightButtonTemplate = function(frame)
@@ -789,7 +726,6 @@ function harness.load(options)
 			mask:SetPoint("BOTTOMRIGHT", portrait, "BOTTOMRIGHT", -2, 4)
 			portrait:AddMaskTexture(mask)
 			Internal("FontString", frame, "TitleText")
-			frame.TitleContainer = { TitleText = frame.TitleText }
 			Internal("Button", frame, "CloseButton")
 			frame.SetTitle = function(self, title)
 				self.TitleText:SetText(title)
@@ -1173,15 +1109,6 @@ function harness.load(options)
 		fn()
 		h.shift = false
 	end
-	-- Control held while `fn` runs: a ctrl-click (the addon reads no ctrl path today, so this guards the modifier).
-	G.IsControlKeyDown = function()
-		return h.ctrl == true
-	end
-	function h.Ctrl(fn)
-		h.ctrl = true
-		fn()
-		h.ctrl = false
-	end
 	-- Entering or leaving combat fires the same events the client does.
 	function h.SetCombat(on)
 		h.combat = on
@@ -1207,13 +1134,6 @@ function harness.load(options)
 	}
 	G.SlashCmdList = {}
 	-- Mainline/SharedUIPanelTemplates.lua:439-640: tab i > 1 after tab i - 1, and the selected tab disabled.
-	G.PanelTemplates_TabResize = function() end
-	G.PanelTemplates_SelectTab = function(tab)
-		tab.disabled = true
-	end
-	G.PanelTemplates_DeselectTab = function(tab)
-		tab.disabled = false
-	end
 	G.geterrorhandler = function()
 		return function(message)
 			h.errors[#h.errors + 1] = message
@@ -1230,15 +1150,11 @@ function harness.load(options)
 		for index = 1, frame.numTabs do
 			local tab = frame.Tabs[index]
 			tab.disabled = index == id
-			tab.disabledFont = index == id and "GameFontHighlightSmall" or tab.disabledFont
 		end
 	end
 	G.UISpecialFrames = {}
 	-- Key bindings: h.bindings maps a key to its action ("" when free); h.savedBindings counts SaveBindings calls.
 	h.bindings, h.savedBindings = options.bindings or {}, {}
-	G.GetBindingText = function(key)
-		return (key:gsub("SHIFT%-", "Shift-"):gsub("CTRL%-", "Ctrl-"):gsub("ALT%-", "Alt-"))
-	end
 	G.GetBindingAction = function(key)
 		return h.bindings[key] or ""
 	end
@@ -1319,11 +1235,8 @@ function harness.load(options)
 	}
 	-- Items and spells: options.items maps an item ID to {name, icon}; anything else has neither yet.
 	local items = options.items or {}
-	h.itemRequests = {}
 	G.C_Item = {
-		RequestLoadItemDataByID = function(id)
-			h.itemRequests[id] = (h.itemRequests[id] or 0) + 1
-		end,
+		RequestLoadItemDataByID = noop,
 		GetItemNameByID = function(itemID)
 			return items[itemID] and items[itemID].name
 		end,
@@ -1398,7 +1311,7 @@ function harness.load(options)
 	G.UnitClass = function()
 		return "Class", "CLASS", player.classID
 	end
-	-- Rest (roadmap #11): a spec sets player.rested (false for none: the client gives nil), player.xpMax and
+	-- Rest: a spec sets player.rested (false for none: the client gives nil), player.xpMax and
 	-- player.resting; by default the bar is half rested, so no route ends at an inn.
 	G.GetXPExhaustion = function()
 		return player.rested or nil
@@ -1493,9 +1406,8 @@ function harness.load(options)
 			end
 			return {}
 		end,
-		-- An entry's `poi` {map, x, y} is the client's point for it on that map; h.poiCalls counts the reads.
+		-- An entry's `poi` {map, x, y} is the client's point for it on that map.
 		GetQuestsOnMap = function(uiMapID)
-			h.poiCalls = (h.poiCalls or 0) + 1
 			local quests = {}
 			for _, entry in ipairs(log) do
 				if entry.poi and entry.poi.map == uiMapID then
@@ -1803,9 +1715,7 @@ function harness.load(options)
 		end
 		G.GameTooltip:Show()
 	end
-	h.flashes = 0
 	G.UIFrameFlash = function(frame, _, _, _, showWhenDone)
-		h.flashes = h.flashes + 1
 		frame.flashing, frame.showWhenDone = true, showWhenDone
 		frame:SetAlpha(0)
 		frame:Show()
@@ -1873,14 +1783,10 @@ function harness.load(options)
 			error("Blizzard_Menu.AcquireMenu can assert in Forever 70009; use the owned menu")
 		end,
 	}
-	-- Opens a DropdownButton's menu (SetupMenu) into h.menu.
+	-- Opens a menu button's menu into h.menu by clicking it.
 	function h.OpenMenu(dropdown)
 		h.menu = Description("root")
-		if dropdown.menuGenerator then
-			h.call(dropdown.menuGenerator, dropdown, h.menu)
-		else
-			h.Click(dropdown)
-		end
+		h.Click(dropdown)
 		return h.menu
 	end
 	-- "kind: text" per entry, a submenu's entries indented under it.
@@ -2080,12 +1986,6 @@ function harness.load(options)
 		end,
 		ApplyCurrentScale = noop,
 	}
-	-- The map's canvas: the 1000 x 700 frame SetPosition places pins on.
-	local canvas = NewRegion("Frame", nil, map)
-	canvas:SetSize(1000, 700)
-	function map:GetCanvas()
-		return canvas
-	end
 	G.OpenWorldMap = function(mapID)
 		map:Show()
 		if mapID then
@@ -2685,11 +2585,14 @@ function harness.load(options)
 	return h
 end
 
--- The planner alone, for the model specs: Locales/enUS.lua for ns.L, the planner's copy, then Core.lua with its
--- load-time hooks into the client stubbed, then Model.lua, all into `ns` (which may already hold the data).
+-- The planner alone: locale strings and route geometry, then Core with its client hooks stubbed,
+-- then the planner in TOC order. The namespace may already hold the data.
 ---@param ns table
 ---@return AGFModel
 function harness.model(ns)
+	if not ns.Data then
+		assert(loadfile("Data/Geometry.lua"))(ADDON, ns)
+	end
 	assert(loadfile("Locales/enUS.lua"))(ADDON, ns)
 	local core = assert(loadfile("Core/Core.lua"))
 	setfenv(
@@ -2703,13 +2606,43 @@ function harness.model(ns)
 		}, { __index = _G })
 	)
 	core(ADDON, ns)
-	assert(loadfile("Planning/Model.lua"))(ADDON, ns)
+	harness.planner(ns)
 	return ns.Model
 end
 
+-- Reload only the planner and its caches, in the same order as the client.
+---@param ns table
+function harness.planner(ns)
+	local planner = false
+	for line in io.lines("AdventureGuideForever.toc") do
+		local path = line:gsub("\\", "/")
+		if path == "Planning/Model.lua" then
+			planner = true
+		elseif path == "Planning/Order.lua" then
+			break
+		end
+		if planner then
+			assert(loadfile(path))(ADDON, ns)
+		end
+	end
+end
+
+-- The route as shown, without the UI: harness.model's files, then the player's order, the session and Shown.Build.
+-- The spec supplies the two client reads the session's own estimate makes (ns.State.RunSpeed,
+-- ns.Integrations.Provider).
+---@param ns table
+---@return AGFShown
+function harness.shown(ns)
+	harness.model(ns)
+	for _, path in ipairs({ "Planning/Order.lua", "Core/Session.lua", "Planning/Shown.lua" }) do
+		assert(loadfile(path))(ADDON, ns)
+	end
+	return ns.Shown
+end
+
 -- Whether a step stands on a point `data` has: a place the data has (keyed to 4 places), or, for an area, where the
--- player enters it: inside the ring of one of its shapes, each centred on a place the data has, with the ring's middle
--- one too (Model.lua Enter). The second return is the key a point is indexed by, for a spec's messages.
+-- player enters it: inside the ring of one of its shapes, centred on a place the data has. The second return is the
+-- key a point is indexed by, for a spec's messages.
 ---@param data AGFData
 ---@param Model AGFModel
 ---@return fun(step: AGFStep): boolean placed
@@ -2737,10 +2670,6 @@ function harness.placement(data, Model)
 	local function Placed(step)
 		if places[Key(step.map, step.x, step.y)] then
 			return true
-		end
-		local ring = step.ring
-		if not (ring and places[Key(ring.map, ring.x, ring.y)]) then
-			return false
 		end
 		for _, shape in ipairs(step.shapes or {}) do
 			local yards = Model.Yards(data, step, shape)

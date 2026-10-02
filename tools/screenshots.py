@@ -7,9 +7,9 @@ client's own art.
 WFA-9: the store and README screenshots come from this script, never from a capture. The panel is
 tests/golden/layout.json; every other scene is read from the addon by tests/scenes.lua through
 the same harness, so no AGF text or layout is retyped here. Stock templates produce no regions headlessly, so each
-one the dumps name has a recipe below citing its Blizzard XML; an unknown stockTemplate fails the run. The frames
-around the addon (the world map, the tracker, the tooltip and the menu) are wowmock's (the wow-mock-screenshots
-skill), drawn from Blizzard's own layout numbers (WFA-4: the stock look).
+one the dumps name has a recipe in screenshots_stock.py citing its Blizzard XML; an unknown stockTemplate fails the run.
+The frames around the addon (the world map, the tracker, the tooltip and the menu) are wowmock's
+(the wow-mock-screenshots skill), drawn from Blizzard's own layout numbers (WFA-4: the stock look).
 
 Art, fonts and DB2 tables come from wago.tools for BUILD and are cached under ~/.cache/wowmock. The game client is
 never started or read. Two runs give byte-identical PNGs with this environment (pip is not installed on the
@@ -23,155 +23,29 @@ machine that pinned it, so the freeze is importlib.metadata's, limited to what t
 Pillow and wowmock are imported inside the render functions only: CI runs the resolver's tests without Pillow.
 """
 
-import dataclasses
 import importlib.metadata
 import io
 import json
-import os
 import re
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
+import screenshots_art as drawing
+from screenshots_art import draw_font_string, draw_texture, fit_text, font, load_wowmock
+from screenshots_resolver import effective_scales, lua_rects, map_point, parent_path, resolve, scroll_child_anchors
+from screenshots_spf import SPF_SHA, breadcrumbs, goal_pins, map_position, spf_walks, stop_groups
+from screenshots_stock import LAYERS, button_font, draw_scroll_frame, stock
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs/screenshots"
 GOLDEN = ROOT / "tests/golden/layout.json"
-WOWMOCK = Path(os.environ["WOWMOCK"]).expanduser() if os.environ.get("WOWMOCK") else None
 PILLOW = "12.3.0"
 # Match the owner's 960 px / 800 UI-unit window. FreeType BASIC advances are pixel-hinted:
 # measuring at 2x then shrinking gives different widths and hides client wrapping/truncation.
 SCALE = 1.2
 LAYOUT_PASSES = 8
-
-# ------------------------------------------------------------------------------ anchors to rects (no Pillow)
-
-POINTS = {
-    "TOPLEFT": (0, 0),
-    "TOP": (0.5, 0),
-    "TOPRIGHT": (1, 0),
-    "LEFT": (0, 0.5),
-    "CENTER": (0.5, 0.5),
-    "RIGHT": (1, 0.5),
-    "BOTTOMLEFT": (0, 1),
-    "BOTTOM": (0.5, 1),
-    "BOTTOMRIGHT": (1, 1),
-}
-
-
-def parent_path(path):
-    return path.rsplit(".", 1)[0] if "." in path else None
-
-
-def explicit_size(entry, scale=1):
-    """The size set with SetSize/SetWidth/SetHeight; 0 is unset, as GetSize(true) reports it. `scale` is the
-    region's effective scale: its size is in its own units."""
-    width, height = entry.get("size") or (0, 0)
-    return (width * scale if width else None), (height * scale if height else None)
-
-
-def effective_scales(entries):
-    """Each region's effective scale (Frame:SetScale down the tree): what its offsets and sizes are multiplied by."""
-    own = {entry["path"]: entry.get("scale") or 1 for entry in entries}
-    scales = {}
-
-    def effective(path):
-        if path not in scales:
-            parent = parent_path(path)
-            while parent is not None and parent not in own:
-                parent = parent_path(parent)
-            scales[path] = own.get(path, 1) * (effective(parent) if parent else 1)
-        return scales[path]
-
-    for path in own:
-        effective(path)
-    return scales
-
-
-def resolve(entries, known, intrinsic=None, defaults=None):
-    """Rects {path: (left, top, width, height)} for dumped regions, in UI units with y growing downwards.
-
-    Each anchor pins one of the region's nine points to a point of another rect. Anchors on both edges of an axis
-    give that axis's extent (Panel.lua sizes its sections this way); otherwise the axis is placed by its one edge,
-    else its centre (so TOPLEFT and RIGHT leave the height alone, as BNet.xml's TopLine relies on), and the size is
-    the explicit one, else `intrinsic(entry, width)` (a font string's text, its height the lines it wraps to in the
-    width laid out, an atlas used at its size, a stock template's <Size>). `known` fixes rects the dump does not
-    hold (the stock frames the addon anchors to); `defaults(entry)` supplies anchors
-    for a region the dump shows with none (a stock template's own <Anchors>). A region with no anchors at all
-    is not drawn, as in the client, and maps to None."""
-    by_path = {entry["path"]: entry for entry in entries}
-    scales = effective_scales(entries)
-    rects = dict(known)
-    visiting = set()
-
-    def axis(constraints, explicit, fallback):
-        if 0 in constraints and 1 in constraints:
-            return constraints[0], constraints[1] - constraints[0]
-        fraction = next(f for f in (0, 1, 0.5) if f in constraints)
-        size = fallback() if explicit is None else explicit
-        return constraints[fraction] - fraction * size, size
-
-    def rect(path):
-        if path in rects:
-            return rects[path]
-        if path not in by_path:
-            raise KeyError(f"no rect for {path}: add it to the scene's known frames")
-        if path in visiting:
-            raise ValueError(f"anchor cycle through {path}")
-        visiting.add(path)
-        entry = by_path[path]
-        anchors = entry["anchors"] or (defaults(entry) if defaults else [])
-        result = None
-        horizontal, vertical = {}, {}
-        placed = True
-        for anchor in anchors:
-            relative = rect(anchor["relativeTo"])
-            if relative is None:
-                placed = False
-                break
-            fx, fy = POINTS[anchor["point"]]
-            rx, ry = POINTS[anchor["relativePoint"]]
-            left, top, width, height = relative
-            horizontal[fx] = left + rx * width + anchor["x"] * scales[path]
-            vertical[fy] = top + ry * height - anchor["y"] * scales[path]
-        if anchors and placed:
-            width, height = explicit_size(entry, scales[path])
-
-            def fallback(index, laid_width=None):
-                return (intrinsic(entry, laid_width) if intrinsic else (0, 0))[index]
-
-            left, w = axis(horizontal, width, lambda: fallback(0))
-            top, h = axis(vertical, height, lambda: fallback(1, w))
-            result = (left, top, w, h)
-        visiting.discard(path)
-        rects[path] = result
-        return result
-
-    for entry in entries:
-        rect(entry["path"])
-    return rects
-
-
-def scroll_child_anchors(entry):
-    """ScrollFrame:SetScrollChild puts the child's TOPLEFT at the scroll frame's, scrolled to the top."""
-    if entry["path"].endswith(".scrollChild"):
-        return [
-            {"point": "TOPLEFT", "relativeTo": parent_path(entry["path"]), "relativePoint": "TOPLEFT", "x": 0, "y": 0}
-        ]
-    return []
-
-
-def lua_rects(rects, widths):
-    """Rects for h.SetRects: {left, bottom, width, height} with y growing upwards, as the client's edges are, and a
-    font string's text width in the client's font fifth (its GetUnboundedStringWidth), the lines it wraps to in its
-    rect sixth (its GetNumLines)."""
-    return {
-        path: [left, -(top + height), width, height] + list(widths.get(path, ()))
-        for path, rect in rects.items()
-        if rect is not None
-        for left, top, width, height in [rect]
-    }
-
 
 # ------------------------------------------------------------------------------------- the addon, headless
 
@@ -230,384 +104,11 @@ def map_tiles(ui):
     zones = re.findall(r"^\t\[(\d+)\] = \{$", (ROOT / "Data/ZoneArt.lua").read_text(), re.M)
     tiles = {}
     for zone in zones:
-        art = wm.map_art_id(ui, int(zone))
+        art = drawing.wm.map_art_id(ui, int(zone))
         rows = [r for r in ui.table("UiMapArtTile").values() if r["UiMapArtID"] == art and r["LayerIndex"] == "0"]
         rows.sort(key=lambda r: (int(r["RowIndex"]), int(r["ColIndex"])))
         tiles[zone] = [int(r["FileDataID"]) for r in rows]
     return tiles
-
-
-# ------------------------------------------------------------------------------------------ art and fonts
-
-wm = None  # wowmock, imported by load_wowmock(): the resolver above and its tests need no Pillow.
-
-
-def load_wowmock():
-    global wm
-    if wm is None:
-        if WOWMOCK is None:
-            sys.exit("Set WOWMOCK to the directory containing wowmock.py from the wow-mock-screenshots library")
-        if not (WOWMOCK / "wowmock.py").is_file():
-            sys.exit(f"wowmock.py not found in {WOWMOCK}; set WOWMOCK to the wow-mock-screenshots skill")
-        sys.path.insert(0, str(WOWMOCK))
-        import wowmock
-
-        wm = wowmock
-        # Blizzard_Fonts_Shared/FontStyles.xml: GameFontNormalMed3 (SystemFont_Med3, shadowed) and GameFontDisable.
-        wm.FONTS.setdefault("GameFontNormalMed3", wm.Font(wm.FRIZQT, 14, wm.NORMAL, (1, -1)))
-        wm.FONTS.setdefault("GameFontDisable", wm.Font(wm.FRIZQT, 12, (0.5, 0.5, 0.5), (1, -1)))
-        # GameFontNormalMed2 is SystemFont_Shadow_Med2 (Fonts.xml: FRIZQT at 13) in gold.
-        wm.FONTS.setdefault("GameFontNormalMed2", wm.Font(wm.FRIZQT, 13, wm.NORMAL, (1, -1)))
-        # GameFontRedSmall: SystemFont_Shadow_Small (FRIZQT at 10) in RED_FONT_COLOR.
-        wm.FONTS.setdefault("GameFontRedSmall", wm.Font(wm.FRIZQT, 10, (1.0, 0.1, 0.1), (1, -1)))
-        # NumberFontNormalSmall: NumberFont_OutlineThick_Mono_Small (ARIALN at 12, outlined) in white.
-        wm.FONTS.setdefault("NumberFontNormalSmall", wm.Font(wm.ARIALN, 12, (1, 1, 1), None, True))
-        # GameFontNormalHuge: SystemFont_Huge1 (FRIZQT at 20, shadowed) in gold.
-        wm.FONTS.setdefault("GameFontNormalHuge", wm.Font(wm.FRIZQT, 20, wm.NORMAL, (1, -1)))
-    return wm
-
-
-def font(name):
-    if name not in wm.FONTS:
-        sys.exit(f"font object {name} has no wowmock Font: add it in load_wowmock()")
-    return wm.FONTS[name]
-
-
-def texture(ui, ref):
-    return ui.texture(int(ref) if isinstance(ref, (int, float)) else ref.replace("\\", "/").lower() + ".blp")
-
-
-def fit_text(canvas, text, face, width, wrap, max_lines=None):
-    """A FontString's lines in `width`: one line cut with '...' under SetWordWrap(false), else word-wrapped, the last
-    of SetMaxLines' lines cut with '...' when more would follow."""
-    if width <= 0 or canvas.text_width(text, face) <= width + 0.5:
-        return [text]
-    if wrap is False:
-        return [cut(canvas, text, face, width)]
-    lines = wm.wrap_text(canvas, text, face, width)
-    if max_lines and len(lines) > max_lines:
-        lines = lines[: max_lines - 1] + [cut(canvas, " ".join(lines[max_lines - 1 :]), face, width)]
-    return lines
-
-
-def cut(canvas, text, face, width):
-    """One line cut short with '...' to fit `width`."""
-    if canvas.text_width(text, face) <= width + 0.5:
-        return text
-    while text and canvas.text_width(text + "...", face) > width:
-        text = text[:-1]
-    return text + "..."
-
-
-# ------------------------------------------------------------------------------------ stock-template recipes
-
-LAYERS = ("BACKGROUND", "BORDER", "ARTWORK", "OVERLAY", "HIGHLIGHT")
-# Every phase a stock recipe is drawn in: the draw layers, then its text, then its frame (before the children) and
-# after the children. A recipe's `layer` is always one of these; screenshots_test.py checks the file's comparisons.
-PHASES = (*LAYERS, "TEXT", "FRAME", "AFTER")
-
-
-def input_border(canvas, x, y, w, h):
-    """InputBoxVisualTemplate (Blizzard_SharedXML/Shared/InputBox/InputBoxTemplates.xml:43): common-search-border
-    Left 8x20 at LEFT (-5, 0), Right 8x20 at RIGHT, Middle between them."""
-    ui = canvas.ui
-    top = y + (h - 20) / 2
-    canvas.draw(ui.atlas("common-search-border-left"), x - 5, top, 8, 20)
-    canvas.draw(ui.atlas("common-search-border-middle"), x + 3, top, w - 8 - 3, 20)
-    canvas.draw(ui.atlas("common-search-border-right"), x + w - 8, top, 8, 20)
-
-
-def draw_input_box(canvas, entry, rect, layer):
-    """InputBoxVisualTemplate (InputBoxTemplates.xml:43) on its own, as the step count's box."""
-    if layer == "BACKGROUND":
-        input_border(canvas, *rect)
-
-
-def draw_search_box(canvas, entry, rect, layer):
-    """SearchBoxTemplate (InputBoxTemplates.xml:206) on InputBoxInstructionsTemplate (:177): the input border, the
-    magnifier 10x10 at LEFT (1, -1); while empty the Instructions at TOPLEFT (16, 0) in GameFontDisableSmall
-    coloured .35 (InputBoxInstructions_OnTextChanged), else the text in GameFontHighlightSmall at the TextInsets'
-    left 16 and the clear button (17x17 at RIGHT (-3, 0), its icon 10x10 at TOPLEFT (3, -3), alpha .5)."""
-    ui, (x, y, w, h), text = canvas.ui, rect, entry.get("text", "")
-    if layer == "BACKGROUND":
-        input_border(canvas, x, y, w, h)
-    elif layer == "ARTWORK":
-        if text:
-            canvas.text(x + 16, y, text, font("GameFontHighlightSmall"), box_height=h)
-        else:
-            instructions = entry.get("stock", {}).get("Instructions", {}).get("text") or "Search"
-            canvas.text(x + 16, y, instructions, font("GameFontDisableSmall"), (0.35, 0.35, 0.35), box_height=h)
-    elif layer == "OVERLAY":
-        canvas.draw(ui.atlas("common-search-magnifyingglass"), x + 1, y + (h - 10) / 2 + 1, 10, 10)
-        if text:
-            button_x, button_y = x + w - 3 - 17, y + (h - 17) / 2
-            canvas.draw(ui.atlas("common-search-clearbutton"), button_x + 3, button_y + 3, 10, 10, (1, 1, 1, 0.5))
-
-
-def draw_icon_dropdown(canvas, entry, rect, layer):
-    """UIPanelIconDropdownButtonTemplate (Blizzard_SharedXML/Mainline/SharedUIPanelTemplates.xml:2312): 15x16, the
-    questlog-icon-setting cog at its atlas size at CENTER."""
-    if layer == "ARTWORK":
-        icon = canvas.ui.atlas("questlog-icon-setting")
-        x, y, w, h = rect
-        canvas.draw(icon, x + (w - icon.width) / 2, y + (h - icon.height) / 2)
-
-
-def draw_dropdown(canvas, entry, rect, layer):
-    """WowStyle1DropdownTemplate (Blizzard_Menu/Mainline/MenuTemplates.xml:3): 120x25; common-dropdown-textholder
-    from TOPLEFT (-8, 7) to BOTTOMRIGHT (8, -9) (BACKGROUND); common-dropdown-a-button at its atlas size at RIGHT
-    (1, -3), and Text (GameFontHighlight, 10 high, justifyH LEFT) from TOPLEFT (8, -8) to the arrow's LEFT (OVERLAY)."""
-    ui, (x, y, w, h) = canvas.ui, rect
-    if layer == "BACKGROUND":
-        canvas.draw(ui.atlas("common-dropdown-textholder"), x - 8, y - 7, w + 16, h + 16)
-    elif layer == "OVERLAY":
-        arrow = ui.atlas("common-dropdown-a-button")
-        ax, ay = x + w + 1 - arrow.width, y + h / 2 + 3 - arrow.height / 2
-        canvas.draw(arrow, ax, ay)
-        text = ((entry.get("stock") or {}).get("Text") or {}).get("text")
-        if text:
-            face = button_font(entry, "GameFontHighlight", "GameFontHighlight", "GameFontDisable")
-            canvas.text(x + 8, y + 8, cut(canvas, text, face, ax - x - 8), face, box_height=10)
-
-
-def draw_quest_log_border(canvas, entry, rect, layer):
-    """QuestLogBorderFrameTemplate (Blizzard_UIPanels_Game/Mainline/QuestMapFrame.xml:287): TOPLEFT (-3, 7) to
-    BOTTOMRIGHT (3, -6) of its parent at frameLevel 100; questlog-frame over all of it (BORDER) and
-    questlog-frame-filigree at TOP (0, 1) (ARTWORK)."""
-    ui, (x, y, w, h) = canvas.ui, rect
-    if layer == "BORDER":
-        canvas.draw(ui.atlas("questlog-frame"), x, y, w, h)
-    elif layer == "ARTWORK":
-        filigree = ui.atlas("questlog-frame-filigree")
-        canvas.draw(filigree, x + (w - filigree.width) / 2, y - 1)
-
-
-def button_font(entry, normal, highlight, disabled):
-    if entry.get("disabled"):
-        return font(disabled)
-    if entry.get("highlightLocked"):
-        return font(entry.get("highlightFont") or highlight)
-    return font(entry.get("normalFont") or normal)
-
-
-def draw_panel_button(canvas, entry, rect, layer):
-    """UIPanelButtonTemplate (Mainline/SharedUIPanelTemplates.xml:315, on UIPanelButtonNoTooltipTemplate,
-    SecureUIPanelTemplates.xml:39): UI-Panel-Button-Up in three slices, 12-unit caps, texcoords to .6875 down
-    (UI-Panel-Button-Disabled once disabled), GameFontNormal centred (GameFontDisable when disabled)."""
-    x, y, w, h = rect
-    if layer == "BACKGROUND":
-        file = texture(
-            canvas.ui, "Interface\\Buttons\\UI-Panel-Button-" + ("Disabled" if entry.get("disabled") else "Up")
-        )
-        canvas.draw(wm.crop_coords(file, 0, 0.09375, 0, 0.6875), x, y, 12, h)
-        canvas.draw(wm.crop_coords(file, 0.09375, 0.53125, 0, 0.6875), x + 12, y, w - 24, h)
-        canvas.draw(wm.crop_coords(file, 0.53125, 0.625, 0, 0.6875), x + w - 12, y, 12, h)
-    elif layer == "TEXT" and entry.get("text"):
-        face = button_font(entry, "GameFontNormal", "GameFontHighlight", "GameFontDisable")
-        canvas.text(x, y, entry["text"], face, justify="CENTER", width=w, box_height=h)
-
-
-def tab_size(ui, entry):
-    """LargeSideTabButtonTemplate's size (SidePanelTabButtonMixin, Mainline/SharedUIPanelTemplates.lua:309):
-    common-sidetab's width by its height less 5."""
-    art = ui.atlas("common-sidetab")
-    return art.width, art.height - 5
-
-
-def draw_side_tab(canvas, entry, rect, layer):
-    """LargeSideTabButtonTemplate (Mainline/SharedUIPanelTemplates.xml:1008): common-sidetab at CENTER; the Icon at
-    CENTER (-3, 0) masked by common-sidetab-mask, in the active or inactive atlas at its size when the tab has them
-    (SidePanelTabButtonMixin:SetChecked), else as the addon set it; common-sidetab-selected over it while checked."""
-    ui, (x, y, w, h) = canvas.ui, rect
-    cx, cy = x + w / 2, y + h / 2
-
-    def centred(name, dx=0, size=None):
-        art = ui.atlas(name)
-        width, height = size or (art.width, art.height)
-        return art, cx + dx - width / 2, cy - height / 2, width, height
-
-    if layer == "BACKGROUND":
-        canvas.draw(*centred("common-sidetab"))
-    elif layer == "ARTWORK":
-        icon = entry.get("stock", {}).get("Icon", {})
-        atlas = entry.get("activeAtlas" if entry.get("checked") else "inactiveAtlas") or icon.get("atlas")
-        if atlas:
-            art = canvas.ui.canvas(canvas.width, canvas.height)
-            art.draw(*centred(atlas, -3, None if entry.get("activeAtlas") else icon.get("size")))
-            mask, mx, my, mw, mh = centred("common-sidetab-mask")
-            art.mask(mask.image, mx, my, mw, mh)
-            canvas.paste(art, 0, 0)
-    elif layer == "OVERLAY" and entry.get("checked"):
-        canvas.draw(*centred("common-sidetab-selected"))
-
-
-def draw_scroll_frame(canvas, entry, rect, layer, child_height=None):
-    """ScrollFrameTemplate (SecureUIPanelTemplates.xml:24): ScrollFrame_OnLoad adds MinimalScrollBar
-    (Mainline/ScrollDefine.lua:1), here where the addon anchored it; its thumb shows the visible share of the
-    scroll child, scrolled to the top."""
-    bar = entry.get("stock", {}).get("ScrollBar", {})
-    if layer != "FRAME" or not bar.get("shown", True) or not bar.get("anchors"):
-        return
-    x, y, w, h = rect
-    points = {}
-    for point in bar["anchors"]:
-        rx, ry = POINTS[point["relativePoint"]]
-        points[point["point"]] = (x + rx * w + point["x"], y + ry * h - point["y"])
-    left, top = points["TOPLEFT"]
-    visible = min(1, h / child_height) if child_height else 1
-    wm.minimal_scrollbar(canvas, left, top, points["BOTTOMLEFT"][1] - top, visible, 0)
-
-
-def draw_portrait_frame(canvas, entry, rect, layer):
-    """PortraitFrameTemplate (Blizzard_SharedXML/Mainline/PortraitFrame.xml): the rock Bg tiled TOPLEFT (2, -21) to
-    BOTTOMRIGHT (-2, 2) and the TopTileStreaks 43 high at TOPLEFT (6, -21) to TOPRIGHT (-2, -21) under everything;
-    after the frame's children (the addon's PortraitContainer is one), the metal NineSlice (frameLevel 500), the
-    TitleText and the CloseButton, as wowmock.portrait_frame_art draws them."""
-    ui, (x, y, w, h) = canvas.ui, rect
-    if layer == "BACKGROUND":
-        rock = ui.texture("interface/framegeneral/ui-background-rock.blp")
-        wm.tiled(canvas, rock, x + 2, y + 21, w - 4, h - 23, rock.width / ui.scale, rock.height / ui.scale)
-        canvas.draw(ui.atlas("_UI-Frame-TopTileStreaks"), x + 6, y + 21, w - 8, 43)
-    elif layer == "AFTER":
-        canvas.nine_slice(wm.PORTRAIT_FRAME_TEMPLATE_LAYOUT, x, y, w, h)
-        title = entry.get("stock", {}).get("TitleText", {}).get("text") or ""
-        canvas.text(x + 58, y + 1 + 5, title, font("GameFontNormal"), justify="CENTER", width=w - 58 - 24)
-        canvas.draw(ui.atlas("RedButton-Exit"), x + w - 2 - 24, y - 1, 24, 24)
-
-
-def draw_inset_frame(canvas, entry, rect, layer):
-    """InsetFrameTemplate (Mainline/SharedUIPanelTemplates.xml): the marble Bg tiled TOPLEFT (2, -2) to BOTTOMRIGHT
-    (-2, 2) at BACKGROUND -6, under the addon's own art, and the inner NineSlice over it."""
-    ui, (x, y, w, h) = canvas.ui, rect
-    if layer == "BACKGROUND":
-        marble = ui.texture("interface/framegeneral/ui-background-marble.blp")
-        wm.tiled(canvas, marble, x + 2, y + 2, w - 4, h - 4, marble.width / ui.scale, marble.height / ui.scale)
-    elif layer == "FRAME":
-        canvas.nine_slice(wm.INSET_FRAME_LAYOUT, x, y, w, h)
-
-
-def panel_tab_font(entry):
-    """The selected tab is disabled (PanelTemplates_SelectTab) and takes GameFontHighlightSmall; the others their
-    normal font (the addon greys a tab with nothing to show)."""
-    return font("GameFontHighlightSmall" if entry.get("disabled") else entry.get("normalFont") or "GameFontNormalSmall")
-
-
-def panel_tab_size(ui, entry):
-    """PanelTabButtonMixin:OnShow's TabResize: the text's width plus 20, at least the caps', 32 high."""
-    caps = ui.atlas("uiframe-tab-left").width + ui.atlas("uiframe-tab-right").width
-    return max(ui.canvas(1, 1).text_width(entry.get("text") or "", panel_tab_font(entry)) + 20, caps), 32
-
-
-def draw_panel_tab(canvas, entry, rect, layer):
-    """PanelTabButtonTemplate (Mainline/SharedUIPanelTemplates.xml:932), as wowmock.panel_tabs draws one: the
-    uiframe-activetab art while selected, else uiframe-tab, and the label at CENTER (0, -3) selected, else (0, 2)."""
-    ui, (x, y, w, _) = canvas.ui, rect
-    active = entry.get("disabled")
-    if layer == "BACKGROUND":
-        prefix = "uiframe-activetab" if active else "uiframe-tab"
-        left, right = ui.atlas(f"{prefix}-left"), ui.atlas(f"{prefix}-right")
-        left_x = x + (-1 if active else -3)
-        right_x = x + w + (8 if active else 7) - right.width
-        canvas.draw(left, left_x, y)
-        canvas.draw(right, right_x, y)
-        middle = ui.atlas(f"_{prefix}-center")
-        canvas.draw(middle, left_x + left.width, y, right_x - left_x - left.width, middle.height)
-    elif layer == "TEXT" and entry.get("text"):
-        top = y + 16 - 5 + (3 if active else -2)
-        canvas.text(x, top, entry["text"], panel_tab_font(entry), justify="CENTER", width=w, box_height=10)
-
-
-def draw_top_tab(canvas, entry, rect, layer):
-    """Shared/TabSystem/TabSystemTemplates.xml's TabSystemTopButtonTemplate: HandleRotation rotates each cap
-    and anchors the art to the same bottom edge. AGF centres all labels on one baseline."""
-    ui, (x, y, w, h) = canvas.ui, rect
-    active = entry.get("disabled")
-    if layer == "BACKGROUND":
-        prefix = "uiframe-activetab" if active else "uiframe-tab"
-        left, right = ui.atlas(f"{prefix}-left"), ui.atlas(f"{prefix}-right")
-        left_x = x - (7 if active else 6)
-        right_x = x + w - left.width
-        canvas.draw(right.image.rotate(180), left_x, y + h - right.height, right.width, right.height)
-        canvas.draw(left.image.rotate(180), right_x, y + h - left.height, left.width, left.height)
-        middle = ui.atlas(f"_{prefix}-center")
-        canvas.draw(
-            middle.image.rotate(180),
-            left_x + right.width,
-            y + h - middle.height,
-            right_x - left_x - right.width,
-            middle.height,
-        )
-    elif layer == "TEXT":
-        canvas.text(
-            x,
-            y + h / 2 - 5,
-            entry.get("text") or "",
-            font(entry.get("normalFont") or "GameFontNormalSmall"),
-            justify="CENTER",
-            width=w,
-            box_height=10,
-        )
-
-
-def draw_collapse_button(canvas, entry, rect, layer):
-    """ListTemplates.xml CollapseButtonTemplate, used by QuestLogHeaderTemplate: native plus/minus centred."""
-    if layer == "ARTWORK":
-        x, y, w, h = rect
-        atlas = entry.get("stock", {}).get("Icon", {}).get("atlas")
-        if atlas:
-            art = canvas.ui.atlas(atlas)
-            canvas.draw(art, x + (w - art.width) / 2, y + (h - art.height) / 2)
-
-
-def draw_check_button(canvas, entry, rect, layer):
-    """Shared/Button/CheckButtonTemplates.xml: UICheckButtonArtTemplate's square Up and Check textures.
-    Text is a template FontString, dumped by the harness at its XML anchor."""
-    if layer == "ARTWORK":
-        canvas.draw(texture(canvas.ui, "Interface/Buttons/UI-CheckBox-Up"), *rect)
-        if entry.get("checked"):
-            canvas.draw(texture(canvas.ui, "Interface/Buttons/UI-CheckBox-Check"), *rect)
-
-
-def draw_alpha_highlight(canvas, entry, rect, layer):
-    """AlphaHighlightButtonTemplate (Mainline/SharedUIPanelTemplates.xml:1587): no art of its own; its NormalTexture
-    and PushedTexture are the button's regions, and its highlight (the same atlas, added) shows only under the mouse,
-    which no scene holds."""
-
-
-# name: (draw(canvas, entry, rect, layer), its <Size> by (ui, entry) or None, its own <Anchors> or None, frameLevel)
-STOCK = {
-    "UICheckButtonTemplate": (draw_check_button, lambda ui, entry: (32, 32), None, 0),
-    "TabSystemTopButtonTemplate": (draw_top_tab, None, None, 0),
-    "CollapseButtonTemplate": (draw_collapse_button, None, None, 0),
-    "AlphaHighlightButtonTemplate": (draw_alpha_highlight, None, None, 0),
-    "InputBoxVisualTemplate": (draw_input_box, None, None, 0),
-    "InsetFrameTemplate": (draw_inset_frame, None, None, 0),
-    "LargeSideTabButtonTemplate": (draw_side_tab, tab_size, None, 0),
-    "PanelTabButtonTemplate": (draw_panel_tab, panel_tab_size, None, 0),
-    "PortraitFrameTemplate": (draw_portrait_frame, None, None, 0),
-    "QuestLogBorderFrameTemplate": (
-        draw_quest_log_border,
-        None,
-        [("TOPLEFT", -3, 7), ("BOTTOMRIGHT", 3, -6)],
-        100,
-    ),
-    "ScrollFrameTemplate": (draw_scroll_frame, None, None, 0),
-    "SearchBoxTemplate": (draw_search_box, None, None, 0),
-    "UIPanelButtonTemplate": (draw_panel_button, lambda ui, entry: (40, 22), None, 0),
-    "UIPanelIconDropdownButtonTemplate": (draw_icon_dropdown, lambda ui, entry: (15, 16), None, 0),
-    "WowStyle1DropdownTemplate": (draw_dropdown, lambda ui, entry: (120, 25), None, 0),
-}
-
-
-def stock(entry):
-    """The recipe for a dumped frame's stock template; one the script has none for fails the run,
-    so a new template is drawn from its XML rather than left out."""
-    name = entry.get("stockTemplate")
-    if name is None:
-        return None
-    if name not in STOCK:
-        sys.exit(f"{entry['path']}: no recipe for stock template {name}: add one to STOCK citing its Blizzard XML")
-    return STOCK[name]
 
 
 # ------------------------------------------------------------------------------------------ layout drawing
@@ -656,98 +157,6 @@ def text_measures(ui, entries, rects):
             lines = fit_text(measure, entry["text"], face, width, entry.get("wordWrap"), entry.get("maxLines"))
             measures[entry["path"]] = [measure.text_width(entry["text"], face), len(lines)]
     return measures
-
-
-def gradient(color, spec):
-    """Texture:SetGradient on a colour texture: its colour times the vertex colours, `minColor` to `maxColor` left
-    to right (HORIZONTAL) or bottom to top (VERTICAL), as a 256-step strip the draw stretches."""
-    orientation, low, high = spec
-    steps = [
-        tuple(round(255 * c * (lo + (hi - lo) * i / 255)) for c, lo, hi in zip(color, low, high, strict=True))
-        for i in range(256)
-    ]
-    if orientation == "HORIZONTAL":
-        image = wm.Image.new("RGBA", (256, 1))
-        image.putdata(steps)
-    else:
-        image = wm.Image.new("RGBA", (1, 256))
-        image.putdata(steps[::-1])
-    return image
-
-
-def draw_texture(canvas, entry, rect, alpha, scale=1, mask=None):
-    """A texture in its rect. An atlas keeps its slice margins (the atlas's, else SetTextureSliceMargins') at its
-    frame's `scale`; `mask` is (MaskTexture entry, rect) for one AddMaskTexture put on it."""
-    ui, (x, y, w, h) = canvas.ui, rect
-    r, g, b, *vertex_alpha = entry.get("vertexColor") or (1, 1, 1)
-    tint = (r, g, b, alpha * (vertex_alpha[0] if vertex_alpha else 1))
-    target = ui.canvas(canvas.width, canvas.height) if entry.get("maskFile") or mask else canvas
-    blend = entry.get("alphaMode") or "BLEND"
-    if entry.get("atlas"):
-        art = ui.atlas(entry["atlas"])
-        if entry.get("desaturated"):
-            art = dataclasses.replace(art, image=art.image.convert("LA").convert("RGBA"))
-        if entry.get("slice"):
-            art = dataclasses.replace(art, slice=tuple(entry["slice"]))
-        if entry.get("texCoord"):
-            # Art.lua's crops and slices: the harness gives each atlas its own whole sheet, so the coords are within it.
-            target.draw(wm.crop_coords(art.image, *entry["texCoord"]), x, y, w, h, tint, blend)
-        elif art.slice and scale != 1:
-            # The margins keep their size in the frame's own units: drawn at that size, then scaled with the frame.
-            full = ui.canvas(w / scale, h / scale)
-            full.draw(art, 0, 0, w / scale, h / scale)
-            target.draw(full.image, x, y, w, h, tint, blend)
-        else:
-            target.draw(art, x, y, w, h, tint, blend)
-    elif entry.get("file") is not None:
-        if entry.get("gradient"):
-            sys.exit(f"{entry['path']}: SetGradient on a file texture: draw it in draw_texture")
-        image = texture(ui, entry["file"])
-        if entry.get("desaturated"):
-            image = image.convert("LA").convert("RGBA")
-        if entry.get("texCoord"):
-            image = wm.crop_coords(image, *entry["texCoord"])
-        target.draw(image, x, y, w, h, tint, blend)
-    elif entry.get("color") and entry.get("gradient"):
-        target.draw(gradient(entry["color"], entry["gradient"]), x, y, w, h, (1, 1, 1, alpha), blend)
-    elif entry.get("color"):
-        r, g, b, a = entry["color"]
-        target.fill(x, y, w, h, (r, g, b, a * alpha))
-    if entry.get("maskFile"):
-        target.mask(texture(ui, entry["maskFile"]), x, y, w, h)
-    if mask:
-        mask_entry, (mx, my, mw, mh) = mask
-        image = ui.atlas(mask_entry["atlas"]).image if mask_entry.get("atlas") else texture(ui, mask_entry["file"])
-        target.mask(image, mx, my, mw, mh)
-    if target is not canvas:
-        canvas.paste(target, 0, 0)
-
-
-def draw_font_string(canvas, entry, rect, alpha):
-    """A FontString in its rect: justifyH CENTER unless set, lines centred vertically, one line cut with '...'
-    when word wrap is off."""
-    text = entry.get("text")
-    if not text:
-        return
-    x, y, w, h = rect
-    face = font(entry["font"])
-    lines = fit_text(canvas, text, face, w, entry.get("wordWrap"), entry.get("maxLines"))
-    top = y + (h - face.height * len(lines) - (entry.get("spacing") or 0) * (len(lines) - 1)) / 2
-    target = canvas.ui.canvas(canvas.width, canvas.height) if alpha < 1 else canvas
-    for index, line in enumerate(lines):
-        colour = tuple(entry["textColor"][:3]) if entry.get("textColor") else None
-        target.text(
-            x,
-            top + index * (face.height + (entry.get("spacing") or 0)),
-            line,
-            face,
-            colour,
-            justify=entry.get("justifyH") or "CENTER",
-            width=w,
-        )
-    if target is not canvas:
-        target.image = wm.tint(target.image, (1, 1, 1, alpha))
-        canvas.paste(target, 0, 0)
 
 
 REGIONS = ("Texture", "FontString", "MaskTexture")
@@ -803,8 +212,6 @@ class Layout:
             before = canvas.image.copy()
 
         def art(layer):
-            if layer not in PHASES:
-                raise ValueError(f"unknown drawing phase {layer!r}")
             if recipe:
                 if recipe[0] is draw_scroll_frame:
                     draw_scroll_frame(canvas, entry, rect, layer, child_height)
@@ -866,9 +273,11 @@ GREEN = (0.1, 1.0, 0.1)  # GREEN_FONT_COLOR, what GameTooltip_AddInstructionLine
 def explored_art(ui, map_id):
     """A uiMap's base art with every WorldMapOverlay drawn, as a character who has explored the whole zone sees it;
     the base art alone is the unexplored parchment."""
-    art = wm.map_art(ui, map_id)
-    for overlay in wm.map_overlays(ui, map_id):
-        wm.draw_overlay(ui, art, overlay.offset_x, overlay.offset_y, overlay.width, overlay.height, overlay.tiles)
+    art = drawing.wm.map_art(ui, map_id)
+    for overlay in drawing.wm.map_overlays(ui, map_id):
+        drawing.wm.draw_overlay(
+            ui, art, overlay.offset_x, overlay.offset_y, overlay.width, overlay.height, overlay.tiles
+        )
     return art
 
 
@@ -879,12 +288,17 @@ def map_frame(ui, map_image, quest_log, on_map=None):
     3) (Blizzard_WorldMap.lua:1290) and the side panel toggle shows QuestCollapse-Hide-Up. `on_map(canvas, rects)`
     draws on the map before the frame's chrome, clipped to the container. The canvas leaves room on the right for
     the quest log's side tabs. Returns the canvas and rects in its UI units, as world_map_frame's plus "quests"."""
-    m = wm.WORLD_MAP_MARGIN
-    w, h = wm.WORLD_MAP_WIDTH + (QUEST_LOG_WIDTH if quest_log else 0), wm.WORLD_MAP_HEIGHT
+    m = drawing.wm.WORLD_MAP_MARGIN
+    w, h = drawing.wm.WORLD_MAP_WIDTH + (QUEST_LOG_WIDTH if quest_log else 0), drawing.wm.WORLD_MAP_HEIGHT
     canvas = ui.canvas(w + 2 * m + (64 if quest_log else 0), h + 2 * m)
     rock = ui.texture("interface/framegeneral/ui-background-rock.blp")
-    wm.tiled(canvas, rock, m + 2, m + 21, w - 4, h - 23, rock.width / ui.scale, rock.height / ui.scale)
-    container = (m + 2, m + wm.WORLD_MAP_SPACER, wm.WORLD_MAP_WIDTH - 5, h - 2 - wm.WORLD_MAP_SPACER)
+    drawing.wm.tiled(canvas, rock, m + 2, m + 21, w - 4, h - 23, rock.width / ui.scale, rock.height / ui.scale)
+    container = (
+        m + 2,
+        m + drawing.wm.WORLD_MAP_SPACER,
+        drawing.wm.WORLD_MAP_WIDTH - 5,
+        h - 2 - drawing.wm.WORLD_MAP_SPACER,
+    )
     cx, cy, cw, ch = container
     scale = min(cw / map_image.width, ch / map_image.height)
     mw, mh = map_image.width * scale, map_image.height * scale
@@ -895,36 +309,33 @@ def map_frame(ui, map_image, quest_log, on_map=None):
     art.draw(map_image, mx, my, mw, mh)
     if on_map:
         on_map(art, rects)
-    keep = wm.Image.new("L", art.image.size, 0)
+    keep = drawing.wm.Image.new("L", art.image.size, 0)
     keep.paste(255, tuple(canvas.px(v) for v in (cx, cy, cx + cw, cy + ch)))
-    art.image.putalpha(wm.ImageChops.multiply(art.image.getchannel("A"), keep))
+    art.image.putalpha(drawing.wm.ImageChops.multiply(art.image.getchannel("A"), keep))
     canvas.paste(art, 0, 0)
     canvas.draw(ui.atlas("_UI-Frame-InnerTopTile"), m + 2, m + 63, cw, 3)
     nav_x, nav_y = m + 2 + 64, m + 25
-    nav_w = (m + wm.WORLD_MAP_WIDTH - 3 + wm.WORLD_MAP_NAVBAR_X_OFFSET) - nav_x
-    nav_h = (m + wm.WORLD_MAP_SPACER - 9) - nav_y
-    wm.nav_bar(canvas, nav_x, nav_y, nav_w, nav_h, MAP_NAV, MAP_NAV[1:])
+    nav_w = (m + drawing.wm.WORLD_MAP_WIDTH - 3 + drawing.wm.WORLD_MAP_NAVBAR_X_OFFSET) - nav_x
+    nav_h = (m + drawing.wm.WORLD_MAP_SPACER - 9) - nav_y
+    drawing.wm.nav_bar(canvas, nav_x, nav_y, nav_w, nav_h, MAP_NAV, MAP_NAV[1:])
     options_x, options_y = nav_x + nav_w + 10, nav_y + nav_h / 2 - 16 + 2
     canvas.draw(ui.atlas("common-dropdown-a-button"), options_x + 4, options_y + 6)
     toggle_x, toggle_y = cx + cw - 2 - 32, cy + ch - 1 - 32
     corner = ui.atlas("MapCornerShadow-Right")
     canvas.draw(corner, toggle_x + 32 + 2 - corner.width, toggle_y + 32 + 1 - corner.height)
     canvas.draw(ui.atlas("QuestCollapse-Hide-Up" if quest_log else "QuestCollapse-Show-Up"), toggle_x, toggle_y, 32, 32)
-    canvas.nine_slice(wm.camelot_layout(wm.PORTRAIT_FRAME_LAYOUT), m, m, w, h)
+    canvas.nine_slice(drawing.wm.camelot_layout(drawing.wm.PORTRAIT_FRAME_LAYOUT), m, m, w, h)
     portrait = ui.canvas(canvas.width, canvas.height)
     portrait.draw(ui.texture("interface/questframe/ui-questlog-bookicon.blp"), m - 5, m - 7, 62, 62)
     portrait.mask(ui.texture("interface/characterframe/tempportraitalphamask.blp"), m - 3, m - 7, 58, 58)
     canvas.paste(portrait, 0, 0)
-    canvas.text(m + 58, m + 1 + 5, "Map & Quest Log", wm.FONTS["GameFontNormal"], justify="CENTER", width=w - 58 - 24)
+    canvas.text(
+        m + 58, m + 1 + 5, "Map & Quest Log", drawing.wm.FONTS["GameFontNormal"], justify="CENTER", width=w - 58 - 24
+    )
     close_x = m + w + 1 - 24
     canvas.draw(ui.atlas("RedButton-Exit"), close_x, m, 24, 24)
     canvas.draw(ui.atlas("RedButton-Expand"), close_x - 1 - 24, m, 24, 24)
     return canvas, rects
-
-
-def map_point(rects, x, y):
-    mx, my, mw, mh = rects["map"]
-    return mx + x * mw, my + y * mh
 
 
 def draw_pins(canvas, rects, pins, hovered=None):
@@ -1004,213 +415,6 @@ def quest_log(ui, data, rects, scene, pins=()):
     return canvas, frame
 
 
-# ------------------------------------------------------------------------------ Shortest Path's route (map scene)
-
-# SPF #52's stock quest POIs. Its geometry is SPF's own Path.FindSync, run by LuaJIT in an extracted copy.
-# The API contract fixture keeps its independent compatibility pin in tests/contract_spec.lua.
-SPF_SHA = "061f0b1041f85d02084c25a27edbbf3db3ae7ec7"
-SPF_TARBALL = f"https://codeload.github.com/cjber/shortest-path-forever/tar.gz/{SPF_SHA}"
-SPF_CACHE = ROOT / "tools/.cache" / f"spf-{SPF_SHA}"
-# Route.lua: THICKNESS 2 over UNDER_THICKNESS 4 at UNDER_ALPHA .5; walks are DOT 4 breadcrumbs every SPACING 9, each
-# over a dark dot RIM 1 wider; the walk colour is NORMAL_FONT_COLOR.
-SPF_DOT, SPF_RIM, SPF_SPACING, SPF_UNDER = 4, 1, 9, (0.04, 0.04, 0.04, 0.5)
-
-SPF_PROGRAM = r"""
-local ns = {}
-local files = {
-    "Data/Routes", "Data/Transports", "Data/Portals", "Data/Taxi",
-    "Transport/Model", "Routing/PathGrid", "Routing/Path", "Routing/Planner",
-}
-for _, name in ipairs(files) do
-	local chunk = loadfile(name .. ".lua")
-	if not chunk then
-		chunk = assert(loadfile(name:match("([^/]+)$") .. ".lua"))
-	end
-	chunk("ShortestPathForever", ns)
-end
-local walks = {}
-for index, leg in ipairs(LEGS) do
-	assert(loadfile("tools/load_nav.lua"))(leg.map)
-	local points, why = ns.Path.FindSync(leg.map, leg.from, leg.to)
-	assert(points, tostring(why))
-	local out = {}
-	for i, point in ipairs(points) do
-		out[i] = string.format("[%.3f,%.3f]", point.x, point.y)
-	end
-	walks[index] = "[" .. table.concat(out, ",") .. "]"
-end
-print("[" .. table.concat(walks, ",") .. "]")
-"""
-
-
-def spf_sources():
-    """SPF_CACHE, extracted from a local clone ($SPF, else a sibling of this checkout or of its main worktree) with
-    `git archive`, else from GitHub's tarball of the sha."""
-    if (SPF_CACHE / "Path.lua").is_file():
-        return SPF_CACHE
-    import tarfile
-    import urllib.request
-
-    candidates = [os.environ.get("SPF"), ROOT.parent / "shortest-path-forever", sibling("shortest-path-forever")]
-    archive = None
-    for candidate in filter(None, candidates):
-        result = subprocess.run(["git", "-C", str(candidate), "archive", SPF_SHA], capture_output=True)
-        if result.returncode == 0:
-            archive, strip = result.stdout, 0
-            break
-    if archive is None:
-        with urllib.request.urlopen(SPF_TARBALL, timeout=300) as response:
-            archive, strip = response.read(), 1
-    staging = SPF_CACHE.with_name(SPF_CACHE.name + ".tmp")
-    with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
-        members = []
-        for member in tar.getmembers():
-            parts = Path(member.name).parts[strip:]
-            if parts:
-                member.name = str(Path(*parts))
-                members.append(member)
-        tar.extractall(staging, members, filter="data")
-    staging.rename(SPF_CACHE)
-    return SPF_CACHE
-
-
-def assignment(ui, map_id):
-    """The UiMapAssignment row placing a uiMap on its world map, as SPF's own screenshots.py picks it."""
-    rows = [
-        r
-        for r in ui.table("UiMapAssignment").values()
-        if r["UiMapID"] == str(map_id) and r["WMODoodadPlacementID"] == "0"
-    ]
-    return min(rows, key=lambda row: (int(row["OrderIndex"]), int(row["ID"])))
-
-
-def world_point(ui, map_id, x, y):
-    """A uiMap position in world coordinates (x north, y west), inverting SPF's projection; ns.WorldPoint needs the
-    client's C_Map."""
-    r = assignment(ui, map_id)
-    nx = (x - float(r["UiMin_0"])) / (float(r["UiMax_0"]) - float(r["UiMin_0"]))
-    ny = (y - float(r["UiMin_1"])) / (float(r["UiMax_1"]) - float(r["UiMin_1"]))
-    west = float(r["Region_4"]) - nx * (float(r["Region_4"]) - float(r["Region_1"]))
-    north = float(r["Region_3"]) - ny * (float(r["Region_3"]) - float(r["Region_0"]))
-    return {"map": int(r["MapID"]), "x": north, "y": west}
-
-
-def map_position(ui, map_id, point):
-    r = assignment(ui, map_id)
-    nx = (float(r["Region_4"]) - point[1]) / (float(r["Region_4"]) - float(r["Region_1"]))
-    ny = (float(r["Region_3"]) - point[0]) / (float(r["Region_3"]) - float(r["Region_0"]))
-    return tuple(
-        float(r[f"UiMin_{i}"]) + n * (float(r[f"UiMax_{i}"]) - float(r[f"UiMin_{i}"])) for i, n in enumerate((nx, ny))
-    )
-
-
-def spf_walks(ui, legs):
-    """Path.FindSync's points for each (uiMap, from, to) leg, in world coordinates."""
-    root = spf_sources()
-    entries = []
-    for map_id, a, b in legs:
-        start, goal = world_point(ui, map_id, *a), world_point(ui, map_id, *b)
-        assert start["map"] == goal["map"]
-        entries.append(
-            f"{{ map = {start['map']}, from = {{ x = {start['x']:.4f}, y = {start['y']:.4f} }}, "
-            f"to = {{ x = {goal['x']:.4f}, y = {goal['y']:.4f} }} }}"
-        )
-    program = "local LEGS = { " + ", ".join(entries) + " }\n" + SPF_PROGRAM
-    result = subprocess.run(["luajit", "-"], input=program, text=True, cwd=root, capture_output=True)
-    if result.returncode:
-        sys.exit("Shortest Path's Path.FindSync failed:\n" + result.stderr)
-    return json.loads(result.stdout)
-
-
-def breadcrumbs(canvas, rects, lines, marks):
-    """Route.lua's walk: breadcrumbs every SPF_SPACING along each polyline (normalised map points), the distance
-    carried across its bends, each dot over a larger dark rim, every rim beneath every dot (ARTWORK -1)."""
-    import math
-
-    dots = []
-    for index, line in enumerate(lines):
-        points = [map_point(rects, x, y) for x, y in line]
-        walked = 0.0
-        for (ax, ay), (bx, by) in zip(points, points[1:], strict=False):
-            length = math.hypot(bx - ax, by - ay)
-            distance = math.ceil(walked / SPF_SPACING) * SPF_SPACING - walked
-            while length and distance <= length:
-                x, y = ax + (bx - ax) * distance / length, ay + (by - ay) * distance / length
-                # Route.lua: a 10-unit stop radius, a 2-unit gap, and the dot's radius plus rim.
-                margin = 10 + 2 + SPF_DOT / 2 + SPF_RIM
-                if all((x - cx) ** 2 + (y - cy) ** 2 >= margin**2 for cx, cy, _ in marks):
-                    dots.append((x, y, 0.4 if index else 1))
-                distance += SPF_SPACING
-            walked += length
-    k = canvas.ui.scale
-    for radius, color in ((SPF_DOT / 2 + SPF_RIM, SPF_UNDER), (SPF_DOT / 2, (*wm.NORMAL, 1))):
-        layer = wm.Image.new("RGBA", canvas.image.size)
-        draw = wm.ImageDraw.Draw(layer)
-        for x, y, alpha in dots:
-            draw.ellipse(
-                ((x - radius) * k, (y - radius) * k, (x + radius) * k, (y + radius) * k),
-                fill=wm.rgba255((*color[:3], color[3] * alpha)),
-            )
-        canvas.image.alpha_composite(layer)
-
-
-# A stop's kind as SPF's Looks.lua draws it, fitted within a 16-unit badge.
-STOP_ATLASES = {
-    "pickup": "QuestNormal",
-    "turnin": "QuestTurnin",
-    "objective": "questobjective",
-    "dungeon": "dungeon",
-    "innkeeper": "innkeeper",
-}
-STOP_FILES = {
-    "trainer": "Interface\\Minimap\\Tracking\\Class",
-    "battlemaster": "Interface\\Minimap\\Tracking\\BattleMaster",
-}
-
-
-def stop_groups(rects, stops):
-    """Map.lua's OverlapGroups with StopPin.lua's 20-unit button and the map's 0.8 overlap factor."""
-    points = [map_point(rects, stop["x"], stop["y"]) for stop in stops]
-    groups = []
-    for number, (x, y) in enumerate(points):
-        touching = [
-            group for group in groups if any(abs(x - points[i][0]) < 16 and abs(y - points[i][1]) < 16 for i in group)
-        ]
-        for group in touching:
-            groups.remove(group)
-        groups.append(sorted([number, *(i for group in touching for i in group)]))
-    marks = []
-    for group in sorted(groups):
-        # Route.lua: the current stop stays put; later shared buttons sit at their group's middle.
-        x, y = points[0] if group[0] == 0 else (sum(points[i][a] for i in group) / len(group) for a in (0, 1))
-        marks.append((x, y, group))
-    return marks
-
-
-def goal_pins(canvas, stops, marks):
-    """SPF StopPin.lua and Map.xml: warm gold stock quest disc, numeral and action badge.
-    Later foreground art fades to 0.9 over an opaque black silhouette."""
-    ui = canvas.ui
-    button = ui.atlas("UI-QuestPoi-QuestNumber")
-    numerals = ui.texture("interface/worldmap/ui-questpoi-numbericons.blp")
-    for cx, cy, group in marks:
-        number, alpha = group[0] + 1, 0.9 if group[0] else 1
-        canvas.draw(button, cx - 16, cy - 16, 32, 32, (0, 0, 0, 1))
-        canvas.draw(button, cx - 16, cy - 16, 32, 32, (1, 0.9, 0.7, alpha))
-        if number <= 25:
-            left, top = (number - 1) % 8 * 0.125, 0.5 + (number - 1) // 8 * 0.125
-            numeral = wm.crop_coords(numerals, left, left + 0.125, top, top + 0.125)
-            canvas.draw(numeral, cx - 16, cy - 16, 32, 32, (1, 0.9, 0.7, alpha))
-        else:
-            draw_font_string(canvas, {"text": str(number), "font": "GameFontNormal"}, (cx - 16, cy - 16, 32, 32), alpha)
-        kind = stops[group[0]].get("kind")
-        if kind in STOP_ATLASES or kind in STOP_FILES:
-            art = ui.atlas(STOP_ATLASES[kind]) if kind in STOP_ATLASES else texture(ui, STOP_FILES[kind])
-            scale = 16 / max(art.width, art.height)
-            width, height = art.width * scale, art.height * scale
-            canvas.draw(art, cx + 14 - width, cy + 14 - height, width, height, (1, 1, 1, alpha))
-
-
 def shortest_path(ui, data):
     """The map while Shortest Path guides the route AGF handed it: the current leg (player to stop 1) walked with
     Path.FindSync, the later stops joined by the straight preview walk (Route.lua's `preview` path), the numbered
@@ -1231,14 +435,6 @@ def shortest_path(ui, data):
     return canvas
 
 
-def sibling(repository):
-    """A clone beside this repository's main worktree, when this checkout is a linked worktree."""
-    common = subprocess.run(["git", "rev-parse", "--git-common-dir"], cwd=ROOT, capture_output=True, text=True)
-    if common.returncode:
-        return None
-    return (ROOT / common.stdout.strip()).resolve().parent.parent / repository
-
-
 def sha256(path):
     import hashlib
 
@@ -1249,7 +445,7 @@ def manifest(paths):
     """docs/screenshots/manifest.txt: what the PNGs were made from and each PNG's sha256, so a stale image or a
     changed input shows in review."""
     lines = [
-        f"build {wm.BUILD}",
+        f"build {drawing.wm.BUILD}",
         f"shortest-path-forever {SPF_SHA}",
         f"tests/golden/layout.json {sha256(GOLDEN)}",
     ]
@@ -1277,13 +473,13 @@ def demo(ui, images):
     width, height = DEMO_SIZE
     stills = []
     for name, seconds in DEMO_SCENES:
-        frame = wm.backdrop(ui, width, height).image.convert("RGB")
+        frame = drawing.wm.backdrop(ui, width, height).image.convert("RGB")
         image = images[name].image.convert("RGB")
         fit = min(frame.width / image.width, frame.height / image.height)
         size = (round(image.width * fit), round(image.height * fit))
         offset = ((frame.width - size[0]) // 2, (frame.height - size[1]) // 2)
-        frame.paste(image.resize(size, wm.Image.Resampling.LANCZOS), offset)
-        stills.append((frame.resize(DEMO_SIZE, wm.Image.Resampling.LANCZOS), round(seconds * 1000), image.size))
+        frame.paste(image.resize(size, drawing.wm.Image.Resampling.LANCZOS), offset)
+        stills.append((frame.resize(DEMO_SIZE, drawing.wm.Image.Resampling.LANCZOS), round(seconds * 1000), image.size))
     frames, durations = [], []
     fades, step = DEMO_FADE
     for index, (still, hold, size) in enumerate(stills):
@@ -1292,13 +488,13 @@ def demo(ui, images):
         following, _, following_size = stills[(index + 1) % len(stills)]
         if following_size == size:
             for fade in range(1, fades + 1):
-                frames.append(wm.Image.blend(still, following, fade / (fades + 1)))
+                frames.append(drawing.wm.Image.blend(still, following, fade / (fades + 1)))
                 durations.append(step)
-    sheet = wm.Image.new("RGB", (width, height * len(stills)))
+    sheet = drawing.wm.Image.new("RGB", (width, height * len(stills)))
     for index, (still, _, _) in enumerate(stills):
         sheet.paste(still, (0, height * index))
-    palette = sheet.quantize(colors=256, method=wm.Image.Quantize.MEDIANCUT)
-    indexed = [frame.quantize(palette=palette, dither=wm.Image.Dither.NONE) for frame in frames]
+    palette = sheet.quantize(colors=256, method=drawing.wm.Image.Quantize.MEDIANCUT)
+    indexed = [frame.quantize(palette=palette, dither=drawing.wm.Image.Dither.NONE) for frame in frames]
     buffer = io.BytesIO()
     indexed[0].save(buffer, format="GIF", save_all=True, append_images=indexed[1:], duration=durations, loop=0)
     content = buffer.getvalue()
@@ -1312,8 +508,8 @@ def render(out):
     version = importlib.metadata.version("pillow")
     if version != PILLOW:
         print(f"warning: Pillow {version}, not the pinned {PILLOW}: the PNGs may not match byte for byte")
-    ui = wm.Ui(scale=SCALE)
-    _, frame = map_frame(ui, wm.Image.new("RGBA", (1002, 668)), True)
+    ui = drawing.wm.Ui(scale=SCALE)
+    _, frame = map_frame(ui, drawing.wm.Image.new("RGBA", (1002, 668)), True)
     known = known_frames(frame) | {WINDOW: (WINDOW_MARGIN, WINDOW_MARGIN, *WINDOW_SIZE)}
     data, rects = layout_pass(
         ui, ("panel", "journeys", "journeys_four", "journeys_overflow", "search", *WINDOWS), known
@@ -1322,25 +518,25 @@ def render(out):
 
     # The lead image: no card chosen yet, compact rows with no scrollbar.
     canvas, _ = quest_log(ui, data, rects, "journeys", data["journeys"]["pins"])
-    images["panel"] = wm.scene(ui, [(canvas, 0, 0)])
+    images["panel"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     # The panel on its own: four journeys, and an overflow link in a shorter sidebar.
     for name, scene in (("panel_four", "journeys_four"), ("panel_overflow", "journeys_overflow")):
         canvas, _ = quest_log(ui, data, rects, scene)
         x, y, width, height = rects[scene]["AdventureGuideForeverPanel"]
-        images[name] = wm.scene(ui, [(crop(canvas, x - 6, y - 6, width + 12, height + 12), 0, 0)])
+        images[name] = drawing.wm.scene(ui, [(crop(canvas, x - 6, y - 6, width + 12, height + 12), 0, 0)])
 
     # The Barrens story chosen: lit over its numbered steps, their rings on the map, the others folded above it.
     canvas, _ = quest_log(ui, data, rects, "panel", data["panel"]["pins"])
-    images["chosen"] = wm.scene(ui, [(canvas, 0, 0)])
+    images["chosen"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     canvas, frame = quest_log(ui, data, rects, "search", data["panel"]["pins"])
     qx, qy, qw, qh = frame["quests"]
-    images["search"] = wm.scene(ui, [(crop(canvas, qx - 3, qy - 30, qw + 3 + 64, qh + 30 + 22), 0, 0)])
+    images["search"] = drawing.wm.scene(ui, [(crop(canvas, qx - 3, qy - 30, qw + 3 + 64, qh + 30 + 22), 0, 0)])
 
     art = explored_art(ui, data["panel"]["map"])
     canvas = shortest_path(ui, data)
-    images["map"] = wm.scene(ui, [(canvas, 0, 0)])
+    images["map"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     hovered = data["tooltip"]["hovered"] - 1
 
@@ -1349,11 +545,16 @@ def render(out):
         draw_player(canvas, frame_rects, PLAYER)
 
     canvas, frame = map_frame(ui, art, False, hover)
-    colours = {"title": wm.WHITE, "highlight": wm.WHITE, "normal": wm.NORMAL, "instruction": GREEN}
-    tip = wm.tooltip(
+    colours = {
+        "title": drawing.wm.WHITE,
+        "highlight": drawing.wm.WHITE,
+        "normal": drawing.wm.NORMAL,
+        "instruction": GREEN,
+    }
+    tip = drawing.wm.tooltip(
         ui,
         [
-            wm.TooltipLine(line["text"], tuple(line["color"]) if line.get("color") else colours[line["kind"]])
+            drawing.wm.TooltipLine(line["text"], tuple(line["color"]) if line.get("color") else colours[line["kind"]])
             for line in data["tooltip"]["lines"]
         ],
     )
@@ -1364,29 +565,31 @@ def render(out):
     tip_x, tip_y = px + pin_width / 2, py - pin_height / 2 - tip.height
     left, top = px - 120, tip_y - 30
     shot = crop(canvas, left, top, tip_x + tip.width + 40 - left, py + 90 - top)
-    images["tooltip"] = wm.scene(ui, [(shot, 0, 0), (tip, tip_x - left, tip_y - top)])
+    images["tooltip"] = drawing.wm.scene(ui, [(shot, 0, 0), (tip, tip_x - left, tip_y - top)])
 
     tracker = data["tracker"]
     blocks = [
-        wm.TrackerBlock(block["header"], [(line["text"], line["dash"]) for line in block["lines"]])
+        drawing.wm.TrackerBlock(block["header"], [(line["text"], line["dash"]) for line in block["lines"]])
         for block in tracker["blocks"]
     ]
-    canvas, tracked = wm.objective_tracker(ui, [wm.TrackerModule(tracker["header"], blocks)], container=False)
-    images["tracker"] = wm.scene(ui, [(canvas, 0, 0)])
+    canvas, tracked = drawing.wm.objective_tracker(
+        ui, [drawing.wm.TrackerModule(tracker["header"], blocks)], container=False
+    )
+    images["tracker"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
-    kinds = {"title": wm.MenuTitle, "button": wm.MenuButton}
-    menu, menu_rects = wm.context_menu(ui, [kinds[entry["kind"]](entry["text"]) for entry in data["menu"]])
+    kinds = {"title": drawing.wm.MenuTitle, "button": drawing.wm.MenuButton}
+    menu, menu_rects = drawing.wm.context_menu(ui, [kinds[entry["kind"]](entry["text"]) for entry in data["menu"]])
     bx, by, _, _ = tracked["blocks"][0]
     # A right-click on the block header: Blizzard_Menu opens the menu with its TOPLEFT at the cursor.
     fx, fy, _, _ = menu_rects["menu"]
-    images["menu"] = wm.scene(ui, [(canvas, 0, 0), (menu, bx + 60 - fx, by + 8 - fy)])
+    images["menu"] = drawing.wm.scene(ui, [(canvas, 0, 0), (menu, bx + 60 - fx, by + 8 - fy)])
 
     # The Adventure Guide window (docs/design.md §2.19) on each of its tabs.
     for scene in WINDOWS:
         width, height = WINDOW_SIZE
         canvas = ui.canvas(width + 2 * WINDOW_MARGIN, height + 2 * WINDOW_MARGIN + WINDOW_TABS)
         Layout(data[scene]["layout"], rects[scene]).draw(canvas)
-        images[scene] = wm.scene(ui, [(canvas, 0, 0)])
+        images[scene] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     out.mkdir(parents=True, exist_ok=True)
     written = []

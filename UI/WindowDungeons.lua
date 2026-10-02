@@ -11,7 +11,6 @@ local PAGE_W = Window.INSET_WIDTH - Window.RIGHT - RIGHT_X
 local BODY_Y, BODY_H, QUEST_W = TOP + HEADER_H + 38, 222, 272
 local DETAIL_H = BODY_H - 52
 local ROW_H, LIST_H, SLICE_MS = 52, 42, 1
-local HEADING_H = 22
 ---@type Frame
 local content
 ---@type AGFWindowCard
@@ -66,6 +65,17 @@ local selectedQuest
 ---@type table<integer, boolean>
 local expanded = {}
 local Refresh, Draw, SelectQuest
+
+local VIEWS = { "quests", "prep", "bosses", "loot" }
+
+---@param key string
+local function Muted(key)
+	return (key == "bosses" and not bosses and not source) or (key == "loot" and not source)
+end
+
+local function SourceMessage()
+	return sourceError and L.DUNGEON_SOURCE_FAILED or sourceRead and L.DUNGEON_NEEDS_QUESTIE or L.DUNGEON_LOADING
+end
 
 ---@param parent Frame
 ---@param text string
@@ -127,59 +137,52 @@ local function MapTooltip(button, place, row)
 	button:SetScript("OnHide", Leave)
 end
 
----@class AGFDungeonRow : Button
----@field Title FontString
----@field Info FontString
----@field Giver FontString
----@field Selected AGFArtSlice
----@field Map Button
----@field Expand AGFCollapseButton
----@field ItemIcon Texture
----@field value? table
-
----@class AGFDungeonListWidget
----@field frame AGFScrollFrame
----@field child Frame
----@field rows AGFDungeonRow[]
----@field values table[]
----@field tops number[]
----@field heights number[]
----@field height number
----@field rowHeight number
----@field headingHeight number
----@field width number
----@field paint fun(row: AGFDungeonRow, value: table)
-
----@param widget AGFDungeonListWidget
-local function PaintList(widget)
-	local scroll = widget.frame:GetVerticalScroll() or 0
-	local values, tops, heights = widget.values, widget.tops, widget.heights
-	local first = 1
-	while first <= #values and tops[first] + heights[first] <= scroll do
-		first = first + 1
-	end
-	for _, row in ipairs(widget.rows) do
-		row.value = nil
-		row:Hide()
-	end
-	local bottom, rowIndex = scroll + widget.height, 0
-	for index = first, #values do
-		if tops[index] >= bottom then
-			break
+---@param parent Frame
+---@param width number
+---@param rowHeight number
+---@param click fun(value: table)
+---@return AGFDungeonRow
+local function CreateListRow(parent, width, rowHeight, click)
+	local row = CreateFrame("Button", nil, parent) --[[@as AGFDungeonRow]]
+	row:SetSize(width, rowHeight - 2)
+	row.ItemIcon = row:CreateTexture(nil, "ARTWORK")
+	row.ItemIcon:SetSize(24, 24)
+	row.ItemIcon:SetPoint("TOPLEFT", 8, -5)
+	row.ItemIcon:Hide()
+	row.Selected = ns.Art.RowArt(row, true) --[[@as AGFArtSlice]]
+	row.Title = Text(row, "", 8, 5, width - 16, "GameFontNormal")
+	row.Title:SetWordWrap(false)
+	row.Info = Text(row, "", 8, 21, width - 16)
+	row.Info:SetWordWrap(false)
+	row.Giver = Text(row, "", 8, 35, width - 16, "GameFontDisableSmall")
+	row.Giver:SetWordWrap(false)
+	row.Map = Button(row, L.DUNGEON_MAP, width - 48, 24, 46, function()
+		if row.value and row.value.quest then
+			Dungeons.Go(row.value.quest.id)
 		end
-		rowIndex = rowIndex + 1
-		local row = widget.rows[rowIndex]
-		if not row then
-			break
+	end)
+	MapTooltip(row.Map)
+	row.Expand = CreateFrame("Button", nil, row, "CollapseButtonTemplate") --[[@as AGFCollapseButton]]
+	row.Expand:SetSize(20, 20)
+	row.Expand:SetPoint("TOPLEFT", 3, -2)
+	row.Expand:SetScript("OnClick", function()
+		if row.value and row.value.quest then
+			local id = row.value.quest.id
+			expanded[id] = not expanded[id]
+			Draw()
 		end
-		local value = values[index]
-		row.value = value
-		row:ClearAllPoints()
-		row:SetHeight(heights[index] - 2)
-		row:SetPoint("TOPLEFT", 0, -tops[index])
-		row:Show()
-		widget.paint(row, value)
-	end
+	end)
+	row:SetScript("OnClick", function()
+		if row.value and not row.value.heading then
+			click(row.value)
+		end
+	end)
+	row:SetScript("OnEnter", function()
+		local lines = { row.Title:GetText(), row.Info:GetText(), row.Giver:GetText() }
+		ns.Overview.ShowTooltip(row, lines)
+	end)
+	row:SetScript("OnLeave", GameTooltip_Hide)
+	return row
 end
 
 ---@param parent Frame
@@ -192,90 +195,7 @@ end
 ---@param click fun(value: table)
 ---@return AGFDungeonListWidget
 local function List(parent, x, y, width, height, rowHeight, paint, click)
-	local scroll = CreateFrame("ScrollFrame", nil, parent, "ScrollFrameTemplate") --[[@as AGFScrollFrame]]
-	scroll:SetPoint("TOPLEFT", x, -y)
-	scroll:SetSize(width, height)
-	scroll.ScrollBar:ClearAllPoints()
-	scroll.ScrollBar:SetPoint("TOPLEFT", scroll, "TOPRIGHT", 3, 0)
-	scroll.ScrollBar:SetPoint("BOTTOMLEFT", scroll, "BOTTOMRIGHT", 3, 0)
-	local child = CreateFrame("Frame", nil, scroll)
-	child:SetSize(width, height)
-	scroll:SetScrollChild(child)
-	local widget = {
-		frame = scroll,
-		child = child,
-		rows = {},
-		values = {},
-		tops = {},
-		heights = {},
-		height = height,
-		rowHeight = rowHeight,
-		headingHeight = HEADING_H,
-		width = width,
-		paint = paint,
-	}
-	for index = 1, math.ceil(height / math.min(rowHeight, HEADING_H)) + 1 do
-		local row = CreateFrame("Button", nil, child) --[[@as AGFDungeonRow]]
-		row:SetSize(width, rowHeight - 2)
-		row.ItemIcon = row:CreateTexture(nil, "ARTWORK")
-		row.ItemIcon:SetSize(24, 24)
-		row.ItemIcon:SetPoint("TOPLEFT", 8, -5)
-		row.ItemIcon:Hide()
-		row.Selected = ns.Art.RowArt(row, true) --[[@as AGFArtSlice]]
-		row.Title = Text(row, "", 8, 5, width - 16, "GameFontNormal")
-		row.Title:SetWordWrap(false)
-		row.Info = Text(row, "", 8, 21, width - 16)
-		row.Info:SetWordWrap(false)
-		row.Giver = Text(row, "", 8, 35, width - 16, "GameFontDisableSmall")
-		row.Giver:SetWordWrap(false)
-		row.Map = Button(row, L.DUNGEON_MAP, width - 48, 24, 46, function()
-			if row.value and row.value.quest then
-				Dungeons.Go(row.value.quest.id)
-			end
-		end)
-		MapTooltip(row.Map)
-		row.Expand = CreateFrame("Button", nil, row, "CollapseButtonTemplate") --[[@as AGFCollapseButton]]
-		row.Expand:SetSize(20, 20)
-		row.Expand:SetPoint("TOPLEFT", 3, -2)
-		row.Expand:SetScript("OnClick", function()
-			if row.value and row.value.quest then
-				local id = row.value.quest.id
-				expanded[id] = not expanded[id]
-				Draw()
-			end
-		end)
-		row:SetScript("OnClick", function()
-			if row.value and not row.value.heading then
-				click(row.value)
-			end
-		end)
-		row:SetScript("OnEnter", function()
-			local lines = { row.Title:GetText(), row.Info:GetText(), row.Giver:GetText() }
-			ns.Overview.ShowTooltip(row, lines)
-		end)
-		row:SetScript("OnLeave", GameTooltip_Hide)
-		widget.rows[index] = row
-	end
-	scroll:HookScript("OnVerticalScroll", function()
-		PaintList(widget)
-	end)
-	return widget
-end
-
----@param widget AGFDungeonListWidget
----@param values table[]
-local function SetList(widget, values)
-	widget.values = values
-	local heights, tops, total = {}, {}, 0
-	for index, value in ipairs(values) do
-		heights[index] = value.heading and widget.headingHeight or widget.rowHeight
-		tops[index] = total
-		total = total + heights[index]
-	end
-	widget.heights, widget.tops = heights, tops
-	widget.child:SetHeight(math.max(widget.height, total))
-	widget.frame.ScrollBar:SetShown(total > widget.height)
-	PaintList(widget)
+	return Window.CreateList(parent, x, y, width, height, rowHeight, paint, click, CreateListRow)
 end
 
 ---@param dungeon AGFDungeon
@@ -287,45 +207,12 @@ local function Range(dungeon)
 	return ""
 end
 
----@param quest AGFDungeonQuest
----@return string
-local function Status(quest)
-	local labels = {
-		done = L.DUNGEON_DONE,
-		log = L.DUNGEON_IN_LOG,
-		available = L.DUNGEON_PICKUP,
-		pre = L.DUNGEON_PRE,
-		unknown = L.DUNGEON_UNAVAILABLE,
-	}
-	return quest.status == "level" and L.DUNGEON_LEVEL:format(quest.requiredLevel) or labels[quest.status]
-end
-
----@param place? AGFPlace
----@return string
-local function Place(place)
-	if not place or not place.name or place.name == "" then
-		return ""
-	end
-	local hub = place.hub and ns.Data.hubs[place.hub]
-	local name = hub and hub.name:match("^(.-),") or hub and hub.name or ns.State.ZoneName(place.map)
-	return place.name .. (name and name ~= "" and L.SEPARATOR .. name or "")
-end
-
----@param quest AGFDungeonQuest
----@return string
-local function Giver(quest)
-	local data = ns.Data.quests[quest.id]
-	return Place(data and data.start)
-end
-
-local requestedItems = {}
 ---@param id integer
 ---@return integer?
 local function ItemIcon(id)
 	local icon = C_Item.GetItemIconByID(id)
-	if not icon and not requestedItems[id] then
-		requestedItems[id] = true
-		C_Item.RequestLoadItemDataByID(id)
+	if not icon then
+		Dungeons.RequestItem(id)
 	end
 	return icon
 end
@@ -337,8 +224,8 @@ local function PaintQuest(row, value)
 	row.Title:SetText((ns.State.QuestTitle(quest.id) or quest.title))
 	row.Title:ClearAllPoints()
 	row.Title:SetPoint("TOPLEFT", value.chain and 34 or 24, -5)
-	row.Info:SetText(Status(quest))
-	row.Giver:SetText(Giver(quest))
+	row.Info:SetText(Dungeons.QuestStatus(quest))
+	row.Giver:SetText(Dungeons.GiverText(quest))
 	row.Title:SetWidth(QUEST_W - (value.chain and 34 or 24) - 74 - 16)
 	row.Info:ClearAllPoints()
 	row.Info:SetPoint("TOPRIGHT", -8, -7)
@@ -361,7 +248,7 @@ local function PaintQuest(row, value)
 	row.Expand:SetShown(not value.chain and #Dungeons.Chain(ns.Data, quest.id, function() end) > 1)
 	row.Expand:UpdateCollapsedState(not expanded[quest.id])
 	row:SetScript("OnEnter", function()
-		local lines = { row.Title:GetText(), Status(quest), Giver(quest) }
+		local lines = { row.Title:GetText(), Dungeons.QuestStatus(quest), Dungeons.GiverText(quest) }
 		if value.alternative then
 			lines[#lines + 1] = L.DUNGEON_ALTERNATIVE
 		end
@@ -375,35 +262,6 @@ local function PaintQuest(row, value)
 		ns.Overview.ShowTooltip(row, lines)
 	end)
 	ns.Art.SetSliceShown(row.Selected, selectedQuest == quest.id)
-end
-
-local function QuestRows()
-	if not page then
-		return {}
-	end
-	local values = {}
-	for _, quest in ipairs(page.quests) do
-		values[#values + 1] = { quest = quest }
-		if expanded[quest.id] then
-			local chain = Dungeons.Chain(ns.Data, quest.id, function() end)
-			local alternatives = {}
-			for _, id in ipairs(chain) do
-				for _, pre in ipairs((ns.Data.quests[id] or {}).preAny or {}) do
-					alternatives[pre] = true
-				end
-			end
-			for _, id in ipairs(chain) do
-				if id ~= quest.id and Dungeons.ForCharacter(ns.Data.quests[id], ns.State.Player()) then
-					values[#values + 1] = {
-						quest = Dungeons.Quest(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), id),
-						chain = true,
-						alternative = alternatives[id],
-					}
-				end
-			end
-		end
-	end
-	return values
 end
 
 ---@param row AGFDungeonRow
@@ -426,9 +284,7 @@ local function PaintOther(row, value)
 	row.Giver:SetPoint("TOPLEFT", icon and 44 or 8, -35)
 	row.Title:SetText(value.title)
 	row.Title:SetFontObject((value.heading or value.boss) and "GameFontNormal" or "GameFontHighlight")
-	---@type table<integer, { r: number, g: number, b: number }>
-	local qualityColors = rawget(_G, "ITEM_QUALITY_COLORS")
-	local color = value.item and qualityColors and qualityColors[value.quality]
+	local color = value.item and ITEM_QUALITY_COLORS[value.quality]
 	if color then
 		row.Title:SetTextColor(color.r, color.g, color.b)
 	elseif value.boss then
@@ -468,70 +324,6 @@ local function PaintOther(row, value)
 	ns.Art.SetSliceShown(row.Selected, false)
 end
 
----@param item integer
----@return string?
-local function ItemName(item)
-	local name = C_Item.GetItemNameByID(item)
-	if not name and not requestedItems[item] then
-		requestedItems[item] = true
-		C_Item.RequestLoadItemDataByID(item)
-	end
-	return name
-end
-
-local function PrepRows()
-	if not page then
-		return {}
-	end
-	local values, seen = {}, {}
-	for _, entry in ipairs(page.prep) do
-		if entry.quest then
-			values[#values + 1] = {
-				title = entry.quest.title,
-				info = (entry.kind == "pre" and L.DUNGEON_PRE_ELSEWHERE or L.DUNGEON_OUTSIDE) .. L.SEPARATOR .. Status(
-					entry.quest
-				),
-				giver = Giver(entry.quest),
-				quest = entry.quest,
-			}
-		elseif entry.gate then
-			local gate = entry.gate
-			---@cast gate AGFEntranceGate
-			local lines = {}
-			if gate.level > 0 then
-				lines[#lines + 1] = L.DUNGEON_ENTRY_LEVEL:format(gate.level)
-			end
-			if gate.items then
-				local items = {}
-				for _, item in ipairs(gate.items) do
-					local name = ItemName(item)
-					if name then
-						items[#items + 1] = name
-					end
-				end
-				if #items == #gate.items then
-					lines[#lines + 1] = L.DUNGEON_REQUIRES_ITEM:format(table.concat(items, L.DUNGEON_OR))
-				end
-			end
-			if gate.quest then
-				local quest = ns.Data.quests[gate.quest]
-				lines[#lines + 1] = L.WHY_COMPLETED:format(
-					ns.State.QuestTitle(gate.quest) or (quest and quest.title) or L.WHY_EARLIER_QUEST
-				)
-			end
-			if gate.conditional then
-				lines[#lines + 1] = L.DUNGEON_GATE_UNKNOWN
-			end
-			local text = table.concat(lines, L.SEPARATOR)
-			if text ~= "" and not seen[text] then
-				seen[text] = true
-				table.insert(values, 1, { title = L.DUNGEON_ENTRANCE_REQUIREMENTS, info = text, entrance = true })
-			end
-		end
-	end
-	return values
-end
-
 function SelectQuest(id)
 	selectedQuest = id
 	detailScroll:SetVerticalScroll(0)
@@ -558,7 +350,7 @@ local function DrawDetail()
 	Line(detailTitle, ns.State.QuestTitle(quest.id) or quest.title)
 	local info = {}
 	if quest.level and quest.level > 0 then
-		info[#info + 1] = L.DUNGEON_QUEST_LEVEL:format(quest.level)
+		info[#info + 1] = L.DUNGEON_LEVEL:format(quest.level)
 	end
 	if quest.xp and quest.xp > 0 then
 		info[#info + 1] = L.DUNGEON_XP:format(BreakUpLargeNumbers(quest.xp))
@@ -572,7 +364,7 @@ local function DrawDetail()
 	Line(detailObjective, objective or "")
 	cursor = cursor + 6
 	local record = ns.Data.quests[quest.id]
-	local start, finish = Place(record and record.start), Place(record and record.finish)
+	local start, finish = Dungeons.PlaceText(record and record.start), Dungeons.PlaceText(record and record.finish)
 	Line(detailGiver, start ~= "" and L.DUNGEON_START:format(start) or "")
 	Line(detailEnd, finish ~= "" and finish ~= start and L.DUNGEON_END:format(finish) or "")
 	local items = source and source.rewards[quest.id] or {}
@@ -632,43 +424,6 @@ local function DrawDetail()
 	giver:SetEnabled(not ns.Setting("wanderer"))
 end
 
--- The catalog with its section headings: dungeons, the announced Forever raids, then the client's other raid maps.
----@return table[]
-local function CatalogRows()
-	local dungeons, current, others = {}, {}, {}
-	for _, entry in ipairs(catalog) do
-		if entry.raid then
-			if entry.current then
-				current[#current + 1] = entry
-			else
-				others[#others + 1] = entry
-			end
-		else
-			dungeons[#dungeons + 1] = entry
-		end
-	end
-	local rows = {}
-	if #dungeons > 0 then
-		rows[#rows + 1] = { heading = true, title = L.DUNGEON_LIST_DUNGEONS }
-	end
-	for _, entry in ipairs(dungeons) do
-		rows[#rows + 1] = entry
-	end
-	if #current > 0 then
-		rows[#rows + 1] = { heading = true, title = L.DUNGEON_LIST_RAIDS }
-	end
-	for _, entry in ipairs(current) do
-		rows[#rows + 1] = entry
-	end
-	if #others > 0 then
-		rows[#rows + 1] = { heading = true, title = L.DUNGEON_LIST_OTHER_RAIDS }
-	end
-	for _, entry in ipairs(others) do
-		rows[#rows + 1] = entry
-	end
-	return rows
-end
-
 function Draw()
 	if not page or not content:IsVisible() then
 		return
@@ -686,7 +441,7 @@ function Draw()
 		meta[#meta + 1] = L.DUNGEON_RAID_PLAYERS:format(dungeon.players)
 	end
 	if dungeon.minimum and dungeon.minimum > 0 then
-		meta[#meta + 1] = L.DUNGEON_ENTRY_LEVEL:format(dungeon.minimum)
+		meta[#meta + 1] = L.WHY_LEVEL:format(dungeon.minimum)
 	end
 	if page.xp > 0 then
 		meta[#meta + 1] = L.DUNGEON_REMAINING_XP:format(BreakUpLargeNumbers(page.xp))
@@ -716,14 +471,14 @@ function Draw()
 		offered = offered or card.key == key
 	end
 	journey:SetShown(offered)
-	SetList(list, CatalogRows())
+	Window.SetList(list, Dungeons.CatalogRows(catalog))
 	if listSelection ~= dungeon.id then
 		listSelection = dungeon.id
 		for index, entry in ipairs(list.values) do
 			if entry.id == dungeon.id then
-				local y, top = list.tops[index] or 0, list.frame:GetVerticalScroll() or 0
+				local y, top = list.tops[index], list.frame:GetVerticalScroll()
 				if y < top or y + list.heights[index] > top + list.height then
-					list.frame:SetVerticalScroll(math.min(y, math.max(0, list.child:GetHeight() - list.height)))
+					Window.ScrollListTo(list, index)
 				end
 			end
 		end
@@ -732,13 +487,10 @@ function Draw()
 	other.frame:SetShown(view ~= "quests")
 	-- The maps overlay owns its selected state while visible; the dungeon detail
 	-- view must never leave the Maps tab looking selected underneath it.
-	if mapsButton then
-		mapsButton:SetTabSelected(false)
-	end
+	mapsButton:SetTabSelected(false)
 	other.rowHeight = (view == "prep" or view == "bosses") and ROW_H or 44
-	subTabs[3]:SetText(L.DUNGEON_BOSSES_TAB)
-	for index, key_ in ipairs({ "quests", "prep", "bosses", "loot" }) do
-		local muted = (key_ == "bosses" and not bosses and not source) or (key_ == "loot" and not source)
+	for index, key_ in ipairs(VIEWS) do
+		local muted = Muted(key_)
 		subTabs[index]:SetTabSelected(key_ == view)
 		subTabs[index].Text:ClearAllPoints()
 		subTabs[index].Text:SetPoint("CENTER", 0, 0)
@@ -748,7 +500,7 @@ function Draw()
 	end
 	note:SetText(not sourceRead and L.DUNGEON_LOADING or "")
 	if view == "quests" then
-		SetList(quests, QuestRows())
+		Window.SetList(quests, Dungeons.QuestRows(page, expanded))
 		if #page.quests == 0 then
 			Window.SetEmpty(
 				empty,
@@ -759,13 +511,13 @@ function Draw()
 			note:SetText("")
 		end
 	elseif view == "prep" then
-		local rows = PrepRows()
-		SetList(other, rows)
+		local rows = Dungeons.PrepRows(page)
+		Window.SetList(other, rows)
 		if #rows == 0 then
 			Window.SetEmpty(empty, L.DUNGEON_NO_PREP)
 		end
 	else
-		local rows = {}
+		local rows
 		local known
 		if view == "bosses" then
 			known = Dungeons.Bosses(source, dungeon.id, bosses)
@@ -778,52 +530,11 @@ function Draw()
 		if view == "loot" and source then
 			rows = Dungeons.LootRows(source, dungeon.id, Dungeons.Bosses(source, dungeon.id, bosses))
 		else
-			local loot = source and Dungeons.LootRows(source, dungeon.id, known or {}) or {}
-			for _, entry in ipairs(known or {}) do
-				local bossMeta = {
-					entry.rank == 1 and L.DUNGEON_ELITE or entry.rank == 2 and L.DUNGEON_RARE_ELITE or L.DUNGEON_BOSS,
-				}
-				if entry.low and entry.low > 0 then
-					local color = GetQuestDifficultyColor(entry.low)
-					local level = entry.high
-							and entry.high > entry.low
-							and L.DUNGEON_ENEMY_LEVELS:format(entry.low, entry.high)
-						or L.DUNGEON_LEVEL:format(entry.low)
-					table.insert(
-						bossMeta,
-						1,
-						("|cff%02x%02x%02x%s|r"):format(color.r * 255, color.g * 255, color.b * 255, level)
-					)
-				end
-				local count, lootIndex = 0, nil
-				for index, item in ipairs(loot) do
-					if item.heading then
-						if lootIndex then
-							break
-						end
-						if item.bossID == entry.id and not entry.journal then
-							lootIndex = index
-						end
-					elseif lootIndex then
-						count = count + 1
-					end
-				end
-				rows[#rows + 1] = {
-					title = entry.name,
-					boss = true,
-					lootIndex = lootIndex,
-					info = table.concat(bossMeta, L.SEPARATOR),
-					description = entry.description,
-					giver = count > 0 and L.DUNGEON_BOSS_LOOT:format(count) or L.DUNGEON_BOSS_LOOT_UNKNOWN,
-				}
-			end
+			rows = Dungeons.BossRows(source, dungeon.id, known or {})
 		end
-		SetList(other, rows)
+		Window.SetList(other, rows)
 		if not known then
-			Window.SetEmpty(
-				empty,
-				sourceError and L.DUNGEON_SOURCE_FAILED or sourceRead and L.DUNGEON_NEEDS_QUESTIE or L.DUNGEON_LOADING
-			)
+			Window.SetEmpty(empty, SourceMessage())
 			note:SetText("")
 		elseif #rows == 0 then
 			Window.SetEmpty(empty, view == "bosses" and L.DUNGEON_NO_BOSSES or L.DUNGEON_NO_RECORDS)
@@ -895,8 +606,7 @@ function Refresh()
 		end
 		ns.WindowDB().dungeon = dungeon.id
 		page = Dungeons.Page(ns.Data, player, ns.State.Completed(), ns.State.Log(), dungeon, yield)
-		local _
-		bosses, _, journalIcon = Dungeons.Journal(dungeon.id, yield)
+		bosses, journalIcon = Dungeons.Journal(dungeon.id, yield)
 		local selected = selectedQuest and ns.Data.quests[selectedQuest]
 		if #page.quests == 0 or (selectedQuest and (not selected or not Dungeons.ForCharacter(selected, player))) then
 			selectedQuest = nil
@@ -1081,18 +791,16 @@ local function BuildContents(parent)
 		end
 	end)
 	for index, label in ipairs({ L.DUNGEON_QUESTS_TAB, L.DUNGEON_PREP_TAB, L.DUNGEON_BOSSES_TAB, L.DUNGEON_LOOT_TAB }) do
-		local key = ({ "quests", "prep", "bosses", "loot" })[index]
+		local key = VIEWS[index]
 		local tab = CreateFrame("Button", nil, content, "TabSystemTopButtonTemplate") --[[@as AGFTopTab]]
 		tab:SetText(label)
 		tab:SetSize(78, 32)
 		tab:HandleRotation()
 		tab:SetPoint("BOTTOMLEFT", body, "TOPLEFT", 8 + (index - 1) * 82, 0)
 		tab:SetScript("OnEnter", function()
-			if (key == "bosses" and not bosses and not source) or (key == "loot" and not source) then
+			if Muted(key) then
 				ns.Overview.ShowTooltip(tab, {
-					sourceError and L.DUNGEON_SOURCE_FAILED
-						or sourceRead and L.DUNGEON_NEEDS_QUESTIE
-						or L.DUNGEON_LOADING,
+					(SourceMessage()),
 				})
 			end
 		end)
@@ -1132,12 +840,7 @@ local function BuildContents(parent)
 		elseif value.boss and value.lootIndex then
 			view = "loot"
 			Draw()
-			other.frame:SetVerticalScroll(
-				math.min(
-					(value.lootIndex - 1) * other.rowHeight,
-					math.max(0, #other.values * other.rowHeight - other.height)
-				)
-			)
+			Window.ScrollListTo(other, value.lootIndex)
 		elseif value.quest then
 			view = "quests"
 			SelectQuest(value.quest.id)

@@ -1,3 +1,6 @@
+-- Run from the repository root: luajit tests/feature_rules_spec.lua
+-- Rules that span features: completion providers, PvP, saved order and sessions, town givers, the hearth hint,
+-- step sounds and skipped givers.
 local harness = dofile("tests/harness.lua")
 local checks = 0
 local function eq(a, b, label)
@@ -70,7 +73,7 @@ do
 	local point = P.DungeonEntrance(36)
 	point.x = 0
 	eq(P.DungeonEntrance(36).x, 0.42, "fresh entrance")
-	eq(P.GoToEntrance(36), true)
+	eq(h.ns.Dungeons.GoEntrance(36), true)
 	eq(h.waypoint.uiMapID, 1436, "entrance uses outdoor UiMapID")
 	local _, missing = P.DungeonEntrance(999)
 	eq(missing, "unknown")
@@ -161,18 +164,18 @@ do
 	eq(O.CanMove(4, 1), true)
 	eq(O.Move(4, 1), true)
 	eq(O.IsCustom(), true)
-	O.Apply(route, h.ns.Prefs())
-	eq(route.steps[1], extra)
+	eq(O.Merge(steps, h.ns.Prefs().customOrders.test)[1], extra)
 	O.Reset()
 	eq(O.IsCustom(), false)
 	h.ns.Prefs().sessionMinutes = 15
-	local trimmed = S.Apply(route)
+	local player = h.ns.State.Player()
+	local trimmed = S.Apply(route, player)
 	eq(trimmed.chosen, true)
 	local saved = h.ns.Prefs().sessionCommit
 	eq(saved ~= nil, true)
 	local added = step("added", "trainer")
 	route.steps = { added }
-	trimmed = S.Apply(route)
+	trimmed = S.Apply(route, player)
 	eq(#trimmed.steps, 0, "new tasks do not refill")
 	eq(trimmed.chosen, true, "empty keeps choice")
 	eq(S.Info().empty, true)
@@ -264,13 +267,13 @@ do
 	})
 	t.ns.StartRoute()
 	t.flush()
-	local sent = t.ns.Integrations.Guided()
+	local sent = t.ns.Guidance.Guided()
 	if #sent > 1 then
 		t.spfAdvance()
 	end
 	t.fire("SUPER_TRACKING_CHANGED")
 	t.flush()
-	local current = t.ns.Integrations.CurrentStep()
+	local current = t.ns.Guidance.CurrentStep()
 	eq(current.title, t.spfRoute.stops[t.spfRoute.index].title)
 	local block = t.tracker.liveBlocks[current.key]
 	eq(block.header, current.title)
@@ -320,11 +323,11 @@ do
 			journey = "zone:1440",
 			steps = {},
 			journeys = {
-				{ key = "zone:1440", kind = "story", map = 1413 },
-				{ key = "zone:1440", kind = "nextzone", map = 1440 },
-				{ key = "zone:1436", kind = "nextzone", map = 1436 },
-				{ key = "zone:1437", kind = "nextzone", map = 1437 },
-				{ key = "zone:1442", kind = "nextzone", map = 1442 },
+				{ key = "zone:1440", zone = 1440, kind = "story", map = 1413 },
+				{ key = "zone:1440", zone = 1440, kind = "nextzone", map = 1440 },
+				{ key = "zone:1436", zone = 1436, kind = "nextzone", map = 1436 },
+				{ key = "zone:1437", zone = 1437, kind = "nextzone", map = 1437 },
+				{ key = "zone:1442", zone = 1442, kind = "nextzone", map = 1442 },
 			},
 		}
 	end
@@ -353,14 +356,15 @@ do
 	local route = { chosen = true, journey = "test", journeys = {}, steps = { work } }
 	route.journeys = { { key = "test", steps = route.steps } }
 	h.ns.Prefs().sessionMinutes, h.ns.Prefs().sessionCommit = 15, nil
-	local trimmed = S.Apply(route)
+	local player = h.ns.State.Player()
+	local trimmed = S.Apply(route, player)
 	eq(#trimmed.steps, 1, "existing carried work fits")
 	work.quests = { 1, 2 }
 	work.objectives[2] = { id = 2, slot = 0, need = 1, have = 0 }
-	eq(#S.Apply(route).steps, 0, "new merged quest does not refill the session")
+	eq(#S.Apply(route, player).steps, 0, "new merged quest does not refill the session")
 	work.quests, work.objectives[2] = { 1 }, nil
 	route.steps = { pick, work, hand }
-	eq(#S.Apply(route).steps, 0, "a new prerequisite cannot be omitted")
+	eq(#S.Apply(route, player).steps, 0, "a new prerequisite cannot be omitted")
 end
 
 -- Completion is evidenced by objectives, not merely by a vanished route row.
@@ -372,7 +376,7 @@ do
 	local previous = { chosen = true, journey = "sound-test", steps = { work } }
 	local current = { chosen = true, journey = "sound-test", steps = {} }
 	local before = #h.sounds
-	h.ns.Sound.Observe(previous, current, {}, {})
+	h.ns.Sound.Observe(previous, current, { completed = {}, log = {} })
 	eq(#h.sounds, before, "abandoning does not play completion")
 	local log = {
 		[1] = {
@@ -384,8 +388,8 @@ do
 			},
 		},
 	}
-	h.ns.Sound.Observe(previous, current, {}, log)
-	h.ns.Sound.Observe(previous, current, {}, log)
+	h.ns.Sound.Observe(previous, current, { completed = {}, log = log })
+	h.ns.Sound.Observe(previous, current, { completed = {}, log = log })
 	eq(#h.sounds, before + 1, "completed area sounds once while another objective remains")
 	h.ns.Data = data
 end
@@ -400,4 +404,4 @@ do
 end
 
 clean(h)
-print(("batch4_spec: %d checks passed"):format(checks))
+print(("feature_rules_spec: %d checks passed"):format(checks))

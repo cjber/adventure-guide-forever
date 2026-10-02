@@ -54,35 +54,23 @@ end
 -- visible in the addon-owned block even when the client has not supplied live
 -- quest text yet; the generated data still has the title and level.
 local function QuestLine(step, questID)
-	local log = ns.State.Log()
-	local entry = log and log[questID]
-	local quest = ns.Data.quests[questID]
-	local title = (entry and entry.title) or (quest and quest.title) or step.questTitle or step.title
-	local level = (entry and entry.level) or (quest and quest.level)
-	if level == -1 then
-		level = ns.State.Player().level
+	local title, color = ns.Pins.QuestLineText(questID)
+	if title == "" then
+		return step.questTitle or step.title
 	end
-	if level and level > 0 then
-		local color = GetQuestDifficultyColor(level)
-		return CreateColor(color.r, color.g, color.b):WrapTextInColorCode(L.TRACKER_QUEST:format(level, title))
-	end
-	return title
+	return CreateColor(color.r, color.g, color.b):WrapTextInColorCode(title)
 end
 
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
 local ModuleMixin = { headerText = L.TITLE, blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
 
 ---@param block AGFTrackerBlock the header's own block: the aside's goes to its place, the journey's end opens the guide
----and the story's does nothing; for the step's, ns.Integrations.CurrentStep() is used since it's always current
+---and the story's does nothing; for the step's, ns.Guidance.CurrentStep() is used since it's always current
 ---@param mouseButton string
 function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 	local aside = ns.Asides.Current()
 	if block.id == ASIDE and aside then
-		if mouseButton == "RightButton" then
-			ns.Asides.Open(self:GetContextMenuParent(), "MENU_ADVENTURE_GUIDE_FOREVER_ASIDE", aside)
-		else
-			ns.Asides.Go(aside)
-		end
+		ns.Asides.Click(self:GetContextMenuParent(), mouseButton, aside)
 		return
 	elseif block.id == JOURNEY then
 		-- Back to the story's start: the same journey, guided from its first step (docs/design.md §2.10).
@@ -97,7 +85,7 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 		return
 	end
 	if mouseButton ~= "RightButton" then
-		local step = ns.Integrations.CurrentStep()
+		local step = ns.Guidance.CurrentStep()
 		if step and ns.Setting("trackRouteQuests") then
 			ns.TrackRouteQuests()
 		end
@@ -111,7 +99,7 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 		end
 		return
 	end
-	ns.Menu.Open(self:GetContextMenuParent(), "MENU_ADVENTURE_GUIDE_FOREVER_TRACKER", ns.Integrations.CurrentStep())
+	ns.Menu.Open(self:GetContextMenuParent(), ns.Guidance.CurrentStep())
 end
 
 -- The title's click starts the route when the setting says so, as an aside's with a place does, so each warns as Go
@@ -127,7 +115,7 @@ function ModuleMixin:OnBlockHeaderEnter(block)
 	if not ns.Integrations.ReplacesJourney() then
 		return
 	end
-	local step, aside = ns.Integrations.CurrentStep(), ns.Asides.Current()
+	local step, aside = ns.Guidance.CurrentStep(), ns.Asides.Current()
 	local title = (block.id == ASIDE and aside and aside.place and aside.text)
 		or (not NOT_STEP[block.id] and step and ns.Setting("titleStartsRoute") and step.title)
 	if title then
@@ -186,7 +174,7 @@ function ModuleMixin:LayoutContents()
 			return
 		end
 	end
-	local step = ns.Integrations.CurrentStep()
+	local step = ns.Guidance.CurrentStep()
 	if not step then
 		if ns.QuestieBuilding() then
 			local loading = self:GetBlock(LOADING)
@@ -232,7 +220,7 @@ function ModuleMixin:LayoutContents()
 		block:AddObjective(line, place)
 	end
 	local resume = ns.Resume(step)
-	-- A lone hand-in, a turn-in or a town's, is titled "Turn in: …", which already says it is ready.
+	-- A lone hand-in, a turn-in or a town's, is titled "Turn in: %s" (L.TURN_IN), which already says it is ready.
 	local handIn = step.kind == "turnin" or (step.kind == "town" and #step.quests == 1 and #step.handins == 1)
 	-- Mid-line, a reason that is a sentence of its own ("Continues a story you started") loses its capital.
 	local reason = resume and L.RESUME:format((resume:gsub("^%u", string.lower))) or (not handIn and step.reason) or nil
@@ -266,15 +254,6 @@ end
 ---@type AGFTrackerModule?
 local module
 
-local function Available()
-	return ns.TrackerHost
-end
-
----@param trackerModule AGFTrackerModule
-local function Attach(trackerModule)
-	ns.TrackerHost.Attach(trackerModule)
-end
-
 local function WarnIfUnattached()
 	if module and not ns.TrackerHost.IsAttached(module) then
 		ns.Print(L.TRACKER_UNATTACHED)
@@ -282,7 +261,7 @@ local function WarnIfUnattached()
 end
 
 local function Register()
-	if not Available() then
+	if not ns.TrackerHost then
 		return
 	end
 	local frame =
@@ -292,10 +271,10 @@ local function Register()
 	Mixin(module, ModuleMixin)
 	module:SetHeader(ModuleMixin.headerText)
 	module.uiOrder = UI_ORDER
-	Attach(module)
+	ns.TrackerHost.Attach(module)
 	EventUtil.ContinueAfterAllEvents(function()
 		C_Timer.After(0, function()
-			Attach(module)
+			ns.TrackerHost.Attach(module)
 		end)
 		C_Timer.After(5, WarnIfUnattached)
 	end, "PLAYER_ENTERING_WORLD", "VARIABLES_LOADED")
@@ -352,7 +331,7 @@ local function OnRouteChange()
 	if journeyDone then
 		journeyDone = not journeyDone.seen and { seen = true } or nil
 	end
-	local step = ns.Integrations.CurrentStep()
+	local step = ns.Guidance.CurrentStep()
 	if finished and not (step and tContains(step.quests, finished.quest)) then
 		local key = step and step.key or ""
 		if finished.key == nil then
@@ -367,6 +346,6 @@ end
 Register()
 ns.OnRouteChange(OnRouteChange)
 ns.Integrations.OnTravelChange(Refresh)
-ns.Integrations.OnGuidanceChange(Refresh)
+ns.Guidance.OnChange(Refresh)
 ns.Asides.OnChange(Refresh)
 ns.Moments.OnChange(Refresh)

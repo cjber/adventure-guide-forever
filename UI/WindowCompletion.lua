@@ -9,15 +9,23 @@ local Window, Overview = ns.Window, ns.Overview
 -- click featuring one. What Legacy counts is completion, never a quest the player can take now. Without a Legacy
 -- Forever that has the API the tab stays, greyed, and says what to install.
 
-local FEATURED_WIDTH, FEATURED_HEIGHT, FEATURED_SPAN, RING = 440, 178, 900, 44
+local FEATURED_WIDTH, FEATURED_HEIGHT, SPAN = Window.Cards.width, Window.Cards.height, 900
 local CATEGORY_TOP, CATEGORY_PITCH, CATEGORY_COLUMNS = 72, 16, 2
 local TARGET_ROWS, TARGET_HEIGHT, TARGET_PITCH, HEAD = 3, 44, 49, 18
-local COLUMNS, GRID_GAP, GRID_SPAN, GRID_RING, GRID_PAD = 4, 10, 900, 30, 14
+local COLUMNS, GRID_GAP, GRID_PAD = Window.Cards.columns, Window.Cards.gap, Window.Cards.pad
 local BAR_GAP = 8
 local LEGACY_ICON = "Legacy-Rewards-Tracker-Icon"
 local DONE_MARK = "|A:UI-QuestTracker-Tracker-Check:12:12|a"
 -- Legacy's categories in its own order, and each target kind's mark.
-local CATEGORIES = { "areas", "taxis", "dungeons", "raids", "legacy", "reputations", "quests" }
+local CATEGORIES = {
+	{ key = "areas", label = L.COMPLETION_CATEGORY_AREAS },
+	{ key = "taxis", label = L.COMPLETION_CATEGORY_TAXIS },
+	{ key = "dungeons", label = L.COMPLETION_CATEGORY_DUNGEONS },
+	{ key = "raids", label = L.COMPLETION_CATEGORY_RAIDS },
+	{ key = "legacy", label = L.COMPLETION_CATEGORY_LEGACY },
+	{ key = "reputations", label = L.COMPLETION_CATEGORY_REPUTATIONS },
+	{ key = "quests", label = L.COMPLETION_CATEGORY_QUESTS },
+}
 local TARGET_ICONS = {
 	explore = "poi-town",
 	instance = "Dungeon",
@@ -27,18 +35,14 @@ local TARGET_ICONS = {
 }
 
 local LEFT, TOP = Window.LEFT, Window.TOP
-local WIDTH = Window.INSET_WIDTH - LEFT - Window.RIGHT
-local GRID_TOP = TOP + FEATURED_HEIGHT + Window.DIVIDER_SPAN
-local GRID_WIDTH = (WIDTH - (COLUMNS - 1) * GRID_GAP) / COLUMNS
+local GRID_TOP = Window.Cards.gridTop
+local GRID_WIDTH = Window.Cards.gridWidth
 local GRID_HEIGHT = Window.INSET_HEIGHT - 12 - GRID_TOP
-local SIDE_LEFT = LEFT + FEATURED_WIDTH + 12
-local SIDE_WIDTH = WIDTH - FEATURED_WIDTH - 12
+local SIDE_LEFT = Window.Cards.sideLeft
+local SIDE_WIDTH = Window.Cards.sideWidth
 local CATEGORY_WIDTH = (FEATURED_WIDTH - 36) / CATEGORY_COLUMNS
 
----@class AGFCompletionCard : AGFWindowCard
----@field Icon AGFRingIcon
----@field Title FontString
----@field Reason FontString
+---@class AGFCompletionCard : AGFWindowFeatureCard
 ---@field Categories FontString[]
 ---@field Bar AGFProgressBar
 ---@field Foot FontString
@@ -126,16 +130,9 @@ end
 ---@param isFeatured boolean
 ---@return AGFCompletionCard
 local function CreateCard(parent, isFeatured)
-	local card = Window.CreateCard(parent, true) --[[@as AGFCompletionCard]]
-	local width, height = isFeatured and FEATURED_WIDTH or GRID_WIDTH, isFeatured and FEATURED_HEIGHT or GRID_HEIGHT
-	Window.SizeCard(card, width, height, 0.75)
-	local content = CreateFrame("Frame", nil, card)
-	content:SetAllPoints()
-	content:SetFrameLevel(card:GetFrameLevel() + 5)
-	local ring = isFeatured and RING or GRID_RING
+	local feature, content = Window.CreateFeatureCard(parent, isFeatured, GRID_HEIGHT)
+	local card = feature --[[@as AGFCompletionCard]]
 	local pad = isFeatured and 18 or GRID_PAD
-	card.Icon = Window.CreateRingIcon(content, ring)
-	card.Icon:SetPoint("TOPLEFT", pad, -pad)
 	Window.SetRingIcon(card.Icon, LEGACY_ICON)
 	card.Title = content:CreateFontString(nil, "ARTWORK", isFeatured and "GameFontNormalHuge" or "GameFontNormal")
 	card.Reason =
@@ -145,11 +142,6 @@ local function CreateCard(parent, isFeatured)
 	card.Foot:SetWordWrap(false)
 	card.Categories = {}
 	if isFeatured then
-		local left = pad + ring + 14
-		card.Title:SetPoint("TOPLEFT", left, -16)
-		card.Title:SetPoint("RIGHT", -16, 0)
-		card.Reason:SetPoint("TOPLEFT", left, -42)
-		card.Reason:SetPoint("RIGHT", -16, 0)
 		for index = 1, #CATEGORIES do
 			local text = content:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 			local column, row = (index - 1) % CATEGORY_COLUMNS, math.floor((index - 1) / CATEGORY_COLUMNS)
@@ -163,14 +155,6 @@ local function CreateCard(parent, isFeatured)
 		card.Foot:SetJustifyH("RIGHT")
 		card.Highlight:Hide()
 	else
-		card.Title:SetPoint("LEFT", card.Icon, "RIGHT", 10, 0)
-		card.Title:SetWidth(GRID_WIDTH - GRID_PAD * 2 - ring - 10)
-		card.Title:SetMaxLines(2)
-		card.Title:SetWordWrap(true)
-		card.Reason:SetPoint("TOPLEFT", GRID_PAD, -60)
-		card.Reason:SetWidth(GRID_WIDTH - 2 * GRID_PAD)
-		card.Reason:SetWordWrap(true)
-		card.Reason:SetMaxLines(3)
 		card.Foot:SetPoint("TOPRIGHT", -GRID_PAD, -(GRID_HEIGHT - GRID_PAD - 10))
 		card.Foot:SetJustifyH("RIGHT")
 		card:SetScript("OnClick", function(self)
@@ -180,9 +164,7 @@ local function CreateCard(parent, isFeatured)
 			end
 		end)
 	end
-	for _, text in ipairs({ card.Title, card.Reason }) do
-		text:SetJustifyH("LEFT")
-	end
+	Window.LayoutCardHeading(card, isFeatured, 2)
 	return card
 end
 
@@ -193,15 +175,7 @@ end
 local function RefreshCard(card, zone, isFeatured)
 	card.zone = zone
 	local width, height = card:GetSize(true)
-	ns.ZoneIcon.SetBackdrop(
-		card.Art --[[@as AGFZoneBackdrop]],
-		width - 4,
-		height - 4,
-		zone.map,
-		0.5,
-		0.5,
-		isFeatured and FEATURED_SPAN or GRID_SPAN
-	)
+	ns.ZoneIcon.SetBackdrop(card.Art --[[@as AGFZoneBackdrop]], width - 4, height - 4, zone.map, 0.5, 0.5, SPAN)
 	card.Title:SetText(zone.name)
 	card.Reason:SetText(ZoneLine(zone))
 	local summary = zone.summary
@@ -222,11 +196,11 @@ local function RefreshCard(card, zone, isFeatured)
 		byKey[category.key] = category
 	end
 	local shown = 0
-	for _, key in ipairs(CATEGORIES) do
-		local category = byKey[key]
+	for _, entry in ipairs(CATEGORIES) do
+		local category = byKey[entry.key]
 		if category and card.Categories[shown + 1] then
 			shown = shown + 1
-			local label = L["COMPLETION_CATEGORY_" .. key:upper()]
+			local label = entry.label
 			local line = label .. "  " .. CountLine(category)
 			if category.scope == "account" then
 				line = line .. L.SEPARATOR .. L.COMPLETION_ACCOUNT

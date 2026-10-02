@@ -31,7 +31,7 @@ local function Current()
 	if not ns.RouteSettled() then
 		return nil
 	end
-	local step = ns.Integrations.CurrentStep()
+	local step = ns.Guidance.CurrentStep()
 	for index, candidate in ipairs(ns.Route().steps) do
 		if candidate == step then
 			return step, index

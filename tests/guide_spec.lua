@@ -1,3 +1,4 @@
+local ui = dofile("tests/ui_helpers.lua")
 -- QuestieDB's Coldridge mail/class prerequisite contracts, read from installed
 -- Camelot metadata on 2026-09-28; this is not a captured live availability policy.
 local harness = dofile("tests/harness.lua")
@@ -23,7 +24,7 @@ local data = {
 }
 data.quests[3114].classes, data.quests[3114].races = 128, 64
 data.quests[3112].classes, data.quests[3112].races = 1, 64
-local journey = { key = "zone:1426", title = "Dun Morogh" }
+local journey = { key = "zone:1426", zone = 1426, title = "Dun Morogh" }
 local steps = {
 	{ quests = { 179 }, title = "Pick up Dwarven Outfitters", kind = "pickup" },
 	{ quests = { 179 }, title = "Complete Dwarven Outfitters", kind = "work" },
@@ -57,18 +58,8 @@ data.quests[233].races = nil
 ns.OpenWindow()
 h.flush()
 local window = h.G.AdventureGuideForeverWindow
-local function find(frame, text)
-	if frame.GetText and frame:GetText() == text then
-		return frame
-	end
-	for _, child in ipairs({ frame:GetChildren() }) do
-		local result = find(child, text)
-		if result then
-			return result
-		end
-	end
-end
-local open = assert(find(window, ns.L.GUIDE_OPEN))
+
+local open = assert(ui.FindText(window, ns.L.GUIDE_OPEN))
 -- The button is parented to the card's content. Use the actual card's parent.
 local card = open:GetParent():GetParent()
 local tabParent = card:GetParent()
@@ -105,8 +96,8 @@ equal(rows[4].questID, 3114, "class follow-up in outline")
 equal(rows[4]:IsEnabled(), false, "future quest cannot be clicked")
 equal(rows[4].Number:IsShown(), false, "future quest has no active step number")
 equal(#route.steps, 3, "outline does not change active route")
-local nextPage = assert(find(guide, ns.L.NEXT_PAGE))
-local previous = assert(find(guide, ns.L.PREVIOUS_PAGE))
+local nextPage = assert(ui.FindText(guide, ns.L.NEXT_PAGE))
+local previous = assert(ui.FindText(guide, ns.L.PREVIOUS_PAGE))
 equal(previous:IsEnabled(), false, "previous disabled on first page")
 h.Click(nextPage)
 equal(#visibleRows(), 10, "second page has ten rows")

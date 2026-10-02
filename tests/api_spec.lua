@@ -16,7 +16,7 @@ h.ns.Invalidate()
 assert(API.CurrentStop() == nil and API.NextStops() == nil, "a route due a rebuild says ask again later")
 h.flush()
 
-local step = assert(h.ns.Integrations.CurrentStep())
+local step = assert(h.ns.Guidance.CurrentStep())
 local steps = h.ns.Route().steps
 local stop = assert(API.CurrentStop(), "a settled route answers")
 assert(stop.map == step.map and stop.x == step.x and stop.y == step.y, "the tracker's stop")
