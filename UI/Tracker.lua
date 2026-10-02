@@ -54,19 +54,11 @@ end
 -- visible in the addon-owned block even when the client has not supplied live
 -- quest text yet; the generated data still has the title and level.
 local function QuestLine(step, questID)
-	local world = ns.Snapshot()
-	local entry = world.log[questID]
-	local quest = ns.Data.quests[questID]
-	local title = (entry and entry.title) or (quest and quest.title) or step.questTitle or step.title
-	local level = (entry and entry.level) or (quest and quest.level)
-	if level == -1 then
-		level = world.player.level
+	local title, color = ns.Pins.QuestLineText(questID)
+	if title == "" then
+		return step.questTitle or step.title
 	end
-	if level and level > 0 then
-		local color = GetQuestDifficultyColor(level)
-		return CreateColor(color.r, color.g, color.b):WrapTextInColorCode(L.TRACKER_QUEST:format(level, title))
-	end
-	return title
+	return CreateColor(color.r, color.g, color.b):WrapTextInColorCode(title)
 end
 
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
@@ -78,11 +70,7 @@ local ModuleMixin = { headerText = L.TITLE, blockTemplate = "ObjectiveTrackerAni
 function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 	local aside = ns.Asides.Current()
 	if block.id == ASIDE and aside then
-		if mouseButton == "RightButton" then
-			ns.Asides.Open(self:GetContextMenuParent(), "MENU_ADVENTURE_GUIDE_FOREVER_ASIDE", aside)
-		else
-			ns.Asides.Go(aside)
-		end
+		ns.Asides.Click(self:GetContextMenuParent(), mouseButton, aside)
 		return
 	elseif block.id == JOURNEY then
 		-- Back to the story's start: the same journey, guided from its first step (docs/design.md §2.10).
@@ -111,7 +99,7 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 		end
 		return
 	end
-	ns.Menu.Open(self:GetContextMenuParent(), "MENU_ADVENTURE_GUIDE_FOREVER_TRACKER", ns.Guidance.CurrentStep())
+	ns.Menu.Open(self:GetContextMenuParent(), ns.Guidance.CurrentStep())
 end
 
 -- The title's click starts the route when the setting says so, as an aside's with a place does, so each warns as Go

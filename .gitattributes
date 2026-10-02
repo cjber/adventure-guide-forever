@@ -2,6 +2,7 @@
 
 # Written by tools/gen_*.py and tools/diff_forever.py; collapsed in diffs and left out of language stats.
 Data/*.lua linguist-generated=true
+tests/fixtures/quests.lua linguist-generated=true
 
 # Rewritten by tools/phrases.py, AGF_UPDATE_GOLDEN=1 and tools/screenshots.py.
 Locales/phrases.txt linguist-generated=true

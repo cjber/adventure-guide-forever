@@ -116,8 +116,8 @@ out.panel.map = h.map:GetMapID()
 -- The lead image, a character with no card chosen: compact journey rows (docs/design.md §2.2),
 -- both asides above them, and the first card's rings, which the guide previews
 -- on its own (§2.6). Two finished quests: Counterattack!, handed in at Regthar Deathgate's camp, so the story card
--- counts two ready, and Hidden Enemies, handed in at Orgrimmar, so Loose ends has one. Tweaks Forever has three spells
--- to train and a talent point waits, so both asides show.
+-- counts two ready, and Hidden Enemies, handed in at Orgrimmar, so Quests in your log has one. Tweaks Forever
+-- has three spells to train and a talent point waits, so both asides show.
 local COUNTERATTACK =
 	{ id = 4021, title = "Counterattack!", level = 20, complete = true, map = 1413, x = 0.4534, y = 0.2841 }
 local HIDDEN_ENEMIES =
@@ -380,7 +380,7 @@ out.window_pvp = Window(h, "window_pvp", 3)
 
 -- The Completion tab, Legacy Forever loaded: The Barrens featured with its categories, its next three objectives, and
 -- the next zones as cards. Stonetalon has nothing done, so the shot holds an empty bar: the client lays a 0-wide fill
--- out at its atlas's width, and this renderer does too (#33).
+-- out at its atlas's width, and this renderer does too.
 local function Zone(map, name, done, total, categories, targets)
 	return {
 		map = map,

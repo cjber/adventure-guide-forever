@@ -61,8 +61,8 @@ function harness.fixtureQuests()
 	return assert(loadfile("tests/fixtures/quests.lua"))()
 end
 
--- The route geometry (shipped Data/Geometry.lua) with the test quest corpus merged in: what specs that used to
--- load Data/Quests.lua now use for the model, and the source harness.questieMirror mirrors.
+-- The shipped route geometry with the test quest corpus merged in: the model fixture and the source
+-- harness.questieMirror mirrors.
 ---@return AGFData
 function harness.data()
 	local ns = {}
@@ -378,6 +378,9 @@ function harness.load(options)
 	end
 	function Methods:GetRight()
 		return self.rect and self.rect[1] + self.rect[3]
+	end
+	function Methods:GetEffectiveScale()
+		return self.scale or 1
 	end
 	function Methods:SetScale(scale)
 		self.scale = scale
@@ -1106,15 +1109,6 @@ function harness.load(options)
 		fn()
 		h.shift = false
 	end
-	-- Control held while `fn` runs: a ctrl-click (the addon reads no ctrl path today, so this guards the modifier).
-	G.IsControlKeyDown = function()
-		return h.ctrl == true
-	end
-	function h.Ctrl(fn)
-		h.ctrl = true
-		fn()
-		h.ctrl = false
-	end
 	-- Entering or leaving combat fires the same events the client does.
 	function h.SetCombat(on)
 		h.combat = on
@@ -1317,7 +1311,7 @@ function harness.load(options)
 	G.UnitClass = function()
 		return "Class", "CLASS", player.classID
 	end
-	-- Rest (roadmap #11): a spec sets player.rested (false for none: the client gives nil), player.xpMax and
+	-- Rest: a spec sets player.rested (false for none: the client gives nil), player.xpMax and
 	-- player.resting; by default the bar is half rested, so no route ends at an inn.
 	G.GetXPExhaustion = function()
 		return player.rested or nil
@@ -2591,11 +2585,14 @@ function harness.load(options)
 	return h
 end
 
--- The planner alone, for the model specs: Locales/enUS.lua for ns.L, the planner's copy, then Core.lua with its
--- load-time hooks into the client stubbed, then Model.lua, all into `ns` (which may already hold the data).
+-- The planner alone: locale strings and route geometry, then Core with its client hooks stubbed,
+-- then the planner in TOC order. The namespace may already hold the data.
 ---@param ns table
 ---@return AGFModel
 function harness.model(ns)
+	if not ns.Data then
+		assert(loadfile("Data/Geometry.lua"))(ADDON, ns)
+	end
 	assert(loadfile("Locales/enUS.lua"))(ADDON, ns)
 	local core = assert(loadfile("Core/Core.lua"))
 	setfenv(
@@ -2609,8 +2606,25 @@ function harness.model(ns)
 		}, { __index = _G })
 	)
 	core(ADDON, ns)
-	assert(loadfile("Planning/Model.lua"))(ADDON, ns)
+	harness.planner(ns)
 	return ns.Model
+end
+
+-- Reload only the planner and its caches, in the same order as the client.
+---@param ns table
+function harness.planner(ns)
+	local planner = false
+	for line in io.lines("AdventureGuideForever.toc") do
+		local path = line:gsub("\\", "/")
+		if path == "Planning/Model.lua" then
+			planner = true
+		elseif path == "Planning/Order.lua" then
+			break
+		end
+		if planner then
+			assert(loadfile(path))(ADDON, ns)
+		end
+	end
 end
 
 -- The route as shown, without the UI: harness.model's files, then the player's order, the session and Shown.Build.
@@ -2627,8 +2641,8 @@ function harness.shown(ns)
 end
 
 -- Whether a step stands on a point `data` has: a place the data has (keyed to 4 places), or, for an area, where the
--- player enters it: inside the ring of one of its shapes, each centred on a place the data has, with the ring's middle
--- one too (Model.lua Enter). The second return is the key a point is indexed by, for a spec's messages.
+-- player enters it: inside the ring of one of its shapes, centred on a place the data has. The second return is the
+-- key a point is indexed by, for a spec's messages.
 ---@param data AGFData
 ---@param Model AGFModel
 ---@return fun(step: AGFStep): boolean placed
@@ -2656,10 +2670,6 @@ function harness.placement(data, Model)
 	local function Placed(step)
 		if places[Key(step.map, step.x, step.y)] then
 			return true
-		end
-		local ring = step.ring
-		if not (ring and places[Key(ring.map, ring.x, ring.y)]) then
-			return false
 		end
 		for _, shape in ipairs(step.shapes or {}) do
 			local yards = Model.Yards(data, step, shape)

@@ -44,9 +44,6 @@ local CARD_ART = "ui-journeys-renown-button"
 -- The chapter track (docs/design.md §2.3): Blizzard's delve squares at 12px, with their meanings kept
 -- (RewardTrackTemplates.lua:427-436): done, the one most recently finished in green, the rest grey.
 local TRACK_MAX, SQUARE, SQUARE_GAP = 8, 12, 3
--- The search (docs/design.md §2.4): 3 characters or more put up to 10 quests in place of the cards; a locked one lists
--- why, unmet lines first, up to 6 (its tooltip has them all).
-local SEARCH_MIN, SEARCH_ROWS, WHY_LINES, RESULT_HEIGHT, WHY_HEIGHT = 3, 10, 6, 24, 14
 -- The quest log's own geometry: a 29px search bar above the list, a 40px footer below it for the Stop button
 -- and the paused line.
 local TOP_BAR = 29
@@ -114,8 +111,6 @@ local stopButton
 local backButton
 ---@type Texture?
 local compass
----@type AGFSearchRow[]
-local results = {}
 ---@type Frame?
 local track
 ---@type Button?
@@ -340,81 +335,6 @@ end
 ---@field Caps Texture[]
 ---@field New Texture
 
--- One search result: the quest and where it starts, and for a locked one a lock and why (docs/design.md §2.4). One
--- open now joins the route with a shift-click, and wears the tradeskill favourite's star while it does (§2.18); an
--- orange or red one, which no route takes, does not (`open` false).
----@class AGFSearchRow : Frame
----@field Lock Texture
----@field Star Texture
----@field id? integer
----@field open? boolean
----@field Title FontString
----@field Zone FontString
----@field Checks Texture[]
----@field Lines FontString[]
----@field why AGFWhyLine[]
-
----@param parent Frame
----@return AGFSearchRow
-local function CreateResult(parent)
-	local row = CreateFrame("Frame", nil, parent) --[[@as AGFSearchRow]]
-	row:EnableMouse(true)
-	row.why = {}
-	row.Lock = row:CreateTexture(nil, "ARTWORK")
-	row.Lock:SetAtlas("questlog-questtypeicon-lock")
-	row.Lock:SetSize(18, 18)
-	row.Lock:SetPoint("TOPLEFT", 4, -2)
-	row.Star = row:CreateTexture(nil, "ARTWORK")
-	Art.Fit(row.Star, "tradeskills-star", 14, 14)
-	row.Star:SetPoint("TOPRIGHT", -4, -5)
-	row.Zone = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-	row.Zone:SetPoint("TOPRIGHT", -22, -6)
-	row.Zone:SetJustifyH("RIGHT")
-	row.Title = row:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-	row.Title:SetPoint("TOPLEFT", 26, -4)
-	row.Title:SetPoint("RIGHT", row.Zone, "LEFT", -6, 0)
-	row.Title:SetJustifyH("LEFT")
-	row.Title:SetWordWrap(false)
-	row.Checks, row.Lines = {}, {}
-	for index = 1, WHY_LINES do
-		local top = -(RESULT_HEIGHT + (index - 1) * WHY_HEIGHT) + 2
-		local check = row:CreateTexture(nil, "ARTWORK")
-		check:SetAtlas("ui-questtracker-tracker-check")
-		check:SetSize(12, 12)
-		check:SetPoint("TOPLEFT", 26, top)
-		local line = row:CreateFontString(nil, "ARTWORK", "GameFontRedSmall")
-		line:SetPoint("TOPLEFT", 40, top)
-		line:SetPoint("RIGHT", -4, 0)
-		line:SetJustifyH("LEFT")
-		line:SetWordWrap(false)
-		row.Checks[index], row.Lines[index] = check, line
-	end
-	-- Every line as a tooltip, in the game's own error and disabled voices.
-	row:SetScript("OnEnter", function(self)
-		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-		GameTooltip_SetTitle(GameTooltip, self.Title:GetText())
-		for _, why in ipairs(self.why) do
-			if why.met then
-				GameTooltip_AddDisabledLine(GameTooltip, why.text)
-			else
-				GameTooltip_AddErrorLine(GameTooltip, why.text)
-			end
-		end
-		if self.open and self.id then
-			GameTooltip_AddInstructionLine(GameTooltip, ns.Pinned({ self.id }) and L.SHIFT_REMOVE or L.SHIFT_ADD)
-		end
-		GameTooltip:Show()
-	end)
-	row:SetScript("OnLeave", ns.Overview.RowLeave)
-	row:SetScript("OnMouseUp", function(self, mouseButton)
-		if mouseButton == "LeftButton" and IsShiftKeyDown() and self.open and self.id then
-			ns.TogglePinned({ self.id })
-			GameTooltip_Hide()
-		end
-	end)
-	return row
-end
-
 -- An aside (Asides.lua) above the cards: its icon, its line and a row's skip. Its click goes to its place when it
 -- has one; right-click is its menu.
 ---@param parent Frame
@@ -442,26 +362,10 @@ local function CreateAsideLine(parent)
 	line.Text:SetWordWrap(false)
 	line:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	line:SetScript("OnClick", function(self, mouseButton)
-		local aside = self.aside
-		if aside and mouseButton == "RightButton" then
-			ns.Asides.Open(self, "MENU_ADVENTURE_GUIDE_FOREVER_ASIDE", aside)
-		elseif aside then
-			ns.Asides.Go(aside)
-		end
+		ns.Asides.Click(self, mouseButton, self.aside)
 	end)
-	-- A long line is cut short, so its tooltip has it whole, and says where a click goes when it goes anywhere.
 	line:SetScript("OnEnter", function(self)
-		local aside = self.aside
-		if not aside then
-			return
-		end
-		local provider = ns.Integrations.Provider()
-		local lines = { aside.text }
-		lines[2] = aside.place
-				and not ns.Setting("wanderer")
-				and (provider and L.CLICK_TRAVEL:format(provider) or L.CLICK_WAYPOINT)
-			or nil
-		ShowTooltip(self, lines)
+		ns.Asides.Enter(self, self.aside)
 	end)
 	line:SetScript("OnLeave", GameTooltip_Hide)
 	HoverOnly(line.Skip, line)
@@ -559,9 +463,7 @@ local function BuildJourneys(parent, below)
 	for index = 1, ns.Model.MAX_STEPS do
 		rows[index] = CreateRow(list)
 	end
-	for index = 1, SEARCH_ROWS do
-		results[index] = CreateResult(list)
-	end
+	ns.PanelSearch.Build(list)
 	-- "Your order" over the chosen journey's rows while the player has moved one, and the way back as a small gold
 	-- text button (docs/design.md §2.20).
 	orderLine = CreateFrame("Frame", nil, list)
@@ -590,7 +492,6 @@ local function BuildJourneys(parent, below)
 	skippedButton:SetHighlightFontObject("GameFontHighlightSmall")
 	skippedButton:SetScript("OnClick", function(self)
 		ns.ContextMenu(self, function(_, root)
-			root:SetTag("MENU_ADVENTURE_GUIDE_FOREVER_SKIPPED")
 			ns.Menu.Skipped(root)
 		end)
 	end)
@@ -618,46 +519,6 @@ local function BuildFooter(parent)
 	stopButton:SetScript("OnClick", ns.Stop)
 end
 
----@param _ Region
----@param menu AGFMenuDescription
-local function BuildSettingsMenu(_, menu)
-	local function Setting(label, key)
-		return menu:CreateCheckbox(label, function()
-			return ns.Setting(key)
-		end, function()
-			ns.SetSetting(key, not ns.Setting(key))
-		end)
-	end
-	local function Pref(label, key)
-		menu:CreateCheckbox(label, function()
-			return ns.Prefs()[key]
-		end, function()
-			local prefs = ns.Prefs()
-			prefs[key] = not prefs[key]
-			ns.Invalidate()
-		end)
-	end
-	Pref(ns.L.MENU_QUESTS, "quests")
-	Pref(ns.L.MENU_DUNGEONS, "dungeons")
-	Pref(ns.L.MENU_BATTLEGROUNDS, "battlegrounds")
-	Setting(ns.L.MENU_MAP_PINS, "showMapPins")
-	-- Givers draw only with map pins on, so the box is grayed until they are (the menu polls a function).
-	Setting(ns.L.MENU_GIVERS, "showQuestGivers"):SetEnabled(function()
-		return ns.Setting("showMapPins")
-	end)
-	Setting(ns.L.MENU_TRACKER, "showTracker")
-	-- Skipped steps, journeys not wanted (roadmap #17) and asides turned down, each with Show again.
-	local skipped = #ns.Skipped()
-	if skipped > 0 then
-		ns.Menu.Skipped(menu:CreateButton(ns.L.SKIPPED:format(skipped)))
-	end
-	menu:CreateButton(ns.L.MENU_MORE_SETTINGS, function()
-		if ns.OpenSettings then
-			ns.OpenSettings()
-		end
-	end)
-end
-
 -- The quest log's top bar: a search box for any quest across its width, and the settings cog. No step count.
 ---@param panelFrame Frame
 local function BuildTopBar(panelFrame)
@@ -679,7 +540,7 @@ local function BuildTopBar(panelFrame)
 	icon:SetAtlas("questlog-icon-setting", true)
 	cog:SetHighlightAtlas("questlog-icon-setting", "ADD")
 	cog:SetScript("OnClick", function(self)
-		ns.ContextMenu(self, BuildSettingsMenu)
+		ns.ContextMenu(self, ns.Menu.Settings)
 	end)
 end
 
@@ -932,14 +793,11 @@ local function LayoutRows(route, top, hidden, journey)
 		row.questID = id
 		row:SetShown(id ~= nil)
 		if id then
-			local quest = ns.Data.quests[id]
-			local level = quest.level == -1 and ns.State.Player().level or quest.level
-			local title = level > 0 and L.QUEST_LEVEL_TITLE:format(level, quest.title) or quest.title
+			local title, color = ns.Pins.QuestLineText(id)
 			ns.Window.SetStepRow(row, 1, title, L.GUIDE_OUTLINE)
 			row.Number:Hide()
 			row.Ring:Hide()
 			ns.Art.SetSliceShown(row.Selected, false)
-			local color = level > 0 and GetQuestDifficultyColor(level) or NORMAL_FONT_COLOR
 			row.Title:SetTextColor(color.r, color.g, color.b)
 			row:SetPoint("TOPLEFT", 6, -top)
 			row:SetPoint("TOPRIGHT", -6, -top)
@@ -947,90 +805,6 @@ local function LayoutRows(route, top, hidden, journey)
 		end
 	end
 	return top
-end
-
--- The client's title, asked for once when it has none cached; the search redraws as titles arrive (Attach).
----@type table<integer, boolean>
-local requested = {}
----@param questID integer
----@return string?
-local function QuestTitle(questID)
-	local title = ns.State.QuestTitle(questID)
-	if not title and not requested[questID] then
-		requested[questID] = true
-		C_QuestLog.RequestLoadQuestByID(questID)
-	end
-	return title
-end
-
--- One result from `top` down. A quest the player can take now is a plain row, starred once added to the route; a locked
--- one gets the lock and its lines, unmet first. No ring and no Go: the search explains, and adds with a shift-click.
----@param row AGFSearchRow
----@param id integer
----@param top number
----@return number top below it
-local function RefreshResult(row, id, top)
-	local state, data = ns.State, ns.Data
-	local names = {
-		title = QuestTitle,
-		race = state.RaceName,
-		class = state.ClassName,
-		skill = state.SkillName,
-		faction = state.FactionName,
-		standing = state.StandingName,
-	}
-	local player = state.Player()
-	local why = ns.Model.Why(data, player, state.Completed(), state.Log(), id, names)
-	local shown = {}
-	for _, met in ipairs({ false, true }) do
-		for _, line in ipairs(why) do
-			if line.met == met then
-				shown[#shown + 1] = line
-			end
-		end
-	end
-	-- Every line met is the quest open now: nothing to explain.
-	if not (shown[1] and not shown[1].met) then
-		shown = {}
-	end
-	row.why, row.id = shown, id
-	row.open = shown[1] == nil and not ns.Model.Hard(data.quests[id], player)
-	row.Star:SetShown(row.open and ns.Pinned({ id }))
-	local quest = data.quests[id]
-	local map = quest.zone or (quest.start and quest.start.map)
-	row.Title:SetText(QuestTitle(id) or quest.title)
-	row.Zone:SetText(map and state.ZoneName(map, data) or "")
-	row.Lock:SetShown(shown[1] ~= nil)
-	for index, line in ipairs(row.Lines) do
-		local entry = shown[index]
-		line:SetShown(entry ~= nil)
-		row.Checks[index]:SetShown(entry ~= nil and entry.met)
-		if entry then
-			line:SetFontObject(entry.met and "GameFontDisableSmall" or "GameFontRedSmall")
-			line:SetText(entry.text)
-		end
-	end
-	local height = RESULT_HEIGHT + math.min(#shown, WHY_LINES) * WHY_HEIGHT
-	row:SetHeight(height)
-	row:SetPoint("TOPLEFT", 6, -top)
-	row:SetPoint("TOPRIGHT", -6, -top)
-	return top + height + ROW_GAP
-end
-
--- The search's results in place of the cards, from the list's top; no `query` hides them.
----@param query? string
----@return number top below the last result
----@return integer found
-local function LayoutResults(query)
-	local found = query and ns.Model.Search(ns.Data, ns.State.Player(), query, ns.State.QuestTitle) or {}
-	local top = 0
-	for index, row in ipairs(results) do
-		row:SetShown(found[index] ~= nil)
-		if found[index] then
-			top = RefreshResult(row, found[index], top)
-		end
-	end
-	return top, #found
 end
 
 ---@param card AGFOverviewCard
@@ -1098,13 +872,10 @@ local function LayoutJourneys(route)
 	---@cast content -?
 	---@cast track -?
 	---@cast panel -?
-	local query = strtrim(searchBox:GetText())
-	-- Characters, not bytes: a character is one byte that doesn't continue a UTF-8 sequence.
-	local _, characters = query:gsub("[^\128-\191]", "")
-	-- Not before completion data loads: every chain quest would read as locked.
-	local searching = characters >= SEARCH_MIN and ns.State.Ready()
+	local query = ns.PanelSearch.Query(searchBox:GetText())
+	local searching = query ~= nil
 	EnsureScroll()
-	local top, found = LayoutResults(searching and query or nil)
+	local top, found = ns.PanelSearch.Layout(query)
 	track:Hide()
 	-- Every aside the player still wants, a line each (docs/design.md §2.11).
 	local asides = not searching and ns.Asides.All() or {}
@@ -1333,7 +1104,7 @@ local function Attach()
 	panel:RegisterEvent("QUEST_DATA_LOAD_RESULT")
 	panel:RegisterEvent("UPDATE_BINDINGS")
 	panel:SetScript("OnEvent", function(_, event, questID)
-		if event == "UPDATE_BINDINGS" or requested[questID] then
+		if event == "UPDATE_BINDINGS" or ns.PanelSearch.Requested(questID) then
 			Refresh()
 		end
 	end)

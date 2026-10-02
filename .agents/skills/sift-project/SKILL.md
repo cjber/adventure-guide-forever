@@ -3,11 +3,11 @@ name: sift-project
 description: "Project profile for sift in Adventure Guide Forever: the exact quality-gate and evidence commands, live roots that must never be deleted as dead code, exclusions, conventions and risk order. Load before running sift or any code-quality, cleanup or dead-code work in this repository."
 ---
 
-# sift project profile — Adventure Guide Forever
+# sift project profile: Adventure Guide Forever
 
 Adventure Guide Forever is a World of Warcraft addon for the WoW: Forever client (Classic content on
 the mainline 12.x UI/API, `## Interface: 16001`). It runs inside the game's Lua 5.1 sandbox; there is
-no `require` — the client loads the files `AdventureGuideForever.toc` lists, in that order, and each
+no `require`: the client loads the files `AdventureGuideForever.toc` lists, in that order, and each
 file receives `local addonName, ns = ...`, the addon's shared table. It ships as a zip built by the
 BigWigs packager (`.pkgmeta`) on a `v*` tag. Standard-library Python generators in `tools/` rebuild
 `Data/Geometry.lua` (`gen_quests.py`, route geometry from a pinned CMaNGOS classic-db dump and wago.tools
@@ -41,22 +41,22 @@ UI (window, panel, pins, tracker, settings) headlessly. What needs the client it
 
 | Concern | Command | Known false positives |
 |---|---|---|
-| Dead code (Lua) | `luacheck . --no-color` + the live-root searches below | a function stored on `ns` is never "unused" to luacheck — search every file for `ns.<Name>` |
-| Dead code (Python) | `uvx vulture tools --min-confidence 60` | — |
-| Live roots | `rg -n 'hooksecurefunc|RegisterEvent|RegisterCallback|SetScript|AddDataProvider|AddTooltipPostCall|SLASH_|SlashCmdList' -g '*.lua'` | — |
+| Dead code (Lua) | `luacheck . --no-color` + the live-root searches below | a function stored on `ns` is never "unused" to luacheck: search every file for `ns.<Name>` |
+| Dead code (Python) | `uvx vulture tools --min-confidence 60` | none |
+| Live roots | `rg -n 'hooksecurefunc|RegisterEvent|RegisterCallback|SetScript|AddDataProvider|AddTooltipPostCall|SLASH_|SlashCmdList' -g '*.lua'` | none |
 | Shared-table members | the `ns-defined`/`ns-once` commands in sift's `languages/lua.md` | the `ns\.` pattern has no word boundary, so `options.zone`/`options.pinned` in the spec match; nested tables (`Model.*`, `ns.Integrations.*`) need their own `rg -n 'Model\.Name'` search |
-| Clones | `npx -y jscpd@4 --silent --min-lines 6 --ignore "Data/**,.types/**,**/.cache/**" .` | — (0 clones on 2026-09-24) |
+| Clones | `npx -y jscpd@4 --silent --min-lines 6 --ignore "Data/**,.types/**,**/.cache/**" .` | none (0 clones on 2026-09-24) |
 | Standards | `python3 .sift/agents.py standards` | resolves the pinned pack declared in AGENTS.md; `SIFT_STANDARDS_PATH` can override it with a local standards directory |
 
 ## Live roots
 
-- `AdventureGuideForever.toc` file list — loads runtime modules in `Core/`, `Planning/`, `Integrations/`, `UI/` and `Data/`.
-- `ns.*` — the shared addon table; search all files for `ns.Name`, not the local file.
-- `## SavedVariables: AdventureGuideForeverDB`, `## SavedVariablesPerCharacter: AdventureGuideForeverCharDB` — keys in `Core/Core.lua` `DEFAULTS` may hold data written by older versions.
-- `## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick` and `SLASH_ADVENTUREGUIDEFOREVER1/2` — called by the client by name.
-- `EventUtil.ContinueAfterAllEvents`, `EventRegistry:RegisterCallback("QuestLog.SetDisplayMode")`, `WorldMapFrame:AddDataProvider`, `TooltipDataProcessor.AddTooltipPostCall` — host callbacks.
-- Optional integrations (the TOC's `## OptionalDeps` line: Adventure Guide Classic, Atlas, AtlasLoot Classic, Shortest Path, Questie, QuestieDB, Skill Up, Legacy and Tweaks Forever) — code guarded by `ShortestPathForever.API`, `SkillUpForever.API` and the other suite addons (`Integrations/Integrations.lua`, `Integrations/Companions.lua`) is live only with that addon installed; QuestieDB, when loaded and fit, supplies the quests (`Integrations/QuestieSource.lua`); AtlasLoot and Atlas supply dungeon loot and maps (`Integrations/Dungeons.lua`).
-- `hooksecurefunc("QuestMapFrame_ShowQuestDetails")`, `EventUtil.ContinueOnAddOnLoaded("Blizzard_WorldMap")` — host callbacks.
+- `AdventureGuideForever.toc` file list: loads runtime modules in `Core/`, `Planning/`, `Integrations/`, `UI/` and `Data/`.
+- `ns.*`: the shared addon table; search all files for `ns.Name`, not the local file.
+- `## SavedVariables: AdventureGuideForeverDB`, `## SavedVariablesPerCharacter: AdventureGuideForeverCharDB`: keys in `Core/Core.lua` `DEFAULTS` may hold data written by older versions.
+- `## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick` and `SLASH_ADVENTUREGUIDEFOREVER1/2`: called by the client by name.
+- `EventUtil.ContinueAfterAllEvents`, `EventRegistry:RegisterCallback("QuestLog.SetDisplayMode")`, `WorldMapFrame:AddDataProvider`, `TooltipDataProcessor.AddTooltipPostCall`: host callbacks.
+- Optional integrations (the TOC's `## OptionalDeps` line: Adventure Guide Classic, Atlas, AtlasLoot Classic, Shortest Path, Questie, QuestieDB, Skill Up, Legacy and Tweaks Forever): code guarded by `ShortestPathForever.API`, `SkillUpForever.API` and the other suite addons (`Integrations/Integrations.lua`, `Integrations/Companions.lua`) is live only with that addon installed; QuestieDB, when loaded and fit, supplies the quests (`Integrations/QuestieSource.lua`); AtlasLoot and Atlas supply dungeon loot and maps (`Integrations/Dungeons.lua`).
+- `hooksecurefunc("QuestMapFrame_ShowQuestDetails")`, `EventUtil.ContinueOnAddOnLoaded("Blizzard_WorldMap")`: host callbacks.
 - Methods the host calls by name: the map provider's `RefreshAllData`/`RemoveAllData`; the pin mixins' `OnAcquired`/`OnMouseEnter`/`OnMouseLeave`/`OnClick` (bound through `mixin=` in `UI/Panel.xml`); the tracker module's `LayoutContents`/`OnBlockHeaderClick`.
 
 ## Zones
@@ -82,11 +82,11 @@ UI (window, panel, pins, tracker, settings) headlessly. What needs the client it
 
 ## Risk order
 
-1. `tools/` — scripts, not shipped; output is diffable.
-2. `tests/` — harness only.
-3. `Planning/Model.lua`, `Planning/Shown.lua`, `Planning/Order.lua`, `Core/Session.lua`, `UI/Settings.lua`, `UI/Hints/*.lua` — the planner and its inputs, under the specs and the bench.
-4. `UI/Window*.lua`, `UI/Overview.lua`, `UI/Panel.lua`, `UI/Pins.lua`, `UI/Tracker.lua`, `UI/Tooltip.lua`, `UI/Menu.lua`, `UI/Art.lua`, `UI/Asides.lua`, `UI/Moments.lua`, `UI/PvP.lua`, `UI/ZoneIcon.lua`, `Planning/Focus.lua`, `UI/Sound.lua`, `Integrations/Providers.lua`, `UI/Dump.lua` — UI and host hooks; headless specs plus `/reload` checks.
-5. `Core/State.lua`, `Core/Core.lua`, `Core/Guidance.lua`, `Integrations/Integrations.lua`, `Integrations/Companions.lua`, `Integrations/QuestieSource.lua`, `Locales/*.lua` — client state, SavedVariables, the cross-addon contracts and every line the player reads.
+1. `tools/`: scripts, not shipped; output is diffable.
+2. `tests/`: harness only.
+3. `Planning/Model.lua` and the planner files the TOC loads after it (`Travel` to `Refresh`), `Planning/Shown.lua`, `Planning/Order.lua`, `Core/Session.lua`, `UI/Settings.lua`, `UI/Hints/*.lua`: the planner and its inputs, under the specs and the bench.
+4. `UI/Window*.lua`, `UI/Overview.lua`, `UI/Panel.lua`, `UI/Pins.lua`, `UI/Tracker.lua`, `UI/Tooltip.lua`, `UI/Menu.lua`, `UI/Art.lua`, `UI/Asides.lua`, `UI/Moments.lua`, `UI/PvP.lua`, `UI/ZoneIcon.lua`, `Planning/Focus.lua`, `UI/Sound.lua`, `Integrations/Providers.lua`, `UI/Dump.lua`: UI and host hooks; headless specs plus `/reload` checks.
+5. `Core/State.lua`, `Core/Core.lua`, `Core/Guidance.lua`, `Integrations/Integrations.lua`, `Integrations/Companions.lua`, `Integrations/QuestieSource.lua`, `Locales/*.lua`: client state, SavedVariables, the cross-addon contracts and every line the player reads.
 
 ## Settled
 
@@ -105,7 +105,7 @@ finding; audits add an entry when verifiers keep dismissing the same shape for t
 - **Absence checks**: a spec asserting that a removed field or pin pool stays absent (`pin.More == nil` in
   `tests/ui_spec.lua`) is a regression test for a shipped defect, not a check that cannot fail.
 - **Repeated spec fixtures**: the same character or options literal retyped per spec or scene is fixture input, not a
-  parallel implementation (e.g. `tests/batch4_spec.lua`, `tests/scenes.lua`).
+  parallel implementation (e.g. `tests/feature_rules_spec.lua`, `tests/scenes.lua`).
 
 ## Anti-patterns
 
@@ -113,7 +113,7 @@ Shapes this codebase has produced more than once and a reviewer confirmed. An au
 confirmed defect of one of these shapes with `settled:<name>`. An entry leaves when a rule enforces
 it or it has not recurred in two audits.
 
-- **Stale leftovers**: comments and annotations left describing code a rewrite replaced — a template, function, format or
+- **Stale leftovers**: comments and annotations left describing code a rewrite replaced: a template, function, format or
   range the code no longer has (`comment-narration`/`stale-docs`; e.g. `UI/Panel.xml` naming
   `QuestLogTabButtonTemplate`, `types/Namespace.lua` "3-5 steps"; six such in the 2026-09-24 audit).
   Grep for the old name when renaming.

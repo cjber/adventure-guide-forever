@@ -15,7 +15,7 @@ local ASIDE = "aside:"
 -- The addon compartment's pip: the Adventure Guide micro button's alert (CSV:2025) at its top-right corner.
 local PIP = "adventureguide-microbutton-alert"
 
--- The session's first look only learns what is there, so a save file the client never loaded (#34) never floods.
+-- The session's first look only learns what is there, so a save file the client never loaded never floods.
 local looked = false
 -- A level gained or a zone entered since the last look; armed by the rebuild it brings, which the next look compares.
 local pending, armed = false, false
@@ -61,10 +61,10 @@ local function Text(journey)
 		return journey.reason
 	elseif journey.kind == "battleground" then
 		return L.BATTLEGROUND_OPEN:format(journey.title)
-	elseif journey.key:find("^chain:") then
+	elseif journey.kind == "story" and journey.instance then
 		return L.MOMENT_OPEN:format(journey.title)
 	end
-	local zone = tonumber(journey.key:match("^zone:(%d+)$"))
+	local zone = journey.zone
 	local name = zone and (ns.State.MapName(zone) or ns.Data.zones[zone].name) or journey.title
 	return L.MOMENT:format(name)
 end

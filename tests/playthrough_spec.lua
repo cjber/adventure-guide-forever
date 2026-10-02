@@ -161,7 +161,7 @@ local function Play(race, classID, chooser)
 			if not chooser then
 				local zoneCards = 0
 				for _, journey in ipairs(route.journeys) do
-					zoneCards = zoneCards + (journey.key:match("^zone:") and 1 or 0)
+					zoneCards = zoneCards + (journey.zone and 1 or 0)
 				end
 				local enough = zoneCards < 2 and ZonesWithEnough(player, completed, log, held) or 0
 				if enough >= 2 then
@@ -169,7 +169,7 @@ local function Play(race, classID, chooser)
 				end
 			end
 			for _, journey in ipairs(route.journeys) do
-				if not chooser and journey.kind == "story" and journey.key:match("^zone:") and journey == card then
+				if not chooser and journey.kind == "story" and journey.zone and journey == card then
 					if stories[#stories] ~= journey.key then
 						stories[#stories + 1] = journey.key
 						local back = stories[#stories - 2]

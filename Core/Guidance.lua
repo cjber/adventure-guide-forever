@@ -48,7 +48,7 @@ local autoStartBlocked = false
 
 -- Yards past which a stop's point has moved (a town's point moving to its next giver): the town linkage
 -- (tools/gen_quests.py LINK). Nearer, the stock "!" and "?" marks show the way.
-local LINK = 100
+local LINK = ns.Data.townLink
 
 -- QUEST_TURNED_IN, from State.lua: latched for the ending below, then the chapter-end fanfare.
 ---@param questID integer
@@ -144,7 +144,7 @@ end
 -- With Shortest Path, the step and every step after it become one numbered journey. When it declines (it returns
 -- false when it cannot plan the route) or is absent, the native waypoint takes the step instead, so Go always
 -- leaves a destination on any map the client allows one on. True when something now guides the player. A wanderer
--- (roadmap #24) is never guided: nothing is set, and nothing is said.
+-- is never guided: nothing is set, and nothing is said.
 ---@param step AGFStep|AGFGiver
 ---@param follow? boolean the chosen journey will replace held quest stops when progress changes
 ---@return boolean
@@ -335,7 +335,7 @@ local function Arrived()
 end
 
 -- The chosen journey's key a filter hides (Quests, Dungeons or Battlegrounds off in the cog): the player's own toggle
--- can bring it back, so the choice is kept. With no next zone (roadmap #21) Dungeons hides nothing, so a dungeon that
+-- can bring it back, so the choice is kept. With no next zone Dungeons hides nothing, so a dungeon that
 -- went ended.
 ---@param key string
 ---@param prefs AGFPrefs
@@ -408,7 +408,7 @@ function ns.StartRoute(step)
 		prefs.journey = route.journey
 		ns.Invalidate()
 	end
-	-- A wanderer (roadmap #24) chooses the journey and sets off on foot: nothing to start, now or after combat.
+	-- A wanderer chooses the journey and sets off on foot: nothing to start, now or after combat.
 	if ns.Setting("wanderer") then
 		pendingStart = false
 		return false

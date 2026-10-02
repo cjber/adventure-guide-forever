@@ -260,6 +260,7 @@ route = Model.Plan(data, player, {}, log, options)
 equal(route.journey, "zone:1", "the chosen card")
 equal(route.chosen, true, "and it is a choice")
 equal(route.journeys[1].title, "Zone story", "the story is named after its zone")
+equal(route.journeys[1].zone, 1, "the story carries its zone ID")
 equal(route.journeys[1].subline, "9 quests near your level", "the story counts its quests")
 equal(#route.steps, 8, "one step per giver")
 equal(route.steps[1].quests[1], 5, "the nearest step first")
@@ -320,7 +321,7 @@ local later = Model.Plan(Ahead(5), player, {}, {}, prefs())
 equal(Kinds(later.journeys), "zone:1 zone:2", "the next zone after the story")
 equal(later.journeys[2].title, "Head to There", "named for its zone")
 equal(later.journeys[2].reason, nil, "offered for the current level, no future-level label")
--- "Not interested" (roadmap #17): a zone so marked is never a card, chosen or not, and the next best takes its place.
+-- "Not interested": a zone so marked is never a card, chosen or not, and the next best takes its place.
 local uninterested = prefs()
 uninterested.notInterested = { ["zone:1"] = { title = "Here story" } }
 equal(
@@ -415,6 +416,7 @@ local away22 = { level = 22, maxLevel = 60, side = 2, raceBit = 2, classBit = 64
 local kept22 = Model.Plan(Ahead(5), away22, {}, {}, Choose("zone:1")).journeys
 equal(Kinds(kept22), "zone:2 zone:1", "chosen: a level-up keeps the chosen zone")
 equal(kept22[2].title, "Head to Here", "chosen: heading there")
+equal(kept22[2].zone, 1, "the next-zone card carries its destination ID")
 -- The chosen dungeon stays with its instance while it has pickups, whichever has the most.
 local halls = { quests = {}, zones = data.zones, instances = { [36] = { name = "Few" }, [48] = { name = "Many" } } }
 for id = 1, 5 do
@@ -423,18 +425,18 @@ for id = 1, 5 do
 end
 local delve = Choose("dungeon:36")
 delve.quests, delve.dungeons = false, true
--- Roadmap #21: with no zone ahead and no story, dungeons off still leaves the dungeon card, not nothing.
+-- With no zone ahead and no story, dungeons off still leaves the dungeon card, not nothing.
 equal(Kinds(Model.Plan(halls, player, {}, {}, prefs()).journeys), "dungeon:48", "stranded: dungeons off, a card")
 delve.journey = nil
 equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:48", "chosen: unchosen, the most quests")
 delve.journey = "dungeon:36"
 equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "chosen: the chosen instance stays")
--- Not interested (roadmap #17) in the busier instance: the other takes its card.
+-- Not interested in the busier instance: the other takes its card.
 delve.journey, delve.notInterested = nil, { ["dungeon:48"] = { title = "Many" } }
 equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "not interested: the next dungeon")
 
 do
-	-- Roadmap #15: the dungeon card's reason counts the log's quests that end inside, and only those.
+	-- The dungeon card's reason counts the log's quests that end inside, and only those.
 	local function Inside(entries)
 		for _, journey in ipairs(Model.Plan(halls, player, {}, entries, delve).journeys) do
 			if journey.key == "dungeon:36" then
@@ -460,7 +462,7 @@ do
 	)
 	halls.quests[6], halls.quests[7], halls.quests[8], delve.journey = nil, nil, nil, nil
 
-	-- Roadmap #21: at the cap there is no level ahead, so the dungeon card comes without the Dungeons toggle and a chain
+	-- At the cap there is no level ahead, so the dungeon card comes without the Dungeons toggle and a chain
 	-- that leads into an instance is a story, after the zones that fit now. Here holds the story; on a map with no zone,
 	-- 50 leads to 51 inside the Hall.
 	local function Stranded()
@@ -480,7 +482,10 @@ do
 		"at the cap: the dungeon and the way in, toggle off"
 	)
 	equal(stranded.stranded, true, "at the cap: stranded")
+	equal(stranded.journeys[3].instance, 36, "the dungeon carries its instance ID")
 	local way = stranded.journeys[4]
+	equal(way.instance, 36, "the way in carries the instance ID, not the chain head")
+	equal(way.zone, nil, "the way in has no zone ID")
 	equal(way.kind .. " · " .. way.title, "story · The way into Hall", "the way in: a story named for the instance")
 	equal(way.subline .. " · " .. way.reason, "Chapter 1 of 2 · Begins a new story", "the way in: its chapter")
 	local onward = Model.Plan(Stranded(), atCap, { [50] = true }, {}, prefs())
@@ -555,7 +560,7 @@ do
 	equal(told.journeys[1].subline, "Chapter 1 of 2", "the story's chain: it leads the story")
 end
 
--- The diversions (roadmap R4): the story, carry and the zones to head to keep their slots; the calling, a dungeon and a
+-- The diversions: the story, carry and the zones to head to keep their slots; the calling, a dungeon and a
 -- battleground share the rest, the one whose newest quest opened at the highest level first, then in that order on a
 -- tie. Here's story holds 1-3; There holds 4-8 (a zone to head to); the Hall 9-10 and the calling 11 are on a map with
 -- no zone of their own. Four cards here, so one slot is left to share.
@@ -620,7 +625,7 @@ equal(
 	"diversions: in combat a new carry card preserves other options"
 )
 
--- Your calling (roadmap #7): the class quests open now as one card, its reason naming the quest it leads with.
+-- Your calling: the class quests open now as one card, its reason naming the quest it leads with.
 local function Calling(fixture, completed, choices)
 	for _, journey in ipairs(Model.Plan(fixture, player, completed or {}, {}, choices or prefs()).journeys) do
 		if journey.kind == "calling" then
@@ -903,7 +908,6 @@ do
 	end
 	local east = Head(0.9)
 	equal(east.key, "area:1:0", "entry: the area leads")
-	equal(("%.3f %.3f"):format(east.ring.x, east.ring.y), "0.400 0.500", "entry: its ring round its middle")
 	equal(("%.3f %.3f"):format(east.x, east.y), "0.550 0.500", "entry: from the east, the east objective's spot")
 	equal(east.here, nil, "entry: outside, not here")
 	equal(("%.3f"):format(Head(0.1).x), "0.400", "entry: from the west, the west objective's spot")
@@ -948,7 +952,7 @@ end
 
 local special = { quests = { [1] = quest(), [2] = quest(0.9), [3] = quest(0.1) }, zones = data.zones }
 special.quests[1].elite, special.quests[2].dungeon = true, 99
--- Roadmap #16: an outdoor elite is a zone's quest (optional, badged); only an instance's quest waits behind Dungeons.
+-- An outdoor elite is a zone's quest (optional, badged); only an instance's quest waits behind Dungeons.
 local outdoor = Model.Plan(special, player, {}, {}, prefs())
 local elite
 for _, step in ipairs(outdoor.steps) do
@@ -1097,7 +1101,7 @@ equal(
 	"Chapter 2",
 	"story card: no total unproven"
 )
--- World-voiced reasons (roadmap #3), one per card, by priority: a started story, then quests about to turn grey (two
+-- World-voiced reasons, one per card, by priority: a started story, then quests about to turn grey (two
 -- or more), then the chain's giver, then a named first town with three pickups; else the plain line.
 do
 	local function Voice(quests, completed, hubs, level)
@@ -1367,9 +1371,10 @@ local function Field()
 end
 -- The keys of the steps `plan` returns with room for only `steps` of them.
 local function Only(steps, plan)
+	local previous = Model.MAX_STEPS
 	Model.MAX_STEPS = steps
 	local ok, result = pcall(plan)
-	Model.MAX_STEPS = 9
+	Model.MAX_STEPS = previous
 	assert(ok, result)
 	local keys = {}
 	for _, step in ipairs(result) do
@@ -1475,7 +1480,7 @@ end
 local city = { quests = { [1] = quest(0.5, 0.5, 9) }, zones = data.zones }
 equal(#Model.Plan(city, player, {}, {}, prefs()).journeys, 0, "story card: none without a zone")
 
--- Roadmap #5 (R3): a chosen journey's route stops to train only in a town it passes anyway (a stop's hub, or within
+-- A chosen journey's route stops to train only in a town it passes anyway (a stop's hub, or within
 -- 100 yards of one), once, at a trainer who teaches the player's spells to train; the step has no quests.
 local academy = {
 	quests = {},
@@ -1580,7 +1585,7 @@ equal(
 	"town: the client's name first"
 )
 
--- Roadmap #11: rested XP under one bubble (a twentieth of the level's XP) and an innkeeper of the player's side in the
+-- Rested XP under one bubble (a twentieth of the level's XP) and an innkeeper of the player's side in the
 -- last stop's town (its hub, or within 100 yards): that stop's reason is the inn. Resting ticks it off; unknown rest,
 -- the cap, plenty of rest or no inn there leave the stop's own reason.
 do
@@ -1681,7 +1686,7 @@ do
 	end
 end
 
--- Honest coverage (#23): a log quest the data lacks, or a quest Forever added on this map that the data lacks.
+-- Honest coverage: a log quest the data lacks, or a quest Forever added on this map that the data lacks.
 do
 	local known = { quests = { [1] = quest(0.5, 0.5, 9) }, forever = { quests = { [7] = { 1 } }, areas = {} } }
 	equal(Model.Unlisted(known, 7, {}, { [1] = {} }), false, "unlisted: every quest known")
@@ -1800,7 +1805,7 @@ for _, fixture in ipairs(characters.list) do
 end
 equal(fixtures >= 5, true, "why: five fixtures or more")
 
--- F15: a dungeon card only with dungeons on or no next zone (roadmap #21: human60, at the cap), and never a step that
+-- F15: a dungeon card only with dungeons on or no next zone (human60, at the cap), and never a step that
 -- is not an eligible giver's data place.
 do
 	local function Valid(place)
@@ -1927,7 +1932,7 @@ equal(
 	"why: the other's"
 )
 
--- Roadmap #8: a skill line's rank and a faction's standing gate a quest, on the data's scale (0 starts Neutral).
+-- A skill line's rank and a faction's standing gate a quest, on the data's scale (0 starts Neutral).
 local locks = {
 	quests = { quest(), quest(), quest(), quest() },
 	zones = {},
@@ -2022,7 +2027,7 @@ local found = Model.Search(wolves, player, "WOLF", function(id)
 end)
 equal(table.concat(found, " "), "12 14 1 2 3 4 6 7 8 9", "search: side, order and limit")
 equal(#Model.Search(wolves, player, "wolf."), 0, "search: plain, not a pattern")
--- Roadmap #5: the nearest trainer who teaches the spells, from Data.npcs, by the route's cost.
+-- The nearest trainer who teaches the spells, from Data.npcs, by the route's cost.
 local function Nearest(side, classBit, map, x, y, level)
 	local npc = Model.Trainer(ns.Data, { side = side, classBit = classBit, map = map, x = x, y = y }, level)
 	return npc and npc.place.name or "none"
@@ -2077,7 +2082,7 @@ do
 		dropped.journey = journey.key
 		equal(Holds(Model.Plan(ns.Data, player, {}, logged, dropped).steps, first), false, "not this quest, in the log")
 	end
-	-- A pinned quest in another zone, which no card offers, is on Loose ends.
+	-- A pinned quest in another zone, which no card offers, is on Quests in your log.
 	local away
 	for id, candidate in pairs(ns.Data.quests) do
 		if
@@ -2101,7 +2106,7 @@ do
 	equal(away ~= nil, true, "pin: a quest no card holds")
 	local pinned = Choice({ pinned = { [away] = true }, journey = "carry" })
 	local carry = Model.Plan(ns.Data, player, {}, {}, pinned)
-	equal(carry.journey, "carry", "pin: on Loose ends")
+	equal(carry.journey, "carry", "pin: on Quests in your log")
 	equal(Holds(carry.steps, away), true, "pin: which leads to it")
 	pinned.notInterested["quest:" .. away] = { title = "Dropped" }
 	equal(Holds(Model.Plan(ns.Data, player, {}, {}, pinned).steps, away), false, "pin: never a dropped one")

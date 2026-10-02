@@ -103,6 +103,20 @@ local function Signature(route, player)
 	return table.concat(keys, "|")
 end
 
+-- The keys a step's quests and objectives take in a saved commit's members.
+---@param step AGFStep
+---@return string[]
+local function Members(step)
+	local members = {}
+	for _, id in ipairs(step.quests) do
+		members[#members + 1] = tostring(id)
+	end
+	for _, objective in ipairs(step.objectives or {}) do
+		members[#members + 1] = objective.id .. ":" .. objective.slot
+	end
+	return members
+end
+
 local function Commit(pending)
 	local endpoint, seconds = Session.Prefix(pending.steps, pending.seconds, pending.minutes * 60)
 	local keys, members, visits = {}, {}, {}
@@ -110,11 +124,8 @@ local function Commit(pending)
 		local step = pending.steps[index]
 		local key = ns.Model.Visit(step)
 		keys[key], members[key] = true, {}
-		for _, id in ipairs(step.quests) do
-			members[key][tostring(id)] = true
-		end
-		for _, objective in ipairs(step.objectives or {}) do
-			members[key][objective.id .. ":" .. objective.slot] = true
+		for _, member in ipairs(Members(step)) do
+			members[key][member] = true
 		end
 		ns.Model.NoteVisits(visits, step)
 	end
@@ -212,11 +223,8 @@ function Session.Apply(route, player)
 			local key = ns.Model.Visit(step)
 			local keep, members = commit.keys[key] == true, commit.members and commit.members[key]
 			if members then
-				for _, id in ipairs(step.quests) do
-					keep = keep and members[tostring(id)] == true
-				end
-				for _, objective in ipairs(step.objectives or {}) do
-					keep = keep and members[objective.id .. ":" .. objective.slot] == true
+				for _, member in ipairs(Members(step)) do
+					keep = keep and members[member] == true
 				end
 			end
 			for parent in pairs(edges[index]) do

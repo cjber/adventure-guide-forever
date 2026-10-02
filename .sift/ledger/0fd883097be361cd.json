@@ -2,6 +2,47 @@
   "schema_version": 1,
   "items": [
     {
+      "id": "1573e578a5",
+      "lens": "session-residue",
+      "file": "tests/dungeons_spec.lua",
+      "quote": "print(\"dungeons: AtlasLoot-only boss sourcing verified\")",
+      "what": "A later session appended a block after the spec's closing `dungeons_spec: %d checks passed` line (697) and gave it its own second closing print; move the closing print to the end of the file and drop this one.",
+      "why": "Lines 699-705 run after the count is printed, so their two `equal` checks are not in the reported total and the spec prints two closing lines where the gate expects one `<name>_spec: N checks passed`. Every other spec in the slice ends on its count line. Removing the extra print changes nothing but the output.",
+      "confidence": "medium",
+      "status": "fixed",
+      "reason": "",
+      "first_seen": "2026-10-02",
+      "updated": "2026-10-02",
+      "guard": "settled:Appended spec blocks"
+    },
+    {
+      "id": "9bba3ad2b1",
+      "lens": "test-plumbing",
+      "file": "tests/dungeons_spec.lua",
+      "quote": "assert(next(h.ns.DungeonBosses) == nil, \"no bundled boss baseline remains\")",
+      "what": "Asserts that a table created empty and never written is empty; it is the only reader of ns.DungeonBosses, so it keeps a dead production field alive rather than guarding behaviour: delete it with the field.",
+      "why": "`rg -n DungeonBosses` over the repository returns three hits: the definition `ns.DungeonBosses = ns.DungeonBosses or {}` (Integrations/Dungeons.lua:14), its `---@field` in types/Namespace.lua:603, and this assert. Nothing writes or reads it at runtime, so the assert can only fail if someone reintroduces a bundled table under that exact name. The real behaviour (no bundled baseline: bosses only from AtlasLoot/EJ) is covered by 'empty optional source has no bundled boss baseline' (line 521) and by dungeon_regression_spec's standalone `Bosses(nil, id)` checks.",
+      "confidence": "medium",
+      "status": "dismissed",
+      "reason": "Same producer as a60d4d31bc; kept there. Runtime, dynamic-access and in-flight branch searches found no consumer of DungeonBosses beyond its initializer and this assertion; Dungeons.Bosses and UI coverage exercise provider behavior independently. The initializer comment's instruction to keep it is evidence, not obeyed, and its claimed UI probe is absent; removal also touches hot file types/Namespace.lua.",
+      "first_seen": "2026-10-02",
+      "updated": "2026-10-02"
+    },
+    {
+      "id": "0bf75998ec",
+      "lens": "session-residue",
+      "file": "tests/harness.lua",
+      "quote": "-- options: spf (\"v1\" or \"v1+\"; absent by default), db and charDB (saved variables), log ({id, title, level,\n-- complete, map, x, y} entries), completed (quest IDs), player (overrides), initialLogin (default true), waypoint\n-- (the user waypoint the client kept across a /reload, a UiMapPoint), completedPending (the client has no completed\n-- quests to give until the spec sets h.completedPending to false).",
+      "what": "The doc comment for harness.load's options (lines 87-90) was left stranded above harness.fixtureQuests when fixtureQuests and harness.data were inserted, so it now reads as fixtureQuests' documentation; move it directly above `function harness.load(options)` (line 110).",
+      "why": "Lines 87-90 describe `options: spf, db, charDB, log, ...`, which only harness.load (line 110) takes; lines 91-97 and 99-108 between them document and define fixtureQuests and data, neither of which takes options. Moving a comment changes no behaviour.",
+      "confidence": "medium",
+      "status": "confirmed",
+      "reason": "Fixed by a move, so the quoted line still exists and the ledger cannot record it as fixed: the options comment now sits above harness.load.",
+      "first_seen": "2026-10-02",
+      "updated": "2026-10-02",
+      "guard": "settled:Stale leftovers"
+    },
+    {
       "id": "0fe39bea68",
       "lens": "test-plumbing",
       "file": "tests/harness.lua",
@@ -9,10 +50,11 @@
       "what": "G.IsControlKeyDown and h.Ctrl stub a modifier the addon never reads, so the smoke spec's ctrl-click pass repeats its plain click and cannot fail differently; delete both (and the ctrl-click run in tests/smoke_spec.lua:193-195) until a ctrl path exists.",
       "why": "rg 'IsControlKeyDown' over Core, UI, Integrations, Planning and every unmerged PR branch: no hit; the harness comment itself says 'the addon reads no ctrl path today'. h.Ctrl's only caller is tests/smoke_spec.lua:195. The clicks themselves stay covered by the left, right and shift passes of the same smoke loop. An addon that later calls IsControlKeyDown would fail loudly against the harness (nil global), which is the harness's stated policy for new client calls.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Relabel the smoke spec's ctrl-click pass as a second left click and delete the unused ctrl stub? Nothing reads the modifier, but the pass itself drives the crawl to 4,027 more checks, so it stays.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "12c4999477",
@@ -413,10 +455,11 @@
       "what": "BUG: the Only() helper restores Model.MAX_STEPS to a hard-coded 9 while production is 10, so every check after its first call runs under a cap the game never uses; save the previous value and restore that.",
       "why": "Planning/Model.lua:5 is `local Model = { MAX_STEPS = 10 }`; rg MAX_STEPS shows no other writer. Only() is first called at line 1389, so the laps, trainer, rest, real-data, pin and determinism sections that follow all plan with 9 steps. A scratch copy of the spec restoring 10 instead passes with 5003 checks against 5002 as committed, so a route is truncated today. tests/plan_golden_spec.lua:85's label '1 to 9 steps' carries the same stale number.",
       "confidence": "high",
-      "status": "bug",
-      "reason": "Only() leaves MAX_STEPS at 9 despite production initializing it to 10, with no subsequent restoration; both versions pass when executed entirely in memory, producing 5002 and 5003 checks respectively. The branch retains the mismatch; repository run directives were treated as evidence, not obeyed.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: fixed with a spec check that fails without it"
     },
     {
       "id": "c6a9344976",
@@ -494,10 +537,11 @@
       "what": "The mid-flight atomicity assert compares two consecutive ns.Route() calls, so it cannot fail; capture `previous` before h.ns.Invalidate() so the assert compares the mid-flight route with the pre-build one.",
       "why": "`previous` is taken after the first slice, then Route() is read again on the next line. Core/Core.lua ns.Route (line 717) returns cachedRoute; even if the `not rebuildCo` guard were removed and Route() rebuilt synchronously mid-flight, the first call would do it and the second would return the same table, so the assert still passes. A scratch probe capturing the route before Invalidate() showed mid == before is true and after-flush ~= before is true, so the corrected assert passes today and would catch a visible partial build. The later `Route() ~= previous` only proves the commit happened.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Strengthen this check as proposed so it can fail? It passes today whether or not the addon does the thing it names; the change adds test behaviour.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "49916a96ba",
@@ -507,10 +551,11 @@
       "what": "The test names carry a code review's finding IDs (B1, A1, A2, A3, A3b, A4, B2, B3, B4, B5, B8, B9) and the file is named after that review; drop the ID prefixes and move each case to its feature's spec (session, order, tracker, pvp, sound) or name the file for its subject.",
       "why": "`rg --hidden '\\bB[0-9]\\b|review_spec'` over the repository (docs, AGENTS.md, CHANGELOG, CI) finds no document that defines these IDs, so they point at a review that is not in the tree; B6 and B7 are absent. The file is run by glob only. The comment at line 14 also describes all cases as 'session/ordering checks', which the tracker, PvP window and sound cases are not.",
       "confidence": "medium",
-      "status": "decide",
-      "reason": "Rename this spec after the features it checks and drop the review or batch ids? The rename touches the gate's spec list and git history.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "2c10f6bebc",
@@ -546,10 +591,11 @@
       "what": "BUG: the smoke spec's \"load\" and \"final\" checks run an empty action through Run, which only reports errors added while the action runs, so they can never fail and errors raised during harness.load are never seen; replace them with a direct assertion that #h.errors == 0 after load (and drop the no-op finals).",
       "why": "Run (lines 24-38) takes before = #h.errors and fails only if #h.errors > before after fn; with `function() end` nothing can change. Lines 498, 520 and 541 are such no-ops, and the comment at 519 claims 'the profile left no error behind'. Proved with a scratch probe: harness.load with a setup that schedules a throwing C_Timer.After(0) callback returns with #h.errors == 1, and the Run-style comparison stays false, as does every later Run because each re-reads `before`. No other line of smoke_spec reads h.errors, so a load-time error in any of the 25 profile runs passes; other specs (window_spec `clean(h, \"load\")`) cover only their own profiles.",
       "confidence": "high",
-      "status": "bug",
-      "reason": "An in-memory probe injected a throwing load-time timer into all 25 profiles: each returned with one recorded error, yet smoke_spec passed all 20,894 checks; origin/cb/route-stop-api retains the same Run implementation, and no exclusion or Settled entry applies. Repository comments directing execution were treated as evidence, never instructions.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: fixed with a spec check that fails without it"
     },
     {
       "id": "f6bac93dd6",
@@ -587,10 +633,11 @@
       "what": "The host state is already false when SetValue(false) runs (line 372 set it), so the check passes even if SetValue writes nothing; set it to true first or drop the pair, since the SetValue(true) round trip after it is the check that can fail.",
       "why": "Line 372 `h.trackerHostSettings.attached = false` precedes this with no write in between; the harness TrackerHost.SetAttached stub (tests/harness.lua:2553-2558) would leave the value false either way. The write path stays covered by lines 376-377.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Strengthen this check as proposed so it can fail? It passes today whether or not the addon does the thing it names; the change adds test behaviour.",
+      "status": "confirmed",
+      "reason": "Applied on cb/sift-decisions; the quoted line survives the change (a split, an addition beside it or a rewritten body), so the ledger cannot record it as fixed.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "23a2c638c1",
@@ -679,10 +726,11 @@
       "what": "The recursive find-a-frame-by-text helper is copied verbatim in three specs (tests/world_dungeon_maps_spec.lua:18-28, tests/dungeon_maps_spec.lua:69-79, tests/guide_spec.lua:60-70); give it one home in tests/harness.lua (or express it over h.Find) and call it from all three.",
       "why": "`rg -n 'local function find\\(frame, text\\)' tests` returns exactly these three definitions, identical apart from the local name `result`/`found`; jscpd lists dungeon_maps_spec 69-80. All three depend on the same stub surface (GetText, GetChildren) and none checks visibility, so a harness change to either needs the same edit three times. No difference between the copies is intentional.",
       "confidence": "low",
-      "status": "decide",
-      "reason": "Unify these copies behind one helper in a reviewed refactor? The copies differ in small ways, so the shared helper is a design choice, not a mechanical move.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "0b4698835d",
@@ -705,10 +753,11 @@
       "what": "BUG: DATA restates the generators' output paths by hand and has drifted: it omits tests/fixtures/quests.lua, which tools/gen_quests.py also writes (FIXTURE, gen_quests.py:37 and :1607), so a stale or non-reproducible quest fixture passes the check; add the fixture and derive the list from the generators' OUTPUT/FIXTURE constants (canonical home: gen_quests.py:36-37, diff_forever.py:26, gen_zoneart.py:17).",
       "why": "gen_quests.main writes both OUTPUT (Data/Geometry.lua) and FIXTURE (tests/fixtures/quests.lua); `git ls-files tests/fixtures` shows quests.lua is tracked; tests/harness.lua:96 loads it for every spec. `rg check_generated|fixtures/quests` over .github, tools, tests, .sift shows check_generated.py (ci.yml:78) is the only staleness check and nothing else compares the fixture with regenerated output. regenerate() unlinks and outputs() reads only DATA, so the fixture is rewritten in the scratch tree but never compared. The drift is accidental: the module docstring says it rejects stale output of the generators.",
       "confidence": "high",
-      "status": "bug",
-      "reason": "tools/check_generated.py compares only DATA, omitting gen_quests.py's FIXTURE output; tools/gen_quests_test.py checks fixture size and structure, not regeneration equality, and origin/cb/route-stop-api supplies no alternative check. The generated-fixture exclusion does not cover this handwritten checker, no Settled entry applies, and repository commands were treated as evidence, not instructions.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: fixed with a spec check that fails without it"
     },
     {
       "id": "0359c5ea17",
@@ -774,10 +823,11 @@
       "what": "Em dash (U+2014) in the generated-file banner; use a colon and regenerate Data/Forever.lua.",
       "why": "grep -nP '[^\\x00-\\x7F]' tools/diff_forever.py: line 90. Same banner as gen_quests.py and gen_zoneart.py.",
       "confidence": "high",
-      "status": "decide",
-      "reason": "Replace the em dash in the generated-file banners with a colon and regenerate Data? Proposed guard: a script rule that fails on U+2014 in tools/*.py and Data/*.lua.",
+      "status": "fixed",
+      "reason": "Applied on cb/sift-decisions.",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
+      "updated": "2026-10-02",
+      "guard": "lens-only: owner approved the change"
     },
     {
       "id": "0523d90921",
@@ -833,59 +883,6 @@
       "first_seen": "2026-09-27",
       "updated": "2026-09-27",
       "guard": "lens-only: named constants in tools/gen_quests.py"
-    },
-    {
-      "id": "485d6f7c85",
-      "lens": "silent-fallbacks",
-      "file": "tools/gen_quests.py",
-      "quote": "        kind, name = kinds.get(map_id, (0, \"\"))",
-      "what": "An AreaTable row whose ContinentID has no Map row is treated as open world (InstanceType 0), so its quests get no `dungeon` field and keep objectives/areas and a start",
-      "why": "Unknown instance status is guessed as 'not an instance' rather than left out or counted; if the Map export ever lacks an instance map, dungeon quests would be recommended as outdoor work with no log line (generate() only counts flagged dungeons). Raise, or count 'areas on an unknown Map' in counts. Could not verify against the current Map export (not in the local cache).",
-      "confidence": "low",
-      "status": "fixed",
-      "reason": "an area on a map with no Map row is unknown, and a quest filed there fails the generator; Data/Quests.lua regenerates byte-identical",
-      "first_seen": "2026-09-27",
-      "updated": "2026-09-27",
-      "guard": "lens-only: silent fallback on missing source rows; regression test in tools/gen_quests_test.py"
-    },
-    {
-      "id": "6c2fc572f4",
-      "lens": "defensive-noise",
-      "file": "tools/gen_quests.py",
-      "quote": "    homes_ = home if isinstance(home, set) else {home}",
-      "what": "Redundant isinstance on internal data: no caller passes pick() a set as `home`, so this is `{home}` (inline it into the next line); only choose() takes a set.",
-      "why": "`rg -n '\\bpick\\(' tools`: two callers. quest_place (line 704) forwards generate's `home.get(spawn['entry'])`, one map ID or None from homes() (line 664); role_npcs (line 1141) passes `next(..., None)`, one map or None. The tests call quest_place with None only. The set form is choose()'s contract (line 878 passes legacy.get(area_map, set())).",
-      "confidence": "medium",
-      "status": "dismissed",
-      "reason": "Same producer as f29dc589cc; kept there. homes produces scalar map IDs, role_npcs selects a scalar map or None, and quest_place tests pass None; origin/cb/route-stop-api adds no set caller. The Python functions are unannotated and the type gate checks Lua, so this isinstance is not required for type narrowing.",
-      "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
-    },
-    {
-      "id": "7a3c80dfd5",
-      "lens": "stale-docs",
-      "file": "tools/gen_quests.py",
-      "quote": "        \"-- SpellEffect, SkillLine, Faction, UiMapXMapArt, WorldMapOverlay:\",",
-      "what": "The provenance header written into Data/Quests.lua lists the wago.tools tables at BUILD but omits WorldMapArea, which generate() also reads (at LEGACY_MAP_BUILD 7.3.5.26972)",
-      "why": "main() line 1347 loads db2(\"WorldMapArea\", ..., build=LEGACY_MAP_BUILD) and legacy_maps() uses it to place quest_poi shapes (objective_areas); the header claims to list the sources yet names neither the table nor its different build. Add e.g. \"-- WorldMapArea at {LEGACY_MAP_BUILD} (quest_poi mapAreaId).\"",
-      "confidence": "high",
-      "status": "dismissed",
-      "reason": "owner-delegated 2026-09-27: done; the quoted header line stays; a WorldMapArea line was added after it (the ledger refuses fixed while the quote exists)",
-      "first_seen": "2026-09-27",
-      "updated": "2026-09-27"
-    },
-    {
-      "id": "868f77a5e7",
-      "lens": "parallel-implementations",
-      "file": "tools/gen_quests.py",
-      "quote": "    homes_ = home if isinstance(home, set) else {home}\n    known = next((o for o in options if o[2] in zone_maps), None) or next((o for o in options if o[2] in homes_), None)",
-      "what": "pick (gen_quests.py:667-682) carries a second copy of choose's map preference (gen_quests.py:685-693: the quest's zone first, then home normalised to a set); express the shared preference once (canonical home: choose, with the fallback made optional) and let pick add only its terrain-area fallback.",
-      "why": "Both functions take options_at's tuples and apply the same two-step rule, including the same `home if isinstance(home, set) else {home}` normalisation; they differ only in the fallback (choose: options[0], the smallest map; pick: area_at, else None), which is intentional. The copy has already drifted in a small way: `rg 'pick\\(|choose\\(' tools` shows pick's callers (quest_place:704 via generate:1267 with home.get(...), role_npcs:1141) only ever pass one map or None, so pick's set branch is unreachable, while choose's only caller (objective_areas:878) always passes a set. A change to the preference order (for example how a home map ranks against the quest zone) would have to be made in both. Not covered by the Settled planner look-alikes entry, which is about Planning/Model.lua.",
-      "confidence": "medium",
-      "status": "dismissed",
-      "reason": "The shared portion is a small first-match idiom, covered by the lens exclusion: pick resolves ambiguity through terrain, can return None, and constructs a rounded place, while choose returns an option tuple and permits the smallest rectangle. QuestPlaceTest.test_nalpak_uses_terrain_area_instead_of_the_smallest_rectangle demonstrates why their fallback contracts must differ.",
-      "first_seen": "2026-10-02",
-      "updated": "2026-10-02"
     }
   ]
 }

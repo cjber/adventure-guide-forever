@@ -86,7 +86,7 @@ function Providers.Completion()
 		for _, journey in ipairs(route.journeys) do
 			if journey.kind == "story" or journey.kind == "nextzone" then
 				if (pass == 1) == (route.chosen and journey.key == route.journey) then
-					Add(tonumber(journey.key:match("^zone:(%d+)$")) or journey.map)
+					Add(journey.zone or journey.map)
 				end
 			end
 		end
@@ -94,8 +94,7 @@ function Providers.Completion()
 	for _, map in ipairs(maps) do
 		local summary, err = api.ZoneSummary(map)
 		local targets, targetError = api.Targets(map, 3)
-		local zone =
-			{ map = map, name = ns.State.MapName(map) or tostring(map), targets = {}, error = err or targetError }
+		local zone = { map = map, name = ns.State.ZoneName(map), targets = {}, error = err or targetError }
 		zone.summary = Copy(summary)
 		if summary then
 			zone.name = summary.name
@@ -116,7 +115,9 @@ function Providers.Completion()
 			end
 			zone.targets[#zone.targets + 1] = copy
 		end
-		result.zones[#result.zones + 1] = zone
+		if zone.name then
+			result.zones[#result.zones + 1] = zone
+		end
 	end
 	return result
 end
@@ -150,24 +151,6 @@ function Providers.DungeonEntrance(instanceID)
 		return nil, "unknown"
 	end
 	return { map = point.map, x = point.x, y = point.y }
-end
-
-function Providers.GoToEntrance(instanceID)
-	local point, err = Providers.DungeonEntrance(instanceID)
-	if not point then
-		return false, err
-	end
-	return ns.Guidance.ShowOnMap({
-		map = point.map,
-		x = point.x,
-		y = point.y,
-		kind = "dungeon",
-		key = "entrance:" .. instanceID,
-		quests = {},
-		title = ns.L.GO_TO_ENTRANCE,
-		reason = "",
-		detail = "",
-	})
 end
 
 local events = CreateFrame("Frame")
