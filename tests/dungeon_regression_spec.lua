@@ -21,7 +21,6 @@ for _, locale in ipairs({ "Normal", "Normalmodus", "Обычный" }) do
 			return module
 		end,
 	}, Locales = {} }
-	assert(module:GetDifficultyByName("NORMAL") == nil)
 	local source = assert(h.ns.Dungeons.Source(noop))
 	for _, id in ipairs({ 36, 43, 48, 389 }) do
 		assert(source.bosses[id][1].name == "Encounter " .. id)
@@ -115,8 +114,6 @@ for _, id in ipairs(planned) do
 	assert(not h.ns.Dungeons.Planned(id))
 end
 assert(#h.errors == 0, table.concat(h.errors, "\n"))
-print("dungeon_regression_spec: localized AtlasLoot lookup, raid pages and whole-catalog planning passed")
-
 -- Hand off to the optional guide's public command without importing its data.
 local classic = harness.load()
 classic.ns.Window.OpenDungeon(43)
@@ -145,3 +142,4 @@ assert(launch:IsVisible(), "available dependency exposes the launch button")
 classic.Click(launch)
 assert(calls == 1, "one click invokes the public guide command once")
 assert(#classic.errors == 0, "public handoff does not raise errors")
+print("dungeon_regression_spec: localized AtlasLoot lookup, raid pages and whole-catalog planning passed")

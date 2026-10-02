@@ -1256,7 +1256,7 @@ equal(skippedTown.steps[1] and skippedTown.steps[1].key, "turnin:12", "skip: the
 equal(Chosen(skippedTown).subline, "1 ready to hand in, 4 quests near your level", "skip: and its count")
 -- Each step's place and zone, for the "NPC, zone" line: the town's name, else its busiest giver; a turn-in names the
 -- data's NPC only where its waypoint agrees with the data's finish; the zone is the client's map name, else the data's.
-equal(stop.place, "Lakeshire, Redridge", "place: a unnamedPlan town")
+equal(stop.place, "Lakeshire, Redridge", "place: a named town")
 equal(stop.zone, "Zone", "place: the data's map name without the client's")
 local far
 for _, step in ipairs(toured.steps) do
@@ -1737,7 +1737,7 @@ local function Chain(id, members, seen)
 	end
 	return Chain(q.next, members, seen)
 end
--- Pinned: the plan's pre-check estimated about 499 and 316; these are the design's three rules applied exactly.
+-- Pinned: the design's three rules applied exactly.
 do
 	local totals, textOnly = 0, 0
 	for _, head in ipairs(heads) do

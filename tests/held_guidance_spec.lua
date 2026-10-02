@@ -48,8 +48,6 @@ for _, kind in ipairs({ "trainer", "battlemaster", "explore" }) do
 	assert(h.spfRoute.stops[1].hold == false, kind .. ": proximity can finish a non-quest stop")
 end
 assert(#h.errors == 0, table.concat(h.errors, "\n"))
-print("held_guidance_spec: completed/abandoned objectives replace held guidance; non-quest stops remain transient")
-
 -- Standalone map/dungeon buttons have no chosen-journey progress owner.
 for _, kind in ipairs({ "giver", "town" }) do
 	local single = harness.load({ spf = "ended" })
@@ -67,3 +65,4 @@ for _, kind in ipairs({ "giver", "town" }) do
 	assert(single.spfRoute.stops[1].hold == false, "standalone navigation must still finish on arrival")
 	assert(single.ns.Prefs().guided == nil, "standalone destination is not owned by a chosen journey")
 end
+print("held_guidance_spec: completed/abandoned objectives replace held guidance; non-quest stops remain transient")
