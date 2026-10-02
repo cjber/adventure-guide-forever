@@ -402,16 +402,20 @@ function ns.InLog(step)
 	return #LogQuests(step) > 0
 end
 
--- A quest in the log opens in Blizzard's own details view (docs/design.md §2.5); anything else is left to the caller.
--- Never in combat, when the quest log's frames are the client's to move. True when the details opened.
+-- A quest in the log opens the world map on the quest's zone and becomes the selected quest (docs/design.md §2.5);
+-- anything else is left to the caller. Never in combat. True when the map opened. Blizzard's details pane is the
+-- player's to open: QuestMapFrame_ShowQuestDetails run from addon code writes the pane's questID, which the map's
+-- quest pins read, and they then fail in combat.
 ---@param step AGFStep
 ---@return boolean
 function ns.ShowQuest(step)
 	if not ns.InLog(step) or InCombatLockdown() then
 		return false
 	end
-	OpenQuestLog()
-	QuestMapFrame_ShowQuestDetails(LogQuests(step)[1])
+	local questID = LogQuests(step)[1]
+	local map = GetQuestUiMapID(questID)
+	C_QuestLog.SetSelectedQuest(questID)
+	C_Map.OpenWorldMap(map ~= 0 and map or nil)
 	return true
 end
 
@@ -894,11 +898,10 @@ function AdventureGuideForever_OnAddonCompartmentClick(_, mouseButton)
 		ns.ToggleWindow()
 		return
 	end
-	if not WorldMapFrame:IsShown() then
-		ToggleWorldMap()
-	end
 	if ns.OpenPanel then
 		ns.OpenPanel()
+	else
+		C_Map.OpenWorldMap()
 	end
 end
 

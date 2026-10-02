@@ -286,7 +286,8 @@ local function HideChecklist(pool, from)
 	end
 end
 
--- A quest in the log opens its details; any other step turns the map to it. Right-click is the step menu and order.
+-- A quest in the log opens the map on its zone; any other step turns the map to it and pings it. Right-click is the
+-- step menu and order.
 ---@param self AGFStepHoverRow
 ---@param mouseButton string
 local function RowClick(self, mouseButton)
@@ -321,11 +322,14 @@ local function CardClick(self, mouseButton)
 	end
 	if self.state == "chosen" and ns.Guidance.Status() == "paused" then
 		ns.StartRoute()
-	elseif self.state == "chosen" then
-		WorldMapFrame:SetMapID(journey.map)
 	else
-		WorldMapFrame:SetMapID(journey.map)
-		ns.Choose(journey.key, ns.Setting("titleStartsRoute"))
+		-- An open map turns to the journey; the window's cards leave a closed map closed.
+		if WorldMapFrame:IsShown() then
+			C_Map.OpenWorldMap(journey.map)
+		end
+		if self.state ~= "chosen" then
+			ns.Choose(journey.key, ns.Setting("titleStartsRoute"))
+		end
 	end
 	-- Its tooltip spoke for the state the click just left.
 	GameTooltip_Hide()

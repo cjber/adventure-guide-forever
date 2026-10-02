@@ -90,7 +90,7 @@ function harness.load(options)
 		tooltip = {},
 		pins = {},
 		providers = {},
-		counts = { CreateFrame = 0, displayModeWrites = 0, tickers = 0, AcquirePin = 0, SetMapID = 0 },
+		counts = { CreateFrame = 0, displayModeWrites = 0, tickers = 0, AcquirePin = 0, SetMapID = 0, OpenQuestLog = 0 },
 		modelCalls = {},
 		fanfares = {},
 		sounds = {},
@@ -1346,7 +1346,20 @@ function harness.load(options)
 			end
 		end
 	end
+	-- GetQuestUiMapID answers 0 for a quest with no zone of its own.
+	G.GetQuestUiMapID = function(id)
+		for _, quest in ipairs(log) do
+			if quest.id == id then
+				return quest.map or 0
+			end
+		end
+		return 0
+	end
+	h.selectedQuests = {}
 	G.C_QuestLog = {
+		SetSelectedQuest = function(id)
+			h.selectedQuests[#h.selectedQuests + 1] = id
+		end,
 		GetLogIndexForQuestID = function(id)
 			for index, quest in ipairs(log) do
 				if quest.id == id then
@@ -1986,14 +1999,12 @@ function harness.load(options)
 		end,
 		ApplyCurrentScale = noop,
 	}
-	G.OpenWorldMap = function(mapID)
+	-- WORLD_MAP_OPEN, which Blizzard_WorldMap.lua:198 turns into its own OpenWorldMap(mapID).
+	G.C_Map.OpenWorldMap = function(mapID)
 		map:Show()
 		if mapID then
 			map:SetMapID(mapID)
 		end
-	end
-	G.ToggleWorldMap = function()
-		map:SetShown(not map:IsShown())
 	end
 
 	-- The quest log: every write to displayMode is counted and raises, since AGF must never write it.
@@ -2024,9 +2035,13 @@ function harness.load(options)
 			return 5, -28
 		end,
 	}
+	-- QuestLogOwnerMixin:HandleUserActionOpenQuestLog: the map opens with its quest sidebar shown.
 	G.OpenQuestLog = function()
+		h.counts.OpenQuestLog = h.counts.OpenQuestLog + 1
 		map:Show()
+		questMap:Show()
 	end
+	-- Blizzard's own details view, opened by the player; the addon never calls it.
 	h.questDetails = {}
 	G.QuestMapFrame_ShowQuestDetails = function(questID)
 		h.questDetails[#h.questDetails + 1] = questID

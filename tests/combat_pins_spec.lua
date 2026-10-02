@@ -5,7 +5,7 @@ local function equal(actual, expected, label)
 	checks = checks + 1
 	assert(actual == expected, label .. ": " .. tostring(actual))
 end
-h.G.OpenQuestLog()
+h.G.C_Map.OpenWorldMap()
 h.flush()
 h.map:SetMapID(1413)
 local provider = h.providers[1]

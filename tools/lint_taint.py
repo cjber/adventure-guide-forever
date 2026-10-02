@@ -33,7 +33,29 @@ CALLS = {
     "SetParentInitializer": "the settings search reads this link",
     "AddMaskableTexture": "writes into the map canvas's texture list",
     "UpdateAnchors": "nameplate layout writes the plate's state",
+    "OpenQuestLog": "runs the world map's layout as the addon; open it with C_Map.OpenWorldMap",
+    "ToggleWorldMap": "runs the world map's layout as the addon; open it with C_Map.OpenWorldMap",
+    "QuestMapFrame_ShowQuestDetails": "writes the quest details frame's questID, which the map's quest pins read",
 }
+
+# The same, for names that are only Blizzard's as a bare global: a namespaced function of the same name is another one.
+GLOBAL_CALLS = {
+    "OpenWorldMap": "sets the map's mapID as the addon; C_Map.OpenWorldMap has Blizzard's code do it",
+}
+
+# The same, for a method on one named Blizzard object, written `Object:Method`.
+OBJECT_CALLS = {
+    "WorldMapFrame:SetMapID": "sets the map's mapID as the addon; C_Map.OpenWorldMap has Blizzard's code do it",
+}
+
+
+def call_reason(tokens: list[Token], index: int) -> str | None:
+    """Why the call whose function name is at `index` must not run from addon code, if it must not."""
+    name = tokens[index].text
+    previous = tokens[index - 1].text if index else ""
+    if previous not in {".", ":"} or tokens[index - 2].text == "_G":
+        return CALLS.get(name) or GLOBAL_CALLS.get(name)
+    return CALLS.get(name) or OBJECT_CALLS.get(f"{tokens[index - 2].text}{previous}{name}")
 
 
 def flagged(comments: dict[int, str], line: int) -> bool:
@@ -117,8 +139,8 @@ def check(source: str) -> list[tuple[int, str]]:
             first = tokens[index + 2]
             if first.kind != "string" and not (first.text in tables and tokens[index + 3].text == ","):
                 report(token.line, "taint-method-hook: hooksecurefunc on an object; hook a script or an event")
-        elif token.text in CALLS and tokens[index + 1].text == "(" and previous != "function":
-            report(token.line, f"taint-blizzard-call: {token.text} ({CALLS[token.text]})")
+        elif tokens[index + 1].text == "(" and previous != "function" and (reason := call_reason(tokens, index)):
+            report(token.line, f"taint-blizzard-call: {token.text} ({reason})")
         elif previous not in {".", ":"} and token.text not in names and not OWN.fullmatch(token.text):
             end = chain_end(tokens, index)
             if end > index + 1 and tokens[end].text == "=":

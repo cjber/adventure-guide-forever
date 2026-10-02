@@ -57,17 +57,12 @@ ITEM_RACES_ALLOWED = nil
 ---@type table<string, fun(msg: string, editBox: EditBox)>
 SlashCmdList = nil
 
----@param uiMapID? integer
-function OpenWorldMap(uiMapID) end
-
----@param uiMapID? integer
-function ToggleWorldMap(uiMapID) end
-
----@param mapID? integer
-function OpenQuestLog(mapID) end
-
+-- The zone a quest's objectives are in, 0 when it has none (Blizzard_UIPanels_Game/Mainline/QuestMapFrame.lua:611).
+-- The pinned annotations declare it without its signature.
 ---@param questID integer
-function QuestMapFrame_ShowQuestDetails(questID) end
+---@param ignoreWaypoints? boolean
+---@return integer uiMapID
+function GetQuestUiMapID(questID, ignoreWaypoints) end
 
 -- Blizzard_ObjectiveTracker/Blizzard_ObjectiveTrackerShared.lua:23: an objective line with no dash and no indent.
 ---@type integer
@@ -120,7 +115,6 @@ MapCanvasPinMixin = nil
 
 ---@class AGFWorldMapFrame : Frame
 ---@field ScrollContainer Frame
----@field SetMapID fun(self: AGFWorldMapFrame, mapID: integer)
 ---@field AddDataProvider fun(self: AGFWorldMapFrame, provider: AGFMapProvider)
 ---@field GetMapID fun(self: AGFWorldMapFrame): integer?
 ---@field AcquirePin fun(self: AGFWorldMapFrame, template: string, ...: any): AGFPinFrame

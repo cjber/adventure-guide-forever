@@ -73,7 +73,7 @@ function Menu.Step(root, step)
 	if ns.Guidance.Owns() then
 		root:CreateButton(L.STOP, ns.Stop)
 	end
-	-- Blizzard's details only open out of combat, so in combat the entry is left out rather than doing nothing.
+	-- The quest's map only opens out of combat, so in combat the entry is left out rather than doing nothing.
 	if step and ns.InLog(step) and not InCombatLockdown() then
 		root:CreateButton(L.SHOW_QUEST, function()
 			ns.ShowQuest(step)

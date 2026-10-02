@@ -1138,8 +1138,13 @@ local function Attach()
 	end
 
 	function ns.OpenPanel()
-		-- Also brings back a collapsed quest sidebar, which hides QuestMapFrame and so the panel inside it.
-		OpenQuestLog()
+		C_Map.OpenWorldMap()
+		-- A collapsed quest sidebar or a maximized map hides QuestMapFrame and so the panel inside it. Bringing the
+		-- sidebar back from addon code taints the map, so the guide opens in its own window instead.
+		if not QuestMapFrame:IsShown() then
+			ns.OpenWindow()
+			return
+		end
 		ShowGuide(true)
 	end
 end

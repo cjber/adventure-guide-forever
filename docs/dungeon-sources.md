@@ -124,7 +124,7 @@ available preparation quests can still be planned. Existing selected dungeon jou
 Map reveal uses Forever's stock `MapPinPingTemplate` from SharedMapPoiTemplates.xml, through AGF's
 existing data provider and a private inherited template in UI/Panel.xml. It acquires at
 `PIN_FRAME_LEVEL_QUEST_PING`, plays two loops at fractional zone coordinates, and releases on refresh.
-Explicit destination controls route through Integrations, then OpenWorldMap/SetMapID; combat skips the
+Explicit destination controls route through Integrations, then C_Map.OpenWorldMap; combat skips the
 panel calls. Matching AGF pins flash on click and glow during map-control hover.
 
 ## Interior maps

@@ -510,8 +510,9 @@ function Pins.Reveal(point)
 	if InCombatLockdown() or not ns.Model.ValidPlace(point) or ns.Setting("wanderer") then
 		return
 	end
-	OpenWorldMap(point.map)
-	WorldMapFrame:SetMapID(point.map)
+	-- C_Map.OpenWorldMap has the client open and turn the map from its own code. The global OpenWorldMap and
+	-- WorldMapFrame:SetMapID run as the addon and leave the map's fields tainted, which blocks its pins in combat.
+	C_Map.OpenWorldMap(point.map)
 	C_Timer.After(0, function()
 		if InCombatLockdown() or not WorldMapFrame:IsShown() or WorldMapFrame:GetMapID() ~= point.map then
 			return
