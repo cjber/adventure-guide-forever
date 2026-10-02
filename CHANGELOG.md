@@ -11,14 +11,6 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
-- **Other addons can follow the guide.** `AdventureGuideForever.API` tells an addon which stop the tracker shows and the stops after it, with each town's hand-in and pickup counts. See `docs/api.md`.
-
-- **Boss rows jump to the right loot.** Clicking a boss in the Dungeons tab now scrolls its loot list to that boss's drops, instead of stopping short once the list has section headings.
-
-- **Scaling quests show your level.** A quest that scales to you appears in the full guide at your level with the right difficulty colour, where it used to read "[-1]" in grey.
-
-- **Completion zones always have a name.** A zone the client cannot name falls back to the guide's own zone name, and is left out when there is none, instead of showing a map number.
-
 ## [0.6.6] - 2026-10-02
 
 - **The tracker fills in seconds, not most of a minute.** After logging in or reloading, the guide read the quest catalogue so gently that the tracker sat on "Loading quest data..." for 40 seconds or more. It now takes a few seconds.
@@ -26,6 +18,10 @@ verbatim rather than rewritten as the addon moves.
 - **The guides stay put in a fight.** In combat the game stretches its quest tracker and nudges it back on screen, which shoved the Forever sections sideways across the screen until the fight ended. They now stay stacked above the quest list.
 - **A damaged save no longer breaks the guide.** A hand-edited saved file with a bad "Not interested" entry or window position is now ignored, instead of raising an error in the Skipped menu or when the window opens.
 - **Setting names fit the settings panel.** Five were cut off with an ellipsis; they are shorter now and their tooltips carry the detail.
+- **Other addons can follow the guide.** `AdventureGuideForever.API` tells an addon which stop the tracker shows and the stops after it, with each town's hand-in and pickup counts. See `docs/api.md`.
+- **Boss rows jump to the right loot.** Clicking a boss in the Dungeons tab now scrolls its loot list to that boss's drops, instead of stopping short once the list has section headings.
+- **Scaling quests show your level.** A quest that scales to you appears in the full guide at your level with the right difficulty colour, where it used to read "[-1]" in grey.
+- **Completion zones always have a name.** A zone the client cannot name falls back to the guide's own zone name, and is left out when there is none, instead of showing a map number.
 
 ## [0.6.5] - 2026-10-01
 
