@@ -21,6 +21,7 @@ class TaintTest(unittest.TestCase):
             "local n = frame:GetBagSize()": "taint-blizzard-call",
             "initializer:SetParentInitializer(parent)": "taint-blizzard-call",
             "OpenWorldMap(1413)": "taint-blizzard-call",
+            "_G.OpenWorldMap(1413)": "taint-blizzard-call",
             "OpenQuestLog()": "taint-blizzard-call",
             "ToggleWorldMap()": "taint-blizzard-call",
             "QuestMapFrame_ShowQuestDetails(questID)": "taint-blizzard-call",

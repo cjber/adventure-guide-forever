@@ -47,7 +47,6 @@ read_globals = { "ShowUIPanel", "HideUIPanel", "CreateFramePoolCollection", "C_X
 	"GetBuildInfo",
 	"strtrim",
 	"WorldMapFrame",
-	"OpenQuestLog",
 	"GetQuestUiMapID",
 	"EventUtil",
 	"MAP_PIN_INVALID_MAP",

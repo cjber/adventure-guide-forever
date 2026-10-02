@@ -3558,14 +3558,14 @@ do
 	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, "preview: a collapsed sidebar takes the rings away")
 	h.G.QuestMapFrame:Show()
 	equal(#h.pins.AdventureGuideForeverPinTemplate, rings, "preview: and its return brings them back")
-	-- Opening the guide leaves a shown sidebar to C_Map.OpenWorldMap, and asks for the quest log only to bring a
-	-- collapsed one back.
+	-- Opening the guide never asks for the quest log: with the sidebar collapsed it opens in its own window.
 	h.ns.OpenPanel()
-	equal(h.counts.OpenQuestLog, 0, "open: a shown sidebar needs no quest log call")
+	equal(h.ns.WindowShown(), false, "open: a shown sidebar holds the guide")
 	h.G.QuestMapFrame:Hide()
 	h.ns.OpenPanel()
-	equal(h.counts.OpenQuestLog, 1, "open: a collapsed sidebar is brought back")
-	equal(h.G.AdventureGuideForeverPanel:IsVisible(), true, "open: with the guide in it")
+	equal(h.counts.OpenQuestLog, 0, "open: a collapsed sidebar is left collapsed")
+	equal(h.ns.WindowShown(), true, "open: and the guide opens in its window")
+	h.G.QuestMapFrame:Show()
 	clean(h, "preview")
 end
 

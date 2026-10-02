@@ -53,7 +53,7 @@ def call_reason(tokens: list[Token], index: int) -> str | None:
     """Why the call whose function name is at `index` must not run from addon code, if it must not."""
     name = tokens[index].text
     previous = tokens[index - 1].text if index else ""
-    if previous not in {".", ":"}:
+    if previous not in {".", ":"} or tokens[index - 2].text == "_G":
         return CALLS.get(name) or GLOBAL_CALLS.get(name)
     return CALLS.get(name) or OBJECT_CALLS.get(f"{tokens[index - 2].text}{previous}{name}")
 

@@ -57,9 +57,6 @@ ITEM_RACES_ALLOWED = nil
 ---@type table<string, fun(msg: string, editBox: EditBox)>
 SlashCmdList = nil
 
----@param mapID? integer
-function OpenQuestLog(mapID) end
-
 -- The zone a quest's objectives are in, 0 when it has none (Blizzard_UIPanels_Game/Mainline/QuestMapFrame.lua:611).
 -- The pinned annotations declare it without its signature.
 ---@param questID integer
