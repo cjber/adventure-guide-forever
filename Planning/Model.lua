@@ -461,10 +461,16 @@ local droppedIDs = {}
 local skippedSeen
 
 ---@param prefs AGFPrefs
-local function ReadDropped(prefs)
+---@param skippedQuests? table<string, integer[]> the build's AGFPlanInputs.skippedQuests
+local function ReadDropped(prefs, skippedQuests)
 	droppedIDs = {}
-	for id in pairs(ns.Order and ns.Order.SkippedQuests(skippedSeen) or NONE) do
-		droppedIDs[id] = true
+	for key, ids in pairs(skippedQuests or NONE) do
+		if skippedSeen then
+			skippedSeen[key] = true
+		end
+		for _, id in ipairs(ids) do
+			droppedIDs[id] = true
+		end
 	end
 	for key in pairs(prefs.notInterested or NONE) do
 		local id = type(key) == "string" and tonumber(key:match("^quest:(%d+)$"))
@@ -3461,9 +3467,23 @@ local function TownCounts(pickups, handins)
 	return ns.L.TOWN_COUNTS:format(pickups, handins)
 end
 
+-- A visit's identity (docs/design.md §4.3): the one a build gave it (FinishRoute), which outlives the town's numbering,
+-- else the step's key. The saved order, the session's commitment, the giver skips and the step sound all key by it.
+function Model.Visit(step)
+	return step.orderKey or step.key
+end
+
+-- The skipped key (prefs.skipped) of one giver on a town visit's checklist.
+function Model.GiverSkip(step, giverKey)
+	return "giver:" .. Model.Visit(step) .. ":" .. giverKey
+end
+
 -- A checklist keeps completed givers until the visit ends, while its arrow follows real remaining locations.
-function Model.TownChecklist(data, player, completed, log, step, previous)
+function Model.TownChecklist(data, player, completed, log, step, previous, skipped)
 	local rows, byKey = {}, {}
+	local function Skipped(row)
+		return skipped ~= nil and skipped[Model.GiverSkip(step, row.key)] == true
+	end
 	local function Add(place, list, id)
 		local key = string.format("%d:%.5f:%.5f:%s", place.map, place.x, place.y, place.name)
 		local row = byKey[key]
@@ -3488,16 +3508,12 @@ function Model.TownChecklist(data, player, completed, log, step, previous)
 	end
 	for _, row in ipairs(previous and previous.checklist or {}) do
 		for _, id in ipairs(row.pickups) do
-			if
-				log[id]
-				or completed[id]
-				or (ns.Order and ns.Order.IsGiverSkipped(step.orderKey or step.key, row.key))
-			then
+			if log[id] or completed[id] or Skipped(row) then
 				Add(row.place, "pickups", id)
 			end
 		end
 		for _, id in ipairs(row.handins) do
-			if completed[id] or (ns.Order and ns.Order.IsGiverSkipped(step.orderKey or step.key, row.key)) then
+			if completed[id] or Skipped(row) then
 				Add(row.place, "handins", id)
 			end
 		end
@@ -3516,7 +3532,7 @@ function Model.TownChecklist(data, player, completed, log, step, previous)
 		for _, id in ipairs(row.handins) do
 			done = done and completed[id] == true
 		end
-		row.skipped = ns.Order ~= nil and ns.Order.IsGiverSkipped(step.orderKey or step.key, row.key)
+		row.skipped = Skipped(row)
 		row.done = done or row.skipped
 		row.text = ns.L.TOWN_GIVER:format(row.name, TownCounts(#row.pickups, #row.handins))
 		complete = complete and row.done
@@ -3600,11 +3616,21 @@ local function PreviousVisit(step, previous, used)
 end
 
 -- Town numbering changes after accepting its pickups; a saved session identifies each action independently.
-local function CommittedVisit(step, commit, used)
+-- Model.NoteVisits writes the `visits` a session commits; CommittedVisit reads them back on the next build.
+function Model.NoteVisits(visits, step)
+	local visit = Model.Visit(step)
+	for _, list in ipairs(step.kind == "town" and { "pickups", "handins" } or NONE) do
+		for _, id in ipairs(step[list]) do
+			visits[list .. ":" .. id] = visit
+		end
+	end
+end
+
+local function CommittedVisit(step, visits, used)
 	local best, score, matches = nil, nil, {}
 	for _, list in ipairs(step.kind == "town" and { "pickups", "handins" } or NONE) do
 		for _, id in ipairs(step[list]) do
-			local key = commit.visits[list .. ":" .. id]
+			local key = visits[list .. ":" .. id]
 			if key and not used[key] then
 				matches[key] = (matches[key] or 0) + 1
 				if not score or matches[key] > score then
@@ -3616,14 +3642,16 @@ local function CommittedVisit(step, commit, used)
 	return best
 end
 
-local function FinishRoute(data, player, completed, log, route, last, prefs)
+---@param inputs? AGFPlanInputs
+local function FinishRoute(data, player, completed, log, route, last, prefs, inputs)
 	local previous = {}
-	local commit = prefs.sessionCommit
+	local committed = inputs and inputs.committed
 	for _, card in ipairs(last and last.journeys or {}) do
 		previous[card.key] = card.steps
 	end
 	for _, card in ipairs(route.journeys) do
 		local identities, steps, used = Idents(card.steps), {}, {}
+		local visits = committed and committed.journey == card.key and committed.visits
 		for index, original in ipairs(card.steps) do
 			-- Combat retains some step tables; decoration must not mutate the preceding snapshot.
 			local step = {}
@@ -3632,15 +3660,11 @@ local function FinishRoute(data, player, completed, log, route, last, prefs)
 			end
 			---@cast step AGFStep
 			local old = PreviousVisit(step, previous[card.key], used)
-			local saved = commit
-				and commit.journey == card.key
-				and commit.minutes == prefs.sessionMinutes
-				and commit.visits
-				and CommittedVisit(step, commit, used)
+			local saved = visits and CommittedVisit(step, visits, used)
 			step.orderKey = old and old.orderKey or saved or identities[index]
 			used[step.orderKey] = true
 			if step.kind == "town" then
-				Model.TownChecklist(data, player, completed, log, step, old)
+				Model.TownChecklist(data, player, completed, log, step, old, prefs.skipped)
 			end
 			Model.StepTitle(data, log, step)
 			if not step.complete then
@@ -3662,10 +3686,11 @@ local YIELD_EVERY = 4
 
 ---@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
 ---@param instanceName? fun(id: integer): string? the client's name for an instance Map.ID; the data's otherwise
+---@param skippedQuests? table<string, integer[]> the build's AGFPlanInputs.skippedQuests
 ---@return AGFJourney[] journeys
 ---@return boolean stranded no next zone
-function Model.Journeys(data, player, completed, log, prefs, mapName, instanceName)
-	ReadDropped(prefs)
+function Model.Journeys(data, player, completed, log, prefs, mapName, instanceName, skippedQuests)
+	ReadDropped(prefs, skippedQuests)
 	local index, L = Index(data), ns.L
 	local zones, eligible = Choices(data, player, completed, log, index, prefs, Far(data, player))
 	local ready = Ready(data, log)
@@ -3908,16 +3933,19 @@ end
 ---@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
 ---@param instanceName? fun(id: integer): string? the client's name for an instance Map.ID; the data's otherwise
 ---@param last? AGFRoute the route before, whose committed orders (`orders`) this one keeps to
-function Model.Plan(data, player, completed, log, prefs, mapName, instanceName, last)
+---@param inputs? AGFPlanInputs what the player's order, skips and session ask of this build; none of them when nil
+function Model.Plan(data, player, completed, log, prefs, mapName, instanceName, last, inputs)
 	skippedSeen, committedOrders, planDocks, heldHere = {}, {}, { data = data }, last and last.here
+	local forget = inputs and inputs.forget or NONE
 	for key, order in pairs(last and last.orders or NONE) do
-		committedOrders[key] = order
+		committedOrders[key] = not forget[key] and order or nil
 	end
-	local journeys, stranded = Model.Journeys(data, player, completed, log, prefs, mapName, instanceName)
+	local journeys, stranded =
+		Model.Journeys(data, player, completed, log, prefs, mapName, instanceName, inputs and inputs.skippedQuests)
 	local route = Route(journeys, prefs)
 	route.skipped, skippedSeen, route.stranded = skippedSeen, nil, stranded or nil
 	route.orders, committedOrders, planDocks, heldHere = committedOrders, nil, nil, nil
-	FinishRoute(data, player, completed, log, route, last, prefs)
+	FinishRoute(data, player, completed, log, route, last, prefs, inputs)
 	local head = route.steps[1]
 	route.here = head and head.here and head.key or nil
 	return route
@@ -3976,8 +4004,9 @@ end
 -- skipped or no longer open since. Only the retained steps' quests are checked again: no eligibility pass over the
 -- data, so it stays cheap; the full build runs once combat ends.
 ---@param last AGFRoute
-function Model.Refresh(data, player, completed, log, prefs, last, mapName)
-	ReadDropped(prefs)
+---@param inputs? AGFPlanInputs as Model.Plan's; `forget` waits for the full build
+function Model.Refresh(data, player, completed, log, prefs, last, mapName, inputs)
+	ReadDropped(prefs, inputs and inputs.skippedQuests)
 	local skipped, groups = prefs.skipped, Index(data).groups
 	local function Keep(ids, open)
 		local kept = {}
@@ -4081,7 +4110,7 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName)
 	-- A carry card the last build lacked pushes out the last card not chosen, as the full build would leave it out.
 	local route = Route(journeys, prefs)
 	route.stranded, route.orders = last.stranded, last.orders
-	FinishRoute(data, player, completed, log, route, last, prefs)
+	FinishRoute(data, player, completed, log, route, last, prefs, inputs)
 	return route
 end
 

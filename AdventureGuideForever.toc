@@ -22,6 +22,7 @@ Core\Core.lua
 Planning\Model.lua
 Planning\Order.lua
 Core\Session.lua
+Planning\Shown.lua
 UI\Sound.lua
 Core\State.lua
 Planning\Geometry.lua

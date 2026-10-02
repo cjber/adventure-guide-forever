@@ -2707,6 +2707,19 @@ function harness.model(ns)
 	return ns.Model
 end
 
+-- The route as shown, without the UI: harness.model's files, then the player's order, the session and Shown.Build.
+-- The spec supplies the two client reads the session's own estimate makes (ns.State.RunSpeed,
+-- ns.Integrations.Provider).
+---@param ns table
+---@return AGFShown
+function harness.shown(ns)
+	harness.model(ns)
+	for _, path in ipairs({ "Planning/Order.lua", "Core/Session.lua", "Planning/Shown.lua" }) do
+		assert(loadfile(path))(ADDON, ns)
+	end
+	return ns.Shown
+end
+
 -- Whether a step stands on a point `data` has: a place the data has (keyed to 4 places), or, for an area, where the
 -- player enters it: inside the ring of one of its shapes, each centred on a place the data has, with the ring's middle
 -- one too (Model.lua Enter). The second return is the key a point is indexed by, for a spec's messages.

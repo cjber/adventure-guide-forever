@@ -592,7 +592,7 @@ do
 	equal(#skip.entries, #town.checklist - 2, "checklist: only remaining givers in menu")
 	skip.entries[1].onClick()
 	h.flush()
-	equal(ns.Order.IsGiverSkipped(town.orderKey, open.key), true, "checklist: menu skips the actual giver")
+	equal(ns.Prefs().skipped[ns.Model.GiverSkip(town, open.key)], true, "checklist: menu skips the actual giver")
 
 	ns.OpenPanel()
 	h.flush()

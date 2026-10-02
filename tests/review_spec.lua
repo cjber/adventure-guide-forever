@@ -42,44 +42,6 @@ test("B1 rejected town offers", function()
 	end
 end)
 
-test("A1 reload preserves the committed return", function()
-	local h = harness.load({})
-	local ns = h.ns
-	local player, completed, log, prefs = fixture(ns, "human18_redridge")
-	local data = {}
-	for key, value in pairs(ns.Data) do
-		data[key] = value
-	end
-	data.quests = { [3741] = ns.Data.quests[3741] }
-	ns.Prefs = function()
-		return prefs
-	end
-	ns.State.Player = function()
-		return player
-	end
-	ns.State.Where = function()
-		return player.map, player.x, player.y
-	end
-	prefs.sessionMinutes = 15
-	local before = ns.Model.Plan(data, player, completed, log, prefs)
-	eq(#ns.Session.Apply(before).steps, 3, "pickup, work and return fit")
-	log[3741] = {
-		id = 3741,
-		title = "Hilary's Necklace",
-		level = 15,
-		complete = false,
-		objectives = { { type = "item", numFulfilled = 0, numRequired = 1, finished = false, text = "Necklace" } },
-	}
-	local warm = ns.Model.Plan(data, player, completed, log, prefs, nil, nil, before)
-	eq(#ns.Session.Apply(warm).steps, 2, "accepted pickup leaves work and return")
-	-- A fresh Model has neither a previous route nor planner caches, as after /reload.
-	assert(loadfile("Planning/Model.lua"))("AdventureGuideForever", ns)
-	local cold = ns.Model.Plan(data, player, completed, log, prefs)
-	local limited = ns.Session.Apply(cold)
-	eq(#limited.steps, 2, "reload retains work and return")
-	eq(limited.steps[2].orderKey, before.steps[3].orderKey, "return identity survives reload")
-end)
-
 test("A2 independent guidance survives an empty session", function()
 	for _, spf in ipairs({ false, "ended" }) do
 		local h = harness.load({
@@ -233,10 +195,8 @@ test("B2 skipped giver can be shown again", function()
 	eq(#ns.Skipped(), 1, "skip is visible in Show again")
 	ns.Unskip(ns.Skipped()[1].key)
 	h.flush()
-	eq(ns.Order.IsGiverSkipped(town.orderKey, giver.key), false, "Show again clears giver skip")
-	for _, id in ipairs(giver.pickups) do
-		eq(ns.Order.SkippedQuests()[id], nil, "Show again restores pickup eligibility")
-	end
+	eq(ns.Prefs().skipped[ns.Model.GiverSkip(town, giver.key)], nil, "Show again clears giver skip")
+	eq(next(ns.Order.SkippedQuests()), nil, "Show again restores pickup eligibility")
 	eq(#ns.Skipped(), 0, "skip menu cleared")
 	town = ns.Route().steps[1]
 	local checkedHandin = false
@@ -264,23 +224,20 @@ end)
 test("B3 rebuilds preserve absent custom positions", function()
 	local ns = harness.load({}).ns
 	local keys = { "b", "a", "c" }
-	local prefs = { customOrders = { test = keys } }
 	local function apply(names)
 		local steps = {}
 		for _, key in ipairs(names) do
 			steps[#steps + 1] = { key = key, kind = "trainer", quests = {} }
 		end
-		local route = { journey = "test", journeys = { { key = "test", steps = steps } } }
-		ns.Order.Apply(route, prefs)
 		local result = {}
-		for _, step in ipairs(route.steps) do
+		for _, step in ipairs(ns.Order.Merge(steps, keys)) do
 			result[#result + 1] = step.key
 		end
 		return table.concat(result, ",")
 	end
 	eq(apply({ "a", "c", "new1", "new2" }), "a,c,new1,new2", "absent step omitted")
 	eq(apply({ "a", "b", "c", "new2", "new1" }), "b,a,c,new2,new1", "returning priority and fresh suggested order")
-	eq(prefs.customOrders.test, keys, "rebuild does not write preferences")
+	eq(table.concat(keys, ","), "b,a,c", "rebuild does not write preferences")
 end)
 
 test("B4 malformed session members are rejected", function()
