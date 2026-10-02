@@ -202,11 +202,10 @@
       "what": "Layout sorts `modules` by uiOrder at UI/TrackerHost.lua:427-429 and LayoutModules sorts them again at :292-294 before anything reads the order; remove the copy in Layout so LayoutModules is the one place the order is set.",
       "why": "Between line 429 and the LayoutModules call at line 451 nothing iterates or indexes `modules` (lines 430-450 only read ObjectiveTrackerFrame, host and nativeAnchor), and LayoutModules always sorts first. rg 'uiOrder <' in the file returns exactly these two comparators. The detached branch (line 359) already relies on LayoutModules alone.",
       "confidence": "high",
-      "status": "fixed",
-      "reason": "Applied on cb/sift-decisions.",
+      "status": "dismissed",
+      "reason": "UI/TrackerHost.lua is kept byte-identical across four repositories (tools/check_shared_tracker.py); tracked as a coordinated change in issue 89",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02",
-      "guard": "lens-only: owner approved the change"
+      "updated": "2026-10-02"
     },
     {
       "id": "9e8086222f",
@@ -216,11 +215,10 @@
       "what": "Method-existence guards on frame methods every Frame has: about 20 `X.GetEffectiveScale and X:GetEffectiveScale() or 1` (also `host.GetBottom and`, `minimap.IsShown`) guards on host, UIParent, Minimap and ObjectiveTrackerFrame; call the methods directly.",
       "why": "The same file calls them unguarded: line 124 and 347 `host:GetEffectiveScale() / UIParent:GetEffectiveScale()`, line 485 `host:GetBottom()` against the guarded `host.GetBottom and host:GetBottom()` at 508; `host` is this file's own CreateFrame. Both specs that load the file stub the method on every frame (tests/tracker_host_spec.lua:36, tests/tracker_geometry_spec.lua:53), so no partial load needs the guards. Guarded sites: lines 82-83, 243-245, 282-283, 397-399, 446-447, 466-467, 482-483, 622, 634. Not included: the `EventRegistry`/`EditModeManagerFrame`/`_G.Minimap` existence checks, which tracker_geometry_spec's environment (no EventRegistry or Minimap) and the load-on-demand Edit Mode need.",
       "confidence": "medium",
-      "status": "fixed",
-      "reason": "Applied on cb/sift-decisions.",
+      "status": "dismissed",
+      "reason": "UI/TrackerHost.lua is kept byte-identical across four repositories (tools/check_shared_tracker.py); tracked as a coordinated change in issue 89",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02",
-      "guard": "lens-only: owner approved the change"
+      "updated": "2026-10-02"
     },
     {
       "id": "b934684129",
@@ -230,11 +228,10 @@
       "what": "Layout (UI/TrackerHost.lua:307-515, about 210 lines) holds four separate jobs: the attach/detach transition that restores the native tracker (311-343), the detached free-floating layout (345-364), the in-combat placement beside the protected tracker (365-422) and the attached reflow that restacks the native frame and sizes it (423-514); split it into one function per mode with Layout only choosing between them.",
       "why": "Each branch ends in its own `return` and shares only the upvalues (attached, nativeAnchor, applied/requested heights), so they separate cleanly. Inside the function the same steps are restated rather than named: `host:ClearAllPoints()` followed by `host:SetPoint(nativeAnchor.point, nativeAnchor.relativeTo, nativeAnchor.relativePoint, nativeAnchor.x, nativeAnchor.y ...)` appears at 382-388, 439-445, 457-463 and 475-481 (and 265-271, 325-331 for the other frame), and the `X.GetEffectiveScale and X:GetEffectiveScale() or 1` guard is written out eleven times in the file (lines 82-83, 243-245, 282-283, 397-399, 446-447, 466-467, 482-483) with three different names for the same host and screen scale inside Layout alone (layoutScale/scale/hostScale). git log shows the two most recent commits to this file (#77, #78) are both fixes in this function.",
       "confidence": "medium",
-      "status": "confirmed",
-      "reason": "Applied on cb/sift-decisions: Layout now only chooses between four mode functions; the quoted line survives, so the ledger cannot record it as fixed.",
+      "status": "dismissed",
+      "reason": "UI/TrackerHost.lua is kept byte-identical across four repositories (tools/check_shared_tracker.py); tracked as a coordinated change in issue 89",
       "first_seen": "2026-10-02",
-      "updated": "2026-10-02",
-      "guard": "lens-only: owner approved the change"
+      "updated": "2026-10-02"
     },
     {
       "id": "61393ed29b",
@@ -879,6 +876,20 @@
       "confidence": "medium",
       "status": "confirmed",
       "reason": "Fixed by a move, so the quoted line still exists and the ledger cannot record it as fixed: the closing print is now the last line of the spec.",
+      "first_seen": "2026-10-02",
+      "updated": "2026-10-02",
+      "guard": "settled:Appended spec blocks"
+    },
+    {
+      "id": "dca01a5918",
+      "lens": "test-plumbing",
+      "file": "tests/dungeon_regression_spec.lua",
+      "quote": "\tassert(module:GetDifficultyByName(\"NORMAL\") == nil)",
+      "what": "The assertion tests the spec's own stub (a table literal defined at lines 6-10 of the same loop body), not the addon, so it cannot fail; delete it.",
+      "why": "`module.GetDifficultyByName` is defined in the spec to return ({ n = 1, [locale] = 1 })[name]; \"NORMAL\" is in neither key for any of the three locales, so the result is nil by construction and no production change can alter it. The behaviour under test (Dungeons.Source resolving the normal difficulty by the short key `n`) stays covered by the `source.bosses`/`source.loot` asserts at lines 25-29.",
+      "confidence": "high",
+      "status": "fixed",
+      "reason": "",
       "first_seen": "2026-10-02",
       "updated": "2026-10-02",
       "guard": "settled:Appended spec blocks"

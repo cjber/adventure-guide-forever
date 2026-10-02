@@ -2,20 +2,6 @@
   "schema_version": 1,
   "items": [
     {
-      "id": "dca01a5918",
-      "lens": "test-plumbing",
-      "file": "tests/dungeon_regression_spec.lua",
-      "quote": "\tassert(module:GetDifficultyByName(\"NORMAL\") == nil)",
-      "what": "The assertion tests the spec's own stub (a table literal defined at lines 6-10 of the same loop body), not the addon, so it cannot fail; delete it.",
-      "why": "`module.GetDifficultyByName` is defined in the spec to return ({ n = 1, [locale] = 1 })[name]; \"NORMAL\" is in neither key for any of the three locales, so the result is nil by construction and no production change can alter it. The behaviour under test (Dungeons.Source resolving the normal difficulty by the short key `n`) stays covered by the `source.bosses`/`source.loot` asserts at lines 25-29.",
-      "confidence": "high",
-      "status": "fixed",
-      "reason": "",
-      "first_seen": "2026-10-02",
-      "updated": "2026-10-02",
-      "guard": "settled:Appended spec blocks"
-    },
-    {
       "id": "1573e578a5",
       "lens": "session-residue",
       "file": "tests/dungeons_spec.lua",
@@ -883,6 +869,20 @@
       "first_seen": "2026-10-02",
       "updated": "2026-10-02",
       "guard": "settled:Stale leftovers"
+    },
+    {
+      "id": "369786a439",
+      "lens": "stringly-typed",
+      "file": "tools/gen_quests.py",
+      "quote": "        if int(maps[ui_map][\"Type\"]) == 3 and int(row[\"WMODoodadPlacementID\"]) == 0:",
+      "what": "UiMap.Type (1 world, 2 continent, 3 zone) and the TaxiNodes side mask (Flags & 3: 1 Alliance, 2 Horde) are compared as literals at several read sites across files: Type == 3 at gen_quests.py:255, 968 and diff_forever.py:52; Type == 1 at gen_quests.py:297; Flags & 3 at gen_quests.py:335, 430 and diff_forever.py:57.",
+      "why": "These are DB2 wire values, but they are read repeatedly rather than converted once, in two scripts; a single named constant in gen_quests.py (which diff_forever already imports from) would make every zone-map / side check findable by one search. Low-stakes: the values are stable in the client data.",
+      "confidence": "low",
+      "status": "fixed",
+      "reason": "owner-delegated 2026-09-27: done",
+      "first_seen": "2026-09-27",
+      "updated": "2026-09-27",
+      "guard": "lens-only: named constants in tools/gen_quests.py"
     }
   ]
 }
