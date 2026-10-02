@@ -245,7 +245,7 @@ end
 
 local function OverlapsMinimap()
 	local minimap = _G.Minimap
-	if not minimap or not minimap:IsShown() then
+	if not minimap or not minimap.IsShown or not minimap:IsShown() then
 		return false
 	end
 	local left, right, top, bottom = host:GetLeft(), host:GetRight(), host:GetTop(), host:GetBottom()
@@ -529,7 +529,7 @@ local function Layout()
 	then
 		requestedNativeHeight = currentNativeHeight
 	end
-	local bottom = host:GetBottom() or ((host:GetTop() or 0) - host:GetHeight())
+	local bottom = host.GetBottom and host:GetBottom() or ((host:GetTop() or 0) - host:GetHeight())
 	local remaining = math.max(1, bottom - margin)
 	local nativeHeight = math.min(requestedNativeHeight or remaining, remaining)
 	if math.abs(currentNativeHeight - nativeHeight) > 0.5 then

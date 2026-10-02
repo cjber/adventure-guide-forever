@@ -30,6 +30,9 @@ local function frame()
 	function f:GetHeight()
 		return self.height
 	end
+	function f:GetBottom()
+		return (self:GetTop() or 0) - self:GetHeight()
+	end
 	function f:GetEffectiveScale()
 		return self.effectiveScale or 1
 	end
