@@ -297,7 +297,7 @@ function Dungeons.Go(id)
 	if not place or not Dungeons.ForCharacter(ns.Data.quests[id], ns.State.Player()) then
 		return false
 	end
-	return ns.Integrations.ShowOnMap({
+	return ns.Guidance.ShowOnMap({
 		map = place.map,
 		x = place.x,
 		y = place.y,
@@ -563,7 +563,7 @@ function Dungeons.GoEntrance(instance, source)
 	if not point then
 		return false
 	end
-	return ns.Integrations.ShowOnMap({
+	return ns.Guidance.ShowOnMap({
 		map = point.map,
 		x = point.x,
 		y = point.y,

@@ -150,7 +150,7 @@ end
 function PvP.Go(id)
 	for _, bg in ipairs(PvP.Data().battlegrounds) do
 		if bg.id == id and bg.place then
-			return ns.Integrations.Navigate({
+			return ns.Guidance.Navigate({
 				kind = "battlemaster",
 				verb = "battlemaster",
 				key = "battlemaster:" .. bg.npc,

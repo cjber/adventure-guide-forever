@@ -319,7 +319,7 @@ local function CardClick(self, mouseButton)
 		end
 		return
 	end
-	if self.state == "chosen" and ns.Paused() then
+	if self.state == "chosen" and ns.Guidance.Status() == "paused" then
 		ns.StartRoute()
 	elseif self.state == "chosen" then
 		WorldMapFrame:SetMapID(journey.map)
@@ -421,7 +421,7 @@ local function CardTooltip(card)
 			GameTooltip_AddHighlightLine(GameTooltip, entry and entry.title or ns.Data.quests[id].title)
 		end
 	end
-	local resumes = chosen and ns.Paused()
+	local resumes = chosen and ns.Guidance.Status() == "paused"
 	if not chosen then
 		GameTooltip_AddInstructionLine(GameTooltip, L.CLICK_TO_CHOOSE)
 	elseif resumes then

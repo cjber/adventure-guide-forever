@@ -264,13 +264,13 @@ do
 	})
 	t.ns.StartRoute()
 	t.flush()
-	local sent = t.ns.Integrations.Guided()
+	local sent = t.ns.Guidance.Guided()
 	if #sent > 1 then
 		t.spfAdvance()
 	end
 	t.fire("SUPER_TRACKING_CHANGED")
 	t.flush()
-	local current = t.ns.Integrations.CurrentStep()
+	local current = t.ns.Guidance.CurrentStep()
 	eq(current.title, t.spfRoute.stops[t.spfRoute.index].title)
 	local block = t.tracker.liveBlocks[current.key]
 	eq(block.header, current.title)

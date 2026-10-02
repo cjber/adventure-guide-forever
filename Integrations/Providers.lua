@@ -157,7 +157,7 @@ function Providers.GoToEntrance(instanceID)
 	if not point then
 		return false, err
 	end
-	return ns.Integrations.ShowOnMap({
+	return ns.Guidance.ShowOnMap({
 		map = point.map,
 		x = point.x,
 		y = point.y,

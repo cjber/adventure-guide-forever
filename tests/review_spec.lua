@@ -95,7 +95,7 @@ test("A2 independent guidance survives an empty session", function()
 		eq(h.ns.Providers.GoToEntrance(36), true, "entrance guidance starts")
 		h.fire("QUEST_LOG_UPDATE")
 		h.flush()
-		eq(h.ns.Integrations.Owns(), true, "unrelated destination remains owned")
+		eq(h.ns.Guidance.Owns(), true, "unrelated destination remains owned")
 		eq(#h.errors, 0, "no event errors")
 	end
 end)
@@ -133,12 +133,12 @@ test("A3 guidance resolves the live step", function()
 	end
 	ns.Choose("test", true)
 	h.flush()
-	local sent = ns.Integrations.CurrentStep()
+	local sent = ns.Guidance.CurrentStep()
 	eq(sent, live, "initial snapshot")
 	live = town(1)
 	h.fire("QUEST_LOG_UPDATE")
 	h.flush()
-	eq(ns.Integrations.CurrentStep(), live, "SPF index resolves to the live route object")
+	eq(ns.Guidance.CurrentStep(), live, "SPF index resolves to the live route object")
 	eq(h.tracker.liveBlocks[live.key].header, live.title, "tracker uses the refreshed title")
 	eq(#h.errors, 0, "no refresh errors")
 end)
@@ -161,7 +161,7 @@ test("A3b town tracker does not duplicate detailed giver rows", function()
 	h.ns.Integrations.Guiding = function()
 		return false
 	end
-	h.ns.Integrations.CurrentStep = function()
+	h.ns.Guidance.CurrentStep = function()
 		return step
 	end
 	h.ns.Integrations.Travel = function() end

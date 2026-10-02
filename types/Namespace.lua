@@ -148,6 +148,7 @@
 
 ---@class AGFFocus
 ---@field Next fun(state: AGFFocusState, here?: {key: string, quests: integer[]}, current?: integer, enabled: boolean): integer?
+---@field Sync fun() the selection follows the route as it is now; Guidance runs it on each route change
 
 -- "town" is a visit to a town (its pickups and agreeing hand-ins), "turnin" a hand-in anywhere else, and "area" or
 -- "dungeon" (a group quest's) where the log's quests under way are done.
@@ -379,23 +380,21 @@
 ---@field Kind fun(step: AGFStep|AGFGiver): AGFSPFStopKind? what Shortest Path is told stands at a stop: a town's "?" where a hand-in is its point, else its "!"
 ---@field TravelLine fun(step: AGFStep): string? asks Shortest Path now, at most one call: "Fly to X · N min" from EstimateDetail, "About N min away" from Estimate, nil without either or an answer
 ---@field RefreshTravel fun() refetches step 1's line; Core runs it in the frame after each rebuild
----@field Debug fun(): string the travel line and guidance state, for /agf travel
+---@field Debug fun(guidance: string): string the travel line and guidance state, for /agf travel; `guidance` is Guidance's part
 ---@field Travel fun(step: AGFStep): string? the last line fetched for this step, without asking again
 ---@field TravelMinutes fun(step: AGFStep): integer? the whole trip's minutes, fetched with that line
 ---@field OnTravelChange fun(callback: fun())
----@field ShowOnMap fun(step: AGFStep|AGFGiver): boolean route, open its zone and ping the destination
----@field Navigate fun(step: AGFStep|AGFGiver, follow?: boolean): boolean route there with Shortest Path, else (declined or absent) the native waypoint where the map allows one; true when something now guides
----@field OnGuidanceChange fun(callback: fun()) called after every Go that guides and every Stop
 ---@field ReplacesJourney fun(): boolean Go would replace a Shortest Path journey someone else started (needs Active)
----@field Cancel fun() Stop: cancels our Shortest Path journey, and clears the native waypoint only while it is ours
----@field Owns fun(): boolean Go's guidance is still running: our Shortest Path journey (guided or held), or the waypoint Go set
 ---@field Guiding fun(): boolean Shortest Path is walking our multi-stop route and draws its own numbered stops; held (its "Guide me" off) is not guiding
----@field Guided fun(): (AGFStep|AGFGiver)[] the stops it walks, while it guides; empty otherwise
----@field Stopped fun(): string? the chosen journey whose route the player cleared or another journey replaced, until something is handed again
----@field Arrived fun(): boolean our journey reached its last stop, and nothing was handed since
----@field Restore fun(steps: AGFStep[]): boolean hands Shortest Path the chosen journey's steps again after a /reload; never the waypoint
----@field Stale fun(handed: AGFStep[], index: integer, steps: AGFStep[], far?: fun(a: AGFStep, b: AGFStep): boolean): boolean the guidance handed to Shortest Path no longer matches the journey's steps
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")
+---@field Hand fun(steps: (AGFStep|AGFGiver)[], hold?: boolean): boolean hands Shortest Path the steps as one journey of ours; false when it is absent or refuses
+---@field Drop fun(): boolean ends Shortest Path's journey by our name; true when it ended one
+---@field CurrentStop fun(): integer? the stop of our journey Shortest Path heads for, guiding it or not; nil when it holds none of ours
+---@field EndReason fun(last?: AGFStep|AGFGiver, near: number): string? why our journey ended: Shortest Path's Ended, else guessed from another journey running or standing within `near` yards of the last stop
+---@field WaypointAt fun(place?: {map: integer, x: number, y: number}): boolean the client's waypoint still sits at the place
+---@field CanWaypoint fun(map: integer): boolean the client allows a waypoint on the map
+---@field SetWaypoint fun(place: {map: integer, x: number, y: number}, track?: boolean) the client's waypoint goes there; `track` points the arrow at it
+---@field ClearWaypoint fun() the client's waypoint and its arrow go
 ---@field RefreshCards fun(journeys: AGFJourney[]) the cards shown: drops other answers, asks for stale destinations, one a frame
 ---@field ResumeCards fun() step 1's travel frame is over: the queued cards ask from the next frame
 ---@field CardTravel fun(journey: AGFJourney): AGFCardTravel? a card's last answer, without asking again
@@ -596,6 +595,25 @@
 ---@field OnAttachmentChanged fun(callback: fun(attached: boolean))
 ---@field SavePosition fun(x: number, y: number)
 
+---@alias AGFGuidanceStatus "queued"|"paused"|"arrived" -- a start waits for combat's end; the route stopped without the player's Stop and can be resumed; it reached its last stop
+
+-- The guidance lifecycle (Guidance.lua): the one writer of AGFPrefs.guided and AGFPrefs.waypoint. Choosing, starting
+-- and stopping are ns.Choose, ns.StartRoute and ns.Stop.
+---@class AGFGuidance
+---@field Status fun(): AGFGuidanceStatus? where the chosen journey's guidance stands, when it is not simply running or absent
+---@field Owns fun(): boolean Go's guidance is still running: our Shortest Path journey (guided or held), or the waypoint Go set
+---@field Navigate fun(step: AGFStep|AGFGiver, follow?: boolean): boolean route there with Shortest Path, else (declined or absent) the native waypoint where the map allows one; true when something now guides
+---@field ShowOnMap fun(step: AGFStep|AGFGiver): boolean route, open its zone and ping the destination
+---@field Cancel fun() Stop: cancels our Shortest Path journey, and clears the native waypoint only while it is ours
+---@field Reroute fun() the player reordered the chosen journey: the route AGF runs for it starts again a frame on
+---@field CurrentStep fun(): AGFStep? the step the handed route heads for while it guides, else the route's head
+---@field Guided fun(): (AGFStep|AGFGiver)[] the stops Shortest Path walks, while it guides; empty otherwise
+---@field OnChange fun(callback: fun()) called after every Go that guides, every Stop and the super-tracking events
+---@field Stale fun(handed: AGFStep[], index: integer, steps: AGFStep[], far?: fun(a: AGFStep, b: AGFStep): boolean): boolean the guidance handed to Shortest Path no longer matches the journey's steps
+---@field Ended fun(route: AGFRoute) Core's commit of a full build: a chosen journey the build no longer has ends
+---@field RouteChanged fun() Core, ahead of every route listener: a waiting start, a choice that went, the restore, Focus.Sync, then following
+---@field Debug fun(): string /agf travel's line
+
 ---@class AGFNamespace
 ---@field TrackerHost ForeverTrackerHostAPI
 ---@field TrackerHostSettings fun(): ForeverTrackerSettings
@@ -607,6 +625,7 @@
 ---@field Model AGFModel
 ---@field State AGFState
 ---@field Integrations AGFIntegrations
+---@field Guidance AGFGuidance
 ---@field Focus AGFFocus
 ---@field Print fun(msg: string)
 ---@field Setting fun(key: string): any
@@ -620,8 +639,6 @@
 ---@field Choose fun(key?: string, start?: boolean) choose a journey, or none; `start` sets off on the rebuild with its steps
 ---@field StartRoute fun(step?: AGFStep): boolean guidance along the chosen journey (choosing the route's own when none is); waits out combat with Shortest Path
 ---@field Stop fun() the player's Stop: our route stops and the choice clears
----@field Paused fun(): boolean the chosen journey has steps but its route stopped: its card and the tracker title resume it
----@field StartPending fun(): boolean a start waits for combat's end
 ---@field Settling fun(): boolean a rebuild or step 1's travel line is due, whose frames take no card estimate
 ---@field Rebuilding fun(): boolean a full build is being sliced across frames (true until its last slice commits)
 ---@field PanelShown? fun(): boolean whether the guide is open, set once Blizzard_WorldMap has loaded
@@ -750,7 +767,7 @@
 ---@field Decline fun(aside: AGFAside) Not interested: hide it for this character, remembering its text
 ---@field Declined fun(): {key: string, text: string}[] the turned-down asides, by text, for Show again: its provider's answer now, else the saved text
 ---@field Restore fun(key: string) Show again: undo a Decline
----@field Go fun(aside: AGFAside): boolean to its place, as Integrations.Navigate; false without one
+---@field Go fun(aside: AGFAside): boolean to its place, as Guidance.Navigate; false without one
 ---@field Open fun(owner: Region, tag: string, aside: AGFAside) its menu: Go with a place, Skip, Not interested
 
 ---@class AGFNamespace
@@ -1163,8 +1180,6 @@
 ---@class AGFModel
 ---@field TownChecklist fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, step: AGFStep, previous?: AGFStep)
 ---@field StepTitle fun(data: AGFData, log: table<integer, AGFLogQuest>, step: AGFStep)
----@class AGFIntegrations
----@field CurrentStep fun(): AGFStep?
 ---@class AGFNamespace
 ---@field Providers AGFProviders
 ---@field PvP AGFPvP

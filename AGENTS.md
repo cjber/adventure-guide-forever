@@ -42,6 +42,8 @@ commit the PNGs it rewrites in `docs/screenshots/`; two runs give byte-identical
 - `UI/` — guide windows, hints, map pins, settings and the private tracker host.
 - `Planning/Model.lua` — the headless-testable planner (eligibility, zones, route); `Core/State.lua` reads the client.
 - `Integrations/Integrations.lua` — Shortest Path Forever's public API when loaded, the native waypoint otherwise.
+- `Core/Guidance.lua` — the guidance lifecycle (choose, start, stop, restore, follow, end); the one writer of
+  `prefs.guided` and `prefs.waypoint`.
 - `Locales/enUS.lua` — every line the player reads (`ns.L`, constant keys); a translation is `Locales/<locale>.lua`
   (`Locales/README.md`). After changing copy, `python3 tools/phrases.py > Locales/phrases.txt`.
 - `UI/Dump.lua` — `/agf dump` saves the drawn layout to the saved variables for `tests/dump_diff.lua`.

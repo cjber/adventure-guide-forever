@@ -86,7 +86,7 @@ local function ShowOnMap(card)
 	end
 	if not route.chosen or route.journey ~= journey.key then
 		ns.Choose(journey.key, ns.Setting("titleStartsRoute"))
-	elseif ns.Paused() then
+	elseif ns.Guidance.Status() == "paused" then
 		ns.StartRoute()
 	end
 	local step = route.steps[1]

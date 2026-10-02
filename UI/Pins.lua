@@ -204,7 +204,7 @@ local function AddGivers(map, mapID)
 		return
 	end
 	local routed = {}
-	for _, step in ipairs(RingsShown() and ns.Route().steps or ns.Integrations.Guided()) do
+	for _, step in ipairs(RingsShown() and ns.Route().steps or ns.Guidance.Guided()) do
 		for _, id in ipairs(step.quests) do
 			routed[id] = true
 		end
@@ -444,7 +444,7 @@ function AdventureGuideForeverGiverPinMixin:OnClick(button)
 		end
 		GameTooltip:Hide()
 	elseif button == "LeftButton" and self.giver then
-		ns.Integrations.Navigate(self.giver)
+		ns.Guidance.Navigate(self.giver)
 	end
 end
 

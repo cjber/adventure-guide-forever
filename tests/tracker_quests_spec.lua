@@ -17,7 +17,7 @@ local step = {
 	quests = { 845, 843 },
 	reason = "quests in progress",
 }
-ns.Integrations.CurrentStep = function()
+ns.Guidance.CurrentStep = function()
 	return step
 end
 ns.Integrations.Guiding = function()

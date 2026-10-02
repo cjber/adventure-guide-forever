@@ -86,7 +86,7 @@ UI (window, panel, pins, tracker, settings) headlessly. What needs the client it
 2. `tests/` — harness only.
 3. `Planning/Model.lua`, `Planning/Order.lua`, `Core/Session.lua`, `UI/Settings.lua`, `UI/Hints/*.lua` — the planner and its inputs, under the specs and the bench.
 4. `UI/Window*.lua`, `UI/Overview.lua`, `UI/Panel.lua`, `UI/Pins.lua`, `UI/Tracker.lua`, `UI/Tooltip.lua`, `UI/Menu.lua`, `UI/Art.lua`, `UI/Asides.lua`, `UI/Moments.lua`, `UI/PvP.lua`, `UI/ZoneIcon.lua`, `Planning/Focus.lua`, `UI/Sound.lua`, `Integrations/Providers.lua`, `UI/Dump.lua` — UI and host hooks; headless specs plus `/reload` checks.
-5. `Core/State.lua`, `Core/Core.lua`, `Integrations/Integrations.lua`, `Integrations/Companions.lua`, `Integrations/QuestieSource.lua`, `Locales/*.lua` — client state, SavedVariables, the cross-addon contracts and every line the player reads.
+5. `Core/State.lua`, `Core/Core.lua`, `Core/Guidance.lua`, `Integrations/Integrations.lua`, `Integrations/Companions.lua`, `Integrations/QuestieSource.lua`, `Locales/*.lua` — client state, SavedVariables, the cross-addon contracts and every line the player reads.
 
 ## Settled
 

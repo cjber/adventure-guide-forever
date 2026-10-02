@@ -94,7 +94,7 @@ equal(onNode, true, "area point: on an objective node, inside its shape")
 h.ns.StartRoute()
 h.flush()
 h.spfAdvance()
-equal(h.ns.Integrations.CurrentStep().key, "area:3902:4", "state: the tracker holds the unfinished step")
+equal(h.ns.Guidance.CurrentStep().key, "area:3902:4", "state: the tracker holds the unfinished step")
 
 -- Walking out with the objective unfinished still holds the step: the route does not end it early.
 h.MovePlayer(1420, 0.36, 0.70)

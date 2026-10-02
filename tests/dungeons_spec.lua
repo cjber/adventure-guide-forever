@@ -109,7 +109,7 @@ equal(M.QuestXP(data.quests[1], 27), 60, "same level-adjusted XP as planner")
 local nav = harness.load()
 nav.ns.Data, nav.player.level = data, 20
 local destination
-nav.ns.Integrations.Navigate = function(step)
+nav.ns.Guidance.Navigate = function(step)
 	destination = step
 	return true
 end
@@ -543,7 +543,7 @@ local mapTarget = {
 	x = 0.21,
 	y = 0.72,
 }
-equal(reveal.ns.Integrations.ShowOnMap(mapTarget), true, "map action sets native route")
+equal(reveal.ns.Guidance.ShowOnMap(mapTarget), true, "map action sets native route")
 reveal.flush()
 equal(reveal.G.WorldMapFrame:IsShown(), true, "map action opens the world map")
 equal(reveal.G.WorldMapFrame:GetMapID(), 1413, "map action switches to target uiMap")
@@ -553,15 +553,15 @@ equal(ping.y, 0.72, "ping uses fractional y")
 equal(ping.loops, 2, "stock ping loops twice")
 equal(ping.frameLevelType, "PIN_FRAME_LEVEL_QUEST_PING", "stock quest ping layer")
 reveal.G.WorldMapFrame:SetMapID(1439)
-reveal.ns.Integrations.ShowOnMap(mapTarget)
+reveal.ns.Guidance.ShowOnMap(mapTarget)
 reveal.flush()
 equal(reveal.G.WorldMapFrame:GetMapID(), 1413, "already-open map switches zone")
 local count = reveal.counts.SetMapID
-equal(reveal.ns.Integrations.ShowOnMap({ map = 1413, x = 0.2 }), false, "missing coordinate is a no-op")
+equal(reveal.ns.Guidance.ShowOnMap({ map = 1413, x = 0.2 }), false, "missing coordinate is a no-op")
 equal(reveal.counts.SetMapID, count, "invalid place never changes map")
 reveal.G.WorldMapFrame:Hide()
 reveal.combat = true
-equal(reveal.ns.Integrations.ShowOnMap(mapTarget), true, "combat still sets native route")
+equal(reveal.ns.Guidance.ShowOnMap(mapTarget), true, "combat still sets native route")
 reveal.flush()
 equal(reveal.G.WorldMapFrame:IsShown(), false, "combat never opens map")
 equal(reveal.counts.SetMapID, count, "combat never changes displayed map")

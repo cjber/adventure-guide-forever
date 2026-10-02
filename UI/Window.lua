@@ -738,7 +738,7 @@ local function Build()
 	ns.OnRouteChange(Refresh)
 	ns.Asides.OnChange(Refresh)
 	ns.Moments.OnChange(Refresh)
-	ns.Integrations.OnGuidanceChange(Refresh)
+	ns.Guidance.OnChange(Refresh)
 	ns.Providers.OnChange(Refresh)
 	local saved = ns.WindowDB().tab
 	for index, tab in ipairs(tabs) do

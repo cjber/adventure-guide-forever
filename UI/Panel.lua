@@ -275,7 +275,7 @@ local function BuildHeader(parent)
 	backButton:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 		GameTooltip_SetTitle(GameTooltip, L.ALL_SUGGESTIONS)
-		if ns.Integrations.Owns() then
+		if ns.Guidance.Owns() then
 			GameTooltip_AddNormalLine(GameTooltip, L.BACK_STOPS_ROUTE)
 		end
 		GameTooltip:Show()
@@ -1205,10 +1205,11 @@ function Refresh()
 	emptyText:SetText((not ready and L.LOADING) or (searching and L.SEARCH_NONE) or L.NO_JOURNEY)
 	emptyText:SetShown(not ready or (searching and found == 0) or (not searching and #route.journeys == 0))
 
-	local queued = ns.StartPending() and InCombatLockdown()
+	local status = ns.Guidance.Status()
+	local queued = status == "queued"
 	queuedText:SetText(queued and L.STARTS_AFTER_COMBAT or L.ROUTE_PAUSED)
-	queuedText:SetShown(queued or ns.Paused())
-	stopButton:SetShown(ns.Integrations.Owns())
+	queuedText:SetShown(queued or status == "paused")
+	stopButton:SetShown(ns.Guidance.Owns())
 	---@cast backButton -?
 	---@cast compass -?
 	backButton:SetShown(route.chosen)
@@ -1329,7 +1330,7 @@ local function Attach()
 	panel:SetScript("OnSizeChanged", Refresh)
 	Art.CoverFrame(panel, background, "QuestLog-main-background", 0, TOP_BAR)
 	-- The footer's Stop follows Shortest Path ending our journey and the player clearing or moving the waypoint through
-	-- Integrations.OnGuidanceChange (below), on the frame after the super-tracking events.
+	-- Guidance.OnChange (below), on the frame after the super-tracking events.
 	panel:RegisterEvent("QUEST_DATA_LOAD_RESULT")
 	panel:RegisterEvent("UPDATE_BINDINGS")
 	panel:SetScript("OnEvent", function(_, event, questID)
@@ -1352,7 +1353,7 @@ local function Attach()
 		end
 	end)
 	ns.OnRouteChange(Refresh)
-	ns.Integrations.OnGuidanceChange(Refresh)
+	ns.Guidance.OnChange(Refresh)
 	ns.Integrations.OnTravelChange(Refresh)
 	ns.Integrations.OnCardTravel(Refresh)
 	ns.Asides.OnChange(Refresh)
