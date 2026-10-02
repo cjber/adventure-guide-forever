@@ -81,7 +81,7 @@ ns.L = {
 		.. "with the guide installed. Change it any time from the guide's settings menu.",
 	SETTING_GIVERS_TOOLTIP = 'A "!" on the world map over everyone with a quest you can take now. '
 		.. "Needs route pins on the map as well.",
-	SETTING_TITLE_ROUTE = "Choosing a journey starts the route",
+	SETTING_TITLE_ROUTE = "Journeys start the route",
 	SETTING_TITLE_ROUTE_TOOLTIP = "Choosing a journey in the guide, or clicking the current step's title in the "
 		.. "objective tracker, sets off along the route, with Shortest Path Forever when it's loaded and a map "
 		.. "waypoint otherwise. Clicking the chosen journey again stops it.",
@@ -89,9 +89,9 @@ ns.L = {
 	SETTING_AUTO_START_TOOLTIP = "The guide sends your chosen journey's route to Shortest Path as soon as it is "
 		.. "ready, so the map line is drawn on login and after a reload without pressing Go. Pressing Stop still "
 		.. "clears it until you choose a journey again.",
-	SETTING_TRACK_ROUTE = "Clicking the tracker title tracks the route's quests",
-	SETTING_TRACK_ROUTE_TOOLTIP = "Every quest on the route that's in your log joins the objective tracker, up to "
-		.. "the tracker's limit.",
+	SETTING_TRACK_ROUTE = "Tracker title tracks quests",
+	SETTING_TRACK_ROUTE_TOOLTIP = "Clicking the guide's title in the objective tracker adds every quest on the "
+		.. "route that's in your log, up to the tracker's limit.",
 	SETTING_UNTRACK_OTHERS = "Stop tracking other quests",
 	SETTING_UNTRACK_OTHERS_TOOLTIP = "The same click stops tracking every quest that isn't on the route. Needs the "
 		.. "route's quests tracked as well.",
@@ -301,7 +301,7 @@ ns.L = {
 	SETTING_WANDERER = "Wanderer: name places only",
 	SETTING_WANDERER_TOOLTIP = "The guide names where to go next and leaves the way to you: no waypoint, no route "
 		.. "with Shortest Path Forever and no marks on the map.",
-	SETTING_FOLLOW_QUEST = "Follow the quest you're working on",
+	SETTING_FOLLOW_QUEST = "Follow your current quest",
 	SETTING_FOLLOW_QUEST_TOOLTIP = "When you walk into the area of the quest the route leads to, the guide selects "
 		.. "that quest so the map shows its area. It never changes a quest you selected yourself.",
 	SETTING_ROUTE_ORDER = "Optimised route (beta)",
@@ -465,7 +465,7 @@ ns.L = {
 	TODAY_MORE = "+%d more",
 	STOP_VISIT = "Stop %d: %s",
 	SET_HEARTH = "Set your hearth in %s",
-	SETTING_STEP_SOUND = "Play a sound when a step is done",
+	SETTING_STEP_SOUND = "Sound when a step is done",
 	SETTING_STEP_SOUND_TOOLTIP = "Play a short sound once when you finish a route step.",
 	STEP_PICKUP = "Pick up: %s",
 	STEP_OBJECTIVE = "Complete objectives · %s",
@@ -478,7 +478,7 @@ ns.L = {
 	UPDATED_TO = "updated to %s. %s",
 	SETTING_FLOAT_WINDOW = "Float window",
 	SETTING_FLOAT_WINDOW_TOOLTIP = "Move the guide independently of other windows. Tweaks Edit Mode also supports it.",
-	SETTING_WHATS_NEW = "Tell me what's new after an update",
+	SETTING_WHATS_NEW = "Show what's new after updates",
 	SETTING_WHATS_NEW_TOOLTIP = "One line in chat the first time you log in after the guide updates.",
 	-- Companion hints (Companions.lua): what another Forever addon would add here, while it isn't loaded.
 	SETTING_COMPANIONS = "Suggest companion addons",
