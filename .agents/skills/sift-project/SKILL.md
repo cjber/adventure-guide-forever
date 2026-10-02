@@ -55,7 +55,7 @@ UI (window, panel, pins, tracker, settings) headlessly. What needs the client it
 - `## SavedVariables: AdventureGuideForeverDB`, `## SavedVariablesPerCharacter: AdventureGuideForeverCharDB` — keys in `Core/Core.lua` `DEFAULTS` may hold data written by older versions.
 - `## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick` and `SLASH_ADVENTUREGUIDEFOREVER1/2` — called by the client by name.
 - `EventUtil.ContinueAfterAllEvents`, `EventRegistry:RegisterCallback("QuestLog.SetDisplayMode")`, `WorldMapFrame:AddDataProvider`, `TooltipDataProcessor.AddTooltipPostCall` — host callbacks.
-- Optional integrations (`## OptionalDeps: ShortestPathForever, QuestieDB, SkillUpForever, LegacyForever, TweaksForever`) — code guarded by `ShortestPathForever.API`, `SkillUpForever.API` and the other suite addons (`Integrations/Integrations.lua`, `Integrations/Companions.lua`) is live only with that addon installed; QuestieDB, when loaded and fit, supplies the quests (`Integrations/QuestieSource.lua`).
+- Optional integrations (the TOC's `## OptionalDeps` line: Adventure Guide Classic, Atlas, AtlasLoot Classic, Shortest Path, Questie, QuestieDB, Skill Up, Legacy and Tweaks Forever) — code guarded by `ShortestPathForever.API`, `SkillUpForever.API` and the other suite addons (`Integrations/Integrations.lua`, `Integrations/Companions.lua`) is live only with that addon installed; QuestieDB, when loaded and fit, supplies the quests (`Integrations/QuestieSource.lua`); AtlasLoot and Atlas supply dungeon loot and maps (`Integrations/Dungeons.lua`).
 - `hooksecurefunc("QuestMapFrame_ShowQuestDetails")`, `EventUtil.ContinueOnAddOnLoaded("Blizzard_WorldMap")` — host callbacks.
 - Methods the host calls by name: the map provider's `RefreshAllData`/`RemoveAllData`; the pin mixins' `OnAcquired`/`OnMouseEnter`/`OnMouseLeave`/`OnClick` (bound through `mixin=` in `UI/Panel.xml`); the tracker module's `LayoutContents`/`OnBlockHeaderClick`.
 
@@ -63,7 +63,7 @@ UI (window, panel, pins, tracker, settings) headlessly. What needs the client it
 
 | Path | Zone | Reason |
 |---|---|---|
-| `Data/*.lua` | generated | `Planning/Geometry.lua` by `tools/gen_quests.py` (route geometry; the quest corpus is test-only), `Forever.lua` by `tools/diff_forever.py`, `ZoneArt.lua` by `tools/gen_zoneart.py`; never hand-edit, fix the generator |
+| `Data/*.lua` | generated | `Geometry.lua` by `tools/gen_quests.py` (route geometry; the quest corpus is test-only), `Forever.lua` by `tools/diff_forever.py`, `ZoneArt.lua` by `tools/gen_zoneart.py`; never hand-edit, fix the generator |
 | `tools/` | script | data generator, CI helpers; not shipped |
 | `tests/` | test | headless LuaJIT harness |
 | `types/` | production | LuaLS annotations only, never loaded in game; review for dead classes and stale field docs |
@@ -97,6 +97,15 @@ finding; audits add an entry when verifiers keep dismissing the same shape for t
   `Locate`/`Build`, `Describe` before and after the overseas override) read alike but take different contracts; five
   `parallel-implementations` candidates were dismissed on the small-idiom and different-contract exclusions in the
   2026-09-27 audit. Raise one only with a caller that needs both to change together.
+- **One-line idioms**: a bit test beside `Model.HasBit`, the hub name before the comma, a Find-and-Click loop in a spec:
+  one expression under different contracts, dismissed six times on the small-idiom exclusion in the 2026-10-02 audit
+  (e.g. `UI/Hints/Explore.lua`, `UI/Hints/Hearth.lua`, `tests/scenes.lua`).
+- **Open keys**: `"town:" .. hub` and `"dungeon:" .. id` identify an open, persisted set of steps and journeys, so they
+  are not a closed set to type (`stringly-typed` dismissed twice; e.g. `Planning/Model.lua`, `Integrations/Dungeons.lua`).
+- **Absence checks**: a spec asserting that a removed field or pin pool stays absent (`pin.More == nil` in
+  `tests/ui_spec.lua`) is a regression test for a shipped defect, not a check that cannot fail.
+- **Repeated spec fixtures**: the same character or options literal retyped per spec or scene is fixture input, not a
+  parallel implementation (e.g. `tests/batch4_spec.lua`, `tests/scenes.lua`).
 
 ## Anti-patterns
 
@@ -110,10 +119,19 @@ it or it has not recurred in two audits.
   Grep for the old name when renaming.
 - **Sibling config**: config copied from a sibling addon that names files this repo lacks (`dead-code`/`stale-docs`;
   e.g. `.pkgmeta` ignoring `PLAN.md`, `tools/ruff.toml` citing `refresh-data.yml`).
+- **Orphaned client declarations**: a harness stub, `types/Client.lua` annotation or `.luacheckrc` global for a client
+  API the addon stopped calling (`dead-code`; e.g. `PanelTemplates_TabResize`, `MenuUtil`, `GetBindingText` in the
+  2026-10-02 audit). When a call to the client goes, grep its name in `tests/harness.lua`, `types/` and `.luacheckrc`.
+- **Unreachable guards**: a nil, existence or default guard on a value every caller or producer already guarantees
+  (`defensive-noise`/`speculative-abstraction`; e.g. `X.GetEffectiveScale and X:GetEffectiveScale() or 1` in
+  `UI/TrackerHost.lua`, a parameter no caller sets in `Planning/Model.lua`).
+- **Appended spec blocks**: checks added after a spec's closing `checks passed` print, or an assertion over the
+  spec's own stub that cannot fail (`session-residue`/`test-plumbing`; e.g. `tests/dungeons_spec.lua`,
+  `tests/dungeon_regression_spec.lua`). New checks go above the closing print and must fail when the addon regresses.
 
 ## Project rules and lenses
 
 - Rules: none yet (no repeated pattern a tool could recognise without judgment).
 - Lenses: none yet.
 
-The type gate also runs `python3 -m tools.lint_taint` and `python3 tools/typecheck_coverage.py`: native-method hooks, shared UI-state writes and omitted runtime type coverage fail CI. TrackerHost owns addon sections and pools outside Blizzard's registry; first rendering follows both native load events, deferred one frame. CI runs the private host against pinned Forever module/block/animation source.
+The type gate also runs `tools/lint_taint.py` and `tools/typecheck_coverage.py`; `AGENTS.md`, Secure UI regression checks, states what they enforce.
