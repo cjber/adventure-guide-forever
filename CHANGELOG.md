@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.6.8] - 2026-10-03
+
 - **A stuck Questie no longer holds the guide.** If Questie loaded but never finished starting on a character, the guide sat on "Loading quest data..." for the whole session, with an empty tracker and empty journeys. After a minute it now reads the quest data on its own, so quests in your log are guided again. New pickups are recommended once Questie is running.
 - **Dungeon quests in a dungeon's side areas count as its quests.** A quest that Questie files under one of a dungeon's other area names was treated as an ordinary zone quest, so it was missing from that dungeon's journey and quest list. It is now filed under the dungeon, like the enemies of the same area.
 - **Dungeon loot no longer shows a slot code.** In the Dungeons tab, a drop that cannot be equipped, such as an item that starts a quest, showed the game's internal text INVTYPE_NON_EQUIP_IGNORE in its details. That text is now left out.
