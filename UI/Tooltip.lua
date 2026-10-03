@@ -16,10 +16,8 @@ local npcs = {}
 -- visits no NPC.
 local function Gather()
 	local route = ns.Route()
-	journey, npcs = nil, {}
-	for _, card in ipairs(route.journeys) do
-		journey = card.key == route.journey and card.title or journey
-	end
+	local card = ns.CurrentJourney()
+	journey, npcs = card and card.title, {}
 	for _, step in ipairs(route.steps) do
 		for _, id in ipairs(step.quests) do
 			local quest = ns.Data.quests[id]
