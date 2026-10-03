@@ -244,6 +244,30 @@ local function Hub(data, cells, place)
 	return hub
 end
 
+-- The instance each area belongs to, among the instances `keep` accepts: an instance's own area, then the alias areas
+-- ZoneDB lists for its dungeon. Also ZoneDB's dungeon rows by area.
+---@param lib AGFQuestieDB
+---@param zones AGFQuestieZones
+---@param keep fun(instance: integer): boolean
+---@return table<integer, integer> instanceOf, table<integer, table> dungeons
+local function InstanceAreas(lib, zones, keep)
+	local zoneDB = lib.Support.Get("ZoneDB")
+	local dungeons = zoneDB and zoneDB.private and zoneDB.private.dungeons or {}
+	local instanceOf = {}
+	for instance, area in pairs(zones.instances) do
+		if keep(instance) then
+			instanceOf[area] = instance
+		end
+	end
+	for instance, area in pairs(zones.instances) do
+		local dungeon = keep(instance) and dungeons[area]
+		for _, alias in ipairs(type(dungeon) == "table" and type(dungeon[2]) == "table" and dungeon[2] or {}) do
+			instanceOf[alias] = instanceOf[alias] or instance
+		end
+	end
+	return instanceOf, dungeons
+end
+
 -- The build, as a coroutine body: ns.Data's replacement, or an error.
 ---@param lib AGFQuestieDB
 ---@param zones AGFQuestieZones
@@ -261,10 +285,9 @@ local function Build(lib, zones, bundled, yield)
 		map = map or (parent and (zones.areaOverride[parent] or zones.area[parent]))
 		return type(map) == "number" and bundled.maps[map] and map or nil
 	end
-	local instanceOf = {}
-	for instance, area in pairs(zones.instances) do
-		instanceOf[area] = instance
-	end
+	local instanceOf = InstanceAreas(lib, zones, function(instance)
+		return bundled.instances[instance] ~= nil
+	end)
 	local cells = TownCells(bundled, yield)
 	-- Each giver's name, its spawns on maps the data places (0-100 on its area's map), and its usual map.
 	local givers = { Npc = {}, Object = {} }
@@ -500,18 +523,16 @@ function ns.ReadDungeonSource(yield)
 		worldDrops = {},
 		starts = {},
 	}
-	local zoneDB = lib.Support.Get("ZoneDB")
-	local dungeons = zoneDB and zoneDB.private and zoneDB.private.dungeons or {}
-	local instanceOf, npcInstances, npcInfo = {}, {}, {}
+	local function Dungeon(instance)
+		return ns.Data.instances[instance] ~= nil and not ns.Data.instances[instance].raid
+	end
+	local instanceOf, dungeons = InstanceAreas(lib, zones, Dungeon)
+	local npcInstances, npcInfo = {}, {}
 	for instance, area in pairs(zones.instances) do
-		if ns.Data.instances[instance] and not ns.Data.instances[instance].raid then
-			instanceOf[area] = instance
+		if Dungeon(instance) then
 			result.bosses[instance], result.loot[instance], result.npcs[instance] = {}, {}, {}
 			local dungeon = dungeons[area]
 			if type(dungeon) == "table" then
-				for _, alias in ipairs(type(dungeon[2]) == "table" and dungeon[2] or {}) do
-					instanceOf[alias] = instance
-				end
 				-- Forever's support points are already converted; applying EraToForever again would move them.
 				for _, spot in ipairs(type(dungeon[4]) == "table" and dungeon[4] or {}) do
 					local map = zones.areaOverride[spot[1]] or zones.area[spot[1]]

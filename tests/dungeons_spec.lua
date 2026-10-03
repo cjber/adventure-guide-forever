@@ -165,7 +165,9 @@ fake.items = {
 }
 fake.quests[1486].objectivesText = { "Test objective." }
 fake.zones.dungeons = { [100043] = { "Test instance", { 999906 }, 1413, { { 1413, 51, 32 } } } }
+fake.quests[999910] = { name = "Alias area quest", questLevel = 20, requiredLevel = 18, zoneOrSort = 999906 }
 local q = harness.load({ questiedb = fake })
+equal(q.ns.Data.quests[999910].dungeon, 43, "a quest in a dungeon's alias area is filed under the dungeon")
 local yields = 0
 local source = q.ns.ReadDungeonSource(function()
 	yields = yields + 1
