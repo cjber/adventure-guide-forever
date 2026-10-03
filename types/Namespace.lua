@@ -616,7 +616,7 @@
 ---@field CurrentStep fun(): AGFStep? the step the handed route heads for while it guides, else the route's head
 ---@field Guided fun(): (AGFStep|AGFGiver)[] the stops Shortest Path walks, while it guides; empty otherwise
 ---@field OnChange fun(callback: fun()) called after every Go that guides, every Stop and the super-tracking events
----@field Stale fun(handed: AGFStep[], index: integer, steps: AGFStep[], far?: fun(a: AGFStep, b: AGFStep): boolean): boolean the guidance handed to Shortest Path no longer matches the journey's steps
+---@field Stale fun(handed: AGFStep[], index: integer, steps: AGFStep[], far: fun(a: AGFStep, b: AGFStep): boolean): boolean the guidance handed to Shortest Path no longer matches the journey's steps
 ---@field Ended fun(route: AGFRoute) Core's commit of a full build: a chosen journey the build no longer has ends
 ---@field RouteChanged fun() Core, ahead of every route listener: a waiting start, a choice that went, the restore, Focus.Sync, then following
 ---@field Debug fun(): string /agf travel's line
