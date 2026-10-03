@@ -12,6 +12,7 @@ verbatim rather than rewritten as the addon moves.
 ## [Unreleased]
 
 - **A boss's level no longer runs into its loot.** In a dungeon's Loot view, the level under each boss's name was drawn over the first item beneath it. The boss heading is now tall enough for both lines, and the Bosses view still jumps to the right place in the list.
+- **View loot opens at the boss you picked.** From the Bosses view, *View loot* on a boss far down the list stopped short and showed an earlier boss's items. It now opens the Loot view at that boss's heading.
 
 ## [0.7.0] - 2026-10-03
 

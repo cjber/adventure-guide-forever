@@ -92,6 +92,8 @@ function Window.SetList(widget, values)
 	end
 	widget.heights, widget.tops = heights, tops
 	widget.child:SetHeight(math.max(widget.height, total))
+	-- The scroll range is otherwise measured a frame late, and a jump made now would stop at the old list's end.
+	widget.frame:UpdateScrollChildRect()
 	widget.frame.ScrollBar:SetShown(total > widget.height)
 	PaintList(widget)
 end
