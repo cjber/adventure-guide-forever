@@ -78,5 +78,52 @@ do
 	equal(#h.errors, 0, "boss jump has no errors")
 end
 
+-- A loot heading with a level line under the boss's name is tall enough that the first item starts below that line.
+do
+	local items = { [101] = { name = "Drop 101", quality = 3 }, [201] = { name = "Drop 201", quality = 3 } }
+	local h = harness.load({ items = items })
+	h.ns.Dungeons.Source = function()
+		return {
+			bosses = { [43] = { { id = 1, name = "Boss 1", low = 20 }, { id = 2, name = "Boss 2" } } },
+			loot = {
+				[43] = {
+					{ id = 101, name = "Drop 101", droppers = { { id = 1 } } },
+					{ id = 201, name = "Drop 201", droppers = { { id = 2 } } },
+				},
+			},
+			rewards = {},
+			objectives = {},
+		}
+	end
+	h.ns.Window.OpenDungeon(43)
+	h.flush()
+	h.Click(assert(h.Find(function(frame)
+		return frame:IsVisible() and frame:GetText() == h.ns.L.DUNGEON_LOOT_TAB
+	end)[1]))
+	local function Row(test)
+		return assert(h.Find(function(frame)
+			return frame:IsVisible() and frame.value and test(frame.value)
+		end)[1])
+	end
+	local function Top(row)
+		return -(select(5, row:GetPoint())) -- multi-value: the y offset only
+	end
+	local heading = Row(function(value)
+		return value.heading and value.title == "Boss 1"
+	end)
+	local item = Row(function(value)
+		return value.item == 101
+	end)
+	equal(heading.Info:GetText(), h.ns.L.DUNGEON_LEVEL:format(20), "loot heading shows the boss's level")
+	local infoBottom = Top(heading) - (select(5, heading.Info:GetPoint())) + heading.Info:GetStringHeight()
+	equal(Top(item) >= infoBottom, true, "loot heading's level line ends above the first item")
+	equal(heading:GetHeight() >= infoBottom - Top(heading), true, "loot heading row holds its level line")
+	local plain = Row(function(value)
+		return value.heading and value.title == "Boss 2"
+	end)
+	equal(plain:GetHeight(), 20, "a loot heading without a level line stays one line tall")
+	equal(#h.errors, 0, "loot heading has no errors")
+end
+
 assert(#failures == 0, table.concat(failures, "\n"))
 print(("ui_decisions_spec: %d checks passed"):format(checks))
