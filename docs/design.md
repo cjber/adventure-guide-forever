@@ -10,7 +10,7 @@ abandons quests.
 
 ## 2. Surfaces
 
-- **2.1 Map tab.** The overview fits without scrolling; overflow opens the window. Chosen steps and
+- **2.1 Map tab.** The overview scrolls; the expand button opens the window. Chosen steps and
   search can scroll. Quest-giver marks and route pins are opt-in.
 - **2.2 Journey cards.** Offer every eligible journey for the current level; the home view scrolls and the window grid pages through them. Prefer useful green/yellow quests; exclude orange/red pickups. A choice shows up to ten route actions, followed by upcoming quest entries when fewer actions are available. The active route appears above alternative destinations.
   Give each card a reason and only known travel estimates.

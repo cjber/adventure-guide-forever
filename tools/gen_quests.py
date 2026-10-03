@@ -311,7 +311,7 @@ def map_indexes(ui_maps, assignments):
 def span(row, axis):
     """Yards per unit of UI axis 0 (east, from world y) or 1 (south, from world x), as `project` maps them."""
     low, high = (float(row[f"Region_{i}"]) for i in ((1, 4) if axis == 0 else (0, 3)))
-    return (high - low) / (float(row.get(f"UiMax_{axis}", 1)) - float(row.get(f"UiMin_{axis}", 0)))
+    return (high - low) / (float(row[f"UiMax_{axis}"]) - float(row[f"UiMin_{axis}"]))
 
 
 def geometry(assignments, wanted, names):
@@ -1151,7 +1151,7 @@ CANVAS = (1002, 668)  # a zone map's art in pixels: WorldMapOverlay offsets and 
 
 def overlays(ui_maps, map_art, overlay_rows, area_rows):
     """Each zone map's (UiMap Type 3) explorable areas: the WorldMapOverlay rows of its art that the client draws once
-    explored, so the addon can tell which it hasn't seen (roadmap #13).
+    explored, so the addon can tell which it hasn't seen.
 
     `ox`, `oy` are the overlay's offset, which C_MapExplorationInfo.GetExploredMapTextures returns for an explored one;
     an overlay without a texture is never returned, so it is left out, as is every overlay sharing its offset with
@@ -1526,7 +1526,7 @@ def render(data):
         "-- NpcFlags, TrainerType, npc_trainer, battlemaster_entry); ranks: each SKILL_STEP spell taught of a",
         "-- SkillLine profession or secondary skill (SpellEffect); side: every side FactionTemplate.EnemyGroup is",
         "-- not hostile to; place: a non-seasonal spawn, as quest givers'. Within",
-        f"-- {LINK} yd of a quest place: its hub, on the map most of the hub's places use; else the smallest map.",
+        f"-- {LINK} yd of a quest place: its hub, on the map most of the hub's places use; else by terrain area.",
         "-- No side or zone-map spawn: left out.",
         "-- skills and factions: the names of those a quest needs.",
         "-- professions: each skill line a trainer here teaches, its ranks' npc_trainer reqlevel and reqskillvalue.",

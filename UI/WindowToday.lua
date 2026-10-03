@@ -4,7 +4,7 @@ local Window, L, Art = ns.Window, ns.L, ns.Art
 local RIGHT = Window.RIGHT
 -- The Today strip: up to two asides across the art's top band, a ringed icon and its line.
 local TODAY_MAX, TODAY_TOP, TODAY_LEFT, TODAY_RING = 2, 4, 18, 26
--- More asides than chips: a stock button at the right that lists the rest in a menu.
+-- More asides than chips: a button at the right that lists the rest in a menu.
 local MORE_WIDTH, MORE_HEIGHT = 90, 22
 
 ---@type AGFTodayChip[]

@@ -646,7 +646,7 @@ local DIVERSION_ORDER = { calling = 1, dungeon = 2, chain = 3, battleground = 4 
 -- places a battlemaster for and the player is interested in. None where the data places none, so a card never points
 -- at coordinates the data lacks; none either while its step is skipped, which Skipped (n) then keeps.
 ---@param prefs AGFPrefs
----@param mapName? fun(map: integer): string?
+---@param mapName? AGFMapName
 local function Battleground(data, player, prefs, mapName)
 	local L, dismissed, open = ns.L, prefs.notInterested or {}, {}
 	for _, bg in ipairs(player.battlegrounds or NONE) do
@@ -691,7 +691,6 @@ local function Battleground(data, player, prefs, mapName)
 			}
 			return {
 				kind = "battleground",
-				key = journey.key,
 				opened = bg.level,
 				quests = 0,
 				build = function()
@@ -708,7 +707,7 @@ end
 -- yields and the build is one frame.
 local YIELD_EVERY = 4
 
----@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
+---@param mapName? AGFMapName the client's (localised) name for a map; the data's English otherwise
 ---@param instanceName? fun(id: integer): string? the client's name for an instance Map.ID; the data's otherwise
 ---@param skippedQuests? table<string, integer[]> the build's AGFPlanInputs.skippedQuests
 ---@return AGFJourney[] journeys
@@ -838,14 +837,14 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	-- Each diversion offers itself with how many quests it holds and the level its newest one opened at, and the
 	-- newest is built first (DIVERSION_ORDER on a tie), so a level just gained or a bracket just opened leads.
 	local diversions = {}
-	local function Offer(kind, key, belongs, build, from)
+	local function Offer(kind, belongs, build, from)
 		local quests, opened = Newest(data, from or eligible, belongs)
 		if opened then
-			diversions[#diversions + 1] = { kind = kind, key = key, opened = opened, quests = quests, build = build }
+			diversions[#diversions + 1] = { kind = kind, opened = opened, quests = quests, build = build }
 		end
 	end
 	if not dismissed.calling then
-		Offer("calling", "calling", ForClass(player.classBit), function()
+		Offer("calling", ForClass(player.classBit), function()
 			return CallingJourney(data, player, completed, log, ready, eligible, prefs, mapName)
 		end)
 	end
@@ -857,7 +856,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 		or eligible
 	local instance = BestDungeon(data, pool, prefs, prefs.dungeons or stranded, chosenDungeon)
 	if instance then
-		Offer("dungeon", "dungeon:" .. instance, InDungeon(instance), function(quests)
+		Offer("dungeon", InDungeon(instance), function(quests)
 			return DungeonJourney(data, player, completed, log, pool, prefs, mapName, instanceName, instance, quests)
 		end, pool)
 	end
@@ -887,7 +886,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			return members[quest] == true
 		end
 		local key = "chain:" .. way.members[1]
-		Offer("chain", key, Member, function()
+		Offer("chain", Member, function()
 			local into, _, step = Pickups(
 				data,
 				player,

@@ -214,7 +214,7 @@ do
 		title = "Hilary's Necklace",
 		level = 15,
 		complete = false,
-		objectives = { { type = "item", numFulfilled = 0, numRequired = 1, finished = false, text = "Necklace" } },
+		objectives = { { type = "item", text = "Necklace" } },
 	}
 	input.last = full
 	local warm = Shown.Build(input)

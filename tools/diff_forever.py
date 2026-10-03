@@ -46,7 +46,7 @@ def zone_quests(blobs, quests):
 
 def lands(maps, assignments, area_rows, taxi_nodes, added_nodes):
     """Each zone map (UiMap Type 3) in `maps`, the ones Forever added: its name, the level range of its areas and the
-    flight masters it has (roadmap #14).
+    flight masters it has.
 
     The range is the least and greatest non-zero AreaTable.ExplorationLevel among the map's areas (its
     UiMapAssignment AreaIDs) and their children; a land whose areas all have 0 (Mount Hyjal, Shen'dralas) has no range

@@ -64,16 +64,7 @@ local function Under(frame, root)
 	return false
 end
 
--- Every text the window shows, from its dump: font strings and button labels.
-local function Texts(h, root)
-	local texts = {}
-	for _, entry in ipairs(h.ns.DumpLayout(root or h.G.AdventureGuideForeverWindow, h.Describe)) do
-		if entry.text then
-			texts[entry.text] = (texts[entry.text] or 0) + 1
-		end
-	end
-	return texts
-end
+local Texts = dofile("tests/ui_helpers.lua").Texts
 
 local function Visible(h, root, test)
 	local found = h.Find(function(frame)
@@ -147,7 +138,6 @@ do
 	equal(texts[L.MENU_BATTLEGROUNDS], nil, "unavailable: nothing else")
 	equal(window.Tabs[3].normalFont, "GameFontDisableSmall", "unavailable: the label greys")
 	clean(h, "pvp")
-	ns.Window.Refresh()
 end
 
 --[[ The Completion tab ]]

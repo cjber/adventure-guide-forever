@@ -34,7 +34,7 @@ def effective_scales(entries):
             parent = parent_path(path)
             while parent is not None and parent not in own:
                 parent = parent_path(parent)
-            scales[path] = own.get(path, 1) * (effective(parent) if parent else 1)
+            scales[path] = own[path] * (effective(parent) if parent else 1)
         return scales[path]
 
     for path in own:

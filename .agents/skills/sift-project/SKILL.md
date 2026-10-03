@@ -44,7 +44,7 @@ UI (window, panel, pins, tracker, settings) headlessly. What needs the client it
 | Dead code (Lua) | `luacheck . --no-color` + the live-root searches below | a function stored on `ns` is never "unused" to luacheck: search every file for `ns.<Name>` |
 | Dead code (Python) | `uvx vulture tools --min-confidence 60` | none |
 | Live roots | `rg -n 'hooksecurefunc|RegisterEvent|RegisterCallback|SetScript|AddDataProvider|AddTooltipPostCall|SLASH_|SlashCmdList' -g '*.lua'` | none |
-| Shared-table members | the `ns-defined`/`ns-once` commands in sift's `languages/lua.md` | the `ns\.` pattern has no word boundary, so `options.zone`/`options.pinned` in the spec match; nested tables (`Model.*`, `ns.Integrations.*`) need their own `rg -n 'Model\.Name'` search |
+| Shared-table members | the shared-table command in sift's `languages/lua.md` (it writes `ns-once`) | nested tables (`Model.*`, `ns.Integrations.*`) need their own `rg -n 'Model\.Name'` search |
 | Clones | `npx -y jscpd@4 --silent --min-lines 6 --ignore "Data/**,.types/**,**/.cache/**" .` | none (0 clones on 2026-09-24) |
 | Standards | `python3 .sift/agents.py standards` | resolves the pinned pack declared in AGENTS.md; `SIFT_STANDARDS_PATH` can override it with a local standards directory |
 
@@ -78,6 +78,8 @@ UI (window, panel, pins, tracker, settings) headlessly. What needs the client it
 - Unknown data is left out rather than guessed; generators raise instead of clamping bad data.
 - Comments explain *why* (client quirks, Forever beta bugs, data provenance), not what.
 - Text shown in game, the `.toc` `## Notes` line and `docs/curseforge.md` are user-facing: audits propose changes, never make them.
+- `UI/TrackerHost.lua` is shared with the companion addons (its own comments say so; no script here checks the copies):
+  a confirmed finding there is a `decide`, since the edit has to land in every copy.
 - New dev-only root files must be added to `.pkgmeta` `ignore:` so they don't ship in the zip.
 
 ## Risk order
@@ -93,7 +95,7 @@ UI (window, panel, pins, tracker, settings) headlessly. What needs the client it
 Shapes that look like defects here but are not. Reviewers and verifiers read this before raising a
 finding; audits add an entry when verifiers keep dismissing the same shape for the same reason.
 
-- **Planner look-alikes**: `Planning/Model.lua`'s step builders, locators and shallow-copy loops (`TrainerSteps`/`Battleground`,
+- **Planner look-alikes**: the `Planning/` modules' step builders, locators and shallow-copy loops (`TrainerSteps`/`Battleground`,
   `Locate`/`Build`, `Describe` before and after the overseas override) read alike but take different contracts; five
   `parallel-implementations` candidates were dismissed on the small-idiom and different-contract exclusions in the
   2026-09-27 audit. Raise one only with a caller that needs both to change together.
@@ -104,6 +106,10 @@ finding; audits add an entry when verifiers keep dismissing the same shape for t
   are not a closed set to type (`stringly-typed` dismissed twice; e.g. `Planning/Model.lua`, `Integrations/Dungeons.lua`).
 - **Absence checks**: a spec asserting that a removed field or pin pool stays absent (`pin.More == nil` in
   `tests/ui_spec.lua`) is a regression test for a shipped defect, not a check that cannot fail.
+- **Guards a spec needs**: a nil or existence guard that looks unreachable in game but that a spec exercises: the
+  harness loads a file without the global or stubs the module that defines the field. Delete the guard in a copy and
+  run every spec before raising it (`defensive-noise` dismissed three times in the 2026-10-03 audit: `EventRegistry` in
+  `UI/TrackerHost.lua`, `ns.SourceHint` in `UI/Panel.lua`, the nil `api` in `Planning/Geometry.lua` `Maps`).
 - **Repeated spec fixtures**: the same character or options literal retyped per spec or scene is fixture input, not a
   parallel implementation (e.g. `tests/feature_rules_spec.lua`, `tests/scenes.lua`).
 
@@ -131,7 +137,8 @@ it or it has not recurred in two audits.
 
 ## Project rules and lenses
 
-- Rules: none yet (no repeated pattern a tool could recognise without judgment).
+- Rules: `.sift/scripts/no-em-dash.py` (an em dash in `tools/*.py` or `Data/*.lua`), with its cases under
+  `.sift/script-tests/no-em-dash`.
 - Lenses: none yet.
 
 The type gate also runs `tools/lint_taint.py` and `tools/typecheck_coverage.py`; `AGENTS.md`, Secure UI regression checks, states what they enforce.

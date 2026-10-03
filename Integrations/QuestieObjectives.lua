@@ -158,8 +158,9 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 		Places(slot, lists)
 	end
 	if type(trigger) == "table" and type(trigger[2]) == "table" then
-		need[16], kinds[16] = 1, "event"
-		Places(16, { trigger[2] })
+		local explore = ns.Model.EXPLORE_SLOT
+		need[explore], kinds[explore] = 1, "event"
+		Places(explore, { trigger[2] })
 	end
 	-- Spell/reputation objectives have no compatible planner slots; use the client's live quest POI instead.
 	if objectives and (next(objectives[4] or {}) or next(objectives[6] or {})) then

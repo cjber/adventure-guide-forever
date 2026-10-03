@@ -10,6 +10,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from gen_quests import lua
 from lint_copy import ns_l_entries, split, unquote
 from lint_multivalue import tokenize
 
@@ -41,12 +42,8 @@ def phrases(source: str) -> dict[str, str]:
     return found
 
 
-def quote(text: str) -> str:
-    return '"' + text.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n") + '"'
-
-
 def render(found: dict[str, str]) -> str:
-    return HEADER + "".join(f"L[{quote(key)}] = {quote(found[key])}\n" for key in sorted(found))
+    return HEADER + "".join(f"L[{lua(key)}] = {lua(found[key])}\n" for key in sorted(found))
 
 
 def keyword_files() -> list[str]:

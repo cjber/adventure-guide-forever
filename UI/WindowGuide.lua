@@ -147,13 +147,10 @@ local function RowEnter(row)
 		ns.Pins.StepTooltip(GameTooltip, row.step, row.index, travel)
 		GameTooltip:Show()
 	elseif row.questID then
-		local quest = ns.Data.quests[row.questID]
-		if quest then
-			ns.Overview.ShowTooltip(row, {
-				(ns.Pins.QuestLineText(row.questID)),
-				L.GUIDE_OUTLINE_TOOLTIP,
-			})
-		end
+		ns.Overview.ShowTooltip(row, {
+			(ns.Pins.QuestLineText(row.questID)),
+			L.GUIDE_OUTLINE_TOOLTIP,
+		})
 	end
 end
 

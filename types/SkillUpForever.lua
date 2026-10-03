@@ -1,7 +1,7 @@
 ---@meta
 
 -- SkillUp Forever's public API (SkillUpForever.API, version 1: cjber/skillup-forever API.lua and types/API.lua),
--- read only through Integrations.lua for the Adventure Guide window's Professions tab. Every table is SkillUp's own
+-- read only through SkillUp.lua for the Adventure Guide window's Professions tab. Every table is SkillUp's own
 -- cached copy, so nothing here writes to it. SkillUp Forever is optional; without it the tab says where the steps
 -- come from.
 
@@ -61,5 +61,5 @@
 ---@field SkillUpNavigate fun(skillLineID: integer, stepIndex: integer): boolean SkillUp's waypoint to a step's vendor or trainer
 ---@field OpenRecipes fun(skillLineID: integer): boolean SkillUp opens the profession's window
 
----@type {API: table?}? read only through Integrations.lua, which checks it against AGFSUAPI
+---@type {API: table?}? read only through SkillUp.lua, which checks it against AGFSUAPI
 SkillUpForever = nil

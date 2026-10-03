@@ -161,7 +161,7 @@ UiMapPoint = nil
 ---@type {API: table?}? read only through Integrations.lua SPF(), which checks it against AGFSPFAPI
 ShortestPathForever = nil
 
----@type {API: table?}? read through Integrations.lua and Providers.lua, each checking it against AGFTFAPI
+---@type {API: table?}? read through Tweaks.lua and Providers.lua, each checking it against AGFTFAPI
 TweaksForever = nil
 
 ---@class AGFSettingsSetting
@@ -308,5 +308,5 @@ AdventureGuideForeverWindow = nil
 ---@type { ItemDB: {Get: fun(self: table, module: string): table?}, Locales: table<string, string> }?
 AtlasLoot = nil
 
----@type table<integer, {r: number, g: number, b: number, hex: string, color: ColorMixin}>
+---@type table<integer, {r: number, g: number, b: number}>
 ITEM_QUALITY_COLORS = nil

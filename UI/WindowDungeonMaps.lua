@@ -101,7 +101,7 @@ local function draw(view)
 	end
 	local rowIndex = 0
 	local y = 12
-	for _, line in ipairs(map.legendLines or {}) do
+	for _, line in ipairs(map.legendLines) do
 		rowIndex = rowIndex + 1
 		local row = view.rows[rowIndex]
 		if not row then
@@ -212,7 +212,7 @@ local function build(parent)
 		view:Hide()
 	end)
 	function view:SetMaps(newMaps)
-		self.maps, self.selected = newMaps or {}, 1
+		self.maps, self.selected = newMaps, 1
 		draw(self)
 		return self
 	end
@@ -231,7 +231,6 @@ end
 ---@param parent Frame
 ---@return AGFDungeonMapView
 function Window.CreateDungeonMapView(parent)
-	assert(parent, "Dungeon map views require a parent frame")
 	local view = views[parent]
 	if not view then
 		view = build(parent)

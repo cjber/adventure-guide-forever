@@ -742,7 +742,7 @@ local function RefreshTravel()
 	end
 end
 
--- Commits the finished route, then wakes the listeners; step 1's travel line gets its own frame (RefreshTravel).
+-- Wakes the listeners once a rebuild ends; step 1's travel line gets its own frame (RefreshTravel).
 local function FinishRebuild()
 	travelPending = true
 	NotifyRouteChange()

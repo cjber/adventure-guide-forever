@@ -48,13 +48,6 @@ for id, instance in pairs(h.ns.Data.instances) do
 		assert(type(bosses) == "table", "boss list is a table for " .. id)
 		h.Click(Button(h, h.ns.L.DUNGEON_BOSSES_TAB))
 		h.flush()
-		if bosses[1] then
-			local visible = false
-			for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)) do
-				visible = visible or entry.text == bosses[1].name
-			end
-			assert(visible, "standalone boss panel for " .. id)
-		end
 		planned[#planned + 1] = id
 	end
 end

@@ -203,7 +203,7 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, l
 			and position.continent ~= origin.continent
 		then
 			away[step] = true
-			local name = (mapName and mapName(step.map)) or (data.maps[step.map] and data.maps[step.map].name)
+			local name = (mapName and mapName(step.map)) or data.maps[step.map].name
 			if name then
 				step.reason = ns.L.HAND_IN_WHEN:format(name)
 				step.detail = step.reason
@@ -375,13 +375,13 @@ local function Stabilise(route, plain, rank, holds, at, origin)
 end
 
 -- Whether `where` stands in area `step`, `margin` yards past its edge: within one of its shapes, the data's objective
--- circles, never the ring merged round them, which covers ground no objective is on. One with no shapes is its point.
+-- circles, never the ring merged round them, which covers ground no objective is on.
 ---@param where {map: integer, x: number, y: number}
 ---@param step AGFStep
 ---@param margin number
 ---@return boolean
 local function InArea(data, where, step, margin)
-	for _, shape in ipairs(step.shapes or { { map = step.map, x = step.x, y = step.y, r = 0 } }) do
+	for _, shape in ipairs(step.shapes) do
 		local yards = Model.Yards(data, where, shape)
 		if yards and yards <= shape.r + margin then
 			return true

@@ -68,5 +68,4 @@ function API.NextStops(limit)
 	return stops
 end
 
-AdventureGuideForever = AdventureGuideForever or {}
-AdventureGuideForever.API = API
+AdventureGuideForever = { API = API }

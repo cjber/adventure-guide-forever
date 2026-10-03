@@ -21,9 +21,9 @@ encounter order or localized names.
 | QuestieDB public API documentation | `365537a340473291f5af3b7a53a5eca94e2a5f1a`, contract 2 | Runtime NPC ranks/spawns, item drops/rewards, quest objectives and entrance points |
 | Tweaks Forever | Public API v1 | Outdoor entrance fallback, through the existing Providers adapter |
 
-The QuestieDB adapter owns the runtime quest source. Its entrance
-requirement list on each instance contains: level, alternative required items, completed quest and an unsupported
-condition flag. This also retains the six reachable Classic dungeon instances without bundled quests
+The QuestieDB adapter owns the runtime quest source. `tools/gen_quests.py` writes the entrance
+requirement list on each instance: level, alternative required items, completed quest and an unsupported
+condition flag. It also retains the six reachable Classic dungeon instances without bundled quests
 filed under their instance area. The catalog contains 19 dungeon instances; unused maps do not enter it.
 Raids come from `Integrations/Raids.lua`, a hand-written registry (not the generator): it names the announced Forever
 raid tiers first and the client's remaining raid Map.IDs after them. A registered raid enters the catalog only
@@ -34,8 +34,8 @@ is browsable today. These three are the announced Forever launch tier
 launch raids need no attunement and none is claimed. The other raid Map.IDs the client still carries are not
 the announced tier and are filed under their own heading. Every raid is level 60; the group sizes and ranges
 are the registry's, not a copied Classic attunement page. Blackrock Spire is one Map.ID, so the source does not
-split its wings or claim Upper Spire is a five-player run. The revision adds recommended ranges and LFG IDs
-through that generator. The pinned
+split its wings or claim Upper Spire is a five-player run. `tools/gen_quests.py` also writes the recommended
+ranges and LFG IDs. The pinned
 [LFGDungeons export](https://wago.tools/db2/LFGDungeons/csv?build=1.60.1.69913) contains the Classic names,
 but their MapID is zero and it has no MinLevel/MaxLevel/TargetLevel columns. The linked
 [ContentTuning export](https://wago.tools/db2/ContentTuning/csv?build=1.60.1.69913) gives identical

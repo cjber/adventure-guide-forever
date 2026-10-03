@@ -982,8 +982,8 @@ for id = 1, 4 do
 end
 equal(Model.Plan(zones, player, {}, {}, prefs()).journeys[1].key, "zone:1", "the story is the best level fit's")
 -- One cost in yards (F12): this continent by distance, then across the ocean, then a map with no geometry.
-local tiers = { quests = {}, zones = data.zones, maps = {}, continents = { [0] = { x = 50000, y = 0 }, [1] = {} } }
-tiers.continents[1] = { x = 0, y = 0 }
+local tiers =
+	{ quests = {}, zones = data.zones, maps = {}, continents = { [0] = { x = 50000, y = 0 }, [1] = { x = 0, y = 0 } } }
 for id, place in ipairs({ { 7, 0.9 }, { 9, 0.1 }, { 3, 0.5 }, { 8, 0.2 } }) do
 	tiers.quests[id] = quest(place[2], 0.5, place[1])
 	tiers.quests[id].zone = 1
