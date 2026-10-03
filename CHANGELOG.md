@@ -11,6 +11,10 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **A stuck Questie no longer holds the guide.** If Questie loaded but never finished starting on a character, the guide sat on "Loading quest data..." for the whole session, with an empty tracker and empty journeys. After a minute it now reads the quest data on its own, so quests in your log are guided again. New pickups are recommended once Questie is running.
+- **Dungeon quests in a dungeon's side areas count as its quests.** A quest that Questie files under one of a dungeon's other area names was treated as an ordinary zone quest, so it was missing from that dungeon's journey and quest list. It is now filed under the dungeon, like the enemies of the same area.
+- **Dungeon loot no longer shows a slot code.** In the Dungeons tab, a drop that cannot be equipped, such as an item that starts a quest, showed the game's internal text INVTYPE_NON_EQUIP_IGNORE in its details. That text is now left out.
+
 ## [0.6.7] - 2026-10-03
 
 - **Dungeons show their real level range.** The Dungeons tab showed some dungeons as a single level written twice, such as Level 13-13, because the game answers with one level for them. It now shows the dungeon's recommended range, such as Level 13-18 for Ragefire Chasm.

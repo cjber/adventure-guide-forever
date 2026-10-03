@@ -12,6 +12,10 @@ local CONTRACT = 2
 -- The catalogue is built once a login, and nothing can be shown until it lands: at a millisecond a frame the tracker
 -- stayed empty for most of a minute. A few frames a second for a few seconds is the smaller cost.
 local SLICE_MS = 5
+-- Questie can load and then never report ready, when its own startup stops on an error for one character. Waiting
+-- longer than this would leave the guide on its loading line for the whole session, so the catalogue is read without
+-- Questie's live policy instead. A ready callback that arrives later reads it again.
+local READY_WAIT = 60
 local LINK = ns.Data.townLink
 -- Daily and weekly quest flags also identify repeatable work.
 local REPEATABLE_FLAGS = 4096 + 32768
@@ -240,6 +244,30 @@ local function Hub(data, cells, place)
 	return hub
 end
 
+-- The instance each area belongs to, among the instances `keep` accepts: an instance's own area, then the alias areas
+-- ZoneDB lists for its dungeon. Also ZoneDB's dungeon rows by area.
+---@param lib AGFQuestieDB
+---@param zones AGFQuestieZones
+---@param keep fun(instance: integer): boolean
+---@return table<integer, integer> instanceOf, table<integer, table> dungeons
+local function InstanceAreas(lib, zones, keep)
+	local zoneDB = lib.Support.Get("ZoneDB")
+	local dungeons = zoneDB and zoneDB.private and zoneDB.private.dungeons or {}
+	local instanceOf = {}
+	for instance, area in pairs(zones.instances) do
+		if keep(instance) then
+			instanceOf[area] = instance
+		end
+	end
+	for instance, area in pairs(zones.instances) do
+		local dungeon = keep(instance) and dungeons[area]
+		for _, alias in ipairs(type(dungeon) == "table" and type(dungeon[2]) == "table" and dungeon[2] or {}) do
+			instanceOf[alias] = instanceOf[alias] or instance
+		end
+	end
+	return instanceOf, dungeons
+end
+
 -- The build, as a coroutine body: ns.Data's replacement, or an error.
 ---@param lib AGFQuestieDB
 ---@param zones AGFQuestieZones
@@ -257,10 +285,9 @@ local function Build(lib, zones, bundled, yield)
 		map = map or (parent and (zones.areaOverride[parent] or zones.area[parent]))
 		return type(map) == "number" and bundled.maps[map] and map or nil
 	end
-	local instanceOf = {}
-	for instance, area in pairs(zones.instances) do
-		instanceOf[area] = instance
-	end
+	local instanceOf = InstanceAreas(lib, zones, function(instance)
+		return bundled.instances[instance] ~= nil
+	end)
 	local cells = TownCells(bundled, yield)
 	-- Each giver's name, its spawns on maps the data places (0-100 on its area's map), and its usual map.
 	local givers = { Npc = {}, Object = {} }
@@ -430,7 +457,16 @@ end
 EventUtil.ContinueAfterAllEvents(function()
 	status.state = "building"
 	if Questie and Questie.API and Questie.API.RegisterOnReady then
-		Questie.API.RegisterOnReady(Start)
+		local ready = false
+		Questie.API.RegisterOnReady(function()
+			ready = true
+			Start()
+		end)
+		C_Timer.After(READY_WAIT, function()
+			if not ready then
+				Start()
+			end
+		end)
 		if Questie.API.RegisterForQuestUpdates then
 			Questie.API.RegisterForQuestUpdates(function()
 				ns.Invalidate()
@@ -479,18 +515,16 @@ function ns.ReadDungeonSource(yield)
 		worldDrops = {},
 		starts = {},
 	}
-	local zoneDB = lib.Support.Get("ZoneDB")
-	local dungeons = zoneDB and zoneDB.private and zoneDB.private.dungeons or {}
-	local instanceOf, npcInstances, npcInfo = {}, {}, {}
+	local function Dungeon(instance)
+		return ns.Data.instances[instance] ~= nil and not ns.Data.instances[instance].raid
+	end
+	local instanceOf, dungeons = InstanceAreas(lib, zones, Dungeon)
+	local npcInstances, npcInfo = {}, {}
 	for instance, area in pairs(zones.instances) do
-		if ns.Data.instances[instance] and not ns.Data.instances[instance].raid then
-			instanceOf[area] = instance
+		if Dungeon(instance) then
 			result.bosses[instance], result.loot[instance], result.npcs[instance] = {}, {}, {}
 			local dungeon = dungeons[area]
 			if type(dungeon) == "table" then
-				for _, alias in ipairs(type(dungeon[2]) == "table" and dungeon[2] or {}) do
-					instanceOf[alias] = instance
-				end
 				-- Forever's support points are already converted; applying EraToForever again would move them.
 				for _, spot in ipairs(type(dungeon[4]) == "table" and dungeon[4] or {}) do
 					local map = zones.areaOverride[spot[1]] or zones.area[spot[1]]

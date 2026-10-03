@@ -141,18 +141,29 @@ equal(
 )
 equal(alone.ns.Data.quests[900001].finish.npc, 197, "logged quest still has finish without policy")
 -- Questie initializes policy corrections asynchronously. Publish no old quest data while waiting.
-local ready
+local ready, deadline
+-- Questie loaded but not ready. The harness runs every timer at once, so the wait for Questie is held back in
+-- `deadline` and runs only when a test says the wait is over.
+local function NotReady(h2)
+	Policy(h2)
+	h2.G.Questie.API.isReady = false
+	h2.G.Questie.API.RegisterOnReady = function(fn)
+		ready = fn
+	end
+	local after = h2.G.C_Timer.After
+	h2.G.C_Timer.After = function(delay, fn)
+		if delay >= 60 then
+			deadline = fn
+		else
+			after(delay, fn)
+		end
+	end
+end
 local delayed = harness.load({
 	questiedb = Fake(),
 	spf = "v1",
 	charDB = { journey = "zone:1429", guided = "zone:1429" },
-	setup = function(h2)
-		Policy(h2)
-		h2.G.Questie.API.isReady = false
-		h2.G.Questie.API.RegisterOnReady = function(fn)
-			ready = fn
-		end
-	end,
+	setup = NotReady,
 })
 equal(next(delayed.ns.Data.quests), nil, "empty until provider ready")
 equal(delayed.ns.QuestieStatus.settled, false, "provider startup remains provisional before ready")
@@ -172,6 +183,26 @@ equal(delayed.ns.Route().journey, "zone:1429", "provider rebuild restores the sa
 equal(delayed.spf.NavigateRoute, 1, "restored story commits guidance once")
 equal(delayed.ns.Data.quests[900001], nil, "snapshot taken after policy corrections")
 equal(delayed.ns.Data.quests[900002].title, "Collect", "ready callback publishes composed catalogue")
+deadline()
+delayed.flush()
+equal(delayed.ns.Data.quests[900002].title, "Collect", "the wait ending after ready changes nothing")
+-- Questie that never reports ready does not hold the guide for the whole session.
+local stuck = harness.load({ questiedb = Fake(), setup = NotReady })
+equal(stuck.ns.QuestieBuilding(), true, "the guide waits for Questie at first")
+deadline()
+stuck.flush()
+equal(stuck.ns.QuestieBuilding(), false, "the wait for Questie ends")
+equal(stuck.ns.QuestieStatus.state, "questie", "the catalogue is read without Questie's policy")
+equal(stuck.ns.Data.quests[900001].title, "Provider-only quest", "the catalogue lands without Questie ready")
+equal(stuck.ns.SourceHint(), stuck.ns.L.QUESTIE_POLICY, "the guide says recommendations need Questie")
+stuck.G.LibQuestieDB.Quest.GetAllIds = function()
+	return { 900002 }
+end
+stuck.G.Questie.API.isReady = true
+ready()
+stuck.flush()
+equal(stuck.ns.Data.quests[900001], nil, "a late ready callback reads the catalogue again")
+equal(stuck.ns.Data.quests[900002].title, "Collect", "the late read publishes the corrected catalogue")
 -- A missing coordinate never inherits the bundled location for the same NPC/quest.
 local fake = Fake()
 fake.quests[7] = fake.quests[900001]
