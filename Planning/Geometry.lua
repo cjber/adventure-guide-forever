@@ -190,10 +190,12 @@ function Geometry.Instances(api, lfgIDs)
 			local zone = api.GetRealZoneText(lfgID)
 			name = zone ~= "" and zone or nil
 		end
+		-- Forever answers some dungeons with the same level twice; that is not a range, so the bundled one stays.
+		local ranged = type(low) == "number" and type(high) == "number" and low > 0 and high > low
 		out[lfgID] = {
 			name = name,
-			low = type(low) == "number" and low or nil,
-			high = type(high) == "number" and high or nil,
+			low = ranged and low or nil,
+			high = ranged and high or nil,
 		}
 	end
 	return out
