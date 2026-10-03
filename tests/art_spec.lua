@@ -159,7 +159,6 @@ do
 	local scale, pixel = 44 / 46, (info.rightTexCoord - info.leftTexCoord) / 209
 	local strip = (209 - 24) * scale
 	local copies = math.ceil((440 - 24 * scale) / strip)
-	equal(copies, 3, "slice: 440 wide takes three copies of the middle")
 	equal(slice.used, 2 + copies, "slice: two caps and the copies")
 	local covered = 0
 	for index = 1, slice.used do

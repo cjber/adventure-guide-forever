@@ -25,7 +25,7 @@ equal(Next(state, nil, 226, true), 0, "walking out clears AGF's selection")
 equal(state.quest, nil, "and forgets it")
 equal(Next(state, nil, 0, true), nil, "outside, nothing")
 
--- (a) Never over the player's own selection, on walking in or out.
+-- Never over the player's own selection, on walking in or out.
 state = {}
 equal(Next(state, wolves, 99, true), nil, "the player's selection stays on walking in")
 equal(Next(state, nil, 99, true), nil, "and on walking out")
@@ -35,7 +35,7 @@ equal(Next(state, wolves, 99, true), nil, "the player selecting another inside: 
 equal(state.quest, nil, "AGF's is forgotten")
 equal(Next(state, nil, 99, true), nil, "walking out leaves theirs")
 
--- (b) Only on walking in: the player clearing it inside stays cleared; a new area selects again.
+-- Only on walking in: the player clearing it inside stays cleared; a new area selects again.
 state = {}
 Next(state, wolves, 0, true)
 equal(Next(state, wolves, 0, true), nil, "cleared by the player inside: not again")
@@ -48,14 +48,14 @@ equal(state.quest, 226, "still AGF's")
 -- Straight from one area into another replaces AGF's own selection.
 equal(Next(state, spiders, 226, true), 245, "into another area from AGF's: the new quest")
 
--- (c) The quest's objectives done while the area stays for another quest: AGF's selection goes.
+-- The quest's objectives done while the area stays for another quest: AGF's selection goes.
 state = {}
 Next(state, both, 0, true)
 equal(state.quest, 245, "the area's first quest")
 equal(Next(state, wolves, 245, true), 0, "its objectives done: cleared")
 equal(Next(state, wolves, 0, true), nil, "and not replaced while still inside")
 
--- (e) The setting off: nothing selected, and AGF's own selection cleared.
+-- The setting off: nothing selected, and AGF's own selection cleared.
 state = {}
 equal(Next(state, wolves, 0, false), nil, "off: nothing selected")
 state = {}
