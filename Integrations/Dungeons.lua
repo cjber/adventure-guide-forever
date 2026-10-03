@@ -336,21 +336,47 @@ function Dungeons.Journal(instance, yield)
 	return #rows > 0 and rows or nil, icon
 end
 
+local ATLASLOOT, ATLASLOOT_PAGES = "AtlasLootClassic", "AtlasLootClassic_DungeonsAndRaids"
+
+-- Whether `addon` is one whose arrival changes what Dungeons.Source reads.
+---@param addon string
+---@return boolean
+function Dungeons.IsSourceAddon(addon)
+	return addon == ATLASLOOT or addon == ATLASLOOT_PAGES
+end
+
+-- The Bosses view's line when a dungeon has no rows: what to install, what to turn on, or that there is nothing to
+-- list. AtlasLoot on disk but not running (turned off, or refused as out of date) is not a reason to install it.
+---@return string
+function Dungeons.NoBosses()
+	local state = ns.Companions.State(ATLASLOOT)
+	if state == "missing" then
+		return L.DUNGEON_NO_BOSSES
+	end
+	if state == "loaded" and C_AddOns.IsAddOnLoaded(ATLASLOOT_PAGES) then
+		return L.DUNGEON_NO_BOSSES_LISTED
+	end
+	return L.DUNGEON_NO_BOSSES_DISABLED
+end
+
 -- AtlasLoot's normal instance pages, read in their encounter order. Its optional module is load-on-demand.
 -- No data or source from AtlasLoot is bundled (docs/dungeon-sources.md).
 ---@param yield fun()
 ---@return AGFDungeonSource?
+---@return boolean? deferred combat kept AtlasLoot's pages from loading: read again once it ends
 function Dungeons.Source(yield)
 	local source = ns.ReadDungeonSource(yield)
 	local atlas = AtlasLoot
 	if not (atlas and atlas.ItemDB and type(atlas.ItemDB.Get) == "function") then
 		return source
 	end
-	local moduleName = "AtlasLootClassic_DungeonsAndRaids"
-	if not atlas.ItemDB:Get(moduleName) and not InCombatLockdown() and C_AddOns.DoesAddOnExist(moduleName) then
-		C_AddOns.LoadAddOn(moduleName)
+	if not atlas.ItemDB:Get(ATLASLOOT_PAGES) and C_AddOns.DoesAddOnExist(ATLASLOOT_PAGES) then
+		if InCombatLockdown() then
+			return source, true
+		end
+		C_AddOns.LoadAddOn(ATLASLOOT_PAGES)
 	end
-	local module = atlas.ItemDB:Get(moduleName)
+	local module = atlas.ItemDB:Get(ATLASLOOT_PAGES)
 	local normal = module and type(module.GetDifficultyByName) == "function" and module:GetDifficultyByName("n")
 	if not module or not normal then
 		return source
@@ -371,7 +397,7 @@ function Dungeons.Source(yield)
 		local entry = page.entry
 		local instance = type(entry) == "table" and entry.InstanceID
 		if instance and (ns.Data.instances[instance] or ns.RaidByMap[instance]) and type(entry.items) == "table" then
-			source = source or { bosses = {}, loot = {}, rewards = {}, objectives = {}, entrances = {} }
+			source = source or { bosses = {}, loot = {}, rewards = {}, objectives = {} }
 			local current = curated[instance] or { bosses = {}, items = {}, seen = {} }
 			curated[instance] = current
 			local bosses, items, seen = current.bosses, current.items, current.seen
@@ -546,19 +572,23 @@ function Dungeons.LootRows(source, instance, bosses)
 	return rows
 end
 
+-- A dungeon's way in: QuestieDB's point, else Tweaks Forever's, else why neither has one. One answer for every view,
+-- from the first draw.
 ---@param instance integer
----@param source? AGFDungeonSource
 ---@return AGFPoint?
-function Dungeons.Entrance(instance, source)
-	local point = source and source.entrances and source.entrances[instance]
-	return Model.ValidPlace(point) and point or (ns.Providers.DungeonEntrance(instance))
+---@return string? reason "missing", "outdated" or "unknown" when there is no point
+function Dungeons.Entrance(instance)
+	local point = ns.DungeonEntrance(instance)
+	if point then
+		return point
+	end
+	return ns.Providers.DungeonEntrance(instance)
 end
 
 ---@param instance integer
----@param source? AGFDungeonSource
 ---@return boolean
-function Dungeons.GoEntrance(instance, source)
-	local point = Dungeons.Entrance(instance, source)
+function Dungeons.GoEntrance(instance)
+	local point = Dungeons.Entrance(instance)
 	if not point then
 		return false
 	end

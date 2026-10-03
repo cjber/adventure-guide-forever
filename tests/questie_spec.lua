@@ -104,6 +104,40 @@ for index, step in ipairs(replay.ns.Route().steps) do
 end
 equal(picked ~= nil and worked ~= nil and returned ~= nil, true, "provider route includes all three actions")
 equal(picked < worked and worked < returned, true, "provider route cannot hand in before doing the work")
+-- Two quests need the same creature: one kills it, one loots it. One build asks QuestieDB for its spawns once, and
+-- for the looted item's droppers once, however many quests share them.
+local shared = Fake()
+shared.quests[900003] = {
+	name = "Collect again",
+	questLevel = 19,
+	requiredLevel = 17,
+	startedBy = { { 197 } },
+	zoneOrSort = 12,
+	objectives = { nil, nil, { { 700, nil, 2 } } },
+}
+local spawnReads, dropReads = 0, 0
+local once = harness.load({
+	questiedb = shared,
+	setup = function(loaded)
+		Policy(loaded)
+		local lib = loaded.G.LibQuestieDB
+		local npc, item = lib.Npc.GetAll, lib.Item.GetAll
+		lib.Npc.GetAll = function(id, keys)
+			spawnReads = spawnReads + (id == 800 and 1 or 0)
+			return npc(id, keys)
+		end
+		lib.Item.GetAll = function(id, keys)
+			dropReads = dropReads + (id == 700 and 1 or 0)
+			return item(id, keys)
+		end
+	end,
+})
+equal(once.ns.QuestieStatus.state, "questie", "shared build ready")
+equal(spawnReads, 1, "a creature three quests share is read once a build")
+equal(dropReads, 1, "an item two quests collect is read once a build")
+for _, id in ipairs({ 900001, 900002, 900003 }) do
+	equal(once.ns.Data.quests[id].obj[1][2], 500, "shared spawn still places quest " .. id)
+end
 local unsupported = Fake()
 unsupported.quests[900001].objectives = { nil, nil, nil, { { 72, 3000 } } }
 local unknown =

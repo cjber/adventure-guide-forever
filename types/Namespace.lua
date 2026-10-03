@@ -1401,7 +1401,6 @@
 ---@field worldDrops? table<integer, boolean>
 ---@field starts? table<integer, boolean>
 ---@field curated? table<integer, boolean>
----@field entrances? table<integer, AGFPoint>
 ---@field bosses table<integer, AGFDungeonBoss[]>
 ---@field loot table<integer, AGFDungeonItem[]>
 ---@field rewards table<integer, AGFDungeonItem[]>
@@ -1415,6 +1414,7 @@
 ---@field Raids AGFRaid[]
 ---@field RaidByMap table<integer, AGFRaid>
 ---@field ReadDungeonSource fun(yield: fun()): AGFDungeonSource?
+---@field DungeonEntrance fun(instance: integer): AGFPoint?
 
 ---@class AGFWindowDB
 ---@field dungeon? integer last selected instance Map.ID
@@ -1469,6 +1469,8 @@
 ---@field DUNGEON_SOURCE_FAILED string
 ---@field DUNGEON_NO_RECORDS string
 ---@field DUNGEON_NO_BOSSES string
+---@field DUNGEON_NO_BOSSES_DISABLED string
+---@field DUNGEON_NO_BOSSES_LISTED string
 ---@field DUNGEON_TRASH string
 ---@field DUNGEON_WANDERER string
 ---@field DUNGEON_SHOW_GIVER string
@@ -1493,9 +1495,10 @@
 
 ---@alias AGFMapLookup fun(area: integer): integer?
 ---@alias AGFYield fun()
+---@alias AGFQuestieReads {Npc: table<integer, table|false>, Object: table<integer, table|false>, Item: table<integer, table|false>}
 
 ---@class AGFNamespace
----@field QuestieObjectives fun(lib: AGFQuestieDB, objectives: table?, trigger: table?, zone: integer?, data: AGFData, mapOf: AGFMapLookup, yield: AGFYield, questID: integer): table?, AGFObjectiveArea[]?, table?, boolean?
+---@field QuestieObjectives fun(lib: AGFQuestieDB, objectives: table?, trigger: table?, zone: integer?, data: AGFData, mapOf: AGFMapLookup, yield: AGFYield, questID: integer, reads: AGFQuestieReads): table?, AGFObjectiveArea[]?, table?, boolean?
 
 ---@class AGFStrings
 ---@field WHY_PROVIDER string

@@ -96,6 +96,12 @@ do
 	local shown, full = Shown.Build(input)
 	eq(shown.steps[1].key, lead.key, "the saved visit leads")
 	eq(full.steps[1].key, lead.key, "the full route is in the player's order too")
+	for _, card in ipairs(full.journeys) do
+		if card.key == journey then
+			eq(lead.place ~= steps[1].place, true, "the moved stop is somewhere else")
+			eq(card.hub, lead.place or lead.title, "the card's hub line names the new first stop")
+		end
+	end
 	local rest = {}
 	for _, step in ipairs(steps) do
 		rest[#rest + 1] = step.key ~= lead.key and step.key or nil

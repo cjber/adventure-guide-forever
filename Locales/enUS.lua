@@ -384,6 +384,9 @@ ns.L = {
 	DUNGEON_SOURCE_FAILED = "Dungeon details could not be read.",
 	DUNGEON_NO_RECORDS = "No records for this dungeon.",
 	DUNGEON_NO_BOSSES = "No boss data found. Install AtlasLoot for complete encounter details.",
+	DUNGEON_NO_BOSSES_DISABLED = "No boss data found. AtlasLoot is installed but not running: "
+		.. "enable it in the AddOns list, or update it if it is marked out of date.",
+	DUNGEON_NO_BOSSES_LISTED = "AtlasLoot lists no encounters for this dungeon.",
 	DUNGEON_TRASH = "Trash",
 	DUNGEON_WANDERER = "Wanderer mode leaves the way to you. Turn it off in settings to use map directions.",
 	DUNGEON_SHOW_GIVER = "Show giver on map",

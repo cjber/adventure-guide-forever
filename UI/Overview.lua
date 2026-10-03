@@ -356,8 +356,8 @@ local function DropLine(journey)
 	return (drop == 1 and L.LOG_FULL_ONE) or (drop > 1 and L.LOG_FULL:format(drop)) or nil
 end
 
--- The dungeon card's way in (docs/design.md §2.19): Tweaks Forever's entrance for its instance (a Map.ID), else the
--- line saying why there is none. Nil for any other card.
+-- The dungeon card's way in (docs/design.md §2.19): the entrance for its instance (a Map.ID, Dungeons.Entrance), else
+-- the line saying why there is none. Nil for any other card.
 ---@param journey AGFJourney
 ---@return integer? instance
 ---@return AGFPoint? point
@@ -367,7 +367,7 @@ local function Entrance(journey)
 	if not instance then
 		return nil
 	end
-	local point, reason = ns.Providers.DungeonEntrance(instance)
+	local point, reason = ns.Dungeons.Entrance(instance)
 	local note = not point
 		and (
 			(reason == "missing" and L.TWEAKS_MISSING)

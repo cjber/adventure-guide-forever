@@ -268,6 +268,47 @@ local function InstanceAreas(lib, zones, keep)
 	return instanceOf, dungeons
 end
 
+-- Whether `instance` (a Map.ID) is a dungeon the data lists, not a raid.
+---@param instance integer
+---@return boolean
+local function Dungeon(instance)
+	return ns.Data.instances[instance] ~= nil and not ns.Data.instances[instance].raid
+end
+
+-- Where each dungeon's way in is, from QuestieDB's zone support. Read once and in one go (a few dozen rows), so the
+-- first draw of a dungeon and every later one name the same point.
+---@type table<integer, AGFPoint>?
+local entrances
+
+---@param instance integer a Map.ID
+---@return AGFPoint?
+function ns.DungeonEntrance(instance)
+	if not entrances then
+		local lib, _, zones = Fit()
+		if not lib or not zones then
+			return nil
+		end
+		local found = {}
+		local _, dungeons = InstanceAreas(lib, zones, Dungeon)
+		for id, area in pairs(zones.instances) do
+			local dungeon = Dungeon(id) and dungeons[area]
+			-- Forever's support points are already converted; applying EraToForever again would move them.
+			for _, spot in ipairs(type(dungeon) == "table" and type(dungeon[4]) == "table" and dungeon[4] or {}) do
+				local map = zones.areaOverride[spot[1]] or zones.area[spot[1]]
+				local x, y = spot[2], spot[3]
+				if map and ns.Data.maps[map] and type(x) == "number" and type(y) == "number" then
+					local point = { map = map, x = x / 100, y = y / 100 }
+					if ns.Model.ValidPlace(point) and not found[id] then
+						found[id] = point
+					end
+				end
+			end
+		end
+		entrances = found
+	end
+	return entrances[instance]
+end
+
 -- The build, as a coroutine body: ns.Data's replacement, or an error.
 ---@param lib AGFQuestieDB
 ---@param zones AGFQuestieZones
@@ -291,6 +332,8 @@ local function Build(lib, zones, bundled, yield)
 	local cells = TownCells(bundled, yield)
 	-- Each giver's name, its spawns on maps the data places (0-100 on its area's map), and its usual map.
 	local givers = { Npc = {}, Object = {} }
+	---@type AGFQuestieReads
+	local reads = { Npc = {}, Object = {}, Item = {} }
 	---@param kind "Npc"|"Object"
 	---@param id integer
 	---@return {name: string, spots: {map: integer, x: number, y: number}[], home: integer?}|false
@@ -395,8 +438,17 @@ local function Build(lib, zones, bundled, yield)
 					start.trainer = (npc and npc.class) or SingleClass(quest.classes)
 				end
 				if not quest.dungeon then
-					quest.need, quest.obj, quest.kinds, quest.objectivesUnknown =
-						ns.QuestieObjectives(lib, v.objectives, v.triggerEnd, quest.zone, bundled, Map, yield, id)
+					quest.need, quest.obj, quest.kinds, quest.objectivesUnknown = ns.QuestieObjectives(
+						lib,
+						v.objectives,
+						v.triggerEnd,
+						quest.zone,
+						bundled,
+						Map,
+						yield,
+						id,
+						reads
+					)
 				end
 				quests[id] = quest
 				status.questCount = status.questCount + 1
@@ -510,33 +562,15 @@ function ns.ReadDungeonSource(yield)
 		loot = {},
 		rewards = {},
 		objectives = {},
-		entrances = {},
 		npcs = {},
 		worldDrops = {},
 		starts = {},
 	}
-	local function Dungeon(instance)
-		return ns.Data.instances[instance] ~= nil and not ns.Data.instances[instance].raid
-	end
-	local instanceOf, dungeons = InstanceAreas(lib, zones, Dungeon)
+	local instanceOf = InstanceAreas(lib, zones, Dungeon)
 	local npcInstances, npcInfo = {}, {}
-	for instance, area in pairs(zones.instances) do
+	for instance in pairs(zones.instances) do
 		if Dungeon(instance) then
 			result.bosses[instance], result.loot[instance], result.npcs[instance] = {}, {}, {}
-			local dungeon = dungeons[area]
-			if type(dungeon) == "table" then
-				-- Forever's support points are already converted; applying EraToForever again would move them.
-				for _, spot in ipairs(type(dungeon[4]) == "table" and dungeon[4] or {}) do
-					local map = zones.areaOverride[spot[1]] or zones.area[spot[1]]
-					local x, y = spot[2], spot[3]
-					if map and ns.Data.maps[map] and type(x) == "number" and type(y) == "number" then
-						local point = { map = map, x = x / 100, y = y / 100 }
-						if ns.Model.ValidPlace(point) and not result.entrances[instance] then
-							result.entrances[instance] = point
-						end
-					end
-				end
-			end
 		end
 	end
 	for _, id in ipairs(lib.Npc.GetAllIds()) do

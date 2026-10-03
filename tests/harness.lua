@@ -2418,6 +2418,9 @@ function harness.load(options)
 							ns.ReadDungeonSource = function()
 								return nil
 							end
+							ns.DungeonEntrance = function()
+								return nil
+							end
 						end
 					or assert(loadfile(path))
 				setfenv(chunk, G)

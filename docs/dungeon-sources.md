@@ -85,15 +85,19 @@ was published for 1.60.1 on 2026-09-26. The publisher lists GPLv2. Its package a
 module's `GetDifficultyByName("n")` key. Row slot 2 is the item ID. NPC IDs may be arrays. Wings
 sharing an instance merge by recommended level, preserving each wing's encounter order. Only encounter
 and localized Trash groups are read; quests, sets and other extra lists are excluded. AGF optionally
-loads the installed dungeon module on demand out of combat. It never changes AtlasLoot's selection or
-bundles its data. With AtlasLoot alone, uncached rarity remains hidden and low-quality quest starters
+loads the installed dungeon module on demand out of combat, and reads again when a fight that held it back
+ends or when AtlasLoot loads after the tab was read. It never changes AtlasLoot's selection or
+bundles its data. An empty Bosses view names what would fill it: install AtlasLoot, or enable a copy that is
+on disk but not running. With AtlasLoot alone, uncached rarity remains hidden and low-quality quest starters
 need QuestieDB to establish that exception. The runtime adapter is also compatible with the inspected
 Classic/Era layout; future schema changes fall back to the native Encounter Journal, and QuestieDB
 still supplies loot relations where AtlasLoot lists none.
 
 QuestieDB's `ZoneDB.private.dungeons` supplies alternate instance area IDs and already-converted Forever
 entrance percentages. The adapter uses only points on maps AGF places and validates them before use. It
-never applies the Era conversion a second time. Tweaks remains the live fallback when those points are absent.
+never applies the Era conversion a second time. The points are read once, before any dungeon details, so the
+page, the journey card and the entrance button name the same place from the first draw. Tweaks remains the live
+fallback when those points are absent.
 
 The revised controls are the pinned Forever shared XML's
 [TabSystemTopButtonTemplate](https://github.com/Gethe/wow-ui-source/blob/bd2470aed543f72697a044e989285b6c83e63f73/Interface/AddOns/Blizzard_SharedXML/Shared/TabSystem/TabSystemTemplates.xml)

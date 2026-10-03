@@ -60,6 +60,8 @@ local bosses
 local listSelection
 local journalIcon
 local sourceRead, sourceError, generation, view = false, false, 0, "quests"
+-- True while Dungeons.Source runs: the AtlasLoot pages it loads itself are already part of that read.
+local reading = false
 ---@type integer?
 local selectedQuest
 ---@type table<integer, boolean>
@@ -304,7 +306,7 @@ local function PaintOther(row, value)
 	end)
 	row.Info:SetText(value.info or "")
 	row.Giver:SetText(value.giver or "")
-	local point = value.entrance and Dungeons.Entrance(instance, source) or value.quest and value.quest.place
+	local point = value.entrance and Dungeons.Entrance(instance) or value.quest and value.quest.place
 	MapTooltip(row.Map, function()
 		return point
 	end, row)
@@ -312,7 +314,7 @@ local function PaintOther(row, value)
 	row.Map:SetEnabled(not ns.Setting("wanderer"))
 	row.Map:SetScript("OnClick", function()
 		if value.entrance then
-			Dungeons.GoEntrance(instance, source)
+			Dungeons.GoEntrance(instance)
 		elseif value.quest then
 			Dungeons.Go(value.quest.id)
 		end
@@ -429,7 +431,7 @@ function Draw()
 		return
 	end
 	local dungeon = page.dungeon
-	local point = Dungeons.Entrance(dungeon.id, source)
+	local point = Dungeons.Entrance(dungeon.id)
 	Window.SetEmpty(empty, nil)
 	Window.SetRingIcon(dungeonIcon, journalIcon or "dungeon")
 	title:SetText(ns.State.InstanceName(dungeon.id) or dungeon.name)
@@ -537,12 +539,28 @@ function Draw()
 			Window.SetEmpty(empty, SourceMessage())
 			note:SetText("")
 		elseif #rows == 0 then
-			Window.SetEmpty(empty, view == "bosses" and L.DUNGEON_NO_BOSSES or L.DUNGEON_NO_RECORDS)
+			Window.SetEmpty(empty, view == "bosses" and Dungeons.NoBosses() or L.DUNGEON_NO_RECORDS)
 			note:SetText("")
 		end
 	end
 	DrawDetail()
 end
+
+-- A source read made without AtlasLoot's pages is not kept: read again when AtlasLoot or its pages load later, or when
+-- the fight that held them back ends. The hidden tab reads on its next show.
+local watcher = CreateFrame("Frame")
+watcher:RegisterEvent("ADDON_LOADED")
+watcher:SetScript("OnEvent", function(self, event, addon)
+	if event == "PLAYER_REGEN_ENABLED" then
+		self:UnregisterEvent(event)
+	elseif reading or not Dungeons.IsSourceAddon(addon) then
+		return
+	end
+	reading, sourceRead = false, false
+	if content and content:IsVisible() then
+		Refresh()
+	end
+end)
 
 ---@param work fun(yield: fun())
 local function Run(work)
@@ -579,6 +597,7 @@ function Refresh()
 	if not content:IsVisible() then
 		return
 	end
+	reading = false
 	if sourceData ~= ns.Data then
 		sourceData, source, sourceRead, sourceError = ns.Data, nil, false, false
 	end
@@ -614,8 +633,13 @@ function Refresh()
 		selectedQuest = selectedQuest or dungeon.quests[1]
 		Draw()
 		if not sourceRead then
-			source = Dungeons.Source(yield)
-			sourceRead = true
+			local deferred
+			reading = true
+			source, deferred = Dungeons.Source(yield)
+			reading, sourceRead = false, true
+			if deferred then
+				watcher:RegisterEvent("PLAYER_REGEN_ENABLED")
+			end
 			Draw()
 		end
 	end)
@@ -781,7 +805,7 @@ local function BuildContents(parent)
 	end)
 	entrance = Button(inner, L.GO_TO_ENTRANCE, PAGE_W - 136, 69, 124, function()
 		if page then
-			Dungeons.GoEntrance(page.dungeon.id, source)
+			Dungeons.GoEntrance(page.dungeon.id)
 		end
 	end)
 	MapTooltip(entrance)
