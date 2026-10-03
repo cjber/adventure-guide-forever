@@ -18,7 +18,7 @@ local pinsByKey = {}
 
 -- One switch over every mark AGF draws (design §2.6): nothing unless showMapPins is on, and nothing for a wanderer
 -- who is told where and never shown.
--- While the guide is open the rings preview the route it shows whatever the switch says (F3): the chosen journey's,
+-- While the guide is open the rings preview the route it shows whatever the switch says: the chosen journey's,
 -- else the first card's, which the guide draws on its own (docs/design.md §2.2). Either way they step aside while
 -- Shortest Path guides, since it numbers its stops itself.
 ---@return boolean
@@ -89,7 +89,7 @@ end
 ---@return string?
 function Pins.StopTooltip(step)
 	local lines = {}
-	for _, id in ipairs(step.quests or {}) do
+	for _, id in ipairs(step.quests) do
 		local title, color = Pins.QuestLineText(id)
 		if title ~= "" then
 			lines[#lines + 1] = ColorTitle(title, color)
@@ -359,7 +359,7 @@ function AdventureGuideForeverPinMixin:OnMouseEnter()
 			end
 		end
 		AddClickLine(GameTooltip)
-		-- A step past the first still has a clear way back to the story's start (docs/design.md §2.5).
+		-- A step past the first still has a clear way back to the story's start (docs/design.md §2.10).
 		if self.index and self.index > 1 then
 			GameTooltip_AddInstructionLine(GameTooltip, ns.L.PIN_RETURN_STORY)
 		end
@@ -477,7 +477,7 @@ local function AtPoint(point, visit, tolerance)
 	end
 end
 
--- A short flash so a step clicked in the panel is easy to find on the map. A no-op when the
+-- A short flash on a step's pin so it is easy to find on the map. A no-op when the
 -- step's pin isn't on the map currently shown (e.g. the click just switched maps and the new
 -- pins haven't been laid out yet).
 ---@param key string

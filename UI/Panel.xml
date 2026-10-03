@@ -1,8 +1,7 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ https://raw.githubusercontent.com/Gethe/wow-ui-source/live/Interface/AddOns/Blizzard_SharedXML/UI.xsd">
 	<Frame name="AdventureGuideForeverPingPinTemplate" inherits="MapPinPingTemplate" virtual="true"/>
-	<!-- The guide tab and its content are plain frames built with CreateFrame in Panel.lua. -->
-	<!-- The tab reuses the stock LargeSideTabButtonTemplate directly (see Panel.lua CreateTab()) instead of a home-grown template here, and anchors to QuestMapFrame in Lua once Blizzard_WorldMap loads. -->
-	<!-- The route pin below must be a real XML template: MapCanvasMixin AcquirePin resolves its template argument through CreateFramePool, which needs a declared virtual frame. -->
+	<!-- The guide tab is built with CreateFrame in Panel.lua; its journey cards use AdventureGuideForeverJourneyCardTemplate below. -->
+	<!-- The tab reuses the stock LargeSideTabButtonTemplate directly (see Panel.lua CreateTab()) and anchors to QuestMapFrame in Lua once Blizzard_WorldMap loads. -->
 	<!-- A quest giver: the game's own available-quest "!", brightened on hover like the quest POIs. -->
 	<Frame name="AdventureGuideForeverGiverPinTemplate" mixin="AdventureGuideForeverGiverPinMixin" enableMouse="true" virtual="true">
 		<Size x="22" y="22"/>
@@ -82,6 +81,7 @@
 			</Layer>
 		</Layers>
 	</Button>
+	<!-- The route pin must be a real XML template: MapCanvasMixin AcquirePin resolves its template argument through CreateFramePool, which needs a declared virtual frame. -->
 	<Frame name="AdventureGuideForeverPinTemplate" mixin="AdventureGuideForeverPinMixin" enableMouse="true" virtual="true">
 		<Size x="20" y="20"/>
 		<Layers>

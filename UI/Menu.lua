@@ -160,8 +160,6 @@ function Menu.Settings(_, menu)
 		ns.Menu.Skipped(menu:CreateButton(ns.L.SKIPPED:format(skipped)))
 	end
 	menu:CreateButton(ns.L.MENU_MORE_SETTINGS, function()
-		if ns.OpenSettings then
-			ns.OpenSettings()
-		end
+		ns.OpenSettings()
 	end)
 end
