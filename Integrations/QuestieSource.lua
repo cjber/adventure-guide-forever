@@ -393,19 +393,11 @@ end
 empty.quests = {}
 ns.Data = empty --[[@as AGFData]]
 
--- Releases a route that was held for the build (Core's ns.QuestieBuilding): the catalogue either landed (the swap
--- below) or will never come (unavailable), and either way the log's route may now be built.
-local function Settled()
-	if ns.Invalidate then
-		ns.Invalidate()
-	end
-end
-
 local function Start()
 	local lib, reason, zones = Fit()
 	if not lib or not zones then
 		status.state, status.reason, status.settled = "unavailable", reason, true
-		Settled()
+		ns.Invalidate()
 		return
 	end
 	local version = C_AddOns.GetAddOnMetadata(ADDON, "Version") or "?"
@@ -423,13 +415,13 @@ local function Start()
 		if not ok then
 			status.state, status.reason, status.settled =
 				"unavailable", ns.L.QUESTIE_FAILED:format(tostring(result)), true
-			Settled()
+			ns.Invalidate()
 		elseif coroutine.status(co) ~= "dead" then
 			C_Timer.After(0, Step)
 		else
 			status.state, status.version, status.settled = "questie", version, true
 			ns.Data = result --[[@as AGFData]]
-			Settled()
+			ns.Invalidate()
 		end
 	end
 	C_Timer.After(0, Step)
