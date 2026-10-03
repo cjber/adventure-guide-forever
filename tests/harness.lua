@@ -694,8 +694,6 @@ function harness.load(options)
 			end
 			frame.scripts.OnLoad = frame.UpdateHighlightForState
 		end,
-		InputBoxVisualTemplate = noop,
-		UIPanelIconDropdownButtonTemplate = noop,
 		QuestLogBorderFrameTemplate = noop,
 		UIPanelButtonTemplate = noop,
 		SearchBoxTemplate = function(frame)
@@ -1331,7 +1329,7 @@ function harness.load(options)
 	local log = options.log or {}
 	h.log = log
 	h.titleRequests = {}
-	h.watched = options.watched or {}
+	h.watched = {}
 	G.GetQuestLogQuestText = function(index)
 		local quest = log[index]
 		return quest and quest.description, quest and quest.objectiveText
@@ -1431,7 +1429,7 @@ function harness.load(options)
 		end,
 		GetTitleForQuestID = noop,
 		GetQuestDifficultyLevel = noop,
-		-- Tracked quests, in order: options.watched seeds them; the client's limit is 25.
+		-- Tracked quests, in order: a spec seeds h.watched; the client's limit is 25.
 		GetNumQuestWatches = function()
 			return #h.watched
 		end,
@@ -2069,7 +2067,7 @@ function harness.load(options)
 	end
 
 	-- The objective tracker (Blizzard_ObjectiveTrackerShared.lua:21-23).
-	G.OBJECTIVE_DASH_STYLE_SHOW, G.OBJECTIVE_DASH_STYLE_HIDE, G.OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 1, 2, 3
+	G.OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 3
 	G.ObjectiveTrackerFrame = NewRegion("Frame", "ObjectiveTrackerFrame", G.UIParent)
 	G.ObjectiveTrackerFrame:SetSize(250, 600)
 	G.ObjectiveTrackerManager = setmetatable({}, {
@@ -2324,12 +2322,9 @@ function harness.load(options)
 	G.GetTime = function()
 		return h.time
 	end
-	player.bind = options.bind
-	G.GetBindLocation = function()
-		return player.bind
-	end
+	G.GetBindLocation = noop
 	G.GetLocale = function()
-		return options.locale or "enUS"
+		return "enUS"
 	end
 	if options.entrances then
 		G.TweaksForever = G.TweaksForever or { API = { version = 1 } }
@@ -2709,13 +2704,9 @@ function harness.questieMirror(data)
 	for instance in pairs(data.instances) do
 		fake.zones.instances[instance] = 100000 + instance
 	end
-	local ids, groups = {}, {}
-	for id, quest in pairs(data.quests) do
+	local ids = {}
+	for id in pairs(data.quests) do
 		ids[#ids + 1] = id
-		if quest.group then
-			groups[quest.group] = groups[quest.group] or {}
-			table.insert(groups[quest.group], id)
-		end
 	end
 	table.sort(ids)
 	local objects, objectCount, homes = {}, 0, {}
@@ -2747,12 +2738,6 @@ function harness.questieMirror(data)
 	end
 	for _, id in ipairs(ids) do
 		local quest = data.quests[id]
-		local exclusive = {}
-		for _, other in ipairs(quest.group and groups[quest.group] or {}) do
-			if other ~= id then
-				exclusive[#exclusive + 1] = other
-			end
-		end
 		fake.quests[id] = {
 			name = quest.title,
 			questLevel = quest.level,
@@ -2764,13 +2749,9 @@ function harness.questieMirror(data)
 			finishedBy = quest.finish and Giver(quest.finish),
 			preQuestGroup = quest.pre,
 			preQuestSingle = quest.preAny,
-			exclusiveTo = exclusive[1] and exclusive or nil,
 			nextQuestInChain = quest.next,
 			breadcrumbForQuestId = quest.breadcrumb,
 			specialFlags = quest.repeatable and 1 or 0,
-			requiredSkill = quest.skill and { quest.skill.id, quest.skill.value },
-			requiredMinRep = quest.rep and quest.rep.min and { quest.rep.faction, quest.rep.min },
-			requiredMaxRep = quest.rep and quest.rep.max and { quest.rep.faction, quest.rep.max },
 		}
 	end
 	-- Each giver's usual map: the one most of its places use, the lowest on a tie.

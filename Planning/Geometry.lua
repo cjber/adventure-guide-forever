@@ -237,9 +237,6 @@ end
 function Geometry.Factions(api, factionIDs)
 	local out = {}
 	local reputation = ClientReputation(api)
-	if type(api) ~= "table" then
-		return out
-	end
 	for _, id in ipairs(factionIDs) do
 		local info = reputation.GetFactionDataByID and reputation.GetFactionDataByID(id)
 		if info and info.name and info.name ~= "" then
@@ -255,7 +252,7 @@ end
 ---@param incoming table
 ---@return table
 function Geometry.Overlay(target, incoming)
-	for id, fields in pairs(incoming or NONE) do
+	for id, fields in pairs(incoming) do
 		local entry = target[id]
 		if not entry then
 			entry = {}

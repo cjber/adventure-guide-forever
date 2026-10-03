@@ -79,7 +79,7 @@ end
 ---@param handed AGFStep[] what was last handed, in order
 ---@param index integer the stop Shortest Path heads for (CurrentStop)
 ---@param steps AGFStep[] the chosen journey's steps now
----@param far? fun(a: AGFStep, b: AGFStep): boolean
+---@param far fun(a: AGFStep, b: AGFStep): boolean
 ---@return boolean
 function Guidance.Stale(handed, index, steps, far)
 	local keys = {}
@@ -96,7 +96,7 @@ function Guidance.Stale(handed, index, steps, far)
 		return false
 	end
 	if current and first.key == current.key then
-		return far ~= nil and far(first, current)
+		return far(first, current)
 	end
 	-- The town just reached, where Shortest Path has already moved on: sending it again would arrive at once.
 	return not (previous and first.key == previous.key)

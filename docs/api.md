@@ -14,7 +14,7 @@ A stop is a fresh table on every call:
 | Field | |
 |---|---|
 | `map`, `x`, `y` | where the stop is |
-| `name` | the town (“Crossroads”), else the quest giver, zone or step title; for display, not for matching |
+| `name` | the town ("Crossroads"), else the quest giver, zone or step title; for display, not for matching |
 | `isTown` | a town visit, grouping its pickups and hand-ins |
 | `handins` | how many quests the route hands in there |
 | `pickups` | how many quests the route picks up there |

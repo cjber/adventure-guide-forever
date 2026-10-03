@@ -50,9 +50,8 @@ local function Givers(givers)
 	return L.HUB_NPCS_MORE:format(table.concat(givers, L.LIST_SEPARATOR, 1, NAMED_GIVERS), #givers - NAMED_GIVERS)
 end
 
--- Steps can cover several quests. Keep the relationship
--- visible in the addon-owned block even when the client has not supplied live
--- quest text yet; the generated data still has the title and level.
+-- Steps can cover several quests, so each gets its own line in the addon-owned block. A quest with no title yet
+-- shows the step's own.
 local function QuestLine(step, questID)
 	local title, color = ns.Pins.QuestLineText(questID)
 	if title == "" then
@@ -184,7 +183,7 @@ function ModuleMixin:LayoutContents()
 		return
 	end
 	local journey = ns.CurrentJourney()
-	if journey and journey.title then
+	if journey then
 		local header = self:GetBlock(JOURNEY)
 		header:SetHeader(journey.title)
 		if not self:LayoutBlock(header) then

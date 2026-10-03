@@ -36,10 +36,7 @@ function Sound.Observe(previous, current, world, trained)
 		if not present[ns.Model.Visit(step)] and not skipped[step.key] then
 			local done = #step.quests > 0
 			for _, id in ipairs(step.quests) do
-				local picked = false
-				for _, pickup in ipairs(step.pickups or {}) do
-					picked = picked or pickup == id
-				end
+				local picked = tContains(step.pickups or {}, id)
 				done = done
 					and (
 						completed[id]

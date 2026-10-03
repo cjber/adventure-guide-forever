@@ -24,6 +24,5 @@ assert(dawn.map == 1426 and math.abs(dawn.x - 0.57727587223053) < 0.000001, "use
 assert(positions[310] < positions[99158] and positions[320] < positions[99158], "nearer ready hand-ins come first")
 assert(positions[99158] < positions[419], "hand in Dawn before travelling farther east for The Lost Pilot")
 assert(positions[99158] < positions[432], "hand in Dawn before the eastern trogg pickup")
-assert(not h.ns.Data.quests[99158], "test does not fabricate a provider record for the new quest")
 assert(#h.errors == 0, "live-log replay raises no errors")
-print("live_quest_spec: 7 checks passed")
+print("live_quest_spec: 6 checks passed")

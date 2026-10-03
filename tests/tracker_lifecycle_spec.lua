@@ -6,16 +6,11 @@ for _, readyAtLoad in ipairs({ false, true }) do
 	local native = {}
 	local function region()
 		return {
-			SetSize = noop,
 			Hide = noop,
 			SetHeader = noop,
-			SetScript = noop,
-			EnableMouse = noop,
-			Header = { EnableMouse = noop, SetScript = noop },
 		}
 	end
 	local env = setmetatable({
-		ObjectiveTrackerFrame = native,
 		ObjectiveTrackerManager = setmetatable({}, {
 			__index = function()
 				error("must not register with native manager")
@@ -53,9 +48,6 @@ for _, readyAtLoad in ipairs({ false, true }) do
 		hooksecurefunc = function()
 			error("native methods must stay unhooked")
 		end,
-		InCombatLockdown = function()
-			return true
-		end,
 	}, { __index = _G })
 	local ns = {
 		TrackerHost = {
@@ -71,18 +63,11 @@ for _, readyAtLoad in ipairs({ false, true }) do
 				return key
 			end,
 		}),
-		Live = { OnChange = noop },
 		Integrations = { OnTravelChange = noop },
 		Guidance = { OnChange = noop },
 		Asides = { OnChange = noop },
 		Moments = { OnChange = noop },
 		OnRouteChange = noop,
-		Init = function(fn)
-			fn()
-		end,
-		OnChange = noop,
-		OnTravelTick = noop,
-		NearestDock = noop,
 	}
 	setfenv(assert(loadfile("UI/Tracker.lua")), env)("Addon", ns)
 	if not readyAtLoad then

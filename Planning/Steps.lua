@@ -484,7 +484,7 @@ end
 -- names the data's finish NPC only while its point is within AGREE of that finish; a town named itself in Describe; a
 -- trainer's stop is titled by its town.
 ---@param step AGFStep
----@param mapName? fun(map: integer): string?
+---@param mapName? AGFMapName
 local function Locate(data, step, mapName)
 	step.zone = (mapName and mapName(step.map)) or (data.maps and data.maps[step.map] and data.maps[step.map].name)
 	if step.kind == "trainer" then
@@ -519,7 +519,7 @@ local function Enter(data, step, from)
 			end
 		end
 	end
-	if not (best and data.maps[best.map]) then
+	if not best then
 		return
 	end
 	step.map, step.x, step.y = best.map, best.x, best.y
@@ -529,7 +529,7 @@ end
 -- the data's. Only names the data has.
 ---@param data AGFData
 ---@param place {map: integer, hub?: integer}
----@param mapName? fun(map: integer): string?
+---@param mapName? AGFMapName
 ---@return string
 function Model.TownName(data, place, mapName)
 	local town = data.hubs and place.hub and data.hubs[place.hub] or nil
