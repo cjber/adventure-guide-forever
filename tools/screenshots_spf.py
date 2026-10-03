@@ -18,8 +18,8 @@ ROOT = Path(__file__).resolve().parent.parent
 SPF_SHA = "061f0b1041f85d02084c25a27edbbf3db3ae7ec7"
 SPF_TARBALL = f"https://codeload.github.com/cjber/shortest-path-forever/tar.gz/{SPF_SHA}"
 SPF_CACHE = ROOT / "tools/.cache" / f"spf-{SPF_SHA}"
-# Route.lua: THICKNESS 2 over UNDER_THICKNESS 4 at UNDER_ALPHA .5; walks are DOT 4 breadcrumbs every SPACING 9, each
-# over a dark dot RIM 1 wider; the walk colour is NORMAL_FONT_COLOR.
+# Route.lua: walks are DOT 4 breadcrumbs every SPACING 9, each over a dark dot RIM 1 wider at UNDER_ALPHA .5; the walk
+# colour is NORMAL_FONT_COLOR.
 SPF_DOT, SPF_RIM, SPF_SPACING, SPF_UNDER = 4, 1, 9, (0.04, 0.04, 0.04, 0.5)
 
 SPF_PROGRAM = r"""
@@ -108,22 +108,21 @@ def map_position(ui, map_id, point):
     )
 
 
-def spf_walks(ui, legs):
-    """Path.FindSync's points for each (uiMap, from, to) leg, in world coordinates."""
+def spf_walk(ui, map_id, a, b):
+    """Path.FindSync's points for the walk from `a` to `b` on a uiMap, in world coordinates."""
     root = spf_sources()
-    entries = []
-    for map_id, a, b in legs:
-        start, goal = world_point(ui, map_id, *a), world_point(ui, map_id, *b)
-        assert start["map"] == goal["map"]
-        entries.append(
-            f"{{ map = {start['map']}, from = {{ x = {start['x']:.4f}, y = {start['y']:.4f} }}, "
-            f"to = {{ x = {goal['x']:.4f}, y = {goal['y']:.4f} }} }}"
-        )
-    program = "local LEGS = { " + ", ".join(entries) + " }\n" + SPF_PROGRAM
+    start, goal = world_point(ui, map_id, *a), world_point(ui, map_id, *b)
+    assert start["map"] == goal["map"]
+    leg = (
+        f"{{ map = {start['map']}, from = {{ x = {start['x']:.4f}, y = {start['y']:.4f} }}, "
+        f"to = {{ x = {goal['x']:.4f}, y = {goal['y']:.4f} }} }}"
+    )
+    program = "local LEGS = { " + leg + " }\n" + SPF_PROGRAM
     result = subprocess.run(["luajit", "-"], input=program, text=True, cwd=root, capture_output=True)
     if result.returncode:
         sys.exit("Shortest Path's Path.FindSync failed:\n" + result.stderr)
-    return json.loads(result.stdout)
+    (walk,) = json.loads(result.stdout)
+    return walk
 
 
 def breadcrumbs(canvas, rects, lines, marks):

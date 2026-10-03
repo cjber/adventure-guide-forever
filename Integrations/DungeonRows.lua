@@ -179,8 +179,8 @@ end
 ---@return table[]
 function Dungeons.BossRows(source, instance, known)
 	local rows = {}
-	local loot = source and Dungeons.LootRows(source, instance, known or {}) or {}
-	for _, entry in ipairs(known or {}) do
+	local loot = source and Dungeons.LootRows(source, instance, known) or {}
+	for _, entry in ipairs(known) do
 		local bossMeta = {
 			entry.rank == 1 and L.DUNGEON_ELITE or entry.rank == 2 and L.DUNGEON_RARE_ELITE or L.DUNGEON_BOSS,
 		}

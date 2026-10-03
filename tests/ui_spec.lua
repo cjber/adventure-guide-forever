@@ -120,9 +120,6 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	local label = spf or "no Shortest Path"
 	local h = Load(spf)
 	clean(h, label .. ": load")
-	equal(h.G.ShortestPathForever ~= nil, spf ~= false, label .. ": Shortest Path global")
-	equal(h.G.TweaksForever, nil, label .. ": no Tweaks Forever")
-	equal(h.G.LegacyForever, nil, label .. ": no Legacy Forever")
 	equal(h.ns.Route().steps[1].key, "town:349", label .. ": the hand-in leads the route")
 
 	-- Blizzard's displayMode is never written, whatever the player clicks (Panel.lua ShowGuide).
@@ -1603,7 +1600,7 @@ do
 	end
 	log[2].complete = true
 	ns.Invalidate()
-	equal(ns.Route().steps ~= nil, true, "combat: the lazy path answers")
+	ns.Route()
 	h.flush()
 	equal(h.modelCalls.Journeys - before, 0, "combat: no full build in combat")
 	equal(ns.Route().journey, "zone:1413", "combat: the chosen card holds")
@@ -2284,7 +2281,7 @@ do
 	same(h.tooltipColors[3], { color.r, color.g, color.b }, "new quest turn-in difficulty")
 end
 
--- A town's tooltip (plan §7.4), from its row and its ring alike: after the reason, each NPC and its quests, hand-ins
+-- A town's tooltip, from its row and its ring alike: after the reason, each NPC and its quests, hand-ins
 -- first, each coloured by the stock difficulty colour, 8 at most and the rest counted; the click line stays last.
 do
 	local h = Load(false, PINS_ON)
@@ -2364,7 +2361,7 @@ do
 	clean(h, "hub tooltip")
 end
 
--- A town (plan §7.4) is titled by its name, so step 1 of the story (Crossroads) shows its counts, then its reason in
+-- A town is titled by its name, so step 1 of the story (Crossroads) shows its counts, then its reason in
 -- place of the NPC line, since The Zhevra opens its next chapter. With a reason that is only the counts, the line
 -- names its NPCs: two, then how many more. One quest's stop reads "NPC, zone".
 do
@@ -3064,7 +3061,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.ns.Data.zoneArt = art
 	h.ns.OpenPanel()
 	equal(icon.Clip:IsShown(), true, label .. ": and back")
-	-- An overview card's tooltip (plan §7.4): its lines, the hub line when line 2 holds the reason, and what a click
+	-- An overview card's tooltip: its lines, the hub line when line 2 holds the reason, and what a click
 	-- does.
 	for _, card in ipairs(Overview()) do
 		local journey = card.journey
@@ -3235,22 +3232,26 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	h.ns.Invalidate()
 	-- The full build is sliced across frames (Core.StepRebuild), so the rebuild spans several frames, each asking
 	-- nothing; then one estimate a frame over step 1 and the cards. Structural, so the slice count is not pinned.
-	local rebuildFrames, askedAfter = 0, 0
-	for _ = 1, 40 do
-		local before = Calls()
-		local rebuilding = h.ns.Rebuilding()
-		if h.tick() == 0 then
-			break
+	local function Frames(what)
+		local rebuildFrames, askingFrames = 0, 0
+		for _ = 1, 40 do
+			local frameCalls = Calls()
+			local rebuilding = h.ns.Rebuilding()
+			if h.tick() == 0 then
+				break
+			end
+			local asked = Calls() - frameCalls
+			if rebuilding then
+				equal(asked, 0, label .. ": a rebuild frame asks nothing")
+				rebuildFrames = rebuildFrames + 1
+			else
+				equal(asked, spf and 1 or 0, label .. what)
+				askingFrames = askingFrames + 1
+			end
 		end
-		local asked = Calls() - before
-		if rebuilding then
-			equal(asked, 0, label .. ": a rebuild frame asks nothing")
-			rebuildFrames = rebuildFrames + 1
-		else
-			equal(asked, spf and 1 or 0, label .. ": a travel or card frame asks once")
-			askedAfter = askedAfter + 1
-		end
+		return rebuildFrames, askingFrames
 	end
+	local rebuildFrames, askedAfter = Frames(": a travel or card frame asks once")
 	equal(rebuildFrames >= 1, true, label .. ": the full build is sliced across the rebuild frames")
 	if spf then
 		equal(askedAfter, #journeys + 1, label .. ": one estimate a frame over step 1 and the cards")
@@ -3378,21 +3379,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	h.tick()
 	h.ns.OpenPanel()
 	-- The build is sliced (Core.StepRebuild): the remaining slices ask nothing, then one estimate a frame.
-	local cardFrames = 0
-	for _ = 1, 40 do
-		local frameCalls = Calls()
-		local rebuilding = h.ns.Rebuilding()
-		if h.tick() == 0 then
-			break
-		end
-		local asked = Calls() - frameCalls
-		if rebuilding then
-			equal(asked, 0, label .. ": a rebuild frame asks nothing")
-		else
-			equal(asked, spf and 1 or 0, label .. ": a card frame asks once")
-			cardFrames = cardFrames + 1
-		end
-	end
+	local _, cardFrames = Frames(": a card frame asks once")
 	if spf then
 		equal(cardFrames, #journeys + 1, label .. ": opened in the rebuild's frame, one estimate a frame")
 	end

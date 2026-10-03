@@ -185,7 +185,7 @@ local events = CreateFrame("Frame")
 events:RegisterEvent("PLAYER_ENTERING_WORLD")
 events:SetScript("OnEvent", function(self, _, isInitialLogin)
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD")
-	if isInitialLogin and type(AdventureGuideForeverDB) == "table" then
+	if isInitialLogin then
 		AdventureGuideForeverDB.dump = nil
 	end
 end)

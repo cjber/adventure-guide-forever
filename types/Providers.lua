@@ -52,7 +52,6 @@ LegacyForever = nil
 ---@field SetShown fun(shown: boolean)
 ---@field OnChange fun(callback: fun())
 ---@field DungeonEntrance fun(instanceID: integer): AGFPoint?, string?
----@field GoToEntrance fun(instanceID: integer): boolean, string?
 
 ---@class AGFPvPRank
 ---@field state "unavailable"|"unranked"|"ranked"|"capped"

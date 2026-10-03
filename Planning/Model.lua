@@ -359,9 +359,7 @@ local function Check(data, player, completed, log, id, groups, lines, names)
 	return true
 end
 
-local function Eligible(data, player, completed, log, id, groups)
-	return Check(data, player, completed, log, id, groups)
-end
+local Eligible = Check
 
 -- A quest with no requirement beyond completion, the log and the side/level/grey/start/race/class filters is open
 -- without rewalking the full requirement checker on every rebuild.

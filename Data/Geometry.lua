@@ -12,7 +12,7 @@
 -- NpcFlags, TrainerType, npc_trainer, battlemaster_entry); ranks: each SKILL_STEP spell taught of a
 -- SkillLine profession or secondary skill (SpellEffect); side: every side FactionTemplate.EnemyGroup is
 -- not hostile to; place: a non-seasonal spawn, as quest givers'. Within
--- 100 yd of a quest place: its hub, on the map most of the hub's places use; else the smallest map.
+-- 100 yd of a quest place: its hub, on the map most of the hub's places use; else by terrain area.
 -- No side or zone-map spawn: left out.
 -- skills and factions: the names of those a quest needs.
 -- professions: each skill line a trainer here teaches, its ranks' npc_trainer reqlevel and reqskillvalue.

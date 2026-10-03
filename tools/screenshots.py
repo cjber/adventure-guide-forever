@@ -35,7 +35,7 @@ from pathlib import Path
 import screenshots_art as drawing
 from screenshots_art import draw_font_string, draw_texture, fit_text, font, load_wowmock
 from screenshots_resolver import effective_scales, lua_rects, map_point, parent_path, resolve, scroll_child_anchors
-from screenshots_spf import SPF_SHA, breadcrumbs, goal_pins, map_position, spf_walks, stop_groups
+from screenshots_spf import SPF_SHA, breadcrumbs, goal_pins, map_position, spf_walk, stop_groups
 from screenshots_stock import LAYERS, button_font, draw_scroll_frame, stock
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -421,7 +421,7 @@ def shortest_path(ui, data):
     stops, and the player."""
     stops, map_id = data["map"]["stops"], data["panel"]["map"]
     player = data["map"]["player"]
-    (walk,) = spf_walks(ui, [(map_id, (player["x"], player["y"]), (stops[0]["x"], stops[0]["y"]))])
+    walk = spf_walk(ui, map_id, (player["x"], player["y"]), (stops[0]["x"], stops[0]["y"]))
     current = [map_position(ui, map_id, point) for point in walk]
     preview = [(stop["x"], stop["y"]) for stop in stops]
 
@@ -502,8 +502,8 @@ def demo(ui, images):
     return content
 
 
-def render(out):
-    """Every scene into `out`; returns the written paths."""
+def render():
+    """Every scene into OUT; returns the written paths."""
     load_wowmock()
     version = importlib.metadata.version("pillow")
     if version != PILLOW:
@@ -591,13 +591,13 @@ def render(out):
         Layout(data[scene]["layout"], rects[scene]).draw(canvas)
         images[scene] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
-    out.mkdir(parents=True, exist_ok=True)
+    OUT.mkdir(parents=True, exist_ok=True)
     written = []
     for name, image in images.items():
-        path = out / f"{name}.png"
+        path = OUT / f"{name}.png"
         image.save(path)
         written.append(path)
-    path = out / "demo.gif"
+    path = OUT / "demo.gif"
     path.write_bytes(demo(ui, images))
     written.append(path)
     manifest(written)
@@ -605,7 +605,7 @@ def render(out):
 
 
 def main():
-    for path in render(OUT):
+    for path in render():
         print(path.relative_to(ROOT))
 
 

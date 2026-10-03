@@ -180,6 +180,7 @@ class GeometryTest(unittest.TestCase):
     def row(ui_map, map_id, region, doodad=0):
         row = {"UiMapID": str(ui_map), "MapID": str(map_id), "WMODoodadPlacementID": str(doodad)}
         row.update((f"Region_{i}", str(value)) for i, value in enumerate(region))
+        row.update(UiMin_0="0", UiMin_1="0", UiMax_0="1", UiMax_1="1")
         return row
 
     def test_darkshore_centre_and_continent(self):

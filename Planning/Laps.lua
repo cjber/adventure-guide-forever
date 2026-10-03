@@ -391,6 +391,8 @@ end
 ---@param choice AGFLapChoice
 ---@param step AGFStep|AGFAnchor
 ---@param anchor AGFAnchor
+---@param cost number
+---@param kind "open"|"stop"|"close"
 local function Consider(lap, walk, choice, step, anchor, cost, kind)
 	local planned, pinned, leadID, rank, at = lap.planned, lap.pinned, lap.leadID, lap.rank, lap.at
 	local lastAnchor = walk.lastAnchor

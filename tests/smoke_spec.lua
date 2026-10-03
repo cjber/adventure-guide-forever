@@ -9,7 +9,6 @@ local checks = 0
 -- What the run exercised, for its closing line: distinct frames, clicks, hovers, menus, pins and settings writes.
 local stats = {
 	profiles = 0,
-	tabs = 0,
 	frames = 0,
 	frameSet = {},
 	clicks = 0,
@@ -259,7 +258,7 @@ local function SortedKeys(table_)
 	return keys
 end
 
---[[ Profiles: the representative states the task names, curated so each dimension is present without a full product. ]]
+--[[ Profiles: representative states, curated so each dimension is present without a full product. ]]
 
 local function Base(extra)
 	local log = {
@@ -396,7 +395,6 @@ local function Drive(h, label)
 	if window then
 		local tabs = h.ns.Window.Tabs()
 		for index, tab in ipairs(tabs) do
-			stats.tabs = stats.tabs + 1
 			Run(h, ("%s select tab %s"):format(label, tab.key), function()
 				h.ns.Window.Select(index)
 				h.ns.Window.Refresh()
