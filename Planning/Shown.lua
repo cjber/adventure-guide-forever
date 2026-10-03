@@ -16,7 +16,8 @@ function Shown.Forget(journey)
 	forget[journey] = true
 end
 
--- The player's saved order, merged into each card it names; the head's "you're here" follows the new first step.
+-- The player's saved order, merged into each card it names; the head's "you're here" and the card's hub line follow
+-- the new first step.
 ---@param route AGFRoute
 ---@param input AGFShownInput
 local function Reorder(route, input)
@@ -33,6 +34,7 @@ local function Reorder(route, input)
 			for index, step in ipairs(card.steps) do
 				step.here = index == 1 and here == 1 or nil
 			end
+			ns.Planner.Journeys.Summarise(card)
 		end
 		if route.journey == card.key then
 			route.steps = card.steps
