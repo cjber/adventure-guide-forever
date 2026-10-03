@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **A stuck Questie no longer holds the guide.** If Questie loaded but never finished starting on a character, the guide sat on "Loading quest data..." for the whole session, with an empty tracker and empty journeys. After a minute it now reads the quest data on its own, so quests in your log are guided again. New pickups are recommended once Questie is running.
+
 ## [0.6.7] - 2026-10-03
 
 - **Dungeons show their real level range.** The Dungeons tab showed some dungeons as a single level written twice, such as Level 13-13, because the game answers with one level for them. It now shows the dungeon's recommended range, such as Level 13-18 for Ragefire Chasm.

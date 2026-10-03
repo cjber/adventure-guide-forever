@@ -12,6 +12,10 @@ local CONTRACT = 2
 -- The catalogue is built once a login, and nothing can be shown until it lands: at a millisecond a frame the tracker
 -- stayed empty for most of a minute. A few frames a second for a few seconds is the smaller cost.
 local SLICE_MS = 5
+-- Questie can load and then never report ready, when its own startup stops on an error for one character. Waiting
+-- longer than this would leave the guide on its loading line for the whole session, so the catalogue is read without
+-- Questie's live policy instead. A ready callback that arrives later reads it again.
+local READY_WAIT = 60
 local LINK = ns.Data.townLink
 -- Daily and weekly quest flags also identify repeatable work.
 local REPEATABLE_FLAGS = 4096 + 32768
@@ -438,7 +442,16 @@ end
 EventUtil.ContinueAfterAllEvents(function()
 	status.state = "building"
 	if Questie and Questie.API and Questie.API.RegisterOnReady then
-		Questie.API.RegisterOnReady(Start)
+		local ready = false
+		Questie.API.RegisterOnReady(function()
+			ready = true
+			Start()
+		end)
+		C_Timer.After(READY_WAIT, function()
+			if not ready then
+				Start()
+			end
+		end)
 		if Questie.API.RegisterForQuestUpdates then
 			Questie.API.RegisterForQuestUpdates(function()
 				ns.Invalidate()
