@@ -11,8 +11,10 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
-- **A detached tracker keeps clear of your quests.** With Attach to quest tracker off, the Forever column could open on top of the quest list. Until you drag it, it now sits beside the quest tracker, level with its top; once dragged, it stays where you put it.
+## [0.7.0] - 2026-10-03
+
 - **Quest data loads sooner after login and a reload.** While "Loading quest data..." was up, the guide asked QuestieDB where the same creature or object is found once for every quest that needs it, tens of thousands of times in all. It now asks once for each, under a third of the reading, so the journeys and the tracker fill in sooner.
+- **A detached tracker keeps clear of your quests.** With Attach to quest tracker off, the Forever column could open on top of the quest list. Until you drag it, it now sits beside the quest tracker, level with its top; once dragged, it stays where you put it.
 - **A journey card follows your own order.** After you reordered a journey's stops, its card kept naming the stop that used to come first, such as "Turn in: The Adventurer and 1 more stop". The card now names the stop your order starts with.
 - **A dungeon's entrance reads the same from the first moment.** The Dungeons tab showed one entrance position, then a slightly different one a moment later once the dungeon's details had loaded. It now shows the QuestieDB position straight away, and a dungeon journey's card and its Go to entrance button use that same position. Tweaks Forever still supplies an entrance QuestieDB does not list.
 - **The Bosses view says when AtlasLoot is installed but not running.** With AtlasLoot in the AddOns folder but turned off or marked out of date, an empty Bosses view asked you to install it. It now asks you to enable or update it, and says so plainly when AtlasLoot is running and lists no encounters for that dungeon.
