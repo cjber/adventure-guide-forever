@@ -36,6 +36,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / "tools" / ".cache"
 OUTPUT = ROOT / "Data" / "Geometry.lua"
 FIXTURE = ROOT / "tests" / "fixtures" / "quests.lua"
+TOWN_FIXTURE = ROOT / "tests" / "fixtures" / "towns.lua"
 # Published dungeon ranges, following the zone generator's published-range fallback.
 # LFGDungeons 1.60.1.69913 has MapID=0 and no usable min/max range (see docs/dungeon-sources.md).
 # Wowhead, Classic Dungeons Overview, 2024-11-22, "WoW Classic Instances by Level":
@@ -1203,6 +1204,8 @@ class Generated:
     shifts: dict
     ferries: list
     towns: dict
+    nodes: list
+    roles: dict
     npcs: dict
     lookups: dict
     explorable: dict
@@ -1391,9 +1394,10 @@ def place_towns(emitted, centres, taxi_nodes, counts):
     counts["town hubs"] = len(hubs)
     counts["town hubs with several givers"] = sum(len(n) > 1 for n in names.values())
     counts["widest town hub (yards)"] = round(max(diameter(members) for _, members in hubs))
-    towns = hub_names(hubs, flight_masters(taxi_nodes))
+    nodes = flight_masters(taxi_nodes)
+    towns = hub_names(hubs, nodes)
     counts["named town hubs"] = len(towns)
-    return towns, grid, town_maps
+    return towns, nodes, grid, town_maps
 
 
 def transport_routes(ui_maps, assignments, centres, tables, path_nodes, taxi_nodes, counts):
@@ -1472,7 +1476,7 @@ def generate(
         role,
     )
     zones, centres = zones_and_centres(maps, assignments, emitted, counts)
-    towns, grid, town_maps = place_towns(emitted, centres, taxi_nodes, counts)
+    towns, nodes, grid, town_maps = place_towns(emitted, centres, taxi_nodes, counts)
     npcs = role_npcs(tables, world, faction_rows, role, grid, town_maps, centres.keys(), counts, area_at)
     shifts, ferries = transport_routes(ui_maps, assignments, centres, tables, path_nodes, taxi_nodes, counts)
     named = named_instances(emitted, tables, instances)
@@ -1488,6 +1492,8 @@ def generate(
         shifts=shifts,
         ferries=ferries,
         towns=towns,
+        nodes=nodes,
+        roles=role,
         npcs=npcs,
         lookups=lookups,
         explorable=explorable,
@@ -1520,15 +1526,13 @@ def render(data):
         "-- Pinned client WDT/ADT terrain area IDs disambiguate unhinted outdoor giver maps.",
         f"-- wago.tools WorldMapArea at {LEGACY_MAP_BUILD}, the last build with it (quest_poi's mapAreaId).",
         f"-- Published zone ranges (tweaks-forever/tools/gen_zonelevels.py): {ZONE_SOURCE}",
-        f"-- hub: the town a start or finish stands in, by single linkage at {LINK} yd, split again past {CAP} yd.",
-        f"-- hubs: a town's name is its flight master's (TaxiNodes) within {NAME_REACH} yd of a giver; no other name.",
-        "-- npcs: class, pet, riding and profession trainers, battlemasters and innkeepers (creature_template",
-        "-- NpcFlags, TrainerType, npc_trainer, battlemaster_entry); ranks: each SKILL_STEP spell taught of a",
-        "-- SkillLine profession or secondary skill (SpellEffect); side: every side FactionTemplate.EnemyGroup is",
-        "-- not hostile to; place: a non-seasonal spawn, as quest givers'. Within",
-        f"-- {LINK} yd of a quest place: its hub, on the map most of the hub's places use; else by terrain area.",
-        "-- No side or zone-map spawn: left out.",
-        "-- skills and factions: the names of those a quest needs.",
+        "-- towns: each flight-map node any player of a side can use (TaxiNodes): its continent, world x and y in",
+        f"-- yards, and name. At runtime a town is the quest places QuestieDB gives within {LINK} yd of each other,",
+        f"-- split again past {CAP} yd, and its name is the node within {NAME_REACH} yd of one of them.",
+        "-- roles: what a class, pet, riding or profession trainer or a battlemaster does (creature_template",
+        "-- TrainerType, npc_trainer, battlemaster_entry); ranks: each SKILL_STEP spell taught of a SkillLine",
+        "-- profession or secondary skill (SpellEffect). Where each stands, its side and who keeps an inn come from",
+        "-- the installed QuestieDB at runtime.",
         "-- professions: each skill line a trainer here teaches, its ranks' npc_trainer reqlevel and reqskillvalue.",
         "-- overlays: a zone map's explorable areas (WorldMapOverlay with a texture, one per offset; AreaTable name",
         "-- and ExplorationLevel, never 0); ox, oy: the offset GetExploredMapTextures returns; x, y: nearness only.",
@@ -1541,6 +1545,8 @@ def render(data):
         f"\tbuild = {lua(BUILD)},",
         f'\tsource = "CMaNGOS classic-db {CLASSICDB_COMMIT}; wago.tools {BUILD}",',
         f"\ttownLink = {LINK},",
+        f"\ttownCap = {CAP},",
+        f"\ttownReach = {NAME_REACH},",
         "\tzones = {",
     ]
     lines.extend(f"\t\t[{qid}] = {lua(zone)}," for qid, zone in sorted(data.zones.items()))
@@ -1559,36 +1565,50 @@ def render(data):
     lines.extend(f"\t\t[{continent}] = {lua(shift)}," for continent, shift in sorted(data.shifts.items()))
     lines.extend(["\t},", "\tcrossings = {"])
     lines.extend(f"\t\t{lua(ferry)}," for ferry in data.ferries)
-    lines.extend(["\t},", "\thubs = {"])
-    lines.extend(f"\t\t[{hub}] = {lua(town)}," for hub, town in sorted(data.towns.items()))
-    lines.extend(["\t},", "\tnpcs = {"])
-    lines.extend(f"\t\t[{entry}] = {lua(npc)}," for entry, npc in sorted(data.npcs.items()))
-    for name in ("skills", "factions", "professions"):
-        lines.extend(["\t},", f"\t{name} = {{"])
-        lines.extend(f"\t\t[{key}] = {lua(value)}," for key, value in sorted(data.lookups[name].items()))
+    lines.extend(["\t},", "\ttowns = {"])
+    lines.extend(
+        f"\t\t{lua({'node': node, 'continent': continent, 'x': x, 'y': y, 'name': name})},"
+        for node, continent, x, y, name in sorted(data.nodes)
+    )
+    lines.extend(["\t},", "\troles = {"])
+    lines.extend(f"\t\t[{entry}] = {lua(role)}," for entry, role in sorted(shipped_roles(data.roles).items()))
+    lines.extend(["\t},", "\tprofessions = {"])
+    lines.extend(f"\t\t[{key}] = {lua(value)}," for key, value in sorted(data.lookups["professions"].items()))
     lines.extend(["\t},", "\toverlays = {"])
     for ui_map, entries in sorted(data.explorable.items()):
         lines.append(f"\t\t[{ui_map}] = {{")
         lines.extend(f"\t\t\t{lua(entry)}," for entry in entries)
         lines.append("\t\t},")
-    lines.extend(["\t},", "\ttownAnchors = {"])
-    lines.extend(f"\t\t{lua(anchor)}," for anchor in town_anchors(data.quests))
     return "\n".join(lines + ["\t},", "}", ""])
 
 
-def town_anchors(quests):
-    """Every distinct quest-giver town place, the route-geometry anchors TownCells clusters a QuestieDB place on."""
-    seen, anchors = set(), []
-    for quest in quests.values():
-        for key in ("start", "finish"):
-            place = quest.get(key)
-            if place and place.get("hub") is not None:
-                point = (place["map"], place["x"], place["y"], place["hub"])
-                if point not in seen:
-                    seen.add(point)
-                    anchors.append({"map": place["map"], "x": place["x"], "y": place["y"], "hub": place["hub"]})
-    anchors.sort(key=lambda a: (a["hub"], a["map"], a["x"], a["y"]))
-    return anchors
+def shipped_roles(roles_):
+    """Each role NPC's fields less `inn`, which QuestieDB's npcFlags answer at runtime; none for a plain innkeeper."""
+    trimmed = {entry: {k: v for k, v in fields.items() if k != "inn"} for entry, fields in roles_.items()}
+    return {entry: fields for entry, fields in trimmed.items() if fields}
+
+
+def render_towns(data):
+    """The test-only towns (tests/fixtures/towns.lua): what the QuestieDB build composes at runtime, for the model
+    specs' corpus. Never shipped.
+    """
+    lines = [
+        "-- Generated by tools/gen_quests.py: do not edit.",
+        f"-- CMaNGOS classic-db (GPL-3.0), pinned: {CLASSICDB_URL}",
+        "-- Test-only towns for the quest corpus beside it (quests.lua): each hub's name, each role NPC's side and",
+        "-- place, and the names of the skills and factions a corpus quest needs. NOT shipped in the addon; in game",
+        "-- the QuestieDB build composes hubs and NPC places (QuestieTowns.lua, QuestieSource.lua).",
+        "-- stylua: ignore",
+        "return {",
+        "\thubs = {",
+    ]
+    lines.extend(f"\t\t[{hub}] = {lua(town)}," for hub, town in sorted(data.towns.items()))
+    lines.extend(["\t},", "\tnpcs = {"])
+    lines.extend(f"\t\t[{entry}] = {lua(npc)}," for entry, npc in sorted(data.npcs.items()))
+    for name in ("skills", "factions"):
+        lines.extend(["\t},", f"\t{name} = {{"])
+        lines.extend(f"\t\t[{key}] = {lua(value)}," for key, value in sorted(data.lookups[name].items()))
+    return "\n".join(lines + ["\t},", "}", ""])
 
 
 def render_quests(quests):
@@ -1686,12 +1706,12 @@ def main():
     FIXTURE.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(render(data), encoding="utf-8")
     FIXTURE.write_text(render_quests(data.quests), encoding="utf-8")
+    TOWN_FIXTURE.write_text(render_towns(data), encoding="utf-8")
     for name, count in sorted(data.counts.items()):
         print(f"{name}: {count}")
     print(
-        f"Wrote {len(data.zones)} zones, {len(data.centres)} map centres, {len(data.npcs)} NPCs and "
-        f"{len(town_anchors(data.quests))} town "
-        f"anchors: {OUTPUT.relative_to(ROOT)} ({OUTPUT.stat().st_size:,} bytes)"
+        f"Wrote {len(data.zones)} zones, {len(data.centres)} map centres, {len(shipped_roles(data.roles))} roles and "
+        f"{len(data.nodes)} flight-map towns: {OUTPUT.relative_to(ROOT)} ({OUTPUT.stat().st_size:,} bytes)"
     )
     print(
         f"Wrote the test-only {len(data.quests)}-quest corpus: {FIXTURE.relative_to(ROOT)} "

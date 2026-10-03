@@ -123,7 +123,7 @@ local once = harness.load({
 		local lib = loaded.G.LibQuestieDB
 		local npc, item = lib.Npc.GetAll, lib.Item.GetAll
 		lib.Npc.GetAll = function(id, keys)
-			spawnReads = spawnReads + (id == 800 and 1 or 0)
+			spawnReads = spawnReads + (id == 800 and keys[1] == "spawns" and 1 or 0)
 			return npc(id, keys)
 		end
 		lib.Item.GetAll = function(id, keys)

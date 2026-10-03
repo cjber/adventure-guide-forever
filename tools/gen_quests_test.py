@@ -12,6 +12,7 @@ from gen_quests import (
     FIXTURE,
     LINK,
     NAME_REACH,
+    OUTPUT,
     SpawnAreas,
     continents,
     crossings,
@@ -43,6 +44,7 @@ from gen_quests import (
     requirements,
     roles,
     shape_area,
+    shipped_roles,
     skill_steps,
     spawn_areas,
     terrain_cells,
@@ -738,6 +740,19 @@ class DataTest(unittest.TestCase):
                 self.assertIn(slot, slots, line)
                 self.assertTrue(0 <= x <= 1000 and 0 <= y <= 1000 and r >= 0 and len(ui_map) <= 1, line)
         self.assertGreater(count, 2500)
+
+
+class ShippedTest(unittest.TestCase):
+    def test_roles_ship_without_inns(self):
+        roles_ = {1: {"inn": True}, 2: {"bg": 3, "inn": True}, 3: {"class": 8, "upto": 60}}
+        self.assertEqual(shipped_roles(roles_), {2: {"bg": 3}, 3: {"class": 8, "upto": 60}})
+
+    def test_geometry_ships_no_places(self):
+        text = OUTPUT.read_text(encoding="utf-8")
+        for name in ("townAnchors", "hubs", "npcs", "skills", "factions"):
+            self.assertNotIn(f"\t{name} = {{", text)
+        self.assertNotIn("place = {", text)
+        self.assertIn("\ttowns = {", text)
 
 
 class LuaTest(unittest.TestCase):

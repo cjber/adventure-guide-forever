@@ -15,7 +15,14 @@ import phrases
 ROOT = Path(__file__).resolve().parent.parent
 DATA = tuple(
     path.relative_to(ROOT).as_posix()
-    for path in (gen_quests.OUTPUT, gen_quests.FIXTURE, diff_forever.OUTPUT, gen_zoneart.OUTPUT, phrases.PHRASES)
+    for path in (
+        gen_quests.OUTPUT,
+        gen_quests.FIXTURE,
+        gen_quests.TOWN_FIXTURE,
+        diff_forever.OUTPUT,
+        gen_zoneart.OUTPUT,
+        phrases.PHRASES,
+    )
 )
 CACHE = gen_quests.CACHE.relative_to(ROOT)
 

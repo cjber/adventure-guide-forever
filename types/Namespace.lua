@@ -11,11 +11,41 @@
 ---@field hub? integer the town it stands in (tools/gen_quests.py town_hubs); nil when its map has no world rectangle
 
 -- One route-geometry town anchor: a place a quest-giver town stands on, used to cluster QuestieDB places into hubs.
----@class AGFTownAnchor
+-- A flight-map node any player of a side can use (TaxiNodes): the bundled name a runtime town takes.
+---@class AGFTownNode
+---@field node integer TaxiNodes ID
+---@field continent integer
+---@field x number world yards
+---@field y number world yards
+---@field name string
+
+-- A quest place in world yards while QuestieTowns groups them.
+---@class AGFTownPoint
+---@field continent integer
+---@field x number world yards
+---@field y number world yards
 ---@field map integer uiMapID
----@field x number
----@field y number
----@field hub integer the town this anchor links to
+---@field px number the place's map x
+---@field py number the place's map y
+---@field hub? integer
+
+---@alias AGFTownGrid table<integer, table<number, AGFTownPoint[]>> continent -> cell -> the quest places in it
+
+---@class AGFQuestieTowns
+---@field Build fun(data: AGFData, places: AGFPlace[], yield: fun()): table<integer, {name: string}>, AGFTownGrid
+---@field Hub fun(data: AGFData, grid: AGFTownGrid, place: {map: integer, x: number, y: number}): integer?
+
+-- What a trainer or battlemaster does (Data/Geometry.lua `roles`); AGFNpc adds its side and place at runtime.
+---@class AGFRole
+---@field class? integer class trainer: the class ID it trains (1 Warrior ... 11 Druid)
+---@field upto? integer class trainer: the highest level among the spells it teaches (6 for a starting-area trainer)
+---@field from? integer class trainer: the lowest level among them, when above 1 (a mage's portal trainer's 20)
+---@field pet? boolean hunter pet trainer
+---@field riding? boolean riding trainer
+---@field race? integer riding trainer: the race ID it teaches (CMaNGOS TrainerRace), when it names one
+---@field skill? integer profession trainer: its skill line ID
+---@field ranks? integer[] profession trainer: each rank it teaches, ascending, 1 Apprentice to 4 Artisan (SpellEffect SKILL_STEP)
+---@field bg? integer battlemaster: its battleground (CMaNGOS battlemaster_entry.bg_template: 1 AV, 2 WSG, 3 AB)
 
 ---@class AGFQuest
 ---@field provider? boolean QuestieDB quest; live Questie policy decides pickup availability
@@ -67,9 +97,12 @@
 ---@field maps table<integer, AGFMapCentre> uiMapID -> where the map sits in the world, for every map a place uses
 ---@field continents table<integer, AGFContinentShift> continent -> its place on the Azeroth world map
 ---@field crossings AGFCrossing[] every boat and zeppelin between two continents
----@field hubs table<integer, {name: string}> hub -> its flight master's name, verbatim; only for hubs with one
+---@field hubs table<integer, {name: string}> hub -> its flight master's name, verbatim; only for hubs with one. Composed from QuestieDB's quest places (QuestieTowns.lua)
 ---@field townLink number maximum distance in yards linking two town places, from gen_quests.py LINK
----@field townAnchors AGFTownAnchor[] every distinct quest-giver town place, the route-geometry anchors TownCells clusters a QuestieDB place on
+---@field townCap number yards: a town wider than this is grouped again at a shorter link
+---@field townReach number yards from a town's nearest quest place to the flight-map node that names it
+---@field towns AGFTownNode[] the flight-map nodes a town can be named for
+---@field roles table<integer, AGFRole> creature entry -> what that trainer or battlemaster does
 
 -- Measures between steps on different maps without travel maths (Travel.lua Cost). World coordinates are yards.
 ---@class AGFMapCentre
@@ -672,19 +705,10 @@
 ---@class AGFData
 ---@field npcs table<integer, AGFNpc> creature entry -> its roles, side and place; only NPCs the data places and sides
 
----@class AGFNpc
----@field side integer the sides it is not hostile to (FactionTemplate.EnemyGroup): 1 Alliance, 2 Horde, 3 both
----@field place AGFPlace a non-seasonal spawn; within 100 yards of a quest place, its `hub` and that town's usual map
----@field class? integer class trainer: the class ID it trains (1 Warrior ... 11 Druid)
----@field upto? integer class trainer: the highest level among the spells it teaches (6 for a starting-area trainer)
----@field from? integer class trainer: the lowest level among them, when above 1 (a mage's portal trainer's 20)
----@field pet? boolean hunter pet trainer
----@field riding? boolean riding trainer
----@field race? integer riding trainer: the race ID it teaches (CMaNGOS TrainerRace), when it names one
----@field skill? integer profession trainer: its skill line ID
----@field ranks? integer[] profession trainer: each rank it teaches, ascending, 1 Apprentice to 4 Artisan (SpellEffect SKILL_STEP)
----@field bg? integer battlemaster: its battleground (CMaNGOS battlemaster_entry.bg_template: 1 AV, 2 WSG, 3 AB)
----@field inn? boolean innkeeper
+---@class AGFNpc : AGFRole
+---@field side integer the sides it is friendly to (QuestieDB friendlyToFaction): 1 Alliance, 2 Horde, 3 both
+---@field place AGFPlace a QuestieDB spawn on its usual map; within 100 yards of a quest place, that town's `hub`
+---@field inn? boolean innkeeper (QuestieDB npcFlags)
 
 --[[ What Forever added (tools/diff_forever.py, Data/Forever.lua) and honest coverage ]]
 
@@ -1498,6 +1522,7 @@
 ---@alias AGFQuestieReads {Npc: table<integer, table|false>, Object: table<integer, table|false>, Item: table<integer, table|false>}
 
 ---@class AGFNamespace
+---@field QuestieTowns AGFQuestieTowns
 ---@field QuestieObjectives fun(lib: AGFQuestieDB, objectives: table?, trigger: table?, zone: integer?, data: AGFData, mapOf: AGFMapLookup, yield: AGFYield, questID: integer, reads: AGFQuestieReads): table?, AGFObjectiveArea[]?, table?, boolean?
 
 ---@class AGFStrings
