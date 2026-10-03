@@ -165,7 +165,7 @@ function Model.Profession(data, player, wanted)
 end
 
 -- Rested XP is low when it is under one bubble of the bar (a twentieth of the level's XP, a night at an
--- inn's worth), or none at all when the client gives no bar. Nil when the player's rest is unknown (a spec's player),
+-- inn's worth), or none at all when the client gives no bar. False when the player's rest is unknown (a spec's player),
 -- and never at the level cap, where rested XP buys nothing.
 local REST_BUBBLE = 0.05
 ---@param player AGFRest

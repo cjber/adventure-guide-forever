@@ -101,15 +101,7 @@ function Order.Merge(steps, keys, cap, log)
 end
 
 local function Moved(steps, from, to)
-	if
-		type(from) ~= "number"
-		or type(to) ~= "number"
-		or from % 1 ~= 0
-		or to % 1 ~= 0
-		or from == to
-		or not steps[from]
-		or not steps[to]
-	then
+	if from == to or not steps[from] or not steps[to] then
 		return nil
 	end
 	local result = {}

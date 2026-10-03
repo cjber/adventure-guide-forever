@@ -519,7 +519,7 @@ local function Enter(data, step, from)
 			end
 		end
 	end
-	if not (best and data.maps[best.map]) then
+	if not best then
 		return
 	end
 	step.map, step.x, step.y = best.map, best.x, best.y

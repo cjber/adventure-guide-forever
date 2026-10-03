@@ -691,7 +691,6 @@ local function Battleground(data, player, prefs, mapName)
 			}
 			return {
 				kind = "battleground",
-				key = journey.key,
 				opened = bg.level,
 				quests = 0,
 				build = function()
@@ -838,14 +837,14 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	-- Each diversion offers itself with how many quests it holds and the level its newest one opened at, and the
 	-- newest is built first (DIVERSION_ORDER on a tie), so a level just gained or a bracket just opened leads.
 	local diversions = {}
-	local function Offer(kind, key, belongs, build, from)
+	local function Offer(kind, belongs, build, from)
 		local quests, opened = Newest(data, from or eligible, belongs)
 		if opened then
-			diversions[#diversions + 1] = { kind = kind, key = key, opened = opened, quests = quests, build = build }
+			diversions[#diversions + 1] = { kind = kind, opened = opened, quests = quests, build = build }
 		end
 	end
 	if not dismissed.calling then
-		Offer("calling", "calling", ForClass(player.classBit), function()
+		Offer("calling", ForClass(player.classBit), function()
 			return CallingJourney(data, player, completed, log, ready, eligible, prefs, mapName)
 		end)
 	end
@@ -857,7 +856,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 		or eligible
 	local instance = BestDungeon(data, pool, prefs, prefs.dungeons or stranded, chosenDungeon)
 	if instance then
-		Offer("dungeon", "dungeon:" .. instance, InDungeon(instance), function(quests)
+		Offer("dungeon", InDungeon(instance), function(quests)
 			return DungeonJourney(data, player, completed, log, pool, prefs, mapName, instanceName, instance, quests)
 		end, pool)
 	end
@@ -887,7 +886,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			return members[quest] == true
 		end
 		local key = "chain:" .. way.members[1]
-		Offer("chain", key, Member, function()
+		Offer("chain", Member, function()
 			local into, _, step = Pickups(
 				data,
 				player,

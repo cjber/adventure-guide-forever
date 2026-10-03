@@ -1,7 +1,7 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 -- The route as shown: one pass from a snapshot of the player to the steps the views draw. The planner's route
--- (Model.lua, which reads nothing but its arguments), then the player's own order (docs/design.md §2.20), then the
+-- (Plan.lua and Refresh.lua, which read no client state), then the player's own order (docs/design.md §2.20), then the
 -- session's trim (§4.3), all over the same player and log. Core.lua's rebuild is the one caller.
 ---@class AGFShown
 local Shown = {}

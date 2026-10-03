@@ -25,10 +25,9 @@ local function Copy(source)
 	return copy
 end
 
--- A journey from the last full build less what went since: every step on it is a town, and a quest the player has
--- taken, done or ruled out (a group choice), or handed in, leaves its town, which goes only once it is empty or
--- skipped; the full build after combat brings back anything else. The same table when nothing went.
----@param journey AGFJourney
+-- A journey from the last full build less what went since: a quest the player has taken, done or ruled out (a group
+-- choice), or handed in, leaves its town, which goes only once it is empty or skipped; the full build after combat
+-- brings back anything else. The same table when nothing went.
 ---@param prune fun(step: AGFStep): AGFStep? the step, a copy less the quests gone, or nil when none is left
 ---@return AGFJourney?
 local function Retained(journey, prune)
