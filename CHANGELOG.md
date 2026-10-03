@@ -16,6 +16,8 @@ verbatim rather than rewritten as the addon moves.
 - **A dungeon's entrance reads the same from the first moment.** The Dungeons tab showed one entrance position, then a slightly different one a moment later once the dungeon's details had loaded. It now shows the QuestieDB position straight away, and a dungeon journey's card and its Go to entrance button use that same position. Tweaks Forever still supplies an entrance QuestieDB does not list.
 - **The Bosses view says when AtlasLoot is installed but not running.** With AtlasLoot in the AddOns folder but turned off or marked out of date, an empty Bosses view asked you to install it. It now asks you to enable or update it, and says so plainly when AtlasLoot is running and lists no encounters for that dungeon.
 - **Bosses appear when AtlasLoot loads late.** If the Dungeons tab was opened during a fight, or before AtlasLoot had loaded, the Bosses and Loot views stayed without AtlasLoot's encounters until the next reload. They now fill in as soon as the fight ends or AtlasLoot loads.
+- **Towns, trainers and innkeepers follow the installed QuestieDB.** Where a quest giver's town is, where a trainer, battlemaster or innkeeper stands and which side each serves used to come from a list packed with the guide and made for Classic Era. They are now read from QuestieDB, so places that exist only in Forever count as towns and its trainers and inns are found where they stand in this game.
+- **A mount seller is no longer taken for an innkeeper.** Eight mount sellers, such as Katie Hunter in Eastvale, and one trainer were listed as innkeepers, so the hearthstone hint could send you to one of them to set your home. Only real innkeepers are used now.
 
 ## [0.6.8] - 2026-10-03
 

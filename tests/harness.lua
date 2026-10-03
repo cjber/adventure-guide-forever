@@ -61,15 +61,25 @@ function harness.fixtureQuests()
 	return assert(loadfile("tests/fixtures/quests.lua"))()
 end
 
+-- Gives `data` the test corpus: its quests, and the towns that go with them (tests/fixtures/towns.lua: hub names,
+-- role NPCs' sides and places, skill and faction names). In game the QuestieDB build composes all of these.
+---@param data AGFData
+---@return AGFData
+function harness.fixture(data)
+	data.quests = harness.fixtureQuests()
+	for key, value in pairs(assert(loadfile("tests/fixtures/towns.lua"))()) do
+		data[key] = value
+	end
+	return data
+end
+
 -- The shipped route geometry with the test quest corpus merged in: the model fixture and the source
 -- harness.questieMirror mirrors.
 ---@return AGFData
 function harness.data()
 	local ns = {}
 	assert(loadfile("Data/Geometry.lua"))(ADDON, ns)
-	local data = ns.Data
-	data.quests = harness.fixtureQuests()
-	return data
+	return harness.fixture(ns.Data)
 end
 
 -- options: spf ("v1" or "v1+"; absent by default), db and charDB (saved variables), log ({id, title, level,
@@ -2433,7 +2443,7 @@ function harness.load(options)
 	-- Any `questiedb` option means the spec drives the QuestieDB path (mirror or a broken/false stand-in): leave the
 	-- quests to QuestieSource, so the no-stale-fallback specs hold. Only a plain load gets the model corpus.
 	if h.ns.Data and options.questiedb == nil then
-		h.ns.Data.quests = harness.fixtureQuests()
+		harness.fixture(h.ns.Data)
 	end
 	-- Counts the model's entry points, so specs can prove what a rebuild ran.
 	for _, name in ipairs({ "Plan", "Journeys" }) do
@@ -2757,7 +2767,15 @@ function harness.questieMirror(data)
 			specialFlags = quest.repeatable and 1 or 0,
 		}
 	end
-	-- Each giver's usual map: the one most of its places use, the lowest on a tie.
+	-- Each role NPC stands at its place, serves its side, and an innkeeper carries QuestieDB's flag.
+	for id, npc in pairs(data.npcs or {}) do
+		fake.npcs[id] = fake.npcs[id] or { name = npc.place.name, spawns = {} }
+		local row, place = fake.npcs[id], npc.place
+		row.spawns[place.map] = row.spawns[place.map] or { { place.x * 100, place.y * 100 } }
+		row.zoneID = row.zoneID or place.map
+		row.friendlyToFaction = ({ "A", "H", "AH" })[npc.side]
+		row.npcFlags = npc.inn and 128 or 16
+	end
 	for giver, counts in pairs(homes) do
 		for map, count in pairs(counts) do
 			local best = giver.zoneID and counts[giver.zoneID]

@@ -16,7 +16,6 @@ local SLICE_MS = 5
 -- longer than this would leave the guide on its loading line for the whole session, so the catalogue is read without
 -- Questie's live policy instead. A ready callback that arrives later reads it again.
 local READY_WAIT = 60
-local LINK = ns.Data.townLink
 -- Daily and weekly quest flags also identify repeatable work.
 local REPEATABLE_FLAGS = 4096 + 32768
 
@@ -44,9 +43,14 @@ ns.QuestieFields = {
 	drops = { "npcDrops", "objectDrops", "itemDrops" },
 }
 local GIVER_FIELDS = { "name", ns.QuestieFields.spawns[1], "zoneID" }
+-- What says whether an NPC keeps an inn and which side it serves.
+local SERVICE_FIELDS = { "npcFlags", "friendlyToFaction" }
+-- QuestieDB's Classic NPC flag for an innkeeper, and its letters for the sides an NPC is friendly to.
+local INNKEEPER, SIDES = 128, { A = 1, H = 2, AH = 3 }
+local NPC_FIELDS = { GIVER_FIELDS[1], GIVER_FIELDS[2], GIVER_FIELDS[3], SERVICE_FIELDS[1], SERVICE_FIELDS[2] }
 local ENTITIES = {
 	{ name = "Quest", keys = "questKeys", fields = QUEST_FIELDS },
-	{ name = "Npc", keys = "npcKeys", fields = GIVER_FIELDS },
+	{ name = "Npc", keys = "npcKeys", fields = NPC_FIELDS },
 	{ name = "Object", keys = "objectKeys", fields = GIVER_FIELDS },
 	{ name = "Item", keys = "itemKeys", fields = ns.QuestieFields.drops },
 }
@@ -167,47 +171,6 @@ local function Round(value)
 	return math.floor(value * 1e4 + 0.5) / 1e4
 end
 
--- A place's continent and world yards, as tools/gen_quests.py world_point; nil on a map the data doesn't place.
----@param data AGFData
----@param place {map: integer, x: number, y: number}
----@return {continent: integer, x: number, y: number}?
-local function World(data, place)
-	local centre = data.maps[place.map]
-	return centre
-		and {
-			continent = centre.continent,
-			x = centre.cx - (place.y - 0.5) * centre.sy,
-			y = centre.cy - (place.x - 0.5) * centre.sx,
-		}
-end
-
----@param continent integer
----@param x number
----@param y number
----@return string
-local function Cell(continent, x, y)
-	return continent .. ":" .. math.floor(x / LINK) .. ":" .. math.floor(y / LINK)
-end
-
--- The bundled town anchors (Data/Geometry.lua `townAnchors`) in LINK-yard cells, so a place from QuestieDB joins the
--- town of the nearest one. Route geometry, not quest data: the anchors are the distinct quest-giver town places.
----@param data AGFData
----@param yield fun()
----@return table<string, {x: number, y: number, hub: integer}[]>
-local function TownCells(data, yield)
-	local cells = {}
-	for _, place in ipairs(data.townAnchors or {}) do
-		yield()
-		local at = place.hub and World(data, place)
-		if at then
-			local key = Cell(at.continent, at.x, at.y)
-			cells[key] = cells[key] or {}
-			table.insert(cells[key], { x = at.x, y = at.y, hub = place.hub })
-		end
-	end
-	return cells
-end
-
 -- Whether sort key `a` comes before `b`.
 ---@param a any[]
 ---@param b any[]
@@ -219,29 +182,6 @@ local function Before(a, b)
 		end
 	end
 	return false
-end
-
----@param data AGFData
----@param cells table<string, {x: number, y: number, hub: integer}[]>
----@param place AGFPlace
----@return integer?
-local function Hub(data, cells, place)
-	local at = World(data, place)
-	if not at then
-		return nil
-	end
-	local best, hub = LINK * LINK, nil
-	for dx = -LINK, LINK, LINK do
-		for dy = -LINK, LINK, LINK do
-			for _, other in ipairs(cells[Cell(at.continent, at.x + dx, at.y + dy)] or {}) do
-				local d = (other.x - at.x) ^ 2 + (other.y - at.y) ^ 2
-				if d <= best then
-					best, hub = d, other.hub
-				end
-			end
-		end
-	end
-	return hub
 end
 
 -- The instance each area belongs to, among the instances `keep` accepts: an instance's own area, then the alias areas
@@ -329,7 +269,8 @@ local function Build(lib, zones, bundled, yield)
 	local instanceOf = InstanceAreas(lib, zones, function(instance)
 		return bundled.instances[instance] ~= nil
 	end)
-	local cells = TownCells(bundled, yield)
+	-- Every quest start and finish, for the towns they stand in (QuestieTowns.lua).
+	local places = {}
 	-- Each giver's name, its spawns on maps the data places (0-100 on its area's map), and its usual map.
 	local givers = { Npc = {}, Object = {} }
 	---@type AGFQuestieReads
@@ -378,9 +319,7 @@ local function Build(lib, zones, bundled, yield)
 				end
 			end
 		end
-		if best then
-			best.hub = Hub(bundled, cells, best)
-		end
+		places[#places + 1] = best
 		return best
 	end
 
@@ -434,7 +373,7 @@ local function Build(lib, zones, bundled, yield)
 				if start and quest.classes and start.npc then
 					-- A class quest's giver is its class's trainer. The bundled trainer data has no entry for Forever's
 					-- extra class/race combinations, so fall back to the quest's single required class.
-					local npc = bundled.npcs[start.npc]
+					local npc = bundled.roles[start.npc]
 					start.trainer = (npc and npc.class) or SingleClass(quest.classes)
 				end
 				if not quest.dungeon then
@@ -456,7 +395,37 @@ local function Build(lib, zones, bundled, yield)
 		end
 		yield()
 	end
-	local data = { quests = quests }
+	local hubs, grid = ns.QuestieTowns.Build(bundled, places, yield)
+	-- Who trains, keeps an inn or runs a battleground queue, where and for which side. What a trainer teaches is the
+	-- bundled `roles`; an innkeeper is QuestieDB's flag. An NPC with no side or no spawn on a placed map is left out.
+	local npcs = {}
+	for _, id in ipairs(type(lib.Npc.GetAllIds) == "function" and lib.Npc.GetAllIds() or {}) do
+		local role = bundled.roles[id]
+		local values = lib.Npc.GetAll(id, SERVICE_FIELDS)
+		local inn = values and bit.band(tonumber(values[1]) or 0, INNKEEPER) ~= 0
+		local side = values and SIDES[values[2]]
+		local giver = side and (role or inn) and Giver("Npc", id)
+		if giver then
+			local best, bestKey
+			for _, spot in ipairs(giver.spots) do
+				local key = { spot.map == giver.home and 0 or 1, spot.map, spot.x, spot.y }
+				if not bestKey or Before(key, bestKey) then
+					best, bestKey = spot, key
+				end
+			end
+			if best then
+				local npc = { inn = inn or nil, side = side }
+				for key, value in pairs(role or {}) do
+					npc[key] = value
+				end
+				npc.place = { map = best.map, x = best.x, y = best.y, name = giver.name }
+				npc.place.hub = ns.QuestieTowns.Hub(bundled, grid, npc.place)
+				npcs[id] = npc
+			end
+		end
+		yield()
+	end
+	local data = { quests = quests, hubs = hubs, npcs = npcs }
 	for key, value in pairs(bundled) do
 		data[key] = data[key] or value
 	end
@@ -469,7 +438,7 @@ local empty = {}
 for key, value in pairs(bundled) do
 	empty[key] = value
 end
-empty.quests = {}
+empty.quests, empty.hubs = {}, {}
 ns.Data = empty --[[@as AGFData]]
 
 local function Start()

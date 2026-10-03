@@ -46,6 +46,7 @@ Integrations\Companions.lua
 Integrations\Providers.lua
 Integrations\Raids.lua
 Integrations\QuestieObjectives.lua
+Integrations\QuestieTowns.lua
 Integrations\QuestieSource.lua
 Integrations\Dungeons.lua
 Integrations\DungeonRows.lua

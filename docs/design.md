@@ -34,7 +34,11 @@ abandons quests.
   provider absence/failure publishes no partial or fallback quest list. The game owns progress and live POIs;
   QuestieDB owns records, spawns and XP; the live log owns objective counts. Provider objective icon fields are never treated as counts. Questie's IsDoable policy, plus minimum/maximum
   level and guide difficulty preferences, gates pickups. Without live policy, logged quests remain browsable
-  but new pickups are not recommended. Route geometry and transport metadata are separate data sources.
+  but new pickups are not recommended. Towns are composed from the catalogue's quest places (within 100 yards
+  of each other, a town wider than 400 cut again) and named for the bundled flight-map node within 150 yards;
+  trainers, battlemasters and innkeepers take their place and side from QuestieDB's NPC rows, and an innkeeper
+  is QuestieDB's flag. Only what a trainer teaches is bundled. Map geometry and transport metadata are separate
+  data sources.
   Questie owns background markers whenever loaded, including its visibility toggle; AGF owns route markers.
 - **2.15 PvP.** Offer only battlegrounds open at the player's level; journey cards are opt-in.
 - **2.16 Professions.** Suggest only training the player qualifies for. Crafting routes come from SkillUp.

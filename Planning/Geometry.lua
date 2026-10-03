@@ -357,7 +357,7 @@ end
 
 -- Overlay one data table with every section the client can answer for the IDs that table already names. It builds
 -- only the sections the data carries, so it creates no keys the planner never reads and clobbers nothing native
--- cannot answer (zones.min/max, instances.raid/lfg/entrances, crossings, zoneArt, hubs, townAnchors, npcs). Kept
+-- cannot answer (zones.min/max, instances.raid/lfg/entrances, crossings, zoneArt, towns, roles). Kept
 -- pure over `api` so the specs drive it with stubs; Geometry.EnsureNative supplies the real client.
 ---@param data AGFData?
 ---@param api table
