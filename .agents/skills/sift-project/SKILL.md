@@ -78,6 +78,8 @@ UI (window, panel, pins, tracker, settings) headlessly. What needs the client it
 - Unknown data is left out rather than guessed; generators raise instead of clamping bad data.
 - Comments explain *why* (client quirks, Forever beta bugs, data provenance), not what.
 - Text shown in game, the `.toc` `## Notes` line and `docs/curseforge.md` are user-facing: audits propose changes, never make them.
+- `UI/TrackerHost.lua` is shared with the companion addons (its own comments say so; no script here checks the copies):
+  a confirmed finding there is a `decide`, since the edit has to land in every copy.
 - New dev-only root files must be added to `.pkgmeta` `ignore:` so they don't ship in the zip.
 
 ## Risk order
@@ -104,6 +106,10 @@ finding; audits add an entry when verifiers keep dismissing the same shape for t
   are not a closed set to type (`stringly-typed` dismissed twice; e.g. `Planning/Model.lua`, `Integrations/Dungeons.lua`).
 - **Absence checks**: a spec asserting that a removed field or pin pool stays absent (`pin.More == nil` in
   `tests/ui_spec.lua`) is a regression test for a shipped defect, not a check that cannot fail.
+- **Guards a spec needs**: a nil or existence guard that looks unreachable in game but that a spec exercises: the
+  harness loads a file without the global or stubs the module that defines the field. Delete the guard in a copy and
+  run every spec before raising it (`defensive-noise` dismissed three times in the 2026-10-03 audit: `EventRegistry` in
+  `UI/TrackerHost.lua`, `ns.SourceHint` in `UI/Panel.lua`, the nil `api` in `Planning/Geometry.lua` `Maps`).
 - **Repeated spec fixtures**: the same character or options literal retyped per spec or scene is fixture input, not a
   parallel implementation (e.g. `tests/feature_rules_spec.lua`, `tests/scenes.lua`).
 
@@ -131,7 +137,7 @@ it or it has not recurred in two audits.
 
 ## Project rules and lenses
 
-- Rules: `.sift/scripts/no-em-dash.py` (em and en dashes in tracked text), with its cases under
+- Rules: `.sift/scripts/no-em-dash.py` (an em dash in `tools/*.py` or `Data/*.lua`), with its cases under
   `.sift/script-tests/no-em-dash`.
 - Lenses: none yet.
 
