@@ -118,6 +118,9 @@ local instanceApi = {
 		if lfgID == 2 then
 			return ""
 		end
+		if lfgID == 4 then
+			return "Wailing Caverns", 0, 0, 0, 0, 0, 13, 13
+		end
 		return nil
 	end,
 	GetRealZoneText = function(mapID)
@@ -135,6 +138,9 @@ equal(instances[1].high, 18, "Instances: 8th LFG return is the high level")
 equal(instances[2].name, "The Deadmines", "Instances: GetRealZoneText is the empty-name fallback")
 equal(instances[3].name, nil, "Instances: a client with no answer leaves the name nil")
 equal(instances[3].low, nil, "Instances: a client with no answer leaves the level nil")
+local single = Geometry.Instances(instanceApi, { 4 })[4]
+equal(single.low, nil, "Instances: the same level twice is no range, so the bundled one stays")
+equal(single.high, nil, "Instances: nor its high level")
 equal(next(Geometry.Instances({}, { 1 })), nil, "Instances: an API without GetLFGDungeonInfo answers nothing")
 equal(next(Geometry.Instances(instanceApi)), nil, "Instances: no LFG IDs means no entries")
 
