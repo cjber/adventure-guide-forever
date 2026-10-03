@@ -136,7 +136,7 @@ do
 	Redraw(h)
 	texts = Texts(h)
 	equal(texts[L.PVP_CAPPED], 1, "capped: says so")
-	equal(texts[L.PVP_RANK_POINTS:format(0, 0)], nil, "capped: no points")
+	equal(texts[L.PVP_RANK_POINTS:format(1200, 3000)], nil, "capped: no points")
 	equal(texts[L.PVP_NO_BATTLEGROUNDS], 1, "capped: no battlegrounds at the level")
 
 	h.rank.info = nil
@@ -298,7 +298,9 @@ do
 	entrances[389] = { map = 1411, x = 0.52, y = 0.49 }
 	Redraw(h)
 	equal(Entrance():IsEnabled(), true, "ready: enabled")
-	equal(Texts(h)[L.TWEAKS_MISSING], nil, "ready: no note")
+	for _, note in ipairs({ L.TWEAKS_MISSING, L.TWEAKS_OUTDATED, L.ENTRANCE_UNKNOWN }) do
+		equal(Texts(h)[note], nil, "ready: no note")
+	end
 	h.Click(Entrance())
 	equal(h.waypoint.uiMapID, 1411, "ready: entrance map")
 	equal(h.waypoint.position.x, 0.52, "ready: entrance point")
@@ -307,12 +309,13 @@ do
 
 	local story = Load({ charDB = { journey = "zone:1413", dungeons = true } })
 	local storyWindow = Open(story)
-	local shown = Visible(story, storyWindow, function(frame)
-		return frame.text == L.GO_TO_ENTRANCE
-			and frame:GetParent().journey ~= nil
-			and frame:GetParent().journey.kind ~= "dungeon"
+	local others = Visible(story, storyWindow, function(frame)
+		return frame.EntranceButton ~= nil and frame.journey ~= nil and frame.journey.kind ~= "dungeon"
 	end)
-	equal(#shown, 0, "only a dungeon card has one")
+	equal(#others > 0, true, "story and zone cards are drawn")
+	for _, card in ipairs(others) do
+		equal(card.EntranceButton:IsVisible(), false, "only a dungeon card has one")
+	end
 	clean(story, "entrance: others")
 end
 

@@ -165,7 +165,9 @@ fake.items = {
 }
 fake.quests[1486].objectivesText = { "Test objective." }
 fake.zones.dungeons = { [100043] = { "Test instance", { 999906 }, 1413, { { 1413, 51, 32 } } } }
+fake.quests[999910] = { name = "Alias area quest", questLevel = 20, requiredLevel = 18, zoneOrSort = 999906 }
 local q = harness.load({ questiedb = fake })
+equal(q.ns.Data.quests[999910].dungeon, 43, "a quest in a dungeon's alias area is filed under the dungeon")
 local yields = 0
 local source = q.ns.ReadDungeonSource(function()
 	yields = yields + 1
@@ -572,7 +574,7 @@ local loot = harness.load({
 		},
 		[999900] = { name = "Elite drop", quality = 2 },
 		[999908] = { name = "Junk", quality = 1 },
-		[999909] = { name = "Quest starter", quality = 1 },
+		[999909] = { name = "Quest starter", quality = 1, equipSlot = "INVTYPE_NON_EQUIP_IGNORE" },
 	},
 })
 local localSource = loot.ns.Dungeons.Source(noop)
@@ -586,6 +588,7 @@ equal(#rows, 5, "junk and world drops omitted; quest starter kept")
 equal(rows[5].item, 999909, "white quest-starting item retained")
 equal(rows[2].quality, 3, "loot carries native rarity")
 equal(rows[2].info, "Armor · Cloth · Head · Requires level 20", "loot carries compact item metadata")
+equal(rows[5].info, "", "an item that cannot be equipped names no slot")
 -- Synthetic AtlasLoot shape: no addon tables or data are copied into the project.
 local atlasModule = {
 	GetDifficultyByName = function(_, name)

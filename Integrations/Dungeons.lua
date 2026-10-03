@@ -513,9 +513,9 @@ function Dungeons.LootRows(source, instance, bosses)
 			if itemType and itemType ~= "" then
 				meta[#meta + 1] = itemSubType and itemType .. L.SEPARATOR .. itemSubType or itemType
 			end
-			equipSlot = equipSlot and _G[equipSlot] or equipSlot
-			if equipSlot and equipSlot ~= "" and equipSlot ~= "INVTYPE_NON EQUIP" then
-				meta[#meta + 1] = equipSlot
+			-- An item that cannot be equipped has an empty slot token or an INVTYPE_NON_EQUIP one.
+			if equipSlot and equipSlot ~= "" and not equipSlot:find("^INVTYPE_NON_EQUIP") then
+				meta[#meta + 1] = _G[equipSlot] or equipSlot
 			end
 			if requiredLevel and requiredLevel > 0 then
 				meta[#meta + 1] = L.WHY_LEVEL:format(requiredLevel)
