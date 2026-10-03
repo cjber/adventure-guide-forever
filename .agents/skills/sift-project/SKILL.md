@@ -44,7 +44,7 @@ UI (window, panel, pins, tracker, settings) headlessly. What needs the client it
 | Dead code (Lua) | `luacheck . --no-color` + the live-root searches below | a function stored on `ns` is never "unused" to luacheck: search every file for `ns.<Name>` |
 | Dead code (Python) | `uvx vulture tools --min-confidence 60` | none |
 | Live roots | `rg -n 'hooksecurefunc|RegisterEvent|RegisterCallback|SetScript|AddDataProvider|AddTooltipPostCall|SLASH_|SlashCmdList' -g '*.lua'` | none |
-| Shared-table members | the `ns-defined`/`ns-once` commands in sift's `languages/lua.md` | the `ns\.` pattern has no word boundary, so `options.zone`/`options.pinned` in the spec match; nested tables (`Model.*`, `ns.Integrations.*`) need their own `rg -n 'Model\.Name'` search |
+| Shared-table members | the shared-table command in sift's `languages/lua.md` (it writes `ns-once`) | nested tables (`Model.*`, `ns.Integrations.*`) need their own `rg -n 'Model\.Name'` search |
 | Clones | `npx -y jscpd@4 --silent --min-lines 6 --ignore "Data/**,.types/**,**/.cache/**" .` | none (0 clones on 2026-09-24) |
 | Standards | `python3 .sift/agents.py standards` | resolves the pinned pack declared in AGENTS.md; `SIFT_STANDARDS_PATH` can override it with a local standards directory |
 
@@ -93,7 +93,7 @@ UI (window, panel, pins, tracker, settings) headlessly. What needs the client it
 Shapes that look like defects here but are not. Reviewers and verifiers read this before raising a
 finding; audits add an entry when verifiers keep dismissing the same shape for the same reason.
 
-- **Planner look-alikes**: `Planning/Model.lua`'s step builders, locators and shallow-copy loops (`TrainerSteps`/`Battleground`,
+- **Planner look-alikes**: the `Planning/` modules' step builders, locators and shallow-copy loops (`TrainerSteps`/`Battleground`,
   `Locate`/`Build`, `Describe` before and after the overseas override) read alike but take different contracts; five
   `parallel-implementations` candidates were dismissed on the small-idiom and different-contract exclusions in the
   2026-09-27 audit. Raise one only with a caller that needs both to change together.
@@ -131,7 +131,8 @@ it or it has not recurred in two audits.
 
 ## Project rules and lenses
 
-- Rules: none yet (no repeated pattern a tool could recognise without judgment).
+- Rules: `.sift/scripts/no-em-dash.py` (em and en dashes in tracked text), with its cases under
+  `.sift/script-tests/no-em-dash`.
 - Lenses: none yet.
 
 The type gate also runs `tools/lint_taint.py` and `tools/typecheck_coverage.py`; `AGENTS.md`, Secure UI regression checks, states what they enforce.
