@@ -16,8 +16,9 @@ local ROW = 2 ^ 16
 ---@param mapOf fun(area: integer): integer?
 ---@param yield fun()
 ---@param questID integer
+---@param reads AGFQuestieReads one catalogue build's QuestieDB answers, so a creature many quests share is read once
 ---@return table?, AGFObjectiveArea[]?, table?, boolean? unsupported
-function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield, questID)
+function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield, questID, reads)
 	-- Questie stores icon overrides, not required counts, in objective[3] (kill credits: [4]).
 	-- Zero retains the objective slot; the quest log supplies its actual count after pickup.
 	local need, areas, kinds = {}, {}, {}
@@ -85,18 +86,27 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 		end
 	end
 	local function Spawns(kind, id, lists)
-		local values = lib[kind].GetAll(id, ns.QuestieFields.spawns)
-		if values and type(values[1]) == "table" then
-			lists[#lists + 1] = values[1]
+		local spawns = reads[kind][id]
+		if spawns == nil then
+			local values = lib[kind].GetAll(id, ns.QuestieFields.spawns)
+			spawns = values and type(values[1]) == "table" and values[1] or false
+			reads[kind][id] = spawns
+			yield()
 		end
-		yield()
+		if spawns then
+			lists[#lists + 1] = spawns
+		end
 	end
 	local function Item(id, lists, seen)
 		if seen[id] then
 			return
 		end
 		seen[id] = true
-		local values = lib.Item.GetAll(id, ns.QuestieFields.drops)
+		local values = reads.Item[id]
+		if values == nil then
+			values = lib.Item.GetAll(id, ns.QuestieFields.drops) or false
+			reads.Item[id] = values
+		end
 		if values then
 			for index, kind in ipairs(KINDS) do
 				for _, source in ipairs(type(values[index]) == "table" and values[index] or {}) do

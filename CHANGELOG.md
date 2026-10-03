@@ -11,6 +11,12 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Quest data loads sooner after login and a reload.** While "Loading quest data..." was up, the guide asked QuestieDB where the same creature or object is found once for every quest that needs it, tens of thousands of times in all. It now asks once for each, about a fifth of the reading, so the journeys and the tracker fill in sooner.
+- **A journey card follows your own order.** After you reordered a journey's stops, its card kept naming the stop that used to come first, such as "Turn in: The Adventurer and 1 more stop". The card now names the stop your order starts with.
+- **A dungeon's entrance reads the same from the first moment.** The Dungeons tab showed one entrance position, then a slightly different one a moment later once the dungeon's details had loaded. It now shows the QuestieDB position straight away, and a dungeon journey's card and its Go to entrance button use that same position. Tweaks Forever still supplies an entrance QuestieDB does not list.
+- **The Bosses view says when AtlasLoot is installed but not running.** With AtlasLoot in the AddOns folder but turned off or marked out of date, an empty Bosses view asked you to install it. It now asks you to enable or update it, and says so plainly when AtlasLoot is running and lists no encounters for that dungeon.
+- **Bosses appear when AtlasLoot loads late.** If the Dungeons tab was opened during a fight, or before AtlasLoot had loaded, the Bosses and Loot views stayed without AtlasLoot's encounters until the next reload. They now fill in as soon as the fight ends or AtlasLoot loads.
+
 ## [0.6.8] - 2026-10-03
 
 - **A stuck Questie no longer holds the guide.** If Questie loaded but never finished starting on a character, the guide sat on "Loading quest data..." for the whole session, with an empty tracker and empty journeys. After a minute it now reads the quest data on its own, so quests in your log are guided again. New pickups are recommended once Questie is running.

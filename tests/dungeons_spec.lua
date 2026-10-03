@@ -181,8 +181,8 @@ equal(#source.loot[43][2].droppers, 2, "droppers deduplicated and restricted to 
 equal(source.loot[43][2].droppers[1].name, "Test boss", "dropper name comes from runtime NPC data")
 equal(source.rewards[1486][1].id, 999904, "inverse item questRewards supplies rewards")
 equal(source.objectives[1486], "Test objective.", "runtime objective text")
-equal(source.entrances[43].x, 0.51, "runtime entrance retains Forever coordinates")
-equal(q.ns.Dungeons.Entrance(43, source).y, 0.32, "runtime entrance needs no Tweaks install")
+equal(q.ns.DungeonEntrance(43).x, 0.51, "runtime entrance retains Forever coordinates")
+equal(q.ns.Dungeons.Entrance(43).y, 0.32, "runtime entrance needs no Tweaks install")
 equal(yields > 1000, true, "large reads yield between entities")
 equal(h.ns.ReadDungeonSource(noop), nil, "standalone source missing")
 q.G.LibQuestieDB.Item.GetAllIds = nil
@@ -691,4 +691,75 @@ local partialAtlas =
 	{ curated = { [43] = true }, bosses = { [43] = { { id = 1, name = "Localized encounter", low = 99, high = 99 } } } }
 equal(#D.Bosses(partialAtlas, 43), 1, "AtlasLoot order and localized details retained")
 equal(#partialAtlas.bosses[43], 1, "display merge does not mutate provider data")
+-- One way in from the first draw: QuestieDB's point is read before any dungeon details, on the page and on the
+-- journey card alike, so the text never changes once details load. Tweaks Forever answers only where QuestieDB
+-- has no point.
+local function Plain()
+	local mirror = harness.questieMirror(h.ns.Data)
+	mirror.zones.dungeons = { [100043] = { "Test instance", {}, 1413, { { 1413, 51, 32 } } } }
+	return mirror
+end
+local tweaks = { [43] = { map = 1413, x = 0.477, y = 0.35 }, [48] = { map = 1440, x = 0.14, y = 0.14 } }
+local way = harness.load({ questiedb = Plain(), entrances = tweaks })
+equal(way.ns.Dungeons.Entrance(43).x, 0.51, "QuestieDB's entrance wins before any details are read")
+equal(way.ns.Overview.Entrance({ kind = "dungeon", instance = 43 }) ~= nil, true, "the journey card has a way in")
+local _, cardPoint = way.ns.Overview.Entrance({ kind = "dungeon", instance = 43 })
+equal(cardPoint.x, 0.51, "the journey card names the same entrance as the dungeon page")
+equal(way.ns.Dungeons.Entrance(48).x, 0.14, "Tweaks Forever fills an entrance QuestieDB lacks")
+local _, why = harness.load({ questiedb = Plain() }).ns.Dungeons.Entrance(48)
+equal(why, "missing", "no entrance says why")
+way.ns.Window.OpenDungeon(43)
+way.flush()
+local shownAt = way.ns.L.DUNGEON_ENTRANCE_AT:format(way.ns.State.ZoneName(1413) or "", 51, 32)
+equal(Texts(way)[shownAt], true, "the page shows QuestieDB's entrance once details load")
+
+-- The empty Bosses view says what would fill it: install AtlasLoot, or turn on a copy that is on disk but not
+-- running. A read made without AtlasLoot is not kept once it loads.
+local function NoBosses(options)
+	options.questiedb = Plain()
+	local ui = harness.load(options)
+	ui.ns.Window.OpenDungeon(43)
+	ui.flush()
+	ui.Click(Button(ui, ui.ns.L.DUNGEON_BOSSES_TAB))
+	return ui
+end
+local absent = NoBosses({})
+equal(Texts(absent)[absent.ns.L.DUNGEON_NO_BOSSES], true, "no AtlasLoot: install it")
+local off = NoBosses({ installed = { AtlasLootClassic = true } })
+equal(Texts(off)[off.ns.L.DUNGEON_NO_BOSSES_DISABLED], true, "AtlasLoot on disk but not running: enable it")
+equal(Texts(off)[off.ns.L.DUNGEON_NO_BOSSES], nil, "an installed AtlasLoot is never asked for again")
+off.metadata.AtlasLootClassic, off.G.AtlasLoot = {}, loot.G.AtlasLoot
+off.fire("ADDON_LOADED", "AtlasLootClassic")
+off.flush()
+equal(Texts(off)["Curated elite boss"], true, "AtlasLoot loading later fills the open Bosses view")
+off.fire("ADDON_LOADED", "SomethingElse")
+equal(#off.errors, 0, "late AtlasLoot has no errors")
+
+-- A fight holds back AtlasLoot's load-on-demand pages: the tab reads again when it ends.
+local pages
+local fight = harness.load({
+	questiedb = Plain(),
+	installed = { AtlasLootClassic_DungeonsAndRaids = true },
+	setup = function(loaded)
+		loaded.G.AtlasLoot =
+			{ Locales = { Trash = "Trash" }, ItemDB = {
+				Get = function()
+					return pages
+				end,
+			} }
+		loaded.G.C_AddOns.LoadAddOn = function()
+			pages = atlasModule
+		end
+	end,
+})
+fight.ns.Window.OpenDungeon(43)
+fight.SetCombat(true)
+fight.flush()
+fight.Click(Button(fight, fight.ns.L.DUNGEON_BOSSES_TAB))
+equal(pages, nil, "nothing is loaded during a fight")
+equal(Texts(fight)["Curated elite boss"], nil, "no AtlasLoot bosses during the fight")
+fight.SetCombat(false)
+fight.flush()
+equal(Texts(fight)["Curated elite boss"], true, "the pages load and the bosses show once the fight ends")
+equal(#fight.errors, 0, "deferred AtlasLoot has no errors")
 print(("dungeons_spec: %d checks passed"):format(checks))
