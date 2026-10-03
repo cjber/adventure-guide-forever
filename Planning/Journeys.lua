@@ -646,7 +646,7 @@ local DIVERSION_ORDER = { calling = 1, dungeon = 2, chain = 3, battleground = 4 
 -- places a battlemaster for and the player is interested in. None where the data places none, so a card never points
 -- at coordinates the data lacks; none either while its step is skipped, which Skipped (n) then keeps.
 ---@param prefs AGFPrefs
----@param mapName? fun(map: integer): string?
+---@param mapName? AGFMapName
 local function Battleground(data, player, prefs, mapName)
 	local L, dismissed, open = ns.L, prefs.notInterested or {}, {}
 	for _, bg in ipairs(player.battlegrounds or NONE) do
@@ -708,7 +708,7 @@ end
 -- yields and the build is one frame.
 local YIELD_EVERY = 4
 
----@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
+---@param mapName? AGFMapName the client's (localised) name for a map; the data's English otherwise
 ---@param instanceName? fun(id: integer): string? the client's name for an instance Map.ID; the data's otherwise
 ---@param skippedQuests? table<string, integer[]> the build's AGFPlanInputs.skippedQuests
 ---@return AGFJourney[] journeys

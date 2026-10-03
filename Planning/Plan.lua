@@ -22,7 +22,7 @@ local function Route(journeys, prefs)
 	}
 end
 
----@param mapName? fun(map: integer): string? the client's (localised) name for a map; the data's English otherwise
+---@param mapName? AGFMapName the client's (localised) name for a map; the data's English otherwise
 ---@param instanceName? fun(id: integer): string? the client's name for an instance Map.ID; the data's otherwise
 ---@param last? AGFRoute the route before, whose committed orders (`orders`) this one keeps to
 ---@param inputs? AGFPlanInputs what the player's order, skips and session ask of this build; none of them when nil

@@ -281,11 +281,11 @@
 ---@field Search fun(data: AGFData, player: AGFPlayer, query: string, title?: fun(questID: integer): string?): integer[] up to 10 quest IDs whose title holds `query`, by title
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
 ---@field Story fun(data: AGFData, questID: integer): AGFStory? the chain the quest belongs to; nil when it is in none, or the way back forks
----@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?), skippedQuests?: table<string, integer[]>): AGFJourney[], boolean
----@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (fun(map: integer): string?), instanceName?: (fun(id: integer): string?), last?: AGFRoute, inputs?: AGFPlanInputs): AGFRoute
+---@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (AGFMapName), instanceName?: (fun(id: integer): string?), skippedQuests?: table<string, integer[]>): AGFJourney[], boolean
+---@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (AGFMapName), instanceName?: (fun(id: integer): string?), last?: AGFRoute, inputs?: AGFPlanInputs): AGFRoute
 ---@field Here fun(data: AGFData, where?: {map?: integer, x?: number, y?: number}, steps: AGFStep[], held?: string): integer? the open area step `where` stands in: the head when it is one, else the first; `held`, the key of the one stood in last, lets go past a margin
 ---@field Yards fun(data: AGFData, a: {map: integer, x: number, y: number}, b: {map: integer, x: number, y: number}): number? yards between two places on one continent the data places; nil otherwise
----@field Refresh fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, last: AGFRoute, mapName?: (fun(map: integer): string?), inputs?: AGFPlanInputs): AGFRoute the cheap in-combat rebuild: the log's steps fresh, the rest from `last`
+---@field Refresh fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, last: AGFRoute, mapName?: (AGFMapName), inputs?: AGFPlanInputs): AGFRoute the cheap in-combat rebuild: the log's steps fresh, the rest from `last`
 
 -- What the player's order, skips and session ask of a build, as plain values (Shown.Build gathers them); Model.Plan
 -- reads no other module.
@@ -470,7 +470,7 @@
 ---@field TRAVEL_ABOUT string format: minutes; the line from a Shortest Path with Estimate only
 ---@field TRAVEL_NEW_FLIGHT_PATH string appended when a walk leg reaches an undiscovered flight master
 ---@field TRAVEL_WAIT string format: minutes waiting for the chosen leg's boat, zeppelin, lift or tram; appended
----@field TRAVEL_WALK string format: the place a leg ends; one per AGFSPFMode
+---@field TRAVEL_WALK string format: the place a leg ends; one per AGFSPFMode but "teleport"
 ---@field TRAVEL_FLIGHT string
 ---@field TRAVEL_BOAT string
 ---@field TRAVEL_ZEPPELIN string
@@ -722,8 +722,6 @@
 ---@class AGFStrings
 ---@field UNLISTED string the panel's honest-coverage line
 
--- "Tone".
-
 ---@class AGFStrings
 ---@field REASON_GREY string format: how many of a zone card's pickups turn grey at the next level
 ---@field REASON_CHAIN_GIVER string format: the giver who begins the card's chain
@@ -843,7 +841,7 @@
 
 ---@class AGFModel
 ---@field Trainer fun(data: AGFData, player: AGFPlayer, level: integer): AGFNpc? the nearest class trainer of the player's class and side who teaches from level 1 up to `level`; nil when the data has none or the player has no place
----@field TownName fun(data: AGFData, place: {map: integer, hub?: integer}, mapName?: fun(map: integer): string?): string the hub's flight-master town, else the map's name
+---@field TownName fun(data: AGFData, place: {map: integer, hub?: integer}, mapName?: AGFMapName): string the hub's flight-master town, else the map's name
 
 ---@class AGFIntegrations
 ---@field Training fun(): AGFTraining?, boolean Tweaks Forever's affordable spells to train, counted; nil without a v1+ Tweaks Forever, its answer, or an affordable spell to train
@@ -1195,7 +1193,7 @@
 ---@field completed table<integer, boolean>
 ---@field log table<integer, AGFLogQuest>
 ---@field prefs AGFPrefs
----@field mapName? fun(map: integer): string?
+---@field mapName? AGFMapName
 ---@field instanceName? fun(id: integer): string?
 ---@field last? AGFRoute the full route of the build before
 ---@field combat? boolean the cheap in-combat build (Model.Refresh), which needs `last`
@@ -1595,7 +1593,7 @@
 ---@field completed table<integer, boolean>
 ---@field log table<integer, AGFLogQuest>
 ---@field plan AGFPlanAreas
----@field mapName? fun(map: integer): string?
+---@field mapName? AGFMapName
 ---@field leadID? integer
 ---@field join? fun(selected: AGFStep[])
 ---@field card string
@@ -1634,7 +1632,7 @@
 ---@class AGFLapChoice
 ---@field step? AGFStep|AGFAnchor
 ---@field anchor? AGFAnchor
----@field kind? string
+---@field kind? "open"|"stop"|"close"
 ---@field rank? number
 ---@field value? number
 ---@field key? string
@@ -1698,7 +1696,7 @@
 ---@field Count fun(one: string, many: string, count: integer): string
 ---@field Describe fun(data: AGFData, log: table<integer, AGFLogQuest>, player: AGFPlayer, step: AGFStep)
 ---@field Enter fun(data: AGFData, step: AGFStep, from?: AGFPosition)
----@field Gather fun(data: AGFData, areas: AGFStep[], anchors: table<AGFStep, AGFNode>, steps: AGFStep[], node: AGFNode, id: integer, title: string, kind: string, optional: boolean?, near: (fun(a: AGFNode, b: AGFNode): boolean), planned?: boolean): AGFStep
+---@field Gather fun(data: AGFData, areas: AGFStep[], anchors: table<AGFStep, AGFNode>, steps: AGFStep[], node: AGFNode, id: integer, title: string, kind: AGFStepKind, optional: boolean?, near: (fun(a: AGFNode, b: AGFNode): boolean), planned?: boolean): AGFStep
 ---@field GreyRisk fun(level: integer, player: AGFPlayer): boolean
 ---@field Hub fun(place: AGFPlace): string
 ---@field Inside fun(yards: number, a: AGFNode, b: AGFNode): boolean
@@ -1714,7 +1712,7 @@
 ---@field Tell fun(area: AGFStep)
 ---@field TownPoint fun(data: AGFData, step: AGFStep, from?: AGFPosition)
 ---@field Trim fun(town: AGFStep, handins: integer[], pickups: integer[])
----@field Visit fun(stops: table<string, AGFStep>, steps: AGFStep[], place: AGFPlace, list: string, id: integer): AGFStep
+---@field Visit fun(stops: table<string, AGFStep>, steps: AGFStep[], place: AGFPlace, list: "handins"|"pickups", id: integer): AGFStep
 
 ---@class AGFPlannerServices
 ---@field Rest fun(data: AGFData, player: AGFPlayer, steps: AGFStep[])
