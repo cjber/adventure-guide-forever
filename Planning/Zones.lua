@@ -105,7 +105,8 @@ local function Choices(data, player, completed, log, index, prefs, far)
 			index.choicesByLevel[0] = sideCandidates
 		end
 	end
-	local choiceKey = string.format("%d:%d:%d", player.level, player.raceBit or 0, player.classBit or 0)
+	-- Joined, not formatted as integers: the 32nd race's bit is past what the client's %d holds.
+	local choiceKey = player.level .. ":" .. (player.raceBit or 0) .. ":" .. (player.classBit or 0)
 	local candidates = sideCandidates[choiceKey]
 	if not candidates then
 		candidates = {}

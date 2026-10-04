@@ -11,6 +11,7 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **The guide works for every race.** A character of the race the game numbers 32 got an "integer overflow" error when the guide planned or the map opened; its routes now plan like any other race's.
 - **The guide's map data matches the current game build.** The maps, flight masters and Forever's own lands the guide carries are read from client build 1.60.1.70205. The Stormwind flight master sits where the game now has it, and the guide no longer plans steps on the Alterac Valley battleground map, which the game no longer lists as a zone.
 - **A route settles the first time it is drawn.** With a nearly full quest log, a route could put a hand-in last, then move it up to second a moment later with nothing changed. The order you first see is now the one it keeps.
 
