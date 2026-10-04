@@ -444,45 +444,45 @@ do
 	equal(h.spf.NavigateRoute, 1, "follow: started once")
 	Moved(h, h.player.map, h.player.x, h.player.y)
 	equal(h.spf.NavigateRoute, 1, "follow: a rebuild that changes nothing sends nothing")
-	-- Southsea Freebooters and Baron Longshore picked up in Ratchet and the player in their area's ring: it is step 1
-	-- before the Crossroads the route heads for, so the way changed.
+	-- Southsea Freebooters and Baron Longshore are in the log: their objective areas join the route after the town's
+	-- stops, so the way is sent again, and once the player stands in the first, it leads.
 	h.log[#h.log + 1] = { id = 887, title = "Southsea Freebooters", level = 14, complete = false }
 	h.log[#h.log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
 	h.fire("QUEST_LOG_UPDATE")
 	h.flush()
-	equal(h.spf.NavigateRoute, 1, "follow: a pickup ahead of step 1 sends nothing")
+	equal(h.spf.NavigateRoute, 2, "follow: a route change after step 1 sends once")
 	Moved(h, 1413, 0.64, 0.46)
 	local head = h.ns.Route().steps[1]
 	equal(head.key, "area:887:0", "follow: the area the player stands in leads")
 	-- Entering an objective area retains the current approach and all later route stops.
 	equal(head.here, true, "follow: you're here")
-	equal(h.spf.NavigateRoute, 2, "follow: in step 1's area, the stops after it sent")
+	equal(h.spf.NavigateRoute, 3, "follow: in step 1's area, the stops after it sent")
 	local onward = h.ns.Route().steps
 	equal(#h.spfRoute.stops, #onward, "follow: proximity keeps every stop")
 	equal(h.spfRoute.stops[1].x, onward[1].x, "follow: current area retains its destination")
 	equal(h.ns.Guidance.Owns(), true, "follow: guidance holds, so Stop still shows")
 	Moved(h, 1413, 0.64, 0.47)
-	equal(h.spf.NavigateRoute, 2, "follow: nothing again while the player is in it")
+	equal(h.spf.NavigateRoute, 3, "follow: nothing again while the player is in it")
 	h.SetCombat(true)
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 2, "follow: nothing in combat")
+	equal(h.spf.NavigateRoute, 3, "follow: nothing in combat")
 	h.SetCombat(false)
 	h.flush()
-	equal(h.spf.NavigateRoute, 3, "follow: out of the area, once combat ends, the route goes on")
+	equal(h.spf.NavigateRoute, 4, "follow: out of the area, once combat ends, the route goes on")
 	equal(h.ns.Prefs().guided, "zone:1413", "follow: still the chosen journey's")
 	-- Standing in the Crossroads still shows the complete route.
 	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: town proximity keeps later stops")
 	h.onTaxi = true
 	Moved(h, 1413, 0.46, 0.79)
-	equal(h.spf.NavigateRoute, 3, "follow: nothing in the air")
+	equal(h.spf.NavigateRoute, 4, "follow: nothing in the air")
 	h.onTaxi = false
 	Moved(h, nil, nil, nil)
-	equal(h.spf.NavigateRoute, 3, "follow: nothing off the map")
+	equal(h.spf.NavigateRoute, 4, "follow: nothing off the map")
 	Moved(h, 1413, 0.5223, 0.3101)
 	Moved(h, 1413, 0.5224, 0.3101)
-	equal(h.spf.NavigateRoute, 3, "follow: near the town, its complete route remains active")
+	equal(h.spf.NavigateRoute, 4, "follow: near the town, its complete route remains active")
 	Moved(h, 1413, 0.46, 0.79)
-	equal(h.spf.NavigateRoute, 4, "follow: out of the town, the journey goes on")
+	equal(h.spf.NavigateRoute, 5, "follow: out of the town, the journey goes on")
 	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: every step")
 	-- Shortest Path moves on stop by stop until it heads for the Crossroads, then the player reaches it.
 	for _, step in ipairs(h.ns.Route().steps) do
@@ -492,11 +492,11 @@ do
 		h.spfAdvance()
 	end
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 5, "follow: retarget the nearest remaining giver in town")
+	equal(h.spf.NavigateRoute, 6, "follow: retarget the nearest remaining giver in town")
 	h.spfOther()
 	Moved(h, 1413, 0.46, 0.79)
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 5, "follow: another journey replaced ours: nothing")
+	equal(h.spf.NavigateRoute, 6, "follow: another journey replaced ours: nothing")
 	clean(h, "follow")
 
 	-- The "you're here" head (design §4.2): checked every 2 s only while the player moves, and a rebuild only on
@@ -1150,12 +1150,11 @@ for _, spf in ipairs({ false, "v1" }) do
 	-- Rings draw above the stock quest marks; givers stay under them (Blizzard_WorldMap.lua:291-311).
 	equal(ring.frameLevelType, "PIN_FRAME_LEVEL_WAYPOINT_LOCATION", label .. ": rings at the user waypoint's level")
 	h.Hover(ring)
-	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. Step 1 is the Crossroads, where the
-	-- route's story begins, handed in before the town's pickups.
+	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. Step 1 is the Crossroads, where The
+	-- Zhevra opens its next chapter, handed in before the town's pickups.
 	local expected = { "title: 1. Visit Crossroads, The Barrens: Pick up 4, turn in 1" }
-	expected[#expected + 1] = "normal: Chapter 1 of 2"
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
-	expected[#expected + 1] = "highlight: Begins a new story"
+	expected[#expected + 1] = "highlight: Opens the next chapter here"
 	expected[#expected + 1] = "normal: Sergra Darkthorn"
 	expected[#expected + 1] = "colored: |A:questturnin:14:14|a [13] The Zhevra"
 	same({ unpack(h.tooltip, 1, #expected) }, expected, label .. ": ring tooltip")
@@ -1233,7 +1232,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		chapter = pin.step.chapter and pin or chapter
 	end
 	h.Hover(chapter)
-	equal(h.tooltip[2], "normal: Chapter 1 of 2", label .. ": the story's ring tells its chapter")
+	equal(h.tooltip[2], "normal: Chapter 1 of 8", label .. ": the story's ring tells its chapter")
 	ns.Prefs().journey = nil
 	ns.Invalidate()
 	h.flush()
@@ -1580,19 +1579,20 @@ do
 	calls = h.spf.EstimateDetail
 	h.Hover(rows[1])
 	equal(h.spf.EstimateDetail, calls, "travel line: step 1's tooltip asks nothing")
-	-- Step 1 is the lead's town, so its chapter line comes before the way.
+	-- Step 1 begins the town's work and opens the lead chain's next chapter, so the way comes before the chapter line.
 	same({ unpack(h.tooltip, 1, 3) }, {
 		"title: 1. " .. rows[1].step.title,
-		"normal: Chapter 1 of 2",
 		"highlight: " .. cases[4][3],
+		"highlight: Opens the next chapter here",
 	}, "travel line: step 1's tooltip")
 	h.spfLegs = cases[1][2]
 	h.Hover(rows[2])
 	equal(h.spf.EstimateDetail, calls + 1, "travel line: another row's tooltip asks once")
+	-- Step 2 is the lead chain's chapter, so its chapter line comes before the way.
 	same({ unpack(h.tooltip, 1, 3) }, {
 		"title: 2. " .. rows[2].step.title,
+		"normal: Chapter 1 of 8",
 		"highlight: " .. cases[1][3],
-		"highlight: " .. rows[2].step.reason,
 	}, "travel line: another row's tooltip")
 	clean(h, "travel line")
 
@@ -2234,7 +2234,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	local label = "tracker: " .. (spf or "no Shortest Path")
 	local h = Load(spf)
 	local steps = h.ns.Route().steps
-	local expected = { "1 to hand in, 4 to pick up", "Begins a new story" }
+	local expected = { "1 to hand in, 4 to pick up", "Opens the next chapter here" }
 	for _, giver in ipairs(steps[1].checklist) do
 		expected[#expected + 1] = giver.text
 	end
@@ -2329,11 +2329,10 @@ do
 	h.Hover(rows[1])
 	local lines, colors = h.tooltip, h.tooltipColors
 	equal(lines[1], "title: 1. Visit Crossroads, The Barrens: Pick up 8, turn in 1", "hub tooltip: the numbered town")
-	equal(lines[2], "normal: Chapter 1 of 2", "hub tooltip: the lead's chapter")
-	equal(lines[3], "highlight: " .. step.reason, "hub tooltip: the reason")
-	equal(lines[4], "normal: Sergra Darkthorn", "hub tooltip: the hand-in's NPC first")
-	equal(lines[5], "colored: |A:questturnin:14:14|a [13] The Zhevra", "hub tooltip: a hand-in has the turn-in mark")
-	equal(lines[7], "colored: |A:questnormal:14:14|a [13] Raptor Thieves", "hub tooltip: a pickup has its level")
+	equal(lines[2], "highlight: " .. step.reason, "hub tooltip: the reason")
+	equal(lines[3], "normal: Sergra Darkthorn", "hub tooltip: the hand-in's NPC first")
+	equal(lines[4], "colored: |A:questturnin:14:14|a [13] The Zhevra", "hub tooltip: a hand-in has the turn-in mark")
+	equal(lines[6], "colored: |A:questnormal:14:14|a [13] Raptor Thieves", "hub tooltip: a pickup has its level")
 	local quests, npcs = 0, 0
 	for index, line in ipairs(lines) do
 		if line:find("^colored: ") then
@@ -2345,11 +2344,11 @@ do
 		npcs = npcs + (line:find("^normal: ") and 1 or 0)
 	end
 	equal(quests, 8, "hub tooltip: 8 quest lines")
-	equal(npcs, 7, "hub tooltip: one line per NPC shown")
+	equal(npcs, 6, "hub tooltip: one line per NPC shown")
 	equal(lines[#lines - 2], "highlight: And 1 more", "hub tooltip: the rest counted")
 	equal(lines[#lines - 1], "instruction: " .. ns.L.ORDER_DRAG, "hub tooltip: then how to reorder")
 	equal(lines[#lines], "instruction: " .. ns.L.SPF_MISSING, "hub tooltip: then the Shortest Path hint")
-	same(colors[12], { 1, 1, 0 }, "hub tooltip: a quest 2 over the player is yellow")
+	same(colors[11], { 1, 1, 0 }, "hub tooltip: a quest 2 over the player is yellow")
 
 	-- The ring's tooltip lists the same, then the click line.
 	h.providers[1]:RefreshAllData()
@@ -2373,7 +2372,7 @@ do
 	ns.Data.quests[step.quests[1]].elite = true
 	h.Hover(rows[1])
 	equal(
-		h.tooltip[5],
+		h.tooltip[4],
 		"colored: |A:questturnin:14:14|a [13] The Zhevra |A:questlog-questtypeicon-group:12:12|a",
 		"hub tooltip: group"
 	)
@@ -2394,7 +2393,7 @@ do
 	local step = steps[1]
 	equal(step.title, "Visit Crossroads, The Barrens: Pick up 4, turn in 1", "tracker, town: town and actions")
 	equal(step.detail, "1 to hand in, 4 to pick up", "tracker, town: the hand-in joins the pickups")
-	local expected = { step.detail, "Begins a new story" }
+	local expected = { step.detail, "Opens the next chapter here" }
 	for _, giver in ipairs(step.checklist) do
 		expected[#expected + 1] = giver.text
 	end
@@ -2662,7 +2661,7 @@ do
 	h.ns.Invalidate()
 	h.flush()
 	local chain, squares, texts = story.story, {}, {}
-	equal(chain and chain.total, 2, "story: the fixture's chain is proven at 2")
+	equal(chain and chain.total, 8, "story: the fixture's chain is proven at 8")
 	for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverPanel, h.Describe)) do
 		if entry.atlas and entry.atlas:match("^ui%-journeys%-delve%-level%-square") then
 			squares[#squares + 1] = entry.atlas
@@ -2829,7 +2828,7 @@ do
 	capped.flush()
 	equal(#capped.ns.Route().journeys, 2, "guide: at the cap, never nothing")
 	equal(Says(capped, "Blackrock Spire"), 1, "guide: the dungeon card, toggle off")
-	equal(Says(capped, capped.ns.L.JOURNEY_INTO:format("Blackrock Spire")), 1, "guide: the way in, as a story")
+	equal(Says(capped, capped.ns.L.JOURNEY_INTO:format("Scholomance")), 1, "guide: the way in, as a story")
 	equal(Says(capped, capped.ns.L.NO_JOURNEY), 0, "guide: no empty line")
 	clean(capped, "guide: at the cap")
 
@@ -2877,10 +2876,10 @@ for _, spf in ipairs({ false, "v1" }) do
 		for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
 			rings[#rings + 1] = pin.step.key
 		end
-		-- A place the route comes back to keeps its first visit's ring.
+		-- A place the route comes back to keeps its first visit's ring: a town by its hub, anything else by its point.
 		local seen = {}
 		for _, step in ipairs(route.steps) do
-			local place = step.x .. ":" .. step.y
+			local place = (step.kind == "town" and step.hub) and step.hub or (step.x .. ":" .. step.y)
 			if step.map == journey.map and not seen[place] then
 				expected[#expected + 1], seen[place] = step.key, true
 			end

@@ -1,39 +1,38 @@
 # human12_elwynn: level 12, side 1, at 1429 0.4200,0.6500
 card (chosen) | zone:1436 | Westfall story | Chapter 1 of 4 | A chain begins with Quartermaster Lewis | map 1436
-  step 1 | town:51 | Visit Verna Furlbrow: Pick up 3 | 1436 0.5995,0.1936 | 3 to pick up
-  step 2 | town:45 | Pick up: Goretusk Liver Pie | 1436 0.5642,0.3052 | near your level
-  step 3 | area:151:4 | Complete objectives · Poor Old Blanchy | 1436 0.4610,0.3600 | after you pick it up | 107 yd | 151/4
-  step 4 | area:22:4 | Complete objectives · Goretusk Liver Pie | 1436 0.4730,0.5380 | after you pick it up | 297 yd | 22/4
-  step 5 | town:37 | Visit Sentinel Hill, Westfall: Pick up 3 | 1436 0.5700,0.4717 | Begins a new story
-  step 6 | town:45:2 | Turn in: Goretusk Liver Pie | 1436 0.5642,0.3052 | once it's done
-  step 7 | area:12:0 | Complete objectives · The People's Militia | 1436 0.4630,0.2210 | 2 quests here | 141 yd | 12/0 12/1 64/4
-  step 8 | town:51:2 | Visit Farmer Furlbrow: Turn in 2 | 1436 0.5995,0.1936 | 2 to hand in
-  step 9 | area:102:4 | Complete objectives · Patrolling Westfall | 1436 0.6140,0.7400 | after you pick it up | 183 yd | 102/4
-  step 10 | town:37:2 | Visit Sentinel Hill, Westfall: Turn in 2 | 1436 0.5642,0.4762 | Opens the next chapter here
+  step 1 | town:59 | Visit Verna Furlbrow: Pick up 3 | 1436 0.5995,0.1936 | 3 to pick up
+  step 2 | town:53 | Pick up: Goretusk Liver Pie | 1436 0.5642,0.3052 | near your level
+  step 3 | area:22:4 | Complete objectives · Goretusk Liver Pie | 1436 0.5390,0.4090 | after you pick it up | 63 yd | 22/4
+  step 4 | town:45 | Visit Sentinel Hill, Westfall: Pick up 3 | 1436 0.5700,0.4717 | Begins a new story
+  step 5 | town:53:2 | Turn in: Goretusk Liver Pie | 1436 0.5642,0.3052 | once it's done
+  step 6 | area:12:1 | Complete objectives · The People's Militia | 1436 0.4470,0.2560 | after you pick it up | 96 yd | 12/1
+  step 7 | area:64:4 | Complete objectives · The Forgotten Heirloom | 1436 0.4930,0.1930 | after you pick it up | 0 yd | 64/4
+  step 8 | area:12:0 | Complete objectives · The People's Militia | 1436 0.3140,0.3380 | after you pick it up | 24 yd | 12/0
+  step 9 | area:102:4 | Complete objectives · Patrolling Westfall | 1436 0.3010,0.4940 | after you pick it up | 51 yd | 102/4
+  step 10 | area:151:4 | Complete objectives · Poor Old Blanchy | 1436 0.3500,0.5410 | after you pick it up | 60 yd | 151/4
 card | zone:1432 | Head to Loch Modan | 5 quests near your level | - | map 1432
-  step 1 | town:112 | Visit Mountaineer Cobbleflint: Pick up 2 | 1432 0.2207,0.7313 | 2 to pick up
-  step 2 | town:123 | Visit Thelsamar, Loch Modan: Pick up 2 | 1432 0.3483,0.4928 | 2 to pick up
-  step 3 | town:137 | Pick up: Stormpike's Order | 1432 0.2476,0.1840 | near your level
+  step 1 | town:121 | Visit Mountaineer Cobbleflint: Pick up 2 | 1432 0.2207,0.7313 | 2 to pick up
+  step 2 | town:132 | Visit Thelsamar, Loch Modan: Pick up 2 | 1432 0.3263,0.4974 | 2 to pick up
+  step 3 | town:144 | Pick up: Stormpike's Order | 1432 0.2476,0.1840 | near your level
 card | zone:1439 | Head to Darkshore | 9 quests near your level | Auberdine needs hands | map 1439
-  step 1 | town:452 | Visit Auberdine, Darkshore: Pick up 8 | 1439 0.3740,0.4013 | 8 to pick up
-  step 2 | town:449 | Pick up: The Fall of Ameth'Aran | 1439 0.4030,0.5973 | near your level
+  step 1 | town:500 | Visit Auberdine, Darkshore: Pick up 8 | 1439 0.3740,0.4013 | 8 to pick up
+  step 2 | town:493 | Pick up: The Fall of Ameth'Aran | 1439 0.4030,0.5973 | near your level
 card | zone:1413 | Head to The Barrens | 2 quests near your level | - | map 1413
-  step 1 | town:340 | Visit Ratchet, The Barrens: Pick up 2 | 1413 0.6268,0.3623 | 2 to pick up
+  step 1 | town:365 | Visit Ratchet, The Barrens: Pick up 2 | 1413 0.6268,0.3623 | 2 to pick up
 card | zone:1426 | Head to Dun Morogh | 10 quests near your level | 2 quests will soon turn grey | map 1426
-  step 1 | town:119 | Pick up: Tundra MacGrann's Stolen Stash | 1426 0.3457,0.5165 | near your level
-  step 2 | town:124 | Pick up: The Perfect Stout | 1426 0.3019,0.4573 | near your level
-  step 3 | town:118 | Visit Ragnar Thunderbrew: Pick up 3 | 1426 0.4683,0.5236 | 3 to pick up
-  step 4 | town:121 | Pick up: The Grizzled Den | 1426 0.4962,0.4861 | near your level
-  step 5 | town:120 | Pick up: Protecting the Herd | 1426 0.6308,0.4985 | near your level
-  step 6 | town:115 | Visit Senator Mehr Stonehallow: Pick up 2 | 1426 0.6908,0.5633 | 2 to pick up
-  step 7 | town:127 | Pick up: The Lost Pilot | 1426 0.8389,0.3919 | near your level
-card | zone:1438 | Head to Teldrassil | 8 quests near your level | 2 quests will soon turn grey | map 1438
-  step 1 | town:476 | Pick up: The Glowing Fruit | 1438 0.4261,0.7619 | near your level
-  step 2 | town:480 | Pick up: The Sleeping Druid | 1438 0.4494,0.6159 | near your level
-  step 3 | town:479 | Visit Tallonkai Swiftroot: Pick up 2 | 1438 0.5557,0.5695 | 2 to pick up
-  step 4 | town:477 | Pick up: Timberling Sprouts | 1438 0.6090,0.6849 | near your level
-  step 5 | town:492 | Pick up: The Enchanted Glade | 1438 0.3832,0.3436 | near your level
-  step 6 | town:495 | Pick up: The Shimmering Frond | 1438 0.3461,0.2876 | near your level
-  step 7 | town:494 | Pick up: Mist | 1438 0.3154,0.3161 | near your level
-card | calling | Your calling | Chapter 2 of 4 | A task for your class: Bartleby the Drunk | map 1453
-  step 1 | town:80 | Pick up: Bartleby the Drunk | 1453 0.7713,0.5326 | Continues a story you started
+  step 1 | town:127 | Visit Ragnar Thunderbrew: Pick up 3 | 1426 0.4673,0.5383 | 3 to pick up
+  step 2 | town:130 | Pick up: The Grizzled Den | 1426 0.4962,0.4861 | near your level
+  step 3 | town:129 | Pick up: Protecting the Herd | 1426 0.6308,0.4985 | near your level
+  step 4 | town:124 | Visit Senator Mehr Stonehallow: Pick up 2 | 1426 0.6908,0.5633 | 2 to pick up
+  step 5 | town:136 | Pick up: The Lost Pilot | 1426 0.8389,0.3919 | near your level
+  step 6 | town:128 | Pick up: Tundra MacGrann's Stolen Stash | 1426 0.3457,0.5165 | near your level
+  step 7 | town:133 | Pick up: The Perfect Stout | 1426 0.3019,0.4573 | near your level
+card | zone:1438 | Head to Teldrassil | 7 quests near your level | 3 quests will soon turn grey | map 1438
+  step 1 | town:534 | Visit Denalan: Pick up 2 | 1438 0.6090,0.6849 | 2 to pick up
+  step 2 | town:536 | Pick up: Twisted Hatred | 1438 0.5557,0.5695 | near your level
+  step 3 | town:540 | Pick up: The Road to Darnassus | 1438 0.5291,0.5720 | near your level
+  step 4 | town:537 | Pick up: The Sleeping Druid | 1438 0.4494,0.6159 | near your level
+  step 5 | town:549 | Pick up: The Enchanted Glade | 1438 0.3832,0.3436 | near your level
+  step 6 | town:551 | Pick up: Mist | 1438 0.3154,0.3161 | near your level
+card | zone:1411 | Head to Durotar | 1 quest near your level | - | map 1411
+  step 1 | town:406 | Pick up: Winds in the Desert | 1411 0.4637,0.2294 | near your level

@@ -170,7 +170,7 @@ equal(select(1, Pips(h)), true, "new aside: the tab's pip")
 equal(h.G.AdventureGuideForeverCharDB.seen["aside:trainer"], true, "new aside: seen")
 LevelUp(h, 20)
 same(h.fanfares, { "aside", "moment" }, "the same aside: no glow; the calling level 20 opens glows")
-equal(Tracker(h), "Your class trainer has a task: Call of Water", "your calling: says what it offers")
+equal(Tracker(h), "A task for your class: Call of Water", "your calling: says what it offers")
 provider.aside = nil
 h.ns.Invalidate()
 h.flush()
@@ -204,11 +204,12 @@ equal(#h.fanfares, 0, "tracker off: no glow")
 equal(select(1, Pips(h)), true, "tracker off: the pip")
 clean(h, "tracker off")
 
--- A way into an instance is no place to be the level for: the cap brings it, and it is open to you.
+-- At the cap the dungeon card and a way into an instance are both fresh; the dungeon card leads, so the moment is
+-- its level line rather than the way-in's open line.
 h = harness.load({ player = { level = 1 }, charDB = { quests = false, seen = { ["dungeon:329"] = true } } })
 h.flush()
 LevelUp(h, 70)
-equal(Tracker(h), "The way into Blackrock Spire is open to you", "way in: open to you")
-clean(h, "way in")
+equal(Tracker(h), "Blackrock Spire is now for your level", "level cap: the dungeon card names the level")
+clean(h, "level cap")
 
 print(("moments_spec: %d checks passed"):format(checks))

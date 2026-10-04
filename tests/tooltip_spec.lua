@@ -41,7 +41,7 @@ local function Lines(h, guid)
 	return h.tooltip
 end
 
-local SERGRA, THORK, LATER = 3338, 3429, 3439 -- The Zhevra's ender; Crossroads and a later-town giver
+local SERGRA, THORK, LATER = 3338, 3429, 3446 -- The Zhevra's ender; Crossroads and Ratchet's giver
 
 -- The log's quests ride on the zone's story (they are done on its map): Sergra Darkthorn takes The Zhevra at the
 -- Crossroads; Innkeeper Gryshka in Orgrimmar is on none of its steps.

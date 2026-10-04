@@ -211,7 +211,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild",
       "size": [
         306.00,
-        926.00
+        940.00
       ],
       "type": "Frame"
     },
@@ -236,7 +236,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1]",
       "size": [
         0.00,
-        926.00
+        940.00
       ],
       "type": "Frame"
     },
@@ -361,7 +361,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
       "size": [
         0.00,
-        874.00
+        888.00
       ],
       "type": "Frame"
     },
@@ -415,6 +415,120 @@
       "atlas": "ui-journeys-delve-level-square-grey",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[1].Texture[2]",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[1]",
+          "x": 30.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "ui-journeys-delve-level-square-grey",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[1].Texture[3]",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[1]",
+          "x": 45.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "ui-journeys-delve-level-square-grey",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[1].Texture[4]",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[1]",
+          "x": 60.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "ui-journeys-delve-level-square-grey",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[1].Texture[5]",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[1]",
+          "x": 75.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "ui-journeys-delve-level-square-grey",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[1].Texture[6]",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[1]",
+          "x": 90.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "ui-journeys-delve-level-square-grey",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[1].Texture[7]",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[1]",
+          "x": 105.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "ui-journeys-delve-level-square-grey",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[1].Texture[8]",
       "size": [
         12.00,
         12.00
@@ -926,7 +1040,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Title",
-      "text": "Complete objectives · Fungal Spores",
+      "text": "Visit Ratchet, The Barrens: Pick up 3",
       "type": "FontString",
       "wordWrap": false
     },
@@ -945,10 +1059,10 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Detail",
       "size": [
-        120.00,
+        72.00,
         0.00
       ],
-      "text": "after you pick it up",
+      "text": "3 to pick up",
       "type": "FontString",
       "wordWrap": false
     },
@@ -962,7 +1076,7 @@
           "y": 4.00
         }
       ],
-      "atlas": "questobjective",
+      "atlas": "QuestNormal",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Kind",
       "size": [
@@ -1020,14 +1134,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -270.00
+          "y": -314.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -270.00
+          "y": -314.00
         }
       ],
       "onUpdate": false,
@@ -1197,7 +1311,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Title",
-      "text": "Complete objectives · Consumed by Hatred",
+      "text": "Complete objectives · WANTED: Baron Longshore",
       "type": "FontString",
       "wordWrap": false
     },
@@ -1291,14 +1405,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -316.00
+          "y": -360.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -316.00
+          "y": -360.00
         }
       ],
       "onUpdate": false,
@@ -1487,10 +1601,10 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Detail",
       "size": [
-        120.00,
+        78.00,
         0.00
       ],
-      "text": "after you pick it up",
+      "text": "2 quests here",
       "type": "FontString",
       "wordWrap": false
     },
@@ -1562,14 +1676,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -362.00
+          "y": -406.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -362.00
+          "y": -406.00
         }
       ],
       "onUpdate": false,
@@ -1739,7 +1853,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Title",
-      "text": "Visit Crossroads, The Barrens: Turn in 3",
+      "text": "Visit Ratchet, The Barrens: Turn in 2",
       "type": "FontString",
       "wordWrap": false
     },
@@ -1761,7 +1875,7 @@
         72.00,
         0.00
       ],
-      "text": "3 to hand in",
+      "text": "2 to hand in",
       "type": "FontString",
       "wordWrap": false
     },
@@ -1833,14 +1947,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -452.00
+          "y": -482.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -452.00
+          "y": -482.00
         }
       ],
       "onUpdate": false,
@@ -2104,14 +2218,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -514.00
+          "y": -544.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -514.00
+          "y": -544.00
         }
       ],
       "onUpdate": false,
@@ -2375,14 +2489,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -560.00
+          "y": -590.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -560.00
+          "y": -590.00
         }
       ],
       "onUpdate": false,
@@ -2646,14 +2760,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -606.00
+          "y": -636.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -606.00
+          "y": -636.00
         }
       ],
       "onUpdate": false,
@@ -2917,14 +3031,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -668.00
+          "y": -698.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -668.00
+          "y": -698.00
         }
       ],
       "onUpdate": false,
@@ -3075,7 +3189,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Title",
-      "text": "Pick up: Ignition",
+      "text": "Complete objectives · Fungal Spores",
       "type": "FontString",
       "wordWrap": false
     },
@@ -3094,10 +3208,10 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Detail",
       "size": [
-        90.00,
+        120.00,
         0.00
       ],
-      "text": "near your level",
+      "text": "after you pick it up",
       "type": "FontString",
       "wordWrap": false
     },
@@ -3111,7 +3225,7 @@
           "y": 4.00
         }
       ],
-      "atlas": "QuestNormal",
+      "atlas": "questobjective",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Kind",
       "size": [
@@ -3268,7 +3382,7 @@
         212.00,
         14.00
       ],
-      "text": "Chapter 1 of 2",
+      "text": "Chapter 1 of 8",
       "type": "FontString",
       "wordWrap": false
     },
@@ -3312,7 +3426,7 @@
         212.00,
         14.00
       ],
-      "text": "A chain begins with Thork",
+      "text": "A chain begins with Sputtervalve",
       "type": "FontString",
       "wordWrap": false
     },
@@ -3383,7 +3497,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -734.00
+          "y": -748.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3523,7 +3637,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -762.00
+          "y": -776.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3663,7 +3777,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -790.00
+          "y": -804.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3803,7 +3917,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -818.00
+          "y": -832.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3943,7 +4057,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -846.00
+          "y": -860.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -4418,7 +4532,7 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 46.00,
-          "y": -408.00
+          "y": -270.00
         }
       ],
       "onUpdate": false,
@@ -4469,7 +4583,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[18].Text",
-      "text": "Gazrog: Turn in 1",
+      "text": "Mebok Mizzyrix: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -4485,7 +4599,7 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 46.00,
-          "y": -422.00
+          "y": -284.00
         }
       ],
       "onUpdate": false,
@@ -4536,7 +4650,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[19].Text",
-      "text": "Mankrik: Turn in 1",
+      "text": "WANTED: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -4552,7 +4666,7 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 46.00,
-          "y": -436.00
+          "y": -298.00
         }
       ],
       "onUpdate": false,
@@ -4603,7 +4717,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[20].Text",
-      "text": "Apothecary Helbrim: Turn in 1",
+      "text": "Sputtervalve: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -4619,7 +4733,7 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 46.00,
-          "y": -498.00
+          "y": -452.00
         }
       ],
       "onUpdate": false,
@@ -4670,7 +4784,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[21].Text",
-      "text": "Regthar Deathgate: Pick up 2",
+      "text": "Mebok Mizzyrix: Turn in 1",
       "textColor": [
         0.90,
         0.90,
@@ -4686,7 +4800,7 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 46.00,
-          "y": -652.00
+          "y": -466.00
         }
       ],
       "onUpdate": false,
@@ -4737,7 +4851,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[22].Text",
-      "text": "Regthar Deathgate: Turn in 2",
+      "text": "Gazlowe: Turn in 1",
       "textColor": [
         0.90,
         0.90,
@@ -4753,7 +4867,7 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 46.00,
-          "y": -714.00
+          "y": -528.00
         }
       ],
       "onUpdate": false,
@@ -4804,7 +4918,74 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[23].Text",
-      "text": "Wizzlecrank's Shredder: Pick up 1",
+      "text": "Regthar Deathgate: Pick up 2",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
+          "x": 46.00,
+          "y": -682.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[24]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[24]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[24].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[24]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[24]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[24].Text",
+      "text": "Regthar Deathgate: Turn in 2",
       "textColor": [
         0.90,
         0.90,

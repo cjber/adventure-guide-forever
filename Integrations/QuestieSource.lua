@@ -49,8 +49,8 @@ ns.QuestieFields = {
 local GIVER_FIELDS = { "name", ns.QuestieFields.spawns[1], "zoneID" }
 -- What says whether an NPC keeps an inn and which side it serves.
 local SERVICE_FIELDS = { "npcFlags", "friendlyToFaction" }
--- QuestieDB's Classic NPC flag for an innkeeper, and its letters for the sides an NPC is friendly to.
-local INNKEEPER, SIDES = 128, { A = 1, H = 2, AH = 3 }
+-- QuestieDB's Classic NPC flags for an innkeeper and a trainer, and its letters for the sides an NPC is friendly to.
+local INNKEEPER, TRAINER, SIDES = 128, 16, { A = 1, H = 2, AH = 3 }
 local NPC_FIELDS = { GIVER_FIELDS[1], GIVER_FIELDS[2], GIVER_FIELDS[3], SERVICE_FIELDS[1], SERVICE_FIELDS[2] }
 local ENTITIES = {
 	{ name = "Quest", keys = "questKeys", fields = QUEST_FIELDS },
@@ -328,6 +328,18 @@ local function Build(lib, zones, bundled, yield)
 		places[#places + 1] = best
 		return best
 	end
+	-- Whether QuestieDB's flags call an NPC a trainer. The bundled roles miss Forever's extra class and race
+	-- combinations, so a class quest's giver needs this bit before its class is stamped on it.
+	local trains = {}
+	local function Trains(id)
+		local known = trains[id]
+		if known == nil then
+			local values = lib.Npc.GetAll(id, SERVICE_FIELDS)
+			known = values and bit.band(tonumber(values[1]) or 0, TRAINER) ~= 0 or false
+			trains[id] = known
+		end
+		return known
+	end
 
 	local ids, quests = lib.Quest.GetAllIds(), {}
 	status.catalogueCount, status.questCount = #ids, 0
@@ -373,8 +385,15 @@ local function Build(lib, zones, bundled, yield)
 				local breadcrumb = tonumber(v.breadcrumbForQuestId) or 0
 				quest.breadcrumb = breadcrumb > 0 and breadcrumb or nil
 				-- Preserve relationships for chain displays. Live Questie policy evaluates their full semantics.
-				quest.pre = type(v.preQuestGroup) == "table" and v.preQuestGroup or nil
-				quest.preAny = type(v.preQuestSingle) == "table" and v.preQuestSingle or nil
+				local group, single = v.preQuestGroup, v.preQuestSingle
+				quest.pre = type(group) == "table" and group or nil
+				quest.preAny = type(single) == "table" and single or nil
+				-- QuestieDB puts a lone prerequisite in preQuestSingle, where it is the one quest required: the same as a
+				-- one-element preQuestGroup, so the model can prove the chain's total. With both fields present the group is
+				-- the all-of set and the single is the any-of set, and the model reads each as such.
+				if not quest.pre and quest.preAny and #quest.preAny == 1 then
+					quest.pre, quest.preAny = quest.preAny, nil
+				end
 				local skill = v.requiredSkill
 				local skillID = type(skill) == "table" and tonumber(skill[1]) or nil
 				local skillValue = type(skill) == "table" and tonumber(skill[2]) or nil
@@ -403,10 +422,15 @@ local function Build(lib, zones, bundled, yield)
 				end
 				local start = quest.start
 				if start and quest.classes and start.npc then
-					-- A class quest's giver is its class's trainer. The bundled trainer data has no entry for Forever's
-					-- extra class/race combinations, so fall back to the quest's single required class.
-					local npc = bundled.roles[start.npc]
-					start.trainer = (npc and npc.class) or SingleClass(quest.classes)
+					-- A class quest's giver is its class's trainer. The bundled role names the class it trains; without one,
+					-- QuestieDB's trainer flag plus the quest's single required class name it, so a plain quest giver is
+					-- never called a trainer.
+					local role = bundled.roles[start.npc]
+					local trained = role and role.class
+					if not trained and Trains(start.npc) then
+						trained = SingleClass(quest.classes)
+					end
+					start.trainer = trained
 				end
 				if not quest.dungeon then
 					quest.need, quest.obj, quest.kinds, quest.objectivesUnknown = ns.QuestieObjectives(

@@ -181,6 +181,61 @@ equal(gates.ns.Data.quests[900005].rep.max, 9000, "requiredMaxRep: the value")
 equal(locked.group, gates.ns.Data.quests[900005].group, "exclusiveTo: one group holds both")
 equal(locked.group ~= nil, true, "exclusiveTo: a group id")
 equal(gates.ns.Data.quests[900006].start, nil, "two reputation factions leave no pickup")
+-- A class quest's giver is its class's trainer only when QuestieDB's flags say it trains. A plain giver of the same
+-- class quest is never called a trainer, and a flagged trainer still names the quest's single class.
+local classes = Fake()
+classes.quests[900007] = {
+	name = "Plain giver",
+	questLevel = 20,
+	requiredLevel = 18,
+	requiredClasses = 64,
+	startedBy = { { 900197 } },
+	zoneOrSort = 12,
+}
+classes.quests[900008] = {
+	name = "Flagged trainer",
+	questLevel = 20,
+	requiredLevel = 18,
+	requiredClasses = 64,
+	startedBy = { { 900198 } },
+	zoneOrSort = 12,
+}
+classes.npcs[900197] = { name = "Plain giver", spawns = { [12] = { { 48, 42 } } }, zoneID = 12 }
+classes.npcs[900198] = { name = "Class trainer", spawns = { [12] = { { 49, 42 } } }, zoneID = 12, npcFlags = 16 }
+local classed = harness.load({ questiedb = classes, setup = Policy })
+equal(classed.ns.QuestieStatus.state, "questie", "class quest build ready")
+equal(classed.ns.Data.quests[900007].start.trainer, nil, "a plain giver is no class trainer")
+equal(classed.ns.Data.quests[900008].start.trainer, 7, "QuestieDB's trainer flag names the quest's class")
+-- QuestieDB puts a lone prerequisite in preQuestSingle; it is exactly that quest, so the model gets `pre` and can
+-- prove the chain's total. Several alternatives stay `preAny`, a group stays `pre`, and both together keep their two
+-- meanings: the group all-of and the single any-of.
+local prereqs = Fake()
+local function Linked(id, single, group)
+	prereqs.quests[id] = {
+		name = "Linked " .. id,
+		questLevel = 20,
+		requiredLevel = 18,
+		startedBy = { { 197 } },
+		zoneOrSort = 12,
+		preQuestSingle = single,
+		preQuestGroup = group,
+	}
+end
+Linked(900010, { 900001 })
+Linked(900011, { 900001, 900002 })
+Linked(900012, nil, { 900001 })
+Linked(900013, { 900001 }, { 900002 })
+local linked = harness.load({ questiedb = prereqs, setup = Policy })
+equal(linked.ns.QuestieStatus.state, "questie", "prerequisite build ready")
+local lone = linked.ns.Data.quests[900010]
+equal(lone.pre and lone.pre[1], 900001, "a lone preQuestSingle is the required quest")
+equal(lone.preAny, nil, "a lone preQuestSingle leaves no any-of set")
+equal(#linked.ns.Data.quests[900011].preAny, 2, "several preQuestSingle stay alternatives")
+equal(linked.ns.Data.quests[900011].pre, nil, "several preQuestSingle leave no all-of set")
+equal(linked.ns.Data.quests[900012].pre[1], 900001, "a preQuestGroup stays the all-of set")
+equal(linked.ns.Data.quests[900012].preAny, nil, "a preQuestGroup alone leaves no any-of set")
+equal(linked.ns.Data.quests[900013].pre[1], 900002, "both fields: the group is the all-of set")
+equal(linked.ns.Data.quests[900013].preAny[1], 900001, "both fields: the single is the any-of set")
 local unsupported = Fake()
 unsupported.quests[900001].objectives = { nil, nil, nil, { { 72, 3000 } } }
 local unknown =

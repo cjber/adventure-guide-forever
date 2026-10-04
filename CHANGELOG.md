@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **A plain quest giver is no longer called a class trainer.** When the bundled trainer list did not name the giver of a class quest, the quest's class was stamped on it, so the calling card said "Your class trainer has a task" for someone like Harry Burlguard or Islen Waterseer. A giver counts as a trainer only when QuestieDB's own NPC flags mark it as one.
+- **A chain with one prerequisite now shows its total.** QuestieDB files a lone prerequisite as one of several alternatives, so a chain containing one was shown as a chapter with no total. A single alternative now reads as the one quest it requires, so those chains show "Chapter 2 of 8" instead of a bare chapter.
 - **The guide no longer offers quests your character cannot take.** A quest gated behind a profession rank or a reputation standing is read from QuestieDB with its requirement, so a route no longer sends you to a pickup the game would refuse.
 - **The guide's map data matches the current game build.** The maps, flight masters and Forever's own lands the guide carries are read from client build 1.60.1.70205. The Stormwind flight master sits where the game now has it, and the guide no longer plans steps on the Alterac Valley battleground map, which the game no longer lists as a zone.
 - **A route settles the first time it is drawn.** With a nearly full quest log, a route could put a hand-in last, then move it up to second a moment later with nothing changed. The order you first see is now the one it keeps.
