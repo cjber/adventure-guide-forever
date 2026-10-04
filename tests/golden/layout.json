@@ -769,7 +769,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Title",
-      "text": "Visit Crossroads, The Barrens: Pick up 4, turn in 1",
+      "text": "Visit The Crossroads: Pick up 4, turn in 1",
       "type": "FontString",
       "wordWrap": false
     },
@@ -1040,7 +1040,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Title",
-      "text": "Visit Ratchet, The Barrens: Pick up 3",
+      "text": "Visit Ratchet: Pick up 3",
       "type": "FontString",
       "wordWrap": false
     },
@@ -1853,7 +1853,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Title",
-      "text": "Visit Ratchet, The Barrens: Turn in 2",
+      "text": "Visit Ratchet: Turn in 2",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2124,7 +2124,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Title",
-      "text": "Visit Regthar Deathgate: Pick up 2",
+      "text": "Visit The Forgotten Pools: Pick up 2",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2937,7 +2937,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Title",
-      "text": "Visit Regthar Deathgate: Turn in 2",
+      "text": "Visit The Forgotten Pools: Turn in 2",
       "type": "FontString",
       "wordWrap": false
     },

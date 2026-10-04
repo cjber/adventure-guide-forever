@@ -617,7 +617,7 @@ do
 	local route = h.ns.Route().steps
 	local revisit
 	for _, pin in ipairs(pins) do
-		revisit = (pin.visits and #pin.visits > 1 and pin.visits[1].step.hub == 376) and pin or revisit
+		revisit = (pin.visits and #pin.visits > 1 and pin.visits[1].step.hub == "1413:380") and pin or revisit
 	end
 	equal(revisit ~= nil, true, "ring: Crossroads visited twice")
 	equal(revisit.visits[1].step.key ~= revisit.visits[2].step.key, true, "ring: two distinct visits share the ring")

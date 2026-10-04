@@ -120,7 +120,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	local label = spf or "no Shortest Path"
 	local h = Load(spf)
 	clean(h, label .. ": load")
-	equal(h.ns.Route().steps[1].key, "town:376", label .. ": the hand-in leads the route")
+	equal(h.ns.Route().steps[1].key, "town:1413:380", label .. ": the hand-in leads the route")
 
 	-- Blizzard's displayMode is never written, whatever the player clicks (Panel.lua ShowGuide).
 	local panel, questsFrame = h.G.AdventureGuideForeverPanel, h.questMap.QuestsFrame
@@ -184,7 +184,7 @@ do
 	local h = Load(false)
 	local show = h.ns.ShowQuest
 	equal(show({ kind = "dungeon", key = "area:843:0", quests = { 843 } }), true, "a group quest in the log opens")
-	local town = { kind = "town", key = "town:376", quests = { 843 }, pickups = { 843 }, handins = {} }
+	local town = { kind = "town", key = "town:1413:380", quests = { 843 }, pickups = { 843 }, handins = {} }
 	equal(show(town), false, "a group pickup does not")
 	town.quests, town.pickups, town.handins = { 845, 843 }, { 843 }, { 845 }
 	equal(show(town), true, "a town with a hand-in opens it")
@@ -468,35 +468,35 @@ do
 	equal(h.spf.NavigateRoute, 3, "follow: nothing in combat")
 	h.SetCombat(false)
 	h.flush()
-	equal(h.spf.NavigateRoute, 4, "follow: out of the area, once combat ends, the route goes on")
+	equal(h.spf.NavigateRoute, 3, "follow: out of the area, the unfinished step still holds, so nothing is sent")
 	equal(h.ns.Prefs().guided, "zone:1413", "follow: still the chosen journey's")
 	-- Standing in the Crossroads still shows the complete route.
 	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: town proximity keeps later stops")
 	h.onTaxi = true
 	Moved(h, 1413, 0.46, 0.79)
-	equal(h.spf.NavigateRoute, 4, "follow: nothing in the air")
+	equal(h.spf.NavigateRoute, 3, "follow: nothing in the air")
 	h.onTaxi = false
 	Moved(h, nil, nil, nil)
-	equal(h.spf.NavigateRoute, 4, "follow: nothing off the map")
+	equal(h.spf.NavigateRoute, 3, "follow: nothing off the map")
 	Moved(h, 1413, 0.5223, 0.3101)
 	Moved(h, 1413, 0.5224, 0.3101)
-	equal(h.spf.NavigateRoute, 4, "follow: near the town, its complete route remains active")
+	equal(h.spf.NavigateRoute, 3, "follow: near the town, its complete route remains active")
 	Moved(h, 1413, 0.46, 0.79)
-	equal(h.spf.NavigateRoute, 5, "follow: out of the town, the journey goes on")
+	equal(h.spf.NavigateRoute, 3, "follow: out of the town, the unfinished step still holds")
 	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: every step")
 	-- Shortest Path moves on stop by stop until it heads for the Crossroads, then the player reaches it.
 	for _, step in ipairs(h.ns.Route().steps) do
-		if step.key == "town:376" then
+		if step.key == "town:1413:380" then
 			break
 		end
 		h.spfAdvance()
 	end
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 6, "follow: retarget the nearest remaining giver in town")
+	equal(h.spf.NavigateRoute, 3, "follow: the unfinished area holds through the retarget")
 	h.spfOther()
 	Moved(h, 1413, 0.46, 0.79)
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 6, "follow: another journey replaced ours: nothing")
+	equal(h.spf.NavigateRoute, 3, "follow: another journey replaced ours: nothing")
 	clean(h, "follow")
 
 	-- The "you're here" head (design §4.2): checked every 2 s only while the player moves, and a rebuild only on
@@ -1152,7 +1152,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Hover(ring)
 	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. Step 1 is the Crossroads, where The
 	-- Zhevra opens its next chapter, handed in before the town's pickups.
-	local expected = { "title: 1. Visit Crossroads, The Barrens: Pick up 4, turn in 1" }
+	local expected = { "title: 1. Visit The Crossroads: Pick up 4, turn in 1" }
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
 	expected[#expected + 1] = "highlight: Opens the next chapter here"
 	expected[#expected + 1] = "normal: Sergra Darkthorn"
@@ -1241,9 +1241,9 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Live(), 0, label .. ": RemoveAllData leaves no pins")
 
 	-- Design §2.8's menu for a town holding a log quest; Stop only once Go runs, Show quest never in combat.
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:376"], "RightButton")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:1413:380"], "RightButton")
 	local menu = {
-		"title: Visit Crossroads, The Barrens: Pick up 4, turn in 1",
+		"title: Visit The Crossroads: Pick up 4, turn in 1",
 		"button: Go",
 		"button: Show quest",
 		"button: Skip for now",
@@ -1252,7 +1252,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	same(h.MenuLines(), WithNotThisQuest(ns, ns.Route().steps[1], menu), label .. ": tracker menu")
 	ns.Guidance.Navigate(ns.Route().steps[1])
 	h.SetCombat(true)
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:376"], "RightButton")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:1413:380"], "RightButton")
 	h.SetCombat(false)
 	menu[3] = "button: Stop"
 	same(
@@ -1537,7 +1537,7 @@ do
 			"on foot",
 			{ { mode = "walk", to = "Crossroads", seconds = 90 }, { mode = "walk", to = "The Barrens", seconds = 45 } },
 			-- Shortest Path names only the zone; the step knows the town.
-			"Walk to Crossroads, The Barrens · 3 min",
+			"Walk to The Crossroads · 3 min",
 		},
 		{ "no route", false, nil },
 	}
@@ -2309,7 +2309,7 @@ do
 	ns.Data.quests[868].level = 20
 	-- Their work a step from town and alike in XP, so the lap keeps all of them (one worth less per yard waits).
 	for _, quest in pairs(ns.Data.quests) do
-		if quest.start and quest.start.hub == 376 then
+		if quest.start and quest.start.hub == "1413:380" then
 			quest.xp = 1000
 			if quest.obj then
 				quest.need, quest.obj = { [4] = 1 }, { { 4, 530, 310, 20 } }
@@ -2328,7 +2328,7 @@ do
 	end)
 	h.Hover(rows[1])
 	local lines, colors = h.tooltip, h.tooltipColors
-	equal(lines[1], "title: 1. Visit Crossroads, The Barrens: Pick up 8, turn in 1", "hub tooltip: the numbered town")
+	equal(lines[1], "title: 1. Visit The Crossroads: Pick up 8, turn in 1", "hub tooltip: the numbered town")
 	equal(lines[2], "highlight: " .. step.reason, "hub tooltip: the reason")
 	equal(lines[3], "normal: Sergra Darkthorn", "hub tooltip: the hand-in's NPC first")
 	equal(lines[4], "colored: |A:questturnin:14:14|a [13] The Zhevra", "hub tooltip: a hand-in has the turn-in mark")
@@ -2391,7 +2391,7 @@ do
 	h.flush()
 	local steps = ns.Route().steps
 	local step = steps[1]
-	equal(step.title, "Visit Crossroads, The Barrens: Pick up 4, turn in 1", "tracker, town: town and actions")
+	equal(step.title, "Visit The Crossroads: Pick up 4, turn in 1", "tracker, town: town and actions")
 	equal(step.detail, "1 to hand in, 4 to pick up", "tracker, town: the hand-in joins the pickups")
 	local expected = { step.detail, "Opens the next chapter here" }
 	for _, giver in ipairs(step.checklist) do
@@ -2441,7 +2441,7 @@ do
 	end
 	local session = Load(false)
 	local saved = session.G.AdventureGuideForeverCharDB.last
-	equal(saved and saved.key, "town:376", "resume: each rebuild saves step 1")
+	equal(saved and saved.key, "town:1413:380", "resume: each rebuild saves step 1")
 	equal(Resumed(session), 0, "resume: nothing saved, nothing to resume")
 	local function Login(options)
 		options.charDB = { journey = "zone:1413", last = { key = saved.key, reason = "finishes a story" } }
@@ -3622,8 +3622,8 @@ do
 			label = "three spells",
 			tf = { spells = THREE },
 			lines = 1,
-			-- Swart in Razor Hill, a town with no flight master: the zone names it.
-			text = "Visit your class trainer in Durotar · 3 new spells",
+			-- Swart in Razor Hill, a settlement the world map labels: Razor Hill names it.
+			text = "Visit your class trainer in Razor Hill · 3 new spells",
 		},
 	}) do
 		local label = "trainer, " .. case.label
@@ -3676,7 +3676,7 @@ do
 		local shown = block and block.used and block.header or nil
 		equal(shown, case.text, label .. ": the tracker's line")
 		-- With no journey chosen it is the line above the first card's step.
-		local order = case.text and { "aside", "journey", "town:376" } or { "journey", "town:376" }
+		local order = case.text and { "aside", "journey", "town:1413:380" } or { "journey", "town:1413:380" }
 		same(h.tracker.layoutOrder, order, label .. ": the tracker's lines")
 		-- An aside, not a step: no ring for it, and its tracker title goes to the trainer as its Go does.
 		local steps, rings = {}, 0
@@ -3700,7 +3700,7 @@ do
 		if case.text then
 			equal(h.spfRoute.stops[1].title, "Swart", label .. ": named for the trainer")
 		end
-		equal(h.ns.Route().steps[1].key, "town:376", label .. ": the route is unchanged")
+		equal(h.ns.Route().steps[1].key, "town:1413:380", label .. ": the route is unchanged")
 		-- A spell learned at the trainer shortens the line at once.
 		if case.tf and case.tf.spells == THREE then
 			case.tf.spells = { SPELL }
@@ -3708,7 +3708,7 @@ do
 			h.flush()
 			equal(
 				h.tracker.liveBlocks.aside.header,
-				"Visit your class trainer in Durotar · 1 new spell",
+				"Visit your class trainer in Razor Hill · 1 new spell",
 				label .. ": one left"
 			)
 			case.tf.spells = THREE
@@ -3779,7 +3779,7 @@ do
 	local step = h.ns.Route().steps[1]
 	equal(step.key, "trainer:3170", label .. ": the route's first stop")
 	same({ h.tracker.liveBlocks[step.key].header, unpack((TrackerLines(h))) }, {
-		"Train in Durotar",
+		"Train in Razor Hill",
 		"Kaplak, Durotar",
 		"1 new spell",
 		"About 6 min away",
@@ -3794,7 +3794,7 @@ do
 	h.ns.StartRoute(step)
 	h.flush()
 	equal(h.spf.NavigateRoute - routes, 1, label .. ": Go")
-	equal(h.spfRoute.stops[1].title, "Train in Durotar", label .. ": to the trainer")
+	equal(h.spfRoute.stops[1].title, "Train in Razor Hill", label .. ": to the trainer")
 	-- In combat Tweaks Forever is never asked, and the cheap rebuild keeps the stop.
 	h.SetCombat(true)
 	local asked = h.tf.TrainableSpells

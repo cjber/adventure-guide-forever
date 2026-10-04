@@ -566,7 +566,7 @@ local function Build(lib, zones, bundled, yield)
 			quests[id].group = root
 		end
 	end
-	local hubs, grid = ns.QuestieTowns.Build(bundled, places, yield)
+	local hubs = ns.QuestieTowns.Build(bundled, places, yield)
 	-- Who trains, keeps an inn or runs a battleground queue, where and for which side. What a trainer teaches is the
 	-- bundled `roles`; an innkeeper is QuestieDB's flag. An NPC with no side or no spawn on a placed map is left out.
 	local npcs = {}
@@ -603,11 +603,18 @@ local function Build(lib, zones, bundled, yield)
 					npc[key] = value
 				end
 				npc.place = { map = best.map, x = best.x, y = best.y, name = giver.name }
-				npc.place.hub = ns.QuestieTowns.Hub(bundled, grid, npc.place)
+				npc.place.hub = ns.QuestieTowns.Hub(bundled, npc.place)
 				npcs[id] = npc
 			end
 		end
 		yield()
+	end
+	-- A service NPC in a town no quest place reaches still needs the town named.
+	for _, npc in pairs(npcs) do
+		local hub = npc.place.hub
+		if hub and not hubs[hub] then
+			hubs[hub] = { name = ns.QuestieTowns.Name(bundled, npc.place) }
+		end
 	end
 	local data = { quests = quests, hubs = hubs, npcs = npcs }
 	for key, value in pairs(bundled) do

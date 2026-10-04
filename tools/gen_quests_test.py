@@ -6,10 +6,7 @@ from collections import Counter
 
 from gen_quests import (
     AREAS,
-    CAP,
     EXPLORE,
-    LINK,
-    NAME_REACH,
     OUTPUT,
     SpawnAreas,
     continents,
@@ -20,12 +17,10 @@ from gen_quests import (
     full_xp,
     gate_names,
     geometry,
-    hub_names,
     inside,
     instance_fields,
     instance_index,
     lua,
-    nearest_hub,
     objective_areas,
     objectives,
     options_at,
@@ -46,9 +41,8 @@ from gen_quests import (
     skill_steps,
     spawn_areas,
     terrain_cells,
-    town_hubs,
+    town_areas,
     trainer_spells,
-    world_point,
 )
 
 
@@ -288,92 +282,6 @@ class InstanceTest(unittest.TestCase):
             instance_fields({"entry": 167, "ZoneOrSort": 1581, "Type": 0}, instance_of, instances)
 
 
-class HubTest(unittest.TestCase):
-    @staticmethod
-    def keys(hubs):
-        return [sorted(key for _, _, key in members) for _, members in hubs]
-
-    def test_single_linkage(self):
-        # A chain of steps of LINK yards is one town however long; one more yard is another town.
-        points = {"a": (0, 0, 0), "b": (0, LINK, 0), "c": (0, 2 * LINK, 0), "d": (0, 3 * LINK + 1, 0)}
-        self.assertEqual(self.keys(town_hubs(points)), [["a", "b", "c"], ["d"]])
-        # Continents never link, however close their coordinates.
-        self.assertEqual(self.keys(town_hubs({"a": (0, 0, 0), "b": (1, 0, 0)})), [["a"], ["b"]])
-
-    def test_wide_towns_split_again(self):
-        # Five givers 95 yards apart span 380 yards: one town under CAP. Six span 475: split at LINK - 10, where
-        # the 95-yard steps no longer link. A 90-yard pair inside a wide town stays together.
-        five = {f"g{i}": (0, 95 * i, 0) for i in range(5)}
-        self.assertEqual(self.keys(town_hubs(five)), [sorted(five)])
-        six = {f"g{i}": (0, 95 * i, 0) for i in range(6)}
-        self.assertEqual(self.keys(town_hubs(six)), [[key] for key in six])
-        self.assertGreater(95 * 5, CAP)
-        six["near"] = (0, 95, 85)
-        self.assertEqual(self.keys(town_hubs(six)), [["g0"], ["g1", "near"], ["g2"], ["g3"], ["g4"], ["g5"]])
-
-    def test_ids_are_stable(self):
-        # Ordered by continent, then least x, then least y, whatever order the places come in.
-        points = {"k1": (1, 0, 0), "e2": (0, 500, 0), "e1": (0, 0, 500), "e3": (0, 0, 900)}
-        expected = [["e1"], ["e3"], ["e2"], ["k1"]]
-        self.assertEqual(self.keys(town_hubs(points)), expected)
-        self.assertEqual(self.keys(town_hubs(dict(reversed(points.items())))), expected)
-
-    def test_world_point_inverts_the_projection(self):
-        # Darkshore's rectangle (GeometryTest): its centre is the map's middle, and map x grows as world y falls.
-        darkshore = {"continent": 1, "cx": 6150.0, "cy": -333.3, "sx": 6550.0, "sy": 4366.7}
-        self.assertEqual(world_point(darkshore, {"x": 0.5, "y": 0.5}), (6150.0, -333.3))
-        x, y = world_point(darkshore, {"x": 0.6, "y": 0.5})
-        self.assertAlmostEqual(y, -333.3 - 655.0)
-        self.assertEqual(x, 6150.0)
-
-
-class HubNameTest(unittest.TestCase):
-    @staticmethod
-    def node(node, name="Lakeshire, Redridge", continent=0, flags=3, mounts=(1, 1), conditions=(0, 0)):
-        return {
-            "ID": str(node),
-            "Name_lang": name,
-            "ContinentID": str(continent),
-            "Pos_0": "10",
-            "Pos_1": "20",
-            "Flags": str(flags),
-            "ConditionID": str(conditions[0]),
-            "VisibilityConditionID": str(conditions[1]),
-            "MountCreatureID_0": str(mounts[0]),
-            "MountCreatureID_1": str(mounts[1]),
-        }
-
-    def test_filter_mirrors_shortest_path(self):
-        rows = [
-            self.node(1),
-            self.node(2, flags=1024),
-            self.node(3275, flags=0, mounts=(0, 5)),
-            self.node(4, continent=530),
-            self.node(5, name="zzOLD Lakeshire"),
-            self.node(6, name="Quest - Test"),
-            self.node(7, conditions=(9, 0)),
-            self.node(8, conditions=(0, 9)),
-            self.node(9, mounts=(0, 0)),
-            self.node(62),
-        ]
-        self.assertEqual([n[0] for n in flight_masters(rows)], [1, 3275])
-        self.assertEqual(flight_masters(rows[:1]), [(1, 0, 10.0, 20.0, "Lakeshire, Redridge")])
-
-    def test_nearest_within_reach(self):
-        hubs = [(0, [(0, 0, "a"), (500, 0, "b")]), (0, [(2000, 0, "c")]), (1, [(0, 0, "d")])]
-        nodes = [
-            (7, 0, 500 + NAME_REACH, 0, "Far side"),
-            (5, 0, 500 - NAME_REACH, 0, "Near side"),
-            (3, 0, 2000 + NAME_REACH + 1, 0, "Too far"),
-            (1, 0, 0, 0, "At a giver"),
-        ]
-        # The nearest wins, a tie goes to the lower ID, the reach counts from any giver, and a node on another
-        # continent never names a hub.
-        self.assertEqual(hub_names(hubs, nodes), {1: {"name": "At a giver"}})
-        self.assertEqual(hub_names(hubs, nodes[:3]), {1: {"name": "Near side"}})
-        self.assertEqual(hub_names(hubs[2:], [(1, 0, 0, 0, "At a giver")]), {})
-
-
 class NpcTest(unittest.TestCase):
     @staticmethod
     def template(entry, flags, kind=0, klass=0, race=0, template=0):
@@ -504,13 +412,6 @@ class NpcTest(unittest.TestCase):
             [1, 2, 3, 1, 2, 0, 0],
         )
 
-    def test_nearest_hub(self):
-        grid = {(0, 0, 0): [(10, 10, 1), (60, 10, 2)], (0, 1, 0): [(150, 10, 3)], (1, 0, 0): [(0, 0, 4)]}
-        self.assertEqual(nearest_hub((0, 40, 10), grid), 2)
-        self.assertEqual(nearest_hub((0, 150 + LINK, 10), grid), 3)
-        self.assertIsNone(nearest_hub((0, 151 + LINK, 10), grid))
-        self.assertIsNone(nearest_hub((2, 0, 0), grid))
-
 
 class QuestPlaceTest(unittest.TestCase):
     def spawn(self, kind):
@@ -621,6 +522,87 @@ class OverlayTest(unittest.TestCase):
         self.assertEqual(overlays(self.MAPS, self.ART, rows, self.AREAS), {})
 
 
+class FlightMastersTest(unittest.TestCase):
+    @staticmethod
+    def node(node, name="Lakeshire, Redridge", continent=0, flags=3, mounts=(1, 1), conditions=(0, 0)):
+        return {
+            "ID": str(node),
+            "Name_lang": name,
+            "ContinentID": str(continent),
+            "Pos_0": "10",
+            "Pos_1": "20",
+            "Flags": str(flags),
+            "ConditionID": str(conditions[0]),
+            "VisibilityConditionID": str(conditions[1]),
+            "MountCreatureID_0": str(mounts[0]),
+            "MountCreatureID_1": str(mounts[1]),
+        }
+
+    def test_filter_mirrors_shortest_path(self):
+        rows = [
+            self.node(1),
+            self.node(2, flags=1024),
+            self.node(3275, flags=0, mounts=(0, 5)),
+            self.node(4, continent=530),
+            self.node(5, name="zzOLD Lakeshire"),
+            self.node(6, name="Quest - Test"),
+            self.node(7, conditions=(9, 0)),
+            self.node(8, conditions=(0, 9)),
+            self.node(9, mounts=(0, 0)),
+            self.node(62),
+        ]
+        self.assertEqual([n[0] for n in flight_masters(rows)], [1, 3275])
+        self.assertEqual(flight_masters(rows[:1]), [(1, 0, 10.0, 20.0, "Lakeshire, Redridge")])
+
+
+class TownAreasTest(unittest.TestCase):
+    # Two zone maps share one art; only a map with a `centres` rectangle ships.
+    CENTRES = {1439: {"name": "Darkshore"}, 1440: {"name": "Ashenvale"}}
+    ART = [
+        {"UiMapID": "1439", "UiMapArtID": "2171", "PhaseID": "0"},
+        {"UiMapID": "1440", "UiMapArtID": "2171", "PhaseID": "0"},
+    ]
+    AREAS = [
+        {"ID": "447", "AreaName_lang": "Ameth'Aran"},
+        {"ID": "442", "AreaName_lang": "Auberdine"},
+        {"ID": "616", "AreaName_lang": ""},
+    ]
+
+    @staticmethod
+    def row(overlay, area, offset, size=(256, 256), hit=(350, 420, 395, 460)):
+        row = {"ID": str(overlay), "UiMapArtID": "2171", "AreaID_0": str(area)}
+        row.update(
+            OffsetX=str(offset[0]), OffsetY=str(offset[1]), TextureWidth=str(size[0]), TextureHeight=str(size[1])
+        )
+        keys = ("HitRectLeft", "HitRectTop", "HitRectRight", "HitRectBottom")
+        row.update(dict(zip(keys, map(str, hit), strict=True)))
+        return row
+
+    def test_rectangles_and_the_hit_centre(self):
+        # Offset 250, 150 with a 256 x 256 texture on the 1002 x 668 canvas; the hit rectangle holds the centre
+        # (350, 420, 395, 460). Both maps sharing the art get the area.
+        towns, names = town_areas(self.CENTRES, self.ART, [self.row(1, 442, (250, 150))], self.AREAS)
+        entry = {"area": 442, "x0": 0.2495, "y0": 0.2246, "x1": 0.505, "y1": 0.6078, "cx": 0.3718, "cy": 0.6587}
+        self.assertEqual(towns, {1439: [entry], 1440: [entry]})
+        self.assertEqual(names, {442: "Auberdine"})
+
+    def test_a_rect_with_no_hit_takes_the_texture_centre(self):
+        towns, _ = town_areas(self.CENTRES, self.ART, [self.row(1, 442, (250, 150), hit=(0, 0, 0, 0))], self.AREAS)
+        self.assertEqual((towns[1439][0]["cx"], towns[1439][0]["cy"]), (0.3772, 0.4162))
+
+    def test_unnamed_sizeless_and_unplaced_left_out(self):
+        rows = [
+            self.row(1, 616, (10, 10)),  # no area name
+            self.row(2, 442, (20, 20), size=(0, 0)),  # no texture: never revealed
+            self.row(3, 999, (30, 30)),  # no AreaTable row
+        ]
+        self.assertEqual(town_areas(self.CENTRES, self.ART, rows, self.AREAS), ({}, {}))
+        world = [{"UiMapID": "1414", "UiMapArtID": "2172", "PhaseID": "0"}]
+        row = self.row(4, 447, (40, 40))
+        row["UiMapArtID"] = "2172"
+        self.assertEqual(town_areas(self.CENTRES, world, [row], self.AREAS), ({}, {}))
+
+
 def quest_row(**fields):
     columns = ("ReqCreatureOrGOId", "ReqCreatureOrGOCount", "ReqItemId", "ReqItemCount")
     row = {f"{column}{i}": 0 for column in columns for i in range(1, 5)}
@@ -726,6 +708,7 @@ class ShippedTest(unittest.TestCase):
             self.assertNotIn(f"\t{name} = {{", text)
         self.assertNotIn("place = {", text)
         self.assertIn("\ttowns = {", text)
+        self.assertIn("\tareaNames = {", text)
 
 
 class LuaTest(unittest.TestCase):
