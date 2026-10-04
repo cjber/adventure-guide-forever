@@ -986,6 +986,8 @@ function harness.load(options)
 		-- Shared/Scroll/ScrollTemplates.xml:4: the list scroll box's own mixin.
 		WowScrollBoxList = function(frame)
 			G.Mixin(frame, ScrollBoxListMixin)
+			-- ScrollBox.xml:20: ScrollBoxBaseTemplate sets clipChildren, so a row past the viewport's edge is cut.
+			frame.clipsChildren = true
 		end,
 		MinimalScrollBar = noop,
 		LargeSideTabButtonTemplate = function(frame)
