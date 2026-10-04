@@ -455,6 +455,17 @@ local function Lead(data, completed, eligible, belongs)
 	return best, bestID, continues
 end
 
+-- The overview header each kind shows under (Overview.GROUPS, docs/design.md §2.2); the map is the one place that
+-- decides it, and no card is grouped by its title. A calling is the player's own class work, so it continues too.
+local SECTION_OF_KIND = {
+	carry = "continue",
+	story = "continue",
+	calling = "continue",
+	nextzone = "zones",
+	dungeon = "dungeons",
+	battleground = "battlegrounds",
+}
+
 -- A card's hub line and group count: its first stop's place, how many stops follow it, and how
 -- many of its quests need a group.
 ---@param journey AGFJourney
@@ -465,6 +476,7 @@ local function Summarise(journey)
 	end
 	journey.hub = first and (first.place or first.title)
 	journey.more, journey.group = #journey.steps - 1, group
+	journey.section = assert(SECTION_OF_KIND[journey.kind], journey.kind .. " has no overview header")
 end
 
 -- A zone card's reason in the world's voice, the first that applies: a story the player started, at least

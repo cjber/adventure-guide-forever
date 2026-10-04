@@ -59,6 +59,9 @@ local ART_BLEED, ART_SLICE = 6, 12
 local OVERVIEW_WIDTH = 288 -- The chosen journey's checklist width.
 local OVERVIEW_HEIGHT, OVERVIEW_GAP, OVERVIEW_ICON, OVERVIEW_BADGE, OVERVIEW_SPAN = 64, 4, 30, 13, 240
 local OVERVIEW_INSET, OVERVIEW_TEXT = 12, 54
+-- The overview's quest log headers (docs/design.md §2.2): the stock list header's height, art and font, a gap under
+-- each before its first card.
+local HEADER_HEIGHT, HEADER_GAP, HEADER_ART = 22, 4, "common-button-list-collapseExpand"
 
 ---@type Frame?
 local panel
@@ -89,6 +92,8 @@ local emptyText
 local asideLines = {}
 ---@type AGFOverviewCard[]
 local overviewCards = {}
+---@type AGFOverviewHeader[]
+local overviewHeaders = {}
 ---@type Frame
 local viewport
 ---@type AGFScrollFrame?
@@ -840,6 +845,85 @@ local function RefreshOverviewCard(card, journey, width)
 	Overview.RefreshCardTooltip(card)
 end
 
+-- A group's header: the stock quest log header (QuestLogHeaderTemplate), its list art, Game15Font_Shadow and a
+-- 20px collapse button; the count of its cards sits at the right of the name while it is collapsed. Clicking it
+-- toggles the group for this character (Overview.ToggleCollapsed).
+---@class AGFOverviewHeader : Button
+---@field key AGFJourneySection
+---@field Name FontString
+---@field Count FontString
+---@field CollapseButton AGFCollapseButton
+
+---@param parent Frame
+---@return AGFOverviewHeader
+local function CreateOverviewHeader(parent)
+	local header = CreateFrame("Button", nil, parent) --[[@as AGFOverviewHeader]]
+	header:SetHeight(HEADER_HEIGHT)
+	for _, layer in ipairs({ "BACKGROUND", "HIGHLIGHT" }) do
+		local art = header:CreateTexture(nil, layer)
+		art:SetAtlas(HEADER_ART)
+		art:SetAllPoints()
+		if layer == "HIGHLIGHT" then
+			art:SetBlendMode("ADD")
+			art:SetAlpha(0.4)
+		end
+	end
+	header.CollapseButton = CreateFrame("Button", nil, header, "CollapseButtonTemplate") --[[@as AGFCollapseButton]]
+	header.CollapseButton:SetPoint("RIGHT", -6, 0)
+	header.Count = header:CreateFontString(nil, "ARTWORK", "Game15Font_Shadow")
+	header.Count:SetPoint("RIGHT", header.CollapseButton, "LEFT", -4, 0)
+	header.Count:SetJustifyH("RIGHT")
+	header.Name = header:CreateFontString(nil, "ARTWORK", "Game15Font_Shadow")
+	header.Name:SetPoint("LEFT", 8, 0)
+	header.Name:SetPoint("RIGHT", header.Count, "LEFT", -4, 0)
+	header.Name:SetJustifyH("LEFT")
+	header.Name:SetWordWrap(false)
+	header.Name:SetMaxLines(1)
+	for _, text in ipairs({ header.Name, header.Count }) do
+		text:SetTextColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
+	end
+	header:RegisterForClicks("LeftButtonUp")
+	header:SetScript("OnClick", function(self)
+		Overview.ToggleCollapsed(self.key)
+		Refresh()
+	end)
+	return header
+end
+
+-- `group`'s header at `top`, then its cards from there while it is open. A collapsed group lays out no card (and
+-- refreshes none); the header shows how many it holds. Returns the top under what it drew.
+---@param group AGFJourneyGroup
+---@param header AGFOverviewHeader
+---@param journeys AGFJourney[]
+---@param top number
+---@param width number
+---@param collapsed boolean
+---@param pool table
+---@return number top
+local function LayoutGroup(group, header, journeys, top, width, collapsed, pool)
+	header.key = group.key
+	header:SetWidth(width)
+	header.Name:SetText(group.label)
+	-- Never hidden: an empty font string keeps the name's anchor resolvable in a layout dump.
+	header.Count:SetText(collapsed and (#journeys == 1 and L.GROUP_CARDS_ONE or L.GROUP_CARDS:format(#journeys)) or "")
+	header.CollapseButton:UpdateCollapsedState(collapsed)
+	header:SetPoint("TOPLEFT", 0, -top)
+	top = top + HEADER_HEIGHT + HEADER_GAP
+	if collapsed then
+		return top
+	end
+	for _, journey in ipairs(journeys) do
+		pool.next = pool.next + 1
+		local card = overviewCards[pool.next] or CreateOverviewCard(assert(list))
+		overviewCards[pool.next] = card
+		card:SetShown(true)
+		RefreshOverviewCard(card, journey, width)
+		card:SetPoint("TOPLEFT", 0, -top)
+		top = top + OVERVIEW_HEIGHT + OVERVIEW_GAP
+	end
+	return top
+end
+
 ---@param route AGFRoute
 ---@param top number
 ---@param shown boolean
@@ -848,16 +932,29 @@ local function LayoutOverview(route, top, shown)
 	---@cast panel -?
 	---@cast list -?
 	local width = math.max(0, panel:GetWidth() - 2 * PAD)
-	for index = 1, math.max(#route.journeys, #overviewCards) do
-		local card = overviewCards[index] or CreateOverviewCard(list)
-		overviewCards[index] = card
-		local journey = shown and route.journeys[index] or nil
-		card:SetShown(journey ~= nil)
-		if journey then
-			RefreshOverviewCard(card, journey, width)
-			card:SetPoint("TOPLEFT", 0, -top)
-			top = top + OVERVIEW_HEIGHT + OVERVIEW_GAP
+	-- The chosen view and the search draw no card and no header, so neither is even built for them.
+	if not shown then
+		for _, header in ipairs(overviewHeaders) do
+			header:Hide()
 		end
+		for _, card in ipairs(overviewCards) do
+			card:Hide()
+		end
+		return top
+	end
+	local pool = { next = 0 }
+	for index, group in ipairs(Overview.GROUPS) do
+		local header = overviewHeaders[index] or CreateOverviewHeader(assert(list))
+		overviewHeaders[index] = header
+		local journeys = Overview.InGroup(route.journeys, group.key)
+		header:SetShown(#journeys > 0)
+		if #journeys > 0 then
+			-- The route's own card stays in sight: its group is open whatever the player saved.
+			top = LayoutGroup(group, header, journeys, top, width, not Overview.Open(route, journeys[1]), pool)
+		end
+	end
+	for index = pool.next + 1, #overviewCards do
+		overviewCards[index]:Hide()
 	end
 	return top
 end
@@ -1085,10 +1182,17 @@ local function Attach()
 	panel:HookScript("OnShow", ns.Pins.Refresh)
 	panel:HookScript("OnHide", ns.Pins.Refresh)
 	panel:HookScript("OnHide", Overview.HideTooltipWithin)
-	-- The cards' minutes, while the guide is open: on opening it and on each new route.
+	-- The cards' minutes, while the guide is open: on opening it and on each new route. A card its header hides is
+	-- never queued.
 	local function QueueCards()
 		if panel:IsShown() then
-			ns.Integrations.RefreshCards(ns.Route().journeys)
+			local route, shown = ns.Route(), {}
+			for _, journey in ipairs(route.journeys) do
+				if Overview.Open(route, journey) then
+					shown[#shown + 1] = journey
+				end
+			end
+			ns.Integrations.RefreshCards(shown)
 		end
 	end
 	panel:HookScript("OnShow", QueueCards)

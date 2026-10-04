@@ -40,6 +40,14 @@ ns.L = {
 		.. "plus quests you added to the route.",
 	JOURNEY_STORY = "%s story",
 	JOURNEY_NEXT_ZONE = "Head to %s",
+	-- The overview's quest log headers (docs/design.md §2.2): one per kind of card, in this order. A collapsed one
+	-- shows how many cards it holds.
+	GROUP_CONTINUE = "Continue",
+	GROUP_ZONES = "Zones for your level",
+	GROUP_DUNGEONS = "Dungeons",
+	GROUP_BATTLEGROUNDS = "Battlegrounds",
+	GROUP_CARDS = "%d cards",
+	GROUP_CARDS_ONE = "1 card",
 	DUNGEON_QUESTS = "%d quests for this dungeon",
 	DUNGEON_QUESTS_ONE = "1 quest for this dungeon",
 	-- The dungeon card's reason: the log's quests filed under its instance, counted.

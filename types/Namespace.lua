@@ -169,6 +169,7 @@
 ---@field dungeons boolean
 ---@field optimisedRoute? boolean the account-wide planned (beta) route order; nil/false is the nearest-action order
 ---@field journey? string key of the journey card the player chose; nil (or gone) = none chosen, the first card drawn
+---@field collapsedGroups table<string, boolean> the overview headers this character collapsed, by group key; a group with no entry uses its default
 ---@field skipped table<string, boolean> step keys skipped this session
 ---@field last? {key: string, reason: string} step 1 at the last rebuild, for the next login's resume line
 ---@field lead? integer the map of the zone the story led with, which the next build keeps while it still has useful work
@@ -251,6 +252,10 @@
 
 ---@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"|"calling"|"battleground"
 
+-- The overview's quest log header a journey shows under (Overview.GROUPS): its kind at build time, so no title is
+-- guessed from. "continue" holds the story, Quests in your log and your calling.
+---@alias AGFJourneySection "continue"|"zones"|"dungeons"|"battlegrounds"
+
 -- A quest's place in its chain (Model.Story): the data's `next` links from the chain's head. Later members are IDs
 -- only, so no later chapter's title is ever drawn.
 ---@class AGFStory
@@ -261,6 +266,7 @@
 -- One card in the guide (docs/design.md §2.2): only steps the player can take now.
 ---@class AGFJourney
 ---@field kind AGFJourneyKind
+---@field section AGFJourneySection the overview header it shows under
 ---@field zone? integer uiMapID of a zone story or next-zone journey, independent of its first step
 ---@field instance? integer Map.ID of a dungeon journey or a story leading into an instance
 ---@field key string stable identity for prefs.journey: "carry", "zone:<uiMapID>" (a zone's story or next-zone card alike), "dungeon:<Map.ID>", "calling", "chain:<questID>" (a way into an instance, by its chain's first quest) or "battleground:<BattlemasterList ID>"
@@ -595,6 +601,12 @@
 ---@field CARRY_EXPLANATION string
 ---@field JOURNEY_STORY string format: zone name
 ---@field JOURNEY_NEXT_ZONE string format: zone name
+---@field GROUP_CONTINUE string the overview's quest log header over the story, the log and your calling
+---@field GROUP_ZONES string the header over the "Head to <zone>" cards
+---@field GROUP_DUNGEONS string the header over the dungeon cards
+---@field GROUP_BATTLEGROUNDS string the header over the battleground cards
+---@field GROUP_CARDS string format: how many cards a collapsed header holds
+---@field GROUP_CARDS_ONE string the same for one card
 ---@field DUNGEON_QUESTS string format: quest count
 ---@field DUNGEON_QUESTS_ONE string
 ---@field DUNGEON_INSIDE string format: count of the log's quests filed under the instance, its name

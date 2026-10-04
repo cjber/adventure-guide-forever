@@ -47,6 +47,9 @@ local PREFS_DEFAULTS = {
 	-- Opt-in: the Battlegrounds card.
 	battlegrounds = false,
 	notInterested = {},
+	-- The overview's quest log headers this character collapsed, by group key (Overview.GROUPS); an absent key
+	-- uses the group's own default.
+	collapsedGroups = {},
 	-- Quests added to the route with a shift-click: quest ID -> true.
 	pinned = {},
 }

@@ -625,6 +625,18 @@ equal(
 	"diversions: in combat a new carry card preserves other options"
 )
 
+-- Every card carries the overview header its kind shows under (docs/design.md §2.2): the planner sets it once, so the
+-- overview never guesses a group from a title.
+local headings = {}
+for _, journey in ipairs(Model.Plan(Diversions(18, 10, 10), player, {}, inLog, both).journeys) do
+	headings[#headings + 1] = journey.kind .. "=" .. journey.section
+end
+equal(
+	table.concat(headings, " "),
+	"story=continue carry=continue nextzone=zones calling=continue dungeon=dungeons",
+	"overview: every card's group from its kind"
+)
+
 -- Your calling: the class quests open now as one card, its reason naming the quest it leads with.
 local function Calling(fixture, completed, choices)
 	for _, journey in ipairs(Model.Plan(fixture, player, completed or {}, {}, choices or prefs()).journeys) do
