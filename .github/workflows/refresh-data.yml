@@ -33,6 +33,7 @@ jobs:
       - name: Regenerate
         if: steps.pins.outputs.changed == 'true'
         run: |
+          sudo apt-get update && sudo apt-get install -y luajit lua-check
           python3 tools/gen_quests.py
           python3 tools/diff_forever.py
           python3 tools/gen_zoneart.py
@@ -51,7 +52,6 @@ jobs:
       - name: Lua checks, specs and the planner bench
         if: steps.pins.outputs.changed == 'true'
         run: |
-          sudo apt-get update && sudo apt-get install -y luajit lua-check
           luacheck .
           for spec in tests/*_spec.lua; do luajit "$spec" || exit 1; done
           luajit -joff tests/plan_bench.lua
