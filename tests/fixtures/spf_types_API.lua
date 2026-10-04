@@ -1,4 +1,4 @@
--- shortest-path-forever cab9c3a5692217fe433c3aa4299a85b8c9fd21f1:types/API.lua
+-- shortest-path-forever 8f8cf3ad4579cd5be97cc2a1e9c45d8413bb44b3:types/API.lua
 ---@meta
 
 -- Public addon-to-addon interface. Coordinates are uiMapID and normalized 0-1 x/y, not world yards.
@@ -9,9 +9,18 @@
 
 ---@alias SPFAPIEnded "arrived"|"cleared"|"replaced"|"cancelled" -- reached the last stop; the player cleared it; another journey took over; the owner's own Cancel
 
--- What stands at a stop. Its pin on the world map becomes that mark (a quest's "!" or "?", a trainer, a flight
--- master, a dock) in a gold ring, and the minimap rings the spot instead of covering the game's own icon there.
+-- What stands at a stop. Its numbered pin on the world map wears that mark (a quest's "!" or "?", a trainer, a
+-- flight master, a dock) as a small badge on its lower right, a lone stop shows the mark alone, and the minimap
+-- rings the spot instead of covering the game's own icon there.
 ---@alias SPFAPIStopKind "pickup"|"turnin"|"objective"|"trainer"|"innkeeper"|"flightmaster"|"battlemaster"|"dungeon"|"boat"|"zeppelin"|"lift"|"tram"|"portal"
+
+--- An objective area a held stop stands for: a circle on one map. The guide draws its outline, and its stop and
+-- line step aside, while the player stands inside.
+---@class SPFAPIShape
+---@field map integer -- uiMapID
+---@field x number -- normalized 0-1
+---@field y number -- normalized 0-1
+---@field radius number -- yards, finite and nonnegative
 
 ---@class SPFAPIStop
 ---@field map integer -- uiMapID
@@ -22,6 +31,7 @@
 ---@field kind? SPFAPIStopKind -- any other value is ignored and the stop keeps the plain pin
 ---@field hold? boolean -- keep guidance at this stop until the caller submits an updated route
 ---@field radius? number -- yards around a held stop where travel cues pause; finite and nonnegative
+---@field shapes? SPFAPIShape[] -- objective areas a held stop stands for; their outlines are drawn while the player is inside one
 
 ---@class SPFAPILeg
 ---@field mode SPFAPIMode

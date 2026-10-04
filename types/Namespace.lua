@@ -366,6 +366,14 @@
 -- What stands at a stop; Shortest Path draws the game's own mark for it on the stop's pin.
 ---@alias AGFSPFStopKind "pickup"|"turnin"|"objective"|"trainer"|"innkeeper"|"flightmaster"|"battlemaster"|"dungeon"|"boat"|"zeppelin"|"lift"|"tram"|"portal"
 
+--- An objective area a held stop stands for: its outline is drawn, and the stop and its line step aside, while the
+-- player stands inside.
+---@class AGFSPFShape
+---@field map integer -- uiMapID
+---@field x number -- normalized 0-1
+---@field y number -- normalized 0-1
+---@field radius number -- yards
+
 ---@class AGFSPFStop
 ---@field map integer -- uiMapID
 ---@field x number -- normalized 0-1
@@ -375,6 +383,7 @@
 ---@field tooltip? string optional quest level/chain detail for the stop tooltip
 ---@field hold? boolean keep guidance until the owner replaces the route after quest progress
 ---@field radius? number yards around a held stop where travel cues pause
+---@field shapes? AGFSPFShape[] the objective areas a held stop stands for
 
 ---@class AGFSPFLeg
 ---@field mode AGFSPFMode
