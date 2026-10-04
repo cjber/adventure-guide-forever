@@ -29,7 +29,7 @@
 ---@type AGFQuestieDB?
 LibQuestieDB = nil
 
----@type {API: {isReady: boolean, RegisterOnReady: fun(callback: fun()), RegisterForQuestUpdates: fun(callback: fun())}}?
+---@type {API: {isReady: boolean, RegisterOnReady: fun(callback: fun()), RegisterForQuestUpdates: fun(callback: fun(questId: integer?, objectiveIndex: integer?, triggerReason: integer?))}}?
 Questie = nil
 ---@type {ImportModule: fun(self: table, name: string): {IsDoable: fun(id: integer): boolean}}?
 QuestieLoader = nil

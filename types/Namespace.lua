@@ -163,10 +163,19 @@
 ---@field have integer
 ---@field need integer
 
+-- The composed QuestieDB catalogue kept in the per-character save between logins (QuestieSource.lua). `key` names
+-- the inputs that built it, and the three tables are ns.Data's own, saved under it.
+---@class AGFCatalogue
+---@field key string
+---@field quests table<integer, AGFQuest>
+---@field hubs table<integer, {name: string}>
+---@field npcs table<integer, AGFNpc>
+
 ---@class AGFPrefs
 ---@field plannedDungeons table<integer, boolean>
 ---@field quests boolean
 ---@field dungeons boolean
+---@field catalogue? AGFCatalogue the composed catalogue the last login built, reused when every input matches
 ---@field optimisedRoute? boolean the account-wide planned (beta) route order; nil/false is the nearest-action order
 ---@field journey? string key of the journey card the player chose; nil (or gone) = none chosen, the first card drawn
 ---@field skipped table<string, boolean> step keys skipped this session
@@ -338,6 +347,8 @@
 ---@field Completed fun(): table<integer, boolean>
 ---@field Log fun(): table<integer, AGFLogQuest>
 ---@field OnChange fun(callback: fun())
+---@field QuestChanged fun() a quest changed outside the client's own events (Questie's live updates), coalesced with them
+---@field QuestUpdateChanged fun(id: integer): boolean whether a Questie update moved the quest's live availability since the last plan
 ---@field OnInitialLogin fun(callback: fun()) called on a login's PLAYER_ENTERING_WORLD, never on a /reload
 ---@field Ready fun(): boolean completion data has loaded
 ---@field MapName fun(map: integer): string? the client's localised map name, nil when it has none

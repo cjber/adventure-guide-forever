@@ -1375,6 +1375,23 @@ function harness.load(options)
 	G.UnitClass = function()
 		return "Class", "CLASS", player.classID
 	end
+	-- The client's class tokens by class ID; QuestieDB's corrections switch on the token UnitClassBase returns.
+	local CLASS_TOKEN = {
+		"WARRIOR",
+		"PALADIN",
+		"HUNTER",
+		"ROGUE",
+		"PRIEST",
+		"DEATHKNIGHT",
+		"SHAMAN",
+		"MAGE",
+		"WARLOCK",
+		"MONK",
+		"DRUID",
+	}
+	G.UnitClassBase = function()
+		return CLASS_TOKEN[player.classID] or "WARRIOR"
+	end
 	-- Rest: a spec sets player.rested (false for none: the client gives nil), player.xpMax and
 	-- player.resting; by default the bar is half rested, so no route ends at an inn.
 	G.GetXPExhaustion = function()

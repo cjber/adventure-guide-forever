@@ -1,5 +1,5 @@
 ---@type string, AGFNamespace
-local _, ns = ...
+local addonName, ns = ...
 
 -- QuestieDB owns the quest catalogue. Bundled geometry still places maps and transport hubs;
 -- it never limits which quests exist. Questie supplies live availability policy (including events).
@@ -593,6 +593,78 @@ end
 empty.quests, empty.hubs = {}, {}
 ns.Data = empty --[[@as AGFData]]
 
+-- The inputs the composed catalogue depends on. QuestieDB corrects its quest, NPC and object rows from the
+-- character's class and faction (UnitClassBase, UnitFactionGroup) and names them in the client's language
+-- (GetLocale), and the client's build and this addon's version decide the record shape, so a catalogue built under
+-- one set of inputs is never used under another. nil in a dev checkout, whose TOC version the packager has not
+-- filled in, so nothing is cached and every login rebuilds.
+---@param version string QuestieDB's version
+---@return string?
+local function CatalogueKey(version)
+	local mine = C_AddOns.GetAddOnMetadata(addonName, "Version")
+	if type(mine) ~= "string" or mine == "" or mine:sub(1, 1) == "@" then
+		return nil
+	end
+	local _, build = GetBuildInfo()
+	return table.concat({
+		"version=" .. mine,
+		"questiedb=" .. version,
+		"flavour=" .. tostring(C_AddOns.GetAddOnMetadata(ADDON, "X-Flavor")),
+		"client=" .. tostring(build),
+		"locale=" .. tostring(GetLocale()),
+		"class=" .. tostring(UnitClassBase("player")),
+		"faction=" .. tostring(UnitFactionGroup("player")),
+	}, "\n")
+end
+
+-- The catalogue the saved data carries for this character, or nil. Per character, because QuestieDB's class and
+-- faction corrections make one character's rows another's. Only a table is considered; anything else rebuilds.
+---@return table?
+local function Saved()
+	local charDB = AdventureGuideForeverCharDB
+	local saved = type(charDB) == "table" and charDB.catalogue or nil
+	return type(saved) == "table" and saved or nil
+end
+
+-- Whether a saved catalogue is the shape this version writes. A truncated or foreign save fails and is rebuilt;
+-- the check reads one quest, so it cannot stall a frame, and it never errors.
+---@param saved table
+---@return boolean
+local function Shape(saved)
+	if type(saved.quests) ~= "table" or type(saved.hubs) ~= "table" or type(saved.npcs) ~= "table" then
+		return false
+	end
+	local id, quest = next(saved.quests)
+	return id ~= nil and type(quest) == "table" and type(quest.title) == "string" and type(quest.level) == "number"
+end
+
+-- The saved catalogue as ns.Data: the bundled geometry with the saved quests, towns and service NPCs over it, the
+-- same overlay Build ends with.
+---@param saved table
+---@return table data an AGFData
+local function Assemble(saved)
+	local data = {}
+	for key, value in pairs(bundled) do
+		data[key] = value
+	end
+	data.quests, data.hubs, data.npcs = saved.quests, saved.hubs, saved.npcs
+	return data
+end
+
+-- Keeps this login's catalogue for the next one, under the key that produced it.
+---@param result AGFData
+---@param key string
+local function Remember(result, key)
+	if type(AdventureGuideForeverCharDB) == "table" then
+		AdventureGuideForeverCharDB.catalogue = {
+			key = key,
+			quests = result.quests,
+			hubs = result.hubs,
+			npcs = result.npcs,
+		}
+	end
+end
+
 local function Start()
 	local lib, reason, zones = Fit()
 	if not lib or not zones then
@@ -601,6 +673,14 @@ local function Start()
 		return
 	end
 	local version = C_AddOns.GetAddOnMetadata(ADDON, "Version") or "?"
+	local key = CatalogueKey(version)
+	local saved = key and Saved()
+	if saved and saved.key == key and Shape(saved) then
+		status.state, status.version, status.settled = "questie", version, true
+		ns.Data = Assemble(saved) --[[@as AGFData]]
+		ns.Invalidate()
+		return
+	end
 	local started = 0
 	local co = coroutine.create(Build)
 	local function Yield()
@@ -620,6 +700,9 @@ local function Start()
 			C_Timer.After(0, Step)
 		else
 			status.state, status.version, status.settled = "questie", version, true
+			if key then
+				Remember(result, key)
+			end
 			ns.Data = result --[[@as AGFData]]
 			ns.Invalidate()
 		end
@@ -641,8 +724,12 @@ EventUtil.ContinueAfterAllEvents(function()
 			end
 		end)
 		if Questie.API.RegisterForQuestUpdates then
-			Questie.API.RegisterForQuestUpdates(function()
-				ns.Invalidate()
+			Questie.API.RegisterForQuestUpdates(function(questId)
+				-- An update that leaves the quest's availability where the last plan found it cannot move the route.
+				if type(questId) == "number" and not ns.State.QuestUpdateChanged(questId) then
+					return
+				end
+				ns.State.QuestChanged()
 			end)
 		end
 	else

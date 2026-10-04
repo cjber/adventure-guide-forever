@@ -430,4 +430,268 @@ do
 	equal(frames > 10, true, "build yields across frames")
 	equal(most <= 501, true, "quest reads within slice")
 end
+-- The composed catalogue is saved per character and reloaded in place of the build. These checks drive the
+-- production save path through tests/harness.lua: a save is only adopted for the exact inputs that produced it
+-- (addon version, QuestieDB version and flavour, client build, locale, class, faction), a save that fails the
+-- shape check rebuilds, and an adopted save is the built catalogue, value for value.
+-- Counts Questie's quest id reads: a build asks, an adopted save never does.
+local function Cat(version, charDB, change)
+	local reads = 0
+	local built = harness.load({
+		version = version,
+		questiedb = Fake(),
+		charDB = charDB,
+		setup = function(loaded)
+			local ids = loaded.G.LibQuestieDB.Quest.GetAllIds
+			loaded.G.LibQuestieDB.Quest.GetAllIds = function()
+				reads = reads + 1
+				return ids()
+			end
+			if change then
+				change(loaded)
+			end
+			Policy(loaded)
+		end,
+	})
+	return built, reads
+end
+
+-- The saved variables of one build, for a spec to reload.
+local function SavedOnce(version)
+	local built, reads = Cat(version)
+	equal(reads > 0, true, "the first login builds")
+	equal(built.ns.QuestieStatus.state, "questie", "the first login is ready")
+	return built.G.AdventureGuideForeverCharDB
+end
+
+-- One Lua literal per value, as the client writes saved variables: the round trip proves the save is plain data
+-- (no cycles, functions or userdata) as much as it proves the two loads agree.
+local function Write(value)
+	local kind = type(value)
+	if kind == "string" then
+		return ("%q"):format(value)
+	end
+	if kind == "number" or kind == "boolean" then
+		return tostring(value)
+	end
+	assert(kind == "table", "a saved catalogue value is savable data, got " .. kind)
+	local parts, n = {}, #value
+	for index = 1, n do
+		parts[#parts + 1] = "[" .. index .. "]=" .. Write(value[index])
+	end
+	for key, item in pairs(value) do
+		if type(key) ~= "number" or key < 1 or key > n then
+			parts[#parts + 1] = "[" .. Write(key) .. "]=" .. Write(item)
+		end
+	end
+	return "{" .. table.concat(parts, ",") .. "}"
+end
+
+-- Deep equality, so a reloaded catalogue is compared value for value, not by identity.
+local function Same(a, b, path)
+	if type(a) ~= type(b) then
+		return false, path .. ": " .. type(a) .. " vs " .. type(b)
+	end
+	if type(a) ~= "table" then
+		return a == b, path .. ": " .. tostring(a) .. " vs " .. tostring(b)
+	end
+	for key, value in pairs(a) do
+		local ok, why = Same(value, b[key], path .. "." .. tostring(key))
+		if not ok then
+			return false, why
+		end
+	end
+	for key in pairs(b) do
+		if a[key] == nil then
+			return false, path .. "." .. tostring(key) .. ": absent from the build"
+		end
+	end
+	return true
+end
+
+-- A build, a client-side save and a reload: the two catalogues are deeply the same and the reload reads no
+-- QuestieDB, so the saved catalogue has completely replaced the build.
+do
+	local build, firstReads = Cat("0.8.0")
+	equal(firstReads > 0, true, "the cache source build reads QuestieDB")
+	local charDB = build.G.AdventureGuideForeverCharDB
+	local reloaded = assert(loadstring("return " .. Write(charDB)))()
+	local again, reads = Cat("0.8.0", reloaded)
+	equal(reads, 0, "an unchanged save is adopted without a QuestieDB read")
+	equal(again.ns.QuestieStatus.state, "questie", "an adopted save is ready")
+	local same, why = Same(build.ns.Data.quests, again.ns.Data.quests, "quests")
+	equal(same, true, "saved quests equal the built ones: " .. tostring(why))
+	same, why = Same(build.ns.Data.hubs, again.ns.Data.hubs, "hubs")
+	equal(same, true, "saved hubs equal the built ones: " .. tostring(why))
+	same, why = Same(build.ns.Data.npcs, again.ns.Data.npcs, "npcs")
+	equal(same, true, "saved npcs equal the built ones: " .. tostring(why))
+	equal(#build.errors, 0, "the build raises no error")
+	equal(#again.errors, 0, "the adopted save raises no error")
+end
+
+-- Every input in the key invalidates the save on its own: a changed value rebuilds rather than adopting.
+for _, case in ipairs({
+	{
+		"addon version",
+		function()
+			return "0.8.1"
+		end,
+	},
+	{
+		"QuestieDB version",
+		nil,
+		function(loaded)
+			loaded.metadata.QuestieDB.Version = "0.0-other"
+		end,
+	},
+	{
+		"client build",
+		nil,
+		function(loaded)
+			loaded.G.GetBuildInfo = function()
+				return "1.60.2", "69914", "Sep 2 2026", 16002
+			end
+		end,
+	},
+	{
+		"locale",
+		nil,
+		function(loaded)
+			loaded.G.GetLocale = function()
+				return "deDE"
+			end
+		end,
+	},
+	{
+		"class",
+		nil,
+		function(loaded)
+			loaded.G.UnitClassBase = function()
+				return "MAGE"
+			end
+		end,
+	},
+	{
+		"faction",
+		nil,
+		function(loaded)
+			loaded.G.UnitFactionGroup = function()
+				return "Alliance"
+			end
+		end,
+	},
+}) do
+	local charDB = SavedOnce("0.8.0")
+	local version = case[2] and case[2]() or "0.8.0"
+	local rebuilt, reads = Cat(version, charDB, case[3])
+	equal(reads > 0, true, "a changed " .. case[1] .. " rebuilds")
+	equal(rebuilt.ns.QuestieStatus.state, "questie", "a changed " .. case[1] .. " still lands")
+	equal(#rebuilt.errors, 0, "a changed " .. case[1] .. " raises no error")
+end
+
+-- A QuestieDB flavour this addon cannot read is never matched against a saved catalogue: the catalogue is
+-- unavailable, not stale.
+do
+	local charDB = SavedOnce("0.8.0")
+	local rebuilt, reads = Cat("0.8.0", charDB, function(loaded)
+		loaded.metadata.QuestieDB["X-Flavor"] = "Camelot"
+	end)
+	equal(reads, 0, "a foreign flavour never reads the provider")
+	equal(rebuilt.ns.QuestieStatus.state, "unavailable", "a foreign flavour is unavailable")
+	equal(next(rebuilt.ns.Data.quests), nil, "a foreign flavour uses no saved quests")
+end
+
+-- A save that fails the shape check is rebuilt, never trusted and never an error.
+for _, damage in ipairs({
+	function(save)
+		save.quests = "nope"
+	end,
+	function(save)
+		save.quests = {}
+	end,
+	function(save)
+		save.quests = { [7] = "not a quest" }
+	end,
+	function(save)
+		save.hubs = nil
+	end,
+	function(save)
+		save.npcs = 5
+	end,
+}) do
+	local charDB = SavedOnce("0.8.0")
+	damage(charDB.catalogue)
+	local rebuilt, reads = Cat("0.8.0", charDB)
+	equal(reads > 0, true, "a damaged save rebuilds")
+	equal(rebuilt.ns.QuestieStatus.state, "questie", "a damaged save still lands")
+	equal(#rebuilt.errors, 0, "a damaged save raises no error")
+end
+do
+	local charDB = SavedOnce("0.8.0")
+	charDB.catalogue = 5
+	local rebuilt, reads = Cat("0.8.0", charDB)
+	equal(reads > 0, true, "a foreign catalogue rebuilds")
+	equal(#rebuilt.errors, 0, "a foreign catalogue raises no error")
+end
+-- A Questie update that leaves the quest's availability where the last plan found it buys no rebuild, however many
+-- objectives it carries; one that moves it buys exactly one, and the client event it accompanies shares that plan.
+do
+	local availability = { [900001] = true }
+	local update
+	local both = harness.load({
+		questiedb = Fake(),
+		setup = function(loaded)
+			loaded.G.Questie = {
+				API = {
+					isReady = true,
+					RegisterOnReady = function(fn)
+						fn()
+					end,
+					RegisterForQuestUpdates = function(fn)
+						update = fn
+					end,
+				},
+			}
+			loaded.G.QuestieLoader = {
+				ImportModule = function()
+					return {
+						IsDoable = function(id)
+							return availability[id] == true
+						end,
+					}
+				end,
+			}
+		end,
+	})
+	equal(type(update), "function", "Questie update callbacks are registered")
+	local base = both.modelCalls.Plan
+	for _ = 1, 13 do
+		update(900001, 1, 2)
+		both.tick()
+	end
+	both.flush()
+	equal(both.modelCalls.Plan, base, "an unchanged availability costs no rebuild")
+	availability[900001] = false
+	update(900001, 1, 2)
+	both.tick()
+	both.flush()
+	equal(both.modelCalls.Plan, base + 1, "a moved availability rebuilds once")
+	-- Both handlers in the same frame cost one plan, whatever order they run in.
+	for _, order in ipairs({ "questie first", "client first" }) do
+		local mark = both.modelCalls.Plan
+		for _ = 1, 3 do
+			if order == "questie first" then
+				update(900001, 1, 2)
+				both.fire("QUEST_LOG_UPDATE")
+			else
+				both.fire("QUEST_LOG_UPDATE")
+				update(900001, 1, 2)
+			end
+			both.tick()
+		end
+		both.flush()
+		equal(both.modelCalls.Plan - mark, 3, order .. ": one plan per frame, not one per handler")
+	end
+	equal(#both.errors, 0, "the update coalescing raises no error")
+end
 print(("questie_spec: %d checks passed"):format(checks))

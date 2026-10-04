@@ -30,7 +30,11 @@ abandons quests.
 - **2.12 Trainers.** Use known spells and trainer locations; add a stop only when the route passes.
 - **2.13 New suggestions.** Announce new offers quietly after a level or zone change, never by opening UI.
 - **2.14 QuestieDB.** Enumerate the compatible provider's complete composed quest catalogue after
-  Questie's ready callback (policy corrections precede reads). No bundled-ID, giver or objective whitelist;
+  Questie's ready callback (policy corrections precede reads). The composed catalogue is kept in the
+  character's saved data and reused while QuestieDB's version and flavour, this addon's version, the client
+  build, the locale and the character's class and faction all match; any other value rebuilds it, a saved
+  catalogue that fails its shape check rebuilds it, and live Questie policy is never saved. No bundled-ID,
+  giver or objective whitelist;
   provider absence/failure publishes no partial or fallback quest list. The game owns progress and live POIs;
   QuestieDB owns records, spawns and XP; the live log owns objective counts. Provider objective icon fields are never treated as counts. Questie's IsDoable policy, plus minimum/maximum
   level and guide difficulty preferences, gates pickups. Without live policy, logged quests remain browsable
