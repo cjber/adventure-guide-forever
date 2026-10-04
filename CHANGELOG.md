@@ -11,6 +11,7 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **The class trainer line names a trainer of your side.** For a class and race pairing Forever adds, such as an Alliance shaman, the line could point at the other side's trainer, for example one in Stonard. A trainer who serves only the other side is no longer offered.
 - **A quest the route cannot finish is no longer handed in early.** When the quest data placed only some of a quest's objectives, the route could still return to hand it in, so a town said "2 to hand in" with only one ready. A quest like that now waits with your log until it is really done, and the next build offers its turn-in.
 - **The tracker comes back after Edit Mode is put away.** Opening a settings or keybind panel from Edit Mode hid the guide's tracker column and left it hidden until a reload. It now returns as soon as the Edit Mode panel goes away.
 - **An objective the game does not count no longer shows a bare 0.** For an objective kind the quest log gives no count for, the tooltip showed a line like "2/0". It now uses the guide's own count for that objective, and shows no count at all when the data has none either.
