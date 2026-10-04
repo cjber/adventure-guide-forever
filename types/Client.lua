@@ -83,7 +83,16 @@ OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 3
 ---@type fun(top?: number, bottom?: number, left?: number, right?: number, spacing?: number): AGFScrollBoxLinearView
 CreateScrollBoxListLinearView = nil
 
----@type {InitScrollBoxListWithScrollBar: fun(scrollBox: Frame, scrollBar: Frame, view: AGFScrollBoxLinearView)}
+---@class AGFScrollBoxGridView
+---@field SetElementSize fun(self: AGFScrollBoxGridView, width: number, height: number)
+---@field SetElementExtent fun(self: AGFScrollBoxGridView, extent: number)
+---@field SetElementInitializer fun(self: AGFScrollBoxGridView, template: string, initializer: fun(frame: Frame, elementData: any))
+---@field SetPadding fun(self: AGFScrollBoxGridView, top: number, bottom: number, left: number, right: number, spacing?: number)
+
+---@type fun(stride: integer, top?: number, bottom?: number, left?: number, right?: number, horizontalSpacing?: number, verticalSpacing?: number): AGFScrollBoxGridView
+CreateScrollBoxListGridView = nil
+
+---@type {InitScrollBoxListWithScrollBar: fun(scrollBox: Frame, scrollBar: Frame, view: AGFScrollBoxLinearView|AGFScrollBoxGridView)}
 ScrollUtil = nil
 
 ---@type fun(tbl?: any[]): AGFDataProvider
@@ -310,6 +319,13 @@ AdventureGuideForeverWindow = nil
 
 ---@class AGFTopTab : Button
 ---@field Text FontString
+---@field Normal? Texture
+---@field Pushed? Texture
+---@field Highlight? Texture
+---@field Icon? Texture
+---@field SelectedIcon? Texture
+---@field key? string
+---@field muted? boolean
 ---@field HandleRotation fun(self: AGFTopTab)
 ---@field SetTabSelected fun(self: AGFTopTab, selected: boolean)
 

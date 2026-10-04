@@ -31,6 +31,7 @@ globals = { "ForeverTrackerHost",
 
 read_globals = { "ShowUIPanel", "HideUIPanel", "CreateFramePoolCollection", "C_XMLUtil",
 	"CreateScrollBoxListLinearView",
+	"CreateScrollBoxListGridView",
 	"CreateDataProvider",
 	"ScrollUtil",
 	"NORMAL_FONT_COLOR",

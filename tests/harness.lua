@@ -881,10 +881,45 @@ function harness.load(options)
 	function ScrollBoxListMixin:Refresh()
 		local provider = self.dataProvider
 		local total = provider and provider:GetSize() or 0
-		local spacing = self.view.spacing or 0
+		local view = self.view
+		if view.stride and view.elementWidth and view.elementHeight then
+			-- A grid view: fixed-size elements laid out by stride, scrolled by row.
+			local hSpacing, vSpacing = view.hSpacing or 0, view.vSpacing or 0
+			local width, height = view.elementWidth, view.elementHeight
+			local rows = math.ceil(total / view.stride)
+			self.panExtent = rows > 0 and rows * (height + vSpacing) - vSpacing or 0
+			for index = 1, #self.active do
+				local frame = self.active[index]
+				frame:Hide()
+				self.pool[#self.pool + 1] = frame
+			end
+			self.active = {}
+			if total == 0 then
+				return
+			end
+			local scroll, viewport = self:GetDerivedScrollOffset(), self:GetHeight()
+			for index = 1, total do
+				local row = math.floor((index - 1) / view.stride)
+				local y = row * (height + vSpacing)
+				local above = y + height <= scroll
+				local below = y >= scroll + viewport
+				if not above and not below then
+					local data = provider:Find(index)
+					local frame = self:Acquire()
+					frame.elementData = data
+					frame:ClearAllPoints()
+					frame:SetPoint("TOPLEFT", ((index - 1) % view.stride) * (width + hSpacing), -(y - scroll))
+					frame:Show()
+					view.initializer(frame, data)
+					self.active[#self.active + 1] = frame
+				end
+			end
+			return
+		end
+		local spacing = view.spacing or 0
 		local extents, offsets, pan = {}, {}, 0
 		for index = 1, total do
-			local extent = self.view:GetElementExtent(index, provider:Find(index))
+			local extent = view:GetElementExtent(index, provider:Find(index))
 			extents[index] = extent
 			offsets[index] = pan
 			pan = pan + extent + spacing
@@ -941,6 +976,24 @@ function harness.load(options)
 				return self.extentCalculator(index, elementData)
 			end
 			return 0
+		end
+		return view
+	end
+	G.CreateScrollBoxListGridView = function(stride, _, _, _, _, hSpacing, vSpacing)
+		local view = { stride = stride or 1, hSpacing = hSpacing or 0, vSpacing = vSpacing or 0 }
+		function view:SetElementSize(width, height)
+			self.elementWidth, self.elementHeight = width, height
+		end
+		function view:SetElementExtent(extent)
+			self.elementExtent, self.elementHeight = extent, self.elementHeight or extent
+		end
+		function view:SetElementInitializer(template, initializer)
+			self.template, self.initializer = template, initializer
+		end
+		function view:SetPadding() end
+		function view:SetFrameFactoryResetter() end
+		function view:GetElementExtent()
+			return self.elementWidth and self.elementHeight or 0
 		end
 		return view
 	end

@@ -377,8 +377,10 @@ WINDOW_MARGIN = 20  # the metal corners overhang the frame by up to 16
 WINDOW_TABS = 30  # the tabs hang below the frame
 WINDOWS = (
     "dungeons",
+    "dungeons_select",
     "dungeons_live",
     "dungeons_empty",
+    "dungeons_overview",
     "dungeons_prep",
     "dungeons_bosses",
     "dungeons_loot",

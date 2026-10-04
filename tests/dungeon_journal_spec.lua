@@ -52,7 +52,8 @@ h.ns.Window.OpenDungeon(43)
 h.flush()
 equal(#h.errors, 0, "open dungeon UI")
 
--- The instance list tiles are the journal's 174x96 buttons with its title and range fonts.
+-- The instance select page is the journal's tile grid; Back leaves the instance page for it.
+h.Click(Button(h, h.ns.L.MENU_BACK))
 local tiles = h.Find(function(frame)
 	return frame:IsVisible() and frame.Range ~= nil and frame.value ~= nil and frame.value.id == 43
 end)
@@ -64,6 +65,11 @@ equal(tile.Up.height, 96, "instance tile height")
 equal(tile.Title.font, "QuestTitleFontBlackShadow", "instance title uses the journal font")
 equal(tile.Range.font, "GameFontNormal", "instance range uses the journal font")
 equal(tile.Range:GetText(), h.ns.L.DUNGEON_QUEST_LEVELS:format(15, 25), "instance tile shows its level range")
+
+-- Picking a tile opens the instance page again.
+h.Click(tile)
+h.flush()
+equal(#h.errors, 0, "select a dungeon from the grid")
 
 -- Bosses are the journal's 325x55 buttons with the default portrait.
 h.Click(Button(h, h.ns.L.DUNGEON_BOSSES_TAB))

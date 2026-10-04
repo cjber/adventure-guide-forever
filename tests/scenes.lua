@@ -223,6 +223,14 @@ local function Window(each, scene, tab)
 	return { layout = each.ns.DumpLayout(window, each.Describe) }
 end
 
+-- The Dungeons tab's right-edge tabs are the journal's icon tabs: their label rides a hidden font string, so a
+-- scene finds the one it wants by that.
+local function SideTab(each, label)
+	return each.Find(function(frame)
+		return frame:IsVisible() and frame.Text and frame.Text:GetText() == label
+	end)[1]
+end
+
 -- The Journeys tab for the lead image's character: nothing chosen, the story featured, both asides in Today.
 h = Load("v1", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, {
 	tf = { spells = { SPELL, SPELL, SPELL } },
@@ -346,16 +354,18 @@ do
 	h.Click(row)
 end
 out.dungeons = Window(h, "dungeons", 5)
-for _, view in ipairs({ "prep", "bosses", "loot" }) do
+for _, view in ipairs({ "overview", "prep", "bosses", "loot" }) do
 	local label = view == "bosses" and h.ns.L.DUNGEON_BOSSES_TAB or h.ns.L["DUNGEON_" .. view:upper() .. "_TAB"]
-	for _, tab in
-		ipairs(h.Find(function(frame)
-			return frame:IsVisible()
-				and frame.stockTemplate == "TabSystemTopButtonTemplate"
-				and frame:GetText() == label
-		end))
-	do
-		h.Click(tab)
+	h.Click(assert(SideTab(h, label)))
+	if view == "bosses" then
+		-- Kresh casts nothing this build can name; the abilities page is shown on a boss that has some.
+		for _, row in
+			ipairs(h.Find(function(frame)
+				return frame:IsVisible() and frame.value and frame.value.boss and frame.value.title == "Lord Pythas"
+			end))
+		do
+			h.Click(row)
+		end
 	end
 	out["dungeons_" .. view] = Window(h, "dungeons_" .. view, 5)
 end
@@ -366,15 +376,7 @@ h = Load("v1", false, true, nil, nil, {
 })
 h.ns.WindowDB().dungeon = 43
 Window(h, "dungeons_bosses_missing", 5)
-for _, tab in
-	ipairs(h.Find(function(frame)
-		return frame:IsVisible()
-			and frame.stockTemplate == "TabSystemTopButtonTemplate"
-			and frame:GetText() == h.ns.L.DUNGEON_BOSSES_TAB
-	end))
-do
-	h.Click(tab)
-end
+h.Click(assert(SideTab(h, h.ns.L.DUNGEON_BOSSES_TAB)))
 out.dungeons_bosses_missing = Window(h, "dungeons_bosses_missing", 5)
 
 -- Owner's live regression: Alliance level 19 in Darkshore, browsing Horde-only Ragefire quests.
@@ -408,16 +410,13 @@ h.ns.Invalidate()
 h.flush()
 h.ns.WindowDB().dungeon = 389
 out.dungeons_live = Window(h, "dungeons_live", 5)
-for _, tab in
-	ipairs(h.Find(function(frame)
-		return frame:IsVisible()
-			and frame.stockTemplate == "TabSystemTopButtonTemplate"
-			and frame:GetText() == h.ns.L.DUNGEON_BOSSES_TAB
-	end))
-do
-	h.Click(tab)
-end
+h.Click(assert(SideTab(h, h.ns.L.DUNGEON_BOSSES_TAB)))
 out.dungeons_empty = Window(h, "dungeons_empty", 5)
+
+-- The instance select page: a character with no instance remembered sees the journal's tile grid under its
+-- Dungeons and Raids tabs.
+h = Load("v1", false, true, nil, nil, { tf = { spells = { SPELL, SPELL, SPELL } }, talents = 1 })
+out.dungeons_select = Window(h, "dungeons_select", 5)
 
 local ASIDES = {
 	tf = { spells = { SPELL, SPELL, SPELL } },
@@ -565,6 +564,7 @@ h.Click(guideCard.GuideButton)
 out.window_full_guide.layout = h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)
 
 h = Load("v1", false, true, nil, nil, ASIDES)
+h.ns.WindowDB().dungeon = 48
 out.window_dungeon_maps = Window(h, "window_dungeon_maps", 5)
 local mapsButton = assert(h.Find(function(frame)
 	return frame:IsVisible() and frame.GetText and frame:GetText() == h.ns.L.DUNGEON_MAPS_TAB

@@ -80,6 +80,38 @@ local function ItemName(item)
 	return name
 end
 
+-- A generated entrance's requirements as one line: the level it asks, the key items, the quest it follows and, when
+-- the source cannot establish them, that the rest is unknown. Every part is proven or omitted.
+---@param gate AGFEntranceGate
+---@return string
+function Dungeons.GateText(gate)
+	local lines = {}
+	if gate.level > 0 then
+		lines[#lines + 1] = L.WHY_LEVEL:format(gate.level)
+	end
+	if gate.items then
+		local items = {}
+		for _, item in ipairs(gate.items) do
+			local name = ItemName(item)
+			if name then
+				items[#items + 1] = name
+			end
+		end
+		if #items == #gate.items then
+			lines[#lines + 1] = L.DUNGEON_REQUIRES_ITEM:format(table.concat(items, L.DUNGEON_OR))
+		end
+	end
+	if gate.quest then
+		local quest = ns.Data.quests[gate.quest]
+		lines[#lines + 1] =
+			L.WHY_COMPLETED:format(ns.State.QuestTitle(gate.quest) or (quest and quest.title) or L.WHY_EARLIER_QUEST)
+	end
+	if gate.conditional then
+		lines[#lines + 1] = L.DUNGEON_GATE_UNKNOWN
+	end
+	return table.concat(lines, L.SEPARATOR)
+end
+
 ---@param page? AGFDungeonPage
 ---@return table[]
 function Dungeons.PrepRows(page)
@@ -98,34 +130,7 @@ function Dungeons.PrepRows(page)
 				quest = entry.quest,
 			}
 		elseif entry.gate then
-			local gate = entry.gate
-			---@cast gate AGFEntranceGate
-			local lines = {}
-			if gate.level > 0 then
-				lines[#lines + 1] = L.WHY_LEVEL:format(gate.level)
-			end
-			if gate.items then
-				local items = {}
-				for _, item in ipairs(gate.items) do
-					local name = ItemName(item)
-					if name then
-						items[#items + 1] = name
-					end
-				end
-				if #items == #gate.items then
-					lines[#lines + 1] = L.DUNGEON_REQUIRES_ITEM:format(table.concat(items, L.DUNGEON_OR))
-				end
-			end
-			if gate.quest then
-				local quest = ns.Data.quests[gate.quest]
-				lines[#lines + 1] = L.WHY_COMPLETED:format(
-					ns.State.QuestTitle(gate.quest) or (quest and quest.title) or L.WHY_EARLIER_QUEST
-				)
-			end
-			if gate.conditional then
-				lines[#lines + 1] = L.DUNGEON_GATE_UNKNOWN
-			end
-			local text = table.concat(lines, L.SEPARATOR)
+			local text = Dungeons.GateText(entry.gate)
 			if text ~= "" and not seen[text] then
 				seen[text] = true
 				table.insert(values, 1, { title = L.DUNGEON_ENTRANCE_REQUIREMENTS, info = text, entrance = true })
@@ -133,44 +138,6 @@ function Dungeons.PrepRows(page)
 		end
 	end
 	return values
-end
-
--- The catalog with its section headings: dungeons, the announced Forever raids, then the client's other raid maps.
----@param catalog AGFDungeon[]
----@return table[]
-function Dungeons.CatalogRows(catalog)
-	local dungeons, current, others = {}, {}, {}
-	for _, entry in ipairs(catalog) do
-		if entry.raid then
-			if entry.current then
-				current[#current + 1] = entry
-			else
-				others[#others + 1] = entry
-			end
-		else
-			dungeons[#dungeons + 1] = entry
-		end
-	end
-	local rows = {}
-	if #dungeons > 0 then
-		rows[#rows + 1] = { heading = true, title = L.DUNGEON_LIST_DUNGEONS }
-	end
-	for _, entry in ipairs(dungeons) do
-		rows[#rows + 1] = entry
-	end
-	if #current > 0 then
-		rows[#rows + 1] = { heading = true, title = L.DUNGEON_LIST_RAIDS }
-	end
-	for _, entry in ipairs(current) do
-		rows[#rows + 1] = entry
-	end
-	if #others > 0 then
-		rows[#rows + 1] = { heading = true, title = L.DUNGEON_LIST_OTHER_RAIDS }
-	end
-	for _, entry in ipairs(others) do
-		rows[#rows + 1] = entry
-	end
-	return rows
 end
 
 ---@param source? AGFDungeonSource
@@ -208,6 +175,7 @@ function Dungeons.BossRows(source, instance, known)
 			end
 		end
 		rows[#rows + 1] = {
+			id = entry.id,
 			title = entry.name,
 			boss = true,
 			lootIndex = lootIndex,
@@ -215,11 +183,18 @@ function Dungeons.BossRows(source, instance, known)
 			description = entry.description,
 			giver = count > 0 and L.DUNGEON_BOSS_LOOT:format(count) or L.DUNGEON_BOSS_LOOT_UNKNOWN,
 		}
-		-- Under each boss, the abilities this build resolves for its creature entry. A heading is the list's short-row
-		-- hint: an ability is one icon and one name, never a boss-sized button.
-		for _, ability in ipairs(Dungeons.Abilities(entry.journal and nil or entry.id)) do
-			rows[#rows + 1] = { title = ability.name, ability = ability.id, icon = ability.icon, heading = true }
-		end
+	end
+	return rows
+end
+
+-- The abilities this build resolves for one creature, each as a short row: an icon and a name with the client's own
+-- spell tooltip. The detail pane draws them under the boss's paper header.
+---@param npc? integer
+---@return table[]
+function Dungeons.AbilityRows(npc)
+	local rows = {}
+	for _, ability in ipairs(Dungeons.Abilities(npc)) do
+		rows[#rows + 1] = { title = ability.name, ability = ability.id, icon = ability.icon }
 	end
 	return rows
 end
