@@ -163,6 +163,20 @@ def draw_scroll_frame(canvas, entry, rect, layer, child_height=None):
     drawing.wm.minimal_scrollbar(canvas, left, top, points["BOTTOMLEFT"][1] - top, visible, 0)
 
 
+def draw_scroll_box(canvas, entry, rect, layer):
+    """WowScrollBoxList (Blizzard_SharedXML/Shared/Scroll/ScrollTemplates.xml:4, on ScrollBoxBaseTemplate): the
+    frame draws no chrome of its own; its rows and its MinimalScrollBar draw themselves."""
+
+
+def draw_minimal_scroll_bar(canvas, entry, rect, layer):
+    """MinimalScrollBar (Blizzard_SharedXML/Shared/Scroll/MinimalScrollBar.xml:15, on the VerticalScrollBarTemplate
+    of ScrollTemplates.xml:15): the 8-wide track and both steppers. A stock frame carries no pan extent, so the
+    thumb is left to the list that owns it."""
+    if layer == "BACKGROUND":
+        x, y, _, h = rect
+        drawing.wm.minimal_scrollbar(canvas, x, y, h, 1, 0)
+
+
 def draw_portrait_frame(canvas, entry, rect, layer):
     """PortraitFrameTemplate (Blizzard_SharedXML/Mainline/PortraitFrame.xml): the rock Bg tiled TOPLEFT (2, -21) to
     BOTTOMRIGHT (-2, 2) and the TopTileStreaks 43 high at TOPLEFT (6, -21) to TOPRIGHT (-2, -21) under everything;
@@ -297,6 +311,8 @@ STOCK = {
         100,
     ),
     "ScrollFrameTemplate": (draw_scroll_frame, None, None, 0),
+    "WowScrollBoxList": (draw_scroll_box, None, None, 0),
+    "MinimalScrollBar": (draw_minimal_scroll_bar, None, None, 0),
     "SearchBoxTemplate": (draw_search_box, None, None, 0),
     "UIPanelButtonTemplate": (draw_panel_button, lambda ui, entry: (40, 22), None, 0),
     "UIPanelIconDropdownButtonTemplate": (draw_icon_dropdown, lambda ui, entry: (15, 16), None, 0),

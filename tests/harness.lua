@@ -28,6 +28,7 @@ end
 -- IsObjectType walks this chain, as the client's widget hierarchy does.
 local SUPER = {
 	Frame = "Region",
+	EventFrame = "Frame",
 	Button = "Frame",
 	CheckButton = "Button",
 	DropdownButton = "Button",
@@ -37,6 +38,48 @@ local SUPER = {
 	MaskTexture = "Region",
 	FontString = "Region",
 	Line = "Region",
+}
+
+-- Mainline/SharedUIPanelTemplates.xml:8-45: the Journal's paper-overlay texture templates, as CreateTexture
+-- inherits them; only their file, native size and texcoords matter to a screenshot.
+local TEXTURE_TEMPLATES = {
+	["UI-PaperOverlay-AbilityTextBG"] = {
+		file = "Interface\\EncounterJournal\\UI-EncounterJournalTextures",
+		width = 256,
+		height = 80,
+		texCoord = { 0.00195313, 0.50195313, 0.02246094, 0.10058594 },
+	},
+	["UI-PaperOverlay-AbilityTextBottomBorder"] = {
+		file = "Interface\\EncounterJournal\\UI-EncounterJournalTextures",
+		width = 243,
+		height = 9,
+		texCoord = { 0.04492188, 0.51953125, 0.00097656, 0.00976563 },
+	},
+	["UI-PaperOverlay-Bullet"] = {
+		file = "Interface\\EncounterJournal\\UI-EncounterJournalTextures",
+		width = 13,
+		height = 13,
+		texCoord = { 0.974609375, 1, 0.7509765625, 0.763671875 },
+	},
+	["UI-PaperOverlay-PaperHeader-SelectUp-Left"] = {
+		file = "Interface\\EncounterJournal\\UI-EncounterJournalTextures",
+		width = 64,
+		height = 29,
+		texCoord = { 0.81445313, 0.93945313, 0.39453125, 0.42285156 },
+	},
+	["UI-PaperOverlay-PaperHeader-SelectUp-Right"] = {
+		file = "Interface\\EncounterJournal\\UI-EncounterJournalTextures",
+		width = 64,
+		height = 29,
+		texCoord = { 0.34570313, 0.47070313, 0.49316406, 0.52148438 },
+	},
+	["UI-PaperOverlay-PaperHeader-SelectUp-Mid"] = {
+		file = "Interface\\EncounterJournal\\UI-EncounterJournalTextures_Tile",
+		width = 64,
+		height = 29,
+		texCoord = { 0, 1, 0.22265625, 0.27929688 },
+		horizTile = true,
+	},
 }
 
 local function IsFrame(objectType)
@@ -488,9 +531,14 @@ function harness.load(options)
 	function Methods:GetFrameLevel()
 		return self.level or 0
 	end
-	function Methods:CreateTexture(name, layer, _, subLevel)
+	function Methods:CreateTexture(name, layer, template, subLevel)
 		local texture = NewRegion("Texture", name, self)
 		texture.layer, texture.subLevel = layer, subLevel
+		local stock = template and TEXTURE_TEMPLATES[template]
+		if stock then
+			texture.file, texture.width, texture.height = stock.file, stock.width, stock.height
+			texture.texCoord, texture.horizTile = stock.texCoord, stock.horizTile
+		end
 		return texture
 	end
 	function Methods:CreateMaskTexture(name, layer)
@@ -750,6 +798,173 @@ function harness.load(options)
 		end
 	end
 
+	-- Shared/Scroll (ScrollBox.lua, ScrollBoxLinearView.lua, ScrollUtil.lua, DataProvider.lua): the list mixin and
+	-- its view, emulated enough that a list builds only the elements its viewport shows, as the client's does. The
+	-- specs read the rows through the frame tree, so what is off screen must not exist.
+	local ScrollBoxListMixin = {}
+	function ScrollBoxListMixin:Init(view)
+		self.view = view
+		view.scrollBox = self
+		self.scrollPercentage, self.active, self.pool, self.frames = 0, {}, {}, {}
+		self:Refresh()
+	end
+	function ScrollBoxListMixin:GetView()
+		return self.view
+	end
+	function ScrollBoxListMixin:SetDataProvider(provider, retainScrollPosition)
+		self.dataProvider = provider
+		if not retainScrollPosition then
+			self.scrollPercentage = 0
+		end
+		self:Refresh()
+	end
+	function ScrollBoxListMixin:RemoveDataProvider()
+		self.dataProvider = nil
+		self:Refresh()
+	end
+	function ScrollBoxListMixin:HasDataProvider()
+		return self.dataProvider ~= nil
+	end
+	function ScrollBoxListMixin:GetScrollPercentage()
+		return self.scrollPercentage
+	end
+	function ScrollBoxListMixin:SetScrollPercentage(percentage)
+		percentage = math.max(0, math.min(1, percentage))
+		if percentage ~= self.scrollPercentage then
+			self.scrollPercentage = percentage
+			self:Refresh()
+		end
+	end
+	function ScrollBoxListMixin:SetScrollAllowed() end
+	function ScrollBoxListMixin:ScrollToBegin()
+		self:SetScrollPercentage(0)
+	end
+	function ScrollBoxListMixin:ScrollToEnd()
+		self:SetScrollPercentage(1)
+	end
+	function ScrollBoxListMixin:GetPanExtent()
+		return self.panExtent or 0
+	end
+	function ScrollBoxListMixin:GetDerivedScrollRange()
+		return math.max(0, self:GetPanExtent() - self:GetHeight())
+	end
+	function ScrollBoxListMixin:GetDerivedScrollOffset()
+		return self:GetDerivedScrollRange() * self.scrollPercentage
+	end
+	function ScrollBoxListMixin:ScrollToOffset(offset)
+		local range = self:GetDerivedScrollRange()
+		self:SetScrollPercentage(range > 0 and offset / range or 0)
+	end
+	function ScrollBoxListMixin:GetFrames()
+		return unpack(self.active) -- multi-value: every active frame, as the client returns them
+	end
+	function ScrollBoxListMixin:GetFrameCount()
+		return #self.active
+	end
+	function ScrollBoxListMixin:FindFrame(elementData)
+		for _, frame in ipairs(self.active) do
+			if frame.elementData == elementData then
+				return frame
+			end
+		end
+	end
+	function ScrollBoxListMixin:Acquire()
+		local frame = table.remove(self.pool)
+		if frame then
+			return frame
+		end
+		frame = G.CreateFrame(self.view.template, nil, self)
+		self.frames[#self.frames + 1] = frame
+		return frame
+	end
+	-- Lays the data provider's elements out from the fixed extents and keeps only the ones the viewport shows.
+	function ScrollBoxListMixin:Refresh()
+		local provider = self.dataProvider
+		local total = provider and provider:GetSize() or 0
+		local spacing = self.view.spacing or 0
+		local extents, offsets, pan = {}, {}, 0
+		for index = 1, total do
+			local extent = self.view:GetElementExtent(index, provider:Find(index))
+			extents[index] = extent
+			offsets[index] = pan
+			pan = pan + extent + spacing
+		end
+		self.panExtent = pan > 0 and pan - spacing or 0
+		for index = 1, #self.active do
+			local frame = self.active[index]
+			frame:Hide()
+			self.pool[#self.pool + 1] = frame
+		end
+		self.active = {}
+		if total == 0 then
+			return
+		end
+		local scroll, viewport = self:GetDerivedScrollOffset(), self:GetHeight()
+		local first = 1
+		while first <= total and offsets[first] + extents[first] <= scroll do
+			first = first + 1
+		end
+		for index = first, total do
+			if offsets[index] >= scroll + viewport then
+				break
+			end
+			local data = provider:Find(index)
+			local frame = self:Acquire()
+			frame.elementData = data
+			frame:ClearAllPoints()
+			frame:SetPoint("TOPLEFT", 0, -(offsets[index] - scroll))
+			frame:Show()
+			self.view.initializer(frame, data)
+			self.active[#self.active + 1] = frame
+		end
+	end
+	G.CreateScrollBoxListLinearView = function(_, _, _, _, spacing)
+		local view = { spacing = spacing or 0 }
+		function view:SetElementExtent(extent)
+			self.elementExtent = extent
+		end
+		function view:SetElementExtentCalculator(calculator)
+			self.extentCalculator = calculator
+		end
+		function view:SetElementInitializer(template, initializer)
+			self.template, self.initializer = template, initializer
+		end
+		function view:SetPadding(_, _, _, _, pad)
+			self.spacing = pad or self.spacing
+		end
+		function view:SetFrameFactoryResetter() end
+		function view:GetElementExtent(index, elementData)
+			if self.elementExtent ~= nil then
+				return self.elementExtent
+			end
+			if self.extentCalculator then
+				return self.extentCalculator(index, elementData)
+			end
+			return 0
+		end
+		return view
+	end
+	G.ScrollUtil = {
+		InitScrollBoxListWithScrollBar = function(scrollBox, scrollBar, view)
+			scrollBox.scrollBar = scrollBar
+			scrollBox:Init(view)
+		end,
+	}
+	G.CreateDataProvider = function(tbl)
+		local values = {}
+		for index, value in ipairs(tbl or {}) do
+			values[index] = value
+		end
+		return {
+			GetSize = function()
+				return #values
+			end,
+			Find = function(_, index)
+				return values[index]
+			end,
+		}
+	end
+
 	local STOCK = {
 		-- Mainline/SharedUIPanelTemplates.xml:1587 and .lua:1763: the highlight is the normal art, or the pushed art
 		-- while the mouse is down.
@@ -768,6 +983,11 @@ function harness.load(options)
 		ScrollFrameTemplate = function(frame)
 			Internal("Frame", frame, "ScrollBar")
 		end,
+		-- Shared/Scroll/ScrollTemplates.xml:4: the list scroll box's own mixin.
+		WowScrollBoxList = function(frame)
+			G.Mixin(frame, ScrollBoxListMixin)
+		end,
+		MinimalScrollBar = noop,
 		LargeSideTabButtonTemplate = function(frame)
 			Internal("Texture", frame, "Icon")
 		end,

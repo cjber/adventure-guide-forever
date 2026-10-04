@@ -32,6 +32,10 @@ def load_wowmock():
         wm.FONTS.setdefault("NumberFontNormalSmall", wm.Font(wm.ARIALN, 12, (1, 1, 1), None, True))
         # GameFontNormalHuge: SystemFont_Huge1 (FRIZQT at 20, shadowed) in gold.
         wm.FONTS.setdefault("GameFontNormalHuge", wm.Font(wm.FRIZQT, 20, wm.NORMAL, (1, -1)))
+        # GameFontNormalLarge2: SystemFont_Shadow_Large2 (Fonts.xml: FRIZQT at 18, shadowed) in gold.
+        wm.FONTS.setdefault("GameFontNormalLarge2", wm.Font(wm.FRIZQT, 18, wm.NORMAL, (1, -1)))
+        # GameFontBlack: SystemFont_Med1 (Fonts.xml: FRIZQT at 12, no shadow).
+        wm.FONTS.setdefault("GameFontBlack", wm.Font(wm.FRIZQT, 12, wm.NORMAL))
     return wm
 
 

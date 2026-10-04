@@ -1509,6 +1509,10 @@
 ---@field DUNGEON_PART string
 ---@field DUNGEON_LEVEL_TOOLTIP string
 
+---@alias AGFListPaint fun(row: AGFDungeonRow, value: table)
+---@alias AGFListClick fun(value: table)
+---@alias AGFListCreate fun(parent: Frame, width: number, rowHeight: number, click: AGFListClick): AGFDungeonRow
+
 ---@class AGFWindow
 ---@field AddTab fun(tab: AGFWindowTab)
 ---@field Tabs fun(): AGFWindowTab[]
@@ -1517,9 +1521,18 @@
 ---@field Refresh fun()
 ---@field OfferKey fun()
 ---@field RefreshToday fun(inset: Frame)
----@field CreateList fun(parent: Frame, x: number, y: number, width: number, height: number, rowHeight: number, paint: fun(row: AGFDungeonRow, value: table), click: fun(value: table), create: fun(parent: Frame, width: number, rowHeight: number, click: fun(value: table)): AGFDungeonRow): AGFDungeonListWidget
+---@field CreateList fun(parent: Frame, x: number, y: number, width: number, height: number, rowHeight: number, paint: AGFListPaint, click: AGFListClick, create: AGFListCreate, extent?: AGFListExtent): AGFDungeonListWidget
 ---@field SetList fun(widget: AGFDungeonListWidget, values: table[])
 ---@field ScrollListTo fun(widget: AGFDungeonListWidget, index: integer)
+---@field CreateSectionHeader fun(parent: Frame, text: string, onClick?: fun(open: boolean)): AGFWindowSectionHeader
+---@field CreatePaperWell fun(parent: Frame): AGFWindowPaperWell
+---@field SetPaperWell fun(well: AGFWindowPaperWell, lines: string[])
+---@field FONT_TITLE string
+---@field FONT_ROW string
+---@field FONT_HEADER string
+---@field GOLD number[]
+---@field TITLE_INK number[]
+---@field BODY_INK number[]
 ---@field OpenDungeon fun(instance: integer)
 
 ---@alias AGFMapLookup fun(area: integer): integer?
@@ -1794,9 +1807,23 @@
 ---@field ItemIcon Texture
 ---@field value? table
 
+---@class AGFDataProvider
+---@field GetSize fun(self: AGFDataProvider): integer
+---@field Find fun(self: AGFDataProvider, index: integer): table?
+
+---@class AGFScrollBoxListMixin
+---@field GetDerivedScrollOffset fun(self: AGFScrollBoxListMixin): number
+---@field ScrollToOffset fun(self: AGFScrollBoxListMixin, offset: number)
+---@field SetDataProvider fun(self: AGFScrollBoxListMixin, provider: AGFDataProvider, retainScrollPosition?: boolean)
+---@field GetVerticalScroll fun(self: AGFScrollBoxListMixin): number the ScrollFrameTemplate accessor the list keeps for its callers
+---@field SetVerticalScroll fun(self: AGFScrollBoxListMixin, value: number)
+
+---@class AGFScrollBox : Frame, AGFScrollBoxListMixin
+
 ---@class AGFDungeonListWidget
----@field frame AGFScrollFrame
----@field child Frame
+---@field frame AGFScrollBox
+---@field scrollBox AGFScrollBox
+---@field scrollBar Frame
 ---@field rows AGFDungeonRow[]
 ---@field values table[]
 ---@field tops number[]
@@ -1804,6 +1831,7 @@
 ---@field height number
 ---@field rowHeight number
 ---@field headingHeight number
+---@field extent? AGFListExtent
 ---@field paint fun(row: AGFDungeonRow, value: table)
 
 ---@class AGFDungeons

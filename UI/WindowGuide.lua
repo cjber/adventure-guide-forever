@@ -123,7 +123,7 @@ end
 
 ---@type Frame?
 local guide
----@type FontString
+---@type AGFWindowSectionHeader
 local heading
 ---@type FontString
 local count
@@ -163,7 +163,7 @@ local function Build(parent)
 	local background = guide:CreateTexture(nil, "BACKGROUND")
 	background:SetAllPoints()
 	background:SetColorTexture(0.025, 0.02, 0.015, 1)
-	heading = Window.Heading(guide, "")
+	heading = Window.CreateSectionHeader(guide, "")
 	heading:SetPoint("TOPLEFT", Window.LEFT, -14)
 	heading:SetWidth(Window.INSET_WIDTH - 180)
 	local back = CreateFrame("Button", nil, guide, "UIPanelButtonTemplate") --[[@as Button]]
@@ -227,7 +227,7 @@ Refresh = function()
 	local total = #steps + #future
 	local pages
 	page, pages = Window.ClampPage(page, total, PAGE_SIZE)
-	heading:SetText(target.title)
+	heading.Label:SetText(target.title)
 	count:SetText(L.GUIDE_PAGE:format(page, pages, #steps, #future))
 	previous:SetEnabled(page > 1)
 	nextPage:SetEnabled(page < pages)

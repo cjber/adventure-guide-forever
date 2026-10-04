@@ -67,7 +67,6 @@ do
 		return frame:IsVisible() and frame.value and frame.value.boss and frame.value.title == "Boss 2"
 	end)[1])
 	local scroll = row:GetParent():GetParent()
-	scroll:UpdateScrollChildRect() -- the client's own layout pass: the range is the shorter Bosses list's
 	h.Click(row)
 	equal(scroll:GetVerticalScroll(), 22 + 6 * 44, "boss jump accounts for heading height")
 	h.Click(tab)
@@ -107,7 +106,7 @@ do
 		end)[1])
 	end
 	local function Top(row)
-		return -(select(5, row:GetPoint())) -- multi-value: the y offset only
+		return -(select(5, row:GetParent():GetPoint())) -- multi-value: the y offset only, from the element container
 	end
 	local heading = Row(function(value)
 		return value.heading and value.title == "Boss 1"
