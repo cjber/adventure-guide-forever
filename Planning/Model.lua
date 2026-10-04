@@ -19,6 +19,23 @@ function Model.IsGray(questLevel, playerLevel)
 	return questLevel > 0 and playerLevel - questLevel > range
 end
 
+-- The planner's level preference, shared by the zone ranking and a step's quest order (docs/design.md §2.2): lower is
+-- taken first. At the player's level and one or two below is free, each level above costs twice its distance, and each
+-- level further below costs one, so deep green content ranks behind content near the player's level.
+---@param questLevel integer
+---@param playerLevel integer
+---@return integer
+function Model.LevelPreference(questLevel, playerLevel)
+	local gap = questLevel - playerLevel
+	if gap > 0 then
+		return 2 * gap
+	end
+	if gap < -2 then
+		return -gap - 2
+	end
+	return 0
+end
+
 local function ValidPlace(place)
 	return place
 		and type(place.map) == "number"

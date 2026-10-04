@@ -23,6 +23,15 @@ for _, case in ipairs({
 	equal(Model.IsGray(case[1] - case[2] - 1, case[1]), true, "gray boundary " .. case[1])
 end
 equal(Model.IsGray(-1, 60), false, "scaling quest")
+-- The planner's level preference (design §2.2): the player's level and one or two below are free, each level above
+-- costs twice its distance, and each level deeper below costs one.
+equal(Model.LevelPreference(20, 20), 0, "level preference: at the player's level")
+equal(Model.LevelPreference(19, 20), 0, "level preference: one below")
+equal(Model.LevelPreference(18, 20), 0, "level preference: two below")
+equal(Model.LevelPreference(17, 20), 1, "level preference: three below costs one")
+equal(Model.LevelPreference(14, 20), 4, "level preference: each deeper level below costs one")
+equal(Model.LevelPreference(21, 20), 2, "level preference: one above costs two")
+equal(Model.LevelPreference(24, 20), 8, "level preference: each level above costs two")
 
 local player = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1, x = 0.5, y = 0.5 }
 local function quest(x, y, map)

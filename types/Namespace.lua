@@ -308,6 +308,7 @@
 ---@class AGFModel
 ---@field MAX_STEPS integer
 ---@field IsGray fun(questLevel: integer, playerLevel: integer): boolean
+---@field LevelPreference fun(questLevel: integer, playerLevel: integer): integer lower is taken first; at the player's level and one or two below are free, each level above costs twice its distance, and each level further below costs one
 ---@field EXPLORE_SLOT integer the data's need slot for an explore objective (tools/gen_quests.py)
 ---@field ValidPlace fun(place?: {map?: integer, x?: number, y?: number}): boolean? true when `place` has a positive map and x, y in 0..1
 ---@field Hub fun(data: AGFData, place: {map: integer, x: number, y: number}): string? the town `place` stands in, as "map:area"

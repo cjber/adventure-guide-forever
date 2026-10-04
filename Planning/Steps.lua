@@ -124,7 +124,7 @@ local function Describe(data, log, player, step)
 		for _, id in ipairs(pass == 1 and handins or pickups) do
 			local level = QuestLevel(data, log, player, id)
 			describeOrder[id] = ((pass - 1) * 2 + (GreyRisk(level, player) and 0 or 1)) * 2 ^ 40
-				+ math.abs(level - player.level) * 2 ^ 32
+				+ Model.LevelPreference(level, player.level) * 2 ^ 32
 				+ id
 			optional = optional and Optional(data.quests[id], level, player)
 		end

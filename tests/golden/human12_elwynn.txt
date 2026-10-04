@@ -10,15 +10,6 @@ card (chosen) | zone:1436 | Westfall story | Chapter 1 of 4 | A chain begins wit
   step 8 | area:12:0 | Complete objectives · The People's Militia | 1436 0.3140,0.3380 | after you pick it up | 24 yd | 12/0
   step 9 | area:102:4 | Complete objectives · Patrolling Westfall | 1436 0.3010,0.4940 | after you pick it up | 51 yd | 102/4
   step 10 | area:151:4 | Complete objectives · Poor Old Blanchy | 1436 0.3500,0.5410 | after you pick it up | 60 yd | 151/4
-card | zone:1432 | Head to Loch Modan | 5 quests near your level | - | map 1432
-  step 1 | town:1432:924 | Visit Valley of Kings: Pick up 2 | 1432 0.2207,0.7313 | 2 to pick up
-  step 2 | town:1432:144 | Visit Thelsamar: Pick up 2 | 1432 0.3263,0.4974 | 2 to pick up
-  step 3 | town:1432:838 | Pick up: Stormpike's Order | 1432 0.2476,0.1840 | near your level
-card | zone:1439 | Head to Darkshore | 9 quests near your level | Auberdine needs hands | map 1439
-  step 1 | town:1439:442 | Visit Auberdine: Pick up 8 | 1439 0.3740,0.4013 | 8 to pick up
-  step 2 | town:1439:447 | Pick up: The Fall of Ameth'Aran | 1439 0.4030,0.5973 | near your level
-card | zone:1413 | Head to The Barrens | 2 quests near your level | - | map 1413
-  step 1 | town:1413:392 | Visit Ratchet: Pick up 2 | 1413 0.6268,0.3623 | 2 to pick up
 card | zone:1426 | Head to Dun Morogh | 10 quests near your level | 2 quests will soon turn grey | map 1426
   step 1 | town:1426:136 | Visit The Grizzled Den: Pick up 3 | 1426 0.4673,0.5383 | 3 to pick up
   step 2 | town:1426:1537 | Pick up: The Grizzled Den | 1426 0.4962,0.4861 | near your level
@@ -27,10 +18,19 @@ card | zone:1426 | Head to Dun Morogh | 10 quests near your level | 2 quests wil
   step 5 | town:1426:808 | Pick up: The Lost Pilot | 1426 0.8389,0.3919 | near your level
   step 6 | town:1426:801 | Pick up: Tundra MacGrann's Stolen Stash | 1426 0.3457,0.5165 | near your level
   step 7 | town:1426:137 | Pick up: The Perfect Stout | 1426 0.3019,0.4573 | near your level
+card | zone:1432 | Head to Loch Modan | 5 quests near your level | - | map 1432
+  step 1 | town:1432:924 | Visit Valley of Kings: Pick up 2 | 1432 0.2207,0.7313 | 2 to pick up
+  step 2 | town:1432:144 | Visit Thelsamar: Pick up 2 | 1432 0.3263,0.4974 | 2 to pick up
+  step 3 | town:1432:838 | Pick up: Stormpike's Order | 1432 0.2476,0.1840 | near your level
+card | zone:1439 | Head to Darkshore | 9 quests near your level | Auberdine needs hands | map 1439
+  step 1 | town:1439:442 | Visit Auberdine: Pick up 8 | 1439 0.3740,0.4013 | 8 to pick up
+  step 2 | town:1439:447 | Pick up: The Fall of Ameth'Aran | 1439 0.4030,0.5973 | near your level
+card | zone:1411 | Head to Durotar | 1 quest near your level | - | map 1411
+  step 1 | town:1411:369 | Pick up: Winds in the Desert | 1411 0.4637,0.2294 | near your level
 card | zone:1438 | Head to Teldrassil | 7 quests near your level | 3 quests will soon turn grey | map 1438
   step 1 | town:1438:259 | Visit Lake Al'Ameth: Pick up 2 | 1438 0.6090,0.6849 | 2 to pick up
   step 2 | town:1438:186 | Visit Dolanaar: Pick up 2 | 1438 0.5557,0.5695 | 2 to pick up
   step 3 | town:1438:736 | Pick up: The Sleeping Druid | 1438 0.4494,0.6159 | near your level
-  step 4 | town:1438:264 | Visit The Oracle Glade: Pick up 2 | 1438 0.3154,0.3161 | 2 to pick up
-card | zone:1411 | Head to Durotar | 1 quest near your level | - | map 1411
-  step 1 | town:1411:369 | Pick up: Winds in the Desert | 1411 0.4637,0.2294 | near your level
+  step 4 | town:1438:264 | Visit The Oracle Glade: Pick up 2 | 1438 0.3832,0.3436 | 2 to pick up
+card | zone:1413 | Head to The Barrens | 2 quests near your level | - | map 1413
+  step 1 | town:1413:392 | Visit Ratchet: Pick up 2 | 1413 0.6268,0.3623 | 2 to pick up

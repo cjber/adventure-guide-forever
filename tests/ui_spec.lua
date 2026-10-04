@@ -2390,11 +2390,15 @@ do
 		npcs = npcs + (line:find("^normal: ") and 1 or 0)
 	end
 	equal(quests, 8, "hub tooltip: 8 quest lines")
-	equal(npcs, 6, "hub tooltip: one line per NPC shown")
+	equal(npcs, 7, "hub tooltip: one line per NPC shown")
 	equal(lines[#lines - 2], "highlight: And 1 more", "hub tooltip: the rest counted")
 	equal(lines[#lines - 1], "instruction: " .. ns.L.ORDER_DRAG, "hub tooltip: then how to reorder")
 	equal(lines[#lines], "instruction: " .. ns.L.SPF_MISSING, "hub tooltip: then the Shortest Path hint")
-	same(colors[11], { 1, 1, 0 }, "hub tooltip: a quest 2 over the player is yellow")
+	local over
+	for index, line in ipairs(lines) do
+		over = tonumber(line:match("%[(%d+)%]")) == 20 and index or over
+	end
+	same(colors[over], { 1, 1, 0 }, "hub tooltip: a quest 2 over the player is yellow")
 
 	-- The ring's tooltip lists the same, then the click line.
 	h.providers[1]:RefreshAllData()

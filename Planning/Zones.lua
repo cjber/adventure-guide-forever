@@ -33,10 +33,10 @@ local function InZone(zone)
 	end
 end
 
--- Useful green quests cost no more than yellow ones. Zone range, available work and travel break ties.
-local ZONE_OUTSIDE = 2 -- a level outside the zone's range
-local ZONE_FRESH = 2 -- the lower half: this less, times how far short of its middle the level is
-local ZONE_TOP, ZONE_CLEANUP = 0.8, 3 -- the top fifth: up to this more, at the zone's last level
+-- A zone's level rank is the average of its quests' own (Model.LevelPreference), so content below the player's level
+-- ranks ahead of content above it. The zone's last level is ranked the same way, which costs nothing while the player
+-- is still inside the zone's range and more the further past it they are: a starting zone kept afloat by one
+-- near-level quest does not outrank a zone that fits. More useful quests is better, and travel breaks ties.
 local ZONE_QUEST, ZONE_QUESTS = 0.25, 8 -- this less a quest, for this many at most
 
 -- The maps of the zones that fit `level` for the quests `ids`, best first. An
@@ -63,16 +63,13 @@ local function Rank(data, ids, level, far)
 			end
 			quests[map] = quests[map] + 1
 			local questLevel = quest.level == -1 and level or quest.level
-			scores[map] = scores[map] + math.max(0, questLevel - level)
+			scores[map] = scores[map] + Model.LevelPreference(questLevel, level)
 		end
 	end
 	for _, map in ipairs(choices) do
 		local zone = data.zones[map]
-		local into = zone.max > zone.min and (level - zone.min) / (zone.max - zone.min) or 0
 		scores[map] = scores[map] / quests[map]
-			+ math.max(0, zone.min - level, level - zone.max) * ZONE_OUTSIDE
-			- math.max(0, 0.5 - into) * ZONE_FRESH
-			+ math.max(0, math.min(into, 1) - ZONE_TOP) / (1 - ZONE_TOP) * ZONE_CLEANUP
+			+ Model.LevelPreference(math.min(zone.max, level), level)
 			- math.min(quests[map], ZONE_QUESTS) * ZONE_QUEST
 			+ far(map)
 	end

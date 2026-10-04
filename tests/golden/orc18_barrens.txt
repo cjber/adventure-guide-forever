@@ -21,7 +21,7 @@ card | zone:1440 | Head to Ashenvale | 1 quest near your level | - | map 1440
 card | zone:1421 | Head to Silverpine Forest | 3 quests near your level | - | map 1421
   step 1 | town:1421:228 | Visit The Sepulcher: Pick up 2 | 1421 0.4342,0.4086 | 2 to pick up
   step 2 | town:1421:204 | Pick up: Pyrewood Ambush | 1421 0.4650,0.7439 | near your level
-card | zone:1433 | Head to Redridge Mountains | 1 quest near your level | - | map 1433
-  step 1 | town:1433:69 | Pick up: Hilary's Necklace | 1433 0.2423,0.5364 | near your level
 card | zone:1436 | Head to Westfall | 3 quests near your level | Westfall Lighthouse needs hands | map 1436
   step 1 | town:1436:115 | Visit Westfall Lighthouse: Pick up 3 | 1436 0.3001,0.8602 | 3 to pick up
+card | zone:1433 | Head to Redridge Mountains | 1 quest near your level | - | map 1433
+  step 1 | town:1433:69 | Pick up: Hilary's Necklace | 1433 0.2423,0.5364 | near your level
