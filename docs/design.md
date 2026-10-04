@@ -12,7 +12,7 @@ abandons quests.
 
 - **2.1 Map tab.** The overview scrolls; the expand button opens the window. Chosen steps and
   search can scroll. Quest-giver marks and route pins are opt-in.
-- **2.2 Journey cards.** Offer every eligible journey for the current level; the home view scrolls and the window grid pages through them. Prefer useful green/yellow quests; exclude orange/red pickups. A choice shows up to ten route actions, followed by upcoming quest entries when fewer actions are available. The active route appears above alternative destinations.
+- **2.2 Journey cards.** Offer every eligible journey for the current level; the home view scrolls and the window grid pages through them. The home view groups its cards under collapsible quest log headers, in order: Continue (the story, Quests in your log and your calling), Zones for your level, Dungeons, then Battlegrounds. A group with no card draws no header, each header remembers its open state per character, and the header holding the route the guide follows stays open. Prefer useful green/yellow quests; exclude orange/red pickups. A choice shows up to ten route actions, followed by upcoming quest entries when fewer actions are available. The active route appears above alternative destinations.
   Give each card a reason and only known travel estimates.
 - **2.3 Chapters.** Show a total only for a proven chain. A quest tooltip may name its proven next chapter with its level.
 - **2.4 Search.** Share eligibility checks with the planner. Explain missing requirements; locked

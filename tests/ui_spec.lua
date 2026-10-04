@@ -3269,6 +3269,99 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label)
 end
 
+-- The overview's quest log headers (docs/design.md §2.2): the cards grouped by kind, the groups in order, a group
+-- with no card left out, a collapse saved per character, and the header the route follows kept open.
+do
+	local label = "overview groups"
+	local h = Load(false, nil, false, true)
+	h.ns.OpenPanel()
+	h.flush()
+	local L = h.ns.L
+	local function Headers()
+		local shown = Shown(h, function(frame)
+			return frame.key ~= nil and frame.Name ~= nil
+		end)
+		table.sort(shown, function(a, b)
+			return select(5, a:GetPoint(1)) > select(5, b:GetPoint(1)) -- multi-value: the y offset only
+		end)
+		return shown
+	end
+	local function CardsUnder()
+		local counts = {}
+		for _, card in
+			ipairs(Shown(h, function(frame)
+				return frame.Icon ~= nil and frame.Icon.Clip ~= nil and frame.journey ~= nil
+			end))
+		do
+			counts[card.journey.section] = (counts[card.journey.section] or 0) + 1
+		end
+		return counts
+	end
+	local keys = {}
+	for index, group in ipairs(h.ns.Overview.GROUPS) do
+		keys[index] = group.key
+	end
+	same(keys, { "continue", "zones", "dungeons", "battlegrounds" }, label .. ": the order")
+	equal(h.ns.Overview.Collapsed("continue"), false, label .. ": Continue opens by default")
+	equal(h.ns.Overview.Collapsed("zones"), false, label .. ": Zones opens by default")
+	equal(h.ns.Overview.Collapsed("dungeons"), true, label .. ": Dungeons is closed by default")
+	equal(h.ns.Overview.Collapsed("battlegrounds"), true, label .. ": Battlegrounds is closed by default")
+	same(CardsUnder(), { continue = 2, zones = 5 }, label .. ": the story and the log continue, the zones follow")
+	equal(#Headers(), 2, label .. ": an empty group draws no header")
+	equal(Headers()[1].key, "continue", label .. ": Continue first")
+	equal(Headers()[1].Name:GetText(), L.GROUP_CONTINUE, label .. ": its label")
+	equal(Headers()[2].key, "zones", label .. ": Zones next")
+	equal(Headers()[2].Name:GetText(), L.GROUP_ZONES, label .. ": its label")
+	equal(Headers()[1].Count:GetText(), "", label .. ": no count while open")
+
+	-- A dungeon card is its own group, closed by default: the header says how many, the cards stay hidden.
+	h.ns.Prefs().dungeons = true
+	h.ns.Invalidate()
+	h.flush()
+	h.ns.OpenPanel()
+	h.flush()
+	equal(h.ns.Route().journeys[#h.ns.Route().journeys].section, "dungeons", label .. ": a dungeon card's group")
+	local headers = Headers()
+	equal(#headers, 3, label .. ": the dungeon group draws its header")
+	equal(headers[3].key, "dungeons", label .. ": after the zones")
+	equal(headers[3].Name:GetText(), L.GROUP_DUNGEONS, label .. ": its label")
+	equal(headers[3].Count:GetText(), L.GROUP_CARDS_ONE, label .. ": the count while collapsed, one card")
+	equal(CardsUnder().dungeons, nil, label .. ": and no card drawn")
+
+	-- The player's collapse is this character's, and it survives a reload; the count says what is folded away.
+	h.Click(headers[2])
+	h.flush()
+	equal(h.G.AdventureGuideForeverCharDB.collapsedGroups.zones, true, label .. ": a collapse is saved")
+	equal(CardsUnder().zones, nil, label .. ": the zones fold away")
+	equal(Headers()[2].Count:GetText(), L.GROUP_CARDS:format(5), label .. ": and their header counts five")
+	local reloaded = Load(false, nil, { collapsedGroups = { zones = true } })
+	reloaded.ns.OpenPanel()
+	reloaded.flush()
+	equal(reloaded.ns.Overview.Collapsed("zones"), true, label .. ": the collapse survives a reload")
+	local reloadedZones = nil
+	for _, card in
+		ipairs(Shown(reloaded, function(frame)
+			return frame.Icon ~= nil and frame.Icon.Clip ~= nil and frame.journey ~= nil
+		end))
+	do
+		reloadedZones = reloadedZones or (card.journey.section == "zones" and card or nil)
+	end
+	equal(reloadedZones, nil, label .. ": and its cards stay hidden")
+
+	-- The header the route follows stays open: point the route at a folded-away zone card.
+	local route = h.ns.Route()
+	local zonesJourney
+	for _, journey in ipairs(route.journeys) do
+		zonesJourney = zonesJourney or (journey.section == "zones" and journey or nil)
+	end
+	route.journey = zonesJourney.key
+	h.ns.OpenPanel()
+	h.flush()
+	equal(CardsUnder().zones, 5, label .. ": the route's own group opens")
+	equal(h.G.AdventureGuideForeverCharDB.collapsedGroups.zones, true, label .. ": though the player left it folded")
+	clean(h, label)
+end
+
 -- Card minutes: while the guide is open, one Shortest Path estimate a frame over the shown cards,
 -- none in the rebuild's frame, none in step 1's travel frame beyond its own, none in combat (the last answers stand),
 -- none with the guide closed and none without Shortest Path. A boat names itself where the subline leaves room.
