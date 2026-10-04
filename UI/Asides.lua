@@ -251,10 +251,13 @@ Asides.Register(function()
 	local place = npc and npc.place or nil
 	if not place then
 		-- A class the bundled trainer data does not place (Forever's extra combos): the nearest class trainer
-		-- Tweaks Forever knows, when its API v2 is loaded.
+		-- Tweaks Forever knows, when its API v2 is loaded. Its list holds both sides' trainers, so one the catalogue
+		-- knows to serve only the other side is passed over.
+		local player = ns.State.Player()
 		local best, bestYards
 		for _, trainer in ipairs(ns.Integrations.Trainers() or {}) do
-			if trainer.place then
+			local known = ns.Data.npcs[trainer.npc]
+			if trainer.place and not (known and not ns.Model.HasBit(known.side, player.side)) then
 				local yards = ns.Model.Yards(ns.Data, ns.State.Player(), trainer.place)
 				if yards and (not bestYards or yards < bestYards) then
 					best, bestYards = trainer.place, yards
