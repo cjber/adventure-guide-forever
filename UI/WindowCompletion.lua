@@ -134,7 +134,10 @@ local function CreateCard(parent, isFeatured)
 	local card = feature --[[@as AGFCompletionCard]]
 	local pad = isFeatured and 18 or GRID_PAD
 	Window.SetRingIcon(card.Icon, LEGACY_ICON)
-	card.Title = content:CreateFontString(nil, "ARTWORK", isFeatured and "GameFontNormalHuge" or "GameFontNormal")
+	card.Title = content:CreateFontString(nil, "ARTWORK", isFeatured and Window.FONT_TITLE or Window.FONT_ROW)
+	if isFeatured then
+		card.Title:SetTextColor(Window.TITLE_INK[1], Window.TITLE_INK[2], Window.TITLE_INK[3])
+	end
 	card.Reason =
 		content:CreateFontString(nil, "ARTWORK", isFeatured and "GameFontHighlight" or "GameFontHighlightSmall")
 	card.Bar = Overview.CreateBar(content)

@@ -12,6 +12,13 @@ local BADGE, BADGE_OUT, ICON_ROW_RING = 14, 3, 26
 -- Where a tab's content starts in the inset, under the Today strip.
 Window.TOP, Window.LEFT, Window.RIGHT = 50, 14, 30
 Window.INSET_WIDTH, Window.INSET_HEIGHT = Window.WIDTH - 8, Window.HEIGHT - Window.INSET_TOP - Window.INSET_BOTTOM
+-- The Encounter Journal's own type and palette (R3): a panel title, a list row's name, a gold section header, the
+-- instance title's warm grey and the ink the Journal sets body text in on its paper.
+Window.FONT_TITLE, Window.FONT_ROW, Window.FONT_HEADER = "GameFontNormalLarge2", "GameFontNormalMed3", "GameFontNormal"
+Window.GOLD = { 0.929, 0.788, 0.620 }
+Window.TITLE_INK = { 0.902, 0.788, 0.671 }
+Window.BODY_INK = { 0.25, 0.148, 0.02 }
+local GOLD, TITLE_INK, BODY_INK = Window.GOLD, Window.TITLE_INK, Window.BODY_INK
 -- The renown divider (UI-Journeys-Renown-divider, 733x16) under a tab's featured card, across the tab at its own
 -- aspect: DIVIDER_GAP below the card, the grid DIVIDER_SPAN below it.
 local DIVIDER_ATLAS, DIVIDER_GAP = "UI-Journeys-Renown-divider", 4
@@ -55,9 +62,15 @@ end
 
 -- An atlas (inset, at its own aspect) or a file icon (whole: a square icon) in the ring.
 ---@param ring AGFRingIcon
----@param icon string|integer
+---@param icon string|integer?
 function Window.SetRingIcon(ring, icon)
 	ring.Icon:ClearAllPoints()
+	if icon == nil then
+		-- A flat dark ground in place of art the data has none of, never a question mark or a stand-in icon.
+		ring.Icon:Hide()
+		return
+	end
+	ring.Icon:Show()
 	if type(icon) == "number" then
 		ring.Icon:SetTexture(icon)
 		ring.Icon:SetAllPoints()
@@ -268,7 +281,7 @@ function Window.CreateIconRow(parent, height)
 	Art.RowArt(row)
 	row.Icon = Window.CreateRingIcon(row, ICON_ROW_RING)
 	row.Icon:SetPoint("LEFT", 8, 0)
-	row.Title, row.Detail = RowText(row, 42, "GameFontNormal")
+	row.Title, row.Detail = RowText(row, 42, Window.FONT_ROW)
 	return row
 end
 
@@ -285,10 +298,15 @@ function Window.CreateEmpty(parent, atlas)
 	local width = Window.INSET_WIDTH - Window.LEFT - Window.RIGHT
 	local height = Window.INSET_HEIGHT - 12 - Window.TOP
 	local art = parent:CreateTexture(nil, "ARTWORK")
-	Art.Cover(art, atlas, width, height)
+	-- The page's ground: a flat dark tile while the client has no art for it, never a question mark or a
+	-- substituted picture.
+	art:SetColorTexture(0.1, 0.09, 0.08, 1)
 	art:SetPoint("TOPLEFT", Window.LEFT, -Window.TOP)
 	art:SetSize(width, height)
-	art:SetAlpha(0.35)
+	if C_Texture.GetAtlasInfo(atlas) then
+		Art.Cover(art, atlas, width, height)
+		art:SetAlpha(0.35)
+	end
 	local text = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	text:SetPoint("CENTER", art, "CENTER", 0, 0)
 	text:SetWidth(width - 120)
@@ -315,15 +333,100 @@ function Window.CreateDivider(parent, below)
 	return divider
 end
 
--- A tab's heading over a column: "Next steps", "Reagents".
+-- A tab's section header over a column: "Next steps", "Reagents". The Journal's gold over the art's own type.
 ---@param parent Frame
 ---@param text string
 ---@return FontString
 function Window.Heading(parent, text)
-	local heading = parent:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+	local heading = parent:CreateFontString(nil, "ARTWORK", Window.FONT_HEADER)
 	heading:SetJustifyH("LEFT")
 	heading:SetText(text)
+	heading:SetTextColor(GOLD[1], GOLD[2], GOLD[3])
 	return heading
+end
+
+--[[ The Journal's paper section header: the paper-overlay caps and tiled middle, gold type, and, when `onClick`
+     is given, a "+"/"-" glyph that folds the section it heads. ]]
+
+---@class AGFWindowSectionHeader : Button
+---@field Label FontString
+---@field Chevron FontString
+---@field Left Texture
+---@field Right Texture
+---@field Mid Texture
+---@field Open boolean
+
+---@param parent Frame
+---@param text string
+---@param onClick? fun(open: boolean)
+---@return AGFWindowSectionHeader
+function Window.CreateSectionHeader(parent, text, onClick)
+	local header = CreateFrame("Button", nil, parent) --[[@as AGFWindowSectionHeader]]
+	header:SetHeight(24)
+	header.Left = header:CreateTexture(nil, "BACKGROUND", "UI-PaperOverlay-PaperHeader-SelectUp-Left")
+	header.Left:SetPoint("LEFT", -1, -1)
+	header.Right = header:CreateTexture(nil, "BACKGROUND", "UI-PaperOverlay-PaperHeader-SelectUp-Right")
+	header.Right:SetPoint("RIGHT", 1, -1)
+	header.Mid = header:CreateTexture(nil, "BACKGROUND", "UI-PaperOverlay-PaperHeader-SelectUp-Mid", -2)
+	header.Mid:SetPoint("LEFT", header.Left, "RIGHT", -32, 0)
+	header.Mid:SetPoint("RIGHT", header.Right, "LEFT", 32, 0)
+	header.Label = header:CreateFontString(nil, "ARTWORK", Window.FONT_HEADER)
+	header.Label:SetPoint("LEFT", 14, 0)
+	header.Label:SetPoint("RIGHT", -24, 0)
+	header.Label:SetJustifyH("LEFT")
+	header.Label:SetWordWrap(false)
+	header.Label:SetTextColor(GOLD[1], GOLD[2], GOLD[3])
+	header.Label:SetText(text)
+	header.Chevron = header:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+	header.Chevron:SetPoint("RIGHT", -8, 0)
+	header.Chevron:SetTextColor(GOLD[1], GOLD[2], GOLD[3])
+	if onClick then
+		header.Open = true
+		header.Chevron:SetText("-")
+		header:SetScript("OnClick", function(self)
+			self.Open = not self.Open
+			self.Chevron:SetText(self.Open and "-" or "+")
+			onClick(self.Open)
+		end)
+	end
+	return header
+end
+
+--[[ The Journal's paper well for text that runs longer than a row: the AbilityTextBG parchment, its bottom
+     border, a bullet and brown body ink. Pages that show long text hand `Window.SetPaperWell` their lines. ]]
+
+---@class AGFWindowPaperWell : Frame
+---@field Paper Texture
+---@field Border Texture
+---@field Text FontString
+---@field Bullet Texture
+
+---@param parent Frame
+---@return AGFWindowPaperWell
+function Window.CreatePaperWell(parent)
+	local well = CreateFrame("Frame", nil, parent) --[[@as AGFWindowPaperWell]]
+	well.Paper = well:CreateTexture(nil, "BACKGROUND", "UI-PaperOverlay-AbilityTextBG")
+	well.Paper:SetPoint("TOPLEFT")
+	well.Paper:SetPoint("BOTTOMRIGHT")
+	well.Border = well:CreateTexture(nil, "BACKGROUND", "UI-PaperOverlay-AbilityTextBottomBorder", 1)
+	well.Border:SetPoint("LEFT", well.Paper, "BOTTOMLEFT")
+	well.Border:SetPoint("RIGHT", well.Paper, "BOTTOMRIGHT")
+	well.Bullet = well:CreateTexture(nil, "ARTWORK", "UI-PaperOverlay-Bullet")
+	well.Bullet:SetPoint("TOPLEFT", 8, -9)
+	well.Text = well:CreateFontString(nil, "ARTWORK", "GameFontBlack")
+	well.Text:SetPoint("TOPLEFT", 26, -6)
+	well.Text:SetPoint("RIGHT", -8, 0)
+	well.Text:SetJustifyH("LEFT")
+	well.Text:SetWordWrap(true)
+	well.Text:SetTextColor(BODY_INK[1], BODY_INK[2], BODY_INK[3])
+	return well
+end
+
+-- `well`'s lines as its body text.
+---@param well AGFWindowPaperWell
+---@param lines string[]
+function Window.SetPaperWell(well, lines)
+	well.Text:SetText(table.concat(lines, "\n"))
 end
 
 -- The tabs share the featured card and side column; a grid leaves room for its own footer.
@@ -422,7 +525,8 @@ function Window.CreatePictureCard(parent, tag)
 		card.Tag:SetPoint("TOPRIGHT", -16, -16)
 		card.Tag:SetText(tag)
 	end
-	card.Title = inner:CreateFontString(nil, "ARTWORK", "GameFontNormalHuge")
+	card.Title = inner:CreateFontString(nil, "ARTWORK", Window.FONT_TITLE)
+	card.Title:SetTextColor(TITLE_INK[1], TITLE_INK[2], TITLE_INK[3])
 	card.Title:SetPoint("TOPLEFT", 18 + cards.ring + 14, -16)
 	if card.Tag then
 		card.Title:SetPoint("RIGHT", card.Tag, "LEFT", -8, 0)

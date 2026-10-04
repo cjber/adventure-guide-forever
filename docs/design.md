@@ -125,6 +125,24 @@ abandons quests.
   tracker's step from the committed route and answers nil while a route is due, never building one for a caller.
   Fields are added, never renamed or repurposed, within a version.
 
+### Window lists and the Journal look
+
+`UI/WindowList.lua` is the window's one list: a `WowScrollBoxList` with a `MinimalScrollBar`, set up with
+`ScrollUtil.InitScrollBoxListWithScrollBar` and `CreateScrollBoxListLinearView`. The scroll box makes a row only
+for the elements its viewport shows and pools it, so no page culls rows or manages a row pool by hand.
+`Window.CreateList(parent, x, y, width, height, rowHeight, paint, click, create, extent?)` returns the widget:
+`create` draws a row once, `paint` fills it from an element, and `extent` measures an element that is not a plain
+row height (a heading, or a step with its checklist). `Window.SetList(widget, values)` hands it the elements and
+`Window.ScrollListTo(widget, index)` jumps to one. `widget.frame` is the scroll box and keeps `GetVerticalScroll`
+and `SetVerticalScroll` in pixels for callers written against the old `ScrollFrameTemplate`. Pages not yet
+migrated adopt the same factory.
+
+The Journal's type and palette live on `Window` (`FONT_TITLE`, `FONT_ROW`, `FONT_HEADER`, `GOLD`, `TITLE_INK`,
+`BODY_INK`). `Window.CreateSectionHeader(parent, text, onClick?)` is the paper-overlay gold header, collapsible
+when `onClick` is given; `Window.CreatePaperWell(parent)` and `Window.SetPaperWell(well, lines)` are the paper
+well for text longer than a row, set in the Journal's brown ink. A surface the client has no art for draws a flat
+dark tile, never a question mark or a substituted picture.
+
 ## 3. Copy
 
 Use short, plain player language and the game's names. Unknown values stay absent. Public descriptions
