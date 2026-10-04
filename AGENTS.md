@@ -44,9 +44,8 @@ commit the PNGs it rewrites in `docs/screenshots/`; two runs give byte-identical
 - `Planning/`: route models, ordering, focus and geometry.
 - `Integrations/`: QuestieDB, companion addons and dungeon providers.
 - `UI/`: guide windows, hints, map pins, settings and the private tracker host.
-- `Planning/Model.lua`: the headless-testable planner's eligibility rules and shared table, `ns.Model`. The rest of the
-  planner loads after it in TOC order: `Travel`, `Zones`, `Steps`, `Services`, `Routing`, `Laps`, `Journeys`,
-  `Decoration`, `Plan` and `Refresh`. `Core/State.lua` reads the client.
+- `Planning/Model.lua`: the headless-testable planner's eligibility rules and shared table, `ns.Model`; the planner's
+  other modules load after it in `AdventureGuideForever.toc` order. `Core/State.lua` reads the client.
 - `Planning/Shown.lua`: the route as shown: `Shown.Build` runs the planner, the player's order and the session's trim
   over one snapshot; Core's rebuild is its one caller, and the planner reads no other module.
 - `Integrations/Integrations.lua`: Shortest Path Forever's public API when loaded, the native waypoint otherwise.
@@ -99,7 +98,6 @@ commit the PNGs it rewrites in `docs/screenshots/`; two runs give byte-identical
 - WFA-28: transports (boats and zeppelins between continents): CMaNGOS classic-db `gameobject_template` with
   wago.tools `TaxiPathNode`. QuestieDB's object rows have a `waypoints` field for objects riding a transport,
   empty in the Forever data, and neither database lists which docks a boat joins.
-
 - WFA-3: the map-pin, quest-giver and tracker toggles stay in the guide's cog as well as Settings > AddOns, as
   quick switches next to the map (owner decision 2026-09-27).
 
