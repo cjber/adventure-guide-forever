@@ -268,6 +268,24 @@ def draw_top_tab(canvas, entry, rect, layer):
         )
 
 
+def draw_nav_bar(canvas, entry, rect, layer):
+    """NavigationBar.xml:248 NavBarTemplate: its CS_HelpTextures_Tile background, tiled across the bar."""
+    if layer == "BACKGROUND":
+        ui, (x, y, w, h) = canvas.ui, rect
+        tile = texture(ui, "Interface/HelpFrame/CS_HelpTextures_Tile")
+        tile = drawing.wm.crop_coords(tile, 0, 1, 0.1875, 0.25390625)
+        drawing.wm.tiled(canvas, tile, x, y, w, h, tile.width / ui.scale, tile.height / ui.scale)
+
+
+def draw_nav_button(canvas, entry, rect, layer):
+    """NavigationBar.xml:123 NavButtonTemplate: its CS_HelpTextures_Tile normal art, tiled."""
+    if layer == "BACKGROUND":
+        ui, (x, y, w, h) = canvas.ui, rect
+        tile = texture(ui, "Interface/HelpFrame/CS_HelpTextures_Tile")
+        tile = drawing.wm.crop_coords(tile, 0, 1, 0.0625, 0.12109375)
+        drawing.wm.tiled(canvas, tile, x, y, w, h, tile.width / ui.scale, tile.height / ui.scale)
+
+
 def draw_collapse_button(canvas, entry, rect, layer):
     """ListTemplates.xml CollapseButtonTemplate, used by QuestLogHeaderTemplate: native plus/minus centred."""
     if layer == "ARTWORK":
@@ -313,6 +331,8 @@ STOCK = {
     "ScrollFrameTemplate": (draw_scroll_frame, None, None, 0),
     "WowScrollBoxList": (draw_scroll_box, None, None, 0),
     "MinimalScrollBar": (draw_minimal_scroll_bar, None, None, 0),
+    "NavBarTemplate": (draw_nav_bar, lambda ui, entry: (300, 34), None, 0),
+    "NavButtonTemplate": (draw_nav_button, lambda ui, entry: (140, 30), None, 0),
     "SearchBoxTemplate": (draw_search_box, None, None, 0),
     "UIPanelButtonTemplate": (draw_panel_button, lambda ui, entry: (40, 22), None, 0),
     "UIPanelIconDropdownButtonTemplate": (draw_icon_dropdown, lambda ui, entry: (15, 16), None, 0),

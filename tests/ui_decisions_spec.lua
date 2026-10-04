@@ -47,7 +47,7 @@ do
 	local items, bosses, loot = {}, {}, {}
 	for boss = 1, 3 do
 		bosses[boss] = { id = boss, name = "Boss " .. boss }
-		for drop = 1, (boss == 3 and 1 or 6) do
+		for drop = 1, (boss == 3 and 1 or 12) do
 			local id = boss * 100 + drop
 			items[id] = { name = "Drop " .. id, quality = 3 }
 			loot[#loot + 1] = { id = id, name = items[id].name, droppers = { { id = boss } } }
@@ -74,14 +74,14 @@ do
 		return frame:IsVisible() and frame.value and frame.value.boss and frame.value.title == "Boss 2"
 	end)[1])
 	h.Click(row)
-	equal(scroll:GetVerticalScroll(), 22 + 6 * 47, "boss jump accounts for heading height")
+	equal(scroll:GetVerticalScroll(), 22 + 12 * 47, "boss jump accounts for heading height")
 	local last = assert(h.Find(function(frame)
 		return frame:IsVisible() and frame.value and frame.value.boss and frame.value.title == "Boss 3"
 	end)[1])
 	h.Click(last)
 	equal(
 		scroll:GetVerticalScroll(),
-		3 * 22 + 13 * 47 - scroll:GetHeight(),
+		3 * 22 + 25 * 47 - scroll:GetHeight(),
 		"boss jump clamps to the measured content height"
 	)
 	equal(#h.errors, 0, "boss jump has no errors")

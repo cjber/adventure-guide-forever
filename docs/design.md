@@ -59,7 +59,9 @@ abandons quests.
   providers. Assign Shift-J once, only if neither it nor the window already has a binding.
 - **2.20 Your order.** Reordering must preserve quest dependencies. Suggested order remains recoverable.
 
-- **2.21 Dungeons.** A window tab below the shared Today strip. It opens on the instance select page: the
+- **2.21 Dungeons.** A window tab that uses the whole inset from its top, without the shared Today strip; while it
+  is selected the window hosts the journal's NavBar over the title bar and hides its zone subtitle. It opens on the
+  instance select page: the
   Encounter Journal's 174x96 tile grid, four across, under its Dungeons and Raids tabs (the announced Forever
   raids, then the client's other raid instances, each tile tagged with its group size; the raid tier and sizes
   come from `Integrations/Raids.lua` (docs/dungeon-sources.md), never from a copied Classic attunement page).
@@ -115,9 +117,12 @@ abandons quests.
   drop chance beside it when AtlasLoot has one, and nothing when it does not.
 
   The views wear the Encounter Journal's own art at its own sizes, since Blizzard's journal frames do not load on
-  this client: a 174x96 instance tile with its icon and level range, a 325x55 boss button with the default
-  portrait, and a 321x45 loot row with a quality-tinted 42x42 icon frame and the journal's loot border, in the
-  journal's fonts. Overview draws the entrance zone's existing map art in the reference's lore area, with the
+  this client: a 174x96 instance tile with its level range, a 325x55 boss button with the encounter's portrait from
+  the client journal (the flat plate when it has none), and a 321x45 loot row with a quality-tinted 45x45 icon frame
+  and the journal's loot border, in the journal's fonts. The frames are ported from Adventure Guide for Classic by
+  FooxyTV (GPL-3.0): the instance select, the parchment instance page and its shadows, the boss list, the icon side
+  tabs, the overview, the loot rows and the NavBar are the reference's own construction, and each ported file names
+  its source. Overview draws the entrance zone's existing map art in the reference's lore area, with the
   instance title over it; Bosses sets the selected encounter's name in the journal's paper header over its ability
   rows; Quests and Prep put their list on the left and the detail, or the entrance requirements paper well, on the
   right. An instance with no art draws the flat dark tile, never a stand-in picture.

@@ -1441,6 +1441,8 @@
 ---@field rank integer 1 elite, 2 rare elite, 3 boss; never infer bosses from names
 ---@field low? integer
 ---@field high? integer
+---@field portrait? integer the client journal's boss picture file id (EJ_GetCreatureInfo)
+---@field display? integer the client journal's creature display id, for a live portrait
 
 ---@class AGFDungeonItem
 ---@field id integer
@@ -1534,6 +1536,8 @@
 ---@field DUNGEON_WANDERER string
 ---@field DUNGEON_SHOW_GIVER string
 ---@field DUNGEON_REWARDS string
+---@field NAV_HOME string
+---@field NAV_SEARCH string
 ---@field DUNGEON_START string
 ---@field DUNGEON_END string
 ---@field DUNGEON_PART string
@@ -1838,6 +1842,7 @@
 ---@field Expand AGFCollapseButton
 ---@field ItemIcon Texture
 ---@field Icon? Texture a dungeon tile's corner icon
+---@field bgImage? Texture a dungeon tile's instance picture ground
 ---@field Up? Texture the journal button's normal art
 ---@field Down? Texture its pushed art, the selected dungeon tile
 ---@field Highlight? Texture its hover art

@@ -93,6 +93,6 @@ Contributing and security policies are inherited from [cjber/.github](https://gi
 
 ## Licence
 
-GPL-3.0-or-later. What trainers teach, dungeon entrance requirements and boat routes derive from [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0); client tables come via [wago.tools](https://wago.tools), and zone level ranges from [Warcraft Wiki](https://warcraft.wiki.gg/wiki/Zones_by_level_(original)). No Questie or Wowhead data is bundled.
+GPL-3.0-or-later. What trainers teach, dungeon entrance requirements and boat routes derive from [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0); client tables come via [wago.tools](https://wago.tools), and zone level ranges from [Warcraft Wiki](https://warcraft.wiki.gg/wiki/Zones_by_level_(original)). No Questie or Wowhead data is bundled. The Dungeons tab's Encounter Journal layout is ported from [Adventure Guide for Classic](https://www.curseforge.com/wow/addons/adventure-guide-for-classic) by FooxyTV (GPL-3.0); its separately licensed `lib/TomCats` library is not used.
 
 Made by Cillian Berragan · [cillian.dev](https://cillian.dev) · [GitHub](https://github.com/cjber) · [Twitter](https://twitter.com/cjberragan)

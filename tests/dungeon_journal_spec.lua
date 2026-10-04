@@ -81,7 +81,7 @@ local boss = bossRows[1]
 equal(boss.Up.file, 522972, "boss button uses the journal sheet")
 equal(boss.Up.width, 325, "boss button width")
 equal(boss.Up.height, 55, "boss button height")
-equal(boss.Portrait.file, "Interface\\EncounterJournal\\UI-EJ-BOSS-Default", "default boss portrait")
+equal(boss.Portrait.file, nil, "no per-encounter portrait source leaves the boss plate")
 equal(boss.Title.font, "GameFontNormalMed3", "boss name uses the journal font")
 
 -- Each boss's abilities sit under it as a spell icon and name, with the client's own spell tooltip.
@@ -105,8 +105,8 @@ for _, row in ipairs(lootRows) do
 	unrated = unrated or (row.value.item == 999905 and row)
 end
 assert(rated and unrated, "both drops are drawn")
-equal(rated.ItemIcon.width, 42, "loot icon width")
-equal(rated.ItemIcon.height, 42, "loot icon height")
+equal(rated.ItemIcon.width, 45, "loot icon width")
+equal(rated.ItemIcon.height, 45, "loot icon height")
 equal(rated.LootFrame.file, 522972, "loot row uses the journal loot border")
 equal(
 	rated.Percent:GetText(),

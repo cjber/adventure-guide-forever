@@ -80,6 +80,12 @@ local TEXTURE_TEMPLATES = {
 		texCoord = { 0, 1, 0.22265625, 0.27929688 },
 		horizTile = true,
 	},
+	-- Mainline/SharedUIPanelTemplates.xml:51-108: the frame-inner tiles the journal's NavBar closes its ends with.
+	["UI-Frame-InnerBotLeftCorner"] = { atlas = "UI-Frame-InnerBotLeftCorner", width = 6, height = 6 },
+	["UI-Frame-InnerBotRight"] = { atlas = "UI-Frame-InnerBotRight", width = 6, height = 6 },
+	["_UI-Frame-InnerBotTile"] = { atlas = "_UI-Frame-InnerBotTile", width = 256, height = 3, horizTile = true },
+	["!UI-Frame-InnerLeftTile"] = { atlas = "!UI-Frame-InnerLeftTile", width = 3, height = 256, vertTile = true },
+	["!UI-Frame-InnerRightTile"] = { atlas = "!UI-Frame-InnerRightTile", width = 3, height = 256, vertTile = true },
 }
 
 local function IsFrame(objectType)
@@ -380,6 +386,9 @@ function harness.load(options)
 	function Methods:SetAlpha(alpha)
 		self.alpha = alpha
 	end
+	function Methods:SetDrawLayer(layer, subLevel)
+		self.layer, self.subLevel = layer, subLevel
+	end
 	function Methods:GetAlpha()
 		return self.alpha or 1
 	end
@@ -537,7 +546,10 @@ function harness.load(options)
 		local stock = template and TEXTURE_TEMPLATES[template]
 		if stock then
 			texture.file, texture.width, texture.height = stock.file, stock.width, stock.height
-			texture.texCoord, texture.horizTile = stock.texCoord, stock.horizTile
+			texture.texCoord, texture.horizTile, texture.vertTile = stock.texCoord, stock.horizTile, stock.vertTile
+			if stock.atlas then
+				texture:SetAtlas(stock.atlas)
+			end
 		end
 		return texture
 	end
@@ -614,12 +626,28 @@ function harness.load(options)
 	function Methods:SetNormalFontObject(font)
 		self.normalFont = font
 	end
-	function Methods:SetNormalTexture(file)
+	function Methods:SetNormalTexture(texture)
+		if type(texture) == "table" then
+			self.NormalTexture = texture
+			return
+		end
 		if not self.NormalTexture then
 			self.NormalTexture = self:CreateTexture(nil, "ARTWORK")
 			self.NormalTexture:SetAllPoints()
 		end
-		self.NormalTexture:SetTexture(file)
+		self.NormalTexture:SetTexture(texture)
+	end
+	function Methods:SetHighlightTexture(texture, mode)
+		if type(texture) == "string" then
+			local region = self:CreateTexture(nil, "HIGHLIGHT")
+			region:SetTexture(texture)
+			self.HighlightTexture = region
+		else
+			self.HighlightTexture = texture
+		end
+		if mode then
+			self.HighlightTexture:SetBlendMode(mode)
+		end
 	end
 	function Methods:LockHighlight()
 		self.highlightLocked = true
@@ -1078,6 +1106,18 @@ function harness.load(options)
 			Internal("Texture", frame, "Bg")
 			Internal("Frame", frame, "NineSlice")
 		end,
+		-- SharedXML/Backdrop.xml: a tooltip-edged ground, kept for tools/screenshots.py to draw.
+		BackdropTemplate = function(frame)
+			function frame:SetBackdrop(backdrop)
+				self.backdrop = backdrop
+			end
+			function frame:SetBackdropColor(r, g, b, a)
+				self.backdropColor = { r, g, b, a }
+			end
+			function frame:SetBackdropBorderColor(r, g, b, a)
+				self.backdropBorderColor = { r, g, b, a }
+			end
+		end,
 		-- Shared/Button/CheckButtonTemplates.xml: the stock label beside the square art.
 		UICheckButtonTemplate = function(frame)
 			frame.Text = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
@@ -1146,6 +1186,14 @@ function harness.load(options)
 			local parent = frame.parent
 			parent.Tabs = parent.Tabs or {}
 			parent.Tabs[#parent.Tabs + 1] = frame
+		end,
+		-- Mainline/NavigationBar.xml:123,248: the bar's background tile and its Home and Overflow buttons.
+		NavBarTemplate = function() end,
+		NavButtonTemplate = function(frame)
+			frame.Text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+			frame.Text:SetPoint("LEFT", 20, 0)
+			frame.Text:SetPoint("RIGHT", -4, 0)
+			frame:SetSize(140, 30)
 		end,
 	}
 
@@ -1523,6 +1571,33 @@ function harness.load(options)
 		end
 	end
 	G.UISpecialFrames = {}
+	-- Mainline/NavigationBar.lua: the bar keeps a Home button and appends a button per breadcrumb.
+	G.NavBar_Initialize = function(frame, _template, homeData)
+		frame.home = G.CreateFrame("Button", frame:GetName() .. "Home", frame, "NavButtonTemplate")
+		frame.home:SetPoint("LEFT", frame, "LEFT", 8, 0)
+		frame.home.Text:SetText(homeData.name or "")
+		frame.home:SetScript("OnClick", homeData.OnClick)
+		frame.home:Show()
+		frame.navAdded = {}
+	end
+	G.NavBar_Reset = function(frame)
+		for _, button in ipairs(frame.navAdded or {}) do
+			button:Hide()
+		end
+		frame.navAdded = {}
+	end
+	G.NavBar_AddButton = function(frame, data)
+		local button = G.CreateFrame("Button", nil, frame, "NavButtonTemplate")
+		local count = #frame.navAdded
+		if count == 0 then
+			button:SetPoint("LEFT", frame.home, "RIGHT", 0, 0)
+		else
+			button:SetPoint("LEFT", frame.navAdded[count], "RIGHT", 0, 0)
+		end
+		button.Text:SetText(data.name or "")
+		button:SetScript("OnClick", data.OnClick)
+		frame.navAdded[#frame.navAdded + 1] = button
+	end
 	-- Key bindings: h.bindings maps a key to its action ("" when free); h.savedBindings counts SaveBindings calls.
 	h.bindings, h.savedBindings = options.bindings or {}, {}
 	G.GetBindingAction = function(key)

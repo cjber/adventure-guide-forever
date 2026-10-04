@@ -101,6 +101,38 @@ CreateDataProvider = nil
 ---@class AGFSearchBox : EditBox
 ---@field Instructions FontString
 
+-- SharedXML/Backdrop.xml: a frame with a backdrop, as NpcPreview and the NavBar's results panel use it.
+---@class AGFBackdropFrame : Frame
+---@field SetBackdrop fun(self: Frame, backdrop: table)
+---@field SetBackdropColor fun(self: Frame, r: number, g: number, b: number, a: number)
+---@field SetBackdropBorderColor fun(self: Frame, r: number, g: number, b: number, a: number)
+
+-- SharedXML/SharedUIPanelTemplates.lua: a texture that can render a creature's portrait from its display id.
+---@class Texture
+---@field SetPortraitTextureFromCreatureDisplayID fun(self: Texture, displayID: integer)
+
+-- Mainline/NavigationBar.lua: the stock NavBar's home button, its appended breadcrumbs and its reset.
+---@param frame Frame
+---@param template string
+---@param homeData table
+---@param home Button
+---@param overflow Button
+function NavBar_Initialize(frame, template, homeData, home, overflow) end
+
+---@param frame Frame
+---@param data table { name: string, OnClick: fun()?, listFunc: fun()? }
+function NavBar_AddButton(frame, data) end
+
+---@param frame Frame
+function NavBar_Reset(frame) end
+
+-- Blizzard_EncounterJournal: an encounter's creature row. Its fourth return is the creature display id and its fifth
+-- the boss picture file id, which is what the journal's own boss button draws.
+---@param index integer
+---@param encounterID? integer
+---@return integer id, string name, string description, integer displayInfo, integer bossImage, integer uiModelSceneID
+function EJ_GetCreatureInfo(index, encounterID) end
+
 ---@class AGFQuestContentFrame : Frame
 ---@field displayMode any
 

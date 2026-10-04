@@ -7,36 +7,64 @@ local L, Window, Dungeons = ns.L, ns.Window, ns.Dungeons
 -- page is its two-pane encounter layout, with the boss list on the left and the detail pane on the right under the
 -- journal's own side tabs. Work belongs to the visible page. Hiding it cancels its coroutine before any more source
 -- reads or drawing.
+--
+-- Ported from Adventure Guide for Classic by FooxyTV (GPL-3.0), ui/InstanceSelect.lua, ui/Info.lua,
+-- ui/EncounterFrame.lua, ui/Encounters.lua, ui/InfoTabs.lua, ui/InstanceOverview.lua, ui/Loot.lua, ui/NavBar.lua and
+-- ui/widgets/. The frame numbers, anchors, texture coordinates, fonts and draw layers below are the reference's; the
+-- data, the quest, prep, plan, map and guide features and the optional-source handling are this addon's.
 -- The layout's own numbers and art crops, grouped so the drawing functions keep few upvalues (Lua 5.1 allows 60).
 local C = {
 	LEFT = Window.LEFT,
-	TOP = Window.TOP,
 	RIGHT_PAD = 14,
 	-- The journal's own sizes and art (Blizzard_EncounterJournal.xml: EncounterInstanceButtonTemplate,
 	-- EncounterBossButtonTemplate, EncounterItemTemplate; InfoTabs.lua: the 63x57 side tab): a 174x96 instance tile,
 	-- a 325x55 boss button, a 321x45 loot row with its 42x42 icon. A row is 2 units taller than the art it lays out.
 	TILE_W = 174,
 	TILE_H = 96,
-	TILE_ICON = 28,
+	ICON = 28,
 	GRID_COLUMNS = 4,
+	GRID_W = 748,
+	GRID_H = 379,
+	GRID_X = 14,
+	GRID_Y = 47,
 	GRID_GAP = 15,
 	BOSS_W = 325,
 	BOSS_H = 55,
+	BOSS_PORTRAIT_W = 128,
+	BOSS_PORTRAIT_H = 64,
 	LOOT_W = 321,
-	LOOT_ICON = 42,
+	LOOT_ICON = 45,
 	LOOT_ROW = 47,
 	ABILITY_H = 24,
 	ROW_H = 38,
 	SIDE_W = 63,
 	SIDE_H = 57,
 	SIDE_GAP = 2,
-	-- The select page's tabs hang from the page top; the grid starts below them.
-	TAB_H = 38,
-	-- The instance page: a three-line header under the same top, then the two panes with the side tabs on the right.
-	HEADER_H = 58,
-	BODY_BOTTOM = 18,
-	PANE_X = 20,
+	-- The instance page: its `info` frame is the reference's 785x425, the inset's own size (792x431) less the
+	-- shadows; the boss list is 338x382 at (25,1) and the side tabs hang from its top right at (-12,-35).
+	INFO_W = 785,
+	INFO_H = 425,
+	PANE_X = 25,
 	PANE_W = 338,
+	PANE_Y = 1,
+	-- The reference's 382 less room for the addon's entrance and summary lines under the instance title.
+	PANE_H = 366,
+	LIST_PAD = 10,
+	SIDE_X = 12,
+	SIDE_Y = 35,
+	-- The reference's textures (ui/InstanceSelect.lua, ui/Info.lua, ui/InstanceOverview.lua, ui/Encounters.lua).
+	SELECT_BG = "Interface/EncounterJournal/UI-EJ-Classic",
+	JOURNAL_BG = "Interface/EncounterJournal/UI-EJ-JournalBG",
+	JOURNAL_CROP = { 0, 0.766601562, 0, 0.830078125 },
+	SHADOW_L = { 0, 0.755859375, 0.9599609375, 1 },
+	SHADOW_R = { 0.755859375, 0, 0.9599609375, 1 },
+	SHADOW_W = 386,
+	SHADOW_H = 39,
+	LOREBG = "Interface/EncounterJournal/UI-EJ-LOREBG-Default",
+	LOREBG_CROP = { 0, 0.7617187, 0, 0.65625 },
+	BOSS_DEFAULT = "Interface\\EncounterJournal\\UI-EJ-BOSS-Default",
+	-- The tile's instance picture (the reference's `instance.thumbnail`): the whole button minus its ornate rim.
+	THUMBNAIL_CROP = { 0, 0.68359375, 0, 0.7421875 },
 	-- Interface\EncounterJournal\UI-EncounterJournalTextures (file 522972), cut at the journal's own texcoords.
 	EJ_SHEET = 522972,
 	CROPS = {
@@ -50,13 +78,11 @@ local C = {
 		overviewTitleBG = { 0.34570313, 0.84570313, 0.42871094, 0.49121094 },
 	},
 }
-C.SELECT_TOP = C.TOP + C.TAB_H
-C.GRID_W = C.GRID_COLUMNS * C.TILE_W + (C.GRID_COLUMNS - 1) * C.GRID_GAP
-C.GRID_H = Window.INSET_HEIGHT - C.SELECT_TOP - 4
-C.BODY_Y = C.TOP + C.HEADER_H
-C.BODY_H = Window.INSET_HEIGHT - C.BODY_Y - C.BODY_BOTTOM
+C.BODY_H = C.PANE_H
+C.BODY_Y = C.PANE_Y
 C.RIGHT_X = C.PANE_X + C.PANE_W + 12
-C.RIGHT_W = Window.INSET_WIDTH - C.RIGHT_X - (C.SIDE_W + 12)
+C.RIGHT_W = C.INFO_W - C.RIGHT_X - (C.SIDE_W + C.SIDE_X)
+C.JOURNAL_LEFT = Window.INSET_WIDTH - 1 - C.INFO_W
 -- The journal's hand-built side tabs: one 63x57 body per state and a 48x43 icon, per tab (InfoTabs.lua).
 C.TAB_CROP = {
 	up = { 0.25585938, 0.37890625, 0.90332031, 0.95898438 },
@@ -219,7 +245,12 @@ local Refresh, Draw, SelectQuest
 local function CreateInstanceTile(parent, width, rowHeight, click)
 	local row = CreateFrame("Button", nil, parent) --[[@as AGFDungeonRow]]
 	row:SetSize(width, rowHeight - 2)
-	row.Up = row:CreateTexture(nil, "BACKGROUND")
+	-- The reference's `instance.thumbnail` shows through the ornate frame's centre; the addon has no per-instance
+	-- splash, so the ground is the flat dark tile (ui/InstanceSelect.lua).
+	row.bgImage = row:CreateTexture(nil, "BACKGROUND")
+	row.bgImage:SetTexCoord(C.THUMBNAIL_CROP[1], C.THUMBNAIL_CROP[2], C.THUMBNAIL_CROP[3], C.THUMBNAIL_CROP[4])
+	row.bgImage:SetAllPoints()
+	row.Up = row:CreateTexture(nil, "BACKGROUND", nil, 1)
 	Sheet(row.Up, C.CROPS.dungeonUp)
 	row.Up:SetSize(C.TILE_W, C.TILE_H)
 	row.Up:SetPoint("TOPLEFT")
@@ -232,15 +263,13 @@ local function CreateInstanceTile(parent, width, rowHeight, click)
 	Sheet(row.Highlight, C.CROPS.dungeonHighlight)
 	row.Highlight:SetSize(C.TILE_W, C.TILE_H)
 	row.Highlight:SetPoint("TOPLEFT")
-	row.Icon = row:CreateTexture(nil, "OVERLAY")
-	row.Icon:SetSize(C.TILE_ICON, C.TILE_ICON)
-	row.Icon:SetPoint("BOTTOMRIGHT", -7, 7)
 	row.Title = row:CreateFontString(nil, "OVERLAY", "QuestTitleFontBlackShadow")
+	row.Title:SetSize(150, 0)
 	row.Title:SetPoint("TOP", 0, -15)
-	row.Title:SetWidth(C.TILE_W - 20)
 	row.Title:SetJustifyH("CENTER")
 	row.Title:SetWordWrap(true)
 	row.Range = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	row.Range:SetSize(100, 12)
 	row.Range:SetPoint("BOTTOMLEFT", 7, 7)
 	row.Range:SetJustifyH("LEFT")
 	row:SetScript("OnClick", function()
@@ -272,11 +301,10 @@ local function PaintTile(row, value)
 	else
 		row.Range:SetTextColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
 	end
-	-- The client build carries no per-instance icon (the Encounter Journal is dead here), so every tile uses the
-	-- Adventure Guide's dungeon atlas. The pushed crop marks the instance the page shows.
-	ns.Art.Fit(row.Icon, "dungeon", C.TILE_ICON, C.TILE_ICON)
+	-- The reference's `instance.thumbnail`, or a flat dark tile when the addon has no art for the instance.
+	row.bgImage:SetTexture(nil)
+	row.bgImage:SetColorTexture(0.1, 0.09, 0.08, 1)
 	row.Up:Show()
-	row.Icon:Show()
 	row.Down:SetShown(not ui.selecting and value.id == ns.WindowDB().dungeon)
 	row:SetScript("OnEnter", function()
 		ns.Overview.ShowTooltip(row, {
@@ -340,10 +368,11 @@ end
 local function PaintQuest(row, value)
 	local quest = value.quest
 	local offset = value.chain and 34 or 24
+	local width = row:GetWidth()
 	row.Title:SetText((ns.State.QuestTitle(quest.id) or quest.title))
 	row.Title:ClearAllPoints()
 	row.Title:SetPoint("TOPLEFT", offset, -5)
-	row.Title:SetWidth(C.PANE_W - offset - 74 - 16)
+	row.Title:SetWidth(width - offset - 74 - 16)
 	row.Info:SetText(Dungeons.QuestStatus(quest))
 	row.Info:ClearAllPoints()
 	row.Info:SetPoint("TOPRIGHT", -8, -7)
@@ -352,12 +381,12 @@ local function PaintQuest(row, value)
 	row.Giver:SetText(Dungeons.GiverText(quest))
 	row.Giver:ClearAllPoints()
 	row.Giver:SetPoint("TOPLEFT", offset, -21)
-	row.Giver:SetWidth(C.PANE_W - offset - 8)
+	row.Giver:SetWidth(width - offset - 8)
 	row.Map:SetShown(value.chain and quest.place ~= nil)
 	row.Map:ClearAllPoints()
 	row.Map:SetPoint("TOPRIGHT", -4, -18)
 	if value.chain and quest.place then
-		row.Giver:SetWidth(C.PANE_W - 34 - 58)
+		row.Giver:SetWidth(width - 34 - 58)
 	end
 	MapTooltip(row.Map, function()
 		return quest.place
@@ -385,19 +414,20 @@ end
 ---@param row AGFDungeonRow
 ---@param value table
 local function PaintPrep(row, value)
+	local width = row:GetWidth()
 	row.Title:SetText(value.title)
 	row.Title:ClearAllPoints()
 	row.Title:SetPoint("TOPLEFT", 8, -5)
-	row.Title:SetWidth(C.PANE_W - 16)
+	row.Title:SetWidth(width - 16)
 	row.Info:SetText(value.info or "")
 	row.Info:ClearAllPoints()
 	row.Info:SetPoint("TOPLEFT", 8, -21)
-	row.Info:SetWidth(C.PANE_W - 16)
+	row.Info:SetWidth(width - 16)
 	row.Info:SetJustifyH("LEFT")
 	row.Giver:SetText(value.giver or "")
 	row.Giver:ClearAllPoints()
 	row.Giver:SetPoint("TOPLEFT", 8, -35)
-	row.Giver:SetWidth(C.PANE_W - 16)
+	row.Giver:SetWidth(width - 16)
 	row.Expand:Hide()
 	local quest = value.quest
 	local place = quest and quest.place
@@ -437,11 +467,11 @@ local function CreateBossRow(parent, width, rowHeight, click)
 	Sheet(row.Highlight, C.CROPS.bossHighlight)
 	row.Highlight:SetSize(C.BOSS_W, C.BOSS_H)
 	row.Highlight:SetPoint("TOPLEFT")
-	row.Portrait = row:CreateTexture(nil, "ARTWORK")
-	row.Portrait:SetTexture("Interface\\EncounterJournal\\UI-EJ-BOSS-Default")
-	row.Portrait:SetSize(128, 64)
+	row.Portrait = row:CreateTexture(nil, "OVERLAY", nil, 6)
+	row.Portrait:SetTexture(C.BOSS_DEFAULT)
+	row.Portrait:SetSize(C.BOSS_PORTRAIT_W, C.BOSS_PORTRAIT_H)
 	row.Portrait:SetPoint("TOPLEFT", -4, 13)
-	row.Title = Text(row, "", 105, 3, C.BOSS_W - 120, "GameFontNormalMed3")
+	row.Title = Text(row, "", 105, 3, 160, "GameFontNormalMed3")
 	row.Title:SetWordWrap(false)
 	row.Info = Text(row, "", 105, 21, C.BOSS_W - 120)
 	row.Info:SetWordWrap(false)
@@ -458,7 +488,21 @@ end
 ---@param value table
 local function PaintBoss(row, value)
 	row.Up:Show()
-	row.Portrait:Show()
+	-- The reference's per-encounter portrait, read from the client journal by encounter name (ui/Encounters.lua sets
+	-- `encounter.portrait`; the picture file id, or the creature display the client turns into a live portrait).
+	local journal = ui.portraits and ui.portraits[value.title]
+	local portrait = value.portrait or (journal and journal.portrait)
+	local display = value.display or (journal and journal.display)
+	if portrait then
+		row.Portrait:SetTexture(portrait)
+		row.Portrait:SetShown(true)
+	elseif display and row.Portrait.SetPortraitTextureFromCreatureDisplayID then
+		row.Portrait:SetPortraitTextureFromCreatureDisplayID(display)
+		row.Portrait:SetShown(true)
+	else
+		row.Portrait:SetTexture(nil)
+		row.Portrait:SetShown(false)
+	end
 	row.Title:SetText(value.title)
 	row.Title:SetTextColor(0.87, 0.659, 0.463)
 	row.Info:SetText(value.info or "")
@@ -783,36 +827,7 @@ end
 
 ---@param shown boolean
 local function ShowInstance(shown)
-	if not shown then
-		for _, widget in ipairs({ ui.bossList, ui.questList, ui.prepList }) do
-			widget.frame:Hide()
-		end
-		for _, frame in ipairs({ ui.overview, ui.prepPane, ui.right, ui.detail }) do
-			frame:Hide()
-		end
-		ui.abilityHeader:Hide()
-		for _, tab in ipairs(ui.sideTabs) do
-			tab:Hide()
-		end
-		for _, frame in ipairs({ ui.back, ui.dungeonIcon, ui.entrance, ui.journey, ui.plan, ui.mapsButton }) do
-			frame:Hide()
-		end
-		ui.title:Hide()
-		ui.location:Hide()
-		ui.summary:Hide()
-		ui.note:Hide()
-		return
-	end
-	ui.title:Show()
-	ui.location:Show()
-	ui.summary:Show()
-	ui.note:Show()
-	ui.back:Show()
-	ui.dungeonIcon:Show()
-	ui.mapsButton:Show()
-	for _, tab in ipairs(ui.sideTabs) do
-		tab:Show()
-	end
+	ui.info:SetShown(shown)
 end
 
 ---@param shown boolean
@@ -820,8 +835,7 @@ local function ShowSelect(shown)
 	for _, tab in ipairs(ui.selectTabs) do
 		tab:SetShown(shown)
 	end
-	ui.selectTitle:SetShown(shown)
-	ui.grid.frame:SetShown(shown)
+	ui.select:SetShown(shown)
 	if not shown then
 		return
 	end
@@ -848,6 +862,9 @@ function Draw()
 		Window.SetEmpty(ui.empty, nil)
 		ShowInstance(false)
 		ShowSelect(true)
+		if ui.navBar then
+			ui.navBar:SetCrumbs({})
+		end
 		return
 	end
 	local dungeon = ui.page.dungeon
@@ -855,7 +872,21 @@ function Draw()
 	ShowSelect(false)
 	ShowInstance(true)
 	local point = Dungeons.Entrance(dungeon.id)
-	Window.SetRingIcon(ui.dungeonIcon, ui.journalIcon or "dungeon")
+	ui.instanceButton.icon:SetShown(ui.journalIcon ~= nil)
+	if ui.journalIcon then
+		ui.instanceButton.icon:SetTexture(ui.journalIcon)
+		if not ui.instanceMask then
+			local mask = ui.instanceButton:CreateMaskTexture()
+			mask:SetAllPoints(ui.instanceButton.icon)
+			mask:SetTexture(
+				"Interface\\CharacterFrame\\TempPortraitAlphaMask",
+				"CLAMPTOBLACKADDITIVE",
+				"CLAMPTOBLACKADDITIVE"
+			)
+			ui.instanceButton.icon:AddMaskTexture(mask)
+			ui.instanceMask = mask
+		end
+	end
 	ui.title:SetText(ns.State.InstanceName(dungeon.id) or dungeon.name)
 	ui.location:SetText(
 		point and L.DUNGEON_ENTRANCE_AT:format(ns.State.ZoneName(point.map) or "", point.x * 100, point.y * 100) or ""
@@ -987,6 +1018,13 @@ function Draw()
 	ui.lootList.frame:SetShown(ui.view == "loot")
 	ui.right:Show()
 	ui.mapsButton:SetEnabled(true)
+	if ui.navBar then
+		local crumbs = { { name = ui.title:GetText(), OnClick = function() end } }
+		if ui.view == "bosses" and selected then
+			crumbs[#crumbs + 1] = { name = selected.name, OnClick = function() end }
+		end
+		ui.navBar:SetCrumbs(crumbs)
+	end
 	DrawDetail()
 end
 
@@ -1034,7 +1072,58 @@ local function Run(work)
 	C_Timer.After(0, Step)
 end
 
+-- The NavBar's search (ui/NavBar.lua): the addon's instance catalogue and the open instance's quests, capped at the
+-- reference's twenty rows.
+---@param text string
+---@return table[]
+local function SearchJournal(text)
+	local needle = text:lower()
+	local rows = {}
+	for _, entry in ipairs(ui.catalog) do
+		local name = ns.State.InstanceName(entry.id) or entry.name
+		if name and name:lower():find(needle, 1, true) then
+			rows[#rows + 1] = {
+				name = name,
+				sub = entry.raid and L.DUNGEON_RAIDS_TAB or L.DUNGEON_LIST_DUNGEONS,
+				OnClick = function()
+					ns.WindowDB().dungeon, ui.selecting = entry.id, false
+					ui.selectedQuest, ui.selectedBoss = nil, nil
+					Refresh()
+				end,
+			}
+		end
+		if #rows >= 20 then
+			return rows
+		end
+	end
+	for _, quest in ipairs(ui.page and ui.page.quests or {}) do
+		local title = ns.State.QuestTitle(quest.id) or quest.title
+		if title and title:lower():find(needle, 1, true) then
+			local id = quest.id
+			rows[#rows + 1] = {
+				name = title,
+				sub = ui.title:GetText(),
+				OnClick = function()
+					ui.view, ui.selectedQuest = "quests", id
+					Draw()
+				end,
+			}
+		end
+		if #rows >= 20 then
+			return rows
+		end
+	end
+	return rows
+end
+
 function Refresh()
+	if ui.navBar then
+		ui.navBar:SetHomeClick(function()
+			ui.selecting = true
+			Draw()
+		end)
+		ui.navBar:SetSearch(SearchJournal)
+	end
 	if ui.classicGuide then
 		ui.classicGuide:SetShown(ns.Integrations.ClassicGuideAvailable())
 	end
@@ -1072,6 +1161,10 @@ function Refresh()
 			ns.WindowDB().dungeon = dungeon.id
 			ui.page = Dungeons.Page(ns.Data, player, ns.State.Completed(), ns.State.Log(), dungeon, yield)
 			ui.bosses, ui.journalIcon = Dungeons.Journal(dungeon.id, yield)
+			ui.portraits = {}
+			for _, boss in ipairs(ui.bosses or {}) do
+				ui.portraits[boss.name] = boss
+			end
 			local selected = ui.selectedQuest and ns.Data.quests[ui.selectedQuest]
 			if
 				#ui.page.quests == 0
@@ -1146,16 +1239,19 @@ local function BuildDetail()
 end
 
 ---@param parent Frame
-local function BuildContents(parent)
+---@param frame AGFWindowFrame
+local function BuildContents(parent, frame)
 	ui.content = parent
+	ui.frame = frame
 	parent:SetScript("OnHide", function()
 		ui.generation = ui.generation + 1
 	end)
-	-- The instance select page: the Dungeons and Raids tabs, the page title and the tile grid.
+	-- The journal's Dungeons and Raids pair belongs to its window's own tab bar; this shared window's bar carries
+	-- the addon's tabs, so the pair rides at the select page's top (ui/EncounterJournalTabs.lua).
 	local first = CreateFrame("Button", nil, parent, "PanelTabButtonTemplate") --[[@as AGFTopTab]]
 	first:SetText(L.DUNGEON_LIST_DUNGEONS)
 	first:SetID(1)
-	first:SetPoint("TOPLEFT", C.LEFT, -C.TOP)
+	first:SetPoint("TOPLEFT", C.LEFT, -2)
 	first:SetScript("OnClick", function()
 		ui.kind, ui.selecting = "dungeons", true
 		PanelTemplates_SetTab(parent, 1)
@@ -1171,63 +1267,94 @@ local function BuildContents(parent)
 	end)
 	PanelTemplates_SetNumTabs(parent, 2)
 	ui.selectTabs[1], ui.selectTabs[2] = first, second
-	local selectTitle = parent:CreateFontString(nil, "ARTWORK", Window.FONT_TITLE)
+
+	-- The instance select page (ui/InstanceSelect.lua): the journal's panel ground, its large title and the 174x96
+	-- tile grid four across on its own scroll box.
+	local select = CreateFrame("Frame", nil, parent)
+	ui.select = select
+	select:SetPoint("TOPLEFT", 0, -2)
+	select:SetPoint("BOTTOMRIGHT", -3, 0)
+	local bg = select:CreateTexture(nil, "BACKGROUND")
+	bg:SetTexture(C.SELECT_BG)
+	bg:SetAllPoints()
+	bg:SetPoint("TOPLEFT", 3, -1)
+	select.bg = bg
+	local selectTitle = select:CreateFontString(nil, "BACKGROUND", "GameFontNormalLarge2")
 	ui.selectTitle = selectTitle
-	selectTitle:SetPoint("TOPRIGHT", -C.RIGHT_PAD, -(C.TOP + 8))
-	selectTitle:SetJustifyH("RIGHT")
-	selectTitle:SetTextColor(Window.TITLE_INK[1], Window.TITLE_INK[2], Window.TITLE_INK[3])
-	ui.grid = Window.CreateList(
-		parent,
-		(Window.INSET_WIDTH - C.GRID_W) / 2,
-		C.SELECT_TOP,
-		C.GRID_W,
-		C.GRID_H,
-		C.TILE_H + 2,
-		PaintTile,
-		function(value)
-			ns.WindowDB().dungeon, ui.selectedQuest, ui.selectedBoss, ui.expanded = value.id, nil, nil, {}
-			ui.selecting = false
-			ui.questList.frame:SetVerticalScroll(0)
-			Refresh()
-		end,
-		CreateInstanceTile,
-		nil,
-		C.GRID_COLUMNS,
-		C.GRID_GAP
-	)
-	-- The instance page's header: the instance icon and title, the back and action buttons and the entry lines.
-	local back = Button(parent, L.MENU_BACK, 52, function()
+	selectTitle:SetJustifyH("LEFT")
+	selectTitle:SetPoint("TOPRIGHT", -C.GRID_X - 8, -15)
+	ui.grid = Window.CreateList(select, C.GRID_X, C.GRID_Y, C.GRID_W, C.GRID_H, C.TILE_H, PaintTile, function(value)
+		ns.WindowDB().dungeon, ui.selectedQuest, ui.selectedBoss, ui.expanded = value.id, nil, nil, {}
+		ui.selecting = false
+		ui.questList.frame:SetVerticalScroll(0)
+		Refresh()
+	end, CreateInstanceTile, nil, C.GRID_COLUMNS, C.GRID_GAP)
+	ui.grid.scrollBar:ClearAllPoints()
+	ui.grid.scrollBar:SetPoint("TOPLEFT", ui.grid.scrollBox, "TOPRIGHT", 12, -6)
+	ui.grid.scrollBar:SetPoint("BOTTOMLEFT", ui.grid.scrollBox, "BOTTOMRIGHT", 12, 4)
+	select:Hide()
+
+	-- The instance and encounter page (ui/Info.lua, ui/EncounterFrame.lua): the journal's 785x425 parchment, its
+	-- edge shadows, the instance portrait button and the instance title, over the two panes and the side tabs.
+	local info = CreateFrame("Frame", nil, parent)
+	ui.info = info
+	info:SetSize(C.INFO_W, C.INFO_H)
+	info:SetPoint("BOTTOMRIGHT", -1, 2)
+	local jbg = info:CreateTexture(nil, "BACKGROUND")
+	jbg:SetDrawLayer("BACKGROUND", 1)
+	jbg:SetTexture(C.JOURNAL_BG)
+	jbg:SetTexCoord(C.JOURNAL_CROP[1], C.JOURNAL_CROP[2], C.JOURNAL_CROP[3], C.JOURNAL_CROP[4])
+	jbg:SetAllPoints()
+	info.bg = jbg
+	local leftShadow = info:CreateTexture(nil, "BACKGROUND", nil, 3)
+	leftShadow:SetTexture(C.EJ_SHEET)
+	leftShadow:SetTexCoord(C.SHADOW_L[1], C.SHADOW_L[2], C.SHADOW_L[3], C.SHADOW_L[4])
+	leftShadow:SetSize(C.SHADOW_W, C.SHADOW_H)
+	leftShadow:SetPoint("TOPLEFT", 0, -11)
+	local rightShadow = info:CreateTexture(nil, "BACKGROUND", nil, 3)
+	rightShadow:SetTexture(C.EJ_SHEET)
+	rightShadow:SetTexCoord(C.SHADOW_R[1], C.SHADOW_R[2], C.SHADOW_R[3], C.SHADOW_R[4])
+	rightShadow:SetSize(C.SHADOW_W, C.SHADOW_H)
+	rightShadow:SetPoint("TOPRIGHT", 0, -11)
+	local instanceButton = CreateFrame("Button", nil, info)
+	ui.instanceButton = instanceButton
+	instanceButton:SetMotionScriptsWhileDisabled(true)
+	instanceButton:SetSize(64, 61)
+	instanceButton:SetPoint("TOPLEFT", 0, -3)
+	instanceButton.icon = instanceButton:CreateTexture(nil, "BACKGROUND", nil, 6)
+	instanceButton.icon:SetSize(64, 64)
+	instanceButton.icon:SetPoint("TOPLEFT", 6.5, -7)
+	local border = instanceButton:CreateTexture()
+	Sheet(border, { 0.50585938, 0.63085938, 0.02246094, 0.08203125 })
+	instanceButton:SetNormalTexture(border)
+	local borderHighlight = instanceButton:CreateTexture()
+	Sheet(borderHighlight, { 0.50585938, 0.63085938, 0.02246094, 0.08203125 })
+	instanceButton:SetHighlightTexture(borderHighlight, "ADD")
+	local title = info:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+	ui.title = title
+	title:SetJustifyH("LEFT")
+	title:SetSize(290, 12)
+	title:SetPoint("TOPLEFT", 65, -20)
+	title:SetTextColor(Window.TITLE_INK[1], Window.TITLE_INK[2], Window.TITLE_INK[3])
+	title:SetWordWrap(false)
+	local location = Text(info, "", 65, 34, 290)
+	ui.location = location
+	location:SetWordWrap(false)
+	local summary = Text(info, "", 65, 46, 290)
+	ui.summary = summary
+	summary:SetWordWrap(false)
+	local note = Text(info, "", 65, 34, 290, "GameFontDisableSmall")
+	ui.note = note
+	note:SetWordWrap(false)
+
+	-- The action controls stay over the parchment's top right, where the reference keeps its difficulty dropdown.
+	local back = Button(info, L.MENU_BACK, 52, function()
 		ui.selecting = true
 		Draw()
 	end, 20)
 	ui.back = back
-	back:SetPoint("TOPRIGHT", -C.RIGHT_PAD, -(C.TOP + 2))
-	ui.dungeonIcon = Window.CreateRingIcon(parent, 38)
-	ui.dungeonIcon:SetPoint("TOPLEFT", C.LEFT, -(C.TOP + 2))
-	local title = Text(parent, "", C.LEFT + 48, C.TOP + 4, 300, "GameFontNormalLarge")
-	ui.title = title
-	title:SetTextColor(Window.TITLE_INK[1], Window.TITLE_INK[2], Window.TITLE_INK[3])
-	title:SetWordWrap(false)
-	local location = Text(parent, "", C.LEFT + 48, C.TOP + 24, 300)
-	ui.location = location
-	location:SetWordWrap(false)
-	local summary = Text(parent, "", C.LEFT + 48, C.TOP + 38, 300)
-	ui.summary = summary
-	summary:SetWordWrap(false)
-	local note = Text(parent, "", C.LEFT + 48, C.TOP + 24, 300, "GameFontDisableSmall")
-	ui.note = note
-	note:SetWordWrap(false)
-	local classicGuide = Button(parent, L.DUNGEON_CLASSIC_GUIDE, 168, function()
-		ns.Integrations.OpenClassicGuide()
-	end)
-	ui.classicGuide = classicGuide
-	classicGuide:SetPoint("TOPRIGHT", -C.RIGHT_PAD - 130, -(C.TOP + 2))
-	classicGuide:SetShown(ns.Integrations.ClassicGuideAvailable())
-	classicGuide:SetScript("OnEnter", function()
-		ns.Overview.ShowTooltip(classicGuide, { L.DUNGEON_CLASSIC_GUIDE_TOOLTIP })
-	end)
-	classicGuide:SetScript("OnLeave", GameTooltip_Hide)
-	local mapsButton = Button(parent, L.DUNGEON_MAPS_TAB, 62, function()
+	back:SetPoint("TOPRIGHT", -8, -4)
+	local mapsButton = Button(info, L.DUNGEON_MAPS_TAB, 62, function()
 		if ui.page then
 			ui.mapsButton:SetEnabled(false)
 			local mapView = Window.CreateDungeonMapView(parent)
@@ -1237,27 +1364,37 @@ local function BuildContents(parent)
 			end)
 			Window.OpenDungeonMaps(ui.page.dungeon.id, parent)
 		end
-	end)
+	end, 20)
 	ui.mapsButton = mapsButton
-	mapsButton:SetPoint("TOPRIGHT", -C.RIGHT_PAD - 60, -(C.TOP + 2))
-	local journey = Button(parent, L.DUNGEON_START_JOURNEY, 110, function()
+	mapsButton:SetPoint("TOPRIGHT", -66, -4)
+	local classicGuide = Button(info, L.DUNGEON_CLASSIC_GUIDE, 168, function()
+		ns.Integrations.OpenClassicGuide()
+	end)
+	ui.classicGuide = classicGuide
+	classicGuide:SetPoint("TOPRIGHT", -136, -4)
+	classicGuide:SetShown(ns.Integrations.ClassicGuideAvailable())
+	classicGuide:SetScript("OnEnter", function()
+		ns.Overview.ShowTooltip(classicGuide, { L.DUNGEON_CLASSIC_GUIDE_TOOLTIP })
+	end)
+	classicGuide:SetScript("OnLeave", GameTooltip_Hide)
+	local journey = Button(info, L.DUNGEON_START_JOURNEY, 110, function()
 		if ui.page then
 			ns.Choose("dungeon:" .. ui.page.dungeon.id, true)
 		end
 	end)
 	ui.journey = journey
-	journey:SetPoint("TOPRIGHT", -C.RIGHT_PAD, -(C.TOP + 34))
-	local entrance = Button(parent, L.GO_TO_ENTRANCE, 108, function()
+	journey:SetPoint("TOPRIGHT", -8, -28)
+	local entrance = Button(info, L.GO_TO_ENTRANCE, 108, function()
 		if ui.page then
 			Dungeons.GoEntrance(ui.page.dungeon.id)
 		end
 	end)
 	ui.entrance = entrance
-	entrance:SetPoint("TOPRIGHT", -C.RIGHT_PAD - 116, -(C.TOP + 34))
+	entrance:SetPoint("TOPRIGHT", -124, -28)
 	MapTooltip(entrance)
-	local plan = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate") --[[@as AGFDungeonPlan]]
+	local plan = CreateFrame("CheckButton", nil, info, "UICheckButtonTemplate") --[[@as AGFDungeonPlan]]
 	ui.plan = plan
-	plan:SetPoint("TOPRIGHT", -C.RIGHT_PAD - 316, -(C.TOP + 34))
+	plan:SetPoint("TOPRIGHT", -300, -28)
 	plan:SetSize(24, 24)
 	plan:SetHitRectInsets(0, -100, 0, 0)
 	plan.Text:SetText(L.DUNGEON_PLAN)
@@ -1267,46 +1404,36 @@ local function BuildContents(parent)
 			Dungeons.SetPlanned(ui.page.dungeon.id, not Dungeons.Planned(ui.page.dungeon.id))
 		end
 	end)
-	-- The two panes: the list on the left, the detail on the right, with the side tabs down its right edge.
-	ui.bossList = Window.CreateList(
-		parent,
-		C.PANE_X,
-		C.BODY_Y,
-		C.PANE_W,
-		C.BODY_H,
-		C.BOSS_H + 2,
-		PaintBoss,
-		function(value)
-			ui.selectedBoss = value.id
-			if ui.view == "loot" and value.lootIndex then
-				Window.ScrollListTo(ui.lootList, value.lootIndex)
-			end
-			Draw()
-		end,
-		CreateBossRow
-	)
-	ui.questList = Window.CreateList(
-		parent,
-		C.PANE_X,
-		C.BODY_Y,
-		C.PANE_W,
-		C.BODY_H,
-		C.ROW_H,
-		PaintQuest,
-		function(value)
-			SelectQuest(value.quest.id)
-		end,
-		CreateListRow
-	)
-	ui.prepList = Window.CreateList(parent, C.PANE_X, C.BODY_Y, C.PANE_W, C.BODY_H, C.ROW_H, PaintPrep, function(value)
+
+	-- The two panes: the boss list 338x382 at (25,1) on the left (ui/Encounters.lua), the detail pane on the right
+	-- and the side tabs down the pane's right edge (ui/InfoTabs.lua).
+	local paneTop = C.INFO_H - C.PANE_H - C.PANE_Y
+	local listX, listW = C.PANE_X + C.LIST_PAD, C.PANE_W - C.LIST_PAD
+	ui.bossList = Window.CreateList(info, listX, paneTop, listW, C.PANE_H, C.BOSS_H + 2, PaintBoss, function(value)
+		ui.selectedBoss = value.id
+		if ui.view == "loot" and value.lootIndex then
+			Window.ScrollListTo(ui.lootList, value.lootIndex)
+		end
+		Draw()
+	end, CreateBossRow)
+	ui.bossList.scrollBar:ClearAllPoints()
+	ui.bossList.scrollBar:SetPoint("TOPLEFT", ui.bossList.scrollBox, "TOPRIGHT", 5, -5)
+	ui.bossList.scrollBar:SetPoint("BOTTOMLEFT", ui.bossList.scrollBox, "BOTTOMRIGHT", 5, 5)
+	ui.questList = Window.CreateList(info, listX, paneTop, listW, C.PANE_H, C.ROW_H, PaintQuest, function(value)
+		SelectQuest(value.quest.id)
+	end, CreateListRow)
+	ui.prepList = Window.CreateList(info, listX, paneTop, listW, C.PANE_H, C.ROW_H, PaintPrep, function(value)
 		if value.quest then
 			Dungeons.Go(value.quest.id)
 		end
 	end, CreateListRow)
-	local right = CreateFrame("Frame", nil, parent)
+	local right = CreateFrame("Frame", nil, info)
 	ui.right = right
-	right:SetPoint("TOPLEFT", C.RIGHT_X, -C.BODY_Y)
-	right:SetSize(C.RIGHT_W, C.BODY_H)
+	right:SetPoint("TOPLEFT", C.RIGHT_X, -paneTop)
+	right:SetSize(C.RIGHT_W, C.PANE_H)
+
+	-- Overview (ui/InstanceOverview.lua): the instance title over the entrance zone's existing map art in the
+	-- reference's lore area, the entry lines in its paper well, and the reference's Show Map button.
 	local overview = CreateFrame("Frame", nil, right)
 	ui.overview = overview
 	overview:SetAllPoints()
@@ -1314,11 +1441,12 @@ local function BuildContents(parent)
 	ui.overviewArt = art
 	art:SetPoint("TOPLEFT", 2, -2)
 	art:SetPoint("BOTTOMRIGHT", -2, 2)
-	local titleBG = overview:CreateTexture(nil, "ARTWORK")
-	Sheet(titleBG, C.CROPS.overviewTitleBG)
-	titleBG:SetSize(256, 64)
-	titleBG:SetPoint("TOP", 0, -24)
-	titleBG:SetAlpha(0.75)
+	overview.titleBG = overview:CreateTexture(nil, "ARTWORK")
+	overview.titleBG:SetTexture(C.EJ_SHEET)
+	overview.titleBG:SetTexCoord(0.34570313, 0.84570313, 0.42871094, 0.49121094)
+	overview.titleBG:SetSize(256, 64)
+	overview.titleBG:SetPoint("TOP", 0, -24)
+	overview.titleBG:SetAlpha(0.75)
 	local overviewTitle = overview:CreateFontString(nil, "OVERLAY", Window.FONT_TITLE)
 	ui.overviewTitle = overviewTitle
 	overviewTitle:SetPoint("TOP", 0, -40)
@@ -1326,9 +1454,17 @@ local function BuildContents(parent)
 	overviewTitle:SetJustifyH("CENTER")
 	overviewTitle:SetTextColor(Window.TITLE_INK[1], Window.TITLE_INK[2], Window.TITLE_INK[3])
 	ui.overviewText = Window.CreatePaperWell(overview)
-	ui.overviewText:SetPoint("BOTTOMLEFT", 12, 12)
-	ui.overviewText:SetPoint("BOTTOMRIGHT", -12, 12)
-	ui.overviewText:SetHeight(56)
+	ui.overviewText:SetPoint("BOTTOMLEFT", 12, 44)
+	ui.overviewText:SetPoint("BOTTOMRIGHT", -12, 44)
+	ui.overviewText:SetHeight(72)
+	local showMap = Button(overview, L.DUNGEON_MAPS_TAB, 82, function()
+		if ui.page then
+			Window.OpenDungeonMaps(ui.page.dungeon.id, parent)
+		end
+	end, 24)
+	ui.showMap = showMap
+	showMap:SetPoint("BOTTOMLEFT", 12, 12)
+
 	local prepPane = CreateFrame("Frame", nil, right)
 	ui.prepPane = prepPane
 	prepPane:SetAllPoints()
@@ -1344,7 +1480,7 @@ local function BuildContents(parent)
 		0,
 		28,
 		C.RIGHT_W,
-		C.BODY_H - 28,
+		C.PANE_H - 28,
 		C.ABILITY_H,
 		PaintAbility,
 		function() end,
@@ -1355,43 +1491,46 @@ local function BuildContents(parent)
 		0,
 		0,
 		C.RIGHT_W,
-		C.BODY_H,
+		C.PANE_H,
 		C.LOOT_ROW,
 		PaintLoot,
 		function() end,
 		CreateLootRow
 	)
-	-- The journal's side tabs run down the right edge from the body's top.
+	-- The journal's side tabs run down the right edge from the pane's top.
 	for index, spec in ipairs(C.SIDE) do
-		local tab = CreateSideTab(parent, spec)
+		local tab = CreateSideTab(info, spec)
 		if index == 1 then
-			tab:SetPoint("TOPLEFT", Window.INSET_WIDTH - 12 - C.SIDE_W, -C.BODY_Y)
+			tab:SetPoint("TOPLEFT", info, "TOPRIGHT", -C.SIDE_X - C.SIDE_W, -C.SIDE_Y)
 		else
 			tab:SetPoint("TOP", ui.sideTabs[index - 1], "BOTTOM", 0, -C.SIDE_GAP)
 		end
 		ui.sideTabs[index] = tab
 	end
-	local empty = Window.CreateEmpty(parent, "UI-EJ-Classic")
+	local empty = Window.CreateEmpty(info, "UI-EJ-Classic")
 	ui.empty = empty
 	empty.Art:ClearAllPoints()
-	empty.Art:SetPoint("TOPLEFT", C.PANE_X, -C.BODY_Y)
-	empty.Art:SetSize(Window.INSET_WIDTH - C.PANE_X - C.RIGHT_PAD, C.BODY_H)
-	ns.Art.Cover(empty.Art, "UI-EJ-Classic", Window.INSET_WIDTH - C.PANE_X - C.RIGHT_PAD, C.BODY_H)
-	empty.Text:SetWidth(Window.INSET_WIDTH - C.PANE_X - 80)
+	empty.Art:SetPoint("TOPLEFT", C.PANE_X, -paneTop)
+	empty.Art:SetSize(C.INFO_W - C.PANE_X - 8, C.PANE_H)
+	ns.Art.Cover(empty.Art, "UI-EJ-Classic", C.INFO_W - C.PANE_X - 8, C.PANE_H)
+	empty.Text:SetWidth(C.INFO_W - C.PANE_X - 80)
 	Window.SetEmpty(empty, nil)
+	info:Hide()
 	BuildDetail()
 end
 
 ---@param parent Frame
-local function Build(parent)
-	ui.content = parent
+---@param frame AGFWindowFrame
+local function Build(parent, frame)
+	ui.content, ui.frame = parent, frame
 	local built = false
 	parent:SetScript("OnShow", function()
 		if not built then
 			built = true
-			BuildContents(parent)
+			BuildContents(parent, frame)
 		end
 	end)
+	ui.navBar = Window.CreateNavBar(frame)
 end
 
 ---@param instance integer
@@ -1407,4 +1546,15 @@ function Window.OpenDungeon(instance)
 	end
 end
 
-Window.AddTab({ key = "dungeons", label = L.TAB_DUNGEONS, Build = Build, Refresh = Refresh })
+Window.AddTab({
+	key = "dungeons",
+	label = L.TAB_DUNGEONS,
+	FullInset = true,
+	Build = Build,
+	Refresh = Refresh,
+	OnSelect = function(selected)
+		if ui.navBar then
+			ui.navBar:SetShown(selected)
+		end
+	end,
+})

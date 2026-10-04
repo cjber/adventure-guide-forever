@@ -284,6 +284,19 @@ h.G.EJ_GetEncounterInfoByIndex = function(index, instance)
 		return npc.name, "", encounters[index]
 	end
 end
+-- The client journal's creature rows: the boss picture file id per Wailing Caverns encounter, as the client carries
+-- them (Blizzard_EncounterJournal.lua:274 reads the fifth return as the boss picture).
+local WAILING_PORTRAITS = {
+	Kresh = 607676,
+	["Lady Anaconda"] = 607693,
+	["Lord Pythas"] = 607696,
+	["Lord Serpentis"] = 607698,
+	Skum = 607775,
+}
+h.G.EJ_GetCreatureInfo = function(_, encounterID)
+	local npc = dungeonFixture.npcs[encounterID]
+	return 1, npc and npc.name or "", "", 0, npc and WAILING_PORTRAITS[npc.name] or nil, 0
+end
 -- The Bosses and Loot views read AtlasLoot's curated pages and drop chances at runtime; this snapshot, built from
 -- the same fixture, shows the encounter order, boss abilities and curated rates a player with AtlasLoot sees.
 local function atlasPages(fixture)

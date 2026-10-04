@@ -1,6 +1,8 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 local L, Art = ns.L, ns.Art
+-- Ported from Adventure Guide for Classic by FooxyTV (GPL-3.0), ui/NavBar.lua: Window.CreateNavBar and the stock
+-- NavBarTemplate breadcrumb, its inner tiles and its search box and result rows.
 ---@class AGFWindow
 local Window = {}
 ns.Window = Window
@@ -427,6 +429,199 @@ end
 ---@param lines string[]
 function Window.SetPaperWell(well, lines)
 	well.Text:SetText(table.concat(lines, "\n"))
+end
+
+--[[ The journal's navigation bar (ui/NavBar.lua): the stock 730x34 NavBarTemplate at (61,-22) on the window, its
+     ends closed by the five UI-Frame-Inner tiles the reference adds by hand, the Home button over the bar's own
+     template, and the instance and encounter breadcrumbs. The search box is the stock SearchBoxTemplate and its
+     results are the journal's 32px rows on a minimal scrollbar; a caller supplies the results. ]]
+
+---@class AGFNavBar : Frame
+---@field search AGFSearchBox
+---@field results Frame
+---@field searchBox AGFScrollBox
+---@field searchScrollBox Frame
+---@field home Button
+---@field overflow Button
+---@field homeClick? fun()
+---@field searchFn? fun(text: string): table[]
+---@field SetHomeClick fun(self: AGFNavBar, onClick: fun())
+---@field SetCrumbs fun(self: AGFNavBar, items: table[])
+---@field SetSearch fun(self: AGFNavBar, fn: fun(text: string): table[])
+---@field ShowResults fun(self: AGFNavBar)
+
+---@class AGFNavResult : Button
+---@field icon Texture
+---@field text FontString
+---@field subText FontString
+---@field initialized boolean
+---@field SetHighlightTexture fun(self: Button, texture: Texture|string, mode?: string)
+
+---@param parent Frame
+---@param onHome? fun()
+---@return AGFNavBar
+function Window.CreateNavBar(parent, onHome)
+	local bar = CreateFrame("Frame", "AdventureGuideForeverNavBar", parent, "NavBarTemplate") --[[@as AGFNavBar]]
+	bar:SetSize(730, 34)
+	bar:SetPoint("TOPLEFT", 61, -22)
+	bar.homeClick = onHome
+	-- The bar's ends: the reference adds these five tiles so the stock bar does not stop short of the window.
+	local bottomLeft = bar:CreateTexture(nil, "BORDER", "UI-Frame-InnerBotLeftCorner")
+	bottomLeft:ClearAllPoints()
+	bottomLeft:SetPoint("BOTTOMLEFT", -3, -3)
+	local bottomRight = bar:CreateTexture(nil, "BORDER", "UI-Frame-InnerBotRight")
+	bottomRight:ClearAllPoints()
+	bottomRight:SetPoint("BOTTOMRIGHT", 3, -3)
+	local bottomTile = bar:CreateTexture(nil, "BORDER", "_UI-Frame-InnerBotTile")
+	bottomTile:ClearAllPoints()
+	bottomTile:SetPoint("BOTTOMLEFT", bottomLeft, "BOTTOMRIGHT")
+	bottomTile:SetPoint("BOTTOMRIGHT", bottomRight, "BOTTOMLEFT")
+	local leftTile = bar:CreateTexture(nil, "BORDER", "!UI-Frame-InnerLeftTile")
+	leftTile:ClearAllPoints()
+	leftTile:SetPoint("TOPLEFT", -3, 0)
+	leftTile:SetPoint("BOTTOMLEFT", bottomLeft, "TOPLEFT")
+	local rightTile = bar:CreateTexture(nil, "BORDER", "!UI-Frame-InnerRightTile")
+	rightTile:ClearAllPoints()
+	rightTile:SetPoint("TOPRIGHT", 3, 0)
+	rightTile:SetPoint("BOTTOMRIGHT", bottomRight, "TOPRIGHT")
+	NavBar_Initialize(bar, "NavButtonTemplate", {
+		name = L.NAV_HOME,
+		OnClick = function()
+			if bar.homeClick then
+				bar.homeClick()
+			end
+		end,
+	}, bar.home, bar.overflow)
+
+	local searchBox = CreateFrame("EditBox", "AdventureGuideForeverNavSearch", bar, "SearchBoxTemplate")
+	---@cast searchBox AGFSearchBox
+	bar.search = searchBox
+	searchBox:SetSize(200, 20)
+	searchBox:SetPoint("RIGHT", bar, "RIGHT", -10, 0)
+	if searchBox.SetAutoFocus then
+		searchBox:SetAutoFocus(false)
+	end
+	if searchBox.Instructions then
+		searchBox.Instructions:SetText(L.NAV_SEARCH)
+	end
+	local results = CreateFrame("Frame", "AdventureGuideForeverNavResults", bar, "BackdropTemplate")
+	---@cast results AGFBackdropFrame
+	bar.results = results
+	results:SetSize(320, 200)
+	results:SetPoint("TOPRIGHT", searchBox, "BOTTOMRIGHT", 0, 2)
+	if results.SetBackdrop then
+		results:SetBackdrop({
+			bgFile = "Interface\\BUTTONS\\WHITE8X8",
+			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+			tile = true,
+			tileSize = 8,
+			edgeSize = 16,
+			insets = { left = 4, right = 4, top = 4, bottom = 4 },
+		})
+		results:SetBackdropColor(0.1, 0.1, 0.1, 1)
+		results:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+	end
+	results:SetFrameStrata("DIALOG")
+	results:SetFrameLevel(100)
+	results:Hide()
+	local scrollBox = CreateFrame("Frame", nil, results, "WowScrollBoxList") --[[@as AGFScrollBox]]
+	scrollBox:SetSize(312, 180)
+	scrollBox:SetPoint("TOPLEFT", 4, -4)
+	scrollBox:SetPoint("BOTTOMRIGHT", -4, 4)
+	local scrollBar = CreateFrame("EventFrame", nil, results, "MinimalScrollBar") --[[@as Frame]]
+	scrollBar:SetPoint("TOPLEFT", scrollBox, "TOPRIGHT", 2, -5)
+	scrollBar:SetPoint("BOTTOMLEFT", scrollBox, "BOTTOMRIGHT", 2, 5)
+	local view = CreateScrollBoxListLinearView()
+	view:SetElementExtent(32)
+	view:SetElementInitializer("Button", function(button, result)
+		---@cast button AGFNavResult
+		if not button.initialized then
+			button.icon = button:CreateTexture(nil, "ARTWORK")
+			button.icon:SetSize(20, 20)
+			button.icon:SetPoint("LEFT", 4, 0)
+			button.text = button:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+			button.text:SetPoint("LEFT", button.icon, "RIGHT", 4, 2)
+			button.text:SetPoint("RIGHT", -4, 0)
+			button.text:SetJustifyH("LEFT")
+			button.text:SetWordWrap(false)
+			button.subText = button:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+			button.subText:SetPoint("TOPLEFT", button.text, "BOTTOMLEFT", 0, 0)
+			button.subText:SetPoint("RIGHT", -4, 0)
+			button.subText:SetJustifyH("LEFT")
+			button.subText:SetTextColor(0.5, 0.5, 0.5)
+			button.subText:SetWordWrap(false)
+			button:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestTitleHighlight", "ADD")
+			button.initialized = true
+		end
+		button.icon:SetShown(result.icon ~= nil)
+		if result.icon then
+			button.icon:SetTexture(result.icon)
+		end
+		button.text:SetText(result.name or "")
+		button.subText:SetText(result.sub or "")
+		button:SetScript("OnClick", result.OnClick)
+	end)
+	ScrollUtil.InitScrollBoxListWithScrollBar(scrollBox, scrollBar, view)
+	bar.searchBox, bar.searchScrollBox = scrollBox, scrollBar
+	local timer
+	searchBox:SetScript("OnTextChanged", function(_, userInput)
+		if not userInput then
+			return
+		end
+		if searchBox.Instructions then
+			searchBox.Instructions:SetShown((searchBox:GetText() or "") == "")
+		end
+		if timer then
+			timer:Cancel()
+			timer = nil
+		end
+		timer = C_Timer.NewTimer(0.1, function()
+			bar:ShowResults()
+		end)
+	end)
+	searchBox:SetScript("OnEscapePressed", function(self)
+		if self.ClearFocus then
+			self:ClearFocus()
+		end
+		results:Hide()
+	end)
+
+	function bar:SetHomeClick(onClick)
+		self.homeClick = onClick
+	end
+
+	---@param items table[] { name, OnClick }
+	function bar:SetCrumbs(items)
+		-- The reference leaves the Home button the template built and appends the instance and encounter after it.
+		NavBar_Reset(self)
+		for _, item in ipairs(items or {}) do
+			NavBar_AddButton(self, {
+				name = item.name,
+				OnClick = item.OnClick or function() end,
+				listFunc = function() end,
+			})
+		end
+	end
+
+	---@param fn fun(text: string): table[] results as { name, sub, icon, OnClick }
+	function bar:SetSearch(fn)
+		self.searchFn = fn
+	end
+
+	function bar:ShowResults()
+		local text = self.search:GetText() or ""
+		local rows = text ~= "" and self.searchFn and self.searchFn(text) or nil
+		if not rows or #rows == 0 then
+			results:Hide()
+			return
+		end
+		results:SetHeight(math.min(8 + #rows * 32, 300))
+		self.searchBox:SetDataProvider(CreateDataProvider(rows), true)
+		results:Show()
+	end
+
+	bar:Hide()
+	return bar
 end
 
 -- The tabs share the featured card and side column; a grid leaves room for its own footer.

@@ -404,6 +404,8 @@ ns.L = {
 	DUNGEON_PART = "Part %d of %d",
 	DUNGEON_LEVEL_TOOLTIP = "Recommended levels: yellow suits you; orange and red are harder, green and grey easier.",
 	DUNGEON_REWARDS = "Rewards",
+	NAV_HOME = "Home",
+	NAV_SEARCH = "Search",
 
 	TAB_PVP = "PvP",
 	TAB_COMPLETION = "Completion",

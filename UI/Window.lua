@@ -31,9 +31,11 @@ local EVENTS = {
 ---@class AGFWindowTab
 ---@field key string
 ---@field label string
----@field Build fun(content: Frame)
+---@field Build fun(content: Frame, frame: AGFWindowFrame)
 ---@field Refresh fun(content: Frame)
 ---@field Muted? fun(): string? the line the tab's tooltip gives while its label is greyed
+---@field FullInset? boolean the tab draws from the top of the inset, with no shared Today strip
+---@field OnSelect? fun(selected: boolean)
 
 ---@type AGFWindowTab[]
 local tabs = {}
@@ -175,6 +177,11 @@ function Window.Select(index)
 	for position, content in ipairs(contents) do
 		content:SetShown(position == index)
 	end
+	for position, tab in ipairs(tabs) do
+		if tab.OnSelect then
+			tab.OnSelect(position == index)
+		end
+	end
 	Refresh()
 end
 
@@ -225,7 +232,7 @@ local function Build()
 		content:SetAllPoints(inset)
 		content:Hide()
 		contents[index] = content
-		tab.Build(content)
+		tab.Build(content, frame)
 		local button = CreateFrame("Button", NAME .. "Tab" .. index, frame, "PanelTabButtonTemplate")
 		button:SetID(index)
 		button:SetText(tab.label)
@@ -295,6 +302,9 @@ local function Build()
 	end
 	PanelTemplates_SetTab(frame, selected)
 	contents[selected]:Show()
+	if tabs[selected].OnSelect then
+		tabs[selected].OnSelect(true)
+	end
 	EventRegistry:TriggerEvent("AdventureGuideForever.WindowCreated", frame)
 end
 
@@ -302,14 +312,18 @@ function Refresh()
 	if not (frame and frame:IsShown()) then
 		return
 	end
+	local tab = tabs[selected]
 	local player = ns.State.Player()
 	local zone = player.map and ns.State.ZoneName(player.map)
+	frame.Subtitle:SetShown(not tab.FullInset)
 	frame.Subtitle:SetText(zone and L.OVERVIEW_WHERE:format(zone, player.level) or "")
-	Window.RefreshToday(frame.Inset)
-	for index, tab in ipairs(tabs) do
-		RefreshTabLabel(frame.Tabs[index], tab)
+	if not tab.FullInset then
+		Window.RefreshToday(frame.Inset)
 	end
-	tabs[selected].Refresh(contents[selected])
+	for index, each in ipairs(tabs) do
+		RefreshTabLabel(frame.Tabs[index], each)
+	end
+	tab.Refresh(contents[selected])
 end
 Window.Refresh = Refresh
 
