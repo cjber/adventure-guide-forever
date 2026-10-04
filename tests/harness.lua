@@ -458,7 +458,15 @@ function harness.load(options)
 	function Methods:GetVerticalScroll()
 		return self.verticalScroll or 0
 	end
+	-- The client measures a scroll frame's range when it lays the child out, a frame after the child changes
+	-- size, or at once on UpdateScrollChildRect; a scroll past the measured range is clamped to it.
+	function Methods:UpdateScrollChildRect()
+		self.scrollRange = math.max(0, self.scrollChild:GetHeight() - self:GetHeight())
+	end
 	function Methods:SetVerticalScroll(value)
+		if self.scrollRange then
+			value = math.min(value, self.scrollRange)
+		end
 		self.verticalScroll = value
 		if self.scripts.OnVerticalScroll then
 			self.scripts.OnVerticalScroll(self, value)

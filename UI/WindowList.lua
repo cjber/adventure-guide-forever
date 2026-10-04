@@ -2,6 +2,8 @@
 local _, ns = ...
 local Window = ns.Window
 local HEADING_H = 22
+-- A heading that carries an info line under its title (a boss and its level over its loot) is two lines tall.
+local HEADING_INFO_H = 38
 
 ---@param widget AGFDungeonListWidget
 local function PaintList(widget)
@@ -83,12 +85,15 @@ function Window.SetList(widget, values)
 	widget.values = values
 	local heights, tops, total = {}, {}, 0
 	for index, value in ipairs(values) do
-		heights[index] = value.heading and widget.headingHeight or widget.rowHeight
+		local heading = value.info and value.info ~= "" and HEADING_INFO_H or widget.headingHeight
+		heights[index] = value.heading and heading or widget.rowHeight
 		tops[index] = total
 		total = total + heights[index]
 	end
 	widget.heights, widget.tops = heights, tops
 	widget.child:SetHeight(math.max(widget.height, total))
+	-- The scroll range is otherwise measured a frame late, and a jump made now would stop at the old list's end.
+	widget.frame:UpdateScrollChildRect()
 	widget.frame.ScrollBar:SetShown(total > widget.height)
 	PaintList(widget)
 end
