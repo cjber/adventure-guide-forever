@@ -361,7 +361,8 @@ local function Stops(steps, hold)
 			map = step.map,
 			x = step.x,
 			y = step.y,
-			title = step.title,
+			-- Shortest Path words its steps around this ("Walk to ..."), so a town is named, not described.
+			title = step.place or step.title,
 			tooltip = ns.Pins.StopTooltip(step),
 			kind = Integrations.Kind(step),
 			radius = radius,
