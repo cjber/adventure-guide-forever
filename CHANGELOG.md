@@ -11,6 +11,7 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **A step's badge says what the work is.** An objective step wears the sword for something to kill, the bag for something to collect and the gear for something to use, in place of the plain yellow dot; a step that mixes them keeps the dot.
 - **The route's next stop stands out on the map.** Its numbered ring is lit the way the game lights the quest it tracks, and the later stops keep the plain ring.
 - **Quest data loads sooner after a login or a reload.** The build read a quest giver's place from QuestieDB, then asked again which side it serves and whether it keeps an inn; it now reads each one once and lets the objective pass share the spawns it already has.
 - **A plain quest giver is no longer called a class trainer.** When the bundled trainer list did not name the giver of a class quest, the quest's class was stamped on it, so the calling card said "Your class trainer has a task" for someone like Harry Burlguard or Islen Waterseer. A giver counts as a trainer only when QuestieDB's own NPC flags mark it as one.
