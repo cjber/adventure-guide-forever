@@ -11,6 +11,9 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **A quest the route cannot finish is no longer handed in early.** When the quest data placed only some of a quest's objectives, the route could still return to hand it in, so a town said "2 to hand in" with only one ready. A quest like that now waits with your log until it is really done, and the next build offers its turn-in.
+- **The tracker comes back after Edit Mode is put away.** Opening a settings or keybind panel from Edit Mode hid the guide's tracker column and left it hidden until a reload. It now returns as soon as the Edit Mode panel goes away.
+- **An objective the game does not count no longer shows a bare 0.** For an objective kind the quest log gives no count for, the tooltip showed a line like "2/0". It now uses the guide's own count for that objective, and shows no count at all when the data has none either.
 - **Quest data loads sooner after a login or a reload.** The build read a quest giver's place from QuestieDB, then asked again which side it serves and whether it keeps an inn; it now reads each one once and lets the objective pass share the spawns it already has.
 - **A plain quest giver is no longer called a class trainer.** When the bundled trainer list did not name the giver of a class quest, the quest's class was stamped on it, so the calling card said "Your class trainer has a task" for someone like Harry Burlguard or Islen Waterseer. A giver counts as a trainer only when QuestieDB's own NPC flags mark it as one.
 - **A chain with one prerequisite now shows its total.** QuestieDB files a lone prerequisite as one of several alternatives, so a chain containing one was shown as a chapter with no total. A single alternative now reads as the one quest it requires, so those chains show "Chapter 2 of 8" instead of a bare chapter.
