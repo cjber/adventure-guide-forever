@@ -1542,9 +1542,15 @@ do
 		{ "no route", false, nil },
 	}
 	h.spfLegs = cases[4][2]
+	-- A step with no place: the player already stands in the zone Shortest Path names, so a walk within it names the
+	-- stop the step is, never the zone the player is in.
+	local area = setmetatable(
+		{ place = false, title = "Complete objectives · The Greenbelt", zone = "The Barrens" },
+		{ __index = step }
+	)
 	equal(
-		ns.Integrations.TravelLine(setmetatable({ place = false }, { __index = step })),
-		"Walk to The Barrens · 3 min",
+		ns.Integrations.TravelLine(area),
+		"Walk to Complete objectives · The Greenbelt · 3 min",
 		"travel line, on foot to a step with no place: where the walk ends"
 	)
 	for _, case in ipairs(cases) do

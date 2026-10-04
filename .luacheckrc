@@ -58,6 +58,7 @@ read_globals = { "ShowUIPanel", "HideUIPanel", "CreateFramePoolCollection", "C_X
 	"bit",
 	"UnitRace",
 	"UnitClass",
+	"UnitClassBase",
 	"UnitFactionGroup",
 	"UnitLevel",
 	"GetMaxPlayerLevel",

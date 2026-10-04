@@ -68,9 +68,9 @@ local function Minutes(seconds)
 	return math.max(1, math.ceil(seconds / 60))
 end
 
--- The first leg that isn't a walk, and the minutes until it arrives; a trip on foot names where it ends, the step's
--- town when it has one (Shortest Path names only the zone). A new flight path on the way, and a wait of a minute or
--- more for the chosen leg, are added.
+-- The first leg that isn't a walk, and the minutes until it arrives; a trip on foot names the step's place, else the
+-- step's own title, the stop we hand Shortest Path (it names only the zone a leg ends in). A new flight path on the
+-- way, and a wait of a minute or more for the chosen leg, are added.
 ---@param detail AGFSPFDetail
 ---@param step AGFStep
 ---@return string?
@@ -89,7 +89,7 @@ local function DetailLine(detail, step)
 	if not verb then
 		return nil
 	end
-	return L.TRAVEL:format(verb:format(onFoot and step.place or chosen.to), Minutes(elapsed))
+	return L.TRAVEL:format(verb:format(onFoot and (step.place or step.title) or chosen.to), Minutes(elapsed))
 		.. (newFlightPath and L.TRAVEL_NEW_FLIGHT_PATH or "")
 		.. (chosen.wait and L.TRAVEL_WAIT:format(Minutes(chosen.wait)) or "")
 end
