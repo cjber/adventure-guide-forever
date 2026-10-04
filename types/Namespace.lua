@@ -1570,6 +1570,7 @@
 ---@field DUNGEON_MAP_BACK string
 ---@field DUNGEON_MAP_WORLD_BACK string
 ---@field DUNGEON_MAP_PAGE string
+---@field DUNGEON_MAP_OPEN string
 ---@field DUNGEON_MAP_MISSING string
 
 ---@class ForeverTrackerSettings
