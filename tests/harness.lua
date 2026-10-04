@@ -2282,6 +2282,21 @@ function harness.load(options)
 			RequireContract = function(required)
 				return required >= 1 and required <= (fake.contract or 2)
 			end,
+			-- QuestieDB's own encoding: the old races by their number, Forever's Skyborne at bits 32 and 33.
+			Enum = {
+				raceMaskById = {
+					[1] = 1,
+					[2] = 2,
+					[3] = 4,
+					[4] = 8,
+					[5] = 16,
+					[6] = 32,
+					[7] = 64,
+					[8] = 128,
+					[95] = 2 ^ 32,
+					[96] = 2 ^ 33,
+				},
+			},
 			Meta = {
 				QuestMeta = { questKeys = keys },
 				NpcMeta = { npcKeys = keys },

@@ -10,6 +10,7 @@
 
 ---@class AGFQuestieDB
 ---@field ObjectiveFirst? {killCreditObjectiveFirst: table<integer, boolean>}
+---@field Enum? {raceMaskById: table<integer, integer>} a race's number -> its bit in a quest's requiredRaces
 ---@field RequireContract fun(required: integer): boolean, string?
 ---@field Meta table<string, table<string, table<string, integer>>> e.g. Meta.QuestMeta.questKeys: field name -> index
 ---@field Quest AGFQuestieEntity
