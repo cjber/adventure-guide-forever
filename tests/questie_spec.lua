@@ -464,6 +464,72 @@ local function SavedOnce(version)
 	return built.G.AdventureGuideForeverCharDB
 end
 
+-- A saved catalogue is adopted the moment the saved variables and the character's class and faction are known, not
+-- when Questie reports ready: the tracker shows the planned route, not the loading line. Questie's late ready joins
+-- the live policy with one route rebuild and never rebuilds the catalogue.
+do
+	local charDB = SavedOnce("0.8.0")
+	local log = {
+		{ id = 900001, title = "Provider-only quest", level = 20, complete = false, map = 1429, x = 0.5, y = 0.5 },
+	}
+	local adopted = harness.load({
+		version = "0.8.0",
+		questiedb = Fake(),
+		charDB = charDB,
+		log = log,
+		setup = NotReady,
+	})
+	equal(adopted.ns.QuestieStatus.state, "questie", "a saved catalogue is ready before Questie")
+	equal(adopted.ns.QuestieStatus.settled, true, "an adopted save is settled, so no route is held")
+	equal(adopted.ns.QuestieBuilding(), false, "the guide does not wait for Questie")
+	equal(adopted.ns.Data.quests[900001].title, "Provider-only quest", "the saved records are the route's records")
+	equal(#adopted.ns.Route().steps > 0, true, "an adopted save shows a planned route at once")
+	equal(
+		adopted.tracker.liveBlocks.loading == nil or not adopted.tracker.liveBlocks.loading.used,
+		true,
+		"the tracker shows no loading line"
+	)
+	equal(#adopted.errors, 0, "adoption raises no error")
+	-- Questie ready afterwards: one route rebuild for the live policy, no catalogue read.
+	local reads = 0
+	local ids = adopted.G.LibQuestieDB.Quest.GetAllIds
+	adopted.G.LibQuestieDB.Quest.GetAllIds = function()
+		reads = reads + 1
+		return ids()
+	end
+	local plans = adopted.modelCalls.Plan
+	adopted.G.Questie.API.isReady = true
+	ready()
+	adopted.flush()
+	equal(reads, 0, "Questie becoming ready never rebuilds the catalogue")
+	equal(adopted.modelCalls.Plan - plans, 1, "Questie becoming ready costs exactly one route rebuild")
+	equal(adopted.ns.Data.quests[900001].title, "Provider-only quest", "the adopted records stand after ready")
+	equal(#adopted.errors, 0, "the late ready raises no error")
+end
+-- A key that no longer matches neither adopts nor waits forever: Questie's ready callback builds the catalogue.
+do
+	local charDB = SavedOnce("0.8.0")
+	local changed = harness.load({
+		version = "0.8.1",
+		questiedb = Fake(),
+		charDB = charDB,
+		setup = NotReady,
+	})
+	equal(changed.ns.QuestieStatus.settled, false, "a changed key waits for Questie")
+	equal(changed.ns.QuestieBuilding(), true, "and holds the route")
+	equal(next(changed.ns.Data.quests), nil, "no saved records are adopted")
+	changed.G.LibQuestieDB.Quest.GetAllIds = function()
+		return { 900002 }
+	end
+	changed.G.Questie.API.isReady = true
+	ready()
+	changed.flush()
+	equal(changed.ns.QuestieStatus.state, "questie", "the build lands")
+	equal(changed.ns.Data.quests[900002].title, "Collect", "a changed key builds the catalogue")
+	equal(changed.ns.Data.quests[900001], nil, "the build replaces the saved records")
+	equal(#changed.errors, 0, "the rebuild raises no error")
+end
+
 -- One Lua literal per value, as the client writes saved variables: the round trip proves the save is plain data
 -- (no cycles, functions or userdata) as much as it proves the two loads agree.
 local function Write(value)

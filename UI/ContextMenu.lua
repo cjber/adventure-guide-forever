@@ -67,6 +67,11 @@ function Description:SetTooltip(tooltip)
 	self.tooltip = tooltip
 end
 
+-- The popup is as wide as its longest entry: a fixed row width cut titles such as a step's "Complete objectives ·
+-- ..." with no way to read them. The body width is capped so one very long line cannot run off the screen; a row cut
+-- at the cap carries its whole text in a tooltip, unless the entry already has one of its own.
+local BODY_MIN, FRAME_PAD, ROW_INSET, TEXT_PADDING, BODY_MAX = 296, 24, 12, 20, 600
+
 ---@class AGFContextPopup : Frame
 ---@field rows Button[]
 ---@field owner? Region
@@ -138,7 +143,7 @@ function Draw(root)
 	for _, entry in ipairs(root.entries) do
 		entries[#entries + 1] = entry
 	end
-	local y = 6
+	local y, bodyWidth = 6, BODY_MIN
 	for index, entry in ipairs(entries) do
 		local row = frame.rows[index]
 		if not row then
@@ -148,7 +153,6 @@ function Draw(root)
 		local height = entry.kind == "divider" and 8 or 26
 		row:ClearAllPoints()
 		row:SetPoint("TOPLEFT", 6, -y)
-		row:SetSize(284, height)
 		local selected = entry.isSelected and entry.isSelected()
 		local label = entry.text or ""
 		if entry.kind == "checkbox" then
@@ -157,6 +161,11 @@ function Draw(root)
 			label = ns.L.MENU_SUBMENU:format(label)
 		end
 		row:SetText(label)
+		local width = math.min(math.max(BODY_MIN - ROW_INSET, row:GetTextWidth() + TEXT_PADDING), BODY_MAX - ROW_INSET)
+		row:SetSize(width, height)
+		bodyWidth = math.max(bodyWidth, width + ROW_INSET)
+		-- A row cut at the cap cannot show its whole line, so its tooltip does.
+		local truncated = entry.tooltip == nil and row:GetTextWidth() > width - TEXT_PADDING
 		row:SetEnabled(entry.kind ~= "title" and entry.kind ~= "divider" and entry:IsEnabled())
 		row:SetScript("OnClick", function()
 			if entry.back then
@@ -175,6 +184,10 @@ function Draw(root)
 				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 				entry.tooltip(GameTooltip)
 				GameTooltip:Show()
+			elseif truncated then
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+				GameTooltip_SetTitle(GameTooltip, label)
+				GameTooltip:Show()
 			end
 		end)
 		row:SetScript("OnLeave", GameTooltip_Hide)
@@ -184,8 +197,9 @@ function Draw(root)
 	for index = #entries + 1, #frame.rows do
 		frame.rows[index]:Hide()
 	end
+	frame.body:SetWidth(bodyWidth)
 	frame.body:SetHeight(y + 6)
-	frame:SetSize(320, math.min(y + 14, 420))
+	frame:SetSize(bodyWidth + FRAME_PAD, math.min(y + 14, 420))
 	frame.scroll:SetVerticalScroll(0)
 end
 

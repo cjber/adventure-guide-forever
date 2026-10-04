@@ -60,5 +60,37 @@ popup.mouseOver = false
 owner.mouseOver = false
 h.fire("GLOBAL_MOUSE_DOWN")
 equal(popup:IsShown(), false, "outside click closes menu")
+-- A long entry widens the whole menu rather than being cut: the aside lines in the guide's "+1 more" menu and a step
+-- menu's title, "Complete objectives · ...", are the entries that need it.
+local aside = "You haven't seen Overlook Standing yet: the overlook on the ridge"
+h.ns.ContextMenu(owner, function(_, root)
+	root:CreateTitle(aside)
+	root:CreateButton("Short", function() end)
+end)
+equal(popup.body:GetWidth() > 296, true, "the body grows past its default")
+equal(popup.body:GetWidth(), popup.rows[1]:GetWidth() + 12, "the body holds the longest row")
+equal(popup:GetWidth(), popup.body:GetWidth() + 24, "the popup leaves room for the scroll bar")
+equal(popup.rows[1]:GetWidth() + 20 >= popup.rows[1]:GetTextWidth(), true, "the longest row is not cut")
+equal(popup:GetWidth() > 320, true, "the menu is wider than the old fixed width")
+
+-- A row still cut at the width cap carries its whole text in a tooltip.
+local huge = string.rep("Complete objectives · The Greenbelt ", 3)
+h.ns.ContextMenu(owner, function(_, root)
+	root:CreateButton(huge, function() end)
+end)
+local cut = popup.rows[1]
+equal(cut:GetTextWidth() > cut:GetWidth() - 20, true, "the row is cut at the width cap")
+h.Hover(cut)
+equal(h.tooltip[1], "title: " .. huge, "a cut row's tooltip holds the whole text")
+
+-- An entry that already has a tooltip keeps it: the row's own text is not shown over it.
+h.ns.ContextMenu(owner, function(_, root)
+	local entry = root:CreateButton(huge, function() end)
+	entry:SetTooltip(function(tooltip)
+		h.G.GameTooltip_SetTitle(tooltip, "Own tip")
+	end)
+end)
+h.Hover(popup.rows[1])
+equal(h.tooltip[1], "title: Own tip", "a row with its own tooltip keeps it")
 equal(#h.errors, 0, table.concat(h.errors, "\n"))
 print("context_menu_spec: " .. checks .. " checks passed")

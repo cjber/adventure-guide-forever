@@ -9,8 +9,9 @@ local ADDON = "QuestieDB"
 -- so a newer additive QuestieDB keeps working and new quests appear automatically via GetAllIds; only a rising
 -- minSupportedContract (or a removed field, caught below) makes the catalogue unavailable, and the reason is shown.
 local CONTRACT = 2
--- The catalogue is built once a login, and nothing can be shown until it lands: at a millisecond a frame the tracker
--- stayed empty for most of a minute. A few frames a second for a few seconds is the smaller cost.
+-- A build is sliced across frames: at a millisecond a frame the tracker stayed empty for most of a minute, and a few
+-- frames a second for a few seconds is the smaller cost. A matching saved catalogue is adopted whole at login, so
+-- only a first login or a changed key builds.
 local SLICE_MS = 5
 -- Questie can load and then never report ready, when its own startup stops on an error for one character. Waiting
 -- longer than this would leave the guide on its loading line for the whole session, so the catalogue is read without
@@ -697,22 +698,45 @@ local function Remember(result, key)
 	end
 end
 
+-- The saved catalogue for this character under `key`, or nil: the key names the exact inputs that produced it, and
+-- the shape check rejects a truncated or foreign save.
+---@param key string
+---@return table?
+local function Matching(key)
+	local saved = Saved()
+	return saved and saved.key == key and Shape(saved) and saved or nil
+end
+
+-- The saved catalogue, adopted from the saved variables and addon metadata alone, so it is available at login
+-- without waiting for Questie. Questie's live availability is policy, not record data, so it joins later; the ready
+-- callback rebuilds the route once for it. True when the catalogue is now ns.Data.
+---@param version string QuestieDB's version
+---@return boolean adopted
+local function Adopt(version)
+	local key = CatalogueKey(version)
+	local saved = key and Matching(key)
+	if not saved then
+		return false
+	end
+	status.state, status.version, status.settled = "questie", version, true
+	ns.Data = Assemble(saved) --[[@as AGFData]]
+	return true
+end
+
 local function Start()
+	local version = C_AddOns.GetAddOnMetadata(ADDON, "Version") or "?"
+	if Adopt(version) then
+		-- The catalogue is already in place; this rebuild brings the live policy in.
+		ns.Invalidate()
+		return
+	end
 	local lib, reason, zones = Fit()
 	if not lib or not zones then
 		status.state, status.reason, status.settled = "unavailable", reason, true
 		ns.Invalidate()
 		return
 	end
-	local version = C_AddOns.GetAddOnMetadata(ADDON, "Version") or "?"
 	local key = CatalogueKey(version)
-	local saved = key and Saved()
-	if saved and saved.key == key and Shape(saved) then
-		status.state, status.version, status.settled = "questie", version, true
-		ns.Data = Assemble(saved) --[[@as AGFData]]
-		ns.Invalidate()
-		return
-	end
 	local started = 0
 	local co = coroutine.create(Build)
 	local function Yield()
@@ -743,15 +767,29 @@ local function Start()
 end
 
 EventUtil.ContinueAfterAllEvents(function()
-	status.state = "building"
+	-- The earliest safe point: the saved variables have loaded, and the class and faction the key depends on are
+	-- readable. Adoption here means the route is planned from the saved records at login, and Questie's ready
+	-- callback only joins its live policy.
+	local version = C_AddOns.GetAddOnMetadata(ADDON, "Version") or "?"
+	local adopted = Adopt(version)
+	if adopted then
+		ns.Invalidate()
+	else
+		status.state = "building"
+	end
 	if Questie and Questie.API and Questie.API.RegisterOnReady then
 		local ready = false
 		Questie.API.RegisterOnReady(function()
 			ready = true
-			Start()
+			if adopted then
+				-- The saved catalogue stands; one rebuild brings Questie's live policy in.
+				ns.Invalidate()
+			else
+				Start()
+			end
 		end)
 		C_Timer.After(READY_WAIT, function()
-			if not ready then
+			if not ready and not adopted then
 				Start()
 			end
 		end)
@@ -764,7 +802,7 @@ EventUtil.ContinueAfterAllEvents(function()
 				ns.State.QuestChanged()
 			end)
 		end
-	else
+	elseif not adopted then
 		Start()
 	end
 end, "PLAYER_LOGIN")
