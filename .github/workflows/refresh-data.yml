@@ -1,0 +1,111 @@
+name: Refresh game data
+
+# Opens a PR with regenerated data when wago.tools lists a newer Forever or Classic Era build.
+# CI on a PR opened with GITHUB_TOKEN waits for a maintainer's approval, so the specs run here first and the ci
+# job dispatches the full CI on the PR's branch.
+# Daily: beta builds have shipped several times a week. A failed run on main reports itself as an issue.
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      branch: ${{ steps.pr.outputs.pull-request-branch }}
+      operation: ${{ steps.pr.outputs.pull-request-operation }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # create-pull-request authenticates with its own `token` input.
+          persist-credentials: false
+      - name: Pin the newest Forever and Classic Era builds
+        id: pins
+        run: python3 tools/refresh_pins.py
+      - name: Regenerate
+        if: steps.pins.outputs.changed == 'true'
+        run: |
+          python3 tools/gen_quests.py
+          python3 tools/diff_forever.py
+          python3 tools/gen_zoneart.py
+      - if: steps.pins.outputs.changed == 'true'
+        run: python3 tools/check_generated.py --offline
+      - name: Generator tests
+        if: steps.pins.outputs.changed == 'true'
+        run: |
+          python3 tools/gen_quests_test.py
+          python3 tools/gen_zoneart_test.py
+          python3 tools/diff_forever_test.py
+          python3 tools/refresh_pins_test.py
+      # The specs include the golden routes (tests/golden): a route the new data changes fails the run.
+      - name: Lua checks, specs and the planner bench
+        if: steps.pins.outputs.changed == 'true'
+        run: |
+          sudo apt-get update && sudo apt-get install -y luajit lua-check
+          luacheck .
+          for spec in tests/*_spec.lua; do luajit "$spec" || exit 1; done
+          luajit -joff tests/plan_bench.lua
+      - if: steps.pins.outputs.changed == 'true'
+        uses: JohnnyMorganz/stylua-action@76fd70c03e6340ceaf673366712db9b20560b402 # v5.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: 2.5.2
+          args: --check .
+      - if: steps.pins.outputs.changed == 'true'
+        id: pr
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          branch: data/refresh
+          title: "data: refresh game data"
+          commit-message: "data: refresh game data (${{ steps.pins.outputs.summary }})"
+          body: |
+            Regenerated `Data/Geometry.lua`, `Data/Forever.lua`, `Data/ZoneArt.lua` and the test corpus in `tests/fixtures/` after moving the pins: ${{ steps.pins.outputs.summary }}.
+
+            Before merging, read the diff of `Data/Geometry.lua` for maps, flight masters, crossings or trainer roles that appeared, moved or dropped out, and `Data/Forever.lua` for lands and quests Forever added or lost. The specs and the golden routes passed on this data, so a changed route would have failed the run. Add a `CHANGELOG.md` line under Unreleased saying what a player would notice.
+
+            CI is dispatched on this branch straight away; approve the pending workflows on this PR too, since only those count as its required checks.
+
+  # The data PR's own CI waits for approval because GITHUB_TOKEN opened it, so run CI on its branch
+  # now; a dispatched run shows under Actions, not in the PR's checks.
+  ci:
+    needs: refresh
+    if: needs.refresh.outputs.operation == 'created' || needs.refresh.outputs.operation == 'updated'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - run: gh workflow run ci.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ needs.refresh.outputs.branch }}
+
+  # A refresh that fails every day unnoticed is how the data falls behind: keep one open issue saying so.
+  report:
+    needs: [refresh, ci]
+    if: failure() && github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: Data refresh failed
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          body="The data refresh failed, so the bundled data may be behind the client: $RUN_URL
+
+          Read the error in that run. A generator or spec that rejects the new client data is fixed from that data: update the expected value, or re-base a golden route the data explains with \`AGF_UPDATE_GOLDEN=1\`, and keep the check exact. \`AGENTS.md\` describes the refresh. Close this issue once a run passes."
+          issue=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "in:title \"$TITLE\"" \
+            --json number,title --jq "[.[] | select(.title == \"$TITLE\")][0].number // empty")
+          if [ -n "$issue" ]; then
+            gh issue comment "$issue" --repo "$GITHUB_REPOSITORY" --body "Failed again: $RUN_URL"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$body" --assignee "$GITHUB_REPOSITORY_OWNER"
+          fi

@@ -25,7 +25,7 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
-BUILD = "1.60.1.69913"
+BUILD = "1.60.1.70205"
 # The last build with WorldMapArea: quest_poi's mapAreaId is one of its IDs, which UiMap replaced in 8.0.
 LEGACY_MAP_BUILD = "7.3.5.26972"
 CLASSICDB_COMMIT = "22b51464f1625f6ef6275771de1f5466c6f5d19e"
@@ -38,7 +38,7 @@ OUTPUT = ROOT / "Data" / "Geometry.lua"
 FIXTURE = ROOT / "tests" / "fixtures" / "quests.lua"
 TOWN_FIXTURE = ROOT / "tests" / "fixtures" / "towns.lua"
 # Published dungeon ranges, following the zone generator's published-range fallback.
-# LFGDungeons 1.60.1.69913 has MapID=0 and no usable min/max range (see docs/dungeon-sources.md).
+# The client's LFGDungeons has MapID=0 and no usable min/max range (see docs/dungeon-sources.md).
 # Wowhead, Classic Dungeons Overview, 2024-11-22, "WoW Classic Instances by Level":
 # https://www.wowhead.com/classic/guide/classic-dungeons-overview
 DUNGEON_LEVELS = {

@@ -2,7 +2,7 @@
 -- CMaNGOS classic-db (GPL-3.0), pinned: https://raw.githubusercontent.com/cmangos/classic-db/22b51464f1625f6ef6275771de1f5466c6f5d19e/Full_DB/ClassicDB_1_12_1_z2815.sql.gz
 -- wago.tools UiMap, UiMapAssignment, QuestV2, TaxiPathNode, TaxiNodes, AreaTable, Map, FactionTemplate,
 -- SpellEffect, SkillLine, Faction, UiMapXMapArt, WorldMapOverlay:
--- https://wago.tools/db2/QuestV2/csv?build=1.60.1.69913
+-- https://wago.tools/db2/QuestV2/csv?build=1.60.1.70205
 -- Pinned client WDT/ADT terrain area IDs disambiguate unhinted outdoor giver maps.
 -- wago.tools WorldMapArea at 7.3.5.26972, the last build with it (quest_poi's mapAreaId).
 -- Published zone ranges (tweaks-forever/tools/gen_zonelevels.py): https://warcraft.wiki.gg/wiki/Zones_by_level_(original)
@@ -22,8 +22,8 @@ local _, ns = ...
 -- stylua: ignore
 ---@diagnostic disable-next-line: missing-fields
 ns.Data = {
-	build = "1.60.1.69913",
-	source = "CMaNGOS classic-db 22b51464f1625f6ef6275771de1f5466c6f5d19e; wago.tools 1.60.1.69913",
+	build = "1.60.1.70205",
+	source = "CMaNGOS classic-db 22b51464f1625f6ef6275771de1f5466c6f5d19e; wago.tools 1.60.1.70205",
 	townLink = 100,
 	townCap = 400,
 	townReach = 150,
@@ -144,7 +144,6 @@ ns.Data = {
 		[1456] = { name = "Thunder Bluff", continent = 1, cx = -1197.9, cy = -5.2, sx = 1043.7, sy = 695.8 },
 		[1457] = { name = "Darnassus", continent = 1, cx = 9885.5, cy = 2409.2, sx = 1058.3, sy = 705.7 },
 		[1458] = { name = "Undercity", continent = 0, cx = 1557.9, cy = 393.5, sx = 959.4, sy = 640.1 },
-		[1459] = { name = "Alterac Valley", continent = 30, cx = -327.1, cy = -337.5, sx = 4237.5, sy = 2825.0 },
 	},
 	continents = {
 		[0] = { x = 32601.0, y = 9894.9 },
@@ -158,7 +157,7 @@ ns.Data = {
 		{ transport = 176310, side = 1, a = { continent = 0, x = -3709.5, y = -575.1 }, b = { continent = 1, x = 6406.2, y = 823.1 } },
 	},
 	towns = {
-		{ node = 2, continent = 0, x = -8840.5595703125, y = 489.70001220703, name = "Stormwind, Elwynn" },
+		{ node = 2, continent = 0, x = -8832.76953125, y = 478.62298583984, name = "Stormwind, Elwynn" },
 		{ node = 4, continent = 0, x = -10628.889648438, y = 1036.6800537109, name = "Sentinel Hill, Westfall" },
 		{ node = 5, continent = 0, x = -9429.099609375, y = -2231.3999023438, name = "Lakeshire, Redridge" },
 		{ node = 6, continent = 0, x = -4821.7797851562, y = -1155.4399414062, name = "Ironforge, Dun Morogh" },
