@@ -808,6 +808,37 @@ function harness.load(options)
 			frame.Text = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
 			frame.Text:SetPoint("LEFT", frame, "RIGHT", -2, 0)
 		end,
+		-- Blizzard_Menu/Mainline/MenuTemplates.xml: the drop-down's text holder and arrow. SetupMenu runs the
+		-- caller's generator once and keeps its radios, so a spec can pick one the way a click on the menu would.
+		WowStyle1DropdownTemplate = function(frame)
+			Internal("Texture", frame, "Arrow")
+			local text = Internal("FontString", frame, "Text")
+			function frame:SetupMenu(generator)
+				self.menuGenerator = generator
+				return self
+			end
+			-- The client builds the menu when it is opened; a spec asks for the same list to pick one.
+			function frame:RefreshMenu()
+				self.radios = {}
+				self.menuGenerator(self, {
+					CreateRadio = function(_, label, isSelected, setSelected, data)
+						local radio = { label = label, isSelected = isSelected, setSelected = setSelected, data = data }
+						self.radios[#self.radios + 1] = radio
+						if isSelected() then
+							text:SetText(label)
+						end
+					end,
+				})
+				return self
+			end
+			function frame:SelectRadio(index)
+				self:RefreshMenu()
+				local radio = assert(self.radios[index], "no drop-down radio " .. tostring(index))
+				radio.setSelected(radio.data)
+				text:SetText(radio.label)
+				return self
+			end
+		end,
 		-- Shared/TabSystem/TabSystemTemplates.xml: the top-tab art and selected font.
 		TabSystemTopButtonTemplate = function(frame)
 			Internal("FontString", frame, "Text")
@@ -2080,6 +2111,8 @@ function harness.load(options)
 		end,
 		ApplyCurrentScale = noop,
 	}
+	-- Blizzard_Menu/Mainline/MenuTemplates.xml: the drop-down template's own mixin.
+	G.WowStyle1DropdownMixin = {}
 	-- WORLD_MAP_OPEN, which Blizzard_WorldMap.lua:198 turns into its own OpenWorldMap(mapID).
 	G.C_Map.OpenWorldMap = function(mapID)
 		map:Show()

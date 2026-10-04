@@ -62,8 +62,11 @@ abandons quests.
   the client's other raid instances, each raid row tagged with its group size; the raid tier and sizes come from
   `Integrations/Raids.lua` (docs/dungeon-sources.md), never from a copied Classic attunement page. Remember the instance Map.ID in window state. Plan to run
   selects the existing dungeon journey and enables the existing dungeon preference; no parallel plan state.
-  Journey cards link back to the dungeon page. Build on first show, slice source reads at 1 ms, cancel on hide,
-  reuse visible rows, and cache a complete optional-source snapshot until the quest data changes.
+  Journey cards link back to the dungeon page. A dungeon the guide offers is pinned at its entrance on the world
+  map; that pin, the dungeon's Maps control and the Maps tab all open the same interior view, whose floor dropdown
+  is the game's own control and returns to the floor last chosen in the session. Without that optional source the
+  entrance pin and the selector are absent, and nothing errors. Build on first show, slice source reads at 1 ms,
+  cancel on hide, reuse visible rows, and cache a complete optional-source snapshot until the quest data changes.
 
   Quest statuses use `Model.Eligible`; completed and accepted quests are identified separately. Known faction, race and class exclusions are omitted from quests, Prep and expanded prerequisites.
   A faction-only empty page explains why. Other unproven requirements remain visible as Locked, without a
