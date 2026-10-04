@@ -128,7 +128,10 @@ follow the shared family voice.
 ## 4. Routes
 
 - **4.1 Selection.** Take the nearest action at every step: the nearest town pickup, the nearest area of
-  a quest the town handed out or the player carries, or the nearest ready hand-in. Group town visits and cross
+  a quest the town handed out or the player carries, or the nearest ready hand-in. A ready hand-in or a pickup
+  within a short walk of the player comes before a step whose own target point is farther, so the guide finishes
+  what is beside the player first; once it leads it stays until it is done or the player walks clearly away.
+  Group town visits and cross
   the sea at most once. This nearest order is the default; the opt-in `optimisedRoute` beta instead keeps the
   older heuristics (the story's chapter lead, a town's-own look-ahead and the committed order), which the
   player turns on from the Add-ons page.
@@ -137,7 +140,8 @@ follow the shared family voice.
   movement changes focus without shuffling the route. Proximity never hides or truncates guidance. Plan a bounded lookahead, then verify and merge visits before limiting the displayed actions. Keep work bounded per frame.
   An area step's point is the objective node nearest the player (a spawn group's medoid, or the generator's point
   inside the shape), so the marker sits on the work rather than on the shape's border; when the player is already
-  inside the area the point stays the area's ring (its middle). Standing in the area step 1 leads to is "you're here":
+  inside the area the point stays the area's ring (its middle). The ring reaches past the shapes, so a broad area's
+  ground between its objectives counts as being in it. Standing in the area step 1 leads to is "you're here":
   its in-progress quest is selected, its travel line and numbered pin go, and the route stays on it until its
   objectives are done (a merged visit takes only the objectives the player can work on now).
 - **4.3 Committed order.** Preserve the chosen sequence and visit identities across rebuilds.

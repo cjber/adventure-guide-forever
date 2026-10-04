@@ -900,8 +900,8 @@ end
 
 -- An area step's point is the objective node nearest the player (design §4.2): each node is a place the data has, so
 -- the point sits on real work rather than on the shape's ring (which read as the area's border), and a long area starts
--- at its near end; its ring keeps the middle. Standing in one of its shapes, it is "you're here", and the next build
--- lets it go only 30 yd past that shape.
+-- at its near end; its ring keeps the middle and reaches the ground between its objectives. Standing in one of its
+-- shapes or in its merged ring, it is "you're here", and the next build lets it go only 30 yd past that ring.
 do
 	local strip = { quests = { [1] = quest() }, zones = data.zones }
 	strip.maps = { [1] = { name = "Zone", continent = 0, cx = 0, cy = 0, sx = 1000, sy = 1000 } }
@@ -927,10 +927,14 @@ do
 	equal(inside.here, true, "entry: inside, you're here")
 	equal(held.here, "area:1:0", "entry: which the route keeps for the next build")
 	equal(Head(0.28, held).here, true, "entry: 20 yd past the west shape, still here")
-	equal(Head(0.28).here, nil, "entry: there fresh, not")
-	equal(Head(0.26, held).here, nil, "entry: 40 yd past it, let go")
-	-- 200 yd north of the west spot: inside the ring merged round both, but on no objective's ground.
-	equal(Head(0.4, nil, 0.3).here, nil, "entry: in the merged ring, off every shape, not here")
+	-- The merged ring reaches past the west shape, so a fresh build keeps it here too; a broad area counts the ground
+	-- between its objectives (docs/design.md §4.2).
+	equal(Head(0.28).here, true, "entry: in the merged ring, here without holding")
+	equal(Head(0.13, held).here, true, "entry: 20 yd past the merged ring, held, still here")
+	equal(Head(0.13).here, nil, "entry: there fresh, not")
+	equal(Head(0.10, held).here, nil, "entry: 50 yd past the ring, let go")
+	-- 200 yd north of the west spot: inside the ring merged round both, on no objective's ground, still reached.
+	equal(Head(0.4, nil, 0.3).here, true, "entry: in the merged ring, off every shape, here")
 end
 
 -- The zone the player stands in leads when they carry its quests, though nothing is left there to pick up and another
