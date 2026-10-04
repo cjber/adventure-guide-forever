@@ -342,21 +342,33 @@ function Integrations.Kind(step)
 	return "pickup"
 end
 
+-- An area step's objective shapes for Shortest Path (its own `shapes`): each on the map it already is, with its
+-- yard radius. The nearest shape's radius is also the stop's reach.
+---@param step AGFStep|AGFGiver
+---@return AGFSPFShape[]?
+---@return number?
+local function Shapes(step)
+	local kind = step.kind --[[@as AGFStepKind?]]
+	if kind ~= "area" then
+		return
+	end
+	local area = step --[[@as AGFStep]]
+	local shapes, radius = {}, 30
+	for _, shape in ipairs(area.shapes or {}) do
+		shapes[#shapes + 1] = { map = shape.map, x = shape.x, y = shape.y, radius = shape.r }
+		if shape.map == area.map and shape.x == area.x and shape.y == area.y then
+			radius = math.max(radius, shape.r)
+		end
+	end
+	return #shapes > 0 and shapes or nil, radius
+end
+
 ---@param steps (AGFStep|AGFGiver)[]
 ---@return AGFSPFStop[]
 local function Stops(steps, hold)
 	local stops = {}
 	for index, step in ipairs(steps) do
-		local radius
-		if step.kind == "area" then
-			radius = 30
-			for _, shape in ipairs(step.shapes or {}) do
-				if shape.map == step.map and shape.x == step.x and shape.y == step.y then
-					radius = math.max(radius, shape.r)
-					break
-				end
-			end
-		end
+		local shapes, radius = Shapes(step)
 		stops[index] = {
 			map = step.map,
 			x = step.x,
@@ -366,6 +378,7 @@ local function Stops(steps, hold)
 			tooltip = ns.Pins.StopTooltip(step),
 			kind = Integrations.Kind(step),
 			radius = radius,
+			shapes = shapes,
 			hold = hold == true
 				and step.kind ~= "trainer"
 				and step.kind ~= "battlemaster"
