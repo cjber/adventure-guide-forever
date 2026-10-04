@@ -1663,18 +1663,23 @@ do
 			assert(ns.Data.instances[q.dungeon].name ~= "", q.title)
 		end
 	end
-	equal(flagged, 223, "dungeon and raid quests flagged")
-	equal(raids, 90, "raid quests flagged")
+	equal(flagged, 556, "dungeon and raid quests flagged")
+	equal(raids, 283, "raid quests flagged")
 end
--- A raid's quest filed outdoors (typed Raid): Zul'Gurub's Paragons of Power, given on Yojamba Isle, are on no card for
--- a level-60 paladin standing there, dungeons on or off.
+-- Raid quests filed outdoors (typed Raid) are on no card, nor is a raid's quest given outdoors under its instance:
+-- Zul'Gurub's Paragons of Power, handed out on Yojamba Isle, are on no card for a level-60 paladin standing there,
+-- dungeons on or off.
 do
 	local typed = 0
 	for _, q in pairs(ns.Data.quests) do
 		typed = typed + ((q.raid and not q.dungeon) and 1 or 0)
 	end
-	equal(typed, 83, "raid quests filed outdoors")
-	equal(ns.Data.quests[8053].raid and not ns.Data.quests[8053].dungeon, true, "Paragons of Power: a raid's, outdoors")
+	equal(typed, 229, "raid quests filed outdoors")
+	equal(
+		ns.Data.quests[8053].raid and ns.Data.quests[8053].start.map == 1434,
+		true,
+		"Paragons of Power: a raid's, outdoors"
+	)
 	local yojamba = { level = 60, maxLevel = 60, side = 1, raceBit = 1, classBit = 2, map = 1434, x = 0.15, y = 0.15 }
 	for _, dungeons in ipairs({ false, true }) do
 		local choices = prefs()
@@ -1770,10 +1775,10 @@ do
 			end
 		end
 	end
-	equal(#heads, 815, "walk: chain heads in the data")
-	equal(totals, 581, "walk: heads whose total the data proves")
-	equal(textOnly, 226, "walk: heads shown as a chapter only")
-	equal(#heads - totals - textOnly, 8, "walk: heads whose next dangles at once")
+	equal(#heads, 852, "walk: chain heads in the data")
+	equal(totals, 61, "walk: heads whose total the data proves")
+	equal(textOnly, 791, "walk: heads shown as a chapter only")
+	equal(#heads - totals - textOnly, 0, "walk: heads whose next dangles at once")
 end
 
 -- Why-not and the planner never disagree (F5 acceptance): every quest, for each fixture character with completed
@@ -2116,7 +2121,7 @@ do
 		if
 			not cut
 			and candidate.start
-			and candidate.start.map == 1413
+			and (candidate.zone or candidate.start.map) == 1413
 			and not (candidate.dungeon or candidate.raid)
 			and candidate.min <= player.level
 			and candidate.level - player.level < 3

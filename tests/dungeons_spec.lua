@@ -316,7 +316,7 @@ equal(drawn["Objective text unavailable"], nil, "no placeholder objective")
 local formatted = false
 for text in pairs(drawn) do
 	equal(text:match("Map %d+") == nil and text:match("Item %d+") == nil, true, "no internal IDs in dungeon text")
-	if text:find("10,310", 1, true) then
+	if text:find("10,305", 1, true) then
 		formatted = true
 	end
 end

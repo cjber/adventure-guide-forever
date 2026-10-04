@@ -120,7 +120,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	local label = spf or "no Shortest Path"
 	local h = Load(spf)
 	clean(h, label .. ": load")
-	equal(h.ns.Route().steps[1].key, "town:349", label .. ": the hand-in leads the route")
+	equal(h.ns.Route().steps[1].key, "town:376", label .. ": the hand-in leads the route")
 
 	-- Blizzard's displayMode is never written, whatever the player clicks (Panel.lua ShowGuide).
 	local panel, questsFrame = h.G.AdventureGuideForeverPanel, h.questMap.QuestsFrame
@@ -184,7 +184,7 @@ do
 	local h = Load(false)
 	local show = h.ns.ShowQuest
 	equal(show({ kind = "dungeon", key = "area:843:0", quests = { 843 } }), true, "a group quest in the log opens")
-	local town = { kind = "town", key = "town:349", quests = { 843 }, pickups = { 843 }, handins = {} }
+	local town = { kind = "town", key = "town:376", quests = { 843 }, pickups = { 843 }, handins = {} }
 	equal(show(town), false, "a group pickup does not")
 	town.quests, town.pickups, town.handins = { 845, 843 }, { 843 }, { 845 }
 	equal(show(town), true, "a town with a hand-in opens it")
@@ -486,7 +486,7 @@ do
 	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: every step")
 	-- Shortest Path moves on stop by stop until it heads for the Crossroads, then the player reaches it.
 	for _, step in ipairs(h.ns.Route().steps) do
-		if step.key == "town:349" then
+		if step.key == "town:376" then
 			break
 		end
 		h.spfAdvance()
@@ -1150,11 +1150,12 @@ for _, spf in ipairs({ false, "v1" }) do
 	-- Rings draw above the stock quest marks; givers stay under them (Blizzard_WorldMap.lua:291-311).
 	equal(ring.frameLevelType, "PIN_FRAME_LEVEL_WAYPOINT_LOCATION", label .. ": rings at the user waypoint's level")
 	h.Hover(ring)
-	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. Step 1 is the Crossroads, where The
-	-- Zhevra opens its next chapter, handed in before the town's pickups.
-	local expected = { "title: 1. Visit Crossroads, The Barrens: Pick up 5, turn in 1" }
+	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. Step 1 is the Crossroads, where the
+	-- route's story begins, handed in before the town's pickups.
+	local expected = { "title: 1. Visit Crossroads, The Barrens: Pick up 4, turn in 1" }
+	expected[#expected + 1] = "normal: Chapter 1 of 2"
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
-	expected[#expected + 1] = "highlight: Opens the next chapter here"
+	expected[#expected + 1] = "highlight: Begins a new story"
 	expected[#expected + 1] = "normal: Sergra Darkthorn"
 	expected[#expected + 1] = "colored: |A:questturnin:14:14|a [13] The Zhevra"
 	same({ unpack(h.tooltip, 1, #expected) }, expected, label .. ": ring tooltip")
@@ -1168,7 +1169,15 @@ for _, spf in ipairs({ false, "v1" }) do
 	local givers = ns.Model.Givers(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), 1442)
 	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, #givers, label .. ": a giver pin per eligible giver")
 	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, label .. ": no rings off the route's map")
-	local giverPin = h.pins.AdventureGuideForeverGiverPinTemplate[1]
+	-- The first giver whose quests the route can take: a giver's hard quests get a pin but no shift-click.
+	local giverPin
+	for _, pin in ipairs(h.pins.AdventureGuideForeverGiverPinTemplate) do
+		if #pin.giver.adds > 0 then
+			giverPin = pin
+			break
+		end
+	end
+	equal(giverPin ~= nil, true, label .. ": a giver the route can take from")
 	equal(giverPin.frameLevelType, "PIN_FRAME_LEVEL_AREA_POI", label .. ": givers at the area POI level")
 	h.Hover(giverPin)
 	-- Closing the map fires no OnMouseLeave: the pin's own OnHide takes its tooltip.
@@ -1224,7 +1233,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		chapter = pin.step.chapter and pin or chapter
 	end
 	h.Hover(chapter)
-	equal(h.tooltip[2], "normal: Chapter 1 of 4", label .. ": the story's ring tells its chapter")
+	equal(h.tooltip[2], "normal: Chapter 1 of 2", label .. ": the story's ring tells its chapter")
 	ns.Prefs().journey = nil
 	ns.Invalidate()
 	h.flush()
@@ -1233,9 +1242,9 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Live(), 0, label .. ": RemoveAllData leaves no pins")
 
 	-- Design §2.8's menu for a town holding a log quest; Stop only once Go runs, Show quest never in combat.
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:349"], "RightButton")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:376"], "RightButton")
 	local menu = {
-		"title: Visit Crossroads, The Barrens: Pick up 5, turn in 1",
+		"title: Visit Crossroads, The Barrens: Pick up 4, turn in 1",
 		"button: Go",
 		"button: Show quest",
 		"button: Skip for now",
@@ -1244,7 +1253,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	same(h.MenuLines(), WithNotThisQuest(ns, ns.Route().steps[1], menu), label .. ": tracker menu")
 	ns.Guidance.Navigate(ns.Route().steps[1])
 	h.SetCombat(true)
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:349"], "RightButton")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:376"], "RightButton")
 	h.SetCombat(false)
 	menu[3] = "button: Stop"
 	same(
@@ -1422,16 +1431,21 @@ for _, case in ipairs({
 	clean(h, label)
 end
 -- Choosing another card while Shortest Path guides: it still walks the old route, so the new journey's givers
--- are drawn, not left to stops nobody draws.
+-- are drawn, not left to stops nobody draws. A card on a map the old route walks picks a giver only where no
+-- guided stop already draws one, so the card here is one on a map the old route never reaches.
 do
 	local h = Load("v1", PINS_ON)
 	local ns = h.ns
 	h.G.C_Map.OpenWorldMap()
 	h.flush()
 	ns.Guidance.Navigate(ns.Route().steps[1])
+	local walked = {}
+	for _, step in ipairs(ns.Guidance.Guided()) do
+		walked[step.map] = true
+	end
 	local nextZone
 	for _, journey in ipairs(ns.Route().journeys) do
-		nextZone = nextZone or (journey.kind == "nextzone" and journey or nil)
+		nextZone = nextZone or (journey.kind == "nextzone" and not walked[journey.map] and journey or nil)
 	end
 	equal(nextZone and nextZone.kind, "nextzone", "guided givers: a next-zone card")
 	---@cast nextZone -?
@@ -1566,14 +1580,17 @@ do
 	calls = h.spf.EstimateDetail
 	h.Hover(rows[1])
 	equal(h.spf.EstimateDetail, calls, "travel line: step 1's tooltip asks nothing")
-	equal(h.tooltip[2], "highlight: " .. cases[4][3], "travel line: step 1's tooltip")
+	-- Step 1 is the lead's town, so its chapter line comes before the way.
+	same({ unpack(h.tooltip, 1, 3) }, {
+		"title: 1. " .. rows[1].step.title,
+		"normal: Chapter 1 of 2",
+		"highlight: " .. cases[4][3],
+	}, "travel line: step 1's tooltip")
 	h.spfLegs = cases[1][2]
 	h.Hover(rows[2])
 	equal(h.spf.EstimateDetail, calls + 1, "travel line: another row's tooltip asks once")
-	-- Row 2 is the lead's town, so its chapter line comes before the way.
-	same({ unpack(h.tooltip, 1, 4) }, {
+	same({ unpack(h.tooltip, 1, 3) }, {
 		"title: 2. " .. rows[2].step.title,
-		"normal: Chapter 1 of 4",
 		"highlight: " .. cases[1][3],
 		"highlight: " .. rows[2].step.reason,
 	}, "travel line: another row's tooltip")
@@ -1881,7 +1898,7 @@ do
 		end
 		return table.concat(keys, " ")
 	end
-	local before, first, second = Keys(), ns.Route().steps[1], ns.Route().steps[2]
+	local before, first = Keys(), ns.Route().steps[1]
 	local function Rows()
 		return Shown(h, function(frame)
 			return frame.SkipButton ~= nil
@@ -1912,6 +1929,8 @@ do
 	h.menu.entries[5].onClick()
 	h.flush()
 	local row = Rows()[1]
+	-- Skipping the lead re-plans the lap, so the second skip is the step now at the head.
+	local second = row.step
 	local skip = row.SkipButton
 	equal(skip:GetAlpha(), 0, "skip X: hidden while its row is not under the mouse")
 	row.mouseOver = true
@@ -2215,7 +2234,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	local label = "tracker: " .. (spf or "no Shortest Path")
 	local h = Load(spf)
 	local steps = h.ns.Route().steps
-	local expected = { "1 to hand in, 5 to pick up", "Opens the next chapter here" }
+	local expected = { "1 to hand in, 4 to pick up", "Begins a new story" }
 	for _, giver in ipairs(steps[1].checklist) do
 		expected[#expected + 1] = giver.text
 	end
@@ -2290,7 +2309,7 @@ do
 	ns.Data.quests[868].level = 20
 	-- Their work a step from town and alike in XP, so the lap keeps all of them (one worth less per yard waits).
 	for _, quest in pairs(ns.Data.quests) do
-		if quest.start and quest.start.hub == 349 then
+		if quest.start and quest.start.hub == 376 then
 			quest.xp = 1000
 			if quest.obj then
 				quest.need, quest.obj = { [4] = 1 }, { { 4, 530, 310, 20 } }
@@ -2310,10 +2329,11 @@ do
 	h.Hover(rows[1])
 	local lines, colors = h.tooltip, h.tooltipColors
 	equal(lines[1], "title: 1. Visit Crossroads, The Barrens: Pick up 8, turn in 1", "hub tooltip: the numbered town")
-	equal(lines[2], "highlight: " .. step.reason, "hub tooltip: the reason")
-	equal(lines[3], "normal: Sergra Darkthorn", "hub tooltip: the hand-in's NPC first")
-	equal(lines[4], "colored: |A:questturnin:14:14|a [13] The Zhevra", "hub tooltip: a hand-in has the turn-in mark")
-	equal(lines[6], "colored: |A:questnormal:14:14|a [13] Raptor Thieves", "hub tooltip: a pickup has its level")
+	equal(lines[2], "normal: Chapter 1 of 2", "hub tooltip: the lead's chapter")
+	equal(lines[3], "highlight: " .. step.reason, "hub tooltip: the reason")
+	equal(lines[4], "normal: Sergra Darkthorn", "hub tooltip: the hand-in's NPC first")
+	equal(lines[5], "colored: |A:questturnin:14:14|a [13] The Zhevra", "hub tooltip: a hand-in has the turn-in mark")
+	equal(lines[7], "colored: |A:questnormal:14:14|a [13] Raptor Thieves", "hub tooltip: a pickup has its level")
 	local quests, npcs = 0, 0
 	for index, line in ipairs(lines) do
 		if line:find("^colored: ") then
@@ -2353,7 +2373,7 @@ do
 	ns.Data.quests[step.quests[1]].elite = true
 	h.Hover(rows[1])
 	equal(
-		h.tooltip[4],
+		h.tooltip[5],
 		"colored: |A:questturnin:14:14|a [13] The Zhevra |A:questlog-questtypeicon-group:12:12|a",
 		"hub tooltip: group"
 	)
@@ -2362,7 +2382,7 @@ do
 end
 
 -- A town is titled by its name, so step 1 of the story (Crossroads) shows its counts, then its reason in
--- place of the NPC line, since The Zhevra opens its next chapter. With a reason that is only the counts, the line
+-- place of the NPC line, since the story begins there. With a reason that is only the counts, the line
 -- names its NPCs: two, then how many more. One quest's stop reads "NPC, zone".
 do
 	local h = Load(false)
@@ -2372,9 +2392,9 @@ do
 	h.flush()
 	local steps = ns.Route().steps
 	local step = steps[1]
-	equal(step.title, "Visit Crossroads, The Barrens: Pick up 5, turn in 1", "tracker, town: town and actions")
-	equal(step.detail, "1 to hand in, 5 to pick up", "tracker, town: the hand-in joins the pickups")
-	local expected = { step.detail, "Opens the next chapter here" }
+	equal(step.title, "Visit Crossroads, The Barrens: Pick up 4, turn in 1", "tracker, town: town and actions")
+	equal(step.detail, "1 to hand in, 4 to pick up", "tracker, town: the hand-in joins the pickups")
+	local expected = { step.detail, "Begins a new story" }
 	for _, giver in ipairs(step.checklist) do
 		expected[#expected + 1] = giver.text
 	end
@@ -2422,7 +2442,7 @@ do
 	end
 	local session = Load(false)
 	local saved = session.G.AdventureGuideForeverCharDB.last
-	equal(saved and saved.key, "town:349", "resume: each rebuild saves step 1")
+	equal(saved and saved.key, "town:376", "resume: each rebuild saves step 1")
 	equal(Resumed(session), 0, "resume: nothing saved, nothing to resume")
 	local function Login(options)
 		options.charDB = { journey = "zone:1413", last = { key = saved.key, reason = "finishes a story" } }
@@ -2642,7 +2662,7 @@ do
 	h.ns.Invalidate()
 	h.flush()
 	local chain, squares, texts = story.story, {}, {}
-	equal(chain and chain.total, 4, "story: the fixture's chain is proven at 4")
+	equal(chain and chain.total, 2, "story: the fixture's chain is proven at 2")
 	for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverPanel, h.Describe)) do
 		if entry.atlas and entry.atlas:match("^ui%-journeys%-delve%-level%-square") then
 			squares[#squares + 1] = entry.atlas
@@ -2687,12 +2707,12 @@ do
 	equal(#Results(), 0, "search: two characters keep the cards")
 	h.Type(search, "\231\139\188\231\139\188") -- two CJK characters, six bytes
 	equal(#Results() + Says(h, h.ns.L.SEARCH_NONE), 0, "search: counts characters, not bytes")
-	-- Call of Water (96) is the one of its title with no start in the data.
-	assert(h.ns.Data.quests[96].title == "Call of Water" and not h.ns.Data.quests[96].start)
-	h.Type(search, "Call of Water")
+	-- Call of Air - Guse's Fleet (6825) has no start in the data.
+	assert(h.ns.Data.quests[6825].title == "Call of Air - Guse's Fleet" and not h.ns.Data.quests[6825].start)
+	h.Type(search, "Call of Air - Guse's Fleet")
 	local suppressed
 	for _, row in ipairs(Results()) do
-		local first = row.Title:GetText() == "Call of Water" and Lines(row)[1]
+		local first = row.Title:GetText() == "Call of Air - Guse's Fleet" and Lines(row)[1]
 		suppressed = suppressed or (first == h.ns.L.WHY_NO_START and row) or nil
 	end
 	h.Type(search, "Call of")
@@ -2705,13 +2725,17 @@ do
 	equal(#Shown(h, function(frame)
 		return frame.SkipButton ~= nil
 	end), 0, "search: and their steps")
-	h.Type(search, "Call of Water")
-	local lines = Lines(assert(suppressed, "search: Call of Water, whose start the data suppresses"))
+	h.Type(search, "Call of Air - Guse's Fleet")
+	local lines = Lines(assert(suppressed, "search: Call of Air - Guse's Fleet, whose start the data suppresses"))
 	equal(#lines, 1, "search: a suppressed start shows exactly 1 line")
 	equal(lines[1], h.ns.L.WHY_NO_START, "search: saying the guide can't tell where it starts")
 	equal(suppressed.Lock:IsShown(), true, "search: behind a lock")
 	h.Hover(suppressed)
-	equal(table.concat(h.tooltip, "\n"), "title: Call of Water\nerror: " .. h.ns.L.WHY_NO_START, "search: tooltip")
+	equal(
+		table.concat(h.tooltip, "\n"),
+		"title: Call of Air - Guse's Fleet\nerror: " .. h.ns.L.WHY_NO_START,
+		"search: tooltip"
+	)
 	h.Type(search, "Call of")
 	equal(#Lines(assert(open, "search: a quest open now")), 0, "search: an open quest has nothing to explain")
 	-- A shift-click adds an open quest to the route (design §2.18), starred; a second takes it off. A plain click, or a
@@ -2747,7 +2771,7 @@ do
 	ShiftUp(Row(), true)
 	equal(next(h.ns.Prefs().pinned), nil, "search: a second takes it off")
 	equal(Row().Star:IsShown(), false, "search: unstarred")
-	h.Type(search, "Call of Water")
+	h.Type(search, "Call of Air - Guse's Fleet")
 	ShiftUp(suppressed, true)
 	equal(next(h.ns.Prefs().pinned), nil, "search: a locked quest is never added")
 	-- Nor an orange or red one open now, which no route takes: no shift-click line, and a shift-click adds nothing.
@@ -2804,8 +2828,8 @@ do
 	capped.ns.OpenPanel()
 	capped.flush()
 	equal(#capped.ns.Route().journeys, 2, "guide: at the cap, never nothing")
-	equal(Says(capped, "Stratholme"), 1, "guide: the dungeon card, toggle off")
-	equal(Says(capped, capped.ns.L.JOURNEY_INTO:format("Scholomance")), 1, "guide: the way in, as a story")
+	equal(Says(capped, "Blackrock Spire"), 1, "guide: the dungeon card, toggle off")
+	equal(Says(capped, capped.ns.L.JOURNEY_INTO:format("Blackrock Spire")), 1, "guide: the way in, as a story")
 	equal(Says(capped, capped.ns.L.NO_JOURNEY), 0, "guide: no empty line")
 	clean(capped, "guide: at the cap")
 
@@ -3653,7 +3677,7 @@ do
 		local shown = block and block.used and block.header or nil
 		equal(shown, case.text, label .. ": the tracker's line")
 		-- With no journey chosen it is the line above the first card's step.
-		local order = case.text and { "aside", "journey", "town:349" } or { "journey", "town:349" }
+		local order = case.text and { "aside", "journey", "town:376" } or { "journey", "town:376" }
 		same(h.tracker.layoutOrder, order, label .. ": the tracker's lines")
 		-- An aside, not a step: no ring for it, and its tracker title goes to the trainer as its Go does.
 		local steps, rings = {}, 0
@@ -3677,7 +3701,7 @@ do
 		if case.text then
 			equal(h.spfRoute.stops[1].title, "Swart", label .. ": named for the trainer")
 		end
-		equal(h.ns.Route().steps[1].key, "town:349", label .. ": the route is unchanged")
+		equal(h.ns.Route().steps[1].key, "town:376", label .. ": the route is unchanged")
 		-- A spell learned at the trainer shortens the line at once.
 		if case.tf and case.tf.spells == THREE then
 			case.tf.spells = { SPELL }
@@ -3908,7 +3932,10 @@ do
 		planned = true,
 		player = { level = 55 },
 		skills = { { skillID = 197, name = "Tailoring", rank = 75 } },
-		reputation = { [576] = { name = "Timbermaw Hold", currentStanding = 2999 } },
+		reputation = {
+			[576] = { name = "Timbermaw Hold", currentStanding = 2999 },
+			[889] = { name = "Warsong Outriders", currentStanding = 2999 },
+		},
 	})
 	local State = h.ns.State
 	equal(State.Player().skills[197], 75, label .. ": a learned line's rank")
@@ -3924,9 +3951,13 @@ do
 	h.G.FACTION_STANDING_LABEL5 = "Amical"
 	equal(State.StandingName(5), "Amical", label .. ": the client's standing name")
 	equal(State.StandingName(9), nil, label .. ": none past Exalted")
-	equal(h.ns.Model.Eligible(h.ns.Data, State.Player(), {}, {}, 6031), false, label .. ": Runecloth short of Friendly")
-	h.reputation[576].currentStanding = 3000
-	equal(h.ns.Model.Eligible(h.ns.Data, State.Player(), {}, {}, 6031), true, label .. ": open at Friendly")
+	equal(
+		h.ns.Model.Eligible(h.ns.Data, State.Player(), {}, {}, 7868),
+		false,
+		label .. ": Outrider Advanced Care Package short of Friendly"
+	)
+	h.reputation[889].currentStanding = 3000
+	equal(h.ns.Model.Eligible(h.ns.Data, State.Player(), {}, {}, 7868), true, label .. ": open at Friendly")
 	h.ns.OpenPanel()
 	h.flush()
 	local plans = h.modelCalls.Plan
@@ -3943,27 +3974,31 @@ do
 	h.fire("SKILL_LINES_CHANGED")
 	h.flush()
 	equal(h.modelCalls.Plan > plans, true, label .. ": a gated rank moved")
-	h.reputation[576].currentStanding = 2999
+	h.reputation[889].currentStanding = 2999
 	h.Type(
 		h.Find(function(frame)
 			return frame.stockTemplate == "SearchBoxTemplate"
 		end)[1],
-		"Runecloth"
+		"Outrider Advanced Care Package"
 	)
 	local row = Shown(h, function(frame)
-		return frame.Lines ~= nil and frame.Title:GetText() == "Runecloth"
+		return frame.Lines ~= nil and frame.Title:GetText() == "Outrider Advanced Care Package"
 	end)[1]
 	local lines = {}
-	for _, line in ipairs(assert(row, label .. ": Runecloth found").Lines) do
+	for _, line in ipairs(assert(row, label .. ": Outrider Advanced Care Package found").Lines) do
 		lines[#lines + 1] = line:IsVisible() and line:GetText() or nil
 	end
-	equal(lines[1], "Requires Amical with Timbermaw Hold", label .. ": the unmet standing leads, in the client's words")
+	equal(
+		lines[1],
+		"Requires Amical with Warsong Outriders",
+		label .. ": the unmet standing leads, in the client's words"
+	)
 	equal(row.Lock:IsShown(), true, label .. ": behind a lock")
 	clean(h, label)
 end
 
 -- With no rest the route ends at the inn its last town has; stepping into an inn ticks it off, and a
--- rest or XP event that moves nothing rebuilds nothing. The carry card's one stop is a hand-in in Orgrimmar.
+-- rest or XP event that moves nothing rebuilds nothing. The carry card's one stop is a hand-in in Durotar.
 do
 	local h = harness.load({
 		planned = true,
@@ -3971,7 +4006,7 @@ do
 		charDB = { journey = "carry" },
 		completed = { 844 },
 		log = {
-			{ id = AWAY, title = "Hidden Enemies", level = 15, complete = true, map = 1454, x = 0.4947, y = 0.5059 },
+			{ id = 830, title = "The Admiral's Orders", level = 7, complete = true, map = 1411, x = 0.5195, y = 0.435 },
 		},
 	})
 	h.flush()

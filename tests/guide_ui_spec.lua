@@ -461,9 +461,9 @@ do
 	local window = Open(h)
 	local rows = StepRows(h, window)
 	equal(#rows, 3, "order: three chosen story rows")
-	local first, second = ns.Route().steps[1].key, ns.Route().steps[2].key
-	equal(ns.Order.CanMove(2, 3), false, "order: pickup cannot follow its objective")
-	h.Click(rows[2], "RightButton")
+	local first, second, third = ns.Route().steps[1].key, ns.Route().steps[2].key, ns.Route().steps[3].key
+	equal(ns.Order.CanMove(1, 2), false, "order: pickup cannot follow its objective")
+	h.Click(rows[1], "RightButton")
 	local entries, lines = h.menu.entries, h.MenuLines()
 	local n = #lines
 	same({ unpack(lines, n - 3, n) }, {
@@ -474,29 +474,31 @@ do
 	}, "order: the step menu's moves")
 	equal(entries[#entries]:IsEnabled(), false, "order: dependency-breaking move greyed")
 	equal(Texts(h)[L.ORDER_RESET], nil, "suggested order: no way back")
+	h.Click(rows[3], "RightButton")
+	entries = h.menu.entries
 	entries[#entries - 1].onClick()
 	Redraw(h)
-	equal(ns.Route().steps[1].key, second, "order: Do this sooner moves the town")
+	equal(ns.Route().steps[2].key, third, "order: Do this sooner moves the objective")
 	equal(ns.Order.IsCustom(), true, "order: the move is persisted")
 
 	rows = StepRows(h, window)
-	rows[1]:GetScript("OnDragStart")(rows[1])
+	rows[3]:GetScript("OnDragStart")(rows[3])
 	equal(h.cursor, "Interface\\CURSOR\\UI-Cursor-Move", "drag: move cursor")
-	equal(rows[3]:GetAlpha(), 0.35, "drag: dependent objective dims")
-	equal(rows[2]:GetAlpha(), 1, "drag: independent town stays")
+	equal(rows[1]:GetAlpha(), 0.35, "drag: dependent pickup dims")
+	equal(rows[2]:GetAlpha(), 1, "drag: independent objective stays")
 	rows[2].mouseOver = true
-	rows[1]:GetScript("OnDragStop")(rows[1])
+	rows[3]:GetScript("OnDragStop")(rows[3])
 	rows[2].mouseOver = false
 	Redraw(h)
 	equal(h.cursor, nil, "drag: cursor reset")
 	equal(ns.Route().steps[1].key, first, "drag: exact move applied")
-	equal(ns.Route().steps[2].key, second, "drag: town moved to second")
+	equal(ns.Route().steps[2].key, second, "drag: objective moved to second")
 	rows = StepRows(h, window)
-	rows[2]:GetScript("OnDragStart")(rows[2])
-	rows[3].mouseOver = true
-	rows[2]:GetScript("OnDragStop")(rows[2])
-	rows[3].mouseOver = false
-	equal(ns.Route().steps[2].key, second, "drag: refused drop preserves order")
+	rows[1]:GetScript("OnDragStart")(rows[1])
+	rows[2].mouseOver = true
+	rows[1]:GetScript("OnDragStop")(rows[1])
+	rows[2].mouseOver = false
+	equal(ns.Route().steps[1].key, first, "drag: refused drop preserves order")
 	equal(Texts(h)[L.ORDER_CUSTOM], 1, "custom order: card tag")
 	h.Click(rows[1], "RightButton")
 	equal(h.MenuLines()[#h.MenuLines()], "button: " .. L.ORDER_RESET, "custom order: menu reset")
@@ -514,12 +516,12 @@ do
 	local panelRows = StepRows(h, panel)
 	equal(#panelRows >= 3, true, "panel: the rows")
 	panelRows[2]:GetScript("OnDragStart")(panelRows[2])
-	equal(panelRows[3]:GetAlpha(), 0.35, "panel drag: dependent objective dims")
-	panelRows[1].mouseOver = true
+	equal(panelRows[1]:GetAlpha(), 0.35, "panel drag: dependent pickup dims")
+	panelRows[3].mouseOver = true
 	panelRows[2]:GetScript("OnDragStop")(panelRows[2])
-	panelRows[1].mouseOver = false
+	panelRows[3].mouseOver = false
 	Redraw(h)
-	equal(ns.Route().steps[1].key, second, "panel drag: applied")
+	equal(ns.Route().steps[3].key, second, "panel drag: applied")
 	equal(Texts(h, panel)[L.ORDER_CUSTOM], 1, "panel: custom order line")
 	h.Hover(panelRows[1])
 	equal(h.tooltip[#h.tooltip - 1], "instruction: " .. L.ORDER_DRAG, "panel: drag instruction")
@@ -614,9 +616,9 @@ do
 	local route = h.ns.Route().steps
 	local revisit
 	for _, pin in ipairs(pins) do
-		revisit = (pin.visits and #pin.visits > 1 and pin.visits[1].step.hub == 340) and pin or revisit
+		revisit = (pin.visits and #pin.visits > 1 and pin.visits[1].step.hub == 376) and pin or revisit
 	end
-	equal(revisit ~= nil, true, "ring: Ratchet visited twice")
+	equal(revisit ~= nil, true, "ring: Crossroads visited twice")
 	equal(revisit.visits[1].step.key ~= revisit.visits[2].step.key, true, "ring: two distinct visits share the ring")
 	equal(revisit.More, nil, "ring: no +1 text")
 	equal(revisit.Badge:IsShown(), true, "ring: shared stops keep their kind")

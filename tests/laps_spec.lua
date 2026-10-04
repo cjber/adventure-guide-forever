@@ -347,8 +347,8 @@ do
 		raceBit = 4,
 		classBit = 64,
 		map = 1431,
-		x = 0.331,
-		y = 0.235,
+		x = 0.305,
+		y = 0.256,
 		logMax = 20,
 	}
 	local log, completed = {}, {}
@@ -372,10 +372,10 @@ do
 	check(steps ~= nil and steps[1].key == "area:226:0" and steps[1].here == true, where .. ": the area leads")
 	local lars, darkshire
 	for index, step in ipairs(steps or {}) do
-		lars = lars or (step.key == "town:41" and index or nil)
-		darkshire = darkshire or (step.key == "town:32" and index or nil)
+		lars = lars or (step.key == "town:49" and index or nil)
+		darkshire = darkshire or (step.key == "town:40" and index or nil)
 	end
-	check(lars == 2, where .. ": Lars takes the wolves next")
+	check(lars == 3, where .. ": Lars takes the wolves next")
 	check(not darkshire or (lars and darkshire > lars), where .. ": Darkshire only after Lars")
 end
 

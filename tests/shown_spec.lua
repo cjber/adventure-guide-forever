@@ -131,10 +131,10 @@ end
 -- The committed order (docs/design.md §4.3): a rebuild keeps to the last build's order though the player walked on,
 -- until the order is reset, which waits out a fight for the full build.
 do
-	local _, Shown, input = Case("orc18_barrens", true)
+	local _, Shown, input = Case("human19_redridge_full", true)
 	local _, first = Shown.Build(input)
 	local journey, head = first.journey, first.steps[1].key
-	input.player = At(input.player, first.steps[3])
+	input.player = At(input.player, first.steps[2])
 	local fresh = Shown.Build(input)
 	eq(fresh.steps[1].key ~= head, true, "the fixture: a fresh plan from there leads elsewhere")
 	input.last = first

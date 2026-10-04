@@ -2,7 +2,7 @@
 -- Objective areas (docs/design.md §4.2): standing inside the area step 1 leads to is "you're here", even when the
 -- same merged visit also holds a quest the route has yet to pick up elsewhere; the in-progress quest is selected, no
 -- travel line or numbered pin points back into the area, and the route does not advance to the next objective area
--- (Night Web's Hollow) while the current objective is unfinished. The point the step marks is an objective node, not
+-- (A Putrid Task) while the current objective is unfinished. The point the step marks is an objective node, not
 -- a spot on the shape's ring.
 local harness = dofile("tests/harness.lua")
 
@@ -15,7 +15,7 @@ local function equal(actual, expected, label)
 end
 
 -- Deathknell: Scavenging Deathknell (3902) is under way at 0/6; Marla's Last Wish (6395) is offered at the same town
--- and its objective node sits beside 3902's, so the planner merges them into one area visit. Night Web's Hollow (380)
+-- and its objective node sits beside 3902's, so the planner merges them into one area visit. A Putrid Task (404)
 -- is the next objective area the route holds.
 local h = harness.load({
 	spf = "v1",
@@ -58,14 +58,14 @@ equal(laterPinned, true, "here: the stops after it keep theirs")
 for index = 2, #route.steps do
 	equal(route.steps[index].here, nil, ("here: step %d is not 'here'"):format(index))
 end
-local nightWeb = false
+local nextArea = false
 for _, later in ipairs(route.steps) do
-	nightWeb = nightWeb or (later.key == "area:380:0" or later.key == "area:380:1")
+	nextArea = nextArea or later.key == "area:404:4"
 end
-equal(nightWeb, true, "here: the next objective area stays on the route")
+equal(nextArea, true, "here: the next objective area stays on the route")
 
--- Standing in the next area (Night Web's Hollow) does not advance the route while 3902 is unfinished.
-h.MovePlayer(1420, 0.287, 0.575)
+-- Standing in the next area (A Putrid Task) does not advance the route while 3902 is unfinished.
+h.MovePlayer(1420, 0.545, 0.543)
 h.ns.Invalidate()
 h.flush()
 equal(h.ns.Route().steps[1].key, "area:3902:4", "state: a later area does not advance an unfinished step")
@@ -80,7 +80,7 @@ for _, later in ipairs(route.steps) do
 		picked = picked or (id == 6395 and later.key or nil)
 	end
 end
-equal(picked, "town:221", "here: the planned pickup keeps its town visit")
+equal(picked, "town:231", "here: the planned pickup keeps its town visit")
 
 -- The step's point is an objective node inside one of its shapes, not a spot on the ring's border.
 local onNode = false
