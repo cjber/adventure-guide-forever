@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **A route settles the first time it is drawn.** With a nearly full quest log, a route could put a hand-in last, then move it up to second a moment later with nothing changed. The order you first see is now the one it keeps.
+
 ## [0.7.1] - 2026-10-04
 
 - **A boss's level no longer runs into its loot.** In a dungeon's Loot view, the level under each boss's name was drawn over the first item beneath it. The boss heading is now tall enough for both lines, and the Bosses view still jumps to the right place in the list.
