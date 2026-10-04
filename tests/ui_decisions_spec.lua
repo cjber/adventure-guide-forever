@@ -68,13 +68,13 @@ do
 	end)[1])
 	local scroll = row:GetParent():GetParent()
 	h.Click(row)
-	equal(scroll:GetVerticalScroll(), 22 + 6 * 44, "boss jump accounts for heading height")
+	equal(scroll:GetVerticalScroll(), 22 + 6 * 47, "boss jump accounts for heading height")
 	h.Click(tab)
 	local last = assert(h.Find(function(frame)
 		return frame:IsVisible() and frame.value and frame.value.boss and frame.value.title == "Boss 3"
 	end)[1])
 	h.Click(last)
-	equal(scroll:GetVerticalScroll(), 3 * 22 + 13 * 44 - 222, "boss jump clamps to the measured content height")
+	equal(scroll:GetVerticalScroll(), 3 * 22 + 13 * 47 - 222, "boss jump clamps to the measured content height")
 	equal(#h.errors, 0, "boss jump has no errors")
 end
 

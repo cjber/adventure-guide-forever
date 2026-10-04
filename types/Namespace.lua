@@ -92,6 +92,7 @@
 ---@field towns table<integer, AGFTownArea[]> zone uiMapID -> its named areas, the areas the world map reveals as you explore
 ---@field areaNames table<integer, string> AreaTable ID -> its English name, the fallback when the client has none
 ---@field roles table<integer, AGFRole> creature entry -> what that trainer or battlemaster does
+---@field bossAbilities table<integer, integer[]> creature entry (npcID) -> its cast spell ids, each gated on this client build (Data/Abilities.lua)
 
 -- Measures between steps on different maps without travel maths (Travel.lua Cost). World coordinates are yards.
 ---@class AGFMapCentre
@@ -1446,6 +1447,12 @@
 ---@field name string
 ---@field droppers? AGFDungeonBoss[] known droppers in this instance
 ---@field startQuest? boolean starts a quest
+---@field percent? number AtlasLoot's curated drop chance, when it has one
+
+---@class AGFBossAbility
+---@field id integer the Forever spell id
+---@field name string the client's name for it
+---@field icon integer the client's icon file ID
 
 ---@class AGFDungeonSource
 ---@field npcs? table<integer, table<integer, AGFDungeonBoss>>
@@ -1507,6 +1514,7 @@
 ---@field DUNGEON_RARE_ELITE string
 ---@field DUNGEON_BOSS_LOOT string
 ---@field DUNGEON_BOSS_LOOT_UNKNOWN string
+---@field DUNGEON_DROP_RATE string
 ---@field DUNGEON_ELITE string
 ---@field DUNGEON_NO_FACTION_QUESTS string
 ---@field DUNGEON_NO_CHARACTER_QUESTS string
@@ -1829,6 +1837,15 @@
 ---@field Map Button
 ---@field Expand AGFCollapseButton
 ---@field ItemIcon Texture
+---@field Icon? Texture a dungeon tile's corner icon
+---@field Up? Texture the journal button's normal art
+---@field Down? Texture its pushed art, the selected dungeon tile
+---@field Highlight? Texture its hover art
+---@field Portrait? Texture the default boss portrait
+---@field LootFrame? Texture the journal loot row's border
+---@field AbilityIcon? Texture a boss ability's spell icon
+---@field Percent? FontString a drop chance beside a loot row
+---@field Range? FontString a dungeon tile's recommended level range
 ---@field value? table
 
 ---@class AGFDataProvider
@@ -1859,6 +1876,8 @@
 ---@field paint fun(row: AGFDungeonRow, value: table)
 
 ---@class AGFDungeons
+---@field Abilities fun(npc?: integer): AGFBossAbility[] the bundled ids for a creature, resolved by this client
+---@field DropRate fun(npc?: integer, item: integer): number?
 ---@field QuestStatus fun(quest: AGFDungeonQuest): string
 ---@field PlaceText fun(place?: AGFPlace): string
 ---@field GiverText fun(quest: AGFDungeonQuest): string

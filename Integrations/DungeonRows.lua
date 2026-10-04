@@ -215,6 +215,11 @@ function Dungeons.BossRows(source, instance, known)
 			description = entry.description,
 			giver = count > 0 and L.DUNGEON_BOSS_LOOT:format(count) or L.DUNGEON_BOSS_LOOT_UNKNOWN,
 		}
+		-- Under each boss, the abilities this build resolves for its creature entry. A heading is the list's short-row
+		-- hint: an ability is one icon and one name, never a boss-sized button.
+		for _, ability in ipairs(Dungeons.Abilities(entry.journal and nil or entry.id)) do
+			rows[#rows + 1] = { title = ability.name, ability = ability.id, icon = ability.icon, heading = true }
+		end
 	end
 	return rows
 end

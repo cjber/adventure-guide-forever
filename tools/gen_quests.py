@@ -224,12 +224,15 @@ def parse_values(text):
     raise ValueError("Truncated SQL VALUES")
 
 
-def read_tables(lines):
+def read_tables(lines, wanted=None):
+    """The dump's tables as row dicts by column order; `wanted` narrows which tables are read, defaulting to
+    the route generator's own set."""
+    wanted = TABLES if wanted is None else wanted
     columns, tables, current = {}, defaultdict(list), None
     for line in lines:
         create = re.match(r"CREATE TABLE `(\w+)`", line)
         if create:
-            current = create[1] if create[1] in TABLES else None
+            current = create[1] if create[1] in wanted else None
             if current:
                 columns[current] = []
         elif current and (column := re.match(r"\s+`([^`]+)`", line)):
@@ -238,11 +241,11 @@ def read_tables(lines):
             current = None
         elif insert := re.match(r"INSERT INTO `(\w+)` VALUES ", line):
             table = insert[1]
-            if table in TABLES:
+            if table in wanted:
                 for values in parse_values(line[insert.end() :]):
                     tables[table].append(dict(zip(columns[table], values, strict=True)))
-    if TABLES - tables.keys():
-        raise ValueError(f"Missing SQL tables: {sorted(TABLES - tables.keys())}")
+    if wanted - tables.keys():
+        raise ValueError(f"Missing SQL tables: {sorted(wanted - tables.keys())}")
     return tables
 
 

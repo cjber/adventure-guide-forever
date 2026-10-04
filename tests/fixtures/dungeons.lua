@@ -79,6 +79,16 @@ return {
 		[10412] = { name = "Belt of the Fang", quality = 3, icon = 132519, itemType = "Armor", itemSubType = "Leather" },
 		[13245] = { name = "Kresh's Back", quality = 3, icon = 134964, itemType = "Armor", itemSubType = "Shields" },
 	},
+	-- Forever spell ids these bosses cast (Data/Abilities.lua), with the client's own name and icon (SpellName and
+	-- SpellMisc at 1.60.1.70205). Screenshot-only: the game reads the same fields at runtime.
+	abilities = {
+		[700] = { name = "Sleep", icon = 136090 },
+		[5187] = { name = "Healing Touch", icon = 136041 },
+		[6254] = { name = "Chained Bolt", icon = 136015 },
+		[6778] = { name = "Healing Touch", icon = 136041 },
+		[8147] = { name = "Thunderclap", icon = 136105 },
+		[9532] = { name = "Lightning Bolt", icon = 136048 },
+	},
 	objectives = {
 		[1486] = "Nalpak in the Wailing Caverns wants 20 Deviate Hides.",
 		[1487] = "Ebru in the Wailing Caverns wants you to kill 7 Deviate Ravagers, 7 Deviate Vipers, "

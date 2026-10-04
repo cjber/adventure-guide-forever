@@ -321,8 +321,8 @@ AdventureGuideForeverWindow = nil
 ---@field SetNumLoops fun(self: AGFMapPing, loops: integer)
 ---@field PlayAt fun(self: AGFMapPing, x: number, y: number)
 
--- AtlasLoot Classic/Era and Forever 1.1.2 expose the same runtime ItemDB layout.
----@type { ItemDB: {Get: fun(self: table, module: string): table?}, Locales: table<string, string> }?
+-- AtlasLoot Classic/Era and Forever 1.1.2 expose the same runtime ItemDB layout and droprate reader.
+---@type { ItemDB: {Get: fun(self: table, module: string): table?}, Locales: table<string, string>, Data: {Droprate: {GetData: fun(self: table, npcID: integer, itemID: integer): number?}}? }?
 AtlasLoot = nil
 
 ---@type table<integer, {r: number, g: number, b: number}>

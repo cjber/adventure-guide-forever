@@ -18,6 +18,7 @@ Locales\enUS.lua
 Data\Geometry.lua
 Data\Forever.lua
 Data\ZoneArt.lua
+Data\Abilities.lua
 Core\Core.lua
 Planning\Model.lua
 Planning\Travel.lua
