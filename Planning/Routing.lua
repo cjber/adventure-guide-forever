@@ -375,7 +375,7 @@ local function Stabilise(route, plain, rank, holds, at, origin)
 end
 
 -- Whether `where` stands in area `step`, `margin` yards past its edge: within one of its shapes, the data's objective
--- circles, never the ring merged round them, which covers ground no objective is on.
+-- circles, or within the ring merged round them, so a broad area counts the ground between its objectives as reached.
 ---@param where {map: integer, x: number, y: number}
 ---@param step AGFStep
 ---@param margin number
@@ -387,7 +387,13 @@ local function InArea(data, where, step, margin)
 			return true
 		end
 	end
-	return false
+	-- The merged ring reaches past the shapes, so a broad area whose objectives are spread out counts the ground
+	-- between them as reached; the ring is centred on the area's first shape, the radius Gather grew from it.
+	local first, yards = step.shapes[1], nil
+	if first then
+		yards = Model.Yards(data, where, first)
+	end
+	return yards ~= nil and yards <= step.r + margin
 end
 
 -- Whether an area is open: it holds at least one objective the player can work on. A merged area stays open while
@@ -407,12 +413,66 @@ local function Workable(step)
 	return false
 end
 
+-- A ready hand-in or a pickup this close to the player comes before the step the route heads for (docs/design.md
+-- §4.1): it is a word away, and a step whose own target point is farther sends them the wrong way first. The named
+-- length is about ten seconds on foot, so the detour to something beside them is no detour at all.
+local NEAR_ACTION = 60 -- yards
+
+-- Whether `step` is something the player can settle in a word: a ready hand-in, or a pickup. A visit back to hand in
+-- the route's own work (`returns`) is not ready, and its hand-in waits for its objectives like any other.
+---@param step AGFStep
+---@param log table<integer, AGFLogQuest>
+local function Beside(step, log)
+	if step.kind == "turnin" then
+		return true
+	end
+	if step.kind ~= "town" or step.returns then
+		return false
+	end
+	if #(step.pickups or NONE) > 0 then
+		return true
+	end
+	for _, id in ipairs(step.handins or NONE) do
+		local entry = log[id]
+		if entry and entry.complete then
+			return true
+		end
+	end
+	return false
+end
+
+-- The step of `steps` beside `from` that goes first (docs/design.md §4.1), or nil: the nearest ready hand-in or
+-- pickup within NEAR_ACTION yards, while the head's own target point is farther away. A step already at the head is
+-- not chosen, so a rebuild with nothing changed keeps the route and the choice never thrashes.
+---@param from? AGFPosition
+---@param log table<integer, AGFLogQuest>
+---@param steps AGFStep[]
+---@param at fun(step: AGFStep): AGFPosition?
+---@return AGFStep?
+function Model.NearAction(from, log, steps, at)
+	local head = steps[1]
+	if not (head and from and from.known) then
+		return nil
+	end
+	local headCost = Cost(from, at(head))
+	local best, bestCost
+	for _, step in ipairs(steps) do
+		if step ~= head and Beside(step, log) then
+			local cost = Cost(from, at(step))
+			if cost <= NEAR_ACTION and cost < headCost and (not best or cost < bestCost) then
+				best, bestCost = step, cost
+			end
+		end
+	end
+	return best
+end
+
 -- The open area the player stands in (docs/design.md §4.2): the head when it is one, else the first on the route.
 -- An area is open while it holds an objective the player can work on; a merged-step pickup the route has yet to make
 -- does not close it (Workable). While the head is an open area it is the only area that can lead, so walking into a
 -- later area does not advance the route past objectives the player has not finished (a step advances only when its
--- state is satisfied). Inside is within one of its shapes (InArea); the area they stood in (`held`, its key) lets go
--- only past HERE_MARGIN more, so its edge never flickers. Nil when they stand in none.
+-- state is satisfied). Inside is within one of its shapes or the ring round them (InArea); the area they stood in
+-- (`held`, its key) lets go only past HERE_MARGIN more, so its edge never flickers. Nil when they stand in none.
 local HERE_MARGIN = 30
 ---@param where? {map?: integer, x?: number, y?: number}
 ---@param steps AGFStep[]
@@ -443,6 +503,7 @@ ns.Planner.Routing = {
 	Build = Build,
 	Ident = Ident,
 	Idents = Idents,
+	NearAction = Model.NearAction,
 	Recommit = Recommit,
 	Stabilise = Stabilise,
 }

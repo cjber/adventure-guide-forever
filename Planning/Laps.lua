@@ -18,6 +18,7 @@ local Inside = ns.Planner.Steps.Inside
 local Locate = ns.Planner.Steps.Locate
 local Opens = ns.Planner.Steps.Opens
 local Optional = ns.Planner.Steps.Optional
+local NearAction = ns.Planner.Routing.NearAction
 local Planned = ns.Planner.Steps.Planned
 local Position = ns.Planner.Travel.Position
 local QuestLevel = ns.Planner.Steps.QuestLevel
@@ -637,8 +638,8 @@ end
 
 ---@param lap AGFLapState
 local function CommitLap(lap)
-	local data, player, planned, route, offered, rank, origin, card =
-		lap.data, lap.player, lap.planned, lap.route, lap.offered, lap.rank, lap.origin, lap.card
+	local data, log, player, planned, route, offered, rank, origin, card =
+		lap.data, lap.log, lap.player, lap.planned, lap.route, lap.offered, lap.rank, lap.origin, lap.card
 	local at = lap.at
 	-- A visit collects the town's eligible offers in one pass. Their work may belong to a later lap;
 	-- Verify still enforces the client's live log capacity, and a limited session requires that work to fit.
@@ -697,6 +698,12 @@ local function CommitLap(lap)
 		if standsIn and here == 1 and standsIn.planned then
 			local lead = LeadingArea(standsIn)
 			route[1], standsIn = lead, lead
+		end
+		-- A ready hand-in or a pickup beside the player goes before the step they head for, a broad area they stand in
+		-- included. Front keeps the route when the check refuses the move, so the head only changes when it is legal.
+		local near = NearAction(origin, log, route, at)
+		if near and near ~= route[1] then
+			route = Front(lap, route, { [near] = true })
 		end
 		if standsIn and route[1] == standsIn then
 			standsIn.here = true

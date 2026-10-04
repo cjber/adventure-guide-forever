@@ -1395,7 +1395,8 @@ do
 		db = { autoStart = false, showMapPins = true, showQuestGivers = true },
 		charDB = { journey = "zone:1420" },
 		completed = { 376 },
-		player = { level = 4, raceID = 5, classID = 1, map = 1420, x = 0.3161, y = 0.656 },
+		-- Away from Deathknell: standing in the broad area's merged ring is "here" now, and this check needs its pin.
+		player = { level = 4, raceID = 5, classID = 1, map = 1420, x = 0.4000, y = 0.6000 },
 		log = {
 			{
 				id = 3902,
