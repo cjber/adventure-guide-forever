@@ -319,12 +319,31 @@ function Dungeons.Journal(instance, yield)
 		return nil
 	end
 	local rows, index = {}, 1
+	local function Creature(encounterID)
+		-- The journal's own creature row (Blizzard_EncounterJournal.lua:274): its fifth return is the boss picture
+		-- and its fourth the creature display, which the client turns into a live portrait.
+		if not EJ_GetCreatureInfo then
+			return nil, nil
+		end
+		local _, _, _, display, picture = EJ_GetCreatureInfo(1, encounterID)
+		return type(picture) == "number" and picture > 0 and picture or nil,
+			type(display) == "number" and display > 0 and display or nil
+	end
 	while true do
 		local name, description, id = EJ_GetEncounterInfoByIndex(index, journal)
 		if not name or name == "" or not id then
 			break
 		end
-		rows[#rows + 1] = { id = id, name = name, rank = 3, journal = true, description = description }
+		local portrait, display = Creature(id)
+		rows[#rows + 1] = {
+			id = id,
+			name = name,
+			rank = 3,
+			journal = true,
+			description = description,
+			portrait = portrait,
+			display = display,
+		}
 		index = index + 1
 		yield()
 	end

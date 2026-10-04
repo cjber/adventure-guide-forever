@@ -83,7 +83,16 @@ OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 3
 ---@type fun(top?: number, bottom?: number, left?: number, right?: number, spacing?: number): AGFScrollBoxLinearView
 CreateScrollBoxListLinearView = nil
 
----@type {InitScrollBoxListWithScrollBar: fun(scrollBox: Frame, scrollBar: Frame, view: AGFScrollBoxLinearView)}
+---@class AGFScrollBoxGridView
+---@field SetElementSize fun(self: AGFScrollBoxGridView, width: number, height: number)
+---@field SetElementExtent fun(self: AGFScrollBoxGridView, extent: number)
+---@field SetElementInitializer fun(self: AGFScrollBoxGridView, template: string, initializer: fun(frame: Frame, elementData: any))
+---@field SetPadding fun(self: AGFScrollBoxGridView, top: number, bottom: number, left: number, right: number, spacing?: number)
+
+---@type fun(stride: integer, top?: number, bottom?: number, left?: number, right?: number, horizontalSpacing?: number, verticalSpacing?: number): AGFScrollBoxGridView
+CreateScrollBoxListGridView = nil
+
+---@type {InitScrollBoxListWithScrollBar: fun(scrollBox: Frame, scrollBar: Frame, view: AGFScrollBoxLinearView|AGFScrollBoxGridView)}
 ScrollUtil = nil
 
 ---@type fun(tbl?: any[]): AGFDataProvider
@@ -91,6 +100,38 @@ CreateDataProvider = nil
 
 ---@class AGFSearchBox : EditBox
 ---@field Instructions FontString
+
+-- SharedXML/Backdrop.xml: a frame with a backdrop, as NpcPreview and the NavBar's results panel use it.
+---@class AGFBackdropFrame : Frame
+---@field SetBackdrop fun(self: Frame, backdrop: table)
+---@field SetBackdropColor fun(self: Frame, r: number, g: number, b: number, a: number)
+---@field SetBackdropBorderColor fun(self: Frame, r: number, g: number, b: number, a: number)
+
+-- SharedXML/SharedUIPanelTemplates.lua: a texture that can render a creature's portrait from its display id.
+---@class Texture
+---@field SetPortraitTextureFromCreatureDisplayID fun(self: Texture, displayID: integer)
+
+-- Mainline/NavigationBar.lua: the stock NavBar's home button, its appended breadcrumbs and its reset.
+---@param frame Frame
+---@param template string
+---@param homeData table
+---@param home Button
+---@param overflow Button
+function NavBar_Initialize(frame, template, homeData, home, overflow) end
+
+---@param frame Frame
+---@param data table { name: string, OnClick: fun()?, listFunc: fun()? }
+function NavBar_AddButton(frame, data) end
+
+---@param frame Frame
+function NavBar_Reset(frame) end
+
+-- Blizzard_EncounterJournal: an encounter's creature row. Its fourth return is the creature display id and its fifth
+-- the boss picture file id, which is what the journal's own boss button draws.
+---@param index integer
+---@param encounterID? integer
+---@return integer id, string name, string description, integer displayInfo, integer bossImage, integer uiModelSceneID
+function EJ_GetCreatureInfo(index, encounterID) end
 
 ---@class AGFQuestContentFrame : Frame
 ---@field displayMode any
@@ -310,6 +351,13 @@ AdventureGuideForeverWindow = nil
 
 ---@class AGFTopTab : Button
 ---@field Text FontString
+---@field Normal? Texture
+---@field Pushed? Texture
+---@field Highlight? Texture
+---@field Icon? Texture
+---@field SelectedIcon? Texture
+---@field key? string
+---@field muted? boolean
 ---@field HandleRotation fun(self: AGFTopTab)
 ---@field SetTabSelected fun(self: AGFTopTab, selected: boolean)
 

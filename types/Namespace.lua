@@ -1442,6 +1442,8 @@
 ---@field rank integer 1 elite, 2 rare elite, 3 boss; never infer bosses from names
 ---@field low? integer
 ---@field high? integer
+---@field portrait? integer the client journal's boss picture file id (EJ_GetCreatureInfo)
+---@field display? integer the client journal's creature display id, for a live portrait
 
 ---@class AGFDungeonItem
 ---@field id integer
@@ -1481,11 +1483,11 @@
 ---@class AGFStrings
 ---@field TAB_DUNGEONS string
 ---@field DUNGEON_LIST_DUNGEONS string
----@field DUNGEON_LIST_RAIDS string
----@field DUNGEON_LIST_OTHER_RAIDS string
+---@field DUNGEON_RAIDS_TAB string
 ---@field DUNGEON_RAID_PLAYERS string
 ---@field DUNGEON_RAID_TOOLTIP string
 ---@field DUNGEON_QUESTS_TAB string
+---@field DUNGEON_OVERVIEW_TAB string
 ---@field DUNGEON_PREP_TAB string
 ---@field DUNGEON_BOSSES_TAB string
 ---@field DUNGEON_LOOT_TAB string
@@ -1535,6 +1537,8 @@
 ---@field DUNGEON_WANDERER string
 ---@field DUNGEON_SHOW_GIVER string
 ---@field DUNGEON_REWARDS string
+---@field NAV_HOME string
+---@field NAV_SEARCH string
 ---@field DUNGEON_START string
 ---@field DUNGEON_END string
 ---@field DUNGEON_PART string
@@ -1552,7 +1556,7 @@
 ---@field Refresh fun()
 ---@field OfferKey fun()
 ---@field RefreshToday fun(inset: Frame)
----@field CreateList fun(parent: Frame, x: number, y: number, width: number, height: number, rowHeight: number, paint: AGFListPaint, click: AGFListClick, create: AGFListCreate, extent?: AGFListExtent): AGFDungeonListWidget
+---@field CreateList fun(parent: Frame, x: number, y: number, width: number, height: number, rowHeight: number, paint: AGFListPaint, click: AGFListClick, create: AGFListCreate, extent?: AGFListExtent, columns?: integer, gap?: number): AGFDungeonListWidget
 ---@field SetList fun(widget: AGFDungeonListWidget, values: table[])
 ---@field ScrollListTo fun(widget: AGFDungeonListWidget, index: integer)
 ---@field CreateSectionHeader fun(parent: Frame, text: string, onClick?: fun(open: boolean)): AGFWindowSectionHeader
@@ -1839,12 +1843,15 @@
 ---@field Expand AGFCollapseButton
 ---@field ItemIcon Texture
 ---@field Icon? Texture a dungeon tile's corner icon
+---@field bgImage? Texture a dungeon tile's instance picture ground
 ---@field Up? Texture the journal button's normal art
 ---@field Down? Texture its pushed art, the selected dungeon tile
 ---@field Highlight? Texture its hover art
 ---@field Portrait? Texture the default boss portrait
 ---@field LootFrame? Texture the journal loot row's border
 ---@field AbilityIcon? Texture a boss ability's spell icon
+---@field IconBorder? Texture a loot row's quality-tinted icon frame
+---@field Header? FontString a loot row's heading
 ---@field Percent? FontString a drop chance beside a loot row
 ---@field Range? FontString a dungeon tile's recommended level range
 ---@field value? table
@@ -1875,6 +1882,8 @@
 ---@field headingHeight number
 ---@field extent? AGFListExtent
 ---@field paint fun(row: AGFDungeonRow, value: table)
+---@field columns? integer grid stride, above one
+---@field gap? number the spacing between grid elements
 
 ---@class AGFDungeons
 ---@field Abilities fun(npc?: integer): AGFBossAbility[] the bundled ids for a creature, resolved by this client
@@ -1882,10 +1891,11 @@
 ---@field QuestStatus fun(quest: AGFDungeonQuest): string
 ---@field PlaceText fun(place?: AGFPlace): string
 ---@field GiverText fun(quest: AGFDungeonQuest): string
+---@field GateText fun(gate: AGFEntranceGate): string
 ---@field QuestRows fun(page: AGFDungeonPage?, expanded: table<integer, boolean>): table[]
 ---@field PrepRows fun(page: AGFDungeonPage?): table[]
----@field CatalogRows fun(catalog: AGFDungeon[]): table[]
 ---@field BossRows fun(source: AGFDungeonSource?, instance: integer, known: AGFDungeonBoss[]): table[]
+---@field AbilityRows fun(npc?: integer): table[]
 
 -- The public surface (Core/API.lua, docs/api.md).
 ---@class AGFAPIStop

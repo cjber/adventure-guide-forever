@@ -362,8 +362,10 @@ equal(#bossRows, 1, "named boss row")
 local bossRow = bossRows[1]
 equal(bossRow.Info:GetText():find("Level 21|r", 1, true) ~= nil, true, "difficulty-coloured single level")
 equal(bossRow.Giver:GetText(), rewardUI.ns.L.DUNGEON_BOSS_LOOT:format(1), "known drop count and action")
+-- Clicking a boss on the loot view keeps its drops shown and moves the list to them.
+rewardUI.Click(Button(rewardUI, rewardUI.ns.L.DUNGEON_LOOT_TAB))
 rewardUI.Click(bossRow)
-equal(Texts(rewardUI)["Test drop"], true, "boss click opens its loot group")
+equal(Texts(rewardUI)["Test drop"], true, "boss click keeps its loot group shown")
 equal(#rewardUI.errors, 0, "source-present UI and item tooltip have no errors")
 -- Browsing a giver is independent of pickup eligibility; absent coordinates hide the control.
 local mapUI = harness.load()
@@ -675,17 +677,27 @@ equal(
 	"a raid without generated geometry still pages"
 )
 
--- The catalog splits dungeons from raids and tags the announced tier with its group size.
+-- The catalog splits dungeons from raids: the select page's two tabs, and the instance page tags the announced tier
+-- with its group size.
 local raidUI = harness.load()
 raidUI.ns.Window.OpenDungeon(249)
 raidUI.flush()
 local raidTexts = Texts(raidUI)
 equal(raidTexts["Onyxia's Lair"], true, "raid page names the instance")
-equal(raidTexts[raidUI.ns.L.DUNGEON_LIST_RAIDS], true, "announced raids get their own heading")
-equal(raidTexts[raidUI.ns.L.DUNGEON_LIST_DUNGEONS], true, "dungeons keep their heading")
 equal(raidTexts[raidUI.ns.L.DUNGEON_RAID_PLAYERS:format(40)], true, "raid group size is shown")
 raidUI.Click(Button(raidUI, raidUI.ns.L.DUNGEON_BOSSES_TAB))
 equal(#raidUI.errors, 0, "raid page has no errors")
+raidUI.Click(Button(raidUI, raidUI.ns.L.MENU_BACK))
+local selectTexts = Texts(raidUI)
+equal(selectTexts[raidUI.ns.L.DUNGEON_RAIDS_TAB], true, "raids get their own tab")
+equal(selectTexts[raidUI.ns.L.DUNGEON_LIST_DUNGEONS], true, "dungeons keep their tab")
+raidUI.Click(Button(raidUI, raidUI.ns.L.DUNGEON_RAIDS_TAB))
+local raidTiles = raidUI.Find(function(frame)
+	return frame:IsVisible() and frame.value and frame.value.raid and frame.value.id == 249
+end)
+assert(#raidTiles >= 1, "the Raids tab shows the raid's tile")
+equal(raidTiles[1].Range:GetText():find("40-player raid", 1, true) ~= nil, true, "the raid tile names its size")
+equal(#raidUI.errors, 0, "select page has no errors")
 
 -- Bosses come from the provider only: its order and details are kept, and the display merge leaves its data alone.
 local partialAtlas =

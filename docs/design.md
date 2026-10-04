@@ -60,10 +60,17 @@ abandons quests.
   providers. Assign Shift-J once, only if neither it nor the window already has a binding.
 - **2.20 Your order.** Reordering must preserve quest dependencies. Suggested order remains recoverable.
 
-- **2.21 Dungeons.** A window tab below the shared Today strip, with a level-sorted dungeon list, featured
-  header and Quests / Prep / Bosses / Loot pages. The list groups dungeons, the announced Forever raids, then
-  the client's other raid instances, each raid row tagged with its group size; the raid tier and sizes come from
-  `Integrations/Raids.lua` (docs/dungeon-sources.md), never from a copied Classic attunement page. Remember the instance Map.ID in window state. Plan to run
+- **2.21 Dungeons.** A window tab that uses the whole inset from its top, without the shared Today strip; while it
+  is selected the window hosts the journal's NavBar over the title bar and hides its zone subtitle. It opens on the
+  instance select page: the
+  Encounter Journal's 174x96 tile grid, four across, under its Dungeons and Raids tabs (the announced Forever
+  raids, then the client's other raid instances, each tile tagged with its group size; the raid tier and sizes
+  come from `Integrations/Raids.lua` (docs/dungeon-sources.md), never from a copied Classic attunement page).
+  With an instance remembered in window state it opens that instance's page instead, and Back returns to the
+  grid. The instance page is the journal's two-pane encounter layout: the 325x55 boss list on the left and the
+  detail pane on the right under the journal's own 63x57 side tabs, Overview, Quests, Prep, Bosses and Loot;
+  Maps stays a header button. The header carries the instance title, Back, Plan to run, Go to entrance, Start
+  journey and the Classic guide. Remember the instance Map.ID in window state. Plan to run
   selects the existing dungeon journey and enables the existing dungeon preference; no parallel plan state.
   Journey cards link back to the dungeon page. A dungeon the guide offers is pinned at its entrance on the world
   map; that pin, the dungeon's Maps control and the Maps tab all open the same interior view, whose floor dropdown
@@ -111,13 +118,17 @@ abandons quests.
   drop chance beside it when AtlasLoot has one, and nothing when it does not.
 
   The views wear the Encounter Journal's own art at its own sizes, since Blizzard's journal frames do not load on
-  this client: a 174x96 instance button with its icon and level range, a 325x55 boss button with the default
-  portrait, and a 321x45 loot row with a 42x42 icon and the journal's loot border, in the journal's fonts.
+  this client: a 174x96 instance tile with its level range, a 325x55 boss button with the encounter's portrait from
+  the client journal (the flat plate when it has none), and a 321x45 loot row with a quality-tinted 45x45 icon frame
+  and the journal's loot border, in the journal's fonts. The frames are ported from Adventure Guide for Classic by
+  FooxyTV (GPL-3.0): the instance select, the parchment instance page and its shadows, the boss list, the icon side
+  tabs, the overview, the loot rows and the NavBar are the reference's own construction, and each ported file names
+  its source. Overview draws the entrance zone's existing map art in the reference's lore area, with the
+  instance title over it; Bosses sets the selected encounter's name in the journal's paper header over its ability
+  rows; Quests and Prep put their list on the left and the detail, or the entrance requirements paper well, on the
+  right. An instance with no art draws the flat dark tile, never a stand-in picture.
 
-  Top sub-tabs use TabSystemTopButtonTemplate on a common baseline; chains use the quest log's
-  CollapseButtonTemplate. The header has title, location and a single meta line (entry level and positive remaining XP),
-  with a stock Plan to run checkbox and padded action row inside its border. It does not repeat the list's range.
-  Sub-tabs meet the content inset. Quest rows are a uniform 38 units: expand at left, title and short status
+  Chains use the quest log's CollapseButtonTemplate. Quest rows are a uniform 38 units: expand at left, title and short status
   in separate columns, giver/place below. Full titles, alternative prerequisites and unmet requirements live in
   the row tooltip; rewards and giver navigation live in the detail inset, with compact Map controls on expanded chain steps.
   Details use a header font, an Objectives heading, spaced wrapping text without an objective line cap, start/end
@@ -139,9 +150,10 @@ abandons quests.
 `UI/WindowList.lua` is the window's one list: a `WowScrollBoxList` with a `MinimalScrollBar`, set up with
 `ScrollUtil.InitScrollBoxListWithScrollBar` and `CreateScrollBoxListLinearView`. The scroll box makes a row only
 for the elements its viewport shows and pools it, so no page culls rows or manages a row pool by hand.
-`Window.CreateList(parent, x, y, width, height, rowHeight, paint, click, create, extent?)` returns the widget:
-`create` draws a row once, `paint` fills it from an element, and `extent` measures an element that is not a plain
-row height (a heading, or a step with its checklist). `Window.SetList(widget, values)` hands it the elements and
+`Window.CreateList(parent, x, y, width, height, rowHeight, paint, click, create, extent?, columns?, gap?)` returns
+the widget: `create` draws a row once, `paint` fills it from an element, and `extent` measures an element that is
+not a plain row height (a heading, or a step with its checklist). `columns` above one switches the same scroll box
+to the journal's grid view, `gap` apart, each element one tile wide (the instance tiles). `Window.SetList(widget, values)` hands it the elements and
 `Window.ScrollListTo(widget, index)` jumps to one. `widget.frame` is the scroll box and keeps `GetVerticalScroll`
 and `SetVerticalScroll` in pixels for callers written against the old `ScrollFrameTemplate`. Pages not yet
 migrated adopt the same factory.

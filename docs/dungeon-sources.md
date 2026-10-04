@@ -39,9 +39,16 @@ curated rate AtlasLoot applies to its own item tooltips, not a claim the client 
 
 The dungeon pages wear the Encounter Journal's own art and sizes without its frames, which do not load on
 this client (`Blizzard_EncounterJournal.toc` gates its files to mainline): a 174x96 instance button, a
-325x55 boss button with the default portrait, a 321x45 loot row with a 42x42 icon and the loot border, the
-journal's title and body fonts, all cut from `UI-EncounterJournalTextures` at the journal's own texcoords.
-Every texture, atlas and font object used was checked against the pinned client build before use.
+325x55 boss button with the encounter's client portrait, a 321x45 loot row with a 45x45 icon and the loot
+border, the journal's title and body fonts, all cut from `UI-EncounterJournalTextures` at the journal's own
+texcoords. Every texture, atlas and font object used was checked against the pinned client build before use.
+The frames themselves are ported from [Adventure Guide for Classic](https://github.com/FooxyTV/AdventureGuideClassic)
+by FooxyTV (GPL-3.0): `UI/WindowDungeons.lua` from `ui/InstanceSelect.lua`, `ui/Info.lua`,
+`ui/EncounterFrame.lua`, `ui/Encounters.lua`, `ui/InfoTabs.lua`, `ui/InstanceOverview.lua`, `ui/Loot.lua` and
+`ui/widgets/`, and `UI/WindowWidgets.lua`'s `Window.CreateNavBar` from `ui/NavBar.lua`. The reference's
+`lib/TomCats` library is separately licensed and not used: the instance button's mask and the boss picture come
+from the client (`EJ_GetCreatureInfo`, `TempPortraitAlphaMask`). On every ported file the first comment names its
+source; this addon supplies the data, the quest, prep, plan, map and guide features and the optional-source reads.
 
 The QuestieDB adapter owns the runtime quest source. `tools/gen_quests.py` writes the entrance
 requirement list on each instance: level, alternative required items, completed quest and an unsupported

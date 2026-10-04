@@ -52,7 +52,8 @@ h.ns.Window.OpenDungeon(43)
 h.flush()
 equal(#h.errors, 0, "open dungeon UI")
 
--- The instance list tiles are the journal's 174x96 buttons with its title and range fonts.
+-- The instance select page is the journal's tile grid; Back leaves the instance page for it.
+h.Click(Button(h, h.ns.L.MENU_BACK))
 local tiles = h.Find(function(frame)
 	return frame:IsVisible() and frame.Range ~= nil and frame.value ~= nil and frame.value.id == 43
 end)
@@ -65,6 +66,11 @@ equal(tile.Title.font, "QuestTitleFontBlackShadow", "instance title uses the jou
 equal(tile.Range.font, "GameFontNormal", "instance range uses the journal font")
 equal(tile.Range:GetText(), h.ns.L.DUNGEON_QUEST_LEVELS:format(15, 25), "instance tile shows its level range")
 
+-- Picking a tile opens the instance page again.
+h.Click(tile)
+h.flush()
+equal(#h.errors, 0, "select a dungeon from the grid")
+
 -- Bosses are the journal's 325x55 buttons with the default portrait.
 h.Click(Button(h, h.ns.L.DUNGEON_BOSSES_TAB))
 local bossRows = h.Find(function(frame)
@@ -75,7 +81,7 @@ local boss = bossRows[1]
 equal(boss.Up.file, 522972, "boss button uses the journal sheet")
 equal(boss.Up.width, 325, "boss button width")
 equal(boss.Up.height, 55, "boss button height")
-equal(boss.Portrait.file, "Interface\\EncounterJournal\\UI-EJ-BOSS-Default", "default boss portrait")
+equal(boss.Portrait.file, nil, "no per-encounter portrait source leaves the boss plate")
 equal(boss.Title.font, "GameFontNormalMed3", "boss name uses the journal font")
 
 -- Each boss's abilities sit under it as a spell icon and name, with the client's own spell tooltip.
@@ -99,8 +105,8 @@ for _, row in ipairs(lootRows) do
 	unrated = unrated or (row.value.item == 999905 and row)
 end
 assert(rated and unrated, "both drops are drawn")
-equal(rated.ItemIcon.width, 42, "loot icon width")
-equal(rated.ItemIcon.height, 42, "loot icon height")
+equal(rated.ItemIcon.width, 45, "loot icon width")
+equal(rated.ItemIcon.height, 45, "loot icon height")
 equal(rated.LootFrame.file, 522972, "loot row uses the journal loot border")
 equal(
 	rated.Percent:GetText(),
