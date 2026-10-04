@@ -660,6 +660,29 @@ do
 	end
 	h.ns.Overview.SetVerbIcon(texture, { verb = "trainer" })
 	equal(texture.file, "Interface\\Minimap\\Tracking\\Class", "badge: trainer texture")
+	-- An objective step of one kind wears that kind's cursor; mixed work keeps the objective's mark.
+	local quests = h.ns.Data.quests
+	local saved = { quests[1], quests[2] }
+	quests[1] = { kinds = { [0] = "monster", [1] = "item", [2] = "object", [3] = "event" } }
+	quests[2] = { kinds = { [0] = "monster" } }
+	for _, case in ipairs({
+		{ { { id = 1, slot = 0 }, { id = 2, slot = 0 } }, "Interface\\Cursor\\Attack", "kill" },
+		{ { { id = 1, slot = 1 } }, "Interface\\Cursor\\Pickup", "collect" },
+		{ { { id = 1, slot = 2 } }, "Interface\\Cursor\\Interact", "use" },
+	}) do
+		h.ns.Overview.SetVerbIcon(texture, { verb = "objective", objectives = case[1] })
+		equal(texture.file, case[2], "badge: an objective to " .. case[3])
+		equal(texture:IsShown(), true, "badge: visible")
+	end
+	for _, case in ipairs({
+		{ { { id = 1, slot = 0 }, { id = 1, slot = 1 } }, "mixed work" },
+		{ { { id = 1, slot = 3 } }, "a place to reach" },
+		{ { { id = 1, slot = 9 } }, "an unknown slot" },
+	}) do
+		h.ns.Overview.SetVerbIcon(texture, { verb = "objective", objectives = case[1] })
+		equal(texture:GetAtlas(), "questobjective", "badge: " .. case[2] .. " keeps the objective's mark")
+	end
+	quests[1], quests[2] = saved[1], saved[2]
 	h.ns.Overview.SetVerbIcon(texture, {})
 	equal(texture:IsShown(), false, "badge: hidden without a verb")
 	clean(h, "badge kinds")

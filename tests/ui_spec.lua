@@ -1146,7 +1146,8 @@ for _, spf in ipairs({ false, "v1" }) do
 
 	local ring = h.pins.AdventureGuideForeverPinTemplate[1]
 	equal(ring.Number.file, "Interface\\WorldMap\\UI-QuestPoi-NumberIcons", label .. ": the stock quest numeral")
-	same(ring.Number.texCoord, { 0, 0.125, 0.5, 0.625 }, label .. ": stock gold numeral 1")
+	same(ring.Number.texCoord, { 0, 0.125, 0, 0.125 }, label .. ": the next stop's dark numeral 1")
+	equal(ring.Icon:GetAtlas(), "UI-QuestPoi-QuestNumber-SuperTracked", label .. ": the next stop's tracked button")
 	-- Rings draw above the stock quest marks; givers stay under them (Blizzard_WorldMap.lua:291-311).
 	equal(ring.frameLevelType, "PIN_FRAME_LEVEL_WAYPOINT_LOCATION", label .. ": rings at the user waypoint's level")
 	h.Hover(ring)
@@ -1310,6 +1311,7 @@ do
 	pin:OnAcquired(step, 1)
 	equal(pin.Number:IsShown(), true, "POI: reused current stop restores its numeral")
 	equal(pin.NumberText:GetText(), "", "POI: reused current stop clears its fallback")
+	equal(pin.Icon:GetAtlas(), "UI-QuestPoi-QuestNumber-SuperTracked", "POI: reused current stop is lit again")
 	for _, region in ipairs({ pin.Icon, pin.Number, pin.NumberText, pin.Badge }) do
 		equal(region:GetAlpha(), 1, "POI: reused current stop restores full strength")
 	end

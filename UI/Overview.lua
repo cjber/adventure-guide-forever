@@ -81,6 +81,29 @@ local VERB_ATLAS = {
 	battlemaster = "battlemaster",
 }
 local TRAINER_FILE = "Interface\\Minimap\\Tracking\\Class"
+-- An objective step whose open objectives are all one kind wears the cursor the game shows over that kind of
+-- target: the sword over something to kill, the bag over something to collect, the gear over something to use.
+-- Mixed work, and a place to reach, keep the objective's own mark.
+local OBJECTIVE_FILES = {
+	monster = "Interface\\Cursor\\Attack",
+	item = "Interface\\Cursor\\Pickup",
+	object = "Interface\\Cursor\\Interact",
+}
+
+---@param step AGFStep
+---@return string? file
+local function ObjectiveFile(step)
+	local kind
+	for _, objective in ipairs(step.objectives or {}) do
+		local quest = ns.Data.quests[objective.id]
+		local own = quest and quest.kinds and quest.kinds[objective.slot]
+		if not own or (kind and own ~= kind) then
+			return nil
+		end
+		kind = own
+	end
+	return kind and OBJECTIVE_FILES[kind] or nil
+end
 
 ---@param step AGFStep
 ---@return string? atlas
@@ -91,6 +114,11 @@ local function VerbIcon(step)
 		return (step.pickups and #step.pickups > 0) and VERB_ATLAS.pickup or VERB_ATLAS.turnin
 	elseif verb == "trainer" then
 		return nil, TRAINER_FILE
+	elseif verb == "objective" then
+		local file = ObjectiveFile(step)
+		if file then
+			return nil, file
+		end
 	end
 	return verb and VERB_ATLAS[verb] or nil
 end
@@ -98,7 +126,8 @@ end
 ---@class AGFBadge : Texture
 ---@field box number the square the mark fits in
 
--- The kind's mark on `badge` at its own aspect, hidden when the step has none. The trainer's file is a square icon.
+-- The kind's mark on `badge` at its own aspect, hidden when the step has none. A file (the trainer's, a cursor) is a
+-- square icon.
 ---@param badge AGFBadge
 ---@param step AGFStep
 local function SetVerbIcon(badge, step)

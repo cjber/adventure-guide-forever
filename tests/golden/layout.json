@@ -1347,7 +1347,7 @@
           "y": 4.00
         }
       ],
-      "atlas": "questobjective",
+      "file": "Interface\\Cursor\\Pickup",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Kind",
       "size": [
@@ -1618,7 +1618,7 @@
           "y": 4.00
         }
       ],
-      "atlas": "questobjective",
+      "file": "Interface\\Cursor\\Pickup",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Kind",
       "size": [
@@ -2431,7 +2431,7 @@
           "y": 4.00
         }
       ],
-      "atlas": "questobjective",
+      "file": "Interface\\Cursor\\Pickup",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Kind",
       "size": [
@@ -2702,7 +2702,7 @@
           "y": 4.00
         }
       ],
-      "atlas": "questobjective",
+      "file": "Interface\\Cursor\\Pickup",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Kind",
       "size": [
@@ -3225,7 +3225,7 @@
           "y": 4.00
         }
       ],
-      "atlas": "questobjective",
+      "file": "Interface\\Cursor\\Pickup",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Kind",
       "size": [
