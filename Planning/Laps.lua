@@ -272,8 +272,8 @@ end
 
 ---@param lap AGFLapState
 local function BuildLapAnchors(lap)
-	local data, towns, areas, picks, ids, nodes, skipped, others, anchors, list =
-		lap.data, lap.towns, lap.areas, lap.picks, lap.ids, lap.nodes, lap.skipped, lap.others, lap.anchors, lap.list
+	local data, towns, areas, picks, ids, skipped, others, anchors, list =
+		lap.data, lap.towns, lap.areas, lap.picks, lap.ids, lap.skipped, lap.others, lap.anchors, lap.list
 	local at = lap.at
 	for _, town in ipairs(towns) do
 		if #town.quests > 0 then
@@ -302,15 +302,24 @@ local function BuildLapAnchors(lap)
 	end
 	table.sort(carried)
 	for _, id in ipairs(carried) do
-		table.insert(homes[id] and homes[id].hands or {}, id)
+		-- A carried quest is handed in only once the route can place and work every objective it needs: one whose data
+		-- misses an objective is left to the log, where the full build makes it a ready hand-in once it is done.
+		local quest, slots = data.quests[id], 0
+		for _ in pairs((quest and quest.need) or NONE) do
+			slots = slots + 1
+		end
+		if pending[id] == slots then
+			table.insert(homes[id] and homes[id].hands or {}, id)
+		end
 	end
 	for _, id in ipairs(ids) do
 		local town, finish = picks[id], data.quests[id].finish
 		homes[id] = town and anchors[town.key] or false
-		-- A lap hands in only what it does: not an outdoor elite, whose work waits for a group, nor a lead whose work
-		-- the data places nowhere.
+		-- A lap hands in only what it does: not an outdoor elite, whose work waits for a group, nor a lead or pinned
+		-- quest whose work the data places nowhere. A quest the route cannot finish stays with the log; finishing it
+		-- makes it a ready hand-in on the next full build.
 		local quest = data.quests[id]
-		local handin = not quest.elite and (#nodes[id] > 0 or next(quest.need or NONE) == nil)
+		local handin = not quest.elite and Pickable(quest)
 		if
 			town
 			and handin

@@ -263,7 +263,8 @@ local function Objective(quest, entry, slot, counted)
 		id = entry.id,
 		slot = slot,
 		have = client and client.have,
-		need = client and client.need or (quest and quest.need and quest.need[slot]),
+		-- A client count of 0 is a kind it does not tally, not a need of none: the data's count stands then.
+		need = client and client.need ~= 0 and client.need or (quest and quest.need and quest.need[slot]),
 		text = client and client.text ~= "" and client.text or nil,
 		type = client and client.type,
 		finish = (finish and ValidPlace(finish)) and "town:" .. Hub(finish) or nil,

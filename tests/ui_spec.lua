@@ -1386,6 +1386,44 @@ do
 	clean(h, "area step")
 end
 
+-- An objective kind the client does not count: the log gives no needed count (0), so the data's count stands and a
+-- bare "2/0" never reaches the tooltip (docs/design.md §2.9).
+do
+	local h = harness.load({
+		spf = "v1",
+		planned = true,
+		db = { autoStart = false, showMapPins = true, showQuestGivers = true },
+		charDB = { journey = "zone:1420" },
+		completed = { 376 },
+		player = { level = 4, raceID = 5, classID = 1, map = 1420, x = 0.3161, y = 0.656 },
+		log = {
+			{
+				id = 3902,
+				title = "Scavenging Deathknell",
+				level = 3,
+				complete = false,
+				objectives = { { type = "item", done = false, have = 2, need = 0, text = "" } },
+			},
+		},
+	})
+	h.G.C_Map.OpenWorldMap()
+	h.flush()
+	h.providers[1]:RefreshAllData()
+	local pin
+	for _, candidate in ipairs(h.pins.AdventureGuideForeverPinTemplate) do
+		pin = candidate.step.key == "area:3902:4" and candidate or pin
+	end
+	equal(pin ~= nil, true, "uncounted objective: the area pin")
+	h.Hover(pin)
+	local counted = false
+	for _, line in ipairs(h.tooltip) do
+		counted = counted or line == "highlight: - 2/6"
+		equal(line == "highlight: - 2/0", false, "uncounted objective: no bare client count")
+	end
+	equal(counted, true, "uncounted objective: the data's count stands")
+	clean(h, "uncounted objective")
+end
+
 -- F1, the map budget: a fresh install draws no mark with the tab closed; opted in, at most 9 rings and exactly the
 -- zone's eligible givers, which stay while Shortest Path guides; either switch off hides every giver. The rings,
 -- the open guide's preview included, step aside while it guides.
