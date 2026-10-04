@@ -11,6 +11,7 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **The tracker reads in game order.** The game's All Objectives header leads the shared column, the Forever sections follow it, and your quests stay below them. In combat the game keeps its quest list in its own slot, so the header and quests stay together and the Forever sections sit directly below them, keeping the tracker to one column.
 - **A step's badge says what the work is.** An objective step wears the sword for something to kill, the bag for something to collect and the gear for something to use, in place of the plain yellow dot; a step that mixes them keeps the dot.
 - **A town stop is named by its town in Shortest Path Forever.** The journey list read "Journey to Visit Stormwind City: Pick up 3" and "Walk to Visit Stormwind City: Pick up 3"; it now reads "Journey to Stormwind City" and "Walk to Stormwind City".
 - **The route's next stop stands out on the map.** Its numbered ring is lit the way the game lights the quest it tracks, and the later stops keep the plain ring.
