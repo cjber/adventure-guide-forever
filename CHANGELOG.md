@@ -11,6 +11,7 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Quest data loads sooner after a login or a reload.** The build read a quest giver's place from QuestieDB, then asked again which side it serves and whether it keeps an inn; it now reads each one once and lets the objective pass share the spawns it already has.
 - **A plain quest giver is no longer called a class trainer.** When the bundled trainer list did not name the giver of a class quest, the quest's class was stamped on it, so the calling card said "Your class trainer has a task" for someone like Harry Burlguard or Islen Waterseer. A giver counts as a trainer only when QuestieDB's own NPC flags mark it as one.
 - **A chain with one prerequisite now shows its total.** QuestieDB files a lone prerequisite as one of several alternatives, so a chain containing one was shown as a chapter with no total. A single alternative now reads as the one quest it requires, so those chains show "Chapter 2 of 8" instead of a bare chapter.
 - **The guide no longer offers quests your character cannot take.** A quest gated behind a profession rank or a reputation standing is read from QuestieDB with its requirement, so a route no longer sends you to a pickup the game would refuse.

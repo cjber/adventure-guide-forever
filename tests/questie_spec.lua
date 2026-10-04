@@ -138,6 +138,53 @@ equal(dropReads, 1, "an item two quests collect is read once a build")
 for _, id in ipairs({ 900001, 900002, 900003 }) do
 	equal(once.ns.Data.quests[id].obj[1][2], 500, "shared spawn still places quest " .. id)
 end
+-- A quest giver's place and its service flags are one NPC read, and the objective pass takes the giver's spawns
+-- rather than asking again: the same creature gives 900014 and is 900014's own objective. A giver tested for the
+-- trainer bit shares that same read.
+local service = Fake()
+service.npcs[900199] = { name = "Giver objective", spawns = { [12] = { { 49, 42 } } }, zoneID = 12 }
+service.npcs[900200] = { name = "Class trainer", spawns = { [12] = { { 48, 42 } } }, zoneID = 12, npcFlags = 16 }
+service.quests[900014] = {
+	name = "Kill the giver",
+	questLevel = 20,
+	requiredLevel = 18,
+	startedBy = { { 900199 } },
+	zoneOrSort = 12,
+	objectives = { { { 900199, nil, 0 } } },
+}
+service.quests[900015] = {
+	name = "Trainer's task",
+	questLevel = 20,
+	requiredLevel = 18,
+	requiredClasses = 64,
+	startedBy = { { 900200 } },
+	zoneOrSort = 12,
+}
+local giverReads, sharedSpawns, trainerReads = 0, 0, 0
+local readOnce = harness.load({
+	questiedb = service,
+	setup = function(loaded)
+		Policy(loaded)
+		local lib = loaded.G.LibQuestieDB
+		local npc = lib.Npc.GetAll
+		lib.Npc.GetAll = function(id, keys)
+			if id == 900199 then
+				giverReads = giverReads + 1
+				for _, key in ipairs(keys) do
+					sharedSpawns = sharedSpawns + (key == "spawns" and 1 or 0)
+				end
+			elseif id == 900200 then
+				trainerReads = trainerReads + 1
+			end
+			return npc(id, keys)
+		end
+	end,
+})
+equal(readOnce.ns.QuestieStatus.state, "questie", "one-read build ready")
+equal(giverReads, 1, "a quest giver's place and service flags are one read")
+equal(sharedSpawns, 1, "the objective pass takes the giver's spawns, not a second read")
+equal(trainerReads, 1, "a giver tested for the trainer bit is read once")
+equal(readOnce.ns.Data.quests[900015].start.trainer, 7, "the shared read still names the class")
 -- QuestieDB's own skill, reputation and exclusive gates become the model's fields.
 local gated = Fake()
 gated.quests[900004] = {

@@ -1525,6 +1525,14 @@
 ---@alias AGFYield fun()
 ---@alias AGFQuestieReads {Npc: table<integer, table|false>, Object: table<integer, table|false>, Item: table<integer, table|false>}
 
+---@class AGFQuestieNpcRow one Npc's place and service fields for a catalogue build
+---@field name string
+---@field spots AGFPoint[]
+---@field home integer? the uiMapID the NPC is most common on
+---@field inn boolean QuestieDB's innkeeper flag
+---@field trains boolean QuestieDB's trainer flag
+---@field side integer? 1 Alliance, 2 Horde, 3 both, nil neither
+
 ---@class AGFNamespace
 ---@field QuestieTowns AGFQuestieTowns
 ---@field QuestieObjectives fun(lib: AGFQuestieDB, objectives: table?, trigger: table?, zone: integer?, data: AGFData, mapOf: AGFMapLookup, yield: AGFYield, questID: integer, reads: AGFQuestieReads): table?, AGFObjectiveArea[]?, table?, boolean?

@@ -281,26 +281,72 @@ local function Build(lib, zones, bundled, yield)
 	local givers = { Npc = {}, Object = {} }
 	---@type AGFQuestieReads
 	local reads = { Npc = {}, Object = {}, Item = {} }
+	-- One Npc row per build: the place fields a giver needs, the service fields the innkeeper and trainer passes
+	-- need, and the spawns the objective pass reads. nil means not read yet, false means no row for the id.
+	---@type table<integer, AGFQuestieNpcRow|false>
+	local npcRows = {}
+	-- A row's spawns on maps the data places (0-100 on its area's map), in the data's order.
+	---@param spawns table<integer, number[][]>
+	---@return AGFPoint[]
+	local function Spots(spawns)
+		local spots = {}
+		for area, coordinates in pairs(spawns) do
+			local map = type(area) == "number" and Map(area)
+			for _, xy in ipairs(map and coordinates or {}) do
+				local x, y = tonumber(xy[1]), tonumber(xy[2])
+				if x and y and x >= 0 and x <= 100 and y >= 0 and y <= 100 then
+					table.insert(spots, { map = map, x = Round(x / 100), y = Round(y / 100) })
+				end
+			end
+		end
+		return spots
+	end
+	---@param id integer
+	---@return AGFQuestieNpcRow|false
+	local function NpcRow(id)
+		local row = npcRows[id]
+		if row == nil then
+			local values = lib.Npc.GetAll(id, NPC_FIELDS)
+			local spawns = values and values[2]
+			row = false
+			if values and type(values[1]) == "string" and type(spawns) == "table" then
+				local flags = tonumber(values[4]) or 0
+				row = {
+					name = values[1],
+					spots = Spots(spawns),
+					home = type(values[3]) == "number" and Map(values[3]) or nil,
+					inn = bit.band(flags, INNKEEPER) ~= 0,
+					trains = bit.band(flags, TRAINER) ~= 0,
+					side = SIDES[values[5]],
+				}
+			end
+			npcRows[id] = row
+			reads.Npc[id] = spawns or false
+		end
+		return row
+	end
 	---@param kind "Npc"|"Object"
 	---@param id integer
 	---@return {name: string, spots: {map: integer, x: number, y: number}[], home: integer?}|false
 	local function Giver(kind, id)
 		local giver = givers[kind][id]
 		if giver == nil then
-			local values = lib[kind].GetAll(id, GIVER_FIELDS)
-			giver = false
-			if values and type(values[1]) == "string" and type(values[2]) == "table" then
-				giver = { name = values[1], spots = {}, home = type(values[3]) == "number" and Map(values[3]) or nil }
-				for area, coordinates in pairs(values[2]) do
-					local map = type(area) == "number" and Map(area)
-					for _, xy in ipairs(map and coordinates or {}) do
-						local x, y = tonumber(xy[1]), tonumber(xy[2])
-						if x and y and x >= 0 and x <= 100 and y >= 0 and y <= 100 then
-							table.insert(giver.spots, { map = map, x = Round(x / 100), y = Round(y / 100) })
-						end
-					end
+			local row
+			if kind == "Npc" then
+				row = NpcRow(id)
+			else
+				local values = lib.Object.GetAll(id, GIVER_FIELDS)
+				if values and type(values[1]) == "string" and type(values[2]) == "table" then
+					row = {
+						name = values[1],
+						spots = Spots(values[2]),
+						home = type(values[3]) == "number" and Map(values[3]) or nil,
+					}
 				end
+				-- The objective pass reads the same spawns; hand it this answer instead of asking again.
+				reads.Object[id] = values and row and values[2] or false
 			end
+			giver = row and { name = row.name, spots = row.spots, home = row.home } or false
 			givers[kind][id] = giver
 		end
 		return giver
@@ -330,15 +376,9 @@ local function Build(lib, zones, bundled, yield)
 	end
 	-- Whether QuestieDB's flags call an NPC a trainer. The bundled roles miss Forever's extra class and race
 	-- combinations, so a class quest's giver needs this bit before its class is stamped on it.
-	local trains = {}
 	local function Trains(id)
-		local known = trains[id]
-		if known == nil then
-			local values = lib.Npc.GetAll(id, SERVICE_FIELDS)
-			known = values and bit.band(tonumber(values[1]) or 0, TRAINER) ~= 0 or false
-			trains[id] = known
-		end
-		return known
+		local row = NpcRow(id)
+		return row and row.trains or false
 	end
 
 	local ids, quests = lib.Quest.GetAllIds(), {}
@@ -500,9 +540,22 @@ local function Build(lib, zones, bundled, yield)
 	local npcs = {}
 	for _, id in ipairs(type(lib.Npc.GetAllIds) == "function" and lib.Npc.GetAllIds() or {}) do
 		local role = bundled.roles[id]
-		local values = lib.Npc.GetAll(id, SERVICE_FIELDS)
-		local inn = values and bit.band(tonumber(values[1]) or 0, INNKEEPER) ~= 0
-		local side = values and SIDES[values[2]]
+		local row = npcRows[id]
+		if row == nil then
+			-- An NPC with a bundled role always needs its place; any other is read for its service flags alone, and an
+			-- innkeeper then read again for its place. An NPC already read as a quest giver keeps that row.
+			if role then
+				row = NpcRow(id)
+			else
+				local values = lib.Npc.GetAll(id, SERVICE_FIELDS)
+				local inn = values and bit.band(tonumber(values[1]) or 0, INNKEEPER) ~= 0
+				local side = values and SIDES[values[2]]
+				row = side and inn and NpcRow(id) or false
+				npcRows[id] = row
+				reads.Npc[id] = reads.Npc[id] or false
+			end
+		end
+		local inn, side = row and row.inn or false, row and row.side
 		local giver = side and (role or inn) and Giver("Npc", id)
 		if giver then
 			local best, bestKey
