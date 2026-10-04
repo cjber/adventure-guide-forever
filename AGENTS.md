@@ -116,6 +116,10 @@ its types reviewed), and the tool versions in
 - WFA-28: transports (boats and zeppelins between continents): CMaNGOS classic-db `gameobject_template` with
   wago.tools `TaxiPathNode`. QuestieDB's object rows have a `waypoints` field for objects riding a transport,
   empty in the Forever data, and neither database lists which docks a boat joins.
+- WFA-28: the headless test quest corpus (`tests/fixtures`, never shipped): CMaNGOS classic-db quest, NPC and
+  object tables. The planner specs need skill and reputation gates, exclusive groups, timed flags and objective
+  counts, which QuestieDB's runtime build does not carry. It stays until a source that follows Forever more closely
+  and is as complete can replace it (owner decision 2026-10-04).
 
 - WFA-3: the map-pin, quest-giver and tracker toggles stay in the guide's cog as well as Settings > AddOns, as
   quick switches next to the map (owner decision 2026-09-27).
