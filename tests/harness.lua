@@ -2329,6 +2329,21 @@ function harness.load(options)
 			RequireContract = function(required)
 				return required >= 1 and required <= (fake.contract or 2)
 			end,
+			-- QuestieDB's own encoding: the old races by their number, Forever's Skyborne at bits 32 and 33.
+			Enum = {
+				raceMaskById = {
+					[1] = 1,
+					[2] = 2,
+					[3] = 4,
+					[4] = 8,
+					[5] = 16,
+					[6] = 32,
+					[7] = 64,
+					[8] = 128,
+					[95] = 2 ^ 32,
+					[96] = 2 ^ 33,
+				},
+			},
 			Meta = {
 				QuestMeta = { questKeys = keys },
 				NpcMeta = { npcKeys = keys },
@@ -2791,6 +2806,7 @@ end
 -- dungeon quest's area sits in its instance, and a place's NPC or object gives or takes the quest there. From the
 -- bundled data only, so none of Questie's data is copied.
 ---@param data AGFData
+local SIDE_RACES = { 77 + 2 ^ 32, 178 + 2 ^ 33 }
 function harness.questieMirror(data)
 	local fake = { quests = {}, npcs = {}, objects = {}, zones = { area = {}, instances = {} } }
 	for map in pairs(data.maps) do
@@ -2857,7 +2873,8 @@ function harness.questieMirror(data)
 			name = quest.title,
 			questLevel = quest.level,
 			requiredLevel = quest.min,
-			requiredRaces = quest.races or 0,
+			-- QuestieDB states a side's quest as that side's whole race mask.
+			requiredRaces = quest.races or SIDE_RACES[quest.side] or 0,
 			requiredClasses = quest.classes or 0,
 			zoneOrSort = quest.dungeon and 100000 + quest.dungeon or quest.zone or 0,
 			startedBy = quest.start and Giver(quest.start),

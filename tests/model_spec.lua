@@ -1867,7 +1867,7 @@ equal(mismatches, 0, "why: Eligible == every Why line met, for every quest and f
 
 -- The lines themselves: the design's copy, the client's names first, a suppressed start alone.
 local horde = { level = 10, maxLevel = 60, side = 2, raceBit = 2, classBit = 1, map = 1, x = 0.5, y = 0.5 }
-local q = ns.Data.quests[83] -- Red Linen Goods: Alliance races, level 4
+local q = ns.Data.quests[83] -- Red Linen Goods: Alliance, level 4
 local function Texts(lines)
 	local out = {}
 	for _, line in ipairs(lines) do
@@ -1878,7 +1878,14 @@ end
 equal(q.title, "Red Linen Goods", "why: the fixture quest")
 equal(
 	Texts(Model.Why(ns.Data, horde, {}, {}, 83)),
-	"- Alliance only | + Requires level 4 | - Races: Human, Dwarf, Night Elf, Gnome",
+	"- Alliance only | + Requires level 4",
+	"why: a quest open to its whole side names no races"
+)
+-- A quest for some of a side's races names them.
+q.races = 5
+equal(
+	Texts(Model.Why(ns.Data, horde, {}, {}, 83)),
+	"- Alliance only | + Requires level 4 | - Races: Human, Dwarf",
 	"why: side, level and races"
 )
 local names = {
@@ -1886,11 +1893,8 @@ local names = {
 		return id == 1 and "Humain" or nil
 	end,
 }
-equal(
-	Model.Why(ns.Data, horde, {}, {}, 83, names)[3].text,
-	"Races: Humain, Dwarf, Night Elf, Gnome",
-	"why: the client's names win"
-)
+equal(Model.Why(ns.Data, horde, {}, {}, 83, names)[3].text, "Races: Humain, Dwarf", "why: the client's names win")
+q.races = nil
 local custom = { quests = { quest(), quest(), quest() }, zones = {} }
 custom.quests[1].pre, custom.quests[1].preAny, custom.quests[1].classes = { 2 }, { 2, 3 }, 1
 custom.quests[2].title, custom.quests[3].title = "First", "Second"
