@@ -1,0 +1,127 @@
+"""Pure ability-generator checks: python3 -m unittest discover -s tools -p '*_test.py'."""
+
+import io
+import unittest
+from unittest import mock
+
+import gen_abilities
+import gen_quests
+
+DUMP = """CREATE TABLE `creature_ai_scripts` (
+  `id` int NOT NULL,
+  `creature_id` int NOT NULL,
+  `action1_type` tinyint unsigned NOT NULL,
+  `action1_param1` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+INSERT INTO `creature_ai_scripts` VALUES (1,639,11,674),(2,639,1,6061),(3,639,11,5200);
+"""
+
+
+def template(entry, rank=1, spell_list=0):
+    return {"Entry": str(entry), "Rank": str(rank), "SpellList": str(spell_list)}
+
+
+def spawn(entry, map_id):
+    return {"id": str(entry), "map": str(map_id)}
+
+
+def spell_set(entry, *spells):
+    row = {"entry": str(entry)}
+    for slot in range(1, 11):
+        row[f"spell{slot}"] = str(spells[slot - 1]) if slot <= len(spells) else "0"
+    return row
+
+
+def cast(entry, spell, slot=1):
+    row = {"creature_id": str(entry), "action1_type": "0", "action1_param1": "0"}
+    row[f"action{slot}_type"], row[f"action{slot}_param1"] = "11", str(spell)
+    return row
+
+
+class ReadTablesTest(unittest.TestCase):
+    def test_reads_only_the_wanted_tables_by_column_order(self):
+        with mock.patch.object(gen_abilities, "TABLES", {"creature_ai_scripts"}):
+            tables = gen_abilities.read_tables(io.StringIO(DUMP))
+        self.assertEqual(
+            tables["creature_ai_scripts"],
+            [
+                {"id": 1, "creature_id": 639, "action1_type": 11, "action1_param1": 674},
+                {"id": 2, "creature_id": 639, "action1_type": 1, "action1_param1": 6061},
+                {"id": 3, "creature_id": 639, "action1_type": 11, "action1_param1": 5200},
+            ],
+        )
+
+    def test_missing_table_is_an_error(self):
+        with mock.patch.object(gen_abilities, "TABLES", {"creature_ai_scripts", "creature"}):
+            with self.assertRaises(ValueError):
+                gen_abilities.read_tables(io.StringIO(DUMP))
+
+
+class InstanceMapsTest(unittest.TestCase):
+    def test_dungeons_and_registry_raids(self):
+        maps = gen_abilities.instance_maps('ns.Raids = {\n\t{ name = "Onyxia\'s Lair", map = 249 },\n}\n')
+        self.assertEqual(maps, set(gen_quests.DUNGEON_LEVELS) | {249})
+
+
+class CreatureAbilitiesTest(unittest.TestCase):
+    def test_collects_casts_spell_sets_and_lists(self):
+        tables = {
+            "creature_template": [template(1, spell_list=7), template(2)],
+            "creature_template_spells": [spell_set(1, 100, 0, 101)],
+            "creature_spell_list": [{"Id": "7", "SpellId": "102"}],
+            "creature_ai_scripts": [cast(1, 103), cast(1, 104, slot=3), cast(2, 105)],
+            "creature": [],
+        }
+        self.assertEqual(gen_abilities.creature_abilities(tables), {1: {100, 101, 102, 103, 104}, 2: {105}})
+
+
+class GateTest(unittest.TestCase):
+    def test_resolves_needs_a_clean_name_and_an_effect(self):
+        names = {1: "Fireball", 2: "", 3: "Fireball (OLD)", 4: "Frostbolt"}
+        effects = {1, 2, 3}
+        self.assertTrue(gen_abilities.resolves(1, names, effects))
+        self.assertFalse(gen_abilities.resolves(2, names, effects))
+        self.assertFalse(gen_abilities.resolves(3, names, effects))
+        self.assertFalse(gen_abilities.resolves(4, names, effects))
+        self.assertFalse(gen_abilities.resolves(9, names, effects))
+
+
+class GenerateTest(unittest.TestCase):
+    def tables(self):
+        return {
+            "creature_template": [template(1), template(2, rank=0), template(3, rank=1)],
+            "creature": [spawn(1, 43), spawn(2, 43), spawn(3, 70)],
+            "creature_template_spells": [],
+            "creature_spell_list": [],
+            "creature_ai_scripts": [cast(1, 100), cast(2, 101), cast(3, 102)],
+        }
+
+    def test_keeps_only_resolved_elite_creatures_on_browsed_maps(self):
+        resolved = gen_abilities.generate(self.tables(), {43}, {100: "Fireball", 102: "Frostbolt"}, {100})
+        self.assertEqual(resolved, {1: [100]})
+
+    def test_no_rows_for_a_creature_that_resolves_nothing(self):
+        self.assertEqual(gen_abilities.generate(self.tables(), {43}, {}, {}), {})
+
+    def test_one_row_per_ability_name(self):
+        tables = {
+            "creature_template": [template(1)],
+            "creature": [spawn(1, 43)],
+            "creature_template_spells": [],
+            "creature_spell_list": [],
+            "creature_ai_scripts": [cast(1, 100), cast(1, 101)],
+        }
+        names = {100: "Cleave", 101: "Cleave"}
+        self.assertEqual(gen_abilities.generate(tables, {43}, names, {100, 101}), {1: [100]})
+        self.assertEqual(gen_abilities.generate(tables, {43}, names, {101}), {1: [101]})
+
+
+class RenderTest(unittest.TestCase):
+    def test_header_and_rows(self):
+        text = gen_abilities.render({639: [674, 5200], 4275: [7803]})
+        self.assertIn("-- Generated by tools/gen_abilities.py: do not edit.\n", text)
+        self.assertIn("ns.Data.bossAbilities = {\n\t[639] = { 674, 5200 },\n\t[4275] = { 7803 },\n}\n", text)
+
+
+if __name__ == "__main__":
+    unittest.main()

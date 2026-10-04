@@ -15,12 +15,33 @@ encounter order or localized names.
 
 | Source | Pin / result | Use |
 | --- | --- | --- |
-| CMaNGOS classic-db | `22b51464f1625f6ef6275771de1f5466c6f5d19e` | `areatrigger_teleport` entrance requirements |
+| CMaNGOS classic-db | `22b51464f1625f6ef6275771de1f5466c6f5d19e` | `areatrigger_teleport` entrance requirements; `creature_ai_scripts`, `creature_template_spells` and `creature_spell_list` boss ability ids |
 | QuestieDB Forever release | `QUESTIEDB_TAG` and `QUESTIEDB_SHA256` in `tools/gen_corpus.py` | The test-only quest corpus, through the addon's own QuestieSource build |
-| wago.tools client tables | `BUILD` in `tools/gen_quests.py` | Existing Map / AreaTable joins identify dungeon instances; existing zone map art; the corpus's skill and faction names |
+| wago.tools client tables | `BUILD` in `tools/gen_quests.py` | Existing Map / AreaTable joins identify dungeon instances; existing zone map art; the corpus's skill and faction names; `SpellName` and `SpellEffect` gate every generated boss ability id |
 | Gethe/wow-ui-source, forever | `bd2470aed543f72697a044e989285b6c83e63f73` | Encounter Journal templates, explicit-instance API reads and square instance icon |
 | QuestieDB public API documentation | `365537a340473291f5af3b7a53a5eca94e2a5f1a`, contract 2 | Runtime NPC ranks/spawns, item drops/rewards, quest objectives and entrance points |
 | Tweaks Forever | Public API v1 | Outdoor entrance fallback, through the existing Providers adapter |
+
+Boss abilities are the one generated boss table. `tools/gen_abilities.py` reads the pinned CMaNGOS
+classic-db (GPL-3.0) `creature_ai_scripts` cast actions, `creature_template_spells` sets and
+`creature_spell_list` lists for every elite-or-above creature that spawns on a browsed instance map, and
+writes `Data/Abilities.lua` keyed by creature entry (npcID). Forever renumbers Classic spell ids, so every
+id is kept only while the pinned wago.tools build names it in `SpellName` (not an obsolete name) and gives
+it a real effect in `SpellEffect`; an id that resolves to nothing is dropped, never shipped. The page reads
+the name, icon and tooltip from the client at runtime with `C_Spell.GetSpellInfo` and
+`GameTooltip:SetSpellByID`, and hides an id this build cannot resolve. Only ids are bundled, no other
+addon's ability table is copied, and the gate is `tools/gen_abilities_test.py` plus the regeneration check.
+
+Drop chances come from AtlasLoot's own installed data, read at runtime through
+`AtlasLoot.Data.Droprate:GetData(npcID, itemID)` (AtlasLoot's `DungeonsAndRaids/droprate.lua`). Nothing is
+bundled and no rate is invented: a boss drop without a registered rate shows no percent. This is the same
+curated rate AtlasLoot applies to its own item tooltips, not a claim the client or CMaNGOS can support.
+
+The dungeon pages wear the Encounter Journal's own art and sizes without its frames, which do not load on
+this client (`Blizzard_EncounterJournal.toc` gates its files to mainline): a 174x96 instance button, a
+325x55 boss button with the default portrait, a 321x45 loot row with a 42x42 icon and the loot border, the
+journal's title and body fonts, all cut from `UI-EncounterJournalTextures` at the journal's own texcoords.
+Every texture, atlas and font object used was checked against the pinned client build before use.
 
 The QuestieDB adapter owns the runtime quest source. `tools/gen_quests.py` writes the entrance
 requirement list on each instance: level, alternative required items, completed quest and an unsupported

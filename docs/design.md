@@ -95,10 +95,18 @@ abandons quests.
   Any outside/unknown dropper excludes an item. Client rarity excludes grey/white items except proven quest
   starters; uncached rarity waits for item data. Shared drops belong to the first matching boss.
   `questRewards` supplies reward icons without claiming which are choices. Neither optional source present
-  shows Needs QuestieDB or AtlasLoot; known empty data shows the empty state. Runtime reads bundle no data.
+  shows Needs QuestieDB or AtlasLoot; known empty data shows the empty state. The optional reads bundle no data;
+  the one bundled boss table is the build-gated ability id list (dungeon-sources.md).
   Objective text comes from that snapshot, then the accepted quest's client log; otherwise it is omitted.
   Place names use the hub, client map name or bundled map name; an unknown place leaves the NPC alone.
   Experience uses BreakUpLargeNumbers. No internal IDs or missing-value placeholders enter player text.
+  Under each boss are the spells it casts, each an icon and name with the client's own spell tooltip, from the
+  bundled table; an id this build cannot resolve is dropped, not shown. A boss drop carries AtlasLoot's curated
+  drop chance beside it when AtlasLoot has one, and nothing when it does not.
+
+  The views wear the Encounter Journal's own art at its own sizes, since Blizzard's journal frames do not load on
+  this client: a 174x96 instance button with its icon and level range, a 325x55 boss button with the default
+  portrait, and a 321x45 loot row with a 42x42 icon and the journal's loot border, in the journal's fonts.
 
   Top sub-tabs use TabSystemTopButtonTemplate on a common baseline; chains use the quest log's
   CollapseButtonTemplate. The header has title, location and a single meta line (entry level and positive remaining XP),

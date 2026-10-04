@@ -369,6 +369,7 @@ ns.L = {
 	DUNGEON_BOSS = "Boss",
 	DUNGEON_BOSS_LOOT = "View loot (%d)",
 	DUNGEON_BOSS_LOOT_UNKNOWN = "No loot recorded",
+	DUNGEON_DROP_RATE = "%.1f",
 	DUNGEON_ENEMY_LEVELS = "Levels %d–%d",
 	DUNGEON_RARE_ELITE = "Rare elite",
 	DUNGEON_ELITE = "Elite",

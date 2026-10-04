@@ -114,6 +114,11 @@ its types reviewed), and the tool versions in
 - WFA-28: profession rank requirements (the level and skill each rank asks): CMaNGOS classic-db `npc_trainer`.
   Neither database has trainer spell lists, and the client gives the requirement only while that trainer's
   window is open.
+- WFA-28: boss abilities (the spell ids a dungeon or raid boss casts): CMaNGOS classic-db
+  `creature_ai_scripts` cast actions, `creature_template_spells` and `creature_spell_list`, for elite-and-above
+  creatures on a browsed instance map. Forever renumbers Classic ids, so `tools/gen_abilities.py` keeps an id only
+  where this build names the spell (`SpellName`) and gives it an effect (`SpellEffect`); an unresolvable id is
+  dropped, never shipped. The client supplies the name, icon and tooltip at runtime.
 - WFA-28: dungeon entrance requirements (level, key items, completed quest): CMaNGOS classic-db
   `areatrigger_teleport`. QuestieDB lists where an entrance is, not what it asks, and AtlasLoot has neither.
 - WFA-28: transports (boats and zeppelins between continents): CMaNGOS classic-db `gameobject_template` with

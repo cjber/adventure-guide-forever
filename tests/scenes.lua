@@ -276,6 +276,66 @@ h.G.EJ_GetEncounterInfoByIndex = function(index, instance)
 		return npc.name, "", encounters[index]
 	end
 end
+-- The Bosses and Loot views read AtlasLoot's curated pages and drop chances at runtime; this snapshot, built from
+-- the same fixture, shows the encounter order, boss abilities and curated rates a player with AtlasLoot sees.
+local function atlasPages(fixture)
+	local pages = {
+		GetDifficultyByName = function(_, name)
+			return name == "n" and 1
+		end,
+	}
+	local ids = {}
+	for id in pairs(fixture.npcs) do
+		ids[#ids + 1] = id
+	end
+	table.sort(ids)
+	for _, id in ipairs(ids) do
+		local npc, drops = fixture.npcs[id], {}
+		for item, row in pairs(fixture.items) do
+			for _, dropper in ipairs(row.npcDrops or {}) do
+				if dropper == id then
+					drops[#drops + 1] = { 1, item }
+				end
+			end
+		end
+		table.sort(drops, function(a, b)
+			return a[2] < b[2]
+		end)
+		pages["Wailing" .. id] = {
+			InstanceID = 43,
+			LevelRange = { 15, 25 },
+			items = { { name = npc.name, npcID = id, Level = npc.maxLevel, [1] = drops } },
+		}
+	end
+	return pages
+end
+-- AtlasLoot's own installed droprate data for these Wailing Caverns drops.
+local RATES = {
+	[3653] = { [13245] = 13.47 },
+	[3670] = { [6472] = 29.57, [6473] = 55.18 },
+	[3671] = { [10412] = 9.6 },
+	[3673] = { [5970] = 19.38, [6459] = 23.28, [6469] = 16.77, [10411] = 21.1 },
+	[3674] = { [6448] = 46.63, [6449] = 45.48 },
+}
+h.G.AtlasLoot = {
+	Locales = { Trash = "Trash" },
+	ItemDB = {
+		Get = function()
+			return atlasPages(dungeonFixture)
+		end,
+	},
+	Data = {
+		Droprate = {
+			GetData = function(_, npc, item)
+				return RATES[npc] and RATES[npc][item]
+			end,
+		},
+	},
+}
+h.G.C_Spell.GetSpellInfo = function(id)
+	local ability = dungeonFixture.abilities[id]
+	return ability and { name = ability.name, iconID = ability.icon, spellID = id }
+end
 h.ns.WindowDB().dungeon = 43
 Window(h, "dungeons", 5)
 for _, row in

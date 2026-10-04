@@ -494,6 +494,41 @@ function Dungeons.Bosses(source, instance, journal)
 	return listed
 end
 
+-- The bundled ability ids for a creature (Data/Abilities.lua), each with the name and icon this build gives it.
+-- Forever renumbers Classic ids, so an id the client cannot resolve is left out, never shown as a bare row.
+---@param npc? integer
+---@return AGFBossAbility[]
+function Dungeons.Abilities(npc)
+	---@type integer[]?
+	local ids = npc and ns.Data.bossAbilities and ns.Data.bossAbilities[npc]
+	if not ids or not (C_Spell and C_Spell.GetSpellInfo) then
+		return {}
+	end
+	local abilities, seen = {}, {}
+	for _, id in ipairs(ids) do
+		local info = C_Spell.GetSpellInfo(id)
+		if info and info.name and info.name ~= "" and info.iconID and info.iconID > 0 and not seen[info.name] then
+			seen[info.name] = true
+			abilities[#abilities + 1] = { id = id, name = info.name, icon = info.iconID }
+		end
+	end
+	return abilities
+end
+
+-- The curated drop chance AtlasLoot registers for this boss and item (AtlasLootClassic/Data/Droprate.lua).
+-- Nothing is bundled and nothing is invented: an absent rate leaves the row without one.
+---@param npc? integer
+---@param item integer
+---@return number?
+function Dungeons.DropRate(npc, item)
+	local droprate = AtlasLoot and AtlasLoot.Data and AtlasLoot.Data.Droprate
+	if not (droprate and type(droprate.GetData) == "function") then
+		return nil
+	end
+	local rate = npc and item and droprate:GetData(npc, item)
+	return type(rate) == "number" and rate or nil
+end
+
 local requestedItems = {}
 ---@param id integer
 function Dungeons.RequestItem(id)
@@ -546,11 +581,14 @@ function Dungeons.LootRows(source, instance, bosses)
 			if requiredLevel and requiredLevel > 0 then
 				meta[#meta + 1] = L.WHY_LEVEL:format(requiredLevel)
 			end
+			local boss = group.boss
+			local npc = boss and not boss.journal and boss.id or nil
 			group.items[#group.items + 1] = {
 				title = itemName or name or item.name,
 				item = item.id,
 				quality = itemQuality or quality,
 				info = table.concat(meta, L.SEPARATOR),
+				percent = Dungeons.DropRate(npc, item.id),
 			}
 		end
 	end
