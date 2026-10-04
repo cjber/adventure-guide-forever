@@ -253,7 +253,7 @@ function PanelTemplates_SetTab(frame, id) end
 ---@type string[]
 UISpecialFrames = nil
 
----@type Frame
+---@type ForeverNativeTrackerFrame
 ObjectiveTrackerFrame = nil
 
 -- AGF's own named frames (CreateFrame names in Panel.lua and Tracker.lua); nil until they are built.
