@@ -19,13 +19,13 @@ end
 ---@return integer
 local function RaceBit()
 	local _, _, raceID = UnitRace("player")
-	return raceID and bit.lshift(1, raceID - 1) or 0
+	return raceID and 2 ^ (raceID - 1) or 0
 end
 
 ---@return integer
 local function ClassBit()
 	local _, _, classID = UnitClass("player")
-	return classID and bit.lshift(1, classID - 1) or 0
+	return classID and 2 ^ (classID - 1) or 0
 end
 
 ---@type table<integer, integer>
