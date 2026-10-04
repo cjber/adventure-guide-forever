@@ -1,6 +1,5 @@
 """Pure generator checks: python3 -m unittest discover -s tools -p '*_test.py'."""
 
-import re
 import struct
 import unittest
 from collections import Counter
@@ -9,7 +8,6 @@ from gen_quests import (
     AREAS,
     CAP,
     EXPLORE,
-    FIXTURE,
     LINK,
     NAME_REACH,
     OUTPUT,
@@ -715,31 +713,6 @@ class ObjectiveTest(unittest.TestCase):
         )
         # A shape whose WorldMapArea is unknown goes on the smallest map that holds it.
         self.assertEqual(objective_areas(slots, shapes, {}, world, set(), 1429, {})[1], [4, 550, 850, 71, 1436])
-
-
-class DataTest(unittest.TestCase):
-    """The committed test-only quest corpus, tests/fixtures/quests.lua."""
-
-    TEXT = FIXTURE.read_text(encoding="utf-8")
-
-    def test_areas_are_on_a_map_and_the_quests_objectives(self):
-        quests = re.findall(r"^\t\t\[\d+\] = \{ title = .*$", self.TEXT, re.M)
-        self.assertGreater(len(quests), 3000)
-        count = 0
-        for line in quests:
-            need = re.search(r"need = \{ (.*?) \}", line)
-            obj = re.search(r"obj = \{ (.*) \} \},$", line)
-            self.assertTrue(bool(need) or not obj, line)
-            self.assertFalse(need and "dungeon = " in line, line)
-            if not obj:
-                continue
-            slots = {int(k) for k in re.findall(r"\[(\d+)\] = \d+", need[1])}
-            for spot in re.findall(r"\{ ([\d, ]+) \}", obj[1]):
-                slot, x, y, r, *ui_map = map(int, spot.split(", "))
-                count += 1
-                self.assertIn(slot, slots, line)
-                self.assertTrue(0 <= x <= 1000 and 0 <= y <= 1000 and r >= 0 and len(ui_map) <= 1, line)
-        self.assertGreater(count, 2500)
 
 
 class ShippedTest(unittest.TestCase):

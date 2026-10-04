@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 import check_generated
-from gen_quests import FIXTURE, ROOT
+from gen_corpus import FIXTURE, ROOT
 
 
 class GeneratedTest(unittest.TestCase):

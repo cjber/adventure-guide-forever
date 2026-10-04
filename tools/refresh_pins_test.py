@@ -23,6 +23,13 @@ class RefreshPins(unittest.TestCase):
         with self.assertRaises(SystemExit):
             refresh_pins.latest({"wow_classic_beta": []}, *refresh_pins.FOREVER, "1.60.1.69913")
 
+    def test_questiedb_tag_moves_forward_only(self):
+        self.assertEqual(refresh_pins.newest_tag("v1.0.4", "v1.0.5"), "v1.0.5")
+        self.assertEqual(refresh_pins.newest_tag("v1.0.4", "v1.0.3"), "v1.0.4")
+        self.assertEqual(refresh_pins.newest_tag("v1.0.4", "v1.0.4"), "v1.0.4")
+        with self.assertRaises(SystemExit):
+            refresh_pins.newest_tag("v1.0.4", "1.0.5")
+
     def test_pin_rewrites_exactly_one_assignment(self):
         self.assertEqual(refresh_pins.pin('A = 1\nBUILD = "x"\n', "BUILD", "y"), 'A = 1\nBUILD = "y"\n')
         with self.assertRaises(SystemExit):

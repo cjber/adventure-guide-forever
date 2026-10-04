@@ -138,6 +138,49 @@ equal(dropReads, 1, "an item two quests collect is read once a build")
 for _, id in ipairs({ 900001, 900002, 900003 }) do
 	equal(once.ns.Data.quests[id].obj[1][2], 500, "shared spawn still places quest " .. id)
 end
+-- QuestieDB's own skill, reputation and exclusive gates become the model's fields.
+local gated = Fake()
+gated.quests[900004] = {
+	name = "Gated",
+	questLevel = 20,
+	requiredLevel = 18,
+	startedBy = { { 197 } },
+	finishedBy = { { 197 } },
+	zoneOrSort = 12,
+	requiredSkill = { 197, 230 },
+	requiredMinRep = { 576, 3000 },
+	exclusiveTo = { 900005 },
+}
+gated.quests[900005] = {
+	name = "Sibling",
+	questLevel = 20,
+	requiredLevel = 18,
+	startedBy = { { 197 } },
+	zoneOrSort = 12,
+	requiredMaxRep = { 576, 9000 },
+	exclusiveTo = { 900004 },
+}
+gated.quests[900006] = {
+	name = "Two factions",
+	questLevel = 20,
+	requiredLevel = 18,
+	startedBy = { { 197 } },
+	zoneOrSort = 12,
+	requiredMinRep = { 576, 3000 },
+	requiredMaxRep = { 21, -6000 },
+}
+local gates = harness.load({ questiedb = gated, setup = Policy })
+equal(gates.ns.QuestieStatus.state, "questie", "gated build ready")
+local locked = gates.ns.Data.quests[900004]
+equal(locked.skill.id, 197, "requiredSkill: the line")
+equal(locked.skill.value, 230, "requiredSkill: the rank")
+equal(locked.rep.faction, 576, "requiredMinRep: the faction")
+equal(locked.rep.min, 3000, "requiredMinRep: the value")
+equal(locked.rep.max, nil, "a minimum alone leaves no maximum")
+equal(gates.ns.Data.quests[900005].rep.max, 9000, "requiredMaxRep: the value")
+equal(locked.group, gates.ns.Data.quests[900005].group, "exclusiveTo: one group holds both")
+equal(locked.group ~= nil, true, "exclusiveTo: a group id")
+equal(gates.ns.Data.quests[900006].start, nil, "two reputation factions leave no pickup")
 local unsupported = Fake()
 unsupported.quests[900001].objectives = { nil, nil, nil, { { 72, 3000 } } }
 local unknown =

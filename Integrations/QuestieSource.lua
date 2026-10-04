@@ -31,6 +31,10 @@ local QUEST_FIELDS = {
 	"finishedBy",
 	"preQuestGroup",
 	"preQuestSingle",
+	"requiredSkill",
+	"requiredMinRep",
+	"requiredMaxRep",
+	"exclusiveTo",
 	"nextQuestInChain",
 	"breadcrumbForQuestId",
 	"questFlags",
@@ -271,6 +275,8 @@ local function Build(lib, zones, bundled, yield)
 	end)
 	-- Every quest start and finish, for the towns they stand in (QuestieTowns.lua).
 	local places = {}
+	-- Each quest's mutually exclusive links, resolved into one group id after every quest is read.
+	local exclusive = {}
 	-- Each giver's name, its spawns on maps the data places (0-100 on its area's map), and its usual map.
 	local givers = { Npc = {}, Object = {} }
 	---@type AGFQuestieReads
@@ -369,6 +375,32 @@ local function Build(lib, zones, bundled, yield)
 				-- Preserve relationships for chain displays. Live Questie policy evaluates their full semantics.
 				quest.pre = type(v.preQuestGroup) == "table" and v.preQuestGroup or nil
 				quest.preAny = type(v.preQuestSingle) == "table" and v.preQuestSingle or nil
+				local skill = v.requiredSkill
+				local skillID = type(skill) == "table" and tonumber(skill[1]) or nil
+				local skillValue = type(skill) == "table" and tonumber(skill[2]) or nil
+				if skillID and skillValue and skillValue > 0 then
+					quest.skill = { id = skillID, value = skillValue }
+				end
+				local low, high = v.requiredMinRep, v.requiredMaxRep
+				local lowFaction = type(low) == "table" and tonumber(low[1]) or nil
+				local highFaction = type(high) == "table" and tonumber(high[1]) or nil
+				if lowFaction and highFaction and lowFaction ~= highFaction then
+					-- AGFQuest holds one faction's standing: with a minimum and a maximum for different factions the data
+					-- cannot establish eligibility, so the quest gets no pickup.
+					quest.start = nil
+				elseif lowFaction or highFaction then
+					local rep = { faction = lowFaction or highFaction }
+					if lowFaction then
+						rep.min = tonumber(low[2])
+					end
+					if highFaction then
+						rep.max = tonumber(high[2])
+					end
+					quest.rep = rep
+				end
+				if type(v.exclusiveTo) == "table" then
+					exclusive[id] = v.exclusiveTo
+				end
 				local start = quest.start
 				if start and quest.classes and start.npc then
 					-- A class quest's giver is its class's trainer. The bundled trainer data has no entry for Forever's
@@ -394,6 +426,49 @@ local function Build(lib, zones, bundled, yield)
 			end
 		end
 		yield()
+	end
+	-- QuestieDB names mutually exclusive quests directly; AGFQuest carries one id per exclusive group. Each
+	-- connected component of those links becomes a group id, its lowest quest, so every member closes the others'
+	-- siblings. A quest linked only to a quest the data does not hold stands alone.
+	local members = {}
+	local function Root(id)
+		local root = id
+		while members[root] ~= root do
+			root = members[root]
+		end
+		while members[id] ~= root do
+			members[id], id = root, members[id]
+		end
+		return root
+	end
+	for id, exclusiveTo in pairs(exclusive) do
+		members[id] = members[id] or id
+		for _, other in ipairs(exclusiveTo) do
+			if quests[other] then
+				members[other] = members[other] or other
+			end
+		end
+	end
+	for id, exclusiveTo in pairs(exclusive) do
+		for _, other in ipairs(exclusiveTo) do
+			if members[other] then
+				local root, member = Root(id), Root(other)
+				if root ~= member then
+					members[math.max(root, member)] = math.min(root, member)
+				end
+			end
+		end
+	end
+	local sizes = {}
+	for id in pairs(members) do
+		local root = Root(id)
+		sizes[root] = (sizes[root] or 0) + 1
+	end
+	for id in pairs(members) do
+		local root = Root(id)
+		if sizes[root] > 1 then
+			quests[id].group = root
+		end
 	end
 	local hubs, grid = ns.QuestieTowns.Build(bundled, places, yield)
 	-- Who trains, keeps an inn or runs a battleground queue, where and for which side. What a trainer teaches is the

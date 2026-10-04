@@ -61,14 +61,44 @@ function harness.fixtureQuests()
 	return assert(loadfile("tests/fixtures/quests.lua"))()
 end
 
+-- Facts only the client gives at runtime, keyed by quest id (tests/fixtures/client.lua): the objective counts a
+-- quest log would, the timed flag and the elite tag. The generated corpus carries none of them, since QuestieDB
+-- has only icon overrides; a spec names the quests it needs. Cached: a QuestieDB build asks for every quest's tag.
+---@return table<integer, {need?: table<integer, integer>, elite?: boolean, timed?: integer}>
+function harness.clientFacts()
+	harness.facts = harness.facts or assert(loadfile("tests/fixtures/client.lua"))()
+	return harness.facts
+end
+
 -- Gives `data` the test corpus: its quests, and the towns that go with them (tests/fixtures/towns.lua: hub names,
--- role NPCs' sides and places, skill and faction names). In game the QuestieDB build composes all of these.
+-- role NPCs' sides and places, skill and faction names). In game the QuestieDB build composes all of these. The
+-- client facts overlay the quests they name, the way the live client's quest log and tag API would.
 ---@param data AGFData
 ---@return AGFData
 function harness.fixture(data)
 	data.quests = harness.fixtureQuests()
 	for key, value in pairs(assert(loadfile("tests/fixtures/towns.lua"))()) do
 		data[key] = value
+	end
+	local facts = harness.clientFacts()
+	for id, quest in pairs(data.quests) do
+		local client = facts[id]
+		if client then
+			if client.need then
+				local need = {}
+				for slot, count in pairs(client.need) do
+					need[slot] = count
+				end
+				quest.need = need
+			end
+			if client.elite then
+				quest.elite = true
+			end
+			if client.timed then
+				quest.flags = quest.flags or {}
+				quest.flags.timed = client.timed
+			end
+		end
 	end
 	return data
 end
@@ -2295,6 +2325,15 @@ function harness.load(options)
 		h.metadata.QuestieDB = { Version = fake.version or "0.0-test", ["X-Flavor"] = fake.flavor or "Forever" }
 	end
 
+	-- The client's quest tag, from the client facts table. The corpus generator asks for no client facts
+	-- (options.clientFacts = false), so the corpus keeps only what QuestieDB itself carries.
+	if options.clientFacts ~= false then
+		G.C_QuestLog.GetQuestTagInfo = function(questID)
+			local client = harness.clientFacts()[questID]
+			return client and client.elite and { tagID = 1 } or nil
+		end
+	end
+
 	-- Tweaks Forever (its API.lua, version 1 or, with options.tf.version, 2): options.tf.spells is what
 	-- TrainableSpells answers (nil before login and in combat), options.tf.trainers what v2's Trainers answers; fresh
 	-- copies each call; h.tf counts the calls. No options.tf is no Tweaks Forever.
@@ -2730,6 +2769,26 @@ function harness.questieMirror(data)
 		ids[#ids + 1] = id
 	end
 	table.sort(ids)
+	-- An exclusive group is a component id in the model; QuestieDB names the other members directly.
+	local grouped, exclusiveTo = {}, {}
+	for _, id in ipairs(ids) do
+		local group = data.quests[id].group
+		if group then
+			grouped[group] = grouped[group] or {}
+			grouped[group][#grouped[group] + 1] = id
+		end
+	end
+	for _, members in pairs(grouped) do
+		for _, id in ipairs(members) do
+			local others = {}
+			for _, other in ipairs(members) do
+				if other ~= id then
+					others[#others + 1] = other
+				end
+			end
+			exclusiveTo[id] = others
+		end
+	end
 	local objects, objectCount, homes = {}, 0, {}
 	-- A place's giver: its NPC, else an object named by where it stands.
 	local function Giver(place)
@@ -2770,6 +2829,10 @@ function harness.questieMirror(data)
 			finishedBy = quest.finish and Giver(quest.finish),
 			preQuestGroup = quest.pre,
 			preQuestSingle = quest.preAny,
+			requiredSkill = quest.skill and { quest.skill.id, quest.skill.value } or nil,
+			requiredMinRep = quest.rep and quest.rep.min and { quest.rep.faction, quest.rep.min } or nil,
+			requiredMaxRep = quest.rep and quest.rep.max and { quest.rep.faction, quest.rep.max } or nil,
+			exclusiveTo = exclusiveTo[id],
 			nextQuestInChain = quest.next,
 			breadcrumbForQuestId = quest.breadcrumb,
 			specialFlags = quest.repeatable and 1 or 0,
