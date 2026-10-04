@@ -166,6 +166,20 @@ characters.list = {
 		},
 	},
 	{
+		-- The user's report: a level-21 Alliance character in Ironforge with nothing completed. Darkshore, one level below
+		-- their level, is still an option and ranks ahead of the zones further above them, such as Duskwood and The
+		-- Barrens; Redridge and the Wetlands, whose own content sits at or just above the player, stay ahead of it.
+		name = "human21_ironforge",
+		level = 21,
+		side = 1,
+		raceBit = 1,
+		classBit = 1,
+		map = 1455,
+		x = 0.5500,
+		y = 0.4800,
+		completed = {},
+	},
+	{
 		-- A level-60 human warrior at Light's Hope Chapel with nothing completed: the end-game zones only.
 		name = "human60",
 		level = 60,

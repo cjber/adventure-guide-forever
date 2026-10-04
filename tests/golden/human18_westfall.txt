@@ -20,13 +20,13 @@ card | zone:1432 | Head to Loch Modan | 11 quests near your level | Thelsamar ne
   step 4 | town:1432:556 | Pick up: Bingles' Missing Supplies | 1432 0.6356,0.4792 | near your level
   step 5 | town:1432:142 | Visit Ironband's Excavation Site: Pick up 2 | 1432 0.6490,0.6666 | 2 to pick up
   step 6 | town:1432:147 | Visit The Farstrider Lodge: Pick up 2 | 1432 0.8347,0.6546 | 2 to pick up
-card | zone:1431 | Head to Duskwood | 2 quests near your level | - | map 1431
-  step 1 | town:1431:94 | Pick up: Jitters' Growling Gut | 1431 0.1838,0.5637 | near your level
-  step 2 | town:1431:42 | Pick up: Raven Hill | 1431 0.7534,0.4875 | near your level
 card | zone:1413 | Head to The Barrens | 9 quests near your level | Ratchet needs hands | map 1413
   step 1 | town:1413:392 | Visit Ratchet: Pick up 7 | 1413 0.6237,0.3762 | 7 to pick up
   step 2 | town:1413:387 | Pick up: Deviate Hides | 1413 0.4599,0.3566 | near your level
   step 3 | town:1413:382 | Pick up: Ignition | 1413 0.5652,0.0745 | near your level
+card | zone:1431 | Head to Duskwood | 2 quests near your level | - | map 1431
+  step 1 | town:1431:94 | Pick up: Jitters' Growling Gut | 1431 0.1838,0.5637 | near your level
+  step 2 | town:1431:42 | Pick up: Raven Hill | 1431 0.7534,0.4875 | near your level
 card | zone:1439 | Head to Darkshore | 16 quests near your level | Auberdine needs hands | map 1439
   step 1 | town:1439:442 | Visit Auberdine: Pick up 12 | 1439 0.3662,0.4559 | 12 to pick up
   step 2 | town:1439:448 | Pick up: The Sleeper Has Awakened | 1439 0.4440,0.7643 | near your level

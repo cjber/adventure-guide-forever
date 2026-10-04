@@ -3971,7 +3971,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Redridge Mountains",
+      "text": "Head to Westfall",
       "type": "FontString",
       "wordWrap": false
     },
@@ -4111,7 +4111,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Westfall",
+      "text": "Head to Redridge Mountains",
       "type": "FontString",
       "wordWrap": false
     },
@@ -4315,7 +4315,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[14].Text",
-      "text": "Thork: Pick up 1",
+      "text": "Apothecary Helbrim: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -4382,7 +4382,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[15].Text",
-      "text": "Mankrik: Pick up 1",
+      "text": "Thork: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -4449,7 +4449,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[16].Text",
-      "text": "Apothecary Helbrim: Pick up 1",
+      "text": "Mankrik: Pick up 1",
       "textColor": [
         0.90,
         0.90,

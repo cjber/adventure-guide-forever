@@ -764,10 +764,6 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	end
 	local kept = lead and Open(lead) and (chosenZone == nil or chosenZone == lead) and lead or nil
 	local zone, here = best, chosenZone ~= nil and chosenZone == player.map
-	local tries = { kept or best }
-	if kept and best and kept ~= best then
-		tries[#tries + 1] = best
-	end
 	-- As in the ranking, only a quest that isn't an outdoor elite or a raid's makes the zone the player's: an outdoor
 	-- elite is optional, and no card offers a raid's.
 	local band, inZone = data.zones[player.map], InZone(player.map)
@@ -790,8 +786,21 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	for place = 1, math.min(FITS, #zones) do
 		here = here or zones[place] == player.map
 	end
-	if here and player.map ~= best and Open(player.map) then
-		table.insert(tries, 1, player.map)
+	-- The lead the story keeps outranks the zone the player stands in, which in turn outranks the ranking's best; with
+	-- no lead, standing here is the story. So the zone the story already leads with is not dropped for a level's
+	-- reshuffle, and the story cannot flip A, B, A around the zone the player walked into for one step.
+	local tries = {}
+	if kept then
+		tries[#tries + 1] = kept
+	end
+	if here and Open(player.map) and player.map ~= kept and player.map ~= best then
+		tries[#tries + 1] = player.map
+	end
+	if best and best ~= kept then
+		tries[#tries + 1] = best
+	end
+	if not kept and #tries == 0 then
+		tries[1] = best
 	end
 	local told
 	for _, map in ipairs(tries) do
