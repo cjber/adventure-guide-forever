@@ -173,7 +173,8 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 		table.insert(journeys, (journeys[1] and journeys[1].kind == "story") and 2 or 1, carry)
 	end
 	local route = Route(journeys, prefs)
-	route.stranded, route.orders = last.stranded, last.orders
+	route.stranded, route.orders, route.lead = last.stranded, last.orders, last.lead
+	route.left = last.left
 	FinishRoute(data, player, completed, log, route, last, prefs, inputs)
 	return route
 end

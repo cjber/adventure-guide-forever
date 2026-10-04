@@ -149,6 +149,12 @@ local function LoadCharDB()
 	if loaded.focus ~= nil and type(loaded.focus) ~= "number" then
 		loaded.focus = nil
 	end
+	if loaded.lead ~= nil and type(loaded.lead) ~= "number" then
+		loaded.lead = nil
+	end
+	if loaded.left ~= nil and type(loaded.left) ~= "number" then
+		loaded.left = nil
+	end
 	local waypoint = loaded.waypoint
 	if
 		waypoint ~= nil
@@ -624,6 +630,10 @@ end
 ---@param world AGFSnapshot
 local function CommitRoute(shown, full, world)
 	cachedRoute, rawRoute, snapshot = shown, full, world
+	-- The zone the story led with, and the zone it left, outlive the session, so a /reload does not shuffle it
+	-- (Plan.lua reads them back).
+	local prefs = ns.Prefs()
+	prefs.lead, prefs.left = full.lead, full.left
 	dirty = false
 	if not InCombatLockdown() then
 		ns.Guidance.Ended(rawRoute)

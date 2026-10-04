@@ -33,9 +33,24 @@ function Model.Plan(data, player, completed, log, prefs, mapName, instanceName, 
 	for key, order in pairs(last and last.orders or NONE) do
 		State.committedOrders[key] = not forget[key] and order or nil
 	end
-	local journeys, stranded =
-		Model.Journeys(data, player, completed, log, prefs, mapName, instanceName, inputs and inputs.skippedQuests)
+	local lead = last and last.lead or prefs.lead
+	local left = last and last.left or prefs.left
+	local journeys, stranded = Model.Journeys(
+		data,
+		player,
+		completed,
+		log,
+		prefs,
+		mapName,
+		instanceName,
+		inputs and inputs.skippedQuests,
+		lead,
+		left
+	)
 	local route = Route(journeys, prefs)
+	local story = journeys[1]
+	route.lead = story and story.kind == "story" and story.zone or nil
+	route.left = lead and lead ~= route.lead and lead or left
 	route.skipped, State.skippedSeen, route.stranded = State.skippedSeen, nil, stranded or nil
 	route.orders, State.committedOrders, State.planDocks, State.heldHere = State.committedOrders, nil, nil, nil
 	FinishRoute(data, player, completed, log, route, last, prefs, inputs)

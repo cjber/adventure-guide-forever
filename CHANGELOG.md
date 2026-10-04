@@ -16,6 +16,7 @@ verbatim rather than rewritten as the addon moves.
 - **The guide no longer offers quests your character cannot take.** A quest gated behind a profession rank or a reputation standing is read from QuestieDB with its requirement, so a route no longer sends you to a pickup the game would refuse.
 - **The guide's map data matches the current game build.** The maps, flight masters and Forever's own lands the guide carries are read from client build 1.60.1.70205. The Stormwind flight master sits where the game now has it, and the guide no longer plans steps on the Alterac Valley battleground map, which the game no longer lists as a zone.
 - **A route settles the first time it is drawn.** With a nearly full quest log, a route could put a hand-in last, then move it up to second a moment later with nothing changed. The order you first see is now the one it keeps.
+- **The story finishes the zone it is in.** While the zone the story led with still has work, the guide keeps leading with it instead of swapping to the zone the ranking likes a little better that level, and it does not go straight back to a zone it just left. The choice survives a reload, so the lead no longer flips back and forth between two zones.
 
 ## [0.7.1] - 2026-10-04
 
