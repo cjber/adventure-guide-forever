@@ -2156,6 +2156,9 @@ function harness.load(options)
 	G.OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 3
 	G.ObjectiveTrackerFrame = NewRegion("Frame", "ObjectiveTrackerFrame", G.UIParent)
 	G.ObjectiveTrackerFrame:SetSize(250, 600)
+	-- The shared tracker host post-hooks the native layout (Blizzard_ObjectiveTrackerFrame.lua).
+	G.ObjectiveTrackerFrame.UpdateHeaderPosition = function() end
+	G.ObjectiveTrackerFrame.UpdateHeight = function() end
 	G.ObjectiveTrackerManager = setmetatable({}, {
 		__index = function(_, key)
 			error("addon entered native tracker manager: " .. key)
