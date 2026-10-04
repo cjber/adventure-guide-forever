@@ -80,7 +80,7 @@ for _, later in ipairs(route.steps) do
 		picked = picked or (id == 6395 and later.key or nil)
 	end
 end
-equal(picked, "town:231", "here: the planned pickup keeps its town visit")
+equal(picked, "town:1420:154", "here: the planned pickup keeps its town visit")
 
 -- The step's point is an objective node inside one of its shapes, not a spot on the ring's border.
 local onNode = false

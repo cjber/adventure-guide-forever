@@ -8,8 +8,6 @@ local ValidPlace = ns.Model.ValidPlace
 
 local CLOSE = 0.03 * 0.03
 
-local AGREE = ns.Data.townLink
-
 local function Distance(a, b)
 	if not ValidPlace(a) or a.map ~= b.map then
 		return 1000000
@@ -131,7 +129,6 @@ local function Gap(a, ra, b, rb)
 end
 
 ns.Planner.Travel = {
-	AGREE = AGREE,
 	CLOSE = CLOSE,
 	Cost = Cost,
 	CostTo = CostTo,

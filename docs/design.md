@@ -38,9 +38,13 @@ abandons quests.
   provider absence/failure publishes no partial or fallback quest list. The game owns progress and live POIs;
   QuestieDB owns records, spawns and XP; the live log owns objective counts. Provider objective icon fields are never treated as counts. Questie's IsDoable policy, plus minimum/maximum
   level and guide difficulty preferences, gates pickups. Without live policy, logged quests remain browsable
-  but new pickups are not recommended. Towns are composed from the catalogue's quest places (within 100 yards
-  of each other, a town wider than 400 cut again) and named for the bundled flight-map node within 150 yards;
-  trainers, battlemasters and innkeepers take their place and side from QuestieDB's NPC rows, and an innkeeper
+  but new pickups are not recommended. A place's town is the named area of its map that holds it, one of the areas the
+  world map reveals as you explore (WorldMapOverlay; among overlapping rectangles the nearest centre wins), and a place
+  in no area, a city map, an instance or a gap between rectangles, belongs to its map itself. A town's name is the
+  area's, or the map's for a map-level town, in the client's language, with the bundled English name as the fallback.
+  Two places are the same town exactly when they stand in the same area of the same map; no radius, cap or reach enters
+  the rule.
+  Trainers, battlemasters and innkeepers take their place and side from QuestieDB's NPC rows, and an innkeeper
   is QuestieDB's flag. Only what a trainer teaches is bundled. Map geometry and transport metadata are separate
   data sources.
   Questie owns background markers whenever loaded, including its visibility toggle; AGF owns route markers.

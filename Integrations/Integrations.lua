@@ -404,11 +404,10 @@ function Integrations.CurrentStop()
 end
 
 -- Why our journey ended: Shortest Path's Ended when it has it; otherwise guessed. Another journey running replaced
--- it, the player standing within `near` yards of its last stop arrived, and anything else was cleared.
+-- it, the player standing in its last stop's town (or inside its area ring) arrived, and anything else was cleared.
 ---@param last? AGFStep|AGFGiver the last stop it was handed
----@param near number
 ---@return string?
-function Integrations.EndReason(last, near)
+function Integrations.EndReason(last)
 	local api = SPF()
 	if not api then
 		return nil
@@ -418,8 +417,15 @@ function Integrations.EndReason(last, near)
 		return "replaced"
 	end
 	local player = ns.State.Player()
-	local yards = last and player.map and ns.Model.Yards(ns.Data, player --[[@as AGFStep]], last)
-	return yards and yards <= near and "arrived" or "cleared"
+	local arrived = last
+		and player.map
+		and (
+			(last.hub ~= nil and ns.Model.Hub(ns.Data, player) == last.hub)
+			or (
+				ns.Model.Yards(ns.Data, player --[[@as AGFStep]], last) or math.huge
+			) <= (last.r or 0)
+		)
+	return arrived and "arrived" or "cleared"
 end
 
 -- The client's waypoint still sits at `place` (x and y within 1e-4): once the player moves or clears it, it does not.

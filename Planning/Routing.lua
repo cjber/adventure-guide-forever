@@ -3,7 +3,6 @@ local _, ns = ...
 local Model = ns.Model
 local State = ns.Planner.State
 local NONE = {}
-local AGREE = ns.Planner.Travel.AGREE
 local Cost = ns.Planner.Travel.Cost
 local Describe = ns.Planner.Steps.Describe
 local Docks = ns.Planner.Travel.Docks
@@ -130,8 +129,8 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, l
 	-- dropping it for whichever key sorts first.
 	local measured = origin ~= nil and origin.known
 	local reach, chosen, selected = {}, {}, {}
-	-- A trainer's stop opens only once a stop in its town is chosen, its hub or within the town linkage
-	-- (AGREE) of it, and one at most: the route stops to train only where it passes anyway.
+	-- A trainer's stop opens only once a stop in its town is chosen, its hub, and one at most: the route stops to
+	-- train only where it passes anyway.
 	local near, trained = {}, false
 	local function Open(step)
 		return step.kind ~= "trainer" or (near[step] and not trained)
@@ -152,7 +151,8 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, l
 					or (
 						other.kind == "trainer"
 						and step.kind ~= "trainer"
-						and ((step.hub ~= nil and step.hub == other.hub) or cost <= AGREE)
+						and step.hub ~= nil
+						and step.hub == other.hub
 					)
 			end
 		end
