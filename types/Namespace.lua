@@ -157,7 +157,7 @@
 ---@class AGFCatalogue
 ---@field key string
 ---@field quests table<integer, AGFQuest>
----@field hubs table<integer, {name: string}>
+---@field hubs table<string, {name: string}>
 ---@field npcs table<integer, AGFNpc>
 
 ---@class AGFPrefs
