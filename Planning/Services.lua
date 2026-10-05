@@ -2,7 +2,6 @@
 local _, ns = ...
 local Model = ns.Model
 local NONE = {}
-local AGREE = ns.Planner.Travel.AGREE
 local Cost = ns.Planner.Travel.Cost
 local Docks = ns.Planner.Travel.Docks
 local HasBit = ns.Model.HasBit
@@ -178,8 +177,8 @@ function Model.RestLow(player)
 end
 
 -- The route's last stop reads "Rest at the inn here" when rest is low (RestLow), the player isn't already resting,
--- and an innkeeper of their side stands in its town: its hub, or within the town linkage of its point. A reason on
--- the stop, never a step of its own; resting ticks it off, and the stop's own reason is back.
+-- and an innkeeper of their side stands in its town: its hub. A reason on the stop, never a step of its own;
+-- resting ticks it off, and the stop's own reason is back.
 ---@param steps AGFStep[]
 local function Rest(data, player, steps)
 	local last = steps[#steps]
@@ -187,12 +186,9 @@ local function Rest(data, player, steps)
 		return
 	end
 	for _, npc in pairs(data.npcs or NONE) do
-		if npc.inn and HasBit(npc.side, player.side) then
-			local yards = Model.Yards(data, last, npc.place)
-			if (last.hub ~= nil and npc.place.hub == last.hub) or (yards ~= nil and yards <= AGREE) then
-				last.reason = ns.L.REST_HERE
-				return
-			end
+		if npc.inn and HasBit(npc.side, player.side) and last.hub ~= nil and npc.place.hub == last.hub then
+			last.reason = ns.L.REST_HERE
+			return
 		end
 	end
 end

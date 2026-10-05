@@ -84,7 +84,8 @@ local function Rows(rows)
 	end
 	table.sort(ids)
 	for _, id in ipairs(ids) do
-		out[#out + 1] = ("\t\t[%d] = %s,"):format(id, Lua(rows[id]))
+		local key = type(id) == "number" and ("[%d]"):format(id) or ("[%q]"):format(id)
+		out[#out + 1] = ("\t\t%s = %s,"):format(key, Lua(rows[id]))
 	end
 	return table.concat(out, "\n"), #ids
 end

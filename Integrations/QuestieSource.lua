@@ -160,13 +160,45 @@ local function SingleClass(classes)
 	return found
 end
 
+-- QuestieDB's race masks: the old races keep their bits (77 the Alliance's, 178 the Horde's), and Forever's
+-- Skyborne are bits 32 (Alliance) and 33 (Horde), past what the client's 32-bit `bit` library holds.
+local ALLIANCE, HORDE = 77 + 2 ^ 32, 178 + 2 ^ 33
+
+---@param mask integer
+---@param set integer
+---@return boolean shares whether the two masks have a bit in common
+local function Shares(mask, set)
+	for index = 0, 33 do
+		local bit = 2 ^ index
+		if math.floor(mask / bit) % 2 == 1 and math.floor(set / bit) % 2 == 1 then
+			return true
+		end
+	end
+	return false
+end
+
 ---@param races integer
 ---@return integer 1 Alliance, 2 Horde, 3 both, 0 neither (tools/gen_quests.py faction)
 local function Side(races)
 	if races == 0 then
 		return 3
 	end
-	return (bit.band(races, 77) ~= 0 and 1 or 0) + (bit.band(races, 178) ~= 0 and 2 or 0)
+	return (Shares(races, ALLIANCE) and 1 or 0) + (Shares(races, HORDE) and 2 or 0)
+end
+
+-- A mask that names every old race of the sides it reaches is a side's quest, not a race's: `side` says so, and
+-- the Skyborne of that side take it though the mask predates them.
+---@param races integer
+---@return integer?
+local function Races(races)
+	local old = (Shares(races, 77) and 77 or 0) + (Shares(races, 178) and 178 or 0)
+	for index = 0, 7 do
+		local bit = 2 ^ index
+		if math.floor(old / bit) % 2 == 1 and math.floor(races / bit) % 2 == 0 then
+			return races
+		end
+	end
+	return nil
 end
 
 ---@param value number
@@ -401,7 +433,7 @@ local function Build(lib, zones, bundled, yield)
 					min = minimum,
 					max = tonumber(v.requiredMaxLevel),
 					side = Side(races),
-					races = races ~= 0 and races or nil,
+					races = races ~= 0 and Races(races) or nil,
 					classes = classes ~= 0 and classes or nil,
 					provider = true,
 				}
@@ -534,7 +566,7 @@ local function Build(lib, zones, bundled, yield)
 			quests[id].group = root
 		end
 	end
-	local hubs, grid = ns.QuestieTowns.Build(bundled, places, yield)
+	local hubs = ns.QuestieTowns.Build(bundled, places, yield)
 	-- Who trains, keeps an inn or runs a battleground queue, where and for which side. What a trainer teaches is the
 	-- bundled `roles`; an innkeeper is QuestieDB's flag. An NPC with no side or no spawn on a placed map is left out.
 	local npcs = {}
@@ -571,11 +603,18 @@ local function Build(lib, zones, bundled, yield)
 					npc[key] = value
 				end
 				npc.place = { map = best.map, x = best.x, y = best.y, name = giver.name }
-				npc.place.hub = ns.QuestieTowns.Hub(bundled, grid, npc.place)
+				npc.place.hub = ns.QuestieTowns.Hub(bundled, npc.place)
 				npcs[id] = npc
 			end
 		end
 		yield()
+	end
+	-- A service NPC in a town no quest place reaches still needs the town named.
+	for _, npc in pairs(npcs) do
+		local hub = npc.place.hub
+		if hub and not hubs[hub] then
+			hubs[hub] = { name = ns.QuestieTowns.Name(bundled, npc.place) }
+		end
 	end
 	local data = { quests = quests, hubs = hubs, npcs = npcs }
 	for key, value in pairs(bundled) do

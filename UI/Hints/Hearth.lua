@@ -5,7 +5,7 @@ local Hearth = {}
 ns.Hearth = Hearth
 
 function Hearth.Advice(data, player, steps, bind, locale)
-	-- Bundled hub names are English; another locale cannot establish the bind's identity.
+	-- Hub names come from the client, but only the English locales are proven to spell a bind the same way.
 	if (locale ~= "enUS" and locale ~= "enGB") or not bind or bind == "" then
 		return nil
 	end

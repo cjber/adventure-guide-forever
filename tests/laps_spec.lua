@@ -150,11 +150,8 @@ end
 -- with a giver or hand-in within 100 yd, else an open area's ring.
 local function Standing(player, route)
 	local head = route.steps[1]
-	for _, spot in pairs(head and head.kind ~= "area" and head.hub and head.spots or {}) do
-		local yards = Model.Yards(data, player, spot)
-		if yards and yards <= 100 then
-			return true
-		end
+	if head and head.kind ~= "area" and head.hub ~= nil and Model.Hub(data, player) == head.hub then
+		return true
 	end
 	return head ~= nil and Model.Here(data, player, route.steps) == 1
 end
@@ -372,8 +369,8 @@ do
 	check(steps ~= nil and steps[1].key == "area:226:0" and steps[1].here == true, where .. ": the area leads")
 	local lars, darkshire
 	for index, step in ipairs(steps or {}) do
-		lars = lars or (step.key == "town:49" and index or nil)
-		darkshire = darkshire or (step.key == "town:40" and index or nil)
+		lars = lars or (step.key == "town:1431:1097" and index or nil)
+		darkshire = darkshire or (step.key == "town:1431:42" and index or nil)
 	end
 	check(lars == 3, where .. ": Lars takes the wolves next")
 	check(not darkshire or (lars and darkshire > lars), where .. ": Darkshire only after Lars")

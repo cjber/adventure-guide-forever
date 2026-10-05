@@ -3,7 +3,7 @@ card (chosen) | zone:1433 | Redridge Mountains story | 1 ready to hand in, 11 in
   drop | 116
   step 1 | area:3741:4 | Complete objectives · Hilary's Necklace | 1433 0.1900,0.5460 | quests in progress | 70 yd | 3741/4
   step 2 | area:34:4 | Complete objectives · An Unwelcome Guest | 1433 0.1060,0.4930 | 2 quests here | 89 yd | 34/4 92/4
-  step 3 | town:64 | Turn in: A Free Lunch | 1433 0.1018,0.7146 | Opens the next chapter here
+  step 3 | town:1433:1002 | Turn in: A Free Lunch | 1433 0.1018,0.7146 | Opens the next chapter here
   step 4 | area:246:1 | Complete objectives · Assessing the Threat | 1433 0.2720,0.8230 | quests in progress | 96 yd | 246/1
   step 5 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | quests in progress | 0 yd | 125/4
   step 6 | area:127:4 | Complete objectives · Selling Fish | 1433 0.5480,0.6150 | quests in progress | 118 yd | 127/4
@@ -12,24 +12,23 @@ card (chosen) | zone:1433 | Redridge Mountains story | 1 ready to hand in, 11 in
   step 9 | area:180:4 | Complete objectives · Wanted: Lieutenant Fangore | 1433 0.7510,0.3710 | quests in progress | 0 yd | 180/4
   step 10 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4860,0.3640 | quests in progress | 81 yd | 92/6
 card | carry | Quests in your log | 4 ready to hand in | - | map 1429
-  step 1 | town:65 | Turn in: The Price of Shoes | 1429 0.4171,0.6554 | Opens the next chapter here
-  step 2 | town:77 | Turn in: Messenger to Stormwind | 1453 0.6917,0.8272 | Opens the next chapter here
-  step 3 | town:87 | Turn in: Elmore's Task | 1453 0.5973,0.3378 | ready to hand in
-  step 4 | town:45 | Turn in: The Defias Brotherhood | 1436 0.5633,0.4752 | Opens the next chapter here
+  step 1 | town:1429:87 | Turn in: The Price of Shoes | 1429 0.4171,0.6554 | Opens the next chapter here
+  step 2 | town:1453:0 | Visit Stormwind City: Turn in 2 | 1453 0.6917,0.8272 | Opens the next chapter here
+  step 3 | town:1436:108 | Turn in: The Defias Brotherhood | 1436 0.5633,0.4752 | Opens the next chapter here
 card | zone:1431 | Head to Duskwood | 4 quests near your level | - | map 1431
-  step 1 | town:40 | Pick up: Raven Hill | 1431 0.7534,0.4875 | near your level
+  step 1 | town:1431:42 | Pick up: Raven Hill | 1431 0.7534,0.4875 | near your level
 card | zone:1436 | Head to Westfall | 7 quests near your level | - | map 1436
-  step 1 | town:59 | Pick up: Poor Old Blanchy | 1436 0.5992,0.1942 | near your level
-  step 2 | town:45 | Visit Sentinel Hill, Westfall: Pick up 1, turn in 1 | 1436 0.5642,0.4762 | Opens the next chapter here
+  step 1 | town:1436:916 | Pick up: Poor Old Blanchy | 1436 0.5992,0.1942 | near your level
+  step 2 | town:1436:108 | Visit Sentinel Hill: Pick up 1, turn in 1 | 1436 0.5633,0.4752 | Opens the next chapter here
 card | zone:1413 | Head to The Barrens | 8 quests near your level | - | map 1413
-  step 1 | town:365 | Pick up: Raptor Horns | 1413 0.6237,0.3762 | near your level
+  step 1 | town:1413:392 | Pick up: Raptor Horns | 1413 0.6237,0.3762 | near your level
 card | zone:1437 | Head to Wetlands | 4 quests near your level | - | map 1432
-  step 1 | town:132 | Pick up: Report to Mountaineer Rockgar | 1432 0.3263,0.4974 | near your level
+  step 1 | town:1432:144 | Pick up: Report to Mountaineer Rockgar | 1432 0.3263,0.4974 | near your level
 card | zone:1440 | Head to Ashenvale | 6 quests near your level | - | map 1440
-  step 1 | town:452 | Pick up: The Ancient Statuette | 1440 0.1479,0.3129 | near your level
+  step 1 | town:1440:414 | Pick up: The Ancient Statuette | 1440 0.1479,0.3129 | near your level
 card | zone:1439 | Head to Darkshore | 15 quests near your level | - | map 1439
-  step 1 | town:500 | Pick up: The Absent Minded Prospector | 1439 0.3744,0.4184 | near your level
+  step 1 | town:1439:442 | Pick up: The Absent Minded Prospector | 1439 0.3744,0.4184 | near your level
 card | zone:1442 | Head to Stonetalon Mountains | 1 quest near your level | - | map 1442
-  step 1 | town:404 | Pick up: Super Reaper 6000 | 1442 0.5899,0.6260 | near your level
+  step 1 | town:1442:1076 | Pick up: Super Reaper 6000 | 1442 0.5899,0.6260 | near your level
 card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
-  step 1 | town:315 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level
+  step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level
