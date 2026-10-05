@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Quest progress stays in step with Shortest Path.** An objective count changing at the current stop refreshes the journey's text, without sending you back to an earlier stop.
+
 - **See what to do next.** The guide leads with your next task and its reason, offers a Start action, and keeps other adventures underneath.
 
 - **An objective area shared by several quests shows the game's own quest area.** Shortest Path Forever now draws the client's quest area on the map for a stop, and the guide names every quest an area covers, not only an area with a single quest, so a merged area gets the same outline and the same arrival check.

@@ -42,6 +42,27 @@ local function atObjectives()
 	return h
 end
 
+do
+	local h = atObjectives()
+	h.log[3].objectives = {
+		{ type = "monster", have = 1, need = 6, text = "Freebooter slain: 1/6" },
+		{ type = "monster", have = 0, need = 8, text = "Cannoneer slain: 0/8" },
+	}
+	h.fire("QUEST_LOG_UPDATE")
+	h.flush()
+	local before = h.spf.NavigateRoute
+	h.log[3].objectives[1].have = 5
+	h.log[3].objectives[1].text = "Freebooter slain: 5/6"
+	h.fire("QUEST_LOG_UPDATE")
+	h.flush()
+	assert(h.ns.Guidance.CurrentStep().title:find("5/6", 1, true), "the guide reads current objective progress")
+	assert(h.spfRoute.stops[1].title == h.ns.Route().steps[1].title, "Shortest Path receives current progress")
+	assert(h.spf.NavigateRoute == before + 1, "progress refreshes held guidance once")
+	h.fire("QUEST_LOG_UPDATE")
+	h.flush()
+	assert(h.spf.NavigateRoute == before + 1, "unchanged progress does not resend the journey")
+end
+
 for _, action in ipairs({ "complete", "abandon" }) do
 	local h = atObjectives()
 	local before = h.spf.NavigateRoute

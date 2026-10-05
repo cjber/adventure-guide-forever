@@ -18,7 +18,7 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png" width="640" alt="Adventure Guide beside The Barrens map"></p>
 
-<p align="center">Choose a journey from the world map's quest log. The rows fit the panel; more choices open in the guide's window.</p>
+<p align="center">Choose a journey from the world map's quest log. Each group shows as many cards as fit and turns pages with arrows in its header.</p>
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/map.png" width="640" alt="Shortest Path Forever's route to the first stop"></p>
 
@@ -26,7 +26,7 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window.png" width="640" alt="The Adventure Guide window"></p>
 
-<p align="center">The same journeys in their own window, the featured one with its next steps beside it.</p>
+<p align="center">The window leads with your next task and why it fits. Start or resume its route, or choose another adventure below.</p>
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/dungeons.png" width="640" alt="The Dungeons tab"></p>
 
@@ -37,6 +37,7 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 - **Dungeons.** Browse dungeon quests, see each one's detail and rewards, check what needs picking up before you go and plan a journey to their givers. The list also holds Forever's raids and the other raid instances, each raid tagged with its group size. With Atlas and its Classic module, a dungeon the guide offers is pinned at its entrance: the pin, or its Maps control, opens the instance's interior map, its wings and floors chosen from the game's own dropdown. Entrance directions come from QuestieDB or Tweaks Forever, and Adventure Guide for Classic opens from the Bosses and loot control for a dungeon's bosses and loot.
 - **Journeys.** Loose ends from your log, a zone's story, nearby zones suited to your level and class quests. The cards sit under collapsible headers like the quest log's: Continue, Zones for your level, Dungeons and Battlegrounds. Dungeon and battleground journeys are opt-in. Each card gives a reason to go; choose one to see its route.
 - **Full guide.** Page through the current route followed by the area's remaining Questie quests, ten rows a page. Later entries stay outline-only until Questie confirms they are available.
+- **Your next task.** The featured card shows what to do next, why it fits and a Start, Resume or Show on Map button. Other adventures stay below it.
 - **Choose and go.** Picking a journey starts guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop and the back arrow clear only the route the guide started; a waypoint you set yourself stays.
 - **A route that stays with you.** The chosen journey survives new quests, travel and a reload. A ready hand-in or a pickup right beside you comes first, and while you stand in an objective area the map shows the area rather than pointing at it. Town stops group pickups and hand-ins, with a checklist of quest givers. The tracker shows the current stop and the next one.
 - **Your order.** Drag steps or right-click for *Do this next*, *Do this sooner* or *Do this later*. Moves that break quest order are greyed out. *Back to suggested order* restores the plan.
@@ -56,13 +57,15 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 
 ## Install
 
-Download the zip from [Releases](https://github.com/cjber/adventure-guide-forever/releases) and extract it into `_classic_beta_/Interface/AddOns/`, so you end up with `AddOns/AdventureGuideForever/AdventureGuideForever.toc`. After an update, `/reload`.
+Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-forever) or [Wago Addons](https://addons.wago.io/addons/adventure-guide-forever), or download the zip from [Releases](https://github.com/cjber/adventure-guide-forever/releases) and extract it into `_classic_beta_/Interface/AddOns/`, so you end up with `AddOns/AdventureGuideForever/AdventureGuideForever.toc`. After an update, `/reload`.
 
 ## Usage
 
 | Command | What it does |
 |---|---|
 | `/agf`, `/adventureguide` | Open the Adventure Guide window |
+| `/agf travel` | Print guidance state for a travel report |
+| `/agf tracker` | Print the tracker anchors for an overlap report |
 | `/agf audit` | Compare the quest data with the game and report its source |
 | `/agf dump` | Save the drawn layout for a bug report; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua` |
 
