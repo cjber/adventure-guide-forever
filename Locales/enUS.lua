@@ -229,6 +229,12 @@ ns.L = {
 	-- cards' footers: how far a journey has come, else how many stops it has.
 	OVERVIEW_WHERE = "%s · level %d",
 	SUGGESTED = "Suggested",
+	RECOMMENDED = "Recommended",
+	YOUR_CHOICE = "Your choice",
+	START_ADVENTURE = "Start",
+	RESUME_ADVENTURE = "Resume",
+	DO_THIS_NEXT = "Do this next",
+	OTHER_ADVENTURES = "Other adventures",
 	READY_OF = "%d of %d ready",
 	CHAPTERS_DONE = "%d of %d done",
 	STOPS_ONE = "1 stop",

@@ -205,6 +205,33 @@ do
 	clean(fighting, "binding")
 end
 
+-- The primary action starts the recommendation even when title clicks only choose it.
+do
+	local h = Load({ spf = "v1" })
+	local ns, L = h.ns, h.ns.L
+	ns.SetSetting("autoStart", false)
+	ns.SetSetting("titleStartsRoute", false)
+	ns.Stop()
+	h.flush()
+	Open(h)
+	equal(Texts(h)[L.RECOMMENDED], 1, "unchosen: the guide recommends")
+	local button = h.Find(function(frame)
+		return frame:IsVisible() and frame.text == L.START_ADVENTURE
+	end)[1]
+	equal(button ~= nil, true, "unchosen: a visible Start action")
+	h.Click(button)
+	h.flush()
+	equal(ns.Route().chosen, true, "Start chooses the recommendation")
+	equal(ns.Guidance.Owns(), true, "Start owns guidance")
+	equal(Texts(h)[L.YOUR_CHOICE], 1, "started: the player's choice")
+	equal(Texts(h)[L.RECOMMENDED], nil, "started: no recommendation tag")
+	ns.SetSetting("wanderer", true)
+	h.flush()
+	equal(Texts(h)[L.START_ADVENTURE], nil, "wanderer: no Start action")
+	equal(Texts(h)[L.SHOW_ON_MAP], 1, "wanderer: map action remains")
+	clean(h, "primary action")
+end
+
 --[[ The Journeys tab: the route's cards and steps, the asides, and the panel kept in step ]]
 
 do
@@ -217,8 +244,8 @@ do
 	local first, others = ns.Overview.Split(route)
 	local texts = Texts(h)
 	equal(texts[first.title], 1, "the featured card: the first journey")
-	equal(texts[L.SUGGESTED], 1, "its Suggested tag")
-	equal(texts[L.SHOW_ON_MAP], 1, "its Show on Map")
+	equal(texts[route.chosen and L.YOUR_CHOICE or L.RECOMMENDED], 1, "its Suggested tag")
+	equal(texts[ns.Guidance.Owns() and L.SHOW_ON_MAP or L.START_ADVENTURE], 1, "its Show on Map")
 	for index = 1, math.min(#others, 4) do
 		equal(texts[others[index].title], 1, "grid card " .. index)
 	end
@@ -227,7 +254,7 @@ do
 	end)
 	equal(#steps, 1, "the real town checklist fills the available step area")
 	equal(steps[1].step, route.steps[1], "the visible row is the route head")
-	equal(texts[route.steps[1].title], 1, "the head's title")
+	equal(texts[route.steps[1].title], 2, "the head's title")
 	equal(texts[route.steps[1].checklist[1].text], 1, "its first giver appears below it")
 	for _, aside in ipairs(ns.Asides.All()) do
 		equal(texts[aside.text], 1, "Today: " .. aside.key)
