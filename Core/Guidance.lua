@@ -71,7 +71,7 @@ end
 -- True when the guidance handed to Shortest Path no longer matches the journey (docs/design.md §2.10): a stop it has
 -- yet to reach has left the steps (a town emptied, a step skipped, a quest abandoned or grey), step 1 is neither the
 -- stop it heads for nor the one it just reached (the player was taken elsewhere, or a new chapter opens at another
--- town), or step 1's point has moved `far` from the stop it heads for. Later stops reordering alone is not stale.
+-- town), or step 1's point has moved `far` or its objective text changed. Later stops reordering alone is not stale.
 ---@param handed AGFStep[] what was last handed, in order
 ---@param index integer the stop Shortest Path heads for (CurrentStop)
 ---@param steps AGFStep[] the chosen journey's steps now
@@ -92,7 +92,7 @@ function Guidance.Stale(handed, index, steps, far)
 		return false
 	end
 	if current and first.key == current.key then
-		return far(first, current)
+		return far(first, current) or first.title ~= current.title
 	end
 	-- The town just reached, where Shortest Path has already moved on: sending it again would arrive at once.
 	return not (previous and first.key == previous.key)

@@ -30,13 +30,37 @@ local function atObjectives()
 			"each area reaches SPF as a map, a point and a yard radius"
 		)
 	end
-	-- Only an area of exactly one quest names it; a merged area leaves Shortest Path to the circles.
+	-- Every quest of the area reaches Shortest Path; one alone is also named the way older versions read it.
 	local areaStep = h.ns.Guidance.CurrentStep()
-	assert(
-		(#(areaStep.quests or {}) == 1) == (h.spfRoute.stops[1].questID ~= nil),
-		"an area names its quest only when it is the only one"
-	)
+	local quests, stop = areaStep.quests or {}, h.spfRoute.stops[1]
+	assert((#quests == 1) == (stop.questID ~= nil), "an area names its quest alone only when it is the only one")
+	assert(#quests == #(stop.questIDs or {}), "an area names every quest it covers")
+	for index, questID in ipairs(quests) do
+		assert(stop.questIDs[index] == questID, "the area's quests reach Shortest Path in order")
+	end
+	assert(stop.questIDs ~= areaStep.quests, "Shortest Path gets its own copy of the quest list")
 	return h
+end
+
+do
+	local h = atObjectives()
+	h.log[3].objectives = {
+		{ type = "monster", have = 1, need = 6, text = "Freebooter slain: 1/6" },
+		{ type = "monster", have = 0, need = 8, text = "Cannoneer slain: 0/8" },
+	}
+	h.fire("QUEST_LOG_UPDATE")
+	h.flush()
+	local before = h.spf.NavigateRoute
+	h.log[3].objectives[1].have = 5
+	h.log[3].objectives[1].text = "Freebooter slain: 5/6"
+	h.fire("QUEST_LOG_UPDATE")
+	h.flush()
+	assert(h.ns.Guidance.CurrentStep().title:find("5/6", 1, true), "the guide reads current objective progress")
+	assert(h.spfRoute.stops[1].title == h.ns.Route().steps[1].title, "Shortest Path receives current progress")
+	assert(h.spf.NavigateRoute == before + 1, "progress refreshes held guidance once")
+	h.fire("QUEST_LOG_UPDATE")
+	h.flush()
+	assert(h.spf.NavigateRoute == before + 1, "unchanged progress does not resend the journey")
 end
 
 for _, action in ipairs({ "complete", "abandon" }) do

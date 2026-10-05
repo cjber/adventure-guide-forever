@@ -422,6 +422,11 @@ do
 		equal(Stale(handed, case[1], case[2], case[3]), case[4], "stale: " .. case[5])
 	end
 
+	local sent = { { key = "a", title = "1/6" }, { key = "b", title = "B" } }
+	local changed = { { key = "a", title = "5/6" }, { key = "b", title = "B" } }
+	equal(Stale(sent, 1, changed, never), true, "current objective progress changed")
+	equal(Stale(sent, 2, changed, never), false, "progress in a passed stop does not send the player back")
+
 	local function Moved(h, map, x, y)
 		h.MovePlayer(map, x, y)
 		h.ns.Invalidate()

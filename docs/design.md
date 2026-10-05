@@ -28,7 +28,8 @@ abandons quests.
 - **2.9 Tooltips.** Explain visits and quest difficulty. Town checklists tick completed givers;
   repeated visits share a map ring.
 - **2.10 Lifecycle.** Keep the chosen journey through rebuilds, travel and reloads. Resume paused
-  guidance explicitly. Stop clears only owned guidance; a moved waypoint survives.
+  guidance explicitly. Stop clears only owned guidance; a moved waypoint survives. The current stop's
+  objective title stays in sync with Shortest Path; text changes in passed stops do not restart them.
 - **2.11 Asides.** Keep hints separate from routes. Unknown locations remain text only.
 - **2.12 Trainers.** Use known spells and trainer locations; add a stop only when the route passes.
 - **2.13 New suggestions.** Announce new offers quietly after a level or zone change, never by opening UI.
