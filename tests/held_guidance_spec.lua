@@ -30,12 +30,15 @@ local function atObjectives()
 			"each area reaches SPF as a map, a point and a yard radius"
 		)
 	end
-	-- Only an area of exactly one quest names it; a merged area leaves Shortest Path to the circles.
+	-- Every quest of the area reaches Shortest Path; one alone is also named the way older versions read it.
 	local areaStep = h.ns.Guidance.CurrentStep()
-	assert(
-		(#(areaStep.quests or {}) == 1) == (h.spfRoute.stops[1].questID ~= nil),
-		"an area names its quest only when it is the only one"
-	)
+	local quests, stop = areaStep.quests or {}, h.spfRoute.stops[1]
+	assert((#quests == 1) == (stop.questID ~= nil), "an area names its quest alone only when it is the only one")
+	assert(#quests == #(stop.questIDs or {}), "an area names every quest it covers")
+	for index, questID in ipairs(quests) do
+		assert(stop.questIDs[index] == questID, "the area's quests reach Shortest Path in order")
+	end
+	assert(stop.questIDs ~= areaStep.quests, "Shortest Path gets its own copy of the quest list")
 	return h
 end
 

@@ -386,6 +386,7 @@
 ---@field hold? boolean keep guidance until the owner replaces the route after quest progress
 ---@field radius? number yards around a held stop where travel cues pause
 ---@field questID? number the one quest this area stands for, so Shortest Path can use the client's own inside-area state
+---@field questIDs? number[] every quest this area covers, for the game's own quest area on the map; a Shortest Path before it ignores it
 ---@field shapes? AGFSPFShape[] the objective areas a held stop stands for
 
 ---@class AGFSPFLeg
