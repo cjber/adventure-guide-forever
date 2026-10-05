@@ -212,10 +212,8 @@ local function Window(each, scene, tab)
 	each.ns.OpenWindow()
 	each.flush()
 	local window = each.G.AdventureGuideForeverWindow
-	if tab then
-		each.Click(window.Tabs[tab])
-		each.flush()
-	end
+	each.Click(window.Tabs[tab or 1])
+	each.flush()
 	each.SetRects(window, input.rects[scene] or {})
 	window:Hide()
 	window:Show()
@@ -429,6 +427,16 @@ h = Load("v1", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, {
 	end,
 })
 out.window_today = Window(h, "window_today")
+out.window_next = Window(h, "window_next", 6)
+h.ns.Recommendations.SetFocus("training")
+out.window_next_training = Window(h, "window_next_training", 6)
+local nextAsides = h.ns.Asides.All
+h.ns.Asides.All = function()
+	return {}
+end
+out.window_next_empty = Window(h, "window_next_empty", 6)
+h.ns.Asides.All = nextAsides
+h.ns.Recommendations.SetFocus("balanced")
 out.window_context_menu = Window(h, "window_context_menu")
 local more = assert(h.Find(function(frame)
 	return frame:IsVisible() and frame.asides

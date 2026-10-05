@@ -40,10 +40,8 @@ local function Open(h, tab)
 	h.ns.OpenWindow()
 	h.flush()
 	local window = h.G.AdventureGuideForeverWindow
-	if tab then
-		h.Click(window.Tabs[tab])
-		h.flush()
-	end
+	h.Click(window.Tabs[tab or 1])
+	h.flush()
 	return window
 end
 

@@ -28,11 +28,17 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 
 <p align="center">The window leads with your next task and why it fits. Start or resume its route, or choose another adventure below.</p>
 
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_next.png" width="640" alt="The Next page with a focus and useful alternatives"></p>
+
+<p align="center">Choose a focus and find something useful to do. Your journey stays chosen while you look at training, professions or dungeon suggestions.</p>
+
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/dungeons.png" width="640" alt="The Dungeons tab"></p>
 
 <p align="center">Pick a dungeon, see which quests you can take and find their givers before entering.</p>
 
 ## Features
+
+- **What to do next.** The Next page brings journeys, training and profession hints together. Choose a focus, see why a suggestion fits, and start its guidance or browse alternatives. Your current journey stays chosen when you change focus.
 
 - **Dungeons.** Browse dungeon quests, see each one's detail and rewards, check what needs picking up before you go and plan a journey to their givers. The list also holds Forever's raids and the other raid instances, each raid tagged with its group size. With Atlas and its Classic module, a dungeon the guide offers is pinned at its entrance: the pin, or its Maps control, opens the instance's interior map, its wings and floors chosen from the game's own dropdown. Entrance directions come from QuestieDB or Tweaks Forever, and Adventure Guide for Classic opens from the Bosses and loot control for a dungeon's bosses and loot.
 - **Journeys.** Loose ends from your log, a zone's story, nearby zones suited to your level and class quests. The cards sit under collapsible headers like the quest log's: Continue, Zones for your level, Dungeons and Battlegrounds. Dungeon and battleground journeys are opt-in. Each card gives a reason to go; choose one to see its route.

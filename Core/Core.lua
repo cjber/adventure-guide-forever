@@ -41,6 +41,7 @@ ns.DEFAULTS = DEFAULTS
 -- Per-character prefs (AGFPrefs). `dungeons` seeds from the account-wide default the first
 -- time this character is seen; every other key is a plain default merged in on load.
 local PREFS_DEFAULTS = {
+	recommendationFocus = "balanced",
 	plannedDungeons = {},
 	quests = true,
 	dungeons = false,

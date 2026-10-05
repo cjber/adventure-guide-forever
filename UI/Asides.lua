@@ -96,6 +96,8 @@ local function Seen(aside)
 			and table.concat({
 				aside.key,
 				aside.text,
+				aside.category or "",
+				aside.reason or "",
 				aside.icon,
 				aside.texture or "",
 				place and ("%d:%.4f:%.4f"):format(place.map, place.x, place.y) or "",
@@ -268,7 +270,14 @@ Asides.Register(function()
 	end
 	local who = place and L.TRAINER_IN:format(ns.Model.TownName(ns.Data, place, ns.State.MapName)) or L.TRAINER
 	-- The minimap's class trainer mark (CSV:1321).
-	return { key = "trainer", text = L.TRAINER_LINE:format(who, spellCount), icon = "class", place = place }
+	return {
+		key = "trainer",
+		text = L.TRAINER_LINE:format(who, spellCount),
+		icon = "class",
+		place = place,
+		category = "training",
+		reason = L.NEXT_REASON_TRAINING,
+	}
 end)
 
 -- A spell learned at the trainer shortens the line at once.
@@ -291,6 +300,32 @@ Asides.Register(function()
 	end
 	local text = points == 1 and L.TALENT_POINT or L.TALENT_POINTS:format(points)
 	-- The Legion minor-talents book (CSV:388), the one square talent mark the atlas has.
-	return { key = "talents", text = text, icon = "minortalents-icon-book", renew = talentRises }
+	return {
+		key = "talents",
+		text = text,
+		icon = "minortalents-icon-book",
+		renew = talentRises,
+		category = "training",
+		reason = L.NEXT_REASON_TALENTS,
+	}
 end)
 Asides.RefreshOn("CHARACTER_POINTS_CHANGED")
+
+-- District events can arrive before the client updates its position. Coalesce and read on the next frame.
+local district = CreateFrame("Frame")
+local districtPending = false
+for _, event in ipairs({ "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "PLAYER_REGEN_ENABLED" }) do
+	pcall(district.RegisterEvent, district, event)
+end
+district:SetScript("OnEvent", function()
+	if not districtPending then
+		districtPending = true
+		C_Timer.After(0, function()
+			districtPending = false
+			if ns.RouteSettled() then
+				Asides.Refresh()
+				ns.Window.Refresh()
+			end
+		end)
+	end
+end)

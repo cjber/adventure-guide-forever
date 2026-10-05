@@ -11,6 +11,9 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **A place to decide what to do next.** The Next page brings your journey, training and profession hints together. Choose a focus, see why each suggestion fits, and start its route or browse the other things you can do. Changing focus leaves your current journey intact.
+- **Training hints follow you around town.** Moving between city districts refreshes the trainer and profession hints without rebuilding your quest route. A hint dismissed or moved since it was drawn cannot start navigation to its old destination.
+
 ## [0.9.0] - 2026-10-05
 
 - **Quest progress stays in step with Shortest Path.** An objective count changing at the current stop refreshes the journey's text, without sending you back to an earlier stop.

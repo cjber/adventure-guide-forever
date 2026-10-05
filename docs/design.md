@@ -145,6 +145,14 @@ when `onClick` is given; `Window.CreatePaperWell(parent)` and `Window.SetPaperWe
 well for text longer than a row, set in the Journal's brown ink. A surface the client has no art for draws a flat
 dark tile, never a question mark or a substituted picture.
 
+### Next page
+
+`Core/Recommendations.lua` combines the committed route and wanted hints for `UI/WindowNext.lua`. The Next tab is appended after the existing tabs to preserve their indices. A first open selects it; a valid saved tab remains selected. Focus is a per-character presentation choice, independent of the chosen journey and dungeon opt-ins.
+
+Balanced preserves a chosen journey. Without a choice, training within 600 measured local yards can precede the offered route. Other focuses filter existing eligible offers. Up to three alternatives are visible, without padding an empty list. Text-only hints have no navigation. The selector never synchronously builds a route: pending work shows an updating state. An action revalidates its identity, destination and current step before delegating to Guidance. Combat, Wanderer mode and pending session estimates disable actions. District changes refresh hints without rebuilding the quest plan.
+
+The wider direction and client checks are in [guidance-roadmap.md](guidance-roadmap.md).
+
 ## 3. Copy
 
 Use short, plain player language and the game's names. Unknown values stay absent. Public descriptions

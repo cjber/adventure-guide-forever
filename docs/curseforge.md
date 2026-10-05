@@ -20,6 +20,10 @@ Pick one and Shortest Path Forever walks you to each stop in turn.
 
 The window leads with your next task and why it fits. Start or resume its route, or choose another adventure below.
 
+![The Next page](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_next.png)
+
+Choose a focus and find something useful to do. Your journey stays chosen while you look at training, professions or dungeon suggestions.
+
 ![The Professions tab](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_professions.png)
 
 SkillUp Forever supplies the recipes to make and reagents still needed.

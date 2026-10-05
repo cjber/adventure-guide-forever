@@ -288,7 +288,7 @@ local function Build()
 	ns.Providers.OnChange(Refresh)
 	local saved = ns.WindowDB().tab
 	for index, tab in ipairs(tabs) do
-		if tab.key == saved then
+		if tab.key == saved or saved == nil and tab.key == "next" then
 			selected = index
 		end
 	end

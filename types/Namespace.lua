@@ -161,6 +161,7 @@
 ---@field npcs table<integer, AGFNpc>
 
 ---@class AGFPrefs
+---@field recommendationFocus string the Next page's focus, normalized to balanced when unknown
 ---@field plannedDungeons table<integer, boolean>
 ---@field quests boolean
 ---@field dungeons boolean
@@ -826,6 +827,8 @@
 
 -- Asides (Asides.lua, docs/design.md §2.11): one-line hints beside the journeys, never a route.
 ---@class AGFAside
+---@field category? string the Next page's focus for this hint
+---@field reason? string why the provider offers this hint
 ---@field key string stable identity for Skip and Not interested, e.g. "trainer"
 ---@field text string the whole line, in the game's voice
 ---@field icon string an atlas the Forever client has (a row of the atlas CSV)
@@ -848,6 +851,28 @@
 
 ---@class AGFNamespace
 ---@field Asides AGFAsides
+
+---@class AGFRecommendation
+---@field key string
+---@field title string
+---@field reason string
+---@field icon? string|integer
+---@field journey? string
+---@field step? AGFStep
+---@field aside? AGFAside
+
+---@class AGFRecommendations
+---@field FOCUSES string[]
+---@field Focus fun(): string
+---@field SetFocus fun(focus: string)
+---@field Build fun(route: AGFRoute, asides: AGFAside[], focus: string, player: AGFPlayer): AGFRecommendation[]
+---@field Current fun(): AGFRecommendation[]
+---@field ActionLabel fun(item: AGFRecommendation): string
+---@field CanAct fun(item: AGFRecommendation): boolean
+---@field Act fun(item: AGFRecommendation): boolean
+
+---@class AGFNamespace
+---@field Recommendations AGFRecommendations
 
 ---@class AGFPrefs
 ---@field asides? table<string, string> the asides this character turned down (Not interested): key -> the text it had
@@ -1158,6 +1183,25 @@
 
 ---@class AGFStrings
 ---@field TAB_JOURNEYS string
+---@field TAB_NEXT string
+---@field NEXT_TITLE string
+---@field NEXT_FOCUS_BALANCED string
+---@field NEXT_FOCUS_QUESTS string
+---@field NEXT_FOCUS_TRAINING string
+---@field NEXT_FOCUS_PROFESSIONS string
+---@field NEXT_FOCUS_DUNGEONS string
+---@field NEXT_WHY string
+---@field NEXT_ALTERNATIVES string
+---@field NEXT_EMPTY string
+---@field NEXT_ADVICE string
+---@field NEXT_LOADING string
+---@field NEXT_BROWSE_JOURNEYS string
+---@field NEXT_BROWSE_DUNGEONS string
+---@field NEXT_REASON_JOURNEY string
+---@field NEXT_REASON_ASIDE string
+---@field NEXT_REASON_TRAINING string
+---@field NEXT_REASON_TALENTS string
+---@field NEXT_REASON_PROFESSIONS string
 ---@field TAB_PROFESSIONS string
 ---@field OPEN_IN_WINDOW string the panel header's button tooltip
 ---@field BINDING_TOGGLE_WINDOW string the key binding's name
