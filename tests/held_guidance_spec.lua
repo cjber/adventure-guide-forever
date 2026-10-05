@@ -30,6 +30,12 @@ local function atObjectives()
 			"each area reaches SPF as a map, a point and a yard radius"
 		)
 	end
+	-- Only an area of exactly one quest names it; a merged area leaves Shortest Path to the circles.
+	local areaStep = h.ns.Guidance.CurrentStep()
+	assert(
+		(#(areaStep.quests or {}) == 1) == (h.spfRoute.stops[1].questID ~= nil),
+		"an area names its quest only when it is the only one"
+	)
 	return h
 end
 

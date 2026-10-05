@@ -384,6 +384,7 @@
 ---@field tooltip? string optional quest level/chain detail for the stop tooltip
 ---@field hold? boolean keep guidance until the owner replaces the route after quest progress
 ---@field radius? number yards around a held stop where travel cues pause
+---@field questID? number the one quest this area stands for, so Shortest Path can use the client's own inside-area state
 ---@field shapes? AGFSPFShape[] the objective areas a held stop stands for
 
 ---@class AGFSPFLeg

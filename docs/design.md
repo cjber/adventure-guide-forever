@@ -21,8 +21,8 @@ abandons quests.
 - **2.5 Tracker.** Show the current and next step beside quests. Leave the stock quest order alone.
   Quest tracking is opt-in; a step's quest opens on the map only outside combat.
 - **2.6 Pins.** Draw only known locations and step aside while Shortest Path supplies guidance. While the player
-  stands in the current step's objective area, the guide draws that area's full outline in yellow on the world map
-  and the minimap, and the step's own pin and line step aside.
+  stands in the current step's objective area, the world map shows that area's full outline in yellow, the minimap
+  turns the game's own quest area gold, and the step's own pin and line step aside.
 - **2.7 Completion.** Announce a proven story ending once, using the game's tracker glow and sound.
 - **2.8 Menus.** Share step actions between the guide and tracker.
 - **2.9 Tooltips.** Explain visits and quest difficulty. Town checklists tick completed givers;

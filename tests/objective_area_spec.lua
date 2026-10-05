@@ -90,9 +90,10 @@ for _, shape in ipairs(step.shapes or {}) do
 end
 equal(onNode, true, "area point: on an objective node, inside its shape")
 
--- Shortest Path advancing its own stop index does not move the tracker off the area the player is in.
+-- An area of one quest names that quest, so Shortest Path can use the client's own inside-area state for it.
 h.ns.StartRoute()
 h.flush()
+equal(h.spfRoute.stops[1].questID, 3902, "area: the step's single quest reaches Shortest Path")
 h.spfAdvance()
 equal(h.ns.Guidance.CurrentStep().key, "area:3902:4", "state: the tracker holds the unfinished step")
 
