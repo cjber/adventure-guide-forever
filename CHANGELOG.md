@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-10-05
+
 - **Quest progress stays in step with Shortest Path.** An objective count changing at the current stop refreshes the journey's text, without sending you back to an earlier stop.
 
 - **See what to do next.** The guide leads with your next task and its reason, offers a Start action, and keeps other adventures underneath.
