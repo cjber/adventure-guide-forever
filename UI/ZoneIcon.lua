@@ -95,7 +95,7 @@ local function Fill(icon, map, base, overlays, x, y, span, tall)
 		if Shows(px, py, TILE, TILE) then
 			used = used + 1
 			local texture = Acquire(art, art.base, used, "BACKGROUND")
-			texture:SetTexture(base[index])
+			texture:SetTexture(base[index]) -- art-ok: a square map tile, sized TILE square on the next line
 			texture:SetSize(TILE * k, TILE * k)
 			texture:SetPoint("TOPLEFT", px * k, -py * k)
 		end
@@ -115,6 +115,7 @@ local function Fill(icon, map, base, overlays, x, y, span, tall)
 			if Shows(px, py, tw, th) then
 				used = used + 1
 				local texture = Acquire(art, art.overlays, used, "BORDER")
+				-- art-ok: an overlay piece, cropped to and sized at its own tw by th
 				texture:SetTexture(overlay[tile] --[[@as integer]])
 				texture:SetTexCoord(0, tw / FileSize(tw), 0, th / FileSize(th))
 				texture:SetSize(tw * k, th * k)

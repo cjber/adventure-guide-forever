@@ -39,6 +39,32 @@ function Art.Fit(texture, atlas, width, height)
 	return w, h
 end
 
+-- A file icon, square as every one is, `size` across and whole: a texture that drew an atlas before keeps that
+-- atlas's crop until it is reset.
+---@param texture Texture
+---@param file string|integer
+---@param size number
+function Art.Icon(texture, file, size)
+	texture:SetTexCoord(0, 1, 0, 1)
+	texture:SetTexture(file)
+	texture:SetSize(size, size)
+end
+
+-- A button's hover glow: `atlas` again, added over itself, fitted in `width` by `height` as Art.Fit draws the icon
+-- under it. Button:SetHighlightAtlas would pull it to the button's own shape.
+---@param button Button
+---@param atlas string
+---@param width number
+---@param height number
+---@return Texture
+function Art.Highlight(button, atlas, width, height)
+	local glow = button:CreateTexture(nil, "HIGHLIGHT")
+	Art.Fit(glow, atlas, width, height)
+	glow:SetPoint("CENTER")
+	glow:SetBlendMode("ADD")
+	return glow
+end
+
 -- `atlas` over the whole of a `width` by `height` box at its own aspect, the overflow cropped evenly from both sides
 -- (SetTexCoord within the atlas's own coordinates on its sheet).
 ---@param texture Texture
@@ -250,8 +276,7 @@ end
 ---@return Texture
 function Art.Ring(frame, size)
 	local ring = frame:CreateTexture(nil, "OVERLAY")
-	ring:SetAtlas("adventureguide-ring")
-	ring:SetSize(size * RING_SCALE, size * RING_SCALE)
+	Art.Fit(ring, "adventureguide-ring", size * RING_SCALE, size * RING_SCALE)
 	ring:SetPoint("CENTER")
 	return ring
 end

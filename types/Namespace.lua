@@ -267,6 +267,7 @@
 ---@field section AGFJourneySection the overview header it shows under
 ---@field zone? integer uiMapID of a zone story or next-zone journey, independent of its first step
 ---@field instance? integer Map.ID of a dungeon journey or a story leading into an instance
+---@field level? integer a battleground journey: the level it opens at
 ---@field key string stable identity for prefs.journey: "carry", "zone:<uiMapID>" (a zone's story or next-zone card alike), "dungeon:<Map.ID>", "calling", "chain:<questID>" (a way into an instance, by its chain's first quest) or "battleground:<BattlemasterList ID>"
 ---@field title string e.g. "Quests in your log" or "Westfall story"
 ---@field subline string e.g. "3 ready to hand in, 1 in progress"
@@ -620,6 +621,11 @@
 ---@field GROUP_BATTLEGROUNDS string the header over the battleground cards
 ---@field GROUP_CARDS string format: how many cards a collapsed header holds
 ---@field GROUP_CARDS_ONE string the same for one card
+---@field LEVELS string a card's level range, low then high
+---@field LEVELS_FROM string a battleground card's first level
+---@field PAGE_OF string a group's page of its pages
+---@field PAGE_PREVIOUS string the previous-page arrow's tooltip
+---@field PAGE_NEXT string the next-page arrow's tooltip
 ---@field DUNGEON_QUESTS string format: quest count
 ---@field DUNGEON_QUESTS_ONE string
 ---@field DUNGEON_INSIDE string format: count of the log's quests filed under the instance, its name

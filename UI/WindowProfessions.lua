@@ -262,8 +262,8 @@ local function Picked(content, professions)
 			pick.Icon = Window.CreateRingIcon(pick, PICKER_SIZE)
 			pick.Icon:SetAllPoints()
 			local highlight = pick.Icon:CreateTexture(nil, "OVERLAY", nil, 1)
-			highlight:SetAtlas("adventureguide-ring")
-			highlight:SetAllPoints(pick.Icon.Ring)
+			ns.Art.Fit(highlight, "adventureguide-ring", pick.Icon.Ring:GetSize())
+			highlight:SetPoint("CENTER", pick.Icon.Ring)
 			highlight:SetBlendMode("ADD")
 			highlight:SetAlpha(0.5)
 			highlight:Hide()
@@ -348,7 +348,7 @@ local function RefreshSide(profession)
 		if reagent then
 			local icon = C_Item.GetItemIconByID(reagent.itemID)
 			if icon then
-				row.Icon:SetTexture(icon)
+				ns.Art.Icon(row.Icon, icon, REAGENT_ICON)
 			else
 				-- A flat dark tile while the client has no icon for the item, never a question mark.
 				row.Icon:SetColorTexture(0.1, 0.09, 0.08, 1)

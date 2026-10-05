@@ -88,7 +88,11 @@ its types reviewed), and the tool versions in
   in `types/Namespace.lua`.
 - A final `select(...)` argument, table element or return must be parenthesised, or carry a trailing
   `-- multi-value: reason` when expansion is intentional.
-- Never stretch art: an icon, atlas or texture is drawn at its native aspect (size it from `C_Texture.GetAtlasInfo`, fit inside the box); only nine-slice pieces stretch by design.
+- Never stretch art: an icon, atlas or texture is drawn at its native aspect, through `UI/Art.lua` (`Art.Fit`,
+  `Art.Icon`, `Art.Markup`, `Art.Highlight`, the slices); only nine-slice pieces, bars and tiles stretch by design.
+  `tools/lint_art.py` refuses a raw `SetAtlas`, `SetTexture`, button atlas or `|A`/`|T` markup anywhere else unless
+  its line says why its shape is right (`-- art-ok: reason`); the specs fail on a file drawn over an atlas's leftover
+  crop, and `tools/screenshots.py` on any atlas drawn off its own shape.
 - Commits are signed (`git commit -S`) with the personal email.
 - Quality: load `.agents/skills/sift-project/SKILL.md` before cleanup, dead-code or refactoring work.
 - A quest whose eligibility the data cannot establish is never recommended, and a step never points at
@@ -123,7 +127,7 @@ its types reviewed), and the tool versions in
 
 ## Secure UI regression checks
 
-`tools/typecheck.sh` checks the TOC/XML load graph, LuaLS coverage and `tools/lint_taint.py`.
+`tools/typecheck.sh` checks the TOC/XML load graph, LuaLS coverage, `tools/lint_taint.py` and `tools/lint_art.py`.
 `tools/forever_tools/` is the shared tooling (cjber/skills, `wow-forever-addon/tooling`), vendored byte for byte: never edit it here.
 `python3 tools/forever_tools/sync.py check` verifies it offline; `sync.py update --source <checkout>` is the only way to refresh it.
 Do not hook Blizzard object methods: use events, `HookScript` or a supported callback registry.

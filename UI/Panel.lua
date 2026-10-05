@@ -62,6 +62,8 @@ local OVERVIEW_INSET, OVERVIEW_TEXT = 12, 54
 -- The overview's quest log headers (docs/design.md §2.2): the stock list header's height, art and font, a gap under
 -- each before its first card.
 local HEADER_HEIGHT, HEADER_GAP, HEADER_ART = 22, 4, "common-button-list-collapseExpand"
+-- Room over each group's header, and the stock page arrows (PagingControls, 32px) at the header's height.
+local GROUP_GAP, PAGE_ARROW = 6, 22
 
 ---@type Frame?
 local panel
@@ -168,7 +170,7 @@ local function CreateRowIcon(parent, atlas, size, tip, action)
 	button.Icon = button:CreateTexture(nil, "ARTWORK")
 	Art.Fit(button.Icon, atlas, size, size)
 	button.Icon:SetPoint("CENTER")
-	button:SetHighlightAtlas(atlas, "ADD")
+	Art.Highlight(button, atlas, size, size)
 	button:SetScript("OnClick", action)
 	button:SetScript("OnEnter", function(self)
 		ShowTooltip(self, { tip() })
@@ -213,8 +215,7 @@ local function CreateRow(parent)
 	row.SkipButton:SetPoint("TOPRIGHT", -6, -7)
 
 	row.Ring = row:CreateTexture(nil, "ARTWORK")
-	row.Ring:SetAtlas("adventureguide-ring")
-	row.Ring:SetSize(26, 26)
+	Art.Fit(row.Ring, "adventureguide-ring", 26, 26)
 	row.Ring:SetPoint("LEFT", 6, 0)
 	row.Number = row:CreateTexture(nil, "OVERLAY")
 	row.Number:SetPoint("CENTER", row.Ring)
@@ -231,8 +232,7 @@ local function CreateRow(parent)
 	row.Detail:SetWordWrap(false)
 	-- Blizzard's group quest tag (QUEST_TAG_ATLAS), after the detail when a quest at the stop needs a group.
 	row.Group = row:CreateTexture(nil, "ARTWORK")
-	row.Group:SetAtlas("questlog-questtypeicon-group")
-	row.Group:SetSize(GROUP_ICON, GROUP_ICON)
+	Art.Fit(row.Group, "questlog-questtypeicon-group", GROUP_ICON, GROUP_ICON)
 	row.Group:SetPoint("LEFT", row.Detail, "RIGHT", 4, 0)
 	row.Tag = row:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
 	row.Tag:SetText(ns.L.OPTIONAL)
@@ -269,8 +269,10 @@ local function BuildHeader(parent)
 	backButton = CreateFrame("Button", nil, header) --[[@as Button]]
 	backButton:SetSize(22, 22)
 	backButton:SetPoint("LEFT", 0, 0)
-	backButton:SetNormalAtlas("common-icon-backarrow")
-	backButton:SetHighlightAtlas("common-icon-backarrow", "ADD")
+	local arrow = backButton:CreateTexture(nil, "ARTWORK")
+	Art.Fit(arrow, "common-icon-backarrow", 22, 22)
+	arrow:SetPoint("CENTER")
+	Art.Highlight(backButton, "common-icon-backarrow", 22, 22)
 	backButton:SetScript("OnClick", Back)
 	backButton:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -293,9 +295,9 @@ local function BuildHeader(parent)
 	-- 22 high at the art's own 18x19.
 	expand:SetSize(22 * 18 / 19, 22)
 	expand:SetPoint("RIGHT", -4, 0)
-	expand:SetNormalAtlas("RedButton-Expand")
-	expand:SetPushedAtlas("RedButton-Expand-Pressed")
-	expand:SetHighlightAtlas("RedButton-Highlight", "ADD")
+	expand:SetNormalAtlas("RedButton-Expand") -- art-ok: the button is the art's own 18x19
+	expand:SetPushedAtlas("RedButton-Expand-Pressed") -- art-ok: the button is the art's own 18x19
+	expand:SetHighlightAtlas("RedButton-Highlight", "ADD") -- art-ok: the button is the art's own 18x19
 	expand:SetScript("OnClick", function()
 		ns.OpenWindow()
 	end)
@@ -304,8 +306,7 @@ local function BuildHeader(parent)
 	end)
 	expand:SetScript("OnLeave", GameTooltip_Hide)
 	compass = header:CreateTexture(nil, "ARTWORK")
-	compass:SetAtlas("islands-queue-prop-compass")
-	compass:SetSize(30, 30)
+	Art.Fit(compass, "islands-queue-prop-compass", 30, 30)
 	compass:SetPoint("LEFT", 2, 0)
 	headerTitle = header:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 	headerTitle:SetText(ns.TITLE)
@@ -350,7 +351,6 @@ local function CreateAsideLine(parent)
 	line:SetPoint("RIGHT", -10, 0)
 	ns.Art.Slice(line, "PetList-ButtonHighlight", "HIGHLIGHT", 12, 12)
 	line.Icon = line:CreateTexture(nil, "ARTWORK")
-	line.Icon:SetSize(ASIDE_HEIGHT, ASIDE_HEIGHT)
 	line.Icon:SetPoint("LEFT")
 	line.Skip = CreateRowIcon(line, "common-icon-redx", ASIDE_HEIGHT, function()
 		return L.SKIP
@@ -383,6 +383,7 @@ end
 ---@field Title FontString
 ---@field Reason FontString
 ---@field Foot FontString
+---@field Level FontString
 ---@field Bar AGFProgressBar
 
 ---@param parent Frame
@@ -392,7 +393,7 @@ local function CreateOverviewCard(parent)
 	card:SetHeight(OVERVIEW_HEIGHT)
 	for _, layer in ipairs({ "BACKGROUND", "HIGHLIGHT" }) do
 		local art = card:CreateTexture(nil, layer)
-		art:SetAtlas(CARD_ART)
+		art:SetAtlas(CARD_ART) -- art-ok: nine-slice, margins set on the next line
 		art:SetTextureSliceMargins(ART_SLICE, ART_SLICE, ART_SLICE, ART_SLICE)
 		art:SetPoint("TOPLEFT", -ART_BLEED, ART_BLEED)
 		art:SetPoint("BOTTOMRIGHT", ART_BLEED, -ART_BLEED)
@@ -402,15 +403,17 @@ local function CreateOverviewCard(parent)
 		end
 	end
 	card.Icon = ns.ZoneIcon.Create(card, OVERVIEW_ICON, OVERVIEW_BADGE)
-	card.Icon:SetPoint("TOPLEFT", OVERVIEW_INSET, -14)
+	card.Icon:SetPoint("LEFT", OVERVIEW_INSET, 0)
 	card.New = card.Icon.Border:CreateTexture(nil, "OVERLAY", nil, 2)
-	card.New:SetAtlas(NEW_MARK)
-	card.New:SetSize(NEW_COMPACT, NEW_COMPACT)
+	Art.Fit(card.New, NEW_MARK, NEW_COMPACT, NEW_COMPACT)
 	card.New:SetPoint("CENTER", card.Icon, "TOPRIGHT", -2, -2)
 	card.Bar = CreateBar(card)
 	card.Title = card:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+	card.Level = card:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+	card.Level:SetPoint("TOPRIGHT", -OVERVIEW_INSET, -10)
+	card.Level:SetJustifyH("RIGHT")
 	card.Title:SetPoint("TOPLEFT", OVERVIEW_TEXT, -10)
-	card.Title:SetPoint("RIGHT", -OVERVIEW_INSET, 0)
+	card.Title:SetPoint("RIGHT", card.Level, "LEFT", -6, 0)
 	card.Reason = card:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 	card.Reason:SetPoint("TOPLEFT", OVERVIEW_TEXT, -27)
 	card.Reason:SetPoint("RIGHT", -OVERVIEW_INSET, 0)
@@ -440,13 +443,13 @@ local function CreateJourneyCard()
 	card.Caps = {}
 	for _, cap in ipairs(ROW_CAPS) do
 		local texture = card:CreateTexture(nil, "OVERLAY")
+		-- art-ok: a row cap at the row art's native 46 high, its width the cap's own share of it
 		texture:SetAtlas(cap[1])
 		texture:SetSize(cap[2], COMPACT_HEIGHT)
 		texture:SetPoint(cap[3])
 		card.Caps[#card.Caps + 1] = texture
 	end
 	card.New = card:CreateTexture(nil, "OVERLAY", nil, 2)
-	card.New:SetAtlas(NEW_MARK)
 	return card
 end
 
@@ -543,7 +546,7 @@ local function BuildTopBar(panelFrame)
 	local icon = cog:CreateTexture(nil, "ARTWORK")
 	icon:SetPoint("CENTER")
 	icon:SetAtlas("questlog-icon-setting", true)
-	cog:SetHighlightAtlas("questlog-icon-setting", "ADD")
+	Art.Highlight(cog, "questlog-icon-setting", 15, 16)
 	cog:SetScript("OnClick", function(self)
 		ns.ContextMenu(self, ns.Menu.Settings)
 	end)
@@ -636,10 +639,10 @@ local function RefreshCard(card, journey, state)
 	card.New:SetShown(ns.Moments.IsNew(journey.key))
 	card.New:ClearAllPoints()
 	if compact then
-		card.New:SetSize(NEW_COMPACT, NEW_COMPACT)
+		Art.Fit(card.New, NEW_MARK, NEW_COMPACT, NEW_COMPACT)
 		card.New:SetPoint("RIGHT", -ROW_CAPS[2][2], 0)
 	else
-		card.New:SetSize(NEW_SIZE, NEW_SIZE)
+		Art.Fit(card.New, NEW_MARK, NEW_SIZE, NEW_SIZE)
 		card.New:SetPoint("CENTER", card.IconFrame, "TOPRIGHT", -4, -4)
 	end
 	local icon = compact and COMPACT_ICON or CARD_ICON
@@ -681,8 +684,8 @@ local function RefreshCard(card, journey, state)
 	end
 	-- The pushed art is the normal art, so a press moves nothing; the highlight follows it (AlphaHighlightButton).
 	local art = compact and ROW_ART or CARD_ART
-	card.NormalTexture:SetAtlas(art)
-	card.PushedTexture:SetAtlas(art)
+	card.NormalTexture:SetAtlas(art) -- art-ok: the card's own 374x112 at 0.77, or the row's tiling middle
+	card.PushedTexture:SetAtlas(art) -- art-ok: the card's own 374x112 at 0.77, or the row's tiling middle
 	card:UpdateHighlightForState()
 	-- The chosen card keeps its hover highlight (its own art, added) lit, the way a stock list keeps its selected row
 	-- lit, and never moves.
@@ -712,6 +715,7 @@ local function LayoutTrack(journey, top)
 	end
 	for index, square in ipairs(squares) do
 		square:SetShown(index <= total)
+		-- art-ok: one of three square atlases of one shape, in the square the track built
 		square:SetAtlas(
 			(index >= story.chapter and "ui-journeys-delve-level-square-grey")
 				or (index == story.chapter - 1 and "ui-journeys-delve-level-square-green")
@@ -829,6 +833,12 @@ local function RefreshOverviewCard(card, journey, width)
 	card:SetWidth(width)
 	RefreshIcon(card, journey, OVERVIEW_SPAN)
 	card.Title:SetText(journey.title)
+	-- Never hidden: the title's right edge hangs off it, and an empty one is no wider than nothing.
+	local levels, color = Overview.Levels(journey, ns.State.Player().level)
+	card.Level:SetText(levels or "")
+	if color then
+		card.Level:SetTextColor(color.r, color.g, color.b)
+	end
 	local value, label = Progress(journey)
 	local foot = label or Stops(journey)
 	local reason = journey.reason ~= foot and journey.reason or nil
@@ -852,6 +862,10 @@ end
 ---@field key AGFJourneySection
 ---@field Name FontString
 ---@field Count FontString
+---@field Page FontString
+---@field page integer the page it shows
+---@field Previous Button
+---@field Next Button
 ---@field CollapseButton AGFCollapseButton
 
 ---@param parent Frame
@@ -861,7 +875,7 @@ local function CreateOverviewHeader(parent)
 	header:SetHeight(HEADER_HEIGHT)
 	for _, layer in ipairs({ "BACKGROUND", "HIGHLIGHT" }) do
 		local art = header:CreateTexture(nil, layer)
-		art:SetAtlas(HEADER_ART)
+		art:SetAtlas(HEADER_ART) -- art-ok: the stock list header's own nine-slice (ListHeaderVisualTemplate)
 		art:SetAllPoints()
 		if layer == "HIGHLIGHT" then
 			art:SetBlendMode("ADD")
@@ -873,6 +887,31 @@ local function CreateOverviewHeader(parent)
 	header.Count = header:CreateFontString(nil, "ARTWORK", "Game15Font_Shadow")
 	header.Count:SetPoint("RIGHT", header.CollapseButton, "LEFT", -4, 0)
 	header.Count:SetJustifyH("RIGHT")
+	-- The group's pages, as the spellbook turns its own: the page, then the stock arrows. A click on one is its
+	-- own, so it never folds the group.
+	local function Arrow(template, by, tip)
+		local arrow = CreateFrame("Button", nil, header, template)
+		arrow:SetSize(PAGE_ARROW, PAGE_ARROW)
+		arrow:SetScript("OnClick", function()
+			PlaySound(SOUNDKIT.IG_ABILITY_PAGE_TURN)
+			Overview.Turn(header.key, by, header.page)
+			Refresh()
+		end)
+		arrow:SetScript("OnEnter", function(self)
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:SetText(tip)
+			GameTooltip:Show()
+		end)
+		arrow:SetScript("OnLeave", GameTooltip_Hide)
+		return arrow
+	end
+	header.Next = Arrow("PagingControlsNextPageButtonTemplate", 1, L.PAGE_NEXT)
+	header.Next:SetPoint("RIGHT", -28, 0)
+	header.Previous = Arrow("PagingControlsPrevPageButtonTemplate", -1, L.PAGE_PREVIOUS)
+	header.Previous:SetPoint("RIGHT", header.Next, "LEFT", 2, 0)
+	header.Page = header:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+	header.Page:SetPoint("RIGHT", header.Previous, "LEFT", -2, 0)
+	header.Page:SetJustifyH("RIGHT")
 	header.Name = header:CreateFontString(nil, "ARTWORK", "Game15Font_Shadow")
 	header.Name:SetPoint("LEFT", 8, 0)
 	header.Name:SetPoint("RIGHT", header.Count, "LEFT", -4, 0)
@@ -890,45 +929,64 @@ local function CreateOverviewHeader(parent)
 	return header
 end
 
--- `group`'s header at `top`, then its cards from there while it is open. A collapsed group lays out no card (and
--- refreshes none); the header shows how many it holds. Returns the top under what it drew.
+-- `group`'s header at `top`, then one page of its cards from there while it is open: `per` to a page, the header's
+-- arrows turning it when the group holds more. A collapsed group lays out no card (and refreshes none); the header
+-- shows how many it holds. Returns the top under what it drew.
 ---@param group AGFJourneyGroup
 ---@param header AGFOverviewHeader
 ---@param journeys AGFJourney[]
 ---@param top number
 ---@param width number
----@param collapsed boolean
+---@param per integer? cards to a page; nil while the group is collapsed
 ---@param pool table
 ---@return number top
-local function LayoutGroup(group, header, journeys, top, width, collapsed, pool)
-	header.key = group.key
+local function LayoutGroup(group, header, journeys, top, width, per, pool)
+	local collapsed = per == nil
+	local pages = per and math.ceil(#journeys / per) or 1
+	-- A card new to the character (Moments) is never a page away when the guide opens.
+	local first = 1
+	for index = #journeys, 1, -1 do
+		first = per and ns.Moments.IsNew(journeys[index].key) and math.ceil(index / per) or first
+	end
+	local page = Overview.Page(group.key, pages, first)
+	header.key, header.page = group.key, page
 	header:SetWidth(width)
 	header.Name:SetText(group.label)
 	-- Never hidden: an empty font string keeps the name's anchor resolvable in a layout dump.
 	header.Count:SetText(collapsed and (#journeys == 1 and L.GROUP_CARDS_ONE or L.GROUP_CARDS:format(#journeys)) or "")
 	header.CollapseButton:UpdateCollapsedState(collapsed)
+	for _, region in ipairs({ header.Page, header.Previous, header.Next }) do
+		region:SetShown(pages > 1)
+	end
+	header.Page:SetText(L.PAGE_OF:format(page, pages))
+	header.Previous:SetEnabled(page > 1)
+	header.Next:SetEnabled(page < pages)
+	header.Name:SetPoint("RIGHT", pages > 1 and header.Page or header.Count, "LEFT", -4, 0)
 	header:SetPoint("TOPLEFT", 0, -top)
 	top = top + HEADER_HEIGHT + HEADER_GAP
-	if collapsed then
+	if not per then
 		return top
 	end
-	for _, journey in ipairs(journeys) do
+	for index = (page - 1) * per + 1, math.min(page * per, #journeys) do
 		pool.next = pool.next + 1
 		local card = overviewCards[pool.next] or CreateOverviewCard(assert(list))
 		overviewCards[pool.next] = card
 		card:SetShown(true)
-		RefreshOverviewCard(card, journey, width)
+		RefreshOverviewCard(card, journeys[index], width)
 		card:SetPoint("TOPLEFT", 0, -top)
 		top = top + OVERVIEW_HEIGHT + OVERVIEW_GAP
 	end
 	return top
 end
 
+-- The overview's groups from `top`. Every header stays in the panel: the cards that fit its height over `under`
+-- (what the list draws below them) are shared between the open groups (Overview.Fit), and each group pages the rest.
 ---@param route AGFRoute
 ---@param top number
 ---@param shown boolean
+---@param under number
 ---@return number
-local function LayoutOverview(route, top, shown)
+local function LayoutOverview(route, top, shown, under)
 	---@cast panel -?
 	---@cast list -?
 	local width = math.max(0, panel:GetWidth() - 2 * PAD)
@@ -942,7 +1000,8 @@ local function LayoutOverview(route, top, shown)
 		end
 		return top
 	end
-	local pool = { next = 0 }
+	local pool, groups, counts = { next = 0 }, {}, {}
+	local room = panel:GetHeight() - TOP_BAR - FOOTER - LIST_TOP - top - under - PAD
 	for index, group in ipairs(Overview.GROUPS) do
 		local header = overviewHeaders[index] or CreateOverviewHeader(assert(list))
 		overviewHeaders[index] = header
@@ -950,8 +1009,17 @@ local function LayoutOverview(route, top, shown)
 		header:SetShown(#journeys > 0)
 		if #journeys > 0 then
 			-- The route's own card stays in sight: its group is open whatever the player saved.
-			top = LayoutGroup(group, header, journeys, top, width, not Overview.Open(route, journeys[1]), pool)
+			local open = Overview.Open(route, journeys[1])
+			groups[#groups + 1] = { group = group, header = header, journeys = journeys, open = open }
+			counts[#counts + 1] = open and #journeys or nil
+			room = room - HEADER_HEIGHT - HEADER_GAP - (#groups > 1 and GROUP_GAP or 0)
 		end
+	end
+	local per, turn = Overview.Fit(counts, math.floor(room / (OVERVIEW_HEIGHT + OVERVIEW_GAP))), 0
+	for index, entry in ipairs(groups) do
+		turn = turn + (entry.open and 1 or 0)
+		top = top + (index > 1 and GROUP_GAP or 0)
+		top = LayoutGroup(entry.group, entry.header, entry.journeys, top, width, entry.open and per[turn] or nil, pool)
 	end
 	for index = pool.next + 1, #overviewCards do
 		overviewCards[index]:Hide()
@@ -984,23 +1052,29 @@ local function LayoutJourneys(route)
 		line:SetShown(aside ~= nil)
 		if aside then
 			if aside.texture then
-				line.Icon:SetTexture(aside.texture)
-				line.Icon:SetSize(ASIDE_HEIGHT, ASIDE_HEIGHT)
+				Art.Icon(line.Icon, aside.texture, ASIDE_HEIGHT)
 			else
 				Art.Fit(line.Icon, aside.icon, ASIDE_HEIGHT, ASIDE_HEIGHT)
 			end
 			line.Text:SetText(aside.text)
-			line:SetPoint("TOPLEFT", 10, -top)
+			line:SetPoint("TOPLEFT", 8, -top)
 			top = top + ASIDE_HEIGHT + ASIDE_GAP
 		end
 	end
-	top = top + (top > 0 and #asides > 0 and CARD_GAP - ASIDE_GAP or 0)
+	top = top + (top > 0 and #asides > 0 and GROUP_GAP - ASIDE_GAP or 0)
 	-- The empty line goes under the asides, never over them; the search's results, when it has any, hide it.
 	---@cast emptyText -?
 	local emptyTop = #asides > 0 and top or 0
 	emptyText:SetPoint("TOPLEFT", 10, -emptyTop - 8)
 	emptyText:SetMaxLines(0)
-	top = LayoutOverview(route, top, not searching and not route.chosen)
+	-- Honest coverage: quests here the data lacks, so the cards can't be every story.
+	local state = ns.State
+	local sourceHint = ns.SourceHint and ns.SourceHint()
+	local unlisted = not searching
+		and (sourceHint ~= nil or ns.Model.Unlisted(ns.Data, state.Player().map, state.Completed(), state.Log()))
+	local skipped = not searching and #ns.Skipped() or 0
+	local under = (unlisted and UNLISTED_HEIGHT + CARD_GAP or 0) + (skipped > 0 and SKIPPED_HEIGHT + CARD_GAP or 0)
+	top = LayoutOverview(route, top, not searching and not route.chosen, under)
 	local shownCard, shownJourney = nil, nil
 	for index = 1, math.max(#route.journeys, #cards) do
 		local card = cards[index] or CreateJourneyCard()
@@ -1027,12 +1101,7 @@ local function LayoutJourneys(route)
 			top = top + RefreshCard(card, journey, "compact") + ROW_GAP
 		end
 	end
-	-- Honest coverage: quests here the data lacks, so the cards can't be every story.
 	---@cast unlistedText -?
-	local state = ns.State
-	local sourceHint = ns.SourceHint and ns.SourceHint()
-	local unlisted = not searching
-		and (sourceHint ~= nil or ns.Model.Unlisted(ns.Data, state.Player().map, state.Completed(), state.Log()))
 	unlistedText:SetText(sourceHint or L.UNLISTED)
 	unlistedText:SetMaxLines(0)
 	unlistedText:SetShown(unlisted)
@@ -1040,7 +1109,6 @@ local function LayoutJourneys(route)
 		unlistedText:SetPoint("TOPLEFT", 10, -top)
 		top = top + UNLISTED_HEIGHT + CARD_GAP
 	end
-	local skipped = not searching and #ns.Skipped() or 0
 	---@cast skippedButton -?
 	skippedButton:SetShown(skipped > 0)
 	if skipped > 0 then
@@ -1139,11 +1207,9 @@ local function CreateTabs()
 	guideTab = CreateTab("AdventureGuideForeverTab", ns.TITLE, function()
 		ShowGuide(true)
 	end)
-	guideTab.Icon:SetAtlas("islands-queue-prop-compass")
-	guideTab.Icon:SetSize(30, 30)
+	Art.Fit(guideTab.Icon, "islands-queue-prop-compass", 30, 30)
 	tabPip = guideTab:CreateTexture(nil, "OVERLAY")
-	tabPip:SetAtlas(TAB_PIP)
-	tabPip:SetSize(20, 20)
+	Art.Fit(tabPip, TAB_PIP, 20, 20)
 	tabPip:SetPoint("CENTER", guideTab, "TOPRIGHT", -8, -8)
 	tabPip:SetShown(ns.Moments.Unseen())
 	if QuestMapFrameOverrides.questTabHidden then
@@ -1199,6 +1265,7 @@ local function Attach()
 	-- Something new: seen once the guide shows; its cards' marks go when it closes.
 	panel:HookScript("OnShow", ns.Moments.Opened)
 	panel:HookScript("OnHide", ns.Moments.Closed)
+	panel:HookScript("OnHide", Overview.ResetPages)
 	ns.OnRouteChange(QueueCards)
 	BuildContent(panel)
 	panel:SetScript("OnSizeChanged", Refresh)

@@ -11,6 +11,10 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Every header of the guide's overview fits the panel, and a group turns pages.** With a few zones open to you the list ran off the bottom of the map panel, and Dungeons and Battlegrounds sat below the fold. Each group now shows as many cards as the panel has room for and its header carries the spellbook's page arrows for the rest, so Continue, Zones, Dungeons and Battlegrounds are all in sight at once.
+- **A card says what level its place is.** A zone or dungeon card shows its level range at the right of its title, and a battleground the level it opens at, in the colour the game gives a quest of that level: yellow suits you, green is easy, orange is a stretch.
+- **Icons keep their shape.** A note above the cards, a step's badge and a profession's icon could show a cropped corner of their picture after the same slot had drawn a different kind of icon, and a few rings and marks were a pixel off square. Every icon is now drawn at its own shape, and the overview's spacing is even: a card's icon sits centred, and each group has room above its header.
+
 ## [0.8.0] - 2026-10-05
 
 - **A ready hand-in beside you comes first, and a broad objective area counts as reached.** Standing in the Valley of Trials with Simple Parchment ready and Frang a few steps away, the guide still headed for an objective hundreds of yards off, and it walked you to the middle of an area you were already standing in. A ready hand-in or a pickup within a short walk now leads over a farther step, and an objective area counts the ground between its objectives as reached: the tracker says you are in the area, with no walking leg.

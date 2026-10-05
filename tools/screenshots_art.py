@@ -117,6 +117,13 @@ def draw_texture(canvas, entry, rect, alpha, scale=1, mask=None):
             full.draw(art, 0, 0, w / scale, h / scale)
             target.draw(full.image, x, y, w, h, tint, blend)
         else:
+            # Never stretched: whole art with no slice keeps its own shape (tiling strips aside), within 2%.
+            tiles = entry["atlas"].startswith(("_", "!")) or entry.get("horizTile") or entry.get("vertTile")
+            if not (art.slice or tiles) and w > 0 and h > 0 and abs(w / h * art.height / art.width - 1) > 0.02:
+                sys.exit(
+                    f"{entry['path']}: {entry['atlas']} is {art.width}x{art.height}, drawn {w:g}x{h:g}: "
+                    "art is never stretched (UI/Art.lua)"
+                )
             target.draw(art, x, y, w, h, tint, blend)
     elif entry.get("file") is not None:
         if entry.get("gradient"):

@@ -108,7 +108,7 @@ local function draw(view)
 	if not map then
 		return
 	end
-	view.art:SetTexture(map.texture)
+	view.art:SetTexture(map.texture) -- art-ok: the map sheet, in a view sized to its own shape
 	view.art:SetTexCoord(0, 1, 0, 1)
 	for _, row in ipairs(view.rows) do
 		row:Hide()

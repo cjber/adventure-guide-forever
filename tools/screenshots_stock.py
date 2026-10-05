@@ -278,6 +278,18 @@ def draw_collapse_button(canvas, entry, rect, layer):
             canvas.draw(art, x + (w - art.width) / 2, y + (h - art.height) / 2)
 
 
+def draw_page_arrow(side):
+    """Blizzard_PagingControls.xml's page buttons: the spellbook's Up art, or its Disabled art at either end."""
+
+    def draw(canvas, entry, rect, layer):
+        """Blizzard_PagedContent/Blizzard_PagingControls.xml: the button's NormalTexture or DisabledTexture."""
+        if layer == "ARTWORK":
+            state = "Disabled" if entry.get("disabled") else "Up"
+            canvas.draw(texture(canvas.ui, f"Interface/Buttons/UI-SpellbookIcon-{side}Page-{state}"), *rect)
+
+    return draw
+
+
 def draw_check_button(canvas, entry, rect, layer):
     """Shared/Button/CheckButtonTemplates.xml: UICheckButtonArtTemplate's square Up and Check textures.
     Text is a template FontString, dumped by the harness at its XML anchor."""
@@ -298,6 +310,8 @@ STOCK = {
     "UICheckButtonTemplate": (draw_check_button, lambda ui, entry: (32, 32), None, 0),
     "TabSystemTopButtonTemplate": (draw_top_tab, None, None, 0),
     "CollapseButtonTemplate": (draw_collapse_button, None, None, 0),
+    "PagingControlsPrevPageButtonTemplate": (draw_page_arrow("Prev"), None, None, 0),
+    "PagingControlsNextPageButtonTemplate": (draw_page_arrow("Next"), None, None, 0),
     "AlphaHighlightButtonTemplate": (draw_alpha_highlight, None, None, 0),
     "InputBoxVisualTemplate": (draw_input_box, None, None, 0),
     "InsetFrameTemplate": (draw_inset_frame, None, None, 0),

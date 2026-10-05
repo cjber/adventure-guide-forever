@@ -83,7 +83,7 @@ end
 -- finished quest handed in at Orgrimmar, off the story's map, so the log has a carry card.
 local PINS_ON = { showMapPins = true, showQuestGivers = true }
 local AWAY = 5729
-local function Load(spf, db, charDB, away)
+local function Load(spf, db, charDB, away, short)
 	local log = {
 		{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
 		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
@@ -102,6 +102,8 @@ local function Load(spf, db, charDB, away)
 	settings.autoStart = false
 	return harness.load({
 		planned = true,
+		-- Room for every card: these specs read the whole overview. "overview pages" has the panel's own height.
+		panelHeight = not short and 1200 or nil,
 		spf = spf or nil,
 		db = settings,
 		charDB = charDB ~= false and (charDB or { journey = "zone:1413" }) or nil,
@@ -3025,7 +3027,15 @@ for _, spf in ipairs({ false, "v1" }) do
 	end
 	local function Back()
 		return Shown(h, function(frame)
-			return frame.normalAtlas == "common-icon-backarrow"
+			if frame:GetObjectType() ~= "Button" then
+				return false
+			end
+			for _, region in ipairs({ frame:GetRegions() }) do
+				if region.atlas == "common-icon-backarrow" and region.layer == "ARTWORK" then
+					return true
+				end
+			end
+			return false
 		end)[1]
 	end
 	equal(route.chosen, false, label .. ": nothing chosen")
@@ -3367,6 +3377,96 @@ do
 	clean(h, label)
 end
 
+-- Overview pages: at the panel's own height every header is in sight, each open group shows the cards it has room for
+-- and its header's arrows turn to the rest; a card says its place's levels.
+do
+	local label = "overview pages"
+	local h = Load(false, nil, false, true, true)
+	h.ns.Prefs().dungeons = true
+	h.ns.Invalidate()
+	h.flush()
+	h.ns.OpenPanel()
+	h.flush()
+	local L, panel = h.ns.L, h.G.AdventureGuideForeverPanel
+	local function Cards(section)
+		local cards = Shown(h, function(frame)
+			return frame.Icon ~= nil and frame.Icon.Clip ~= nil and frame.journey ~= nil
+		end)
+		local kept = {}
+		for _, card in ipairs(cards) do
+			kept[#kept + 1] = card.journey.section == section and card or nil
+		end
+		table.sort(kept, function(a, b)
+			return select(5, a:GetPoint(1)) > select(5, b:GetPoint(1)) -- multi-value: the y offset only
+		end)
+		return kept
+	end
+	local function Header(key)
+		return Shown(h, function(frame)
+			return frame.key == key and frame.Name ~= nil
+		end)[1]
+	end
+	local zones = {}
+	for _, journey in ipairs(h.ns.Route().journeys) do
+		zones[#zones + 1] = journey.section == "zones" and journey.key or nil
+	end
+	equal(#zones, 5, label .. ": five zones on offer")
+	for _, key in ipairs({ "continue", "zones", "dungeons" }) do
+		local header = Header(key)
+		equal(header ~= nil, true, label .. ": " .. key .. " draws its header")
+		-- 29 for the top bar, 44 down to the list, 40 for the footer: the header's foot is inside the panel's body.
+		local foot = -select(5, header:GetPoint(1)) + header:GetHeight() -- multi-value: the y offset only
+		equal(foot <= panel:GetHeight() - 29 - 44 - 40, true, label .. ": " .. key .. "'s header is in the panel")
+	end
+	equal(#Cards("continue"), 2, label .. ": Continue keeps both its cards")
+	local shown = #Cards("zones")
+	equal(shown < 5 and shown >= 1, true, label .. ": Zones shows the cards it has room for")
+	local header, pages = Header("zones"), math.ceil(5 / shown)
+	equal(header.Page:IsShown(), true, label .. ": and says which page")
+	equal(header.Page:GetText(), L.PAGE_OF:format(1, pages), label .. ": the first of them")
+	equal(header.Previous.disabled, true, label .. ": nothing before the first page")
+	equal(header.Next.disabled, false, label .. ": the next page waits")
+	equal(Header("continue").Page:IsShown(), false, label .. ": a group that fits has no arrows")
+	equal(Cards("zones")[1].journey.key, zones[1], label .. ": page one leads with the first zone")
+	-- Every zone is a page turn away, in the route's order, and the last page stops.
+	local seen = {}
+	for page = 1, pages do
+		for _, card in ipairs(Cards("zones")) do
+			seen[#seen + 1] = card.journey.key
+		end
+		equal(header.Page:GetText(), L.PAGE_OF:format(page, pages), label .. ": page " .. page)
+		if page < pages then
+			h.Click(header.Next)
+			h.flush()
+		end
+	end
+	same(seen, zones, label .. ": the pages hold every zone once, in order")
+	equal(header.Next.disabled, true, label .. ": nothing after the last page")
+	equal(h.ns.Overview.Collapsed("zones"), false, label .. ": an arrow never folds its group")
+	h.Click(header.Previous)
+	h.flush()
+	equal(header.Page:GetText(), L.PAGE_OF:format(pages - 1, pages), label .. ": and back again")
+	-- A card says its levels: the zone's range, coloured as the game colours a quest of that level.
+	local card = Cards("zones")[1]
+	local zone = h.ns.Data.zones[card.journey.zone]
+	equal(card.Level:GetText(), L.LEVELS:format(zone.min, zone.max), label .. ": a zone card's level range")
+	local text, color = h.ns.Overview.Levels(card.journey, h.player.level)
+	equal(text, card.Level:GetText(), label .. ": from the one place")
+	equal(color ~= nil, true, label .. ": with its difficulty colour")
+	equal(h.ns.Overview.Levels({ kind = "carry", steps = {} }, 20), nil, label .. ": no levels for the log's card")
+	equal(
+		h.ns.Overview.Levels({ kind = "battleground", level = 20, steps = {} }, 25),
+		"20+",
+		label .. ": a battleground's"
+	)
+	-- The share of the room: one card each, then the spare slots a card at a time.
+	same(h.ns.Overview.Fit({ 2, 5 }, 4), { 2, 2 }, label .. ": four slots between two groups")
+	same(h.ns.Overview.Fit({ 2, 5 }, 6), { 2, 4 }, label .. ": the spare goes to the group with more")
+	same(h.ns.Overview.Fit({ 2, 5, 3 }, 0), { 1, 1, 1 }, label .. ": never fewer than a card each")
+	same(h.ns.Overview.Fit({ 1, 2 }, 9), { 1, 2 }, label .. ": never more than a group holds")
+	clean(h, label)
+end
+
 -- Card minutes: while the guide is open, one Shortest Path estimate a frame over the shown cards,
 -- none in the rebuild's frame, none in step 1's travel frame beyond its own, none in combat (the last answers stand),
 -- none with the guide closed and none without Shortest Path. A boat names itself where the subline leaves room.
@@ -3620,7 +3720,15 @@ for _, spf in ipairs({ false, "v1" }) do
 	end
 	local function Back()
 		h.Click(Shown(h, function(frame)
-			return frame.normalAtlas == "common-icon-backarrow"
+			if frame:GetObjectType() ~= "Button" then
+				return false
+			end
+			for _, region in ipairs({ frame:GetRegions() }) do
+				if region.atlas == "common-icon-backarrow" and region.layer == "ARTWORK" then
+					return true
+				end
+			end
+			return false
 		end)[1])
 	end
 	equal(Queued(), 0, label .. ": nothing waits")
@@ -3961,7 +4069,7 @@ end
 -- the story card's towns with Shortest Path loaded (their counts, and step 1's minutes), as tests/scenes.lua draws it.
 do
 	local json, diff = dofile("tests/json.lua"), dofile("tests/dump_diff.lua")
-	local h = Load("v1", nil, { journey = "zone:1413" })
+	local h = Load("v1", nil, { journey = "zone:1413" }, nil, true)
 	h.ns.OpenPanel()
 	h.flush()
 	local panel = h.G.AdventureGuideForeverPanel

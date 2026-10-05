@@ -71,8 +71,8 @@ function Window.SetRingIcon(ring, icon)
 	end
 	ring.Icon:Show()
 	if type(icon) == "number" then
-		ring.Icon:SetTexture(icon)
-		ring.Icon:SetAllPoints()
+		Art.Icon(ring.Icon, icon, ring.size)
+		ring.Icon:SetPoint("CENTER")
 	else
 		---@cast icon string
 		local box = ring.size * (1 - 2 * ATLAS_INSET)
@@ -133,7 +133,7 @@ function Window.CreateCard(parent, zoneArt)
 	for row = 1, 3 do
 		for column = 1, 3 do
 			local piece = cover:CreateTexture(nil, "BORDER")
-			piece:SetTexture(EJ_FILE)
+			piece:SetTexture(EJ_FILE) -- art-ok: a nine-slice piece of the journal's card, cropped below
 			piece:SetTexCoord(
 				x[column] / EJ_SHEET_W,
 				x[column + 1] / EJ_SHEET_W,
@@ -142,7 +142,7 @@ function Window.CreateCard(parent, zoneArt)
 			)
 			card.Rim[#card.Rim + 1] = piece
 			local glow = card.Highlight:CreateTexture(nil, "OVERLAY")
-			glow:SetTexture(EJ_FILE)
+			glow:SetTexture(EJ_FILE) -- art-ok: the same piece's glow, cropped below
 			glow:SetTexCoord(
 				x[column] / EJ_SHEET_W,
 				x[column + 1] / EJ_SHEET_W,
@@ -238,8 +238,7 @@ function Window.CreateStepRow(parent, height)
 	row:SetHeight(height)
 	row.Selected = Art.RowArt(row, true) --[[@as AGFArtSlice]]
 	row.Ring = row:CreateTexture(nil, "ARTWORK")
-	row.Ring:SetAtlas("adventureguide-ring")
-	row.Ring:SetSize(26, 26)
+	Art.Fit(row.Ring, "adventureguide-ring", 26, 26)
 	row.Ring:SetPoint("LEFT", 6, 0)
 	row.Number = row:CreateTexture(nil, "OVERLAY")
 	row.Number:SetPoint("CENTER", row.Ring, "CENTER", 0, 0)

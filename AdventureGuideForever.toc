@@ -55,11 +55,11 @@ UI\Hints\Profession.lua
 UI\PvP.lua
 UI\Hints\Explore.lua
 UI\Hints\Hearth.lua
+UI\Art.lua
 UI\Moments.lua
 UI\ContextMenu.lua
 UI\Menu.lua
 UI\Pins.lua
-UI\Art.lua
 UI\Overview.lua
 UI\Panel.xml
 UI\ZoneIcon.lua
