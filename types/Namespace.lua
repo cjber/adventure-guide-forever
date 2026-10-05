@@ -8,32 +8,23 @@
 ---@field x number
 ---@field y number
 ---@field name string NPC or object name
----@field hub? integer the town it stands in (tools/gen_quests.py town_hubs); nil when its map has no world rectangle
+---@field hub? string the town it stands in, as "map:area"; nil on a map the data doesn't place
 
--- One route-geometry town anchor: a place a quest-giver town stands on, used to cluster QuestieDB places into hubs.
--- A flight-map node any player of a side can use (TaxiNodes): the bundled name a runtime town takes.
----@class AGFTownNode
----@field node integer TaxiNodes ID
----@field continent integer
----@field x number world yards
----@field y number world yards
----@field name string
-
--- A quest place in world yards while QuestieTowns groups them.
----@class AGFTownPoint
----@field continent integer
----@field x number world yards
----@field y number world yards
----@field map integer uiMapID
----@field px number the place's map x
----@field py number the place's map y
----@field hub? integer
-
----@alias AGFTownGrid table<integer, table<number, AGFTownPoint[]>> continent -> cell -> the quest places in it
+-- One named area of a zone map: a WorldMapOverlay's rectangle on the map, the area the world map reveals as you
+-- explore and the town a place inside it stands in (tools/gen_quests.py `town_areas`, Data/Geometry.lua `towns`).
+---@class AGFTownArea
+---@field area integer its AreaTable ID, keyed in AGFData.areaNames for its English name
+---@field x0 number left edge on the map, 0-1
+---@field y0 number top edge
+---@field x1 number right edge
+---@field y1 number bottom edge
+---@field cx number the overlay's hit rectangle centre (its texture's when it has none), for which is nearer only
+---@field cy number
 
 ---@class AGFQuestieTowns
----@field Build fun(data: AGFData, places: AGFPlace[], yield: fun()): table<integer, {name: string}>, AGFTownGrid
----@field Hub fun(data: AGFData, grid: AGFTownGrid, place: {map: integer, x: number, y: number}): integer?
+---@field Build fun(data: AGFData, places: AGFPlace[], yield: fun()): table<string, {name: string}>
+---@field Hub fun(data: AGFData, place: {map: integer, x: number, y: number}): string?
+---@field Name fun(data: AGFData, place: {map: integer, hub: string}): string the town's area name, else the map's name
 
 -- What a trainer or battlemaster does (Data/Geometry.lua `roles`); AGFNpc adds its side and place at runtime.
 ---@class AGFRole
@@ -97,11 +88,9 @@
 ---@field maps table<integer, AGFMapCentre> uiMapID -> where the map sits in the world, for every map a place uses
 ---@field continents table<integer, AGFContinentShift> continent -> its place on the Azeroth world map
 ---@field crossings AGFCrossing[] every boat and zeppelin between two continents
----@field hubs table<integer, {name: string}> hub -> its flight master's name, verbatim; only for hubs with one. Composed from QuestieDB's quest places (QuestieTowns.lua)
----@field townLink number maximum distance in yards linking two town places, from gen_quests.py LINK
----@field townCap number yards: a town wider than this is grouped again at a shorter link
----@field townReach number yards from a town's nearest quest place to the flight-map node that names it
----@field towns AGFTownNode[] the flight-map nodes a town can be named for
+---@field hubs table<string, {name: string}> hub ("map:area") -> its town's name. Composed from QuestieDB's quest places (QuestieTowns.lua)
+---@field towns table<integer, AGFTownArea[]> zone uiMapID -> its named areas, the areas the world map reveals as you explore
+---@field areaNames table<integer, string> AreaTable ID -> its English name, the fallback when the client has none
 ---@field roles table<integer, AGFRole> creature entry -> what that trainer or battlemaster does
 
 -- Measures between steps on different maps without travel maths (Travel.lua Cost). World coordinates are yards.
@@ -217,7 +206,7 @@
 ---@field detail string grey second line, e.g. "2 to hand in, 4 to pick up"
 ---@field reason string short why, e.g. "continues chain"
 ---@field quests integer[] quest IDs this step covers; a town's hand-ins first, then by ID
----@field hub? integer a town's hub (AGFPlace.hub); nil for a town the generator could not place
+---@field hub? string a town's hub (AGFPlace.hub); nil for a town the data could not place
 ---@field pickups? integer[] a town's eligible quests this card wants there, ascending
 ---@field handins? integer[] a town's finished log quests handed in there, ascending
 ---@field objectives? AGFAreaObjective[] an area's open objectives, by quest and slot
@@ -318,6 +307,7 @@
 ---@field IsGray fun(questLevel: integer, playerLevel: integer): boolean
 ---@field EXPLORE_SLOT integer the data's need slot for an explore objective (tools/gen_quests.py)
 ---@field ValidPlace fun(place?: {map?: integer, x?: number, y?: number}): boolean? true when `place` has a positive map and x, y in 0..1
+---@field Hub fun(data: AGFData, place: {map: integer, x: number, y: number}): string? the town `place` stands in, as "map:area"
 ---@field Hard fun(quest: AGFQuest, player: AGFPlayer): boolean orange or red: no route takes it
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
 ---@field Why fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer, names?: AGFWhyNames): AGFWhyLine[] every requirement, met or not; eligible exactly when all are met
@@ -441,7 +431,7 @@
 ---@field Hand fun(steps: (AGFStep|AGFGiver)[], hold?: boolean): boolean hands Shortest Path the steps as one journey of ours; false when it is absent or refuses
 ---@field Drop fun(): boolean ends Shortest Path's journey by our name; true when it ended one
 ---@field CurrentStop fun(): integer? the stop of our journey Shortest Path heads for, guiding it or not; nil when it holds none of ours
----@field EndReason fun(last?: AGFStep|AGFGiver, near: number): string? why our journey ended: Shortest Path's Ended, else guessed from another journey running or standing within `near` yards of the last stop
+---@field EndReason fun(last?: AGFStep|AGFGiver): string? why our journey ended: Shortest Path's Ended, else guessed from another journey running or standing in the last stop's town or area
 ---@field WaypointAt fun(place?: {map: integer, x: number, y: number}): boolean the client's waypoint still sits at the place
 ---@field CanWaypoint fun(map: integer): boolean the client allows a waypoint on the map
 ---@field SetWaypoint fun(place: {map: integer, x: number, y: number}, track?: boolean) the client's waypoint goes there; `track` points the arrow at it
@@ -723,7 +713,7 @@
 
 ---@class AGFNpc : AGFRole
 ---@field side integer the sides it is friendly to (QuestieDB friendlyToFaction): 1 Alliance, 2 Horde, 3 both
----@field place AGFPlace a QuestieDB spawn on its usual map; within 100 yards of a quest place, that town's `hub`
+---@field place AGFPlace a QuestieDB spawn on its usual map; its `hub` is the town it stands in
 ---@field inn? boolean innkeeper (QuestieDB npcFlags)
 
 --[[ What Forever added (tools/diff_forever.py, Data/Forever.lua) and honest coverage ]]
@@ -765,7 +755,7 @@
 ---@class AGFStrings
 ---@field REASON_GREY string format: how many of a zone card's pickups turn grey at the next level
 ---@field REASON_CHAIN_GIVER string format: the giver who begins the card's chain
----@field REASON_HANDS string format: the first stop's town, by its flight master's name
+---@field REASON_HANDS string format: the first stop's town, by its area's or map's name
 ---@field NOT_INTERESTED string a journey card's menu: hide it on this character
 ---@field RIGHT_CLICK_NOT_INTERESTED string a journey card's tooltip: its right-click
 
@@ -881,7 +871,7 @@
 
 ---@class AGFModel
 ---@field Trainer fun(data: AGFData, player: AGFPlayer, level: integer): AGFNpc? the nearest class trainer of the player's class and side who teaches from level 1 up to `level`; nil when the data has none or the player has no place
----@field TownName fun(data: AGFData, place: {map: integer, hub?: integer}, mapName?: AGFMapName): string the hub's flight-master town, else the map's name
+---@field TownName fun(data: AGFData, place: {map: integer, hub?: string}, mapName?: AGFMapName): string the hub's town, else the map's name
 
 ---@class AGFIntegrations
 ---@field Training fun(): AGFTraining?, boolean Tweaks Forever's affordable spells to train, counted; nil without a v1+ Tweaks Forever, its answer, or an affordable spell to train
@@ -1650,6 +1640,7 @@
 ---@field join? fun(selected: AGFStep[])
 ---@field card string
 ---@field docks AGFFrameCrossing[]
+---@field hub string? the town the player stands in, its areas' own
 ---@field origin AGFPosition
 ---@field planned boolean
 ---@field rank table<string, integer>
@@ -1726,7 +1717,6 @@
 ---@field SimpleOpen fun(quest: AGFQuest, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, id: integer): boolean
 
 ---@class AGFPlannerTravel
----@field AGREE number
 ---@field CLOSE number
 ---@field UNKNOWN number
 ---@field Cost fun(a?: AGFPosition, b?: AGFPosition): number

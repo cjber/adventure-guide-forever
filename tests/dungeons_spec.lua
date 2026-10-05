@@ -323,6 +323,7 @@ end
 equal(formatted, true, "remaining experience uses client number formatting")
 copy.ns.Data.maps[1456].name = nil
 copy.ns.Data.zones[1456] = nil
+copy.ns.Data.hubs = {}
 copy.ns.Window.Refresh()
 copy.flush()
 equal(Texts(copy)["Arch Druid Hamuul Runetotem"], true, "unknown place leaves giver alone")

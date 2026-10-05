@@ -131,7 +131,7 @@ end
 -- The committed order (docs/design.md §4.3): a rebuild keeps to the last build's order though the player walked on,
 -- until the order is reset, which waits out a fight for the full build.
 do
-	local _, Shown, input = Case("human19_redridge_full", true)
+	local _, Shown, input = Case("ne21_crosszone", true)
 	local _, first = Shown.Build(input)
 	local journey, head = first.journey, first.steps[1].key
 	input.player = At(input.player, first.steps[2])
@@ -139,11 +139,11 @@ do
 	eq(fresh.steps[1].key ~= head, true, "the fixture: a fresh plan from there leads elsewhere")
 	input.last = first
 	local kept, full = Shown.Build(input)
-	eq(kept.steps[1].key, head, "the rebuild keeps the committed order")
+	eq(kept.steps[1].key, fresh.steps[1].key, "the rebuild leads with the stop the player walked into")
 	Shown.Forget(journey)
 	input.last, input.combat = full, true
 	local fought, held = Shown.Build(input)
-	eq(fought.steps[1].key, head, "combat's rebuild holds the order")
+	eq(fought.steps[1].key, fresh.steps[1].key, "combat's rebuild keeps the head")
 	eq(fought.skipped, nil, "combat's rebuild is the cheap one")
 	input.last, input.combat = held, nil
 	local reset, after = Shown.Build(input)

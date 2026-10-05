@@ -31,16 +31,16 @@ test("rejected town offers", function()
 	local player, completed, log, prefs = fixture(ns, "human18_redridge")
 	local route = ns.Model.Plan(ns.Data, player, completed, log, prefs)
 	local town = route.steps[1]
-	eq(town.key, "town:68", "Lakeshire visit")
+	eq(town.key, "town:1433:69", "Lakeshire visit")
 	for _, id in ipairs(town.pickups) do
 		eq(id == 92 or id == 116, false, "filtered work stays out of the town offers")
 	end
-	eq(#town.pickups, 4, "only filtered offers remain")
+	eq(#town.pickups, 4, "only filtered offers remain in Lakeshire")
 	player, completed, log, prefs = fixture(ns, "ne23_darkshore")
 	route = ns.Model.Plan(ns.Data, player, completed, log, prefs)
 	for _, step in ipairs(route.steps) do
-		if step.key == "town:449" then
-			eq(table.concat(step.pickups, ","), "1010", "scripted escort 976 stays rejected")
+		if step.key == "town:1440:415" then
+			eq(table.concat(step.pickups, ","), "1070,991,1056", "scripted escort 976 stays rejected")
 		end
 	end
 end)

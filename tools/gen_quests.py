@@ -11,7 +11,6 @@ https://github.com/cmangos/issues/wiki/Quest_template
 """
 
 import argparse
-import csv
 import gzip
 import io
 import json
@@ -20,10 +19,11 @@ import re
 import struct
 import sys
 import urllib.error
-import urllib.request
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
+
+from forever_tools import fsio, wago
 
 BUILD = "1.60.1.70205"
 # The last build with WorldMapArea: quest_poi's mapAreaId is one of its IDs, which UiMap replaced in 8.0.
@@ -155,32 +155,21 @@ ESCAPES = {"0": "\0", "n": "\n", "r": "\r", "t": "\t", "b": "\b", "Z": "\x1a"}
 
 
 def download(url, filename, refresh=False, offline=False):
-    path = CACHE / filename
-    if path.exists() and not refresh:
-        return path.read_bytes()
-    if offline:
-        raise ValueError(f"Missing cached source: {path}")
-    request = urllib.request.Request(url, headers={"User-Agent": "AdventureGuideForever/1.0"})
-    with urllib.request.urlopen(request, timeout=120) as response:
-        content = response.read()
-    if content.lstrip().startswith(b"<"):
-        raise ValueError(f"Expected data, received HTML: {url}")
-    CACHE.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_bytes(content)
-    temporary.replace(path)
-    return content
+    return wago.fetch(
+        url,
+        CACHE / filename,
+        user_agent="AdventureGuideForever/1.0",
+        refresh=refresh,
+        offline=offline,
+        timeout=120,
+        validate=gzip.decompress if filename.endswith(".gz") else None,
+    )
 
 
 def db2(name, columns, build=BUILD, **options):
-    content = download(f"https://wago.tools/db2/{name}/csv?build={build}", f"{name}-{build}.csv", **options)
-    reader = csv.DictReader(io.StringIO(content.decode("utf-8-sig")), strict=True)
-    if not set(columns) <= set(reader.fieldnames or []):
-        raise ValueError(f"{name}: missing required columns {columns}")
-    rows = list(reader)
-    if not rows:
-        raise ValueError(f"{name}: empty export")
-    return rows
+    return wago.db2_rows(
+        name, build, CACHE, user_agent="AdventureGuideForever/1.0", timeout=120, required=columns, **options
+    )
 
 
 def parse_values(text):
@@ -397,13 +386,10 @@ def crossings(templates, path_nodes, taxi_nodes, wanted):
     return result
 
 
-LINK = 100  # yards: two givers this close stand in one town
-CAP = 400  # yards: a town wider than this is split again at a shorter link (only the capitals are)
-
-
-def world_point(centre, place):
-    """A place's world x and y in yards: the inverse of `project`, through its map's `geometry` rectangle."""
-    return centre["cx"] - (place["y"] - 0.5) * centre["sy"], centre["cy"] - (place["x"] - 0.5) * centre["sx"]
+UIMAP_WORLD, UIMAP_ZONE = 1, 3  # UiMap.Type: a world map, a zone map
+TAXI_SIDES = 3  # TaxiNodes.Flags side bits: 1 Alliance, 2 Horde
+TAXI_COLUMNS = ("ID", "Name_lang", "ContinentID", "Pos_0", "Pos_1", "Flags", "ConditionID", "VisibilityConditionID")
+TAXI_COLUMNS += ("MountCreatureID_0", "MountCreatureID_1")
 
 
 def link(points, reach):
@@ -432,49 +418,15 @@ def link(points, reach):
     return list(groups.values())
 
 
-def diameter(points):
-    return max((math.dist(a[:2], b[:2]) for a in points for b in points), default=0)
-
-
-def split(points, reach):
-    """Groups at `reach`; each one wider than CAP is grouped again at `reach` - 10, recursively. One shorter cut for
-    the whole world would break towns apart (at 60 yards Darkshire loses its crier), so only wide groups are cut.
-    """
-    result = []
-    for group in link(points, reach):
-        if reach > 10 and diameter(group) > CAP:
-            result.extend(split(group, reach - 10))
-        else:
-            result.append(group)
-    return result
-
-
-def town_hubs(points):
-    """Towns from quest places: `points` maps a key to (continent, x, y) in world yards. Each continent is grouped
-    apart. Returns every hub as (continent, members), members being (x, y, key), in ID order from 1: by continent,
-    then the hub's least x, then its least y.
-    """
-    by_continent = defaultdict(list)
-    for key, (continent, x, y) in sorted(points.items()):
-        by_continent[continent].append((x, y, key))
-    hubs = [(continent, group) for continent, members in by_continent.items() for group in split(members, LINK)]
-    return sorted(hubs, key=lambda h: (h[0], min(p[0] for p in h[1]), min(p[1] for p in h[1]), sorted(h[1])))
-
-
-NAME_REACH = 150  # yards from a town's nearest giver to the flight master that names it
 # Copied from shortest-path-forever/tools/gen_transit.py RESTRICTED_NODES: Nighthaven is druid-only, and the
-# Plaguewood towers' flights depend on PvP control, so neither is a town's flight master for every player.
+# Plaguewood towers' flights depend on PvP control, so neither is a flight master for every player.
 RESTRICTED_NODES = {62, 63, 84, 85, 86, 87}
-UIMAP_WORLD, UIMAP_ZONE = 1, 3  # UiMap.Type: a world map, a zone map
-TAXI_SIDES = 3  # TaxiNodes.Flags side bits: 1 Alliance, 2 Horde
-TAXI_COLUMNS = ("ID", "Name_lang", "ContinentID", "Pos_0", "Pos_1", "Flags", "ConditionID", "VisibilityConditionID")
-TAXI_COLUMNS += ("MountCreatureID_0", "MountCreatureID_1")
 
 
 def flight_masters(taxi_nodes):
     """The flight-map nodes any player of a side can use, by shortest-path-forever/tools/gen_transit.py `taxis`'
     filter: the side bits (or Powderfuse's 3275), the three continents, no obsolete or quest node, no condition, a
-    mount set. Each as (ID, continent, world x, world y, name).
+    mount set. Each as (ID, continent, world x, world y, name). Data/Forever.lua lists the ones Forever added.
     """
     result = []
     for row in taxi_nodes:
@@ -492,23 +444,6 @@ def flight_masters(taxi_nodes):
             continue
         result.append((node, int(row["ContinentID"]), float(row["Pos_0"]), float(row["Pos_1"]), name))
     return result
-
-
-def hub_names(hubs, nodes):
-    """Each hub's name: its flight master's, the node nearest any of its givers within NAME_REACH (the lower ID on
-    a tie), verbatim. The data names no other town, so a hub without one has none.
-    """
-    names = {}
-    for hub, (continent, members) in enumerate(hubs, 1):
-        near = [
-            (min(math.dist((x, y), member[:2]) for member in members), node, name)
-            for node, where, x, y, name in nodes
-            if where == continent
-        ]
-        best = min((n for n in near if n[0] <= NAME_REACH), default=None)
-        if best:
-            names[hub] = {"name": best[2]}
-    return names
 
 
 def chunks(data):
@@ -1098,28 +1033,11 @@ def reaction(template):
     return 0 if enemies & 1 else (0 if enemies & 2 else 1) | (0 if enemies & 4 else 2)
 
 
-def nearest_hub(point, grid):
-    """The hub of the quest place nearest `point` (continent, world x, world y) within LINK yards, or None. `grid` maps
-    a (continent, cell x, cell y) cell of LINK yards to its places as (x, y, hub).
-    """
-    continent, x, y = point
-    cx, cy = math.floor(x / LINK), math.floor(y / LINK)
-    near = [
-        (math.dist((x, y), (mx, my)), hub)
-        for dx in (-1, 0, 1)
-        for dy in (-1, 0, 1)
-        for mx, my, hub in grid.get((continent, cx + dx, cy + dy), ())
-    ]
-    best = min((n for n in near if n[0] <= LINK), default=None)
-    return None if best is None else best[1]
-
-
-def role_npcs(tables, world, faction_rows, role, grid, town_maps, maps, counts, area_at):
-    """Each role NPC (`roles`) with its side (`reaction`) and place: a spawn projected as a quest giver's is. Within
-    LINK yards of a quest place it takes that place's hub and the map most of the hub's quest places use (Astranaar
-    is Ashenvale, not the Stonetalon map that overhangs it; `town_maps` ranks each hub's maps). Elsewhere `pick`
-    resolves overlapping maps through the client's terrain area. Several proven spawns give the least place,
-    as several givers of one quest do.
+def role_npcs(tables, world, faction_rows, role, maps, counts, area_at):
+    """Each role NPC (`roles`) with its side (`reaction`) and place: a spawn projected as a quest giver's is. `pick`
+    resolves overlapping maps through the client's terrain area. Several proven spawns give the least place, as
+    several givers of one quest do. What a trainer teaches is `roles`; the place only decides which trainer the
+    bundled data keeps (one whose every spawn is off a placed map has no rows at all).
     """
     factions = {int(r["ID"]): r for r in faction_rows}
     template_faction = {r["Entry"]: r["Faction"] for r in tables["creature_template"]}
@@ -1130,18 +1048,15 @@ def role_npcs(tables, world, faction_rows, role, grid, town_maps, maps, counts, 
         candidates = []
         for spawn in found[entry]:
             if options := [o for o in spawn["options"] if o[2] in maps]:
-                hub = nearest_hub(spawn["at"], grid)
-                home = next((m for m in town_maps.get(hub, ()) if any(o[2] == m for o in options)), None)
-                place = pick({**spawn, "options": options}, (), home, area_at)
+                place = pick({**spawn, "options": options}, (), None, area_at)
                 if place is not None:
-                    candidates.append(place if hub is None else {**place, "hub": hub})
+                    candidates.append(place)
         if not side or not candidates:
             counts["dropped NPC: no side" if candidates else "dropped NPC: no zone-map spawn"] += 1
             continue
         place = min(candidates, key=lambda p: (p["map"], p["name"], p["x"], p["y"]))
         npcs[entry] = {**fields, "side": side, "place": place}
     counts["NPCs"] = len(npcs)
-    counts["NPCs in a hub"] = sum("hub" in npc["place"] for npc in npcs.values())
     return npcs
 
 
@@ -1193,6 +1108,51 @@ def overlays(ui_maps, map_art, overlay_rows, area_rows):
     return result
 
 
+def town_areas(centres, map_art, overlay_rows, area_rows):
+    """Each known zone map's named areas: the WorldMapOverlay rows of its art, the areas the world map reveals as you
+    explore and the town a place inside one stands in. `area` is the overlay's AreaID_0; a place in no area (a city
+    map, an instance, a gap between rectangles) belongs to its map instead.
+
+    `x0`, `y0`, `x1`, `y1` are the overlay's texture rectangle on the map, 0-1; `cx`, `cy` its hit rectangle's centre
+    (the texture's when it has none), for which of two overlapping rectangles is nearer only, never a place. An area
+    whose name is empty is left out. Only maps with a `centres` rectangle ship.
+    """
+    areas = {int(r["ID"]): r for r in area_rows}
+    maps_of = defaultdict(set)
+    for row in map_art:
+        if int(row["PhaseID"]) == 0:
+            maps_of[int(row["UiMapArtID"])].add(int(row["UiMapID"]))
+    found = defaultdict(list)
+    for row in sorted(overlay_rows, key=lambda r: int(r["ID"])):
+        area = areas.get(int(row["AreaID_0"]))
+        width, height = int(row["TextureWidth"]), int(row["TextureHeight"])
+        if not area or not area["AreaName_lang"].strip() or width <= 0 or height <= 0:
+            continue
+        left, top = int(row["OffsetX"]), int(row["OffsetY"])
+        hit = tuple(int(row[f"HitRect{side}"]) for side in ("Left", "Top", "Right", "Bottom"))
+        left_hit, top_hit, right, bottom = (
+            hit if hit[2] > hit[0] and hit[3] > hit[1] else (left, top, left + width, top + height)
+        )
+        entry = {
+            "area": int(area["ID"]),
+            "x0": round(left / CANVAS[0], 4),
+            "y0": round(top / CANVAS[1], 4),
+            "x1": round((left + width) / CANVAS[0], 4),
+            "y1": round((top + height) / CANVAS[1], 4),
+            "cx": round((left_hit + right) / 2 / CANVAS[0], 4),
+            "cy": round((top_hit + bottom) / 2 / CANVAS[1], 4),
+        }
+        for ui_map in maps_of.get(int(row["UiMapArtID"]), ()):
+            if ui_map in centres:
+                found[ui_map].append(entry)
+    names = {int(area["ID"]): area["AreaName_lang"] for area in area_rows}
+    used = {entry["area"] for entries in found.values() for entry in entries}
+    return (
+        {ui_map: entries for ui_map, entries in sorted(found.items())},
+        {area: names[area] for area in sorted(used)},
+    )
+
+
 @dataclass
 class Generated:
     quests: dict
@@ -1202,7 +1162,7 @@ class Generated:
     shifts: dict
     ferries: list
     towns: dict
-    nodes: list
+    area_names: dict
     roles: dict
     npcs: dict
     lookups: dict
@@ -1367,37 +1327,6 @@ def zones_and_centres(maps, assignments, emitted, counts):
     return zones, centres
 
 
-def place_towns(emitted, centres, taxi_nodes, counts):
-    points = {}
-    for quest in emitted.values():
-        for place in (quest[k] for k in ("start", "finish") if k in quest):
-            if centre := centres.get(place["map"]):
-                points[place["map"], place["x"], place["y"]] = (centre["continent"], *world_point(centre, place))
-    hubs = town_hubs(points)
-    hub_of = {key: hub for hub, (_, members) in enumerate(hubs, 1) for _, _, key in members}
-    for quest in emitted.values():
-        for place in (quest[k] for k in ("start", "finish") if k in quest):
-            if (key := (place["map"], place["x"], place["y"])) in hub_of:
-                place["hub"] = hub_of[key]
-    grid, votes = defaultdict(list), defaultdict(Counter)
-    for hub, (continent, members) in enumerate(hubs, 1):
-        for x, y, (ui_map, _, _) in members:
-            grid[continent, math.floor(x / LINK), math.floor(y / LINK)].append((x, y, hub))
-            votes[hub][ui_map] += 1
-    town_maps = {hub: sorted(counter, key=lambda m: (-counter[m], m)) for hub, counter in votes.items()}
-    names = defaultdict(set)
-    for quest in emitted.values():
-        for place in (quest[k] for k in ("start", "finish") if "hub" in quest.get(k, {})):
-            names[place["hub"]].add(place["name"])
-    counts["town hubs"] = len(hubs)
-    counts["town hubs with several givers"] = sum(len(n) > 1 for n in names.values())
-    counts["widest town hub (yards)"] = round(max(diameter(members) for _, members in hubs))
-    nodes = flight_masters(taxi_nodes)
-    towns = hub_names(hubs, nodes)
-    counts["named town hubs"] = len(towns)
-    return towns, nodes, grid, town_maps
-
-
 def transport_routes(ui_maps, assignments, centres, tables, path_nodes, taxi_nodes, counts):
     shifts = continents(ui_maps, assignments, {c["continent"] for c in centres.values()})
     counts["continents off the world map"] = len({c["continent"] for c in centres.values()} - shifts.keys())
@@ -1467,8 +1396,10 @@ def generate(
         role,
     )
     zones, centres = zones_and_centres(maps, assignments, emitted, counts)
-    towns, nodes, grid, town_maps = place_towns(emitted, centres, taxi_nodes, counts)
-    npcs = role_npcs(tables, world, faction_rows, role, grid, town_maps, centres.keys(), counts, area_at)
+    towns, area_names = town_areas(centres, map_art, overlay_rows, area_rows)
+    counts["town areas"] = sum(map(len, towns.values()))
+    counts["zone maps with town areas"] = len(towns)
+    npcs = role_npcs(tables, world, faction_rows, role, centres.keys(), counts, area_at)
     shifts, ferries = transport_routes(ui_maps, assignments, centres, tables, path_nodes, taxi_nodes, counts)
     named = named_instances(emitted, tables, instances)
     lookups = quest_lookups(npcs, steps, spells, skill_lines, counts)
@@ -1483,7 +1414,7 @@ def generate(
         shifts=shifts,
         ferries=ferries,
         towns=towns,
-        nodes=nodes,
+        area_names=area_names,
         roles=role,
         npcs=npcs,
         lookups=lookups,
@@ -1511,15 +1442,16 @@ def render(data):
     lines = [
         "-- Generated by tools/gen_quests.py: do not edit.",
         f"-- CMaNGOS classic-db (GPL-3.0), pinned: {CLASSICDB_URL}",
-        "-- wago.tools UiMap, UiMapAssignment, QuestV2, TaxiPathNode, TaxiNodes, AreaTable, Map, FactionTemplate,",
-        "-- SpellEffect, SkillLine, Faction, UiMapXMapArt, WorldMapOverlay:",
+        "-- wago.tools UiMap, UiMapAssignment, QuestV2, TaxiPathNode, TaxiNodes, AreaTable, Map,",
+        "-- FactionTemplate, SpellEffect, SkillLine, Faction, UiMapXMapArt, WorldMapOverlay:",
         f"-- https://wago.tools/db2/QuestV2/csv?build={BUILD}",
         "-- Pinned client WDT/ADT terrain area IDs disambiguate unhinted outdoor giver maps.",
         f"-- wago.tools WorldMapArea at {LEGACY_MAP_BUILD}, the last build with it (quest_poi's mapAreaId).",
         f"-- Published zone ranges (tweaks-forever/tools/gen_zonelevels.py): {ZONE_SOURCE}",
-        "-- towns: each flight-map node any player of a side can use (TaxiNodes): its continent, world x and y in",
-        f"-- yards, and name. At runtime a town is the quest places QuestieDB gives within {LINK} yd of each other,",
-        f"-- split again past {CAP} yd, and its name is the node within {NAME_REACH} yd of one of them.",
+        "-- towns: each zone map's named areas (WorldMapOverlay), the areas the world map reveals as you explore and",
+        "-- the town a place inside one stands in; a place in no area (a city map, an instance, a gap) is its map's",
+        "-- own town. `x0`, `y0`, `x1`, `y1` are the overlay's texture rectangle on the map, 0-1; `cx`, `cy` its hit",
+        "-- rectangle's centre, for which of two overlaps is nearer only. `areaNames`: each area's English name.",
         "-- roles: what a class, pet, riding or profession trainer or a battlemaster does (creature_template",
         "-- TrainerType, npc_trainer, battlemaster_entry); ranks: each SKILL_STEP spell taught of a SkillLine",
         "-- profession or secondary skill (SpellEffect). Where each stands, its side and who keeps an inn come from",
@@ -1535,9 +1467,6 @@ def render(data):
         "ns.Data = {",
         f"\tbuild = {lua(BUILD)},",
         f'\tsource = "CMaNGOS classic-db {CLASSICDB_COMMIT}; wago.tools {BUILD}",',
-        f"\ttownLink = {LINK},",
-        f"\ttownCap = {CAP},",
-        f"\ttownReach = {NAME_REACH},",
         "\tzones = {",
     ]
     lines.extend(f"\t\t[{qid}] = {lua(zone)}," for qid, zone in sorted(data.zones.items()))
@@ -1557,10 +1486,12 @@ def render(data):
     lines.extend(["\t},", "\tcrossings = {"])
     lines.extend(f"\t\t{lua(ferry)}," for ferry in data.ferries)
     lines.extend(["\t},", "\ttowns = {"])
-    lines.extend(
-        f"\t\t{lua({'node': node, 'continent': continent, 'x': x, 'y': y, 'name': name})},"
-        for node, continent, x, y, name in sorted(data.nodes)
-    )
+    for ui_map, entries in sorted(data.towns.items()):
+        lines.append(f"\t\t[{ui_map}] = {{")
+        lines.extend(f"\t\t\t{lua(entry)}," for entry in entries)
+        lines.append("\t\t},")
+    lines.extend(["\t},", "\tareaNames = {"])
+    lines.extend(f"\t\t[{area}] = {lua(name)}," for area, name in sorted(data.area_names.items()))
     lines.extend(["\t},", "\troles = {"])
     lines.extend(f"\t\t[{entry}] = {lua(role)}," for entry, role in sorted(shipped_roles(data.roles).items()))
     lines.extend(["\t},", "\tprofessions = {"])
@@ -1592,7 +1523,7 @@ def run(main, name):
     """Run a generator's main, turning a source or data error into a one-line exit."""
     try:
         main()
-    except (OSError, ValueError, KeyError, csv.Error, urllib.error.URLError) as error:
+    except (OSError, ValueError, KeyError, urllib.error.URLError) as error:
         sys.exit(f"{name}: {error}")
 
 
@@ -1632,13 +1563,12 @@ def main():
     )
     if not data.quests or not data.counts["with start"]:
         raise ValueError("No usable quests; leaving existing output untouched")
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(render(data), encoding="utf-8")
+    fsio.atomic_write(OUTPUT, render(data))
     for name, count in sorted(data.counts.items()):
         print(f"{name}: {count}")
     print(
         f"Wrote {len(data.zones)} zones, {len(data.centres)} map centres, {len(shipped_roles(data.roles))} roles and "
-        f"{len(data.nodes)} flight-map towns: {OUTPUT.relative_to(ROOT)} ({OUTPUT.stat().st_size:,} bytes)"
+        f"{sum(map(len, data.towns.values()))} town areas: {OUTPUT.relative_to(ROOT)} ({OUTPUT.stat().st_size:,} bytes)"
     )
 
 

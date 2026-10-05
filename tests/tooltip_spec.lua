@@ -88,7 +88,7 @@ end
 
 -- A turn-in at the client's waypoint, away from the town: the quest's finish NPC still takes it.
 do
-	local h = Load({ journey = "zone:1413" }, { x = 0.55, y = 0.33 })
+	local h = Load({ journey = "zone:1413" }, { x = 0.62, y = 0.36 })
 	local turnin
 	for _, step in ipairs(h.ns.Route().steps) do
 		turnin = turnin or (step.key == "turnin:845" and step or nil)

@@ -481,9 +481,9 @@ end
 
 -- A zone card's reason in the world's voice, the first that applies: a story the player started, at least
 -- GREY_REASON_MIN of its quests going grey at the next level (never at the cap), the giver who begins its chain, then
--- its first quest stop's town (its flight master's name, before the zone) with HANDS_MIN quests or more to pick up.
--- Nil when none applies; the caller falls back to its plain line. Only names the data has: a chain's giver, a town's
--- flight master.
+-- its first quest stop's town (the area's name, or its map's) with HANDS_MIN quests or more to pick up. Nil when
+-- none applies; the caller falls back to its plain line. Only names the data has: a chain's giver, a town's area,
+-- a town's map.
 local GREY_REASON_MIN, HANDS_MIN = 2, 3
 ---@param journey AGFJourney
 ---@param chain? {continues: boolean, giver?: string}

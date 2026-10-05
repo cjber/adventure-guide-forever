@@ -658,6 +658,7 @@ end
 -- anything inside it; another addon's tooltip stays.
 ---@param root Frame
 local function HideTooltipWithin(root)
+	---@type Frame? the walk ends on a parentless frame
 	local owner = GameTooltip:GetOwner()
 	while owner do
 		if owner == root then

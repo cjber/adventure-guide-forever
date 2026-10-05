@@ -12,6 +12,7 @@ art is the 1002x668 canvas of 256-pixel tiles the addon lays out.
 import re
 from collections import defaultdict
 
+from forever_tools import fsio
 from gen_quests import BUILD, CANVAS, ROOT, db2, run, source_options
 
 OUTPUT = ROOT / "Data" / "ZoneArt.lua"
@@ -107,7 +108,7 @@ def main():
     )
     if not art:
         raise ValueError("no zone art; leaving existing output untouched")
-    OUTPUT.write_text(render(art), encoding="utf-8")
+    fsio.atomic_write(OUTPUT, render(art))
     overlays = sum(len(each) for each in art.values())
     print(f"{len(art)} of {len(zones)} zones, {overlays} overlays")
     print(f"Wrote {OUTPUT.relative_to(ROOT)} ({OUTPUT.stat().st_size:,} bytes)")

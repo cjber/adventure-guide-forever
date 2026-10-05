@@ -3,7 +3,6 @@ local _, ns = ...
 local Model = ns.Model
 local State = ns.Planner.State
 local NONE = {}
-local AGREE = ns.Planner.Travel.AGREE
 local CLOSE = ns.Planner.Travel.CLOSE
 local Cost = ns.Planner.Travel.Cost
 local Describe = ns.Planner.Steps.Describe
@@ -59,7 +58,6 @@ local RUN = 7 -- yards a second at a run
 local LAP_YARDS = 15 * 60 * RUN -- a lap's travel and work: about a quarter of an hour out of town and back
 local WORK_YARDS = 4 * RUN -- one count of an objective (a kill, an item): about four seconds' work
 local TALK_YARDS = 10 * RUN -- a quest's pickup and its hand-in
-local HERE = 100 -- yards: a town (a hub) this near the player is the one they stand in, visited before any lap
 -- A conservative work estimate, not measured kill times: above-level objectives take longer and need more recovery.
 local function WorkFactor(level, player)
 	local above = math.max(0, level - player.level)
@@ -354,15 +352,10 @@ local function BuildLapAnchors(lap)
 	end
 	local trained = false
 	for _, step in ipairs(others) do
-		-- A trainer only in a town a lap visits anyway (its hub, or one within the town linkage: a town of several
-		-- hubs), and once.
+		-- A trainer only in a town a lap visits anyway (its hub), and once.
 		local anchor
 		if step.kind == "trainer" then
 			anchor = not trained and step.hub and anchors["town:" .. step.hub] or nil
-			for _, near in ipairs(not (anchor or trained) and list or NONE) do
-				local cost = near.key ~= "" and near.pos and Cost(near.pos, at(step)) or UNKNOWN
-				anchor = anchor or (cost <= AGREE and near or nil)
-			end
 			trained = trained or anchor ~= nil
 		else
 			anchor = Closest(lap, step)
@@ -451,13 +444,13 @@ local function WalkLap(lap)
 			for index = #anchor.stops, 1, -1 do
 				local stop = anchor.stops[index]
 				local town = (stop.kind == "town" or stop.kind == "trainer") and stop.hub
-				if town and Cost(origin, at(stop)) <= HERE then
+				if town and town == lap.hub then
 					placed[stop], walk.lastAnchor = true, anchor
 					route[#route + 1] = table.remove(anchor.stops, index)
 				end
 			end
 			local open = not reached[anchor] and anchor.open or nil
-			if open and open.hub and Cost(origin, at(open)) <= HERE then
+			if open and open.hub and open.hub == lap.hub then
 				reached[anchor], walk.lastAnchor = true, anchor
 				route[#route + 1] = open
 			end
@@ -644,8 +637,8 @@ end
 
 ---@param lap AGFLapState
 local function CommitLap(lap)
-	local data, player, log, planned, route, offered, rank, origin, card =
-		lap.data, lap.player, lap.log, lap.planned, lap.route, lap.offered, lap.rank, lap.origin, lap.card
+	local data, player, planned, route, offered, rank, origin, card =
+		lap.data, lap.player, lap.planned, lap.route, lap.offered, lap.rank, lap.origin, lap.card
 	local at = lap.at
 	-- A visit collects the town's eligible offers in one pass. Their work may belong to a later lap;
 	-- Verify still enforces the client's live log capacity, and a limited session requires that work to fit.
@@ -668,16 +661,9 @@ local function CommitLap(lap)
 		route = Stabilise(verified, plain, rank, function(steps)
 			return Holds(lap, steps)
 		end, at, origin)
-		local inTown = {}
-		for _, step in ipairs(route) do
-			local available = step.kind ~= "area" and step.hub ~= nil and Cost(origin, at(step)) <= HERE
-			for _, id in ipairs(step.handins or NONE) do
-				available = available and log[id] ~= nil and log[id].complete == true
-			end
-			inTown[step] = available or nil
-		end
-		route = Front(lap, route, inTown)
-		local here = not inTown[route[1]] and Model.Here(data, player, route, State.heldHere)
+		-- The area the player stands in leads over the committed order; the town the player stands in already leads
+		-- through the greedy loop's front, so an unfinished step is never passed for a walk away.
+		local here = Model.Here(data, player, route, State.heldHere)
 		local standsIn = here and route[here]
 		if standsIn and here > 1 then
 			-- Lead with the area the player stands in. A merged area can hold both objectives the player can work on and
@@ -909,6 +895,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 		join = join,
 		card = card,
 		docks = docks,
+		hub = Model.Hub(data, player),
 		origin = origin,
 		planned = planned,
 		rank = rank,
