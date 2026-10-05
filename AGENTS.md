@@ -45,9 +45,8 @@ commit the PNGs it rewrites in `docs/screenshots/`; two runs give byte-identical
 - `Planning/`: route models, ordering, focus and geometry.
 - `Integrations/`: QuestieDB, companion addons and dungeon providers.
 - `UI/`: guide windows, hints, map pins, settings and the private tracker host.
-- `Planning/Model.lua`: the headless-testable planner's eligibility rules and shared table, `ns.Model`. The rest of the
-  planner loads after it in TOC order: `Travel`, `Zones`, `Steps`, `Services`, `Routing`, `Laps`, `Journeys`,
-  `Decoration`, `Plan` and `Refresh`. `Core/State.lua` reads the client.
+- `Planning/Model.lua`: the headless-testable planner's eligibility rules and shared table, `ns.Model`; the planner's
+  other modules load after it in `AdventureGuideForever.toc` order. `Core/State.lua` reads the client.
 - `Planning/Shown.lua`: the route as shown: `Shown.Build` runs the planner, the player's order and the session's trim
   over one snapshot; Core's rebuild is its one caller, and the planner reads no other module.
 - `Integrations/Integrations.lua`: Shortest Path Forever's public API when loaded, the native waypoint otherwise.
@@ -127,6 +126,8 @@ its types reviewed), and the tool versions in
 ## Secure UI regression checks
 
 `tools/typecheck.sh` checks the TOC/XML load graph, LuaLS coverage and `tools/lint_taint.py`.
+`tools/forever_tools/` is the shared tooling (cjber/skills, `wow-forever-addon/tooling`), vendored byte for byte: never edit it here.
+`python3 tools/forever_tools/sync.py check` verifies it offline; `sync.py update --source <checkout>` is the only way to refresh it.
 Do not hook Blizzard object methods: use events, `HookScript` or a supported callback registry.
 Keep addon tracker sections and pools in `UI/TrackerHost.lua`, outside Blizzard's registry.
 Render only after `PLAYER_ENTERING_WORLD` and `VARIABLES_LOADED`, deferred one frame.

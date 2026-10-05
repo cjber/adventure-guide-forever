@@ -11,7 +11,6 @@ https://github.com/cmangos/issues/wiki/Quest_template
 """
 
 import argparse
-import csv
 import gzip
 import io
 import json
@@ -20,10 +19,11 @@ import re
 import struct
 import sys
 import urllib.error
-import urllib.request
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
+
+from forever_tools import fsio, wago
 
 BUILD = "1.60.1.70205"
 # The last build with WorldMapArea: quest_poi's mapAreaId is one of its IDs, which UiMap replaced in 8.0.
@@ -157,32 +157,21 @@ ESCAPES = {"0": "\0", "n": "\n", "r": "\r", "t": "\t", "b": "\b", "Z": "\x1a"}
 
 
 def download(url, filename, refresh=False, offline=False):
-    path = CACHE / filename
-    if path.exists() and not refresh:
-        return path.read_bytes()
-    if offline:
-        raise ValueError(f"Missing cached source: {path}")
-    request = urllib.request.Request(url, headers={"User-Agent": "AdventureGuideForever/1.0"})
-    with urllib.request.urlopen(request, timeout=120) as response:
-        content = response.read()
-    if content.lstrip().startswith(b"<"):
-        raise ValueError(f"Expected data, received HTML: {url}")
-    CACHE.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_bytes(content)
-    temporary.replace(path)
-    return content
+    return wago.fetch(
+        url,
+        CACHE / filename,
+        user_agent="AdventureGuideForever/1.0",
+        refresh=refresh,
+        offline=offline,
+        timeout=120,
+        validate=gzip.decompress if filename.endswith(".gz") else None,
+    )
 
 
 def db2(name, columns, build=BUILD, **options):
-    content = download(f"https://wago.tools/db2/{name}/csv?build={build}", f"{name}-{build}.csv", **options)
-    reader = csv.DictReader(io.StringIO(content.decode("utf-8-sig")), strict=True)
-    if not set(columns) <= set(reader.fieldnames or []):
-        raise ValueError(f"{name}: missing required columns {columns}")
-    rows = list(reader)
-    if not rows:
-        raise ValueError(f"{name}: empty export")
-    return rows
+    return wago.db2_rows(
+        name, build, CACHE, user_agent="AdventureGuideForever/1.0", timeout=120, required=columns, **options
+    )
 
 
 def parse_values(text):
@@ -1662,7 +1651,7 @@ def run(main, name):
     """Run a generator's main, turning a source or data error into a one-line exit."""
     try:
         main()
-    except (OSError, ValueError, KeyError, csv.Error, urllib.error.URLError) as error:
+    except (OSError, ValueError, KeyError, urllib.error.URLError) as error:
         sys.exit(f"{name}: {error}")
 
 
@@ -1702,11 +1691,7 @@ def main():
     )
     if not data.quests or not data.counts["with start"]:
         raise ValueError("No usable quests; leaving existing output untouched")
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    FIXTURE.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(render(data), encoding="utf-8")
-    FIXTURE.write_text(render_quests(data.quests), encoding="utf-8")
-    TOWN_FIXTURE.write_text(render_towns(data), encoding="utf-8")
+    fsio.publish({OUTPUT: render(data), FIXTURE: render_quests(data.quests), TOWN_FIXTURE: render_towns(data)})
     for name, count in sorted(data.counts.items()):
         print(f"{name}: {count}")
     print(
