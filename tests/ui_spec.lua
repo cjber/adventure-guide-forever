@@ -3374,6 +3374,17 @@ do
 	h.flush()
 	equal(CardsUnder().zones, 5, label .. ": the route's own group opens")
 	equal(h.G.AdventureGuideForeverCharDB.collapsedGroups.zones, true, label .. ": though the player left it folded")
+	local held
+	for _, header in
+		ipairs(Shown(h, function(frame)
+			return frame.CollapseButton ~= nil and frame.key == "zones"
+		end))
+	do
+		held = header
+	end
+	equal(held.CollapseButton:IsShown(), false, label .. ": a group that cannot fold offers no fold button")
+	held:GetScript("OnClick")(held)
+	equal(h.G.AdventureGuideForeverCharDB.collapsedGroups.zones, true, label .. ": and its click saves nothing")
 	clean(h, label)
 end
 

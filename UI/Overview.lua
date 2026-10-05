@@ -87,6 +87,14 @@ local function ActiveSection(route)
 	end
 end
 
+-- Whether the route's own card sits under `key`: that header cannot fold, so the player never loses the card.
+---@param route AGFRoute
+---@param key AGFJourneySection
+---@return boolean
+local function Held(route, key)
+	return ActiveSection(route) == key
+end
+
 -- Whether `journey` is on show in the overview: every card while the player follows one, and every card of an open
 -- header. A card of the header the route follows is always shown, so the player never loses it. The card-minute
 -- queue uses this too, so a hidden card is never refreshed.
@@ -94,7 +102,7 @@ end
 ---@param journey AGFJourney
 ---@return boolean
 local function Open(route, journey)
-	return route.chosen or journey.section == ActiveSection(route) or not Collapsed(journey.section)
+	return route.chosen or Held(route, journey.section) or not Collapsed(journey.section)
 end
 
 -- A step on the world map: the map opens when it is closed, then turns to the step and flashes its ring.
@@ -781,6 +789,7 @@ Overview.InGroup = InGroup
 Overview.Collapsed = Collapsed
 Overview.ToggleCollapsed = ToggleCollapsed
 Overview.Open = Open
+Overview.Held = Held
 Overview.SetVerbIcon = SetVerbIcon
 Overview.CreateBadge = CreateBadge
 Overview.StepMenu = StepMenu

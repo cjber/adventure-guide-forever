@@ -867,6 +867,7 @@ end
 ---@field Previous Button
 ---@field Next Button
 ---@field CollapseButton AGFCollapseButton
+---@field held boolean the route's own card is under it, so it cannot fold
 
 ---@param parent Frame
 ---@return AGFOverviewHeader
@@ -885,7 +886,8 @@ local function CreateOverviewHeader(parent)
 	header.CollapseButton = CreateFrame("Button", nil, header, "CollapseButtonTemplate") --[[@as AGFCollapseButton]]
 	header.CollapseButton:SetPoint("RIGHT", -6, 0)
 	header.Count = header:CreateFontString(nil, "ARTWORK", "Game15Font_Shadow")
-	header.Count:SetPoint("RIGHT", header.CollapseButton, "LEFT", -4, 0)
+	-- Clear of the fold button's place, whether or not the button is shown.
+	header.Count:SetPoint("RIGHT", -28, 0)
 	header.Count:SetJustifyH("RIGHT")
 	-- The group's pages, as the spellbook turns its own: the page, then the stock arrows. A click on one is its
 	-- own, so it never folds the group.
@@ -923,8 +925,10 @@ local function CreateOverviewHeader(parent)
 	end
 	header:RegisterForClicks("LeftButtonUp")
 	header:SetScript("OnClick", function(self)
-		Overview.ToggleCollapsed(self.key)
-		Refresh()
+		if not self.held then
+			Overview.ToggleCollapsed(self.key)
+			Refresh()
+		end
 	end)
 	return header
 end
@@ -955,6 +959,7 @@ local function LayoutGroup(group, header, journeys, top, width, per, pool)
 	-- Never hidden: an empty font string keeps the name's anchor resolvable in a layout dump.
 	header.Count:SetText(collapsed and (#journeys == 1 and L.GROUP_CARDS_ONE or L.GROUP_CARDS:format(#journeys)) or "")
 	header.CollapseButton:UpdateCollapsedState(collapsed)
+	header.CollapseButton:SetShown(not header.held)
 	for _, region in ipairs({ header.Page, header.Previous, header.Next }) do
 		region:SetShown(pages > 1)
 	end
@@ -1010,6 +1015,7 @@ local function LayoutOverview(route, top, shown, under)
 		if #journeys > 0 then
 			-- The route's own card stays in sight: its group is open whatever the player saved.
 			local open = Overview.Open(route, journeys[1])
+			header.held = Overview.Held(route, group.key)
 			groups[#groups + 1] = { group = group, header = header, journeys = journeys, open = open }
 			counts[#counts + 1] = open and #journeys or nil
 			room = room - HEADER_HEIGHT - HEADER_GAP - (#groups > 1 and GROUP_GAP or 0)
