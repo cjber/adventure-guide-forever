@@ -46,15 +46,16 @@ The full guide continues across pages. These images are generated previews of th
 
 ## Features
 
-- **Dungeons.** Browse dungeon quests, check what needs picking up before you go and plan a journey to their givers. Atlas supplies the interior maps, and [Adventure Guide for Classic](https://www.curseforge.com/wow/addons/adventure-guide-for-classic) is the recommended companion for a dungeon's bosses and loot: the Bosses and loot control opens it from the tab.
+- **Dungeons.** Browse dungeon quests, check what needs picking up before you go and plan a journey to their givers. The list also holds Forever's raids and the other raid instances, each raid tagged with its group size. With Atlas and its Classic module, a dungeon the guide offers is pinned at its entrance: the pin, or the Maps control, opens its interior map, its wings and floors chosen from the game's own dropdown. [Adventure Guide for Classic](https://www.curseforge.com/wow/addons/adventure-guide-for-classic) is the recommended companion for a dungeon's bosses and loot: the Bosses and loot control opens it from the tab.
 - **Full guide.** Page through the current route followed by the area's Questie outline. Later entries stay outline-only until Questie confirms they are available.
-- **Journeys.** Finish loose ends, follow a zone's story, head somewhere suited to your level or pick up class quests. Each card says why it fits. Dungeon and battleground journeys are opt-in.
+- **Journeys.** Finish loose ends, follow a zone's story, head somewhere suited to your level or pick up class quests. Each card says why it fits, under collapsible headers like the quest log's. Dungeon and battleground journeys are opt-in.
 - **Choose and go.** Picking a journey starts its route with Shortest Path Forever, or the game's waypoint without it. Stop clears only the route the guide started; a waypoint you set yourself stays.
+- **A route that stays with you.** A ready hand-in or a pickup right beside you comes first, and while you stand in an objective area the map shows the area rather than pointing at it. The chosen journey survives new quests, travel and a reload, and the quest catalogue is kept between logins, so the route is on the tracker from the start.
 - **Your order.** Drag steps or use their right-click menu. Moves that put a hand-in before its pickup are greyed out. Towns list their quest givers, ticked as you finish with them.
 - **Time to play.** Pick 15, 30 or 60 minutes to shorten the route using rough travel and quest-time estimates.
 - **Search.** Search a quest to see which requirements you meet and what is missing.
-- **Other things to do.** Hints cover trainers, professions and unspent talents. The PvP tab shows your rank, its next reward and available battlegrounds.
-- **Your say.** Skip a step for this session, hide a journey or rule out a quest. The guide never abandons quests for you. Map pins and quest-giver marks are off by default.
+- **Other things to do.** Hints cover trainers, professions, unspent talents, a hearth you could set and an area you have not seen. The PvP tab shows your rank, its next reward and available battlegrounds.
+- **Your say.** Skip a step for this session, hide a journey or rule out a quest. Shift-click a quest in search, or a quest giver on the map, to add its quests to the route. The guide never abandons quests for you. Map pins and quest-giver marks are off by default.
 
 Forever's new quests are only considered once they are in your log, and a missing location stays missing. This is not a complete levelling walkthrough.
 
