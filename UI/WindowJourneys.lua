@@ -266,6 +266,7 @@ local function RefreshFeatured(journey, custom)
 	action:SetEnabled(step ~= nil)
 	local counts = featured.Counts --[[@as FontString]]
 	counts:SetText(journey.title)
+	counts:SetShown(step ~= nil)
 	local notes = featured.Note --[[@as FontString]]
 	notes:SetShown(note ~= nil)
 	notes:SetText(note or "")
