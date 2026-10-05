@@ -572,6 +572,12 @@
 ---@field STEP_NUMBERED string format: route index, step title
 ---@field QUEST_LEVEL string format: quest level, quest title
 ---@field OVERVIEW_WHERE string format: the overview's line under the title, the player's zone and level
+---@field RECOMMENDED string
+---@field YOUR_CHOICE string
+---@field START_ADVENTURE string
+---@field RESUME_ADVENTURE string
+---@field DO_THIS_NEXT string
+---@field OTHER_ADVENTURES string
 ---@field SUGGESTED string the overview's first card's tag
 ---@field READY_OF string format: a Quests in your log card's footer in the overview, ready of all it holds
 ---@field CHAPTERS_DONE string format: a story card's footer in the overview, chapters done of the chain's

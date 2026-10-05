@@ -26,6 +26,7 @@ local CHECK_LEFT = 40
 ---@field EntranceButton Button
 ---@field DungeonButton Button
 ---@field GuideButton? Button
+---@field Action? Button
 ---@field Note? FontString why Go to entrance is greyed, on the featured card
 
 ---@class AGFWindowStepRow : AGFWindowRow, AGFDraggableRow
@@ -42,6 +43,8 @@ local checks = {}
 local grid = {}
 ---@type FontString
 local heading
+---@type FontString
+local alternatives
 ---@type Texture
 local divider
 ---@type FontString
@@ -65,7 +68,7 @@ local pageText
 
 local LEFT, TOP = Window.LEFT, Window.TOP
 local WIDTH = Window.Cards.available
-local GRID_TOP = Window.Cards.gridTop
+local GRID_TOP = Window.Cards.gridTop + 24
 local GRID_WIDTH = Window.Cards.gridWidth
 local GRID_HEIGHT = Window.INSET_HEIGHT - 40 - GRID_TOP
 local STEPS_LEFT = Window.Cards.sideLeft
@@ -85,7 +88,7 @@ local function ShowOnMap(card)
 	elseif ns.Guidance.Status() == "paused" then
 		ns.StartRoute()
 	end
-	local step = route.steps[1]
+	local step = ns.Route().steps[1]
 	if step then
 		Overview.ShowOnMap(step)
 	end
@@ -156,9 +159,19 @@ local function CreateCard(parent, isFeatured)
 		local button = CreateFrame("Button", nil, content, "UIPanelButtonTemplate") --[[@as Button]]
 		button:SetSize(BUTTON_WIDTH, BUTTON_HEIGHT)
 		button:SetPoint("BOTTOMRIGHT", -16, 22)
-		button:SetText(L.SHOW_ON_MAP)
+		card.Action = button
+		button:SetText(L.START_ADVENTURE)
 		button:SetScript("OnClick", function()
-			ShowOnMap(card)
+			local route = ns.Route()
+			if card.journey and not ns.Setting("wanderer") and not ns.Guidance.Owns() then
+				if route.chosen and route.journey == card.journey.key then
+					ns.StartRoute()
+				else
+					ns.Choose(card.journey.key, true)
+				end
+			else
+				ShowOnMap(card)
+			end
 		end)
 		card.Foot:SetPoint("RIGHT", button, "LEFT", -BAR_LABEL_GAP, 0)
 		card.EntranceButton:SetPoint("RIGHT", button, "LEFT", -6, 0)
@@ -180,6 +193,18 @@ local function CreateCard(parent, isFeatured)
 		card.EntranceButton:SetPoint("BOTTOMRIGHT", -GRID_PAD + 4, GRID_PAD - 6)
 	end
 	Window.LayoutCardHeading(card, isFeatured, 3)
+	if isFeatured then
+		card.Title:ClearAllPoints()
+		card.Title:SetPoint("TOPLEFT", 76, -32)
+		card.Title:SetPoint("RIGHT", -16, 0)
+		card.Title:SetWordWrap(true)
+		card.Title:SetMaxLines(2)
+		card.Reason:ClearAllPoints()
+		card.Reason:SetPoint("TOPLEFT", 18, -82)
+		card.Reason:SetPoint("RIGHT", -18, 0)
+		card.Reason:SetWordWrap(true)
+		card.Reason:SetMaxLines(2)
+	end
 	card:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	card.noBack = true
 	card:SetScript("OnClick", Overview.CardClick)
@@ -224,10 +249,24 @@ local function RefreshFeatured(journey, custom)
 	featured.GuideButton:SetShown(Overview.Entrance(journey) == nil)
 	local note = RefreshCard(featured, journey, FEATURED_SPAN)
 	local tag = featured.Tag --[[@as FontString]]
-	tag:SetText(custom and L.ORDER_CUSTOM or L.SUGGESTED)
-	featured.Reason:SetText(Overview.DropLine(journey) or journey.reason or Overview.HubLine(journey) or "")
+	local route = ns.Route()
+	local step = route.steps[1]
+	tag:SetText(custom and L.ORDER_CUSTOM or (route.chosen and L.YOUR_CHOICE or L.RECOMMENDED))
+	featured.Title:SetText(step and step.title or journey.title)
+	featured.Reason:SetText(
+		Overview.DropLine(journey) or (step and step.reason) or journey.reason or Overview.HubLine(journey) or ""
+	)
+	local action = assert(featured.Action)
+	local status = ns.Guidance.Status()
+	local paused = status == "paused"
+	local actionText = (ns.Setting("wanderer") or ns.Guidance.Owns()) and L.SHOW_ON_MAP
+		or paused and L.RESUME_ADVENTURE
+		or L.START_ADVENTURE
+	action:SetText(actionText)
+	action:SetEnabled(step ~= nil)
 	local counts = featured.Counts --[[@as FontString]]
-	counts:SetText(Overview.Counts(journey))
+	counts:SetText(journey.title)
+	counts:SetShown(step ~= nil)
 	local notes = featured.Note --[[@as FontString]]
 	notes:SetShown(note ~= nil)
 	notes:SetText(note or "")
@@ -349,7 +388,7 @@ end
 local function Build(content)
 	featured = CreateCard(content, true)
 	featured:SetPoint("TOPLEFT", LEFT, -TOP)
-	heading = Window.Heading(content, L.NEXT_STEPS)
+	heading = Window.Heading(content, L.DO_THIS_NEXT)
 	heading:SetPoint("TOPLEFT", STEPS_LEFT + 2, -TOP)
 	session = CreateSessionPicker(content)
 	session:HookScript("OnEnter", function(self)
@@ -379,6 +418,8 @@ local function Build(content)
 		ns.Order.Reset()
 	end)
 	divider = Window.CreateDivider(content, TOP + FEATURED_HEIGHT)
+	alternatives = Window.Heading(content, L.OTHER_ADVENTURES)
+	alternatives:SetPoint("TOPLEFT", LEFT + 2, -(Window.Cards.gridTop + 3))
 	for index = 1, COLUMNS do
 		local card = CreateCard(content, false)
 		card:SetPoint("TOPLEFT", LEFT + (index - 1) * (GRID_WIDTH + GRID_GAP), -GRID_TOP)
@@ -448,6 +489,7 @@ Refresh = function(content)
 	session:SetShown(first ~= nil)
 	session:SetText(SessionLabel(ns.Session.Get()))
 	divider:SetShown(first ~= nil and #others > 0)
+	alternatives:SetShown(#others > 0)
 	if first then
 		RefreshFeatured(first, custom)
 	end

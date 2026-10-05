@@ -508,7 +508,7 @@ do
 	h.Click(reset)
 	Redraw(h)
 	equal(ns.Order.IsCustom(), false, "window reset clears custom order")
-	equal(Texts(h)[L.SUGGESTED], 1, "reset: suggested tag")
+	equal(Texts(h)[L.YOUR_CHOICE], 1, "reset: retains the player's choice")
 
 	ns.OpenPanel()
 	h.flush()
