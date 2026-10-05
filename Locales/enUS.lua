@@ -495,7 +495,7 @@ ns.L = {
 	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "A ready hand-in beside you comes first, and a broad objective area counts as reached.",
+	WHATS_NEW = "Quest progress stays in step with Shortest Path. Your next task leads the guide.",
 	DUNGEON_BOSSES_LOOT = "Bosses and loot",
 	DUNGEON_BOSSES_LOOT_TOOLTIP = "Open Adventure Guide for Classic for boss tactics, models and loot.",
 	DUNGEON_BOSSES_LOOT_INSTALL = "Install Adventure Guide for Classic for bosses and loot",
