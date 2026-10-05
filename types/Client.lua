@@ -236,7 +236,7 @@ CreateSettingsButtonInitializer = nil
 
 -- Blizzard_SharedXML/Mainline/SoundKitConstants.lua:125 (UI_SCENARIO_STAGE_END = 31757), and the character
 -- frame's open, close and tab sounds the Adventure Guide window plays (839, 840, 841).
----@type {UI_SCENARIO_STAGE_END: integer, IG_CHARACTER_INFO_OPEN: integer, IG_CHARACTER_INFO_CLOSE: integer, IG_CHARACTER_INFO_TAB: integer}
+---@type {UI_SCENARIO_STAGE_END: integer, IG_ABILITY_PAGE_TURN: integer, IG_CHARACTER_INFO_OPEN: integer, IG_CHARACTER_INFO_CLOSE: integer, IG_CHARACTER_INFO_TAB: integer}
 SOUNDKIT = nil
 
 -- Blizzard_SharedXML/Mainline/SharedUIPanelTemplates.lua: a frame's PanelTabButtonTemplate tabs, anchored in a row

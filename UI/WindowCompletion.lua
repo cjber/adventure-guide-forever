@@ -15,7 +15,7 @@ local TARGET_ROWS, TARGET_HEIGHT, TARGET_PITCH, HEAD = 3, 44, 49, 18
 local COLUMNS, GRID_GAP, GRID_PAD = Window.Cards.columns, Window.Cards.gap, Window.Cards.pad
 local BAR_GAP = 8
 local LEGACY_ICON = "Legacy-Rewards-Tracker-Icon"
-local DONE_MARK = "|A:UI-QuestTracker-Tracker-Check:12:12|a"
+local DONE_MARK = ns.Art.Markup("UI-QuestTracker-Tracker-Check", 12)
 -- Legacy's categories in its own order, and each target kind's mark.
 local CATEGORIES = {
 	{ key = "areas", label = L.COMPLETION_CATEGORY_AREAS },

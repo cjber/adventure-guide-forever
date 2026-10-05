@@ -91,7 +91,6 @@
           "y": -4.00
         }
       ],
-      "highlightAtlas": "questlog-icon-setting",
       "onUpdate": false,
       "path": "AdventureGuideForeverSettingsButton",
       "size": [
@@ -113,6 +112,26 @@
       "atlas": "questlog-icon-setting",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverSettingsButton.Texture[1]",
+      "type": "Texture"
+    },
+    {
+      "alphaMode": "ADD",
+      "anchors": [
+        {
+          "point": "CENTER",
+          "relativePoint": "CENTER",
+          "relativeTo": "AdventureGuideForeverSettingsButton",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "questlog-icon-setting",
+      "layer": "HIGHLIGHT",
+      "path": "AdventureGuideForeverSettingsButton.Texture[2]",
+      "size": [
+        15.00,
+        16.00
+      ],
       "type": "Texture"
     },
     {
@@ -280,7 +299,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[1].Texture[1]",
       "size": [
         30.00,
-        30.00
+        29.70
       ],
       "type": "Texture"
     },
@@ -310,8 +329,6 @@
           "y": 0.00
         }
       ],
-      "highlightAtlas": "common-icon-backarrow",
-      "normalAtlas": "common-icon-backarrow",
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[1].Button[1]",
       "size": [
@@ -319,6 +336,45 @@
         22.00
       ],
       "type": "Button"
+    },
+    {
+      "anchors": [
+        {
+          "point": "CENTER",
+          "relativePoint": "CENTER",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[1].Button[1]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "common-icon-backarrow",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[1].Button[1].Texture[1]",
+      "size": [
+        22.00,
+        22.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "alphaMode": "ADD",
+      "anchors": [
+        {
+          "point": "CENTER",
+          "relativePoint": "CENTER",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[1].Button[1]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "common-icon-backarrow",
+      "layer": "HIGHLIGHT",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[1].Button[1].Texture[2]",
+      "size": [
+        22.00,
+        22.00
+      ],
+      "type": "Texture"
     },
     {
       "anchors": [
@@ -724,7 +780,7 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Ring",
       "size": [
-        26.00,
+        25.73,
         26.00
       ],
       "type": "Texture"
@@ -826,7 +882,6 @@
           "y": -7.00
         }
       ],
-      "highlightAtlas": "common-icon-redx",
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].SkipButton",
       "size": [
@@ -850,6 +905,26 @@
       "desaturated": true,
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].SkipButton.Icon",
+      "size": [
+        14.00,
+        14.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "alphaMode": "ADD",
+      "anchors": [
+        {
+          "point": "CENTER",
+          "relativePoint": "CENTER",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].SkipButton",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "common-icon-redx",
+      "layer": "HIGHLIGHT",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].SkipButton.Texture[1]",
       "size": [
         14.00,
         14.00
@@ -995,7 +1070,7 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Ring",
       "size": [
-        26.00,
+        25.73,
         26.00
       ],
       "type": "Texture"
@@ -1097,7 +1172,6 @@
           "y": -7.00
         }
       ],
-      "highlightAtlas": "common-icon-redx",
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].SkipButton",
       "size": [
@@ -1121,6 +1195,26 @@
       "desaturated": true,
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].SkipButton.Icon",
+      "size": [
+        14.00,
+        14.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "alphaMode": "ADD",
+      "anchors": [
+        {
+          "point": "CENTER",
+          "relativePoint": "CENTER",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].SkipButton",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "common-icon-redx",
+      "layer": "HIGHLIGHT",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].SkipButton.Texture[1]",
       "size": [
         14.00,
         14.00
@@ -1266,7 +1360,7 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Ring",
       "size": [
-        26.00,
+        25.73,
         26.00
       ],
       "type": "Texture"
@@ -1368,7 +1462,6 @@
           "y": -7.00
         }
       ],
-      "highlightAtlas": "common-icon-redx",
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].SkipButton",
       "size": [
@@ -1392,6 +1485,26 @@
       "desaturated": true,
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].SkipButton.Icon",
+      "size": [
+        14.00,
+        14.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "alphaMode": "ADD",
+      "anchors": [
+        {
+          "point": "CENTER",
+          "relativePoint": "CENTER",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].SkipButton",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "common-icon-redx",
+      "layer": "HIGHLIGHT",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].SkipButton.Texture[1]",
       "size": [
         14.00,
         14.00
@@ -1537,7 +1650,7 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Ring",
       "size": [
-        26.00,
+        25.73,
         26.00
       ],
       "type": "Texture"
@@ -1639,7 +1752,6 @@
           "y": -7.00
         }
       ],
-      "highlightAtlas": "common-icon-redx",
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].SkipButton",
       "size": [
@@ -1663,6 +1775,26 @@
       "desaturated": true,
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].SkipButton.Icon",
+      "size": [
+        14.00,
+        14.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "alphaMode": "ADD",
+      "anchors": [
+        {
+          "point": "CENTER",
+          "relativePoint": "CENTER",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].SkipButton",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "common-icon-redx",
+      "layer": "HIGHLIGHT",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].SkipButton.Texture[1]",
       "size": [
         14.00,
         14.00
@@ -1808,7 +1940,7 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Ring",
       "size": [
-        26.00,
+        25.73,
         26.00
       ],
       "type": "Texture"
@@ -1910,7 +2042,6 @@
           "y": -7.00
         }
       ],
-      "highlightAtlas": "common-icon-redx",
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].SkipButton",
       "size": [
@@ -1934,6 +2065,26 @@
       "desaturated": true,
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].SkipButton.Icon",
+      "size": [
+        14.00,
+        14.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "alphaMode": "ADD",
+      "anchors": [
+        {
+          "point": "CENTER",
+          "relativePoint": "CENTER",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].SkipButton",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "common-icon-redx",
+      "layer": "HIGHLIGHT",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].SkipButton.Texture[1]",
       "size": [
         14.00,
         14.00
@@ -2079,7 +2230,7 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Ring",
       "size": [
-        26.00,
+        25.73,
         26.00
       ],
       "type": "Texture"
@@ -2181,7 +2332,6 @@
           "y": -7.00
         }
       ],
-      "highlightAtlas": "common-icon-redx",
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].SkipButton",
       "size": [
@@ -2205,6 +2355,26 @@
       "desaturated": true,
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].SkipButton.Icon",
+      "size": [
+        14.00,
+        14.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "alphaMode": "ADD",
+      "anchors": [
+        {
+          "point": "CENTER",
+          "relativePoint": "CENTER",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].SkipButton",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "common-icon-redx",
+      "layer": "HIGHLIGHT",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].SkipButton.Texture[1]",
       "size": [
         14.00,
         14.00
@@ -2350,7 +2520,7 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Ring",
       "size": [
-        26.00,
+        25.73,
         26.00
       ],
       "type": "Texture"
@@ -2452,7 +2622,6 @@
           "y": -7.00
         }
       ],
-      "highlightAtlas": "common-icon-redx",
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].SkipButton",
       "size": [
@@ -2476,6 +2645,26 @@
       "desaturated": true,
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].SkipButton.Icon",
+      "size": [
+        14.00,
+        14.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "alphaMode": "ADD",
+      "anchors": [
+        {
+          "point": "CENTER",
+          "relativePoint": "CENTER",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].SkipButton",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "common-icon-redx",
+      "layer": "HIGHLIGHT",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].SkipButton.Texture[1]",
       "size": [
         14.00,
         14.00
@@ -2621,7 +2810,7 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Ring",
       "size": [
-        26.00,
+        25.73,
         26.00
       ],
       "type": "Texture"
@@ -2723,7 +2912,6 @@
           "y": -7.00
         }
       ],
-      "highlightAtlas": "common-icon-redx",
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].SkipButton",
       "size": [
@@ -2747,6 +2935,26 @@
       "desaturated": true,
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].SkipButton.Icon",
+      "size": [
+        14.00,
+        14.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "alphaMode": "ADD",
+      "anchors": [
+        {
+          "point": "CENTER",
+          "relativePoint": "CENTER",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].SkipButton",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "common-icon-redx",
+      "layer": "HIGHLIGHT",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].SkipButton.Texture[1]",
       "size": [
         14.00,
         14.00
@@ -2892,7 +3100,7 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Ring",
       "size": [
-        26.00,
+        25.73,
         26.00
       ],
       "type": "Texture"
@@ -2994,7 +3202,6 @@
           "y": -7.00
         }
       ],
-      "highlightAtlas": "common-icon-redx",
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].SkipButton",
       "size": [
@@ -3018,6 +3225,26 @@
       "desaturated": true,
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].SkipButton.Icon",
+      "size": [
+        14.00,
+        14.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "alphaMode": "ADD",
+      "anchors": [
+        {
+          "point": "CENTER",
+          "relativePoint": "CENTER",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].SkipButton",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "common-icon-redx",
+      "layer": "HIGHLIGHT",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].SkipButton.Texture[1]",
       "size": [
         14.00,
         14.00
@@ -3163,7 +3390,7 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Ring",
       "size": [
-        26.00,
+        25.73,
         26.00
       ],
       "type": "Texture"
@@ -3262,7 +3489,6 @@
           "y": -7.00
         }
       ],
-      "highlightAtlas": "common-icon-redx",
       "onUpdate": false,
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].SkipButton",
       "size": [
@@ -3286,6 +3512,26 @@
       "desaturated": true,
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].SkipButton.Icon",
+      "size": [
+        14.00,
+        14.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "alphaMode": "ADD",
+      "anchors": [
+        {
+          "point": "CENTER",
+          "relativePoint": "CENTER",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].SkipButton",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "common-icon-redx",
+      "layer": "HIGHLIGHT",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].SkipButton.Texture[1]",
       "size": [
         14.00,
         14.00

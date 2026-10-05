@@ -26,11 +26,7 @@ function Window.GuideOutline(data, player, completed, journey, steps)
 			active[id] = true
 		end
 	end
-	---@param mask? integer
-	---@param bit? integer
-	local function Matches(mask, bit)
-		return not mask or mask == 0 or (bit and math.floor(mask / bit) % 2 == 1)
-	end
+	local Matches = ns.Model.HasBit
 	for id, quest in pairs(data.quests) do
 		if
 			(quest.zone == zone or (quest.start and quest.start.map == zone))

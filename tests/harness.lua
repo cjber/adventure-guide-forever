@@ -271,6 +271,11 @@ function harness.load(options)
 			self[field] = select("#", ...) > 0 and { first, ... } or first -- multi-value: every argument
 		end
 	end
+	local setTexCoord = Methods.SetTexCoord
+	function Methods:SetTexCoord(...)
+		self.atlasCrop = nil
+		return setTexCoord(self, ...)
+	end
 	local function visibilityChanged(frame, shown)
 		local script = frame.scripts and frame.scripts[shown and "OnShow" or "OnHide"]
 		if script then
@@ -635,11 +640,20 @@ function harness.load(options)
 	function Methods:SetAtlas(atlas, useAtlasSize)
 		self.atlas, self.useAtlasSize, self.file, self.color = atlas, useAtlasSize == true, nil, nil
 		self.texCoord = nil
+		-- The client leaves the atlas's place on its sheet as the texture's coordinates until they are set again.
+		self.atlasCrop = atlas
 	end
 	function Methods:GetAtlas()
 		return self.atlas
 	end
 	function Methods:SetTexture(file)
+		-- A file over an atlas's crop draws a corner of the file: Art.Icon resets the coordinates first.
+		if self.atlasCrop and file ~= nil then
+			h.errors[#h.errors + 1] = ("SetTexture(%s) over the crop %s left: use Art.Icon"):format(
+				tostring(file),
+				self.atlasCrop
+			)
+		end
 		self.file, self.atlas, self.texCoord = file, nil, nil
 		if type(file) == "string" and file:sub(1, #h.SHEET) == h.SHEET then
 			self.file, self.atlas = nil, file:sub(#h.SHEET + 1)
@@ -1084,6 +1098,13 @@ function harness.load(options)
 				self:SetPosition(x, y)
 			end
 		end,
+		-- Blizzard_PagedContent/Blizzard_PagingControls.xml: the spellbook's page arrows, 32px file art.
+		PagingControlsPrevPageButtonTemplate = function(frame)
+			frame:SetSize(32, 32)
+		end,
+		PagingControlsNextPageButtonTemplate = function(frame)
+			frame:SetSize(32, 32)
+		end,
 		CollapseButtonTemplate = function(frame)
 			Internal("Texture", frame, "Icon")
 			frame.UpdateCollapsedState = function(self, collapsed)
@@ -1261,7 +1282,8 @@ function harness.load(options)
 		local frame = NewRegion(objectType, name, parent)
 		-- The map sidebar starts laid out; screenshots feed its measured rect back on later passes.
 		if name == "AdventureGuideForeverPanel" then
-			frame.rect = { 0, 0, 306, 535 }
+			-- options.panelHeight: a spec about every card at once asks for a panel tall enough to hold them.
+			frame.rect = { 0, 0, 306, options.panelHeight or 535 }
 		end
 		if template then
 			Instantiate(frame, template)
@@ -1521,6 +1543,12 @@ function harness.load(options)
 		["ui-journeys-renown-button"] = { 374, 112 },
 		["tradeskills-star"] = { 20, 19 },
 		["redbutton-expand"] = { 18, 19 },
+		["redbutton-expand-pressed"] = { 18, 19 },
+		["redbutton-highlight"] = { 18, 19 },
+		["questlog-icon-setting"] = { 15, 16 },
+		["options_listexpand_left"] = { 12, 26 },
+		["options_listexpand_right"] = { 28, 26 },
+		["common-button-list-collapseexpand"] = { 64, 22 },
 		["minortalents-icon-book"] = { 40, 38 },
 		["legacy-rewards-tracker-icon"] = { 108, 155 },
 		["legacy-tree-frame-points-icon"] = { 50, 73 },
@@ -2389,6 +2417,7 @@ function harness.load(options)
 	-- Sounds are recorded by kit ID (Blizzard_SharedXML/Mainline/SoundKitConstants.lua:125).
 	G.SOUNDKIT = {
 		UI_SCENARIO_STAGE_END = 31757,
+		IG_ABILITY_PAGE_TURN = 836,
 		IG_CHARACTER_INFO_OPEN = 839,
 		IG_CHARACTER_INFO_CLOSE = 840,
 		IG_CHARACTER_INFO_TAB = 841,

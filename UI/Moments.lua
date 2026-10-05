@@ -193,8 +193,7 @@ end)
 -- The compartment's button is Blizzard's (Blizzard_Minimap AddonCompartment.xml); the pip is a texture of AGF's on it.
 if AddonCompartmentFrame then
 	compartmentPip = AddonCompartmentFrame:CreateTexture(nil, "OVERLAY")
-	compartmentPip:SetAtlas(PIP)
-	compartmentPip:SetSize(14, 14)
+	ns.Art.Fit(compartmentPip, PIP, 14, 14)
 	compartmentPip:SetPoint("CENTER", AddonCompartmentFrame, "TOPRIGHT", -2, -2)
 	compartmentPip:Hide()
 end

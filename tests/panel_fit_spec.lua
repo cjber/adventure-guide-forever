@@ -20,18 +20,38 @@ route.journeys = journeys
 for _, height in ipairs({ 185, 389, 600 }) do
 	panel.rect = { 0, 0, 306, height }
 	h.call(panel:GetScript("OnSizeChanged"), panel, panel:GetWidth(), height)
-	local cards = h.Find(function(frame)
-		return frame:IsVisible() and frame.Icon and frame.Icon.Clip and frame.journey
-	end)
-	assert(#cards == 12, "all destinations remain in the scroll content at every window height")
-	local found = {}
-	for _, card in ipairs(cards) do
-		found[card.journey.key] = true
-		assert(card.Title.wordWrap == false and card.Title.maxLines == 1, "long titles stay on one line")
-		h.Hover(card)
-		assert(h.tooltip[1] == "title: " .. card.journey.title, "tooltip retains full title")
+	local function Cards()
+		return h.Find(function(frame)
+			return frame:IsVisible() and frame.Icon and frame.Icon.Clip and frame.journey
+		end)
 	end
-	assert(found["fit:12"], "the last destination is available, not truncated")
+	local header = h.Find(function(frame)
+		return frame:IsVisible() and frame.key ~= nil and frame.Name ~= nil
+	end)[1]
+	-- One group of 12: the cards the panel has room for, never fewer than one, and the rest a page turn away.
+	local per = #Cards()
+	assert(per >= 1 and per < 12, "a page of the destinations at every window height")
+	assert(per * 68 <= math.max(68, height), "the page fits the panel")
+	local found = {}
+	for _ = 1, math.ceil(12 / per) do
+		for _, card in ipairs(Cards()) do
+			found[card.journey.key] = true
+			assert(card.Title.wordWrap == false and card.Title.maxLines == 1, "long titles stay on one line")
+			h.Hover(card)
+			assert(h.tooltip[1] == "title: " .. card.journey.title, "tooltip retains full title")
+		end
+		if not header.Next.disabled then
+			h.Click(header.Next)
+			h.flush()
+		end
+	end
+	for index = 1, 12 do
+		assert(found["fit:" .. index], "every destination is on a page: " .. index)
+	end
+	while not header.Previous.disabled do
+		h.Click(header.Previous)
+		h.flush()
+	end
 	assert(#h.Find(function(frame)
 		return frame:GetObjectType() == "ScrollFrame" and frame:IsVisible()
 	end) == 1, "home uses the stock scroll frame")

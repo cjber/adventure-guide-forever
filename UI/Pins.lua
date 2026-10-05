@@ -46,9 +46,9 @@ local function AddClickLine(tooltip)
 end
 
 -- The map's own marks, inline: a hand-in's "?", a pickup's "!", and the quest log's group tag.
-local HAND_IN_ICON = "|A:questturnin:14:14|a "
-local PICK_UP_ICON = "|A:questnormal:14:14|a "
-local GROUP_ICON = " |A:questlog-questtypeicon-group:12:12|a"
+local HAND_IN_ICON = ns.Art.Markup("questturnin", 14) .. " "
+local PICK_UP_ICON = ns.Art.Markup("questnormal", 14) .. " "
+local GROUP_ICON = " " .. ns.Art.Markup("questlog-questtypeicon-group", 12)
 -- A town's quests listed in its tooltip; the rest are counted.
 local HUB_QUEST_LINES = 8
 
@@ -330,6 +330,7 @@ function AdventureGuideForeverPinMixin:OnAcquired(step, index, visits)
 		texture:SetVertexColor(1, 0.9, 0.7)
 	end
 	local current = index == 1
+	-- art-ok: the quest POI's two discs, one shape, in the pin's own square (Panel.xml)
 	self.Icon:SetAtlas(current and CURRENT_ATLAS or STOP_ATLAS)
 	if current then
 		self.NumberText:SetTextColor(0.1, 0.05, 0)

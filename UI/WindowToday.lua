@@ -49,7 +49,7 @@ end
 local function AsideMarkup(aside)
 	local texture = aside.texture
 	if type(texture) == "number" then
-		return ("|T%d:14:14|t "):format(texture)
+		return ("|T%d:14:14|t "):format(texture) -- art-ok: a file icon is square
 	end
 	return Art.Markup(texture --[[@as string?]] or aside.icon, 14) .. " "
 end

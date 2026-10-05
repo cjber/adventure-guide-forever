@@ -87,6 +87,14 @@ local function ActiveSection(route)
 	end
 end
 
+-- Whether the route's own card sits under `key`: that header cannot fold, so the player never loses the card.
+---@param route AGFRoute
+---@param key AGFJourneySection
+---@return boolean
+local function Held(route, key)
+	return ActiveSection(route) == key
+end
+
 -- Whether `journey` is on show in the overview: every card while the player follows one, and every card of an open
 -- header. A card of the header the route follows is always shown, so the player never loses it. The card-minute
 -- queue uses this too, so a hidden card is never refreshed.
@@ -94,7 +102,7 @@ end
 ---@param journey AGFJourney
 ---@return boolean
 local function Open(route, journey)
-	return route.chosen or journey.section == ActiveSection(route) or not Collapsed(journey.section)
+	return route.chosen or Held(route, journey.section) or not Collapsed(journey.section)
 end
 
 -- A step on the world map: the map opens when it is closed, then turns to the step and flashes its ring.
@@ -211,8 +219,7 @@ local function SetVerbIcon(badge, step)
 	if atlas then
 		ns.Art.Fit(badge, atlas, badge.box, badge.box)
 	elseif file then
-		badge:SetTexture(file)
-		badge:SetSize(badge.box, badge.box)
+		ns.Art.Icon(badge, file, badge.box)
 	end
 	badge:SetShown(atlas ~= nil or file ~= nil)
 end
@@ -371,6 +378,7 @@ local function LayoutChecklist(pool, first, parent, step, left, top, width, bott
 		pool[index] = line
 		line:SetWidth(width)
 		line:SetPoint("TOPLEFT", left, -top)
+		-- art-ok: the tracker's tick or its nub, both square, in the square the line built
 		line.Tick:SetAtlas(giver.done and "UI-QuestTracker-Tracker-Check" or "UI-QuestTracker-Objective-Nub")
 		line.Tick:SetAlpha(giver.skipped and 0.4 or 1)
 		line.Text:SetText(giver.text)
@@ -585,7 +593,8 @@ local function Stops(journey)
 end
 
 -- The featured card's counts, after the map's own turn-in and quest marks.
-local READY_MARK, UNDERWAY_MARK, COUNT_GAP = "|A:QuestTurnin:12:12|a ", "|A:QuestNormal:12:12|a ", "  "
+local READY_MARK, UNDERWAY_MARK = ns.Art.Markup("QuestTurnin", 12) .. " ", ns.Art.Markup("QuestNormal", 12) .. " "
+local COUNT_GAP = "  "
 
 -- The featured card's line of counts, with the map's marks; its subline when it has none.
 ---@param journey AGFJourney
@@ -698,12 +707,89 @@ local function HideTooltipWithin(root)
 	end
 end
 
+-- How many cards each open group shows when `slots` cards fit the panel: one each, then the spare slots dealt a card
+-- at a time down the groups that still hold more, so every header stays in sight and the rest is a page turn away.
+---@param counts integer[] each open group's cards
+---@param slots integer
+---@return integer[]
+local function Fit(counts, slots)
+	local per, left = {}, slots
+	for index = 1, #counts do
+		per[index], left = 1, left - 1
+	end
+	local dealt = true
+	while left > 0 and dealt do
+		dealt = false
+		for index, count in ipairs(counts) do
+			if left > 0 and per[index] < count then
+				per[index], left, dealt = per[index] + 1, left - 1, true
+			end
+		end
+	end
+	return per
+end
+
+-- The page the player turned each group to, while the guide stays open: a page is only where they are looking.
+---@type table<string, integer>
+local turned = {}
+
+-- `key`'s page of `pages`, kept in range as its cards come and go: the one the player turned to, else `first`.
+---@param key AGFJourneySection
+---@param pages integer
+---@param first integer
+---@return integer
+local function Page(key, pages, first)
+	return math.max(1, math.min(turned[key] or first, pages))
+end
+
+-- The guide opened: every group starts again from its first page, or the one holding its new card.
+local function ResetPages()
+	turned = {}
+end
+
+---@param key AGFJourneySection
+---@param by integer
+---@param page integer the page it shows now
+local function Turn(key, by, page)
+	turned[key] = page + by
+end
+
+-- A card's levels, in the colour the game gives a quest of that level: a zone's or dungeon's range, a battleground's
+-- first level. Nothing for a card with no one place (Quests in your log).
+---@param journey AGFJourney
+---@param level integer the player's
+---@return string? text
+---@return {r: number, g: number, b: number}? color
+local function Levels(journey, level)
+	local zone = journey.zone and ns.Data.zones[journey.zone] or nil
+	---@type AGFInstance?
+	local instance = journey.instance and ns.Data.instances and ns.Data.instances[journey.instance] or nil
+	local low, high
+	if zone then
+		low, high = zone.min, zone.max
+	elseif instance then
+		low, high = instance.low, instance.high
+	end
+	if journey.level then
+		return L.LEVELS_FROM:format(journey.level), GetQuestDifficultyColor(level)
+	elseif low and high and low > 0 and high >= low then
+		local text = low == high and tostring(low) or L.LEVELS:format(low, high)
+		return text, GetQuestDifficultyColor(math.max(low, math.min(level, high)))
+	end
+end
+
 Overview.KIND_ICONS = KIND_ICONS
+Overview.Fit = Fit
+Overview.Page = Page
+Overview.Turn = Turn
+Overview.ResetPages = ResetPages
+Overview.Levels = Levels
 Overview.GROUPS = GROUPS
 Overview.InGroup = InGroup
 Overview.Collapsed = Collapsed
 Overview.ToggleCollapsed = ToggleCollapsed
 Overview.Open = Open
+Overview.Held = Held
 Overview.SetVerbIcon = SetVerbIcon
 Overview.CreateBadge = CreateBadge
 Overview.StepMenu = StepMenu

@@ -349,7 +349,7 @@ local function DrawDetail()
 		button:ClearAllPoints()
 		button:SetPoint("TOPLEFT", (index - 1) * 36, -cursor)
 		if icon and item then
-			button:SetNormalTexture(icon)
+			button:SetNormalTexture(icon) -- art-ok: a square item icon on a square button
 			button:SetScript("OnEnter", function()
 				GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
 				GameTooltip:SetItemByID(item)

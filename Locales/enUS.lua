@@ -233,6 +233,12 @@ ns.L = {
 	CHAPTERS_DONE = "%d of %d done",
 	STOPS_ONE = "1 stop",
 	STOPS = "%d stops",
+	-- A card's levels at the right of its title, and a group's page beside its arrows.
+	LEVELS = "%d-%d",
+	LEVELS_FROM = "%d+",
+	PAGE_OF = "%d/%d",
+	PAGE_PREVIOUS = "Previous",
+	PAGE_NEXT = "Next",
 	OBJECTIVE_COUNT = "- %d/%d",
 	-- The guide's settings menu, then the addon's settings page.
 	MENU_QUESTS = "Quests",

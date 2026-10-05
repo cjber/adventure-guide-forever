@@ -696,6 +696,7 @@ local function Battleground(data, player, prefs, mapName)
 				kind = "battleground",
 				key = "battleground:" .. bg.id,
 				title = bg.name,
+				level = bg.level,
 				subline = L.BATTLEGROUND_SUBLINE,
 				reason = step.title,
 				map = step.map,
