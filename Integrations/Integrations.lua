@@ -343,10 +343,12 @@ function Integrations.Kind(step)
 end
 
 -- An area step's objective shapes for Shortest Path (its own `shapes`): each on the map it already is, with its
--- yard radius. The nearest shape's radius is also the stop's reach.
+-- yard radius. The nearest shape's radius is also the stop's reach. An area of exactly one quest also names it, so
+-- Shortest Path can ask the client's own inside-area state for that quest instead of trusting the circles.
 ---@param step AGFStep|AGFGiver
 ---@return AGFSPFShape[]?
 ---@return number?
+---@return integer?
 local function Shapes(step)
 	local kind = step.kind --[[@as AGFStepKind?]]
 	if kind ~= "area" then
@@ -360,7 +362,8 @@ local function Shapes(step)
 			radius = math.max(radius, shape.r)
 		end
 	end
-	return #shapes > 0 and shapes or nil, radius
+	local quests = area.quests or {}
+	return #shapes > 0 and shapes or nil, radius, #quests == 1 and quests[1] or nil
 end
 
 ---@param steps (AGFStep|AGFGiver)[]
@@ -368,7 +371,7 @@ end
 local function Stops(steps, hold)
 	local stops = {}
 	for index, step in ipairs(steps) do
-		local shapes, radius = Shapes(step)
+		local shapes, radius, questID = Shapes(step)
 		stops[index] = {
 			map = step.map,
 			x = step.x,
@@ -378,6 +381,7 @@ local function Stops(steps, hold)
 			tooltip = ns.Pins.StopTooltip(step),
 			kind = Integrations.Kind(step),
 			radius = radius,
+			questID = questID,
 			shapes = shapes,
 			hold = hold == true
 				and step.kind ~= "trainer"

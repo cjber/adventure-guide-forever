@@ -1,4 +1,4 @@
--- shortest-path-forever 8f8cf3ad4579cd5be97cc2a1e9c45d8413bb44b3:types/API.lua
+-- shortest-path-forever b92cbc36e4801e5e5a135257f79ffa025751cbd0:types/API.lua
 ---@meta
 
 -- Public addon-to-addon interface. Coordinates are uiMapID and normalized 0-1 x/y, not world yards.
@@ -31,7 +31,8 @@
 ---@field kind? SPFAPIStopKind -- any other value is ignored and the stop keeps the plain pin
 ---@field hold? boolean -- keep guidance at this stop until the caller submits an updated route
 ---@field radius? number -- yards around a held stop where travel cues pause; finite and nonnegative
----@field shapes? SPFAPIShape[] -- objective areas a held stop stands for; their outlines are drawn while the player is inside one
+---@field questID? number -- the one quest this held stop's area belongs to; the client's own "inside the area" state for it decides inside
+---@field shapes? SPFAPIShape[] -- objective areas a held stop stands for; their outlines are drawn on the world map while the player is inside one
 
 ---@class SPFAPILeg
 ---@field mode SPFAPIMode
