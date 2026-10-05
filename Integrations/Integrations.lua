@@ -13,6 +13,9 @@ function Integrations.ClassicGuideAvailable()
 	return C_AddOns.IsAddOnLoaded("AdventureGuideClassic") and type(SlashCmdList.ADVENTUREGUIDECLASSIC) == "function"
 end
 
+-- Adventure Guide for Classic exposes one public entry, its slash command, whose handler toggles its encounter
+-- journal; it has no public way to open a named instance, and its journal and navigation tables sit behind a private
+-- facade. An empty message is that handler's own "open the window" case, so the handoff uses it as it stands.
 ---@return boolean
 function Integrations.OpenClassicGuide()
 	if not Integrations.ClassicGuideAvailable() then
@@ -68,9 +71,9 @@ local function Minutes(seconds)
 	return math.max(1, math.ceil(seconds / 60))
 end
 
--- The first leg that isn't a walk, and the minutes until it arrives; a trip on foot names where it ends, the step's
--- town when it has one (Shortest Path names only the zone). A new flight path on the way, and a wait of a minute or
--- more for the chosen leg, are added.
+-- The first leg that isn't a walk, and the minutes until it arrives; a trip on foot names the step's place, else the
+-- step's own title, the stop we hand Shortest Path (it names only the zone a leg ends in). A new flight path on the
+-- way, and a wait of a minute or more for the chosen leg, are added.
 ---@param detail AGFSPFDetail
 ---@param step AGFStep
 ---@return string?
@@ -89,7 +92,7 @@ local function DetailLine(detail, step)
 	if not verb then
 		return nil
 	end
-	return L.TRAVEL:format(verb:format(onFoot and step.place or chosen.to), Minutes(elapsed))
+	return L.TRAVEL:format(verb:format(onFoot and (step.place or step.title) or chosen.to), Minutes(elapsed))
 		.. (newFlightPath and L.TRAVEL_NEW_FLIGHT_PATH or "")
 		.. (chosen.wait and L.TRAVEL_WAIT:format(Minutes(chosen.wait)) or "")
 end
@@ -342,29 +345,47 @@ function Integrations.Kind(step)
 	return "pickup"
 end
 
+-- An area step's objective shapes for Shortest Path (its own `shapes`): each on the map it already is, with its
+-- yard radius. The nearest shape's radius is also the stop's reach. An area of exactly one quest also names it, so
+-- Shortest Path can ask the client's own inside-area state for that quest instead of trusting the circles.
+---@param step AGFStep|AGFGiver
+---@return AGFSPFShape[]?
+---@return number?
+---@return integer?
+local function Shapes(step)
+	local kind = step.kind --[[@as AGFStepKind?]]
+	if kind ~= "area" then
+		return
+	end
+	local area = step --[[@as AGFStep]]
+	local shapes, radius = {}, 30
+	for _, shape in ipairs(area.shapes or {}) do
+		shapes[#shapes + 1] = { map = shape.map, x = shape.x, y = shape.y, radius = shape.r }
+		if shape.map == area.map and shape.x == area.x and shape.y == area.y then
+			radius = math.max(radius, shape.r)
+		end
+	end
+	local quests = area.quests or {}
+	return #shapes > 0 and shapes or nil, radius, #quests == 1 and quests[1] or nil
+end
+
 ---@param steps (AGFStep|AGFGiver)[]
 ---@return AGFSPFStop[]
 local function Stops(steps, hold)
 	local stops = {}
 	for index, step in ipairs(steps) do
-		local radius
-		if step.kind == "area" then
-			radius = 30
-			for _, shape in ipairs(step.shapes or {}) do
-				if shape.map == step.map and shape.x == step.x and shape.y == step.y then
-					radius = math.max(radius, shape.r)
-					break
-				end
-			end
-		end
+		local shapes, radius, questID = Shapes(step)
 		stops[index] = {
 			map = step.map,
 			x = step.x,
 			y = step.y,
-			title = step.title,
+			-- Shortest Path words its steps around this ("Walk to ..."), so a town is named, not described.
+			title = step.kind == "town" and step.place or step.title,
 			tooltip = ns.Pins.StopTooltip(step),
 			kind = Integrations.Kind(step),
 			radius = radius,
+			questID = questID,
+			shapes = shapes,
 			hold = hold == true
 				and step.kind ~= "trainer"
 				and step.kind ~= "battlemaster"
@@ -404,11 +425,10 @@ function Integrations.CurrentStop()
 end
 
 -- Why our journey ended: Shortest Path's Ended when it has it; otherwise guessed. Another journey running replaced
--- it, the player standing within `near` yards of its last stop arrived, and anything else was cleared.
+-- it, the player standing in its last stop's town (or inside its area ring) arrived, and anything else was cleared.
 ---@param last? AGFStep|AGFGiver the last stop it was handed
----@param near number
 ---@return string?
-function Integrations.EndReason(last, near)
+function Integrations.EndReason(last)
 	local api = SPF()
 	if not api then
 		return nil
@@ -418,8 +438,15 @@ function Integrations.EndReason(last, near)
 		return "replaced"
 	end
 	local player = ns.State.Player()
-	local yards = last and player.map and ns.Model.Yards(ns.Data, player --[[@as AGFStep]], last)
-	return yards and yards <= near and "arrived" or "cleared"
+	local arrived = last
+		and player.map
+		and (
+			(last.hub ~= nil and ns.Model.Hub(ns.Data, player) == last.hub)
+			or (
+				ns.Model.Yards(ns.Data, player --[[@as AGFStep]], last) or math.huge
+			) <= (last.r or 0)
+		)
+	return arrived and "arrived" or "cleared"
 end
 
 -- The client's waypoint still sits at `place` (x and y within 1e-4): once the player moves or clears it, it does not.

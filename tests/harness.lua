@@ -28,6 +28,7 @@ end
 -- IsObjectType walks this chain, as the client's widget hierarchy does.
 local SUPER = {
 	Frame = "Region",
+	EventFrame = "Frame",
 	Button = "Frame",
 	CheckButton = "Button",
 	DropdownButton = "Button",
@@ -37,6 +38,48 @@ local SUPER = {
 	MaskTexture = "Region",
 	FontString = "Region",
 	Line = "Region",
+}
+
+-- Mainline/SharedUIPanelTemplates.xml:8-45: the Journal's paper-overlay texture templates, as CreateTexture
+-- inherits them; only their file, native size and texcoords matter to a screenshot.
+local TEXTURE_TEMPLATES = {
+	["UI-PaperOverlay-AbilityTextBG"] = {
+		file = "Interface\\EncounterJournal\\UI-EncounterJournalTextures",
+		width = 256,
+		height = 80,
+		texCoord = { 0.00195313, 0.50195313, 0.02246094, 0.10058594 },
+	},
+	["UI-PaperOverlay-AbilityTextBottomBorder"] = {
+		file = "Interface\\EncounterJournal\\UI-EncounterJournalTextures",
+		width = 243,
+		height = 9,
+		texCoord = { 0.04492188, 0.51953125, 0.00097656, 0.00976563 },
+	},
+	["UI-PaperOverlay-Bullet"] = {
+		file = "Interface\\EncounterJournal\\UI-EncounterJournalTextures",
+		width = 13,
+		height = 13,
+		texCoord = { 0.974609375, 1, 0.7509765625, 0.763671875 },
+	},
+	["UI-PaperOverlay-PaperHeader-SelectUp-Left"] = {
+		file = "Interface\\EncounterJournal\\UI-EncounterJournalTextures",
+		width = 64,
+		height = 29,
+		texCoord = { 0.81445313, 0.93945313, 0.39453125, 0.42285156 },
+	},
+	["UI-PaperOverlay-PaperHeader-SelectUp-Right"] = {
+		file = "Interface\\EncounterJournal\\UI-EncounterJournalTextures",
+		width = 64,
+		height = 29,
+		texCoord = { 0.34570313, 0.47070313, 0.49316406, 0.52148438 },
+	},
+	["UI-PaperOverlay-PaperHeader-SelectUp-Mid"] = {
+		file = "Interface\\EncounterJournal\\UI-EncounterJournalTextures_Tile",
+		width = 64,
+		height = 29,
+		texCoord = { 0, 1, 0.22265625, 0.27929688 },
+		horizTile = true,
+	},
 }
 
 local function IsFrame(objectType)
@@ -79,14 +122,44 @@ function harness.fixtureQuests()
 	return assert(loadfile("tests/fixtures/quests.lua"))()
 end
 
+-- Facts only the client gives at runtime, keyed by quest id (tests/fixtures/client.lua): the objective counts a
+-- quest log would, the timed flag and the elite tag. The generated corpus carries none of them, since QuestieDB
+-- has only icon overrides; a spec names the quests it needs. Cached: a QuestieDB build asks for every quest's tag.
+---@return table<integer, {need?: table<integer, integer>, elite?: boolean, timed?: integer}>
+function harness.clientFacts()
+	harness.facts = harness.facts or assert(loadfile("tests/fixtures/client.lua"))()
+	return harness.facts
+end
+
 -- Gives `data` the test corpus: its quests, and the towns that go with them (tests/fixtures/towns.lua: hub names,
--- role NPCs' sides and places, skill and faction names). In game the QuestieDB build composes all of these.
+-- role NPCs' sides and places, skill and faction names). In game the QuestieDB build composes all of these. The
+-- client facts overlay the quests they name, the way the live client's quest log and tag API would.
 ---@param data AGFData
 ---@return AGFData
 function harness.fixture(data)
 	data.quests = harness.fixtureQuests()
 	for key, value in pairs(assert(loadfile("tests/fixtures/towns.lua"))()) do
 		data[key] = value
+	end
+	local facts = harness.clientFacts()
+	for id, quest in pairs(data.quests) do
+		local client = facts[id]
+		if client then
+			if client.need then
+				local need = {}
+				for slot, count in pairs(client.need) do
+					need[slot] = count
+				end
+				quest.need = need
+			end
+			if client.elite then
+				quest.elite = true
+			end
+			if client.timed then
+				quest.flags = quest.flags or {}
+				quest.flags.timed = client.timed
+			end
+		end
 	end
 	return data
 end
@@ -410,6 +483,9 @@ function harness.load(options)
 	function Methods:GetEffectiveScale()
 		return self.scale or 1
 	end
+	function Methods:IsClampedToScreen()
+		return self.clamped == true
+	end
 	function Methods:SetScale(scale)
 		self.scale = scale
 	end
@@ -458,9 +534,14 @@ function harness.load(options)
 	function Methods:GetFrameLevel()
 		return self.level or 0
 	end
-	function Methods:CreateTexture(name, layer, _, subLevel)
+	function Methods:CreateTexture(name, layer, template, subLevel)
 		local texture = NewRegion("Texture", name, self)
 		texture.layer, texture.subLevel = layer, subLevel
+		local stock = template and TEXTURE_TEMPLATES[template]
+		if stock then
+			texture.file, texture.width, texture.height = stock.file, stock.width, stock.height
+			texture.texCoord, texture.horizTile = stock.texCoord, stock.horizTile
+		end
 		return texture
 	end
 	function Methods:CreateMaskTexture(name, layer)
@@ -720,6 +801,173 @@ function harness.load(options)
 		end
 	end
 
+	-- Shared/Scroll (ScrollBox.lua, ScrollBoxLinearView.lua, ScrollUtil.lua, DataProvider.lua): the list mixin and
+	-- its view, emulated enough that a list builds only the elements its viewport shows, as the client's does. The
+	-- specs read the rows through the frame tree, so what is off screen must not exist.
+	local ScrollBoxListMixin = {}
+	function ScrollBoxListMixin:Init(view)
+		self.view = view
+		view.scrollBox = self
+		self.scrollPercentage, self.active, self.pool, self.frames = 0, {}, {}, {}
+		self:Refresh()
+	end
+	function ScrollBoxListMixin:GetView()
+		return self.view
+	end
+	function ScrollBoxListMixin:SetDataProvider(provider, retainScrollPosition)
+		self.dataProvider = provider
+		if not retainScrollPosition then
+			self.scrollPercentage = 0
+		end
+		self:Refresh()
+	end
+	function ScrollBoxListMixin:RemoveDataProvider()
+		self.dataProvider = nil
+		self:Refresh()
+	end
+	function ScrollBoxListMixin:HasDataProvider()
+		return self.dataProvider ~= nil
+	end
+	function ScrollBoxListMixin:GetScrollPercentage()
+		return self.scrollPercentage
+	end
+	function ScrollBoxListMixin:SetScrollPercentage(percentage)
+		percentage = math.max(0, math.min(1, percentage))
+		if percentage ~= self.scrollPercentage then
+			self.scrollPercentage = percentage
+			self:Refresh()
+		end
+	end
+	function ScrollBoxListMixin:SetScrollAllowed() end
+	function ScrollBoxListMixin:ScrollToBegin()
+		self:SetScrollPercentage(0)
+	end
+	function ScrollBoxListMixin:ScrollToEnd()
+		self:SetScrollPercentage(1)
+	end
+	function ScrollBoxListMixin:GetPanExtent()
+		return self.panExtent or 0
+	end
+	function ScrollBoxListMixin:GetDerivedScrollRange()
+		return math.max(0, self:GetPanExtent() - self:GetHeight())
+	end
+	function ScrollBoxListMixin:GetDerivedScrollOffset()
+		return self:GetDerivedScrollRange() * self.scrollPercentage
+	end
+	function ScrollBoxListMixin:ScrollToOffset(offset)
+		local range = self:GetDerivedScrollRange()
+		self:SetScrollPercentage(range > 0 and offset / range or 0)
+	end
+	function ScrollBoxListMixin:GetFrames()
+		return unpack(self.active) -- multi-value: every active frame, as the client returns them
+	end
+	function ScrollBoxListMixin:GetFrameCount()
+		return #self.active
+	end
+	function ScrollBoxListMixin:FindFrame(elementData)
+		for _, frame in ipairs(self.active) do
+			if frame.elementData == elementData then
+				return frame
+			end
+		end
+	end
+	function ScrollBoxListMixin:Acquire()
+		local frame = table.remove(self.pool)
+		if frame then
+			return frame
+		end
+		frame = G.CreateFrame(self.view.template, nil, self)
+		self.frames[#self.frames + 1] = frame
+		return frame
+	end
+	-- Lays the data provider's elements out from the fixed extents and keeps only the ones the viewport shows.
+	function ScrollBoxListMixin:Refresh()
+		local provider = self.dataProvider
+		local total = provider and provider:GetSize() or 0
+		local spacing = self.view.spacing or 0
+		local extents, offsets, pan = {}, {}, 0
+		for index = 1, total do
+			local extent = self.view:GetElementExtent(index, provider:Find(index))
+			extents[index] = extent
+			offsets[index] = pan
+			pan = pan + extent + spacing
+		end
+		self.panExtent = pan > 0 and pan - spacing or 0
+		for index = 1, #self.active do
+			local frame = self.active[index]
+			frame:Hide()
+			self.pool[#self.pool + 1] = frame
+		end
+		self.active = {}
+		if total == 0 then
+			return
+		end
+		local scroll, viewport = self:GetDerivedScrollOffset(), self:GetHeight()
+		local first = 1
+		while first <= total and offsets[first] + extents[first] <= scroll do
+			first = first + 1
+		end
+		for index = first, total do
+			if offsets[index] >= scroll + viewport then
+				break
+			end
+			local data = provider:Find(index)
+			local frame = self:Acquire()
+			frame.elementData = data
+			frame:ClearAllPoints()
+			frame:SetPoint("TOPLEFT", 0, -(offsets[index] - scroll))
+			frame:Show()
+			self.view.initializer(frame, data)
+			self.active[#self.active + 1] = frame
+		end
+	end
+	G.CreateScrollBoxListLinearView = function(_, _, _, _, spacing)
+		local view = { spacing = spacing or 0 }
+		function view:SetElementExtent(extent)
+			self.elementExtent = extent
+		end
+		function view:SetElementExtentCalculator(calculator)
+			self.extentCalculator = calculator
+		end
+		function view:SetElementInitializer(template, initializer)
+			self.template, self.initializer = template, initializer
+		end
+		function view:SetPadding(_, _, _, _, pad)
+			self.spacing = pad or self.spacing
+		end
+		function view:SetFrameFactoryResetter() end
+		function view:GetElementExtent(index, elementData)
+			if self.elementExtent ~= nil then
+				return self.elementExtent
+			end
+			if self.extentCalculator then
+				return self.extentCalculator(index, elementData)
+			end
+			return 0
+		end
+		return view
+	end
+	G.ScrollUtil = {
+		InitScrollBoxListWithScrollBar = function(scrollBox, scrollBar, view)
+			scrollBox.scrollBar = scrollBar
+			scrollBox:Init(view)
+		end,
+	}
+	G.CreateDataProvider = function(tbl)
+		local values = {}
+		for index, value in ipairs(tbl or {}) do
+			values[index] = value
+		end
+		return {
+			GetSize = function()
+				return #values
+			end,
+			Find = function(_, index)
+				return values[index]
+			end,
+		}
+	end
+
 	local STOCK = {
 		-- Mainline/SharedUIPanelTemplates.xml:1587 and .lua:1763: the highlight is the normal art, or the pushed art
 		-- while the mouse is down.
@@ -738,6 +986,13 @@ function harness.load(options)
 		ScrollFrameTemplate = function(frame)
 			Internal("Frame", frame, "ScrollBar")
 		end,
+		-- Shared/Scroll/ScrollTemplates.xml:4: the list scroll box's own mixin.
+		WowScrollBoxList = function(frame)
+			G.Mixin(frame, ScrollBoxListMixin)
+			-- ScrollBox.xml:20: ScrollBoxBaseTemplate sets clipChildren, so a row past the viewport's edge is cut.
+			frame.clipsChildren = true
+		end,
+		MinimalScrollBar = noop,
 		LargeSideTabButtonTemplate = function(frame)
 			Internal("Texture", frame, "Icon")
 		end,
@@ -777,6 +1032,37 @@ function harness.load(options)
 		UICheckButtonTemplate = function(frame)
 			frame.Text = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
 			frame.Text:SetPoint("LEFT", frame, "RIGHT", -2, 0)
+		end,
+		-- Blizzard_Menu/Mainline/MenuTemplates.xml: the drop-down's text holder and arrow. SetupMenu runs the
+		-- caller's generator once and keeps its radios, so a spec can pick one the way a click on the menu would.
+		WowStyle1DropdownTemplate = function(frame)
+			Internal("Texture", frame, "Arrow")
+			local text = Internal("FontString", frame, "Text")
+			function frame:SetupMenu(generator)
+				self.menuGenerator = generator
+				return self
+			end
+			-- The client builds the menu when it is opened; a spec asks for the same list to pick one.
+			function frame:RefreshMenu()
+				self.radios = {}
+				self.menuGenerator(self, {
+					CreateRadio = function(_, label, isSelected, setSelected, data)
+						local radio = { label = label, isSelected = isSelected, setSelected = setSelected, data = data }
+						self.radios[#self.radios + 1] = radio
+						if isSelected() then
+							text:SetText(label)
+						end
+					end,
+				})
+				return self
+			end
+			function frame:SelectRadio(index)
+				self:RefreshMenu()
+				local radio = assert(self.radios[index], "no drop-down radio " .. tostring(index))
+				radio.setSelected(radio.data)
+				text:SetText(radio.label)
+				return self
+			end
 		end,
 		-- Shared/TabSystem/TabSystemTemplates.xml: the top-tab art and selected font.
 		TabSystemTopButtonTemplate = function(frame)
@@ -1344,6 +1630,23 @@ function harness.load(options)
 	end
 	G.UnitClass = function()
 		return "Class", "CLASS", player.classID
+	end
+	-- The client's class tokens by class ID; QuestieDB's corrections switch on the token UnitClassBase returns.
+	local CLASS_TOKEN = {
+		"WARRIOR",
+		"PALADIN",
+		"HUNTER",
+		"ROGUE",
+		"PRIEST",
+		"DEATHKNIGHT",
+		"SHAMAN",
+		"MAGE",
+		"WARLOCK",
+		"MONK",
+		"DRUID",
+	}
+	G.UnitClassBase = function()
+		return CLASS_TOKEN[player.classID] or "WARRIOR"
 	end
 	-- Rest: a spec sets player.rested (false for none: the client gives nil), player.xpMax and
 	-- player.resting; by default the bar is half rested, so no route ends at an inn.
@@ -2033,6 +2336,8 @@ function harness.load(options)
 		end,
 		ApplyCurrentScale = noop,
 	}
+	-- Blizzard_Menu/Mainline/MenuTemplates.xml: the drop-down template's own mixin.
+	G.WowStyle1DropdownMixin = {}
 	-- WORLD_MAP_OPEN, which Blizzard_WorldMap.lua:198 turns into its own OpenWorldMap(mapID).
 	G.C_Map.OpenWorldMap = function(mapID)
 		map:Show()
@@ -2106,6 +2411,9 @@ function harness.load(options)
 	G.OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 3
 	G.ObjectiveTrackerFrame = NewRegion("Frame", "ObjectiveTrackerFrame", G.UIParent)
 	G.ObjectiveTrackerFrame:SetSize(250, 600)
+	-- The shared tracker host post-hooks the native layout (Blizzard_ObjectiveTrackerFrame.lua).
+	G.ObjectiveTrackerFrame.UpdateHeaderPosition = function() end
+	G.ObjectiveTrackerFrame.UpdateHeight = function() end
 	G.ObjectiveTrackerManager = setmetatable({}, {
 		__index = function(_, key)
 			error("addon entered native tracker manager: " .. key)
@@ -2328,6 +2636,15 @@ function harness.load(options)
 		h.metadata.QuestieDB = { Version = fake.version or "0.0-test", ["X-Flavor"] = fake.flavor or "Forever" }
 	end
 
+	-- The client's quest tag, from the client facts table. The corpus generator asks for no client facts
+	-- (options.clientFacts = false), so the corpus keeps only what QuestieDB itself carries.
+	if options.clientFacts ~= false then
+		G.C_QuestLog.GetQuestTagInfo = function(questID)
+			local client = harness.clientFacts()[questID]
+			return client and client.elite and { tagID = 1 } or nil
+		end
+	end
+
 	-- Tweaks Forever (its API.lua, version 1 or, with options.tf.version, 2): options.tf.spells is what
 	-- TrainableSpells answers (nil before login and in combat), options.tf.trainers what v2's Trainers answers; fresh
 	-- copies each call; h.tf counts the calls. No options.tf is no Tweaks Forever.
@@ -2466,7 +2783,7 @@ function harness.load(options)
 						and options.questiedb == nil
 						and function(_, ns)
 							ns.QuestieStatus = { state = "unavailable", settled = true }
-							ns.ReadDungeonSource = function()
+							ns.ReadDungeonDetails = function()
 								return nil
 							end
 							ns.DungeonEntrance = function()
@@ -2750,6 +3067,7 @@ end
 -- dungeon quest's area sits in its instance, and a place's NPC or object gives or takes the quest there. From the
 -- bundled data only, so none of Questie's data is copied.
 ---@param data AGFData
+local SIDE_RACES = { 77 + 2 ^ 32, 178 + 2 ^ 33 }
 function harness.questieMirror(data)
 	local fake = { quests = {}, npcs = {}, objects = {}, zones = { area = {}, instances = {} } }
 	for map in pairs(data.maps) do
@@ -2763,6 +3081,26 @@ function harness.questieMirror(data)
 		ids[#ids + 1] = id
 	end
 	table.sort(ids)
+	-- An exclusive group is a component id in the model; QuestieDB names the other members directly.
+	local grouped, exclusiveTo = {}, {}
+	for _, id in ipairs(ids) do
+		local group = data.quests[id].group
+		if group then
+			grouped[group] = grouped[group] or {}
+			grouped[group][#grouped[group] + 1] = id
+		end
+	end
+	for _, members in pairs(grouped) do
+		for _, id in ipairs(members) do
+			local others = {}
+			for _, other in ipairs(members) do
+				if other ~= id then
+					others[#others + 1] = other
+				end
+			end
+			exclusiveTo[id] = others
+		end
+	end
 	local objects, objectCount, homes = {}, 0, {}
 	-- A place's giver: its NPC, else an object named by where it stands.
 	local function Giver(place)
@@ -2796,13 +3134,18 @@ function harness.questieMirror(data)
 			name = quest.title,
 			questLevel = quest.level,
 			requiredLevel = quest.min,
-			requiredRaces = quest.races or 0,
+			-- QuestieDB states a side's quest as that side's whole race mask.
+			requiredRaces = quest.races or SIDE_RACES[quest.side] or 0,
 			requiredClasses = quest.classes or 0,
 			zoneOrSort = quest.dungeon and 100000 + quest.dungeon or quest.zone or 0,
 			startedBy = quest.start and Giver(quest.start),
 			finishedBy = quest.finish and Giver(quest.finish),
 			preQuestGroup = quest.pre,
 			preQuestSingle = quest.preAny,
+			requiredSkill = quest.skill and { quest.skill.id, quest.skill.value } or nil,
+			requiredMinRep = quest.rep and quest.rep.min and { quest.rep.faction, quest.rep.min } or nil,
+			requiredMaxRep = quest.rep and quest.rep.max and { quest.rep.faction, quest.rep.max } or nil,
+			exclusiveTo = exclusiveTo[id],
 			nextQuestInChain = quest.next,
 			breadcrumbForQuestId = quest.breadcrumb,
 			specialFlags = quest.repeatable and 1 or 0,

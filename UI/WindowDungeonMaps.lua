@@ -2,12 +2,20 @@
 local _, ns = ...
 local Window, L = ns.Window, ns.L
 
+---@class AGFDungeonFloorDropdown : Frame
+---@field Text FontString
+---@field SetupMenu fun(self: AGFDungeonFloorDropdown, generator: fun(dropdown: AGFDungeonFloorDropdown, root: table))
+
 ---@class AGFDungeonMapView
 ---@field panel Frame
 ---@field back Button
+---@field floor AGFDungeonFloorDropdown
+---@field count FontString
 ---@field maps AGFInteriorMap[]
 ---@field selected integer
+---@field instance? integer
 ---@field SetMaps fun(self: AGFDungeonMapView, maps: AGFInteriorMap[]): AGFDungeonMapView
+---@field Select fun(self: AGFDungeonMapView, index: integer): AGFDungeonMapView
 ---@field SetInstance fun(self: AGFDungeonMapView, instance: integer): AGFDungeonMapView
 ---@field Show fun(self: AGFDungeonMapView)
 ---@field Hide fun(self: AGFDungeonMapView)
@@ -80,6 +88,9 @@ function Window.DungeonMaps(instance)
 end
 
 local views = setmetatable({}, { __mode = "k" })
+-- The floor chosen for each instance, kept for the session so reopening an instance returns to it.
+---@type table<integer, integer>
+local floors = {}
 
 local function draw(view)
 	local map = view.maps[view.selected]
@@ -88,9 +99,12 @@ local function draw(view)
 	view.legendCard:SetShown(map ~= nil)
 	view.art:SetShown(map ~= nil)
 	view.empty:SetShown(map == nil)
-	view.previous:SetEnabled(view.selected > 1)
-	view.next:SetEnabled(view.selected < #view.maps)
 	view.count:SetText(map and L.DUNGEON_MAP_PAGE:format(view.selected, #view.maps) or "")
+	-- One floor needs no selector, and an instance without Atlas maps has none at all.
+	view.floor:SetShown(#view.maps > 1)
+	if map and view.floor:IsShown() then
+		view.floor.Text:SetText(map.title)
+	end
 	if not map then
 		return
 	end
@@ -183,13 +197,23 @@ local function build(parent)
 	view.empty:SetPoint("CENTER")
 	view.empty:SetWidth(Window.INSET_WIDTH - 100)
 	view.empty:SetText(L.DUNGEON_MAP_MISSING)
-	view.previous, view.next, view.count = Window.CreatePager(view.panel, function()
-		view.selected = math.max(1, view.selected - 1)
-		draw(view)
-	end, function()
-		view.selected = math.min(#view.maps, view.selected + 1)
-		draw(view)
-	end, true)
+	view.count = view.panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+	view.count:SetPoint("BOTTOM", 0, 13)
+	-- The game's own floor selector: a stock map dropdown listing this instance's wings and levels.
+	local floor = CreateFrame("DropdownButton", nil, view.panel, "WowStyle1DropdownTemplate")
+	---@cast floor AGFDungeonFloorDropdown
+	view.floor = floor
+	view.floor:SetSize(200, 26)
+	view.floor:SetPoint("TOPRIGHT", view.back, "TOPLEFT", -8, 0)
+	view.floor:SetupMenu(function(_, root)
+		for index, map in ipairs(view.maps) do
+			root:CreateRadio(map.title, function()
+				return view.selected == index
+			end, function()
+				view:Select(index)
+			end)
+		end
+	end)
 	local function layout(_, width, height)
 		if width <= 0 or height <= 0 then
 			return
@@ -212,12 +236,24 @@ local function build(parent)
 		view:Hide()
 	end)
 	function view:SetMaps(newMaps)
-		self.maps, self.selected = newMaps, 1
+		self.maps, self.selected, self.instance = newMaps, 1, nil
+		draw(self)
+		return self
+	end
+	function view:Select(index)
+		self.selected = math.max(1, math.min(index, #self.maps))
+		if self.instance then
+			floors[self.instance] = self.selected
+		end
 		draw(self)
 		return self
 	end
 	function view:SetInstance(instance)
-		return self:SetMaps(Window.DungeonMaps(instance))
+		self.instance = instance
+		self.maps = Window.DungeonMaps(instance)
+		self.selected = math.max(1, math.min(floors[instance] or 1, #self.maps))
+		draw(self)
+		return self
 	end
 	function view:Show()
 		self.panel:Show()

@@ -154,14 +154,9 @@ equal(h.ns.RaidByMap[409].players, 40, "the registry indexes client-present raid
 
 -- Synthetic QuestieDB rows exercise contracts; no Questie-derived data is stored in the repository.
 local fake = harness.questieMirror(h.ns.Data)
-fake.npcs[999901] =
-	{ name = "Test boss", rank = 3, spawns = { [100043] = { { 20, 30 } } }, minLevel = 21, maxLevel = 21 }
-fake.npcs[999902] = { name = "Test elite", rank = 1, spawns = { [100043] = { { 25, 30 } } } }
-fake.npcs[999903] = { name = "Test boss", rank = 3, spawns = { [1413] = { { 20, 30 } } } }
 fake.items = {
-	[999904] = { name = "Test drop", npcDrops = { 999901, 999902, 999901 }, questRewards = { 1486 } },
-	[999905] = { name = "Outside drop", npcDrops = { 999903 } },
-	[999900] = { name = "Elite drop", npcDrops = { 999902 } },
+	[999904] = { name = "Test reward", questRewards = { 1486 } },
+	[999900] = { name = "Unknown quest reward", questRewards = { 999999 } },
 }
 fake.quests[1486].objectivesText = { "Test objective." }
 fake.zones.dungeons = { [100043] = { "Test instance", { 999906 }, 1413, { { 1413, 51, 32 } } } }
@@ -169,57 +164,18 @@ fake.quests[999910] = { name = "Alias area quest", questLevel = 20, requiredLeve
 local q = harness.load({ questiedb = fake })
 equal(q.ns.Data.quests[999910].dungeon, 43, "a quest in a dungeon's alias area is filed under the dungeon")
 local yields = 0
-local source = q.ns.ReadDungeonSource(function()
+local details = q.ns.ReadDungeonDetails(function()
 	yields = yields + 1
 end)
-equal(source.bosses[43][1].id, 999901, "boss identified by rank and instance area")
-equal(#source.bosses[43], 1, "ordinary elites omitted from Bosses")
-equal(#source.loot[43], 2, "drops deduplicated across dungeon NPCs")
-equal(source.loot[43][2].id, 999904, "local boss drops retained")
-equal(source.loot[43][1].id, 999900, "elite drop retained")
-equal(#source.loot[43][2].droppers, 2, "droppers deduplicated and restricted to this instance")
-equal(source.loot[43][2].droppers[1].name, "Test boss", "dropper name comes from runtime NPC data")
-equal(source.rewards[1486][1].id, 999904, "inverse item questRewards supplies rewards")
-equal(source.objectives[1486], "Test objective.", "runtime objective text")
+equal(details.rewards[1486][1], 999904, "inverse item questRewards supplies a reward")
+equal(details.rewards[999999], nil, "a reward for an unknown quest is left out")
+equal(details.objectives[1486], "Test objective.", "runtime objective text")
 equal(q.ns.DungeonEntrance(43).x, 0.51, "runtime entrance retains Forever coordinates")
 equal(q.ns.Dungeons.Entrance(43).y, 0.32, "runtime entrance needs no Tweaks install")
 equal(yields > 1000, true, "large reads yield between entities")
-equal(h.ns.ReadDungeonSource(noop), nil, "standalone source missing")
+equal(h.ns.ReadDungeonDetails(noop), nil, "standalone source missing")
 q.G.LibQuestieDB.Item.GetAllIds = nil
-equal(q.ns.ReadDungeonSource(noop), nil, "optional item contract rejected")
-
--- Journal IDs are mapped by the client, never inferred from dungeon names, and reads pass the instance ID.
-h.G.C_EncounterJournal = {
-	GetInstanceForGameMap = function(id)
-		return id == 43 and 99 or 0
-	end,
-}
-h.G.EJ_GetEncounterInfoByIndex = function(index, instance)
-	equal(instance, 99, "explicit journal instance, no global selection")
-	if index == 1 then
-		return "Client encounter", "", 123
-	end
-end
-local bosses = D.Journal(43, noop)
-equal(bosses[1].name, "Client encounter", "client boss preferred")
-equal(D.Journal(33, noop), nil, "missing journal stays absent")
-local partial = { bosses = {}, npcs = { [43] = { { id = 555, name = "Client encounter", rank = 1 } } } }
-equal(D.Bosses({ bosses = {} }, 43, bosses)[1].name, "Client encounter", "partial source preserves journal")
-bosses[2] = { id = 555, name = "Unmatched encounter", rank = 3, journal = true }
-local displayed = D.Bosses(partial, 43, bosses)
-equal(#displayed, 2, "partial name match preserves every journal encounter")
-equal(displayed[1].id, 555, "matched journal encounter uses the source NPC")
-equal(displayed[2].name, "Unmatched encounter", "unmatched journal encounter stays visible")
-local collision = harness.load({ items = { [999904] = { name = "Test drop", quality = 3 } } })
-partial.loot = { [43] = { { id = 999904, name = "Test drop", droppers = { { id = 555 } } } } }
-local grouped = collision.ns.Dungeons.LootRows(partial, 43, displayed)
-equal(grouped[1].title, "Client encounter", "journal ID cannot overwrite an NPC loot group")
-equal(
-	collision.ns.Dungeons.LootRows(partial, 43, { displayed[2] })[1].title,
-	collision.ns.L.DUNGEON_TRASH,
-	"journal ID alone never identifies a loot dropper"
-)
-bosses[2] = nil
+equal(q.ns.ReadDungeonDetails(noop), nil, "optional item contract rejected")
 
 local Button = dofile("tests/ui_helpers.lua").Button
 local function Texts(each)
@@ -235,10 +191,6 @@ h.ns.Window.OpenDungeon(43)
 h.flush()
 equal(#h.errors, 0, "open dungeon UI")
 equal(h.ns.WindowDB().dungeon, 43, "selection saved")
-h.Click(Button(h, h.ns.L.DUNGEON_LOOT_TAB))
-equal(Texts(h)[h.ns.L.DUNGEON_NEEDS_QUESTIE], true, "missing optional source explained")
-h.Click(Button(h, h.ns.L.DUNGEON_BOSSES_TAB))
-equal(Texts(h)["Client encounter"], true, "journal shown without QuestieDB")
 h.Click(Button(h, h.ns.L.DUNGEON_PLAN))
 h.flush()
 equal(h.ns.Prefs().dungeons, true, "planning shares include-dungeons preference")
@@ -250,12 +202,12 @@ equal(#h.G.AdventureGuideForeverDB.dump.window > 0, true, "dump captures window 
 -- Selecting and hiding while a source job is sliced must stop all reads; a later show restarts safely.
 local sliced = harness.load()
 local reads = 0
-sliced.ns.ReadDungeonSource = function(yield)
+sliced.ns.ReadDungeonDetails = function(yield)
 	for _ = 1, 100 do
 		reads = reads + 1
 		yield()
 	end
-	return { bosses = {}, loot = {}, rewards = {}, objectives = {} }
+	return { rewards = {}, objectives = {} }
 end
 sliced.clockStep = 1
 sliced.ns.Window.OpenDungeon(43)
@@ -316,13 +268,14 @@ equal(drawn["Objective text unavailable"], nil, "no placeholder objective")
 local formatted = false
 for text in pairs(drawn) do
 	equal(text:match("Map %d+") == nil and text:match("Item %d+") == nil, true, "no internal IDs in dungeon text")
-	if text:find("10,310", 1, true) then
+	if text:find("10,305", 1, true) then
 		formatted = true
 	end
 end
 equal(formatted, true, "remaining experience uses client number formatting")
 copy.ns.Data.maps[1456].name = nil
 copy.ns.Data.zones[1456] = nil
+copy.ns.Data.hubs = {}
 copy.ns.Window.Refresh()
 copy.flush()
 equal(Texts(copy)["Arch Druid Hamuul Runetotem"], true, "unknown place leaves giver alone")
@@ -349,20 +302,6 @@ end)
 equal(#icons, 1, "known reward icon renders")
 rewardUI.Hover(icons[1])
 equal(rewardUI.tooltip[1], "item: 999904", "reward hover uses the client item tooltip")
-rewardUI.Click(Button(rewardUI, rewardUI.ns.L.DUNGEON_LOOT_TAB))
-equal(Texts(rewardUI)["Test drop"], true, "runtime loot renders")
-equal(Texts(rewardUI)["Test boss"], true, "loot grouped under named boss")
-rewardUI.Click(Button(rewardUI, rewardUI.ns.L.DUNGEON_BOSSES_TAB))
--- Bosses come from AtlasLoot/EJ now; this scene has a single named row, so no scroll is needed.
-local bossRows = rewardUI.Find(function(frame)
-	return frame:IsVisible() and frame.value and frame.value.boss and frame.value.title == "Test boss"
-end)
-equal(#bossRows, 1, "named boss row")
-local bossRow = bossRows[1]
-equal(bossRow.Info:GetText():find("Level 21|r", 1, true) ~= nil, true, "difficulty-coloured single level")
-equal(bossRow.Giver:GetText(), rewardUI.ns.L.DUNGEON_BOSS_LOOT:format(1), "known drop count and action")
-rewardUI.Click(bossRow)
-equal(Texts(rewardUI)["Test drop"], true, "boss click opens its loot group")
 equal(#rewardUI.errors, 0, "source-present UI and item tooltip have no errors")
 -- Browsing a giver is independent of pickup eligibility; absent coordinates hide the control.
 local mapUI = harness.load()
@@ -504,12 +443,6 @@ filteredUI.ns.Window.Refresh()
 filteredUI.flush()
 equal(Texts(filteredUI)[filteredUI.ns.L.DUNGEON_NO_QUESTS], true, "questless source explains empty page")
 equal(Texts(filteredUI)[filteredUI.ns.L.DUNGEON_SHOW_GIVER], nil, "empty page clears the previous detail")
-local emptySource = harness.load({ questiedb = fake })
-emptySource.ns.Window.OpenDungeon(389)
-emptySource.flush()
-emptySource.Click(Button(emptySource, emptySource.ns.L.DUNGEON_BOSSES_TAB))
-equal(Texts(emptySource)["Jergosh the Invoker"], nil, "empty optional source has no bundled boss baseline")
-equal(Texts(emptySource)[emptySource.ns.L.DUNGEON_NEEDS_QUESTIE], nil, "loaded source is never reported missing")
 equal(#filteredUI.errors, 0, "restricted prep UI has no errors")
 data.quests[1] = original
 local planned = Button(h, h.ns.L.DUNGEON_PLAN)
@@ -556,124 +489,6 @@ reveal.flush()
 equal(reveal.G.WorldMapFrame:IsShown(), false, "combat never opens map")
 equal(reveal.counts.SetMapID, count, "combat never changes displayed map")
 
--- Every known dropper must live exclusively in this dungeon; rarity waits for the client cache.
-fake.items[999906] = { name = "World drop", npcDrops = { 999901, 999903 } }
-fake.items[999907] = { name = "Unknown dropper", npcDrops = { 999901, 888888 } }
-fake.items[999908] = { name = "Junk", npcDrops = { 999902 } }
-fake.items[999909] = { name = "Quest starter", npcDrops = { 999902 }, startQuest = 1486 }
-local loot = harness.load({
-	questiedb = fake,
-	items = {
-		[999904] = {
-			name = "Test drop",
-			quality = 3,
-			itemType = "Armor",
-			itemSubType = "Cloth",
-			equipSlot = "INVTYPE_HEAD",
-			requiredLevel = 20,
-		},
-		[999900] = { name = "Elite drop", quality = 2 },
-		[999908] = { name = "Junk", quality = 1 },
-		[999909] = { name = "Quest starter", quality = 1, equipSlot = "INVTYPE_NON_EQUIP_IGNORE" },
-	},
-})
-local localSource = loot.ns.Dungeons.Source(noop)
-equal(localSource.worldDrops[999906], true, "outside NPC excludes a world drop")
-equal(localSource.worldDrops[999907], true, "unknown NPC cannot prove exclusive drop")
-local rows = loot.ns.Dungeons.LootRows(localSource, 43, localSource.bosses[43])
-equal(rows[1].title, "Test boss", "boss heading comes first")
-equal(rows[2].item, 999904, "shared boss/trash item belongs to boss once")
-equal(rows[3].title, "Trash", "non-boss-only drops grouped last")
-equal(#rows, 5, "junk and world drops omitted; quest starter kept")
-equal(rows[5].item, 999909, "white quest-starting item retained")
-equal(rows[2].quality, 3, "loot carries native rarity")
-equal(rows[2].info, "Armor · Cloth · Head · Requires level 20", "loot carries compact item metadata")
-equal(rows[5].info, "", "an item that cannot be equipped names no slot")
--- Synthetic AtlasLoot shape: no addon tables or data are copied into the project.
-local atlasModule = {
-	GetDifficultyByName = function(_, name)
-		return name == "n" and 1
-	end,
-	Test = {
-		InstanceID = 43,
-		LevelRange = { 10, 17, 24 },
-		items = {
-			{
-				name = "Curated elite boss",
-				npcID = 999902,
-				Level = 20,
-				[1] = { { 1, 999900 }, { 2, 999900 }, { 3, 999906 } },
-			},
-			{ name = "Test boss", npcID = 999901, Level = 21, [1] = { { 1, 999904 } } },
-			{ name = "Trash", ExtraList = true, [1] = { { 1, 999900 }, { 2, 999909 } } },
-		},
-	},
-	Wing = {
-		InstanceID = 43,
-		LevelRange = { 10, 20, 24 },
-		items = {
-			{ name = "Later wing", npcID = { 111111, 222222 }, Level = 24, [1] = {} },
-		},
-	},
-}
-loot.G.AtlasLoot = { Locales = { Trash = "Trash" }, ItemDB = {
-	Get = function()
-		return atlasModule
-	end,
-} }
-local curated = loot.ns.Dungeons.Source(noop)
-equal(#curated.bosses[43], 3, "instance wings merge and encounter NPC arrays are supported")
-equal(curated.bosses[43][1].name, "Curated elite boss", "AtlasLoot encounter order takes precedence over rank")
-equal(curated.bosses[43][3].name, "Later wing", "wings ordered by level")
-equal(#curated.loot[43], 3, "AtlasLoot drops deduped; known world drops still excluded")
-local standalone = harness.load({ items = { [999904] = { name = "Test drop", quality = 3 } } })
-standalone.G.AtlasLoot = loot.G.AtlasLoot
-equal(standalone.ns.Dungeons.Source(noop) ~= nil, true, "AtlasLoot works without QuestieDB")
-
--- Raids read the same curated AtlasLoot pages, and a raid absent from the generated geometry still pages safely.
-local raidLoot = harness.load({ items = { [999910] = { name = "Raid drop", quality = 4 } } })
-raidLoot.ns.Data.instances[249] = nil
-local raidModule = {
-	GetDifficultyByName = function(_, name)
-		return name == "n" and 1
-	end,
-	Onyxia = {
-		InstanceID = 249,
-		items = {
-			{ name = "Onyxia", npcID = 10184, Level = 60, [1] = { { 1, 999910 } } },
-		},
-	},
-}
-raidLoot.G.AtlasLoot = { Locales = { Trash = "Trash" }, ItemDB = {
-	Get = function()
-		return raidModule
-	end,
-} }
-local raidSource = raidLoot.ns.Dungeons.Source(noop)
-equal(#raidSource.bosses[249], 1, "a raid's curated encounter is read")
-equal(raidSource.bosses[249][1].name, "Onyxia", "raid boss name comes from AtlasLoot")
-equal(raidSource.loot[249][1].id, 999910, "raid loot comes from AtlasLoot")
-equal(
-	raidLoot.ns.Dungeons.Bosses(raidSource, 249, nil)[1].name,
-	"Onyxia",
-	"raid boss list comes from the curated source"
-)
-local raidRows = raidLoot.ns.Dungeons.LootRows(raidSource, 249, raidSource.bosses[249])
-equal(raidRows[1].title, "Onyxia", "raid loot is grouped under the encounter")
-equal(raidRows[2].item, 999910, "raid item row")
-local raidEntry
-for _, entry in ipairs(raidLoot.ns.Dungeons.List(raidLoot.ns.Data, raidLoot.ns.State.Player(), noop)) do
-	if entry.id == 249 then
-		raidEntry = entry
-	end
-end
-assert(raidEntry, "Onyxia's Lair is in the catalog")
-equal(
-	raidLoot.ns.Dungeons.Page(raidLoot.ns.Data, raidLoot.ns.State.Player(), {}, {}, raidEntry, noop).dungeon.id,
-	249,
-	"a raid without generated geometry still pages"
-)
-
 -- The catalog splits dungeons from raids and tags the announced tier with its group size.
 local raidUI = harness.load()
 raidUI.ns.Window.OpenDungeon(249)
@@ -683,14 +498,8 @@ equal(raidTexts["Onyxia's Lair"], true, "raid page names the instance")
 equal(raidTexts[raidUI.ns.L.DUNGEON_LIST_RAIDS], true, "announced raids get their own heading")
 equal(raidTexts[raidUI.ns.L.DUNGEON_LIST_DUNGEONS], true, "dungeons keep their heading")
 equal(raidTexts[raidUI.ns.L.DUNGEON_RAID_PLAYERS:format(40)], true, "raid group size is shown")
-raidUI.Click(Button(raidUI, raidUI.ns.L.DUNGEON_BOSSES_TAB))
 equal(#raidUI.errors, 0, "raid page has no errors")
 
--- Bosses come from the provider only: its order and details are kept, and the display merge leaves its data alone.
-local partialAtlas =
-	{ curated = { [43] = true }, bosses = { [43] = { { id = 1, name = "Localized encounter", low = 99, high = 99 } } } }
-equal(#D.Bosses(partialAtlas, 43), 1, "AtlasLoot order and localized details retained")
-equal(#partialAtlas.bosses[43], 1, "display merge does not mutate provider data")
 -- One way in from the first draw: QuestieDB's point is read before any dungeon details, on the page and on the
 -- journey card alike, so the text never changes once details load. Tweaks Forever answers only where QuestieDB
 -- has no point.
@@ -713,53 +522,4 @@ way.flush()
 local shownAt = way.ns.L.DUNGEON_ENTRANCE_AT:format(way.ns.State.ZoneName(1413) or "", 51, 32)
 equal(Texts(way)[shownAt], true, "the page shows QuestieDB's entrance once details load")
 
--- The empty Bosses view says what would fill it: install AtlasLoot, or turn on a copy that is on disk but not
--- running. A read made without AtlasLoot is not kept once it loads.
-local function NoBosses(options)
-	options.questiedb = Plain()
-	local ui = harness.load(options)
-	ui.ns.Window.OpenDungeon(43)
-	ui.flush()
-	ui.Click(Button(ui, ui.ns.L.DUNGEON_BOSSES_TAB))
-	return ui
-end
-local absent = NoBosses({})
-equal(Texts(absent)[absent.ns.L.DUNGEON_NO_BOSSES], true, "no AtlasLoot: install it")
-local off = NoBosses({ installed = { AtlasLootClassic = true } })
-equal(Texts(off)[off.ns.L.DUNGEON_NO_BOSSES_DISABLED], true, "AtlasLoot on disk but not running: enable it")
-equal(Texts(off)[off.ns.L.DUNGEON_NO_BOSSES], nil, "an installed AtlasLoot is never asked for again")
-off.metadata.AtlasLootClassic, off.G.AtlasLoot = {}, loot.G.AtlasLoot
-off.fire("ADDON_LOADED", "AtlasLootClassic")
-off.flush()
-equal(Texts(off)["Curated elite boss"], true, "AtlasLoot loading later fills the open Bosses view")
-off.fire("ADDON_LOADED", "SomethingElse")
-equal(#off.errors, 0, "late AtlasLoot has no errors")
-
--- A fight holds back AtlasLoot's load-on-demand pages: the tab reads again when it ends.
-local pages
-local fight = harness.load({
-	questiedb = Plain(),
-	installed = { AtlasLootClassic_DungeonsAndRaids = true },
-	setup = function(loaded)
-		loaded.G.AtlasLoot =
-			{ Locales = { Trash = "Trash" }, ItemDB = {
-				Get = function()
-					return pages
-				end,
-			} }
-		loaded.G.C_AddOns.LoadAddOn = function()
-			pages = atlasModule
-		end
-	end,
-})
-fight.ns.Window.OpenDungeon(43)
-fight.SetCombat(true)
-fight.flush()
-fight.Click(Button(fight, fight.ns.L.DUNGEON_BOSSES_TAB))
-equal(pages, nil, "nothing is loaded during a fight")
-equal(Texts(fight)["Curated elite boss"], nil, "no AtlasLoot bosses during the fight")
-fight.SetCombat(false)
-fight.flush()
-equal(Texts(fight)["Curated elite boss"], true, "the pages load and the bosses show once the fight ends")
-equal(#fight.errors, 0, "deferred AtlasLoot has no errors")
 print(("dungeons_spec: %d checks passed"):format(checks))

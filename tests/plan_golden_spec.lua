@@ -120,6 +120,18 @@ for _, fixture in ipairs(characters.list) do
 		equal(route.journeys[1].key, "zone:1440", "ne21_crosszone: Ashenvale's story, beside Darkshore")
 	end
 
+	-- The user's report: a level-21 Alliance character in Ironforge still has Darkshore, a zone they have just
+	-- outgrown, offered as somewhere to head to. Its deep green quests put it behind the zones whose content sits near
+	-- the player's level, so it is a later card rather than dropped.
+	if fixture.name == "human21_ironforge" then
+		local at = {}
+		for index, journey in ipairs(route.journeys) do
+			at[journey.key] = index
+		end
+		equal(at["zone:1439"] ~= nil, true, "human21_ironforge: Darkshore is offered")
+		equal(route.journeys[at["zone:1439"]].kind, "nextzone", "human21_ironforge: as a zone to head to")
+	end
+
 	-- Redridge, next door with 8 quests, is offered before Ashenvale, a boat away with 3: overseas costs the crossing.
 	if fixture.name == "human18_westfall" then
 		local at = {}

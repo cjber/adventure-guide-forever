@@ -19,6 +19,23 @@ function Model.IsGray(questLevel, playerLevel)
 	return questLevel > 0 and playerLevel - questLevel > range
 end
 
+-- The planner's level preference, shared by the zone ranking and a step's quest order (docs/design.md §2.2): lower is
+-- taken first. At the player's level and one or two below is free, each level above costs twice its distance, and each
+-- level further below costs one, so deep green content ranks behind content near the player's level.
+---@param questLevel integer
+---@param playerLevel integer
+---@return integer
+function Model.LevelPreference(questLevel, playerLevel)
+	local gap = questLevel - playerLevel
+	if gap > 0 then
+		return 2 * gap
+	end
+	if gap < -2 then
+		return -gap - 2
+	end
+	return 0
+end
+
 local function ValidPlace(place)
 	return place
 		and type(place.map) == "number"
@@ -38,6 +55,34 @@ local function HasBit(mask, bit)
 end
 
 Model.HasBit = HasBit
+
+-- A zone map's art in pixels (tools/gen_quests.py CANVAS): overlay rectangles and their centres are on this canvas,
+-- so which of two overlaps is nearer is measured across and down, as the client's own shading does.
+local CANVAS_W, CANVAS_H = 1002, 668
+
+-- A town is the named area of its map a place stands in (Data/Geometry `towns`, the world map's overlays): among
+-- the areas whose rectangle holds the point, the one whose centre is nearest wins, as the client's own shading does.
+-- A place in no area (a city map, an instance, a gap between rectangles) is its map's own town. Nil on a map the
+-- data doesn't place.
+---@param data AGFData
+---@param place {map: integer, x: number, y: number}
+---@return string?
+function Model.Hub(data, place)
+	if not (data.maps and data.maps[place.map]) then
+		return nil
+	end
+	local best, bestNear
+	for _, area in ipairs((data.towns and data.towns[place.map]) or NONE) do
+		if place.x >= area.x0 and place.x <= area.x1 and place.y >= area.y0 and place.y <= area.y1 then
+			local dx, dy = (place.x - area.cx) * CANVAS_W, (place.y - area.cy) * CANVAS_H
+			local near = dx * dx + dy * dy
+			if not best or near < bestNear then
+				best, bestNear = area, near
+			end
+		end
+	end
+	return place.map .. ":" .. (best and best.area or 0)
+end
 
 function Model.Handins(step)
 	return step.handins or (step.kind == "turnin" and step.quests) or NONE

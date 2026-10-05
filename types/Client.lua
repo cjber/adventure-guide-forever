@@ -72,6 +72,23 @@ OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 3
 ---@class AGFScrollFrame : ScrollFrame
 ---@field ScrollBar Frame
 
+-- Blizzard_SharedXML/Shared/Scroll: the scroll box, its linear view and the data provider the list factory builds
+-- on. The client loads them with the shared XML, so they are present wherever the guide's window is.
+---@class AGFScrollBoxLinearView
+---@field SetElementExtent fun(self: AGFScrollBoxLinearView, extent: number)
+---@field SetElementExtentCalculator fun(self: AGFScrollBoxLinearView, calculator: fun(index: integer, elementData: any): number)
+---@field SetElementInitializer fun(self: AGFScrollBoxLinearView, template: string, initializer: fun(frame: Frame, elementData: any))
+---@field SetPadding fun(self: AGFScrollBoxLinearView, top: number, bottom: number, left: number, right: number, spacing?: number)
+
+---@type fun(top?: number, bottom?: number, left?: number, right?: number, spacing?: number): AGFScrollBoxLinearView
+CreateScrollBoxListLinearView = nil
+
+---@type {InitScrollBoxListWithScrollBar: fun(scrollBox: Frame, scrollBar: Frame, view: AGFScrollBoxLinearView)}
+ScrollUtil = nil
+
+---@type fun(tbl?: any[]): AGFDataProvider
+CreateDataProvider = nil
+
 ---@class AGFSearchBox : EditBox
 ---@field Instructions FontString
 
@@ -236,7 +253,7 @@ function PanelTemplates_SetTab(frame, id) end
 ---@type string[]
 UISpecialFrames = nil
 
----@type Frame
+---@type ForeverNativeTrackerFrame
 ObjectiveTrackerFrame = nil
 
 -- AGF's own named frames (CreateFrame names in Panel.lua and Tracker.lua); nil until they are built.
@@ -303,10 +320,6 @@ AdventureGuideForeverWindow = nil
 ---@class AGFMapPing : AGFMapPinMixin
 ---@field SetNumLoops fun(self: AGFMapPing, loops: integer)
 ---@field PlayAt fun(self: AGFMapPing, x: number, y: number)
-
--- AtlasLoot Classic/Era and Forever 1.1.2 expose the same runtime ItemDB layout.
----@type { ItemDB: {Get: fun(self: table, module: string): table?}, Locales: table<string, string> }?
-AtlasLoot = nil
 
 ---@type table<integer, {r: number, g: number, b: number}>
 ITEM_QUALITY_COLORS = nil

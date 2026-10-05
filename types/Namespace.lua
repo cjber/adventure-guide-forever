@@ -8,32 +8,23 @@
 ---@field x number
 ---@field y number
 ---@field name string NPC or object name
----@field hub? integer the town it stands in (tools/gen_quests.py town_hubs); nil when its map has no world rectangle
+---@field hub? string the town it stands in, as "map:area"; nil on a map the data doesn't place
 
--- One route-geometry town anchor: a place a quest-giver town stands on, used to cluster QuestieDB places into hubs.
--- A flight-map node any player of a side can use (TaxiNodes): the bundled name a runtime town takes.
----@class AGFTownNode
----@field node integer TaxiNodes ID
----@field continent integer
----@field x number world yards
----@field y number world yards
----@field name string
-
--- A quest place in world yards while QuestieTowns groups them.
----@class AGFTownPoint
----@field continent integer
----@field x number world yards
----@field y number world yards
----@field map integer uiMapID
----@field px number the place's map x
----@field py number the place's map y
----@field hub? integer
-
----@alias AGFTownGrid table<integer, table<number, AGFTownPoint[]>> continent -> cell -> the quest places in it
+-- One named area of a zone map: a WorldMapOverlay's rectangle on the map, the area the world map reveals as you
+-- explore and the town a place inside it stands in (tools/gen_quests.py `town_areas`, Data/Geometry.lua `towns`).
+---@class AGFTownArea
+---@field area integer its AreaTable ID, keyed in AGFData.areaNames for its English name
+---@field x0 number left edge on the map, 0-1
+---@field y0 number top edge
+---@field x1 number right edge
+---@field y1 number bottom edge
+---@field cx number the overlay's hit rectangle centre (its texture's when it has none), for which is nearer only
+---@field cy number
 
 ---@class AGFQuestieTowns
----@field Build fun(data: AGFData, places: AGFPlace[], yield: fun()): table<integer, {name: string}>, AGFTownGrid
----@field Hub fun(data: AGFData, grid: AGFTownGrid, place: {map: integer, x: number, y: number}): integer?
+---@field Build fun(data: AGFData, places: AGFPlace[], yield: fun()): table<string, {name: string}>
+---@field Hub fun(data: AGFData, place: {map: integer, x: number, y: number}): string?
+---@field Name fun(data: AGFData, place: {map: integer, hub: string}): string the town's area name, else the map's name
 
 -- What a trainer or battlemaster does (Data/Geometry.lua `roles`); AGFNpc adds its side and place at runtime.
 ---@class AGFRole
@@ -97,11 +88,9 @@
 ---@field maps table<integer, AGFMapCentre> uiMapID -> where the map sits in the world, for every map a place uses
 ---@field continents table<integer, AGFContinentShift> continent -> its place on the Azeroth world map
 ---@field crossings AGFCrossing[] every boat and zeppelin between two continents
----@field hubs table<integer, {name: string}> hub -> its flight master's name, verbatim; only for hubs with one. Composed from QuestieDB's quest places (QuestieTowns.lua)
----@field townLink number maximum distance in yards linking two town places, from gen_quests.py LINK
----@field townCap number yards: a town wider than this is grouped again at a shorter link
----@field townReach number yards from a town's nearest quest place to the flight-map node that names it
----@field towns AGFTownNode[] the flight-map nodes a town can be named for
+---@field hubs table<string, {name: string}> hub ("map:area") -> its town's name. Composed from QuestieDB's quest places (QuestieTowns.lua)
+---@field towns table<integer, AGFTownArea[]> zone uiMapID -> its named areas, the areas the world map reveals as you explore
+---@field areaNames table<integer, string> AreaTable ID -> its English name, the fallback when the client has none
 ---@field roles table<integer, AGFRole> creature entry -> what that trainer or battlemaster does
 
 -- Measures between steps on different maps without travel maths (Travel.lua Cost). World coordinates are yards.
@@ -163,14 +152,26 @@
 ---@field have integer
 ---@field need integer
 
+-- The composed QuestieDB catalogue kept in the per-character save between logins (QuestieSource.lua). `key` names
+-- the inputs that built it, and the three tables are ns.Data's own, saved under it.
+---@class AGFCatalogue
+---@field key string
+---@field quests table<integer, AGFQuest>
+---@field hubs table<string, {name: string}>
+---@field npcs table<integer, AGFNpc>
+
 ---@class AGFPrefs
 ---@field plannedDungeons table<integer, boolean>
 ---@field quests boolean
 ---@field dungeons boolean
+---@field catalogue? AGFCatalogue the composed catalogue the last login built, reused when every input matches
 ---@field optimisedRoute? boolean the account-wide planned (beta) route order; nil/false is the nearest-action order
 ---@field journey? string key of the journey card the player chose; nil (or gone) = none chosen, the first card drawn
+---@field collapsedGroups table<string, boolean> the overview headers this character collapsed, by group key; a group with no entry uses its default
 ---@field skipped table<string, boolean> step keys skipped this session
 ---@field last? {key: string, reason: string} step 1 at the last rebuild, for the next login's resume line
+---@field lead? integer the map of the zone the story led with, which the next build keeps while it still has useful work
+---@field left? integer the map of the zone the story left, which waits behind every other zone the next build offers
 ---@field waypoint? {map: integer, x: number, y: number} the native waypoint the last Go set, while it may still be ours
 ---@field guided? string the key of the chosen journey whose route AGF started, while that guidance should run
 ---@field focus? integer the quest AGF selected on walking into its area (Focus.lua), while that selection is still AGF's
@@ -214,7 +215,7 @@
 ---@field detail string grey second line, e.g. "2 to hand in, 4 to pick up"
 ---@field reason string short why, e.g. "continues chain"
 ---@field quests integer[] quest IDs this step covers; a town's hand-ins first, then by ID
----@field hub? integer a town's hub (AGFPlace.hub); nil for a town the generator could not place
+---@field hub? string a town's hub (AGFPlace.hub); nil for a town the data could not place
 ---@field pickups? integer[] a town's eligible quests this card wants there, ascending
 ---@field handins? integer[] a town's finished log quests handed in there, ascending
 ---@field objectives? AGFAreaObjective[] an area's open objectives, by quest and slot
@@ -249,6 +250,10 @@
 
 ---@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"|"calling"|"battleground"
 
+-- The overview's quest log header a journey shows under (Overview.GROUPS): its kind at build time, so no title is
+-- guessed from. "continue" holds the story, Quests in your log and your calling.
+---@alias AGFJourneySection "continue"|"zones"|"dungeons"|"battlegrounds"
+
 -- A quest's place in its chain (Model.Story): the data's `next` links from the chain's head. Later members are IDs
 -- only, so no later chapter's title is ever drawn.
 ---@class AGFStory
@@ -259,6 +264,7 @@
 -- One card in the guide (docs/design.md §2.2): only steps the player can take now.
 ---@class AGFJourney
 ---@field kind AGFJourneyKind
+---@field section AGFJourneySection the overview header it shows under
 ---@field zone? integer uiMapID of a zone story or next-zone journey, independent of its first step
 ---@field instance? integer Map.ID of a dungeon journey or a story leading into an instance
 ---@field key string stable identity for prefs.journey: "carry", "zone:<uiMapID>" (a zone's story or next-zone card alike), "dungeon:<Map.ID>", "calling", "chain:<questID>" (a way into an instance, by its chain's first quest) or "battleground:<BattlemasterList ID>"
@@ -285,6 +291,8 @@
 ---@field steps AGFStep[] that journey's steps, never more than MAX_STEPS
 ---@field skipped? table<string, boolean> the skipped keys a full build still had a step for; nil after the combat one
 ---@field orders? table<string, AGFOrder> each card's committed order by journey key, which the next build keeps to; the planner's own, read by nothing else
+---@field lead? integer the map of the zone the story led with, which the next build keeps while it still has useful work
+---@field left? integer the map of the zone the story left, which waits behind every other zone the next build offers
 ---@field here? string the key of the area the player stood in (step 1's `here`), which the next build lets go only past HERE_MARGIN
 
 -- A card's committed order (docs/design.md §4.3): its steps' identities in order (Routing.lua Idents), and the quests
@@ -306,17 +314,20 @@
 ---@class AGFModel
 ---@field MAX_STEPS integer
 ---@field IsGray fun(questLevel: integer, playerLevel: integer): boolean
+---@field LevelPreference fun(questLevel: integer, playerLevel: integer): integer lower is taken first; at the player's level and one or two below are free, each level above costs twice its distance, and each level further below costs one
 ---@field EXPLORE_SLOT integer the data's need slot for an explore objective (tools/gen_quests.py)
 ---@field ValidPlace fun(place?: {map?: integer, x?: number, y?: number}): boolean? true when `place` has a positive map and x, y in 0..1
+---@field Hub fun(data: AGFData, place: {map: integer, x: number, y: number}): string? the town `place` stands in, as "map:area"
 ---@field Hard fun(quest: AGFQuest, player: AGFPlayer): boolean orange or red: no route takes it
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
 ---@field Why fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer, names?: AGFWhyNames): AGFWhyLine[] every requirement, met or not; eligible exactly when all are met
 ---@field Search fun(data: AGFData, player: AGFPlayer, query: string, title?: fun(questID: integer): string?): integer[] up to 10 quest IDs whose title holds `query`, by title
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
 ---@field Story fun(data: AGFData, questID: integer): AGFStory? the chain the quest belongs to; nil when it is in none, or the way back forks
----@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (AGFMapName), instanceName?: (fun(id: integer): string?), skippedQuests?: table<string, integer[]>): AGFJourney[], boolean
+---@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (AGFMapName), instanceName?: (fun(id: integer): string?), skippedQuests?: table<string, integer[]>, lead?: integer, left?: integer): AGFJourney[], boolean
 ---@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (AGFMapName), instanceName?: (fun(id: integer): string?), last?: AGFRoute, inputs?: AGFPlanInputs): AGFRoute
 ---@field Here fun(data: AGFData, where?: {map?: integer, x?: number, y?: number}, steps: AGFStep[], held?: string): integer? the open area step `where` stands in: the head when it is one, else the first; `held`, the key of the one stood in last, lets go past a margin
+---@field NearAction fun(from?: AGFPosition, log: table<integer, AGFLogQuest>, steps: AGFStep[], at: (fun(step: AGFStep): AGFPosition?)): AGFStep? the ready hand-in or pickup beside the player that goes before the head, or nil
 ---@field Yards fun(data: AGFData, a: {map: integer, x: number, y: number}, b: {map: integer, x: number, y: number}): number? yards between two places on one continent the data places; nil otherwise
 ---@field Refresh fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, last: AGFRoute, mapName?: (AGFMapName), inputs?: AGFPlanInputs): AGFRoute the cheap in-combat rebuild: the log's steps fresh, the rest from `last`
 
@@ -334,6 +345,8 @@
 ---@field Completed fun(): table<integer, boolean>
 ---@field Log fun(): table<integer, AGFLogQuest>
 ---@field OnChange fun(callback: fun())
+---@field QuestChanged fun() a quest changed outside the client's own events (Questie's live updates), coalesced with them
+---@field QuestUpdateChanged fun(id: integer): boolean whether a Questie update moved the quest's live availability since the last plan
 ---@field OnInitialLogin fun(callback: fun()) called on a login's PLAYER_ENTERING_WORLD, never on a /reload
 ---@field Ready fun(): boolean completion data has loaded
 ---@field MapName fun(map: integer): string? the client's localised map name, nil when it has none
@@ -354,6 +367,14 @@
 -- What stands at a stop; Shortest Path draws the game's own mark for it on the stop's pin.
 ---@alias AGFSPFStopKind "pickup"|"turnin"|"objective"|"trainer"|"innkeeper"|"flightmaster"|"battlemaster"|"dungeon"|"boat"|"zeppelin"|"lift"|"tram"|"portal"
 
+--- An objective area a held stop stands for: its outline is drawn, and the stop and its line step aside, while the
+-- player stands inside.
+---@class AGFSPFShape
+---@field map integer -- uiMapID
+---@field x number -- normalized 0-1
+---@field y number -- normalized 0-1
+---@field radius number -- yards
+
 ---@class AGFSPFStop
 ---@field map integer -- uiMapID
 ---@field x number -- normalized 0-1
@@ -363,6 +384,8 @@
 ---@field tooltip? string optional quest level/chain detail for the stop tooltip
 ---@field hold? boolean keep guidance until the owner replaces the route after quest progress
 ---@field radius? number yards around a held stop where travel cues pause
+---@field questID? number the one quest this area stands for, so Shortest Path can use the client's own inside-area state
+---@field shapes? AGFSPFShape[] the objective areas a held stop stands for
 
 ---@class AGFSPFLeg
 ---@field mode AGFSPFMode
@@ -431,7 +454,7 @@
 ---@field Hand fun(steps: (AGFStep|AGFGiver)[], hold?: boolean): boolean hands Shortest Path the steps as one journey of ours; false when it is absent or refuses
 ---@field Drop fun(): boolean ends Shortest Path's journey by our name; true when it ended one
 ---@field CurrentStop fun(): integer? the stop of our journey Shortest Path heads for, guiding it or not; nil when it holds none of ours
----@field EndReason fun(last?: AGFStep|AGFGiver, near: number): string? why our journey ended: Shortest Path's Ended, else guessed from another journey running or standing within `near` yards of the last stop
+---@field EndReason fun(last?: AGFStep|AGFGiver): string? why our journey ended: Shortest Path's Ended, else guessed from another journey running or standing in the last stop's town or area
 ---@field WaypointAt fun(place?: {map: integer, x: number, y: number}): boolean the client's waypoint still sits at the place
 ---@field CanWaypoint fun(map: integer): boolean the client allows a waypoint on the map
 ---@field SetWaypoint fun(place: {map: integer, x: number, y: number}, track?: boolean) the client's waypoint goes there; `track` points the arrow at it
@@ -591,6 +614,12 @@
 ---@field CARRY_EXPLANATION string
 ---@field JOURNEY_STORY string format: zone name
 ---@field JOURNEY_NEXT_ZONE string format: zone name
+---@field GROUP_CONTINUE string the overview's quest log header over the story, the log and your calling
+---@field GROUP_ZONES string the header over the "Head to <zone>" cards
+---@field GROUP_DUNGEONS string the header over the dungeon cards
+---@field GROUP_BATTLEGROUNDS string the header over the battleground cards
+---@field GROUP_CARDS string format: how many cards a collapsed header holds
+---@field GROUP_CARDS_ONE string the same for one card
 ---@field DUNGEON_QUESTS string format: quest count
 ---@field DUNGEON_QUESTS_ONE string
 ---@field DUNGEON_INSIDE string format: count of the log's quests filed under the instance, its name
@@ -707,7 +736,7 @@
 
 ---@class AGFNpc : AGFRole
 ---@field side integer the sides it is friendly to (QuestieDB friendlyToFaction): 1 Alliance, 2 Horde, 3 both
----@field place AGFPlace a QuestieDB spawn on its usual map; within 100 yards of a quest place, that town's `hub`
+---@field place AGFPlace a QuestieDB spawn on its usual map; its `hub` is the town it stands in
 ---@field inn? boolean innkeeper (QuestieDB npcFlags)
 
 --[[ What Forever added (tools/diff_forever.py, Data/Forever.lua) and honest coverage ]]
@@ -749,7 +778,7 @@
 ---@class AGFStrings
 ---@field REASON_GREY string format: how many of a zone card's pickups turn grey at the next level
 ---@field REASON_CHAIN_GIVER string format: the giver who begins the card's chain
----@field REASON_HANDS string format: the first stop's town, by its flight master's name
+---@field REASON_HANDS string format: the first stop's town, by its area's or map's name
 ---@field NOT_INTERESTED string a journey card's menu: hide it on this character
 ---@field RIGHT_CLICK_NOT_INTERESTED string a journey card's tooltip: its right-click
 
@@ -865,7 +894,7 @@
 
 ---@class AGFModel
 ---@field Trainer fun(data: AGFData, player: AGFPlayer, level: integer): AGFNpc? the nearest class trainer of the player's class and side who teaches from level 1 up to `level`; nil when the data has none or the player has no place
----@field TownName fun(data: AGFData, place: {map: integer, hub?: integer}, mapName?: AGFMapName): string the hub's flight-master town, else the map's name
+---@field TownName fun(data: AGFData, place: {map: integer, hub?: string}, mapName?: AGFMapName): string the hub's town, else the map's name
 
 ---@class AGFIntegrations
 ---@field Training fun(): AGFTraining?, boolean Tweaks Forever's affordable spells to train, counted; nil without a v1+ Tweaks Forever, its answer, or an affordable spell to train
@@ -1405,30 +1434,9 @@
 ---@field prep AGFDungeonPrep[]
 ---@field xp number proven remaining XP at the current level; alternatives counted once
 
----@class AGFDungeonBoss
----@field description? string
----@field journal? boolean id is an Encounter Journal encounter, not an NPC
----@field id integer
----@field name string
----@field rank integer 1 elite, 2 rare elite, 3 boss; never infer bosses from names
----@field low? integer
----@field high? integer
-
----@class AGFDungeonItem
----@field id integer
----@field name string
----@field droppers? AGFDungeonBoss[] known droppers in this instance
----@field startQuest? boolean starts a quest
-
----@class AGFDungeonSource
----@field npcs? table<integer, table<integer, AGFDungeonBoss>>
----@field worldDrops? table<integer, boolean>
----@field starts? table<integer, boolean>
----@field curated? table<integer, boolean>
----@field bosses table<integer, AGFDungeonBoss[]>
----@field loot table<integer, AGFDungeonItem[]>
----@field rewards table<integer, AGFDungeonItem[]>
----@field objectives table<integer, string>
+---@class AGFDungeonDetails
+---@field rewards table<integer, integer[]> quest id -> the item ids the catalogue gives as its rewards
+---@field objectives table<integer, string> quest id -> the catalogue's objective text
 
 ---@class AGFModel
 ---@field QuestXP fun(quest: AGFQuest, level: integer): number?
@@ -1437,7 +1445,7 @@
 ---@field Dungeons AGFDungeons
 ---@field Raids AGFRaid[]
 ---@field RaidByMap table<integer, AGFRaid>
----@field ReadDungeonSource fun(yield: fun()): AGFDungeonSource?
+---@field ReadDungeonDetails fun(yield: fun()): AGFDungeonDetails?
 ---@field DungeonEntrance fun(instance: integer): AGFPoint?
 
 ---@class AGFWindowDB
@@ -1452,8 +1460,6 @@
 ---@field DUNGEON_RAID_TOOLTIP string
 ---@field DUNGEON_QUESTS_TAB string
 ---@field DUNGEON_PREP_TAB string
----@field DUNGEON_BOSSES_TAB string
----@field DUNGEON_LOOT_TAB string
 ---@field DUNGEON_QUEST_LEVELS string
 ---@field DUNGEON_DONE string
 ---@field DUNGEON_IN_LOG string
@@ -1475,12 +1481,6 @@
 ---@field DUNGEON_PLAN string
 ---@field DUNGEON_START_JOURNEY string
 ---@field DUNGEON_OPEN_PAGE string
----@field DUNGEON_BOSS string
----@field DUNGEON_ENEMY_LEVELS string
----@field DUNGEON_RARE_ELITE string
----@field DUNGEON_BOSS_LOOT string
----@field DUNGEON_BOSS_LOOT_UNKNOWN string
----@field DUNGEON_ELITE string
 ---@field DUNGEON_NO_FACTION_QUESTS string
 ---@field DUNGEON_NO_CHARACTER_QUESTS string
 ---@field DUNGEON_NO_PREP string
@@ -1488,14 +1488,9 @@
 ---@field DUNGEON_HOSTILE_ENTRANCE string
 ---@field DUNGEON_OBJECTIVES string
 ---@field DUNGEON_NO_QUESTS string
----@field DUNGEON_NEEDS_QUESTIE string
 ---@field DUNGEON_LOADING string
 ---@field DUNGEON_SOURCE_FAILED string
 ---@field DUNGEON_NO_RECORDS string
----@field DUNGEON_NO_BOSSES string
----@field DUNGEON_NO_BOSSES_DISABLED string
----@field DUNGEON_NO_BOSSES_LISTED string
----@field DUNGEON_TRASH string
 ---@field DUNGEON_WANDERER string
 ---@field DUNGEON_SHOW_GIVER string
 ---@field DUNGEON_REWARDS string
@@ -1503,6 +1498,10 @@
 ---@field DUNGEON_END string
 ---@field DUNGEON_PART string
 ---@field DUNGEON_LEVEL_TOOLTIP string
+
+---@alias AGFListPaint fun(row: AGFDungeonRow, value: table)
+---@alias AGFListClick fun(value: table)
+---@alias AGFListCreate fun(parent: Frame, width: number, rowHeight: number, click: AGFListClick): AGFDungeonRow
 
 ---@class AGFWindow
 ---@field AddTab fun(tab: AGFWindowTab)
@@ -1512,14 +1511,28 @@
 ---@field Refresh fun()
 ---@field OfferKey fun()
 ---@field RefreshToday fun(inset: Frame)
----@field CreateList fun(parent: Frame, x: number, y: number, width: number, height: number, rowHeight: number, paint: fun(row: AGFDungeonRow, value: table), click: fun(value: table), create: fun(parent: Frame, width: number, rowHeight: number, click: fun(value: table)): AGFDungeonRow): AGFDungeonListWidget
+---@field CreateList fun(parent: Frame, x: number, y: number, width: number, height: number, rowHeight: number, paint: AGFListPaint, click: AGFListClick, create: AGFListCreate): AGFDungeonListWidget
 ---@field SetList fun(widget: AGFDungeonListWidget, values: table[])
 ---@field ScrollListTo fun(widget: AGFDungeonListWidget, index: integer)
+---@field CreateSectionHeader fun(parent: Frame, text: string, onClick?: fun(open: boolean)): AGFWindowSectionHeader
+---@field FONT_TITLE string
+---@field FONT_ROW string
+---@field FONT_HEADER string
+---@field GOLD number[]
+---@field TITLE_INK number[]
 ---@field OpenDungeon fun(instance: integer)
 
 ---@alias AGFMapLookup fun(area: integer): integer?
 ---@alias AGFYield fun()
 ---@alias AGFQuestieReads {Npc: table<integer, table|false>, Object: table<integer, table|false>, Item: table<integer, table|false>}
+
+---@class AGFQuestieNpcRow one Npc's place and service fields for a catalogue build
+---@field name string
+---@field spots AGFPoint[]
+---@field home integer? the uiMapID the NPC is most common on
+---@field inn boolean QuestieDB's innkeeper flag
+---@field trains boolean QuestieDB's trainer flag
+---@field side integer? 1 Alliance, 2 Horde, 3 both, nil neither
 
 ---@class AGFNamespace
 ---@field QuestieTowns AGFQuestieTowns
@@ -1552,11 +1565,13 @@
 
 ---@class AGFStrings
 ---@field DUNGEON_MAPS_TAB string
----@field DUNGEON_CLASSIC_GUIDE string
----@field DUNGEON_CLASSIC_GUIDE_TOOLTIP string
+---@field DUNGEON_BOSSES_LOOT string
+---@field DUNGEON_BOSSES_LOOT_TOOLTIP string
+---@field DUNGEON_BOSSES_LOOT_INSTALL string
 ---@field DUNGEON_MAP_BACK string
 ---@field DUNGEON_MAP_WORLD_BACK string
 ---@field DUNGEON_MAP_PAGE string
+---@field DUNGEON_MAP_OPEN string
 ---@field DUNGEON_MAP_MISSING string
 
 ---@class ForeverTrackerSettings
@@ -1626,6 +1641,7 @@
 ---@field join? fun(selected: AGFStep[])
 ---@field card string
 ---@field docks AGFFrameCrossing[]
+---@field hub string? the town the player stands in, its areas' own
 ---@field origin AGFPosition
 ---@field planned boolean
 ---@field rank table<string, integer>
@@ -1702,7 +1718,6 @@
 ---@field SimpleOpen fun(quest: AGFQuest, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, id: integer): boolean
 
 ---@class AGFPlannerTravel
----@field AGREE number
 ---@field CLOSE number
 ---@field UNKNOWN number
 ---@field Cost fun(a?: AGFPosition, b?: AGFPosition): number
@@ -1751,6 +1766,7 @@
 ---@field Build fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, candidates: AGFStep[], prefs: AGFPrefs, mapName?: AGFMapName, lead?: AGFStep, join?: (fun(selected: AGFStep[]))): AGFStep[]
 ---@field Ident fun(step: AGFStep|AGFAnchor): string
 ---@field Idents fun(route: AGFStep[]): string[]
+---@field NearAction fun(from?: AGFPosition, log: table<integer, AGFLogQuest>, steps: AGFStep[], at: (fun(step: AGFStep): AGFPosition?)): AGFStep? the ready hand-in or pickup beside the player that goes before the head, or nil
 ---@field Recommit fun(route: AGFStep[], rank: table<string, integer>): AGFStep[]
 ---@field Stabilise fun(route: AGFStep[], plain: AGFStep[], rank: table<string, integer>, holds: (fun(steps: AGFStep[]): boolean), at: (fun(step: AGFStep): AGFPosition?), origin: AGFPosition): AGFStep[]
 
@@ -1778,12 +1794,25 @@
 ---@field Selected AGFArtSlice
 ---@field Map Button
 ---@field Expand AGFCollapseButton
----@field ItemIcon Texture
 ---@field value? table
 
+---@class AGFDataProvider
+---@field GetSize fun(self: AGFDataProvider): integer
+---@field Find fun(self: AGFDataProvider, index: integer): table?
+
+---@class AGFScrollBoxListMixin
+---@field GetDerivedScrollOffset fun(self: AGFScrollBoxListMixin): number
+---@field ScrollToOffset fun(self: AGFScrollBoxListMixin, offset: number)
+---@field SetDataProvider fun(self: AGFScrollBoxListMixin, provider: AGFDataProvider, retainScrollPosition?: boolean)
+---@field GetVerticalScroll fun(self: AGFScrollBoxListMixin): number the ScrollFrameTemplate accessor the list keeps for its callers
+---@field SetVerticalScroll fun(self: AGFScrollBoxListMixin, value: number)
+
+---@class AGFScrollBox : Frame, AGFScrollBoxListMixin
+
 ---@class AGFDungeonListWidget
----@field frame AGFScrollFrame
----@field child Frame
+---@field frame AGFScrollBox
+---@field scrollBox AGFScrollBox
+---@field scrollBar Frame
 ---@field rows AGFDungeonRow[]
 ---@field values table[]
 ---@field tops number[]
@@ -1800,7 +1829,6 @@
 ---@field QuestRows fun(page: AGFDungeonPage?, expanded: table<integer, boolean>): table[]
 ---@field PrepRows fun(page: AGFDungeonPage?): table[]
 ---@field CatalogRows fun(catalog: AGFDungeon[]): table[]
----@field BossRows fun(source: AGFDungeonSource?, instance: integer, known: AGFDungeonBoss[]): table[]
 
 -- The public surface (Core/API.lua, docs/api.md).
 ---@class AGFAPIStop

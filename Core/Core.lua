@@ -47,6 +47,9 @@ local PREFS_DEFAULTS = {
 	-- Opt-in: the Battlegrounds card.
 	battlegrounds = false,
 	notInterested = {},
+	-- The overview's quest log headers this character collapsed, by group key (Overview.GROUPS); an absent key
+	-- uses the group's own default.
+	collapsedGroups = {},
 	-- Quests added to the route with a shift-click: quest ID -> true.
 	pinned = {},
 }
@@ -148,6 +151,12 @@ local function LoadCharDB()
 	end
 	if loaded.focus ~= nil and type(loaded.focus) ~= "number" then
 		loaded.focus = nil
+	end
+	if loaded.lead ~= nil and type(loaded.lead) ~= "number" then
+		loaded.lead = nil
+	end
+	if loaded.left ~= nil and type(loaded.left) ~= "number" then
+		loaded.left = nil
 	end
 	local waypoint = loaded.waypoint
 	if
@@ -624,6 +633,10 @@ end
 ---@param world AGFSnapshot
 local function CommitRoute(shown, full, world)
 	cachedRoute, rawRoute, snapshot = shown, full, world
+	-- The zone the story led with, and the zone it left, outlive the session, so a /reload does not shuffle it
+	-- (Plan.lua reads them back).
+	local prefs = ns.Prefs()
+	prefs.lead, prefs.left = full.lead, full.left
 	dirty = false
 	if not InCombatLockdown() then
 		ns.Guidance.Ended(rawRoute)

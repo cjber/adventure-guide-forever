@@ -2,7 +2,6 @@
 local _, ns = ...
 local Model = ns.Model
 local NONE = {}
-local AGREE = ns.Planner.Travel.AGREE
 local CLOSE = ns.Planner.Travel.CLOSE
 local CostTo = ns.Planner.Travel.CostTo
 local Distance = ns.Planner.Travel.Distance
@@ -125,7 +124,7 @@ local function Describe(data, log, player, step)
 		for _, id in ipairs(pass == 1 and handins or pickups) do
 			local level = QuestLevel(data, log, player, id)
 			describeOrder[id] = ((pass - 1) * 2 + (GreyRisk(level, player) and 0 or 1)) * 2 ^ 40
-				+ math.abs(level - player.level) * 2 ^ 32
+				+ Model.LevelPreference(level, player.level) * 2 ^ 32
 				+ id
 			optional = optional and Optional(data.quests[id], level, player)
 		end
@@ -264,7 +263,8 @@ local function Objective(quest, entry, slot, counted)
 		id = entry.id,
 		slot = slot,
 		have = client and client.have,
-		need = client and client.need or (quest and quest.need and quest.need[slot]),
+		-- A client count of 0 is a kind it does not tally, not a need of none: the data's count stands then.
+		need = client and client.need ~= 0 and client.need or (quest and quest.need and quest.need[slot]),
 		text = client and client.text ~= "" and client.text or nil,
 		type = client and client.type,
 		finish = (finish and ValidPlace(finish)) and "town:" .. Hub(finish) or nil,
@@ -461,8 +461,8 @@ local function PickupSteps(data, eligible, wanted, steps, stops)
 	end
 end
 
--- The finished log quests whose hand-in the data and the client agree on: the client's waypoint is on a map the data
--- places and lies within AGREE of the data's finish, which is in a town. Each maps to that finish; none ruled out.
+-- The finished log quests whose hand-in the data and the client agree on: the client's waypoint stands in the same
+-- town as the data's finish, which is in a town. Each maps to that finish; none ruled out.
 ---@return table<integer, AGFPlace>
 local function Ready(data, log)
 	local ready = {}
@@ -471,9 +471,8 @@ local function Ready(data, log)
 		local finish = entry.complete and quest and quest.finish
 		if finish and finish.hub then
 			local point = TurnInPlace(entry, nil)
-			local yards = point and Model.Yards(data, point, finish)
-			if yards then
-				ready[id] = yards <= AGREE and finish or nil
+			if point and Model.Hub(data, point) == finish.hub then
+				ready[id] = finish
 			end
 		end
 	end
@@ -481,7 +480,7 @@ local function Ready(data, log)
 end
 
 -- Where a step is, for its "NPC, zone" line: the zone is the client's name for its map, the data's otherwise. A turn-in
--- names the data's finish NPC only while its point is within AGREE of that finish; a town named itself in Describe; a
+-- names the data's finish NPC only while its point stands in that finish's town; a town named itself in Describe; a
 -- trainer's stop is titled by its town.
 ---@param step AGFStep
 ---@param mapName? AGFMapName
@@ -492,8 +491,7 @@ local function Locate(data, step, mapName)
 	elseif step.kind == "turnin" then
 		local quest = data.quests[step.quests[1]]
 		local finish = quest and quest.finish
-		local yards = finish and Model.Yards(data, step, finish)
-		step.place = yards and yards <= AGREE and finish.name or nil
+		step.place = finish and Model.Hub(data, step) == finish.hub and finish.name or nil
 	end
 end
 
@@ -525,8 +523,7 @@ local function Enter(data, step, from)
 	step.map, step.x, step.y = best.map, best.x, best.y
 end
 
--- A town's name for the player: its flight master's town (before ", zone"), else the client's name for its map, else
--- the data's. Only names the data has.
+-- A town's name for the player: its own, else the client's name for its map, else the data's. Only names the data has.
 ---@param data AGFData
 ---@param place {map: integer, hub?: integer}
 ---@param mapName? AGFMapName

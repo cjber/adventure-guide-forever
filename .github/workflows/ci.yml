@@ -75,6 +75,8 @@ jobs:
           path: tools/.cache
           key: regeneration-${{ runner.os }}-${{ hashFiles('tools/gen_*.py', 'tools/diff_forever.py') }}
           restore-keys: regeneration-${{ runner.os }}-
+      # The test corpus is composed by the addon's own code, run in LuaJIT.
+      - run: sudo apt-get update && sudo apt-get install -y luajit
       - name: Regenerate pinned data in a scratch tree
         run: python3 tools/check_generated.py
 

@@ -21,6 +21,82 @@ local KIND_ICONS = {
 	battleground = "battlemaster",
 }
 
+-- The overview's quest log headers (docs/design.md §2.2), in the order they show. A journey carries its header's key
+-- in `section`, set once in Planning/Journeys.lua from its kind; `open` is the default for a character that has never
+-- touched the header, and the player's own choice is saved per character by `key`.
+---@class AGFJourneyGroup
+---@field key AGFJourneySection
+---@field label string
+---@field open boolean
+
+---@type AGFJourneyGroup[]
+local GROUPS = {
+	{ key = "continue", label = L.GROUP_CONTINUE, open = true },
+	{ key = "zones", label = L.GROUP_ZONES, open = true },
+	{ key = "dungeons", label = L.GROUP_DUNGEONS, open = false },
+	{ key = "battlegrounds", label = L.GROUP_BATTLEGROUNDS, open = false },
+}
+
+-- `journeys`' cards under `key`, in the order the route offered them; empty when it has none, so a header with no
+-- card is never drawn.
+---@param journeys AGFJourney[]
+---@param key AGFJourneySection
+---@return AGFJourney[]
+local function InGroup(journeys, key)
+	local kept = {}
+	for _, journey in ipairs(journeys) do
+		if journey.section == key then
+			kept[#kept + 1] = journey
+		end
+	end
+	return kept
+end
+
+-- Whether the player collapsed `key`: their saved choice, else the group's default.
+---@param key AGFJourneySection
+---@return boolean
+local function Collapsed(key)
+	local saved = ns.Prefs().collapsedGroups or {}
+	if saved[key] ~= nil then
+		return saved[key] == true
+	end
+	for _, group in ipairs(GROUPS) do
+		if group.key == key then
+			return not group.open
+		end
+	end
+	return false
+end
+
+-- The header's click: remember the opposite state for this character, so it survives a reload.
+---@param key AGFJourneySection
+local function ToggleCollapsed(key)
+	local prefs = ns.Prefs()
+	prefs.collapsedGroups = prefs.collapsedGroups or {}
+	prefs.collapsedGroups[key] = not Collapsed(key)
+end
+
+-- The section the route's own card sits in, so its header stays open.
+---@param route AGFRoute
+---@return AGFJourneySection?
+local function ActiveSection(route)
+	for _, journey in ipairs(route.journeys) do
+		if journey.key == route.journey then
+			return journey.section
+		end
+	end
+end
+
+-- Whether `journey` is on show in the overview: every card while the player follows one, and every card of an open
+-- header. A card of the header the route follows is always shown, so the player never loses it. The card-minute
+-- queue uses this too, so a hidden card is never refreshed.
+---@param route AGFRoute
+---@param journey AGFJourney
+---@return boolean
+local function Open(route, journey)
+	return route.chosen or journey.section == ActiveSection(route) or not Collapsed(journey.section)
+end
+
 -- A step on the world map: the map opens when it is closed, then turns to the step and flashes its ring.
 ---@param step AGFStep
 local function ShowOnMap(step)
@@ -81,6 +157,29 @@ local VERB_ATLAS = {
 	battlemaster = "battlemaster",
 }
 local TRAINER_FILE = "Interface\\Minimap\\Tracking\\Class"
+-- An objective step whose open objectives are all one kind wears the cursor the game shows over that kind of
+-- target: the sword over something to kill, the bag over something to collect, the gear over something to use.
+-- Mixed work, and a place to reach, keep the objective's own mark.
+local OBJECTIVE_FILES = {
+	monster = "Interface\\Cursor\\Attack",
+	item = "Interface\\Cursor\\Pickup",
+	object = "Interface\\Cursor\\Interact",
+}
+
+---@param step AGFStep
+---@return string? file
+local function ObjectiveFile(step)
+	local kind
+	for _, objective in ipairs(step.objectives or {}) do
+		local quest = ns.Data.quests[objective.id]
+		local own = quest and quest.kinds and quest.kinds[objective.slot]
+		if not own or (kind and own ~= kind) then
+			return nil
+		end
+		kind = own
+	end
+	return kind and OBJECTIVE_FILES[kind] or nil
+end
 
 ---@param step AGFStep
 ---@return string? atlas
@@ -91,6 +190,11 @@ local function VerbIcon(step)
 		return (step.pickups and #step.pickups > 0) and VERB_ATLAS.pickup or VERB_ATLAS.turnin
 	elseif verb == "trainer" then
 		return nil, TRAINER_FILE
+	elseif verb == "objective" then
+		local file = ObjectiveFile(step)
+		if file then
+			return nil, file
+		end
 	end
 	return verb and VERB_ATLAS[verb] or nil
 end
@@ -98,7 +202,8 @@ end
 ---@class AGFBadge : Texture
 ---@field box number the square the mark fits in
 
--- The kind's mark on `badge` at its own aspect, hidden when the step has none. The trainer's file is a square icon.
+-- The kind's mark on `badge` at its own aspect, hidden when the step has none. A file (the trainer's, a cursor) is a
+-- square icon.
 ---@param badge AGFBadge
 ---@param step AGFStep
 local function SetVerbIcon(badge, step)
@@ -594,6 +699,11 @@ local function HideTooltipWithin(root)
 end
 
 Overview.KIND_ICONS = KIND_ICONS
+Overview.GROUPS = GROUPS
+Overview.InGroup = InGroup
+Overview.Collapsed = Collapsed
+Overview.ToggleCollapsed = ToggleCollapsed
+Overview.Open = Open
 Overview.SetVerbIcon = SetVerbIcon
 Overview.CreateBadge = CreateBadge
 Overview.StepMenu = StepMenu

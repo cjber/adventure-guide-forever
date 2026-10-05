@@ -165,12 +165,28 @@ function State.Where()
 	return bestMap, x, y
 end
 
--- Cache within one player snapshot only: quest/event/profession updates must re-evaluate live policy.
-local function QuestAvailability()
-	local cache = {}
-	local module
+-- The provider's live answers, kept across plans so a Questie update can tell whether its quest's availability
+-- actually moved since the last one. A client quest event clears them: the player state behind IsDoable changed, so
+-- every answer is asked again (Coalesce).
+---@type table<integer, boolean>
+local policyAnswers = {}
+---@type table?
+local policyLoader
+---@type table?
+local policyModule
+---@type table?
+local policySource
+
+-- QuestieDB's live policy module, or nil while Questie is not ready. Resolved once per QuestieLoader: the module
+-- it hands out is stable, but a reloaded Questie is a new loader whose answers all moved.
+---@return table?
+local function PolicyModule()
+	if QuestieLoader ~= policyLoader then
+		policyLoader, policyModule = QuestieLoader, nil
+	end
 	if
-		Questie
+		not policyModule
+		and Questie
 		and Questie.API
 		and Questie.API.isReady
 		and QuestieLoader
@@ -178,19 +194,54 @@ local function QuestAvailability()
 	then
 		local ok, result = pcall(QuestieLoader.ImportModule, QuestieLoader, "QuestieDB")
 		if ok and type(result) == "table" then
-			module = result
+			policyModule = result
 		end
 	end
-	return function(id)
-		if cache[id] == nil then
-			local ok, available = false, false
-			if module and type(module.IsDoable) == "function" then
-				ok, available = pcall(module.IsDoable, id)
-			end
-			cache[id] = ok and available == true
-		end
-		return cache[id]
+	return policyModule
+end
+
+-- Ask the provider for `id` and remember its answer.
+---@param id integer
+---@return boolean
+local function Ask(id)
+	local ok, available = false, false
+	if policyModule and type(policyModule.IsDoable) == "function" then
+		ok, available = pcall(policyModule.IsDoable, id)
 	end
+	policyAnswers[id] = ok and available == true
+	return policyAnswers[id]
+end
+
+-- The provider's answer for `id`, cached. A different module drops the old answers: a reloaded Questie can change
+-- every one.
+---@param id integer
+---@return boolean
+local function Available(id)
+	PolicyModule()
+	if policyModule ~= policySource then
+		policyAnswers, policySource = {}, policyModule
+	end
+	if policyAnswers[id] == nil then
+		Ask(id)
+	end
+	return policyAnswers[id]
+end
+
+-- Whether a Questie update moved the quest's live availability since the last plan. A quest the planner never asked
+-- about cannot be on the route, so an update to it buys no rebuild either.
+---@param id integer
+---@return boolean
+function State.QuestUpdateChanged(id)
+	local module = PolicyModule()
+	if not module then
+		return true
+	end
+	if module ~= policySource then
+		policyAnswers, policySource = {}, module
+		return true
+	end
+	local known = policyAnswers[id]
+	return known ~= nil and known ~= Ask(id)
 end
 
 ---@return AGFPlayer
@@ -201,7 +252,7 @@ function State.Player()
 
 	local rested, xpMax, resting = Rest()
 	return {
-		questAvailable = QuestAvailability(),
+		questAvailable = Available,
 		rested = rested,
 		xpMax = xpMax,
 		resting = resting,
@@ -443,10 +494,18 @@ local function Coalesce()
 		return
 	end
 	pendingNotify = true
+	-- The player's own state changed: every live policy answer is stale.
+	policyAnswers = {}
 	C_Timer.After(0, function()
 		pendingNotify = false
 		Notify()
 	end)
+end
+
+-- A quest change from outside the client's own events (Questie's live updates): the same coalescing the events
+-- use, so an update that accompanies a quest-log event still costs one rebuild.
+function State.QuestChanged()
+	Coalesce()
 end
 
 local events = CreateFrame("Frame")

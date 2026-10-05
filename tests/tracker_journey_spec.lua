@@ -44,7 +44,10 @@ do
 	h.tracker:OnBlockHeaderClick(block, "LeftButton")
 	h.flush()
 	check(h.spf.NavigateRoute == 1, "clicking it starts the journey's route")
-	check(h.spfRoute.stops[1].title == route.steps[1].title, "from the story's first step")
+	check(
+		h.spfRoute.stops[1].title == (route.steps[1].kind == "town" and route.steps[1].place or route.steps[1].title),
+		"from the story's first step"
+	)
 	check(#h.errors == 0, table.concat(h.errors, "\n"))
 end
 
@@ -119,10 +122,16 @@ do
 	h.call(pin.OnClick, pin, "LeftButton")
 	h.flush()
 	check(h.spf.NavigateRoute == 1, "clicking the pin routes")
-	check(h.spfRoute.stops[1].title == second.title, "from the clicked step")
+	check(
+		h.spfRoute.stops[1].title == (second.kind == "town" and second.place or second.title),
+		"from the clicked step"
+	)
 	h.call(pin.OnClick, pin, "RightButton")
 	h.flush()
-	check(h.spfRoute.stops[1].title == first.title, "right-click is back at the story's start")
+	check(
+		h.spfRoute.stops[1].title == (first.kind == "town" and first.place or first.title),
+		"right-click is back at the story's start"
+	)
 	check(#h.errors == 0, table.concat(h.errors, "\n"))
 end
 

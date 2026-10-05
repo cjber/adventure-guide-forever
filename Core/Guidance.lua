@@ -46,10 +46,6 @@ local pendingStart = false
 -- again. Session-scoped, like the route it stops.
 local autoStartBlocked = false
 
--- Yards past which a stop's point has moved (a town's point moving to its next giver): the town linkage
--- (tools/gen_quests.py LINK). Nearer, the stock "!" and "?" marks show the way.
-local LINK = ns.Data.townLink
-
 -- QUEST_TURNED_IN, from State.lua: latched for the ending below, then the chapter-end fanfare.
 ---@param questID integer
 function ns.TurnedIn(questID)
@@ -106,8 +102,7 @@ end
 ---@param b AGFStep
 ---@return boolean
 local function Far(a, b)
-	local yards = ns.Model.Yards(ns.Data, a, b)
-	return (a.checklist ~= nil and (a.map ~= b.map or a.x ~= b.x or a.y ~= b.y)) or (yards ~= nil and yards > LINK)
+	return a.map ~= b.map or a.x ~= b.x or a.y ~= b.y
 end
 
 -- The stops Shortest Path walks, while it guides; empty otherwise.
@@ -239,7 +234,7 @@ end
 local function Watch()
 	local now = Integrations.CurrentStop() ~= nil
 	if ours and not now then
-		local reason = Integrations.EndReason(guided[#guided], LINK)
+		local reason = Integrations.EndReason(guided[#guided])
 		if reason == "arrived" then
 			arrived = true
 		elseif reason == "cleared" or reason == "replaced" then

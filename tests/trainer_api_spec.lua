@@ -17,6 +17,7 @@ local h = harness.load({
 		version = 2,
 		spells = { { spellID = 635, name = "Holy Light", level = 20, cost = 0, line = "Holy", lineID = 594 } },
 		trainers = {
+			{ npc = 999003, name = "Other Side", map = 1420, x = 0.5, y = 0.6 },
 			{ npc = 999001, name = "Aranis Hammerhand", map = 1420, x = 0.32, y = 0.62 },
 			{ npc = 999002, name = "Placed Nowhere" },
 		},
@@ -26,12 +27,15 @@ local training, known = h.ns.Integrations.Training()
 equal(known, true, "v2 Training answers")
 equal(training and training.count, 1, "v2 Training counts the affordable spell")
 local trainers = h.ns.Integrations.Trainers()
-equal(#trainers, 2, "v2 Trainers returns both rows")
-equal(trainers[1].npc, 999001, "first trainer entry")
-equal(trainers[1].place.map, 1420, "first trainer has its place")
-equal(trainers[2].place, nil, "a trainer the data places nowhere has no place")
+equal(#trainers, 3, "v2 Trainers returns every row")
+equal(trainers[2].npc, 999001, "a trainer entry")
+equal(trainers[2].place.map, 1420, "a trainer has its place")
+equal(trainers[3].place, nil, "a trainer the data places nowhere has no place")
 
--- The aside falls back to the Tweaks trainer place: a Horde paladin has no bundled trainer.
+-- The aside falls back to the Tweaks trainer place: a Horde paladin has no bundled trainer. The trainer standing
+-- on the player serves only the Alliance, so the nearest one who does not is taken.
+h.ns.Data.npcs[999003] = { side = 1, place = { map = 1420, x = 0.5, y = 0.6 } }
+h.ns.Asides.Refresh()
 local aside
 for _, entry in ipairs(h.ns.Asides.All()) do
 	if entry.key == "trainer" then
@@ -40,6 +44,7 @@ for _, entry in ipairs(h.ns.Asides.All()) do
 end
 equal(aside ~= nil, true, "the trainer aside is offered")
 equal(aside.place and aside.place.map, 1420, "a class the bundled data does not place uses the Tweaks trainer place")
+equal(aside.place.x, 0.32, "a trainer of the other side alone is passed over")
 
 -- v1: no Trainers, and Training still answers.
 local one = harness.load({

@@ -461,7 +461,7 @@ do
 	local window = Open(h)
 	local rows = StepRows(h, window)
 	equal(#rows, 3, "order: three chosen story rows")
-	local first, second = ns.Route().steps[1].key, ns.Route().steps[2].key
+	local second, third = ns.Route().steps[2].key, ns.Route().steps[3].key
 	equal(ns.Order.CanMove(2, 3), false, "order: pickup cannot follow its objective")
 	h.Click(rows[2], "RightButton")
 	local entries, lines = h.menu.entries, h.MenuLines()
@@ -474,29 +474,31 @@ do
 	}, "order: the step menu's moves")
 	equal(entries[#entries]:IsEnabled(), false, "order: dependency-breaking move greyed")
 	equal(Texts(h)[L.ORDER_RESET], nil, "suggested order: no way back")
+	h.Click(rows[2], "RightButton")
+	entries = h.menu.entries
 	entries[#entries - 1].onClick()
 	Redraw(h)
 	equal(ns.Route().steps[1].key, second, "order: Do this sooner moves the town")
 	equal(ns.Order.IsCustom(), true, "order: the move is persisted")
 
 	rows = StepRows(h, window)
-	rows[1]:GetScript("OnDragStart")(rows[1])
+	rows[3]:GetScript("OnDragStart")(rows[3])
 	equal(h.cursor, "Interface\\CURSOR\\UI-Cursor-Move", "drag: move cursor")
-	equal(rows[3]:GetAlpha(), 0.35, "drag: dependent objective dims")
+	equal(rows[1]:GetAlpha(), 0.35, "drag: dependent pickup dims")
 	equal(rows[2]:GetAlpha(), 1, "drag: independent town stays")
 	rows[2].mouseOver = true
-	rows[1]:GetScript("OnDragStop")(rows[1])
+	rows[3]:GetScript("OnDragStop")(rows[3])
 	rows[2].mouseOver = false
 	Redraw(h)
 	equal(h.cursor, nil, "drag: cursor reset")
-	equal(ns.Route().steps[1].key, first, "drag: exact move applied")
-	equal(ns.Route().steps[2].key, second, "drag: town moved to second")
+	equal(ns.Route().steps[1].key, second, "drag: the sooner town stays first")
+	equal(ns.Route().steps[2].key, third, "drag: the objective moved to second")
 	rows = StepRows(h, window)
-	rows[2]:GetScript("OnDragStart")(rows[2])
-	rows[3].mouseOver = true
-	rows[2]:GetScript("OnDragStop")(rows[2])
-	rows[3].mouseOver = false
-	equal(ns.Route().steps[2].key, second, "drag: refused drop preserves order")
+	rows[1]:GetScript("OnDragStart")(rows[1])
+	rows[2].mouseOver = true
+	rows[1]:GetScript("OnDragStop")(rows[1])
+	rows[2].mouseOver = false
+	equal(ns.Route().steps[1].key, second, "drag: refused drop preserves order")
 	equal(Texts(h)[L.ORDER_CUSTOM], 1, "custom order: card tag")
 	h.Click(rows[1], "RightButton")
 	equal(h.MenuLines()[#h.MenuLines()], "button: " .. L.ORDER_RESET, "custom order: menu reset")
@@ -515,6 +517,7 @@ do
 	equal(#panelRows >= 3, true, "panel: the rows")
 	panelRows[2]:GetScript("OnDragStart")(panelRows[2])
 	equal(panelRows[3]:GetAlpha(), 0.35, "panel drag: dependent objective dims")
+	equal(panelRows[1]:GetAlpha(), 1, "panel drag: independent town stays")
 	panelRows[1].mouseOver = true
 	panelRows[2]:GetScript("OnDragStop")(panelRows[2])
 	panelRows[1].mouseOver = false
@@ -614,7 +617,7 @@ do
 	local route = h.ns.Route().steps
 	local revisit
 	for _, pin in ipairs(pins) do
-		revisit = (pin.visits and #pin.visits > 1 and pin.visits[1].step.hub == 340) and pin or revisit
+		revisit = (pin.visits and #pin.visits > 1 and pin.visits[1].step.hub == "1413:392") and pin or revisit
 	end
 	equal(revisit ~= nil, true, "ring: Ratchet visited twice")
 	equal(revisit.visits[1].step.key ~= revisit.visits[2].step.key, true, "ring: two distinct visits share the ring")
@@ -657,6 +660,29 @@ do
 	end
 	h.ns.Overview.SetVerbIcon(texture, { verb = "trainer" })
 	equal(texture.file, "Interface\\Minimap\\Tracking\\Class", "badge: trainer texture")
+	-- An objective step of one kind wears that kind's cursor; mixed work keeps the objective's mark.
+	local quests = h.ns.Data.quests
+	local saved = { quests[1], quests[2] }
+	quests[1] = { kinds = { [0] = "monster", [1] = "item", [2] = "object", [3] = "event" } }
+	quests[2] = { kinds = { [0] = "monster" } }
+	for _, case in ipairs({
+		{ { { id = 1, slot = 0 }, { id = 2, slot = 0 } }, "Interface\\Cursor\\Attack", "kill" },
+		{ { { id = 1, slot = 1 } }, "Interface\\Cursor\\Pickup", "collect" },
+		{ { { id = 1, slot = 2 } }, "Interface\\Cursor\\Interact", "use" },
+	}) do
+		h.ns.Overview.SetVerbIcon(texture, { verb = "objective", objectives = case[1] })
+		equal(texture.file, case[2], "badge: an objective to " .. case[3])
+		equal(texture:IsShown(), true, "badge: visible")
+	end
+	for _, case in ipairs({
+		{ { { id = 1, slot = 0 }, { id = 1, slot = 1 } }, "mixed work" },
+		{ { { id = 1, slot = 3 } }, "a place to reach" },
+		{ { { id = 1, slot = 9 } }, "an unknown slot" },
+	}) do
+		h.ns.Overview.SetVerbIcon(texture, { verb = "objective", objectives = case[1] })
+		equal(texture:GetAtlas(), "questobjective", "badge: " .. case[2] .. " keeps the objective's mark")
+	end
+	quests[1], quests[2] = saved[1], saved[2]
 	h.ns.Overview.SetVerbIcon(texture, {})
 	equal(texture:IsShown(), false, "badge: hidden without a verb")
 	clean(h, "badge kinds")

@@ -19,6 +19,7 @@ machine that pinned it, so the freeze is importlib.metadata's, limited to what t
     wowmock.py        db11c4fdc3ea7f43e6a754e28da468b3a1008ee89029466f68b9dc4ac2a93e33
     fonts/frizqt__.ttf (fdid 615960)  73de74d5d63690f29c7f97a9225edc8bd6f89e5103806af3714e4d7bfb9474e9
     fonts/arialn.ttf   (fdid 615958)  bd31d0cf2e5a1a3a9074e98ebe4964c641121e9e660f31627614c4acb6c89c1c
+    fonts/morpheus.ttf (fdid 615962)  0df28ca8a5e6fc14ee53de7b7f8ed7cf128108766b97d13d5ba60296cb517fd7
 
 Pillow and wowmock are imported inside the render functions only: CI runs the resolver's tests without Pillow.
 """
@@ -377,11 +378,7 @@ WINDOW_TABS = 30  # the tabs hang below the frame
 WINDOWS = (
     "dungeons",
     "dungeons_live",
-    "dungeons_empty",
     "dungeons_prep",
-    "dungeons_bosses",
-    "dungeons_loot",
-    "dungeons_bosses_missing",
     "window",
     "window_professions",
     "window_pvp",

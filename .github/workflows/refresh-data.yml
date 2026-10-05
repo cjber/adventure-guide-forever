@@ -1,6 +1,7 @@
 name: Refresh game data
 
-# Opens a PR with regenerated data when wago.tools lists a newer Forever or Classic Era build.
+# Opens a PR with regenerated data when wago.tools lists a newer Forever or Classic Era build, or QuestieDB a
+# newer release.
 # CI on a PR opened with GITHUB_TOKEN waits for a maintainer's approval, so the specs run here first and the ci
 # job dispatches the full CI on the PR's branch.
 # Daily: beta builds have shipped several times a week. A failed run on main reports itself as an issue.
@@ -26,21 +27,24 @@ jobs:
         with:
           # create-pull-request authenticates with its own `token` input.
           persist-credentials: false
-      - name: Pin the newest Forever and Classic Era builds
+      - name: Pin the newest Forever, Classic Era and QuestieDB releases
         id: pins
         run: python3 tools/refresh_pins.py
       - name: Regenerate
         if: steps.pins.outputs.changed == 'true'
         run: |
+          sudo apt-get update && sudo apt-get install -y luajit lua-check
           python3 tools/gen_quests.py
           python3 tools/diff_forever.py
           python3 tools/gen_zoneart.py
+          python3 tools/gen_corpus.py
       - if: steps.pins.outputs.changed == 'true'
         run: python3 tools/check_generated.py --offline
       - name: Generator tests
         if: steps.pins.outputs.changed == 'true'
         run: |
           python3 tools/gen_quests_test.py
+          python3 tools/gen_corpus_test.py
           python3 tools/gen_zoneart_test.py
           python3 tools/diff_forever_test.py
           python3 tools/refresh_pins_test.py
@@ -48,7 +52,6 @@ jobs:
       - name: Lua checks, specs and the planner bench
         if: steps.pins.outputs.changed == 'true'
         run: |
-          sudo apt-get update && sudo apt-get install -y luajit lua-check
           luacheck .
           for spec in tests/*_spec.lua; do luajit "$spec" || exit 1; done
           luajit -joff tests/plan_bench.lua

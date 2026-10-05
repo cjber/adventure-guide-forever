@@ -455,6 +455,17 @@ local function Lead(data, completed, eligible, belongs)
 	return best, bestID, continues
 end
 
+-- The overview header each kind shows under (Overview.GROUPS, docs/design.md §2.2); the map is the one place that
+-- decides it, and no card is grouped by its title. A calling is the player's own class work, so it continues too.
+local SECTION_OF_KIND = {
+	carry = "continue",
+	story = "continue",
+	calling = "continue",
+	nextzone = "zones",
+	dungeon = "dungeons",
+	battleground = "battlegrounds",
+}
+
 -- A card's hub line and group count: its first stop's place, how many stops follow it, and how
 -- many of its quests need a group.
 ---@param journey AGFJourney
@@ -465,13 +476,14 @@ local function Summarise(journey)
 	end
 	journey.hub = first and (first.place or first.title)
 	journey.more, journey.group = #journey.steps - 1, group
+	journey.section = assert(SECTION_OF_KIND[journey.kind], journey.kind .. " has no overview header")
 end
 
 -- A zone card's reason in the world's voice, the first that applies: a story the player started, at least
 -- GREY_REASON_MIN of its quests going grey at the next level (never at the cap), the giver who begins its chain, then
--- its first quest stop's town (its flight master's name, before the zone) with HANDS_MIN quests or more to pick up.
--- Nil when none applies; the caller falls back to its plain line. Only names the data has: a chain's giver, a town's
--- flight master.
+-- its first quest stop's town (the area's name, or its map's) with HANDS_MIN quests or more to pick up. Nil when
+-- none applies; the caller falls back to its plain line. Only names the data has: a chain's giver, a town's area,
+-- a town's map.
 local GREY_REASON_MIN, HANDS_MIN = 2, 3
 ---@param journey AGFJourney
 ---@param chain? {continues: boolean, giver?: string}
@@ -524,11 +536,11 @@ end
 
 -- The zone's story card, or nil when `zone` has no step: of a chain when the zone has one the player can take up.
 ---@param ready table<integer, AGFPlace>
----@return AGFJourney?
+---@return AGFJourney?, integer? the card, and how many new pickups its zone offers
 local function StoryJourney(data, player, completed, log, ready, eligible, zone, prefs, mapName)
 	local L = ns.L
 	local chain, chainID, continues = Lead(data, completed, eligible, InZone(zone))
-	local story, _, lead = Pickups(
+	local story, quests, lead = Pickups(
 		data,
 		player,
 		completed,
@@ -559,7 +571,7 @@ local function StoryJourney(data, player, completed, log, ready, eligible, zone,
 	else
 		story.reason = WorldReason(data, log, player, story)
 	end
-	return story
+	return story, quests
 end
 
 -- A class quest: one only the player's class may take. A mask of several classes is no calling: Vile
@@ -710,9 +722,11 @@ local YIELD_EVERY = 4
 ---@param mapName? AGFMapName the client's (localised) name for a map; the data's English otherwise
 ---@param instanceName? fun(id: integer): string? the client's name for an instance Map.ID; the data's otherwise
 ---@param skippedQuests? table<string, integer[]> the build's AGFPlanInputs.skippedQuests
+---@param lead? integer the map of the zone the story led with last build, while it still has useful work
+---@param left? integer the map of the zone the story left the build before, which waits behind every other
 ---@return AGFJourney[] journeys
 ---@return boolean stranded no next zone
-function Model.Journeys(data, player, completed, log, prefs, mapName, instanceName, skippedQuests)
+function Model.Journeys(data, player, completed, log, prefs, mapName, instanceName, skippedQuests, lead, left)
 	ReadDropped(prefs, skippedQuests)
 	local index, L = Index(data), ns.L
 	local zones, eligible = Choices(data, player, completed, log, index, prefs, Far(data, player))
@@ -740,13 +754,16 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			end
 		end
 	end
-	-- Keep the current zone when it has useful work or was chosen; otherwise lead with the best-fitting zone.
-	-- The story holds its log quests, followed by the remaining quests in the log.
+	-- The zone the story led with stays the lead while it still has a step: a player finishing a zone is not
+	-- shuffled to the zone the ranking likes a little better this level. The zone it just left waits behind every
+	-- other zone, so the story never flips back to it (A, B, A). The player's own choice of another zone, or
+	-- turning this one off, ends it. The story holds its log quests, followed by the remaining quests in the log.
 	local best
 	for _, map in ipairs(zones) do
-		best = best or (Open(map) and map or nil)
+		best = best or (Open(map) and map ~= left and map or nil)
 	end
-	local zone, tries, here = best, { best }, chosenZone ~= nil and chosenZone == player.map
+	local kept = lead and Open(lead) and (chosenZone == nil or chosenZone == lead) and lead or nil
+	local zone, here = best, chosenZone ~= nil and chosenZone == player.map
 	-- As in the ranking, only a quest that isn't an outdoor elite or a raid's makes the zone the player's: an outdoor
 	-- elite is optional, and no card offers a raid's.
 	local band, inZone = data.zones[player.map], InZone(player.map)
@@ -769,13 +786,28 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	for place = 1, math.min(FITS, #zones) do
 		here = here or zones[place] == player.map
 	end
-	if here and player.map ~= best and Open(player.map) then
-		table.insert(tries, 1, player.map)
+	-- The lead the story keeps outranks the zone the player stands in, which in turn outranks the ranking's best; with
+	-- no lead, standing here is the story. So the zone the story already leads with is not dropped for a level's
+	-- reshuffle, and the story cannot flip A, B, A around the zone the player walked into for one step.
+	local tries = {}
+	if kept then
+		tries[#tries + 1] = kept
+	end
+	if here and Open(player.map) and player.map ~= kept and player.map ~= best then
+		tries[#tries + 1] = player.map
+	end
+	if best and best ~= kept then
+		tries[#tries + 1] = best
+	end
+	if not kept and #tries == 0 then
+		tries[1] = best
 	end
 	local told
 	for _, map in ipairs(tries) do
-		local story = StoryJourney(data, player, completed, log, ready, eligible, map, prefs, mapName)
-		if story then
+		local story, quests = StoryJourney(data, player, completed, log, ready, eligible, map, prefs, mapName)
+		-- A zone held only by the log's hand-ins does not hold the lead: carry carries them, and a zone with new pickups
+		-- leads. A chosen or only zone stays, however little it has left.
+		if story and (quests > 0 or map == chosenZone or best == map or best == nil) then
 			zone, told = map, story
 			journeys[#journeys + 1] = story
 			break

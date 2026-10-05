@@ -2,7 +2,7 @@
 ## Title: Adventure Guide Forever
 ## Notes: Suggests a short route of next quest steps from your level, finished quests and current log.
 ## Author: cjber
-## Version: @project-version@
+## Version: preview-71cf9cd
 ## Category: Quests
 ## X-License: GPL-3.0-or-later
 ## X-Website: https://github.com/cjber/adventure-guide-forever
@@ -12,7 +12,7 @@
 ## SavedVariables: AdventureGuideForeverDB
 ## SavedVariablesPerCharacter: AdventureGuideForeverCharDB
 ## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick
-## OptionalDeps: AdventureGuideClassic, Atlas, Atlas_ClassicWoW, AtlasLootClassic, AtlasLootClassic_DungeonsAndRaids, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever
+## OptionalDeps: AdventureGuideClassic, Atlas, Atlas_ClassicWoW, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever
 
 Locales\enUS.lua
 Data\Geometry.lua

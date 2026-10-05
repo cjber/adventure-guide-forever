@@ -134,7 +134,7 @@ local function CreateRecipe(parent)
 	row:SetSize(CARD_WIDTH - 40, 32)
 	row.Icon = Window.CreateRingIcon(row, 26)
 	row.Icon:SetPoint("TOPLEFT", 4, -3)
-	row.Name = row:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+	row.Name = row:CreateFontString(nil, "ARTWORK", Window.FONT_ROW)
 	row.Name:SetPoint("TOPLEFT", 42, 0)
 	row.Name:SetPoint("RIGHT")
 	row.Detail = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
@@ -321,7 +321,7 @@ local function RefreshCard(profession)
 		if recipe then
 			local icon = recipe.itemID and C_Item.GetItemIconByID(recipe.itemID)
 				or C_Spell.GetSpellTexture(recipe.spellID)
-			Window.SetRingIcon(row.Icon, icon or 134400)
+			Window.SetRingIcon(row.Icon, icon)
 			row.Name:SetText(L.RECIPE_COUNT:format(recipe.name or ItemName(recipe.itemID) or "", recipe.count))
 			local color = DIFFICULTY[recipe.color or ""] or DIFFICULTY.grey
 			row.Name:SetTextColor(color[1], color[2], color[3])
@@ -346,7 +346,13 @@ local function RefreshSide(profession)
 		local reagent = profession.reagents[index]
 		row:SetShown(reagent ~= nil)
 		if reagent then
-			row.Icon:SetTexture(C_Item.GetItemIconByID(reagent.itemID) or 134400)
+			local icon = C_Item.GetItemIconByID(reagent.itemID)
+			if icon then
+				row.Icon:SetTexture(icon)
+			else
+				-- A flat dark tile while the client has no icon for the item, never a question mark.
+				row.Icon:SetColorTexture(0.1, 0.09, 0.08, 1)
+			end
 			row.Name:SetText(L.REAGENT_NEED:format(reagent.need, ItemName(reagent.itemID) or ""))
 			local have = reagent.have or 0
 			row.Source:SetText(

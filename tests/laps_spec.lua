@@ -105,7 +105,11 @@ local function Walk(where, steps, player, completed, log, held)
 			check(entry or picked[id], label .. ": hands in " .. id .. ", carried or picked up")
 			check((later[id] or 0) < index, label .. ": hands in " .. id .. " after all its objectives")
 			if not (entry and entry.complete) then
-				check(worked[id] or not next(data.quests[id].need or {}), label .. ": " .. id .. " done before")
+				local slots = 0
+				for _ in pairs(data.quests[id].need or {}) do
+					slots = slots + 1
+				end
+				check((worked[id] or 0) == slots, label .. ": " .. id .. " done before")
 			end
 			check(not handed[id], label .. ": hands in " .. id .. " once")
 			handed[id], count = true, count - 1
@@ -129,7 +133,7 @@ local function Walk(where, steps, player, completed, log, held)
 			for _, objective in ipairs(step.objectives or {}) do
 				local id = objective.id
 				check(log[id] or picked[id], label .. ": " .. id .. "'s objective after its pickup")
-				worked[id] = true
+				worked[id] = (worked[id] or 0) + 1
 			end
 		end
 	end
@@ -150,11 +154,8 @@ end
 -- with a giver or hand-in within 100 yd, else an open area's ring.
 local function Standing(player, route)
 	local head = route.steps[1]
-	for _, spot in pairs(head and head.kind ~= "area" and head.hub and head.spots or {}) do
-		local yards = Model.Yards(data, player, spot)
-		if yards and yards <= 100 then
-			return true
-		end
+	if head and head.kind ~= "area" and head.hub ~= nil and Model.Hub(data, player) == head.hub then
+		return true
 	end
 	return head ~= nil and Model.Here(data, player, route.steps) == 1
 end
@@ -347,8 +348,8 @@ do
 		raceBit = 4,
 		classBit = 64,
 		map = 1431,
-		x = 0.331,
-		y = 0.235,
+		x = 0.305,
+		y = 0.256,
 		logMax = 20,
 	}
 	local log, completed = {}, {}
@@ -372,11 +373,45 @@ do
 	check(steps ~= nil and steps[1].key == "area:226:0" and steps[1].here == true, where .. ": the area leads")
 	local lars, darkshire
 	for index, step in ipairs(steps or {}) do
-		lars = lars or (step.key == "town:41" and index or nil)
-		darkshire = darkshire or (step.key == "town:32" and index or nil)
+		lars = lars or (step.key == "town:1431:1097" and index or nil)
+		darkshire = darkshire or (step.key == "town:1431:42" and index or nil)
 	end
-	check(lars == 2, where .. ": Lars takes the wolves next")
+	check(lars == 3, where .. ": Lars takes the wolves next")
 	check(not darkshire or (lars and darkshire > lars), where .. ": Darkshire only after Lars")
+end
+
+-- A carried quest is handed in only once the route can place and work every objective it needs. Raene's Cleansing
+-- (1046) has two need slots and the data places only the first, so Astranaar's return visit advertised two hand-ins
+-- while only the picked-up quest could ever be ready. The full build leaves 1046 to the log, where finishing it makes
+-- it a ready hand-in (docs/design.md §4.2).
+do
+	local characters = dofile("tests/fixtures/characters.lua")
+	local player, completed, log, prefs = characters.Resolve(data, characters.list[1])
+	player.map, player.x, player.y = 1440, 1.0, 1.0
+	prefs.journey = "zone:1440"
+	log[1046] = { id = 1046, title = data.quests[1046].title, level = data.quests[1046].level, complete = false }
+	local steps
+	for _, journey in ipairs(Model.Plan(data, player, completed, log, prefs).journeys) do
+		steps = journey.key == prefs.journey and journey.steps or steps
+	end
+	local where = "Raene's Cleansing, half placed"
+	local slots, placed = 0, {}
+	for _ in pairs(data.quests[1046].need) do
+		slots = slots + 1
+	end
+	for _, step in ipairs(steps or {}) do
+		for _, objective in ipairs(step.objectives or {}) do
+			placed[objective.id] = (placed[objective.id] or 0) + 1
+		end
+	end
+	check((placed[1046] or 0) < slots, where .. ": the data places fewer objectives than it needs")
+	local handed = nil
+	for _, step in ipairs(steps or {}) do
+		for _, id in ipairs(step.handins or {}) do
+			handed = id == 1046 and step or handed
+		end
+	end
+	check(handed == nil, where .. ": never handed in while the client has it under way")
 end
 
 for index = 1, math.min(10, #failures) do

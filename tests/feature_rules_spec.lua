@@ -274,7 +274,7 @@ do
 	t.fire("SUPER_TRACKING_CHANGED")
 	t.flush()
 	local current = t.ns.Guidance.CurrentStep()
-	eq(current.title, t.spfRoute.stops[t.spfRoute.index].title)
+	eq(current.kind == "town" and current.place or current.title, t.spfRoute.stops[t.spfRoute.index].title)
 	local block = t.tracker.liveBlocks[current.key]
 	eq(block.header, current.title)
 	local related = (current.kind == "area" or current.kind == "dungeon" or #current.quests > 1) and #current.quests

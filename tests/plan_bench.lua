@@ -387,8 +387,8 @@ for _, instance in ipairs({ 43, 230, 429 }) do
 	h.ns.OpenWindow()
 	h.flush()
 	collectgarbage("collect")
-	local reads, original = 0, h.ns.ReadDungeonSource
-	h.ns.ReadDungeonSource = function(yield)
+	local reads, original = 0, h.ns.ReadDungeonDetails
+	h.ns.ReadDungeonDetails = function(yield)
 		reads = reads + 1
 		return original(yield)
 	end

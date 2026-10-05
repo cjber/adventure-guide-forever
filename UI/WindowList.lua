@@ -2,40 +2,25 @@
 local _, ns = ...
 local Window = ns.Window
 local HEADING_H = 22
--- A heading that carries an info line under its title (a boss and its level over its loot) is two lines tall.
-local HEADING_INFO_H = 38
 
+---@class AGFListContainer : Frame
+---@field row? AGFDungeonRow
+
+-- An element's height: a heading's line or the list's row height.
 ---@param widget AGFDungeonListWidget
-local function PaintList(widget)
-	local scroll = widget.frame:GetVerticalScroll()
-	local values, tops, heights = widget.values, widget.tops, widget.heights
-	local first = 1
-	while first <= #values and tops[first] + heights[first] <= scroll do
-		first = first + 1
+---@param value table
+---@return number
+local function ElementHeight(widget, value)
+	if not value.heading then
+		return widget.rowHeight
 	end
-	for _, row in ipairs(widget.rows) do
-		row.value = nil
-		row:Hide()
-	end
-	local bottom, rowIndex = scroll + widget.height, 0
-	for index = first, #values do
-		if tops[index] >= bottom then
-			break
-		end
-		rowIndex = rowIndex + 1
-		local row = widget.rows[rowIndex]
-		if not row then
-			break
-		end
-		local value = values[index]
-		row.value = value
-		row:ClearAllPoints()
-		row:SetHeight(heights[index] - 2)
-		row:SetPoint("TOPLEFT", 0, -tops[index])
-		row:Show()
-		widget.paint(row, value)
-	end
+	return widget.headingHeight
 end
+
+--[[ The window's shared list: a WowScrollBoxList of pooled rows and a MinimalScrollBar, the way the client's own
+     lists scroll. The scroll box makes a row only for the elements its viewport shows, positions it, and hands it
+     back to the pool when it leaves, so the list keeps no rows of its own and culls nothing by hand. A caller gives
+     `create` (one row frame, drawn once) and `paint` (a row's element). ]]
 
 ---@param parent Frame
 ---@param x number
@@ -48,18 +33,16 @@ end
 ---@param create fun(parent: Frame, width: number, rowHeight: number, click: fun(value: table)): AGFDungeonRow
 ---@return AGFDungeonListWidget
 function Window.CreateList(parent, x, y, width, height, rowHeight, paint, click, create)
-	local scroll = CreateFrame("ScrollFrame", nil, parent, "ScrollFrameTemplate") --[[@as AGFScrollFrame]]
+	local scroll = CreateFrame("Frame", nil, parent, "WowScrollBoxList") --[[@as AGFScrollBox]]
 	scroll:SetPoint("TOPLEFT", x, -y)
 	scroll:SetSize(width, height)
-	scroll.ScrollBar:ClearAllPoints()
-	scroll.ScrollBar:SetPoint("TOPLEFT", scroll, "TOPRIGHT", 3, 0)
-	scroll.ScrollBar:SetPoint("BOTTOMLEFT", scroll, "BOTTOMRIGHT", 3, 0)
-	local child = CreateFrame("Frame", nil, scroll)
-	child:SetSize(width, height)
-	scroll:SetScrollChild(child)
+	local scrollBar = CreateFrame("EventFrame", nil, parent, "MinimalScrollBar") --[[@as Frame]]
+	scrollBar:SetPoint("TOPLEFT", scroll, "TOPRIGHT", 2, 0)
+	scrollBar:SetPoint("BOTTOMLEFT", scroll, "BOTTOMRIGHT", 2, 0)
 	local widget = {
 		frame = scroll,
-		child = child,
+		scrollBox = scroll,
+		scrollBar = scrollBar,
 		rows = {},
 		values = {},
 		tops = {},
@@ -68,38 +51,66 @@ function Window.CreateList(parent, x, y, width, height, rowHeight, paint, click,
 		rowHeight = rowHeight,
 		headingHeight = HEADING_H,
 		paint = paint,
-	}
-	for index = 1, math.ceil(height / math.min(rowHeight, HEADING_H)) + 1 do
-		local row = create(child, width, rowHeight, click)
-		widget.rows[index] = row
-	end
-	scroll:HookScript("OnVerticalScroll", function()
-		PaintList(widget)
+	} --[[@as AGFDungeonListWidget]]
+	local view = CreateScrollBoxListLinearView()
+	view:SetElementExtentCalculator(function(_, value)
+		return ElementHeight(widget, value)
 	end)
+	---@param container AGFListContainer
+	---@param value table
+	local function Initialize(container, value)
+		if not container.row then
+			container.row = create(container, width, rowHeight, click)
+			container.row:ClearAllPoints()
+			container.row:SetPoint("TOPLEFT")
+			widget.rows[#widget.rows + 1] = container.row
+		end
+		-- A heading's taller element is the list's to size.
+		container.row:SetHeight(ElementHeight(widget, value) - 2)
+		container.row.value = value
+		widget.paint(container.row, value)
+	end
+	view:SetElementInitializer("Frame", Initialize)
+	ScrollUtil.InitScrollBoxListWithScrollBar(scroll, scrollBar, view)
+	-- The bar is the box's sibling, so it follows the box's own show and hide; a list the page hides takes its bar
+	-- with it, as the scroll frame's bar did.
+	scrollBar:SetShown(scroll:IsShown())
+	scroll:HookScript("OnShow", function()
+		scrollBar:Show()
+	end)
+	scroll:HookScript("OnHide", function()
+		scrollBar:Hide()
+	end)
+	-- Callers written against the old ScrollFrameTemplate read and reset the scroll in pixels; the scroll box
+	-- takes a percentage, so the widget keeps the same accessors for them.
+	scroll.GetVerticalScroll = function(self)
+		return self:GetDerivedScrollOffset()
+	end
+	scroll.SetVerticalScroll = function(self, value)
+		self:ScrollToOffset(value)
+	end
 	return widget
 end
 
+-- `values` into the list: the element heights, their tops for callers that ask where an element is, then the
+-- scroll box's own data provider, which lays the rows out and pools them.
 ---@param widget AGFDungeonListWidget
 ---@param values table[]
 function Window.SetList(widget, values)
 	widget.values = values
 	local heights, tops, total = {}, {}, 0
 	for index, value in ipairs(values) do
-		local heading = value.info and value.info ~= "" and HEADING_INFO_H or widget.headingHeight
-		heights[index] = value.heading and heading or widget.rowHeight
+		local height = ElementHeight(widget, value)
+		heights[index] = height
 		tops[index] = total
-		total = total + heights[index]
+		total = total + height
 	end
 	widget.heights, widget.tops = heights, tops
-	widget.child:SetHeight(math.max(widget.height, total))
-	-- The scroll range is otherwise measured a frame late, and a jump made now would stop at the old list's end.
-	widget.frame:UpdateScrollChildRect()
-	widget.frame.ScrollBar:SetShown(total > widget.height)
-	PaintList(widget)
+	widget.scrollBox:SetDataProvider(CreateDataProvider(values), true)
 end
 
 ---@param widget AGFDungeonListWidget
 ---@param index integer
 function Window.ScrollListTo(widget, index)
-	widget.frame:SetVerticalScroll(math.min(widget.tops[index], math.max(0, widget.child:GetHeight() - widget.height)))
+	widget.scrollBox:ScrollToOffset(widget.tops[index])
 end

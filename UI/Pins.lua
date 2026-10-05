@@ -7,6 +7,9 @@ local PING_TEMPLATE = "AdventureGuideForeverPingPinTemplate"
 -- Warm gold route rings keep future stops readable against the map.
 local NUMERAL_CELL, NUMERAL_YELLOW, NUMERALS_PER_ROW, MAX_NUMERAL = 0.125, 0.5, 8, 25
 local LATER_STOP_ALPHA = 0.9
+-- The route's next stop wears the button of the quest the game tracks (POIButton.lua): the lit disc with the dark
+-- numeral from the grid's upper half. Every later stop wears the plain button with the yellow numeral.
+local STOP_ATLAS, CURRENT_ATLAS = "UI-QuestPoi-QuestNumber", "UI-QuestPoi-QuestNumber-SuperTracked"
 local BADGE_SIZE, BADGE_OFFSET = 16, 4
 
 ---@class AGFPinsModule
@@ -147,8 +150,14 @@ local function AreaObjectives(tooltip, step)
 			QuestLine(tooltip, objective.id, "")
 			last = objective.id
 		end
+		-- A count only when one is known: a needed count of 0 is a kind the client does not tally, and "2/0" says nothing.
 		local line = objective.text and ns.L.OBJECTIVE_LINE:format(objective.text)
-			or (objective.have and objective.need and ns.L.OBJECTIVE_COUNT:format(objective.have, objective.need))
+			or (
+				objective.have
+				and objective.need
+				and objective.need > 0
+				and ns.L.OBJECTIVE_COUNT:format(objective.have, objective.need)
+			)
 		if line then
 			GameTooltip_AddHighlightLine(tooltip, line)
 		end
@@ -320,18 +329,24 @@ function AdventureGuideForeverPinMixin:OnAcquired(step, index, visits)
 		texture:SetDesaturated(false)
 		texture:SetVertexColor(1, 0.9, 0.7)
 	end
-	self.NumberText:SetTextColor(1, 0.82, 0.25)
+	local current = index == 1
+	self.Icon:SetAtlas(current and CURRENT_ATLAS or STOP_ATLAS)
+	if current then
+		self.NumberText:SetTextColor(0.1, 0.05, 0)
+	else
+		self.NumberText:SetTextColor(1, 0.82, 0.25)
+	end
 	local numeral = index <= MAX_NUMERAL
 	self.Number:SetShown(numeral)
 	self.NumberText:SetText(not numeral and tostring(index) or "")
 	if numeral then
 		local left = (index - 1) % NUMERALS_PER_ROW * NUMERAL_CELL
-		local top = NUMERAL_YELLOW + math.floor((index - 1) / NUMERALS_PER_ROW) * NUMERAL_CELL
+		local top = (current and 0 or NUMERAL_YELLOW) + math.floor((index - 1) / NUMERALS_PER_ROW) * NUMERAL_CELL
 		self.Number:SetTexCoord(left, left + NUMERAL_CELL, top, top + NUMERAL_CELL)
 	end
 	local badge = Badge(self)
 	ns.Overview.SetVerbIcon(badge, step)
-	local alpha = index > 1 and LATER_STOP_ALPHA or 1
+	local alpha = current and 1 or LATER_STOP_ALPHA
 	self.Icon:SetAlpha(alpha)
 	self.Number:SetAlpha(alpha)
 	self.NumberText:SetAlpha(alpha)

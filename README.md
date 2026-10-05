@@ -72,13 +72,13 @@ Translations are welcome as a pull request, or pasted into an issue, on GitHub: 
 
 ## Where the quests come from
 
-Quest data comes from the installed Forever edition of QuestieDB, including quests outside the old bundled catalogue. Questie's live policy checks prerequisites, events and character restrictions. The game supplies finished quests, objective progress and cached quest details. AtlasLoot supplies dungeon and raid bosses and loot; the native Encounter Journal fills gaps. Route geometry, transport and trainer records are a separate source from the quest catalogue. Missing QuestieDB is shown explicitly; no smaller quest list silently replaces it.
+Quest data comes from the installed Forever edition of QuestieDB, including quests outside the old bundled catalogue. Questie's live policy checks prerequisites, events and character restrictions. The game supplies finished quests, objective progress and cached quest details. Dungeon and raid bosses and loot come from [Adventure Guide for Classic](https://www.curseforge.com/wow/addons/adventure-guide-for-classic), the recommended companion for them. Route geometry, transport and trainer records are a separate source from the quest catalogue. Missing QuestieDB is shown explicitly; no smaller quest list silently replaces it.
 
 Forever's new quests are only considered once they are in your log. The guide never recommends a quest whose eligibility it cannot establish or points at a location it does not have. This is not a complete levelling walkthrough.
 
 ## Works alongside
 
-QuestieDB supplies quest records, and Questie is needed for pickup recommendations. The Dungeons tab can open [Adventure Guide for Classic](https://www.curseforge.com/wow/addons/adventure-guide-for-classic) when installed and enabled, for its boss tactics, models and loot. Other integrations are optional: [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting routes, [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion. The guide's tracker has its own switch when you prefer another guide.
+QuestieDB supplies quest records, and Questie is needed for pickup recommendations. [Adventure Guide for Classic](https://www.curseforge.com/wow/addons/adventure-guide-for-classic) is the recommended companion for dungeon and raid bosses and loot: the Dungeons tab's Bosses and loot control opens it on the dungeon you are looking at. Other integrations are optional: [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting routes, [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion. The guide's tracker has its own switch when you prefer another guide.
 
 ## Development
 

@@ -1,5 +1,5 @@
 ---@type string, AGFNamespace
-local _, ns = ...
+local addonName, ns = ...
 
 -- QuestieDB owns the quest catalogue. Bundled geometry still places maps and transport hubs;
 -- it never limits which quests exist. Questie supplies live availability policy (including events).
@@ -9,8 +9,9 @@ local ADDON = "QuestieDB"
 -- so a newer additive QuestieDB keeps working and new quests appear automatically via GetAllIds; only a rising
 -- minSupportedContract (or a removed field, caught below) makes the catalogue unavailable, and the reason is shown.
 local CONTRACT = 2
--- The catalogue is built once a login, and nothing can be shown until it lands: at a millisecond a frame the tracker
--- stayed empty for most of a minute. A few frames a second for a few seconds is the smaller cost.
+-- A build is sliced across frames: at a millisecond a frame the tracker stayed empty for most of a minute, and a few
+-- frames a second for a few seconds is the smaller cost. A matching saved catalogue is adopted whole at login, so
+-- only a first login or a changed key builds.
 local SLICE_MS = 5
 -- Questie can load and then never report ready, when its own startup stops on an error for one character. Waiting
 -- longer than this would leave the guide on its loading line for the whole session, so the catalogue is read without
@@ -31,6 +32,10 @@ local QUEST_FIELDS = {
 	"finishedBy",
 	"preQuestGroup",
 	"preQuestSingle",
+	"requiredSkill",
+	"requiredMinRep",
+	"requiredMaxRep",
+	"exclusiveTo",
 	"nextQuestInChain",
 	"breadcrumbForQuestId",
 	"questFlags",
@@ -45,8 +50,8 @@ ns.QuestieFields = {
 local GIVER_FIELDS = { "name", ns.QuestieFields.spawns[1], "zoneID" }
 -- What says whether an NPC keeps an inn and which side it serves.
 local SERVICE_FIELDS = { "npcFlags", "friendlyToFaction" }
--- QuestieDB's Classic NPC flag for an innkeeper, and its letters for the sides an NPC is friendly to.
-local INNKEEPER, SIDES = 128, { A = 1, H = 2, AH = 3 }
+-- QuestieDB's Classic NPC flags for an innkeeper and a trainer, and its letters for the sides an NPC is friendly to.
+local INNKEEPER, TRAINER, SIDES = 128, 16, { A = 1, H = 2, AH = 3 }
 local NPC_FIELDS = { GIVER_FIELDS[1], GIVER_FIELDS[2], GIVER_FIELDS[3], SERVICE_FIELDS[1], SERVICE_FIELDS[2] }
 local ENTITIES = {
 	{ name = "Quest", keys = "questKeys", fields = QUEST_FIELDS },
@@ -303,30 +308,78 @@ local function Build(lib, zones, bundled, yield)
 	end)
 	-- Every quest start and finish, for the towns they stand in (QuestieTowns.lua).
 	local places = {}
+	-- Each quest's mutually exclusive links, resolved into one group id after every quest is read.
+	local exclusive = {}
 	-- Each giver's name, its spawns on maps the data places (0-100 on its area's map), and its usual map.
 	local givers = { Npc = {}, Object = {} }
 	---@type AGFQuestieReads
 	local reads = { Npc = {}, Object = {}, Item = {} }
+	-- One Npc row per build: the place fields a giver needs, the service fields the innkeeper and trainer passes
+	-- need, and the spawns the objective pass reads. nil means not read yet, false means no row for the id.
+	---@type table<integer, AGFQuestieNpcRow|false>
+	local npcRows = {}
+	-- A row's spawns on maps the data places (0-100 on its area's map), in the data's order.
+	---@param spawns table<integer, number[][]>
+	---@return AGFPoint[]
+	local function Spots(spawns)
+		local spots = {}
+		for area, coordinates in pairs(spawns) do
+			local map = type(area) == "number" and Map(area)
+			for _, xy in ipairs(map and coordinates or {}) do
+				local x, y = tonumber(xy[1]), tonumber(xy[2])
+				if x and y and x >= 0 and x <= 100 and y >= 0 and y <= 100 then
+					table.insert(spots, { map = map, x = Round(x / 100), y = Round(y / 100) })
+				end
+			end
+		end
+		return spots
+	end
+	---@param id integer
+	---@return AGFQuestieNpcRow|false
+	local function NpcRow(id)
+		local row = npcRows[id]
+		if row == nil then
+			local values = lib.Npc.GetAll(id, NPC_FIELDS)
+			local spawns = values and values[2]
+			row = false
+			if values and type(values[1]) == "string" and type(spawns) == "table" then
+				local flags = tonumber(values[4]) or 0
+				row = {
+					name = values[1],
+					spots = Spots(spawns),
+					home = type(values[3]) == "number" and Map(values[3]) or nil,
+					inn = bit.band(flags, INNKEEPER) ~= 0,
+					trains = bit.band(flags, TRAINER) ~= 0,
+					side = SIDES[values[5]],
+				}
+			end
+			npcRows[id] = row
+			reads.Npc[id] = spawns or false
+		end
+		return row
+	end
 	---@param kind "Npc"|"Object"
 	---@param id integer
 	---@return {name: string, spots: {map: integer, x: number, y: number}[], home: integer?}|false
 	local function Giver(kind, id)
 		local giver = givers[kind][id]
 		if giver == nil then
-			local values = lib[kind].GetAll(id, GIVER_FIELDS)
-			giver = false
-			if values and type(values[1]) == "string" and type(values[2]) == "table" then
-				giver = { name = values[1], spots = {}, home = type(values[3]) == "number" and Map(values[3]) or nil }
-				for area, coordinates in pairs(values[2]) do
-					local map = type(area) == "number" and Map(area)
-					for _, xy in ipairs(map and coordinates or {}) do
-						local x, y = tonumber(xy[1]), tonumber(xy[2])
-						if x and y and x >= 0 and x <= 100 and y >= 0 and y <= 100 then
-							table.insert(giver.spots, { map = map, x = Round(x / 100), y = Round(y / 100) })
-						end
-					end
+			local row
+			if kind == "Npc" then
+				row = NpcRow(id)
+			else
+				local values = lib.Object.GetAll(id, GIVER_FIELDS)
+				if values and type(values[1]) == "string" and type(values[2]) == "table" then
+					row = {
+						name = values[1],
+						spots = Spots(values[2]),
+						home = type(values[3]) == "number" and Map(values[3]) or nil,
+					}
 				end
+				-- The objective pass reads the same spawns; hand it this answer instead of asking again.
+				reads.Object[id] = values and row and values[2] or false
 			end
+			giver = row and { name = row.name, spots = row.spots, home = row.home } or false
 			givers[kind][id] = giver
 		end
 		return giver
@@ -353,6 +406,12 @@ local function Build(lib, zones, bundled, yield)
 		end
 		places[#places + 1] = best
 		return best
+	end
+	-- Whether QuestieDB's flags call an NPC a trainer. The bundled roles miss Forever's extra class and race
+	-- combinations, so a class quest's giver needs this bit before its class is stamped on it.
+	local function Trains(id)
+		local row = NpcRow(id)
+		return row and row.trains or false
 	end
 
 	local ids, quests = lib.Quest.GetAllIds(), {}
@@ -399,14 +458,52 @@ local function Build(lib, zones, bundled, yield)
 				local breadcrumb = tonumber(v.breadcrumbForQuestId) or 0
 				quest.breadcrumb = breadcrumb > 0 and breadcrumb or nil
 				-- Preserve relationships for chain displays. Live Questie policy evaluates their full semantics.
-				quest.pre = type(v.preQuestGroup) == "table" and v.preQuestGroup or nil
-				quest.preAny = type(v.preQuestSingle) == "table" and v.preQuestSingle or nil
+				local group, single = v.preQuestGroup, v.preQuestSingle
+				quest.pre = type(group) == "table" and group or nil
+				quest.preAny = type(single) == "table" and single or nil
+				-- QuestieDB puts a lone prerequisite in preQuestSingle, where it is the one quest required: the same as a
+				-- one-element preQuestGroup, so the model can prove the chain's total. With both fields present the group is
+				-- the all-of set and the single is the any-of set, and the model reads each as such.
+				if not quest.pre and quest.preAny and #quest.preAny == 1 then
+					quest.pre, quest.preAny = quest.preAny, nil
+				end
+				local skill = v.requiredSkill
+				local skillID = type(skill) == "table" and tonumber(skill[1]) or nil
+				local skillValue = type(skill) == "table" and tonumber(skill[2]) or nil
+				if skillID and skillValue and skillValue > 0 then
+					quest.skill = { id = skillID, value = skillValue }
+				end
+				local low, high = v.requiredMinRep, v.requiredMaxRep
+				local lowFaction = type(low) == "table" and tonumber(low[1]) or nil
+				local highFaction = type(high) == "table" and tonumber(high[1]) or nil
+				if lowFaction and highFaction and lowFaction ~= highFaction then
+					-- AGFQuest holds one faction's standing: with a minimum and a maximum for different factions the data
+					-- cannot establish eligibility, so the quest gets no pickup.
+					quest.start = nil
+				elseif lowFaction or highFaction then
+					local rep = { faction = lowFaction or highFaction }
+					if lowFaction then
+						rep.min = tonumber(low[2])
+					end
+					if highFaction then
+						rep.max = tonumber(high[2])
+					end
+					quest.rep = rep
+				end
+				if type(v.exclusiveTo) == "table" then
+					exclusive[id] = v.exclusiveTo
+				end
 				local start = quest.start
 				if start and quest.classes and start.npc then
-					-- A class quest's giver is its class's trainer. The bundled trainer data has no entry for Forever's
-					-- extra class/race combinations, so fall back to the quest's single required class.
-					local npc = bundled.roles[start.npc]
-					start.trainer = (npc and npc.class) or SingleClass(quest.classes)
+					-- A class quest's giver is its class's trainer. The bundled role names the class it trains; without one,
+					-- QuestieDB's trainer flag plus the quest's single required class name it, so a plain quest giver is
+					-- never called a trainer.
+					local role = bundled.roles[start.npc]
+					local trained = role and role.class
+					if not trained and Trains(start.npc) then
+						trained = SingleClass(quest.classes)
+					end
+					start.trainer = trained
 				end
 				if not quest.dungeon then
 					quest.need, quest.obj, quest.kinds, quest.objectivesUnknown = ns.QuestieObjectives(
@@ -427,15 +524,71 @@ local function Build(lib, zones, bundled, yield)
 		end
 		yield()
 	end
-	local hubs, grid = ns.QuestieTowns.Build(bundled, places, yield)
+	-- QuestieDB names mutually exclusive quests directly; AGFQuest carries one id per exclusive group. Each
+	-- connected component of those links becomes a group id, its lowest quest, so every member closes the others'
+	-- siblings. A quest linked only to a quest the data does not hold stands alone.
+	local members = {}
+	local function Root(id)
+		local root = id
+		while members[root] ~= root do
+			root = members[root]
+		end
+		while members[id] ~= root do
+			members[id], id = root, members[id]
+		end
+		return root
+	end
+	for id, exclusiveTo in pairs(exclusive) do
+		members[id] = members[id] or id
+		for _, other in ipairs(exclusiveTo) do
+			if quests[other] then
+				members[other] = members[other] or other
+			end
+		end
+	end
+	for id, exclusiveTo in pairs(exclusive) do
+		for _, other in ipairs(exclusiveTo) do
+			if members[other] then
+				local root, member = Root(id), Root(other)
+				if root ~= member then
+					members[math.max(root, member)] = math.min(root, member)
+				end
+			end
+		end
+	end
+	local sizes = {}
+	for id in pairs(members) do
+		local root = Root(id)
+		sizes[root] = (sizes[root] or 0) + 1
+	end
+	for id in pairs(members) do
+		local root = Root(id)
+		if sizes[root] > 1 then
+			quests[id].group = root
+		end
+	end
+	local hubs = ns.QuestieTowns.Build(bundled, places, yield)
 	-- Who trains, keeps an inn or runs a battleground queue, where and for which side. What a trainer teaches is the
 	-- bundled `roles`; an innkeeper is QuestieDB's flag. An NPC with no side or no spawn on a placed map is left out.
 	local npcs = {}
 	for _, id in ipairs(type(lib.Npc.GetAllIds) == "function" and lib.Npc.GetAllIds() or {}) do
 		local role = bundled.roles[id]
-		local values = lib.Npc.GetAll(id, SERVICE_FIELDS)
-		local inn = values and bit.band(tonumber(values[1]) or 0, INNKEEPER) ~= 0
-		local side = values and SIDES[values[2]]
+		local row = npcRows[id]
+		if row == nil then
+			-- An NPC with a bundled role always needs its place; any other is read for its service flags alone, and an
+			-- innkeeper then read again for its place. An NPC already read as a quest giver keeps that row.
+			if role then
+				row = NpcRow(id)
+			else
+				local values = lib.Npc.GetAll(id, SERVICE_FIELDS)
+				local inn = values and bit.band(tonumber(values[1]) or 0, INNKEEPER) ~= 0
+				local side = values and SIDES[values[2]]
+				row = side and inn and NpcRow(id) or false
+				npcRows[id] = row
+				reads.Npc[id] = reads.Npc[id] or false
+			end
+		end
+		local inn, side = row and row.inn or false, row and row.side
 		local giver = side and (role or inn) and Giver("Npc", id)
 		if giver then
 			local best, bestKey
@@ -451,11 +604,18 @@ local function Build(lib, zones, bundled, yield)
 					npc[key] = value
 				end
 				npc.place = { map = best.map, x = best.x, y = best.y, name = giver.name }
-				npc.place.hub = ns.QuestieTowns.Hub(bundled, grid, npc.place)
+				npc.place.hub = ns.QuestieTowns.Hub(bundled, npc.place)
 				npcs[id] = npc
 			end
 		end
 		yield()
+	end
+	-- A service NPC in a town no quest place reaches still needs the town named.
+	for _, npc in pairs(npcs) do
+		local hub = npc.place.hub
+		if hub and not hubs[hub] then
+			hubs[hub] = { name = ns.QuestieTowns.Name(bundled, npc.place) }
+		end
 	end
 	local data = { quests = quests, hubs = hubs, npcs = npcs }
 	for key, value in pairs(bundled) do
@@ -473,14 +633,117 @@ end
 empty.quests, empty.hubs = {}, {}
 ns.Data = empty --[[@as AGFData]]
 
+-- The inputs the composed catalogue depends on. QuestieDB corrects its quest, NPC and object rows from the
+-- character's class and faction (UnitClassBase, UnitFactionGroup) and names them in the client's language
+-- (GetLocale), and the client's build and this addon's version decide the record shape, so a catalogue built under
+-- one set of inputs is never used under another. nil in a dev checkout, whose TOC version the packager has not
+-- filled in, so nothing is cached and every login rebuilds.
+---@param version string QuestieDB's version
+---@return string?
+local function CatalogueKey(version)
+	local mine = C_AddOns.GetAddOnMetadata(addonName, "Version")
+	if type(mine) ~= "string" or mine == "" or mine:sub(1, 1) == "@" then
+		return nil
+	end
+	local _, build = GetBuildInfo()
+	return table.concat({
+		"version=" .. mine,
+		"questiedb=" .. version,
+		"flavour=" .. tostring(C_AddOns.GetAddOnMetadata(ADDON, "X-Flavor")),
+		"client=" .. tostring(build),
+		"locale=" .. tostring(GetLocale()),
+		"class=" .. tostring(UnitClassBase("player")),
+		"faction=" .. tostring(UnitFactionGroup("player")),
+	}, "\n")
+end
+
+-- The catalogue the saved data carries for this character, or nil. Per character, because QuestieDB's class and
+-- faction corrections make one character's rows another's. Only a table is considered; anything else rebuilds.
+---@return table?
+local function Saved()
+	local charDB = AdventureGuideForeverCharDB
+	local saved = type(charDB) == "table" and charDB.catalogue or nil
+	return type(saved) == "table" and saved or nil
+end
+
+-- Whether a saved catalogue is the shape this version writes. A truncated or foreign save fails and is rebuilt;
+-- the check reads one quest, so it cannot stall a frame, and it never errors.
+---@param saved table
+---@return boolean
+local function Shape(saved)
+	if type(saved.quests) ~= "table" or type(saved.hubs) ~= "table" or type(saved.npcs) ~= "table" then
+		return false
+	end
+	local id, quest = next(saved.quests)
+	return id ~= nil and type(quest) == "table" and type(quest.title) == "string" and type(quest.level) == "number"
+end
+
+-- The saved catalogue as ns.Data: the bundled geometry with the saved quests, towns and service NPCs over it, the
+-- same overlay Build ends with.
+---@param saved table
+---@return table data an AGFData
+local function Assemble(saved)
+	local data = {}
+	for key, value in pairs(bundled) do
+		data[key] = value
+	end
+	data.quests, data.hubs, data.npcs = saved.quests, saved.hubs, saved.npcs
+	return data
+end
+
+-- Keeps this login's catalogue for the next one, under the key that produced it.
+---@param result AGFData
+---@param key string
+local function Remember(result, key)
+	if type(AdventureGuideForeverCharDB) == "table" then
+		AdventureGuideForeverCharDB.catalogue = {
+			key = key,
+			quests = result.quests,
+			hubs = result.hubs,
+			npcs = result.npcs,
+		}
+	end
+end
+
+-- The saved catalogue for this character under `key`, or nil: the key names the exact inputs that produced it, and
+-- the shape check rejects a truncated or foreign save.
+---@param key string
+---@return table?
+local function Matching(key)
+	local saved = Saved()
+	return saved and saved.key == key and Shape(saved) and saved or nil
+end
+
+-- The saved catalogue, adopted from the saved variables and addon metadata alone, so it is available at login
+-- without waiting for Questie. Questie's live availability is policy, not record data, so it joins later; the ready
+-- callback rebuilds the route once for it. True when the catalogue is now ns.Data.
+---@param version string QuestieDB's version
+---@return boolean adopted
+local function Adopt(version)
+	local key = CatalogueKey(version)
+	local saved = key and Matching(key)
+	if not saved then
+		return false
+	end
+	status.state, status.version, status.settled = "questie", version, true
+	ns.Data = Assemble(saved) --[[@as AGFData]]
+	return true
+end
+
 local function Start()
+	local version = C_AddOns.GetAddOnMetadata(ADDON, "Version") or "?"
+	if Adopt(version) then
+		-- The catalogue is already in place; this rebuild brings the live policy in.
+		ns.Invalidate()
+		return
+	end
 	local lib, reason, zones = Fit()
 	if not lib or not zones then
 		status.state, status.reason, status.settled = "unavailable", reason, true
 		ns.Invalidate()
 		return
 	end
-	local version = C_AddOns.GetAddOnMetadata(ADDON, "Version") or "?"
+	local key = CatalogueKey(version)
 	local started = 0
 	local co = coroutine.create(Build)
 	local function Yield()
@@ -500,6 +763,9 @@ local function Start()
 			C_Timer.After(0, Step)
 		else
 			status.state, status.version, status.settled = "questie", version, true
+			if key then
+				Remember(result, key)
+			end
 			ns.Data = result --[[@as AGFData]]
 			ns.Invalidate()
 		end
@@ -508,24 +774,42 @@ local function Start()
 end
 
 EventUtil.ContinueAfterAllEvents(function()
-	status.state = "building"
+	-- The earliest safe point: the saved variables have loaded, and the class and faction the key depends on are
+	-- readable. Adoption here means the route is planned from the saved records at login, and Questie's ready
+	-- callback only joins its live policy.
+	local version = C_AddOns.GetAddOnMetadata(ADDON, "Version") or "?"
+	local adopted = Adopt(version)
+	if adopted then
+		ns.Invalidate()
+	else
+		status.state = "building"
+	end
 	if Questie and Questie.API and Questie.API.RegisterOnReady then
 		local ready = false
 		Questie.API.RegisterOnReady(function()
 			ready = true
-			Start()
+			if adopted then
+				-- The saved catalogue stands; one rebuild brings Questie's live policy in.
+				ns.Invalidate()
+			else
+				Start()
+			end
 		end)
 		C_Timer.After(READY_WAIT, function()
-			if not ready then
+			if not ready and not adopted then
 				Start()
 			end
 		end)
 		if Questie.API.RegisterForQuestUpdates then
-			Questie.API.RegisterForQuestUpdates(function()
-				ns.Invalidate()
+			Questie.API.RegisterForQuestUpdates(function(questId)
+				-- An update that leaves the quest's availability where the last plan found it cannot move the route.
+				if type(questId) == "number" and not ns.State.QuestUpdateChanged(questId) then
+					return
+				end
+				ns.State.QuestChanged()
 			end)
 		end
-	else
+	elseif not adopted then
 		Start()
 	end
 end, "PLAYER_LOGIN")
@@ -542,108 +826,36 @@ function ns.SourceHint()
 	end
 end
 
--- Optional dungeon details are read only by the visible dungeon tab. Like the quest adapter, this takes a
--- yielding caller and publishes a complete snapshot. GetAllIds is the contract's shared, read-only ID list.
+-- Optional dungeon quest details, read only by the visible dungeon tab: the reward items the catalogue gives a
+-- dungeon quest, and the objective text it holds for it. Like the quest adapter this takes a yielding caller and
+-- publishes a complete snapshot. GetAllIds is the contract's shared, read-only ID list.
 ---@param yield fun()
----@return AGFDungeonSource?
-function ns.ReadDungeonSource(yield)
-	local lib, _, zones = Fit()
-	if not lib or not zones then
+---@return AGFDungeonDetails?
+function ns.ReadDungeonDetails(yield)
+	local lib = Fit()
+	if not lib then
 		return nil
 	end
-	local fields = {
-		Npc = { "name", "rank", "spawns", "minLevel", "maxLevel" },
-		Item = { "name", "npcDrops", "questRewards", "startQuest" },
-	}
-	if MissingField(lib, { ENTITIES[2], ENTITIES[4] }, fields) then
+	local fields = { Item = { "questRewards" } }
+	if MissingField(lib, { ENTITIES[4] }, fields) then
 		return nil
 	end
-	local result = {
-		bosses = {},
-		loot = {},
-		rewards = {},
-		objectives = {},
-		npcs = {},
-		worldDrops = {},
-		starts = {},
-	}
-	local instanceOf = InstanceAreas(lib, zones, Dungeon)
-	local npcInstances, npcInfo = {}, {}
-	for instance in pairs(zones.instances) do
-		if Dungeon(instance) then
-			result.bosses[instance], result.loot[instance], result.npcs[instance] = {}, {}, {}
-		end
-	end
-	for _, id in ipairs(lib.Npc.GetAllIds()) do
-		local values = lib.Npc.GetAll(id, fields.Npc)
-		if values and type(values[1]) == "string" and type(values[3]) == "table" then
-			local instance, outside
-			for area, spots in pairs(values[3]) do
-				if type(spots) == "table" and next(spots) then
-					local parent = zones.parentOverride[area] or zones.parent[area]
-					local here = instanceOf[area] or (parent and instanceOf[parent])
-					outside = outside or not here or (instance and instance ~= here)
-					instance = here or instance
-				end
-				yield()
-			end
-			if instance and not outside then
-				npcInstances[id] = instance
-				local npc = { id = id, name = values[1], rank = values[2] or 0, low = values[4], high = values[5] }
-				npcInfo[id], result.npcs[instance][id] = npc, npc
-				-- Elite rank alone is not evidence of an encounter. Curated AtlasLoot/EJ bosses augment this later.
-				if npc.rank == 3 then
-					table.insert(result.bosses[instance], npc)
-				end
-			end
-		end
-		yield()
-	end
+	local details = { rewards = {}, objectives = {} }
 	local seen = {}
 	for _, id in ipairs(lib.Item.GetAllIds()) do
-		local values = not seen[id] and lib.Item.GetAll(id, fields.Item)
+		local quests = not seen[id] and lib.Item.GetAll(id, fields.Item)
 		seen[id] = true
-		if values and type(values[1]) == "string" then
-			local instance, outside
-			local droppers, known = {}, {}
-			for _, npc in ipairs(type(values[2]) == "table" and values[2] or {}) do
-				local here = npcInstances[npc]
-				outside = outside or not here or (instance and instance ~= here)
-				instance = here or instance
-				if here and not known[npc] then
-					known[npc] = true
-					droppers[#droppers + 1] = npcInfo[npc]
-				end
-				yield()
-			end
-			local item =
-				{ id = id, name = values[1], startQuest = type(values[4]) == "number" and values[4] > 0 or nil }
-			result.worldDrops[id] = outside or nil
-			result.starts[id] = item.startQuest
-			if instance and not outside then
-				table.sort(droppers, function(a, b)
-					return a.id < b.id
-				end)
-				item.droppers = droppers
-				table.insert(result.loot[instance], item)
-			end
-			for _, quest in ipairs(type(values[3]) == "table" and values[3] or {}) do
+		if quests and type(quests[1]) == "table" then
+			for _, quest in ipairs(quests[1]) do
 				if ns.Data.quests[quest] then
-					result.rewards[quest] = result.rewards[quest] or {}
-					table.insert(result.rewards[quest], item)
+					local list = details.rewards[quest] or {}
+					details.rewards[quest] = list
+					list[#list + 1] = id
 				end
 				yield()
 			end
 		end
 		yield()
-	end
-	for _, rows in pairs(result.bosses) do
-		table.sort(rows, function(a, b)
-			if (a.low or 0) ~= (b.low or 0) then
-				return (a.low or 0) < (b.low or 0)
-			end
-			return a.id < b.id
-		end)
 	end
 	local keys = lib.Meta.QuestMeta.questKeys
 	if keys.objectivesText then
@@ -656,10 +868,10 @@ function ns.ReadDungeonSource(yield)
 						lines[#lines + 1] = line
 					end
 				end
-				result.objectives[id] = table.concat(lines, "\n")
+				details.objectives[id] = table.concat(lines, "\n")
 			end
 			yield()
 		end
 	end
-	return result
+	return details
 end

@@ -22,6 +22,20 @@ local function atObjectives()
 	assert(h.ns.Guidance.CurrentStep().key == "area:887:0", "active guidance targets the objective area")
 	assert(h.spfRoute.stops[1].hold == true, "objective interaction holds its destination")
 	assert(h.spfRoute.stops[1].radius >= 30, "objective arrival carries its area radius to SPF")
+	local shapes = h.spfRoute.stops[1].shapes
+	assert(type(shapes) == "table" and #shapes > 0, "objective arrival carries its areas to SPF")
+	for _, shape in ipairs(shapes) do
+		assert(
+			shape.map and shape.x and shape.y and shape.radius and shape.radius >= 0,
+			"each area reaches SPF as a map, a point and a yard radius"
+		)
+	end
+	-- Only an area of exactly one quest names it; a merged area leaves Shortest Path to the circles.
+	local areaStep = h.ns.Guidance.CurrentStep()
+	assert(
+		(#(areaStep.quests or {}) == 1) == (h.spfRoute.stops[1].questID ~= nil),
+		"an area names its quest only when it is the only one"
+	)
 	return h
 end
 
