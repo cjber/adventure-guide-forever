@@ -46,7 +46,7 @@ The full guide continues across pages. These images are generated previews of th
 
 ## Features
 
-- **Dungeons.** Browse dungeon quests, check what needs picking up before you go and plan a journey to their givers. AtlasLoot optionally supplies encounter and loot tables, Atlas the interior maps, and Adventure Guide for Classic opens from the tab for boss tactics.
+- **Dungeons.** Browse dungeon quests, check what needs picking up before you go and plan a journey to their givers. Atlas supplies the interior maps, and [Adventure Guide for Classic](https://www.curseforge.com/wow/addons/adventure-guide-for-classic) is the recommended companion for a dungeon's bosses and loot: the Bosses and loot control opens it from the tab.
 - **Full guide.** Page through the current route followed by the area's Questie outline. Later entries stay outline-only until Questie confirms they are available.
 - **Journeys.** Finish loose ends, follow a zone's story, head somewhere suited to your level or pick up class quests. Each card says why it fits. Dungeon and battleground journeys are opt-in.
 - **Choose and go.** Picking a journey starts its route with Shortest Path Forever, or the game's waypoint without it. Stop clears only the route the guide started; a waypoint you set yourself stays.

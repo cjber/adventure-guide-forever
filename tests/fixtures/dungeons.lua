@@ -1,45 +1,19 @@
--- Screenshot-only runtime adapter fixture, never shipped. Names, ranks, objectives and drop/reward
--- relations: CMaNGOS classic-db 22b51464; icons: wago.tools 1.60.1.69913. Instance spawn coordinates are
--- synthetic and used only for membership; no Questie data is copied or bundled.
+-- Screenshot-only runtime adapter fixture, never shipped. Names, objectives and reward relations:
+-- CMaNGOS classic-db 22b51464; item icons: wago.tools 1.60.1.69913. No Questie data is copied or bundled.
 return {
-	npcs = {
-		[3653] = { name = "Kresh", rank = 1, minLevel = 20, maxLevel = 20, spawns = { [100043] = { { 50, 50 } } } },
-		[3670] = {
-			name = "Lord Pythas",
-			rank = 1,
-			minLevel = 21,
-			maxLevel = 21,
-			spawns = { [100043] = { { 50, 50 } } },
-		},
-		[3671] = {
-			name = "Lady Anacondra",
-			rank = 1,
-			minLevel = 20,
-			maxLevel = 20,
-			spawns = { [100043] = { { 50, 50 } } },
-		},
-		[3673] = {
-			name = "Lord Serpentis",
-			rank = 1,
-			minLevel = 21,
-			maxLevel = 21,
-			spawns = { [100043] = { { 50, 50 } } },
-		},
-		[3674] = { name = "Skum", rank = 1, minLevel = 21, maxLevel = 21, spawns = { [100043] = { { 50, 50 } } } },
-	},
 	items = {
-		[918] = { name = "Deviate Hide Pack", npcDrops = {}, questRewards = { 1486 } },
-		[5970] = { name = "Serpent Gloves", npcDrops = { 3673 }, questRewards = {} },
-		[6448] = { name = "Tail Spike", npcDrops = { 3674 }, questRewards = {} },
-		[6449] = { name = "Glowing Lizardscale Cloak", npcDrops = { 3674 }, questRewards = {} },
-		[6459] = { name = "Savage Trodders", npcDrops = { 3673 }, questRewards = {} },
-		[6469] = { name = "Venomstrike", npcDrops = { 3673 }, questRewards = {} },
-		[6472] = { name = "Stinging Viper", npcDrops = { 3670 }, questRewards = {} },
-		[6473] = { name = "Armor of the Fang", npcDrops = { 3670 }, questRewards = {} },
-		[6480] = { name = "Slick Deviate Leggings", npcDrops = {}, questRewards = { 1486 } },
-		[10411] = { name = "Footpads of the Fang", npcDrops = { 3673 }, questRewards = {} },
-		[10412] = { name = "Belt of the Fang", npcDrops = { 3671 }, questRewards = {} },
-		[13245] = { name = "Kresh's Back", npcDrops = { 3653 }, questRewards = {} },
+		[918] = { name = "Deviate Hide Pack", questRewards = { 1486 } },
+		[5970] = { name = "Serpent Gloves", questRewards = {} },
+		[6448] = { name = "Tail Spike", questRewards = {} },
+		[6449] = { name = "Glowing Lizardscale Cloak", questRewards = {} },
+		[6459] = { name = "Savage Trodders", questRewards = {} },
+		[6469] = { name = "Venomstrike", questRewards = {} },
+		[6472] = { name = "Stinging Viper", questRewards = {} },
+		[6473] = { name = "Armor of the Fang", questRewards = {} },
+		[6480] = { name = "Slick Deviate Leggings", questRewards = { 1486 } },
+		[10411] = { name = "Footpads of the Fang", questRewards = {} },
+		[10412] = { name = "Belt of the Fang", questRewards = {} },
+		[13245] = { name = "Kresh's Back", questRewards = {} },
 	},
 	client = {
 		[918] = { name = "Deviate Hide Pack", quality = 3, icon = 133629, itemType = "Container", itemSubType = "Bag" },
@@ -78,16 +52,6 @@ return {
 		},
 		[10412] = { name = "Belt of the Fang", quality = 3, icon = 132519, itemType = "Armor", itemSubType = "Leather" },
 		[13245] = { name = "Kresh's Back", quality = 3, icon = 134964, itemType = "Armor", itemSubType = "Shields" },
-	},
-	-- Forever spell ids these bosses cast (Data/Abilities.lua), with the client's own name and icon (SpellName and
-	-- SpellMisc at 1.60.1.70205). Screenshot-only: the game reads the same fields at runtime.
-	abilities = {
-		[700] = { name = "Sleep", icon = 136090 },
-		[5187] = { name = "Healing Touch", icon = 136041 },
-		[6254] = { name = "Chained Bolt", icon = 136015 },
-		[6778] = { name = "Healing Touch", icon = 136041 },
-		[8147] = { name = "Thunderclap", icon = 136105 },
-		[9532] = { name = "Lightning Bolt", icon = 136048 },
 	},
 	objectives = {
 		[1486] = "Nalpak in the Wailing Caverns wants 20 Deviate Hides.",

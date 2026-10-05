@@ -250,9 +250,6 @@ out.window_professions = Window(h, "window_professions", 2)
 -- The optional runtime adapter is exercised with independently sourced, non-shipping fixtures.
 local dungeonFixture = dofile("tests/fixtures/dungeons.lua")
 local mirror = harness.questieMirror(h.ns.Data)
-for id, npc in pairs(dungeonFixture.npcs) do
-	mirror.npcs[id] = npc
-end
 mirror.items = dungeonFixture.items
 for id, text in pairs(dungeonFixture.objectives) do
 	mirror.quests[id].objectivesText = { text }
@@ -264,78 +261,6 @@ h = Load("v1", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, {
 	questiedb = mirror,
 	items = dungeonFixture.client,
 })
-local encounters = { 3671, 3653, 3670, 3674, 3673 }
-h.G.C_EncounterJournal = {
-	GetInstanceForGameMap = function(id)
-		return id == 43 and 99 or 0
-	end,
-}
-h.G.EJ_GetEncounterInfoByIndex = function(index, instance)
-	local npc = instance == 99 and dungeonFixture.npcs[encounters[index]]
-	if npc then
-		return npc.name, "", encounters[index]
-	end
-end
--- The Bosses and Loot views read AtlasLoot's curated pages and drop chances at runtime; this snapshot, built from
--- the same fixture, shows the encounter order, boss abilities and curated rates a player with AtlasLoot sees.
-local function atlasPages(fixture)
-	local pages = {
-		GetDifficultyByName = function(_, name)
-			return name == "n" and 1
-		end,
-	}
-	local ids = {}
-	for id in pairs(fixture.npcs) do
-		ids[#ids + 1] = id
-	end
-	table.sort(ids)
-	for _, id in ipairs(ids) do
-		local npc, drops = fixture.npcs[id], {}
-		for item, row in pairs(fixture.items) do
-			for _, dropper in ipairs(row.npcDrops or {}) do
-				if dropper == id then
-					drops[#drops + 1] = { 1, item }
-				end
-			end
-		end
-		table.sort(drops, function(a, b)
-			return a[2] < b[2]
-		end)
-		pages["Wailing" .. id] = {
-			InstanceID = 43,
-			LevelRange = { 15, 25 },
-			items = { { name = npc.name, npcID = id, Level = npc.maxLevel, [1] = drops } },
-		}
-	end
-	return pages
-end
--- AtlasLoot's own installed droprate data for these Wailing Caverns drops.
-local RATES = {
-	[3653] = { [13245] = 13.47 },
-	[3670] = { [6472] = 29.57, [6473] = 55.18 },
-	[3671] = { [10412] = 9.6 },
-	[3673] = { [5970] = 19.38, [6459] = 23.28, [6469] = 16.77, [10411] = 21.1 },
-	[3674] = { [6448] = 46.63, [6449] = 45.48 },
-}
-h.G.AtlasLoot = {
-	Locales = { Trash = "Trash" },
-	ItemDB = {
-		Get = function()
-			return atlasPages(dungeonFixture)
-		end,
-	},
-	Data = {
-		Droprate = {
-			GetData = function(_, npc, item)
-				return RATES[npc] and RATES[npc][item]
-			end,
-		},
-	},
-}
-h.G.C_Spell.GetSpellInfo = function(id)
-	local ability = dungeonFixture.abilities[id]
-	return ability and { name = ability.name, iconID = ability.icon, spellID = id }
-end
 h.ns.WindowDB().dungeon = 43
 Window(h, "dungeons", 5)
 for _, row in
@@ -346,37 +271,16 @@ do
 	h.Click(row)
 end
 out.dungeons = Window(h, "dungeons", 5)
-for _, view in ipairs({ "prep", "bosses", "loot" }) do
-	local label = view == "bosses" and h.ns.L.DUNGEON_BOSSES_TAB or h.ns.L["DUNGEON_" .. view:upper() .. "_TAB"]
-	for _, tab in
-		ipairs(h.Find(function(frame)
-			return frame:IsVisible()
-				and frame.stockTemplate == "TabSystemTopButtonTemplate"
-				and frame:GetText() == label
-		end))
-	do
-		h.Click(tab)
-	end
-	out["dungeons_" .. view] = Window(h, "dungeons_" .. view, 5)
-end
-h = Load("v1", false, true, nil, nil, {
-	tf = { spells = { SPELL, SPELL, SPELL } },
-	talents = 1,
-	entrances = { [43] = { map = 1413, x = 0.46, y = 0.36 } },
-})
-h.ns.WindowDB().dungeon = 43
-Window(h, "dungeons_bosses_missing", 5)
 for _, tab in
 	ipairs(h.Find(function(frame)
 		return frame:IsVisible()
 			and frame.stockTemplate == "TabSystemTopButtonTemplate"
-			and frame:GetText() == h.ns.L.DUNGEON_BOSSES_TAB
+			and frame:GetText() == h.ns.L.DUNGEON_PREP_TAB
 	end))
 do
 	h.Click(tab)
 end
-out.dungeons_bosses_missing = Window(h, "dungeons_bosses_missing", 5)
-
+out.dungeons_prep = Window(h, "dungeons_prep", 5)
 -- Owner's live regression: Alliance level 19 in Darkshore, browsing Horde-only Ragefire quests.
 -- Character selection in the beta client confirms a dwarf shaman.
 h = Load("v1", false, true, nil, nil, {
@@ -408,16 +312,6 @@ h.ns.Invalidate()
 h.flush()
 h.ns.WindowDB().dungeon = 389
 out.dungeons_live = Window(h, "dungeons_live", 5)
-for _, tab in
-	ipairs(h.Find(function(frame)
-		return frame:IsVisible()
-			and frame.stockTemplate == "TabSystemTopButtonTemplate"
-			and frame:GetText() == h.ns.L.DUNGEON_BOSSES_TAB
-	end))
-do
-	h.Click(tab)
-end
-out.dungeons_empty = Window(h, "dungeons_empty", 5)
 
 local ASIDES = {
 	tf = { spells = { SPELL, SPELL, SPELL } },

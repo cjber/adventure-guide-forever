@@ -378,11 +378,7 @@ WINDOW_TABS = 30  # the tabs hang below the frame
 WINDOWS = (
     "dungeons",
     "dungeons_live",
-    "dungeons_empty",
     "dungeons_prep",
-    "dungeons_bosses",
-    "dungeons_loot",
-    "dungeons_bosses_missing",
     "window",
     "window_professions",
     "window_pvp",

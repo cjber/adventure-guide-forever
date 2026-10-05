@@ -17,8 +17,7 @@ Window.INSET_WIDTH, Window.INSET_HEIGHT = Window.WIDTH - 8, Window.HEIGHT - Wind
 Window.FONT_TITLE, Window.FONT_ROW, Window.FONT_HEADER = "GameFontNormalLarge2", "GameFontNormalMed3", "GameFontNormal"
 Window.GOLD = { 0.929, 0.788, 0.620 }
 Window.TITLE_INK = { 0.902, 0.788, 0.671 }
-Window.BODY_INK = { 0.25, 0.148, 0.02 }
-local GOLD, TITLE_INK, BODY_INK = Window.GOLD, Window.TITLE_INK, Window.BODY_INK
+local GOLD, TITLE_INK = Window.GOLD, Window.TITLE_INK
 -- The renown divider (UI-Journeys-Renown-divider, 733x16) under a tab's featured card, across the tab at its own
 -- aspect: DIVIDER_GAP below the card, the grid DIVIDER_SPAN below it.
 local DIVIDER_ATLAS, DIVIDER_GAP = "UI-Journeys-Renown-divider", 4
@@ -390,43 +389,6 @@ function Window.CreateSectionHeader(parent, text, onClick)
 		end)
 	end
 	return header
-end
-
---[[ The Journal's paper well for text that runs longer than a row: the AbilityTextBG parchment, its bottom
-     border, a bullet and brown body ink. Pages that show long text hand `Window.SetPaperWell` their lines. ]]
-
----@class AGFWindowPaperWell : Frame
----@field Paper Texture
----@field Border Texture
----@field Text FontString
----@field Bullet Texture
-
----@param parent Frame
----@return AGFWindowPaperWell
-function Window.CreatePaperWell(parent)
-	local well = CreateFrame("Frame", nil, parent) --[[@as AGFWindowPaperWell]]
-	well.Paper = well:CreateTexture(nil, "BACKGROUND", "UI-PaperOverlay-AbilityTextBG")
-	well.Paper:SetPoint("TOPLEFT")
-	well.Paper:SetPoint("BOTTOMRIGHT")
-	well.Border = well:CreateTexture(nil, "BACKGROUND", "UI-PaperOverlay-AbilityTextBottomBorder", 1)
-	well.Border:SetPoint("LEFT", well.Paper, "BOTTOMLEFT")
-	well.Border:SetPoint("RIGHT", well.Paper, "BOTTOMRIGHT")
-	well.Bullet = well:CreateTexture(nil, "ARTWORK", "UI-PaperOverlay-Bullet")
-	well.Bullet:SetPoint("TOPLEFT", 8, -9)
-	well.Text = well:CreateFontString(nil, "ARTWORK", "GameFontBlack")
-	well.Text:SetPoint("TOPLEFT", 26, -6)
-	well.Text:SetPoint("RIGHT", -8, 0)
-	well.Text:SetJustifyH("LEFT")
-	well.Text:SetWordWrap(true)
-	well.Text:SetTextColor(BODY_INK[1], BODY_INK[2], BODY_INK[3])
-	return well
-end
-
--- `well`'s lines as its body text.
----@param well AGFWindowPaperWell
----@param lines string[]
-function Window.SetPaperWell(well, lines)
-	well.Text:SetText(table.concat(lines, "\n"))
 end
 
 -- The tabs share the featured card and side column; a grid leaves room for its own footer.

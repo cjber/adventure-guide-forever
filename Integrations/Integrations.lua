@@ -13,6 +13,9 @@ function Integrations.ClassicGuideAvailable()
 	return C_AddOns.IsAddOnLoaded("AdventureGuideClassic") and type(SlashCmdList.ADVENTUREGUIDECLASSIC) == "function"
 end
 
+-- Adventure Guide for Classic exposes one public entry, its slash command, whose handler toggles its encounter
+-- journal; it has no public way to open a named instance, and its journal and navigation tables sit behind a private
+-- facade. An empty message is that handler's own "open the window" case, so the handoff uses it as it stands.
 ---@return boolean
 function Integrations.OpenClassicGuide()
 	if not Integrations.ClassicGuideAvailable() then

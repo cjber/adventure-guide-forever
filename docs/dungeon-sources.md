@@ -1,47 +1,20 @@
 # Dungeon sources
 
-The Dungeons tab uses instance Map.IDs, never dungeon-name matching. AtlasLoot, the native Encounter
-Journal and QuestieDB are optional runtime sources; no third-party guide code, AtlasLoot data or
-bundled boss table is shipped.
-
-Boss data comes from AtlasLoot first and the native Encounter Journal second. AtlasLoot's curated
-encounter list is authoritative when its dungeon module is installed, and explicit
-`C_EncounterJournal` / `EJ_GetEncounterInfoByIndex` records fill the gaps when it is not. Loot comes
-from AtlasLoot's curated item rows, with QuestieDB supplying runtime item-to-NPC relations where
-AtlasLoot lists none. Neither source is bundled, and when none is installed the tab shows an empty
-state instead of failing. QuestieDB can still supply runtime NPC names, item drops, rewards,
-objectives and entrance points, but it is not a bundled fallback and never overrides AtlasLoot's
-encounter order or localized names.
+The Dungeons tab uses instance Map.IDs, never dungeon-name matching. QuestieDB is the optional runtime
+source for a dungeon's quests and their details, and Atlas is the optional source for its interior maps;
+no third-party guide code or data is shipped. Dungeon and raid bosses and loot belong to
+[Adventure Guide for Classic](https://www.curseforge.com/wow/addons/adventure-guide-for-classic), this
+addon's recommended companion for them. The tab keeps one control, Bosses and loot, that opens that
+addon's window where its own Bosses and Loot pages were.
 
 | Source | Pin / result | Use |
 | --- | --- | --- |
-| CMaNGOS classic-db | `22b51464f1625f6ef6275771de1f5466c6f5d19e` | `areatrigger_teleport` entrance requirements; `creature_ai_scripts`, `creature_template_spells` and `creature_spell_list` boss ability ids |
+| CMaNGOS classic-db | `22b51464f1625f6ef6275771de1f5466c6f5d19e` | `areatrigger_teleport` entrance requirements, and the test-only quest corpus |
 | QuestieDB Forever release | `QUESTIEDB_TAG` and `QUESTIEDB_SHA256` in `tools/gen_corpus.py` | The test-only quest corpus, through the addon's own QuestieSource build |
-| wago.tools client tables | `BUILD` in `tools/gen_quests.py` | Existing Map / AreaTable joins identify dungeon instances; existing zone map art; the corpus's skill and faction names; `SpellName` and `SpellEffect` gate every generated boss ability id |
-| Gethe/wow-ui-source, forever | `bd2470aed543f72697a044e989285b6c83e63f73` | Encounter Journal templates, explicit-instance API reads and square instance icon |
-| QuestieDB public API documentation | `365537a340473291f5af3b7a53a5eca94e2a5f1a`, contract 2 | Runtime NPC ranks/spawns, item drops/rewards, quest objectives and entrance points |
+| wago.tools client tables | `BUILD` in `tools/gen_quests.py` | Existing Map / AreaTable joins identify dungeon instances; existing zone map art; the corpus's skill and faction names |
+| Gethe/wow-ui-source, forever | `bd2470aed543f72697a044e989285b6c83e63f73` | Shared tab and list templates |
+| QuestieDB public API documentation | `365537a340473291f5af3b7a53a5eca94e2a5f1a`, contract 2 | Runtime NPC ranks/spawns, item rewards, quest objectives and entrance points |
 | Tweaks Forever | Public API v1 | Outdoor entrance fallback, through the existing Providers adapter |
-
-Boss abilities are the one generated boss table. `tools/gen_abilities.py` reads the pinned CMaNGOS
-classic-db (GPL-3.0) `creature_ai_scripts` cast actions, `creature_template_spells` sets and
-`creature_spell_list` lists for every elite-or-above creature that spawns on a browsed instance map, and
-writes `Data/Abilities.lua` keyed by creature entry (npcID). Forever renumbers Classic spell ids, so every
-id is kept only while the pinned wago.tools build names it in `SpellName` (not an obsolete name) and gives
-it a real effect in `SpellEffect`; an id that resolves to nothing is dropped, never shipped. The page reads
-the name, icon and tooltip from the client at runtime with `C_Spell.GetSpellInfo` and
-`GameTooltip:SetSpellByID`, and hides an id this build cannot resolve. Only ids are bundled, no other
-addon's ability table is copied, and the gate is `tools/gen_abilities_test.py` plus the regeneration check.
-
-Drop chances come from AtlasLoot's own installed data, read at runtime through
-`AtlasLoot.Data.Droprate:GetData(npcID, itemID)` (AtlasLoot's `DungeonsAndRaids/droprate.lua`). Nothing is
-bundled and no rate is invented: a boss drop without a registered rate shows no percent. This is the same
-curated rate AtlasLoot applies to its own item tooltips, not a claim the client or CMaNGOS can support.
-
-The dungeon pages wear the Encounter Journal's own art and sizes without its frames, which do not load on
-this client (`Blizzard_EncounterJournal.toc` gates its files to mainline): a 174x96 instance button, a
-325x55 boss button with the default portrait, a 321x45 loot row with a 42x42 icon and the loot border, the
-journal's title and body fonts, all cut from `UI-EncounterJournalTextures` at the journal's own texcoords.
-Every texture, atlas and font object used was checked against the pinned client build before use.
 
 The QuestieDB adapter owns the runtime quest source. `tools/gen_quests.py` writes the entrance
 requirement list on each instance: level, alternative required items, completed quest and an unsupported
@@ -70,50 +43,21 @@ ranges directly. No quest levels or entry minima are substituted for those recom
 
 On 2026-09-27, wago.tools returned `{"errors":"Table not found."}` for both
 [JournalInstance](https://wago.tools/db2/JournalInstance/csv?build=1.60.1.69913) and
-[JournalEncounter](https://wago.tools/db2/JournalEncounter/csv?build=1.60.1.69913).
-The [Forever API source](https://github.com/Gethe/wow-ui-source/blob/bd2470aed543f72697a044e989285b6c83e63f73/Interface/AddOns/Blizzard_APIDocumentationGenerated/EncounterJournalDocumentation.lua)
-still declares `C_EncounterJournal.GetInstanceForGameMap`. The tab probes it and uses
-`EJ_GetEncounterInfoByIndex(index, journalInstanceID)` when it returns a real instance. It never changes the
-player's journal selection. Journal loot APIs depend on that shared selection, so the tab's Loot page uses
-AtlasLoot's rows, or QuestieDB's explicit item-to-NPC relations, instead.
+[JournalEncounter](https://wago.tools/db2/JournalEncounter/csv?build=1.60.1.69913). The build carries no
+client encounter table, which is why a dungeon's bosses and loot are not listed here and the Bosses and loot
+control hands them to Adventure Guide for Classic instead.
 
 [LoadingScreens](https://wago.tools/db2/LoadingScreens/csv?build=1.60.1.69913) exists, but the inspected API
 surface provides no Map.ID-to-loading-screen texture lookup. Adding an exported art table would exceed
-this feature's bundled-data allowance. Instead, a client journal icon is shown when available; otherwise
-the header uses existing `Data/ZoneArt.lua` tiles around the known entrance. Both preserve native aspect.
+this feature's bundled-data allowance. The page's ring icon is the Adventure Guide's own dungeon atlas, drawn
+at native aspect, and the header uses existing `Data/ZoneArt.lua` tiles around the known entrance.
 
 The [QuestieDB API](https://github.com/Questie/QuestieDB/blob/365537a340473291f5af3b7a53a5eca94e2a5f1a/docs/api.md)
 provides sorted, shared `GetAllIds` arrays and detached `GetAll` rows. The adapter yields between records,
-checks field metadata, and publishes only a complete snapshot. The pinned NPC metadata has creature rank
-but no dungeon-boss flag. Only rank 3 proves a boss by itself; ordinary rank-1 elites are not listed as
-bosses. Explicit client journal encounters can identify matching local NPCs in journal order. AtlasLoot's
-curated encounter list takes precedence when available; otherwise the native journal supplies the
-encounter list, and rank-3 Questie NPCs remain the final runtime fallback. Unidentified elites stay out.
-
-Loot is deduplicated by item ID. Every dropper must have known spawns exclusively in the same instance;
-unknown, outdoor or multi-instance droppers exclude the item, including when AtlasLoot also lists it.
-The client supplies rarity: green and better survive, as do QuestieDB `startQuest` items of any rarity.
-Uncached rarity waits for item data. Boss headings follow encounter order (otherwise level), and a final
-Trash heading collects remaining local drops. Shared drops appear once, under the first matching boss.
-Rewards still come from `questRewards`; the relation cannot establish which rewards are choices.
-Icons and item tooltips come from the client. Objectives use runtime `objectivesText`, falling back to
-GetQuestLogQuestText for accepted quests. Entrance gates do not establish every locked door's key.
-
-[AtlasLoot Classic Forever 1.1.2](https://www.curseforge.com/wow/addons/atlasloot-forever/files/8984349)
-was published for 1.60.1 on 2026-09-26. The publisher lists GPLv2. Its package and
-[upstream Classic source](https://github.com/Hoizame/AtlasLootClassic) expose
-`AtlasLoot.ItemDB:Get("AtlasLootClassic_DungeonsAndRaids")`: instance tables have `InstanceID`,
-`LevelRange` and ordered `items`; encounter groups have `npcID`, `name`, `Level`, and item rows at the
-module's `GetDifficultyByName("n")` key. Row slot 2 is the item ID. NPC IDs may be arrays. Wings
-sharing an instance merge by recommended level, preserving each wing's encounter order. Only encounter
-and localized Trash groups are read; quests, sets and other extra lists are excluded. AGF optionally
-loads the installed dungeon module on demand out of combat, and reads again when a fight that held it back
-ends or when AtlasLoot loads after the tab was read. It never changes AtlasLoot's selection or
-bundles its data. An empty Bosses view names what would fill it: install AtlasLoot, or enable a copy that is
-on disk but not running. With AtlasLoot alone, uncached rarity remains hidden and low-quality quest starters
-need QuestieDB to establish that exception. The runtime adapter is also compatible with the inspected
-Classic/Era layout; future schema changes fall back to the native Encounter Journal, and QuestieDB
-still supplies loot relations where AtlasLoot lists none.
+checks field metadata, and publishes only a complete snapshot. It reads item `questRewards` to place reward
+icons on a dungeon quest and `objectivesText` for its objective line; a quest with no catalogue text falls
+back to GetQuestLogQuestText for accepted quests. The relation cannot establish which rewards are choices.
+Icons and item tooltips come from the client. Entrance gates do not establish every locked door's key.
 
 QuestieDB's `ZoneDB.private.dungeons` supplies alternate instance area IDs and already-converted Forever
 entrance percentages. The adapter uses only points on maps AGF places and validates them before use. It
@@ -121,13 +65,19 @@ never applies the Era conversion a second time. The points are read once, before
 page, the journey card and the entrance button name the same place from the first draw. Tweaks remains the live
 fallback when those points are absent.
 
+Adventure Guide for Classic registers one public entry point, the slash command `/agc`, whose handler toggles
+its encounter journal window. It exposes no public way to open a specific instance, and its journal, navigation
+and component tables sit inside a private global facade rather than `_G`. The Bosses and loot control therefore
+calls that handler to open the companion's own window, names it in a tooltip, and is disabled with an install
+hint when the addon is absent or disabled. Nothing reaches into the companion's tables.
+
 The revised controls are the pinned Forever shared XML's
 [TabSystemTopButtonTemplate](https://github.com/Gethe/wow-ui-source/blob/bd2470aed543f72697a044e989285b6c83e63f73/Interface/AddOns/Blizzard_SharedXML/Shared/TabSystem/TabSystemTemplates.xml)
 and [CollapseButtonTemplate](https://github.com/Gethe/wow-ui-source/blob/bd2470aed543f72697a044e989285b6c83e63f73/Interface/AddOns/Blizzard_SharedXML/ListTemplates.xml),
 the latter used by QuestLogHeaderTemplate. AGF centres every sub-tab label on the same baseline.
 Screenshot runtime fixtures are independently derived from the pinned CMaNGOS source and client Item icons,
 with synthetic instance spawn positions used only for membership. They live under tests, which is never packaged;
-no Questie data has been copied. Scenes cover quests, prep, bosses, grouped loot, absent sources, empty data and the owner's Alliance Darkshore state.
+no Questie data has been copied. Scenes cover quests, prep, empty data and the owner's Alliance Darkshore state.
 
 The generator resolves unhinted overlapping outdoor maps using terrain area IDs from the same pinned
 client build. CMaNGOS spawn rows have world coordinates but no area/zone column. The old smallest-rectangle
@@ -140,10 +90,6 @@ terrain downloads are generator cache files and are not packaged.
 The rebuild moved 77 NPCs off map edges they had been projected onto, including Nalpak and Ebru at the
 Wailing Caverns cave.
 
-AtlasLoot's installed `AtlasLootClassic_DungeonsAndRaids` module supplies encounter order and loot by
-`InstanceID`. The reader loads that module outside combat. `ItemDB:AddDifficulty("NORMAL")` stores the
-localized display name and the stable short identifier `n`; `GetDifficultyByName("NORMAL")` does not
-resolve that registration key. Regression fixtures exercise localized names and the `n` contract.
 Dungeon plans are character preferences independent of an eligible quest journey: a dungeon with no
 available preparation quests can still be planned. Existing selected dungeon journeys migrate once.
 
@@ -159,4 +105,4 @@ The Maps tab reads `AtlasMaps` registered by Atlas 1.53.00 and Atlas Classic WoW
 
 The Maps tab and the world map share one view. A dungeon the guide offers is pinned at its entrance on the world map, and the pin opens that instance's interior without going there first. An instance with several Atlas maps carries the game's own floor dropdown, on the map and in the tab, which returns to the floor last chosen in the session. Both controls are absent without Atlas and its Classic module, and nothing errors.
 
-Sources: [Atlas](https://www.curseforge.com/wow/addons/atlas), [Atlas Classic WoW](https://www.curseforge.com/wow/addons/atlas-classicwow). Enable both for interiors; AtlasLoot supplies loot, not these maps. Read-only validation against the r109 data and image files covered all 19 Classic dungeons. Maps without their provider show an explicit empty state.
+Sources: [Atlas](https://www.curseforge.com/wow/addons/atlas), [Atlas Classic WoW](https://www.curseforge.com/wow/addons/atlas-classicwow). Enable both for interiors; Adventure Guide for Classic supplies bosses and loot, not these maps. Read-only validation against the r109 data and image files covered all 19 Classic dungeons. Maps without their provider show an explicit empty state.

@@ -826,108 +826,36 @@ function ns.SourceHint()
 	end
 end
 
--- Optional dungeon details are read only by the visible dungeon tab. Like the quest adapter, this takes a
--- yielding caller and publishes a complete snapshot. GetAllIds is the contract's shared, read-only ID list.
+-- Optional dungeon quest details, read only by the visible dungeon tab: the reward items the catalogue gives a
+-- dungeon quest, and the objective text it holds for it. Like the quest adapter this takes a yielding caller and
+-- publishes a complete snapshot. GetAllIds is the contract's shared, read-only ID list.
 ---@param yield fun()
----@return AGFDungeonSource?
-function ns.ReadDungeonSource(yield)
-	local lib, _, zones = Fit()
-	if not lib or not zones then
+---@return AGFDungeonDetails?
+function ns.ReadDungeonDetails(yield)
+	local lib = Fit()
+	if not lib then
 		return nil
 	end
-	local fields = {
-		Npc = { "name", "rank", "spawns", "minLevel", "maxLevel" },
-		Item = { "name", "npcDrops", "questRewards", "startQuest" },
-	}
-	if MissingField(lib, { ENTITIES[2], ENTITIES[4] }, fields) then
+	local fields = { Item = { "questRewards" } }
+	if MissingField(lib, { ENTITIES[4] }, fields) then
 		return nil
 	end
-	local result = {
-		bosses = {},
-		loot = {},
-		rewards = {},
-		objectives = {},
-		npcs = {},
-		worldDrops = {},
-		starts = {},
-	}
-	local instanceOf = InstanceAreas(lib, zones, Dungeon)
-	local npcInstances, npcInfo = {}, {}
-	for instance in pairs(zones.instances) do
-		if Dungeon(instance) then
-			result.bosses[instance], result.loot[instance], result.npcs[instance] = {}, {}, {}
-		end
-	end
-	for _, id in ipairs(lib.Npc.GetAllIds()) do
-		local values = lib.Npc.GetAll(id, fields.Npc)
-		if values and type(values[1]) == "string" and type(values[3]) == "table" then
-			local instance, outside
-			for area, spots in pairs(values[3]) do
-				if type(spots) == "table" and next(spots) then
-					local parent = zones.parentOverride[area] or zones.parent[area]
-					local here = instanceOf[area] or (parent and instanceOf[parent])
-					outside = outside or not here or (instance and instance ~= here)
-					instance = here or instance
-				end
-				yield()
-			end
-			if instance and not outside then
-				npcInstances[id] = instance
-				local npc = { id = id, name = values[1], rank = values[2] or 0, low = values[4], high = values[5] }
-				npcInfo[id], result.npcs[instance][id] = npc, npc
-				-- Elite rank alone is not evidence of an encounter. Curated AtlasLoot/EJ bosses augment this later.
-				if npc.rank == 3 then
-					table.insert(result.bosses[instance], npc)
-				end
-			end
-		end
-		yield()
-	end
+	local details = { rewards = {}, objectives = {} }
 	local seen = {}
 	for _, id in ipairs(lib.Item.GetAllIds()) do
-		local values = not seen[id] and lib.Item.GetAll(id, fields.Item)
+		local quests = not seen[id] and lib.Item.GetAll(id, fields.Item)
 		seen[id] = true
-		if values and type(values[1]) == "string" then
-			local instance, outside
-			local droppers, known = {}, {}
-			for _, npc in ipairs(type(values[2]) == "table" and values[2] or {}) do
-				local here = npcInstances[npc]
-				outside = outside or not here or (instance and instance ~= here)
-				instance = here or instance
-				if here and not known[npc] then
-					known[npc] = true
-					droppers[#droppers + 1] = npcInfo[npc]
-				end
-				yield()
-			end
-			local item =
-				{ id = id, name = values[1], startQuest = type(values[4]) == "number" and values[4] > 0 or nil }
-			result.worldDrops[id] = outside or nil
-			result.starts[id] = item.startQuest
-			if instance and not outside then
-				table.sort(droppers, function(a, b)
-					return a.id < b.id
-				end)
-				item.droppers = droppers
-				table.insert(result.loot[instance], item)
-			end
-			for _, quest in ipairs(type(values[3]) == "table" and values[3] or {}) do
+		if quests and type(quests[1]) == "table" then
+			for _, quest in ipairs(quests[1]) do
 				if ns.Data.quests[quest] then
-					result.rewards[quest] = result.rewards[quest] or {}
-					table.insert(result.rewards[quest], item)
+					local list = details.rewards[quest] or {}
+					details.rewards[quest] = list
+					list[#list + 1] = id
 				end
 				yield()
 			end
 		end
 		yield()
-	end
-	for _, rows in pairs(result.bosses) do
-		table.sort(rows, function(a, b)
-			if (a.low or 0) ~= (b.low or 0) then
-				return (a.low or 0) < (b.low or 0)
-			end
-			return a.id < b.id
-		end)
 	end
 	local keys = lib.Meta.QuestMeta.questKeys
 	if keys.objectivesText then
@@ -940,10 +868,10 @@ function ns.ReadDungeonSource(yield)
 						lines[#lines + 1] = line
 					end
 				end
-				result.objectives[id] = table.concat(lines, "\n")
+				details.objectives[id] = table.concat(lines, "\n")
 			end
 			yield()
 		end
 	end
-	return result
+	return details
 end
