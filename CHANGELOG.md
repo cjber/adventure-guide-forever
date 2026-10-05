@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-05
+
 - **A ready hand-in beside you comes first, and a broad objective area counts as reached.** Standing in the Valley of Trials with Simple Parchment ready and Frang a few steps away, the guide still headed for an objective hundreds of yards off, and it walked you to the middle of an area you were already standing in. A ready hand-in or a pickup within a short walk now leads over a farther step, and an objective area counts the ground between its objectives as reached: the tracker says you are in the area, with no walking leg.
 - **A dungeon's interior map opens from its entrance, with the game's own floor selector.** A dungeon the guide offers is pinned at its entrance on the world map, and clicking the pin opens that instance's interior without going there first; a dungeon's Maps control in the guide opens the same view. An instance with several Atlas maps chooses its wings and floors from the game's own dropdown, which returns to the floor you last looked at for the rest of the session. Both are absent without Atlas and its Classic module, and the guide shows its usual empty state instead of erroring.
 - **Inside a quest's area, the guide shows the area instead of pointing at it.** While you work inside the objective area of the step the guide is on, the world map shows the area's outline in yellow, the minimap turns the game's own quest area gold, and the ring and the dots leading to its middle are gone, because they only told you to go where you already are. Stepping out brings them back.

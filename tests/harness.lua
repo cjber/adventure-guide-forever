@@ -483,6 +483,9 @@ function harness.load(options)
 	function Methods:GetEffectiveScale()
 		return self.scale or 1
 	end
+	function Methods:IsClampedToScreen()
+		return self.clamped == true
+	end
 	function Methods:SetScale(scale)
 		self.scale = scale
 	end
