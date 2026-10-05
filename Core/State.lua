@@ -16,16 +16,22 @@ function State.RunSpeed()
 	return lastRunSpeed
 end
 
+-- The player's bit in a quest's race mask, in QuestieDB's encoding: Forever's Skyborne (races 95 and 96) are
+-- bits 32 and 33, not a shift of the race's number. A race QuestieDB does not know has none.
 ---@return integer
 local function RaceBit()
 	local _, _, raceID = UnitRace("player")
-	return raceID and bit.lshift(1, raceID - 1) or 0
+	local masks = LibQuestieDB and LibQuestieDB.Enum and LibQuestieDB.Enum.raceMaskById
+	if masks then
+		return raceID and masks[raceID] or 0
+	end
+	return raceID and raceID <= 8 and 2 ^ (raceID - 1) or 0
 end
 
 ---@return integer
 local function ClassBit()
 	local _, _, classID = UnitClass("player")
-	return classID and bit.lshift(1, classID - 1) or 0
+	return classID and 2 ^ (classID - 1) or 0
 end
 
 ---@type table<integer, integer>

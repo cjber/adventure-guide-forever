@@ -32,6 +32,7 @@ jobs:
           python3 tools/gen_quests_test.py
           python3 tools/gen_zoneart_test.py
           python3 tools/diff_forever_test.py
+          python3 tools/refresh_pins_test.py
       - name: The vendored Shortest Path types match upstream at the pinned sha
         run: |
           sha=$(sed -n 's/^local SPF_SHA = "\(.*\)"/\1/p' tests/contract_spec.lua)

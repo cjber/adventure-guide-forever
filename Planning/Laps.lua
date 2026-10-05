@@ -647,7 +647,7 @@ local function CommitLap(lap)
 			visited[step.key] = true
 		end
 	end
-	local order
+	local order, ordered = nil, lap.ordered
 	if planned then
 		local verified, survived, plain = Verify(lap, Recommit(route, rank)), {}, {}
 		for _, step in ipairs(verified) do
@@ -689,6 +689,10 @@ local function CommitLap(lap)
 		end
 		-- The order is committed before the visits merge, so the next build, which splits them again, keeps to it.
 		order = State.committedOrders and card and Idents(route) --[[@as AGFOrder?]]
+		-- What each ordered step holds now, to tell after the merge and the last check which of them are still there.
+		for index, step in ipairs(order and route or NONE) do
+			ordered[index] = { step = step, pickups = step.pickups, handins = step.handins }
+		end
 	else
 		route = Verify(lap, route)
 		-- Nearest first already puts the area the player stands in at the head; a merged visit keeps only the work
@@ -708,7 +712,8 @@ end
 
 ---@param lap AGFLapState
 local function MergeLapVisits(lap)
-	local route, skipped, order, card = lap.route, lap.skipped, lap.order, lap.card
+	local route, skipped, order, card, ordered = lap.route, lap.skipped, lap.order, lap.card, lap.ordered
+	local into = {}
 	-- Two visits to one town in a row are one, unless the second hands in what the first handed out.
 	for index = #route, 2, -1 do
 		local a, b = route[index - 1], route[index]
@@ -733,6 +738,7 @@ local function MergeLapVisits(lap)
 					end
 				end
 				Trim(a, lists.handins, lists.pickups)
+				into[b] = a
 				table.remove(route, index)
 			end
 		end
@@ -752,11 +758,42 @@ local function MergeLapVisits(lap)
 		end
 	end
 	route = Verify(lap, route)
+	-- A step the check dropped (its pickups gave way to the log's limit) leaves the order with it, so the next build
+	-- ranks only steps this one holds and a rebuild with nothing changed is the same route. A step past the step limit
+	-- stays in the order.
+	local held = {}
+	for _, step in ipairs(route) do
+		held[step] = {}
+		for _, id in ipairs(step.kind == "town" and step.pickups or NONE) do
+			held[step][id] = true
+		end
+		for _, id in ipairs(step.kind == "town" and step.handins or NONE) do
+			held[step][-id] = true
+		end
+	end
 	for index = #route, Model.MAX_STEPS + 1, -1 do
 		route[index] = nil
 	end
 	-- Temporary skips must not overwrite the order that Show again restores.
 	if order and not next(skipped) then
+		local kept = {}
+		for index, ident in ipairs(order) do
+			local was = ordered[index]
+			local step = was.step
+			while into[step] do
+				step = into[step]
+			end
+			local now = held[step]
+			local there = now ~= nil and step.kind ~= "town"
+			for _, id in ipairs(now and was.pickups or NONE) do
+				there = there or now[id] ~= nil
+			end
+			for _, id in ipairs(now and was.handins or NONE) do
+				there = there or now[-id] ~= nil
+			end
+			kept[#kept + 1] = there and ident or nil
+		end
+		order = kept
 		order.picked = {}
 		for _, step in ipairs(route) do
 			for _, id in ipairs(step.kind == "town" and step.pickups or NONE) do
@@ -885,6 +922,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 		count = count,
 		picked = State.committedOrders and State.committedOrders[card] and State.committedOrders[card].picked or {},
 		route = {},
+		ordered = {},
 	}
 	PickLapQuests(lap)
 	NameLapAreas(lap)

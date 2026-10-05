@@ -1650,6 +1650,7 @@
 ---@field picked table<integer, true>
 ---@field route AGFStep[]
 ---@field order? AGFOrder
+---@field ordered {step: AGFStep, pickups?: integer[], handins?: integer[]}[] each step of `order` as it was committed
 
 ---@class AGFLapWalk
 ---@field done table<integer, integer>

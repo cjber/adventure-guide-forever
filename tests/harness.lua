@@ -7,6 +7,24 @@ local ADDON = "AdventureGuideForever"
 
 local function noop() end
 
+-- The client's string.format refuses a %d outside a signed 32-bit integer ("integer overflow"); LuaJIT prints it.
+-- A race or class mask reaches bit 32, so the specs hold formats to the client's rule.
+local format = string.format
+---@diagnostic disable-next-line: duplicate-set-field
+string.format = function(pattern, ...) -- luacheck: ignore 122
+	local index = 0
+	for spec in pattern:gmatch("%%[-+ #0]*%d*%.?%d*([%a%%])") do
+		if spec ~= "%" then
+			index = index + 1
+			local value = select(index, ...)
+			if spec == "d" and type(value) == "number" and (value >= 2 ^ 31 or value < -2 ^ 31) then
+				error("integer overflow attempting to store " .. value, 2)
+			end
+		end
+	end
+	return format(pattern, ...)
+end
+
 -- IsObjectType walks this chain, as the client's widget hierarchy does.
 local SUPER = {
 	Frame = "Region",
@@ -2264,6 +2282,21 @@ function harness.load(options)
 			RequireContract = function(required)
 				return required >= 1 and required <= (fake.contract or 2)
 			end,
+			-- QuestieDB's own encoding: the old races by their number, Forever's Skyborne at bits 32 and 33.
+			Enum = {
+				raceMaskById = {
+					[1] = 1,
+					[2] = 2,
+					[3] = 4,
+					[4] = 8,
+					[5] = 16,
+					[6] = 32,
+					[7] = 64,
+					[8] = 128,
+					[95] = 2 ^ 32,
+					[96] = 2 ^ 33,
+				},
+			},
 			Meta = {
 				QuestMeta = { questKeys = keys },
 				NpcMeta = { npcKeys = keys },

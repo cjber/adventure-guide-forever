@@ -16,7 +16,7 @@ encounter order or localized names.
 | Source | Pin / result | Use |
 | --- | --- | --- |
 | CMaNGOS classic-db | `22b51464f1625f6ef6275771de1f5466c6f5d19e` | `areatrigger_teleport` entrance requirements, and the test-only quest corpus |
-| wago.tools client tables | `1.60.1.69913` | Existing Map / AreaTable joins identify dungeon instances; existing zone map art |
+| wago.tools client tables | `BUILD` in `tools/gen_quests.py` | Existing Map / AreaTable joins identify dungeon instances; existing zone map art |
 | Gethe/wow-ui-source, forever | `bd2470aed543f72697a044e989285b6c83e63f73` | Encounter Journal templates, explicit-instance API reads and square instance icon |
 | QuestieDB public API documentation | `365537a340473291f5af3b7a53a5eca94e2a5f1a`, contract 2 | Runtime NPC ranks/spawns, item drops/rewards, quest objectives and entrance points |
 | Tweaks Forever | Public API v1 | Outdoor entrance fallback, through the existing Providers adapter |
