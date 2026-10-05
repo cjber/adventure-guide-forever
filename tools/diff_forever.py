@@ -8,6 +8,7 @@ addon reads; the other tables are only printed.
 
 from collections import defaultdict
 
+from forever_tools import fsio
 from gen_quests import (
     BUILD,
     ROOT,
@@ -143,7 +144,7 @@ def main():
     for name in REPORTED:
         ids = both(name)
         print(f"{name}: {len(ids)} added: {', '.join(map(str, ids))}")
-    OUTPUT.write_text(render(zones, areas, new_lands), encoding="utf-8")
+    fsio.atomic_write(OUTPUT, render(zones, areas, new_lands))
     print(f"Wrote {OUTPUT.relative_to(ROOT)} ({OUTPUT.stat().st_size:,} bytes)")
 
 
