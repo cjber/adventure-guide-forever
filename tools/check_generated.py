@@ -8,7 +8,6 @@ import tempfile
 from pathlib import Path
 
 import diff_forever
-import gen_abilities
 import gen_corpus
 import gen_quests
 import gen_zoneart
@@ -19,7 +18,6 @@ DATA = tuple(
     path.relative_to(ROOT).as_posix()
     for path in (
         gen_quests.OUTPUT,
-        gen_abilities.OUTPUT,
         gen_corpus.FIXTURE,
         gen_corpus.TOWN_FIXTURE,
         diff_forever.OUTPUT,
@@ -43,7 +41,6 @@ def regenerate(root, offline):
         (root / name).unlink()
     mode = ["--offline"] if offline else []
     run(root, sys.executable, "tools/gen_quests.py", *mode)
-    run(root, sys.executable, "tools/gen_abilities.py", *mode)
     run(root, sys.executable, "tools/diff_forever.py", *mode)
     run(root, sys.executable, "tools/gen_zoneart.py", *mode)
     # The corpus loads the addon, which needs the shipped Data/ files above.

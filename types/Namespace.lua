@@ -92,7 +92,6 @@
 ---@field towns table<integer, AGFTownArea[]> zone uiMapID -> its named areas, the areas the world map reveals as you explore
 ---@field areaNames table<integer, string> AreaTable ID -> its English name, the fallback when the client has none
 ---@field roles table<integer, AGFRole> creature entry -> what that trainer or battlemaster does
----@field bossAbilities table<integer, integer[]> creature entry (npcID) -> its cast spell ids, each gated on this client build (Data/Abilities.lua)
 
 -- Measures between steps on different maps without travel maths (Travel.lua Cost). World coordinates are yards.
 ---@class AGFMapCentre
@@ -1434,36 +1433,9 @@
 ---@field prep AGFDungeonPrep[]
 ---@field xp number proven remaining XP at the current level; alternatives counted once
 
----@class AGFDungeonBoss
----@field description? string
----@field journal? boolean id is an Encounter Journal encounter, not an NPC
----@field id integer
----@field name string
----@field rank integer 1 elite, 2 rare elite, 3 boss; never infer bosses from names
----@field low? integer
----@field high? integer
-
----@class AGFDungeonItem
----@field id integer
----@field name string
----@field droppers? AGFDungeonBoss[] known droppers in this instance
----@field startQuest? boolean starts a quest
----@field percent? number AtlasLoot's curated drop chance, when it has one
-
----@class AGFBossAbility
----@field id integer the Forever spell id
----@field name string the client's name for it
----@field icon integer the client's icon file ID
-
----@class AGFDungeonSource
----@field npcs? table<integer, table<integer, AGFDungeonBoss>>
----@field worldDrops? table<integer, boolean>
----@field starts? table<integer, boolean>
----@field curated? table<integer, boolean>
----@field bosses table<integer, AGFDungeonBoss[]>
----@field loot table<integer, AGFDungeonItem[]>
----@field rewards table<integer, AGFDungeonItem[]>
----@field objectives table<integer, string>
+---@class AGFDungeonDetails
+---@field rewards table<integer, integer[]> quest id -> the item ids the catalogue gives as its rewards
+---@field objectives table<integer, string> quest id -> the catalogue's objective text
 
 ---@class AGFModel
 ---@field QuestXP fun(quest: AGFQuest, level: integer): number?
@@ -1472,7 +1444,7 @@
 ---@field Dungeons AGFDungeons
 ---@field Raids AGFRaid[]
 ---@field RaidByMap table<integer, AGFRaid>
----@field ReadDungeonSource fun(yield: fun()): AGFDungeonSource?
+---@field ReadDungeonDetails fun(yield: fun()): AGFDungeonDetails?
 ---@field DungeonEntrance fun(instance: integer): AGFPoint?
 
 ---@class AGFWindowDB
@@ -1487,8 +1459,6 @@
 ---@field DUNGEON_RAID_TOOLTIP string
 ---@field DUNGEON_QUESTS_TAB string
 ---@field DUNGEON_PREP_TAB string
----@field DUNGEON_BOSSES_TAB string
----@field DUNGEON_LOOT_TAB string
 ---@field DUNGEON_QUEST_LEVELS string
 ---@field DUNGEON_DONE string
 ---@field DUNGEON_IN_LOG string
@@ -1510,13 +1480,6 @@
 ---@field DUNGEON_PLAN string
 ---@field DUNGEON_START_JOURNEY string
 ---@field DUNGEON_OPEN_PAGE string
----@field DUNGEON_BOSS string
----@field DUNGEON_ENEMY_LEVELS string
----@field DUNGEON_RARE_ELITE string
----@field DUNGEON_BOSS_LOOT string
----@field DUNGEON_BOSS_LOOT_UNKNOWN string
----@field DUNGEON_DROP_RATE string
----@field DUNGEON_ELITE string
 ---@field DUNGEON_NO_FACTION_QUESTS string
 ---@field DUNGEON_NO_CHARACTER_QUESTS string
 ---@field DUNGEON_NO_PREP string
@@ -1524,14 +1487,9 @@
 ---@field DUNGEON_HOSTILE_ENTRANCE string
 ---@field DUNGEON_OBJECTIVES string
 ---@field DUNGEON_NO_QUESTS string
----@field DUNGEON_NEEDS_QUESTIE string
 ---@field DUNGEON_LOADING string
 ---@field DUNGEON_SOURCE_FAILED string
 ---@field DUNGEON_NO_RECORDS string
----@field DUNGEON_NO_BOSSES string
----@field DUNGEON_NO_BOSSES_DISABLED string
----@field DUNGEON_NO_BOSSES_LISTED string
----@field DUNGEON_TRASH string
 ---@field DUNGEON_WANDERER string
 ---@field DUNGEON_SHOW_GIVER string
 ---@field DUNGEON_REWARDS string
@@ -1552,18 +1510,15 @@
 ---@field Refresh fun()
 ---@field OfferKey fun()
 ---@field RefreshToday fun(inset: Frame)
----@field CreateList fun(parent: Frame, x: number, y: number, width: number, height: number, rowHeight: number, paint: AGFListPaint, click: AGFListClick, create: AGFListCreate, extent?: AGFListExtent): AGFDungeonListWidget
+---@field CreateList fun(parent: Frame, x: number, y: number, width: number, height: number, rowHeight: number, paint: AGFListPaint, click: AGFListClick, create: AGFListCreate): AGFDungeonListWidget
 ---@field SetList fun(widget: AGFDungeonListWidget, values: table[])
 ---@field ScrollListTo fun(widget: AGFDungeonListWidget, index: integer)
 ---@field CreateSectionHeader fun(parent: Frame, text: string, onClick?: fun(open: boolean)): AGFWindowSectionHeader
----@field CreatePaperWell fun(parent: Frame): AGFWindowPaperWell
----@field SetPaperWell fun(well: AGFWindowPaperWell, lines: string[])
 ---@field FONT_TITLE string
 ---@field FONT_ROW string
 ---@field FONT_HEADER string
 ---@field GOLD number[]
 ---@field TITLE_INK number[]
----@field BODY_INK number[]
 ---@field OpenDungeon fun(instance: integer)
 
 ---@alias AGFMapLookup fun(area: integer): integer?
@@ -1609,8 +1564,9 @@
 
 ---@class AGFStrings
 ---@field DUNGEON_MAPS_TAB string
----@field DUNGEON_CLASSIC_GUIDE string
----@field DUNGEON_CLASSIC_GUIDE_TOOLTIP string
+---@field DUNGEON_BOSSES_LOOT string
+---@field DUNGEON_BOSSES_LOOT_TOOLTIP string
+---@field DUNGEON_BOSSES_LOOT_INSTALL string
 ---@field DUNGEON_MAP_BACK string
 ---@field DUNGEON_MAP_WORLD_BACK string
 ---@field DUNGEON_MAP_PAGE string
@@ -1837,16 +1793,6 @@
 ---@field Selected AGFArtSlice
 ---@field Map Button
 ---@field Expand AGFCollapseButton
----@field ItemIcon Texture
----@field Icon? Texture a dungeon tile's corner icon
----@field Up? Texture the journal button's normal art
----@field Down? Texture its pushed art, the selected dungeon tile
----@field Highlight? Texture its hover art
----@field Portrait? Texture the default boss portrait
----@field LootFrame? Texture the journal loot row's border
----@field AbilityIcon? Texture a boss ability's spell icon
----@field Percent? FontString a drop chance beside a loot row
----@field Range? FontString a dungeon tile's recommended level range
 ---@field value? table
 
 ---@class AGFDataProvider
@@ -1873,19 +1819,15 @@
 ---@field height number
 ---@field rowHeight number
 ---@field headingHeight number
----@field extent? AGFListExtent
 ---@field paint fun(row: AGFDungeonRow, value: table)
 
 ---@class AGFDungeons
----@field Abilities fun(npc?: integer): AGFBossAbility[] the bundled ids for a creature, resolved by this client
----@field DropRate fun(npc?: integer, item: integer): number?
 ---@field QuestStatus fun(quest: AGFDungeonQuest): string
 ---@field PlaceText fun(place?: AGFPlace): string
 ---@field GiverText fun(quest: AGFDungeonQuest): string
 ---@field QuestRows fun(page: AGFDungeonPage?, expanded: table<integer, boolean>): table[]
 ---@field PrepRows fun(page: AGFDungeonPage?): table[]
 ---@field CatalogRows fun(catalog: AGFDungeon[]): table[]
----@field BossRows fun(source: AGFDungeonSource?, instance: integer, known: AGFDungeonBoss[]): table[]
 
 -- The public surface (Core/API.lua, docs/api.md).
 ---@class AGFAPIStop

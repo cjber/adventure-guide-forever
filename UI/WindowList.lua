@@ -2,33 +2,25 @@
 local _, ns = ...
 local Window = ns.Window
 local HEADING_H = 22
--- A heading that carries an info line under its title (a boss and its level over its loot) is two lines tall.
-local HEADING_INFO_H = 38
-
----@alias AGFListExtent fun(value: table): number
 
 ---@class AGFListContainer : Frame
 ---@field row? AGFDungeonRow
 
--- An element's height: the caller's own measure, else a heading's two lines or the list's row height.
+-- An element's height: a heading's line or the list's row height.
 ---@param widget AGFDungeonListWidget
 ---@param value table
 ---@return number
 local function ElementHeight(widget, value)
-	if widget.extent then
-		return widget.extent(value)
-	end
 	if not value.heading then
 		return widget.rowHeight
 	end
-	return (value.info and value.info ~= "" and HEADING_INFO_H) or widget.headingHeight
+	return widget.headingHeight
 end
 
---[[ The window's shared list: a WowScrollBoxList of pooled rows and a MinimalScrollBar, the way every Encounter
-     Journal list scrolls. The scroll box makes a row only for the elements its viewport shows, positions it, and
-     hands it back to the pool when it leaves, so the list keeps no rows of its own and culls nothing by hand. A
-     caller gives `create` (one row frame, drawn once) and `paint` (a row's element); headings and any other
-     variable row are measured by `extent`. ]]
+--[[ The window's shared list: a WowScrollBoxList of pooled rows and a MinimalScrollBar, the way the client's own
+     lists scroll. The scroll box makes a row only for the elements its viewport shows, positions it, and hands it
+     back to the pool when it leaves, so the list keeps no rows of its own and culls nothing by hand. A caller gives
+     `create` (one row frame, drawn once) and `paint` (a row's element). ]]
 
 ---@param parent Frame
 ---@param x number
@@ -39,9 +31,8 @@ end
 ---@param paint fun(row: AGFDungeonRow, value: table)
 ---@param click fun(value: table)
 ---@param create fun(parent: Frame, width: number, rowHeight: number, click: fun(value: table)): AGFDungeonRow
----@param extent? AGFListExtent an element's height, in place of the heading rule
 ---@return AGFDungeonListWidget
-function Window.CreateList(parent, x, y, width, height, rowHeight, paint, click, create, extent)
+function Window.CreateList(parent, x, y, width, height, rowHeight, paint, click, create)
 	local scroll = CreateFrame("Frame", nil, parent, "WowScrollBoxList") --[[@as AGFScrollBox]]
 	scroll:SetPoint("TOPLEFT", x, -y)
 	scroll:SetSize(width, height)
@@ -59,7 +50,6 @@ function Window.CreateList(parent, x, y, width, height, rowHeight, paint, click,
 		height = height,
 		rowHeight = rowHeight,
 		headingHeight = HEADING_H,
-		extent = extent,
 		paint = paint,
 	} --[[@as AGFDungeonListWidget]]
 	local view = CreateScrollBoxListLinearView()
@@ -75,11 +65,8 @@ function Window.CreateList(parent, x, y, width, height, rowHeight, paint, click,
 			container.row:SetPoint("TOPLEFT")
 			widget.rows[#widget.rows + 1] = container.row
 		end
-		-- A caller that measures its own elements sets its rows' heights in `create`; a heading's taller element
-		-- is the list's to size.
-		if value.heading or not widget.extent then
-			container.row:SetHeight(ElementHeight(widget, value) - 2)
-		end
+		-- A heading's taller element is the list's to size.
+		container.row:SetHeight(ElementHeight(widget, value) - 2)
 		container.row.value = value
 		widget.paint(container.row, value)
 	end

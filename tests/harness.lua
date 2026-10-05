@@ -1980,9 +1980,6 @@ function harness.load(options)
 	function G.GameTooltip:SetItemByID(id)
 		h.tooltip[#h.tooltip + 1] = "item: " .. id
 	end
-	function G.GameTooltip:SetSpellByID(id)
-		h.tooltip[#h.tooltip + 1] = "spell: " .. id
-	end
 	function G.GameTooltip:IsOwned(owner)
 		return self:IsShown() and self.owner == owner
 	end
@@ -2783,7 +2780,7 @@ function harness.load(options)
 						and options.questiedb == nil
 						and function(_, ns)
 							ns.QuestieStatus = { state = "unavailable", settled = true }
-							ns.ReadDungeonSource = function()
+							ns.ReadDungeonDetails = function()
 								return nil
 							end
 							ns.DungeonEntrance = function()

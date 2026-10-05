@@ -5,37 +5,12 @@ local L, Window, Dungeons = ns.L, ns.Window, ns.Dungeons
 -- §2.21: the shared EJ frame, featured card and divider; fixed columns and recycled scrolling rows.
 -- Work belongs to the visible page. Hiding it cancels its coroutine before any more source reads or drawing.
 local LEFT, TOP = Window.LEFT, Window.TOP
-local LIST_W, GAP, HEADER_H = 174, 28, 100
+local LIST_W, GAP, HEADER_H = 168, 28, 100
 local RIGHT_X = LEFT + LIST_W + GAP
 local PAGE_W = Window.INSET_WIDTH - Window.RIGHT - RIGHT_X
 local BODY_Y, BODY_H, QUEST_W = TOP + HEADER_H + 38, 222, 272
 local DETAIL_H = BODY_H - 52
--- The Encounter Journal's own sizes and art (Blizzard_EncounterJournal.xml, EncounterInstanceButtonTemplate,
--- EncounterBossButtonTemplate, EncounterItemTemplate): a 174x96 instance button, a 325x55 boss button, a 321x45
--- loot row with a 42x42 icon. A row is 2 units taller than the art it lays out, the list's own gap.
-local ROW_H, TILE_H, BOSS_H, LOOT_H, SLICE_MS = 52, 98, 57, 47, 1
--- Interface\EncounterJournal\UI-EncounterJournalTextures (file 522972), cut at the journal's own texcoords.
-local EJ_SHEET = 522972
-local CROPS = {
-	dungeonUp = { 0.00195313, 0.34179688, 0.42871094, 0.52246094 },
-	dungeonDown = { 0.00195313, 0.34179688, 0.33300781, 0.42675781 },
-	dungeonHighlight = { 0.34570313, 0.68554688, 0.33300781, 0.42675781 },
-	bossUp = { 0.00195313, 0.63671875, 0.21386719, 0.26757813 },
-	bossDown = { 0.00195313, 0.63671875, 0.10253906, 0.15625000 },
-	bossHighlight = { 0.00195313, 0.63671875, 0.15820313, 0.21191406 },
-	loot = { 0.00195313, 0.62890625, 0.61816406, 0.66210938 },
-}
-
-local TILE_W, TILE_ART_H, TILE_ICON = 174, 96, 28
-local BOSS_W, BOSS_ART_H = 325, 55
-local LOOT_W, LOOT_ART_H, LOOT_ICON = 321, 45, 42
-
----@param texture Texture
----@param crop number[]
-local function Sheet(texture, crop)
-	texture:SetTexture(EJ_SHEET)
-	texture:SetTexCoord(crop[1], crop[2], crop[3], crop[4])
-end
+local ROW_H, LIST_H, SLICE_MS = 52, 42, 1
 ---@type Frame
 local content
 ---@type AGFWindowCard
@@ -45,7 +20,7 @@ local dungeonIcon
 ---@type FontString
 local title, location, summary, note
 ---@type Button
-local entrance, journey, classicGuide
+local entrance, journey, handoff
 ---@class AGFDungeonPlan : CheckButton
 ---@field Text FontString
 ---@type AGFDungeonPlan
@@ -69,40 +44,26 @@ local rewards = {}
 ---@type AGFTopTab[]
 local subTabs = {}
 ---@type AGFDungeonListWidget
-local list, quests, other
+local list, quests, prep
 ---@type AGFTopTab
 local mapsButton
 ---@type AGFDungeon[]
 local catalog = {}
 ---@type AGFDungeonPage?
 local page
----@type AGFDungeonSource?
-local source
+---@type AGFDungeonDetails?
+local details
 ---@type AGFData?
-local sourceData
----@type AGFDungeonBoss[]?
-local bosses
+local detailsData
 local listSelection
-local journalIcon
-local sourceRead, sourceError, generation, view = false, false, 0, "quests"
--- True while Dungeons.Source runs: the AtlasLoot pages it loads itself are already part of that read.
-local reading = false
+local detailsRead, generation, view = false, 0, "quests"
 ---@type integer?
 local selectedQuest
 ---@type table<integer, boolean>
 local expanded = {}
 local Refresh, Draw, SelectQuest
 
-local VIEWS = { "quests", "prep", "bosses", "loot" }
-
----@param key string
-local function Muted(key)
-	return (key == "bosses" and not bosses and not source) or (key == "loot" and not source)
-end
-
-local function SourceMessage()
-	return sourceError and L.DUNGEON_SOURCE_FAILED or sourceRead and L.DUNGEON_NEEDS_QUESTIE or L.DUNGEON_LOADING
-end
+local VIEWS = { "quests", "prep" }
 
 ---@param parent Frame
 ---@param text string
@@ -172,10 +133,6 @@ end
 local function CreateListRow(parent, width, rowHeight, click)
 	local row = CreateFrame("Button", nil, parent) --[[@as AGFDungeonRow]]
 	row:SetSize(width, rowHeight - 2)
-	row.ItemIcon = row:CreateTexture(nil, "ARTWORK")
-	row.ItemIcon:SetSize(24, 24)
-	row.ItemIcon:SetPoint("TOPLEFT", 8, -5)
-	row.ItemIcon:Hide()
 	row.Selected = ns.Art.RowArt(row, true) --[[@as AGFArtSlice]]
 	row.Title = Text(row, "", 8, 5, width - 16, "GameFontNormal")
 	row.Title:SetWordWrap(false)
@@ -212,137 +169,6 @@ local function CreateListRow(parent, width, rowHeight, click)
 	return row
 end
 
--- A dungeon's covered art: the journal's up/pushed/highlight crops of the sheet at 174x96, the name in the
--- journal's title font and the recommended range under it, over a square icon.
----@param parent Frame
----@param width number
----@param rowHeight number
----@param click fun(value: table)
----@return AGFDungeonRow
-local function CreateInstanceTile(parent, width, rowHeight, click)
-	local row = CreateFrame("Button", nil, parent) --[[@as AGFDungeonRow]]
-	row:SetSize(width, rowHeight - 2)
-	row.Up = row:CreateTexture(nil, "BACKGROUND")
-	Sheet(row.Up, CROPS.dungeonUp)
-	row.Up:SetSize(TILE_W, TILE_ART_H)
-	row.Up:SetPoint("TOPLEFT")
-	row.Down = row:CreateTexture(nil, "ARTWORK")
-	Sheet(row.Down, CROPS.dungeonDown)
-	row.Down:SetSize(TILE_W, TILE_ART_H)
-	row.Down:SetPoint("TOPLEFT")
-	row.Down:Hide()
-	row.Highlight = row:CreateTexture(nil, "HIGHLIGHT")
-	Sheet(row.Highlight, CROPS.dungeonHighlight)
-	row.Highlight:SetSize(TILE_W, TILE_ART_H)
-	row.Highlight:SetPoint("TOPLEFT")
-	row.Icon = row:CreateTexture(nil, "OVERLAY")
-	row.Icon:SetSize(TILE_ICON, TILE_ICON)
-	row.Icon:SetPoint("BOTTOMRIGHT", -7, 7)
-	row.Title = row:CreateFontString(nil, "OVERLAY", "QuestTitleFontBlackShadow")
-	row.Title:SetPoint("TOP", 0, -15)
-	row.Title:SetWidth(TILE_W - 20)
-	row.Title:SetJustifyH("CENTER")
-	row.Title:SetWordWrap(true)
-	row.Range = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	row.Range:SetPoint("BOTTOMLEFT", 7, 7)
-	row.Range:SetJustifyH("LEFT")
-	row:SetScript("OnClick", function()
-		if row.value and not row.value.heading then
-			click(row.value)
-		end
-	end)
-	return row
-end
-
--- A Prep, Bosses or Loot row: the journal's 325x55 boss button with its default portrait, its 321x45 loot row
--- with a 42x42 icon, or an ability line under a boss.
----@param parent Frame
----@param width number
----@param rowHeight number
----@param click fun(value: table)
----@return AGFDungeonRow
-local function CreateOtherRow(parent, width, rowHeight, click)
-	local row = CreateFrame("Button", nil, parent) --[[@as AGFDungeonRow]]
-	row:SetSize(width, rowHeight - 2)
-	row.Up = row:CreateTexture(nil, "BACKGROUND")
-	Sheet(row.Up, CROPS.bossUp)
-	row.Up:SetSize(BOSS_W, BOSS_ART_H)
-	row.Up:SetPoint("TOPLEFT")
-	row.Up:Hide()
-	row.Down = row:CreateTexture(nil, "ARTWORK")
-	Sheet(row.Down, CROPS.bossDown)
-	row.Down:SetSize(BOSS_W, BOSS_ART_H)
-	row.Down:SetPoint("TOPLEFT")
-	row.Down:Hide()
-	row.Highlight = row:CreateTexture(nil, "HIGHLIGHT")
-	Sheet(row.Highlight, CROPS.bossHighlight)
-	row.Highlight:SetSize(BOSS_W, BOSS_ART_H)
-	row.Highlight:SetPoint("TOPLEFT")
-	row.Highlight:Hide()
-	row.Portrait = row:CreateTexture(nil, "ARTWORK")
-	row.Portrait:SetTexture("Interface\\EncounterJournal\\UI-EJ-BOSS-Default")
-	row.Portrait:SetSize(128, 64)
-	row.Portrait:SetPoint("TOPLEFT", -4, 13)
-	row.Portrait:Hide()
-	row.LootFrame = row:CreateTexture(nil, "BORDER")
-	Sheet(row.LootFrame, CROPS.loot)
-	row.LootFrame:SetSize(LOOT_W, LOOT_ART_H)
-	row.LootFrame:SetPoint("TOPLEFT")
-	row.LootFrame:Hide()
-	row.ItemIcon = row:CreateTexture(nil, "ARTWORK", nil, 1)
-	row.ItemIcon:SetSize(LOOT_ICON, LOOT_ICON)
-	row.ItemIcon:SetPoint("TOPLEFT", 2, -2)
-	row.ItemIcon:Hide()
-	row.AbilityIcon = row:CreateTexture(nil, "ARTWORK", nil, 1)
-	row.AbilityIcon:SetSize(18, 18)
-	row.AbilityIcon:SetPoint("TOPLEFT", 6, -2)
-	row.AbilityIcon:Hide()
-	row.Title = Text(row, "", 8, 5, width - 16, "GameFontNormal")
-	row.Title:SetWordWrap(false)
-	row.Info = Text(row, "", 8, 21, width - 16)
-	row.Info:SetWordWrap(false)
-	row.Giver = Text(row, "", 8, 35, width - 16, "GameFontDisableSmall")
-	row.Giver:SetWordWrap(false)
-	row.Percent = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	row.Percent:SetPoint("TOPRIGHT", -8, -7)
-	row.Percent:SetJustifyH("RIGHT")
-	row.Percent:Hide()
-	row.Map = Button(row, L.DUNGEON_MAP, width - 48, 24, 46, function()
-		if row.value and row.value.quest then
-			Dungeons.Go(row.value.quest.id)
-		end
-	end)
-	MapTooltip(row.Map)
-	row.Expand = CreateFrame("Button", nil, row, "CollapseButtonTemplate") --[[@as AGFCollapseButton]]
-	row.Expand:SetSize(20, 20)
-	row.Expand:SetPoint("TOPLEFT", 3, -2)
-	row.Expand:SetScript("OnClick", function()
-		if row.value and row.value.quest then
-			local id = row.value.quest.id
-			expanded[id] = not expanded[id]
-			Draw()
-		end
-	end)
-	row:SetScript("OnClick", function()
-		if row.value and not row.value.heading then
-			click(row.value)
-		end
-	end)
-	row:SetScript("OnLeave", GameTooltip_Hide)
-	row:SetScript("OnMouseDown", function(self)
-		if self.value and self.value.boss then
-			self.Down:Show()
-		end
-	end)
-	row:SetScript("OnMouseUp", function(self)
-		self.Down:Hide()
-	end)
-	row:SetScript("OnHide", function(self)
-		self.Down:Hide()
-	end)
-	return row
-end
-
 ---@param parent Frame
 ---@param x number
 ---@param y number
@@ -351,10 +177,9 @@ end
 ---@param rowHeight number
 ---@param paint fun(row: AGFDungeonRow, value: table)
 ---@param click fun(value: table)
----@param create fun(parent: Frame, width: number, rowHeight: number, click: fun(value: table)): AGFDungeonRow
 ---@return AGFDungeonListWidget
-local function List(parent, x, y, width, height, rowHeight, paint, click, create)
-	return Window.CreateList(parent, x, y, width, height, rowHeight, paint, click, create)
+local function List(parent, x, y, width, height, rowHeight, paint, click)
+	return Window.CreateList(parent, x, y, width, height, rowHeight, paint, click, CreateListRow)
 end
 
 ---@param dungeon AGFDungeon
@@ -425,106 +250,29 @@ end
 
 ---@param row AGFDungeonRow
 ---@param value table
-local function PaintOther(row, value)
+local function PaintPrep(row, value)
 	if not page then
 		return
 	end
 	local instance = page.dungeon.id
-	local icon = value.item and ItemIcon(value.item)
-	local boss = value.boss == true
-	local ability = value.ability ~= nil
-	-- A row is recycled across the Prep, Bosses and Loot views, so every piece is reset before the value paints.
-	row.Up:SetShown(boss)
-	row.Down:Hide()
-	row.Highlight:SetShown(boss)
-	row.Portrait:SetShown(boss)
-	row.LootFrame:SetShown(value.item ~= nil)
-	row.ItemIcon:SetShown(icon ~= nil)
-	row.AbilityIcon:SetShown(ability)
-	row.Percent:SetText("")
-	row.Percent:Hide()
-	if icon then
-		row.ItemIcon:SetTexture(icon)
+	for _, text in ipairs({ row.Title, row.Info, row.Giver }) do
+		text:ClearAllPoints()
 	end
-	row.Title:ClearAllPoints()
+	row.Title:SetPoint("TOPLEFT", 8, -5)
+	row.Info:SetPoint("TOPLEFT", 8, -21)
+	row.Giver:SetPoint("TOPLEFT", 8, -35)
+	row.Title:SetText(value.title)
 	row.Title:SetFontObject("GameFontHighlight")
 	row.Title:SetTextColor(1, 1, 1)
-	row.Title:SetWidth(PAGE_W - 80)
-	row.Title:SetText(value.title)
-	row.Info:ClearAllPoints()
-	row.Info:SetFontObject("GameFontHighlightSmall")
-	row.Info:SetTextColor(1, 1, 1)
-	row.Info:SetJustifyH("LEFT")
-	row.Info:SetWidth(PAGE_W - 80)
 	row.Info:SetText(value.info or "")
-	row.Giver:ClearAllPoints()
-	row.Giver:SetWidth(PAGE_W - 80)
 	row.Giver:SetText(value.giver or "")
-	row.Giver:SetShown(false)
-	if ability then
-		-- One spell: the client's icon and name, its own tooltip on hover. An id this build cannot resolve never
-		-- reaches here (Dungeons.Abilities), so a row always has both.
-		row.Title:SetPoint("TOPLEFT", 28, -4)
-		row.Title:SetWidth(PAGE_W - 60)
-		row.Info:SetShown(false)
-		row.AbilityIcon:SetTexture(value.icon)
-		row:EnableMouse(true)
-		row:SetScript("OnEnter", function()
-			GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
-			GameTooltip:SetSpellByID(value.ability)
-			GameTooltip:Show()
-		end)
-	elseif boss then
-		row.Title:SetFontObject("GameFontNormalMed3")
-		row.Title:SetTextColor(0.827, 0.659, 0.463)
-		row.Title:SetPoint("TOPLEFT", 105, -3)
-		row.Title:SetWidth(BOSS_W - 120)
-		row.Info:SetPoint("TOPLEFT", 105, -23)
-		row.Info:SetWidth(BOSS_W - 120)
-		row.Info:SetShown(true)
-		row.Giver:SetPoint("TOPLEFT", 105, -37)
-		row.Giver:SetWidth(BOSS_W - 120)
-		row.Giver:SetShown(true)
-		row:EnableMouse(true)
-		row:SetScript("OnEnter", function()
-			ns.Overview.ShowTooltip(row, { value.title, value.info or "", value.giver or "", value.description or "" })
-		end)
-	elseif value.item then
-		row.Title:SetFontObject("GameFontNormalMed3")
-		local color = ITEM_QUALITY_COLORS[value.quality]
-		if color then
-			row.Title:SetTextColor(color.r, color.g, color.b)
-		end
-		row.Title:SetPoint("TOPLEFT", 56, -7)
-		row.Title:SetWidth(PAGE_W - 150)
-		row.Info:SetFontObject("GameFontBlack")
-		row.Info:SetPoint("TOPLEFT", 56, -24)
-		row.Info:SetWidth(PAGE_W - 150)
-		row.Info:SetShown(true)
-		if value.percent then
-			-- The rate as a number, then the journal's own percent sign, as AtlasLoot's tooltip does.
-			row.Percent:SetText(L.DUNGEON_DROP_RATE:format(value.percent) .. "%")
-			row.Percent:Show()
-		end
-		row:EnableMouse(true)
-		row:SetScript("OnEnter", function()
-			GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
-			GameTooltip:SetItemByID(value.item)
-			GameTooltip:Show()
-		end)
-	else
-		row.Title:SetPoint("TOPLEFT", 8, -5)
-		row.Info:SetPoint("TOPRIGHT", -8, -7)
-		row.Info:SetWidth(74)
-		row.Info:SetJustifyH("RIGHT")
-		row.Info:SetShown(true)
-		row.Giver:SetPoint("TOPLEFT", 8, -21)
-		row.Giver:SetShown(true)
-		row:EnableMouse(true)
-		row:SetScript("OnEnter", function()
-			ns.Overview.ShowTooltip(row, { value.title, value.info or "", value.giver or "" })
-		end)
-	end
+	row:EnableMouse(true)
+	row:SetScript("OnEnter", function()
+		ns.Overview.ShowTooltip(row, { value.title, value.info or "", value.giver or "" })
+	end)
+	row.Title:SetWidth(PAGE_W - 80)
+	row.Info:SetWidth(PAGE_W - 80)
+	row.Giver:SetWidth(PAGE_W - 80)
 	-- Only a Prep row with a proven place gets the stock Map control.
 	local point = value.entrance and Dungeons.Entrance(instance) or value.quest and value.quest.place
 	MapTooltip(row.Map, function()
@@ -540,6 +288,7 @@ local function PaintOther(row, value)
 		end
 	end)
 	row.Expand:Hide()
+	ns.Art.SetSliceShown(row.Selected, false)
 end
 
 function SelectQuest(id)
@@ -574,7 +323,7 @@ local function DrawDetail()
 		info[#info + 1] = L.DUNGEON_XP:format(BreakUpLargeNumbers(quest.xp))
 	end
 	Line(detailInfo, table.concat(info, L.SEPARATOR))
-	local objective = Dungeons.Objective(quest.id, source)
+	local objective = Dungeons.Objective(quest.id, details)
 	if objective then
 		cursor = cursor + 6
 	end
@@ -585,7 +334,7 @@ local function DrawDetail()
 	local start, finish = Dungeons.PlaceText(record and record.start), Dungeons.PlaceText(record and record.finish)
 	Line(detailGiver, start ~= "" and L.DUNGEON_START:format(start) or "")
 	Line(detailEnd, finish ~= "" and finish ~= start and L.DUNGEON_END:format(finish) or "")
-	local items = source and source.rewards[quest.id] or {}
+	local items = details and details.rewards[quest.id] or {}
 	detailDivider:SetShown(#items > 0)
 	if #items > 0 then
 		detailDivider:ClearAllPoints()
@@ -595,7 +344,7 @@ local function DrawDetail()
 	Line(detailRewards, #items > 0 and L.DUNGEON_REWARDS or "")
 	for index, button in ipairs(rewards) do
 		local item = items[index]
-		local icon = item and ItemIcon(item.id)
+		local icon = item and ItemIcon(item)
 		button:SetShown(icon ~= nil)
 		button:ClearAllPoints()
 		button:SetPoint("TOPLEFT", (index - 1) * 36, -cursor)
@@ -603,7 +352,7 @@ local function DrawDetail()
 			button:SetNormalTexture(icon)
 			button:SetScript("OnEnter", function()
 				GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
-				GameTooltip:SetItemByID(item.id)
+				GameTooltip:SetItemByID(item)
 				GameTooltip:Show()
 			end)
 		end
@@ -649,7 +398,7 @@ function Draw()
 	local dungeon = page.dungeon
 	local point = Dungeons.Entrance(dungeon.id)
 	Window.SetEmpty(empty, nil)
-	Window.SetRingIcon(dungeonIcon, journalIcon or "dungeon")
+	Window.SetRingIcon(dungeonIcon, "dungeon")
 	title:SetText(ns.State.InstanceName(dungeon.id) or dungeon.name)
 	location:SetText(
 		point and L.DUNGEON_ENTRANCE_AT:format(ns.State.ZoneName(point.map) or "", point.x * 100, point.y * 100) or ""
@@ -692,39 +441,27 @@ function Draw()
 	Window.SetList(list, Dungeons.CatalogRows(catalog))
 	if listSelection ~= dungeon.id then
 		listSelection = dungeon.id
-		local selected, heading
 		for index, entry in ipairs(list.values) do
-			if entry.heading then
-				heading = index
-			elseif entry.id == dungeon.id then
-				selected = index
-				break
-			end
-		end
-		if selected then
-			local y, top = list.tops[selected], list.frame:GetVerticalScroll()
-			if y < top or y + list.heights[selected] > top + list.height then
-				-- Bring the section heading in with the selection: a raid tile is never shown without its tier's name.
-				Window.ScrollListTo(list, heading or selected)
+			if entry.id == dungeon.id then
+				local y, top = list.tops[index], list.frame:GetVerticalScroll()
+				if y < top or y + list.heights[index] > top + list.height then
+					Window.ScrollListTo(list, index)
+				end
 			end
 		end
 	end
 	quests.frame:SetShown(view == "quests")
-	other.frame:SetShown(view ~= "quests")
+	prep.frame:SetShown(view == "prep")
 	-- The maps overlay owns its selected state while visible; the dungeon detail
 	-- view must never leave the Maps tab looking selected underneath it.
 	mapsButton:SetTabSelected(false)
-	other.rowHeight = view == "bosses" and BOSS_H or view == "loot" and LOOT_H or ROW_H
 	for index, key_ in ipairs(VIEWS) do
-		local muted = Muted(key_)
 		subTabs[index]:SetTabSelected(key_ == view)
 		subTabs[index].Text:ClearAllPoints()
 		subTabs[index].Text:SetPoint("CENTER", 0, 0)
-		if muted then
-			subTabs[index]:SetNormalFontObject("GameFontDisableSmall")
-		end
 	end
-	note:SetText(not sourceRead and L.DUNGEON_LOADING or "")
+	handoff:SetEnabled(ns.Integrations.ClassicGuideAvailable())
+	note:SetText(not detailsRead and L.DUNGEON_LOADING or "")
 	if view == "quests" then
 		Window.SetList(quests, Dungeons.QuestRows(page, expanded))
 		if #page.quests == 0 then
@@ -736,55 +473,15 @@ function Draw()
 			)
 			note:SetText("")
 		end
-	elseif view == "prep" then
+	else
 		local rows = Dungeons.PrepRows(page)
-		Window.SetList(other, rows)
+		Window.SetList(prep, rows)
 		if #rows == 0 then
 			Window.SetEmpty(empty, L.DUNGEON_NO_PREP)
-		end
-	else
-		local rows
-		local known
-		if view == "bosses" then
-			known = Dungeons.Bosses(source, dungeon.id, bosses)
-		else
-			known = source and source.loot[dungeon.id]
-		end
-		if source and not known then
-			known = {}
-		end
-		if view == "loot" and source then
-			rows = Dungeons.LootRows(source, dungeon.id, Dungeons.Bosses(source, dungeon.id, bosses))
-		else
-			rows = Dungeons.BossRows(source, dungeon.id, known or {})
-		end
-		Window.SetList(other, rows)
-		if not known then
-			Window.SetEmpty(empty, SourceMessage())
-			note:SetText("")
-		elseif #rows == 0 then
-			Window.SetEmpty(empty, view == "bosses" and Dungeons.NoBosses() or L.DUNGEON_NO_RECORDS)
-			note:SetText("")
 		end
 	end
 	DrawDetail()
 end
-
--- A source read made without AtlasLoot's pages is not kept: read again when AtlasLoot or its pages load later, or when
--- the fight that held them back ends. The hidden tab reads on its next show.
-local watcher = CreateFrame("Frame")
-watcher:RegisterEvent("ADDON_LOADED")
-watcher:SetScript("OnEvent", function(self, event, addon)
-	if event == "PLAYER_REGEN_ENABLED" then
-		self:UnregisterEvent(event)
-	elseif reading or not Dungeons.IsSourceAddon(addon) then
-		return
-	end
-	reading, sourceRead = false, false
-	if content and content:IsVisible() then
-		Refresh()
-	end
-end)
 
 ---@param work fun(yield: fun())
 local function Run(work)
@@ -804,7 +501,7 @@ local function Run(work)
 		started = debugprofilestop()
 		local ok, err = coroutine.resume(co)
 		if not ok then
-			sourceRead, sourceError = true, true
+			detailsRead = true
 			note:SetText(L.DUNGEON_SOURCE_FAILED)
 			geterrorhandler()(err)
 		elseif coroutine.status(co) ~= "dead" then
@@ -815,15 +512,11 @@ local function Run(work)
 end
 
 function Refresh()
-	if classicGuide then
-		classicGuide:SetShown(ns.Integrations.ClassicGuideAvailable())
-	end
 	if not content:IsVisible() then
 		return
 	end
-	reading = false
-	if sourceData ~= ns.Data then
-		sourceData, source, sourceRead, sourceError = ns.Data, nil, false, false
+	if detailsData ~= ns.Data then
+		detailsData, details, detailsRead = ns.Data, nil, false
 	end
 	Run(function(yield)
 		local player = ns.State.Player()
@@ -849,21 +542,15 @@ function Refresh()
 		end
 		ns.WindowDB().dungeon = dungeon.id
 		page = Dungeons.Page(ns.Data, player, ns.State.Completed(), ns.State.Log(), dungeon, yield)
-		bosses, journalIcon = Dungeons.Journal(dungeon.id, yield)
 		local selected = selectedQuest and ns.Data.quests[selectedQuest]
 		if #page.quests == 0 or (selectedQuest and (not selected or not Dungeons.ForCharacter(selected, player))) then
 			selectedQuest = nil
 		end
 		selectedQuest = selectedQuest or dungeon.quests[1]
 		Draw()
-		if not sourceRead then
-			local deferred
-			reading = true
-			source, deferred = Dungeons.Source(yield)
-			reading, sourceRead = false, true
-			if deferred then
-				watcher:RegisterEvent("PLAYER_REGEN_ENABLED")
-			end
+		if not detailsRead then
+			details = ns.ReadDungeonDetails(yield)
+			detailsRead = true
 			Draw()
 		end
 	end)
@@ -931,68 +618,52 @@ local function BuildContents(parent)
 	Window.SetEmpty(empty, nil)
 	local heading = Window.Heading(content, L.TAB_DUNGEONS)
 	heading:SetPoint("TOPLEFT", LEFT + 8, -TOP)
-	classicGuide = Button(content, L.DUNGEON_CLASSIC_GUIDE, RIGHT_X + PAGE_W - 214, TOP, 214, function()
-		ns.Integrations.OpenClassicGuide()
-	end)
-	classicGuide:SetShown(ns.Integrations.ClassicGuideAvailable())
-	classicGuide:SetScript("OnEnter", function()
-		ns.Overview.ShowTooltip(classicGuide, { L.DUNGEON_CLASSIC_GUIDE_TOOLTIP })
-	end)
-	classicGuide:SetScript("OnLeave", GameTooltip_Hide)
-	list = List(content, LEFT, TOP + 22, LIST_W, 338, TILE_H, function(row, value)
+	list = List(content, LEFT, TOP + 22, LIST_W, 338, LIST_H, function(row, value)
 		if value.heading then
 			row.Title:SetText(value.title)
 			row.Title:SetFontObject("GameFontNormal")
 			row.Title:SetTextColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
 			row.Title:ClearAllPoints()
 			row.Title:SetPoint("TOPLEFT", 8, -4)
-			row.Title:SetJustifyH("LEFT")
-			row.Title:SetWidth(LIST_W - 16)
-			row.Range:SetText("")
-			row.Up:Hide()
-			row.Icon:Hide()
-			row.Down:Hide()
+			row.Info:SetText("")
+			row.Giver:SetText("")
+			row.Map:Hide()
+			row.Expand:Hide()
 			row:EnableMouse(false)
 			row:SetScript("OnEnter", nil)
+			ns.Art.SetSliceShown(row.Selected, false)
 			return
 		end
 		row.Title:SetText(ns.State.InstanceName(value.id) or value.name)
-		row.Title:SetFontObject("QuestTitleFontBlackShadow")
 		row.Title:ClearAllPoints()
-		row.Title:SetPoint("TOP", 0, -15)
-		row.Title:SetJustifyH("CENTER")
-		row.Title:SetWidth(TILE_W - 20)
-		row.Title:SetTextColor(
-			value.raid and NORMAL_FONT_COLOR.r or 1,
-			value.raid and NORMAL_FONT_COLOR.g or 1,
-			value.raid and NORMAL_FONT_COLOR.b or 1
-		)
+		row.Title:SetPoint("TOPLEFT", 8, -5)
+		row.Title:SetFontObject("GameFontHighlight")
+		if value.raid then
+			row.Title:SetTextColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
+		else
+			row.Title:SetTextColor(1, 1, 1)
+		end
 		local range = Range(value --[[@as AGFDungeon]])
 		local info = value.hostile and L.DUNGEON_HOSTILE_LEVELS:format(range) or range
 		if value.raid then
 			local size = L.DUNGEON_RAID_PLAYERS:format(value.players)
 			info = info ~= "" and size .. L.SEPARATOR .. info or size
 		end
-		row.Range:SetText(info)
+		row.Info:SetText(info)
+		row.Giver:SetText("")
+		row:EnableMouse(true)
 		if value.low then
 			local player = ns.State.Player()
 			local level = math.max(value.low, math.min(player.level, value.high))
 			local color = GetQuestDifficultyColor(level)
-			row.Range:SetTextColor(
-				value.hostile and 0.5 or color.r,
-				value.hostile and 0.5 or color.g,
-				value.hostile and 0.5 or color.b
-			)
+			if value.hostile then
+				row.Info:SetTextColor(0.5, 0.5, 0.5)
+			else
+				row.Info:SetTextColor(color.r, color.g, color.b)
+			end
 		else
-			row.Range:SetTextColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
+			row.Info:SetTextColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b)
 		end
-		-- The client build carries no per-instance icon (the Encounter Journal is dead here), so every tile uses the
-		-- Adventure Guide's dungeon atlas. The pushed crop marks the instance the page shows.
-		ns.Art.Fit(row.Icon, "dungeon", TILE_ICON, TILE_ICON)
-		row.Up:Show()
-		row.Icon:Show()
-		row.Down:SetShown(value.id == ns.WindowDB().dungeon)
-		row:EnableMouse(true)
 		row:SetScript("OnEnter", function()
 			ns.Overview.ShowTooltip(row, {
 				row.Title:GetText(),
@@ -1001,12 +672,15 @@ local function BuildContents(parent)
 					or (value.raid and L.DUNGEON_RAID_TOOLTIP or L.DUNGEON_LEVEL_TOOLTIP),
 			})
 		end)
+		row.Map:Hide()
+		row.Expand:Hide()
+		ns.Art.SetSliceShown(row.Selected, value.id == ns.WindowDB().dungeon)
 	end, function(value)
 		ns.WindowDB().dungeon, selectedQuest, expanded = value.id, nil, {}
 		quests.frame:SetVerticalScroll(0)
-		other.frame:SetVerticalScroll(0)
+		prep.frame:SetVerticalScroll(0)
 		Refresh()
-	end, CreateInstanceTile)
+	end)
 	header = Window.CreateCard(content, true)
 	Window.SizeCard(header, PAGE_W, HEADER_H, 0.8)
 	header:SetPoint("TOPLEFT", RIGHT_X, -TOP)
@@ -1043,24 +717,16 @@ local function BuildContents(parent)
 			ns.Choose("dungeon:" .. page.dungeon.id, true)
 		end
 	end)
-	for index, label in ipairs({ L.DUNGEON_QUESTS_TAB, L.DUNGEON_PREP_TAB, L.DUNGEON_BOSSES_TAB, L.DUNGEON_LOOT_TAB }) do
+	for index, label in ipairs({ L.DUNGEON_QUESTS_TAB, L.DUNGEON_PREP_TAB }) do
 		local key = VIEWS[index]
 		local tab = CreateFrame("Button", nil, content, "TabSystemTopButtonTemplate") --[[@as AGFTopTab]]
 		tab:SetText(label)
 		tab:SetSize(78, 32)
 		tab:HandleRotation()
 		tab:SetPoint("BOTTOMLEFT", body, "TOPLEFT", 8 + (index - 1) * 82, 0)
-		tab:SetScript("OnEnter", function()
-			if Muted(key) then
-				ns.Overview.ShowTooltip(tab, {
-					(SourceMessage()),
-				})
-			end
-		end)
-		tab:SetScript("OnLeave", GameTooltip_Hide)
 		tab:SetScript("OnClick", function()
 			view = key
-			other.frame:SetVerticalScroll(0)
+			prep.frame:SetVerticalScroll(0)
 			Draw()
 		end)
 		subTabs[index] = tab
@@ -1069,7 +735,7 @@ local function BuildContents(parent)
 	mapsButton:SetText(L.DUNGEON_MAPS_TAB)
 	mapsButton:SetSize(78, 32)
 	mapsButton:HandleRotation()
-	mapsButton:SetPoint("BOTTOMLEFT", body, "TOPLEFT", 8 + 4 * 82, 0)
+	mapsButton:SetPoint("BOTTOMLEFT", body, "TOPLEFT", 8 + 2 * 82, 0)
 	mapsButton:SetScript("OnClick", function()
 		if page then
 			mapsButton:SetTabSelected(true)
@@ -1081,25 +747,32 @@ local function BuildContents(parent)
 			Window.OpenDungeonMaps(page.dungeon.id, content)
 		end
 	end)
+	-- The Bosses and Loot pages belong to Adventure Guide for Classic: this control hands off to its own window.
+	handoff = CreateFrame("Button", nil, content, "UIPanelButtonTemplate") --[[@as Button]]
+	handoff:SetSize(120, 22)
+	handoff:SetPoint("BOTTOMLEFT", body, "TOPLEFT", 8 + 3 * 82, 5)
+	handoff:SetText(L.DUNGEON_BOSSES_LOOT)
+	handoff:SetScript("OnClick", function()
+		ns.Integrations.OpenClassicGuide()
+	end)
+	handoff:SetMotionScriptsWhileDisabled(true)
+	handoff:SetScript("OnEnter", function()
+		ns.Overview.ShowTooltip(handoff, {
+			ns.Integrations.ClassicGuideAvailable() and L.DUNGEON_BOSSES_LOOT_TOOLTIP or L.DUNGEON_BOSSES_LOOT_INSTALL,
+		})
+	end)
+	handoff:SetScript("OnLeave", GameTooltip_Hide)
 	note = Text(content, "", RIGHT_X + 8, BODY_Y + BODY_H + 2, PAGE_W - 16, "GameFontDisableSmall")
 	quests = List(content, RIGHT_X, BODY_Y, QUEST_W, BODY_H, 38, PaintQuest, function(value)
 		SelectQuest(value.quest.id)
-	end, CreateListRow)
-	other = List(content, RIGHT_X, BODY_Y, PAGE_W - 12, BODY_H, 36, PaintOther, function(value)
-		if value.item then
-			GameTooltip:SetOwner(other.frame, "ANCHOR_RIGHT")
-			GameTooltip:SetItemByID(value.item)
-			GameTooltip:Show()
-		elseif value.boss and value.lootIndex then
-			view = "loot"
-			Draw()
-			Window.ScrollListTo(other, value.lootIndex)
-		elseif value.quest then
+	end)
+	prep = List(content, RIGHT_X, BODY_Y, PAGE_W - 12, BODY_H, ROW_H, PaintPrep, function(value)
+		if value.quest then
 			view = "quests"
 			SelectQuest(value.quest.id)
 		end
-	end, CreateOtherRow)
-	other.frame:Hide()
+	end)
+	prep.frame:Hide()
 	BuildDetail()
 end
 

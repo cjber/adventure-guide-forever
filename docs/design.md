@@ -61,7 +61,7 @@ abandons quests.
 - **2.20 Your order.** Reordering must preserve quest dependencies. Suggested order remains recoverable.
 
 - **2.21 Dungeons.** A window tab below the shared Today strip, with a level-sorted dungeon list, featured
-  header and Quests / Prep / Bosses / Loot pages. The list groups dungeons, the announced Forever raids, then
+  header and Quests / Prep pages. The list groups dungeons, the announced Forever raids, then
   the client's other raid instances, each raid row tagged with its group size; the raid tier and sizes come from
   `Integrations/Raids.lua` (docs/dungeon-sources.md), never from a copied Classic attunement page. Remember the instance Map.ID in window state. Plan to run
   selects the existing dungeon journey and enables the existing dungeon preference; no parallel plan state.
@@ -95,24 +95,17 @@ abandons quests.
   these sources are not invented or described as unnecessary.
 
   QuestieDB is read only through QuestieSource's contract-checked runtime layer. Nothing derived from it is
-  shipped. Bosses lists only rank-3 NPCs or explicit AtlasLoot/client journal encounters, never every elite.
-  AtlasLoot's installed normal-difficulty pages supply curated encounter order and drops; wings merge by level.
-  QuestieDB is the fallback. Loot has one row per item ID, boss headings with known levels, and final Trash.
-  Any outside/unknown dropper excludes an item. Client rarity excludes grey/white items except proven quest
-  starters; uncached rarity waits for item data. Shared drops belong to the first matching boss.
-  `questRewards` supplies reward icons without claiming which are choices. Neither optional source present
-  shows Needs QuestieDB or AtlasLoot; known empty data shows the empty state. The optional reads bundle no data;
-  the one bundled boss table is the build-gated ability id list (dungeon-sources.md).
-  Objective text comes from that snapshot, then the accepted quest's client log; otherwise it is omitted.
+  shipped. The quest detail reads reward `questRewards` and objective text from that layer as one sliced
+  snapshot; a quest with no catalogue text falls back to the accepted quest's client log, and unknown item
+  data contributes nothing. Neither a missing source nor an empty catalogue invents an objective or a reward.
   Place names use the hub, client map name or bundled map name; an unknown place leaves the NPC alone.
   Experience uses BreakUpLargeNumbers. No internal IDs or missing-value placeholders enter player text.
-  Under each boss are the spells it casts, each an icon and name with the client's own spell tooltip, from the
-  bundled table; an id this build cannot resolve is dropped, not shown. A boss drop carries AtlasLoot's curated
-  drop chance beside it when AtlasLoot has one, and nothing when it does not.
 
-  The views wear the Encounter Journal's own art at its own sizes, since Blizzard's journal frames do not load on
-  this client: a 174x96 instance button with its icon and level range, a 325x55 boss button with the default
-  portrait, and a 321x45 loot row with a 42x42 icon and the journal's loot border, in the journal's fonts.
+  The Bosses and Loot pages belong to Adventure Guide for Classic, this addon's recommended companion for
+  dungeon and raid bosses and loot. One stock button labelled Bosses and loot sits where those two tabs did
+  and opens that addon's window through its public slash entry point; it is always drawn, and disabled with a
+  tooltip naming the addon to install when it is absent. No boss, ability, drop-chance or loot data is read or
+  bundled, and no private table of the companion is reached into.
 
   Top sub-tabs use TabSystemTopButtonTemplate on a common baseline; chains use the quest log's
   CollapseButtonTemplate. The header has title, location and a single meta line (entry level and positive remaining XP),
@@ -124,9 +117,8 @@ abandons quests.
   NPCs (one line when identical), a Rewards heading and a proven linear chain position. The scrollable body keeps the giver button fixed at the bottom. Item icons remain square,
   tooltips use GameTooltip, and the stock divider keeps its atlas aspect.
 
-  Client journal instance IDs and encounters win when available, queried with an explicit instance ID so the
-  player's journal selection is untouched. Client dungeon icons are square, as the EJ instance button draws
-  them; otherwise the header uses the entrance zone's existing map art at native aspect. Source findings and
+  Client dungeon icons are square, as the game draws them; the header otherwise uses the entrance zone's
+  existing map art at native aspect. Source findings and
   pins are recorded in [dungeon-sources.md](dungeon-sources.md). The layout is included in `/agf dump` and
   `docs/screenshots/dungeons*.png`, including the owner's Alliance level 19 Darkshore/Ragefire regression.
   The shared Today strip shows two wide hints, with the rest in a small stock-font More menu control on every tab.

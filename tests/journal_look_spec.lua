@@ -1,6 +1,6 @@
 -- Run from the repository root: luajit tests/journal_look_spec.lua
 -- The window's Journal look (UI/WindowWidgets.lua): the Encounter Journal's type and palette, the paper section
--- header and long-text well, and the flat dark tile a page with no art falls back to.
+-- header, and the flat dark tile a page with no art falls back to.
 local harness = dofile("tests/harness.lua")
 local checks = 0
 
@@ -26,21 +26,20 @@ equal(Window.FONT_TITLE, "GameFontNormalLarge2", "the panel title font")
 equal(Window.FONT_ROW, "GameFontNormalMed3", "the list row font")
 equal(Window.FONT_HEADER, "GameFontNormal", "the section header font")
 same(Window.GOLD, { 0.929, 0.788, 0.62 }, "the gold")
-same(Window.BODY_INK, { 0.25, 0.148, 0.02 }, "the paper ink")
 
 local heading = Window.Heading(parent, "Next steps")
 equal(heading:GetFontObject():GetName(), Window.FONT_HEADER, "a heading takes the header font")
 same(heading.textColor, { Window.GOLD[1], Window.GOLD[2], Window.GOLD[3] }, "in the Journal's gold")
 
 -- A section header carries the paper-overlay caps and tiled middle, and folds only when given a callback.
-local header = Window.CreateSectionHeader(parent, "Bosses")
-equal(header.Label:GetText(), "Bosses", "the section's name")
+local header = Window.CreateSectionHeader(parent, "Next steps")
+equal(header.Label:GetText(), "Next steps", "the section's name")
 equal(header.Left.file, "Interface\\EncounterJournal\\UI-EncounterJournalTextures", "the paper cap's own file")
 equal(header.Right.file, "Interface\\EncounterJournal\\UI-EncounterJournalTextures", "the other cap")
 equal(header.Mid.file, "Interface\\EncounterJournal\\UI-EncounterJournalTextures_Tile", "the tiled middle")
 equal(header.Chevron.text, nil, "no callback, no fold glyph")
 local folded
-local folding = Window.CreateSectionHeader(parent, "Loot", function(open)
+local folding = Window.CreateSectionHeader(parent, "Reagents", function(open)
 	folded = open
 end)
 equal(folding.Open, true, "a foldable section starts open")
@@ -49,16 +48,6 @@ folding:GetScript("OnClick")(folding)
 equal(folding.Open, false, "the click folds it")
 equal(folding.Chevron:GetText(), "+", "and shows the plus glyph")
 equal(folded, false, "and tells the caller")
-
--- The long-text well: the AbilityTextBG parchment, its border, a bullet and the brown body ink.
-local well = Window.CreatePaperWell(parent)
-equal(well.Paper.file, "Interface\\EncounterJournal\\UI-EncounterJournalTextures", "the parchment's file")
-equal(well.Border.file, "Interface\\EncounterJournal\\UI-EncounterJournalTextures", "the bottom border's file")
-equal(well.Bullet.file, "Interface\\EncounterJournal\\UI-EncounterJournalTextures", "the bullet's file")
-equal(well.Text:GetFontObject():GetName(), "GameFontBlack", "the body font")
-same(well.Text.textColor, { Window.BODY_INK[1], Window.BODY_INK[2], Window.BODY_INK[3] }, "in the paper ink")
-Window.SetPaperWell(well, { "Line one", "Line two" })
-equal(well.Text:GetText(), "Line one\nLine two", "the well's lines")
 
 -- A page the client has no art for: a flat dark tile, never a question mark or a substituted picture.
 local empty = Window.CreateEmpty(parent, "AGF-No-Such-Atlas")
