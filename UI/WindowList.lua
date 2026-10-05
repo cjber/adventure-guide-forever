@@ -28,8 +28,7 @@ end
      Journal list scrolls. The scroll box makes a row only for the elements its viewport shows, positions it, and
      hands it back to the pool when it leaves, so the list keeps no rows of its own and culls nothing by hand. A
      caller gives `create` (one row frame, drawn once) and `paint` (a row's element); headings and any other
-     variable row are measured by `extent`. `columns` above one lays the elements out as a grid instead (the
-     instance tiles), `gap` apart, with the same pooling. ]]
+     variable row are measured by `extent`. ]]
 
 ---@param parent Frame
 ---@param x number
@@ -41,10 +40,8 @@ end
 ---@param click fun(value: table)
 ---@param create fun(parent: Frame, width: number, rowHeight: number, click: fun(value: table)): AGFDungeonRow
 ---@param extent? AGFListExtent an element's height, in place of the heading rule
----@param columns? integer grid stride: elements per row
----@param gap? number the spacing between grid elements
 ---@return AGFDungeonListWidget
-function Window.CreateList(parent, x, y, width, height, rowHeight, paint, click, create, extent, columns, gap)
+function Window.CreateList(parent, x, y, width, height, rowHeight, paint, click, create, extent)
 	local scroll = CreateFrame("Frame", nil, parent, "WowScrollBoxList") --[[@as AGFScrollBox]]
 	scroll:SetPoint("TOPLEFT", x, -y)
 	scroll:SetSize(width, height)
@@ -64,34 +61,16 @@ function Window.CreateList(parent, x, y, width, height, rowHeight, paint, click,
 		headingHeight = HEADING_H,
 		extent = extent,
 		paint = paint,
-		columns = columns,
-		gap = gap,
 	} --[[@as AGFDungeonListWidget]]
-	local elementWidth = width
-	local view
-	if columns and columns > 1 then
-		-- The grid's own view: a fixed element size, so every tile is the art's own width and the list still pools
-		-- only the tiles its viewport shows.
-		local spacing = gap or 0
-		view = CreateScrollBoxListGridView(columns, 0, 0, 0, 0, spacing, spacing)
-		elementWidth = (width - (columns - 1) * spacing) / columns
-		if view.SetElementSize then
-			view:SetElementSize(elementWidth, rowHeight)
-		else
-			view:SetElementExtent(rowHeight)
-		end
-	else
-		view = CreateScrollBoxListLinearView()
-		view:SetElementExtentCalculator(function(_, value)
-			return ElementHeight(widget, value)
-		end)
-	end
+	local view = CreateScrollBoxListLinearView()
+	view:SetElementExtentCalculator(function(_, value)
+		return ElementHeight(widget, value)
+	end)
 	---@param container AGFListContainer
 	---@param value table
 	local function Initialize(container, value)
 		if not container.row then
-			-- A grid element is one tile wide, never the row of tiles.
-			container.row = create(container, elementWidth, rowHeight, click)
+			container.row = create(container, width, rowHeight, click)
 			container.row:ClearAllPoints()
 			container.row:SetPoint("TOPLEFT")
 			widget.rows[#widget.rows + 1] = container.row
@@ -132,20 +111,7 @@ end
 ---@param values table[]
 function Window.SetList(widget, values)
 	widget.values = values
-	local heights, tops = {}, {}
-	if widget.columns and widget.columns > 1 then
-		-- A grid's elements share one extent; the top of an element is its row's top, so a caller can still ask
-		-- `ScrollListTo` for the row that holds it.
-		local pitch = widget.rowHeight + (widget.gap or 0)
-		for index in ipairs(values) do
-			heights[index] = widget.rowHeight
-			tops[index] = math.floor((index - 1) / widget.columns) * pitch
-		end
-		widget.heights, widget.tops = heights, tops
-		widget.scrollBox:SetDataProvider(CreateDataProvider(values), true)
-		return
-	end
-	local total = 0
+	local heights, tops, total = {}, {}, 0
 	for index, value in ipairs(values) do
 		local height = ElementHeight(widget, value)
 		heights[index] = height

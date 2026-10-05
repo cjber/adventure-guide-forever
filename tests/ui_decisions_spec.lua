@@ -47,7 +47,7 @@ do
 	local items, bosses, loot = {}, {}, {}
 	for boss = 1, 3 do
 		bosses[boss] = { id = boss, name = "Boss " .. boss }
-		for drop = 1, (boss == 3 and 1 or 12) do
+		for drop = 1, (boss == 3 and 1 or 6) do
 			local id = boss * 100 + drop
 			items[id] = { name = "Drop " .. id, quality = 3 }
 			loot[#loot + 1] = { id = id, name = items[id].name, droppers = { { id = boss } } }
@@ -59,31 +59,22 @@ do
 	end
 	h.ns.Window.OpenDungeon(43)
 	h.flush()
-	local function SideTab(name)
-		return assert(h.Find(function(frame)
-			return frame:IsVisible() and frame.Text and frame.Text:GetText() == name
-		end)[1])
-	end
-	-- Boss rows live in the left list and the drops in the right one; a boss click moves the right list to its group.
-	h.Click(SideTab(h.ns.L.DUNGEON_LOOT_TAB))
-	local lootRow = assert(h.Find(function(frame)
-		return frame:IsVisible() and frame.value and frame.value.item
+	local tab = assert(h.Find(function(frame)
+		return frame:IsVisible() and frame:GetText() == h.ns.L.DUNGEON_BOSSES_TAB
 	end)[1])
-	local scroll = lootRow:GetParent():GetParent()
+	h.Click(tab)
 	local row = assert(h.Find(function(frame)
 		return frame:IsVisible() and frame.value and frame.value.boss and frame.value.title == "Boss 2"
 	end)[1])
+	local scroll = row:GetParent():GetParent()
 	h.Click(row)
-	equal(scroll:GetVerticalScroll(), 22 + 12 * 47, "boss jump accounts for heading height")
+	equal(scroll:GetVerticalScroll(), 22 + 6 * 47, "boss jump accounts for heading height")
+	h.Click(tab)
 	local last = assert(h.Find(function(frame)
 		return frame:IsVisible() and frame.value and frame.value.boss and frame.value.title == "Boss 3"
 	end)[1])
 	h.Click(last)
-	equal(
-		scroll:GetVerticalScroll(),
-		3 * 22 + 25 * 47 - scroll:GetHeight(),
-		"boss jump clamps to the measured content height"
-	)
+	equal(scroll:GetVerticalScroll(), 3 * 22 + 13 * 47 - 222, "boss jump clamps to the measured content height")
 	equal(#h.errors, 0, "boss jump has no errors")
 end
 
@@ -107,7 +98,7 @@ do
 	h.ns.Window.OpenDungeon(43)
 	h.flush()
 	h.Click(assert(h.Find(function(frame)
-		return frame:IsVisible() and frame.Text and frame.Text:GetText() == h.ns.L.DUNGEON_LOOT_TAB
+		return frame:IsVisible() and frame:GetText() == h.ns.L.DUNGEON_LOOT_TAB
 	end)[1]))
 	local function Row(test)
 		return assert(h.Find(function(frame)
