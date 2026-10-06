@@ -180,10 +180,10 @@ do
 	local h = Load({ installed = { SkillUpForever = true, LegacyForever = true } })
 	local L = h.ns.L
 	equal(TabLine(h, "professions")[L.SKILLUP_DISABLED], true, "Professions, SkillUp off: says enable")
-	equal(TabLine(h, "progress")[L.LEGACY_DISABLED], true, "Completion, Legacy off: says enable")
+	equal(TabLine(h, "progress")[L.LEGACY_DISABLED], true, "Progress link, Legacy off: says enable")
 	h.ns.SetSetting("suggestCompanions", false)
 	equal(TabLine(h, "professions")[L.SKILLUP_ABSENT], true, "Professions, hints off: the plain line")
-	equal(TabLine(h, "progress")[L.LEGACY_ABSENT], true, "Completion, hints off: the plain line")
+	equal(TabLine(h, "progress")[L.LEGACY_PROGRESS_NOTE], true, "Progress link, hints off: the plain line")
 	clean(h, "tabs")
 end
 

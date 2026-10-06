@@ -1336,9 +1336,6 @@
 ---@field TWEAKS_OUTDATED string
 ---@field ENTRANCE_UNKNOWN string
 ---@field LEGACY_MISSING string
----@field COMPLETION_NOT_KNOWN string format: items Legacy Forever can't check yet
----@field COMPLETION_NOT_KNOWN_TAXIS string format: the same, all flight paths, with how to check them
----@field COMPLETION_NOT_KNOWN_QUESTS string format: the same, all quests, with what they wait on
 ---@field PVP_RANK string
 ---@field PVP_RANK_POINTS string
 ---@field PVP_UNRANKED string

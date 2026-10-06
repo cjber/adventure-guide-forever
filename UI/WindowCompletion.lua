@@ -4,7 +4,9 @@ local Window, L = ns.Window, ns.L
 ---@type AGFDungeonListWidget
 local milestones
 ---@type FontString
-local empty
+local empty, note
+---@type Button
+local legacy
 local function Build(parent)
 	local heading = Window.Heading(parent, L.STORY_COMPLETE)
 	heading:SetPoint("TOPLEFT", Window.LEFT, -Window.TOP)
@@ -40,20 +42,22 @@ local function Build(parent)
 	empty:SetWidth(Window.Cards.available)
 	empty:SetJustifyH("LEFT")
 	empty:SetText(L.JOURNEY_PROGRESS_EMPTY)
-	local note = parent:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+	note = parent:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
 	note:SetPoint("TOPLEFT", Window.LEFT, -340)
 	note:SetWidth(Window.Cards.available)
 	note:SetJustifyH("LEFT")
 	note:SetText(L.LEGACY_PROGRESS_NOTE)
-	local button = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate") --[[@as Button]]
-	button:SetSize(220, 24)
-	button:SetPoint("TOPLEFT", Window.LEFT, -366)
-	button:SetText(L.LEGACY_PROGRESS_LINK)
-	button:SetScript("OnClick", function()
+	legacy = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate") --[[@as Button]]
+	legacy:SetSize(220, 24)
+	legacy:SetPoint("TOPLEFT", Window.LEFT, -366)
+	legacy:SetText(L.LEGACY_PROGRESS_LINK)
+	legacy:SetScript("OnClick", function()
 		C_Map.OpenWorldMap()
 	end)
 end
 local function Refresh()
+	note:SetText(ns.Companions.Hint("LegacyForever") or L.LEGACY_PROGRESS_NOTE)
+	legacy:SetEnabled(ns.Companions.State("LegacyForever") == "loaded")
 	local records = {}
 	for key, record in pairs(ns.Prefs().completedStories) do
 		records[#records + 1] = { key = key, title = record.title }
