@@ -235,6 +235,31 @@ do
 	clean(h, "primary action")
 end
 
+-- The current-stop highlight follows guidance after Shortest Path advances.
+do
+	local h = Load({ spf = "v1" })
+	Open(h)
+	local first = h.ns.Overview.Split(h.ns.Route())
+	h.ns.Choose(first.key, true)
+	h.flush()
+	h.spfRoute.index = 2
+	h.ns.Window.Refresh()
+	local current = h.ns.Guidance.CurrentStep()
+	local rows = h.Find(function(frame)
+		return frame:IsVisible() and frame.Kind and frame.step
+	end)
+	equal(current ~= nil and current.key == h.ns.Route().steps[2].key, true, "guidance advanced to second stop")
+	local selected = 0
+	for _, row in ipairs(rows) do
+		if row.Selected.shown then
+			selected = selected + 1
+			equal(row.step.key, current.key, "gold highlight follows the current stop")
+		end
+	end
+	equal(selected, 1, "one current stop is highlighted")
+	clean(h, "advanced journey highlight")
+end
+
 -- Journey choices live in Activities and selecting one updates the main journey and map together.
 do
 	local h = Load({ spf = "v1" })

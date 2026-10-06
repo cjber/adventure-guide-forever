@@ -17,6 +17,8 @@ local start, stop, entrance, guide, session, reset, previous, nextPage
 local details
 ---@type AGFJourneyBanner
 local banner
+---@type AGFRingIcon
+local bannerIcon
 local page = 1
 local Refresh
 local lootInstance, lootSource
@@ -161,9 +163,8 @@ local function Build(parent)
 	local inner = CreateFrame("Frame", nil, banner)
 	inner:SetAllPoints()
 	inner:SetFrameLevel(banner:GetFrameLevel() + 5)
-	local icon = Window.CreateRingIcon(inner, 36)
-	icon:SetPoint("TOPLEFT", 12, -10)
-	Window.SetRingIcon(icon, "QuestNormal")
+	bannerIcon = Window.CreateRingIcon(inner, 36)
+	bannerIcon:SetPoint("TOPLEFT", 12, -10)
 	title = inner:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 	title:SetPoint("TOPLEFT", 60, -8)
 	title:SetWidth(WIDTH - 180)
@@ -209,9 +210,6 @@ local function Build(parent)
 		end
 	end)
 	entrance:SetWidth(112)
-	Button(parent, L.TAB_ACTIVITIES, SIDE_LEFT + 120, function()
-		Window.SelectActivity("journeys")
-	end)
 	estimate = parent:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
 	estimate:SetPoint("TOPRIGHT", parent, "TOPLEFT", LEFT + 420, -142)
 	stepHeading = Window.Heading(parent, L.DO_THIS_NEXT)
@@ -243,6 +241,7 @@ local function Build(parent)
 	details = Window.CreateList(parent, SIDE_LEFT, 166, SIDE_WIDTH - 12, 226, 36, function(row, value)
 		row.Title:SetText(value.title or (value.item and C_Item.GetItemNameByID(value.item)) or L.ITEM_LOADING)
 		row.Info:SetText(value.info or "")
+		row.Info:SetFontObject(value.future and "GameFontDisableSmall" or "GameFontHighlightSmall")
 		local itemIcon = value.item and C_Item.GetItemIconByID(value.item)
 		row.Icon:SetShown(itemIcon ~= nil)
 		row:SetEnabled(not value.future and not value.heading)
@@ -354,11 +353,15 @@ Refresh = function()
 		row:SetShown(step ~= nil)
 		if step then
 			Window.SetStepRow(row, position, step.title, step.detail, step)
-			row:SetAlpha(step.optional and 0.6 or 1)
+			local active = position == begin
+			ns.Art.SetSliceShown(row.Selected, active)
+			row.Title:SetFontObject(active and "GameFontNormalMed3" or "GameFontHighlight")
+			row.Title:SetAlpha(step.optional and not active and 0.75 or 1)
 		end
 	end
 	banner:SetShown(first ~= nil)
 	if first then
+		Window.SetRingIcon(bannerIcon, Overview.KIND_ICONS[first.kind])
 		local place = Overview.IconStep(first)
 		ns.ZoneIcon.SetBackdrop(
 			banner.Art --[[@as AGFZoneBackdrop]],
@@ -403,6 +406,8 @@ Refresh = function()
 	end)
 	stop:SetShown(chosen == true)
 	stop:SetEnabled(not InCombatLockdown())
+	guide:ClearAllPoints()
+	guide:SetPoint("LEFT", chosen and stop or start, "RIGHT", 6, 0)
 	guide:SetShown(first ~= nil)
 	entrance:SetShown(first ~= nil and first.instance ~= nil)
 	entrance:SetEnabled(

@@ -28,6 +28,7 @@ local function Build(parent)
 	end, function(parentFrame, width, height, click)
 		local row = CreateFrame("Button", nil, parentFrame) --[[@as AGFDungeonRow]]
 		row:SetSize(width, height)
+		ns.Art.RowArt(row)
 		local ring = Window.CreateRingIcon(row, 36)
 		row.Ring = ring
 		ring:SetPoint("LEFT", 4, 0)
@@ -41,7 +42,6 @@ local function Build(parent)
 		row.Info:SetWidth(width - 62)
 		row.Info:SetJustifyH("LEFT")
 		row.Info:SetMaxLines(2)
-		ns.Art.Slice(row, "PetList-ButtonHighlight", "HIGHLIGHT", 12, 12)
 		row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 		row:SetScript("OnClick", function(self, button)
 			if button == "RightButton" then

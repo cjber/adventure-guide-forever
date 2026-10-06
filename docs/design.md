@@ -112,6 +112,9 @@ dark tile, never a question mark or a substituted picture.
 Journey is the default page. A compact header names the adventure and its reason, followed by route controls.
 Six upcoming stops sit beside the journey's quest list or dungeon bosses and loot. Later stops are paged;
 full guide shows the complete route and future prerequisites. Session length remains directly accessible.
+The current stop keeps its gold highlight as guidance advances; later stops use quieter white text.
+Optional steps retain readable icons and a full-strength current highlight. Header icons identify the journey
+kind, and visible route controls sit together without gaps for hidden actions.
 Activities groups journey selection, professions and PvP in a left-hand list. Choosing a journey returns to
 Journey, using the same choice and start preferences as the map. Progress records character story milestones;
 collections, exploration and zone completion live in Legacy Forever, linked through the world map.
@@ -157,3 +160,14 @@ Tweaks can request hidden, lazy creation through `AdventureGuideForever.EnsureWi
 The Journey header opens `UI/WindowGuide.lua`, a ten-row paged view of the active lap and the zone's remaining QuestieDB catalogue. Active route steps remain the planner's responsibility. Outline entries never become navigation targets or claim pickup eligibility. Race, class, faction, completion and dungeon/repeatable filters apply; active-chain successors and useful quest levels sort first, with prerequisites before dependents. This is an adaptive zone outline, not a fixed 1–60 walkthrough. Hiding the Journeys page closes the outline.
 
 The Journeys window leads with the committed route's first task and its honest reason, with the journey name as context. Start explicitly chooses and starts that journey through Guidance; a running route offers Show on Map, a paused route Resume. Wanderer mode offers only Show on Map. Recommended applies to an unchosen journey; a chosen journey says Your choice. Alternative eligible journeys live in Activities.
+
+### Journey layout proposal
+
+The approval concept in `journey-preview.png` shows a whole zone map beside the current stop and five upcoming
+steps. It is a proposed layout, separate from the implemented UI and store screenshots. Map content and its
+frame share one rectangle definition. Container artwork uses fixed eight-pixel corners, and action buttons
+share a height and gap. `tools/journey_preview_test.py` checks these contracts in CI, including rejected
+misalignment, stretched artwork, overflowing buttons and an underfilled step column. Visual inspection still
+checks readability and composition.
+
+Render with `WOWMOCK` configured: `python3 tools/journey_preview.py docs/journey-preview.png`.

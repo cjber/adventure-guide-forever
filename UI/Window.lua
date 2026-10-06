@@ -238,6 +238,7 @@ local function Build()
 	art:SetPoint("TOPLEFT", 3, -1)
 	art:SetPoint("BOTTOMRIGHT", -3, 1)
 	Art.CoverFrame(inset, art, "UI-EJ-Classic", 6, 2)
+	art:SetVertexColor(0.6, 0.6, 0.6)
 	for index, tab in ipairs(tabs) do
 		local content = CreateFrame("Frame", nil, frame)
 		content:SetAllPoints(inset)
