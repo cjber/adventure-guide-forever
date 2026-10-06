@@ -24,6 +24,10 @@ class JourneyLayoutTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "fit inside"):
             preview.validate_layout(buttons=(replace(preview.BUTTONS[0], width=400), preview.BUTTONS[1]))
 
+    def test_quest_action_overflow(self):
+        with self.assertRaisesRegex(ValueError, "left column"):
+            preview.validate_layout(quest_button=replace(preview.QUEST_BUTTON, y=505))
+
     def test_empty_column(self):
         with self.assertRaisesRegex(ValueError, "available column"):
             preview.validate_layout(upcoming=preview.UPCOMING[:3])

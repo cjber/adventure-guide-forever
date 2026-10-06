@@ -523,4 +523,28 @@ do
 	clean(h, "journey hover")
 end
 
+-- Dungeon details remain available without a loot provider; definitive missing data settles.
+do
+	local h = Load({ charDB = { journey = "dungeon:389", dungeons = true } })
+	Open(h)
+	local L = h.ns.L
+	equal(Texts(h)[L.DUNGEON_BOSSES_LOOT], 1, "dungeon journey shows boss and loot heading")
+	equal(Texts(h)[L.DUNGEON_LOOT_INSTALL], 1, "dungeon journey offers missing loot provider hint")
+	equal(Texts(h)[L.GO_TO_ENTRANCE], 1, "dungeon journey offers entrance action")
+	local attempts = 0
+	h.G.AtlasLoot = {}
+	h.ns.DungeonLoot.Bosses = function()
+		attempts = attempts + 1
+		return {}, L.DUNGEON_LOOT_UNKNOWN
+	end
+	h.ns.Window.Refresh()
+	h.ns.Window.Refresh()
+	equal(attempts, 1, "unknown dungeon loot is cached across refreshes")
+	equal(Texts(h)[L.DUNGEON_LOOT_UNKNOWN], 1, "unknown loot hint remains visible")
+	h.G.AtlasLoot = {}
+	h.ns.Window.Refresh()
+	equal(attempts, 2, "changing the provider invalidates unknown loot")
+	clean(h, "dungeon journey details")
+end
+
 print(("window_spec: %d checks passed"):format(checks))

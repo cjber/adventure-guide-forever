@@ -54,7 +54,11 @@ local function DetailRows()
 	if not journey then
 		return {}, nil
 	elseif journey.instance then
-		if lootInstance ~= journey.instance or lootSource ~= AtlasLoot or lootHint ~= nil then
+		if
+			lootInstance ~= journey.instance
+			or lootSource ~= AtlasLoot
+			or (lootHint ~= nil and lootHint ~= L.DUNGEON_LOOT_UNKNOWN)
+		then
 			lootInstance, lootSource = journey.instance, AtlasLoot
 			local bosses
 			bosses, lootHint = ns.DungeonLoot.Bosses(journey.instance)
@@ -298,7 +302,7 @@ local function Build(parent)
 		return row
 	end)
 	detailHint = parent:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-	detailHint:SetPoint("TOPLEFT", SIDE_LEFT, -170)
+	detailHint:SetPoint("TOPLEFT", SIDE_LEFT, -166)
 	detailHint:SetWidth(SIDE_WIDTH - 12)
 	detailHint:SetJustifyH("LEFT")
 	empty = parent:CreateFontString(nil, "ARTWORK", "GameFontHighlight")

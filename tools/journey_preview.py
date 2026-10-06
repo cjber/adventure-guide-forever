@@ -32,21 +32,25 @@ MAP_RIM = 8
 MAP = Rect(60, 158, 344, 344 / MAP_ASPECT)
 MAP_FRAME = Rect(MAP.x - MAP_RIM, MAP.y - MAP_RIM, MAP.width + 2 * MAP_RIM, MAP.height + 2 * MAP_RIM)
 CURRENT = Rect(428, 154, 370, 118)
-BUTTONS = (Rect(442, 234, 158, 24), Rect(608, 234, 82, 24))
+BUTTONS = (Rect(442, 234, 158, 22), Rect(608, 234, 82, 22))
+QUESTS = Rect(60, 405, 344, 94)
+QUEST_BUTTON = Rect(60, 475, 144, 22)
 UPCOMING = tuple(Rect(442, 312 + i * 36, 342, 32) for i in range(5))
 PAGE = Rect(48, 94, 760, 416)
 
 
-def validate_layout(map_rect=MAP, map_frame=MAP_FRAME, buttons=BUTTONS, upcoming=UPCOMING):
+def validate_layout(map_rect=MAP, map_frame=MAP_FRAME, buttons=BUTTONS, upcoming=UPCOMING, quest_button=QUEST_BUTTON):
     if map_frame.inset(MAP_RIM) != map_rect:
         raise ValueError("Map must align with the frame's inner edges")
     if abs(map_rect.width / map_rect.height - MAP_ASPECT) > 0.001:
         raise ValueError("Map must preserve its full native aspect")
-    for rect in (map_frame, CURRENT, *upcoming):
+    for rect in (map_frame, CURRENT, QUESTS, *upcoming):
         if not PAGE.contains(rect):
             raise ValueError("Content must fit inside the page")
+    if not QUESTS.contains(quest_button):
+        raise ValueError("Quest action must fit inside the left column")
     for button in buttons:
-        if button.height != 24 or not CURRENT.inset(12).contains(button):
+        if button.height != 22 or not CURRENT.inset(12).contains(button):
             raise ValueError("Buttons must have a consistent height and fit inside the current step")
     if buttons[1].x - buttons[0].x - buttons[0].width != 8:
         raise ValueError("Button gap must be eight pixels")
@@ -102,8 +106,8 @@ def render(output):
     icon("questlog-questtypeicon-story", 58, 104, 25)
     text(92, 103, "Ashenvale story", "GameFontNormalLarge")
     text(92, 128, "Questing around Astranaar", "GameFontHighlightSmall")
-    w.ui_panel_button(c, 558, 105, 126, 24, "View full guide")
-    w.ui_panel_button(c, 692, 105, 104, 24, "No time limit")
+    w.ui_panel_button(c, 558, 105, 126, 22, "View full guide")
+    w.ui_panel_button(c, 692, 105, 104, 22, "No time limit")
     frame(MAP_FRAME)
     art = w.map_art(ui, 1440)
     validate_art(MAP.width, MAP.height, art.width, art.height)
@@ -115,7 +119,7 @@ def render(output):
     icon("QuestTurnin", 60, 430)
     text(84, 430, "Bathan's Hair")
     text(84, 448, "Ready to hand in", "GameFontHighlightSmall")
-    w.ui_panel_button(c, 60, 475, 144, 24, "View quests")
+    w.ui_panel_button(c, QUEST_BUTTON.x, QUEST_BUTTON.y, QUEST_BUTTON.width, QUEST_BUTTON.height, "View quests")
     frame(CURRENT)
     text(442, 166, "Do this next", "GameFontNormal")
     icon("QuestTurnin", 442, 189, 22)
