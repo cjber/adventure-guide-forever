@@ -56,7 +56,8 @@ local function Build(parent)
 	end)
 end
 local function Refresh()
-	note:SetText(ns.Companions.Hint("LegacyForever") or L.LEGACY_PROGRESS_NOTE)
+	local hint = ns.Companions.Hint("LegacyForever")
+	note:SetText(hint or L.LEGACY_PROGRESS_NOTE)
 	legacy:SetEnabled(ns.Companions.State("LegacyForever") == "loaded")
 	local records = {}
 	for key, record in pairs(ns.Prefs().completedStories) do
