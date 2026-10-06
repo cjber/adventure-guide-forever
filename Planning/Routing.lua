@@ -501,6 +501,7 @@ end
 
 ns.Planner.Routing = {
 	Build = Build,
+	HandInOnly = HandInOnly,
 	Ident = Ident,
 	Idents = Idents,
 	NearAction = Model.NearAction,

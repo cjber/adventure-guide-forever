@@ -159,9 +159,10 @@ local VERB_ATLAS = {
 }
 local TRAINER_FILE = "Interface\\Minimap\\Tracking\\Class"
 -- An objective step whose open objectives are all one kind wears the cursor the game shows over that kind of
--- target: compact crossed swords for kills, the bag over something to collect, the gear over something to use.
+-- target: a skull for kills, the bag over something to collect, the gear over something to use.
 -- Mixed work, and a place to reach, keep the objective's own mark.
 local OBJECTIVE_FILES = {
+	monster = "Interface\\TargetingFrame\\UI-TargetingFrame-Skull",
 	item = "Interface\\Cursor\\Pickup",
 	object = "Interface\\Cursor\\Interact",
 }
@@ -179,7 +180,7 @@ local function ObjectiveIcon(step)
 		end
 		kind = own
 	end
-	return kind == "monster" and VERB_ATLAS.battlemaster or nil, kind and OBJECTIVE_FILES[kind] or nil
+	return nil, kind and OBJECTIVE_FILES[kind] or nil
 end
 
 ---@param step AGFStep

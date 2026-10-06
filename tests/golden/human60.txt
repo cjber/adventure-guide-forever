@@ -127,18 +127,13 @@ card | dungeon:329 | Stratholme | 9 quests for this dungeon | - | map 1423
   step 2 | town:1423:2271 | Pick up: The Restless Souls | 1423 0.6993,0.5372 | near your level
   step 3 | town:1423:2627 | Visit Terrordale: Pick up 3 | 1423 0.0516,0.3557 | 3 to pick up
   step 4 | town:1455:0 | Pick up: An Earnest Proposition | 1455 0.4353,0.5264 | near your level
-card | dungeon:229 | Blackrock Spire | 4 quests for this dungeon | - | map 1428
-  step 1 | town:1428:250 | Visit Ruins of Thaurissan: Pick up 3 | 1428 0.6589,0.2192 | 3 to pick up
-  step 2 | town:1428:2418 | Pick up: Put Her Down | 1428 0.8582,0.6895 | near your level
 card | dungeon:289 | Scholomance | 4 quests for this dungeon | - | map 1423
   step 1 | town:1423:2268 | Pick up: Plagued Hatchlings | 1423 0.7166,0.4994 | near your level
   step 2 | town:1422:2298 | Pick up: Doctor Theolen Krastinov, the Butcher | 1422 0.7022,0.7371 | near your level
   step 3 | town:1422:197 | Pick up: Barov Family Fortune | 1422 0.4345,0.8373 | near your level
   step 4 | town:1428:250 | Pick up: Broodling Essence | 1428 0.6524,0.2400 | near your level
-card | dungeon:429 | Dire Maul | 4 quests for this dungeon | - | map 1453
-  step 1 | town:1453:0 | Pick up: Feathermoon Stronghold | 1453 0.5639,0.7409 | near your level
-  step 2 | town:1444:1099 | Pick up: Pusillin and the Elder Azj'Tordin | 1444 0.7691,0.3735 | near your level
-  step 3 | town:1444:1120 | Visit Sardor Isle: Pick up 2 | 1444 0.3165,0.4345 | 2 to pick up
+card | dungeon:109 | Sunken Temple | 1 quest for this dungeon | - | map 1425
+  step 1 | town:1425:353 | Pick up: Jammal'an the Prophet | 1425 0.3375,0.7521 | near your level
 card | dungeon:230 | Blackrock Depths | 12 quests for this dungeon | - | map 1455
   step 1 | town:1455:0 | Pick up: The Smoldering Ruins of Thaurissan | 1455 0.3837,0.5531 | near your level
   step 2 | town:1426:136 | Pick up: Hurley Blackbreath | 1426 0.4683,0.5236 | near your level
@@ -149,13 +144,18 @@ card | dungeon:230 | Blackrock Depths | 12 quests for this dungeon | - | map 145
   step 7 | town:1428:2418 | Visit Morgan's Vigil: Pick up 3 | 1428 0.8582,0.6895 | 3 to pick up
   step 8 | town:1419:1438 | Pick up: Ragnar Thunderbrew | 1419 0.6363,0.2063 | near your level
   step 9 | town:1446:977 | Pick up: Yuka Screwspigot | 1446 0.6704,0.2401 | near your level
+card | dungeon:229 | Blackrock Spire | 4 quests for this dungeon | - | map 1428
+  step 1 | town:1428:250 | Visit Ruins of Thaurissan: Pick up 3 | 1428 0.6589,0.2192 | 3 to pick up
+  step 2 | town:1428:2418 | Pick up: Put Her Down | 1428 0.8582,0.6895 | near your level
 card | chain:4182 | The way into Blackrock Depths | Chapter 1 of 16 | Begins a new story | map 1428
   step 1 | town:1428:2418 | Pick up: Dragonkin Menace | 1428 0.8582,0.6895 | Begins a new story
+card | dungeon:429 | Dire Maul | 4 quests for this dungeon | - | map 1453
+  step 1 | town:1453:0 | Pick up: Feathermoon Stronghold | 1453 0.5639,0.7409 | near your level
+  step 2 | town:1444:1099 | Pick up: Pusillin and the Elder Azj'Tordin | 1444 0.7691,0.3735 | near your level
+  step 3 | town:1444:1120 | Visit Sardor Isle: Pick up 2 | 1444 0.3165,0.4345 | 2 to pick up
 card | dungeon:349 | Maraudon | 3 quests for this dungeon | - | map 1443
   step 1 | town:1443:608 | Pick up: Corruption of Earth and Seed | 1443 0.6383,0.1067 | near your level
   step 2 | town:1443:2408 | Pick up: Legends of Maraudon | 1443 0.3190,0.6380 | near your level
   step 3 | town:1443:602 | Pick up: The Pariah's Instructions | 1443 0.5042,0.8665 | near your level
 card | dungeon:209 | Zul'Farrak | 1 quest for this dungeon | - | map 1441
   step 1 | town:1441:439 | Pick up: Gahz'rilla | 1441 0.7814,0.7712 | near your level
-card | dungeon:109 | Sunken Temple | 1 quest for this dungeon | - | map 1425
-  step 1 | town:1425:353 | Pick up: Jammal'an the Prophet | 1425 0.3375,0.7521 | near your level

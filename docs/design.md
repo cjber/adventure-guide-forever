@@ -132,3 +132,7 @@ follow the shared family voice.
 The map guide includes the zone's remaining QuestieDB catalogue after actionable route steps.
 `UI/GuideOutline.lua` orders prerequisites before successors and filters race, class, faction and completed
 quests. Outline entries never become navigation targets or claim pickup eligibility.
+
+Dungeon choices rank by recommended level range, accepted quest count and travel to the first actionable stop.
+Available quest count and instance identity break ties. Unknown ranges follow known ones. Class quests and
+battlegrounds keep their unlock priority; dungeon ranking does not reorder an active route.

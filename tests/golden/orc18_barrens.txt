@@ -13,6 +13,7 @@ card | zone:1413 | The Barrens story | Chapter 1 of 8 | A chain begins with Sput
 card (chosen) | carry | Quests in your log | 1 ready to hand in, 1 in progress | - | map 1413
   step 1 | town:1413:380 | Turn in: The Zhevra | 1413 0.5223,0.3101 | Opens the next chapter here
   step 2 | area:843:0 | Complete objectives · Gann's Reclamation | 1413 0.4770,0.8490 | quests in progress | 90 yd | 843/0 843/1 843/4
+  step 3 | town:1413:390 | Turn in: Gann's Reclamation | 1413 0.4589,0.7700 | Opens the next chapter here
 card | zone:1442 | Head to Stonetalon Mountains | 7 quests near your level | - | map 1413
   step 1 | town:1413:1702 | Visit Honor's Stand: Pick up 2 | 1413 0.3526,0.2788 | 2 to pick up
   step 2 | town:1442:2539 | Visit Malaka'jin: Pick up 2 | 1442 0.7325,0.9489 | 2 to pick up

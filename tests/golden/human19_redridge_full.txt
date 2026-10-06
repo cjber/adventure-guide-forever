@@ -15,13 +15,13 @@ card (chosen) | carry | Quests in your log | 5 ready to hand in, 11 in progress 
   step 1 | area:3741:4 | Complete objectives · Hilary's Necklace | 1433 0.1900,0.5460 | quests in progress | 70 yd | 3741/4
   step 2 | area:34:4 | Complete objectives · An Unwelcome Guest | 1433 0.1060,0.4930 | 2 quests here | 89 yd | 34/4 92/4
   step 3 | town:1433:1002 | Turn in: A Free Lunch | 1433 0.1018,0.7146 | Opens the next chapter here
-  step 4 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | quests in progress | 0 yd | 125/4
-  step 5 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4880,0.4320 | quests in progress | 50 yd | 92/6
-  step 6 | area:127:4 | Complete objectives · Selling Fish | 1433 0.5480,0.6150 | quests in progress | 118 yd | 127/4
-  step 7 | area:20:4 | Complete objectives · Blackrock Menace | 1433 0.6430,0.5550 | 2 quests here | 127 yd | 20/4 169/4
-  step 8 | area:91:4 | Complete objectives · Solomon's Law | 1433 0.7490,0.4980 | quests in progress | 84 yd | 91/4
-  step 9 | area:180:4 | Complete objectives · Wanted: Lieutenant Fangore | 1433 0.7510,0.3710 | quests in progress | 0 yd | 180/4
-  step 10 | area:92:5 | Complete objectives · Redridge Goulash | 1433 0.5570,0.7830 | quests in progress | 78 yd | 92/5
+  step 4 | area:246:1 | Complete objectives · Assessing the Threat | 1433 0.2720,0.8230 | quests in progress | 96 yd | 246/1
+  step 5 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | quests in progress | 0 yd | 125/4
+  step 6 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4880,0.4320 | quests in progress | 50 yd | 92/6
+  step 7 | area:127:4 | Complete objectives · Selling Fish | 1433 0.5480,0.6150 | quests in progress | 118 yd | 127/4
+  step 8 | area:20:4 | Complete objectives · Blackrock Menace | 1433 0.6430,0.5550 | 2 quests here | 127 yd | 20/4 169/4
+  step 9 | area:91:4 | Complete objectives · Solomon's Law | 1433 0.7490,0.4980 | quests in progress | 84 yd | 91/4
+  step 10 | area:180:4 | Complete objectives · Wanted: Lieutenant Fangore | 1433 0.7510,0.3710 | quests in progress | 0 yd | 180/4
 card | zone:1436 | Head to Westfall | 19 quests near your level | Stormwind City needs hands | map 1453
   step 1 | town:1453:0 | Visit Stormwind City: Pick up 3, turn in 2 | 1453 0.8028,0.7007 | Opens the next chapter here
   step 2 | town:1436:108 | Visit Sentinel Hill: Pick up 1, turn in 1 | 1436 0.5633,0.4752 | Opens the next chapter here

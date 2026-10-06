@@ -11,13 +11,16 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Useful dungeon order.** Level suitability comes first, then quests in your log and travel to the first stop. Recently unlocked quests no longer push high-level dungeons ahead.
+
 - **Journeys keep their full route.** Time-limit controls and estimated session budgets are removed. Saved time limits no longer hide quest steps.
 
 - **One map guide.** The standalone window and its key binding are removed. Continue shows two choices and other sections one until expanded. Quests in your log includes the current story and is the default suggestion.
+- **Steady quest-log routes.** Accepting another quest keeps the current first stop while adding the new work to your route.
 - **Quicker reloads.** Reuse the Questie catalogue when addon source and data are unchanged.
 - **Dungeon information stays with the quest route.** Dungeon journeys include available prerequisite chains. Automatic interior maps live in Tweaks Forever.
 
-- **Readable map badges.** Quest marks return to their original size. Kill objectives use compact crossed swords instead of the long attack cursor.
+- **Readable map badges.** Quest marks return to their original size. Kill objectives use the native skull instead of the long attack cursor.
 
 - **Choose your quest difficulty.** A level slider defaults to quests no more than two levels above yours, avoiding orange and red recommendations. Accepted quests stay visible.
 - **Keep preparing for your dungeon.** Accepting its quests no longer removes the dungeon journey. It includes available preparation quests and uses a known entrance when an accepted objective has no location.

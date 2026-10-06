@@ -11,6 +11,7 @@ local Docks = ns.Planner.Travel.Docks
 local Enter = ns.Planner.Steps.Enter
 local Gap = ns.Planner.Travel.Gap
 local Gather = ns.Planner.Steps.Gather
+local HandInOnly = ns.Planner.Routing.HandInOnly
 local Hub = ns.Planner.Steps.Hub
 local Ident = ns.Planner.Routing.Ident
 local Idents = ns.Planner.Routing.Idents
@@ -840,8 +841,16 @@ local function DescribeLap(lap)
 		elseif step.kind == "trainer" then
 			Describe(data, log, player, step)
 		end
+		local position = Position(data, step, docks)
+		if HandInOnly(step) and position and position.known and position.continent ~= origin.continent then
+			local name = (mapName and mapName(step.map)) or data.maps[step.map].name
+			if name then
+				step.reason = ns.L.HAND_IN_WHEN:format(name)
+				step.detail = step.reason
+			end
+		end
 		Locate(data, step, mapName)
-		from = Position(data, step, docks) or from
+		from = position or from
 	end
 end
 

@@ -1601,6 +1601,7 @@
 ---@field TrainerSteps fun(data: AGFData, player: AGFPlayer, prefs: AGFPrefs, key: string): AGFStep[]
 
 ---@class AGFPlannerRouting
+---@field HandInOnly fun(step: AGFStep): boolean
 ---@field Build fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, candidates: AGFStep[], prefs: AGFPrefs, mapName?: AGFMapName, lead?: AGFStep, join?: (fun(selected: AGFStep[]))): AGFStep[]
 ---@field Ident fun(step: AGFStep|AGFAnchor): string
 ---@field Idents fun(route: AGFStep[]): string[]

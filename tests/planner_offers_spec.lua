@@ -85,6 +85,50 @@ do
 	equal(second, "dungeon:43", "dungeon with fewer quests sorts second")
 end
 
+-- Useful dungeon choices beat a high-level instance with recently unlocked quests.
+do
+	local ranked = {
+		build = "ranking",
+		source = "fixture",
+		hubs = {},
+		zones = {},
+		maps = data.maps,
+		instances = {
+			[36] = { name = "Deadmines", low = 18, high = 23 },
+			[43] = { name = "Wailing Caverns", low = 15, high = 25 },
+			[48] = { name = "Blackfathom Deeps", low = 24, high = 32 },
+			[90] = { name = "Gnomeregan", low = 29, high = 38 },
+		},
+		quests = {},
+	}
+	local log = {}
+	for index, instance in ipairs({ 36, 36, 43, 48, 90 }) do
+		local id, point = 100 + index, at(instance == 36 and 0.8 or 0.51, 0.5)
+		ranked.quests[id] = {
+			title = "Dungeon errand " .. id,
+			level = 21,
+			min = instance == 90 and 20 or 10,
+			side = 1,
+			start = point,
+			finish = point,
+			dungeon = instance,
+		}
+		log[id] = { complete = true }
+	end
+	local function Order()
+		local ids = {}
+		for _, journey in ipairs(Model.Plan(ranked, player, {}, log, prefs()).journeys) do
+			if journey.kind == "dungeon" then
+				ids[#ids + 1] = journey.instance
+			end
+		end
+		return table.concat(ids, ",")
+	end
+	equal(Order(), "36,43,48,90", "level fit precedes accepted count and newness")
+	log[102] = nil
+	equal(Order(), "43,36,48,90", "equal fit and accepted counts prefer nearer travel")
+end
+
 -- A dismissed dungeon does not appear.
 do
 	local p = prefs({ notInterested = { ["dungeon:36"] = { title = "The Deadmines" } } })

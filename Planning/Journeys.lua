@@ -158,13 +158,15 @@ end
 ---@param added integer[]
 local function Carry(data, player, completed, log, ready, prefs, mapName, added)
 	local candidates, stops = TrainerSteps(data, player, prefs, "carry"), {}
+	local plan = { areas = {}, anchors = {} }
 	local held = LogSteps(data, player, log, ready, function(id)
 		return not Dropped(id)
-	end, stops, candidates, { areas = {}, anchors = {} })
+	end, stops, candidates, plan)
 	PickupSteps(data, added, function()
 		return true
 	end, candidates, stops)
-	local steps = Build(data, player, completed, log, candidates, prefs, mapName)
+	local steps = Laps(data, player, completed, log, candidates, plan, prefs, mapName, nil, nil, "carry")
+		or Build(data, player, completed, log, candidates, prefs, mapName)
 	steps = #added > 0 and Within(data, player, completed, log, steps) or steps
 	if steps[1] and Model.Here(data, player, steps, State.heldHere) == 1 then
 		steps[1].here = true
@@ -327,11 +329,12 @@ end
 -- Offer actionable dungeons, retaining a chosen instance after the toggle changes.
 ---@param open boolean
 ---@return integer[] instances, table<integer,integer> counts, table<integer,integer> opened
+---@return table<integer,integer> accepted
 local function AllDungeons(data, eligible, log, prefs, open, chosen)
 	if not (data.instances and (open or chosen)) then
-		return {}, {}, {}
+		return {}, {}, {}, {}
 	end
-	local counts, openedMap, dismissed = {}, {}, prefs.notInterested or {}
+	local counts, openedMap, accepted, dismissed = {}, {}, {}, prefs.notInterested or {}
 	local ids = {}
 	for _, id in ipairs(eligible) do
 		ids[id] = true
@@ -353,6 +356,7 @@ local function AllDungeons(data, eligible, log, prefs, open, chosen)
 			and not dismissed["dungeon:" .. instance]
 		then
 			counts[instance] = (counts[instance] or 0) + 1
+			accepted[instance] = (accepted[instance] or 0) + (log[id] and 1 or 0)
 			if not openedMap[instance] or quest.min > openedMap[instance] then
 				openedMap[instance] = quest.min
 			end
@@ -368,7 +372,52 @@ local function AllDungeons(data, eligible, log, prefs, open, chosen)
 		end
 		return a < b
 	end)
-	return instances, counts, openedMap
+	return instances, counts, openedMap, accepted
+end
+
+-- Rank dungeon choices independently of newly unlocked class quests and battleground brackets.
+local function SortDungeons(data, player, journeys, accepted, counts)
+	local travel = ns.Planner.Travel
+	local origin = travel.Position(data, player, travel.Docks(data, player.side))
+	local slots, ranked = {}, {}
+	for index, journey in ipairs(journeys) do
+		if journey.kind == "dungeon" then
+			local instance = data.instances[journey.instance]
+			local level = player.level
+			local fit = math.huge
+			if instance.low and instance.high then
+				fit = level < instance.low and 2 * (instance.low - level)
+					or level > instance.high and level - instance.high
+					or 0
+			end
+			slots[#slots + 1] = index
+			ranked[#ranked + 1] = {
+				journey = journey,
+				fit = fit,
+				accepted = accepted[journey.instance] or 0,
+				travel = travel.Cost(origin, travel.Position(data, journey.steps[1])),
+				quests = counts[journey.instance] or 0,
+			}
+		end
+	end
+	table.sort(ranked, function(a, b)
+		if a.fit ~= b.fit then
+			return a.fit < b.fit
+		end
+		if a.accepted ~= b.accepted then
+			return a.accepted > b.accepted
+		end
+		if a.travel ~= b.travel then
+			return a.travel < b.travel
+		end
+		if a.quests ~= b.quests then
+			return a.quests > b.quests
+		end
+		return a.journey.instance < b.journey.instance
+	end)
+	for index, slot in ipairs(slots) do
+		journeys[slot] = ranked[index].journey
+	end
 end
 
 -- The quests a dungeon card holds: its instance's, never a raid's.
@@ -961,6 +1010,7 @@ function Model.Journeys(
 	-- Each diversion offers itself with how many quests it holds and the level its newest one opened at, and the
 	-- newest is built first (DIVERSION_ORDER on a tie), so a level just gained or a bracket just opened leads.
 	local diversions = {}
+	local dungeonAccepted, dungeonCounts
 	local function Offer(kind, belongs, build, from)
 		local quests, opened = Newest(data, from or eligible, belongs)
 		if opened then
@@ -979,7 +1029,8 @@ function Model.Journeys(
 	local pool = (stranded and not prefs.dungeons) and WithInstances(data, player, completed, log, index, eligible)
 		or eligible
 	do
-		local dungeonInstances, dungeonCounts, dungeonOpened =
+		local dungeonInstances, dungeonOpened
+		dungeonInstances, dungeonCounts, dungeonOpened, dungeonAccepted =
 			AllDungeons(data, pool, log, prefs, prefs.dungeons or stranded, chosenDungeon)
 		for _, inst in ipairs(dungeonInstances) do
 			local count, opened = dungeonCounts[inst], dungeonOpened[inst]
@@ -1072,6 +1123,7 @@ function Model.Journeys(
 		journeys[#journeys + 1] = diversion.build(diversion.quests)
 		Yield()
 	end
+	SortDungeons(data, player, journeys, dungeonAccepted, dungeonCounts)
 	for _, journey in ipairs(journeys) do
 		Summarise(journey --[[@as AGFJourney]])
 		Rest(data, player, journey.steps)

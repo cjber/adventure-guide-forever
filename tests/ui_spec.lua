@@ -2901,7 +2901,7 @@ do
 	capped.ns.OpenPanel()
 	capped.flush()
 	equal(#capped.ns.Route().journeys, 5, "guide: at the cap, dungeon alternatives and a chain remain")
-	equal(Says(capped, "Blackrock Spire"), 1, "guide: the dungeon card, toggle off")
+	equal(Says(capped, "Dire Maul"), 1, "guide: the closest suitable dungeon card, toggle off")
 	equal(Says(capped, capped.ns.L.JOURNEY_INTO:format("Scholomance")), 1, "guide: the way in, as a story")
 	equal(Says(capped, capped.ns.L.NO_JOURNEY), 0, "guide: no empty line")
 	clean(capped, "guide: at the cap")
