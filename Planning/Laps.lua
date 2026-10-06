@@ -705,7 +705,7 @@ local function CommitLap(lap)
 		if standsIn and route[1] == standsIn then
 			standsIn.here = true
 		end
-		local near = NearAction(origin, log, route, at)
+		local near = card == "carry" and route[1] and route[1].kind ~= "area" and NearAction(origin, log, route, at)
 		if near and near ~= route[1] then
 			route = Front(lap, route, { [near] = true })
 		end
