@@ -95,6 +95,17 @@ function Model.TownChecklist(data, player, completed, log, step, previous, skipp
 	end
 end
 
+---@param objective AGFAreaObjective
+---@return string?
+function Model.ObjectiveText(objective)
+	if objective.text and objective.text ~= "" then
+		return objective.text
+	end
+	if objective.have and objective.need and objective.need > 0 then
+		return ns.L.OBJECTIVE_PROGRESS:format(objective.have, objective.need)
+	end
+end
+
 function Model.StepTitle(data, log, step)
 	local L = ns.L
 	local function Quest(id)
@@ -119,7 +130,10 @@ function Model.StepTitle(data, log, step)
 		step.questTitle = Quest(step.quests[1])
 		local objective = step.objectives and step.objectives[1]
 		local text = objective and objective.text
-		if text and text ~= "" then
+		if step.objectives and #step.objectives > 1 then
+			local place = #step.quests > 1 and step.zone or nil
+			step.title = L.STEP_SHARED_OBJECTIVES:format(#step.objectives, place or step.questTitle)
+		elseif text and text ~= "" then
 			local prefix = (objective and objective.type == "item" and L.STEP_COLLECT)
 				or (objective and objective.type == "monster" and L.STEP_DEFEAT)
 				or L.STEP_WORK

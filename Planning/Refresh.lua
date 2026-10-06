@@ -94,8 +94,7 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 		end
 		if not step.pickups then
 			-- A log step: its quests still carried, less an objective finished in the fight, which carry hands in, and
-			-- a lap's quests not yet picked up while they are still open. Objectives ticked short of that wait for the
-			-- full build.
+			-- a lap's quests not yet picked up while they are still open.
 			local function Carrying(id)
 				if log[id] == nil then
 					return step.planned ~= nil and step.planned[id] ~= nil and Open(id)
@@ -103,7 +102,7 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 				return not ((step.objectives or step.entrance) and log[id].complete)
 			end
 			local quests = Keep(step.quests, Carrying)
-			if #quests == #step.quests then
+			if #quests == #step.quests and not step.objectives then
 				return step
 			elseif #quests == 0 then
 				return nil
@@ -114,9 +113,22 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 				copy.group = #quests
 			end
 			if step.objectives then
-				copy.objectives = {}
+				local objectives = {}
 				for _, objective in ipairs(step.objectives) do
-					copy.objectives[#copy.objectives + 1] = Carrying(objective.id) and objective or nil
+					objectives[#objectives + 1] = Carrying(objective.id) and objective or nil
+				end
+				copy.objectives = ns.Planner.Steps.LiveObjectives(data, log, objectives)
+				if #objectives > 0 then
+					local remaining = {}
+					for _, objective in ipairs(copy.objectives) do
+						remaining[objective.id] = true
+					end
+					copy.quests = Keep(quests, function(id)
+						return remaining[id] == true
+					end)
+					if #copy.quests == 0 then
+						return nil
+					end
 				end
 				Tell(copy)
 			end

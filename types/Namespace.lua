@@ -583,7 +583,7 @@
 ---@field STOPS_ONE string a card's footer in the overview when it has one stop
 ---@field STOPS string format: the same for several
 ---@field OBJECTIVE_LINE string format: the client's words for an open objective, with its count
----@field OBJECTIVE_COUNT string format: an open objective's count so far, the count it needs
+---@field OBJECTIVE_PROGRESS string format: an open objective's count so far, the count it needs
 ---@field MENU_QUESTS string
 ---@field MENU_DUNGEONS string
 ---@field MENU_MAP_PINS string
@@ -1270,6 +1270,7 @@
 ---@field Visit fun(step: AGFStep): string the visit's identity: `orderKey`, else `key`
 ---@field GiverSkip fun(step: AGFStep, giverKey: string): string the skipped key of one giver on a town visit
 ---@field StepTitle fun(data: AGFData, log: table<integer, AGFLogQuest>, step: AGFStep)
+---@field ObjectiveText fun(objective: AGFAreaObjective): string?
 ---@class AGFNamespace
 ---@field Providers AGFProviders
 ---@field PvP AGFPvP
@@ -1322,6 +1323,7 @@
 ---@field SETTING_STEP_SOUND_TOOLTIP string
 ---@field STEP_PICKUP string
 ---@field STEP_OBJECTIVE string
+---@field STEP_SHARED_OBJECTIVES string
 ---@field STEP_COLLECT string
 ---@field STEP_DEFEAT string
 ---@field STEP_WORK string
@@ -1585,6 +1587,7 @@
 ---@field Locate fun(data: AGFData, step: AGFStep, mapName?: AGFMapName)
 ---@field LogSteps fun(data: AGFData, player: AGFPlayer, log: table<integer, AGFLogQuest>, ready: table<integer, AGFPlace>, belongs: (fun(id: integer, place?: AGFLocation): boolean), stops: table<string, AGFStep>, steps: AGFStep[], plan: AGFPlanAreas): table<integer, AGFStep|false>
 ---@field Nodes fun(data: AGFData, entry: AGFLogQuest): AGFNode[]
+---@field LiveObjectives fun(data: AGFData, log: table<integer, AGFLogQuest>, objectives: AGFAreaObjective[]): AGFAreaObjective[]
 ---@field Opens fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, step: AGFStep)
 ---@field Optional fun(quest: AGFQuest?, level: integer, player: AGFPlayer): boolean?
 ---@field PickupSteps fun(data: AGFData, eligible: integer[], wanted: (fun(quest: AGFQuest): boolean), steps: AGFStep[], stops?: table<string, AGFStep>)

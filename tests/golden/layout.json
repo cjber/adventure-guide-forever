@@ -2255,7 +2255,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Title",
-      "text": "Complete objectives · Raptor Thieves",
+      "text": "Complete 2 objectives · The Barrens",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2835,7 +2835,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Title",
-      "text": "Complete objectives · Lost in Battle",
+      "text": "Complete 2 objectives · The Barrens",
       "type": "FontString",
       "wordWrap": false
     },

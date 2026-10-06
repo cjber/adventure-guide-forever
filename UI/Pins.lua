@@ -151,13 +151,8 @@ local function AreaObjectives(tooltip, step)
 			last = objective.id
 		end
 		-- A count only when one is known: a needed count of 0 is a kind the client does not tally, and "2/0" says nothing.
-		local line = objective.text and ns.L.OBJECTIVE_LINE:format(objective.text)
-			or (
-				objective.have
-				and objective.need
-				and objective.need > 0
-				and ns.L.OBJECTIVE_COUNT:format(objective.have, objective.need)
-			)
+		local text = ns.Model.ObjectiveText(objective)
+		local line = text and ns.L.OBJECTIVE_LINE:format(text)
 		if line then
 			GameTooltip_AddHighlightLine(tooltip, line)
 		end

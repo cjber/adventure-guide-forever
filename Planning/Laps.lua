@@ -184,6 +184,9 @@ local function PickLapQuests(lap)
 		end
 	end
 	local function Touches(a, b)
+		if a.map ~= b.map then
+			return false
+		end
 		local here, there = at(a), at(b)
 		if here and there and here.known and there.known and here.continent == there.continent then
 			return Inside(Yards(here, there), a, b)

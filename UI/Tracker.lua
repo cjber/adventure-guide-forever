@@ -199,6 +199,13 @@ function ModuleMixin:LayoutContents()
 		for _, questID in ipairs(step.quests) do
 			line = line + 1
 			block:AddObjective(line, QuestLine(step, questID))
+			for _, objective in ipairs(step.objectives or {}) do
+				local text = objective.id == questID and ns.Model.ObjectiveText(objective)
+				if text then
+					line = line + 1
+					block:AddObjective(line, GRAY_FONT_COLOR:WrapTextInColorCode(text))
+				end
+			end
 		end
 	end
 	if guiding then
