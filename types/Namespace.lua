@@ -1707,6 +1707,7 @@
 ---@field origin AGFPosition
 ---@field planned boolean
 ---@field rank table<string, integer>
+---@field ranked table<integer, integer> each quest's first place in the committed order among its work's areas
 ---@field skipped table<string, boolean>
 ---@field pinned table<integer, boolean>
 ---@field where table<table, AGFPosition|false>

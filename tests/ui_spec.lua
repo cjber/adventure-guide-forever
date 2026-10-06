@@ -1156,7 +1156,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Hover(ring)
 	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. Step 1 is the Crossroads, where The
 	-- Zhevra opens its next chapter, handed in before the town's pickups.
-	local expected = { "title: 1. Visit The Crossroads: Pick up 4, turn in 1" }
+	local expected = { "title: 1. Visit The Crossroads: Pick up 7, turn in 1" }
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
 	expected[#expected + 1] = "highlight: Opens the next chapter here"
 	expected[#expected + 1] = "normal: Sergra Darkthorn"
@@ -1247,7 +1247,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	-- Design §2.8's menu for a town holding a log quest; Stop only once Go runs, Show quest never in combat.
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:1413:380"], "RightButton")
 	local menu = {
-		"title: Visit The Crossroads: Pick up 4, turn in 1",
+		"title: Visit The Crossroads: Pick up 7, turn in 1",
 		"button: Go",
 		"button: Show quest",
 		"button: Skip for now",
@@ -2293,7 +2293,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	local label = "tracker: " .. (spf or "no Shortest Path")
 	local h = Load(spf)
 	local steps = h.ns.Route().steps
-	local expected = { "1 to hand in, 4 to pick up", "Opens the next chapter here" }
+	local expected = { "1 to hand in, 7 to pick up", "Opens the next chapter here" }
 	for _, giver in ipairs(steps[1].checklist) do
 		expected[#expected + 1] = giver.text
 	end
@@ -2369,7 +2369,7 @@ end
 do
 	local h = Load(false, PINS_ON)
 	local ns = h.ns
-	-- Egg Hunt at 20, two over the player: yellow, so offered (at 22 it is orange and never is), a ninth to count.
+	-- Egg Hunt at 20, two over the player: yellow, so offered (at 22 it is orange and never is), a tenth to count.
 	ns.Data.quests[868].level = 20
 	-- Their work a step from town and alike in XP, so the lap keeps all of them (one worth less per yard waits).
 	for _, quest in pairs(ns.Data.quests) do
@@ -2386,13 +2386,13 @@ do
 	ns.OpenPanel()
 	h.flush()
 	local step = ns.Route().steps[1]
-	equal(#step.quests, 9, "hub tooltip: Crossroads has 9 quests")
+	equal(#step.quests, 10, "hub tooltip: Crossroads has 10 quests")
 	local rows = Shown(h, function(frame)
 		return frame.SkipButton ~= nil
 	end)
 	h.Hover(rows[1])
 	local lines, colors = h.tooltip, h.tooltipColors
-	equal(lines[1], "title: 1. Visit The Crossroads: Pick up 8, turn in 1", "hub tooltip: the numbered town")
+	equal(lines[1], "title: 1. Visit The Crossroads: Pick up 9, turn in 1", "hub tooltip: the numbered town")
 	equal(lines[2], "highlight: " .. step.reason, "hub tooltip: the reason")
 	equal(lines[3], "normal: Sergra Darkthorn", "hub tooltip: the hand-in's NPC first")
 	equal(lines[4], "colored: |A:questturnin:14:14|a [13] The Zhevra", "hub tooltip: a hand-in has the turn-in mark")
@@ -2409,7 +2409,7 @@ do
 	end
 	equal(quests, 8, "hub tooltip: 8 quest lines")
 	equal(npcs, 7, "hub tooltip: one line per NPC shown")
-	equal(lines[#lines - 2], "highlight: And 1 more", "hub tooltip: the rest counted")
+	equal(lines[#lines - 2], "highlight: And 2 more", "hub tooltip: the rest counted")
 	equal(lines[#lines - 1], "instruction: " .. ns.L.ORDER_DRAG, "hub tooltip: then how to reorder")
 	equal(lines[#lines], "instruction: " .. ns.L.SPF_MISSING, "hub tooltip: then the Shortest Path hint")
 	local over
@@ -2433,7 +2433,7 @@ do
 		end
 	end
 	equal(visits >= 1, true, "hub tooltip: the ring's visits")
-	equal(h.tooltip[last - visits - 1], "highlight: And 1 more", "hub tooltip: the ring's quests")
+	equal(h.tooltip[last - visits - 1], "highlight: And 2 more", "hub tooltip: the ring's quests")
 	equal(h.tooltip[last], "instruction: Click to set a waypoint", "hub tooltip: the click line last")
 
 	-- A group quest carries the quest log's group tag.
@@ -2459,8 +2459,8 @@ do
 	h.flush()
 	local steps = ns.Route().steps
 	local step = steps[1]
-	equal(step.title, "Visit The Crossroads: Pick up 4, turn in 1", "tracker, town: town and actions")
-	equal(step.detail, "1 to hand in, 4 to pick up", "tracker, town: the hand-in joins the pickups")
+	equal(step.title, "Visit The Crossroads: Pick up 7, turn in 1", "tracker, town: town and actions")
+	equal(step.detail, "1 to hand in, 7 to pick up", "tracker, town: the hand-in joins the pickups")
 	local expected = { step.detail, "Opens the next chapter here" }
 	for _, giver in ipairs(step.checklist) do
 		expected[#expected + 1] = giver.text
@@ -2685,7 +2685,7 @@ do
 	clean(h, "card")
 end
 
--- The guide (F2): seven cards in this fixture. The chosen one is lit, never moved, 288x86 with a 46x46 ring
+-- The guide (F2): eight cards in this fixture. The chosen one is lit, never moved, 288x86 with a 46x46 ring
 -- and followed by its steps; the others sit above it as one-line 288x26 header rows with a 16x16 icon and no ring, in
 -- the dumped layout the client's own dump is compared with.
 do
@@ -2708,7 +2708,7 @@ do
 		end
 	end
 	equal(full + compact, #route.journeys, "guide: a card per journey")
-	equal(#route.journeys, 7, "guide: all seven eligible journeys survive")
+	equal(#route.journeys, 8, "guide: all eight eligible journeys survive")
 	equal(full, 1, "guide: only the chosen card is whole")
 	equal(lit, 1, "guide: and only it stays lit, so it reads as chosen in game")
 	local rows = Shown(h, function(frame)
@@ -2784,7 +2784,9 @@ do
 		local first = row.Title:GetText() == "Call of Air - Guse's Fleet" and Lines(row)[1]
 		suppressed = suppressed or (first == h.ns.L.WHY_NO_START and row) or nil
 	end
-	h.Type(search, "Call of")
+	-- Call of Fire: QuestieDB v1.0.5 gates the first Call of Earth rows (1516, 1519) on 92466, which has no giver in
+	-- the data, so none of "Call of"'s first ten is open now; Call of Fire's first ten hold Kranal Fiss's and others.
+	h.Type(search, "Call of Fire")
 	local found, open = Results(), nil
 	for _, row in ipairs(found) do
 		open = open or (not row.Lock:IsShown() and row) or nil
@@ -2805,7 +2807,7 @@ do
 		"title: Call of Air - Guse's Fleet\nerror: " .. h.ns.L.WHY_NO_START,
 		"search: tooltip"
 	)
-	h.Type(search, "Call of")
+	h.Type(search, "Call of Fire")
 	equal(#Lines(assert(open, "search: a quest open now")), 0, "search: an open quest has nothing to explain")
 	-- A shift-click adds an open quest to the route (design §2.18), starred; a second takes it off. A plain click, or a
 	-- locked quest's, adds nothing.
@@ -3202,7 +3204,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#Overview(), 0, label .. ": the overview gives way")
 	equal(Previews(), "", label .. ": with its steps")
 	equal(Says(L.OVERVIEW_WHERE:format("The Barrens", h.player.level)), 0, label .. ": and the line by the title")
-	equal(Heights(), "86 26 26 26 26 26 26", label .. ": the chosen route precedes alternatives")
+	equal(Heights(), "86 26 26 26 26 26 26 26", label .. ": the chosen route precedes alternatives")
 	equal(Cards()[1].journey.key, story.key, label .. ": the chosen card first, over its steps")
 	-- The chosen card is lit, not pressed: its art, pressed or not, is the card's own, so nothing moves.
 	local chosenCard = Cards()[1]
@@ -3242,7 +3244,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(h.ns.Route().journey, key, label .. ": a row chooses its card")
 	equal(Starts(), 2, label .. ": and starts its route in place of the first")
-	equal(Heights(), "86 26 26 26 26 26 26", label .. ": still one whole card")
+	equal(Heights(), "86 26 26 26 26 26 26 26", label .. ": still one whole card")
 	equal(Cards()[1].journey.key, key, label .. ": the new choice over the steps")
 
 	-- The chosen card again: nothing changes but the map, which turns to it.
@@ -3277,7 +3279,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Click(Overview()[2])
 	h.flush()
 	equal(h.ns.Route().chosen and h.ns.Route().journey, second.key, label .. ": a row chooses it")
-	equal(Heights(), "86 26 26 26 26 26 26", label .. ": alternatives fold below it")
+	equal(Heights(), "86 26 26 26 26 26 26 26", label .. ": alternatives fold below it")
 	equal(Cards()[1].journey.key, second.key, label .. ": lit over its steps")
 	equal(Rows(), #h.ns.Route().steps, label .. ": which are listed")
 	h.Click(Back())
@@ -3338,7 +3340,7 @@ do
 	equal(h.ns.Overview.Collapsed("zones"), false, label .. ": Zones opens by default")
 	equal(h.ns.Overview.Collapsed("dungeons"), true, label .. ": Dungeons is closed by default")
 	equal(h.ns.Overview.Collapsed("battlegrounds"), true, label .. ": Battlegrounds is closed by default")
-	same(CardsUnder(), { continue = 2, zones = 5 }, label .. ": the story and the log continue, the zones follow")
+	same(CardsUnder(), { continue = 2, zones = 6 }, label .. ": the story and the log continue, the zones follow")
 	equal(#Headers(), 2, label .. ": an empty group draws no header")
 	equal(Headers()[1].key, "continue", label .. ": Continue first")
 	equal(Headers()[1].Name:GetText(), L.GROUP_CONTINUE, label .. ": its label")
@@ -3365,7 +3367,7 @@ do
 	h.flush()
 	equal(h.G.AdventureGuideForeverCharDB.collapsedGroups.zones, true, label .. ": a collapse is saved")
 	equal(CardsUnder().zones, nil, label .. ": the zones fold away")
-	equal(Headers()[2].Count:GetText(), L.GROUP_CARDS:format(5), label .. ": and their header counts five")
+	equal(Headers()[2].Count:GetText(), L.GROUP_CARDS:format(6), label .. ": and their header counts six")
 	local reloaded = Load(false, nil, { collapsedGroups = { zones = true } })
 	reloaded.ns.OpenPanel()
 	reloaded.flush()
@@ -3389,7 +3391,7 @@ do
 	route.journey = zonesJourney.key
 	h.ns.OpenPanel()
 	h.flush()
-	equal(CardsUnder().zones, 5, label .. ": the route's own group opens")
+	equal(CardsUnder().zones, 6, label .. ": the route's own group opens")
 	equal(h.G.AdventureGuideForeverCharDB.collapsedGroups.zones, true, label .. ": though the player left it folded")
 	local held
 	for _, header in
@@ -3438,7 +3440,7 @@ do
 	for _, journey in ipairs(h.ns.Route().journeys) do
 		zones[#zones + 1] = journey.section == "zones" and journey.key or nil
 	end
-	equal(#zones, 5, label .. ": five zones on offer")
+	equal(#zones, 6, label .. ": six zones on offer")
 	for _, key in ipairs({ "continue", "zones", "dungeons" }) do
 		local header = Header(key)
 		equal(header ~= nil, true, label .. ": " .. key .. " draws its header")
@@ -3448,8 +3450,8 @@ do
 	end
 	equal(#Cards("continue"), 2, label .. ": Continue keeps both its cards")
 	local shown = #Cards("zones")
-	equal(shown < 5 and shown >= 1, true, label .. ": Zones shows the cards it has room for")
-	local header, pages = Header("zones"), math.ceil(5 / shown)
+	equal(shown < 6 and shown >= 1, true, label .. ": Zones shows the cards it has room for")
+	local header, pages = Header("zones"), math.ceil(6 / shown)
 	equal(header.Page:IsShown(), true, label .. ": and says which page")
 	equal(header.Page:GetText(), L.PAGE_OF:format(1, pages), label .. ": the first of them")
 	equal(header.Previous.disabled, true, label .. ": nothing before the first page")
@@ -4146,13 +4148,15 @@ do
 	for _, case in ipairs({
 		{ label = "every quest known", lines = 0 },
 		{ label = "a log quest the data lacks", log = UNKNOWN, lines = 1 },
-		{ label = "Westfall, where Forever added quests", player = { map = 1436, x = 0.5, y = 0.5 }, lines = 1 },
+		{ label = "Tanaris, where Forever added quests", player = { map = 1446, x = 0.5, y = 0.5 }, lines = 1 },
 		{
-			label = "Westfall, its added quests finished",
-			player = { map = 1436, x = 0.5, y = 0.5 },
-			completed = { 844, 92742, 92744, 92745, 92747, 92748, 92752, 92753, 92819 },
+			label = "Tanaris, its added quests finished",
+			player = { map = 1446, x = 0.5, y = 0.5 },
+			completed = { 844, 96912, 96913, 96914, 96915, 96916, 96917, 96918, 96919, 96920, 96921 },
 			lines = 0,
 		},
+		-- QuestieDB v1.0.5 lists Westfall's added quests.
+		{ label = "Westfall, its added quests listed", player = { map = 1436, x = 0.5, y = 0.5 }, lines = 0 },
 	}) do
 		local label = "unlisted, " .. case.label
 		local log = {

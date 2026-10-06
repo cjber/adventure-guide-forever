@@ -1,34 +1,39 @@
 # human18_redridge: level 18, side 1, at 1433 0.2600,0.4500
 card (chosen) | zone:1433 | Redridge Mountains story | Chapter 1 of 6 | A chain begins with Magistrate Solomon | map 1433
-  step 1 | town:1433:69 | Visit Lakeshire: Pick up 6 | 1433 0.2490,0.4445 | Begins a new story
+  step 1 | town:1433:69 | Visit Lakeshire: Pick up 7 | 1433 0.2490,0.4445 | Begins a new story
   step 2 | area:92:4 | Complete objectives · Redridge Goulash | 1433 0.1060,0.4930 | after you pick it up | 89 yd | 92/4
   step 3 | area:3741:4 | Complete objectives · Hilary's Necklace | 1433 0.1900,0.5460 | after you pick it up | 70 yd | 3741/4
-  step 4 | town:1433:1002 | Pick up: Encroaching Gnolls | 1433 0.1018,0.7146 | near your level
-  step 5 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | after you pick it up | 0 yd | 125/4
-  step 6 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4860,0.3640 | after you pick it up | 81 yd | 92/6
-  step 7 | area:92:5 | Complete objectives · Redridge Goulash | 1433 0.5570,0.7830 | after you pick it up | 78 yd | 92/5
-  step 8 | town:1433:69:2 | Visit Lakeshire: Turn in 3 | 1433 0.2705,0.4864 | Opens the next chapter here
-card | zone:1432 | Head to Loch Modan | 11 quests near your level | - | map 1432
-  step 1 | town:1432:142 | Visit Ironband's Excavation Site: Pick up 2 | 1432 0.6490,0.6666 | 2 to pick up
-  step 2 | town:1432:556 | Pick up: Bingles' Missing Supplies | 1432 0.6356,0.4792 | near your level
-  step 3 | town:1432:147 | Visit The Farstrider Lodge: Pick up 2 | 1432 0.8347,0.6546 | 2 to pick up
-  step 4 | town:1432:144 | Visit Thelsamar: Pick up 3 | 1432 0.3263,0.4974 | 3 to pick up
-  step 5 | town:1432:838 | Visit North Gate Pass: Pick up 2 | 1432 0.2476,0.1840 | 2 to pick up
-  step 6 | town:1432:146 | Pick up: A Dark Threat Looms | 1432 0.4605,0.1361 | near your level
-card | zone:1436 | Head to Westfall | 8 quests near your level | - | map 1436
-  step 1 | town:1436:916 | Pick up: Poor Old Blanchy | 1436 0.5992,0.1942 | near your level
-  step 2 | town:1436:107 | Pick up: The Killing Fields | 1436 0.5604,0.3123 | near your level
-  step 3 | town:1436:108 | Visit Sentinel Hill: Pick up 3 | 1436 0.5642,0.4762 | 3 to pick up
-  step 4 | town:1436:115 | Visit Westfall Lighthouse: Pick up 3 | 1436 0.3001,0.8602 | 3 to pick up
+  step 4 | area:98407:4 | Complete objectives · Show of Force | 1433 0.1000,0.6720 | after you pick it up | 64 yd | 98407/4
+  step 5 | town:1433:1002 | Pick up: Encroaching Gnolls | 1433 0.1018,0.7146 | near your level
+  step 6 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | after you pick it up | 0 yd | 125/4
+  step 7 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4880,0.4320 | after you pick it up | 50 yd | 92/6
+  step 8 | area:92:5 | Complete objectives · Redridge Goulash | 1433 0.5570,0.7830 | after you pick it up | 78 yd | 92/5
+  step 9 | town:1433:69:2 | Visit Lakeshire: Turn in 4 | 1433 0.2705,0.4864 | Opens the next chapter here
+card | zone:1436 | Head to Westfall | 20 quests near your level | Stormwind City needs hands | map 1453
+  step 1 | town:1453:0 | Visit Stormwind City: Pick up 4 | 1453 0.8028,0.7007 | 4 to pick up
+  step 2 | town:1436:916 | Pick up: Poor Old Blanchy | 1436 0.5992,0.1942 | near your level
+  step 3 | town:1436:107 | Visit Saldean's Farm: Pick up 3 | 1436 0.5604,0.3123 | 3 to pick up
+  step 4 | town:1436:108 | Visit Sentinel Hill: Pick up 7 | 1436 0.5642,0.4762 | 7 to pick up
+  step 5 | town:1436:921 | Pick up: Of Mice and Milk | 1436 0.3251,0.7178 | near your level
+  step 6 | town:1436:115 | Visit Westfall Lighthouse: Pick up 4 | 1436 0.3869,0.8355 | 4 to pick up
+card | zone:1432 | Head to Loch Modan | 14 quests near your level | - | map 1432
+  step 1 | town:1432:923 | Pick up: Banner of the Fallen | 1432 0.3176,0.8621 | near your level
+  step 2 | town:1432:144 | Visit Thelsamar: Pick up 3 | 1432 0.3263,0.4974 | 3 to pick up
+  step 3 | town:1432:838 | Visit North Gate Pass: Pick up 2 | 1432 0.2476,0.1840 | 2 to pick up
+  step 4 | town:1432:146 | Pick up: A Dark Threat Looms | 1432 0.4605,0.1361 | near your level
+  step 5 | town:1432:556 | Visit The Loch: Pick up 2 | 1432 0.6356,0.4792 | 2 to pick up
+  step 6 | town:1432:142 | Visit Ironband's Excavation Site: Pick up 2 | 1432 0.6490,0.6666 | 2 to pick up
+  step 7 | town:1432:147 | Visit The Farstrider Lodge: Pick up 3 | 1432 0.8347,0.6546 | 3 to pick up
 card | zone:1413 | Head to The Barrens | 9 quests near your level | Ratchet needs hands | map 1413
   step 1 | town:1413:392 | Visit Ratchet: Pick up 7 | 1413 0.6237,0.3762 | 7 to pick up
   step 2 | town:1413:387 | Pick up: Deviate Hides | 1413 0.4599,0.3566 | near your level
   step 3 | town:1413:382 | Pick up: Ignition | 1413 0.5652,0.0745 | near your level
-card | zone:1439 | Head to Darkshore | 16 quests near your level | Auberdine needs hands | map 1439
-  step 1 | town:1439:442 | Visit Auberdine: Pick up 12 | 1439 0.3662,0.4559 | 12 to pick up
-  step 2 | town:1439:448 | Pick up: The Sleeper Has Awakened | 1439 0.4440,0.7643 | near your level
-  step 3 | town:1439:449 | Visit The Master's Glaive: Pick up 2 | 1439 0.3864,0.8733 | 2 to pick up
-  step 4 | town:1439:443 | Pick up: Gyromast's Retrieval | 1439 0.5666,0.1348 | near your level
+card | zone:1439 | Head to Darkshore | 22 quests near your level | 2 quests will soon turn grey | map 1453
+  step 1 | town:1453:0 | Visit Stormwind City: Pick up 2 | 1453 0.5774,0.4786 | 2 to pick up
+  step 2 | town:1439:442 | Visit Auberdine: Pick up 14 | 1439 0.3662,0.4559 | 14 to pick up
+  step 3 | town:1439:448 | Visit Grove of the Ancients: Pick up 2 | 1439 0.4440,0.7643 | 2 to pick up
+  step 4 | town:1439:449 | Visit The Master's Glaive: Pick up 3 | 1439 0.3864,0.8733 | 3 to pick up
+  step 5 | town:1439:443 | Pick up: Gyromast's Retrieval | 1439 0.5666,0.1348 | near your level
 card | zone:1431 | Head to Duskwood | 2 quests near your level | - | map 1431
   step 1 | town:1431:42 | Pick up: Raven Hill | 1431 0.7534,0.4875 | near your level
   step 2 | town:1431:94 | Pick up: Jitters' Growling Gut | 1431 0.1838,0.5637 | near your level
@@ -38,5 +43,8 @@ card | zone:1440 | Head to Ashenvale | 3 quests near your level | Astranaar need
   step 1 | town:1440:415 | Visit Astranaar: Pick up 3 | 1440 0.3577,0.4910 | 3 to pick up
 card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
   step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level
+card | zone:1426 | Head to Dun Morogh | 4 quests near your level | 3 quests will soon turn grey | map 1426
+  step 1 | town:1426:134 | Visit Gol'Bolar Quarry: Pick up 3 | 1426 0.6484,0.5845 | 3 to pick up
+  step 2 | town:1426:1537 | Pick up: A Visitor to Dun Morogh | 1426 0.5044,0.4909 | near your level
 card | dungeon:36 | Deadmines | 3 quests for this dungeon | - | map 1453
   step 1 | town:1453:0 | Visit Stormwind City: Pick up 3 | 1453 0.7031,0.4082 | 3 to pick up

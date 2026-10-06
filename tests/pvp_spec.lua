@@ -197,13 +197,15 @@ do
 end
 
 -- A level that opens a battleground brings its card, whose moment says it is open (Moments.lua); the calling, new at
--- the same level, is turned down so the line is the card's, as is Hillsbrad, a zone to head to from that level.
+-- the same level, is turned down so the line is the card's, as are Hillsbrad and Moonglade (the Great Cat Spirit
+-- quests, QuestieDB v1.0.5), zones to head to from that level.
 do
 	local charDB = {
 		battlegrounds = true,
 		notInterested = {
 			calling = "Your calling",
 			["zone:1424"] = "Head to Hillsbrad Foothills",
+			["zone:1450"] = "Head to Moonglade",
 			["zone:1411"] = "Durotar",
 			["zone:1412"] = "Mulgore",
 		},

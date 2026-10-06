@@ -16,6 +16,7 @@ verbatim rather than rewritten as the addon moves.
 
 - **A place to decide what to do next.** The Next page brings your journey, training and profession hints together. Choose a focus, see why each suggestion fits, and start its route or browse the other things you can do. Changing focus leaves your current journey intact.
 - **Training hints follow you around town.** Moving between city districts refreshes the trainer and profession hints without rebuilding your quest route. A hint dismissed or moved since it was drawn cannot start navigation to its old destination.
+- **Game data for Forever build 1.60.1.70235, tested against QuestieDB 1.0.5.** The new QuestieDB lists Forever's added quests in Westfall, Moonglade's Great Cat Spirit and more, and when your quest log is full a route that leaves out a town's quest no longer drops the walk back to hand in the rest.
 
 ## [0.9.0] - 2026-10-05
 

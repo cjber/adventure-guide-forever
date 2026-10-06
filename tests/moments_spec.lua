@@ -21,7 +21,8 @@ local function clean(h, label)
 end
 
 -- ui_spec's level-18 orc shaman in The Barrens, nothing chosen: its cards are The Barrens' story and Stonetalon
--- Mountains and Ashenvale; Hillsbrad becomes useful at level 19.
+-- Mountains and Ashenvale; Hillsbrad becomes useful at level 19, and Moonglade at 20 (the Great Cat Spirit quests,
+-- QuestieDB v1.0.5).
 local function Load(charDB)
 	return harness.load({ charDB = charDB or {}, completed = { 844 }, log = {} })
 end
@@ -73,15 +74,16 @@ LevelUp(h, 18)
 equal(#h.fanfares, 0, "same cards: no glow")
 equal(Tracker(h), nil, "same cards: no line")
 
--- A level that brings a zone the character hasn't been offered: one glowing line, a pip on the tab and the
--- compartment, and the card's mark. Nothing opens.
+-- A level that brings zones the character hasn't been offered: one glowing line naming the first of them, a pip on
+-- the tab and the compartment, and each card's mark. Nothing opens.
 LevelUp(h, 22)
 same(h.fanfares, { "moment" }, "new zone: the line glows once")
-equal(Tracker(h), "Hillsbrad Foothills is now for your level", "new zone: named by the client")
+equal(Tracker(h), "Moonglade is now for your level", "new zone: named by the client")
 equal(h.G.AdventureGuideForeverPanel:IsShown(), false, "new zone: nothing opens")
 equal(select(1, Pips(h)), true, "new zone: the tab's pip")
 equal(select(2, Pips(h)), true, "new zone: the compartment's pip")
 equal(seen["zone:1424"], true, "new zone: now seen")
+equal(seen["zone:1450"], true, "new zone: the one named, now seen")
 equal(seen["zone:1442"], true, "new zone: the zone it replaced stays seen")
 h.tracker:MarkDirty()
 same(h.fanfares, { "moment" }, "new zone: glows once, not on every layout")
@@ -93,14 +95,14 @@ equal(h.G.AdventureGuideForeverPanel:IsVisible(), true, "click: the guide opens"
 equal(select(1, Pips(h)), false, "opened: the tab's pip goes")
 equal(select(2, Pips(h)), false, "opened: the compartment's pip goes")
 equal(Tracker(h), nil, "opened: the line goes")
-equal(Marked(h, "zone:1424"), true, "opened: the new card is marked")
+equal(Marked(h, "zone:1450"), true, "opened: the new card is marked")
 equal(Marked(h, "zone:1413"), false, "opened: the others are not")
 
 -- Closing the guide takes the marks away; a zone change that brings nothing new leaves them away.
 h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
 h.ns.OpenPanel()
 h.flush()
-equal(Marked(h, "zone:1424"), false, "closed: the mark goes")
+equal(Marked(h, "zone:1450"), false, "closed: the mark goes")
 h.fire("ZONE_CHANGED_NEW_AREA")
 h.flush()
 equal(#h.fanfares, 1, "zone change, nothing new: no glow")
@@ -113,7 +115,7 @@ h.flush()
 LevelUp(h, 22)
 equal(#h.fanfares, 0, "guide open: no glow")
 equal(select(1, Pips(h)), false, "guide open: no pip")
-equal(Marked(h, "zone:1424"), true, "guide open: the card is marked")
+equal(Marked(h, "zone:1450"), true, "guide open: the card is marked")
 clean(h, "guide open")
 
 -- A saved seen set: the same level-up on the next session finds nothing new.
@@ -147,11 +149,12 @@ same(h.fanfares, { "moment" }, "after combat: the line glows")
 clean(h, "combat")
 
 -- An aside no provider gave before: its own line glows, with the pips, and no moment line. One that stops being
--- given leaves the seen set, so it is new again when it comes back. Hillsbrad, a zone to head to from level 20, is
--- turned down so the line level 20 brings is the calling's.
+-- given leaves the seen set, so it is new again when it comes back. Hillsbrad and Moonglade, zones to head to from
+-- level 20, are turned down so the line level 20 brings is the calling's.
 h = Load({
 	notInterested = {
 		["zone:1424"] = "Head to Hillsbrad Foothills",
+		["zone:1450"] = "Head to Moonglade",
 		["zone:1411"] = "Durotar",
 		["zone:1412"] = "Mulgore",
 	},
