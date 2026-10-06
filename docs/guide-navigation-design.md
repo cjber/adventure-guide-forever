@@ -97,6 +97,26 @@ target. Use the same treatment for AGF and Shortest Path numbered stops. A route
 selected by shift-click wears a corner tag on the clicked icon. Do not stack a full-size
 sword over the disc or add a second central marker at the same point.
 
+## Story completion
+
+Finishing a proven story shows an achievement-style popup: Story complete, the story
+name, a small quest or destination icon, warm gold trim, a brief glow and the existing
+completion sound. Use the client's visual language in an addon-owned frame. This is
+a guide milestone, so it must not claim to award a Blizzard achievement or achievement
+points. It fades without requiring a click; optional interaction can open its completed
+story entry when the player chooses.
+
+Use the existing verified story-ending turn-in signal. A route becoming empty, a zone
+change, a skipped quest or an unavailable provider does not complete a story. Persist
+the announcement by stable story identity per character, suppress repeats on reload,
+and do not announce historical completions on login. Completion is independent of
+whether the tracker or guide is visible. Queue simultaneous completions and avoid
+covering existing alerts or replacing a popup already being shown. Defer presentation
+if the relevant client UI is not ready, without losing the completion.
+
+The tracker can retain its completed-story line, but the milestone plays one sound
+and one visual celebration. Reuse that same completion record in Progress.
+
 ## Implementation
 
 1. Fix missing-catalogue errors and misleading empty states with regression tests.
@@ -110,6 +130,8 @@ sword over the disc or add a second central marker at the same point.
 5. Review dungeon alternatives and zone-visit ranking, with fixtures that include
    level-21 Deadmines, Wailing Caverns and a low-level Theramore errand.
 6. Verify map badge sizes in both addon renderers and refresh previews and player docs.
+7. Add the story completion popup using the existing proven chain-ending signal,
+   with per-character deduplication and a queue independent of tracker visibility.
 
 ## Acceptance
 
@@ -125,6 +147,10 @@ sword over the disc or add a second central marker at the same point.
 - Completing an objective updates the main page, tracker and Shortest Path count.
 - Long names, UI scale and compact layouts keep text and controls readable.
 - Pin badges leave the original icon or numeral readable, at normal and zoomed scales.
+- A final story hand-in produces one named completion popup, including with the
+  tracker hidden. Intermediate hand-ins, abandoned routes and reloads do not.
+- Two stories completed together queue their popups; sound and progress records
+  are not duplicated.
 
 ## Design review
 
