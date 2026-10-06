@@ -96,6 +96,24 @@ do
 	end
 end
 
+-- Stranded fallback offers must respect dismissed quests even with the dungeon toggle off.
+do
+	local route = Model.Plan(
+		data,
+		player,
+		{},
+		{},
+		prefs({ dungeons = false, notInterested = { ["quest:3"] = { title = "DM Quest 1" } } })
+	)
+	for _, journey in ipairs(route.journeys) do
+		for _, step in ipairs(journey.steps) do
+			for _, id in ipairs(step.quests) do
+				equal(id == 3, false, "fallback does not offer a dismissed quest")
+			end
+		end
+	end
+end
+
 -- The chosen dungeon is preserved while it has quests (it appears even after level changes).
 do
 	local p = prefs({ journey = "dungeon:43" })

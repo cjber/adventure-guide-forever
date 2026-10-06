@@ -418,7 +418,15 @@ local function WithInstances(data, player, completed, log, index, eligible)
 			id, alreadyEligible, eligibleIndex, dungeonIndex = eligibleID, true, eligibleIndex + 1, dungeonIndex + 1
 		end
 		local quest = data.quests[id]
-		if alreadyEligible or (quest.dungeon and Eligible(data, player, completed, log, id, index.groups)) then
+		if
+			alreadyEligible
+			or (
+				quest.dungeon
+				and not Dropped(id)
+				and not Hard(quest, player)
+				and Eligible(data, player, completed, log, id, index.groups)
+			)
+		then
 			pool[#pool + 1] = id
 		end
 	end
