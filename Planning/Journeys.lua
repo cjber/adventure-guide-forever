@@ -978,7 +978,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 		if a.quests ~= b.quests then
 			return a.quests > b.quests
 		end
-		return a.instance < b.instance
+		return a.kind == "dungeon" and a.instance < b.instance
 	end)
 	for _, diversion in ipairs(diversions) do
 		journeys[#journeys + 1] = diversion.build(diversion.quests)
