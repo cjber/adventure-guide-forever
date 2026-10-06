@@ -188,9 +188,15 @@ local function Build()
 		saved = "journeys"
 	elseif saved == "completion" then
 		saved = "progress"
-	elseif saved == "professions" or saved == "pvp" or saved == "dungeons" then
+	elseif saved == "dungeons" then
+		state.activity, saved = "journeys", "activities"
+	elseif saved == "professions" or saved == "pvp" then
 		state.activity, saved = saved, "activities"
 	end
+	if state.activity == "dungeons" then
+		state.activity = "journeys"
+	end
+	state.dungeon = nil
 	state.tab = saved or "journeys"
 	frame = CreateFrame("Frame", NAME, UIParent, "PortraitFrameTemplate") --[[@as AGFWindowFrame]]
 	frame:SetSize(WIDTH, HEIGHT)
