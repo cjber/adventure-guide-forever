@@ -312,9 +312,6 @@ TooltipDataProcessor = nil
 ---@return AGFMajorFactionProgressionInfo?
 function C_MajorFactions.GetMajorFactionProgressionInfo(majorFactionID) end
 
----@type AGFWindowFrame?
-AdventureGuideForeverWindow = nil
-
 ---@class AGFTopTab : Button
 ---@field Text FontString
 ---@field HandleRotation fun(self: AGFTopTab)

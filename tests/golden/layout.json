@@ -230,7 +230,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild",
       "size": [
         306.00,
-        978.00
+        1006.00
       ],
       "type": "Frame"
     },
@@ -255,7 +255,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1]",
       "size": [
         0.00,
-        978.00
+        1006.00
       ],
       "type": "Frame"
     },
@@ -379,26 +379,6 @@
     {
       "anchors": [
         {
-          "point": "RIGHT",
-          "relativePoint": "RIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[1]",
-          "x": -4.00,
-          "y": 0.00
-        }
-      ],
-      "highlightAtlas": "RedButton-Highlight",
-      "normalAtlas": "RedButton-Expand",
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[1].Button[2]",
-      "size": [
-        20.84,
-        22.00
-      ],
-      "type": "Button"
-    },
-    {
-      "anchors": [
-        {
           "point": "TOPLEFT",
           "relativePoint": "BOTTOMLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[1]",
@@ -417,7 +397,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
       "size": [
         0.00,
-        926.00
+        954.00
       ],
       "type": "Frame"
     },
@@ -857,16 +837,16 @@
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Ring",
-          "x": -4.00,
-          "y": 4.00
+          "x": -5.00,
+          "y": 5.00
         }
       ],
       "atlas": "QuestNormal",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Kind",
       "size": [
-        14.00,
-        14.00
+        16.00,
+        16.00
       ],
       "subLevel": 1.00,
       "type": "Texture"
@@ -1147,16 +1127,16 @@
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Ring",
-          "x": -4.00,
-          "y": 4.00
+          "x": -5.00,
+          "y": 5.00
         }
       ],
       "atlas": "QuestNormal",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Kind",
       "size": [
-        14.00,
-        14.00
+        16.00,
+        16.00
       ],
       "subLevel": 1.00,
       "type": "Texture"
@@ -1437,16 +1417,16 @@
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Ring",
-          "x": -4.00,
-          "y": 4.00
+          "x": -5.00,
+          "y": 5.00
         }
       ],
       "file": "Interface\\Cursor\\Pickup",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Kind",
       "size": [
-        14.00,
-        14.00
+        16.00,
+        16.00
       ],
       "subLevel": 1.00,
       "type": "Texture"
@@ -1727,16 +1707,16 @@
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Ring",
-          "x": -4.00,
-          "y": 4.00
+          "x": -5.00,
+          "y": 5.00
         }
       ],
       "file": "Interface\\Cursor\\Pickup",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Kind",
       "size": [
-        14.00,
-        14.00
+        16.00,
+        16.00
       ],
       "subLevel": 1.00,
       "type": "Texture"
@@ -2017,16 +1997,16 @@
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Ring",
-          "x": -4.00,
-          "y": 4.00
+          "x": -5.00,
+          "y": 5.00
         }
       ],
       "file": "Interface\\Cursor\\Pickup",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Kind",
       "size": [
-        14.00,
-        14.00
+        16.00,
+        16.00
       ],
       "subLevel": 1.00,
       "type": "Texture"
@@ -2307,16 +2287,16 @@
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Ring",
-          "x": -4.00,
-          "y": 4.00
+          "x": -5.00,
+          "y": 5.00
         }
       ],
       "file": "Interface\\Cursor\\Pickup",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Kind",
       "size": [
-        14.00,
-        14.00
+        16.00,
+        16.00
       ],
       "subLevel": 1.00,
       "type": "Texture"
@@ -2597,16 +2577,16 @@
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Ring",
-          "x": -4.00,
-          "y": 4.00
+          "x": -5.00,
+          "y": 5.00
         }
       ],
       "atlas": "QuestTurnin",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Kind",
       "size": [
-        14.00,
-        14.00
+        16.00,
+        16.00
       ],
       "subLevel": 1.00,
       "type": "Texture"
@@ -2887,16 +2867,16 @@
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Ring",
-          "x": -4.00,
-          "y": 4.00
+          "x": -5.00,
+          "y": 5.00
         }
       ],
       "atlas": "questobjective",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Kind",
       "size": [
-        14.00,
-        14.00
+        16.00,
+        16.00
       ],
       "subLevel": 1.00,
       "type": "Texture"
@@ -3177,16 +3157,16 @@
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Ring",
-          "x": -4.00,
-          "y": 4.00
+          "x": -5.00,
+          "y": 5.00
         }
       ],
       "file": "Interface\\Cursor\\Pickup",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Kind",
       "size": [
-        14.00,
-        14.00
+        16.00,
+        16.00
       ],
       "subLevel": 1.00,
       "type": "Texture"
@@ -3448,16 +3428,16 @@
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Ring",
-          "x": -4.00,
-          "y": 4.00
+          "x": -5.00,
+          "y": 5.00
         }
       ],
       "file": "Interface\\Cursor\\Pickup",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Kind",
       "size": [
-        14.00,
-        14.00
+        16.00,
+        16.00
       ],
       "subLevel": 1.00,
       "type": "Texture"
@@ -3797,7 +3777,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Stonetalon Mountains",
+      "text": "Quests in your log",
       "type": "FontString",
       "wordWrap": false
     },
@@ -3867,7 +3847,7 @@
           "y": 0.00
         }
       ],
-      "atlas": "QuestNormal",
+      "atlas": "questlog-questtypeicon-quest",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[13].IconFrame.Icon",
       "size": [
@@ -3937,7 +3917,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Ashenvale",
+      "text": "Head to Stonetalon Mountains",
       "type": "FontString",
       "wordWrap": false
     },
@@ -4077,7 +4057,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Silverpine Forest",
+      "text": "Head to Ashenvale",
       "type": "FontString",
       "wordWrap": false
     },
@@ -4217,7 +4197,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Westfall",
+      "text": "Head to Silverpine Forest",
       "type": "FontString",
       "wordWrap": false
     },
@@ -4357,7 +4337,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Redridge Mountains",
+      "text": "Head to Westfall",
       "type": "FontString",
       "wordWrap": false
     },
@@ -4497,7 +4477,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Tirisfal Glades",
+      "text": "Head to Redridge Mountains",
       "type": "FontString",
       "wordWrap": false
     },
@@ -4570,6 +4550,146 @@
       "atlas": "QuestNormal",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[18].IconFrame.Icon",
+      "size": [
+        16.00,
+        16.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOP",
+          "relativePoint": "TOP",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
+          "x": 0.00,
+          "y": -926.00
+        }
+      ],
+      "highlightAtlas": "_options_listexpand_middle",
+      "highlightLocked": false,
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[19]",
+      "size": [
+        288.00,
+        26.00
+      ],
+      "stockTemplate": "AlphaHighlightButtonTemplate",
+      "type": "Button"
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[19]",
+          "x": 0.00,
+          "y": 0.00
+        },
+        {
+          "point": "BOTTOMRIGHT",
+          "relativePoint": "BOTTOMRIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[19]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "_options_listexpand_middle",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[19].NormalTexture",
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[19].IconFrame",
+          "x": 6.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontNormalMed2",
+      "justifyH": "LEFT",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[19].Title",
+      "size": [
+        212.00,
+        16.00
+      ],
+      "text": "Head to Tirisfal Glades",
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[19]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "options_listexpand_left",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[19].Texture[1]",
+      "size": [
+        12.00,
+        26.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[19]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "options_listexpand_right",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[19].Texture[2]",
+      "size": [
+        28.00,
+        26.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[19]",
+          "x": 12.00,
+          "y": 0.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[19].IconFrame",
+      "size": [
+        16.00,
+        16.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "CENTER",
+          "relativePoint": "CENTER",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[19].IconFrame",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "QuestNormal",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[19].IconFrame.Icon",
       "size": [
         16.00,
         16.00

@@ -239,8 +239,8 @@ local log = {
 	[102] = { id = 102, title = "Nearby", complete = false, level = 18, map = 2, x = 0.53, y = 0.5 },
 	[103] = { id = 103, title = "Unknown location", complete = false, level = 18 },
 }
--- Journeys (F2) are disjoint: the zone's story leads with its pickups and the log's quests done on its map, carry
--- follows with the rest of the log (here all on another map); the first card is the route while none is chosen.
+-- Stories include their zone's pickups and accepted quests. The separate log choice includes every accepted
+-- quest and supplies the default route until the player chooses a journey.
 local options = prefs()
 local route = Model.Plan(data, player, {}, log, options)
 local function Has(steps, key)
@@ -250,8 +250,8 @@ local function Has(steps, key)
 	end
 	return count
 end
-equal(route.journey, "zone:1", "the story is the first card")
-equal(route.chosen, false, "with none chosen the route is the first card's, not a choice")
+equal(route.journey, "carry", "accepted quests are the default route")
+equal(route.chosen, false, "a default recommendation does not count as an explicit choice")
 equal(#route.journeys, 2, "the zone's story and carry")
 do
 	local carry = route.journeys[2]
@@ -277,7 +277,7 @@ for _, step in ipairs(route.steps) do
 	equal(step.kind == "town" and #step.handins == 0, true, "the story holds no log quest off its map")
 end
 options.journey = "gone"
-equal(Model.Plan(data, player, {}, log, options).journey, "zone:1", "a vanished choice falls back to the first card")
+equal(Model.Plan(data, player, {}, log, options).journey, "carry", "a vanished choice falls back to accepted quests")
 equal(Model.Plan(data, player, {}, log, options).chosen, false, "and reads as none chosen")
 local empty = prefs()
 empty.quests = false
@@ -893,12 +893,16 @@ do
 	equal(loots and loots.objectives[1].text, nil, "areas: no empty words")
 	equal(apart and apart.key, "area:3:4", "areas: a quest 150 yd off is its own visit")
 	equal(apart and apart.r, 0, "areas: a single point's ring")
-	-- The extended route includes all three quests across successive laps, without a carry card.
+	-- The story and quest-log choice both include all three accepted quests.
 	local counts = {}
 	for _, journey in ipairs(plan.journeys) do
 		counts[#counts + 1] = journey.subline
 	end
-	equal(table.concat(counts, " | "), "3 in progress", "areas: the story counts each quest")
+	equal(
+		table.concat(counts, " | "),
+		"3 in progress | 3 in progress",
+		"areas: story and log choice each count every accepted quest"
+	)
 	-- In combat an area keeps its objectives of the quests still carried, and recounts.
 	local fought = { [1] = carried[1], [3] = carried[3] }
 	local refreshed = Model.Refresh(fields, player, done, fought, prefs(), plan)
@@ -969,14 +973,23 @@ do
 	local here = Model.Plan(world, player, done, carried, prefs())
 	equal(here.journeys[1].key, "zone:1", "standing: the zone you carry quests in is card 1")
 	equal(here.journeys[1].subline, "3 in progress", "standing: its card counts them")
+	equal(here.journey, "carry", "standing: accepted quests are the default even on the story zone")
+	equal(here.journeys[2].kind, "carry", "standing: the full log stays available as an alternative")
+	local chosen = prefs()
+	chosen.journey = "zone:1"
+	equal(Model.Plan(world, player, done, carried, chosen).journey, "zone:1", "standing: explicit story choice wins")
 	equal(
-		here.journeys[2] and here.journeys[2].key,
+		here.journeys[3] and here.journeys[3].key,
 		"zone:2",
-		"standing: the other zone remains available without a carry card"
+		"standing: the other zone remains available alongside the log choice"
 	)
 	carried[7].complete = true
 	here = Model.Plan(world, player, done, carried, prefs())
-	equal(here.journeys[2] and here.journeys[2].subline, "1 ready to hand in", "standing: carry holds the rest")
+	equal(
+		here.journeys[2] and here.journeys[2].subline,
+		"1 ready to hand in, 3 in progress",
+		"standing: carry holds the entire log"
+	)
 end
 
 local special = { quests = { [1] = quest(), [2] = quest(0.9), [3] = quest(0.1) }, zones = data.zones }
@@ -1282,7 +1295,7 @@ equal(townCard.hub, "Lakeshire, Redridge", "card: the hub line names its first s
 equal(townCard.more, #townCard.steps - 1, "card: and counts the stops after it")
 equal(townCard.group, 1, "card: the elite quest needs a group")
 equal(Has(toured.steps, "turnin:12"), 1, "town: a waypoint 350 yd from the data's finish stays a turn-in")
-equal(#toured.journeys, 1, "town: no carry card, the story holds the log")
+equal(#toured.journeys, 2, "town: accepted quests also have their own choice")
 equal(townCard.subline, "3 ready to hand in, 4 quests near your level", "town: the story counts every hand-in first")
 -- Skipping the town takes its hand-ins with it, from the route and the count.
 local townSkip = prefs()

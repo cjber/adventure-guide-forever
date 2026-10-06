@@ -168,7 +168,7 @@
 ---@field catalogue? AGFCatalogue the composed catalogue the last login built, reused when every input matches
 ---@field optimisedRoute? boolean the account-wide planned (beta) route order; nil/false is the nearest-action order
 ---@field journey? string key of the journey card the player chose; nil (or gone) = none chosen, the first card drawn
----@field collapsedGroups table<string, boolean> the overview headers this character collapsed, by group key; a group with no entry uses its default
+---@field previewGroups table<string, boolean> the overview headers this character collapsed, by group key; a group with no entry uses its default
 ---@field skipped table<string, boolean> step keys skipped this session
 ---@field last? {key: string, reason: string} step 1 at the last rebuild, for the next login's resume line
 ---@field lead? integer the map of the zone the story led with, which the next build keeps while it still has useful work
@@ -630,13 +630,8 @@
 ---@field GROUP_ZONES string the header over the "Head to <zone>" cards
 ---@field GROUP_DUNGEONS string the header over the dungeon cards
 ---@field GROUP_BATTLEGROUNDS string the header over the battleground cards
----@field GROUP_CARDS string format: how many cards a collapsed header holds
----@field GROUP_CARDS_ONE string the same for one card
 ---@field LEVELS string a card's level range, low then high
 ---@field LEVELS_FROM string a battleground card's first level
----@field PAGE_OF string a group's page of its pages
----@field PAGE_PREVIOUS string the previous-page arrow's tooltip
----@field PAGE_NEXT string the next-page arrow's tooltip
 ---@field DUNGEON_QUESTS string format: quest count
 ---@field DUNGEON_QUESTS_ONE string
 ---@field DUNGEON_INSIDE string format: count of the log's quests filed under the instance, its name
@@ -1165,24 +1160,10 @@
 ---@field SETTING_ROUTE_ORDER string beta: the planned route order (chapter lead, town look-ahead, committed order)
 ---@field SETTING_ROUTE_ORDER_TOOLTIP string
 
--- The Adventure Guide window (Window.lua, WindowJourneys.lua, WindowProfessions.lua; docs/design.md §2.19).
-
--- The window's account-wide state in AdventureGuideForeverDB.window.
----@class AGFWindowDB
----@field position? {point: string, relativePoint: string, x: number, y: number} where the player left it
----@field tab? string the key of the tab last shown
----@field profession? integer the skill line the Professions view last showed
----@field activity? string last inspected activity category
----@field keyOffered? boolean Shift-J was offered once (Window.OfferKey), taken or not
-
 ---@class AGFNamespace
----@field Art AGFArt atlases at their native aspect (Art.lua)
+---@field Art AGFArt
 ---@field Overview AGFOverview
----@field Window AGFWindow
----@field WindowDB fun(): AGFWindowDB the window's saved state; an empty table before the save file loads
----@field OpenWindow fun() builds the window the first time, then shows it
----@field ToggleWindow fun() the key binding's and the addon compartment's left-click
----@field WindowShown fun(): boolean
+---@field Widgets AGFWidgets shared guide row and popup widgets
 
 ---@class AGFStrings
 ---@field TAB_JOURNEYS string
@@ -1194,9 +1175,6 @@
 ---@field NEXT_REASON_TALENTS string
 ---@field NEXT_REASON_PROFESSIONS string
 ---@field TAB_PROFESSIONS string
----@field OPEN_IN_WINDOW string the panel header's button tooltip
----@field BINDING_TOGGLE_WINDOW string the key binding's name
----@field BINDING_SET string the chat line when Shift-J is set as the window's key
 ---@field SHOW_ON_MAP string
 ---@field NEXT_STEPS string
 ---@field OPEN_RECIPES string
@@ -1351,8 +1329,6 @@
 ---@field STEP_BATTLEMASTER string
 ---@field UPDATED_TO string format: the version, then WHATS_NEW
 ---@field WHATS_NEW string this version's headline, printed once after an update
----@field SETTING_FLOAT_WINDOW string
----@field SETTING_FLOAT_WINDOW_TOOLTIP string
 ---@field SETTING_WHATS_NEW string
 ---@field SETTING_WHATS_NEW_TOOLTIP string
 ---@field SETTING_COMPANIONS string
@@ -1401,32 +1377,6 @@
 ---@class AGFStrings
 ---@field DUNGEON_PICKUP string
 
----@alias AGFListPaint fun(row: AGFDungeonRow, value: table)
----@alias AGFListClick fun(value: table)
----@alias AGFListCreate fun(parent: Frame, width: number, rowHeight: number, click: AGFListClick): AGFDungeonRow
-
----@class AGFWindow
----@field ACTIVITY_LEFT number
----@field ACTIVITY_CARD_WIDTH number
----@field AddActivity fun(activity: AGFWindowTab)
----@field SelectActivity fun(key: string)
----@field AddTab fun(tab: AGFWindowTab)
----@field Tabs fun(): AGFWindowTab[]
----@field ApplyMode fun()
----@field Select fun(index: integer)
----@field Refresh fun()
----@field OfferKey fun()
----@field RefreshToday fun(inset: Frame, visible: boolean)
----@field CreateList fun(parent: Frame, x: number, y: number, width: number, height: number, rowHeight: number, paint: AGFListPaint, click: AGFListClick, create: AGFListCreate): AGFDungeonListWidget
----@field SetList fun(widget: AGFDungeonListWidget, values: table[])
----@field ScrollListTo fun(widget: AGFDungeonListWidget, index: integer)
----@field CreateSectionHeader fun(parent: Frame, text: string, onClick?: fun(open: boolean)): AGFWindowSectionHeader
----@field FONT_TITLE string
----@field FONT_ROW string
----@field FONT_HEADER string
----@field GOLD number[]
----@field TITLE_INK number[]
-
 ---@alias AGFMapLookup fun(area: integer): integer?
 ---@alias AGFYield fun()
 ---@alias AGFQuestieReads {Npc: table<integer, table|false>, Object: table<integer, table|false>, Item: table<integer, table|false>}
@@ -1455,9 +1405,8 @@
 ---@field QUESTIE_ENABLE string
 ---@field QUESTIE_POLICY string
 
----@class AGFWindow
+---@class AGFWidgets
 ---@field GuideOutline fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, journey: AGFJourney, steps: AGFStep[]): integer[]
----@field OpenGuide fun(journey: AGFJourney, parent: Frame)
 
 ---@class AGFStrings
 ---@field DUNGEON_BOSSES_LOOT string
@@ -1664,7 +1613,7 @@
 
 ---@class AGFPlannerJourneys
 ---@field Added fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, elsewhere: (fun(quest: AGFQuest): boolean)): integer[]
----@field Carry fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, ready: table<integer, AGFPlace>, prefs: AGFPrefs, mapName: AGFMapName?, elsewhere: (fun(id: integer, place?: AGFLocation): boolean), added: integer[]): AGFJourney?
+---@field Carry fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, ready: table<integer, AGFPlace>, prefs: AGFPrefs, mapName: AGFMapName?, added: integer[]): AGFJourney?
 ---@field Summarise fun(journey: AGFJourney)
 
 ---@class AGFPlannerDecoration

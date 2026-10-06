@@ -31,7 +31,7 @@ ns.L = {
 	QUESTIE_FIELD = "it lacks %s",
 	QUESTIE_ZONES = "it lacks its zone tables",
 	QUESTIE_FAILED = "reading it failed (%s)",
-	HELP_OPEN = "/agf - open the Adventure Guide window; it is also a tab on the world map's quest log.",
+	HELP_OPEN = "/agf - open the guide on the world map.",
 	HELP_AUDIT = "/agf audit - check the quest data against the game",
 	HELP_DUMP = "/agf dump - save the guide's layout for a bug report",
 	HELP_TRACKER = "/agf tracker - print the tracker stack's anchors (for a combat overlap)",
@@ -41,7 +41,7 @@ ns.L = {
 	NEXT_PAGE = "Next",
 	JOURNEY_PAGE = "%d / %d",
 	JOURNEY_CARRY = "Quests in your log",
-	CARRY_EXPLANATION = "Turn-ins and unfinished objectives outside the main zone story, "
+	CARRY_EXPLANATION = "Turn-ins and unfinished objectives from your quest log, "
 		.. "plus quests you added to the route.",
 	JOURNEY_STORY = "%s story",
 	JOURNEY_NEXT_ZONE = "Head to %s",
@@ -52,8 +52,6 @@ ns.L = {
 	GROUP_ZONES = "Quest destinations",
 	GROUP_DUNGEONS = "Dungeons",
 	GROUP_BATTLEGROUNDS = "Battlegrounds",
-	GROUP_CARDS = "%d cards",
-	GROUP_CARDS_ONE = "1 card",
 	DUNGEON_QUESTS = "%d quests for this dungeon",
 	DUNGEON_QUESTS_ONE = "1 quest for this dungeon",
 	-- The dungeon card's reason: the log's quests filed under its instance, counted.
@@ -247,9 +245,6 @@ ns.L = {
 	-- A card's levels at the right of its title, and a group's page beside its arrows.
 	LEVELS = "%d-%d",
 	LEVELS_FROM = "%d+",
-	PAGE_OF = "%d/%d",
-	PAGE_PREVIOUS = "Previous",
-	PAGE_NEXT = "Next",
 	OBJECTIVE_COUNT = "- %d/%d",
 	-- The guide's settings menu, then the addon's settings page.
 	MENU_QUESTS = "Quests",
@@ -344,9 +339,6 @@ ns.L = {
 	NEXT_REASON_TALENTS = "Spending your talent points makes your character stronger.",
 	NEXT_REASON_PROFESSIONS = "You meet the requirements for this profession training.",
 	TAB_PROFESSIONS = "Professions",
-	OPEN_IN_WINDOW = "Open in window",
-	BINDING_TOGGLE_WINDOW = "Toggle the Adventure Guide window",
-	BINDING_SET = "Shift-J now opens the Adventure Guide window. Change it under Key Bindings.",
 	SHOW_ON_MAP = "Show on Map",
 	NEXT_STEPS = "Next steps",
 	OPEN_RECIPES = "Open Recipes",
@@ -423,8 +415,6 @@ ns.L = {
 	STEP_BATTLEMASTER = "Visit the battlemaster in %s",
 	-- After an update (WhatsNew): the version, then WHATS_NEW.
 	UPDATED_TO = "updated to %s. %s",
-	SETTING_FLOAT_WINDOW = "Float window",
-	SETTING_FLOAT_WINDOW_TOOLTIP = "Move the guide independently of other windows. Tweaks Edit Mode also supports it.",
 	SETTING_WHATS_NEW = "What's new after an update",
 	SETTING_WHATS_NEW_TOOLTIP = "One line in chat the first time you log in after the guide updates.",
 	-- Companion hints (Companions.lua): what another Forever addon would add here, while it isn't loaded.

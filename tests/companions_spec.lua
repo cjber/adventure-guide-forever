@@ -156,35 +156,4 @@ do
 	clean(h, "step with Shortest Path")
 end
 
--- The window's Professions view and Progress page: their calm line is the hint, or a plain one with hints off.
-local function TabLine(h, key)
-	h.ns.OpenWindow()
-	h.flush()
-	local window = h.G.AdventureGuideForeverWindow
-	if key == "professions" then
-		h.ns.Window.SelectActivity(key)
-	else
-		h.ns.Window.Select(3)
-	end
-	h.flush()
-	local texts = {}
-	for _, entry in ipairs(h.ns.DumpLayout(window, h.Describe)) do
-		if entry.text then
-			texts[entry.text] = true
-		end
-	end
-	return texts
-end
-
-do
-	local h = Load({ installed = { SkillUpForever = true, LegacyForever = true } })
-	local L = h.ns.L
-	equal(TabLine(h, "professions")[L.SKILLUP_DISABLED], true, "Professions, SkillUp off: says enable")
-	equal(TabLine(h, "progress")[L.LEGACY_DISABLED], true, "Progress link, Legacy off: says enable")
-	h.ns.SetSetting("suggestCompanions", false)
-	equal(TabLine(h, "professions")[L.SKILLUP_ABSENT], true, "Professions, hints off: the plain line")
-	equal(TabLine(h, "progress")[L.LEGACY_PROGRESS_NOTE], true, "Progress link, hints off: the plain line")
-	clean(h, "tabs")
-end
-
 print(("companions_spec: %d checks passed"):format(checks))

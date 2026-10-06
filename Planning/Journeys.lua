@@ -151,22 +151,24 @@ local function Added(data, player, completed, log, prefs, elsewhere)
 	return ids
 end
 
--- "Quests in your log": the log's turn-ins and objectives the story card does not hold (`elsewhere`), plus quests
+-- "Quests in your log": every accepted quest's turn-ins and objectives, plus quests
 -- the player added that no zone card holds (`added`). The subline counts every quest the card holds, including
 -- those outside the route and those nothing places.
 ---@param ready table<integer, AGFPlace>
----@param elsewhere fun(id: integer, place?: table): boolean
 ---@param added integer[]
-local function Carry(data, player, completed, log, ready, prefs, mapName, elsewhere, added)
+local function Carry(data, player, completed, log, ready, prefs, mapName, added)
 	local candidates, stops = TrainerSteps(data, player, prefs, "carry"), {}
-	local held = LogSteps(data, player, log, ready, function(id, place)
-		return not Dropped(id) and elsewhere(id, place)
+	local held = LogSteps(data, player, log, ready, function(id)
+		return not Dropped(id)
 	end, stops, candidates, { areas = {}, anchors = {} })
 	PickupSteps(data, added, function()
 		return true
 	end, candidates, stops)
 	local steps = Build(data, player, completed, log, candidates, prefs, mapName)
 	steps = #added > 0 and Within(data, player, completed, log, steps) or steps
+	if steps[1] and Model.Here(data, player, steps, State.heldHere) == 1 then
+		steps[1].here = true
+	end
 	if #steps == 0 then
 		return nil
 	end
@@ -905,16 +907,12 @@ function Model.Journeys(
 			break
 		end
 	end
-	-- Carry holds the log's quests off the story's zone, as the in-combat rebuild does: the story holds
-	-- those on it, a later lap's too.
-	local holds = told and told.holds or {}
+	-- The quest-log choice includes accepted quests on the story's zone too.
 	local onStory = InZone(zone)
 	local added = Added(data, player, completed, log, prefs, function(quest)
 		return not onStory(quest)
 	end)
-	journeys[#journeys + 1] = Carry(data, player, completed, log, ready, prefs, mapName, function(id)
-		return not holds[id]
-	end, added)
+	journeys[#journeys + 1] = Carry(data, player, completed, log, ready, prefs, mapName, added)
 	-- Story and carry routes can exhaust a frame before the alternative zones.
 	Yield()
 	-- Every zone with a useful pickup is an option, ranked for the player's level now.

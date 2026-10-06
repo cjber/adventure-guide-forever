@@ -16,37 +16,15 @@ Choose a journey without leaving the world map's quest log.
 
 Pick one and Shortest Path Forever walks you to each stop in turn.
 
-![The Adventure Guide window](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window.png)
-
-Follow your journey, browse its upcoming steps and quests, or choose another in Activities.
-
-![Professions in Activities](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_professions.png)
-
-SkillUp Forever supplies the recipes to make and reagents still needed.
-
-![Progress](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_completion.png)
-
-See completed stories here. Legacy Forever supplies collection and zone completion on the map.
-
-![A journey in your chosen order](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_order.png)
-
-Move steps around.
-
 ![The Adventure Guide tracker section](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png)
 
 Your journey heads the tracker, with action icons for the current stop and up to two upcoming stops.
 
-![Bosses and loot beside a dungeon journey](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/dungeons.png)
-
-Check the quests and their earlier steps before heading to the entrance.
-
-![A full quest outline with current steps followed by later Questie quests](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_full_guide.png)
-
-The full guide continues across pages. These images are generated previews of the guide UI.
+These images are generated previews of the guide UI.
 
 ## Features
 
-- **What to do next.** Journeys explains your next action. Activities offers journeys, professions and PvP. Progress records completed stories.
+- **What to do next.** The map guide offers two Continue cards and one per other section. Expand a header to see more. Quests in your log is the default suggestion.
 - **Journeys.** Finish loose ends, follow zone stories or pick up class quests. Dungeon and battleground journeys are opt-in.
 - **Dungeons.** Check quests and prerequisites, then visit their givers. Tweaks Forever displays Atlas interior maps on the world map. [AtlasLoot Classic](https://www.curseforge.com/wow/addons/atlaslootclassic) supplies bosses and loot.
 - **Full guide.** Browse the route and the area's quest outline. Later entries wait for Questie's availability checks.
@@ -60,7 +38,7 @@ Forever's new quests are only considered once they are in your log, and a missin
 
 ## Usage
 
-`/agf` or `/adventureguide` opens the window. Shift-J does too if that key was free at first login. Left-click the addon compartment for the window; right-click for the map tab. Options are in the guide's cog and Settings > AddOns > Adventure Guide.
+`/agf`, `/adventureguide` or the addon compartment opens the guide on the world map. Options are in the guide's cog and Settings > AddOns > Adventure Guide.
 
 Translations are welcome on GitHub: see the [Locales folder](https://github.com/cjber/adventure-guide-forever/tree/main/Locales).
 

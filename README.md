@@ -14,51 +14,34 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif" width="640" alt="Choosing a journey and following its route"></p>
 
-<p align="center">Choose a journey, see its steps on the map and follow the route, then Activities and Progress.</p>
+<p align="center">Choose a journey, see its steps on the map and follow the route, check off its quests as you go.</p>
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png" width="640" alt="Adventure Guide beside The Barrens map"></p>
 
-<p align="center">Choose a journey from the world map's quest log. Each group shows as many cards as fit and turns pages with arrows in its header.</p>
+<p align="center">Choose a journey from the world map's quest log. Continue shows two cards; other sections show one. Expand a header for more choices.</p>
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/map.png" width="640" alt="Shortest Path Forever's route to the first stop"></p>
 
 <p align="center">Pick one and Shortest Path Forever walks you to each stop in turn.</p>
 
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window.png" width="640" alt="The Adventure Guide window"></p>
-
-<p align="center">The window leads with your next task and why it fits. Start or resume its route, see upcoming stops and quests, then choose another journey in Activities.</p>
-
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_activities.png" width="640" alt="Choosing a journey in Activities"></p>
-
-<p align="center">Choose another adventure in Activities.</p>
-
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/dungeons.png" width="640" alt="Dungeon journey with bosses and loot"></p>
-
-<p align="center">Pick a dungeon, see which quests you can take and find their givers before entering.</p>
-
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/story_complete.png" width="400" alt="Story completion popup"></p>
 
 ## Features
 
-- **Three pages.** Journey shows your current adventure, six upcoming steps and its quests. Activities holds journey choices, professions and PvP. Progress records completed stories; collections and zone completion stay in Legacy Forever.
+- **Map guide.** Continue shows two journeys; other sections show one each. Expand a section for more choices. Quests in your log is the default suggestion.
 
 - **Quest difficulty.** Choose the highest recommended quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups. Accepted quests remain visible.
 
-- **Dungeon journeys.** Follow quest pickups, preparation chains and hand-ins with Shortest Path Forever. The full guide includes later prerequisites, kept separate from steps available now. Bosses and drops from installed AtlasLoot appear beside your route, with item tooltips. Tweaks Forever handles automatic dungeon maps.
-- **Journeys.** Finish loose ends, follow a zone's story, find nearby zones suited to your level or take class quests. Activity choices explain why each fits. Dungeon and battleground journeys are opt-in.
-- **Full guide.** Page through the current route followed by the area's Questie outline. Later entries stay outline-only until Questie confirms they are available.
-- **Choose and go.** Use Start adventure in the window, or pick a journey on the map to start guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop clears only guidance the addon started.
+- **Dungeon journeys.** Follow quest pickups, preparation chains and hand-ins with Shortest Path Forever. Preparation steps include prerequisites available now. Tweaks Forever handles automatic dungeon maps.
+- **Journeys.** Finish loose ends, follow a zone's story, find nearby zones suited to your level or take class quests. Journey choices explain why each fits. Dungeon and battleground journeys are opt-in.
+- **Full guide.** Expand the map guide to see the current route followed by the area's Questie outline. Later entries stay outline-only until Questie confirms they are available.
+- **Choose and go.** Pick a journey on the map to start guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop clears only guidance the addon started.
 - **A route that stays with you.** Your choice survives new quests, travel and a reload. Ready hand-ins and nearby pickups come first. Town stops group quest givers into a checklist. The tracker uses your journey as its heading and shows action icons for the current stop and up to two upcoming stops.
 - **Your order.** Drag steps or right-click to move them earlier or later. Moves that break quest order are greyed out. *Back to suggested order* restores the plan.
-- **Story milestones.** Completing a proven quest chain earns a brief story-complete popup, recorded once for that character in Progress.
+- **Story milestones.** Completing a proven quest chain earns a brief story-complete popup, recorded once for that character.
 - **Stories and search.** Stories read as chapters without naming later quests. Totals appear only when the data proves them. Search shows a quest's requirements and which ones you meet.
 - **Other things to do.** Hints cover professions, unspent talents, hearths and unexplored areas. Class spell reminders and automatic trainer visits are off by default; enable them under Settings > AddOns > Adventure Guide Forever > Route. PvP shows your rank, its next reward and available battlegrounds, with the nearest battlemaster.
-- **Professions.** SkillUp Forever fills Activities with recipes, next steps and reagents.
 - **Your say.** Skip a step until your next reload, hide a journey or rule out a quest on this character. Shift-click a search result or map quest giver to add quests. *Skipped* restores hidden suggestions. The guide never abandons quests for you. Map marks are off by default.
-
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_order.png" width="640" alt="A journey in your chosen order"></p>
-
-<p align="center">The journey says Your order, and each town lists the quest givers still to visit.</p>
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png" width="400" alt="The Adventure Guide tracker section"></p>
 
@@ -72,13 +55,13 @@ Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-
 
 | Command | What it does |
 |---|---|
-| `/agf`, `/adventureguide` | Open the Adventure Guide window |
+| `/agf`, `/adventureguide` | Open the guide on the world map |
 | `/agf travel` | Print guidance state for a travel report |
 | `/agf tracker` | Print the tracker anchors for an overlap report |
 | `/agf audit` | Compare the quest data with the game and report its source |
 | `/agf dump` | Save the drawn layout for a bug report; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua` |
 
-Shift-J opens the window if the key was free at first login; change it under Key Bindings. Left-click the addon compartment for the window, or right-click for the map tab. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including starting routes on selection, tracking their quests and detaching the shared Forever tracker so you can drag it elsewhere.
+Open the guide from its world-map tab, the addon compartment or `/agf`. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including starting routes on selection, tracking their quests and detaching the shared Forever tracker so you can drag it elsewhere.
 
 Translations are welcome as a pull request, or pasted into an issue, on GitHub: see the [Locales folder](https://github.com/cjber/adventure-guide-forever/tree/main/Locales).
 

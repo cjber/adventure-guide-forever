@@ -124,7 +124,7 @@ function Moments.Observe()
 		moment = { key = first.key, text = Text(first) }
 	end
 	-- Already looking at the guide, on the map or in its window: the marks, and nothing to call the player over.
-	unseen = not (ns.PanelShown and ns.PanelShown() or ns.WindowShown())
+	unseen = not (ns.PanelShown and ns.PanelShown())
 	if unseen then
 		ns.OnMoment(first ~= nil, newAside)
 	end

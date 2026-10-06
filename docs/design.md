@@ -10,9 +10,9 @@ abandons quests.
 
 ## 2. Surfaces
 
-- **2.1 Map tab.** The overview scrolls; the expand button opens the window. Chosen steps and
+- **2.1 Map tab.** The overview scrolls; the overview keeps two Continue cards and one card per other section until expanded. Chosen steps and
   search can scroll. Quest-giver marks and route pins are opt-in.
-- **2.2 Journey cards.** Offer every eligible journey for the current level; the home view scrolls and the window grid
+- **2.2 Journey cards.** Offer every eligible journey for the current level; the map overview scrolls and the guide
   pages through them. The home view groups its cards under collapsible quest log headers, in order: Continue (the story,
   Quests in your log and your calling), Zones for your level, Dungeons, then Battlegrounds. A group with no card draws
   no header, each header remembers its open state per character, and the header holding the route the guide follows
@@ -71,8 +71,7 @@ abandons quests.
 - **2.17 Pacing.** Rest and hearth hints advise. Wanderer mode chooses without starting guidance.
 - **2.18 Choices.** Dropped quests stay in the log. Added quests still pass eligibility checks.
   Skips are reversible; a full log gets advice only.
-- **2.19 Window.** Share the map's choices. Optional tabs use sibling public APIs and explain missing
-  providers. Assign Shift-J once, only if neither it nor the window already has a binding.
+- **2.19 Guide access.** The map tab, addon compartment and `/agf` open the same guide. No standalone window or default key binding.
 - **2.20 Your order.** Reordering must preserve quest dependencies. Suggested order remains recoverable.
 
 - **2.21 Dungeons.** Dungeon journeys share the normal planner, guide and Shortest Path integration.
@@ -90,35 +89,13 @@ abandons quests.
   tracker's step from the committed route and answers nil while a route is due, never building one for a caller.
   Fields are added, never renamed or repurposed, within a version.
 
-### Window lists and the Journal look
-
-`UI/WindowList.lua` is the window's one list: a `WowScrollBoxList` with a `MinimalScrollBar`, set up with
-`ScrollUtil.InitScrollBoxListWithScrollBar` and `CreateScrollBoxListLinearView`. The scroll box makes a row only
-for the elements its viewport shows and pools it, so no page culls rows or manages a row pool by hand.
-`Window.CreateList(parent, x, y, width, height, rowHeight, paint, click, create, extent?)` returns the widget:
-`create` draws a row once, `paint` fills it from an element, and `extent` measures an element that is not a plain
-row height (a heading, or a step with its checklist). `Window.SetList(widget, values)` hands it the elements and
-`Window.ScrollListTo(widget, index)` jumps to one. `widget.frame` is the scroll box and keeps `GetVerticalScroll`
-and `SetVerticalScroll` in pixels for callers written against the old `ScrollFrameTemplate`. Pages not yet
-migrated adopt the same factory.
-
-The Journal's type and palette live on `Window` (`FONT_TITLE`, `FONT_ROW`, `FONT_HEADER`, `GOLD`, `TITLE_INK`,
-`BODY_INK`). `Window.CreateSectionHeader(parent, text, onClick?)` is the paper-overlay gold header, collapsible
-when `onClick` is given; A surface the client has no art for draws a flat
-dark tile, never a question mark or a substituted picture.
-
 ### Guide navigation
 
-Journey is the default page. A compact header names the adventure and its reason, followed by route controls.
-Six upcoming stops sit beside the journey's quest list or dungeon bosses and loot. Later stops are paged;
-full guide shows the complete route and future prerequisites.
-The current stop keeps its gold highlight as guidance advances; later stops use quieter white text.
-Optional steps retain readable icons and a full-strength current highlight. Header icons identify the journey
-kind, and visible route controls sit together without gaps for hidden actions.
-Activities groups journey selection, professions and PvP in a left-hand list. Choosing a journey returns to
-Journey, using the same choice and start preferences as the map. Progress records character story milestones;
-collections, exploration and zone completion live in Legacy Forever, linked through the world map.
-The shared Today strip shows useful hints once on every page. Spell training is opt-in.
+The world-map sidebar is the guide. Folded sections show two Continue journeys and one journey per other
+section. Expanding a header reveals the remaining choices. Existing settings from the paged overview do
+not expand the new previews. Accepted quests, including the current story's quests, form Quests in your log,
+the default suggested route until the player chooses a journey. This does not start guidance automatically.
+Shared row and notification art lives in `UI/Widgets.lua`.
 
 `Core/Recommendations.lua` reads the committed route and wanted hints. An action revalidates its identity and destination before delegating to Guidance. Combat and Wanderer mode disable travel. Unknown destinations remain advice. The detailed contracts are in [guide-navigation-design.md](guide-navigation-design.md).
 
@@ -150,23 +127,8 @@ follow the shared family voice.
   objectives are done (a merged visit takes only the objectives the player can work on now).
 - **4.3 Committed order.** Preserve the chosen sequence and visit identities across rebuilds.
 
-The guide uses `ShowUIPanel` / `HideUIPanel` by default, with `UIPanelLayout-*` attributes on its own frame only. It never registers in Blizzard's shared `UIPanelWindows` table. `floatWindow` opts into independent placement and dragging; saved floating positions remain available when switching back. Opening and mode changes defer during combat.
-
-Tweaks can request hidden, lazy creation through `AdventureGuideForever.EnsureWindow`. The guide emits `AdventureGuideForever.WindowCreated` after building and `AdventureGuideForever.WindowLayoutChanged` after switching modes. Tweaks owns layout overrides and scale; the guide retains normal panel occupancy or floating behavior.
-
 ### Full guide outline
 
-The Journey header opens `UI/WindowGuide.lua`, a ten-row paged view of the active lap and the zone's remaining QuestieDB catalogue. Active route steps remain the planner's responsibility. Outline entries never become navigation targets or claim pickup eligibility. Race, class, faction, completion and dungeon/repeatable filters apply; active-chain successors and useful quest levels sort first, with prerequisites before dependents. This is an adaptive zone outline, not a fixed 1–60 walkthrough. Hiding the Journeys page closes the outline.
-
-The Journeys window leads with the committed route's first task and its honest reason, with the journey name as context. Start explicitly chooses and starts that journey through Guidance; a running route offers Show on Map, a paused route Resume. Wanderer mode offers only Show on Map. Recommended applies to an unchosen journey; a chosen journey says Your choice. Alternative eligible journeys live in Activities.
-
-### Journey layout proposal
-
-The approval concept in `journey-preview.png` shows a whole zone map beside the current stop and five upcoming
-steps. It is a proposed layout, separate from the implemented UI and store screenshots. Map content and its
-frame share one rectangle definition. Container artwork uses fixed eight-pixel corners, and action buttons
-share a height and gap. `tools/journey_preview_test.py` checks these contracts in CI, including rejected
-misalignment, stretched artwork, overflowing buttons and an underfilled step column. Visual inspection still
-checks readability and composition.
-
-Render with `WOWMOCK` configured: `python3 tools/journey_preview.py docs/journey-preview.png`.
+The map guide includes the zone's remaining QuestieDB catalogue after actionable route steps.
+`UI/GuideOutline.lua` orders prerequisites before successors and filters race, class, faction and completed
+quests. Outline entries never become navigation targets or claim pickup eligibility.

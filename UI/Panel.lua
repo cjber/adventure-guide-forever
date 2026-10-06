@@ -49,7 +49,7 @@ local TRACK_MAX, SQUARE, SQUARE_GAP = 8, 12, 3
 local TOP_BAR = 29
 local SKIPPED_HEIGHT = 16
 -- A step's kind badge (Overview.CreateBadge) on its 26 ring.
-local BADGE, BADGE_OUT = 14, 3
+local BADGE, BADGE_OUT = 16, 3
 local ORDER_HEIGHT, CHECK_LEFT = 16, 46
 local ASIDE_HEIGHT, ASIDE_GAP = 14, 2
 local FOOTER = 40
@@ -63,7 +63,7 @@ local OVERVIEW_INSET, OVERVIEW_TEXT = 12, 54
 -- each before its first card.
 local HEADER_HEIGHT, HEADER_GAP, HEADER_ART = 22, 4, "common-button-list-collapseExpand"
 -- Room over each group's header, and the stock page arrows (PagingControls, 32px) at the header's height.
-local GROUP_GAP, PAGE_ARROW = 6, 22
+local GROUP_GAP = 6
 
 ---@type Frame?
 local panel
@@ -287,21 +287,6 @@ local function BuildHeader(parent)
 			Back()
 		end
 	end)
-	-- The guide in its own window (Window.lua): the map frame's maximize art at 22, mirroring the compass at the left.
-	local expand = CreateFrame("Button", nil, header)
-	-- 22 high at the art's own 18x19.
-	expand:SetSize(22 * 18 / 19, 22)
-	expand:SetPoint("RIGHT", -4, 0)
-	expand:SetNormalAtlas("RedButton-Expand") -- art-ok: the button is the art's own 18x19
-	expand:SetPushedAtlas("RedButton-Expand-Pressed") -- art-ok: the button is the art's own 18x19
-	expand:SetHighlightAtlas("RedButton-Highlight", "ADD") -- art-ok: the button is the art's own 18x19
-	expand:SetScript("OnClick", function()
-		ns.OpenWindow()
-	end)
-	expand:SetScript("OnEnter", function(self)
-		ShowTooltip(self, { L.OPEN_IN_WINDOW })
-	end)
-	expand:SetScript("OnLeave", GameTooltip_Hide)
 	compass = header:CreateTexture(nil, "ARTWORK")
 	Art.Fit(compass, "islands-queue-prop-compass", 30, 30)
 	compass:SetPoint("LEFT", 2, 0)
@@ -766,18 +751,17 @@ local function LayoutRows(route, top, hidden, journey)
 	local future = not hidden
 			and #route.steps < ns.Model.MAX_STEPS
 			and journey
-			and ns.Window.GuideOutline(ns.Data, ns.State.Player(), ns.State.Completed(), journey, route.steps)
+			and ns.Widgets.GuideOutline(ns.Data, ns.State.Player(), ns.State.Completed(), journey, route.steps)
 		or {}
 	for index = 1, math.max(#laterRows, math.min(#future, math.max(0, ns.Model.MAX_STEPS - #route.steps))) do
 		local row = laterRows[index]
 		if not row then
-			row = ns.Window.CreateStepRow(assert(list), ROW_HEIGHT) --[[@as AGFGuideRow]]
+			row = ns.Widgets.CreateStepRow(assert(list), ROW_HEIGHT) --[[@as AGFGuideRow]]
 			row:SetEnabled(false)
 			row:SetMotionScriptsWhileDisabled(true)
 			row:SetScript("OnEnter", function(self)
 				if self.questID then
-					local quest = ns.Data.quests[self.questID]
-					ShowTooltip(self, { quest.title, L.GUIDE_OUTLINE_TOOLTIP })
+					ShowTooltip(self, { (ns.Pins.QuestLineText(self.questID)), L.GUIDE_OUTLINE_TOOLTIP })
 				end
 			end)
 			row:SetScript("OnLeave", GameTooltip_Hide)
@@ -788,7 +772,7 @@ local function LayoutRows(route, top, hidden, journey)
 		row:SetShown(id ~= nil)
 		if id then
 			local title, color = ns.Pins.QuestLineText(id)
-			ns.Window.SetStepRow(row, 1, title, L.GUIDE_OUTLINE)
+			ns.Widgets.SetStepRow(row, 1, title, L.GUIDE_OUTLINE)
 			row.Number:Hide()
 			row.Ring:Hide()
 			ns.Art.SetSliceShown(row.Selected, false)
@@ -847,12 +831,7 @@ end
 ---@field key AGFJourneySection
 ---@field Name FontString
 ---@field Count FontString
----@field Page FontString
----@field page integer the page it shows
----@field Previous Button
----@field Next Button
 ---@field CollapseButton AGFCollapseButton
----@field held boolean the route's own card is under it, so it cannot fold
 
 ---@param parent Frame
 ---@return AGFOverviewHeader
@@ -874,31 +853,6 @@ local function CreateOverviewHeader(parent)
 	-- Clear of the fold button's place, whether or not the button is shown.
 	header.Count:SetPoint("RIGHT", -28, 0)
 	header.Count:SetJustifyH("RIGHT")
-	-- The group's pages, as the spellbook turns its own: the page, then the stock arrows. A click on one is its
-	-- own, so it never folds the group.
-	local function Arrow(template, by, tip)
-		local arrow = CreateFrame("Button", nil, header, template)
-		arrow:SetSize(PAGE_ARROW, PAGE_ARROW)
-		arrow:SetScript("OnClick", function()
-			PlaySound(SOUNDKIT.IG_ABILITY_PAGE_TURN)
-			Overview.Turn(header.key, by, header.page)
-			Refresh()
-		end)
-		arrow:SetScript("OnEnter", function(self)
-			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-			GameTooltip:SetText(tip)
-			GameTooltip:Show()
-		end)
-		arrow:SetScript("OnLeave", GameTooltip_Hide)
-		return arrow
-	end
-	header.Next = Arrow("PagingControlsNextPageButtonTemplate", 1, L.PAGE_NEXT)
-	header.Next:SetPoint("RIGHT", -28, 0)
-	header.Previous = Arrow("PagingControlsPrevPageButtonTemplate", -1, L.PAGE_PREVIOUS)
-	header.Previous:SetPoint("RIGHT", header.Next, "LEFT", 2, 0)
-	header.Page = header:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-	header.Page:SetPoint("RIGHT", header.Previous, "LEFT", -2, 0)
-	header.Page:SetJustifyH("RIGHT")
 	header.Name = header:CreateFontString(nil, "ARTWORK", "Game15Font_Shadow")
 	header.Name:SetPoint("LEFT", 8, 0)
 	header.Name:SetPoint("RIGHT", header.Count, "LEFT", -4, 0)
@@ -910,54 +864,33 @@ local function CreateOverviewHeader(parent)
 	end
 	header:RegisterForClicks("LeftButtonUp")
 	header:SetScript("OnClick", function(self)
-		if not self.held then
-			Overview.ToggleCollapsed(self.key)
-			Refresh()
-		end
+		Overview.ToggleCollapsed(self.key)
+		Refresh()
 	end)
 	return header
 end
 
--- `group`'s header at `top`, then one page of its cards from there while it is open: `per` to a page, the header's
--- arrows turning it when the group holds more. A collapsed group lays out no card (and refreshes none); the header
--- shows how many it holds. Returns the top under what it drew.
+-- Folded groups keep leading cards visible; expansion shows all cards in the scrollable list.
 ---@param group AGFJourneyGroup
 ---@param header AGFOverviewHeader
 ---@param journeys AGFJourney[]
 ---@param top number
 ---@param width number
----@param per integer? cards to a page; nil while the group is collapsed
 ---@param pool table
 ---@return number top
-local function LayoutGroup(group, header, journeys, top, width, per, pool)
-	local collapsed = per == nil
-	local pages = per and math.ceil(#journeys / per) or 1
-	-- A card new to the character (Moments) is never a page away when the guide opens.
-	local first = 1
-	for index = #journeys, 1, -1 do
-		first = per and ns.Moments.IsNew(journeys[index].key) and math.ceil(index / per) or first
-	end
-	local page = Overview.Page(group.key, pages, first)
-	header.key, header.page = group.key, page
+local function LayoutGroup(group, header, journeys, top, width, pool)
+	local collapsed = Overview.Collapsed(group.key)
+	local preview = group.key == "continue" and 2 or 1
+	local count = collapsed and math.min(preview, #journeys) or #journeys
+	header.key = group.key
 	header:SetWidth(width)
 	header.Name:SetText(group.label)
-	-- Never hidden: an empty font string keeps the name's anchor resolvable in a layout dump.
-	header.Count:SetText(collapsed and (#journeys == 1 and L.GROUP_CARDS_ONE or L.GROUP_CARDS:format(#journeys)) or "")
+	header.Count:SetText(#journeys > preview and tostring(#journeys) or "")
 	header.CollapseButton:UpdateCollapsedState(collapsed)
-	header.CollapseButton:SetShown(not header.held)
-	for _, region in ipairs({ header.Page, header.Previous, header.Next }) do
-		region:SetShown(pages > 1)
-	end
-	header.Page:SetText(L.PAGE_OF:format(page, pages))
-	header.Previous:SetEnabled(page > 1)
-	header.Next:SetEnabled(page < pages)
-	header.Name:SetPoint("RIGHT", pages > 1 and header.Page or header.Count, "LEFT", -4, 0)
+	header.CollapseButton:SetShown(#journeys > preview)
 	header:SetPoint("TOPLEFT", 0, -top)
 	top = top + HEADER_HEIGHT + HEADER_GAP
-	if not per then
-		return top
-	end
-	for index = (page - 1) * per + 1, math.min(page * per, #journeys) do
+	for index = 1, count do
 		pool.next = pool.next + 1
 		local card = overviewCards[pool.next] or CreateOverviewCard(assert(list))
 		overviewCards[pool.next] = card
@@ -969,14 +902,12 @@ local function LayoutGroup(group, header, journeys, top, width, per, pool)
 	return top
 end
 
--- The overview's groups from `top`. Every header stays in the panel: the cards that fit its height over `under`
--- (what the list draws below them) are shared between the open groups (Overview.Fit), and each group pages the rest.
+-- Overview previews and expanded groups share the panel's scrolling list.
 ---@param route AGFRoute
 ---@param top number
 ---@param shown boolean
----@param under number
 ---@return number
-local function LayoutOverview(route, top, shown, under)
+local function LayoutOverview(route, top, shown)
 	---@cast panel -?
 	---@cast list -?
 	local width = math.max(0, panel:GetWidth() - 2 * PAD)
@@ -990,27 +921,17 @@ local function LayoutOverview(route, top, shown, under)
 		end
 		return top
 	end
-	local pool, groups, counts = { next = 0 }, {}, {}
-	local room = panel:GetHeight() - TOP_BAR - FOOTER - LIST_TOP - top - under - PAD
+	local pool, shownGroups = { next = 0 }, 0
 	for index, group in ipairs(Overview.GROUPS) do
 		local header = overviewHeaders[index] or CreateOverviewHeader(assert(list))
 		overviewHeaders[index] = header
 		local journeys = Overview.InGroup(route.journeys, group.key)
 		header:SetShown(#journeys > 0)
 		if #journeys > 0 then
-			-- The route's own card stays in sight: its group is open whatever the player saved.
-			local open = Overview.Open(route, journeys[1])
-			header.held = Overview.Held(route, group.key)
-			groups[#groups + 1] = { group = group, header = header, journeys = journeys, open = open }
-			counts[#counts + 1] = open and #journeys or nil
-			room = room - HEADER_HEIGHT - HEADER_GAP - (#groups > 1 and GROUP_GAP or 0)
+			top = top + (shownGroups > 0 and GROUP_GAP or 0)
+			top = LayoutGroup(group, header, journeys, top, width, pool)
+			shownGroups = shownGroups + 1
 		end
-	end
-	local per, turn = Overview.Fit(counts, math.floor(room / (OVERVIEW_HEIGHT + OVERVIEW_GAP))), 0
-	for index, entry in ipairs(groups) do
-		turn = turn + (entry.open and 1 or 0)
-		top = top + (index > 1 and GROUP_GAP or 0)
-		top = LayoutGroup(entry.group, entry.header, entry.journeys, top, width, entry.open and per[turn] or nil, pool)
 	end
 	for index = pool.next + 1, #overviewCards do
 		overviewCards[index]:Hide()
@@ -1064,8 +985,7 @@ local function LayoutJourneys(route)
 	local unlisted = not searching
 		and (sourceHint ~= nil or ns.Model.Unlisted(ns.Data, state.Player().map, state.Completed(), state.Log()))
 	local skipped = not searching and #ns.Skipped() or 0
-	local under = (unlisted and UNLISTED_HEIGHT + CARD_GAP or 0) + (skipped > 0 and SKIPPED_HEIGHT + CARD_GAP or 0)
-	top = LayoutOverview(route, top, not searching and not route.chosen, under)
+	top = LayoutOverview(route, top, not searching and not route.chosen)
 	local shownCard, shownJourney = nil, nil
 	for index = 1, math.max(#route.journeys, #cards) do
 		local card = cards[index] or CreateJourneyCard()
@@ -1256,7 +1176,6 @@ local function Attach()
 	-- Something new: seen once the guide shows; its cards' marks go when it closes.
 	panel:HookScript("OnShow", ns.Moments.Opened)
 	panel:HookScript("OnHide", ns.Moments.Closed)
-	panel:HookScript("OnHide", Overview.ResetPages)
 	ns.OnRouteChange(QueueCards)
 	BuildContent(panel)
 	panel:SetScript("OnSizeChanged", Refresh)
@@ -1302,9 +1221,8 @@ local function Attach()
 	function ns.OpenPanel()
 		C_Map.OpenWorldMap()
 		-- A collapsed quest sidebar or a maximized map hides QuestMapFrame and so the panel inside it. Bringing the
-		-- sidebar back from addon code taints the map, so the guide opens in its own window instead.
+		-- sidebar back from addon code taints the map, so opening the guide leaves the sidebar state alone.
 		if not QuestMapFrame:IsShown() then
-			ns.OpenWindow()
 			return
 		end
 		ShowGuide(true)

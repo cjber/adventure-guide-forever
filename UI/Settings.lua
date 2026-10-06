@@ -152,7 +152,6 @@ function ns.RegisterSettings()
 			"SETTINGS_GROUP_INTERFACE",
 			function(subcategory)
 				for _, initializer in ipairs({
-					Checkbox(subcategory, "floatWindow", ns.L.SETTING_FLOAT_WINDOW, ns.L.SETTING_FLOAT_WINDOW_TOOLTIP),
 					Checkbox(
 						subcategory,
 						"suggestCompanions",

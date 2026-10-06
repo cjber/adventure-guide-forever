@@ -149,19 +149,12 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 		end
 		return copy
 	end
-	-- The story's log quests stay on it; one taken on its zone since, or finished for a lap the story doesn't draw yet,
-	-- joins carry until the full build.
-	local journeys, dismissed, zone, told, drawn = {}, prefs.notInterested or {}, nil, {}, {}
+	-- Accepted quests remain available as one choice during combat too.
+	local journeys, dismissed, zone = {}, prefs.notInterested or {}, nil
 	for _, journey in ipairs(last.journeys) do
 		local kept = journey.kind ~= "carry" and not dismissed[journey.key] and Retained(journey, Prune) or nil
 		if kept and kept.kind == "story" then
 			zone = kept.zone
-			told = kept.holds or told
-			for _, step in ipairs(kept.steps) do
-				for _, id in ipairs(step.handins or (step.kind ~= "trainer" and step.quests) or NONE) do
-					drawn[id] = true
-				end
-			end
 		end
 		journeys[#journeys + 1] = kept
 	end
@@ -169,9 +162,7 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 	local added = Added(data, player, completed, log, prefs, function(quest)
 		return not story(quest)
 	end)
-	local carry = Carry(data, player, completed, log, Ready(data, log), prefs, mapName, function(id)
-		return not told[id] or (log[id].complete and not drawn[id])
-	end, added)
+	local carry = Carry(data, player, completed, log, Ready(data, log), prefs, mapName, added)
 	if carry then
 		table.insert(journeys, (journeys[1] and journeys[1].kind == "story") and 2 or 1, carry)
 	end

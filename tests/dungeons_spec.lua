@@ -18,7 +18,7 @@ local data = {
 }
 local journey = { key = "dungeon:36", instance = 36 }
 local function outline(done, steps)
-	return table.concat(ns.Window.GuideOutline(data, player, done or {}, journey, steps or {}), ",")
+	return table.concat(ns.Widgets.GuideOutline(data, player, done or {}, journey, steps or {}), ",")
 end
 equal(outline(), "1,2,3", "full prerequisite outline precedes dungeon quest")
 equal(outline({ [1] = true }), "2,3", "completed prerequisite omitted")
@@ -121,9 +121,7 @@ ns.DungeonLoot.Bosses(36)
 equal(attempts, 1, "disabled module load is not retried on every refresh")
 
 local ui = harness.load({ charDB = { journey = "dungeon:389", dungeons = true } })
-ui.ns.OpenWindow()
+ui.ns.OpenPanel()
 ui.flush()
 equal(#ui.errors, 0, "dungeon journey opens without Classic guide or AtlasLoot")
-equal(#ui.ns.Window.Tabs(), 3, "three top-level tabs")
-equal(ui.ns.Window.Tabs()[1].label, "Journey", "default tab is Journey")
 print(("dungeons_spec: %d checks passed"):format(checks))

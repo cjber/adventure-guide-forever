@@ -2,8 +2,8 @@
 local _, ns = ...
 local L = ns.L
 
--- What the map panel's overview and the Adventure Guide window share (docs/design.md §2.2): the kind icons, a card's
--- lines and progress, the first card and the others, and what a click or hover on a card or a step does. Both draw
+-- The map guide's shared presentation (docs/design.md §2.2): the kind icons, a card's
+-- lines and progress, and what a click or hover on a card or a step does. Rows draw
 -- from the same route and choose through the same ns.Choose, so they never disagree.
 ---@class AGFOverview
 local Overview = {}
@@ -31,8 +31,8 @@ local KIND_ICONS = {
 
 ---@type AGFJourneyGroup[]
 local GROUPS = {
-	{ key = "continue", label = L.GROUP_CONTINUE, open = true },
-	{ key = "zones", label = L.GROUP_ZONES, open = true },
+	{ key = "continue", label = L.GROUP_CONTINUE, open = false },
+	{ key = "zones", label = L.GROUP_ZONES, open = false },
 	{ key = "dungeons", label = L.GROUP_DUNGEONS, open = false },
 	{ key = "battlegrounds", label = L.GROUP_BATTLEGROUNDS, open = false },
 }
@@ -56,7 +56,7 @@ end
 ---@param key AGFJourneySection
 ---@return boolean
 local function Collapsed(key)
-	local saved = ns.Prefs().collapsedGroups or {}
+	local saved = ns.Prefs().previewGroups or {}
 	if saved[key] ~= nil then
 		return saved[key] == true
 	end
@@ -72,27 +72,8 @@ end
 ---@param key AGFJourneySection
 local function ToggleCollapsed(key)
 	local prefs = ns.Prefs()
-	prefs.collapsedGroups = prefs.collapsedGroups or {}
-	prefs.collapsedGroups[key] = not Collapsed(key)
-end
-
--- The section the route's own card sits in, so its header stays open.
----@param route AGFRoute
----@return AGFJourneySection?
-local function ActiveSection(route)
-	for _, journey in ipairs(route.journeys) do
-		if journey.key == route.journey then
-			return journey.section
-		end
-	end
-end
-
--- Whether the route's own card sits under `key`: that header cannot fold, so the player never loses the card.
----@param route AGFRoute
----@param key AGFJourneySection
----@return boolean
-local function Held(route, key)
-	return ActiveSection(route) == key
+	prefs.previewGroups = prefs.previewGroups or {}
+	prefs.previewGroups[key] = not Collapsed(key)
 end
 
 -- Whether `journey` is on show in the overview: every card while the player follows one, and every card of an open
@@ -102,7 +83,19 @@ end
 ---@param journey AGFJourney
 ---@return boolean
 local function Open(route, journey)
-	return route.chosen or Held(route, journey.section) or not Collapsed(journey.section)
+	if route.chosen or not Collapsed(journey.section) then
+		return true
+	end
+	local limit, position = journey.section == "continue" and 2 or 1, 0
+	for _, candidate in ipairs(route.journeys) do
+		if candidate.section == journey.section then
+			position = position + 1
+			if candidate.key == journey.key then
+				return position <= limit
+			end
+		end
+	end
+	return false
 end
 
 -- A step on the world map: the map opens when it is closed, then turns to the step and flashes its ring.
@@ -449,7 +442,7 @@ local function CardClick(self, mouseButton)
 	if self.state == "chosen" and ns.Guidance.Status() == "paused" then
 		ns.StartRoute()
 	else
-		-- An open map turns to the journey; the window's cards leave a closed map closed.
+		-- Turn the map to the selected journey.
 		if WorldMapFrame:IsShown() then
 			C_Map.OpenWorldMap(journey.map)
 		end
@@ -619,26 +612,6 @@ local function Counts(journey)
 	return #counts > 0 and table.concat(counts, COUNT_GAP) or journey.subline
 end
 
--- The overview's split with no card chosen: the card the route follows, else the first, and the others in order.
----@param route AGFRoute
----@return AGFJourney? first
----@return AGFJourney[] others
-local function Split(route)
-	local first, others = nil, {}
-	for _, journey in ipairs(route.journeys) do
-		if not first and journey.key == route.journey then
-			first = journey
-		else
-			others[#others + 1] = journey
-		end
-	end
-	-- The route follows the first card while none is chosen; one it does not name is the first all the same.
-	if not first and #others > 0 then
-		first = table.remove(others, 1)
-	end
-	return first, others
-end
-
 -- The Journeys renown bar is 18 tall at its own scale, too tall for a card: its frame is scaled to draw it 7 tall.
 -- Its art (335x18) is a three-slice at that scale, its caps the atlas's own 11-pixel slice margins round the rounded
 -- ends; the fill is the whole bar's width of its own art, clipped to the progress. The fill runs dark green, then
@@ -696,7 +669,7 @@ local function SetBar(bar, x, y, width, value)
 end
 
 -- A rebuild redraws a hovered card's tooltip only while the card is on screen and the tooltip still up: a card that
--- closed with the map or window has no OnLeave to clear its ownership, and redrawing it would leave the tooltip
+-- closed with the map has no OnLeave to clear its ownership, and redrawing it would leave the tooltip
 -- floating where the card was.
 ---@param card AGFCardButton
 local function RefreshCardTooltip(card)
@@ -718,53 +691,6 @@ local function HideTooltipWithin(root)
 		end
 		owner = owner:GetParent()
 	end
-end
-
--- How many cards each open group shows when `slots` cards fit the panel: one each, then the spare slots dealt a card
--- at a time down the groups that still hold more, so every header stays in sight and the rest is a page turn away.
----@param counts integer[] each open group's cards
----@param slots integer
----@return integer[]
-local function Fit(counts, slots)
-	local per, left = {}, slots
-	for index = 1, #counts do
-		per[index], left = 1, left - 1
-	end
-	local dealt = true
-	while left > 0 and dealt do
-		dealt = false
-		for index, count in ipairs(counts) do
-			if left > 0 and per[index] < count then
-				per[index], left, dealt = per[index] + 1, left - 1, true
-			end
-		end
-	end
-	return per
-end
-
--- The page the player turned each group to, while the guide stays open: a page is only where they are looking.
----@type table<string, integer>
-local turned = {}
-
--- `key`'s page of `pages`, kept in range as its cards come and go: the one the player turned to, else `first`.
----@param key AGFJourneySection
----@param pages integer
----@param first integer
----@return integer
-local function Page(key, pages, first)
-	return math.max(1, math.min(turned[key] or first, pages))
-end
-
--- The guide opened: every group starts again from its first page, or the one holding its new card.
-local function ResetPages()
-	turned = {}
-end
-
----@param key AGFJourneySection
----@param by integer
----@param page integer the page it shows now
-local function Turn(key, by, page)
-	turned[key] = page + by
 end
 
 -- A card's levels, in the colour the game gives a quest of that level: a zone's or dungeon's range, a battleground's
@@ -803,17 +729,12 @@ function Overview.VisitWarning(journey, player)
 end
 
 Overview.KIND_ICONS = KIND_ICONS
-Overview.Fit = Fit
-Overview.Page = Page
-Overview.Turn = Turn
-Overview.ResetPages = ResetPages
 Overview.Levels = Levels
 Overview.GROUPS = GROUPS
 Overview.InGroup = InGroup
 Overview.Collapsed = Collapsed
 Overview.ToggleCollapsed = ToggleCollapsed
 Overview.Open = Open
-Overview.Held = Held
 Overview.SetVerbIcon = SetVerbIcon
 Overview.CreateBadge = CreateBadge
 Overview.StepMenu = StepMenu
@@ -836,5 +757,4 @@ Overview.DropLine = DropLine
 Overview.Progress = Progress
 Overview.IconStep = IconStep
 Overview.Stops = Stops
-Overview.Split = Split
 Overview.Counts = Counts

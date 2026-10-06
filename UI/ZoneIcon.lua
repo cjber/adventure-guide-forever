@@ -73,8 +73,9 @@ end
 ---@param span number
 ---@param tall number
 local function Fill(icon, map, base, overlays, x, y, span, tall)
-	local left = math.min(math.max(x * ART_WIDTH - span / 2, EDGE), ART_WIDTH - EDGE - span)
-	local top = math.min(math.max(y * ART_HEIGHT - tall / 2, EDGE), ART_HEIGHT - EDGE - tall)
+	local left = span >= ART_WIDTH and 0 or math.min(math.max(x * ART_WIDTH - span / 2, EDGE), ART_WIDTH - EDGE - span)
+	local top = tall >= ART_HEIGHT and 0
+		or math.min(math.max(y * ART_HEIGHT - tall / 2, EDGE), ART_HEIGHT - EDGE - tall)
 	local key = ("%d:%.1f:%.1f:%.1f:%.1f:%.1f"):format(map, left, top, span, tall, icon.width)
 	if key == icon.key then
 		return

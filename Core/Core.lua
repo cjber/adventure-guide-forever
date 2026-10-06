@@ -9,7 +9,6 @@ ns.TITLE = L.TITLE
 ---@type table<string, boolean|number>
 local DEFAULTS = {
 	showTracker = true,
-	floatWindow = false,
 	stepSound = true,
 	trainingReminders = false,
 	maxQuestLevelOffset = 2,
@@ -52,7 +51,7 @@ local PREFS_DEFAULTS = {
 	notInterested = {},
 	-- The overview's quest log headers this character collapsed, by group key (Overview.GROUPS); an absent key
 	-- uses the group's own default.
-	collapsedGroups = {},
+	previewGroups = {},
 	-- Quests added to the route with a shift-click: quest ID -> true.
 	pinned = {},
 }
@@ -85,6 +84,7 @@ local function LoadDB()
 			loaded[key] = value
 		end
 	end
+	loaded.window, loaded.floatWindow = nil, nil
 	loaded.maxQuestLevelOffset = QuestLevelOffset(loaded.maxQuestLevelOffset)
 	AdventureGuideForeverDB = loaded
 	db = loaded
@@ -230,28 +230,12 @@ function ns.SetSetting(key, value)
 		return
 	end
 	db[key] = key == "maxQuestLevelOffset" and QuestLevelOffset(value) or value
-	if key == "floatWindow" then
-		ns.Window.ApplyMode()
-	end
 	-- Wandering from now: what Go started stops, as the player's Stop would.
 	if key == "wanderer" and value then
 		ns.Guidance.Cancel()
 	end
 	-- Rebuilds the route (cheap) and wakes listeners (Panel/Pins/Tracker) to redraw with the new setting.
 	ns.Invalidate()
-end
-
--- The Adventure Guide window's own account-wide state (Window.lua): where it was left, its tab, and whether the
--- default key was offered. Not a setting: nothing rebuilds when it changes.
----@return AGFWindowDB
-function ns.WindowDB()
-	if not db then
-		return {}
-	end
-	if type(db.window) ~= "table" then
-		db.window = {}
-	end
-	return db.window
 end
 
 ---@return AGFPrefs
@@ -906,8 +890,12 @@ SlashCmdList.ADVENTUREGUIDEFOREVER = function(msg)
 		ns.Print(ns.TrackerHost.Debug())
 	elseif command == "travel" then
 		ns.Print(ns.Guidance.Debug())
-	elseif command == "" or command == "window" then
-		ns.OpenWindow()
+	elseif command == "" then
+		if ns.OpenPanel then
+			ns.OpenPanel()
+		else
+			C_Map.OpenWorldMap()
+		end
 	else
 		ns.Print(L.HELP_OPEN)
 		ns.Print(L.HELP_AUDIT)
@@ -916,14 +904,8 @@ SlashCmdList.ADVENTUREGUIDEFOREVER = function(msg)
 	end
 end
 
--- Left-click toggles the window; any other click opens the guide on the world map.
----@param _ string the addon's name
----@param mouseButton? string
-function AdventureGuideForever_OnAddonCompartmentClick(_, mouseButton)
-	if mouseButton == nil or mouseButton == "LeftButton" then
-		ns.ToggleWindow()
-		return
-	end
+-- Open the guide on the world map.
+function AdventureGuideForever_OnAddonCompartmentClick()
 	if ns.OpenPanel then
 		ns.OpenPanel()
 	else

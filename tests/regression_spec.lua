@@ -152,40 +152,6 @@ test("town tracker does not duplicate detailed giver rows", function()
 	eq(block.lines[1], step.reason, "meaningful story reason remains beside the checklist")
 end)
 
-test("PvP progress refreshes with unchanged rewards", function()
-	local h = harness.load({
-		rank = {
-			info = { renownLevel = 3, renownReputationEarned = 1200, renownLevelThreshold = 3000, maxLevel = 14 },
-			rewards = { [6] = { { description = "Tabard" } } },
-		},
-	})
-	h.ns.OpenWindow()
-	h.flush()
-	local window = h.G.AdventureGuideForeverWindow
-	h.ns.Window.SelectActivity("pvp")
-	h.flush()
-	for _, event in ipairs({ "PLAYER_PVP_RANK_CHANGED", "MAJOR_FACTION_RENOWN_LEVEL_CHANGED", "UPDATE_FACTION" }) do
-		h.rank.info.renownReputationEarned = h.rank.info.renownReputationEarned + 100
-		if event == "MAJOR_FACTION_RENOWN_LEVEL_CHANGED" then
-			h.rank.info.renownLevel = 4
-		end
-		h.fire(event, 2800)
-		h.flush()
-		local text = h.ns.L.PVP_RANK_POINTS:format(h.rank.info.renownReputationEarned, 3000)
-		local found, rank = false, false
-		for _, entry in ipairs(h.ns.DumpLayout(window, h.Describe)) do
-			found = found or entry.text == text
-			rank = rank or entry.text == h.ns.L.PVP_RANK:format(h.rank.info.renownLevel)
-		end
-		eq(found, true, event .. " updates points")
-		eq(rank, true, event .. " updates rank")
-	end
-	window:Hide()
-	for _, event in ipairs({ "PLAYER_PVP_RANK_CHANGED", "MAJOR_FACTION_RENOWN_LEVEL_CHANGED", "UPDATE_FACTION" }) do
-		eq(window.events[event], nil, "hidden window releases " .. event)
-	end
-end)
-
 test("skipped giver can be shown again", function()
 	local h = harness.load({
 		charDB = { journey = "zone:1413" },

@@ -409,23 +409,6 @@ def known_frames(rects):
 
 # ---------------------------------------------------------------------------------------------- the scenes
 
-WINDOW = "AdventureGuideForeverWindow"
-WINDOW_SIZE = (800, 496)  # Window.lua's WIDTH and HEIGHT
-WINDOW_MARGIN = 20  # the metal corners overhang the frame by up to 16
-WINDOW_TABS = 30  # the tabs hang below the frame
-WINDOWS = (
-    "dungeons",
-    "window",
-    "window_activities",
-    "window_professions",
-    "window_pvp",
-    "window_completion",
-    "window_missing",
-    "window_today",
-    "window_context_menu",
-    "window_full_guide",
-    "window_order",
-)
 PLAYER = {"x": 0.52, "y": 0.30}  # tests/harness.lua's player position in The Barrens
 
 
@@ -484,13 +467,10 @@ def manifest(paths):
 
 
 DEMO_SIZE = (960, 640)  # the GIF's pixels: the README shows it at 640 wide, so text stays sharp on a 1.5x screen
-DEMO_SCENES = (  # (image, seconds held): pick a journey, see its route, then the window's tabs
+DEMO_SCENES = (  # (image, seconds held): pick a journey, see its route, then its map route
     ("panel", 1.2),
     ("chosen", 1.8),
     ("map", 1.6),
-    ("window", 1.2),
-    ("window_professions", 1.0),
-    ("window_completion", 1.4),
 )
 DEMO_FADE = (4, 75)  # crossfade frames and milliseconds per frame
 DEMO_LIMIT = 3_000_000
@@ -498,7 +478,7 @@ DEMO_LIMIT = 3_000_000
 
 def demo(ui, images):
     """docs/screenshots/demo.gif: the stills above in order, each fitted to one frame. Two stills of the same frame
-    (the map before and after choosing, the window's tabs) crossfade, so only the part that changes moves and the
+    (the map before and after choosing, the map route) crossfade, so only the part that changes moves and the
     GIF stores just that; the others cut. Holds are single long frames on one shared palette, so two runs match."""
     width, height = DEMO_SIZE
     stills = []
@@ -540,9 +520,9 @@ def render():
         print(f"warning: Pillow {version}, not the pinned {PILLOW}: the PNGs may not match byte for byte")
     ui = drawing.wm.Ui(scale=SCALE)
     _, frame = map_frame(ui, drawing.wm.Image.new("RGBA", (1002, 668)), True)
-    known = known_frames(frame) | {WINDOW: (WINDOW_MARGIN, WINDOW_MARGIN, *WINDOW_SIZE)}
+    known = known_frames(frame)
     data, rects = layout_pass(
-        ui, ("panel", "journeys", "journeys_four", "journeys_overflow", "search", "story_complete", *WINDOWS), known
+        ui, ("panel", "journeys", "journeys_four", "journeys_overflow", "search", "story_complete"), known
     )
     images = {}
 
@@ -613,13 +593,6 @@ def render():
     # A right-click on the block header: Blizzard_Menu opens the menu with its TOPLEFT at the cursor.
     fx, fy, _, _ = menu_rects["menu"]
     images["menu"] = drawing.wm.scene(ui, [(canvas, 0, 0), (menu, bx + 60 - fx, by + 8 - fy)])
-
-    # The Adventure Guide window (docs/design.md §2.19) on each of its tabs.
-    for scene in WINDOWS:
-        width, height = WINDOW_SIZE
-        canvas = ui.canvas(width + 2 * WINDOW_MARGIN, height + 2 * WINDOW_MARGIN + WINDOW_TABS)
-        Layout(data[scene]["layout"], rects[scene]).draw(canvas)
-        images[scene] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     canvas = ui.canvas(400, 122)
     Layout(data["story_complete"]["layout"], rects["story_complete"]).draw(canvas)
