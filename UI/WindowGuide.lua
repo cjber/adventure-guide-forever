@@ -1,6 +1,8 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 local Window, L = ns.Window, ns.L
+---@type Button
+local start
 local PAGE_SIZE, ROW_HEIGHT, ROW_PITCH = 10, 32, 34
 
 -- A zone catalogue, not a second eligibility policy: only the planner supplies actionable steps.
@@ -153,6 +155,7 @@ end
 ---@param parent Frame
 local function Build(parent)
 	guide = CreateFrame("Frame", "AdventureGuideForeverFullGuide", parent)
+	guide:Hide()
 	guide:SetAllPoints(parent)
 	guide:SetFrameLevel(parent:GetFrameLevel() + 20)
 	guide:EnableMouse(true)
@@ -161,7 +164,7 @@ local function Build(parent)
 	background:SetColorTexture(0.025, 0.02, 0.015, 1)
 	heading = Window.CreateSectionHeader(guide, "")
 	heading:SetPoint("TOPLEFT", Window.LEFT, -14)
-	heading:SetWidth(Window.INSET_WIDTH - 180)
+	heading:SetWidth(Window.INSET_WIDTH - 300)
 	local back = CreateFrame("Button", nil, guide, "UIPanelButtonTemplate") --[[@as Button]]
 	back:SetSize(112, 22)
 	back:SetPoint("TOPRIGHT", -Window.RIGHT, -14)
@@ -169,6 +172,33 @@ local function Build(parent)
 	back:SetScript("OnClick", function()
 		guide:Hide()
 	end)
+	start = CreateFrame("Button", "AdventureGuideForeverGuideStart", guide, "UIPanelButtonTemplate") --[[@as Button]]
+	start:SetSize(112, 22)
+	start:SetPoint("TOPRIGHT", -Window.RIGHT - 120, -14)
+	start:SetText(L.START_ADVENTURE)
+	start:SetScript("OnClick", function()
+		if
+			not target
+			or not start:IsEnabled()
+			or InCombatLockdown()
+			or not ns.RouteSettled()
+			or ns.Setting("wanderer")
+			or ns.Session.Info().pending
+		then
+			return
+		end
+		for _, journey in ipairs(ns.Route().journeys) do
+			if journey.key == target.key then
+				if ns.Route().chosen and ns.Route().journey == target.key then
+					ns.StartRoute()
+				else
+					ns.Choose(target.key, true)
+				end
+				return
+			end
+		end
+	end)
+
 	for index = 1, PAGE_SIZE do
 		local row = Window.CreateStepRow(guide, ROW_HEIGHT) --[[@as AGFGuideRow]]
 		row:SetWidth(Window.INSET_WIDTH - Window.LEFT - Window.RIGHT)
@@ -190,7 +220,16 @@ local function Build(parent)
 		page = page + 1
 		Refresh()
 	end)
+	guide:SetScript("OnEvent", function()
+		Refresh()
+	end)
+	guide:HookScript("OnShow", function()
+		guide:RegisterEvent("PLAYER_REGEN_DISABLED")
+		guide:RegisterEvent("PLAYER_REGEN_ENABLED")
+	end)
 	guide:HookScript("OnHide", function()
+		guide:UnregisterEvent("PLAYER_REGEN_DISABLED")
+		guide:UnregisterEvent("PLAYER_REGEN_ENABLED")
 		GameTooltip_Hide()
 	end)
 	parent:HookScript("OnHide", function()
@@ -224,6 +263,13 @@ Refresh = function()
 	local pages
 	page, pages = Window.ClampPage(page, total, PAGE_SIZE)
 	heading.Label:SetText(target.title)
+	start:SetEnabled(
+		ns.RouteSettled()
+			and not InCombatLockdown()
+			and not ns.Setting("wanderer")
+			and not ns.Session.Info().pending
+			and ns.Model.ValidPlace(steps[1])
+	)
 	count:SetText(L.GUIDE_PAGE:format(page, pages, #steps, #future))
 	previous:SetEnabled(page > 1)
 	nextPage:SetEnabled(page < pages)

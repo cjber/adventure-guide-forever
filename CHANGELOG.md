@@ -11,10 +11,13 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **More useful choices.** Suitable dungeons appear together, including Deadmines and Wailing Caverns. A quest visit in a zone above your level follows normal questing zones and explains the level range.
+- **Smoother rebuilds.** Route planning checks its frame budget between adventure cards and presents only the finished result. The cold QuestieDB catalogue also uses shorter slices; completed routes remain atomic.
+- **Three guide pages.** Journeys holds your adventure and useful suggestions, Activities groups dungeon, profession and PvP browsing, and Progress shows completion. Old page selections carry across.
+- **Stories worth finishing.** A proven final story hand-in shows a named completion popup once per character, including with the tracker hidden.
 - **A clearer story tracker.** Your chosen journey is the section heading, with action icons for the current stop and up to two upcoming stops. The preview follows your current route position, and a ready hand-in no longer repeats its status beneath the action.
 - **Class spell training is optional.** Spell reminders and automatic trainer visits are off by default. Enable them in the Route settings when you want them; talent and profession hints keep working independently.
-
-- **A place to decide what to do next.** The Next page brings your journey, training and profession hints together. Choose a focus, see why each suggestion fits, and start its route or browse the other things you can do. Changing focus leaves your current journey intact.
+- **Useful suggestions beside your journey.** Journeys brings your adventure, training and profession hints together. See why each suggestion fits, start its route or browse other things you can do. Browsing leaves your current journey intact.
 - **Training hints follow you around town.** Moving between city districts refreshes the trainer and profession hints without rebuilding your quest route. A hint dismissed or moved since it was drawn cannot start navigation to its old destination.
 - **Game data for Forever build 1.60.1.70235, tested against QuestieDB 1.0.5.** The new QuestieDB lists Forever's added quests in Westfall, Moonglade's Great Cat Spirit and more, and when your quest log is full a route that leaves out a town's quest no longer drops the walk back to hand in the rest.
 

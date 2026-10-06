@@ -308,30 +308,40 @@ local function Pickups(data, player, completed, log, ready, eligible, belongs, k
 		kept and lead or nil
 end
 
--- The dungeon card's instance: while dungeons are `open` (on, or no next zone), the party instance
--- with the most quests the player can take now (the lowest Map.ID on a tie); the `chosen` instance instead while it has
--- any, so a choice never moves to another dungeon. Raids are never offered. Nil when none has a quest.
+-- Offer actionable dungeons, retaining a chosen instance after the toggle changes.
 ---@param open boolean
----@param chosen? integer
----@return integer?
-local function BestDungeon(data, eligible, prefs, open, chosen)
-	if not (open and data.instances) then
-		return nil
+---@return integer[] instances, table<integer,integer> counts, table<integer,integer> opened
+local function AllDungeons(data, eligible, prefs, open, chosen)
+	if not (data.instances and (open or chosen)) then
+		return {}, {}, {}
 	end
-	local counts, best, dismissed = {}, nil, prefs.notInterested or {}
+	local counts, openedMap, dismissed = {}, {}, prefs.notInterested or {}
 	for _, id in ipairs(eligible) do
 		local quest = data.quests[id]
 		local instance = not quest.raid and quest.dungeon
-		if instance and data.instances[instance] and not dismissed["dungeon:" .. instance] then
+		if
+			instance
+			and data.instances[instance]
+			and (open or instance == chosen)
+			and not dismissed["dungeon:" .. instance]
+		then
 			counts[instance] = (counts[instance] or 0) + 1
+			if not openedMap[instance] or quest.min > openedMap[instance] then
+				openedMap[instance] = quest.min
+			end
 		end
 	end
-	for instance, count in pairs(counts) do
-		if not best or count > counts[best] or (count == counts[best] and instance < best) then
-			best = instance
-		end
+	local instances = {}
+	for instance in pairs(counts) do
+		instances[#instances + 1] = instance
 	end
-	return chosen and counts[chosen] and chosen or best
+	table.sort(instances, function(a, b)
+		if counts[a] ~= counts[b] then
+			return counts[a] > counts[b]
+		end
+		return a < b
+	end)
+	return instances, counts, openedMap
 end
 
 -- The quests a dungeon card holds: its instance's, never a raid's.
@@ -408,7 +418,15 @@ local function WithInstances(data, player, completed, log, index, eligible)
 			id, alreadyEligible, eligibleIndex, dungeonIndex = eligibleID, true, eligibleIndex + 1, dungeonIndex + 1
 		end
 		local quest = data.quests[id]
-		if alreadyEligible or (quest.dungeon and Eligible(data, player, completed, log, id, index.groups)) then
+		if
+			alreadyEligible
+			or (
+				quest.dungeon
+				and not Dropped(id)
+				and not Hard(quest, player)
+				and Eligible(data, player, completed, log, id, index.groups)
+			)
+		then
 			pool[#pool + 1] = id
 		end
 	end
@@ -714,11 +732,12 @@ local function Battleground(data, player, prefs, mapName)
 	end
 end
 
--- The full build is sliced across frames so no frame exceeds the client's budget (WFA-13): when Core runs the rebuild
--- in a coroutine, Model.Journeys yields every this many card routes. The caller commits the route only when the last
--- slice ends, so a partial build is never visible. Outside a coroutine (specs, ns.Route's synchronous path) nothing
--- yields and the build is one frame.
-local YIELD_EVERY = 4
+-- Each card has its own frame in Core's rebuild; synchronous callers never yield.
+local function Yield()
+	if coroutine.running() then
+		coroutine.yield()
+	end
+end
 
 ---@param mapName? AGFMapName the client's (localised) name for a map; the data's English otherwise
 ---@param instanceName? fun(id: integer): string? the client's name for an instance Map.ID; the data's otherwise
@@ -732,6 +751,8 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	local index, L = Index(data), ns.L
 	local zones, eligible = Choices(data, player, completed, log, index, prefs, Far(data, player))
 	local ready = Ready(data, log)
+	-- Keep eligibility and route construction in separate frames.
+	Yield()
 	-- The offer rules below only gate new choices (docs/design.md §2.10): a chosen zone or dungeon is built while it
 	-- has a step, whatever would offer it now.
 	local chosen = prefs.journey or ""
@@ -744,17 +765,6 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	end
 	chosenZone = Open(chosenZone) and chosenZone or nil
 	local journeys = {}
-	-- One slice of the build per this many cards when running inside Core's rebuild coroutine (see YIELD_EVERY).
-	local cardsSinceYield = 0
-	local function YieldCards()
-		if coroutine.running() then
-			cardsSinceYield = cardsSinceYield + 1
-			if cardsSinceYield >= YIELD_EVERY then
-				cardsSinceYield = 0
-				coroutine.yield()
-			end
-		end
-	end
 	-- The zone the story led with stays the lead while it still has a step: a player finishing a zone is not
 	-- shuffled to the zone the ranking likes a little better this level. The zone it just left waits behind every
 	-- other zone, so the story never flips back to it (A, B, A). The player's own choice of another zone, or
@@ -824,6 +834,8 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	journeys[#journeys + 1] = Carry(data, player, completed, log, ready, prefs, mapName, function(id)
 		return not holds[id]
 	end, added)
+	-- Story and carry routes can exhaust a frame before the alternative zones.
+	Yield()
 	-- Every zone with a useful pickup is an option, ranked for the player's level now.
 	-- The current story already has a card; chosen zones stay while they have a step.
 	local headed = chosenZone ~= zone and chosenZone or nil
@@ -861,7 +873,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 			if card then
 				headed, offered = headed or map, offered or mine
 			end
-			YieldCards()
+			Yield()
 		end
 	end
 	if chosenZone and chosenZone ~= zone and not offered then
@@ -887,11 +899,34 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 	local stranded = player.level >= player.maxLevel or not (headed or told)
 	local pool = (stranded and not prefs.dungeons) and WithInstances(data, player, completed, log, index, eligible)
 		or eligible
-	local instance = BestDungeon(data, pool, prefs, prefs.dungeons or stranded, chosenDungeon)
-	if instance then
-		Offer("dungeon", InDungeon(instance), function(quests)
-			return DungeonJourney(data, player, completed, log, pool, prefs, mapName, instanceName, instance, quests)
-		end, pool)
+	do
+		local dungeonInstances, dungeonCounts, dungeonOpened =
+			AllDungeons(data, pool, prefs, prefs.dungeons or stranded, chosenDungeon)
+		for _, inst in ipairs(dungeonInstances) do
+			local count, opened = dungeonCounts[inst], dungeonOpened[inst]
+			if opened then
+				diversions[#diversions + 1] = {
+					kind = "dungeon",
+					opened = opened,
+					instance = inst,
+					quests = count,
+					build = function()
+						return DungeonJourney(
+							data,
+							player,
+							completed,
+							log,
+							pool,
+							prefs,
+							mapName,
+							instanceName,
+							inst,
+							count
+						)
+					end,
+				}
+			end
+		end
 	end
 	-- A way into an instance: the chain the player can take up that goes inside, when stranded or chosen,
 	-- and not the one the story already leads with.
@@ -945,11 +980,17 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 		if a.opened ~= b.opened then
 			return a.opened > b.opened
 		end
-		return DIVERSION_ORDER[a.kind] < DIVERSION_ORDER[b.kind]
+		if a.kind ~= b.kind then
+			return DIVERSION_ORDER[a.kind] < DIVERSION_ORDER[b.kind]
+		end
+		if a.quests ~= b.quests then
+			return a.quests > b.quests
+		end
+		return a.kind == "dungeon" and a.instance < b.instance
 	end)
 	for _, diversion in ipairs(diversions) do
 		journeys[#journeys + 1] = diversion.build(diversion.quests)
-		YieldCards()
+		Yield()
 	end
 	for _, journey in ipairs(journeys) do
 		Summarise(journey --[[@as AGFJourney]])

@@ -435,11 +435,15 @@ end
 local delve = Choose("dungeon:36")
 delve.quests, delve.dungeons = false, true
 -- With no zone ahead and no story, dungeons off still leaves the dungeon card, not nothing.
-equal(Kinds(Model.Plan(halls, player, {}, {}, prefs()).journeys), "dungeon:48", "stranded: dungeons off, a card")
+equal(
+	Kinds(Model.Plan(halls, player, {}, {}, prefs()).journeys),
+	"dungeon:48 dungeon:36",
+	"stranded: dungeons off, actionable alternatives"
+)
 delve.journey = nil
 equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:48", "chosen: unchosen, the most quests")
 delve.journey = "dungeon:36"
-equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "chosen: the chosen instance stays")
+equal(Model.Plan(halls, player, {}, {}, delve).journey, "dungeon:36", "chosen: the chosen instance stays")
 -- Not interested in the busier instance: the other takes its card.
 delve.journey, delve.notInterested = nil, { ["dungeon:48"] = { title = "Many" } }
 equal(Model.Plan(halls, player, {}, {}, delve).journeys[2].key, "dungeon:36", "not interested: the next dungeon")

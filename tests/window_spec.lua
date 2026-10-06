@@ -38,6 +38,12 @@ local Texts = dofile("tests/ui_helpers.lua").Texts
 local function Open(h)
 	h.ns.OpenWindow()
 	h.flush()
+	local header = h.Find(function(frame)
+		return frame.Label and frame.Label:GetText() == h.ns.L.OTHER_ADVENTURES and frame.Open ~= nil
+	end)[1]
+	if header and not header.Open then
+		h.Click(header)
+	end
 	return h.G.AdventureGuideForeverWindow
 end
 
@@ -52,20 +58,16 @@ do
 	for index, tab in ipairs(h.ns.Window.Tabs()) do
 		keys[index] = tab.key
 	end
-	equal(
-		table.concat(keys, ","),
-		"journeys,professions,pvp,completion,dungeons,next",
-		"registry: one entry a tab, in TOC order"
-	)
+	equal(table.concat(keys, ","), "journeys,activities,progress", "registry: one entry a tab, in TOC order")
 	local window = Open(h)
 	clean(h, "open")
 	equal(window:IsShown(), true, "open: shown")
 	equal(window.stockTemplate, "PortraitFrameTemplate", "a portrait frame")
 	equal(window.TitleText:GetText(), h.ns.TITLE, "its title")
 	equal(h.G.UISpecialFrames[1], "AdventureGuideForeverWindow", "Escape closes it")
-	equal(#window.Tabs, 6, "a tab button a registered tab")
+	equal(#window.Tabs, 3, "a tab button a registered tab")
 	equal(window.Tabs[1]:GetText(), L.TAB_JOURNEYS, "tab 1 label")
-	equal(window.Tabs[2]:GetText(), L.TAB_PROFESSIONS, "tab 2 label")
+	equal(window.Tabs[2]:GetText(), L.TAB_ACTIVITIES, "tab 2 label")
 	local point, relativeTo, relativePoint, x, y = window.Tabs[1]:GetPoint(1)
 	equal(
 		("%s %s %s %d %d"):format(point, relativeTo:GetName(), relativePoint, x, y),
@@ -77,7 +79,7 @@ do
 	equal(window.Tabs[1]:IsEnabled(), false, "the selected tab is disabled, as PanelTemplates_SelectTab does")
 	h.Click(window.Tabs[2])
 	equal(window.selectedTab, 2, "a click selects Professions")
-	equal(h.G.AdventureGuideForeverDB.window.tab, "professions", "the tab is saved")
+	equal(h.G.AdventureGuideForeverDB.window.tab, "activities", "the tab is saved")
 	clean(h, "tabs")
 
 	-- The window remembers where it was left, and its tab, after a reload.
@@ -258,14 +260,10 @@ do
 	local steps = h.Find(function(frame)
 		return frame:IsVisible() and frame.Kind ~= nil and frame.step ~= nil
 	end)
-	equal(#steps, 1, "the real town checklist fills the available step area")
+	equal(#steps, math.min(3, #route.steps), "current step and two upcoming steps")
 	equal(steps[1].step, route.steps[1], "the visible row is the route head")
 	equal(texts[route.steps[1].title], 2, "the head's title")
-	equal(texts[route.steps[1].checklist[1].text], 1, "its first giver appears below it")
-	for _, aside in ipairs(ns.Asides.All()) do
-		equal(texts[aside.text], 1, "Today: " .. aside.key)
-	end
-	equal(#ns.Asides.All() >= 2, true, "Today: the trainer and the talents")
+
 	local player = ns.State.Player()
 	equal(window.Subtitle:GetText(), L.OVERVIEW_WHERE:format("The Barrens", player.level), "where and what level")
 	-- A map the client has no name for takes the data's, a zone's or else a map's (Orgrimmar is only a map there).
@@ -281,12 +279,25 @@ do
 	window:Hide()
 	Open(h)
 
-	-- A grid card chooses its journey as the panel's does, and both redraw from the same route.
+	-- Browsing keeps the route; Start commits the inspected journey.
 	local card = h.Find(function(frame)
 		return frame:IsVisible() and frame.journey == others[1] and frame:GetParent() ~= nil and frame.Art ~= nil
 	end)[1]
 	equal(card ~= nil, true, "the first grid card")
+	local before = ns.Prefs().journey
 	h.Click(card)
+	h.flush()
+	equal(ns.Prefs().journey, before, "browsing preserves the choice")
+	h.combat = true
+	h.fire("PLAYER_REGEN_DISABLED")
+	equal(h.G.AdventureGuideForeverGuideStart:IsEnabled(), false, "guide start disabled when combat begins")
+	h.Click(h.G.AdventureGuideForeverGuideStart)
+	equal(ns.Prefs().journey, before, "combat leaves the inspected route unchosen")
+	h.combat = false
+	h.fire("PLAYER_REGEN_ENABLED")
+	equal(h.G.AdventureGuideForeverGuideStart:IsEnabled(), true, "guide start returns after combat")
+	h.Click(h.G.AdventureGuideForeverGuideStart)
+	h.G.AdventureGuideForeverFullGuide:Hide()
 	h.flush()
 	equal(ns.Prefs().journey, others[1].key, "the click chooses it")
 	equal(ns.Route().journey, others[1].key, "the route follows it")
@@ -366,7 +377,7 @@ end
 
 local function ProfessionsTab(h)
 	local window = Open(h)
-	h.Click(window.Tabs[2])
+	h.ns.Window.SelectActivity("professions")
 	return window
 end
 
@@ -386,7 +397,7 @@ for _, case in ipairs({
 	equal(h.ns.Integrations.SkillUpState(), case.state, case.label .. ": state")
 	equal(#h.ns.Integrations.Professions(), 0, case.label .. ": no professions")
 	local window = Open(h)
-	local tab = window.Tabs[2]
+	local tab = h.G.AdventureGuideForeverActivityprofessions
 	equal(tab.normalFont, "GameFontDisableSmall", case.label .. ": the label greyed")
 	equal(tab:IsEnabled(), true, case.label .. ": still clickable")
 	h.Hover(tab)
@@ -406,9 +417,9 @@ do
 	local ns, L = h.ns, h.ns.L
 	equal(ns.Integrations.SkillUpState(), "ready", "present: ready")
 	equal(#ns.Integrations.Professions(), 2, "present: both professions")
-	local window = ProfessionsTab(h)
+	ProfessionsTab(h)
 	clean(h, "present: open")
-	equal(window.Tabs[2].normalFont, "GameFontNormalSmall", "present: the label gold")
+	equal(h.G.AdventureGuideForeverActivityprofessions.normalFont, "GameFontNormalSmall", "present: the label gold")
 	local texts = Texts(h)
 	equal(texts.Leatherworking, 1, "present: the most actionable first")
 	equal(texts[L.PROFESSION_RANGE_TITLE:format(142, 150, "Journeyman")], 1, "present: rank to cap and title")

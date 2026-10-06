@@ -10,13 +10,9 @@ card (chosen) | zone:1440 | Ashenvale story | Chapter 1 of 11 | A chain begins w
   step 8 | town:1440:415 | Visit Astranaar: Pick up 4 | 1440 0.3467,0.4884 | Begins a new story
   step 9 | area:1008:4 | Complete objectives · The Zoram Strand | 1440 0.0720,0.1370 | after you pick it up | 87 yd | 1008/4
   step 10 | town:1440:415:2 | Turn in: The Zoram Strand | 1440 0.3467,0.4884 | Opens the next chapter here
-card | zone:1450 | Head to Moonglade | 3 quests near your level | Moonglade needs hands | map 1450
-  step 1 | town:1450:493 | Visit Moonglade: Pick up 3 | 1450 0.4400,0.7340 | 3 to pick up
 card | zone:1413 | Head to The Barrens | 7 quests near your level | - | map 1413
   step 1 | town:1413:382 | Pick up: Ignition | 1413 0.5652,0.0745 | near your level
   step 2 | town:1413:392 | Visit Ratchet: Pick up 6 | 1413 0.6237,0.3762 | 6 to pick up
-card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
-  step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level
 card | zone:1437 | Head to Wetlands | 11 quests near your level | - | map 1439
   step 1 | town:1439:442 | Pick up: Unrequited Love | 1439 0.3744,0.4184 | near your level
   step 2 | town:1437:150 | Visit Menethil Harbor: Pick up 5 | 1437 0.1090,0.5964 | 5 to pick up
@@ -55,3 +51,7 @@ card | zone:1426 | Head to Dun Morogh | 3 quests near your level | - | map 1426
   step 1 | town:1426:1537 | Pick up: Search for Incendicite | 1426 0.4962,0.4861 | near your level
   step 2 | town:1426:134 | Pick up: Old Ironforge Incursion | 1426 0.6484,0.5845 | near your level
   step 3 | town:1432:144 | Pick up: Stonegear's Search | 1432 0.3263,0.4974 | near your level
+card | zone:1450 | Head to Moonglade | 3 quests near your level | Moonglade needs hands | map 1450
+  step 1 | town:1450:493 | Visit Moonglade: Pick up 3 | 1450 0.4400,0.7340 | 3 to pick up
+card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
+  step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level

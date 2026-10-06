@@ -791,6 +791,17 @@ local function Levels(journey, level)
 	end
 end
 
+---@param journey AGFJourney
+---@param player? AGFPlayer
+---@return string?
+function Overview.VisitWarning(journey, player)
+	local zone = journey.zone and ns.Data.zones[journey.zone]
+	local step = journey.steps[1]
+	if zone and step and zone.min > (player or ns.State.Player()).level then
+		return L.QUEST_VISIT_WARNING:format(step.title, zone.min, zone.max)
+	end
+end
+
 Overview.KIND_ICONS = KIND_ICONS
 Overview.Fit = Fit
 Overview.Page = Page

@@ -48,10 +48,6 @@ card | zone:1439 | Head to Darkshore | 16 quests near your level | - | map 1453
 card | zone:1413 | Head to The Barrens | 7 quests near your level | Ratchet needs hands | map 1413
   step 1 | town:1413:392 | Visit Ratchet: Pick up 6 | 1413 0.6237,0.3762 | 6 to pick up
   step 2 | town:1413:382 | Pick up: Ignition | 1413 0.5652,0.0745 | near your level
-card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
-  step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level
-card | zone:1450 | Head to Moonglade | 3 quests near your level | Moonglade needs hands | map 1450
-  step 1 | town:1450:493 | Visit Moonglade: Pick up 3 | 1450 0.5621,0.3064 | 3 to pick up
 card | zone:1442 | Head to Stonetalon Mountains | 2 quests near your level | - | map 1442
   step 1 | town:1442:1076 | Pick up: Super Reaper 6000 | 1442 0.5899,0.6260 | near your level
   step 2 | town:1442:461 | Pick up: Gerenzo's Orders | 1442 0.7187,0.6000 | near your level
@@ -59,6 +55,10 @@ card | zone:1426 | Head to Dun Morogh | 3 quests near your level | - | map 1426
   step 1 | town:1426:1537 | Pick up: Search for Incendicite | 1426 0.4962,0.4861 | near your level
   step 2 | town:1426:134 | Pick up: Old Ironforge Incursion | 1426 0.6484,0.5845 | near your level
   step 3 | town:1432:144 | Pick up: Stonegear's Search | 1432 0.3263,0.4974 | near your level
+card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
+  step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level
+card | zone:1450 | Head to Moonglade | 3 quests near your level | Moonglade needs hands | map 1450
+  step 1 | town:1450:493 | Visit Moonglade: Pick up 3 | 1450 0.5621,0.3064 | 3 to pick up
 card | calling | Your calling | Chapter 1 of 5 | Your class trainer has a task: Yorus Barleybrew | map 1453
   step 1 | town:1453:0 | Pick up: Yorus Barleybrew | 1453 0.8055,0.5987 | Begins a new story
   step 2 | town:1433:69 | Pick up: The Rethban Gauntlet | 1433 0.2149,0.4472 | near your level

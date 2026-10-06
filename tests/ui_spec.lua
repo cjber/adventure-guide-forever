@@ -2621,7 +2621,8 @@ do
 	h = Load(false, { showTracker = false })
 	h.fire("QUEST_TURNED_IN", last)
 	h.flush()
-	equal(#h.sounds, 0, "fanfare: no sound without the tracker section")
+	equal(#h.sounds, 1, "fanfare: the story popup sounds with the tracker hidden")
+	equal(#h.fanfares, 0, "fanfare: no tracker glow when its section is hidden")
 end
 
 -- Chat copy comes from ns.L: an unknown command prints the three help lines, in order.
@@ -2898,7 +2899,7 @@ do
 	capped.ns.Invalidate()
 	capped.ns.OpenPanel()
 	capped.flush()
-	equal(#capped.ns.Route().journeys, 2, "guide: at the cap, never nothing")
+	equal(#capped.ns.Route().journeys, 5, "guide: at the cap, dungeon alternatives and a chain remain")
 	equal(Says(capped, "Blackrock Spire"), 1, "guide: the dungeon card, toggle off")
 	equal(Says(capped, capped.ns.L.JOURNEY_INTO:format("Scholomance")), 1, "guide: the way in, as a story")
 	equal(Says(capped, capped.ns.L.NO_JOURNEY), 0, "guide: no empty line")
@@ -3359,7 +3360,7 @@ do
 	equal(#headers, 3, label .. ": the dungeon group draws its header")
 	equal(headers[3].key, "dungeons", label .. ": after the zones")
 	equal(headers[3].Name:GetText(), L.GROUP_DUNGEONS, label .. ": its label")
-	equal(headers[3].Count:GetText(), L.GROUP_CARDS_ONE, label .. ": the count while collapsed, one card")
+	equal(headers[3].Count:GetText(), L.GROUP_CARDS:format(2), label .. ": the count while collapsed, both dungeons")
 	equal(CardsUnder().dungeons, nil, label .. ": and no card drawn")
 
 	-- The player's collapse is this character's, and it survives a reload; the count says what is folded away.

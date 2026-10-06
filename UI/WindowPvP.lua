@@ -3,19 +3,19 @@ local _, ns = ...
 local L = ns.L
 local Window = ns.Window
 
--- The window's PvP tab (docs/design.md §2.19): the character's PvP rank over the battleground queue's own art, its rank
--- points toward the next rank and the next reward, as the character pane's rank tab reads them (PvP.lua), and on the
+-- Activities shows battlegrounds and unfinished PvP quests. The featured battleground uses its own art.
+-- The honour progress points toward the next rank and reward, as the character pane reads them. On the
 -- right every battleground open at the player's level with the nearest battlemaster of their side. No honour
 -- conversion, match count or queue time: the client gives none of them.
 
-local CARD_WIDTH, REWARD_RING = Window.Cards.width, 26
+local CARD_WIDTH, REWARD_RING = Window.ACTIVITY_CARD_WIDTH, 26
 local ROWS, ROW_HEIGHT, ROW_PITCH, HEAD = 7, 44, 49, 18
 -- The rank badges (Interface\PvPRankBadges): PvPRank01 to 14 by rank, then the Alliance and Horde crests.
 local BADGE_FIRST, BADGE_ALLIANCE, BADGE_HORDE = 136766, 136781, 136782
 
 local TOP = Window.TOP
-local SIDE_LEFT = Window.Cards.sideLeft
-local SIDE_WIDTH = Window.Cards.sideWidth
+local SIDE_LEFT = Window.ACTIVITY_LEFT + Window.ACTIVITY_CARD_WIDTH + 12
+local SIDE_WIDTH = Window.INSET_WIDTH - Window.RIGHT - SIDE_LEFT
 
 ---@class AGFPvPCard : AGFWindowPictureCard
 ---@field Reward AGFRingIcon
@@ -77,7 +77,7 @@ end
 
 ---@param content Frame
 local function Build(content)
-	empty = Window.CreateEmpty(content, "pvpqueue-background-casual")
+	empty = Window.CreateEmpty(content, "pvpqueue-background-casual", Window.ACTIVITY_LEFT)
 	local picture, inner = Window.CreatePictureCard(content)
 	card = picture --[[@as AGFPvPCard]]
 	card.Reward = Window.CreateRingIcon(inner, REWARD_RING)
@@ -173,4 +173,4 @@ local function Refresh()
 	RefreshBattles(data.battlegrounds)
 end
 
-Window.AddTab({ key = "pvp", label = L.TAB_PVP, Build = Build, Refresh = Refresh, Muted = Muted })
+Window.AddActivity({ key = "pvp", label = L.TAB_PVP, Build = Build, Refresh = Refresh, Muted = Muted })

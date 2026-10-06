@@ -124,7 +124,7 @@ equal(view.selected, 3, "reopening returns to the session's floor")
 equal(view.floor.Text:GetText(), "Blackfathom Deeps C", "selector still names the session's floor")
 h.Click(window.Tabs[1])
 equal(panel:IsVisible(), false, "switching main tabs hides map")
-h.Click(window.Tabs[5])
+h.ns.Window.SelectActivity("dungeons")
 equal(panel:IsShown(), false, "returning restores dungeon details")
 h.G.AtlasMaps = nil
 h.Click(button)

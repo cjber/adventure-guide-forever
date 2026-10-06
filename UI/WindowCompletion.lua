@@ -3,7 +3,7 @@ local _, ns = ...
 local L = ns.L
 local Window, Overview = ns.Window, ns.Overview
 
--- The window's Completion tab (docs/design.md §2.19): Legacy Forever's progress where the player is and where the route
+-- The window's Progress page (docs/design.md §2.19): Legacy Forever's progress where the player is and where the route
 -- goes next (Providers.lua; at most four zones). The zone shown is featured over its map with each category Legacy
 -- counts, and its next three unfinished objectives on the right; the other zones run across under the divider, a
 -- click featuring one. What Legacy counts is completion, never a quest the player can take now. Without a Legacy
@@ -69,6 +69,10 @@ local empty
 -- The zone featured: the player's own until another card is clicked.
 ---@type integer?
 local picked
+---@type AGFDungeonListWidget
+local milestones
+---@type FontString
+local milestoneHeading
 
 -- The line the tab gives while Legacy Forever is missing or too old to ask.
 ---@return string?
@@ -252,6 +256,33 @@ end
 ---@param content Frame
 local function Build(content)
 	empty = Window.CreateEmpty(content, "Legacy-Tree-Frame-background")
+	local label = Window.Heading(content, L.STORY_COMPLETE)
+	milestoneHeading = label
+	label:SetPoint("TOPLEFT", LEFT + 3 * (GRID_WIDTH + GRID_GAP), -GRID_TOP)
+	milestones = Window.CreateList(
+		content,
+		LEFT + 3 * (GRID_WIDTH + GRID_GAP),
+		GRID_TOP + 24,
+		GRID_WIDTH,
+		GRID_HEIGHT - 24,
+		36,
+		function(row, record)
+			row.Title:SetText(record.name)
+			row.Info:SetText("")
+		end,
+		function() end,
+		function(parent, width, height)
+			local row = CreateFrame("Button", nil, parent) --[[@as AGFDungeonRow]]
+			row:SetSize(width, height)
+			row.Title = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+			row.Title:SetPoint("TOPLEFT", 4, -4)
+			row.Title:SetWidth(width - 8)
+			row.Title:SetJustifyH("LEFT")
+			row.Title:SetMaxLines(2)
+			row.Info = row:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+			return row
+		end
+	)
 	featured = CreateCard(content, true)
 	featured:SetPoint("TOPLEFT", LEFT, -TOP)
 	heading = Window.Heading(content, L.NEXT_STEPS)
@@ -297,7 +328,17 @@ end
 
 local function Refresh()
 	local muted = Muted()
-	local zones = muted == nil and ns.Providers.Completion().zones or {}
+	local zones = ns.Providers.Completion().zones
+	local records = {}
+	for key, record in pairs(ns.Prefs().completedStories) do
+		records[#records + 1] = { key = key, name = record.title }
+	end
+	table.sort(records, function(a, b)
+		return a.name < b.name or a.name == b.name and a.key < b.key
+	end)
+	Window.SetList(milestones, records)
+	milestones.frame:SetShown(#records > 0)
+	milestoneHeading:SetShown(#records > 0)
 	local line = muted or (#zones == 0 and L.COMPLETION_EMPTY) or nil
 	Window.SetEmpty(empty, line)
 	local first
@@ -329,4 +370,12 @@ local function Refresh()
 	end
 end
 
-Window.AddTab({ key = "completion", label = L.TAB_COMPLETION, Build = Build, Refresh = Refresh, Muted = Muted })
+Window.AddTab({
+	key = "progress",
+	label = L.TAB_PROGRESS,
+	Build = Build,
+	Refresh = Refresh,
+	Muted = function()
+		return not next(ns.Prefs().completedStories) and Muted() or nil
+	end,
+})

@@ -78,12 +78,12 @@ equal(Tracker(h), nil, "same cards: no line")
 -- the tab and the compartment, and each card's mark. Nothing opens.
 LevelUp(h, 22)
 same(h.fanfares, { "moment" }, "new zone: the line glows once")
-equal(Tracker(h), "Moonglade is now for your level", "new zone: named by the client")
+equal(Tracker(h), "Hillsbrad Foothills is now for your level", "new zone: named by the client")
 equal(h.G.AdventureGuideForeverPanel:IsShown(), false, "new zone: nothing opens")
 equal(select(1, Pips(h)), true, "new zone: the tab's pip")
 equal(select(2, Pips(h)), true, "new zone: the compartment's pip")
 equal(seen["zone:1424"], true, "new zone: now seen")
-equal(seen["zone:1450"], true, "new zone: the one named, now seen")
+equal(seen["zone:1450"], true, "new zone: the quest-visit alternative is also seen")
 equal(seen["zone:1442"], true, "new zone: the zone it replaced stays seen")
 h.tracker:MarkDirty()
 same(h.fanfares, { "moment" }, "new zone: glows once, not on every layout")
@@ -95,14 +95,14 @@ equal(h.G.AdventureGuideForeverPanel:IsVisible(), true, "click: the guide opens"
 equal(select(1, Pips(h)), false, "opened: the tab's pip goes")
 equal(select(2, Pips(h)), false, "opened: the compartment's pip goes")
 equal(Tracker(h), nil, "opened: the line goes")
-equal(Marked(h, "zone:1450"), true, "opened: the new card is marked")
+equal(Marked(h, "zone:1424"), true, "opened: the new card is marked")
 equal(Marked(h, "zone:1413"), false, "opened: the others are not")
 
 -- Closing the guide takes the marks away; a zone change that brings nothing new leaves them away.
 h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
 h.ns.OpenPanel()
 h.flush()
-equal(Marked(h, "zone:1450"), false, "closed: the mark goes")
+equal(Marked(h, "zone:1424"), false, "closed: the mark goes")
 h.fire("ZONE_CHANGED_NEW_AREA")
 h.flush()
 equal(#h.fanfares, 1, "zone change, nothing new: no glow")
@@ -115,7 +115,7 @@ h.flush()
 LevelUp(h, 22)
 equal(#h.fanfares, 0, "guide open: no glow")
 equal(select(1, Pips(h)), false, "guide open: no pip")
-equal(Marked(h, "zone:1450"), true, "guide open: the card is marked")
+equal(Marked(h, "zone:1424"), true, "guide open: the card is marked")
 clean(h, "guide open")
 
 -- A saved seen set: the same level-up on the next session finds nothing new.
@@ -147,6 +147,24 @@ h.SetCombat(false)
 h.flush()
 same(h.fanfares, { "moment" }, "after combat: the line glows")
 clean(h, "combat")
+
+-- A new quest visit in a higher-level zone keeps the same range warning as its card.
+h = Load()
+h.ns.Prefs().seen["zone:1424"] = true
+h.ns.Prefs().seen["zone:1411"] = true
+h.ns.Prefs().seen["zone:1412"] = true
+LevelUp(h, 22)
+local visit
+for _, journey in ipairs(h.ns.Route().journeys) do
+	if journey.key == "zone:1450" then
+		visit = journey
+	end
+end
+equal(visit ~= nil, true, "quest visit: Moonglade is offered")
+local warning = h.ns.Overview.VisitWarning(visit)
+equal(warning ~= nil, true, "quest visit: the zone is above the character's level")
+equal(Tracker(h), warning, "quest visit: alert keeps the range warning")
+clean(h, "quest visit")
 
 -- An aside no provider gave before: its own line glows, with the pips, and no moment line. One that stops being
 -- given leaves the seen set, so it is new again when it comes back. Hillsbrad and Moonglade, zones to head to from

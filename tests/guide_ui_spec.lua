@@ -40,7 +40,13 @@ local function Open(h, tab)
 	h.ns.OpenWindow()
 	h.flush()
 	local window = h.G.AdventureGuideForeverWindow
-	h.Click(window.Tabs[tab or 1])
+	if tab == 3 then
+		h.ns.Window.SelectActivity("pvp")
+	elseif tab == 4 then
+		h.ns.Window.Select(3)
+	else
+		h.ns.Window.Select(1)
+	end
 	h.flush()
 	return window
 end
@@ -99,8 +105,8 @@ do
 	})
 	local ns, L = h.ns, h.ns.L
 	local window = Open(h, 3)
-	equal(window.selectedTab, 3, "pvp: the third tab")
-	equal(window.Tabs[3]:GetText(), L.TAB_PVP, "pvp: its label")
+	equal(window.selectedTab, 2, "pvp: the third tab")
+	equal(h.G.AdventureGuideForeverActivitypvp:GetText(), L.TAB_PVP, "pvp: its label")
 	local texts = Texts(h)
 	equal(texts[L.PVP_RANK:format(3)], 1, "pvp: the rank")
 	equal(texts[L.PVP_RANK_POINTS:format(1200, 3000)], 1, "pvp: its points")
@@ -134,7 +140,7 @@ do
 	texts = Texts(h)
 	equal(texts[L.PVP_UNAVAILABLE], 1, "unavailable: the page says why")
 	equal(texts[L.MENU_BATTLEGROUNDS], nil, "unavailable: nothing else")
-	equal(window.Tabs[3].normalFont, "GameFontDisableSmall", "unavailable: the label greys")
+	equal(h.G.AdventureGuideForeverActivitypvp.normalFont, "GameFontDisableSmall", "unavailable: the label greys")
 	clean(h, "pvp")
 end
 
@@ -147,10 +153,10 @@ do
 	local addon = h.G.LegacyForever
 	h.G.LegacyForever = nil
 	local window = Open(h, 4)
-	equal(window.selectedTab, 4, "legacy missing: the tab still opens")
-	equal(window.Tabs[4].normalFont, "GameFontDisableSmall", "legacy missing: its label greys")
+	equal(window.selectedTab, 3, "legacy missing: the tab still opens")
+	equal(window.Tabs[3].normalFont, "GameFontDisableSmall", "legacy missing: its label greys")
 	equal(Texts(h)[L.LEGACY_MISSING], 1, "legacy missing: the page says to install it")
-	h.Hover(window.Tabs[4])
+	h.Hover(window.Tabs[3])
 	equal(h.tooltip[#h.tooltip], "normal: " .. L.LEGACY_MISSING, "legacy missing: and the tab's tooltip")
 
 	h.G.LegacyForever = addon
@@ -192,7 +198,7 @@ do
 	end
 	Redraw(h)
 	local texts = Texts(h)
-	equal(window.Tabs[4].normalFont, "GameFontNormalSmall", "ready: the label is gold")
+	equal(window.Tabs[3].normalFont, "GameFontNormalSmall", "ready: the label is gold")
 	equal(texts["The Barrens"] ~= nil, true, "ready: the player's zone featured")
 	equal(texts[L.COMPLETION_COUNTS:format(7, 20)], 1, "ready: its overall count")
 	equal(texts[L.COMPLETION_NOT_KNOWN:format(1)] ~= nil, true, "ready: what Legacy can't check, in words")
@@ -332,7 +338,7 @@ do
 		end,
 	})
 	local L = h.ns.L
-	local window = Open(h)
+	local window = Open(h, 3)
 	local all = h.ns.Asides.All()
 	equal(#all, 5, "overflow: five asides")
 	local texts = Texts(h)
@@ -559,17 +565,13 @@ do
 	equal(rows[1].Kind:IsShown(), true, "badge: shown")
 	local texts = Texts(h)
 	for _, giver in ipairs(town.checklist) do
-		equal(texts[giver.text], 1, "checklist: " .. giver.name)
+		equal(texts[giver.text], nil, "main page keeps the town checklist in its details")
 	end
 	local ticks = Visible(h, window, function(frame)
 		return frame.Tick ~= nil
 	end)
-	local byText = {}
-	for _, line in ipairs(ticks) do
-		byText[line.Text:GetText()] = line
-	end
-	equal(byText[done.text].Tick:GetAtlas(), "UI-QuestTracker-Tracker-Check", "checklist: accepted giver ticked")
-	equal(byText[skipped.text].Tick:GetAlpha(), 0.4, "checklist: skipped giver fades")
+	equal(#ticks, 0, "main page leaves room for upcoming actions")
+
 	local open
 	for _, giver in ipairs(town.checklist) do
 		if not giver.done then
@@ -577,7 +579,6 @@ do
 			break
 		end
 	end
-	equal(byText[open.text].Tick:GetAtlas(), "UI-QuestTracker-Objective-Nub", "checklist: open giver nub")
 	h.Click(rows[1], "RightButton")
 	local skip
 	for _, entry in ipairs(h.menu.entries) do

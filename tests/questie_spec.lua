@@ -754,8 +754,8 @@ do
 				update(900001, 1, 2)
 			end
 			both.tick()
+			both.flush()
 		end
-		both.flush()
 		equal(both.modelCalls.Plan - mark, 3, order .. ": one plan per frame, not one per handler")
 	end
 	equal(#both.errors, 0, "the update coalescing raises no error")

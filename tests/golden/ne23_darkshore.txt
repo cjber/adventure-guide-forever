@@ -1,11 +1,12 @@
 # ne23_darkshore: level 23, side 1, at 1439 0.3700,0.4400
-card (chosen) | zone:1450 | Moonglade story | 3 quests near your level | - | map 1450
-  step 1 | town:1450:493 | Visit Moonglade: Pick up 2 | 1450 0.4400,0.7340 | 2 to pick up
-  step 2 | town:1450:493:2 | Visit Moonglade: Turn in 2 | 1450 0.4400,0.7340 | 2 to hand in
-card | zone:1442 | Head to Stonetalon Mountains | 3 quests near your level | - | map 1442
+card (chosen) | zone:1442 | Stonetalon Mountains story | Chapter 1 of 2 | A chain begins with Piznik | map 1442
   step 1 | town:1442:460 | Pick up: Scramble | 1442 0.4079,0.5261 | near your level
-  step 2 | town:1442:1076 | Pick up: Super Reaper 6000 | 1442 0.5899,0.6260 | near your level
-  step 3 | town:1442:461 | Pick up: Gerenzo's Orders | 1442 0.7187,0.6000 | near your level
+  step 2 | town:1442:460:2 | Turn in: Scramble | 1442 0.3960,0.4991 | once it's done
+  step 3 | town:1442:1076 | Pick up: Super Reaper 6000 | 1442 0.5899,0.6260 | near your level
+  step 4 | area:1093:4 | Complete objectives · Super Reaper 6000 | 1442 0.6280,0.5350 | after you pick it up | 19 yd | 1093/4
+  step 5 | town:1442:1076:2 | Turn in: Super Reaper 6000 | 1442 0.5899,0.6260 | Opens the next chapter here
+  step 6 | town:1442:461 | Pick up: Gerenzo's Orders | 1442 0.7187,0.6000 | Begins a new story
+  step 7 | area:1090:0 | Complete objectives · Gerenzo's Orders | 1442 0.7190,0.6000 | after you pick it up | 0 yd | 1090/0
 card | zone:1440 | Head to Ashenvale | 14 quests near your level | - | map 1439
   step 1 | town:1439:442 | Pick up: Trek to Ashenvale | 1439 0.3928,0.4346 | Continues a story you started
   step 2 | town:1440:414 | Pick up: The Ancient Statuette | 1440 0.1479,0.3129 | near your level
@@ -25,8 +26,6 @@ card | zone:1437 | Head to Wetlands | 14 quests near your level | - | map 1439
   step 5 | town:1432:838 | Pick up: The Algaz Gauntlet | 1432 0.2544,0.1038 | near your level
   step 6 | town:1432:144 | Pick up: Report to Mountaineer Rockgar | 1432 0.3263,0.4974 | near your level
   step 7 | town:1424:271 | Pick up: A Lack of Virtue | 1424 0.5053,0.7001 | near your level
-card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
-  step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level
 card | zone:1433 | Head to Redridge Mountains | 13 quests near your level | - | map 1433
   step 1 | town:1433:95 | Pick up: Missing In Action | 1433 0.2330,0.1255 | near your level
   step 2 | town:1433:69 | Visit Lakeshire: Pick up 11 | 1433 0.2564,0.6000 | 11 to pick up
@@ -50,3 +49,7 @@ card | zone:1436 | Head to Westfall | 6 quests near your level | - | map 1436
 card | zone:1426 | Head to Dun Morogh | 2 quests near your level | - | map 1426
   step 1 | town:1426:1537 | Pick up: Search for Incendicite | 1426 0.4962,0.4861 | near your level
   step 2 | town:1432:144 | Pick up: Stonegear's Search | 1432 0.3263,0.4974 | near your level
+card | zone:1450 | Head to Moonglade | 3 quests near your level | Moonglade needs hands | map 1450
+  step 1 | town:1450:493 | Visit Moonglade: Pick up 3 | 1450 0.4400,0.7340 | 3 to pick up
+card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
+  step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level

@@ -23,13 +23,13 @@ card | zone:1431 | Head to Duskwood | 4 quests near your level | - | map 1431
 card | zone:1439 | Head to Darkshore | 20 quests near your level | - | map 1453
   step 1 | town:1453:0 | Visit Stormwind City: Pick up 2, turn in 2 | 1453 0.6917,0.8272 | Opens the next chapter here
   step 2 | town:1439:442 | Pick up: Cave Mushrooms | 1439 0.3732,0.4364 | near your level
-card | zone:1437 | Head to Wetlands | 6 quests near your level | - | map 1432
-  step 1 | town:1432:144 | Pick up: Report to Mountaineer Rockgar | 1432 0.3263,0.4974 | near your level
 card | zone:1413 | Head to The Barrens | 9 quests near your level | - | map 1413
   step 1 | town:1413:392 | Pick up: Raptor Horns | 1413 0.6237,0.3762 | near your level
 card | zone:1440 | Head to Ashenvale | 6 quests near your level | - | map 1440
   step 1 | town:1440:414 | Pick up: The Ancient Statuette | 1440 0.1479,0.3129 | near your level
-card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
-  step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level
 card | zone:1442 | Head to Stonetalon Mountains | 1 quest near your level | - | map 1442
   step 1 | town:1442:1076 | Pick up: Super Reaper 6000 | 1442 0.5899,0.6260 | near your level
+card | zone:1437 | Head to Wetlands | 6 quests near your level | - | map 1432
+  step 1 | town:1432:144 | Pick up: Report to Mountaineer Rockgar | 1432 0.3263,0.4974 | near your level
+card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
+  step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level

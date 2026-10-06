@@ -212,7 +212,12 @@ local function Window(each, scene, tab)
 	each.ns.OpenWindow()
 	each.flush()
 	local window = each.G.AdventureGuideForeverWindow
-	each.Click(window.Tabs[tab or 1])
+	local category = ({ [2] = "professions", [3] = "pvp", [5] = "dungeons" })[tab]
+	if category then
+		each.ns.Window.SelectActivity(category)
+	else
+		each.Click(window.Tabs[tab == 4 and 3 or 1])
+	end
 	each.flush()
 	each.SetRects(window, input.rects[scene] or {})
 	window:Hide()
@@ -382,6 +387,9 @@ for _, zone in ipairs({
 	legacy.summaries[zone.map], legacy.targets[zone.map] = zone.summary, zone.targets
 end
 h = Load("v1", false, false, STORY, nil, { legacy = legacy })
+h.flush()
+h.ns.StoryCompletion.Record(849)
+h.flush()
 out.window_completion = Window(h, "window_completion", 4)
 for _, frame in ipairs(h.frames) do
 	if frame.zone and frame.zone.map == 1442 and frame:GetScript("OnClick") then
@@ -390,6 +398,18 @@ for _, frame in ipairs(h.frames) do
 		break
 	end
 end
+
+h = Load("v1", false, true)
+h.flush()
+h.ns.StoryCompletion.Record(849)
+local popup = h.Find(function(frame)
+	return frame.Fill and frame:GetWidth() == 360 and frame:GetHeight() == 82
+end)
+assert(popup[1], "story completion popup missing")
+if input.rects.story_complete then
+	h.SetRects(popup[1], input.rects.story_complete)
+end
+out.story_complete = { layout = h.ns.DumpLayout(popup[1], h.Describe) }
 
 -- Neither Tweaks Forever nor Legacy Forever loaded: Ragefire Chasm chosen, its Go to entrance greyed with the note,
 -- and the Completion tab's label grey.
@@ -428,18 +448,8 @@ h = Load("v1", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, {
 		end
 	end,
 })
-out.window_today = Window(h, "window_today")
-out.window_next = Window(h, "window_next", 6)
-h.ns.Recommendations.SetFocus("training")
-out.window_next_training = Window(h, "window_next_training", 6)
-local nextAsides = h.ns.Asides.All
-h.ns.Asides.All = function()
-	return {}
-end
-out.window_next_empty = Window(h, "window_next_empty", 6)
-h.ns.Asides.All = nextAsides
-h.ns.Recommendations.SetFocus("balanced")
-out.window_context_menu = Window(h, "window_context_menu")
+out.window_today = Window(h, "window_today", 3)
+out.window_context_menu = Window(h, "window_context_menu", 3)
 local more = assert(h.Find(function(frame)
 	return frame:IsVisible() and frame.asides
 end)[1])

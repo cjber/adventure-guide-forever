@@ -161,7 +161,6 @@
 ---@field npcs table<integer, AGFNpc>
 
 ---@class AGFPrefs
----@field recommendationFocus string the Next page's focus, normalized to balanced when unknown
 ---@field plannedDungeons table<integer, boolean>
 ---@field quests boolean
 ---@field dungeons boolean
@@ -828,7 +827,7 @@
 
 -- Asides (Asides.lua, docs/design.md §2.11): one-line hints beside the journeys, never a route.
 ---@class AGFAside
----@field category? AGFRecommendationCategory the Next page's focus for this hint
+---@field category? AGFRecommendationCategory the kind of useful hint
 ---@field reason? string why the provider offers this hint
 ---@field key string stable identity for Skip and Not interested, e.g. "trainer"
 ---@field text string the whole line, in the game's voice
@@ -863,13 +862,9 @@
 ---@field aside? AGFAside
 
 ---@alias AGFRecommendationCategory "training"|"professions"
----@alias AGFRecommendationFocus "balanced"|"quests"|"dungeons"|AGFRecommendationCategory
 
 ---@class AGFRecommendations
----@field FOCUSES AGFRecommendationFocus[]
----@field Focus fun(): AGFRecommendationFocus
----@field SetFocus fun(focus: string)
----@field Build fun(route: AGFRoute, asides: AGFAside[], focus: AGFRecommendationFocus, player: AGFPlayer): AGFRecommendation[]
+---@field Build fun(route: AGFRoute, asides: AGFAside[], player: AGFPlayer): AGFRecommendation[]
 ---@field Current fun(): AGFRecommendation[]
 ---@field ActionLabel fun(item: AGFRecommendation): string
 ---@field CanAct fun(item: AGFRecommendation): boolean
@@ -1173,7 +1168,8 @@
 ---@class AGFWindowDB
 ---@field position? {point: string, relativePoint: string, x: number, y: number} where the player left it
 ---@field tab? string the key of the tab last shown
----@field profession? integer the skill line the Professions tab last showed
+---@field profession? integer the skill line the Professions view last showed
+---@field activity? string last inspected activity category
 ---@field keyOffered? boolean Shift-J was offered once (Window.OfferKey), taken or not
 
 ---@class AGFNamespace
@@ -1187,21 +1183,8 @@
 
 ---@class AGFStrings
 ---@field TAB_JOURNEYS string
----@field TAB_NEXT string
----@field NEXT_TITLE string
----@field NEXT_FOCUS_BALANCED string
----@field NEXT_FOCUS_QUESTS string
----@field NEXT_FOCUS_TRAINING string
----@field NEXT_FOCUS_PROFESSIONS string
----@field NEXT_FOCUS_DUNGEONS string
----@field NEXT_WHY string
----@field NEXT_ALTERNATIVES string
----@field NEXT_EMPTY string
----@field NEXT_ADVICE string
----@field NEXT_LOADING string
----@field NEXT_DUNGEONS_DISABLED string
----@field NEXT_BROWSE_JOURNEYS string
----@field NEXT_BROWSE_DUNGEONS string
+---@field TAB_ACTIVITIES string
+---@field TAB_PROGRESS string
 ---@field NEXT_REASON_JOURNEY string
 ---@field NEXT_REASON_ASIDE string
 ---@field NEXT_REASON_TRAINING string
@@ -1231,9 +1214,9 @@
 ---@field REAGENT_GATHER string
 ---@field REAGENT_AUCTION string
 ---@field CLICK_WAYPOINT_STEP string a profession step's tooltip, when SkillUp can route to it
----@field SKILLUP_MISSING string the Professions tab without SkillUp Forever
----@field SKILLUP_OUTDATED string the Professions tab with a SkillUp Forever too old for its API
----@field SKILLUP_NONE string the Professions tab with no crafting profession to level
+---@field SKILLUP_MISSING string the Professions view without SkillUp Forever
+---@field SKILLUP_OUTDATED string the Professions view with a SkillUp Forever too old for its API
+---@field SKILLUP_NONE string the Professions view with no crafting profession to level
 
 ---@class AGFTownGiver
 ---@field key string
@@ -1342,7 +1325,6 @@
 
 ---@class AGFStrings
 ---@field TAB_PVP string
----@field TAB_COMPLETION string
 ---@field GO_TO_ENTRANCE string
 ---@field TWEAKS_MISSING string
 ---@field TWEAKS_OUTDATED string
@@ -1425,10 +1407,10 @@
 ---@field SETTING_COMPANIONS_TOOLTIP string
 ---@field SPF_MISSING string a route step's tooltip without Shortest Path Forever installed
 ---@field SPF_DISABLED string a route step's tooltip with Shortest Path Forever installed but not enabled
----@field SKILLUP_DISABLED string the Professions tab with SkillUp Forever installed but not enabled
----@field SKILLUP_ABSENT string the Professions tab without SkillUp Forever, companion hints off
----@field LEGACY_DISABLED string the Completion tab with Legacy Forever installed but not enabled
----@field LEGACY_ABSENT string the Completion tab without Legacy Forever, companion hints off
+---@field SKILLUP_DISABLED string the Professions view with SkillUp Forever installed but not enabled
+---@field SKILLUP_ABSENT string the Professions view without SkillUp Forever, companion hints off
+---@field LEGACY_DISABLED string the Progress page with Legacy Forever installed but not enabled
+---@field LEGACY_ABSENT string the Progress page without Legacy Forever, companion hints off
 
 ---@alias AGFCompanionState "loaded"|"disabled"|"missing"
 
@@ -1566,6 +1548,10 @@
 ---@alias AGFListCreate fun(parent: Frame, width: number, rowHeight: number, click: AGFListClick): AGFDungeonRow
 
 ---@class AGFWindow
+---@field ACTIVITY_LEFT number
+---@field ACTIVITY_CARD_WIDTH number
+---@field AddActivity fun(activity: AGFWindowTab)
+---@field SelectActivity fun(key: string)
 ---@field AddTab fun(tab: AGFWindowTab)
 ---@field Tabs fun(): AGFWindowTab[]
 ---@field ApplyMode fun()
@@ -1913,3 +1899,18 @@
 
 ---@type AGFGlobal
 AdventureGuideForever = nil
+
+---@class AGFStoryCompletion
+---@field Record fun(questID: integer): boolean true only for a new proven final turn-in
+
+---@class AGFNamespace
+---@field StoryCompletion AGFStoryCompletion
+
+---@class AGFPrefs
+---@field completedStories table<string, {key: string, title: string, quest: integer}> proven story milestones for this character
+
+---@class AGFStrings
+---@field QUEST_VISIT_WARNING string
+
+---@class AGFOverview
+---@field VisitWarning fun(journey: AGFJourney, player?: AGFPlayer): string?

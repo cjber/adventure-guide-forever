@@ -42,8 +42,8 @@ ns.DEFAULTS = DEFAULTS
 -- Per-character prefs (AGFPrefs). `dungeons` seeds from the account-wide default the first
 -- time this character is seen; every other key is a plain default merged in on load.
 local PREFS_DEFAULTS = {
-	recommendationFocus = "balanced",
 	plannedDungeons = {},
+	completedStories = {},
 	quests = true,
 	dungeons = false,
 	-- Opt-in: the Battlegrounds card.
@@ -97,6 +97,7 @@ end
 
 local function LoadCharDB()
 	local loaded = type(AdventureGuideForeverCharDB) == "table" and AdventureGuideForeverCharDB or {}
+	loaded["recommendationFocus"] = nil
 	local migratePlan = type(loaded.plannedDungeons) ~= "table"
 	-- First time this character is seen: honour the account-wide default instead of PREFS_DEFAULTS.dungeons.
 	if loaded.dungeons == nil then
@@ -105,6 +106,16 @@ local function LoadCharDB()
 	for key, value in pairs(PREFS_DEFAULTS) do
 		if key ~= "dungeons" and type(loaded[key]) ~= type(value) then
 			loaded[key] = type(value) == "table" and {} or value
+		end
+	end
+	for key, record in pairs(loaded.completedStories) do
+		if
+			type(key) ~= "string"
+			or type(record) ~= "table"
+			or type(record.title) ~= "string"
+			or type(record.quest) ~= "number"
+		then
+			loaded.completedStories[key] = nil
 		end
 	end
 	-- Journeys marked "Not interested": key -> the title Show again names it by, and whether it ended the choice of it.
@@ -765,8 +776,9 @@ local function FinishRebuild()
 end
 
 -- One frame of the rebuild: starts the coroutine, resumes it for another slice, or commits the finished route. The
--- coroutine yields inside Model.Journeys every few card routes (WFA-13), so a heavy full build never spends its whole
--- cost in one frame. The route is committed only when the last slice ends; a partial build is never visible.
+-- Resume small planner units within one budgeted frame instead of waiting a frame per card. Leave headroom for
+-- the next indivisible unit and commit notification; only a completed route becomes visible.
+local REBUILD_SLICE_MS = 0.75
 local function StepRebuild()
 	if not rebuildCo then
 		-- A caller in the same frame (the map a card click turns) may have rebuilt through ns.Route() already: the
@@ -794,7 +806,14 @@ local function StepRebuild()
 		flightStart = invalidations
 		rebuildCo = coroutine.create(BuildRoute)
 	end
-	local ok, shown, full, world = coroutine.resume(rebuildCo)
+	local started = debugprofilestop()
+	local ok, shown, full, world
+	repeat
+		ok, shown, full, world = coroutine.resume(rebuildCo)
+	until not ok
+		or coroutine.status(rebuildCo) == "dead"
+		or shown == "frame"
+		or debugprofilestop() - started >= REBUILD_SLICE_MS
 	if not ok then
 		rebuildCo = nil
 		pendingRebuild = false

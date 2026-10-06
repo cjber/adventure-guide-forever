@@ -407,6 +407,19 @@ local function Drive(h, label)
 				window:Show()
 				h.ns.Window.Refresh()
 			end)
+			if tab.key == "activities" then
+				for _, activity in ipairs({ "dungeons", "professions", "pvp" }) do
+					Run(h, label .. " select activity " .. activity, function()
+						window:Show()
+						h.ns.Window.SelectActivity(activity)
+						h.flush()
+					end)
+					DriveScope(h, window, label .. " activity/" .. activity, function()
+						window:Show()
+						h.ns.Window.SelectActivity(activity)
+					end)
+				end
+			end
 		end
 		for index, button in ipairs(window.Tabs) do
 			Run(h, ("%s tab button %d"):format(label, index), function()
