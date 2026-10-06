@@ -26,7 +26,7 @@ These images are generated previews of the guide UI.
 
 - **What to do next.** The map guide offers two Continue cards and one per other section. Expand a header to see more. Quests in your log is the default suggestion.
 - **Journeys.** Finish loose ends, follow zone stories or pick up class quests. Dungeon and battleground journeys are opt-in.
-- **Dungeons.** Check quests and prerequisites, then visit their givers. Tweaks Forever displays Atlas interior maps on the world map. [AtlasLoot Classic](https://www.curseforge.com/wow/addons/atlaslootclassic) supplies bosses and loot.
+- **Dungeons.** Check quests and prerequisites, then visit their givers. Tweaks Forever displays Atlas interior maps on the world map. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) supplies bosses and loot.
 - **Full guide.** Browse the route and the area's quest outline. Later entries wait for Questie's availability checks.
 - **Choose and go.** Use Shortest Path Forever or the game's waypoint. Stop clears only guidance the addon started.
 - **Your route.** Your journey survives travel and reloads. Ready hand-ins come first. Towns group quest givers into checklists.
