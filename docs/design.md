@@ -12,13 +12,26 @@ abandons quests.
 
 - **2.1 Map tab.** The overview scrolls; the expand button opens the window. Chosen steps and
   search can scroll. Quest-giver marks and route pins are opt-in.
-- **2.2 Journey cards.** Offer every eligible journey for the current level; the home view scrolls and the window grid pages through them. The home view groups its cards under collapsible quest log headers, in order: Continue (the story, Quests in your log and your calling), Zones for your level, Dungeons, then Battlegrounds. A group with no card draws no header, each header remembers its open state per character, and the header holding the route the guide follows stays open. Prefer useful green/yellow quests; exclude orange/red pickups. A choice shows up to ten route actions, followed by upcoming quest entries when fewer actions are available. The active route appears above alternative destinations.
-- **2.2 Journey cards.** Offer every eligible journey for the current level; the home view scrolls and the window grid pages through them. Prefer useful green/yellow quests; exclude orange/red pickups. One level preference ranks both a zone and the quests in a stop (`Model.LevelPreference`): at the player's level and one or two below costs nothing, each level above costs twice its distance, and each level further below costs one, so content near the player's level beats content above it and deep green content falls behind. A zone's last level is ranked the same way, which costs nothing while the player is inside its range: a zone that still has takeable, experience-giving quests stays on offer rather than being buried by the zones that reach higher, while a zone the player has long outgrown does not ride one near-level quest past a zone that fits. A choice shows up to ten route actions, followed by upcoming quest entries when fewer actions are available. The active route appears above alternative destinations.
-  Give each card a reason and only known travel estimates.
+- **2.2 Journey cards.** Offer every eligible journey for the current level; the home view scrolls and the window grid
+  pages through them. The home view groups its cards under collapsible quest log headers, in order: Continue (the story,
+  Quests in your log and your calling), Zones for your level, Dungeons, then Battlegrounds. A group with no card draws
+  no header, each header remembers its open state per character, and the header holding the route the guide follows
+  stays open. Prefer useful green/yellow quests; exclude orange/red pickups. A choice shows up to ten route actions,
+  followed by upcoming quest entries when fewer actions are available. The active route appears above alternative
+  destinations.
+    One level preference ranks both a zone and the quests in a stop (`Model.LevelPreference`): at the player's level and
+  one or two below costs nothing, each level above costs twice its distance, and each level further below costs one, so
+  content near the player's level beats content above it and deep green content falls behind. A zone's last level is
+  ranked the same way, which costs nothing while the player is inside its range: a zone that still has takeable,
+  experience-giving quests stays on offer rather than being buried by the zones that reach higher, while a zone the
+  player has long outgrown does not ride one near-level quest past a zone that fits.
+    Give each card a reason and only known travel estimates.
 - **2.3 Chapters.** Show a total only for a proven chain. A quest tooltip may name its proven next chapter with its level.
 - **2.4 Search.** Share eligibility checks with the planner. Explain missing requirements; locked
   quests offer no destination.
-- **2.5 Tracker.** Show the current and next step beside quests. Leave the stock quest order alone.
+- **2.5 Tracker.** Use the chosen journey as the section heading, with Adventure Guide as the fallback.
+  Show the current action and up to two upcoming actions with native action icons beside quests.
+  Upcoming actions are muted and follow the resolved current stop. Leave the stock quest order alone.
   Quest tracking is opt-in; a step's quest opens on the map only outside combat.
 - **2.6 Pins.** Draw only known locations and step aside while Shortest Path supplies guidance. While the player
   stands in the current step's objective area, the world map shows that area's full outline in yellow, the minimap
@@ -122,7 +135,7 @@ abandons quests.
   existing map art at native aspect. Source findings and
   pins are recorded in [dungeon-sources.md](dungeon-sources.md). The layout is included in `/agf dump` and
   `docs/screenshots/dungeons*.png`, including the owner's Alliance level 19 Darkshore/Ragefire regression.
-  The shared Today strip shows two wide hints, with the rest in a small stock-font More menu control on every tab.
+  The shared Today strip shows two wide hints, with the rest in a small stock-font More menu control on the browsing tabs. Next incorporates those hints in its recommendations instead.
 - **2.22 Addon API.** `AdventureGuideForever.API` (docs/api.md) is read-only and versioned. It copies the
   tracker's step from the committed route and answers nil while a route is due, never building one for a caller.
   Fields are added, never renamed or repurposed, within a version.
@@ -144,6 +157,16 @@ The Journal's type and palette live on `Window` (`FONT_TITLE`, `FONT_ROW`, `FONT
 when `onClick` is given; `Window.CreatePaperWell(parent)` and `Window.SetPaperWell(well, lines)` are the paper
 well for text longer than a row, set in the Journal's brown ink. A surface the client has no art for draws a flat
 dark tile, never a question mark or a substituted picture.
+
+### Next page
+
+`Core/Recommendations.lua` combines the committed route and wanted hints for `UI/WindowNext.lua`. The Next tab is appended after the existing tabs to preserve their indices. A first open selects it; a valid saved tab remains selected. Focus is a per-character presentation choice, independent of the chosen journey and dungeon opt-ins.
+
+Balanced preserves a chosen journey. Without a choice, training within 600 measured local yards can precede the offered route. Other focuses filter existing eligible offers. Up to three alternatives are visible, without padding an empty list. Text-only hints have no navigation. The selector never synchronously builds a route: pending work shows an updating state. An action revalidates its identity, destination and current step before delegating to Guidance. Combat, Wanderer mode and pending session estimates disable actions. District changes refresh hints without rebuilding the quest plan.
+
+The wider direction and client checks are in [guidance-roadmap.md](guidance-roadmap.md).
+
+The selected focus uses the stock button highlight. The featured card uses the destination's map art, with a dark fade behind its text; unknown locations keep the plain card. Missing quest data uses the shared source message. Entering combat immediately updates visible action buttons without rebuilding the route.
 
 ## 3. Copy
 

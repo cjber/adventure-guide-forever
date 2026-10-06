@@ -16,9 +16,6 @@ local ASIDE = "aside"
 -- Something new (Moments.lua, docs/design.md §2.13): "Duskwood is now for your level", glowing once, until the guide
 -- opens; a click opens it.
 local MOMENT = "moment"
--- The journey the step belongs to (docs/design.md §2.5): its title names the story above the step, and a click routes
--- from its start.
-local JOURNEY = "journey"
 -- The quiet wait while QuestieSource's catalogue builds (docs/design.md §2.14): a line instead of a wrong route.
 local LOADING = "loading"
 -- Headers that are not the step's: its click and hover never act on them.
@@ -71,12 +68,6 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 	if block.id == ASIDE and aside then
 		ns.Asides.Click(self:GetContextMenuParent(), mouseButton, aside)
 		return
-	elseif block.id == JOURNEY then
-		-- Back to the story's start: the same journey, guided from its first step (docs/design.md §2.10).
-		if mouseButton ~= "RightButton" then
-			ns.StartRoute()
-		end
-		return
 	elseif NOT_STEP[block.id] then
 		if (block.id == JOURNEY_COMPLETE or block.id == MOMENT) and mouseButton ~= "RightButton" and ns.OpenPanel then
 			ns.OpenPanel()
@@ -105,12 +96,6 @@ end
 -- does.
 ---@param block AGFTrackerBlock
 function ModuleMixin:OnBlockHeaderEnter(block)
-	if block.id == JOURNEY then
-		GameTooltip:SetOwner(block, "ANCHOR_RIGHT")
-		GameTooltip_AddInstructionLine(GameTooltip, L.TRACKER_ROUTE_START)
-		GameTooltip:Show()
-		return
-	end
 	if not ns.Integrations.ReplacesJourney() then
 		return
 	end
@@ -139,6 +124,30 @@ local function LayoutLine(module)
 	local block = module:GetBlock(ASIDE)
 	block:SetHeader(aside.text)
 	return module:LayoutBlock(block)
+end
+
+---@param block AGFTrackerBlock
+---@param step AGFStep
+---@param line integer
+local function Preview(block, step, line)
+	local steps = ns.Route().steps
+	for index, candidate in ipairs(steps) do
+		if candidate.key == step.key then
+			for nextIndex = index + 1, math.min(index + 2, #steps) do
+				local upcoming = steps[nextIndex]
+				local text = ns.Overview.VerbMarkup(upcoming, 12) .. L.NEXT:format(upcoming.title)
+				line = line + 1
+				block:AddObjective(
+					line,
+					GRAY_FONT_COLOR:WrapTextInColorCode(text),
+					nil,
+					nil,
+					OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE
+				)
+			end
+			return
+		end
+	end
 end
 
 -- One quiet line (LayoutLine), something new (Moments.Line) under it, then one block for the current step of the
@@ -182,16 +191,8 @@ function ModuleMixin:LayoutContents()
 		end
 		return
 	end
-	local journey = ns.CurrentJourney()
-	if journey then
-		local header = self:GetBlock(JOURNEY)
-		header:SetHeader(journey.title)
-		if not self:LayoutBlock(header) then
-			return
-		end
-	end
 	local block = self:GetBlock(step.key)
-	block:SetHeader(step.title)
+	block:SetHeader(ns.Overview.VerbMarkup(step, 14) .. step.title)
 	local line = 0
 	local guiding = ns.Integrations.Guiding()
 	if step.kind == "area" or step.kind == "dungeon" or (guiding and #step.quests > 1) then
@@ -201,7 +202,11 @@ function ModuleMixin:LayoutContents()
 		end
 	end
 	if guiding then
-		block:AddObjective(line + 1, step.reason)
+		if step.reason ~= L.READY_TO_HAND_IN then
+			line = line + 1
+			block:AddObjective(line, step.reason)
+		end
+		Preview(block, step, line)
 		self:LayoutBlock(block)
 		return
 	end
@@ -242,11 +247,7 @@ function ModuleMixin:LayoutContents()
 		line = line + 1
 		block:AddObjective(line, travel)
 	end
-	local nextStep = ns.Route().steps[2]
-	if nextStep then
-		line = line + 1
-		block:AddObjective(line, L.NEXT:format(nextStep.title), nil, nil, OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE)
-	end
+	Preview(block, step, line)
 	self:LayoutBlock(block)
 end
 
@@ -281,6 +282,9 @@ end
 
 local function Refresh()
 	if module then
+		local journey = ns.Route().chosen and ns.CurrentJourney()
+		module.headerText = journey and journey.title or L.TITLE
+		module:SetHeader(module.headerText)
 		module:MarkDirty()
 	end
 end

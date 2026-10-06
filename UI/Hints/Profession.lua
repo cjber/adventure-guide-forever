@@ -41,7 +41,14 @@ ns.Asides.Register(function()
 		)
 	end
 	-- The minimap's profession trainer mark (CSV:1322).
-	return { key = nudge.key, text = text, icon = "profession", place = npc and npc.place }
+	return {
+		key = nudge.key,
+		text = text,
+		icon = "profession",
+		place = npc and npc.place,
+		category = "professions",
+		reason = L.NEXT_REASON_PROFESSIONS,
+	}
 end)
 
 -- A skill-up to a rank's cap, or a line learned, changes the answer. SKILL_LINES_CHANGED fires on every weapon

@@ -105,7 +105,11 @@ test("guidance resolves the live step", function()
 	h.fire("QUEST_LOG_UPDATE")
 	h.flush()
 	eq(ns.Guidance.CurrentStep(), live, "SPF index resolves to the live route object")
-	eq(h.tracker.liveBlocks[live.key].header, live.title, "tracker uses the refreshed title")
+	eq(
+		h.tracker.liveBlocks[live.key].header,
+		h.ns.Overview.VerbMarkup(live, 14) .. live.title,
+		"tracker uses the refreshed title"
+	)
 	eq(#h.errors, 0, "no refresh errors")
 end)
 

@@ -83,7 +83,17 @@ local function CreateMore(inset)
 end
 
 ---@param inset Frame
-function Window.RefreshToday(inset)
+---@param visible boolean
+function Window.RefreshToday(inset, visible)
+	if not visible then
+		for _, chip in ipairs(chips) do
+			chip:Hide()
+		end
+		if more then
+			more:Hide()
+		end
+		return
+	end
 	local all = ns.Asides.All()
 	local overflow = #all > TODAY_MAX
 	local width = (Window.INSET_WIDTH - TODAY_LEFT - RIGHT - (overflow and MORE_WIDTH + 12 or 0)) / TODAY_MAX

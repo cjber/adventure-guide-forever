@@ -207,6 +207,19 @@ local function VerbIcon(step)
 	return verb and VERB_ATLAS[verb] or nil
 end
 
+---@param step AGFStep
+---@param size number
+---@return string
+function Overview.VerbMarkup(step, size)
+	local atlas, file = VerbIcon(step)
+	if atlas then
+		return ns.Art.Markup(atlas, size) .. " "
+	elseif file then
+		return ns.Art.FileMarkup(file, size) .. " "
+	end
+	return ""
+end
+
 ---@class AGFBadge : Texture
 ---@field box number the square the mark fits in
 

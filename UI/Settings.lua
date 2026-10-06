@@ -55,6 +55,12 @@ function ns.RegisterSettings()
 					),
 					Checkbox(subcategory, "autoStart", ns.L.SETTING_AUTO_START, ns.L.SETTING_AUTO_START_TOOLTIP),
 					Checkbox(subcategory, "stepSound", ns.L.SETTING_STEP_SOUND, ns.L.SETTING_STEP_SOUND_TOOLTIP),
+					Checkbox(
+						subcategory,
+						"trainingReminders",
+						ns.L.SETTING_TRAINING_REMINDERS,
+						ns.L.SETTING_TRAINING_REMINDERS_TOOLTIP
+					),
 				}) do
 					Settings.RegisterInitializer(subcategory, initializer)
 				end

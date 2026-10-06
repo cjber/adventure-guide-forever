@@ -43,7 +43,7 @@ ns.L = {
 	-- The overview's quest log headers (docs/design.md §2.2): one per kind of card, in this order. A collapsed one
 	-- shows how many cards it holds.
 	GROUP_CONTINUE = "Continue",
-	GROUP_ZONES = "Zones for your level",
+	GROUP_ZONES = "Quest destinations",
 	GROUP_DUNGEONS = "Dungeons",
 	GROUP_BATTLEGROUNDS = "Battlegrounds",
 	GROUP_CARDS = "%d cards",
@@ -181,7 +181,6 @@ ns.L = {
 	JOURNEY_COMPLETE = "Journey complete",
 	CHOOSE_NEXT = "Choose your next journey",
 	-- The tracker's journey line and the wait for QuestieDB's catalogue.
-	TRACKER_ROUTE_START = "Click to route from this story's start",
 	TRACKER_DRAG_TITLE = "Forever tracker",
 	TRACKER_DRAG_TOOLTIP = "Drag to move",
 	TRACKER_LOADING = "Loading quest data...",
@@ -267,6 +266,9 @@ ns.L = {
 	SETTING_MAP_PINS = "Show route pins on the map",
 	SETTING_GIVERS = "Show quest givers on the map",
 	SETTING_DUNGEONS_DEFAULT = "Include dungeons by default",
+	SETTING_TRAINING_REMINDERS = "Remind me to train class spells",
+	SETTING_TRAINING_REMINDERS_TOOLTIP = "Suggest class trainer visits and add spell training to journeys. "
+		.. "You can choose which spells to learn; buying every spell is optional.",
 	-- Honest coverage (docs/design.md §2.1): the "!" over a giver marks the quests the guide can't list; Forever
 	-- draws no givers on the map.
 	UNLISTED = 'This land has stories the guide doesn\'t know yet; look for the "!" over quest givers.',
@@ -328,6 +330,26 @@ ns.L = {
 		.. "keeps its earlier suggestions steady.",
 	-- The Adventure Guide window (Window.lua): its tabs, the Today strip, the featured card and the Professions tab.
 	TAB_JOURNEYS = "Journeys",
+	TAB_NEXT = "Next",
+	NEXT_TITLE = "What would you like to do?",
+	NEXT_FOCUS_BALANCED = "A bit of everything",
+	NEXT_FOCUS_QUESTS = "Quests",
+	NEXT_FOCUS_TRAINING = "Training",
+	NEXT_FOCUS_PROFESSIONS = "Professions",
+	NEXT_FOCUS_DUNGEONS = "Dungeons",
+	NEXT_WHY = "Why this?",
+	NEXT_ALTERNATIVES = "Other things you can do",
+	NEXT_EMPTY = "No suggestions for this focus right now. Browse your journeys or dungeons, or choose another focus.",
+	NEXT_ADVICE = "Advice",
+	NEXT_LOADING = "Updating your suggestions...",
+	NEXT_DUNGEONS_DISABLED = "Dungeon journeys are turned off. Browse dungeons to choose a run.",
+	NEXT_BROWSE_JOURNEYS = "Browse journeys",
+	NEXT_BROWSE_DUNGEONS = "Browse dungeons",
+	NEXT_REASON_JOURNEY = "The next step in %s.",
+	NEXT_REASON_ASIDE = "Something useful to consider alongside your adventure.",
+	NEXT_REASON_TRAINING = "Your class trainer has spells you can learn.",
+	NEXT_REASON_TALENTS = "Spending your talent points makes your character stronger.",
+	NEXT_REASON_PROFESSIONS = "You meet the requirements for this profession training.",
 	TAB_PROFESSIONS = "Professions",
 	OPEN_IN_WINDOW = "Open in window",
 	BINDING_TOGGLE_WINDOW = "Toggle the Adventure Guide window",
@@ -413,7 +435,7 @@ ns.L = {
 	COMPLETION_EMPTY = "No completion categories are available here.",
 	COMPLETION_DONE = "Nothing left to do here.",
 	COMPLETION_LOADING = "Loading completion progress...",
-	COMPLETION_UNAVAILABLE = "Completion progress is unavailable here.",
+	COMPLETION_UNAVAILABLE = "Progress unavailable.",
 	COMPLETION_COUNTS = "%d/%d",
 	-- Legacy Forever's own words for items it can't check yet, with its hint when one category holds them all.
 	COMPLETION_NOT_KNOWN = "%d not known yet",
