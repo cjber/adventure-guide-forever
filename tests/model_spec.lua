@@ -1060,6 +1060,31 @@ equal(full.journeys[1].reason, "1 to hand in across the sea", "and the far turn-
 local room = Model.Plan(shore, player, {}, Objectives(Model.MAX_STEPS - 1), prefs())
 equal(room.steps[Model.MAX_STEPS].key, "turnin:200", "with room, the far turn-in comes last")
 equal(room.steps[Model.MAX_STEPS].reason, "Hand in when you're in Far Shore", "and says where")
+-- A waypoint without objective slots survives when it shares an area with a known objective.
+do
+	local mergedData = { quests = { [301] = quest() }, zones = data.zones, maps = tiers.maps }
+	mergedData.quests[301].need = { [1] = 1 }
+	mergedData.quests[301].obj = { { 1, 500, 500, 0, 1 } }
+	local mergedLog = {
+		[301] = {
+			id = 301,
+			title = "Known",
+			level = 18,
+			complete = false,
+			objectives = { { have = 0, need = 1, done = false } },
+		},
+		[302] = { id = 302, title = "Client waypoint", level = 18, complete = false, map = 1, x = 0.5, y = 0.5 },
+	}
+	local mergedRoute = Model.Plan(mergedData, player, {}, mergedLog, prefs())
+	local mergedQuests = {}
+	for _, step in ipairs(mergedRoute.steps) do
+		for _, id in ipairs(step.quests) do
+			mergedQuests[id] = true
+		end
+	end
+	equal(mergedQuests[301], true, "merged area keeps the known objective")
+	equal(mergedQuests[302], true, "merged area keeps the client waypoint without slots")
+end
 -- In an instance the player has no position: nothing measures from them, so the turn-in leads and is never dropped.
 local lost = {
 	level = player.level,

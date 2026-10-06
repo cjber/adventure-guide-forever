@@ -234,7 +234,7 @@ clean(h, "tracker off")
 h = harness.load({ player = { level = 1 }, charDB = { quests = false, seen = { ["dungeon:329"] = true } } })
 h.flush()
 LevelUp(h, 70)
-equal(Tracker(h), "Blackrock Spire is now for your level", "level cap: the dungeon card names the level")
+equal(Tracker(h), "Dire Maul is now for your level", "level cap: the best-ranked dungeon card names the level")
 clean(h, "level cap")
 
 print(("moments_spec: %d checks passed"):format(checks))

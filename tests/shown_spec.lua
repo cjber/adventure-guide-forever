@@ -149,6 +149,7 @@ end
 -- A skipped giver: its row stays on the visit, ticked; its quests leave every route; the skip stays offered back.
 do
 	local ns, Shown, input = Case("orc18_barrens")
+	input.prefs.journey = "zone:1413"
 	local shown, full = Shown.Build(input)
 	local town = shown.steps[1]
 	eq(town.kind, "town", "the fixture leads with a town")

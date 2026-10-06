@@ -90,6 +90,9 @@ authorization. A preparation-only request ends before tags or uploads.
 
 ## Addon checks
 
+- Update `WHATS_NEW` in `Locales/enUS.lua` to begin with the newest release
+  headline, regenerate `Locales/phrases.txt` and run `tests/locales_spec.lua`.
+
 - Review geometry, Forever quest IDs and the QuestieDB corpus together. Keep the
   pinned QuestieDB release/hash and Shortest Path contract fixtures consistent
   with the integrations being shipped.

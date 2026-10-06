@@ -578,7 +578,14 @@ local function Verify(lap, steps)
 			table.sort(pickups)
 			Trim(step, handins, pickups)
 		elseif step.objectives then
-			local objectives, quests = {}, {}
+			local objectives, quests, slotted = {}, {}, {}
+			for _, objective in ipairs(step.objectives) do
+				slotted[objective.id] = true
+			end
+			-- A client waypoint can place a carried quest without database objective slots.
+			for _, id in ipairs(step.quests) do
+				quests[#quests + 1] = not slotted[id] and log[id] and not log[id].complete and id or nil
+			end
 			for _, objective in ipairs(step.objectives) do
 				local id = objective.id
 				-- A planned quest can be worked only after its pickup survived log-capacity checks.
@@ -697,6 +704,10 @@ local function CommitLap(lap)
 		-- "You're here": the area they stand in, leading, is theirs to clear; nothing guides to it, only on from it.
 		if standsIn and route[1] == standsIn then
 			standsIn.here = true
+		end
+		local near = NearAction(origin, log, route, at)
+		if near and near ~= route[1] then
+			route = Front(lap, route, { [near] = true })
 		end
 		-- The order is committed before the visits merge, so the next build, which splits them again, keeps to it.
 		order = State.committedOrders and card and Idents(route) --[[@as AGFOrder?]]

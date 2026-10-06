@@ -428,7 +428,7 @@ ns.L = {
 	LEGACY_DISABLED = "Enable Legacy Forever to see your completion progress.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "Quest progress stays in step with Shortest Path. Your next task leads the guide.",
+	WHATS_NEW = "Bosses and loot on the map. Right-click a dungeon card to browse bosses and their drops.",
 	DUNGEON_BOSSES_LOOT = "Bosses and loot",
 	DUNGEON_LOOT_INSTALL = "Install AtlasLoot Classic and its Dungeons and Raids module for bosses and loot.",
 	DUNGEON_LOOT_COMBAT = "Boss loot will load after combat.",
