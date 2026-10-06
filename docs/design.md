@@ -17,7 +17,7 @@ abandons quests.
   Quests in your log and your calling), Zones for your level, Dungeons, then Battlegrounds. A group with no card draws
   no header, each header remembers its open state per character, and the header holding the route the guide follows
   stays open. Prefer useful green/yellow quests; the maximum quest level slider defaults to +2, excluding
-  orange/red pickups. The limit applies to recommendations and zone ranking; accepted quests keep their steps. A choice shows up to ten route actions,
+  orange/red pickups. The limit applies to recommendations, zone ranking and search recommendation eligibility; higher-level quests remain searchable, and accepted quests keep their steps. A choice shows up to ten route actions,
   followed by upcoming quest entries when fewer actions are available. The active route appears above alternative
   destinations.
     One level preference ranks both a zone and the quests in a stop (`Model.LevelPreference`): at the player's level and
