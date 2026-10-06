@@ -443,7 +443,6 @@ ns.L = {
 	SKILLUP_DISABLED = "Your next skill-ups come from SkillUp Forever. Enable it and they show here.",
 	SKILLUP_ABSENT = "Your next skill-ups come from SkillUp Forever.",
 	LEGACY_DISABLED = "Enable Legacy Forever to see your completion progress.",
-	LEGACY_ABSENT = "Your completion progress comes from Legacy Forever.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
 	WHATS_NEW = "Quest progress stays in step with Shortest Path. Your next task leads the guide.",

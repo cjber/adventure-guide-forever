@@ -5,7 +5,7 @@ local Window, L = ns.Window, ns.L
 local start
 local PAGE_SIZE, ROW_HEIGHT, ROW_PITCH = 10, 32, 34
 
--- A zone catalogue, not a second eligibility policy: only the planner supplies actionable steps.
+-- A quest outline: only the planner supplies actionable steps.
 -- Questie prerequisites order the outline; no future quest is sent to navigation or tracking.
 ---@param data AGFData
 ---@param player AGFPlayer

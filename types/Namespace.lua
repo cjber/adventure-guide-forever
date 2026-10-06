@@ -1397,7 +1397,6 @@
 ---@field SKILLUP_DISABLED string the Professions view with SkillUp Forever installed but not enabled
 ---@field SKILLUP_ABSENT string the Professions view without SkillUp Forever, companion hints off
 ---@field LEGACY_DISABLED string the Progress page with Legacy Forever installed but not enabled
----@field LEGACY_ABSENT string the Progress page without Legacy Forever, companion hints off
 
 ---@alias AGFCompanionState "loaded"|"disabled"|"missing"
 
@@ -1433,9 +1432,6 @@
 ---@class AGFNamespace
 ---@field Dungeons AGFDungeons
 ---@field DungeonEntrance fun(instance: integer): AGFPoint?
-
----@class AGFWindowDB
----@field dungeon? integer last selected instance Map.ID
 
 ---@class AGFStrings
 ---@field TAB_DUNGEONS string
