@@ -509,8 +509,8 @@ do
 	local indexed, completed = Stranded(), {}
 	equal(
 		Model.Plan(indexed, atCap, completed, {}, prefs()).journeys[3].subline,
-		"1 quest for this dungeon",
-		"indexed: prerequisite still locked"
+		"2 quests for this dungeon",
+		"indexed: preparation counts while the dungeon chapter is locked"
 	)
 	completed[50] = true
 	equal(
@@ -527,7 +527,7 @@ do
 	completed[50], completed[51], completed[52] = nil, nil, nil
 	equal(
 		Model.Plan(indexed, atCap, completed, {}, prefs()).journeys[3].subline,
-		"1 quest for this dungeon",
+		"2 quests for this dungeon",
 		"indexed: character state is never cached"
 	)
 	-- The static dungeon subset is keyed by level: changing level must not reuse the old bracket.
@@ -1846,8 +1846,7 @@ for _, fixture in ipairs(characters.list) do
 end
 equal(fixtures >= 5, true, "why: five fixtures or more")
 
--- F15: a dungeon card only with dungeons on or no next zone (human60, at the cap), and never a step that
--- is not an eligible giver's data place.
+-- F15: dungeon cards respect the toggle, use real places and contain eligible pickups or accepted quests.
 do
 	local function Valid(place)
 		return place and place.map > 0 and place.x >= 0 and place.x <= 1 and place.y >= 0 and place.y <= 1
@@ -1866,9 +1865,9 @@ do
 					for _, step in ipairs(journey.steps) do
 						for _, id in ipairs(step.quests) do
 							local given = ns.Data.quests[id]
-							local fine = Valid(given.start)
+							local fine = Valid(step)
 								and not given.raid
-								and Model.Eligible(ns.Data, who, done, carried, id)
+								and (carried[id] ~= nil or Model.Eligible(ns.Data, who, done, carried, id))
 							placeless = placeless + (fine and 0 or 1)
 						end
 					end
@@ -1877,7 +1876,7 @@ do
 		end
 	end
 	equal(cards > 0, true, "dungeon card: offered to a fixture with dungeons on")
-	equal(placeless, 0, "dungeon card: every step an eligible giver with a data place")
+	equal(placeless, 0, "dungeon card: every step has a real place and an eligible or accepted quest")
 	equal(offCards, 0, "dungeon card: none with dungeons off")
 	equal(strandedCards > 0, true, "dungeon card: at the cap even with dungeons off")
 	-- The Deadmines card's title: the client's name when it has one (Spanish here), the data's when it answers nil.
