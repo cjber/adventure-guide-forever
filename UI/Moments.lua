@@ -66,7 +66,7 @@ local function Text(journey)
 	end
 	local zone = journey.zone
 	local name = zone and (ns.State.MapName(zone) or ns.Data.zones[zone].name) or journey.title
-	return L.MOMENT:format(name)
+	return ns.Overview.VisitWarning(journey) or L.MOMENT:format(name)
 end
 
 -- An aside no provider gives any more leaves the set, so the trainer's next spells are new again; so does anything a
