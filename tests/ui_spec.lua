@@ -1378,7 +1378,7 @@ do
 	end
 	h.Hover(pin)
 	local expected = {
-		"title: " .. index .. ". Defeat Bael'dun Excavator slain: 7/15 · Gann's Reclamation",
+		"title: " .. index .. ". Complete 2 objectives · Gann's Reclamation",
 		"highlight: quests in progress",
 		"colored: [23] Gann's Reclamation",
 		"highlight: - Bael'dun Excavator slain: 7/15",

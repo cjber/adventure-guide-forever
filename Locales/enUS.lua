@@ -245,7 +245,7 @@ ns.L = {
 	-- A card's levels at the right of its title, and a group's page beside its arrows.
 	LEVELS = "%d-%d",
 	LEVELS_FROM = "%d+",
-	OBJECTIVE_COUNT = "- %d/%d",
+	OBJECTIVE_PROGRESS = "%d/%d",
 	-- The guide's settings menu, then the addon's settings page.
 	MENU_QUESTS = "Quests",
 	MENU_DUNGEONS = "Dungeons",
@@ -408,6 +408,7 @@ ns.L = {
 	SETTING_STEP_SOUND_TOOLTIP = "Play a short sound once when you finish a route step.",
 	STEP_PICKUP = "Pick up: %s",
 	STEP_OBJECTIVE = "Complete objectives · %s",
+	STEP_SHARED_OBJECTIVES = "Complete %d objectives · %s",
 	STEP_COLLECT = "Collect %s · %s",
 	STEP_DEFEAT = "Defeat %s · %s",
 	STEP_WORK = "Complete %s · %s",

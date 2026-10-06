@@ -3,11 +3,11 @@ card (chosen) | zone:1437 | Wetlands story | Chapter 1 of 6 | A chain begins wit
   step 1 | town:1437:150 | Visit Menethil Harbor: Pick up 5 | 1437 0.1090,0.5964 | 5 to pick up
   step 2 | area:98197:4 | Complete objectives · Spoils of War | 1437 0.0710,0.6560 | after you pick it up | 105 yd | 98197/4
   step 3 | area:98197:5 | Complete objectives · Spoils of War | 1437 0.0500,0.5230 | after you pick it up | 79 yd | 98197/5
-  step 4 | area:279:0 | Complete objectives · Claws from the Deep | 1437 0.1530,0.3980 | after you pick it up | 47 yd | 279/0 279/4
+  step 4 | area:279:0 | Complete 2 objectives · Claws from the Deep | 1437 0.1530,0.3980 | after you pick it up | 47 yd | 279/0 279/4
   step 5 | town:1437:150:2 | Visit Menethil Harbor: Turn in 2 | 1437 0.0832,0.5857 | Opens the next chapter here
   step 6 | area:98282:4 | Complete objectives · Alchemical Hazards | 1437 0.5000,0.5880 | after you pick it up | 86 yd | 98282/4
   step 7 | town:1437:1025 | Visit The Green Belt: Pick up 2 | 1437 0.4992,0.3937 | 2 to pick up
-  step 8 | area:276:0 | Complete objectives · Tramping Paws | 1437 0.6170,0.7220 | after you pick it up | 108 yd | 276/0 276/1
+  step 8 | area:276:0 | Complete 2 objectives · Tramping Paws | 1437 0.6170,0.7220 | after you pick it up | 108 yd | 276/0 276/1
   step 9 | town:1437:1025:2 | Turn in: Tramping Paws | 1437 0.5637,0.4040 | Opens the next chapter here
   step 10 | town:1432:144 | Pick up: Report to Mountaineer Rockgar | 1432 0.3263,0.4974 | Begins a new story
 card | zone:1432 | Head to Loch Modan | 14 quests near your level | 5 quests will soon turn grey | map 1432

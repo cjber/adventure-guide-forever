@@ -271,6 +271,27 @@ local function Objective(quest, entry, slot, counted)
 	}
 end
 
+---@param objectives AGFAreaObjective[]
+---@return AGFAreaObjective[]
+local function LiveObjectives(data, log, objectives)
+	local slots, result = {}, {}
+	for _, old in ipairs(objectives) do
+		local entry, quest = log[old.id], data.quests[old.id]
+		if entry and quest then
+			if not slots[old.id] then
+				slots[old.id] = (OpenSlots(quest, entry))
+			end
+			local counted = slots[old.id][old.slot]
+			if counted and not entry.complete then
+				result[#result + 1] = Objective(quest, entry, old.slot, counted)
+			end
+		else
+			result[#result + 1] = old
+		end
+	end
+	return result
+end
+
 -- Quest `quest`'s node for objective `slot`: its first area for the slot (the generator orders them) with its radius,
 -- counting `objective`. Nil when the data has no area for the slot or its place is not a valid one.
 ---@param quest AGFQuest
@@ -349,6 +370,9 @@ end
 ---@param a AGFNode
 ---@param b AGFNode
 local function Near(data, a, b)
+	if a.map ~= b.map then
+		return false
+	end
 	local yards = Model.Yards(data, a, b)
 	if yards then
 		return Inside(yards, a, b)
@@ -588,6 +612,7 @@ ns.Planner.Steps = {
 	Inside = Inside,
 	Locate = Locate,
 	LogSteps = LogSteps,
+	LiveObjectives = LiveObjectives,
 	Nodes = Nodes,
 	Opens = Opens,
 	Optional = Optional,
