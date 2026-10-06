@@ -94,6 +94,7 @@ its types reviewed), and the tool versions in
   its line says why its shape is right (`-- art-ok: reason`); the specs fail on a file drawn over an atlas's leftover
   crop, and `tools/screenshots.py` on any atlas drawn off its own shape.
 - Commits are signed (`git commit -S`) with the personal email.
+- Release: load `.agents/skills/release/SKILL.md` when preparing or publishing a release.
 - Quality: load `.agents/skills/sift-project/SKILL.md` before cleanup, dead-code or refactoring work.
 - A quest whose eligibility the data cannot establish is never recommended, and a step never points at
   coordinates the data does not have.
