@@ -469,7 +469,6 @@ local function Build(content)
 	end)
 	alternatives.Open = false
 	alternatives.Chevron:SetText("+")
-	alternatives:SetWidth(WIDTH)
 	alternatives:SetPoint("TOPLEFT", LEFT + 80, -(TOP + FEATURED_HEIGHT + Window.DIVIDER_SPAN + 1))
 	alternatives:SetWidth(WIDTH - 80)
 	for index = 1, COLUMNS do

@@ -300,7 +300,7 @@ local function Build()
 	ns.Providers.OnChange(Refresh)
 
 	for index, tab in ipairs(tabs) do
-		if tab.key == saved or saved == nil and tab.key == "journeys" then
+		if tab.key == saved then
 			selected = index
 		end
 	end
