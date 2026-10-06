@@ -827,7 +827,7 @@
 
 -- Asides (Asides.lua, docs/design.md §2.11): one-line hints beside the journeys, never a route.
 ---@class AGFAside
----@field category? string the Next page's focus for this hint
+---@field category? AGFRecommendationCategory the Next page's focus for this hint
 ---@field reason? string why the provider offers this hint
 ---@field key string stable identity for Skip and Not interested, e.g. "trainer"
 ---@field text string the whole line, in the game's voice
@@ -861,11 +861,14 @@
 ---@field step? AGFStep
 ---@field aside? AGFAside
 
+---@alias AGFRecommendationCategory "training"|"professions"
+---@alias AGFRecommendationFocus "balanced"|"quests"|"dungeons"|AGFRecommendationCategory
+
 ---@class AGFRecommendations
----@field FOCUSES string[]
----@field Focus fun(): string
+---@field FOCUSES AGFRecommendationFocus[]
+---@field Focus fun(): AGFRecommendationFocus
 ---@field SetFocus fun(focus: string)
----@field Build fun(route: AGFRoute, asides: AGFAside[], focus: string, player: AGFPlayer): AGFRecommendation[]
+---@field Build fun(route: AGFRoute, asides: AGFAside[], focus: AGFRecommendationFocus, player: AGFPlayer): AGFRecommendation[]
 ---@field Current fun(): AGFRecommendation[]
 ---@field ActionLabel fun(item: AGFRecommendation): string
 ---@field CanAct fun(item: AGFRecommendation): boolean
@@ -1567,7 +1570,7 @@
 ---@field Select fun(index: integer)
 ---@field Refresh fun()
 ---@field OfferKey fun()
----@field RefreshToday fun(inset: Frame)
+---@field RefreshToday fun(inset: Frame, visible: boolean)
 ---@field CreateList fun(parent: Frame, x: number, y: number, width: number, height: number, rowHeight: number, paint: AGFListPaint, click: AGFListClick, create: AGFListCreate): AGFDungeonListWidget
 ---@field SetList fun(widget: AGFDungeonListWidget, values: table[])
 ---@field ScrollListTo fun(widget: AGFDungeonListWidget, index: integer)

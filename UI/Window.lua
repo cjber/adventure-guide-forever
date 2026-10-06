@@ -304,7 +304,7 @@ function Refresh()
 	local player = ns.State.Player()
 	local zone = player.map and ns.State.ZoneName(player.map)
 	frame.Subtitle:SetText(zone and L.OVERVIEW_WHERE:format(zone, player.level) or "")
-	Window.RefreshToday(frame.Inset)
+	Window.RefreshToday(frame.Inset, tabs[selected].key ~= "next")
 	for index, tab in ipairs(tabs) do
 		RefreshTabLabel(frame.Tabs[index], tab)
 	end

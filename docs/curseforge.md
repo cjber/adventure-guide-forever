@@ -1,8 +1,8 @@
 Developed with AI assistance; changes are reviewed and checked with automated tests, linting and type checks and performance budgets.
 
-I wanted a levelling guide that left me room to wander. Adventure Guide Forever offers a few journeys from your level and quest log, with a route for the one you pick. It looks like it came with the game: a tab beside Quests, retail's Journeys cards and the game's own objective tracker.
+I wanted a levelling guide that left me room to wander. Adventure Guide Forever suggests journeys from your level and quest log, with a route for the one you pick. It looks like it came with the game.
 
-Quests come from your installed QuestieDB, and Questie applies its live availability rules. If you'd rather follow another guide's route, you can hide the guide's tracker in settings.
+QuestieDB supplies quests; Questie checks pickup availability. You can hide the tracker when following another guide.
 
 ![Choosing a journey and following its route](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif)
 
@@ -18,11 +18,11 @@ Pick one and Shortest Path Forever walks you to each stop in turn.
 
 ![The Adventure Guide window](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window.png)
 
-The window leads with your next task and why it fits. Start or resume its route, or choose another adventure below.
+Start or resume a journey, or choose another below.
 
 ![The Next page](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_next.png)
 
-Choose a focus and find something useful to do. Your journey stays chosen while you look at training, professions or dungeon suggestions.
+Choose a focus and find something useful to do.
 
 ![The Professions tab](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_professions.png)
 
@@ -50,17 +50,16 @@ The full guide continues across pages. These images are generated previews of th
 
 ## Features
 
-- **Dungeons.** Browse dungeon quests, check what needs picking up before you go and plan a journey to their givers. The list also holds Forever's raids and the other raid instances, each raid tagged with its group size. With Atlas and its Classic module, a dungeon the guide offers is pinned at its entrance: the pin, or the Maps control, opens its interior map, its wings and floors chosen from the game's own dropdown. [Adventure Guide for Classic](https://www.curseforge.com/wow/addons/adventure-guide-for-classic) is the recommended companion for a dungeon's bosses and loot: the Bosses and loot control opens it from the tab.
-- **Full guide.** Page through the current route followed by the area's Questie outline. Later entries stay outline-only until Questie confirms they are available.
-- **Journeys.** Finish loose ends, follow a zone's story, head somewhere suited to your level or pick up class quests. Each card says why it fits, under collapsible headers like the quest log's. Dungeon and battleground journeys are opt-in.
-- **Your next task.** The featured card shows what to do next, why it fits and a Start, Resume or Show on Map button. Other adventures stay below it.
-- **Choose and go.** Picking a journey starts its route with Shortest Path Forever, or the game's waypoint without it. Stop clears only the route the guide started; a waypoint you set yourself stays.
-- **A route that stays with you.** A ready hand-in or a pickup right beside you comes first, and while you stand in an objective area the map shows the area rather than pointing at it. The chosen journey survives new quests, travel and a reload, and the quest catalogue is kept between logins, so the route is on the tracker from the start.
-- **Your order.** Drag steps or use their right-click menu. Moves that put a hand-in before its pickup are greyed out. Towns list their quest givers, ticked as you finish with them.
-- **Time to play.** Pick 15, 30 or 60 minutes to shorten the route using rough travel and quest-time estimates.
-- **Search.** Search a quest to see which requirements you meet and what is missing.
-- **Other things to do.** Hints cover trainers, professions, unspent talents, a hearth you could set and an area you have not seen. The PvP tab shows your rank, its next reward and available battlegrounds.
-- **Your say.** Skip a step for this session, hide a journey or rule out a quest. Shift-click a quest in search, or a quest giver on the map, to add its quests to the route. The guide never abandons quests for you. Map pins and quest-giver marks are off by default.
+- **What to do next.** Choose a focus, see why a suggestion fits and start its guidance. Looking at alternatives keeps your current journey chosen.
+- **Journeys.** Finish loose ends, follow zone stories or pick up class quests. Dungeon and battleground journeys are opt-in.
+- **Dungeons.** Check quests and prerequisites, then visit their givers. Atlas opens interior maps. [Adventure Guide for Classic](https://www.curseforge.com/wow/addons/adventure-guide-for-classic) supplies bosses and loot.
+- **Full guide.** Browse the route and the area's quest outline. Later entries wait for Questie's availability checks.
+- **Choose and go.** Use Shortest Path Forever or the game's waypoint. Stop clears only guidance the addon started.
+- **Your route.** Your journey survives travel and reloads. Ready hand-ins come first. Towns group quest givers into checklists.
+- **Your order.** Drag steps or use their menu. Moves that break quest order are greyed out.
+- **Time to play.** Choose 15, 30 or 60 minutes using rough travel and quest-time estimates.
+- **Search and hints.** Check quest requirements, nearby training, talents and battlegrounds.
+- **Your say.** Skip steps or hide journeys. Shift-click search results or map quest givers to add quests. Nothing abandons quests for you. Map marks are off by default.
 
 Forever's new quests are only considered once they are in your log, and a missing location stays missing. This is not a complete levelling walkthrough.
 

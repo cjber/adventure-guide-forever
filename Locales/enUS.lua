@@ -432,7 +432,7 @@ ns.L = {
 	COMPLETION_EMPTY = "No completion categories are available here.",
 	COMPLETION_DONE = "Nothing left to do here.",
 	COMPLETION_LOADING = "Loading completion progress...",
-	COMPLETION_UNAVAILABLE = "Completion progress is unavailable here.",
+	COMPLETION_UNAVAILABLE = "Progress unavailable.",
 	COMPLETION_COUNTS = "%d/%d",
 	-- Legacy Forever's own words for items it can't check yet, with its hint when one category holds them all.
 	COMPLETION_NOT_KNOWN = "%d not known yet",

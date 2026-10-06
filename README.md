@@ -40,18 +40,17 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 
 - **What to do next.** The Next page brings journeys, training and profession hints together. Choose a focus, see why a suggestion fits, and start its guidance or browse alternatives. Your current journey stays chosen when you change focus.
 
-- **Dungeons.** Browse dungeon quests, see each one's detail and rewards, check what needs picking up before you go and plan a journey to their givers. The list also holds Forever's raids and the other raid instances, each raid tagged with its group size. With Atlas and its Classic module, a dungeon the guide offers is pinned at its entrance: the pin, or its Maps control, opens the instance's interior map, its wings and floors chosen from the game's own dropdown. Entrance directions come from QuestieDB or Tweaks Forever, and Adventure Guide for Classic opens from the Bosses and loot control for a dungeon's bosses and loot.
-- **Journeys.** Loose ends from your log, a zone's story, nearby zones suited to your level and class quests. The cards sit under collapsible headers like the quest log's: Continue, Zones for your level, Dungeons and Battlegrounds. Dungeon and battleground journeys are opt-in. Each card gives a reason to go; choose one to see its route.
-- **Full guide.** Page through the current route followed by the area's remaining Questie quests, ten rows a page. Later entries stay outline-only until Questie confirms they are available.
-- **Your next task.** The featured card shows what to do next, why it fits and a Start, Resume or Show on Map button. Other adventures stay below it.
-- **Choose and go.** Picking a journey starts guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop and the back arrow clear only the route the guide started; a waypoint you set yourself stays.
-- **A route that stays with you.** The chosen journey survives new quests, travel and a reload. A ready hand-in or a pickup right beside you comes first, and while you stand in an objective area the map shows the area rather than pointing at it. Town stops group pickups and hand-ins, with a checklist of quest givers. The tracker shows the current stop and the next one.
-- **Your order.** Drag steps or right-click for *Do this next*, *Do this sooner* or *Do this later*. Moves that break quest order are greyed out. *Back to suggested order* restores the plan.
-- **Time to play.** Choose 15, 30 or 60 minutes to shorten the route using rough travel and quest-time estimates. Leave it at *No limit* for the full route.
-- **Stories and search.** Stories read as chapters without naming later quests. A chapter total appears only when the data proves it. Type three letters in search to see a quest's requirements and which ones you meet.
-- **Other things to do.** Hints cover class trainers, profession training, unspent talents, a hearth you could set and an area you have not seen. The PvP tab shows your rank, its next reward and battlegrounds open at your level, with the nearest battlemaster.
-- **Professions and completion.** SkillUp Forever fills the Professions tab with recipes, next steps and reagents. Legacy Forever fills Completion with zone progress and nearby objectives. Tweaks Forever supplies class spell hints and dungeon entrance locations.
-- **Your say.** Skip a step until your next reload, hide a journey or rule out a quest on this character. Shift-click a quest in search, or a quest giver on the map, to add its quests to the route. *Skipped* brings them back. The guide can suggest quests to drop from a full log, but never abandons anything for you. Map pins and quest-giver marks are off by default.
+- **Dungeons.** Browse dungeon and raid quests, check pickups and prerequisites, then plan a trip to their givers. Atlas and its Classic module open interior maps with wings and floors. Adventure Guide for Classic opens bosses and loot. Entrance directions come from QuestieDB or Tweaks Forever.
+- **Journeys.** Finish loose ends, follow a zone's story, find nearby zones suited to your level or take class quests. Cards explain why each fits, under collapsible headers. Dungeon and battleground journeys are opt-in.
+- **Full guide.** Page through the current route followed by the area's Questie outline. Later entries stay outline-only until Questie confirms they are available.
+- **Choose and go.** Picking a journey starts guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop clears only guidance the addon started.
+- **A route that stays with you.** Your choice survives new quests, travel and a reload. Ready hand-ins and nearby pickups come first. Town stops group quest givers into a checklist. The tracker shows the current stop and the next one.
+- **Your order.** Drag steps or right-click to move them earlier or later. Moves that break quest order are greyed out. *Back to suggested order* restores the plan.
+- **Time to play.** Choose 15, 30 or 60 minutes to shorten the route using rough travel and quest-time estimates. *No limit* keeps the full route.
+- **Stories and search.** Stories read as chapters without naming later quests. Totals appear only when the data proves them. Search shows a quest's requirements and which ones you meet.
+- **Other things to do.** Hints cover trainers, professions, unspent talents, hearths and unexplored areas. PvP shows your rank, its next reward and available battlegrounds, with the nearest battlemaster.
+- **Professions and completion.** SkillUp Forever fills Professions with recipes, next steps and reagents. Legacy Forever fills Completion with zone progress and nearby objectives.
+- **Your say.** Skip a step until your next reload, hide a journey or rule out a quest on this character. Shift-click a search result or map quest giver to add quests. *Skipped* restores hidden suggestions. The guide never abandons quests for you. Map marks are off by default.
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_order.png" width="640" alt="A journey in your chosen order"></p>
 
@@ -81,18 +80,17 @@ Translations are welcome as a pull request, or pasted into an issue, on GitHub: 
 
 ## Where the quests come from
 
-Quest data comes from the installed Forever edition of QuestieDB, including quests outside the old bundled catalogue. Questie's live policy checks prerequisites, events and character restrictions. The game supplies finished quests, objective progress and cached quest details. The catalogue is kept between logins, so the route is on the tracker from the start. Dungeon and raid bosses and loot come from [Adventure Guide for Classic](https://www.curseforge.com/wow/addons/adventure-guide-for-classic), the recommended companion for them. Route geometry, transport and trainer records are a separate source from the quest catalogue. Missing QuestieDB is shown explicitly; no smaller quest list silently replaces it.
+The installed Forever edition of QuestieDB supplies quests and locations. Questie checks pickup availability; the game supplies finished quests and objective progress. The catalogue is kept between logins. Missing QuestieDB is shown explicitly.
 
-Forever's new quests are only considered once they are in your log. The guide never recommends a quest whose eligibility it cannot establish or points at a location it does not have. This is not a complete levelling walkthrough.
+Forever's new quests are only considered once they are in your log. The guide recommends only quests whose eligibility it can establish and never invents a location. This is not a complete levelling walkthrough.
 
 ## Works alongside
 
-QuestieDB supplies quest records, and Questie is needed for pickup recommendations. [Adventure Guide for Classic](https://www.curseforge.com/wow/addons/adventure-guide-for-classic) is the recommended companion for dungeon and raid bosses and loot: the Dungeons tab's Bosses and loot control opens it on the dungeon you are looking at. Other integrations are optional: [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting routes, [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion. The guide's tracker has its own switch when you prefer another guide.
+QuestieDB and Questie are needed for pickup recommendations. Optional companions are [Adventure Guide for Classic](https://www.curseforge.com/wow/addons/adventure-guide-for-classic) for bosses and loot, [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting and [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion. The guide's tracker has its own switch when you prefer another guide.
 
 ## Development
 
 Developed with AI assistance; changes are reviewed and checked with automated tests, linting and type checks and performance budgets.
-
 
 Run the full gate in [AGENTS.md](AGENTS.md#commands). It needs LuaJIT, luacheck, StyLua, LuaLS 3.19.1, Python and ruff; type checking fetches pinned WoW API annotations on first use.
 

@@ -6,13 +6,14 @@ local Window = ns.Window
 -- Next reads existing offers and delegates navigation to Recommendations (docs/design.md, Next page).
 
 local Recommendations = ns.Recommendations
-local TOP, LEFT = Window.TOP, Window.LEFT
+local TOP, LEFT = Window.TOP - 36, Window.LEFT
 local WIDTH = Window.INSET_WIDTH - LEFT - Window.RIGHT
 local FOCUS_GAP, FOCUS_HEIGHT = 6, 22
-local CARD_TOP, CARD_HEIGHT, RING, PAD = TOP + 48, 140, 44, 18
+local CARD_TOP, CARD_HEIGHT, RING, PAD = TOP + 48, 176, 44, 18
 local ALTERNATIVES, ROW_HEIGHT, ROW_PITCH = 3, 36, 40
 local ACTION_WIDTH, ACTION_HEIGHT = 110, 22
 local BROWSE_WIDTH = 150
+---@type table<AGFRecommendationFocus, string>
 local FOCUS_LABELS = {
 	balanced = L.NEXT_FOCUS_BALANCED,
 	quests = L.NEXT_FOCUS_QUESTS,
@@ -25,6 +26,7 @@ local FOCUS_LABELS = {
 ---@field item? AGFRecommendation
 
 ---@class AGFNextCard : AGFWindowCard
+---@field Art AGFZoneBackdrop
 ---@field Advice FontString
 ---@field item? AGFRecommendation
 ---@field Icon AGFRingIcon
@@ -39,7 +41,7 @@ local FOCUS_LABELS = {
 ---@field Advice FontString
 
 ---@class AGFNextPage
----@field Focus table<string, Button>
+---@field Focus table<AGFRecommendationFocus, Button>
 ---@field Card AGFNextCard
 ---@field Rows AGFNextRow[]
 ---@field Heading FontString
@@ -106,7 +108,7 @@ end
 ---@param content Frame
 ---@return AGFNextCard
 local function CreateMain(content)
-	local card = Window.CreateCard(content, false) --[[@as AGFNextCard]]
+	local card = Window.CreateCard(content, true) --[[@as AGFNextCard]]
 	Window.SizeCard(card, WIDTH, CARD_HEIGHT, 0.8)
 	card:SetPoint("TOPLEFT", LEFT, -CARD_TOP)
 	card:EnableMouse(true)
@@ -236,7 +238,11 @@ local function Refresh()
 	end
 	local focus = Recommendations.Focus()
 	for name, button in pairs(page.Focus) do
-		button:SetEnabled(name ~= focus)
+		if name == focus then
+			button:LockHighlight()
+		else
+			button:UnlockHighlight()
+		end
 	end
 	local items = Recommendations.Current()
 	local lead = items[1]
@@ -246,12 +252,25 @@ local function Refresh()
 	if lead then
 		local card = page.Card
 		card.item = lead
+		local place = lead.step or lead.aside and lead.aside.place
+		local width, height = card:GetSize(true)
+		ns.ZoneIcon.SetBackdrop(
+			card.Art,
+			width - 4,
+			height - 4,
+			place and place.map,
+			place and place.x,
+			place and place.y,
+			640
+		)
 		Window.SetRingIcon(card.Icon, lead.icon)
 		card.Title:SetText(lead.title)
 		card.Reason:SetText(lead.reason)
 		SetAction(card.Action, card.Advice, lead)
 	else
-		page.Empty:SetText(ns.RouteSettled() and L.NEXT_EMPTY or L.NEXT_LOADING)
+		page.Empty:SetText(
+			(ns.SourceHint and ns.SourceHint()) or (ns.RouteSettled() and L.NEXT_EMPTY or L.NEXT_LOADING)
+		)
 	end
 	for index, row in ipairs(page.Rows) do
 		local item = items[index + 1]
@@ -261,5 +280,13 @@ local function Refresh()
 		end
 	end
 end
+
+local combat = CreateFrame("Frame")
+combat:RegisterEvent("PLAYER_REGEN_DISABLED")
+combat:SetScript("OnEvent", function()
+	if page and page.Heading:IsVisible() then
+		Refresh()
+	end
+end)
 
 Window.AddTab({ key = "next", label = L.TAB_NEXT, Build = Build, Refresh = Refresh })

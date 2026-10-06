@@ -140,11 +140,12 @@ do
 	local window = OpenNext(h)
 	local R = h.ns.Recommendations
 	equal(R.Focus(), "balanced", "balanced first")
-	equal(h.G.AdventureGuideForeverNextFocusbalanced:IsEnabled(), false, "the focus in force is the pressed one")
+	equal(h.G.AdventureGuideForeverNextFocusbalanced.highlightLocked, true, "the selected focus is highlighted")
+	equal(h.G.AdventureGuideForeverNextFocusbalanced:IsEnabled(), true, "the selected focus stays available")
 	h.Click(h.G.AdventureGuideForeverNextFocusquests)
 	equal(R.Focus(), "quests", "a focus button sets it")
-	equal(h.G.AdventureGuideForeverNextFocusquests:IsEnabled(), false, "and becomes the pressed one")
-	equal(h.G.AdventureGuideForeverNextFocusbalanced:IsEnabled(), true, "the old one is free")
+	equal(h.G.AdventureGuideForeverNextFocusquests.highlightLocked, true, "the new focus is highlighted")
+	equal(h.G.AdventureGuideForeverNextFocusbalanced.highlightLocked, false, "the old highlight clears")
 	h.Click(h.G.AdventureGuideForeverNextBrowsedungeons)
 	equal(h.G.AdventureGuideForeverDB.window.tab, "dungeons", "Browse dungeons jumps to the Dungeons tab")
 	equal(window.selectedTab, 5, "the Dungeons tab is shown")
@@ -155,6 +156,24 @@ do
 end
 
 --[[ Empty and loading ]]
+
+do
+	local h = harness.load({ talents = 1 })
+	OpenNext(h)
+	local aside
+	for _, hint in ipairs(h.ns.Asides.All()) do
+		if hint.category == "training" and not hint.place then
+			aside = hint
+		end
+	end
+	assert(aside, "a real talent hint is available")
+	equal(Texts(h)[aside.text], 1, "Next shows the hint once")
+	h.ns.Window.Select(1)
+	equal(Texts(h)[aside.text], 1, "browsing pages retain Today")
+	h.ns.Window.Select(#h.ns.Window.Tabs())
+	equal(Texts(h)[aside.text], 1, "returning to Next hides the existing Today chip")
+	clean(h, "Today visibility")
+end
 
 do
 	local h = Load()
@@ -176,6 +195,27 @@ do
 end
 
 --[[ A click goes through the real Act, which refuses what the route no longer holds ]]
+
+do
+	local h = harness.load({ questiedb = false })
+	OpenNext(h)
+	equal(Empty(h):GetText(), h.ns.L.QUESTIE_ENABLE, "missing quest data explains what to enable")
+	clean(h, "missing quest data")
+end
+
+do
+	local h = Load()
+	Stub(h, { Item("lead", { aside = { place = { map = 1413, x = 0.5, y = 0.5 } } }) })
+	OpenNext(h)
+	local button = h.G.AdventureGuideForeverNextAction
+	equal(button:IsEnabled(), true, "navigation is available before combat")
+	h.SetCombat(true)
+	equal(button:IsEnabled(), false, "entering combat visibly disables navigation")
+	h.SetCombat(false)
+	h.flush()
+	equal(button:IsEnabled(), true, "leaving combat restores navigation")
+	clean(h, "combat presentation")
+end
 
 do
 	local h = Load()

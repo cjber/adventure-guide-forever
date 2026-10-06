@@ -17,7 +17,7 @@ end
 
 function Recommendations.Focus()
 	local focus = ns.Prefs().recommendationFocus
-	return Offered(focus) and focus or "balanced"
+	return Offered(focus) and focus --[[@as AGFRecommendationFocus]] or "balanced"
 end
 
 function Recommendations.SetFocus(focus)
@@ -29,7 +29,7 @@ end
 
 ---@param route AGFRoute
 ---@param asides AGFAside[]
----@param focus string
+---@param focus AGFRecommendationFocus
 ---@param player AGFPlayer
 ---@return AGFRecommendation[]
 function Recommendations.Build(route, asides, focus, player)

@@ -1459,6 +1459,10 @@ function harness.load(options)
 	G.strtrim = function(text)
 		return (text:match("^%s*(.-)%s*$"))
 	end
+	G.strlenutf8 = function(text)
+		local _, count = text:gsub("[^\128-\191]", "")
+		return count
+	end
 	G.GetBuildInfo = function()
 		return "1.60.1", "69913", "Sep 1 2026", 16001
 	end
