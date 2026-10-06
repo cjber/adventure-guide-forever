@@ -40,3 +40,6 @@ card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 
   step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level
 card | dungeon:36 | Deadmines | 3 quests for this dungeon | - | map 1453
   step 1 | town:1453:0 | Visit Stormwind City: Pick up 3 | 1453 0.7031,0.4082 | 3 to pick up
+card | dungeon:43 | Wailing Caverns | 2 quests for this dungeon | - | map 1413
+  step 1 | town:1413:392 | Pick up: Trouble at the Docks | 1413 0.6309,0.3761 | near your level
+  step 2 | town:1413:387 | Pick up: Deviate Hides | 1413 0.4599,0.3566 | near your level

@@ -3,11 +3,11 @@ local _, ns = ...
 local L = ns.L
 local Window, Integrations = ns.Window, ns.Integrations
 
--- The window's Professions tab (docs/design.md §2.19): SkillUp Forever's next skill-ups for one profession at a time,
+-- The window's Professions view (docs/design.md §2.19): SkillUp Forever's next skill-ups for one profession at a time,
 -- a card of its rank and next recipes over the profession's own art, its next steps and the reagents on the right.
 -- Without a SkillUp Forever that has the API (or with nothing to level) the tab stays, greyed, and says so.
 
-local CARD_WIDTH, RECIPE_ROWS, RECIPE_TOP, RECIPE_PITCH = Window.Cards.width, 5, 96, 40
+local CARD_WIDTH, RECIPE_ROWS, RECIPE_TOP, RECIPE_PITCH = Window.ACTIVITY_CARD_WIDTH, 5, 96, 40
 local STEP_ROWS, STEP_HEIGHT, STEP_PITCH, STEP_HEAD = 3, 44, 49, 18
 local REAGENT_ROWS, REAGENT_PITCH, REAGENT_ICON = 8, 22, 18
 local PICKER_SIZE, PICKER_GAP = 22, 12
@@ -43,8 +43,8 @@ local SOURCES = {
 }
 
 local TOP = Window.TOP
-local SIDE_LEFT = Window.Cards.sideLeft
-local SIDE_WIDTH = Window.Cards.sideWidth
+local SIDE_LEFT = Window.ACTIVITY_LEFT + Window.ACTIVITY_CARD_WIDTH + 12
+local SIDE_WIDTH = Window.INSET_WIDTH - Window.RIGHT - SIDE_LEFT
 
 ---@class AGFRecipeRow : Frame
 ---@field Icon AGFRingIcon
@@ -201,7 +201,7 @@ end
 
 ---@param content Frame
 local function Build(content)
-	empty = Window.CreateEmpty(content, "Professions-Recipe-Background")
+	empty = Window.CreateEmpty(content, "Professions-Recipe-Background", Window.ACTIVITY_LEFT)
 
 	local picture, inner = Window.CreatePictureCard(content, L.FROM_SKILLUP)
 	card = picture --[[@as AGFProfessionCard]]
@@ -384,4 +384,4 @@ local function Refresh(content)
 	end
 end
 
-Window.AddTab({ key = "professions", label = L.TAB_PROFESSIONS, Build = Build, Refresh = Refresh, Muted = Muted })
+Window.AddActivity({ key = "professions", label = L.TAB_PROFESSIONS, Build = Build, Refresh = Refresh, Muted = Muted })

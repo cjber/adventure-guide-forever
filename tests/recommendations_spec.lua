@@ -21,23 +21,23 @@ local trainer = {
 }
 local profession = { key = "profession", text = "Train Mining", icon = "profession", category = "professions" }
 local route = { chosen = true, journey = journey.key, journeys = { journey, dungeon, bg }, steps = { step } }
-Equal(R.Build(route, { trainer }, "balanced", player)[1].journey, journey.key, "chosen route survives a nearby trainer")
+Equal(R.Build(route, { trainer }, player)[1].journey, journey.key, "chosen route survives a nearby trainer")
 route.chosen = false
-Equal(R.Build(route, { trainer }, "balanced", player)[1].aside, trainer, "nearby training before an unchosen route")
-Equal(R.Build(route, { trainer }, "training", player)[1].aside, trainer, "training focus")
-Equal(R.Build(route, { trainer }, "professions", player)[1], nil, "empty focus stays honest")
-Equal(R.Build(route, { profession }, "professions", player)[1].aside, profession, "unplaced hint remains advice")
-Equal(#R.Build(route, { trainer }, "quests", player), 1, "quest focus excludes dungeon and battleground")
-Equal(R.Build(route, {}, "dungeons", player)[1].journey, dungeon.key, "dungeon focus uses offered journeys")
-Equal(#R.Build(route, { trainer, trainer }, "training", player), 1, "same aside appears once")
-ns.Prefs().recommendationFocus = "bad save"
-Equal(R.Focus(), "balanced", "unknown focus falls back")
-local before = ns.Prefs().journey
-R.SetFocus("training")
-Equal(ns.Prefs().journey, before, "focus never chooses a journey")
-Equal(R.Focus(), "training", "valid focus persists")
-R.SetFocus("invalid")
-Equal(R.Focus(), "training", "unknown focus ignored")
+Equal(R.Build(route, { trainer }, player)[1].aside, trainer, "nearby training before an unchosen route")
+Equal(R.Build(route, { profession }, player)[2].aside, profession, "unplaced hint remains advice")
+Equal(#R.Build(route, { trainer, trainer }, player), 4, "same aside appears once")
+
+local errand = { key = "zone:1445", kind = "zone", zone = 1445, title = "Dustwallow Marsh", steps = { step } }
+local low = {}
+for key, value in pairs(player) do
+	low[key] = value
+end
+low.level = 21
+local warning =
+	R.Build({ journey = errand.key, chosen = true, journeys = { errand }, steps = { step } }, {}, low)[1].reason
+Equal(warning, ns.L.QUEST_VISIT_WARNING:format(step.title, 35, 45), "high-level zone describes a quest visit")
+low.level = 40
+Equal(ns.Overview.VisitWarning(errand, low), nil, "normal zone needs no visit warning")
 
 local savedRoute, savedAsides = ns.Route, ns.Asides.All
 local settled = true

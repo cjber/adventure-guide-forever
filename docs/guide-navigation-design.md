@@ -8,9 +8,7 @@ should not need to understand the addon's modules or companion APIs to choose an
 
 ## Main page
 
-Journeys is the main page and the first page for a new character. Suggestions belong
-inside it. Remove the separate Next tab, its five focus buttons and its duplicate
-Browse buttons. Keep one featured area rather than stacking two recommendation cards.
+Journeys is the main page and the first page for a new character. Suggestions share its featured area with route guidance.
 
 When following a journey, the featured area shows its name, current objective and
 live count, a short reason or destination, and the next two steps. Its primary action
@@ -28,7 +26,7 @@ details; Start commits the choice. Keep session length beside journey controls.
 Class spell reminders and automatic spell-training visits are off by default; an
 explicit Route setting enables them. Unspent talent and profession hints remain
 independent. Show each enabled trainer or profession hint once, as a compact contextual row, rather
-than repeating it in the featured area and the Today strip.
+than repeating it in the featured area and the Today strip are removed.
 
 ## Navigation
 
@@ -98,8 +96,7 @@ falls back to Adventure Guide; the icon and tooltip retain the addon's identity.
 Show the current objective with its action icon, then up to two upcoming objectives
 with smaller icons and muted text. Keep the preview in route order and update it
 after progress changes. Hide it when there are no further objectives, and keep the
-current objective readable when space is limited. The tracker heading and two-step
-preview are implemented; the wider guide navigation migration below remains planned. Keep zone context secondary.
+current objective readable when space is limited. Keep zone context secondary.
 Avoid repeating a whole quest title on every line.
 Progress changes update the existing route label rather than restarting it.
 
@@ -174,5 +171,4 @@ avoids duplicate actions and uses the space already available. This design also
 removes the proposed segmented focus control: activity browsing already serves that
 choice. Completion stays in Progress rather than being nested under Dungeons.
 
-This document describes the proposed navigation. The current branch still has the
-existing tabs until the migration above is implemented and verified.
+This document describes the guide navigation and its acceptance checks.

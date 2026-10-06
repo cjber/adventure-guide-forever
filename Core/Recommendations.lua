@@ -4,35 +4,11 @@ local L = ns.L
 ---@class AGFRecommendations
 local Recommendations = {}
 ns.Recommendations = Recommendations
-Recommendations.FOCUSES = { "balanced", "quests", "training", "professions", "dungeons" }
-
-local function Offered(focus)
-	for _, value in ipairs(Recommendations.FOCUSES) do
-		if focus == value then
-			return true
-		end
-	end
-	return false
-end
-
-function Recommendations.Focus()
-	local focus = ns.Prefs().recommendationFocus
-	return Offered(focus) and focus --[[@as AGFRecommendationFocus]] or "balanced"
-end
-
-function Recommendations.SetFocus(focus)
-	if Offered(focus) and focus ~= Recommendations.Focus() then
-		ns.Prefs().recommendationFocus = focus
-		ns.Window.Refresh()
-	end
-end
-
 ---@param route AGFRoute
 ---@param asides AGFAside[]
----@param focus AGFRecommendationFocus
 ---@param player AGFPlayer
 ---@return AGFRecommendation[]
-function Recommendations.Build(route, asides, focus, player)
+function Recommendations.Build(route, asides, player)
 	local result, seen = {}, {}
 	local function Journey(journey)
 		local step = journey.steps[1]
@@ -40,21 +16,15 @@ function Recommendations.Build(route, asides, focus, player)
 		if not step or seen[key] then
 			return
 		end
-		local dungeon = journey.kind == "dungeon" or journey.instance ~= nil
-		if
-			focus ~= "balanced"
-			and not (
-				focus == "dungeons" and dungeon
-				or focus == "quests" and not dungeon and journey.kind ~= "battleground"
-			)
-		then
-			return
-		end
+
 		seen[key] = true
 		result[#result + 1] = {
 			key = key,
 			title = step.title,
-			reason = step.reason or journey.reason or L.NEXT_REASON_JOURNEY:format(journey.title),
+			reason = ns.Overview.VisitWarning(journey, player)
+				or step.reason
+				or journey.reason
+				or L.NEXT_REASON_JOURNEY:format(journey.title),
 			icon = ns.Overview.KIND_ICONS[journey.kind],
 			journey = journey.key,
 			step = step,
@@ -62,7 +32,7 @@ function Recommendations.Build(route, asides, focus, player)
 	end
 	local function Aside(aside)
 		local key = "aside:" .. aside.key
-		if seen[key] or focus ~= "balanced" and focus ~= aside.category then
+		if seen[key] then
 			return
 		end
 		seen[key] = true
@@ -75,7 +45,7 @@ function Recommendations.Build(route, asides, focus, player)
 		}
 	end
 	-- A chosen journey stays first even when paused. Nearby training precedes an unchosen route only.
-	if not route.chosen and focus == "balanced" then
+	if not route.chosen then
 		for _, aside in ipairs(asides) do
 			local place = aside.place
 			local yards = place and place.map == player.map and ns.Model.Yards(ns.Data, player, place)
@@ -103,7 +73,7 @@ function Recommendations.Current()
 	if not ns.RouteSettled() then
 		return {}
 	end
-	return Recommendations.Build(ns.Route(), ns.Asides.All(), Recommendations.Focus(), ns.State.Player())
+	return Recommendations.Build(ns.Route(), ns.Asides.All(), ns.State.Player())
 end
 
 ---@param item AGFRecommendation

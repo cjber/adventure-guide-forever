@@ -42,8 +42,7 @@ local function Reorder(route, input)
 	end
 end
 
--- May yield inside a coroutine (the full build is sliced, Model.Journeys); everything after the plan runs in the slice
--- that finishes it.
+-- Planning and presentation use separate frames; only the finished route is committed by Core.
 ---@param input AGFShownInput
 ---@return AGFRoute shown what the views draw: the chosen journey's steps in the player's order, within the session
 ---@return AGFRoute full the same route before the session's trim: the next build's `last`
@@ -76,6 +75,9 @@ function Shown.Build(input)
 			input.last,
 			inputs
 		)
+		if coroutine.running() then
+			coroutine.yield("frame")
+		end
 	end
 	Reorder(full, input)
 	if input.observe then

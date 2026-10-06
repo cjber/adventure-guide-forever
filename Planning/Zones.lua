@@ -74,6 +74,12 @@ local function Rank(data, ids, level, far)
 			+ far(map)
 	end
 	table.sort(choices, function(a, b)
+		-- An errand in a higher-level zone follows zones the player can quest through.
+		local aAbove = data.zones[a].min > level
+		local bAbove = data.zones[b].min > level
+		if aAbove ~= bAbove then
+			return not aAbove
+		end
 		if scores[a] ~= scores[b] then
 			return scores[a] < scores[b]
 		end
@@ -141,13 +147,14 @@ local function Choices(data, player, completed, log, index, prefs, far)
 		end
 		table.sort(candidateIDs)
 	end
+	local chosenDungeon = tonumber((prefs.journey or ""):match("^dungeon:(%d+)$"))
 	for _, id in ipairs(candidateIDs) do
 		local quest = data.quests[id]
 		local instance = quest.dungeon ~= nil
 		-- The completion first: Eligible would say no to most for it, at more cost.
 		if
 			not completed[id]
-			and ((instance and prefs.dungeons) or (not instance and prefs.quests))
+			and ((instance and (prefs.dungeons or quest.dungeon == chosenDungeon)) or (not instance and prefs.quests))
 			and not Dropped(id)
 			and (pinned[id] or not Model.IsGray(quest.level, player.level))
 			and not Hard(quest, player)

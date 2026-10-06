@@ -5,7 +5,7 @@ local L, Art = ns.L, ns.Art
 --[[ The Adventure Guide window (docs/design.md §2.19): the guide on its own, away from the world map, built as the
      Encounter Journal is (Blizzard_EncounterJournal.xml:1333): PortraitFrameTemplate 800x496, an InsetFrameTemplate
      from (4, -60) to (-4, 5) with the tier art at (3, -1), and PanelTabButtonTemplate tabs from BOTTOMLEFT (11, 2).
-     The Today strip (the asides) runs across the top of the inset on every tab; each tab draws below it. A tab is one
+     Activities and Progress share the Today strip; Journeys includes hints in its featured area. A tab is one
      Window.AddTab call from its own file. The window reads the same route, asides and choices as the map panel and
      redraws only while it shows. ]]
 
@@ -18,6 +18,8 @@ local INSET_TOP, INSET_BOTTOM = Window.INSET_TOP, Window.INSET_BOTTOM
 local KEY, BINDING = "SHIFT-J", "ADVENTUREGUIDEFOREVER_WINDOW"
 -- SkillUp's answers, item data and the character's PvP rank progress.
 local EVENTS = {
+	"PLAYER_REGEN_DISABLED",
+	"PLAYER_REGEN_ENABLED",
 	"SKILL_LINES_CHANGED",
 	"BAG_UPDATE_DELAYED",
 	"NEW_RECIPE_LEARNED",
@@ -179,6 +181,16 @@ function Window.Select(index)
 end
 
 local function Build()
+	local state = ns.WindowDB()
+	local saved = state.tab
+	if saved == "next" then
+		saved = "journeys"
+	elseif saved == "completion" then
+		saved = "progress"
+	elseif saved == "professions" or saved == "pvp" or saved == "dungeons" then
+		state.activity, saved = saved, "activities"
+	end
+	state.tab = saved or "journeys"
 	frame = CreateFrame("Frame", NAME, UIParent, "PortraitFrameTemplate") --[[@as AGFWindowFrame]]
 	frame:SetSize(WIDTH, HEIGHT)
 	frame:SetTitle(ns.TITLE)
@@ -286,9 +298,9 @@ local function Build()
 	ns.Moments.OnChange(Refresh)
 	ns.Guidance.OnChange(Refresh)
 	ns.Providers.OnChange(Refresh)
-	local saved = ns.WindowDB().tab
+
 	for index, tab in ipairs(tabs) do
-		if tab.key == saved or saved == nil and tab.key == "next" then
+		if tab.key == saved or saved == nil and tab.key == "journeys" then
 			selected = index
 		end
 	end
@@ -304,7 +316,7 @@ function Refresh()
 	local player = ns.State.Player()
 	local zone = player.map and ns.State.ZoneName(player.map)
 	frame.Subtitle:SetText(zone and L.OVERVIEW_WHERE:format(zone, player.level) or "")
-	Window.RefreshToday(frame.Inset, tabs[selected].key ~= "next")
+	Window.RefreshToday(frame.Inset, tabs[selected].key ~= "journeys")
 	for index, tab in ipairs(tabs) do
 		RefreshTabLabel(frame.Tabs[index], tab)
 	end

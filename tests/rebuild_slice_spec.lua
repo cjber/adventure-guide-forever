@@ -1,5 +1,5 @@
 -- Run from the repository root: luajit tests/rebuild_slice_spec.lua
--- Core.StepRebuild slices the full build across frames (Model.Journeys yields every few card routes) so a heavy
+-- Core.StepRebuild uses budgeted planner yield points across frames so a heavy
 -- rebuild never spends its whole cost in one frame (WFA-13). The route is committed atomically: a partial build is
 -- never visible, and an invalidation that lands while a build is under way earns exactly one follow-up build.
 local harness = dofile("tests/harness.lua")
@@ -11,6 +11,7 @@ local function Load()
 		charDB = { journey = "zone:1413" },
 	})
 	h.flush()
+	h.clockStep = 1
 	return h
 end
 

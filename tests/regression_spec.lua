@@ -164,7 +164,7 @@ test("PvP progress refreshes with unchanged rewards", function()
 	h.ns.OpenWindow()
 	h.flush()
 	local window = h.G.AdventureGuideForeverWindow
-	h.Click(window.Tabs[3])
+	h.ns.Window.SelectActivity("pvp")
 	h.flush()
 	for _, event in ipairs({ "PLAYER_PVP_RANK_CHANGED", "MAJOR_FACTION_RENOWN_LEVEL_CHANGED", "UPDATE_FACTION" }) do
 		h.rank.info.renownReputationEarned = h.rank.info.renownReputationEarned + 100

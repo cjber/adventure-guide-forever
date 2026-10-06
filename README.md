@@ -14,7 +14,7 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif" width="640" alt="Choosing a journey and following its route"></p>
 
-<p align="center">Choose a journey, see its steps on the map and follow the route, then the window's Professions and Completion tabs.</p>
+<p align="center">Choose a journey, see its steps on the map and follow the route, then Activities and Progress.</p>
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png" width="640" alt="Adventure Guide beside The Barrens map"></p>
 
@@ -28,25 +28,24 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 
 <p align="center">The window leads with your next task and why it fits. Start or resume its route, or choose another adventure below.</p>
 
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_next.png" width="640" alt="The Next page with a focus and useful alternatives"></p>
-
-<p align="center">Choose a focus and find something useful to do. Your journey stays chosen while you look at training, professions or dungeon suggestions.</p>
-
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/dungeons.png" width="640" alt="The Dungeons tab"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/dungeons.png" width="640" alt="Dungeons in Activities"></p>
 
 <p align="center">Pick a dungeon, see which quests you can take and find their givers before entering.</p>
 
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/story_complete.png" width="400" alt="Story completion popup"></p>
+
 ## Features
 
-- **What to do next.** The Next page brings journeys, training and profession hints together. Choose a focus, see why a suggestion fits, and start its guidance or browse alternatives. Your current journey stays chosen when you change focus.
+- **What to do next.** Journeys brings your adventure and useful hints together. See why a suggestion fits, start its guidance or open other adventures. Activities groups dungeon, profession and PvP browsing; Progress shows completion and story milestones. Browsing keeps your current journey chosen.
 
 - **Dungeons.** Browse dungeon and raid quests, check pickups and prerequisites, then plan a trip to their givers. Atlas and its Classic module open interior maps with wings and floors. Adventure Guide for Classic opens bosses and loot. Entrance directions come from QuestieDB or Tweaks Forever.
 - **Journeys.** Finish loose ends, follow a zone's story, find nearby zones suited to your level or take class quests. Cards explain why each fits, under collapsible headers. Dungeon and battleground journeys are opt-in.
 - **Full guide.** Page through the current route followed by the area's Questie outline. Later entries stay outline-only until Questie confirms they are available.
-- **Choose and go.** Picking a journey starts guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop clears only guidance the addon started.
+- **Choose and go.** Use Start adventure in the window, or pick a journey on the map to start guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop clears only guidance the addon started.
 - **A route that stays with you.** Your choice survives new quests, travel and a reload. Ready hand-ins and nearby pickups come first. Town stops group quest givers into a checklist. The tracker uses your journey as its heading and shows action icons for the current stop and up to two upcoming stops.
 - **Your order.** Drag steps or right-click to move them earlier or later. Moves that break quest order are greyed out. *Back to suggested order* restores the plan.
 - **Time to play.** Choose 15, 30 or 60 minutes to shorten the route using rough travel and quest-time estimates. *No limit* keeps the full route.
+- **Story milestones.** Completing a proven quest chain earns a brief story-complete popup, recorded once for that character in Progress.
 - **Stories and search.** Stories read as chapters without naming later quests. Totals appear only when the data proves them. Search shows a quest's requirements and which ones you meet.
 - **Other things to do.** Hints cover professions, unspent talents, hearths and unexplored areas. Class spell reminders and automatic trainer visits are off by default; enable them under Settings > AddOns > Adventure Guide Forever > Route. PvP shows your rank, its next reward and available battlegrounds, with the nearest battlemaster.
 - **Professions and completion.** SkillUp Forever fills Professions with recipes, next steps and reagents. Legacy Forever fills Completion with zone progress and nearby objectives.

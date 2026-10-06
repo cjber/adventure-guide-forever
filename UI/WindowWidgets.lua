@@ -11,6 +11,8 @@ Window.INSET_TOP, Window.INSET_BOTTOM = 60, 5
 local BADGE, BADGE_OUT, ICON_ROW_RING = 14, 3, 26
 -- Where a tab's content starts in the inset, under the Today strip.
 Window.TOP, Window.LEFT, Window.RIGHT = 50, 14, 30
+Window.ACTIVITY_LEFT = 118
+Window.ACTIVITY_CARD_WIDTH = 340
 Window.INSET_WIDTH, Window.INSET_HEIGHT = Window.WIDTH - 8, Window.HEIGHT - Window.INSET_TOP - Window.INSET_BOTTOM
 -- The Encounter Journal's own type and palette (R3): a panel title, a list row's name, a gold section header, the
 -- instance title's warm grey and the ink the Journal sets body text in on its paper.
@@ -291,15 +293,17 @@ end
 
 ---@param parent Frame
 ---@param atlas string
+---@param left? number
 ---@return AGFWindowEmpty
-function Window.CreateEmpty(parent, atlas)
-	local width = Window.INSET_WIDTH - Window.LEFT - Window.RIGHT
+function Window.CreateEmpty(parent, atlas, left)
+	left = left or Window.LEFT
+	local width = Window.INSET_WIDTH - left - Window.RIGHT
 	local height = Window.INSET_HEIGHT - 12 - Window.TOP
 	local art = parent:CreateTexture(nil, "ARTWORK")
 	-- The page's ground: a flat dark tile while the client has no art for it, never a question mark or a
 	-- substituted picture.
 	art:SetColorTexture(0.1, 0.09, 0.08, 1)
-	art:SetPoint("TOPLEFT", Window.LEFT, -Window.TOP)
+	art:SetPoint("TOPLEFT", left, -Window.TOP)
 	art:SetSize(width, height)
 	if C_Texture.GetAtlasInfo(atlas) then
 		Art.Cover(art, atlas, width, height)
@@ -471,8 +475,8 @@ end
 ---@return AGFWindowPictureCard, Frame
 function Window.CreatePictureCard(parent, tag)
 	local card = Window.CreateCard(parent, false) --[[@as AGFWindowPictureCard]]
-	Window.SizeCard(card, cards.width, cards.fullHeight, 0.8)
-	card:SetPoint("TOPLEFT", Window.LEFT, -Window.TOP)
+	Window.SizeCard(card, Window.ACTIVITY_CARD_WIDTH, cards.fullHeight, 0.8)
+	card:SetPoint("TOPLEFT", Window.ACTIVITY_LEFT, -Window.TOP)
 	card.Shade:Hide()
 	card.Picture:Show()
 	card.Highlight:Hide()
@@ -511,7 +515,7 @@ end
 ---@param card AGFWindowPictureCard
 ---@param progress number
 function Window.SetPictureProgress(card, progress)
-	local room = cards.width - 36 - card.BarLabel:GetUnboundedStringWidth() - 8
+	local room = card:GetWidth() - 36 - card.BarLabel:GetUnboundedStringWidth() - 8
 	ns.Overview.SetBar(card.Bar, 18, 76, room, progress)
 end
 

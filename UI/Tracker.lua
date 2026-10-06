@@ -289,17 +289,15 @@ local function Refresh()
 	end
 end
 
--- Only a chain whose end the data proves (Model.Story's total) is ever called complete; the sound plays with the
--- glow even during the client's turn-in sound (design §2.7), never without the tracker section to show it.
+-- StoryCompletion records the milestone independently of tracker visibility.
 ---@param questID integer
 function ns.OnTurnIn(questID)
-	local story = ns.Data.quests[questID] and ns.Model.Story(ns.Data, questID)
-	if not (module and ns.Setting("showTracker") and story and story.total and story.chapter == story.total) then
+	local recorded = ns.StoryCompletion.Record(questID)
+	if not (recorded and module and ns.Setting("showTracker")) then
 		return
 	end
 	finished = { quest = questID }
 	module:SetNeedsFanfare(STORY_COMPLETE)
-	ns.Sound.Complete("story:" .. questID, true)
 	Refresh()
 end
 

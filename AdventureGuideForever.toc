@@ -71,6 +71,7 @@ UI\WindowToday.lua
 UI\Window.lua
 UI\WindowJourneys.lua
 UI\WindowGuide.lua
+UI\WindowActivities.lua
 UI\WindowProfessions.lua
 UI\WindowPvP.lua
 UI\WindowCompletion.lua
@@ -78,8 +79,8 @@ UI\WindowDungeonMaps.lua
 UI\WorldDungeonMaps.lua
 UI\WindowList.lua
 UI\WindowDungeons.lua
-UI\WindowNext.lua
 UI\TrackerHost.lua
+UI\StoryCompletion.lua
 UI\Tracker.lua
 UI\Tooltip.lua
 UI\Settings.lua

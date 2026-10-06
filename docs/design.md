@@ -36,7 +36,7 @@ abandons quests.
 - **2.6 Pins.** Draw only known locations and step aside while Shortest Path supplies guidance. While the player
   stands in the current step's objective area, the world map shows that area's full outline in yellow, the minimap
   turns the game's own quest area gold, and the step's own pin and line step aside.
-- **2.7 Completion.** Announce a proven story ending once, using the game's tracker glow and sound.
+- **2.7 Completion.** Record a proven story ending once per character and show a native-style popup with one completion sound. Tracker visibility does not affect it.
 - **2.8 Menus.** Share step actions between the guide and tracker.
 - **2.9 Tooltips.** Explain visits and quest difficulty. Town checklists tick completed givers;
   repeated visits share a map ring.
@@ -135,7 +135,7 @@ abandons quests.
   existing map art at native aspect. Source findings and
   pins are recorded in [dungeon-sources.md](dungeon-sources.md). The layout is included in `/agf dump` and
   `docs/screenshots/dungeons*.png`, including the owner's Alliance level 19 Darkshore/Ragefire regression.
-  The shared Today strip shows two wide hints, with the rest in a small stock-font More menu control on the browsing tabs. Next incorporates those hints in its recommendations instead.
+  The shared Today strip shows two wide hints, with the rest in a small stock-font More menu control on the browsing tabs. Journeys incorporates those hints beside its recommendation instead.
 - **2.22 Addon API.** `AdventureGuideForever.API` (docs/api.md) is read-only and versioned. It copies the
   tracker's step from the committed route and answers nil while a route is due, never building one for a caller.
   Fields are added, never renamed or repurposed, within a version.
@@ -158,15 +158,15 @@ when `onClick` is given; `Window.CreatePaperWell(parent)` and `Window.SetPaperWe
 well for text longer than a row, set in the Journal's brown ink. A surface the client has no art for draws a flat
 dark tile, never a question mark or a substituted picture.
 
-### Next page
+### Guide navigation
 
-`Core/Recommendations.lua` combines the committed route and wanted hints for `UI/WindowNext.lua`. The Next tab is appended after the existing tabs to preserve their indices. A first open selects it; a valid saved tab remains selected. Focus is a per-character presentation choice, independent of the chosen journey and dungeon opt-ins.
+Journeys is the first page. Its single featured area shows the chosen adventure, live objective and next steps, or one useful suggestion when nothing is chosen. Other adventures are collapsed until opened. Session length stays beside the steps. Compact hints appear once; spell training is opt-in.
 
-Balanced preserves a chosen journey. Without a choice, training within 600 measured local yards can precede the offered route. Other focuses filter existing eligible offers. Up to three alternatives are visible, without padding an empty list. Text-only hints have no navigation. The selector never synchronously builds a route: pending work shows an updating state. An action revalidates its identity, destination and current step before delegating to Guidance. Combat, Wanderer mode and pending session estimates disable actions. District changes refresh hints without rebuilding the quest plan.
+Activities groups dungeon, profession and PvP browsing in a left-hand list. Progress shows Legacy's completion categories and character story milestones. Saved Next selections migrate to Journeys; saved activity pages retain their category and detail selection. Browsing never changes a chosen route.
 
-The wider direction and client checks are in [guidance-roadmap.md](guidance-roadmap.md).
+`Core/Recommendations.lua` reads the committed route and wanted hints. An action revalidates its identity and destination before delegating to Guidance. Combat, Wanderer mode and pending session estimates disable travel. Unknown destinations remain advice. The detailed contracts are in [guide-navigation-design.md](guide-navigation-design.md).
 
-The selected focus uses the stock button highlight. The featured card uses the destination's map art, with a dark fade behind its text; unknown locations keep the plain card. Missing quest data uses the shared source message. Entering combat immediately updates visible action buttons without rebuilding the route.
+Story completion comes only from a proven final chain hand-in. `UI/StoryCompletion.lua` persists the chain head identity per character and queues an addon-owned notification independently of tracker visibility. It does not announce historical completions on login. Popup and tracker share one completion record and sound.
 
 ## 3. Copy
 

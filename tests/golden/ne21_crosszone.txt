@@ -17,8 +17,6 @@ card (chosen) | carry | Quests in your log | 2 ready to hand in | 1 to hand in a
 card | zone:1413 | Head to The Barrens | 6 quests near your level | - | map 1413
   step 1 | town:1413:382 | Pick up: Ignition | 1413 0.5652,0.0745 | near your level
   step 2 | town:1413:392 | Visit Ratchet: Pick up 5 | 1413 0.6237,0.3762 | 5 to pick up
-card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
-  step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level
 card | zone:1437 | Head to Wetlands | 7 quests near your level | Menethil Harbor needs hands | map 1437
   step 1 | town:1437:150 | Visit Menethil Harbor: Pick up 3 | 1437 0.1090,0.5964 | 3 to pick up
   step 2 | town:1437:1025 | Visit The Green Belt: Pick up 2 | 1437 0.5637,0.4040 | 2 to pick up
@@ -50,3 +48,5 @@ card | zone:1436 | Head to Westfall | 6 quests near your level | 2 quests will s
 card | zone:1426 | Head to Dun Morogh | 2 quests near your level | - | map 1426
   step 1 | town:1426:1537 | Pick up: Search for Incendicite | 1426 0.4962,0.4861 | near your level
   step 2 | town:1432:144 | Pick up: Stonegear's Search | 1432 0.3263,0.4974 | near your level
+card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
+  step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level

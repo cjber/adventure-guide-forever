@@ -1,0 +1,166 @@
+-- Run from the repository root: luajit tests/planner_offers_spec.lua
+-- Dungeon alternatives and high-level-zone errands retain distinct recommendations.
+local ns = {}
+dofile("tests/harness.lua").model(ns)
+local Model = ns.Model
+local checks = 0
+local function equal(actual, expected, label)
+	checks = checks + 1
+	assert(actual == expected, label .. ": expected " .. tostring(expected) .. ", got " .. tostring(actual))
+end
+local function has(list, value, label)
+	checks = checks + 1
+	for _, v in ipairs(list) do
+		if v == value then
+			return
+		end
+	end
+	assert(false, label .. ": " .. tostring(value) .. " not found in list")
+end
+
+local function at(x, y, map)
+	return { map = map or 1, x = x or 0.5, y = y or 0.5, name = "Giver" }
+end
+
+local player = { level = 21, maxLevel = 60, side = 1, raceBit = 1, classBit = 1, map = 1, x = 0.5, y = 0.5 }
+
+-- Minimal data: two dungeons each with eligible quests, no zone quests (forces stranded path).
+local data = {
+	build = "test",
+	source = "fixture",
+	quests = {
+		[1] = { title = "WC Quest 1", level = 21, min = 18, side = 1, start = at(0.3, 0.5, 1), dungeon = 43 },
+		[2] = { title = "WC Quest 2", level = 21, min = 18, side = 1, start = at(0.4, 0.5, 1), dungeon = 43 },
+		[3] = { title = "DM Quest 1", level = 21, min = 18, side = 1, start = at(0.5, 0.5, 1), dungeon = 36 },
+		[4] = { title = "DM Quest 2", level = 21, min = 18, side = 1, start = at(0.6, 0.5, 1), dungeon = 36 },
+		[5] = { title = "DM Quest 3", level = 21, min = 18, side = 1, start = at(0.7, 0.5, 1), dungeon = 36 },
+	},
+	instances = {
+		[43] = { name = "Wailing Caverns", low = 15, high = 25 },
+		[36] = { name = "The Deadmines", low = 18, high = 23 },
+	},
+	maps = { [1] = { continent = 1, cx = 0, cy = 0, sx = 1, sy = 1 } },
+	hubs = {},
+	zones = {},
+}
+
+local function prefs(extra)
+	local p = { quests = true, dungeons = true, skipped = {}, optimisedRoute = true }
+	for k, v in pairs(extra or {}) do
+		p[k] = v
+	end
+	return p
+end
+
+local function keys(journeys)
+	local ks = {}
+	for _, j in ipairs(journeys) do
+		ks[#ks + 1] = j.key
+	end
+	return ks
+end
+
+-- Both dungeons have eligible quests: both should appear as dungeon cards.
+do
+	local route = Model.Plan(data, player, {}, {}, prefs())
+	local ks = keys(route.journeys)
+	has(ks, "dungeon:36", "Deadmines offered when it has eligible quests")
+	has(ks, "dungeon:43", "Wailing Caverns offered when it has eligible quests")
+end
+
+-- The dungeon with more quests sorts first (Deadmines has 3, WC has 2).
+do
+	local route = Model.Plan(data, player, {}, {}, prefs())
+	local first, second
+	for _, j in ipairs(route.journeys) do
+		if j.kind == "dungeon" then
+			if not first then
+				first = j.key
+			elseif not second then
+				second = j.key
+			end
+		end
+	end
+	equal(first, "dungeon:36", "dungeon with more quests sorts first")
+	equal(second, "dungeon:43", "dungeon with fewer quests sorts second")
+end
+
+-- A dismissed dungeon does not appear.
+do
+	local p = prefs({ notInterested = { ["dungeon:36"] = { title = "The Deadmines" } } })
+	local route = Model.Plan(data, player, {}, {}, p)
+	local ks = keys(route.journeys)
+	has(ks, "dungeon:43", "undismissed dungeon still appears")
+	for _, k in ipairs(ks) do
+		equal(k == "dungeon:36", false, "dismissed dungeon does not appear")
+	end
+end
+
+-- The chosen dungeon is preserved while it has quests (it appears even after level changes).
+do
+	local p = prefs({ journey = "dungeon:43" })
+	local route = Model.Plan(data, player, {}, {}, p)
+	local ks = keys(route.journeys)
+	has(ks, "dungeon:43", "chosen dungeon preserved while it has quests")
+	has(ks, "dungeon:36", "unchosen dungeon also offered alongside the chosen one")
+end
+
+-- No fake questless routes: a dungeon with all quests completed is not offered.
+do
+	local completed = { [1] = true, [2] = true }
+	local route = Model.Plan(data, player, completed, {}, prefs())
+	local ks = keys(route.journeys)
+	for _, k in ipairs(ks) do
+		equal(k == "dungeon:43", false, "dungeon with no remaining quests does not appear")
+	end
+end
+
+-- A zone above the player's level ranks after normal suitable zones.
+do
+	local zdata = {
+		build = "test",
+		source = "fixture",
+		quests = {
+			-- Zone 1: normal zone (min=10, max=20, player level 21 - just above max but quests still ok)
+			[10] = { title = "Low zone Q", level = 20, min = 10, side = 1, start = at(0.3, 0.5, 2), zone = 2 },
+			-- Zone 2: high zone (min=25, player is level 21 - below min)
+			[11] = { title = "High zone Q", level = 22, min = 21, side = 1, start = at(0.4, 0.5, 3), zone = 3 },
+		},
+		instances = {},
+		maps = {
+			[1] = { continent = 1, cx = 0, cy = 0, sx = 1, sy = 1 },
+			[2] = { continent = 1, cx = 100, cy = 0, sx = 1, sy = 1 },
+			[3] = { continent = 1, cx = 200, cy = 0, sx = 1, sy = 1 },
+		},
+		hubs = {},
+		zones = {
+			[2] = { name = "Normal Zone", min = 10, max = 20 },
+			[3] = { name = "High Zone", min = 25, max = 35 },
+		},
+	}
+	local zplayer = { level = 21, maxLevel = 60, side = 1, raceBit = 1, classBit = 1, map = 1, x = 0.5, y = 0.5 }
+	zdata.instances = data.instances
+	zdata.quests[1], zdata.quests[3] = data.quests[1], data.quests[3]
+	local kept = Model.Plan(zdata, zplayer, {}, {}, prefs({ journey = "dungeon:43", dungeons = false }))
+	equal(kept.chosen, true, "chosen dungeon remains after disabling alternatives")
+	equal(kept.journey, "dungeon:43", "chosen dungeon keeps its identity")
+	for _, card in ipairs(kept.journeys) do
+		equal(card.key == "dungeon:36", false, "unchosen dungeon respects opt-out")
+	end
+	local zroute = Model.Plan(zdata, zplayer, {}, {}, prefs())
+	-- Find zone cards and check their order: normal zone (min <= level) before high zone (min > level).
+	local zoneCards = {}
+	for _, j in ipairs(zroute.journeys) do
+		if j.zone then
+			zoneCards[#zoneCards + 1] = j
+		end
+	end
+	if #zoneCards >= 2 then
+		local firstMin = zdata.zones[zoneCards[1].zone].min
+		local secondMin = zdata.zones[zoneCards[2].zone].min
+		equal(firstMin <= zplayer.level, true, "first zone card has min <= player.level (normal zone)")
+		equal(secondMin > zplayer.level, true, "second zone card has min > player.level (above zone)")
+	end
+end
+
+print(("planner_offers_spec: %d checks passed"):format(checks))

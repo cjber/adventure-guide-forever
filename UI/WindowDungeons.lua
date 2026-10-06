@@ -4,11 +4,11 @@ local L, Window, Dungeons = ns.L, ns.Window, ns.Dungeons
 
 -- §2.21: the shared EJ frame, featured card and divider; fixed columns and recycled scrolling rows.
 -- Work belongs to the visible page. Hiding it cancels its coroutine before any more source reads or drawing.
-local LEFT, TOP = Window.LEFT, Window.TOP
-local LIST_W, GAP, HEADER_H = 168, 28, 100
+local LEFT, TOP = Window.ACTIVITY_LEFT, Window.TOP
+local LIST_W, GAP, HEADER_H = 140, 16, 100
 local RIGHT_X = LEFT + LIST_W + GAP
 local PAGE_W = Window.INSET_WIDTH - Window.RIGHT - RIGHT_X
-local BODY_Y, BODY_H, QUEST_W = TOP + HEADER_H + 38, 222, 272
+local BODY_Y, BODY_H, QUEST_W = TOP + HEADER_H + 38, 222, 220
 local DETAIL_H = BODY_H - 52
 local ROW_H, LIST_H, SLICE_MS = 52, 42, 1
 ---@type Frame
@@ -792,12 +792,7 @@ end
 function Window.OpenDungeon(instance)
 	ns.WindowDB().dungeon, selectedQuest = instance, nil
 	ns.OpenWindow()
-	for index, tab in ipairs(Window.Tabs()) do
-		if tab.key == "dungeons" then
-			Window.Select(index)
-			return
-		end
-	end
+	Window.SelectActivity("dungeons")
 end
 
-Window.AddTab({ key = "dungeons", label = L.TAB_DUNGEONS, Build = Build, Refresh = Refresh })
+Window.AddActivity({ key = "dungeons", label = L.TAB_DUNGEONS, Build = Build, Refresh = Refresh })

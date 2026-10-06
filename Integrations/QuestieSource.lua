@@ -12,7 +12,7 @@ local CONTRACT = 2
 -- A build is sliced across frames: at a millisecond a frame the tracker stayed empty for most of a minute, and a few
 -- frames a second for a few seconds is the smaller cost. A matching saved catalogue is adopted whole at login, so
 -- only a first login or a changed key builds.
-local SLICE_MS = 5
+local SLICE_MS = 2
 -- Questie can load and then never report ready, when its own startup stops on an error for one character. Waiting
 -- longer than this would leave the guide on its loading line for the whole session, so the catalogue is read without
 -- Questie's live policy instead. A ready callback that arrives later reads it again.
@@ -524,6 +524,8 @@ local function Build(lib, zones, bundled, yield)
 		end
 		yield()
 	end
+	-- Yield unconditionally so the exclusive-group pass and NPC loop start with a fresh slice budget.
+	coroutine.yield()
 	-- QuestieDB names mutually exclusive quests directly; AGFQuest carries one id per exclusive group. Each
 	-- connected component of those links becomes a group id, its lowest quest, so every member closes the others'
 	-- siblings. A quest linked only to a quest the data does not hold stands alone.

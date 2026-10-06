@@ -6,22 +6,17 @@ The guide should help a player who has logged in, finished a quest or reached a 
 flowchart TB
   Player[Level, quest log and player choices] --> Offers[Eligible journeys and useful hints]
   Offers --> Next[One next action and a few alternatives]
-  Focus[Your focus] --> Next
   Next --> Choice[You choose]
   Choice --> Route[Existing journey or known destination]
   Route --> Progress[Live quest progress]
   Progress --> Offers
   classDef guide fill:#332719,color:#ffe4a1,stroke:#ad8b50;
-  class Player,Offers,Next,Focus,Choice,Route,Progress guide;
+  class Player,Offers,Next,Choice,Route,Progress guide;
 ```
 
-## Next page
+## Guide
 
-The first page brings the existing quest, class training and profession hints together. One suggestion leads, followed by up to three alternatives. Each says what to do and why. A bit of everything is the default focus; quests, training, professions and dungeons narrow the suggestions.
-
-A chosen journey leads the balanced view, even when paused. Without a chosen journey, class training within a short local walk can precede the suggested route. Changing focus does not choose a journey, enable dungeon offers or replace a waypoint. Start, Resume and Show on Map use the existing guidance lifecycle. Text-only hints stay advice. An empty focus points to the journey and dungeon pages, rather than inventing a task.
-
-Suggestions read the committed route and the hints the player still wants. A pending rebuild shows an updating message. Clicking a suggestion checks that it still exists and that its destination and current task match. Combat and Wanderer mode prevent navigation. City district changes refresh hints on the next frame, without another periodic scan or a quest-route rebuild.
+Journeys brings the current adventure and useful next actions together. Activities holds dungeon, profession and PvP browsing; Progress holds completion categories and story milestones. The navigation and action contracts are in [guide-navigation-design.md](guide-navigation-design.md).
 
 ## Next steps for the wider guide
 
@@ -36,10 +31,10 @@ Each step needs source-backed eligibility, a visible reason, reversible player c
 ## Client checks
 
 - Open `/agf` on a character with no saved tab, then reload with another tab selected.
-- Switch every focus. Check that the tracked journey and waypoint do not change until an action is pressed.
-- Start an offered journey, stop it, then resume from Next. Repeat with Shortest Path disabled.
+- Browse every Activities category. Check that the tracked journey and waypoint do not change until an action is pressed.
+- Start an offered journey, stop it, then choose another from Journeys. Repeat with Shortest Path disabled.
 - Dismiss a hint or complete the leading task and check that the page updates without an old action remaining active.
 - Walk between city districts, enter and leave combat, and check trainer destinations and profession hints.
-- Check a focus with no suggestions, a text-only hint, Wanderer mode and a missing Questie source.
+- Check Journeys with no suggestions, a text-only hint, Wanderer mode and a missing Questie source.
 
 The repository's headless checks and generated previews cover the logic and layout. These client checks remain necessary before merging a player-visible change.

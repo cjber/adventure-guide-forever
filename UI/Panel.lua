@@ -657,7 +657,7 @@ local function RefreshCard(card, journey, state)
 	card.Subline:SetShown(not compact)
 	card.Reason:SetShown(not compact)
 	card.Subline:SetText(journey.subline)
-	card.Reason:SetText(DropLine(journey) or journey.reason or HubLine(journey) or "")
+	card.Reason:SetText(Overview.VisitWarning(journey) or DropLine(journey) or journey.reason or HubLine(journey) or "")
 	-- Shortest Path's minutes, naming a boat or zeppelin when the subline leaves room for it.
 	local travel = not compact and ns.Integrations.CardTravel(journey) or nil
 	local minutes = travel and travel.minutes
@@ -842,7 +842,7 @@ local function RefreshOverviewCard(card, journey, width)
 	local value, label = Progress(journey)
 	local foot = label or Stops(journey)
 	local reason = journey.reason ~= foot and journey.reason or nil
-	card.detail = DropLine(journey) or reason or HubLine(journey) or journey.subline
+	card.detail = Overview.VisitWarning(journey) or DropLine(journey) or reason or HubLine(journey) or journey.subline
 	card.Reason:SetText(card.detail)
 	card.Foot:SetText(foot)
 	card.Foot:SetWidth(width - OVERVIEW_TEXT - OVERVIEW_INSET)

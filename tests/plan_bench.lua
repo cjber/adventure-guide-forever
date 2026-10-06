@@ -9,7 +9,7 @@
 -- would flake.
 local harness = dofile("tests/harness.lua")
 local MISS_MS, HIT_MS, BUDGET_MS, SLOTS, TTL = 2.45, 0.003, 3, 256, 5
--- QuestieDB's catalogue is built once a login in 5 ms slices (QuestieSource.lua's SLICE_MS): nothing can be drawn
+-- QuestieDB's catalogue is built once a login in 2 ms slices (QuestieSource.lua's SLICE_MS): nothing can be drawn
 -- until it lands, so it trades the 3 ms budget for a tracker that fills in seconds.
 local BUILD_BUDGET_MS = 7
 local SAMPLES, strict = 20, os.getenv("AGF_BENCH_STRICT") == "1"
@@ -211,6 +211,10 @@ local function Profile(profile, level, questiedb, full)
 		setup = questiedb and Slices,
 		log = full and FullLog(profile.side, level) or nil,
 	})
+	-- Core's scheduler uses the client's profiling clock, including profiles without QuestieDB.
+	h.G.debugprofilestop = function()
+		return os.clock() * 1000
+	end
 	check(not questiedb or h.ns.QuestieStatus.state == "questie", label .. ": QuestieDB's quests not in use")
 	local api, model = h.G.ShortestPathForever.API, CostModel()
 	for _, name in ipairs({ "Estimate", "EstimateDetail" }) do

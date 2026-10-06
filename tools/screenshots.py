@@ -89,7 +89,14 @@ def layout_pass(ui, scenes, known):
     inputs = {"rects": {}, "mapArt": map_tiles(ui)}
     for _ in range(LAYOUT_PASSES):
         data = run_scenes(inputs)
-        rects = {scene: layout_rects(ui, data[scene]["layout"], known) for scene in scenes}
+        rects = {
+            scene: layout_rects(
+                ui,
+                data[scene]["layout"],
+                known | ({data[scene]["layout"][0]["path"]: (20, 20, 360, 82)} if scene == "story_complete" else {}),
+            )
+            for scene in scenes
+        }
         fed = {
             scene: lua_rects(rects[scene], text_measures(ui, data[scene]["layout"], rects[scene])) for scene in scenes
         }
@@ -385,9 +392,6 @@ WINDOWS = (
     "window_completion",
     "window_missing",
     "window_today",
-    "window_next",
-    "window_next_training",
-    "window_next_empty",
     "window_context_menu",
     "window_session",
     "window_session_picker",
@@ -512,7 +516,7 @@ def render():
     _, frame = map_frame(ui, drawing.wm.Image.new("RGBA", (1002, 668)), True)
     known = known_frames(frame) | {WINDOW: (WINDOW_MARGIN, WINDOW_MARGIN, *WINDOW_SIZE)}
     data, rects = layout_pass(
-        ui, ("panel", "journeys", "journeys_four", "journeys_overflow", "search", *WINDOWS), known
+        ui, ("panel", "journeys", "journeys_four", "journeys_overflow", "search", "story_complete", *WINDOWS), known
     )
     images = {}
 
@@ -590,6 +594,10 @@ def render():
         canvas = ui.canvas(width + 2 * WINDOW_MARGIN, height + 2 * WINDOW_MARGIN + WINDOW_TABS)
         Layout(data[scene]["layout"], rects[scene]).draw(canvas)
         images[scene] = drawing.wm.scene(ui, [(canvas, 0, 0)])
+
+    canvas = ui.canvas(400, 122)
+    Layout(data["story_complete"]["layout"], rects["story_complete"]).draw(canvas)
+    images["story_complete"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     OUT.mkdir(parents=True, exist_ok=True)
     written = []
