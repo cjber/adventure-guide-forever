@@ -35,7 +35,8 @@ test("rejected town offers", function()
 	for _, id in ipairs(town.pickups) do
 		eq(id == 92 or id == 116, false, "filtered work stays out of the town offers")
 	end
-	eq(#town.pickups, 4, "only filtered offers remain in Lakeshire")
+	-- 118, 129, 3741, 120, and 98407 Show of Force (QuestieDB v1.0.5).
+	eq(#town.pickups, 5, "only filtered offers remain in Lakeshire")
 	player, completed, log, prefs = fixture(ns, "ne23_darkshore")
 	route = ns.Model.Plan(ns.Data, player, completed, log, prefs)
 	for _, step in ipairs(route.steps) do

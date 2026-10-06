@@ -25,7 +25,7 @@ from pathlib import Path
 
 from forever_tools import fsio, wago
 
-BUILD = "1.60.1.70205"
+BUILD = "1.60.1.70235"
 # The last build with WorldMapArea: quest_poi's mapAreaId is one of its IDs, which UiMap replaced in 8.0.
 LEGACY_MAP_BUILD = "7.3.5.26972"
 CLASSICDB_COMMIT = "22b51464f1625f6ef6275771de1f5466c6f5d19e"

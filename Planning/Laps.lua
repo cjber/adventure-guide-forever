@@ -243,6 +243,11 @@ local function NameLapAreas(lap)
 		if best and best ~= area.key then
 			named[area.key], named[best], area.key = nil, true, best
 		end
+		local place = rank[area.key]
+		for _, objective in ipairs(place and area.objectives or NONE) do
+			local id = objective.id
+			lap.ranked[id] = math.min(lap.ranked[id] or place, place)
+		end
 	end
 end
 
@@ -365,23 +370,31 @@ local function BuildLapAnchors(lap)
 	end
 end
 
--- All of a town's hand-ins ready to hand in at once, none handed in yet.
+-- All of a town's hand-ins ready to hand in at once, none handed in yet. When the committed order comes back to the
+-- town before it picks up a new quest there or works it, or never does (the last build's check gave its pickup to the
+-- log's limit), that quest holds none of them back: waiting on it would lose the visit back the order keeps, and a
+-- rebuild with nothing changed would not be the same route.
 ---@param lap AGFLapState
 ---@param walk AGFLapWalk
 ---@param anchor AGFAnchor
 local function Handable(lap, walk, anchor)
 	local done, handed, reached = walk.done, walk.handed, walk.reached
-	local pending, log = lap.pending, lap.log
+	local pending, log, ranked = lap.pending, lap.log, lap.ranked
+	local back, any = lap.rank[anchor.key .. "<<"], false
+	local before = back and (lap.rank[anchor.key] or math.huge) < back
 	for _, id in ipairs(anchor.hands) do
-		if
-			(done[id] or 0) ~= (pending[id] or 0)
-			or handed[id]
-			or not (log[id] or reached[anchor] or anchor.open == nil)
-		then
-			return false
+		if not back or log[id] or (before and ((pending[id] or 0) == 0 or (ranked[id] or math.huge) < back)) then
+			if
+				(done[id] or 0) ~= (pending[id] or 0)
+				or handed[id]
+				or not (log[id] or reached[anchor] or anchor.open == nil)
+			then
+				return false
+			end
+			any = true
 		end
 	end
-	return #anchor.hands > 0
+	return any
 end
 
 -- The committed order holds every stop it has, in order (docs/design.md §4.3), so a rebuild or a move never
@@ -407,7 +420,8 @@ local function Consider(lap, walk, choice, step, anchor, cost, kind)
 			pin = pin or pinned[id] or false
 			lead = lead or id == leadID
 		end
-		local held = rank[Ident(step)]
+		-- A visit back is the order's "<<" step, which hands in only, whatever the town's own visit holds.
+		local held = rank[kind == "close" and anchor.key .. "<<" or Ident(step)]
 		local place = anchor.place
 		local same = anchor == lastAnchor
 			and anchor.pos ~= nil
@@ -906,6 +920,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 		origin = origin,
 		planned = planned,
 		rank = rank,
+		ranked = {},
 		skipped = skipped,
 		pinned = pinned,
 		where = where,

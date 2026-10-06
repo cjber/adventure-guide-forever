@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Game data for Forever build 1.60.1.70235, tested against QuestieDB 1.0.5.** The new QuestieDB lists Forever's added quests in Westfall, Moonglade's Great Cat Spirit and more, and when your quest log is full a route that leaves out a town's quest no longer drops the walk back to hand in the rest.
+
 ## [0.9.0] - 2026-10-05
 
 - **Quest progress stays in step with Shortest Path.** An objective count changing at the current stop refreshes the journey's text, without sending you back to an earlier stop.
