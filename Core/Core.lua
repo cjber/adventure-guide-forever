@@ -716,7 +716,7 @@ function ns.RouteSettled()
 	return not dirty and not rebuildCo and ns.State.Ready()
 end
 
--- The journey the route is showing (the chosen one, else the first card's), for the tracker's title line and the
+-- The journey the route is showing (the chosen one, else the first card's), for the tracker's heading and the
 -- map's way back to the story's start.
 ---@return AGFJourney?
 function ns.CurrentJourney()

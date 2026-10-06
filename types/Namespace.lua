@@ -542,7 +542,6 @@
 ---@field STORY_COMPLETE string the tracker header that glows when a proven chain's last quest is handed in
 ---@field JOURNEY_COMPLETE string the tracker header that glows when a turn-in ends the chosen journey
 ---@field CHOOSE_NEXT string its line: the guide has every journey again
----@field TRACKER_ROUTE_START string the journey line's hover instruction: route from the story's start
 ---@field TRACKER_DRAG_TITLE string shared tracker grip title
 ---@field TRACKER_DRAG_TOOLTIP string shared tracker grip tooltip
 ---@field TRAINER string

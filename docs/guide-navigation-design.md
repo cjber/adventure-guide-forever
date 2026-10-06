@@ -98,7 +98,8 @@ falls back to Adventure Guide; the icon and tooltip retain the addon's identity.
 Show the current objective with its action icon, then up to two upcoming objectives
 with smaller icons and muted text. Keep the preview in route order and update it
 after progress changes. Hide it when there are no further objectives, and keep the
-current objective readable when space is limited. Keep zone context secondary.
+current objective readable when space is limited. The tracker heading and two-step
+preview are implemented; the wider guide navigation migration below remains planned. Keep zone context secondary.
 Avoid repeating a whole quest title on every line.
 Progress changes update the existing route label rather than restarting it.
 

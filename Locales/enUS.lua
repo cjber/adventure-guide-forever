@@ -181,7 +181,6 @@ ns.L = {
 	JOURNEY_COMPLETE = "Journey complete",
 	CHOOSE_NEXT = "Choose your next journey",
 	-- The tracker's journey line and the wait for QuestieDB's catalogue.
-	TRACKER_ROUTE_START = "Click to route from this story's start",
 	TRACKER_DRAG_TITLE = "Forever tracker",
 	TRACKER_DRAG_TOOLTIP = "Drag to move",
 	TRACKER_LOADING = "Loading quest data...",

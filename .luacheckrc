@@ -34,6 +34,7 @@ read_globals = { "ShowUIPanel", "HideUIPanel", "CreateFramePoolCollection", "C_X
 	"CreateDataProvider",
 	"ScrollUtil",
 	"NORMAL_FONT_COLOR",
+	"GRAY_FONT_COLOR",
 	"ITEM_QUALITY_COLORS",
 	"AtlasMaps",
 	"GetInstanceInfo",

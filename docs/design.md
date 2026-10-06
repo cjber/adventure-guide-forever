@@ -29,7 +29,9 @@ abandons quests.
 - **2.3 Chapters.** Show a total only for a proven chain. A quest tooltip may name its proven next chapter with its level.
 - **2.4 Search.** Share eligibility checks with the planner. Explain missing requirements; locked
   quests offer no destination.
-- **2.5 Tracker.** Show the current and next step beside quests. Leave the stock quest order alone.
+- **2.5 Tracker.** Use the chosen journey as the section heading, with Adventure Guide as the fallback.
+  Show the current action and up to two upcoming actions with native action icons beside quests.
+  Upcoming actions are muted and follow the resolved current stop. Leave the stock quest order alone.
   Quest tracking is opt-in; a step's quest opens on the map only outside combat.
 - **2.6 Pins.** Draw only known locations and step aside while Shortest Path supplies guidance. While the player
   stands in the current step's objective area, the world map shows that area's full outline in yellow, the minimap

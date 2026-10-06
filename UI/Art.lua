@@ -114,6 +114,14 @@ function Art.Markup(atlas, height)
 	return ("|A:%s:%d:%d|a"):format(atlas, height, math.floor(height * Aspect(atlas) + 0.5))
 end
 
+-- File icons use their whole square image, like Art.Icon.
+---@param file string
+---@param size number
+---@return string
+function Art.FileMarkup(file, size)
+	return ("|T%s:%d:%d|t"):format(file, size, size)
+end
+
 ---@class AGFArtSlice
 ---@field frame Frame
 ---@field atlas string

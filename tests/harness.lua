@@ -2057,6 +2057,7 @@ function harness.load(options)
 	end
 	-- UIParent.lua GetRelativeDifficultyColor's bands, with QuestDifficultyColors' values; grey is Model.IsGray's.
 	G.NORMAL_FONT_COLOR = { r = 1, g = 0.82, b = 0 }
+	G.GRAY_FONT_COLOR = G.CreateColor(0.5, 0.5, 0.5)
 	G.GetQuestDifficultyColor = function(level)
 		local difference = level - player.level
 		if difference >= 5 then
