@@ -1,7 +1,7 @@
 -- Run from the repository root: luajit tests/shown_spec.lua
 -- The route as shown (Planning/Shown.lua): Shown.Build is the one pass from a snapshot of the player to the steps the
--- views draw, so the planner's route, the player's own order (docs/design.md §2.20), the giver skips and the
--- session's trim (§4.3) are checked together here, with no UI loaded.
+-- views draw, so the planner's route, the player's own order (docs/design.md §2.20) and giver skips are checked
+-- together here, with no UI loaded.
 local harness = dofile("tests/harness.lua")
 local characters = dofile("tests/fixtures/characters.lua")
 local checks = 0
@@ -16,12 +16,6 @@ end
 local function Case(name, optimised)
 	local ns = { Data = harness.data() }
 	local Shown = harness.shown(ns)
-	ns.State = {
-		RunSpeed = function()
-			return 7
-		end,
-	}
-	ns.Integrations = { Provider = function() end }
 	ns.Invalidate = function() end
 	ns.Setting = function(key)
 		return key == "optimisedRoute" and optimised == true
@@ -64,10 +58,10 @@ end
 do
 	local ns, Shown, input = Case("orc18_barrens")
 	local shown, full = Shown.Build(input)
-	eq(shown, full, "no session: the whole route is shown")
+	eq(shown, full, "the whole ordered route is shown")
 	eq(shown.chosen, true, "the fixture's journey is chosen")
 	local planned = ns.Model.Plan(input.data, input.player, input.completed, input.log, input.prefs)
-	eq(Keys(shown), Keys(planned), "no order, skip or session: the planner's route")
+	eq(Keys(shown), Keys(planned), "no order or skip: the planner's route")
 	for index, step in ipairs(shown.steps) do
 		eq(ns.Model.Visit(step), step.orderKey, "every shown step carries its visit identity, step " .. index)
 	end
@@ -191,77 +185,6 @@ do
 	end
 	eq(row ~= nil and row.skipped, true, "the visit keeps the giver's row, skipped")
 	eq(row.done, true, "and ticks it")
-end
-
--- The session (docs/design.md §4.3): the shown route is the committed prefix, the full route stays whole, new work
--- never refills it, and a committed return keeps its visit identity across a reload.
-do
-	local ns, Shown, input = Case("human18_redridge", true)
-	local data = {}
-	for key, value in pairs(input.data) do
-		data[key] = value
-	end
-	data.quests = { [3741] = input.data.quests[3741] }
-	input.data, ns.Data = data, data
-	local whole = Shown.Build(input)
-	eq(#whole.steps, 3, "the fixture: a pickup, its work and the return")
-	input.prefs.sessionMinutes = 15
-	local observed = {}
-	input.observe = function(full)
-		observed[#observed + 1] = full
-	end
-	local before, full = Shown.Build(input)
-	eq(#before.steps, 3, "pickup, work and return fit")
-	eq(#observed, 1, "the route is observed once a build")
-	eq(observed[1], full, "whole, before the session trims it")
-	eq(ns.Session.Info().seconds ~= nil, true, "the session knows its estimate")
-	input.log[3741] = {
-		id = 3741,
-		title = "Hilary's Necklace",
-		level = 15,
-		complete = false,
-		objectives = { { type = "item", text = "Necklace" } },
-	}
-	input.last = full
-	local warm = Shown.Build(input)
-	eq(#warm.steps, 2, "accepted pickup leaves work and return")
-	-- A fresh Model has neither a previous route nor planner caches, as after /reload: the saved commitment alone
-	-- names the return's visit.
-	harness.planner(ns)
-	input.last = nil
-	local cold = Shown.Build(input)
-	eq(#cold.steps, 2, "reload retains work and return")
-	eq(ns.Model.Visit(cold.steps[2]), ns.Model.Visit(before.steps[3]), "return identity survives reload")
-	-- The length changed: the old commitment names no visits any more, and the new one is made from this route.
-	input.prefs.sessionMinutes = 30
-	eq(ns.Session.Committed(), nil, "a commitment to another length is not kept to")
-end
-
-do
-	local ns, Shown, input = Case("orc18_barrens")
-	input.prefs.sessionMinutes = 15
-	local shown, full = Shown.Build(input)
-	eq(shown.chosen, true, "the choice survives the trim")
-	eq(#shown.steps < #full.steps, true, "fifteen minutes show less than the whole route")
-	for index, step in ipairs(shown.steps) do
-		eq(step, full.steps[index], "the session shows a prefix, step " .. index)
-	end
-	for _, card in ipairs(shown.journeys) do
-		if card.key == shown.journey then
-			eq(card.steps, shown.steps, "the chosen card is trimmed with the route")
-		end
-	end
-	eq(ns.Session.Info().empty, #shown.steps == 0, "empty only when nothing fits")
-	-- Walking on changes the plan, never what the session committed to.
-	local committed = {}
-	for _, step in ipairs(shown.steps) do
-		committed[ns.Model.Visit(step)] = true
-	end
-	input.player, input.last = At(input.player, full.steps[#full.steps]), full
-	local later = Shown.Build(input)
-	for _, step in ipairs(later.steps) do
-		eq(committed[ns.Model.Visit(step)], true, "a rebuild adds no work to the session: " .. step.key)
-	end
 end
 
 print(("shown_spec: %d checks passed"):format(checks))

@@ -334,16 +334,14 @@
 ---@field Yards fun(data: AGFData, a: {map: integer, x: number, y: number}, b: {map: integer, x: number, y: number}): number? yards between two places on one continent the data places; nil otherwise
 ---@field Refresh fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, last: AGFRoute, mapName?: (AGFMapName), inputs?: AGFPlanInputs): AGFRoute the cheap in-combat rebuild: the log's steps fresh, the rest from `last`
 
--- What the player's order, skips and session ask of a build, as plain values (Shown.Build gathers them); Model.Plan
+-- What the player's order and skips ask of a build, as plain values (Shown.Build gathers them); Model.Plan
 -- reads no other module.
 ---@class AGFPlanInputs
 ---@field dungeonEntrances? table<integer, AGFLocation> known instance entrance points
 ---@field skippedQuests? table<string, integer[]> the quests of each skipped giver, by skipped key: no route offers them
----@field committed? {journey: string, visits?: table<string, string>} the session's commitment: its journey's town actions keep their visit identities
 ---@field forget? table<string, true> journeys whose committed order (`AGFRoute.orders`) this build lets go
 
 ---@class AGFState
----@field RunSpeed fun(): number last readable positive run speed, including mounts and slows
 ---@field Player fun(): AGFPlayer
 ---@field Where fun(): integer?, number?, number? the player's map and point on it; nil where the client places them nowhere
 ---@field Completed fun(): table<integer, boolean>
@@ -1243,33 +1241,8 @@
 ---@class AGFAreaObjective
 ---@field type? string
 
----@class AGFSessionCommit
----@field journey string
----@field minutes integer
----@field keys table<string, boolean>
----@field members? table<string, table<string, boolean>>
----@field visits? table<string, string> town pickup/hand-in action to committed visit identity (Model.NoteVisits)
----@field seconds? number
----@class AGFSessionInfo
----@field seconds? number
----@field pending boolean
----@field empty boolean
 ---@class AGFPrefs
 ---@field customOrders? table<string, string[]>
----@field sessionMinutes? integer
----@field sessionCommit? AGFSessionCommit
-
----@class AGFSession
----@field LENGTHS integer[] the session lengths the picker offers, in minutes; 0 is no limit
----@field Get fun(): integer
----@field Set fun(minutes: integer)
----@field Info fun(): AGFSessionInfo
----@field Work fun(step: AGFStep): number?
----@field Prefix fun(steps: AGFStep[], seconds: table<integer, number>, budget: number): integer, number
----@field Committed fun(): AGFSessionCommit? the commitment a build keeps its visit identities to; nil once the length changed
----@field Apply fun(route: AGFRoute, player: AGFPlayer): AGFRoute
----@field PendingWork fun(): boolean
----@field NextEstimate fun(api: AGFSPFAPI): boolean
 
 ---@class AGFOrderModule
 ---@field CanMove fun(from: integer, to: integer): boolean
@@ -1301,7 +1274,7 @@
 ---@field instanceName? fun(id: integer): string?
 ---@field last? AGFRoute the full route of the build before
 ---@field combat? boolean the cheap in-combat build (Model.Refresh), which needs `last`
----@field observe? fun(full: AGFRoute) called with the ordered route before the session trims it
+---@field observe? fun(full: AGFRoute) called with the ordered route
 
 ---@class AGFShown
 ---@field Build fun(input: AGFShownInput): AGFRoute, AGFRoute
@@ -1318,12 +1291,10 @@
 ---@field TownChecklist fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, step: AGFStep, previous?: AGFStep, skipped?: table<string, boolean>)
 ---@field Visit fun(step: AGFStep): string the visit's identity: `orderKey`, else `key`
 ---@field GiverSkip fun(step: AGFStep, giverKey: string): string the skipped key of one giver on a town visit
----@field NoteVisits fun(visits: table<string, string>, step: AGFStep) records a town visit's actions under its identity, for a session's commitment
 ---@field StepTitle fun(data: AGFData, log: table<integer, AGFLogQuest>, step: AGFStep)
 ---@class AGFNamespace
 ---@field Providers AGFProviders
 ---@field PvP AGFPvP
----@field Session AGFSession
 ---@field Order AGFOrderModule
 ---@field Shown AGFShown
 ---@field Sound AGFSound
@@ -1346,7 +1317,6 @@
 ---@field PVP_BATTLEGROUND_LEVEL string
 ---@field PVP_GO_BATTLEMASTER string
 ---@field PVP_NEXT_REWARD string
----@field SESSION_LABEL string
 ---@field GUIDE_OPEN string
 ---@field GUIDE_BACK string
 ---@field MENU_BACK string
@@ -1356,11 +1326,6 @@
 ---@field GUIDE_OUTLINE string
 ---@field GUIDE_OUTLINE_TOOLTIP string
 ---@field GUIDE_PAGE string
----@field SESSION_UNLIMITED string
----@field SESSION_MINUTES string
----@field SESSION_ABOUT string
----@field SESSION_EMPTY string
----@field SESSION_PENDING string
 ---@field ORDER_DRAG string
 ---@field ORDER_SOONER string
 ---@field ORDER_LATER string
@@ -1703,7 +1668,7 @@
 ---@field Summarise fun(journey: AGFJourney)
 
 ---@class AGFPlannerDecoration
----@field FinishRoute fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, route: AGFRoute, last: AGFRoute?, prefs: AGFPrefs, inputs?: AGFPlanInputs)
+---@field FinishRoute fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, route: AGFRoute, last: AGFRoute?, prefs: AGFPrefs)
 
 ---@class AGFPlannerPlan
 ---@field Route fun(journeys: AGFJourney[], prefs: AGFPrefs): AGFRoute

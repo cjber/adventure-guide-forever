@@ -1,5 +1,5 @@
 -- Run from the repository root: luajit tests/feature_rules_spec.lua
--- Rules that span features: completion providers, PvP, saved order and sessions, town givers, the hearth hint,
+-- Rules that span features: completion providers, PvP, saved order, town givers, the hearth hint,
 -- step sounds and skipped givers.
 local harness = dofile("tests/harness.lua")
 local checks = 0
@@ -74,7 +74,7 @@ do
 end
 
 local h = harness.load({})
-local M, O, S = h.ns.Model, h.ns.Order, h.ns.Session
+local M, O = h.ns.Model, h.ns.Order
 eq(O.CanMove(1, 2), false, "unchosen journey cannot move")
 eq(O.Move(1, 2), false, "unchosen move is refused without changing preferences")
 eq(h.ns.Prefs().customOrders, nil, "refused move does not persist an order")
@@ -93,19 +93,7 @@ eq(merged[2], pick)
 eq(merged[3], work)
 eq(merged[4], hand)
 eq(O.Merge(steps, { "extra" })[2], pick, "new work appends in suggested order")
-local n, seconds = S.Prefix(steps, { 10, 10, 10, 10 }, 30)
-eq(n, 3, "exact budget")
-eq(seconds, 30)
-eq(S.Prefix(steps, { 10, 10, 10, 10 }, 29), 0, "pickup cannot outlive its work")
-eq(S.Prefix({ extra, pick, work, hand }, { 10, 10, 10, 10 }, 30), 1, "earlier complete task survives")
-eq(S.Prefix(steps, { nil, 1, 1, 1 }, 100), 0, "unknown leg is not free")
-eq(S.Prefix(steps, { 1000, 1, 1, 1 }, 900), 0, "first task over budget")
-eq(S.Work(step("d", "dungeon")), nil, "no dungeon duration")
-work.objectives[1].slot = 16
-eq(S.Work(work), nil, "no scripted duration")
-work.objectives[1].slot = 0
-
--- Persistence, exact moves, reset and a committed session that never refills.
+-- Persistence, exact moves and reset.
 do
 	local route = { journey = "test", chosen = true, journeys = {}, steps = steps, orders = {} }
 	route.journeys = { { key = "test", steps = steps } }
@@ -121,18 +109,6 @@ do
 	eq(O.Merge(steps, h.ns.Prefs().customOrders.test)[1], extra)
 	O.Reset()
 	eq(O.IsCustom(), false)
-	h.ns.Prefs().sessionMinutes = 15
-	local player = h.ns.State.Player()
-	local trimmed = S.Apply(route, player)
-	eq(trimmed.chosen, true)
-	local saved = h.ns.Prefs().sessionCommit
-	eq(saved ~= nil, true)
-	local added = step("added", "trainer")
-	route.steps = { added }
-	trimmed = S.Apply(route, player)
-	eq(#trimmed.steps, 0, "new tasks do not refill")
-	eq(trimmed.chosen, true, "empty keeps choice")
-	eq(S.Info().empty, true)
 	h.ns.Route = originalRoute
 end
 
@@ -272,22 +248,6 @@ do
 		end
 	end
 	clean(t)
-end
-
--- A rebuild cannot extend a committed task by merging new quest work into its old stable key.
-do
-	local route = { chosen = true, journey = "test", journeys = {}, steps = { work } }
-	route.journeys = { { key = "test", steps = route.steps } }
-	h.ns.Prefs().sessionMinutes, h.ns.Prefs().sessionCommit = 15, nil
-	local player = h.ns.State.Player()
-	local trimmed = S.Apply(route, player)
-	eq(#trimmed.steps, 1, "existing carried work fits")
-	work.quests = { 1, 2 }
-	work.objectives[2] = { id = 2, slot = 0, need = 1, have = 0 }
-	eq(#S.Apply(route, player).steps, 0, "new merged quest does not refill the session")
-	work.quests, work.objectives[2] = { 1 }, nil
-	route.steps = { pick, work, hand }
-	eq(#S.Apply(route, player).steps, 0, "a new prerequisite cannot be omitted")
 end
 
 -- Completion is evidenced by objectives, not merely by a vanished route row.

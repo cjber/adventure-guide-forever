@@ -362,16 +362,6 @@ for _, entry in ipairs(h.ns.DumpLayout(h.G.AdventureGuideForeverContextMenu, h.D
 	table.insert(out.window_context_menu.layout, entry)
 end
 
--- A real off-zone hand-in fits 30 minutes, including the provider's travel estimate.
-h = Load("v1", false, false, "carry", { HIDDEN_ENEMIES }, ASIDES)
-h.spfSeconds = 1480
-h.ns.Session.Set(30)
-h.flush()
-out.window_session = Window(h, "window_session")
-out.window_session_picker = Window(h, "window_session_picker")
-h.Click(h.G.AdventureGuideForeverSessionPicker:GetParent())
-out.window_session_picker.layout = h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)
-
 -- Full guide: ten rows per page, future quests never become active route steps.
 h = Load("v1", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, ASIDES)
 out.window_full_guide = Window(h, "window_full_guide")
@@ -380,13 +370,6 @@ local guideButton = assert(h.Find(function(frame)
 end)[1])
 h.Click(guideButton)
 out.window_full_guide.layout = h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)
-
--- The same whole task does not fit 15 minutes.
-h = Load("v1", false, false, "carry", { HIDDEN_ENEMIES }, ASIDES)
-h.spfSeconds = 1480
-h.ns.Session.Set(15)
-h.flush()
-out.window_empty = Window(h, "window_empty")
 
 -- The player's actual custom order and retained giver checklist after accepting one giver's quests.
 local orderOptions = {}

@@ -5,17 +5,6 @@ local _, ns = ...
 local State = {}
 ns.State = State
 
-local lastRunSpeed = 7
-
----@return number
-function State.RunSpeed()
-	local _, speed = GetUnitSpeed("player")
-	if canaccessvalue(speed) and type(speed) == "number" and speed > 0 and speed < math.huge then
-		lastRunSpeed = speed
-	end
-	return lastRunSpeed
-end
-
 -- The player's bit in a quest's race mask, in QuestieDB's encoding: Forever's Skyborne (races 95 and 96) are
 -- bits 32 and 33, not a shift of the race's number. A race QuestieDB does not know has none.
 ---@return integer

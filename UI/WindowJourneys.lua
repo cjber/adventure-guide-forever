@@ -10,9 +10,9 @@ local journey
 ---@type AGFWindowStepRow[]
 local rows = {}
 ---@type FontString
-local title, reason, status, empty, stepHeading, detailHeading, detailHint, pageText, estimate
+local title, reason, status, empty, stepHeading, detailHeading, detailHint, pageText
 ---@type Button
-local start, stop, entrance, guide, session, reset, previous, nextPage
+local start, stop, entrance, guide, reset, previous, nextPage
 ---@type AGFDungeonListWidget
 local details
 ---@type AGFJourneyBanner
@@ -101,65 +101,6 @@ local function DetailRows()
 	return values, nil
 end
 
----@param minutes integer
-local function SessionLabel(minutes)
-	return minutes == 0 and L.SESSION_UNLIMITED or L.SESSION_MINUTES:format(minutes)
-end
-
--- Forever build 70009 crashes in Blizzard_Menu.AcquireMenu when opening the native picker.
--- Keep this small selector entirely in addon-owned frames, outside the native menu pool.
----@param content Frame
----@return Button
-local function CreateSessionPicker(content)
-	local button = CreateFrame("Button", nil, content, "UIPanelButtonTemplate") --[[@as Button]]
-	button:SetSize(100, 22)
-	button:SetPoint("BOTTOMRIGHT", -Window.RIGHT, 5)
-	local popup = CreateFrame("Frame", "AdventureGuideForeverSessionPicker", button)
-	popup:SetSize(144, #ns.Session.LENGTHS * 26 + 12)
-	popup:SetPoint("BOTTOMRIGHT", button, "TOPRIGHT", 0, 2)
-	popup:SetFrameStrata("DIALOG")
-	popup:EnableMouse(true)
-	local background = popup:CreateTexture(nil, "BACKGROUND")
-	background:SetAllPoints()
-	background:SetColorTexture(0.04, 0.03, 0.02, 1)
-	local choices = {}
-	for index, minutes in ipairs(ns.Session.LENGTHS) do
-		local choice = CreateFrame("Button", nil, popup, "UIPanelButtonTemplate")
-		choice:SetSize(132, 24)
-		choice:SetPoint("TOPLEFT", 6, -6 - (index - 1) * 26)
-		choice:SetText(SessionLabel(minutes))
-		choice:SetScript("OnClick", function()
-			popup:Hide()
-			ns.Session.Set(minutes)
-			button:SetText(SessionLabel(ns.Session.Get()))
-		end)
-		choices[index] = choice
-	end
-	popup:SetScript("OnShow", function(self)
-		for index, minutes in ipairs(ns.Session.LENGTHS) do
-			choices[index]:SetEnabled(ns.Session.Get() ~= minutes)
-		end
-		self:RegisterEvent("GLOBAL_MOUSE_DOWN")
-	end)
-	popup:SetScript("OnHide", function(self)
-		self:UnregisterEvent("GLOBAL_MOUSE_DOWN")
-	end)
-	popup:SetScript("OnEvent", function(self)
-		if not self:IsMouseOver() and not button:IsMouseOver() then
-			self:Hide()
-		end
-	end)
-	popup:Hide()
-	table.insert(UISpecialFrames, "AdventureGuideForeverSessionPicker")
-	button:SetScript("OnClick", function()
-		popup:SetShown(not popup:IsShown())
-	end)
-	button:HookScript("OnHide", function()
-		popup:Hide()
-	end)
-	return button
-end
-
 local function Build(parent)
 	banner = Window.CreateCard(parent, true) --[[@as AGFJourneyBanner]]
 	Window.SizeCard(banner, WIDTH, 56, 0.65)
@@ -214,8 +155,6 @@ local function Build(parent)
 		end
 	end)
 	entrance:SetWidth(112)
-	estimate = parent:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-	estimate:SetPoint("TOPRIGHT", parent, "TOPLEFT", LEFT + 420, -142)
 	stepHeading = Window.Heading(parent, L.DO_THIS_NEXT)
 	stepHeading:SetPoint("TOPLEFT", LEFT, -142)
 	detailHeading = Window.Heading(parent, L.JOURNEY_QUESTS)
@@ -322,7 +261,6 @@ local function Build(parent)
 	nextPage:SetPoint("LEFT", previous, "RIGHT", 70, 0)
 	pageText:ClearAllPoints()
 	pageText:SetPoint("LEFT", previous, "RIGHT", 8, 0)
-	session = CreateSessionPicker(parent)
 	reset = Button(parent, L.ORDER_RESET, LEFT + 260, ns.Order.Reset)
 	reset:ClearAllPoints()
 	reset:SetPoint("LEFT", nextPage, "RIGHT", 10, 0)
@@ -392,13 +330,7 @@ Refresh = function()
 		or L.START_ADVENTURE
 	)
 	start:SetText(actionText)
-	start:SetEnabled(
-		first ~= nil
-			and total > 0
-			and not InCombatLockdown()
-			and not ns.Setting("wanderer")
-			and not ns.Session.Info().pending
-	)
+	start:SetEnabled(first ~= nil and total > 0 and not InCombatLockdown() and not ns.Setting("wanderer"))
 	start:SetScript("OnClick", (ns.Guidance.Owns() or ns.Setting("wanderer")) and ShowMap or function()
 		if journey and start:IsEnabled() and not InCombatLockdown() then
 			if ns.Route().chosen then
@@ -423,9 +355,7 @@ Refresh = function()
 	)
 	stepHeading:SetShown(first ~= nil)
 	empty:SetShown(total == 0)
-	empty:SetText(
-		(ns.SourceHint and ns.SourceHint()) or (ns.Session.Info().empty and L.SESSION_EMPTY) or L.JOURNEY_CHOOSE
-	)
+	empty:SetText((ns.SourceHint and ns.SourceHint()) or L.JOURNEY_CHOOSE)
 	local values, hint = DetailRows()
 	Window.SetList(details, values)
 	details.frame:SetShown(#values > 0)
@@ -440,17 +370,6 @@ Refresh = function()
 	nextPage:SetEnabled(page < pages)
 	pageText:SetText(L.JOURNEY_PAGE:format(page, pages))
 	reset:SetShown(chosen and ns.Order.IsCustom() or false)
-	local info = ns.Session.Info()
-	local line = chosen
-			and (info.pending and L.SESSION_PENDING or info.seconds and L.SESSION_ABOUT:format(
-				math.ceil(info.seconds / 60)
-			))
-		or nil
-	estimate:SetText(line or "")
-	estimate:SetShown(line ~= nil)
-	session:SetShown(first ~= nil)
-	local minutes = ns.Session.Get()
-	session:SetText(minutes == 0 and L.SESSION_UNLIMITED or L.SESSION_MINUTES:format(minutes))
 end
 
 Window.AddTab({ key = "journeys", label = L.TAB_JOURNEYS, Build = Build, Refresh = Refresh })

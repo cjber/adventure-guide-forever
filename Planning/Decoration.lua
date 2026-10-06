@@ -14,7 +14,7 @@ local function TownCounts(pickups, handins)
 end
 
 -- A visit's identity (docs/design.md §4.3): the one a build gave it (FinishRoute), which outlives the town's numbering,
--- else the step's key. The saved order, the session's commitment, the giver skips and the step sound all key by it.
+-- else the step's key. The saved order, the giver skips and the step sound all key by it.
 function Model.Visit(step)
 	return step.orderKey or step.key
 end
@@ -164,43 +164,13 @@ local function PreviousVisit(step, previous, used)
 	return best
 end
 
--- Town numbering changes after accepting its pickups; a saved session identifies each action independently.
--- Model.NoteVisits writes the `visits` a session commits; CommittedVisit reads them back on the next build.
-function Model.NoteVisits(visits, step)
-	local visit = Model.Visit(step)
-	for _, list in ipairs(step.kind == "town" and { "pickups", "handins" } or NONE) do
-		for _, id in ipairs(step[list]) do
-			visits[list .. ":" .. id] = visit
-		end
-	end
-end
-
-local function CommittedVisit(step, visits, used)
-	local best, score, matches = nil, nil, {}
-	for _, list in ipairs(step.kind == "town" and { "pickups", "handins" } or NONE) do
-		for _, id in ipairs(step[list]) do
-			local key = visits[list .. ":" .. id]
-			if key and not used[key] then
-				matches[key] = (matches[key] or 0) + 1
-				if not score or matches[key] > score then
-					best, score = key, matches[key]
-				end
-			end
-		end
-	end
-	return best
-end
-
----@param inputs? AGFPlanInputs
-local function FinishRoute(data, player, completed, log, route, last, prefs, inputs)
+local function FinishRoute(data, player, completed, log, route, last, prefs)
 	local previous = {}
-	local committed = inputs and inputs.committed
 	for _, card in ipairs(last and last.journeys or {}) do
 		previous[card.key] = card.steps
 	end
 	for _, card in ipairs(route.journeys) do
 		local identities, steps, used = Idents(card.steps), {}, {}
-		local visits = committed and committed.journey == card.key and committed.visits
 		for index, original in ipairs(card.steps) do
 			-- Combat retains some step tables; decoration must not mutate the preceding snapshot.
 			local step = {}
@@ -209,9 +179,7 @@ local function FinishRoute(data, player, completed, log, route, last, prefs, inp
 			end
 			---@cast step AGFStep
 			local old = PreviousVisit(step, previous[card.key], used)
-			local saved = visits and CommittedVisit(step, visits, used)
-			step.orderKey = old and old.orderKey or saved or identities[index]
-			used[step.orderKey] = true
+			step.orderKey = old and old.orderKey or identities[index]
 			if step.kind == "town" then
 				Model.TownChecklist(data, player, completed, log, step, old, prefs.skipped)
 			end

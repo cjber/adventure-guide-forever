@@ -215,7 +215,6 @@ local function Build(parent)
 			or InCombatLockdown()
 			or not ns.RouteSettled()
 			or ns.Setting("wanderer")
-			or ns.Session.Info().pending
 		then
 			return
 		end
@@ -296,11 +295,7 @@ Refresh = function()
 	page, pages = Window.ClampPage(page, total, PAGE_SIZE)
 	heading.Label:SetText(target.title)
 	start:SetEnabled(
-		ns.RouteSettled()
-			and not InCombatLockdown()
-			and not ns.Setting("wanderer")
-			and not ns.Session.Info().pending
-			and ns.Model.ValidPlace(steps[1])
+		ns.RouteSettled() and not InCombatLockdown() and not ns.Setting("wanderer") and ns.Model.ValidPlace(steps[1])
 	)
 	count:SetText(L.GUIDE_PAGE:format(page, pages, #steps, #future))
 	previous:SetEnabled(page > 1)

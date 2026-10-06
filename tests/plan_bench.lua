@@ -145,7 +145,7 @@ local function check(ok, message)
 	end
 end
 
-local worstRebuild, worstTravel, worstSlice, worstSession, profiles = 0, 0, 0, 0, 0
+local worstRebuild, worstTravel, worstSlice, profiles = 0, 0, 0, 0
 
 -- QuestieDB's build (QuestieSource.lua) on the real clock: each frame's slice, timed as the timer that runs it.
 local function Slices(h)
@@ -320,58 +320,10 @@ for _, level in ipairs({ 10, 40 }) do
 	end
 end
 
--- Session legs share
--- the travel scheduler; showing either guide must not cause a second SPF estimate in the same frame.
-for _, shown in ipairs({ false, true }) do
-	local h = harness.load({
-		spf = "ended",
-		charDB = { journey = "zone:1413" },
-		completed = { 844 },
-		log = { { id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 } },
-	})
-	if shown then
-		h.ns.OpenWindow()
-	end
-	h.flush()
-	local api, model = h.G.ShortestPathForever.API, CostModel()
-	for _, name in ipairs({ "Estimate", "EstimateDetail" }) do
-		local original = api[name]
-		api[name] = function(...)
-			model.charge(...)
-			return original(...) -- multi-value: preserve the provider's refusal reason
-		end
-	end
-	collectgarbage("collect")
-	local frames = {}
-	for sample = 1, SAMPLES do
-		model.reset()
-		model.now = sample * 60
-		h.ns.Session.Set(sample % 2 == 0 and 30 or 15)
-		for _ = 1, 30 do
-			local asked, charged = model.calls, model.ms
-			local frameStart = os.clock()
-			local ran = h.tick()
-			frames[#frames + 1] = (os.clock() - frameStart) * 1000 + model.ms - charged
-			check(model.calls - asked <= 1, "session/card travel must share one SPF call per frame")
-			if ran == 0 then
-				break
-			end
-		end
-	end
-	worstSession = math.max(worstSession, Max(frames))
-	lines[#lines + 1] = ("Session frames, window %s: %.3f / %.3f ms (modelled, median / max)"):format(
-		shown and "shown" or "hidden",
-		Median(frames),
-		Max(frames)
-	)
-	check(#h.errors == 0, "session benchmark errors: " .. table.concat(h.errors, "\n"))
-end
-
 print(table.concat(lines, "\n"))
 if strict then
 	check(worstRebuild < BUDGET_MS, ("rebuild frame max %.3f ms is over %d ms"):format(worstRebuild, BUDGET_MS))
 	check(worstTravel < BUDGET_MS, ("travel frame max %.3f ms is over %d ms"):format(worstTravel, BUDGET_MS))
-	check(worstSession < BUDGET_MS, ("session frame max %.3f ms is over %d ms"):format(worstSession, BUDGET_MS))
 	check(
 		worstSlice < BUILD_BUDGET_MS,
 		("QuestieDB build slice max %.3f ms is over %d ms"):format(worstSlice, BUILD_BUDGET_MS)
@@ -379,16 +331,12 @@ if strict then
 end
 assert(#failures == 0, table.concat(failures, "\n"))
 print(
-	(
-		"plan_bench: %d profiles x %d samples; worst rebuild %.3f ms, travel %.3f ms, "
-		.. "QuestieDB slice %.3f ms, session %.3f ms%s"
-	):format(
+	("plan_bench: %d profiles x %d samples; rebuild %.3f ms, travel %.3f ms, " .. "QuestieDB slice %.3f ms%s"):format(
 		profiles,
 		SAMPLES,
 		worstRebuild,
 		worstTravel,
 		worstSlice,
-		worstSession,
 		strict and " (budget checked)" or ""
 	)
 )

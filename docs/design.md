@@ -111,7 +111,7 @@ dark tile, never a question mark or a substituted picture.
 
 Journey is the default page. A compact header names the adventure and its reason, followed by route controls.
 Six upcoming stops sit beside the journey's quest list or dungeon bosses and loot. Later stops are paged;
-full guide shows the complete route and future prerequisites. Session length remains directly accessible.
+full guide shows the complete route and future prerequisites.
 The current stop keeps its gold highlight as guidance advances; later stops use quieter white text.
 Optional steps retain readable icons and a full-strength current highlight. Header icons identify the journey
 kind, and visible route controls sit together without gaps for hidden actions.
@@ -120,7 +120,7 @@ Journey, using the same choice and start preferences as the map. Progress record
 collections, exploration and zone completion live in Legacy Forever, linked through the world map.
 The shared Today strip shows useful hints once on every page. Spell training is opt-in.
 
-`Core/Recommendations.lua` reads the committed route and wanted hints. An action revalidates its identity and destination before delegating to Guidance. Combat, Wanderer mode and pending session estimates disable travel. Unknown destinations remain advice. The detailed contracts are in [guide-navigation-design.md](guide-navigation-design.md).
+`Core/Recommendations.lua` reads the committed route and wanted hints. An action revalidates its identity and destination before delegating to Guidance. Combat and Wanderer mode disable travel. Unknown destinations remain advice. The detailed contracts are in [guide-navigation-design.md](guide-navigation-design.md).
 
 Story completion comes only from a proven final chain hand-in. `UI/StoryCompletion.lua` persists the chain head identity per character and queues an addon-owned notification independently of tracker visibility. It does not announce historical completions on login. Popup and tracker share one completion record and sound.
 
@@ -149,7 +149,6 @@ follow the shared family voice.
   its in-progress quest is selected, its travel line and numbered pin go, and the route stays on it until its
   objectives are done (a merged visit takes only the objectives the player can work on now).
 - **4.3 Committed order.** Preserve the chosen sequence and visit identities across rebuilds.
-  Session limits use rough estimates and retain complete planned work and returns.
 
 The guide uses `ShowUIPanel` / `HideUIPanel` by default, with `UIPanelLayout-*` attributes on its own frame only. It never registers in Blizzard's shared `UIPanelWindows` table. `floatWindow` opts into independent placement and dragging; saved floating positions remain available when switching back. Opening and mode changes defer during combat.
 

@@ -50,7 +50,7 @@ local TOP_BAR = 29
 local SKIPPED_HEIGHT = 16
 -- A step's kind badge (Overview.CreateBadge) on its 26 ring.
 local BADGE, BADGE_OUT = 14, 3
-local ORDER_HEIGHT, SESSION_EMPTY_HEIGHT, CHECK_LEFT = 16, 30, 46
+local ORDER_HEIGHT, CHECK_LEFT = 16, 46
 local ASIDE_HEIGHT, ASIDE_GAP = 14, 2
 local FOOTER = 40
 -- The map overview uses compact full-width rows. The renown atlas has a 6px empty margin;
@@ -127,9 +127,6 @@ local squares = {}
 -- The chosen journey's order line over its rows while the order is the player's (docs/design.md §2.20).
 ---@type Frame
 local orderLine
--- The empty session's line in place of the rows.
----@type FontString
-local sessionEmpty
 -- The town checklist's lines under their rows.
 ---@type AGFCheckLine[]
 local checks = {}
@@ -489,10 +486,6 @@ local function BuildJourneys(parent, below)
 	reset:SetScript("OnClick", function()
 		ns.Order.Reset()
 	end)
-	sessionEmpty = list:CreateFontString(nil, "ARTWORK", "GameFontDisable")
-	sessionEmpty:SetPoint("RIGHT", -10, 0)
-	sessionEmpty:SetJustifyH("LEFT")
-	sessionEmpty:SetText(L.SESSION_EMPTY)
 	-- "Skipped (n)" under the cards (design §2.18), a small gold text button that opens the Skipped submenu on its own.
 	skippedButton = CreateFrame("Button", nil, list) --[[@as Button]]
 	skippedButton:SetHeight(SKIPPED_HEIGHT)
@@ -727,7 +720,7 @@ local function LayoutTrack(journey, top)
 end
 
 -- The shown card's rows, from `top` down, each town's checklist under its row; over them the order line while the
--- chosen journey's order is the player's, or in their place the empty session's line. `hidden` (a search, or no
+-- chosen journey's order is the player's. `hidden` (a search, or no
 -- card) hides them all.
 ---@param route AGFRoute
 ---@param top number
@@ -736,19 +729,12 @@ end
 ---@return number top below the last row shown
 local function LayoutRows(route, top, hidden, journey)
 	---@cast orderLine -?
-	---@cast sessionEmpty -?
 	local custom = not hidden and route.chosen and ns.Order.IsCustom()
 	orderLine:SetShown(custom)
 	if custom then
 		orderLine:SetPoint("TOPLEFT", 6, -top)
 		orderLine:SetPoint("TOPRIGHT", -6, -top)
 		top = top + ORDER_HEIGHT + ROW_GAP
-	end
-	local empty = not hidden and route.chosen and ns.Session.Info().empty
-	sessionEmpty:SetShown(empty)
-	if empty then
-		sessionEmpty:SetPoint("TOPLEFT", 10, -(top + 4))
-		top = top + SESSION_EMPTY_HEIGHT
 	end
 	local check = 1
 	for index, row in ipairs(rows) do
@@ -779,7 +765,6 @@ local function LayoutRows(route, top, hidden, journey)
 	Overview.HideChecklist(checks, check)
 	local future = not hidden
 			and #route.steps < ns.Model.MAX_STEPS
-			and not empty
 			and journey
 			and ns.Window.GuideOutline(ns.Data, ns.State.Player(), ns.State.Completed(), journey, route.steps)
 		or {}

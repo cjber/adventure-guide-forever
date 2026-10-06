@@ -8,7 +8,7 @@ The guide helps a player choose an adventure and follow it from preparation to c
 | Activities | Choose journeys, professions or PvP |
 | Progress | Completed story milestones and a link to Legacy Forever on the map |
 
-Journey has a compact heading and two columns. The left column shows ordered steps with action icons; the right shows related quests. Start, Resume, Show on map, Stop and Full guide act on the displayed journey. Session length and manual ordering stay available. Full guide adds later quests without turning locked prerequisites into active route steps.
+Journey has a compact heading and two columns. The left column shows ordered steps with action icons; the right shows related quests. Start, Resume, Show on map, Stop and Full guide act on the displayed journey. Manual ordering stays available. Full guide adds later quests without turning locked prerequisites into active route steps.
 
 Dungeon journeys retain faction and class checks, prerequisite pickups, accepted quests and end-to-end Shortest Path routing. Their right column shows bosses and drops supplied by AtlasLoot Classic through its public item database. Show item icons and native item tooltips. Do not duplicate encounter strategies, models or an independent dungeon journal. Missing AtlasLoot explains how to install it without blocking quest guidance.
 

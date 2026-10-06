@@ -205,33 +205,7 @@ local function LoadCharDB()
 			loaded.customOrders[key] = keys
 		end
 	end
-	local session = loaded.sessionCommit
-	if
-		session ~= nil
-		and not (
-			type(session) == "table"
-			and type(session.journey) == "string"
-			and type(session.minutes) == "number"
-			and type(session.keys) == "table"
-			and (session.members == nil or type(session.members) == "table")
-			and (session.visits == nil or type(session.visits) == "table")
-			and (session.seconds == nil or type(session.seconds) == "number")
-		)
-	then
-		loaded.sessionCommit = nil
-	end
-	if loaded.sessionCommit then
-		for _, members in pairs(session.members or {}) do
-			if type(members) ~= "table" then
-				loaded.sessionCommit = nil
-			end
-		end
-		for action, key in pairs(session.visits or {}) do
-			if type(action) ~= "string" or type(key) ~= "string" then
-				loaded.sessionCommit = nil
-			end
-		end
-	end
+	loaded.sessionMinutes, loaded.sessionCommit = nil, nil
 	-- The defaults loop above guarantees every AGFPrefs field except `skipped`, which ns.Prefs()
 	-- always sets before returning; nothing else reads charDB directly.
 	---@cast loaded AGFPrefs
@@ -554,7 +528,7 @@ local function BuildRoute()
 		instanceName = state.InstanceName,
 		last = rawRoute,
 		combat = combat,
-		-- The step sound hears the whole route, before the session trims it.
+		-- The step sound hears the ordered route.
 		observe = function(ordered)
 			ns.Sound.Observe(cachedRoute, ordered, world, trained)
 		end,
@@ -657,7 +631,7 @@ function ns.Resume(step)
 end
 
 -- Commits a finished build (Shown.Build's two routes and the snapshot they were planned from): the plan is atomic,
--- so its order, sound and session, then Guidance.Ended and the callers, all run on the frame the last slice of the
+-- so its order and sound, then Guidance.Ended and the callers, all run on the frame the last slice of the
 -- rebuild finished, never on a partial route.
 ---@param shown AGFRoute
 ---@param full AGFRoute

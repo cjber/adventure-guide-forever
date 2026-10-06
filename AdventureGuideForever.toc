@@ -31,7 +31,6 @@ Planning\Decoration.lua
 Planning\Plan.lua
 Planning\Refresh.lua
 Planning\Order.lua
-Core\Session.lua
 Planning\Shown.lua
 UI\Sound.lua
 Core\State.lua

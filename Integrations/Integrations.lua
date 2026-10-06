@@ -195,7 +195,7 @@ local NextCard
 
 -- The next queued card asks a frame on, unless a chain already will.
 local function Chain()
-	if (cardQueue[1] or ns.Session.PendingWork()) and not chained then
+	if cardQueue[1] and not chained then
 		chained = true
 		C_Timer.After(0, NextCard)
 	end
@@ -210,7 +210,7 @@ end)
 
 function NextCard()
 	chained = false
-	if not ns.Session.PendingWork() and not (ns.PanelShown and ns.PanelShown()) then
+	if not (ns.PanelShown and ns.PanelShown()) then
 		cardQueue = {}
 		return
 	elseif InCombatLockdown() then
@@ -220,13 +220,6 @@ function NextCard()
 		return
 	end
 	-- The queue may have emptied since this frame was asked for: a route with nothing new to fetch.
-	if ns.Session.PendingWork() then
-		local api = SPF()
-		if api and ns.Session.NextEstimate(api) then
-			Chain()
-		end
-		return
-	end
 	local journey = table.remove(cardQueue, 1)
 	if journey then
 		local line, minutes, crossing = Fetch(journey.steps[1])

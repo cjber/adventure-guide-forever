@@ -1,7 +1,7 @@
 -- Run from the repository root: luajit tests/guide_ui_spec.lua
--- The window's PvP and Completion tabs, Go to entrance, Today's overflow, the session picker, reordering, the step
+-- The window's PvP and Completion tabs, Go to entrance, Today's overflow, reordering, the step
 -- kinds' badges, a town's checklist and a revisited place's ring (docs/design.md §2.9, §2.19, §2.20), through the
--- harness and the real Session, Order, PvP and Providers modules. The map tab, drag feel, menus and pin art
+-- harness and the real Order, PvP and Providers modules. The map tab, drag feel, menus and pin art
 -- still need /reload checks.
 local harness = dofile("tests/harness.lua")
 local checks = 0
@@ -245,92 +245,6 @@ do
 	h.ns.Window.Refresh()
 	equal(more:IsShown(), false, "two fit: no overflow")
 	clean(h, "today")
-end
-
---[[ The session picker ]]
-
-do
-	local h = Load({
-		spf = "v1",
-		charDB = { journey = "carry" },
-		log = {
-			{ id = 5729, title = "Hidden Enemies", level = 15, complete = true, map = 1454, x = 0.4947, y = 0.5059 },
-		},
-	})
-	h.spfSeconds = 1480
-	local L = h.ns.L
-	local window = Open(h)
-	local popup = h.G.AdventureGuideForeverSessionPicker
-	local picker = popup:GetParent()
-	equal(picker:GetObjectType(), "Button", "session: addon-owned button")
-	equal(picker:GetText(), L.SESSION_UNLIMITED, "session: No limit to start")
-	-- Opening must not call Blizzard_Menu: build 70009 asserts inside its native pool.
-	h.G.MenuUtil.CreateContextMenu = function()
-		error("session picker used native menu manager")
-	end
-	equal(popup:IsShown(), false, "session: choices initially hidden")
-	h.Click(picker)
-	equal(popup:IsShown(), true, "session: click opens choices")
-	local choices = Visible(h, popup, function(frame)
-		return frame:GetObjectType() == "Button"
-	end)
-	equal(#choices, 4, "session: all four lengths offered")
-	local labels = {}
-	for index, choice in ipairs(choices) do
-		labels[index] = choice:GetText()
-	end
-	local expectedLabels = {
-		L.SESSION_UNLIMITED,
-		L.SESSION_MINUTES:format(15),
-		L.SESSION_MINUTES:format(30),
-		L.SESSION_MINUTES:format(60),
-	}
-	same(labels, expectedLabels, "session: offered lengths")
-	local escaped = false
-	for _, name in ipairs(h.G.UISpecialFrames) do
-		escaped = escaped or h.G[name] == popup
-	end
-	equal(escaped, true, "session: selector registered for Escape")
-	equal(choices[1]:IsEnabled(), false, "session: current choice marked")
-	h.Click(choices[3])
-	equal(popup:IsShown(), false, "session: choice closes selector")
-	h.Click(picker)
-	equal(choices[3]:IsEnabled(), false, "session: new selection marked on reopen")
-	popup.mouseOver = true
-	h.fire("GLOBAL_MOUSE_DOWN", "LeftButton")
-	equal(popup:IsShown(), true, "session: choice press stays open until click")
-	popup.mouseOver = false
-	h.fire("GLOBAL_MOUSE_DOWN", "LeftButton")
-	equal(popup:IsShown(), false, "session: outside press dismisses")
-	h.Click(picker)
-	h.Click(picker)
-	equal(popup:IsShown(), false, "session: clicking picker again closes")
-	h.Click(picker)
-	window:Hide()
-	equal(popup:IsShown(), false, "session: closing guide dismisses selector")
-	window:Show()
-	equal(popup:IsShown(), false, "session: selector stays closed when guide reopens")
-	equal(h.ns.Session.Get(), 30, "session: a pick persists it")
-	Redraw(h)
-	equal(picker:GetText(), L.SESSION_MINUTES:format(30), "session: the pick shows")
-	equal(h.ns.Session.Info().seconds, 1490, "session: real travel and work estimate")
-	equal(Texts(h)[L.SESSION_ABOUT:format(25)], 1, "session: About 25 min")
-	h.combat = true
-	h.ns.Session.Set(15)
-	Redraw(h)
-	equal(h.ns.Session.Info().pending, true, "session: combat holds estimates")
-	equal(Texts(h)[L.SESSION_PENDING], 1, "session: estimating")
-	h.combat = false
-	h.fire("PLAYER_REGEN_ENABLED")
-	Redraw(h)
-	equal(h.ns.Session.Info().empty, true, "session: whole task exceeds 15 minutes")
-	equal(Texts(h)[L.SESSION_EMPTY], 1, "session empty: says so")
-	equal(#StepRows(h, window), 0, "session empty: no steps")
-	h.ns.OpenPanel()
-	h.flush()
-	local panel = h.G.AdventureGuideForeverPanel
-	equal(Texts(h, panel)[L.SESSION_EMPTY], 1, "session empty: the panel says so too")
-	clean(h, "session")
 end
 
 --[[ Reordering: the menu, the drag, the tag and the way back ]]

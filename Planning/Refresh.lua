@@ -178,6 +178,6 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 	local route = Route(journeys, prefs)
 	route.stranded, route.orders, route.lead = last.stranded, last.orders, last.lead
 	route.left = last.left
-	FinishRoute(data, player, completed, log, route, last, prefs, inputs)
+	FinishRoute(data, player, completed, log, route, last, prefs)
 	return route
 end

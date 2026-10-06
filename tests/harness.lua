@@ -3027,14 +3027,12 @@ function harness.planner(ns)
 	end
 end
 
--- The route as shown, without the UI: harness.model's files, then the player's order, the session and Shown.Build.
--- The spec supplies the two client reads the session's own estimate makes (ns.State.RunSpeed,
--- ns.Integrations.Provider).
+-- The route as shown, without the UI: harness.model's files, then the player's order and Shown.Build.
 ---@param ns table
 ---@return AGFShown
 function harness.shown(ns)
 	harness.model(ns)
-	for _, path in ipairs({ "Planning/Order.lua", "Core/Session.lua", "Planning/Shown.lua" }) do
+	for _, path in ipairs({ "Planning/Order.lua", "Planning/Shown.lua" }) do
 		assert(loadfile(path))(ADDON, ns)
 	end
 	return ns.Shown

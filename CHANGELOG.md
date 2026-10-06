@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Journeys keep their full route.** Time-limit controls and estimated session budgets are removed. Saved time limits no longer hide quest steps.
+
 - **Journey, Activities and Progress have distinct jobs.** Your current adventure shows six upcoming steps with quests or dungeon bosses and loot alongside. Other journey choices live in Activities; Progress records completed stories and links to Legacy for collections.
 - **Dungeon information stays with the quest route.** AtlasLoot supplies bosses and item drops directly. The full guide includes prerequisite chains, while automatic interior maps live in Tweaks Forever.
 

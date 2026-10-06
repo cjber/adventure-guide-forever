@@ -375,9 +375,6 @@ end
 ---@param key? string
 ---@param start? boolean
 function ns.Choose(key, start)
-	if ns.Prefs().journey ~= key then
-		ns.Prefs().sessionCommit = nil
-	end
 	local prefs = ns.Prefs()
 	local was = prefs.guided
 	prefs.journey = key
@@ -407,9 +404,6 @@ function ns.StartRoute(step)
 	if ns.Setting("wanderer") then
 		pendingStart = false
 		return false
-	elseif ns.Session.Info().pending then
-		pendingStart = true
-		return true
 	elseif InCombatLockdown() and Integrations.Provider() then
 		pendingStart = true
 		return true
@@ -473,14 +467,11 @@ function Guidance.Status()
 	end
 end
 
--- A start that waited (for the rebuild with the journey's steps, the session's estimate or combat's end) runs. A
--- chosen journey whose steps ran out while its route ran stops it, and waits for the session to fill again.
+-- A start waiting for the chosen journey's rebuild or combat's end runs. Empty routes stop their guidance.
 local function StartWaiting()
 	local route = ns.Route()
 	if route.chosen and #route.steps == 0 and ns.Prefs().guided == route.journey and Guidance.Owns() then
-		local waiting = ns.Session.Info().pending
 		Guidance.Cancel()
-		pendingStart = pendingStart or waiting
 	end
 	if pendingStart and not InCombatLockdown() and ns.Route().chosen then
 		ns.StartRoute()

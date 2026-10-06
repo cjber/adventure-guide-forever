@@ -423,10 +423,7 @@ WINDOWS = (
     "window_missing",
     "window_today",
     "window_context_menu",
-    "window_session",
-    "window_session_picker",
     "window_full_guide",
-    "window_empty",
     "window_order",
 )
 PLAYER = {"x": 0.52, "y": 0.30}  # tests/harness.lua's player position in The Barrens

@@ -49,7 +49,7 @@ commit the PNGs it rewrites in `docs/screenshots/`; two runs give byte-identical
 - `UI/`: guide windows, hints, map pins, settings and the private tracker host.
 - `Planning/Model.lua`: the headless-testable planner's eligibility rules and shared table, `ns.Model`; the planner's
   other modules load after it in `AdventureGuideForever.toc` order. `Core/State.lua` reads the client.
-- `Planning/Shown.lua`: the route as shown: `Shown.Build` runs the planner, the player's order and the session's trim
+- `Planning/Shown.lua`: the route as shown: `Shown.Build` runs the planner, the player's order and giver skips
   over one snapshot; Core's rebuild is its one caller, and the planner reads no other module.
 - `Integrations/Integrations.lua`: Shortest Path Forever's public API when loaded, the native waypoint otherwise.
 - `Core/Guidance.lua`: the guidance lifecycle (choose, start, stop, restore, follow, end); the one writer of

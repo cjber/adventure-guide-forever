@@ -53,7 +53,6 @@ The full guide continues across pages. These images are generated previews of th
 - **Choose and go.** Use Shortest Path Forever or the game's waypoint. Stop clears only guidance the addon started.
 - **Your route.** Your journey survives travel and reloads. Ready hand-ins come first. Towns group quest givers into checklists.
 - **Your order.** Drag steps or use their menu. Moves that break quest order are greyed out.
-- **Time to play.** Choose 15, 30 or 60 minutes using rough travel and quest-time estimates.
 - **Search and hints.** Check quest requirements, talents and battlegrounds. Class spell reminders are optional and off by default.
 - **Your say.** Skip steps or hide journeys. Shift-click search results or map quest givers to add quests. Nothing abandons quests for you. Map marks are off by default.
 
