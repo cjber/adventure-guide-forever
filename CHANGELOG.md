@@ -19,6 +19,7 @@ verbatim rather than rewritten as the addon moves.
 - **Class spell training is optional.** Spell reminders and automatic trainer visits are off by default. Enable them in the Route settings when you want them; talent and profession hints keep working independently.
 - **Useful suggestions beside your journey.** Journeys brings your adventure, training and profession hints together. See why each suggestion fits, start its route or browse other things you can do. Browsing leaves your current journey intact.
 - **Training hints follow you around town.** Moving between city districts refreshes the trainer and profession hints without rebuilding your quest route. A hint dismissed or moved since it was drawn cannot start navigation to its old destination.
+- **Game data for Forever build 1.60.1.70235, tested against QuestieDB 1.0.5.** The new QuestieDB lists Forever's added quests in Westfall, Moonglade's Great Cat Spirit and more, and when your quest log is full a route that leaves out a town's quest no longer drops the walk back to hand in the rest.
 
 ## [0.9.0] - 2026-10-05
 

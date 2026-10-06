@@ -1,53 +1,64 @@
 # human21_ironforge: level 21, side 1, at 1455 0.5500,0.4800
 card (chosen) | zone:1437 | Wetlands story | Chapter 1 of 6 | A chain begins with Mountaineer Kadrell | map 1437
-  step 1 | town:1437:150 | Visit Menethil Harbor: Pick up 3 | 1437 0.1090,0.5964 | 3 to pick up
-  step 2 | area:279:0 | Complete objectives · Claws from the Deep | 1437 0.1520,0.4150 | after you pick it up | 47 yd | 279/0 279/4
-  step 3 | town:1437:150:2 | Turn in: Claws from the Deep | 1437 0.0832,0.5857 | Opens the next chapter here
-  step 4 | town:1437:1025 | Visit The Green Belt: Pick up 2 | 1437 0.4992,0.3937 | 2 to pick up
-  step 5 | area:276:0 | Complete objectives · Tramping Paws | 1437 0.6170,0.7220 | after you pick it up | 108 yd | 276/0 276/1
-  step 6 | town:1437:1025:2 | Turn in: Tramping Paws | 1437 0.5637,0.4040 | Opens the next chapter here
-  step 7 | town:1432:144 | Pick up: Report to Mountaineer Rockgar | 1432 0.3263,0.4974 | Begins a new story
-card | zone:1431 | Head to Duskwood | 5 quests near your level | - | map 1431
-  step 1 | town:1431:1097 | Pick up: Wolves at Our Heels | 1431 0.0771,0.3320 | near your level
-  step 2 | town:1431:94 | Pick up: Jitters' Growling Gut | 1431 0.1838,0.5637 | near your level
-  step 3 | town:1431:245 | Pick up: Eight-Legged Menaces | 1431 0.4512,0.6703 | near your level
-  step 4 | town:1431:42 | Visit Darkshire: Pick up 2 | 1431 0.7534,0.4875 | 2 to pick up
-card | zone:1432 | Head to Loch Modan | 11 quests near your level | 5 quests will soon turn grey | map 1432
+  step 1 | town:1437:150 | Visit Menethil Harbor: Pick up 5 | 1437 0.1090,0.5964 | 5 to pick up
+  step 2 | area:98197:4 | Complete objectives · Spoils of War | 1437 0.0710,0.6560 | after you pick it up | 105 yd | 98197/4
+  step 3 | area:98197:5 | Complete objectives · Spoils of War | 1437 0.0500,0.5230 | after you pick it up | 79 yd | 98197/5
+  step 4 | area:279:0 | Complete objectives · Claws from the Deep | 1437 0.1530,0.3980 | after you pick it up | 47 yd | 279/0 279/4
+  step 5 | town:1437:150:2 | Visit Menethil Harbor: Turn in 2 | 1437 0.0832,0.5857 | Opens the next chapter here
+  step 6 | area:98282:4 | Complete objectives · Alchemical Hazards | 1437 0.5000,0.5880 | after you pick it up | 86 yd | 98282/4
+  step 7 | town:1437:1025 | Visit The Green Belt: Pick up 2 | 1437 0.4992,0.3937 | 2 to pick up
+  step 8 | area:276:0 | Complete objectives · Tramping Paws | 1437 0.6170,0.7220 | after you pick it up | 108 yd | 276/0 276/1
+  step 9 | town:1437:1025:2 | Turn in: Tramping Paws | 1437 0.5637,0.4040 | Opens the next chapter here
+  step 10 | town:1432:144 | Pick up: Report to Mountaineer Rockgar | 1432 0.3263,0.4974 | Begins a new story
+card | zone:1432 | Head to Loch Modan | 14 quests near your level | 5 quests will soon turn grey | map 1432
   step 1 | town:1432:838 | Pick up: Filthy Paws | 1432 0.2476,0.1840 | near your level
   step 2 | town:1432:144 | Visit Thelsamar: Pick up 4 | 1432 0.3263,0.4974 | 4 to pick up
   step 3 | town:1432:146 | Pick up: A Dark Threat Looms | 1432 0.4605,0.1361 | near your level
-  step 4 | town:1432:556 | Pick up: Bingles' Missing Supplies | 1432 0.6356,0.4792 | near your level
+  step 4 | town:1432:556 | Visit The Loch: Pick up 2 | 1432 0.4806,0.3976 | 2 to pick up
   step 5 | town:1432:142 | Visit Ironband's Excavation Site: Pick up 2 | 1432 0.6490,0.6666 | 2 to pick up
-  step 6 | town:1432:147 | Visit The Farstrider Lodge: Pick up 2 | 1432 0.8176,0.6166 | 2 to pick up
-card | zone:1433 | Head to Redridge Mountains | 13 quests near your level | 3 quests will soon turn grey | map 1433
-  step 1 | town:1433:69 | Visit Lakeshire: Pick up 11 | 1433 0.1759,0.4384 | 11 to pick up
+  step 6 | town:1432:147 | Visit The Farstrider Lodge: Pick up 3 | 1432 0.8176,0.6166 | 3 to pick up
+  step 7 | town:1432:923 | Pick up: Banner of the Fallen | 1432 0.3176,0.8621 | near your level
+card | zone:1433 | Head to Redridge Mountains | 16 quests near your level | 3 quests will soon turn grey | map 1433
+  step 1 | town:1433:69 | Visit Lakeshire: Pick up 14 | 1433 0.1759,0.4384 | 14 to pick up
   step 2 | town:1433:1002 | Pick up: Encroaching Gnolls | 1433 0.1018,0.7146 | near your level
   step 3 | town:1429:91 | Pick up: A Watchful Eye | 1429 0.6522,0.6971 | near your level
-card | zone:1436 | Head to Westfall | 6 quests near your level | 2 quests will soon turn grey | map 1436
-  step 1 | town:1436:107 | Pick up: The Killing Fields | 1436 0.5604,0.3123 | near your level
-  step 2 | town:1436:108 | Visit Sentinel Hill: Pick up 2 | 1436 0.5633,0.4752 | 2 to pick up
-  step 3 | town:1436:115 | Visit Westfall Lighthouse: Pick up 3 | 1436 0.3001,0.8602 | 3 to pick up
+card | zone:1431 | Head to Duskwood | 6 quests near your level | - | map 1431
+  step 1 | town:1431:1097 | Pick up: Wolves at Our Heels | 1431 0.0771,0.3320 | near your level
+  step 2 | town:1431:94 | Pick up: Jitters' Growling Gut | 1431 0.1838,0.5637 | near your level
+  step 3 | town:1431:245 | Pick up: Eight-Legged Menaces | 1431 0.4512,0.6703 | near your level
+  step 4 | town:1431:42 | Visit Darkshire: Pick up 3 | 1431 0.7262,0.4762 | 3 to pick up
+card | zone:1436 | Head to Westfall | 18 quests near your level | 5 quests will soon turn grey | map 1453
+  step 1 | town:1453:0 | Visit Stormwind City: Pick up 4 | 1453 0.6188,0.3056 | 4 to pick up
+  step 2 | town:1436:107 | Visit Saldean's Farm: Pick up 3 | 1436 0.5604,0.3123 | 3 to pick up
+  step 3 | town:1436:108 | Visit Sentinel Hill: Pick up 5 | 1436 0.5633,0.4752 | 5 to pick up
+  step 4 | town:1436:219 | Pick up: ... and that note you found | 1436 0.3727,0.5070 | near your level
+  step 5 | town:1436:921 | Pick up: Of Mice and Milk | 1436 0.3251,0.7178 | near your level
+  step 6 | town:1436:115 | Visit Westfall Lighthouse: Pick up 4 | 1436 0.3869,0.8355 | 4 to pick up
 card | zone:1440 | Head to Ashenvale | 7 quests near your level | - | map 1440
   step 1 | town:1440:414 | Pick up: The Ancient Statuette | 1440 0.1479,0.3129 | near your level
   step 2 | town:1440:413 | Pick up: Bathran's Hair | 1440 0.2644,0.3859 | near your level
   step 3 | town:1440:415 | Visit Astranaar: Pick up 4 | 1440 0.3662,0.4958 | 4 to pick up
   step 4 | town:1442:1076 | Pick up: On Guard in Stonetalon | 1442 0.5990,0.6685 | near your level
-card | zone:1439 | Head to Darkshore | 11 quests near your level | Auberdine needs hands | map 1439
-  step 1 | town:1439:442 | Visit Auberdine: Pick up 7 | 1439 0.3744,0.4184 | 7 to pick up
-  step 2 | town:1439:448 | Pick up: The Sleeper Has Awakened | 1439 0.4440,0.7643 | near your level
-  step 3 | town:1439:449 | Visit The Master's Glaive: Pick up 2 | 1439 0.4594,0.9029 | 2 to pick up
-  step 4 | town:1439:443 | Pick up: Gyromast's Retrieval | 1439 0.5666,0.1348 | near your level
-card | zone:1413 | Head to The Barrens | 6 quests near your level | Ratchet needs hands | map 1413
-  step 1 | town:1413:392 | Visit Ratchet: Pick up 5 | 1413 0.6237,0.3762 | 5 to pick up
+card | zone:1439 | Head to Darkshore | 16 quests near your level | - | map 1453
+  step 1 | town:1453:0 | Visit Stormwind City: Pick up 2 | 1453 0.5940,0.3426 | 2 to pick up
+  step 2 | town:1439:442 | Visit Auberdine: Pick up 8 | 1439 0.3744,0.4184 | 8 to pick up
+  step 3 | town:1439:448 | Visit Grove of the Ancients: Pick up 2 | 1439 0.4440,0.7643 | 2 to pick up
+  step 4 | town:1439:449 | Visit The Master's Glaive: Pick up 3 | 1439 0.4594,0.9029 | 3 to pick up
+  step 5 | town:1439:443 | Pick up: Gyromast's Retrieval | 1439 0.5666,0.1348 | near your level
+card | zone:1413 | Head to The Barrens | 7 quests near your level | Ratchet needs hands | map 1413
+  step 1 | town:1413:392 | Visit Ratchet: Pick up 6 | 1413 0.6237,0.3762 | 6 to pick up
   step 2 | town:1413:382 | Pick up: Ignition | 1413 0.5652,0.0745 | near your level
 card | zone:1442 | Head to Stonetalon Mountains | 2 quests near your level | - | map 1442
   step 1 | town:1442:1076 | Pick up: Super Reaper 6000 | 1442 0.5899,0.6260 | near your level
   step 2 | town:1442:461 | Pick up: Gerenzo's Orders | 1442 0.7187,0.6000 | near your level
-card | zone:1426 | Head to Dun Morogh | 2 quests near your level | - | map 1426
+card | zone:1426 | Head to Dun Morogh | 3 quests near your level | - | map 1426
   step 1 | town:1426:1537 | Pick up: Search for Incendicite | 1426 0.4962,0.4861 | near your level
-  step 2 | town:1432:144 | Pick up: Stonegear's Search | 1432 0.3263,0.4974 | near your level
+  step 2 | town:1426:134 | Pick up: Old Ironforge Incursion | 1426 0.6484,0.5845 | near your level
+  step 3 | town:1432:144 | Pick up: Stonegear's Search | 1432 0.3263,0.4974 | near your level
 card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
   step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level
+card | zone:1450 | Head to Moonglade | 3 quests near your level | Moonglade needs hands | map 1450
+  step 1 | town:1450:493 | Visit Moonglade: Pick up 3 | 1450 0.5621,0.3064 | 3 to pick up
 card | calling | Your calling | Chapter 1 of 5 | Your class trainer has a task: Yorus Barleybrew | map 1453
   step 1 | town:1453:0 | Pick up: Yorus Barleybrew | 1453 0.8055,0.5987 | Begins a new story
   step 2 | town:1433:69 | Pick up: The Rethban Gauntlet | 1433 0.2149,0.4472 | near your level

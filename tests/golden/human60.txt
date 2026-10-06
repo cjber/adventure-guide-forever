@@ -77,6 +77,8 @@ card | zone:1444 | Head to Feralas | 6 quests near your level | - | map 1444
   step 2 | town:1444:2577 | Pick up: Mistwalker the Elder | 1444 0.6258,0.3096 | near your level
   step 3 | town:1444:1119 | Visit The Twin Colossals: Pick up 3 | 1444 0.4481,0.4342 | 3 to pick up
   step 4 | town:1444:1120 | Pick up: The Sunken Temple | 1444 0.3183,0.4561 | near your level
+card | zone:1416 | Head to Alterac Mountains | 1 quest near your level | - | map 1416
+  step 1 | town:1416:279 | Pick up: A Donation of Wool | 1416 0.1157,0.5780 | near your level
 card | zone:1435 | Head to Swamp of Sorrows | 1 quest near your level | - | map 1435
   step 1 | town:1435:1780 | Pick up: Warrior Kinship | 1435 0.3429,0.6614 | near your level
 card | zone:1441 | Head to Thousand Needles | 2 quests near your level | - | map 1441
@@ -84,11 +86,15 @@ card | zone:1441 | Head to Thousand Needles | 2 quests near your level | - | map
   step 2 | town:1441:484 | Pick up: Skyseer the Elder | 1441 0.4529,0.5000 | near your level
 card | zone:1424 | Head to Hillsbrad Foothills | 2 quests near your level | - | map 1424
   step 1 | town:1424:271 | Visit Southshore: Pick up 2 | 1424 0.5000,0.5735 | 2 to pick up
+card | zone:1431 | Head to Duskwood | 1 quest near your level | - | map 1431
+  step 1 | town:1431:245 | Pick up: An Unfortunate End | 1431 0.4552,0.7937 | near your level
 card | zone:1440 | Head to Ashenvale | 1 quest near your level | - | map 1440
   step 1 | town:1440:415 | Pick up: Riversong the Elder | 1440 0.3560,0.4880 | near your level
-card | zone:1413 | Head to The Barrens | 3 quests near your level | - | map 1413
+card | zone:1433 | Head to Redridge Mountains | 2 quests near your level | - | map 1433
+  step 1 | town:1433:1002 | Visit Three Corners: Pick up 2 | 1433 0.0975,0.7102 | 2 to pick up
+card | zone:1413 | Head to The Barrens | 5 quests near your level | - | map 1413
   step 1 | town:1413:378 | Pick up: High Mountain the Elder | 1413 0.4509,0.5792 | near your level
-  step 2 | town:1413:380 | Pick up: Moonwarden the Elder | 1413 0.5142,0.3071 | near your level
+  step 2 | town:1413:380 | Visit The Crossroads: Pick up 3 | 1413 0.5142,0.3071 | 3 to pick up
   step 3 | town:1413:392 | Pick up: Windtotem the Elder | 1413 0.6270,0.3673 | near your level
 card | zone:1421 | Head to Silverpine Forest | 1 quest near your level | - | map 1421
   step 1 | town:1421:228 | Pick up: Obsidian the Elder | 1421 0.4498,0.4114 | near your level

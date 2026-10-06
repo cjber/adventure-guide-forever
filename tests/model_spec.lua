@@ -1739,13 +1739,15 @@ do
 		"unlisted: every added quest here finished"
 	)
 	equal(Model.Unlisted({ quests = {}, forever = known.forever }, 8, {}, {}), false, "unlisted: none on another map")
-	-- The generated slice against the bundled data: Westfall's added quests are unknown to it, the Barrens has none.
+	-- The generated slice against the bundled data: Tanaris's added quests are unknown to it, Westfall's are listed
+	-- (QuestieDB v1.0.5 added them) and the Barrens has none.
 	assert(loadfile("Data/Forever.lua"))("AdventureGuideForever", ns)
 	local forever = ns.Data.forever
 	---@cast forever -?
 	equal(forever.areas[16591], true, "unlisted: Riverglades is an added area")
 	equal(forever.areas[40], nil, "unlisted: Westfall is not")
-	equal(Model.Unlisted(ns.Data, 1436, {}, {}), true, "unlisted: Westfall has added quests")
+	equal(Model.Unlisted(ns.Data, 1446, {}, {}), true, "unlisted: Tanaris has added quests")
+	equal(Model.Unlisted(ns.Data, 1436, {}, {}), false, "unlisted: Westfall's added quests are listed")
 	equal(Model.Unlisted(ns.Data, 1413, {}, {}), false, "unlisted: the Barrens has none")
 end
 
@@ -1809,9 +1811,9 @@ do
 			end
 		end
 	end
-	equal(#heads, 852, "walk: chain heads in the data")
-	equal(totals, 689, "walk: heads whose total the data proves")
-	equal(textOnly, 163, "walk: heads shown as a chapter only")
+	equal(#heads, 885, "walk: chain heads in the data")
+	equal(totals, 711, "walk: heads whose total the data proves")
+	equal(textOnly, 174, "walk: heads shown as a chapter only")
 	equal(#heads - totals - textOnly, 0, "walk: heads whose next dangles at once")
 end
 
@@ -2228,9 +2230,11 @@ for _, step in ipairs(baseline.steps) do
 	signature[#signature + 1] = step.key
 end
 -- The game runs plain Lua 5.1, so this times the planner, not LuaJIT's code cache: Ubuntu's LuaJIT
--- keeps 512 KB of machine code, too little for the whole spec, and flushes every few Plans once full.
+-- keeps 512 KB of machine code, too little for the whole spec, and flushes every few Plans once full; its
+-- default 1000 traces is likewise too few: the QuestieDB v1.0.5 corpus compiles 1,185 here (v1.0.4's, 991), and
+-- past the cap the warm loop flushes and recompiles dozens of times.
 -- plan_bench's -joff run is the frame budget.
-jit.opt.start("maxmcode=4096")
+jit.opt.start("maxmcode=4096", "maxtrace=4000")
 jit.flush()
 for _ = 1, 100 do
 	Model.Plan(ns.Data, player, {}, {}, prefs())
