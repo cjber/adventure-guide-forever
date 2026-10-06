@@ -8,7 +8,6 @@ local Dropped = ns.Planner.Eligibility.Dropped
 local Eligible = ns.Planner.Eligibility.Eligible
 local Hard = ns.Model.Hard
 local HasBit = ns.Model.HasBit
-local ORANGE = ns.Planner.Eligibility.ORANGE
 local Position = ns.Planner.Travel.Position
 local SimpleOpen = ns.Planner.Eligibility.SimpleOpen
 local ValidPlace = ns.Model.ValidPlace
@@ -45,7 +44,8 @@ local ZONE_QUEST, ZONE_QUESTS = 0.25, 8 -- this less a quest, for this many at m
 -- player (Journeys' Far).
 ---@param far fun(map: integer): number
 ---@return integer[] maps
-local function Rank(data, ids, level, far)
+local function Rank(data, ids, player, far)
+	local level = player.level
 	local choices, scores, quests = {}, {}, {}
 	for _, id in ipairs(ids) do
 		local quest = data.quests[id]
@@ -55,7 +55,7 @@ local function Rank(data, ids, level, far)
 			map
 			and zone
 			and not Model.IsGray(quest.level, level)
-			and quest.level - level < ORANGE
+			and not Hard(quest, player)
 			and not OutdoorElite(quest)
 		then
 			if not quests[map] then
@@ -167,7 +167,7 @@ local function Choices(data, player, completed, log, index, prefs, far)
 			ranked[#ranked + 1] = id
 		end
 	end
-	local zones = Rank(data, ranked, player.level, far)
+	local zones = Rank(data, ranked, player, far)
 	return zones, eligible
 end
 

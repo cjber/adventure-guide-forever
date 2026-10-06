@@ -103,7 +103,10 @@ function Model.StepTitle(data, log, step)
 			or step.questTitle
 			or step.title
 	end
-	if step.kind == "town" then
+	if step.entrance then
+		step.verb = "objective"
+		step.title = L.GO_TO_ENTRANCE
+	elseif step.kind == "town" then
 		if #step.quests == 1 then
 			step.verb = #step.handins > 0 and "turnin" or "pickup"
 			step.title = (step.verb == "turnin" and L.TURN_IN or L.STEP_PICKUP):format(Quest(step.quests[1]))

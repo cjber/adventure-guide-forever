@@ -43,8 +43,10 @@ card | zone:1437 | Head to Wetlands | 1 quest near your level | - | map 1437
   step 1 | town:1437:150 | Pick up: Fiora Longears | 1437 0.0996,0.5796 | near your level
 card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
   step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level
-card | dungeon:36 | Deadmines | 3 quests for this dungeon | - | map 1453
-  step 1 | town:1453:0 | Visit Stormwind City: Pick up 3 | 1453 0.7031,0.4082 | 3 to pick up
-card | dungeon:43 | Wailing Caverns | 2 quests for this dungeon | - | map 1413
-  step 1 | town:1413:392 | Pick up: Trouble at the Docks | 1413 0.6309,0.3761 | near your level
+card | dungeon:36 | Deadmines | 5 quests for this dungeon | - | map 1436
+  step 1 | town:1436:108 | Pick up: The Defias Brotherhood | 1436 0.5633,0.4752 | near your level
+  step 2 | town:1453:0 | Visit Stormwind City: Pick up 3 | 1453 0.7031,0.4082 | 3 to pick up
+  step 3 | town:1455:0 | Pick up: Speak with Shoni | 1455 0.6918,0.5055 | near your level
+card | dungeon:43 | Wailing Caverns | 3 quests for this dungeon | - | map 1413
+  step 1 | town:1413:392 | Visit Ratchet: Pick up 2 | 1413 0.6237,0.3762 | 2 to pick up
   step 2 | town:1413:387 | Pick up: Deviate Hides | 1413 0.4599,0.3566 | near your level

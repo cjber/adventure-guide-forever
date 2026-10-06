@@ -100,7 +100,7 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 				if log[id] == nil then
 					return step.planned ~= nil and step.planned[id] ~= nil and Open(id)
 				end
-				return not (step.objectives and log[id].complete)
+				return not ((step.objectives or step.entrance) and log[id].complete)
 			end
 			local quests = Keep(step.quests, Carrying)
 			if #quests == #step.quests then
@@ -110,6 +110,9 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 			end
 			local copy = Copy(step) --[[@as AGFStep]]
 			copy.quests = quests
+			if step.entrance then
+				copy.group = #quests
+			end
 			if step.objectives then
 				copy.objectives = {}
 				for _, objective in ipairs(step.objectives) do

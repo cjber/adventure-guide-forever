@@ -16,7 +16,8 @@ abandons quests.
   pages through them. The home view groups its cards under collapsible quest log headers, in order: Continue (the story,
   Quests in your log and your calling), Zones for your level, Dungeons, then Battlegrounds. A group with no card draws
   no header, each header remembers its open state per character, and the header holding the route the guide follows
-  stays open. Prefer useful green/yellow quests; exclude orange/red pickups. A choice shows up to ten route actions,
+  stays open. Prefer useful green/yellow quests; the maximum quest level slider defaults to +2, excluding
+  orange/red pickups. The limit applies to recommendations and zone ranking; accepted quests keep their steps. A choice shows up to ten route actions,
   followed by upcoming quest entries when fewer actions are available. The active route appears above alternative
   destinations.
     One level preference ranks both a zone and the quests in a stop (`Model.LevelPreference`): at the player's level and
@@ -74,11 +75,13 @@ abandons quests.
   providers. Assign Shift-J once, only if neither it nor the window already has a binding.
 - **2.20 Your order.** Reordering must preserve quest dependencies. Suggested order remains recoverable.
 
-- **2.21 Dungeons.** A window tab below the shared Today strip, with a level-sorted dungeon list, featured
-  header and Quests / Prep pages. The list groups dungeons, the announced Forever raids, then
+- **2.21 Dungeons.** Activities contains a level-sorted dungeon list, featured header and Quests / Prep pages. The list groups dungeons, the announced Forever raids, then
   the client's other raid instances, each raid row tagged with its group size; the raid tier and sizes come from
   `Integrations/Raids.lua` (docs/dungeon-sources.md), never from a copied Classic attunement page. Remember the instance Map.ID in window state. Plan to run
   selects the existing dungeon journey and enables the existing dungeon preference; no parallel plan state.
+  Journey cards hold accepted dungeon quests and the available or accepted chapters of proven preparation chains.
+  Unplaced unfinished dungeon objectives may lead to a known entrance, explicitly labelled as an entrance rather
+  than an objective location. With no known point and no preparation or hand-in step, no route is invented.
   Journey cards link back to the dungeon page. A dungeon the guide offers is pinned at its entrance on the world
   map; that pin, the dungeon's Maps control and the Maps tab all open the same interior view, whose floor dropdown
   is the game's own control and returns to the floor last chosen in the session. Without that optional source the

@@ -38,6 +38,7 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 
 - **What to do next.** Journeys brings your adventure and useful hints together. See why a suggestion fits, start its guidance or open other adventures. Activities groups dungeon, profession and PvP browsing; Progress shows completion and story milestones. Browsing keeps your current journey chosen.
 
+- **Quest difficulty.** Choose the highest recommended quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups. Accepted quests remain visible.
 - **Dungeons.** Browse dungeon and raid quests, check pickups and prerequisites, then plan a trip to their givers. Atlas and its Classic module open interior maps with wings and floors. Adventure Guide for Classic opens bosses and loot. Entrance directions come from QuestieDB or Tweaks Forever.
 - **Journeys.** Finish loose ends, follow a zone's story, find nearby zones suited to your level or take class quests. Cards explain why each fits, under collapsible headers. Dungeon and battleground journeys are opt-in.
 - **Full guide.** Page through the current route followed by the area's Questie outline. Later entries stay outline-only until Questie confirms they are available.

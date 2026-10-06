@@ -70,3 +70,5 @@ For a missing quest, include `/agf audit` output in a bug report. Early days, fe
 Works alongside [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting routes and [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion. All optional.
 
 Source code and issues: [github.com/cjber/adventure-guide-forever](https://github.com/cjber/adventure-guide-forever). Licence: GPL-3.0-or-later.
+
+Choose the highest recommended quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups. Quests already in your log remain visible.

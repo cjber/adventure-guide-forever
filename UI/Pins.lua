@@ -10,7 +10,7 @@ local LATER_STOP_ALPHA = 0.9
 -- The route's next stop wears the button of the quest the game tracks (POIButton.lua): the lit disc with the dark
 -- numeral from the grid's upper half. Every later stop wears the plain button with the yellow numeral.
 local STOP_ATLAS, CURRENT_ATLAS = "UI-QuestPoi-QuestNumber", "UI-QuestPoi-QuestNumber-SuperTracked"
-local BADGE_SIZE, BADGE_OFFSET = 11, 5
+local BADGE_SIZE, BADGE_OFFSET = 16, 4
 
 ---@class AGFPinsModule
 local Pins = {}

@@ -257,6 +257,7 @@ function State.Player()
 		xpMax = xpMax,
 		resting = resting,
 		level = UnitLevel("player"),
+		maxQuestLevelOffset = ns.Setting("maxQuestLevelOffset"),
 		maxLevel = GetMaxPlayerLevel(),
 		logMax = C_QuestLog.GetMaxNumQuestsCanAccept(),
 		side = side,

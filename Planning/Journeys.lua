@@ -308,20 +308,45 @@ local function Pickups(data, player, completed, log, ready, eligible, belongs, k
 		kept and lead or nil
 end
 
+-- The instance a chain leads into: the first quest from its chapter on filed under an instance the data names. Nil
+-- when none is: the data never says a chain is an attunement, only that it goes inside.
+---@param chain AGFStory
+---@return integer?
+local function Into(data, chain)
+	for index = chain.chapter, #chain.members do
+		local quest = data.quests[chain.members[index]]
+		local instance = not quest.raid and quest.dungeon
+		if instance and data.instances and data.instances[instance] and not data.instances[instance].raid then
+			return instance
+		end
+	end
+end
+
 -- Offer actionable dungeons, retaining a chosen instance after the toggle changes.
 ---@param open boolean
 ---@return integer[] instances, table<integer,integer> counts, table<integer,integer> opened
-local function AllDungeons(data, eligible, prefs, open, chosen)
+local function AllDungeons(data, eligible, log, prefs, open, chosen)
 	if not (data.instances and (open or chosen)) then
 		return {}, {}, {}
 	end
 	local counts, openedMap, dismissed = {}, {}, prefs.notInterested or {}
+	local ids = {}
 	for _, id in ipairs(eligible) do
+		ids[id] = true
+	end
+	for id in pairs(log) do
+		if not Dropped(id) then
+			ids[id] = true
+		end
+	end
+	for id in pairs(ids) do
 		local quest = data.quests[id]
-		local instance = not quest.raid and quest.dungeon
+		local story = quest and not quest.dungeon and Model.Story(data, id)
+		local instance = quest and not quest.raid and (quest.dungeon or (story and Into(data, story)))
 		if
 			instance
 			and data.instances[instance]
+			and not data.instances[instance].raid
 			and (open or instance == chosen)
 			and not dismissed["dungeon:" .. instance]
 		then
@@ -358,9 +383,66 @@ end
 ---@param instanceName? fun(id: integer): string?
 ---@param best integer
 ---@param quests integer how many of its quests the player can take now
-local function DungeonJourney(data, player, completed, log, eligible, prefs, mapName, instanceName, best, quests)
-	local candidates = {}
-	PickupSteps(data, eligible, InDungeon(best), candidates)
+local function DungeonJourney(
+	data,
+	player,
+	completed,
+	log,
+	eligible,
+	prefs,
+	mapName,
+	instanceName,
+	best,
+	quests,
+	entrances
+)
+	local candidates, stops, belongs, preparation = {}, {}, InDungeon(best), {}
+	local function Prepare(id)
+		local quest = data.quests[id]
+		local story = quest and not quest.dungeon and Model.Story(data, id)
+		if story and Into(data, story) == best then
+			preparation[quest] = true
+		end
+	end
+	for _, id in ipairs(eligible) do
+		Prepare(id)
+	end
+	for id in pairs(log) do
+		if not Dropped(id) then
+			Prepare(id)
+		end
+	end
+	local held = LogSteps(data, player, log, Ready(data, log), function(id)
+		local quest = data.quests[id]
+		return quest ~= nil and not Dropped(id) and (belongs(quest) or preparation[quest] == true)
+	end, stops, candidates, { areas = {}, anchors = {} })
+	local unplaced = {}
+	for id, step in pairs(held) do
+		if not step and not log[id].complete and belongs(data.quests[id]) then
+			unplaced[#unplaced + 1] = id
+		end
+	end
+	table.sort(unplaced)
+	local entrance = entrances and entrances[best]
+	if #unplaced > 0 and Model.ValidPlace(entrance) then
+		candidates[#candidates + 1] = {
+			kind = "dungeon",
+			key = "entrance:" .. best,
+			entrance = best,
+			map = entrance.map,
+			x = entrance.x,
+			y = entrance.y,
+			title = ns.L.GO_TO_ENTRANCE,
+			reason = ns.L.QUESTS_IN_PROGRESS,
+			detail = "",
+			quests = unplaced,
+			group = #unplaced,
+			optional = true,
+		}
+	end
+	PickupSteps(data, eligible, function(quest)
+		return belongs(quest) or preparation[quest] == true
+	end, candidates, stops)
 	for _, step in ipairs(TrainerSteps(data, player, prefs, "dungeon:" .. best)) do
 		candidates[#candidates + 1] = step
 	end
@@ -369,7 +451,7 @@ local function DungeonJourney(data, player, completed, log, eligible, prefs, map
 		return nil
 	end
 	local name = instanceName and instanceName(best) or data.instances[best].name
-	local L, inside, belongs = ns.L, 0, InDungeon(best)
+	local L, inside = ns.L, 0
 	for id in pairs(log) do
 		inside = inside + ((data.quests[id] and not Dropped(id) and belongs(data.quests[id])) and 1 or 0)
 	end
@@ -431,19 +513,6 @@ local function WithInstances(data, player, completed, log, index, eligible)
 		end
 	end
 	return pool
-end
-
--- The instance a chain leads into: the first quest from its chapter on filed under an instance the data names. Nil
--- when none is: the data never says a chain is an attunement, only that it goes inside.
----@param chain AGFStory
----@return integer?
-local function Into(data, chain)
-	for index = chain.chapter, #chain.members do
-		local instance = data.quests[chain.members[index]].dungeon
-		if instance and data.instances and data.instances[instance] then
-			return instance
-		end
-	end
 end
 
 -- The chain a card leads with (docs/design.md §2.3): of the chains among the quests `belongs` keeps that the player
@@ -746,7 +815,19 @@ end
 ---@param left? integer the map of the zone the story left the build before, which waits behind every other
 ---@return AGFJourney[] journeys
 ---@return boolean stranded no next zone
-function Model.Journeys(data, player, completed, log, prefs, mapName, instanceName, skippedQuests, lead, left)
+function Model.Journeys(
+	data,
+	player,
+	completed,
+	log,
+	prefs,
+	mapName,
+	instanceName,
+	skippedQuests,
+	lead,
+	left,
+	entrances
+)
 	ReadDropped(prefs, skippedQuests)
 	local index, L = Index(data), ns.L
 	local zones, eligible = Choices(data, player, completed, log, index, prefs, Far(data, player))
@@ -901,7 +982,7 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 		or eligible
 	do
 		local dungeonInstances, dungeonCounts, dungeonOpened =
-			AllDungeons(data, pool, prefs, prefs.dungeons or stranded, chosenDungeon)
+			AllDungeons(data, pool, log, prefs, prefs.dungeons or stranded, chosenDungeon)
 		for _, inst in ipairs(dungeonInstances) do
 			local count, opened = dungeonCounts[inst], dungeonOpened[inst]
 			if opened then
@@ -921,7 +1002,8 @@ function Model.Journeys(data, player, completed, log, prefs, mapName, instanceNa
 							mapName,
 							instanceName,
 							inst,
-							count
+							count,
+							entrances
 						)
 					end,
 				}

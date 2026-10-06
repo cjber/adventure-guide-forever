@@ -11,7 +11,7 @@
 ---@field RegisterSettings fun() defined by Settings.lua, called once after ADDON_LOADED.
 ---@field OpenSettings? fun() set by RegisterSettings; opens our page under Settings > AddOns.
 ---@field Pins AGFPinsModule
----@field DEFAULTS table<string, boolean> account-wide setting defaults (Core.lua)
+---@field DEFAULTS table<string, boolean|number> account-wide setting defaults (Core.lua)
 
 ---@class AGFPinsModule
 ---@field Ping fun(key: string) flash the numbered pin for a step, if it's on the shown map.
@@ -182,7 +182,7 @@ ShortestPathForever = nil
 TweaksForever = nil
 
 ---@class AGFSettingsSetting
----@field SetValueChangedCallback fun(self: AGFSettingsSetting, callback: fun(setting: AGFSettingsSetting, value: boolean))
+---@field SetValueChangedCallback fun(self: AGFSettingsSetting, callback: fun(setting: AGFSettingsSetting, value: boolean|number))
 -- A checkbox's row (Blizzard_Settings_Shared SettingsListElementInitializer); a child is greyed while predicate is false.
 ---@class AGFSettingsInitializer
 ---@field Indent fun(self: AGFSettingsInitializer)
@@ -190,13 +190,20 @@ TweaksForever = nil
 ---@field AddModifyPredicate fun(self: AGFSettingsInitializer, predicate: fun(): boolean)
 ---@class AGFSettingsCategory
 ---@field GetID fun(self: AGFSettingsCategory): integer
+---@class AGFSliderOptions
+---@field SetLabelFormatter fun(self: AGFSliderOptions, label: integer, formatter: fun(value: number): string)
+---@type {Label: {Right: integer}}
+MinimalSliderWithSteppersMixin = nil
+
 ---@class AGFSettingsModule
----@field VarType {Boolean: string}
+---@field VarType {Boolean: string, Number: string}
 ---@field RegisterVerticalLayoutCategory fun(name: string): AGFSettingsCategory
 ---@field RegisterVerticalLayoutSubcategory fun(category: AGFSettingsCategory, name: string): AGFSettingsCategory
----@field RegisterAddOnSetting fun(category: AGFSettingsCategory, variable: string, key: string, storage: table, variableType: string, name: string, default: boolean): AGFSettingsSetting
+---@field RegisterAddOnSetting fun(category: AGFSettingsCategory, variable: string, key: string, storage: table, variableType: string, name: string, default: boolean|number): AGFSettingsSetting
 ---@field RegisterProxySetting fun(category: AGFSettingsCategory, variable: string, variableType: string, name: string, default: boolean, getter: (fun(): boolean), setter: (fun(value: boolean))): AGFSettingsSetting
 ---@field NotifyUpdate fun(variable: string)
+---@field CreateSliderOptions fun(minimum: number, maximum: number, step: number): AGFSliderOptions
+---@field CreateSliderInitializer fun(setting: AGFSettingsSetting, options: AGFSliderOptions, tooltip?: string): AGFSettingsInitializer
 ---@field CreateCheckboxInitializer fun(setting: AGFSettingsSetting, options?: table, tooltip?: string): AGFSettingsInitializer
 ---@field RegisterInitializer fun(category: AGFSettingsCategory, initializer: AGFSettingsInitializer) inserts the row from Blizzard's secure delegate
 ---@field RegisterAddOnCategory fun(category: AGFSettingsCategory)

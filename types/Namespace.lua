@@ -124,6 +124,7 @@
 ---@class AGFPlayer
 ---@field questAvailable? fun(id: integer): boolean
 ---@field level integer
+---@field maxQuestLevelOffset? integer highest recommended quest level relative to the player; defaults to +2
 ---@field maxLevel integer the level cap
 ---@field logMax? integer the quests the log may hold (C_QuestLog.GetMaxNumQuestsCanAccept); no limit when nil
 ---@field side integer 1 Alliance, 2 Horde
@@ -210,6 +211,7 @@
 
 ---@class AGFStep
 ---@field key string stable identity for skips and the resume line; repeated town visits append ":<n>" to the town key
+---@field entrance? integer an instance entrance stop for accepted quests whose objective points are unknown
 ---@field kind AGFStepKind
 ---@field title string e.g. "Turn in: Bathran's Hair", "Pick up quests: Guard Parker" or "Lakeshire, Redridge"
 ---@field detail string grey second line, e.g. "2 to hand in, 4 to pick up"
@@ -319,13 +321,13 @@
 ---@field EXPLORE_SLOT integer the data's need slot for an explore objective (tools/gen_quests.py)
 ---@field ValidPlace fun(place?: {map?: integer, x?: number, y?: number}): boolean? true when `place` has a positive map and x, y in 0..1
 ---@field Hub fun(data: AGFData, place: {map: integer, x: number, y: number}): string? the town `place` stands in, as "map:area"
----@field Hard fun(quest: AGFQuest, player: AGFPlayer): boolean orange or red: no route takes it
+---@field Hard fun(quest: AGFQuest, player: AGFPlayer): boolean above the chosen quest level ceiling
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
 ---@field Why fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer, names?: AGFWhyNames): AGFWhyLine[] every requirement, met or not; eligible exactly when all are met
 ---@field Search fun(data: AGFData, player: AGFPlayer, query: string, title?: fun(questID: integer): string?): integer[] up to 10 quest IDs whose title holds `query`, by title
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
 ---@field Story fun(data: AGFData, questID: integer): AGFStory? the chain the quest belongs to; nil when it is in none, or the way back forks
----@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (AGFMapName), instanceName?: (fun(id: integer): string?), skippedQuests?: table<string, integer[]>, lead?: integer, left?: integer): AGFJourney[], boolean
+---@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (AGFMapName), instanceName?: (fun(id: integer): string?), skippedQuests?: table<string, integer[]>, lead?: integer, left?: integer, entrances?: table<integer, AGFLocation>): AGFJourney[], boolean
 ---@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (AGFMapName), instanceName?: (fun(id: integer): string?), last?: AGFRoute, inputs?: AGFPlanInputs): AGFRoute
 ---@field Here fun(data: AGFData, where?: {map?: integer, x?: number, y?: number}, steps: AGFStep[], held?: string): integer? the open area step `where` stands in: the head when it is one, else the first; `held`, the key of the one stood in last, lets go past a margin
 ---@field NearAction fun(from?: AGFPosition, log: table<integer, AGFLogQuest>, steps: AGFStep[], at: (fun(step: AGFStep): AGFPosition?)): AGFStep? the ready hand-in or pickup beside the player that goes before the head, or nil
@@ -335,6 +337,7 @@
 -- What the player's order, skips and session ask of a build, as plain values (Shown.Build gathers them); Model.Plan
 -- reads no other module.
 ---@class AGFPlanInputs
+---@field dungeonEntrances? table<integer, AGFLocation> known instance entrance points
 ---@field skippedQuests? table<string, integer[]> the quests of each skipped giver, by skipped key: no route offers them
 ---@field committed? {journey: string, visits?: table<string, string>} the session's commitment: its journey's town actions keep their visit identities
 ---@field forget? table<string, true> journeys whose committed order (`AGFRoute.orders`) this build lets go
@@ -603,6 +606,10 @@
 ---@field SETTING_MAP_PINS string
 ---@field SETTING_GIVERS string
 ---@field SETTING_DUNGEONS_DEFAULT string
+---@field SETTING_QUEST_LEVEL string
+---@field SETTING_QUEST_LEVEL_VALUE string
+---@field SETTING_QUEST_LEVEL_ONE string
+---@field SETTING_QUEST_LEVEL_TOOLTIP string
 ---@field SETTING_TRAINING_REMINDERS string
 ---@field SETTING_TRAINING_REMINDERS_TOOLTIP string
 ---@field SETTING_MAP_PINS_TOOLTIP string
@@ -1286,6 +1293,7 @@
 
 -- One build's snapshot of the player (Shown.Build): Core.lua reads the client once and every stage shares it.
 ---@class AGFShownInput
+---@field dungeonEntrances? table<integer, AGFLocation> known instance entrance points
 ---@field data AGFData
 ---@field player AGFPlayer
 ---@field completed table<integer, boolean>

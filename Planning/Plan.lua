@@ -45,7 +45,8 @@ function Model.Plan(data, player, completed, log, prefs, mapName, instanceName, 
 		instanceName,
 		inputs and inputs.skippedQuests,
 		lead,
-		left
+		left,
+		inputs and inputs.dungeonEntrances
 	)
 	local route = Route(journeys, prefs)
 	local story = journeys[1]

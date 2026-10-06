@@ -37,6 +37,28 @@ function ns.RegisterSettings()
 		{
 			"SETTINGS_GROUP_ROUTE",
 			function(subcategory)
+				local setting = Settings.RegisterAddOnSetting(
+					subcategory,
+					"AdventureGuideForever_maxQuestLevelOffset",
+					"maxQuestLevelOffset",
+					AdventureGuideForeverDB,
+					Settings.VarType.Number,
+					ns.L.SETTING_QUEST_LEVEL,
+					ns.DEFAULTS.maxQuestLevelOffset
+				)
+				setting:SetValueChangedCallback(function(_, value)
+					ns.SetSetting("maxQuestLevelOffset", value)
+				end)
+				local options = Settings.CreateSliderOptions(-4, 10, 1)
+				options:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right, function(value)
+					local label = math.abs(value) == 1 and ns.L.SETTING_QUEST_LEVEL_ONE
+						or ns.L.SETTING_QUEST_LEVEL_VALUE
+					return label:format(value >= 0 and ("+" .. value) or tostring(value))
+				end)
+				Settings.RegisterInitializer(
+					subcategory,
+					Settings.CreateSliderInitializer(setting, options, ns.L.SETTING_QUEST_LEVEL_TOOLTIP)
+				)
 				for _, initializer in ipairs({
 					Checkbox(subcategory, "wanderer", ns.L.SETTING_WANDERER, ns.L.SETTING_WANDERER_TOOLTIP),
 					Checkbox(subcategory, "followQuest", ns.L.SETTING_FOLLOW_QUEST, ns.L.SETTING_FOLLOW_QUEST_TOOLTIP),

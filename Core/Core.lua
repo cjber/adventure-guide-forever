@@ -6,12 +6,13 @@ ns.TITLE = L.TITLE
 
 -- Account-wide settings (Settings.lua), one key per row on the AddOns page. A missing key
 -- always reads as its default here, so an old save file and a new option agree (WFA-14).
----@type table<string, boolean>
+---@type table<string, boolean|number>
 local DEFAULTS = {
 	showTracker = true,
 	floatWindow = false,
 	stepSound = true,
 	trainingReminders = false,
+	maxQuestLevelOffset = 2,
 	-- Opt-in: with the Adventure tab closed the map shows no Adventure Guide mark unless the player asks for them.
 	showMapPins = false,
 	showQuestGivers = false,
@@ -73,6 +74,10 @@ function ns.Print(msg)
 	DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99" .. ns.TITLE .. "|r " .. msg)
 end
 
+local function QuestLevelOffset(value)
+	return type(value) == "number" and value == value and math.max(-4, math.min(10, math.floor(value))) or 2
+end
+
 local function LoadDB()
 	local loaded = type(AdventureGuideForeverDB) == "table" and AdventureGuideForeverDB or {}
 	for key, value in pairs(DEFAULTS) do
@@ -80,6 +85,7 @@ local function LoadDB()
 			loaded[key] = value
 		end
 	end
+	loaded.maxQuestLevelOffset = QuestLevelOffset(loaded.maxQuestLevelOffset)
 	AdventureGuideForeverDB = loaded
 	db = loaded
 end
@@ -249,7 +255,7 @@ function ns.SetSetting(key, value)
 	if not db then
 		return
 	end
-	db[key] = value
+	db[key] = key == "maxQuestLevelOffset" and QuestLevelOffset(value) or value
 	if key == "floatWindow" then
 		ns.Window.ApplyMode()
 	end
@@ -526,8 +532,20 @@ local function BuildRoute()
 	player.train = training
 	---@type AGFSnapshot
 	local world = { player = player, completed = state.Completed(), log = log }
+	local dungeonEntrances, queried = {}, {}
+	if not combat then
+		for id, entry in pairs(log) do
+			local quest = ns.Data.quests[id]
+			local instance = quest and not quest.raid and quest.dungeon
+			if instance and not entry.complete and not queried[instance] then
+				queried[instance] = true
+				dungeonEntrances[instance] = ns.Dungeons.Entrance(instance)
+			end
+		end
+	end
 	local shown, full = ns.Shown.Build({
 		data = ns.Data,
+		dungeonEntrances = dungeonEntrances,
 		player = player,
 		completed = world.completed,
 		log = log,

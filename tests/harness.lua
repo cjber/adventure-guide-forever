@@ -2198,8 +2198,9 @@ function harness.load(options)
 			end,
 		}
 	end
+	G.MinimalSliderWithSteppersMixin = { Label = { Right = 1 } }
 	G.Settings = {
-		VarType = { Boolean = "boolean" },
+		VarType = { Boolean = "boolean", Number = "number" },
 		RegisterVerticalLayoutCategory = function(name)
 			return Category(name)
 		end,
@@ -2241,6 +2242,19 @@ function harness.load(options)
 		end,
 		CreateDropdown = function()
 			h.taintedRows = h.taintedRows + 1
+		end,
+		CreateSliderOptions = function(minimum, maximum, step)
+			return {
+				minimum = minimum,
+				maximum = maximum,
+				step = step,
+				SetLabelFormatter = function(self, _, formatter)
+					self.formatter = formatter
+				end,
+			}
+		end,
+		CreateSliderInitializer = function(setting, sliderOptions, tooltip)
+			return { key = setting.key, options = sliderOptions, tooltip = tooltip }
 		end,
 		CreateCheckboxInitializer = function(setting, _, tooltip)
 			return {

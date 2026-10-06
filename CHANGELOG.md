@@ -11,6 +11,11 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Readable map badges.** Quest marks return to their original size. Kill objectives use compact crossed swords instead of the long attack cursor.
+
+- **Choose your quest difficulty.** A level slider defaults to quests no more than two levels above yours, avoiding orange and red recommendations. Accepted quests stay visible.
+- **Keep preparing for your dungeon.** Accepting its quests no longer removes the dungeon journey. It includes available preparation quests and uses a known entrance when an accepted objective has no location.
+
 - **More useful choices.** Suitable dungeons appear together, including Deadmines and Wailing Caverns. A quest visit in a zone above your level follows normal questing zones and explains the level range.
 - **Smoother rebuilds.** Route planning checks its frame budget between adventure cards and presents only the finished result. The cold QuestieDB catalogue also uses shorter slices; completed routes remain atomic.
 - **Three guide pages.** Journeys holds your adventure and useful suggestions, Activities groups dungeon, profession and PvP browsing, and Progress shows completion. Old page selections carry across.

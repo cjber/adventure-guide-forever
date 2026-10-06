@@ -49,7 +49,11 @@ end
 function Shown.Build(input)
 	local Model = ns.Model
 	---@type AGFPlanInputs
-	local inputs = { skippedQuests = ns.Order.SkippedQuests(), committed = ns.Session.Committed() }
+	local inputs = {
+		skippedQuests = ns.Order.SkippedQuests(),
+		committed = ns.Session.Committed(),
+		dungeonEntrances = input.dungeonEntrances,
+	}
 	local full
 	if input.combat then
 		full = Model.Refresh(
