@@ -746,7 +746,7 @@
 -- NPC roles (tools/gen_quests.py `roles`): where trainers, battlemasters and innkeepers stand.
 
 ---@class AGFData
----@field npcs table<integer, AGFNpc> creature entry -> its roles, side and place; only NPCs the data places and sides
+---@field npcs? table<integer, AGFNpc> creature entry -> its roles, side and place; absent until QuestieDB publishes its catalogue
 
 ---@class AGFNpc : AGFRole
 ---@field side integer the sides it is friendly to (QuestieDB friendlyToFaction): 1 Alliance, 2 Horde, 3 both
@@ -1198,6 +1198,7 @@
 ---@field NEXT_EMPTY string
 ---@field NEXT_ADVICE string
 ---@field NEXT_LOADING string
+---@field NEXT_DUNGEONS_DISABLED string
 ---@field NEXT_BROWSE_JOURNEYS string
 ---@field NEXT_BROWSE_DUNGEONS string
 ---@field NEXT_REASON_JOURNEY string

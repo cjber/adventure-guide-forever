@@ -43,7 +43,7 @@ ns.L = {
 	-- The overview's quest log headers (docs/design.md §2.2): one per kind of card, in this order. A collapsed one
 	-- shows how many cards it holds.
 	GROUP_CONTINUE = "Continue",
-	GROUP_ZONES = "Zones for your level",
+	GROUP_ZONES = "Quest destinations",
 	GROUP_DUNGEONS = "Dungeons",
 	GROUP_BATTLEGROUNDS = "Battlegrounds",
 	GROUP_CARDS = "%d cards",
@@ -340,6 +340,7 @@ ns.L = {
 	NEXT_EMPTY = "No suggestions for this focus right now. Browse your journeys or dungeons, or choose another focus.",
 	NEXT_ADVICE = "Advice",
 	NEXT_LOADING = "Updating your suggestions...",
+	NEXT_DUNGEONS_DISABLED = "Dungeon journeys are turned off. Browse dungeons to choose a run.",
 	NEXT_BROWSE_JOURNEYS = "Browse journeys",
 	NEXT_BROWSE_DUNGEONS = "Browse dungeons",
 	NEXT_REASON_JOURNEY = "The next step in %s.",

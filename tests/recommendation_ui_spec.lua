@@ -191,6 +191,14 @@ do
 	h.ns.Window.Refresh()
 	equal(Empty(h):GetText(), L.NEXT_LOADING, "unsettled: the loading line")
 	equal(state.reads > 1, true, "each refresh reads Current again")
+	h.ns.RouteSettled = function()
+		return true
+	end
+	h.ns.Prefs().dungeons = false
+	h.Click(h.G.AdventureGuideForeverNextFocusdungeons)
+	equal(Empty(h):GetText(), L.NEXT_DUNGEONS_DISABLED, "disabled dungeon journeys explain how to browse")
+	h.Click(h.G.AdventureGuideForeverNextBrowsedungeons)
+	equal(h.ns.WindowDB().tab, "dungeons", "disabled dungeon journeys still permit browsing")
 	clean(h, "empty")
 end
 
@@ -200,6 +208,15 @@ do
 	local h = harness.load({ questiedb = false })
 	OpenNext(h)
 	equal(Empty(h):GetText(), h.ns.L.QUESTIE_ENABLE, "missing quest data explains what to enable")
+	for _, focus in ipairs({ "training", "professions" }) do
+		h.Click(h.G["AdventureGuideForeverNextFocus" .. focus])
+		equal(Empty(h):GetText(), h.ns.L.NEXT_EMPTY, focus .. ": quest policy is not the empty explanation")
+	end
+	h.Click(h.G.AdventureGuideForeverNextFocusdungeons)
+	equal(h.ns.Recommendations.Focus(), "dungeons", "Dungeons focus changes even without quest data")
+	equal(Empty(h):GetText(), h.ns.L.NEXT_DUNGEONS_DISABLED, "dungeons: disabled offers explain how to browse")
+	h.Click(h.G.AdventureGuideForeverNextBrowsedungeons)
+	equal(h.ns.WindowDB().tab, "dungeons", "Browse dungeons opens its page without quest data")
 	clean(h, "missing quest data")
 end
 

@@ -268,9 +268,10 @@ local function Refresh()
 		card.Reason:SetText(lead.reason)
 		SetAction(card.Action, card.Advice, lead)
 	else
-		page.Empty:SetText(
-			(ns.SourceHint and ns.SourceHint()) or (ns.RouteSettled() and L.NEXT_EMPTY or L.NEXT_LOADING)
-		)
+		local questFocus = focus == "balanced" or focus == "quests" or focus == "dungeons"
+		local sourceHint = questFocus and ns.SourceHint and ns.SourceHint()
+		local disabled = focus == "dungeons" and not ns.Prefs().dungeons and L.NEXT_DUNGEONS_DISABLED
+		page.Empty:SetText(disabled or sourceHint or (ns.RouteSettled() and L.NEXT_EMPTY or L.NEXT_LOADING))
 	end
 	for index, row in ipairs(page.Rows) do
 		local item = items[index + 1]

@@ -258,7 +258,7 @@ Asides.Register(function()
 		local player = ns.State.Player()
 		local best, bestYards
 		for _, trainer in ipairs(ns.Integrations.Trainers() or {}) do
-			local known = ns.Data.npcs[trainer.npc]
+			local known = ns.Data.npcs and ns.Data.npcs[trainer.npc]
 			if trainer.place and not (known and not ns.Model.HasBit(known.side, player.side)) then
 				local yards = ns.Model.Yards(ns.Data, ns.State.Player(), trainer.place)
 				if yards and (not bestYards or yards < bestYards) then

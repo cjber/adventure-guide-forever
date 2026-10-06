@@ -606,11 +606,13 @@ do
 	local pins = h.pins.AdventureGuideForeverPinTemplate
 	local ring = pins[1]
 	equal(ring.Badge:GetAtlas(), "QuestNormal", "ring: the kind's badge")
-	equal(ring.Badge:GetWidth(), 16, "ring: badge 16 wide, as Shortest Path's")
+	equal(ring.Badge:GetWidth(), 11, "ring: compact badge leaves the numeral readable")
 	local point, _, _, x, y = ring.Badge:GetPoint(1)
-	-- Centred in its 16 square, which hangs 4 past the ring's lower right.
-	equal(("%s %d %d"):format(point, x, y), "CENTER -4 4", "ring: hung past the ring")
-	equal(ring.hitRectInsets[4], -4, "ring: the badge takes clicks")
+	-- Centred in its compact square, which hangs 5 past the ring's lower right.
+	equal(point, "CENTER", "ring: badge is centred at the corner")
+	equal(x, -0.5, "ring: compact badge horizontal offset")
+	equal(y, 0.5, "ring: compact badge vertical offset")
+	equal(ring.hitRectInsets[4], -5, "ring: the badge takes clicks")
 	equal(ring.More, nil, "ring: icons only in the corner")
 	local route = h.ns.Route().steps
 	local revisit
