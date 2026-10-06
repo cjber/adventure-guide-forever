@@ -370,7 +370,6 @@ ns.L = {
 	SKILLUP_MISSING = "Your next skill-ups come from SkillUp Forever. Install it and they show here.",
 	SKILLUP_OUTDATED = "Your next skill-ups come from SkillUp Forever. Update it and they show here.",
 	SKILLUP_NONE = "No crafting professions to level. Learn one at a trainer and it shows here.",
-	TAB_DUNGEONS = "Dungeons",
 	DUNGEON_PICKUP = "Pick up",
 
 	TAB_PVP = "PvP",

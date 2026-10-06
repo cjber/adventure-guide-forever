@@ -1434,7 +1434,6 @@
 ---@field DungeonEntrance fun(instance: integer): AGFPoint?
 
 ---@class AGFStrings
----@field TAB_DUNGEONS string
 ---@field DUNGEON_PICKUP string
 
 ---@alias AGFListPaint fun(row: AGFDungeonRow, value: table)
