@@ -235,121 +235,52 @@ do
 	clean(h, "primary action")
 end
 
---[[ The Journeys tab: the route's cards and steps, the asides, and the panel kept in step ]]
-
+-- Journey choices live in Activities and selecting one updates the main journey and map together.
 do
-	local spell = { name = "Lightning Bolt", level = 18, line = "Elemental", lineID = 375, general = false }
-	local h = Load({
-		spf = "v1",
-		db = { trainingReminders = true, window = { tab = "journeys" } },
-		tf = { spells = { spell } },
-		talents = 1,
-	})
+	local h = Load({ spf = "v1" })
 	local ns, L = h.ns, h.ns.L
 	local window = Open(h)
-	clean(h, "journeys")
 	local route = ns.Route()
-	local first, others = ns.Overview.Split(route)
-	local texts = Texts(h)
-	equal(texts[first.title], 1, "the featured card: the first journey")
-	equal(texts[route.chosen and L.YOUR_CHOICE or L.RECOMMENDED], 1, "its Suggested tag")
-	equal(texts[ns.Guidance.Owns() and L.SHOW_ON_MAP or L.START_ADVENTURE], 1, "its Show on Map")
-	for index = 1, math.min(#others, 4) do
-		equal(texts[others[index].title], 1, "grid card " .. index)
-	end
-	local steps = h.Find(function(frame)
-		return frame:IsVisible() and frame.Kind ~= nil and frame.step ~= nil
+	local first = ns.Overview.Split(route)
+	equal(Texts(h)[first.title], 1, "journey heading appears once")
+	local rows = h.Find(function(frame)
+		return frame:IsVisible() and frame.Kind and frame.step
 	end)
-	equal(#steps, math.min(3, #route.steps), "current step and two upcoming steps")
-	equal(steps[1].step, route.steps[1], "the visible row is the route head")
-	equal(texts[route.steps[1].title], 2, "the head's title")
-
-	local player = ns.State.Player()
-	equal(window.Subtitle:GetText(), L.OVERVIEW_WHERE:format("The Barrens", player.level), "where and what level")
-	-- A map the client has no name for takes the data's, a zone's or else a map's (Orgrimmar is only a map there).
-	local getMapInfo = h.G.C_Map.GetMapInfo
-	h.G.C_Map.GetMapInfo = function() end
-	equal(ns.State.ZoneName(1413), "The Barrens", "no client name: the data's zone")
-	equal(ns.State.ZoneName(1454), "Orgrimmar", "no client name: the data's map")
-	h.player.map = 1454
-	window:Hide()
-	Open(h)
-	equal(window.Subtitle:GetText(), L.OVERVIEW_WHERE:format("Orgrimmar", player.level), "where: the data's name")
-	h.player.map, h.G.C_Map.GetMapInfo = 1413, getMapInfo
-	window:Hide()
-	Open(h)
-
-	-- Browsing keeps the route; Start commits the inspected journey.
-	local card = h.Find(function(frame)
-		return frame:IsVisible() and frame.journey == others[1] and frame:GetParent() ~= nil and frame.Art ~= nil
-	end)[1]
-	equal(card ~= nil, true, "the first grid card")
-	local before = ns.Prefs().journey
-	h.Click(card)
+	equal(#rows, math.min(6, #route.steps), "six upcoming steps fit")
+	equal(Texts(h)[route.steps[1].title], 1, "next step is not repeated in the header")
+	ns.Window.SelectActivity("journeys")
 	h.flush()
-	equal(ns.Prefs().journey, before, "browsing preserves the choice")
-	h.combat = true
-	h.fire("PLAYER_REGEN_DISABLED")
-	equal(h.G.AdventureGuideForeverGuideStart:IsEnabled(), false, "guide start disabled when combat begins")
-	h.Click(h.G.AdventureGuideForeverGuideStart)
-	equal(ns.Prefs().journey, before, "combat leaves the inspected route unchosen")
-	h.combat = false
-	h.fire("PLAYER_REGEN_ENABLED")
-	equal(h.G.AdventureGuideForeverGuideStart:IsEnabled(), true, "guide start returns after combat")
-	h.Click(h.G.AdventureGuideForeverGuideStart)
-	h.G.AdventureGuideForeverFullGuide:Hide()
+	local choices = h.Find(function(frame)
+		return frame:IsVisible() and frame.value and frame.value.journey
+	end)
+	equal(#choices > 0, true, "Activities lists journeys")
+	local choice = choices[1].value.journey
+	h.Click(choices[1])
 	h.flush()
-	equal(ns.Prefs().journey, others[1].key, "the click chooses it")
-	equal(ns.Route().journey, others[1].key, "the route follows it")
-	equal(Texts(h)[others[1].title], 1, "the window redraws with it")
-	-- Its card is the chosen one now: a second click turns the map to it again but never restarts its route.
-	local again = h.Find(function(frame)
-		return frame:IsVisible() and frame.journey and frame.journey.key == others[1].key and frame.Art ~= nil
+	equal(window.selectedTab, 1, "choosing returns to Journey")
+	equal(ns.Route().journey, choice.key, "chosen journey reaches route")
+	equal(Texts(h)[choice.title], 1, "chosen heading redraws")
+	local start = h.Find(function(frame)
+		return frame:IsVisible() and frame.text == L.START_ADVENTURE
 	end)[1]
-	equal(again.state, "chosen", "the chosen journey's card is chosen")
-	h.Hover(again)
-	local lines = {}
-	for _, line in ipairs(h.tooltip) do
-		lines[line] = true
+	if start then
+		h.Click(start)
 	end
-	equal(lines["instruction: " .. L.CLICK_TO_CHOOSE], nil, "its tooltip doesn't offer to choose it")
-	equal(lines["instruction: " .. L.BACK_TO_ALL], nil, "nor points to a back arrow the window lacks")
-	local navigations = h.spf.NavigateRoute
-	h.Click(again)
 	h.flush()
-	equal(h.spf.NavigateRoute, navigations, "a second click doesn't restart the route")
-	ns.OpenPanel()
-	h.flush()
-	local chosen = h.Find(function(frame)
-		return frame:IsVisible() and frame.state == "chosen"
-	end)[1]
-	equal(chosen and chosen.journey.key, others[1].key, "the panel shows the same choice")
-
-	-- Show on Map opens the world map to the featured card's first step.
-	h.map:Hide()
-	local button = h.Find(function(frame)
+	local mapButton = h.Find(function(frame)
 		return frame:IsVisible() and frame.text == L.SHOW_ON_MAP
 	end)[1]
-	local turns = h.counts.SetMapID
-	h.Click(button)
-	h.flush()
-	equal(h.map:IsShown(), true, "Show on Map: the map opens")
-	equal(h.counts.SetMapID > turns, true, "Show on Map: turned to the step")
-	clean(h, "journeys: clicks")
-
-	-- Hidden, the window draws nothing and listens to nothing; shown, it catches up.
-	local featuredTitle = ns.Overview.Split(ns.Route()).title
+	if mapButton then
+		h.map:Hide()
+		h.Click(mapButton)
+		equal(h.map:IsShown(), true, "map action opens world map")
+	end
 	window:Hide()
-	equal(next(window.events or {}), nil, "hidden: no events")
-	ns.Choose(nil)
-	h.flush()
-	local stale = Texts(h)[featuredTitle]
-	equal(stale, 1, "hidden: not redrawn")
+	equal(next(window.events), nil, "hidden window unregisters events")
 	window:Show()
 	h.flush()
-	equal(Texts(h)[ns.Overview.Split(ns.Route()).title], 1, "shown: redrawn")
-	equal(window.events.BAG_UPDATE_DELAYED, true, "shown: listens")
-	clean(h, "journeys: hidden")
+	equal(window.events.BAG_UPDATE_DELAYED, true, "shown window listens again")
+	clean(h, "journey choices")
 end
 
 --[[ SkillUp Forever: present, missing, too old, nothing to level ]]

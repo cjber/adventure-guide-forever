@@ -11,6 +11,9 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Journey, Activities and Progress have distinct jobs.** Your current adventure shows six upcoming steps with quests or dungeon bosses and loot alongside. Other journey choices live in Activities; Progress records completed stories and links to Legacy for collections.
+- **Dungeon information stays with the quest route.** AtlasLoot supplies bosses and item drops directly. The full guide includes prerequisite chains, while automatic interior maps live in Tweaks Forever.
+
 - **Readable map badges.** Quest marks return to their original size. Kill objectives use compact crossed swords instead of the long attack cursor.
 
 - **Choose your quest difficulty.** A level slider defaults to quests no more than two levels above yours, avoiding orange and red recommendations. Accepted quests stay visible.

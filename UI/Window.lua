@@ -5,7 +5,7 @@ local L, Art = ns.L, ns.Art
 --[[ The Adventure Guide window (docs/design.md §2.19): the guide on its own, away from the world map, built as the
      Encounter Journal is (Blizzard_EncounterJournal.xml:1333): PortraitFrameTemplate 800x496, an InsetFrameTemplate
      from (4, -60) to (-4, 5) with the tier art at (3, -1), and PanelTabButtonTemplate tabs from BOTTOMLEFT (11, 2).
-     Activities and Progress share the Today strip; Journeys includes hints in its featured area. A tab is one
+     All three pages share a compact Today strip above their content. A tab is one
      Window.AddTab call from its own file. The window reads the same route, asides and choices as the map panel and
      redraws only while it shows. ]]
 
@@ -18,6 +18,7 @@ local INSET_TOP, INSET_BOTTOM = Window.INSET_TOP, Window.INSET_BOTTOM
 local KEY, BINDING = "SHIFT-J", "ADVENTUREGUIDEFOREVER_WINDOW"
 -- SkillUp's answers, item data and the character's PvP rank progress.
 local EVENTS = {
+	"ADDON_LOADED",
 	"PLAYER_REGEN_DISABLED",
 	"PLAYER_REGEN_ENABLED",
 	"SKILL_LINES_CHANGED",
@@ -277,8 +278,6 @@ local function Build()
 		end
 		PlaySound(SOUNDKIT.IG_CHARACTER_INFO_OPEN)
 		ns.Moments.Opened()
-		-- Legacy Forever is listened to only while the window shows (Providers.lua).
-		ns.Providers.SetShown(true)
 		Refresh()
 	end)
 	frame:SetScript("OnHide", function(self)
@@ -286,7 +285,6 @@ local function Build()
 		for _, event in ipairs(EVENTS) do
 			self:UnregisterEvent(event)
 		end
-		ns.Providers.SetShown(false)
 		PlaySound(SOUNDKIT.IG_CHARACTER_INFO_CLOSE)
 		if not (ns.PanelShown and ns.PanelShown()) then
 			ns.Moments.Closed()
@@ -316,7 +314,7 @@ function Refresh()
 	local player = ns.State.Player()
 	local zone = player.map and ns.State.ZoneName(player.map)
 	frame.Subtitle:SetText(zone and L.OVERVIEW_WHERE:format(zone, player.level) or "")
-	Window.RefreshToday(frame.Inset, tabs[selected].key ~= "journeys")
+	Window.RefreshToday(frame.Inset, true)
 	for index, tab in ipairs(tabs) do
 		RefreshTabLabel(frame.Tabs[index], tab)
 	end

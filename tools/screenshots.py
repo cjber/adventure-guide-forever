@@ -27,6 +27,7 @@ Pillow and wowmock are imported inside the render functions only: CI runs the re
 import importlib.metadata
 import io
 import json
+import os
 import re
 import subprocess
 import sys
@@ -34,6 +35,8 @@ import tempfile
 from pathlib import Path
 
 import screenshots_art as drawing
+from diff_forever import ERA
+from gen_quests import BUILD
 from screenshots_art import draw_font_string, draw_texture, fit_text, font, load_wowmock
 from screenshots_resolver import effective_scales, lua_rects, map_point, parent_path, resolve, scroll_child_anchors
 from screenshots_spf import SPF_SHA, breadcrumbs, goal_pins, map_position, spf_walk, stop_groups
@@ -87,6 +90,34 @@ def layout_pass(ui, scenes, known):
     if two_places(data["panel"]["layout"]) != golden:
         sys.exit("tests/scenes.lua's panel differs from tests/golden/layout.json: update its fixture to ui_spec's")
     inputs = {"rects": {}, "mapArt": map_tiles(ui)}
+    source = Path(
+        os.environ.get(
+            "AGF_ATLASLOOT",
+            Path.home()
+            / "Games/battlenet/drive_c/Program Files (x86)/World of Warcraft"
+            / "_classic_beta_/Interface/AddOns/AtlasLootClassic_DungeonsAndRaids/data.lua",
+        )
+    )
+    loot = subprocess.run(
+        ["luajit", "tools/screenshot_loot.lua", str(source)], cwd=ROOT, capture_output=True, text=True, check=True
+    )
+    inputs["atlasloot"] = json.loads(loot.stdout)
+    items = {}
+    era = drawing.wm.Ui(ERA)
+    client = drawing.wm.Ui(BUILD)
+    for boss in inputs["atlasloot"]["WailingCaverns"]["items"]:
+        for row in boss.get("1", []):
+            if isinstance(row[1], int) and row[1] > 0:
+                try:
+                    item = client.item(row[1])
+                    items[str(row[1])] = {"name": item.name, "icon": item.icon}
+                except KeyError:
+                    try:
+                        item = era.item(row[1])
+                        items[str(row[1])] = {"name": item.name, "icon": item.icon}
+                    except KeyError:
+                        pass
+    inputs["lootItems"] = items
     for _ in range(LAYOUT_PASSES):
         data = run_scenes(inputs)
         rects = {
@@ -384,9 +415,8 @@ WINDOW_MARGIN = 20  # the metal corners overhang the frame by up to 16
 WINDOW_TABS = 30  # the tabs hang below the frame
 WINDOWS = (
     "dungeons",
-    "dungeons_live",
-    "dungeons_prep",
     "window",
+    "window_activities",
     "window_professions",
     "window_pvp",
     "window_completion",
@@ -396,7 +426,6 @@ WINDOWS = (
     "window_session",
     "window_session_picker",
     "window_full_guide",
-    "window_dungeon_maps",
     "window_empty",
     "window_order",
 )

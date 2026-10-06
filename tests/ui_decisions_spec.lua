@@ -8,17 +8,6 @@ local function equal(actual, expected, label)
 end
 
 do
-	local h = harness.load({ legacy = { summaries = {}, targets = {} } })
-	h.G.C_Map.GetMapInfo = function() end
-	h.ns.Route = function()
-		return { journeys = {} }
-	end
-	equal(h.ns.Providers.Completion().zones[1].name, "The Barrens", "completion uses bundled zone name")
-	h.player.map = 999999
-	equal(#h.ns.Providers.Completion().zones, 0, "completion omits an unnamed zone")
-end
-
-do
 	local h = harness.load()
 	local ns = h.ns
 	ns.Data.quests = { [999999] = { title = "Scaling quest", level = -1, min = 1, side = 3, zone = 1413 } }

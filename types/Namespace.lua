@@ -444,8 +444,6 @@
 ---@field place? AGFPlace where the trainer stands; nil when the data places none
 
 ---@class AGFIntegrations
----@field ClassicGuideAvailable fun(): boolean
----@field OpenClassicGuide fun(): boolean
 ---@field Kind fun(step: AGFStep|AGFGiver): AGFSPFStopKind? what Shortest Path is told stands at a stop: a town's "?" where a hand-in is its point, else its "!"
 ---@field TravelLine fun(step: AGFStep): string? asks Shortest Path now, at most one call: "Fly to X · N min" from EstimateDetail, "About N min away" from Estimate, nil without either or an answer
 ---@field RefreshTravel fun() refetches step 1's line; Core runs it in the frame after each rebuild
@@ -1338,25 +1336,9 @@
 ---@field TWEAKS_OUTDATED string
 ---@field ENTRANCE_UNKNOWN string
 ---@field LEGACY_MISSING string
----@field LEGACY_OUTDATED string
----@field COMPLETION_EMPTY string
----@field COMPLETION_DONE string
----@field COMPLETION_LOADING string
----@field COMPLETION_UNAVAILABLE string
----@field COMPLETION_COUNTS string
 ---@field COMPLETION_NOT_KNOWN string format: items Legacy Forever can't check yet
 ---@field COMPLETION_NOT_KNOWN_TAXIS string format: the same, all flight paths, with how to check them
 ---@field COMPLETION_NOT_KNOWN_QUESTS string format: the same, all quests, with what they wait on
----@field COMPLETION_ACCOUNT string
----@field COMPLETION_GO string
----@field COMPLETION_NO_LOCATION string
----@field COMPLETION_CATEGORY_AREAS string
----@field COMPLETION_CATEGORY_TAXIS string
----@field COMPLETION_CATEGORY_DUNGEONS string
----@field COMPLETION_CATEGORY_RAIDS string
----@field COMPLETION_CATEGORY_LEGACY string
----@field COMPLETION_CATEGORY_REPUTATIONS string
----@field COMPLETION_CATEGORY_QUESTS string
 ---@field PVP_RANK string
 ---@field PVP_RANK_POINTS string
 ---@field PVP_UNRANKED string
@@ -1448,56 +1430,11 @@
 ---@field low? integer published recommended level
 ---@field high? integer published recommended level
 
----@class AGFDungeon
----@field id integer
----@field name string
----@field raid? boolean an instance from the raid registry
----@field current? boolean an announced Forever raid tier
----@field players? integer raid group size
----@field quests integer[]
----@field minimum? integer entrance level, not a recommended level
----@field low? integer recommended minimum level
----@field high? integer recommended maximum level
----@field suitable boolean
----@field hostile boolean
----@field excludedFaction integer
----@field excludedCharacter integer
-
----@alias AGFDungeonQuestStatus "unknown"|"done"|"log"|"available"|"level"|"pre"
----@alias AGFDungeonPrepKind "pickup"|"pre"|"entrance"
-
----@class AGFDungeonQuest
----@field id integer
----@field title string
----@field status AGFDungeonQuestStatus
----@field level? integer
----@field requiredLevel? integer
----@field xp? number
----@field place? AGFPlace known giver coordinates; explicit browsing is independent of pickup eligibility
-
----@class AGFDungeonPrep
----@field kind AGFDungeonPrepKind
----@field quest? AGFDungeonQuest
----@field gate? AGFEntranceGate
-
----@class AGFDungeonPage
----@field dungeon AGFDungeon
----@field quests AGFDungeonQuest[]
----@field prep AGFDungeonPrep[]
----@field xp number proven remaining XP at the current level; alternatives counted once
-
----@class AGFDungeonDetails
----@field rewards table<integer, integer[]> quest id -> the item ids the catalogue gives as its rewards
----@field objectives table<integer, string> quest id -> the catalogue's objective text
-
 ---@class AGFModel
 ---@field QuestXP fun(quest: AGFQuest, level: integer): number?
 
 ---@class AGFNamespace
 ---@field Dungeons AGFDungeons
----@field Raids AGFRaid[]
----@field RaidByMap table<integer, AGFRaid>
----@field ReadDungeonDetails fun(yield: fun()): AGFDungeonDetails?
 ---@field DungeonEntrance fun(instance: integer): AGFPoint?
 
 ---@class AGFWindowDB
@@ -1505,51 +1442,7 @@
 
 ---@class AGFStrings
 ---@field TAB_DUNGEONS string
----@field DUNGEON_LIST_DUNGEONS string
----@field DUNGEON_LIST_RAIDS string
----@field DUNGEON_LIST_OTHER_RAIDS string
----@field DUNGEON_RAID_PLAYERS string
----@field DUNGEON_RAID_TOOLTIP string
----@field DUNGEON_QUESTS_TAB string
----@field DUNGEON_PREP_TAB string
----@field DUNGEON_QUEST_LEVELS string
----@field DUNGEON_DONE string
----@field DUNGEON_IN_LOG string
 ---@field DUNGEON_PICKUP string
----@field DUNGEON_PRE string
----@field DUNGEON_UNAVAILABLE string
----@field DUNGEON_LEVEL string
----@field DUNGEON_MAP string
----@field DUNGEON_ALTERNATIVE string
----@field DUNGEON_PRE_ELSEWHERE string
----@field DUNGEON_OUTSIDE string
----@field DUNGEON_REQUIRES_ITEM string
----@field DUNGEON_OR string
----@field DUNGEON_GATE_UNKNOWN string
----@field DUNGEON_ENTRANCE_REQUIREMENTS string
----@field DUNGEON_XP string
----@field DUNGEON_REMAINING_XP string
----@field DUNGEON_ENTRANCE_AT string
----@field DUNGEON_PLAN string
----@field DUNGEON_START_JOURNEY string
----@field DUNGEON_OPEN_PAGE string
----@field DUNGEON_NO_FACTION_QUESTS string
----@field DUNGEON_NO_CHARACTER_QUESTS string
----@field DUNGEON_NO_PREP string
----@field DUNGEON_HOSTILE_LEVELS string
----@field DUNGEON_HOSTILE_ENTRANCE string
----@field DUNGEON_OBJECTIVES string
----@field DUNGEON_NO_QUESTS string
----@field DUNGEON_LOADING string
----@field DUNGEON_SOURCE_FAILED string
----@field DUNGEON_NO_RECORDS string
----@field DUNGEON_WANDERER string
----@field DUNGEON_SHOW_GIVER string
----@field DUNGEON_REWARDS string
----@field DUNGEON_START string
----@field DUNGEON_END string
----@field DUNGEON_PART string
----@field DUNGEON_LEVEL_TOOLTIP string
 
 ---@alias AGFListPaint fun(row: AGFDungeonRow, value: table)
 ---@alias AGFListClick fun(value: table)
@@ -1576,7 +1469,6 @@
 ---@field FONT_HEADER string
 ---@field GOLD number[]
 ---@field TITLE_INK number[]
----@field OpenDungeon fun(instance: integer)
 
 ---@alias AGFMapLookup fun(area: integer): integer?
 ---@alias AGFYield fun()
@@ -1610,25 +1502,8 @@
 ---@field GuideOutline fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, journey: AGFJourney, steps: AGFStep[]): integer[]
 ---@field OpenGuide fun(journey: AGFJourney, parent: Frame)
 
----@class AGFInteriorMap
----@field key string
----@field title string
----@field texture string
-
----@class AGFWindow
----@field DungeonMaps fun(instance: integer): AGFInteriorMap[]
----@field OpenDungeonMaps fun(instance: integer, parent: Frame)
-
 ---@class AGFStrings
----@field DUNGEON_MAPS_TAB string
 ---@field DUNGEON_BOSSES_LOOT string
----@field DUNGEON_BOSSES_LOOT_TOOLTIP string
----@field DUNGEON_BOSSES_LOOT_INSTALL string
----@field DUNGEON_MAP_BACK string
----@field DUNGEON_MAP_WORLD_BACK string
----@field DUNGEON_MAP_PAGE string
----@field DUNGEON_MAP_OPEN string
----@field DUNGEON_MAP_MISSING string
 
 ---@class ForeverTrackerSettings
 ---@field attached boolean
@@ -1879,14 +1754,6 @@
 ---@field headingHeight number
 ---@field paint fun(row: AGFDungeonRow, value: table)
 
----@class AGFDungeons
----@field QuestStatus fun(quest: AGFDungeonQuest): string
----@field PlaceText fun(place?: AGFPlace): string
----@field GiverText fun(quest: AGFDungeonQuest): string
----@field QuestRows fun(page: AGFDungeonPage?, expanded: table<integer, boolean>): table[]
----@field PrepRows fun(page: AGFDungeonPage?): table[]
----@field CatalogRows fun(catalog: AGFDungeon[]): table[]
-
 -- The public surface (Core/API.lua, docs/api.md).
 ---@class AGFAPIStop
 ---@field map integer uiMapID
@@ -1922,3 +1789,28 @@ AdventureGuideForever = nil
 
 ---@class AGFOverview
 ---@field VisitWarning fun(journey: AGFJourney, player?: AGFPlayer): string?
+
+---@class AGFNamespace
+---@field DungeonLoot {Bosses: fun(instance: integer): AGFLootBoss[], string?}
+
+---@class AGFStrings
+---@field DUNGEON_LOOT_INSTALL string
+---@field DUNGEON_LOOT_COMBAT string
+---@field ITEM_LOADING string
+---@field DUNGEON_LOOT_UNKNOWN string
+---@field JOURNEY_QUESTS string
+---@field JOURNEY_CHOICES string
+---@field JOURNEY_CHOOSE string
+---@field JOURNEY_PROGRESS_EMPTY string
+---@field LEGACY_PROGRESS_LINK string
+---@field LEGACY_PROGRESS_NOTE string
+
+---@class AGFDungeonRow
+---@field Icon Texture
+---@field Ring AGFRingIcon
+
+---@class AGFDungeonRow
+---@field journey? AGFJourney
+
+---@class AGFJourneyBanner : AGFWindowCard
+---@field journey? AGFJourney

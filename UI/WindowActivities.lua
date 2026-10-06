@@ -73,7 +73,7 @@ local function Build(parent)
 		end)
 		button:SetScript("OnLeave", GameTooltip_Hide)
 		buttons[index] = button
-		if activity.key == ns.WindowDB().activity or ns.WindowDB().activity == nil and activity.key == "dungeons" then
+		if activity.key == ns.WindowDB().activity or ns.WindowDB().activity == nil and activity.key == "journeys" then
 			selected = index
 		end
 	end

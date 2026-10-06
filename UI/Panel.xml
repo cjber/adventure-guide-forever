@@ -16,20 +16,6 @@
 			</Layer>
 		</Layers>
 	</Frame>
-	<!-- A dungeon the guide offers: the quest log's dungeon kind icon at its entrance, brightened on hover like a quest POI. Its click opens that instance's interior map. -->
-	<Frame name="AdventureGuideForeverDungeonPinTemplate" mixin="AdventureGuideForeverDungeonPinMixin" enableMouse="true" virtual="true">
-		<Size x="24" y="24"/>
-		<Layers>
-			<Layer level="ARTWORK">
-				<!-- art-ok: a square atlas on the pin's 24 square -->
-				<Texture parentKey="Icon" atlas="questlog-questtypeicon-dungeon" setAllPoints="true"/>
-			</Layer>
-			<Layer level="ARTWORK" textureSubLevel="1">
-				<!-- art-ok: a square atlas on the pin's 24 square -->
-				<Texture parentKey="Glow" atlas="questlog-questtypeicon-dungeon" alphaMode="ADD" setAllPoints="true" hidden="true"/>
-			</Layer>
-		</Layers>
-	</Frame>
 	<!-- A journey card: Blizzard's renown card (Blizzard_Journeys.xml:5-107, RenownCardButtonTemplate) at 0.77 scale,
 	     its art and radial ring kept, the kind's quest-log icon in the ring, and a title, a count and a reason beside
 	     it. AlphaHighlightButtonTemplate's OnLoad copies NormalTexture's atlas into the highlight, so the art is set

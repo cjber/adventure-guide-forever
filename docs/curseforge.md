@@ -18,7 +18,7 @@ Pick one and Shortest Path Forever walks you to each stop in turn.
 
 ![The Adventure Guide window](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window.png)
 
-Start or resume a journey, or choose another below.
+Follow your journey, browse its upcoming steps and quests, or choose another in Activities.
 
 ![Professions in Activities](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_professions.png)
 
@@ -26,7 +26,7 @@ SkillUp Forever supplies the recipes to make and reagents still needed.
 
 ![Progress](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_completion.png)
 
-Legacy Forever supplies your zone's progress and the next things to do there.
+See completed stories here. Legacy Forever supplies collection and zone completion on the map.
 
 ![A journey in your chosen order](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/window_order.png)
 
@@ -36,7 +36,7 @@ Move steps around.
 
 Your journey heads the tracker, with action icons for the current stop and up to two upcoming stops.
 
-![Dungeons in Activities](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/dungeons.png)
+![Bosses and loot beside a dungeon journey](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/dungeons.png)
 
 Check the quests and their earlier steps before heading to the entrance.
 
@@ -46,9 +46,9 @@ The full guide continues across pages. These images are generated previews of th
 
 ## Features
 
-- **What to do next.** Journeys explains your next action. Activities groups dungeon, profession and PvP browsing. Progress shows completion and story milestones. Looking at alternatives keeps your current journey chosen.
+- **What to do next.** Journeys explains your next action. Activities offers journeys, professions and PvP. Progress records completed stories.
 - **Journeys.** Finish loose ends, follow zone stories or pick up class quests. Dungeon and battleground journeys are opt-in.
-- **Dungeons.** Check quests and prerequisites, then visit their givers. Atlas opens interior maps. [Adventure Guide for Classic](https://www.curseforge.com/wow/addons/adventure-guide-for-classic) supplies bosses and loot.
+- **Dungeons.** Check quests and prerequisites, then visit their givers. Tweaks Forever displays Atlas interior maps on the world map. [AtlasLoot Classic](https://www.curseforge.com/wow/addons/atlaslootclassic) supplies bosses and loot.
 - **Full guide.** Browse the route and the area's quest outline. Later entries wait for Questie's availability checks.
 - **Choose and go.** Use Shortest Path Forever or the game's waypoint. Stop clears only guidance the addon started.
 - **Your route.** Your journey survives travel and reloads. Ready hand-ins come first. Towns group quest givers into checklists.

@@ -408,7 +408,7 @@ local function Drive(h, label)
 				h.ns.Window.Refresh()
 			end)
 			if tab.key == "activities" then
-				for _, activity in ipairs({ "dungeons", "professions", "pvp" }) do
+				for _, activity in ipairs({ "journeys", "professions", "pvp" }) do
 					Run(h, label .. " select activity " .. activity, function()
 						window:Show()
 						h.ns.Window.SelectActivity(activity)

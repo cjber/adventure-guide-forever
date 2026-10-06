@@ -12,7 +12,7 @@
 ## SavedVariables: AdventureGuideForeverDB
 ## SavedVariablesPerCharacter: AdventureGuideForeverCharDB
 ## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick
-## OptionalDeps: AdventureGuideClassic, Atlas, Atlas_ClassicWoW, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever
+## OptionalDeps: AtlasLootClassic, AtlasLootClassic_DungeonsAndRaids, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever
 
 Locales\enUS.lua
 Data\Geometry.lua
@@ -44,12 +44,11 @@ Core\Guidance.lua
 Core\API.lua
 Integrations\Companions.lua
 Integrations\Providers.lua
-Integrations\Raids.lua
 Integrations\QuestieObjectives.lua
 Integrations\QuestieTowns.lua
 Integrations\QuestieSource.lua
 Integrations\Dungeons.lua
-Integrations\DungeonRows.lua
+Integrations\AtlasLoot.lua
 UI\Asides.lua
 UI\Hints\Profession.lua
 UI\PvP.lua
@@ -72,13 +71,11 @@ UI\Window.lua
 UI\WindowJourneys.lua
 UI\WindowGuide.lua
 UI\WindowActivities.lua
+UI\WindowChoices.lua
 UI\WindowProfessions.lua
 UI\WindowPvP.lua
 UI\WindowCompletion.lua
-UI\WindowDungeonMaps.lua
-UI\WorldDungeonMaps.lua
 UI\WindowList.lua
-UI\WindowDungeons.lua
 UI\TrackerHost.lua
 UI\StoryCompletion.lua
 UI\Tracker.lua

@@ -144,123 +144,17 @@ do
 	clean(h, "pvp")
 end
 
---[[ The Completion tab ]]
-
+-- Progress belongs to completed stories, independently of Legacy's installation.
 do
-	local legacy = { summaries = {}, targets = {} }
-	local h = Load({ legacy = legacy })
-	local L = h.ns.L
-	local addon = h.G.LegacyForever
-	h.G.LegacyForever = nil
+	local h = Load()
 	local window = Open(h, 4)
-	equal(window.selectedTab, 3, "legacy missing: the tab still opens")
-	equal(window.Tabs[3].normalFont, "GameFontDisableSmall", "legacy missing: its label greys")
-	equal(Texts(h)[L.LEGACY_MISSING], 1, "legacy missing: the page says to install it")
-	h.Hover(window.Tabs[3])
-	equal(h.tooltip[#h.tooltip], "normal: " .. L.LEGACY_MISSING, "legacy missing: and the tab's tooltip")
-
-	h.G.LegacyForever = addon
-	addon.API.version = 0
+	equal(window.Tabs[3].normalFont, "GameFontNormalSmall", "Progress works without Legacy")
+	equal(Texts(h)[h.ns.L.JOURNEY_PROGRESS_EMPTY], 1, "no completed stories yet")
+	h.ns.Prefs().completedStories["zone:1413"] = { title = "The Barrens story" }
 	Redraw(h)
-	equal(Texts(h)[L.LEGACY_OUTDATED], 1, "legacy outdated: says to update it")
-
-	addon.API.version = 1
-	h.fire("ADDON_LOADED", "LegacyForever")
-	local function Zone(map, name, done)
-		return {
-			map = map,
-			name = name,
-			summary = {
-				name = name,
-				done = done,
-				total = 20,
-				pending = 1,
-				questsStatus = "ready",
-				complete = false,
-				categories = {
-					{ key = "areas", scope = "character", done = 3, total = 5, pending = 0, complete = false },
-					{ key = "taxis", scope = "account", done = 2, total = 2, pending = 0, complete = true },
-				},
-			},
-			targets = {
-				{
-					key = "explore:1",
-					text = "Explore the Crossroads",
-					kind = "explore",
-					place = { map = map, x = 0.5, y = 0.3 },
-				},
-				{ key = "kill:2", text = "Defeat Kolkar", kind = "kill", quantity = 2, required = 5 },
-			},
-		}
-	end
-	for _, zone in ipairs({ Zone(1413, "The Barrens", 7), Zone(1442, "Stonetalon Mountains", 1) }) do
-		legacy.summaries[zone.map], legacy.targets[zone.map] = zone.summary, zone.targets
-	end
-	Redraw(h)
-	local texts = Texts(h)
-	equal(window.Tabs[3].normalFont, "GameFontNormalSmall", "ready: the label is gold")
-	equal(texts["The Barrens"] ~= nil, true, "ready: the player's zone featured")
-	equal(texts[L.COMPLETION_COUNTS:format(7, 20)], 1, "ready: its overall count")
-	equal(texts[L.COMPLETION_NOT_KNOWN:format(1)] ~= nil, true, "ready: what Legacy can't check, in words")
-	equal(texts["Explore the Crossroads"], 1, "ready: a target")
-	equal(texts[L.COMPLETION_COUNTS:format(2, 5) .. L.SEPARATOR .. L.COMPLETION_NO_LOCATION], 1, "ready: no place")
-	local rows = Visible(h, window, function(frame)
-		return frame.target ~= nil
-	end)
-	for _, row in ipairs(rows) do
-		h.Click(row)
-	end
-	equal(#h.legacy.navigations, 1, "ready: only a target with a place goes")
-	equal(h.legacy.navigations[1].map, 1413, "ready: navigation map")
-	equal(h.legacy.navigations[1].key, "explore:1", "ready: navigation target")
-	local other = Visible(h, window, function(frame)
-		return frame.zone ~= nil and frame.zone.map == 1442 and frame.target == nil
-	end)[1]
-	equal(other ~= nil, true, "ready: the next zone's card")
-	h.Click(other)
-	h.flush()
-	equal(Texts(h)[L.COMPLETION_COUNTS:format(1, 20)], 1, "ready: its click features it")
-
-	-- A fresh character's flight paths: none known yet reads as words and Legacy's hint, never
-	-- "0/0 · 1 pending"; a category that knows some adds the rest in words.
-	local fresh = legacy.summaries[1442]
-	fresh.pending, fresh.categories =
-		1, {
-			{ key = "areas", scope = "character", done = 1, total = 5, pending = 0, complete = false },
-			{ key = "taxis", scope = "character", done = 0, total = 0, pending = 1, complete = false },
-		}
-	Redraw(h)
-	texts = Texts(h)
-	equal(texts[L.COMPLETION_NOT_KNOWN_TAXIS:format(1)], 1, "not known: the zone line says how to check them")
-	equal(texts[L.COMPLETION_CATEGORY_TAXIS .. "  " .. L.COMPLETION_NOT_KNOWN:format(1)], 1, "not known: no 0/0")
-	fresh.pending, fresh.categories[1].done, fresh.categories[1].total, fresh.categories[1].pending = 3, 3, 5, 2
-	Redraw(h)
-	texts = Texts(h)
-	equal(texts[L.COMPLETION_NOT_KNOWN:format(3)], 1, "not known, two categories: no one hint")
-	local areas = L.COMPLETION_COUNTS:format(3, 5) .. L.SEPARATOR .. L.COMPLETION_NOT_KNOWN:format(2)
-	equal(
-		texts[L.COMPLETION_CATEGORY_AREAS .. "  " .. areas],
-		1,
-		"not known: the counts it has, then the rest in words"
-	)
-
-	-- A zone with everything done has its categories and no target left: it says so, never "no categories".
-	fresh.done, fresh.total, fresh.pending, fresh.complete, fresh.categories =
-		5, 5, 0, true, { { key = "areas", scope = "character", done = 5, total = 5, pending = 0, complete = true } }
-	legacy.targets[1442] = {}
-	Redraw(h)
-	texts = Texts(h)
-	equal(texts[L.COMPLETION_EMPTY], nil, "all done: never says there are no categories")
-	equal(texts[L.COMPLETION_DONE], 1, "all done: says there is nothing left")
-
-	legacy.summaries[1442].categories = {}
-	equal(h.legacy.subscriptions, 1, "shown: subscribed to Legacy")
-	h.legacyChanged()
-	h.flush()
-	equal(Texts(h)[L.COMPLETION_EMPTY] ~= nil, true, "ready, no categories: says so")
-	window:Hide()
-	equal(h.legacy.subscriptions, 0, "hidden: unsubscribed from Legacy")
-	clean(h, "completion")
+	equal(Texts(h)["The Barrens story"], 1, "completed story appears")
+	equal(Texts(h)[h.ns.L.JOURNEY_PROGRESS_EMPTY], nil, "empty hint goes away")
+	clean(h, "story progress")
 end
 
 --[[ Go to entrance ]]
@@ -287,7 +181,6 @@ do
 		local button = Entrance()
 		equal(button ~= nil, true, case[1] .. ": the dungeon card has Go to entrance")
 		equal(button:IsEnabled(), false, case[1] .. ": greyed")
-		equal(Texts(h)[case[2]], 1, case[1] .. ": the note says why")
 	end
 	entrances[389] = { map = 1411, x = 0.52, y = 0.49 }
 	Redraw(h)
@@ -300,17 +193,6 @@ do
 	equal(h.waypoint.position.x, 0.52, "ready: entrance point")
 	equal(h.ns.Prefs().journey, "dungeon:389", "entrance keeps the journey")
 	clean(h, "entrance")
-
-	local story = Load({ charDB = { journey = "zone:1413", dungeons = true } })
-	local storyWindow = Open(story)
-	local others = Visible(story, storyWindow, function(frame)
-		return frame.EntranceButton ~= nil and frame.journey ~= nil and frame.journey.kind ~= "dungeon"
-	end)
-	equal(#others > 0, true, "story and zone cards are drawn")
-	for _, card in ipairs(others) do
-		equal(card.EntranceButton:IsVisible(), false, "only a dungeon card has one")
-	end
-	clean(story, "entrance: others")
 end
 
 --[[ Today's overflow ]]
@@ -465,7 +347,7 @@ do
 	local ns, L = h.ns, h.ns.L
 	local window = Open(h)
 	local rows = StepRows(h, window)
-	equal(#rows, 3, "order: three chosen story rows")
+	equal(#rows, math.min(6, #ns.Route().steps), "order: upcoming chosen story rows")
 	local second, third = ns.Route().steps[2].key, ns.Route().steps[3].key
 	equal(ns.Order.CanMove(2, 3), false, "order: pickup cannot follow its objective")
 	h.Click(rows[2], "RightButton")

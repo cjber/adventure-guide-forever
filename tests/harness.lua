@@ -2749,36 +2749,7 @@ function harness.load(options)
 		end
 	end
 	if options.legacy then
-		local fake, subscribers = options.legacy, {}
-		h.legacy = { subscriptions = 0, navigations = {} }
-		G.LegacyForever = {
-			API = {
-				version = fake.version or 1,
-				ZoneSummary = function(zoneMap)
-					return (fake.summaries or {})[zoneMap], fake.error
-				end,
-				Targets = function(zoneMap)
-					return (fake.targets or {})[zoneMap] or {}, fake.error
-				end,
-				Navigate = function(zoneMap, key)
-					h.legacy.navigations[#h.legacy.navigations + 1] = { map = zoneMap, key = key }
-					return fake.navigateError == nil, fake.navigateError
-				end,
-				Subscribe = function(callback)
-					subscribers[callback] = true
-					h.legacy.subscriptions = h.legacy.subscriptions + 1
-					return function()
-						subscribers[callback] = nil
-						h.legacy.subscriptions = h.legacy.subscriptions - 1
-					end
-				end,
-			},
-		}
-		function h.legacyChanged()
-			for callback in pairs(subscribers) do
-				callback()
-			end
-		end
+		G.LegacyForever = {}
 	end
 
 	-- SkillUp Forever (its API.lua, version 1): options.skillup.professions is what Professions answers, the same

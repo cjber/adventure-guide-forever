@@ -63,8 +63,7 @@ h.flush()
 
 local open = assert(ui.FindText(window, ns.L.GUIDE_OPEN))
 -- The button is parented to the card's content. Use the actual card's parent.
-local card = open:GetParent():GetParent()
-local tabParent = card:GetParent()
+local tabParent = open:GetParent()
 ns.Data.quests = data.quests
 for id = 4000, 4020 do
 	data.quests[id] = quest("Later quest " .. id, 5)

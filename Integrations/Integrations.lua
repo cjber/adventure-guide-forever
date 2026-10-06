@@ -8,24 +8,6 @@ ns.Integrations = Integrations
 -- Passed to Shortest Path so it can tell our journeys apart from the player's own.
 local OWNER = "AdventureGuideForever"
 
----@return boolean
-function Integrations.ClassicGuideAvailable()
-	return C_AddOns.IsAddOnLoaded("AdventureGuideClassic") and type(SlashCmdList.ADVENTUREGUIDECLASSIC) == "function"
-end
-
--- Adventure Guide for Classic exposes one public entry, its slash command, whose handler toggles its encounter
--- journal; it has no public way to open a named instance, and its journal and navigation tables sit behind a private
--- facade. An empty message is that handler's own "open the window" case, so the handoff uses it as it stands.
----@return boolean
-function Integrations.OpenClassicGuide()
-	if not Integrations.ClassicGuideAvailable() then
-		return false
-	end
-	local openGuide = SlashCmdList.ADVENTUREGUIDECLASSIC --[[@as fun(message: string)]]
-	openGuide("")
-	return true
-end
-
 -- The v1 members; types/Namespace.lua AGFSPFAPI is the contract, and tests/contract_spec.lua holds this list to
 -- exactly its non-optional functions. A Shortest Path missing any of them is treated as absent.
 local REQUIRED = { "Estimate", "Navigate", "NavigateRoute", "CurrentStop", "Cancel" }

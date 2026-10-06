@@ -14,6 +14,38 @@ local PAGE_SIZE, ROW_HEIGHT, ROW_PITCH = 10, 32, 34
 ---@param steps AGFStep[]
 ---@return integer[]
 function Window.GuideOutline(data, player, completed, journey, steps)
+	if journey.instance then
+		local active, future, seen = {}, {}, {}
+		for _, step in ipairs(steps) do
+			for _, id in ipairs(step.quests) do
+				active[id] = true
+			end
+		end
+		local ids = {}
+		for id, quest in pairs(data.quests) do
+			if quest.dungeon == journey.instance and not quest.raid and ns.Dungeons.ForCharacter(quest, player) then
+				ids[#ids + 1] = id
+			end
+		end
+		table.sort(ids)
+		for _, id in ipairs(ids) do
+			if not completed[id] then
+				for _, before in ipairs(ns.Dungeons.Chain(data, id, function() end)) do
+					local quest = data.quests[before]
+					if
+						quest
+						and not seen[before]
+						and not active[before]
+						and not completed[before]
+						and ns.Dungeons.ForCharacter(quest, player)
+					then
+						future[#future + 1], seen[before] = before, true
+					end
+				end
+			end
+		end
+		return future
+	end
 	local zone = journey.zone
 	if not zone then
 		return {}

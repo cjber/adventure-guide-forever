@@ -212,7 +212,7 @@ local function Window(each, scene, tab)
 	each.ns.OpenWindow()
 	each.flush()
 	local window = each.G.AdventureGuideForeverWindow
-	local category = ({ [2] = "professions", [3] = "pvp", [5] = "dungeons" })[tab]
+	local category = ({ [2] = "professions", [3] = "pvp", [5] = "journeys" })[tab]
 	if category then
 		each.ns.Window.SelectActivity(category)
 	else
@@ -239,6 +239,8 @@ assert(hoverCards[1], "journey hover card")
 hoverCards[1]:GetScript("OnEnter")(hoverCards[1])
 out.window.layout = h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)
 
+out.window_activities = Window(h, "window_activities", 5)
+
 -- The Professions tab, SkillUp Forever loaded: the leatherworker's card, steps and reagents, the picker for two;
 -- the same asides above.
 local skillup = dofile("tests/fixtures/skillup.lua")
@@ -250,77 +252,35 @@ h = Load("v1", false, false, STORY, nil, {
 })
 out.window_professions = Window(h, "window_professions", 2)
 
--- The optional runtime adapter is exercised with independently sourced, non-shipping fixtures.
-local dungeonFixture = dofile("tests/fixtures/dungeons.lua")
-local mirror = harness.questieMirror(h.ns.Data)
-mirror.items = dungeonFixture.items
-for id, text in pairs(dungeonFixture.objectives) do
-	mirror.quests[id].objectivesText = { text }
-end
-mirror.zones.dungeons = { [100043] = { "Wailing Caverns", {}, 1413, { { 1413, 46, 36 } } } }
-h = Load("v1", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, {
-	tf = { spells = { SPELL, SPELL, SPELL } },
-	talents = 1,
-	questiedb = mirror,
-	items = dungeonFixture.client,
-})
-h.ns.WindowDB().dungeon = 43
-Window(h, "dungeons", 5)
-for _, row in
-	ipairs(h.Find(function(frame)
-		return frame:IsVisible() and frame.value and frame.value.quest and frame.value.quest.id == 1486
-	end))
-do
-	h.Click(row)
-end
-out.dungeons = Window(h, "dungeons", 5)
-for _, tab in
-	ipairs(h.Find(function(frame)
-		return frame:IsVisible()
-			and frame.stockTemplate == "TabSystemTopButtonTemplate"
-			and frame:GetText() == h.ns.L.DUNGEON_PREP_TAB
-	end))
-do
-	h.Click(tab)
-end
-out.dungeons_prep = Window(h, "dungeons_prep", 5)
--- Owner's live regression: Alliance level 19 in Darkshore, browsing Horde-only Ragefire quests.
--- Character selection in the beta client confirms a dwarf shaman.
-h = Load("v1", false, true, nil, nil, {
-	player = { level = 19, faction = "Alliance", raceID = 3, classID = 7, map = 1439 },
-	log = {},
-	completed = {},
-	tf = { spells = { SPELL, SPELL, SPELL, SPELL, SPELL, SPELL, SPELL } },
-	skills = { { skillID = 356, name = "Fishing", rank = 75, maxRank = 75, category = 9 } },
-	battlegrounds = { [10] = { { id = 2, name = "Warsong Gulch" } } },
-	questiedb = mirror,
-	entrances = { [389] = { map = 1454, x = 0.526, y = 0.49 } },
-})
-h.G.C_Map.GetMapInfo = function(map)
-	local record = h.ns.Data.maps[map] or h.ns.Data.zones[map]
-	return record and { name = record.name, mapType = 3 }
-end
-h.G.C_MapExplorationInfo = {
-	GetExploredMapTextures = function(map)
-		local seen = {}
-		for _, overlay in ipairs(h.ns.Data.overlays[map] or {}) do
-			if overlay.name ~= "Ruins of Mathystra" then
-				seen[#seen + 1] = { offsetX = overlay.ox, offsetY = overlay.oy, fileDataIDs = {} }
-			end
+-- Dungeon route with bosses and drops from installed AtlasLoot, supplied by screenshots.py.
+h = Load("v1", false, false, "dungeon:43", nil, {
+	charDB = { journey = "dungeon:43", dungeons = true },
+	items = (function()
+		local items = {}
+		for id, value in pairs(input.lootItems or {}) do
+			items[tonumber(id)] = value
 		end
-		return seen
+		return items
+	end)(),
+	setup = function(each)
+		if input.atlasloot then
+			each.G.AtlasLoot = {
+				ItemDB = {
+					Get = function()
+						return input.atlasloot
+					end,
+					GetItemTable = function(_, _, key, boss, difficulty)
+						return input.atlasloot[key].items[boss][tostring(difficulty)]
+					end,
+				},
+			}
+		end
 	end,
-}
-h.ns.Invalidate()
-h.flush()
-h.ns.WindowDB().dungeon = 389
-out.dungeons_live = Window(h, "dungeons_live", 5)
+})
+out.dungeons = Window(h, "dungeons")
 
-local ASIDES = {
-	db = { autoStart = false, trainingReminders = true },
-	tf = { spells = { SPELL, SPELL, SPELL } },
-	talents = 1,
-}
+local ASIDES =
+	{ db = { autoStart = false, trainingReminders = true }, tf = { spells = { SPELL, SPELL, SPELL } }, talents = 1 }
 
 -- The PvP tab: client rank progress and every unlocked battleground; Darkspear Islands has no known battlemaster.
 h = Load("v1", false, false, STORY, nil, {
@@ -336,68 +296,11 @@ h = Load("v1", false, false, STORY, nil, {
 })
 out.window_pvp = Window(h, "window_pvp", 3)
 
--- The Completion tab, Legacy Forever loaded: The Barrens featured with its categories, its next three objectives, and
--- the next zones as cards. Stonetalon has nothing done, so the shot holds an empty bar: the client lays a 0-wide fill
--- out at its atlas's width, and this renderer does too.
-local function Zone(map, name, done, total, categories, targets)
-	return {
-		map = map,
-		name = name,
-		summary = {
-			name = name,
-			done = done,
-			total = total,
-			pending = 0,
-			questsStatus = "ready",
-			complete = false,
-			categories = categories,
-		},
-		targets = targets or {},
-	}
-end
-local function Category(key, done, total, scope)
-	return { key = key, scope = scope or "character", done = done, total = total, pending = 0, complete = done == total }
-end
-local legacy = { summaries = {}, targets = {} }
-for _, zone in ipairs({
-	Zone(1413, "The Barrens", 41, 96, {
-		Category("areas", 14, 22),
-		Category("taxis", 2, 2, "account"),
-		Category("dungeons", 0, 1),
-		Category("reputations", 1, 2),
-		Category("quests", 24, 69),
-	}, {
-		{
-			key = "explore:Lushwater Oasis",
-			text = "Explore Lushwater Oasis",
-			kind = "explore",
-			place = { map = 1413, x = 0.47, y = 0.38 },
-		},
-		{
-			key = "instance:43",
-			text = "Wailing Caverns",
-			kind = "instance",
-			place = { map = 1413, x = 0.46, y = 0.36 },
-		},
-		{ key = "kill:Kolkar", text = "Kolkar Centaur", kind = "kill", quantity = 6, required = 10 },
-	}),
-	Zone(1442, "Stonetalon Mountains", 0, 58, { Category("areas", 0, 15), Category("quests", 0, 43) }),
-	Zone(1411, "Durotar", 52, 60, { Category("areas", 12, 12), Category("quests", 40, 48) }),
-}) do
-	legacy.summaries[zone.map], legacy.targets[zone.map] = zone.summary, zone.targets
-end
-h = Load("v1", false, false, STORY, nil, { legacy = legacy })
-h.flush()
+-- Completed stories remain visible without the Legacy companion.
+h = Load("v1", false, false, STORY)
 h.ns.StoryCompletion.Record(849)
 h.flush()
 out.window_completion = Window(h, "window_completion", 4)
-for _, frame in ipairs(h.frames) do
-	if frame.zone and frame.zone.map == 1442 and frame:GetScript("OnClick") then
-		frame:GetScript("OnEnter")(frame)
-		out.window_completion.layout = h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)
-		break
-	end
-end
 
 h = Load("v1", false, true)
 h.flush()
@@ -472,19 +375,11 @@ out.window_session_picker.layout = h.ns.DumpLayout(h.G.AdventureGuideForeverWind
 -- Full guide: ten rows per page, future quests never become active route steps.
 h = Load("v1", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, ASIDES)
 out.window_full_guide = Window(h, "window_full_guide")
-local guideCard = assert(h.Find(function(frame)
-	return frame:IsVisible() and frame.GuideButton and frame.journey
+local guideButton = assert(h.Find(function(frame)
+	return frame:IsVisible() and frame.GetText and frame:GetText() == h.ns.L.GUIDE_OPEN
 end)[1])
-h.Click(guideCard.GuideButton)
+h.Click(guideButton)
 out.window_full_guide.layout = h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)
-
-h = Load("v1", false, true, nil, nil, ASIDES)
-out.window_dungeon_maps = Window(h, "window_dungeon_maps", 5)
-local mapsButton = assert(h.Find(function(frame)
-	return frame:IsVisible() and frame.GetText and frame:GetText() == h.ns.L.DUNGEON_MAPS_TAB
-end)[1])
-h.Click(mapsButton)
-out.window_dungeon_maps.layout = h.ns.DumpLayout(h.G.AdventureGuideForeverWindow, h.Describe)
 
 -- The same whole task does not fit 15 minutes.
 h = Load("v1", false, false, "carry", { HIDDEN_ENEMIES }, ASIDES)
