@@ -327,7 +327,6 @@ district:SetScript("OnEvent", function()
 			districtPending = false
 			if ns.RouteSettled() then
 				Asides.Refresh()
-				ns.Window.Refresh()
 			end
 		end)
 	end

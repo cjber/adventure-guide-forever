@@ -22,7 +22,10 @@ end
 assert(dawn, "Dawn in the Mountains survives client state, zone selection and lap planning")
 assert(dawn.map == 1426 and math.abs(dawn.x - 0.57727587223053) < 0.000001, "uses the native map location")
 assert(positions[310] < positions[99158] and positions[320] < positions[99158], "nearer ready hand-ins come first")
-assert(positions[99158] < positions[419], "hand in Dawn before travelling farther east for The Lost Pilot")
+assert(not positions[419], "the bounded preview keeps carried waypoints ahead of the farther Lost Pilot pickup")
 assert(positions[99158] < positions[432], "hand in Dawn before the eastern trogg pickup")
+for _, id in ipairs({ 412, 287, 98326, 315 }) do
+	assert(positions[id], "carried client waypoint survives without database objective slots: " .. id)
+end
 assert(#h.errors == 0, "live-log replay raises no errors")
-print("live_quest_spec: 6 checks passed")
+print("live_quest_spec: 10 checks passed")

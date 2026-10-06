@@ -141,7 +141,6 @@ local function Frames()
 		end
 	end
 	for _, root in ipairs({
-		AdventureGuideForeverWindow or false,
 		AdventureGuideForeverPanel or false,
 		AdventureGuideForeverTab or false,
 		AdventureGuideForeverQuestsTab or false,
@@ -171,8 +170,6 @@ function ns.Dump()
 		build = version .. "." .. build,
 		questSource = ns.QuestieStatus,
 		layout = AdventureGuideForeverPanel and ns.DumpLayout(AdventureGuideForeverPanel),
-		window = AdventureGuideForeverWindow and ns.DumpLayout(AdventureGuideForeverWindow),
-		windowTab = ns.WindowDB().tab,
 		tracker = AdventureGuideForeverObjectiveTracker and ns.DumpLayout(AdventureGuideForeverObjectiveTracker),
 		route = route,
 		frames = Frames(),

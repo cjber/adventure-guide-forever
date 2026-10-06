@@ -27,6 +27,7 @@ Pillow and wowmock are imported inside the render functions only: CI runs the re
 import importlib.metadata
 import io
 import json
+import os
 import re
 import subprocess
 import sys
@@ -34,6 +35,8 @@ import tempfile
 from pathlib import Path
 
 import screenshots_art as drawing
+from diff_forever import ERA
+from gen_quests import BUILD
 from screenshots_art import draw_font_string, draw_texture, fit_text, font, load_wowmock
 from screenshots_resolver import effective_scales, lua_rects, map_point, parent_path, resolve, scroll_child_anchors
 from screenshots_spf import SPF_SHA, breadcrumbs, goal_pins, map_position, spf_walk, stop_groups
@@ -87,6 +90,34 @@ def layout_pass(ui, scenes, known):
     if two_places(data["panel"]["layout"]) != golden:
         sys.exit("tests/scenes.lua's panel differs from tests/golden/layout.json: update its fixture to ui_spec's")
     inputs = {"rects": {}, "mapArt": map_tiles(ui)}
+    source = Path(
+        os.environ.get(
+            "AGF_ATLASLOOT",
+            Path.home()
+            / "Games/battlenet/drive_c/Program Files (x86)/World of Warcraft"
+            / "_classic_beta_/Interface/AddOns/AtlasLootClassic_DungeonsAndRaids/data.lua",
+        )
+    )
+    loot = subprocess.run(
+        ["luajit", "tools/screenshot_loot.lua", str(source)], cwd=ROOT, capture_output=True, text=True, check=True
+    )
+    inputs["atlasloot"] = json.loads(loot.stdout)
+    items = {}
+    era = drawing.wm.Ui(ERA)
+    client = drawing.wm.Ui(BUILD)
+    for boss in inputs["atlasloot"]["WailingCaverns"]["items"]:
+        for row in boss.get("1", []):
+            if isinstance(row[1], int) and row[1] > 0:
+                try:
+                    item = client.item(row[1])
+                    items[str(row[1])] = {"name": item.name, "icon": item.icon}
+                except KeyError:
+                    try:
+                        item = era.item(row[1])
+                        items[str(row[1])] = {"name": item.name, "icon": item.icon}
+                    except KeyError:
+                        pass
+    inputs["lootItems"] = items
     for _ in range(LAYOUT_PASSES):
         data = run_scenes(inputs)
         rects = {
@@ -378,28 +409,6 @@ def known_frames(rects):
 
 # ---------------------------------------------------------------------------------------------- the scenes
 
-WINDOW = "AdventureGuideForeverWindow"
-WINDOW_SIZE = (800, 496)  # Window.lua's WIDTH and HEIGHT
-WINDOW_MARGIN = 20  # the metal corners overhang the frame by up to 16
-WINDOW_TABS = 30  # the tabs hang below the frame
-WINDOWS = (
-    "dungeons",
-    "dungeons_live",
-    "dungeons_prep",
-    "window",
-    "window_professions",
-    "window_pvp",
-    "window_completion",
-    "window_missing",
-    "window_today",
-    "window_context_menu",
-    "window_session",
-    "window_session_picker",
-    "window_full_guide",
-    "window_dungeon_maps",
-    "window_empty",
-    "window_order",
-)
 PLAYER = {"x": 0.52, "y": 0.30}  # tests/harness.lua's player position in The Barrens
 
 
@@ -458,13 +467,10 @@ def manifest(paths):
 
 
 DEMO_SIZE = (960, 640)  # the GIF's pixels: the README shows it at 640 wide, so text stays sharp on a 1.5x screen
-DEMO_SCENES = (  # (image, seconds held): pick a journey, see its route, then the window's tabs
+DEMO_SCENES = (  # (image, seconds held): pick a journey, see its route, then its map route
     ("panel", 1.2),
     ("chosen", 1.8),
     ("map", 1.6),
-    ("window", 1.2),
-    ("window_professions", 1.0),
-    ("window_completion", 1.4),
 )
 DEMO_FADE = (4, 75)  # crossfade frames and milliseconds per frame
 DEMO_LIMIT = 3_000_000
@@ -472,7 +478,7 @@ DEMO_LIMIT = 3_000_000
 
 def demo(ui, images):
     """docs/screenshots/demo.gif: the stills above in order, each fitted to one frame. Two stills of the same frame
-    (the map before and after choosing, the window's tabs) crossfade, so only the part that changes moves and the
+    (the map before and after choosing, the map route) crossfade, so only the part that changes moves and the
     GIF stores just that; the others cut. Holds are single long frames on one shared palette, so two runs match."""
     width, height = DEMO_SIZE
     stills = []
@@ -514,9 +520,9 @@ def render():
         print(f"warning: Pillow {version}, not the pinned {PILLOW}: the PNGs may not match byte for byte")
     ui = drawing.wm.Ui(scale=SCALE)
     _, frame = map_frame(ui, drawing.wm.Image.new("RGBA", (1002, 668)), True)
-    known = known_frames(frame) | {WINDOW: (WINDOW_MARGIN, WINDOW_MARGIN, *WINDOW_SIZE)}
+    known = known_frames(frame)
     data, rects = layout_pass(
-        ui, ("panel", "journeys", "journeys_four", "journeys_overflow", "search", "story_complete", *WINDOWS), known
+        ui, ("panel", "journeys", "journeys_four", "journeys_overflow", "search", "story_complete"), known
     )
     images = {}
 
@@ -582,18 +588,13 @@ def render():
     images["tracker"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     kinds = {"title": drawing.wm.MenuTitle, "button": drawing.wm.MenuButton}
+    loot, _ = drawing.wm.context_menu(ui, [kinds[entry["kind"]](entry["text"]) for entry in data["loot_menu"]])
+    images["loot"] = drawing.wm.scene(ui, [(loot, 0, 0)])
     menu, menu_rects = drawing.wm.context_menu(ui, [kinds[entry["kind"]](entry["text"]) for entry in data["menu"]])
     bx, by, _, _ = tracked["blocks"][0]
     # A right-click on the block header: Blizzard_Menu opens the menu with its TOPLEFT at the cursor.
     fx, fy, _, _ = menu_rects["menu"]
     images["menu"] = drawing.wm.scene(ui, [(canvas, 0, 0), (menu, bx + 60 - fx, by + 8 - fy)])
-
-    # The Adventure Guide window (docs/design.md §2.19) on each of its tabs.
-    for scene in WINDOWS:
-        width, height = WINDOW_SIZE
-        canvas = ui.canvas(width + 2 * WINDOW_MARGIN, height + 2 * WINDOW_MARGIN + WINDOW_TABS)
-        Layout(data[scene]["layout"], rects[scene]).draw(canvas)
-        images[scene] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     canvas = ui.canvas(400, 122)
     Layout(data["story_complete"]["layout"], rects["story_complete"]).draw(canvas)

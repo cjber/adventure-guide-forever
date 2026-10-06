@@ -97,11 +97,7 @@ end
 ---@return boolean
 function Recommendations.CanAct(item)
 	local place = item.step or item.aside and item.aside.place
-	return ns.RouteSettled()
-		and not ns.Session.Info().pending
-		and not InCombatLockdown()
-		and not ns.Setting("wanderer")
-		and ns.Model.ValidPlace(place)
+	return ns.RouteSettled() and not InCombatLockdown() and not ns.Setting("wanderer") and ns.Model.ValidPlace(place)
 end
 
 ---@param item AGFRecommendation

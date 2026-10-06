@@ -1,6 +1,6 @@
 -- Run from the repository root: luajit tests/regression_spec.lua
 -- One test per defect that crossed features: town offers, guidance, the tracker, PvP progress, skips, custom order,
--- session members and sounds.
+-- saved preferences and sounds.
 local harness = dofile("tests/harness.lua")
 local characters = dofile("tests/fixtures/characters.lua")
 local checks, failures = 0, {}
@@ -14,7 +14,7 @@ local function test(name, run)
 		failures[#failures + 1] = name .. ": " .. err
 	end
 end
--- These session/ordering checks pin the planned (beta) ordering; the default nearest order has its own spec.
+-- These ordering checks pin the planned (beta) ordering; the default nearest order has its own spec.
 local function fixture(ns, name)
 	for _, value in ipairs(characters.list) do
 		if value.name == name then
@@ -46,18 +46,15 @@ test("rejected town offers", function()
 	end
 end)
 
-test("independent guidance survives an empty session", function()
+test("independent guidance survives a route update", function()
 	for _, spf in ipairs({ false, "ended" }) do
 		local h = harness.load({
 			spf = spf or nil,
 			charDB = {
 				journey = "zone:1413",
-				sessionMinutes = 15,
-				sessionCommit = { journey = "zone:1413", minutes = 15, keys = {} },
 			},
 			entrances = { [36] = { map = 1436, x = 0.42, y = 0.71 } },
 		})
-		eq(h.ns.Session.Info().empty, true, "empty limited session")
 		eq(h.ns.Dungeons.GoEntrance(36), true, "entrance guidance starts")
 		h.fire("QUEST_LOG_UPDATE")
 		h.flush()
@@ -155,40 +152,6 @@ test("town tracker does not duplicate detailed giver rows", function()
 	eq(block.lines[1], step.reason, "meaningful story reason remains beside the checklist")
 end)
 
-test("PvP progress refreshes with unchanged rewards", function()
-	local h = harness.load({
-		rank = {
-			info = { renownLevel = 3, renownReputationEarned = 1200, renownLevelThreshold = 3000, maxLevel = 14 },
-			rewards = { [6] = { { description = "Tabard" } } },
-		},
-	})
-	h.ns.OpenWindow()
-	h.flush()
-	local window = h.G.AdventureGuideForeverWindow
-	h.ns.Window.SelectActivity("pvp")
-	h.flush()
-	for _, event in ipairs({ "PLAYER_PVP_RANK_CHANGED", "MAJOR_FACTION_RENOWN_LEVEL_CHANGED", "UPDATE_FACTION" }) do
-		h.rank.info.renownReputationEarned = h.rank.info.renownReputationEarned + 100
-		if event == "MAJOR_FACTION_RENOWN_LEVEL_CHANGED" then
-			h.rank.info.renownLevel = 4
-		end
-		h.fire(event, 2800)
-		h.flush()
-		local text = h.ns.L.PVP_RANK_POINTS:format(h.rank.info.renownReputationEarned, 3000)
-		local found, rank = false, false
-		for _, entry in ipairs(h.ns.DumpLayout(window, h.Describe)) do
-			found = found or entry.text == text
-			rank = rank or entry.text == h.ns.L.PVP_RANK:format(h.rank.info.renownLevel)
-		end
-		eq(found, true, event .. " updates points")
-		eq(rank, true, event .. " updates rank")
-	end
-	window:Hide()
-	for _, event in ipairs({ "PLAYER_PVP_RANK_CHANGED", "MAJOR_FACTION_RENOWN_LEVEL_CHANGED", "UPDATE_FACTION" }) do
-		eq(window.events[event], nil, "hidden window releases " .. event)
-	end
-end)
-
 test("skipped giver can be shown again", function()
 	local h = harness.load({
 		charDB = { journey = "zone:1413" },
@@ -248,27 +211,21 @@ test("rebuilds preserve absent custom positions", function()
 	eq(table.concat(keys, ","), "b,a,c", "rebuild does not write preferences")
 end)
 
-test("malformed session members are rejected", function()
-	for _, members in ipairs({ 1, true, "bad", { ["town:349"] = 1 }, { ["town:349"] = "bad" } }) do
-		local h = harness.load({
-			charDB = {
-				journey = "zone:1413",
-				sessionMinutes = 15,
-				sessionCommit = {
-					journey = "zone:1413",
-					minutes = 15,
-					keys = { ["town:349"] = true },
-					members = members,
-				},
-			},
-		})
-		eq(#h.errors, 0, "invalid members cannot break the rebuild")
-		eq(h.ns.Prefs().sessionCommit.members == members, false, "malformed commitment replaced")
-	end
-	for _, members in ipairs({ false, {}, { ["town:349"] = { ["845"] = true } } }) do
-		local commit = { journey = "zone:1413", minutes = 15, keys = {}, members = members or nil }
-		local h = harness.load({ charDB = { sessionCommit = commit } })
-		eq(h.ns.Prefs().sessionCommit, commit, "valid and legacy commitments survive loading")
+test("legacy time limits cannot truncate a journey", function()
+	local baseline = harness.load({ charDB = { journey = "zone:1413" } })
+	for _, commit in ipairs({
+		{ journey = "zone:1413", minutes = 15, keys = {} },
+		{ journey = "zone:1413", minutes = 15, keys = {}, members = "bad" },
+		false,
+	}) do
+		local h = harness.load({ charDB = { journey = "zone:1413", sessionMinutes = 15, sessionCommit = commit } })
+		eq(h.ns.Prefs().sessionMinutes, nil, "retired time preference removed")
+		eq(h.ns.Prefs().sessionCommit, nil, "retired route cap removed")
+		eq(#h.ns.Route().steps, #baseline.ns.Route().steps, "whole journey survives old saved limits")
+		for index, step in ipairs(h.ns.Route().steps) do
+			eq(step.key, baseline.ns.Route().steps[index].key, "saved limits do not change the route")
+		end
+		eq(#h.errors, 0, "legacy settings load without errors")
 	end
 end)
 

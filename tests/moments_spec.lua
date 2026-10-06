@@ -24,7 +24,9 @@ end
 -- Mountains and Ashenvale; Hillsbrad becomes useful at level 19, and Moonglade at 20 (the Great Cat Spirit quests,
 -- QuestieDB v1.0.5).
 local function Load(charDB)
-	return harness.load({ charDB = charDB or {}, completed = { 844 }, log = {} })
+	charDB = charDB or {}
+	charDB.previewGroups = { continue = false, zones = false }
+	return harness.load({ charDB = charDB, completed = { 844 }, log = {} })
 end
 
 local function LevelUp(h, level)
@@ -100,6 +102,7 @@ equal(Marked(h, "zone:1413"), false, "opened: the others are not")
 
 -- Closing the guide takes the marks away; a zone change that brings nothing new leaves them away.
 h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+h.ns.Prefs().previewGroups = { continue = false, zones = false }
 h.ns.OpenPanel()
 h.flush()
 equal(Marked(h, "zone:1424"), false, "closed: the mark goes")
@@ -110,6 +113,7 @@ clean(h, "level up")
 
 -- Found with the guide open: the card is marked, and nothing calls the player over.
 h = Load()
+h.ns.Prefs().previewGroups = { continue = false, zones = false }
 h.ns.OpenPanel()
 h.flush()
 LevelUp(h, 22)
@@ -230,7 +234,7 @@ clean(h, "tracker off")
 h = harness.load({ player = { level = 1 }, charDB = { quests = false, seen = { ["dungeon:329"] = true } } })
 h.flush()
 LevelUp(h, 70)
-equal(Tracker(h), "Blackrock Spire is now for your level", "level cap: the dungeon card names the level")
+equal(Tracker(h), "Dire Maul is now for your level", "level cap: the best-ranked dungeon card names the level")
 clean(h, "level cap")
 
 print(("moments_spec: %d checks passed"):format(checks))

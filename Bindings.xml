@@ -1,6 +1,3 @@
 <Bindings>
-	<!-- The Adventure Guide window (Window.lua); its header and name are set there from ns.L. -->
-	<Binding name="ADVENTUREGUIDEFOREVER_WINDOW" header="ADVENTUREGUIDEFOREVER">
-		AdventureGuideForever_ToggleWindow()
-	</Binding>
+	<!-- Kept empty because an already-running client may still request this file on reload. -->
 </Bindings>

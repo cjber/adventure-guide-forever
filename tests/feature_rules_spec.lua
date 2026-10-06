@@ -1,5 +1,5 @@
 -- Run from the repository root: luajit tests/feature_rules_spec.lua
--- Rules that span features: completion providers, PvP, saved order and sessions, town givers, the hearth hint,
+-- Rules that span features: completion providers, PvP, saved order, town givers, the hearth hint,
 -- step sounds and skipped givers.
 local harness = dofile("tests/harness.lua")
 local checks = 0
@@ -24,52 +24,10 @@ local function step(key, kind, ids)
 	}
 end
 
--- Providers preserve scope, disabled categories, unknown counts and detached copies.
+-- Entrance provider returns detached, validated coordinates.
 do
-	local summary = {
-		map = 1413,
-		name = "The Barrens",
-		done = 1,
-		total = 2,
-		pending = 3,
-		complete = false,
-		questsStatus = "loading",
-		categories = {
-			{ key = "areas", scope = "character", done = 1, total = 2, pending = 0, complete = false },
-			{ key = "legacy", scope = "account", done = 0, total = 0, pending = 3, complete = false },
-		},
-	}
-	local target = { key = "opaque", text = "An objective", kind = "kill", achievementID = 1, criteriaID = 2 }
-	local fake = { summaries = { [1413] = summary }, targets = { [1413] = { target } } }
-	local h = harness.load({ legacy = fake, entrances = { [36] = { map = 1436, x = 0.42, y = 0.71 } } })
+	local h = harness.load({ entrances = { [36] = { map = 1436, x = 0.42, y = 0.71 } } })
 	local P = h.ns.Providers
-	eq(P.LegacyState(), "ready")
-	local result = P.Completion()
-	eq(result.zones[1].map, 1413)
-	eq(result.zones[1].summary.categories[2].scope, "account")
-	eq(result.zones[1].summary.pending, 3)
-	eq(result.zones[1].targets[1].place, nil)
-	result.zones[1].summary.categories[2].scope = "character"
-	eq(summary.categories[2].scope, "account", "fresh summary")
-	result.zones[1].targets[1].text = "changed"
-	eq(target.text, "An objective", "fresh target")
-	local notifications = 0
-	P.OnChange(function()
-		notifications = notifications + 1
-	end)
-	eq(h.legacy.subscriptions, 0)
-	P.SetShown(true)
-	P.SetShown(true)
-	eq(h.legacy.subscriptions, 1)
-	h.legacyChanged()
-	eq(notifications, 1)
-	P.SetShown(false)
-	h.legacyChanged()
-	eq(notifications, 1)
-	fake.navigateError = "stale"
-	local ok, err = P.NavigateCompletion(1413, "opaque")
-	eq(ok, false)
-	eq(err, "stale")
 	local point = P.DungeonEntrance(36)
 	point.x = 0
 	eq(P.DungeonEntrance(36).x, 0.42, "fresh entrance")
@@ -80,10 +38,6 @@ do
 	h.G.TweaksForever.API.version = 0
 	_, missing = P.DungeonEntrance(36)
 	eq(missing, "outdated")
-	h.G.LegacyForever.API.version = 0
-	eq(P.LegacyState(), "outdated")
-	h.G.LegacyForever = nil
-	eq(P.LegacyState(), "missing")
 	clean(h)
 end
 
@@ -120,7 +74,7 @@ do
 end
 
 local h = harness.load({})
-local M, O, S = h.ns.Model, h.ns.Order, h.ns.Session
+local M, O = h.ns.Model, h.ns.Order
 eq(O.CanMove(1, 2), false, "unchosen journey cannot move")
 eq(O.Move(1, 2), false, "unchosen move is refused without changing preferences")
 eq(h.ns.Prefs().customOrders, nil, "refused move does not persist an order")
@@ -139,19 +93,7 @@ eq(merged[2], pick)
 eq(merged[3], work)
 eq(merged[4], hand)
 eq(O.Merge(steps, { "extra" })[2], pick, "new work appends in suggested order")
-local n, seconds = S.Prefix(steps, { 10, 10, 10, 10 }, 30)
-eq(n, 3, "exact budget")
-eq(seconds, 30)
-eq(S.Prefix(steps, { 10, 10, 10, 10 }, 29), 0, "pickup cannot outlive its work")
-eq(S.Prefix({ extra, pick, work, hand }, { 10, 10, 10, 10 }, 30), 1, "earlier complete task survives")
-eq(S.Prefix(steps, { nil, 1, 1, 1 }, 100), 0, "unknown leg is not free")
-eq(S.Prefix(steps, { 1000, 1, 1, 1 }, 900), 0, "first task over budget")
-eq(S.Work(step("d", "dungeon")), nil, "no dungeon duration")
-work.objectives[1].slot = 16
-eq(S.Work(work), nil, "no scripted duration")
-work.objectives[1].slot = 0
-
--- Persistence, exact moves, reset and a committed session that never refills.
+-- Persistence, exact moves and reset.
 do
 	local route = { journey = "test", chosen = true, journeys = {}, steps = steps, orders = {} }
 	route.journeys = { { key = "test", steps = steps } }
@@ -167,18 +109,6 @@ do
 	eq(O.Merge(steps, h.ns.Prefs().customOrders.test)[1], extra)
 	O.Reset()
 	eq(O.IsCustom(), false)
-	h.ns.Prefs().sessionMinutes = 15
-	local player = h.ns.State.Player()
-	local trimmed = S.Apply(route, player)
-	eq(trimmed.chosen, true)
-	local saved = h.ns.Prefs().sessionCommit
-	eq(saved ~= nil, true)
-	local added = step("added", "trainer")
-	route.steps = { added }
-	trimmed = S.Apply(route, player)
-	eq(#trimmed.steps, 0, "new tasks do not refill")
-	eq(trimmed.chosen, true, "empty keeps choice")
-	eq(S.Info().empty, true)
 	h.ns.Route = originalRoute
 end
 
@@ -318,59 +248,6 @@ do
 		end
 	end
 	clean(t)
-end
-
--- Completion zones use their outdoor destination, not an off-zone starting giver, and never repeat a map.
-do
-	local t = harness.load({ legacy = { summaries = {} } })
-	t.ns.Route = function()
-		return {
-			chosen = true,
-			journey = "zone:1440",
-			steps = {},
-			journeys = {
-				{ key = "zone:1440", zone = 1440, kind = "story", map = 1413 },
-				{ key = "zone:1440", zone = 1440, kind = "nextzone", map = 1440 },
-				{ key = "zone:1436", zone = 1436, kind = "nextzone", map = 1436 },
-				{ key = "zone:1437", zone = 1437, kind = "nextzone", map = 1437 },
-				{ key = "zone:1442", zone = 1442, kind = "nextzone", map = 1442 },
-			},
-		}
-	end
-	local zones = t.ns.Providers.Completion().zones
-	eq(#zones, 4)
-	eq(zones[1].map, 1413)
-	eq(zones[2].map, 1440)
-	eq(zones[4].map, 1437)
-	t.G.LegacyForever.API.ZoneSummary = function(map)
-		return {
-			map = map,
-			name = "Zone",
-			done = 0,
-			total = 0,
-			pending = 0,
-			complete = true,
-			categories = {},
-			questsStatus = "disabled",
-		}
-	end
-	eq(t.ns.Providers.Completion().zones[1].summary.complete, false, "disabled categories cannot prove completion")
-end
-
--- A rebuild cannot extend a committed task by merging new quest work into its old stable key.
-do
-	local route = { chosen = true, journey = "test", journeys = {}, steps = { work } }
-	route.journeys = { { key = "test", steps = route.steps } }
-	h.ns.Prefs().sessionMinutes, h.ns.Prefs().sessionCommit = 15, nil
-	local player = h.ns.State.Player()
-	local trimmed = S.Apply(route, player)
-	eq(#trimmed.steps, 1, "existing carried work fits")
-	work.quests = { 1, 2 }
-	work.objectives[2] = { id = 2, slot = 0, need = 1, have = 0 }
-	eq(#S.Apply(route, player).steps, 0, "new merged quest does not refill the session")
-	work.quests, work.objectives[2] = { 1 }, nil
-	route.steps = { pick, work, hand }
-	eq(#S.Apply(route, player).steps, 0, "a new prerequisite cannot be omitted")
 end
 
 -- Completion is evidenced by objectives, not merely by a vanished route row.

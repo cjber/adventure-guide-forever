@@ -5,7 +5,7 @@ local _, ns = ...
 -- tooltip. The NPCs are gathered on each route change, so a hover only reads; the line is the tooltip's own, added
 -- after the client's (TooltipDataProcessor), and touches no secure frame, in combat or out.
 
--- The shown journey's title (the chosen one, else the first card, which the guide draws on its own), and the creature
+-- The shown journey's title (the chosen one, otherwise accepted quests or the first available card), and the creature
 -- entries its steps visit; nil and empty with no card.
 ---@type string?
 local journey

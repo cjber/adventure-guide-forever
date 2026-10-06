@@ -90,11 +90,14 @@ authorization. A preparation-only request ends before tags or uploads.
 
 ## Addon checks
 
+- Update `WHATS_NEW` in `Locales/enUS.lua` to begin with the newest release
+  headline, regenerate `Locales/phrases.txt` and run `tests/locales_spec.lua`.
+
 - Review geometry, Forever quest IDs and the QuestieDB corpus together. Keep the
   pinned QuestieDB release/hash and Shortest Path contract fixtures consistent
   with the integrations being shipped.
 - After planner changes, run `AGF_BENCH_STRICT=1 luajit -joff tests/plan_bench.lua`.
-- User checks: Journeys, Activities and Progress navigation; dungeon and zone
+- User checks: map sidebar previews and expansion; dungeon card boss/drop menus; dungeon and zone
   eligibility; quest counts updating in the guide and Shortest Path; story
   completion appearing once; training reminders off for a fresh character.
 

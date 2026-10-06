@@ -10,13 +10,14 @@ abandons quests.
 
 ## 2. Surfaces
 
-- **2.1 Map tab.** The overview scrolls; the expand button opens the window. Chosen steps and
+- **2.1 Map tab.** The overview scrolls; the overview keeps two Continue cards and one card per other section until expanded. Chosen steps and
   search can scroll. Quest-giver marks and route pins are opt-in.
-- **2.2 Journey cards.** Offer every eligible journey for the current level; the home view scrolls and the window grid
+- **2.2 Journey cards.** Offer every eligible journey for the current level; the map overview scrolls and the guide
   pages through them. The home view groups its cards under collapsible quest log headers, in order: Continue (the story,
   Quests in your log and your calling), Zones for your level, Dungeons, then Battlegrounds. A group with no card draws
   no header, each header remembers its open state per character, and the header holding the route the guide follows
-  stays open. Prefer useful green/yellow quests; exclude orange/red pickups. A choice shows up to ten route actions,
+  stays open. Prefer useful green/yellow quests; the maximum quest level slider defaults to +2, excluding
+  orange/red pickups. The limit applies to recommendations, zone ranking and search recommendation eligibility; higher-level quests remain searchable, and accepted quests keep their steps. A choice shows up to ten route actions,
   followed by upcoming quest entries when fewer actions are available. The active route appears above alternative
   destinations.
     One level preference ranks both a zone and the quests in a stop (`Model.LevelPreference`): at the player's level and
@@ -70,101 +71,33 @@ abandons quests.
 - **2.17 Pacing.** Rest and hearth hints advise. Wanderer mode chooses without starting guidance.
 - **2.18 Choices.** Dropped quests stay in the log. Added quests still pass eligibility checks.
   Skips are reversible; a full log gets advice only.
-- **2.19 Window.** Share the map's choices. Optional tabs use sibling public APIs and explain missing
-  providers. Assign Shift-J once, only if neither it nor the window already has a binding.
+- **2.19 Guide access.** The map tab, addon compartment and `/agf` open the same guide. No standalone window or default key binding.
 - **2.20 Your order.** Reordering must preserve quest dependencies. Suggested order remains recoverable.
 
-- **2.21 Dungeons.** A window tab below the shared Today strip, with a level-sorted dungeon list, featured
-  header and Quests / Prep pages. The list groups dungeons, the announced Forever raids, then
-  the client's other raid instances, each raid row tagged with its group size; the raid tier and sizes come from
-  `Integrations/Raids.lua` (docs/dungeon-sources.md), never from a copied Classic attunement page. Remember the instance Map.ID in window state. Plan to run
-  selects the existing dungeon journey and enables the existing dungeon preference; no parallel plan state.
-  Journey cards link back to the dungeon page. A dungeon the guide offers is pinned at its entrance on the world
-  map; that pin, the dungeon's Maps control and the Maps tab all open the same interior view, whose floor dropdown
-  is the game's own control and returns to the floor last chosen in the session. Without that optional source the
-  entrance pin and the selector are absent, and nothing errors. Build on first show, slice source reads at 1 ms,
-  cancel on hide, reuse visible rows, and cache a complete optional-source snapshot until the quest data changes.
-
-  Quest statuses use `Model.Eligible`; completed and accepted quests are identified separately. Known faction, race and class exclusions are omitted from quests, Prep and expanded prerequisites.
-  A faction-only empty page explains why. Other unproven requirements remain visible as Locked, without a
-  pickup recommendation. Expanded steps show prerequisites, including
-  alternatives, with no claim that every alternative is required. Only proven giver coordinates are navigable,
-  revalidated on click through Integrations. Explicit map actions set the existing SPF/native route, open the
-  destination zone with C_Map.OpenWorldMap and play the stock map ping twice. Combat skips opening or
-  changing the map but retains navigation. Journey/step map actions and other explicit place buttons share
-  the reveal helper; automatic route maintenance never opens panels. Matching AGF pins flash on click and
-  glow on map-control hover, with the corresponding row highlighted. Explicit giver navigation is available for locked and earlier quests;
-  Map controls are hidden without coordinates. Wanderer mode disables them with an explanatory tooltip. Quest experience uses the planner's level adjustment, counting
-  accepted quests and chains provable at the current level, excluding completed quests and counting exclusive
-  alternatives once. Unknown experience contributes nothing. Recommended levels use a valid client LFG range, falling back to
-  the generator's published Classic dungeon ranges; sorting and every list subtitle use that same range.
-  Entry requirements stay in the header and Prep. Enemy-capital entrances remain browsable, marked Hostile and excluded from automatic level-fit selection.
-  Other range text uses the client's quest difficulty colour for the
-  nearest level in the range, with a tooltip explaining yellow, orange/red and green/grey. Titles remain white.
-
-  Prep derives outside pickups and prerequisite chains from quest records. Each generated entrance keeps its
-  level, alternative items, completed-quest gate and unsupported-condition flag. Teleport destinations are inside
-  the instance and are never used as outdoor waypoints. QuestieDB's Forever entrance points supply those,
-  with Tweaks Forever as the fallback. Door keys absent from
-  these sources are not invented or described as unnecessary.
-
-  QuestieDB is read only through QuestieSource's contract-checked runtime layer. Nothing derived from it is
-  shipped. The quest detail reads reward `questRewards` and objective text from that layer as one sliced
-  snapshot; a quest with no catalogue text falls back to the accepted quest's client log, and unknown item
-  data contributes nothing. Neither a missing source nor an empty catalogue invents an objective or a reward.
-  Place names use the hub, client map name or bundled map name; an unknown place leaves the NPC alone.
-  Experience uses BreakUpLargeNumbers. No internal IDs or missing-value placeholders enter player text.
-
-  The Bosses and Loot pages belong to Adventure Guide for Classic, this addon's recommended companion for
-  dungeon and raid bosses and loot. One stock button labelled Bosses and loot sits where those two tabs did
-  and opens that addon's window through its public slash entry point; it is always drawn, and disabled with a
-  tooltip naming the addon to install when it is absent. No boss, ability, drop-chance or loot data is read or
-  bundled, and no private table of the companion is reached into.
-
-  Top sub-tabs use TabSystemTopButtonTemplate on a common baseline; chains use the quest log's
-  CollapseButtonTemplate. The header has title, location and a single meta line (entry level and positive remaining XP),
-  with a stock Plan to run checkbox and padded action row inside its border. It does not repeat the list's range.
-  Sub-tabs meet the content inset. Quest rows are a uniform 38 units: expand at left, title and short status
-  in separate columns, giver/place below. Full titles, alternative prerequisites and unmet requirements live in
-  the row tooltip; rewards and giver navigation live in the detail inset, with compact Map controls on expanded chain steps.
-  Details use a header font, an Objectives heading, spaced wrapping text without an objective line cap, start/end
-  NPCs (one line when identical), a Rewards heading and a proven linear chain position. The scrollable body keeps the giver button fixed at the bottom. Item icons remain square,
-  tooltips use GameTooltip, and the stock divider keeps its atlas aspect.
-
-  Client dungeon icons are square, as the game draws them; the header otherwise uses the entrance zone's
-  existing map art at native aspect. Source findings and
-  pins are recorded in [dungeon-sources.md](dungeon-sources.md). The layout is included in `/agf dump` and
-  `docs/screenshots/dungeons*.png`, including the owner's Alliance level 19 Darkshore/Ragefire regression.
-  The shared Today strip shows two wide hints, with the rest in a small stock-font More menu control on the browsing tabs. Journeys incorporates those hints beside its recommendation instead.
+- **2.21 Dungeons.** Dungeon journeys share the normal planner, guide and Shortest Path integration.
+  Accepted dungeon quests and available or accepted preparation chapters keep a journey visible.
+  Unplaced objectives may lead to a known entrance, explicitly labelled as an entrance, never an invented objective location.
+  QuestieDB supplies quest chains and outdoor entrance points; Tweaks Forever is the entrance fallback.
+  The full guide lists remaining prerequisites before their dungeon quest. Future entries are an outline,
+  not a pickup recommendation or navigation target. Character restrictions and completion apply throughout.
+  Boss names and item drops are read from installed AtlasLoot's public ItemDB, resolving its linked tables
+  and selected difficulty. Only the selected dungeon is read; visible item rows request missing item data.
+  Bosses and loot sit beside the journey, with item tooltips and no strategies or models.
+  Automatic interior maps belong to Tweaks Forever. AGF has no map overlay or separate dungeon browser.
+  Source contracts are in [dungeon-sources.md](dungeon-sources.md).
 - **2.22 Addon API.** `AdventureGuideForever.API` (docs/api.md) is read-only and versioned. It copies the
   tracker's step from the committed route and answers nil while a route is due, never building one for a caller.
   Fields are added, never renamed or repurposed, within a version.
 
-### Window lists and the Journal look
-
-`UI/WindowList.lua` is the window's one list: a `WowScrollBoxList` with a `MinimalScrollBar`, set up with
-`ScrollUtil.InitScrollBoxListWithScrollBar` and `CreateScrollBoxListLinearView`. The scroll box makes a row only
-for the elements its viewport shows and pools it, so no page culls rows or manages a row pool by hand.
-`Window.CreateList(parent, x, y, width, height, rowHeight, paint, click, create, extent?)` returns the widget:
-`create` draws a row once, `paint` fills it from an element, and `extent` measures an element that is not a plain
-row height (a heading, or a step with its checklist). `Window.SetList(widget, values)` hands it the elements and
-`Window.ScrollListTo(widget, index)` jumps to one. `widget.frame` is the scroll box and keeps `GetVerticalScroll`
-and `SetVerticalScroll` in pixels for callers written against the old `ScrollFrameTemplate`. Pages not yet
-migrated adopt the same factory.
-
-The Journal's type and palette live on `Window` (`FONT_TITLE`, `FONT_ROW`, `FONT_HEADER`, `GOLD`, `TITLE_INK`,
-`BODY_INK`). `Window.CreateSectionHeader(parent, text, onClick?)` is the paper-overlay gold header, collapsible
-when `onClick` is given; `Window.CreatePaperWell(parent)` and `Window.SetPaperWell(well, lines)` are the paper
-well for text longer than a row, set in the Journal's brown ink. A surface the client has no art for draws a flat
-dark tile, never a question mark or a substituted picture.
-
 ### Guide navigation
 
-Journeys is the first page. Its single featured area shows the chosen adventure, live objective and next steps, or one useful suggestion when nothing is chosen. Other adventures are collapsed until opened. Session length stays beside the steps. Compact hints appear once; spell training is opt-in.
+The world-map sidebar is the guide. Folded sections show two Continue journeys and one journey per other
+section. Expanding a header reveals the remaining choices. Existing settings from the paged overview do
+not expand the new previews. Accepted quests, including the current story's quests, form Quests in your log,
+the default suggested route until the player chooses a journey. This does not start guidance automatically.
+Shared row and notification art lives in `UI/Widgets.lua`.
 
-Activities groups dungeon, profession and PvP browsing in a left-hand list. Progress shows Legacy's completion categories and character story milestones. Saved Next selections migrate to Journeys; saved activity pages retain their category and detail selection. Browsing never changes a chosen route.
-
-`Core/Recommendations.lua` reads the committed route and wanted hints. An action revalidates its identity and destination before delegating to Guidance. Combat, Wanderer mode and pending session estimates disable travel. Unknown destinations remain advice. The detailed contracts are in [guide-navigation-design.md](guide-navigation-design.md).
+`Core/Recommendations.lua` reads the committed route and wanted hints. An action revalidates its identity and destination before delegating to Guidance. Combat and Wanderer mode disable travel. Unknown destinations remain advice. The detailed contracts are in [guide-navigation-design.md](guide-navigation-design.md).
 
 Story completion comes only from a proven final chain hand-in. `UI/StoryCompletion.lua` persists the chain head identity per character and queues an addon-owned notification independently of tracker visibility. It does not announce historical completions on login. Popup and tracker share one completion record and sound.
 
@@ -193,14 +126,13 @@ follow the shared family voice.
   its in-progress quest is selected, its travel line and numbered pin go, and the route stays on it until its
   objectives are done (a merged visit takes only the objectives the player can work on now).
 - **4.3 Committed order.** Preserve the chosen sequence and visit identities across rebuilds.
-  Session limits use rough estimates and retain complete planned work and returns.
-
-The guide uses `ShowUIPanel` / `HideUIPanel` by default, with `UIPanelLayout-*` attributes on its own frame only. It never registers in Blizzard's shared `UIPanelWindows` table. `floatWindow` opts into independent placement and dragging; saved floating positions remain available when switching back. Opening and mode changes defer during combat.
-
-Tweaks can request hidden, lazy creation through `AdventureGuideForever.EnsureWindow`. The guide emits `AdventureGuideForever.WindowCreated` after building and `AdventureGuideForever.WindowLayoutChanged` after switching modes. Tweaks owns layout overrides and scale; the guide retains normal panel occupancy or floating behavior.
 
 ### Full guide outline
 
-The Journeys card opens `UI/WindowGuide.lua`, a ten-row paged view of the active lap and the zone's remaining QuestieDB catalogue. Active route steps remain the planner's responsibility. Outline entries never become navigation targets or claim pickup eligibility. Race, class, faction, completion and dungeon/repeatable filters apply; active-chain successors and useful quest levels sort first, with prerequisites before dependents. This is an adaptive zone outline, not a fixed 1–60 walkthrough. Hiding the Journeys page closes the outline.
+The map guide includes the zone's remaining QuestieDB catalogue after actionable route steps.
+`UI/GuideOutline.lua` orders prerequisites before successors and filters race, class, faction and completed
+quests. Outline entries never become navigation targets or claim pickup eligibility.
 
-The Journeys window leads with the committed route's first task and its honest reason, with the journey name as context. Start explicitly chooses and starts that journey through Guidance; a running route offers Show on Map, a paused route Resume. Wanderer mode offers only Show on Map. Recommended applies to an unchosen journey; a chosen journey says Your choice. Alternative eligible journeys remain underneath.
+Dungeon choices rank by recommended level range, accepted quest count and travel to the first actionable stop.
+Available quest count and instance identity break ties. Unknown ranges follow known ones. Class quests and
+battlegrounds keep their unlock priority; dungeon ranking does not reorder an active route.

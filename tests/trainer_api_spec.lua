@@ -68,7 +68,7 @@ for _, entry in ipairs(absent.ns.Asides.All()) do
 end
 equal(fallback ~= nil, true, "absent: Tweaks training remains available")
 equal(fallback.place.x, 0.32, "absent: the companion places its trainer")
-absent.ns.OpenWindow()
+absent.ns.OpenPanel()
 absent.flush()
 equal(#absent.errors, 0, "absent: no startup or window errors\n" .. table.concat(absent.errors, "\n"))
 
@@ -101,7 +101,7 @@ local placed, placedKnown = unplaced.ns.Integrations.Training()
 equal(placedKnown, true, "unplaced: the provider answered")
 equal(placed and placed.count, 1, "unplaced: a spell without a level is left out")
 equal(placed and placed.level, 5, "unplaced: the placed spell's level stands")
-unplaced.ns.OpenWindow()
+unplaced.ns.OpenPanel()
 unplaced.flush()
 equal(#unplaced.errors, 0, "unplaced: a rebuild with it does not raise\n" .. table.concat(unplaced.errors, "\n"))
 

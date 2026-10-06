@@ -1,0 +1,13 @@
+---@class AGFAtlasLootBossSource
+---@field name string
+---@field npcID? integer|integer[]
+---@class AGFAtlasLootContent
+---@field InstanceID integer
+---@field LoadDifficulty? integer
+---@field items AGFAtlasLootBossSource[]
+---@class AGFAtlasLootDatabase : table<string, AGFAtlasLootContent>
+---@class AGFAtlasLootItemDB
+---@field Get fun(self: AGFAtlasLootItemDB, module: string): AGFAtlasLootDatabase?
+---@field GetItemTable fun(self: AGFAtlasLootItemDB, module: string, content: string, boss: integer, difficulty: integer): table[]|string|nil
+---@type {ItemDB: AGFAtlasLootItemDB, Loader?: {LoadModule: fun(self: table, module: string)}}?
+AtlasLoot = nil

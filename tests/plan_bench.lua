@@ -145,7 +145,7 @@ local function check(ok, message)
 	end
 end
 
-local worstRebuild, worstTravel, worstSlice, worstSession, profiles = 0, 0, 0, 0, 0
+local worstRebuild, worstTravel, worstSlice, profiles = 0, 0, 0, 0
 
 -- QuestieDB's build (QuestieSource.lua) on the real clock: each frame's slice, timed as the timer that runs it.
 local function Slices(h)
@@ -226,18 +226,6 @@ local function Profile(profile, level, questiedb, full)
 			end
 		end
 	end
-	-- The Adventure Guide window, built and closed: it redraws only while shown, so no rebuild frame reaches its tabs.
-	h.ns.OpenWindow()
-	h.flush()
-	h.G.AdventureGuideForeverWindow:Hide()
-	local windowRefreshes = 0
-	for _, tab in ipairs(h.ns.Window.Tabs()) do
-		local refresh = tab.Refresh
-		tab.Refresh = function(content)
-			windowRefreshes = windowRefreshes + 1
-			refresh(content)
-		end
-	end
 	h.ns.OpenPanel()
 	h.flush()
 	-- Earlier profiles are discarded clients, including their full databases. Reclaim those before timing this
@@ -289,7 +277,6 @@ local function Profile(profile, level, questiedb, full)
 		rebuild[sample], travel[sample] = worstFrameRebuild, worstFrameTravel
 	end
 	check(h.counts.CreateFrame == created, label .. ": frames created after the first render")
-	check(windowRefreshes == 0, label .. ": the closed window redrew " .. windowRefreshes .. " times")
 	check(not full or #h.log == LOG_SIZE, label .. ": a log of " .. #h.log)
 	check(#h.errors == 0, label .. ": errors\n" .. table.concat(h.errors, "\n"))
 	worstRebuild, worstTravel = math.max(worstRebuild, Max(rebuild)), math.max(worstTravel, Max(travel))
@@ -320,115 +307,10 @@ for _, level in ipairs({ 10, 40 }) do
 	end
 end
 
--- Cold Legacy reads return pending immediately, including while the guide is hidden. Session legs share
--- the travel scheduler; showing either guide must not cause a second SPF estimate in the same frame.
-for _, shown in ipairs({ false, true }) do
-	local h = harness.load({
-		spf = "ended",
-		legacy = { error = "loading" },
-		charDB = { journey = "zone:1413" },
-		completed = { 844 },
-		log = { { id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 } },
-	})
-	if shown then
-		h.ns.OpenWindow()
-	end
-	h.flush()
-	local api, model = h.G.ShortestPathForever.API, CostModel()
-	for _, name in ipairs({ "Estimate", "EstimateDetail" }) do
-		local original = api[name]
-		api[name] = function(...)
-			model.charge(...)
-			return original(...) -- multi-value: preserve the provider's refusal reason
-		end
-	end
-	collectgarbage("collect")
-	local samples, frames = {}, {}
-	for sample = 1, SAMPLES do
-		model.reset()
-		model.now = sample * 60
-		local started = os.clock()
-		local completion = h.ns.Providers.Completion()
-		check(completion.zones[1].error == "loading", "cold provider must preserve pending")
-		samples[sample] = (os.clock() - started) * 1000
-		h.ns.Session.Set(sample % 2 == 0 and 30 or 15)
-		for _ = 1, 30 do
-			local asked, charged = model.calls, model.ms
-			local frameStart = os.clock()
-			local ran = h.tick()
-			frames[#frames + 1] = (os.clock() - frameStart) * 1000 + model.ms - charged
-			check(model.calls - asked <= 1, "session/card travel must share one SPF call per frame")
-			if ran == 0 then
-				break
-			end
-		end
-	end
-	worstSession = math.max(worstSession, Max(frames))
-	lines[#lines + 1] = ("Session frames, window %s: %.3f / %.3f ms (modelled, median / max)"):format(
-		shown and "shown" or "hidden",
-		Median(frames),
-		Max(frames)
-	)
-	check(#h.errors == 0, "session benchmark errors: " .. table.concat(h.errors, "\n"))
-	lines[#lines + 1] = ("Legacy cold, window %s: %.3f / %.3f ms (median / max)"):format(
-		shown and "shown" or "hidden",
-		Median(samples),
-		Max(samples)
-	)
-end
-
--- The visible dungeon page, cold and cached; source reads use the same coroutine slice as the live tab.
-local worstDungeon = 0
-for _, instance in ipairs({ 43, 230, 429 }) do
-	-- Keep allocations from the previous isolated harness out of this scenario's
-	-- timed frames. The client owns GC scheduling, so this does not change addon
-	-- behavior; it makes the benchmark measure the dungeon work itself.
-	collectgarbage("collect")
-	local h = harness.load({ questiedb = mirror, player = { level = 60 } })
-	h.G.debugprofilestop = function()
-		return os.clock() * 1000
-	end
-	h.ns.OpenWindow()
-	h.flush()
-	collectgarbage("collect")
-	local reads, original = 0, h.ns.ReadDungeonDetails
-	h.ns.ReadDungeonDetails = function(yield)
-		reads = reads + 1
-		return original(yield)
-	end
-	local frames = {}
-	for _ = 1, 2 do
-		local opened = os.clock()
-		h.ns.Window.OpenDungeon(instance)
-		frames[#frames + 1] = (os.clock() - opened) * 1000
-		for _ = 1, 1000 do
-			local started = os.clock()
-			local ran = h.tick()
-			frames[#frames + 1] = (os.clock() - started) * 1000
-			if ran == 0 then
-				break
-			end
-		end
-	end
-	h.G.AdventureGuideForeverWindow:Hide()
-	h.ns.Window.Refresh()
-	h.flush()
-	check(reads == 1, "dungeon source read once across page shows")
-	check(#h.errors == 0, "dungeon benchmark errors: " .. table.concat(h.errors, "\n"))
-	worstDungeon = math.max(worstDungeon, Max(frames))
-	lines[#lines + 1] = ("Dungeon %d frames: %.3f / %.3f ms (median / max)"):format(
-		instance,
-		Median(frames),
-		Max(frames)
-	)
-end
-
 print(table.concat(lines, "\n"))
 if strict then
-	check(worstDungeon < BUDGET_MS, ("dungeon frame max %.3f ms is over %d ms"):format(worstDungeon, BUDGET_MS))
 	check(worstRebuild < BUDGET_MS, ("rebuild frame max %.3f ms is over %d ms"):format(worstRebuild, BUDGET_MS))
 	check(worstTravel < BUDGET_MS, ("travel frame max %.3f ms is over %d ms"):format(worstTravel, BUDGET_MS))
-	check(worstSession < BUDGET_MS, ("session frame max %.3f ms is over %d ms"):format(worstSession, BUDGET_MS))
 	check(
 		worstSlice < BUILD_BUDGET_MS,
 		("QuestieDB build slice max %.3f ms is over %d ms"):format(worstSlice, BUILD_BUDGET_MS)
@@ -436,16 +318,12 @@ if strict then
 end
 assert(#failures == 0, table.concat(failures, "\n"))
 print(
-	(
-		"plan_bench: %d profiles x %d samples; worst rebuild %.3f ms, travel %.3f ms, "
-		.. "QuestieDB slice %.3f ms, session %.3f ms%s"
-	):format(
+	("plan_bench: %d profiles x %d samples; rebuild %.3f ms, travel %.3f ms, " .. "QuestieDB slice %.3f ms%s"):format(
 		profiles,
 		SAMPLES,
 		worstRebuild,
 		worstTravel,
 		worstSlice,
-		worstSession,
 		strict and " (budget checked)" or ""
 	)
 )

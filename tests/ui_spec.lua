@@ -278,13 +278,13 @@ do
 	equal(h.tracker.liveBlocks[h.ns.Route().steps[1].key] ~= nil, true, "none chosen: the first card's step")
 	h.SetCombat(true)
 	ClickTitle(h)
-	equal(h.ns.Prefs().journey, "zone:1413", "none chosen: the title chooses the first card")
+	equal(h.ns.Prefs().journey, "carry", "none chosen: the title chooses accepted quests")
 	equal(h.spf.NavigateRoute + h.counts.SetUserWaypoint, 0, "none chosen: in combat nothing starts yet")
 	h.SetCombat(false)
 	h.flush()
 	equal(h.spf.NavigateRoute, 1, "none chosen: the route starts once combat ends")
 	equal(h.counts.SetUserWaypoint, 0, "none chosen: and no waypoint was set")
-	equal(h.ns.Prefs().guided, "zone:1413", "none chosen: recorded as the chosen journey's route")
+	equal(h.ns.Prefs().guided, "carry", "none chosen: recorded as the chosen journey's route")
 	clean(h, "title click chooses")
 
 	h = Load("v1", { trackRouteQuests = true, untrackOthers = true })
@@ -318,7 +318,8 @@ do
 	local L = h.ns.L
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
-		"wanderer followQuest optimisedRoute includeDungeonsDefault titleStartsRoute autoStart stepSound trainingReminders",
+		"maxQuestLevelOffset wanderer followQuest optimisedRoute includeDungeonsDefault "
+			.. "titleStartsRoute autoStart stepSound trainingReminders",
 		"Route holds its rows in order"
 	)
 	equal(table.concat(pages[L.SETTINGS_GROUP_MAP] or {}, " "), "showMapPins showQuestGivers", "Map holds its rows")
@@ -329,7 +330,7 @@ do
 	)
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_INTERFACE] or {}, " "),
-		"floatWindow suggestCompanions whatsNew",
+		"suggestCompanions whatsNew",
 		"Interface holds the window, companion and update rows"
 	)
 	-- The index page's buttons are on the addon's own category, one per group, in index order, and open its subpage.
@@ -1247,7 +1248,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	-- Design §2.8's menu for a town holding a log quest; Stop only once Go runs, Show quest never in combat.
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:1413:380"], "RightButton")
 	local menu = {
-		"title: Visit The Crossroads: Pick up 7, turn in 1",
+		"title: Turn in: The Zhevra",
 		"button: Go",
 		"button: Show quest",
 		"button: Skip for now",
@@ -1670,7 +1671,7 @@ do
 	ns.Route()
 	h.flush()
 	equal(h.modelCalls.Journeys - before, 0, "combat: no full build in combat")
-	equal(ns.Route().journey, "zone:1413", "combat: the chosen card holds")
+	equal(ns.Route().journey, "carry", "combat: the default accepted-quest route holds")
 	-- A quest finished mid-fight: carry, fresh from the log, hands it in. Gann's waits for a later lap on the story
 	-- (Ratchet's leads), so the story, which never drew it, keeps every step.
 	local keys, cards = {}, ns.Route().journeys
@@ -2900,7 +2901,7 @@ do
 	capped.ns.OpenPanel()
 	capped.flush()
 	equal(#capped.ns.Route().journeys, 5, "guide: at the cap, dungeon alternatives and a chain remain")
-	equal(Says(capped, "Blackrock Spire"), 1, "guide: the dungeon card, toggle off")
+	equal(Says(capped, "Dire Maul"), 1, "guide: the closest suitable dungeon card, toggle off")
 	equal(Says(capped, capped.ns.L.JOURNEY_INTO:format("Scholomance")), 1, "guide: the way in, as a story")
 	equal(Says(capped, capped.ns.L.NO_JOURNEY), 0, "guide: no empty line")
 	clean(capped, "guide: at the cap")
@@ -2979,6 +2980,7 @@ end
 for _, spf in ipairs({ false, "v1" }) do
 	local label = "none chosen: " .. (spf or "no Shortest Path")
 	local h = Load(spf, nil, false, true)
+	h.ns.Prefs().previewGroups = { continue = false, zones = false }
 	h.ns.OpenPanel()
 	h.flush()
 	local route = h.ns.Route()
@@ -3060,7 +3062,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	end
 	equal(route.chosen, false, label .. ": nothing chosen")
 	equal(Back(), nil, label .. ": no back arrow with nothing chosen")
-	equal(route.journey, "zone:1413", label .. ": the route falls back to the first card")
+	equal(route.journey, "carry", label .. ": the route defaults to accepted quests")
 	same(h.tracker.layoutOrder, { route.steps[1].key }, label .. ": the tracker shows the first card's step")
 	equal(route.journeys[1].kind, "story", label .. ": a story card")
 	equal(#route.journeys >= 3, true, label .. ": several journey rows")
@@ -3304,197 +3306,49 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label)
 end
 
--- The overview's quest log headers (docs/design.md §2.2): the cards grouped by kind, the groups in order, a group
--- with no card left out, a collapse saved per character, and the header the route follows kept open.
+-- Folded sections keep previews; expansion reveals every card without paging arrows.
 do
-	local label = "overview groups"
-	local h = Load(false, nil, false, true)
-	h.ns.OpenPanel()
-	h.flush()
-	local L = h.ns.L
-	local function Headers()
-		local shown = Shown(h, function(frame)
-			return frame.key ~= nil and frame.Name ~= nil
-		end)
-		table.sort(shown, function(a, b)
-			return select(5, a:GetPoint(1)) > select(5, b:GetPoint(1)) -- multi-value: the y offset only
-		end)
-		return shown
-	end
-	local function CardsUnder()
-		local counts = {}
-		for _, card in
-			ipairs(Shown(h, function(frame)
-				return frame.Icon ~= nil and frame.Icon.Clip ~= nil and frame.journey ~= nil
-			end))
-		do
-			counts[card.journey.section] = (counts[card.journey.section] or 0) + 1
-		end
-		return counts
-	end
-	local keys = {}
-	for index, group in ipairs(h.ns.Overview.GROUPS) do
-		keys[index] = group.key
-	end
-	same(keys, { "continue", "zones", "dungeons", "battlegrounds" }, label .. ": the order")
-	equal(h.ns.Overview.Collapsed("continue"), false, label .. ": Continue opens by default")
-	equal(h.ns.Overview.Collapsed("zones"), false, label .. ": Zones opens by default")
-	equal(h.ns.Overview.Collapsed("dungeons"), true, label .. ": Dungeons is closed by default")
-	equal(h.ns.Overview.Collapsed("battlegrounds"), true, label .. ": Battlegrounds is closed by default")
-	same(CardsUnder(), { continue = 2, zones = 6 }, label .. ": the story and the log continue, the zones follow")
-	equal(#Headers(), 2, label .. ": an empty group draws no header")
-	equal(Headers()[1].key, "continue", label .. ": Continue first")
-	equal(Headers()[1].Name:GetText(), L.GROUP_CONTINUE, label .. ": its label")
-	equal(Headers()[2].key, "zones", label .. ": Zones next")
-	equal(Headers()[2].Name:GetText(), L.GROUP_ZONES, label .. ": its label")
-	equal(Headers()[1].Count:GetText(), "", label .. ": no count while open")
-
-	-- A dungeon card is its own group, closed by default: the header says how many, the cards stay hidden.
-	h.ns.Prefs().dungeons = true
-	h.ns.Invalidate()
-	h.flush()
-	h.ns.OpenPanel()
-	h.flush()
-	equal(h.ns.Route().journeys[#h.ns.Route().journeys].section, "dungeons", label .. ": a dungeon card's group")
-	local headers = Headers()
-	equal(#headers, 3, label .. ": the dungeon group draws its header")
-	equal(headers[3].key, "dungeons", label .. ": after the zones")
-	equal(headers[3].Name:GetText(), L.GROUP_DUNGEONS, label .. ": its label")
-	equal(headers[3].Count:GetText(), L.GROUP_CARDS:format(2), label .. ": the count while collapsed, both dungeons")
-	equal(CardsUnder().dungeons, nil, label .. ": and no card drawn")
-
-	-- The player's collapse is this character's, and it survives a reload; the count says what is folded away.
-	h.Click(headers[2])
-	h.flush()
-	equal(h.G.AdventureGuideForeverCharDB.collapsedGroups.zones, true, label .. ": a collapse is saved")
-	equal(CardsUnder().zones, nil, label .. ": the zones fold away")
-	equal(Headers()[2].Count:GetText(), L.GROUP_CARDS:format(6), label .. ": and their header counts six")
-	local reloaded = Load(false, nil, { collapsedGroups = { zones = true } })
-	reloaded.ns.OpenPanel()
-	reloaded.flush()
-	equal(reloaded.ns.Overview.Collapsed("zones"), true, label .. ": the collapse survives a reload")
-	local reloadedZones = nil
-	for _, card in
-		ipairs(Shown(reloaded, function(frame)
-			return frame.Icon ~= nil and frame.Icon.Clip ~= nil and frame.journey ~= nil
-		end))
-	do
-		reloadedZones = reloadedZones or (card.journey.section == "zones" and card or nil)
-	end
-	equal(reloadedZones, nil, label .. ": and its cards stay hidden")
-
-	-- The header the route follows stays open: point the route at a folded-away zone card.
-	local route = h.ns.Route()
-	local zonesJourney
-	for _, journey in ipairs(route.journeys) do
-		zonesJourney = zonesJourney or (journey.section == "zones" and journey or nil)
-	end
-	route.journey = zonesJourney.key
-	h.ns.OpenPanel()
-	h.flush()
-	equal(CardsUnder().zones, 6, label .. ": the route's own group opens")
-	equal(h.G.AdventureGuideForeverCharDB.collapsedGroups.zones, true, label .. ": though the player left it folded")
-	local held
-	for _, header in
-		ipairs(Shown(h, function(frame)
-			return frame.CollapseButton ~= nil and frame.key == "zones"
-		end))
-	do
-		held = header
-	end
-	equal(held.CollapseButton:IsShown(), false, label .. ": a group that cannot fold offers no fold button")
-	held:GetScript("OnClick")(held)
-	equal(h.G.AdventureGuideForeverCharDB.collapsedGroups.zones, true, label .. ": and its click saves nothing")
-	clean(h, label)
-end
-
--- Overview pages: at the panel's own height every header is in sight, each open group shows the cards it has room for
--- and its header's arrows turn to the rest; a card says its place's levels.
-do
-	local label = "overview pages"
+	local label = "overview previews"
 	local h = Load(false, nil, false, true, true)
+	h.ns.Prefs().collapsedGroups = { continue = false, zones = false, dungeons = false }
 	h.ns.Prefs().dungeons = true
 	h.ns.Invalidate()
 	h.flush()
 	h.ns.OpenPanel()
 	h.flush()
-	local L, panel = h.ns.L, h.G.AdventureGuideForeverPanel
-	local function Cards(section)
-		local cards = Shown(h, function(frame)
-			return frame.Icon ~= nil and frame.Icon.Clip ~= nil and frame.journey ~= nil
+	local function Cards(key)
+		return Shown(h, function(frame)
+			return frame.Icon and frame.Icon.Clip and frame.journey and frame.journey.section == key
 		end)
-		local kept = {}
-		for _, card in ipairs(cards) do
-			kept[#kept + 1] = card.journey.section == section and card or nil
-		end
-		table.sort(kept, function(a, b)
-			return select(5, a:GetPoint(1)) > select(5, b:GetPoint(1)) -- multi-value: the y offset only
-		end)
-		return kept
 	end
 	local function Header(key)
 		return Shown(h, function(frame)
-			return frame.key == key and frame.Name ~= nil
+			return frame.key == key and frame.Name
 		end)[1]
 	end
-	local zones = {}
-	for _, journey in ipairs(h.ns.Route().journeys) do
-		zones[#zones + 1] = journey.section == "zones" and journey.key or nil
-	end
-	equal(#zones, 6, label .. ": six zones on offer")
-	for _, key in ipairs({ "continue", "zones", "dungeons" }) do
-		local header = Header(key)
-		equal(header ~= nil, true, label .. ": " .. key .. " draws its header")
-		-- 29 for the top bar, 44 down to the list, 40 for the footer: the header's foot is inside the panel's body.
-		local foot = -select(5, header:GetPoint(1)) + header:GetHeight() -- multi-value: the y offset only
-		equal(foot <= panel:GetHeight() - 29 - 44 - 40, true, label .. ": " .. key .. "'s header is in the panel")
-	end
-	equal(#Cards("continue"), 2, label .. ": Continue keeps both its cards")
-	local shown = #Cards("zones")
-	equal(shown < 6 and shown >= 1, true, label .. ": Zones shows the cards it has room for")
-	local header, pages = Header("zones"), math.ceil(6 / shown)
-	equal(header.Page:IsShown(), true, label .. ": and says which page")
-	equal(header.Page:GetText(), L.PAGE_OF:format(1, pages), label .. ": the first of them")
-	equal(header.Previous.disabled, true, label .. ": nothing before the first page")
-	equal(header.Next.disabled, false, label .. ": the next page waits")
-	equal(Header("continue").Page:IsShown(), false, label .. ": a group that fits has no arrows")
-	equal(Cards("zones")[1].journey.key, zones[1], label .. ": page one leads with the first zone")
-	-- Every zone is a page turn away, in the route's order, and the last page stops.
-	local seen = {}
-	for page = 1, pages do
-		for _, card in ipairs(Cards("zones")) do
-			seen[#seen + 1] = card.journey.key
-		end
-		equal(header.Page:GetText(), L.PAGE_OF:format(page, pages), label .. ": page " .. page)
-		if page < pages then
-			h.Click(header.Next)
-			h.flush()
-		end
-	end
-	same(seen, zones, label .. ": the pages hold every zone once, in order")
-	equal(header.Next.disabled, true, label .. ": nothing after the last page")
-	equal(h.ns.Overview.Collapsed("zones"), false, label .. ": an arrow never folds its group")
-	h.Click(header.Previous)
+	equal(#Cards("continue"), 2, label .. ": two continuing choices")
+	equal(#Cards("zones"), 1, label .. ": one zone preview")
+	equal(#Cards("dungeons"), 1, label .. ": one dungeon preview")
+	equal(h.ns.Overview.Collapsed("zones"), true, label .. ": preview by default")
+	local header = Header("zones")
+	equal(header.Previous, nil, label .. ": no previous arrow")
+	equal(header.Next, nil, label .. ": no next arrow")
+	equal(header.CollapseButton:IsShown(), true, label .. ": more choices can expand")
+	h.Click(header)
 	h.flush()
-	equal(header.Page:GetText(), L.PAGE_OF:format(pages - 1, pages), label .. ": and back again")
-	-- A card says its levels: the zone's range, coloured as the game colours a quest of that level.
+	equal(#Cards("zones"), 6, label .. ": expansion shows every zone")
+	equal(h.ns.Prefs().previewGroups.zones, false, label .. ": expansion is saved")
 	local card = Cards("zones")[1]
 	local zone = h.ns.Data.zones[card.journey.zone]
-	equal(card.Level:GetText(), L.LEVELS:format(zone.min, zone.max), label .. ": a zone card's level range")
-	local text, color = h.ns.Overview.Levels(card.journey, h.player.level)
-	equal(text, card.Level:GetText(), label .. ": from the one place")
-	equal(color ~= nil, true, label .. ": with its difficulty colour")
-	equal(h.ns.Overview.Levels({ kind = "carry", steps = {} }, 20), nil, label .. ": no levels for the log's card")
-	equal(
-		h.ns.Overview.Levels({ kind = "battleground", level = 20, steps = {} }, 25),
-		"20+",
-		label .. ": a battleground's"
-	)
-	-- The share of the room: one card each, then the spare slots a card at a time.
-	same(h.ns.Overview.Fit({ 2, 5 }, 4), { 2, 2 }, label .. ": four slots between two groups")
-	same(h.ns.Overview.Fit({ 2, 5 }, 6), { 2, 4 }, label .. ": the spare goes to the group with more")
-	same(h.ns.Overview.Fit({ 2, 5, 3 }, 0), { 1, 1, 1 }, label .. ": never fewer than a card each")
-	same(h.ns.Overview.Fit({ 1, 2 }, 9), { 1, 2 }, label .. ": never more than a group holds")
+	equal(card.Level:GetText(), h.ns.L.LEVELS:format(zone.min, zone.max), label .. ": native level range")
+	h.Click(header)
+	h.flush()
+	equal(#Cards("zones"), 1, label .. ": folding keeps the best choice")
+	equal(h.ns.Prefs().previewGroups.zones, true, label .. ": fold is saved")
+	local reloaded = Load(false, nil, { previewGroups = { zones = false } })
+	reloaded.ns.OpenPanel()
+	reloaded.flush()
+	equal(reloaded.ns.Overview.Collapsed("zones"), false, label .. ": expansion survives reload")
 	clean(h, label)
 end
 
@@ -3504,6 +3358,7 @@ end
 for _, spf in ipairs({ false, "v1", "v1+" }) do
 	local label = "card minutes: " .. (spf or "no Shortest Path")
 	local h = Load(spf, nil, false, true)
+	h.ns.Prefs().previewGroups = { continue = false, zones = false }
 	h.ns.OpenPanel()
 	h.flush()
 	local integrations, L = h.ns.Integrations, h.ns.L
@@ -3854,11 +3709,11 @@ do
 	equal(#h.pins.AdventureGuideForeverPinTemplate, rings, "preview: and its return brings them back")
 	-- Opening the guide never asks for the quest log: with the sidebar collapsed it opens in its own window.
 	h.ns.OpenPanel()
-	equal(h.ns.WindowShown(), false, "open: a shown sidebar holds the guide")
+	equal(h.G.AdventureGuideForeverWindow, nil, "open: no separate window")
 	h.G.QuestMapFrame:Hide()
 	h.ns.OpenPanel()
 	equal(h.counts.OpenQuestLog, 0, "open: a collapsed sidebar is left collapsed")
-	equal(h.ns.WindowShown(), true, "open: and the guide opens in its window")
+	equal(h.G.AdventureGuideForeverWindow, nil, "open: no window fallback")
 	h.G.QuestMapFrame:Show()
 	clean(h, "preview")
 end

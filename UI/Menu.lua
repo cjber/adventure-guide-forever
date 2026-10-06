@@ -94,17 +94,31 @@ function Menu.Step(root, step)
 	end
 end
 
--- A journey card's right-click: its dungeon page and "Not interested". The carry card has no menu.
+-- The journey card's menu, including its dungeon companion data.
 ---@param owner Region
 ---@param journey AGFJourney
 function Menu.Journey(owner, journey)
 	ns.ContextMenu(owner, function(_, root)
 		root:CreateTitle(journey.title)
-		local instance = journey.kind == "dungeon" and journey.instance
-		if instance then
-			root:CreateButton(L.DUNGEON_OPEN_PAGE, function()
-				ns.Window.OpenDungeon(instance)
-			end)
+		if journey.instance then
+			local loot = root:CreateButton(L.DUNGEON_BOSSES_LOOT)
+			local bosses, hint = ns.DungeonLoot.Bosses(journey.instance)
+			if hint then
+				loot:CreateTitle(hint)
+			end
+			for _, boss in ipairs(bosses) do
+				local drops = loot:CreateButton(boss.name)
+				drops:CreateTitle(boss.name)
+				for _, id in ipairs(boss.items) do
+					local name = C_Item.GetItemNameByID(id)
+					if not name then
+						C_Item.RequestLoadItemDataByID(id)
+					end
+					drops:CreateButton(name or L.ITEM_LOADING):SetTooltip(function(tooltip)
+						tooltip:SetItemByID(id)
+					end)
+				end
+			end
 		end
 		root:CreateButton(L.NOT_INTERESTED, function()
 			ns.NotInterested(journey.key, journey.title)

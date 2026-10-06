@@ -71,8 +71,7 @@ do
 	equal(#h.errors, 0, "log: errors\n" .. table.concat(h.errors, "\n"))
 end
 
--- The zone's story: its pickups' givers, in towns beyond the first; choosing none keeps the line, as the guide draws
--- the first card on its own.
+-- The chosen story names its pickups and hand-ins; clearing the choice returns to accepted quests.
 do
 	local h = Load({ journey = "zone:1413" })
 	local line = { "normal: Adventure guide: The Barrens story" }
@@ -82,7 +81,8 @@ do
 	h.ns.Choose(nil)
 	h.flush()
 	equal(h.ns.Route().chosen, false, "none chosen")
-	same(Lines(h, Creature(THORK)), line, "none chosen: the first card's line")
+	same(Lines(h, Creature(THORK)), {}, "none chosen: unrelated pickup has no line")
+	same(Lines(h, Creature(SERGRA)), { "normal: Adventure guide: Quests in your log" }, "none chosen: accepted hand-in")
 	equal(#h.errors, 0, "story: errors\n" .. table.concat(h.errors, "\n"))
 end
 
@@ -98,11 +98,11 @@ do
 	equal(#h.errors, 0, "turn-in: errors\n" .. table.concat(h.errors, "\n"))
 end
 
--- No journey chosen on login: the first card's NPCs say so all the same.
+-- No journey chosen on login: accepted quests provide the default route.
 do
 	local h = Load(nil)
 	equal(h.ns.Route().chosen, false, "login: none chosen")
-	same(Lines(h, Creature(SERGRA)), { "normal: Adventure guide: The Barrens story" }, "login: the first card's")
+	same(Lines(h, Creature(SERGRA)), { "normal: Adventure guide: Quests in your log" }, "login: accepted quest route")
 	equal(#h.errors, 0, "login: errors\n" .. table.concat(h.errors, "\n"))
 end
 

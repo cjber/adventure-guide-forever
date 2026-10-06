@@ -6,12 +6,12 @@ ns.TITLE = L.TITLE
 
 -- Account-wide settings (Settings.lua), one key per row on the AddOns page. A missing key
 -- always reads as its default here, so an old save file and a new option agree (WFA-14).
----@type table<string, boolean>
+---@type table<string, boolean|number>
 local DEFAULTS = {
 	showTracker = true,
-	floatWindow = false,
 	stepSound = true,
 	trainingReminders = false,
+	maxQuestLevelOffset = 2,
 	-- Opt-in: with the Adventure tab closed the map shows no Adventure Guide mark unless the player asks for them.
 	showMapPins = false,
 	showQuestGivers = false,
@@ -51,7 +51,7 @@ local PREFS_DEFAULTS = {
 	notInterested = {},
 	-- The overview's quest log headers this character collapsed, by group key (Overview.GROUPS); an absent key
 	-- uses the group's own default.
-	collapsedGroups = {},
+	previewGroups = {},
 	-- Quests added to the route with a shift-click: quest ID -> true.
 	pinned = {},
 }
@@ -73,6 +73,10 @@ function ns.Print(msg)
 	DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99" .. ns.TITLE .. "|r " .. msg)
 end
 
+local function QuestLevelOffset(value)
+	return type(value) == "number" and value == value and math.max(-4, math.min(10, math.floor(value))) or 2
+end
+
 local function LoadDB()
 	local loaded = type(AdventureGuideForeverDB) == "table" and AdventureGuideForeverDB or {}
 	for key, value in pairs(DEFAULTS) do
@@ -80,6 +84,8 @@ local function LoadDB()
 			loaded[key] = value
 		end
 	end
+	loaded.window, loaded.floatWindow = nil, nil
+	loaded.maxQuestLevelOffset = QuestLevelOffset(loaded.maxQuestLevelOffset)
 	AdventureGuideForeverDB = loaded
 	db = loaded
 end
@@ -199,33 +205,7 @@ local function LoadCharDB()
 			loaded.customOrders[key] = keys
 		end
 	end
-	local session = loaded.sessionCommit
-	if
-		session ~= nil
-		and not (
-			type(session) == "table"
-			and type(session.journey) == "string"
-			and type(session.minutes) == "number"
-			and type(session.keys) == "table"
-			and (session.members == nil or type(session.members) == "table")
-			and (session.visits == nil or type(session.visits) == "table")
-			and (session.seconds == nil or type(session.seconds) == "number")
-		)
-	then
-		loaded.sessionCommit = nil
-	end
-	if loaded.sessionCommit then
-		for _, members in pairs(session.members or {}) do
-			if type(members) ~= "table" then
-				loaded.sessionCommit = nil
-			end
-		end
-		for action, key in pairs(session.visits or {}) do
-			if type(action) ~= "string" or type(key) ~= "string" then
-				loaded.sessionCommit = nil
-			end
-		end
-	end
+	loaded.sessionMinutes, loaded.sessionCommit = nil, nil
 	-- The defaults loop above guarantees every AGFPrefs field except `skipped`, which ns.Prefs()
 	-- always sets before returning; nothing else reads charDB directly.
 	---@cast loaded AGFPrefs
@@ -249,29 +229,13 @@ function ns.SetSetting(key, value)
 	if not db then
 		return
 	end
-	db[key] = value
-	if key == "floatWindow" then
-		ns.Window.ApplyMode()
-	end
+	db[key] = key == "maxQuestLevelOffset" and QuestLevelOffset(value) or value
 	-- Wandering from now: what Go started stops, as the player's Stop would.
 	if key == "wanderer" and value then
 		ns.Guidance.Cancel()
 	end
 	-- Rebuilds the route (cheap) and wakes listeners (Panel/Pins/Tracker) to redraw with the new setting.
 	ns.Invalidate()
-end
-
--- The Adventure Guide window's own account-wide state (Window.lua): where it was left, its tab, and whether the
--- default key was offered. Not a setting: nothing rebuilds when it changes.
----@return AGFWindowDB
-function ns.WindowDB()
-	if not db then
-		return {}
-	end
-	if type(db.window) ~= "table" then
-		db.window = {}
-	end
-	return db.window
 end
 
 ---@return AGFPrefs
@@ -526,8 +490,20 @@ local function BuildRoute()
 	player.train = training
 	---@type AGFSnapshot
 	local world = { player = player, completed = state.Completed(), log = log }
+	local dungeonEntrances, queried = {}, {}
+	if not combat then
+		for id, entry in pairs(log) do
+			local quest = ns.Data.quests[id]
+			local instance = quest and not quest.raid and quest.dungeon
+			if instance and not entry.complete and not queried[instance] then
+				queried[instance] = true
+				dungeonEntrances[instance] = ns.Dungeons.Entrance(instance)
+			end
+		end
+	end
 	local shown, full = ns.Shown.Build({
 		data = ns.Data,
+		dungeonEntrances = dungeonEntrances,
 		player = player,
 		completed = world.completed,
 		log = log,
@@ -536,7 +512,7 @@ local function BuildRoute()
 		instanceName = state.InstanceName,
 		last = rawRoute,
 		combat = combat,
-		-- The step sound hears the whole route, before the session trims it.
+		-- The step sound hears the ordered route.
 		observe = function(ordered)
 			ns.Sound.Observe(cachedRoute, ordered, world, trained)
 		end,
@@ -639,7 +615,7 @@ function ns.Resume(step)
 end
 
 -- Commits a finished build (Shown.Build's two routes and the snapshot they were planned from): the plan is atomic,
--- so its order, sound and session, then Guidance.Ended and the callers, all run on the frame the last slice of the
+-- so its order and sound, then Guidance.Ended and the callers, all run on the frame the last slice of the
 -- rebuild finished, never on a partial route.
 ---@param shown AGFRoute
 ---@param full AGFRoute
@@ -914,8 +890,12 @@ SlashCmdList.ADVENTUREGUIDEFOREVER = function(msg)
 		ns.Print(ns.TrackerHost.Debug())
 	elseif command == "travel" then
 		ns.Print(ns.Guidance.Debug())
-	elseif command == "" or command == "window" then
-		ns.OpenWindow()
+	elseif command == "" then
+		if ns.OpenPanel then
+			ns.OpenPanel()
+		else
+			C_Map.OpenWorldMap()
+		end
 	else
 		ns.Print(L.HELP_OPEN)
 		ns.Print(L.HELP_AUDIT)
@@ -924,14 +904,8 @@ SlashCmdList.ADVENTUREGUIDEFOREVER = function(msg)
 	end
 end
 
--- Left-click toggles the window; any other click opens the guide on the world map.
----@param _ string the addon's name
----@param mouseButton? string
-function AdventureGuideForever_OnAddonCompartmentClick(_, mouseButton)
-	if mouseButton == nil or mouseButton == "LeftButton" then
-		ns.ToggleWindow()
-		return
-	end
+-- Open the guide on the world map.
+function AdventureGuideForever_OnAddonCompartmentClick()
 	if ns.OpenPanel then
 		ns.OpenPanel()
 	else

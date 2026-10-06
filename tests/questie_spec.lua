@@ -595,6 +595,16 @@ do
 	equal(#again.errors, 0, "the adopted save raises no error")
 end
 
+-- Branch installs retain a cache too, under the catalogue producer's fingerprint.
+do
+	local built, firstReads = Cat("@project-version@")
+	equal(firstReads > 0, true, "development first login builds")
+	local again, reads = Cat("@project-version@", built.G.AdventureGuideForeverCharDB)
+	equal(reads, 0, "unchanged development reload adopts the cache")
+	equal(again.ns.Data.quests[900001].title, "Provider-only quest", "development cache keeps quest data")
+	equal(#again.errors, 0, "development adoption has no errors")
+end
+
 -- Every input in the key invalidates the save on its own: a changed value rebuilds rather than adopting.
 for _, case in ipairs({
 	{

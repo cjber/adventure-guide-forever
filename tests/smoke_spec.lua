@@ -389,46 +389,6 @@ local function DriveSettings(h, label)
 end
 
 local function Drive(h, label)
-	-- The window: each tab selected, refreshed, then every interactive frame on it.
-	Run(h, label .. " open window", function()
-		h.ns.OpenWindow()
-		h.flush()
-	end)
-	local window = h.G.AdventureGuideForeverWindow
-	if window then
-		local tabs = h.ns.Window.Tabs()
-		for index, tab in ipairs(tabs) do
-			Run(h, ("%s select tab %s"):format(label, tab.key), function()
-				h.ns.Window.Select(index)
-				h.ns.Window.Refresh()
-				h.flush()
-			end)
-			DriveScope(h, window, ("%s window/%s"):format(label, tab.key), function()
-				window:Show()
-				h.ns.Window.Refresh()
-			end)
-			if tab.key == "activities" then
-				for _, activity in ipairs({ "dungeons", "professions", "pvp" }) do
-					Run(h, label .. " select activity " .. activity, function()
-						window:Show()
-						h.ns.Window.SelectActivity(activity)
-						h.flush()
-					end)
-					DriveScope(h, window, label .. " activity/" .. activity, function()
-						window:Show()
-						h.ns.Window.SelectActivity(activity)
-					end)
-				end
-			end
-		end
-		for index, button in ipairs(window.Tabs) do
-			Run(h, ("%s tab button %d"):format(label, index), function()
-				h.Click(button)
-				h.flush()
-			end)
-		end
-	end
-
 	-- The map sidebar: its buttons, then the two side tabs.
 	Run(h, label .. " open panel", function()
 		h.ns.OpenPanel()

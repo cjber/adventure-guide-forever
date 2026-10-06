@@ -8,24 +8,6 @@ ns.Integrations = Integrations
 -- Passed to Shortest Path so it can tell our journeys apart from the player's own.
 local OWNER = "AdventureGuideForever"
 
----@return boolean
-function Integrations.ClassicGuideAvailable()
-	return C_AddOns.IsAddOnLoaded("AdventureGuideClassic") and type(SlashCmdList.ADVENTUREGUIDECLASSIC) == "function"
-end
-
--- Adventure Guide for Classic exposes one public entry, its slash command, whose handler toggles its encounter
--- journal; it has no public way to open a named instance, and its journal and navigation tables sit behind a private
--- facade. An empty message is that handler's own "open the window" case, so the handoff uses it as it stands.
----@return boolean
-function Integrations.OpenClassicGuide()
-	if not Integrations.ClassicGuideAvailable() then
-		return false
-	end
-	local openGuide = SlashCmdList.ADVENTUREGUIDECLASSIC --[[@as fun(message: string)]]
-	openGuide("")
-	return true
-end
-
 -- The v1 members; types/Namespace.lua AGFSPFAPI is the contract, and tests/contract_spec.lua holds this list to
 -- exactly its non-optional functions. A Shortest Path missing any of them is treated as absent.
 local REQUIRED = { "Estimate", "Navigate", "NavigateRoute", "CurrentStop", "Cancel" }
@@ -213,7 +195,7 @@ local NextCard
 
 -- The next queued card asks a frame on, unless a chain already will.
 local function Chain()
-	if (cardQueue[1] or ns.Session.PendingWork()) and not chained then
+	if cardQueue[1] and not chained then
 		chained = true
 		C_Timer.After(0, NextCard)
 	end
@@ -228,7 +210,7 @@ end)
 
 function NextCard()
 	chained = false
-	if not ns.Session.PendingWork() and not (ns.PanelShown and ns.PanelShown()) then
+	if not (ns.PanelShown and ns.PanelShown()) then
 		cardQueue = {}
 		return
 	elseif InCombatLockdown() then
@@ -238,13 +220,6 @@ function NextCard()
 		return
 	end
 	-- The queue may have emptied since this frame was asked for: a route with nothing new to fetch.
-	if ns.Session.PendingWork() then
-		local api = SPF()
-		if api and ns.Session.NextEstimate(api) then
-			Chain()
-		end
-		return
-	end
 	local journey = table.remove(cardQueue, 1)
 	if journey then
 		local line, minutes, crossing = Fetch(journey.steps[1])

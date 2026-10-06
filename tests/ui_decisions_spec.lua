@@ -8,30 +8,21 @@ local function equal(actual, expected, label)
 end
 
 do
-	local h = harness.load({ legacy = { summaries = {}, targets = {} } })
-	h.G.C_Map.GetMapInfo = function() end
-	h.ns.Route = function()
-		return { journeys = {} }
-	end
-	equal(h.ns.Providers.Completion().zones[1].name, "The Barrens", "completion uses bundled zone name")
-	h.player.map = 999999
-	equal(#h.ns.Providers.Completion().zones, 0, "completion omits an unnamed zone")
-end
-
-do
 	local h = harness.load()
 	local ns = h.ns
 	ns.Data.quests = { [999999] = { title = "Scaling quest", level = -1, min = 1, side = 3, zone = 1413 } }
-	local journey = { key = "zone:1413", zone = 1413, title = "The Barrens" }
+	local journey = ns.Route().journeys[1]
+	journey.key, journey.zone, journey.title = "zone:1413", 1413, "The Barrens"
 	ns.Route = function()
-		return { journey = journey.key, steps = {}, journeys = {} }
+		return { journey = journey.key, steps = {}, journeys = { journey }, chosen = true }
 	end
 	local difficulty
 	h.G.GetQuestDifficultyColor = function(level)
 		difficulty = level
 		return { r = 1, g = 0.5, b = 0 }
 	end
-	ns.Window.OpenGuide(journey, h.G.CreateFrame("Frame"))
+	ns.OpenPanel()
+	h.flush()
 	local row = assert(h.Find(function(frame)
 		return frame.questID == 999999
 	end)[1])

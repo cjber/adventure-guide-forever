@@ -85,6 +85,50 @@ do
 	equal(second, "dungeon:43", "dungeon with fewer quests sorts second")
 end
 
+-- Useful dungeon choices beat a high-level instance with recently unlocked quests.
+do
+	local ranked = {
+		build = "ranking",
+		source = "fixture",
+		hubs = {},
+		zones = {},
+		maps = data.maps,
+		instances = {
+			[36] = { name = "Deadmines", low = 18, high = 23 },
+			[43] = { name = "Wailing Caverns", low = 15, high = 25 },
+			[48] = { name = "Blackfathom Deeps", low = 24, high = 32 },
+			[90] = { name = "Gnomeregan", low = 29, high = 38 },
+		},
+		quests = {},
+	}
+	local log = {}
+	for index, instance in ipairs({ 36, 36, 43, 48, 90 }) do
+		local id, point = 100 + index, at(instance == 36 and 0.8 or 0.51, 0.5)
+		ranked.quests[id] = {
+			title = "Dungeon errand " .. id,
+			level = 21,
+			min = instance == 90 and 20 or 10,
+			side = 1,
+			start = point,
+			finish = point,
+			dungeon = instance,
+		}
+		log[id] = { complete = true }
+	end
+	local function Order()
+		local ids = {}
+		for _, journey in ipairs(Model.Plan(ranked, player, {}, log, prefs()).journeys) do
+			if journey.kind == "dungeon" then
+				ids[#ids + 1] = journey.instance
+			end
+		end
+		return table.concat(ids, ",")
+	end
+	equal(Order(), "36,43,48,90", "level fit precedes accepted count and newness")
+	log[102] = nil
+	equal(Order(), "43,36,48,90", "equal fit and accepted counts prefer nearer travel")
+end
+
 -- A dismissed dungeon does not appear.
 do
 	local p = prefs({ notInterested = { ["dungeon:36"] = { title = "The Deadmines" } } })
@@ -178,6 +222,55 @@ do
 		local secondMin = zdata.zones[zoneCards[2].zone].min
 		equal(firstMin <= zplayer.level, true, "first zone card has min <= player.level (normal zone)")
 		equal(secondMin > zplayer.level, true, "second zone card has min > player.level (above zone)")
+	end
+end
+
+-- Accepting every available dungeon quest must not remove its journey.
+do
+	local log = {
+		[3] = { id = 3, title = "DM Quest 1", level = 21, complete = false },
+		[4] = { id = 4, title = "DM Quest 2", level = 21, complete = false },
+		[5] = { id = 5, title = "DM Quest 3", level = 21, complete = false },
+	}
+	local inputs = { dungeonEntrances = { [36] = at(0.2, 0.3) } }
+	local route = Model.Plan(data, player, {}, log, prefs(), nil, nil, nil, inputs)
+	has(keys(route.journeys), "dungeon:36", "accepted dungeon quests retain Deadmines")
+	local card
+	for _, journey in ipairs(route.journeys) do
+		if journey.instance == 36 then
+			card = journey
+		end
+	end
+	equal(card.steps[1].entrance, 36, "unknown objective points lead to the known entrance")
+	equal(#card.steps[1].quests, 3, "one entrance stop holds all unplaced quests")
+	equal(card.steps[1].title, ns.L.GO_TO_ENTRANCE, "entrance is not described as an objective location")
+	local dismissed =
+		Model.Plan(data, player, {}, log, prefs({ notInterested = { ["dungeon:36"] = true } }), nil, nil, nil, inputs)
+	for _, journey in ipairs(dismissed.journeys) do
+		equal(journey.key == "dungeon:36", false, "dismissal remains respected")
+	end
+	local after = { [3] = log[3], [4] = log[4] }
+	local updated = Model.Refresh(data, player, { [5] = true }, after, prefs(), route)
+	local retained
+	for _, journey in ipairs(updated.journeys) do
+		if journey.instance == 36 then
+			retained = journey
+		end
+	end
+	equal(#retained.steps[1].quests, 2, "combat refresh prunes a finished dungeon quest")
+	local finished = { [3] = true, [4] = true, [5] = true }
+	local empty = Model.Refresh(data, player, finished, {}, prefs(), updated)
+	for _, journey in ipairs(empty.journeys) do
+		equal(journey.key == "dungeon:36", false, "empty dungeon stops disappear in combat")
+	end
+	local skipped =
+		Model.Plan(data, player, {}, log, prefs({ skipped = { ["entrance:36"] = true } }), nil, nil, nil, inputs)
+	for _, journey in ipairs(skipped.journeys) do
+		equal(journey.key == "dungeon:36", false, "skipped entrance is respected")
+	end
+	local unknown = Model.Plan(data, player, {}, log, prefs())
+	for _, journey in ipairs(unknown.journeys) do
+		equal(journey.key == "dungeon:36", false, "unknown entrance does not invent a route")
 	end
 end
 

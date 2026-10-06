@@ -501,11 +501,12 @@ local function Dropped(id)
 	return droppedIDs[id] == true
 end
 
--- Orange or red: ORANGE levels above the player or more, too hard alone, so no route takes it, added or not.
+-- Pickup recommendations respect the chosen level ceiling; accepted quests keep their log steps.
 ---@param quest AGFQuest
 ---@param player AGFPlayer
 function Model.Hard(quest, player)
-	return quest.level - player.level >= ORANGE
+	local level = quest.level > 0 and quest.level or player.level
+	return level - player.level > (player.maxQuestLevelOffset or (ORANGE - 1))
 end
 local Hard = Model.Hard
 

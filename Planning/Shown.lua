@@ -1,8 +1,8 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 -- The route as shown: one pass from a snapshot of the player to the steps the views draw. The planner's route
--- (Plan.lua and Refresh.lua, which read no client state), then the player's own order (docs/design.md §2.20), then the
--- session's trim (§4.3), all over the same player and log. Core.lua's rebuild is the one caller.
+-- (Plan.lua and Refresh.lua, which read no client state), then the player's own order (docs/design.md §2.20) and
+-- giver skips, all over the same player and log. Core.lua's rebuild is the one caller.
 ---@class AGFShown
 local Shown = {}
 ns.Shown = Shown
@@ -44,12 +44,15 @@ end
 
 -- Planning and presentation use separate frames; only the finished route is committed by Core.
 ---@param input AGFShownInput
----@return AGFRoute shown what the views draw: the chosen journey's steps in the player's order, within the session
----@return AGFRoute full the same route before the session's trim: the next build's `last`
+---@return AGFRoute shown what the views draw: the chosen journey's steps in the player's order
+---@return AGFRoute full the same route: the next build's `last`
 function Shown.Build(input)
 	local Model = ns.Model
 	---@type AGFPlanInputs
-	local inputs = { skippedQuests = ns.Order.SkippedQuests(), committed = ns.Session.Committed() }
+	local inputs = {
+		skippedQuests = ns.Order.SkippedQuests(),
+		dungeonEntrances = input.dungeonEntrances,
+	}
 	local full
 	if input.combat then
 		full = Model.Refresh(
@@ -83,5 +86,5 @@ function Shown.Build(input)
 	if input.observe then
 		input.observe(full)
 	end
-	return ns.Session.Apply(full, input.player), full
+	return full, full
 end
