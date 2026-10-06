@@ -20,6 +20,7 @@ end
 -- whatever else `extra` adds (SkillUp Forever, key bindings, talents).
 local function Load(extra)
 	local options = {
+		db = { window = { tab = "journeys" } },
 		completed = { 844 },
 		log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
@@ -53,7 +54,7 @@ do
 	end
 	equal(
 		table.concat(keys, ","),
-		"journeys,professions,pvp,completion,dungeons",
+		"journeys,professions,pvp,completion,dungeons,next",
 		"registry: one entry a tab, in TOC order"
 	)
 	local window = Open(h)
@@ -62,7 +63,7 @@ do
 	equal(window.stockTemplate, "PortraitFrameTemplate", "a portrait frame")
 	equal(window.TitleText:GetText(), h.ns.TITLE, "its title")
 	equal(h.G.UISpecialFrames[1], "AdventureGuideForeverWindow", "Escape closes it")
-	equal(#window.Tabs, 5, "a tab button a registered tab")
+	equal(#window.Tabs, 6, "a tab button a registered tab")
 	equal(window.Tabs[1]:GetText(), L.TAB_JOURNEYS, "tab 1 label")
 	equal(window.Tabs[2]:GetText(), L.TAB_PROFESSIONS, "tab 2 label")
 	local point, relativeTo, relativePoint, x, y = window.Tabs[1]:GetPoint(1)
@@ -236,7 +237,12 @@ end
 
 do
 	local spell = { name = "Lightning Bolt", level = 18, line = "Elemental", lineID = 375, general = false }
-	local h = Load({ spf = "v1", tf = { spells = { spell } }, talents = 1 })
+	local h = Load({
+		spf = "v1",
+		db = { trainingReminders = true, window = { tab = "journeys" } },
+		tf = { spells = { spell } },
+		talents = 1,
+	})
 	local ns, L = h.ns, h.ns.L
 	local window = Open(h)
 	clean(h, "journeys")

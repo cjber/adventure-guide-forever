@@ -314,11 +314,11 @@ do
 	-- Every row goes in through the secure delegate; none from addon code, which taints the search. The rows are
 	-- grouped into subcategories with a short index page, so no page grows tall.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 20, "16 rows and 4 index buttons, all through Settings.RegisterInitializer")
+	equal(#h.settings, 21, "17 rows and 4 index buttons, all through Settings.RegisterInitializer")
 	local L = h.ns.L
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
-		"wanderer followQuest optimisedRoute includeDungeonsDefault titleStartsRoute autoStart stepSound",
+		"wanderer followQuest optimisedRoute includeDungeonsDefault titleStartsRoute autoStart stepSound trainingReminders",
 		"Route holds its rows in order"
 	)
 	equal(table.concat(pages[L.SETTINGS_GROUP_MAP] or {}, " "), "showMapPins showQuestGivers", "Map holds its rows")
@@ -715,11 +715,7 @@ do
 	equal(block and block.header, "Journey complete", "journey complete: the header")
 	-- None is chosen now: the header, then the step of the first card, which the guide draws on its own.
 	local first = h.ns.Route().steps[1].key
-	same(
-		h.tracker.layoutOrder,
-		{ "journey-complete", "journey", first },
-		"journey complete: over the first card's step"
-	)
+	same(h.tracker.layoutOrder, { "journey-complete", first }, "journey complete: over the first card's step")
 	same(h.fanfares, { "journey-complete" }, "journey complete: glows once")
 	equal(#h.sounds, 0, "journey complete: no stage-end sound")
 	local opened, openPanel = 0, h.ns.OpenPanel
@@ -732,7 +728,7 @@ do
 	equal(h.spf.NavigateRoute, 1, "journey complete: and starts nothing")
 	h.ns.Invalidate()
 	h.flush()
-	same(h.tracker.layoutOrder, { "journey", first }, "journey complete: gone on the next route change")
+	same(h.tracker.layoutOrder, { first }, "journey complete: gone on the next route change")
 
 	h = Started("v1")
 	h.SetCombat(true)
@@ -2275,7 +2271,16 @@ do
 end
 
 -- F8, the tracker (design §2.5): step 1's place, its reason and, with Shortest Path, its travel line, dashed; then the
--- next step, undashed.
+-- next two steps, undashed.
+local function Upcoming(h, index)
+	local step = h.ns.Route().steps[index]
+	if not step then
+		return nil
+	end
+	local text = h.ns.Overview.VerbMarkup(step, 12) .. "Next: " .. step.title
+	return h.G.GRAY_FONT_COLOR:WrapTextInColorCode(text) .. " (no dash)"
+end
+
 local function TrackerLines(h)
 	local block = h.tracker.liveBlocks[h.ns.Route().steps[1].key]
 	local lines = {}
@@ -2293,9 +2298,14 @@ for _, spf in ipairs({ false, "v1" }) do
 		expected[#expected + 1] = giver.text
 	end
 	expected[#expected + 1] = spf and "About 6 min away" or nil
-	expected[#expected + 1] = "Next: " .. steps[2].title .. " (no dash)"
+	expected[#expected + 1] = Upcoming(h, 2)
+	expected[#expected + 1] = Upcoming(h, 3)
 	local lines, block = TrackerLines(h)
-	equal(block.header, steps[1].title, label .. ": step 1's title heads the block")
+	equal(
+		block.header,
+		h.ns.Overview.VerbMarkup(steps[1], 14) .. steps[1].title,
+		label .. ": step 1's title heads the block"
+	)
 	same(lines, expected, label .. ": a town's counts, its reason, travel, next")
 	clean(h, label)
 end
@@ -2455,7 +2465,8 @@ do
 	for _, giver in ipairs(step.checklist) do
 		expected[#expected + 1] = giver.text
 	end
-	expected[#expected + 1] = "Next: " .. steps[2].title .. " (no dash)"
+	expected[#expected + 1] = Upcoming(h, 2)
+	expected[#expected + 1] = Upcoming(h, 3)
 	same(TrackerLines(h), expected, "tracker, town: counts, reason, checklist and next")
 
 	step.reason = step.detail
@@ -2464,7 +2475,8 @@ do
 	for _, giver in ipairs(step.checklist) do
 		detailed[#detailed + 1] = giver.text
 	end
-	detailed[#detailed + 1] = "Next: " .. steps[2].title .. " (no dash)"
+	detailed[#detailed + 1] = Upcoming(h, 2)
+	detailed[#detailed + 1] = Upcoming(h, 3)
 	same(TrackerLines(h), detailed, "tracker, town: checklist suppresses duplicate giver summary")
 	step.givers = { "Sergra Darkthorn", "Gazrog" }
 	h.tracker:MarkDirty()
@@ -2603,7 +2615,7 @@ do
 	local first = ns.Route().steps[1]
 	ns.Skip(first.key, first.title)
 	h.flush()
-	same(h.tracker.layoutOrder, { "journey", ns.Route().steps[1].key }, "fanfare: gone once step 1 moves on")
+	same(h.tracker.layoutOrder, { ns.Route().steps[1].key }, "fanfare: gone once step 1 moves on")
 	clean(h, "fanfare")
 
 	h = Load(false, { showTracker = false })
@@ -3046,7 +3058,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(route.chosen, false, label .. ": nothing chosen")
 	equal(Back(), nil, label .. ": no back arrow with nothing chosen")
 	equal(route.journey, "zone:1413", label .. ": the route falls back to the first card")
-	same(h.tracker.layoutOrder, { "journey", route.steps[1].key }, label .. ": the tracker shows the first card's step")
+	same(h.tracker.layoutOrder, { route.steps[1].key }, label .. ": the tracker shows the first card's step")
 	equal(route.journeys[1].kind, "story", label .. ": a story card")
 	equal(#route.journeys >= 3, true, label .. ": several journey rows")
 	equal(Heights(), "", label .. ": none of the chosen view's cards")
@@ -3898,7 +3910,7 @@ do
 		local h = harness.load({
 			planned = true,
 			spf = "v1+",
-			db = { showMapPins = true, showQuestGivers = true, autoStart = false },
+			db = { showMapPins = true, showQuestGivers = true, autoStart = false, trainingReminders = true },
 			tf = case.tf,
 			completed = { 844 },
 			log = {
@@ -3944,7 +3956,7 @@ do
 		local shown = block and block.used and block.header or nil
 		equal(shown, case.text, label .. ": the tracker's line")
 		-- With no journey chosen it is the line above the first card's step.
-		local order = case.text and { "aside", "journey", "town:1413:380" } or { "journey", "town:1413:380" }
+		local order = case.text and { "aside", "town:1413:380" } or { "town:1413:380" }
 		same(h.tracker.layoutOrder, order, label .. ": the tracker's lines")
 		-- An aside, not a step: no ring for it, and its tracker title goes to the trainer as its Go does.
 		local steps, rings = {}, 0
@@ -4031,7 +4043,7 @@ do
 	local h = harness.load({
 		planned = true,
 		spf = "v1",
-		db = { showMapPins = true, showQuestGivers = true, autoStart = false },
+		db = { showMapPins = true, showQuestGivers = true, autoStart = false, trainingReminders = true },
 		tf = tf,
 		player = { level = 8, map = 1411, x = 0.52, y = 0.43, classID = 4, raceID = 8 },
 		charDB = { journey = "zone:1411" },
@@ -4047,11 +4059,12 @@ do
 	local step = h.ns.Route().steps[1]
 	equal(step.key, "trainer:3170", label .. ": the route's first stop")
 	same({ h.tracker.liveBlocks[step.key].header, unpack((TrackerLines(h))) }, {
-		"Train in Razor Hill",
+		h.ns.Overview.VerbMarkup(step, 14) .. "Train in Razor Hill",
 		"Kaplak, Durotar",
 		"1 new spell",
 		"About 6 min away",
-		"Next: " .. h.ns.Route().steps[2].title .. " (no dash)",
+		Upcoming(h, 2),
+		Upcoming(h, 3),
 	}, label .. ": the tracker")
 	local ringed = false
 	for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do

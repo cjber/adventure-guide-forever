@@ -29,25 +29,71 @@ local function Shown(ns)
 	end
 end
 
--- The tracker's journey line names the story above the step, and a click on it routes from the story's start.
+-- One section heading names the chosen story; the action retains its route interaction.
 do
 	local h = Barrens({ spf = "v1", db = { autoStart = false } })
 	local ns, route = h.ns, h.ns.Route()
 	local journey = Shown(ns)
-	check(journey ~= nil and journey.title == "The Barrens story", "the Barrens story is the chosen journey")
-	local block = h.tracker.liveBlocks.journey
-	check(block ~= nil, "the tracker has a journey line")
-	check(block.header == journey.title, "it names the journey, not just the step")
-	check(block.header ~= route.steps[1].title, "the title is not the step's")
-	check(h.tracker.layoutOrder[1] == "journey", "the journey line sits above the step")
-	-- Its click is the way back to the story's start.
+	check(journey ~= nil and journey.title == "The Barrens story", "the chosen story")
+	check(h.tracker.Header.Text:GetText() == journey.title, "one section heading names the story")
+	check(h.tracker.liveBlocks.journey == nil, "no duplicate story block")
+	check(h.tracker.layoutOrder[1] == route.steps[1].key, "current action follows the section heading")
+	local block = h.tracker.liveBlocks[route.steps[1].key]
+	check(block.header:find("|A:QuestNormal:", 1, true) ~= nil, "current town action uses its pickup icon")
+	check(block.header:find(route.steps[1].title, 1, true) ~= nil, "current action remains readable")
+	local count = 0
+	for _, key in ipairs(block.order) do
+		if block.dashes[key] == h.G.OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE then
+			count = count + 1
+			local upcoming = route.steps[1 + count]
+			check(block.lines[key]:find(upcoming.title, 1, true) ~= nil, "preview follows route order")
+			check(block.lines[key]:find("|cff7f7f7f", 1, true) ~= nil, "preview is muted")
+		end
+	end
+	check(count == 2, "only two upcoming actions")
 	h.tracker:OnBlockHeaderClick(block, "LeftButton")
 	h.flush()
-	check(h.spf.NavigateRoute == 1, "clicking it starts the journey's route")
-	check(
-		h.spfRoute.stops[1].title == (route.steps[1].kind == "town" and route.steps[1].place or route.steps[1].title),
-		"from the story's first step"
-	)
+	check(h.spf.NavigateRoute == 1, "current action starts the journey")
+	check(#h.errors == 0, table.concat(h.errors, "\n"))
+	local current = ns.Guidance.CurrentStep
+	ns.Guidance.CurrentStep = function()
+		return route.steps[#route.steps]
+	end
+	h.tracker:MarkDirty()
+	local last = h.tracker.liveBlocks[route.steps[#route.steps].key]
+	local previews = 0
+	for _, key in ipairs(last.order) do
+		if last.dashes[key] == h.G.OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE then
+			previews = previews + 1
+		end
+	end
+	check(previews == 0, "last current stop has no earlier or invented upcoming actions")
+	ns.Guidance.CurrentStep = current
+	local previousTitle = route.steps[1].title
+	ns.Skip(route.steps[1].key, previousTitle)
+	h.flush()
+	check(h.tracker.Header.Text:GetText() == journey.title, "advancing retains the story heading")
+	local nextAction = h.tracker.liveBlocks[ns.Guidance.CurrentStep().key]
+	check(nextAction.header:find(previousTitle, 1, true) == nil, "advancing replaces the current action")
+	local unchosen = Barrens({ charDB = {}, db = { autoStart = false } })
+	check(unchosen.tracker.Header.Text:GetText() == unchosen.ns.L.TITLE, "no chosen journey uses generic heading")
+end
+
+-- A guided hand-in already says what to do, without a second ready-to-hand-in line.
+do
+	local h = harness.load({
+		questiedb = false,
+		spf = "v1",
+		charDB = { journey = "carry" },
+		log = { { id = 845, title = "The Zhevra", complete = true, map = 1413, x = 0.52, y = 0.31 } },
+	})
+	local step = h.ns.Guidance.CurrentStep()
+	check(step ~= nil and step.reason == h.ns.L.READY_TO_HAND_IN, "fixture has a ready hand-in")
+	check(h.ns.Integrations.Guiding(), "the hand-in is guided")
+	local block = h.tracker.liveBlocks[step.key]
+	for _, key in ipairs(block.order) do
+		check(block.lines[key] ~= h.ns.L.READY_TO_HAND_IN, "hand-in status is not repeated")
+	end
 	check(#h.errors == 0, table.concat(h.errors, "\n"))
 end
 
@@ -78,7 +124,7 @@ do
 	check(ns.Route().chosen, "chosen as before")
 	check(h.spf.NavigateRoute == 1, "and the held auto-start begins")
 	check(h.tracker.liveBlocks.loading == nil or not h.tracker.liveBlocks.loading.used, "the loading line goes")
-	check(h.tracker.liveBlocks.journey.header == "The Barrens story", "the tracker names the story then")
+	check(h.tracker.Header.Text:GetText() == "The Barrens story", "the tracker names the story then")
 	check(#h.errors == 0, table.concat(h.errors, "\n"))
 end
 

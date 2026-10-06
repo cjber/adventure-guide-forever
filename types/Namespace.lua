@@ -161,6 +161,7 @@
 ---@field npcs table<integer, AGFNpc>
 
 ---@class AGFPrefs
+---@field recommendationFocus string the Next page's focus, normalized to balanced when unknown
 ---@field plannedDungeons table<integer, boolean>
 ---@field quests boolean
 ---@field dungeons boolean
@@ -541,7 +542,6 @@
 ---@field STORY_COMPLETE string the tracker header that glows when a proven chain's last quest is handed in
 ---@field JOURNEY_COMPLETE string the tracker header that glows when a turn-in ends the chosen journey
 ---@field CHOOSE_NEXT string its line: the guide has every journey again
----@field TRACKER_ROUTE_START string the journey line's hover instruction: route from the story's start
 ---@field TRACKER_DRAG_TITLE string shared tracker grip title
 ---@field TRACKER_DRAG_TOOLTIP string shared tracker grip tooltip
 ---@field TRAINER string
@@ -604,6 +604,8 @@
 ---@field SETTING_MAP_PINS string
 ---@field SETTING_GIVERS string
 ---@field SETTING_DUNGEONS_DEFAULT string
+---@field SETTING_TRAINING_REMINDERS string
+---@field SETTING_TRAINING_REMINDERS_TOOLTIP string
 ---@field SETTING_MAP_PINS_TOOLTIP string
 ---@field SETTING_GIVERS_TOOLTIP string
 ---@field SETTING_DUNGEONS_DEFAULT_TOOLTIP string
@@ -745,7 +747,7 @@
 -- NPC roles (tools/gen_quests.py `roles`): where trainers, battlemasters and innkeepers stand.
 
 ---@class AGFData
----@field npcs table<integer, AGFNpc> creature entry -> its roles, side and place; only NPCs the data places and sides
+---@field npcs? table<integer, AGFNpc> creature entry -> its roles, side and place; absent until QuestieDB publishes its catalogue
 
 ---@class AGFNpc : AGFRole
 ---@field side integer the sides it is friendly to (QuestieDB friendlyToFaction): 1 Alliance, 2 Horde, 3 both
@@ -826,6 +828,8 @@
 
 -- Asides (Asides.lua, docs/design.md §2.11): one-line hints beside the journeys, never a route.
 ---@class AGFAside
+---@field category? AGFRecommendationCategory the Next page's focus for this hint
+---@field reason? string why the provider offers this hint
 ---@field key string stable identity for Skip and Not interested, e.g. "trainer"
 ---@field text string the whole line, in the game's voice
 ---@field icon string an atlas the Forever client has (a row of the atlas CSV)
@@ -848,6 +852,31 @@
 
 ---@class AGFNamespace
 ---@field Asides AGFAsides
+
+---@class AGFRecommendation
+---@field key string
+---@field title string
+---@field reason string
+---@field icon? string|integer
+---@field journey? string
+---@field step? AGFStep
+---@field aside? AGFAside
+
+---@alias AGFRecommendationCategory "training"|"professions"
+---@alias AGFRecommendationFocus "balanced"|"quests"|"dungeons"|AGFRecommendationCategory
+
+---@class AGFRecommendations
+---@field FOCUSES AGFRecommendationFocus[]
+---@field Focus fun(): AGFRecommendationFocus
+---@field SetFocus fun(focus: string)
+---@field Build fun(route: AGFRoute, asides: AGFAside[], focus: AGFRecommendationFocus, player: AGFPlayer): AGFRecommendation[]
+---@field Current fun(): AGFRecommendation[]
+---@field ActionLabel fun(item: AGFRecommendation): string
+---@field CanAct fun(item: AGFRecommendation): boolean
+---@field Act fun(item: AGFRecommendation): boolean
+
+---@class AGFNamespace
+---@field Recommendations AGFRecommendations
 
 ---@class AGFPrefs
 ---@field asides? table<string, string> the asides this character turned down (Not interested): key -> the text it had
@@ -1158,6 +1187,26 @@
 
 ---@class AGFStrings
 ---@field TAB_JOURNEYS string
+---@field TAB_NEXT string
+---@field NEXT_TITLE string
+---@field NEXT_FOCUS_BALANCED string
+---@field NEXT_FOCUS_QUESTS string
+---@field NEXT_FOCUS_TRAINING string
+---@field NEXT_FOCUS_PROFESSIONS string
+---@field NEXT_FOCUS_DUNGEONS string
+---@field NEXT_WHY string
+---@field NEXT_ALTERNATIVES string
+---@field NEXT_EMPTY string
+---@field NEXT_ADVICE string
+---@field NEXT_LOADING string
+---@field NEXT_DUNGEONS_DISABLED string
+---@field NEXT_BROWSE_JOURNEYS string
+---@field NEXT_BROWSE_DUNGEONS string
+---@field NEXT_REASON_JOURNEY string
+---@field NEXT_REASON_ASIDE string
+---@field NEXT_REASON_TRAINING string
+---@field NEXT_REASON_TALENTS string
+---@field NEXT_REASON_PROFESSIONS string
 ---@field TAB_PROFESSIONS string
 ---@field OPEN_IN_WINDOW string the panel header's button tooltip
 ---@field BINDING_TOGGLE_WINDOW string the key binding's name
@@ -1523,7 +1572,7 @@
 ---@field Select fun(index: integer)
 ---@field Refresh fun()
 ---@field OfferKey fun()
----@field RefreshToday fun(inset: Frame)
+---@field RefreshToday fun(inset: Frame, visible: boolean)
 ---@field CreateList fun(parent: Frame, x: number, y: number, width: number, height: number, rowHeight: number, paint: AGFListPaint, click: AGFListClick, create: AGFListCreate): AGFDungeonListWidget
 ---@field SetList fun(widget: AGFDungeonListWidget, values: table[])
 ---@field ScrollListTo fun(widget: AGFDungeonListWidget, index: integer)

@@ -55,6 +55,7 @@ UI\Hints\Profession.lua
 UI\PvP.lua
 UI\Hints\Explore.lua
 UI\Hints\Hearth.lua
+Core\Recommendations.lua
 UI\Art.lua
 UI\Moments.lua
 UI\ContextMenu.lua
@@ -77,6 +78,7 @@ UI\WindowDungeonMaps.lua
 UI\WorldDungeonMaps.lua
 UI\WindowList.lua
 UI\WindowDungeons.lua
+UI\WindowNext.lua
 UI\TrackerHost.lua
 UI\Tracker.lua
 UI\Tooltip.lua

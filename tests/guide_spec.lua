@@ -58,6 +58,8 @@ data.quests[233].races = nil
 ns.OpenWindow()
 h.flush()
 local window = h.G.AdventureGuideForeverWindow
+ns.Window.Select(1)
+h.flush()
 
 local open = assert(ui.FindText(window, ns.L.GUIDE_OPEN))
 -- The button is parented to the card's content. Use the actual card's parent.

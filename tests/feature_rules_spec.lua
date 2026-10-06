@@ -276,10 +276,16 @@ do
 	local current = t.ns.Guidance.CurrentStep()
 	eq(current.kind == "town" and current.place or current.title, t.spfRoute.stops[t.spfRoute.index].title)
 	local block = t.tracker.liveBlocks[current.key]
-	eq(block.header, current.title)
+	eq(block.header, t.ns.Overview.VerbMarkup(current, 14) .. current.title)
 	local related = (current.kind == "area" or current.kind == "dungeon" or #current.quests > 1) and #current.quests
 		or 0
-	eq(#block.order, related + 1, "related quests and one reason")
+	local remaining = 0
+	for index, candidate in ipairs(t.ns.Route().steps) do
+		if candidate.key == current.key then
+			remaining = math.min(2, #t.ns.Route().steps - index)
+		end
+	end
+	eq(#block.order, related + 1 + remaining, "related quests, reason and upcoming actions")
 	eq(block.lines[related + 1], current.reason, "reason follows quest identities")
 	clean(t)
 end

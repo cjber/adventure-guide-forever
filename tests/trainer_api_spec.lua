@@ -12,6 +12,7 @@ end
 
 -- v2: Training still answers (additive), and Trainers returns the class trainers with their places.
 local h = harness.load({
+	db = { trainingReminders = true },
 	player = { level = 20, faction = "Horde", raceID = 2, classID = 2, map = 1420, x = 0.5, y = 0.6 },
 	tf = {
 		version = 2,
@@ -46,6 +47,31 @@ equal(aside ~= nil, true, "the trainer aside is offered")
 equal(aside.place and aside.place.map, 1420, "a class the bundled data does not place uses the Tweaks trainer place")
 equal(aside.place.x, 0.32, "a trainer of the other side alone is passed over")
 
+-- The service catalogue is absent without QuestieDB, including while its first build is pending.
+local absent = harness.load({
+	db = { trainingReminders = true },
+	questiedb = false,
+	player = { level = 20, faction = "Horde", raceID = 2, classID = 2, map = 1420, x = 0.5, y = 0.6 },
+	tf = {
+		version = 2,
+		spells = { { spellID = 635, name = "Holy Light", level = 20, cost = 0, line = "Holy", lineID = 594 } },
+		trainers = { { npc = 999001, name = "Aranis Hammerhand", map = 1420, x = 0.32, y = 0.62 } },
+	},
+})
+equal(absent.ns.Data.npcs, nil, "absent: no service catalogue")
+absent.ns.Asides.Refresh()
+local fallback
+for _, entry in ipairs(absent.ns.Asides.All()) do
+	if entry.key == "trainer" then
+		fallback = entry
+	end
+end
+equal(fallback ~= nil, true, "absent: Tweaks training remains available")
+equal(fallback.place.x, 0.32, "absent: the companion places its trainer")
+absent.ns.OpenWindow()
+absent.flush()
+equal(#absent.errors, 0, "absent: no startup or window errors\n" .. table.concat(absent.errors, "\n"))
+
 -- v1: no Trainers, and Training still answers.
 local one = harness.load({
 	tf = { version = 1, spells = { { spellID = 1, name = "X", level = 5, cost = 0, line = "L", lineID = 1 } } },
@@ -61,6 +87,7 @@ equal(select(2, none.ns.Integrations.Training()), false, "no Tweaks, Training un
 -- A reply with a known, affordable fee but no level cannot be placed: it is left out like an unknown fee, never
 -- passed to math.max. This is the owner crash: with a journey chosen, any rebuild (a setting click) raised here.
 local unplaced = harness.load({
+	db = { trainingReminders = true },
 	charDB = { journey = "zone:1413" },
 	tf = {
 		version = 1,

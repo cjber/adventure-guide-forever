@@ -93,11 +93,7 @@ do
 	equal(Top(lines[1]), 0, "above the cards")
 	equal(Top(lines[2]), -16, "a line under the other")
 	local step = h.ns.Route().steps[1]
-	same(
-		h.tracker.layoutOrder,
-		{ "aside", "journey", step.key },
-		"one line in the tracker, above the chosen journey's step"
-	)
+	same(h.tracker.layoutOrder, { "aside", step.key }, "one line in the tracker, above the chosen journey's step")
 	equal(h.tracker.liveBlocks.aside.header, A.text, "the same aside")
 	equal(#h.tracker.liveBlocks.aside.order, 0, "one line: the header alone")
 
@@ -123,7 +119,7 @@ do
 	h.menu.entries[3].onClick()
 	h.flush()
 	equal(#Line(h), 0, "declined: no line in the guide")
-	same(h.tracker.layoutOrder, { "journey", step.key }, "declined: nor in the tracker")
+	same(h.tracker.layoutOrder, { step.key }, "declined: nor in the tracker")
 	equal(h.G.AdventureGuideForeverCharDB.asides.b, B.text, "declined: saved per character with its text")
 
 	-- The cog brings it back, by the text its provider gives now (a trainer's count moves on).
@@ -257,14 +253,10 @@ do
 	Settle(h)
 	local route = h.ns.Route()
 	equal(route.chosen, false, "ambient: none chosen")
-	same(
-		h.tracker.layoutOrder,
-		{ "aside", "journey", route.steps[1].key },
-		"ambient: the aside, then the first card's step"
-	)
+	same(h.tracker.layoutOrder, { "aside", route.steps[1].key }, "ambient: the aside, then the first card's step")
 	provider.aside = nil
 	Settle(h)
-	same(h.tracker.layoutOrder, { "journey", route.steps[1].key }, "ambient: else the step alone")
+	same(h.tracker.layoutOrder, { route.steps[1].key }, "ambient: else the step alone")
 	-- Its title's click chooses that card.
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[route.steps[1].key], "LeftButton")
 	h.flush()

@@ -97,8 +97,7 @@ end
 ---@return string?
 function Search.Query(text)
 	local query = strtrim(text)
-	-- Characters, not bytes: a character is one byte that doesn't continue a UTF-8 sequence.
-	local _, characters = query:gsub("[^\128-\191]", "")
+	local characters = strlenutf8(query)
 	-- Not before completion data loads: every chain quest would read as locked.
 	return characters >= SEARCH_MIN and ns.State.Ready() and query or nil
 end
