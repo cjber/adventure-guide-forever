@@ -93,8 +93,8 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 			return step -- nothing is learned, and no battleground opens, in a fight
 		end
 		if not step.pickups then
-			-- A log step: its quests still carried, less an objective finished in the fight, which carry hands in, and
-			-- a lap's quests not yet picked up while they are still open.
+			-- Keep carried quests and a lap's still-open pickups. Objective work drops completed quests;
+			-- hand-ins belong to town/return steps and have no objective rows.
 			local function Carrying(id)
 				if log[id] == nil then
 					return step.planned ~= nil and step.planned[id] ~= nil and Open(id)
