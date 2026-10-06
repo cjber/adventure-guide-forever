@@ -196,7 +196,7 @@ local function Build()
 	if state.activity == "dungeons" then
 		state.activity = "journeys"
 	end
-	state.dungeon = nil
+	rawset(state, "dungeon", nil)
 	state.tab = saved or "journeys"
 	frame = CreateFrame("Frame", NAME, UIParent, "PortraitFrameTemplate") --[[@as AGFWindowFrame]]
 	frame:SetSize(WIDTH, HEIGHT)
