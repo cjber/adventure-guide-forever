@@ -11,6 +11,9 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **A clearer story tracker.** Your chosen journey is the section heading, with action icons for the current stop and up to two upcoming stops. The preview follows your current route position, and a ready hand-in no longer repeats its status beneath the action.
+- **Class spell training is optional.** Spell reminders and automatic trainer visits are off by default. Enable them in the Route settings when you want them; talent and profession hints keep working independently.
+
 - **A place to decide what to do next.** The Next page brings your journey, training and profession hints together. Choose a focus, see why each suggestion fits, and start its route or browse the other things you can do. Changing focus leaves your current journey intact.
 - **Training hints follow you around town.** Moving between city districts refreshes the trainer and profession hints without rebuilding your quest route. A hint dismissed or moved since it was drawn cannot start navigation to its old destination.
 

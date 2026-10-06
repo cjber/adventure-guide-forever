@@ -44,7 +44,7 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 - **Journeys.** Finish loose ends, follow a zone's story, find nearby zones suited to your level or take class quests. Cards explain why each fits, under collapsible headers. Dungeon and battleground journeys are opt-in.
 - **Full guide.** Page through the current route followed by the area's Questie outline. Later entries stay outline-only until Questie confirms they are available.
 - **Choose and go.** Picking a journey starts guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop clears only guidance the addon started.
-- **A route that stays with you.** Your choice survives new quests, travel and a reload. Ready hand-ins and nearby pickups come first. Town stops group quest givers into a checklist. The tracker shows the current stop and the next one.
+- **A route that stays with you.** Your choice survives new quests, travel and a reload. Ready hand-ins and nearby pickups come first. Town stops group quest givers into a checklist. The tracker uses your journey as its heading and shows action icons for the current stop and up to two upcoming stops.
 - **Your order.** Drag steps or right-click to move them earlier or later. Moves that break quest order are greyed out. *Back to suggested order* restores the plan.
 - **Time to play.** Choose 15, 30 or 60 minutes to shorten the route using rough travel and quest-time estimates. *No limit* keeps the full route.
 - **Stories and search.** Stories read as chapters without naming later quests. Totals appear only when the data proves them. Search shows a quest's requirements and which ones you meet.

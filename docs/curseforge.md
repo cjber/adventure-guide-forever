@@ -38,7 +38,7 @@ Move steps around.
 
 ![The Adventure Guide tracker section](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png)
 
-Your current stop sits above your quests in the tracker.
+Your journey heads the tracker, with action icons for the current stop and up to two upcoming stops.
 
 ![The Dungeons tab](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/dungeons.png)
 
