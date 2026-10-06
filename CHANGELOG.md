@@ -11,6 +11,10 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-10-06
+
+- **Shared quest stops show all their work.** Nearby objectives share a visit with each quest's current progress shown beneath it in the tracker and map tooltip. Counts update during combat, completed work drops out, and quests placed by the client stay in the visit. Objectives on different maps remain separate.
+
 ## [0.10.0] - 2026-10-06
 
 - **Bosses and loot on the map.** Right-click a dungeon card to browse AtlasLoot bosses and their drops with native item tooltips.
