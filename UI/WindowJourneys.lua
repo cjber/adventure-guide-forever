@@ -320,9 +320,9 @@ local function Build(parent)
 	pageText:ClearAllPoints()
 	pageText:SetPoint("LEFT", previous, "RIGHT", 8, 0)
 	session = CreateSessionPicker(parent)
-	reset = Button(parent, L.ORDER_RESET, LEFT + 220, ns.Order.Reset)
+	reset = Button(parent, L.ORDER_RESET, LEFT + 260, ns.Order.Reset)
 	reset:ClearAllPoints()
-	reset:SetPoint("BOTTOMLEFT", LEFT + 220, 5)
+	reset:SetPoint("LEFT", nextPage, "RIGHT", 10, 0)
 	reset:SetWidth(160)
 end
 
