@@ -608,13 +608,13 @@ do
 	local pins = h.pins.AdventureGuideForeverPinTemplate
 	local ring = pins[1]
 	equal(ring.Badge:GetAtlas(), "QuestNormal", "ring: the kind's badge")
-	equal(ring.Badge:GetWidth(), 11, "ring: compact badge leaves the numeral readable")
+	equal(ring.Badge:GetWidth(), 16, "ring: badge retains its readable size")
 	local point, _, _, x, y = ring.Badge:GetPoint(1)
-	-- Centred in its compact square, which hangs 5 past the ring's lower right.
+	-- Centred in its square, which hangs 4 past the ring's lower right.
 	equal(point, "CENTER", "ring: badge is centred at the corner")
-	equal(x, -0.5, "ring: compact badge horizontal offset")
-	equal(y, 0.5, "ring: compact badge vertical offset")
-	equal(ring.hitRectInsets[4], -5, "ring: the badge takes clicks")
+	equal(x, -4, "ring: badge horizontal offset")
+	equal(y, 4, "ring: badge vertical offset")
+	equal(ring.hitRectInsets[4], -4, "ring: the badge takes clicks")
 	equal(ring.More, nil, "ring: icons only in the corner")
 	local route = h.ns.Route().steps
 	local revisit
@@ -662,18 +662,18 @@ do
 	end
 	h.ns.Overview.SetVerbIcon(texture, { verb = "trainer" })
 	equal(texture.file, "Interface\\Minimap\\Tracking\\Class", "badge: trainer texture")
-	-- An objective step of one kind wears that kind's cursor; mixed work keeps the objective's mark.
+	-- Each objective kind has its own icon; mixed work keeps the objective mark.
 	local quests = h.ns.Data.quests
 	local saved = { quests[1], quests[2] }
 	quests[1] = { kinds = { [0] = "monster", [1] = "item", [2] = "object", [3] = "event" } }
 	quests[2] = { kinds = { [0] = "monster" } }
 	for _, case in ipairs({
-		{ { { id = 1, slot = 0 }, { id = 2, slot = 0 } }, "Interface\\Cursor\\Attack", "kill" },
+		{ { { id = 1, slot = 0 }, { id = 2, slot = 0 } }, "battlemaster", "kill" },
 		{ { { id = 1, slot = 1 } }, "Interface\\Cursor\\Pickup", "collect" },
 		{ { { id = 1, slot = 2 } }, "Interface\\Cursor\\Interact", "use" },
 	}) do
 		h.ns.Overview.SetVerbIcon(texture, { verb = "objective", objectives = case[1] })
-		equal(texture.file, case[2], "badge: an objective to " .. case[3])
+		equal(case[3] == "kill" and texture:GetAtlas() or texture.file, case[2], "badge: an objective to " .. case[3])
 		equal(texture:IsShown(), true, "badge: visible")
 	end
 	for _, case in ipairs({
