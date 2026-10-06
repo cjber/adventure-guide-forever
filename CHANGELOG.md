@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-10-06
+
 - **Bosses and loot on the map.** Right-click a dungeon card to browse AtlasLoot bosses and their drops with native item tooltips.
 
 - **Useful dungeon order.** Level suitability comes first, then quests in your log and travel to the first stop. Recently unlocked quests no longer push high-level dungeons ahead.
