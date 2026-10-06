@@ -196,7 +196,7 @@ h.flush()
 equal(h.ns.Prefs().dungeons, true, "planning shares include-dungeons preference")
 equal(h.ns.Dungeons.Planned(43), true, "planning persists independently of eligible quests")
 h.ns.Dump()
-equal(h.G.AdventureGuideForeverDB.dump.windowTab, "dungeons", "dump names active tab")
+equal(h.G.AdventureGuideForeverDB.dump.windowTab, "activities", "dump names active tab")
 equal(#h.G.AdventureGuideForeverDB.dump.window > 0, true, "dump captures window layout")
 
 -- Selecting and hiding while a source job is sliced must stop all reads; a later show restarts safely.
