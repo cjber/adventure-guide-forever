@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Bosses and loot on the map.** Right-click a dungeon card to browse AtlasLoot bosses and their drops with native item tooltips.
+
 - **Useful dungeon order.** Level suitability comes first, then quests in your log and travel to the first stop. Recently unlocked quests no longer push high-level dungeons ahead.
 
 - **Journeys keep their full route.** Time-limit controls and estimated session budgets are removed. Saved time limits no longer hide quest steps.

@@ -218,6 +218,24 @@ if input.rects.story_complete then
 end
 out.story_complete = { layout = h.ns.DumpLayout(popup[1], h.Describe) }
 
+-- AtlasLoot Classic's Deadmines record: Edwin VanCleef (639), Cruel Barb (5191).
+h = harness.load({ items = { [5191] = { name = "Cruel Barb" } } })
+loaded[#loaded + 1] = h
+h.ns.DungeonLoot.Bosses = function()
+	return { { name = "Edwin VanCleef", npcID = 639, items = { 5191 } } }
+end
+local owner = h.G.CreateFrame("Button", nil, h.G.UIParent)
+h.ns.Menu.Journey(owner, { title = "Deadmines", key = "dungeon:36", instance = 36 })
+local lootPopup = h.G.AdventureGuideForeverContextMenu
+h.Click(lootPopup.rows[2])
+h.Click(lootPopup.rows[2])
+out.loot_menu = {}
+for _, row in ipairs(lootPopup.rows) do
+	if row:IsShown() then
+		out.loot_menu[#out.loot_menu + 1] = { kind = row:IsEnabled() and "button" or "title", text = row:GetText() }
+	end
+end
+
 out.errors = {}
 for _, each in ipairs(loaded) do
 	for _, err in ipairs(each.errors) do

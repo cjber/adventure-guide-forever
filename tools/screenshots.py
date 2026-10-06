@@ -588,6 +588,8 @@ def render():
     images["tracker"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     kinds = {"title": drawing.wm.MenuTitle, "button": drawing.wm.MenuButton}
+    loot, _ = drawing.wm.context_menu(ui, [kinds[entry["kind"]](entry["text"]) for entry in data["loot_menu"]])
+    images["loot"] = drawing.wm.scene(ui, [(loot, 0, 0)])
     menu, menu_rects = drawing.wm.context_menu(ui, [kinds[entry["kind"]](entry["text"]) for entry in data["menu"]])
     bx, by, _, _ = tracked["blocks"][0]
     # A right-click on the block header: Blizzard_Menu opens the menu with its TOPLEFT at the cursor.

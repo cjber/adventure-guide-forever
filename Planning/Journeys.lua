@@ -165,7 +165,8 @@ local function Carry(data, player, completed, log, ready, prefs, mapName, added)
 	PickupSteps(data, added, function()
 		return true
 	end, candidates, stops)
-	local steps = Laps(data, player, completed, log, candidates, plan, prefs, mapName, nil, nil, "carry")
+	local steps = State.committedOrders
+			and Laps(data, player, completed, log, candidates, plan, prefs, mapName, nil, nil, "carry")
 		or Build(data, player, completed, log, candidates, prefs, mapName)
 	steps = #added > 0 and Within(data, player, completed, log, steps) or steps
 	if steps[1] and Model.Here(data, player, steps, State.heldHere) == 1 then

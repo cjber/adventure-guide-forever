@@ -94,12 +94,32 @@ function Menu.Step(root, step)
 	end
 end
 
--- The journey card's dismissal menu.
+-- The journey card's menu, including its dungeon companion data.
 ---@param owner Region
 ---@param journey AGFJourney
 function Menu.Journey(owner, journey)
 	ns.ContextMenu(owner, function(_, root)
 		root:CreateTitle(journey.title)
+		if journey.instance then
+			local loot = root:CreateButton(L.DUNGEON_BOSSES_LOOT)
+			local bosses, hint = ns.DungeonLoot.Bosses(journey.instance)
+			if hint then
+				loot:CreateTitle(hint)
+			end
+			for _, boss in ipairs(bosses) do
+				local drops = loot:CreateButton(boss.name)
+				drops:CreateTitle(boss.name)
+				for _, id in ipairs(boss.items) do
+					local name = C_Item.GetItemNameByID(id)
+					if not name then
+						C_Item.RequestLoadItemDataByID(id)
+					end
+					drops:CreateButton(name or L.ITEM_LOADING):SetTooltip(function(tooltip)
+						tooltip:SetItemByID(id)
+					end)
+				end
+			end
+		end
 		root:CreateButton(L.NOT_INTERESTED, function()
 			ns.NotInterested(journey.key, journey.title)
 		end)

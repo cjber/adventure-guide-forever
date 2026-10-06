@@ -93,4 +93,27 @@ end)
 h.Hover(popup.rows[1])
 equal(h.tooltip[1], "title: Own tip", "a row with its own tooltip keeps it")
 equal(#h.errors, 0, table.concat(h.errors, "\n"))
+-- Dungeon data stays reachable from the map card after removing the standalone window.
+h.ns.DungeonLoot.Bosses = function(instance)
+	equal(instance, 36, "the card asks for its own instance")
+	return { { name = "Edwin VanCleef", npcID = 639, items = { 5191 } } }
+end
+h.G.C_Item.GetItemNameByID = function(id)
+	return id == 5191 and "Cruel Barb" or nil
+end
+h.ns.Menu.Journey(owner, { title = "Deadmines", key = "dungeon:36", instance = 36 })
+equal(popup.rows[2]:GetText(), "Bosses and loot >", "dungeon menu offers companion loot")
+h.Click(popup.rows[2])
+equal(popup.rows[2]:GetText(), "Edwin VanCleef >", "boss list uses AtlasLoot names")
+h.Click(popup.rows[2])
+equal(popup.rows[3]:GetText(), "Cruel Barb", "boss drops list cached item names")
+h.Hover(popup.rows[3])
+equal(h.tooltip[1], "item: 5191", "drop hover opens the native item tooltip")
+h.ns.DungeonLoot.Bosses = function()
+	return {}, h.ns.L.DUNGEON_LOOT_INSTALL
+end
+h.ns.Menu.Journey(owner, { title = "Deadmines", key = "dungeon:36", instance = 36 })
+h.Click(popup.rows[2])
+equal(popup.rows[2]:GetText(), h.ns.L.DUNGEON_LOOT_INSTALL, "missing companion has an explicit hint")
+
 print("context_menu_spec: " .. checks .. " checks passed")

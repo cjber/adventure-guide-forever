@@ -36,6 +36,10 @@ These images are generated previews of the guide UI.
 
 Forever's new quests are only considered once they are in your log, and a missing location stays missing. This is not a complete levelling walkthrough.
 
+![Dungeon boss drops](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/loot.png)
+
+Right-click a dungeon card to browse AtlasLoot bosses and their drops with native item tooltips.
+
 ## Usage
 
 `/agf`, `/adventureguide` or the addon compartment opens the guide on the world map. Options are in the guide's cog and Settings > AddOns > Adventure Guide.

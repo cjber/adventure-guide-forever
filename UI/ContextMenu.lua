@@ -167,6 +167,7 @@ function Draw(root)
 		-- A row cut at the cap cannot show its whole line, so its tooltip does.
 		local truncated = entry.tooltip == nil and row:GetTextWidth() > width - TEXT_PADDING
 		row:SetEnabled(entry.kind ~= "title" and entry.kind ~= "divider" and entry:IsEnabled())
+		row:SetMotionScriptsWhileDisabled(true)
 		row:SetScript("OnClick", function()
 			if entry.back then
 				Draw(entry.back)

@@ -32,7 +32,7 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 
 - **Quest difficulty.** Choose the highest recommended quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups. Accepted quests remain visible.
 
-- **Dungeon journeys.** Follow quest pickups, preparation chains and hand-ins with Shortest Path Forever. Preparation steps include prerequisites available now. Tweaks Forever handles automatic dungeon maps.
+- **Dungeon journeys.** Follow quest pickups, preparation chains and hand-ins with Shortest Path Forever. Preparation steps include prerequisites available now. Right-click a dungeon card for AtlasLoot bosses, drops and native item tooltips. Tweaks Forever handles automatic dungeon maps.
 - **Journeys.** Finish loose ends, follow a zone's story, find nearby zones suited to your level or take class quests. Journey choices explain why each fits. Dungeon and battleground journeys are opt-in.
 - **Full guide.** Expand the map guide to see the current route followed by the area's Questie outline. Later entries stay outline-only until Questie confirms they are available.
 - **Choose and go.** Pick a journey on the map to start guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop clears only guidance the addon started.
@@ -46,6 +46,10 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png" width="400" alt="The Adventure Guide tracker section"></p>
 
 <p align="center">Your next stop sits beside your quests, with travel time when Shortest Path Forever has an estimate.</p>
+
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/loot.png" width="300" alt="Dungeon boss drops in the map card menu"></p>
+
+<p align="center">Right-click a dungeon card for its bosses and loot. Hover a drop for the game's item tooltip.</p>
 
 ## Install
 
