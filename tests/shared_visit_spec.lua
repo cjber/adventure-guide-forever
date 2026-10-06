@@ -164,6 +164,20 @@ do
 	equal(area.title:find("Complete 2", 1, true), nil, "replan: no longer titled as shared")
 end
 
+-- A client waypoint can share a visit without a database objective slot.
+do
+	local fields, log = Fields(), Log()
+	fields.quests[3].need, fields.quests[3].obj = nil, nil
+	log[3] = { id = 3, title = "Waypoint quest", level = 18, complete = false, poi = { map = 1, x = 0.225, y = 0.8 } }
+	local plan = Model.Plan(fields, player, done, log, prefs())
+	local original = Find(plan.steps, "area:1:0")
+	equal(table.concat(original.quests, " "), "3 1 2", "waypoint: joins the nearby objective visit")
+	log[1].objectives = { { type = "monster", done = true, have = 8, need = 8 } }
+	local refreshed = Model.Refresh(fields, player, done, log, prefs(), plan)
+	local remaining = Find(refreshed.journeys[1].steps, "area:1:0")
+	equal(table.concat(remaining.quests, " "), "3 2", "waypoint: combat refresh retains unslotted work")
+end
+
 -- Far apart, on another map, or group against ordinary: separate visits.
 do
 	local log = Log({

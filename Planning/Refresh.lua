@@ -113,8 +113,9 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 				copy.group = #quests
 			end
 			if step.objectives then
-				local objectives = {}
+				local objectives, slotted = {}, {}
 				for _, objective in ipairs(step.objectives) do
+					slotted[objective.id] = true
 					objectives[#objectives + 1] = Carrying(objective.id) and objective or nil
 				end
 				copy.objectives = ns.Planner.Steps.LiveObjectives(data, log, objectives)
@@ -124,7 +125,7 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 						remaining[objective.id] = true
 					end
 					copy.quests = Keep(quests, function(id)
-						return remaining[id] == true
+						return not slotted[id] or remaining[id] == true
 					end)
 					if #copy.quests == 0 then
 						return nil
