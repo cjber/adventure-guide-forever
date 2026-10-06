@@ -1,0 +1,3 @@
+<Bindings>
+	<!-- Kept empty because an already-running client may still request this file on reload. -->
+</Bindings>
