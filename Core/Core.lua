@@ -11,6 +11,7 @@ local DEFAULTS = {
 	showTracker = true,
 	floatWindow = false,
 	stepSound = true,
+	trainingReminders = false,
 	-- Opt-in: with the Adventure tab closed the map shows no Adventure Guide mark unless the player asks for them.
 	showMapPins = false,
 	showQuestGivers = false,
@@ -503,7 +504,7 @@ local function BuildRoute()
 		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
 	else
 		local previous, known = training, false
-		if prefs.journey then
+		if prefs.journey and ns.Setting("trainingReminders") then
 			training, known = ns.Integrations.Training()
 		else
 			training = nil
@@ -586,7 +587,7 @@ end
 -- A spell learned (or a new level's) changes what the trainer stop says, or ends it: rebuild when the answer moved.
 local spellbook = CreateFrame("Frame")
 spellbook:SetScript("OnEvent", function(_, event)
-	if not ns.Prefs().journey or InCombatLockdown() then
+	if not ns.Setting("trainingReminders") or not ns.Prefs().journey or InCombatLockdown() then
 		return
 	end
 	local now = ns.Integrations.Training()

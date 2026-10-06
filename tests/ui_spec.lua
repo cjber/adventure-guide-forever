@@ -314,11 +314,11 @@ do
 	-- Every row goes in through the secure delegate; none from addon code, which taints the search. The rows are
 	-- grouped into subcategories with a short index page, so no page grows tall.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 20, "16 rows and 4 index buttons, all through Settings.RegisterInitializer")
+	equal(#h.settings, 21, "17 rows and 4 index buttons, all through Settings.RegisterInitializer")
 	local L = h.ns.L
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
-		"wanderer followQuest optimisedRoute includeDungeonsDefault titleStartsRoute autoStart stepSound",
+		"wanderer followQuest optimisedRoute includeDungeonsDefault titleStartsRoute autoStart stepSound trainingReminders",
 		"Route holds its rows in order"
 	)
 	equal(table.concat(pages[L.SETTINGS_GROUP_MAP] or {}, " "), "showMapPins showQuestGivers", "Map holds its rows")
@@ -3898,7 +3898,7 @@ do
 		local h = harness.load({
 			planned = true,
 			spf = "v1+",
-			db = { showMapPins = true, showQuestGivers = true, autoStart = false },
+			db = { showMapPins = true, showQuestGivers = true, autoStart = false, trainingReminders = true },
 			tf = case.tf,
 			completed = { 844 },
 			log = {
@@ -4031,7 +4031,7 @@ do
 	local h = harness.load({
 		planned = true,
 		spf = "v1",
-		db = { showMapPins = true, showQuestGivers = true, autoStart = false },
+		db = { showMapPins = true, showQuestGivers = true, autoStart = false, trainingReminders = true },
 		tf = tf,
 		player = { level = 8, map = 1411, x = 0.52, y = 0.43, classID = 4, raceID = 8 },
 		charDB = { journey = "zone:1411" },

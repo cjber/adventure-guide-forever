@@ -25,7 +25,9 @@ making every suggestion a large decorative card.
 
 Below it, a collapsed Other adventures section offers alternatives. Browse opens
 details; Start commits the choice. Keep session length beside journey controls.
-Show each trainer or profession hint once, as a compact contextual row, rather
+Class spell reminders and automatic spell-training visits are off by default; an
+explicit Route setting enables them. Unspent talent and profession hints remain
+independent. Show each enabled trainer or profession hint once, as a compact contextual row, rather
 than repeating it in the featured area and the Today strip.
 
 ## Navigation
@@ -88,8 +90,17 @@ not sufficient feedback.
 ## Map and tracker
 
 The tracker shows the current action once, its live progress, and the next destination.
-Keep zone and journey context secondary. Avoid repeating a whole quest title on
-every line. Progress changes update the existing route label rather than restarting it.
+Use the active journey's title as its single section heading, such as Ashenvale story,
+in place of Adventure Guide. Put the current action, such as Turn in: Bathran's Hair,
+beneath it in the normal objective style. Do not repeat the journey title as another
+block or stack it beneath an addon heading. Without an active journey, the heading
+falls back to Adventure Guide; the icon and tooltip retain the addon's identity.
+Show the current objective with its action icon, then up to two upcoming objectives
+with smaller icons and muted text. Keep the preview in route order and update it
+after progress changes. Hide it when there are no further objectives, and keep the
+current objective readable when space is limited. Keep zone context secondary.
+Avoid repeating a whole quest title on every line.
+Progress changes update the existing route label rather than restarting it.
 
 On a map pin, the original icon or numbered disc remains readable. Put a small
 action badge in its lower-right corner, preserving native aspect and the click
@@ -145,6 +156,8 @@ and one visual celebration. Reuse that same completion record in Progress.
   Deadmines and Wailing Caverns when appropriate; exclusions explain their reason.
 - A high-level zone visit identifies its eligible quest and its zone warning.
 - Completing an objective updates the main page, tracker and Shortest Path count.
+- An active story uses one tracker heading with its action below it; the generic
+  Adventure Guide heading and a duplicate story-title row are absent.
 - Long names, UI scale and compact layouts keep text and controls readable.
 - Pin badges leave the original icon or numeral readable, at normal and zoomed scales.
 - A final story hand-in produces one named completion popup, including with the

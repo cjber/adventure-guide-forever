@@ -267,6 +267,9 @@ ns.L = {
 	SETTING_MAP_PINS = "Show route pins on the map",
 	SETTING_GIVERS = "Show quest givers on the map",
 	SETTING_DUNGEONS_DEFAULT = "Include dungeons by default",
+	SETTING_TRAINING_REMINDERS = "Remind me to train class spells",
+	SETTING_TRAINING_REMINDERS_TOOLTIP = "Suggest class trainer visits and add spell training to journeys. "
+		.. "You can choose which spells to learn; buying every spell is optional.",
 	-- Honest coverage (docs/design.md §2.1): the "!" over a giver marks the quests the guide can't list; Forever
 	-- draws no givers on the map.
 	UNLISTED = 'This land has stories the guide doesn\'t know yet; look for the "!" over quest givers.',

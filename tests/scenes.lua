@@ -117,7 +117,7 @@ out.panel.map = h.map:GetMapID()
 -- both asides above them, and the first card's rings, which the guide previews
 -- on its own (§2.6). Two finished quests: Counterattack!, handed in at Regthar Deathgate's camp, so the story card
 -- counts two ready, and Hidden Enemies, handed in at Orgrimmar, so Quests in your log has one. Tweaks Forever
--- has three spells to train and a talent point waits, so both asides show.
+-- has three optional spells to train and a talent point waits; spell reminders stay off.
 local COUNTERATTACK =
 	{ id = 4021, title = "Counterattack!", level = 20, complete = true, map = 1413, x = 0.4534, y = 0.2841 }
 local HIDDEN_ENEMIES =
@@ -221,7 +221,7 @@ local function Window(each, scene, tab)
 	return { layout = each.ns.DumpLayout(window, each.Describe) }
 end
 
--- The Journeys tab for the lead image's character: nothing chosen, the story featured, both asides in Today.
+-- The Journeys tab for the lead image's character: nothing chosen, the story featured, talents in Today.
 h = Load("v1", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, {
 	tf = { spells = { SPELL, SPELL, SPELL } },
 	talents = 1,
@@ -312,6 +312,7 @@ h.ns.WindowDB().dungeon = 389
 out.dungeons_live = Window(h, "dungeons_live", 5)
 
 local ASIDES = {
+	db = { autoStart = false, trainingReminders = true },
 	tf = { spells = { SPELL, SPELL, SPELL } },
 	talents = 1,
 }
@@ -397,6 +398,7 @@ out.window_missing = Window(h, "window_missing")
 
 -- Today with more than fits: three chips and "+2 more", the hearth among them.
 h = Load("v1", false, true, nil, { COUNTERATTACK, HIDDEN_ENEMIES }, {
+	db = ASIDES.db,
 	tf = ASIDES.tf,
 	talents = ASIDES.talents,
 	setup = function(each)

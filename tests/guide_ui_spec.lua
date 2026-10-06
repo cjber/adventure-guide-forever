@@ -311,6 +311,7 @@ end
 
 do
 	local h = Load({
+		db = { trainingReminders = true },
 		tf = { spells = { SPELL } },
 		talents = 1,
 		setup = function(each)

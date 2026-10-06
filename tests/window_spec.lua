@@ -237,7 +237,12 @@ end
 
 do
 	local spell = { name = "Lightning Bolt", level = 18, line = "Elemental", lineID = 375, general = false }
-	local h = Load({ spf = "v1", tf = { spells = { spell } }, talents = 1 })
+	local h = Load({
+		spf = "v1",
+		db = { trainingReminders = true, window = { tab = "journeys" } },
+		tf = { spells = { spell } },
+		talents = 1,
+	})
 	local ns, L = h.ns, h.ns.L
 	local window = Open(h)
 	clean(h, "journeys")

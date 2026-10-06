@@ -12,6 +12,7 @@ end
 
 -- v2: Training still answers (additive), and Trainers returns the class trainers with their places.
 local h = harness.load({
+	db = { trainingReminders = true },
 	player = { level = 20, faction = "Horde", raceID = 2, classID = 2, map = 1420, x = 0.5, y = 0.6 },
 	tf = {
 		version = 2,
@@ -48,6 +49,7 @@ equal(aside.place.x, 0.32, "a trainer of the other side alone is passed over")
 
 -- The service catalogue is absent without QuestieDB, including while its first build is pending.
 local absent = harness.load({
+	db = { trainingReminders = true },
 	questiedb = false,
 	player = { level = 20, faction = "Horde", raceID = 2, classID = 2, map = 1420, x = 0.5, y = 0.6 },
 	tf = {
@@ -85,6 +87,7 @@ equal(select(2, none.ns.Integrations.Training()), false, "no Tweaks, Training un
 -- A reply with a known, affordable fee but no level cannot be placed: it is left out like an unknown fee, never
 -- passed to math.max. This is the owner crash: with a journey chosen, any rebuild (a setting click) raised here.
 local unplaced = harness.load({
+	db = { trainingReminders = true },
 	charDB = { journey = "zone:1413" },
 	tf = {
 		version = 1,

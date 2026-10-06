@@ -243,6 +243,9 @@ end
      trainer who teaches them (Model.Trainer); text only when the data places none. ]]
 
 Asides.Register(function()
+	if not ns.Setting("trainingReminders") then
+		return nil
+	end
 	local training = ns.Integrations.Training()
 	if not training then
 		return nil

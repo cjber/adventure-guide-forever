@@ -48,7 +48,7 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 - **Your order.** Drag steps or right-click to move them earlier or later. Moves that break quest order are greyed out. *Back to suggested order* restores the plan.
 - **Time to play.** Choose 15, 30 or 60 minutes to shorten the route using rough travel and quest-time estimates. *No limit* keeps the full route.
 - **Stories and search.** Stories read as chapters without naming later quests. Totals appear only when the data proves them. Search shows a quest's requirements and which ones you meet.
-- **Other things to do.** Hints cover trainers, professions, unspent talents, hearths and unexplored areas. PvP shows your rank, its next reward and available battlegrounds, with the nearest battlemaster.
+- **Other things to do.** Hints cover professions, unspent talents, hearths and unexplored areas. Class spell reminders and automatic trainer visits are off by default; enable them under Settings > AddOns > Adventure Guide Forever > Route. PvP shows your rank, its next reward and available battlegrounds, with the nearest battlemaster.
 - **Professions and completion.** SkillUp Forever fills Professions with recipes, next steps and reagents. Legacy Forever fills Completion with zone progress and nearby objectives.
 - **Your say.** Skip a step until your next reload, hide a journey or rule out a quest on this character. Shift-click a search result or map quest giver to add quests. *Skipped* restores hidden suggestions. The guide never abandons quests for you. Map marks are off by default.
 

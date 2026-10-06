@@ -58,7 +58,7 @@ The full guide continues across pages. These images are generated previews of th
 - **Your route.** Your journey survives travel and reloads. Ready hand-ins come first. Towns group quest givers into checklists.
 - **Your order.** Drag steps or use their menu. Moves that break quest order are greyed out.
 - **Time to play.** Choose 15, 30 or 60 minutes using rough travel and quest-time estimates.
-- **Search and hints.** Check quest requirements, nearby training, talents and battlegrounds.
+- **Search and hints.** Check quest requirements, talents and battlegrounds. Class spell reminders are optional and off by default.
 - **Your say.** Skip steps or hide journeys. Shift-click search results or map quest givers to add quests. Nothing abandons quests for you. Map marks are off by default.
 
 Forever's new quests are only considered once they are in your log, and a missing location stays missing. This is not a complete levelling walkthrough.
