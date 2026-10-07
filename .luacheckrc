@@ -12,7 +12,9 @@ exclude_files = {
 }
 ignore = { "212/_.*", "212/self" } -- unused args prefixed with _, and self on mixin handlers
 
-globals = { "ForeverTrackerHost",
+globals = {
+	"RXPCData",
+	"ForeverTrackerHost",
 	"AdventureGuideForever",
 	"AdventureGuideForeverDB",
 	"AdventureGuideForeverCharDB",
@@ -28,7 +30,15 @@ globals = { "ForeverTrackerHost",
 	"BINDING_NAME_ADVENTUREGUIDEFOREVER_WINDOW",
 }
 
-read_globals = { "MinimalSliderWithSteppersMixin", "ShowUIPanel", "HideUIPanel", "CreateFramePoolCollection", "C_XMLUtil",
+read_globals = {
+	"LibStub",
+	"LibDBIcon10_RXPGuides",
+	"RXP",
+	"MinimalSliderWithSteppersMixin",
+	"ShowUIPanel",
+	"HideUIPanel",
+	"CreateFramePoolCollection",
+	"C_XMLUtil",
 	"CreateScrollBoxListLinearView",
 	"CreateDataProvider",
 	"ScrollUtil",
@@ -68,6 +78,8 @@ read_globals = { "MinimalSliderWithSteppersMixin", "ShowUIPanel", "HideUIPanel",
 	"UnitXPMax",
 	"GetRealZoneText",
 	"C_Map",
+	"C_Minimap",
+	"Minimap",
 	"C_Texture",
 	"C_QuestLog",
 	"C_CreatureInfo",
@@ -86,7 +98,9 @@ read_globals = { "MinimalSliderWithSteppersMixin", "ShowUIPanel", "HideUIPanel",
 	"C_SuperTrack",
 	"UIErrorsFrame",
 	-- QuestieSource.lua
-	"LibQuestieDB", "Questie", "QuestieLoader",
+	"LibQuestieDB",
+	"Questie",
+	"QuestieLoader",
 	"C_AddOns",
 	"debugprofilestop",
 	-- Pins.lua

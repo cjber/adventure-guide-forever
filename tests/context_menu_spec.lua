@@ -24,6 +24,8 @@ end)
 local popup = h.G.AdventureGuideForeverContextMenu
 assert(popup)
 equal(popup:IsShown(), true, "owned menu opens")
+equal(popup.rows[3]:GetHeight(), 20, "compact dropdown rows")
+equal(popup.rows[3].fontString:GetText(), "First >", "button uses its compact text label")
 equal(popup:GetParent(), h.G.UIParent, "popup escapes owner scroll clipping")
 equal(popup.rows[1]:IsEnabled(), false, "title not actionable")
 equal(popup.rows[2]:IsEnabled(), false, "disabled action stays disabled")

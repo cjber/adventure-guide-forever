@@ -10,7 +10,7 @@ A few places to go next in WoW: Forever, in a guide that looks like it came with
 
 I wanted a levelling guide that left me room to wander. From your level, finished quests and quest log, Adventure Guide Forever offers a few journeys, each with a reason, and a short route for the one you pick. It uses the quest log's side tab, retail's Journeys art and the game's own objective tracker. Clicking a quest in your log opens Blizzard's quest details.
 
-Shortest Path Forever handles travel when installed. QuestieDB supplies the full quest catalogue; Questie checks which pickups are currently available. Questie owns background quest markers; the guide adds route rings. If you'd rather follow another guide's route, you can hide the guide's tracker in settings.
+Shortest Path Forever handles travel when installed. QuestieDB supplies the full quest catalogue; Questie checks which pickups are currently available. Questie owns background quest markers; the guide adds route rings. When RestedXP is installed, a one-time prompt lets you keep its display or show its instructions in Adventure Guide. Choosing Adventure Guide hides RestedXP windows and map markers, and uses Shortest Path for navigation when installed. Choose a suitable RestedXP guide from the Continue cards. A single matching chapter loads automatically. RestedXP loads guides and advances their steps; Shortest Path Forever handles travel. Turn off *Use RestedXP guides* to return to Adventure Guide's recommendations.
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif" width="640" alt="Choosing a journey and following its route"></p>
 
@@ -26,9 +26,17 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/story_complete.png" width="400" alt="Story completion popup"></p>
 
+<p align="center">Finished stories are recorded once for this character.</p>
+
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/restedxp.png" width="640" alt="RestedXP instructions in the Adventure tab"></p>
+
+<p align="center">Follow a RestedXP guide in the Adventure tab, with its engine handling progress.</p>
+
 ## Features
 
-- **Map guide.** Continue shows two journeys; other sections show one each. Expand a section for more choices. Quests in your log is the default suggestion.
+- **RestedXP guides.** Read the active guide in your existing journey cards, step rows and objective tracker, with about ten steps on the map and the current, next and ongoing steps in the quest tracker. Choose a guide, move between steps or skip one, and import guides through RestedXP. Its engine handles completion; Shortest Path Forever follows the destination.
+
+- **Map guide.** Continue shows two journeys; other sections show one each. Expand a section for more choices. The active RestedXP guide is offered first when its integration is enabled; otherwise Quests in your log is the default suggestion.
 
 - **Quest difficulty.** Choose the highest recommended quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups. Accepted quests remain visible.
 

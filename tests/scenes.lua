@@ -236,6 +236,21 @@ for _, row in ipairs(lootPopup.rows) do
 	end
 end
 
+h = Load("v1", false, true)
+dofile("tests/rxp_fixture.lua")(h, 10)
+local example = assert(h.ns.RestedXP.Journey())
+h.ns.Choose(example.key, true)
+h.flush()
+out.restedxp = Panel(h, "restedxp")
+h.providers[1]:RefreshAllData()
+out.restedxp.pins = Pins(h)
+
+h = Load("v1", false, true, nil, nil, { skillup = { professions = {} } })
+dofile("tests/rxp_fixture.lua")(h, nil, true)
+local setup = assert(h.G.AdventureGuideForeverGuideSetup)
+h.SetRects(setup, input.rects.guide_setup or {})
+out.guide_setup = { layout = h.ns.DumpLayout(setup, h.Describe) }
+
 out.errors = {}
 for _, each in ipairs(loaded) do
 	for _, err in ipairs(each.errors) do

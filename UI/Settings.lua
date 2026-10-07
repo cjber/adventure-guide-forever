@@ -60,6 +60,7 @@ function ns.RegisterSettings()
 					Settings.CreateSliderInitializer(setting, options, ns.L.SETTING_QUEST_LEVEL_TOOLTIP)
 				)
 				for _, initializer in ipairs({
+					Checkbox(subcategory, "restedxpGuide", ns.L.SETTING_RXP, ns.L.SETTING_RXP_TOOLTIP),
 					Checkbox(subcategory, "wanderer", ns.L.SETTING_WANDERER, ns.L.SETTING_WANDERER_TOOLTIP),
 					Checkbox(subcategory, "followQuest", ns.L.SETTING_FOLLOW_QUEST, ns.L.SETTING_FOLLOW_QUEST_TOOLTIP),
 					Checkbox(subcategory, "optimisedRoute", ns.L.SETTING_ROUTE_ORDER, ns.L.SETTING_ROUTE_ORDER_TOOLTIP),

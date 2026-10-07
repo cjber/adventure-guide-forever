@@ -68,4 +68,15 @@ function API.NextStops(limit)
 	return stops
 end
 
+-- RXP keeps its engine; this frontend owns the guide's navigation, including Stop.
+---@return boolean
+function API.RestedXPIntegrated()
+	return ns.RestedXP.Enabled()
+end
+
+---@return boolean
+function API.RestedXPNativeUI()
+	return not ns.Setting("restedxpChoiceMade") or not ns.Setting("restedxpGuide")
+end
+
 AdventureGuideForever = { API = API }

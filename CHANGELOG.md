@@ -11,6 +11,14 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-10-07
+
+- **Choose where to display RestedXP guides.** A one-time prompt explains which windows and markers Adventure Guide replaces. Keep RestedXP or use Adventure Guide, and change the choice later in AddOns settings.
+
+- **Compact step menus.** Step actions use small menu rows instead of a column of red buttons. Nearby map stops share stacked rings on the world map and minimap.
+
+- **RestedXP guides in the Adventure tab.** Read guide instructions and objectives in the map sidebar and tracker, select guides and control their steps. RestedXP handles progression while Shortest Path Forever handles travel. The guide shares existing journey cards, steps and map pins with Adventure Guide recommendations. The map previews ten steps with grouped markers, while the quest tracker shows the current step, the next step and ongoing objectives.
+
 ## [0.10.2] - 2026-10-07
 
 - **Data checked against Forever 1.60.1.70245.** The bundled game data is unchanged.

@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: Adventure Guide Forever
-## Notes: Suggests a short route of next quest steps from your level, finished quests and current log.
+## Notes: Quest journeys and RestedXP guides in the map and objective tracker.
 ## Author: cjber
 ## Version: @project-version@
 ## Category: Quests
@@ -12,7 +12,7 @@
 ## SavedVariables: AdventureGuideForeverDB
 ## SavedVariablesPerCharacter: AdventureGuideForeverCharDB
 ## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick
-## OptionalDeps: AtlasLootClassic, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever
+## OptionalDeps: AtlasLootClassic, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever, RXPGuides
 
 Locales\enUS.lua
 Data\Geometry.lua
@@ -37,6 +37,7 @@ Core\State.lua
 Planning\Geometry.lua
 Planning\Focus.lua
 Integrations\Integrations.lua
+Integrations\RestedXP.lua
 Integrations\Tweaks.lua
 Integrations\SkillUp.lua
 Core\Guidance.lua
@@ -57,6 +58,7 @@ Core\Recommendations.lua
 UI\Art.lua
 UI\Moments.lua
 UI\ContextMenu.lua
+UI\GuideSetup.lua
 UI\Menu.lua
 UI\Pins.lua
 UI\Overview.lua

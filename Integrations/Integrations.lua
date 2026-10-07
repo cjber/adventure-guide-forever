@@ -98,7 +98,7 @@ end
 local function Fetch(step)
 	local api = SPF()
 	local player = ns.State.Player()
-	if not (api and player.map and player.x and player.y) or InCombatLockdown() then
+	if not (api and player.map and player.x and player.y) or not ns.Model.ValidPlace(step) or InCombatLockdown() then
 		return nil
 	end
 	if type(api.EstimateDetail) == "function" then
@@ -368,7 +368,7 @@ local function Stops(steps, hold)
 			hold = hold == true
 				and step.kind ~= "trainer"
 				and step.kind ~= "battlemaster"
-				and (#(step.quests or {}) > 0 or #(step.handins or {}) > 0),
+				and (step.rxpIndex ~= nil or #(step.quests or {}) > 0 or #(step.handins or {}) > 0),
 		}
 	end
 	return stops

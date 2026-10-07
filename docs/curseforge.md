@@ -2,7 +2,7 @@ Developed with AI assistance; changes are reviewed and checked with automated te
 
 I wanted a levelling guide that left me room to wander. Adventure Guide Forever suggests journeys from your level and quest log, with a route for the one you pick. It looks like it came with the game.
 
-QuestieDB supplies quests; Questie checks pickup availability. You can hide the tracker when following another guide.
+QuestieDB supplies quests; Questie checks pickup availability. A one-time prompt lets you keep RestedXP's display or use Adventure Guide. Choosing Adventure Guide hides RestedXP windows and markers, with Shortest Path Forever handling travel when installed.
 
 ![Choosing a journey and following its route](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif)
 
@@ -20,9 +20,13 @@ Pick one and Shortest Path Forever walks you to each stop in turn.
 
 Your journey heads the tracker, with action icons for the current stop and up to two upcoming stops.
 
+![RestedXP instructions in the Adventure tab](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/restedxp.png)
+
 These images are generated previews of the guide UI.
 
 ## Features
+
+- **RestedXP guides.** With RestedXP installed, read its instructions and objectives in the Adventure tab and tracker. Choose a guide from the Continue cards, ordered for your level, and move between its steps while Shortest Path Forever handles travel. Turn off *Use RestedXP guides* to return to Adventure Guide recommendations.
 
 - **What to do next.** The map guide offers two Continue cards and one per other section. Expand a header to see more. Quests in your log is the default suggestion.
 - **Journeys.** Finish loose ends, follow zone stories or pick up class quests. Dungeon and battleground journeys are opt-in.

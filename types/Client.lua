@@ -132,6 +132,8 @@ MapCanvasPinMixin = nil
 
 ---@class AGFWorldMapFrame : Frame
 ---@field ScrollContainer Frame
+---@field GetCanvas? fun(self: AGFWorldMapFrame): Frame
+---@field GetCanvasScale? fun(self: AGFWorldMapFrame): number
 ---@field AddDataProvider fun(self: AGFWorldMapFrame, provider: AGFMapProvider)
 ---@field GetMapID fun(self: AGFWorldMapFrame): integer?
 ---@field AcquirePin fun(self: AGFWorldMapFrame, template: string, ...: any): AGFPinFrame

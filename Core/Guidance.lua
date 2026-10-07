@@ -59,6 +59,12 @@ end
 ---@param hold? boolean
 ---@return boolean
 local function Send(steps, hold)
+	if steps[1] and steps[1].preview then
+		return false
+	end
+	if steps[1] and steps[1].rxpIndex then
+		steps = { steps[1] }
+	end
 	if not Integrations.Hand(steps, hold) then
 		return false
 	end
@@ -144,7 +150,7 @@ end
 ---@param follow? boolean the chosen journey will replace held quest stops when progress changes
 ---@return boolean
 function Guidance.Navigate(step, follow)
-	if ns.Setting("wanderer") or not ns.Model.ValidPlace(step) then
+	if ns.Setting("wanderer") or step.preview or not ns.Model.ValidPlace(step) then
 		return false
 	end
 	local routed = Integrations.Provider() ~= nil
@@ -292,6 +298,11 @@ local function Follow()
 	if not spf then
 		return
 	end
+	if first and first.rxpIndex and not ns.Model.ValidPlace(first) then
+		Integrations.Drop()
+		guided, ours = {}, false
+		return
+	end
 	local index = Integrations.CurrentStop()
 	if index then
 		if
@@ -302,6 +313,8 @@ local function Follow()
 		then
 			Send(route.steps, true)
 		end
+	elseif first and first.rxpIndex and ns.Model.ValidPlace(first) then
+		Send({ first }, true)
 	elseif arrived and Unhanded(route.steps) then
 		Send(route.steps, true)
 	end
@@ -393,6 +406,9 @@ end
 ---@return boolean
 function ns.StartRoute(step)
 	local route, prefs = ns.Route(), ns.Prefs()
+	if step and step.preview then
+		return false
+	end
 	if not route.journey then
 		return false
 	end
@@ -410,6 +426,10 @@ function ns.StartRoute(step)
 	end
 	pendingStart = false
 	step = step or route.steps[1]
+	if step and step.rxpIndex and not ns.Model.ValidPlace(step) then
+		prefs.guided = route.journey
+		return true
+	end
 	if step and Guidance.Navigate(step, true) then
 		prefs.guided = route.journey
 		return true
@@ -513,8 +533,11 @@ local function Restore()
 	-- The route AGF had started for the chosen journey comes back, as it was started. Never the waypoint: the client
 	-- kept any that was ours.
 	if prefs.guided and route.chosen and route.journey == prefs.guided then
+		local first = route.steps[1]
 		if not Integrations.Provider() or Integrations.ReplacesJourney() then
 			restoring, prefs.guided = false, nil
+		elseif first and first.rxpIndex and not ns.Model.ValidPlace(first) then
+			restoring = false
 		elseif not ns.Setting("wanderer") and Send(route.steps, true) then
 			restoring = false
 		end

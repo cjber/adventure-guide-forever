@@ -237,11 +237,9 @@ function harness.load(options)
 	local regionMeta = { __index = Methods }
 	-- Client methods whose effect no spec reads: accepted and ignored.
 	for _, name in ipairs({
-		"EnableMouse",
 		"RegisterForClicks",
 		"RegisterForDrag",
 		"SetClampedToScreen",
-		"SetDontSavePosition",
 		"SetMaxLetters",
 		"SetMotionScriptsWhileDisabled",
 		"SetToplevel",
@@ -252,6 +250,7 @@ function harness.load(options)
 	end
 	-- Setters no spec reads but tools/screenshots.py draws: each stores its arguments under `field` for h.Describe.
 	for name, field in pairs({
+		SetDontSavePosition = "dontSavePosition",
 		SetBlendMode = "alphaMode",
 		SetFrameStrata = "frameStrata",
 		SetMovable = "movable",
@@ -259,6 +258,7 @@ function harness.load(options)
 		SetTextColor = "textColor",
 		SetClipsChildren = "clipsChildren",
 		SetHighlightFontObject = "highlightFont",
+		SetDisabledFontObject = "disabledFont",
 		SetJustifyH = "justifyH",
 		SetMaxLines = "maxLines",
 		SetTexCoord = "texCoord",
@@ -392,6 +392,12 @@ function harness.load(options)
 		self.desaturated = desaturated
 	end
 	-- A spec puts the mouse on a frame by setting mouseOver, then runs its OnEnter/OnLeave.
+	function Methods:EnableMouse(enabled)
+		self.mouseEnabled = not not enabled
+	end
+	function Methods:IsMouseEnabled()
+		return self.mouseEnabled == true
+	end
 	function Methods:IsMouseOver()
 		return self.mouseOver == true
 	end
@@ -487,6 +493,9 @@ function harness.load(options)
 	end
 	function Methods:GetEffectiveScale()
 		return self.scale or 1
+	end
+	function Methods:GetDontSavePosition()
+		return self.dontSavePosition == true
 	end
 	function Methods:IsClampedToScreen()
 		return self.clamped == true
@@ -664,8 +673,14 @@ function harness.load(options)
 	end
 
 	-- Text: font strings, buttons and edit boxes. An edit box's OnTextChanged fires on every change.
+	function Methods:SetFontString(text)
+		self.fontString = text
+	end
 	function Methods:SetText(text)
 		self.text = text
+		if self.fontString then
+			self.fontString:SetText(text)
+		end
 		if self.objectType == "EditBox" and self.scripts.OnTextChanged then
 			h.call(self.scripts.OnTextChanged, self, self.userInput == true)
 		end
@@ -993,6 +1008,7 @@ function harness.load(options)
 			frame.scripts.OnLoad = frame.UpdateHighlightForState
 		end,
 		QuestLogBorderFrameTemplate = noop,
+		-- SharedTooltipTemplates.xml: the stock bordered tooltip backdrop.
 		UIPanelButtonTemplate = noop,
 		SearchBoxTemplate = function(frame)
 			Internal("FontString", frame, "Instructions")
@@ -2287,6 +2303,14 @@ function harness.load(options)
 	function G.CreateSettingsButtonInitializer(name, tooltip, onClick, _, addSearchTags)
 		return { kind = "button", name = name, tooltip = tooltip, onClick = onClick, addSearchTags = addSearchTags }
 	end
+
+	G.Minimap = NewRegion("Frame", "Minimap", G.UIParent)
+	G.Minimap:SetSize(140, 140)
+	G.C_Minimap = {
+		GetViewRadius = function()
+			return 200
+		end,
+	}
 
 	-- The world map: a canvas with data providers and pooled pins, counted per template.
 	local map = NewRegion("Frame", "WorldMapFrame", G.UIParent)

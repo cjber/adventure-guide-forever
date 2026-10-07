@@ -12,6 +12,7 @@ ns.Overview = Overview
 -- Blizzard's QUEST_TAG_ATLAS icons (Blizzard_FrameXMLBase/Constants.lua:514-527); the next zone gets the map's "!",
 -- the calling the quest log's class icon from the same sheet (CSV:9385).
 local KIND_ICONS = {
+	guide = "questlog-questtypeicon-story",
 	carry = "questlog-questtypeicon-quest",
 	story = "questlog-questtypeicon-story",
 	nextzone = "QuestNormal",
@@ -137,7 +138,7 @@ local function RowEnter(self)
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	ns.Pins.StepTooltip(GameTooltip, step, index, travel)
 	-- The chosen journey's rows drag into another order (docs/design.md §2.20).
-	if ns.Route().chosen then
+	if ns.Route().chosen and not step.rxpIndex then
 		GameTooltip_AddInstructionLine(GameTooltip, L.ORDER_DRAG)
 	end
 	-- Without Shortest Path a step is a waypoint as the crow flies; a wanderer wants neither.
@@ -262,7 +263,7 @@ local DIMMED = 0.35
 ---@param index? integer
 local function OrderEntries(root, step, index)
 	local Order = ns.Order
-	if not (index and ns.Route().chosen) then
+	if step.rxpIndex or not (index and ns.Route().chosen) then
 		return
 	end
 	root:CreateDivider()
@@ -312,7 +313,7 @@ end
 local function Draggable(row, rows, redraw)
 	row:RegisterForDrag("LeftButton")
 	row:SetScript("OnDragStart", function(self)
-		if not (self.index and ns.Route().chosen) then
+		if (self.step and self.step.rxpIndex) or not (self.index and ns.Route().chosen) then
 			return
 		end
 		GameTooltip_Hide()
@@ -388,11 +389,14 @@ local function LayoutChecklist(pool, first, parent, step, left, top, width, bott
 		-- art-ok: the tracker's tick or its nub, both square, in the square the line built
 		line.Tick:SetAtlas(giver.done and "UI-QuestTracker-Tracker-Check" or "UI-QuestTracker-Objective-Nub")
 		line.Tick:SetAlpha(giver.skipped and 0.4 or 1)
+		line.Text:SetWordWrap(step.rxpIndex ~= nil)
 		line.Text:SetText(giver.text)
+		local height = step.rxpIndex and math.max(CHECK_HEIGHT, line.Text:GetStringHeight()) or CHECK_HEIGHT
+		line:SetHeight(height)
 		local shade = (giver.done or giver.skipped) and 0.6 or 0.9
 		line.Text:SetTextColor(shade, shade, shade)
 		line:Show()
-		top, index = top + CHECK_HEIGHT, index + 1
+		top, index = top + height, index + 1
 	end
 	return top, index
 end
@@ -433,6 +437,11 @@ local function CardClick(self, mouseButton)
 	if not journey then
 		return
 	end
+	if journey.rxpGroup and journey.rxpName and mouseButton ~= "RightButton" then
+		ns.RestedXP.Choose(journey.rxpGroup, journey.rxpName, ns.Setting("titleStartsRoute"))
+		GameTooltip_Hide()
+		return
+	end
 	if mouseButton == "RightButton" then
 		if journey.kind ~= "carry" then
 			GameTooltip_Hide()
@@ -444,7 +453,7 @@ local function CardClick(self, mouseButton)
 		ns.StartRoute()
 	else
 		-- Turn the map to the selected journey.
-		if WorldMapFrame:IsShown() then
+		if WorldMapFrame:IsShown() and journey.map > 0 then
 			C_Map.OpenWorldMap(journey.map)
 		end
 		if self.state ~= "chosen" then
@@ -595,6 +604,9 @@ end
 ---@param journey AGFJourney
 ---@return string
 local function Stops(journey)
+	if journey.rxpGroup then
+		return L.RXP_SELECT
+	end
 	local stops = journey.more and journey.more + 1 or #journey.steps
 	return stops == 1 and L.STOPS_ONE or L.STOPS:format(stops)
 end
@@ -709,6 +721,9 @@ local function Levels(journey, level)
 		low, high = zone.min, zone.max
 	elseif instance then
 		low, high = instance.low, instance.high
+	end
+	if journey.guideLow and journey.guideHigh then
+		low, high = journey.guideLow, journey.guideHigh
 	end
 	if journey.level then
 		return L.LEVELS_FROM:format(journey.level), GetQuestDifficultyColor(level)
