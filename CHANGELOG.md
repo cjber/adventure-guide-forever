@@ -11,6 +11,11 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-10-07
+
+- **Data checked against Forever 1.60.1.70245.** The bundled game data is unchanged.
+- **Data updates keep the saved catalogue in sync.** The refresh workflow updates its revision and checks it before opening a pull request.
+
 ## [0.10.1] - 2026-10-06
 
 - **Shared quest stops show all their work.** Nearby objectives share a visit with each quest's current progress shown beneath it in the tracker and map tooltip. Counts update during combat, completed work drops out, and quests placed by the client stay in the visit. Objectives on different maps remain separate.
