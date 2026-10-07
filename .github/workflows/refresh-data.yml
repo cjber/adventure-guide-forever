@@ -38,6 +38,7 @@ jobs:
           python3 tools/diff_forever.py
           python3 tools/gen_zoneart.py
           python3 tools/gen_corpus.py
+          python3 tools/catalogue_revision.py --write
       - if: steps.pins.outputs.changed == 'true'
         run: python3 tools/check_generated.py --offline
       - name: Generator tests
@@ -48,6 +49,7 @@ jobs:
           python3 tools/gen_zoneart_test.py
           python3 tools/diff_forever_test.py
           python3 tools/refresh_pins_test.py
+          python3 tools/catalogue_revision_test.py
       # The specs include the golden routes (tests/golden): a route the new data changes fails the run.
       - name: Lua checks, specs and the planner bench
         if: steps.pins.outputs.changed == 'true'
