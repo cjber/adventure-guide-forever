@@ -9,6 +9,8 @@ ns.TITLE = L.TITLE
 ---@type table<string, boolean|number>
 local DEFAULTS = {
 	showTracker = true,
+	restedxpGuide = true,
+	restedxpChoiceMade = false,
 	stepSound = true,
 	trainingReminders = false,
 	maxQuestLevelOffset = 2,
@@ -230,6 +232,11 @@ function ns.SetSetting(key, value)
 		return
 	end
 	db[key] = key == "maxQuestLevelOffset" and QuestLevelOffset(value) or value
+	if key == "restedxpGuide" then
+		db.restedxpChoiceMade = true
+		ns.GuideSetup.Hide()
+		ns.RestedXP.Refresh()
+	end
 	-- Wandering from now: what Go started stops, as the player's Stop would.
 	if key == "wanderer" and value then
 		ns.Guidance.Cancel()
@@ -256,6 +263,12 @@ end
 ---@param key string
 ---@param title string
 function ns.Skip(key, title)
+	if key:sub(1, 6) == "guide:" then
+		if ns.RestedXP then
+			ns.RestedXP.SkipKey(key)
+		end
+		return
+	end
 	if not sessionSkipped[key] then
 		sessionSkipped[key] = true
 		skippedOrder[#skippedOrder + 1] = { key = key, title = title }
@@ -621,6 +634,40 @@ end
 ---@param full AGFRoute
 ---@param world AGFSnapshot
 local function CommitRoute(shown, full, world)
+	local guide = ns.RestedXP and ns.RestedXP.Journey()
+	if guide and not ns.Prefs().notInterested[guide.key] then
+		local prefs = ns.Prefs()
+		for _, previous in ipairs(cachedRoute.journeys) do
+			if previous.kind == "guide" and prefs.journey == previous.key and previous.key ~= guide.key then
+				prefs.journey = guide.key
+				if prefs.guided == previous.key then
+					prefs.guided = guide.key
+				end
+				break
+			end
+		end
+		for _, route in ipairs(shown == full and { shown } or { shown, full }) do
+			for index = #route.journeys, 1, -1 do
+				if route.journeys[index].kind == "guide" then
+					table.remove(route.journeys, index)
+				end
+			end
+
+			if ns.Prefs().journey == guide.key or not route.chosen then
+				route.journey, route.steps = guide.key, guide.steps
+				route.chosen = ns.Prefs().journey == guide.key
+			end
+		end
+	end
+	local guideCards = ns.RestedXP.Cards(guide)
+	for _, route in ipairs(shown == full and { shown } or { shown, full }) do
+		for index = #guideCards, 1, -1 do
+			local card = guideCards[index]
+			if not ns.Prefs().notInterested[card.key] then
+				table.insert(route.journeys, 1, card)
+			end
+		end
+	end
 	cachedRoute, rawRoute, snapshot = shown, full, world
 	-- The zone the story led with, and the zone it left, outlive the session, so a /reload does not shuffle it
 	-- (Plan.lua reads them back).

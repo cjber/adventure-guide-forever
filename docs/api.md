@@ -9,6 +9,11 @@ normalized 0–1 coordinates, as Shortest Path's API does.
   at most eight, and an empty table at the end of the route. A `limit` that is not a whole number of zero or more
   returns `nil`.
 
+`RestedXPNativeUI()` returns true while the display choice is pending or the player chose RestedXP. Navigation addons should preserve the native arrow in that case.
+
+`RestedXPIntegrated()` returns whether the installed RestedXP engine is assigned to AGF, including before its first deferred render. Navigation addons can
+use it to defer standalone RXP routing and suppress its native arrow while AGF owns the guide.
+
 A stop is a fresh table on every call:
 
 | Field | |

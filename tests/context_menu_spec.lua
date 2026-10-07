@@ -24,6 +24,8 @@ end)
 local popup = h.G.AdventureGuideForeverContextMenu
 assert(popup)
 equal(popup:IsShown(), true, "owned menu opens")
+equal(popup.rows[3]:GetHeight(), 20, "compact dropdown rows")
+equal(popup.rows[3].fontString:GetText(), "First >", "button uses its compact text label")
 equal(popup:GetParent(), h.G.UIParent, "popup escapes owner scroll clipping")
 equal(popup.rows[1]:IsEnabled(), false, "title not actionable")
 equal(popup.rows[2]:IsEnabled(), false, "disabled action stays disabled")
@@ -115,5 +117,11 @@ end
 h.ns.Menu.Journey(owner, { title = "Deadmines", key = "dungeon:36", instance = 36 })
 h.Click(popup.rows[2])
 equal(popup.rows[2]:GetText(), h.ns.L.DUNGEON_LOOT_INSTALL, "missing companion has an explicit hint")
+
+local step = h.ns.Route().steps[1]
+local block = h.tracker.liveBlocks[step.key]
+block.HeaderButton = h.G.CreateFrame("Button", nil, h.G.UIParent)
+h.tracker:OnBlockHeaderClick(block, "RightButton")
+equal(popup.owner, block.HeaderButton, "tracker menu anchors beside the selected step")
 
 print("context_menu_spec: " .. checks .. " checks passed")

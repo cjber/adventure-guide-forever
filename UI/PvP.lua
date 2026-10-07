@@ -17,6 +17,9 @@ end
 -- a battleground since it opened; its place is the nearest battlemaster the data has, else it is text only (Darkspear
 -- Islands has none in CMaNGOS).
 Asides.Register(function()
+	if not ns.Prefs().battlegrounds then
+		return nil
+	end
 	local bg = ns.State.Battlegrounds()[1]
 	if not bg or bg.level <= Battled() then
 		return nil

@@ -70,7 +70,7 @@ end
 -- The popup is as wide as its longest entry: a fixed row width cut titles such as a step's "Complete objectives ·
 -- ..." with no way to read them. The body width is capped so one very long line cannot run off the screen; a row cut
 -- at the cap carries its whole text in a tooltip, unless the entry already has one of its own.
-local BODY_MIN, FRAME_PAD, ROW_INSET, TEXT_PADDING, BODY_MAX = 296, 24, 12, 20, 600
+local BODY_MIN, FRAME_PAD, ROW_INSET, TEXT_PADDING, BODY_MAX = 180, 24, 12, 20, 600
 
 ---@class AGFContextPopup : Frame
 ---@field rows Button[]
@@ -95,19 +95,21 @@ local function Ensure()
 	if popup then
 		return popup
 	end
-	popup = CreateFrame("Frame", "AdventureGuideForeverContextMenu", UIParent) --[[@as AGFContextPopup]]
+	local frame = CreateFrame("Frame", "AdventureGuideForeverContextMenu", UIParent)
+	popup = frame --[[@as AGFContextPopup]]
 	popup.rows = {}
 	popup:SetFrameStrata("FULLSCREEN_DIALOG")
 	popup:SetClampedToScreen(true)
 	popup:EnableMouse(true)
 	local background = popup:CreateTexture(nil, "BACKGROUND")
+	-- art-ok: common-dropdown-bg supplies native nine-slice margins for a resizing menu.
+	background:SetAtlas("common-dropdown-bg")
 	background:SetAllPoints()
-	background:SetColorTexture(0.04, 0.03, 0.02, 1)
 	local scroll = CreateFrame("ScrollFrame", nil, popup, "ScrollFrameTemplate") --[[@as AGFScrollFrame]]
 	scroll:SetPoint("TOPLEFT", 0, -4)
 	scroll:SetPoint("BOTTOMRIGHT", -24, 4)
 	local body = CreateFrame("Frame", nil, scroll)
-	body:SetWidth(296)
+	body:SetWidth(BODY_MIN)
 	scroll:SetScrollChild(body)
 	popup.body, popup.scroll = body, scroll
 	popup:SetScript("OnShow", function(self)
@@ -147,10 +149,20 @@ function Draw(root)
 	for index, entry in ipairs(entries) do
 		local row = frame.rows[index]
 		if not row then
-			row = CreateFrame("Button", nil, frame.body, "UIPanelButtonTemplate") --[[@as Button]]
+			row = CreateFrame("Button", nil, frame.body) --[[@as Button]]
+			local text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+			text:SetPoint("LEFT", 8, 0)
+			text:SetPoint("RIGHT", -8, 0)
+			text:SetJustifyH("LEFT")
+			row:SetFontString(text)
+			row:SetNormalFontObject("GameFontHighlightSmall")
+			row:SetDisabledFontObject("GameFontDisableSmall")
+			local highlight = row:CreateTexture(nil, "HIGHLIGHT")
+			highlight:SetAllPoints()
+			highlight:SetColorTexture(1, 1, 1, 0.08)
 			frame.rows[index] = row
 		end
-		local height = entry.kind == "divider" and 8 or 26
+		local height = entry.kind == "divider" and 6 or 20
 		row:ClearAllPoints()
 		row:SetPoint("TOPLEFT", 6, -y)
 		local selected = entry.isSelected and entry.isSelected()
@@ -160,6 +172,7 @@ function Draw(root)
 		elseif #entry.entries > 0 then
 			label = ns.L.MENU_SUBMENU:format(label)
 		end
+		row:SetDisabledFontObject(entry.kind == "title" and "GameFontNormalSmall" or "GameFontDisableSmall")
 		row:SetText(label)
 		local width = math.min(math.max(BODY_MIN - ROW_INSET, row:GetTextWidth() + TEXT_PADDING), BODY_MAX - ROW_INSET)
 		row:SetSize(width, height)
@@ -201,6 +214,7 @@ function Draw(root)
 	frame.body:SetWidth(bodyWidth)
 	frame.body:SetHeight(y + 6)
 	frame:SetSize(bodyWidth + FRAME_PAD, math.min(y + 14, 420))
+	frame.scroll.ScrollBar:SetShown(y + 14 > 420)
 	frame.scroll:SetVerticalScroll(0)
 end
 

@@ -124,7 +124,9 @@ def layout_pass(ui, scenes, known):
             scene: layout_rects(
                 ui,
                 data[scene]["layout"],
-                known | ({data[scene]["layout"][0]["path"]: (20, 20, 360, 82)} if scene == "story_complete" else {}),
+                known
+                | ({data[scene]["layout"][0]["path"]: (20, 20, 360, 82)} if scene == "story_complete" else {})
+                | ({data[scene]["layout"][0]["path"]: (0, 0, 454, 294)} if scene == "guide_setup" else {}),
             )
             for scene in scenes
         }
@@ -522,9 +524,25 @@ def render():
     _, frame = map_frame(ui, drawing.wm.Image.new("RGBA", (1002, 668)), True)
     known = known_frames(frame)
     data, rects = layout_pass(
-        ui, ("panel", "journeys", "journeys_four", "journeys_overflow", "search", "story_complete"), known
+        ui,
+        (
+            "panel",
+            "journeys",
+            "journeys_four",
+            "journeys_overflow",
+            "search",
+            "story_complete",
+            "restedxp",
+            "guide_setup",
+        ),
+        known,
     )
     images = {}
+    setup_canvas = ui.canvas(454, 294)
+    Layout(data["guide_setup"]["layout"], rects["guide_setup"]).draw(setup_canvas)
+    images["guide_setup"] = drawing.wm.scene(ui, [(setup_canvas, 0, 0)])
+    canvas, _ = quest_log(ui, data, rects, "restedxp", data["restedxp"]["pins"])
+    images["restedxp"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     # The lead image: no card chosen yet, compact rows with no scrollbar.
     canvas, _ = quest_log(ui, data, rects, "journeys", data["journeys"]["pins"])

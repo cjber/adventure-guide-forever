@@ -484,12 +484,18 @@ function Model.Here(data, where, steps, held)
 	end
 	---@cast where {map: integer, x: number, y: number}
 	local head = steps[1]
-	if head and head.kind == "area" and Workable(head) then
+	if
+		head
+		and not head.preview
+		and (head.kind == "area" or (head.kind == "guide" and head.shapes and #head.shapes > 0))
+		and Workable(head)
+	then
 		return InArea(data, where, head, head.key == held and HERE_MARGIN or 0) and 1 or nil
 	end
 	for index, step in ipairs(steps) do
 		if
-			step.kind == "area"
+			not step.preview
+			and (step.kind == "area" or (step.kind == "guide" and step.shapes and #step.shapes > 0))
 			and Workable(step)
 			and InArea(data, where, step, step.key == held and HERE_MARGIN or 0)
 		then

@@ -8,6 +8,40 @@ local L = ns.L
 local Menu = {}
 ns.Menu = Menu
 
+---@param choose AGFMenuDescription
+local function GuideChoices(choose)
+	local groups = {}
+	for _, guide in ipairs(ns.RestedXP.Guides()) do
+		local group = groups[guide.group]
+		if not group then
+			group = choose:CreateButton(guide.group)
+			groups[guide.group] = group
+		end
+		group:CreateButton(guide.name, function()
+			ns.RestedXP.Choose(guide.group, guide.name, true)
+		end)
+	end
+end
+
+-- Guide actions use the same menus as journey cards and step rows.
+---@param root AGFMenuDescription
+local function GuideEntries(root)
+	if not ns.RestedXP.Active() then
+		return
+	end
+	root = root:CreateButton(L.RXP_TITLE)
+	GuideChoices(root:CreateButton(L.RXP_SELECT))
+	root:CreateButton(L.RXP_PREVIOUS, function()
+		ns.RestedXP.Move(-1)
+	end)
+	root:CreateButton(L.RXP_NEXT, function()
+		ns.RestedXP.Move(1)
+	end)
+	root:CreateButton(L.RXP_IMPORT, ns.RestedXP.OpenImport)
+	root:CreateButton(L.RXP_SETTINGS, ns.RestedXP.OpenSettings)
+	root:CreateButton(L.RXP_ORIGINAL, ns.RestedXP.UseOriginal)
+end
+
 -- "Show again: <title>" for each step skipped this session, in the order they were skipped, then each journey this
 -- character is not interested in, then each aside it turned down.
 ---@param description AGFMenuDescription
@@ -83,7 +117,11 @@ function Menu.Step(root, step)
 		root:CreateButton(L.SKIP, function()
 			ns.Skip(step.key, step.title)
 		end)
-		NotThisQuest(root, step)
+		if step.rxpIndex then
+			GuideEntries(root)
+		else
+			NotThisQuest(root, step)
+		end
 	end
 	local skipped = #ns.Skipped()
 	if skipped > 0 then
@@ -100,6 +138,9 @@ end
 function Menu.Journey(owner, journey)
 	ns.ContextMenu(owner, function(_, root)
 		root:CreateTitle(journey.title)
+		if journey.kind == "guide" then
+			GuideEntries(root)
+		end
 		if journey.instance then
 			local loot = root:CreateButton(L.DUNGEON_BOSSES_LOOT)
 			local bosses, hint = ns.DungeonLoot.Bosses(journey.instance)
@@ -159,6 +200,8 @@ function Menu.Settings(_, menu)
 			ns.Invalidate()
 		end)
 	end
+	Setting(ns.L.SETTING_RXP, "restedxpGuide")
+	GuideEntries(menu)
 	Pref(ns.L.MENU_QUESTS, "quests")
 	Pref(ns.L.MENU_DUNGEONS, "dungeons")
 	Pref(ns.L.MENU_BATTLEGROUNDS, "battlegrounds")

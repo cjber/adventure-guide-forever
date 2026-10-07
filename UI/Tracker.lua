@@ -57,6 +57,17 @@ local function QuestLine(step, questID)
 	return CreateColor(color.r, color.g, color.b):WrapTextInColorCode(title)
 end
 
+---@param block AGFTrackerBlock
+---@return AGFStep?
+local function BlockStep(block)
+	for _, step in ipairs(ns.Route().steps) do
+		if step.key == block.id then
+			return step
+		end
+	end
+	return ns.Guidance.CurrentStep()
+end
+
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
 local ModuleMixin = { headerText = L.TITLE, blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
 
@@ -66,7 +77,7 @@ local ModuleMixin = { headerText = L.TITLE, blockTemplate = "ObjectiveTrackerAni
 function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 	local aside = ns.Asides.Current()
 	if block.id == ASIDE and aside then
-		ns.Asides.Click(self:GetContextMenuParent(), mouseButton, aside)
+		ns.Asides.Click(block.HeaderButton or block, mouseButton, aside)
 		return
 	elseif NOT_STEP[block.id] then
 		if (block.id == JOURNEY_COMPLETE or block.id == MOMENT) and mouseButton ~= "RightButton" and ns.OpenPanel then
@@ -75,7 +86,7 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 		return
 	end
 	if mouseButton ~= "RightButton" then
-		local step = ns.Guidance.CurrentStep()
+		local step = BlockStep(block)
 		if step and ns.Setting("trackRouteQuests") then
 			ns.TrackRouteQuests()
 		end
@@ -89,7 +100,7 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 		end
 		return
 	end
-	ns.Menu.Open(self:GetContextMenuParent(), ns.Guidance.CurrentStep())
+	ns.Menu.Open(block.HeaderButton or block, BlockStep(block))
 end
 
 -- The title's click starts the route when the setting says so, as an aside's with a place does, so each warns as Go
@@ -99,7 +110,7 @@ function ModuleMixin:OnBlockHeaderEnter(block)
 	if not ns.Integrations.ReplacesJourney() then
 		return
 	end
-	local step, aside = ns.Guidance.CurrentStep(), ns.Asides.Current()
+	local step, aside = BlockStep(block), ns.Asides.Current()
 	local title = (block.id == ASIDE and aside and aside.place and aside.text)
 		or (not NOT_STEP[block.id] and step and ns.Setting("titleStartsRoute") and step.title)
 	if title then
@@ -194,6 +205,38 @@ function ModuleMixin:LayoutContents()
 	local block = self:GetBlock(step.key)
 	block:SetHeader(ns.Overview.VerbMarkup(step, 14) .. step.title)
 	local line = 0
+	if step.rxpIndex then
+		for _, item in ipairs(step.checklist or {}) do
+			line = line + 1
+			block:AddObjective(line, item.text, nil, item.done)
+		end
+		local travel = ns.Integrations.Travel(step)
+		if travel then
+			block:AddObjective(line + 1, travel)
+		end
+		if not self:LayoutBlock(block) then
+			return
+		end
+		local nextShown = false
+		for _, sticky in ipairs(ns.Route().steps) do
+			local ongoing = sticky.rxpSticky and not sticky.preview
+			local upcoming = not sticky.rxpSticky and not nextShown
+			if sticky ~= step and sticky.rxpIndex and (ongoing or upcoming) then
+				if upcoming then
+					nextShown = true
+				end
+				local extra = self:GetBlock(sticky.key)
+				extra:SetHeader(sticky.title)
+				for index, item in ipairs(sticky.checklist or {}) do
+					extra:AddObjective(index, item.text, nil, item.done)
+				end
+				if not self:LayoutBlock(extra) then
+					return
+				end
+			end
+		end
+		return
+	end
 	local guiding = ns.Integrations.Guiding()
 	if step.kind == "area" or step.kind == "dungeon" or (guiding and #step.quests > 1) then
 		for _, questID in ipairs(step.quests) do

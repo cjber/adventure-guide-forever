@@ -188,7 +188,7 @@
 
 -- "town" is a visit to a town (its pickups and agreeing hand-ins), "turnin" a hand-in anywhere else, and "area" or
 -- "dungeon" (a group quest's) where the log's quests under way are done.
----@alias AGFStepKind "town"|"turnin"|"area"|"dungeon"|"trainer"|"battlemaster"
+---@alias AGFStepKind "guide"|"town"|"turnin"|"area"|"dungeon"|"trainer"|"battlemaster"
 
 -- Where a quest under way is done next (Steps.lua Nodes): one open objective's area, or the client's point for the
 -- quest with every open objective.
@@ -210,6 +210,10 @@
 ---@field finish? string the town key ("town:<hub>") of the quest's hand-in, when the data has one
 
 ---@class AGFStep
+---@field rxpIndex? integer
+---@field rxpSticky? boolean an ongoing RestedXP objective
+---@field rxpGuide? string
+---@field preview? boolean a read-only future RestedXP step shown for context
 ---@field key string stable identity for skips and the resume line; repeated town visits append ":<n>" to the town key
 ---@field entrance? integer an instance entrance stop for accepted quests whose objective points are unknown
 ---@field kind AGFStepKind
@@ -250,7 +254,7 @@
 ---@field quests integer[] quest IDs it offers the player now, ascending
 ---@field adds integer[] those a shift-click puts on the route: none orange or red
 
----@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"|"calling"|"battleground"
+---@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"|"calling"|"battleground"|"guide"
 
 -- The overview's quest log header a journey shows under (Overview.GROUPS): its kind at build time, so no title is
 -- guessed from. "continue" holds the story, Quests in your log and your calling.
@@ -265,6 +269,10 @@
 
 -- One card in the guide (docs/design.md §2.2): only steps the player can take now.
 ---@class AGFJourney
+---@field rxpGroup? string
+---@field rxpName? string
+---@field guideLow? integer
+---@field guideHigh? integer
 ---@field kind AGFJourneyKind
 ---@field section AGFJourneySection the overview header it shows under
 ---@field zone? integer uiMapID of a zone story or next-zone journey, independent of its first step
@@ -1675,6 +1683,8 @@
 ---@field pickups integer quests the route picks up there
 
 ---@class AGFAPI
+---@field RestedXPIntegrated fun(): boolean
+---@field RestedXPNativeUI fun(): boolean
 ---@field version integer
 ---@field CurrentStop fun(): AGFAPIStop?
 ---@field NextStops fun(limit?: integer): AGFAPIStop[]?
@@ -1724,3 +1734,39 @@ AdventureGuideForever = nil
 
 ---@class AGFJourneyBanner : AGFWindowCard
 ---@field journey? AGFJourney
+
+---@class AGFNamespace
+
+---@class AGFStrings
+---@field SETTING_RXP string
+---@field SETTING_RXP_TOOLTIP string
+---@field RXP_TITLE string
+---@field RXP_PREVIOUS string
+---@field RXP_NEXT string
+---@field RXP_SKIP string
+---@field RXP_SKIP_STEP string
+---@field RXP_IMPORT string
+---@field RXP_SETTINGS string
+---@field RXP_ORIGINAL string
+---@field RXP_SELECT string
+---@field RXP_PROGRESS string
+---@field RXP_STEP string
+---@field RXP_NO_GUIDE string
+---@field RXP_STICKY string
+---@field RXP_RECOMMENDATIONS string
+
+---@class AGFNamespace
+---@field GuideSetup AGFGuideSetup
+
+---@class AGFStrings
+---@field RXP_SETUP_TITLE string
+---@field RXP_SETUP_NATIVE_TITLE string
+---@field RXP_SETUP_PROMPT string
+---@field RXP_SETUP_AGF string
+---@field RXP_SETUP_SPF string
+---@field RXP_SETUP_HIDDEN_SPF string
+---@field RXP_SETUP_HIDDEN string
+---@field RXP_SETUP_NATIVE string
+---@field RXP_SETUP_SKILLUP_SPF string
+---@field RXP_SETUP_SKILLUP string
+---@field RXP_SETUP_SETTINGS string

@@ -116,6 +116,7 @@ QUESTS_LABEL = nil
 ---@class AGFMapProvider
 ---@field GetMap fun(self: AGFMapProvider): AGFWorldMapFrame
 ---@field RefreshAllData fun(self: AGFMapProvider, fromOnShow?: boolean)
+---@field OnCanvasScaleChanged fun(self: AGFMapProvider)
 ---@field RemoveAllData fun(self: AGFMapProvider)
 ---@type AGFMapProvider
 MapCanvasDataProviderMixin = nil
@@ -132,6 +133,8 @@ MapCanvasPinMixin = nil
 
 ---@class AGFWorldMapFrame : Frame
 ---@field ScrollContainer Frame
+---@field GetCanvas? fun(self: AGFWorldMapFrame): Frame
+---@field GetCanvasScale? fun(self: AGFWorldMapFrame): number
 ---@field AddDataProvider fun(self: AGFWorldMapFrame, provider: AGFMapProvider)
 ---@field GetMapID fun(self: AGFWorldMapFrame): integer?
 ---@field AcquirePin fun(self: AGFWorldMapFrame, template: string, ...: any): AGFPinFrame
@@ -224,6 +227,7 @@ CreateSettingsButtonInitializer = nil
 ---@field tooltipText string
 
 ---@class AGFTrackerBlock : Frame
+---@field HeaderButton? Button
 ---@field id string
 ---@field SetHeader fun(self: AGFTrackerBlock, text: string)
 ---@field AddObjective fun(self: AGFTrackerBlock, index: integer|string, text: string, ...: any)

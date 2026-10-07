@@ -127,7 +127,8 @@ end
 
 -- A battleground open to you: the newest, at its nearest battlemaster; the level-up list is asked once a level.
 do
-	local h = Load({ battlegrounds = OPENS, instanceType = "none" })
+	local h =
+		Load({ battlegrounds = OPENS, instanceType = "none", charDB = { journey = "zone:1413", battlegrounds = true } })
 	Settle(h)
 	local aside = h.ns.Asides.Current()
 	equal(aside.key, "battleground:2", "aside: Warsong Gulch at 18")
@@ -172,6 +173,9 @@ do
 	local h = Load({ battlegrounds = OPENS, charDB = {} })
 	Settle(h)
 	equal(h.ns.Prefs().battlegrounds, false, "cog: off by default")
+	for _, aside in ipairs(h.ns.Asides.All()) do
+		equal(aside.key:match("^battleground:"), nil, "default: no unsolicited battleground announcement")
+	end
 	h.ns.OpenPanel()
 	local cog = h.Find(function(frame)
 		return frame.name == "AdventureGuideForeverSettingsButton"

@@ -7,6 +7,7 @@ local PING_TEMPLATE = "AdventureGuideForeverPingPinTemplate"
 -- Warm gold route rings keep future stops readable against the map.
 local NUMERAL_CELL, NUMERAL_YELLOW, NUMERALS_PER_ROW, MAX_NUMERAL = 0.125, 0.5, 8, 25
 local LATER_STOP_ALPHA = 0.9
+local MAP_GROUP_SIZE = 32
 -- The route's next stop wears the button of the quest the game tracks (POIButton.lua): the lit disc with the dark
 -- numeral from the grid's upper half. Every later stop wears the plain button with the yellow numeral.
 local STOP_ATLAS, CURRENT_ATLAS = "UI-QuestPoi-QuestNumber", "UI-QuestPoi-QuestNumber-SuperTracked"
@@ -18,6 +19,110 @@ ns.Pins = Pins
 
 ---@type table<string, AGFPinFrame>
 local pinsByKey = {}
+local minimapOwner = {}
+local minimapIcons = {}
+local RingsShown
+
+---@class AGFMinimapIcon : Frame
+---@field disc Texture
+---@field number FontString
+---@field visits AGFPinVisit[]
+---@field Stack? Texture
+
+---@param eligible fun(step: AGFStep): boolean
+---@param close fun(first: AGFStep, step: AGFStep): boolean
+---@return AGFPinVisit[][]
+local function Groups(eligible, close)
+	local groups = {}
+	for index, step in ipairs(ns.Route().steps) do
+		if eligible(step) then
+			local group
+			for _, visits in ipairs(groups) do
+				local first = visits[1].step
+				if
+					first.map == step.map
+					and (
+						first.key == step.key
+						or (first.kind == "town" and step.kind == "town" and first.hub and first.hub == step.hub)
+						or (first.x == step.x and first.y == step.y)
+						or ((step.preview or first.preview) and close(first, step))
+					)
+				then
+					group = visits
+					break
+				end
+			end
+			if not group then
+				group = {}
+				groups[#groups + 1] = group
+			end
+			group[#group + 1] = { step = step, index = index }
+		end
+	end
+	return groups
+end
+
+local function RefreshMinimap()
+	local pins = LibStub and LibStub:GetLibrary("HereBeDragons-Pins-2.0", true)
+	if not pins then
+		return
+	end
+	pins:RemoveAllMinimapIcons(minimapOwner)
+	for _, icon in ipairs(minimapIcons) do
+		icon:Hide()
+	end
+	if
+		not (RingsShown() or (ns.Integrations.Guiding() and not ns.Setting("wanderer")))
+		or not (ns.Route().steps[1] and ns.Route().steps[1].rxpIndex)
+	then
+		return
+	end
+	local radius = C_Minimap.GetViewRadius()
+	local reach = radius * 2 * 18 / math.max(1, Minimap:GetWidth())
+	local groups = Groups(function(step)
+		return step.map > 0 and not step.here and step.x >= 0 and step.x <= 1 and step.y >= 0 and step.y <= 1
+	end, function(first, step)
+		local map = ns.Data.maps[step.map]
+		return map ~= nil
+			and map.sx ~= nil
+			and map.sy ~= nil
+			and math.abs(first.x - step.x) * map.sx <= reach
+			and math.abs(first.y - step.y) * map.sy <= reach
+	end)
+	for slot, visits in ipairs(groups) do
+		local step, index = visits[1].step, visits[1].index
+		do
+			local icon = minimapIcons[slot]
+			if not icon then
+				icon = CreateFrame("Frame") --[[@as AGFMinimapIcon]]
+				icon:SetSize(18, 18)
+				icon:SetFrameStrata("MEDIUM")
+				icon:EnableMouse(false)
+				local texture = icon:CreateTexture(nil, "ARTWORK")
+				ns.Art.Fit(texture, index == 1 and CURRENT_ATLAS or STOP_ATLAS, 18, 18)
+				texture:SetPoint("CENTER")
+				local number = icon:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+				number:SetPoint("CENTER")
+				number:SetTextColor(index == 1 and 0.1 or 1, index == 1 and 0.05 or 0.82, index == 1 and 0 or 0.25)
+				icon.number, icon.disc = number, texture
+				minimapIcons[slot] = icon
+			end
+			ns.Art.Fit(icon.disc, index == 1 and CURRENT_ATLAS or STOP_ATLAS, 18, 18)
+			icon.number:SetTextColor(index == 1 and 0.1 or 1, index == 1 and 0.05 or 0.82, index == 1 and 0 or 0.25)
+			icon.visits = visits
+			if not icon.Stack then
+				icon.Stack = icon:CreateTexture(nil, "BACKGROUND")
+				ns.Art.Fit(icon.Stack, STOP_ATLAS, 18, 18)
+				icon.Stack:SetPoint("CENTER", 3, -3)
+				icon.Stack:SetAlpha(0.7)
+			end
+			icon.Stack:SetShown(#visits > 1)
+			icon.number:SetText(index <= MAX_NUMERAL and tostring(index) or "")
+			icon:Show()
+			pins:AddMinimapIconMap(minimapOwner, icon, step.map, step.x, step.y, true, false)
+		end
+	end
+end
 
 -- One switch over every mark AGF draws (design §2.6): nothing unless showMapPins is on, and nothing for a wanderer
 -- who is told where and never shown.
@@ -25,9 +130,13 @@ local pinsByKey = {}
 -- else the first card's, which the guide draws on its own (docs/design.md §2.2). Either way they step aside while
 -- Shortest Path guides, since it numbers its stops itself.
 ---@return boolean
-local function RingsShown()
+RingsShown = function()
 	local preview = ns.PanelShown ~= nil and ns.PanelShown()
-	return (preview or ns.Setting("showMapPins")) and not ns.Integrations.Guiding() and not ns.Setting("wanderer")
+	local first = ns.Route().steps[1]
+	local guideActive = first ~= nil and first.rxpIndex ~= nil
+	return (preview or ns.Setting("showMapPins"))
+		and (not ns.Integrations.Guiding() or guideActive)
+		and not ns.Setting("wanderer")
 end
 
 -- Questie owns background quest markers when loaded, including its hide/show switch.
@@ -251,37 +360,27 @@ function provider:RefreshAllData()
 	-- draws nothing more: the game's own objective mark and its hover shape show where its objectives are.
 	-- A place the route comes back to keeps one ring, numbered for its first visit, with its quest-action badge
 	-- intact and every visit in its tooltip (docs/design.md §2.9).
-	---@type table<string, AGFPinVisit[]>
-	local places, order = {}, {}
-	for index, step in ipairs(ns.Route().steps) do
-		if step.map == mapID and not step.here then
-			local place = step.key
-			for _, other in ipairs(order) do
-				local first = places[other][1].step
-				if
-					first.key == step.key
-					or (first.kind == "town" and step.kind == "town" and first.hub and first.hub == step.hub)
-					or (first.x == step.x and first.y == step.y)
-				then
-					place = other
-					break
-				end
-			end
-			if not places[place] then
-				places[place] = {}
-				order[#order + 1] = place
-			end
-			table.insert(places[place], { step = step, index = index })
-		end
-	end
-	for _, place in ipairs(order) do
-		local visits = places[place]
+	local map = self:GetMap()
+	local canvas = map.GetCanvas and map:GetCanvas() or map.ScrollContainer
+	local scale = map.GetCanvasScale and map:GetCanvasScale() or 1
+	local reachX = MAP_GROUP_SIZE / math.max(1, canvas:GetWidth() * scale)
+	local reachY = MAP_GROUP_SIZE / math.max(1, canvas:GetHeight() * scale)
+	local groups = Groups(function(step)
+		return step.map == mapID and not step.here
+	end, function(first, step)
+		return math.abs(first.x - step.x) <= reachX and math.abs(first.y - step.y) <= reachY
+	end)
+	for _, visits in ipairs(groups) do
 		---@type AGFPinFrame
 		local pin = self:GetMap():AcquirePin(PIN_TEMPLATE, visits[1].step, visits[1].index, visits)
 		for _, visit in ipairs(visits) do
 			pinsByKey[visit.step.key] = pin
 		end
 	end
+end
+
+function provider:OnCanvasScaleChanged()
+	self:RefreshAllData()
 end
 
 ---@class AGFPinVisit
@@ -309,6 +408,7 @@ end
 ---@field step? AGFStep
 ---@field index? number
 ---@field visits? AGFPinVisit[]
+---@field Stack? Texture
 AdventureGuideForeverPinMixin = CreateFromMixins(MapCanvasPinMixin)
 
 ---@param step AGFStep
@@ -319,6 +419,17 @@ function AdventureGuideForeverPinMixin:OnAcquired(step, index, visits)
 	-- one's included (Blizzard_WorldMap.lua:291-311); givers stay at AREA_POI, under both.
 	self:UseFrameLevelType("PIN_FRAME_LEVEL_WAYPOINT_LOCATION")
 	self.step, self.index, self.visits = step, index, visits
+	if visits and #visits > 1 then
+		if not self.Stack then
+			self.Stack = self:CreateTexture(nil, "BACKGROUND", nil, -1)
+			ns.Art.Fit(self.Stack, STOP_ATLAS, 32, 32)
+			self.Stack:SetPoint("CENTER", self, "CENTER", 4, -4)
+			self.Stack:SetAlpha(0.7)
+		end
+		self.Stack:Show()
+	elseif self.Stack then
+		self.Stack:Hide()
+	end
 	self.Disc:SetVertexColor(0, 0, 0)
 	for _, texture in ipairs({ self.Icon, self.Number }) do
 		texture:SetDesaturated(false)
@@ -539,15 +650,24 @@ function Pins.Reveal(point)
 end
 
 function Pins.Refresh()
+	if InCombatLockdown() then
+		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
+	end
+	RefreshMinimap()
 	if WorldMapFrame:IsShown() then
 		provider:RefreshAllData()
 	end
 end
 
-afterCombat:SetScript("OnEvent", function(self)
-	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+afterCombat:SetScript("OnEvent", function(self, event)
+	if event == "PLAYER_REGEN_ENABLED" then
+		self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	end
 	Pins.Refresh()
 end)
+
+afterCombat:RegisterEvent("MINIMAP_UPDATE_ZOOM")
 
 local function Attach()
 	local map = WorldMapFrame

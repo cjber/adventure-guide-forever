@@ -139,3 +139,13 @@ quests. Outline entries never become navigation targets or claim pickup eligibil
 Dungeon choices rank by recommended level range, accepted quest count and travel to the first actionable stop.
 Available quest count and instance identity break ties. Unknown ranges follow known ones. Class quests and
 battlegrounds keep their unlock priority; dungeon ranking does not reorder an active route.
+
+## RestedXP guide mode
+
+When the optional RestedXP addon is available, `Integrations/RestedXP.lua` adapts its active steps into a presentation snapshot. RestedXP remains responsible for parsing guides, eligibility, automatic quest handling, objective completion and step progression. The Adventure tab and addon-owned tracker display that snapshot. Available guides use the existing Continue cards, ordered by their level ranges after RXP eligibility checks. A single matching chapter loads automatically when no guide is selected; imports in progress and existing selections are preserved. Guide selection and step controls delegate to RestedXP. Imports use its own importer.
+
+`restedxpGuide` adds the active guide as an ordinary journey in Continue. Other journeys and activity hints remain available. The guide uses the existing card, selected step rows, checklist, pins and tracker. A character's selected journey is retained. Guide step order stays with RXP and cannot be rearranged by AGF.
+
+AGF hands the current guide waypoint to SPF as `AdventureGuideForever`, held until RXP changes it. Sticky objectives remain visible without becoming future travel stops. Unknown destinations have no pin or travel estimate. SPF's direct RXP adapter defers while `AdventureGuideForever.API.RestedXPIntegrated()` is true, so Stop and route ownership stay with the existing frontend. RXP active-item and target windows and its minimap icon are suppressed alongside its guide window. Native RXP windows must retain their engine updates while their presentation is suppressed; restoring the original frontend restores its captured presentation state.
+
+The integration ships original adapter code and requires the separately installed RXP addon. It does not include RXP code, guide files or artwork, export guides, or bypass its account and eligibility checks. Paid guides remain subject to RestedXP's personal-use terms. Public preview text is an original test fixture.

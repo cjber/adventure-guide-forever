@@ -6,6 +6,25 @@ local _, ns = ...
 -- has, so a line nobody has translated yet stays in English. Format strings keep their specifiers.
 ---@type AGFStrings
 ns.L = {
+	SETTING_RXP = "Use RestedXP guides",
+	SETTING_RXP_TOOLTIP = "Add the current RestedXP guide to your journey cards, map and tracker. "
+		.. "RestedXP advances guide steps; Shortest Path Forever handles travel. "
+		.. "RestedXP stays installed and controls guide progress.",
+	RXP_TITLE = "RestedXP guides",
+	RXP_PREVIOUS = "Previous",
+	RXP_NEXT = "Next",
+	RXP_SKIP = "Skip: %s",
+	RXP_SKIP_STEP = "Skip step",
+	RXP_IMPORT = "Import",
+	RXP_SETTINGS = "Settings",
+	RXP_ORIGINAL = "Open original RestedXP window",
+	RXP_SELECT = "Choose guide",
+	RXP_PROGRESS = "Step %d of %d",
+	RXP_STEP = "Step %d",
+	RXP_NO_GUIDE = "Choose a guide to begin.",
+	RXP_STICKY = "%s (ongoing)",
+	RXP_RECOMMENDATIONS = "Adventure Guide recommendations",
+
 	SETTING_QUEST_LEVEL = "Maximum quest level above yours",
 	SETTING_QUEST_LEVEL_VALUE = "%s levels",
 	SETTING_QUEST_LEVEL_ONE = "%s level",
@@ -429,7 +448,7 @@ ns.L = {
 	LEGACY_DISABLED = "Enable Legacy Forever to see your completion progress.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "Data checked against Forever 1.60.1.70245.",
+	WHATS_NEW = "Choose where to display RestedXP guides. Keep RestedXP or show its steps in Adventure Guide.",
 	DUNGEON_BOSSES_LOOT = "Bosses and loot",
 	DUNGEON_LOOT_INSTALL = "Install AtlasLoot Classic and its Dungeons and Raids module for bosses and loot.",
 	DUNGEON_LOOT_COMBAT = "Boss loot will load after combat.",
@@ -441,4 +460,15 @@ ns.L = {
 	JOURNEY_PROGRESS_EMPTY = "Your completed stories will appear here.",
 	LEGACY_PROGRESS_LINK = "Open map for Legacy progress",
 	LEGACY_PROGRESS_NOTE = "Collections, exploration and zone completion are tracked by Legacy Forever.",
+	RXP_SETUP_TITLE = "Guide display",
+	RXP_SETUP_NATIVE_TITLE = "RestedXP",
+	RXP_SETUP_PROMPT = "RestedXP is installed. Choose where to show its guides.",
+	RXP_SETUP_AGF = "Show RestedXP steps in Adventure Guide.",
+	RXP_SETUP_SPF = "Use Shortest Path for routes and compass guidance.",
+	RXP_SETUP_HIDDEN_SPF = "Hide RestedXP windows, arrow and map markers.",
+	RXP_SETUP_HIDDEN = "Hide RestedXP windows and map markers.",
+	RXP_SETUP_NATIVE = "Keep its guide window, arrow, targets and map markers.",
+	RXP_SETUP_SKILLUP_SPF = "SkillUp: equipment and shopping routes use Shortest Path.",
+	RXP_SETUP_SKILLUP = "SkillUp: equipment and shopping journeys are available.",
+	RXP_SETUP_SETTINGS = "Change this later in AddOns settings.",
 }
