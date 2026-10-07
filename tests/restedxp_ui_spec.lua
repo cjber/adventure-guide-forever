@@ -131,6 +131,13 @@ end
 assert(grouped, "nearby steps share a readable marker at normal zoom")
 local count = #ringPins
 zoom = 4
-preview.ns.Pins.Refresh()
+local pinProvider
+for _, candidate in ipairs(preview.providers) do
+	if candidate.RefreshAllData and candidate.OnCanvasScaleChanged then
+		pinProvider = candidate
+	end
+end
+assert(pinProvider, "map zoom has a data-provider callback")
+pinProvider:OnCanvasScaleChanged()
 assert(#preview.pins.AdventureGuideForeverPinTemplate > count, "zooming in separates nearby guide markers")
 print("restedxp_ui_spec: nearby markers group and split with zoom")

@@ -77,7 +77,7 @@ local ModuleMixin = { headerText = L.TITLE, blockTemplate = "ObjectiveTrackerAni
 function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 	local aside = ns.Asides.Current()
 	if block.id == ASIDE and aside then
-		ns.Asides.Click(self:GetContextMenuParent(), mouseButton, aside)
+		ns.Asides.Click(block.HeaderButton or block, mouseButton, aside)
 		return
 	elseif NOT_STEP[block.id] then
 		if (block.id == JOURNEY_COMPLETE or block.id == MOMENT) and mouseButton ~= "RightButton" and ns.OpenPanel then
@@ -100,7 +100,7 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 		end
 		return
 	end
-	ns.Menu.Open(self:GetContextMenuParent(), BlockStep(block))
+	ns.Menu.Open(block.HeaderButton or block, BlockStep(block))
 end
 
 -- The title's click starts the route when the setting says so, as an aside's with a place does, so each warns as Go

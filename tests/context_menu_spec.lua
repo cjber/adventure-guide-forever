@@ -118,4 +118,10 @@ h.ns.Menu.Journey(owner, { title = "Deadmines", key = "dungeon:36", instance = 3
 h.Click(popup.rows[2])
 equal(popup.rows[2]:GetText(), h.ns.L.DUNGEON_LOOT_INSTALL, "missing companion has an explicit hint")
 
+local step = h.ns.Route().steps[1]
+local block = h.tracker.liveBlocks[step.key]
+block.HeaderButton = h.G.CreateFrame("Button", nil, h.G.UIParent)
+h.tracker:OnBlockHeaderClick(block, "RightButton")
+equal(popup.owner, block.HeaderButton, "tracker menu anchors beside the selected step")
+
 print("context_menu_spec: " .. checks .. " checks passed")

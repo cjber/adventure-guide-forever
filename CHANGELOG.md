@@ -15,6 +15,8 @@ verbatim rather than rewritten as the addon moves.
 
 - **Choose where to display RestedXP guides.** A one-time prompt explains which windows and markers Adventure Guide replaces. Keep RestedXP or use Adventure Guide, and change the choice later in AddOns settings.
 
+- **Quest objectives stay below the Forever tracker after reload.** The shared tracker no longer resizes Blizzard's quest container, which could move it over the addon sections.
+
 - **Compact step menus.** Step actions use small menu rows instead of a column of red buttons. Nearby map stops share stacked rings on the world map and minimap.
 
 - **RestedXP guides in the Adventure tab.** Read guide instructions and objectives in the map sidebar and tracker, select guides and control their steps. RestedXP handles progression while Shortest Path Forever handles travel. The guide shares existing journey cards, steps and map pins with Adventure Guide recommendations. The map previews ten steps with grouped markers, while the quest tracker shows the current step, the next step and ongoing objectives.

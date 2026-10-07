@@ -379,6 +379,10 @@ function provider:RefreshAllData()
 	end
 end
 
+function provider:OnCanvasScaleChanged()
+	self:RefreshAllData()
+end
+
 ---@class AGFPinVisit
 ---@field step AGFStep
 ---@field index number
