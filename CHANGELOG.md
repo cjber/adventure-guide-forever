@@ -13,9 +13,9 @@ verbatim rather than rewritten as the addon moves.
 
 ## [0.11.1] - 2026-10-08
 
-- **Shorter addon descriptions.** The README and store pages explain the features directly and keep the author and licence credits.
-
 - **Quest text stays on screen when the Forever tracker is smaller.** The native quest column and its header keep their full width at the edge of the screen.
+
+- **Shorter addon descriptions.** The README and store pages explain the features directly and keep the author and licence credits.
 
 - **Shared tracker scaling.** Adventure Guide follows the tracker scale selected in Shortest Path Forever.
 
