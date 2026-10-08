@@ -679,6 +679,8 @@
 
 ---@class ForeverTrackerHostAPI
 ---@field GetSettings fun(): ForeverTrackerSettings
+---@field GetScale fun(): number
+---@field SetScale fun(scale: number)
 ---@field SetAttached fun(value: boolean)
 ---@field IsAttachedToQuestTracker fun(): boolean
 ---@field OnAttachmentChanged fun(callback: fun(attached: boolean))
@@ -1423,6 +1425,7 @@
 
 ---@class ForeverTrackerSettings
 ---@field attached boolean
+---@field scale? number tracker size, 1 is the stock size
 ---@field x? number
 ---@field y? number
 

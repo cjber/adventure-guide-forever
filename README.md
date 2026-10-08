@@ -3,12 +3,12 @@
 <h1 align="center">Adventure Guide Forever</h1>
 
 <p align="center">
-A few places to go next in WoW: Forever, in a guide that looks like it came with the game.<br>
+Quest suggestions and routes for your level in WoW: Forever.<br>
 <a href="https://github.com/cjber/adventure-guide-forever/actions/workflows/ci.yml"><img src="https://github.com/cjber/adventure-guide-forever/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 <a href="https://github.com/cjber/adventure-guide-forever/releases/latest"><img src="https://img.shields.io/github/v/release/cjber/adventure-guide-forever" alt="Latest release"></a>
 </p>
 
-I wanted a levelling guide that left me room to wander. From your level, finished quests and quest log, Adventure Guide Forever offers a few journeys, each with a reason, and a short route for the one you pick. It uses the quest log's side tab, retail's Journeys art and the game's own objective tracker. Clicking a quest in your log opens Blizzard's quest details.
+Adventure Guide Forever suggests quests and routes for your level and quest log. Choose a journey from the quest log or world map.
 
 Shortest Path Forever handles travel when installed. QuestieDB supplies the full quest catalogue; Questie checks which pickups are currently available. Questie owns background quest markers; the guide adds route rings. When RestedXP is installed, a one-time prompt lets you keep its display or show its instructions in Adventure Guide. Choosing Adventure Guide hides RestedXP windows and map markers, and uses Shortest Path for navigation when installed. Choose a suitable RestedXP guide from the Continue cards. A single matching chapter loads automatically. RestedXP loads guides and advances their steps; Shortest Path Forever handles travel. Turn off *Use RestedXP guides* to return to Adventure Guide's recommendations.
 
@@ -89,8 +89,6 @@ QuestieDB and Questie are needed for pickup recommendations. Optional companions
 
 ## Development
 
-Developed with AI assistance; changes are reviewed and checked with automated tests, linting and type checks and performance budgets.
-
 Run the full gate in [AGENTS.md](AGENTS.md#commands). It needs LuaJIT, luacheck, StyLua, LuaLS 3.19.1, Python and ruff; type checking fetches pinned WoW API annotations on first use.
 
 Screenshots use Pillow and the [wow-mock-screenshots library](https://github.com/cjber/skills/tree/main/wow-mock-screenshots). Set `WOWMOCK` to the directory containing `wowmock.py`, then run `python3 tools/screenshots.py` twice to check reproducibility.
@@ -102,3 +100,5 @@ Contributing and security policies are inherited from [cjber/.github](https://gi
 GPL-3.0-or-later. What trainers teach, dungeon entrance requirements and boat routes derive from [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0); client tables come via [wago.tools](https://wago.tools), and zone level ranges from [Warcraft Wiki](https://warcraft.wiki.gg/wiki/Zones_by_level_(original)). No Questie or Wowhead data is bundled.
 
 Made by Cillian Berragan · [cillian.dev](https://cillian.dev) · [GitHub](https://github.com/cjber) · [Twitter](https://twitter.com/cjberragan)
+
+Built with AI assistance.
