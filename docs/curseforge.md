@@ -1,6 +1,4 @@
-Developed with AI assistance; changes are reviewed and checked with automated tests, linting and type checks and performance budgets.
-
-I wanted a levelling guide that left me room to wander. Adventure Guide Forever suggests journeys from your level and quest log, with a route for the one you pick. It looks like it came with the game.
+Adventure Guide Forever suggests quests and routes for your level and quest log. Choose a journey from the quest log or world map.
 
 QuestieDB supplies quests; Questie checks pickup availability. A one-time prompt lets you keep RestedXP's display or use Adventure Guide. Choosing Adventure Guide hides RestedXP windows and markers, with Shortest Path Forever handling travel when installed.
 
@@ -50,10 +48,12 @@ Right-click a dungeon card to browse AtlasLoot bosses and their drops with nativ
 
 Translations are welcome on GitHub: see the [Locales folder](https://github.com/cjber/adventure-guide-forever/tree/main/Locales).
 
-For a missing quest, include `/agf audit` output in a bug report. Early days, feedback welcome.
+For a missing quest, include `/agf audit` output in a bug report.
 
 Works alongside [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting routes and [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion. All optional.
 
 Source code and issues: [github.com/cjber/adventure-guide-forever](https://github.com/cjber/adventure-guide-forever). Licence: GPL-3.0-or-later.
 
 Choose the highest recommended quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups. Quests already in your log remain visible.
+
+Built with AI assistance.

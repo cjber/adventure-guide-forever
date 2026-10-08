@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Shared tracker scaling.** Adventure Guide follows the tracker scale selected in Shortest Path Forever.
+
 ## [0.11.0] - 2026-10-07
 
 - **Choose where to display RestedXP guides.** A one-time prompt explains which windows and markers Adventure Guide replaces. Keep RestedXP or use Adventure Guide, and change the choice later in AddOns settings.
