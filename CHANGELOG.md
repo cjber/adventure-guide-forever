@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Quest text stays on screen when the Forever tracker is smaller.** The native quest column and its header keep their full width at the edge of the screen.
+
 - **Shared tracker scaling.** Adventure Guide follows the tracker scale selected in Shortest Path Forever.
 
 ## [0.11.0] - 2026-10-07
