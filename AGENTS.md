@@ -67,8 +67,8 @@ the newest Forever build on wago.tools, `ERA` (`tools/diff_forever.py`) to the n
 `QUESTIEDB_TAG` and `QUESTIEDB_SHA256` (`tools/gen_corpus.py`) to the newest QuestieDB release; when one moved, the
 workflow regenerates `Data/` and the test corpus, runs `tools/check_generated.py --offline`, the
 generator tests, luacheck, every spec (the golden routes among them), the planner bench and stylua, opens the
-`data/refresh` PR and dispatches CI on it. A failed run on main opens the issue "Data refresh failed", assigned to
-the owner, or comments on the open one. A check that rejects new client data is corrected from that data and kept
+`data/refresh` PR and dispatches CI on it. A failed run on main is re-run once ten minutes later by `.github/workflows/retry-refresh.yml`;
+one that fails again opens the issue "Data refresh failed", assigned to the owner, or comments on the open one. A check that rejects new client data is corrected from that data and kept
 exact, never loosened; a golden route is re-based only when the new data explains the change.
 
 Pins moved by hand: `LEGACY_MAP_BUILD` (the last build with WorldMapArea, fixed), `CLASSICDB_COMMIT` (the waivers
