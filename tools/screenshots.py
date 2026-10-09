@@ -460,7 +460,7 @@ def manifest(paths):
     """docs/screenshots/manifest.txt: what the PNGs were made from and each PNG's sha256, so a stale image or a
     changed input shows in review."""
     lines = [
-        f"build {drawing.wm.BUILD}",
+        f"build {BUILD}",
         f"shortest-path-forever {SPF_SHA}",
         f"tests/golden/layout.json {sha256(GOLDEN)}",
     ]
