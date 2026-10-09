@@ -11,6 +11,15 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-10-09
+
+- **Resume RestedXP from Shortest Path.** Its Resume guide action returns to the active RestedXP journey through Adventure Guide when integrated navigation is enabled.
+
+- **Keep Blizzard's tracker methods intact.** The shared Forever tracker responds to objective and player events without wrapping native layout methods.
+
+- **Keep route updates smooth during quest-log changes.** A queued route rebuild now stays frame-sliced while the tracker refreshes, so the current route remains visible until the new one is ready.
+
+- **Current quest and map data.** The guide includes the latest Forever client data for newly added quests and map areas.
 ## [0.11.1] - 2026-10-08
 
 - **Quest text stays on screen when the Forever tracker is smaller.** The native quest column and its header keep their full width at the edge of the screen.

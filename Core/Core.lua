@@ -724,9 +724,9 @@ end
 
 ---@return AGFRoute
 function ns.Route()
-	-- While Core's rebuild coroutine is mid-flight the route is stale on purpose: a synchronous build here would run
-	-- Model.Plan a second time over the same module state. The flight's own commit finishes it.
-	if dirty and not rebuildCo then
+	-- A queued or running rebuild owns the next commit. Reads keep the current route so they cannot pull sliced
+	-- planning into the caller's frame or run Model.Plan twice over the same state.
+	if dirty and not rebuildCo and not pendingRebuild then
 		Rebuild()
 	end
 	return cachedRoute

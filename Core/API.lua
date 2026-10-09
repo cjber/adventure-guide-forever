@@ -1,8 +1,8 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
--- Read-only answers for other addons (docs/api.md). Nothing here rebuilds the route, starts guidance or hands out a
--- table the guide keeps: nil means the route is still settling, so ask again later.
+-- Public answers and navigation requests for other addons (docs/api.md). Reads return copies;
+-- nil means the route is still settling, so ask again later.
 ---@class AGFAPI
 local API = { version = 1 }
 
@@ -77,6 +77,20 @@ end
 ---@return boolean
 function API.RestedXPNativeUI()
 	return not ns.Setting("restedxpChoiceMade") or not ns.Setting("restedxpGuide")
+end
+
+-- Explicit player request: return to the active RestedXP guide after another addon took navigation.
+---@return boolean
+function API.ResumeRestedXP()
+	if not ns.RestedXP.Enabled() then
+		return false
+	end
+	local journey = ns.RestedXP.Journey()
+	if not journey then
+		return false
+	end
+	ns.Choose(journey.key, true)
+	return true
 end
 
 AdventureGuideForever = { API = API }
