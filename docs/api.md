@@ -1,8 +1,8 @@
 # Addon API
 
-Addons can read where the guide is sending the player through `AdventureGuideForever.API` (`version = 1`). It is
-read-only: no call rebuilds the route, starts guidance or changes what the tracker shows. Places use uiMapIDs and
-normalized 0–1 coordinates, as Shortest Path's API does.
+Addons can read where the guide is sending the player through `AdventureGuideForever.API` (`version = 1`).
+The stop queries are read-only; `ResumeRestedXP()` is an explicit navigation request. Places use uiMapIDs and
+normalized 0-1 coordinates, as Shortest Path's API does.
 
 - `CurrentStop()` returns the stop the tracker shows now, or `nil`.
 - `NextStops(limit)` returns the stops after it in route order, nearest first: two unless `limit` says otherwise,
@@ -36,3 +36,7 @@ if stop and stop.isTown then
 	print(("Next town: %s (%d to hand in, %d to pick up)"):format(stop.name, stop.handins, stop.pickups))
 end
 ```
+
+### `API.ResumeRestedXP()`
+
+Resume the active RestedXP guide through Adventure Guide's navigation. Returns `true` when the request is accepted, or `false` when integrated RestedXP is unavailable. Use this for an explicit player action after selecting another destination.

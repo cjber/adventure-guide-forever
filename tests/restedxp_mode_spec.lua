@@ -73,6 +73,9 @@ assert(not ns.Guidance.Owns(), "Stop stays stopped across guide refreshes")
 ns.Choose(chosen, true)
 h.flush()
 assert(ns.Route().journey == chosen, "other journeys remain selectable alongside the guide")
+assert(h.G.AdventureGuideForever.API.ResumeRestedXP(), "the companion can request the active guide")
+h.flush()
+assert(ns.Route().journey == nextGuide.key and ns.Guidance.Owns(), "resume selects and navigates the active RXP guide")
 assert(#h.errors == 0, table.concat(h.errors, "\n"))
 
 -- Reload while the native step has no waypoint must wait without sending invalid routes.
