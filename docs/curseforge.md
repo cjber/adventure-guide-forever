@@ -50,7 +50,16 @@ Translations are welcome on GitHub: see the [Locales folder](https://github.com/
 
 For a missing quest, include `/agf audit` output in a bug report.
 
-Works alongside [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting routes and [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion. All optional.
+## With my other Forever addons
+
+All optional. Each one adds something to the guide:
+
+- [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) plans the way to every stop, with walking routes, flights, boats and boat times. It also follows RestedXP steps.
+- [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) fills the Professions tab with your next skill-ups from its levelling route.
+- [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) adds your zone completion progress.
+- [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) supplies class trainer locations for spell reminders, marks dungeon entrances on the map and lets you move the guide window.
+
+The guide's tracker section shares one column with theirs, above your quests.
 
 Source code and issues: [github.com/cjber/adventure-guide-forever](https://github.com/cjber/adventure-guide-forever). Licence: GPL-3.0-or-later.
 

@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **How the Forever addons work together.** The README and store page list each of the other Forever addons and what it adds when installed alongside this one.
+
 ## [0.12.0] - 2026-10-09
 
 - **Resume RestedXP from Shortest Path.** Its Resume guide action returns to the active RestedXP journey through Adventure Guide when integrated navigation is enabled.
