@@ -520,7 +520,7 @@ def render():
     version = importlib.metadata.version("pillow")
     if version != PILLOW:
         print(f"warning: Pillow {version}, not the pinned {PILLOW}: the PNGs may not match byte for byte")
-    ui = drawing.wm.Ui(scale=SCALE)
+    ui = drawing.wm.Ui(BUILD, scale=SCALE)
     _, frame = map_frame(ui, drawing.wm.Image.new("RGBA", (1002, 668)), True)
     known = known_frames(frame)
     data, rects = layout_pass(
