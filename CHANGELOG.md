@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Resume RestedXP from Shortest Path.** Its Resume guide action returns to the active RestedXP journey through Adventure Guide when integrated navigation is enabled.
+
 - **Keep Blizzard's tracker methods intact.** The shared Forever tracker responds to objective and player events without wrapping native layout methods.
 
 ## [0.11.1] - 2026-10-08
