@@ -61,6 +61,30 @@ do
 	assert(#h.errors == 0, table.concat(h.errors, "\n"))
 end
 
+-- The map's quest-giver pins read the settled route's snapshot: refreshing the map walks no quest log, and a
+-- turn-in still reaches them through the rebuild it brings.
+do
+	local h, Walks = Load({ db = { showMapPins = true, showQuestGivers = true } })
+	h.G.C_Map.OpenWorldMap()
+	h.flush()
+	h.map:SetMapID(1413)
+	local provider = h.providers[1]
+	Walks()
+	for _ = 1, 5 do
+		provider:RefreshAllData()
+	end
+	assert(Walks() == 0, "map refreshes over a settled route walk no quest log")
+	assert(#(h.pins.AdventureGuideForeverGiverPinTemplate or {}) > 0, "and still draw the givers")
+	h.ns.Invalidate()
+	provider:RefreshAllData()
+	assert(Walks() == 1, "a refresh while a rebuild is due reads the log afresh, once")
+	h.flush()
+	Walks()
+	provider:RefreshAllData()
+	assert(Walks() == 0, "and the next settled route's snapshot again after it")
+	assert(#h.errors == 0, table.concat(h.errors, "\n"))
+end
+
 -- No build behind the route: every call is a fresh read, as the views took before.
 do
 	local h, Walks = Load({ completedPending = true })
