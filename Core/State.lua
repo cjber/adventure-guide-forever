@@ -317,19 +317,24 @@ end
 local completed = {}
 local ready = false
 
--- Every completed quest ID the game currently knows about. Nil means the game hasn't answered
--- yet (Ready() stays false); an empty table is a legitimate answer for a fresh character.
----@return boolean
+-- Every completed quest ID the game currently knows about, merged into `completed`: a quest is only ever added, so
+-- a turn-in the server's list has not caught up with yet is kept. Nil means the game hasn't answered yet (Ready()
+-- stays false); an empty table is a legitimate answer for a fresh character. Returns whether it answered, and
+-- whether that added a quest.
+---@return boolean answered, boolean added
 local function LoadCompleted()
 	local ids = C_QuestLog.GetAllCompletedQuestIDs()
 	if not ids then
-		return false
+		return false, false
 	end
-	completed = {}
+	local added = false
 	for _, id in ipairs(ids) do
-		completed[id] = true
+		if not completed[id] then
+			completed[id] = true
+			added = true
+		end
 	end
-	return true
+	return true, added
 end
 
 ---@return table<integer, boolean>
@@ -527,6 +532,61 @@ local KEEPS_POINTS = {
 	UPDATE_EXHAUSTION = true,
 	PLAYER_XP_UPDATE = true,
 }
+-- The completed quests are read whole at every loading screen, and again a moment after a turn-in's quest log
+-- settles: the server can mark a quest done with no QUEST_TURNED_IN (a breadcrumb or a chain's other branch closing),
+-- and that would otherwise wait for a /reload. Until the first answer, the read is retried each second, for a while,
+-- and on every quest-log event (the client often answers only once the log has loaded): the guide is "Loading" until
+-- then. An empty first answer readies the guide but is read again the same way, in case the list had not loaded.
+local RESYNC_AFTER = 2
+local RETRY_EVERY, RETRIES = 1, 30
+local resyncDue, resyncQueued = false, false
+local retries = 0
+
+-- Reads the completed quests again; a quest it adds rebuilds the route (Coalesce), and the first answer readies it.
+local function Resync()
+	local answered, added = LoadCompleted()
+	if answered and not ready then
+		ready = true
+		Coalesce()
+	elseif added then
+		Coalesce()
+	end
+	return answered
+end
+
+-- Whether the first read is still owed: no answer yet, or an empty one, which the client also gives before its
+-- list has loaded (a character with no quest done is the rare case, and costs only the retries).
+---@return boolean
+local function Unsettled()
+	return not ready or next(completed) == nil
+end
+
+local retryPending = false
+local function Retry()
+	if retryPending or retries >= RETRIES then
+		return
+	end
+	retries, retryPending = retries + 1, true
+	C_Timer.After(RETRY_EVERY, function()
+		retryPending = false
+		Resync()
+		if Unsettled() then
+			Retry()
+		end
+	end)
+end
+
+local function QueueResync()
+	if resyncQueued then
+		return
+	end
+	resyncQueued = true
+	C_Timer.After(RESYNC_AFTER, function()
+		resyncQueued = false
+		Resync()
+	end)
+end
+
 -- The first argument is PLAYER_ENTERING_WORLD's isInitialLogin, and QUEST_TURNED_IN's and QUEST_WATCH_UPDATE's questID.
 events:SetScript("OnEvent", function(_, event, arg)
 	if event == "QUEST_TURNED_IN" then
@@ -535,9 +595,17 @@ events:SetScript("OnEvent", function(_, event, arg)
 		ns.Sound.ClientEvent()
 	end
 	pointsStale = pointsStale or not KEEPS_POINTS[event]
+	if not ready and event == "QUEST_LOG_UPDATE" then
+		Resync()
+	elseif resyncDue and event == "QUEST_LOG_UPDATE" then
+		resyncDue = false
+		QueueResync()
+	end
 	if event == "PLAYER_ENTERING_WORLD" then
-		if not ready and LoadCompleted() then
-			ready = true
+		ready = LoadCompleted() or ready
+		if Unsettled() then
+			retries = 0
+			Retry()
 		end
 		LoadSkills()
 		GatesMoved()
@@ -560,6 +628,7 @@ events:SetScript("OnEvent", function(_, event, arg)
 		end
 	elseif event == "QUEST_TURNED_IN" and arg then
 		completed[arg] = true
+		resyncDue = true
 		ns.TurnedIn(arg)
 	end
 	Coalesce()
