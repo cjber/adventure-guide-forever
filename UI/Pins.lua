@@ -321,7 +321,11 @@ local function AddGivers(map, mapID)
 			routed[id] = true
 		end
 	end
-	local givers = ns.Model.Givers(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), mapID)
+	-- The settled route's snapshot, so a map refresh walks no quest log of its own; a fresh read only while a
+	-- rebuild is due (reading the route then would plan it in this frame).
+	local world = ns.RouteSettled() and ns.Snapshot()
+		or { player = ns.State.Player(), completed = ns.State.Completed(), log = ns.State.Log() }
+	local givers = ns.Model.Givers(ns.Data, world.player, world.completed, world.log, mapID)
 	for _, giver in ipairs(givers) do
 		local covered = false
 		for _, id in ipairs(giver.quests) do

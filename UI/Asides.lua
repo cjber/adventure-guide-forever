@@ -142,12 +142,35 @@ function Asides.Skip(key)
 	Asides.Refresh()
 end
 
--- Asks the providers again on `event`, when the client has it: an unknown event is an error on RegisterEvent, and an
--- API the probe did not confirm may come with none.
+-- The events whose bursts ask the providers once, `settle` seconds after the first (Asides.RefreshOn).
+---@type table<string, number>
+local settles = {}
+---@type table<string, boolean>
+local settling = {}
+
 ---@param event string
-function Asides.RefreshOn(event)
+local function OnEvent(_, event)
+	local settle = settles[event]
+	if not settle then
+		Asides.Refresh()
+	elseif not settling[event] then
+		settling[event] = true
+		C_Timer.After(settle, function()
+			settling[event] = nil
+			Asides.Refresh()
+		end)
+	end
+end
+
+-- Asks the providers again on `event`, when the client has it: an unknown event is an error on RegisterEvent, and an
+-- API the probe did not confirm may come with none. With `settle`, a burst of the event asks once, that many seconds
+-- after it starts.
+---@param event string
+---@param settle? number
+function Asides.RefreshOn(event, settle)
 	events = events or CreateFrame("Frame")
-	events:SetScript("OnEvent", Asides.Refresh)
+	events:SetScript("OnEvent", OnEvent)
+	settles[event] = settle
 	pcall(events.RegisterEvent, events, event)
 end
 
@@ -285,7 +308,8 @@ end)
 
 -- A spell learned at the trainer shortens the line at once.
 Asides.RefreshOn("SPELLS_CHANGED")
-Asides.RefreshOn("PLAYER_MONEY")
+-- Money only moves the line when it crosses a fee, and PLAYER_MONEY fires for every coin looted.
+Asides.RefreshOn("PLAYER_MONEY", 1)
 
 --[[ Unspent talent points: "You have 2 talent points to spend", while any are. The probe found
      GetNumUnspentTalents on Forever and UnitCharacterPoints missing; without the former there is no line. A point

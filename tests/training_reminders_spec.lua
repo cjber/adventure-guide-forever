@@ -39,5 +39,24 @@ equal(h.ns.Snapshot().player.train, nil, "opting out removes automatic training"
 local saved = Load({ trainingReminders = true })
 saved.flush()
 equal(Has(saved, "trainer"), true, "explicit saved opt-in survives loading")
+-- A burst of PLAYER_MONEY (every coin looted) asks Tweaks Forever once per reader, a moment later, and its answer
+-- still lands.
+local asked = saved.tf.TrainableSpells
+for _ = 1, 20 do
+	saved.fire("PLAYER_MONEY")
+end
+equal(saved.tf.TrainableSpells, asked, "a money event defers the training question")
+saved.tick()
+-- Once for the route's trainer stop (Core) and once for the trainer aside (Asides), not once per coin.
+equal(saved.tf.TrainableSpells, asked + 2, "a burst of money events asks once per reader")
+local spells = saved.G.TweaksForever.API.TrainableSpells
+saved.G.TweaksForever.API.TrainableSpells = function()
+	local list = spells()
+	list[#list + 1] = { name = "Earth Shock", level = 18, cost = 0, line = "Elemental", lineID = 375 }
+	return list
+end
+saved.fire("PLAYER_MONEY")
+saved.flush()
+equal(saved.ns.Snapshot().player.train.count, 2, "a moved answer after the burst rebuilds the route")
 equal(#h.errors + #saved.errors, 0, "settings changes do not raise errors")
 print(("training_reminders_spec: %d checks passed"):format(checks))

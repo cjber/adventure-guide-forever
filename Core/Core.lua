@@ -586,7 +586,8 @@ end
 
 -- A spell learned (or a new level's) changes what the trainer stop says, or ends it: rebuild when the answer moved.
 local spellbook = CreateFrame("Frame")
-spellbook:SetScript("OnEvent", function(_, event)
+---@param event string
+local function TrainingMoved(event)
 	if not ns.Setting("trainingReminders") or not ns.Prefs().journey or InCombatLockdown() then
 		return
 	end
@@ -594,6 +595,21 @@ spellbook:SetScript("OnEvent", function(_, event)
 	trainingEndedBySpell = event == "SPELLS_CHANGED" and training ~= nil and now == nil
 	if (now and now.count) ~= (training and training.count) or (now and now.level) ~= (training and training.level) then
 		ns.Invalidate()
+	end
+end
+-- PLAYER_MONEY fires for every coin looted or spent: a burst asks Tweaks Forever once, a moment after it starts,
+-- since money only moves the answer when it crosses a fee.
+local MONEY_SETTLE = 1
+local moneyPending = false
+spellbook:SetScript("OnEvent", function(_, event)
+	if event ~= "PLAYER_MONEY" then
+		TrainingMoved(event)
+	elseif not moneyPending then
+		moneyPending = true
+		C_Timer.After(MONEY_SETTLE, function()
+			moneyPending = false
+			TrainingMoved("PLAYER_MONEY")
+		end)
 	end
 end)
 
