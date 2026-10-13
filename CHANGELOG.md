@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-10-13
+
 - **Tracker stays put when Edit Mode places it by its centre or bottom.** Attaching to the quest tracker no longer pushes it down the screen when it has been moved away from the default top-anchored spot.
 
 - **How the Forever addons work together.** The README and store page list each of the other Forever addons and what it adds when installed alongside this one.
