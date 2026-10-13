@@ -1735,7 +1735,7 @@ do
 			assert(ns.Data.instances[q.dungeon].name ~= "", q.title)
 		end
 	end
-	equal(flagged, 556, "dungeon and raid quests flagged")
+	equal(flagged, 558, "dungeon and raid quests flagged")
 	equal(raids, 283, "raid quests flagged")
 end
 -- Raid quests filed outdoors (typed Raid) are on no card, nor is a raid's quest given outdoors under its instance:
@@ -1849,8 +1849,8 @@ do
 			end
 		end
 	end
-	equal(#heads, 885, "walk: chain heads in the data")
-	equal(totals, 711, "walk: heads whose total the data proves")
+	equal(#heads, 899, "walk: chain heads in the data")
+	equal(totals, 725, "walk: heads whose total the data proves")
 	equal(textOnly, 174, "walk: heads shown as a chapter only")
 	equal(#heads - totals - textOnly, 0, "walk: heads whose next dangles at once")
 end
