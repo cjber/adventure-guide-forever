@@ -24,8 +24,8 @@ CACHE = gen_quests.CACHE
 FIXTURE = ROOT / "tests" / "fixtures" / "quests.lua"
 TOWN_FIXTURE = ROOT / "tests" / "fixtures" / "towns.lua"
 # QuestieDB's Forever release, pinned to the tag and the asset's sha256. The refresh workflow moves the tag.
-QUESTIEDB_TAG = "v1.0.5"
-QUESTIEDB_SHA256 = "993680e91b8bcc1f5454af94478b1f70e0bf02bc4bd596001c8136b440939712"
+QUESTIEDB_TAG = "v1.0.6"
+QUESTIEDB_SHA256 = "d78b066c362eaf28258d9e2d041c0a7b03d6943a2dfc741dec70c6bfd8e1fc27"
 QUESTIEDB_URL = f"https://github.com/Questie/QuestieDB/releases/download/{QUESTIEDB_TAG}/QuestieDB-Forever.zip"
 
 

@@ -1,9 +1,9 @@
 # orc18_barrens: level 18, side 2, at 1413 0.5200,0.3000
 card | zone:1413 | The Barrens story | Chapter 1 of 8 | A chain begins with Sputtervalve | map 1413
-  step 1 | town:1413:380 | Visit The Crossroads: Pick up 8, turn in 1 | 1413 0.5193,0.3032 | Opens the next chapter here
+  step 1 | town:1413:380 | Visit The Crossroads: Pick up 9, turn in 1 | 1413 0.5193,0.3032 | Opens the next chapter here
   step 2 | area:5041:4 | Complete objectives · Supplies for the Crossroads | 1413 0.5850,0.2730 | after you pick it up | 32 yd | 5041/4
   step 3 | town:1413:392 | Visit Ratchet: Pick up 9 | 1413 0.6268,0.3623 | Begins a new story
-  step 4 | area:92706:4 | Complete objectives · WANTED: Bruuz | 1413 0.6370,0.3870 | after you pick it up | 0 yd | 92706/4
+  step 4 | area:92706:4 | Complete objectives · WANTED: Bruuz | 1413 0.6420,0.3890 | after you pick it up | 116 yd | 92706/4
   step 5 | area:887:0 | Complete objectives · Southsea Freebooters | 1413 0.6360,0.4620 | after you pick it up | 86 yd | 887/0
   step 6 | area:887:1 | Complete 2 objectives · The Barrens | 1413 0.6310,0.4930 | 2 quests here | 81 yd | 887/1 895/4
   step 7 | area:891:0 | Complete 2 objectives · The Guns of Northwatch | 1413 0.6130,0.5570 | after you pick it up | 181 yd | 891/0 891/4
@@ -14,12 +14,13 @@ card (chosen) | carry | Quests in your log | 1 ready to hand in, 1 in progress |
   step 1 | town:1413:380 | Turn in: The Zhevra | 1413 0.5223,0.3101 | Opens the next chapter here
   step 2 | area:843:0 | Complete 3 objectives · Gann's Reclamation | 1413 0.4770,0.8490 | quests in progress | 90 yd | 843/0 843/1 843/4
   step 3 | town:1413:390 | Turn in: Gann's Reclamation | 1413 0.4589,0.7700 | Opens the next chapter here
-card | zone:1442 | Head to Stonetalon Mountains | 7 quests near your level | - | map 1413
+card | zone:1442 | Head to Stonetalon Mountains | 8 quests near your level | - | map 1413
   step 1 | town:1413:1702 | Visit Honor's Stand: Pick up 2 | 1413 0.3526,0.2788 | 2 to pick up
   step 2 | town:1442:2539 | Visit Malaka'jin: Pick up 2 | 1442 0.7325,0.9489 | 2 to pick up
   step 3 | town:1442:2537 | Pick up: Protect Kaya | 1442 0.7348,0.8559 | near your level
-  step 4 | town:1442:460 | Pick up: Boulderslide Ravine | 1442 0.4722,0.6404 | near your level
-  step 5 | town:1454:0 | Pick up: The Spirits of Stonetalon | 1454 0.3893,0.3840 | near your level
+  step 4 | town:1442:1076 | Pick up: Goblin Lockpicks | 1442 0.5822,0.5174 | near your level
+  step 5 | town:1442:460 | Pick up: Boulderslide Ravine | 1442 0.4722,0.6404 | near your level
+  step 6 | town:1454:0 | Pick up: The Spirits of Stonetalon | 1454 0.3893,0.3840 | near your level
 card | zone:1440 | Head to Ashenvale | 1 quest near your level | - | map 1440
   step 1 | town:1440:414 | Pick up: Naga at the Zoram Strand | 1440 0.1169,0.3491 | near your level
 card | zone:1421 | Head to Silverpine Forest | 6 quests near your level | The Sepulcher needs hands | map 1421
@@ -31,5 +32,7 @@ card | zone:1433 | Head to Redridge Mountains | 1 quest near your level | - | ma
   step 1 | town:1433:69 | Pick up: Hilary's Necklace | 1433 0.2423,0.5364 | near your level
 card | zone:1420 | Head to Tirisfal Glades | 7 quests near your level | 7 quests will soon turn grey | map 1420
   step 1 | town:1420:159 | Visit Brill: Pick up 2 | 1420 0.6347,0.5655 | 2 to pick up
-  step 2 | town:1420:165 | Visit Balnir Farmstead: Pick up 3 | 1420 0.6588,0.6113 | 3 to pick up
-  step 3 | town:1420:16616 | Visit Whispering Forest: Pick up 2 | 1420 0.2201,0.4477 | 2 to pick up
+  step 2 | town:1420:165 | Visit Balnir Farmstead: Pick up 3 | 1420 0.6588,0.6110 | 3 to pick up
+  step 3 | town:1420:16616 | Visit Whispering Forest: Pick up 2 | 1420 0.2197,0.4487 | 2 to pick up
+card | zone:1434 | Head to Stranglethorn Vale | 3 quests near your level | Booty Bay needs hands | map 1434
+  step 1 | town:1434:35 | Visit Booty Bay: Pick up 3 | 1434 0.2773,0.7692 | 3 to pick up

@@ -41,7 +41,7 @@ local function Lines(h, guid)
 	return h.tooltip
 end
 
-local SERGRA, THORK, LATER = 3338, 3429, 3446 -- The Zhevra's ender; Crossroads and Ratchet's giver
+local SERGRA, MANKRIK, LATER = 3338, 3432, 3446 -- The Zhevra's ender; Crossroads and Ratchet's giver
 
 -- The log's quests ride on the zone's story (they are done on its map): Sergra Darkthorn takes The Zhevra at the
 -- Crossroads; Innkeeper Gryshka in Orgrimmar is on none of its steps.
@@ -75,13 +75,13 @@ end
 do
 	local h = Load({ journey = "zone:1413" })
 	local line = { "normal: Adventure guide: The Barrens story" }
-	same(Lines(h, Creature(THORK)), line, "story: a pickup's giver")
+	same(Lines(h, Creature(MANKRIK)), line, "story: a pickup's giver")
 	same(Lines(h, Creature(LATER)), line, "story: in a later town")
 	same(Lines(h, Creature(SERGRA)), line, "story: its hand-in's ender")
 	h.ns.Choose(nil)
 	h.flush()
 	equal(h.ns.Route().chosen, false, "none chosen")
-	same(Lines(h, Creature(THORK)), {}, "none chosen: unrelated pickup has no line")
+	same(Lines(h, Creature(MANKRIK)), {}, "none chosen: unrelated pickup has no line")
 	same(Lines(h, Creature(SERGRA)), { "normal: Adventure guide: Quests in your log" }, "none chosen: accepted hand-in")
 	equal(#h.errors, 0, "story: errors\n" .. table.concat(h.errors, "\n"))
 end

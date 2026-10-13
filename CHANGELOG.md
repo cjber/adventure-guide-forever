@@ -15,6 +15,8 @@ verbatim rather than rewritten as the addon moves.
 
 - **How the Forever addons work together.** The README and store page list each of the other Forever addons and what it adds when installed alongside this one.
 
+- **Current Forever client data.** The guide is built against Forever build 1.60.1.70338 and rebuilds its quest catalogue for QuestieDB 1.0.6, which adds the new Deadmines and Scarlet Monastery quests.
+
 ## [0.12.0] - 2026-10-09
 
 - **Resume RestedXP from Shortest Path.** Its Resume guide action returns to the active RestedXP journey through Adventure Guide when integrated navigation is enabled.
