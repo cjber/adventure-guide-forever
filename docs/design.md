@@ -31,7 +31,9 @@ abandons quests.
 - **2.4 Search.** Share eligibility checks with the planner. Explain missing requirements; locked
   quests offer no destination. Every word of the query must appear in the title (case and Latin accents folded); the
   best match comes first (the whole title, the title's start, the start of its words, anywhere), then a quest open
-  now, then the level nearest the player's, then the title. Ten at most.
+  now, then the level nearest the player's, then the title. Ten at most. A locked row whose chain can start now
+  names its earliest prerequisite open now and not orange or red ("Starts with …", `Model.ChainStart`), and a
+  shift-click adds that quest; the locked quest itself never becomes a target.
 - **2.5 Tracker.** Use the chosen journey as the section heading, with Adventure Guide as the fallback.
   Show the current action and up to two upcoming actions with native action icons beside quests.
   Upcoming actions are muted and follow the resolved current stop. Leave the stock quest order alone.

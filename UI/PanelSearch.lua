@@ -26,6 +26,15 @@ local results = {}
 ---@field Checks Texture[]
 ---@field Lines FontString[]
 ---@field why AGFWhyLine[]
+---@field chain? integer a locked quest's earliest prerequisite open now (Model.ChainStart), added with a shift-click
+
+-- A quest's title for a tooltip line: the client's, else the data's.
+---@param questID integer
+---@return string
+local function QuestTitleOf(questID)
+	local quest = ns.Data.quests[questID]
+	return ns.State.QuestTitle(questID) or (quest and quest.title) or ""
+end
 
 ---@param parent Frame
 ---@return AGFSearchRow
@@ -73,14 +82,24 @@ local function CreateResult(parent)
 		end
 		if self.open and self.id then
 			GameTooltip_AddInstructionLine(GameTooltip, ns.Pinned({ self.id }) and L.SHIFT_REMOVE or L.SHIFT_ADD)
+		elseif self.chain then
+			-- A locked quest whose chain can start now: name where, and add that quest with a shift-click.
+			GameTooltip_AddNormalLine(GameTooltip, L.STARTS_WITH:format(QuestTitleOf(self.chain)))
+			GameTooltip_AddInstructionLine(
+				GameTooltip,
+				ns.Pinned({ self.chain }) and L.SHIFT_REMOVE_START or L.SHIFT_ADD_START
+			)
 		end
 		GameTooltip:Show()
 	end)
 	row:SetScript("OnLeave", ns.Overview.RowLeave)
 	row:SetScript("OnMouseUp", function(self, mouseButton)
-		if mouseButton == "LeftButton" and IsShiftKeyDown() and self.open and self.id then
-			ns.TogglePinned({ self.id })
-			GameTooltip_Hide()
+		if mouseButton == "LeftButton" and IsShiftKeyDown() then
+			local id = (self.open and self.id) or self.chain
+			if id then
+				ns.TogglePinned({ id })
+				GameTooltip_Hide()
+			end
 		end
 	end)
 	return row
@@ -160,6 +179,7 @@ local function RefreshResult(row, id, top, read)
 	end
 	row.why, row.id = shown, id
 	row.open = shown[1] == nil and not ns.Model.Hard(data.quests[id], player)
+	row.chain = shown[1] ~= nil and ns.Model.ChainStart(data, player, read.completed, read.log, id) or nil
 	row.Star:SetShown(row.open and ns.Pinned({ id }))
 	local quest = data.quests[id]
 	local map = quest.zone or (quest.start and quest.start.map)

@@ -332,6 +332,7 @@
 ---@field EXPLORE_SLOT integer the data's need slot for an explore objective (tools/gen_quests.py)
 ---@field ValidPlace fun(place?: {map?: integer, x?: number, y?: number}): boolean? true when `place` has a positive map and x, y in 0..1
 ---@field Hub fun(data: AGFData, place: {map: integer, x: number, y: number}): string? the town `place` stands in, as "map:area"
+---@field ChainStart fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): integer? a locked quest's earliest prerequisite open now and not orange or red
 ---@field Hard fun(quest: AGFQuest, player: AGFPlayer): boolean above the chosen quest level ceiling
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
 ---@field Why fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer, names?: AGFWhyNames): AGFWhyLine[] every requirement, met or not; eligible exactly when all are met
@@ -854,6 +855,9 @@
 ---@field NOT_THIS_QUEST string a step's menu: drop one of its quests on this character
 ---@field SHIFT_ADD string a quest giver's or search result's tooltip: its shift-click adds the quests
 ---@field SHIFT_REMOVE string the same once they are added: its shift-click takes them off
+---@field STARTS_WITH string format: a locked search row's tooltip, the quest its chain starts with
+---@field SHIFT_ADD_START string
+---@field SHIFT_REMOVE_START string
 
 ---@class AGFPrefs
 ---@field pinned table<integer, true> quests the player added by shift-click: in the route past the ratio cut
