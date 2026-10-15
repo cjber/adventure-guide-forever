@@ -96,10 +96,39 @@ do
 	h.Talk(Creature(npc), "GOSSIP_SHOW", offered)
 	h.flush()
 	equal(Said(h, h.ns.L.NOT_OFFERED:format(title)), 1, "gossip: not said again")
-	-- A turn-in clears the marks: the giver may offer it now.
-	h.fire("QUEST_TURNED_IN", 845)
+	-- An unrelated hand-in keeps the mark; one at the same NPC, or of a quest it needs, clears it.
+	local quests = h.ns.Data.quests
+	local unrelated
+	for other, quest in pairs(quests) do
+		local needs = false
+		for _, pre in ipairs(quests[id].pre or {}) do
+			needs = needs or pre == other
+		end
+		for _, pre in ipairs(quests[id].preAny or {}) do
+			needs = needs or pre == other
+		end
+		if
+			not unrelated
+			and not needs
+			and quest.finish
+			and quest.finish.npc
+			and quest.finish.npc ~= npc
+			and other ~= id
+		then
+			unrelated = other
+		end
+	end
+	h.fire("QUEST_TURNED_IN", unrelated)
 	h.flush()
-	equal(next(h.ns.Prefs().notOffered), nil, "turn-in: cleared")
+	equal(h.ns.Prefs().notOffered[id], h.player.level, "an unrelated hand-in: still marked")
+	local here
+	for other, quest in pairs(quests) do
+		here = here or (quest.finish and quest.finish.npc == npc and other ~= id and other) or nil
+	end
+	quests[assert(here, "a quest handed in at the same NPC")].finish.npc = npc
+	h.fire("QUEST_TURNED_IN", here)
+	h.flush()
+	equal(h.ns.Prefs().notOffered[id], nil, "a hand-in at the same NPC: cleared")
 	equal(#h.errors, 0, "gossip: errors\n" .. table.concat(h.errors, "\n"))
 end
 
@@ -117,9 +146,20 @@ do
 	h.Talk(h.Secret(), "GOSSIP_SHOW", {})
 	h.flush()
 	equal(h.ns.Prefs().notOffered[id], nil, "secret GUID: not marked")
+	-- A greeting gives titles only: without the client's own title for the quest it proves nothing.
+	h.Talk(Creature(npc), "QUEST_GREETING", { "Some Other Quest" })
+	h.flush()
+	equal(h.ns.Prefs().notOffered[id], nil, "greeting: no client title, nothing proved")
+	h.G.C_QuestLog.GetTitleForQuestID = function(questID)
+		return h.ns.Data.quests[questID] and h.ns.Data.quests[questID].title
+	end
 	h.Talk(Creature(npc), "QUEST_GREETING", { title })
 	h.flush()
 	equal(h.ns.Prefs().notOffered[id], nil, "greeting: listed by title, not marked")
+	-- A gossip entry with neither an ID nor a title makes the whole list unreadable.
+	h.Talk(Creature(npc), "GOSSIP_SHOW", { { questID = h.Secret(), title = "" } })
+	h.flush()
+	equal(h.ns.Prefs().notOffered[id], nil, "gossip: an unreadable entry proves nothing")
 	h.Talk(Creature(npc), "QUEST_GREETING", { "" })
 	h.flush()
 	equal(h.ns.Prefs().notOffered[id], nil, "greeting: an untitled list proves nothing")
@@ -127,11 +167,11 @@ do
 	h.Talk(Creature(npc), "QUEST_GREETING", { "Some Other Quest" })
 	h.flush()
 	equal(h.ns.Prefs().notOffered[id], h.player.level, "greeting: marked")
-	-- A level-up clears it.
+	-- A level-up lets it go: the mark holds only at the level it was made at.
 	h.player.level = h.player.level + 1
 	h.fire("PLAYER_LEVEL_UP", h.player.level)
 	h.flush()
-	equal(next(h.ns.Prefs().notOffered), nil, "level-up: cleared")
+	equal(Why(h, id), nil, "level-up: no longer counted")
 	equal(#h.errors, 0, "listed: errors\n" .. table.concat(h.errors, "\n"))
 end
 
@@ -155,8 +195,14 @@ do
 	h.ns.Prefs().notOffered[id] = h.player.level - 1
 	h.ns.Invalidate()
 	h.flush()
-	equal(h.ns.State.Player().notOffered[id], nil, "another level: not counted")
+	equal(Why(h, id), nil, "another level: not counted")
 	equal(OnRoute(h, id), true, "another level: still on the route")
+	-- A quest already taken is never marked.
+	table.insert(h.log, { id = id, title = "Taken", level = 1, complete = false })
+	local npc = select(2, Pickup(h))
+	h.Talk(Creature(npc), "GOSSIP_SHOW", {})
+	h.flush()
+	equal(h.ns.Prefs().notOffered[id], h.player.level - 1, "taken: not marked again")
 end
 
 print(("giver_offers_spec: %d checks passed"):format(checks))

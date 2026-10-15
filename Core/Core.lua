@@ -72,6 +72,19 @@ local sessionSkipped = {}
 ---@type AGFSkipped[]
 local skippedOrder = {}
 
+-- A creature's entry from its GUID, "Creature-0-server-instance-zone-entry-spawn" ("Vehicle-..." for one that carries
+-- a rider); nil for players, pets, objects and a secret or missing GUID (docs/design.md §2.23).
+---@param guid? string
+---@return integer?
+function ns.CreatureEntry(guid)
+	guid = ns.Readable(guid)
+	if type(guid) ~= "string" then
+		return nil
+	end
+	local kind, entry = guid:match("^(%a+)%-%d+%-%d+%-%d+%-%d+%-(%d+)%-%x+$")
+	return (kind == "Creature" or kind == "Vehicle") and tonumber(entry) or nil
+end
+
 ---@param msg string
 function ns.Print(msg)
 	DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99" .. ns.TITLE .. "|r " .. msg)

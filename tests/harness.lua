@@ -1843,6 +1843,14 @@ function harness.load(options)
 			return quests
 		end,
 		GetTitleForQuestID = noop,
+		IsOnQuest = function(questID)
+			for _, entry in ipairs(log) do
+				if entry.id == questID then
+					return true
+				end
+			end
+			return false
+		end,
 		GetQuestDifficultyLevel = noop,
 		-- Tracked quests, in order: a spec seeds h.watched; the client's limit is 25.
 		GetNumQuestWatches = function()

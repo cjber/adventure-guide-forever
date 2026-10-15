@@ -123,7 +123,7 @@
 
 -- What the live state tells the planner. Built by State.lua, consumed by the planner.
 ---@class AGFPlayer
----@field notOffered? table<integer, true> quests marked not offered at the player's level: unproven, with their own Why line
+---@field notOffered? table<integer, integer> quests marked not offered: quest ID -> the level marked at; one marked at the player's level is unproven, with its own Why line
 ---@field questAvailable? fun(id: integer): boolean
 ---@field level integer
 ---@field maxQuestLevelOffset? integer highest recommended quest level relative to the player; defaults to +2
@@ -713,6 +713,7 @@
 
 ---@class AGFNamespace
 ---@field Offers AGFOffersModule what a giver's window really offers (Offers.lua)
+---@field CreatureEntry fun(guid?: string): integer? a creature's entry from its GUID; nil for anything else or a secret
 ---@field PanelSearch AGFPanelSearch
 ---@field QuestieFields {spawns: string[], drops: string[]}
 ---@field TrackerHost ForeverTrackerHostAPI

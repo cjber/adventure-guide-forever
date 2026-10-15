@@ -12,7 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-- **The guide learns when a quest giver doesn't have a quest.** If the guide sends you to pick up a quest and the NPC's window doesn't list it (Forever removed or changed some quests), the guide says so once in chat, drops it from the route, and its search explains "The giver didn't offer it". It tries again after your next level-up or hand-in, in case the quest has opened up.
+- **The guide learns when a quest giver doesn't have a quest.** If the guide sends you to pick up a quest and the NPC's window doesn't list it (Forever removed or changed some quests), the guide says so once in chat, drops it from the route, and its search explains "The giver didn't offer it". It tries again after your next level-up, or after a hand-in that could open the quest up.
 
 - **The guide's quest search puts the best match first.** It used to list every title containing what you typed in alphabetical order and stop at ten, so the quest you meant could be cut off. Now a title that starts with your words comes first, then titles with a word starting that way, then the rest; within those, quests you can take now, then those nearest your level. You can type the words in any order, and "dun garok" finds "Dûn Garok".
 
