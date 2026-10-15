@@ -1,6 +1,8 @@
 # Addon API
 
-Addons can read where the guide is sending the player through `AdventureGuideForever.API` (`version = 1`).
+Addons can read where the guide is sending the player through `AdventureGuideForever.API` (`version = 1`). Additions
+keep `version` at 1 and raise `minor` (1 from `Subscribe`, absent before), so check that a function exists before
+calling it.
 The stop queries are read-only; `ResumeRestedXP()` is an explicit navigation request. Places use uiMapIDs and
 normalized 0-1 coordinates, as Shortest Path's API does.
 
@@ -26,14 +28,29 @@ A stop is a fresh table on every call:
 
 `nil` means ask again later: the game's quest data has not loaded, the route is being worked out, or the current
 stop has no known place. The counts are what the route plans for the visit; a hand-in the route returns for later
-is counted at its stop. The guide fires no event of its own when the stop changes, so poll, for example when your
-own panel opens or on `QUEST_LOG_UPDATE`.
+is counted at its stop. `Subscribe` says when to read again.
+
+- `Subscribe(callback)` calls `callback(changes)` on the frame after what `CurrentStop` answers or the journey the
+  route follows changes, at most once per burst of changes and never while the route is being worked out. `changes`
+  is a new table each call with either or both set to `true`: `stop` (a stop appeared, moved on, changed or went) and
+  `journey` (another journey, or the same one chosen or let go). Read `CurrentStop` and `NextStops` again rather than
+  replaying the changes. A callback added by another callback waits for the next burst. It returns a function that
+  unsubscribes, safe to call twice. An error in one callback goes to the game's error handler without stopping the
+  others. A non-function callback is an error.
 
 ```lua
 local api = AdventureGuideForever and AdventureGuideForever.API
-local stop = api and api.version == 1 and api.CurrentStop()
-if stop and stop.isTown then
-	print(("Next town: %s (%d to hand in, %d to pick up)"):format(stop.name, stop.handins, stop.pickups))
+local function Show()
+	local stop = api.CurrentStop()
+	if stop and stop.isTown then
+		print(("Next town: %s (%d to hand in, %d to pick up)"):format(stop.name, stop.handins, stop.pickups))
+	end
+end
+if api and api.version == 1 then
+	Show()
+	if type(api.Subscribe) == "function" then
+		api.Subscribe(Show)
+	end
 end
 ```
 

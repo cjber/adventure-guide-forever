@@ -1,5 +1,5 @@
 build 1.60.1.70374
-shortest-path-forever 061f0b1041f85d02084c25a27edbbf3db3ae7ec7
+shortest-path-forever 9c2d86bad8418ee07c74b54e2757568b9d5aff3f
 tests/golden/layout.json ab031f90cb803b4cbcbc1ba690e27cbe797340bdd952db84266105ea69ac4995
 docs/screenshots/chosen.png a422706d8616492022b16166b29c5d6a04a3e53dd4f24edf9bf5b332676cf49a
 docs/screenshots/demo.gif 5fbbeb866a8b3432bf2d836ccf44e1831f1eae7a3d054c2c12fb06d159b2a926
