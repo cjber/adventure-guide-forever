@@ -10,8 +10,6 @@ image's hash beside its dump's; tools/screenshots.py rewrites it after a render.
 """
 
 import functools
-import json
-import subprocess
 import sys
 from pathlib import Path
 
@@ -20,21 +18,31 @@ try:
 except ModuleNotFoundError:
     from forever_tools import screens
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs/screenshots"
-CODE = ("tools/screenshots*.py", "tools/screenshot_loot.lua")
-# Each image and the tests/scenes.lua scenes tools/screenshots.py reads for it ("panel" carries the map and pins
-# every quest-log image sits on).
+# The render modules (not screenshots_test.py, and never an untracked scratch file).
+CODE = (
+    "tools/screenshots.py",
+    "tools/screenshots_art.py",
+    "tools/screenshots_resolver.py",
+    "tools/screenshots_spf.py",
+    "tools/screenshots_stock.py",
+    "tools/screenshot_loot.lua",
+)
+# Each image and the parts of tests/scenes.lua's run tools/screenshots.py reads for it: a scene, or one of its
+# fields ("panel.map" is the zone every quest-log image is drawn on).
 IMAGES = {
-    "panel.png": ("journeys", "panel"),
+    "panel.png": ("journeys", "panel.map"),
     "chosen.png": ("panel",),
-    "panel_four.png": ("journeys_four", "panel"),
-    "panel_overflow.png": ("journeys_overflow", "panel"),
-    "search.png": ("search", "panel"),
-    "restedxp.png": ("restedxp", "panel"),
+    "panel_four.png": ("journeys_four", "panel.map"),
+    "panel_overflow.png": ("journeys_overflow", "panel.map"),
+    "search.png": ("search", "panel.map", "panel.pins"),
+    "restedxp.png": ("restedxp", "panel.map"),
     "guide_setup.png": ("guide_setup",),
-    "map.png": ("map", "panel"),
-    "tooltip.png": ("tooltip", "panel"),
+    "map.png": ("map", "panel.map"),
+    "tooltip.png": ("tooltip", "panel.map"),
     "tracker.png": ("tracker",),
     "menu.png": ("menu", "tracker"),
     "loot.png": ("loot_menu",),
@@ -45,16 +53,20 @@ IMAGES = {
 
 @functools.cache
 def scenes_run() -> dict:
-    result = subprocess.run(["luajit", "tests/scenes.lua"], cwd=ROOT, capture_output=True, text=True, check=True)
-    data = json.loads(result.stdout)
-    if data["errors"]:
-        sys.exit("tests/scenes.lua raised:\n" + "\n".join(data["errors"]))
-    return data
+    """tests/scenes.lua with no input, as tools/screenshots.py's first layout pass runs it (no Pillow needed)."""
+    import screenshots
+
+    return screenshots.run_scenes()
+
+
+def part(data: dict, key: str) -> object:
+    scene, _, field = key.partition(".")
+    return data[scene][field] if field else data[scene]
 
 
 def dump(keys: tuple[str, ...]) -> bytes:
     data = scenes_run()
-    return screens.dump_json({key: data[key] for key in keys}) + screens.files(ROOT, CODE)
+    return screens.dump_json({key: part(data, key) for key in keys}) + screens.files(ROOT, CODE)
 
 
 SCENES = {image: functools.partial(dump, keys) for image, keys in IMAGES.items()}

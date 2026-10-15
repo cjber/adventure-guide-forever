@@ -635,11 +635,12 @@ def main():
     for path in render():
         print(path.relative_to(ROOT))
     # What each image was drawn from, for CI's stale-screenshot check (tools/check_screenshots.py). Every image was
-    # just drawn, so one whose pixels came out the same is recorded too.
+    # just drawn, so one whose pixels came out the same is recorded too, but only with the pinned Pillow: another
+    # version's bytes are not the ones to keep.
     import check_screenshots
     from forever_tools import screens
 
-    screens.record(OUT, check_screenshots.SCENES, force=True)
+    screens.record(OUT, check_screenshots.SCENES, force=importlib.metadata.version("pillow") == PILLOW)
 
 
 if __name__ == "__main__":

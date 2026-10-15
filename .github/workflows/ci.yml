@@ -120,7 +120,7 @@ jobs:
           ./gitleaks git --redact --no-banner .
 
   # What a tag would ship, checked before it ships: the release workflow's packager without uploading or zipping,
-  # then tools/check_package.py on .release/ (every loaded file present, no development folders, specs pass on it).
+  # then tools/check_package.py on .release/ (every loaded file present, no development folders, the smoke spec passes on it).
   package:
     runs-on: ubuntu-latest
     timeout-minutes: 30

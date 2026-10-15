@@ -22,7 +22,7 @@ python3 .sift/gate.py --base origin/main && python3 .sift/agents.py check
 
 CI's `package` job builds the zip with the release's packager without uploading (`-d -z`) and runs
 `python3 tools/check_package.py` on its output: every loaded file ships, no development folder does, and the
-specs pass on the packaged files.
+smoke spec passes on the packaged files.
 
 Every version needs a `CHANGELOG.md` entry (prose, bold-lead bullets) before its `v*` tag: the release publishes
 it as the notes on GitHub, CurseForge and Wago.
@@ -32,7 +32,9 @@ planner or the rebuild, also run `AGF_BENCH_STRICT=1 luajit -joff tests/plan_ben
 the once-a-login QuestieDB catalogue build; local only, since shared runners flake). `AGF_UPDATE_GOLDEN=1` rewrites the golden files in `tests/golden/`.
 After a UI change, set `WOWMOCK` to the installed wow-mock-screenshots library directory and run
 `python3 tools/screenshots.py` (WFA-9; local only: it needs Pillow and wago.tools) and
-commit the PNGs it rewrites in `docs/screenshots/`; two runs give byte-identical files.
+commit the PNGs it rewrites in `docs/screenshots/` with `scenes.sha256`; two runs give byte-identical files.
+A data refresh that changes what a scene shows fails `tools/check_screenshots.py` until the images are rendered
+again.
 
 ## Layout
 
