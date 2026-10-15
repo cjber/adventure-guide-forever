@@ -3,16 +3,10 @@ local _, ns = ...
 
 -- Adventure Guide's own lines in /agf report (docs/design.md §2.24): the guide's settings, the quest data, and the
 -- stop the tracker shows with each quest's ID and Why lines, then the next stops' titles. Read from the committed
--- route only: while a build is due the report says so rather than building one. English data names throughout, so
--- the report reads the same in every locale.
+-- route and the snapshot it was planned from: while a build is due the report says so rather than building one.
+-- Quest titles are the data's; step titles and Why lines are the client's language.
 
 local NEXT_SHOWN = 2
-
----@param value? number
----@return string
-local function Percent(value)
-	return value and ("%.1f"):format(value * 100) or "-"
-end
 
 -- What a stop does with one of its quests.
 ---@param step AGFStep
@@ -34,8 +28,11 @@ end
 
 ---@param lines string[]
 ---@param step AGFStep
-local function Stop(lines, step)
-	lines[#lines + 1] = ("Stop: %s [%s %s] map %s %s, %s r%s"):format(
+---@param label string "Stop" for the stop being guided to, "Route head" for step 1 when nothing is
+local function Stop(lines, step, label)
+	local Percent = ns.Report.Percent
+	lines[#lines + 1] = ("%s: %s [%s %s] map %s %s, %s r%s"):format(
+		label,
 		step.title or "-",
 		step.kind,
 		step.key,
@@ -45,8 +42,9 @@ local function Stop(lines, step)
 		tostring(step.r or 0)
 	)
 	lines[#lines + 1] = ("  Why: %s | %s"):format(step.reason or "-", step.detail or "-")
-	local data, state = ns.Data, ns.State
-	local player, completed, log = state.Player(), state.Completed(), state.Log()
+	-- What the committed route was planned from, so the Why lines match why the stop is there.
+	local data, snapshot = ns.Data, ns.Snapshot()
+	local player, completed, log = snapshot.player, snapshot.completed, snapshot.log
 	for _, id in ipairs(step.quests) do
 		local quest = data.quests[id]
 		lines[#lines + 1] = ("  Quest %d %s (level %s): %s%s"):format(
@@ -90,12 +88,13 @@ function ns.ReportLines()
 		route.chosen and ", chosen" or "",
 		#route.steps
 	)
-	local current = ns.Guidance.CurrentStep() or route.steps[1]
+	local guided = ns.Guidance.CurrentStep()
+	local current = guided or route.steps[1]
 	if not current then
 		lines[#lines + 1] = "Stop: none"
 		return lines
 	end
-	Stop(lines, current)
+	Stop(lines, current, guided and "Stop" or "Route head")
 	local after, index = {}, nil
 	for position, step in ipairs(route.steps) do
 		if step == current then

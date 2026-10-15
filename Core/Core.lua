@@ -854,9 +854,12 @@ local function StepRebuild()
 		or shown == "frame"
 		or debugprofilestop() - started >= REBUILD_SLICE_MS
 	if not ok then
-		ns.RecordError("rebuild", shown, debug.traceback(rebuildCo))
+		local failed = rebuildCo
 		rebuildCo = nil
 		pendingRebuild = false
+		-- debugstack takes the coroutine first in the client; the annotations know only its level form.
+		---@diagnostic disable-next-line: param-type-mismatch
+		ns.RecordError("rebuild", shown, debugstack and debugstack(failed) or debug.traceback(failed))
 		error(shown, 0)
 	end
 	if coroutine.status(rebuildCo) == "suspended" then
@@ -947,7 +950,9 @@ SLASH_ADVENTUREGUIDEFOREVER2 = "/adventureguide"
 local function Slash(msg)
 	local command = strtrim(msg or ""):lower()
 	if command == "report" then
-		ns.Report.Show(ns.Report.Text(ns.ReportLines()))
+		-- The addon's lines can fail in the very state being reported: the header and caught errors still show.
+		local ok, lines = ns.SafeCall("report lines", ns.ReportLines)
+		ns.Report.Show(ns.Report.Text(ok and lines or { "Report lines failed: " .. tostring(lines) }))
 	elseif command == "audit" then
 		Audit()
 	elseif command == "dump" then

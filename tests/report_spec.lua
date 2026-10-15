@@ -141,6 +141,79 @@ do
 	equal(#text <= 2000, true, "report: still one message")
 end
 
+-- The client's stack lines ('[string "@Interface/AddOns/.../file.lua"]:12:') are kept as LuaJIT's are; a long
+-- message is cut on a character boundary; a nested SafeCall names its own label.
+do
+	local h = Load()
+	local ns = h.ns
+	ns.RecordError(
+		"client",
+		"boom",
+		table.concat({
+			'[string "@Interface/AddOns/AdventureGuideForever/Core/State.lua"]:612: in function <...>',
+			"[C]: in function 'xpcall'",
+			"[Interface/AddOns/AdventureGuideForever/Core/Core.lua]:790: in function 'Notify'",
+		}, "\n")
+	)
+	local stack = ns.CaughtErrors()[1].stack
+	has(stack, 'State.lua"]:612', "client stack: a string chunk line")
+	has(stack, "Core.lua]:790", "client stack: a file line")
+	lacks(stack, "[C]", "client stack: C frames left out")
+	ns.RecordError("utf8", ("é"):rep(200))
+	local message = ns.CaughtErrors()[2].message
+	equal(message:sub(-3), "...", "utf8: cut")
+	equal(#message <= 300, true, "utf8: within the limit")
+	equal(select(2, message:sub(1, -4):gsub("é", "")) * 2, #message - 3, "utf8: whole characters only")
+	ns.SafeCall("outer", function()
+		ns.SafeCall("inner", error, "inner failed", 0)
+	end)
+	local caught = ns.CaughtErrors()
+	equal(caught[#caught].label, "inner", "nested: the inner label")
+	equal(#caught, 3, "nested: the outer call didn't fail")
+end
+
+-- Escape closes the window like a panel even without the edit box's focus; long addon lines are capped, so the
+-- caught errors and the addon list still fit.
+do
+	local h = Load()
+	local ns = h.ns
+	ns.SafeCall("kept", error, "still shown", 0)
+	local long = {}
+	for index = 1, 100 do
+		long[index] = ("line %03d "):format(index) .. ("x"):rep(60)
+	end
+	ns.ReportLines = function()
+		return long
+	end
+	h.Slash("report")
+	local frame, edit = Window(h)
+	local special = false
+	for _, name in ipairs(h.G.UISpecialFrames) do
+		special = special or (name == "AdventureGuideForeverReport" and h.G[name] == frame)
+	end
+	equal(special, true, "Escape: the window is a special frame")
+	local text = edit:GetText()
+	equal(#text <= 2000, true, "long lines: one message")
+	has(text, "line 001 ", "long lines: the first kept")
+	lacks(text, "line 100 ", "long lines: the last cut")
+	has(text, "- [kept] x1 still shown", "long lines: the errors still shown")
+	has(text, "Other addons (", "long lines: the addon list still shown")
+end
+
+-- The addon's own lines failing still opens the report, with the header and the error.
+do
+	local h = Load()
+	h.ns.ReportLines = function()
+		error("lines broke", 0)
+	end
+	h.Slash("report")
+	local _, edit = Window(h)
+	local text = edit:GetText()
+	has(text, "AdventureGuideForever 1.2.3", "lines failed: the header")
+	has(text, "Report lines failed: lines broke", "lines failed: said")
+	has(text, "- [report lines] x1 lines broke", "lines failed: caught")
+end
+
 -- A route listener that fails is caught and kept; the listeners after it still run.
 do
 	local h = Load()
