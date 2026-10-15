@@ -14,11 +14,15 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 - **`/agf where` for reporting a wrong stop.** It shows the stop the guide is on, with its quest IDs and why it was chosen, ready to copy. The GitHub issue page now has a "Wrong stop" form that asks for it, plus a form for pasting a translation, and the README says how to help without writing code.
 
+- **The arrow stops flipping between two quest givers standing near each other.** In a town visit the arrow always pointed at whichever giver was nearest, so walking between two of them could swap the Shortest Path waypoint back and forth. It now stays on the giver it's pointing at until another one is about 35 yards closer, or you've finished with the first.
+
 - **The guide's quest search puts the best match first.** It used to list every title containing what you typed in alphabetical order and stop at ten, so the quest you meant could be cut off. Now a title that starts with your words comes first, then titles with a word starting that way, then the rest; within those, quests you can take now, then those nearest your level. You can type the words in any order, and "dun garok" finds "Dûn Garok".
 
 - **Hovering an NPC in combat or an instance can no longer raise an error.** The "Adventure guide" line on a unit's tooltip read the unit's ID straight away, but the game can keep that ID hidden from addons. The guide now checks first and quietly leaves its line out when it can't read the ID, and it leaves protected tooltips alone.
 
 - **Quests with two kill or two collect objectives keep the right one on the route.** When the quest log listed them in a different order from the quest data (The Guns of Northwatch, for one), the guide paired them up by position. Kill Smythe first and his area stayed on the route while Fairmount's dropped off. It now matches each objective by the NPC or item it names, and only uses position when there's no name to go on.
+
+- **Suggestions right after a level-up use your new level.** The game can briefly report your old level after the level-up, and the guide sometimes rebuilt in that gap, so the new suggestions were a level behind until something else changed. It now goes by the level the level-up itself reported.
 
 - **`/agf report` gives you something to paste into a bug report.** It opens a small window with the text already selected: your addon and game versions, your character, the stop the guide is showing and why, the quest data version, your other addons, and any errors the guide caught this session. Press Ctrl+C and paste it. It fits in one message, and you don't need a /reload or a saved-variables file.
 
