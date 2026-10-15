@@ -39,7 +39,7 @@ authorization. A preparation-only request ends before tags or uploads.
 5. Set `WOWMOCK` to the installed mock library and run `python3 tools/screenshots.py`
    twice, requiring identical output bytes. Inspect the actual images at readable
    size, including the changed features and empty/error states. Commit the current
-   images and screenshot manifest where present; remove obsolete images and their
+   images, screenshot manifest and `scenes.sha256`; remove obsolete images and their
    references. Regenerate icon art if changed. Check README image links against
    the files that will exist on main.
 6. Record the intended store summary, description, logo and gallery set with exact
