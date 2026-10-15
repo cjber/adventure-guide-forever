@@ -415,6 +415,7 @@
 
 ---@class AGFSPFAPI
 ---@field version integer -- AGF accepts exactly 1
+---@field minor? integer -- 1 from Subscribe; absent before
 ---@field Estimate fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): number?, AGFSPFNoRoute? -- travel seconds; nil comes with the reason
 ---@field Navigate fun(owner: string, map: integer, x: number, y: number, title?: string, kind?: AGFSPFStopKind): boolean -- starts or replaces guidance
 ---@field NavigateRoute fun(owner: string, stops: AGFSPFStop[]): boolean -- 1-64 stops in order
@@ -423,6 +424,15 @@
 ---@field EstimateDetail? fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): AGFSPFDetail?, AGFSPFNoRoute? -- Estimate leg by leg, sharing its cache
 ---@field Active? fun(): boolean -- true while any journey is guiding, whoever started it
 ---@field Ended? fun(owner: string): AGFSPFEnded?, number? -- why owner's last journey ended and its GetTime(); nil while it runs, before any, or after a reload
+---@field Subscribe? fun(callback: fun(changes: AGFSPFChanges)): fun() -- calls back at most once per burst of journey changes, the next frame; returns the unsubscribe
+
+-- Shortest Path's Subscribe changes: each field true or absent, several at once from one burst.
+---@class AGFSPFChanges
+---@field started? boolean -- a journey began where none was under way
+---@field changed? boolean -- the journey under way now heads somewhere else
+---@field ended? boolean -- the journey under way ended, with nothing after it
+---@field stop? boolean -- what CurrentStop answers changed
+---@field active? boolean -- what Active answers changed
 
 -- Tweaks Forever's public API (its types/API.lua TFPublicAPI and TFAPITrainableSpell), version 1.
 ---@class AGFTFSpell
@@ -454,6 +464,7 @@
 ---@field place? AGFPlace where the trainer stands; nil when the data places none
 
 ---@class AGFIntegrations
+---@field Subscribe fun(fn: fun()): boolean have Shortest Path call `fn` the frame after its guidance changes; false when it has no Subscribe
 ---@field Kind fun(step: AGFStep|AGFGiver): AGFSPFStopKind? what Shortest Path is told stands at a stop: a town's "?" where a hand-in is its point, else its "!"
 ---@field TravelLine fun(step: AGFStep): string? asks Shortest Path now, at most one call: "Fly to X · N min" from EstimateDetail, "About N min away" from Estimate, nil without either or an answer
 ---@field RefreshTravel fun() refetches step 1's line; Core runs it in the frame after each rebuild
@@ -1711,8 +1722,15 @@
 ---@field RestedXPIntegrated fun(): boolean
 ---@field RestedXPNativeUI fun(): boolean
 ---@field version integer
+---@field minor integer 1 from Subscribe
+---@field Subscribe fun(callback: fun(changes: AGFAPIChanges)): fun() calls back the frame after the current stop or the journey changes, at most once per burst; returns the unsubscribe
 ---@field CurrentStop fun(): AGFAPIStop?
 ---@field NextStops fun(limit?: integer): AGFAPIStop[]?
+
+-- What changed since a Subscribe callback was last called; each field true or absent.
+---@class AGFAPIChanges
+---@field stop? true what CurrentStop answers changed (a stop appeared, moved on, changed or went)
+---@field journey? true the journey the route follows changed, or was chosen or let go
 
 ---@class AGFGlobal
 ---@field API AGFAPI
