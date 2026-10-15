@@ -10,7 +10,7 @@ is stubbed in `harness.lua`, and agents never launch it. Checks that need the re
 |---|---|---|---|
 | Planner | `harness.model(ns)`: locale strings, geometry, Core with its client hooks stubbed, then `Planning/` in TOC order | eligibility, ordering and route rules on the test corpus, with no frames | `model_spec`, `route_order_spec`, `objective_names_spec` |
 | Shown route | `harness.shown(ns)`: the planner plus the player's order and `Shown.Build` | what the route shows after skips and reordering | `shown_spec`, `order_spec` |
-| Whole addon | `harness.load(options)`: every TOC file in order into a fresh client stub, then the login events | UI, events, guidance, integrations, slash commands | `ui_spec`, `tooltip_spec`, `report_spec` |
+| Whole addon | `harness.load(options)`: every TOC file in order into a fresh client stub, then the login events | UI, events, guidance, integrations, slash commands | `ui_spec`, `tooltip_spec`, `report_spec`, `subscribe_spec` |
 | Golden routes | `harness.load` for fixed characters, compared with `tests/golden/*.txt` | catching a route change you didn't mean | `plan_golden_spec` (`AGF_UPDATE_GOLDEN=1` rewrites them) |
 | Contract | reads `types/Namespace.lua` and the vendored `fixtures/spf_types_API.lua` | AGF's mirror of Shortest Path's API at the pinned `SPF_SHA` | `contract_spec` |
 
@@ -23,14 +23,15 @@ counts, and `AGF_BENCH_STRICT=1` adds the frame budget locally.
 methods are errors, so each new client call is stubbed on purpose.
 
 - `harness.load(options)` returns `h`. The options are listed above the function: `log`, `completed`, `player`,
-  `charDB` and `db` (saved variables), `spf` (a Shortest Path profile: `"v1"`, `"v1+"`, `"ended"`),
+  `charDB` and `db` (saved variables), `spf` (a Shortest Path profile: `"v1"`, `"v1+"`, `"ended"`, `"subscribe"`),
   `questiedb` (a synthetic QuestieDB), `planned`, `version` and more.
 - `h.flush()` runs the queued timers and frames until nothing is due. Most specs call it after each action.
 - `h.fire(event, ...)`, `h.Slash(text)`, `h.Click(frame)`, `h.Hover(frame)`, `h.HoverUnit(guid)`, `h.Type(box, text)`,
   `h.MovePlayer(map, x, y)`, `h.SetCombat(on)` drive the addon as a player would.
 - `h.ns` is the addon's namespace, `h.G` its globals. `h.errors` collects every error the addon raised, and most specs
   end by checking that it is empty.
-- `h.spf` counts Shortest Path calls; `h.spfAdvance`, `h.spfEnd(reason)` and `h.spfOther` move its journey on.
+- `h.spf` counts Shortest Path calls; `h.spfAdvance`, `h.spfEnd(reason)` and `h.spfOther` move its journey on, and
+  under `"subscribe"` its subscribers hear about it on the next frame (`h.spfNotify(changes)` calls them at once).
 - `h.secrets` and `h.Secret()` stand in for values the client keeps secret; a stand-in errors on any use.
 
 `ui_helpers.lua` has the shared lookups the UI specs use (find a button by its text, read a tracker block).
