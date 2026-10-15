@@ -46,10 +46,10 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the ques
 - **Choose and go.** Pick a journey on the map to start guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop clears only guidance the addon started.
 - **A route that stays with you.** Your choice survives new quests, travel and reloads. Ready hand-ins and nearby pickups come first. Town stops group quest givers into a checklist.
 - **Your order.** Drag steps or right-click to move them earlier or later. Moves that break quest order are greyed out. *Back to suggested order* restores the plan.
-- **Next spot.** When a camp is cleared or busy, right-click an objective step with more than one place to do it and choose *Next spot*. The arrow moves to the next place; keep pressing to work round them all.
-- **Givers that don't offer a quest.** If a giver's window doesn't list the quest the guide sent you for, the guide says so once in chat and drops it. It tries again after a level-up or a hand-in that could open it up.
+- **Next spot.** Right-click an objective step with more than one place to do it and choose *Next spot*: the arrow moves to the nearest place you haven't passed over. It isn't offered inside the area.
+- **Givers that don't offer a quest.** If a giver's quest list leaves out the quest the guide sent you for, the guide says so once in chat and drops it. It tries again after a level-up or a hand-in that could open it up.
 - **Story milestones.** Completing a proven quest chain earns a brief story-complete popup, recorded once for that character.
-- **Stories and search.** Stories read as chapters without naming later quests. Search puts titles starting with your words first, then quests you can take now. It shows a quest's requirements and which ones you meet. For a locked quest it names the earliest quest in its chain you can take, and a shift-click adds that one.
+- **Stories and search.** Stories read as chapters without naming later quests. Search puts exact titles and titles starting with your words first. It shows a quest's requirements and which ones you meet. For a locked quest it names the earliest quest in its chain you can take, and a shift-click adds that one.
 - **Other things to do.** Hints cover professions, unspent talents, hearths and unexplored areas. Class spell reminders and trainer visits are off by default; turn them on in Route settings. PvP shows your rank, its next reward and the nearest battlemaster.
 - **Your say.** Skip a step until your next reload, hide a journey or rule out a quest on this character. Shift-click a search result or map quest giver to add quests. *Skipped* restores hidden suggestions. The guide never abandons quests for you. Map marks are off by default.
 
@@ -101,7 +101,7 @@ No code needed:
 
 Run the full gate in [AGENTS.md](AGENTS.md#commands). `python3 tools/doctor.py` lists the tools it needs, with a fix for each problem.
 
-Screenshots use Pillow and the [wow-mock-screenshots library](https://github.com/cjber/skills/tree/main/wow-mock-screenshots): set `WOWMOCK` to its directory and run `python3 tools/screenshots.py`.
+Screenshots use Pillow and the [wow-mock-screenshots library](https://github.com/cjber/skills/tree/main/wow-mock-screenshots): set `WOWMOCK` to its directory and run `python3 tools/screenshots.py` twice; both runs must match.
 
 [tests/README.md](tests/README.md) describes the test layers and the harness. Contributing and security policies are inherited from [cjber/.github](https://github.com/cjber/.github). Read [AGENTS.md](AGENTS.md) before changing code.
 

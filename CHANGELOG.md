@@ -14,15 +14,15 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [0.13.0] - 2026-10-15
 
-- **The guide learns when a quest giver doesn't have a quest.** If the guide sends you to pick up a quest and the NPC's window doesn't list it (Forever removed or changed some quests), the guide says so once in chat, drops it from the route, and its search explains "The giver didn't offer it". It tries again after your next level-up, or after a hand-in that could open the quest up.
+- **The guide learns when a quest giver doesn't have a quest.** If the guide sends you to pick up a quest and the NPC's quest list doesn't include it (Forever removed or changed some quests), the guide says so in chat, drops it from the route, and its search explains "The giver didn't offer it". It tries again after your next level-up, or after a hand-in that could open the quest up.
 
-- **"Next spot" when a camp is cleared or busy.** Right-click an objective step that has more than one place to do it, and "Next spot" moves the arrow to the next one. Keep pressing to work round them all. It forgets the spots you passed over when you /reload.
+- **"Next spot" for objectives with more than one camp.** Right-click an objective step that has more than one place to do it, and "Next spot" moves the arrow to the nearest place you haven't passed over yet. It isn't offered while you're standing in the area, and it forgets the places you passed over when you /reload.
 
-- **Start a locked quest's chain from the search.** When a quest you search for is locked behind others, its tooltip now names the quest that starts the chain, the earliest one you can take now, and a shift-click adds that quest to your route.
+- **Start a locked quest's chain from the search.** When a quest you search for is locked behind others, its tooltip now names the earliest quest in its chain that you can take now, and a shift-click adds that quest to your route.
 
-- **The guide's quest search puts the best match first.** It used to list every title containing what you typed in alphabetical order and stop at ten, so the quest you meant could be cut off. Now a title that starts with your words comes first, then titles with a word starting that way, then the rest; within those, quests you can take now, then those nearest your level. You can type the words in any order, and "dun garok" finds "Dûn Garok".
+- **The guide's quest search puts the best match first.** It used to list every title containing what you typed in alphabetical order and stop at ten, so the quest you meant could be cut off. Now an exact title comes first, then titles that start with your words, then titles with a word starting that way, then the rest; within those, quests you can take now come first, then those that best suit your level. You can type the words in any order, and "dun garok" finds "Dûn Garok".
 
-- **`/agf report` gives you something to paste into a bug report.** It opens a small window with the text already selected: your addon and game versions, your character, the stop the guide is showing and why, the quest data version, your other addons, and any errors the guide caught this session. Press Ctrl+C and paste it. It fits in one message, and you don't need a /reload or a saved-variables file.
+- **`/agf report` gives you something to paste into a bug report.** It opens a small window with the text already selected: your addon and game versions, your character, the stop the guide is showing and why, the quest data version, your other addons, and the last few errors the guide caught this session. Press Ctrl+C and paste it. It fits in one message, and you don't need a /reload or a saved-variables file.
 
 - **`/agf where` for reporting a wrong stop.** It shows the stop the guide is on, with its quest IDs and why it was chosen, ready to copy. The GitHub issue page now has a "Wrong stop" form that asks for it, plus a form for pasting a translation, and the README says how to help without writing code.
 
@@ -32,7 +32,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 - **Suggestions right after a level-up use your new level.** The game can briefly report your old level after the level-up, and the guide sometimes rebuilt in that gap, so the new suggestions were a level behind until something else changed. It now goes by the level the level-up itself reported.
 
-- **Quests with two kill or two collect objectives keep the right one on the route.** When the quest log listed them in a different order from the quest data (The Guns of Northwatch, for one), the guide paired them up by position. Kill Smythe first and his area stayed on the route while Fairmount's dropped off. It now matches each objective by the NPC or item it names, and only uses position when there's no name to go on. The quest catalogue is rebuilt once at your next login for this.
+- **Quests with two kill or two collect objectives keep the right one on the route.** When the quest log listed them in a different order from the quest data (The Guns of Northwatch, for one), the guide paired them up by position. Kill Smythe first and his area stayed on the route while Fairmount's dropped off. It now matches each objective by the NPC or item it names, and only uses position when there's no name to go on.
 
 - **Hovering an NPC in combat or an instance can no longer raise an error.** The "Adventure guide" line on a unit's tooltip read the unit's ID straight away, but the game can keep that ID hidden from addons. The guide now checks first and quietly leaves its line out when it can't read the ID, and it leaves protected tooltips alone.
 
