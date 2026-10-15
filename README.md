@@ -69,14 +69,13 @@ Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-
 |---|---|
 | `/agf`, `/adventureguide` | Open the guide on the world map |
 | `/agf report` | Show a report to copy into a bug report: versions, your current stop and why, recent errors |
+| `/agf where` | Show the stop the guide is on, for a wrong-stop report |
 | `/agf travel` | Print guidance state for a travel report |
 | `/agf tracker` | Print the tracker anchors for an overlap report |
 | `/agf audit` | Compare the quest data with the game and report its source |
 | `/agf dump` | Save the drawn layout for a bug report; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua` |
 
 Open the guide from its world-map tab, the addon compartment or `/agf`. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including starting routes on selection, tracking their quests and detaching the shared Forever tracker so you can drag it elsewhere.
-
-Translations are welcome as a pull request, or pasted into an issue, on GitHub: see the [Locales folder](https://github.com/cjber/adventure-guide-forever/tree/main/Locales).
 
 ## Where the quests come from
 
@@ -88,13 +87,21 @@ Forever's new quests are only considered once they are in your log. The guide re
 
 QuestieDB and Questie are needed for pickup recommendations. Optional companions are [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) for bosses and loot, [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting and [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion. Tweaks Forever's Windows option moves the guide window. The guide's tracker section shares one column with the Shortest Path, SkillUp and Legacy sections, above your quests, and has its own switch when you prefer another guide.
 
+## Ways to help
+
+No code needed:
+
+- **Wrong stop:** paste `/agf where` into a [Wrong stop issue](https://github.com/cjber/adventure-guide-forever/issues/new?template=wrong_stop.yml).
+- **An error:** paste `/agf report` into a [bug report](https://github.com/cjber/adventure-guide-forever/issues/new?template=bug_report.yml).
+- **A translation:** translate [Locales/phrases.txt](Locales/phrases.txt) and paste it into a [translation issue](https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml).
+
 ## Development
 
 Run the full gate in [AGENTS.md](AGENTS.md#commands). It needs LuaJIT, luacheck, StyLua, LuaLS 3.19.1, Python and ruff; type checking fetches pinned WoW API annotations on first use.
 
 Screenshots use Pillow and the [wow-mock-screenshots library](https://github.com/cjber/skills/tree/main/wow-mock-screenshots). Set `WOWMOCK` to the directory containing `wowmock.py`, then run `python3 tools/screenshots.py` twice to check reproducibility.
 
-Contributing and security policies are inherited from [cjber/.github](https://github.com/cjber/.github). Read [AGENTS.md](AGENTS.md) before changing code.
+[tests/README.md](tests/README.md) describes the test layers and the harness. Contributing and security policies are inherited from [cjber/.github](https://github.com/cjber/.github). Read [AGENTS.md](AGENTS.md) before changing code.
 
 ## Licence
 

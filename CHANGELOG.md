@@ -18,6 +18,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 - **`AdventureGuideForever.API.Subscribe(callback)`** calls back the frame after the current stop or the followed journey changes, once per burst, with `{stop = true, journey = true}` as they apply. `API.minor` is 1; `version` stays 1. See docs/api.md.
 
+- **`/agf where` for reporting a wrong stop.** It shows the stop the guide is on, with its quest IDs and why it was chosen, ready to copy. The GitHub issue page now has a "Wrong stop" form that asks for it, plus a form for pasting a translation, and the README says how to help without writing code.
+
 - **The arrow stops flipping between two quest givers standing near each other.** In a town visit the arrow always pointed at whichever giver was nearest, so walking between two of them could swap the Shortest Path waypoint back and forth. It now stays on the giver it's pointing at until another one is about 35 yards closer, or you've finished with the first.
 
 - **The guide's quest search puts the best match first.** It used to list every title containing what you typed in alphabetical order and stop at ten, so the quest you meant could be cut off. Now a title that starts with your words comes first, then titles with a word starting that way, then the rest; within those, quests you can take now, then those nearest your level. You can type the words in any order, and "dun garok" finds "Dûn Garok".

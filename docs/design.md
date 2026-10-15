@@ -104,7 +104,8 @@ abandons quests.
   Why lines; the errors caught this session; the other loaded addons. At most 2,000 characters (one message): the
   addon's lines capped at 1,000 and the errors at 600, the addon list in what is left. It reads only the committed route and never builds one. Errors are caught through one
   wrapper, `ns.SafeCall`, which keeps the last five and still passes each to the game's error handler. The pattern and
-  how to port it are in [report-window.md](report-window.md).
+  how to port it are in [report-window.md](report-window.md). `/agf where`, for the Wrong stop issue form, shows only
+  the versions, level, place and the guide's own lines in the same window.
 
 ### Guide navigation
 

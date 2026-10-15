@@ -1,5 +1,5 @@
 ---@type string, AGFNamespace
-local _, ns = ...
+local addonName, ns = ...
 
 -- Adventure Guide's own lines in /agf report (docs/design.md §2.24): the guide's settings, the quest data, and the
 -- stop the tracker shows with each quest's ID and Why lines, then the next stops' titles. Read from the committed
@@ -105,6 +105,44 @@ function ns.ReportLines()
 	end
 	if after[1] then
 		lines[#lines + 1] = "Next: " .. table.concat(after, " / ")
+	end
+	return lines
+end
+
+-- /agf where (the wrong-stop issue form's field): just enough to find the stop again, the versions, where the player
+-- stands and the report's own lines, without the caught errors and the addon list.
+---@return string[]
+function ns.WhereLines()
+	local version = C_AddOns.GetAddOnMetadata(addonName, "Version") or "-"
+	local gameVersion, build, _, interface = GetBuildInfo()
+	local map = C_Map.GetBestMapForUnit("player")
+	local point = map and C_Map.GetPlayerMapPosition(map, "player")
+	local x, y
+	if point then
+		x, y = point:GetXY()
+	end
+	local info = map and C_Map.GetMapInfo(map)
+	local lines = {
+		("%s %s | WoW %s (%s) %s | %s | level %d"):format(
+			addonName,
+			version,
+			gameVersion,
+			build,
+			tostring(interface),
+			GetLocale(),
+			UnitLevel("player") or 0
+		),
+		("Place: map %s (%s) %s, %s"):format(
+			tostring(map or "-"),
+			info and info.name or "-",
+			ns.Report.Percent(x),
+			ns.Report.Percent(y)
+		),
+	}
+	-- The guide's own lines can fail in the very state being reported: the versions and place still show.
+	local ok, own = ns.SafeCall("where lines", ns.ReportLines)
+	for _, line in ipairs(ok and own or { "Report lines failed: " .. tostring(own) }) do
+		lines[#lines + 1] = line
 	end
 	return lines
 end
