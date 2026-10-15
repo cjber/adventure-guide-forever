@@ -2633,10 +2633,10 @@ do
 	local before = #h.prints
 	h.Slash("help")
 	local L = h.ns.L
-	for index, line in ipairs({ L.HELP_OPEN, L.HELP_REPORT, L.HELP_AUDIT, L.HELP_DUMP, L.HELP_TRACKER }) do
+	for index, line in ipairs({ L.HELP_OPEN, L.HELP_REPORT, L.HELP_WHERE, L.HELP_AUDIT, L.HELP_DUMP, L.HELP_TRACKER }) do
 		equal(h.prints[before + index]:sub(-#line), line, "L: help line " .. index)
 	end
-	equal(#h.prints, before + 5, "L: five help lines")
+	equal(#h.prints, before + 6, "L: six help lines")
 	-- Map names come from the client (C_Map.GetMapInfo), which the planner prefers over the data's English.
 	h.G.C_Map.GetMapInfo = function()
 		return { name = "Client Stormwind" }
