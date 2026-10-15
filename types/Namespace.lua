@@ -164,6 +164,7 @@
 ---@field npcs table<integer, AGFNpc>
 
 ---@class AGFPrefs
+---@field camps? table<string, table<string, true>> the spots "Next spot" passed over this session, by area step key and Model.SpotKey
 ---@field notOffered table<integer, integer> route pickups their giver's window left out: quest ID -> the player's level then (Offers.lua)
 ---@field plannedDungeons table<integer, boolean>
 ---@field quests boolean
@@ -523,6 +524,7 @@
 ---@field AUDIT_COUNTS string format: bundled, eligible and completed counts
 ---@field AUDIT_NOT_READY string
 ---@field HELP_OPEN string
+---@field NEXT_CAMP string a step menu's entry: move an area step on to its next objective spot
 ---@field HELP_AUDIT string
 ---@field HELP_DUMP string
 ---@field HELP_TRACKER string
@@ -744,6 +746,7 @@
 ---@field Guidance AGFGuidance
 ---@field Focus AGFFocus
 ---@field Print fun(msg: string)
+---@field NextCamp fun(step: AGFStep) "Next spot": pass over the spot the area step points at, for this session
 ---@field Readable fun(value: any): any `value`, or nil when the client keeps it secret (Core/Secret.lua)
 ---@field Usable fun(frame?: Frame): boolean false for nil and for a forbidden frame (Core/Secret.lua)
 ---@field SafeCall fun(label: string, fn: function, ...: any): boolean, ... run fn as pcall does, keeping a failure for the report and passing it to the error handler (Core/SafeCall.lua)
@@ -1315,6 +1318,9 @@
 ---@field Advice fun(data: AGFData, player: AGFPlayer, steps: AGFStep[], bind?: string, locale?: string): AGFAside?
 
 ---@class AGFModel
+---@field Spots fun(step: AGFStep): AGFNode[] an area step's distinct objective spots, in the data's order
+---@field SpotKey fun(spot: {map: integer, x: number, y: number}): string a spot's identity for "Next spot"
+---@field Camp fun(data: AGFData, player: AGFPlayer, step: AGFStep, passed: table<string, true>) move an area step off a spot passed over, to the nearest one not passed over
 ---@field TownArrow fun(data: AGFData, player: AGFPlayer|AGFPosition|{map: integer, x: number, y: number}, rows: AGFTownGiver[], current?: {map: integer, x: number, y: number}): AGFPlace? the giver a town visit's arrow points at, with the switch margin
 ---@field SWITCH_YARDS number how much nearer another town giver must be before the arrow leaves the one it points at
 ---@field TownChecklist fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, step: AGFStep, previous?: AGFStep, skipped?: table<string, boolean>)
