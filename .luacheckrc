@@ -63,11 +63,12 @@ read_globals = {
 	"ITEM_RACES_ALLOWED",
 	"InCombatLockdown",
 	"UnitOnTaxi",
+	-- Secret.lua
+	"canaccessvalue",
 	-- SafeCall.lua
 	"debugstack",
 	-- State.lua
 	"GetUnitSpeed",
-	"canaccessvalue",
 	"bit",
 	"UnitRace",
 	"UnitClass",
