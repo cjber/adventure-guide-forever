@@ -241,6 +241,8 @@ function harness.load(options)
 		"RegisterForDrag",
 		"SetClampedToScreen",
 		"SetMaxLetters",
+		"SetAutoFocus",
+		"SetMultiLine",
 		"SetMotionScriptsWhileDisabled",
 		"SetToplevel",
 		"StartMoving",
@@ -684,6 +686,17 @@ function harness.load(options)
 		if self.objectType == "EditBox" and self.scripts.OnTextChanged then
 			h.call(self.scripts.OnTextChanged, self, self.userInput == true)
 		end
+	end
+	-- An edit box's keyboard focus and selection: h.focus is the edit box that has it, and `highlighted` says the
+	-- whole text is selected, until the text changes.
+	function Methods:SetFocus()
+		h.focus = self
+	end
+	function Methods:ClearFocus()
+		h.focus = h.focus ~= self and h.focus or nil
+	end
+	function Methods:HighlightText()
+		self.highlighted = self.text
 	end
 	function Methods:GetText()
 		if self.objectType == "EditBox" then
@@ -2597,12 +2610,34 @@ function harness.load(options)
 	local function Loaded(addon)
 		return addon ~= ADDON and (h.metadata[addon] ~= nil or G[addon] ~= nil)
 	end
+	-- The AddOns list: this addon first, then each addon with metadata, by name.
+	local function List()
+		local names = {}
+		for name in pairs(h.metadata) do
+			if name ~= ADDON then
+				names[#names + 1] = name
+			end
+		end
+		table.sort(names)
+		table.insert(names, 1, ADDON)
+		return names
+	end
 	G.C_AddOns = {
 		GetAddOnMetadata = function(addon, field)
 			return h.metadata[addon] and h.metadata[addon][field]
 		end,
 		IsAddOnLoaded = function(addon)
+			if type(addon) == "number" then
+				addon = List()[addon]
+			end
 			return Loaded(addon), Loaded(addon)
+		end,
+		GetNumAddOns = function()
+			return #List()
+		end,
+		GetAddOnInfo = function(index)
+			local name = List()[index]
+			return name, name
 		end,
 		DoesAddOnExist = function(addon)
 			return Loaded(addon) or h.installed[addon] == true

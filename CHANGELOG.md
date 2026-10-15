@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **`/agf report` gives you something to paste into a bug report.** It opens a small window with the text already selected: your addon and game versions, your character, the stop the guide is showing and why, the quest data version, your other addons, and any errors the guide caught this session. Press Ctrl+C and paste it. It fits in one message, and you don't need a /reload or a saved-variables file.
+
 ## [0.12.2] - 2026-10-15
 
 - **Finished quests catch up without a /reload.** The guide read your finished quests once per session and then only counted the ones you handed in, so a quest the game closed some other way (a breadcrumb or the other branch of a chain) stayed on the route until you reloaded. It now reads them again after each hand-in and at every loading screen, and if the game has no answer at login it keeps asking instead of staying on "Loading".

@@ -48,7 +48,7 @@ Right-click a dungeon card to browse AtlasLoot bosses and their drops with nativ
 
 Translations are welcome on GitHub: see the [Locales folder](https://github.com/cjber/adventure-guide-forever/tree/main/Locales).
 
-For a missing quest, include `/agf audit` output in a bug report.
+For a bug report, type `/agf report` and paste what it shows. For a missing quest, include `/agf audit` output too.
 
 ## With my other Forever addons
 
