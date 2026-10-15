@@ -459,7 +459,7 @@ local function RestMoved()
 	return moved
 end
 
----@type fun()[]
+---@type fun(countsOnly: boolean)[]
 local listeners = {}
 ---@type fun()[]
 local loginListeners = {}
@@ -470,7 +470,7 @@ function State.OnInitialLogin(fn)
 	loginListeners[#loginListeners + 1] = fn
 end
 
----@param fn fun()
+---@param fn fun(countsOnly: boolean)
 function State.OnChange(fn)
 	listeners[#listeners + 1] = fn
 end

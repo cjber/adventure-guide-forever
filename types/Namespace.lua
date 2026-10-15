@@ -356,7 +356,7 @@
 ---@field Where fun(): integer?, number?, number? the player's map and point on it; nil where the client places them nowhere
 ---@field Completed fun(): table<integer, boolean>
 ---@field Log fun(): table<integer, AGFLogQuest>
----@field OnChange fun(callback: fun())
+---@field OnChange fun(callback: fun(countsOnly: boolean)) countsOnly: a burst of quest-log events only, which may have moved only counts
 ---@field QuestChanged fun() a quest changed outside the client's own events (Questie's live updates), coalesced with them
 ---@field QuestUpdateChanged fun(id: integer): boolean whether a Questie update moved the quest's live availability since the last plan
 ---@field OnInitialLogin fun(callback: fun()) called on a login's PLAYER_ENTERING_WORLD, never on a /reload
@@ -742,6 +742,7 @@
 ---@field RouteSettled fun(): boolean Route() answers from the committed route, without building one
 ---@field QuestieBuilding fun(): boolean QuestieDB's catalogue is still building: the route holds and the tracker waits
 ---@field Invalidate fun() mark the route stale and notify views
+---@field InvalidateCounts fun() only the quest log moved: the next build is the cheap one when its shape is unchanged (docs/design.md §4.4)
 ---@field OnRouteChange fun(callback: fun())
 ---@field Choose fun(key?: string, start?: boolean) choose a journey, or none; `start` sets off on the rebuild with its steps
 ---@field StartRoute fun(step?: AGFStep): boolean guidance along the chosen journey (choosing the route's own when none is); waits out combat with Shortest Path
