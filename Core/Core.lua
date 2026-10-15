@@ -565,19 +565,15 @@ local function Walked()
 	local map, x, y = ns.State.Where()
 	local steps = cachedRoute.steps
 	local first = steps[1]
+	local here = { map = map, x = x, y = y }
 	if first and first.checklist and map and x and y then
-		local nearest, distance
-		for _, giver in ipairs(first.checklist) do
-			local yards = not giver.done and ns.Model.Yards(ns.Data, { map = map, x = x, y = y }, giver.place)
-			if yards and (not distance or yards < distance) then
-				nearest, distance = giver.place, yards
-			end
-		end
-		if nearest and (nearest.map ~= first.map or nearest.x ~= first.x or nearest.y ~= first.y) then
+		-- The arrow moves to another giver only past Model.TownArrow's margin, as the rebuild would place it.
+		local target = ns.Model.TownArrow(ns.Data, here, first.checklist, first)
+		if target and (target.map ~= first.map or target.x ~= first.x or target.y ~= first.y) then
 			ns.Invalidate()
 		end
 	end
-	local index = ns.Model.Here(ns.Data, { map = map, x = x, y = y }, steps, cachedRoute.here)
+	local index = ns.Model.Here(ns.Data, here, steps, cachedRoute.here)
 	local key = index and steps[index].key or nil
 	if key ~= hereKey and key ~= cachedRoute.here then
 		ns.Invalidate()

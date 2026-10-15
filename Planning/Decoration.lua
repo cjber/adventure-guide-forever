@@ -24,6 +24,35 @@ function Model.GiverSkip(step, giverKey)
 	return "giver:" .. Model.Visit(step) .. ":" .. giverKey
 end
 
+-- How much nearer another giver of a town visit must be before the arrow leaves the one it points at.
+Model.SWITCH_YARDS = 35
+
+-- Which giver of a town visit the arrow points at (docs/design.md §2.10): the nearest with work left, except that the
+-- one it points at now (`current`, a point) keeps it while it has work, until another is SWITCH_YARDS nearer, so two
+-- near-equal givers don't flip the waypoint as the player walks. Model.TownChecklist and Core's Walked both ask this.
+---@param rows AGFTownGiver[]
+---@param current? {map: integer, x: number, y: number}
+---@return AGFPlace?
+function Model.TownArrow(data, player, rows, current)
+	local nearest, distance, kept, keptYards
+	for _, row in ipairs(rows) do
+		if not row.done then
+			local place = row.place
+			local yards = Model.Yards(data, player, place)
+			if not nearest or (yards and (not distance or yards < distance)) then
+				nearest, distance = place, yards
+			end
+			if current and place.map == current.map and place.x == current.x and place.y == current.y then
+				kept, keptYards = place, yards
+			end
+		end
+	end
+	if kept and keptYards and distance and keptYards < distance + Model.SWITCH_YARDS then
+		return kept
+	end
+	return nearest
+end
+
 -- A checklist keeps completed givers until the visit ends, while its arrow follows real remaining locations.
 function Model.TownChecklist(data, player, completed, log, step, previous, skipped)
 	local rows, byKey = {}, {}
@@ -69,7 +98,7 @@ function Model.TownChecklist(data, player, completed, log, step, previous, skipp
 			Add(step.spots[id], list, id)
 		end
 	end
-	local nearest, distance, complete = nil, nil, #rows > 0
+	local complete = #rows > 0
 	for _, row in ipairs(rows) do
 		local done = true
 		for _, id in ipairs(row.pickups) do
@@ -82,13 +111,8 @@ function Model.TownChecklist(data, player, completed, log, step, previous, skipp
 		row.done = done or row.skipped
 		row.text = ns.L.TOWN_GIVER:format(row.name, TownCounts(#row.pickups, #row.handins))
 		complete = complete and row.done
-		if not row.done then
-			local yards = Model.Yards(data, player, row.place)
-			if not nearest or (yards and (not distance or yards < distance)) then
-				nearest, distance = row.place, yards
-			end
-		end
 	end
+	local nearest = Model.TownArrow(data, player, rows, previous and previous.map and previous or nil)
 	step.checklist, step.complete = rows, complete
 	if nearest then
 		step.map, step.x, step.y = nearest.map, nearest.x, nearest.y
