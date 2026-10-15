@@ -91,7 +91,7 @@ local function Look(event)
 		return
 	end
 	local prefs, data, state = ns.Prefs(), ns.Data, ns.State
-	local level, completed = UnitLevel("player"), state.Completed()
+	local level, completed = state.Level(), state.Completed()
 	local marked = false
 	for _, id in ipairs(wanted) do
 		local quest = data.quests[id]
