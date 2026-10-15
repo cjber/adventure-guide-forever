@@ -41,6 +41,7 @@
 ---@class AGFQuest
 ---@field provider? boolean QuestieDB quest; live Questie policy decides pickup availability
 ---@field kinds? table<integer, string> objective slot type
+---@field names? table<integer, string> where two or more slots share a type: each slot's NPC, object or item name in the client's language, lower-cased, to match the log's objectives by
 ---@field title string English title from the source data; the client's own title wins when cached
 ---@field level integer quest level (-1 scales to the player)
 ---@field min integer minimum level to accept
@@ -1400,7 +1401,7 @@
 
 ---@alias AGFMapLookup fun(area: integer): integer?
 ---@alias AGFYield fun()
----@alias AGFQuestieReads {Npc: table<integer, table|false>, Object: table<integer, table|false>, Item: table<integer, table|false>}
+---@alias AGFQuestieReads {Npc: table<integer, table|false>, Object: table<integer, table|false>, Item: table<integer, table|false>, names: {Npc: table<integer, string|false>, Object: table<integer, string|false>, Item: table<integer, string|false>}}
 
 ---@class AGFQuestieNpcRow one Npc's place and service fields for a catalogue build
 ---@field name string
@@ -1412,7 +1413,7 @@
 
 ---@class AGFNamespace
 ---@field QuestieTowns AGFQuestieTowns
----@field QuestieObjectives fun(lib: AGFQuestieDB, objectives: table?, trigger: table?, zone: integer?, data: AGFData, mapOf: AGFMapLookup, yield: AGFYield, questID: integer, reads: AGFQuestieReads): table?, AGFObjectiveArea[]?, table?, boolean?
+---@field QuestieObjectives fun(lib: AGFQuestieDB, objectives: table?, trigger: table?, zone: integer?, data: AGFData, mapOf: AGFMapLookup, yield: AGFYield, questID: integer, reads: AGFQuestieReads): table?, AGFObjectiveArea[]?, table?, boolean?, table<integer, string>?
 
 ---@class AGFStrings
 ---@field WHY_PROVIDER string
