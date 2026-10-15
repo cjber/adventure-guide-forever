@@ -2561,10 +2561,11 @@ function harness.load(options)
 	end
 
 	-- Shortest Path Forever: absent, v1 (Estimate, Navigate, NavigateRoute, CurrentStop, Cancel), v1+ (adds
-	-- EstimateDetail and Active) or "ended" (v1+ and Ended). Each profile counts its calls per function in h.spf. One
-	-- journey runs at a time, as in its API.lua: h.spfRoute is {owner, index, stops}, and a spec moves it on with
-	-- h.spfAdvance or ends it with h.spfEnd(reason) ("arrived", "cleared"), h.spfOther (another addon's journey) or
-	-- h.spfHeld (its "Guide me" off: the journey stays, Active is false).
+	-- EstimateDetail and Active), "ended" (v1+ and Ended) or "subscribe" (ended, minor 1 and Subscribe). Each
+	-- profile counts its calls per function in h.spf. One journey runs at a time, as in its API.lua: h.spfRoute is
+	-- {owner, index, stops}, and a spec moves it on with h.spfAdvance or ends it with h.spfEnd(reason) ("arrived",
+	-- "cleared"), h.spfOther (another addon's journey) or h.spfHeld (its "Guide me" off:
+	-- the journey stays, Active is false).
 	if options.spf then
 		local api, ended = { version = 1 }, {}
 		h.spf, h.spfSeconds = {}, 360
@@ -2616,7 +2617,8 @@ function harness.load(options)
 			h.spfEnd("cancelled")
 			return true
 		end)
-		if options.spf == "v1+" or options.spf == "ended" then
+		local later = options.spf == "ended" or options.spf == "subscribe"
+		if options.spf == "v1+" or later then
 			-- h.spfLegs replaces the one flight leg, and false is no route; seconds add up as Shortest Path's do.
 			Counted("EstimateDetail", function()
 				if h.spfLegs == false then
@@ -2633,10 +2635,51 @@ function harness.load(options)
 				return h.spfRoute ~= nil and not h.spfHeld
 			end)
 		end
-		if options.spf == "ended" then
+		if later then
 			Counted("Ended", function(owner)
 				return not (h.spfRoute and h.spfRoute.owner == owner) and ended[owner] or nil
 			end)
+		end
+		-- "subscribe" (minor 1): Subscribe keeps each callback in h.spfSubscribers, and a journey starting, moving on
+		-- or ending calls them all on the next frame, once per burst, as Shortest Path does; h.spfNotify(changes) calls
+		-- them at once.
+		if options.spf == "subscribe" then
+			api.minor = 1
+			h.spfSubscribers = {}
+			Counted("Subscribe", function(callback)
+				h.spfSubscribers[#h.spfSubscribers + 1] = callback
+				return function() end
+			end)
+			function h.spfNotify(changes)
+				for _, callback in ipairs(h.spfSubscribers) do
+					h.call(callback, changes)
+				end
+			end
+			local burst
+			local function Changed(field)
+				if not burst then
+					burst = {}
+					G.C_Timer.After(0, function()
+						local changes = burst
+						burst = nil
+						h.spfNotify(changes)
+					end)
+				end
+				burst[field], burst.stop = true, true
+			end
+			local start, advance, finish = Start, h.spfAdvance, h.spfEnd
+			Start = function(owner, stops)
+				Changed(h.spfRoute and "changed" or "started")
+				return start(owner, stops)
+			end
+			function h.spfAdvance()
+				advance()
+				Changed("changed")
+			end
+			function h.spfEnd(reason)
+				finish(reason)
+				Changed("ended")
+			end
 		end
 		G.ShortestPathForever = { API = api }
 	end

@@ -14,6 +14,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 - **The guide learns when a quest giver doesn't have a quest.** If the guide sends you to pick up a quest and the NPC's window doesn't list it (Forever removed or changed some quests), the guide says so once in chat, drops it from the route, and its search explains "The giver didn't offer it". It tries again after your next level-up, or after a hand-in that could open the quest up.
 
+- **The guide follows Shortest Path the moment its journey changes.** With a Shortest Path new enough to announce its changes, the guide hears straight away when a journey ends, moves on or is replaced, instead of waiting for the game's waypoint events. Older Shortest Path versions work as before.
+
 - **`/agf where` for reporting a wrong stop.** It shows the stop the guide is on, with its quest IDs and why it was chosen, ready to copy. The GitHub issue page now has a "Wrong stop" form that asks for it, plus a form for pasting a translation, and the README says how to help without writing code.
 
 - **The arrow stops flipping between two quest givers standing near each other.** In a town visit the arrow always pointed at whichever giver was nearest, so walking between two of them could swap the Shortest Path waypoint back and forth. It now stays on the giver it's pointing at until another one is about 35 yards closer, or you've finished with the first.
@@ -27,6 +29,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 - **Suggestions right after a level-up use your new level.** The game can briefly report your old level after the level-up, and the guide sometimes rebuilt in that gap, so the new suggestions were a level behind until something else changed. It now goes by the level the level-up itself reported.
 
 - **`/agf report` gives you something to paste into a bug report.** It opens a small window with the text already selected: your addon and game versions, your character, the stop the guide is showing and why, the quest data version, your other addons, and any errors the guide caught this session. Press Ctrl+C and paste it. It fits in one message, and you don't need a /reload or a saved-variables file.
+
+### For addon authors
+
+- **`AdventureGuideForever.API.Subscribe(callback)`** calls back the frame after the current stop or the followed journey changes, once per burst, with `{stop = true, journey = true}` as they apply. `API.minor` is 1; `version` stays 1. See docs/api.md.
 
 ## [0.12.2] - 2026-10-15
 
