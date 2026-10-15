@@ -7,6 +7,7 @@ packager builds on a `v*` tag.
 ## Commands
 
 ```sh
+python3 tools/doctor.py   # first on a new machine: every tool pin below, with a fix for each problem
 stylua --check .
 ruff format --check tools && ruff check tools
 luacheck .
@@ -15,8 +16,13 @@ for s in tests/*_spec.lua; do luajit "$s" || exit 1; done
 luajit -joff tests/plan_bench.lua
 python3 tools/check_generated.py --offline # omit --offline to fetch missing pinned inputs
 python3 tools/changelog.py --check
+python3 tools/check_screenshots.py   # an image older than its scene; tools/screenshots.py re-records it
 python3 .sift/gate.py --base origin/main && python3 .sift/agents.py check
 ```
+
+CI's `package` job builds the zip with the release's packager without uploading (`-d -z`) and runs
+`python3 tools/check_package.py` on its output: every loaded file ships, no development folder does, and the
+smoke spec passes on the packaged files.
 
 Every version needs a `CHANGELOG.md` entry (prose, bold-lead bullets) before its `v*` tag: the release publishes
 it as the notes on GitHub, CurseForge and Wago.
@@ -26,7 +32,9 @@ planner or the rebuild, also run `AGF_BENCH_STRICT=1 luajit -joff tests/plan_ben
 the once-a-login QuestieDB catalogue build; local only, since shared runners flake). `AGF_UPDATE_GOLDEN=1` rewrites the golden files in `tests/golden/`.
 After a UI change, set `WOWMOCK` to the installed wow-mock-screenshots library directory and run
 `python3 tools/screenshots.py` (WFA-9; local only: it needs Pillow and wago.tools) and
-commit the PNGs it rewrites in `docs/screenshots/`; two runs give byte-identical files.
+commit the PNGs it rewrites in `docs/screenshots/` with `scenes.sha256`; two runs give byte-identical files.
+A data refresh that changes what a scene shows fails `tools/check_screenshots.py` until the images are rendered
+again.
 
 ## Layout
 
@@ -105,7 +113,7 @@ its types reviewed), and the tool versions in
 
 ## Standards
 
-- `wow-forever-addon`: https://github.com/cjber/skills/tree/19082fc10bf90cbb466b8129bddc4a7f32334756/wow-forever-addon (UI look,
+- `wow-forever-addon`: https://github.com/cjber/skills/tree/ceffa4d79857540c0592fa6540e535ebbedad03e/wow-forever-addon (UI look,
   icon, README and store page, CI and release requirements shared by every WoW: Forever addon)
 
 ## Waivers
@@ -130,7 +138,8 @@ its types reviewed), and the tool versions in
 
 ## Secure UI regression checks
 
-`tools/typecheck.sh` checks the TOC/XML load graph, LuaLS coverage, `tools/lint_taint.py` and `tools/lint_art.py`.
+`tools/typecheck.sh` checks the TOC/XML load graph, LuaLS coverage, `tools/lint_taint.py`, `tools/lint_art.py`, `tools/lint_secret.py` (secret values through `ns.Readable`, tooltip hooks behind `ns.Usable`)
+and `tools/check_editorconfig.py`.
 `tools/forever_tools/` is the shared tooling (cjber/skills, `wow-forever-addon/tooling`), vendored byte for byte: never edit it here.
 `python3 tools/forever_tools/sync.py check` verifies it offline; `sync.py update --source <checkout>` is the only way to refresh it.
 Do not hook Blizzard object methods: use events, `HookScript` or a supported callback registry.
