@@ -351,6 +351,7 @@
 ---@field forget? table<string, true> journeys whose committed order (`AGFRoute.orders`) this build lets go
 
 ---@class AGFState
+---@field Level fun(): integer the player's level: UnitLevel, or PLAYER_LEVEL_UP's level while UnitLevel still lags behind it
 ---@field Player fun(): AGFPlayer
 ---@field Where fun(): integer?, number?, number? the player's map and point on it; nil where the client places them nowhere
 ---@field Completed fun(): table<integer, boolean>

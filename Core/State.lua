@@ -102,6 +102,22 @@ end
 ---@type table<integer, LevelUpBattlegroundInfo[]>
 local opensAt = {}
 
+-- The level PLAYER_LEVEL_UP last announced: UnitLevel can still answer the old level when the deferred rebuild reads
+-- it, so the larger of the two counts until UnitLevel catches up.
+---@type integer?
+local announced
+
+-- The player's level: UnitLevel, or the level-up event's own level while UnitLevel lags behind it.
+---@return integer
+function State.Level()
+	local level = UnitLevel("player")
+	if announced and announced > level then
+		return announced
+	end
+	announced = nil
+	return level
+end
+
 -- Every battleground open to the player, the newest first (then by ID), each at the level it opened. Only
 -- the client's level-up list says so: the probe found `canEnter` false for all three at level 19, so it gates nothing,
 -- and a battleground behind a condition (Battle for Blackrock) or with no levels (Battle for Gilneas) is on no list.
@@ -112,7 +128,7 @@ function State.Battlegrounds()
 	if not (pvp and pvp.GetLevelUpBattlegrounds) then
 		return open
 	end
-	for level = 1, UnitLevel("player") do
+	for level = 1, State.Level() do
 		opensAt[level] = opensAt[level] or pvp.GetLevelUpBattlegrounds(level) or {}
 		for _, info in ipairs(opensAt[level]) do
 			if not seen[info.id] then
@@ -245,7 +261,7 @@ function State.Player()
 		rested = rested,
 		xpMax = xpMax,
 		resting = resting,
-		level = UnitLevel("player"),
+		level = State.Level(),
 		maxQuestLevelOffset = ns.Setting("maxQuestLevelOffset"),
 		maxLevel = GetMaxPlayerLevel(),
 		logMax = C_QuestLog.GetMaxNumQuestsCanAccept(),
@@ -448,7 +464,7 @@ local restWas
 local function RestMoved()
 	local rested, xpMax, resting = Rest()
 	local low = ns.Model.RestLow({
-		level = UnitLevel("player"),
+		level = State.Level(),
 		maxLevel = GetMaxPlayerLevel(),
 		rested = rested,
 		xpMax = xpMax,
@@ -589,6 +605,9 @@ end
 
 -- The first argument is PLAYER_ENTERING_WORLD's isInitialLogin, and QUEST_TURNED_IN's and QUEST_WATCH_UPDATE's questID.
 local function OnEvent(_, event, arg)
+	if event == "PLAYER_LEVEL_UP" then
+		announced = tonumber(arg)
+	end
 	if event == "QUEST_TURNED_IN" then
 		ns.Sound.ClientEvent()
 	elseif event == "QUEST_WATCH_UPDATE" and arg and C_QuestLog.IsComplete(arg) then
