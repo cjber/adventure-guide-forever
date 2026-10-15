@@ -123,6 +123,7 @@
 
 -- What the live state tells the planner. Built by State.lua, consumed by the planner.
 ---@class AGFPlayer
+---@field notOffered? table<integer, integer> quests marked not offered: quest ID -> the level marked at; one marked at the player's level is unproven, with its own Why line
 ---@field questAvailable? fun(id: integer): boolean
 ---@field level integer
 ---@field maxQuestLevelOffset? integer highest recommended quest level relative to the player; defaults to +2
@@ -164,6 +165,7 @@
 
 ---@class AGFPrefs
 ---@field camps? table<string, table<string, true>> the spots "Next spot" passed over this session, by area step key and Model.SpotKey
+---@field notOffered table<integer, integer> route pickups their giver's window left out: quest ID -> the player's level then (Offers.lua)
 ---@field plannedDungeons table<integer, boolean>
 ---@field quests boolean
 ---@field dungeons boolean
@@ -725,6 +727,8 @@
 ---@field Debug fun(): string /agf travel's line
 
 ---@class AGFNamespace
+---@field Offers AGFOffersModule what a giver's window really offers (Offers.lua)
+---@field CreatureEntry fun(guid?: string): integer? a creature's entry from its GUID; nil for anything else or a secret
 ---@field PanelSearch AGFPanelSearch
 ---@field QuestieFields {spawns: string[], drops: string[]}
 ---@field TrackerHost ForeverTrackerHostAPI
@@ -1441,6 +1445,8 @@
 
 ---@class AGFStrings
 ---@field WHY_PROVIDER string
+---@field WHY_NOT_OFFERED string Why line: the giver's window left the quest out
+---@field NOT_OFFERED string format: the chat line when a route quest's giver doesn't offer it
 
 ---@class AGFNamespace
 ---@field SourceHint fun(): string?
