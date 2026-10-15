@@ -954,7 +954,7 @@ local function Slash(msg)
 		local ok, lines = ns.SafeCall("report lines", ns.ReportLines)
 		ns.Report.Show(ns.Report.Text(ok and lines or { "Report lines failed: " .. tostring(lines) }))
 	elseif command == "where" then
-		local ok, lines = ns.SafeCall("report lines", ns.WhereLines)
+		local ok, lines = ns.SafeCall("where lines", ns.WhereLines)
 		ns.Report.Show(
 			ns.CutText(table.concat(ok and lines or { "Report lines failed: " .. tostring(lines) }, "\n"), 2000)
 		)

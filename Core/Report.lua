@@ -114,25 +114,34 @@ end
 ---@return string[]
 function ns.WhereLines()
 	local version = C_AddOns.GetAddOnMetadata(addonName, "Version") or "-"
-	local gameVersion, build = GetBuildInfo()
+	local gameVersion, build, _, interface = GetBuildInfo()
 	local map = C_Map.GetBestMapForUnit("player")
 	local point = map and C_Map.GetPlayerMapPosition(map, "player")
 	local x, y
 	if point then
 		x, y = point:GetXY()
 	end
+	local info = map and C_Map.GetMapInfo(map)
 	local lines = {
-		("%s %s | WoW %s (%s) | %s | level %d"):format(
+		("%s %s | WoW %s (%s) %s | %s | level %d"):format(
 			addonName,
 			version,
 			gameVersion,
 			build,
+			tostring(interface),
 			GetLocale(),
 			UnitLevel("player") or 0
 		),
-		("Place: map %s %s, %s"):format(tostring(map or "-"), ns.Report.Percent(x), ns.Report.Percent(y)),
+		("Place: map %s (%s) %s, %s"):format(
+			tostring(map or "-"),
+			info and info.name or "-",
+			ns.Report.Percent(x),
+			ns.Report.Percent(y)
+		),
 	}
-	for _, line in ipairs(ns.ReportLines()) do
+	-- The guide's own lines can fail in the very state being reported: the versions and place still show.
+	local ok, own = ns.SafeCall("where lines", ns.ReportLines)
+	for _, line in ipairs(ok and own or { "Report lines failed: " .. tostring(own) }) do
 		lines[#lines + 1] = line
 	end
 	return lines

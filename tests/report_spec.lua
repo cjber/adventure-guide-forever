@@ -270,7 +270,7 @@ do
 	local _, edit = Window(h)
 	local text = edit:GetText()
 	equal(edit.highlighted, text, "where: selected")
-	has(text, "AdventureGuideForever 1.2.3 | WoW 1.60.1 (69913) | enUS | level 18", "where: versions and level")
+	has(text, "AdventureGuideForever 1.2.3 | WoW 1.60.1 (69913) 16001 | enUS | level 18", "where: versions and level")
 	has(text, "Place: map ", "where: place")
 	local step = h.ns.Guidance.CurrentStep() or h.ns.Route().steps[1]
 	has(text, ("[%s %s]"):format(step.kind, step.key), "where: the stop")
@@ -283,6 +283,8 @@ do
 	end
 	h.Slash("where")
 	has(edit:GetText(), "Report lines failed: lines broke", "where: failing lines said")
+	has(edit:GetText(), "AdventureGuideForever 1.2.3 | WoW", "where: the versions still show")
+	has(edit:GetText(), "Place: map ", "where: and the place")
 end
 
 -- The help lists the command.
