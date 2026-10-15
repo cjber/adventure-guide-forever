@@ -110,8 +110,8 @@ function Model.Spots(step)
 end
 
 -- "Next spot" (docs/design.md §2.8): an area step's point moves `presses` spots on from the one the planner chose, in
--- order of distance from the player, nearest first, round again after the last; ties keep the data's order. Not while the
--- player stands in the area (its `here`), nor for a step with one spot.
+-- order of distance from the player, nearest first, round again after the last; ties keep the data's order. Not while
+-- the player stands in the area (its `here`), nor for a step with one spot.
 ---@param step AGFStep
 ---@param presses integer
 function Model.Camp(data, player, step, presses)
