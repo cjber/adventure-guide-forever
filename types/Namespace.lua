@@ -724,6 +724,8 @@
 ---@field Guidance AGFGuidance
 ---@field Focus AGFFocus
 ---@field Print fun(msg: string)
+---@field Readable fun(value: any): any `value`, or nil when the client keeps it secret (Core/Secret.lua)
+---@field Usable fun(frame?: Frame): boolean false for nil and for a forbidden frame (Core/Secret.lua)
 ---@field SafeCall fun(label: string, fn: function, ...: any): boolean, ... run fn as pcall does, keeping a failure for the report and passing it to the error handler (Core/SafeCall.lua)
 ---@field RecordError fun(label: string, message: any, stack?: string) keep an error caught some other way (a coroutine's) for the report
 ---@field CutText fun(text: string, limit: integer): string `text` at most `limit` bytes, cut on a character boundary with "..."
