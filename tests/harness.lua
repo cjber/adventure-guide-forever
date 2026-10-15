@@ -1657,9 +1657,22 @@ function harness.load(options)
 		return 0, 7
 	end
 	-- Secret values (Core/Secret.lua): a value in h.secrets reads as secret, every other one as readable.
+	-- h.Secret() makes a stand-in for a secret the client hands over: in h.secrets, and indexing, matching,
+	-- concatenating, comparing or printing it raises an error, as the client's does.
 	h.secrets = {}
 	G.canaccessvalue = function(value)
 		return value == nil or not h.secrets[value]
+	end
+	local function Refuse()
+		error("attempt to use a secret value", 2)
+	end
+	function h.Secret()
+		local secret = newproxy(true)
+		local meta = getmetatable(secret)
+		meta.__index, meta.__concat, meta.__eq, meta.__lt, meta.__le, meta.__len, meta.__tostring, meta.__call =
+			Refuse, Refuse, Refuse, Refuse, Refuse, Refuse, Refuse, Refuse
+		h.secrets[secret] = true
+		return secret
 	end
 	G.UnitLevel = function()
 		return player.level
@@ -2111,12 +2124,13 @@ function harness.load(options)
 	function G.GameTooltip:IsForbidden()
 		return h.forbiddenTooltip == true
 	end
-	-- The mouseover unit's tooltip, as the client builds it for `guid`; its lines land in h.tooltip.
-	function h.HoverUnit(guid)
+	-- The mouseover unit's tooltip, as the client builds it for `guid`; its lines land in h.tooltip. With `unitOnly`
+	-- the tooltip data carries no GUID, so only the unit token leads to it.
+	function h.HoverUnit(guid, unitOnly)
 		G.GameTooltip:SetOwner(G.UIParent, "ANCHOR_CURSOR")
 		G.GameTooltip.unitName, G.GameTooltip.unit, guids.mouseover = "Unit", "mouseover", guid
 		for _, fn in ipairs(postCalls[G.Enum.TooltipDataType.Unit] or {}) do
-			h.call(fn, G.GameTooltip, { type = G.Enum.TooltipDataType.Unit, guid = guid })
+			h.call(fn, G.GameTooltip, { type = G.Enum.TooltipDataType.Unit, guid = not unitOnly and guid or nil })
 		end
 		G.GameTooltip:Show()
 	end

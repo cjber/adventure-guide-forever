@@ -36,8 +36,8 @@ local function Creature(entry)
 end
 
 -- The lines a unit's tooltip gains.
-local function Lines(h, guid)
-	h.HoverUnit(guid)
+local function Lines(h, guid, unitOnly)
+	h.HoverUnit(guid, unitOnly)
 	return h.tooltip
 end
 
@@ -107,22 +107,24 @@ do
 end
 
 -- Secret values (docs/design.md §2.23): a GUID or unit token the client keeps secret reads as no unit, and a forbidden
--- tooltip is left alone; neither raises an error, in combat or out. Indexing or matching a secret would.
+-- tooltip is left alone; neither raises an error, in combat or out. h.Secret() errors on any use, as the client's does.
 do
 	local h = Load({ journey = "zone:1413" })
 	local line = { "normal: Adventure guide: The Barrens story" }
 	local guid = Creature(SERGRA)
-	h.secrets[guid] = true
-	same(Lines(h, guid), {}, "secret: a secret GUID adds nothing")
+	same(Lines(h, h.Secret()), {}, "secret: a secret GUID adds nothing")
 	h.SetCombat(true)
 	h.flush()
-	same(Lines(h, guid), {}, "secret: in combat too")
+	same(Lines(h, h.Secret()), {}, "secret: in combat too")
 	h.SetCombat(false)
-	h.secrets[guid] = nil
+	same(Lines(h, h.Secret(), true), {}, "secret: a secret GUID behind the unit token")
 	h.secrets.mouseover = true
-	same(Lines(h, guid), {}, "secret: a secret unit token adds nothing")
+	same(Lines(h, guid, true), {}, "secret: a secret unit token adds nothing")
+	same(Lines(h, guid), line, "secret: the tooltip data's own GUID still names the NPC")
 	h.secrets.mouseover = nil
-	same(Lines(h, guid), line, "secret: readable again")
+	same(Lines(h, guid, true), line, "secret: readable through the unit token again")
+	same(Lines(h, ("Vehicle-0-5250-0-17-%d-00004A2B3C"):format(SERGRA)), line, "a vehicle GUID names its entry")
+	same(Lines(h, 3338), {}, "a GUID that isn't a string adds nothing")
 	h.forbiddenTooltip = true
 	same(Lines(h, guid), {}, "forbidden: the tooltip is left alone")
 	h.forbiddenTooltip = false
@@ -136,6 +138,8 @@ do
 	local h = Load(nil)
 	local ns = h.ns
 	h.secrets.hidden = true
+	local secret = h.Secret()
+	equal(ns.Readable(secret), nil, "Readable: a stand-in secret")
 	equal(ns.Readable("shown"), "shown", "Readable: a readable string")
 	equal(ns.Readable(0), 0, "Readable: a readable zero")
 	equal(ns.Readable(false), false, "Readable: a readable false")
