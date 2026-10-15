@@ -260,6 +260,31 @@ do
 	equal(h.modelCalls.Plan, plans, "unsettled: no build for the report")
 end
 
+-- /agf where: the versions, the place and the stop with its quest IDs and Why lines, selected, without the caught
+-- errors or the addon list; failing lines still open it.
+do
+	local h = Load()
+	h.metadata.Questie = { Version = "9.1.0" }
+	h.ns.SafeCall("kept", error, "an error", 0)
+	h.Slash("where")
+	local _, edit = Window(h)
+	local text = edit:GetText()
+	equal(edit.highlighted, text, "where: selected")
+	has(text, "AdventureGuideForever 1.2.3 | WoW 1.60.1 (69913) | enUS | level 18", "where: versions and level")
+	has(text, "Place: map ", "where: place")
+	local step = h.ns.Guidance.CurrentStep() or h.ns.Route().steps[1]
+	has(text, ("[%s %s]"):format(step.kind, step.key), "where: the stop")
+	has(text, ("  Quest %d "):format(step.quests[1]), "where: its quests by ID")
+	lacks(text, "Errors", "where: no errors section")
+	lacks(text, "Other addons", "where: no addon list")
+	equal(#text <= 2000, true, "where: one message")
+	h.ns.ReportLines = function()
+		error("lines broke", 0)
+	end
+	h.Slash("where")
+	has(edit:GetText(), "Report lines failed: lines broke", "where: failing lines said")
+end
+
 -- The help lists the command.
 do
 	local h = Load()
@@ -269,6 +294,11 @@ do
 		found = found or line:find("/agf report", 1, true) ~= nil
 	end
 	equal(found, true, "help names /agf report")
+	found = false
+	for _, line in ipairs(h.prints) do
+		found = found or line:find("/agf where", 1, true) ~= nil
+	end
+	equal(found, true, "help names /agf where")
 end
 
 print(("report_spec: %d checks passed"):format(checks))

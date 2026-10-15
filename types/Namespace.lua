@@ -510,6 +510,7 @@
 ---@field HELP_DUMP string
 ---@field HELP_TRACKER string
 ---@field HELP_REPORT string
+---@field HELP_WHERE string
 ---@field REPORT_TITLE string the report window's title
 ---@field REPORT_HINT string the report window's line on copying its text
 ---@field HAND_IN_WHEN string format: zone name; the reason on a turn-in the route leaves for another continent
@@ -729,6 +730,7 @@
 ---@field CutText fun(text: string, limit: integer): string `text` at most `limit` bytes, cut on a character boundary with "..."
 ---@field CaughtErrors fun(): AGFCaughtError[] this session's caught errors, oldest first, as copies
 ---@field Report AGFReportModule the report window (UI/Report.lua)
+---@field WhereLines fun(): string[] /agf where: versions, place and the report's own lines (Core/Report.lua)
 ---@field ReportLines fun(): string[] Adventure Guide's own lines in the report (Core/Report.lua)
 ---@field Setting fun(key: string): any
 ---@field SetSetting fun(key: string, value: any)
