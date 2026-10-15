@@ -508,6 +508,9 @@
 ---@field HELP_AUDIT string
 ---@field HELP_DUMP string
 ---@field HELP_TRACKER string
+---@field HELP_REPORT string
+---@field REPORT_TITLE string the report window's title
+---@field REPORT_HINT string the report window's line on copying its text
 ---@field HAND_IN_WHEN string format: zone name; the reason on a turn-in the route leaves for another continent
 ---@field NO_WAYPOINT string the error Go shows when nothing can guide the player on the step's map
 ---@field GO string the step menu's entry that starts guidance
@@ -720,6 +723,11 @@
 ---@field Guidance AGFGuidance
 ---@field Focus AGFFocus
 ---@field Print fun(msg: string)
+---@field SafeCall fun(label: string, fn: function, ...: any): boolean, ... run fn as pcall does, keeping a failure for the report and passing it to the error handler (Core/SafeCall.lua)
+---@field RecordError fun(label: string, message: any, stack?: string) keep an error caught some other way (a coroutine's) for the report
+---@field CaughtErrors fun(): AGFCaughtError[] this session's caught errors, oldest first, as copies
+---@field Report AGFReportModule the report window (UI/Report.lua)
+---@field ReportLines fun(): string[] Adventure Guide's own lines in the report (Core/Report.lua)
 ---@field Setting fun(key: string): any
 ---@field SetSetting fun(key: string, value: any)
 ---@field Prefs fun(): AGFPrefs

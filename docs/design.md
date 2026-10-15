@@ -90,6 +90,12 @@ abandons quests.
 - **2.22 Addon API.** `AdventureGuideForever.API` (docs/api.md) is read-only and versioned. It copies the
   tracker's step from the committed route and answers nil while a route is due, never building one for a caller.
   Fields are added, never renamed or repurposed, within a version.
+- **2.24 Report.** `/agf report` shows one block of text, selected, in a stock portrait frame: the versions, build,
+  locale, character and place; the guide's settings, QuestieDB, the stop the tracker shows with each quest's ID and
+  Why lines; the errors caught this session; the other loaded addons. At most 2,000 characters (one message), the
+  addon list shortened first. It reads only the committed route and never builds one. Errors are caught through one
+  wrapper, `ns.SafeCall`, which keeps the last five and still passes each to the game's error handler. The pattern and
+  how to port it are in [report-window.md](report-window.md).
 
 ### Guide navigation
 
