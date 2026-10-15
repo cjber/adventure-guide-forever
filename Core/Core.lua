@@ -949,6 +949,11 @@ local function Slash(msg)
 		-- The addon's lines can fail in the very state being reported: the header and caught errors still show.
 		local ok, lines = ns.SafeCall("report lines", ns.ReportLines)
 		ns.Report.Show(ns.Report.Text(ok and lines or { "Report lines failed: " .. tostring(lines) }))
+	elseif command == "where" then
+		local ok, lines = ns.SafeCall("where lines", ns.WhereLines)
+		ns.Report.Show(
+			ns.CutText(table.concat(ok and lines or { "Report lines failed: " .. tostring(lines) }, "\n"), 2000)
+		)
 	elseif command == "audit" then
 		Audit()
 	elseif command == "dump" then
@@ -966,6 +971,7 @@ local function Slash(msg)
 	else
 		ns.Print(L.HELP_OPEN)
 		ns.Print(L.HELP_REPORT)
+		ns.Print(L.HELP_WHERE)
 		ns.Print(L.HELP_AUDIT)
 		ns.Print(L.HELP_DUMP)
 		ns.Print(L.HELP_TRACKER)

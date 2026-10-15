@@ -1,0 +1,41 @@
+name: Wrong stop
+description: The guide sends you somewhere wrong, offers a quest you can't take, or skips one you can.
+labels: [bug]
+body:
+  - type: textarea
+    id: where
+    attributes:
+      label: /agf where
+      description: >-
+        While the guide shows the wrong stop, type `/agf where`, press Ctrl+C (Cmd+C on a Mac) and paste it here.
+        It has your versions, where you are, and the stop with its quest IDs and why the guide chose it.
+      render: text
+    validations:
+      required: true
+  - type: dropdown
+    id: problem
+    attributes:
+      label: What's wrong
+      options:
+        - The stop is in the wrong place
+        - It offers a quest I can't take (the giver doesn't have it)
+        - It leaves out a quest I can take
+        - An objective I finished is still on the route (or one I haven't is gone)
+        - The order makes no sense
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      description: Where the stop should be, or which quest should or shouldn't be there, by name if you know it.
+    validations:
+      required: true
+  - type: textarea
+    id: report
+    attributes:
+      label: /agf report (if there were errors)
+      description: >-
+        If you saw a Lua error, paste `/agf report` too: it adds any errors the guide caught and your other addons.
+      render: text

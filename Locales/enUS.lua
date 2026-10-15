@@ -51,6 +51,7 @@ ns.L = {
 	QUESTIE_ZONES = "it lacks its zone tables",
 	QUESTIE_FAILED = "reading it failed (%s)",
 	HELP_OPEN = "/agf - open the guide on the world map.",
+	HELP_WHERE = "/agf where - show the stop the guide is on, to copy into a wrong-stop report",
 	HELP_REPORT = "/agf report - show a report to copy into a bug report",
 	REPORT_TITLE = "Adventure Guide report",
 	REPORT_HINT = "The text is selected. Press Ctrl+C (Cmd+C on a Mac) to copy it, then paste it into your bug report.",
