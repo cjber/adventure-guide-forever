@@ -181,7 +181,7 @@ function Pins.QuestLineText(id)
 	local quest = ns.Data.quests[id]
 	local level = C_QuestLog.GetQuestDifficultyLevel(id)
 	if not level or level <= 0 then
-		level = quest and (quest.level == -1 and UnitLevel("player") or quest.level)
+		level = quest and (quest.level == -1 and ns.State.Level() or quest.level)
 	end
 	local title = ns.State.QuestTitle(id) or (quest and quest.title) or ""
 	local known = level and level > 0
@@ -541,7 +541,7 @@ function AdventureGuideForeverGiverPinMixin:OnMouseEnter()
 	GameTooltip_SetTitle(GameTooltip, giver.title)
 	for _, id in ipairs(giver.quests) do
 		local quest = ns.Data.quests[id]
-		local level = quest.level == -1 and UnitLevel("player") or quest.level
+		local level = quest.level == -1 and ns.State.Level() or quest.level
 		local title = ns.State.QuestTitle(id) or quest.title
 		GameTooltip_AddNormalLine(GameTooltip, ns.L.QUEST_LEVEL:format(level, title))
 	end
