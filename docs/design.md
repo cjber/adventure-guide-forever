@@ -89,7 +89,9 @@ abandons quests.
   Source contracts are in [dungeon-sources.md](dungeon-sources.md).
 - **2.22 Addon API.** `AdventureGuideForever.API` (docs/api.md) is read-only and versioned. It copies the
   tracker's step from the committed route and answers nil while a route is due, never building one for a caller.
-  Fields are added, never renamed or repurposed, within a version.
+  Fields are added, never renamed or repurposed, within a version; `minor` counts the additions. `Subscribe` calls
+  back the frame after the stop or the journey changes. Shortest Path's own `Subscribe`, when it has one, replaces
+  watching the super-tracking events.
 - **2.24 Report.** `/agf report` shows one block of text, selected, in a stock portrait frame: the versions, build,
   locale, character and place; the guide's settings, QuestieDB, the stop the tracker shows with each quest's ID and
   Why lines; the errors caught this session; the other loaded addons. At most 2,000 characters (one message): the

@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 # SPF #52's stock quest POIs. Its geometry is SPF's own Path.FindSync, run by LuaJIT in an extracted copy.
 # The API contract fixture keeps its independent compatibility pin in tests/contract_spec.lua.
-SPF_SHA = "061f0b1041f85d02084c25a27edbbf3db3ae7ec7"
+SPF_SHA = "9c2d86bad8418ee07c74b54e2757568b9d5aff3f"
 SPF_TARBALL = f"https://codeload.github.com/cjber/shortest-path-forever/tar.gz/{SPF_SHA}"
 SPF_CACHE = ROOT / "tools/.cache" / f"spf-{SPF_SHA}"
 # Route.lua: walks are DOT 4 breadcrumbs every SPACING 9, each over a dark dot RIM 1 wider at UNDER_ALPHA .5; the walk

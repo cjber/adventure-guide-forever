@@ -394,6 +394,21 @@ function Integrations.Drop()
 	return api ~= nil and api.Cancel(OWNER) and true or false
 end
 
+-- Shortest Path (minor 1) calls `fn` the frame after its guidance changes, whoever changed it, once per burst; an
+-- older one has no Subscribe and returns false, and the caller keeps watching the super-tracking events instead.
+---@param fn fun()
+---@return boolean
+function Integrations.Subscribe(fn)
+	local api = SPF()
+	if not (api and type(api.Subscribe) == "function") then
+		return false
+	end
+	api.Subscribe(function()
+		fn()
+	end)
+	return true
+end
+
 -- The stop of our journey Shortest Path heads for, guiding it or not; nil when it holds none of ours.
 ---@return integer?
 function Integrations.CurrentStop()

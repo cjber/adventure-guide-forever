@@ -320,12 +320,24 @@ local function Follow()
 	end
 end
 
--- Shortest Path ending our journey and the player clearing or moving the waypoint: the super-tracking events Shortest
--- Path itself registers. Handled on the next frame, once its own handler has run, with the guide open or closed.
+-- Shortest Path ending our journey and the player clearing or moving the waypoint. A Shortest Path with Subscribe says
+-- itself when its guidance changes, on the next frame, so from login only the client's waypoint event is watched;
+-- an older one is noticed through the super-tracking events it registers, handled on the next frame once its own
+-- handler has run. Either way with the guide open or closed.
 local events, eventPending = CreateFrame("Frame"), false
 events:RegisterEvent("SUPER_TRACKING_CHANGED")
 events:RegisterEvent("USER_WAYPOINT_UPDATED")
-events:SetScript("OnEvent", function()
+events:RegisterEvent("PLAYER_LOGIN")
+events:SetScript("OnEvent", function(_, event)
+	if event == "PLAYER_LOGIN" then
+		if Integrations.Subscribe(function()
+			Follow()
+			Notify()
+		end) then
+			events:UnregisterEvent("SUPER_TRACKING_CHANGED")
+		end
+		return
+	end
 	if not eventPending then
 		eventPending = true
 		C_Timer.After(0, function()

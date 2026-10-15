@@ -4,7 +4,8 @@ local _, ns = ...
 -- Public answers and navigation requests for other addons (docs/api.md). Reads return copies;
 -- nil means the route is still settling, so ask again later.
 ---@class AGFAPI
-local API = { version = 1 }
+-- `minor` rises with each addition within version 1 (1: Subscribe); a caller checks a member before using it.
+local API = { version = 1, minor = 1 }
 
 local NEXT_LIMIT = 8
 
@@ -91,6 +92,89 @@ function API.ResumeRestedXP()
 	end
 	ns.Choose(journey.key, true)
 	return true
+end
+
+--[[ Subscribe: the frame after the current stop or the journey changes ]]
+
+---@class AGFSubscription
+---@field callback? fun(changes: AGFAPIChanges) nil once unsubscribed
+
+---@type AGFSubscription[]
+local subscriptions = {}
+-- What the last dispatch saw: CurrentStop's answer as a string (false for none) and the journey followed.
+---@type string|false, string|false
+local lastStop, lastJourney = false, false
+local pending = false
+
+---@param stop? AGFAPIStop
+---@return string|false
+local function StopKey(stop)
+	if not stop then
+		return false
+	end
+	return ("%d:%.4f:%.4f:%s:%d:%d"):format(stop.map, stop.x, stop.y, stop.name, stop.handins, stop.pickups)
+end
+
+-- One burst's changes, to every subscriber there when the call-back began (one added by a callback waits for the next
+-- burst), each with its own table and each under
+-- ns.SafeCall, so an error in one reaches the game's error handler and the report without stopping the others. While
+-- the route is being worked out nothing is sent: the rebuild's own notification queues the next look.
+local function Dispatch()
+	pending = false
+	if not ns.RouteSettled() then
+		return
+	end
+	local route = ns.Route()
+	local stop = StopKey(API.CurrentStop())
+	local journey = route.journey and (route.journey .. (route.chosen and ":chosen" or "")) or false
+	local stopChanged, journeyChanged = stop ~= lastStop, journey ~= lastJourney
+	lastStop, lastJourney = stop, journey
+	if not (stopChanged or journeyChanged) then
+		return
+	end
+	local current = {}
+	for index, subscription in ipairs(subscriptions) do
+		current[index] = subscription
+	end
+	for _, subscription in ipairs(current) do
+		if subscription.callback then
+			ns.SafeCall("API subscriber", subscription.callback, {
+				stop = stopChanged or nil,
+				journey = journeyChanged or nil,
+			})
+		end
+	end
+end
+
+local function Queue()
+	if not pending then
+		pending = true
+		C_Timer.After(0, Dispatch)
+	end
+end
+ns.OnRouteChange(Queue)
+ns.Guidance.OnChange(Queue)
+
+-- Calls `callback(changes)` the frame after what CurrentStop answers or the journey followed changes, at most once per
+-- burst of changes (docs/api.md). Returns a function that unsubscribes, safe to call twice.
+---@param callback fun(changes: AGFAPIChanges)
+---@return fun()
+function API.Subscribe(callback)
+	if type(callback) ~= "function" then
+		error("AdventureGuideForever.API.Subscribe: callback must be a function", 2)
+	end
+	---@type AGFSubscription
+	local subscription = { callback = callback }
+	subscriptions[#subscriptions + 1] = subscription
+	return function()
+		subscription.callback = nil
+		for index, other in ipairs(subscriptions) do
+			if other == subscription then
+				table.remove(subscriptions, index)
+				return
+			end
+		end
+	end
 end
 
 AdventureGuideForever = { API = API }

@@ -12,6 +12,12 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The guide follows Shortest Path the moment its journey changes.** With a Shortest Path new enough to announce its changes, the guide hears straight away when a journey ends, moves on or is replaced, instead of waiting for the game's waypoint events. Older Shortest Path versions work as before.
+
+### For addon authors
+
+- **`AdventureGuideForever.API.Subscribe(callback)`** calls back the frame after the current stop or the followed journey changes, once per burst, with `{stop = true, journey = true}` as they apply. `API.minor` is 1; `version` stays 1. See docs/api.md.
+
 - **Quests with two kill or two collect objectives keep the right one on the route.** When the quest log listed them in a different order from the quest data (The Guns of Northwatch, for one), the guide paired them up by position. Kill Smythe first and his area stayed on the route while Fairmount's dropped off. It now matches each objective by the NPC or item it names, and only uses position when there's no name to go on.
 
 - **`/agf report` gives you something to paste into a bug report.** It opens a small window with the text already selected: your addon and game versions, your character, the stop the guide is showing and why, the quest data version, your other addons, and any errors the guide caught this session. Press Ctrl+C and paste it. It fits in one message, and you don't need a /reload or a saved-variables file.
