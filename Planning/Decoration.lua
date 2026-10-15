@@ -24,6 +24,9 @@ function Model.GiverSkip(step, giverKey)
 	return "giver:" .. Model.Visit(step) .. ":" .. giverKey
 end
 
+-- How much nearer another giver of a town visit must be before the arrow leaves the one it points at.
+Model.SWITCH_YARDS = 35
+
 -- A checklist keeps completed givers until the visit ends, while its arrow follows real remaining locations.
 function Model.TownChecklist(data, player, completed, log, step, previous, skipped)
 	local rows, byKey = {}, {}
@@ -86,6 +89,25 @@ function Model.TownChecklist(data, player, completed, log, step, previous, skipp
 			local yards = Model.Yards(data, player, row.place)
 			if not nearest or (yards and (not distance or yards < distance)) then
 				nearest, distance = row.place, yards
+			end
+		end
+	end
+	-- The giver the arrow already points at keeps it while it has work, unless another is SWITCH_YARDS nearer
+	-- (docs/design.md §2.10), so two near-equal givers don't flip the waypoint back and forth as the player walks.
+	if nearest and distance and previous and previous.map then
+		for _, row in ipairs(rows) do
+			local place = row.place
+			if
+				not row.done
+				and place ~= nearest
+				and place.map == previous.map
+				and place.x == previous.x
+				and place.y == previous.y
+			then
+				local kept = Model.Yards(data, player, place)
+				if kept and kept < distance + Model.SWITCH_YARDS then
+					nearest = place
+				end
 			end
 		end
 	end

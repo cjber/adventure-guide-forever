@@ -551,14 +551,25 @@ local function Walked()
 	local steps = cachedRoute.steps
 	local first = steps[1]
 	if first and first.checklist and map and x and y then
-		local nearest, distance
+		-- Another giver takes the arrow only once it is SWITCH_YARDS nearer than the one it points at, or that one's
+		-- work is done (Model.TownChecklist keeps the same margin on the rebuild).
+		local here = { map = map, x = x, y = y }
+		local nearest, distance, current
 		for _, giver in ipairs(first.checklist) do
-			local yards = not giver.done and ns.Model.Yards(ns.Data, { map = map, x = x, y = y }, giver.place)
+			local place = giver.place
+			local yards = not giver.done and ns.Model.Yards(ns.Data, here, place)
 			if yards and (not distance or yards < distance) then
-				nearest, distance = giver.place, yards
+				nearest, distance = place, yards
+			end
+			if yards and place.map == first.map and place.x == first.x and place.y == first.y then
+				current = yards
 			end
 		end
-		if nearest and (nearest.map ~= first.map or nearest.x ~= first.x or nearest.y ~= first.y) then
+		if
+			nearest
+			and (nearest.map ~= first.map or nearest.x ~= first.x or nearest.y ~= first.y)
+			and (not current or distance + ns.Model.SWITCH_YARDS <= current)
+		then
 			ns.Invalidate()
 		end
 	end
