@@ -213,35 +213,51 @@ local function Fits(quest, slot, kind)
 	return range ~= nil and slot >= range[1] and slot <= range[2] and (not quest.kinds or quest.kinds[slot] == kind)
 end
 
--- The slot whose name the client's words for `objective` hold, among the free slots it fits: the longest name found
--- wins, so "Defias Pillager slain" picks the Pillager over a plain "Defias". nil when no name is found, or two slots
--- tie on it. Plain, case-insensitive matching, in the client's language on both sides.
+-- The name pass: every (objective, slot) pair whose slot name the objective's words hold, the longest name first and,
+-- for the same name length, the objective with the shortest words, so "Gnoll slain" takes the Gnoll slot before
+-- "Riverpaw Gnoll Mystic slain" can. A pair is taken while both are free. An objective whose best match is a tie
+-- between two free slots is left to order. Plain matching, lower-cased (ASCII letters only fold, as the client's
+-- string.lower does), in the client's language on both sides.
 ---@param quest AGFQuest
 ---@param slots integer[]
+---@param objectives AGFLogObjective[]
 ---@param used table<integer, true>
----@param objective AGFLogObjective
----@return integer?
-local function Named(quest, slots, used, objective)
-	local names, text = quest.names, objective.text
-	if not names or type(text) ~= "string" or text == "" then
-		return nil
+---@param placed table<integer, integer|false>
+local function NamePass(quest, slots, objectives, used, placed)
+	local names = quest.names
+	if not names then
+		return
 	end
-	text = text:lower()
-	local best, length, tied
-	for _, slot in ipairs(slots) do
-		if not used[slot] and Fits(quest, slot, objective.type) then
-			for _, name in ipairs(names[slot] or NONE) do
-				if #name > 0 and text:find(name:lower(), 1, true) then
-					if not best or #name > length then
-						best, length, tied = slot, #name, false
-					elseif #name == length and slot ~= best then
-						tied = true
-					end
-				end
+	local matches = {}
+	for index, objective in ipairs(objectives) do
+		local text = type(objective.text) == "string" and objective.text:lower() or ""
+		for _, slot in ipairs(text ~= "" and slots or NONE) do
+			local name = names[slot]
+			if name and Fits(quest, slot, objective.type) and text:find(name, 1, true) then
+				matches[#matches + 1] = { index = index, slot = slot, length = #name, size = #text }
 			end
 		end
 	end
-	return not tied and best or nil
+	table.sort(matches, function(a, b)
+		if a.length ~= b.length then
+			return a.length > b.length
+		elseif a.size ~= b.size then
+			return a.size < b.size
+		elseif a.index ~= b.index then
+			return a.index < b.index
+		end
+		return a.slot < b.slot
+	end)
+	for position, match in ipairs(matches) do
+		if placed[match.index] == nil and not used[match.slot] then
+			local after = matches[position + 1]
+			if after and after.index == match.index and after.length == match.length and not used[after.slot] then
+				placed[match.index] = false
+			else
+				used[match.slot], placed[match.index] = true, match.slot
+			end
+		end
+	end
 end
 
 -- The data's need slots still open for a quest under way, each to the client's objective for it. The client's
@@ -263,14 +279,9 @@ local function OpenSlots(quest, entry)
 	end
 	table.sort(slots)
 	local aligned, used, placed = {}, {}, {}
+	NamePass(quest, slots, objectives, used, placed)
 	for index, objective in ipairs(objectives) do
-		local slot = Named(quest, slots, used, objective)
-		if slot then
-			used[slot], placed[index] = true, slot
-		end
-	end
-	for index, objective in ipairs(objectives) do
-		local slot = placed[index]
+		local slot = placed[index] or nil
 		for _, candidate in ipairs(slot == nil and slots or NONE) do
 			if not slot and not used[candidate] and Fits(quest, candidate, objective.type) then
 				slot = candidate

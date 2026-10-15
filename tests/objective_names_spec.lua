@@ -19,9 +19,9 @@ end
 -- named from QuestieDB; the corpus carries the names because the three slots share a type.
 local GUNS = 891
 local quest = data.quests[GUNS]
-equal(quest.names[0][1], "Captain Fairmount", "corpus: slot 0's name")
-equal(quest.names[1][1], "Cannoneer Whessan", "corpus: slot 1's name")
-equal(quest.names[2][1], "Cannoneer Smythe", "corpus: slot 2's name")
+equal(quest.names[0], "captain fairmount", "corpus: slot 0's name, lower-cased")
+equal(quest.names[1], "cannoneer whessan", "corpus: slot 1's name")
+equal(quest.names[2], "cannoneer smythe", "corpus: slot 2's name")
 equal(quest.names[4], nil, "corpus: the one collect slot carries no name")
 
 local function Entry(objectives)
@@ -62,29 +62,49 @@ equal(Model.ObjectiveDone(data, entry, 1), false, "order: the second slot")
 
 -- The longest name found wins: "Defias Pillager" over "Defias"; a tie on the same length falls back to order.
 local saved = quest.names
-quest.names = { [0] = { "Defias" }, [1] = { "Defias Pillager" }, [2] = { "Smythe" } }
+quest.names = { [0] = "defias", [1] = "defias pillager", [2] = "smythe" }
 entry = Entry({ Kill("Defias Pillager slain: 1/1", true), Kill("Defias slain: 0/1", false), Kill("x", false), ITEM })
 equal(Model.ObjectiveDone(data, entry, 1), true, "longest: the Pillager's slot")
 equal(Model.ObjectiveDone(data, entry, 0), false, "longest: the plain Defias slot open")
-quest.names = { [0] = { "Gnoll" }, [1] = { "Gnoll" }, [2] = { "Smythe" } }
+quest.names = { [0] = "gnoll", [1] = "gnoll", [2] = "smythe" }
 entry = Entry({ Kill("Gnoll slain: 0/1", false), Kill("Gnoll slain: 1/1", true), Kill("x", false), ITEM })
 equal(Model.ObjectiveDone(data, entry, 1), true, "tie: order decides")
+-- A name the client's words for another objective also hold: the objective whose words are shortest takes it, so the
+-- partial match can't steal it ("Riverpaw Gnoll Mystic" holds "gnoll", but not the data's "riverpaw mystic").
+quest.names = { [0] = "gnoll", [1] = "riverpaw mystic", [2] = "smythe" }
+entry = Entry({
+	Kill("Riverpaw Gnoll Mystic slain: 0/1", false),
+	Kill("Gnoll slain: 1/1", true),
+	Kill("x", false),
+	ITEM,
+})
+equal(Model.ObjectiveDone(data, entry, 0), true, "steal: the Gnoll slot goes to the plain Gnoll objective")
+equal(Model.ObjectiveDone(data, entry, 1), false, "steal: the Mystic's slot open")
 quest.names = saved
 
--- QuestieObjectives names only slots that share a type: an NPC's name and the objective's own text, read once.
+-- QuestieObjectives names only slots that share a type: NPC names (a kill credit's root NPC), item names, lower-cased,
+-- each read once per build; English objective text overrides are left out; a failing name read leaves the slot unnamed.
 do
-	local reads, asked = { Npc = {}, Object = {}, Item = {} }, 0
+	local reads, asked = { Npc = {}, Object = {}, Item = {}, names = { Npc = {}, Object = {}, Item = {} } }, 0
 	local rows = {
-		Npc = { [1] = { name = "Kobold Vermin" }, [2] = { name = "Kobold Worker" }, [3] = { name = "Lonely" } },
+		Npc = {
+			[1] = { name = "Kobold Vermin" },
+			[2] = { name = "Kobold Worker" },
+			[3] = { name = "Lonely" },
+			[5] = { name = "Credit Root" },
+		},
 		Object = { [9] = { name = "Crate" } },
-		Item = { [7] = { name = "Candle" } },
+		Item = { [7] = { name = "Candle" }, [8] = { name = "Wick" } },
 	}
 	local function Entity(kind)
 		return {
 			GetAll = function(id, keys)
-				local row = rows[kind][id]
 				if keys[1] == "name" then
 					asked = asked + 1
+					if id == 666 then
+						error("no name field")
+					end
+					local row = rows[kind][id]
 					return row and { row.name }
 				end
 				return { {} }
@@ -93,30 +113,36 @@ do
 	end
 	local lib = { Npc = Entity("Npc"), Object = Entity("Object"), Item = Entity("Item") }
 	local function yield() end
-	local objectives = { { { 1, "Vermin slain" }, { 2 } }, { { 9 } }, { { 7 } } }
-	local need, _, kinds, unsupported, names = ns.QuestieObjectives(
-		lib,
-		objectives,
+	local function Map() end
+	local objectives = {
+		{ { 1, "Vermin slain" }, { 2 } },
+		{ { 9 } },
+		{ { 7, "Candles" }, { 8 } },
 		nil,
-		nil,
-		data,
-		function() end,
-		yield,
-		1,
-		reads
+		{ { { 4, 6 }, 5, "Credit given" } },
+	}
+	local _, _, kinds, unsupported, names = ns.QuestieObjectives(lib, objectives, nil, nil, data, Map, yield, 1, reads)
+	-- Kills 0-1, the object 2, the kill credit after them at 3, the collects at 4-5.
+	equal(
+		kinds[2] == "object" and kinds[3] == "monster" and kinds[4] == "item" and kinds[5] == "item",
+		true,
+		"names: slots"
 	)
-	equal(need[0] ~= nil and need[1] ~= nil and kinds[2] == "object" and kinds[4] == "item", true, "names: slots")
 	equal(unsupported, nil, "names: supported")
-	equal(names[0][1], "Kobold Vermin", "names: the NPC's name")
-	equal(names[0][2], "Vermin slain", "names: and the objective's text")
-	equal(names[1][1], "Kobold Worker", "names: the second kill")
+	equal(names[0], "kobold vermin", "names: the NPC's name, lower-cased, no override text")
+	equal(names[1], "kobold worker", "names: the second kill")
 	equal(names[2], nil, "names: an object of its own type has none")
-	equal(names[4], nil, "names: an item of its own type has none")
-	equal(asked, 2, "names: only the shared slots are read")
-	ns.QuestieObjectives(lib, objectives, nil, nil, data, function() end, yield, 2, reads)
-	equal(asked, 2, "names: read once per build")
-	local _, _, _, _, none = ns.QuestieObjectives(lib, { { { 3 } } }, nil, nil, data, function() end, yield, 3, reads)
+	equal(names[3], "credit root", "names: a kill credit by its root NPC")
+	equal(names[4], "candle", "names: a collect slot")
+	equal(names[5], "wick", "names: the second collect slot")
+	equal(asked, 5, "names: only the shared slots are read")
+	ns.QuestieObjectives(lib, objectives, nil, nil, data, Map, yield, 2, reads)
+	equal(asked, 5, "names: read once per build")
+	local _, _, _, _, none = ns.QuestieObjectives(lib, { { { 3 } } }, nil, nil, data, Map, yield, 3, reads)
 	equal(none, nil, "names: nil with no shared type")
+	local _, _, _, _, failed = ns.QuestieObjectives(lib, { { { 666 }, { 1 } } }, nil, nil, data, Map, yield, 4, reads)
+	equal(failed[0], nil, "names: a failing read leaves its slot unnamed")
+	equal(failed[1], "kobold vermin", "names: the other slot still named")
 end
 
 print(("objective_names_spec: %d checks passed"):format(checks))
