@@ -112,7 +112,15 @@ local function StopKey(stop)
 	if not stop then
 		return false
 	end
-	return ("%d:%.4f:%.4f:%s:%d:%d"):format(stop.map, stop.x, stop.y, stop.name, stop.handins, stop.pickups)
+	return ("%d:%.4f:%.4f:%s:%s:%d:%d"):format(
+		stop.map,
+		stop.x,
+		stop.y,
+		tostring(stop.name),
+		tostring(stop.isTown),
+		stop.handins,
+		stop.pickups
+	)
 end
 
 -- One burst's changes, to every subscriber there when the call-back began (one added by a callback waits for the next
@@ -121,7 +129,7 @@ end
 -- the route is being worked out nothing is sent: the rebuild's own notification queues the next look.
 local function Dispatch()
 	pending = false
-	if not ns.RouteSettled() then
+	if not subscriptions[1] or not ns.RouteSettled() then
 		return
 	end
 	local route = ns.Route()
@@ -147,9 +155,12 @@ local function Dispatch()
 end
 
 local function Queue()
-	if not pending then
+	-- Nobody listening: no timer, no stop read. API.Subscribe takes its baseline when the first one joins.
+	if not pending and subscriptions[1] then
 		pending = true
-		C_Timer.After(0, Dispatch)
+		C_Timer.After(0, function()
+			ns.SafeCall("API subscribers", Dispatch)
+		end)
 	end
 end
 ns.OnRouteChange(Queue)
@@ -162,6 +173,12 @@ ns.Guidance.OnChange(Queue)
 function API.Subscribe(callback)
 	if type(callback) ~= "function" then
 		error("AdventureGuideForever.API.Subscribe: callback must be a function", 2)
+	end
+	if not subscriptions[1] then
+		-- The first subscriber: what CurrentStop answers now is the baseline, so it hears only what changes after.
+		local route = ns.RouteSettled() and ns.Route()
+		lastStop = route and StopKey(API.CurrentStop()) or false
+		lastJourney = route and route.journey and (route.journey .. (route.chosen and ":chosen" or "")) or false
 	end
 	---@type AGFSubscription
 	local subscription = { callback = callback }

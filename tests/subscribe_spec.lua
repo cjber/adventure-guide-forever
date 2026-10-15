@@ -34,14 +34,28 @@ do
 	h.ns.StartRoute()
 	h.flush()
 	equal(h.ns.Guidance.Owns(), true, "spf: our route runs")
+	local watching = false
+	for _, frame in ipairs(h.frames) do
+		watching = watching
+			or (frame.events and frame.events.SUPER_TRACKING_CHANGED and frame.events.USER_WAYPOINT_UPDATED)
+			or false
+	end
+	equal(watching, false, "spf: the super-tracking event is no longer watched")
+	-- Shortest Path ends the journey and calls back on the next frame (the harness profile does, as SPF does).
 	h.spfEnd("cleared")
-	h.fire("SUPER_TRACKING_CHANGED")
-	h.flush()
-	equal(h.ns.Prefs().guided ~= nil, true, "spf: the super-tracking event is no longer watched")
-	h.spfNotify({ ended = true, stop = true })
 	h.flush()
 	equal(h.ns.Prefs().guided, nil, "spf: its callback forgets the cleared journey")
 	equal(#h.errors, 0, "spf: errors\n" .. table.concat(h.errors, "\n"))
+	-- An error in AGF's handling is caught for the report, under its own label, and still reaches the error handler.
+	local follow = h.ns.Route
+	h.ns.Route = function()
+		error("route broke", 0)
+	end
+	h.spfNotify({ changed = true })
+	h.ns.Route = follow
+	local caught = h.ns.CaughtErrors()
+	equal(caught[#caught].label, "spf subscriber", "spf: a failing look is caught for the report")
+	equal(#h.errors, 1, "spf: and passed to the error handler")
 end
 
 -- An older Shortest Path (no Subscribe): the super-tracking event still notices.
@@ -80,6 +94,7 @@ do
 	-- Nothing changed yet: a burst that moves nothing calls nobody.
 	h.ns.Invalidate()
 	h.flush()
+	equal(calls, 0, "api: no call when nothing changed since subscribing")
 	local base = calls
 	-- Choosing another journey changes the stop and the journey: one call, both set, a fresh table each time.
 	local other

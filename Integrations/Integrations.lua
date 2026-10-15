@@ -403,9 +403,7 @@ function Integrations.Subscribe(fn)
 	if not (api and type(api.Subscribe) == "function") then
 		return false
 	end
-	api.Subscribe(function()
-		fn()
-	end)
+	api.Subscribe(fn)
 	return true
 end
 

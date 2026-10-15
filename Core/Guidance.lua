@@ -268,9 +268,10 @@ local function Unhanded(steps)
 end
 
 -- Guidance follows the chosen journey (docs/design.md §2.10): on each rebuild, and on the frame after Shortest Path's
--- own super-tracking events, a route AGF started for the chosen journey that no longer matches its steps is sent
--- again, at most once, and one that arrived goes on to steps it was never handed. Never in combat (Shortest Path
--- refuses), in the air, where the player's position is unknown (at sea, in an instance), or once it no longer guides.
+-- Subscribe callback (its super-tracking events for an older one), a route AGF started for the chosen journey that no
+-- longer matches its steps is sent again, at most once, and one that arrived goes on to steps it was never handed.
+-- Never in combat (Shortest Path refuses), in the air, where the player's position is unknown (at sea, in an
+-- instance), or once it no longer guides.
 local function Follow()
 	local spf, route, prefs = Integrations.Provider() ~= nil, ns.Route(), ns.Prefs()
 	if spf then
@@ -324,6 +325,11 @@ end
 -- itself when its guidance changes, on the next frame, so from login only the client's waypoint event is watched;
 -- an older one is noticed through the super-tracking events it registers, handled on the next frame once its own
 -- handler has run. Either way with the guide open or closed.
+-- Look again: follow the chosen journey, then tell the views.
+local function Look()
+	Follow()
+	Notify()
+end
 local events, eventPending = CreateFrame("Frame"), false
 events:RegisterEvent("SUPER_TRACKING_CHANGED")
 events:RegisterEvent("USER_WAYPOINT_UPDATED")
@@ -331,8 +337,7 @@ events:RegisterEvent("PLAYER_LOGIN")
 events:SetScript("OnEvent", function(_, event)
 	if event == "PLAYER_LOGIN" then
 		if Integrations.Subscribe(function()
-			Follow()
-			Notify()
+			ns.SafeCall("spf subscriber", Look)
 		end) then
 			events:UnregisterEvent("SUPER_TRACKING_CHANGED")
 		end
@@ -342,8 +347,7 @@ events:SetScript("OnEvent", function(_, event)
 		eventPending = true
 		C_Timer.After(0, function()
 			eventPending = false
-			Follow()
-			Notify()
+			Look()
 		end)
 	end
 end)

@@ -1714,13 +1714,13 @@
 ---@field version integer
 ---@field minor integer 1 from Subscribe
 ---@field Subscribe fun(callback: fun(changes: AGFAPIChanges)): fun() calls back the frame after the current stop or the journey changes, at most once per burst; returns the unsubscribe
+---@field CurrentStop fun(): AGFAPIStop?
+---@field NextStops fun(limit?: integer): AGFAPIStop[]?
 
 -- What changed since a Subscribe callback was last called; each field true or absent.
 ---@class AGFAPIChanges
 ---@field stop? true what CurrentStop answers changed (a stop appeared, moved on, changed or went)
 ---@field journey? true the journey the route follows changed, or was chosen or let go
----@field CurrentStop fun(): AGFAPIStop?
----@field NextStops fun(limit?: integer): AGFAPIStop[]?
 
 ---@class AGFGlobal
 ---@field API AGFAPI

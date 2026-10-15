@@ -2612,8 +2612,9 @@ function harness.load(options)
 				return not (h.spfRoute and h.spfRoute.owner == owner) and ended[owner] or nil
 			end)
 		end
-		-- "subscribe" (minor 1): Subscribe keeps each callback in h.spfSubscribers; h.spfNotify(changes) calls them
-		-- all, as Shortest Path does on the frame after its guidance changes.
+		-- "subscribe" (minor 1): Subscribe keeps each callback in h.spfSubscribers, and a journey starting, moving on
+		-- or ending calls them all on the next frame, once per burst, as Shortest Path does; h.spfNotify(changes) calls
+		-- them at once.
 		if options.spf == "subscribe" then
 			api.minor = 1
 			h.spfSubscribers = {}
@@ -2625,6 +2626,31 @@ function harness.load(options)
 				for _, callback in ipairs(h.spfSubscribers) do
 					h.call(callback, changes)
 				end
+			end
+			local burst
+			local function Changed(field)
+				if not burst then
+					burst = {}
+					G.C_Timer.After(0, function()
+						local changes = burst
+						burst = nil
+						h.spfNotify(changes)
+					end)
+				end
+				burst[field], burst.stop = true, true
+			end
+			local start, advance, finish = Start, h.spfAdvance, h.spfEnd
+			Start = function(owner, stops)
+				Changed(h.spfRoute and "changed" or "started")
+				return start(owner, stops)
+			end
+			function h.spfAdvance()
+				advance()
+				Changed("changed")
+			end
+			function h.spfEnd(reason)
+				finish(reason)
+				Changed("ended")
 			end
 		end
 		G.ShortestPathForever = { API = api }
