@@ -30,20 +30,41 @@ local function Gather()
 end
 ns.OnRouteChange(Gather)
 
--- A creature's GUID is "Creature-0-server-instance-zone-entry-spawn"; players, pets and objects have none here.
+-- A creature's GUID is "Creature-0-server-instance-zone-entry-spawn" ("Vehicle-..." for one that carries a rider);
+-- players, pets and objects have none here. A secret or missing GUID reads as no entry (docs/design.md §2.23).
 ---@param guid? string
 ---@return integer?
 local function Entry(guid)
-	return guid and tonumber(guid:match("^Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)%-%x+$"))
+	guid = ns.Readable(guid)
+	if type(guid) ~= "string" then
+		return nil
+	end
+	local kind, entry = guid:match("^(%a+)%-%d+%-%d+%-%d+%-%d+%-(%d+)%-%x+$")
+	return (kind == "Creature" or kind == "Vehicle") and tonumber(entry) or nil
 end
 
+-- The unit's GUID: the tooltip data's own, else the GUID of the unit the tooltip shows. Either may be secret.
 ---@param tooltip GameTooltip
-TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, function(tooltip)
-	if not journey then
+---@param data? {guid?: string}
+---@return string?
+local function Guid(tooltip, data)
+	local guid = ns.Readable(data and data.guid)
+	if guid then
+		return guid
+	end
+	local unit = ns.Readable((select(2, tooltip:GetUnit())))
+	return unit and ns.Readable(UnitGUID(unit))
+end
+
+-- A forbidden tooltip is never read or drawn on, and a unit or GUID the client keeps secret reads as no unit: the hover
+-- shows nothing of ours rather than raising an error.
+---@param tooltip GameTooltip
+---@param data? {guid?: string}
+TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, function(tooltip, data)
+	if not journey or not ns.Usable(tooltip) then
 		return
 	end
-	local _, unit = tooltip:GetUnit()
-	local entry = unit and Entry(UnitGUID(unit))
+	local entry = Entry(Guid(tooltip, data))
 	if entry and npcs[entry] then
 		GameTooltip_AddNormalLine(tooltip, ns.L.NPC_JOURNEY:format(journey))
 	end
