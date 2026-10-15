@@ -20,7 +20,7 @@ No embedded libraries ship.
 
 | Input | Used for | Licence |
 |---|---|---|
-| [QuestieDB](https://github.com/Questie/QuestieDB) and Questie, installed by the player | Quest records, NPC places and towns (WFA-2 and WFA-28 in `AGENTS.md`) | No licence; nothing is copied |
+| [QuestieDB](https://github.com/Questie/QuestieDB) and Questie, installed by the player | Quest records, NPC places and towns (WFA-2 and WFA-28 in `AGENTS.md`) | QuestieDB carries no licence; nothing is copied |
 | AtlasLoot Classic, if installed | Dungeon loot in the Dungeons tab | Its own; nothing is copied |
 | Shortest Path Forever, if installed | Routes to each step, through its public API | GPL-3.0-or-later |
 
@@ -32,10 +32,9 @@ No embedded libraries ship.
 | [Blizzard UI source](https://github.com/Gethe/wow-ui-source) | The native tracker integration spec, fetched into `tools/.cache/` | `REVISION` in `tools/fetch_tracker_ui.py` | Blizzard Entertainment's; fetched, never committed |
 | Shortest Path Forever types and source | The API contract spec and the map screenshots | `SPF_SHA` in `tests/contract_spec.lua` and `tools/screenshots_spf.py` | GPL-3.0-or-later |
 | [Ketho's WoW API annotations](https://github.com/Ketho/vscode-wow-api) | lua-language-server types in `tools/typecheck.sh` | `revision` in `tools/typecheck.sh` | MIT |
-| [forever_tools](https://github.com/cjber/skills/tree/main/wow-forever-addon/tooling) | Shared lints, release checks and the generated-data gate, vendored in `tools/forever_tools/` | `revision` in `tools/forever_tools/MANIFEST.json` | MIT |
-| [wow-mock-screenshots](https://github.com/cjber/skills/tree/main/wow-mock-screenshots) and the client art it fetches | `tools/screenshots.py` | `WOWMOCK`; its sha256 in the `tools/screenshots.py` docstring; art at `BUILD` | MIT; the art is Blizzard Entertainment's |
-| AtlasLoot Classic data | Loot in the screenshots (`tools/screenshot_loot.lua`) | A local install (`AGF_ATLASLOOT`) | Its own; read locally, never committed |
+| [forever_tools](https://github.com/cjber/skills/tree/main/wow-forever-addon/tooling/forever_tools) | Shared lints, release checks and the generated-data gate, vendored in `tools/forever_tools/` | `revision` in `tools/forever_tools/MANIFEST.json` | MIT |
+| [wow-mock-screenshots](https://github.com/cjber/skills/tree/main/wow-mock-screenshots) and the client art it fetches | `tools/screenshots.py` | `WOWMOCK` (a local checkout); the art at `BUILD` in `tools/gen_quests.py` | MIT; the art is Blizzard Entertainment's |
+| AtlasLoot Classic data | Loot in the screenshots (`tools/screenshot_loot.lua`) | A local install (`AGF_ATLASLOOT`) | Its own; only `docs/screenshots/loot.png`, which shows the items it lists, is committed |
 | sift gate | `.sift/gate.py` and `.sift/agents.py` in CI | Vendored by `sift setup` | MIT (`.sift/LICENSE`) |
 
-CI tools (StyLua, ruff, luacheck, lua-language-server, actionlint, zizmor, gitleaks, the BigWigs packager) are pinned in
-`.github/workflows/` and `tools/typecheck.sh`; they build and check the addon and are never part of it.
+CI tools (StyLua, ruff, luacheck, lua-language-server, actionlint, zizmor, gitleaks, the BigWigs packager) are pinned in `.github/workflows/` and `tools/typecheck.sh`, except luajit and luacheck, which come from the runner's apt; they build and check the addon and are never part of it.
