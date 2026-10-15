@@ -171,6 +171,9 @@ ns.L = {
 	-- A quest the route leaves out joins it with a shift-click, in the search or on the map, and leaves the same way.
 	SHIFT_ADD = "Shift-click to add it to your route",
 	SHIFT_REMOVE = "Shift-click to take it off your route",
+	STARTS_WITH = "Starts with %s",
+	SHIFT_ADD_START = "Shift-click to add that quest to your route",
+	SHIFT_REMOVE_START = "Shift-click to take that quest off your route",
 	-- With no card chosen the guide shows every card whole (docs/design.md §2.1); the header's back arrow goes back to
 	-- that overview.
 	ALL_SUGGESTIONS = "All suggestions",

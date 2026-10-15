@@ -600,6 +600,36 @@ function Model.Hard(quest, player)
 end
 local Hard = Model.Hard
 
+-- Where a locked quest's chain starts for the player (docs/design.md §2.4): the earliest of its prerequisites, deepest
+-- first in the data's order (all-of, then one-of), that is open now and not orange or red. Nil when none is, or when
+-- what locks the quest is no prerequisite (a level, a side, a skill). Never a quest the eligibility rule rejects.
+---@return integer?
+function Model.ChainStart(data, player, completed, log, questID)
+	local groups, seen = Index(data).groups, {}
+	local function Start(id, depth)
+		local quest = data.quests[id]
+		if not quest or seen[id] or depth > 30 then
+			return nil
+		end
+		seen[id] = true
+		for _, list in ipairs({ quest.pre or NONE, quest.preAny or NONE }) do
+			for _, pre in ipairs(list) do
+				if not completed[pre] and not log[pre] then
+					local found = Start(pre, depth + 1)
+					if found then
+						return found
+					end
+					local before = data.quests[pre]
+					if before and Eligible(data, player, completed, log, pre, groups) and not Hard(before, player) then
+						return pre
+					end
+				end
+			end
+		end
+	end
+	return Start(questID, 0)
+end
+
 -- Every quest giver on `mapID` with a quest the player can take now, one entry per NPC or object, like the
 -- game's own "!". Gray quests stay hidden, as the game hides them unless low-level tracking is on. An orange or red
 -- quest shows but is not among the giver's `adds`, since no route takes it.
