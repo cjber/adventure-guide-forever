@@ -260,6 +260,7 @@ function State.Player()
 		primaries = primaries,
 		reputation = State.Reputation,
 		battlegrounds = State.Battlegrounds(),
+		notOffered = ns.Offers and ns.Offers.NotOffered(UnitLevel("player")) or nil,
 	}
 end
 

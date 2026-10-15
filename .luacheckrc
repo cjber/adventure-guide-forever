@@ -65,6 +65,11 @@ read_globals = {
 	"UnitOnTaxi",
 	-- SafeCall.lua
 	"debugstack",
+	-- Offers.lua
+	"C_GossipInfo",
+	"GetNumAvailableQuests",
+	"GetAvailableTitle",
+	"GetAvailableQuestInfo",
 	-- State.lua
 	"GetUnitSpeed",
 	"canaccessvalue",

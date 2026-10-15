@@ -56,6 +56,8 @@ local PREFS_DEFAULTS = {
 	previewGroups = {},
 	-- Quests added to the route with a shift-click: quest ID -> true.
 	pinned = {},
+	-- Route pickups their giver's window left out (Offers.lua): quest ID -> the level the player was then.
+	notOffered = {},
 }
 
 ---@type table<string, any>?
@@ -139,6 +141,11 @@ local function LoadCharDB()
 	for id, value in pairs(loaded.pinned) do
 		if type(id) ~= "number" or value ~= true then
 			loaded.pinned[id] = nil
+		end
+	end
+	for id, level in pairs(loaded.notOffered) do
+		if type(id) ~= "number" or type(level) ~= "number" then
+			loaded.notOffered[id] = nil
 		end
 	end
 	-- Asides turned down: key -> the text Show again names it by. Asides.lua makes the table; anything else in it would

@@ -325,6 +325,8 @@ local function Check(data, player, completed, log, id, groups, lines, names)
 		return false
 	elseif quest.repeatable and not Line(data, lines, false, "WHY_REPEATABLE") then
 		return false
+	elseif player.notOffered and player.notOffered[id] and not Line(data, lines, false, "WHY_NOT_OFFERED") then
+		return false
 	end
 	-- Each line below is written only when unmet (the planner stops there) or when Why asks and it says something.
 	local met = quest.side == 3 or quest.side == player.side

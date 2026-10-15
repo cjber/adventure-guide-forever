@@ -2118,6 +2118,26 @@ function harness.load(options)
 	function G.GameTooltip:GetUnit()
 		return self.unitName, self.unit
 	end
+	-- Talking to an NPC (Offers.lua): `guid` becomes the "npc" unit's, and `event` opens its window, GOSSIP_SHOW with
+	-- `offered` as C_GossipInfo.GetAvailableQuests' {questID, title} entries, QUEST_GREETING with `offered` as the
+	-- titles GetAvailableTitle gives (and no IDs, as on a client without GetAvailableQuestInfo).
+	G.C_GossipInfo = {
+		GetAvailableQuests = function()
+			return h.gossipOffered or {}
+		end,
+	}
+	G.GetNumAvailableQuests = function()
+		return #(h.greetingOffered or {})
+	end
+	G.GetAvailableTitle = function(index)
+		return (h.greetingOffered or {})[index]
+	end
+	function h.Talk(guid, event, offered)
+		guids.npc = guid
+		h.gossipOffered = event == "GOSSIP_SHOW" and offered or nil
+		h.greetingOffered = event == "QUEST_GREETING" and offered or nil
+		h.fire(event)
+	end
 	-- The mouseover unit's tooltip, as the client builds it for `guid`; its lines land in h.tooltip.
 	function h.HoverUnit(guid)
 		G.GameTooltip:SetOwner(G.UIParent, "ANCHOR_CURSOR")

@@ -97,6 +97,11 @@ abandons quests.
   wrapper, `ns.SafeCall`, which keeps the last five and still passes each to the game's error handler. The pattern and
   how to port it are in [report-window.md](report-window.md).
 
+- **2.25 What a giver offers.** A route pickup its giver's gossip or greeting window leaves out, and that isn't grey
+  for the player, is marked not offered at the player's level: unproven, with the Why line "The giver didn't offer
+  it", one quiet chat line, and off the route. A listed quest, a window the guide can't read whole, another NPC's or a
+  single quest's detail window marks nothing. A level-up or any turn-in clears the marks (`Core/Offers.lua`).
+
 ### Guide navigation
 
 The world-map sidebar is the guide. Folded sections show two Continue journeys and one journey per other
