@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Quests with two kill or two collect objectives keep the right one on the route.** When the quest log listed them in a different order from the quest data (The Guns of Northwatch, for one), the guide paired them up by position. Kill Smythe first and his area stayed on the route while Fairmount's dropped off. It now matches each objective by the NPC or item it names, and only uses position when there's no name to go on.
+
 ## [0.12.2] - 2026-10-15
 
 - **Finished quests catch up without a /reload.** The guide read your finished quests once per session and then only counted the ones you handed in, so a quest the game closed some other way (a breadcrumb or the other branch of a chain) stayed on the route until you reloaded. It now reads them again after each hand-in and at every loading screen, and if the game has no answer at login it keeps asking instead of staying on "Loading".

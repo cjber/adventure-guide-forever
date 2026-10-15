@@ -202,9 +202,53 @@ local EXPLORE_SLOT = 16
 local SLOTS = { monster = { 0, 3 }, object = { 0, 3 }, item = { 4, 7 }, event = { EXPLORE_SLOT, EXPLORE_SLOT } }
 Model.EXPLORE_SLOT = EXPLORE_SLOT
 
+-- Whether `slot` can take a client objective of `kind`: in the kind's slot range and, where the data types its
+-- slots, of that type.
+---@param quest AGFQuest
+---@param slot integer
+---@param kind string
+---@return boolean
+local function Fits(quest, slot, kind)
+	local range = SLOTS[kind]
+	return range ~= nil and slot >= range[1] and slot <= range[2] and (not quest.kinds or quest.kinds[slot] == kind)
+end
+
+-- The slot whose name the client's words for `objective` hold, among the free slots it fits: the longest name found
+-- wins, so "Defias Pillager slain" picks the Pillager over a plain "Defias". nil when no name is found, or two slots
+-- tie on it. Plain, case-insensitive matching, in the client's language on both sides.
+---@param quest AGFQuest
+---@param slots integer[]
+---@param used table<integer, true>
+---@param objective AGFLogObjective
+---@return integer?
+local function Named(quest, slots, used, objective)
+	local names, text = quest.names, objective.text
+	if not names or type(text) ~= "string" or text == "" then
+		return nil
+	end
+	text = text:lower()
+	local best, length, tied
+	for _, slot in ipairs(slots) do
+		if not used[slot] and Fits(quest, slot, objective.type) then
+			for _, name in ipairs(names[slot] or NONE) do
+				if #name > 0 and text:find(name:lower(), 1, true) then
+					if not best or #name > length then
+						best, length, tied = slot, #name, false
+					elseif #name == length and slot ~= best then
+						tied = true
+					end
+				end
+			end
+		end
+	end
+	return not tied and best or nil
+end
+
 -- The data's need slots still open for a quest under way, each to the client's objective for it. The client's
 -- objectives line up with the slots only when it lists as many as the data needs and each kind fills a slot of its
--- own; otherwise every slot counts as open, to `true`, and the second return is false.
+-- own; otherwise every slot counts as open, to `true`, and the second return is false. Where two slots share a type,
+-- an objective goes to the slot whose NPC or item name its words hold (quest.names); the rest take the first free
+-- slot of their type, in order.
 ---@param quest AGFQuest
 ---@param entry AGFLogQuest
 ---@return table<integer, AGFLogObjective|true>, boolean aligned
@@ -218,17 +262,17 @@ local function OpenSlots(quest, entry)
 		return open, false
 	end
 	table.sort(slots)
-	local aligned, used = {}, {}
-	for _, objective in ipairs(objectives) do
-		local range, slot = SLOTS[objective.type], nil
-		for _, candidate in ipairs(range and slots or NONE) do
-			if
-				not slot
-				and not used[candidate]
-				and candidate >= range[1]
-				and candidate <= range[2]
-				and (not quest.kinds or quest.kinds[candidate] == objective.type)
-			then
+	local aligned, used, placed = {}, {}, {}
+	for index, objective in ipairs(objectives) do
+		local slot = Named(quest, slots, used, objective)
+		if slot then
+			used[slot], placed[index] = true, slot
+		end
+	end
+	for index, objective in ipairs(objectives) do
+		local slot = placed[index]
+		for _, candidate in ipairs(slot == nil and slots or NONE) do
+			if not slot and not used[candidate] and Fits(quest, candidate, objective.type) then
 				slot = candidate
 			end
 		end
