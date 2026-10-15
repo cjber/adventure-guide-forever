@@ -20,7 +20,12 @@ local WIDTH, HEIGHT = 460, 380
 local Report = {}
 ns.Report = Report
 
----@type Frame?
+-- PortraitFrameTemplate's own members this file uses (Mainline/SharedUIPanelTemplates.xml).
+---@class AGFReportWindow : Frame
+---@field SetTitle fun(self: AGFReportWindow, title: string)
+---@field GetPortrait fun(self: AGFReportWindow): Texture
+
+---@type AGFReportWindow?
 local window
 ---@type EditBox
 local editBox
@@ -144,12 +149,12 @@ local function Select(edit)
 	edit:HighlightText()
 end
 
----@return Frame
+---@return AGFReportWindow
 local function Window()
 	if window then
 		return window
 	end
-	local frame = CreateFrame("Frame", nil, UIParent, "PortraitFrameTemplate")
+	local frame = CreateFrame("Frame", nil, UIParent, "PortraitFrameTemplate") --[[@as AGFReportWindow]]
 	frame:SetSize(WIDTH, HEIGHT)
 	frame:SetPoint("CENTER")
 	frame:SetFrameStrata("DIALOG")
