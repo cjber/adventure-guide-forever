@@ -135,6 +135,19 @@ do
 	equal(#h.errors, 0, "listed: errors\n" .. table.concat(h.errors, "\n"))
 end
 
+-- A quest grey for the player is never marked: the window may hide low-level quests.
+do
+	local h = Load()
+	local id, npc = Pickup(h)
+	local quest = h.ns.Data.quests[id]
+	local level = quest.level
+	quest.level = h.player.level - 12
+	h.Talk(Creature(npc), "GOSSIP_SHOW", {})
+	h.flush()
+	equal(h.ns.Prefs().notOffered[id], nil, "grey: not marked")
+	quest.level = level
+end
+
 -- A mark from another level doesn't count: the planner's player carries only this level's.
 do
 	local h = Load()

@@ -427,6 +427,7 @@ local function SimpleOpen(quest, player, completed, log, id)
 		and not quest.preAny
 		and not quest.group
 		and not quest.breadcrumb
+		and not (player.notOffered and player.notOffered[id])
 end
 
 function Model.Eligible(data, player, completed, log, questID)
