@@ -332,7 +332,6 @@
 ---@field Hard fun(quest: AGFQuest, player: AGFPlayer): boolean above the chosen quest level ceiling
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
 ---@field Why fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer, names?: AGFWhyNames): AGFWhyLine[] every requirement, met or not; eligible exactly when all are met
----@field Fold fun(text: string): string lower-cased with Latin accents folded, for search matching
 ---@field Search fun(data: AGFData, player: AGFPlayer, query: string, title?: (fun(questID: integer): string?), completed?: table<integer, boolean>, log?: table<integer, AGFLogQuest>): integer[] up to 10 quest IDs whose title holds every word of `query`, best match first
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
 ---@field Story fun(data: AGFData, questID: integer): AGFStory? the chain the quest belongs to; nil when it is in none, or the way back forks

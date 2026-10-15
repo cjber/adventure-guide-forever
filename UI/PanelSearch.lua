@@ -122,13 +122,19 @@ local function QuestTitle(questID)
 	return title
 end
 
+---@class AGFSearchRead
+---@field player AGFPlayer
+---@field completed table<integer, boolean>
+---@field log table<integer, AGFLogQuest>
+
 -- One result from `top` down. A quest the player can take now is a plain row, starred once added to the route; a locked
 -- one gets the lock and its lines, unmet first. No ring and no Go: the search explains, and adds with a shift-click.
 ---@param row AGFSearchRow
 ---@param id integer
 ---@param top number
+---@param read AGFSearchRead one read of the client for every row
 ---@return number top below it
-local function RefreshResult(row, id, top)
+local function RefreshResult(row, id, top, read)
 	local state, data = ns.State, ns.Data
 	local names = {
 		title = QuestTitle,
@@ -138,8 +144,8 @@ local function RefreshResult(row, id, top)
 		faction = state.FactionName,
 		standing = state.StandingName,
 	}
-	local player = state.Player()
-	local why = ns.Model.Why(data, player, state.Completed(), state.Log(), id, names)
+	local player = read.player
+	local why = ns.Model.Why(data, player, read.completed, read.log, id, names)
 	local shown = {}
 	for _, met in ipairs({ false, true }) do
 		for _, line in ipairs(why) do
@@ -182,14 +188,16 @@ end
 ---@return integer found
 function Search.Layout(query)
 	local state = ns.State
-	local found = query
-			and ns.Model.Search(ns.Data, state.Player(), query, state.QuestTitle, state.Completed(), state.Log())
-		or {}
+	local found, read = {}, nil
+	if query then
+		read = { player = state.Player(), completed = state.Completed(), log = state.Log() }
+		found = ns.Model.Search(ns.Data, read.player, query, state.QuestTitle, read.completed, read.log)
+	end
 	local top = 0
 	for index, row in ipairs(results) do
 		row:SetShown(found[index] ~= nil)
-		if found[index] then
-			top = RefreshResult(row, found[index], top)
+		if read and found[index] then
+			top = RefreshResult(row, found[index], top, read)
 		end
 	end
 	return top, #found

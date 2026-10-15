@@ -2097,58 +2097,94 @@ equal(ns.Data.skills[197].name, "Tailoring", "data: skill names")
 -- F5 search: the player's side and both sides, a plain case-insensitive title match, best match first (a title
 -- starting with the query, then the query starting a word, then anywhere), then title and ID, 10 at most; the client's
 -- title wins over the data's.
-local wolves = { quests = {}, zones = {} }
-for id = 1, 14 do
-	wolves.quests[id] = quest()
-	wolves.quests[id].title = "Wolf pack"
-end
-wolves.quests[13].title, wolves.quests[13].side = "A wolf hunt", 1
-wolves.quests[14].title, wolves.quests[14].side = "Big wolf", 3
-wolves.quests[5].title = "Sheep"
-local found = Model.Search(wolves, player, "WOLF", function(id)
-	return id == 12 and "Aardwolf" or nil
-end)
-equal(table.concat(found, " "), "1 2 3 4 6 7 8 9 10 11", "search: side, prefix tier first and limit")
-for id = 2, 11 do
-	wolves.quests[id].side = 1 -- the other side's: out of the search
-end
-found = Model.Search(wolves, player, "WOLF", function(id)
-	return id == 12 and "Aardwolf" or nil
-end)
-equal(table.concat(found, " "), "1 14 12", "search: prefix, then word start, then anywhere")
-equal(#Model.Search(wolves, player, "wolf."), 0, "search: plain, not a pattern")
-equal(#Model.Search(wolves, player, "   "), 0, "search: blank finds nothing")
+do
+	local wolves = { quests = {}, zones = {} }
+	for id = 1, 14 do
+		wolves.quests[id] = quest()
+		wolves.quests[id].title = "Wolf pack"
+	end
+	wolves.quests[13].title, wolves.quests[13].side = "A wolf hunt", 1
+	wolves.quests[14].title, wolves.quests[14].side = "Big wolf", 3
+	wolves.quests[5].title = "Sheep"
+	local found = Model.Search(wolves, player, "WOLF", function(id)
+		return id == 12 and "Aardwolf" or nil
+	end)
+	equal(table.concat(found, " "), "1 2 3 4 6 7 8 9 10 11", "search: side, prefix tier first and limit")
+	for id = 2, 11 do
+		wolves.quests[id].side = 1 -- the other side's: out of the search
+	end
+	found = Model.Search(wolves, player, "WOLF", function(id)
+		return id == 12 and "Aardwolf" or nil
+	end)
+	equal(table.concat(found, " "), "1 14 12", "search: prefix, then word start, then anywhere")
+	equal(#Model.Search(wolves, player, "wolf."), 0, "search: plain, not a pattern")
+	equal(#Model.Search(wolves, player, "   "), 0, "search: blank finds nothing")
 
--- Every word must appear, in any order; accents fold both ways; an exact title beats a longer one; within a tier a
--- quest open now, then the level nearest the player's, then the title.
-local ranked = { quests = {}, zones = {} }
-local function Add(id, title, level)
-	ranked.quests[id] = quest()
-	ranked.quests[id].title, ranked.quests[id].level = title, level or player.level
+	-- Every word must appear, in any order; accents fold both ways; an exact title beats a longer one; within a tier a
+	-- quest open now, then the level nearest the player's, then the title.
+	local ranked = { quests = {}, zones = {} }
+	local function Add(id, title, level)
+		ranked.quests[id] = quest()
+		ranked.quests[id].title, ranked.quests[id].level = title, level or player.level
+	end
+	Add(1, "The Defias Brotherhood")
+	Add(2, "Defias Brotherhood")
+	Add(3, "Brotherhood of Thieves")
+	Add(4, "Dûn Garok Dwarves")
+	Add(5, "Eclair Delivery")
+	Add(6, "Report to Dun Garok")
+	equal(table.concat(Model.Search(ranked, player, "brotherhood defias"), " "), "2 1", "search: every word, any order")
+	equal(table.concat(Model.Search(ranked, player, "Defias Brotherhood"), " "), "2 1", "search: the exact title first")
+	equal(table.concat(Model.Search(ranked, player, "dun garok"), " "), "4 6", "search: accents fold (Dûn)")
+	equal(table.concat(Model.Search(ranked, player, "ÉCLAIR"), " "), "5", "search: and on the query's side")
+	equal(#Model.Search(ranked, player, "defias thieves"), 0, "search: a missing word finds nothing")
+	equal(Model.Search(ranked, player, "defias  brotherhood")[1], 2, "search: extra spaces still find the exact title")
+	Add(10, "Mor'Ladim")
+	Add(11, "Aladim's Pack")
+	equal(
+		table.concat(Model.Search(ranked, player, "ladim"), " "),
+		"10 11",
+		"search: a word after punctuation starts a word"
+	)
+	Add(12, "Die Straße")
+	Add(13, "Cœur de Lion")
+	equal(Model.Search(ranked, player, "strasse")[1], 12, "search: ß folds to ss")
+	equal(Model.Search(ranked, player, "coeur")[1], 13, "search: œ folds to oe")
+	Add(7, "Wanted: Gnolls", player.level + 6)
+	Add(8, "Wanted: Gnolls", player.level + 1)
+	Add(9, "Wanted: Gnolls", player.level)
+	equal(table.concat(Model.Search(ranked, player, "gnolls"), " "), "9 8 7", "search: level nearest the player's")
+	Add(14, "Wanted: Gnolls", 0)
+	equal(
+		Model.Search(ranked, player, "gnolls")[1],
+		9,
+		"search: a level-0 quest counts as the player's level (ID decides)"
+	)
+	equal(Model.Search(ranked, player, "gnolls")[2], 14, "search: and sorts beside it")
+	ranked.quests[14] = nil
+	ranked.quests[7].side = player.side
+	local noLog, noneCompleted = {}, {}
+	ranked.quests[9].pre = { 999 } -- not open yet
+	equal(
+		table.concat(Model.Search(ranked, player, "gnolls", nil, noneCompleted, noLog), " "),
+		"8 9 7",
+		"search: open now before a locked one; a quest too hard for now (7, red) is not open"
+	)
+	-- Questie's live policy is asked about the best 30 text matches at most, however many match.
+	local asked, many = 0, { quests = {}, zones = {} }
+	for id = 1, 200 do
+		many.quests[id] = quest()
+		many.quests[id].title, many.quests[id].provider = "Kobold Camp", true
+	end
+	local live = setmetatable({
+		questAvailable = function()
+			asked = asked + 1
+			return true
+		end,
+	}, { __index = player })
+	equal(#Model.Search(many, live, "kobold", nil, noneCompleted, noLog), 10, "search: ten of many")
+	equal(asked <= 30, true, "search: the live policy asked about 30 at most, not " .. asked)
 end
-Add(1, "The Defias Brotherhood")
-Add(2, "Defias Brotherhood")
-Add(3, "Brotherhood of Thieves")
-Add(4, "Dûn Garok Dwarves")
-Add(5, "Eclair Delivery")
-Add(6, "Report to Dun Garok")
-equal(table.concat(Model.Search(ranked, player, "brotherhood defias"), " "), "2 1", "search: every word, any order")
-equal(table.concat(Model.Search(ranked, player, "Defias Brotherhood"), " "), "2 1", "search: the exact title first")
-equal(table.concat(Model.Search(ranked, player, "dun garok"), " "), "4 6", "search: accents fold (Dûn)")
-equal(table.concat(Model.Search(ranked, player, "ÉCLAIR"), " "), "5", "search: and on the query's side")
-equal(#Model.Search(ranked, player, "defias thieves"), 0, "search: a missing word finds nothing")
-Add(7, "Wanted: Gnolls", player.level + 6)
-Add(8, "Wanted: Gnolls", player.level + 1)
-Add(9, "Wanted: Gnolls", player.level)
-equal(table.concat(Model.Search(ranked, player, "gnolls"), " "), "9 8 7", "search: level nearest the player's")
-ranked.quests[7].side = player.side
-local noLog, noneCompleted = {}, {}
-ranked.quests[9].pre = { 999 } -- not open yet
-equal(
-	table.concat(Model.Search(ranked, player, "gnolls", nil, noneCompleted, noLog), " "),
-	"8 7 9",
-	"search: open now before a locked one"
-)
 -- The nearest trainer who teaches the spells, from Data.npcs, by the route's cost.
 local function Nearest(side, classBit, map, x, y, level)
 	local npc = Model.Trainer(ns.Data, { side = side, classBit = classBit, map = map, x = x, y = y }, level)
