@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The guide's quest search puts the best match first.** It used to list every title containing what you typed in alphabetical order and stop at ten, so the quest you meant could be cut off. Now a title that starts with your words comes first, then titles with a word starting that way, then the rest; within those, quests you can take now, then those nearest your level. You can type the words in any order, and "dun garok" finds "Dûn Garok".
+
 - **Hovering an NPC in combat or an instance can no longer raise an error.** The "Adventure guide" line on a unit's tooltip read the unit's ID straight away, but the game can keep that ID hidden from addons. The guide now checks first and quietly leaves its line out when it can't read the ID, and it leaves protected tooltips alone.
 
 - **Quests with two kill or two collect objectives keep the right one on the route.** When the quest log listed them in a different order from the quest data (The Guns of Northwatch, for one), the guide paired them up by position. Kill Smythe first and his area stayed on the route while Fairmount's dropped off. It now matches each objective by the NPC or item it names, and only uses position when there's no name to go on.
