@@ -53,7 +53,7 @@ local function Guid(tooltip, data)
 		return guid
 	end
 	local unit = ns.Readable((select(2, tooltip:GetUnit())))
-	return unit and UnitGUID(unit)
+	return unit and ns.Readable(UnitGUID(unit))
 end
 
 -- A forbidden tooltip is never read or drawn on, and a unit or GUID the client keeps secret reads as no unit: the hover
