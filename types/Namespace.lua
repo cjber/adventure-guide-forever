@@ -1289,6 +1289,7 @@
 ---@field Advice fun(data: AGFData, player: AGFPlayer, steps: AGFStep[], bind?: string, locale?: string): AGFAside?
 
 ---@class AGFModel
+---@field TownArrow fun(data: AGFData, player: AGFPlayer|AGFPosition|{map: integer, x: number, y: number}, rows: AGFTownGiver[], current?: {map: integer, x: number, y: number}): AGFPlace? the giver a town visit's arrow points at, with the switch margin
 ---@field SWITCH_YARDS number how much nearer another town giver must be before the arrow leaves the one it points at
 ---@field TownChecklist fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, step: AGFStep, previous?: AGFStep, skipped?: table<string, boolean>)
 ---@field Visit fun(step: AGFStep): string the visit's identity: `orderKey`, else `key`

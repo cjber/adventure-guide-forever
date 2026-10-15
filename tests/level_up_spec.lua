@@ -29,10 +29,14 @@ equal(State.Level(), before + 1, "caught up")
 h.player.level = before
 equal(State.Level(), before, "the event's level is forgotten once UnitLevel reached it")
 
--- An event with no level changes nothing.
+-- An event with no level keeps the one announced before it; a loading screen forgets a stale announcement.
+h.fire("PLAYER_LEVEL_UP", before + 2)
 h.fire("PLAYER_LEVEL_UP")
 h.flush()
-equal(State.Level(), before, "no payload: UnitLevel")
+equal(State.Level(), before + 2, "no payload: the earlier announcement stands")
+h.fire("PLAYER_ENTERING_WORLD", false)
+h.flush()
+equal(State.Level(), before, "a loading screen: UnitLevel again")
 equal(#h.errors, 0, "errors\n" .. table.concat(h.errors, "\n"))
 
 print(("level_up_spec: %d checks passed"):format(checks))

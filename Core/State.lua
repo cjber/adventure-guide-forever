@@ -606,7 +606,10 @@ end
 -- The first argument is PLAYER_ENTERING_WORLD's isInitialLogin, and QUEST_TURNED_IN's and QUEST_WATCH_UPDATE's questID.
 local function OnEvent(_, event, arg)
 	if event == "PLAYER_LEVEL_UP" then
-		announced = tonumber(arg)
+		announced = tonumber(arg) or announced
+	elseif event == "PLAYER_ENTERING_WORLD" then
+		-- A loading screen settles the client's level: a stale announcement never outlives it.
+		announced = nil
 	end
 	if event == "QUEST_TURNED_IN" then
 		ns.Sound.ClientEvent()

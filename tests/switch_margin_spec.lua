@@ -34,17 +34,17 @@ end
 local step = Step()
 Model.TownChecklist(data, Player(0.45), {}, {}, step, nil, nil)
 equal(Point(step), "A", "first: the nearest")
--- Just past halfway, B is a little nearer: the arrow stays on A.
+-- Past halfway by `share` of the way, B is 2 * share * apart yards nearer than A; `edge` is the share at which that
+-- gap is exactly SWITCH_YARDS. Just short of it the arrow stays on A; just past it B takes the arrow.
 local previous = step
-local margin = Model.SWITCH_YARDS / apart -- the share of the way that makes SWITCH_YARDS
+local edge = Model.SWITCH_YARDS / apart / 2
 step = Step()
-Model.TownChecklist(data, Player(0.5 + margin / 4), {}, {}, step, previous, nil)
-equal(Point(step), "A", "a little nearer: kept")
--- Far enough that B is more than SWITCH_YARDS nearer: it takes the arrow.
+Model.TownChecklist(data, Player(0.5 + edge * 0.9), {}, {}, step, previous, nil)
+equal(Point(step), "A", "just under SWITCH_YARDS nearer: kept")
 previous = step
 step = Step()
-Model.TownChecklist(data, Player(0.5 + margin), {}, {}, step, previous, nil)
-equal(Point(step), "B", "SWITCH_YARDS nearer: switched")
+Model.TownChecklist(data, Player(0.5 + edge * 1.1), {}, {}, step, previous, nil)
+equal(Point(step), "B", "just over SWITCH_YARDS nearer: switched")
 -- Once A's work is done, B takes the arrow at once, however close the two are.
 step = Step()
 previous = { map = MAP, x = A.x, y = A.y, checklist = {} }
