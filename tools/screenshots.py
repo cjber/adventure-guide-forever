@@ -634,6 +634,12 @@ def render():
 def main():
     for path in render():
         print(path.relative_to(ROOT))
+    # What each image was drawn from, for CI's stale-screenshot check (tools/check_screenshots.py). Every image was
+    # just drawn, so one whose pixels came out the same is recorded too.
+    import check_screenshots
+    from forever_tools import screens
+
+    screens.record(OUT, check_screenshots.SCENES, force=True)
 
 
 if __name__ == "__main__":
