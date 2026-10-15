@@ -65,6 +65,8 @@ read_globals = {
 	"UnitOnTaxi",
 	-- Secret.lua
 	"canaccessvalue",
+	-- SafeCall.lua
+	"debugstack",
 	-- State.lua
 	"GetUnitSpeed",
 	"bit",

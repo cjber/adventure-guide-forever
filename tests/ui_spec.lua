@@ -2627,16 +2627,16 @@ do
 	equal(#h.fanfares, 0, "fanfare: no tracker glow when its section is hidden")
 end
 
--- Chat copy comes from ns.L: an unknown command prints the three help lines, in order.
+-- Chat copy comes from ns.L: an unknown command prints the help lines, in order.
 do
 	local h = Load(false)
 	local before = #h.prints
 	h.Slash("help")
 	local L = h.ns.L
-	for index, line in ipairs({ L.HELP_OPEN, L.HELP_AUDIT, L.HELP_DUMP, L.HELP_TRACKER }) do
+	for index, line in ipairs({ L.HELP_OPEN, L.HELP_REPORT, L.HELP_AUDIT, L.HELP_DUMP, L.HELP_TRACKER }) do
 		equal(h.prints[before + index]:sub(-#line), line, "L: help line " .. index)
 	end
-	equal(#h.prints, before + 4, "L: four help lines")
+	equal(#h.prints, before + 5, "L: five help lines")
 	-- Map names come from the client (C_Map.GetMapInfo), which the planner prefers over the data's English.
 	h.G.C_Map.GetMapInfo = function()
 		return { name = "Client Stormwind" }

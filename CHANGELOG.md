@@ -7,11 +7,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 Added/Fixed lists: what matters about a release is why the guide now sends you somewhere different.
 
 Each version's entry is also its release notes on GitHub, CurseForge and Wago. Older entries are kept
-verbatim rather than rewritten as the addon moves.
+verbatim rather than rewritten as the addon moves. API changes other addons' authors need go under an
+optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
 - **Hovering an NPC in combat or an instance can no longer raise an error.** The "Adventure guide" line on a unit's tooltip read the unit's ID straight away, but the game can keep that ID hidden from addons. The guide now checks first and quietly leaves its line out when it can't read the ID, and it leaves protected tooltips alone.
+
+- **`/agf report` gives you something to paste into a bug report.** It opens a small window with the text already selected: your addon and game versions, your character, the stop the guide is showing and why, the quest data version, your other addons, and any errors the guide caught this session. Press Ctrl+C and paste it. It fits in one message, and you don't need a /reload or a saved-variables file.
 
 ## [0.12.2] - 2026-10-15
 

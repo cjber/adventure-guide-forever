@@ -94,6 +94,12 @@ abandons quests.
   instance states) is read only through `ns.Readable` (`Core/Secret.lua`), which answers nil for a secret, and a
   forbidden tooltip only after `ns.Usable` says it may be touched. A secret reads as absent: the line it would have
   fed is left out, never guessed and never an error.
+- **2.24 Report.** `/agf report` shows one block of text, selected, in a stock portrait frame: the versions, build,
+  locale, character and place; the guide's settings, QuestieDB, the stop the tracker shows with each quest's ID and
+  Why lines; the errors caught this session; the other loaded addons. At most 2,000 characters (one message): the
+  addon's lines capped at 1,000 and the errors at 600, the addon list in what is left. It reads only the committed route and never builds one. Errors are caught through one
+  wrapper, `ns.SafeCall`, which keeps the last five and still passes each to the game's error handler. The pattern and
+  how to port it are in [report-window.md](report-window.md).
 
 ### Guide navigation
 
