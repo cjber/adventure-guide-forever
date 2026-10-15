@@ -41,6 +41,8 @@ function Model.Repaint(data, log, last)
 			copy = Copy(step) --[[@as AGFStep]]
 			copy.objectives = ns.Planner.Steps.LiveObjectives(data, log, step.objectives)
 			Tell(copy)
+			-- The title carries the counts too ("Freebooter slain: 5/6"), as the decoration writes it.
+			Model.StepTitle(data, log, copy)
 			painted[step] = copy
 		end
 		return copy
