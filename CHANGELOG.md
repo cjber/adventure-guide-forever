@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves.
 
 ## [Unreleased]
 
+- **Your quests stay below the Forever tracker with EllesmereUI and other UI suites.** When the game, Edit Mode or a UI addon put the quest tracker back in its saved spot, the Forever sections waited for the next quest event to restack, so your quests sat over them until then. The column now follows the quest tracker as soon as it moves, still without touching the game's own tracker code.
+
 - **A detached tracker with nothing to show leaves the screen.** Its "Forever tracker" title hides with the empty column and comes back, where you left it, as soon as a section has something to show.
 
 - **Finished quests catch up without a /reload.** The guide read your finished quests once per session and then only counted the ones you handed in, so a quest the game closed some other way (a breadcrumb or the other branch of a chain) stayed on the route until you reloaded. It now reads them again after each hand-in and at every loading screen, and if the game has no answer at login it keeps asking instead of staying on "Loading".
