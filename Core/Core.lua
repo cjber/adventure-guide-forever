@@ -66,8 +66,9 @@ local charDB
 -- next time the route is rebuilt from scratch.
 ---@type table<string, boolean>
 local sessionSkipped = {}
--- "Next spot" presses this session, by area step key (Model.Camp): never saved, so a reload starts at the nearest.
----@type table<string, integer>
+-- The spots "Next spot" passed over this session, by area step key (Model.Camp). The table rides on the prefs like
+-- `skipped` and is replaced at every load, so a reload starts at the nearest again.
+---@type table<string, table<string, true>>
 local sessionCamps = {}
 -- The same steps in the order they were skipped, with the titles the menu offers them back by.
 ---@type AGFSkipped[]
@@ -264,16 +265,18 @@ function ns.Prefs()
 	return charDB
 end
 
----@param key string
----@param title string
--- "Next spot" on an area step (docs/design.md §2.8): its point moves on to the next of its objective spots, nearest
--- first, round again after the last, for this session.
----@param key string
-function ns.NextCamp(key)
-	sessionCamps[key] = (sessionCamps[key] or 0) + 1
+-- "Next spot" on an area step (docs/design.md §2.8): the spot its arrow points at is passed over for this session,
+-- so the arrow moves to the nearest spot not passed over (Model.Camp).
+---@param step AGFStep
+function ns.NextCamp(step)
+	local passed = sessionCamps[step.key] or {}
+	passed[ns.Model.SpotKey(step)] = true
+	sessionCamps[step.key] = passed
 	ns.Invalidate()
 end
 
+---@param key string
+---@param title string
 function ns.Skip(key, title)
 	if key:sub(1, 6) == "guide:" then
 		if ns.RestedXP then

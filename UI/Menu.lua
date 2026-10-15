@@ -116,7 +116,7 @@ function Menu.Step(root, step)
 	-- An area with more than one spot: the next one, for a camp that's cleared or contested.
 	if step and step.kind == "area" and #ns.Model.Spots(step) > 1 and not step.here then
 		root:CreateButton(L.NEXT_CAMP, function()
-			ns.NextCamp(step.key)
+			ns.NextCamp(step)
 		end)
 	end
 	if step then

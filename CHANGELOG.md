@@ -12,7 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-- **"Next spot" when a camp is cleared or busy.** Right-click an objective step that has more than one place to do it, and "Next spot" moves the arrow to the next one. Keep pressing to work round them all. It resets when you /reload.
+- **"Next spot" when a camp is cleared or busy.** Right-click an objective step that has more than one place to do it, and "Next spot" moves the arrow to the next one. Keep pressing to work round them all. It forgets the spots you passed over when you /reload.
 
 - **The guide's quest search puts the best match first.** It used to list every title containing what you typed in alphabetical order and stop at ten, so the quest you meant could be cut off. Now a title that starts with your words comes first, then titles with a word starting that way, then the rest; within those, quests you can take now, then those nearest your level. You can type the words in any order, and "dun garok" finds "Dûn Garok".
 

@@ -17,7 +17,7 @@ local Model = ns.Model
 local data = harness.data()
 
 -- Model.Camp on a hand-made area: three spots east of the player, 1, 2 and 3 steps away; the planner chose the
--- middle one, so presses go on to the far one, round to the near one, and back to the middle.
+-- middle one.
 local MAP = 1429
 local function Shape(x)
 	return { map = MAP, x = x, y = 0.5, r = 20, slot = 0, objectives = {} }
@@ -27,18 +27,33 @@ local player = { map = MAP, x = 0.40, y = 0.5 }
 local function Area()
 	return { kind = "area", key = "area:1:0", map = MAP, x = middle.x, y = 0.5, shapes = { far, near, middle } }
 end
-for presses, expected in ipairs({ far, near, middle, far }) do
-	local step = Area()
-	Model.Camp(data, player, step, presses)
-	equal(step.x, expected.x, "camp: press " .. presses)
+local function Passed(...)
+	local passed = {}
+	for _, spot in ipairs({ ... }) do
+		passed[Model.SpotKey(spot)] = true
+	end
+	return passed
 end
+local function Camp(passed, at)
+	local step = Area()
+	if at then
+		step.x = at.x
+	end
+	Model.Camp(data, player, step, passed)
+	return step.x
+end
+equal(Camp(Passed()), middle.x, "camp: nothing passed over, the planner's spot")
+equal(Camp(Passed(middle)), near.x, "camp: the middle passed over, the nearest left")
+equal(Camp(Passed(middle, near)), far.x, "camp: then the far one")
+equal(Camp(Passed(middle, near, far)), near.x, "camp: all passed over, the nearest other spot")
+equal(Camp(Passed(middle), far), far.x, "camp: a spot not passed over keeps the arrow")
 local step = Area()
 step.here = true
-Model.Camp(data, player, step, 1)
+Model.Camp(data, player, step, Passed(middle))
 equal(step.x, middle.x, "camp: not while standing in the area")
 step = Area()
-step.shapes = { near, Shape(0.42) }
-Model.Camp(data, player, step, 1)
+step.shapes = { middle, Shape(0.46) }
+Model.Camp(data, player, step, Passed(middle))
 equal(step.x, middle.x, "camp: two objectives at one node are one spot, which stays")
 equal(#Model.Spots(step), 1, "spots: one distinct spot")
 
@@ -85,12 +100,20 @@ do
 		local key, before = area.key, area.x .. ":" .. area.y
 		menu.next()
 		h.flush()
-		local moved
-		for _, candidate in ipairs(h.ns.Route().steps) do
-			moved = moved or (candidate.key == key and candidate)
+		local function Find()
+			for _, candidate in ipairs(h.ns.Route().steps) do
+				if candidate.key == key then
+					return candidate
+				end
+			end
 		end
+		local moved = Find()
 		equal(moved ~= nil, true, "press: the step is still there")
-		equal(moved.x .. ":" .. moved.y ~= before, true, "press: its point moved")
+		local after = moved.x .. ":" .. moved.y
+		equal(after ~= before, true, "press: its point moved")
+		h.ns.Invalidate()
+		h.flush()
+		equal(Find().x .. ":" .. Find().y, after, "a rebuild: the new spot stays")
 	end
 	-- A town step has no Next spot.
 	local labels = {}

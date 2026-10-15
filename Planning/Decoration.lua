@@ -95,13 +95,20 @@ function Model.TownChecklist(data, player, completed, log, step, previous, skipp
 	end
 end
 
+-- A spot's identity, as "Next spot" remembers it: its map and point.
+---@param spot {map: integer, x: number, y: number}
+---@return string
+function Model.SpotKey(spot)
+	return ("%d:%.4f:%.4f"):format(spot.map, spot.x, spot.y)
+end
+
 -- An area step's distinct objective spots, in the data's order: two objectives at one node are one spot.
 ---@param step AGFStep
 ---@return AGFNode[]
 function Model.Spots(step)
 	local spots, seen = {}, {}
 	for _, shape in ipairs(step.shapes or NONE) do
-		local key = ("%d:%.4f:%.4f"):format(shape.map, shape.x, shape.y)
+		local key = Model.SpotKey(shape)
 		if not seen[key] then
 			seen[key], spots[#spots + 1] = true, shape
 		end
@@ -109,39 +116,34 @@ function Model.Spots(step)
 	return spots
 end
 
--- "Next spot" (docs/design.md §2.8): an area step's point moves `presses` spots on from the one the planner chose, in
--- order of distance from the player, nearest first, round again after the last; ties keep the data's order. Not while
--- the player stands in the area (its `here`), nor for a step with one spot.
+-- "Next spot" (docs/design.md §2.8): while the spot an area step points at is one the player passed over, its point
+-- moves to the nearest spot not passed over, by distance from the player; once every spot is passed over, to the
+-- nearest other than the one it points at. A spot not passed over keeps the arrow, so walking towards it, a combat
+-- rebuild or the planner choosing it again never moves it on. Not while the player stands in the area (its `here`),
+-- nor for a step with one spot.
 ---@param step AGFStep
----@param presses integer
-function Model.Camp(data, player, step, presses)
-	local shapes = Model.Spots(step)
-	if step.here or #shapes < 2 then
+---@param passed table<string, true> the spots passed over, by Model.SpotKey
+function Model.Camp(data, player, step, passed)
+	local spots = Model.Spots(step)
+	local current = Model.SpotKey(step)
+	if step.here or #spots < 2 or not passed[current] then
 		return
 	end
-	local order, yards = {}, {}
-	for index, shape in ipairs(shapes) do
-		order[index], yards[shape] = shape, Model.Yards(data, player, shape) or math.huge
-	end
-	local position = {}
-	for index, shape in ipairs(shapes) do
-		position[shape] = index
-	end
-	table.sort(order, function(a, b)
-		if yards[a] ~= yards[b] then
-			return yards[a] < yards[b]
+	local best, bestYards, fallback, fallbackYards
+	for _, spot in ipairs(spots) do
+		local key = Model.SpotKey(spot)
+		local yards = Model.Yards(data, player, spot) or math.huge
+		if not passed[key] and (not best or yards < bestYards) then
+			best, bestYards = spot, yards
 		end
-		return position[a] < position[b]
-	end)
-	-- From the spot the planner chose (the step's own point), on by `presses`.
-	local start = 1
-	for index, shape in ipairs(order) do
-		if shape.map == step.map and shape.x == step.x and shape.y == step.y then
-			start = index
+		if key ~= current and (not fallback or yards < fallbackYards) then
+			fallback, fallbackYards = spot, yards
 		end
 	end
-	local shape = order[(start - 1 + presses) % #order + 1]
-	step.map, step.x, step.y = shape.map, shape.x, shape.y
+	local spot = best or fallback
+	if spot then
+		step.map, step.x, step.y = spot.map, spot.x, spot.y
+	end
 end
 
 ---@param objective AGFAreaObjective
