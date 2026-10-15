@@ -95,6 +95,55 @@ function Model.TownChecklist(data, player, completed, log, step, previous, skipp
 	end
 end
 
+-- An area step's distinct objective spots, in the data's order: two objectives at one node are one spot.
+---@param step AGFStep
+---@return AGFNode[]
+function Model.Spots(step)
+	local spots, seen = {}, {}
+	for _, shape in ipairs(step.shapes or NONE) do
+		local key = ("%d:%.4f:%.4f"):format(shape.map, shape.x, shape.y)
+		if not seen[key] then
+			seen[key], spots[#spots + 1] = true, shape
+		end
+	end
+	return spots
+end
+
+-- "Next spot" (docs/design.md §2.8): an area step's point moves `presses` spots on from the one the planner chose, in
+-- order of distance from the player, nearest first, round again after the last; ties keep the data's order. Not while the
+-- player stands in the area (its `here`), nor for a step with one spot.
+---@param step AGFStep
+---@param presses integer
+function Model.Camp(data, player, step, presses)
+	local shapes = Model.Spots(step)
+	if step.here or #shapes < 2 then
+		return
+	end
+	local order, yards = {}, {}
+	for index, shape in ipairs(shapes) do
+		order[index], yards[shape] = shape, Model.Yards(data, player, shape) or math.huge
+	end
+	local position = {}
+	for index, shape in ipairs(shapes) do
+		position[shape] = index
+	end
+	table.sort(order, function(a, b)
+		if yards[a] ~= yards[b] then
+			return yards[a] < yards[b]
+		end
+		return position[a] < position[b]
+	end)
+	-- From the spot the planner chose (the step's own point), on by `presses`.
+	local start = 1
+	for index, shape in ipairs(order) do
+		if shape.map == step.map and shape.x == step.x and shape.y == step.y then
+			start = index
+		end
+	end
+	local shape = order[(start - 1 + presses) % #order + 1]
+	step.map, step.x, step.y = shape.map, shape.x, shape.y
+end
+
 ---@param objective AGFAreaObjective
 ---@return string?
 function Model.ObjectiveText(objective)
@@ -196,6 +245,8 @@ local function FinishRoute(data, player, completed, log, route, last, prefs)
 			step.orderKey = old and old.orderKey or identities[index]
 			if step.kind == "town" then
 				Model.TownChecklist(data, player, completed, log, step, old, prefs.skipped)
+			elseif step.kind == "area" and prefs.camps and prefs.camps[step.key] then
+				Model.Camp(data, player, step, prefs.camps[step.key])
 			end
 			Model.StepTitle(data, log, step)
 			if not step.complete then

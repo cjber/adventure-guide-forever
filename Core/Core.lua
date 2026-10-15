@@ -66,6 +66,9 @@ local charDB
 -- next time the route is rebuilt from scratch.
 ---@type table<string, boolean>
 local sessionSkipped = {}
+-- "Next spot" presses this session, by area step key (Model.Camp): never saved, so a reload starts at the nearest.
+---@type table<string, integer>
+local sessionCamps = {}
 -- The same steps in the order they were skipped, with the titles the menu offers them back by.
 ---@type AGFSkipped[]
 local skippedOrder = {}
@@ -255,6 +258,7 @@ function ns.Prefs()
 		charDB = prefs --[[@as AGFPrefs]]
 	end
 	charDB.skipped = sessionSkipped
+	charDB.camps = sessionCamps
 	-- The account-wide route-order setting, folded into the prefs the planner reads (Model.Laps, Model.Build).
 	charDB.optimisedRoute = ns.Setting("optimisedRoute") == true
 	return charDB
@@ -262,6 +266,14 @@ end
 
 ---@param key string
 ---@param title string
+-- "Next spot" on an area step (docs/design.md §2.8): its point moves on to the next of its objective spots, nearest
+-- first, round again after the last, for this session.
+---@param key string
+function ns.NextCamp(key)
+	sessionCamps[key] = (sessionCamps[key] or 0) + 1
+	ns.Invalidate()
+end
+
 function ns.Skip(key, title)
 	if key:sub(1, 6) == "guide:" then
 		if ns.RestedXP then

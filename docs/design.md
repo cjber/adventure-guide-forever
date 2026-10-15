@@ -40,7 +40,9 @@ abandons quests.
   stands in the current step's objective area, the world map shows that area's full outline in yellow, the minimap
   turns the game's own quest area gold, and the step's own pin and line step aside.
 - **2.7 Completion.** Record a proven story ending once per character and show a native-style popup with one completion sound. Tracker visibility does not affect it.
-- **2.8 Menus.** Share step actions between the guide and tracker.
+- **2.8 Menus.** Share step actions between the guide and tracker. An area with more than one objective spot offers
+  Next spot: its point moves on to the next spot by distance from the player, round again after the last, for the
+  session.
 - **2.9 Tooltips.** Explain visits and quest difficulty. Town checklists tick completed givers;
   repeated visits share a map ring.
 - **2.10 Lifecycle.** Keep the chosen journey through rebuilds, travel and reloads. Resume paused

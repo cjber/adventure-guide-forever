@@ -163,6 +163,7 @@
 ---@field npcs table<integer, AGFNpc>
 
 ---@class AGFPrefs
+---@field camps? table<string, integer> "Next spot" presses this session by area step key; never saved
 ---@field plannedDungeons table<integer, boolean>
 ---@field quests boolean
 ---@field dungeons boolean
@@ -506,6 +507,7 @@
 ---@field AUDIT_COUNTS string format: bundled, eligible and completed counts
 ---@field AUDIT_NOT_READY string
 ---@field HELP_OPEN string
+---@field NEXT_CAMP string a step menu's entry: move an area step on to its next objective spot
 ---@field HELP_AUDIT string
 ---@field HELP_DUMP string
 ---@field HELP_TRACKER string
@@ -724,6 +726,7 @@
 ---@field Guidance AGFGuidance
 ---@field Focus AGFFocus
 ---@field Print fun(msg: string)
+---@field NextCamp fun(key: string) "Next spot": move the area step `key` on to its next objective spot this session
 ---@field Readable fun(value: any): any `value`, or nil when the client keeps it secret (Core/Secret.lua)
 ---@field Usable fun(frame?: Frame): boolean false for nil and for a forbidden frame (Core/Secret.lua)
 ---@field SafeCall fun(label: string, fn: function, ...: any): boolean, ... run fn as pcall does, keeping a failure for the report and passing it to the error handler (Core/SafeCall.lua)
@@ -1288,6 +1291,8 @@
 ---@field Advice fun(data: AGFData, player: AGFPlayer, steps: AGFStep[], bind?: string, locale?: string): AGFAside?
 
 ---@class AGFModel
+---@field Spots fun(step: AGFStep): AGFNode[] an area step's distinct objective spots, in the data's order
+---@field Camp fun(data: AGFData, player: AGFPlayer, step: AGFStep, presses: integer) move an area step's point to its `presses`-th next spot, nearest first
 ---@field TownChecklist fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, step: AGFStep, previous?: AGFStep, skipped?: table<string, boolean>)
 ---@field Visit fun(step: AGFStep): string the visit's identity: `orderKey`, else `key`
 ---@field GiverSkip fun(step: AGFStep, giverKey: string): string the skipped key of one giver on a town visit

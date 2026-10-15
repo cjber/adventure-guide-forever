@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **"Next spot" when a camp is cleared or busy.** Right-click an objective step that has more than one place to do it, and "Next spot" moves the arrow to the next one. Keep pressing to work round them all. It resets when you /reload.
+
 - **Hovering an NPC in combat or an instance can no longer raise an error.** The "Adventure guide" line on a unit's tooltip read the unit's ID straight away, but the game can keep that ID hidden from addons. The guide now checks first and quietly leaves its line out when it can't read the ID, and it leaves protected tooltips alone.
 
 - **Quests with two kill or two collect objectives keep the right one on the route.** When the quest log listed them in a different order from the quest data (The Guns of Northwatch, for one), the guide paired them up by position. Kill Smythe first and his area stayed on the route while Fairmount's dropped off. It now matches each objective by the NPC or item it names, and only uses position when there's no name to go on.
