@@ -588,7 +588,7 @@ local function QueueResync()
 end
 
 -- The first argument is PLAYER_ENTERING_WORLD's isInitialLogin, and QUEST_TURNED_IN's and QUEST_WATCH_UPDATE's questID.
-events:SetScript("OnEvent", function(_, event, arg)
+local function OnEvent(_, event, arg)
 	if event == "QUEST_TURNED_IN" then
 		ns.Sound.ClientEvent()
 	elseif event == "QUEST_WATCH_UPDATE" and arg and C_QuestLog.IsComplete(arg) then
@@ -632,4 +632,7 @@ events:SetScript("OnEvent", function(_, event, arg)
 		ns.TurnedIn(arg)
 	end
 	Coalesce()
+end
+events:SetScript("OnEvent", function(self, event, arg)
+	ns.SafeCall("state event", OnEvent, self, event, arg)
 end)
