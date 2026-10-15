@@ -56,6 +56,8 @@ local PREFS_DEFAULTS = {
 	previewGroups = {},
 	-- Quests added to the route with a shift-click: quest ID -> true.
 	pinned = {},
+	-- Route pickups their giver's window left out (Offers.lua): quest ID -> the level the player was then.
+	notOffered = {},
 }
 
 ---@type table<string, any>?
@@ -69,6 +71,19 @@ local sessionSkipped = {}
 -- The same steps in the order they were skipped, with the titles the menu offers them back by.
 ---@type AGFSkipped[]
 local skippedOrder = {}
+
+-- A creature's entry from its GUID, "Creature-0-server-instance-zone-entry-spawn" ("Vehicle-..." for one that carries
+-- a rider); nil for players, pets, objects and a secret or missing GUID (docs/design.md §2.23).
+---@param guid? string
+---@return integer?
+function ns.CreatureEntry(guid)
+	guid = ns.Readable(guid)
+	if type(guid) ~= "string" then
+		return nil
+	end
+	local kind, entry = guid:match("^(%a+)%-%d+%-%d+%-%d+%-%d+%-(%d+)%-%x+$")
+	return (kind == "Creature" or kind == "Vehicle") and tonumber(entry) or nil
+end
 
 ---@param msg string
 function ns.Print(msg)
@@ -139,6 +154,11 @@ local function LoadCharDB()
 	for id, value in pairs(loaded.pinned) do
 		if type(id) ~= "number" or value ~= true then
 			loaded.pinned[id] = nil
+		end
+	end
+	for id, level in pairs(loaded.notOffered) do
+		if type(id) ~= "number" or type(level) ~= "number" then
+			loaded.notOffered[id] = nil
 		end
 	end
 	-- Asides turned down: key -> the text Show again names it by. Asides.lua makes the table; anything else in it would

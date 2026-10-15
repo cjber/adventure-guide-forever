@@ -67,6 +67,11 @@ read_globals = {
 	"canaccessvalue",
 	-- SafeCall.lua
 	"debugstack",
+	-- Offers.lua
+	"C_GossipInfo",
+	"GetNumAvailableQuests",
+	"GetAvailableTitle",
+	"GetAvailableQuestInfo",
 	-- State.lua
 	"GetUnitSpeed",
 	"bit",

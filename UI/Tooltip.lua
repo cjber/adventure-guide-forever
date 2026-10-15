@@ -30,18 +30,7 @@ local function Gather()
 end
 ns.OnRouteChange(Gather)
 
--- A creature's GUID is "Creature-0-server-instance-zone-entry-spawn" ("Vehicle-..." for one that carries a rider);
--- players, pets and objects have none here. A secret or missing GUID reads as no entry (docs/design.md §2.23).
----@param guid? string
----@return integer?
-local function Entry(guid)
-	guid = ns.Readable(guid)
-	if type(guid) ~= "string" then
-		return nil
-	end
-	local kind, entry = guid:match("^(%a+)%-%d+%-%d+%-%d+%-%d+%-(%d+)%-%x+$")
-	return (kind == "Creature" or kind == "Vehicle") and tonumber(entry) or nil
-end
+local Entry = ns.CreatureEntry
 
 -- The unit's GUID: the tooltip data's own, else the GUID of the unit the tooltip shows. Either may be secret.
 ---@param tooltip GameTooltip
