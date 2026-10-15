@@ -6,4 +6,5 @@ The guide is in English. If you'd like it in your language, I'd welcome a transl
 2. Translate the text on the right of each line. Keep every `%d` and `%s`, and delete any line you leave in English.
 3. Add `Locales\<locale>.lua` to `AdventureGuideForever.toc`, on the line after `Locales\enUS.lua`.
 
-Send it as a pull request, or paste the file into an issue and I'll add it. Some NPC and town names come from the guide's bundled route data rather than the game, so those stay in English.
+Send it as a pull request, or paste the file into a
+[translation issue](https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml) and I'll add it. Some NPC and town names come from the guide's bundled route data rather than the game, so those stay in English.
