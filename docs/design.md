@@ -139,6 +139,9 @@ follow the shared family voice.
   its in-progress quest is selected, its travel line and numbered pin go, and the route stays on it until its
   objectives are done (a merged visit takes only the objectives the player can work on now).
 - **4.3 Committed order.** Preserve the chosen sequence and visit identities across rebuilds.
+- **4.4 Count ticks.** A burst of quest-log events that leaves the log's shape alone (the same quests, complete flags
+  and objective done flags; `Model.LogShape`) only moved counts: the rebuild is the cheap one combat uses
+  (`Model.Refresh`), repainting the log's steps without a full plan. Anything else plans in full.
 
 ### Full guide outline
 

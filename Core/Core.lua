@@ -455,6 +455,8 @@ local rawRoute = cachedRoute
 ---@type AGFSnapshot?
 local snapshot
 local dirty = true
+-- What the next build owes: a full plan (anything but counts changed since the last full one), or only the counts.
+local fullDue, countsDue = true, false
 local pendingRebuild = false
 -- The rebuild coroutine (see StepRebuild): nil when no build is in flight. `invalidations` counts ns.Invalidate
 -- calls, so a build that finishes over state that changed while it ran can tell, and rebuild again.
@@ -488,9 +490,17 @@ local function BuildRoute()
 	end
 	local state, prefs, player, combat = ns.State, ns.Prefs(), ns.State.Player(), InCombatLockdown()
 	local log, trained = state.Log(), false
+	-- Only the quest log's counts moved since the last full build (its shape is the snapshot's): the cheap rebuild, as
+	-- in combat, with no full one owed after it.
+	local cheap = not combat
+		and not fullDue
+		and countsDue
+		and snapshot ~= nil
+		and ns.Model.LogShape(log) == ns.Model.LogShape(snapshot.log)
+	fullDue, countsDue = false, false
 	if combat then
 		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
-	else
+	elseif not cheap then
 		local previous, known = training, false
 		if prefs.journey and ns.Setting("trainingReminders") then
 			training, known = ns.Integrations.Training()
@@ -524,7 +534,7 @@ local function BuildRoute()
 		mapName = state.MapName,
 		instanceName = state.InstanceName,
 		last = rawRoute,
-		combat = combat,
+		combat = combat or cheap,
 		-- The step sound hears the ordered route.
 		observe = function(ordered)
 			ns.Sound.Observe(cachedRoute, ordered, world, trained)
@@ -882,7 +892,26 @@ local function StepRebuild()
 	end
 end
 
+-- Only the quest log moved (State's countsOnly): if its shape is unchanged, the next build is the cheap one combat
+-- uses (Model.Refresh: the log's steps with their live counts, the rest as the last full build left them), unless
+-- something else has asked for a full one since the last full build. docs/design.md §4.4.
+function ns.InvalidateCounts()
+	if fullDue or not rawRoute.journeys[1] then
+		ns.Invalidate()
+		return
+	end
+	countsDue = true
+	dirty = true
+	invalidations = invalidations + 1
+	if pendingRebuild then
+		return
+	end
+	pendingRebuild = true
+	C_Timer.After(0, StepRebuild)
+end
+
 function ns.Invalidate()
+	fullDue = true
 	dirty = true
 	invalidations = invalidations + 1
 	if pendingRebuild then
@@ -993,7 +1022,13 @@ end
 EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	LoadDB()
 	LoadCharDB()
-	ns.State.OnChange(ns.Invalidate)
+	ns.State.OnChange(function(countsOnly)
+		if countsOnly then
+			ns.InvalidateCounts()
+		else
+			ns.Invalidate()
+		end
+	end)
 	spellbook:RegisterEvent("SPELLS_CHANGED")
 	spellbook:RegisterEvent("PLAYER_MONEY")
 	ns.State.OnInitialLogin(function()

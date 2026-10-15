@@ -324,6 +324,7 @@
 ---@field class? fun(classID: integer): string?
 
 ---@class AGFModel
+---@field LogShape fun(log: table<integer, AGFLogQuest>): string the log's quests, complete flags and objective done flags, counts left out
 ---@field MAX_STEPS integer
 ---@field IsGray fun(questLevel: integer, playerLevel: integer): boolean
 ---@field LevelPreference fun(questLevel: integer, playerLevel: integer): integer lower is taken first; at the player's level and one or two below are free, each level above costs twice its distance, and each level further below costs one
