@@ -8,3 +8,4 @@ tests/fixtures/quests.lua linguist-generated=true
 Locales/phrases.txt linguist-generated=true
 tests/golden/* linguist-generated=true
 docs/screenshots/manifest.txt linguist-generated=true
+docs/screenshots/scenes.sha256 linguist-generated=true
