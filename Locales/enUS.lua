@@ -52,6 +52,7 @@ ns.L = {
 	QUESTIE_FIELD = "it lacks %s",
 	QUESTIE_ZONES = "it lacks its zone tables",
 	QUESTIE_FAILED = "reading it failed (%s)",
+	NEXT_CAMP = "Next spot",
 	HELP_OPEN = "/agf - open the guide on the world map.",
 	HELP_WHERE = "/agf where - show the stop the guide is on, to copy into a wrong-stop report",
 	HELP_REPORT = "/agf report - show a report to copy into a bug report",

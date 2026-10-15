@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **"Next spot" when a camp is cleared or busy.** Right-click an objective step that has more than one place to do it, and "Next spot" moves the arrow to the next one. Keep pressing to work round them all. It forgets the spots you passed over when you /reload.
+
 - **Start a locked quest's chain from the search.** When a quest you search for is locked behind others, its tooltip now names the quest that starts the chain, the earliest one you can take now, and a shift-click adds that quest to your route.
 
 - **The guide learns when a quest giver doesn't have a quest.** If the guide sends you to pick up a quest and the NPC's window doesn't list it (Forever removed or changed some quests), the guide says so once in chat, drops it from the route, and its search explains "The giver didn't offer it". It tries again after your next level-up, or after a hand-in that could open the quest up.
@@ -35,7 +37,6 @@ optional `### For addon authors` subsection after a version's player bullets.
 ### For addon authors
 
 - **`AdventureGuideForever.API.Subscribe(callback)`** calls back the frame after the current stop or the followed journey changes, once per burst, with `{stop = true, journey = true}` as they apply. `API.minor` is 1; `version` stays 1. See docs/api.md.
-
 
 ## [0.12.2] - 2026-10-15
 
