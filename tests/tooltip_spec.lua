@@ -106,4 +106,50 @@ do
 	equal(#h.errors, 0, "login: errors\n" .. table.concat(h.errors, "\n"))
 end
 
+-- Secret values (docs/design.md §2.23): a GUID or unit token the client keeps secret reads as no unit, and a forbidden
+-- tooltip is left alone; neither raises an error, in combat or out. Indexing or matching a secret would.
+do
+	local h = Load({ journey = "zone:1413" })
+	local line = { "normal: Adventure guide: The Barrens story" }
+	local guid = Creature(SERGRA)
+	h.secrets[guid] = true
+	same(Lines(h, guid), {}, "secret: a secret GUID adds nothing")
+	h.SetCombat(true)
+	h.flush()
+	same(Lines(h, guid), {}, "secret: in combat too")
+	h.SetCombat(false)
+	h.secrets[guid] = nil
+	h.secrets.mouseover = true
+	same(Lines(h, guid), {}, "secret: a secret unit token adds nothing")
+	h.secrets.mouseover = nil
+	same(Lines(h, guid), line, "secret: readable again")
+	h.forbiddenTooltip = true
+	same(Lines(h, guid), {}, "forbidden: the tooltip is left alone")
+	h.forbiddenTooltip = false
+	same(Lines(h, guid), line, "forbidden: allowed again")
+	equal(#h.errors, 0, "secret: errors\n" .. table.concat(h.errors, "\n"))
+end
+
+-- ns.Readable passes readable values through unchanged and nil for a secret; ns.Usable refuses nil and a forbidden
+-- frame. Without canaccessvalue (a client with no secret values) every value reads.
+do
+	local h = Load(nil)
+	local ns = h.ns
+	h.secrets.hidden = true
+	equal(ns.Readable("shown"), "shown", "Readable: a readable string")
+	equal(ns.Readable(0), 0, "Readable: a readable zero")
+	equal(ns.Readable(false), false, "Readable: a readable false")
+	equal(ns.Readable(nil), nil, "Readable: nil")
+	equal(ns.Readable("hidden"), nil, "Readable: a secret")
+	equal(ns.Usable(nil), false, "Usable: nil")
+	equal(ns.Usable({}), true, "Usable: a frame without IsForbidden")
+	equal(ns.Usable(h.G.GameTooltip), true, "Usable: GameTooltip")
+	h.forbiddenTooltip = true
+	equal(ns.Usable(h.G.GameTooltip), false, "Usable: a forbidden GameTooltip")
+	local saved = h.G.canaccessvalue
+	h.G.canaccessvalue = nil
+	equal(ns.Readable("hidden"), "hidden", "Readable: no secret values on this client")
+	h.G.canaccessvalue = saved
+end
+
 print(("tooltip_spec: %d checks passed"):format(checks))

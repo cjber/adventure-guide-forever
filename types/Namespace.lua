@@ -720,6 +720,8 @@
 ---@field Guidance AGFGuidance
 ---@field Focus AGFFocus
 ---@field Print fun(msg: string)
+---@field Readable fun(value: any): any `value`, or nil when the client keeps it secret (Core/Secret.lua)
+---@field Usable fun(frame?: Frame): boolean false for nil and for a forbidden frame (Core/Secret.lua)
 ---@field Setting fun(key: string): any
 ---@field SetSetting fun(key: string, value: any)
 ---@field Prefs fun(): AGFPrefs

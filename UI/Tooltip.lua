@@ -37,13 +37,15 @@ local function Entry(guid)
 	return guid and tonumber(guid:match("^Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)%-%x+$"))
 end
 
+-- A forbidden tooltip is never read or drawn on, and a unit or GUID the client keeps secret (docs/design.md §2.23)
+-- reads as no unit: the hover shows nothing of ours rather than raising an error.
 ---@param tooltip GameTooltip
 TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Unit, function(tooltip)
-	if not journey then
+	if not journey or not ns.Usable(tooltip) then
 		return
 	end
-	local _, unit = tooltip:GetUnit()
-	local entry = unit and Entry(UnitGUID(unit))
+	local unit = ns.Readable((select(2, tooltip:GetUnit())))
+	local entry = unit and Entry(ns.Readable(UnitGUID(unit)))
 	if entry and npcs[entry] then
 		GameTooltip_AddNormalLine(tooltip, ns.L.NPC_JOURNEY:format(journey))
 	end

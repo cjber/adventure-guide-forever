@@ -1656,8 +1656,10 @@ function harness.load(options)
 	G.GetUnitSpeed = function()
 		return 0, 7
 	end
-	G.canaccessvalue = function()
-		return true
+	-- Secret values (Core/Secret.lua): a value in h.secrets reads as secret, every other one as readable.
+	h.secrets = {}
+	G.canaccessvalue = function(value)
+		return value == nil or not h.secrets[value]
 	end
 	G.UnitLevel = function()
 		return player.level
@@ -2104,6 +2106,10 @@ function harness.load(options)
 	end
 	function G.GameTooltip:GetUnit()
 		return self.unitName, self.unit
+	end
+	-- h.forbiddenTooltip stands for a tooltip the client has marked forbidden.
+	function G.GameTooltip:IsForbidden()
+		return h.forbiddenTooltip == true
 	end
 	-- The mouseover unit's tooltip, as the client builds it for `guid`; its lines land in h.tooltip.
 	function h.HoverUnit(guid)

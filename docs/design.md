@@ -90,6 +90,10 @@ abandons quests.
 - **2.22 Addon API.** `AdventureGuideForever.API` (docs/api.md) is read-only and versioned. It copies the
   tracker's step from the committed route and answers nil while a route is due, never building one for a caller.
   Fields are added, never renamed or repurposed, within a version.
+- **2.23 Secret values.** A value the client hands over but keeps secret (a unit's GUID or token in some combat and
+  instance states) is read only through `ns.Readable` (`Core/Secret.lua`), which answers nil for a secret, and a
+  forbidden tooltip only after `ns.Usable` says it may be touched. A secret reads as absent: the line it would have
+  fed is left out, never guessed and never an error.
 
 ### Guide navigation
 
