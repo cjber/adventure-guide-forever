@@ -55,7 +55,7 @@ local function Offered(event)
 				return nil -- a list the guide can't read whole proves nothing
 			end
 			titles[title] = true
-			local id = GetAvailableQuestInfo and ns.Readable(select(5, GetAvailableQuestInfo(index)))
+			local id = GetAvailableQuestInfo and ns.Readable((select(5, GetAvailableQuestInfo(index))))
 			if type(id) == "number" then
 				ids[id] = true
 			end
@@ -94,11 +94,11 @@ local function Look(event)
 		return
 	end
 	local ids, titles = Offered(event)
-	if not ids then
+	if not (ids and titles) then
 		return
 	end
 	local prefs, data, state = ns.Prefs(), ns.Data, ns.State
-	local level = state.Level and state.Level() or UnitLevel("player")
+	local level = UnitLevel("player")
 	local marked = false
 	for _, id in ipairs(wanted) do
 		local quest = data.quests[id]
