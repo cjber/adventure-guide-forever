@@ -29,7 +29,9 @@ abandons quests.
     Give each card a reason and only known travel estimates.
 - **2.3 Chapters.** Show a total only for a proven chain. A quest tooltip may name its proven next chapter with its level.
 - **2.4 Search.** Share eligibility checks with the planner. Explain missing requirements; locked
-  quests offer no destination.
+  quests offer no destination. Every word of the query must appear in the title (case and Latin accents folded); the
+  best match comes first (the whole title, the title's start, the start of its words, anywhere), then a quest open
+  now, then the level nearest the player's, then the title. Ten at most.
 - **2.5 Tracker.** Use the chosen journey as the section heading, with Adventure Guide as the fallback.
   Show the current action and up to two upcoming actions with native action icons beside quests.
   Upcoming actions are muted and follow the resolved current stop. Leave the stock quest order alone.
