@@ -54,7 +54,9 @@ function Shown.Build(input)
 		dungeonEntrances = input.dungeonEntrances,
 	}
 	local full
-	if input.combat then
+	if input.repaint then
+		full = Model.Repaint(input.data, input.log, input.last)
+	elseif input.combat then
 		full = Model.Refresh(
 			input.data,
 			input.player,

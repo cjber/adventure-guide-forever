@@ -25,6 +25,49 @@ local function Copy(source)
 	return copy
 end
 
+-- The last route with only its objective counts read again (docs/design.md §4.4): every journey, step, order, `here`
+-- hold and choice as the last build left them; an area step's objectives take the log's live counts and words. Only
+-- for a burst that moved counts alone (Model.LogShape unchanged), so no objective finishes and no quest comes or goes.
+---@param last AGFRoute
+---@return AGFRoute
+function Model.Repaint(data, log, last)
+	local painted = {}
+	local function Paint(step)
+		if not step.objectives then
+			return step
+		end
+		local copy = painted[step]
+		if not copy then
+			copy = Copy(step) --[[@as AGFStep]]
+			copy.objectives = ns.Planner.Steps.LiveObjectives(data, log, step.objectives)
+			Tell(copy)
+			painted[step] = copy
+		end
+		return copy
+	end
+	local function PaintAll(steps)
+		local out = {}
+		for index, step in ipairs(steps) do
+			out[index] = Paint(step)
+		end
+		return out
+	end
+	local route = Copy(last) --[[@as AGFRoute]]
+	route.journeys = {}
+	for index, journey in ipairs(last.journeys) do
+		local copy = Copy(journey) --[[@as AGFJourney]]
+		copy.steps = PaintAll(journey.steps)
+		route.journeys[index] = copy
+		if journey.steps == last.steps then
+			route.steps = copy.steps
+		end
+	end
+	if route.steps == last.steps then
+		route.steps = PaintAll(last.steps)
+	end
+	return route
+end
+
 -- A journey from the last full build less what went since: a quest the player has taken, done or ruled out (a group
 -- choice), or handed in, leaves its town, which goes only once it is empty or skipped; the full build after combat
 -- brings back anything else. The same table when nothing went.

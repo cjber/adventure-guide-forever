@@ -427,8 +427,9 @@ local function SimpleOpen(quest, player, completed, log, id)
 		and not quest.breadcrumb
 end
 
--- The quest log's shape (docs/design.md §4.4): each quest by ID, whether it is complete, and each objective's type and
--- done flag. The counts are left out, so two logs that differ only in a kill or an item count share a shape.
+-- The quest log's shape (docs/design.md §4.4): each quest by ID, whether it is complete, its waypoint, and each
+-- objective's type and done flag. The counts are left out, so two logs that differ only in a kill or an item count
+-- share a shape.
 ---@param log table<integer, AGFLogQuest>
 ---@return string
 function Model.LogShape(log)
@@ -439,7 +440,13 @@ function Model.LogShape(log)
 	table.sort(ids)
 	for _, id in ipairs(ids) do
 		local entry = log[id]
-		parts[#parts + 1] = id .. (entry.complete and "+" or "-")
+		parts[#parts + 1] = ("%d%s%s:%.3f:%.3f"):format(
+			id,
+			entry.complete and "+" or "-",
+			tostring(entry.map),
+			entry.x or 0,
+			entry.y or 0
+		)
 		for _, objective in ipairs(entry.objectives or NONE) do
 			parts[#parts + 1] = tostring(objective.type) .. (objective.done and "1" or "0")
 		end

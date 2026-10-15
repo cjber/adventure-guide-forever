@@ -324,6 +324,7 @@
 ---@field class? fun(classID: integer): string?
 
 ---@class AGFModel
+---@field Repaint fun(data: AGFData, log: table<integer, AGFLogQuest>, last: AGFRoute): AGFRoute the last route with its objective counts read again
 ---@field LogShape fun(log: table<integer, AGFLogQuest>): string the log's quests, complete flags and objective done flags, counts left out
 ---@field MAX_STEPS integer
 ---@field IsGray fun(questLevel: integer, playerLevel: integer): boolean
@@ -1260,12 +1261,14 @@
 -- One rebuild's read of the client (Core.lua's BuildRoute): the route is planned from it, and it is kept beside the
 -- cached route for the views that draw that route (ns.Snapshot). Read-only.
 ---@class AGFSnapshot
+---@field shape? string the log's Model.LogShape, to tell a counts-only change
 ---@field player AGFPlayer
 ---@field completed table<integer, boolean>
 ---@field log table<integer, AGFLogQuest>
 
 -- One build's snapshot of the player (Shown.Build): Core.lua reads the client once and every stage shares it.
 ---@class AGFShownInput
+---@field repaint? boolean only counts moved: Model.Repaint the last route instead of planning
 ---@field dungeonEntrances? table<integer, AGFLocation> known instance entrance points
 ---@field data AGFData
 ---@field player AGFPlayer

@@ -484,7 +484,7 @@ end
 
 -- QUEST_LOG_UPDATE fires often (once per objective tick); coalesce a burst into one notification per frame instead of
 -- rebuilding the route for every one of them. A burst of quest-log events only is told as countsOnly: Core's rebuild
--- then checks whether the log moved more than objective counts (Core.lua LogShape). Any other event makes it full.
+-- then checks whether the log moved more than objective counts (Model.LogShape). Any other event makes it full.
 local pendingNotify, pendingFull = false, false
 ---@param countsEvent? boolean the event can only move the quest log
 local function Coalesce(countsEvent)

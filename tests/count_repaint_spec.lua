@@ -1,7 +1,7 @@
 -- Run from the repository root: luajit tests/count_repaint_spec.lua
--- A quest-log burst that moves only objective counts (Core/State.lua Shape, docs/design.md §4.4) repaints the route's
--- counts through the cheap rebuild (Model.Refresh) instead of a full plan; a finished objective, a completed quest, a
--- quest accepted or dropped, or any other event plans in full.
+-- A quest-log burst that moves only objective counts (Model.LogShape, Model.Repaint, docs/design.md §4.4) repaints
+-- the counts on the last route (every order and hold kept) instead of a full plan; a finished objective, a completed
+-- quest, a quest accepted or dropped, or any other event plans in full.
 local harness = dofile("tests/harness.lua")
 local checks = 0
 local function equal(actual, expected, label)
@@ -52,8 +52,18 @@ local function Tick(have, done)
 	return h.modelCalls.Plan - plans
 end
 
+local function Keys()
+	local keys = {}
+	for _, step in ipairs(h.ns.Route().steps) do
+		keys[#keys + 1] = step.key
+	end
+	return table.concat(keys, " ")
+end
+local order, here = Keys(), h.ns.Route().here
 equal(Tick(1, false), 0, "a count: no full plan")
 equal(Have(), 1, "a count: the route shows 1/6")
+equal(Keys(), order, "a count: the steps keep their order")
+equal(h.ns.Route().here, here, "a count: and the here hold")
 equal(Tick(2, false), 0, "another count: still no full plan")
 equal(Have(), 2, "another count: 2/6")
 -- Something else in the same burst asks for a full plan.
