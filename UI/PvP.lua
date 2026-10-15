@@ -44,7 +44,7 @@ instance:SetScript("OnEvent", function()
 		return
 	end
 	local _, kind = IsInInstance()
-	local level = UnitLevel("player")
+	local level = ns.State.Level()
 	if kind == "pvp" and level > Battled() then
 		ns.Prefs().battled = level
 		Asides.Refresh()

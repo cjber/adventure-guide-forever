@@ -351,6 +351,7 @@
 ---@field forget? table<string, true> journeys whose committed order (`AGFRoute.orders`) this build lets go
 
 ---@class AGFState
+---@field Level fun(): integer the player's level: UnitLevel, or PLAYER_LEVEL_UP's level while UnitLevel still lags behind it
 ---@field Player fun(): AGFPlayer
 ---@field Where fun(): integer?, number?, number? the player's map and point on it; nil where the client places them nowhere
 ---@field Completed fun(): table<integer, boolean>
@@ -1288,6 +1289,8 @@
 ---@field Advice fun(data: AGFData, player: AGFPlayer, steps: AGFStep[], bind?: string, locale?: string): AGFAside?
 
 ---@class AGFModel
+---@field TownArrow fun(data: AGFData, player: AGFPlayer|AGFPosition|{map: integer, x: number, y: number}, rows: AGFTownGiver[], current?: {map: integer, x: number, y: number}): AGFPlace? the giver a town visit's arrow points at, with the switch margin
+---@field SWITCH_YARDS number how much nearer another town giver must be before the arrow leaves the one it points at
 ---@field TownChecklist fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, step: AGFStep, previous?: AGFStep, skipped?: table<string, boolean>)
 ---@field Visit fun(step: AGFStep): string the visit's identity: `orderKey`, else `key`
 ---@field GiverSkip fun(step: AGFStep, giverKey: string): string the skipped key of one giver on a town visit
