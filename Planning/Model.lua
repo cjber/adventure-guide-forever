@@ -442,24 +442,90 @@ end
 
 local SEARCH_MAX = 10
 
--- The player's side's quests whose title holds `query` (plain, case-insensitive, as the quest log's search), by title
--- then ID, at most 10: the search's rows (docs/design.md §2.4). `title` is the client's, the data's otherwise.
+-- Latin-1's accented letters (UTF-8 \195\128-\195\191, U+00C0-U+00FF) folded to their plain letter, upper and lower
+-- case alike, so "Dun Morogh" finds "Dûn Morogh" and "eclair" finds "Éclair". The two signs (multiply, divide) stay.
+local FOLD = {}
+do
+	local plain = "aaaaaaaceeeeiiiidnooooo\0ouuuuytsaaaaaaaceeeeiiiidnooooo\0ouuuuyty"
+	for code = 0xC0, 0xFF do
+		local letter = plain:sub(code - 0xBF, code - 0xBF)
+		if letter ~= "\0" then
+			FOLD["\195" .. string.char(code - 0x40)] = letter
+		end
+	end
+end
+
+-- `text` lower-cased with Latin accents folded, for search matching only.
+---@param text string
+---@return string
+local function Fold(text)
+	return (text:lower():gsub("\195[\128-\191]", FOLD))
+end
+Model.Fold = Fold
+
+-- How well a folded title matches the folded query's words (every word must appear, else nil): 1 the whole title,
+-- 2 the title starts with the query, 3 every word starts a word of the title, 4 every word appears somewhere.
+---@param name string
+---@param query string
+---@param words string[]
+---@return integer?
+local function Tier(name, query, words)
+	for _, word in ipairs(words) do
+		if not name:find(word, 1, true) then
+			return nil
+		end
+	end
+	if name == query then
+		return 1
+	elseif name:sub(1, #query) == query then
+		return 2
+	end
+	local padded = " " .. name
+	for _, word in ipairs(words) do
+		if not padded:find(" " .. word, 1, true) then
+			return 4
+		end
+	end
+	return 3
+end
+
+-- The player's side's quests whose title holds every word of `query` (plain, case-insensitive, accents folded), at
+-- most 10: the search's rows (docs/design.md §2.4). Best match first: the whole title, then a title starting with the
+-- query, then every word starting a title word, then the words anywhere; within a tier a quest the player can take
+-- now (given `completed` and `log`), then the quest level nearest the player's, then title and ID. `title` is the
+-- client's, the data's otherwise.
 ---@param title? fun(questID: integer): string?
+---@param completed? table<integer, boolean>
+---@param log? table<integer, AGFLogQuest>
 ---@return integer[]
-function Model.Search(data, player, query, title)
-	query = query:lower()
-	local found, titles = {}, {}
+function Model.Search(data, player, query, title, completed, log)
+	query = Fold(query):match("^%s*(.-)%s*$")
+	local words = {}
+	for word in query:gmatch("%S+") do
+		words[#words + 1] = word
+	end
+	if not words[1] then
+		return {}
+	end
+	local found, rank = {}, {}
 	for id, quest in pairs(data.quests) do
 		if quest.side == 3 or quest.side == player.side then
 			local name = (title and title(id)) or quest.title
-			if name:lower():find(query, 1, true) then
-				found[#found + 1], titles[id] = id, name
+			local tier = Tier(Fold(name), query, words)
+			if tier then
+				local level = quest.level == -1 and player.level or quest.level
+				local open = completed and log and Model.Eligible(data, player, completed, log, id) or false
+				found[#found + 1] = id
+				rank[id] = { tier, open and 0 or 1, math.abs((level or 0) - (player.level or 0)), name }
 			end
 		end
 	end
 	table.sort(found, function(a, b)
-		if titles[a] ~= titles[b] then
-			return titles[a] < titles[b]
+		local x, y = rank[a], rank[b]
+		for index = 1, 4 do
+			if x[index] ~= y[index] then
+				return x[index] < y[index]
+			end
 		end
 		return a < b
 	end)

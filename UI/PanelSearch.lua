@@ -181,7 +181,10 @@ end
 ---@return number top below the last result
 ---@return integer found
 function Search.Layout(query)
-	local found = query and ns.Model.Search(ns.Data, ns.State.Player(), query, ns.State.QuestTitle) or {}
+	local state = ns.State
+	local found = query
+			and ns.Model.Search(ns.Data, state.Player(), query, state.QuestTitle, state.Completed(), state.Log())
+		or {}
 	local top = 0
 	for index, row in ipairs(results) do
 		row:SetShown(found[index] ~= nil)
