@@ -18,6 +18,7 @@ Locales\enUS.lua
 Data\Geometry.lua
 Data\Forever.lua
 Data\ZoneArt.lua
+Core\SafeCall.lua
 Core\Core.lua
 Planning\Model.lua
 Planning\Travel.lua
@@ -42,6 +43,7 @@ Integrations\Tweaks.lua
 Integrations\SkillUp.lua
 Core\Guidance.lua
 Core\API.lua
+Core\Report.lua
 Integrations\Companions.lua
 Integrations\Providers.lua
 Integrations\QuestieObjectives.lua
@@ -56,6 +58,7 @@ UI\Hints\Explore.lua
 UI\Hints\Hearth.lua
 Core\Recommendations.lua
 UI\Art.lua
+UI\Report.lua
 UI\Moments.lua
 UI\ContextMenu.lua
 UI\GuideSetup.lua
