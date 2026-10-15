@@ -276,6 +276,7 @@ function State.Player()
 		primaries = primaries,
 		reputation = State.Reputation,
 		battlegrounds = State.Battlegrounds(),
+		notOffered = ns.Prefs().notOffered,
 	}
 end
 
