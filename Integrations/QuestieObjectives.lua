@@ -3,8 +3,45 @@ local _, ns = ...
 local floor = math.floor
 
 local KINDS = { "Npc", "Object" }
+local NAME_FIELDS = { "name" }
 -- A cell is one square of a map's yard grid. No map is this many yards across, so a column and a row share a number.
 local ROW = 2 ^ 16
+
+-- The names a client objective of a shared type is matched by (Planning/Steps.lua OpenSlots): only where two or more
+-- slots share a type, since a type of its own lines up already. Each slot's QuestieDB NPC, object or item name, in the
+-- client's language and lower-cased once here; a kill credit's is its root NPC's. QuestieDB's objective text overrides
+-- are English only, so they are left out. nil when no slot shares a type or none has a name. A name is optional: a
+-- QuestieDB without one (or one that fails to answer) leaves that slot to order.
+---@param lib AGFQuestieDB
+---@param kinds table<integer, string>
+---@param sources table<integer, {kind: string, id: integer?}>
+---@param reads AGFQuestieReads
+---@return table<integer, string>?
+local function Names(lib, kinds, sources, reads)
+	local count = {}
+	for _, kind in pairs(kinds) do
+		count[kind] = (count[kind] or 0) + 1
+	end
+	local names
+	for slot, kind in pairs(kinds) do
+		local source = sources[slot]
+		if count[kind] > 1 and source and source.id then
+			local cache = reads.names[source.kind]
+			local name = cache[source.id]
+			if name == nil then
+				local ok, values = pcall(lib[source.kind].GetAll, source.id, NAME_FIELDS)
+				local value = ok and type(values) == "table" and values[1]
+				name = type(value) == "string" and value ~= "" and value:lower() or false
+				cache[source.id] = name
+			end
+			if name then
+				names = names or {}
+				names[slot] = name
+			end
+		end
+	end
+	return names
+end
 
 -- Locations come from the provider's composed spawns. Bucket nearby spawns and choose a real point in each
 -- bucket, rather than directing the player to an average that may be inside terrain or across a river.
@@ -17,11 +54,14 @@ local ROW = 2 ^ 16
 ---@param yield fun()
 ---@param questID integer
 ---@param reads AGFQuestieReads one catalogue build's QuestieDB answers, so a creature many quests share is read once
----@return table?, AGFObjectiveArea[]?, table?, boolean? unsupported
+---@return table?, AGFObjectiveArea[]?, table?, boolean? unsupported, table<integer, string>? names
 function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield, questID, reads)
 	-- Questie stores icon overrides, not required counts, in objective[3] (kill credits: [4]).
 	-- Zero retains the objective slot; the quest log supplies its actual count after pickup.
 	local need, areas, kinds = {}, {}, {}
+	-- What each slot is named by: the QuestieDB entity and id.
+	---@type table<integer, {kind: string, id: integer?}>
+	local sources = {}
 	local function Places(slot, lists)
 		local cells, ordered = {}, {}
 		for _, spawns in ipairs(lists) do
@@ -126,6 +166,7 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 				return false
 			end
 			need[slot], kinds[slot] = 0, "monster"
+			sources[slot] = { kind = "Npc", id = tonumber(objective[2]) }
 			local lists = {}
 			for _, id in ipairs(objective[1] or {}) do
 				Spawns("Npc", id, lists)
@@ -147,6 +188,7 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 				return nil, nil, nil, true
 			end
 			need[slot], kinds[slot] = 0, kind == "Npc" and "monster" or "object"
+			sources[slot] = { kind = kind, id = tonumber(objective[1]) }
 			local lists = {}
 			Spawns(kind, objective[1], lists)
 			Places(slot, lists)
@@ -163,6 +205,7 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 		end
 		slot = index + 3
 		need[slot], kinds[slot] = 0, "item"
+		sources[slot] = { kind = "Item", id = tonumber(objective[1]) }
 		local lists = {}
 		Item(objective[1], lists, {})
 		Places(slot, lists)
@@ -176,5 +219,9 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 	if objectives and (next(objectives[4] or {}) or next(objectives[6] or {})) then
 		return nil, nil, nil, true
 	end
-	return next(need) and need or nil, areas[1] and areas or nil, next(kinds) and kinds or nil
+	return next(need) and need or nil,
+		areas[1] and areas or nil,
+		next(kinds) and kinds or nil,
+		nil,
+		Names(lib, kinds, sources, reads)
 end
