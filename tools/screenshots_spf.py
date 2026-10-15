@@ -26,7 +26,7 @@ SPF_PROGRAM = r"""
 local ns = {}
 local files = {
     "Data/Routes", "Data/Transports", "Data/Portals", "Data/Taxi",
-    "Model", "PathGrid", "Path", "Planner",
+    "Transport/Model", "Routing/PathGrid", "Routing/Path", "Routing/Planner",
 }
 for _, name in ipairs(files) do
 	local chunk = assert(loadfile(name .. ".lua"))
@@ -50,7 +50,7 @@ print("[" .. table.concat(walks, ",") .. "]")
 def spf_sources():
     """SPF_CACHE, extracted from a local clone ($SPF, else a sibling of this checkout or of its main worktree) with
     `git archive`, else from GitHub's tarball of the sha."""
-    if (SPF_CACHE / "Path.lua").is_file():
+    if (SPF_CACHE / "Routing/Path.lua").is_file():
         return SPF_CACHE
     import tarfile
     import urllib.request
