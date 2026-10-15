@@ -490,6 +490,8 @@ local rawRoute = cachedRoute
 ---@type AGFSnapshot?
 local snapshot
 local dirty = true
+-- What the next build owes: a full plan (anything but counts changed since the last full one), or only the counts.
+local fullDue = true
 local pendingRebuild = false
 -- The rebuild coroutine (see StepRebuild): nil when no build is in flight. `invalidations` counts ns.Invalidate
 -- calls, so a build that finishes over state that changed while it ran can tell, and rebuild again.
@@ -523,9 +525,14 @@ local function BuildRoute()
 	end
 	local state, prefs, player, combat = ns.State, ns.Prefs(), ns.State.Player(), InCombatLockdown()
 	local log, trained = state.Log(), false
+	-- Only the quest log's counts moved since the last build (its shape is the snapshot's): repaint the last route's
+	-- counts (Model.Repaint), every order, hold and choice kept, with no plan owed after it. docs/design.md §4.4.
+	local shape = ns.Model.LogShape(log)
+	local repaint = not combat and not fullDue and snapshot ~= nil and snapshot.shape == shape
+	fullDue = false
 	if combat then
 		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
-	else
+	elseif not repaint then
 		local previous, known = training, false
 		if prefs.journey and ns.Setting("trainingReminders") then
 			training, known = ns.Integrations.Training()
@@ -537,9 +544,9 @@ local function BuildRoute()
 	end
 	player.train = training
 	---@type AGFSnapshot
-	local world = { player = player, completed = state.Completed(), log = log }
+	local world = { player = player, completed = state.Completed(), log = log, shape = shape }
 	local dungeonEntrances, queried = {}, {}
-	if not combat then
+	if not (combat or repaint) then
 		for id, entry in pairs(log) do
 			local quest = ns.Data.quests[id]
 			local instance = quest and not quest.raid and quest.dungeon
@@ -560,6 +567,7 @@ local function BuildRoute()
 		instanceName = state.InstanceName,
 		last = rawRoute,
 		combat = combat,
+		repaint = repaint,
 		-- The step sound hears the ordered route.
 		observe = function(ordered)
 			ns.Sound.Observe(cachedRoute, ordered, world, trained)
@@ -888,6 +896,7 @@ local function StepRebuild()
 		local failed = rebuildCo
 		rebuildCo = nil
 		pendingRebuild = false
+		fullDue = true -- the next build plans in full, never repaints a route that failed
 		-- debugstack takes the coroutine first in the client; the annotations know only its level form.
 		---@diagnostic disable-next-line: param-type-mismatch
 		ns.RecordError("rebuild", shown, debugstack and debugstack(failed) or debug.traceback(failed))
@@ -913,7 +922,8 @@ local function StepRebuild()
 	end
 end
 
-function ns.Invalidate()
+-- Marks the route stale and queues its rebuild for the next frame, once.
+local function Queue()
 	dirty = true
 	invalidations = invalidations + 1
 	if pendingRebuild then
@@ -921,6 +931,18 @@ function ns.Invalidate()
 	end
 	pendingRebuild = true
 	C_Timer.After(0, StepRebuild)
+end
+
+-- Only the quest log moved (State's countsOnly): if its shape is unchanged since the last build, the next one only
+-- repaints the counts (Model.Repaint), unless something else has asked for a full plan since. docs/design.md §4.4.
+function ns.InvalidateCounts()
+	fullDue = fullDue or not rawRoute.journeys[1]
+	Queue()
+end
+
+function ns.Invalidate()
+	fullDue = true
+	Queue()
 end
 
 -- A rebuild or step 1's travel line is due: this frame or the next belongs to them, not to a card's estimate.
@@ -1030,7 +1052,13 @@ end
 EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	LoadDB()
 	LoadCharDB()
-	ns.State.OnChange(ns.Invalidate)
+	ns.State.OnChange(function(countsOnly)
+		if countsOnly then
+			ns.InvalidateCounts()
+		else
+			ns.Invalidate()
+		end
+	end)
 	spellbook:RegisterEvent("SPELLS_CHANGED")
 	spellbook:RegisterEvent("PLAYER_MONEY")
 	ns.State.OnInitialLogin(function()

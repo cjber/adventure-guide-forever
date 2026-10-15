@@ -476,7 +476,7 @@ local function RestMoved()
 	return moved
 end
 
----@type fun()[]
+---@type fun(countsOnly: boolean)[]
 local listeners = {}
 ---@type fun()[]
 local loginListeners = {}
@@ -487,21 +487,25 @@ function State.OnInitialLogin(fn)
 	loginListeners[#loginListeners + 1] = fn
 end
 
----@param fn fun()
+---@param fn fun(countsOnly: boolean)
 function State.OnChange(fn)
 	listeners[#listeners + 1] = fn
 end
 
-local function Notify()
+---@param countsOnly boolean
+local function Notify(countsOnly)
 	for _, fn in ipairs(listeners) do
-		fn()
+		fn(countsOnly)
 	end
 end
 
--- QUEST_LOG_UPDATE fires often (once per objective tick); coalesce a burst into one
--- notification per frame instead of rebuilding the route for every one of them.
-local pendingNotify = false
-local function Coalesce()
+-- QUEST_LOG_UPDATE fires often (once per objective tick); coalesce a burst into one notification per frame instead of
+-- rebuilding the route for every one of them. A burst of quest-log events only is told as countsOnly: Core's rebuild
+-- then checks whether the log moved more than objective counts (Model.LogShape). Any other event makes it full.
+local pendingNotify, pendingFull = false, false
+---@param countsEvent? boolean the event can only move the quest log
+local function Coalesce(countsEvent)
+	pendingFull = pendingFull or not countsEvent
 	if pendingNotify then
 		return
 	end
@@ -509,8 +513,9 @@ local function Coalesce()
 	-- The player's own state changed: every live policy answer is stale.
 	policyAnswers = {}
 	C_Timer.After(0, function()
-		pendingNotify = false
-		Notify()
+		local countsOnly = not pendingFull
+		pendingNotify, pendingFull = false, false
+		Notify(countsOnly)
 	end)
 end
 
@@ -605,6 +610,9 @@ local function QueueResync()
 end
 
 -- The first argument is PLAYER_ENTERING_WORLD's isInitialLogin, and QUEST_TURNED_IN's and QUEST_WATCH_UPDATE's questID.
+-- The events that move only the quest log; whether only its counts moved is Core's rebuild's to say (LogShape).
+local COUNTS_EVENTS = { QUEST_LOG_UPDATE = true, QUEST_WATCH_UPDATE = true }
+
 local function OnEvent(_, event, arg)
 	if event == "PLAYER_LEVEL_UP" then
 		announced = tonumber(arg) or announced
@@ -654,7 +662,7 @@ local function OnEvent(_, event, arg)
 		resyncDue = true
 		ns.TurnedIn(arg)
 	end
-	Coalesce()
+	Coalesce(COUNTS_EVENTS[event])
 end
 events:SetScript("OnEvent", function(self, event, arg)
 	ns.SafeCall("state event", OnEvent, self, event, arg)

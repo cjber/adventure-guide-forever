@@ -434,6 +434,33 @@ local function SimpleOpen(quest, player, completed, log, id)
 		and not (player.notOffered and player.notOffered[id] == player.level)
 end
 
+-- The quest log's shape (docs/design.md §4.4): each quest by ID, whether it is complete, its waypoint, and each
+-- objective's type and done flag. The counts are left out, so two logs that differ only in a kill or an item count
+-- share a shape.
+---@param log table<integer, AGFLogQuest>
+---@return string
+function Model.LogShape(log)
+	local ids, parts = {}, {}
+	for id in pairs(log) do
+		ids[#ids + 1] = id
+	end
+	table.sort(ids)
+	for _, id in ipairs(ids) do
+		local entry = log[id]
+		parts[#parts + 1] = ("%d%s%s:%.3f:%.3f"):format(
+			id,
+			entry.complete and "+" or "-",
+			tostring(entry.map),
+			entry.x or 0,
+			entry.y or 0
+		)
+		for _, objective in ipairs(entry.objectives or NONE) do
+			parts[#parts + 1] = tostring(objective.type) .. (objective.done and "1" or "0")
+		end
+	end
+	return table.concat(parts, ",")
+end
+
 function Model.Eligible(data, player, completed, log, questID)
 	return Eligible(data, player, completed, log, questID, Index(data).groups)
 end

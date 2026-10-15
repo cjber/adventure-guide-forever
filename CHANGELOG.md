@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Killing and looting for a quest costs less.** Every kill or quest item used to re-plan the whole route, even when all that changed was a count like 3/10. Now a count-only change just updates the numbers, and the full re-plan waits for something that matters: an objective finishing, a quest completing, or a quest added or dropped.
+
 - **"Next spot" when a camp is cleared or busy.** Right-click an objective step that has more than one place to do it, and "Next spot" moves the arrow to the next one. Keep pressing to work round them all. It forgets the spots you passed over when you /reload.
 
 - **Start a locked quest's chain from the search.** When a quest you search for is locked behind others, its tooltip now names the quest that starts the chain, the earliest one you can take now, and a shift-click adds that quest to your route.
@@ -37,6 +39,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 ### For addon authors
 
 - **`AdventureGuideForever.API.Subscribe(callback)`** calls back the frame after the current stop or the followed journey changes, once per burst, with `{stop = true, journey = true}` as they apply. `API.minor` is 1; `version` stays 1. See docs/api.md.
+
 
 ## [0.12.2] - 2026-10-15
 

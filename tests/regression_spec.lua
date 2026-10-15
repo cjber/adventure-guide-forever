@@ -99,7 +99,8 @@ test("guidance resolves the live step", function()
 	local sent = ns.Guidance.CurrentStep()
 	eq(sent, live, "initial snapshot")
 	live = town(1)
-	h.fire("QUEST_LOG_UPDATE")
+	-- A change that plans in full (a quest-log event that moves only counts repaints them instead: count_repaint_spec).
+	h.fire("ZONE_CHANGED_NEW_AREA")
 	h.flush()
 	eq(ns.Guidance.CurrentStep(), live, "SPF index resolves to the live route object")
 	eq(
