@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Start a locked quest's chain from the search.** When a quest you search for is locked behind others, its tooltip now names the quest that starts the chain, the earliest one you can take now, and a shift-click adds that quest to your route.
+
 - **The guide's quest search puts the best match first.** It used to list every title containing what you typed in alphabetical order and stop at ten, so the quest you meant could be cut off. Now a title that starts with your words comes first, then titles with a word starting that way, then the rest; within those, quests you can take now, then those nearest your level. You can type the words in any order, and "dun garok" finds "Dûn Garok".
 
 - **Hovering an NPC in combat or an instance can no longer raise an error.** The "Adventure guide" line on a unit's tooltip read the unit's ID straight away, but the game can keep that ID hidden from addons. The guide now checks first and quietly leaves its line out when it can't read the ID, and it leaves protected tooltips alone.
