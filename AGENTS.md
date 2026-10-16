@@ -33,8 +33,9 @@ the once-a-login QuestieDB catalogue build; local only, since shared runners fla
 After a UI change, set `WOWMOCK` to the installed wow-mock-screenshots library directory and run
 `python3 tools/screenshots.py` (WFA-9; local only: it needs Pillow and wago.tools) and
 commit the PNGs it rewrites in `docs/screenshots/` with `scenes.sha256`; two runs give byte-identical files.
-A data refresh that changes what a scene shows fails `tools/check_screenshots.py` until the images are rendered
-again.
+A data refresh that changes what a scene shows is only a warning from `tools/check_screenshots.py` on the bot's
+`data/refresh` PR (ci.yml sets `SCREENSHOTS_STALE_WARN` there; the bot can't render), so render the images again
+straight after it merges: on main, and on every other branch, a stale image fails.
 
 ## Layout
 
