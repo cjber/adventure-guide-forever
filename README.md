@@ -125,7 +125,7 @@ Screenshots use Pillow and the [wow-mock-screenshots library](https://github.com
 
 ## Credits
 
-Game data comes from [wago.tools](https://wago.tools), [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0) and [Warcraft Wiki](https://warcraft.wiki.gg/wiki/Zones_by_level_(original)). Some features were inspired by [Polestar](https://github.com/fitzforge/polestar) by Fitz, such as `/agf report`; no code was copied. Fitz is welcome to use our code. Thanks to VinzNL, fuguer-ai, jechten and everyone who reported a bug.
+Game data comes from [wago.tools](https://wago.tools), [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0) and [Warcraft Wiki](https://warcraft.wiki.gg/wiki/Zones_by_level_(original)). Some features were inspired by [Polestar](https://github.com/fitzforge/polestar) by Fitz, such as `/agf report`; no code was copied. Fitz is welcome to use our code. Thanks to rhednak, VinzNL, fuguer-ai and everyone in [THIRD_PARTY.md](THIRD_PARTY.md).
 
 ## Licence
 
