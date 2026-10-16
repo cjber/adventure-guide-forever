@@ -19,8 +19,12 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y luajit lua-check
       - run: luacheck .
       - run: for spec in tests/*_spec.lua; do luajit "$spec" || exit 1; done
-      # A screenshot older than the headless scene it is drawn from (docs/screenshots/scenes.sha256).
+      # A screenshot older than the headless scene it is drawn from (docs/screenshots/scenes.sha256). On this
+      # repository's own data/refresh PR (and CI dispatched on that branch) a scene moved by new data only warns,
+      # since the bot can't render; the images are rendered again after it merges.
       - run: python3 tools/check_screenshots.py
+        env:
+          SCREENSHOTS_STALE_WARN: ${{ (github.event_name == 'pull_request' && github.head_ref == 'data/refresh' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'workflow_dispatch' && github.ref_name == 'data/refresh') }}
       - name: Native tracker integration
         run: |
           python3 tools/fetch_tracker_ui.py

@@ -33,8 +33,9 @@ the once-a-login QuestieDB catalogue build; local only, since shared runners fla
 After a UI change, set `WOWMOCK` to the installed wow-mock-screenshots library directory and run
 `python3 tools/screenshots.py` (WFA-9; local only: it needs Pillow and wago.tools) and
 commit the PNGs it rewrites in `docs/screenshots/` with `scenes.sha256`; two runs give byte-identical files.
-A data refresh that changes what a scene shows fails `tools/check_screenshots.py` until the images are rendered
-again.
+A data refresh that changes what a scene shows is only a warning from `tools/check_screenshots.py` on the bot's
+`data/refresh` PR (ci.yml sets `SCREENSHOTS_STALE_WARN` there; the bot can't render), so render the images again
+straight after it merges: on main, and on every other branch, a stale image fails.
 
 ## Layout
 
@@ -77,9 +78,7 @@ workflow regenerates `Data/` and the test corpus, runs `tools/check_generated.py
 generator tests, luacheck, every spec (the golden routes among them), the planner bench and stylua, opens the
 `data/refresh` PR and dispatches CI on it. A failed run on main is re-run once ten minutes later by `.github/workflows/retry-refresh.yml`;
 one that fails again opens the issue "Data refresh failed", assigned to the owner, or comments on the open one. A check that rejects new client data is corrected from that data and kept
-exact, never loosened; a golden route is re-based only when the new data explains the change. On `data/refresh` only,
-`tools/check_screenshots.py` reports a stale screenshot as a `::warning::` rather than failing, since the bot can't render;
-re-render the screenshots after that PR merges. Everywhere else a stale screenshot still fails CI.
+exact, never loosened; a golden route is re-based only when the new data explains the change.
 
 Pins moved by hand: `LEGACY_MAP_BUILD` (the last build with WorldMapArea, fixed), `CLASSICDB_COMMIT` (the waivers
 below; not bumped), `REVISION` in `tools/fetch_tracker_ui.py` (checksum-pinned tracker source shared with the other
