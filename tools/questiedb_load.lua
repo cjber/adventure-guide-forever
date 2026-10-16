@@ -144,7 +144,7 @@ return function(root, toc)
 			return "enUS"
 		end,
 		-- QuestieDB applies some corrections by race, class and faction; the corpus pins one character (Alliance
-		-- warrior) so the fixture is one deterministic world, as tests/fixtures/quests.lua's header says.
+		-- warrior) so the fixture is one deterministic world, as the corpus's header (tests/.corpus/quests.lua) says.
 		UnitFactionGroup = function()
 			return "Alliance"
 		end,
