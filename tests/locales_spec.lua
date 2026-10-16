@@ -83,6 +83,48 @@ for name in files:lines() do
 end
 files:close()
 
+-- A sample argument for each placeholder in an English line, in order: text for %s, a number for the rest.
+local function Samples(text)
+	local args = {}
+	for conversion in text:gsub("%%%%", ""):gmatch("%%[%-+#0]*%d*%.?%d*([a-zA-Z])") do
+		args[#args + 1] = conversion == "s" and "Sample" or 7
+	end
+	return args
+end
+
+-- Every translation the TOC loads, in the client's own way: nothing under another locale, and under its own each line
+-- is text that formats with the English line's arguments (Lua ignores a spare argument, so the count is checked too).
+local translated = 0
+for line in io.lines("AdventureGuideForever.toc") do
+	local locale = line:gsub("\r", ""):match("^Locales\\(%a%a%u%u)%.lua$")
+	if locale and locale ~= "enUS" then
+		translated = translated + 1
+		local path = "Locales/" .. locale .. ".lua"
+		local source = Read(path)
+		equal(
+			source:find("^%-%- Machine translated %(%d+%-%d+%-%d+%); corrections welcome: https://") ~= nil
+				or not source:find("%-%- mt\n"),
+			true,
+			path .. ": a file with machine lines says so on its first line"
+		)
+		equal(Load({ enUS, assert(loadfile(path)) }, "enUS").TITLE, english.TITLE, path .. ": English ignores it")
+		local strings = Load({ enUS, assert(loadfile(path)) }, locale)
+		local count = 0
+		for key, text in pairs(strings) do
+			local args = Samples(english[key])
+			equal(type(text), "string", path .. ": " .. key .. " is text")
+			equal(#Samples(text), #args, path .. ": " .. key .. " keeps its placeholders")
+			if #args > 0 then
+				local ok, result = pcall(string.format, text, unpack(args))
+				equal(ok, true, path .. ": " .. key .. " formats (" .. tostring(result) .. ")")
+			end
+			count = count + (text ~= english[key] and 1 or 0)
+		end
+		equal(count > 0, true, path .. ": translates something")
+	end
+end
+equal(translated > 0, true, "the TOC loads the translations")
+
 -- WHATS_NEW is the newest release's news: it opens with the first headline of CHANGELOG.md's top versioned entry, so
 -- a release that forgets to rewrite it fails here instead of announcing the last release's features.
 local newest = Read("CHANGELOG.md"):match("\n## %[?%d+%.%d+%.%d+%]? %- [^\n]*\n+%- %*%*(.-)%.?%*%*")

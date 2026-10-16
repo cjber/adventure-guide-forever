@@ -1,4 +1,4 @@
-"""Write Locales/phrases.txt, the template a translation starts from, or check it and the tree with --check.
+"""Write Locales/phrases.txt, the template the translations follow, or check it and the tree with --check.
 
 A translation is Locales/<locale>.lua: the guard lines below, then `L["KEY"] = "text"` for each line it translates.
 The keys are AGF's constant names and the template gives each one's English. A line that is a Blizzard GlobalString
@@ -18,10 +18,9 @@ ROOT = Path(__file__).resolve().parent.parent
 STRINGS = ROOT / "Locales" / "enUS.lua"
 PHRASES = ROOT / "Locales" / "phrases.txt"
 HEADER = """\
--- Adventure Guide Forever's lines, to translate. Copy this file to Locales/deDE.lua (or esES, esMX, frFR, itIT,
--- koKR, ptBR, ruRU, zhCN, zhTW), change "deDE" below to match, translate the text on the right of each line and
--- keep the %d and %s in it. Delete a line you leave in English. Then add the file to AdventureGuideForever.toc,
--- after Locales\\enUS.lua. Regenerate with: python3 tools/phrases.py > Locales/phrases.txt
+-- Every line Adventure Guide Forever shows, by key, with its English text: the template the Locales/<locale>.lua
+-- files follow. Each client language already has its file; to correct a line, edit that file (Locales/README.md).
+-- Regenerate with: python3 tools/phrases.py > Locales/phrases.txt
 local _, ns = ...
 if GetLocale() ~= "deDE" then
 \treturn

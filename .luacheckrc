@@ -188,4 +188,5 @@ read_globals = {
 
 files["tests/"] = { std = "+luajit" }
 files["Data/Geometry.lua"] = { max_line_length = false }
+files["Locales/"] = { max_line_length = false } -- one phrase per line, however long
 read_globals[#read_globals + 1] = "EditModeManagerFrame"

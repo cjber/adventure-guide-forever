@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **In your language.** The guide is now in German, French, Spanish (Spain and Latin America), Brazilian Portuguese, Russian, Korean and Chinese (simplified and traditional), using the game's own words for the quest log, quest givers, flight paths and the objective tracker. It's machine translated, and corrections are welcome through the translation issue form. Quest, NPC and place names come from the game or QuestieDB as before, and a few town names from the guide's own data stay in English.
+
 ## [0.15.0] - 2026-10-16
 
 - **A Forever addons page in the settings.** Settings > AddOns > Adventure Guide has a new *Forever addons* page. It lists my five Forever addons and, for each of the others, says whether it's on, turned off or not installed, with a *Copy link* button that shows its address to copy. Its *Suggest my other Forever addons* box replaces *Suggest companion addons*; if you had that turned off, it stays off.

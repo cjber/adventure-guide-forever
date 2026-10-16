@@ -48,7 +48,7 @@ Right-click a dungeon card to browse AtlasLoot bosses and their drops with nativ
 
 `/agf`, `/adventureguide` or the addon compartment opens the guide on the world map. Options are in the guide's cog and Settings > AddOns > Adventure Guide, whose Forever addons page lists all five Forever addons.
 
-Translations are welcome on GitHub: see the [Locales folder](https://github.com/cjber/adventure-guide-forever/tree/main/Locales).
+Translated into German, French, Spanish, Brazilian Portuguese, Russian, Korean and Chinese (machine translated; corrections welcome through the [translation form](https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml)).
 
 For a bug report, paste what `/agf report` shows. For a wrong stop, paste `/agf where`. For a missing quest, include `/agf audit` output too.
 
