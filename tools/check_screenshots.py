@@ -7,9 +7,14 @@ image's hash beside its dump's; tools/screenshots.py rewrites it after a render.
 
     python3 tools/check_screenshots.py           # CI: fail on a stale image
     python3 tools/check_screenshots.py --record  # after a render, if tools/screenshots.py did not
+
+On the daily data PR's branch (`data/refresh`) a stale image is a GitHub `::warning::` and the check passes: new
+client data can move what a scene shows, the bot that opens that PR cannot render (no Pillow or WOWMOCK), and
+the images are re-rendered by hand after it merges. On every other branch it still fails.
 """
 
 import functools
+import os
 import sys
 from pathlib import Path
 
@@ -71,6 +76,27 @@ def dump(keys: tuple[str, ...]) -> bytes:
 
 SCENES = {image: functools.partial(dump, keys) for image, keys in IMAGES.items()}
 
+# The branch .github/workflows/refresh-data.yml opens its PR from.
+REFRESH_BRANCH = "data/refresh"
+
+
+def branch(env: dict[str, str]) -> str:
+    """The branch CI checks: a pull request's head (GITHUB_HEAD_REF), else the pushed or dispatched ref."""
+    return env.get("GITHUB_HEAD_REF") or env.get("GITHUB_REF_NAME") or ""
+
+
+def main(argv: list[str], env: dict[str, str]) -> int:
+    if argv or branch(env) != REFRESH_BRANCH:
+        return screens.main(OUT, SCENES, argv)
+    problems = screens.check(OUT, SCENES)
+    for problem in problems:
+        print(f"::warning title=Stale screenshot::{problem}")
+    if problems:
+        print(f"Screenshots: {len(problems)} stale on {REFRESH_BRANCH}; re-render after the data PR merges")
+    else:
+        print(f"Screenshots: {len(SCENES)} images match what they are drawn from")
+    return 0
+
 
 if __name__ == "__main__":
-    sys.exit(screens.main(OUT, SCENES))
+    sys.exit(main(sys.argv[1:], dict(os.environ)))

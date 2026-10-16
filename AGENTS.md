@@ -77,7 +77,9 @@ workflow regenerates `Data/` and the test corpus, runs `tools/check_generated.py
 generator tests, luacheck, every spec (the golden routes among them), the planner bench and stylua, opens the
 `data/refresh` PR and dispatches CI on it. A failed run on main is re-run once ten minutes later by `.github/workflows/retry-refresh.yml`;
 one that fails again opens the issue "Data refresh failed", assigned to the owner, or comments on the open one. A check that rejects new client data is corrected from that data and kept
-exact, never loosened; a golden route is re-based only when the new data explains the change.
+exact, never loosened; a golden route is re-based only when the new data explains the change. On `data/refresh` only,
+`tools/check_screenshots.py` reports a stale screenshot as a `::warning::` rather than failing, since the bot can't render;
+re-render the screenshots after that PR merges. Everywhere else a stale screenshot still fails CI.
 
 Pins moved by hand: `LEGACY_MAP_BUILD` (the last build with WorldMapArea, fixed), `CLASSICDB_COMMIT` (the waivers
 below; not bumped), `REVISION` in `tools/fetch_tracker_ui.py` (checksum-pinned tracker source shared with the other
