@@ -3,14 +3,18 @@
 <h1 align="center">Adventure Guide Forever</h1>
 
 <p align="center">
-Quest suggestions and routes for your level in WoW: Forever.<br>
+Picks quests for your level in WoW: Forever and, with Shortest Path Forever, walks you to each one.<br>
 <a href="https://github.com/cjber/adventure-guide-forever/actions/workflows/ci.yml"><img src="https://github.com/cjber/adventure-guide-forever/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 <a href="https://github.com/cjber/adventure-guide-forever/releases/latest"><img src="https://img.shields.io/github/v/release/cjber/adventure-guide-forever" alt="Latest release"></a>
 </p>
 
-Adventure Guide Forever suggests quests and routes for your level and quest log. Choose a journey from the quest log or world map.
+Adventure Guide Forever suggests quests for your level and quest log, in a short route. Shortest Path Forever walks you to each stop; without it, the game's waypoint does.
 
-Shortest Path Forever handles travel when installed. Questie draws the quest markers; the guide adds route rings. With RestedXP installed, a one-time prompt lets you keep its display or follow its guides in Adventure Guide.
+Questie draws the quest markers; the guide adds route rings. With RestedXP installed, a one-time prompt lets you keep its display or follow its guides in Adventure Guide.
+
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/map.png" width="640" alt="A journey's quest stops numbered on The Barrens map, with Shortest Path Forever's route to the first"></p>
+
+<p align="center">Each number is a stop on the route: a pickup, an objective or a hand-in.</p>
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif" width="640" alt="Choosing a journey and following its route"></p>
 
@@ -19,10 +23,6 @@ Shortest Path Forever handles travel when installed. Questie draws the quest mar
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png" width="640" alt="Adventure Guide beside The Barrens map"></p>
 
 <p align="center">Choose a journey from the world map's quest log. Continue shows two cards; other sections show one. Expand a header for more choices.</p>
-
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/map.png" width="640" alt="Shortest Path Forever's route to the first stop"></p>
-
-<p align="center">Pick one and Shortest Path Forever walks you to each stop in turn.</p>
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/story_complete.png" width="400" alt="Story completion popup"></p>
 
