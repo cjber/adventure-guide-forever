@@ -8,13 +8,13 @@ Picks quests for your level in WoW: Forever and, with Shortest Path Forever, wal
 <a href="https://github.com/cjber/adventure-guide-forever/releases/latest"><img src="https://img.shields.io/github/v/release/cjber/adventure-guide-forever" alt="Latest release"></a>
 </p>
 
-Adventure Guide Forever picks quests for your level and quest log, and with Shortest Path Forever walks you to each one. Choose a journey from the world map's quest log.
+Adventure Guide Forever suggests quests for your level and quest log, in a short route. Shortest Path Forever walks you to each stop; without it, the game's waypoint does.
 
 Questie draws the quest markers; the guide adds route rings. With RestedXP installed, a one-time prompt lets you keep its display or follow its guides in Adventure Guide.
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/map.png" width="640" alt="A journey's quest stops numbered on The Barrens map, with Shortest Path Forever's route to the first"></p>
 
-<p align="center">A journey's quests, numbered in order. Shortest Path Forever walks you to each one.</p>
+<p align="center">Each number is a stop on the route: a pickup, an objective or a hand-in.</p>
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif" width="640" alt="Choosing a journey and following its route"></p>
 

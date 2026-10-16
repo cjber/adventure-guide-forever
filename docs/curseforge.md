@@ -1,10 +1,10 @@
-Adventure Guide Forever picks quests for your level and quest log, and with Shortest Path Forever walks you to each one. Choose a journey from the world map's quest log.
+Adventure Guide Forever suggests quests for your level and quest log, in a short route. Shortest Path Forever walks you to each stop; without it, the game's waypoint does.
 
 QuestieDB supplies quests; Questie checks pickup availability. With RestedXP installed, a one-time prompt lets you keep its display or follow its guides here.
 
 ![A journey's quest stops numbered on The Barrens map, with Shortest Path Forever's route to the first](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/map.png)
 
-A journey's quests, numbered in order. Shortest Path Forever walks you to each one.
+Each number is a stop on the route: a pickup, an objective or a hand-in.
 
 ![Choosing a journey and following its route](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif)
 
