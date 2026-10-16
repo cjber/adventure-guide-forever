@@ -2,6 +2,8 @@ std = "lua51"
 max_line_length = 120
 exclude_files = {
 	"tools/.cache/**",
+	-- The test corpus tools/gen_corpus.py builds (gitignored).
+	"tests/.corpus/**",
 	".types/**",
 	"types/**",
 	".release/**",
@@ -186,6 +188,4 @@ read_globals = {
 
 files["tests/"] = { std = "+luajit" }
 files["Data/Geometry.lua"] = { max_line_length = false }
-files["tests/fixtures/quests.lua"] = { max_line_length = false }
-files["tests/fixtures/towns.lua"] = { max_line_length = false }
 read_globals[#read_globals + 1] = "EditModeManagerFrame"
