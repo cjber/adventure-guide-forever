@@ -153,6 +153,9 @@ follow the shared family voice.
   Objective areas merge only on the same map and for the same activity kind; separate maps keep separate visits. Current objective data does not distinguish floors on the same map.
   Rebuild on events;
   movement changes focus without shuffling the route. Proximity never hides or truncates guidance. Plan a bounded lookahead, then verify and merge visits before limiting the displayed actions. Keep work bounded per frame.
+  Each objective's node is its first spawn group in the data's order (its zone, then the most spawns), passing over a
+  group whose mobs' lowest level (QuestieDB minLevel) is 3 or more above the player for the next that isn't; a group
+  with an object or an NPC without a level is never over, and when every group is over the first stays.
   An area step's point is the objective node nearest the player (a spawn group's medoid, or the generator's point
   inside the shape), so the marker sits on the work rather than on the shape's border; when the player is already
   inside the area the point stays the area's ring (its middle). The ring reaches past the shapes, so a broad area's

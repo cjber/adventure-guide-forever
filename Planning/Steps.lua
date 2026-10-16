@@ -347,11 +347,16 @@ local function LiveObjectives(data, log, objectives)
 	return result
 end
 
--- Quest `quest`'s node for objective `slot`: its first area for the slot (the generator orders them) with its radius,
--- counting `objective`. Nil when the data has no area for the slot or its place is not a valid one.
+-- Quest `quest`'s node for objective `slot`, counting `objective`, with its radius: its first valid area for the slot
+-- in the data's order (in the quest's zone, then the most spawns), unless that area's mobs are ORANGE (3) or more
+-- levels above `level` (#152; they hit hard and are hard to hit) and a later valid area on the same map has mobs that
+-- aren't, so a spot is never traded for one across the world. An area with no level is never over. Nil when the data
+-- has no valid area for the slot.
 ---@param quest AGFQuest
+---@param level? integer the player's
 ---@return AGFNode?
-local function AreaNode(quest, slot, objective)
+local function AreaNode(quest, slot, objective, level)
+	local first
 	for _, area in ipairs(quest.obj or NONE) do
 		if area[1] == slot then
 			local node = {
@@ -362,19 +367,27 @@ local function AreaNode(quest, slot, objective)
 				slot = slot,
 				objectives = { objective },
 			}
-			return ValidPlace(node) and node or nil
+			local over = level and area[6] and area[6] >= level + ORANGE
+			if ValidPlace(node) and (not first or node.map == first.map) then
+				if not over then
+					return node
+				end
+				first = first or node
+			end
 		end
 	end
-	return nil
+	return first
 end
 
 -- Where a quest under way is done next, in slot order: each open objective the data places, at its first area (the
--- generator orders them) with its radius. The client's point for the quest stands in for them all when its objectives
--- don't line up with the data's slots or the data places none of the open ones, and the client's waypoint (the live
--- client gives one only once finished) before anything. Empty when nothing places it.
+-- generator orders them; AreaNode passes over one far above the player's `level`) with its radius. The client's point
+-- for the quest stands in for them all when its objectives don't line up with the data's slots or the data places
+-- none of the open ones, and the client's waypoint (the live client gives one only once finished) before anything.
+-- Empty when nothing places it.
 ---@param entry AGFLogQuest
+---@param level? integer the player's
 ---@return AGFNode[]
-local function Nodes(data, entry)
+local function Nodes(data, entry, level)
 	local quest = data.quests[entry.id]
 	local open, aligned, slots, nodes = {}, false, {}, {}
 	if quest then
@@ -385,7 +398,7 @@ local function Nodes(data, entry)
 	end
 	table.sort(slots)
 	for _, slot in ipairs(ValidPlace(entry) and NONE or slots) do
-		nodes[#nodes + 1] = AreaNode(quest, slot, Objective(quest, entry, slot, open[slot]))
+		nodes[#nodes + 1] = AreaNode(quest, slot, Objective(quest, entry, slot, open[slot]), level)
 	end
 	if #nodes > 0 and (aligned or not ValidPlace(entry.poi)) then
 		return nodes
@@ -488,7 +501,7 @@ local function LogSteps(data, player, log, ready, belongs, stops, steps, plan)
 	table.sort(ids)
 	for _, id in ipairs(ids) do
 		local entry, quest = log[id], data.quests[id]
-		local nodes = entry.complete and {} or Nodes(data, entry)
+		local nodes = entry.complete and {} or Nodes(data, entry, player.level)
 		---@type AGFPlace?
 		local place = ready[id] or (entry.complete and TurnInPlace(entry, quest)) or nodes[1]
 		place = ValidPlace(place) and place or nil
@@ -643,8 +656,9 @@ end
 -- A new quest's objective nodes, one for each slot at its first area (AreaNode, as for a quest under way), each
 -- counting the data's need.
 ---@param quest AGFQuest
+---@param level? integer the player's
 ---@return AGFNode[]
-local function Planned(quest, id)
+local function Planned(quest, id, level)
 	local slots, nodes = {}, {}
 	for slot in pairs(quest.need or NONE) do
 		slots[#slots + 1] = slot
@@ -652,7 +666,8 @@ local function Planned(quest, id)
 	table.sort(slots)
 	local finish = ValidPlace(quest.finish) and "town:" .. Hub(quest.finish) or nil
 	for _, slot in ipairs(slots) do
-		nodes[#nodes + 1] = AreaNode(quest, slot, { id = id, slot = slot, need = quest.need[slot], finish = finish })
+		local objective = { id = id, slot = slot, need = quest.need[slot], finish = finish }
+		nodes[#nodes + 1] = AreaNode(quest, slot, objective, level)
 	end
 	return nodes
 end

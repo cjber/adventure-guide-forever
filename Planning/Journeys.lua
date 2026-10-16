@@ -84,7 +84,7 @@ local function Droppable(data, player, log)
 	end
 	for id, entry in pairs(log) do
 		if data.quests[id] and not entry.complete then
-			local place = Nodes(data, entry)[1]
+			local place = Nodes(data, entry, player.level)[1]
 			if
 				Dropped(id)
 				or Model.IsGray(QuestLevel(data, log, player, id), player.level)
