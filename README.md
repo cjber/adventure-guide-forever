@@ -10,7 +10,7 @@ Quest suggestions and routes for your level in WoW: Forever.<br>
 
 Adventure Guide Forever suggests quests and routes for your level and quest log. Choose a journey from the quest log or world map.
 
-Shortest Path Forever handles travel when installed. QuestieDB supplies the full quest catalogue; Questie checks which pickups are currently available. Questie owns background quest markers; the guide adds route rings. When RestedXP is installed, a one-time prompt lets you keep its display or show its instructions in Adventure Guide. Choosing Adventure Guide hides RestedXP windows and map markers, and uses Shortest Path for navigation when installed. Choose a suitable RestedXP guide from the Continue cards. A single matching chapter loads automatically. RestedXP loads guides and advances their steps; Shortest Path Forever handles travel. Turn off *Use RestedXP guides* to return to Adventure Guide's recommendations.
+Shortest Path Forever handles travel when installed. QuestieDB supplies the quest catalogue and Questie checks which pickups are available now. Questie draws the background quest markers; the guide adds route rings. With RestedXP installed, a one-time prompt lets you keep its display or follow its guides in Adventure Guide.
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif" width="640" alt="Choosing a journey and following its route"></p>
 
@@ -34,21 +34,23 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the full
 
 ## Features
 
-- **RestedXP guides.** Read the active guide in your existing journey cards, step rows and objective tracker, with about ten steps on the map and the current, next and ongoing steps in the quest tracker. Choose a guide, move between steps or skip one, and import guides through RestedXP. Its engine handles completion; Shortest Path Forever follows the destination.
+- **RestedXP guides.** Read the active guide in the journey cards, step rows and tracker, with about ten steps on the map. Choose a guide from the Continue cards, move between steps or skip one. RestedXP handles completion; Shortest Path Forever handles travel. Turn off *Use RestedXP guides* to return to Adventure Guide's suggestions.
 
-- **Map guide.** Continue shows two journeys; other sections show one each. Expand a section for more choices. The active RestedXP guide is offered first when its integration is enabled; otherwise Quests in your log is the default suggestion.
+- **Map guide.** The active RestedXP guide is offered first when its integration is enabled; otherwise Quests in your log is the default suggestion.
 
 - **Quest difficulty.** Choose the highest recommended quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups. Accepted quests remain visible.
 
-- **Dungeon journeys.** Follow quest pickups, preparation chains and hand-ins with Shortest Path Forever. Preparation steps include prerequisites available now. Right-click a dungeon card for AtlasLoot bosses, drops and native item tooltips. Tweaks Forever handles automatic dungeon maps.
+- **Dungeon journeys.** Follow quest pickups, preparation chains and hand-ins with Shortest Path Forever. Right-click a dungeon card for AtlasLoot bosses, drops and native item tooltips. Tweaks Forever handles automatic dungeon maps.
 - **Journeys.** Finish loose ends, follow a zone's story, find nearby zones suited to your level or take class quests. Journey choices explain why each fits. Dungeon and battleground journeys are opt-in.
-- **Full guide.** Expand the map guide to see the current route followed by the area's Questie outline. Later entries stay outline-only until Questie confirms they are available.
+- **Full guide.** Expand the map guide for the whole route, then the area's Questie outline. Later entries stay as outline until Questie confirms them.
 - **Choose and go.** Pick a journey on the map to start guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop clears only guidance the addon started.
-- **A route that stays with you.** Your choice survives new quests, travel and a reload. Ready hand-ins and nearby pickups come first. Town stops group quest givers into a checklist. The tracker uses your journey as its heading and shows action icons for the current stop and up to two upcoming stops.
+- **A route that stays with you.** Your choice survives new quests, travel and reloads. Ready hand-ins and nearby pickups come first. Town stops group quest givers into a checklist.
 - **Your order.** Drag steps or right-click to move them earlier or later. Moves that break quest order are greyed out. *Back to suggested order* restores the plan.
+- **Next spot.** Right-click an objective step with more than one place to do it and choose *Next spot*: the arrow moves to the nearest place you haven't passed over. It isn't offered inside the area.
+- **Givers that don't offer a quest.** If a giver's quest list leaves out the quest the guide sent you for, the guide says so once in chat and drops it. It tries again after a level-up or a hand-in that could open it up.
 - **Story milestones.** Completing a proven quest chain earns a brief story-complete popup, recorded once for that character.
-- **Stories and search.** Stories read as chapters without naming later quests. Totals appear only when the data proves them. Search shows a quest's requirements and which ones you meet.
-- **Other things to do.** Hints cover professions, unspent talents, hearths and unexplored areas. Class spell reminders and automatic trainer visits are off by default; enable them under Settings > AddOns > Adventure Guide Forever > Route. PvP shows your rank, its next reward and available battlegrounds, with the nearest battlemaster.
+- **Stories and search.** Stories read as chapters without naming later quests. Search puts exact titles and titles starting with your words first. It shows a quest's requirements and which ones you meet. For a locked quest it names the earliest quest in its chain you can take, and a shift-click adds that one.
+- **Other things to do.** Hints cover professions, unspent talents, hearths and unexplored areas. Class spell reminders and trainer visits are off by default; turn them on in Route settings. PvP shows your rank, its next reward and the nearest battlemaster.
 - **Your say.** Skip a step until your next reload, hide a journey or rule out a quest on this character. Shift-click a search result or map quest giver to add quests. *Skipped* restores hidden suggestions. The guide never abandons quests for you. Map marks are off by default.
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png" width="400" alt="The Adventure Guide tracker section"></p>
@@ -97,9 +99,9 @@ No code needed:
 
 ## Development
 
-Run the full gate in [AGENTS.md](AGENTS.md#commands). It needs LuaJIT, luacheck, StyLua, LuaLS 3.19.1, Python and ruff; type checking fetches pinned WoW API annotations on first use.
+Run the full gate in [AGENTS.md](AGENTS.md#commands). `python3 tools/doctor.py` lists the tools it needs, with a fix for each problem.
 
-Screenshots use Pillow and the [wow-mock-screenshots library](https://github.com/cjber/skills/tree/main/wow-mock-screenshots). Set `WOWMOCK` to the directory containing `wowmock.py`, then run `python3 tools/screenshots.py` twice to check reproducibility.
+Screenshots use Pillow and the [wow-mock-screenshots library](https://github.com/cjber/skills/tree/main/wow-mock-screenshots): set `WOWMOCK` to its directory and run `python3 tools/screenshots.py` twice; both runs must match.
 
 [tests/README.md](tests/README.md) describes the test layers and the harness. Contributing and security policies are inherited from [cjber/.github](https://github.com/cjber/.github). Read [AGENTS.md](AGENTS.md) before changing code.
 
