@@ -175,7 +175,7 @@ function ns.RegisterSettings()
 	-- The Forever addons page, shared by all five addons (UI/ForeverFamily.lua), with the suggestions setting on it.
 	local family = Settings.RegisterCanvasLayoutSubcategory(
 		category,
-		ns.Family.CreatePanel(nil, ns.FamilyDB, "AdventureGuideForever"),
+		ns.Family.CreatePanel(nil, ns.FamilyDB, "AdventureGuideForever", ns.Companions.L),
 		ns.L.FAMILY_PAGE
 	)
 	Settings.RegisterInitializer(

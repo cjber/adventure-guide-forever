@@ -38,6 +38,15 @@ local HINTS = {
 	},
 }
 
+-- The shared module (UI/ForeverFamily.lua) looks its words up by their English phrase; ours are keyed by name, so this
+-- maps each phrase (Locales/enUS.lua's FAMILY_ lines, as written) to our line, translated when a translation has it.
+-- Built here, after every Locales file has loaded.
+---@type table<string, string>
+Companions.L = {}
+for key, phrase in pairs(ns.FamilyPhrases) do
+	Companions.L[phrase] = L[key]
+end
+
 -- The line for `addon` and whether it suggests installing it (grey), or nil while it runs, suggestions are off or
 -- the player dismissed it.
 ---@param addon string a key of HINTS
@@ -72,7 +81,7 @@ function Companions.AddMenu(root, addon)
 	local hint, db = HINTS[addon], ns.FamilyDB()
 	if hint.menu and ns.Family.Hint(db, hint.key, addon) then
 		root:CreateButton(GRAY_FONT_COLOR:WrapTextInColorCode(hint.menu), function()
-			ns.Family.ShowLink(db, hint.key, addon)
+			ns.Family.ShowLink(db, hint.key, addon, nil, Companions.L)
 		end)
 	end
 end

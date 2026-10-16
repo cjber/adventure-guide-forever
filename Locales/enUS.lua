@@ -449,6 +449,24 @@ ns.L = {
 	-- Companion hints (Companions.lua): what another Forever addon would add here, while it isn't loaded. The
 	-- Forever addons page itself and its setting are UI/ForeverFamily.lua's, shared by all five addons.
 	FAMILY_PAGE = "Forever addons",
+	-- The Forever addons page and its address window (UI/ForeverFamily.lua): the shared module looks each up by its
+	-- English, so these keep its words exactly (Companions.lua maps them, tests/companions_spec.lua checks).
+	FAMILY_LINE_SPF = "Plans the quickest way anywhere and guides you there, with live boat and zeppelin times.",
+	FAMILY_LINE_AGF = "Picks quests for your level and plans them into one journey.",
+	FAMILY_LINE_SKILLUP = "Plans the cheapest route to your next profession rank.",
+	FAMILY_LINE_LEGACY = "Shows the Legacy challenges you can advance in each zone.",
+	FAMILY_LINE_TWEAKS = "Quest automation, rare alerts and merchant handling for the default UI.",
+	FAMILY_SUGGEST = "Suggest my other Forever addons",
+	FAMILY_SUGGEST_ABOUT = "Show a quiet line where one of my other Forever addons would help. "
+		.. "Only for addons you don't have.",
+	FAMILY_STATE_ON = "On",
+	FAMILY_STATE_OFF = "Installed, turned off",
+	FAMILY_STATE_MISSING = "Not installed",
+	FAMILY_THIS_ADDON = "This addon",
+	FAMILY_COPY_LINK = "Copy link",
+	FAMILY_COPY_HINT = "Copy the address, then open it in your browser.",
+	FAMILY_CLOSE = "Close",
+	FAMILY_DONT_SUGGEST = "Don't suggest this again",
 	SPF_FAMILY_MENU = "Walked routes and boat times: Shortest Path Forever",
 	SKILLUP_FAMILY = "SkillUp Forever plans the cheapest route to your next profession rank.",
 	SKILLUP_FAMILY_MENU = "Cheapest route to your next rank: SkillUp Forever",
@@ -480,3 +498,13 @@ ns.L = {
 	RXP_SETUP_SKILLUP = "SkillUp: equipment and shopping journeys are available.",
 	RXP_SETUP_SETTINGS = "Change this later in AddOns settings.",
 }
+
+-- The Forever addons page's words in English, kept before a translation replaces them: the shared module looks its
+-- words up by these (Integrations/Companions.lua).
+---@type table<string, string>
+ns.FamilyPhrases = {}
+for key, text in pairs(ns.L) do
+	if key:find("^FAMILY_") then
+		ns.FamilyPhrases[key] = text
+	end
+end

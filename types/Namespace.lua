@@ -1402,6 +1402,21 @@
 ---@field SETTING_WHATS_NEW string
 ---@field SETTING_WHATS_NEW_TOOLTIP string
 ---@field FAMILY_PAGE string the Forever addons settings page's name
+---@field FAMILY_LINE_SPF string the Forever addons page: Plans the quickest way anywhere and guid
+---@field FAMILY_LINE_AGF string the Forever addons page: Picks quests for your level and plans th
+---@field FAMILY_LINE_SKILLUP string the Forever addons page: Plans the cheapest route to your next pr
+---@field FAMILY_LINE_LEGACY string the Forever addons page: Shows the Legacy challenges you can adva
+---@field FAMILY_LINE_TWEAKS string the Forever addons page: Quest automation, rare alerts and mercha
+---@field FAMILY_SUGGEST string the Forever addons page: Suggest my other Forever addons
+---@field FAMILY_SUGGEST_ABOUT string the Forever addons page: Show a quiet line where one of my other
+---@field FAMILY_STATE_ON string the Forever addons page: On
+---@field FAMILY_STATE_OFF string the Forever addons page: Installed, turned off
+---@field FAMILY_STATE_MISSING string the Forever addons page: Not installed
+---@field FAMILY_THIS_ADDON string the Forever addons page: This addon
+---@field FAMILY_COPY_LINK string the Forever addons page: Copy link
+---@field FAMILY_COPY_HINT string the Forever addons page: Copy the address, then open it in your b
+---@field FAMILY_CLOSE string the Forever addons page: Close
+---@field FAMILY_DONT_SUGGEST string the Forever addons page: Don't suggest this again
 ---@field SPF_FAMILY_MENU string a step's menu entry without Shortest Path Forever installed
 ---@field SKILLUP_FAMILY string a profession trainer's tooltip without SkillUp Forever installed
 ---@field SKILLUP_FAMILY_MENU string a profession trainer's menu entry without SkillUp Forever installed
@@ -1412,12 +1427,14 @@
 ---@field Line fun(addon: string): string?, boolean? the line for a companion that isn't running, and whether it suggests installing it
 ---@field AddLine fun(tooltip: GameTooltip, addon: string) the line at a tooltip's foot: a suggestion grey, an "Enable" line as an instruction
 ---@field AddMenu fun(root: AGFMenuDescription, addon: string) the grey entry that shows a missing companion's address
+---@field L table<string, string> the shared module's English phrases -> our lines, for its locale argument
 
 ---@class AGFNamespace
 ---@field WhatsNew fun() on login: print WHATS_NEW once if the version changed since the last one seen
 ---@field Companions AGFCompanions
 ---@field Family ForeverFamilyAPI the shared Forever addons module (UI/ForeverFamily.lua)
 ---@field FamilyDB fun(): ForeverFamilyDB? the account-wide saved variables its page and hints use
+---@field FamilyPhrases table<string, string> FAMILY_ key -> its English, before any translation
 
 ---@class AGFModel
 ---@field ObjectiveDone fun(data: AGFData, entry?: AGFLogQuest, slot: integer): boolean

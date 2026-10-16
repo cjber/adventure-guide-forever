@@ -141,6 +141,22 @@ for _, case in ipairs({
 	clean(h, addon)
 end
 
+-- The shared module looks its words up by English phrase: every one it asks for maps to our line of the same words,
+-- which a translation of its FAMILY_ key replaces.
+do
+	local h = Load()
+	local file = assert(io.open("UI/ForeverFamily.lua", "rb"))
+	local source = file:read("*a")
+	file:close()
+	local asked = 0
+	for phrase in source:gmatch('L%["([^"]+)"%]') do
+		asked = asked + 1
+		equal(h.ns.Companions.L[phrase], phrase, "the module's phrase has our line: " .. phrase)
+	end
+	equal(asked >= 16, true, "the module's phrases were found")
+	clean(h, "phrases")
+end
+
 -- The old "Suggest companion addons" setting carries over: off stays off, and the old key goes.
 do
 	local h = Load({ db = { suggestCompanions = false } })
@@ -225,7 +241,7 @@ do
 	local entry = assert(Find(root, h.ns.L.SPF_FAMILY_MENU), "step menu without Shortest Path: the grey entry")
 	equal(entry.text, "|cff7f7f7f" .. h.ns.L.SPF_FAMILY_MENU .. "|r", "step menu: grey")
 	entry.onClick()
-	local window = assert(h.G.ForeverFamilyLink, "the entry opens the address window")
+	local window = assert(h.G["ForeverFamilyLink" .. h.G.ForeverFamily.VERSION], "the entry opens the address window")
 	equal(window:IsShown(), true, "the address window shows")
 	window:Hide()
 	h.combat = true
