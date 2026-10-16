@@ -67,8 +67,8 @@ step = Inside(middle, Passed(near))
 equal(step.here, true, "inside: walking into the next spot makes it theirs again")
 step = Inside({ x = 0.42 + 0.0005 }, Passed(far))
 equal(step.here, true, "inside: a step off a spot's centre is still at it")
-step, at = Inside({ x = 0.4401 }, Passed(near))
-equal(at, middle, "camp at: the spot whose edge is nearest")
+local _, nearestEdge = Inside({ x = 0.4401 }, Passed(near))
+equal(nearestEdge, middle, "camp at: the spot whose edge is nearest")
 local wide = Shape(0.42)
 wide.r = 400
 step = Area()
@@ -259,8 +259,8 @@ do
 	equal(h.ns.Route().steps[1].here, nil, "walk: and leads on again")
 	-- The player's own order runs over the plan and sets the head's `here` again; Next spot still leads on.
 	local keys = {}
-	for _, step in ipairs(h.ns.Route().steps) do
-		keys[#keys + 1] = step.orderKey
+	for _, routeStep in ipairs(h.ns.Route().steps) do
+		keys[#keys + 1] = routeStep.orderKey
 	end
 	h.ns.Prefs().customOrders = { [h.ns.Route().journey] = keys }
 	h.ns.Invalidate()

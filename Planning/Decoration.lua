@@ -179,9 +179,9 @@ end
 -- moves to the nearest spot not passed over, by distance from the player. A spot not passed over keeps the arrow, so
 -- walking towards it, a combat rebuild or the planner choosing it again never moves it on. While the player stands
 -- in the area (its `here`) and has passed over a spot of it, the area stays theirs while the spot they are at is one
--- not passed over (Model.AtFreshCamp); at one passed over, the point moves on as above and the step stops being `here`, so the arrow
--- and pin lead them to it. ns.NextCamp starts the round again before every spot is passed over. Nothing changes for
--- a step with one spot.
+-- not passed over (Model.AtFreshCamp); at one passed over, the point moves on as above and the step stops being
+-- `here`, so the arrow and pin lead them to it. ns.NextCamp starts the round again before every spot is passed over.
+-- Nothing changes for a step with one spot.
 ---@param step AGFStep
 ---@param passed table<string, true> the spots passed over, by Model.SpotKey
 function Model.Camp(data, player, step, passed)
