@@ -689,7 +689,7 @@ local function CommitLap(lap)
 		end, at, origin)
 		-- The area the player stands in leads over the committed order; the town the player stands in already leads
 		-- through the greedy loop's front, so an unfinished step is never passed for a walk away.
-		local here = Model.Here(data, player, route, State.heldHere)
+		local here = Model.Here(data, player, route, State.heldHere, State.camps)
 		local standsIn = here and route[here]
 		if standsIn and here > 1 then
 			-- Lead with the area the player stands in. A merged area can hold both objectives the player can work on and
@@ -722,7 +722,7 @@ local function CommitLap(lap)
 		route = Verify(lap, route)
 		-- Nearest first already puts the area the player stands in at the head; a merged visit keeps only the work
 		-- they can do now, not objectives for quests the route has yet to pick up elsewhere.
-		local here = Model.Here(data, player, route, State.heldHere)
+		local here = Model.Here(data, player, route, State.heldHere, State.camps)
 		local standsIn = here and route[here]
 		if standsIn and here == 1 and standsIn.planned then
 			local lead = LeadingArea(standsIn)

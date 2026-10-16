@@ -30,14 +30,10 @@ local function Reorder(route, input)
 		local keys = orders[card.key]
 		if keys then
 			card.steps = ns.Order.Merge(card.steps, keys, player.logMax, input.log)
-			local here = ns.Model.Here(input.data, player, card.steps)
+			-- As the plan reckoned it: the area it held, and the spots "Next spot" passed over.
+			local here = ns.Model.Here(input.data, player, card.steps, route.here, input.prefs.camps)
 			for index, step in ipairs(card.steps) do
 				step.here = index == 1 and here == 1 or nil
-			end
-			-- The player's order can make the area they stand in the head again; "Next spot" still leads on from it.
-			local first, camps = card.steps[1], input.prefs.camps
-			if first and first.here and first.kind == "area" and camps and camps[first.key] then
-				ns.Model.Camp(input.data, player, first, camps[first.key])
 			end
 			ns.Planner.Journeys.Summarise(card)
 		end

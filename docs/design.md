@@ -47,9 +47,10 @@ abandons quests.
 - **2.8 Menus.** Share step actions between the guide and tracker. An area with more than one objective spot offers
   Next spot: the spot it points at is passed over for the session and the point moves to the nearest spot not passed
   over; a spot not passed over keeps the arrow through rebuilds and walking. Inside the area it passes over the spot
-  the player is at (the nearest edge, since an area's spots are close and often overlap); while the spot they are at
-  is passed over, the area stops being "here" and the arrow leads on, and at a spot not passed over it is theirs. Walking between spots
-  rebuilds when that changes. Passing over the last spot starts the round again from it.
+  the player is at (the nearest edge, since an area's spots are close and often overlap). Model.Here doesn't count
+  standing at a spot passed over as standing in the area (with a switching margin), so the arrow leads on, and at a
+  spot not passed over it is theirs; walking between spots rebuilds when that changes. Passing over the last spot
+  starts the round again from it.
 - **2.9 Tooltips.** Explain visits and quest difficulty. Town checklists tick completed givers;
   repeated visits share a map ring.
 - **2.10 Lifecycle.** Keep the chosen journey through rebuilds, travel and reloads. Resume paused
@@ -155,7 +156,8 @@ follow the shared family voice.
   An area step's point is the objective node nearest the player (a spawn group's medoid, or the generator's point
   inside the shape), so the marker sits on the work rather than on the shape's border; when the player is already
   inside the area the point stays the area's ring (its middle). The ring reaches past the shapes, so a broad area's
-  ground between its objectives counts as being in it. Standing in the area step 1 leads to is "you're here":
+  ground between its objectives counts as being in it; standing at a spot Next spot passed over does not (§2.8).
+  Standing in the area step 1 leads to is "you're here":
   its in-progress quest is selected, its travel line and numbered pin go, and the route stays on it until its
   objectives are done (a merged visit takes only the objectives the player can work on now).
 - **4.3 Committed order.** Preserve the chosen sequence and visit identities across rebuilds.

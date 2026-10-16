@@ -609,15 +609,11 @@ local function Walked()
 			ns.Invalidate()
 		end
 	end
-	local index = ns.Model.Here(ns.Data, here, steps, cachedRoute.here)
+	-- A spot "Next spot" passed over is not standing in its area (Model.Here), so walking between the spots of one
+	-- area rebuilds when that changes, as walking into or out of an area does.
+	local index = ns.Model.Here(ns.Data, here, steps, cachedRoute.here, sessionCamps)
 	local key = index and steps[index].key or nil
 	if key ~= hereKey and key ~= cachedRoute.here then
-		ns.Invalidate()
-	end
-	-- In an area where "Next spot" passed over a spot, walking into a spot not passed over makes it theirs again, and
-	-- walking out of one leads them on (Model.Camp); both are within the one area, so the key above doesn't change.
-	local passed = index == 1 and first.kind == "area" and sessionCamps[first.key]
-	if passed and ns.Model.AtFreshCamp(ns.Data, here, first, passed) ~= (first.here == true) then
 		ns.Invalidate()
 	end
 	hereKey = key

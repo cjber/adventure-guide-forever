@@ -47,41 +47,56 @@ equal(Camp(Passed(middle)), near.x, "camp: the middle passed over, the nearest l
 equal(Camp(Passed(middle, near)), far.x, "camp: then the far one")
 equal(Camp(Passed(middle, near, far)), middle.x, "camp: all passed over (NextCamp never leaves it so), nothing moves")
 equal(Camp(Passed(middle), far), far.x, "camp: a spot not passed over keeps the arrow")
--- Standing in the area (#151): the spot that counts is the one the player stands in, not the arrow's.
-local function Inside(at, passed)
-	local step = Area()
-	step.here = true
-	local stand = { map = MAP, x = at.x, y = 0.5 }
-	local camp = Model.CampAt(data, stand, step)
-	Model.Camp(data, stand, step, passed)
-	return step, camp
+-- Standing in the area (#151): a spot passed over isn't standing in it (Model.Here), so the arrow leads on from there.
+local function Stand(x, y)
+	return { map = MAP, x = x, y = y or 0.5 }
 end
-local step, at = Inside(near, Passed())
-equal(step.here, true, "inside: in a spot not passed over, the area stays theirs")
-equal(step.x, middle.x, "inside: and the point stays")
-equal(at, near, "inside: the spot passed over is the one stood in, not the arrow's")
-step = Inside(near, Passed(near))
-equal(step.here, nil, "inside: in a spot passed over, the step stops being here")
-equal(step.x, middle.x, "inside: and points at the nearest spot not passed over")
-step = Inside(middle, Passed(near))
-equal(step.here, true, "inside: walking into the next spot makes it theirs again")
-step = Inside({ x = 0.42 + 0.0005 }, Passed(far))
-equal(step.here, true, "inside: a step off a spot's centre is still at it")
-local _, nearestEdge = Inside({ x = 0.4401 }, Passed(near))
-equal(nearestEdge, middle, "camp at: the spot whose edge is nearest")
+local function At(x, passed, held)
+	return Model.AtPassedSpot(data, Stand(x), Area(), passed, held == true)
+end
+equal(At(near.x, Passed()), false, "nothing passed over: never")
+equal(At(near.x, Passed(near), true), true, "at a spot passed over: not here")
+equal(At(middle.x, Passed(near), true), false, "at a spot not passed over: here")
+equal(At(near.x, Passed(near, middle, far), true), false, "no spot left that isn't passed over: here")
+-- The line between near and middle: their edges are equal there, so held decides, and CAMP_SWITCH either side.
+local line = (near.x + middle.x) / 2
+equal(At(line, Passed(near), true), false, "on the line, held: stays here")
+equal(At(line, Passed(near), false), true, "on the line, not held: stays led on")
+local step
+do
+	local area = Area()
+	area.r = 400
+	equal(Model.Here(data, Stand(near.x), { area }), 1, "Here: standing in the area")
+	equal(
+		Model.Here(data, Stand(near.x), { area }, nil, { [area.key] = Passed(near) }),
+		nil,
+		"Here: not at its spot passed over"
+	)
+	equal(
+		Model.Here(data, Stand(middle.x), { area }, nil, { [area.key] = Passed(near) }),
+		1,
+		"Here: at a fresh spot, yes"
+	)
+	equal(
+		Model.Here(data, Stand(near.x), { area }, nil, { other = Passed(near) }),
+		1,
+		"Here: another area's passed spots"
+	)
+end
+-- Next spot inside the area passes over the spot the player is at, not the arrow's.
+step = Area()
+step.here = true
+equal(Model.CampAt(data, Stand(near.x), step), near, "camp at: the spot stood in, not the arrow's")
+equal(Model.CampAt(data, Stand(0.4401), step), middle, "camp at: the spot whose edge is nearest")
 local wide = Shape(0.42)
 wide.r = 400
 step = Area()
 step.here, step.shapes = true, { wide, middle }
-equal(
-	Model.CampAt(data, { map = MAP, x = 0.455, y = 0.5 }, step),
-	wide,
-	"camp at: the spot stood in, though another centre is nearer"
-)
+equal(Model.CampAt(data, Stand(0.455), step), wide, "camp at: the spot stood in, though another centre is nearer")
 step = Area()
 step.here = true
-Model.Camp(data, { map = MAP, x = 0.43, y = 0.9 }, step, Passed(near))
-equal(step.here, nil, "in the ring, nearest a spot passed over: on to the nearest spot not passed over")
+Model.Camp(data, player, step, Passed(middle))
+equal(step.x, middle.x, "camp: never moves a step that is here")
 step = Area()
 equal(Model.CampAt(data, player, step), step, "camp at: away from the area, the arrow's spot")
 step = Area()
@@ -257,6 +272,7 @@ do
 	equal(Walk(spots[2]), 0, "walk: standing on at it, no rebuild")
 	equal(Walk(first) > 0, true, "walk: back to the spot passed over rebuilds")
 	equal(h.ns.Route().steps[1].here, nil, "walk: and leads on again")
+	equal(Walk(first), 0, "walk: standing on at the spot passed over, no rebuild")
 	-- The player's own order runs over the plan and sets the head's `here` again; Next spot still leads on.
 	local keys = {}
 	for _, routeStep in ipairs(h.ns.Route().steps) do

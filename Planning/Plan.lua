@@ -27,8 +27,8 @@ end
 ---@param last? AGFRoute the route before, whose committed orders (`orders`) this one keeps to
 ---@param inputs? AGFPlanInputs what the player's order and skips ask of this build; none of them when nil
 function Model.Plan(data, player, completed, log, prefs, mapName, instanceName, last, inputs)
-	State.skippedSeen, State.committedOrders, State.planDocks, State.heldHere =
-		{}, {}, { data = data }, last and last.here
+	State.skippedSeen, State.committedOrders, State.planDocks, State.heldHere, State.camps =
+		{}, {}, { data = data }, last and last.here, prefs.camps
 	local forget = inputs and inputs.forget or NONE
 	for key, order in pairs(last and last.orders or NONE) do
 		State.committedOrders[key] = not forget[key] and order or nil
@@ -53,7 +53,8 @@ function Model.Plan(data, player, completed, log, prefs, mapName, instanceName, 
 	route.lead = story and story.kind == "story" and story.zone or nil
 	route.left = lead and lead ~= route.lead and lead or left
 	route.skipped, State.skippedSeen, route.stranded = State.skippedSeen, nil, stranded or nil
-	route.orders, State.committedOrders, State.planDocks, State.heldHere = State.committedOrders, nil, nil, nil
+	route.orders, State.committedOrders, State.planDocks, State.heldHere, State.camps =
+		State.committedOrders, nil, nil, nil, nil
 	FinishRoute(data, player, completed, log, route, last, prefs)
 	local head = route.steps[1]
 	route.here = head and head.here and head.key or nil

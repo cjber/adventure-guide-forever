@@ -140,11 +140,15 @@ function Model.Spots(step)
 	return spots
 end
 
--- The spot of an area step the player is at: the one whose edge is nearest them (the deepest, inside one).
+-- The spot "Next spot" passes over: the one the step's arrow points at, or, while the player stands in the area (its
+-- `here`), the spot whose edge is nearest them (the deepest, inside one), since that is the camp they found cleared.
 ---@param step AGFStep
 ---@param player? AGFPlayer|{map?: integer, x?: number, y?: number}
----@return AGFNode?
-local function SpotAt(data, player, step)
+---@return AGFNode|AGFStep
+function Model.CampAt(data, player, step)
+	if not step.here then
+		return step
+	end
 	local best, bestEdge = nil, nil
 	for _, spot in ipairs(Model.Spots(step)) do
 		local yards = player and Model.Yards(data, player, spot)
@@ -152,48 +156,19 @@ local function SpotAt(data, player, step)
 			best, bestEdge = spot, yards - spot.r
 		end
 	end
-	return best
-end
-
--- The spot "Next spot" passes over: the one the step's arrow points at, or, while the player stands in the area (its
--- `here`), the spot they are at (SpotAt), since that is the camp they found cleared.
----@param step AGFStep
----@param player? AGFPlayer|{map?: integer, x?: number, y?: number}
----@return AGFNode|AGFStep
-function Model.CampAt(data, player, step)
-	return step.here and SpotAt(data, player, step) or step
-end
-
--- Whether the spot of the area the player is at (SpotAt) is one not passed over. An area's spots lie within a short
--- gap of one another and their rings often overlap, so the nearest edge says which one they are at, not a ring test.
----@param step AGFStep
----@param player? AGFPlayer|{map?: integer, x?: number, y?: number}
----@param passed table<string, true> the spots passed over, by Model.SpotKey
----@return boolean
-function Model.AtFreshCamp(data, player, step, passed)
-	local spot = SpotAt(data, player, step)
-	return spot ~= nil and not passed[Model.SpotKey(spot)]
+	return best or step
 end
 
 -- "Next spot" (docs/design.md §2.8): while the spot an area step points at is one the player passed over, its point
 -- moves to the nearest spot not passed over, by distance from the player. A spot not passed over keeps the arrow, so
--- walking towards it, a combat rebuild or the planner choosing it again never moves it on. While the player stands
--- in the area (its `here`) and has passed over a spot of it, the area stays theirs while the spot they are at is one
--- not passed over (Model.AtFreshCamp); at one passed over, the point moves on as above and the step stops being
--- `here`, so the arrow and pin lead them to it. ns.NextCamp starts the round again before every spot is passed over.
--- Nothing changes for a step with one spot.
+-- walking towards it, a combat rebuild or the planner choosing it again never moves it on. Not while the player is
+-- "here" (Model.Here, which a spot passed over doesn't count for), nor for a step with one spot; once every spot
+-- left is passed over nothing moves (ns.NextCamp starts the round again first, but objectives can finish).
 ---@param step AGFStep
 ---@param passed table<string, true> the spots passed over, by Model.SpotKey
 function Model.Camp(data, player, step, passed)
 	local spots = Model.Spots(step)
-	if #spots < 2 then
-		return
-	end
-	if step.here then
-		if Model.AtFreshCamp(data, player, step, passed) then
-			return
-		end
-	elseif not passed[Model.SpotKey(step)] then
+	if step.here or #spots < 2 or not passed[Model.SpotKey(step)] then
 		return
 	end
 	local best, bestYards
@@ -205,7 +180,6 @@ function Model.Camp(data, player, step, passed)
 	end
 	if best then
 		step.map, step.x, step.y = best.map, best.x, best.y
-		step.here = nil
 	end
 end
 

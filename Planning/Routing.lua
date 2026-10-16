@@ -472,13 +472,52 @@ end
 -- does not close it (Workable). While the head is an open area it is the only area that can lead, so walking into a
 -- later area does not advance the route past objectives the player has not finished (a step advances only when its
 -- state is satisfied). Inside is within one of its shapes or the ring round them (InArea); the area they stood in
--- (`held`, its key) lets go only past HERE_MARGIN more, so its edge never flickers. Nil when they stand in none.
+-- (`held`, its key) lets go only past HERE_MARGIN more, so its edge never flickers. Standing at a spot "Next spot"
+-- passed over (AtPassedSpot, `camps`) is not standing in it. Nil when they stand in none.
 local HERE_MARGIN = 30
+-- How much nearer a spot's edge must be before standing at it changes from a spot "Next spot" passed over to one it
+-- didn't, or back: the area's "here" never flickers on the line between two spots.
+local CAMP_SWITCH = 15
+
+-- Whether `where` stands at a spot of area `step` that "Next spot" passed over (docs/design.md §2.8), so the area isn't
+-- theirs to clear there and the arrow leads on (Model.Camp): the passed-over spot whose edge is nearest them is nearer
+-- than every spot not passed over, by CAMP_SWITCH while the area is `held` here and less CAMP_SWITCH otherwise. False
+-- with no spot passed over, or none left that isn't. An area's spots are close and their rings often overlap, so the
+-- nearest edge says which one they are at, not a ring test.
+---@param where {map: integer, x: number, y: number}
+---@param step AGFStep
+---@param passed? table<string, true> the spots passed over, by Model.SpotKey
+---@param held boolean
+---@return boolean
+local function AtPassedSpot(data, where, step, passed, held)
+	if not (passed and next(passed)) then
+		return false
+	end
+	local passedEdge, freshEdge
+	for _, spot in ipairs(Model.Spots(step)) do
+		local yards = Model.Yards(data, where, spot)
+		if yards then
+			local edge = yards - spot.r
+			if passed[Model.SpotKey(spot)] then
+				passedEdge = math.min(passedEdge or edge, edge)
+			else
+				freshEdge = math.min(freshEdge or edge, edge)
+			end
+		end
+	end
+	if not (passedEdge and freshEdge) then
+		return false
+	end
+	return freshEdge - passedEdge > (held and CAMP_SWITCH or -CAMP_SWITCH)
+end
+Model.AtPassedSpot = AtPassedSpot
+
 ---@param where? {map?: integer, x?: number, y?: number}
 ---@param steps AGFStep[]
 ---@param held? string
+---@param camps? table<string, table<string, true>> the spots "Next spot" passed over, by area step key
 ---@return integer?
-function Model.Here(data, where, steps, held)
+function Model.Here(data, where, steps, held, camps)
 	if not ValidPlace(where) then
 		return nil
 	end
@@ -490,7 +529,11 @@ function Model.Here(data, where, steps, held)
 		and (head.kind == "area" or (head.kind == "guide" and head.shapes and #head.shapes > 0))
 		and Workable(head)
 	then
-		return InArea(data, where, head, head.key == held and HERE_MARGIN or 0) and 1 or nil
+		local mine = head.key == held
+		return InArea(data, where, head, mine and HERE_MARGIN or 0)
+				and not AtPassedSpot(data, where, head, camps and camps[head.key], mine)
+				and 1
+			or nil
 	end
 	for index, step in ipairs(steps) do
 		if
@@ -498,6 +541,7 @@ function Model.Here(data, where, steps, held)
 			and (step.kind == "area" or (step.kind == "guide" and step.shapes and #step.shapes > 0))
 			and Workable(step)
 			and InArea(data, where, step, step.key == held and HERE_MARGIN or 0)
+			and not AtPassedSpot(data, where, step, camps and camps[step.key], step.key == held)
 		then
 			return index
 		end
