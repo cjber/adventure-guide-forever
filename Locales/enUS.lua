@@ -499,12 +499,16 @@ ns.L = {
 	RXP_SETUP_SETTINGS = "Change this later in AddOns settings.",
 }
 
--- The Forever addons page's words in English, kept before a translation replaces them: the shared module looks its
--- words up by these (Integrations/Companions.lua).
+-- The Forever addons page's words in English, kept before a translation replaces them. The shared module
+-- (UI/ForeverFamily.lua, loaded next) reads its words from ns.FamilyL by their English phrase, since our ns.L is keyed
+-- by name: English here, and Integrations/Companions.lua puts each translated line in once every Locales file has loaded.
 ---@type table<string, string>
 ns.FamilyPhrases = {}
+---@type table<string, string>
+ns.FamilyL = {}
 for key, text in pairs(ns.L) do
 	if key:find("^FAMILY_") then
 		ns.FamilyPhrases[key] = text
+		ns.FamilyL[text] = text
 	end
 end

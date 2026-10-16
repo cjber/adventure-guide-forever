@@ -1427,7 +1427,6 @@
 ---@field Line fun(addon: string): string?, boolean? the line for a companion that isn't running, and whether it suggests installing it
 ---@field AddLine fun(tooltip: GameTooltip, addon: string) the line at a tooltip's foot: a suggestion grey, an "Enable" line as an instruction
 ---@field AddMenu fun(root: AGFMenuDescription, addon: string) the grey entry that shows a missing companion's address
----@field L table<string, string> the shared module's English phrases -> our lines, for its locale argument
 
 ---@class AGFNamespace
 ---@field WhatsNew fun() on login: print WHATS_NEW once if the version changed since the last one seen
@@ -1435,6 +1434,7 @@
 ---@field Family ForeverFamilyAPI the shared Forever addons module (UI/ForeverFamily.lua)
 ---@field FamilyDB fun(): ForeverFamilyDB? the account-wide saved variables its page and hints use
 ---@field FamilyPhrases table<string, string> FAMILY_ key -> its English, before any translation
+---@field FamilyL table<string, string> the shared module's L: its English phrases -> our lines, translated
 
 ---@class AGFModel
 ---@field ObjectiveDone fun(data: AGFData, entry?: AGFLogQuest, slot: integer): boolean

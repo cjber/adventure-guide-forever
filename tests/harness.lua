@@ -720,6 +720,10 @@ function harness.load(options)
 	end
 	-- A button's label, as wide as a font string's.
 	Methods.GetTextWidth = Methods.GetStringWidth
+	-- A button's label font string: the button itself stands in, measuring the text SetText gave it.
+	function Methods:GetFontString()
+		return self.objectType == "Button" and self or nil
+	end
 	-- The lines the text wraps to: as the layout pass counted them in the client's font, else each word's estimate
 	-- wrapped greedily in the width set; at most SetMaxLines'.
 	function Methods:GetNumLines()

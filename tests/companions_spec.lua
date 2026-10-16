@@ -151,7 +151,7 @@ do
 	local asked = 0
 	for phrase in source:gmatch('L%["([^"]+)"%]') do
 		asked = asked + 1
-		equal(h.ns.Companions.L[phrase], phrase, "the module's phrase has our line: " .. phrase)
+		equal(h.ns.FamilyL[phrase], phrase, "the module's phrase has our line: " .. phrase)
 	end
 	equal(asked >= 16, true, "the module's phrases were found")
 	clean(h, "phrases")
@@ -241,7 +241,7 @@ do
 	local entry = assert(Find(root, h.ns.L.SPF_FAMILY_MENU), "step menu without Shortest Path: the grey entry")
 	equal(entry.text, "|cff7f7f7f" .. h.ns.L.SPF_FAMILY_MENU .. "|r", "step menu: grey")
 	entry.onClick()
-	local window = assert(h.G["ForeverFamilyLink" .. h.G.ForeverFamily.VERSION], "the entry opens the address window")
+	local window = assert(h.G.ForeverFamilyLink, "the entry opens the address window")
 	equal(window:IsShown(), true, "the address window shows")
 	window:Hide()
 	h.combat = true
