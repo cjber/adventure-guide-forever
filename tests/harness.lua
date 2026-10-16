@@ -125,10 +125,15 @@ local function Corpus(name)
 	if not chunk then
 		error(("%s: %s. Build the test corpus first: python3 tools/gen_corpus.py"):format(path, problem), 3)
 	end
-	-- Built from another QuestieDB release than the one pinned now (a pull moved the pin): build it again.
+	-- Built from another QuestieDB release than the one pinned now (a pull moved the pin): build it again. The
+	-- package check runs the smoke spec with tests/ laid over the packaged files and no tools/, so no pin to read.
 	local pinned, header
-	for line in io.lines("tools/gen_corpus.py") do
+	local generator = io.open("tools/gen_corpus.py", "r")
+	for line in generator and generator:lines() or function() end do
 		pinned = pinned or line:match('^QUESTIEDB_SHA256 = "(%x+)"')
+	end
+	if generator then
+		generator:close()
 	end
 	local file = assert(io.open(path, "rb"))
 	for _ = 1, 8 do
