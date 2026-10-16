@@ -26,7 +26,7 @@ These images are generated previews of the guide UI.
 
 - **RestedXP guides.** Read RestedXP's instructions and objectives in the Adventure tab and tracker. Choose a guide from the Continue cards and move between its steps. Turn off *Use RestedXP guides* to return to Adventure Guide recommendations.
 
-- **What to do next.** The map guide offers two Continue cards and one per other section. Quests in your log is the default suggestion.
+- **What to do next.** The map guide offers Continue cards, with Quests in your log the default.
 - **Journeys.** Finish loose ends, follow zone stories or pick up class quests. Dungeon and battleground journeys are opt-in.
 - **Dungeons.** Check quests and prerequisites, then visit their givers. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) supplies bosses and loot.
 - **Full guide.** Browse the route and the area's quest outline.
@@ -42,7 +42,7 @@ Forever's new quests are only considered once they are in your log, and a missin
 
 ![Dungeon boss drops](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/loot.png)
 
-Right-click a dungeon card to browse AtlasLoot bosses and their drops with native item tooltips.
+Right-click a dungeon card for AtlasLoot bosses and drops, with item tooltips.
 
 ## Usage
 
