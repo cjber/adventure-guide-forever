@@ -46,7 +46,7 @@ Right-click a dungeon card to browse AtlasLoot bosses and their drops with nativ
 
 ## Usage
 
-`/agf`, `/adventureguide` or the addon compartment opens the guide on the world map. Options are in the guide's cog and Settings > AddOns > Adventure Guide, whose Forever addons page lists my other addons.
+`/agf`, `/adventureguide` or the addon compartment opens the guide on the world map. Options are in the guide's cog and Settings > AddOns > Adventure Guide, whose Forever addons page lists all five Forever addons.
 
 Translations are welcome on GitHub: see the [Locales folder](https://github.com/cjber/adventure-guide-forever/tree/main/Locales).
 

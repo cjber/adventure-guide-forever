@@ -14,9 +14,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [0.15.0] - 2026-10-16
 
-- **A Forever addons page in the settings.** Settings > AddOns > Adventure Guide has a new *Forever addons* page. It lists my five Forever addons, says whether each is on, turned off or not installed, and has a *Copy link* button that shows each one's address to copy. Its *Suggest my other Forever addons* box replaces *Suggest companion addons*; if you had that turned off, it stays off.
+- **A Forever addons page in the settings.** Settings > AddOns > Adventure Guide has a new *Forever addons* page. It lists my five Forever addons and, for each of the others, says whether it's on, turned off or not installed, with a *Copy link* button that shows its address to copy. Its *Suggest my other Forever addons* box replaces *Suggest companion addons*; if you had that turned off, it stays off.
 
-- **Suggestions for my other addons are quieter.** They are grey now and show only for an addon you don't have. A step's menu, a dungeon card's menu and a profession trainer's menu offer the address, with *Don't suggest this again*. A trainer for your next profession rank mentions SkillUp Forever, which plans the cheapest route there, and a dungeon card says to enable Tweaks Forever when it's installed but turned off.
+- **Suggestions for my other addons are quieter.** They are grey now and show only for an addon you don't have, where it would help: a route step for Shortest Path Forever, a trainer for your next profession rank for SkillUp Forever, which plans the cheapest route there, and a dungeon card with no known entrance for Tweaks Forever. Each one's menu offers the address, with *Don't suggest this again* (never in combat). While suggestions are on, a dungeon card still says to enable Tweaks Forever when it's installed but turned off; with them off, no suggestion shows anywhere.
 
 - **The README credits the people and addons behind Adventure Guide Forever.** The players who reported bugs or asked for features, and Polestar, which inspired some features, are named, and THIRD_PARTY.md has the full list.
 

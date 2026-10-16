@@ -77,7 +77,7 @@ Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-
 | `/agf audit` | Compare the quest data with the game and report its source |
 | `/agf dump` | Save the drawn layout; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua` |
 
-Open the guide from its world-map tab or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide: starting routes on selection, tracking their quests, detaching the shared Forever tracker, and a Forever addons page that lists my other addons and turns off suggestions for them.
+Open the guide from its world-map tab or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including starting routes on selection, tracking their quests and detaching the shared Forever tracker. Its Forever addons page lists all five Forever addons, with a box to turn off suggestions.
 
 ## Where the quests come from
 
