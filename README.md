@@ -87,7 +87,25 @@ Forever's new quests are only considered once they are in your log. The guide re
 
 ## Works alongside
 
-QuestieDB and Questie are needed for pickup recommendations. Optional companions are [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) for bosses and loot, [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting and [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion. Tweaks Forever's Windows option moves the guide window. The guide's tracker section shares one column with the Shortest Path, SkillUp and Legacy sections, above your quests, and has its own switch when you prefer another guide. An empty column leaves your quests where Edit Mode or your UI addon put them.
+QuestieDB and Questie are needed for pickup recommendations. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) is an optional companion for bosses and loot. The guide's tracker section shares one column with the Shortest Path, SkillUp and Legacy sections, above your quests, and has its own switch when you prefer another guide. An empty column leaves your quests where Edit Mode or your UI addon put them.
+
+<!-- forever-family:start -->
+
+## My other Forever addons
+
+Each one works on its own, and they work together when you install more than one.
+
+| Addon | What it does |
+|---|---|
+| [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) | Plans journeys on foot, by air, by sea and through portals, with directions in the tracker. |
+| [Adventure Guide Forever](https://www.curseforge.com/wow/addons/adventure-guide-forever) | Suggests quests for your level and routes you from one to the next. |
+| [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) | Shows skill-up chances, recipe costs and levelling routes in the Professions window. |
+| [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) | Shows your unfinished Legacy challenges on the world map and tracks the ones you choose. |
+| [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) | Adds quest automation, rare alerts and merchant options to the game's settings. |
+
+<!-- forever-family:end -->
+
+Installed together, Shortest Path Forever plans the way to every stop, SkillUp Forever fills the Professions tab with your next skill-ups, and Legacy Forever adds your zone completion. Tweaks Forever supplies class trainer locations for spell reminders and each dungeon's entrance, and its Windows option moves the guide window.
 
 ## Ways to help
 
