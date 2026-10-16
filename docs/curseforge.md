@@ -54,7 +54,7 @@ For a bug report, paste what `/agf report` shows. For a wrong stop, paste `/agf 
 
 <!-- forever-family:start -->
 
-## My other Forever addons
+## The Forever addons
 
 Each one works on its own, and they work together when you install more than one.
 
