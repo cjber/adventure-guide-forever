@@ -1,4 +1,4 @@
--- Hand-written client facts for the test corpus (tests/fixtures/quests.lua), keyed by quest id. QuestieDB carries
+-- Hand-written client facts for the test corpus (tests/.corpus/quests.lua), keyed by quest id. QuestieDB carries
 -- only objective icon overrides, so the count a quest log would show, the timed flag and the elite tag come from
 -- the client at runtime. The harness serves them (C_QuestLog.GetQuestTagInfo and the quest log's objectives), and
 -- overlays the entries here on the corpus; a spec names only the quests it needs.

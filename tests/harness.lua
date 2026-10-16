@@ -114,12 +114,24 @@ local function ParseXML(text)
 	return root
 end
 
--- The test quest corpus (tests/fixtures/quests.lua). The addon no longer ships its own quest catalogue: in game,
--- quests come from QuestieDB. The specs keep this generated corpus as their deterministic model fixture.
+-- The test quest corpus (tests/.corpus/, built by tools/gen_corpus.py from the pinned QuestieDB release and never
+-- committed, since QuestieDB carries no licence). The addon no longer ships its own quest catalogue: in game, quests
+-- come from QuestieDB. The specs keep this generated corpus as their deterministic model fixture.
+---@param name string "quests" or "towns"
+---@return function
+local function Corpus(name)
+	local path = "tests/.corpus/" .. name .. ".lua"
+	local chunk, problem = loadfile(path)
+	if not chunk then
+		error(("%s: %s. Build the test corpus first: python3 tools/gen_corpus.py"):format(path, problem), 3)
+	end
+	return chunk
+end
+
 -- Loaded fresh each call, never cached: specs mutate quest records, and a shared table would leak between loads.
 ---@return table<integer, AGFQuest>
 function harness.fixtureQuests()
-	return assert(loadfile("tests/fixtures/quests.lua"))()
+	return Corpus("quests")()
 end
 
 -- Facts only the client gives at runtime, keyed by quest id (tests/fixtures/client.lua): the objective counts a
@@ -131,14 +143,14 @@ function harness.clientFacts()
 	return harness.facts
 end
 
--- Gives `data` the test corpus: its quests, and the towns that go with them (tests/fixtures/towns.lua: hub names,
+-- Gives `data` the test corpus: its quests, and the towns that go with them (tests/.corpus/towns.lua: hub names,
 -- role NPCs' sides and places, skill and faction names). In game the QuestieDB build composes all of these. The
 -- client facts overlay the quests they name, the way the live client's quest log and tag API would.
 ---@param data AGFData
 ---@return AGFData
 function harness.fixture(data)
 	data.quests = harness.fixtureQuests()
-	for key, value in pairs(assert(loadfile("tests/fixtures/towns.lua"))()) do
+	for key, value in pairs(Corpus("towns")()) do
 		data[key] = value
 	end
 	local facts = harness.clientFacts()

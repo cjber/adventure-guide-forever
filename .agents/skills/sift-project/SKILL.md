@@ -11,7 +11,7 @@ no `require`: the client loads the files `AdventureGuideForever.toc` lists, in t
 file receives `local addonName, ns = ...`, the addon's shared table. It ships as a zip built by the
 BigWigs packager (`.pkgmeta`) on a `v*` tag. Standard-library Python generators in `tools/` rebuild
 `Data/Geometry.lua` (`gen_quests.py`, route geometry from a pinned CMaNGOS classic-db dump and wago.tools
-DB2 exports; its quest corpus is test-only, in `tests/fixtures/quests.lua`), `Data/Forever.lua`
+DB2 exports; its test-only quest corpus is built by `gen_corpus.py` into the gitignored `tests/.corpus/`), `Data/Forever.lua`
 (`diff_forever.py`) and `Data/ZoneArt.lua` (`gen_zoneart.py`).
 
 ## Gate
