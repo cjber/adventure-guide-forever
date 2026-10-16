@@ -4,6 +4,8 @@ local floor = math.floor
 
 local KINDS = { "Npc", "Object" }
 local NAME_FIELDS = { "name" }
+-- An objective NPC's spawns and lowest level, in one read: the level says how hard a spot's mobs are (#152).
+local NPC_SPAWN_FIELDS = { "spawns", "minLevel" }
 -- A cell is one square of a map's yard grid. No map is this many yards across, so a column and a row share a number.
 local ROW = 2 ^ 16
 
@@ -43,6 +45,14 @@ local function Names(lib, kinds, sources, reads)
 	return names
 end
 
+-- An NPC's lowest level as QuestieDB gives it (`minLevel`), or false when it gives none.
+---@param value any
+---@return integer|false
+function ns.QuestieLevel(value)
+	local level = tonumber(value)
+	return level and level > 0 and floor(level) or false
+end
+
 -- Locations come from the provider's composed spawns. Bucket nearby spawns and choose a real point in each
 -- bucket, rather than directing the player to an average that may be inside terrain or across a river.
 ---@param lib AGFQuestieDB
@@ -62,9 +72,13 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 	-- What each slot is named by: the QuestieDB entity and id.
 	---@type table<integer, {kind: string, id: integer?}>
 	local sources = {}
+	-- `lists` holds spawn tables, and `lists.levels` each one's NPC lowest level (false: an object, or unknown). A
+	-- spot's level is the lowest of its mobs', only when every spawn in it has one.
 	local function Places(slot, lists)
 		local cells, ordered = {}, {}
-		for _, spawns in ipairs(lists) do
+		local levels = lists.levels or {}
+		for index, spawns in ipairs(lists) do
+			local level = levels[index] or false
 			for area, coordinates in pairs(spawns) do
 				local map = mapOf(area)
 				local geometry = map and data.maps[map]
@@ -83,9 +97,11 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 							local key = floor(x * sx / 100) * ROW + floor(y * sy / 100)
 							local cell = onMap[key]
 							if not cell then
-								cell = { map = map, x = x, y = y, count = 0, reach = 0 }
+								cell = { map = map, x = x, y = y, count = 0, reach = 0, level = level }
 								onMap[key] = cell
 								ordered[#ordered + 1] = cell
+							elseif cell.level and (not level or level < cell.level) then
+								cell.level = level
 							end
 							cell.count = cell.count + 1
 							local dx, dy = (x - cell.x) * sx, (y - cell.y) * sy
@@ -122,19 +138,26 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 				math.floor(cell.y * 1000 + 0.5),
 				math.ceil(math.sqrt(cell.reach)),
 				cell.map,
+				cell.level or nil,
 			}
 		end
 	end
 	local function Spawns(kind, id, lists)
 		local spawns = reads[kind][id]
 		if spawns == nil then
-			local values = lib[kind].GetAll(id, ns.QuestieFields.spawns)
+			local npc = kind == "Npc"
+			local values = lib[kind].GetAll(id, npc and NPC_SPAWN_FIELDS or ns.QuestieFields.spawns)
 			spawns = values and type(values[1]) == "table" and values[1] or false
 			reads[kind][id] = spawns
+			if npc then
+				reads.levels[id] = ns.QuestieLevel(values and values[2])
+			end
 			yield()
 		end
 		if spawns then
 			lists[#lists + 1] = spawns
+			lists.levels = lists.levels or {}
+			lists.levels[#lists] = kind == "Npc" and reads.levels[id] or false
 		end
 	end
 	local function Item(id, lists, seen)

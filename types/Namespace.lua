@@ -75,6 +75,7 @@
 ---@field [3] integer map y in thousandths
 ---@field [4] integer yards from x, y holding 80% of the shape's points or the group's spawns
 ---@field [5] integer? the uiMapID x, y are on when it is not the quest's zone
+---@field [6] integer? the lowest level of the mobs there, when every spawn in it is an NPC QuestieDB gives a level
 
 ---@class AGFQuestFlags
 ---@field event? true a script completes it: an escort, a spell cast or a summoned fight
@@ -1438,7 +1439,7 @@
 
 ---@alias AGFMapLookup fun(area: integer): integer?
 ---@alias AGFYield fun()
----@alias AGFQuestieReads {Npc: table<integer, table|false>, Object: table<integer, table|false>, Item: table<integer, table|false>, names: {Npc: table<integer, string|false>, Object: table<integer, string|false>, Item: table<integer, string|false>}}
+---@alias AGFQuestieReads {Npc: table<integer, table|false>, Object: table<integer, table|false>, Item: table<integer, table|false>, levels: table<integer, integer|false>, names: {Npc: table<integer, string|false>, Object: table<integer, string|false>, Item: table<integer, string|false>}}
 
 ---@class AGFQuestieNpcRow one Npc's place and service fields for a catalogue build
 ---@field name string
@@ -1450,6 +1451,7 @@
 
 ---@class AGFNamespace
 ---@field QuestieTowns AGFQuestieTowns
+---@field QuestieLevel fun(value: any): integer|false an NPC's QuestieDB minLevel as a level, false when it has none
 ---@field QuestieObjectives fun(lib: AGFQuestieDB, objectives: table?, trigger: table?, zone: integer?, data: AGFData, mapOf: AGFMapLookup, yield: AGFYield, questID: integer, reads: AGFQuestieReads): table?, AGFObjectiveArea[]?, table?, boolean?, table<integer, string>?
 
 ---@class AGFStrings
@@ -1646,12 +1648,12 @@
 ---@field Inside fun(yards: number, a: AGFNode, b: AGFNode): boolean
 ---@field Locate fun(data: AGFData, step: AGFStep, mapName?: AGFMapName)
 ---@field LogSteps fun(data: AGFData, player: AGFPlayer, log: table<integer, AGFLogQuest>, ready: table<integer, AGFPlace>, belongs: (fun(id: integer, place?: AGFLocation): boolean), stops: table<string, AGFStep>, steps: AGFStep[], plan: AGFPlanAreas): table<integer, AGFStep|false>
----@field Nodes fun(data: AGFData, entry: AGFLogQuest): AGFNode[]
+---@field Nodes fun(data: AGFData, entry: AGFLogQuest, level?: integer): AGFNode[]
 ---@field LiveObjectives fun(data: AGFData, log: table<integer, AGFLogQuest>, objectives: AGFAreaObjective[]): AGFAreaObjective[]
 ---@field Opens fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, step: AGFStep)
 ---@field Optional fun(quest: AGFQuest?, level: integer, player: AGFPlayer): boolean?
 ---@field PickupSteps fun(data: AGFData, eligible: integer[], wanted: (fun(quest: AGFQuest): boolean), steps: AGFStep[], stops?: table<string, AGFStep>)
----@field Planned fun(quest: AGFQuest, id: integer): AGFNode[]
+---@field Planned fun(quest: AGFQuest, id: integer, level?: integer): AGFNode[]
 ---@field QuestLevel fun(data: AGFData, log: table<integer, AGFLogQuest>, player: AGFPlayer, id: integer): integer
 ---@field Ready fun(data: AGFData, log: table<integer, AGFLogQuest>): table<integer, AGFPlace>
 ---@field Tell fun(area: AGFStep)

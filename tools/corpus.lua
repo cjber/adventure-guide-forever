@@ -132,7 +132,7 @@ Write("tests/fixtures/quests.lua", {
 	"-- skill, rep: RequiredSkill/Values and RequiredMin/MaxRep; group: the quests exclusiveTo names, as one id;",
 	"-- breadcrumb: BreadcrumbForQuestId, open only while the quest it leads to is neither done nor in the log.",
 	"-- need: each objective's slot; 0 until the client's log gives its count. obj: where one is done, as",
-	"-- { slot, x, y, r[, map] }, x and y in thousandths of the map. xp: the XP a start gives.",
+	"-- { slot, x, y, r[, map[, level]] }, x and y in thousandths of the map, level its mobs' lowest. xp: a start's XP.",
 	"-- flags: event, a script completes it; dungeon, raid and repeatable follow the data. pre and preAny are",
 	"-- preQuestGroup and preQuestSingle; next is NextQuestInChain; a class quest's giver carries `trainer`.",
 	"-- stylua: ignore",

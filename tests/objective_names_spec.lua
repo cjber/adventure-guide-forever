@@ -85,7 +85,8 @@ quest.names = saved
 -- QuestieObjectives names only slots that share a type: NPC names (a kill credit's root NPC), item names, lower-cased,
 -- each read once per build; English objective text overrides are left out; a failing name read leaves the slot unnamed.
 do
-	local reads, asked = { Npc = {}, Object = {}, Item = {}, names = { Npc = {}, Object = {}, Item = {} } }, 0
+	local reads, asked =
+		{ Npc = {}, Object = {}, Item = {}, levels = {}, names = { Npc = {}, Object = {}, Item = {} } }, 0
 	local rows = {
 		Npc = {
 			[1] = { name = "Kobold Vermin" },

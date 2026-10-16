@@ -142,7 +142,7 @@ local function PickLapQuests(lap)
 			if id == leadID or pinned[id] or Pickable(data.quests[id]) then
 				pickups[#pickups + 1], picks[id], ids[#ids + 1] = id, town, id
 				-- An outdoor elite is picked up, optional and with the group badge, but its work waits for a group.
-				nodes[id] = data.quests[id].elite and {} or Planned(data.quests[id], id)
+				nodes[id] = data.quests[id].elite and {} or Planned(data.quests[id], id, player.level)
 			end
 		end
 		Trim(town, town.handins, pickups)
