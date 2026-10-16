@@ -46,7 +46,7 @@ straight after it merges: on main, and on every other branch, a stale image fail
   records, no NPC places and no towns**: quests, where givers, trainers and innkeepers stand, their sides and the
   towns they form come from the installed QuestieDB at runtime (`Integrations/QuestieSource.lua`,
   `Integrations/QuestieTowns.lua`).
-- `tests/.corpus/quests.lua` and `tests/.corpus/towns.lua`: the test-only corpus, built by
+- The test-only corpus, quests.lua and towns.lua in the tests/.corpus folder, built by
   `tools/gen_corpus.py` from the sha-pinned QuestieDB release through the addon's own QuestieSource build; the model
   specs' deterministic world for one fixed character. Gitignored and never committed or shipped, since QuestieDB
   carries no licence (WFA-28): build it before the specs, as `## Commands` does. `tests/fixtures/client.lua` is the
