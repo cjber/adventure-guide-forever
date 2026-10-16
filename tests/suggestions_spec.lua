@@ -27,7 +27,8 @@ equal(API.StartSuggestion("carry"), false, "nothing starts while the route settl
 h.flush()
 
 local ns = h.ns
--- The panel's order: the chosen card, then each header's cards in route order.
+-- The panel's order (UI/Panel.lua LayoutJourneys): a chosen card, then the rest as the route offered them; with none
+-- chosen, the headers' cards in turn (LayoutOverview).
 local function Expected()
 	local route, cards = ns.Route(), {}
 	if route.chosen then
@@ -36,15 +37,36 @@ local function Expected()
 				cards[1] = journey
 			end
 		end
-	end
-	for _, group in ipairs(ns.Overview.GROUPS) do
 		for _, journey in ipairs(route.journeys) do
-			if journey.section == group.key and not (route.chosen and journey.key == route.journey) then
+			if journey.key ~= route.journey then
 				cards[#cards + 1] = journey
 			end
 		end
+		return cards
+	end
+	for _, group in ipairs(ns.Overview.GROUPS) do
+		for _, journey in ipairs(ns.Overview.InGroup(route.journeys, group.key)) do
+			cards[#cards + 1] = journey
+		end
 	end
 	return cards
+end
+
+-- Model.Cards on a route whose order and headers disagree: chosen keeps the route's order, unchosen the headers'.
+do
+	local function Card(key, section)
+		return { key = key, section = section }
+	end
+	local journeys = { Card("z", "zones"), Card("c1", "continue"), Card("d", "dungeons"), Card("c2", "continue") }
+	local function Keys(route)
+		local keys = {}
+		for _, card in ipairs(ns.Model.Cards(route)) do
+			keys[#keys + 1] = card.key
+		end
+		return table.concat(keys, " ")
+	end
+	equal(Keys({ journeys = journeys, chosen = false, journey = "z" }), "c1 c2 z d", "unchosen: by header")
+	equal(Keys({ journeys = journeys, chosen = true, journey = "d" }), "d z c1 c2", "chosen: it, then route order")
 end
 
 local route = ns.Route()
@@ -60,8 +82,8 @@ for index, suggestion in ipairs(suggestions) do
 	equal(suggestion.id, journey.key, "card " .. index .. " in the panel's order")
 	equal(suggestion.title, journey.title, "card " .. index .. " title")
 	equal(suggestion.kind, journey.kind, "card " .. index .. " kind")
-	equal(suggestion.map, journey.map, "card " .. index .. " map")
-	equal(suggestion.level, (ns.Overview.LevelRange(journey)), "card " .. index .. " level is the card's lowest")
+	equal(suggestion.map, journey.steps[1].map, "card " .. index .. " map is its first stop's")
+	equal(suggestion.level, (ns.Model.LevelRange(ns.Data, journey)), "card " .. index .. " level is the card's lowest")
 	local step = journey.steps[1]
 	equal(suggestion.x, step.x, "card " .. index .. " x is its first stop's")
 	equal(suggestion.y, step.y, "card " .. index .. " y is its first stop's")

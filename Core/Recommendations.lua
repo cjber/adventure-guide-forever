@@ -125,12 +125,9 @@ function Recommendations.Act(item)
 			if current.aside then
 				return ns.Asides.Go(current.aside)
 			end
-			local route = ns.Route()
-			if not route.chosen or route.journey ~= current.journey then
-				ns.Choose(current.journey, true)
-				return true
-			elseif ns.Guidance.Status() == "paused" or ns.Prefs().guided ~= route.journey or not ns.Guidance.Owns() then
-				return ns.StartRoute()
+			local journey = assert(current.journey)
+			if not ns.Guidance.Running(journey) then
+				return ns.StartJourney(journey)
 			end
 			ns.Overview.ShowOnMap(current.step)
 			return true

@@ -728,6 +728,7 @@
 ---@field Owns fun(): boolean Go's guidance is still running: our Shortest Path journey (guided or held), or the waypoint Go set
 ---@field Navigate fun(step: AGFStep|AGFGiver, follow?: boolean): boolean route there with Shortest Path, else (declined or absent) the native waypoint where the map allows one; true when something now guides
 ---@field ShowOnMap fun(step: AGFStep|AGFGiver): boolean route, open its zone and ping the destination
+---@field Running fun(key: string): boolean the card is chosen and its route is ours, running and not paused
 ---@field Cancel fun() Stop: cancels our Shortest Path journey, and clears the native waypoint only while it is ours
 ---@field Reroute fun() the player reordered the chosen journey: the route AGF runs for it starts again a frame on
 ---@field CurrentStep fun(): AGFStep? the step the handed route heads for while it guides, else the route's head
@@ -777,6 +778,7 @@
 ---@field InvalidateCounts fun() only the quest log moved: the next build is the cheap one when its shape is unchanged (docs/design.md §4.4)
 ---@field OnRouteChange fun(callback: fun())
 ---@field Choose fun(key?: string, start?: boolean) choose a journey, or none; `start` sets off on the rebuild with its steps
+---@field StartJourney fun(key: string): boolean the guide's Start on a card: choose and start it, or start the chosen card's route when it is not running
 ---@field StartRoute fun(step?: AGFStep): boolean guidance along the chosen journey (choosing the route's own when none is); waits out combat with Shortest Path
 ---@field Stop fun() the player's Stop: our route stops and the choice clears
 ---@field Settling fun(): boolean a rebuild or step 1's travel line is due, whose frames take no card estimate
@@ -838,6 +840,9 @@
 ---@field ZoneIcon AGFZoneIconModule
 
 ---@class AGFModel
+---@field SECTIONS AGFJourneySection[] the overview's headers in the order they show
+---@field Cards fun(route: AGFRoute): AGFJourney[] the cards in the order the panel draws them
+---@field LevelRange fun(data: AGFData, journey: AGFJourney): integer?, integer? the levels a card shows; high nil for "from low"
 ---@field Unlisted fun(data: AGFData, map?: integer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>): boolean the log holds a quest the data lacks, or Forever added quests on `map` the data lacks and the player hasn't finished
 
 ---@class AGFStrings
@@ -1754,7 +1759,7 @@
 ---@field title string e.g. "Westfall story"
 ---@field level? integer the lowest level the card shows
 ---@field kind AGFJourneyKind
----@field map integer uiMapID of its first stop
+---@field map integer uiMapID of its first stop (where `x`, `y` are), else of the card
 ---@field x? number normalized 0-1; nil when the first stop has no known place
 ---@field y? number normalized 0-1; nil when the first stop has no known place
 

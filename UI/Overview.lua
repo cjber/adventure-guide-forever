@@ -31,12 +31,16 @@ local KIND_ICONS = {
 ---@field open boolean
 
 ---@type AGFJourneyGroup[]
-local GROUPS = {
-	{ key = "continue", label = L.GROUP_CONTINUE, open = false },
-	{ key = "zones", label = L.GROUP_ZONES, open = false },
-	{ key = "dungeons", label = L.GROUP_DUNGEONS, open = false },
-	{ key = "battlegrounds", label = L.GROUP_BATTLEGROUNDS, open = false },
+local GROUPS = {}
+local LABELS = {
+	continue = L.GROUP_CONTINUE,
+	zones = L.GROUP_ZONES,
+	dungeons = L.GROUP_DUNGEONS,
+	battlegrounds = L.GROUP_BATTLEGROUNDS,
 }
+for index, key in ipairs(ns.Model.SECTIONS) do
+	GROUPS[index] = { key = key, label = LABELS[key], open = false }
+end
 
 -- `journeys`' cards under `key`, in the order the route offered them; empty when it has none, so a header with no
 -- card is never drawn.
@@ -706,32 +710,6 @@ local function HideTooltipWithin(root)
 	end
 end
 
--- The levels a card shows: a battleground's opening level with no top, else its guide's, zone's or instance's span.
--- Nil when it has none to show.
----@param journey AGFJourney
----@return integer? low
----@return integer? high nil for "from `low`"
-local function LevelRange(journey)
-	if journey.level then
-		return journey.level, nil
-	end
-	local zone = journey.zone and ns.Data.zones[journey.zone] or nil
-	---@type AGFInstance?
-	local instance = journey.instance and ns.Data.instances and ns.Data.instances[journey.instance] or nil
-	local low, high
-	if zone then
-		low, high = zone.min, zone.max
-	elseif instance then
-		low, high = instance.low, instance.high
-	end
-	if journey.guideLow and journey.guideHigh then
-		low, high = journey.guideLow, journey.guideHigh
-	end
-	if low and high and low > 0 and high >= low then
-		return low, high
-	end
-end
-
 -- A card's levels, in the colour the game gives a quest of that level: a zone's or dungeon's range, a battleground's
 -- first level. Nothing for a card with no one place (Quests in your log).
 ---@param journey AGFJourney
@@ -739,7 +717,7 @@ end
 ---@return string? text
 ---@return {r: number, g: number, b: number}? color
 local function Levels(journey, level)
-	local low, high = LevelRange(journey)
+	local low, high = ns.Model.LevelRange(ns.Data, journey)
 	if not low then
 		return nil
 	elseif not high then
@@ -764,7 +742,6 @@ Overview.KIND_ICONS = KIND_ICONS
 Overview.Levels = Levels
 Overview.GROUPS = GROUPS
 Overview.InGroup = InGroup
-Overview.LevelRange = LevelRange
 Overview.Collapsed = Collapsed
 Overview.ToggleCollapsed = ToggleCollapsed
 Overview.Open = Open
