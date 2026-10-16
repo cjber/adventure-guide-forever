@@ -1,7 +1,7 @@
 # human19_redridge_full: level 19, side 1, at 1433 0.1580,0.5660
 card | zone:1433 | Redridge Mountains story | 1 ready to hand in, 11 in progress, 2 of them on later laps, 3 quests near your level | - | map 1433
   drop | 116
-  step 1 | area:3741:4 | Complete objectives · Hilary's Necklace | 1433 0.1900,0.5460 | quests in progress | 70 yd | 3741/4
+  step 1 | area:3741:4 | Complete objectives · Hilary's Necklace | 1433 0.1680,0.5320 | quests in progress | 70 yd | 3741/4
   step 2 | area:34:4 | Complete 2 objectives · Redridge Mountains | 1433 0.1060,0.4930 | 2 quests here | 89 yd | 34/4 92/4
   step 3 | town:1433:1002 | Turn in: A Free Lunch | 1433 0.1018,0.7146 | Opens the next chapter here
   step 4 | area:246:1 | Complete objectives · Assessing the Threat | 1433 0.2720,0.8230 | quests in progress | 96 yd | 246/1
@@ -12,7 +12,7 @@ card | zone:1433 | Redridge Mountains story | 1 ready to hand in, 11 in progress
   step 9 | area:20:4 | Complete 2 objectives · Redridge Mountains | 1433 0.6430,0.5550 | 2 quests here | 127 yd | 20/4 169/4
   step 10 | area:91:4 | Complete objectives · Solomon's Law | 1433 0.7490,0.4980 | quests in progress | 84 yd | 91/4
 card (chosen) | carry | Quests in your log | 5 ready to hand in, 11 in progress | - | map 1433
-  step 1 | area:3741:4 | Complete objectives · Hilary's Necklace | 1433 0.1900,0.5460 | quests in progress | 70 yd | 3741/4
+  step 1 | area:3741:4 | Complete objectives · Hilary's Necklace | 1433 0.1680,0.5320 | quests in progress | 70 yd | 3741/4
   step 2 | area:34:4 | Complete 2 objectives · Redridge Mountains | 1433 0.1060,0.4930 | 2 quests here | 89 yd | 34/4 92/4
   step 3 | town:1433:1002 | Turn in: A Free Lunch | 1433 0.1018,0.7146 | Opens the next chapter here
   step 4 | area:246:1 | Complete objectives · Assessing the Threat | 1433 0.2720,0.8230 | quests in progress | 96 yd | 246/1

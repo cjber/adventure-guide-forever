@@ -733,6 +733,11 @@ local function CommitRoute(shown, full, world)
 			end
 		end
 	end
+	-- A rebuild that changes the area the player is "here" in (Next spot passing over the camp they stand at, say)
+	-- restarts the walking check from it, so walking on into the next camp rebuilds again (Walked).
+	if shown.here ~= cachedRoute.here then
+		hereKey = shown.here
+	end
 	cachedRoute, rawRoute, snapshot = shown, full, world
 	-- The zone the story led with, and the zone it left, outlive the session, so a /reload does not shuffle it
 	-- (Plan.lua reads them back).

@@ -126,8 +126,9 @@ function Model.SpotKey(spot)
 	return ("%d:%.4f:%.4f"):format(spot.map, spot.x, spot.y)
 end
 
--- An area step's distinct objective spots, in the data's order: each objective's node, then its other camps on the
--- same map (`alternates`, #187); two at one point are one spot.
+-- An area step's distinct objective spots, in the data's order; two at one point are one spot. A step whose objectives
+-- share one place also has that objective's other camps on the map (its `alternates`, #187): they serve every
+-- objective there only when there is one place, so a merged step of objectives in different places keeps to its nodes.
 ---@param step AGFStep
 ---@return AGFCamp[]
 function Model.Spots(step)
@@ -141,9 +142,11 @@ function Model.Spots(step)
 	for _, shape in ipairs(step.shapes or NONE) do
 		Add(shape)
 	end
-	for _, shape in ipairs(step.shapes or NONE) do
-		for _, alternate in ipairs(shape.alternates or NONE) do
-			Add(alternate)
+	if #spots == 1 then
+		for _, shape in ipairs(step.shapes) do
+			for _, alternate in ipairs(shape.alternates or NONE) do
+				Add(alternate)
+			end
 		end
 	end
 	return spots
@@ -293,8 +296,16 @@ local function FinishRoute(data, player, completed, log, route, last, prefs)
 			step.orderKey = old and old.orderKey or identities[index]
 			if step.kind == "town" then
 				Model.TownChecklist(data, player, completed, log, step, old, prefs.skipped)
-			elseif step.kind == "area" and prefs.camps and prefs.camps[step.key] then
-				Model.Camp(data, player, step, prefs.camps[step.key])
+			elseif step.kind == "area" then
+				-- Standing at one of an objective's other camps (#187): the step is there, so Shortest Path's stop is
+				-- that camp rather than the node they left.
+				if step.here and step.shapes and #Model.Spots(step) > #step.shapes then
+					local at = Model.CampAt(data, player, step)
+					step.map, step.x, step.y = at.map, at.x, at.y
+				end
+				if prefs.camps and prefs.camps[step.key] then
+					Model.Camp(data, player, step, prefs.camps[step.key])
+				end
 			end
 			Model.StepTitle(data, log, step)
 			if not step.complete then

@@ -342,6 +342,15 @@ local function Shapes(step)
 			radius = math.max(radius, shape.r)
 		end
 	end
+	-- The arrow on one of the objective's other camps (#187, Next spot): that camp is the stop's shape and reach.
+	if radius == 30 then
+		for _, spot in ipairs(ns.Model.Spots(area)) do
+			if spot.map == area.map and spot.x == area.x and spot.y == area.y then
+				shapes[#shapes + 1] = { map = spot.map, x = spot.x, y = spot.y, radius = spot.r }
+				radius = math.max(radius, spot.r)
+			end
+		end
+	end
 	local quests = area.quests or {}
 	local questIDs = #quests > 0 and { unpack(quests) } or nil
 	return #shapes > 0 and shapes or nil, radius, #quests == 1 and quests[1] or nil, questIDs

@@ -230,9 +230,9 @@ do
 	assert(area, "an area step with several spots on the Barrens route")
 end
 
--- Walking (#151, #187): a Duskwood area of two objectives with three camps each. Stand at one, pass it over, walk to
--- the spot the arrow leads to, and back; each change of spot rebuilds as the player walks, though the area the player
--- stands in stays the same.
+-- Walking (#151): a Duskwood area of two objectives in two places (their own camps stay out: #187 is for one place).
+-- Stand at one, pass it over, walk to the spot the arrow leads to, and back; each change of spot rebuilds as the player
+-- walks, though the area the player stands in stays the same.
 do
 	local h = harness.load({
 		charDB = { journey = "zone:1431" },
@@ -246,7 +246,7 @@ do
 	end
 	assert(area, "walk: the Night Watch area on the route")
 	local spots = h.ns.Model.Spots(area)
-	equal(#spots, 6, "walk: two objectives, three camps each (#187)")
+	equal(#spots, 2, "walk: two objectives in two places, their own camps left out")
 	local first = spots[1]
 	h.MovePlayer(first.map, first.x, first.y)
 	h.ns.Invalidate()
@@ -336,6 +336,80 @@ do
 	equal(Model.Here(data, Stand(0.48, 0.9), { camps }), nil, "here: not away from every camp")
 	Model.Camp(data, Stand(0.40), camps, Passed(camps.shapes[1]))
 	equal(camps.x, 0.46, "camp: passing the node's camp over moves the arrow to the nearest other camp")
+end
+
+-- Walking one objective's camps (#187): Brotherhood of Thieves (18) collects one item in three Elwynn camps.
+do
+	local h = harness.load({
+		spf = "ended",
+		charDB = { journey = "zone:1429" },
+		planned = true,
+		completed = { 783 },
+		log = { { id = 18, title = "Brotherhood of Thieves", level = 4, complete = false } },
+	})
+	h.flush()
+	local area
+	for _, candidate in ipairs(h.ns.Route().steps) do
+		area = area or (candidate.key == "area:18:4" and candidate or nil)
+	end
+	assert(area, "camps: the Brotherhood of Thieves area on the route")
+	equal(#area.shapes, 1, "camps: one objective place")
+	local spots = h.ns.Model.Spots(area)
+	equal(#spots, 3, "camps: and its three camps")
+	local labels = {}
+	h.ns.Menu.Step(
+		setmetatable({}, {
+			__index = function()
+				return function(_, text)
+					labels[#labels + 1] = text
+					return setmetatable({}, {
+						__index = function()
+							return function() end
+						end,
+					})
+				end
+			end,
+		}),
+		area
+	)
+	local offered = false
+	for _, label in ipairs(labels) do
+		offered = offered or label == h.ns.L.NEXT_CAMP
+	end
+	equal(offered, true, "camps: Next spot offered for a single objective")
+	local function Walk(spot)
+		h.MovePlayer(spot.map, spot.x, spot.y)
+		h.fire("PLAYER_STARTED_MOVING")
+		h.fire("PLAYER_STOPPED_MOVING")
+		h.flush()
+		return h.ns.Route().steps[1]
+	end
+	local head = Walk(spots[1])
+	equal(head.key == area.key and head.here == true, true, "camps: at the first camp, here")
+	h.ns.NextCamp(head)
+	h.flush()
+	head = h.ns.Route().steps[1]
+	equal(head.here, nil, "camps: Next spot there leads on")
+	local to = { map = head.map, x = head.x, y = head.y }
+	equal(h.ns.Model.SpotKey(to), h.ns.Model.SpotKey(spots[2]), "camps: to the nearest other camp")
+	-- Shortest Path's stop for it is that camp: its shape and reach.
+	h.ns.StartRoute()
+	h.flush()
+	local stop
+	for _, candidate in ipairs(h.spfRoute and h.spfRoute.stops or {}) do
+		stop = stop or (candidate.x == to.x and candidate.y == to.y and candidate or nil)
+	end
+	equal(stop ~= nil, true, "camps: Shortest Path is sent to the camp")
+	equal(stop.radius, spots[2].r, "camps: with that camp's reach")
+	local shaped = false
+	for _, shape in ipairs(stop.shapes or {}) do
+		shaped = shaped or (shape.x == to.x and shape.y == to.y)
+	end
+	equal(shaped, true, "camps: and its shape")
+	head = Walk(to)
+	equal(head.key == area.key and head.here == true, true, "camps: arriving at it, here again")
+	equal(h.ns.Model.SpotKey(head), h.ns.Model.SpotKey(spots[2]), "camps: the stop is the camp stood at")
+	equal(#h.errors, 0, "camps: errors\n" .. table.concat(h.errors, "\n"))
 end
 
 print(("next_camp_spec: %d checks passed"):format(checks))
