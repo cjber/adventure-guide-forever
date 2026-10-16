@@ -412,7 +412,7 @@ L["UNEXPLORED"] = "Vous n’avez pas encore vu %s"
 L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
-L["WHATS_NEW"] = "Une page des addons Forever dans les réglages."
+L["WHATS_NEW"] = "Dans votre langue : le Guide de l’aventurier est maintenant en français."
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"
