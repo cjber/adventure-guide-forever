@@ -43,10 +43,16 @@ local function Places(route)
 end
 
 -- A step menu's lines with "Not this quest" (design §2.18) after "Skip for now": one button for a lone quest, else
--- one per quest under it, titled as the log titles it.
-local function WithNotThisQuest(ns, step, lines)
+-- one per quest under it, titled as the log titles it. `combat`: the menu opened in combat.
+local function WithNotThisQuest(ns, step, lines, combat)
 	local out = {}
+	-- Without Shortest Path installed, a step's menu ends with its grey suggestion before Choose another journey; never
+	-- in combat, where its window can't open.
+	local suggests = ns.Family.State("ShortestPathForever") == "missing" and not ns.Setting("wanderer") and not combat
 	for _, line in ipairs(lines) do
+		if suggests and line == "button: " .. ns.L.CHOOSE_JOURNEY then
+			out[#out + 1] = "button: " .. "|cff7f7f7f" .. ns.L.SPF_FAMILY_MENU .. "|r"
+		end
 		out[#out + 1] = line
 		if line == "button: Skip for now" and #step.quests == 1 then
 			out[#out + 1] = "button: " .. ns.L.NOT_THIS_QUEST
@@ -330,8 +336,8 @@ do
 	)
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_INTERFACE] or {}, " "),
-		"suggestCompanions whatsNew",
-		"Interface holds the window, companion and update rows"
+		"whatsNew",
+		"Interface holds the update row; the suggestions setting is on the Forever addons page"
 	)
 	-- The index page's buttons are on the addon's own category, one per group, in index order, and open its subpage.
 	local buttons = {}
@@ -340,7 +346,15 @@ do
 			buttons[#buttons + 1] = entry
 		end
 	end
-	equal(#buttons, 4, "one index button per group")
+	equal(#buttons, 5, "one index button per group, then the Forever addons page")
+	local familyButton = table.remove(buttons)
+	local familyPage = assert(h.canvasPages[L.FAMILY_PAGE], "the Forever addons page is registered")
+	equal(familyButton.name, L.FAMILY_PAGE, "the last index button is the Forever addons page's")
+	equal(familyButton.addSearchTags, false, "the Forever addons button stays out of search")
+	equal(familyPage.parent.name, h.ns.TITLE, "the Forever addons page hangs off the addon's page")
+	familyButton.onClick()
+	equal(h.openedSettings, familyPage.GetID(), "the Forever addons button opens its page")
+	equal(familyPage.frame ~= nil, true, "the page is the shared module's panel")
 	equal(
 		buttons[1].name .. " " .. buttons[2].name .. " " .. buttons[3].name .. " " .. buttons[4].name,
 		L.SETTINGS_GROUP_ROUTE
@@ -1262,7 +1276,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	menu[3] = "button: Stop"
 	same(
 		h.MenuLines(),
-		WithNotThisQuest(ns, ns.Route().steps[1], menu),
+		WithNotThisQuest(ns, ns.Route().steps[1], menu, true),
 		label .. ": tracker menu while Go guides, in combat"
 	)
 	ns.Guidance.Cancel()
@@ -2399,8 +2413,11 @@ do
 	equal(lines[4], "colored: |A:questturnin:14:14|a [13] The Zhevra", "hub tooltip: a hand-in has the turn-in mark")
 	equal(lines[6], "colored: |A:questnormal:14:14|a [13] Raptor Thieves", "hub tooltip: a pickup has its level")
 	local quests, npcs = 0, 0
+	-- Without Shortest Path the last line is its grey suggestion, not a quest.
+	equal(lines[#lines], "colored: " .. ns.L.SPF_MISSING, "hub tooltip: the Shortest Path suggestion last")
+	same(colors[#lines], { 0.5, 0.5, 0.5 }, "hub tooltip: and grey")
 	for index, line in ipairs(lines) do
-		if line:find("^colored: ") then
+		if line:find("^colored: ") and index < #lines then
 			quests = quests + 1
 			-- A quest with no level (A Sealed Crate) shows none and takes the normal font colour.
 			local level = tonumber(line:match("%[(%d+)%]"))
@@ -2413,7 +2430,6 @@ do
 	equal(npcs, 7, "hub tooltip: one line per NPC shown")
 	equal(lines[#lines - 2], "highlight: And 3 more", "hub tooltip: the rest counted")
 	equal(lines[#lines - 1], "instruction: " .. ns.L.ORDER_DRAG, "hub tooltip: then how to reorder")
-	equal(lines[#lines], "instruction: " .. ns.L.SPF_MISSING, "hub tooltip: then the Shortest Path hint")
 	local over
 	for index, line in ipairs(lines) do
 		over = tonumber(line:match("%[(%d+)%]")) == 20 and index or over

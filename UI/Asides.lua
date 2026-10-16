@@ -220,6 +220,18 @@ function Asides.Go(aside)
 		})
 end
 
+-- A profession aside for a learned line's next rank ("profession:<skill>:<rank>", rank 2 Journeyman or above), not a
+-- free slot or a secondary skill still to learn: where SkillUp Forever's route to the next rank would help.
+---@param aside AGFAside
+---@return boolean
+function Asides.NextRank(aside)
+	if aside.category ~= "professions" then
+		return false
+	end
+	local rank = tonumber(aside.key:match("^profession:%d+:(%d+)$"))
+	return rank ~= nil and rank >= 2
+end
+
 -- The aside's menu, for its line in the guide and in the tracker.
 ---@param owner Region
 ---@param aside AGFAside
@@ -237,6 +249,9 @@ function Asides.Open(owner, aside)
 		root:CreateButton(L.NOT_INTERESTED, function()
 			Asides.Decline(aside)
 		end)
+		if Asides.NextRank(aside) then
+			ns.Companions.AddMenu(root, "SkillUpForever")
+		end
 	end)
 end
 
@@ -259,6 +274,11 @@ function Asides.Enter(owner, aside)
 			aside.text,
 			aside.place and not ns.Setting("wanderer") and ns.Menu.ClickLine() or nil,
 		})
+		-- A trainer for a profession's next rank: SkillUp Forever plans the way there.
+		if Asides.NextRank(aside) then
+			ns.Companions.AddLine(GameTooltip, "SkillUpForever")
+			GameTooltip:Show()
+		end
 	end
 end
 

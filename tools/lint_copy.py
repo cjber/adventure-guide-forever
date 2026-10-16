@@ -32,6 +32,9 @@ TOOLTIP_PREFIX = "GameTooltip_"
 # Colour codes, atlas and texture markup carry no words, so a literal of only those is not copy.
 MARKUP = re.compile(r"\|c[0-9a-fA-F]{8}|\|r|\|A[^|]*\|a|\|T[^|]*\|t")
 ESCAPES = {"n": "\n", "t": "\t", "\\": "\\", '"': '"', "'": "'"}
+# Shared byte for byte by the Forever addons, so it can't use this addon's constant keys: its copy goes through its own
+# L, keyed by the English phrase (L["Close"]), which falls back to the phrase. Those lookups are its ns.L.
+PHRASE_KEYED = {"ForeverFamily.lua"}
 
 
 def unquote(literal: str) -> str:
@@ -113,8 +116,29 @@ def strings_table(tokens: list[Token]) -> list[tuple[int, str, str]]:
     return entries
 
 
-def literal_calls(tokens: list[Token]) -> list[tuple[int, str]]:
-    """(line, call) for each string literal with words in it in a call's text argument."""
+def phrase_lookup(tokens: list[Token], index: int) -> bool:
+    """The string at index is the key of an L["phrase"] lookup."""
+    return (
+        2 <= index < len(tokens) - 1
+        and tokens[index - 1].text == "["
+        and tokens[index - 2].text == "L"
+        and tokens[index + 1].text == "]"
+    )
+
+
+def phrases(tokens: list[Token]) -> list[tuple[int, str]]:
+    """(line, phrase) for each L["phrase"] lookup."""
+    return [
+        (token.line, unquote(token.text))
+        for index, token in enumerate(tokens)
+        if token.kind == "string" and phrase_lookup(tokens, index)
+    ]
+
+
+def literal_calls(tokens: list[Token], keyed: bool = False) -> list[tuple[int, str]]:
+    """(line, call) for each string literal with words in it in a call's text argument; with `keyed`, an L["phrase"]
+    lookup is copy, not a literal."""
+    positions = {id(token): index for index, token in enumerate(tokens)}
     hits = []
     for index, token in enumerate(tokens[:-1]):
         if token.kind != "name" or tokens[index + 1].text != "(":
@@ -125,6 +149,8 @@ def literal_calls(tokens: list[Token]) -> list[tuple[int, str]]:
         arguments = split(tokens[index + 2 : matching(tokens, index + 1)], ",")
         if len(arguments) >= position:
             for part in arguments[position - 1]:
+                if keyed and part.kind == "string" and phrase_lookup(tokens, positions[id(part)]):
+                    continue
                 if part.kind == "string" and re.search(r"[^\W\d_]", MARKUP.sub("", unquote(part.text))):
                     hits.append((part.line, token.text))
     return hits
@@ -135,8 +161,12 @@ def check(core: Path, files: list[Path]) -> list[str]:
     for line, key, value in strings_table(tokenize(core.read_text())[0]):
         report += [f"{core}:{line}: L.{key}: {problem}" for problem in value_problems(value)]
     for path in files:
-        for line, call in literal_calls(tokenize(path.read_text())[0]):
+        tokens = tokenize(path.read_text())[0]
+        keyed = path.name in PHRASE_KEYED
+        for line, call in literal_calls(tokens, keyed):
             report.append(f"{path}:{line}: a string literal passed to {call}; put the copy in ns.L")
+        for line, phrase in phrases(tokens) if keyed else []:
+            report += [f"{path}:{line}: L[{phrase!r}]: {problem}" for problem in value_problems(phrase)]
     return report
 
 

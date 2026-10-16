@@ -388,7 +388,6 @@ ns.L = {
 	REAGENT_GATHER = "Gather it",
 	REAGENT_AUCTION = "Auction house",
 	CLICK_WAYPOINT_STEP = "Click to set a waypoint",
-	SKILLUP_MISSING = "Your next skill-ups come from SkillUp Forever. Install it and they show here.",
 	SKILLUP_OUTDATED = "Your next skill-ups come from SkillUp Forever. Update it and they show here.",
 	SKILLUP_NONE = "No crafting professions to level. Learn one at a trainer and it shows here.",
 	DUNGEON_PICKUP = "Pick up",
@@ -397,8 +396,8 @@ ns.L = {
 	GO_TO_ENTRANCE = "Go to entrance",
 	TWEAKS_MISSING = "Install Tweaks Forever to find dungeon entrances.",
 	TWEAKS_OUTDATED = "Update Tweaks Forever to find dungeon entrances.",
+	TWEAKS_DISABLED = "Enable Tweaks Forever to find dungeon entrances.",
 	ENTRANCE_UNKNOWN = "The entrance location is unknown.",
-	LEGACY_MISSING = "Install Legacy Forever to see your completion progress.",
 	-- Legacy Forever's own words for items it can't check yet, with its hint when one category holds them all.
 	PVP_RANK = "Rank %d",
 	PVP_RANK_POINTS = "%d/%d rank points",
@@ -447,15 +446,33 @@ ns.L = {
 	UPDATED_TO = "updated to %s. %s",
 	SETTING_WHATS_NEW = "What's new after an update",
 	SETTING_WHATS_NEW_TOOLTIP = "One line in chat the first time you log in after the guide updates.",
-	-- Companion hints (Companions.lua): what another Forever addon would add here, while it isn't loaded.
-	SETTING_COMPANIONS = "Suggest companion addons",
-	SETTING_COMPANIONS_TOOLTIP = "A short line where another Forever addon would fill a tab or a route step, while "
-		.. "that addon isn't installed or enabled.",
+	-- Companion hints (Companions.lua): what another Forever addon would add here, while it isn't loaded. The
+	-- Forever addons page itself and its setting are UI/ForeverFamily.lua's, shared by all five addons.
+	FAMILY_PAGE = "Forever addons",
+	-- The Forever addons page and its address window (UI/ForeverFamily.lua): the shared module looks each up by its
+	-- English, so these keep its words exactly (Companions.lua maps them, tests/companions_spec.lua checks).
+	FAMILY_LINE_SPF = "Plans the quickest way anywhere and guides you there, with live boat and zeppelin times.",
+	FAMILY_LINE_AGF = "Picks quests for your level and plans them into one journey.",
+	FAMILY_LINE_SKILLUP = "Plans the cheapest route to your next profession rank.",
+	FAMILY_LINE_LEGACY = "Shows the Legacy challenges you can advance in each zone.",
+	FAMILY_LINE_TWEAKS = "Quest automation, rare alerts and merchant handling for the default UI.",
+	FAMILY_SUGGEST = "Suggest my other Forever addons",
+	FAMILY_SUGGEST_ABOUT = "Show a quiet line where one of my other Forever addons would help. "
+		.. "Only for addons you don't have.",
+	FAMILY_STATE_ON = "On",
+	FAMILY_STATE_OFF = "Installed, turned off",
+	FAMILY_STATE_MISSING = "Not installed",
+	FAMILY_THIS_ADDON = "This addon",
+	FAMILY_COPY_LINK = "Copy link",
+	FAMILY_COPY_HINT = "Copy the address, then open it in your browser.",
+	FAMILY_CLOSE = "Close",
+	FAMILY_DONT_SUGGEST = "Don't suggest this again",
+	SPF_FAMILY_MENU = "Walked routes and boat times: Shortest Path Forever",
+	SKILLUP_FAMILY = "SkillUp Forever plans the cheapest route to your next profession rank.",
+	SKILLUP_FAMILY_MENU = "Cheapest route to your next rank: SkillUp Forever",
+	TWEAKS_FAMILY_MENU = "Find dungeon entrances: Tweaks Forever",
 	SPF_MISSING = "Install Shortest Path Forever for walked routes and boat times.",
 	SPF_DISABLED = "Enable Shortest Path Forever for walked routes and boat times.",
-	SKILLUP_DISABLED = "Your next skill-ups come from SkillUp Forever. Enable it and they show here.",
-	SKILLUP_ABSENT = "Your next skill-ups come from SkillUp Forever.",
-	LEGACY_DISABLED = "Enable Legacy Forever to see your completion progress.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
 	WHATS_NEW = '"Next spot" moves between an objective\'s camps.',
@@ -482,3 +499,18 @@ ns.L = {
 	RXP_SETUP_SKILLUP = "SkillUp: equipment and shopping journeys are available.",
 	RXP_SETUP_SETTINGS = "Change this later in AddOns settings.",
 }
+
+-- The Forever addons page's words in English, kept before a translation replaces them. The shared module
+-- (UI/ForeverFamily.lua, loaded next) reads its words from ns.FamilyL by their English phrase, since our ns.L is keyed
+-- by name: English here, and Integrations/Companions.lua puts each translated line in once every Locales file has
+-- loaded.
+---@type table<string, string>
+ns.FamilyPhrases = {}
+---@type table<string, string>
+ns.FamilyL = {}
+for key, text in pairs(ns.L) do
+	if key:find("^FAMILY_") then
+		ns.FamilyPhrases[key] = text
+		ns.FamilyL[text] = text
+	end
+end

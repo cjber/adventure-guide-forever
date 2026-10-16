@@ -33,8 +33,6 @@ local DEFAULTS = {
 	followQuest = true,
 	-- One chat line after an update (WhatsNew).
 	whatsNew = true,
-	-- A line where a missing companion addon would fill a tab or a route step (Companions.lua).
-	suggestCompanions = true,
 	-- Beta: the planned route order (chapter lead, town look-ahead, committed order); false is the simple
 	-- nearest-action order, the default (docs/design.md §4.1).
 	optimisedRoute = false,
@@ -106,9 +104,22 @@ local function LoadDB()
 		end
 	end
 	loaded.window, loaded.floatWindow = nil, nil
+	-- "Suggest companion addons" became the Forever addons page's "Suggest my other Forever addons"
+	-- (UI/ForeverFamily.lua, `suggestFamily`, on unless false): a player who had turned it off keeps it off.
+	if loaded.suggestCompanions == false and loaded.suggestFamily == nil then
+		loaded.suggestFamily = false
+	end
+	loaded.suggestCompanions = nil
 	loaded.maxQuestLevelOffset = QuestLevelOffset(loaded.maxQuestLevelOffset)
 	AdventureGuideForeverDB = loaded
 	db = loaded
+end
+
+-- The account-wide saved variables the Forever addons page and its hints read and write (UI/ForeverFamily.lua);
+-- nil before they load.
+---@return ForeverFamilyDB?
+function ns.FamilyDB()
+	return db
 end
 
 ---@return table

@@ -15,6 +15,7 @@
 ## OptionalDeps: AtlasLootClassic, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever, RXPGuides
 
 Locales\enUS.lua
+UI\ForeverFamily.lua
 Data\Geometry.lua
 Data\Forever.lua
 Data\ZoneArt.lua
