@@ -501,7 +501,8 @@ ns.L = {
 
 -- The Forever addons page's words in English, kept before a translation replaces them. The shared module
 -- (UI/ForeverFamily.lua, loaded next) reads its words from ns.FamilyL by their English phrase, since our ns.L is keyed
--- by name: English here, and Integrations/Companions.lua puts each translated line in once every Locales file has loaded.
+-- by name: English here, and Integrations/Companions.lua puts each translated line in once every Locales file has
+-- loaded.
 ---@type table<string, string>
 ns.FamilyPhrases = {}
 ---@type table<string, string>
