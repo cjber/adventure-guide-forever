@@ -103,7 +103,9 @@ abandons quests.
   tracker's step from the committed route and answers nil while a route is due, never building one for a caller.
   Fields are added, never renamed or repurposed, within a version; `minor` counts the additions. `Subscribe` calls
   back the frame after the stop or the journey changes. Shortest Path's own `Subscribe`, when it has one, replaces
-  watching the super-tracking events.
+  watching the super-tracking events. `Suggestions` copies the panel's cards in the order it draws them, and
+  `StartSuggestion` starts one through the same `ns.Choose` as the guide's Start, so another addon's menu and the
+  guide never disagree.
 - **2.23 Secret values.** A value the client hands over but keeps secret (a unit's GUID or token in some combat and
   instance states) is read only through `ns.Readable` (`Core/Secret.lua`), which answers nil for a secret, and a
   forbidden tooltip only after `ns.Usable` says it may be touched. A secret reads as absent: the line it would have

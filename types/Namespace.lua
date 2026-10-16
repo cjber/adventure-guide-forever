@@ -1748,11 +1748,23 @@
 ---@field handins integer quests the route hands in there
 ---@field pickups integer quests the route picks up there
 
+-- One of the guide's cards, as API.Suggestions answers.
+---@class AGFAPISuggestion
+---@field id string the card's key, for StartSuggestion
+---@field title string e.g. "Westfall story"
+---@field level? integer the lowest level the card shows
+---@field kind AGFJourneyKind
+---@field map integer uiMapID of its first stop
+---@field x? number normalized 0-1; nil when the first stop has no known place
+---@field y? number normalized 0-1; nil when the first stop has no known place
+
 ---@class AGFAPI
 ---@field RestedXPIntegrated fun(): boolean
 ---@field RestedXPNativeUI fun(): boolean
 ---@field version integer
----@field minor integer 1 from Subscribe
+---@field minor integer 1 from Subscribe, 2 from Suggestions and StartSuggestion
+---@field Suggestions fun(limit?: integer): AGFAPISuggestion[]? the panel's cards, at most five
+---@field StartSuggestion fun(id: string): boolean starts a card as the guide's own Start does
 ---@field Subscribe fun(callback: fun(changes: AGFAPIChanges)): fun() calls back the frame after the current stop or the journey changes, at most once per burst; returns the unsubscribe
 ---@field CurrentStop fun(): AGFAPIStop?
 ---@field NextStops fun(limit?: integer): AGFAPIStop[]?

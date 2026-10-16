@@ -706,13 +706,15 @@ local function HideTooltipWithin(root)
 	end
 end
 
--- A card's levels, in the colour the game gives a quest of that level: a zone's or dungeon's range, a battleground's
--- first level. Nothing for a card with no one place (Quests in your log).
+-- The levels a card shows: a battleground's opening level with no top, else its guide's, zone's or instance's span.
+-- Nil when it has none to show.
 ---@param journey AGFJourney
----@param level integer the player's
----@return string? text
----@return {r: number, g: number, b: number}? color
-local function Levels(journey, level)
+---@return integer? low
+---@return integer? high nil for "from `low`"
+local function LevelRange(journey)
+	if journey.level then
+		return journey.level, nil
+	end
 	local zone = journey.zone and ns.Data.zones[journey.zone] or nil
 	---@type AGFInstance?
 	local instance = journey.instance and ns.Data.instances and ns.Data.instances[journey.instance] or nil
@@ -725,12 +727,26 @@ local function Levels(journey, level)
 	if journey.guideLow and journey.guideHigh then
 		low, high = journey.guideLow, journey.guideHigh
 	end
-	if journey.level then
-		return L.LEVELS_FROM:format(journey.level), GetQuestDifficultyColor(level)
-	elseif low and high and low > 0 and high >= low then
-		local text = low == high and tostring(low) or L.LEVELS:format(low, high)
-		return text, GetQuestDifficultyColor(math.max(low, math.min(level, high)))
+	if low and high and low > 0 and high >= low then
+		return low, high
 	end
+end
+
+-- A card's levels, in the colour the game gives a quest of that level: a zone's or dungeon's range, a battleground's
+-- first level. Nothing for a card with no one place (Quests in your log).
+---@param journey AGFJourney
+---@param level integer the player's
+---@return string? text
+---@return {r: number, g: number, b: number}? color
+local function Levels(journey, level)
+	local low, high = LevelRange(journey)
+	if not low then
+		return nil
+	elseif not high then
+		return L.LEVELS_FROM:format(low), GetQuestDifficultyColor(level)
+	end
+	local text = low == high and tostring(low) or L.LEVELS:format(low, high)
+	return text, GetQuestDifficultyColor(math.max(low, math.min(level, high)))
 end
 
 ---@param journey AGFJourney
@@ -748,6 +764,7 @@ Overview.KIND_ICONS = KIND_ICONS
 Overview.Levels = Levels
 Overview.GROUPS = GROUPS
 Overview.InGroup = InGroup
+Overview.LevelRange = LevelRange
 Overview.Collapsed = Collapsed
 Overview.ToggleCollapsed = ToggleCollapsed
 Overview.Open = Open
