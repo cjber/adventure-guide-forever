@@ -12,10 +12,17 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-- **Objectives send you to mobs nearer your level.** When an objective can be done in more than one place and the first place's mobs are 3 or more levels above you, the guide picks the next place whose mobs aren't. If every place is that high, it keeps the first.
-- **"Next spot" works while you're standing in the area.** At a camp someone has already cleared, right-click the step and choose "Next spot": the arrow leads you to the nearest camp you haven't passed over, and the area is yours again once you get there.
-- **The quest tracker goes back to its own place when the guide has nothing to show in it.** With no steps in the Forever section, or All Objectives collapsed, the tracker returns to where Edit Mode (or your UI addon) put it, and it can be moved again. Before, it could stay stuck mid-screen or over the minimap.
+## [0.14.0] - 2026-10-16
+
+- **Objectives send you to mobs nearer your level.** When an objective can be done in more than one place and the first place's mobs are 3 or more levels above you, the guide sends you to the next place on the same map whose mobs aren't. If there's no such place, it keeps the first.
+
+- **"Next spot" works while you're standing in the area.** When a step covers objectives in more than one spot nearby, right-click it where you stand and choose "Next spot": the arrow leads you to the nearest spot you haven't passed over, and the area is yours again once you get there. Walk back to a spot you passed over and the arrow leads on again. After the last spot it goes round again.
+
+- **The quest tracker goes back to its own place when the guide has nothing to show in it.** With nothing in the Forever section, or All Objectives collapsed, the quest tracker returns to where Edit Mode (or your UI addon) put it, and you can move it again. Before, it could stay stuck mid-screen or over the minimap.
+
 - **The guide's tracker section stays current in combat.** Collapsing All Objectives mid-fight hides it straight away, and its steps keep updating until combat ends.
+
+- **Data checked against Forever 1.60.1.70425.** The patch adds two areas, Hyjal Crater and Sunken Hollow, and nothing else in the bundled data changed. The quest catalogue is rebuilt once at your next login.
 
 ## [0.13.0] - 2026-10-16
 
