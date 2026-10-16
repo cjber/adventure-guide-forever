@@ -12,7 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-- **The README credits the people and addons behind Adventure Guide Forever.** The players who reported bugs and the addons that inspired features are named, and THIRD_PARTY.md has the full list.
+- **The README credits the people and addons behind Adventure Guide Forever.** The players who reported bugs or asked for features, and Polestar, which inspired some features, are named, and THIRD_PARTY.md has the full list.
 
 ## [0.14.1] - 2026-10-16
 

@@ -22,9 +22,9 @@ No embedded libraries ship. `media/` is this addon's own: the icon is drawn in `
 |---|---|---|
 | [QuestieDB](https://github.com/Questie/QuestieDB) and Questie, installed by the player | Quest records, NPC places and towns (WFA-2 and WFA-28 in `AGENTS.md`) | QuestieDB carries no licence; nothing is copied |
 | AtlasLoot Classic, if installed | Dungeon loot in the Dungeons tab | Its own; nothing is copied |
-| [RestedXP Guides](https://github.com/RestedXP/RXPGuides), if installed | The current guide's steps in the Adventure tab and tracker, read from its loaded tables and hooks | Its own (guides CC BY-NC-SA 4.0); nothing is copied, and `tests/rxp_fixture.lua` holds only original example steps |
+| [RestedXP Guides](https://github.com/RestedXP/RXPGuides), if installed | The current guide's steps in the Adventure tab and tracker: read from its loaded tables and hooks, and its steps skipped or advanced through its own step controls | CC BY-NC-SA 4.0; nothing is copied, and `tests/rxp_fixture.lua` holds only original example steps |
 | Shortest Path Forever, if installed | Routes to each step, through its public API | GPL-3.0-or-later |
-| SkillUp Forever and Tweaks Forever, if installed | The Professions tab, and class trainer places for spell reminders, through their public APIs | GPL-3.0-or-later |
+| SkillUp Forever and Tweaks Forever, if installed | The Professions tab, and class trainer places and dungeon entrances, through their public APIs | GPL-3.0-or-later |
 
 ## Build and test only
 
@@ -43,11 +43,11 @@ CI tools (StyLua, ruff, luacheck, lua-language-server, actionlint, zizmor, gitle
 
 ## Ideas and contributors
 
-Credit for the ideas, translations and reports behind the addon.
+Credit for the ideas and reports behind the addon.
 
 | Who | What | Notes |
 |---|---|---|
-| [Polestar](https://github.com/fitzforge/polestar) by Fitz | The ideas for guarding NPC tooltips against secret values (#145), matching objectives by name (#146), learning what a giver really offers (#147), waypoint hysteresis (#148), the level-up payload (#149), ranked search (#150), the "next camp" and "another NPC" actions (#151), weighting drop areas (#152), Shift-click to start a locked chain (#153) and skipping a full replan for a count change (#154); `/agf report`, the `Subscribe` API (#159), `tests/README.md` (#164), and the shared tooling's zip check, `tools/doctor.py`, stale-screenshot check and `.editorconfig`, plus this file, the issue forms and the "For addon authors" changelog subsection (#156-#158, #160-#163, #165) | GPL-3.0. Inspired only; no code was copied. Fitz is welcome to use our code. |
+| [Polestar](https://github.com/fitzforge/polestar) by Fitz | The ideas for guarding NPC tooltips against secret values (#145), matching objectives by name (#146), learning what a giver really offers (#147), waypoint hysteresis (#148), the level-up payload (#149), ranked search (#150), the "next camp" and "another NPC" actions (#151), weighting drop areas (#152), Shift-click to start a locked chain (#153) and skipping a full replan for a count change (#154). Ideas Adventure Guide took for every Forever addon: `/agf report` with its copy box and caught errors (#156), the issue forms (#157), the zip check (#158), the `Subscribe` API (#159), `tools/doctor.py` (#160), the stale-screenshot check (#161), this file (#162), the "For addon authors" changelog subsection (#163), `tests/README.md` (#164) and `.editorconfig` (#165). | GPL-3.0. Inspired only; no code was copied. Fitz is welcome to use our code. |
 | VinzNL | Asked for battlegrounds to be left out of suggestions (#62) | |
 | fuguer-ai | Asked for a read-only API for the current stop (#79) | |
 | jechten, on CurseForge | Reported slow logins (#166) | |
