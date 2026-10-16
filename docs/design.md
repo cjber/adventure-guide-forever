@@ -46,10 +46,10 @@ abandons quests.
 - **2.7 Completion.** Record a proven story ending once per character and show a native-style popup with one completion sound. Tracker visibility does not affect it.
 - **2.8 Menus.** Share step actions between the guide and tracker. An area with more than one objective spot offers
   Next spot: the spot it points at is passed over for the session and the point moves to the nearest spot not passed
-  over (once all are, the nearest other one); a spot not passed over keeps the arrow through rebuilds and walking.
-  Inside the area it passes over the spot the player stands at; standing in a spot passed over, the step stops being
-  "here" so the arrow leads on, and inside a spot not passed over it is theirs again. Passing over the last spot
-  starts the round again from it.
+  over; a spot not passed over keeps the arrow through rebuilds and walking. Inside the area it passes over the spot
+  the player is at (the nearest edge, since an area's spots are close and often overlap); while the spot they are at
+  is passed over, the area stops being "here" and the arrow leads on, and at a spot not passed over it is theirs. Walking between spots
+  rebuilds when that changes. Passing over the last spot starts the round again from it.
 - **2.9 Tooltips.** Explain visits and quest difficulty. Town checklists tick completed givers;
   repeated visits share a map ring.
 - **2.10 Lifecycle.** Keep the chosen journey through rebuilds, travel and reloads. Resume paused

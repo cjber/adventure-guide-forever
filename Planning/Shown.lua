@@ -34,6 +34,11 @@ local function Reorder(route, input)
 			for index, step in ipairs(card.steps) do
 				step.here = index == 1 and here == 1 or nil
 			end
+			-- The player's order can make the area they stand in the head again; "Next spot" still leads on from it.
+			local first, camps = card.steps[1], input.prefs.camps
+			if first and first.here and first.kind == "area" and camps and camps[first.key] then
+				ns.Model.Camp(input.data, player, first, camps[first.key])
+			end
 			ns.Planner.Journeys.Summarise(card)
 		end
 		if route.journey == card.key then

@@ -746,7 +746,7 @@
 ---@field Guidance AGFGuidance
 ---@field Focus AGFFocus
 ---@field Print fun(msg: string)
----@field NextCamp fun(step: AGFStep) "Next spot": pass over the spot the area step points at, for this session
+---@field NextCamp fun(step: AGFStep) "Next spot": pass over the spot the area step points at (the one the player is at, inside the area) for this session; the last one starts the round again
 ---@field Readable fun(value: any): any `value`, or nil when the client keeps it secret (Core/Secret.lua)
 ---@field Usable fun(frame?: Frame): boolean false for nil and for a forbidden frame (Core/Secret.lua)
 ---@field SafeCall fun(label: string, fn: function, ...: any): boolean, ... run fn as pcall does, keeping a failure for the report and passing it to the error handler (Core/SafeCall.lua)
@@ -1320,7 +1320,8 @@
 ---@class AGFModel
 ---@field Spots fun(step: AGFStep): AGFNode[] an area step's distinct objective spots, in the data's order
 ---@field SpotKey fun(spot: {map: integer, x: number, y: number}): string a spot's identity for "Next spot"
----@field CampAt fun(data: AGFData, player?: AGFPlayer|{map?: integer, x?: number, y?: number}, step: AGFStep): AGFNode|AGFStep the spot "Next spot" passes over: the arrow's, or the nearest while standing in the area
+---@field CampAt fun(data: AGFData, player?: AGFPlayer|{map?: integer, x?: number, y?: number}, step: AGFStep): AGFNode|AGFStep the spot "Next spot" passes over: the arrow's, or the one the player is at while standing in the area
+---@field AtFreshCamp fun(data: AGFData, player?: AGFPlayer|{map?: integer, x?: number, y?: number}, step: AGFStep, passed: table<string, true>): boolean whether the spot of the area the player is at (nearest edge) is one not passed over
 ---@field Camp fun(data: AGFData, player: AGFPlayer, step: AGFStep, passed: table<string, true>) move an area step off a spot passed over, to the nearest one not passed over, and on from a spot passed over while standing in the area
 ---@field TownArrow fun(data: AGFData, player: AGFPlayer|AGFPosition|{map: integer, x: number, y: number}, rows: AGFTownGiver[], current?: {map: integer, x: number, y: number}): AGFPlace? the giver a town visit's arrow points at, with the switch margin
 ---@field SWITCH_YARDS number how much nearer another town giver must be before the arrow leaves the one it points at

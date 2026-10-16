@@ -285,9 +285,9 @@ function ns.Prefs()
 	return charDB
 end
 
--- "Next spot" on an area step (docs/design.md §2.8): the spot its arrow points at, or the one the player stands at
--- inside the area, is passed over for this session, so the arrow moves to the nearest spot not passed over
--- (Model.Camp). Passing over the last one starts the round again from it.
+-- "Next spot" on an area step (docs/design.md §2.8): the spot its arrow points at, or the one the player is at inside
+-- the area (Model.CampAt), is passed over for this session, so the arrow moves to the nearest spot not passed over
+-- (Model.Camp). Passing over the last one starts the round again from it, so some spot is always left to lead to.
 ---@param step AGFStep
 function ns.NextCamp(step)
 	local Model = ns.Model
@@ -612,6 +612,12 @@ local function Walked()
 	local index = ns.Model.Here(ns.Data, here, steps, cachedRoute.here)
 	local key = index and steps[index].key or nil
 	if key ~= hereKey and key ~= cachedRoute.here then
+		ns.Invalidate()
+	end
+	-- In an area where "Next spot" passed over a spot, walking into a spot not passed over makes it theirs again, and
+	-- walking out of one leads them on (Model.Camp); both are within the one area, so the key above doesn't change.
+	local passed = index == 1 and first.kind == "area" and sessionCamps[first.key]
+	if passed and ns.Model.AtFreshCamp(ns.Data, here, first, passed) ~= (first.here == true) then
 		ns.Invalidate()
 	end
 	hereKey = key
