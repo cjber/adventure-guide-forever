@@ -735,7 +735,8 @@ local function CommitRoute(shown, full, world)
 	end
 	-- A rebuild that changes the area the player is "here" in (Next spot passing over the camp they stand at, say)
 	-- restarts the walking check from it, so walking on into the next camp rebuilds again (Walked).
-	if shown.here ~= cachedRoute.here then
+	-- (Not from a combat refresh, which keeps no `here`.)
+	if shown.here ~= cachedRoute.here and not InCombatLockdown() then
 		hereKey = shown.here
 	end
 	cachedRoute, rawRoute, snapshot = shown, full, world

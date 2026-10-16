@@ -259,12 +259,7 @@ do
 	equal(head.key, area.key, "walk: the area still leads")
 	equal(head.here, nil, "walk: Next spot inside the area leads on")
 	local to = { map = head.map, x = head.x, y = head.y }
-	equal(h.ns.Model.SpotKey(to) ~= h.ns.Model.SpotKey(first), true, "walk: to another spot")
-	local known = false
-	for _, spot in ipairs(spots) do
-		known = known or h.ns.Model.SpotKey(spot) == h.ns.Model.SpotKey(to)
-	end
-	equal(known, true, "walk: one of the area's spots")
+	equal(h.ns.Model.SpotKey(to), h.ns.Model.SpotKey(spots[2]), "walk: to the other spot")
 	local function Walk(spot)
 		h.MovePlayer(spot.map, spot.x, spot.y)
 		local plans = h.modelCalls.Plan
@@ -332,6 +327,16 @@ do
 	}
 	camps.x, camps.r = 0.42, 20
 	equal(#Model.Spots(camps), 3, "spots: the node and its camps")
+	local merged = Area()
+	merged.shapes = { camps.shapes[1], { map = MAP, x = 0.42, y = 0.5, r = 20, slot = 4, objectives = {} } }
+	equal(#Model.Spots(merged), 1, "spots: a merged step keeps to its nodes, without one objective's camps")
+	local here = Area()
+	here.shapes, here.here = camps.shapes, true
+	Model.PlaceCamp(data, Stand(0.50), here, Passed())
+	equal(here.x, 0.50, "place: here at a camp, the step points at it")
+	here.x = 0.42
+	Model.PlaceCamp(data, Stand(0.47), here, Passed(camps.shapes[1].alternates[1]))
+	equal(here.x, 0.50, "place: never at a camp passed over")
 	equal(Model.Here(data, Stand(0.50), { camps }), 1, "here: at one of its other camps")
 	equal(Model.Here(data, Stand(0.48, 0.9), { camps }), nil, "here: not away from every camp")
 	Model.Camp(data, Stand(0.40), camps, Passed(camps.shapes[1]))
@@ -406,6 +411,7 @@ do
 		shaped = shaped or (shape.x == to.x and shape.y == to.y)
 	end
 	equal(shaped, true, "camps: and its shape")
+	equal(#stop.shapes, 1, "camps: only that camp, not the one passed over")
 	head = Walk(to)
 	equal(head.key == area.key and head.here == true, true, "camps: arriving at it, here again")
 	equal(h.ns.Model.SpotKey(head), h.ns.Model.SpotKey(spots[2]), "camps: the stop is the camp stood at")

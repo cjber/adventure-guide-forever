@@ -1329,6 +1329,7 @@
 ---@class AGFModel
 ---@field Spots fun(step: AGFStep): AGFCamp[] an area step's distinct objective spots, in the data's order: each node, then its alternates
 ---@field SpotKey fun(spot: {map: integer, x: number, y: number}): string a spot's identity for "Next spot"
+---@field PlaceCamp fun(data: AGFData, player: AGFPlayer, step: AGFStep, passed?: table<string, true>) where an area step points among its spots once its here is settled
 ---@field CampAt fun(data: AGFData, player?: AGFPlayer|{map?: integer, x?: number, y?: number}, step: AGFStep): AGFCamp|AGFStep the spot "Next spot" passes over: the arrow's, or the one the player is at while standing in the area
 ---@field AtPassedSpot fun(data: AGFData, where: {map: integer, x: number, y: number}, step: AGFStep, passed?: table<string, true>, held: boolean): boolean whether the player stands at a spot "Next spot" passed over, which is not standing in the area
 ---@field Camp fun(data: AGFData, player: AGFPlayer, step: AGFStep, passed: table<string, true>) move an area step off a spot passed over, to the nearest one not passed over
