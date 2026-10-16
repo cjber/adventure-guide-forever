@@ -169,7 +169,7 @@ local function Carry(data, player, completed, log, ready, prefs, mapName, added)
 			and Laps(data, player, completed, log, candidates, plan, prefs, mapName, nil, nil, "carry")
 		or Build(data, player, completed, log, candidates, prefs, mapName)
 	steps = #added > 0 and Within(data, player, completed, log, steps) or steps
-	if steps[1] and Model.Here(data, player, steps, State.heldHere) == 1 then
+	if steps[1] and Model.Here(data, player, steps, State.heldHere, State.camps) == 1 then
 		steps[1].here = true
 	end
 	if #steps == 0 then

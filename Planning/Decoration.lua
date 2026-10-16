@@ -140,33 +140,46 @@ function Model.Spots(step)
 	return spots
 end
 
+-- The spot "Next spot" passes over: the one the step's arrow points at, or, while the player stands in the area (its
+-- `here`), the spot whose edge is nearest them (the deepest, inside one), since that is the camp they found cleared.
+---@param step AGFStep
+---@param player? AGFPlayer|{map?: integer, x?: number, y?: number}
+---@return AGFNode|AGFStep
+function Model.CampAt(data, player, step)
+	if not step.here then
+		return step
+	end
+	local best, bestEdge = nil, nil
+	for _, spot in ipairs(Model.Spots(step)) do
+		local yards = player and Model.Yards(data, player, spot)
+		if yards and (not best or yards - spot.r < bestEdge) then
+			best, bestEdge = spot, yards - spot.r
+		end
+	end
+	return best or step
+end
+
 -- "Next spot" (docs/design.md §2.8): while the spot an area step points at is one the player passed over, its point
--- moves to the nearest spot not passed over, by distance from the player; once every spot is passed over, to the
--- nearest other than the one it points at. A spot not passed over keeps the arrow, so walking towards it, a combat
--- rebuild or the planner choosing it again never moves it on. Not while the player stands in the area (its `here`),
--- nor for a step with one spot.
+-- moves to the nearest spot not passed over, by distance from the player. A spot not passed over keeps the arrow, so
+-- walking towards it, a combat rebuild or the planner choosing it again never moves it on. Not while the player is
+-- "here" (Model.Here, which a spot passed over doesn't count for), nor for a step with one spot; once every spot
+-- left is passed over nothing moves (ns.NextCamp starts the round again first, but objectives can finish).
 ---@param step AGFStep
 ---@param passed table<string, true> the spots passed over, by Model.SpotKey
 function Model.Camp(data, player, step, passed)
 	local spots = Model.Spots(step)
-	local current = Model.SpotKey(step)
-	if step.here or #spots < 2 or not passed[current] then
+	if step.here or #spots < 2 or not passed[Model.SpotKey(step)] then
 		return
 	end
-	local best, bestYards, fallback, fallbackYards
+	local best, bestYards
 	for _, spot in ipairs(spots) do
-		local key = Model.SpotKey(spot)
-		local yards = Model.Yards(data, player, spot) or math.huge
-		if not passed[key] and (not best or yards < bestYards) then
+		local yards = not passed[Model.SpotKey(spot)] and (Model.Yards(data, player, spot) or math.huge)
+		if yards and (not best or yards < bestYards) then
 			best, bestYards = spot, yards
 		end
-		if key ~= current and (not fallback or yards < fallbackYards) then
-			fallback, fallbackYards = spot, yards
-		end
 	end
-	local spot = best or fallback
-	if spot then
-		step.map, step.x, step.y = spot.map, spot.x, spot.y
+	if best then
+		step.map, step.x, step.y = best.map, best.x, best.y
 	end
 end
 

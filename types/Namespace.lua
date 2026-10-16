@@ -345,7 +345,7 @@
 ---@field Story fun(data: AGFData, questID: integer): AGFStory? the chain the quest belongs to; nil when it is in none, or the way back forks
 ---@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (AGFMapName), instanceName?: (fun(id: integer): string?), skippedQuests?: table<string, integer[]>, lead?: integer, left?: integer, entrances?: table<integer, AGFLocation>): AGFJourney[], boolean
 ---@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (AGFMapName), instanceName?: (fun(id: integer): string?), last?: AGFRoute, inputs?: AGFPlanInputs): AGFRoute
----@field Here fun(data: AGFData, where?: {map?: integer, x?: number, y?: number}, steps: AGFStep[], held?: string): integer? the open area step `where` stands in: the head when it is one, else the first; `held`, the key of the one stood in last, lets go past a margin
+---@field Here fun(data: AGFData, where?: {map?: integer, x?: number, y?: number}, steps: AGFStep[], held?: string, camps?: table<string, table<string, true>>): integer? the open area step `where` stands in: the head when it is one, else the first; `held`, the key of the one stood in last, lets go past a margin; a spot `camps` passed over doesn't count
 ---@field NearAction fun(from?: AGFPosition, log: table<integer, AGFLogQuest>, steps: AGFStep[], at: (fun(step: AGFStep): AGFPosition?)): AGFStep? the ready hand-in or pickup beside the player that goes before the head, or nil
 ---@field Yards fun(data: AGFData, a: {map: integer, x: number, y: number}, b: {map: integer, x: number, y: number}): number? yards between two places on one continent the data places; nil otherwise
 ---@field Refresh fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, last: AGFRoute, mapName?: (AGFMapName), inputs?: AGFPlanInputs): AGFRoute the cheap in-combat rebuild: the log's steps fresh, the rest from `last`
@@ -747,7 +747,7 @@
 ---@field Guidance AGFGuidance
 ---@field Focus AGFFocus
 ---@field Print fun(msg: string)
----@field NextCamp fun(step: AGFStep) "Next spot": pass over the spot the area step points at, for this session
+---@field NextCamp fun(step: AGFStep) "Next spot": pass over the spot the area step points at (the one the player is at, inside the area) for this session; the last one starts the round again
 ---@field Readable fun(value: any): any `value`, or nil when the client keeps it secret (Core/Secret.lua)
 ---@field Usable fun(frame?: Frame): boolean false for nil and for a forbidden frame (Core/Secret.lua)
 ---@field SafeCall fun(label: string, fn: function, ...: any): boolean, ... run fn as pcall does, keeping a failure for the report and passing it to the error handler (Core/SafeCall.lua)
@@ -1321,6 +1321,8 @@
 ---@class AGFModel
 ---@field Spots fun(step: AGFStep): AGFNode[] an area step's distinct objective spots, in the data's order
 ---@field SpotKey fun(spot: {map: integer, x: number, y: number}): string a spot's identity for "Next spot"
+---@field CampAt fun(data: AGFData, player?: AGFPlayer|{map?: integer, x?: number, y?: number}, step: AGFStep): AGFNode|AGFStep the spot "Next spot" passes over: the arrow's, or the one the player is at while standing in the area
+---@field AtPassedSpot fun(data: AGFData, where: {map: integer, x: number, y: number}, step: AGFStep, passed?: table<string, true>, held: boolean): boolean whether the player stands at a spot "Next spot" passed over, which is not standing in the area
 ---@field Camp fun(data: AGFData, player: AGFPlayer, step: AGFStep, passed: table<string, true>) move an area step off a spot passed over, to the nearest one not passed over
 ---@field TownArrow fun(data: AGFData, player: AGFPlayer|AGFPosition|{map: integer, x: number, y: number}, rows: AGFTownGiver[], current?: {map: integer, x: number, y: number}): AGFPlace? the giver a town visit's arrow points at, with the switch margin
 ---@field SWITCH_YARDS number how much nearer another town giver must be before the arrow leaves the one it points at
@@ -1607,6 +1609,7 @@
 ---@field committedOrders? table<string, AGFOrder>
 ---@field planDocks? {data: AGFData, [integer]: AGFFrameCrossing[]}
 ---@field heldHere? string
+---@field camps? table<string, table<string, true>> one plan's spots "Next spot" passed over, by area step key
 
 ---@alias AGFLocation {map?: integer, x?: number, y?: number}
 ---@alias AGFMapName fun(map: integer): string?
