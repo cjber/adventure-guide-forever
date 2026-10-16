@@ -16,6 +16,7 @@ import io
 import os
 import subprocess
 import sys
+import tempfile
 import urllib.error
 import zipfile
 from pathlib import Path
@@ -75,6 +76,14 @@ def names_file(options):
     return path
 
 
+def build(directory, environment):
+    """Run tools/corpus.lua, writing quests.lua and towns.lua into `directory`."""
+    directory.mkdir(parents=True, exist_ok=True)
+    subprocess.run(
+        ["luajit", "tools/corpus.lua"], cwd=ROOT, check=True, env={**environment, "AGF_CORPUS_DIR": str(directory)}
+    )
+
+
 def main():
     options = gen_quests.source_options(__doc__)
     content = gen_quests.download(QUESTIEDB_URL, f"questiedb-{QUESTIEDB_TAG}.zip", **options)
@@ -93,10 +102,14 @@ def main():
         AGF_QUESTIEDB_TAG=QUESTIEDB_TAG,
         AGF_QUESTIEDB_SHA256=QUESTIEDB_SHA256,
         AGF_CLIENT_BUILD=gen_quests.BUILD,
-        AGF_CORPUS_DIR=str(CORPUS),
     )
-    CORPUS.mkdir(parents=True, exist_ok=True)
-    subprocess.run(["luajit", "tools/corpus.lua"], cwd=ROOT, check=True, env=environment)
+    build(CORPUS, environment)
+    # Built a second time, apart, and compared: a corpus that differs between runs would fail specs at random.
+    with tempfile.TemporaryDirectory(prefix="agf-corpus-") as scratch:
+        build(Path(scratch), environment)
+        for path in (FIXTURE, TOWN_FIXTURE):
+            if (Path(scratch) / path.name).read_bytes() != path.read_bytes():
+                raise ValueError(f"{path.relative_to(ROOT)} is not byte-for-byte reproducible")
     for path in (FIXTURE, TOWN_FIXTURE):
         if not path.is_file() or not path.stat().st_size:
             raise ValueError(f"tools/corpus.lua wrote no {path.relative_to(ROOT)}")

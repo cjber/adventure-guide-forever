@@ -125,6 +125,19 @@ local function Corpus(name)
 	if not chunk then
 		error(("%s: %s. Build the test corpus first: python3 tools/gen_corpus.py"):format(path, problem), 3)
 	end
+	-- Built from another QuestieDB release than the one pinned now (a pull moved the pin): build it again.
+	local pinned, header
+	for line in io.lines("tools/gen_corpus.py") do
+		pinned = pinned or line:match('^QUESTIEDB_SHA256 = "(%x+)"')
+	end
+	local file = assert(io.open(path, "rb"))
+	for _ = 1, 8 do
+		header = (header or "") .. (file:read("*l") or "")
+	end
+	file:close()
+	if pinned and not header:find(pinned, 1, true) then
+		error(("%s was built from another QuestieDB release: python3 tools/gen_corpus.py"):format(path), 3)
+	end
 	return chunk
 end
 

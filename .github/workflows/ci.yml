@@ -18,10 +18,14 @@ jobs:
           persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install -y luajit lua-check
       # The test corpus is never committed (QuestieDB carries no licence): it is built from the sha-pinned release,
-      # downloaded once into tools/.cache and kept here between runs, keyed by the pins in the generators.
+      # downloaded once into tools/.cache and kept here between runs (only its own inputs, keyed by the pins in the
+      # generators, so the tracker source and the other dumps never come back stale).
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: tools/.cache
+          path: |
+            tools/.cache/questiedb-*
+            tools/.cache/SkillLine-*.csv
+            tools/.cache/Faction-*.csv
           key: corpus-${{ runner.os }}-${{ hashFiles('tools/gen_corpus.py', 'tools/gen_quests.py') }}
       - run: python3 tools/gen_corpus.py
       - run: luacheck .
@@ -70,10 +74,14 @@ jobs:
       # tools/gen_corpus_test.py, among the unit tests typecheck.sh runs, reads the built corpus.
       - run: sudo apt-get update && sudo apt-get install -y luajit
       # The test corpus is never committed (QuestieDB carries no licence): it is built from the sha-pinned release,
-      # downloaded once into tools/.cache and kept here between runs, keyed by the pins in the generators.
+      # downloaded once into tools/.cache and kept here between runs (only its own inputs, keyed by the pins in the
+      # generators, so the tracker source and the other dumps never come back stale).
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: tools/.cache
+          path: |
+            tools/.cache/questiedb-*
+            tools/.cache/SkillLine-*.csv
+            tools/.cache/Faction-*.csv
           key: corpus-${{ runner.os }}-${{ hashFiles('tools/gen_corpus.py', 'tools/gen_quests.py') }}
       - run: python3 tools/gen_corpus.py
       - name: Install LuaLS 3.19.1
@@ -97,8 +105,6 @@ jobs:
           path: tools/.cache
           key: regeneration-${{ runner.os }}-${{ hashFiles('tools/gen_*.py', 'tools/diff_forever.py') }}
           restore-keys: regeneration-${{ runner.os }}-
-      # The test corpus is composed by the addon's own code, run in LuaJIT.
-      - run: sudo apt-get update && sudo apt-get install -y luajit
       - name: Regenerate pinned data in a scratch tree
         run: python3 tools/check_generated.py
 
@@ -153,7 +159,10 @@ jobs:
       # The smoke spec runs on the packaged files with tests/ laid over them, the built corpus with it.
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: tools/.cache
+          path: |
+            tools/.cache/questiedb-*
+            tools/.cache/SkillLine-*.csv
+            tools/.cache/Faction-*.csv
           key: corpus-${{ runner.os }}-${{ hashFiles('tools/gen_corpus.py', 'tools/gen_quests.py') }}
       - run: python3 tools/gen_corpus.py
       # .pkgmeta's manual changelog, which the release fills with the version's entry.
