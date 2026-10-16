@@ -123,9 +123,13 @@ Screenshots use Pillow and the [wow-mock-screenshots library](https://github.com
 
 [tests/README.md](tests/README.md) describes the test layers and the harness. Contributing and security policies are inherited from [cjber/.github](https://github.com/cjber/.github). Read [AGENTS.md](AGENTS.md) before changing code.
 
+## Credits
+
+Data comes from [wago.tools](https://wago.tools), [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0) and [Warcraft Wiki](https://warcraft.wiki.gg/wiki/Zones_by_level_(original)). Some features were inspired by [Polestar](https://github.com/fitzforge/polestar) by Fitz; no code was copied. Fitz is welcome to use our code. Thanks to rhednak and everyone in [THIRD_PARTY.md](THIRD_PARTY.md).
+
 ## Licence
 
-GPL-3.0-or-later. What trainers teach, dungeon entrance requirements and boat routes derive from [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0); client tables come via [wago.tools](https://wago.tools), and zone level ranges from [Warcraft Wiki](https://warcraft.wiki.gg/wiki/Zones_by_level_(original)). No Questie or Wowhead data is bundled. Every input, its pin and licence, and what ships: [THIRD_PARTY.md](THIRD_PARTY.md).
+GPL-3.0-or-later; [THIRD_PARTY.md](THIRD_PARTY.md) lists inputs. No Questie or Wowhead data is bundled.
 
 Made by Cillian Berragan · [cillian.dev](https://cillian.dev) · [GitHub](https://github.com/cjber) · [Twitter](https://twitter.com/cjberragan)
 
