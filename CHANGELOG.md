@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **"Next spot" works while you're standing in the area.** At a camp someone has already cleared, right-click the step and choose "Next spot": the arrow leads you to the nearest camp you haven't passed over, and the area is yours again once you get there.
+
 ## [0.13.0] - 2026-10-16
 
 - **The guide learns when a quest giver doesn't have a quest.** If the guide sends you to pick up a quest and the NPC's quest list doesn't include it (Forever removed or changed some quests), the guide says so in chat, drops it from the route, and its search explains "The giver didn't offer it". It tries again after your next level-up, or after a hand-in that could open the quest up.

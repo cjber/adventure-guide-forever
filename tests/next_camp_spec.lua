@@ -47,10 +47,32 @@ equal(Camp(Passed(middle)), near.x, "camp: the middle passed over, the nearest l
 equal(Camp(Passed(middle, near)), far.x, "camp: then the far one")
 equal(Camp(Passed(middle, near, far)), near.x, "camp: all passed over, the nearest other spot")
 equal(Camp(Passed(middle), far), far.x, "camp: a spot not passed over keeps the arrow")
-local step = Area()
+-- Standing in the area (#151): the spot that counts is the one the player stands in, not the arrow's.
+local function Inside(at, passed)
+	local step = Area()
+	step.here = true
+	local stand = { map = MAP, x = at.x, y = 0.5 }
+	Model.Camp(data, stand, step, passed)
+	return step, Model.CampAt(data, stand, step)
+end
+local step, at = Inside(near, Passed())
+equal(step.here, true, "inside: in a spot not passed over, the area stays theirs")
+equal(step.x, middle.x, "inside: and the point stays")
+equal(at, near, "inside: the spot passed over is the one stood in, not the arrow's")
+step = Inside(near, Passed(near))
+equal(step.here, nil, "inside: in a spot passed over, the step stops being here")
+equal(step.x, middle.x, "inside: and points at the nearest spot not passed over")
+step = Inside(middle, Passed(near))
+equal(step.here, true, "inside: walking into the next spot makes it theirs again")
+step = Inside(near, Passed(near, middle, far))
+equal(step.x, middle.x, "inside: all passed over, the nearest other than the one stood in")
+equal(step.here, nil, "inside: and the arrow leads there")
+step = Area()
 step.here = true
-Model.Camp(data, player, step, Passed(middle))
-equal(step.x, middle.x, "camp: not while standing in the area")
+Model.Camp(data, { map = MAP, x = 0.44, y = 0.9 }, step, Passed(near))
+equal(step.here, nil, "inside the ring but no spot: on to the nearest spot not passed over")
+step = Area()
+equal(Model.CampAt(data, player, step), step, "camp at: away from the area, the arrow's spot")
 step = Area()
 step.shapes = { middle, Shape(0.46) }
 Model.Camp(data, player, step, Passed(middle))
@@ -114,6 +136,48 @@ do
 		h.ns.Invalidate()
 		h.flush()
 		equal(Find().x .. ":" .. Find().y, after, "a rebuild: the new spot stays")
+	end
+	-- Standing in the area, the entry is still offered (#151), and pressing it passes over a spot.
+	if area then
+		local inside = {}
+		for key, value in pairs(area) do
+			inside[key] = value
+		end
+		inside.here, inside.key = true, "area:inside"
+		local offered
+		h.ns.Menu.Step(
+			setmetatable({}, {
+				__index = function()
+					return function(_, text, onClick)
+						if text == h.ns.L.NEXT_CAMP then
+							offered = onClick
+						end
+						return setmetatable({}, {
+							__index = function()
+								return function() end
+							end,
+						})
+					end
+				end,
+			}),
+			inside
+		)
+		equal(offered ~= nil, true, "menu: Next spot offered inside the area")
+		offered()
+		h.flush()
+		local camps = h.ns.Prefs().camps["area:inside"]
+		equal(camps ~= nil and next(camps) ~= nil, true, "inside press: a spot passed over")
+		-- Passing over every spot starts the round again from the last one, so the arrow never settles on a spot passed over.
+		local spots = h.ns.Model.Spots(inside)
+		for _, spot in ipairs(spots) do
+			inside.here, inside.map, inside.x, inside.y = nil, spot.map, spot.x, spot.y
+			h.ns.NextCamp(inside)
+		end
+		local count = 0
+		for _ in pairs(h.ns.Prefs().camps["area:inside"]) do
+			count = count + 1
+		end
+		equal(count < #spots, true, "round again: never every spot passed over")
 	end
 	-- A town step has no Next spot.
 	local labels = {}

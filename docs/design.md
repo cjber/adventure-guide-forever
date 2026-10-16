@@ -47,6 +47,9 @@ abandons quests.
 - **2.8 Menus.** Share step actions between the guide and tracker. An area with more than one objective spot offers
   Next spot: the spot it points at is passed over for the session and the point moves to the nearest spot not passed
   over (once all are, the nearest other one); a spot not passed over keeps the arrow through rebuilds and walking.
+  Inside the area it passes over the spot the player stands at; standing in a spot passed over, the step stops being
+  "here" so the arrow leads on, and inside a spot not passed over it is theirs again. Passing over the last spot
+  starts the round again from it.
 - **2.9 Tooltips.** Explain visits and quest difficulty. Town checklists tick completed givers;
   repeated visits share a map ring.
 - **2.10 Lifecycle.** Keep the chosen journey through rebuilds, travel and reloads. Resume paused
