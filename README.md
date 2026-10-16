@@ -46,7 +46,7 @@ Shortest Path Forever handles travel when installed. Questie draws the quest mar
 - **Choose and go.** Pick a journey on the map to start guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop clears only guidance the addon started.
 - **A route that stays with you.** Your choice survives new quests, travel and reloads. Ready hand-ins and nearby pickups come first. Town stops group quest givers into a checklist.
 - **Your order.** Drag steps or right-click to move them earlier or later. Moves that break quest order are greyed out. *Back to suggested order* restores the plan.
-- **Where to do an objective.** The guide passes over a place whose mobs are 3 or more levels above you. Right-click the step and choose *Next spot* for the nearest place you haven't passed over, even from a cleared camp you're in.
+- **Where to do an objective.** The guide skips a place whose mobs are 3 or more levels above you for a lower one on the same map. When a step covers objectives in several spots, *Next spot* in its menu moves the arrow on, even where you stand.
 - **Givers that don't offer a quest.** If a giver's quest list leaves out the quest the guide sent you for, the guide says so once in chat and drops it. It tries again after a level-up or a hand-in that could open it up.
 - **Story milestones.** Completing a proven quest chain earns a brief story-complete popup, recorded once for that character.
 - **Stories and search.** Stories read as chapters without naming later quests. Search puts exact titles and titles starting with your words first. It shows a quest's requirements and which ones you meet. For a locked quest it names the earliest quest in its chain you can take, and a shift-click adds that one.
@@ -75,9 +75,9 @@ Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-
 | `/agf travel` | Print guidance state for a travel report |
 | `/agf tracker` | Print the tracker anchors for an overlap report |
 | `/agf audit` | Compare the quest data with the game and report its source |
-| `/agf dump` | Save the drawn layout for a bug report; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua` |
+| `/agf dump` | Save the drawn layout; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua` |
 
-Open the guide from its world-map tab, the addon compartment or `/agf`. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including starting routes on selection, tracking their quests and detaching the shared Forever tracker so you can drag it elsewhere.
+Open the guide from its world-map tab or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including starting routes on selection, tracking their quests and detaching the shared Forever tracker to drag it elsewhere.
 
 ## Where the quests come from
 
@@ -87,7 +87,7 @@ Forever's new quests are only considered once they are in your log. The guide re
 
 ## Works alongside
 
-QuestieDB and Questie are needed for pickup recommendations. Optional companions are [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) for bosses and loot, [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting and [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion. Tweaks Forever's Windows option moves the guide window. The guide's tracker section shares one column with the Shortest Path, SkillUp and Legacy sections, above your quests, and has its own switch when you prefer another guide. With nothing in the column, your quests stay where Edit Mode put them.
+QuestieDB and Questie are needed for pickup recommendations. Optional companions are [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) for bosses and loot, [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting and [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion. Tweaks Forever's Windows option moves the guide window. The guide's tracker section shares one column with the Shortest Path, SkillUp and Legacy sections, above your quests, and has its own switch when you prefer another guide. An empty column leaves your quests where Edit Mode or your UI addon put them.
 
 ## Ways to help
 

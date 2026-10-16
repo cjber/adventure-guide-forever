@@ -24,7 +24,7 @@ These images are generated previews of the guide UI.
 
 ## Features
 
-- **RestedXP guides.** Read its instructions and objectives in the Adventure tab and tracker. Choose a guide from the Continue cards and move between its steps. Turn off *Use RestedXP guides* to return to Adventure Guide recommendations.
+- **RestedXP guides.** Read RestedXP's instructions and objectives in the Adventure tab and tracker. Choose a guide from the Continue cards and move between its steps. Turn off *Use RestedXP guides* to return to Adventure Guide recommendations.
 
 - **What to do next.** The map guide offers two Continue cards and one per other section. Quests in your log is the default suggestion.
 - **Journeys.** Finish loose ends, follow zone stories or pick up class quests. Dungeon and battleground journeys are opt-in.
@@ -32,7 +32,7 @@ These images are generated previews of the guide UI.
 - **Full guide.** Browse the route and the area's quest outline.
 - **Choose and go.** Use Shortest Path Forever or the game's waypoint. Stop clears only guidance the addon started.
 - **Your route.** Your journey survives travel and reloads. Ready hand-ins come first. Towns group quest givers into checklists. A quest missing from its giver's list drops off, with a line in chat.
-- **Where to do objectives.** Places whose mobs are 3 or more levels above you are passed over. *Next spot* in a step's menu moves the arrow to another place, even inside a cleared camp.
+- **Where to do objectives.** A place with mobs 3 or more levels above you gives way to a lower one on its map. *Next spot* cycles a step's spots, even where you stand.
 - **Quest difficulty.** Set the highest quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups.
 - **Your order.** Drag steps or use their menu. Moves that break quest order are greyed out.
 - **Search and hints.** Search puts the best match first and shows a quest's requirements. For a locked quest it names the earliest quest in its chain you can take. Hints cover talents and battlegrounds; class spell reminders are off by default.
@@ -61,7 +61,7 @@ All optional:
 - [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) adds your zone completion progress.
 - [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) supplies class trainer locations for spell reminders, marks dungeon entrances on the map and lets you move the guide window.
 
-The guide's tracker section shares one column with theirs, above your quests. Empty, it leaves your quests where Edit Mode put them.
+The guide's tracker section shares one column with theirs, above your quests. Empty, it leaves your quests where Edit Mode or your UI addon put them.
 
 Source code and issues: [github.com/cjber/adventure-guide-forever](https://github.com/cjber/adventure-guide-forever). Licence: GPL-3.0-or-later.
 
