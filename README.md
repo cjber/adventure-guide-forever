@@ -18,11 +18,11 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif" width="640" alt="Choosing a journey and following its route"></p>
 
-<p align="center">Choose a journey, see its steps on the map and follow the route, check off its quests as you go.</p>
+<p align="center">Choose a journey and follow its route, checking off its quests as you go.</p>
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png" width="640" alt="Adventure Guide beside The Barrens map"></p>
 
-<p align="center">Choose a journey from the world map's quest log. Continue shows two cards; other sections show one. Expand a header for more choices.</p>
+<p align="center">Choose a journey from the world map's quest log. Expand a header for more choices.</p>
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/story_complete.png" width="400" alt="Story completion popup"></p>
 
@@ -77,7 +77,7 @@ Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-
 | `/agf audit` | Compare the quest data with the game and report its source |
 | `/agf dump` | Save the drawn layout; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua` |
 
-Open the guide from its world-map tab or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including starting routes on selection, tracking their quests and detaching the shared Forever tracker to drag it elsewhere.
+Open the guide from its world-map tab or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide: starting routes on selection, tracking their quests, detaching the shared Forever tracker, and a Forever addons page that lists my other addons and turns off suggestions for them.
 
 ## Where the quests come from
 

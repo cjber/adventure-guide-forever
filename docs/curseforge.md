@@ -16,7 +16,7 @@ Choose a journey without leaving the world map's quest log.
 
 ![The Adventure Guide tracker section](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png)
 
-Your journey heads the tracker, with action icons for the current stop and up to two upcoming stops.
+Your journey heads the tracker, with the current stop and up to two upcoming ones.
 
 ![RestedXP instructions in the Adventure tab](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/restedxp.png)
 
@@ -46,7 +46,7 @@ Right-click a dungeon card to browse AtlasLoot bosses and their drops with nativ
 
 ## Usage
 
-`/agf`, `/adventureguide` or the addon compartment opens the guide on the world map. Options are in the guide's cog and Settings > AddOns > Adventure Guide.
+`/agf`, `/adventureguide` or the addon compartment opens the guide on the world map. Options are in the guide's cog and Settings > AddOns > Adventure Guide, whose Forever addons page lists my other addons.
 
 Translations are welcome on GitHub: see the [Locales folder](https://github.com/cjber/adventure-guide-forever/tree/main/Locales).
 
