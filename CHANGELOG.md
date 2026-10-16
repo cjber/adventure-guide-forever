@@ -12,7 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-- **A Forever addons page, and quieter suggestions.** Settings > AddOns > Adventure Guide has a new *Forever addons* page. It lists my five Forever addons, says whether each is on, turned off or not installed, and has a *Copy link* button for each. Its *Suggest my other Forever addons* box replaces *Suggest companion addons*; if you had that turned off, it stays off. Suggestions are now grey and show only for an addon you don't have. A step's menu and a profession trainer's menu offer the address, with *Don't suggest this again*. A profession trainer's tooltip mentions SkillUp Forever, which plans the cheapest route to your next rank. A dungeon card says to enable Tweaks Forever when it's installed but turned off.
+- **A Forever addons page, and quieter suggestions.** Settings > AddOns > Adventure Guide has a new *Forever addons* page. It lists my five Forever addons, says whether each is on, turned off or not installed, and has a *Copy link* button for each. Its *Suggest my other Forever addons* box replaces *Suggest companion addons*; if you had that turned off, it stays off. Suggestions are now grey and show only for an addon you don't have. A step's menu, a profession trainer's menu and a dungeon card's menu offer the address, with *Don't suggest this again*. A trainer for your next profession rank mentions SkillUp Forever, which plans the cheapest route there. A dungeon card says to enable Tweaks Forever when it's installed but turned off.
 
 ### For addon authors
 

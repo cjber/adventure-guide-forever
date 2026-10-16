@@ -470,6 +470,7 @@ ns.L = {
 	SPF_FAMILY_MENU = "Walked routes and boat times: Shortest Path Forever",
 	SKILLUP_FAMILY = "SkillUp Forever plans the cheapest route to your next profession rank.",
 	SKILLUP_FAMILY_MENU = "Cheapest route to your next rank: SkillUp Forever",
+	TWEAKS_FAMILY_MENU = "Find dungeon entrances: Tweaks Forever",
 	SPF_MISSING = "Install Shortest Path Forever for walked routes and boat times.",
 	SPF_DISABLED = "Enable Shortest Path Forever for walked routes and boat times.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG

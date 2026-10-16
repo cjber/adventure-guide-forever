@@ -173,6 +173,10 @@ function Menu.Journey(owner, journey)
 		root:CreateButton(L.NOT_INTERESTED, function()
 			ns.NotInterested(journey.key, journey.title)
 		end)
+		-- A dungeon whose entrance nothing knows: Tweaks Forever would find it.
+		if journey.instance and journey.kind == "dungeon" and not ns.Dungeons.Entrance(journey.instance) then
+			ns.Companions.AddMenu(root, "TweaksForever")
+		end
 	end)
 end
 

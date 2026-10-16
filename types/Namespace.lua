@@ -1142,6 +1142,7 @@
 ---@field Profession fun(data: AGFData, player: AGFPlayer, wanted?: fun(key: string): boolean): AGFProfessionNudge? the first nudge `wanted` takes, with its nearest trainer
 
 ---@class AGFAsides
+---@field NextRank fun(aside: AGFAside): boolean a profession aside for a learned line's next rank, where SkillUp Forever helps
 ---@field Wanted fun(key: string, renew?: integer): boolean neither skipped this session (at this `renew`) nor turned down: a provider offers the first it still wants
 
 ---@class AGFStrings
@@ -1425,6 +1426,7 @@
 ---@field SPF_FAMILY_MENU string a step's menu entry without Shortest Path Forever installed
 ---@field SKILLUP_FAMILY string a profession trainer's tooltip without SkillUp Forever installed
 ---@field SKILLUP_FAMILY_MENU string a profession trainer's menu entry without SkillUp Forever installed
+---@field TWEAKS_FAMILY_MENU string a dungeon card's menu entry without Tweaks Forever installed, when its entrance is unknown
 ---@field SPF_MISSING string a route step's tooltip without Shortest Path Forever installed
 ---@field SPF_DISABLED string a route step's tooltip with Shortest Path Forever installed but not enabled
 

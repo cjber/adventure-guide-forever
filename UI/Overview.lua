@@ -489,24 +489,27 @@ local function DropLine(journey)
 end
 
 -- The dungeon card's way in (docs/design.md §2.19): the entrance for its instance (a Map.ID, Dungeons.Entrance), else
--- the line saying why there is none. Nil for any other card.
+-- the line saying why there is none, and whether that line suggests installing Tweaks Forever (drawn grey). Nil for
+-- any other card.
 ---@param journey AGFJourney
 ---@return integer? instance
 ---@return AGFPoint? point
 ---@return string? note
+---@return boolean? suggestion
 local function Entrance(journey)
 	local instance = journey.kind == "dungeon" and journey.instance
 	if not instance then
 		return nil
 	end
 	local point, reason = ns.Dungeons.Entrance(instance)
-	local note = not point
-		and (
-			(reason == "missing" and ns.Companions.Line("TweaksForever"))
-			or (reason == "outdated" and L.TWEAKS_OUTDATED)
-			or L.ENTRANCE_UNKNOWN
-		)
-	return instance, point, note or nil
+	if point then
+		return instance, point
+	end
+	local line, suggestion
+	if reason == "missing" then
+		line, suggestion = ns.Companions.Line("TweaksForever")
+	end
+	return instance, nil, line or (reason == "outdated" and L.TWEAKS_OUTDATED) or L.ENTRANCE_UNKNOWN, suggestion
 end
 
 -- Every card's tooltip, whole or one-line: its lines, the hub line when line 3 holds the reason
@@ -545,8 +548,10 @@ local function CardTooltip(card)
 	if group > 0 then
 		GameTooltip_AddHighlightLine(GameTooltip, group == 1 and L.GROUP_ONE or L.GROUP_MANY:format(group))
 	end
-	local _, _, note = Entrance(journey)
-	if note then
+	local _, _, note, suggestion = Entrance(journey)
+	if note and suggestion then
+		GameTooltip_AddColoredLine(GameTooltip, note, GRAY_FONT_COLOR)
+	elseif note then
 		GameTooltip_AddNormalLine(GameTooltip, note)
 	end
 	if journey.drop then

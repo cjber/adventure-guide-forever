@@ -43,11 +43,12 @@ local function Places(route)
 end
 
 -- A step menu's lines with "Not this quest" (design §2.18) after "Skip for now": one button for a lone quest, else
--- one per quest under it, titled as the log titles it.
-local function WithNotThisQuest(ns, step, lines)
+-- one per quest under it, titled as the log titles it. `combat`: the menu opened in combat.
+local function WithNotThisQuest(ns, step, lines, combat)
 	local out = {}
-	-- Without Shortest Path installed, a step's menu ends with its grey suggestion before Choose another journey.
-	local suggests = ns.Family.State("ShortestPathForever") == "missing" and not ns.Setting("wanderer")
+	-- Without Shortest Path installed, a step's menu ends with its grey suggestion before Choose another journey; never
+	-- in combat, where its window can't open.
+	local suggests = ns.Family.State("ShortestPathForever") == "missing" and not ns.Setting("wanderer") and not combat
 	for _, line in ipairs(lines) do
 		if suggests and line == "button: " .. ns.L.CHOOSE_JOURNEY then
 			out[#out + 1] = "button: " .. "|cff7f7f7f" .. ns.L.SPF_FAMILY_MENU .. "|r"
@@ -1275,7 +1276,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	menu[3] = "button: Stop"
 	same(
 		h.MenuLines(),
-		WithNotThisQuest(ns, ns.Route().steps[1], menu),
+		WithNotThisQuest(ns, ns.Route().steps[1], menu, true),
 		label .. ": tracker menu while Go guides, in combat"
 	)
 	ns.Guidance.Cancel()

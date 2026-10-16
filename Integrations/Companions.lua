@@ -34,6 +34,7 @@ local HINTS = {
 	TweaksForever = {
 		key = "AdventureGuideForever.entrance",
 		missing = L.TWEAKS_MISSING,
+		menu = L.TWEAKS_FAMILY_MENU,
 		disabled = L.TWEAKS_DISABLED,
 	},
 }
@@ -71,12 +72,13 @@ function Companions.AddLine(tooltip, addon)
 end
 
 -- The grey menu entry for `addon`, while its hint may show: it opens the window with the addon's address, which also
--- offers "Don't suggest this again".
+-- offers "Don't suggest this again". The window never opens in combat, so in combat the entry is left out rather than
+-- doing nothing.
 ---@param root AGFMenuDescription
 ---@param addon string a key of HINTS with a menu entry
 function Companions.AddMenu(root, addon)
 	local hint, db = HINTS[addon], ns.FamilyDB()
-	if hint.menu and ns.Family.Hint(db, hint.key, addon) then
+	if hint.menu and not InCombatLockdown() and ns.Family.Hint(db, hint.key, addon) then
 		root:CreateButton(GRAY_FONT_COLOR:WrapTextInColorCode(hint.menu), function()
 			ns.Family.ShowLink(db, hint.key, addon)
 		end)

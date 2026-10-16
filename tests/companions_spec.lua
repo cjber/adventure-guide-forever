@@ -266,16 +266,25 @@ end
 do
 	local h = Load()
 	local L, owner = h.ns.L, h.G.CreateFrame("Button", nil, h.G.UIParent)
-	local trainer = { key = "profession:slot", text = "A free profession slot", category = "professions" }
+	local trainer = { key = "profession:186:2", text = "Your Mining has reached 75 of 75", category = "professions" }
+	local slot = { key = "profession:slot", text = "A free profession slot", category = "professions" }
 	local other = { key = "talents", text = "Unspent talent points", category = "talents" }
 	h.ns.Asides.Enter(owner, trainer)
 	equal(h.tooltip[#h.tooltip], "colored: " .. L.SKILLUP_FAMILY, "trainer without SkillUp: its line")
 	equal(h.tooltipColors[#h.tooltip][1], 0.5, "trainer without SkillUp: grey")
 	h.ns.Asides.Enter(owner, other)
 	equal(h.tooltip[#h.tooltip] ~= "colored: " .. L.SKILLUP_FAMILY, true, "another aside: no line")
+	h.ns.Asides.Enter(owner, slot)
+	equal(h.tooltip[#h.tooltip] ~= "colored: " .. L.SKILLUP_FAMILY, true, "a free slot, no rank to train: no line")
+	h.ns.Asides.Open(owner, slot)
+	equal(table.concat(h.MenuLines(), "\n"):find(L.SKILLUP_FAMILY_MENU, 1, true), nil, "a free slot's menu: none")
 	h.ns.Asides.Open(owner, trainer)
 	local lines = table.concat(h.MenuLines(), "\n")
 	equal(lines:find(L.SKILLUP_FAMILY_MENU, 1, true) ~= nil, true, "trainer's menu without SkillUp: the entry")
+	h.combat = true
+	h.ns.Asides.Open(owner, trainer)
+	equal(table.concat(h.MenuLines(), "\n"):find(L.SKILLUP_FAMILY_MENU, 1, true), nil, "in combat: no entry")
+	h.combat = false
 	h.ns.Asides.Open(owner, other)
 	equal(table.concat(h.MenuLines(), "\n"):find(L.SKILLUP_FAMILY_MENU, 1, true), nil, "another aside's menu: none")
 	h.G.AdventureGuideForeverDB.suggestFamily = false
@@ -296,15 +305,29 @@ do
 	local h = Load()
 	local L, journey = h.ns.L, { kind = "dungeon", instance = 999999 }
 	local function Note()
-		local _, _, note = h.ns.Overview.Entrance(journey)
-		return note
+		local _, _, note, suggestion = h.ns.Overview.Entrance(journey)
+		return note, suggestion
 	end
-	equal(Note(), L.TWEAKS_MISSING, "entrance without Tweaks: its line")
+	local note, suggestion = Note()
+	equal(note, L.TWEAKS_MISSING, "entrance without Tweaks: its line")
+	equal(suggestion, true, "entrance without Tweaks: a suggestion, drawn grey")
+	local owner = h.G.CreateFrame("Button", nil, h.G.UIParent)
+	local card = { key = "dungeon:999999", title = "A dungeon", kind = "dungeon", instance = 999999 }
+	h.ns.Menu.Journey(owner, card)
+	equal(
+		table.concat(h.MenuLines(), "\n"):find(L.TWEAKS_FAMILY_MENU, 1, true) ~= nil,
+		true,
+		"the card's menu without Tweaks: the entry that offers Don't suggest this again"
+	)
 	h.G.AdventureGuideForeverDB.familyDismissed = { ["AdventureGuideForever.entrance"] = true }
 	equal(Note(), L.ENTRANCE_UNKNOWN, "entrance, dismissed: unknown")
 	h.G.AdventureGuideForeverDB.familyDismissed = nil
 	State(h, "TweaksForever", "off")
-	equal(Note(), L.TWEAKS_DISABLED, "entrance, Tweaks off: enable line")
+	note, suggestion = Note()
+	equal(note, L.TWEAKS_DISABLED, "entrance, Tweaks off: enable line")
+	equal(suggestion, false, "entrance, Tweaks off: not a suggestion")
+	h.ns.Menu.Journey(owner, card)
+	equal(table.concat(h.MenuLines(), "\n"):find(L.TWEAKS_FAMILY_MENU, 1, true), nil, "Tweaks off: no menu entry")
 	h.G.AdventureGuideForeverDB.suggestFamily = false
 	equal(Note(), L.ENTRANCE_UNKNOWN, "entrance, Tweaks off and suggestions off: unknown")
 	clean(h, "entrance")

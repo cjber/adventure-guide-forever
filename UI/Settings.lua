@@ -160,29 +160,32 @@ function ns.RegisterSettings()
 		},
 	}
 
-	for _, group in ipairs(groups) do
-		local subcategory = Settings.RegisterVerticalLayoutSubcategory(category, ns.L[group[1]])
-		group[2](subcategory)
-		-- The index is buttons that open each subpage; search finds the settings themselves instead.
+	-- The index is buttons that open each subpage; search finds the settings themselves instead.
+	---@param name string
+	---@param subcategory AGFSettingsCategory
+	local function IndexButton(name, subcategory)
 		Settings.RegisterInitializer(
 			category,
-			CreateSettingsButtonInitializer(ns.L[group[1]], ns.L.SETTINGS_OPEN, function()
+			CreateSettingsButtonInitializer(name, ns.L.SETTINGS_OPEN, function()
 				Settings.OpenToCategory(subcategory:GetID())
 			end, nil, false)
 		)
 	end
 
+	for _, group in ipairs(groups) do
+		local subcategory = Settings.RegisterVerticalLayoutSubcategory(category, ns.L[group[1]])
+		group[2](subcategory)
+		IndexButton(ns.L[group[1]], subcategory)
+	end
+
 	-- The Forever addons page, shared by all five addons (UI/ForeverFamily.lua), with the suggestions setting on it.
-	local family = Settings.RegisterCanvasLayoutSubcategory(
-		category,
-		ns.Family.CreatePanel(nil, ns.FamilyDB, "AdventureGuideForever"),
-		ns.L.FAMILY_PAGE
-	)
-	Settings.RegisterInitializer(
-		category,
-		CreateSettingsButtonInitializer(ns.L.FAMILY_PAGE, ns.L.SETTINGS_OPEN, function()
-			Settings.OpenToCategory(family:GetID())
-		end, nil, false)
+	IndexButton(
+		ns.L.FAMILY_PAGE,
+		Settings.RegisterCanvasLayoutSubcategory(
+			category,
+			ns.Family.CreatePanel(nil, ns.FamilyDB, "AdventureGuideForever"),
+			ns.L.FAMILY_PAGE
+		)
 	)
 
 	Settings.RegisterAddOnCategory(category)
