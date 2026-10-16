@@ -734,7 +734,7 @@
 ---@field Offers AGFOffersModule what a giver's window really offers (Offers.lua)
 ---@field CreatureEntry fun(guid?: string): integer? a creature's entry from its GUID; nil for anything else or a secret
 ---@field PanelSearch AGFPanelSearch
----@field QuestieFields {spawns: string[], drops: string[]}
+---@field QuestieFields {spawns: string[], drops: string[], level: string[]}
 ---@field TrackerHost ForeverTrackerHostAPI
 ---@field TrackerHostSettings fun(): ForeverTrackerSettings
 ---@field Geometry AGFGeometry the native-geometry adapter (Geometry.lua)
@@ -1439,7 +1439,7 @@
 
 ---@alias AGFMapLookup fun(area: integer): integer?
 ---@alias AGFYield fun()
----@alias AGFQuestieReads {Npc: table<integer, table|false>, Object: table<integer, table|false>, Item: table<integer, table|false>, levels: table<integer, integer|false>, names: {Npc: table<integer, string|false>, Object: table<integer, string|false>, Item: table<integer, string|false>}}
+---@alias AGFQuestieReads {Npc: table<integer, table|false>, Object: table<integer, table|false>, Item: table<integer, table|false>, levels?: table<integer, integer|false>, names: {Npc: table<integer, string|false>, Object: table<integer, string|false>, Item: table<integer, string|false>}}
 
 ---@class AGFQuestieNpcRow one Npc's place and service fields for a catalogue build
 ---@field name string

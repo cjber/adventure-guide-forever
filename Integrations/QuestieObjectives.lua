@@ -4,8 +4,6 @@ local floor = math.floor
 
 local KINDS = { "Npc", "Object" }
 local NAME_FIELDS = { "name" }
--- An objective NPC's spawns and lowest level, in one read: the level says how hard a spot's mobs are (#152).
-local NPC_SPAWN_FIELDS = { "spawns", "minLevel" }
 -- A cell is one square of a map's yard grid. No map is this many yards across, so a column and a row share a number.
 local ROW = 2 ^ 16
 
@@ -45,6 +43,10 @@ local function Names(lib, kinds, sources, reads)
 	return names
 end
 
+-- An NPC's spawns and lowest level, as one read (ns.QuestieFields, set by QuestieSource.lua, which loads after this).
+---@type string[]?
+local npcSpawnLevel
+
 -- An NPC's lowest level as QuestieDB gives it (`minLevel`), or false when it gives none.
 ---@param value any
 ---@return integer|false
@@ -72,13 +74,12 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 	-- What each slot is named by: the QuestieDB entity and id.
 	---@type table<integer, {kind: string, id: integer?}>
 	local sources = {}
-	-- `lists` holds spawn tables, and `lists.levels` each one's NPC lowest level (false: an object, or unknown). A
-	-- spot's level is the lowest of its mobs', only when every spawn in it has one.
+	-- `lists` holds { spawns, level } pairs: a spawn table and its NPC's lowest level (false: an object, or unknown).
+	-- A spot's level is the lowest of its mobs', only when every spawn in it has one.
 	local function Places(slot, lists)
 		local cells, ordered = {}, {}
-		local levels = lists.levels or {}
-		for index, spawns in ipairs(lists) do
-			local level = levels[index] or false
+		for _, list in ipairs(lists) do
+			local spawns, level = list[1], list[2]
 			for area, coordinates in pairs(spawns) do
 				local map = mapOf(area)
 				local geometry = map and data.maps[map]
@@ -142,22 +143,26 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 			}
 		end
 	end
+	-- An NPC's spawns and lowest level are one read, when the build reads levels (reads.levels).
+	local levels = reads.levels
+	if levels and not npcSpawnLevel then
+		npcSpawnLevel = { ns.QuestieFields.spawns[1], ns.QuestieFields.level[1] }
+	end
+	local npcFields = levels and npcSpawnLevel or ns.QuestieFields.spawns
 	local function Spawns(kind, id, lists)
 		local spawns = reads[kind][id]
+		local npc = kind == "Npc"
 		if spawns == nil then
-			local npc = kind == "Npc"
-			local values = lib[kind].GetAll(id, npc and NPC_SPAWN_FIELDS or ns.QuestieFields.spawns)
+			local values = lib[kind].GetAll(id, npc and npcFields or ns.QuestieFields.spawns)
 			spawns = values and type(values[1]) == "table" and values[1] or false
 			reads[kind][id] = spawns
-			if npc then
-				reads.levels[id] = ns.QuestieLevel(values and values[2])
+			if npc and levels then
+				levels[id] = ns.QuestieLevel(values and values[2])
 			end
 			yield()
 		end
 		if spawns then
-			lists[#lists + 1] = spawns
-			lists.levels = lists.levels or {}
-			lists.levels[#lists] = kind == "Npc" and reads.levels[id] or false
+			lists[#lists + 1] = { spawns, npc and levels and levels[id] or false }
 		end
 	end
 	local function Item(id, lists, seen)
@@ -236,7 +241,7 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 	if type(trigger) == "table" and type(trigger[2]) == "table" then
 		local explore = ns.Model.EXPLORE_SLOT
 		need[explore], kinds[explore] = 1, "event"
-		Places(explore, { trigger[2] })
+		Places(explore, { { trigger[2], false } })
 	end
 	-- Spell/reputation objectives have no compatible planner slots; use the client's live quest POI instead.
 	if objectives and (next(objectives[4] or {}) or next(objectives[6] or {})) then

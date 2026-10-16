@@ -600,7 +600,8 @@ function Guide.Journey()
 						local entry = log[line.questId]
 						if line.tag == "complete" and not line.done and entry and not areas[line.questId] then
 							areas[line.questId] = true
-							for _, node in ipairs(ns.Planner.Steps.Nodes(ns.Data, entry)) do
+							local nodes = ns.Planner.Steps.Nodes(ns.Data, entry, ns.State.Player().level)
+							for _, node in ipairs(nodes) do
 								if node.map == row.map and row.map > 0 then
 									shapes[#shapes + 1] = node
 									radius = math.max(radius, (ns.Model.Yards(ns.Data, row, node) or 0) + node.r)

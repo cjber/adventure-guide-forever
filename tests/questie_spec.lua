@@ -74,6 +74,16 @@ equal(q.obj[1][5], 1429, "provider objective map")
 equal(q.obj[1][2], 500, "provider spawn")
 equal(h.ns.Data.quests[900002].need[4], 0, "icon override is not an item count")
 equal(h.ns.Data.quests[900002].obj[1][2], 500, "item drop location")
+-- A QuestieDB without NPC levels still builds: only the spots' level weighting (#152) is lost.
+do
+	local fake = Fake()
+	fake.missing = "minLevel"
+	local plain = harness.load({ questiedb = fake, setup = Policy })
+	equal(#plain.errors, 0, "no minLevel: errors")
+	equal(plain.ns.QuestieStatus.state, "questie", "no minLevel: provider ready")
+	equal(plain.ns.Data.quests[900001].obj[1][6], nil, "no minLevel: no spot level")
+	equal(plain.ns.Data.quests[900001].obj[1][2], 500, "no minLevel: the spot is still placed")
+end
 local player = h.ns.State.Player()
 player.level = 20
 local Model = h.ns.Model

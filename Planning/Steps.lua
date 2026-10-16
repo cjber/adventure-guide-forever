@@ -347,41 +347,36 @@ local function LiveObjectives(data, log, objectives)
 	return result
 end
 
--- A spot whose mobs are this many levels above the player is passed over for another of the objective's spots whose
--- mobs are nearer their level (#152): above it they hit hard and are hard to hit.
-local OVER_LEVEL = 3
-
--- Quest `quest`'s node for objective `slot`, counting `objective`, with its radius: its first area for the slot in
--- the data's order (in the quest's zone, then the most spawns), unless that area's mobs are OVER_LEVEL or more above
--- `level` and a later one's are not. An area with no level is never over. Nil when the data has no area for the
--- slot or its place is not a valid one.
+-- Quest `quest`'s node for objective `slot`, counting `objective`, with its radius: its first valid area for the slot
+-- in the data's order (in the quest's zone, then the most spawns), unless that area's mobs are ORANGE (3) or more
+-- levels above `level` (#152; they hit hard and are hard to hit) and a later valid area on the same map has mobs that
+-- aren't, so a spot is never traded for one across the world. An area with no level is never over. Nil when the data
+-- has no valid area for the slot.
 ---@param quest AGFQuest
 ---@param level? integer the player's
 ---@return AGFNode?
 local function AreaNode(quest, slot, objective, level)
-	local first, fit
+	local first
 	for _, area in ipairs(quest.obj or NONE) do
 		if area[1] == slot then
-			first = first or area
-			if not (level and area[6] and area[6] >= level + OVER_LEVEL) then
-				fit = area
-				break
+			local node = {
+				map = area[5] or quest.zone or 0, -- 0: no map, which ValidPlace refuses
+				x = area[2] / 1000,
+				y = area[3] / 1000,
+				r = area[4],
+				slot = slot,
+				objectives = { objective },
+			}
+			local over = level and area[6] and area[6] >= level + ORANGE
+			if ValidPlace(node) and (not first or node.map == first.map) then
+				if not over then
+					return node
+				end
+				first = first or node
 			end
 		end
 	end
-	local area = fit or first
-	if not area then
-		return nil
-	end
-	local node = {
-		map = area[5] or quest.zone or 0, -- 0: no map, which ValidPlace refuses
-		x = area[2] / 1000,
-		y = area[3] / 1000,
-		r = area[4],
-		slot = slot,
-		objectives = { objective },
-	}
-	return ValidPlace(node) and node or nil
+	return first
 end
 
 -- Where a quest under way is done next, in slot order: each open objective the data places, at its first area (the

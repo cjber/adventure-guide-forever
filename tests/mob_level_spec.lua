@@ -5,7 +5,7 @@
 local ns = {}
 local harness = dofile("tests/harness.lua")
 harness.model(ns)
-ns.QuestieFields = { spawns = { "spawns" }, drops = { "npcDrops", "objectDrops", "itemDrops" } }
+ns.QuestieFields = { spawns = { "spawns" }, drops = { "npcDrops", "objectDrops", "itemDrops" }, level = { "minLevel" } }
 assert(loadfile("Integrations/QuestieObjectives.lua"))("AdventureGuideForever", ns)
 local checks = 0
 local function equal(actual, expected, label)
@@ -71,6 +71,18 @@ do
 	equal(reads.levels[5], false, "no level is remembered as none")
 	equal(ns.QuestieLevel("7.0"), 7, "a level from QuestieDB: a number")
 	equal(ns.QuestieLevel(0), false, "a zero level is none")
+	-- A QuestieDB without the field: no levels are read, and no spot has one.
+	local plain = { Npc = {}, Object = {}, Item = {}, names = { Npc = {}, Object = {}, Item = {} } }
+	local asked
+	local wrapped = lib.Npc.GetAll
+	lib.Npc.GetAll = function(id, keys)
+		asked = #keys
+		return wrapped(id, keys)
+	end
+	local _, areas = ns.QuestieObjectives(lib, { { { 2 } } }, nil, MAP, data, Map, yield, 1, plain)
+	equal(areas[1][6], nil, "no level field: no level")
+	equal(asked, 1, "no level field: spawns alone are read")
+	lib.Npc.GetAll = wrapped
 end
 
 -- The planner: Murloc Gills-style, the first spot's mobs are level 16, the second's 12.
@@ -94,6 +106,12 @@ do
 	equal(At(12), "0.284,0.703", "every spot over: the data's first, the quest stays placed")
 	quest.obj = { { 4, 284, 703, 97, MAP }, { 4, 342, 159, 39, MAP, 12 } }
 	equal(At(1), "0.284,0.703", "a spot with no level is never over")
+	quest.obj = { { 4, 284, 703, 97, MAP, 16 }, { 4, 500, 500, 40, 1429, 12 } }
+	equal(At(12), "0.284,0.703", "a fitting spot on another map isn't taken: never a spot across the world")
+	quest.obj = { { 4, 284, 703, 97, 0, 16 }, { 4, 342, 159, 39, MAP, 16 } }
+	quest.zone = nil
+	equal(At(12), "0.342,0.159", "an area with no valid place is skipped for the next valid one")
+	quest.zone = MAP
 	-- A quest under way picks the same way, slot by slot.
 	quest.obj = { { 4, 284, 703, 97, MAP, 16 }, { 4, 342, 159, 39, MAP, 12 } }
 	local data = harness.data()
