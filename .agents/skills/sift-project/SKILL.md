@@ -11,7 +11,7 @@ no `require`: the client loads the files `AdventureGuideForever.toc` lists, in t
 file receives `local addonName, ns = ...`, the addon's shared table. It ships as a zip built by the
 BigWigs packager (`.pkgmeta`) on a `v*` tag. Standard-library Python generators in `tools/` rebuild
 `Data/Geometry.lua` (`gen_quests.py`, route geometry from a pinned CMaNGOS classic-db dump and wago.tools
-DB2 exports; its quest corpus is test-only, in `tests/fixtures/quests.lua`), `Data/Forever.lua`
+DB2 exports; its test-only quest corpus is built by `gen_corpus.py` into the gitignored `tests/.corpus/`), `Data/Forever.lua`
 (`diff_forever.py`) and `Data/ZoneArt.lua` (`gen_zoneart.py`).
 
 ## Gate
@@ -24,6 +24,7 @@ Run in order from the repository root. All must pass before and after any audit 
 | Format (Python) | `ruff format --check tools` | exit 0 (config: `tools/ruff.toml`) |
 | Lint (Lua) | `luacheck .` | `0 warnings / 0 errors`, exit 0 |
 | Lint (Python) | `ruff check tools` | exit 0 |
+| Test corpus | `python3 tools/gen_corpus.py` | writes `tests/.corpus/` (gitignored; built from the pinned QuestieDB release, twice, byte-identical) |
 | Types and multi-values | `tools/typecheck.sh` | LuaLS 3.19.1 reports no diagnostics; the multi-value lint and its tests pass |
 | Tests | `for s in tests/*_spec.lua; do luajit "$s" \|\| exit 1; done` | each prints `<name>_spec: N checks passed`, exit 0 |
 | Bench | `luajit -joff tests/plan_bench.lua` | exit 0; after a planner or rebuild change also `AGF_BENCH_STRICT=1` (3 ms frame budget, local only) |

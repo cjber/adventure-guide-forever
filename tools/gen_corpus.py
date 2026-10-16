@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""Generate the test-only QuestieDB quest corpus (tests/fixtures/quests.lua and towns.lua; stdlib only).
+"""Build the test-only QuestieDB quest corpus into tests/.corpus/ (quests.lua and towns.lua; stdlib only).
 
 The corpus is the model fixture: one deterministic world for the headless specs, composed by the addon's own
 QuestieSource build over a pinned QuestieDB release, so what the specs plan against is what a player's game carries.
-tools/corpus.lua loads the baked store offline in LuaJIT and writes the two files; this downloads and verifies the
-release, supplies the client's skill and faction names, and keeps the pin. The classic-db corpus this replaces is
+QuestieDB carries no licence, so the corpus is never committed (WFA-28): it is built here, before the specs run, into
+the gitignored tests/.corpus/ (the package check lays tests/ over the packaged files, so it travels with the smoke
+spec). tools/corpus.lua loads the baked store offline in LuaJIT and writes the two files; this downloads the release
+once into tools/.cache, checks its sha256 against the pin, supplies the client's skill and faction names, and keeps
+the pin. --offline builds from tools/.cache only, as CI does from its cache. The classic-db corpus this replaces is
 gone; tools/gen_quests.py still generates Forever's shipped route geometry from CMaNGOS.
 """
 
@@ -13,6 +16,7 @@ import io
 import os
 import subprocess
 import sys
+import tempfile
 import urllib.error
 import zipfile
 from pathlib import Path
@@ -21,8 +25,9 @@ import gen_quests
 
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = gen_quests.CACHE
-FIXTURE = ROOT / "tests" / "fixtures" / "quests.lua"
-TOWN_FIXTURE = ROOT / "tests" / "fixtures" / "towns.lua"
+CORPUS = ROOT / "tests" / ".corpus"
+FIXTURE = CORPUS / "quests.lua"
+TOWN_FIXTURE = CORPUS / "towns.lua"
 # QuestieDB's Forever release, pinned to the tag and the asset's sha256. The refresh workflow moves the tag.
 QUESTIEDB_TAG = "v1.0.6"
 QUESTIEDB_SHA256 = "d78b066c362eaf28258d9e2d041c0a7b03d6943a2dfc741dec70c6bfd8e1fc27"
@@ -71,6 +76,14 @@ def names_file(options):
     return path
 
 
+def build(directory, environment):
+    """Run tools/corpus.lua, writing quests.lua and towns.lua into `directory`."""
+    directory.mkdir(parents=True, exist_ok=True)
+    subprocess.run(
+        ["luajit", "tools/corpus.lua"], cwd=ROOT, check=True, env={**environment, "AGF_CORPUS_DIR": str(directory)}
+    )
+
+
 def main():
     options = gen_quests.source_options(__doc__)
     content = gen_quests.download(QUESTIEDB_URL, f"questiedb-{QUESTIEDB_TAG}.zip", **options)
@@ -90,7 +103,13 @@ def main():
         AGF_QUESTIEDB_SHA256=QUESTIEDB_SHA256,
         AGF_CLIENT_BUILD=gen_quests.BUILD,
     )
-    subprocess.run(["luajit", "tools/corpus.lua"], cwd=ROOT, check=True, env=environment)
+    build(CORPUS, environment)
+    # Built a second time, apart, and compared: a corpus that differs between runs would fail specs at random.
+    with tempfile.TemporaryDirectory(prefix="agf-corpus-") as scratch:
+        build(Path(scratch), environment)
+        for path in (FIXTURE, TOWN_FIXTURE):
+            if (Path(scratch) / path.name).read_bytes() != path.read_bytes():
+                raise ValueError(f"{path.relative_to(ROOT)} is not byte-for-byte reproducible")
     for path in (FIXTURE, TOWN_FIXTURE):
         if not path.is_file() or not path.stat().st_size:
             raise ValueError(f"tools/corpus.lua wrote no {path.relative_to(ROOT)}")

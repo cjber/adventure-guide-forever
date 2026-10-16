@@ -77,7 +77,7 @@ jobs:
           title: "data: refresh game data"
           commit-message: "data: refresh game data (${{ steps.pins.outputs.summary }})"
           body: |
-            Regenerated `Data/Geometry.lua`, `Data/Forever.lua`, `Data/ZoneArt.lua` and the test corpus in `tests/fixtures/` after moving the pins: ${{ steps.pins.outputs.summary }}.
+            Regenerated `Data/Geometry.lua`, `Data/Forever.lua` and `Data/ZoneArt.lua`, and ran the specs on the test corpus built from the new QuestieDB pin (never committed), after moving the pins: ${{ steps.pins.outputs.summary }}.
 
             Before merging, read the diff of `Data/Geometry.lua` for maps, flight masters, crossings or trainer roles that appeared, moved or dropped out, and `Data/Forever.lua` for lands and quests Forever added or lost. The specs and the golden routes passed on this data, so a changed route would have failed the run. Add a `CHANGELOG.md` line under Unreleased saying what a player would notice.
 

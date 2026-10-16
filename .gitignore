@@ -1,4 +1,6 @@
 tools/.cache/
+# The test corpus, built by tools/gen_corpus.py from QuestieDB, which carries no licence.
+tests/.corpus/
 __pycache__/
 *.zip
 .release/
