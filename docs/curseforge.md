@@ -68,9 +68,9 @@ Each one works on its own, and they work together when you install more than one
 
 <!-- forever-family:end -->
 
-With Shortest Path Forever, the guide plans the way to every stop, with flights and boat times. SkillUp Forever fills its Professions tab with your next skill-ups, and Legacy Forever adds your zone completion. Tweaks Forever supplies class trainer locations for spell reminders, marks dungeon entrances and lets you move the guide window.
+Installed together, Shortest Path Forever plans the way to every stop, with flights and boat times. SkillUp Forever fills the Professions tab with your next skill-ups, and Legacy Forever adds your zone completion. Tweaks Forever supplies class trainer locations for spell reminders and each dungeon's entrance, and lets you move the guide window.
 
-The guide's tracker section shares one column with theirs, above your quests. Empty, it leaves your quests where Edit Mode or your UI addon put them.
+The guide's tracker section shares one column with the Shortest Path, SkillUp and Legacy sections, above your quests. Empty, it leaves your quests where Edit Mode or your UI addon put them.
 
 Source code and issues: [github.com/cjber/adventure-guide-forever](https://github.com/cjber/adventure-guide-forever). Licence: GPL-3.0-or-later.
 

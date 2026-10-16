@@ -105,7 +105,7 @@ Each one works on its own, and they work together when you install more than one
 
 <!-- forever-family:end -->
 
-Installed together, Shortest Path Forever plans the way to every stop, SkillUp Forever fills the Professions tab with your next skill-ups, and Legacy Forever adds your zone completion. Tweaks Forever supplies class trainer locations for spell reminders and dungeon entrances, and its Windows option moves the guide window.
+Installed together, Shortest Path Forever plans the way to every stop, SkillUp Forever fills the Professions tab with your next skill-ups, and Legacy Forever adds your zone completion. Tweaks Forever supplies class trainer locations for spell reminders and each dungeon's entrance, and its Windows option moves the guide window.
 
 ## Ways to help
 
