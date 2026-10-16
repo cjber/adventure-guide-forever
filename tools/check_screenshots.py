@@ -77,6 +77,7 @@ def dump(keys: tuple[str, ...]) -> bytes:
 
 SCENES = {image: functools.partial(dump, keys) for image, keys in IMAGES.items()}
 
+
 def stale_by_data(name: str, recorded: dict[str, tuple[str, str]]) -> bool:
     """Whether `name` is stale only because what it shows moved: the image is as recorded, its scene dump is not."""
     path = OUT / name
