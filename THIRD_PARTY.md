@@ -51,6 +51,6 @@ Credit for the ideas and reports behind the addon.
 | VinzNL | Asked for battlegrounds to be left out of suggestions (#62) | |
 | fuguer-ai | Asked for a read-only API for the current stop (#79) | |
 | rhednak, on CurseForge | Found the integer overflow error that broke the guide for Skyborne characters, with the full error text (0.8.0) | |
-| jechten, on CurseForge | Reported slow loading, which later releases sped up (#166 is still open) | |
+| jechten, on CurseForge | Reported slow loading, which later releases sped up (#166) | |
 
 Thanks also to everyone else who reported a bug or asked for a feature, here or on CurseForge.
