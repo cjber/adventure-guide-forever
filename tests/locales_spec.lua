@@ -83,14 +83,29 @@ for name in files:lines() do
 end
 files:close()
 
--- A sample argument for each placeholder in an English line, in order: text for %s, a number for the rest.
+-- A sample argument for each placeholder in an English line, in order: text for %s, a number for the rest. A
+-- positional one (%2$s, which the client's string.format takes) counts once.
 local function Samples(text)
 	local args = {}
-	for conversion in text:gsub("%%%%", ""):gmatch("%%[%-+#0]*%d*%.?%d*([a-zA-Z])") do
+	for conversion in text:gsub("%%%%", ""):gsub("%%%d+%$", "%%"):gmatch("%%[%-+#0]*%d*%.?%d*([a-zA-Z])") do
 		args[#args + 1] = conversion == "s" and "Sample" or 7
 	end
 	return args
 end
+
+-- string.format with the client's positional placeholders, which LuaJIT's lacks.
+local function Format(text, args)
+	if not text:find("%%%d+%$") then
+		return string.format(text, unpack(args))
+	end
+	local ordered = {}
+	local plain = text:gsub("%%(%d+)%$", function(position)
+		ordered[#ordered + 1] = args[tonumber(position)]
+		return "%"
+	end)
+	return string.format(plain, unpack(ordered))
+end
+equal(Format("%2$s, %1$d", { 3, "a" }), "a, 3", "positional placeholders reorder their arguments")
 
 -- Every translation the TOC loads, in the client's own way: nothing under another locale, and under its own each line
 -- is text that formats with the English line's arguments (Lua ignores a spare argument, so the count is checked too).
@@ -101,11 +116,12 @@ for line in io.lines("AdventureGuideForever.toc") do
 		translated = translated + 1
 		local path = "Locales/" .. locale .. ".lua"
 		local source = Read(path)
+		-- Every shipped file has machine lines, whole or marked `-- mt` (WFA-34); one that people translate in full
+		-- drops the note and its case here.
 		equal(
-			source:find("^%-%- Machine translated %(%d+%-%d+%-%d+%); corrections welcome: https://") ~= nil
-				or not source:find("%-%- mt\n"),
+			source:find("^%-%- Machine translated %(%d+%-%d+%-%d+%); corrections welcome: https://") ~= nil,
 			true,
-			path .. ": a file with machine lines says so on its first line"
+			path .. ": says it is machine translated on its first line"
 		)
 		equal(Load({ enUS, assert(loadfile(path)) }, "enUS").TITLE, english.TITLE, path .. ": English ignores it")
 		local strings = Load({ enUS, assert(loadfile(path)) }, locale)
@@ -115,7 +131,7 @@ for line in io.lines("AdventureGuideForever.toc") do
 			equal(type(text), "string", path .. ": " .. key .. " is text")
 			equal(#Samples(text), #args, path .. ": " .. key .. " keeps its placeholders")
 			if #args > 0 then
-				local ok, result = pcall(string.format, text, unpack(args))
+				local ok, result = pcall(Format, text, args)
 				equal(ok, true, path .. ": " .. key .. " formats (" .. tostring(result) .. ")")
 			end
 			count = count + (text ~= english[key] and 1 or 0)

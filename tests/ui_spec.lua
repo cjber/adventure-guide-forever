@@ -2557,6 +2557,17 @@ do
 		"resume: sentence case mid-line"
 	)
 	clean(capital, "resume: sentence case")
+	-- German capitalises nouns, so a German client keeps the reason's capital (it reads the German line around it).
+	local german = harness.load({
+		planned = true,
+		locale = "deDE",
+		charDB = { journey = "zone:1413", last = { key = saved.key, reason = "Quests in Arbeit" } },
+		completed = { 844 },
+		log = {
+			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
+		},
+	})
+	equal(TrackerLines(german)[2], "Wo Ihr aufgehört habt: Quests in Arbeit", "resume: German keeps the capital")
 	local first = h.ns.Route().steps[1]
 	h.ns.Skip(first.key, first.title)
 	h.flush()

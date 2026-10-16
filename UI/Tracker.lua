@@ -276,8 +276,12 @@ function ModuleMixin:LayoutContents()
 	local resume = ns.Resume(step)
 	-- A lone hand-in, a turn-in or a town's, is titled "Turn in: %s" (L.TURN_IN), which already says it is ready.
 	local handIn = step.kind == "turnin" or (step.kind == "town" and #step.quests == 1 and #step.handins == 1)
-	-- Mid-line, a reason that is a sentence of its own ("Continues a story you started") loses its capital.
-	local reason = resume and L.RESUME:format((resume:gsub("^%u", string.lower))) or (not handIn and step.reason) or nil
+	-- Mid-line, a reason that is a sentence of its own ("Continues a story you started") loses its capital; German keeps
+	-- it, since there a capital may begin a noun ("Quests in Arbeit").
+	if resume and GetLocale() ~= "deDE" then
+		resume = resume:gsub("^%u", string.lower)
+	end
+	local reason = resume and L.RESUME:format(resume) or (not handIn and step.reason) or nil
 	-- A town's reason is its counts unless something more is true there; then who to see takes the line.
 	if town and not resume and step.reason == step.detail then
 		-- The checklist already names each giver and action. Keep the compact giver

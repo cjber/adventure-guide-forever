@@ -10,7 +10,7 @@ always wins over a machine one.
 
 To correct a line, change the text on the right in `<locale>.lua`. In a file that is all machine translated, the first
 correction makes it mixed: every line you didn't touch then ends `-- mt`, so a later machine pass only ever replaces
-marked lines. Keep every `%d` and `%s`, in the same order. Then open a pull request, or paste the lines into the
+marked lines. Keep every `%d` and `%s`; `%2$s` style numbering works if your word order needs it. Then open a pull request, or paste the lines into the
 [translation form](https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml) and I'll add
 them. Some NPC and town names come from the guide's bundled route data rather than the game, so those stay in English.
 

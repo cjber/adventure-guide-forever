@@ -188,5 +188,8 @@ read_globals = {
 
 files["tests/"] = { std = "+luajit" }
 files["Data/Geometry.lua"] = { max_line_length = false }
-files["Locales/"] = { max_line_length = false } -- one phrase per line, however long
+-- The translations: one phrase per line, however long (enUS.lua, written by hand, keeps the limit).
+for _, locale in ipairs({ "deDE", "esES", "esMX", "frFR", "koKR", "ptBR", "ruRU", "zhCN", "zhTW" }) do
+	files["Locales/" .. locale .. ".lua"] = { max_line_length = false }
+end
 read_globals[#read_globals + 1] = "EditModeManagerFrame"
