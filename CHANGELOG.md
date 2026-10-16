@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **A Forever addons page, and quieter suggestions.** Settings > AddOns > Adventure Guide has a new *Forever addons* page. It lists my five Forever addons, says whether each is on, turned off or not installed, and has a *Copy link* button for each. Its *Suggest my other Forever addons* box replaces *Suggest companion addons*; if you had that turned off, it stays off. Suggestions are now grey and show only for an addon you don't have. A step's menu and a profession trainer's menu offer the address, with *Don't suggest this again*. A profession trainer's tooltip mentions SkillUp Forever, which plans the cheapest route to your next rank. A dungeon card says to enable Tweaks Forever when it's installed but turned off.
+
 ## [0.14.1] - 2026-10-16
 
 - **"Next spot" moves between an objective's camps.** When a step's objective can be done at more than one camp on the map, right-click the step and choose "Next spot" to go to the nearest camp you haven't passed over, including from a camp someone has just cleared. Before, it only moved between the different objectives of one step, so a quest with a single kill or collect objective never offered it. Standing at any of the camps of the step you're on now counts as being in its area. A step that groups objectives done in different places still moves between those places.

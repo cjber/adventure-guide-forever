@@ -1254,7 +1254,6 @@
 ---@field REAGENT_GATHER string
 ---@field REAGENT_AUCTION string
 ---@field CLICK_WAYPOINT_STEP string a profession step's tooltip, when SkillUp can route to it
----@field SKILLUP_MISSING string the Professions view without SkillUp Forever
 ---@field SKILLUP_OUTDATED string the Professions view with a SkillUp Forever too old for its API
 ---@field SKILLUP_NONE string the Professions view with no crafting profession to level
 
@@ -1353,8 +1352,8 @@
 ---@field GO_TO_ENTRANCE string
 ---@field TWEAKS_MISSING string
 ---@field TWEAKS_OUTDATED string
+---@field TWEAKS_DISABLED string a dungeon card with Tweaks Forever installed but not enabled
 ---@field ENTRANCE_UNKNOWN string
----@field LEGACY_MISSING string
 ---@field PVP_RANK string
 ---@field PVP_RANK_POINTS string
 ---@field PVP_UNRANKED string
@@ -1402,23 +1401,23 @@
 ---@field WHATS_NEW string this version's headline, printed once after an update
 ---@field SETTING_WHATS_NEW string
 ---@field SETTING_WHATS_NEW_TOOLTIP string
----@field SETTING_COMPANIONS string
----@field SETTING_COMPANIONS_TOOLTIP string
+---@field FAMILY_PAGE string the Forever addons settings page's name
+---@field SPF_FAMILY_MENU string a step's menu entry without Shortest Path Forever installed
+---@field SKILLUP_FAMILY string a profession trainer's tooltip without SkillUp Forever installed
+---@field SKILLUP_FAMILY_MENU string a profession trainer's menu entry without SkillUp Forever installed
 ---@field SPF_MISSING string a route step's tooltip without Shortest Path Forever installed
 ---@field SPF_DISABLED string a route step's tooltip with Shortest Path Forever installed but not enabled
----@field SKILLUP_DISABLED string the Professions view with SkillUp Forever installed but not enabled
----@field SKILLUP_ABSENT string the Professions view without SkillUp Forever, companion hints off
----@field LEGACY_DISABLED string the Progress page with Legacy Forever installed but not enabled
-
----@alias AGFCompanionState "loaded"|"disabled"|"missing"
 
 ---@class AGFCompanions
----@field State fun(addon: string): AGFCompanionState loaded, installed but not loaded, or not installed
----@field Hint fun(addon: string): string? the line naming what the companion adds, while it isn't loaded and hints are on
+---@field Line fun(addon: string): string?, boolean? the line for a companion that isn't running, and whether it suggests installing it
+---@field AddLine fun(tooltip: GameTooltip, addon: string) the line at a tooltip's foot: a suggestion grey, an "Enable" line as an instruction
+---@field AddMenu fun(root: AGFMenuDescription, addon: string) the grey entry that shows a missing companion's address
 
 ---@class AGFNamespace
 ---@field WhatsNew fun() on login: print WHATS_NEW once if the version changed since the last one seen
 ---@field Companions AGFCompanions
+---@field Family ForeverFamilyAPI the shared Forever addons module (UI/ForeverFamily.lua)
+---@field FamilyDB fun(): ForeverFamilyDB? the account-wide saved variables its page and hints use
 
 ---@class AGFModel
 ---@field ObjectiveDone fun(data: AGFData, entry?: AGFLogQuest, slot: integer): boolean

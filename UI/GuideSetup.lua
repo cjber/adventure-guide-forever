@@ -41,7 +41,7 @@ local function Ensure()
 	end
 	Text(22, 18, ns.L.RXP_SETUP_TITLE, "GameFontNormal")
 	Text(22, 42, ns.L.RXP_SETUP_PROMPT, "GameFontHighlightSmall")
-	local hasSPF = ns.Companions.State("ShortestPathForever") == "loaded"
+	local hasSPF = ns.Family.State("ShortestPathForever") == "on"
 	local function Row(y, height, title, lines, integrated)
 		local row = CreateFrame("Button", nil, frame)
 		row:SetPoint("TOPLEFT", 14, -y)
@@ -67,7 +67,7 @@ local function Ensure()
 	lines[#lines + 1] = hasSPF and ns.L.RXP_SETUP_HIDDEN_SPF or ns.L.RXP_SETUP_HIDDEN
 	Row(73, 75, ns.TITLE, lines, true)
 	Row(155, 54, ns.L.RXP_SETUP_NATIVE_TITLE, { ns.L.RXP_SETUP_NATIVE }, false)
-	if ns.Companions.State("SkillUpForever") == "loaded" then
+	if ns.Family.State("SkillUpForever") == "on" then
 		Text(44, 244, hasSPF and ns.L.RXP_SETUP_SKILLUP_SPF or ns.L.RXP_SETUP_SKILLUP, "GameFontHighlightSmall")
 	end
 	Text(44, 267, ns.L.RXP_SETUP_SETTINGS, "GameFontDisableSmall")

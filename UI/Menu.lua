@@ -133,6 +133,9 @@ function Menu.Step(root, step)
 	if skipped > 0 then
 		Menu.Skipped(root:CreateButton(L.SKIPPED:format(skipped)))
 	end
+	if step and not ns.Setting("wanderer") then
+		ns.Companions.AddMenu(root, "ShortestPathForever")
+	end
 	if ns.OpenPanel then
 		root:CreateButton(L.CHOOSE_JOURNEY, ns.OpenPanel)
 	end

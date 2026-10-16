@@ -202,6 +202,7 @@ MinimalSliderWithSteppersMixin = nil
 ---@field VarType {Boolean: string, Number: string}
 ---@field RegisterVerticalLayoutCategory fun(name: string): AGFSettingsCategory
 ---@field RegisterVerticalLayoutSubcategory fun(category: AGFSettingsCategory, name: string): AGFSettingsCategory
+---@field RegisterCanvasLayoutSubcategory fun(category: AGFSettingsCategory, frame: Frame, name: string): AGFSettingsCategory
 ---@field RegisterAddOnSetting fun(category: AGFSettingsCategory, variable: string, key: string, storage: table, variableType: string, name: string, default: boolean|number): AGFSettingsSetting
 ---@field RegisterProxySetting fun(category: AGFSettingsCategory, variable: string, variableType: string, name: string, default: boolean, getter: (fun(): boolean), setter: (fun(value: boolean))): AGFSettingsSetting
 ---@field NotifyUpdate fun(variable: string)

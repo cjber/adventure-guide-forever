@@ -2,7 +2,7 @@
 
 import unittest
 
-from lint_copy import literal_calls, strings_table, value_problems
+from lint_copy import literal_calls, phrases, strings_table, value_problems
 from lint_multivalue import tokenize
 
 
@@ -87,6 +87,21 @@ class CallTests(unittest.TestCase):
             'Settings.RegisterAddOnSetting(category, "AGF_x", "x", db, Settings.VarType.Boolean, ns.L.PINS, true)',
         ]:
             self.assertEqual(literal_calls(tokens(source)), [], source)
+
+
+class PhraseKeyedTests(unittest.TestCase):
+    def test_lookup_is_copy_only_when_keyed(self):
+        source = 'hint:SetText(L["Copy the address, then open it in your browser."])'
+        self.assertEqual(len(literal_calls(tokens(source))), 1)
+        self.assertEqual(literal_calls(tokens(source), keyed=True), [])
+
+    def test_keyed_still_flags_a_bare_literal(self):
+        self.assertEqual(len(literal_calls(tokens('close:SetText(own and L["On"] or "Close")'), keyed=True)), 1)
+
+    def test_phrases(self):
+        found = phrases(tokens('x:SetText(L["Close"])\nlocal line = L["The fastest way"]\nt["not L"] = 1'))
+        self.assertEqual([p for _, p in found], ["Close", "The fastest way"])
+        self.assertEqual(value_problems(found[1][1]), ["banned word 'fastest'"])
 
 
 if __name__ == "__main__":

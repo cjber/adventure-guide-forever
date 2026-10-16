@@ -1023,6 +1023,8 @@ function harness.load(options)
 		QuestLogBorderFrameTemplate = noop,
 		-- SharedTooltipTemplates.xml: the stock bordered tooltip backdrop.
 		UIPanelButtonTemplate = noop,
+		-- SharedXMLBase InputBoxTemplate: the stock single-line edit box art (the Forever addons link window's).
+		InputBoxTemplate = noop,
 		SearchBoxTemplate = function(frame)
 			Internal("FontString", frame, "Instructions")
 		end,
@@ -2263,6 +2265,8 @@ function harness.load(options)
 	-- h.settings is the registered rows; h.addonSettings the setting object per row, so a spec can drive the
 	-- real value-changed callback the checkbox fires, not only ns.SetSetting.
 	h.settings, h.taintedRows, h.subcategories, h.openedSettings, h.addonSettings = {}, 0, {}, nil, {}
+	-- h.canvasPages: the pages the addon draws itself, by name.
+	h.canvasPages = {}
 	local settingsCategory = 0
 	local function Category(name, parent)
 		settingsCategory = settingsCategory + 1
@@ -2284,6 +2288,13 @@ function harness.load(options)
 		RegisterVerticalLayoutSubcategory = function(parent, name)
 			local subcategory = Category(name, parent)
 			h.subcategories[#h.subcategories + 1] = subcategory
+			return subcategory
+		end,
+		-- A page the addon draws itself (the Forever addons page): kept apart from the vertical subpages, by name.
+		RegisterCanvasLayoutSubcategory = function(parent, frame, name)
+			local subcategory = Category(name, parent)
+			subcategory.frame = frame
+			h.canvasPages[name] = subcategory
 			return subcategory
 		end,
 		RegisterAddOnSetting = function(_, _, key, storage, _, _, default)

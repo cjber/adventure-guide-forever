@@ -388,7 +388,6 @@ ns.L = {
 	REAGENT_GATHER = "Gather it",
 	REAGENT_AUCTION = "Auction house",
 	CLICK_WAYPOINT_STEP = "Click to set a waypoint",
-	SKILLUP_MISSING = "Your next skill-ups come from SkillUp Forever. Install it and they show here.",
 	SKILLUP_OUTDATED = "Your next skill-ups come from SkillUp Forever. Update it and they show here.",
 	SKILLUP_NONE = "No crafting professions to level. Learn one at a trainer and it shows here.",
 	DUNGEON_PICKUP = "Pick up",
@@ -397,8 +396,8 @@ ns.L = {
 	GO_TO_ENTRANCE = "Go to entrance",
 	TWEAKS_MISSING = "Install Tweaks Forever to find dungeon entrances.",
 	TWEAKS_OUTDATED = "Update Tweaks Forever to find dungeon entrances.",
+	TWEAKS_DISABLED = "Enable Tweaks Forever to find dungeon entrances.",
 	ENTRANCE_UNKNOWN = "The entrance location is unknown.",
-	LEGACY_MISSING = "Install Legacy Forever to see your completion progress.",
 	-- Legacy Forever's own words for items it can't check yet, with its hint when one category holds them all.
 	PVP_RANK = "Rank %d",
 	PVP_RANK_POINTS = "%d/%d rank points",
@@ -447,15 +446,14 @@ ns.L = {
 	UPDATED_TO = "updated to %s. %s",
 	SETTING_WHATS_NEW = "What's new after an update",
 	SETTING_WHATS_NEW_TOOLTIP = "One line in chat the first time you log in after the guide updates.",
-	-- Companion hints (Companions.lua): what another Forever addon would add here, while it isn't loaded.
-	SETTING_COMPANIONS = "Suggest companion addons",
-	SETTING_COMPANIONS_TOOLTIP = "A short line where another Forever addon would fill a tab or a route step, while "
-		.. "that addon isn't installed or enabled.",
+	-- Companion hints (Companions.lua): what another Forever addon would add here, while it isn't loaded. The
+	-- Forever addons page itself and its setting are UI/ForeverFamily.lua's, shared by all five addons.
+	FAMILY_PAGE = "Forever addons",
+	SPF_FAMILY_MENU = "Walked routes and boat times: Shortest Path Forever",
+	SKILLUP_FAMILY = "SkillUp Forever plans the cheapest route to your next profession rank.",
+	SKILLUP_FAMILY_MENU = "Cheapest route to your next rank: SkillUp Forever",
 	SPF_MISSING = "Install Shortest Path Forever for walked routes and boat times.",
 	SPF_DISABLED = "Enable Shortest Path Forever for walked routes and boat times.",
-	SKILLUP_DISABLED = "Your next skill-ups come from SkillUp Forever. Enable it and they show here.",
-	SKILLUP_ABSENT = "Your next skill-ups come from SkillUp Forever.",
-	LEGACY_DISABLED = "Enable Legacy Forever to see your completion progress.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
 	WHATS_NEW = '"Next spot" moves between an objective\'s camps.',

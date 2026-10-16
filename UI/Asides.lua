@@ -237,6 +237,9 @@ function Asides.Open(owner, aside)
 		root:CreateButton(L.NOT_INTERESTED, function()
 			Asides.Decline(aside)
 		end)
+		if aside.category == "professions" then
+			ns.Companions.AddMenu(root, "SkillUpForever")
+		end
 	end)
 end
 
@@ -259,6 +262,11 @@ function Asides.Enter(owner, aside)
 			aside.text,
 			aside.place and not ns.Setting("wanderer") and ns.Menu.ClickLine() or nil,
 		})
+		-- A profession trainer: SkillUp Forever plans the way to the next rank.
+		if aside.category == "professions" then
+			ns.Companions.AddLine(GameTooltip, "SkillUpForever")
+			GameTooltip:Show()
+		end
 	end
 end
 

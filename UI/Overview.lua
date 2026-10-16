@@ -142,9 +142,8 @@ local function RowEnter(self)
 		GameTooltip_AddInstructionLine(GameTooltip, L.ORDER_DRAG)
 	end
 	-- Without Shortest Path a step is a waypoint as the crow flies; a wanderer wants neither.
-	local hint = not ns.Setting("wanderer") and ns.Companions.Hint("ShortestPathForever")
-	if hint then
-		GameTooltip_AddInstructionLine(GameTooltip, hint)
+	if not ns.Setting("wanderer") then
+		ns.Companions.AddLine(GameTooltip, "ShortestPathForever")
 	end
 	GameTooltip:Show()
 end
@@ -499,7 +498,7 @@ local function Entrance(journey)
 	local point, reason = ns.Dungeons.Entrance(instance)
 	local note = not point
 		and (
-			(reason == "missing" and L.TWEAKS_MISSING)
+			(reason == "missing" and ns.Companions.Line("TweaksForever"))
 			or (reason == "outdated" and L.TWEAKS_OUTDATED)
 			or L.ENTRANCE_UNKNOWN
 		)

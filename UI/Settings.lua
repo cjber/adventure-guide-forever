@@ -152,17 +152,10 @@ function ns.RegisterSettings()
 		{
 			"SETTINGS_GROUP_INTERFACE",
 			function(subcategory)
-				for _, initializer in ipairs({
-					Checkbox(
-						subcategory,
-						"suggestCompanions",
-						ns.L.SETTING_COMPANIONS,
-						ns.L.SETTING_COMPANIONS_TOOLTIP
-					),
-					Checkbox(subcategory, "whatsNew", ns.L.SETTING_WHATS_NEW, ns.L.SETTING_WHATS_NEW_TOOLTIP),
-				}) do
-					Settings.RegisterInitializer(subcategory, initializer)
-				end
+				Settings.RegisterInitializer(
+					subcategory,
+					Checkbox(subcategory, "whatsNew", ns.L.SETTING_WHATS_NEW, ns.L.SETTING_WHATS_NEW_TOOLTIP)
+				)
 			end,
 		},
 	}
@@ -178,6 +171,19 @@ function ns.RegisterSettings()
 			end, nil, false)
 		)
 	end
+
+	-- The Forever addons page, shared by all five addons (UI/ForeverFamily.lua), with the suggestions setting on it.
+	local family = Settings.RegisterCanvasLayoutSubcategory(
+		category,
+		ns.Family.CreatePanel(nil, ns.FamilyDB, "AdventureGuideForever"),
+		ns.L.FAMILY_PAGE
+	)
+	Settings.RegisterInitializer(
+		category,
+		CreateSettingsButtonInitializer(ns.L.FAMILY_PAGE, ns.L.SETTINGS_OPEN, function()
+			Settings.OpenToCategory(family:GetID())
+		end, nil, false)
+	)
 
 	Settings.RegisterAddOnCategory(category)
 	function ns.OpenSettings()
