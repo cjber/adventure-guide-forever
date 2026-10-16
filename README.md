@@ -10,7 +10,7 @@ Quest suggestions and routes for your level in WoW: Forever.<br>
 
 Adventure Guide Forever suggests quests and routes for your level and quest log. Choose a journey from the quest log or world map.
 
-Shortest Path Forever handles travel when installed. QuestieDB supplies the quest catalogue and Questie checks which pickups are available now. Questie draws the background quest markers; the guide adds route rings. With RestedXP installed, a one-time prompt lets you keep its display or follow its guides in Adventure Guide.
+Shortest Path Forever handles travel when installed. Questie draws the quest markers; the guide adds route rings. With RestedXP installed, a one-time prompt lets you keep its display or follow its guides in Adventure Guide.
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif" width="640" alt="Choosing a journey and following its route"></p>
 
@@ -46,7 +46,7 @@ Shortest Path Forever handles travel when installed. QuestieDB supplies the ques
 - **Choose and go.** Pick a journey on the map to start guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop clears only guidance the addon started.
 - **A route that stays with you.** Your choice survives new quests, travel and reloads. Ready hand-ins and nearby pickups come first. Town stops group quest givers into a checklist.
 - **Your order.** Drag steps or right-click to move them earlier or later. Moves that break quest order are greyed out. *Back to suggested order* restores the plan.
-- **Next spot.** Right-click an objective step with more than one place to do it and choose *Next spot*: the arrow moves to the nearest place you haven't passed over. Standing in a camp that's been cleared, it moves you on from that one.
+- **Where to do an objective.** The guide passes over a place whose mobs are 3 or more levels above you. Right-click the step and choose *Next spot* for the nearest place you haven't passed over, even from a cleared camp you're in.
 - **Givers that don't offer a quest.** If a giver's quest list leaves out the quest the guide sent you for, the guide says so once in chat and drops it. It tries again after a level-up or a hand-in that could open it up.
 - **Story milestones.** Completing a proven quest chain earns a brief story-complete popup, recorded once for that character.
 - **Stories and search.** Stories read as chapters without naming later quests. Search puts exact titles and titles starting with your words first. It shows a quest's requirements and which ones you meet. For a locked quest it names the earliest quest in its chain you can take, and a shift-click adds that one.
@@ -81,13 +81,13 @@ Open the guide from its world-map tab, the addon compartment or `/agf`. The guid
 
 ## Where the quests come from
 
-The installed Forever edition of QuestieDB supplies quests and locations. Questie checks pickup availability; the game supplies finished quests and objective progress. The catalogue is kept between logins. Missing QuestieDB is shown explicitly.
+The installed Forever edition of QuestieDB supplies quests and locations. Questie checks pickup availability; the game supplies finished quests and objective progress. Missing QuestieDB is shown explicitly.
 
 Forever's new quests are only considered once they are in your log. The guide recommends only quests whose eligibility it can establish and never invents a location. This is not a complete levelling walkthrough.
 
 ## Works alongside
 
-QuestieDB and Questie are needed for pickup recommendations. Optional companions are [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) for bosses and loot, [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting and [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion. Tweaks Forever's Windows option moves the guide window. The guide's tracker section shares one column with the Shortest Path, SkillUp and Legacy sections, above your quests, and has its own switch when you prefer another guide.
+QuestieDB and Questie are needed for pickup recommendations. Optional companions are [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) for bosses and loot, [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) for travel, [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) for class spells and dungeon entrances, [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) for crafting and [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) for completion. Tweaks Forever's Windows option moves the guide window. The guide's tracker section shares one column with the Shortest Path, SkillUp and Legacy sections, above your quests, and has its own switch when you prefer another guide. With nothing in the column, your quests stay where Edit Mode put them.
 
 ## Ways to help
 

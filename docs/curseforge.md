@@ -24,15 +24,15 @@ These images are generated previews of the guide UI.
 
 ## Features
 
-- **RestedXP guides.** With RestedXP installed, read its instructions and objectives in the Adventure tab and tracker. Choose a guide from the Continue cards and move between its steps while Shortest Path Forever handles travel. Turn off *Use RestedXP guides* to return to Adventure Guide recommendations.
+- **RestedXP guides.** Read its instructions and objectives in the Adventure tab and tracker. Choose a guide from the Continue cards and move between its steps. Turn off *Use RestedXP guides* to return to Adventure Guide recommendations.
 
-- **What to do next.** The map guide offers two Continue cards and one per other section. Expand a header to see more. Quests in your log is the default suggestion.
+- **What to do next.** The map guide offers two Continue cards and one per other section. Quests in your log is the default suggestion.
 - **Journeys.** Finish loose ends, follow zone stories or pick up class quests. Dungeon and battleground journeys are opt-in.
 - **Dungeons.** Check quests and prerequisites, then visit their givers. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) supplies bosses and loot.
 - **Full guide.** Browse the route and the area's quest outline.
 - **Choose and go.** Use Shortest Path Forever or the game's waypoint. Stop clears only guidance the addon started.
 - **Your route.** Your journey survives travel and reloads. Ready hand-ins come first. Towns group quest givers into checklists. A quest missing from its giver's list drops off, with a line in chat.
-- **Next spot.** Right-click an objective step with several places and choose *Next spot* to move the arrow to another one.
+- **Where to do objectives.** Places whose mobs are 3 or more levels above you are passed over. *Next spot* in a step's menu moves the arrow to another place, even inside a cleared camp.
 - **Quest difficulty.** Set the highest quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups.
 - **Your order.** Drag steps or use their menu. Moves that break quest order are greyed out.
 - **Search and hints.** Search puts the best match first and shows a quest's requirements. For a locked quest it names the earliest quest in its chain you can take. Hints cover talents and battlegrounds; class spell reminders are off by default.
@@ -54,14 +54,14 @@ For a bug report, paste what `/agf report` shows. For a wrong stop, paste `/agf 
 
 ## With my other Forever addons
 
-All optional. Each one adds something to the guide:
+All optional:
 
 - [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever) plans the way to every stop, with flights and boat times.
 - [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever) fills the Professions tab with your next skill-ups from its levelling route.
 - [Legacy Forever](https://www.curseforge.com/wow/addons/legacy-forever) adds your zone completion progress.
 - [Tweaks Forever](https://www.curseforge.com/wow/addons/tweaks-forever) supplies class trainer locations for spell reminders, marks dungeon entrances on the map and lets you move the guide window.
 
-The guide's tracker section shares one column with theirs, above your quests.
+The guide's tracker section shares one column with theirs, above your quests. Empty, it leaves your quests where Edit Mode put them.
 
 Source code and issues: [github.com/cjber/adventure-guide-forever](https://github.com/cjber/adventure-guide-forever). Licence: GPL-3.0-or-later.
 
