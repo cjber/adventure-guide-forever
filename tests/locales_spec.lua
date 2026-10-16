@@ -37,13 +37,13 @@ end
 local enUS = assert(loadfile("Locales/enUS.lua"))
 local template = Read("Locales/phrases.txt")
 -- A translator's copy: the template's guard for their locale, and a line translated.
-local french = template:gsub('"deDE"', '"frFR"'):gsub('L%["TITLE"%] = "[^\n]*"', 'L["TITLE"] = "Guide d\'aventure"')
+local french = template:gsub('"deDE"', '"frFR"'):gsub('L%["GO"%] = "[^\n]*"', 'L["GO"] = "Y aller"')
 
 local L = Load({ enUS, french }, "frFR")
-equal(L.TITLE, "Guide d'aventure", "a translated line")
-equal(L.GO, "Go", "a line left as the template has it reads English")
-equal(Load({ enUS, french }, "deDE").TITLE, "Adventure Guide", "another locale ignores the file")
-equal(Load({ enUS, french }, "enUS").TITLE, "Adventure Guide", "English ignores it too")
+equal(L.GO, "Y aller", "a translated line")
+equal(L.STOP, "Stop", "a line left as the template has it reads English")
+equal(Load({ enUS, french }, "deDE").GO, "Go", "another locale ignores the file")
+equal(Load({ enUS, french }, "enUS").GO, "Go", "English ignores it too")
 
 -- The template holds every English line as it is, bar the GlobalStrings the client translates itself.
 local english = Load({ enUS }, "enUS")
@@ -123,8 +123,20 @@ for line in io.lines("AdventureGuideForever.toc") do
 			true,
 			path .. ": says it is machine translated on its first line"
 		)
-		equal(Load({ enUS, assert(loadfile(path)) }, "enUS").TITLE, english.TITLE, path .. ": English ignores it")
+		for key, text in pairs(Load({ enUS, assert(loadfile(path)) }, "enUS")) do
+			equal(text, english[key], path .. ": English ignores it (" .. key .. ")")
+		end
 		local strings = Load({ enUS, assert(loadfile(path)) }, locale)
+		-- The guide's name stays its own in every language: the client's word for it is Blizzard's dungeon journal.
+		for key, text in pairs(english) do
+			if text:find("Adventure Guide", 1, true) then
+				equal(
+					strings[key]:find("Adventure Guide", 1, true) ~= nil,
+					true,
+					path .. ": " .. key .. " names Adventure Guide"
+				)
+			end
+		end
 		local count = 0
 		for key, text in pairs(strings) do
 			local args = Samples(english[key])
