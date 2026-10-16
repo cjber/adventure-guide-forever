@@ -125,6 +125,8 @@ for line in io.lines("AdventureGuideForever.toc") do
 		)
 		equal(Load({ enUS, assert(loadfile(path)) }, "enUS").TITLE, english.TITLE, path .. ": English ignores it")
 		local strings = Load({ enUS, assert(loadfile(path)) }, locale)
+		-- The guide's name stays its own in every language: the client's word for it is Blizzard's dungeon journal.
+		equal(strings.TITLE, english.TITLE, path .. ": keeps the name Adventure Guide")
 		local count = 0
 		for key, text in pairs(strings) do
 			local args = Samples(english[key])

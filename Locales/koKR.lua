@@ -159,7 +159,7 @@ L["NOT_OFFERED"] = "%s 건너뜀: 퀘스트 NPC가 제공하지 않았습니다.
 L["NOT_THIS_QUEST"] = "이 퀘스트 말고"
 L["NO_JOURNEY"] =
 	'이곳에는 안내서가 제안할 여정이 없습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
-L["NPC_JOURNEY"] = "모험 안내서: %s"
+L["NPC_JOURNEY"] = "Adventure Guide: %s"
 L["OBJECTIVE_LINE"] = "- %s"
 L["OBJECTIVE_PROGRESS"] = "%d/%d"
 L["OPENS_CHAPTER_HERE"] = "여기서 다음 장이 열립니다"
@@ -236,7 +236,7 @@ L["RECOMMENDED"] = "추천"
 L["REPLACES_JOURNEY"] = "현재 여정을 대체합니다."
 L["REPORT_HINT"] =
 	"텍스트가 선택되었습니다. Ctrl+C(Mac은 Cmd+C)를 눌러 복사한 후 오류 보고에 붙여 넣으십시오."
-L["REPORT_TITLE"] = "모험 안내서 보고서"
+L["REPORT_TITLE"] = "Adventure Guide 보고서"
 L["REST_HERE"] = "이곳 여관에서 휴식"
 L["RESUME"] = "중단한 곳: %s"
 L["RESUME_ADVENTURE"] = "재개"
@@ -248,10 +248,10 @@ L["RXP_NO_GUIDE"] = "시작하려면 가이드를 선택하십시오."
 L["RXP_ORIGINAL"] = "RestedXP 원래 창 열기"
 L["RXP_PREVIOUS"] = "이전"
 L["RXP_PROGRESS"] = "%d/%d단계"
-L["RXP_RECOMMENDATIONS"] = "모험 안내서 추천"
+L["RXP_RECOMMENDATIONS"] = "Adventure Guide 추천"
 L["RXP_SELECT"] = "가이드 선택"
 L["RXP_SETTINGS"] = "설정"
-L["RXP_SETUP_AGF"] = "모험 안내서에 RestedXP 단계를 표시합니다."
+L["RXP_SETUP_AGF"] = "Adventure Guide에 RestedXP 단계를 표시합니다."
 L["RXP_SETUP_HIDDEN"] = "RestedXP 창과 지도 표시를 숨깁니다."
 L["RXP_SETUP_HIDDEN_SPF"] = "RestedXP 창, 화살표, 지도 표시를 숨깁니다."
 L["RXP_SETUP_NATIVE"] = "가이드 창, 화살표, 대상, 지도 표시를 그대로 둡니다."
@@ -311,7 +311,7 @@ L["SETTING_TITLE_ROUTE_TOOLTIP"] =
 	"안내서에서 여정을 선택하거나 목표 추적기에서 현재 단계의 제목을 클릭하면 경로를 따라 출발합니다. Shortest Path Forever를 불러왔으면 그것을, 아니면 지도의 이동 지점을 사용합니다. 선택한 여정을 다시 클릭하면 중지합니다."
 L["SETTING_TRACKER"] = "추적기 영역 표시"
 L["SETTING_TRACKER_TOOLTIP"] =
-	'목표 추적기의 퀘스트 위에 현재 단계를 위한 짧은 "모험 안내서" 영역을 표시합니다.'
+	'목표 추적기의 퀘스트 위에 현재 단계를 위한 짧은 "Adventure Guide" 영역을 표시합니다.'
 L["SETTING_TRACK_ROUTE"] = "추적기 제목으로 퀘스트 추적"
 L["SETTING_TRACK_ROUTE_TOOLTIP"] =
 	"목표 추적기에서 안내서 제목을 클릭하면 퀘스트 목록에 있는 경로의 모든 퀘스트를 추적기 한도까지 추적합니다."
@@ -373,7 +373,7 @@ L["TAB_PROGRESS"] = "진행 상황"
 L["TAB_PVP"] = "PvP"
 L["TALENT_POINT"] = "사용할 특성 포인트가 1개 있습니다"
 L["TALENT_POINTS"] = "사용할 특성 포인트가 %d개 있습니다"
-L["TITLE"] = "모험 안내서"
+L["TITLE"] = "Adventure Guide"
 L["TODAY_MORE"] = "+%d개 더"
 L["TOWN_COUNTS"] = "수락 %d, 제출 %d"
 L["TOWN_GIVER"] = "%s: %s"
@@ -412,7 +412,7 @@ L["UNEXPLORED"] = "아직 보지 못한 곳: %s"
 L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
-L["WHATS_NEW"] = "당신의 언어로: 모험 안내서가 이제 한국어로 표시됩니다."
+L["WHATS_NEW"] = "당신의 언어로: Adventure Guide가 이제 한국어로 표시됩니다."
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"
