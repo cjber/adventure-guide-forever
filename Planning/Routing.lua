@@ -386,6 +386,13 @@ local function InArea(data, where, step, margin)
 		if yards and yards <= shape.r + margin then
 			return true
 		end
+		-- The objective's other camps (#187): standing at one is standing where its work is done.
+		for _, alternate in ipairs(shape.alternates or NONE) do
+			yards = Model.Yards(data, where, alternate)
+			if yards and yards <= alternate.r + margin then
+				return true
+			end
+		end
 	end
 	-- The merged ring reaches past the shapes, so a broad area whose objectives are spread out counts the ground
 	-- between them as reached; the ring is centred on the area's first shape, the radius Gather grew from it.

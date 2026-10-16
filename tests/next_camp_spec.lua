@@ -230,8 +230,9 @@ do
 	assert(area, "an area step with several spots on the Barrens route")
 end
 
--- Walking (#151): a Duskwood area of two spots. Stand at one, pass it over, walk to the spot the arrow leads to, and
--- back; each change of spot rebuilds as the player walks, though the area the player stands in stays the same.
+-- Walking (#151, #187): a Duskwood area of two objectives with three camps each. Stand at one, pass it over, walk to
+-- the spot the arrow leads to, and back; each change of spot rebuilds as the player walks, though the area the player
+-- stands in stays the same.
 do
 	local h = harness.load({
 		charDB = { journey = "zone:1431" },
@@ -245,7 +246,7 @@ do
 	end
 	assert(area, "walk: the Night Watch area on the route")
 	local spots = h.ns.Model.Spots(area)
-	equal(#spots, 2, "walk: two spots")
+	equal(#spots, 6, "walk: two objectives, three camps each (#187)")
 	local first = spots[1]
 	h.MovePlayer(first.map, first.x, first.y)
 	h.ns.Invalidate()
@@ -257,7 +258,13 @@ do
 	head = h.ns.Route().steps[1]
 	equal(head.key, area.key, "walk: the area still leads")
 	equal(head.here, nil, "walk: Next spot inside the area leads on")
-	equal(h.ns.Model.SpotKey(head), h.ns.Model.SpotKey(spots[2]), "walk: to the other spot")
+	local to = { map = head.map, x = head.x, y = head.y }
+	equal(h.ns.Model.SpotKey(to) ~= h.ns.Model.SpotKey(first), true, "walk: to another spot")
+	local known = false
+	for _, spot in ipairs(spots) do
+		known = known or h.ns.Model.SpotKey(spot) == h.ns.Model.SpotKey(to)
+	end
+	equal(known, true, "walk: one of the area's spots")
 	local function Walk(spot)
 		h.MovePlayer(spot.map, spot.x, spot.y)
 		local plans = h.modelCalls.Plan
@@ -266,10 +273,10 @@ do
 		h.flush()
 		return h.modelCalls.Plan - plans
 	end
-	equal(Walk(spots[2]) > 0, true, "walk: arriving rebuilds")
+	equal(Walk(to) > 0, true, "walk: arriving rebuilds")
 	head = h.ns.Route().steps[1]
 	equal(head.key == area.key and head.here == true, true, "walk: arriving, the area is theirs again")
-	equal(Walk(spots[2]), 0, "walk: standing on at it, no rebuild")
+	equal(Walk(to), 0, "walk: standing on at it, no rebuild")
 	equal(Walk(first) > 0, true, "walk: back to the spot passed over rebuilds")
 	equal(h.ns.Route().steps[1].here, nil, "walk: and leads on again")
 	equal(Walk(first), 0, "walk: standing on at the spot passed over, no rebuild")
@@ -285,6 +292,50 @@ do
 	equal(head.key, area.key, "custom order: the area still leads")
 	equal(head.here, nil, "custom order: still leads on from the spot passed over")
 	equal(#h.errors, 0, "walk: errors\n" .. table.concat(h.errors, "\n"))
+end
+
+-- One objective's own camps (#187): a quest with a single objective and three camps offers Next spot, and standing at
+-- any of its camps is standing in its area.
+do
+	local Steps = ns.Planner.Steps
+	local quest = {
+		zone = MAP,
+		need = { [0] = 0 },
+		obj = { { 0, 420, 500, 20, MAP, 5 }, { 0, 460, 500, 20, MAP, 5 }, { 0, 500, 500, 20, MAP, 9 } },
+	}
+	local node = Steps.Planned(quest, 1, 5)[1]
+	equal(#node.alternates, 1, "alternates: the camp not over the player's level")
+	equal(("%.2f"):format(node.alternates[1].x), "0.46", "alternates: in the data's order")
+	node = Steps.Planned(quest, 1, 9)[1]
+	equal(#node.alternates, 2, "alternates: every other camp when none is over")
+	node = Steps.Planned(quest, 1, nil)[1]
+	equal(#node.alternates, 2, "alternates: every other camp with no level known")
+	quest.obj[3][5] = 1436
+	node = Steps.Planned(quest, 1, 9)[1]
+	equal(#node.alternates, 1, "alternates: only on the node's map")
+	quest.obj = { { 0, 420, 500, 20, MAP } }
+	equal(Steps.Planned(quest, 1, 9)[1].alternates, nil, "alternates: none for a single camp")
+	local camps = Area()
+	camps.shapes = {
+		{
+			map = MAP,
+			x = 0.42,
+			y = 0.5,
+			r = 20,
+			slot = 0,
+			objectives = {},
+			alternates = {
+				{ map = MAP, x = 0.46, y = 0.5, r = 20 },
+				{ map = MAP, x = 0.50, y = 0.5, r = 20 },
+			},
+		},
+	}
+	camps.x, camps.r = 0.42, 20
+	equal(#Model.Spots(camps), 3, "spots: the node and its camps")
+	equal(Model.Here(data, Stand(0.50), { camps }), 1, "here: at one of its other camps")
+	equal(Model.Here(data, Stand(0.48, 0.9), { camps }), nil, "here: not away from every camp")
+	Model.Camp(data, Stand(0.40), camps, Passed(camps.shapes[1]))
+	equal(camps.x, 0.46, "camp: passing the node's camp over moves the arrow to the nearest other camp")
 end
 
 print(("next_camp_spec: %d checks passed"):format(checks))

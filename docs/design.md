@@ -44,8 +44,9 @@ abandons quests.
   stands in the current step's objective area, the world map shows that area's full outline in yellow, the minimap
   turns the game's own quest area gold, and the step's own pin and line step aside.
 - **2.7 Completion.** Record a proven story ending once per character and show a native-style popup with one completion sound. Tracker visibility does not affect it.
-- **2.8 Menus.** Share step actions between the guide and tracker. An area with more than one objective spot offers
-  Next spot: the spot it points at is passed over for the session and the point moves to the nearest spot not passed
+- **2.8 Menus.** Share step actions between the guide and tracker. An area with more than one objective spot (each
+  objective's node and its other camps on that map, AreaNode's `alternates`; standing at any of them is standing in
+  the area) offers Next spot: the spot it points at is passed over for the session and the point moves to the nearest spot not passed
   over; a spot not passed over keeps the arrow through rebuilds and walking. Inside the area it passes over the spot
   the player is at (the nearest edge, since an area's spots are close and often overlap). Model.Here doesn't count
   standing at a spot passed over as standing in the area (with a switching margin), so the arrow leads on, and at a

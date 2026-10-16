@@ -126,15 +126,24 @@ function Model.SpotKey(spot)
 	return ("%d:%.4f:%.4f"):format(spot.map, spot.x, spot.y)
 end
 
--- An area step's distinct objective spots, in the data's order: two objectives at one node are one spot.
+-- An area step's distinct objective spots, in the data's order: each objective's node, then its other camps on the
+-- same map (`alternates`, #187); two at one point are one spot.
 ---@param step AGFStep
----@return AGFNode[]
+---@return AGFCamp[]
 function Model.Spots(step)
 	local spots, seen = {}, {}
-	for _, shape in ipairs(step.shapes or NONE) do
-		local key = Model.SpotKey(shape)
+	local function Add(spot)
+		local key = Model.SpotKey(spot)
 		if not seen[key] then
-			seen[key], spots[#spots + 1] = true, shape
+			seen[key], spots[#spots + 1] = true, spot
+		end
+	end
+	for _, shape in ipairs(step.shapes or NONE) do
+		Add(shape)
+	end
+	for _, shape in ipairs(step.shapes or NONE) do
+		for _, alternate in ipairs(shape.alternates or NONE) do
+			Add(alternate)
 		end
 	end
 	return spots
@@ -144,7 +153,7 @@ end
 -- `here`), the spot whose edge is nearest them (the deepest, inside one), since that is the camp they found cleared.
 ---@param step AGFStep
 ---@param player? AGFPlayer|{map?: integer, x?: number, y?: number}
----@return AGFNode|AGFStep
+---@return AGFCamp|AGFStep
 function Model.CampAt(data, player, step)
 	if not step.here then
 		return step
