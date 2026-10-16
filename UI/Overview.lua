@@ -31,12 +31,16 @@ local KIND_ICONS = {
 ---@field open boolean
 
 ---@type AGFJourneyGroup[]
-local GROUPS = {
-	{ key = "continue", label = L.GROUP_CONTINUE, open = false },
-	{ key = "zones", label = L.GROUP_ZONES, open = false },
-	{ key = "dungeons", label = L.GROUP_DUNGEONS, open = false },
-	{ key = "battlegrounds", label = L.GROUP_BATTLEGROUNDS, open = false },
+local GROUPS = {}
+local LABELS = {
+	continue = L.GROUP_CONTINUE,
+	zones = L.GROUP_ZONES,
+	dungeons = L.GROUP_DUNGEONS,
+	battlegrounds = L.GROUP_BATTLEGROUNDS,
 }
+for index, key in ipairs(ns.Model.SECTIONS) do
+	GROUPS[index] = { key = key, label = LABELS[key], open = false }
+end
 
 -- `journeys`' cards under `key`, in the order the route offered them; empty when it has none, so a header with no
 -- card is never drawn.
@@ -712,24 +716,14 @@ end
 ---@return string? text
 ---@return {r: number, g: number, b: number}? color
 local function Levels(journey, level)
-	local zone = journey.zone and ns.Data.zones[journey.zone] or nil
-	---@type AGFInstance?
-	local instance = journey.instance and ns.Data.instances and ns.Data.instances[journey.instance] or nil
-	local low, high
-	if zone then
-		low, high = zone.min, zone.max
-	elseif instance then
-		low, high = instance.low, instance.high
+	local low, high = ns.Model.LevelRange(ns.Data, journey)
+	if not low then
+		return nil
+	elseif not high then
+		return L.LEVELS_FROM:format(low), GetQuestDifficultyColor(level)
 	end
-	if journey.guideLow and journey.guideHigh then
-		low, high = journey.guideLow, journey.guideHigh
-	end
-	if journey.level then
-		return L.LEVELS_FROM:format(journey.level), GetQuestDifficultyColor(level)
-	elseif low and high and low > 0 and high >= low then
-		local text = low == high and tostring(low) or L.LEVELS:format(low, high)
-		return text, GetQuestDifficultyColor(math.max(low, math.min(level, high)))
-	end
+	local text = low == high and tostring(low) or L.LEVELS:format(low, high)
+	return text, GetQuestDifficultyColor(math.max(low, math.min(level, high)))
 end
 
 ---@param journey AGFJourney

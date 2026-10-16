@@ -1,9 +1,10 @@
 # Addon API
 
 Addons can read where the guide is sending the player through `AdventureGuideForever.API` (`version = 1`). Additions
-keep `version` at 1 and raise `minor` (1 from `Subscribe`, absent before), so check that a function exists before
-calling it.
-The stop queries are read-only; `ResumeRestedXP()` is an explicit navigation request. Places use uiMapIDs and
+keep `version` at 1 and raise `minor` (1 from `Subscribe`, 2 from `Suggestions` and `StartSuggestion`, absent
+before), so check that a function exists before calling it.
+The stop and suggestion queries are read-only; `ResumeRestedXP()` and `StartSuggestion(id)` are explicit navigation
+requests. Places use uiMapIDs and
 normalized 0-1 coordinates, as Shortest Path's API does.
 
 - `CurrentStop()` returns the stop the tracker shows now, or `nil`.
@@ -57,3 +58,41 @@ end
 ### `API.ResumeRestedXP()`
 
 Resume the active RestedXP guide through Adventure Guide's navigation. Returns `true` when the request is accepted, or `false` when integrated RestedXP is unavailable. Use this for an explicit player action after selecting another destination.
+
+## Suggestions
+
+- `Suggestions(limit)` returns the guide's cards in the order its panel draws them: the chosen one first, then each
+  header's cards (Continue, Zones, Dungeons, Battlegrounds) in the order the route offers them. Five unless `limit`
+  says fewer, and never more than five. It copies what the guide has already worked out and plans nothing for the
+  caller. `nil` means ask again later, as for the stops; a `limit` that is not a whole number of zero or more also
+  returns `nil`.
+- `StartSuggestion(id)` starts the card with that `id` as the guide's own Start does: it chooses the card and starts
+  its route on the rebuild that has its steps (through Shortest Path when it is loaded, the game's waypoint
+  otherwise), resumes the chosen card's route when it is paused or not running, and hands a RestedXP guide's card to
+  RestedXP. It returns `true` when it accepted the request, or `false` while the route is being worked out, for an
+  `id` no card has now, when RestedXP refuses its guide in combat, or when the chosen card's route could not start.
+  With the guide's wanderer setting on, it chooses the card and starts nothing, as the guide's own Start does. Call it
+  only for a player's click.
+
+Read `Suggestions` when your menu opens: `Subscribe` does not call back when only the cards change.
+
+A suggestion is a fresh table on every call:
+
+| Field | |
+|---|---|
+| `id` | the card's key, for `StartSuggestion`; stable while the card is offered |
+| `title` | the card's title ("The Barrens story", "Head to Ashenvale"); for display |
+| `level` | the lowest level the card shows (a zone's or dungeon's range, a battleground's first level), or `nil` |
+| `kind` | `"carry"` (quests in your log), `"story"`, `"nextzone"`, `"dungeon"`, `"calling"`, `"battleground"` or `"guide"` |
+| `map` | the uiMapID of its first stop, where `x` and `y` are; the card's map when that stop has no known place |
+| `x`, `y` | its first stop, normalized 0-1; `nil` when that stop has no known place |
+
+```lua
+local api = AdventureGuideForever and AdventureGuideForever.API
+if api and type(api.Suggestions) == "function" then
+	for _, suggestion in ipairs(api.Suggestions(3) or {}) do
+		local label = suggestion.level and ("[%d] %s"):format(suggestion.level, suggestion.title) or suggestion.title
+		-- On the player's click: api.StartSuggestion(suggestion.id)
+	end
+end
+```
