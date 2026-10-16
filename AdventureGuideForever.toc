@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: Adventure Guide Forever
-## Notes: Quest journeys and RestedXP guides in the map and objective tracker.
+## Notes: Picks quests for your level and, with Shortest Path Forever, walks you to each one.
 ## Author: cjber
 ## Version: @project-version@
 ## Category: Quests
