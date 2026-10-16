@@ -488,9 +488,10 @@ end
 ---@param group string
 ---@param name string
 ---@param start? boolean
+---@return boolean selected false when the engine refused the guide (none loaded, or in combat)
 function Guide.Choose(group, name, start)
 	if not Guide.Select(group, name) then
-		return
+		return false
 	end
 	C_Timer.After(0, function()
 		local current = Guide.Snapshot()
@@ -499,6 +500,7 @@ function Guide.Choose(group, name, start)
 			ns.Choose(journey.key, start)
 		end
 	end)
+	return true
 end
 
 function Guide.Select(group, name)

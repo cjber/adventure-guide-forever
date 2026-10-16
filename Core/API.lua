@@ -4,10 +4,12 @@ local _, ns = ...
 -- Public answers and navigation requests for other addons (docs/api.md). Reads return copies;
 -- nil means the route is still settling, so ask again later.
 ---@class AGFAPI
--- `minor` rises with each addition within version 1 (1: Subscribe); a caller checks a member before using it.
-local API = { version = 1, minor = 1 }
+-- `minor` rises with each addition within version 1 (1: Subscribe, 2: Suggestions and StartSuggestion); a caller
+-- checks a member before using it.
+local API = { version = 1, minor = 2 }
 
 local NEXT_LIMIT = 8
+local SUGGESTION_LIMIT = 5
 
 ---@param step AGFStep
 ---@return AGFAPIStop?
@@ -67,6 +69,57 @@ function API.NextStops(limit)
 		stops[#stops + 1] = stop
 	end
 	return stops
+end
+
+---@param limit? integer how many, five (the most) unless given
+---@return AGFAPISuggestion[]?
+function API.Suggestions(limit)
+	if limit == nil then
+		limit = SUGGESTION_LIMIT
+	elseif type(limit) ~= "number" or limit < 0 or limit % 1 ~= 0 then
+		return nil
+	end
+	if not ns.RouteSettled() then
+		return nil
+	end
+	local suggestions, cap = {}, math.min(limit, SUGGESTION_LIMIT)
+	for _, journey in ipairs(ns.Model.Cards(ns.Route())) do
+		if #suggestions >= cap then
+			break
+		end
+		local step = journey.steps[1]
+		local placed = step and ns.Model.ValidPlace(step)
+		suggestions[#suggestions + 1] = {
+			id = journey.key,
+			title = journey.title,
+			level = (ns.Model.LevelRange(ns.Data, journey)),
+			kind = journey.kind,
+			map = placed and step.map or journey.map,
+			x = placed and step.x or nil,
+			y = placed and step.y or nil,
+		}
+	end
+	return suggestions
+end
+
+-- Starts the card `id` names as the guide's own Start does (ns.StartJourney), and hands a RestedXP guide's card to its
+-- engine as the card's click does. False when the route is settling, no card has that id, RestedXP refused its guide
+-- (in combat) or the chosen card's route could not start.
+---@param id string
+---@return boolean
+function API.StartSuggestion(id)
+	if type(id) ~= "string" or not ns.RouteSettled() then
+		return false
+	end
+	for _, journey in ipairs(ns.Route().journeys) do
+		if journey.key == id then
+			if journey.rxpGroup and journey.rxpName then
+				return ns.RestedXP.Choose(journey.rxpGroup, journey.rxpName, true)
+			end
+			return ns.StartJourney(id)
+		end
+	end
+	return false
 end
 
 -- RXP keeps its engine; this frontend owns the guide's navigation, including Stop.

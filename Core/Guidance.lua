@@ -453,6 +453,32 @@ function ns.StartRoute(step)
 	return false
 end
 
+-- `key`'s route runs now: it is the chosen card, its route is ours and nothing paused it.
+---@param key string
+---@return boolean
+function Guidance.Running(key)
+	local route = ns.Route()
+	return route.chosen
+		and route.journey == key
+		and Guidance.Status() ~= "paused"
+		and ns.Prefs().guided == key
+		and Guidance.Owns()
+end
+
+-- The guide's Start on a card: choose it and start its route on the rebuild that has its steps, or start the chosen
+-- card's route when it is not running (paused, or never started). True when that is under way or already running;
+-- false when the chosen card's route could not start. A wanderer's choice starts nothing, as everywhere.
+---@param key string
+---@return boolean
+function ns.StartJourney(key)
+	local route = ns.Route()
+	if not route.chosen or route.journey ~= key then
+		ns.Choose(key, true)
+		return true
+	end
+	return Guidance.Running(key) or ns.StartRoute()
+end
+
 -- The player's Stop, from the footer or a step's menu: what the back arrow does while it runs, so no journey is left
 -- chosen with nothing to resume it.
 function ns.Stop()

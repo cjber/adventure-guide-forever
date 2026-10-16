@@ -4,6 +4,63 @@ local _, ns = ...
 -- Ten upcoming route actions; the UI scrolls and the plan rebuilds as quests progress.
 local Model = { MAX_STEPS = 10 }
 ns.Model = Model
+
+-- The overview's headers in the order they show; UI/Overview.lua labels them (GROUPS).
+---@type AGFJourneySection[]
+Model.SECTIONS = { "continue", "zones", "dungeons", "battlegrounds" }
+
+-- The guide's cards in the order its panel draws them (UI/Panel.lua LayoutJourneys): with one chosen, that card and
+-- then the rest as the route offered them; with none, each header's cards in turn, in the route's order.
+---@param route AGFRoute
+---@return AGFJourney[]
+function Model.Cards(route)
+	local cards = {}
+	if route.chosen then
+		for _, journey in ipairs(route.journeys) do
+			if journey.key == route.journey then
+				table.insert(cards, 1, journey)
+			else
+				cards[#cards + 1] = journey
+			end
+		end
+		return cards
+	end
+	for _, section in ipairs(Model.SECTIONS) do
+		for _, journey in ipairs(route.journeys) do
+			if journey.section == section then
+				cards[#cards + 1] = journey
+			end
+		end
+	end
+	return cards
+end
+
+-- The levels a card shows: a battleground's opening level with no top, else its guide's, zone's or instance's span.
+-- Nil when it has none to show.
+---@param data AGFData
+---@param journey AGFJourney
+---@return integer? low
+---@return integer? high nil for "from `low`"
+function Model.LevelRange(data, journey)
+	if journey.level then
+		return journey.level, nil
+	end
+	local zone = journey.zone and data.zones[journey.zone] or nil
+	---@type AGFInstance?
+	local instance = journey.instance and data.instances and data.instances[journey.instance] or nil
+	local low, high
+	if zone then
+		low, high = zone.min, zone.max
+	elseif instance then
+		low, high = instance.low, instance.high
+	end
+	if journey.guideLow and journey.guideHigh then
+		low, high = journey.guideLow, journey.guideHigh
+	end
+	if low and high and low > 0 and high >= low then
+		return low, high
+	end
+end
 ---@class AGFPlanner
 local Planner = { State = {} }
 ns.Planner = Planner
