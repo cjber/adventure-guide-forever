@@ -32,7 +32,7 @@ These images are generated previews of the guide UI.
 - **Full guide.** Browse the route and the area's quest outline.
 - **Choose and go.** Use Shortest Path Forever or the game's waypoint. Stop clears only guidance the addon started.
 - **Your route.** Your journey survives travel and reloads. Ready hand-ins come first. Towns group quest givers into checklists. A quest missing from its giver's list drops off, with a line in chat.
-- **Where to do objectives.** A place with mobs 3 or more levels above you gives way to a lower one on its map. *Next spot* cycles a step's spots, even where you stand.
+- **Where to do objectives.** A place with mobs 3 or more levels above you gives way to a lower one on its map. *Next spot* picks another camp, even where you stand.
 - **Quest difficulty.** Set the highest quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups.
 - **Your order.** Drag steps or use their menu. Moves that break quest order are greyed out.
 - **Search and hints.** Search puts the best match first and shows a quest's requirements. For a locked quest it names the earliest quest in its chain you can take. Hints cover talents and battlegrounds; class spell reminders are off by default.

@@ -350,33 +350,52 @@ end
 -- Quest `quest`'s node for objective `slot`, counting `objective`, with its radius: its first valid area for the slot
 -- in the data's order (in the quest's zone, then the most spawns), unless that area's mobs are ORANGE (3) or more
 -- levels above `level` (#152; they hit hard and are hard to hit) and a later valid area on the same map has mobs that
--- aren't, so a spot is never traded for one across the world. An area with no level is never over. Nil when the data
--- has no valid area for the slot.
+-- aren't, so a spot is never traded for one across the world. An area with no level is never over. The slot's other
+-- valid areas on that map, not over when the node isn't, are its `alternates`: the camps "Next spot" moves between
+-- (#187) and where the player stands in the area as well (Routing.lua InArea). Nil when the data has no valid area.
 ---@param quest AGFQuest
 ---@param level? integer the player's
 ---@return AGFNode?
 local function AreaNode(quest, slot, objective, level)
-	local first
+	local places = {}
 	for _, area in ipairs(quest.obj or NONE) do
 		if area[1] == slot then
-			local node = {
+			local place = {
 				map = area[5] or quest.zone or 0, -- 0: no map, which ValidPlace refuses
 				x = area[2] / 1000,
 				y = area[3] / 1000,
 				r = area[4],
-				slot = slot,
-				objectives = { objective },
 			}
-			local over = level and area[6] and area[6] >= level + ORANGE
-			if ValidPlace(node) and (not first or node.map == first.map) then
-				if not over then
-					return node
-				end
-				first = first or node
+			if ValidPlace(place) and (not places[1] or place.map == places[1].map) then
+				place.over = level and area[6] and area[6] >= level + ORANGE or nil
+				places[#places + 1] = place
 			end
 		end
 	end
-	return first
+	local chosen
+	for _, place in ipairs(places) do
+		chosen = chosen or (not place.over and place or nil)
+	end
+	chosen = chosen or places[1]
+	if not chosen then
+		return nil
+	end
+	local alternates
+	for _, place in ipairs(places) do
+		if place ~= chosen and (chosen.over or not place.over) then
+			alternates = alternates or {}
+			alternates[#alternates + 1] = { map = place.map, x = place.x, y = place.y, r = place.r }
+		end
+	end
+	return {
+		map = chosen.map,
+		x = chosen.x,
+		y = chosen.y,
+		r = chosen.r,
+		slot = slot,
+		objectives = { objective },
+		alternates = alternates,
+	}
 end
 
 -- Where a quest under way is done next, in slot order: each open objective the data places, at its first area (the

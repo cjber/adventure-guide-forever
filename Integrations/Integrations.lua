@@ -335,11 +335,20 @@ local function Shapes(step)
 		return
 	end
 	local area = step --[[@as AGFStep]]
-	local shapes, radius = {}, 30
+	local shapes, radius, matched = {}, 30, false
 	for _, shape in ipairs(area.shapes or {}) do
 		shapes[#shapes + 1] = { map = shape.map, x = shape.x, y = shape.y, radius = shape.r }
 		if shape.map == area.map and shape.x == area.x and shape.y == area.y then
-			radius = math.max(radius, shape.r)
+			radius, matched = math.max(radius, shape.r), true
+		end
+	end
+	-- The arrow on one of the objective's other camps (#187, Next spot): that camp alone is the stop's shape and
+	-- reach, so walking through the camp passed over never counts as arriving.
+	if not matched then
+		for _, spot in ipairs(ns.Model.Spots(area)) do
+			if spot.map == area.map and spot.x == area.x and spot.y == area.y then
+				shapes, radius = { { map = spot.map, x = spot.x, y = spot.y, radius = spot.r } }, math.max(30, spot.r)
+			end
 		end
 	end
 	local quests = area.quests or {}

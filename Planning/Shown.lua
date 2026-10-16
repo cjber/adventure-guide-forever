@@ -35,6 +35,10 @@ local function Reorder(route, input)
 			for index, step in ipairs(card.steps) do
 				step.here = index == 1 and here == 1 or nil
 			end
+			local first, camps = card.steps[1], input.prefs.camps
+			if first and first.kind == "area" then
+				ns.Model.PlaceCamp(input.data, player, first, camps and camps[first.key])
+			end
 			ns.Planner.Journeys.Summarise(card)
 		end
 		if route.journey == card.key then

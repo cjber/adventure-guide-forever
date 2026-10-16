@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **"Next spot" moves between an objective's camps.** When a step's objective can be done at more than one camp on the map, right-click the step and choose "Next spot" to go to the nearest camp you haven't passed over, including from a camp someone has just cleared. Before, it only moved between the different objectives of one step, so a quest with a single kill or collect objective never offered it. Standing at any of the camps of the step you're on now counts as being in its area. A step that groups objectives done in different places still moves between those places.
+
 ## [0.14.0] - 2026-10-16
 
 - **Objectives send you to mobs nearer your level.** When an objective can be done in more than one place and the first place's mobs are 3 or more levels above you, the guide sends you to the next place on the same map whose mobs aren't. If there's no such place, it keeps the first.

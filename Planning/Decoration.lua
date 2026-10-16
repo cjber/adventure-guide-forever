@@ -126,15 +126,26 @@ function Model.SpotKey(spot)
 	return ("%d:%.4f:%.4f"):format(spot.map, spot.x, spot.y)
 end
 
--- An area step's distinct objective spots, in the data's order: two objectives at one node are one spot.
+-- An area step's distinct objective spots, in the data's order; two at one point are one spot. A step of one objective
+-- node also has that objective's other camps on the map (its `alternates`, #187); a merged step keeps to its nodes,
+-- since one objective's camps don't serve the others.
 ---@param step AGFStep
----@return AGFNode[]
+---@return AGFCamp[]
 function Model.Spots(step)
 	local spots, seen = {}, {}
-	for _, shape in ipairs(step.shapes or NONE) do
-		local key = Model.SpotKey(shape)
+	local function Add(spot)
+		local key = Model.SpotKey(spot)
 		if not seen[key] then
-			seen[key], spots[#spots + 1] = true, shape
+			seen[key], spots[#spots + 1] = true, spot
+		end
+	end
+	for _, shape in ipairs(step.shapes or NONE) do
+		Add(shape)
+	end
+	local shapes = step.shapes or NONE
+	if #shapes == 1 then
+		for _, alternate in ipairs(shapes[1].alternates or NONE) do
+			Add(alternate)
 		end
 	end
 	return spots
@@ -144,7 +155,7 @@ end
 -- `here`), the spot whose edge is nearest them (the deepest, inside one), since that is the camp they found cleared.
 ---@param step AGFStep
 ---@param player? AGFPlayer|{map?: integer, x?: number, y?: number}
----@return AGFNode|AGFStep
+---@return AGFCamp|AGFStep
 function Model.CampAt(data, player, step)
 	if not step.here then
 		return step
@@ -176,6 +187,35 @@ function Model.Camp(data, player, step, passed)
 		local yards = not passed[Model.SpotKey(spot)] and (Model.Yards(data, player, spot) or math.huge)
 		if yards and (not best or yards < bestYards) then
 			best, bestYards = spot, yards
+		end
+	end
+	if best then
+		step.map, step.x, step.y = best.map, best.x, best.y
+	end
+end
+
+-- Where an area step points among its spots (docs/design.md §2.8), after its here is settled: away from it, Model.Camp
+-- leads on from a spot passed over; while here at a step of one objective node with other camps (#187), the camp the
+-- player is at (the nearest edge among those not passed over), so Shortest Path's stop is that camp and not the node
+-- they left. FinishRoute and the player's order (Shown.lua Reorder) both end with it.
+---@param step AGFStep
+---@param passed? table<string, true> the spots passed over, by Model.SpotKey
+function Model.PlaceCamp(data, player, step, passed)
+	local shapes = step.shapes or NONE
+	if not step.here then
+		if passed then
+			Model.Camp(data, player, step, passed)
+		end
+		return
+	end
+	if not (#shapes == 1 and shapes[1].alternates) then
+		return
+	end
+	local best, bestEdge
+	for _, spot in ipairs(Model.Spots(step)) do
+		local yards = not (passed and passed[Model.SpotKey(spot)]) and Model.Yards(data, player, spot)
+		if yards and (not best or yards - spot.r < bestEdge) then
+			best, bestEdge = spot, yards - spot.r
 		end
 	end
 	if best then
@@ -284,8 +324,8 @@ local function FinishRoute(data, player, completed, log, route, last, prefs)
 			step.orderKey = old and old.orderKey or identities[index]
 			if step.kind == "town" then
 				Model.TownChecklist(data, player, completed, log, step, old, prefs.skipped)
-			elseif step.kind == "area" and prefs.camps and prefs.camps[step.key] then
-				Model.Camp(data, player, step, prefs.camps[step.key])
+			elseif step.kind == "area" then
+				Model.PlaceCamp(data, player, step, prefs.camps and prefs.camps[step.key])
 			end
 			Model.StepTitle(data, log, step)
 			if not step.complete then

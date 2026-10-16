@@ -379,9 +379,11 @@ end
 ---@param where {map: integer, x: number, y: number}
 ---@param step AGFStep
 ---@param margin number
+---@param camps? boolean the step's other camps count too (Model.Spots, #187): only for the head, so a camp of a later
+--- step the player passes on the way never makes it lead
 ---@return boolean
-local function InArea(data, where, step, margin)
-	for _, shape in ipairs(step.shapes) do
+local function InArea(data, where, step, margin, camps)
+	for _, shape in ipairs(camps and Model.Spots(step) or step.shapes or NONE) do
 		local yards = Model.Yards(data, where, shape)
 		if yards and yards <= shape.r + margin then
 			return true
@@ -530,7 +532,7 @@ function Model.Here(data, where, steps, held, camps)
 		and Workable(head)
 	then
 		local mine = head.key == held
-		return InArea(data, where, head, mine and HERE_MARGIN or 0)
+		return InArea(data, where, head, mine and HERE_MARGIN or 0, true)
 				and not AtPassedSpot(data, where, head, camps and camps[head.key], mine)
 				and 1
 			or nil
