@@ -5,7 +5,8 @@ stays English.
 
 It ships in every language the WoW: Forever client has besides English: deDE, esES, esMX, frFR, koKR, ptBR, ruRU, zhCN
 and zhTW (the client has no Italian). Those files are machine translated, using the game's own words for the quest
-log, quest givers, flight paths, the objective tracker and the rest, and say so on their first line. A human line
+log, quest givers, flight paths, the objective tracker and the rest, and say so on their first line. The guide's own
+name, Adventure Guide, stays in English in every language. A human line
 always wins over a machine one.
 
 To correct a line, change the text on the right in `<locale>.lua`. In a file that is all machine translated, the first

@@ -313,7 +313,7 @@ ns.L = {
 	CALLING_TRAINER = "Your class trainer has a task: %s",
 	CALLING_TASK = "A task for your class: %s",
 	-- A unit tooltip's line on an NPC the chosen journey visits: its title.
-	NPC_JOURNEY = "Adventure guide: %s",
+	NPC_JOURNEY = "Adventure Guide: %s",
 	-- Something new (docs/design.md §2.13): the tracker's line for a journey card the character hasn't been offered.
 	MOMENT = "%s is now for your level",
 	-- PvP (docs/design.md §2.15): a battleground open to the player, as an aside and as

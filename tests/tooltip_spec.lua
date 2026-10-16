@@ -48,7 +48,7 @@ local SERGRA, MANKRIK, LATER = 3338, 3432, 3446 -- The Zhevra's ender; Crossroad
 local GRYSHKA = 6929
 do
 	local h = Load({ journey = "zone:1413" })
-	local line = { "normal: Adventure guide: The Barrens story" }
+	local line = { "normal: Adventure Guide: The Barrens story" }
 	same(Lines(h, Creature(SERGRA)), line, "log: the ender")
 	same(Lines(h, Creature(GRYSHKA)), {}, "log: an NPC the card doesn't visit")
 	same(Lines(h, "Player-5250-0A1B2C3D"), {}, "log: a player")
@@ -74,7 +74,7 @@ end
 -- The chosen story names its pickups and hand-ins; clearing the choice returns to accepted quests.
 do
 	local h = Load({ journey = "zone:1413" })
-	local line = { "normal: Adventure guide: The Barrens story" }
+	local line = { "normal: Adventure Guide: The Barrens story" }
 	same(Lines(h, Creature(MANKRIK)), line, "story: a pickup's giver")
 	same(Lines(h, Creature(LATER)), line, "story: in a later town")
 	same(Lines(h, Creature(SERGRA)), line, "story: its hand-in's ender")
@@ -82,7 +82,7 @@ do
 	h.flush()
 	equal(h.ns.Route().chosen, false, "none chosen")
 	same(Lines(h, Creature(MANKRIK)), {}, "none chosen: unrelated pickup has no line")
-	same(Lines(h, Creature(SERGRA)), { "normal: Adventure guide: Quests in your log" }, "none chosen: accepted hand-in")
+	same(Lines(h, Creature(SERGRA)), { "normal: Adventure Guide: Quests in your log" }, "none chosen: accepted hand-in")
 	equal(#h.errors, 0, "story: errors\n" .. table.concat(h.errors, "\n"))
 end
 
@@ -94,7 +94,7 @@ do
 		turnin = turnin or (step.key == "turnin:845" and step or nil)
 	end
 	equal(turnin and turnin.kind, "turnin", "a turn-in step")
-	same(Lines(h, Creature(SERGRA)), { "normal: Adventure guide: The Barrens story" }, "turn-in: the ender")
+	same(Lines(h, Creature(SERGRA)), { "normal: Adventure Guide: The Barrens story" }, "turn-in: the ender")
 	equal(#h.errors, 0, "turn-in: errors\n" .. table.concat(h.errors, "\n"))
 end
 
@@ -102,7 +102,7 @@ end
 do
 	local h = Load(nil)
 	equal(h.ns.Route().chosen, false, "login: none chosen")
-	same(Lines(h, Creature(SERGRA)), { "normal: Adventure guide: Quests in your log" }, "login: accepted quest route")
+	same(Lines(h, Creature(SERGRA)), { "normal: Adventure Guide: Quests in your log" }, "login: accepted quest route")
 	equal(#h.errors, 0, "login: errors\n" .. table.concat(h.errors, "\n"))
 end
 
@@ -110,7 +110,7 @@ end
 -- tooltip is left alone; neither raises an error, in combat or out. h.Secret() errors on any use, as the client's does.
 do
 	local h = Load({ journey = "zone:1413" })
-	local line = { "normal: Adventure guide: The Barrens story" }
+	local line = { "normal: Adventure Guide: The Barrens story" }
 	local guid = Creature(SERGRA)
 	same(Lines(h, h.Secret()), {}, "secret: a secret GUID adds nothing")
 	h.SetCombat(true)
