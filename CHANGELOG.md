@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The README credits the people and addons behind Adventure Guide Forever.** The players who reported bugs or asked for features, and Polestar, which inspired some features, are named, and THIRD_PARTY.md has the full list.
+
 ### For addon authors
 
 - **`AdventureGuideForever.API.Suggestions(limit)` and `API.StartSuggestion(id)`** let another addon list the guide's cards (up to five, in the panel's order, as `{id, title, level, kind, map, x, y}`) and start one as the guide's own Start does. `API.minor` is 2; `version` stays 1. See docs/api.md.
