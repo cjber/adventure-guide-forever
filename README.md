@@ -14,7 +14,7 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/map.png" width="640" alt="A journey's quest stops numbered on The Barrens map, with Shortest Path Forever's route to the first"></p>
 
-<p align="center">A journey's quests, numbered on the map in the order you do them. Shortest Path Forever walks you to each stop in turn.</p>
+<p align="center">A journey's quests, numbered in order. Shortest Path Forever walks you to each one.</p>
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif" width="640" alt="Choosing a journey and following its route"></p>
 
