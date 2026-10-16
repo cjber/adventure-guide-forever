@@ -239,6 +239,22 @@ h.flush()
 local journey3 = ns.RestedXP.Journey()
 assert(journey3 and journey3.key == guideKey, "journey key does not include the current step index")
 
+-- API.StartSuggestion starts a guide card as its own click does: the loaded guide's card is chosen like any other, and
+-- another guide's card goes to the engine, which refuses it in combat.
+local api = G.AdventureGuideForever.API
+assert(api.StartSuggestion(guideKey), "the loaded guide's card starts")
+h.flush()
+assert(ns.Route().chosen and ns.Route().journey == guideKey, "and is chosen")
+local other = { key = "guide:other", kind = "guide", section = "continue", title = "Other", map = 0, steps = {} }
+other.rxpGroup, other.rxpName = guide.group, guide.name
+table.insert(ns.Route().journeys, other)
+loaded = nil
+h.combat = true
+assert(not api.StartSuggestion(other.key) and loaded == nil, "another guide's card waits out combat")
+h.combat = false
+assert(api.StartSuggestion(other.key) and loaded == guide.group .. guide.name, "another guide's card selects it")
+h.flush()
+
 -- Snapshot waypoint changes trigger OnChange callbacks.
 local waypointChanges = 0
 ns.RestedXP.OnChange(function()

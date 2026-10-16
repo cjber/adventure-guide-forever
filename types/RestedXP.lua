@@ -113,7 +113,7 @@ RXPCData = nil
 ---@field OnChange fun(callback: fun())
 ---@field Refresh fun()
 ---@field Cards fun(current?: AGFJourney): AGFJourney[]
----@field Choose fun(group: string, name: string, start?: boolean)
+---@field Choose fun(group: string, name: string, start?: boolean): boolean false when the engine refused the guide
 ---@field Guides fun(): {group: string, name: string}[]
 ---@field Select fun(group: string, name: string): boolean
 ---@field Move fun(delta: integer): boolean

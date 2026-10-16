@@ -75,7 +75,7 @@ do
 	local h = Load("subscribe")
 	local API = h.G.AdventureGuideForever.API
 	equal(API.version, 1, "api: still version 1")
-	equal(API.minor, 1, "api: minor 1")
+	equal(API.minor >= 1, true, "api: Subscribe arrived in minor 1")
 	local ok = pcall(API.Subscribe, "not a function")
 	equal(ok, false, "api: a non-function callback is an error")
 	local calls, seen, failing = 0, {}, 0
