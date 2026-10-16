@@ -12,7 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-## [0.13.0] - 2026-10-15
+## [0.13.0] - 2026-10-16
 
 - **The guide learns when a quest giver doesn't have a quest.** If the guide sends you to pick up a quest and the NPC's quest list doesn't include it (Forever removed or changed some quests), the guide says so in chat, drops it from the route, and its search explains "The giver didn't offer it". It tries again after your next level-up, or after a hand-in that could open the quest up.
 
