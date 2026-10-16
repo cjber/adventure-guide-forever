@@ -2934,8 +2934,9 @@ function harness.load(options)
 		return h.time
 	end
 	G.GetBindLocation = noop
+	-- The client's language: English unless a spec names another, which also loads that Locales file.
 	G.GetLocale = function()
-		return "enUS"
+		return options.locale or "enUS"
 	end
 	if options.entrances then
 		G.TweaksForever = G.TweaksForever or { API = { version = 1 } }

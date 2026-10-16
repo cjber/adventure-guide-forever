@@ -94,6 +94,10 @@ authorization. A preparation-only request ends before tags or uploads.
 
 - Update `WHATS_NEW` in `Locales/enUS.lua` to begin with the newest release
   headline, regenerate `Locales/phrases.txt` and run `tests/locales_spec.lua`.
+- Translate every phrase added or changed since the last tag into each shipped locale (WFA-34), marked as
+  `Locales/README.md` says. `python3 tools/check_locales.py --release` fails on a missing line only: a key whose
+  English changed (the new `WHATS_NEW` always does) keeps its old translation until you redo it, so go through
+  `git diff <last-tag> -- Locales/phrases.txt` line by line too.
 
 - Review geometry, Forever quest IDs and the QuestieDB corpus together. Keep the
   pinned QuestieDB release/hash and Shortest Path contract fixtures consistent
