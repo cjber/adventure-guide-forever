@@ -12,11 +12,11 @@ Choose a journey and follow its route.
 
 ![Adventure Guide beside The Barrens map](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png)
 
-Choose a journey without leaving the world map's quest log.
+Choose a journey from the world map's quest log.
 
 ![The Adventure Guide tracker section](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png)
 
-Your journey heads the tracker, with the current stop and up to two upcoming ones.
+Your journey heads the tracker, with its current and next two stops.
 
 ![RestedXP instructions in the Adventure tab](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/restedxp.png)
 
@@ -26,7 +26,7 @@ These images are generated previews of the guide UI.
 
 - **RestedXP guides.** Read RestedXP's instructions and objectives in the Adventure tab and tracker. Choose a guide from the Continue cards and move between its steps. Turn off *Use RestedXP guides* to return to Adventure Guide recommendations.
 
-- **What to do next.** The map guide offers Continue cards, with Quests in your log the default.
+- **What to do next.** The map guide offers two Continue cards and one per section; Quests in your log comes first.
 - **Journeys.** Finish loose ends, follow zone stories or pick up class quests. Dungeon and battleground journeys are opt-in.
 - **Dungeons.** Check quests and prerequisites, then visit their givers. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) supplies bosses and loot.
 - **Full guide.** Browse the route and the area's quest outline.
@@ -42,7 +42,7 @@ Forever's new quests are only considered once they are in your log, and a missin
 
 ![Dungeon boss drops](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/loot.png)
 
-Right-click a dungeon card for AtlasLoot bosses and drops, with item tooltips.
+Right-click a dungeon card for AtlasLoot bosses and drops, with native item tooltips.
 
 ## Usage
 
@@ -50,7 +50,7 @@ Right-click a dungeon card for AtlasLoot bosses and drops, with item tooltips.
 
 Translated into German, French, Spanish, Brazilian Portuguese, Russian, Korean and Chinese (machine translated; corrections welcome through the [translation form](https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml)).
 
-For a bug report, paste what `/agf report` shows. For a wrong stop, paste `/agf where`. For a missing quest, include `/agf audit` output too.
+For a bug report, paste what `/agf report` shows. For a wrong stop, paste `/agf where`. For a missing quest, add `/agf audit`.
 
 <!-- forever-family:start -->
 

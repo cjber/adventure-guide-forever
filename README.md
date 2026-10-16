@@ -36,7 +36,7 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 - **RestedXP guides.** Read the active guide in the journey cards, step rows and tracker, with about ten steps on the map. Choose a guide from the Continue cards, move between steps or skip one. RestedXP handles completion; Shortest Path Forever handles travel. Turn off *Use RestedXP guides* to return to Adventure Guide's suggestions.
 
-- **Map guide.** The active RestedXP guide comes first when enabled; otherwise Quests in your log.
+- **Map guide.** The active RestedXP guide comes first while *Use RestedXP guides* is on; otherwise Quests in your log.
 
 - **Quest difficulty.** Choose the highest recommended quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups. Accepted quests remain visible.
 
@@ -77,7 +77,7 @@ Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-
 | `/agf audit` | Compare the quest data with the game and report its source |
 | `/agf dump` | Save the drawn layout; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua` |
 
-Open the guide from its world-map tab or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including starting routes on selection, tracking their quests and detaching the shared Forever tracker. Its Forever addons page lists all five Forever addons, with a box to turn off suggestions.
+Open the guide from its world-map tab or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including tracking route quests and detaching the shared Forever tracker. Its Forever addons page lists all five Forever addons, with a box to turn off suggestions.
 
 ## Where the quests come from
 
@@ -113,7 +113,7 @@ No code needed:
 
 - **Wrong stop:** paste `/agf where` into a [Wrong stop issue](https://github.com/cjber/adventure-guide-forever/issues/new?template=wrong_stop.yml).
 - **An error:** paste `/agf report` into a [bug report](https://github.com/cjber/adventure-guide-forever/issues/new?template=bug_report.yml).
-- **A translation:** translated into German, French, Spanish, Brazilian Portuguese, Russian, Korean and Chinese (machine translated; corrections welcome through the [translation form](https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml)).
+- **A translation:** it's machine translated into German, French, Spanish, Brazilian Portuguese, Russian, Korean and Chinese; send corrections through the [translation form](https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml).
 
 ## Development
 
