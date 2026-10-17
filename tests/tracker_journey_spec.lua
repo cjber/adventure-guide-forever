@@ -149,7 +149,7 @@ do
 	local ns = h.ns
 	h.G.C_Map.OpenWorldMap()
 	h.flush()
-	h.providers[1]:RefreshAllData()
+	h.ns.Pins.Refresh()
 	local route = ns.Route()
 	local first, second = route.steps[1], route.steps[2]
 	check(second ~= nil, "the route has a second step")

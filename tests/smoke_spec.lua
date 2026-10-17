@@ -351,7 +351,7 @@ local function KnownRoots(h)
 	return {
 		h.G.AdventureGuideForeverWindow,
 		h.G.AdventureGuideForeverPanel,
-		h.G.WorldMapFrame,
+		h.map,
 		h.G.AdventureGuideForeverObjectiveTracker,
 		h.G.ForeverTrackerCompanion,
 	}
@@ -427,7 +427,7 @@ local function Drive(h, label)
 		h.G.C_Map.OpenWorldMap(h.player.map)
 		h.flush()
 	end)
-	DriveScope(h, h.G.WorldMapFrame, label .. " map", function()
+	DriveScope(h, h.map, label .. " map", function()
 		h.G.C_Map.OpenWorldMap(h.player.map)
 		h.flush()
 	end)
@@ -444,7 +444,7 @@ local function Drive(h, label)
 
 	-- Closing and reopening the world map runs its OnHide/OnShow hooks (pins, tooltips, the guide's own refresh).
 	Run(h, label .. " close map", function()
-		h.G.WorldMapFrame:Hide()
+		h.map:Hide()
 		h.flush()
 	end)
 	Run(h, label .. " reopen map", function()

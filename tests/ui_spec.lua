@@ -590,7 +590,7 @@ do
 	h.G.C_Map.OpenWorldMap()
 	h.map:SetMapID(1413)
 	h.flush()
-	h.providers[1]:RefreshAllData()
+	h.ns.Pins.Refresh()
 	local numbered = false
 	for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
 		numbered = numbered or pin.step == standing
@@ -1096,11 +1096,15 @@ do
 	end
 end
 
--- WFA-13: nothing runs per frame while idle, and a refresh reuses the frames it has.
+-- WFA-13: nothing runs per frame while idle, and a refresh reuses the frames it has. The map view's frame
+-- (UI/MapCanvas.lua) is the one exception, and only while the world map is open: it is the map's own per-frame read.
 local function IdleUpdates(h)
 	local busy = 0
+	local mapView = h.map.ScrollContainer.Child.childFrames[1]
 	for _, frame in ipairs(h.frames) do
-		busy = busy + (frame.scripts.OnUpdate and 1 or 0)
+		if not (frame == mapView and h.map:IsShown()) then
+			busy = busy + (frame.scripts.OnUpdate and 1 or 0)
+		end
 	end
 	return busy + h.counts.tickers
 end
@@ -1132,13 +1136,13 @@ do
 	h.map:SetMapID(1442)
 	equal(#h.pins.AdventureGuideForeverGiverPinTemplate > 0, true, "standalone giver baseline")
 	h.installed.Questie = true
-	h.providers[1]:RefreshAllData()
+	h.ns.Pins.Refresh()
 	equal(#h.pins.AdventureGuideForeverGiverPinTemplate > 0, true, "disabled Questie does not claim markers")
 	h.metadata.Questie = { Version = "test" }
-	h.providers[1]:RefreshAllData()
+	h.ns.Pins.Refresh()
 	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, 0, "loaded Questie owns background markers")
 	h.G.Questie = { db = { profile = { enabled = false } } }
-	h.providers[1]:RefreshAllData()
+	h.ns.Pins.Refresh()
 	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, 0, "Questie hide toggle cannot reveal duplicates")
 	h.map:SetMapID(1413)
 	equal(#h.pins.AdventureGuideForeverPinTemplate > 0, true, "route markers remain with Questie")
@@ -1150,15 +1154,15 @@ for _, spf in ipairs({ false, "v1" }) do
 	local label = spf or "no Shortest Path"
 	local click = spf and "instruction: Click to travel with Shortest Path" or "instruction: Click to set a waypoint"
 	local h = Load(spf, PINS_ON)
-	local provider, ns = h.providers[1], h.ns
+	local ns = h.ns
 	h.G.C_Map.OpenWorldMap()
 	h.flush()
 	local function Live()
 		return #h.pins.AdventureGuideForeverPinTemplate + #h.pins.AdventureGuideForeverGiverPinTemplate
 	end
-	provider:RefreshAllData()
+	h.ns.Pins.Refresh()
 	local first = Live()
-	provider:RefreshAllData()
+	h.ns.Pins.Refresh()
 	equal(Live(), first, label .. ": a second refresh keeps the pin count")
 	equal(#h.pins.AdventureGuideForeverPinTemplate, Places(ns.Route()), label .. ": one ring per place on this map")
 
@@ -1197,8 +1201,8 @@ for _, spf in ipairs({ false, "v1" }) do
 	end
 	equal(giverPin ~= nil, true, label .. ": a giver the route can take from")
 	equal(giverPin.frameLevelType, "PIN_FRAME_LEVEL_AREA_POI", label .. ": givers at the area POI level")
-	h.Hover(giverPin)
-	-- Closing the map fires no OnMouseLeave: the pin's own OnHide takes its tooltip.
+	-- The pointer enters the pin as the client sends it. Closing the map fires no OnLeave: the map view takes the tooltip.
+	h.call(giverPin.scripts.OnEnter, giverPin)
 	h.map:SetShown(not h.map:IsShown())
 	equal(h.G.GameTooltip:IsShown(), false, label .. ": closing the map takes a hovered giver's tooltip")
 	h.map:SetShown(not h.map:IsShown())
@@ -1256,8 +1260,13 @@ for _, spf in ipairs({ false, "v1" }) do
 	ns.Invalidate()
 	h.flush()
 
-	provider:RemoveAllData()
-	equal(Live(), 0, label .. ": RemoveAllData leaves no pins")
+	-- Turning the pins off releases every one.
+	local db = h.G.AdventureGuideForeverDB
+	db.showMapPins = false
+	ns.Pins.Refresh()
+	equal(Live(), 0, label .. ": switched off, no pins left")
+	db.showMapPins = true
+	ns.Pins.Refresh()
 
 	-- Design §2.8's menu for a town holding a log quest; Stop only once Go runs, Show quest never in combat.
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:1413:380"], "RightButton")
@@ -1294,7 +1303,7 @@ do
 	pin:OnAcquired(step, 25, visits)
 	equal(pin:GetWidth(), 20, "POI: fixed 20-unit button")
 	equal(pin.ignoreGlobalPinScale, true, "POI: ignores the global pin scale")
-	same(pin.scalingLimits, { 1, 1, 1 }, "POI: unchanged by map zoom")
+	same({ pin.scaleFactor, pin.startScale, pin.endScale }, { 1, 1, 1 }, "POI: unchanged by map zoom")
 	equal(pin.Icon:GetAtlas(), "UI-QuestPoi-QuestNumber", "POI: stock button")
 	equal(pin.Disc:GetAtlas(), pin.Icon:GetAtlas(), "POI: silhouette follows the stock art")
 	same(pin.Disc.vertexColor, { 0, 0, 0 }, "POI: black silhouette")
@@ -1371,13 +1380,13 @@ do
 	})
 	h.G.C_Map.OpenWorldMap()
 	h.flush()
-	h.providers[1]:RefreshAllData()
+	h.ns.Pins.Refresh()
 	local index, step
 	for i, candidate in ipairs(h.ns.Route().steps) do
 		index, step = candidate.key == "area:843:0" and i or index, candidate.key == "area:843:0" and candidate or step
 	end
 	equal(step and step.kind, "area", "area step: Gann's Reclamation is an area step")
-	equal(h.pins.AdventureGuideForeverAreaPinTemplate, nil, "area step: no disc of ours over the area")
+	equal(#h.pins.AdventureGuideForeverAreaPinTemplate, 0, "area step: no disc of ours over the area")
 	-- The step's point, and its pin, is the objective node nearest the stop before (design §4.2), a spot inside one of
 	-- its shapes rather than on the ring's border.
 	local inside = false
@@ -1427,7 +1436,7 @@ do
 	})
 	h.G.C_Map.OpenWorldMap()
 	h.flush()
-	h.providers[1]:RefreshAllData()
+	h.ns.Pins.Refresh()
 	local pin
 	for _, candidate in ipairs(h.pins.AdventureGuideForeverPinTemplate) do
 		pin = candidate.step.key == "area:3902:4" and candidate or pin
@@ -1451,9 +1460,9 @@ do
 	h.G.C_Map.OpenWorldMap()
 	h.flush()
 	for _ = 1, 10 do
-		h.providers[1]:RefreshAllData()
+		h.ns.Pins.Refresh()
 	end
-	equal(h.counts.AcquirePin, 0, "map budget: a fresh install draws nothing")
+	equal(#h.AllPins(), 0, "map budget: a fresh install draws nothing")
 	equal(h.G.AdventureGuideForeverDB.showMapPins, false, "map budget: pins are opt-in")
 	equal(h.G.AdventureGuideForeverDB.showQuestGivers, false, "map budget: givers are opt-in")
 	clean(h, "map budget: fresh")
@@ -2437,7 +2446,7 @@ do
 	same(colors[over], { 1, 1, 0 }, "hub tooltip: a quest 2 over the player is yellow")
 
 	-- The ring's tooltip lists the same, then the click line.
-	h.providers[1]:RefreshAllData()
+	h.ns.Pins.Refresh()
 	local ring = h.pins.AdventureGuideForeverPinTemplate[1]
 	equal(ring.step.key, step.key, "hub tooltip: ring 1 is the town")
 	h.Hover(ring)
@@ -4244,7 +4253,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	ns.OpenPanel()
 	h.flush()
-	h.providers[1]:RefreshAllData()
+	h.ns.Pins.Refresh()
 	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, label .. ": no rings, even with the guide open")
 	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, 0, label .. ": no givers")
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[step.key], "RightButton")

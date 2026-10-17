@@ -5,9 +5,10 @@ local _, ns = ...
      writes it to disk for tests/dump_diff.lua to compare with the headless layout. It runs only on the
      command, and the snapshot is dropped at the next login so it never lingers in the save file. ]]
 
+-- The map pins the dump lists: rings and givers, not the reveal ping.
 local PIN_TEMPLATES = {
-	"AdventureGuideForeverPinTemplate",
-	"AdventureGuideForeverGiverPinTemplate",
+	AdventureGuideForeverPinTemplate = true,
+	AdventureGuideForeverGiverPinTemplate = true,
 }
 
 -- The key a parent holds a region under: its XML parentKey, else the first field (by name) that holds it.
@@ -151,9 +152,11 @@ local function Frames()
 		end
 	end
 	if WorldMapFrame then
-		for _, template in ipairs(PIN_TEMPLATES) do
-			for pin in WorldMapFrame:EnumeratePinsByTemplate(template) do
-				Visit(pin)
+		for _, pool in ipairs(ns.MapCanvas.Pools(WorldMapFrame)) do
+			if PIN_TEMPLATES[pool.template] then
+				for _, pin in ipairs(pool.active) do
+					Visit(pin)
+				end
 			end
 		end
 	end

@@ -1871,6 +1871,7 @@ AdventureGuideForever = nil
 ---@field RXP_RECOMMENDATIONS string
 
 ---@class AGFNamespace
+---@field MapCanvas AGFMapCanvasModule the world map drawn on frames of the addon's own (UI/MapCanvas.lua)
 ---@field GuideSetup AGFGuideSetup
 ---@field Polestar AGFPolestarModule
 

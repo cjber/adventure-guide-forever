@@ -77,12 +77,10 @@ do
 		h.G.C_Map.OpenWorldMap()
 		h.flush()
 		h.map:SetMapID(1413)
-		h.providers[1]:RefreshAllData()
+		h.ns.Pins.Refresh()
 		local count = 0
-		for _, pins in pairs(h.pins) do
-			for _, pin in ipairs(pins) do
-				count = count + (pin:IsShown() and 1 or 0)
-			end
+		for _, pin in ipairs(h.AllPins()) do
+			count = count + (pin:IsVisible() and 1 or 0)
 		end
 		return count
 	end

@@ -1,9 +1,24 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ https://raw.githubusercontent.com/Gethe/wow-ui-source/live/Interface/AddOns/Blizzard_SharedXML/UI.xsd">
-	<Frame name="AdventureGuideForeverPingPinTemplate" inherits="MapPinPingTemplate" virtual="true"/>
+	<!-- The map pins are frames of AGF's on the map's canvas (UI/MapCanvas.lua): these templates hold their art only, and Pins.lua gives them their mixins; none is a map pin. -->
+	<!-- The reveal ping: the minimap ping's ring, as the map's own MapPinPingTemplate draws it; Pins.lua animates it. -->
+	<Frame name="AdventureGuideForeverPingPinTemplate" virtual="true">
+		<Size x="70" y="70"/>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<!-- art-ok: the square ping ring at 50 square -->
+				<Texture parentKey="Expand" file="Interface\Minimap\UI-Minimap-Ping-Expand" alpha="0">
+					<Size x="50" y="50"/>
+					<Anchors>
+						<Anchor point="CENTER"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+	</Frame>
 	<!-- The guide tab is built with CreateFrame in Panel.lua; its journey cards use AdventureGuideForeverJourneyCardTemplate below. -->
 	<!-- The tab reuses the stock LargeSideTabButtonTemplate directly (see Panel.lua CreateTab()) and anchors to QuestMapFrame in Lua once Blizzard_WorldMap loads. -->
 	<!-- A quest giver: the game's own available-quest "!", brightened on hover like the quest POIs. -->
-	<Frame name="AdventureGuideForeverGiverPinTemplate" mixin="AdventureGuideForeverGiverPinMixin" enableMouse="true" virtual="true">
+	<Frame name="AdventureGuideForeverGiverPinTemplate" enableMouse="true" virtual="true">
 		<Size x="22" y="22"/>
 		<Layers>
 			<Layer level="ARTWORK">
@@ -87,8 +102,7 @@
 			</Layer>
 		</Layers>
 	</Button>
-	<!-- The route pin must be a real XML template: MapCanvasMixin AcquirePin resolves its template argument through CreateFramePool, which needs a declared virtual frame. -->
-	<Frame name="AdventureGuideForeverPinTemplate" mixin="AdventureGuideForeverPinMixin" enableMouse="true" virtual="true">
+	<Frame name="AdventureGuideForeverPinTemplate" enableMouse="true" virtual="true">
 		<Size x="20" y="20"/>
 		<Layers>
 			<!-- The stock quest POI, as Shortest Path's StopPin.lua draws it: 32-unit art on a 20-unit button.
@@ -136,7 +150,6 @@
 				</FontString>
 			</Layer>
 		</Layers>
-		<!-- No OnEnter/OnLeave scripts: MapCanvas asserts a new pin has none and wires OnMouseEnter/OnMouseLeave itself. -->
-		<!-- OnClick is not an XML script here: MapCanvasMixin OnPinMouseUp calls pin OnClick(button) directly once IsMouseClickEnabled() is true (see enableMouse above), same as OnMouseUp/Down. -->
+		<!-- No scripts: UI/MapCanvas.lua sets OnEnter and OnLeave, and a click script would make the pin a button to the gamepad interface. -->
 	</Frame>
 </Ui>

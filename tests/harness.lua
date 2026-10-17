@@ -220,8 +220,16 @@ function harness.load(options)
 		uiErrors = {},
 		tooltip = {},
 		pins = {},
-		providers = {},
-		counts = { CreateFrame = 0, displayModeWrites = 0, tickers = 0, AcquirePin = 0, SetMapID = 0, OpenQuestLog = 0 },
+		counts = {
+			CreateFrame = 0,
+			displayModeWrites = 0,
+			tickers = 0,
+			SetMapID = 0,
+			OpenQuestLog = 0,
+			mapWrites = 0,
+			frameLevelReads = 0,
+			passThrough = 0,
+		},
 		modelCalls = {},
 		fanfares = {},
 		sounds = {},
@@ -535,6 +543,76 @@ function harness.load(options)
 	function Methods:SetScale(scale)
 		self.scale = scale
 	end
+	function Methods:GetScale()
+		return self.scale or 1
+	end
+	-- Protected in combat, as the client's own map pins found (UI/MapCanvas.lua).
+	function Methods:SetPassThroughButtons(...)
+		assert(not h.combat, "SetPassThroughButtons is protected in combat")
+		h.counts.passThrough = h.counts.passThrough + 1
+		self.passThrough = { ... }
+	end
+	function Methods:GetCenter()
+		if self.rect then
+			return self.rect[1] + self.rect[3] / 2, self.rect[2] + self.rect[4] / 2
+		end
+	end
+	-- Animation groups: their animations' settings kept, Play and Stop counted, OnFinished run by h.FinishAnimations.
+	local AnimationMethods = {}
+	local settings = { "Target", "FromAlpha", "ToAlpha", "StartDelay", "Duration", "Order", "ScaleFrom", "ScaleTo" }
+	for _, key in ipairs(settings) do
+		AnimationMethods["Set" .. key] = function(self, ...)
+			self[key] = select("#", ...) > 1 and { ... } or (...)
+		end
+	end
+	local GroupMethods = {}
+	function GroupMethods:CreateAnimation(kind)
+		local animation = setmetatable({ kind = kind }, { __index = AnimationMethods })
+		self.animations[#self.animations + 1] = animation
+		return animation
+	end
+	function GroupMethods:SetLooping(looping)
+		self.looping = looping
+	end
+	function GroupMethods:SetScript(name, fn)
+		self.scripts[name] = fn
+	end
+	function GroupMethods:Play()
+		self.playing, self.plays = true, self.plays + 1
+	end
+	function GroupMethods:Stop()
+		self.playing = false
+	end
+	function GroupMethods:IsPlaying()
+		return self.playing
+	end
+	h.animationGroups = {}
+	function Methods:CreateAnimationGroup()
+		local group = setmetatable(
+			{ owner = self, animations = {}, scripts = {}, plays = 0 },
+			{ __index = GroupMethods }
+		)
+		h.animationGroups[#h.animationGroups + 1] = group
+		return group
+	end
+	-- Every playing, non-looping group reaches its end.
+	function h.FinishAnimations()
+		for _ = 1, 100 do
+			local finished = false
+			for _, group in ipairs(h.animationGroups) do
+				if group.playing and not group.looping then
+					group.playing, finished = false, true
+					if group.scripts.OnFinished then
+						h.call(group.scripts.OnFinished, group)
+					end
+				end
+			end
+			if not finished then
+				return
+			end
+		end
+		error("animations keep restarting")
+	end
 	-- A texture masked by a MaskTexture: tools/screenshots.py masks it with its frame's mask.
 	function Methods:AddMaskTexture(mask)
 		assert(mask.objectType == "MaskTexture", "AddMaskTexture takes a MaskTexture")
@@ -544,8 +622,14 @@ function harness.load(options)
 	end
 
 	-- Frames.
+	-- Frames that ever had an OnUpdate, so h.frame visits only them.
+	local updating = {}
 	function Methods:SetScript(scriptType, fn)
 		self.scripts[scriptType] = fn
+		if scriptType == "OnUpdate" and fn and not updating[self] then
+			updating[self] = true
+			updating[#updating + 1] = self
+		end
 	end
 	function Methods:GetScript(scriptType)
 		return self.scripts[scriptType]
@@ -1152,17 +1236,6 @@ function harness.load(options)
 				self:SetNormalFontObject(selected and "GameFontHighlightSmall" or "GameFontNormalSmall")
 			end
 		end,
-		MapPinPingTemplate = function(frame)
-			for key, value in pairs(G.MapCanvasPinMixin) do
-				frame[key] = value
-			end
-			function frame:SetNumLoops(loops)
-				self.loops = loops
-			end
-			function frame:PlayAt(x, y)
-				self:SetPosition(x, y)
-			end
-		end,
 		-- Blizzard_PagedContent/Blizzard_PagingControls.xml: the spellbook's page arrows, 32px file art.
 		PagingControlsPrevPageButtonTemplate = function(frame)
 			frame:SetSize(32, 32)
@@ -1345,6 +1418,8 @@ function harness.load(options)
 	G.CreateFrame = function(objectType, name, parent, template)
 		h.counts.CreateFrame = h.counts.CreateFrame + 1
 		local frame = NewRegion(objectType, name, parent)
+		-- tests/map_canvas_spec.lua: nothing is made straight onto the map's canvas.
+		frame.createdParent = parent
 		-- The map sidebar starts laid out; screenshots feed its measured rect back on later passes.
 		if name == "AdventureGuideForeverPanel" then
 			-- options.panelHeight: a spec about every card at once asks for a panel tall enough to hold them.
@@ -1390,7 +1465,13 @@ function harness.load(options)
 	end
 	-- Runs queued timers, and any they queue, the way the next frames would.
 	function h.flush()
+		local ticked = false
 		for _ = 1, 1000 do
+			if #timers == 0 and not ticked and h.frame then
+				-- Then the next frame's OnUpdates, and anything they queue.
+				ticked = true
+				h.frame()
+			end
 			if #timers == 0 then
 				return
 			end
@@ -2418,109 +2499,148 @@ function harness.load(options)
 		end,
 	}
 
-	-- The world map: a canvas with data providers and pooled pins, counted per template.
-	local map = NewRegion("Frame", "WorldMapFrame", G.UIParent)
+	-- The world map, read only. AGF draws on frames of its own on the canvas (UI/MapCanvas.lua); the map's own pin
+	-- machinery (data providers, pin pools, AcquirePin) is not here, so a call to it fails, and WorldMapFrame is a
+	-- guard that raises on any field AGF writes into it or its canvas (tests/map_canvas_spec.lua).
+	local map = NewRegion("Frame", nil, G.UIParent)
 	map.ScrollContainer = NewRegion("Frame", nil, map)
 	map.ScrollContainer:SetSize(830, 560)
+	local canvas = NewRegion("Frame", nil, map.ScrollContainer)
+	canvas:SetSize(830, 560)
+	map.ScrollContainer.Child = canvas
 	map.mapID = player.map
+	map.canvasScale, map.zoom, map.pinScale = 1, 0, 1
 	map:Hide()
-	local pools = {}
-	function map:AddDataProvider(provider)
-		h.providers[#h.providers + 1] = provider
-		provider:OnAdded(self)
+	-- MapCanvas_PinFrameLevelsManager.lua's levels for the types AGF asks for; any other is the default's.
+	local levels = {
+		PIN_FRAME_LEVEL_AREA_POI = 300,
+		PIN_FRAME_LEVEL_WAYPOINT_LOCATION = 1200,
+		PIN_FRAME_LEVEL_QUEST_PING = 1500,
+	}
+	local levelsManager = {
+		GetValidFrameLevel = function(_, levelType)
+			h.counts.frameLevelReads = h.counts.frameLevelReads + 1
+			return levels[levelType] or 100
+		end,
+	}
+	local MAP_READS = {
+		GetMapID = function(self)
+			return self.mapID
+		end,
+		GetCanvas = function()
+			return h.guards.canvas
+		end,
+		GetCanvasScale = function(self)
+			return self.canvasScale
+		end,
+		GetCanvasZoomPercent = function(self)
+			return self.zoom
+		end,
+		GetGlobalPinScale = function(self)
+			return self.pinScale
+		end,
+		GetPinFrameLevelsManager = function()
+			return levelsManager
+		end,
+	}
+	for name, fn in pairs(MAP_READS) do
+		map[name] = fn
 	end
-	function map:RefreshAllDataProviders()
-		for _, provider in ipairs(h.providers) do
-			h.call(provider.RefreshAllData, provider)
+	-- One frame of the client: every visible frame's OnUpdate, as the next frame would run it.
+	function h.frame(elapsed)
+		for _, frame in ipairs(updating) do
+			local script = frame.scripts.OnUpdate
+			if script and frame:IsVisible() then
+				h.call(script, frame, elapsed or 0.016)
+			end
 		end
 	end
-	-- MapCanvasMixin:OnShow and OnMapChanged refresh every provider, before any hook of the addon's runs.
-	map:SetScript("OnShow", map.RefreshAllDataProviders)
+	-- WORLD_MAP_OPEN and the map's own OnMapChanged: the map turned by the client's code, drawn on the next frame.
 	function map:SetMapID(mapID)
 		h.counts.SetMapID = h.counts.SetMapID + 1
 		self.mapID = mapID
-		if self:IsShown() then
-			self:RefreshAllDataProviders()
-		end
+		h.frame()
 	end
-	function map:GetMapID()
-		return self.mapID
+	-- The canvas zoomed: its scale and zoom read on the next frame.
+	function h.ZoomMap(canvasScale, zoom)
+		map.canvasScale, map.zoom = canvasScale, zoom
+		h.frame()
 	end
-	function map:AcquirePin(template, ...)
-		assert(not h.combat, "AcquirePin changes protected mouse passthrough in combat")
-		h.counts.AcquirePin = h.counts.AcquirePin + 1
-		pools[template] = pools[template] or {}
-		h.pins[template] = h.pins[template] or {}
-		local pin = table.remove(pools[template])
-		if not pin then
-			pin = NewRegion("Frame", nil, self)
-			Instantiate(pin, template)
-			if not pin.scripts.OnLoad then
-				pin:OnLoad()
+	-- A guard over a Blizzard frame: reads pass through (methods are called on the guard, so a method that sets a
+	-- field raises too), and any field written, or a map method that writes, raises and is counted.
+	local FORBIDDEN = {
+		AddDataProvider = true,
+		RemoveDataProvider = true,
+		AcquirePin = true,
+		RemoveAllPinsByTemplate = true,
+		RemovePin = true,
+		RefreshAllDataProviders = true,
+		SetMapID = true,
+		AddCanvasClickHandler = true,
+		AddGlobalPinMouseActionHandler = true,
+		SetPinPosition = true,
+		ApplyPinPosition = true,
+	}
+	local function Guard(target, label)
+		return setmetatable({}, {
+			__index = function(_, key)
+				if FORBIDDEN[key] then
+					h.counts.mapWrites = h.counts.mapWrites + 1
+					error(label .. ":" .. key .. " called by the addon")
+				end
+				return target[key]
+			end,
+			__newindex = function(_, key)
+				h.counts.mapWrites = h.counts.mapWrites + 1
+				error(label .. "." .. tostring(key) .. " written by the addon")
+			end,
+		})
+	end
+	h.guards = { map = Guard(map, "WorldMapFrame"), canvas = Guard(canvas, "WorldMapFrame canvas") }
+	G.WorldMapFrame = h.guards.map
+	-- Frames parented to a guard are the canvas's children, as the client keeps them.
+	h.guardTargets = { [h.guards.map] = map, [h.guards.canvas] = canvas }
+	-- The pins AGF shows on the map, per template, from its own pools in drawing order.
+	h.pins = setmetatable({}, {
+		__index = function(_, template)
+			for _, pool in ipairs(h.ns.MapCanvas.Pools(h.guards.map)) do
+				if pool.template == template then
+					return pool.active
+				end
+			end
+			return {}
+		end,
+	})
+	-- Every pin AGF has out on the map, each pool's in drawing order.
+	function h.AllPins()
+		local all = {}
+		for _, pool in ipairs(h.ns.MapCanvas.Pools(h.guards.map)) do
+			for _, pin in ipairs(pool.active) do
+				all[#all + 1] = pin
 			end
 		end
-		table.insert(h.pins[template], pin)
-		pin:Show()
-		pin:OnAcquired(...)
-		return pin
+		return all
 	end
-	function map:RemoveAllPinsByTemplate(template)
-		pools[template] = pools[template] or {}
-		for _, pin in ipairs(h.pins[template] or {}) do
-			pin:Hide()
-			pin:ClearAllPoints()
-			pin:OnReleased()
-			table.insert(pools[template], pin)
-		end
-		h.pins[template] = {}
+	-- A click on a map pin as the client makes one: the pointer enters it, then the button goes down and up.
+	function h.ClickPin(pin, button)
+		button = button or "LeftButton"
+		pin.mouseOver = true
+		h.call(assert(pin.scripts.OnEnter, "a map pin takes the mouse"), pin)
+		h.fire("GLOBAL_MOUSE_DOWN", button)
+		h.fire("GLOBAL_MOUSE_UP", button)
+		pin.mouseOver = false
+		h.call(pin.scripts.OnLeave, pin)
 	end
-	function map:EnumeratePinsByTemplate(template)
-		local index, list = 0, h.pins[template] or {}
-		return function()
-			index = index + 1
-			return list[index]
-		end
-	end
-	G.MapCanvasDataProviderMixin = {
-		OnAdded = function(self, owningMap)
-			self.owningMap = owningMap
-		end,
-		GetMap = function(self)
-			return self.owningMap
-		end,
-		RefreshAllData = noop,
-		RemoveAllData = noop,
-	}
-	G.MapCanvasPinMixin = {
-		OnLoad = noop,
-		OnAcquired = noop,
-		OnReleased = noop,
-		GetMap = function()
-			return map
-		end,
-		UseFrameLevelType = function(self, frameLevelType)
-			self.frameLevelType = frameLevelType
-		end,
-		SetPosition = function(self, x, y)
-			self.x, self.y = x, y
-			self:SetPoint("CENTER", map, "TOPLEFT", x * 1000, -y * 700)
-		end,
-		SetScalingLimits = function(self, style, minScale, maxScale)
-			self.scalingLimits = { style, minScale, maxScale }
-		end,
-		SetIgnoreGlobalPinScale = function(self, ignore)
-			self.ignoreGlobalPinScale = ignore
-		end,
-		ApplyCurrentScale = noop,
-	}
 	-- Blizzard_Menu/Mainline/MenuTemplates.xml: the drop-down template's own mixin.
 	G.WowStyle1DropdownMixin = {}
 	-- WORLD_MAP_OPEN, which Blizzard_WorldMap.lua:198 turns into its own OpenWorldMap(mapID).
 	G.C_Map.OpenWorldMap = function(mapID)
 		map:Show()
 		if mapID then
-			map:SetMapID(mapID)
+			h.counts.SetMapID = h.counts.SetMapID + 1
+			map.mapID = mapID
 		end
+		h.frame()
 	end
 
 	-- The quest log: every write to displayMode is counted and raises, since AGF must never write it.
@@ -2556,6 +2676,7 @@ function harness.load(options)
 		h.counts.OpenQuestLog = h.counts.OpenQuestLog + 1
 		map:Show()
 		questMap:Show()
+		h.frame()
 	end
 	-- Blizzard's own details view, opened by the player; the addon never calls it.
 	h.questDetails = {}

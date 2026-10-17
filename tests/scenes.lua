@@ -87,7 +87,8 @@ local function Pins(h)
 	local pins = {}
 	for _, template in ipairs(PIN_TEMPLATES) do
 		for _, pin in ipairs(h.pins[template] or {}) do
-			pins[#pins + 1] = { template = template, x = pin.x, y = pin.y, layout = h.ns.DumpLayout(pin, h.Describe) }
+			pins[#pins + 1] =
+				{ template = template, x = pin.mapX, y = pin.mapY, layout = h.ns.DumpLayout(pin, h.Describe) }
 		end
 	end
 	return pins
@@ -109,7 +110,7 @@ local out = {}
 local STORY = "zone:1413"
 local h = Load("v1", false, false, STORY, nil, { planned = true })
 out.panel = Panel(h, "panel")
-h.providers[1]:RefreshAllData()
+h.ns.Pins.Refresh()
 out.panel.pins = Pins(h)
 out.panel.map = h.map:GetMapID()
 
@@ -135,7 +136,7 @@ h.G.ShortestPathForever.API.EstimateDetail = function(fromMap, fromX, fromY, toM
 	return detail(fromMap, fromX, fromY, toMap, toX, toY) -- multi-value: the stub's detail and its reason
 end
 out.journeys = Panel(h, "journeys")
-h.providers[1]:RefreshAllData()
+h.ns.Pins.Refresh()
 out.journeys.pins = Pins(h)
 
 -- Four choices with dungeons enabled, then the same overview in a shorter map sidebar.
@@ -159,7 +160,7 @@ out.search = Panel(h, "search")
 h = Load("v1", true, false, STORY)
 h.G.C_Map.OpenWorldMap()
 h.flush()
-h.providers[1]:RefreshAllData()
+h.ns.Pins.Refresh()
 -- Ring 2, Regthar Deathgate's two quests: ring 1, Crossroads, sits under the player's arrow at the fixture's position.
 local HOVERED = 2
 local ring = h.pins.AdventureGuideForeverPinTemplate[HOVERED]
@@ -203,7 +204,7 @@ h.ns.Invalidate()
 h.flush()
 h.ns.Guidance.Navigate(h.ns.Route().steps[1])
 h.flush()
-h.providers[1]:RefreshAllData()
+h.ns.Pins.Refresh()
 out.map = { stops = stops, pins = Pins(h), player = { map = h.player.map, x = h.player.x, y = h.player.y } }
 
 h = Load("v1", false, true)
@@ -242,7 +243,7 @@ local example = assert(h.ns.RestedXP.Journey())
 h.ns.Choose(example.key, true)
 h.flush()
 out.restedxp = Panel(h, "restedxp")
-h.providers[1]:RefreshAllData()
+h.ns.Pins.Refresh()
 out.restedxp.pins = Pins(h)
 
 h = Load("v1", false, true, nil, nil, { skillup = { professions = {} } })

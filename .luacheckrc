@@ -21,8 +21,8 @@ globals = {
 	"AdventureGuideForever",
 	"AdventureGuideForeverDB",
 	"AdventureGuideForeverCharDB",
-	"AdventureGuideForeverPinMixin",
-	"AdventureGuideForeverGiverPinMixin",
+	-- UI/MapCanvas.lua: the Forever addons' shared world-map marker table.
+	"ForeverMapMarkers",
 	"AdventureGuideForever_OnAddonCompartmentClick",
 	"SLASH_ADVENTUREGUIDEFOREVER1",
 	"SLASH_ADVENTUREGUIDEFOREVER2",
@@ -117,8 +117,8 @@ read_globals = {
 	"debugprofilestop",
 	-- Pins.lua
 	"CreateFromMixins",
-	"MapCanvasDataProviderMixin",
-	"MapCanvasPinMixin",
+	"C_InputInterfaceStyle",
+	"SoftCursor",
 	"GameTooltip",
 	"GameTooltip_SetTitle",
 	"GameTooltip_AddNormalLine",

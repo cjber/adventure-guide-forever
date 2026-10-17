@@ -113,33 +113,18 @@ QuestMapFrameOverrides = nil
 ---@type string
 QUESTS_LABEL = nil
 
----@class AGFMapProvider
----@field GetMap fun(self: AGFMapProvider): AGFWorldMapFrame
----@field RefreshAllData fun(self: AGFMapProvider, fromOnShow?: boolean)
----@field OnCanvasScaleChanged fun(self: AGFMapProvider)
----@field RemoveAllData fun(self: AGFMapProvider)
----@type AGFMapProvider
-MapCanvasDataProviderMixin = nil
+-- The map's frame-level table (Blizzard_MapCanvas/MapCanvas_PinFrameLevelsManager.lua), read for a pin's level.
+---@class AGFPinFrameLevelsManager
+---@field GetValidFrameLevel fun(self: AGFPinFrameLevelsManager, levelType: string, index?: integer): integer
 
----@class AGFMapPinMixin : Frame
----@field GetMap fun(self: AGFMapPinMixin): AGFWorldMapFrame
----@field UseFrameLevelType fun(self: AGFMapPinMixin, frameLevelType: string)
----@field SetPosition fun(self: AGFMapPinMixin, x: number, y: number)
----@field SetScalingLimits fun(self: AGFMapPinMixin, style: number, minScale: number, maxScale: number)
----@field SetIgnoreGlobalPinScale fun(self: AGFMapPinMixin, ignore: boolean)
----@field ApplyCurrentScale fun(self: AGFMapPinMixin)
----@type AGFMapPinMixin
-MapCanvasPinMixin = nil
-
+-- The world map, only ever read (UI/MapCanvas.lua): AGF adds no provider, acquires no pin and writes nothing.
 ---@class AGFWorldMapFrame : Frame
----@field ScrollContainer Frame
----@field GetCanvas? fun(self: AGFWorldMapFrame): Frame
+---@field GetCanvas fun(self: AGFWorldMapFrame): Frame
 ---@field GetCanvasScale? fun(self: AGFWorldMapFrame): number
----@field AddDataProvider fun(self: AGFWorldMapFrame, provider: AGFMapProvider)
+---@field GetCanvasZoomPercent? fun(self: AGFWorldMapFrame): number
+---@field GetGlobalPinScale? fun(self: AGFWorldMapFrame): number
+---@field GetPinFrameLevelsManager? fun(self: AGFWorldMapFrame): AGFPinFrameLevelsManager
 ---@field GetMapID fun(self: AGFWorldMapFrame): integer?
----@field AcquirePin fun(self: AGFWorldMapFrame, template: string, ...: any): AGFPinFrame
----@field RemoveAllPinsByTemplate fun(self: AGFWorldMapFrame, template: string)
----@field EnumeratePinsByTemplate fun(self: AGFWorldMapFrame, template: string): fun(): AGFPinFrame?
 ---@type AGFWorldMapFrame
 WorldMapFrame = nil
 
@@ -339,9 +324,24 @@ function C_MajorFactions.GetMajorFactionProgressionInfo(majorFactionID) end
 ---@field Icon Texture
 ---@field UpdateCollapsedState fun(self: AGFCollapseButton, collapsed: boolean)
 
----@class AGFMapPing : AGFMapPinMixin
----@field SetNumLoops fun(self: AGFMapPing, loops: integer)
----@field PlayAt fun(self: AGFMapPing, x: number, y: number)
-
 ---@type table<integer, {r: number, g: number, b: number}>
 ITEM_QUALITY_COLORS = nil
+
+-- Forever's interface styles (Blizzard_EditMode/Shared/EditModeManager.lua), which Ketho's annotations lack.
+---@class AGFInputInterfaceStyle
+---@field GetCurrentStyle? fun(): integer
+---@type AGFInputInterfaceStyle?
+C_InputInterfaceStyle = nil
+
+---@class AGFInputDeviceInterfaceType
+---@field Gamepad integer
+---@type AGFInputDeviceInterfaceType?
+Enum.InputDeviceInterfaceType = nil
+
+-- The gamepad interface's map cursor (Blizzard_GamepadSmartNavigation).
+---@type Frame?
+SoftCursor = nil
+
+-- The Forever addons' world-map markers, for each other (UI/MapCanvas.lua).
+---@type table<string, fun(map: AGFWorldMapFrame): {x: number, y: number, kind: string}[]>
+ForeverMapMarkers = nil

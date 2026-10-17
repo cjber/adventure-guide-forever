@@ -68,19 +68,18 @@ do
 	h.G.C_Map.OpenWorldMap()
 	h.flush()
 	h.map:SetMapID(1413)
-	local provider = h.providers[1]
 	Walks()
 	for _ = 1, 5 do
-		provider:RefreshAllData()
+		h.ns.Pins.Refresh()
 	end
 	assert(Walks() == 0, "map refreshes over a settled route walk no quest log")
 	assert(#(h.pins.AdventureGuideForeverGiverPinTemplate or {}) > 0, "and still draw the givers")
 	h.ns.Invalidate()
-	provider:RefreshAllData()
+	h.ns.Pins.Refresh()
 	assert(Walks() == 1, "a refresh while a rebuild is due reads the log afresh, once")
 	h.flush()
 	Walks()
-	provider:RefreshAllData()
+	h.ns.Pins.Refresh()
 	assert(Walks() == 0, "and the next settled route's snapshot again after it")
 	assert(#h.errors == 0, table.concat(h.errors, "\n"))
 end

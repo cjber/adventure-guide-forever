@@ -242,10 +242,8 @@ print("restedxp_mode_spec: auxiliary UI suppression and restoration passed")
 
 local maps = harness.load({ spf = "v1", db = { autoStart = false } })
 local mr = dofile("tests/rxp_fixture.lua")(maps)
-local canvas = maps.G.CreateFrame("Frame", nil, maps.G.UIParent)
-maps.G.WorldMapFrame.GetCanvas = function()
-	return canvas
-end
+-- RestedXP's lines sit on the map's canvas, beside AGF's own view frame.
+local canvas = maps.map.ScrollContainer.Child
 local ownLine = maps.G.CreateFrame("Frame", nil, canvas)
 ownLine.lineData = { element = { step = mr.currentGuide.steps[2] } }
 ownLine:SetAlpha(0.7)

@@ -43,6 +43,8 @@ abandons quests.
 - **2.6 Pins.** Draw only known locations and step aside while Shortest Path supplies guidance. While the player
   stands in the current step's objective area, the world map shows that area's full outline in yellow, the minimap
   turns the game's own quest area gold, and the step's own pin and line step aside.
+  The world map's marks are frames of the addon's own on the map's canvas (`UI/MapCanvas.lua`): no data provider,
+  no acquired pin and no write into the map, which Forever's gamepad interface walks from secure code.
 - **2.7 Completion.** Record a proven story ending once per character and show a native-style popup with one completion sound. Tracker visibility does not affect it.
 - **2.8 Menus.** Share step actions between the guide and tracker. An area with more than one objective spot (each
   objective's node and its other camps on that map, AreaNode's `alternates`; standing at any of them is standing in

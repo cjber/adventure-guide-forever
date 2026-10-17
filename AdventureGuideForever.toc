@@ -76,6 +76,7 @@ UI\Moments.lua
 UI\ContextMenu.lua
 UI\GuideSetup.lua
 UI\Menu.lua
+UI\MapCanvas.lua
 UI\Pins.lua
 UI\Overview.lua
 UI\Panel.xml

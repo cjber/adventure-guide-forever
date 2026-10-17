@@ -5,41 +5,49 @@ local function equal(actual, expected, label)
 	checks = checks + 1
 	assert(actual == expected, label .. ": " .. tostring(actual))
 end
+-- A pin's right-button pass-through is protected in combat (the harness raises on it), so combat draws nothing new:
+-- the pins hide and the map is drawn again once combat ends.
+local function Visible()
+	local count = 0
+	for _, pin in ipairs(h.AllPins()) do
+		count = count + (pin:IsVisible() and 1 or 0)
+	end
+	return count
+end
 h.G.C_Map.OpenWorldMap()
 h.flush()
 h.map:SetMapID(1413)
-local provider = h.providers[1]
-provider:RefreshAllData()
-local before = h.counts.AcquirePin
+h.ns.Pins.Refresh()
+equal(Visible() > 0, true, "pins on the open map")
+local before = h.counts.passThrough
 h.combat = true
-provider:RefreshAllData()
+h.ns.Pins.Refresh()
 h.map:SetMapID(1442)
-provider:RefreshAllData()
-equal(h.counts.AcquirePin, before, "combat never acquires protected pins")
-for _, pins in pairs(h.pins) do
-	for _, pin in ipairs(pins) do
-		equal(pin:IsShown(), false, "old map pin hidden")
-	end
-end
+equal(h.counts.passThrough, before, "combat lays out no pin")
+equal(Visible(), 0, "old map pins hidden")
 h.combat = false
 h.fire("PLAYER_REGEN_ENABLED")
-equal(h.counts.AcquirePin > before, true, "combat end refreshes current map")
+equal(h.counts.passThrough > before, true, "combat end draws the current map")
+equal(Visible() > 0, true, "and shows its pins")
 for _, pin in ipairs(h.pins.AdventureGuideForeverGiverPinTemplate) do
 	equal(pin.giver.map, 1442, "uses new map")
 end
 -- Combat can begin between requesting the map reveal and the next-frame ping.
 h.ns.Pins.Reveal({ map = 1442, x = 0.5, y = 0.5 })
-before = h.counts.AcquirePin
+before = h.counts.passThrough
 h.combat = true
 h.flush()
-equal(h.counts.AcquirePin, before, "deferred ping rechecks lockdown")
-provider:RefreshAllData()
+equal(h.counts.passThrough, before, "deferred ping rechecks lockdown")
+equal(#h.pins.AdventureGuideForeverPingPinTemplate, 0, "no ping in combat")
+h.ns.Pins.Refresh()
 h.map:Hide()
 h.combat = false
 h.fire("PLAYER_REGEN_ENABLED")
-equal(h.counts.AcquirePin, before, "hidden map stays idle after combat")
+equal(h.counts.passThrough, before, "hidden map stays idle after combat")
 h.map:Show()
 h.flush()
-equal(h.counts.AcquirePin > before, true, "opening map restores pins")
+equal(h.counts.passThrough > before, true, "opening map restores pins")
+equal(Visible() > 0, true, "and shows them")
+equal(h.counts.mapWrites, 0, "nothing written into the map")
 equal(#h.errors, 0, table.concat(h.errors, "\n"))
 print("combat_pins_spec: " .. checks .. " checks passed")

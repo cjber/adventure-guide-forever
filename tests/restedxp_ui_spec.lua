@@ -59,7 +59,7 @@ dofile("tests/rxp_fixture.lua")(preview, 10)
 local upcoming = assert(preview.ns.RestedXP.Journey())
 preview.ns.Choose(upcoming.key, true)
 preview.flush()
-preview.G.WorldMapFrame:Hide()
+preview.map:Hide()
 preview.ns.Pins.Refresh()
 local numbered
 for _, owned in pairs(markers) do
@@ -100,18 +100,10 @@ assert(ongoingBlock, "the quest tracker retains active ongoing objectives")
 assert(#preview.errors == 0, table.concat(preview.errors, "\n"))
 print("restedxp_ui_spec: ten-step preview and minimap guidance passed")
 
-local map = preview.G.WorldMapFrame
-local canvas = preview.G.CreateFrame("Frame")
-canvas:SetSize(1000, 1000)
-local zoom = 1
-map.GetCanvas = function()
-	return canvas
-end
-map.GetCanvasScale = function()
-	return zoom
-end
-map:SetMapID(1413)
+local map = preview.map
+map.ScrollContainer.Child:SetSize(1000, 1000)
 map:Show()
+map:SetMapID(1413)
 preview.ns.Pins.Refresh()
 local worldMinimap = 0
 for _, owned in pairs(markers) do
@@ -130,14 +122,7 @@ for _, pin in ipairs(ringPins or {}) do
 end
 assert(grouped, "nearby steps share a readable marker at normal zoom")
 local count = #ringPins
-zoom = 4
-local pinProvider
-for _, candidate in ipairs(preview.providers) do
-	if candidate.RefreshAllData and candidate.OnCanvasScaleChanged then
-		pinProvider = candidate
-	end
-end
-assert(pinProvider, "map zoom has a data-provider callback")
-pinProvider:OnCanvasScaleChanged()
+-- The canvas zooms in: the view reads the new scale on its next frame and draws again.
+preview.ZoomMap(4, 1)
 assert(#preview.pins.AdventureGuideForeverPinTemplate > count, "zooming in separates nearby guide markers")
 print("restedxp_ui_spec: nearby markers group and split with zoom")
