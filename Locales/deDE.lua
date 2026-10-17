@@ -298,7 +298,7 @@ L["SETTING_MAP_PINS_TOOLTIP"] =
 	"Die nummerierten Schritte der Route auf der Weltkarte, solange ihr Gebiet angezeigt wird, und Questgeber, wenn diese auch an sind. Der geöffnete Führer zeigt seine Route in jedem Fall als Vorschau."
 L["SETTING_POLESTAR_ASIDE"] = "Zurücktreten, während Polestar führt"
 L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
-	"Solange Polestar einen Leitfaden ausführt, startet der Führer keine eigene Route und zeichnet keine Markierungen auf der Karte. Die Questverfolgung zeigt, dass Polestar Euch führt; klickt darauf, um wieder zu übernehmen."
+	"Solange Polestar einen Leitfaden ausführt, startet der Führer keine eigene Route und zeichnet keine Markierungen auf der Karte. Die Questzielverfolgung zeigt, dass Polestar Euch führt; klickt darauf, um wieder zu übernehmen."
 L["SETTING_QUEST_LEVEL"] = "Höchste Queststufe über Eurer"
 L["SETTING_QUEST_LEVEL_ONE"] = "%s Stufe"
 L["SETTING_QUEST_LEVEL_TOOLTIP"] =
@@ -417,7 +417,7 @@ L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
 L["WHATS_NEW"] =
-	"Tritt zurück, während Polestar führt; klickt auf die Zeile in der Questverfolgung, um wieder zu übernehmen."
+	"Der Führer tritt zurück, während Polestar führt, mit einer Zeile in der Questzielverfolgung, um wieder zu übernehmen."
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"

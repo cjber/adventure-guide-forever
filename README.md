@@ -38,21 +38,19 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 - **Map guide.** The active RestedXP guide comes first while *Use RestedXP guides* is on; otherwise Quests in your log.
 
-- **Works alongside Polestar.** While Polestar has a guide running, Adventure Guide starts no route and draws no map marks, and the tracker says *Polestar is guiding you*. Click that line, or Go on a journey, to take over again. Turn off *Step aside while Polestar is guiding* in Route settings to keep both.
-
 - **Quest difficulty.** Choose the highest recommended quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups. Accepted quests remain visible.
 
 - **Dungeon journeys.** Follow quest pickups, preparation chains and hand-ins with Shortest Path Forever. Right-click a dungeon card for AtlasLoot bosses, drops and native item tooltips. Tweaks Forever handles automatic dungeon maps.
 - **Journeys.** Finish loose ends, follow a zone's story, find nearby zones suited to your level or take class quests. Journey choices explain why each fits. Dungeon and battleground journeys are opt-in.
 - **Full guide.** Expand the map guide for the whole route, then the area's Questie outline. Later entries stay as outline until Questie confirms them.
-- **Choose and go.** Pick a journey on the map to start guidance with Shortest Path Forever, or the game's waypoint without it. A setting makes choosing preview only. Stop clears only guidance the addon started.
+- **Choose and go.** Pick a journey on the map to start guidance with Shortest Path Forever, or the game's waypoint. A setting makes choosing preview only. Stop clears only guidance the addon started.
 - **A route that stays with you.** Your choice survives new quests, travel and reloads. Ready hand-ins and nearby pickups come first. Town stops group quest givers into a checklist.
 - **Your order.** Drag steps or right-click to move them earlier or later. Moves that break quest order are greyed out. *Back to suggested order* restores the plan.
-- **Where to do an objective.** The guide skips a place whose mobs are 3 or more levels above you for a lower one on the same map. When there are other camps, *Next spot* in the step's menu moves the arrow to the nearest, even where you stand.
-- **Givers that don't offer a quest.** If a giver's quest list leaves out the quest the guide sent you for, the guide says so once in chat and drops it. It tries again after a level-up or a hand-in that could open it up.
-- **Story milestones.** Completing a proven quest chain earns a brief story-complete popup, recorded once for that character.
-- **Stories and search.** Stories read as chapters without naming later quests. Search puts exact titles and titles starting with your words first. It shows a quest's requirements and which ones you meet. For a locked quest it names the earliest quest in its chain you can take, and a shift-click adds that one.
-- **Other things to do.** Hints cover professions, unspent talents, hearths and unexplored areas. Class spell reminders and trainer visits are off by default; turn them on in Route settings. PvP shows your rank, its next reward and the nearest battlemaster.
+- **Where to do an objective.** The guide skips a place whose mobs are 3 or more levels above you for a lower one on the same map. *Next spot* in the step's menu moves the arrow to the nearest other camp, even where you stand.
+- **Givers that don't offer a quest.** If a giver doesn't offer the quest the guide sent you for, the guide says so once in chat and drops it, trying again after a level-up or a hand-in that could open it up.
+- **Story milestones.** Finishing a proven quest chain shows a short popup, once per character.
+- **Stories and search.** Stories read as chapters without naming later quests. Search puts the best match first and shows which of a quest's requirements you meet. For a locked quest it names the earliest quest in its chain you can take, and a shift-click adds that one.
+- **Other things to do.** Hints cover professions, unspent talents, hearths and unexplored areas. Class spell reminders and trainer visits are off by default (Route settings). PvP shows your rank, its next reward and the nearest battlemaster.
 - **Your say.** Skip a step until your next reload, hide a journey or rule out a quest on this character. Shift-click a search result or map quest giver to add quests. *Skipped* restores hidden suggestions. The guide never abandons quests for you. Map marks are off by default.
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png" width="400" alt="The Adventure Guide tracker section"></p>
@@ -89,7 +87,7 @@ Forever's new quests are only considered once they are in your log. The guide re
 
 ## Works alongside
 
-QuestieDB and Questie are needed for pickup recommendations. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) is an optional companion for bosses and loot. The guide's tracker section shares one column with the Shortest Path, SkillUp and Legacy sections, above your quests, and has its own switch when you prefer another guide. An empty column leaves your quests where Edit Mode or your UI addon put them.
+QuestieDB and Questie are needed for pickup recommendations. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) is an optional companion for bosses and loot. While Polestar has a guide running, the guide starts no route and draws no map marks until you click its tracker line; *Step aside while Polestar is guiding* turns that off. The guide's tracker section shares one column with the other Forever sections, above your quests, and has its own switch when you prefer another guide. An empty column leaves your quests where Edit Mode or your UI addon put them.
 
 <!-- forever-family:start -->
 
@@ -107,7 +105,7 @@ Each one works on its own, and they work together when you install more than one
 
 <!-- forever-family:end -->
 
-Installed together, Shortest Path Forever plans the way to every stop, SkillUp Forever fills the Professions tab with your next skill-ups, and Legacy Forever adds your zone completion. Tweaks Forever supplies class trainer locations for spell reminders and each dungeon's entrance, and its Windows option moves the guide window.
+Installed together, Shortest Path Forever plans the way to every stop, SkillUp Forever fills the Professions tab, and Legacy Forever adds your zone completion. Tweaks Forever supplies class trainer locations and dungeon entrances, and its Windows option moves the guide window.
 
 ## Ways to help
 
