@@ -124,8 +124,8 @@ local function RefreshMinimap()
 	end
 end
 
--- One switch over every mark AGF draws (design §2.6): nothing unless showMapPins is on, nothing for a wanderer
--- who is told where and never shown, and nothing while Polestar guides (Polestar.lua).
+-- One switch over every mark AGF draws (design §2.6): nothing unless showMapPins is on, and nothing for a wanderer
+-- who is told where and never shown. While Polestar guides (Polestar.lua) the switch draws nothing.
 -- While the guide is open the rings preview the route it shows whatever the switch says: the chosen journey's,
 -- else the first card's, which the guide draws on its own (docs/design.md §2.2). Either way they step aside while
 -- Shortest Path guides, since it numbers its stops itself.
@@ -134,10 +134,9 @@ RingsShown = function()
 	local preview = ns.PanelShown ~= nil and ns.PanelShown()
 	local first = ns.Route().steps[1]
 	local guideActive = first ~= nil and first.rxpIndex ~= nil
-	return (preview or ns.Setting("showMapPins"))
+	return (preview or (ns.Setting("showMapPins") and not ns.Polestar.Active()))
 		and (not ns.Integrations.Guiding() or guideActive)
 		and not ns.Setting("wanderer")
-		and not ns.Polestar.Active()
 end
 
 -- Questie owns background quest markers when loaded, including its hide/show switch.

@@ -153,8 +153,6 @@ function Guidance.Navigate(step, follow)
 	if ns.Setting("wanderer") or step.preview or not ns.Model.ValidPlace(step) then
 		return false
 	end
-	-- Go while Polestar guides is the player taking over (Polestar.lua).
-	ns.Polestar.TakeOver()
 	local routed = Integrations.Provider() ~= nil
 	-- Shortest Path refuses every route in combat, which is no sign it cannot plan this one: a journey an earlier Go
 	-- started keeps guiding, and without one the waypoint takes the step as for any refusal.
@@ -446,13 +444,24 @@ function ns.StartRoute(step)
 	step = step or route.steps[1]
 	if step and step.rxpIndex and not ns.Model.ValidPlace(step) then
 		prefs.guided = route.journey
+		ns.Polestar.TakeOver()
 		return true
 	end
 	if step and Guidance.Navigate(step, true) then
 		prefs.guided = route.journey
+		-- A route started while Polestar guides is the player taking over (Polestar.lua).
+		ns.Polestar.TakeOver()
 		return true
 	end
 	return false
+end
+
+-- Polestar started guiding (Polestar.lua): a start waiting for combat's end is dropped, and only what Go started stops.
+function Guidance.StepAside()
+	pendingStart = false
+	if Guidance.Owns() then
+		Guidance.Cancel()
+	end
 end
 
 -- `key`'s route runs now: it is the chosen card, its route is ours and nothing paused it.
@@ -568,9 +577,8 @@ local function Restore()
 	if not restoring or InCombatLockdown() or not ns.State.Ready() or ns.QuestieBuilding() then
 		return
 	end
-	-- Polestar guides: nothing comes back or starts itself, now or once the player takes over (Polestar.lua).
+	-- Polestar guides: nothing comes back or starts itself until it stops or the player takes over (Polestar.lua).
 	if ns.Polestar.Active() then
-		restoring = false
 		return
 	end
 	local prefs, route = ns.Prefs(), ns.Route()

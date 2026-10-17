@@ -193,14 +193,18 @@ The integration ships original adapter code and requires the separately installe
 
 ## Alongside Polestar
 
-Polestar is a separate leveling guide with its own window and arrow. `Integrations/Polestar.lua` makes one
-read-only, feature-detected call, `Polestar.Engine.GetGuide()`, again on Polestar's `GUIDE_CHANGED` message, or every
-5 seconds where it has no message bus (`Polestar.On`); an error from it reads as no guide. Nothing of Polestar's is
-written, hooked or copied.
+Polestar is a separate leveling guide with its own window and arrow. `Integrations/Polestar.lua` reads two things,
+each feature-detected and called through `pcall`: `Polestar.Engine.GetGuide()`, and `GetStepIndex()`, since a finished
+guide stays loaded with no step left. It reads them again on Polestar's `GUIDE_CHANGED` and `GUIDE_COMPLETED`
+messages, or every 5 seconds where Polestar has no message bus (`Polestar.On`). An error reads as no guide. Nothing of
+Polestar's is written, hooked or copied.
 
-While `polestarAside` is on (the default) and Polestar has a guide running, the route steps aside: Restore neither
-brings back nor auto-starts a route, Follow sends nothing, the route Adventure Guide had started stops
-(`Guidance.Cancel`, only ours), the map draws no rings or givers, and the tracker holds one line, "Polestar is guiding
-you", under the generic title. The guide window stays open to browse. Clicking the line, or any Go
-(`Guidance.Navigate`), takes over: Adventure Guide leads again until Polestar runs a different guide. Polestar closing
-its guide forgets the take-over. With Polestar absent or idle, or the setting off, nothing changes.
+While `polestarAside` is on (the default) and Polestar has a guide running, the route steps aside:
+`Guidance.StepAside` drops a start waiting for combat's end and stops only what Go started; Restore neither brings
+back nor auto-starts a route until Polestar stops; Follow sends nothing; the map switch draws no rings or givers (the
+guide window's own preview still does); and the tracker holds one line, "Polestar is guiding you", under the generic
+title. Clicking the line, or starting a journey's route (`ns.StartRoute`), takes over: Adventure Guide leads again
+until Polestar runs a different guide. The guide taken over from is kept per character (`polestarTakenFrom`), so
+Polestar reopening it after a reload does not undo the choice, and it is forgotten once Polestar runs none. A one-off
+Go (a trainer, a giver pin, a dungeon entrance) sets its waypoint without taking over. With Polestar absent or idle, or
+the setting off, nothing changes.

@@ -165,6 +165,7 @@
 ---@field npcs table<integer, AGFNpc>
 
 ---@class AGFPrefs
+---@field polestarTakenFrom? string|true the Polestar guide the player took over from (Polestar.lua); nil once Polestar runs none
 ---@field camps? table<string, table<string, true>> the spots "Next spot" passed over this session, by area step key and Model.SpotKey
 ---@field notOffered table<integer, integer> route pickups their giver's window left out: quest ID -> the player's level then (Offers.lua)
 ---@field plannedDungeons table<integer, boolean>
@@ -734,6 +735,7 @@
 ---@field ShowOnMap fun(step: AGFStep|AGFGiver): boolean route, open its zone and ping the destination
 ---@field Running fun(key: string): boolean the card is chosen and its route is ours, running and not paused
 ---@field Cancel fun() Stop: cancels our Shortest Path journey, and clears the native waypoint only while it is ours
+---@field StepAside fun() Polestar started guiding: drops a waiting start and cancels only what Go started
 ---@field Reroute fun() the player reordered the chosen journey: the route AGF runs for it starts again a frame on
 ---@field CurrentStep fun(): AGFStep? the step the handed route heads for while it guides, else the route's head
 ---@field Guided fun(): (AGFStep|AGFGiver)[] the stops Shortest Path walks, while it guides; empty otherwise

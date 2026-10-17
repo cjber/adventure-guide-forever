@@ -184,7 +184,17 @@ ShortestPathForever = nil
 ---@type {API: table?}? read through Tweaks.lua and Providers.lua, each checking it against AGFTFAPI
 TweaksForever = nil
 
----@type table? read only through Polestar.lua, which checks Engine.GetGuide and On before calling either
+-- The few calls Polestar.lua makes, each checked for before it is called (Polestar's docs/ARCHITECTURE.md, "Engine" and
+-- "Message bus").
+---@class AGFPolestarEngine
+---@field GetGuide? fun(): {id?: string}? the active tab's guide, kept loaded after it is finished
+---@field GetStepIndex? fun(): integer? the step shown; nil once the guide is finished
+
+---@class AGFPolestarGlobal
+---@field Engine? AGFPolestarEngine
+---@field On? fun(message: string, fn: fun(...)): table
+
+---@type AGFPolestarGlobal?
 Polestar = nil
 
 ---@class AGFSettingsSetting

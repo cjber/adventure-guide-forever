@@ -15,11 +15,14 @@ local LOG = { { id = 845, title = "The Zhevra", level = 13, complete = true, map
 
 -- A stand-in for the two calls Adventure Guide makes: Engine.GetGuide, and On for GUIDE_CHANGED when `bus` is set.
 local function Stub(guide, bus)
-	local stub = { guide = guide, handlers = {} }
+	local stub = { guide = guide, handlers = {}, step = 1 }
 	stub.global = {
 		Engine = {
 			GetGuide = function()
 				return stub.guide
+			end,
+			GetStepIndex = function()
+				return stub.guide and stub.step or nil
 			end,
 		},
 	}
@@ -87,6 +90,15 @@ do
 	check(h.spf.NavigateRoute == 0, "nothing starts itself while Polestar guides")
 	check(ns.Prefs().guided == nil, "and no journey is recorded as guided")
 	check(stub.handlers.GUIDE_CHANGED ~= nil, "Polestar's GUIDE_CHANGED is the re-check")
+	check(stub.handlers.GUIDE_COMPLETED ~= nil, "and GUIDE_COMPLETED")
+
+	-- A one-off Go (a trainer, a giver pin) is not taking the route over.
+	local route = ns.Route()
+	ns.Guidance.Navigate(route.steps[1])
+	h.flush()
+	check(ns.Polestar.Active(), "a one-off destination leaves the route stepped aside")
+	ns.Guidance.Cancel()
+	h.flush()
 	local line = h.tracker.liveBlocks.polestar
 	check(line ~= nil and line.used ~= false, "the tracker shows the Polestar line")
 	check(line.header == ns.L.POLESTAR_GUIDING, "in the guide's words")
@@ -132,6 +144,33 @@ do
 	h.flush()
 	check(ns.Polestar.Active(), "a guide started afresh steps aside, even the one taken over from before")
 	check(#h.errors == 0, table.concat(h.errors, "\n"))
+end
+
+-- The take-over outlives a reload, while Polestar reopens the same saved guide.
+do
+	local stub = Stub({ id = "forever/horde/the-barrens" }, true)
+	local h = Load(stub)
+	h.flush()
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks.polestar, "LeftButton")
+	h.flush()
+	check(not h.ns.Polestar.Active(), "taken over before the reload")
+	local charDB = h.ns.Prefs()
+	local again = Load(stub, nil, { polestarTakenFrom = charDB.polestarTakenFrom, journey = charDB.journey })
+	again.flush()
+	check(not again.ns.Polestar.Active(), "still taken over after it")
+end
+
+-- A finished Polestar guide stays loaded with no step left: that is not guiding, and the route comes back on its own.
+do
+	local stub = Stub({ id = "forever/horde/the-barrens" }, true)
+	local h = Load(stub)
+	h.flush()
+	check(h.ns.Polestar.Active() and h.spf.NavigateRoute == 0, "aside while the guide runs")
+	stub.step = nil
+	stub.handlers.GUIDE_COMPLETED("forever/horde/the-barrens")
+	h.flush()
+	check(not h.ns.Polestar.Active(), "a finished guide is not guiding")
+	check(h.spf.NavigateRoute >= 1, "and the route starts itself as it would have at login")
 end
 
 -- The setting off: Polestar guiding changes nothing; turning it on steps aside at once.
