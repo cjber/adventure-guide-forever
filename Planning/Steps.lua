@@ -158,7 +158,9 @@ local function Describe(data, log, player, step)
 			step.reason = (step.returns and step.returns[id]) and L.HAND_IN_WHEN_DONE or L.READY_TO_HAND_IN
 		else
 			step.title = L.PICK_UP:format(step.spots[id].name)
-			step.reason = (quest.pre or quest.preAny) and L.CONTINUES_STORY or L.NEAR_YOUR_LEVEL
+			-- Someone in the party has it: they can share it (docs/design.md §4.5).
+			step.reason = (player.party and player.party[id] and L.PARTY_HAS)
+				or ((quest.pre or quest.preAny) and L.CONTINUES_STORY or L.NEAR_YOUR_LEVEL)
 		end
 	else
 		step.title = step.place

@@ -66,6 +66,15 @@ read_globals = {
 	"ITEM_RACES_ALLOWED",
 	"InCombatLockdown",
 	"UnitOnTaxi",
+	-- Party.lua
+	"C_ChatInfo",
+	"IsInGroup",
+	"IsInRaid",
+	"GetNormalizedRealmName",
+	"LE_PARTY_CATEGORY_HOME",
+	"UNKNOWNOBJECT",
+	"UnitExists",
+	"UnitName",
 	-- Secret.lua
 	"canaccessvalue",
 	-- SafeCall.lua
