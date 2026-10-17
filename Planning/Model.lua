@@ -531,6 +531,34 @@ function Model.Why(data, player, completed, log, questID, names)
 	return lines
 end
 
+-- Why a quest wants a group, from what the data and the quest log already say (docs/design.md §2.27): a raid's or a
+-- dungeon's quest names its instance; otherwise the log's suggested group size (2 or more), else the elite tag.
+-- Nil for a quest done alone.
+---@param data AGFData
+---@param log table<integer, AGFLogQuest>
+---@param questID integer
+---@return AGFGroupNeed? kind
+---@return integer? value the instance Map.ID for a raid or a dungeon, the group size for "size"
+function Model.GroupNeed(data, log, questID)
+	local quest = data.quests[questID]
+	if not quest then
+		return nil
+	end
+	local instance = quest.dungeon
+	if instance and data.instances and data.instances[instance] then
+		return quest.raid and "raid" or "dungeon", instance
+	elseif quest.raid then
+		return "raid", nil
+	end
+	local entry = log[questID]
+	if entry and entry.group then
+		return "size", entry.group
+	elseif quest.elite then
+		return "elite", nil
+	end
+	return nil
+end
+
 local SEARCH_MAX = 10
 -- How many of the best text matches the search asks "open now?" of: Eligible asks Questie's live policy about a
 -- QuestieDB quest, so a short query never asks it about hundreds.

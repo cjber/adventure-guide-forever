@@ -731,6 +731,41 @@ local function Levels(journey, level)
 	return text, GetQuestDifficultyColor(math.max(low, math.min(level, high)))
 end
 
+-- Why a quest wants a group, in words (Model.GroupNeed, docs/design.md §2.27): "Dungeon: The Deadmines", "Group of
+-- 3", "Elite: group advised". Nil for a quest done alone.
+---@param questID integer
+---@return string?
+function Overview.GroupNote(questID)
+	local data = ns.Data
+	local kind, value = ns.Model.GroupNeed(data, ns.Snapshot().log, questID)
+	if (kind == "dungeon" or kind == "raid") and value then
+		local name = ns.State.InstanceName(value) or data.instances[value].name
+		return (kind == "raid" and L.GROUP_NEED_RAID or L.GROUP_NEED_DUNGEON):format(name)
+	elseif kind == "raid" then
+		return L.GROUP_NEED_RAID_ANY
+	elseif kind == "size" and value then
+		return L.GROUP_NEED_SIZE:format(value)
+	elseif kind == "elite" then
+		return L.GROUP_NEED_ELITE
+	end
+	return nil
+end
+
+-- A step's group notes, each said once, in the step's quest order: the tracker's and the step tooltip's lines.
+---@param step AGFStep
+---@return string[]
+function Overview.GroupNotes(step)
+	local notes, seen = {}, {}
+	for _, id in ipairs(step.quests) do
+		local note = Overview.GroupNote(id)
+		if note and not seen[note] then
+			seen[note] = true
+			notes[#notes + 1] = note
+		end
+	end
+	return notes
+end
+
 ---@param journey AGFJourney
 ---@param player? AGFPlayer
 ---@return string?

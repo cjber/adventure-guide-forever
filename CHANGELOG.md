@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Steps say when you'll want a group.** A step's tooltip and its lines in the objective tracker now say why it needs company: *Dungeon:* or *Raid:* with the instance's name, *Group of 3* when your quest log suggests a group size, or *Elite: group advised* for other elite quests. The group icon on the step stays as it was. The idea came from Polestar.
+
 ## [0.17.0] - 2026-10-17
 
 - **Steps aside while Polestar is guiding.** If you have Polestar installed and one of its guides running, Adventure Guide no longer starts its own route or draws map marks over it. The tracker says *Polestar is guiding you*; click that line, or Go on a journey, to take over again. Turn off *Step aside while Polestar is guiding* in Route settings to keep both running.

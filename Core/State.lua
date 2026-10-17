@@ -440,6 +440,7 @@ function State.Log()
 				title = info.title,
 				complete = C_QuestLog.IsComplete(info.questID) or false,
 				level = info.level or 0,
+				group = (info.suggestedGroup or 0) > 1 and info.suggestedGroup or nil,
 				map = map,
 				x = x,
 				y = y,
