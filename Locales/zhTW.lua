@@ -42,6 +42,7 @@ L["CLICK_TO_RESUME"] = "點擊繼續路線"
 L["CLICK_TRAVEL"] = "點擊使用%s移動"
 L["CLICK_WAYPOINT"] = "點擊設定路徑點"
 L["CLICK_WAYPOINT_STEP"] = "點擊設定路徑點"
+L["CLOSES_WARNING"] = "接受%s將永久關閉%s。"
 L["CONTINUES_STORY"] = "繼續你已開始的故事"
 L["DO_THIS_NEXT"] = "下一步做這個"
 L["DUMP_SAVED"] =
@@ -321,6 +322,9 @@ L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
 L["SETTING_WANDERER"] = "漫遊者：只說地名"
 L["SETTING_WANDERER_TOOLTIP"] =
 	"指南只說出下一步去哪裡，路怎麼走由你決定：沒有路徑點，沒有Shortest Path Forever路線，地圖上也沒有標記。"
+L["SETTING_WARN_CLOSING"] = "任務會關閉其他任務時發出警告"
+L["SETTING_WARN_CLOSING_TOOLTIP"] =
+	"當任務給予者提供的任務會永久關閉另一個任務時，在你接受之前於聊天框中說明你將失去哪些任務。"
 L["SETTING_WHATS_NEW"] = "更新後的新內容"
 L["SETTING_WHATS_NEW_TOOLTIP"] = "指南更新後你首次登入時，在對話框中顯示一行。"
 L["SET_HEARTH"] = "將爐石設定在%s"

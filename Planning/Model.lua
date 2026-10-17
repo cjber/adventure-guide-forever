@@ -531,6 +531,45 @@ function Model.Why(data, player, completed, log, questID, names)
 	return lines
 end
 
+-- What taking `questID` closes for good (docs/design.md §2.26): the other members of its exclusive group that name it
+-- in their closedBy. Left out: a quest done or in the log, one already closed by another quest done or in the log,
+-- one the character can never take (side, race, class, or a repeatable), and another version of the same quest (the
+-- same title). Ascending; empty when nothing is lost.
+---@param data AGFData
+---@param player AGFPlayer
+---@param completed table<integer, boolean>
+---@param log table<integer, AGFLogQuest>
+---@param questID integer
+---@return integer[]
+function Model.Closes(data, player, completed, log, questID)
+	local closes = {}
+	local quest = data.quests[questID]
+	local members = quest and quest.group and Index(data).groups[quest.group] or NONE
+	for _, id in ipairs(members) do
+		local other = data.quests[id]
+		local named, closed = false, false
+		for _, by in ipairs(id ~= questID and other.closedBy or NONE) do
+			named = named or by == questID
+			closed = closed or completed[by] == true or log[by] ~= nil
+		end
+		if
+			named
+			and not closed
+			and not completed[id]
+			and not log[id]
+			and not other.repeatable
+			and other.title ~= quest.title
+			and (other.side == 3 or other.side == player.side)
+			and HasBit(other.races, player.raceBit)
+			and HasBit(other.classes, player.classBit)
+		then
+			closes[#closes + 1] = id
+		end
+	end
+	table.sort(closes)
+	return closes
+end
+
 local SEARCH_MAX = 10
 -- How many of the best text matches the search asks "open now?" of: Eligible asks Questie's live policy about a
 -- QuestieDB quest, so a short query never asks it about hundreds.

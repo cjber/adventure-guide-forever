@@ -125,6 +125,16 @@ abandons quests.
   was made at; a hand-in clears the marks it could open (quests that need it, and quests its ender gives).
   `Core/Offers.lua`.
 
+- **2.26 Quests that close another.** QuestieDB's `exclusiveTo` names, for each quest, the quests whose taking
+  closes it; AGF keeps those links inside each exclusive group as `closedBy`, so a breadcrumb that closes once its
+  target is taken never reads as closing the target. When a giver's detail window offers a quest that would close
+  another for good, one chat line names what you'd lose, once per quest a session: "Taking X closes Y for good."
+  Left out: quests done or in the log, quests something else already closed, quests the character can never take
+  (side, race, class, repeatable) and other versions of the offered quest (the same title). A quest the game took
+  itself (auto-accept) says nothing. The setting `warnClosing` (on) turns it off; with Polestar's own warning on
+  (`Polestar.Get("behavior.warnClosing")`) AGF says nothing, so it is never said twice. `Model.Closes`,
+  `Core/Closes.lua`.
+
 ### Guide navigation
 
 The world-map sidebar is the guide. Folded sections show two Continue journeys and one journey per other

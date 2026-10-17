@@ -38,6 +38,8 @@ local DEFAULTS = {
 	optimisedRoute = false,
 	-- While Polestar runs a guide, the route steps aside for it (Polestar.lua); off does nothing without Polestar.
 	polestarAside = true,
+	-- Before a giver's window offers a quest that closes another for good, say which in chat (Closes.lua).
+	warnClosing = true,
 }
 ns.DEFAULTS = DEFAULTS
 
