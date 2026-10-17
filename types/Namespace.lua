@@ -1528,6 +1528,7 @@
 
 ---@class ForeverTrackerNamespace
 ---@field TrackerHost? ForeverTrackerHostAPI
+---@field TrackerQuestie? ForeverTrackerQuestie Questie's quest list, from UI/TrackerQuestie.lua
 ---@field TrackerHostSettings? fun(): ForeverTrackerSettings
 ---@field L table<string, string>
 
