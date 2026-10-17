@@ -67,6 +67,7 @@
 ---@field obj? AGFObjectiveArea[] where the objectives are done, at most 3 each; never for a dungeon quest; with need
 ---@field objectivesUnknown? boolean provider has objectives that cannot be planned
 ---@field flags? AGFQuestFlags
+---@field expires? integer[] the items it hands over, needs or collects that run out in the bags (AGFData.expiring)
 
 --- Where one objective is done: Blizzard's quest POI shape, else a group of its spawns (tools/gen_quests.py).
 ---@class AGFObjectiveArea
@@ -94,6 +95,7 @@
 ---@field towns table<integer, AGFTownArea[]> zone uiMapID -> its named areas, the areas the world map reveals as you explore
 ---@field areaNames table<integer, string> AreaTable ID -> its English name, the fallback when the client has none
 ---@field roles table<integer, AGFRole> creature entry -> what that trainer or battlemaster does
+---@field expiring? table<integer, integer> item ID -> the seconds it lasts in the bags, a day or less (ItemSparse)
 
 -- Measures between steps on different maps without travel maths (Travel.lua Cost). World coordinates are yards.
 ---@class AGFMapCentre
@@ -147,6 +149,8 @@
 ---@field y? number
 ---@field objectives? AGFLogObjective[] the client's objectives, in its order (C_QuestLog.GetQuestObjectives)
 ---@field poi? {map: integer, x: number, y: number} the client's point for the quest (C_QuestLog.GetQuestsOnMap)
+---@field expiring? integer the first of its items that run out in the bags (AGFQuest.expires) the player carries
+---@field expiringName? string that item's name, once the client has it
 
 -- One objective of a logged quest as the client counts it.
 ---@class AGFLogObjective
