@@ -91,19 +91,19 @@ do
 	equal(#h.errors, 0, "released: no errors")
 end
 
--- A broad objective area counts the ground between its objectives as reached. North of Galgar's Cactus Apple
--- Surprise's objectives, inside the ring merged round them but on no objective's ground, the step reads as being in
--- the area: no walking leg, and the merge is what puts the player there.
+-- A broad objective area counts the ground between its objectives as reached. Between Vile Familiars' camp and
+-- Yarrog Baneshadow (Burning Blade Medallion), inside the ring merged round them but on neither objective's ground,
+-- the step reads as being in the area: no walking leg, and the merge is what puts the player there.
 do
 	local h = harness.load({
 		spf = "v1",
 		db = { autoStart = false },
 		charDB = { journey = "zone:1411" },
 		completed = { 788 },
-		player = { level = 5, faction = "Horde", raceID = 2, classID = 1, map = 1411, x = 0.447, y = 0.6111 },
+		player = { level = 5, faction = "Horde", raceID = 2, classID = 1, map = 1411, x = 0.4303, y = 0.5352 },
 		log = {
-			{ id = 4402, title = "Galgar's Cactus Apple Surprise", level = 3, complete = false },
-			{ id = 5441, title = "Thwarting the Peons", level = 4, complete = false },
+			{ id = 792, title = "Vile Familiars", level = 4, complete = false },
+			{ id = 794, title = "Burning Blade Medallion", level = 5, complete = false },
 		},
 	})
 	h.flush()

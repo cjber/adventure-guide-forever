@@ -68,14 +68,16 @@
 ---@field objectivesUnknown? boolean provider has objectives that cannot be planned
 ---@field flags? AGFQuestFlags
 
---- Where one objective is done: Blizzard's quest POI shape, else a group of its spawns (tools/gen_quests.py).
+--- Where one objective is done: a camp of its spawns (Integrations/QuestieObjectives.lua), the cell of 100-yard
+--- squares with the most spawns in and around it, each camp's cell apart from the others'.
 ---@class AGFObjectiveArea
 ---@field [1] integer the objective's slot, a key of the quest's need
----@field [2] integer map x in thousandths
+---@field [2] integer map x in thousandths: the camp's medoid, a spawn
 ---@field [3] integer map y in thousandths
----@field [4] integer yards from x, y holding 80% of the shape's points or the group's spawns
+---@field [4] integer yards from x, y to the camp's farthest spawn within 100 yards
 ---@field [5] integer? the uiMapID x, y are on when it is not the quest's zone
 ---@field [6] integer? the lowest level of the mobs there, when every spawn in it is an NPC QuestieDB gives a level
+---@field [7] true? every spawn there is an elite's (QuestieDB rank 1 to 3); only with a level
 
 ---@class AGFQuestFlags
 ---@field event? true a script completes it: an escort, a spell cast or a summoned fight
@@ -749,7 +751,7 @@
 ---@field Offers AGFOffersModule what a giver's window really offers (Offers.lua)
 ---@field CreatureEntry fun(guid?: string): integer? a creature's entry from its GUID; nil for anything else or a secret
 ---@field PanelSearch AGFPanelSearch
----@field QuestieFields {spawns: string[], drops: string[], level: string[]}
+---@field QuestieFields {spawns: string[], drops: string[], level: string[], rank: string[]}
 ---@field TrackerHost ForeverTrackerHostAPI
 ---@field TrackerHostSettings fun(): ForeverTrackerSettings
 ---@field Geometry AGFGeometry the native-geometry adapter (Geometry.lua)
@@ -1479,7 +1481,7 @@
 
 ---@alias AGFMapLookup fun(area: integer): integer?
 ---@alias AGFYield fun()
----@alias AGFQuestieReads {Npc: table<integer, table|false>, Object: table<integer, table|false>, Item: table<integer, table|false>, levels?: table<integer, integer|false>, names: {Npc: table<integer, string|false>, Object: table<integer, string|false>, Item: table<integer, string|false>}}
+---@alias AGFQuestieReads {Npc: table<integer, table|false>, Object: table<integer, table|false>, Item: table<integer, table|false>, levels?: table<integer, integer|false>, elite?: table<integer, boolean>, names: {Npc: table<integer, string|false>, Object: table<integer, string|false>, Item: table<integer, string|false>}}
 
 ---@class AGFQuestieNpcRow one Npc's place and service fields for a catalogue build
 ---@field name string
@@ -1492,6 +1494,7 @@
 ---@class AGFNamespace
 ---@field QuestieTowns AGFQuestieTowns
 ---@field QuestieLevel fun(value: any): integer|false an NPC's QuestieDB minLevel as a level, false when it has none
+---@field QuestieElite fun(value: any): boolean whether an NPC's QuestieDB rank is an elite's (1 to 3)
 ---@field QuestieObjectives fun(lib: AGFQuestieDB, objectives: table?, trigger: table?, zone: integer?, data: AGFData, mapOf: AGFMapLookup, yield: AGFYield, questID: integer, reads: AGFQuestieReads): table?, AGFObjectiveArea[]?, table?, boolean?, table<integer, string>?
 
 ---@class AGFStrings
