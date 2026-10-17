@@ -734,10 +734,11 @@ end
 -- Why a quest wants a group, in words (Model.GroupNeed, docs/design.md §2.27): "Dungeon: The Deadmines", "Group of
 -- 3", "Elite: group advised". Nil for a quest done alone.
 ---@param questID integer
+---@param log? table<integer, AGFLogQuest> the snapshot's log, when the caller has read it already
 ---@return string?
-function Overview.GroupNote(questID)
+function Overview.GroupNote(questID, log)
 	local data = ns.Data
-	local kind, value = ns.Model.GroupNeed(data, ns.Snapshot().log, questID)
+	local kind, value = ns.Model.GroupNeed(data, log or ns.Snapshot().log, questID)
 	if (kind == "dungeon" or kind == "raid") and value then
 		local name = ns.State.InstanceName(value) or data.instances[value].name
 		return (kind == "raid" and L.GROUP_NEED_RAID or L.GROUP_NEED_DUNGEON):format(name)
@@ -755,9 +756,9 @@ end
 ---@param step AGFStep
 ---@return string[]
 function Overview.GroupNotes(step)
-	local notes, seen = {}, {}
+	local notes, seen, log = {}, {}, ns.Snapshot().log
 	for _, id in ipairs(step.quests) do
-		local note = Overview.GroupNote(id)
+		local note = Overview.GroupNote(id, log)
 		if note and not seen[note] then
 			seen[note] = true
 			notes[#notes + 1] = note

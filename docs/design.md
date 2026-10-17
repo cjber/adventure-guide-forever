@@ -127,9 +127,10 @@ abandons quests.
 
 - **2.27 Group lines.** A step says why it wants a group, from what AGF already knows, one line per reason and each
   once: "Dungeon: X" or "Raid: X" for a quest filed under an instance (the client's name for it, else the data's),
-  "Group of N" when the quest log suggests a group of 2 or more, and "Elite: group advised" for any other elite quest.
-  The lines go after the reason in the step's tooltip (its ring and its row) and in the tracker's step block; the row
-  keeps its group icon. `Model.GroupNeed`, `Overview.GroupNote`.
+  "Group of N" for an elite quest the quest log suggests a group of 2 or more for, and "Elite: group advised" for any
+  other elite quest. A quest ready to hand in says nothing: its group work is done. The lines go after the reason in
+  the step's tooltip (its ring and its row) and in the tracker's step block (a RestedXP step's after its checklist);
+  the row keeps its group icon. `Model.GroupNeed`, `Overview.GroupNote`.
 
 ### Guide navigation
 

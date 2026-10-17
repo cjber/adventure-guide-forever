@@ -532,16 +532,16 @@ function Model.Why(data, player, completed, log, questID, names)
 end
 
 -- Why a quest wants a group, from what the data and the quest log already say (docs/design.md §2.27): a raid's or a
--- dungeon's quest names its instance; otherwise the log's suggested group size (2 or more), else the elite tag.
--- Nil for a quest done alone.
+-- dungeon's quest names its instance; an elite quest gives the log's suggested group size (2 or more) when it has
+-- one, else just the tag. Nil for a quest done alone, and for one ready to hand in: its group work is done.
 ---@param data AGFData
 ---@param log table<integer, AGFLogQuest>
 ---@param questID integer
 ---@return AGFGroupNeed? kind
 ---@return integer? value the instance Map.ID for a raid or a dungeon, the group size for "size"
 function Model.GroupNeed(data, log, questID)
-	local quest = data.quests[questID]
-	if not quest then
+	local quest, entry = data.quests[questID], log[questID]
+	if not quest or (entry and entry.complete) then
 		return nil
 	end
 	local instance = quest.dungeon
@@ -550,13 +550,12 @@ function Model.GroupNeed(data, log, questID)
 	elseif quest.raid then
 		return "raid", nil
 	end
-	local entry = log[questID]
-	if entry and entry.group then
-		return "size", entry.group
-	elseif quest.elite then
-		return "elite", nil
+	if not quest.elite then
+		return nil
+	elseif entry and entry.groupSize then
+		return "size", entry.groupSize
 	end
-	return nil
+	return "elite", nil
 end
 
 local SEARCH_MAX = 10

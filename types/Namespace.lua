@@ -145,7 +145,7 @@
 ---@field title string
 ---@field complete boolean ready to hand in
 ---@field level integer
----@field group? integer the group size the quest log suggests, when it is 2 or more (C_QuestLog.GetInfo suggestedGroup)
+---@field groupSize? integer the group size the quest log suggests, when it is 2 or more (C_QuestLog.GetInfo suggestedGroup)
 ---@field map? integer where to go next, from C_QuestLog.GetNextWaypoint: the live client gives one only once finished
 ---@field x? number
 ---@field y? number

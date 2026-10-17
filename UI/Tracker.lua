@@ -242,6 +242,7 @@ function ModuleMixin:LayoutContents()
 			line = line + 1
 			block:AddObjective(line, item.text, nil, item.done)
 		end
+		line = GroupLines(block, step, line)
 		local travel = ns.Integrations.Travel(step)
 		if travel then
 			block:AddObjective(line + 1, travel)
