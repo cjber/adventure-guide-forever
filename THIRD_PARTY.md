@@ -53,5 +53,6 @@ Credit for the ideas and reports behind the addon.
 | fuguer-ai | Asked for a read-only API for the current stop (#79) | |
 | rhednak, on CurseForge | Found the integer overflow error that broke the guide for Skyborne characters, with the full error text (0.8.0) | |
 | jechten, on CurseForge | Reported slow loading, which later releases sped up (#166) | |
+| deathmvp1 and berserkerlxl, on CurseForge | Found Questie's quest list covering the Forever tracker sections, which now move clear of it (cjber/shortest-path-forever#214) | |
 
 Thanks also to everyone else who reported a bug or asked for a feature, here or on CurseForge.
