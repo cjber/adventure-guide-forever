@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Steps aside while Polestar is guiding.** If you have Polestar installed and one of its guides running, Adventure Guide no longer starts its own route or draws map marks over it. The tracker says *Polestar is guiding you*; click that line, or Go on a journey, to take over again. Turn off *Step aside while Polestar is guiding* in Route settings to keep both running.
+
 ## [0.16.1] - 2026-10-17
 
 - **Data checked against Forever 1.60.1.70450.** The bundled maps, zones and quest data are unchanged apart from the build they name, so the quest catalogue is rebuilt once at your next login.

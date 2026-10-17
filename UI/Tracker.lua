@@ -18,6 +18,8 @@ local ASIDE = "aside"
 local MOMENT = "moment"
 -- The quiet wait while QuestieSource's catalogue builds (docs/design.md §2.14): a line instead of a wrong route.
 local LOADING = "loading"
+-- Polestar is guiding (Polestar.lua): its line stands alone, and a click takes over again.
+local POLESTAR = "polestar"
 -- Headers that are not the step's: its click and hover never act on them.
 local NOT_STEP = {
 	[STORY_COMPLETE] = true,
@@ -25,6 +27,7 @@ local NOT_STEP = {
 	[JOURNEY_COMPLETE] = true,
 	[MOMENT] = true,
 	[LOADING] = true,
+	[POLESTAR] = true,
 }
 -- A town's NPC line names this many, then counts the rest.
 local NAMED_GIVERS = 2
@@ -78,6 +81,12 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 	local aside = ns.Asides.Current()
 	if block.id == ASIDE and aside then
 		ns.Asides.Click(block.HeaderButton or block, mouseButton, aside)
+		return
+	elseif block.id == POLESTAR then
+		if mouseButton ~= "RightButton" then
+			ns.Polestar.TakeOver()
+			ns.StartRoute()
+		end
 		return
 	elseif NOT_STEP[block.id] then
 		if (block.id == JOURNEY_COMPLETE or block.id == MOMENT) and mouseButton ~= "RightButton" and ns.OpenPanel then
@@ -167,7 +176,17 @@ end
 -- follows it, undashed. Nothing is laid out (an empty,
 -- self-hiding module) when the setting is off, or there's nothing to say.
 function ModuleMixin:LayoutContents()
-	if not ns.Setting("showTracker") or not LayoutLine(self) then
+	if not ns.Setting("showTracker") then
+		return
+	end
+	if ns.Polestar.Active() then
+		local block = self:GetBlock(POLESTAR)
+		block:SetHeader(L.POLESTAR_GUIDING)
+		block:AddObjective(1, L.POLESTAR_TAKE_OVER)
+		self:LayoutBlock(block)
+		return
+	end
+	if not LayoutLine(self) then
 		return
 	end
 	local moment = ns.Moments.Line()
@@ -336,7 +355,7 @@ end
 
 local function Refresh()
 	if module then
-		local journey = ns.Route().chosen and ns.CurrentJourney()
+		local journey = ns.Route().chosen and not ns.Polestar.Active() and ns.CurrentJourney()
 		module.headerText = journey and journey.title or L.TITLE
 		module:SetHeader(module.headerText)
 		module:MarkDirty()

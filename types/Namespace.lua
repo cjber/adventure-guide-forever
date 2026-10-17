@@ -589,6 +589,10 @@
 ---@field TRAINER_LINE string format: TRAINER, then the spell count
 ---@field TRACKER_UNATTACHED string
 ---@field TRACKER_LOADING string the tracker's quiet line while QuestieDB's catalogue builds
+---@field POLESTAR_GUIDING string the tracker's one line while Polestar runs a guide
+---@field POLESTAR_TAKE_OVER string under it: a click takes over again
+---@field SETTING_POLESTAR_ASIDE string
+---@field SETTING_POLESTAR_ASIDE_TOOLTIP string
 ---@field DUMP_SAVED string
 ---@field TURN_IN string format: quest title
 ---@field READY_TO_HAND_IN string
@@ -1865,6 +1869,7 @@ AdventureGuideForever = nil
 
 ---@class AGFNamespace
 ---@field GuideSetup AGFGuideSetup
+---@field Polestar AGFPolestarModule
 
 ---@class AGFStrings
 ---@field RXP_SETUP_TITLE string

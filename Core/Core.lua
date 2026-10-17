@@ -36,6 +36,8 @@ local DEFAULTS = {
 	-- Beta: the planned route order (chapter lead, town look-ahead, committed order); false is the simple
 	-- nearest-action order, the default (docs/design.md §4.1).
 	optimisedRoute = false,
+	-- While Polestar runs a guide, the route steps aside for it (Polestar.lua); off does nothing without Polestar.
+	polestarAside = true,
 }
 ns.DEFAULTS = DEFAULTS
 
@@ -271,6 +273,9 @@ function ns.SetSetting(key, value)
 		db.restedxpChoiceMade = true
 		ns.GuideSetup.Hide()
 		ns.RestedXP.Refresh()
+	end
+	if key == "polestarAside" then
+		ns.Polestar.Check()
 	end
 	-- Wandering from now: what Go started stops, as the player's Stop would.
 	if key == "wanderer" and value then

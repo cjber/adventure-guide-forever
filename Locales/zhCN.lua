@@ -170,6 +170,8 @@ L["OVERVIEW_WHERE"] = "%s · %d级"
 L["PICK_UP"] = "接受任务：%s"
 L["PIN_RETURN_STORY"] = "右键点击从故事起点规划路线"
 L["PLACE"] = "%s，%s"
+L["POLESTAR_GUIDING"] = "Polestar正在为你导航"
+L["POLESTAR_TAKE_OVER"] = "点击以接管"
 L["PREVIOUS_PAGE"] = "上一页"
 L["PROFESSION_BAR"] = "%d/%d"
 L["PROFESSION_CAP"] = "%s已达到%d/%d"
@@ -285,6 +287,9 @@ L["SETTING_GIVERS_TOOLTIP"] =
 L["SETTING_MAP_PINS"] = "在地图上显示路线标记"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"显示其所在地区时，在世界地图上显示路线的编号步骤；若任务NPC也已开启，则一并显示。打开的指南总会预览其路线。"
+L["SETTING_POLESTAR_ASIDE"] = "Polestar导航时让路"
+L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
+	"Polestar运行指南期间，本指南不会开始自己的路线，也不会在地图上绘制标记。追踪器会显示Polestar正在为你导航；点击它即可重新接管。"
 L["SETTING_QUEST_LEVEL"] = "任务等级最多高于你"
 L["SETTING_QUEST_LEVEL_ONE"] = "%s级"
 L["SETTING_QUEST_LEVEL_TOOLTIP"] =

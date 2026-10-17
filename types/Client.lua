@@ -184,6 +184,9 @@ ShortestPathForever = nil
 ---@type {API: table?}? read through Tweaks.lua and Providers.lua, each checking it against AGFTFAPI
 TweaksForever = nil
 
+---@type table? read only through Polestar.lua, which checks Engine.GetGuide and On before calling either
+Polestar = nil
+
 ---@class AGFSettingsSetting
 ---@field SetValueChangedCallback fun(self: AGFSettingsSetting, callback: fun(setting: AGFSettingsSetting, value: boolean|number))
 -- A checkbox's row (Blizzard_Settings_Shared SettingsListElementInitializer); a child is greyed while predicate is false.

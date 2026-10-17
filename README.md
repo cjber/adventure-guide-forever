@@ -38,6 +38,8 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 - **Map guide.** The active RestedXP guide comes first while *Use RestedXP guides* is on; otherwise Quests in your log.
 
+- **Works alongside Polestar.** While Polestar has a guide running, Adventure Guide starts no route and draws no map marks, and the tracker says *Polestar is guiding you*. Click that line, or Go on a journey, to take over again. Turn off *Step aside while Polestar is guiding* in Route settings to keep both.
+
 - **Quest difficulty.** Choose the highest recommended quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups. Accepted quests remain visible.
 
 - **Dungeon journeys.** Follow quest pickups, preparation chains and hand-ins with Shortest Path Forever. Right-click a dungeon card for AtlasLoot bosses, drops and native item tooltips. Tweaks Forever handles automatic dungeon maps.
