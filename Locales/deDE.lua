@@ -416,7 +416,8 @@ L["UNEXPLORED"] = "Ihr habt %s noch nicht gesehen"
 L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
-L["WHATS_NEW"] = "Daten mit Forever 1.60.1.70450 abgeglichen."
+L["WHATS_NEW"] =
+	"Tritt zurück, während Polestar führt; klickt auf die Zeile in der Questverfolgung, um wieder zu übernehmen."
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"

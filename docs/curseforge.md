@@ -26,6 +26,7 @@ These images are generated previews of the guide UI.
 
 - **RestedXP guides.** Read RestedXP's instructions and objectives in the Adventure tab and tracker. Choose a guide from the Continue cards and move between its steps. Turn off *Use RestedXP guides* to return to Adventure Guide recommendations.
 
+- **Works alongside Polestar.** While Polestar has a guide running, no route starts and no map marks are drawn. The tracker says *Polestar is guiding you*; click it to take over.
 - **What to do next.** The map guide offers two Continue cards and one per section; Quests in your log comes first.
 - **Journeys.** Finish loose ends, follow zone stories or pick up class quests. Dungeon and battleground journeys are opt-in.
 - **Dungeons.** Check quests and prerequisites, then visit their givers. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) supplies bosses and loot.

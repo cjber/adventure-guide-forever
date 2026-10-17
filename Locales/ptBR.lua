@@ -411,7 +411,7 @@ L["UNEXPLORED"] = "Você ainda não viu %s"
 L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
 L["UPDATED_TO"] = "atualizado para %s. %s"
-L["WHATS_NEW"] = "Dados conferidos com o Forever 1.60.1.70450."
+L["WHATS_NEW"] = "Sai do caminho enquanto o Polestar guia; clique na linha do rastreador para assumir de novo."
 L["WHY_ALLIANCE"] = "Só Aliança"
 L["WHY_BREADCRUMB"] = "Só até você aceitar %s"
 L["WHY_CHOSE"] = "Você escolheu %s no lugar"
