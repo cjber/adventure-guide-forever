@@ -279,7 +279,7 @@ local function Follow()
 	end
 	if not (route.chosen and prefs.guided == route.journey and ns.State.Player().map) then
 		return
-	elseif InCombatLockdown() or UnitOnTaxi("player") then
+	elseif InCombatLockdown() or UnitOnTaxi("player") or ns.Polestar.Active() then
 		return
 	end
 	local first, saved = route.steps[1], prefs.waypoint
@@ -444,13 +444,24 @@ function ns.StartRoute(step)
 	step = step or route.steps[1]
 	if step and step.rxpIndex and not ns.Model.ValidPlace(step) then
 		prefs.guided = route.journey
+		ns.Polestar.TakeOver()
 		return true
 	end
 	if step and Guidance.Navigate(step, true) then
 		prefs.guided = route.journey
+		-- A route started while Polestar guides is the player taking over (Polestar.lua).
+		ns.Polestar.TakeOver()
 		return true
 	end
 	return false
+end
+
+-- Polestar started guiding (Polestar.lua): a start waiting for combat's end is dropped, and only what Go started stops.
+function Guidance.StepAside()
+	pendingStart = false
+	if Guidance.Owns() then
+		Guidance.Cancel()
+	end
 end
 
 -- `key`'s route runs now: it is the chosen card, its route is ours and nothing paused it.
@@ -564,6 +575,10 @@ end
 local restoring = true
 local function Restore()
 	if not restoring or InCombatLockdown() or not ns.State.Ready() or ns.QuestieBuilding() then
+		return
+	end
+	-- Polestar guides: nothing comes back or starts itself until it stops or the player takes over (Polestar.lua).
+	if ns.Polestar.Active() then
 		return
 	end
 	local prefs, route = ns.Prefs(), ns.Route()

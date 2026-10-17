@@ -176,6 +176,8 @@ L["OVERVIEW_WHERE"] = "%s · %d레벨"
 L["PICK_UP"] = "퀘스트 수락: %s"
 L["PIN_RETURN_STORY"] = "오른쪽 클릭하면 이야기의 시작부터 경로를 잡습니다"
 L["PLACE"] = "%s, %s"
+L["POLESTAR_GUIDING"] = "Polestar가 안내 중입니다"
+L["POLESTAR_TAKE_OVER"] = "클릭하여 안내 되찾기"
 L["PREVIOUS_PAGE"] = "이전"
 L["PROFESSION_BAR"] = "%d/%d"
 L["PROFESSION_CAP"] = "%s: %d/%d 도달"
@@ -293,6 +295,9 @@ L["SETTING_GIVERS_TOOLTIP"] =
 L["SETTING_MAP_PINS"] = "지도에 경로 핀 표시"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"해당 지역이 표시되는 동안 세계 지도에 경로의 번호 붙은 단계를 표시하며, 퀘스트 NPC 표시가 켜져 있으면 퀘스트 NPC도 표시합니다. 열린 안내서는 어느 경우든 경로를 미리 보여 줍니다."
+L["SETTING_POLESTAR_ASIDE"] = "Polestar가 안내하는 동안 물러나기"
+L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
+	"Polestar가 가이드를 진행하는 동안에는 안내서가 자체 경로를 시작하지 않고 지도 표시도 그리지 않습니다. 추적기에 Polestar가 안내 중이라고 표시되며, 클릭하면 다시 안내를 맡습니다."
 L["SETTING_QUEST_LEVEL"] = "내 레벨보다 높은 최대 퀘스트 레벨"
 L["SETTING_QUEST_LEVEL_ONE"] = "%s레벨"
 L["SETTING_QUEST_LEVEL_TOOLTIP"] =

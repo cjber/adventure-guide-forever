@@ -77,6 +77,12 @@ function ns.RegisterSettings()
 						ns.L.SETTING_TITLE_ROUTE_TOOLTIP
 					),
 					Checkbox(subcategory, "autoStart", ns.L.SETTING_AUTO_START, ns.L.SETTING_AUTO_START_TOOLTIP),
+					Checkbox(
+						subcategory,
+						"polestarAside",
+						ns.L.SETTING_POLESTAR_ASIDE,
+						ns.L.SETTING_POLESTAR_ASIDE_TOOLTIP
+					),
 					Checkbox(subcategory, "stepSound", ns.L.SETTING_STEP_SOUND, ns.L.SETTING_STEP_SOUND_TOOLTIP),
 					Checkbox(
 						subcategory,

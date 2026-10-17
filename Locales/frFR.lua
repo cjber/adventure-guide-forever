@@ -176,6 +176,8 @@ L["OVERVIEW_WHERE"] = "%s · niveau %d"
 L["PICK_UP"] = "Prendre des quêtes : %s"
 L["PIN_RETURN_STORY"] = "Clic droit pour un itinéraire depuis le début de l’histoire"
 L["PLACE"] = "%s, %s"
+L["POLESTAR_GUIDING"] = "Polestar vous guide"
+L["POLESTAR_TAKE_OVER"] = "Cliquez pour reprendre la main"
 L["PREVIOUS_PAGE"] = "Précédent"
 L["PROFESSION_BAR"] = "%d/%d"
 L["PROFESSION_CAP"] = "%s a atteint %d sur %d"
@@ -293,6 +295,9 @@ L["SETTING_GIVERS_TOOLTIP"] =
 L["SETTING_MAP_PINS"] = "Afficher les repères d’itinéraire sur la carte"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"Les étapes numérotées de l’itinéraire sur la carte du monde quand leur zone est affichée, et les donneurs de quêtes s’ils sont aussi activés. Le guide ouvert montre toujours un aperçu de son itinéraire."
+L["SETTING_POLESTAR_ASIDE"] = "S’effacer quand Polestar guide"
+L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
+	"Tant que Polestar suit un guide, le guide ne lance aucun itinéraire et ne place aucune marque sur la carte. Le suivi indique que Polestar vous guide ; cliquez dessus pour reprendre la main."
 L["SETTING_QUEST_LEVEL"] = "Niveau de quête maximum au-dessus du vôtre"
 L["SETTING_QUEST_LEVEL_ONE"] = "%s niveau"
 L["SETTING_QUEST_LEVEL_TOOLTIP"] =

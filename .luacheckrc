@@ -100,6 +100,7 @@ read_globals = {
 	-- Integrations.lua
 	"ShortestPathForever",
 	"TweaksForever",
+	"Polestar",
 	"LegacyForever",
 	"GetBindLocation",
 	"GetLocale",

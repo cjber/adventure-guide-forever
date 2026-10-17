@@ -177,6 +177,8 @@ L["OVERVIEW_WHERE"] = "%s · Stufe %d"
 L["PICK_UP"] = "Quests annehmen: %s"
 L["PIN_RETURN_STORY"] = "Rechtsklick für eine Route vom Anfang der Geschichte"
 L["PLACE"] = "%s, %s"
+L["POLESTAR_GUIDING"] = "Polestar führt Euch"
+L["POLESTAR_TAKE_OVER"] = "Klicken, um zu übernehmen"
 L["PREVIOUS_PAGE"] = "Zurück"
 L["PROFESSION_BAR"] = "%d/%d"
 L["PROFESSION_CAP"] = "%s: %d von %d erreicht"
@@ -294,6 +296,9 @@ L["SETTING_GIVERS_TOOLTIP"] =
 L["SETTING_MAP_PINS"] = "Routenmarkierungen auf der Karte anzeigen"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"Die nummerierten Schritte der Route auf der Weltkarte, solange ihr Gebiet angezeigt wird, und Questgeber, wenn diese auch an sind. Der geöffnete Führer zeigt seine Route in jedem Fall als Vorschau."
+L["SETTING_POLESTAR_ASIDE"] = "Zurücktreten, während Polestar führt"
+L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
+	"Solange Polestar einen Leitfaden ausführt, startet der Führer keine eigene Route und zeichnet keine Markierungen auf der Karte. Die Questverfolgung zeigt, dass Polestar Euch führt; klickt darauf, um wieder zu übernehmen."
 L["SETTING_QUEST_LEVEL"] = "Höchste Queststufe über Eurer"
 L["SETTING_QUEST_LEVEL_ONE"] = "%s Stufe"
 L["SETTING_QUEST_LEVEL_TOOLTIP"] =

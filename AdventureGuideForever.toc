@@ -12,7 +12,7 @@
 ## SavedVariables: AdventureGuideForeverDB
 ## SavedVariablesPerCharacter: AdventureGuideForeverCharDB
 ## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick
-## OptionalDeps: AtlasLootClassic, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever, RXPGuides
+## OptionalDeps: AtlasLootClassic, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever, RXPGuides, Polestar
 
 Locales\enUS.lua
 Locales\deDE.lua
@@ -50,6 +50,7 @@ Planning\Geometry.lua
 Planning\Focus.lua
 Integrations\Integrations.lua
 Integrations\RestedXP.lua
+Integrations\Polestar.lua
 Integrations\Tweaks.lua
 Integrations\SkillUp.lua
 Core\Guidance.lua

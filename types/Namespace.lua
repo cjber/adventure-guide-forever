@@ -165,6 +165,7 @@
 ---@field npcs table<integer, AGFNpc>
 
 ---@class AGFPrefs
+---@field polestarTakenFrom? string|true the Polestar guide the player took over from (Polestar.lua); nil once Polestar runs none
 ---@field camps? table<string, table<string, true>> the spots "Next spot" passed over this session, by area step key and Model.SpotKey
 ---@field notOffered table<integer, integer> route pickups their giver's window left out: quest ID -> the player's level then (Offers.lua)
 ---@field plannedDungeons table<integer, boolean>
@@ -589,6 +590,10 @@
 ---@field TRAINER_LINE string format: TRAINER, then the spell count
 ---@field TRACKER_UNATTACHED string
 ---@field TRACKER_LOADING string the tracker's quiet line while QuestieDB's catalogue builds
+---@field POLESTAR_GUIDING string the tracker's one line while Polestar runs a guide
+---@field POLESTAR_TAKE_OVER string under it: a click takes over again
+---@field SETTING_POLESTAR_ASIDE string
+---@field SETTING_POLESTAR_ASIDE_TOOLTIP string
 ---@field DUMP_SAVED string
 ---@field TURN_IN string format: quest title
 ---@field READY_TO_HAND_IN string
@@ -730,6 +735,7 @@
 ---@field ShowOnMap fun(step: AGFStep|AGFGiver): boolean route, open its zone and ping the destination
 ---@field Running fun(key: string): boolean the card is chosen and its route is ours, running and not paused
 ---@field Cancel fun() Stop: cancels our Shortest Path journey, and clears the native waypoint only while it is ours
+---@field StepAside fun() Polestar started guiding: drops a waiting start and cancels only what Go started
 ---@field Reroute fun() the player reordered the chosen journey: the route AGF runs for it starts again a frame on
 ---@field CurrentStep fun(): AGFStep? the step the handed route heads for while it guides, else the route's head
 ---@field Guided fun(): (AGFStep|AGFGiver)[] the stops Shortest Path walks, while it guides; empty otherwise
@@ -1865,6 +1871,7 @@ AdventureGuideForever = nil
 
 ---@class AGFNamespace
 ---@field GuideSetup AGFGuideSetup
+---@field Polestar AGFPolestarModule
 
 ---@class AGFStrings
 ---@field RXP_SETUP_TITLE string

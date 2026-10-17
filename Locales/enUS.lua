@@ -217,6 +217,12 @@ ns.L = {
 	TRACKER_DRAG_TITLE = "Forever tracker",
 	TRACKER_DRAG_TOOLTIP = "Drag to move",
 	TRACKER_LOADING = "Loading quest data...",
+	-- While Polestar runs a guide (Polestar.lua): the tracker's one line, and the setting behind it.
+	POLESTAR_GUIDING = "Polestar is guiding you",
+	POLESTAR_TAKE_OVER = "Click to take over",
+	SETTING_POLESTAR_ASIDE = "Step aside while Polestar is guiding",
+	SETTING_POLESTAR_ASIDE_TOOLTIP = "While Polestar has a guide running, the guide starts no route of its own and "
+		.. "draws no map marks. The tracker says Polestar is guiding you; click it to take over again.",
 	-- The trainer aside.
 	TRAINER = "Visit your class trainer",
 	TRAINER_SPELLS = "%d new spells",

@@ -170,6 +170,8 @@ L["OVERVIEW_WHERE"] = "%s · %d級"
 L["PICK_UP"] = "接受任務：%s"
 L["PIN_RETURN_STORY"] = "右鍵點擊從故事起點規劃路線"
 L["PLACE"] = "%s，%s"
+L["POLESTAR_GUIDING"] = "Polestar正在為你導航"
+L["POLESTAR_TAKE_OVER"] = "點擊以接管"
 L["PREVIOUS_PAGE"] = "上一頁"
 L["PROFESSION_BAR"] = "%d/%d"
 L["PROFESSION_CAP"] = "%s已達到%d/%d"
@@ -285,6 +287,9 @@ L["SETTING_GIVERS_TOOLTIP"] =
 L["SETTING_MAP_PINS"] = "在地圖上顯示路線標記"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"顯示其所在地區時，在世界地圖上顯示路線的編號步驟；若任務給予者也已開啟，則一併顯示。開啟的指南總會預覽其路線。"
+L["SETTING_POLESTAR_ASIDE"] = "Polestar導航時讓路"
+L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
+	"Polestar執行指南期間，本指南不會開始自己的路線，也不會在地圖上繪製標記。追蹤器會顯示Polestar正在為你導航；點擊它即可重新接管。"
 L["SETTING_QUEST_LEVEL"] = "任務等級最多高於你"
 L["SETTING_QUEST_LEVEL_ONE"] = "%s級"
 L["SETTING_QUEST_LEVEL_TOOLTIP"] =

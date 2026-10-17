@@ -192,6 +192,8 @@ L["PICK_UP"] = "Взять задания: %s"
 L["PIN_RETURN_STORY"] =
 	"Щелкните правой кнопкой, чтобы проложить маршрут от начала истории"
 L["PLACE"] = "%s, %s"
+L["POLESTAR_GUIDING"] = "Вас ведет Polestar"
+L["POLESTAR_TAKE_OVER"] = "Щелкните, чтобы вернуть управление"
 L["PREVIOUS_PAGE"] = "Назад"
 L["PROFESSION_BAR"] = "%d/%d"
 L["PROFESSION_CAP"] = "%s: достигнуто %d из %d"
@@ -316,6 +318,9 @@ L["SETTING_GIVERS_TOOLTIP"] =
 L["SETTING_MAP_PINS"] = "Показывать метки маршрута на карте"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"Пронумерованные шаги маршрута на карте мира, пока показана их зона, а также те, кто дает задания, если это тоже включено. Открытый путеводитель в любом случае показывает свой маршрут."
+L["SETTING_POLESTAR_ASIDE"] = "Уступать, пока ведет Polestar"
+L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
+	"Пока Polestar ведет вас по руководству, путеводитель не запускает свой маршрут и не ставит метки на карте. В списке заданий написано, что вас ведет Polestar; щелкните по строке, чтобы снова вести самому."
 L["SETTING_QUEST_LEVEL"] = "Макс. уровень заданий выше вашего"
 L["SETTING_QUEST_LEVEL_ONE"] = "Уровень: %s"
 L["SETTING_QUEST_LEVEL_TOOLTIP"] =

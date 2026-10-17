@@ -173,6 +173,8 @@ L["OVERVIEW_WHERE"] = "%s · nível %d"
 L["PICK_UP"] = "Aceitar missões: %s"
 L["PIN_RETURN_STORY"] = "Clique com o botão direito para traçar a rota desde o início da história"
 L["PLACE"] = "%s, %s"
+L["POLESTAR_GUIDING"] = "O Polestar está guiando você"
+L["POLESTAR_TAKE_OVER"] = "Clique para assumir"
 L["PREVIOUS_PAGE"] = "Anterior"
 L["PROFESSION_BAR"] = "%d/%d"
 L["PROFESSION_CAP"] = "%s chegou a %d de %d"
@@ -290,6 +292,9 @@ L["SETTING_GIVERS_TOOLTIP"] =
 L["SETTING_MAP_PINS"] = "Mostrar marcadores de rota no mapa"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"Os passos numerados da rota no mapa-múndi enquanto a zona deles é mostrada, e os recrutadores de missões quando também estiverem ativados. O guia aberto mostra a rota de qualquer forma."
+L["SETTING_POLESTAR_ASIDE"] = "Sair do caminho enquanto o Polestar guia"
+L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
+	"Enquanto o Polestar tiver um guia em andamento, o guia não inicia nenhuma rota própria nem desenha marcas no mapa. O rastreador mostra que o Polestar está guiando você; clique nele para assumir de novo."
 L["SETTING_QUEST_LEVEL"] = "Nível máximo de missão acima do seu"
 L["SETTING_QUEST_LEVEL_ONE"] = "%s nível"
 L["SETTING_QUEST_LEVEL_TOOLTIP"] =

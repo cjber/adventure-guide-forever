@@ -184,6 +184,19 @@ ShortestPathForever = nil
 ---@type {API: table?}? read through Tweaks.lua and Providers.lua, each checking it against AGFTFAPI
 TweaksForever = nil
 
+-- The few calls Polestar.lua makes, each checked for before it is called (Polestar's docs/ARCHITECTURE.md, "Engine" and
+-- "Message bus").
+---@class AGFPolestarEngine
+---@field GetGuide? fun(): {id?: string}? the active tab's guide, kept loaded after it is finished
+---@field GetStepIndex? fun(): integer? the step shown; nil once the guide is finished
+
+---@class AGFPolestarGlobal
+---@field Engine? AGFPolestarEngine
+---@field On? fun(message: string, fn: fun(...)): table
+
+---@type AGFPolestarGlobal?
+Polestar = nil
+
 ---@class AGFSettingsSetting
 ---@field SetValueChangedCallback fun(self: AGFSettingsSetting, callback: fun(setting: AGFSettingsSetting, value: boolean|number))
 -- A checkbox's row (Blizzard_Settings_Shared SettingsListElementInitializer); a child is greyed while predicate is false.

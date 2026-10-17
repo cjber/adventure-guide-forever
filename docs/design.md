@@ -190,3 +190,21 @@ When the optional RestedXP addon is available, `Integrations/RestedXP.lua` adapt
 AGF hands the current guide waypoint to SPF as `AdventureGuideForever`, held until RXP changes it. Sticky objectives remain visible without becoming future travel stops. Unknown destinations have no pin or travel estimate. SPF's direct RXP adapter defers while `AdventureGuideForever.API.RestedXPIntegrated()` is true, so Stop and route ownership stay with the existing frontend. RXP active-item and target windows and its minimap icon are suppressed alongside its guide window. Native RXP windows must retain their engine updates while their presentation is suppressed; restoring the original frontend restores its captured presentation state.
 
 The integration ships original adapter code and requires the separately installed RXP addon. It does not include RXP code, guide files or artwork, export guides, or bypass its account and eligibility checks. Paid guides remain subject to RestedXP's personal-use terms. Public preview text is an original test fixture.
+
+## Alongside Polestar
+
+Polestar is a separate leveling guide with its own window and arrow. `Integrations/Polestar.lua` reads two things,
+each feature-detected and called through `pcall`: `Polestar.Engine.GetGuide()`, and `GetStepIndex()`, since a finished
+guide stays loaded with no step left. It reads them again on Polestar's `GUIDE_CHANGED` and `GUIDE_COMPLETED`
+messages, or every 5 seconds where Polestar has no message bus (`Polestar.On`). An error reads as no guide. Nothing of
+Polestar's is written, hooked or copied.
+
+While `polestarAside` is on (the default) and Polestar has a guide running, the route steps aside:
+`Guidance.StepAside` drops a start waiting for combat's end and stops only what Go started; Restore neither brings
+back nor auto-starts a route until Polestar stops; Follow sends nothing; the map switch draws no rings or givers (the
+guide window's own preview still does); and the tracker holds one line, "Polestar is guiding you", under the generic
+title. Clicking the line, or starting a journey's route (`ns.StartRoute`), takes over: Adventure Guide leads again
+until Polestar runs a different guide. The guide taken over from is kept per character (`polestarTakenFrom`), so
+Polestar reopening it after a reload does not undo the choice, and it is forgotten once Polestar runs none. A one-off
+Go (a trainer, a giver pin, a dungeon entrance) sets its waypoint without taking over. With Polestar absent or idle, or
+the setting off, nothing changes.
