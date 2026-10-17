@@ -149,6 +149,10 @@ end
 ---@type table<AGFData, AGFIndex>
 local indexes = setmetatable({}, { __mode = "k" })
 
+-- An exclusive group's members, ascending; `directed` when any member's links keep their direction (closedBy).
+---@class AGFExclusiveGroup: integer[]
+---@field directed? boolean
+
 local function Index(data)
 	local index = indexes[data]
 	if index then
@@ -178,6 +182,7 @@ local function Index(data)
 			table.insert(index.starts[mapID], id)
 		end
 		if quest.group and quest.group > 0 then
+			---@type AGFExclusiveGroup
 			local group = index.groups[quest.group] or {}
 			index.groups[quest.group] = group
 			group[#group + 1] = id
