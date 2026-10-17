@@ -26,6 +26,9 @@ These images are generated previews of the guide UI.
 
 - **RestedXP guides.** Read RestedXP's instructions and objectives in the Adventure tab and tracker. Choose a guide from the Continue cards and move between its steps. Turn off *Use RestedXP guides* to return to Adventure Guide recommendations.
 
+
+- **Works alongside Polestar.** While Polestar guides, the route and map marks pause; click the tracker line to take over, or turn this off in Route settings.
+
 - **What to do next.** The map guide offers two Continue cards and one per section; Quests in your log comes first.
 - **Journeys.** Finish loose ends, follow zone stories or pick up class quests. Dungeon and battleground journeys are opt-in.
 - **Dungeons.** Check quests and prerequisites, then visit their givers. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) supplies bosses and loot.
@@ -35,7 +38,7 @@ These images are generated previews of the guide UI.
 - **Where to do objectives.** A place with mobs 3 or more levels above you gives way to a lower one on its map. *Next spot* picks another camp, even where you stand.
 - **Quest difficulty.** Set the highest quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups.
 - **Your order.** Drag steps or use their menu. Moves that break quest order are greyed out.
-- **Search and hints.** Search puts the best match first and shows a quest's requirements. For a locked quest it names the earliest quest in its chain you can take. Hints cover talents and battlegrounds; class spell reminders are off by default.
+- **Search and hints.** Search puts the best match first, with each quest's requirements and, for a locked one, the first quest in its chain you can take. Hints cover talents and battlegrounds.
 - **Your say.** Skip steps or hide journeys. Shift-click search results or map quest givers to add quests. Nothing abandons quests for you. Map marks are off by default.
 
 Forever's new quests are only considered once they are in your log, and a missing location stays missing. This is not a complete levelling walkthrough.
@@ -68,9 +71,9 @@ Each one works on its own, and they work together when you install more than one
 
 <!-- forever-family:end -->
 
-Installed together, Shortest Path Forever plans the way to every stop, with flights and boat times. SkillUp Forever fills the Professions tab with your next skill-ups, and Legacy Forever adds your zone completion. Tweaks Forever supplies class trainer locations for spell reminders and each dungeon's entrance, and lets you move the guide window.
+Installed together, Shortest Path Forever plans the way to every stop. SkillUp Forever fills the Professions tab, and Legacy Forever adds your zone completion. Tweaks Forever supplies class trainer locations and dungeon entrances, and lets you move the guide window.
 
-The guide's tracker section shares one column with the Shortest Path, SkillUp and Legacy sections, above your quests. Empty, it leaves your quests where Edit Mode or your UI addon put them.
+The guide's tracker section shares one column with the other Forever sections, above your quests. Empty, it leaves your quests where Edit Mode or your UI addon put them.
 
 Source code and issues: [github.com/cjber/adventure-guide-forever](https://github.com/cjber/adventure-guide-forever). Licence: GPL-3.0-or-later.
 

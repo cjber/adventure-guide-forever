@@ -289,7 +289,7 @@ L["SETTING_MAP_PINS_TOOLTIP"] =
 	"显示其所在地区时，在世界地图上显示路线的编号步骤；若任务NPC也已开启，则一并显示。打开的指南总会预览其路线。"
 L["SETTING_POLESTAR_ASIDE"] = "Polestar导航时让路"
 L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
-	"Polestar运行指南期间，本指南不会开始自己的路线，也不会在地图上绘制标记。追踪器会显示Polestar正在为你导航；点击它即可重新接管。"
+	"Polestar运行指南期间，本指南不会开始自己的路线，也不会在地图上绘制标记。目标追踪栏会显示Polestar正在为你导航；点击它即可重新接管。"
 L["SETTING_QUEST_LEVEL"] = "任务等级最多高于你"
 L["SETTING_QUEST_LEVEL_ONE"] = "%s级"
 L["SETTING_QUEST_LEVEL_TOOLTIP"] =
@@ -404,7 +404,7 @@ L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以寻找地下城入口。"
 L["UNEXPLORED"] = "你还没见过%s"
 L["UNLISTED"] = "这片土地有指南尚不知道的故事；请留意任务NPC头上的“!”。"
 L["UPDATED_TO"] = "已更新到%s。%s"
-L["WHATS_NEW"] = "已按 Forever 1.60.1.70450 核对数据。"
+L["WHATS_NEW"] = "Polestar导航时本指南会让路，目标追踪栏中有一行可供你重新接管。"
 L["WHY_ALLIANCE"] = "仅限联盟"
 L["WHY_BREADCRUMB"] = "仅在你接受%s之前"
 L["WHY_CHOSE"] = "你改选了%s"
