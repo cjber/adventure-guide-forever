@@ -27,9 +27,14 @@ function Closes.Line(questID)
 	if not lost[1] then
 		return nil
 	end
-	local names = {}
-	for index, id in ipairs(lost) do
-		names[index] = state.QuestTitle(id) or data.quests[id].title
+	-- Each title once: a chain's steps or a quest's versions can share one.
+	local names, seen = {}, {}
+	for _, id in ipairs(lost) do
+		local name = state.QuestTitle(id) or data.quests[id].title
+		if not seen[name] then
+			seen[name] = true
+			names[#names + 1] = name
+		end
 	end
 	return L.CLOSES_WARNING:format(state.QuestTitle(questID) or quest.title, table.concat(names, L.LIST_SEPARATOR))
 end

@@ -129,8 +129,11 @@ abandons quests.
   closes it; AGF keeps those links inside each exclusive group as `closedBy`, so a breadcrumb that closes once its
   target is taken never reads as closing the target. When a giver's detail window offers a quest that would close
   another for good, one chat line names what you'd lose, once per quest a session: "Taking X closes Y for good."
-  Left out: quests done or in the log, quests something else already closed, quests the character can never take
-  (side, race, class, repeatable) and other versions of the offered quest (the same title). A quest the game took
+  Left out: quests done or in the log, quests something else already closed (another closer, or a breadcrumb's
+  target), quests the character can never take (side, race, class, repeatable, a start the data cannot place), a
+  follow-up that needs another member of the group first (its lead is the loss), and other versions of the offered
+  quest (the same title); each title is named once. The planner's eligibility reads the same directions: a group
+  whose links carry `closedBy` closes a member only once one of its own closers is done or in the log. A quest the game took
   itself (auto-accept) says nothing. The setting `warnClosing` (on) turns it off; with Polestar's own warning on
   (`Polestar.Get("behavior.warnClosing")`) AGF says nothing, so it is never said twice. `Model.Closes`,
   `Core/Closes.lua`.

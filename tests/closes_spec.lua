@@ -74,6 +74,46 @@ do
 	equal(#h.errors, 0, "model: errors\n" .. table.concat(h.errors, "\n"))
 end
 
+-- A chain's follow-ups go with their lead, each title is said once, and the planner reads the same directions: with
+-- 861 done, 844 stays open (861 never closed it).
+do
+	local h = Load()
+	equal(Closes(h, 8747), "8752,8757", "follow-ups that need a lost lead are not counted again")
+	equal(
+		h.ns.Closes.Line(8747),
+		h.ns.L.CLOSES_WARNING:format(
+			"The Path of the Protector",
+			"The Path of the Conqueror" .. h.ns.L.LIST_SEPARATOR .. "The Path of the Invoker"
+		),
+		"each lead named once"
+	)
+	local quests = h.ns.Data.quests
+	quests[861].breadcrumb = 6
+	equal(Closes(h, 844), "861", "a breadcrumb whose target is open is still lost")
+	quests[861].breadcrumb = nil
+	local start = quests[861].start
+	quests[861].start = nil
+	equal(Closes(h, 844), "", "a start the data cannot place: never offered, never lost")
+	quests[861].start = start
+	local state = h.ns.State
+	local function GroupLine(completed, id)
+		for _, line in ipairs(h.ns.Model.Why(h.ns.Data, state.Player(), completed, {}, id)) do
+			if line.text:find("instead", 1, true) then
+				return line.text
+			end
+		end
+	end
+	equal(GroupLine({ [861] = true }, 844), nil, "861 done: 844 is not closed")
+	equal(GroupLine({ [844] = true }, 861) ~= nil, true, "844 done: 861 is closed")
+end
+
+do
+	local h = Load({ completed = {}, log = { { id = 6, title = "Bounty on Garrick Padfoot", level = 5 } } })
+	local quests = h.ns.Data.quests
+	quests[861].breadcrumb = 6
+	equal(Closes(h, 844), "", "a breadcrumb whose target is taken is closed already")
+end
+
 -- Done, in the log, or closed already by another quest done or in the log: nothing left to lose.
 do
 	local h = Load({ completed = { 7867 } })
