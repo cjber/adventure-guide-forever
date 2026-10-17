@@ -70,6 +70,9 @@ read_globals = {
 	"C_ChatInfo",
 	"IsInGroup",
 	"IsInRaid",
+	"GetNormalizedRealmName",
+	"LE_PARTY_CATEGORY_HOME",
+	"UNKNOWNOBJECT",
 	"UnitExists",
 	"UnitName",
 	-- Secret.lua

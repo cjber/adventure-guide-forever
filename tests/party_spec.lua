@@ -174,11 +174,18 @@ local function Load(options)
 		db = options.db,
 		setup = function(h)
 			local G = h.G
-			G.IsInGroup = function()
-				return party.grouped
+			G.LE_PARTY_CATEGORY_HOME = 1
+			G.IsInGroup = function(category)
+				if category == 1 then
+					return party.grouped
+				end
+				return party.grouped or party.instance == true
 			end
 			G.IsInRaid = function()
 				return party.raid
+			end
+			G.GetNormalizedRealmName = function()
+				return "Realm"
 			end
 			G.UnitExists = function(unit)
 				return party.grouped and party.members[unit] ~= nil
@@ -187,7 +194,8 @@ local function Load(options)
 				if unit == "player" then
 					return "Me"
 				end
-				return party.members[unit], "Realm"
+				local name = party.members[unit]
+				return name, party.realms and party.realms[unit] or nil
 			end
 			G.C_QuestLog.IsUnitOnQuest = function(unit, questID)
 				return party.on[unit] ~= nil and party.on[unit][questID] == true
@@ -305,6 +313,53 @@ do
 	h.fire("GROUP_ROSTER_UPDATE")
 	h.flush()
 	equal(h.ns.Party.Quests(), nil, "left: no party quests once the party is gone")
+	check(#h.errors == 0, table.concat(h.errors, "\n"))
+end
+
+-- An instance group of strangers is not a party: nothing is read or sent.
+do
+	local h = Load({ grouped = false })
+	h.party.instance = true
+	h.party.on.party1 = { [870] = true }
+	h.fire("GROUP_ROSTER_UPDATE")
+	h.flush()
+	equal(#h.sent, 0, "instance group: no message is sent")
+	equal(h.ns.Party.Quests(), nil, "instance group: nothing is favoured")
+end
+
+-- Two members of one name from different realms stay apart; a failed send is not taken as said.
+do
+	local h = Load()
+	h.party.members.party2 = "Ana"
+	h.party.realms = { party2 = "Other Realm" }
+	h.party.result = 5 -- NotInGroup
+	h.fire("GROUP_ROSTER_UPDATE")
+	h.flush()
+	local tried = #h.sent
+	check(tried >= 1, "failed: the asking message was tried")
+	h.party.result = nil
+	h.time = h.time + 30
+	h.fire("CHAT_MSG_ADDON", "AGFParty", "1:1kf", "PARTY", "Ana-Realm")
+	h.fire("CHAT_MSG_ADDON", "AGFParty", "1:1kf", "PARTY", "Ana-OtherRealm")
+	h.flush()
+	equal(h.ns.Party.Quests()[2031], 2, "realms: two Anas count as two members")
+	equal(#h.sent, tried, "heard: a plain message asks for no reply")
+	h.time = h.time + 30
+	h.fire("QUEST_ACCEPTED", 870)
+	h.flush()
+	equal(#h.sent, tried + 1, "failed: a send the client refused goes again on the next log event")
+	-- A message that lands before the client knows its sender's name still counts once it does.
+	h.time = h.time + 30
+	h.party.members.party3 = "Unknown"
+	h.G.UNKNOWNOBJECT = "Unknown"
+	h.fire("CHAT_MSG_ADDON", "AGFParty", "1:2bx", "PARTY", "Bo-Realm")
+	h.fire("GROUP_ROSTER_UPDATE")
+	h.flush()
+	equal(h.ns.Party.Quests()[3021], nil, "late name: not counted while unknown")
+	h.party.members.party3 = "Bo"
+	h.fire("GROUP_ROSTER_UPDATE")
+	h.flush()
+	equal(h.ns.Party.Quests()[3021], 1, "late name: counted once the name is known")
 	check(#h.errors == 0, table.concat(h.errors, "\n"))
 end
 

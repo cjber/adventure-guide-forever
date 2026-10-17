@@ -188,13 +188,11 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, l
 	while #selected < Model.MAX_STEPS do
 		local best, bestKey
 		for _, step in ipairs(pool) do
-			local key = PartyCost(player.party, step.quests, reach[step])
-			if
-				not chosen[step]
-				and Open(step)
-				and (not best or key < bestKey or (key == bestKey and step.key < best.key))
-			then
-				best, bestKey = step, key
+			if not chosen[step] and Open(step) then
+				local key = PartyCost(player.party, step.quests, reach[step])
+				if not best or key < bestKey or (key == bestKey and step.key < best.key) then
+					best, bestKey = step, key
+				end
 			end
 		end
 		if not best then

@@ -20,11 +20,11 @@ local SETTLE = 2 -- seconds a burst of log or roster events waits, so it costs o
 local SEND_GAP = 15 -- seconds between two messages, whatever asks for them
 local MAX_BYTES = 255 -- the client's limit for one addon message
 local MAX_IDS = 50 -- more than a full log (Forever's holds 40), so a longer message is not ours
-local MAX_ID = 36 ^ 4 - 1 -- four base-36 digits, well above any quest ID
 local MAX_MEMBERS = 4 -- a party is the player and four others
 local DIGITS = "0123456789abcdefghijklmnopqrstuvwxyz"
 
--- What each party member's last message said: short name -> set of quest IDs.
+-- What each party member's last message said: "Name-Realm" -> set of quest IDs. Kept while in a party, so a message
+-- that lands before the client knows the sender's name still counts once it does.
 ---@type table<string, table<integer, true>>
 local heard = {}
 -- The planner's answer (Party.Quests): quest ID -> how many party members have it; nil when there is nothing to favour.
@@ -87,8 +87,9 @@ function Party.Decode(text)
 	end
 	local ids, count = {}, 0
 	for part in body:gmatch("[^,]+") do
+		-- Four base-36 digits at most: well above any quest ID.
 		local id = #part <= 4 and tonumber(part, 36)
-		if not id or id < 1 or id > MAX_ID then
+		if not id or id < 1 then
 			return nil
 		end
 		count = count + 1
@@ -103,10 +104,11 @@ end
 -- In a party, not a raid (the client's home group: an instance group of strangers is not a party to share with).
 ---@return boolean
 local function InParty()
-	if not (IsInGroup and IsInGroup()) then
+	local home = LE_PARTY_CATEGORY_HOME
+	if not (IsInGroup and IsInGroup(home)) then
 		return false
 	end
-	return not (IsInRaid and IsInRaid())
+	return not (IsInRaid and IsInRaid(home))
 end
 
 ---@return boolean
@@ -128,22 +130,32 @@ local function OwnQuests()
 	return ids
 end
 
--- A name without its realm: party members are told apart by name, and a sender's arrives as "Name-Realm".
+-- A character's key, "Name-Realm" as a sender's name arrives: `realm` (spaces dropped) when given, else the player's
+-- own realm, so two members of one name from different realms stay apart.
 ---@param name string
+---@param realm? string
 ---@return string
-local function Short(name)
-	return (name:match("^[^-]+")) or name
+local function Key(name, realm)
+	if name:find("-", 1, true) then
+		return name
+	end
+	realm = (type(realm) == "string" and realm ~= "") and realm:gsub("%s", "")
+		or (GetNormalizedRealmName and GetNormalizedRealmName())
+	return realm and realm ~= "" and (name .. "-" .. realm) or name
 end
 
--- The party members the client lists now: unit token -> short name (nil where the name is secret).
+-- The party members the client lists now: unit token -> key, false where the name is secret or not known yet.
 ---@return table<string, string|false>
 local function Members()
 	local members = {}
 	for index = 1, MAX_MEMBERS do
 		local unit = "party" .. index
 		if UnitExists and UnitExists(unit) then
-			local name = UnitName and ns.Readable(UnitName(unit))
-			members[unit] = type(name) == "string" and Short(name) or false
+			local name = ns.Readable(UnitName(unit))
+			-- secret-ok: the realm, UnitName's second value, goes straight through ns.Readable as the name does
+			local realm = ns.Readable((select(2, UnitName(unit))))
+			local named = type(name) == "string" and name ~= "" and name ~= UNKNOWNOBJECT
+			members[unit] = named and Key(name, realm) or false
 		end
 	end
 	return members
@@ -186,8 +198,6 @@ local function Read()
 			for id in pairs(ids) do
 				Carry(id, name)
 			end
-		else
-			heard[name] = nil
 		end
 	end
 	local counts, keys = {}, {}
@@ -203,9 +213,16 @@ local function Read()
 		keys[index] = id .. "=" .. counts[id]
 	end
 	local joined = not grouped
-	local newcomer = false
-	for who in pairs(now) do
-		newcomer = newcomer or not roster[who]
+	local newcomer, settled = false, true
+	for unit, name in pairs(members) do
+		newcomer = newcomer or not roster[name or unit]
+		settled = settled and name ~= false
+	end
+	-- Once every member's name is known, a message from someone no longer here is forgotten.
+	if settled then
+		for name in pairs(heard) do
+			heard[name] = now[name] and heard[name] or nil
+		end
 	end
 	roster, grouped = now, true
 	known = #keys > 0 and counts or nil
@@ -214,10 +231,9 @@ local function Read()
 		signature = text
 		ns.Invalidate()
 	end
-	if joined then
+	-- Joining, or someone new in the party: tell them, and ask for theirs.
+	if joined or newcomer then
 		Party.Send(true)
-	elseif newcomer then
-		Party.Send(false, true)
 	end
 end
 
@@ -253,7 +269,7 @@ local function Flush()
 	end
 	local own = OwnQuests()
 	local text, plain = Party.Encode(own, ask), Party.Encode(own)
-	if not text or (plain == sentText and not force) then
+	if not text or (plain == sentText and not force and not ask) then
 		ask, force = false, false
 		return
 	end
@@ -261,7 +277,9 @@ local function Flush()
 	local ok, result = pcall(C_ChatInfo.SendAddonMessage, PREFIX, text, "PARTY")
 	local results = Enum and Enum.SendAddonMessageResult
 	local throttled = results and (result == results.AddonMessageThrottle or result == results.ChannelThrottle)
-	if ok and result ~= false and not throttled then
+	-- An older client answers true or nothing; a newer one Enum.SendAddonMessageResult, where only Success is sent.
+	local success = result == nil or result == true or (results ~= nil and result == results.Success)
+	if ok and success then
 		sentText, ask, force, retried = plain, false, false, false
 	elseif ok and throttled and not retried then
 		retried = true
@@ -308,8 +326,8 @@ local function Heard(sender, text)
 	if type(name) ~= "string" then
 		return
 	end
-	name = Short(name)
-	local me = UnitName and ns.Readable(UnitName("player"))
+	name = Key(name)
+	local me = Key(UnitName("player"))
 	if name == me then
 		return
 	end
