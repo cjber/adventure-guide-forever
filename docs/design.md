@@ -170,6 +170,19 @@ follow the shared family voice.
 - **4.4 Count ticks.** A burst of quest-log events that leaves the log's shape alone (the same quests, complete flags
   and objective done flags; `Model.LogShape`) only moved counts: the last route is repainted with the live counts
   (`Model.Repaint`), every journey, order, `here` hold and choice kept, without a plan. Anything else plans in full.
+- **4.5 Party quests.** In a party (not a raid) with *Favour quests your party has* on (the default), a step holding
+  a quest someone in the party also has costs half as much to reach, but never more than 300 yards less
+  (`Model.PartyCost`, in the selection, the nearest order and the laps' walk alike). The route stays the nearest
+  action at every step, so it leans towards shared work without a fixed order, and a step the player stands in or a
+  ready hand-in beside them still comes first. A pickup someone in the party has says so. The party's quests
+  (`Core/Party.lua`) are what the client shows, `C_QuestLog.IsUnitOnQuest` for each quest in the player's log, and
+  what party members running the guide say: one hidden addon message (prefix `AGFParty`, to `PARTY` only) carrying
+  their log's quest IDs in base 36, never text. It goes out 2 seconds after the log or the party changes, at most
+  once every 15 seconds, never in combat (it waits for the fight's end) and never on a timer of its own; one that
+  says what the last said is not sent again unless someone asked, and one the client throttles is tried once more.
+  Joining a party asks the others for theirs once. A sender's name is read through `ns.Readable`; a malformed
+  message, another version's, our own echo or a raid's is ignored. With the setting off, or out of a party, nothing
+  is sent, kept or favoured.
 
 ### Full guide outline
 
