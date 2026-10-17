@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Quest items that run out go first.** Some quest items vanish from your bags after a while, like the Rendered Spores Apothecary Zamah wants in Thunder Bluff within 45 minutes. While you carry one, the guide puts that quest's hand-in (or its objectives, if it isn't done yet) at the top of the route and says *before Rendered Spores runs out*. Thanks to Polestar for the idea.
+
 ## [0.17.0] - 2026-10-17
 
 - **Steps aside while Polestar is guiding.** If you have Polestar installed and one of its guides running, Adventure Guide no longer starts its own route or draws map marks over it. The tracker says *Polestar is guiding you*; click that line, or Go on a journey, to take over again. Turn off *Step aside while Polestar is guiding* in Route settings to keep both running.
