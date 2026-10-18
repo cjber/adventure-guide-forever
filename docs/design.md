@@ -153,14 +153,20 @@ follow the shared family voice.
   older heuristics (the story's chapter lead, a town's-own look-ahead and the committed order), which the
   player turns on from the Add-ons page.
 - **4.2 Laps.** A quest's objectives follow its pickup and its hand-in all of them. Respect quest-log capacity.
-  Objective areas merge only on the same map and for the same activity kind; separate maps keep separate visits. Current objective data does not distinguish floors on the same map.
+  Objective areas merge only on the same map and for the same activity kind; separate maps keep separate visits. A
+  quest a lap picks up joins an area only when every quest picked up for it there comes from the same town. Current objective data does not distinguish floors on the same map.
   Rebuild on events;
   movement changes focus without shuffling the route. Proximity never hides or truncates guidance. Plan a bounded lookahead, then verify and merge visits before limiting the displayed actions. Keep work bounded per frame.
-  Each objective's node is its first spawn group in the data's order (its zone, then the most spawns), passing over a
-  group whose mobs' lowest level (QuestieDB minLevel) is 3 or more above the player for the next that isn't; a group
-  with an object or an NPC without a level is never over, and when every group is over the first stays.
-  An area step's point is the objective node nearest the player (a spawn group's medoid, or the generator's point
-  inside the shape), so the marker sits on the work rather than on the shape's border; when the player is already
+  An objective's spawns form camps: 100-yard cells ranked by the spawns in and around them, so a camp across a cell's
+  edge stays one camp and a lone spawn ranks behind it, up to three per slot, none beside another, each at its camp's
+  medoid with a ring to the camp's farthest spawn within 100 yards. Each objective's node is its first camp in the
+  data's order (its zone, then the biggest camp), passing over a harder camp for the next easier one on the same map:
+  one whose mobs' lowest level (QuestieDB minLevel) is 3 or more above the player is harder, one whose mobs are all
+  elites (QuestieDB rank 1 to 3) harder still, so normal mobs come first, then normal mobs far above, then elites. A
+  camp with an object or an NPC without a level is never over, one with an object or a normal mob never elite, and when
+  every camp is as hard the first stays.
+  An area step's point is the objective node nearest the player (a camp's medoid), so the marker sits on the work
+  rather than on the shape's border; when the player is already
   inside the area the point stays the area's ring (its middle). The ring reaches past the shapes, so a broad area's
   ground between its objectives counts as being in it; standing at a spot Next spot passed over does not (§2.8).
   Standing in the area step 1 leads to is "you're here":

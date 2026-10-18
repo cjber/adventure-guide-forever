@@ -194,6 +194,16 @@ local function PickLapQuests(lap)
 		end
 		return Distance(a, b) <= CLOSE
 	end
+	-- A new quest's node joins an area only when every quest the route picks up there is its own town's, so an area is
+	-- never worked between two towns' pickups, where the order check would drop one town's work from it.
+	local function Joins(a, b, area)
+		for id in pairs(area.planned or NONE) do
+			if picks[id] ~= picks[owner[b]] then
+				return false
+			end
+		end
+		return Touches(a, b)
+	end
 	local fresh = {}
 	for _, town in ipairs(towns) do
 		local pickups = {}
@@ -210,7 +220,7 @@ local function PickLapQuests(lap)
 				local quest = data.quests[id]
 				local optional = Optional(quest, QuestLevel(data, log, player, id), player)
 				for _, node in ipairs(nodes[id]) do
-					Gather(data, areas, plan.anchors, fresh, node, id, quest.title, "area", optional, Touches, true)
+					Gather(data, areas, plan.anchors, fresh, node, id, quest.title, "area", optional, Joins, true)
 				end
 			else
 				picks[id] = nil
