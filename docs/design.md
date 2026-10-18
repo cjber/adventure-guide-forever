@@ -148,6 +148,9 @@ follow the shared family voice.
   a quest the town handed out or the player carries, or the nearest ready hand-in. A ready hand-in or a pickup
   within a short walk of the player comes before a step whose own target point is farther, so the guide finishes
   what is beside the player first; once it leads it stays until it is done or the player walks clearly away.
+  A quest whose item runs out in the bags (one the client lets last a day or less, ItemSparse DurationInInventory,
+  that the quest hands over, needs or collects) goes first while the player carries one, ahead even of the area they
+  stand in: its hand-in once it is done, else its objectives, with the reason "before <item> runs out".
   Group town visits and cross
   the sea at most once. This nearest order is the default; the opt-in `optimisedRoute` beta instead keeps the
   older heuristics (the story's chapter lead, a town's-own look-ahead and the committed order), which the

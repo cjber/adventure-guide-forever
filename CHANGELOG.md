@@ -13,6 +13,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [Unreleased]
 
 - **Plays better in a party.** When you're grouped, quests someone in your party also has count as a little nearer, so the route leans towards what you can do together without locking you into an order, and a pickup a party member already has says *someone in your party has it* so you can ask for a share. Party members running Adventure Guide tell each other which quests they have through a hidden addon message, at most once every 15 seconds and never in combat. It's on by default; turn off *Favour quests your party has* in Route settings to stop it. The idea came from Polestar.
+- **Quest items that run out go first.** Some quest items vanish from your bags after a while, like the Rendered Spores Apothecary Zamah wants in Thunder Bluff within 45 minutes. While you carry one, the guide puts that quest's hand-in (or its objectives, if it isn't done yet) at the top of the route and says *before Rendered Spores runs out*. Thanks to Polestar for the idea.
 
 ## [0.17.1] - 2026-10-17
 

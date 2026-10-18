@@ -101,6 +101,8 @@ L["GUIDE_OUTLINE_TOOLTIP"] =
 L["GUIDE_PAGE"] = "%d / %d · следующих шагов: %d · поздних заданий: %d"
 L["HAND_IN_WHEN"] = "Сдать, когда будете здесь: %s"
 L["HAND_IN_WHEN_DONE"] = "когда будет выполнено"
+L["BEFORE_IT_RUNS_OUT"] = "пока не исчез предмет «%s»"
+L["BEFORE_ITEM_RUNS_OUT"] = "пока не исчез предмет для задания"
 L["HELP_AUDIT"] = "/agf audit - сверить данные заданий с игрой"
 L["HELP_DUMP"] =
 	"/agf dump - сохранить раскладку путеводителя для отчета об ошибке"

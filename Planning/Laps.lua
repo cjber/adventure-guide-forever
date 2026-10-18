@@ -665,6 +665,42 @@ local function Front(lap, route, leads)
 	return Holds(lap, moved) and moved or route
 end
 
+-- The log quest whose item runs out (docs/design.md §4.1, AGFLogQuest.expiring) that `step` finishes, or nil: a
+-- complete one it hands in, else an unfinished one whose objectives it works.
+---@param log table<integer, AGFLogQuest>
+---@param step AGFStep
+---@return AGFLogQuest?
+local function Expiring(log, step)
+	for _, id in ipairs(Model.Handins(step)) do
+		local entry = log[id]
+		if entry and entry.expiring and entry.complete then
+			return entry
+		end
+	end
+	for _, objective in ipairs(step.objectives or NONE) do
+		local entry = log[objective.id]
+		if entry and entry.expiring and not entry.complete then
+			return entry
+		end
+	end
+	return nil
+end
+
+-- A quest carrying an item that runs out goes first, ahead even of the area the player stands in: the item won't
+-- wait. Front keeps the route when the order check refuses the move.
+---@param lap AGFLapState
+---@param route AGFStep[]
+---@return AGFStep[]
+local function Hurry(lap, route)
+	local leads, any = {}, false
+	for _, step in ipairs(route) do
+		if Expiring(lap.log, step) then
+			leads[step], any = true, true
+		end
+	end
+	return any and Front(lap, route, leads) or route
+end
+
 ---@param lap AGFLapState
 local function CommitLap(lap)
 	local data, log, player, planned, route, offered, rank, origin, card =
@@ -716,6 +752,10 @@ local function CommitLap(lap)
 		if near and near ~= route[1] then
 			route = Front(lap, route, { [near] = true })
 		end
+		route = Hurry(lap, route)
+		if standsIn and route[1] ~= standsIn then
+			standsIn.here = nil
+		end
 		-- The order is committed before the visits merge, so the next build, which splits them again, keeps to it.
 		order = State.committedOrders and card and Idents(route) --[[@as AGFOrder?]]
 		-- What each ordered step holds now, to tell after the merge and the last check which of them are still there.
@@ -738,6 +778,7 @@ local function CommitLap(lap)
 		if near and near ~= route[1] then
 			route = Front(lap, route, { [near] = true })
 		end
+		route = Hurry(lap, route)
 		if standsIn and route[1] == standsIn then
 			standsIn.here = true
 		end
@@ -866,6 +907,12 @@ local function DescribeLap(lap)
 				step.reason = ns.L.HAND_IN_WHEN:format(name)
 				step.detail = step.reason
 			end
+		end
+		local hurry = Expiring(log, step)
+		if hurry then
+			step.reason = hurry.expiringName and ns.L.BEFORE_IT_RUNS_OUT:format(hurry.expiringName)
+				or ns.L.BEFORE_ITEM_RUNS_OUT
+			step.detail = step.reason
 		end
 		Locate(data, step, mapName)
 		from = position or from

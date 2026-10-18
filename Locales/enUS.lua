@@ -236,6 +236,9 @@ ns.L = {
 	READY_TO_HAND_IN = "ready to hand in",
 	-- A hand-in the route comes back for once the quest's objectives are done, and an area of a quest picked up first.
 	HAND_IN_WHEN_DONE = "once it's done",
+	-- A step moved up the route because a quest item in the bags (named) vanishes after a while.
+	BEFORE_IT_RUNS_OUT = "before %s runs out",
+	BEFORE_ITEM_RUNS_OUT = "before a quest item runs out",
 	AFTER_PICK_UP = "after you pick it up",
 	OPENS_CHAPTER_HERE = "Opens the next chapter here",
 	QUESTS_IN_PROGRESS = "quests in progress",
