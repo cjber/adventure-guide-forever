@@ -192,6 +192,13 @@ ns.L = {
 	-- A card's tooltip: how many of its quests need a group, and what a click on it does.
 	GROUP_ONE = "1 needs a group",
 	GROUP_MANY = "%d need a group",
+	-- Why a step's quest wants a group (Overview.GroupNote): an outdoor elite, its dungeon or raid, or the size the quest
+	-- log suggests.
+	GROUP_NEED_ELITE = "Elite: group advised",
+	GROUP_NEED_DUNGEON = "Dungeon: %s",
+	GROUP_NEED_RAID = "Raid: %s",
+	GROUP_NEED_RAID_ANY = "Raid: group advised",
+	GROUP_NEED_SIZE = "Group of %d",
 	CLICK_TO_CHOOSE = "Click to choose this journey",
 	-- The travel line (docs/design.md §2.5): Shortest Path's own verbs (its JourneySteps.lua VERB), so both addons
 	-- name a leg alike.
