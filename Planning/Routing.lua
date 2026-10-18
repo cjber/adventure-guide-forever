@@ -21,17 +21,40 @@ local function HandInOnly(step)
 	return step.kind == "turnin" or (step.kind == "town" and #step.pickups == 0)
 end
 
+-- Party quests (docs/design.md §4.5): a step holding a quest someone in the player's party also has (`party`, the
+-- player's: quest ID -> how many members have it) costs half as much to reach, but never more than PARTY_YARDS less,
+-- so the route leans towards work the party shares and a quest a member carries can be shared on the spot. It stays
+-- the nearest action at every step: a shared step more than PARTY_YARDS farther than the nearest still waits.
+local PARTY_SHARE = 0.5
+local PARTY_YARDS = 300
+---@param party? table<integer, integer>
+---@param quests? integer[]
+---@param cost number
+---@return number
+function Model.PartyCost(party, quests, cost)
+	if party then
+		for _, id in ipairs(quests or NONE) do
+			if party[id] then
+				return cost - math.min(cost * PARTY_SHARE, PARTY_YARDS)
+			end
+		end
+	end
+	return cost
+end
+local PartyCost = Model.PartyCost
+
 -- Orders `stops` greedily by nearest action (docs/design.md §4.1): from `from`, repeatedly the unvisited stop
 -- cheapest to reach, so the route is the nearest action at every step. `group` (optional) names the town or area a
 -- stop belongs to; a stop in the group the route is already in comes before the route leaves it, so nearby stops of
 -- one town are finished first and the route never zig-zags between them. A stop already placed is never revisited,
--- and ties break by key, so a rebuild gives the same order.
+-- and ties break by key, so a rebuild gives the same order. `party` (optional) favours the party's quests (PartyCost).
 ---@param from? AGFPosition
 ---@param stops AGFStep[]
 ---@param at fun(step: AGFStep): AGFPosition?
 ---@param group? fun(step: AGFStep): unknown
+---@param party? table<integer, integer>
 ---@return AGFStep[]
-local function NearestStop(from, stops, at, group)
+local function NearestStop(from, stops, at, group, party)
 	local path, left = {}, {}
 	for _, step in ipairs(stops) do
 		left[#left + 1] = step
@@ -42,7 +65,7 @@ local function NearestStop(from, stops, at, group)
 		for index, step in ipairs(left) do
 			local home = group and group(step) or nil
 			local same = home ~= nil and home == was
-			local cost = Gap(here, 0, at(step), step.r or 0)
+			local cost = PartyCost(party, step.quests, Gap(here, 0, at(step), step.r or 0))
 			if
 				not pick
 				or (same ~= pickSame and same)
@@ -64,7 +87,7 @@ Model.Nearest = NearestStop
 -- Groups the selected steps by continent, the player's first and the rest by how dear they are to reach, so the
 -- route crosses each ocean once. In each group the turn-ins in `away` (another continent than the player's) go last,
 -- and within a part the stops go in Nearest order, the player's nearest action at every step.
-local function Order(selected, origin, where, away, planned)
+local function Order(selected, origin, where, away, planned, party)
 	local groups, byContinent = {}, {}
 	for _, step in ipairs(selected) do
 		local continent = where[step].continent
@@ -97,7 +120,7 @@ local function Order(selected, origin, where, away, planned)
 	end
 	for _, group in ipairs(groups) do
 		for _, part in ipairs({ group.main, group.last }) do
-			for _, step in ipairs(NearestStop(from, part, At, Group)) do
+			for _, step in ipairs(NearestStop(from, part, At, Group, party)) do
 				steps[#steps + 1] = step
 				from = where[step]
 			end
@@ -165,13 +188,11 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, l
 	while #selected < Model.MAX_STEPS do
 		local best, bestKey
 		for _, step in ipairs(pool) do
-			local key = reach[step]
-			if
-				not chosen[step]
-				and Open(step)
-				and (not best or key < bestKey or (key == bestKey and step.key < best.key))
-			then
-				best, bestKey = step, key
+			if not chosen[step] and Open(step) then
+				local key = PartyCost(player.party, step.quests, reach[step])
+				if not best or key < bestKey or (key == bestKey and step.key < best.key) then
+					best, bestKey = step, key
+				end
 			end
 		end
 		if not best then
@@ -220,7 +241,7 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, l
 	end
 	-- Each town's point is the place of its quest nearest the stop before it (the player, for the first): a real
 	-- giver, never a centre, so Shortest Path takes the player to the nearest door of the town.
-	local steps, from = Order(selected, start, where, away, prefs.optimisedRoute == true), start
+	local steps, from = Order(selected, start, where, away, prefs.optimisedRoute == true, player.party), start
 	for _, step in ipairs(steps) do
 		if step.spots then
 			TownPoint(data, step, from)
