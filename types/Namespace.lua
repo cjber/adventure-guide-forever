@@ -124,6 +124,7 @@
 
 -- What the live state tells the planner. Built by State.lua, consumed by the planner.
 ---@class AGFPlayer
+---@field party? table<integer, integer> in a party with the setting on (Party.lua): quest ID -> how many party members have it; nil when nothing is shared
 ---@field notOffered? table<integer, integer> quests marked not offered: quest ID -> the level marked at; one marked at the player's level is unproven, with its own Why line
 ---@field questAvailable? fun(id: integer): boolean
 ---@field level integer
@@ -617,6 +618,7 @@
 ---@field HUB_NPCS_MORE string format: a town's first NPCs, how many more
 ---@field PLACE string format: a step's place (NPC or town), its zone
 ---@field NEAR_YOUR_LEVEL string
+---@field PARTY_HAS string a pickup's reason when someone in the party has the quest (Party.lua)
 ---@field SKIP_STEP string
 ---@field OPTIONAL string
 ---@field SHORTEST_PATH string
@@ -1238,6 +1240,8 @@
 ---@field SETTING_WANDERER_TOOLTIP string
 ---@field SETTING_FOLLOW_QUEST string walking into the route's quest area selects the quest (Focus.lua)
 ---@field SETTING_FOLLOW_QUEST_TOOLTIP string
+---@field SETTING_PARTY_QUESTS string in a party, steps for the party's quests count as nearer (Party.lua)
+---@field SETTING_PARTY_QUESTS_TOOLTIP string
 ---@field SETTING_ROUTE_ORDER string beta: the planned route order (chapter lead, town look-ahead, committed order)
 ---@field SETTING_ROUTE_ORDER_TOOLTIP string
 
@@ -1741,7 +1745,8 @@
 ---@field Route fun(journeys: AGFJourney[], prefs: AGFPrefs): AGFRoute
 
 ---@class AGFModel
----@field Nearest fun(from: AGFPosition?, stops: AGFStep[], at: (fun(step: AGFStep): AGFPosition?), group?: (fun(step: AGFStep): unknown)): AGFStep[]
+---@field Nearest fun(from: AGFPosition?, stops: AGFStep[], at: (fun(step: AGFStep): AGFPosition?), group?: (fun(step: AGFStep): unknown), party?: table<integer, integer>): AGFStep[]
+---@field PartyCost fun(party: table<integer, integer>?, quests: integer[]?, cost: number): number `cost` less half, at most 300 yards, when the party shares one of `quests` (docs/design.md §4.5)
 
 ---@class AGFDungeonRow : Button
 ---@field Title FontString
@@ -1885,6 +1890,7 @@ AdventureGuideForever = nil
 ---@class AGFNamespace
 ---@field GuideSetup AGFGuideSetup
 ---@field Polestar AGFPolestarModule
+---@field Party AGFPartyModule
 
 ---@class AGFStrings
 ---@field RXP_SETUP_TITLE string

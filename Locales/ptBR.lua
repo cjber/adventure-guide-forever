@@ -175,6 +175,7 @@ L["ORDER_RESET"] = "Voltar à ordem sugerida"
 L["ORDER_SOONER"] = "Fazer isto antes"
 L["OTHER_ADVENTURES"] = "Outras aventuras"
 L["OVERVIEW_WHERE"] = "%s · nível %d"
+L["PARTY_HAS"] = "alguém do seu grupo tem esta"
 L["PICK_UP"] = "Aceitar missões: %s"
 L["PIN_RETURN_STORY"] = "Clique com o botão direito para traçar a rota desde o início da história"
 L["PLACE"] = "%s, %s"
@@ -297,6 +298,9 @@ L["SETTING_GIVERS_TOOLTIP"] =
 L["SETTING_MAP_PINS"] = "Mostrar marcadores de rota no mapa"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"Os passos numerados da rota no mapa-múndi enquanto a zona deles é mostrada, e os recrutadores de missões quando também estiverem ativados. O guia aberto mostra a rota de qualquer forma."
+L["SETTING_PARTY_QUESTS"] = "Preferir missões do seu grupo"
+L["SETTING_PARTY_QUESTS_TOOLTIP"] =
+	"Em grupo, os passos de missões que alguém do seu grupo também tem contam como um pouco mais perto, para que vocês tendam a fazê-las juntos. Membros do grupo com o Adventure Guide informam uns aos outros quais missões têm, por mensagens de addon ocultas."
 L["SETTING_POLESTAR_ASIDE"] = "Sair do caminho enquanto o Polestar guia"
 L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
 	"Enquanto o Polestar tiver um guia em andamento, o guia não inicia nenhuma rota própria nem desenha marcas no mapa. O rastreador mostra que o Polestar está guiando você; clique nele para assumir de novo."

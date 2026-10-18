@@ -172,6 +172,7 @@ L["ORDER_RESET"] = "恢復建議順序"
 L["ORDER_SOONER"] = "提前做"
 L["OTHER_ADVENTURES"] = "其他冒險"
 L["OVERVIEW_WHERE"] = "%s · %d級"
+L["PARTY_HAS"] = "隊伍中有人有這個任務"
 L["PICK_UP"] = "接受任務：%s"
 L["PIN_RETURN_STORY"] = "右鍵點擊從故事起點規劃路線"
 L["PLACE"] = "%s，%s"
@@ -292,6 +293,9 @@ L["SETTING_GIVERS_TOOLTIP"] =
 L["SETTING_MAP_PINS"] = "在地圖上顯示路線標記"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"顯示其所在地區時，在世界地圖上顯示路線的編號步驟；若任務給予者也已開啟，則一併顯示。開啟的指南總會預覽其路線。"
+L["SETTING_PARTY_QUESTS"] = "優先隊伍的任務"
+L["SETTING_PARTY_QUESTS_TOOLTIP"] =
+	"組隊時，隊伍中也有人接了的任務，其步驟會被算得稍近一些，便於你們一起完成。使用Adventure Guide的隊友會透過隱藏的插件訊息互相告知各自的任務。"
 L["SETTING_POLESTAR_ASIDE"] = "Polestar導航時讓路"
 L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
 	"Polestar執行指南期間，本指南不會開始自己的路線，也不會在地圖上繪製標記。追蹤器會顯示Polestar正在為你導航；點擊它即可重新接管。"

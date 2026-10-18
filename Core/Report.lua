@@ -76,6 +76,14 @@ function ns.ReportLines()
 			tostring(ns.Setting("maxQuestLevelOffset"))
 		),
 	}
+	local party = ns.Party.Quests()
+	if party then
+		local shared = 0
+		for _ in pairs(party) do
+			shared = shared + 1
+		end
+		lines[#lines + 1] = ("Party quests shared: %d"):format(shared)
+	end
 	if not ns.RouteSettled() then
 		lines[#lines + 1] = "Route: still being worked out"
 		return lines

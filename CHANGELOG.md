@@ -12,7 +12,11 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+<<<<<<< HEAD
 - **Steps say when you'll want a group.** A step's tooltip and its lines in the objective tracker now say why it needs company: *Dungeon:* or *Raid:* with the instance's name, *Group of 3* when your quest log suggests a group size, or *Elite: group advised* for other elite quests. The group icon on the step stays as it was. The idea came from Polestar.
+=======
+- **Plays better in a party.** When you're grouped, quests someone in your party also has count as a little nearer, so the route leans towards what you can do together without locking you into an order, and a pickup a party member already has says *someone in your party has it* so you can ask for a share. Party members running Adventure Guide tell each other which quests they have through a hidden addon message, at most once every 15 seconds and never in combat. It's on by default; turn off *Favour quests your party has* in Route settings to stop it. The idea came from Polestar.
+>>>>>>> origin/main
 
 ## [0.17.1] - 2026-10-17
 
