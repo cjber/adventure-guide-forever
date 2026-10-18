@@ -426,13 +426,19 @@ local function Objectives(questID)
 	return objectives
 end
 
+-- Whether the last log read held a quest with an item that runs out, so a bag change may matter (BAG_UPDATE_DELAYED).
+local watchBags = false
+
 -- The first of a logged quest's items that run out in the bags (the catalogue's `expires`) the player carries, or nil.
+-- Its name is asked for, so a later read has it.
 ---@param id integer
 ---@return integer?
 local function Expiring(id)
 	local quest = ns.Data and ns.Data.quests and ns.Data.quests[id]
 	for _, item in ipairs(quest and quest.expires or {}) do
+		watchBags = true
 		if (C_Item.GetItemCount(item) or 0) > 0 then
+			C_Item.RequestLoadItemDataByID(item)
 			return item
 		end
 	end
@@ -463,6 +469,7 @@ function State.Log()
 	if pointsStale then
 		LoadPoints(log)
 	end
+	watchBags = false
 	for id, entry in pairs(log) do
 		entry.poi = points[id]
 		entry.expiring = Expiring(id)
@@ -558,6 +565,8 @@ for _, event in ipairs({
 	"PLAYER_XP_UPDATE",
 	"QUEST_POI_UPDATE",
 	"QUEST_WATCH_UPDATE",
+	-- A quest item that runs out arriving or leaving the bags (AGFLogQuest.expiring), only while one is in the log.
+	"BAG_UPDATE_DELAYED",
 }) do
 	pcall(events.RegisterEvent, events, event)
 end
@@ -568,6 +577,7 @@ local KEEPS_POINTS = {
 	PLAYER_UPDATE_RESTING = true,
 	UPDATE_EXHAUSTION = true,
 	PLAYER_XP_UPDATE = true,
+	BAG_UPDATE_DELAYED = true,
 }
 -- The completed quests are read whole at every loading screen, and again a moment after a turn-in's quest log
 -- settles: the server can mark a quest done with no QUEST_TURNED_IN (a breadcrumb or a chain's other branch closing),
@@ -626,7 +636,7 @@ end
 
 -- The first argument is PLAYER_ENTERING_WORLD's isInitialLogin, and QUEST_TURNED_IN's and QUEST_WATCH_UPDATE's questID.
 -- The events that move only the quest log; whether only its counts moved is Core's rebuild's to say (LogShape).
-local COUNTS_EVENTS = { QUEST_LOG_UPDATE = true, QUEST_WATCH_UPDATE = true }
+local COUNTS_EVENTS = { QUEST_LOG_UPDATE = true, QUEST_WATCH_UPDATE = true, BAG_UPDATE_DELAYED = true }
 
 local function OnEvent(_, event, arg)
 	if event == "PLAYER_LEVEL_UP" then
@@ -666,6 +676,10 @@ local function OnEvent(_, event, arg)
 			LoadSkills()
 		end
 		if not GatesMoved() then
+			return
+		end
+	elseif event == "BAG_UPDATE_DELAYED" then
+		if not watchBags then
 			return
 		end
 	elseif event == "PLAYER_UPDATE_RESTING" or event == "UPDATE_EXHAUSTION" or event == "PLAYER_XP_UPDATE" then

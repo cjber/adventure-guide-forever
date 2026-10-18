@@ -492,8 +492,8 @@ local function SimpleOpen(quest, player, completed, log, id)
 end
 
 -- The quest log's shape (docs/design.md §4.4): each quest by ID, whether it is complete, whether it carries an item
--- that runs out (`expiring`), its waypoint, and each objective's type and done flag. The counts are left out, so two
--- logs that differ only in a kill or an item count share a shape.
+-- that runs out (`expiring`, and whether its name is known yet), its waypoint, and each objective's type and done
+-- flag. The counts are left out, so two logs that differ only in a kill or an item count share a shape.
 ---@param log table<integer, AGFLogQuest>
 ---@return string
 function Model.LogShape(log)
@@ -507,7 +507,7 @@ function Model.LogShape(log)
 		parts[#parts + 1] = ("%d%s%s%s:%.3f:%.3f"):format(
 			id,
 			entry.complete and "+" or "-",
-			entry.expiring and "!" or "",
+			entry.expiring and (entry.expiringName and "!" or "?") or "",
 			tostring(entry.map),
 			entry.x or 0,
 			entry.y or 0

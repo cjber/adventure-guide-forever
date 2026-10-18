@@ -25,6 +25,11 @@ local plain = ns.Model.LogShape({ [853] = entry })
 entry.expiring = SPORES
 equal(ns.Model.LogShape({ [853] = entry }) ~= plain, true, "shape: carrying an expiring item changes it")
 
+-- An area moved up keeps its line when a count tick repaints it (Model.Repaint tells areas again).
+local area = { quests = { 1, 2 }, hurry = "before Rendered Spores runs out" }
+ns.Planner.Steps.Tell(area)
+equal(area.reason, "before Rendered Spores runs out", "repaint: the hurry line outlives a recount")
+
 local function Load(options)
 	local h = harness.load({
 		spf = "ended",
@@ -61,16 +66,33 @@ for _, planned in ipairs({ false, true }) do
 	equal(Handing(first, 853), true, label .. ": with them, Zamah's hand-in goes first")
 	equal(first.reason, "before Rendered Spores runs out", label .. ": and says why")
 	equal(#h.errors, 0, label .. ": no errors\n" .. table.concat(h.errors, "\n"))
-	-- The item gone (it ran out), the nearest order comes back; the planned beta keeps its committed order, as for any
-	-- step that led (§4.3), but no longer says to hurry.
+	-- The item gone (it ran out), the usual order comes back: the hurry never enters the committed order.
 	h.bags[SPORES] = nil
-	h.fire("QUEST_LOG_UPDATE")
+	h.fire("BAG_UPDATE_DELAYED")
 	h.flush()
 	first = h.ns.Route().steps[1]
-	if not planned then
-		equal(Handing(first, 853), false, label .. ": the spores gone, the hurry ends")
-	end
+	equal(Handing(first, 853), false, label .. ": the spores gone (a bag event), the hurry ends")
 	equal(first.reason ~= "before Rendered Spores runs out", true, label .. ": the spores gone, no hurry line")
+	-- And back in the bags, the bag event alone brings it back.
+	h.bags[SPORES] = 1
+	h.fire("BAG_UPDATE_DELAYED")
+	h.flush()
+	equal(Handing(h.ns.Route().steps[1], 853), true, label .. ": the spores back, the hurry again")
+end
+
+-- With no quest of that kind in the log, a bag change plans nothing.
+do
+	local h = harness.load({
+		spf = "ended",
+		charDB = { journey = "carry" },
+		completed = { 844 },
+		log = { { id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 } },
+	})
+	h.flush()
+	local builds = h.modelCalls.Journeys
+	h.fire("BAG_UPDATE_DELAYED")
+	h.flush()
+	equal(h.modelCalls.Journeys, builds, "bags: nothing to watch, no rebuild")
 end
 
 -- An item the client hasn't named yet still says why.

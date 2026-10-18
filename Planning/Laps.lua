@@ -688,13 +688,32 @@ end
 ---@param route AGFStep[]
 ---@return AGFStep[]
 local function Hurry(lap, route)
-	local leads, any = {}, false
+	local leads, list = {}, {}
 	for _, step in ipairs(route) do
 		if Expiring(lap.log, step) then
-			leads[step], any = true, true
+			leads[step], list[#list + 1] = true, step
 		end
 	end
-	return any and Front(lap, route, leads) or route
+	if #list == 0 then
+		return route
+	end
+	local moved = Front(lap, route, leads)
+	-- The check refused them all together: each alone, in route order, so one that may lead still does.
+	for _, step in ipairs(moved == route and list or NONE) do
+		local alone = Front(lap, moved, { [step] = true })
+		if alone ~= moved then
+			moved, leads = alone, { [step] = true }
+			break
+		end
+	end
+	-- A step moved up says why: the item's name once the client has it.
+	for _, step in ipairs(moved ~= route and list or NONE) do
+		local entry = leads[step] and Expiring(lap.log, step)
+		step.hurry = entry
+				and (entry.expiringName and ns.L.BEFORE_IT_RUNS_OUT:format(entry.expiringName) or ns.L.BEFORE_ITEM_RUNS_OUT)
+			or nil
+	end
+	return moved
 end
 
 ---@param lap AGFLapState
@@ -748,15 +767,17 @@ local function CommitLap(lap)
 		if near and near ~= route[1] then
 			route = Front(lap, route, { [near] = true })
 		end
-		route = Hurry(lap, route)
-		if standsIn and route[1] ~= standsIn then
-			standsIn.here = nil
-		end
 		-- The order is committed before the visits merge, so the next build, which splits them again, keeps to it.
 		order = State.committedOrders and card and Idents(route) --[[@as AGFOrder?]]
 		-- What each ordered step holds now, to tell after the merge and the last check which of them are still there.
 		for index, step in ipairs(order and route or NONE) do
 			ordered[index] = { step = step, pickups = step.pickups, handins = step.handins }
+		end
+		-- A hurry is fronted after the order is committed, so it ends with the item and never stays in the order.
+		local head = route[1]
+		route = Hurry(lap, route)
+		if standsIn and route[1] ~= head and route[1] ~= standsIn then
+			standsIn.here = nil
 		end
 	else
 		route = Verify(lap, route)
@@ -904,11 +925,10 @@ local function DescribeLap(lap)
 				step.detail = step.reason
 			end
 		end
-		local hurry = Expiring(log, step)
-		if hurry then
-			step.reason = hurry.expiringName and ns.L.BEFORE_IT_RUNS_OUT:format(hurry.expiringName)
-				or ns.L.BEFORE_ITEM_RUNS_OUT
-			step.detail = step.reason
+		-- Only a step Hurry moved up says why; a town keeps its counts as its detail.
+		if step.hurry then
+			step.reason = step.hurry
+			step.detail = step.kind == "town" and step.detail or step.hurry
 		end
 		Locate(data, step, mapName)
 		from = position or from

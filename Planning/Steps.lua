@@ -433,11 +433,13 @@ local function Nodes(data, entry, level)
 	return { { map = point.map, x = point.x, y = point.y, r = 0, slot = slots[1] or 0, objectives = objectives } }
 end
 
--- An area's reason: how many quests are done there; a lone quest the route picks up first says so.
+-- An area's reason: why it leads when a quest item runs out (Laps.lua Hurry), else how many quests are done there; a
+-- lone quest the route picks up first says so.
 ---@param area AGFStep
 local function Tell(area)
 	local planned = area.planned and area.planned[area.quests[1]]
-	area.reason = #area.quests > 1 and ns.L.QUESTS_HERE:format(#area.quests)
+	area.reason = area.hurry
+		or #area.quests > 1 and ns.L.QUESTS_HERE:format(#area.quests)
 		or planned and ns.L.AFTER_PICK_UP
 		or ns.L.QUESTS_IN_PROGRESS
 	area.detail = area.reason

@@ -300,9 +300,10 @@ function ModuleMixin:LayoutContents()
 	if resume and GetLocale() ~= "deDE" then
 		resume = resume:gsub("^%u", string.lower)
 	end
-	local reason = resume and L.RESUME:format(resume) or (not handIn and step.reason) or nil
+	-- A step moved up because its quest item runs out always says so.
+	local reason = resume and L.RESUME:format(resume) or ((not handIn or step.hurry) and step.reason) or nil
 	-- A town's reason is its counts unless something more is true there; then who to see takes the line.
-	if town and not resume and step.reason == step.detail then
+	if town and not resume and not step.hurry and step.reason == step.detail then
 		-- The checklist already names each giver and action. Keep the compact giver
 		-- summary only when there are no detailed rows to show.
 		reason = #(step.checklist or {}) == 0 and Givers(step.givers) or nil
