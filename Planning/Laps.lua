@@ -20,6 +20,7 @@ local Locate = ns.Planner.Steps.Locate
 local Opens = ns.Planner.Steps.Opens
 local Optional = ns.Planner.Steps.Optional
 local NearAction = ns.Planner.Routing.NearAction
+local PartyCost = ns.Model.PartyCost
 local Planned = ns.Planner.Steps.Planned
 local Position = ns.Planner.Travel.Position
 local QuestLevel = ns.Planner.Steps.QuestLevel
@@ -405,7 +406,8 @@ end
 -- shuffles the route; a pinned quest (and the story's chapter) first among the rest; then the nearest action,
 -- with a stop in the town the route is already in preferred while it is within half a lap on its map.
 -- The planned mode ranks the committed order, a pinned quest and the story's chapter above plain distance, and
--- finishes a town the route is already in (the look-ahead). The nearest mode ranks by distance alone.
+-- finishes a town the route is already in (the look-ahead). The nearest mode ranks by distance alone. In both, a stop
+-- for a quest the party shares counts as nearer (Model.PartyCost).
 ---@param lap AGFLapState
 ---@param walk AGFLapWalk
 ---@param choice AGFLapChoice
@@ -417,6 +419,8 @@ local function Consider(lap, walk, choice, step, anchor, cost, kind)
 	local planned, pinned, leadID, rank, at = lap.planned, lap.pinned, lap.leadID, lap.rank, lap.at
 	local lastAnchor = walk.lastAnchor
 	local pick, pickRank, pickValue, pickKey = choice.step, choice.rank, choice.value, choice.key
+	-- The party's quests count as nearer (docs/design.md §4.5): a visit back hands in the anchor's quests.
+	cost = PartyCost(lap.player.party, kind == "close" and anchor.hands or step.quests, cost)
 	local pref = 0
 	if planned then
 		local pin, lead = false, false

@@ -198,6 +198,13 @@ TweaksForever = nil
 ---@type AGFPolestarGlobal?
 Polestar = nil
 
+-- Party.lua: the client's home group category (Enum-era clients define it as 1) and its "Unknown" name for a unit not
+-- loaded yet; both read only, and checked against nil.
+---@type integer?
+LE_PARTY_CATEGORY_HOME = nil
+---@type string?
+UNKNOWNOBJECT = nil
+
 ---@class AGFSettingsSetting
 ---@field SetValueChangedCallback fun(self: AGFSettingsSetting, callback: fun(setting: AGFSettingsSetting, value: boolean|number))
 -- A checkbox's row (Blizzard_Settings_Shared SettingsListElementInitializer); a child is greyed while predicate is false.

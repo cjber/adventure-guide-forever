@@ -63,6 +63,7 @@ function ns.RegisterSettings()
 					Checkbox(subcategory, "restedxpGuide", ns.L.SETTING_RXP, ns.L.SETTING_RXP_TOOLTIP),
 					Checkbox(subcategory, "wanderer", ns.L.SETTING_WANDERER, ns.L.SETTING_WANDERER_TOOLTIP),
 					Checkbox(subcategory, "followQuest", ns.L.SETTING_FOLLOW_QUEST, ns.L.SETTING_FOLLOW_QUEST_TOOLTIP),
+					Checkbox(subcategory, "partyQuests", ns.L.SETTING_PARTY_QUESTS, ns.L.SETTING_PARTY_QUESTS_TOOLTIP),
 					Checkbox(subcategory, "optimisedRoute", ns.L.SETTING_ROUTE_ORDER, ns.L.SETTING_ROUTE_ORDER_TOOLTIP),
 					Checkbox(
 						subcategory,

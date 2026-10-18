@@ -174,6 +174,7 @@ L["ORDER_RESET"] = "제안 순서로 되돌리기"
 L["ORDER_SOONER"] = "먼저 하기"
 L["OTHER_ADVENTURES"] = "다른 모험"
 L["OVERVIEW_WHERE"] = "%s · %d레벨"
+L["PARTY_HAS"] = "파티원 중 누군가가 가지고 있음"
 L["PICK_UP"] = "퀘스트 수락: %s"
 L["PIN_RETURN_STORY"] = "오른쪽 클릭하면 이야기의 시작부터 경로를 잡습니다"
 L["PLACE"] = "%s, %s"
@@ -296,6 +297,9 @@ L["SETTING_GIVERS_TOOLTIP"] =
 L["SETTING_MAP_PINS"] = "지도에 경로 핀 표시"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"해당 지역이 표시되는 동안 세계 지도에 경로의 번호 붙은 단계를 표시하며, 퀘스트 NPC 표시가 켜져 있으면 퀘스트 NPC도 표시합니다. 열린 안내서는 어느 경우든 경로를 미리 보여 줍니다."
+L["SETTING_PARTY_QUESTS"] = "파티의 퀘스트 우선"
+L["SETTING_PARTY_QUESTS_TOOLTIP"] =
+	"파티 중에는 파티원도 가지고 있는 퀘스트의 단계를 조금 더 가까운 것으로 계산해 함께 하기 쉽게 합니다. Adventure Guide를 쓰는 파티원끼리는 숨겨진 애드온 메시지로 서로 가진 퀘스트를 알려 줍니다."
 L["SETTING_POLESTAR_ASIDE"] = "Polestar가 안내하는 동안 물러나기"
 L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
 	"Polestar가 가이드를 진행하는 동안에는 안내서가 자체 경로를 시작하지 않고 지도 표시도 그리지 않습니다. 추적기에 Polestar가 안내 중이라고 표시되며, 클릭하면 다시 안내를 맡습니다."

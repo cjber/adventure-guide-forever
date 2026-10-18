@@ -40,6 +40,8 @@ local DEFAULTS = {
 	polestarAside = true,
 	-- Before a giver's window offers a quest that closes another for good, say which in chat (Closes.lua).
 	warnClosing = true,
+	-- In a party, steps for quests the party shares count as nearer, and the quest IDs go to the party (Party.lua).
+	partyQuests = true,
 }
 ns.DEFAULTS = DEFAULTS
 
@@ -278,6 +280,9 @@ function ns.SetSetting(key, value)
 	end
 	if key == "polestarAside" then
 		ns.Polestar.Check()
+	end
+	if key == "partyQuests" then
+		ns.Party.Apply()
 	end
 	-- Wandering from now: what Go started stops, as the player's Stop would.
 	if key == "wanderer" and value then

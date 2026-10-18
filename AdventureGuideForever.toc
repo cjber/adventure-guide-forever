@@ -46,6 +46,7 @@ Planning\Order.lua
 Planning\Shown.lua
 UI\Sound.lua
 Core\State.lua
+Core\Party.lua
 Planning\Geometry.lua
 Planning\Focus.lua
 Integrations\Integrations.lua

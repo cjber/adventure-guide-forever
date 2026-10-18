@@ -277,6 +277,7 @@ function State.Player()
 		reputation = State.Reputation,
 		battlegrounds = State.Battlegrounds(),
 		notOffered = ns.Prefs().notOffered,
+		party = ns.Party.Quests(),
 	}
 end
 

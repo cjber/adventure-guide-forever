@@ -254,6 +254,8 @@ ns.L = {
 	HUB_NPCS_MORE = "%s and %d more",
 	PLACE = "%s, %s",
 	NEAR_YOUR_LEVEL = "near your level",
+	-- A pickup someone in the party already has (Party.lua): they can share it.
+	PARTY_HAS = "someone in your party has it",
 	-- The guide and the map.
 	SKIP_STEP = "Skip this step for now",
 	OPTIONAL = "optional",
@@ -365,6 +367,10 @@ ns.L = {
 	SETTING_FOLLOW_QUEST = "Follow your current quest",
 	SETTING_FOLLOW_QUEST_TOOLTIP = "When you walk into the area of the quest the route leads to, the guide selects "
 		.. "that quest so the map shows its area. It never changes a quest you selected yourself.",
+	SETTING_PARTY_QUESTS = "Favour quests your party has",
+	SETTING_PARTY_QUESTS_TOOLTIP = "In a party, steps for quests someone in your party also has count as a little "
+		.. "nearer, so you tend to do them together. Party members with Adventure Guide tell each other which quests "
+		.. "they have, as hidden addon messages.",
 	SETTING_ROUTE_ORDER = "Optimised route (beta)",
 	SETTING_ROUTE_ORDER_TOOLTIP = "Off: the route is the nearest thing to do next, step by step, so it is simple "
 		.. "and predictable. On: an experimental order that leads with the story's chapter, groups a town's work and "
