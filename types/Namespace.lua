@@ -138,11 +138,15 @@
 ---@field x? number
 ---@field y? number
 
+-- Why a quest wants a group (Model.GroupNeed).
+---@alias AGFGroupNeed "raid"|"dungeon"|"size"|"elite"
+
 ---@class AGFLogQuest
 ---@field id integer
 ---@field title string
 ---@field complete boolean ready to hand in
 ---@field level integer
+---@field groupSize? integer the group size the quest log suggests, when it is 2 or more (C_QuestLog.GetInfo suggestedGroup)
 ---@field map? integer where to go next, from C_QuestLog.GetNextWaypoint: the live client gives one only once finished
 ---@field x? number
 ---@field y? number
@@ -349,6 +353,7 @@
 ---@field ChainStart fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): integer? a locked quest's earliest prerequisite open now and not orange or red
 ---@field Hard fun(quest: AGFQuest, player: AGFPlayer): boolean above the chosen quest level ceiling
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
+---@field GroupNeed fun(data: AGFData, log: table<integer, AGFLogQuest>, questID: integer): AGFGroupNeed?, integer? why a quest wants a group: its raid or dungeon (with the instance), the log's suggested size, or the elite tag
 ---@field Why fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer, names?: AGFWhyNames): AGFWhyLine[] every requirement, met or not; eligible exactly when all are met
 ---@field Search fun(data: AGFData, player: AGFPlayer, query: string, title?: (fun(questID: integer): string?), completed?: table<integer, boolean>, log?: table<integer, AGFLogQuest>): integer[] up to 10 quest IDs whose title holds every word of `query`, best match first
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
@@ -565,6 +570,11 @@
 ---@field CARD_BY_ZEPPELIN string format: the same when the way takes a zeppelin
 ---@field GROUP_ONE string a card's tooltip when one of its quests needs a group
 ---@field GROUP_MANY string format: how many of a card's quests need a group
+---@field GROUP_NEED_ELITE string a step quest's line: an elite quest, with no group size from the log
+---@field GROUP_NEED_DUNGEON string format: a step quest's line, the dungeon it is done in
+---@field GROUP_NEED_RAID string format: a step quest's line, the raid it is done in
+---@field GROUP_NEED_RAID_ANY string a step quest's line: a raid quest the data names no instance for
+---@field GROUP_NEED_SIZE string format: a step quest's line, the group size the quest log suggests
 ---@field CLICK_TO_CHOOSE string an unchosen card's tooltip instruction
 ---@field TRAVEL string format: a leg ("Fly to X"), minutes until it arrives
 ---@field TRAVEL_ABOUT string format: minutes; the line from a Shortest Path with Estimate only
@@ -1829,6 +1839,8 @@ AdventureGuideForever = nil
 
 ---@class AGFOverview
 ---@field VisitWarning fun(journey: AGFJourney, player?: AGFPlayer): string?
+---@field GroupNote fun(questID: integer, log?: table<integer, AGFLogQuest>): string? why a quest wants a group, in words; nil for one done alone
+---@field GroupNotes fun(step: AGFStep): string[] a step's distinct group notes, in its quest order
 
 ---@class AGFNamespace
 ---@field DungeonLoot {Bosses: fun(instance: integer): AGFLootBoss[], string?}
