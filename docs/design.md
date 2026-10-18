@@ -125,6 +125,13 @@ abandons quests.
   was made at; a hand-in clears the marks it could open (quests that need it, and quests its ender gives).
   `Core/Offers.lua`.
 
+- **2.27 Group lines.** A step says why it wants a group, from what AGF already knows, one line per reason and each
+  once: "Dungeon: X" or "Raid: X" for a quest filed under an instance (the client's name for it, else the data's),
+  "Group of N" for an elite quest the quest log suggests a group of 2 or more for, and "Elite: group advised" for any
+  other elite quest. A quest ready to hand in says nothing: its group work is done. The lines go after the reason in
+  the step's tooltip (its ring and its row) and in the tracker's step block (a RestedXP step's after its checklist);
+  the row keeps its group icon. `Model.GroupNeed`, `Overview.GroupNote`.
+
 ### Guide navigation
 
 The world-map sidebar is the guide. Folded sections show two Continue journeys and one journey per other
