@@ -1675,7 +1675,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Title",
-      "text": "Complete 2 objectives · Southsea Freebooters",
+      "text": "Complete objectives · Southsea Freebooters",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2255,7 +2255,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Title",
-      "text": "Complete objectives · WANTED: Baron Longshore",
+      "text": "Complete 2 objectives · The Barrens",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2274,10 +2274,10 @@
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Detail",
       "size": [
-        120.00,
+        78.00,
         0.00
       ],
-      "text": "after you pick it up",
+      "text": "2 quests here",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2291,7 +2291,7 @@
           "y": 5.00
         }
       ],
-      "file": "Interface\\Cursor\\Pickup",
+      "atlas": "questobjective",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Kind",
       "size": [

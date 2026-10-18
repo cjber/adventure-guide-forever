@@ -1,13 +1,13 @@
 # human18_redridge: level 18, side 1, at 1433 0.2600,0.4500
 card (chosen) | zone:1433 | Redridge Mountains story | Chapter 1 of 6 | A chain begins with Magistrate Solomon | map 1433
   step 1 | town:1433:69 | Visit Lakeshire: Pick up 7 | 1433 0.2490,0.4445 | Begins a new story
-  step 2 | area:3741:4 | Complete objectives · Hilary's Necklace | 1433 0.2080,0.5410 | after you pick it up | 88 yd | 3741/4
-  step 3 | area:92:4 | Complete objectives · Redridge Goulash | 1433 0.2390,0.7330 | after you pick it up | 100 yd | 92/4
-  step 4 | area:98407:4 | Complete objectives · Show of Force | 1433 0.1040,0.6630 | after you pick it up | 73 yd | 98407/4
-  step 5 | town:1433:1002 | Pick up: Encroaching Gnolls | 1433 0.1018,0.7146 | near your level
-  step 6 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | after you pick it up | 0 yd | 125/4
-  step 7 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4850,0.4270 | after you pick it up | 99 yd | 92/6
-  step 8 | area:92:5 | Complete objectives · Redridge Goulash | 1433 0.5470,0.7610 | after you pick it up | 99 yd | 92/5
+  step 2 | area:3741:4 | Complete objectives · Hilary's Necklace | 1433 0.2850,0.5520 | after you pick it up | 94 yd | 3741/4
+  step 3 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | after you pick it up | 0 yd | 125/4
+  step 4 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4850,0.4270 | after you pick it up | 99 yd | 92/6
+  step 5 | area:92:5 | Complete objectives · Redridge Goulash | 1433 0.5470,0.7610 | after you pick it up | 99 yd | 92/5
+  step 6 | area:92:4 | Complete objectives · Redridge Goulash | 1433 0.2390,0.7330 | after you pick it up | 100 yd | 92/4
+  step 7 | area:98407:4 | Complete objectives · Show of Force | 1433 0.1040,0.6630 | after you pick it up | 73 yd | 98407/4
+  step 8 | town:1433:1002 | Pick up: Encroaching Gnolls | 1433 0.1018,0.7146 | near your level
   step 9 | town:1433:69:2 | Visit Lakeshire: Turn in 4 | 1433 0.2705,0.4864 | Opens the next chapter here
 card | zone:1436 | Head to Westfall | 20 quests near your level | Stormwind City needs hands | map 1453
   step 1 | town:1453:0 | Visit Stormwind City: Pick up 4 | 1453 0.8028,0.7007 | 4 to pick up

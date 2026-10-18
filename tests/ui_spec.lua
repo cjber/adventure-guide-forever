@@ -484,7 +484,8 @@ do
 	equal(#h.spfRoute.stops, #onward, "follow: proximity keeps every stop")
 	equal(h.spfRoute.stops[1].x, onward[1].x, "follow: current area retains its destination")
 	equal(h.ns.Guidance.Owns(), true, "follow: guidance holds, so Stop still shows")
-	Moved(h, 1413, 0.64, 0.47)
+	-- A step within the same camp: the point stays on it.
+	Moved(h, 1413, 0.641, 0.455)
 	equal(h.spf.NavigateRoute, 2, "follow: nothing again while the player is in it")
 	h.SetCombat(true)
 	Moved(h, 1413, 0.5223, 0.3101)
@@ -565,7 +566,7 @@ do
 	-- They are there: no "Walk to <zone>" line to the area's middle.
 	equal(h.ns.Integrations.Travel(h.ns.Route().steps[1]), nil, "focus: no travel line in the area")
 	local selected = h.counts.SetSuperTrackedQuestID
-	Moved(h, 1413, 0.64, 0.47)
+	Moved(h, 1413, 0.641, 0.455)
 	equal(h.counts.SetSuperTrackedQuestID, selected, "focus: once, on walking in")
 	Moved(h, 1413, 0.5223, 0.3101)
 	equal(h.superTrackedQuest, 0, "focus: walking out clears it")

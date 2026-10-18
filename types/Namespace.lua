@@ -68,16 +68,17 @@
 ---@field objectivesUnknown? boolean provider has objectives that cannot be planned
 ---@field flags? AGFQuestFlags
 
---- Where one objective is done: a camp of its spawns (Integrations/QuestieObjectives.lua), the cell of 100-yard
---- squares with the most spawns in and around it, each camp's cell apart from the others'.
+--- Where one objective is done: a camp of its spawns (Integrations/QuestieObjectives.lua), centred on the spawn with the
+--- most others within 100 yards; a slot's camps stand over 200 yards apart.
 ---@class AGFObjectiveArea
 ---@field [1] integer the objective's slot, a key of the quest's need
----@field [2] integer map x in thousandths: the camp's medoid, a spawn
+---@field [2] integer map x in thousandths: the camp's centre, a spawn
 ---@field [3] integer map y in thousandths
----@field [4] integer yards from x, y to the camp's farthest spawn within 100 yards
+---@field [4] integer yards from x, y to the camp's farthest spawn, at most 100
 ---@field [5] integer? the uiMapID x, y are on when it is not the quest's zone
----@field [6] integer? the lowest level of the mobs there, when every spawn in it is an NPC QuestieDB gives a level
----@field [7] true? every spawn there is an elite's (QuestieDB rank 1 to 3); only with a level
+---@field [6] integer|false? the lowest level of the mobs there, when every spawn in it is an NPC QuestieDB gives a level;
+--- false when it has none but an elite mark follows
+---@field [7] true? every spawn there is an elite's (QuestieDB rank 1 to 3)
 
 ---@class AGFQuestFlags
 ---@field event? true a script completes it: an escort, a spell cast or a summoned fight

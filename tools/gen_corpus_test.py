@@ -65,6 +65,8 @@ class CorpusTest(unittest.TestCase):
                     self.assertEqual(len(values), 7, line)
                     values = values[:-1]
                     elites += 1
+                    if values[-1] == "false":
+                        values = values[:-1]
                 slot, x, y, r, *rest = (int(value) for value in values)
                 count += 1
                 levelled += len(rest) == 2

@@ -1,27 +1,27 @@
 # human19_redridge_full: level 19, side 1, at 1433 0.1580,0.5660
-card | zone:1433 | Redridge Mountains story | 1 ready to hand in, 11 in progress, 2 of them on later laps, 3 quests near your level | - | map 1433
+card | zone:1433 | Redridge Mountains story | 1 ready to hand in, 11 in progress, 3 of them on later laps, 3 quests near your level | - | map 1433
   drop | 116
-  step 1 | area:3741:4 | Complete objectives · Hilary's Necklace | 1433 0.2080,0.5410 | quests in progress | 88 yd | 3741/4
-  step 2 | area:92:4 | Complete 2 objectives · Redridge Mountains | 1433 0.2390,0.7330 | 2 quests here | 245 yd | 92/4 246/1
-  step 3 | town:1433:1002 | Turn in: A Free Lunch | 1433 0.1018,0.7146 | Opens the next chapter here
-  step 4 | area:34:4 | Complete objectives · An Unwelcome Guest | 1433 0.1060,0.4930 | quests in progress | 0 yd | 34/4
-  step 5 | town:1433:69 | Visit Lakeshire: Pick up 2 | 1433 0.2564,0.6000 | 2 to pick up
-  step 6 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | quests in progress | 0 yd | 125/4
-  step 7 | area:92:6 | Complete 2 objectives · Redridge Mountains | 1433 0.4850,0.4270 | 2 quests here | 109 yd | 92/6 98386/0
-  step 8 | area:127:4 | Complete objectives · Selling Fish | 1433 0.5300,0.5740 | quests in progress | 97 yd | 127/4
-  step 9 | area:20:4 | Complete 2 objectives · Redridge Mountains | 1433 0.6130,0.5330 | 2 quests here | 100 yd | 20/4 169/4
-  step 10 | area:91:4 | Complete objectives · Solomon's Law | 1433 0.7390,0.4940 | quests in progress | 99 yd | 91/4
+  step 1 | area:92:4 | Complete 2 objectives · Redridge Mountains | 1433 0.2390,0.7330 | 2 quests here | 245 yd | 92/4 246/1
+  step 2 | area:3741:4 | Complete objectives · Hilary's Necklace | 1433 0.2850,0.5520 | quests in progress | 94 yd | 3741/4
+  step 3 | town:1433:69 | Pick up: Alther's Mill | 1433 0.2705,0.4864 | near your level
+  step 4 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | quests in progress | 0 yd | 125/4
+  step 5 | area:92:6 | Complete 2 objectives · Redridge Mountains | 1433 0.4680,0.4120 | 2 quests here | 140 yd | 92/6 98386/0
+  step 6 | area:127:4 | Complete objectives · Selling Fish | 1433 0.5300,0.5740 | quests in progress | 97 yd | 127/4
+  step 7 | area:20:4 | Complete 2 objectives · Redridge Mountains | 1433 0.6130,0.5330 | 2 quests here | 100 yd | 20/4 169/4
+  step 8 | area:91:4 | Complete objectives · Solomon's Law | 1433 0.7390,0.4940 | quests in progress | 99 yd | 91/4
+  step 9 | area:180:4 | Complete objectives · Wanted: Lieutenant Fangore | 1433 0.7510,0.3710 | quests in progress | 0 yd | 180/4
+  step 10 | area:92:5 | Complete objectives · Redridge Goulash | 1433 0.5470,0.7610 | quests in progress | 99 yd | 92/5
 card (chosen) | carry | Quests in your log | 5 ready to hand in, 11 in progress | - | map 1433
-  step 1 | area:3741:4 | Complete objectives · Hilary's Necklace | 1433 0.2080,0.5410 | quests in progress | 88 yd | 3741/4
-  step 2 | area:92:4 | Complete 2 objectives · Redridge Mountains | 1433 0.2390,0.7330 | 2 quests here | 245 yd | 92/4 246/1
-  step 3 | town:1433:1002 | Turn in: A Free Lunch | 1433 0.1018,0.7146 | Opens the next chapter here
-  step 4 | area:34:4 | Complete objectives · An Unwelcome Guest | 1433 0.1060,0.4930 | quests in progress | 0 yd | 34/4
-  step 5 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | quests in progress | 0 yd | 125/4
-  step 6 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4850,0.4270 | quests in progress | 99 yd | 92/6
-  step 7 | area:127:4 | Complete objectives · Selling Fish | 1433 0.5300,0.5740 | quests in progress | 97 yd | 127/4
-  step 8 | area:20:4 | Complete 2 objectives · Redridge Mountains | 1433 0.6130,0.5330 | 2 quests here | 100 yd | 20/4 169/4
-  step 9 | area:91:4 | Complete objectives · Solomon's Law | 1433 0.7390,0.4940 | quests in progress | 99 yd | 91/4
-  step 10 | area:180:4 | Complete objectives · Wanted: Lieutenant Fangore | 1433 0.7510,0.3710 | quests in progress | 0 yd | 180/4
+  step 1 | area:92:4 | Complete 2 objectives · Redridge Mountains | 1433 0.2390,0.7330 | 2 quests here | 245 yd | 92/4 246/1
+  step 2 | area:3741:4 | Complete objectives · Hilary's Necklace | 1433 0.2850,0.5520 | quests in progress | 94 yd | 3741/4
+  step 3 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | quests in progress | 0 yd | 125/4
+  step 4 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4850,0.4270 | quests in progress | 99 yd | 92/6
+  step 5 | area:127:4 | Complete objectives · Selling Fish | 1433 0.5300,0.5740 | quests in progress | 97 yd | 127/4
+  step 6 | area:20:4 | Complete 2 objectives · Redridge Mountains | 1433 0.6130,0.5330 | 2 quests here | 100 yd | 20/4 169/4
+  step 7 | area:91:4 | Complete objectives · Solomon's Law | 1433 0.7390,0.4940 | quests in progress | 99 yd | 91/4
+  step 8 | area:180:4 | Complete objectives · Wanted: Lieutenant Fangore | 1433 0.7510,0.3710 | quests in progress | 0 yd | 180/4
+  step 9 | area:92:5 | Complete objectives · Redridge Goulash | 1433 0.5470,0.7610 | quests in progress | 99 yd | 92/5
+  step 10 | town:1433:1002 | Turn in: A Free Lunch | 1433 0.1018,0.7146 | Opens the next chapter here
 card | zone:1436 | Head to Westfall | 18 quests near your level | Stormwind City needs hands | map 1453
   step 1 | town:1453:0 | Visit Stormwind City: Pick up 3, turn in 2 | 1453 0.8028,0.7007 | Opens the next chapter here
   step 2 | town:1436:108 | Visit Sentinel Hill: Pick up 1, turn in 1 | 1436 0.5633,0.4752 | Opens the next chapter here

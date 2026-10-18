@@ -99,13 +99,39 @@ do
 	equal(Spots(), "202,502 r9 10 nil | 702,702 r2 10 nil", "a camp's other spawns are the same camp, not a spot")
 	-- The ring holds the camp, the spawns within 100 yards; one farther off is a spot of its own.
 	rows.Npc[1].spawns[MAP] = { { 50.0, 50.0 }, { 50.3, 50.0 }, { 50.1, 50.4 }, { 61.5, 50.0 } }
-	equal(Spots(), "500,500 r5 10 nil | 615,500 r0 10 nil", "a spawn 115 yards off isn't in the camp or its ring")
+	equal(
+		Spots(),
+		"503,500 r5 10 nil",
+		"a spawn 115 yards off is in neither the camp's ring nor a camp of its own so near it"
+	)
+	-- A field of mobs 300 yards across (121 spawns 30 yards apart): its spots stand over 200 yards apart, so their
+	-- rings never overlap and Next spot moves across the field, not round one camp's edge.
+	local field = {}
+	for i = -5, 5 do
+		for j = -5, 5 do
+			field[#field + 1] = { 50 + i * 3, 50 + j * 3 }
+		end
+	end
+	rows.Npc[1].spawns[MAP] = field
+	equal(Spots(), "530,530 r95 10 nil | 380,380 r95 10 nil | 620,350 r95 10 nil", "a wide field: spots apart")
+	-- A camp 60 yards across beside a small camp 300 yards off: the camp's marker in its middle, then the small camp.
+	local camp = {}
+	for i = -3, 3 do
+		for j = -3, 3 do
+			camp[#camp + 1] = { 50 + i, 50 + j }
+		end
+	end
+	for _, xy in ipairs({ { 80.0, 50.0 }, { 80.2, 50.0 }, { 80.0, 50.2 } }) do
+		camp[#camp + 1] = xy
+	end
+	rows.Npc[1].spawns[MAP] = camp
+	equal(Spots(), "500,500 r43 10 nil | 800,500 r3 10 nil", "a camp's middle, then the separate small camp")
 	-- Scattered mobs (Lazy Peons): the spawn with the most others within 100 yards.
 	rows.Npc[1].spawns[MAP] = { { 10.0, 10.0 }, { 18.0, 10.0 }, { 26.0, 10.0 }, { 34.0, 10.0 }, { 60.0, 60.0 } }
 	equal(
 		Spots(),
-		"180,100 r81 10 nil | 340,100 r81 10 nil | 600,600 r0 10 nil",
-		"scattered: a spawn between two others first, then the next not in its camp"
+		"180,100 r81 10 nil | 600,600 r0 10 nil",
+		"scattered: a spawn between two others first, then the next camp over 200 yards from it"
 	)
 end
 
@@ -153,6 +179,12 @@ do
 	equal(areas[1][7], nil, "no rank field: never elite")
 	equal(asked, 2, "no rank field: spawns and level alone are read")
 	lib.Npc.GetAll = wrapped
+	-- An elite QuestieDB gives no level: the mark still stands, after a false level.
+	rows.Npc[4] = { rank = 1, spawns = { [MAP] = { { 10.0, 10.0 } } } }
+	_, areas = ns.QuestieObjectives(lib, { { { 4 } } }, nil, MAP, data, Map, yield, 1, Reads())
+	equal(areas[1][6], false, "no level: false before the mark")
+	equal(areas[1][7], true, "no level: still elite")
+	lib.Npc.GetAll = wrapped
 end
 
 -- The planner: normal mobs before elites, and elites last even after mobs far above (#152's weighting).
@@ -197,6 +229,16 @@ do
 		At(nil, { { 0, 100, 100, 40, MAP, 10, true }, { 0, 200, 200, 40, MAP } }),
 		"0.200 []",
 		"no level known: still"
+	)
+	equal(
+		At(10, { { 0, 100, 100, 40, MAP, 10, true }, { 0, 200, 200, 40, MAP, 15 } }),
+		"0.100 []",
+		"elites at the player's level before normal mobs 5 above"
+	)
+	equal(
+		At(10, { { 0, 100, 100, 40, MAP, false, true }, { 0, 200, 200, 40, MAP } }),
+		"0.200 []",
+		"an elite camp with no level is still elite"
 	)
 end
 

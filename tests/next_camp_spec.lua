@@ -343,7 +343,8 @@ do
 	equal(camps.x, 0.46, "camp: passing the node's camp over moves the arrow to the nearest other camp")
 end
 
--- Walking one objective's camps (#187): Brotherhood of Thieves (18) collects one item in three Elwynn camps.
+-- Walking one objective's camps (#187): Brotherhood of Thieves (18) collects one item in two Elwynn camps of Defias
+-- Thugs, over 200 yards apart.
 do
 	local h = harness.load({
 		spf = "ended",
@@ -360,7 +361,7 @@ do
 	assert(area, "camps: the Brotherhood of Thieves area on the route")
 	equal(#area.shapes, 1, "camps: one objective place")
 	local spots = h.ns.Model.Spots(area)
-	equal(#spots, 3, "camps: and its three camps")
+	equal(#spots, 2, "camps: and its two camps")
 	local labels = {}
 	h.ns.Menu.Step(
 		setmetatable({}, {

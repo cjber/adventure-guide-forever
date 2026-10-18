@@ -9,6 +9,8 @@ local Dropped = ns.Planner.Eligibility.Dropped
 local Eligible = ns.Planner.Eligibility.Eligible
 local Index = ns.Planner.Eligibility.Index
 local ORANGE = ns.Planner.Eligibility.ORANGE
+-- Levels above the player past which a camp of normal mobs is harder than elites at the player's level (AreaNode).
+local FAR = 5
 local Point = ns.Planner.Travel.Point
 local ValidPlace = ns.Model.ValidPlace
 
@@ -350,10 +352,10 @@ end
 -- Quest `quest`'s node for objective `slot`, counting `objective`, with its radius: its first valid area for the slot
 -- in the data's order (in the quest's zone, then the biggest camp), passing over a harder one for a later valid area on
 -- the same map that is easier, so a spot is never traded for one across the world. An area is harder when its mobs are
--- ORANGE (3) or more levels above `level` (#152; they hit hard and are hard to hit), and harder still when they are all
--- elites (the data's elite mark), which a player alone may not kill at all: a camp of normal mobs comes first, then one
--- of normal mobs far above, then elites. An area with no level is never over, and one with an object or a normal mob is
--- never elite. The slot's other valid areas on that map, no harder than the node, are its `alternates`: the camps
+-- ORANGE (3) or more levels above `level` (#152; they hit hard and are hard to hit), harder still when they are all
+-- elites (the data's elite mark), which a player alone may not kill at all, and hardest FAR (5) or more above: a camp of
+-- normal mobs comes first, then normal mobs 3 or 4 above, then elites, and mobs 5 or more above after elites at the
+-- player's level. An area with no level is never over, and one with an object or a normal mob is never elite. The slot's other valid areas on that map, no harder than the node, are its `alternates`: the camps
 -- "Next spot" moves between (#187) and where the player stands in the area as well (Routing.lua InArea). Nil when the
 -- data has no valid area.
 ---@param quest AGFQuest
@@ -370,8 +372,8 @@ local function AreaNode(quest, slot, objective, level)
 				r = area[4],
 			}
 			if ValidPlace(place) and (not places[1] or place.map == places[1].map) then
-				local over = level and area[6] and area[6] >= level + ORANGE
-				place.hard = (area[7] and 2 or 0) + (over and 1 or 0)
+				local above = level and area[6] and area[6] - level or 0
+				place.hard = (area[7] and 2 or 0) + (above >= ORANGE and 1 or 0) + (above >= FAR and 2 or 0)
 				places[#places + 1] = place
 			end
 		end

@@ -35,8 +35,9 @@ test("rejected town offers", function()
 	for _, id in ipairs(town.pickups) do
 		eq(id == 92 or id == 116, false, "filtered work stays out of the town offers")
 	end
-	-- 118, 129, 3741, 120, and 98407 Show of Force (QuestieDB v1.0.5).
-	eq(#town.pickups, 5, "only filtered offers remain in Lakeshire")
+	-- 118, 129, 3741, 120, 98407 Show of Force (QuestieDB v1.0.5) and 125 The Lost Tools, whose objective camp is
+	-- near enough to be worth its walk.
+	eq(#town.pickups, 6, "only filtered offers remain in Lakeshire")
 	player, completed, log, prefs = fixture(ns, "ne23_darkshore")
 	route = ns.Model.Plan(ns.Data, player, completed, log, prefs)
 	for _, step in ipairs(route.steps) do
