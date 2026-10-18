@@ -84,6 +84,9 @@ read_globals = {
 	"GetNumAvailableQuests",
 	"GetAvailableTitle",
 	"GetAvailableQuestInfo",
+	-- Closes.lua
+	"GetQuestID",
+	"QuestGetAutoAccept",
 	-- State.lua
 	"GetUnitSpeed",
 	"bit",
