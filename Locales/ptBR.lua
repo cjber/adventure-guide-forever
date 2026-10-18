@@ -45,6 +45,7 @@ L["CLICK_TO_RESUME"] = "Clique para retomar a rota"
 L["CLICK_TRAVEL"] = "Clique para viajar com %s"
 L["CLICK_WAYPOINT"] = "Clique para marcar um ponto de rota"
 L["CLICK_WAYPOINT_STEP"] = "Clique para marcar um ponto de rota"
+L["CLOSES_WARNING"] = "Aceitar %s fecha %s para sempre."
 L["CONTINUES_STORY"] = "Continua uma história que você começou"
 L["DO_THIS_NEXT"] = "Faça isto em seguida"
 L["DUMP_SAVED"] =
@@ -330,6 +331,9 @@ L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
 L["SETTING_WANDERER"] = "Andarilho: só nomear lugares"
 L["SETTING_WANDERER_TOOLTIP"] =
 	"O guia diz aonde ir em seguida e deixa o caminho com você: sem ponto de rota, sem rota com o Shortest Path Forever e sem marcas no mapa."
+L["SETTING_WARN_CLOSING"] = "Avisar antes que uma missão feche outra"
+L["SETTING_WARN_CLOSING_TOOLTIP"] =
+	"Quando um recrutador oferece uma missão que fecharia outra para sempre, diz no bate-papo quais missões você perderia, antes de aceitar."
 L["SETTING_WHATS_NEW"] = "Novidades após uma atualização"
 L["SETTING_WHATS_NEW_TOOLTIP"] =
 	"Uma linha no bate-papo na primeira vez que você entra depois que o guia é atualizado."
