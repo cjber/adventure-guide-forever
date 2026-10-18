@@ -146,19 +146,6 @@ local function LayoutLine(module)
 	return module:LayoutBlock(block)
 end
 
--- Why the step wants a group (docs/design.md §2.27), one line each, after why it is next.
----@param block AGFTrackerBlock
----@param step AGFStep
----@param line integer
----@return integer line the last line used
-local function GroupLines(block, step, line)
-	for _, note in ipairs(ns.Overview.GroupNotes(step)) do
-		line = line + 1
-		block:AddObjective(line, note)
-	end
-	return line
-end
-
 ---@param block AGFTrackerBlock
 ---@param step AGFStep
 ---@param line integer
@@ -242,7 +229,6 @@ function ModuleMixin:LayoutContents()
 			line = line + 1
 			block:AddObjective(line, item.text, nil, item.done)
 		end
-		line = GroupLines(block, step, line)
 		local travel = ns.Integrations.Travel(step)
 		if travel then
 			block:AddObjective(line + 1, travel)
@@ -289,7 +275,6 @@ function ModuleMixin:LayoutContents()
 			line = line + 1
 			block:AddObjective(line, step.reason)
 		end
-		line = GroupLines(block, step, line)
 		Preview(block, step, line)
 		self:LayoutBlock(block)
 		return
@@ -326,7 +311,6 @@ function ModuleMixin:LayoutContents()
 		line = line + 1
 		block:AddObjective(line, reason)
 	end
-	line = GroupLines(block, step, line)
 	for _, giver in ipairs(step.checklist or {}) do
 		line = line + 1
 		block:AddObjective(line, giver.text, nil, giver.done)

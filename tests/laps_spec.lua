@@ -17,7 +17,7 @@ end
 -- A step's point is a place the data has, or where the player enters an area the data has (tests/harness.lua).
 local Placed, Key = dofile("tests/harness.lua").placement(data, Model)
 
-local givers, groups = {}, {}
+local givers, groups, directed = {}, {}, {}
 for id, quest in pairs(data.quests) do
 	if quest.start and quest.start.hub and quest.side ~= 3 and not quest.dungeon and not quest.raid then
 		givers[#givers + 1] = id
@@ -25,6 +25,9 @@ for id, quest in pairs(data.quests) do
 	if quest.group then
 		groups[quest.group] = groups[quest.group] or {}
 		table.insert(groups[quest.group], id)
+		if quest.closedBy then
+			directed[quest.group] = true
+		end
 	end
 end
 table.sort(givers)
@@ -120,11 +123,21 @@ local function Walk(where, steps, player, completed, log, held)
 		end
 		for _, id in ipairs(step.pickups or {}) do
 			check(not log[id] and not picked[id], label .. ": picks " .. id .. " up once")
-			for _, other in ipairs(groups[data.quests[id].group] or {}) do
-				check(
-					other == id or not (completed[other] or log[other] or picked[other]),
-					label .. ": " .. id .. " is the only one of its group"
-				)
+			local quest = data.quests[id]
+			for _, other in ipairs(groups[quest.group] or {}) do
+				if not directed[quest.group] then
+					check(
+						other == id or not (completed[other] or log[other] or picked[other]),
+						label .. ": " .. id .. " is the only one of its group"
+					)
+				else
+					for _, closer in ipairs(quest.closedBy or {}) do
+						check(
+							closer ~= other or not (completed[other] or log[other] or picked[other]),
+							label .. ": " .. id .. " is not picked after its closer " .. other
+						)
+					end
+				end
 			end
 			picked[id], count = true, count + 1
 			check(count <= player.logMax, ("%s: the log at %d of %d"):format(label, count, player.logMax))
