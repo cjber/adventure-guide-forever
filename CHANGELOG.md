@@ -12,7 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-- **A warning before a quest closes another.** Some quests shut others off for good once you take them. When a giver offers one, the guide now says in chat which quests you'd lose, before you click Accept, once per quest. Turn off *Warn before a quest closes another* in Route settings if you'd rather not hear it. If Polestar's own warning is on, the guide leaves it to Polestar. The idea came from Polestar.
+- **Steps say when you'll want a group.** A step's tooltip and its lines in the objective tracker now say why it needs company: *Dungeon:* or *Raid:* with the instance's name, *Group of 3* when your quest log suggests a group size, or *Elite: group advised* for other elite quests. The group icon on the step stays as it was. The idea came from Polestar.
 
 ## [0.18.0] - 2026-10-18
 

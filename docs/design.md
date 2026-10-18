@@ -125,18 +125,12 @@ abandons quests.
   was made at; a hand-in clears the marks it could open (quests that need it, and quests its ender gives).
   `Core/Offers.lua`.
 
-- **2.26 Quests that close another.** QuestieDB's `exclusiveTo` names, for each quest, the quests whose taking
-  closes it; AGF keeps those links inside each exclusive group as `closedBy`, so a breadcrumb that closes once its
-  target is taken never reads as closing the target. When a giver's detail window offers a quest that would close
-  another for good, one chat line names what you'd lose, once per quest a session: "Taking X closes Y for good."
-  Left out: quests done or in the log, quests something else already closed (another closer, or a breadcrumb's
-  target), quests the character can never take (side, race, class, repeatable, a start the data cannot place), a
-  follow-up that needs another member of the group first (its lead is the loss), and other versions of the offered
-  quest (the same title); each title is named once. The planner's eligibility reads the same directions: a group
-  whose links carry `closedBy` closes a member only once one of its own closers is done or in the log. A quest the game took
-  itself (auto-accept) says nothing. The setting `warnClosing` (on) turns it off; with Polestar's own warning on
-  (`Polestar.Get("behavior.warnClosing")`) AGF says nothing, so it is never said twice. `Model.Closes`,
-  `Core/Closes.lua`.
+- **2.27 Group lines.** A step says why it wants a group, from what AGF already knows, one line per reason and each
+  once: "Dungeon: X" or "Raid: X" for a quest filed under an instance (the client's name for it, else the data's),
+  "Group of N" for an elite quest the quest log suggests a group of 2 or more for, and "Elite: group advised" for any
+  other elite quest. A quest ready to hand in says nothing: its group work is done. The lines go after the reason in
+  the step's tooltip (its ring and its row) and in the tracker's step block (a RestedXP step's after its checklist);
+  the row keeps its group icon. `Model.GroupNeed`, `Overview.GroupNote`.
 
 ### Guide navigation
 
