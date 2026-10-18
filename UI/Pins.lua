@@ -270,8 +270,8 @@ local function AreaObjectives(tooltip, step)
 end
 
 -- A step's lines (docs/design.md §2.9), shared by its ring and its row in the guide: the title numbered as the route
--- numbers it, the chapter, the travel line when there is one, why it is on the route, why it wants a group (§2.27),
--- a town's quests by NPC, and an area's objectives.
+-- numbers it, the chapter, the travel line when there is one, why it is on the route, a town's quests by NPC, and an
+-- area's objectives.
 ---@param tooltip GameTooltip
 ---@param step AGFStep
 ---@param index number
@@ -285,9 +285,6 @@ function Pins.StepTooltip(tooltip, step, index, travel)
 		GameTooltip_AddHighlightLine(tooltip, travel)
 	end
 	GameTooltip_AddHighlightLine(tooltip, step.reason)
-	for _, note in ipairs(ns.Overview.GroupNotes(step)) do
-		GameTooltip_AddNormalLine(tooltip, note)
-	end
 	if step.kind == "town" then
 		TownQuests(tooltip, step)
 	elseif step.kind == "turnin" then
