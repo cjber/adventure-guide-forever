@@ -10,8 +10,8 @@ card (chosen) | zone:1436 | Westfall story | Chapter 1 of 4 | A chain begins wit
   step 8 | area:64:4 | Complete objectives · The Forgotten Heirloom | 1436 0.4930,0.1930 | after you pick it up | 0 yd | 64/4
   step 9 | area:92744:4 | Complete objectives · Murloc Gills | 1436 0.3420,0.1590 | after you pick it up | 39 yd | 92744/4
   step 10 | area:12:0 | Complete objectives · The People's Militia | 1436 0.3140,0.3380 | after you pick it up | 24 yd | 12/0
-card | zone:1426 | Head to Dun Morogh | 20 quests near your level | 3 quests will soon turn grey | map 1426
-  step 1 | town:1426:136 | Visit The Grizzled Den: Pick up 7 | 1426 0.4673,0.5383 | 7 to pick up
+card | zone:1426 | Head to Dun Morogh | 19 quests near your level | 3 quests will soon turn grey | map 1426
+  step 1 | town:1426:136 | Visit The Grizzled Den: Pick up 6 | 1426 0.4673,0.5383 | 6 to pick up
   step 2 | town:1426:1537 | Visit Ironforge: Pick up 2 | 1426 0.5044,0.4909 | 2 to pick up
   step 3 | town:1426:138 | Pick up: Finding Warmth | 1426 0.5773,0.4488 | near your level
   step 4 | town:1426:803 | Visit Amberstill Ranch: Pick up 2 | 1426 0.6308,0.4985 | 2 to pick up
@@ -27,9 +27,9 @@ card | zone:1432 | Head to Loch Modan | 6 quests near your level | - | map 1432
 card | zone:1439 | Head to Darkshore | 10 quests near your level | Auberdine needs hands | map 1439
   step 1 | town:1439:442 | Visit Auberdine: Pick up 9 | 1439 0.3740,0.4013 | 9 to pick up
   step 2 | town:1439:447 | Pick up: The Fall of Ameth'Aran | 1439 0.4030,0.5973 | near your level
-card | zone:1438 | Head to Teldrassil | 13 quests near your level | 3 quests will soon turn grey | map 1438
+card | zone:1438 | Head to Teldrassil | 12 quests near your level | 3 quests will soon turn grey | map 1438
   step 1 | town:1438:259 | Visit Lake Al'Ameth: Pick up 2 | 1438 0.6090,0.6849 | 2 to pick up
-  step 2 | town:1438:186 | Visit Dolanaar: Pick up 5 | 1438 0.5551,0.5715 | 5 to pick up
+  step 2 | town:1438:186 | Visit Dolanaar: Pick up 4 | 1438 0.5551,0.5715 | 4 to pick up
   step 3 | town:1438:736 | Visit Ban'ethil Hollow: Pick up 3 | 1438 0.4468,0.5892 | 3 to pick up
   step 4 | town:1438:264 | Visit The Oracle Glade: Pick up 3 | 1438 0.3832,0.3436 | 3 to pick up
 card | zone:1411 | Head to Durotar | 1 quest near your level | - | map 1411
@@ -40,5 +40,3 @@ card | zone:1434 | Head to Stranglethorn Vale | 3 quests near your level | Booty
   step 1 | town:1434:35 | Visit Booty Bay: Pick up 3 | 1434 0.2773,0.7692 | 3 to pick up
 card | zone:1442 | Head to Stonetalon Mountains | 1 quest near your level | - | map 1442
   step 1 | town:1442:1076 | Pick up: Goblin Lockpicks | 1442 0.5822,0.5174 | near your level
-card | calling | Your calling | Chapter 1 | A task for your class: Bartleby the Drunk | map 1453
-  step 1 | town:1453:0 | Pick up: Bartleby the Drunk | 1453 0.7713,0.5326 | Begins a new story

@@ -57,7 +57,6 @@ Integrations\SkillUp.lua
 Core\Guidance.lua
 Core\API.lua
 Core\Offers.lua
-Core\Closes.lua
 Core\Report.lua
 Integrations\Companions.lua
 Integrations\Providers.lua
