@@ -40,8 +40,6 @@ local DEFAULTS = {
 	polestarAside = true,
 	-- In a party, steps for quests the party shares count as nearer, and the quest IDs go to the party (Party.lua).
 	partyQuests = true,
-	-- Before a giver's window offers a quest that closes another for good, say which in chat (Closes.lua).
-	warnClosing = true,
 }
 ns.DEFAULTS = DEFAULTS
 

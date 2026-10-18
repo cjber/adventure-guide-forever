@@ -12,8 +12,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-10-18
+
 - **Plays better in a party.** When you're grouped, quests someone in your party also has count as a little nearer, so the route leans towards what you can do together without locking you into an order, and a pickup a party member already has says *someone in your party has it* so you can ask for a share. Party members running Adventure Guide tell each other which quests they have through a hidden addon message, at most once every 15 seconds and never in combat. It's on by default; turn off *Favour quests your party has* in Route settings to stop it. The idea came from Polestar.
-- **A warning before a quest closes another.** Some quests shut others off for good once you take them. When a giver offers one, the guide now says in chat which quests you'd lose, before you click Accept, once per quest. Turn off *Warn before a quest closes another* in Route settings if you'd rather not hear it. If Polestar's own warning is on, the guide leaves it to Polestar. The idea came from Polestar.
 
 ## [0.17.1] - 2026-10-17
 

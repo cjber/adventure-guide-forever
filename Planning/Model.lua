@@ -149,10 +149,6 @@ end
 ---@type table<AGFData, AGFIndex>
 local indexes = setmetatable({}, { __mode = "k" })
 
--- An exclusive group's members, ascending; `directed` when any member's links keep their direction (closedBy).
----@class AGFExclusiveGroup: integer[]
----@field directed? boolean
-
 local function Index(data)
 	local index = indexes[data]
 	if index then
@@ -182,12 +178,9 @@ local function Index(data)
 			table.insert(index.starts[mapID], id)
 		end
 		if quest.group and quest.group > 0 then
-			---@type AGFExclusiveGroup
 			local group = index.groups[quest.group] or {}
 			index.groups[quest.group] = group
 			group[#group + 1] = id
-			-- A group whose links keep their direction (closedBy, QuestieSource.lua) closes a member only through them.
-			group.directed = group.directed or quest.closedBy ~= nil
 		end
 		for side, ids in ipairs(ValidPlace(quest.start) and not quest.repeatable and index.sides or NONE) do
 			ids[#ids + 1] = (quest.side == 3 or quest.side == side) and id or nil
@@ -461,11 +454,7 @@ local function Check(data, player, completed, log, id, groups, lines, names)
 			return false
 		end
 	end
-	-- An exclusive group closes a quest once one of the quests that close it is done or taken: its closedBy where the
-	-- links keep their direction (a breadcrumb never closes its target), every other member where they don't.
-	local members = quest.group and groups[quest.group]
-	local closers = members and (members.directed and (quest.closedBy or NONE) or members) or NONE
-	for _, other in ipairs(closers) do
+	for _, other in ipairs((quest.group and groups[quest.group]) or NONE) do
 		if other ~= id and (completed[other] or log[other]) and not Line(data, lines, false, "group", other, names) then
 			return false
 		end
@@ -540,55 +529,6 @@ function Model.Why(data, player, completed, log, questID, names)
 	local lines = {}
 	Check(data, player, completed, log, questID, Index(data).groups, lines, names)
 	return lines
-end
-
--- What taking `questID` closes for good (docs/design.md §2.26): the other members of its exclusive group that name it
--- in their closedBy. Left out: a quest done or in the log, one already closed by another quest done or in the log
--- (or by its breadcrumb target), one the character can never take (side, race, class, a repeatable, or a start the
--- data cannot place), a follow-up that needs another member of the group first (its lead is the loss), and another
--- version of the same quest (the same title). Ascending; empty when nothing is lost.
----@param data AGFData
----@param player AGFPlayer
----@param completed table<integer, boolean>
----@param log table<integer, AGFLogQuest>
----@param questID integer
----@return integer[]
-function Model.Closes(data, player, completed, log, questID)
-	local closes = {}
-	local quest = data.quests[questID]
-	local members = quest and quest.group and Index(data).groups[quest.group] or NONE
-	for _, id in ipairs(members) do
-		local other = data.quests[id]
-		local named, closed, follows = false, false, false
-		for _, by in ipairs(id ~= questID and other.closedBy or NONE) do
-			named = named or by == questID
-			closed = closed or completed[by] == true or log[by] ~= nil
-		end
-		local target = other.breadcrumb
-		closed = closed or (target ~= nil and (completed[target] == true or log[target] ~= nil))
-		for _, list in ipairs(named and { other.pre or NONE, other.preAny or NONE } or NONE) do
-			for _, pre in ipairs(list) do
-				follows = follows or (pre ~= id and data.quests[pre] ~= nil and data.quests[pre].group == quest.group)
-			end
-		end
-		if
-			named
-			and not closed
-			and not follows
-			and ValidPlace(other.start)
-			and not completed[id]
-			and not log[id]
-			and not other.repeatable
-			and other.title ~= quest.title
-			and (other.side == 3 or other.side == player.side)
-			and HasBit(other.races, player.raceBit)
-			and HasBit(other.classes, player.classBit)
-		then
-			closes[#closes + 1] = id
-		end
-	end
-	-- The group lists its members ascending (Index), so the result is too.
-	return closes
 end
 
 local SEARCH_MAX = 10

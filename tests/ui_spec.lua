@@ -325,7 +325,7 @@ do
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
 		"maxQuestLevelOffset restedxpGuide wanderer followQuest partyQuests optimisedRoute includeDungeonsDefault "
-			.. "titleStartsRoute autoStart polestarAside warnClosing stepSound trainingReminders",
+			.. "titleStartsRoute autoStart polestarAside stepSound trainingReminders",
 		"Route holds its rows in order"
 	)
 	equal(table.concat(pages[L.SETTINGS_GROUP_MAP] or {}, " "), "showMapPins showQuestGivers", "Map holds its rows")

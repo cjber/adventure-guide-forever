@@ -2197,18 +2197,6 @@ function harness.load(options)
 		h.greetingOffered = event == "QUEST_GREETING" and offered or nil
 		h.fire(event)
 	end
-	-- A giver's detail window offering one quest (Closes.lua): GetQuestID gives `id` (a secret stand-in works too),
-	-- and QuestGetAutoAccept `auto`, a quest the game took itself.
-	G.GetQuestID = function()
-		return h.detailQuest or 0
-	end
-	G.QuestGetAutoAccept = function()
-		return h.detailAuto == true
-	end
-	function h.Offer(id, auto)
-		h.detailQuest, h.detailAuto = id, auto
-		h.fire("QUEST_DETAIL")
-	end
 	-- h.forbiddenTooltip stands for a tooltip the client has marked forbidden.
 	function G.GameTooltip:IsForbidden()
 		return h.forbiddenTooltip == true
@@ -3315,24 +3303,15 @@ function harness.questieMirror(data)
 			grouped[group][#grouped[group] + 1] = id
 		end
 	end
-	-- The corpus keeps each link's direction as closedBy; a group a spec wrote without it links every member to the rest.
 	for _, members in pairs(grouped) do
-		local directed = false
 		for _, id in ipairs(members) do
-			directed = directed or data.quests[id].closedBy ~= nil
-		end
-		for _, id in ipairs(members) do
-			if directed then
-				exclusiveTo[id] = data.quests[id].closedBy
-			else
-				local others = {}
-				for _, other in ipairs(members) do
-					if other ~= id then
-						others[#others + 1] = other
-					end
+			local others = {}
+			for _, other in ipairs(members) do
+				if other ~= id then
+					others[#others + 1] = other
 				end
-				exclusiveTo[id] = others
 			end
+			exclusiveTo[id] = others
 		end
 	end
 	local objects, objectCount, homes = {}, 0, {}

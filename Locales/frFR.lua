@@ -45,7 +45,6 @@ L["CLICK_TO_RESUME"] = "Cliquez pour reprendre l’itinéraire"
 L["CLICK_TRAVEL"] = "Cliquez pour voyager avec %s"
 L["CLICK_WAYPOINT"] = "Cliquez pour placer un point de passage"
 L["CLICK_WAYPOINT_STEP"] = "Cliquez pour placer un point de passage"
-L["CLOSES_WARNING"] = "Accepter %s ferme définitivement %s."
 L["CONTINUES_STORY"] = "Poursuit une histoire commencée"
 L["DO_THIS_NEXT"] = "À faire ensuite"
 L["DUMP_SAVED"] =
@@ -334,9 +333,6 @@ L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
 L["SETTING_WANDERER"] = "Vagabond : seulement nommer les lieux"
 L["SETTING_WANDERER_TOOLTIP"] =
 	"Le guide nomme où aller ensuite et vous laisse trouver le chemin : pas de point de passage, pas d’itinéraire avec Shortest Path Forever et aucune marque sur la carte."
-L["SETTING_WARN_CLOSING"] = "Avertir avant qu’une quête en ferme une autre"
-L["SETTING_WARN_CLOSING_TOOLTIP"] =
-	"Quand un donneur de quêtes propose une quête qui en fermerait une autre définitivement, indique dans la discussion les quêtes que vous perdriez, avant d’accepter."
 L["SETTING_WHATS_NEW"] = "Nouveautés après une mise à jour"
 L["SETTING_WHATS_NEW_TOOLTIP"] =
 	"Une ligne dans la discussion la première fois que vous vous connectez après une mise à jour du guide."

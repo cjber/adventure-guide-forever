@@ -45,7 +45,6 @@ L["CLICK_TO_RESUME"] = "클릭하여 경로 재개"
 L["CLICK_TRAVEL"] = "클릭하여 %s(으)로 이동"
 L["CLICK_WAYPOINT"] = "클릭하여 이동 지점 설정"
 L["CLICK_WAYPOINT_STEP"] = "클릭하여 이동 지점 설정"
-L["CLOSES_WARNING"] = "%s 퀘스트를 수락하면 %s 퀘스트를 영영 받을 수 없습니다."
 L["CONTINUES_STORY"] = "시작한 이야기를 이어 갑니다"
 L["DO_THIS_NEXT"] = "다음에 하기"
 L["DUMP_SAVED"] =
@@ -334,9 +333,6 @@ L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
 L["SETTING_WANDERER"] = "방랑자: 장소 이름만"
 L["SETTING_WANDERER_TOOLTIP"] =
 	"안내서는 다음에 갈 곳의 이름만 알려 주고 길은 맡깁니다. 이동 지점, Shortest Path Forever 경로, 지도 표시가 없습니다."
-L["SETTING_WARN_CLOSING"] = "다른 퀘스트를 막는 퀘스트 경고"
-L["SETTING_WARN_CLOSING_TOOLTIP"] =
-	"퀘스트 NPC가 다른 퀘스트를 영영 받을 수 없게 만드는 퀘스트를 제공하면, 수락하기 전에 잃게 될 퀘스트를 대화창에 알려줍니다."
 L["SETTING_WHATS_NEW"] = "업데이트 후 새로운 소식"
 L["SETTING_WHATS_NEW_TOOLTIP"] =
 	"안내서가 업데이트된 후 처음 접속할 때 대화창에 한 줄을 표시합니다."

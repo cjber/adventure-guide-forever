@@ -193,7 +193,6 @@ TweaksForever = nil
 ---@class AGFPolestarGlobal
 ---@field Engine? AGFPolestarEngine
 ---@field On? fun(message: string, fn: fun(...)): table
----@field Get? fun(path: string): any one of Polestar's settings by its dotted path (Closes.lua reads behavior.warnClosing)
 
 ---@type AGFPolestarGlobal?
 Polestar = nil

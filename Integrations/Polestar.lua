@@ -38,19 +38,6 @@ local function Running()
 	return type(guide.id) == "string" and guide.id or true
 end
 
--- One of Polestar's settings, read through its own `Polestar.Get(path)`: nil without Polestar, without that reader, or
--- when the read fails. A feature Polestar does too asks this before doing it twice (Closes.lua).
----@param path string
----@return any
-function Aside.Setting(path)
-	local addon = Polestar
-	if type(addon) ~= "table" or type(addon.Get) ~= "function" then
-		return nil
-	end
-	local ok, value = pcall(addon.Get, path)
-	return ok and value or nil
-end
-
 -- True while Adventure Guide stands aside: the setting is on, Polestar runs a guide, and it is not the one this
 -- character took over from (kept across reloads, so Polestar reopening its saved guide does not undo it).
 ---@return boolean

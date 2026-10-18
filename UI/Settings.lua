@@ -84,7 +84,6 @@ function ns.RegisterSettings()
 						ns.L.SETTING_POLESTAR_ASIDE,
 						ns.L.SETTING_POLESTAR_ASIDE_TOOLTIP
 					),
-					Checkbox(subcategory, "warnClosing", ns.L.SETTING_WARN_CLOSING, ns.L.SETTING_WARN_CLOSING_TOOLTIP),
 					Checkbox(subcategory, "stepSound", ns.L.SETTING_STEP_SOUND, ns.L.SETTING_STEP_SOUND_TOOLTIP),
 					Checkbox(
 						subcategory,
