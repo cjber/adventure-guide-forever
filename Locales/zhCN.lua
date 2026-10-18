@@ -42,6 +42,7 @@ L["CLICK_TO_RESUME"] = "点击继续路线"
 L["CLICK_TRAVEL"] = "点击使用%s出行"
 L["CLICK_WAYPOINT"] = "点击设置路径点"
 L["CLICK_WAYPOINT_STEP"] = "点击设置路径点"
+L["CLOSES_WARNING"] = "接受%s将永久关闭%s。"
 L["CONTINUES_STORY"] = "继续你已开始的故事"
 L["DO_THIS_NEXT"] = "下一步做这个"
 L["DUMP_SAVED"] =
@@ -325,6 +326,9 @@ L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
 L["SETTING_WANDERER"] = "漫游者：只说地名"
 L["SETTING_WANDERER_TOOLTIP"] =
 	"指南只说出下一步去哪里，路怎么走由你决定：没有路径点，没有Shortest Path Forever路线，地图上也没有标记。"
+L["SETTING_WARN_CLOSING"] = "任务会关闭其他任务时发出警告"
+L["SETTING_WARN_CLOSING_TOOLTIP"] =
+	"当任务NPC提供的任务会永久关闭另一个任务时，在你接受之前于聊天框中说明你将失去哪些任务。"
 L["SETTING_WHATS_NEW"] = "更新后的新内容"
 L["SETTING_WHATS_NEW_TOOLTIP"] = "指南更新后你首次登录时，在聊天框中显示一行。"
 L["SET_HEARTH"] = "将炉石设定在%s"
