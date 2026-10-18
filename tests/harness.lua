@@ -203,7 +203,7 @@ function harness.data()
 	return harness.fixture(ns.Data)
 end
 
--- options: spf ("v1" or "v1+"; absent by default), db and charDB (saved variables), log ({id, title, level,
+-- options: spf ("v1" or "v1+"; absent by default), db and charDB (saved variables), log ({id, title, level, groupSize,
 -- complete, map, x, y} entries), completed (quest IDs), player (overrides), initialLogin (default true), waypoint
 -- (the user waypoint the client kept across a /reload, a UiMapPoint), completedPending (the client has no completed
 -- quests to give until the spec sets h.completedPending to false).
@@ -1831,7 +1831,14 @@ function harness.load(options)
 		end,
 		GetInfo = function(index)
 			local entry = log[index]
-			return entry and { questID = entry.id, title = entry.title, level = entry.level, isHeader = false }
+			return entry
+				and {
+					questID = entry.id,
+					title = entry.title,
+					level = entry.level,
+					suggestedGroup = entry.groupSize or 0,
+					isHeader = false,
+				}
 		end,
 		IsComplete = function(questID)
 			for _, entry in ipairs(log) do
