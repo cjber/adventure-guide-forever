@@ -45,6 +45,7 @@ L["CLICK_TO_RESUME"] = "Haz clic para reanudar la ruta"
 L["CLICK_TRAVEL"] = "Haz clic para viajar con %s"
 L["CLICK_WAYPOINT"] = "Haz clic para poner un punto de ruta"
 L["CLICK_WAYPOINT_STEP"] = "Haz clic para poner un punto de ruta"
+L["CLOSES_WARNING"] = "Aceptar %s cierra %s para siempre."
 L["CONTINUES_STORY"] = "Continúa una historia que empezaste"
 L["DO_THIS_NEXT"] = "Haz esto a continuación"
 L["DUMP_SAVED"] =
@@ -337,6 +338,9 @@ L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
 L["SETTING_WANDERER"] = "Trotamundos: solo nombrar lugares"
 L["SETTING_WANDERER_TOOLTIP"] =
 	"La guía dice adónde ir y te deja el camino a ti: sin punto de ruta, sin ruta con Shortest Path Forever y sin marcas en el mapa."
+L["SETTING_WARN_CLOSING"] = "Avisar antes de que una misión cierre otra"
+L["SETTING_WARN_CLOSING_TOOLTIP"] =
+	"Cuando un asignador ofrece una misión que cerraría otra para siempre, indica en el chat qué misiones perderías antes de aceptarla."
 L["SETTING_WHATS_NEW"] = "Novedades tras una actualización"
 L["SETTING_WHATS_NEW_TOOLTIP"] = "Una línea en el chat la primera vez que te conectas tras actualizarse la guía."
 L["SET_HEARTH"] = "Vincula tu piedra de hogar en %s"

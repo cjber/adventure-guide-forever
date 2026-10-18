@@ -45,6 +45,7 @@ L["CLICK_TO_RESUME"] = "Klicken, um die Route fortzusetzen"
 L["CLICK_TRAVEL"] = "Klicken, um mit %s zu reisen"
 L["CLICK_WAYPOINT"] = "Klicken, um einen Wegpunkt zu setzen"
 L["CLICK_WAYPOINT_STEP"] = "Klicken, um einen Wegpunkt zu setzen"
+L["CLOSES_WARNING"] = "Wenn Ihr %s annehmt, verliert Ihr %s endgültig."
 L["CONTINUES_STORY"] = "Setzt eine begonnene Geschichte fort"
 L["DO_THIS_NEXT"] = "Als Nächstes erledigen"
 L["DUMP_SAVED"] =
@@ -339,6 +340,9 @@ L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
 L["SETTING_WANDERER"] = "Wanderer: nur Orte nennen"
 L["SETTING_WANDERER_TOOLTIP"] =
 	"Der Führer nennt, wohin es als Nächstes geht, und überlässt Euch den Weg: kein Wegpunkt, keine Route mit Shortest Path Forever und keine Markierungen auf der Karte."
+L["SETTING_WARN_CLOSING"] = "Warnen, bevor eine Quest eine andere ausschließt"
+L["SETTING_WARN_CLOSING_TOOLTIP"] =
+	"Bietet ein Questgeber eine Quest an, die eine andere endgültig ausschließt, nennt der Chat vor dem Annehmen die Quests, die Ihr verlieren würdet."
 L["SETTING_WHATS_NEW"] = "Neuigkeiten nach einem Update"
 L["SETTING_WHATS_NEW_TOOLTIP"] =
 	"Eine Zeile im Chat, wenn Ihr Euch nach einem Update des Führers zum ersten Mal einloggt."
