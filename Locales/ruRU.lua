@@ -47,6 +47,7 @@ L["CLICK_TO_RESUME"] = "Щелкните, чтобы продолжить мар
 L["CLICK_TRAVEL"] = "Щелкните, чтобы отправиться с %s"
 L["CLICK_WAYPOINT"] = "Щелкните, чтобы поставить точку маршрута"
 L["CLICK_WAYPOINT_STEP"] = "Щелкните, чтобы поставить точку маршрута"
+L["CLOSES_WARNING"] = "Взяв задание %s, вы навсегда потеряете: %s."
 L["CONTINUES_STORY"] = "Продолжает начатую вами историю"
 L["DO_THIS_NEXT"] = "Сделать следующим"
 L["DUMP_SAVED"] =
@@ -91,6 +92,11 @@ L["GROUP_BATTLEGROUNDS"] = "Поля боя"
 L["GROUP_CONTINUE"] = "Продолжить"
 L["GROUP_DUNGEONS"] = "Подземелья"
 L["GROUP_MANY"] = "Нужна группа: %d"
+L["GROUP_NEED_DUNGEON"] = "Подземелье: %s"
+L["GROUP_NEED_ELITE"] = "Элитное: рекомендуется группа"
+L["GROUP_NEED_RAID"] = "Рейд: %s"
+L["GROUP_NEED_RAID_ANY"] = "Рейд: рекомендуется группа"
+L["GROUP_NEED_SIZE"] = "Группа из %d"
 L["GROUP_ONE"] = "Нужна группа: 1"
 L["GROUP_ZONES"] = "Места заданий"
 L["GUIDE_BACK"] = "К путешествиям"
@@ -359,6 +365,9 @@ L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
 L["SETTING_WANDERER"] = "Странник: только названия мест"
 L["SETTING_WANDERER_TOOLTIP"] =
 	"Путеводитель называет, куда идти дальше, а путь оставляет вам: без точки маршрута, без маршрута Shortest Path Forever и без меток на карте."
+L["SETTING_WARN_CLOSING"] = "Предупреждать, если задание закрывает другое"
+L["SETTING_WARN_CLOSING_TOOLTIP"] =
+	"Когда персонаж предлагает задание, после которого другое станет недоступно навсегда, в чате будет сказано, какие задания вы потеряете, прежде чем вы его примете."
 L["SETTING_WHATS_NEW"] = "Что нового после обновления"
 L["SETTING_WHATS_NEW_TOOLTIP"] =
 	"Одна строка в чате при первом входе после обновления путеводителя."

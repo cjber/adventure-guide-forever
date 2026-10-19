@@ -45,6 +45,7 @@ L["CLICK_TO_RESUME"] = "클릭하여 경로 재개"
 L["CLICK_TRAVEL"] = "클릭하여 %s(으)로 이동"
 L["CLICK_WAYPOINT"] = "클릭하여 이동 지점 설정"
 L["CLICK_WAYPOINT_STEP"] = "클릭하여 이동 지점 설정"
+L["CLOSES_WARNING"] = "%s 퀘스트를 수락하면 %s 퀘스트를 영영 받을 수 없습니다."
 L["CONTINUES_STORY"] = "시작한 이야기를 이어 갑니다"
 L["DO_THIS_NEXT"] = "다음에 하기"
 L["DUMP_SAVED"] =
@@ -85,6 +86,11 @@ L["GROUP_BATTLEGROUNDS"] = "전장"
 L["GROUP_CONTINUE"] = "계속하기"
 L["GROUP_DUNGEONS"] = "던전"
 L["GROUP_MANY"] = "파티 필요 %d개"
+L["GROUP_NEED_DUNGEON"] = "던전: %s"
+L["GROUP_NEED_ELITE"] = "정예: 파티 권장"
+L["GROUP_NEED_RAID"] = "공격대: %s"
+L["GROUP_NEED_RAID_ANY"] = "공격대: 파티 권장"
+L["GROUP_NEED_SIZE"] = "%d인 파티"
 L["GROUP_ONE"] = "파티 필요 1개"
 L["GROUP_ZONES"] = "퀘스트 목적지"
 L["GUIDE_BACK"] = "여정으로 돌아가기"
@@ -335,6 +341,9 @@ L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
 L["SETTING_WANDERER"] = "방랑자: 장소 이름만"
 L["SETTING_WANDERER_TOOLTIP"] =
 	"안내서는 다음에 갈 곳의 이름만 알려 주고 길은 맡깁니다. 이동 지점, Shortest Path Forever 경로, 지도 표시가 없습니다."
+L["SETTING_WARN_CLOSING"] = "다른 퀘스트를 막는 퀘스트 경고"
+L["SETTING_WARN_CLOSING_TOOLTIP"] =
+	"퀘스트 NPC가 다른 퀘스트를 영영 받을 수 없게 만드는 퀘스트를 제공하면, 수락하기 전에 잃게 될 퀘스트를 대화창에 알려줍니다."
 L["SETTING_WHATS_NEW"] = "업데이트 후 새로운 소식"
 L["SETTING_WHATS_NEW_TOOLTIP"] =
 	"안내서가 업데이트된 후 처음 접속할 때 대화창에 한 줄을 표시합니다."
@@ -423,7 +432,7 @@ L["UNEXPLORED"] = "아직 보지 못한 곳: %s"
 L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
-L["WHATS_NEW"] = "이제 추적기 항목이 Questie 퀘스트 목록을 가리지 않도록 비켜 표시됩니다."
+L["WHATS_NEW"] = "Steps say when you'll want a group."
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"
