@@ -427,6 +427,19 @@ local function Objectives(questID)
 	return objectives
 end
 
+-- The first of a logged quest's items that run out in the bags (the catalogue's `expires`) the player carries, or nil.
+---@param id integer
+---@return integer?
+local function Expiring(id)
+	local quest = ns.Data and ns.Data.quests and ns.Data.quests[id]
+	for _, item in ipairs(quest and quest.expires or {}) do
+		if (C_Item.GetItemCount(item) or 0) > 0 then
+			return item
+		end
+	end
+	return nil
+end
+
 -- Keyed by quest ID, like Completed(), so the model can look either up in O(1).
 ---@return table<integer, AGFLogQuest>
 function State.Log()
@@ -454,6 +467,8 @@ function State.Log()
 	end
 	for id, entry in pairs(log) do
 		entry.poi = points[id]
+		entry.expiring = Expiring(id)
+		entry.expiringName = entry.expiring and C_Item.GetItemNameByID(entry.expiring) or nil
 	end
 	return log
 end
