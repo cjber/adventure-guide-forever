@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-10-20
+
+- **Objectives send you to the main camp of normal mobs.** When an objective's mobs or drops can be found in more than one place, the guide now sends you to the biggest camp rather than a lone spawn or a small cluster nearby, with the marker in the middle of the camp. It passes over a camp of elites for one of normal mobs on the same map, even if those are a few levels higher, and keeps the elites only when there's nothing else. "Next spot" moves between separate camps. Thanks to Polestar for the idea.
+
 ## [0.19.0] - 2026-10-20
 
 - **Quest items that run out go first.** Some quest items vanish from your bags after a while, like the Rendered Spores Apothecary Zamah wants in Thunder Bluff within 45 minutes. While you carry one, the guide puts that quest's hand-in (or its objectives, if it isn't done yet) at the top of the route and says *before Rendered Spores runs out*. Thanks to Polestar for the idea.
@@ -23,9 +27,6 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [0.18.0] - 2026-10-18
 
 - **Plays better in a party.** When you're grouped, quests someone in your party also has count as a little nearer, so the route leans towards what you can do together without locking you into an order, and a pickup a party member already has says *someone in your party has it* so you can ask for a share. Party members running Adventure Guide tell each other which quests they have through a hidden addon message, at most once every 15 seconds and never in combat. It's on by default; turn off *Favour quests your party has* in Route settings to stop it. The idea came from Polestar.
-
-
-- **Objectives send you to the main camp of normal mobs.** When an objective's mobs or drops can be found in more than one place, the guide now sends you to the biggest camp rather than a lone spawn or a small cluster nearby, with the marker in the middle of the camp. It passes over a camp of elites for one of normal mobs on the same map, even if those are a few levels higher, and keeps the elites only when there's nothing else. "Next spot" moves between separate camps. Thanks to Polestar for the idea.
 ## [0.17.1] - 2026-10-17
 
 - **The tracker sections now move clear of Questie's quest list.** With Questie's tracker on, its list was drawn over the Forever sections. They now sit below Questie's list, or above or beside it when there isn't room, and follow it when it moves, grows or hides; your quest tracker keeps its own place. Thanks to deathmvp1 for the report and berserkerlxl for finding the cause.
