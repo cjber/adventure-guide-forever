@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [0.20.1] - 2026-10-20
+
+- **Questie's quest tracker can be moved again.** With a Forever section in the tracker, Questie's quest list and the game's own quest tracker could no longer be dragged, and could vanish. A frame of ours sat between UIParent and Questie's list, and Questie's own drag code reads the list's corners and then clears its points mid-gesture, so a layout pass of ours landing in that window left it nothing to read. Nothing of ours is anchored to the list any more: it is watched through its own show, hide, drag-stop and size calls, the column holds its place while you drag or resize it, and it reflows once when you let go. Thanks to procque and Fareed on CurseForge, and to the Questie team for the report that named the cause in Questie/Questie#8076.
+
 ## [0.20.0] - 2026-10-20
 
 - **Objectives send you to the main camp of normal mobs.** When an objective's mobs or drops can be found in more than one place, the guide now sends you to the biggest camp rather than a lone spawn or a small cluster nearby, with the marker in the middle of the camp. It passes over a camp of elites for one of normal mobs on the same map, even if those are a few levels higher, and keeps the elites only when there's nothing else. "Next spot" moves between separate camps. Thanks to Polestar for the idea.
