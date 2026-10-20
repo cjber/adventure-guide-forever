@@ -1,18 +1,18 @@
 # orc18_barrens: level 18, side 2, at 1413 0.5200,0.3000
 card | zone:1413 | The Barrens story | Chapter 1 of 8 | A chain begins with Sputtervalve | map 1413
   step 1 | town:1413:380 | Visit The Crossroads: Pick up 9, turn in 1 | 1413 0.5193,0.3032 | Opens the next chapter here
-  step 2 | area:5041:4 | Complete objectives · Supplies for the Crossroads | 1413 0.5850,0.2730 | after you pick it up | 32 yd | 5041/4
-  step 3 | town:1413:392 | Visit Ratchet: Pick up 9 | 1413 0.6268,0.3623 | Begins a new story
-  step 4 | area:92706:4 | Complete objectives · WANTED: Bruuz | 1413 0.6420,0.3890 | after you pick it up | 116 yd | 92706/4
-  step 5 | area:887:0 | Complete objectives · Southsea Freebooters | 1413 0.6360,0.4620 | after you pick it up | 86 yd | 887/0
-  step 6 | area:887:1 | Complete 2 objectives · The Barrens | 1413 0.6310,0.4930 | 2 quests here | 81 yd | 887/1 895/4
-  step 7 | area:891:0 | Complete 2 objectives · The Guns of Northwatch | 1413 0.6130,0.5570 | after you pick it up | 181 yd | 891/0 891/4
-  step 8 | area:891:1 | Complete objectives · The Guns of Northwatch | 1413 0.6040,0.5480 | after you pick it up | 0 yd | 891/1
-  step 9 | area:869:4 | Complete 2 objectives · The Barrens | 1413 0.5770,0.5410 | 2 quests here | 49 yd | 869/4 865/4
-  step 10 | area:891:2 | Complete objectives · The Guns of Northwatch | 1413 0.6320,0.5660 | after you pick it up | 0 yd | 891/2
+  step 2 | town:1413:386 | Visit The Forgotten Pools: Pick up 2 | 1413 0.4534,0.2841 | 2 to pick up
+  step 3 | area:848:4 | Complete objectives · Fungal Spores | 1413 0.4540,0.2300 | after you pick it up | 97 yd | 848/4
+  step 4 | area:850:4 | Complete objectives · Kolkar Leaders | 1413 0.4280,0.2350 | after you pick it up | 0 yd | 850/4
+  step 5 | area:867:4 | Complete objectives · Harpy Raiders | 1413 0.4040,0.1630 | after you pick it up | 100 yd | 867/4
+  step 6 | town:1413:383 | Visit The Dry Hills: Pick up 5 | 1413 0.4380,0.1221 | 5 to pick up
+  step 7 | area:95621:4 | Complete objectives · Trouble in the Valley | 1413 0.4180,0.1530 | after you pick it up | 96 yd | 95621/4
+  step 8 | area:95507:4 | Complete objectives · Vrang's Game | 1413 0.4700,0.1300 | after you pick it up | 67 yd | 95507/4
+  step 9 | town:1413:382 | Pick up: Ignition | 1413 0.5652,0.0745 | near your level
+  step 10 | area:858:4 | Complete objectives · Ignition | 1413 0.5630,0.0860 | after you pick it up | 0 yd | 858/4
 card (chosen) | carry | Quests in your log | 1 ready to hand in, 1 in progress | - | map 1413
   step 1 | town:1413:380 | Turn in: The Zhevra | 1413 0.5223,0.3101 | Opens the next chapter here
-  step 2 | area:843:0 | Complete 3 objectives · Gann's Reclamation | 1413 0.4770,0.8490 | quests in progress | 90 yd | 843/0 843/1 843/4
+  step 2 | area:843:0 | Complete 3 objectives · Gann's Reclamation | 1413 0.4760,0.8530 | quests in progress | 103 yd | 843/0 843/1 843/4
   step 3 | town:1413:390 | Turn in: Gann's Reclamation | 1413 0.4589,0.7700 | Opens the next chapter here
 card | zone:1442 | Head to Stonetalon Mountains | 8 quests near your level | - | map 1413
   step 1 | town:1413:1702 | Visit Honor's Stand: Pick up 2 | 1413 0.3526,0.2788 | 2 to pick up
