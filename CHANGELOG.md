@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [0.20.2] - 2026-10-20
+
+- **A RestedXP guide no longer breaks the route.** With the RestedXP guide loaded, the guide's own card had no overview header to sit under, so every rebuild failed with *guide has no overview header* and the guide stopped keeping up with your progress. That card now sits under Continue with the rest of your route, and a card of a kind the guide does not know falls back there rather than taking the rebuild down with it. Thanks to CodeHoax for the report and the error text.
+
 ## [0.20.1] - 2026-10-20
 
 - **Questie's quest tracker can be moved again.** With a Forever section in the tracker, Questie's quest list and the game's own quest tracker could no longer be dragged, and could vanish. A frame of ours sat between UIParent and Questie's list, and Questie's own drag code reads the list's corners and then clears its points mid-gesture, so a layout pass of ours landing in that window left it nothing to read. Nothing of ours is anchored to the list any more: it is watched through its own show, hide, drag-stop and size calls, the column holds its place while you drag or resize it, and it reflows once when you let go. Thanks to procque and Fareed on CurseForge, and to the Questie team for the report that named the cause in Questie/Questie#8076.

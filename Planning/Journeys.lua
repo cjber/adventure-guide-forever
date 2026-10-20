@@ -595,8 +595,11 @@ local function Lead(data, completed, eligible, belongs)
 end
 
 -- The overview header each kind shows under (Overview.GROUPS, docs/design.md §2.2); the map is the one place that
--- decides it, and no card is grouped by its title. A calling is the player's own class work, so it continues too.
+-- decides it, and no card is grouped by its title. A calling is the player's own class work, so it continues too,
+-- and so does a companion guide's card: the RestedXP guide the player follows is their route, not a zone or an
+-- instance. A kind this map does not know still gets a header rather than failing the whole rebuild (#233).
 local SECTION_OF_KIND = {
+	guide = "continue",
 	carry = "continue",
 	story = "continue",
 	calling = "continue",
@@ -615,7 +618,7 @@ local function Summarise(journey)
 	end
 	journey.hub = first and (first.place or first.title)
 	journey.more, journey.group = #journey.steps - 1, group
-	journey.section = assert(SECTION_OF_KIND[journey.kind], journey.kind .. " has no overview header")
+	journey.section = SECTION_OF_KIND[journey.kind] or "continue"
 end
 
 -- A zone card's reason in the world's voice, the first that applies: a story the player started, at least

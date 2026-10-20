@@ -424,7 +424,7 @@ L["UNEXPLORED"] = "你还没见过%s"
 L["UNLISTED"] = "这片土地有指南尚不知道的故事；请留意任务NPC头上的“!”。"
 L["UPDATED_TO"] = "已更新到%s。%s"
 -- mt
-L["WHATS_NEW"] = "Questie 的任务追踪器又可以移动了。"
+L["WHATS_NEW"] = "RestedXP 指南不再破坏路线。"
 L["WHY_ALLIANCE"] = "仅限联盟"
 L["WHY_BREADCRUMB"] = "仅在你接受%s之前"
 L["WHY_CHOSE"] = "你改选了%s"
