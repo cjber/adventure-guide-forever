@@ -426,7 +426,8 @@ L["UNEXPLORED"] = "Você ainda não viu %s"
 L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
 L["UPDATED_TO"] = "atualizado para %s. %s"
-L["WHATS_NEW"] = "Quest items that run out go first."
+-- mt
+L["WHATS_NEW"] = "Objectives send you to the main camp of normal mobs."
 L["WHY_ALLIANCE"] = "Só Aliança"
 L["WHY_BREADCRUMB"] = "Só até você aceitar %s"
 L["WHY_CHOSE"] = "Você escolheu %s no lugar"
