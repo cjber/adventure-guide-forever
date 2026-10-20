@@ -132,9 +132,13 @@ end
 function ns.TrackerHostSettings()
 	local account = assert(db)
 	if type(account.trackerHost) ~= "table" then
-		account.trackerHost = { attached = true }
+		account.trackerHost = { attached = true, locked = false }
 	elseif account.trackerHost.attached == nil then
 		account.trackerHost.attached = true
+	end
+	-- Lock defaults off, and a trackerHost saved before it existed simply gains the key.
+	if type(account.trackerHost.locked) ~= "boolean" then
+		account.trackerHost.locked = false
 	end
 	return account.trackerHost
 end

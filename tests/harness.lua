@@ -3066,7 +3066,7 @@ function harness.load(options)
 	if options.setup then
 		options.setup(h)
 	end
-	local trackerSettings = { attached = true }
+	local trackerSettings = { attached = true, locked = false }
 	local trackerCallbacks = {}
 	function h.ns.TrackerHost.GetSettings()
 		return trackerSettings
@@ -3076,6 +3076,9 @@ function harness.load(options)
 		for _, callback in ipairs(trackerCallbacks) do
 			callback()
 		end
+	end
+	function h.ns.TrackerHost.SetLocked(value)
+		trackerSettings.locked = value
 	end
 	function h.ns.TrackerHost.OnAttachmentChanged(callback)
 		trackerCallbacks[#trackerCallbacks + 1] = callback

@@ -300,6 +300,9 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "Mostrar asignadores de misiones en el mapa"
 L["SETTING_GIVERS_TOOLTIP"] =
 	"Un «!» en el mapa del mundo sobre todos los que tienen una misión que puedes aceptar ya. Necesita también las marcas de ruta en el mapa."
+L["SETTING_LOCK_TRACKER"] = "Bloquear el rastreador"
+L["SETTING_LOCK_TRACKER_TOOLTIP"] =
+	"Mantiene el rastreador compartido Forever donde lo pones. El tirador de arriba ya no lo arrastra."
 L["SETTING_MAP_PINS"] = "Mostrar marcas de ruta en el mapa"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"Los pasos numerados de la ruta en el mapa del mundo mientras se muestra su zona, y los asignadores de misiones cuando también estén activados. La guía abierta muestra su ruta de todos modos."
@@ -400,6 +403,7 @@ L["TOWN_SKIP_GIVER"] = "Saltar este asignador"
 L["TRACKER_DRAG_TITLE"] = "Rastreador Forever"
 L["TRACKER_DRAG_TOOLTIP"] = "Arrastra para mover"
 L["TRACKER_LOADING"] = "Cargando datos de misiones..."
+L["TRACKER_LOCKED_TOOLTIP"] = "El rastreador está bloqueado. Desactiva Bloquear el rastreador para moverlo."
 L["TRACKER_UNATTACHED"] = "no se pudo añadir una sección al rastreador de objetivos; infórmalo con /agf audit."
 L["TRAINER"] = "Visita a tu instructor de clase"
 L["TRAINER_IN"] = "Visita a tu instructor de clase en %s"

@@ -301,6 +301,9 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "Afficher les donneurs de quêtes sur la carte"
 L["SETTING_GIVERS_TOOLTIP"] =
 	"Un « ! » sur la carte du monde au-dessus de chaque personnage ayant une quête que vous pouvez prendre maintenant. Demande aussi les repères d’itinéraire sur la carte."
+L["SETTING_LOCK_TRACKER"] = "Verrouiller le suivi"
+L["SETTING_LOCK_TRACKER_TOOLTIP"] =
+	"Garde le suivi Forever partagé là où vous l'avez placé. La poignée en haut ne le déplace plus."
 L["SETTING_MAP_PINS"] = "Afficher les repères d’itinéraire sur la carte"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"Les étapes numérotées de l’itinéraire sur la carte du monde quand leur zone est affichée, et les donneurs de quêtes s’ils sont aussi activés. Le guide ouvert montre toujours un aperçu de son itinéraire."
@@ -403,6 +406,7 @@ L["TOWN_SKIP_GIVER"] = "Passer ce donneur de quêtes"
 L["TRACKER_DRAG_TITLE"] = "Suivi Forever"
 L["TRACKER_DRAG_TOOLTIP"] = "Glisser pour déplacer"
 L["TRACKER_LOADING"] = "Chargement des données de quêtes..."
+L["TRACKER_LOCKED_TOOLTIP"] = "Le suivi est verrouillé. Désactivez Verrouiller le suivi pour le déplacer."
 L["TRACKER_UNATTACHED"] =
 	"impossible d’ajouter une section au suivi des objectifs ; merci de le signaler avec /agf audit."
 L["TRAINER"] = "Rendez visite à votre maître de classe"

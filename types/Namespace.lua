@@ -748,6 +748,8 @@
 ---@field IsAttachedToQuestTracker fun(): boolean
 ---@field OnAttachmentChanged fun(callback: fun(attached: boolean))
 ---@field SavePosition fun(x: number, y: number)
+---@field IsLocked fun(): boolean
+---@field SetLocked fun(value: boolean)
 
 ---@alias AGFGuidanceStatus "queued"|"paused"|"arrived" -- a start waits for combat's end; the route stopped without the player's Stop and can be resumed; it reached its last stop
 
@@ -1545,6 +1547,7 @@
 
 ---@class ForeverTrackerSettings
 ---@field attached boolean
+---@field locked? boolean the grip ignores drag while the tracker is locked
 ---@field scale? number tracker size, 1 is the stock size
 ---@field x? number
 ---@field y? number

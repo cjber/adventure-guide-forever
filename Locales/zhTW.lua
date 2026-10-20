@@ -293,6 +293,9 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "在地圖上顯示任務給予者"
 L["SETTING_GIVERS_TOOLTIP"] =
 	"在世界地圖上，為每個有你現在可接任務的人顯示「!」。還需要開啟地圖上的路線標記。"
+L["SETTING_LOCK_TRACKER"] = "鎖定追蹤器"
+L["SETTING_LOCK_TRACKER_TOOLTIP"] =
+	"將共用的 Forever 追蹤器保持在您放置的位置。頂部的拖曳握把不再移動它。"
 L["SETTING_MAP_PINS"] = "在地圖上顯示路線標記"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"顯示其所在地區時，在世界地圖上顯示路線的編號步驟；若任務給予者也已開啟，則一併顯示。開啟的指南總會預覽其路線。"
@@ -392,6 +395,7 @@ L["TOWN_SKIP_GIVER"] = "跳過此任務給予者"
 L["TRACKER_DRAG_TITLE"] = "Forever追蹤器"
 L["TRACKER_DRAG_TOOLTIP"] = "拖曳以移動"
 L["TRACKER_LOADING"] = "正在載入任務資料..."
+L["TRACKER_LOCKED_TOOLTIP"] = "追蹤器已鎖定。關閉「鎖定追蹤器」即可移動它。"
 L["TRACKER_UNATTACHED"] = "無法在目標追蹤器中加入區塊；請使用/agf audit回報。"
 L["TRAINER"] = "拜訪你的職業訓練師"
 L["TRAINER_IN"] = "拜訪%s的職業訓練師"
