@@ -670,6 +670,8 @@
 ---@field SETTING_TRACKER_TOOLTIP string
 ---@field SETTING_ATTACH_TRACKER string
 ---@field SETTING_ATTACH_TRACKER_TOOLTIP string
+---@field SETTING_LOCK_TRACKER string
+---@field SETTING_LOCK_TRACKER_TOOLTIP string
 ---@field SETTING_MAP_PINS string
 ---@field SETTING_GIVERS string
 ---@field SETTING_DUNGEONS_DEFAULT string
