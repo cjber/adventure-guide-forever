@@ -12,7 +12,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-- **A RestedXP guide no longer stops the route rebuilding.** With the RestedXP guide loaded, the guide's own card had no overview header to sit under, so every rebuild failed with *guide has no overview header* and the guide stopped keeping up with your progress. That card now sits under Continue with the rest of your route, and a card of a kind the guide does not know falls back there rather than taking the rebuild down with it. Thanks to CodeHoax for the report and the error text.
+## [0.20.2] - 2026-10-20
+
+- **A RestedXP guide no longer breaks the route.** With the RestedXP guide loaded, the guide's own card had no overview header to sit under, so every rebuild failed with *guide has no overview header* and the guide stopped keeping up with your progress. That card now sits under Continue with the rest of your route, and a card of a kind the guide does not know falls back there rather than taking the rebuild down with it. Thanks to CodeHoax for the report and the error text.
 
 ## [0.20.1] - 2026-10-20
 
