@@ -134,6 +134,27 @@ function ns.RegisterSettings()
 					local attach = Settings.CreateCheckboxInitializer(setting, nil, ns.L.SETTING_ATTACH_TRACKER_TOOLTIP)
 					Settings.RegisterInitializer(subcategory, attach)
 				end
+				-- Lock keeps the detached column where it is: the grip ignores drag while it is on. It only writes the
+				-- saved switch, so it is safe to toggle in combat.
+				if host and host.GetSettings and host.SetLocked then
+					local lock = Settings.RegisterProxySetting(
+						subcategory,
+						"AdventureGuideForever_lockTracker",
+						Settings.VarType.Boolean,
+						ns.L.SETTING_LOCK_TRACKER,
+						false,
+						function()
+							return host.GetSettings().locked == true
+						end,
+						function(value)
+							host.SetLocked(value == true)
+						end
+					)
+					Settings.RegisterInitializer(
+						subcategory,
+						Settings.CreateCheckboxInitializer(lock, nil, ns.L.SETTING_LOCK_TRACKER_TOOLTIP)
+					)
+				end
 				local show = Checkbox(subcategory, "showTracker", ns.L.SETTING_TRACKER, ns.L.SETTING_TRACKER_TOOLTIP)
 				local track = Checkbox(
 					subcategory,

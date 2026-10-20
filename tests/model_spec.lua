@@ -649,6 +649,18 @@ equal(
 	"story=continue carry=continue nextzone=zones calling=continue dungeon=dungeons",
 	"overview: every card's group from its kind"
 )
+-- A companion guide's card is not a planner kind: RestedXP's guide journey is built in Integrations/RestedXP.lua
+-- and goes through the same summary, so it carries a header instead of failing the rebuild (#233).
+do
+	local guided = { kind = "guide", steps = { { title = "Accept the quest" } } }
+	ns.Planner.Journeys.Summarise(guided)
+	equal(guided.section, "continue", "overview: a companion guide's card groups under Continue")
+	equal(guided.more, 0, "overview: a guide card counts its remaining stops")
+	-- A kind nothing knows still gets a header, so a new card can never break every player's route.
+	local unknown = { kind = "unknownkind", steps = { { title = "Step" } } }
+	ns.Planner.Journeys.Summarise(unknown)
+	equal(unknown.section, "continue", "overview: an unknown kind falls back to Continue")
+end
 
 -- Your calling: the class quests open now as one card, its reason naming the quest it leads with.
 local function Calling(fixture, completed, choices)

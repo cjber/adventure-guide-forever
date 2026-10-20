@@ -223,6 +223,7 @@ ns.L = {
 	-- The tracker's journey line and the wait for QuestieDB's catalogue.
 	TRACKER_DRAG_TITLE = "Forever tracker",
 	TRACKER_DRAG_TOOLTIP = "Drag to move",
+	TRACKER_LOCKED_TOOLTIP = "The tracker is locked. Turn off Lock the tracker to move it.",
 	TRACKER_LOADING = "Loading quest data...",
 	-- While Polestar runs a guide (Polestar.lua): the tracker's one line, and the setting behind it.
 	POLESTAR_GUIDING = "Polestar is guiding you",
@@ -314,6 +315,9 @@ ns.L = {
 	SETTING_TRACKER = "Show tracker section",
 	SETTING_ATTACH_TRACKER = "Attach to quest tracker",
 	SETTING_ATTACH_TRACKER_TOOLTIP = "Turn this off to drag the shared Forever tracker anywhere on screen.",
+	SETTING_LOCK_TRACKER = "Lock the tracker",
+	SETTING_LOCK_TRACKER_TOOLTIP = "Keeps the shared Forever tracker where you put it. The grip at its top no "
+		.. "longer drags it.",
 	SETTING_TRACKER_TOOLTIP = 'A short "Adventure Guide" section above your quests in the objective tracker, for the '
 		.. "current step.",
 	SETTING_MAP_PINS = "Show route pins on the map",
