@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-10-20
+
 - **Quest items that run out go first.** Some quest items vanish from your bags after a while, like the Rendered Spores Apothecary Zamah wants in Thunder Bluff within 45 minutes. While you carry one, the guide puts that quest's hand-in (or its objectives, if it isn't done yet) at the top of the route and says *before Rendered Spores runs out*. Thanks to Polestar for the idea.
 ## [0.18.1] - 2026-10-19
 
