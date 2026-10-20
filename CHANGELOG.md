@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [0.21.0] - 2026-10-20
+
+- **Lock the tracker where you put it.** Detach the Forever column, drag it where you want it, then tick *Settings*, *Objective tracker*, *Lock the tracker*: the grip stops moving the column and hovering it says the tracker is locked instead of offering to move it. It is off by default, it only ever suppresses our own drag handler, so turning it on or off in combat cannot taint or move anything, and an existing character's settings gain the switch without losing their place. Thanks to Alex21xx for the request.
+
 ## [0.20.2] - 2026-10-20
 
 - **A RestedXP guide no longer breaks the route.** With the RestedXP guide loaded, the guide's own card had no overview header to sit under, so every rebuild failed with *guide has no overview header* and the guide stopped keeping up with your progress. That card now sits under Continue with the rest of your route, and a card of a kind the guide does not know falls back there rather than taking the rebuild down with it. Thanks to CodeHoax for the report and the error text.
