@@ -77,4 +77,6 @@ The guide's tracker section shares one column with the other Forever sections, a
 
 Source code and issues: [github.com/cjber/adventure-guide-forever](https://github.com/cjber/adventure-guide-forever). Licence: GPL-3.0-or-later.
 
+The addon is free. If it saves you time, you can [buy me a coffee on Ko-fi](https://ko-fi.com/cjber59408).
+
 Built with AI assistance.
