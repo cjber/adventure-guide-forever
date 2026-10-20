@@ -44,9 +44,11 @@ end
 
 do
 	local h = atObjectives()
+	-- The cannoneers are done, so the area (both objectives' camps meet) holds the freebooters alone and its title is
+	-- their count.
 	h.log[3].objectives = {
 		{ type = "monster", have = 1, need = 6, text = "Freebooter slain: 1/6" },
-		{ type = "monster", have = 0, need = 8, text = "Cannoneer slain: 0/8" },
+		{ type = "monster", have = 8, need = 8, done = true, text = "Cannoneer slain: 8/8" },
 	}
 	h.fire("QUEST_LOG_UPDATE")
 	h.flush()

@@ -50,7 +50,7 @@ class CorpusTest(unittest.TestCase):
     def test_areas_are_on_a_map_and_the_quests_objectives(self):
         quests = re.findall(r"^\t\t\[\d+\] = \{.*$", self.TEXT, re.M)
         self.assertGreater(len(quests), 3000)
-        count = levelled = 0
+        count = levelled = elites = 0
         for line in quests:
             need, obj = span(line, "need"), span(line, "obj")
             self.assertTrue(bool(need) or obj is None, line)
@@ -59,15 +59,23 @@ class CorpusTest(unittest.TestCase):
                 continue
             known = slots(need)
             for spot in re.findall(r"\{ ([^}]+) \}", obj):
-                slot, x, y, r, *rest = (int(value) for value in spot.split(", "))
+                # A spot's elite mark comes last, after its map and level, and only as true.
+                values = spot.split(", ")
+                if values[-1] == "true":
+                    self.assertEqual(len(values), 7, line)
+                    values = values[:-1]
+                    elites += 1
+                slot, x, y, r, *rest = (int(value) for value in values)
                 count += 1
                 levelled += len(rest) == 2
                 self.assertIn(slot, known, line)
-                self.assertTrue(0 <= x <= 1000 and 0 <= y <= 1000 and r >= 0 and len(rest) <= 2, line)
+                self.assertTrue(0 <= x <= 1000 and 0 <= y <= 1000 and 0 <= r <= 100 and len(rest) <= 2, line)
                 # The spot's mobs' lowest level (#152), after its map: a level QuestieDB gives an NPC.
                 self.assertTrue(len(rest) < 2 or 1 <= rest[1] <= 63, line)
         self.assertGreater(count, 2500)
         self.assertGreater(levelled, count // 2)
+        # Some camps are all elites (QuestieDB rank 1 to 3), never most.
+        self.assertTrue(0 < elites < count // 2)
 
     def test_the_corpus_names_the_release_and_no_provider_marker(self):
         self.assertIn("QuestieDB Forever, pinned:", self.TEXT)

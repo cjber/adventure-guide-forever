@@ -6,6 +6,29 @@ local KINDS = { "Npc", "Object" }
 local NAME_FIELDS = { "name" }
 -- A cell is one square of a map's yard grid. No map is this many yards across, so a column and a row share a number.
 local ROW = 2 ^ 16
+-- A camp's reach in yards: the spawns this near a spawn are its camp, and spawns are bucketed into squares this wide,
+-- so a spawn's camp is in its own square or the eight around it.
+local CAMP = 100
+
+-- The spawns in `spawn`'s camp (within CAMP yards of it, itself included), from the squares around it.
+---@param onMap table<integer, table[]>
+---@return table[] camp, number sum their summed yards from it
+local function Camp(onMap, spawn, sx, sy)
+	local camp, sum = {}, 0
+	for dx = -ROW, ROW, ROW do
+		for dy = -1, 1 do
+			for _, other in ipairs(onMap[spawn.key + dx + dy] or {}) do
+				local ox, oy = (other.x - spawn.x) * sx, (other.y - spawn.y) * sy
+				local yards = math.sqrt(ox * ox + oy * oy)
+				if yards <= CAMP then
+					camp[#camp + 1], sum = other, sum + yards
+					other.yards = yards
+				end
+			end
+		end
+	end
+	return camp, sum
+end
 
 -- The names a client objective of a shared type is matched by (Planning/Steps.lua OpenSlots): only where two or more
 -- slots share a type, since a type of its own lines up already. Each slot's QuestieDB NPC, object or item name, in the
@@ -43,9 +66,10 @@ local function Names(lib, kinds, sources, reads)
 	return names
 end
 
--- An NPC's spawns and lowest level, as one read (ns.QuestieFields, set by QuestieSource.lua, which loads after this).
+-- An NPC's spawns, lowest level and rank, as one read (ns.QuestieFields, set by QuestieSource.lua, which loads after
+-- this).
 ---@type string[]?
-local npcSpawnLevel
+local npcSpawnLevel, npcSpawnLevelRank
 
 -- An NPC's lowest level as QuestieDB gives it (`minLevel`), or false when it gives none.
 ---@param value any
@@ -53,6 +77,15 @@ local npcSpawnLevel
 function ns.QuestieLevel(value)
 	local level = tonumber(value)
 	return level and level > 0 and floor(level) or false
+end
+
+-- Whether QuestieDB's NPC rank (`rank`, CMaNGOS creature_template) is an elite's: 1 elite, 2 rare elite, 3 boss. A
+-- normal (0) or rare (4) mob, or none given, is not.
+---@param value any
+---@return boolean
+function ns.QuestieElite(value)
+	local rank = tonumber(value)
+	return rank == 1 or rank == 2 or rank == 3
 end
 
 -- Locations come from the provider's composed spawns. Bucket nearby spawns and choose a real point in each
@@ -74,54 +107,61 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 	-- What each slot is named by: the QuestieDB entity and id.
 	---@type table<integer, {kind: string, id: integer?}>
 	local sources = {}
-	-- `lists` holds { spawns, level } pairs: a spawn table and its NPC's lowest level (false: an object, or unknown).
-	-- A spot's level is the lowest of its mobs', only when every spawn in it has one.
+	-- `lists` holds { spawns, level, elite } entries: a spawn table, its NPC's lowest level (false: an object, or
+	-- unknown) and whether that NPC is an elite. A spot is a camp: the spawn with the most others within CAMP yards,
+	-- the quest's zone first, the spawns nearest it on a tie, at most three apart. A spot's level is the lowest of its
+	-- mobs', only when every spawn in it has one; a spot is elite only when every spawn in it is an elite's.
 	local function Places(slot, lists)
-		local cells, ordered = {}, {}
+		local squares, spawns, scales = {}, {}, {}
 		for _, list in ipairs(lists) do
-			local spawns, level = list[1], list[2]
-			for area, coordinates in pairs(spawns) do
+			local level, elite = list[2], list[3]
+			for area, coordinates in pairs(list[1]) do
 				local map = mapOf(area)
 				local geometry = map and data.maps[map]
 				if geometry then
 					---@cast map -?
 					local sx, sy = geometry.sx, geometry.sy
-					local onMap = cells[map]
+					scales[map] = geometry
+					local onMap = squares[map]
 					if not onMap then
 						onMap = {}
-						cells[map] = onMap
+						squares[map] = onMap
 					end
 					for _, xy in ipairs(coordinates) do
 						local x, y = tonumber(xy[1]), tonumber(xy[2])
 						if x and y and x >= 0 and x <= 100 and y >= 0 and y <= 100 then
 							x, y = x / 100, y / 100
-							local key = floor(x * sx / 100) * ROW + floor(y * sy / 100)
-							local cell = onMap[key]
-							if not cell then
-								cell = { map = map, x = x, y = y, count = 0, reach = 0, level = level }
-								onMap[key] = cell
-								ordered[#ordered + 1] = cell
-							elseif cell.level and (not level or level < cell.level) then
-								cell.level = level
+							local key = floor(x * sx / CAMP) * ROW + floor(y * sy / CAMP)
+							local spawn = { map = map, key = key, x = x, y = y, level = level, elite = elite }
+							local square = onMap[key]
+							if not square then
+								square = {}
+								onMap[key] = square
 							end
-							cell.count = cell.count + 1
-							local dx, dy = (x - cell.x) * sx, (y - cell.y) * sy
-							local reach = dx * dx + dy * dy
-							if reach > cell.reach then
-								cell.reach = reach
-							end
+							square[#square + 1], spawns[#spawns + 1] = spawn, spawn
 						end
 					end
 					yield()
 				end
 			end
 		end
-		table.sort(ordered, function(a, b)
+		for index, spawn in ipairs(spawns) do
+			local geometry = scales[spawn.map]
+			local camp, sum = Camp(squares[spawn.map], spawn, geometry.sx, geometry.sy)
+			spawn.size, spawn.sum = #camp, sum
+			if index % 64 == 0 then
+				yield()
+			end
+		end
+		table.sort(spawns, function(a, b)
 			if (a.map == zone) ~= (b.map == zone) then
 				return a.map == zone
 			end
-			if a.count ~= b.count then
-				return a.count > b.count
+			if a.size ~= b.size then
+				return a.size > b.size
+			end
+			if a.sum ~= b.sum then
+				return a.sum < b.sum
 			end
 			if a.map ~= b.map then
 				return a.map < b.map
@@ -131,24 +171,45 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 			end
 			return a.y < b.y
 		end)
-		for i = 1, math.min(3, #ordered) do
-			local cell = ordered[i]
-			areas[#areas + 1] = {
-				slot,
-				math.floor(cell.x * 1000 + 0.5),
-				math.floor(cell.y * 1000 + 0.5),
-				math.ceil(math.sqrt(cell.reach)),
-				cell.map,
-				cell.level or nil,
-			}
+		-- Up to three camps, each centred on a spawn in no camp taken before it, so "Next spot" moves between camps.
+		local taken = 0
+		for _, spawn in ipairs(spawns) do
+			if taken == 3 then
+				break
+			end
+			if not spawn.used then
+				taken = taken + 1
+				local geometry = scales[spawn.map]
+				local reach, level, elite = 0, spawn.level, spawn.elite
+				for _, other in ipairs((Camp(squares[spawn.map], spawn, geometry.sx, geometry.sy))) do
+					other.used = true
+					reach = math.max(reach, other.yards)
+					level = level and other.level and math.min(level, other.level) or false
+					elite = elite and other.elite
+				end
+				areas[#areas + 1] = {
+					slot,
+					math.floor(spawn.x * 1000 + 0.5),
+					math.floor(spawn.y * 1000 + 0.5),
+					math.ceil(reach),
+					spawn.map,
+					level or nil,
+					-- Only after a level, so the record stays a plain list.
+					level and elite or nil,
+				}
+			end
 		end
 	end
-	-- An NPC's spawns and lowest level are one read, when the build reads levels (reads.levels).
-	local levels = reads.levels
+	-- An NPC's spawns, lowest level and rank are one read, when the build reads levels (reads.levels).
+	local levels, elites = reads.levels, reads.elite
+	local fields = ns.QuestieFields
 	if levels and not npcSpawnLevel then
-		npcSpawnLevel = { ns.QuestieFields.spawns[1], ns.QuestieFields.level[1] }
+		npcSpawnLevel = { fields.spawns[1], fields.level[1] }
 	end
-	local npcFields = levels and npcSpawnLevel or ns.QuestieFields.spawns
+	if levels and elites and not npcSpawnLevelRank then
+		npcSpawnLevelRank = { fields.spawns[1], fields.level[1], fields.rank[1] }
+	end
+	local npcFields = levels and (elites and npcSpawnLevelRank or npcSpawnLevel) or fields.spawns
 	local function Spawns(kind, id, lists)
 		local spawns = reads[kind][id]
 		local npc = kind == "Npc"
@@ -159,10 +220,14 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 			if npc and levels then
 				levels[id] = ns.QuestieLevel(values and values[2])
 			end
+			if npc and elites then
+				elites[id] = ns.QuestieElite(values and values[3])
+			end
 			yield()
 		end
 		if spawns then
-			lists[#lists + 1] = { spawns, npc and levels and levels[id] or false }
+			lists[#lists + 1] =
+				{ spawns, npc and levels and levels[id] or false, npc and elites and elites[id] or false }
 		end
 	end
 	local function Item(id, lists, seen)
@@ -241,7 +306,7 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 	if type(trigger) == "table" and type(trigger[2]) == "table" then
 		local explore = ns.Model.EXPLORE_SLOT
 		need[explore], kinds[explore] = 1, "event"
-		Places(explore, { { trigger[2], false } })
+		Places(explore, { { trigger[2], false, false } })
 	end
 	-- Spell/reputation objectives have no compatible planner slots; use the client's live quest POI instead.
 	if objectives and (next(objectives[4] or {}) or next(objectives[6] or {})) then
