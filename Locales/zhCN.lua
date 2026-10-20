@@ -293,6 +293,9 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "在地图上显示任务NPC"
 L["SETTING_GIVERS_TOOLTIP"] =
 	"在世界地图上，为每个有你现在可接任务的人显示“!”。还需要开启地图上的路线标记。"
+L["SETTING_LOCK_TRACKER"] = "锁定追踪器"
+L["SETTING_LOCK_TRACKER_TOOLTIP"] =
+	"将共享的 Forever 追踪器保持在您放置的位置。顶部的拖拽手柄不再移动它。"
 L["SETTING_MAP_PINS"] = "在地图上显示路线标记"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"显示其所在地区时，在世界地图上显示路线的编号步骤；若任务NPC也已开启，则一并显示。打开的指南总会预览其路线。"
@@ -392,6 +395,7 @@ L["TOWN_SKIP_GIVER"] = "跳过此任务NPC"
 L["TRACKER_DRAG_TITLE"] = "Forever追踪栏"
 L["TRACKER_DRAG_TOOLTIP"] = "拖动以移动"
 L["TRACKER_LOADING"] = "正在加载任务数据..."
+L["TRACKER_LOCKED_TOOLTIP"] = "追踪器已锁定。关闭“锁定追踪器”即可移动它。"
 L["TRACKER_UNATTACHED"] = "无法在目标追踪栏中添加区块；请使用/agf audit报告。"
 L["TRAINER"] = "拜访你的职业训练师"
 L["TRAINER_IN"] = "拜访%s的职业训练师"
