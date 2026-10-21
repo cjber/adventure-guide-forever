@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [0.21.3] - 2026-10-21
+
+- **The game's All Objectives header stays in its own frame.** The guide's tracker column used to lift Blizzard's *All Objectives* header out of the objective tracker and hang it above the Forever rows; the game re-anchors it on every tracker update, so the two fought and left a stranded header with a blank band under it. Nothing of ours touches that header any more - no re-anchor, no show or hide, no reserved gap - so the column starts cleanly under the header and stays there through refreshes. Already released in Shortest Path Forever 1.21.8.
+
 ## [0.21.2] - 2026-10-21
 
 - **The tracker no longer errors out when another Forever addon adds its own section.** With SkillUp Forever loaded, the two addons' tracker sections are sorted together, and a section that carries no ordering of its own was compared against ones that do, so the layout pass died with `attempt to compare nil with number` on every refresh. Sections that carry an order keep it, sections without one follow them in the order they were added, and the column draws every time. Found in the shared tracker host, reported against Shortest Path Forever by Torpdotorgx on CurseForge.
