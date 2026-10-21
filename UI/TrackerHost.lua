@@ -4,6 +4,7 @@ local _, ns = ...
 ---@class ForeverTrackerModule : Frame
 ---@field parentContainer? Frame
 ---@field SetContainer fun(self: ForeverTrackerModule, container: Frame)
+---@field IsTruncated fun(self: ForeverTrackerModule): boolean
 
 ---@class ForeverTrackerHostAPI
 ---@field Attach fun(module: Frame)
@@ -69,6 +70,8 @@ local nativeAnchor
 local appliedNativeAnchor
 -- The saved slot ReleaseNative last wrote, so the probe does not reflow for our own handback.
 local releasedNativeAnchor
+-- The handback is ignored only once: a later move back onto that slot is someone else's move and reflows.
+local releasedNativeProbe = false
 -- The column's height and header room when the native frame was last stacked below it: in combat the native frame
 -- cannot move, so the sections redraw within this.
 local stackedHeight, stackedReserve = 1, 0
@@ -154,48 +157,12 @@ host:SetWidth(ObjectiveTrackerFrame:GetWidth())
 host:SetHeight(1)
 host:SetMovable(true)
 host:SetClampedToScreen(true)
-local grip = CreateFrame("Button", nil, host)
-grip:SetPoint("TOPLEFT", host, "TOPLEFT", 0, 0)
-grip:SetPoint("TOPRIGHT", host, "TOPRIGHT", 0, 0)
-grip:SetHeight(24)
-grip:RegisterForDrag("LeftButton")
-local label = grip:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-label:SetPoint("CENTER", grip, "CENTER", 0, 0)
-local dragTitle = rawget(ns.L, "TRACKER_DRAG_TITLE") or ns.L["Forever tracker"]
-local dragTooltip = rawget(ns.L, "TRACKER_DRAG_TOOLTIP") or ns.L["Drag to move"]
-local lockedTooltip = rawget(ns.L, "TRACKER_LOCKED_TOOLTIP")
-	or ns.L["The tracker is locked. Turn off Lock the tracker to move it."]
+-- The grip and the Lock switch that suppresses its drag live in their own file (UI/TrackerLock.lua), which the TOC
+-- loads before this one. It hands back the label redraw for a Lock change and the show switch for the attachment.
+local Grip = ns.TrackerLock.Grip(host, api)
 local function IsLocked()
 	return Settings().locked
 end
-label:SetText(dragTitle)
-grip:SetScript("OnEnter", function(self)
-	local locked = IsLocked()
-	label:SetText(locked and lockedTooltip or dragTitle)
-	GameTooltip:SetOwner(self, "ANCHOR_TOP")
-	GameTooltip:SetText(locked and lockedTooltip or dragTooltip)
-	GameTooltip:Show()
-end)
-grip:SetScript("OnLeave", function()
-	GameTooltip:Hide()
-end)
-grip:SetScript("OnDragStart", function()
-	if attached or IsLocked() or InCombatLockdown() then
-		return
-	end
-	dragging = true
-	host:StartMoving()
-end)
-grip:SetScript("OnDragStop", function()
-	if not dragging then
-		return
-	end
-	dragging = false
-	host:StopMovingOrSizing()
-	local scale = host:GetEffectiveScale() / UIParent:GetEffectiveScale()
-	api.SavePosition((host:GetLeft() or 0) * scale, (host:GetTop() or 0) * scale - UIParent:GetHeight())
-end)
-grip:Hide()
 local modules, queued = {}, false
 local pools = CreateFramePoolCollection()
 
@@ -491,7 +458,7 @@ local function ReleaseNative()
 		ObjectiveTrackerFrame:ClearAllPoints()
 		local saved = nativeAnchor.saved
 		ObjectiveTrackerFrame:SetPoint(saved.point, saved.relativeTo, saved.relativePoint, saved.x, saved.y)
-		releasedNativeAnchor = saved
+		releasedNativeAnchor, releasedNativeProbe = saved, true
 	end
 	appliedNativeAnchor = nil
 	RestoreNativeClamp()
@@ -551,14 +518,28 @@ local function LayoutInCombat()
 	-- protected and nothing protected anchors to it, so it stays at the top of our column. Only Blizzard moving
 	-- the native frame itself sends us to the one-column fallback below its content.
 	if appliedNativeAnchor and IsAppliedNativeAnchor(ObjectiveTrackerFrame:GetPoint()) then
-		-- Still stacked where the last reflow left both frames: nothing moves, but the sections still follow their
-		-- content and All Objectives. The native frame cannot move up or down to make room, so the sections redraw
-		-- within the height the stack gave them (less the last section's 10px gap, which LayoutModules adds back), and
-		-- the next reflow out of combat sizes them again.
-		local room = math.max(0, stackedHeight - stackedReserve - 10)
-		if not NativeCollapsed() and LayoutModules(host:GetWidth(), room, stackedReserve) then
-			if stackedReserve > 0 then
+		-- Still stacked: the sections follow their content within the height the stack gave them (less the last
+		-- section's 10px gap, which LayoutModules adds back), and the next out-of-combat reflow sizes them again.
+		-- A hidden header leaves no gap; a section that gains content grows the stack instead of waiting.
+		local headerShown = NativeHeaderShown()
+		local reserve = headerShown and (stackedReserve > 0 and stackedReserve or HEADER_TOP_PADDING) or 0
+		local room = math.max(0, stackedHeight - reserve - 10)
+		local truncated = false
+		local drew = not NativeCollapsed() and LayoutModules(host:GetWidth(), room, reserve)
+		for _, module in ipairs(modules) do
+			truncated = truncated or (module.IsTruncated ~= nil and module:IsTruncated())
+		end
+		if drew and truncated then
+			-- Measure the new content uncapped, then keep the taller stack for the rest of the fight.
+			LayoutModules(host:GetWidth(), math.max(room, (host:GetTop() or UIParent:GetHeight()) - 24), reserve)
+			stackedHeight = math.max(stackedHeight, host:GetHeight() or 1)
+			drew = LayoutModules(host:GetWidth(), math.max(0, stackedHeight - reserve - 10), reserve)
+		end
+		if drew then
+			if headerShown then
 				AdoptNativeHeader()
+			else
+				RestoreNativeHeader()
 			end
 			host:Show()
 		else
@@ -743,9 +724,11 @@ local function LayoutAttached()
 	hostLeft = math.max(0, math.min(hostLeft, UIParent:GetWidth() - nativeWidth))
 	local nativeX = hostLeft * screenScale / nativeScale
 	local nativeOffsetY = nativeY * screenScale / nativeScale
+	-- Read our height before moving the protected frame: its layout can reflow us inside SetPoint.
+	local stackHeight = host:GetHeight() or 1
 	ObjectiveTrackerFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", nativeX, nativeOffsetY)
-	releasedNativeAnchor = nil
-	stackedHeight, stackedReserve = host:GetHeight() or 1, headerReserve
+	releasedNativeAnchor, releasedNativeProbe = nil, false
+	stackedHeight, stackedReserve = stackHeight, headerReserve
 	appliedNativeAnchor = {
 		point = "TOPLEFT",
 		relativeTo = UIParent,
@@ -799,7 +782,7 @@ end
 local function Layout()
 	queued = false
 	local settings = ApplyAttachment()
-	grip:SetShown(not attached)
+	Grip.Show(not attached)
 	if not attached then
 		besideQuestie = false
 		LayoutDetached(settings)
@@ -854,10 +837,14 @@ function api.SetScale(value)
 	settings.scale = scale
 	host:MarkDirty()
 end
-api.IsLocked = IsLocked
+---@return boolean
+function api.IsLocked()
+	return IsLocked()
+end
+---@param value boolean
 function api.SetLocked(value)
 	Settings().locked = not not value
-	label:SetText(value and lockedTooltip or dragTitle)
+	Grip.SetLabel(value)
 end
 function api.IsAttachedToQuestTracker()
 	return Settings().attached ~= false
@@ -929,10 +916,10 @@ probe:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 0, 0)
 probe:SetPoint("TOPRIGHT", ObjectiveTrackerFrame, "TOPLEFT", 0, 0)
 probe:SetScript("OnSizeChanged", function()
 	local point, relativeTo, relativePoint, x, y = ObjectiveTrackerFrame:GetPoint()
-	if
-		not IsAppliedNativeAnchor(point, relativeTo, relativePoint, x, y)
-		and not (attached and SameAnchor(releasedNativeAnchor, point, relativeTo, relativePoint, x, y))
-	then
+	local released = attached and SameAnchor(releasedNativeAnchor, point, relativeTo, relativePoint, x, y)
+	if released and releasedNativeProbe then
+		releasedNativeProbe = false
+	elseif not IsAppliedNativeAnchor(point, relativeTo, relativePoint, x, y) and not released then
 		host:MarkDirty()
 	end
 end)
