@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [0.21.1] - 2026-10-21
+
+- **Sections that grow in combat no longer get cut off.** While you were in combat, a section that gained lines, such as a new quest objective or a scenario step, was drawn inside the height the column had before it grew, so the new lines stayed clipped until the fight ended. The column now measures the taller content and keeps that height for the rest of the fight, and a collapsed native tracker header no longer leaves a blank gap at the top of the column.
+
 ## [0.21.0] - 2026-10-20
 
 - **Lock the tracker where you put it.** Detach the Forever column, drag it where you want it, then tick *Settings*, *Objective tracker*, *Lock the tracker*: the grip stops moving the column and hovering it says the tracker is locked instead of offering to move it. It is off by default, it only ever suppresses our own drag handler, so turning it on or off in combat cannot taint or move anything, and an existing character's settings gain the switch without losing their place. Thanks to Alex21xx for the request.
