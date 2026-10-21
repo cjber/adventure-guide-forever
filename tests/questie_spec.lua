@@ -690,19 +690,19 @@ end
 -- A save that fails the shape check is rebuilt, never trusted and never an error.
 for _, damage in ipairs({
 	function(save)
-		save.quests = "nope"
+		save.data.quests = "nope"
 	end,
 	function(save)
-		save.quests = {}
+		save.data.quests = {}
 	end,
 	function(save)
-		save.quests = { [7] = "not a quest" }
+		save.data.quests = { [7] = "not a quest" }
 	end,
 	function(save)
-		save.hubs = nil
+		save.data.hubs = nil
 	end,
 	function(save)
-		save.npcs = 5
+		save.data.npcs = 5
 	end,
 }) do
 	local charDB = SavedOnce("0.8.0")
@@ -711,6 +711,16 @@ for _, damage in ipairs({
 	equal(reads > 0, true, "a damaged save rebuilds")
 	equal(rebuilt.ns.QuestieStatus.state, "questie", "a damaged save still lands")
 	equal(#rebuilt.errors, 0, "a damaged save raises no error")
+end
+-- A legacy expanded catalogue is rebuilt once after the cache shape revision.
+do
+	local charDB = SavedOnce("0.8.0")
+	local save = charDB.catalogue
+	charDB.catalogue = { key = save.key, quests = save.data.quests, hubs = save.data.hubs, npcs = save.data.npcs }
+	local rebuilt, reads = Cat("0.8.0", charDB)
+	equal(reads > 0, true, "an old-shape save rebuilds")
+	equal(rebuilt.ns.QuestieStatus.state, "questie", "an old-shape save is rebuilt")
+	equal(#rebuilt.errors, 0, "an old-shape save raises no error")
 end
 do
 	local charDB = SavedOnce("0.8.0")
