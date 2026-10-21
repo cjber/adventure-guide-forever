@@ -89,6 +89,7 @@ UI\Widgets.lua
 UI\GuideOutline.lua
 UI\TrackerQuestie.lua
 UI\TrackerLock.lua
+UI\TrackerOrder.lua
 UI\TrackerHost.lua
 UI\StoryCompletion.lua
 UI\Tracker.lua
