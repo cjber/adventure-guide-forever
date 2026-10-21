@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [0.21.4] - 2026-10-21
+
 - **The guide spends less time loading your character.** Its saved Questie catalogue used to repeat the same field names in every quest, town and NPC record; it now stores those names once and uses compact numeric keys, rebuilding the expanded tables after loading. Existing saves are rebuilt once. Thanks to jechten, Jechten and Naburiel for the reports on CurseForge and GitHub issue #166.
 
 ## [0.21.3] - 2026-10-21
