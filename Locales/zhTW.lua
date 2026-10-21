@@ -424,7 +424,7 @@ L["UNEXPLORED"] = "你還沒見過%s"
 L["UNLISTED"] = "這片土地有指南尚不知道的故事；請留意任務給予者頭上的「!」。"
 L["UPDATED_TO"] = "已更新到%s。%s"
 -- mt
-L["WHATS_NEW"] = "戰鬥中變長的區塊不再被截斷。"
+L["WHATS_NEW"] = "遊戲的「所有目標」標題保留在其自己的框架內。"
 L["WHY_ALLIANCE"] = "僅限聯盟"
 L["WHY_BREADCRUMB"] = "僅在你接受%s之前"
 L["WHY_CHOSE"] = "你改選了%s"
