@@ -431,7 +431,7 @@ L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
 L["UPDATED_TO"] = "atualizado para %s. %s"
 -- mt
-L["WHATS_NEW"] = "Bloqueie o rastreador onde você o colocou."
+L["WHATS_NEW"] = "As seções que crescem em combate não são mais cortadas."
 L["WHY_ALLIANCE"] = "Só Aliança"
 L["WHY_BREADCRUMB"] = "Só até você aceitar %s"
 L["WHY_CHOSE"] = "Você escolheu %s no lugar"
