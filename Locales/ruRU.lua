@@ -1,4 +1,4 @@
--- Machine translated (2026-10-16); corrections welcome: https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml
+-- Machine translated (2026-10-22); corrections welcome: https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml
 local _, ns = ...
 if GetLocale() ~= "ruRU" then
 	return
@@ -115,6 +115,8 @@ L["HELP_DUMP"] =
 L["HELP_OPEN"] = "/agf - открыть путеводитель на карте мира."
 L["HELP_REPORT"] =
 	"/agf report - показать отчет для копирования в сообщение об ошибке"
+L["HELP_STATS"] =
+	"/agf stats - показывает местные записи о сдаче заданий и число пользователей других аддонов, сообщивших об активности"
 L["HELP_TRACKER"] =
 	"/agf tracker - вывести привязки панели отслеживания (при наложении в бою)"
 L["HELP_WHERE"] =
@@ -347,6 +349,9 @@ L["SETTING_ROUTE_ORDER_TOOLTIP"] =
 L["SETTING_RXP"] = "Использовать руководства RestedXP"
 L["SETTING_RXP_TOOLTIP"] =
 	"Добавляет текущее руководство RestedXP в карточки путешествий, на карту и в отслеживание. RestedXP переключает шаги руководства; Shortest Path Forever отвечает за перемещение. RestedXP остается установленным и управляет прогрессом руководства."
+L["SETTING_STATS_SHARE"] = "Делиться активностью с гильдией и группами"
+L["SETTING_STATS_SHARE_TOOLTIP"] =
+	"Включено по умолчанию. Делится сводными записями об активности с пользователями аддона в вашей гильдии, группе, рейде или подземелье. Отключите, чтобы хранить записи только на этом персонаже. Общие записи сообщают игроки; они не проверяются."
 L["SETTING_STEP_SOUND"] = "Звук при выполнении шага"
 L["SETTING_STEP_SOUND_TOOLTIP"] =
 	"Один раз проигрывать короткий звук, когда вы завершаете шаг маршрута."
@@ -401,6 +406,8 @@ L["SPF_MISSING"] =
 L["STARTS_AFTER_COMBAT"] = "Маршрут начнется после боя"
 L["STARTS_WITH"] = "Начинается с: %s"
 L["START_ADVENTURE"] = "Начать"
+L["STATS_SUMMARY"] =
+	"Активность: локально записано сдач заданий: %d; пользователей других аддонов сообщили об активности: %d."
 L["STEP_BATTLEMASTER"] = "Посетите военачальника: %s"
 L["STEP_COLLECT"] = "Собрать: %s · %s"
 L["STEP_DEFEAT"] = "Победить: %s · %s"
@@ -469,7 +476,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "обновлено до %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Предмет задания в сумках нажимается как обычно, пока трекер загружен."
+	"Активность заданий теперь записывается правильно и доступна для обмена."
 L["WHY_ALLIANCE"] = "Только для Альянса"
 L["WHY_BREADCRUMB"] = "Только пока вы не возьмете: %s"
 L["WHY_CHOSE"] = "Вместо этого вы выбрали: %s"

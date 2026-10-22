@@ -1,4 +1,4 @@
--- Machine translated (2026-10-16); corrections welcome: https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml
+-- Machine translated (2026-10-22); corrections welcome: https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml
 local _, ns = ...
 if GetLocale() ~= "frFR" then
 	return
@@ -107,6 +107,8 @@ L["HELP_AUDIT"] = "/agf audit - comparer les données de quêtes avec le jeu"
 L["HELP_DUMP"] = "/agf dump - enregistrer la disposition du guide pour un rapport de bug"
 L["HELP_OPEN"] = "/agf - ouvrir le guide sur la carte du monde."
 L["HELP_REPORT"] = "/agf report - afficher un rapport à copier dans un rapport de bug"
+L["HELP_STATS"] =
+	"/agf stats - affiche les quêtes terminées localement et le nombre d’utilisateurs d’autres addons qui signalent leur activité"
 L["HELP_TRACKER"] = "/agf tracker - afficher les ancrages du suivi (en cas de chevauchement en combat)"
 L["HELP_WHERE"] = "/agf where - afficher l’arrêt actuel du guide, à copier dans un rapport d’arrêt erroné"
 L["HUB_HAND_IN"] = "%d à rendre"
@@ -324,6 +326,9 @@ L["SETTING_ROUTE_ORDER_TOOLTIP"] =
 L["SETTING_RXP"] = "Utiliser les guides RestedXP"
 L["SETTING_RXP_TOOLTIP"] =
 	"Ajoute le guide RestedXP actuel à vos cartes de voyage, à la carte et au suivi. RestedXP fait avancer les étapes du guide ; Shortest Path Forever gère les déplacements. RestedXP reste installé et contrôle la progression du guide."
+L["SETTING_STATS_SHARE"] = "Partager l’activité avec la guilde et les groupes"
+L["SETTING_STATS_SHARE_TOOLTIP"] =
+	"Activé par défaut. Partage les lignes d’activité cumulées avec les utilisateurs de l’addon dans votre guilde, groupe, raid ou instance. Désactivez cette option pour garder les données sur ce personnage uniquement. Les données partagées sont déclarées par les joueurs, sans vérification."
 L["SETTING_STEP_SOUND"] = "Son à la fin d’une étape"
 L["SETTING_STEP_SOUND_TOOLTIP"] = "Joue un court son une fois quand vous terminez une étape de l’itinéraire."
 L["SETTING_TITLE_ROUTE"] = "Les voyages lancent l’itinéraire"
@@ -374,6 +379,8 @@ L["SPF_MISSING"] = "Installez Shortest Path Forever pour les trajets à pied et 
 L["STARTS_AFTER_COMBAT"] = "L’itinéraire commencera à la fin du combat"
 L["STARTS_WITH"] = "Commence par %s"
 L["START_ADVENTURE"] = "Commencer"
+L["STATS_SUMMARY"] =
+	"Activité : %d quêtes terminées enregistrées localement ; %d utilisateurs d’autres addons ont signalé leur activité."
 L["STEP_BATTLEMASTER"] = "Rendez visite au maître de guerre à %s"
 L["STEP_COLLECT"] = "Collecter %s · %s"
 L["STEP_DEFEAT"] = "Vaincre %s · %s"
@@ -437,7 +444,7 @@ L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
 -- mt
-L["WHATS_NEW"] = "Un objet de quête dans vos sacs se clique normalement tant que le suivi est chargé."
+L["WHATS_NEW"] = "L’activité des quêtes est bien enregistrée et peut être partagée."
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"

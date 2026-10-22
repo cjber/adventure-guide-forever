@@ -12,6 +12,12 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [0.22.0] - 2026-10-22
+
+- **Quest activity totals record correctly and can be shared.** The sharing setting now appears, and quest turn-ins are recorded for your character.
+
+### For addon authors
+
 - **Addon authors can read local quest activity totals.** Version 1 minor 3 of the API reports turn-ins observed for this character, with an aggregate row and per-quest rows for personal journals and milestones. These SavedVariables stay local; the addon does not broadcast them or call them realm-first records.
 
 ## [0.21.5] - 2026-10-22

@@ -1,4 +1,4 @@
--- Machine translated (2026-10-16); corrections welcome: https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml
+-- Machine translated (2026-10-22); corrections welcome: https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml
 local _, ns = ...
 if GetLocale() ~= "koKR" then
 	return
@@ -107,6 +107,8 @@ L["HELP_AUDIT"] = "/agf audit - 퀘스트 데이터를 게임과 대조합니다
 L["HELP_DUMP"] = "/agf dump - 오류 보고용으로 안내서 배치를 저장합니다"
 L["HELP_OPEN"] = "/agf - 세계 지도에서 안내서를 엽니다."
 L["HELP_REPORT"] = "/agf report - 오류 보고에 복사할 보고서를 표시합니다"
+L["HELP_STATS"] =
+	"/agf stats - 이 캐릭터의 퀘스트 완료 기록과 활동을 보고한 다른 애드온 사용자 수를 표시합니다"
 L["HELP_TRACKER"] = "/agf tracker - 추적기 고정점을 출력합니다 (전투 중 겹칠 때)"
 L["HELP_WHERE"] = "/agf where - 안내서의 현재 정거장을 표시합니다 (잘못된 정거장 보고용)"
 L["HUB_HAND_IN"] = "제출 %d개"
@@ -324,6 +326,9 @@ L["SETTING_ROUTE_ORDER_TOOLTIP"] =
 L["SETTING_RXP"] = "RestedXP 가이드 사용"
 L["SETTING_RXP_TOOLTIP"] =
 	"현재 RestedXP 가이드를 여정 카드, 지도, 추적기에 추가합니다. RestedXP는 가이드 단계를 진행하고, Shortest Path Forever는 이동을 맡습니다. RestedXP는 설치된 채로 가이드 진행을 관리합니다."
+L["SETTING_STATS_SHARE"] = "길드 및 파티와 활동 공유"
+L["SETTING_STATS_SHARE_TOOLTIP"] =
+	"기본으로 켜져 있습니다. 길드, 파티, 공격대 또는 인스턴스의 애드온 사용자와 누적 활동 기록을 공유합니다. 끄면 이 캐릭터에만 기록을 보관합니다. 공유 기록은 플레이어가 보고한 내용이며 검증되지 않습니다."
 L["SETTING_STEP_SOUND"] = "단계 완료 시 소리"
 L["SETTING_STEP_SOUND_TOOLTIP"] = "경로 단계를 마치면 짧은 소리를 한 번 재생합니다."
 L["SETTING_TITLE_ROUTE"] = "여정으로 경로 시작"
@@ -374,6 +379,8 @@ L["SPF_MISSING"] = "걷는 경로와 배 시간을 보려면 Shortest Path Forev
 L["STARTS_AFTER_COMBAT"] = "전투가 끝나면 경로가 시작됩니다"
 L["STARTS_WITH"] = "시작: %s"
 L["START_ADVENTURE"] = "시작"
+L["STATS_SUMMARY"] =
+	"활동: 퀘스트 완료 %d회 로컬 기록, 다른 애드온 사용자 %d명이 활동을 보고했습니다."
 L["STEP_BATTLEMASTER"] = "전투모병관 방문: %s"
 L["STEP_COLLECT"] = "수집: %s · %s"
 L["STEP_DEFEAT"] = "처치: %s · %s"
@@ -437,7 +444,7 @@ L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
 -- mt
-L["WHATS_NEW"] = "가방의 퀘스트 아이템은 추적기가 켜져 있어도 정상적으로 클릭됩니다."
+L["WHATS_NEW"] = "퀘스트 활동이 올바르게 기록되며 공유할 수 있습니다."
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"

@@ -1,4 +1,4 @@
--- Machine translated (2026-10-16); corrections welcome: https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml
+-- Machine translated (2026-10-22); corrections welcome: https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml
 local _, ns = ...
 if GetLocale() ~= "esES" then
 	return
@@ -107,6 +107,8 @@ L["HELP_AUDIT"] = "/agf audit - comprobar los datos de misiones con el juego"
 L["HELP_DUMP"] = "/agf dump - guardar el diseño de la guía para un informe de error"
 L["HELP_OPEN"] = "/agf - abrir la guía en el mapa del mundo."
 L["HELP_REPORT"] = "/agf report - mostrar un informe para copiar en un informe de error"
+L["HELP_STATS"] =
+	"/agf stats - muestra las entregas locales de misiones y cuántos usuarios de otros complementos informan de actividad"
 L["HELP_TRACKER"] = "/agf tracker - mostrar los anclajes del rastreador (si se solapa en combate)"
 L["HELP_WHERE"] = "/agf where - mostrar la parada actual de la guía, para copiarla en un informe de parada errónea"
 L["HUB_HAND_IN"] = "%d para entregar"
@@ -323,6 +325,9 @@ L["SETTING_ROUTE_ORDER_TOOLTIP"] =
 L["SETTING_RXP"] = "Usar guías de RestedXP"
 L["SETTING_RXP_TOOLTIP"] =
 	"Añade la guía actual de RestedXP a tus tarjetas de viaje, el mapa y el rastreador. RestedXP avanza los pasos de la guía; Shortest Path Forever se encarga de los desplazamientos. RestedXP sigue instalado y controla el progreso de la guía."
+L["SETTING_STATS_SHARE"] = "Compartir actividad con hermandad y grupos"
+L["SETTING_STATS_SHARE_TOOLTIP"] =
+	"Activado de forma predeterminada. Comparte los registros acumulados de actividad con usuarios del complemento en tu hermandad, grupo, banda o instancia. Desactívalo para guardar los registros solo en este personaje. Los registros compartidos los comunican los jugadores; no se verifican."
 L["SETTING_STEP_SOUND"] = "Sonido al completar un paso"
 L["SETTING_STEP_SOUND_TOOLTIP"] = "Reproduce un sonido corto una vez al terminar un paso de la ruta."
 L["SETTING_TITLE_ROUTE"] = "Los viajes inician la ruta"
@@ -371,6 +376,8 @@ L["SPF_MISSING"] = "Instala Shortest Path Forever para rutas a pie y horarios de
 L["STARTS_AFTER_COMBAT"] = "La ruta empieza cuando acabe el combate"
 L["STARTS_WITH"] = "Empieza con %s"
 L["START_ADVENTURE"] = "Empezar"
+L["STATS_SUMMARY"] =
+	"Actividad: %d entregas de misiones registradas localmente; %d usuarios de otros complementos informaron de actividad."
 L["STEP_BATTLEMASTER"] = "Visita al maestro de batalla en %s"
 L["STEP_COLLECT"] = "Recoger %s · %s"
 L["STEP_DEFEAT"] = "Derrotar %s · %s"
@@ -433,8 +440,7 @@ L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
 -- mt
-L["WHATS_NEW"] =
-	"Un objeto de misión de tus bolsas se puede pulsar con normalidad mientras el rastreador está cargado."
+L["WHATS_NEW"] = "La actividad de las misiones se registra correctamente y se puede compartir."
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
