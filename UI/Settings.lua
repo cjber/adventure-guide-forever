@@ -183,6 +183,15 @@ function ns.RegisterSettings()
 			function(subcategory)
 				Settings.RegisterInitializer(
 					subcategory,
+					Checkbox(
+						subcategory,
+						"statsShare",
+						ns.L.SETTING_STATS_SHARE,
+						ns.L.SETTING_STATS_SHARE_TOOLTIP
+					)
+				)
+				Settings.RegisterInitializer(
+					subcategory,
 					Checkbox(subcategory, "whatsNew", ns.L.SETTING_WHATS_NEW, ns.L.SETTING_WHATS_NEW_TOOLTIP)
 				)
 			end,

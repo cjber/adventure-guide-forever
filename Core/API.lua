@@ -4,12 +4,18 @@ local _, ns = ...
 -- Public answers and navigation requests for other addons (docs/api.md). Reads return copies;
 -- nil means the route is still settling, so ask again later.
 ---@class AGFAPI
--- `minor` rises with each addition within version 1 (1: Subscribe, 2: Suggestions and StartSuggestion); a caller
--- checks a member before using it.
-local API = { version = 1, minor = 2 }
+-- `minor` rises with each addition within version 1 (1: Subscribe, 2: Suggestions and StartSuggestion, 3: Stats);
+-- a caller checks a member before using it.
+local API = { version = 1, minor = 3 }
 
 local NEXT_LIMIT = 8
 local SUGGESTION_LIMIT = 5
+
+-- Local per-character activity records. Returned values are copies; no sharing or leaderboard transport is implied.
+---@return AGFActivityRecord[]
+function API.Stats()
+	return ns.ActivityStats and ns.ActivityStats() or {}
+end
 
 ---@param step AGFStep
 ---@return AGFAPIStop?

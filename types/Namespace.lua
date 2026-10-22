@@ -1841,6 +1841,7 @@
 ---@field RestedXPNativeUI fun(): boolean
 ---@field version integer
 ---@field minor integer 1 from Subscribe, 2 from Suggestions and StartSuggestion
+---@field Stats fun(): AGFActivityRecord[] read-only per-character rows (minor 3); never transmitted
 ---@field Suggestions fun(limit?: integer): AGFAPISuggestion[]? the panel's cards, at most five
 ---@field StartSuggestion fun(id: string): boolean starts a card as the guide's own Start does
 ---@field Subscribe fun(callback: fun(changes: AGFAPIChanges)): fun() calls back the frame after the current stop or the journey changes, at most once per burst; returns the unsubscribe
@@ -1858,6 +1859,16 @@
 ---@type AGFGlobal
 AdventureGuideForever = nil
 
+---@class AGFActivityRecord
+---@field addon "AdventureGuideForever"
+---@field metric "quest_turn_ins"|"quest_turn_in"
+---@field subject string "all" or the quest ID as a string
+---@field value integer observed count
+---@field eventUnix? integer timestamp of the most recent observed event
+
+---@class AGFNamespace
+---@field ActivityStats fun(): AGFActivityRecord[]
+
 ---@class AGFStoryCompletion
 ---@field Record fun(questID: integer): boolean true only for a new proven final turn-in
 
@@ -1866,6 +1877,7 @@ AdventureGuideForever = nil
 
 ---@class AGFPrefs
 ---@field completedStories table<string, {key: string, title: string, quest: integer}> proven story milestones for this character
+---@field activity {questTurnIns: integer, lastEventUnix?: integer, quests: table<integer, {count: integer, eventUnix?: integer}>} local observed quest turn-ins
 
 ---@class AGFStrings
 ---@field QUEST_VISIT_WARNING string

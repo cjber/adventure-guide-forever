@@ -34,6 +34,7 @@ globals = {
 }
 
 read_globals = {
+	"time",
 	"LibStub",
 	"LibDBIcon10_RXPGuides",
 	"RXP",
