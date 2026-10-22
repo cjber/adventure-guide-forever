@@ -1,8 +1,8 @@
 # Addon API
 
 Addons can read where the guide is sending the player through `AdventureGuideForever.API` (`version = 1`). Additions
-keep `version` at 1 and raise `minor` (1 from `Subscribe`, 2 from `Suggestions` and `StartSuggestion`, absent
-before), so check that a function exists before calling it.
+keep `version` at 1 and raise `minor` (1 from `Subscribe`, 2 from `Suggestions` and `StartSuggestion`, 3 from
+`Stats`), so check that a function exists before calling it.
 The stop and suggestion queries are read-only; `ResumeRestedXP()` and `StartSuggestion(id)` are explicit navigation
 requests. Places use uiMapIDs and
 normalized 0-1 coordinates, as Shortest Path's API does.
@@ -11,6 +11,10 @@ normalized 0-1 coordinates, as Shortest Path's API does.
 - `NextStops(limit)` returns the stops after it in route order, nearest first: two unless `limit` says otherwise,
   at most eight, and an empty table at the end of the route. A `limit` that is not a whole number of zero or more
   returns `nil`.
+- `Stats()` returns fresh read-only activity rows: an aggregate `quest_turn_ins` row and one `quest_turn_in` row per
+  quest ID. Each row has `addon`, `metric`, `subject`, `value`, and the latest observed `eventUnix` when available.
+  These are local SavedVariables. Adventure Guide does not broadcast them or assert that a record is a first for
+  anyone else.
 
 `RestedXPNativeUI()` returns true while the display choice is pending or the player chose RestedXP. Navigation addons should preserve the native arrow in that case.
 

@@ -33,6 +33,8 @@ local DEFAULTS = {
 	followQuest = true,
 	-- One chat line after an update (WhatsNew).
 	whatsNew = true,
+	-- Share small cumulative activity rows over guild/group addon channels; local records remain when disabled.
+	statsShare = true,
 	-- Beta: the planned route order (chapter lead, town look-ahead, committed order); false is the simple
 	-- nearest-action order, the default (docs/design.md §4.1).
 	optimisedRoute = false,
@@ -50,6 +52,8 @@ ns.DEFAULTS = DEFAULTS
 local PREFS_DEFAULTS = {
 	plannedDungeons = {},
 	completedStories = {},
+	-- Local engagement records. These stay per-character and are never transmitted by this addon.
+	activity = { questTurnIns = 0, quests = {} },
 	quests = true,
 	dungeons = false,
 	-- Opt-in: the Battlegrounds card.
@@ -164,6 +168,29 @@ local function LoadCharDB()
 			or type(record.quest) ~= "number"
 		then
 			loaded.completedStories[key] = nil
+		end
+	end
+	if type(loaded.activity.questTurnIns) ~= "number" or loaded.activity.questTurnIns < 0 then
+		loaded.activity.questTurnIns = 0
+	end
+	if type(loaded.activity.quests) ~= "table" then
+		loaded.activity.quests = {}
+	end
+	if loaded.activity.lastEventUnix ~= nil and type(loaded.activity.lastEventUnix) ~= "number" then
+		loaded.activity.lastEventUnix = nil
+	end
+	for id, record in pairs(loaded.activity.quests) do
+		if type(id) ~= "number" then
+			loaded.activity.quests[id] = nil
+		elseif type(record) == "number" and record >= 1 then
+			loaded.activity.quests[id] = { count = math.floor(record) }
+		elseif type(record) ~= "table" or type(record.count) ~= "number" or record.count < 1 then
+			loaded.activity.quests[id] = nil
+		else
+			record.count = math.floor(record.count)
+			if record.eventUnix ~= nil and type(record.eventUnix) ~= "number" then
+				record.eventUnix = nil
+			end
 		end
 	end
 	-- Journeys marked "Not interested": key -> the title Show again names it by, and whether it ended the choice of it.
@@ -287,6 +314,9 @@ function ns.SetSetting(key, value)
 	end
 	if key == "partyQuests" then
 		ns.Party.Apply()
+	end
+	if key == "statsShare" and ns.Stats then
+		ns.Stats.SetEnabled(value == true)
 	end
 	-- Wandering from now: what Go started stops, as the player's Stop would.
 	if key == "wanderer" and value then
@@ -1056,6 +1086,19 @@ local function Slash(msg)
 		)
 	elseif command == "audit" then
 		Audit()
+	elseif command == "stats" then
+		local activity = ns.ActivityStats and ns.ActivityStats() or {}
+		local count = 0
+		for _, row in ipairs(activity) do
+			if row.metric == "quest_turn_ins" and row.subject == "all" then
+				count = row.value
+			end
+		end
+		local peers = 0
+		for _ in pairs(ns.Stats and ns.Stats.Shared() or {}) do
+			peers = peers + 1
+		end
+		ns.Print(L.STATS_SUMMARY:format(count, peers))
 	elseif command == "dump" then
 		ns.Dump()
 	elseif command == "tracker" then
@@ -1073,6 +1116,7 @@ local function Slash(msg)
 		ns.Print(L.HELP_REPORT)
 		ns.Print(L.HELP_WHERE)
 		ns.Print(L.HELP_AUDIT)
+		ns.Print(L.HELP_STATS)
 		ns.Print(L.HELP_DUMP)
 		ns.Print(L.HELP_TRACKER)
 	end

@@ -34,6 +34,11 @@ globals = {
 }
 
 read_globals = {
+	"time",
+	"GetServerTime",
+	"GetRealmName",
+	"IsInGuild",
+	"LE_PARTY_CATEGORY_INSTANCE",
 	"LibStub",
 	"LibDBIcon10_RXPGuides",
 	"RXP",

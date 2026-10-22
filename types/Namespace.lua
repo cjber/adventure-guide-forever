@@ -551,6 +551,7 @@
 ---@field NEXT_CAMP string a step menu's entry: move an area step on to its next objective spot
 ---@field HELP_AUDIT string
 ---@field HELP_DUMP string
+---@field HELP_STATS string
 ---@field HELP_TRACKER string
 ---@field HELP_REPORT string
 ---@field HELP_WHERE string
@@ -1431,8 +1432,11 @@
 ---@field TODAY_MORE string
 ---@field STOP_VISIT string
 ---@field SET_HEARTH string
+---@field SETTING_STATS_SHARE string
+---@field SETTING_STATS_SHARE_TOOLTIP string
 ---@field SETTING_STEP_SOUND string
 ---@field SETTING_STEP_SOUND_TOOLTIP string
+---@field STATS_SUMMARY string format: local quest turn-ins, then the number of users reporting activity
 ---@field STEP_PICKUP string
 ---@field STEP_OBJECTIVE string
 ---@field STEP_SHARED_OBJECTIVES string
@@ -1841,6 +1845,7 @@
 ---@field RestedXPNativeUI fun(): boolean
 ---@field version integer
 ---@field minor integer 1 from Subscribe, 2 from Suggestions and StartSuggestion
+---@field Stats fun(): AGFActivityRecord[] read-only per-character rows (minor 3); never transmitted
 ---@field Suggestions fun(limit?: integer): AGFAPISuggestion[]? the panel's cards, at most five
 ---@field StartSuggestion fun(id: string): boolean starts a card as the guide's own Start does
 ---@field Subscribe fun(callback: fun(changes: AGFAPIChanges)): fun() calls back the frame after the current stop or the journey changes, at most once per burst; returns the unsubscribe
@@ -1858,6 +1863,23 @@
 ---@type AGFGlobal
 AdventureGuideForever = nil
 
+---@class AGFActivityRecord
+---@field addon "AdventureGuideForever"
+---@field metric "quest_turn_ins"|"quest_turn_in"
+---@field subject string "all" or the quest ID as a string
+---@field value integer observed count
+---@field eventUnix? integer timestamp of the most recent observed event
+
+---@class AGFNamespace
+---@field ActivityStats fun(): AGFActivityRecord[]
+---@field Stats AGFStats this client's sender and the rows it has heard (Core/Stats.lua)
+
+---@class AGFStats
+---@field Sync fun() queue this character's shareable rows for every channel it can reach
+---@field Receive fun(prefix: string, payload: string, channel: string, sender: string) validate and keep one heard row
+---@field Shared fun(): table<string, table<string, table<string, table<string, {value: integer, eventUnix: integer?}>>>> rows heard from other users, by sender, addon, metric and subject
+---@field SetEnabled fun(enabled: boolean) the sharing switch changed: sync now, or drop what waited
+
 ---@class AGFStoryCompletion
 ---@field Record fun(questID: integer): boolean true only for a new proven final turn-in
 
@@ -1866,6 +1888,7 @@ AdventureGuideForever = nil
 
 ---@class AGFPrefs
 ---@field completedStories table<string, {key: string, title: string, quest: integer}> proven story milestones for this character
+---@field activity {questTurnIns: integer, lastEventUnix?: integer, quests: table<integer, {count: integer, eventUnix?: integer}>} local observed quest turn-ins
 
 ---@class AGFStrings
 ---@field QUEST_VISIT_WARNING string
