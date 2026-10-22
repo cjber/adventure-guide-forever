@@ -551,6 +551,7 @@
 ---@field NEXT_CAMP string a step menu's entry: move an area step on to its next objective spot
 ---@field HELP_AUDIT string
 ---@field HELP_DUMP string
+---@field HELP_STATS string
 ---@field HELP_TRACKER string
 ---@field HELP_REPORT string
 ---@field HELP_WHERE string
@@ -1431,8 +1432,11 @@
 ---@field TODAY_MORE string
 ---@field STOP_VISIT string
 ---@field SET_HEARTH string
+---@field SETTING_STATS_SHARE string
+---@field SETTING_STATS_SHARE_TOOLTIP string
 ---@field SETTING_STEP_SOUND string
 ---@field SETTING_STEP_SOUND_TOOLTIP string
+---@field STATS_SUMMARY string format: local quest turn-ins, then the number of users reporting activity
 ---@field STEP_PICKUP string
 ---@field STEP_OBJECTIVE string
 ---@field STEP_SHARED_OBJECTIVES string
@@ -1868,6 +1872,13 @@ AdventureGuideForever = nil
 
 ---@class AGFNamespace
 ---@field ActivityStats fun(): AGFActivityRecord[]
+---@field Stats AGFStats this client's sender and the rows it has heard (Core/Stats.lua)
+
+---@class AGFStats
+---@field Sync fun() queue this character's shareable rows for every channel it can reach
+---@field Receive fun(prefix: string, payload: string, channel: string, sender: string) validate and keep one heard row
+---@field Shared fun(): table<string, table<string, table<string, table<string, {value: integer, eventUnix: integer?}>>>> rows heard from other users, by sender, addon, metric and subject
+---@field SetEnabled fun(enabled: boolean) the sharing switch changed: sync now, or drop what waited
 
 ---@class AGFStoryCompletion
 ---@field Record fun(questID: integer): boolean true only for a new proven final turn-in

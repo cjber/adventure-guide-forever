@@ -16,6 +16,10 @@
 ---@class AGFPinsModule
 ---@field Ping fun(key: string) flash the numbered pin for a step, if it's on the shown map.
 
+-- Gethe/wow-ui-source FrameXML: the party category that means an instance group.
+---@type number
+LE_PARTY_CATEGORY_INSTANCE = nil
+
 ---@type {AddMessage: fun(self: table, text: string)}
 DEFAULT_CHAT_FRAME = nil
 
