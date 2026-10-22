@@ -1,4 +1,4 @@
--- Machine translated (2026-10-16); corrections welcome: https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml
+-- Machine translated (2026-10-22); corrections welcome: https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml
 local _, ns = ...
 if GetLocale() ~= "deDE" then
 	return
@@ -108,6 +108,7 @@ L["HELP_AUDIT"] = "/agf audit - die Questdaten mit dem Spiel abgleichen"
 L["HELP_DUMP"] = "/agf dump - das Layout des Führers für einen Fehlerbericht speichern"
 L["HELP_OPEN"] = "/agf - den Führer auf der Weltkarte öffnen."
 L["HELP_REPORT"] = "/agf report - einen Bericht zum Kopieren in einen Fehlerbericht anzeigen"
+L["HELP_STATS"] = "/agf stats - zeigt lokale Questabgaben und wie viele andere Addon-Nutzer Aktivität melden"
 L["HELP_TRACKER"] = "/agf tracker - die Anker der Verfolgung ausgeben (bei Überlappung im Kampf)"
 L["HELP_WHERE"] =
 	"/agf where - den aktuellen Halt des Führers anzeigen, zum Kopieren in einen Bericht über einen falschen Halt"
@@ -325,6 +326,9 @@ L["SETTING_ROUTE_ORDER_TOOLTIP"] =
 L["SETTING_RXP"] = "RestedXP-Guides nutzen"
 L["SETTING_RXP_TOOLTIP"] =
 	"Fügt den aktuellen RestedXP-Guide Euren Reisekarten, der Karte und der Verfolgung hinzu. RestedXP schaltet die Guide-Schritte weiter; Shortest Path Forever übernimmt das Reisen. RestedXP bleibt installiert und steuert den Guide-Fortschritt."
+L["SETTING_STATS_SHARE"] = "Aktivität mit Gilde und Gruppen teilen"
+L["SETTING_STATS_SHARE_TOOLTIP"] =
+	"Standardmäßig an. Teilt kumulierte Aktivitätsdaten mit Addon-Nutzern in Gilde, Gruppe, Schlachtzug oder Instanz. Ausschalten, um Aufzeichnungen nur auf diesem Charakter zu behalten. Geteilte Daten werden von Spielern gemeldet und nicht überprüft."
 L["SETTING_STEP_SOUND"] = "Ton, wenn ein Schritt erledigt ist"
 L["SETTING_STEP_SOUND_TOOLTIP"] = "Spielt einmal einen kurzen Ton, wenn Ihr einen Routenschritt abschließt."
 L["SETTING_TITLE_ROUTE"] = "Reisen starten die Route"
@@ -374,6 +378,7 @@ L["SPF_MISSING"] = "Installiert Shortest Path Forever für Laufwege und Schiffsz
 L["STARTS_AFTER_COMBAT"] = "Die Route startet nach dem Kampf"
 L["STARTS_WITH"] = "Beginnt mit %s"
 L["START_ADVENTURE"] = "Starten"
+L["STATS_SUMMARY"] = "Aktivität: %d Questabgaben lokal erfasst; %d andere Addon-Nutzer meldeten Aktivität."
 L["STEP_BATTLEMASTER"] = "Besucht den Kampfmeister in %s"
 L["STEP_COLLECT"] = "Sammeln: %s · %s"
 L["STEP_DEFEAT"] = "Besiegen: %s · %s"
@@ -436,8 +441,7 @@ L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
 -- mt
-L["WHATS_NEW"] =
-	"Ein Questgegenstand in Euren Taschen lässt sich normal anklicken, solange die Verfolgung geladen ist."
+L["WHATS_NEW"] = "Questaktivität wird korrekt erfasst und kann geteilt werden."
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"

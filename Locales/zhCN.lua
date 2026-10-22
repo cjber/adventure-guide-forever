@@ -1,4 +1,4 @@
--- Machine translated (2026-10-16); corrections welcome: https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml
+-- Machine translated (2026-10-22); corrections welcome: https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml
 local _, ns = ...
 if GetLocale() ~= "zhCN" then
 	return
@@ -102,6 +102,7 @@ L["HELP_AUDIT"] = "/agf audit - 将任务数据与游戏核对"
 L["HELP_DUMP"] = "/agf dump - 保存指南布局以提交错误报告"
 L["HELP_OPEN"] = "/agf - 在世界地图上打开指南。"
 L["HELP_REPORT"] = "/agf report - 显示可复制到错误报告中的报告"
+L["HELP_STATS"] = "/agf stats - 显示本地任务交付记录和报告活动的其他插件用户数量"
 L["HELP_TRACKER"] = "/agf tracker - 输出追踪栏的锚点（战斗中重叠时）"
 L["HELP_WHERE"] = "/agf where - 显示指南当前所在的站点，用于复制到站点错误报告中"
 L["HUB_HAND_IN"] = "%d个待交还"
@@ -316,6 +317,9 @@ L["SETTING_ROUTE_ORDER_TOOLTIP"] =
 L["SETTING_RXP"] = "使用RestedXP指南"
 L["SETTING_RXP_TOOLTIP"] =
 	"将当前的RestedXP指南添加到你的旅程卡片、地图和追踪栏。RestedXP推进指南步骤；Shortest Path Forever负责出行。RestedXP保持安装并控制指南进度。"
+L["SETTING_STATS_SHARE"] = "与公会和队伍分享活动"
+L["SETTING_STATS_SHARE_TOOLTIP"] =
+	"默认开启。与公会、队伍、团队或副本中的插件用户分享累计活动记录。关闭后，记录仅保存在此角色上。分享的记录由玩家报告，未经验证。"
 L["SETTING_STEP_SOUND"] = "完成步骤时播放声音"
 L["SETTING_STEP_SOUND_TOOLTIP"] = "完成一个路线步骤时播放一次短促的声音。"
 L["SETTING_TITLE_ROUTE"] = "旅程开始路线"
@@ -363,6 +367,7 @@ L["SPF_MISSING"] = "安装Shortest Path Forever以获得步行路线和船只时
 L["STARTS_AFTER_COMBAT"] = "战斗结束后路线开始"
 L["STARTS_WITH"] = "始于%s"
 L["START_ADVENTURE"] = "开始"
+L["STATS_SUMMARY"] = "活动：本地记录了 %d 次任务交付；另有 %d 位插件用户报告了活动。"
 L["STEP_BATTLEMASTER"] = "拜访%s的战场军官"
 L["STEP_COLLECT"] = "收集%s · %s"
 L["STEP_DEFEAT"] = "击败%s · %s"
@@ -424,7 +429,7 @@ L["UNEXPLORED"] = "你还没见过%s"
 L["UNLISTED"] = "这片土地有指南尚不知道的故事；请留意任务NPC头上的“!”。"
 L["UPDATED_TO"] = "已更新到%s。%s"
 -- mt
-L["WHATS_NEW"] = "追踪栏加载时，背包中的任务物品可以正常点击。"
+L["WHATS_NEW"] = "任务活动现已正确记录，并可分享。"
 L["WHY_ALLIANCE"] = "仅限联盟"
 L["WHY_BREADCRUMB"] = "仅在你接受%s之前"
 L["WHY_CHOSE"] = "你改选了%s"
