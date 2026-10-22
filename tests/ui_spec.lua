@@ -320,7 +320,7 @@ do
 	-- Every row goes in through the secure delegate; none from addon code, which taints the search. The rows are
 	-- grouped into subcategories with a short index page, so no page grows tall.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 26, "22 rows and 4 index buttons, all through Settings.RegisterInitializer")
+	equal(#h.settings, 27, "23 rows and 4 index buttons, all through Settings.RegisterInitializer")
 	local L = h.ns.L
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
@@ -336,8 +336,8 @@ do
 	)
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_INTERFACE] or {}, " "),
-		"whatsNew",
-		"Interface holds the update row; the suggestions setting is on the Forever addons page"
+		"statsShare whatsNew",
+		"Interface holds the activity sharing and update rows; the suggestions setting is on the Forever addons page"
 	)
 	-- The index page's buttons are on the addon's own category, one per group, in index order, and open its subpage.
 	local buttons = {}
@@ -2663,10 +2663,18 @@ do
 	local before = #h.prints
 	h.Slash("help")
 	local L = h.ns.L
-	for index, line in ipairs({ L.HELP_OPEN, L.HELP_REPORT, L.HELP_WHERE, L.HELP_AUDIT, L.HELP_DUMP, L.HELP_TRACKER }) do
+	for index, line in ipairs({
+		L.HELP_OPEN,
+		L.HELP_REPORT,
+		L.HELP_WHERE,
+		L.HELP_AUDIT,
+		L.HELP_STATS,
+		L.HELP_DUMP,
+		L.HELP_TRACKER,
+	}) do
 		equal(h.prints[before + index]:sub(-#line), line, "L: help line " .. index)
 	end
-	equal(#h.prints, before + 6, "L: six help lines")
+	equal(#h.prints, before + 7, "L: seven help lines")
 	-- Map names come from the client (C_Map.GetMapInfo), which the planner prefers over the data's English.
 	h.G.C_Map.GetMapInfo = function()
 		return { name = "Client Stormwind" }

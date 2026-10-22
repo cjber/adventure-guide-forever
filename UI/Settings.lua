@@ -183,12 +183,7 @@ function ns.RegisterSettings()
 			function(subcategory)
 				Settings.RegisterInitializer(
 					subcategory,
-					Checkbox(
-						subcategory,
-						"statsShare",
-						ns.L.SETTING_STATS_SHARE,
-						ns.L.SETTING_STATS_SHARE_TOOLTIP
-					)
+					Checkbox(subcategory, "statsShare", ns.L.SETTING_STATS_SHARE, ns.L.SETTING_STATS_SHARE_TOOLTIP)
 				)
 				Settings.RegisterInitializer(
 					subcategory,

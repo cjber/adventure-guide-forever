@@ -7,8 +7,9 @@ local _, ns = ...
 ---@type AGFStrings
 ns.L = {
 	SETTING_STATS_SHARE = "Share activity with guild and groups",
-	SETTING_STATS_SHARE_TOOLTIP = "On by default. Shares cumulative activity rows with addon users in your guild, party, raid or instance. "
-		.. "Turn it off to keep records on this character only. Shared records are player-reported, not verified.",
+	SETTING_STATS_SHARE_TOOLTIP = "On by default. Shares cumulative activity rows with addon users in "
+		.. "your guild, party, raid or instance. Turn it off to keep records on this character only. "
+		.. "Shared records are player-reported, not verified.",
 	STATS_SUMMARY = "Activity: %d quest turn-ins recorded locally; %d other addon users reported activity.",
 	HELP_STATS = "/agf stats - show local quest turn-ins and the number of peers reporting activity",
 	SETTING_RXP = "Use RestedXP guides",
