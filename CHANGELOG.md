@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [0.21.5] - 2026-10-22
+
+- **A quest item in your bags clicks normally while the tracker is loaded.** The guide's tracker sections used to be handed to the game's own tracker manager, which marked the bag item click path insecure, and a click on an item in your bags could be turned into a blocked action while the Forever column was up. Each addon now parents its own sections and never calls the native manager, so the click path stays secure. Already released in SkillUp Forever 0.18.12 and Shortest Path Forever 1.21.10.
+
 ## [0.21.4] - 2026-10-21
 
 - **The guide spends less time loading your character.** Its saved Questie catalogue used to repeat the same field names in every quest, town and NPC record; it now stores those names once and uses compact numeric keys, rebuilding the expanded tables after loading. Existing saves are rebuilt once. Thanks to jechten, Jechten and Naburiel for the reports on CurseForge and GitHub issue #166.
