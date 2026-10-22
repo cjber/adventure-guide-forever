@@ -424,7 +424,7 @@ L["UNEXPLORED"] = "你还没见过%s"
 L["UNLISTED"] = "这片土地有指南尚不知道的故事；请留意任务NPC头上的“!”。"
 L["UPDATED_TO"] = "已更新到%s。%s"
 -- mt
-L["WHATS_NEW"] = "指南加载你的角色所需的时间更短了。"
+L["WHATS_NEW"] = "追踪栏加载时，背包中的任务物品可以正常点击。"
 L["WHY_ALLIANCE"] = "仅限联盟"
 L["WHY_BREADCRUMB"] = "仅在你接受%s之前"
 L["WHY_CHOSE"] = "你改选了%s"

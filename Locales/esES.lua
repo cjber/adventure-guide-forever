@@ -433,7 +433,8 @@ L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
 -- mt
-L["WHATS_NEW"] = "La guía tarda menos en cargar a tu personaje."
+L["WHATS_NEW"] =
+	"Un objeto de misión de tus bolsas se puede pulsar con normalidad mientras el rastreador está cargado."
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
