@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [0.22.1] - 2026-10-23
+
+- **The objective tracker hands itself back cleanly in Edit Mode.** Entering Edit Mode now releases the native objective frame anchor and detaches the guide column before Blizzard moves the tracker, and leaving Edit Mode puts the column back. Previously the two fought over the anchor and the tracker could end up clamped in the wrong place.
+
 ## [0.22.0] - 2026-10-22
 
 - **Quest activity totals record correctly and can be shared.** The sharing setting now appears, and quest turn-ins are recorded for your character.
