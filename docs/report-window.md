@@ -76,3 +76,9 @@ rebuild does.
   listener, failing addon lines, long addon lines that leave the errors in, the 2,000-character cap with many addons,
   Escape through `UISpecialFrames`, and the help line. The harness needs `SetFocus`, `HighlightText`, `SetMultiLine`, `SetAutoFocus`,
   `C_AddOns.GetNumAddOns` and `C_AddOns.GetAddOnInfo`.
+
+## Issue link
+
+The in-game issue composer selects a pre-filled GitHub issue URL for copying into a browser; the WoW client cannot open a browser or submit an HTTP request. The `report.md` template lets GitHub use the URL body because issue forms ignore `body` prefills. When porting this window, read the repository from `X-Website` metadata and include the matching markdown template.
+
+The system report also includes the two newest current-session Lua errors and their first trace line when BugGrabber is installed (BugSack uses BugGrabber for its error history). Without it, the client’s ScriptErrors window does not expose a readable history to addons; the composer does not replace the game’s error handler. Error locals are never copied.

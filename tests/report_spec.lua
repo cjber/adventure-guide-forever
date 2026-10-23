@@ -75,6 +75,22 @@ do
 	has(text, ("  Quest %d "):format(step.quests[1]), "its quests by ID")
 	has(text, "    + ", "the quest's requirements, met")
 	has(text, "Errors: none caught", "no errors yet")
+	h.G.BugGrabber = {
+		GetDB = function()
+			return {
+				{ message = "stale session error", stack = "Old.lua:4", session = 6, counter = 8 },
+				{ message = "direct Lua failure", stack = "Addon/Feature.lua:42", session = 7, counter = 2 },
+			}
+		end,
+		GetSessionId = function()
+			return 7
+		end,
+	}
+	local issueBody = h.ns.Report.Body("bug", "Bug: direct Lua failure", "it broke", {})
+	has(issueBody, "direct Lua failure", "BugGrabber runtime error in issue body")
+	has(issueBody, "Addon/Feature.lua:42", "BugGrabber trace in issue body")
+	lacks(issueBody, "stale session error", "old BugGrabber errors are excluded")
+	h.G.BugGrabber = nil
 	has(text, "Other addons (2): Questie 9.1.0, ShortestPathForever 0.9.0", "the other addons with versions")
 	equal(#text <= 2000, true, "one message")
 
@@ -91,6 +107,53 @@ do
 	equal(frame:IsShown(), true, "shown again")
 	equal(h.counts.CreateFrame - before, made, "the window is made once")
 	equal(#h.errors, 0, "errors\n" .. table.concat(h.errors, "\n"))
+end
+
+-- The GitHub link encodes UTF-8, includes the matching template and label, and keeps player details first.
+do
+	local h = Load()
+	h.metadata.AdventureGuideForever = { ["X-Website"] = "https://github.com/cjber/adventure-guide-forever/" }
+	local report = h.ns.Report
+	equal(report.Encode("a b&#é~"), "a%20b%26%23%C3%A9~", "URL encoding")
+	equal(report.Repo(), "cjber/adventure-guide-forever", "repo from X-Website")
+	h.metadata.AdventureGuideForever["X-Website"] = nil
+	equal(report.Repo(), "", "missing X-Website")
+	h.metadata.AdventureGuideForever["X-Website"] = "https://github.com/cjber/adventure-guide-forever/"
+	local issue = report.Issue("bug", "Bug: one & two", "details", { "system line" })
+	has(issue, "https://github.com/cjber/adventure-guide-forever/issues/new?template=report.md", "issue template URL")
+	has(issue, "labels=bug", "bug label")
+	has(issue, "title=Bug%3A%20one%20%26%20two", "encoded title")
+	has(issue, "body=", "encoded body")
+	local body = report.Body("feature", "Feature request: a thing", "wanted", { "system line" })
+	has(body, "### What happened, or what you would like\n\nwanted", "details first")
+	has(body, "### System information", "system information section")
+	equal(
+		report
+			.Issue("feature", "Feature request: thing", "wanted", { "system line" })
+			:find("labels=enhancement", 1, true) ~= nil,
+		true,
+		"feature label"
+	)
+	local long = report.Issue("bug", "Bug: long", ("x"):rep(4000), { "system line" })
+	equal(#long < 7000, true, "long details stay within URL limit")
+	local before = h.counts.CreateFrame
+	h.Slash("issue")
+	local frame = h.G.AdventureGuideForeverIssue
+	equal(frame:IsShown(), true, "issue composer opens")
+	equal(frame.outputBox.highlighted, frame.outputBox:GetText(), "issue URL selected")
+	equal(h.counts.CreateFrame > before, true, "composer created")
+	frame.featureButton.scripts.OnClick()
+	equal(frame.titleBox:GetText():sub(1, 17), "Feature request: ", "feature title prefix")
+	frame.copyReportButton.scripts.OnClick()
+	has(frame.outputBox:GetText(), "### System information", "copy report shows markdown")
+	frame.detailsBox:SetText("keep this detail")
+	frame.outputBox.scripts.OnEscapePressed(frame.outputBox)
+	equal(frame:IsShown(), false, "Escape closes composer")
+	local count = h.counts.CreateFrame
+	h.Slash("feature")
+	equal(frame.titleBox:GetText():sub(1, 17), "Feature request: ", "feature alias opens with its title prefix")
+	equal(h.counts.CreateFrame, count, "composer reused")
+	equal(frame.detailsBox:GetText(), "keep this detail", "details persist between opens")
 end
 
 -- ns.SafeCall: pcall's answers, and each failure kept (label, count, short stack) and passed to the error handler.

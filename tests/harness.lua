@@ -287,6 +287,7 @@ function harness.load(options)
 		SetFrameStrata = "frameStrata",
 		SetMovable = "movable",
 		SetPushedAtlas = "pushedAtlas",
+		SetButtonState = "buttonState",
 		SetTextColor = "textColor",
 		SetClipsChildren = "clipsChildren",
 		SetHighlightFontObject = "highlightFont",
