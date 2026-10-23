@@ -444,7 +444,7 @@ L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
 -- mt
-L["WHATS_NEW"] = "게임에서 버그를 신고하거나 기능을 요청하세요."
+L["WHATS_NEW"] = "Forever 애돼 링크 상자가 Lua 오류 없이 주소를 선택합니다."
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"

@@ -438,7 +438,7 @@ L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
 L["UPDATED_TO"] = "atualizado para %s. %s"
 -- mt
-L["WHATS_NEW"] = "Relate um bug ou peça um recurso direto do jogo."
+L["WHATS_NEW"] = "A caixa de links dos addons Forever seleciona o endereço sem um erro de Lua."
 L["WHY_ALLIANCE"] = "Só Aliança"
 L["WHY_BREADCRUMB"] = "Só até você aceitar %s"
 L["WHY_CHOSE"] = "Você escolheu %s no lugar"
