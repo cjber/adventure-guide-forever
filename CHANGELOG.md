@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [0.22.2] - 2026-10-23
+
+- **Report a bug or request a feature from the game.** `/agf issue` (also `/agf bug` and `/agf feature`) opens a composer: write what went wrong, pick Bug or Feature request, and the window hands you a ready-made GitHub issue link, selected so Ctrl+C and a paste opens the new issue with your words and the addon's system report already filled in. Copy report still puts the same text in your hands for Discord.
+
 ## [0.22.1] - 2026-10-23
 
 - **The objective tracker hands itself back cleanly in Edit Mode.** Entering Edit Mode now releases the native objective frame anchor and detaches the guide column before Blizzard moves the tracker, and leaving Edit Mode puts the column back. Previously the two fought over the anchor and the tracker could end up clamped in the wrong place.
