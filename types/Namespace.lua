@@ -554,6 +554,17 @@
 ---@field HELP_STATS string
 ---@field HELP_TRACKER string
 ---@field HELP_REPORT string
+---@field HELP_ISSUE string
+---@field ISSUE_WINDOW_TITLE string
+---@field ISSUE_LINK_HINT string
+---@field ISSUE_BUG string
+---@field ISSUE_BUG_PREFIX string
+---@field ISSUE_FEATURE string
+---@field ISSUE_FEATURE_PREFIX string
+---@field ISSUE_TITLE_LABEL string
+---@field ISSUE_DETAILS_LABEL string
+---@field ISSUE_COPY_LINK string
+---@field ISSUE_COPY_REPORT string
 ---@field HELP_WHERE string
 ---@field REPORT_TITLE string the report window's title
 ---@field REPORT_HINT string the report window's line on copying its text
