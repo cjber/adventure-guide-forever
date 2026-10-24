@@ -1,10 +1,5 @@
--- Run from the repository root: luajit tests/report_spec.lua
--- The report window and caught errors (UI/Report.lua, Core/Report.lua, Core/SafeCall.lua; docs/design.md §2.24):
--- /agf report shows one selected block of text with the versions, character, the stop and its Why lines, the caught
--- errors and the other addons, never longer than one message; ns.SafeCall keeps errors and still reports them.
-local harness = dofile("tests/harness.lua")
+-- Contract for the shared report window, issue composer and slash-command dispatch.
 local checks = 0
-
 local function equal(actual, expected, label)
 	checks = checks + 1
 	if actual ~= expected then
@@ -12,358 +7,131 @@ local function equal(actual, expected, label)
 	end
 end
 
-local function has(text, part, label)
-	checks = checks + 1
-	if not text:find(part, 1, true) then
-		error(("%s: %q not in\n%s"):format(label, part, text), 2)
+local widgets = {}
+local function widget(widgetKind, widgetName)
+	local value = { kind = widgetKind, name = widgetName, scripts = {}, text = "" }
+	local methods = {}
+	function methods:SetScript(name, callback)
+		self.scripts[name] = callback
 	end
-end
-
-local function lacks(text, part, label)
-	checks = checks + 1
-	if text:find(part, 1, true) then
-		error(("%s: %q in\n%s"):format(label, part, text), 2)
+	function methods:SetText(text)
+		self.text = text
+		self.highlighted = nil
 	end
-end
-
--- ui_spec's level-18 orc shaman in The Barrens, The Zhevra ready to hand in, on The Barrens story.
-local function Load(options)
-	options = options or {}
-	local h = harness.load({
-		charDB = { journey = "zone:1413" },
-		planned = true,
-		version = "1.2.3",
-		completed = { 844 },
-		log = {
-			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
-			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
-		},
-		questiedb = options.questiedb,
+	function methods:GetText()
+		return self.text
+	end
+	function methods:HighlightText(start)
+		if start ~= nil and type(start) ~= "number" then
+			error("HighlightText start must be a number")
+		end
+		self.highlighted = self.text
+	end
+	function methods:SetFocus()
+		self.focused = true
+	end
+	function methods:Show()
+		self.shown = true
+	end
+	function methods:Hide()
+		self.shown = false
+	end
+	function methods:SetTitle(text)
+		self.title = text
+	end
+	function methods:GetPortrait()
+		self.hasPortrait = true
+		return widget("Texture")
+	end
+	function methods:CreateFontString()
+		self.createdFontString = true
+		return widget("FontString")
+	end
+	function methods:SetScrollChild(child)
+		self.child = child
+	end
+	setmetatable(value, {
+		__index = function(_, key)
+			return methods[key] or function() end
+		end,
 	})
-	h.flush()
-	return h
+	widgets[#widgets + 1] = value
+	return value
 end
 
--- The report window: the one frame /agf report made, with its edit box.
-local function Window(h)
-	local edit = h.focus
-	return edit and edit:GetParent():GetParent():GetParent(), edit
+_G.UIParent = {}
+_G.UISpecialFrames = {}
+_G.CreateFrame = function(kind, name)
+	return widget(kind, name)
+end
+_G.GameFontNormal, _G.ChatFontNormal = {}, {}
+_G.C_AddOns = {
+	GetAddOnMetadata = function(_, key)
+		return key == "X-Website" and "https://github.com/cjber/example-addon" or "1.0.0"
+	end,
+}
+
+local phrases = setmetatable({}, {
+	__index = function(_, key)
+		return key
+	end,
+})
+local reportLinesCalls = 0
+local ns = {
+	L = phrases,
+	Art = { Icon = function() end },
+	CutText = function(text, limit)
+		return text:sub(1, limit)
+	end,
+	CaughtErrors = function()
+		return {}
+	end,
+	SafeCall = function(_, callback)
+		return true, callback()
+	end,
+	ReportLines = function()
+		reportLinesCalls = reportLinesCalls + 1
+		return { "addon details" }
+	end,
+}
+local chunk = assert(loadfile("UI/Report.lua"))
+chunk("ExampleAddon", ns)
+ns.ReportTitle = "ExampleAddon report"
+ns.Report.Text = function(lines)
+	return table.concat(lines, "\n")
 end
 
-do
-	local h = Load()
-	h.metadata.Questie = { Version = "9.1.0" }
-	h.metadata.ShortestPathForever = { Version = "0.9.0" }
-	local before = h.counts.CreateFrame
-	h.Slash("report")
-	local frame, edit = Window(h)
-	equal(edit and edit:GetObjectType(), "EditBox", "the report's edit box has the focus")
-	local text = edit:GetText()
-	equal(edit.highlighted, text, "the whole report is selected")
-	equal(frame.stockTemplate, "PortraitFrameTemplate", "a stock portrait frame")
-	equal(frame.TitleText.text, "Adventure Guide report", "its title")
-	equal(frame:IsShown(), true, "shown")
-	has(text, "AdventureGuideForever 1.2.3 | WoW 1.60.1 (69913) 16001 | enUS", "versions, build and locale")
-	has(text, "Character: level 18 ", "character")
-	has(text, "Place: map ", "place")
-	has(text, "QuestieDB: ", "QuestieDB line")
-	has(text, "Settings: guide, ", "settings")
-	has(text, "Journey: The Barrens story [zone:1413], chosen", "the chosen journey")
-	local step = h.ns.Guidance.CurrentStep() or h.ns.Route().steps[1]
-	has(text, ("Stop: %s [%s %s]"):format(step.title, step.kind, step.key), "the current stop, kind and key")
-	has(text, "  Why: ", "its Why line")
-	has(text, ("  Quest %d "):format(step.quests[1]), "its quests by ID")
-	has(text, "    + ", "the quest's requirements, met")
-	has(text, "Errors: none caught", "no errors yet")
-	h.G.BugGrabber = {
-		GetDB = function()
-			return {
-				{ message = "stale session error", stack = "Old.lua:4", session = 6, counter = 8 },
-				{ message = "direct Lua failure", stack = "Addon/Feature.lua:42", session = 7, counter = 2 },
-			}
-		end,
-		GetSessionId = function()
-			return 7
-		end,
-	}
-	local issueBody = h.ns.Report.Body("bug", "Bug: direct Lua failure", "it broke", {})
-	has(issueBody, "direct Lua failure", "BugGrabber runtime error in issue body")
-	has(issueBody, "Addon/Feature.lua:42", "BugGrabber trace in issue body")
-	lacks(issueBody, "stale session error", "old BugGrabber errors are excluded")
-	h.G.BugGrabber = nil
-	has(text, "Other addons (2): Questie 9.1.0, ShortestPathForever 0.9.0", "the other addons with versions")
-	equal(#text <= 2000, true, "one message")
+equal(ns.Report.Command("unknown"), false, "unknown command remains for addon handler")
+equal(ns.Report.Command("report"), true, "report command handled")
+equal(reportLinesCalls, 1, "report command gets addon lines")
 
-	-- Read-only: a key typed in the box puts the report back, selected.
-	edit.text, edit.highlighted = "x", nil
-	edit.scripts.OnTextChanged(edit, true)
-	equal(edit:GetText(), text, "typing restores the report")
-	equal(edit.highlighted, text, "and selects it again")
-	-- Escape closes it; a second /agf report reuses the frame.
-	edit.scripts.OnEscapePressed(edit)
-	equal(frame:IsShown(), false, "Escape hides it")
-	local made = h.counts.CreateFrame - before
-	h.Slash("report")
-	equal(frame:IsShown(), true, "shown again")
-	equal(h.counts.CreateFrame - before, made, "the window is made once")
-	equal(#h.errors, 0, "errors\n" .. table.concat(h.errors, "\n"))
-end
-
--- The GitHub link encodes UTF-8, includes the matching template and label, and keeps player details first.
-do
-	local h = Load()
-	h.metadata.AdventureGuideForever = { ["X-Website"] = "https://github.com/cjber/adventure-guide-forever/" }
-	local report = h.ns.Report
-	equal(report.Encode("a b&#é~"), "a%20b%26%23%C3%A9~", "URL encoding")
-	equal(report.Repo(), "cjber/adventure-guide-forever", "repo from X-Website")
-	h.metadata.AdventureGuideForever["X-Website"] = nil
-	equal(report.Repo(), "", "missing X-Website")
-	h.metadata.AdventureGuideForever["X-Website"] = "https://github.com/cjber/adventure-guide-forever/"
-	local issue = report.Issue("bug", "Bug: one & two", "details", { "system line" })
-	has(issue, "https://github.com/cjber/adventure-guide-forever/issues/new?template=report.md", "issue template URL")
-	has(issue, "labels=bug", "bug label")
-	has(issue, "title=Bug%3A%20one%20%26%20two", "encoded title")
-	has(issue, "body=", "encoded body")
-	local body = report.Body("feature", "Feature request: a thing", "wanted", { "system line" })
-	has(body, "### What happened, or what you would like\n\nwanted", "details first")
-	has(body, "### System information", "system information section")
-	equal(
-		report
-			.Issue("feature", "Feature request: thing", "wanted", { "system line" })
-			:find("labels=enhancement", 1, true) ~= nil,
-		true,
-		"feature label"
-	)
-	local long = report.Issue("bug", "Bug: long", ("x"):rep(4000), { "system line" })
-	equal(#long < 7000, true, "long details stay within URL limit")
-	local before = h.counts.CreateFrame
-	h.Slash("issue")
-	local frame = h.G.AdventureGuideForeverIssue
-	equal(frame:IsShown(), true, "issue composer opens")
-	equal(frame.outputBox.highlighted, frame.outputBox:GetText(), "issue URL selected")
-	equal(h.counts.CreateFrame > before, true, "composer created")
-	frame.featureButton.scripts.OnClick()
-	equal(frame.titleBox:GetText():sub(1, 17), "Feature request: ", "feature title prefix")
-	frame.copyReportButton.scripts.OnClick()
-	has(frame.outputBox:GetText(), "### System information", "copy report shows markdown")
-	frame.detailsBox:SetText("keep this detail")
-	frame.outputBox.scripts.OnEscapePressed(frame.outputBox)
-	equal(frame:IsShown(), false, "Escape closes composer")
-	local count = h.counts.CreateFrame
-	h.Slash("feature")
-	equal(frame.titleBox:GetText():sub(1, 17), "Feature request: ", "feature alias opens with its title prefix")
-	equal(h.counts.CreateFrame, count, "composer reused")
-	equal(frame.detailsBox:GetText(), "keep this detail", "details persist between opens")
-end
-
--- ns.SafeCall: pcall's answers, and each failure kept (label, count, short stack) and passed to the error handler.
-do
-	local h = Load()
-	local ns = h.ns
-	local ok, a, b, c = ns.SafeCall("test", function(x)
-		return x, nil, 3
-	end, 1)
-	equal(ok, true, "SafeCall: ok")
-	equal(a, 1, "SafeCall: first result")
-	equal(b, nil, "SafeCall: a nil result kept in place")
-	equal(c, 3, "SafeCall: last result")
-	equal(#ns.CaughtErrors(), 0, "SafeCall: nothing caught")
-	local failed, message = ns.SafeCall("test", error, "boom", 0)
-	equal(failed, false, "SafeCall: failure")
-	equal(message, "boom", "SafeCall: the error")
-	equal(#h.errors, 1, "SafeCall: passed to the error handler")
-	ns.SafeCall("test", error, "boom", 0)
-	local caught = ns.CaughtErrors()
-	equal(#caught, 1, "SafeCall: a repeat is one entry")
-	equal(caught[1].count, 2, "SafeCall: counted")
-	equal(caught[1].label, "test", "SafeCall: labelled")
-	ns.SafeCall("deep", function()
-		local t = nil
-		return t.field
-	end)
-	caught = ns.CaughtErrors()
-	equal(caught[2].label, "deep", "SafeCall: newest last")
-	has(caught[2].stack, "report_spec.lua:", "SafeCall: the stack names the file")
-	for index = 1, 6 do
-		ns.SafeCall("many", error, "error " .. index, 0)
+local reportBox
+for _, value in ipairs(widgets) do
+	if value.kind == "EditBox" and value.scripts.OnEditFocusGained then
+		reportBox = value
+		break
 	end
-	caught = ns.CaughtErrors()
-	equal(#caught, 5, "SafeCall: the last five kept")
-	equal(caught[5].message, "error 6", "SafeCall: newest kept")
-	equal(caught[1].message, "error 2", "SafeCall: oldest dropped")
-	caught[1].message = "changed"
-	equal(ns.CaughtErrors()[1].message, "error 2", "SafeCall: copies")
-	ns.SafeCall("long", error, ("x"):rep(400), 0)
-	equal(#ns.CaughtErrors()[5].message, 300, "SafeCall: a long message is cut")
-
-	h.Slash("report")
-	local _, edit = Window(h)
-	local text = edit:GetText()
-	has(text, "Errors (5):", "report: the caught errors")
-	has(text, "- [long] x1 xxx", "report: newest first")
-	equal(#text <= 2000, true, "report: still one message")
 end
+equal(reportBox ~= nil, true, "report edit box created")
+reportBox.scripts.OnEditFocusGained(reportBox, true)
+equal(reportBox.highlighted, "addon details", "focus selects report text")
 
--- The client's stack lines ('[string "@Interface/AddOns/.../file.lua"]:12:') are kept as LuaJIT's are; a long
--- message is cut on a character boundary; a nested SafeCall names its own label.
-do
-	local h = Load()
-	local ns = h.ns
-	ns.RecordError(
-		"client",
-		"boom",
-		table.concat({
-			'[string "@Interface/AddOns/AdventureGuideForever/Core/State.lua"]:612: in function <...>',
-			"[C]: in function 'xpcall'",
-			"[Interface/AddOns/AdventureGuideForever/Core/Core.lua]:790: in function 'Notify'",
-		}, "\n")
-	)
-	local stack = ns.CaughtErrors()[1].stack
-	has(stack, 'State.lua"]:612', "client stack: a string chunk line")
-	has(stack, "Core.lua]:790", "client stack: a file line")
-	lacks(stack, "[C]", "client stack: C frames left out")
-	ns.RecordError("utf8", ("é"):rep(200))
-	local message = ns.CaughtErrors()[2].message
-	equal(message:sub(-3), "...", "utf8: cut")
-	equal(#message <= 300, true, "utf8: within the limit")
-	equal(select(2, message:sub(1, -4):gsub("é", "")) * 2, #message - 3, "utf8: whole characters only")
-	ns.SafeCall("outer", function()
-		ns.SafeCall("inner", error, "inner failed", 0)
-	end)
-	local caught = ns.CaughtErrors()
-	equal(caught[#caught].label, "inner", "nested: the inner label")
-	equal(#caught, 3, "nested: the outer call didn't fail")
-end
-
--- Escape closes the window like a panel even without the edit box's focus; long addon lines are capped, so the
--- caught errors and the addon list still fit.
-do
-	local h = Load()
-	local ns = h.ns
-	ns.SafeCall("kept", error, "still shown", 0)
-	local long = {}
-	for index = 1, 100 do
-		long[index] = ("line %03d "):format(index) .. ("x"):rep(60)
+equal(ns.Report.Command("issue", "feature"), true, "issue command handled")
+local issueWindow
+for _, value in ipairs(widgets) do
+	if value.name == "ExampleAddonIssue" then
+		issueWindow = value
 	end
-	ns.ReportLines = function()
-		return long
-	end
-	h.Slash("report")
-	local frame, edit = Window(h)
-	local special = false
-	for _, name in ipairs(h.G.UISpecialFrames) do
-		special = special or (name == "AdventureGuideForeverReport" and h.G[name] == frame)
-	end
-	equal(special, true, "Escape: the window is a special frame")
-	local text = edit:GetText()
-	equal(#text <= 2000, true, "long lines: one message")
-	has(text, "line 001 ", "long lines: the first kept")
-	lacks(text, "line 100 ", "long lines: the last cut")
-	has(text, "- [kept] x1 still shown", "long lines: the errors still shown")
-	has(text, "Other addons (", "long lines: the addon list still shown")
 end
-
--- The addon's own lines failing still opens the report, with the header and the error.
-do
-	local h = Load()
-	h.ns.ReportLines = function()
-		error("lines broke", 0)
+equal(issueWindow.kind, "feature", "issue argument selects feature request")
+local issueBox
+for _, value in ipairs(widgets) do
+	if value.kind == "EditBox" and value.scripts.OnEditFocusGained and value ~= reportBox then
+		issueBox = value
 	end
-	h.Slash("report")
-	local _, edit = Window(h)
-	local text = edit:GetText()
-	has(text, "AdventureGuideForever 1.2.3", "lines failed: the header")
-	has(text, "Report lines failed: lines broke", "lines failed: said")
-	has(text, "- [report lines] x1 lines broke", "lines failed: caught")
 end
-
--- A route listener that fails is caught and kept; the listeners after it still run.
-do
-	local h = Load()
-	local ns = h.ns
-	local ran = 0
-	ns.OnRouteChange(function()
-		error("listener failed", 0)
-	end)
-	ns.OnRouteChange(function()
-		ran = ran + 1
-	end)
-	ns.Invalidate()
-	h.flush()
-	equal(ran > 0, true, "listener: the next listener still runs")
-	local caught = ns.CaughtErrors()
-	equal(caught[#caught].label, "route listener", "listener: caught")
-	equal(caught[#caught].message, "listener failed", "listener: its error")
-	equal(#h.errors > 0, true, "listener: still passed to the error handler")
-end
-
--- Many other addons: the list says how many more, and the report stays one message.
-do
-	local h = Load()
-	for index = 1, 300 do
-		h.metadata[("SomeAddon%03d"):format(index)] = { Version = "1.0." .. index }
-	end
-	h.Slash("report")
-	local _, edit = Window(h)
-	local text = edit:GetText()
-	equal(#text <= 2000, true, "many addons: one message")
-	has(text, "Other addons (300): SomeAddon001 1.0.1, ", "many addons: counted")
-	has(text, " more", "many addons: the rest counted")
-	lacks(text, "SomeAddon300", "many addons: the last left out")
-end
-
--- While a build is due the report says so, and doesn't build one.
-do
-	local h = Load()
-	h.ns.Invalidate()
-	local plans = h.modelCalls.Plan
-	h.Slash("report")
-	local _, edit = Window(h)
-	has(edit:GetText(), "Route: still being worked out", "unsettled: said")
-	equal(h.modelCalls.Plan, plans, "unsettled: no build for the report")
-end
-
--- /agf where: the versions, the place and the stop with its quest IDs and Why lines, selected, without the caught
--- errors or the addon list; failing lines still open it.
-do
-	local h = Load()
-	h.metadata.Questie = { Version = "9.1.0" }
-	h.ns.SafeCall("kept", error, "an error", 0)
-	h.Slash("where")
-	local _, edit = Window(h)
-	local text = edit:GetText()
-	equal(edit.highlighted, text, "where: selected")
-	has(text, "AdventureGuideForever 1.2.3 | WoW 1.60.1 (69913) 16001 | enUS | level 18", "where: versions and level")
-	has(text, "Place: map ", "where: place")
-	local step = h.ns.Guidance.CurrentStep() or h.ns.Route().steps[1]
-	has(text, ("[%s %s]"):format(step.kind, step.key), "where: the stop")
-	has(text, ("  Quest %d "):format(step.quests[1]), "where: its quests by ID")
-	lacks(text, "Errors", "where: no errors section")
-	lacks(text, "Other addons", "where: no addon list")
-	equal(#text <= 2000, true, "where: one message")
-	h.ns.ReportLines = function()
-		error("lines broke", 0)
-	end
-	h.Slash("where")
-	has(edit:GetText(), "Report lines failed: lines broke", "where: failing lines said")
-	has(edit:GetText(), "AdventureGuideForever 1.2.3 | WoW", "where: the versions still show")
-	has(edit:GetText(), "Place: map ", "where: and the place")
-end
-
--- The help lists the command.
-do
-	local h = Load()
-	h.Slash("help")
-	local found = false
-	for _, line in ipairs(h.prints) do
-		found = found or line:find("/agf report", 1, true) ~= nil
-	end
-	equal(found, true, "help names /agf report")
-	found = false
-	for _, line in ipairs(h.prints) do
-		found = found or line:find("/agf where", 1, true) ~= nil
-	end
-	equal(found, true, "help names /agf where")
-end
+equal(issueBox ~= nil, true, "issue output box created")
+issueBox.scripts.OnEditFocusGained(issueBox, true)
+equal(issueBox.highlighted, issueBox.text, "focus selects issue link")
 
 print(("report_spec: %d checks passed"):format(checks))

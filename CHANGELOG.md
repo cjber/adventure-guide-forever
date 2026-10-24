@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Report and issue text selects when focused.** Ctrl+C now copies the full report or issue link from either text box.
+
 ## [0.22.4] - 2026-10-24
 
 - **The optimised route stays put when your log is nearly full.** A town's quest the log had no room for no longer holds back the visit to hand in that town's other quests, so the route no longer switches between two versions on every rebuild.

@@ -34,7 +34,7 @@ MARKUP = re.compile(r"\|c[0-9a-fA-F]{8}|\|r|\|A[^|]*\|a|\|T[^|]*\|t")
 ESCAPES = {"n": "\n", "t": "\t", "\\": "\\", '"': '"', "'": "'"}
 # Shared byte for byte by the Forever addons, so it can't use this addon's constant keys: its copy goes through its own
 # L, keyed by the English phrase (L["Close"]), which falls back to the phrase. Those lookups are its ns.L.
-PHRASE_KEYED = {"ForeverFamily.lua"}
+PHRASE_KEYED = {"ForeverFamily.lua", "Report.lua"}
 
 
 def unquote(literal: str) -> str:
