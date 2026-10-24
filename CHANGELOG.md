@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The optimised route stays put when your log is nearly full.** A town's quest the log had no room for no longer holds back the visit to hand in that town's other quests, so the route no longer switches between two versions on every rebuild.
+
 ## [0.22.3] - 2026-10-23
 
 - **The Forever addons link box selects its address without a Lua error.** Focusing the read-only box handed the client's own `isUserInput` flag to `HighlightText` as its start argument, so it raised *bad argument #2 to '?' (outside of expected range -2147483648 to 2147483647)* and left the address unselected. It now selects the whole address the way the game asks, from the shared link box the Forever addons all carry (#269).

@@ -29,8 +29,8 @@ CORPUS = ROOT / "tests" / ".corpus"
 FIXTURE = CORPUS / "quests.lua"
 TOWN_FIXTURE = CORPUS / "towns.lua"
 # QuestieDB's Forever release, pinned to the tag and the asset's sha256. The refresh workflow moves the tag.
-QUESTIEDB_TAG = "v1.0.6"
-QUESTIEDB_SHA256 = "d78b066c362eaf28258d9e2d041c0a7b03d6943a2dfc741dec70c6bfd8e1fc27"
+QUESTIEDB_TAG = "v1.0.7"
+QUESTIEDB_SHA256 = "469a0c87939bb9d7dad5b2171aea0418987a4927e99798ba26fde7579c24ae50"
 QUESTIEDB_URL = f"https://github.com/Questie/QuestieDB/releases/download/{QUESTIEDB_TAG}/QuestieDB-Forever.zip"
 
 
