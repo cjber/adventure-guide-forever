@@ -336,6 +336,7 @@
 -- its route picks up, which keep their slots in the log on the next build.
 ---@class AGFOrder: string[]
 ---@field picked? table<integer, true>
+---@field taken? table<integer, true> the quests its steps pick up, past the step limit too
 
 -- One requirement in the why-not view (Model.Why).
 ---@class AGFWhyLine
@@ -1669,6 +1670,7 @@
 ---@field cap number
 ---@field count integer
 ---@field picked table<integer, true>
+---@field taken table<integer, true>
 ---@field route AGFStep[]
 ---@field order? AGFOrder
 ---@field ordered {step: AGFStep, pickups?: integer[], handins?: integer[]}[] each step of `order` as it was committed

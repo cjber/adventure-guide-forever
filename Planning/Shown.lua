@@ -85,7 +85,9 @@ function Shown.Build(input)
 			input.last,
 			inputs
 		)
-		if coroutine.running() then
+		-- Synchronous callers never yield; a Lua 5.2-style host names the main thread too, and flags it.
+		local co, main = coroutine.running()
+		if co and not main then
 			coroutine.yield("frame")
 		end
 	end

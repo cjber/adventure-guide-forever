@@ -258,10 +258,14 @@ local function NameLapAreas(lap)
 		if best and best ~= area.key then
 			named[area.key], named[best], area.key = nil, true, best
 		end
+		-- The order works only the quests it carries or picks up, past the step limit too: a quest the log's limit
+		-- left unpicked waits for no committed visit back, or the hand-ins it shares a town with would never come.
 		local place = rank[area.key]
 		for _, objective in ipairs(place and area.objectives or NONE) do
 			local id = objective.id
-			lap.ranked[id] = math.min(lap.ranked[id] or place, place)
+			if lap.taken[id] or lap.log[id] then
+				lap.ranked[id] = math.min(lap.ranked[id] or place, place)
+			end
 		end
 	end
 end
@@ -880,6 +884,12 @@ local function MergeLapVisits(lap)
 			kept[#kept + 1] = there and ident or nil
 		end
 		order = kept
+		order.taken = {}
+		for _, ids in pairs(held) do
+			for id in pairs(ids) do
+				order.taken[id] = id > 0 or nil
+			end
+		end
 		order.picked = {}
 		for _, step in ipairs(route) do
 			for _, id in ipairs(step.kind == "town" and step.pickups or NONE) do
@@ -1023,6 +1033,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 		cap = player.logMax or math.huge,
 		count = count,
 		picked = State.committedOrders and State.committedOrders[card] and State.committedOrders[card].picked or {},
+		taken = State.committedOrders and State.committedOrders[card] and State.committedOrders[card].taken or {},
 		route = {},
 		ordered = {},
 	}

@@ -856,9 +856,11 @@ local function Battleground(data, player, prefs, mapName)
 	end
 end
 
--- Each card has its own frame in Core's rebuild; synchronous callers never yield.
+-- Each card has its own frame in Core's rebuild; synchronous callers never yield. A Lua 5.2-style host names the main
+-- thread too, and flags it.
 local function Yield()
-	if coroutine.running() then
+	local co, main = coroutine.running()
+	if co and not main then
 		coroutine.yield()
 	end
 end
