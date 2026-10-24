@@ -788,6 +788,7 @@
 ---@field Debug fun(): string /agf travel's line
 
 ---@class AGFNamespace
+---@field ReportTitle string the localized title shown by the shared report window
 ---@field Offers AGFOffersModule what a giver's window really offers (Offers.lua)
 ---@field Closes AGFClosesModule the chat warning before taking a quest that closes another (Closes.lua)
 ---@field CreatureEntry fun(guid?: string): integer? a creature's entry from its GUID; nil for anything else or a secret
@@ -812,7 +813,7 @@
 ---@field RecordError fun(label: string, message: any, stack?: string) keep an error caught some other way (a coroutine's) for the report
 ---@field CutText fun(text: string, limit: integer): string `text` at most `limit` bytes, cut on a character boundary with "..."
 ---@field CaughtErrors fun(): AGFCaughtError[] this session's caught errors, oldest first, as copies
----@field Report AGFReportModule the report window (UI/Report.lua)
+---@field Report ForeverReportModule the report window (UI/Report.lua)
 ---@field WhereLines fun(): string[] /agf where: versions, place and the report's own lines (Core/Report.lua)
 ---@field ReportLines fun(): string[] Adventure Guide's own lines in the report (Core/Report.lua)
 ---@field Setting fun(key: string): any

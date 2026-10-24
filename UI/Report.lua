@@ -1,12 +1,20 @@
----@type string, AGFNamespace
-local addonName, ns = ...
+local addonName = ...
+---@class ForeverReportNamespace
+---@field L table<string, string>
+---@field Art table
+---@field ReportTitle string
+---@field CutText fun(text: string, limit: integer): string
+---@field CaughtErrors fun(): table
+---@field SafeCall fun(label: string, callback: function, ...: any): boolean, any
+---@field ReportLines fun(): string[]
+local ns = select(2, ...)
 
--- The report window (docs/design.md §2.24): `/agf report` shows one block of text, already selected, for the player
--- to copy into a bug report. The text opens with what every Forever addon reports (versions, build, locale,
--- character, place), then the addon's own lines, the errors ns.SafeCall caught, and the other addons loaded, cut to
--- fit one message. This file knows nothing else about the addon: it copies across the Forever addons with only its
--- strings (ns.L.REPORT_*) changed. The field labels stay English in every locale; the names and the addon's own
--- lines are the client's.
+-- Vendored from Forever Core. `/report` shows one block of text,
+-- already selected, for the player to copy into a bug report. The text opens with what every Forever addon reports
+-- (versions, build, locale, character, place), then the addon's own lines, the errors ns.SafeCall caught, and the
+-- other addons loaded, cut to fit one message. This file knows nothing else about the addon: it copies across the
+-- Forever addons with phrase keys supplied through the namespace. The field labels stay English in every locale; the
+-- names and the addon's own lines are the client's.
 
 local L, Art = ns.L, ns.Art
 -- One Discord or forum message; a GitHub issue field takes it whole.
@@ -16,7 +24,7 @@ local LINES_LIMIT, ERRORS_LIMIT = 1000, 600
 local ICON = "Interface\\AddOns\\" .. addonName .. "\\media\\Icon"
 local WIDTH, HEIGHT = 460, 380
 
----@class AGFReportModule
+---@class ForeverReportModule
 ---@field Text fun(lines: string[]): string the whole report around the addon's `lines`, at most 2000 characters
 ---@field Show fun(text: string) show `text` in the report window, selected for copying
 ---@field Percent fun(value?: number): string a map coordinate as the map shows it
@@ -25,15 +33,16 @@ local WIDTH, HEIGHT = 460, 380
 ---@field Issue fun(kind: string, title: string, details: string, lines: string[]): string the new-issue URL
 ---@field Body fun(kind: string, title: string, details: string, lines: string[]): string the markdown issue body
 ---@field Compose fun(kind?: string) show the bug or feature request composer
+---@field Command fun(command: string, argument?: string): boolean handle shared slash commands
 local Report = {}
 ns.Report = Report
 
 -- PortraitFrameTemplate's own members this file uses (Mainline/SharedUIPanelTemplates.xml).
----@class AGFReportWindow : Frame
----@field SetTitle fun(self: AGFReportWindow, title: string)
----@field GetPortrait fun(self: AGFReportWindow): Texture
+---@class ForeverReportWindow : Frame
+---@field SetTitle fun(self: ForeverReportWindow, title: string)
+---@field GetPortrait fun(self: ForeverReportWindow): Texture
 
----@type AGFReportWindow?
+---@type ForeverReportWindow?
 local window
 ---@type EditBox
 local editBox
@@ -224,14 +233,14 @@ local function Select(edit)
 	edit:HighlightText()
 end
 
----@return AGFReportWindow
+---@return ForeverReportWindow
 local function Window()
 	if window then
 		return window
 	end
 	local name = addonName .. "Report"
-	local frame = CreateFrame("Frame", name, UIParent, "PortraitFrameTemplate") --[[@as AGFReportWindow]]
-	-- Escape closes it like any panel, with or without the edit box's focus (an addon-owned frame, as GuideSetup.lua).
+	local frame = CreateFrame("Frame", name, UIParent, "PortraitFrameTemplate") --[[@as ForeverReportWindow]]
+	-- Escape closes it like any panel, with or without the edit box's focus (an addon-owned frame).
 	table.insert(UISpecialFrames, name)
 	frame:SetSize(WIDTH, HEIGHT)
 	frame:SetPoint("CENTER")
@@ -243,14 +252,16 @@ local function Window()
 	frame:RegisterForDrag("LeftButton")
 	frame:SetScript("OnDragStart", frame.StartMoving)
 	frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
-	frame:SetTitle(L.REPORT_TITLE)
+	frame:SetTitle(ns.ReportTitle)
 	Art.Icon(frame:GetPortrait(), ICON, 62)
 
 	local hint = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
 	hint:SetPoint("TOPLEFT", 70, -32)
 	hint:SetPoint("RIGHT", -16, 0)
 	hint:SetJustifyH("LEFT")
-	hint:SetText(L.REPORT_HINT)
+	hint:SetText(
+		L["The text is selected. Press Ctrl+C (Cmd+C on a Mac) to copy it, then paste it into your bug report."]
+	)
 
 	local inset = CreateFrame("Frame", nil, frame, "InsetFrameTemplate")
 	inset:SetPoint("TOPLEFT", 10, -64)
@@ -273,7 +284,9 @@ local function Window()
 			Select(self)
 		end
 	end)
-	edit:SetScript("OnEditFocusGained", edit.HighlightText)
+	edit:SetScript("OnEditFocusGained", function(self)
+		self:HighlightText()
+	end)
 	edit:SetScript("OnEscapePressed", function()
 		frame:Hide()
 	end)
@@ -381,7 +394,7 @@ local function IssueLines()
 	return ok and lines or { "Report lines failed: " .. tostring(lines) }
 end
 
----@class AGFIssueWindow : AGFReportWindow
+---@class ForeverIssueWindow : ForeverReportWindow
 ---@field titleBox EditBox
 ---@field detailsBox EditBox
 ---@field outputBox EditBox
@@ -392,7 +405,7 @@ end
 ---@field copyLinkButton Button
 ---@field copyReportButton Button
 
----@type AGFIssueWindow?
+---@type ForeverIssueWindow?
 local issueWindow
 ---@type EditBox
 local issueTitle, issueDetails, issueOutput
@@ -441,21 +454,21 @@ end
 
 ---@param kind string
 local function SetIssueKind(kind)
-	local prefix = kind == "feature" and L.ISSUE_FEATURE_PREFIX or L.ISSUE_BUG_PREFIX
+	local prefix = kind == "feature" and L["Feature request: "] or L["Bug: "]
 	local current = issueTitle:GetText() or ""
-	local oldPrefix = issueKind == "feature" and L.ISSUE_FEATURE_PREFIX or L.ISSUE_BUG_PREFIX
+	local oldPrefix = issueKind == "feature" and L["Feature request: "] or L["Bug: "]
 	local plain = current:sub(1, #oldPrefix) == oldPrefix and current:sub(#oldPrefix + 1) or current
 	issueTitle:SetText(prefix .. plain)
 	RefreshIssue(kind, IssueLines())
 end
 
----@return AGFIssueWindow
+---@return ForeverIssueWindow
 local function IssueWindow()
 	if issueWindow then
 		return issueWindow
 	end
 	local name = addonName .. "Issue"
-	local frame = CreateFrame("Frame", name, UIParent, "PortraitFrameTemplate") --[[@as AGFIssueWindow]]
+	local frame = CreateFrame("Frame", name, UIParent, "PortraitFrameTemplate") --[[@as ForeverIssueWindow]]
 	table.insert(UISpecialFrames, name)
 	frame:SetSize(520, 500)
 	frame:SetPoint("CENTER")
@@ -467,31 +480,33 @@ local function IssueWindow()
 	frame:RegisterForDrag("LeftButton")
 	frame:SetScript("OnDragStart", frame.StartMoving)
 	frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
-	frame:SetTitle(L.ISSUE_WINDOW_TITLE)
+	frame:SetTitle(L["Report a bug or request a feature"])
 	Art.Icon(frame:GetPortrait(), ICON, 62)
 
 	local hint = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
 	hint:SetPoint("TOPLEFT", 70, -30)
 	hint:SetPoint("RIGHT", -16, 0)
 	hint:SetJustifyH("LEFT")
-	hint:SetText(L.ISSUE_LINK_HINT)
+	hint:SetText(
+		L["The link is selected. Press Ctrl+C (Cmd+C on a Mac), then paste into a browser; GitHub opens a filled-in issue."]
+	)
 
 	local bug = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate") --[[@as Button]]
 	bug:SetSize(110, 24)
 	bug:SetPoint("TOPLEFT", 18, -66)
-	bug:SetText(L.ISSUE_BUG)
+	bug:SetText(L["Bug"])
 	local feature = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate") --[[@as Button]]
 	feature:SetSize(150, 24)
 	feature:SetPoint("LEFT", bug, "RIGHT", 8, 0)
-	feature:SetText(L.ISSUE_FEATURE)
-	Label(frame, L.ISSUE_TITLE_LABEL, "TOPLEFT", frame, "TOPLEFT", 18, -102)
+	feature:SetText(L["Feature request"])
+	Label(frame, L["Title"], "TOPLEFT", frame, "TOPLEFT", 18, -102)
 	local title = CreateFrame("EditBox", nil, frame, "InputBoxTemplate") --[[@as EditBox]]
 	title:SetAutoFocus(false)
 	title:SetSize(478, 24)
 	title:SetPoint("TOPLEFT", 20, -122)
 	title:SetMaxLetters(300)
-	title:SetText(L.ISSUE_BUG_PREFIX)
-	Label(frame, L.ISSUE_DETAILS_LABEL, "TOPLEFT", frame, "TOPLEFT", 18, -158)
+	title:SetText(L["Bug: "])
+	Label(frame, L["What happened, or what you would like"], "TOPLEFT", frame, "TOPLEFT", 18, -158)
 	local details = CreateFrame("EditBox", nil, frame, "InputBoxTemplate") --[[@as EditBox]]
 	details:SetMultiLine(true)
 	details:SetAutoFocus(false)
@@ -503,11 +518,11 @@ local function IssueWindow()
 	local copyLink = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate") --[[@as Button]]
 	copyLink:SetSize(150, 24)
 	copyLink:SetPoint("TOPLEFT", 18, -260)
-	copyLink:SetText(L.ISSUE_COPY_LINK)
+	copyLink:SetText(L["Copy issue link"])
 	local copyReport = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate") --[[@as Button]]
 	copyReport:SetSize(140, 24)
 	copyReport:SetPoint("LEFT", copyLink, "RIGHT", 8, 0)
-	copyReport:SetText(L.ISSUE_COPY_REPORT)
+	copyReport:SetText(L["Copy report"])
 	local inset = CreateFrame("Frame", nil, frame, "InsetFrameTemplate")
 	inset:SetPoint("TOPLEFT", 10, -294)
 	inset:SetPoint("BOTTOMRIGHT", -10, 10)
@@ -526,7 +541,9 @@ local function IssueWindow()
 			Select(self)
 		end
 	end)
-	output:SetScript("OnEditFocusGained", output.HighlightText)
+	output:SetScript("OnEditFocusGained", function(self)
+		self:HighlightText()
+	end)
 	output:SetScript("OnEscapePressed", function()
 		frame:Hide()
 	end)
@@ -537,12 +554,16 @@ local function IssueWindow()
 		SetIssueKind("feature")
 	end)
 	copyLink:SetScript("OnClick", function()
-		hint:SetText(L.ISSUE_LINK_HINT)
+		hint:SetText(
+			L["The link is selected. Press Ctrl+C (Cmd+C on a Mac), then paste into a browser; GitHub opens a filled-in issue."]
+		)
 		RefreshIssue(issueKind, IssueLines())
 		Select(output)
 	end)
 	copyReport:SetScript("OnClick", function()
-		hint:SetText(L.REPORT_HINT)
+		hint:SetText(
+			L["The text is selected. Press Ctrl+C (Cmd+C on a Mac) to copy it, then paste it into your bug report."]
+		)
 		SetSelected(output, Report.Body(issueKind, title:GetText() or "", details:GetText() or "", IssueLines()))
 	end)
 	title:SetScript("OnTextChanged", function()
@@ -571,4 +592,21 @@ function Report.Compose(kind)
 	end
 	frame:Show()
 	Select(issueOutput)
+end
+
+-- Handle the shared report and issue commands before an addon's own slash commands.
+---@param command string
+---@param argument? string
+---@return boolean handled
+function Report.Command(command, argument)
+	if command == "report" then
+		local ok, lines = ns.SafeCall("report lines", ns.ReportLines)
+		Report.Show(Report.Text(ok and lines or { "Report lines failed: " .. tostring(lines) }))
+		return true
+	end
+	if command == "issue" or command == "bug" or command == "feature" then
+		Report.Compose((command == "feature" or argument == "feature") and "feature" or "bug")
+		return true
+	end
+	return false
 end

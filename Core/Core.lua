@@ -1,7 +1,29 @@
 ---@type string, AGFNamespace
 local addonName, ns = ...
+local REPORT_TEXT_HINT = "The text is selected. Press Ctrl+C (Cmd+C on a Mac) to copy it, "
+	.. "then paste it into your bug report."
+local ISSUE_LINK_HINT = "The link is selected. Press Ctrl+C (Cmd+C on a Mac), "
+	.. "then paste into a browser; GitHub opens a filled-in issue."
+local REPORT_PHRASES = {
+	["Adventure Guide report"] = "REPORT_TITLE",
+	[REPORT_TEXT_HINT] = "REPORT_HINT",
+	["Report a bug or request a feature"] = "ISSUE_WINDOW_TITLE",
+	[ISSUE_LINK_HINT] = "ISSUE_LINK_HINT",
+	["Bug"] = "ISSUE_BUG",
+	["Feature request"] = "ISSUE_FEATURE",
+	["Title"] = "ISSUE_TITLE_LABEL",
+	["Bug: "] = "ISSUE_BUG_PREFIX",
+	["Feature request: "] = "ISSUE_FEATURE_PREFIX",
+	["What happened, or what you would like"] = "ISSUE_DETAILS_LABEL",
+	["Copy issue link"] = "ISSUE_COPY_LINK",
+	["Copy report"] = "ISSUE_COPY_REPORT",
+}
+for phrase, key in pairs(REPORT_PHRASES) do
+	ns.L[phrase] = ns.L[key]
+end
 
 local L = ns.L
+ns.ReportTitle = L["Adventure Guide report"]
 ns.TITLE = L.TITLE
 
 -- Account-wide settings (Settings.lua), one key per row on the AddOns page. A missing key
@@ -1075,12 +1097,8 @@ SLASH_ADVENTUREGUIDEFOREVER1 = "/agf"
 SLASH_ADVENTUREGUIDEFOREVER2 = "/adventureguide"
 local function Slash(msg)
 	local command = strtrim(msg or ""):lower()
-	if command == "report" then
-		-- The addon's lines can fail in the very state being reported: the header and caught errors still show.
-		local ok, lines = ns.SafeCall("report lines", ns.ReportLines)
-		ns.Report.Show(ns.Report.Text(ok and lines or { "Report lines failed: " .. tostring(lines) }))
-	elseif command == "issue" or command == "bug" or command == "feature" then
-		ns.Report.Compose(command == "feature" and "feature" or "bug")
+	if ns.Report and ns.Report.Command and ns.Report.Command(command) then
+		return
 	elseif command == "where" then
 		local ok, lines = ns.SafeCall("where lines", ns.WhereLines)
 		ns.Report.Show(
