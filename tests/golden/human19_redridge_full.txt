@@ -1,20 +1,20 @@
 # human19_redridge_full: level 19, side 1, at 1433 0.1580,0.5660
-card | zone:1433 | Redridge Mountains story | 1 ready to hand in, 11 in progress, 2 of them on later laps, 3 quests near your level | - | map 1433
+card | zone:1433 | Redridge Mountains story | 1 ready to hand in, 11 in progress, 2 of them on later laps, 2 quests near your level | - | map 1433
   drop | 116
   step 1 | area:3741:4 | Complete objectives · Hilary's Necklace | 1433 0.2080,0.5410 | quests in progress | 88 yd | 3741/4
   step 2 | area:92:4 | Complete 2 objectives · Redridge Mountains | 1433 0.2390,0.7330 | 2 quests here | 245 yd | 92/4 246/1
-  step 3 | town:1433:1002 | Turn in: A Free Lunch | 1433 0.1018,0.7146 | Opens the next chapter here
+  step 3 | town:1433:1002 | Turn in: A Free Lunch | 1433 0.1037,0.7126 | Opens the next chapter here
   step 4 | area:34:4 | Complete objectives · An Unwelcome Guest | 1433 0.1060,0.4930 | quests in progress | 0 yd | 34/4
   step 5 | town:1433:69 | Visit Lakeshire: Pick up 2 | 1433 0.2564,0.6000 | 2 to pick up
   step 6 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | quests in progress | 0 yd | 125/4
-  step 7 | area:92:6 | Complete 2 objectives · Redridge Mountains | 1433 0.4850,0.4270 | 2 quests here | 109 yd | 92/6 98386/0
+  step 7 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4850,0.4270 | quests in progress | 99 yd | 92/6
   step 8 | area:127:4 | Complete objectives · Selling Fish | 1433 0.5300,0.5740 | quests in progress | 97 yd | 127/4
   step 9 | area:20:4 | Complete 2 objectives · Redridge Mountains | 1433 0.6130,0.5330 | 2 quests here | 100 yd | 20/4 169/4
   step 10 | area:91:4 | Complete objectives · Solomon's Law | 1433 0.7390,0.4940 | quests in progress | 99 yd | 91/4
 card (chosen) | carry | Quests in your log | 5 ready to hand in, 11 in progress | - | map 1433
   step 1 | area:3741:4 | Complete objectives · Hilary's Necklace | 1433 0.2080,0.5410 | quests in progress | 88 yd | 3741/4
   step 2 | area:92:4 | Complete 2 objectives · Redridge Mountains | 1433 0.2390,0.7330 | 2 quests here | 245 yd | 92/4 246/1
-  step 3 | town:1433:1002 | Turn in: A Free Lunch | 1433 0.1018,0.7146 | Opens the next chapter here
+  step 3 | town:1433:1002 | Turn in: A Free Lunch | 1433 0.1037,0.7126 | Opens the next chapter here
   step 4 | area:34:4 | Complete objectives · An Unwelcome Guest | 1433 0.1060,0.4930 | quests in progress | 0 yd | 34/4
   step 5 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | quests in progress | 0 yd | 125/4
   step 6 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4850,0.4270 | quests in progress | 99 yd | 92/6
@@ -22,23 +22,21 @@ card (chosen) | carry | Quests in your log | 5 ready to hand in, 11 in progress 
   step 8 | area:20:4 | Complete 2 objectives · Redridge Mountains | 1433 0.6130,0.5330 | 2 quests here | 100 yd | 20/4 169/4
   step 9 | area:91:4 | Complete objectives · Solomon's Law | 1433 0.7390,0.4940 | quests in progress | 99 yd | 91/4
   step 10 | area:180:4 | Complete objectives · Wanted: Lieutenant Fangore | 1433 0.7510,0.3710 | quests in progress | 0 yd | 180/4
-card | zone:1436 | Head to Westfall | 18 quests near your level | Stormwind City needs hands | map 1453
-  step 1 | town:1453:0 | Visit Stormwind City: Pick up 3, turn in 2 | 1453 0.8028,0.7007 | Opens the next chapter here
+card | zone:1436 | Head to Westfall | 9 quests near your level | - | map 1436
+  step 1 | town:1436:916 | Pick up: Poor Old Blanchy | 1436 0.5992,0.1942 | near your level
   step 2 | town:1436:108 | Visit Sentinel Hill: Pick up 1, turn in 1 | 1436 0.5633,0.4752 | Opens the next chapter here
 card | zone:1431 | Head to Duskwood | 4 quests near your level | - | map 1431
   step 1 | town:1431:42 | Pick up: Raven Hill | 1431 0.7534,0.4875 | near your level
-card | zone:1439 | Head to Darkshore | 20 quests near your level | - | map 1453
-  step 1 | town:1453:0 | Visit Stormwind City: Pick up 2, turn in 2 | 1453 0.6917,0.8272 | Opens the next chapter here
-  step 2 | town:1439:442 | Pick up: Cave Mushrooms | 1439 0.3732,0.4364 | near your level
+card | zone:1439 | Head to Darkshore | 18 quests near your level | - | map 1453
+  step 1 | town:1453:0 | Visit Stormwind City: Pick up 1, turn in 2 | 1453 0.6917,0.8272 | Opens the next chapter here
+  step 2 | town:1439:442 | Visit Auberdine: Pick up 2 | 1439 0.3732,0.4364 | 2 to pick up
 card | zone:1413 | Head to The Barrens | 9 quests near your level | - | map 1413
   step 1 | town:1413:392 | Pick up: Raptor Horns | 1413 0.6237,0.3762 | near your level
 card | zone:1440 | Head to Ashenvale | 6 quests near your level | - | map 1440
   step 1 | town:1440:414 | Pick up: The Ancient Statuette | 1440 0.1479,0.3129 | near your level
-card | zone:1442 | Head to Stonetalon Mountains | 2 quests near your level | - | map 1442
-  step 1 | town:1442:1076 | Pick up: Goblin Lockpicks | 1442 0.5822,0.5174 | near your level
+card | zone:1442 | Head to Stonetalon Mountains | 1 quest near your level | - | map 1442
+  step 1 | town:1442:1076 | Pick up: Super Reaper 6000 | 1442 0.5899,0.6260 | near your level
 card | zone:1437 | Head to Wetlands | 5 quests near your level | - | map 1432
   step 1 | town:1432:144 | Pick up: Report to Mountaineer Rockgar | 1432 0.3263,0.4974 | near your level
 card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
   step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level
-card | zone:1434 | Head to Stranglethorn Vale | 3 quests near your level | - | map 1434
-  step 1 | town:1434:35 | Pick up: Tip the Scales - Keefer's Angelfish | 1434 0.2773,0.7692 | near your level

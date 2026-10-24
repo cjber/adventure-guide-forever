@@ -1,24 +1,24 @@
 # human18_westfall: level 18, side 1, at 1436 0.5600,0.4700
 card (chosen) | zone:1436 | Westfall story | Chapter 1 of 7 | A chain begins with Gryan Stoutmantle | map 1436
-  step 1 | town:1436:108 | Visit Sentinel Hill: Pick up 7 | 1436 0.5633,0.4752 | Begins a new story
-  step 2 | town:1436:107 | Visit Saldean's Farm: Pick up 3 | 1436 0.5604,0.3123 | 3 to pick up
+  step 1 | town:1436:108 | Visit Sentinel Hill: Pick up 3 | 1436 0.5633,0.4752 | Begins a new story
+  step 2 | town:1436:107 | Visit Saldean's Farm: Pick up 2 | 1436 0.5604,0.3123 | 2 to pick up
   step 3 | area:92909:5 | Complete objectives · Harvesting the Harvesters | 1436 0.5530,0.3370 | after you pick it up | 84 yd | 92909/5
-  step 4 | area:92909:4 | Complete 2 objectives · Westfall | 1436 0.5200,0.2340 | 2 quests here | 98 yd | 92909/4 92911/4
-  step 5 | area:92745:0 | Complete objectives · The State of the Mines | 1436 0.4530,0.2050 | after you pick it up | 65 yd | 92745/0
-  step 6 | town:1436:916 | Pick up: Poor Old Blanchy | 1436 0.5992,0.1942 | near your level
-  step 7 | area:151:4 | Complete objectives · Poor Old Blanchy | 1436 0.5740,0.1730 | after you pick it up | 95 yd | 151/4
-  step 8 | town:1436:916:2 | Turn in: Poor Old Blanchy | 1436 0.5992,0.1942 | once it's done
-  step 9 | area:9:0 | Complete objectives · The Killing Fields | 1436 0.3810,0.5080 | after you pick it up | 99 yd | 9/0
-  step 10 | area:92745:1 | Complete objectives · The State of the Mines | 1436 0.3030,0.4760 | after you pick it up | 86 yd | 92745/1
+  step 4 | area:92909:4 | Complete objectives · Harvesting the Harvesters | 1436 0.5200,0.2340 | after you pick it up | 98 yd | 92909/4
+  step 5 | town:1436:916 | Pick up: Poor Old Blanchy | 1436 0.5992,0.1942 | near your level
+  step 6 | area:151:4 | Complete objectives · Poor Old Blanchy | 1436 0.5740,0.1730 | after you pick it up | 95 yd | 151/4
+  step 7 | town:1436:916:2 | Turn in: Poor Old Blanchy | 1436 0.5992,0.1942 | once it's done
+  step 8 | area:9:0 | Complete objectives · The Killing Fields | 1436 0.3810,0.5080 | after you pick it up | 99 yd | 9/0
+  step 9 | area:153:4 | Complete objectives · Red Leather Bandanas | 1436 0.4390,0.6840 | after you pick it up | 98 yd | 153/4
+  step 10 | town:1436:921 | Pick up: Of Mice and Milk | 1436 0.3251,0.7178 | near your level
 card | zone:1433 | Head to Redridge Mountains | 9 quests near your level | - | map 1433
-  step 1 | town:1433:1002 | Pick up: Encroaching Gnolls | 1433 0.1018,0.7146 | near your level
+  step 1 | town:1433:1002 | Pick up: Encroaching Gnolls | 1433 0.1037,0.7126 | near your level
   step 2 | town:1433:69 | Visit Lakeshire: Pick up 8 | 1433 0.1759,0.4384 | 8 to pick up
 card | zone:1432 | Head to Loch Modan | 14 quests near your level | - | map 1432
-  step 1 | town:1432:923 | Pick up: Banner of the Fallen | 1432 0.3172,0.8654 | near your level
+  step 1 | town:1432:923 | Pick up: Banner of the Fallen | 1432 0.3177,0.8631 | near your level
   step 2 | town:1432:144 | Visit Thelsamar: Pick up 3 | 1432 0.3263,0.4974 | 3 to pick up
   step 3 | town:1432:838 | Visit North Gate Pass: Pick up 2 | 1432 0.2476,0.1840 | 2 to pick up
   step 4 | town:1432:146 | Pick up: A Dark Threat Looms | 1432 0.4605,0.1361 | near your level
-  step 5 | town:1432:556 | Visit The Loch: Pick up 2 | 1432 0.4561,0.4306 | 2 to pick up
+  step 5 | town:1432:556 | Visit The Loch: Pick up 2 | 1432 0.4806,0.3970 | 2 to pick up
   step 6 | town:1432:142 | Visit Ironband's Excavation Site: Pick up 2 | 1432 0.6490,0.6666 | 2 to pick up
   step 7 | town:1432:147 | Visit The Farstrider Lodge: Pick up 3 | 1432 0.8347,0.6546 | 3 to pick up
 card | zone:1413 | Head to The Barrens | 9 quests near your level | Ratchet needs hands | map 1413
@@ -28,9 +28,9 @@ card | zone:1413 | Head to The Barrens | 9 quests near your level | Ratchet need
 card | zone:1431 | Head to Duskwood | 2 quests near your level | - | map 1431
   step 1 | town:1431:94 | Pick up: Jitters' Growling Gut | 1431 0.1838,0.5637 | near your level
   step 2 | town:1431:42 | Pick up: Raven Hill | 1431 0.7534,0.4875 | near your level
-card | zone:1439 | Head to Darkshore | 22 quests near your level | 2 quests will soon turn grey | map 1453
-  step 1 | town:1453:0 | Visit Stormwind City: Pick up 2 | 1453 0.5774,0.4786 | 2 to pick up
-  step 2 | town:1439:442 | Visit Auberdine: Pick up 14 | 1439 0.3662,0.4559 | 14 to pick up
+card | zone:1439 | Head to Darkshore | 20 quests near your level | 2 quests will soon turn grey | map 1453
+  step 1 | town:1453:0 | Pick up: Business in Auberdine | 1453 0.5940,0.3426 | near your level
+  step 2 | town:1439:442 | Visit Auberdine: Pick up 13 | 1439 0.3662,0.4559 | 13 to pick up
   step 3 | town:1439:448 | Visit Grove of the Ancients: Pick up 2 | 1439 0.4440,0.7643 | 2 to pick up
   step 4 | town:1439:449 | Visit The Master's Glaive: Pick up 3 | 1439 0.3864,0.8733 | 3 to pick up
   step 5 | town:1439:443 | Pick up: Gyromast's Retrieval | 1439 0.5666,0.1348 | near your level
@@ -39,14 +39,10 @@ card | zone:1440 | Head to Ashenvale | 3 quests near your level | Astranaar need
 card | zone:1426 | Head to Dun Morogh | 2 quests near your level | 2 quests will soon turn grey | map 1426
   step 1 | town:1426:134 | Pick up: Farsen's Watch | 1426 0.6487,0.5847 | near your level
   step 2 | town:1426:1537 | Pick up: A Visitor to Dun Morogh | 1426 0.5044,0.4909 | near your level
-card | zone:1442 | Head to Stonetalon Mountains | 1 quest near your level | - | map 1442
-  step 1 | town:1442:1076 | Pick up: Goblin Lockpicks | 1442 0.5822,0.5174 | near your level
 card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
   step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level
-card | zone:1434 | Head to Stranglethorn Vale | 3 quests near your level | Booty Bay needs hands | map 1434
-  step 1 | town:1434:35 | Visit Booty Bay: Pick up 3 | 1434 0.2773,0.7692 | 3 to pick up
-card | dungeon:36 | Deadmines | 6 quests for this dungeon | - | map 1436
-  step 1 | town:1436:108 | Visit Sentinel Hill: Pick up 2 | 1436 0.5633,0.4752 | 2 to pick up
+card | dungeon:36 | Deadmines | 5 quests for this dungeon | - | map 1436
+  step 1 | town:1436:108 | Pick up: The Defias Brotherhood | 1436 0.5633,0.4752 | near your level
   step 2 | town:1453:0 | Visit Stormwind City: Pick up 3 | 1453 0.7031,0.4082 | 3 to pick up
   step 3 | town:1455:0 | Pick up: Speak with Shoni | 1455 0.6918,0.5055 | near your level
 card | dungeon:43 | Wailing Caverns | 3 quests for this dungeon | - | map 1413
