@@ -429,7 +429,7 @@ L["UNEXPLORED"] = "你還沒見過%s"
 L["UNLISTED"] = "這片土地有指南尚不知道的故事；請留意任務給予者頭上的「!」。"
 L["UPDATED_TO"] = "已更新到%s。%s"
 -- mt
-L["WHATS_NEW"] = "當日誌快滿時，最佳化路線保持不變。"
+L["WHATS_NEW"] = "報告與問題文字在取得焦點時會被選取。"
 L["WHY_ALLIANCE"] = "僅限聯盟"
 L["WHY_BREADCRUMB"] = "僅在你接受%s之前"
 L["WHY_CHOSE"] = "你改選了%s"
