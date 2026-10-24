@@ -73,6 +73,7 @@ Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-
 |---|---|
 | `/agf`, `/adventureguide` | Open the guide on the world map |
 | `/agf report` | Show a report to copy into a bug report: versions, your current stop and why, recent errors |
+| `/agf issue` | Open a ready-made GitHub issue link to report a bug or request a feature |
 | `/agf where` | Show the stop the guide is on, for a wrong-stop report |
 | `/agf travel` | Print guidance state for a travel report |
 | `/agf tracker` | Print the tracker anchors for an overlap report |

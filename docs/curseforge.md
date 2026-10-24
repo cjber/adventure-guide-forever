@@ -54,7 +54,7 @@ Use `/agf stats` to see local quest turn-ins and how many addon users report act
 
 Translated into German, French, Spanish, Brazilian Portuguese, Russian, Korean and Chinese (machine translated; corrections welcome through the [translation form](https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml)).
 
-For a bug report, paste what `/agf report` shows. For a wrong stop, paste `/agf where`. For a missing quest, add `/agf audit`.
+For a bug report, paste what `/agf report` shows. For a wrong stop, paste `/agf where`. For a missing quest, add `/agf audit`. To report a bug or request a feature, `/agf issue` opens a ready-made GitHub issue link.
 
 <!-- forever-family:start -->
 
