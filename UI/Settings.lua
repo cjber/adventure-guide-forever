@@ -189,6 +189,49 @@ function ns.RegisterSettings()
 					subcategory,
 					Checkbox(subcategory, "whatsNew", ns.L.SETTING_WHATS_NEW, ns.L.SETTING_WHATS_NEW_TOOLTIP)
 				)
+				Settings.RegisterInitializer(
+					subcategory,
+					Checkbox(subcategory, "microButton", ns.L.SETTING_MICRO_BUTTON, ns.L.MICRO_BUTTON_TOOLTIP)
+				)
+				Settings.RegisterInitializer(
+					subcategory,
+					Checkbox(
+						subcategory,
+						"replaceMicroButton",
+						ns.L.SETTING_REPLACE_MICRO_BUTTON,
+						ns.L.MICRO_BUTTON_TOOLTIP
+					)
+				)
+				local setting = Settings.RegisterAddOnSetting(
+					subcategory,
+					"AdventureGuideForever_microButtonPlacement",
+					"microButtonPlacement",
+					AdventureGuideForeverDB,
+					Settings.VarType.String,
+					ns.L.SETTING_MICRO_BUTTON_PLACEMENT,
+					ns.DEFAULTS.microButtonPlacement
+				)
+				setting:SetValueChangedCallback(function(_, value)
+					ns.SetSetting("microButtonPlacement", value)
+				end)
+				local options = Settings.CreateControlTextContainer()
+				options:Add("beforeGameMenu", ns.L.SETTING_MICRO_BUTTON_BEFORE)
+				options:Add("afterCollections", ns.L.SETTING_MICRO_BUTTON_AFTER)
+				Settings.RegisterInitializer(
+					subcategory,
+					Settings.CreateDropdownInitializer(setting, function()
+						return options:GetData()
+					end)
+				)
+				-- The note under the micro menu rows: a plain element row, so it reads as Blizzard's own
+				-- small print rather than a control, and the keybinding path is visible without a tooltip.
+				Settings.RegisterInitializer(
+					subcategory,
+					Settings.CreateElementInitializer(
+						"SettingsListElementTemplate",
+						{ name = ns.L.MICRO_BUTTON_BINDING_NOTE }
+					)
+				)
 			end,
 		},
 	}

@@ -464,3 +464,13 @@ L["WHY_REP_BELOW"] = "%s 미만일 때만 (%s)"
 L["WHY_REP_MIN"] = "%s 필요 (%s)"
 L["WHY_SKILL"] = "%s %d 필요"
 L["YOUR_CHOICE"] = "선택"
+-- mt: Micro-menu button settings.
+L["SETTING_MICRO_BUTTON"] = "미니 메뉴에 Adventure Guide 표시" -- mt
+L["SETTING_REPLACE_MICRO_BUTTON"] = "Blizzard Adventure Guide 대체" -- mt
+L["SETTING_MICRO_BUTTON_PLACEMENT"] = "위치" -- mt
+L["SETTING_MICRO_BUTTON_BEFORE"] = "게임 메뉴 앞" -- mt
+L["SETTING_MICRO_BUTTON_AFTER"] = "수집품 뒤" -- mt
+L["MICRO_BUTTON_BINDING_NOTE"] = "키 설정 > 애드온에서 두 버튼을 지정할 수도 있습니다." -- mt
+L["MICRO_BUTTON_TOOLTIP"] = "미니 메뉴에 Adventure Guide 버튼을 추가합니다." -- mt
+L["MICRO_BUTTON_TITLE"] = "Adventure Guide" -- mt
+L["MICRO_BUTTON_SUBTEXT"] = "레벨링 안내서를 열려면 클릭하세요" -- mt

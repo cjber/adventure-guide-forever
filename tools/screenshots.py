@@ -29,6 +29,7 @@ import io
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -634,6 +635,7 @@ def render():
 def main():
     for path in render():
         print(path.relative_to(ROOT))
+    render_micro_menu_scenes()
     # What each image was drawn from, for CI's stale-screenshot check (tools/check_screenshots.py). Every image was
     # just drawn, so one whose pixels came out the same is recorded too, but only with the pinned Pillow: another
     # version's bytes are not the ones to keep.
@@ -641,6 +643,18 @@ def main():
     from forever_tools import screens
 
     screens.record(OUT, check_screenshots.SCENES, force=importlib.metadata.version("pillow") == PILLOW)
+
+
+def render_micro_menu_scenes():
+    renderer = ROOT.parent / "forever-core/docs/handoff/micro-menu-buttons/render.py"
+    with tempfile.TemporaryDirectory(prefix="adventure-guide-micro-menu-") as directory:
+        subprocess.run([sys.executable, str(renderer)], cwd=directory, check=True)
+        for scene in (
+            "micro-menu-adventure-guide.png",
+            "micro-menu-adventure-guide-additive.png",
+            "micro-menu-options.png",
+        ):
+            shutil.copy2(Path(directory) / scene, OUT / scene)
 
 
 if __name__ == "__main__":

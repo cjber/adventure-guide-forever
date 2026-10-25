@@ -63,6 +63,14 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 <p align="center">Right-click a dungeon card for its bosses and loot. Hover a drop for the game's item tooltip.</p>
 
+## Micro menu button
+
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/micro-menu-adventure-guide.png" width="640" alt="Adventure Guide button replacing Blizzard's tome"></p>
+
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/micro-menu-adventure-guide-additive.png" width="640" alt="Adventure Guide button alongside Blizzard's tome"></p>
+
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/micro-menu-options.png" width="500" alt="Micro menu button settings"></p>
+
 ## Install
 
 Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-forever) or [Wago Addons](https://addons.wago.io/addons/adventure-guide-forever), or download the zip from [Releases](https://github.com/cjber/adventure-guide-forever/releases) and extract it into `_classic_beta_/Interface/AddOns/`, so you end up with `AddOns/AdventureGuideForever/AdventureGuideForever.toc`. After an update, `/reload`.

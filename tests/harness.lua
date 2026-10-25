@@ -277,6 +277,7 @@ function harness.load(options)
 		"SetToplevel",
 		"StartMoving",
 		"StopMovingOrSizing",
+		"Layout",
 	}) do
 		Methods[name] = noop
 	end
@@ -287,6 +288,7 @@ function harness.load(options)
 		SetFrameStrata = "frameStrata",
 		SetMovable = "movable",
 		SetPushedAtlas = "pushedAtlas",
+		SetDisabledAtlas = "disabledAtlas",
 		SetButtonState = "buttonState",
 		SetTextColor = "textColor",
 		SetClipsChildren = "clipsChildren",
@@ -1046,6 +1048,7 @@ function harness.load(options)
 	end
 
 	local STOCK = {
+		MainMenuBarMicroButton = noop,
 		-- Mainline/SharedUIPanelTemplates.xml:1587 and .lua:1763: the highlight is the normal art, or the pushed art
 		-- while the mouse is down.
 		AlphaHighlightButtonTemplate = function(frame)
@@ -1335,8 +1338,12 @@ function harness.load(options)
 		file:close()
 		for _, ui in ipairs(tree.children) do
 			for _, element in ipairs(ui.children) do
-				assert(element.attrs.virtual == "true", path .. ": only virtual templates are supported")
-				templates[element.attrs.name] = element
+				if element.tag == "Binding" then
+					assert(element.attrs.name and element.attrs.default, path .. ": binding needs a name and default")
+				else
+					assert(element.attrs.virtual == "true", path .. ": only virtual templates are supported")
+					templates[element.attrs.name] = element
+				end
 			end
 		end
 	end
@@ -1356,6 +1363,11 @@ function harness.load(options)
 		end
 		return frame
 	end
+	G.MicroMenu = NewRegion("Frame", "MicroMenu")
+	G.MainMenuMicroButton = NewRegion("Button", "MainMenuMicroButton", G.MicroMenu)
+	G.CollectionsMicroButton = NewRegion("Button", "CollectionsMicroButton", G.MicroMenu)
+	G.AdventureGuideMicroButton = NewRegion("Button", "AdventureGuideMicroButton", G.MicroMenu)
+	G.UpdateMicroButtons = noop
 
 	local timers = {}
 	G.C_Timer = {
@@ -2159,6 +2171,14 @@ function harness.load(options)
 	-- UIParent.lua GetRelativeDifficultyColor's bands, with QuestDifficultyColors' values; grey is Model.IsGray's.
 	G.NORMAL_FONT_COLOR = { r = 1, g = 0.82, b = 0 }
 	G.GRAY_FONT_COLOR = G.CreateColor(0.5, 0.5, 0.5)
+	G.GameTooltip.SetText = noop
+	G.GameTooltip.AddLine = noop
+	G.NORMAL_FONT_COLOR.GetRGB = function()
+		return 1, 0.82, 0
+	end
+	G.GRAY_FONT_COLOR.GetRGB = function()
+		return 0.5, 0.5, 0.5
+	end
 	G.GetQuestDifficultyColor = function(level)
 		local difference = level - player.level
 		if difference >= 5 then
@@ -2340,7 +2360,7 @@ function harness.load(options)
 	end
 	G.MinimalSliderWithSteppersMixin = { Label = { Right = 1 } }
 	G.Settings = {
-		VarType = { Boolean = "boolean", Number = "number" },
+		VarType = { Boolean = "boolean", Number = "number", String = "string" },
 		RegisterVerticalLayoutCategory = function(name)
 			return Category(name)
 		end,
@@ -2361,6 +2381,12 @@ function harness.load(options)
 				storage[key] = default
 			end
 			local setting = { key = key }
+			function setting:SetValue(value)
+				storage[key] = value
+				if self.valueChanged then
+					self.valueChanged(self, value)
+				end
+			end
 			function setting:SetValueChangedCallback(callback)
 				self.valueChanged = callback
 			end
@@ -2420,6 +2446,23 @@ function harness.load(options)
 					self.enabled = predicate
 				end,
 			}
+		end,
+		CreateControlTextContainer = function()
+			local container = { values = {} }
+			function container:Add(value, label)
+				self.values[#self.values + 1] = { value = value, label = label }
+			end
+			function container:GetData()
+				return self.values
+			end
+			return container
+		end,
+		CreateDropdownInitializer = function(setting, values, tooltip)
+			return { kind = "dropdown", key = setting.key, values = values(), tooltip = tooltip }
+		end,
+		-- A plain list element (descriptive text, no control): Settings.CreateElementInitializer's template + data.
+		CreateElementInitializer = function(template, data)
+			return { kind = "element", template = template, name = data and data.name }
 		end,
 		-- The secure delegate's path: the row as it was when registered, in order.
 		RegisterInitializer = function(category, initializer)

@@ -53,6 +53,9 @@ IMAGES = {
     "menu.png": ("menu", "tracker"),
     "loot.png": ("loot_menu",),
     "story_complete.png": ("story_complete",),
+    "micro-menu-adventure-guide.png": ("menu", "tracker"),
+    "micro-menu-adventure-guide-additive.png": ("menu", "tracker"),
+    "micro-menu-options.png": ("menu", "tracker"),
     "demo.gif": ("journeys", "panel", "map"),
 }
 

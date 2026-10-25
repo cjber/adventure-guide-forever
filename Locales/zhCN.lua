@@ -449,3 +449,13 @@ L["WHY_REP_BELOW"] = "仅在低于%s时（%s）"
 L["WHY_REP_MIN"] = "需要%s（%s）"
 L["WHY_SKILL"] = "需要%s %d"
 L["YOUR_CHOICE"] = "你的选择"
+-- mt: Micro-menu button settings.
+L["SETTING_MICRO_BUTTON"] = "在微菜单中显示 Adventure Guide" -- mt
+L["SETTING_REPLACE_MICRO_BUTTON"] = "替换暴雪的 Adventure Guide" -- mt
+L["SETTING_MICRO_BUTTON_PLACEMENT"] = "位置" -- mt
+L["SETTING_MICRO_BUTTON_BEFORE"] = "游戏菜单之前" -- mt
+L["SETTING_MICRO_BUTTON_AFTER"] = "收藏之后" -- mt
+L["MICRO_BUTTON_BINDING_NOTE"] = "也可以在按键设置 > 插件中绑定这两个按钮。" -- mt
+L["MICRO_BUTTON_TOOLTIP"] = "在微菜单中添加 Adventure Guide。" -- mt
+L["MICRO_BUTTON_TITLE"] = "Adventure Guide" -- mt
+L["MICRO_BUTTON_SUBTEXT"] = "点击打开升级指南" -- mt

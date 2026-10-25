@@ -1,5 +1,6 @@
 ---@type string, AGFNamespace
 local addonName, ns = ...
+-- luacheck: globals AdventureGuideMicroButton
 local REPORT_TEXT_HINT = "The text is selected. Press Ctrl+C (Cmd+C on a Mac) to copy it, "
 	.. "then paste it into your bug report."
 local ISSUE_LINK_HINT = "The link is selected. Press Ctrl+C (Cmd+C on a Mac), "
@@ -28,7 +29,7 @@ ns.TITLE = L.TITLE
 
 -- Account-wide settings (Settings.lua), one key per row on the AddOns page. A missing key
 -- always reads as its default here, so an old save file and a new option agree (WFA-14).
----@type table<string, boolean|number>
+---@type table<string, boolean|number|string>
 local DEFAULTS = {
 	showTracker = true,
 	restedxpGuide = true,
@@ -64,6 +65,9 @@ local DEFAULTS = {
 	polestarAside = true,
 	-- In a party, steps for quests the party shares count as nearer, and the quest IDs go to the party (Party.lua).
 	partyQuests = true,
+	microButton = true,
+	replaceMicroButton = true,
+	microButtonPlacement = "beforeGameMenu",
 	-- Before a giver's window offers a quest that closes another for good, say which in chat (Closes.lua).
 	warnClosing = true,
 }
@@ -339,6 +343,14 @@ function ns.SetSetting(key, value)
 	end
 	if key == "statsShare" and ns.Stats then
 		ns.Stats.SetEnabled(value == true)
+	end
+	if key == "microButton" or key == "replaceMicroButton" or key == "microButtonPlacement" then
+		if key == "replaceMicroButton" and AdventureGuideMicroButton then
+			AdventureGuideMicroButton:SetShown(value ~= true)
+		end
+		if ns.MicroButton then
+			ns.MicroButton.Refresh()
+		end
 	end
 	-- Wandering from now: what Go started stops, as the player's Stop would.
 	if key == "wanderer" and value then
@@ -1174,6 +1186,37 @@ EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	end)
 	ns.RegisterSettings()
 	EventUtil.ContinueAfterAllEvents(ns.WhatsNew, "PLAYER_LOGIN")
+	EventUtil.ContinueAfterAllEvents(function()
+		if AdventureGuideMicroButton then
+			AdventureGuideMicroButton:SetShown(ns.Setting("replaceMicroButton") ~= true)
+			AdventureGuideMicroButton:HookScript("OnClick", function()
+				if ns.Setting("replaceMicroButton") == true and ns.OpenPanel then
+					ns.OpenPanel()
+				end
+			end)
+		end
+		ns.MicroButton.Create({
+			name = "AdventureGuideForeverMicroButton",
+			atlas = "AdventureGuide",
+			icon = "Interface\\Icons\\inv_misc_map_01",
+			title = ns.L.TITLE,
+			binding = "Alt-G",
+			subtext = ns.L.MICRO_BUTTON_SUBTEXT,
+			slot = "beforeGameMenu",
+			getSlot = function()
+				return ns.Setting("microButtonPlacement")
+			end,
+			host = ns,
+			getShown = function()
+				return ns.Setting("microButton") == true
+			end,
+			onClick = function()
+				if ns.OpenPanel then
+					ns.OpenPanel()
+				end
+			end,
+		})
+	end, "PLAYER_LOGIN")
 end)
 
 -- After an update, one chat line says what changed. Never on a first install (no version seen yet, which is also

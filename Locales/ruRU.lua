@@ -497,3 +497,14 @@ L["WHY_REP_BELOW"] = "Только пока ниже «%s» у: %s"
 L["WHY_REP_MIN"] = "Требуется «%s» у: %s"
 L["WHY_SKILL"] = "Требуется %s %d"
 L["YOUR_CHOICE"] = "Ваш выбор"
+-- mt: Micro-menu button settings.
+L["SETTING_MICRO_BUTTON"] = "Показывать Adventure Guide в микроменю" -- mt
+L["SETTING_REPLACE_MICRO_BUTTON"] = "Заменить Adventure Guide Blizzard" -- mt
+L["SETTING_MICRO_BUTTON_PLACEMENT"] = "Положение" -- mt
+L["SETTING_MICRO_BUTTON_BEFORE"] = "Перед меню игры" -- mt
+L["SETTING_MICRO_BUTTON_AFTER"] = "После коллекций" -- mt
+L["MICRO_BUTTON_BINDING_NOTE"] =
+	"Обе кнопки также можно назначить в настройках клавиш > Аддоны." -- mt
+L["MICRO_BUTTON_TOOLTIP"] = "Добавляет Adventure Guide в микроменю." -- mt
+L["MICRO_BUTTON_TITLE"] = "Adventure Guide" -- mt
+L["MICRO_BUTTON_SUBTEXT"] = "Нажмите, чтобы открыть руководство прокачки" -- mt
