@@ -12,7 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-- Add a configurable Adventure Guide micro-menu button, optional tome replacement, placement choices and Alt-G binding.
+## [0.22.7] - 2026-10-25
+
+- **An Adventure Guide button now sits on the micro menu bar.** It opens the guide with a click or Alt-G, can take over Blizzard's own tome so the old
+  button opens this guide, and follows the placement choice in the addon's settings.
 
 ## [0.22.6] - 2026-10-24
 

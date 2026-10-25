@@ -440,7 +440,7 @@ L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
 -- mt
-L["WHATS_NEW"] = "El texto del informe y de la incidencia se selecciona al enfocarlo."
+L["WHATS_NEW"] = "El botón Adventure Guide ahora está en la barra de micromenú." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
