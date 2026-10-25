@@ -320,7 +320,11 @@ do
 	-- Every row goes in through the secure delegate; none from addon code, which taints the search. The rows are
 	-- grouped into subcategories with a short index page, so no page grows tall.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 27, "23 rows and 4 index buttons, all through Settings.RegisterInitializer")
+	equal(
+		#h.settings,
+		31,
+		"25 settings rows, the keybinding note and 5 index buttons, all through Settings.RegisterInitializer"
+	)
 	local L = h.ns.L
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
@@ -336,7 +340,7 @@ do
 	)
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_INTERFACE] or {}, " "),
-		"statsShare whatsNew",
+		"statsShare whatsNew microButton replaceMicroButton microButtonPlacement",
 		"Interface holds the activity sharing and update rows; the suggestions setting is on the Forever addons page"
 	)
 	-- The index page's buttons are on the addon's own category, one per group, in index order, and open its subpage.

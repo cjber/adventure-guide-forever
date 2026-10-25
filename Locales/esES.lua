@@ -460,3 +460,13 @@ L["WHY_REP_BELOW"] = "Solo mientras estés por debajo de %s con %s"
 L["WHY_REP_MIN"] = "Requiere %s con %s"
 L["WHY_SKILL"] = "Requiere %s %d"
 L["YOUR_CHOICE"] = "Tu elección"
+-- mt: Micro-menu button settings.
+L["SETTING_MICRO_BUTTON"] = "Mostrar Adventure Guide en el menú micro" -- mt
+L["SETTING_REPLACE_MICRO_BUTTON"] = "Reemplazar Adventure Guide de Blizzard" -- mt
+L["SETTING_MICRO_BUTTON_PLACEMENT"] = "Posición" -- mt
+L["SETTING_MICRO_BUTTON_BEFORE"] = "Antes del menú del juego" -- mt
+L["SETTING_MICRO_BUTTON_AFTER"] = "Después de colecciones" -- mt
+L["MICRO_BUTTON_BINDING_NOTE"] = "También puedes asignar ambos botones en Teclas > AddOns." -- mt
+L["MICRO_BUTTON_TOOLTIP"] = "Añade Adventure Guide al menú micro." -- mt
+L["MICRO_BUTTON_TITLE"] = "Adventure Guide" -- mt
+L["MICRO_BUTTON_SUBTEXT"] = "Haz clic para abrir la guía de leveo" -- mt

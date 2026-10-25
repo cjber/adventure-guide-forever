@@ -458,3 +458,13 @@ L["WHY_REP_BELOW"] = "Só enquanto abaixo de %s com %s"
 L["WHY_REP_MIN"] = "Requer %s com %s"
 L["WHY_SKILL"] = "Requer %s %d"
 L["YOUR_CHOICE"] = "Sua escolha"
+-- mt: Micro-menu button settings.
+L["SETTING_MICRO_BUTTON"] = "Mostrar Adventure Guide no micro menu" -- mt
+L["SETTING_REPLACE_MICRO_BUTTON"] = "Substituir Adventure Guide da Blizzard" -- mt
+L["SETTING_MICRO_BUTTON_PLACEMENT"] = "Posição" -- mt
+L["SETTING_MICRO_BUTTON_BEFORE"] = "Antes do Menu do Jogo" -- mt
+L["SETTING_MICRO_BUTTON_AFTER"] = "Depois de Coleções" -- mt
+L["MICRO_BUTTON_BINDING_NOTE"] = "Os dois botões também podem ser vinculados em Teclas > AddOns." -- mt
+L["MICRO_BUTTON_TOOLTIP"] = "Adiciona Adventure Guide ao micro menu." -- mt
+L["MICRO_BUTTON_TITLE"] = "Adventure Guide" -- mt
+L["MICRO_BUTTON_SUBTEXT"] = "Clique para abrir o guia de nivelamento" -- mt

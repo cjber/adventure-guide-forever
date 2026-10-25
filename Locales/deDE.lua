@@ -461,3 +461,13 @@ L["WHY_REP_BELOW"] = "Nur solange unter %s bei %s"
 L["WHY_REP_MIN"] = "Benötigt %s bei %s"
 L["WHY_SKILL"] = "Benötigt %s %d"
 L["YOUR_CHOICE"] = "Eure Wahl"
+-- mt: Micro-menu button settings.
+L["SETTING_MICRO_BUTTON"] = "Adventure Guide im Mikromenü anzeigen" -- mt
+L["SETTING_REPLACE_MICRO_BUTTON"] = "Blizzards Adventure Guide ersetzen" -- mt
+L["SETTING_MICRO_BUTTON_PLACEMENT"] = "Position" -- mt
+L["SETTING_MICRO_BUTTON_BEFORE"] = "Vor dem Spielmenü" -- mt
+L["SETTING_MICRO_BUTTON_AFTER"] = "Nach Sammlungen" -- mt
+L["MICRO_BUTTON_BINDING_NOTE"] = "Beide Schaltflächen können auch unter Tastaturbelegung > AddOns belegt werden." -- mt
+L["MICRO_BUTTON_TOOLTIP"] = "Fügt Adventure Guide dem Mikromenü hinzu." -- mt
+L["MICRO_BUTTON_TITLE"] = "Adventure Guide" -- mt
+L["MICRO_BUTTON_SUBTEXT"] = "Klicken, um den Leveling-Guide zu öffnen" -- mt

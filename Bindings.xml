@@ -1,3 +1,3 @@
 <Bindings>
-	<!-- Kept empty because an already-running client may still request this file on reload. -->
+	<Binding name="CLICK AdventureGuideForeverMicroButton:LeftButton" header="BINDING_HEADER_ADVENTUREGUIDEFOREVER" default="ALT-G" category="ADDONS"/>
 </Bindings>

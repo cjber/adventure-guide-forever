@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- Add a configurable Adventure Guide micro-menu button, optional tome replacement, placement choices and Alt-G binding.
+
 ## [0.22.6] - 2026-10-24
 
 - The report keeps the same error details, now captured by Forever Core alongside the other shared report code.
