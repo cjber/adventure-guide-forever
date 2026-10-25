@@ -11,7 +11,8 @@
 ---@field RegisterSettings fun() defined by Settings.lua, called once after ADDON_LOADED.
 ---@field OpenSettings? fun() set by RegisterSettings; opens our page under Settings > AddOns.
 ---@field Pins AGFPinsModule
----@field DEFAULTS table<string, boolean|number> account-wide setting defaults (Core.lua)
+---@field DEFAULTS table<string, boolean|number|string> account-wide setting defaults (Core.lua)
+---@field MicroButton AGFMicroButtonModule the shared micro menu button module (Core/MicroButton.lua)
 
 ---@class AGFPinsModule
 ---@field Ping fun(key: string) flash the numbered pin for a step, if it's on the shown map.
@@ -212,6 +213,9 @@ UNKNOWNOBJECT = nil
 ---@class AGFSettingsSetting
 ---@field SetValueChangedCallback fun(self: AGFSettingsSetting, callback: fun(setting: AGFSettingsSetting, value: boolean|number))
 -- A checkbox's row (Blizzard_Settings_Shared SettingsListElementInitializer); a child is greyed while predicate is false.
+---@class AGFControlTextContainer
+---@field Add fun(self: AGFControlTextContainer, value: string, text: string)
+---@field GetData fun(self: AGFControlTextContainer): table[]
 ---@class AGFSettingsInitializer
 ---@field Indent fun(self: AGFSettingsInitializer)
 ---@field AddEvaluateStateCVar fun(self: AGFSettingsInitializer, variable: string)
@@ -224,16 +228,19 @@ UNKNOWNOBJECT = nil
 MinimalSliderWithSteppersMixin = nil
 
 ---@class AGFSettingsModule
----@field VarType {Boolean: string, Number: string}
+---@field VarType {Boolean: string, Number: string, String: string}
 ---@field RegisterVerticalLayoutCategory fun(name: string): AGFSettingsCategory
 ---@field RegisterVerticalLayoutSubcategory fun(category: AGFSettingsCategory, name: string): AGFSettingsCategory
 ---@field RegisterCanvasLayoutSubcategory fun(category: AGFSettingsCategory, frame: Frame, name: string): AGFSettingsCategory
----@field RegisterAddOnSetting fun(category: AGFSettingsCategory, variable: string, key: string, storage: table, variableType: string, name: string, default: boolean|number): AGFSettingsSetting
+---@field RegisterAddOnSetting fun(category: AGFSettingsCategory, variable: string, key: string, storage: table, variableType: string, name: string, default: boolean|number|string): AGFSettingsSetting
 ---@field RegisterProxySetting fun(category: AGFSettingsCategory, variable: string, variableType: string, name: string, default: boolean, getter: (fun(): boolean), setter: (fun(value: boolean))): AGFSettingsSetting
 ---@field NotifyUpdate fun(variable: string)
 ---@field CreateSliderOptions fun(minimum: number, maximum: number, step: number): AGFSliderOptions
 ---@field CreateSliderInitializer fun(setting: AGFSettingsSetting, options: AGFSliderOptions, tooltip?: string): AGFSettingsInitializer
 ---@field CreateCheckboxInitializer fun(setting: AGFSettingsSetting, options?: table, tooltip?: string): AGFSettingsInitializer
+---@field CreateControlTextContainer fun(): AGFControlTextContainer
+---@field CreateDropdownInitializer fun(setting: AGFSettingsSetting, getData: fun(): table[]): AGFSettingsInitializer
+---@field CreateElementInitializer fun(template: string, data?: table): AGFSettingsInitializer
 ---@field RegisterInitializer fun(category: AGFSettingsCategory, initializer: AGFSettingsInitializer) inserts the row from Blizzard's secure delegate
 ---@field RegisterAddOnCategory fun(category: AGFSettingsCategory)
 ---@field OpenToCategory fun(categoryID: integer)
@@ -357,3 +364,25 @@ function C_MajorFactions.GetMajorFactionProgressionInfo(majorFactionID) end
 
 ---@type table<integer, {r: number, g: number, b: number}>
 ITEM_QUALITY_COLORS = nil
+
+-- The client's micro menu bar and the buttons MicroButton.lua anchors against (FrameXML MicroMenu).
+---@class AGFMicroMenu : Frame
+---@field Layout fun(self: AGFMicroMenu)
+---@type AGFMicroMenu?
+MicroMenu = nil
+---@type Button?
+MainMenuMicroButton = nil
+---@type Button?
+CollectionsMicroButton = nil
+---@type fun()
+UpdateMicroButtons = nil
+
+-- Blizzard's own Adventure Guide micro button, hidden when the Forever button replaces it (Core/Core.lua).
+---@type Button?
+AdventureGuideMicroButton = nil
+
+-- The frame Core/MicroButton.lua builds: Blizzard's micro button template plus the state it stores on it.
+---@class ForeverMicroButton : Button
+---@field microButtonSpec table the spec the consumer passed to Create
+---@field icon Texture the glyph drawn over the plate
+---@field alert table? the template's alert overlay, hidden for a custom button

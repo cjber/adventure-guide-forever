@@ -29,7 +29,7 @@ ns.TITLE = L.TITLE
 
 -- Account-wide settings (Settings.lua), one key per row on the AddOns page. A missing key
 -- always reads as its default here, so an old save file and a new option agree (WFA-14).
----@type table<string, boolean|number>
+---@type table<string, boolean|number|string>
 local DEFAULTS = {
 	showTracker = true,
 	restedxpGuide = true,

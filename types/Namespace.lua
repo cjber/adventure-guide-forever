@@ -1445,6 +1445,16 @@
 ---@field TODAY_MORE string
 ---@field STOP_VISIT string
 ---@field SET_HEARTH string
+---@field MICRO_MENU_UNAVAILABLE string
+---@field MICRO_BUTTON_BINDING_NOTE string
+---@field MICRO_BUTTON_SUBTEXT string
+---@field MICRO_BUTTON_TITLE string
+---@field MICRO_BUTTON_TOOLTIP string
+---@field SETTING_MICRO_BUTTON string
+---@field SETTING_MICRO_BUTTON_AFTER string
+---@field SETTING_MICRO_BUTTON_BEFORE string
+---@field SETTING_MICRO_BUTTON_PLACEMENT string
+---@field SETTING_REPLACE_MICRO_BUTTON string
 ---@field SETTING_STATS_SHARE string
 ---@field SETTING_STATS_SHARE_TOOLTIP string
 ---@field SETTING_STEP_SOUND string
@@ -1873,9 +1883,29 @@
 
 ---@class AGFGlobal
 ---@field API AGFAPI
+---@field MicroButton AGFMicroButtonModule the shared micro menu button module (Core/MicroButton.lua)
 
 ---@type AGFGlobal
 AdventureGuideForever = nil
+
+---@class AGFMicroButtonSpec
+---@field name string
+---@field atlas string
+---@field icon string
+---@field title string
+---@field binding string
+---@field subtext string
+---@field slot string
+---@field getSlot? fun(): string
+---@field getShown fun(): boolean
+---@field onClick fun()
+---@field host? table
+
+---@class AGFMicroButtonModule
+---@field Create fun(spec: AGFMicroButtonSpec): Button?
+---@field Destroy fun(button: Button?)
+---@field SetShown fun(button: Button?, shown: boolean)
+---@field Refresh fun()
 
 ---@class AGFActivityRecord
 ---@field addon "AdventureGuideForever"
