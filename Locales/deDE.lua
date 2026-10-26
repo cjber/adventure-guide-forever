@@ -441,7 +441,8 @@ L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
 -- mt
-L["WHATS_NEW"] = "Adventure Guide sitzt jetzt als Button in der Mikromenü-Leiste." -- mt
+L["WHATS_NEW"] =
+	"Die Suche der Anleitung läuft jetzt über dieselbe gemeinsame Textsuche wie jedes andere Forever-Addon." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"
