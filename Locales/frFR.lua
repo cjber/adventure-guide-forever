@@ -444,7 +444,8 @@ L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
 -- mt
-L["WHATS_NEW"] = "Le bouton Adventure Guide figure désormais dans la barre de micro-menu." -- mt
+L["WHATS_NEW"] =
+	"La recherche du guide utilise désormais la même recherche de texte partagée que tout autre module Forever." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"
