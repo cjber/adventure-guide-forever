@@ -12,6 +12,13 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [0.22.9] - 2026-10-26
+
+- **The guide now ships the suite's dead-code gate, and an internal build hook nothing called is gone.**
+  `tools/deadcode.py` scans the addon for namespace members no code reads, Lua files no TOC loads and media
+  nothing references, and runs as its own CI job; adopting it removed `ns.Rebuilding()`, the leftover accessor
+  the rebuild benchmark used to read. Nothing changes in game.
+
 ## [0.22.8] - 2026-10-26
 
 - **The guide's search now runs on the same shared text matching as every other Forever addon.** It folds and ranks search text through Forever Core's one shared fold (`Core/Text.lua`, `ns.Text.Fold` and `ns.Text.Rank`) instead of its own copy, so an accented quest title is found the same way wherever you search in the suite. Nothing changes in game. Forever Core's settings-page chrome (`UI/SettingsPage.lua`) is vendored byte for byte for the shared-code drift gate; the guide keeps its own settings page.
