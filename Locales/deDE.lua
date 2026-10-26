@@ -442,7 +442,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Die Suche der Anleitung läuft jetzt über dieselbe gemeinsame Textsuche wie jedes andere Forever-Addon." -- mt
+	"The guide now ships the suite's dead-code gate, and an internal build hook nothing called is gone." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"

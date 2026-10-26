@@ -476,7 +476,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "обновлено до %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Поиск в руководстве теперь использует общий поиск по тексту, как и любой другой аддон Forever." -- mt
+	"The guide now ships the suite's dead-code gate, and an internal build hook nothing called is gone." -- mt
 L["WHY_ALLIANCE"] = "Только для Альянса"
 L["WHY_BREADCRUMB"] = "Только пока вы не возьмете: %s"
 L["WHY_CHOSE"] = "Вместо этого вы выбрали: %s"
