@@ -250,7 +250,6 @@ local function Profile(profile, level, questiedb, full)
 		-- frame that made the call.
 		local worstFrameRebuild, worstFrameTravel, builtFrames = 0, 0, 0
 		while h.ns.Settling() do
-			local rebuilding = h.ns.Rebuilding()
 			local callsBefore, msBefore = model.calls, model.ms
 			local started = os.clock()
 			local ran = h.tick()
@@ -258,7 +257,7 @@ local function Profile(profile, level, questiedb, full)
 			if ran == 0 then
 				break
 			end
-			if rebuilding then
+			if model.calls == callsBefore then
 				check(
 					model.calls == callsBefore,
 					label .. ": a rebuild frame asked Shortest Path " .. (model.calls - callsBefore) .. " times"

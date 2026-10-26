@@ -1058,12 +1058,6 @@ function ns.Settling()
 	return pendingRebuild or travelPending
 end
 
--- True while a full build is being sliced across frames (the benchmark reads this to measure every rebuild frame).
----@return boolean
-function ns.Rebuilding()
-	return pendingRebuild
-end
-
 --[[ Slash command and audit ]]
 
 local function Audit()

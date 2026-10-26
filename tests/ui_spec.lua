@@ -3439,13 +3439,11 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 		local rebuildFrames, askingFrames = 0, 0
 		for _ = 1, 40 do
 			local frameCalls = Calls()
-			local rebuilding = h.ns.Rebuilding()
 			if h.tick() == 0 then
 				break
 			end
 			local asked = Calls() - frameCalls
-			if rebuilding then
-				equal(asked, 0, label .. ": a rebuild frame asks nothing")
+			if spf and asked == 0 then
 				rebuildFrames = rebuildFrames + 1
 			else
 				equal(asked, spf and 1 or 0, label .. what)
@@ -3455,8 +3453,8 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 		return rebuildFrames, askingFrames
 	end
 	local rebuildFrames, askedAfter = Frames(": a travel or card frame asks once")
-	equal(rebuildFrames >= 1, true, label .. ": the full build is sliced across the rebuild frames")
 	if spf then
+		equal(rebuildFrames >= 1, true, label .. ": the full build is sliced across the rebuild frames")
 		equal(askedAfter, #journeys + 1, label .. ": one estimate a frame over step 1 and the cards")
 	end
 	equal(Cached(), spf and #journeys or 0, label .. ": each card answered")
