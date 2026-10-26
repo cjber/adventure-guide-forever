@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- The guide's search folds and ranks text through Forever Core's one shared fold (`Core/Text.lua`, `ns.Text.Fold` and `ns.Text.Rank`) instead of its own copy, so an accented quest title is found the same way in every Forever addon. Nothing changes in game. Forever Core's settings-page chrome (`UI/SettingsPage.lua`) is vendored byte for byte for the shared-code drift gate; the guide keeps its own settings page.
+
 ## [0.22.7] - 2026-10-25
 
 - **An Adventure Guide button now sits on the micro menu bar.** It opens the guide with a click or Alt-G, can take over Blizzard's own tome so the old
