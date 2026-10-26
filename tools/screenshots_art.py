@@ -5,7 +5,8 @@ import os
 import sys
 from pathlib import Path
 
-WOWMOCK = Path(os.environ["WOWMOCK"]).expanduser() if os.environ.get("WOWMOCK") else None
+FOREVER_CORE = Path(os.environ.get("FOREVER_CORE", Path(__file__).resolve().parents[2] / "forever-core")).expanduser()
+WOWMOCK = FOREVER_CORE / "tools" / "wowmock"
 
 wm = None  # Imported by load_wowmock so headless tests need no Pillow.
 
@@ -13,10 +14,8 @@ wm = None  # Imported by load_wowmock so headless tests need no Pillow.
 def load_wowmock():
     global wm
     if wm is None:
-        if WOWMOCK is None:
-            sys.exit("Set WOWMOCK to the directory containing wowmock.py from the wow-mock-screenshots library")
         if not (WOWMOCK / "wowmock.py").is_file():
-            sys.exit(f"wowmock.py not found in {WOWMOCK}; set WOWMOCK to the wow-mock-screenshots skill")
+            sys.exit(f"wowmock.py not found in {WOWMOCK}; set FOREVER_CORE to the forever-core checkout")
         sys.path.insert(0, str(WOWMOCK))
         import wowmock
 
