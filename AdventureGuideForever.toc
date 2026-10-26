@@ -31,6 +31,7 @@ Data\Forever.lua
 Data\ZoneArt.lua
 Core\Secret.lua
 Core\SafeCall.lua
+Core\Text.lua
 Core\MicroButton.lua
 Core\Core.lua
 Planning\Model.lua
@@ -99,4 +100,5 @@ UI\StoryCompletion.lua
 UI\Tracker.lua
 UI\Tooltip.lua
 UI\Settings.lua
+UI\SettingsPage.lua
 UI\Dump.lua

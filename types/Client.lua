@@ -243,6 +243,7 @@ MinimalSliderWithSteppersMixin = nil
 ---@field CreateElementInitializer fun(template: string, data?: table): AGFSettingsInitializer
 ---@field RegisterInitializer fun(category: AGFSettingsCategory, initializer: AGFSettingsInitializer) inserts the row from Blizzard's secure delegate
 ---@field RegisterAddOnCategory fun(category: AGFSettingsCategory)
+---@field RegisterCanvasLayoutCategory fun(frame: Frame, name: string): AGFSettingsCategory
 ---@field OpenToCategory fun(categoryID: integer)
 ---@type AGFSettingsModule
 Settings = nil

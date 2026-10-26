@@ -3280,6 +3280,10 @@ end
 -- Reload only the planner and its caches, in the same order as the client.
 ---@param ns table
 function harness.planner(ns)
+	-- Core/Text.lua loads before the planner in the TOC, and Planning/Model.lua's search reads ns.Text.
+	if not ns.Text then
+		assert(loadfile("Core/Text.lua"))(ADDON, ns)
+	end
 	local planner = false
 	for line in io.lines("AdventureGuideForever.toc") do
 		local path = line:gsub("\\", "/")
