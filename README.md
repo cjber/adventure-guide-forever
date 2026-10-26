@@ -131,7 +131,7 @@ No code needed:
 
 Run the full gate in [AGENTS.md](AGENTS.md#commands). `python3 tools/doctor.py` lists the tools it needs, with a fix for each problem.
 
-Screenshots use Pillow and the [wow-mock-screenshots library](https://github.com/cjber/skills/tree/main/wow-mock-screenshots): set `WOWMOCK` to its directory and run `python3 tools/screenshots.py` twice; both runs must match.
+Screenshots use Pillow and the [shared renderer in forever-core](https://github.com/cjber/forever-core): set `FOREVER_CORE` to the forever-core checkout and run `python3 tools/screenshots.py` twice; both runs must match.
 
 [tests/README.md](tests/README.md) describes the test layers and the harness. Contributing and security policies are inherited from [cjber/.github](https://github.com/cjber/.github). Read [AGENTS.md](AGENTS.md) before changing code.
 
