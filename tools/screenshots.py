@@ -2,14 +2,14 @@
 """Render docs/screenshots/*.png and demo.gif from what the addon draws headlessly, with the WoW: Forever
 client's own art.
 
-    WOWMOCK=/path/to/wow-mock-screenshots python3 tools/screenshots.py
+    FOREVER_CORE=/path/to/forever-core python3 tools/screenshots.py
 
 WFA-9: the store and README screenshots come from this script, never from a capture. The panel is
 tests/golden/layout.json; every other scene is read from the addon by tests/scenes.lua through
 the same harness, so no AGF text or layout is retyped here. Stock templates produce no regions headlessly, so each
 one the dumps name has a recipe in screenshots_stock.py citing its Blizzard XML; an unknown stockTemplate fails the run.
 The frames around the addon (the world map, the tracker, the tooltip and the menu) are wowmock's
-(the wow-mock-screenshots skill), drawn from Blizzard's own layout numbers (WFA-4: the stock look).
+(the forever-core shared renderer), drawn from Blizzard's own layout numbers (WFA-4: the stock look).
 
 Art, fonts and DB2 tables come from wago.tools for BUILD and are cached under ~/.cache/wowmock. The game client is
 never started or read. Two runs give byte-identical PNGs with this environment (pip is not installed on the
@@ -44,6 +44,7 @@ from screenshots_spf import SPF_SHA, breadcrumbs, goal_pins, map_position, spf_w
 from screenshots_stock import LAYERS, button_font, draw_scroll_frame, stock
 
 ROOT = Path(__file__).resolve().parent.parent
+FOREVER_CORE = Path(os.environ.get("FOREVER_CORE", ROOT.parent / "forever-core")).expanduser()
 OUT = ROOT / "docs/screenshots"
 GOLDEN = ROOT / "tests/golden/layout.json"
 PILLOW = "12.3.0"
@@ -646,7 +647,7 @@ def main():
 
 
 def render_micro_menu_scenes():
-    renderer = ROOT.parent / "forever-core/docs/handoff/micro-menu-buttons/render.py"
+    renderer = FOREVER_CORE / "docs/handoff/micro-menu-buttons/render.py"
     with tempfile.TemporaryDirectory(prefix="adventure-guide-micro-menu-") as directory:
         subprocess.run([sys.executable, str(renderer)], cwd=directory, check=True)
         for scene in (

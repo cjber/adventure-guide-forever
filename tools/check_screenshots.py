@@ -11,7 +11,8 @@ image's hash beside its dump's; tools/screenshots.py rewrites it after a render.
 On the daily data PR (`data/refresh`, opened by .github/workflows/refresh-data.yml), ci.yml sets
 SCREENSHOTS_STALE_WARN=true. Then an image whose scene moved while the image itself is as recorded (what new client
 data does) is a GitHub `::warning::` rather than a failure, since the bot that opens that PR can't render (no Pillow
-or WOWMOCK). Re-render after it merges. Every other problem still fails there, and everything fails everywhere else.
+or FOREVER_CORE). Re-render after it merges. Every other problem still fails there, and everything fails everywhere
+else.
 """
 
 import functools
