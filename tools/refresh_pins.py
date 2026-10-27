@@ -21,20 +21,26 @@ import gen_corpus
 import gen_quests
 
 TOOLS = Path(__file__).resolve().parent
-# wago.tools product and version prefix: wow_classic_beta carries other Classic betas too, and Forever's are 1.6x.
-FOREVER = ("wow_classic_beta", "1.6")
-ERA = ("wow_classic_era", "1.15.")
+# wago.tools products and version prefix: Forever publishes under its own `wowf` product now, and the builds
+# before its creation sit in `wow_classic_beta`, which also carries other Classic betas. Read both, keep 1.6x.
+FOREVER = (("wowf", "wow_classic_beta"), "1.6")
+ERA = (("wow_classic_era",), "1.15.")
 
 
 def version_key(version):
     return tuple(int(part) for part in version.split("."))
 
 
-def latest(builds, product, prefix, pinned):
-    """The newest `product` build whose version starts with `prefix`, or `pinned` when that is newer."""
-    versions = [build["version"] for build in builds.get(product, ()) if build["version"].startswith(prefix)]
+def latest(builds, products, prefix, pinned):
+    """The newest build across `products` whose version starts with `prefix`, or `pinned` when that is newer."""
+    versions = [
+        build["version"]
+        for product in products
+        for build in builds.get(product, ())
+        if build["version"].startswith(prefix)
+    ]
     if not versions:
-        raise SystemExit(f"no {product} {prefix}x build listed on wago.tools")
+        raise SystemExit(f"no {'/'.join(products)} {prefix}x build listed on wago.tools")
     return max([*versions, pinned], key=version_key)
 
 
