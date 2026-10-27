@@ -23,7 +23,7 @@ from gen_quests import (
     source_options,
 )
 
-ERA = "1.15.9.70003"
+ERA = "1.15.9.70576"
 OUTPUT = ROOT / "Data" / "Forever.lua"
 # Each table's added IDs are printed in full.
 REPORTED = ("TaxiNodes", "Map")

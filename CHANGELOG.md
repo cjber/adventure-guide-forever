@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Quest, geometry, zone-art and Forever data regenerated for client build 1.60.1.70630, on QuestieDB v1.0.9 and Classic Era 1.15.9.70576.** The generators now read the newest Forever build from wago.tools' `wowf` product as well as `wow_classic_beta`: wago lists 1.60.1.70630 only under `wowf`, and the pin check had been reading only `wow_classic_beta`, so the daily refresh reported itself already current and skipped regeneration. This build adds 14 flight points and 15 map areas to Forever; the guide's zones, town areas and routes follow them. QuestieDB v1.0.9 also corrects quest text the guide shows.
+
 ## [0.22.9] - 2026-10-26
 
 - **The guide now ships the suite's dead-code gate, and an internal build hook nothing called is gone.**
