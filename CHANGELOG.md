@@ -12,7 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-## [[adventure-guide-forever]] - 2026-10-28
+## [0.22.12] - 2026-10-28
 
 - **Quest, geometry, zone-art and Forever data re-pinned to client build 1.60.1.70685.** The quest, geometry, zone-art and Forever tables come from the newer build; regenerating against it produces no player-visible change, so the recorded build and every pinned value move together.
 
