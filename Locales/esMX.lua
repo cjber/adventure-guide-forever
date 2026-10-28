@@ -440,7 +440,7 @@ L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
 -- mt
-L["WHATS_NEW"] = "Quest, geometry, zone-art and Forever data re-pinned to client build 1.60.1.70658." -- mt
+L["WHATS_NEW"] = "Quest, geometry, zone-art and Forever data re-pinned to client build 1.60.1.70685." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
