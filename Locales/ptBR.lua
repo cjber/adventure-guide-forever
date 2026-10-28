@@ -438,7 +438,7 @@ L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
 L["UPDATED_TO"] = "atualizado para %s. %s"
 -- mt
-L["WHATS_NEW"] = "A busca do guia agora usa a mesma busca de texto compartilhada de qualquer outro addon Forever." -- mt
+L["WHATS_NEW"] = "Quest, geometry, zone-art and Forever data re-pinned to client build 1.60.1.70658." -- mt
 L["WHY_ALLIANCE"] = "Só Aliança"
 L["WHY_BREADCRUMB"] = "Só até você aceitar %s"
 L["WHY_CHOSE"] = "Você escolheu %s no lugar"

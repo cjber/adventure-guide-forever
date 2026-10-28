@@ -475,7 +475,7 @@ L["UNLISTED"] =
 	"В этих землях есть истории, которых путеводитель пока не знает; ищите «!» над теми, кто дает задания."
 L["UPDATED_TO"] = "обновлено до %s. %s"
 -- mt
-L["WHATS_NEW"] = "Quest, geometry, zone-art and Forever data regenerated for client build 1.60.1.70630." -- mt
+L["WHATS_NEW"] = "Quest, geometry, zone-art and Forever data re-pinned to client build 1.60.1.70658." -- mt
 L["WHY_ALLIANCE"] = "Только для Альянса"
 L["WHY_BREADCRUMB"] = "Только пока вы не возьмете: %s"
 L["WHY_CHOSE"] = "Вместо этого вы выбрали: %s"
