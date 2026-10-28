@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [0.22.11] - 2026-10-28
+
+- **Quest, geometry, zone-art and Forever data re-pinned to client build 1.60.1.70658.** The generators now read and record the newer Forever build from wago.tools, so the guide's zones, town areas and routes stay keyed to the build the client ships. Regenerating against this build produces no change to the bundled rows, so nothing a player sees changes.
+
 ## [0.22.10] - 2026-10-27
 
 - **Quest, geometry, zone-art and Forever data regenerated for client build 1.60.1.70630.** This build adds 14 flight
