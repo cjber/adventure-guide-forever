@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [0.22.13] - 2026-10-30
+
+- **Quest, geometry, zone-art and Forever data re-pinned to client build 1.60.1.70707.** The quest, geometry, zone-art and Forever tables come from the newer build; regenerating against it produces no player-visible change, so the recorded build and every pinned value move together.
+
 ## [0.22.12] - 2026-10-28
 
 - **Quest, geometry, zone-art and Forever data re-pinned to client build 1.60.1.70685.** The quest, geometry, zone-art and Forever tables come from the newer build; regenerating against it produces no player-visible change, so the recorded build and every pinned value move together.
