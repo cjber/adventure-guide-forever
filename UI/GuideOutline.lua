@@ -2,6 +2,35 @@
 local _, ns = ...
 local Widgets = ns.Widgets
 
+-- Per quest table, the IDs of quests in each zone or picked up there, ascending. Published quest tables are not
+-- changed in place; a new catalogue is a new table.
+---@type table<table<integer, AGFQuest>, table<integer, integer[]>>
+local byZone = setmetatable({}, { __mode = "k" })
+
+---@param quests table<integer, AGFQuest>
+---@param zone integer
+---@return integer[]
+local function ZoneQuests(quests, zone)
+	local zones = byZone[quests]
+	if not zones then
+		zones = {}
+		for id, quest in pairs(quests) do
+			local pickup = quest.start and quest.start.map
+			for _, map in pairs({ quest.zone or false, pickup ~= quest.zone and pickup or false }) do
+				if map then
+					zones[map] = zones[map] or {}
+					table.insert(zones[map], id)
+				end
+			end
+		end
+		for _, ids in pairs(zones) do
+			table.sort(ids)
+		end
+		byZone[quests] = zones
+	end
+	return zones[zone] or {}
+end
+
 -- A quest outline: only the planner supplies actionable steps.
 -- Questie prerequisites order the outline; no future quest is sent to navigation or tracking.
 ---@param data AGFData
@@ -58,10 +87,10 @@ function Widgets.GuideOutline(data, player, completed, journey, steps)
 		end
 	end
 	local Matches = ns.Model.HasBit
-	for id, quest in pairs(data.quests) do
+	for _, id in ipairs(ZoneQuests(data.quests, zone)) do
+		local quest = data.quests[id]
 		if
-			(quest.zone == zone or (quest.start and quest.start.map == zone))
-			and (quest.side == 3 or quest.side == player.side)
+			(quest.side == 3 or quest.side == player.side)
 			and Matches(quest.races, player.raceBit)
 			and Matches(quest.classes, player.classBit)
 			and not quest.repeatable
@@ -108,7 +137,6 @@ function Widgets.GuideOutline(data, player, completed, journey, steps)
 		end
 		return level > player.level and 2 or 3
 	end
-	table.sort(ids)
 	local ranks = {}
 	for _, id in ipairs(ids) do
 		ranks[id] = Rank(id)
