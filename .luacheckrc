@@ -11,6 +11,9 @@ exclude_files = {
 	".claude/**",
 	-- Shortest Path's own types, vendored byte for byte for tests/contract_spec.lua.
 	"tests/fixtures/spf_types_API.lua",
+	".bugpatrol/runs/**",
+	".speedpatrol/runs/**",
+	".sloppatrol/runs/**",
 }
 ignore = { "212/_.*", "212/self" } -- unused args prefixed with _, and self on mixin handlers
 
