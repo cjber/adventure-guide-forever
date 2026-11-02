@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# sift-scope: all
-# sift-fix: Use a colon in generated-file banners and ASCII punctuation in tools and data; regenerate outputs.
+# sloppatrol-scope: all
+# sloppatrol-fix: Use a colon in generated-file banners and ASCII punctuation in tools and data; regenerate outputs.
 # The generator banners contain four occurrences in Python and three in Data, with no false positives.
 
 import os
@@ -9,9 +9,9 @@ from pathlib import Path
 
 
 def main():
-    root = Path(os.environ["SIFT_ROOT"])
+    root = Path(os.environ["SLOPPATROL_ROOT"])
     failed = False
-    for name in Path(os.environ["SIFT_FILES"]).read_text().splitlines():
+    for name in Path(os.environ["SLOPPATROL_FILES"]).read_text().splitlines():
         path = Path(name)
         if (path.parent.as_posix(), path.suffix) not in {
             ("tools", ".py"),
@@ -23,7 +23,7 @@ def main():
         ):
             if "\u2014" in text:
                 print(
-                    f"{name}:{line}: {os.environ['SIFT_RULE']} U+2014 is forbidden in tools and generated data"
+                    f"{name}:{line}: {os.environ['SLOPPATROL_RULE']} U+2014 is forbidden in tools and generated data"
                 )
                 failed = True
     return int(failed)
