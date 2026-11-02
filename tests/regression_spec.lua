@@ -230,6 +230,101 @@ test("legacy time limits cannot truncate a journey", function()
 	end
 end)
 
+-- Deep equality on plain saved-variable values: same keys, same types, same leaves.
+local function same(actual, expected, label)
+	checks = checks + 1
+	local function walk(a, e, path)
+		if type(e) ~= "table" then
+			assert(a == e, label .. path .. ": expected " .. tostring(e) .. ", got " .. tostring(a))
+			return
+		end
+		assert(type(a) == "table", label .. path .. ": expected a table, got " .. tostring(a))
+		for key, value in pairs(e) do
+			walk(a[key], value, path .. "." .. tostring(key))
+		end
+		for key in pairs(a) do
+			assert(e[key] ~= nil, label .. path .. ": unexpected key " .. tostring(key))
+		end
+	end
+	walk(actual, expected, "")
+end
+
+test("a malformed character save is cleaned field by field on load", function()
+	local saved = harness.load({
+		charDB = {
+			recommendationFocus = 1,
+			zone = 1413,
+			journey = "story:1413",
+			guided = 5,
+			focus = "f",
+			left = "r",
+			waypoint = { map = 1, x = "a", y = 2 },
+			completedStories = {
+				s = { title = "S", quest = 1 },
+				t = { title = "T" },
+				[4] = { title = "x", quest = 1 },
+			},
+			activity = {
+				questTurnIns = -1,
+				lastEventUnix = "x",
+				quests = {
+					[5] = 3,
+					[6] = 0,
+					x = { count = 2 },
+					[7] = { count = 2.7, eventUnix = "no" },
+					[8] = { count = 1, eventUnix = 99 },
+					[9] = 2.5,
+				},
+			},
+			notInterested = {
+				a = "Title",
+				b = { title = "T", chosen = false },
+				c = { title = "C", chosen = true },
+				d = {},
+				[3] = "x",
+			},
+			pinned = { [1] = true, [2] = false, x = true },
+			notOffered = { [1] = 5, [2] = "y", z = 3 },
+			asides = { k = "text", [1] = "n", m = 2 },
+			customOrders = { k = { "a", "a", 3, "b" }, [2] = { "z" }, j = "bad" },
+		},
+	})
+	eq(#saved.errors, 0, "malformed save loads without errors")
+	local db = saved.G.AdventureGuideForeverCharDB
+	for _, retired in ipairs({ "recommendationFocus", "zone", "guided", "focus", "left", "waypoint" }) do
+		eq(db[retired], nil, retired .. " dropped")
+	end
+	eq(db.journey, "zone:1413", "story journey renamed to its zone")
+	same(db.completedStories, { s = { title = "S", quest = 1 } }, "completedStories")
+	same(db.activity, {
+		questTurnIns = 0,
+		quests = { [5] = { count = 3 }, [7] = { count = 2 }, [8] = { count = 1, eventUnix = 99 }, [9] = { count = 2 } },
+	}, "activity")
+	same(
+		db.notInterested,
+		{ a = { title = "Title" }, b = { title = "T" }, c = { title = "C", chosen = true } },
+		"notInterested"
+	)
+	same(db.pinned, { [1] = true }, "pinned")
+	same(db.notOffered, { [1] = 5 }, "notOffered")
+	same(db.asides, { k = "text" }, "asides")
+	same(db.customOrders, { k = { "a", "b" } }, "customOrders")
+
+	for _, row in ipairs({
+		{ charDB = { journey = "nextzone:1413" }, journey = "zone:1413" },
+		{ charDB = { journey = 3 }, journey = nil },
+		{ charDB = { journey = "dungeon:7" }, journey = "dungeon:7", planned = { [7] = true } },
+		{ charDB = { journey = "dungeon:7", plannedDungeons = {} }, journey = "dungeon:7", planned = {} },
+	}) do
+		local h = harness.load({ charDB = row.charDB })
+		local label = "journey " .. tostring(row.charDB.journey)
+		eq(h.G.AdventureGuideForeverCharDB.journey, row.journey, label)
+		if row.planned then
+			same(h.G.AdventureGuideForeverCharDB.plannedDungeons, row.planned, label .. " plannedDungeons")
+		end
+	end
+end)
+
 test("story-end sound follows the documented fanfare", function()
 	local h = harness.load({})
 	local ns = h.ns

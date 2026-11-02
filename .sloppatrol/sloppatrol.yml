@@ -1,8 +1,10 @@
 # Sloppatrol profile for Adventure Guide Forever, a WoW: Forever addon in Lua 5.1 with Python tooling.
 # `sloppatrol init` writes a failing placeholder for a repo without package.json, so the checks
-# are set by hand from the gate in AGENTS.md.
+# are set by hand from the gate in AGENTS.md. A run checkout is clean: the specs need the test corpus
+# that gen_corpus.py builds, and `check_generated.py --offline` is left out because it needs the
+# gitignored tools/.cache.
 agent: claude
-prepare: []
+prepare: ["python3 tools/gen_corpus.py"]
 cleanup: [stylua .]
 checks:
   - { name: format, run: "stylua --check ." }
@@ -10,7 +12,6 @@ checks:
   - { name: typecheck, run: "tools/typecheck.sh" }
   - { name: specs, run: "for s in tests/*_spec.lua; do luajit \"$s\" || exit 1; done", tests: true }
   - { name: tools, run: "ruff format --check tools && ruff check tools" }
-  - { name: generated, run: "python3 tools/check_generated.py --offline" }
   - { name: changelog, run: "python3 tools/changelog.py --check" }
   - { name: gate, run: "python3 .sift/gate.py --base origin/main && python3 .sift/agents.py check" }
 focus: [Core/**, Planning/**, UI/**, Integrations/**]

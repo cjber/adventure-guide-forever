@@ -117,9 +117,15 @@ end
 -- The test quest corpus (tests/.corpus/, built by tools/gen_corpus.py from the pinned QuestieDB release and never
 -- committed, since QuestieDB carries no licence). The addon no longer ships its own quest catalogue: in game, quests
 -- come from QuestieDB. The specs keep this generated corpus as their deterministic model fixture.
+-- Each file is parsed and checked once per process; every call runs the chunk again for fresh tables.
+---@type table<string, function>
+local corpora = {}
 ---@param name string "quests" or "towns"
 ---@return function
 local function Corpus(name)
+	if corpora[name] then
+		return corpora[name]
+	end
 	local path = "tests/.corpus/" .. name .. ".lua"
 	local chunk, problem = loadfile(path)
 	if not chunk then
@@ -143,10 +149,11 @@ local function Corpus(name)
 	if pinned and not header:find(pinned, 1, true) then
 		error(("%s was built from another QuestieDB release: python3 tools/gen_corpus.py"):format(path), 3)
 	end
+	corpora[name] = chunk
 	return chunk
 end
 
--- Loaded fresh each call, never cached: specs mutate quest records, and a shared table would leak between loads.
+-- Built fresh each call, never shared: specs mutate quest records, and a shared table would leak between loads.
 ---@return table<integer, AGFQuest>
 function harness.fixtureQuests()
 	return Corpus("quests")()
