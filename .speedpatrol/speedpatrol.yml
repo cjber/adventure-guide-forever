@@ -1,0 +1,32 @@
+# Speedpatrol: https://github.com/agent-labs-dev/speedpatrol
+# Commit this file and instructions.md. runs/ is local data.
+version: 1
+project:
+  name: adventure-guide-forever
+  source: .
+app:
+  # The planner bench reads the test corpus, which is built, never committed.
+  prepare:
+    - run: python3 tools/gen_corpus.py
+  setup: []
+  env: {}
+  secrets: []
+defaults:
+  iterations: 7
+  warmup: 1
+benchmarks:
+  # The planner's own bench, run headless: it times a plan against the test corpus. Wall time is
+  # what is recorded, so luajit startup is in the number and the threshold is loose on purpose.
+  - id: planner.plan
+    kind: command
+    run: luajit -joff tests/plan_bench.lua
+    tags: [planner]
+thresholds:
+  relative: 0.10
+  absolute: 2
+agents:
+  scout: { use: claude }
+  analyst: { use: claude }
+  optimizer: { use: claude, enabled: false }
+  github: { enabled: false }
+  patrol: { intervalMinutes: 30, pull: origin/main }
