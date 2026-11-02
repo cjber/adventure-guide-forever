@@ -474,3 +474,17 @@ L["MICRO_BUTTON_BINDING_NOTE"] = "키 설정 > 애드온에서 두 버튼을 지
 L["MICRO_BUTTON_TOOLTIP"] = "미니 메뉴에 Adventure Guide 버튼을 추가합니다." -- mt
 L["MICRO_BUTTON_TITLE"] = "Adventure Guide" -- mt
 L["MICRO_BUTTON_SUBTEXT"] = "레벨링 안내서를 열려면 클릭하세요" -- mt
+-- mt: Issue composer and report window.
+L["HELP_ISSUE"] = "/agf issue - GitHub 이슈 링크와 함께 오류를 보고하거나 기능을 요청합니다" -- mt
+L["ISSUE_BUG"] = "오류" -- mt
+L["ISSUE_BUG_PREFIX"] = "오류: " -- mt
+L["ISSUE_COPY_LINK"] = "이슈 링크 복사" -- mt
+L["ISSUE_COPY_REPORT"] = "보고서 복사" -- mt
+L["ISSUE_DETAILS_LABEL"] = "무슨 일이 있었는지 또는 원하는 기능" -- mt
+L["ISSUE_FEATURE"] = "기능 요청" -- mt
+L["ISSUE_FEATURE_PREFIX"] = "기능 요청: " -- mt
+L["ISSUE_LINK_HINT"] =
+	"링크가 선택되었습니다. Ctrl+C(Mac은 Cmd+C)를 눌러 브라우저에 붙여 넣으십시오. GitHub에서 이 내용이 채워진 새 이슈가 열립니다." -- mt
+L["ISSUE_TITLE_LABEL"] = "제목" -- mt
+L["ISSUE_WINDOW_TITLE"] = "오류 보고 또는 기능 요청" -- mt
+L["MICRO_MENU_UNAVAILABLE"] = "미니 메뉴를 사용할 수 없어 사용자 지정 버튼을 건너뜁니다." -- mt

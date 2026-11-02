@@ -470,3 +470,17 @@ L["MICRO_BUTTON_BINDING_NOTE"] = "También puedes asignar ambos botones en Tecla
 L["MICRO_BUTTON_TOOLTIP"] = "Añade Adventure Guide al menú micro." -- mt
 L["MICRO_BUTTON_TITLE"] = "Adventure Guide" -- mt
 L["MICRO_BUTTON_SUBTEXT"] = "Haz clic para abrir la guía de leveo" -- mt
+-- mt: Issue composer and report window.
+L["HELP_ISSUE"] = "/agf issue - informar de un error o pedir una función con un enlace listo para GitHub" -- mt
+L["ISSUE_BUG"] = "Error" -- mt
+L["ISSUE_BUG_PREFIX"] = "Error: " -- mt
+L["ISSUE_COPY_LINK"] = "Copiar enlace de la incidencia" -- mt
+L["ISSUE_COPY_REPORT"] = "Copiar informe" -- mt
+L["ISSUE_DETAILS_LABEL"] = "Qué pasó o qué te gustaría" -- mt
+L["ISSUE_FEATURE"] = "Solicitud de función" -- mt
+L["ISSUE_FEATURE_PREFIX"] = "Solicitud de función: " -- mt
+L["ISSUE_LINK_HINT"] =
+	"El enlace está seleccionado. Presiona Ctrl+C (Cmd+C en Mac) y pégalo en tu navegador: GitHub abre una incidencia nueva con estos datos." -- mt
+L["ISSUE_TITLE_LABEL"] = "Título" -- mt
+L["ISSUE_WINDOW_TITLE"] = "Informar de un error o pedir una función" -- mt
+L["MICRO_MENU_UNAVAILABLE"] = "Menú micro no disponible; se omite el botón personalizado." -- mt

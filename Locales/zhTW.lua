@@ -459,3 +459,17 @@ L["MICRO_BUTTON_BINDING_NOTE"] = "也可以在按鍵設定 > 插件中綁定這�
 L["MICRO_BUTTON_TOOLTIP"] = "在微選單中新增 Adventure Guide。" -- mt
 L["MICRO_BUTTON_TITLE"] = "Adventure Guide" -- mt
 L["MICRO_BUTTON_SUBTEXT"] = "點擊以開啟升級指南" -- mt
+-- mt: Issue composer and report window.
+L["HELP_ISSUE"] = "/agf issue - 透過現成的 GitHub Issue 連結回報錯誤或請求功能" -- mt
+L["ISSUE_BUG"] = "錯誤" -- mt
+L["ISSUE_BUG_PREFIX"] = "錯誤：" -- mt
+L["ISSUE_COPY_LINK"] = "複製 Issue 連結" -- mt
+L["ISSUE_COPY_REPORT"] = "複製報告" -- mt
+L["ISSUE_DETAILS_LABEL"] = "發生了什麼，或你想要的功能" -- mt
+L["ISSUE_FEATURE"] = "功能請求" -- mt
+L["ISSUE_FEATURE_PREFIX"] = "功能請求：" -- mt
+L["ISSUE_LINK_HINT"] =
+	"連結已選取。按Ctrl+C（Mac上為Cmd+C），然後貼到瀏覽器中：GitHub 會開啟一個已填好的新 Issue。" -- mt
+L["ISSUE_TITLE_LABEL"] = "標題" -- mt
+L["ISSUE_WINDOW_TITLE"] = "回報錯誤或請求功能" -- mt
+L["MICRO_MENU_UNAVAILABLE"] = "微選單不可用，已略過自訂按鈕。" -- mt

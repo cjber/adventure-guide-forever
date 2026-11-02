@@ -471,3 +471,17 @@ L["MICRO_BUTTON_BINDING_NOTE"] = "Beide Schaltflächen können auch unter Tastat
 L["MICRO_BUTTON_TOOLTIP"] = "Fügt Adventure Guide dem Mikromenü hinzu." -- mt
 L["MICRO_BUTTON_TITLE"] = "Adventure Guide" -- mt
 L["MICRO_BUTTON_SUBTEXT"] = "Klicken, um den Leveling-Guide zu öffnen" -- mt
+-- mt: Issue composer and report window.
+L["HELP_ISSUE"] = "/agf issue - einen Fehler melden oder eine Funktion wünschen, mit einem fertigen GitHub-Issue-Link" -- mt
+L["ISSUE_BUG"] = "Fehler" -- mt
+L["ISSUE_BUG_PREFIX"] = "Fehler: " -- mt
+L["ISSUE_COPY_LINK"] = "Issue-Link kopieren" -- mt
+L["ISSUE_COPY_REPORT"] = "Bericht kopieren" -- mt
+L["ISSUE_DETAILS_LABEL"] = "Was passiert ist oder was Ihr Euch wünscht" -- mt
+L["ISSUE_FEATURE"] = "Funktionswunsch" -- mt
+L["ISSUE_FEATURE_PREFIX"] = "Funktionswunsch: " -- mt
+L["ISSUE_LINK_HINT"] =
+	"Der Link ist markiert. Drückt Strg+C (Cmd+C auf dem Mac) und fügt ihn dann in Euren Browser ein: GitHub öffnet ein neues Issue mit diesen Angaben." -- mt
+L["ISSUE_TITLE_LABEL"] = "Titel" -- mt
+L["ISSUE_WINDOW_TITLE"] = "Einen Fehler melden oder eine Funktion wünschen" -- mt
+L["MICRO_MENU_UNAVAILABLE"] = "Mikromenü nicht verfügbar; eigene Schaltfläche wird übersprungen." -- mt
