@@ -30,7 +30,8 @@ python3 tools/lint_copy.py
 python3 tools/lint_art.py
 python3 tools/lint_secret.py
 python3 tools/check_editorconfig.py
-python3 tools/check_locales.py
+# --release: a locale that is short a line now fails the PR, not just the release.
+python3 tools/check_locales.py --release
 python3 tools/check_family.py
 python3 tools/phrases.py --check
 # A fresh output path prevents a crashed server from reusing an earlier clean report.
