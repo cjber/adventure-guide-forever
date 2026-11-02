@@ -444,7 +444,7 @@ L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
 -- mt
-L["WHATS_NEW"] = "보고서와 문제 창이 이제 배포되는 모든 언어로 표시됩니다." -- mt
+L["WHATS_NEW"] = "WoW: Forever 출시에 맞춘 첫 번째 안정 버전입니다." -- mt
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"

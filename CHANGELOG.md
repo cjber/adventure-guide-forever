@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-02
+
+- **The first stable release, ready for the WoW: Forever launch.** Adventure Guide Forever 1.0 works as 0.22.14 did: the guide, its routes, the map pins and the tracker are unchanged. The version number now marks the addon as ready for everyday play, and the chat line after the update says so in every shipped language.
+
 ## [0.22.14] - 2026-11-02
 
 - **The report and issue windows read in every shipped language.** The twelve phrases behind `/agf report`, `/agf issue` and their window were still English in German, Spanish, Korean, Portuguese, Russian and both Chinese files; they are translated now, so nothing in either window falls back to English. `tools/typecheck.sh` runs the locale check with `--release` from now on, so an English line added without its translations fails the change that adds it.
