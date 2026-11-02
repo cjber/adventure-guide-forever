@@ -1,9 +1,9 @@
 ---
-name: sift-project
-description: "Project profile for sift in Adventure Guide Forever: the exact quality-gate and evidence commands, live roots that must never be deleted as dead code, exclusions, conventions and risk order. Load before running sift or any code-quality, cleanup or dead-code work in this repository."
+name: sloppatrol-project
+description: "Project profile for Sloppatrol in Adventure Guide Forever: the exact quality-gate and evidence commands, live roots that must never be deleted as dead code, exclusions, conventions and risk order. Load before running Sloppatrol or any code-quality, cleanup or dead-code work in this repository."
 ---
 
-# sift project profile: Adventure Guide Forever
+# Sloppatrol project profile: Adventure Guide Forever
 
 Adventure Guide Forever is a World of Warcraft addon for the WoW: Forever client (Classic content on
 the mainline 12.x UI/API, `## Interface: 16001`). It runs inside the game's Lua 5.1 sandbox; there is
@@ -31,7 +31,7 @@ Run in order from the repository root. All must pass before and after any audit 
 | Changelog | `python3 tools/changelog.py --check` | exit 0: every release has a `CHANGELOG.md` entry |
 | Workflows | `uvx --from actionlint-py==1.7.12.25 actionlint && uvx zizmor@1.30.1 --offline .github` | exit 0 |
 | Secrets | `gitleaks git --redact --no-banner .` | `no leaks found` |
-| Project rules | `python3 .sift/gate.py --base origin/main && python3 .sift/agents.py check` | exit 0 |
+| Project rules | `python3 .sloppatrol/gate.py --base origin/main && python3 .sloppatrol/agents.py check` | exit 0 |
 
 CI (`.github/workflows/ci.yml`) runs all of these. The tests are a headless harness, not the game
 client: `tests/harness.lua` stubs the client APIs and loads the TOC's files, so the specs drive the planner and the
@@ -45,9 +45,9 @@ UI (window, panel, pins, tracker, settings) headlessly. What needs the client it
 | Dead code (Lua) | `luacheck . --no-color` + the live-root searches below | a function stored on `ns` is never "unused" to luacheck: search every file for `ns.<Name>` |
 | Dead code (Python) | `uvx vulture tools --min-confidence 60` | none |
 | Live roots | `rg -n 'hooksecurefunc|RegisterEvent|RegisterCallback|SetScript|AddDataProvider|AddTooltipPostCall|SLASH_|SlashCmdList' -g '*.lua'` | none |
-| Shared-table members | the shared-table command in sift's `languages/lua.md` (it writes `ns-once`) | nested tables (`Model.*`, `ns.Integrations.*`) need their own `rg -n 'Model\.Name'` search |
+| Shared-table members | the shared-table command in the Sloppatrol skill's `references/languages/lua.md` (it writes `ns-once`) | nested tables (`Model.*`, `ns.Integrations.*`) need their own `rg -n 'Model\.Name'` search |
 | Clones | `npx -y jscpd@4 --silent --min-lines 6 --ignore "Data/**,.types/**,**/.cache/**" .` | none (0 clones on 2026-09-24) |
-| Standards | `python3 .sift/agents.py standards` | resolves the pinned pack declared in AGENTS.md; `SIFT_STANDARDS_PATH` can override it with a local standards directory |
+| Standards (`wow-forever-addon`) | load the `wow-forever-addon` skill that AGENTS.md declares under `## Standards` | an audit reviews the addon against its WFA ids |
 
 ## Live roots
 
@@ -138,8 +138,8 @@ it or it has not recurred in two audits.
 
 ## Project rules and lenses
 
-- Rules: `.sift/scripts/no-em-dash.py` (an em dash in `tools/*.py` or `Data/*.lua`), with its cases under
-  `.sift/script-tests/no-em-dash`.
+- Rules: `.sloppatrol/scripts/no-em-dash.py` (an em dash in `tools/*.py` or `Data/*.lua`), with its cases under
+  `.sloppatrol/script-tests/no-em-dash`.
 - Lenses: none yet.
 
 The type gate also runs `tools/lint_taint.py` and `tools/typecheck_coverage.py`; `AGENTS.md`, Secure UI regression checks, states what they enforce.

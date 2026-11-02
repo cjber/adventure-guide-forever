@@ -9,7 +9,7 @@
     ".types",
     "tests",
     "tools",
-    ".sift",
+    ".sloppatrol",
     ".release",
     ".claude",
     ".bugpatrol",

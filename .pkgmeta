@@ -7,7 +7,7 @@ manual-changelog:
 # The packager already drops every dot-prefixed path, so only the rest is listed.
 ignore:
   - .agents
-  - .sift
+  - .sloppatrol
   - AGENTS.md
   - tools
   - types
