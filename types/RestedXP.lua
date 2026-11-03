@@ -42,6 +42,11 @@
 ---@class AGFRXPWindow : Frame
 ---@field savePosition? boolean
 
+-- RXP's navigation arrow: a window like the rest, carrying the element it points at.
+---@class AGFRXPArrowFrame : AGFRXPWindow
+---@field element? AGFRXPElement
+---@field wrongContinent? boolean
+
 ---@class AGFRXPCurrentStepFrame : Frame
 ---@field UpdateText fun()
 
@@ -73,7 +78,7 @@
 ---@field guideImporter? {Open: fun(self: table), importCoroutine?: thread, importBufferSize?: integer}
 ---@field settings? {profile: {showEnabled?: boolean, hideGuideWindow?: boolean}, OpenSettings: fun()}
 ---@field v2? {state?: {guideWindow?: {frame: AGFRXPWindow}}, UpdateGuideWindow?: fun(self: table)}
----@field arrowFrame? {element?: AGFRXPElement, wrongContinent?: boolean}
+---@field arrowFrame? AGFRXPArrowFrame
 ---@field activeWaypoints? table[]
 ---@field hideArrow? boolean
 
