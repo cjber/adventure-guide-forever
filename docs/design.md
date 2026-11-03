@@ -231,7 +231,11 @@ When the optional RestedXP addon is available, `Integrations/RestedXP.lua` adapt
 
 `restedxpGuide` adds the active guide as an ordinary journey in Continue. Other journeys and activity hints remain available. The guide uses the existing card, selected step rows, checklist, pins and tracker. A character's selected journey is retained. Guide step order stays with RXP and cannot be rearranged by AGF.
 
-AGF hands the current guide waypoint to SPF as `AdventureGuideForever`, held until RXP changes it. Sticky objectives remain visible without becoming future travel stops. Unknown destinations have no pin or travel estimate. SPF's direct RXP adapter defers while `AdventureGuideForever.API.RestedXPIntegrated()` is true, so Stop and route ownership stay with the existing frontend. RXP active-item and target windows and its minimap icon are suppressed alongside its guide window. Native RXP windows must retain their engine updates while their presentation is suppressed; restoring the original frontend restores its captured presentation state.
+AGF hands the current guide waypoint to SPF as `AdventureGuideForever`, held until RXP changes it. Sticky objectives remain visible without becoming future travel stops. Unknown destinations have no pin or travel estimate. SPF's direct RXP adapter defers while `AdventureGuideForever.API.RestedXPIntegrated()` is true, so Stop and route ownership stay with the existing frontend.
+
+RXP active-item and target windows, its arrow and its minimap icon are suppressed alongside its guide window. The adapter does not change the player's RXP arrow preference. Native RXP windows retain their engine updates while their presentation is suppressed; restoring the original frontend restores its captured presentation state.
+
+RXP's explicit `.ingamewaypoint` instructions can still set the native user waypoint; ordinary RXP arrow steps do not write it. If the player or another addon moves or unfocuses AGF's native waypoint, AGF forgets ownership and neither refresh nor Stop overwrites or clears the replacement. Its own automatic quest highlighting retains an already focused, owned native waypoint, without refocusing one the player unfocused.
 
 The integration ships original adapter code and requires the separately installed RXP addon. It does not include RXP code, guide files or artwork, export guides, or bypass its account and eligibility checks. Paid guides remain subject to RestedXP's personal-use terms. Public preview text is an original test fixture.
 

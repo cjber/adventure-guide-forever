@@ -81,6 +81,11 @@ function Focus.Sync()
 	local set = Focus.Next(state, Here(ns.Route()), C_SuperTrack.GetSuperTrackedQuestID(), ns.Setting("followQuest"))
 	area, prefs.focus = state.area, state.quest
 	if set then
+		local navigating = ns.Integrations.WaypointAt(prefs.waypoint) and C_SuperTrack.IsSuperTrackingUserWaypoint()
 		C_SuperTrack.SetSuperTrackedQuestID(set)
+		-- Objective highlighting must not take focus from our running native navigation.
+		if navigating and not C_SuperTrack.IsSuperTrackingUserWaypoint() then
+			C_SuperTrack.SetSuperTrackedUserWaypoint(true)
+		end
 	end
 end
