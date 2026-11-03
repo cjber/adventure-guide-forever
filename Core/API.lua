@@ -4,17 +4,26 @@ local _, ns = ...
 -- Public answers and navigation requests for other addons (docs/api.md). Reads return copies;
 -- nil means the route is still settling, so ask again later.
 ---@class AGFAPI
--- `minor` rises with each addition within version 1 (1: Subscribe, 2: Suggestions and StartSuggestion, 3: Stats);
+-- `minor` rises with each addition within version 1 (1: Subscribe, 2: Suggestions and StartSuggestion, 3: Stats,
+-- 4: Leaderboard);
 -- a caller checks a member before using it.
-local API = { version = 1, minor = 3 }
+local API = { version = 1, minor = 4 }
 
 local NEXT_LIMIT = 8
 local SUGGESTION_LIMIT = 5
 
--- Local per-character activity records. Returned values are copies; no sharing or leaderboard transport is implied.
+-- Local per-character activity records. Returned values are copies.
 ---@return AGFActivityRecord[]
 function API.Stats()
 	return ns.ActivityStats and ns.ActivityStats() or {}
+end
+
+-- Cumulative quest turn-ins ranked among this character and the guild and group members who reported theirs. Copies;
+-- nil for a limit that is not a whole number of zero or more.
+---@param limit? integer how many top rows, ten unless given, 25 at most; this character's row is always included
+---@return AGFLeaderboard?
+function API.Leaderboard(limit)
+	return ns.Stats.Leaderboard(limit)
 end
 
 ---@param step AGFStep

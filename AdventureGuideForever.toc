@@ -50,6 +50,7 @@ Planning\Shown.lua
 UI\Sound.lua
 Core\State.lua
 Core\Activity.lua
+Core\PeerStats.lua
 Core\Stats.lua
 Core\Party.lua
 Planning\Geometry.lua

@@ -45,6 +45,7 @@ jobs:
           key: corpus-${{ runner.os }}-${{ hashFiles('tools/gen_corpus.py', 'tools/gen_quests.py') }}
       - run: python3 tools/gen_corpus.py
       - run: luacheck .
+      - run: python3 -m tools.forever_tools.assets
       - run: for spec in tests/*_spec.lua; do luajit "$spec" || exit 1; done
       # A screenshot older than the headless scene it is drawn from (docs/screenshots/scenes.sha256). On this
       # repository's own data/refresh PR (and a manual run on that branch) a scene moved by new data only warns,

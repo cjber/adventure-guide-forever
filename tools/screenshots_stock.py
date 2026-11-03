@@ -96,17 +96,11 @@ def button_font(entry, normal, highlight, disabled):
 
 
 def draw_panel_button(canvas, entry, rect, layer):
-    """UIPanelButtonTemplate (Mainline/SharedUIPanelTemplates.xml:315, on UIPanelButtonNoTooltipTemplate,
-    SecureUIPanelTemplates.xml:39): UI-Panel-Button-Up in three slices, 12-unit caps, texcoords to .6875 down
-    (UI-Panel-Button-Disabled once disabled), GameFontNormal centred (GameFontDisable when disabled)."""
+    """SharedButtonSmallTemplate in Shared/Button/ThreeSliceButtonTemplate.xml, with separate text layering."""
     x, y, w, h = rect
     if layer == "BACKGROUND":
-        file = texture(
-            canvas.ui, "Interface\\Buttons\\UI-Panel-Button-" + ("Disabled" if entry.get("disabled") else "Up")
-        )
-        canvas.draw(drawing.wm.crop_coords(file, 0, 0.09375, 0, 0.6875), x, y, 12, h)
-        canvas.draw(drawing.wm.crop_coords(file, 0.09375, 0.53125, 0, 0.6875), x + 12, y, w - 24, h)
-        canvas.draw(drawing.wm.crop_coords(file, 0.53125, 0.625, 0, 0.6875), x + w - 12, y, 12, h)
+        state = "disabled" if entry.get("disabled") else "hover" if entry.get("highlightLocked") else "normal"
+        drawing.wm.three_slice_button(canvas, x, y, w, h, "", state=state)
     elif layer == "TEXT" and entry.get("text"):
         face = button_font(entry, "GameFontNormal", "GameFontHighlight", "GameFontDisable")
         canvas.text(x, y, entry["text"], face, justify="CENTER", width=w, box_height=h)
@@ -328,7 +322,7 @@ STOCK = {
     "WowScrollBoxList": (draw_scroll_box, None, None, 0),
     "MinimalScrollBar": (draw_minimal_scroll_bar, None, None, 0),
     "SearchBoxTemplate": (draw_search_box, None, None, 0),
-    "UIPanelButtonTemplate": (draw_panel_button, lambda ui, entry: (40, 22), None, 0),
+    "SharedButtonSmallTemplate": (draw_panel_button, lambda ui, entry: (138, 28), None, 0),
     "UIPanelIconDropdownButtonTemplate": (draw_icon_dropdown, lambda ui, entry: (15, 16), None, 0),
     "WowStyle1DropdownTemplate": (draw_dropdown, lambda ui, entry: (120, 25), None, 0),
 }

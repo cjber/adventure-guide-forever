@@ -20,8 +20,17 @@ ns.L = {
 	SETTING_STATS_SHARE_TOOLTIP = "On by default. Shares cumulative activity rows with addon users in "
 		.. "your guild, party, raid or instance. Turn it off to keep records on this character only. "
 		.. "Shared records are player-reported, not verified.",
-	STATS_SUMMARY = "Activity: %d quest turn-ins recorded locally; %d other addon users reported activity.",
-	HELP_STATS = "/agf stats - show local quest turn-ins and the number of peers reporting activity",
+	LEADERBOARD_TITLE = "Quest turn-ins observed for this character (cumulative)",
+	LEADERBOARD_SCOPE = "Guild and group members running Adventure Guide report their own totals. "
+		.. "Values are player-reported, not verified.",
+	LEADERBOARD_ROW = "%d. %s: %d",
+	LEADERBOARD_ROW_SELF = "%d. %s (you): %d",
+	LEADERBOARD_NO_PEERS = "No guild or group member has reported yet; their totals are unknown.",
+	LEADERBOARD_PEERS_HIDDEN = "Other players' totals are hidden while sharing is off.",
+	LEADERBOARD_SHARING_ON = "Sharing is on. Turn it off with /agf share off or in Settings > AddOns > Adventure Guide.",
+	LEADERBOARD_SHARING_OFF = "Sharing is off: nothing is sent or shown. Turn it on with /agf share on.",
+	HELP_LEADERBOARD = "/agf leaderboard - show quest turn-ins reported by your guild and group (also /agf stats)",
+	HELP_SHARE = "/agf share on|off - turn sharing of quest turn-in totals with your guild and groups on or off",
 	SETTING_RXP = "Use RestedXP guides",
 	SETTING_RXP_TOOLTIP = "Add the current RestedXP guide to your journey cards, map and tracker. "
 		.. "RestedXP advances guide steps; Shortest Path Forever handles travel. "

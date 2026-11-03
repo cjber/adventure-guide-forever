@@ -1112,19 +1112,14 @@ local function Slash(msg)
 		)
 	elseif command == "audit" then
 		Audit()
-	elseif command == "stats" then
-		local activity = ns.ActivityStats and ns.ActivityStats() or {}
-		local count = 0
-		for _, row in ipairs(activity) do
-			if row.metric == "quest_turn_ins" and row.subject == "all" then
-				count = row.value
-			end
+	elseif command == "leaderboard" or command == "stats" then
+		ns.Stats.Print()
+	elseif command == "share" or command == "share on" or command == "share off" then
+		if command ~= "share" then
+			ns.SetSetting("statsShare", command == "share on")
 		end
-		local peers = 0
-		for _ in pairs(ns.Stats and ns.Stats.Shared() or {}) do
-			peers = peers + 1
-		end
-		ns.Print(L.STATS_SUMMARY:format(count, peers))
+		local sharing = ns.Setting("statsShare") ~= false
+		ns.Print(sharing and L.LEADERBOARD_SHARING_ON or L.LEADERBOARD_SHARING_OFF)
 	elseif command == "dump" then
 		ns.Dump()
 	elseif command == "tracker" then
@@ -1143,7 +1138,8 @@ local function Slash(msg)
 		ns.Print(L.HELP_ISSUE)
 		ns.Print(L.HELP_WHERE)
 		ns.Print(L.HELP_AUDIT)
-		ns.Print(L.HELP_STATS)
+		ns.Print(L.HELP_LEADERBOARD)
+		ns.Print(L.HELP_SHARE)
 		ns.Print(L.HELP_DUMP)
 		ns.Print(L.HELP_TRACKER)
 	end

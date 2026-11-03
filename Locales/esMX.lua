@@ -105,10 +105,12 @@ L["BEFORE_IT_RUNS_OUT"] = "antes de que caduque %s"
 L["BEFORE_ITEM_RUNS_OUT"] = "antes de que caduque un objeto de misión"
 L["HELP_AUDIT"] = "/agf audit - comprobar los datos de misiones con el juego"
 L["HELP_DUMP"] = "/agf dump - guardar el diseño de la guía para un informe de error"
+L["HELP_LEADERBOARD"] =
+	"/agf leaderboard - muestra las entregas de misiones comunicadas por tu hermandad y grupo (también /agf stats)"
 L["HELP_OPEN"] = "/agf - abrir la guía en el mapa del mundo."
 L["HELP_REPORT"] = "/agf report - mostrar un informe para copiar en un informe de error"
-L["HELP_STATS"] =
-	"/agf stats - muestra las entregas locales de misiones y cuántos usuarios de otros addons reportan actividad"
+L["HELP_SHARE"] =
+	"/agf share on|off - activa o desactiva compartir los totales de entregas de misiones con tu hermandad y grupos"
 L["HELP_TRACKER"] = "/agf tracker - mostrar los anclajes del rastreador (si se solapa en combate)"
 L["HELP_WHERE"] = "/agf where - mostrar la parada actual de la guía, para copiarla en un informe de parada errónea"
 L["HUB_HAND_IN"] = "%d para entregar"
@@ -130,6 +132,18 @@ L["JOURNEY_PROGRESS_EMPTY"] = "Tus historias completadas aparecerán aquí."
 L["JOURNEY_QUESTS"] = "Misiones de este viaje"
 L["JOURNEY_STORY"] = "Historia: %s"
 L["LATER_LAPS"] = "%d de ellas en vueltas posteriores"
+L["LEADERBOARD_NO_PEERS"] =
+	"Aún ningún miembro de la hermandad o del grupo ha informado; sus totales son desconocidos."
+L["LEADERBOARD_PEERS_HIDDEN"] = "Los totales de otros jugadores están ocultos mientras compartir esté desactivado."
+L["LEADERBOARD_ROW"] = "%d. %s: %d"
+L["LEADERBOARD_ROW_SELF"] = "%d. %s (tú): %d"
+L["LEADERBOARD_SCOPE"] =
+	"Los miembros de la hermandad y del grupo con Adventure Guide informan de sus propios totales. Los valores los declaran los jugadores y no están verificados."
+L["LEADERBOARD_SHARING_OFF"] =
+	"Compartir está desactivado: no se envía ni se muestra nada. Actívalo con /agf share on."
+L["LEADERBOARD_SHARING_ON"] =
+	"Compartir está activado. Desactívalo con /agf share off o en Opciones > AddOns > Adventure Guide."
+L["LEADERBOARD_TITLE"] = "Entregas de misiones observadas para este personaje (acumuladas)"
 L["LEGACY_PROGRESS_LINK"] = "Abrir el mapa para el progreso de legado"
 L["LEGACY_PROGRESS_NOTE"] = "Legacy Forever sigue las colecciones, la exploración y la finalización de zonas."
 L["LEVELS"] = "%d-%d"
@@ -376,8 +390,6 @@ L["SPF_MISSING"] = "Instala Shortest Path Forever para rutas a pie y horarios de
 L["STARTS_AFTER_COMBAT"] = "La ruta empieza cuando acabe el combate"
 L["STARTS_WITH"] = "Empieza con %s"
 L["START_ADVENTURE"] = "Empezar"
-L["STATS_SUMMARY"] =
-	"Actividad: %d entregas de misiones registradas localmente; %d usuarios de otros addons reportaron actividad."
 L["STEP_BATTLEMASTER"] = "Visita al maestro de batalla en %s"
 L["STEP_COLLECT"] = "Recoger %s · %s"
 L["STEP_DEFEAT"] = "Derrotar %s · %s"

@@ -2,7 +2,7 @@
 
 Addons can read where the guide is sending the player through `AdventureGuideForever.API` (`version = 1`). Additions
 keep `version` at 1 and raise `minor` (1 from `Subscribe`, 2 from `Suggestions` and `StartSuggestion`, 3 from
-`Stats`), so check that a function exists before calling it.
+`Stats`, 4 from `Leaderboard`), so check that a function exists before calling it.
 The stop and suggestion queries are read-only; `ResumeRestedXP()` and `StartSuggestion(id)` are explicit navigation
 requests. Places use uiMapIDs and
 normalized 0-1 coordinates, as Shortest Path's API does.
@@ -15,6 +15,13 @@ normalized 0-1 coordinates, as Shortest Path's API does.
   quest ID. Each row has `addon`, `metric`, `subject`, `value`, and the latest observed `eventUnix` when available.
   These are local SavedVariables. Adventure Guide does not broadcast them or assert that a record is a first for
   anyone else.
+- `Leaderboard(limit)` returns cumulative quest turn-ins ranked among this character and the guild and group members
+  who report theirs: `{ metric = "quest_turn_ins", scope = "guild_group", sharing, total, rows }`. `rows` holds the top
+  `limit` rows (ten unless given, 25 at most) and this character's row when it ranks below them; each row has `rank`,
+  `name`, `value`, `eventUnix` and `self` (true on this character's). Ties fall to the lowercase name. Values are
+  what each player's addon reported, so they are neither verified nor realm-wide, and a player who has not reported
+  is unknown rather than zero. With `sharing` false (the player turned it off), only this character's row is
+  returned. A `limit` that is not a whole number of zero or more returns `nil`. The result is a fresh table.
 
 `RestedXPNativeUI()` returns true while the display choice is pending or the player chose RestedXP. Navigation addons should preserve the native arrow in that case.
 

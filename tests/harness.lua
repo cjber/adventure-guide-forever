@@ -1067,7 +1067,7 @@ function harness.load(options)
 		end,
 		QuestLogBorderFrameTemplate = noop,
 		-- SharedTooltipTemplates.xml: the stock bordered tooltip backdrop.
-		UIPanelButtonTemplate = noop,
+		SharedButtonSmallTemplate = noop,
 		-- SharedXMLBase InputBoxTemplate: the stock single-line edit box art (the Forever addons link window's).
 		InputBoxTemplate = noop,
 		SearchBoxTemplate = function(frame)
