@@ -1840,7 +1840,7 @@ end
 -- one of them runs.
 local function StopButton(h)
 	return h.Find(function(frame)
-		return frame.stockTemplate == "UIPanelButtonTemplate" and frame.text == h.ns.L.STOP
+		return frame.stockTemplate == "SharedButtonSmallTemplate" and frame.text == h.ns.L.STOP
 	end)[1]
 end
 -- Choosing another journey, which starts its route once the rebuild has its steps.
@@ -2673,13 +2673,14 @@ do
 		L.HELP_ISSUE,
 		L.HELP_WHERE,
 		L.HELP_AUDIT,
-		L.HELP_STATS,
+		L.HELP_LEADERBOARD,
+		L.HELP_SHARE,
 		L.HELP_DUMP,
 		L.HELP_TRACKER,
 	}) do
 		equal(h.prints[before + index]:sub(-#line), line, "L: help line " .. index)
 	end
-	equal(#h.prints, before + 8, "L: eight help lines")
+	equal(#h.prints, before + 9, "L: nine help lines")
 	-- Map names come from the client (C_Map.GetMapInfo), which the planner prefers over the data's English.
 	h.G.C_Map.GetMapInfo = function()
 		return { name = "Client Stormwind" }

@@ -552,7 +552,16 @@
 ---@field NEXT_CAMP string a step menu's entry: move an area step on to its next objective spot
 ---@field HELP_AUDIT string
 ---@field HELP_DUMP string
----@field HELP_STATS string
+---@field HELP_LEADERBOARD string
+---@field HELP_SHARE string
+---@field LEADERBOARD_TITLE string
+---@field LEADERBOARD_SCOPE string
+---@field LEADERBOARD_ROW string
+---@field LEADERBOARD_ROW_SELF string
+---@field LEADERBOARD_NO_PEERS string
+---@field LEADERBOARD_PEERS_HIDDEN string
+---@field LEADERBOARD_SHARING_ON string
+---@field LEADERBOARD_SHARING_OFF string
 ---@field HELP_TRACKER string
 ---@field HELP_REPORT string
 ---@field HELP_ISSUE string
@@ -1458,7 +1467,6 @@
 ---@field SETTING_STATS_SHARE_TOOLTIP string
 ---@field SETTING_STEP_SOUND string
 ---@field SETTING_STEP_SOUND_TOOLTIP string
----@field STATS_SUMMARY string format: local quest turn-ins, then the number of users reporting activity
 ---@field STEP_PICKUP string
 ---@field STEP_OBJECTIVE string
 ---@field STEP_SHARED_OBJECTIVES string
@@ -1867,8 +1875,9 @@
 ---@field RestedXPIntegrated fun(): boolean
 ---@field RestedXPNativeUI fun(): boolean
 ---@field version integer
----@field minor integer 1 from Subscribe, 2 from Suggestions and StartSuggestion
----@field Stats fun(): AGFActivityRecord[] read-only per-character rows (minor 3); never transmitted
+---@field minor integer 1 from Subscribe, 2 from Suggestions and StartSuggestion, 3 from Stats, 4 from Leaderboard
+---@field Stats fun(): AGFActivityRecord[] read-only per-character rows (minor 3)
+---@field Leaderboard fun(limit?: integer): AGFLeaderboard? quest turn-ins among this character and reporting peers (minor 4)
 ---@field Suggestions fun(limit?: integer): AGFAPISuggestion[]? the panel's cards, at most five
 ---@field StartSuggestion fun(id: string): boolean starts a card as the guide's own Start does
 ---@field Subscribe fun(callback: fun(changes: AGFAPIChanges)): fun() calls back the frame after the current stop or the journey changes, at most once per burst; returns the unsubscribe
@@ -1915,13 +1924,29 @@ AdventureGuideForever = nil
 
 ---@class AGFNamespace
 ---@field ActivityStats fun(): AGFActivityRecord[]
----@field Stats AGFStats this client's sender and the rows it has heard (Core/Stats.lua)
+---@field PeerStats ForeverPeerStatsNamespace the shared guild and group statistics transport (Core/PeerStats.lua)
+---@field Stats AGFStats Adventure Guide's adapter and leaderboard over it (Core/Stats.lua)
+
+---@class AGFLeaderboardRow
+---@field rank integer 1-based; ties fall to the lowercase name
+---@field name string
+---@field value integer cumulative quest turn-ins as reported; player-reported, not verified
+---@field eventUnix? integer
+---@field self? true this character
+
+---@class AGFLeaderboard
+---@field metric "quest_turn_ins"
+---@field scope "guild_group" addon reports from the guild and the current group, never the realm
+---@field sharing boolean false hides every other player and stops sending
+---@field total integer rows ranked, including those cut by the limit
+---@field rows AGFLeaderboardRow[] the top rows, plus this character's row when it ranks below them
 
 ---@class AGFStats
----@field Sync fun() queue this character's shareable rows for every channel it can reach
----@field Receive fun(prefix: string, payload: string, channel: string, sender: string) validate and keep one heard row
----@field Shared fun(): table<string, table<string, table<string, table<string, {value: integer, eventUnix: integer?}>>>> rows heard from other users, by sender, addon, metric and subject
----@field SetEnabled fun(enabled: boolean) the sharing switch changed: sync now, or drop what waited
+---@field Sync fun() offer this character's total to the guild and group channels
+---@field Shared fun(): table<string, table<string, table<string, {value: integer, eventUnix: integer}>>> rows heard from other users by sender, metric and subject; empty while sharing is off
+---@field SetEnabled fun(enabled: boolean) the saved sharing switch changed: cancel what waited, or offer the total again
+---@field Leaderboard fun(limit?: integer): AGFLeaderboard?
+---@field Print fun() /agf leaderboard
 
 ---@class AGFStoryCompletion
 ---@field Record fun(questID: integer): boolean true only for a new proven final turn-in

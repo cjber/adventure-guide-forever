@@ -105,10 +105,12 @@ L["BEFORE_IT_RUNS_OUT"] = "%s(이)가 사라지기 전에"
 L["BEFORE_ITEM_RUNS_OUT"] = "퀘스트 아이템이 사라지기 전에"
 L["HELP_AUDIT"] = "/agf audit - 퀘스트 데이터를 게임과 대조합니다"
 L["HELP_DUMP"] = "/agf dump - 오류 보고용으로 안내서 배치를 저장합니다"
+L["HELP_LEADERBOARD"] =
+	"/agf leaderboard - 길드와 파티가 보고한 퀘스트 완료 횟수를 표시합니다 (/agf stats도 가능)"
 L["HELP_OPEN"] = "/agf - 세계 지도에서 안내서를 엽니다."
 L["HELP_REPORT"] = "/agf report - 오류 보고에 복사할 보고서를 표시합니다"
-L["HELP_STATS"] =
-	"/agf stats - 이 캐릭터의 퀘스트 완료 기록과 활동을 보고한 다른 애드온 사용자 수를 표시합니다"
+L["HELP_SHARE"] =
+	"/agf share on|off - 퀘스트 완료 합계를 길드 및 파티와 공유하는 기능을 켜거나 끕니다"
 L["HELP_TRACKER"] = "/agf tracker - 추적기 고정점을 출력합니다 (전투 중 겹칠 때)"
 L["HELP_WHERE"] = "/agf where - 안내서의 현재 정거장을 표시합니다 (잘못된 정거장 보고용)"
 L["HUB_HAND_IN"] = "제출 %d개"
@@ -130,6 +132,18 @@ L["JOURNEY_PROGRESS_EMPTY"] = "완료한 이야기가 여기에 표시됩니다.
 L["JOURNEY_QUESTS"] = "이 여정의 퀘스트"
 L["JOURNEY_STORY"] = "%s 이야기"
 L["LATER_LAPS"] = "그중 %d개는 나중 바퀴"
+L["LEADERBOARD_NO_PEERS"] =
+	"아직 보고한 길드 또는 파티 구성원이 없습니다. 그들의 합계는 알 수 없습니다."
+L["LEADERBOARD_PEERS_HIDDEN"] = "공유가 꺼져 있는 동안 다른 플레이어의 합계는 숨겨집니다."
+L["LEADERBOARD_ROW"] = "%d. %s: %d"
+L["LEADERBOARD_ROW_SELF"] = "%d. %s (나): %d"
+L["LEADERBOARD_SCOPE"] =
+	"Adventure Guide를 사용하는 길드 및 파티 구성원이 각자의 합계를 보고합니다. 값은 플레이어가 직접 보고한 것이며 검증되지 않았습니다."
+L["LEADERBOARD_SHARING_OFF"] =
+	"공유가 꺼져 있습니다. 아무것도 보내거나 표시하지 않습니다. /agf share on으로 켤 수 있습니다."
+L["LEADERBOARD_SHARING_ON"] =
+	"공유가 켜져 있습니다. /agf share off 또는 설정 > 애드온 > Adventure Guide에서 끌 수 있습니다."
+L["LEADERBOARD_TITLE"] = "이 캐릭터에서 관찰된 퀘스트 완료 횟수 (누적)"
 L["LEGACY_PROGRESS_LINK"] = "지도에서 유산 진행 상황 열기"
 L["LEGACY_PROGRESS_NOTE"] = "수집품, 탐험, 지역 완료는 Legacy Forever가 추적합니다."
 L["LEVELS"] = "%d-%d"
@@ -379,8 +393,6 @@ L["SPF_MISSING"] = "걷는 경로와 배 시간을 보려면 Shortest Path Forev
 L["STARTS_AFTER_COMBAT"] = "전투가 끝나면 경로가 시작됩니다"
 L["STARTS_WITH"] = "시작: %s"
 L["START_ADVENTURE"] = "시작"
-L["STATS_SUMMARY"] =
-	"활동: 퀘스트 완료 %d회 로컬 기록, 다른 애드온 사용자 %d명이 활동을 보고했습니다."
 L["STEP_BATTLEMASTER"] = "전투모병관 방문: %s"
 L["STEP_COLLECT"] = "수집: %s · %s"
 L["STEP_DEFEAT"] = "처치: %s · %s"
