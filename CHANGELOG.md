@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-03
+
+- **The guide's game data is re-pinned to the 1.60.1.70753 build.** Nothing the guide sends you to changed with this build, so no quest, zone, pin or route moves: the data now carries the build you are running and the map cache revision that goes with it.
+
 ## [1.0.0] - 2026-11-02
 
 - **The first stable release, ready for the WoW: Forever launch.** Adventure Guide Forever 1.0 works as 0.22.14 did: the guide, its routes, the map pins and the tracker are unchanged. The version number now marks the addon as ready for everyday play, and the chat line after the update says so in every shipped language.
