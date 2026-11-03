@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-11-03
+
 - **Shared reports keep distinct errors separate.** Errors with the same opening text keep their own counts, and BugGrabber entries already captured by the addon appear once. Thanks to cjber for requesting the compatibility audit (#304).
 
 - **Unfocusing a map pin stops its guidance.** The guide leaves your pin and new quest focus alone instead of treating an unfocused pin as a running route. Its own objective highlighting preserves navigation already running. Thanks to cjber for the report (#304).
