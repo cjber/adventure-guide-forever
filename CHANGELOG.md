@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-11-03
+
 - **Unfocusing a map pin stops its guidance.** The guide leaves your pin and new quest focus alone instead of treating an unfocused pin as a running route. Its own objective highlighting preserves navigation already running. Thanks to cjber for the report (#304).
 
 ## [1.0.2] - 2026-11-03
