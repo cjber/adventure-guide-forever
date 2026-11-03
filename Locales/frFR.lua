@@ -105,10 +105,12 @@ L["BEFORE_IT_RUNS_OUT"] = "avant que %s n'expire"
 L["BEFORE_ITEM_RUNS_OUT"] = "avant qu'un objet de quête n'expire"
 L["HELP_AUDIT"] = "/agf audit - comparer les données de quêtes avec le jeu"
 L["HELP_DUMP"] = "/agf dump - enregistrer la disposition du guide pour un rapport de bug"
+L["HELP_LEADERBOARD"] =
+	"/agf leaderboard - affiche les remises de quêtes communiquées par votre guilde et votre groupe (aussi /agf stats)"
 L["HELP_OPEN"] = "/agf - ouvrir le guide sur la carte du monde."
 L["HELP_REPORT"] = "/agf report - afficher un rapport à copier dans un rapport de bug"
-L["HELP_STATS"] =
-	"/agf stats - affiche les quêtes terminées localement et le nombre d’utilisateurs d’autres addons qui signalent leur activité"
+L["HELP_SHARE"] =
+	"/agf share on|off - active ou désactive le partage des totaux de remises de quêtes avec votre guilde et vos groupes"
 L["HELP_TRACKER"] = "/agf tracker - afficher les ancrages du suivi (en cas de chevauchement en combat)"
 L["HELP_WHERE"] = "/agf where - afficher l’arrêt actuel du guide, à copier dans un rapport d’arrêt erroné"
 L["HUB_HAND_IN"] = "%d à rendre"
@@ -130,6 +132,17 @@ L["JOURNEY_PROGRESS_EMPTY"] = "Vos histoires terminées apparaîtront ici."
 L["JOURNEY_QUESTS"] = "Quêtes de ce voyage"
 L["JOURNEY_STORY"] = "Histoire : %s"
 L["LATER_LAPS"] = "dont %d lors de tours suivants"
+L["LEADERBOARD_NO_PEERS"] = "Aucun membre de la guilde ou du groupe n’a encore répondu ; leurs totaux sont inconnus."
+L["LEADERBOARD_PEERS_HIDDEN"] = "Les totaux des autres joueurs sont masqués tant que le partage est désactivé."
+L["LEADERBOARD_ROW"] = "%d. %s : %d"
+L["LEADERBOARD_ROW_SELF"] = "%d. %s (vous) : %d"
+L["LEADERBOARD_SCOPE"] =
+	"Les membres de la guilde et du groupe qui utilisent Adventure Guide communiquent leurs propres totaux. Les valeurs sont déclarées par les joueurs et non vérifiées."
+L["LEADERBOARD_SHARING_OFF"] =
+	"Le partage est désactivé : rien n’est envoyé ni affiché. Activez-le avec /agf share on."
+L["LEADERBOARD_SHARING_ON"] =
+	"Le partage est activé. Désactivez-le avec /agf share off ou dans Options > AddOns > Adventure Guide."
+L["LEADERBOARD_TITLE"] = "Remises de quêtes observées pour ce personnage (cumul)"
 L["LEGACY_PROGRESS_LINK"] = "Ouvrir la carte pour la progression d’héritage"
 L["LEGACY_PROGRESS_NOTE"] =
 	"Les collections, l’exploration et l’achèvement des zones sont suivis par Legacy Forever."
@@ -379,8 +392,6 @@ L["SPF_MISSING"] = "Installez Shortest Path Forever pour les trajets à pied et 
 L["STARTS_AFTER_COMBAT"] = "L’itinéraire commencera à la fin du combat"
 L["STARTS_WITH"] = "Commence par %s"
 L["START_ADVENTURE"] = "Commencer"
-L["STATS_SUMMARY"] =
-	"Activité : %d quêtes terminées enregistrées localement ; %d utilisateurs d’autres addons ont signalé leur activité."
 L["STEP_BATTLEMASTER"] = "Rendez visite au maître de guerre à %s"
 L["STEP_COLLECT"] = "Collecter %s · %s"
 L["STEP_DEFEAT"] = "Vaincre %s · %s"

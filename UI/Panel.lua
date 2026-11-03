@@ -498,7 +498,7 @@ local function BuildFooter(parent)
 	queuedText = parent:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
 	queuedText:SetPoint("BOTTOMLEFT", PAD, 15)
 	-- Shown only while our guidance runs (design §2.10): it never stops what the player or another addon started.
-	stopButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate") --[[@as Button]]
+	stopButton = CreateFrame("Button", nil, parent, "SharedButtonSmallTemplate") --[[@as Button]]
 	stopButton:SetSize(90, 26)
 	stopButton:SetPoint("BOTTOMRIGHT", -PAD, 8)
 	stopButton:SetText(L.STOP)

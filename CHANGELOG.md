@@ -12,6 +12,14 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **A quest turn-in leaderboard for your guild and groups.** `/agf leaderboard` (or `/agf stats`) ranks the quest turn-ins Adventure Guide has seen your character make against the totals your guild and group members running the addon report. Their numbers are what they report, not verified, and someone who has not reported is shown as unknown. Your own row always shows. Sharing stays on by default; turn it off with `/agf share off` or in Settings > AddOns > Adventure Guide and nothing is sent or shown from others, while your own progress and history stay. Totals heard before this version carry over, and a choice to share nothing is kept.
+
+- **Controls use the Forever asset set.** Buttons use the native gold-bordered family, and CI rejects legacy loose chrome in runtime UI and screenshot renderers.
+
+### For addon authors
+
+- **`API.Leaderboard(limit)`** (minor 4) returns the same ranked quest turn-ins as fresh tables (docs/api.md).
+
 ## [1.0.1] - 2026-11-03
 
 - **The guide's game data is re-pinned to the 1.60.1.70753 build.** Nothing the guide sends you to changed with this build, so no quest, zone, pin or route moves: the data now carries the build you are running and the map cache revision that goes with it.
