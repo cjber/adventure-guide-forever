@@ -84,7 +84,7 @@ def two_places(value):
     return value
 
 
-def layout_pass(ui, scenes, known):
+def layout_pass(ui, content_ui, scenes, known):
     """The client's layout, emulated: rects resolved from a run's dumps go back into the next run (h.SetRects runs
     the addon's OnSizeChanged, then the refresh re-lays the rows) until nothing moves, as the client settles over
     its first frames. The first run carries no input and must be tests/golden/layout.json exactly, so the scenes'
@@ -93,7 +93,7 @@ def layout_pass(ui, scenes, known):
     golden = json.loads(GOLDEN.read_text())["layout"]
     if two_places(data["panel"]["layout"]) != golden:
         sys.exit("tests/scenes.lua's panel differs from tests/golden/layout.json: update its fixture to ui_spec's")
-    inputs = {"rects": {}, "mapArt": map_tiles(ui)}
+    inputs = {"rects": {}, "mapArt": map_tiles(content_ui)}
     source = Path(
         os.environ.get(
             "AGF_ATLASLOOT",
@@ -315,13 +315,13 @@ PLAYER_ARROW = 27  # the player pin's arrow, as wowmock's NOTES measure it again
 GREEN = (0.1, 1.0, 0.1)  # GREEN_FONT_COLOR, what GameTooltip_AddInstructionLine uses
 
 
-def explored_art(ui, map_id):
+def explored_art(ui, content_ui, map_id):
     """A uiMap's base art with every WorldMapOverlay drawn, as a character who has explored the whole zone sees it;
     the base art alone is the unexplored parchment."""
-    art = drawing.wm.map_art(ui, map_id)
-    for overlay in drawing.wm.map_overlays(ui, map_id):
+    art = drawing.wm.map_art(content_ui, map_id)
+    for overlay in drawing.wm.map_overlays(content_ui, map_id):
         drawing.wm.draw_overlay(
-            ui, art, overlay.offset_x, overlay.offset_y, overlay.width, overlay.height, overlay.tiles
+            content_ui, art, overlay.offset_x, overlay.offset_y, overlay.width, overlay.height, overlay.tiles
         )
     return art
 
@@ -418,10 +418,10 @@ def known_frames(rects):
 PLAYER = {"x": 0.52, "y": 0.30}  # tests/harness.lua's player position in The Barrens
 
 
-def quest_log(ui, data, rects, scene, pins=()):
+def quest_log(ui, content_ui, data, rects, scene, pins=()):
     """The world map with the quest log open on the guide's tab: `scene`'s panel dump in the quest pane, the tabs,
     and the map's pins."""
-    art = explored_art(ui, data["panel"]["map"])
+    art = explored_art(ui, content_ui, data["panel"]["map"])
 
     def on_map(canvas, frame_rects):
         draw_pins(canvas, frame_rects, pins)
@@ -434,7 +434,7 @@ def quest_log(ui, data, rects, scene, pins=()):
     return canvas, frame
 
 
-def shortest_path(ui, data):
+def shortest_path(ui, content_ui, data):
     """The map while Shortest Path guides the route AGF handed it: the current leg (player to stop 1) walked with
     Path.FindSync, the later stops joined by the straight preview walk (Route.lua's `preview` path), the numbered
     stops, and the player."""
@@ -450,7 +450,7 @@ def shortest_path(ui, data):
         goal_pins(canvas, stops, marks)
         draw_player(canvas, rects, player)
 
-    canvas, _ = map_frame(ui, explored_art(ui, map_id), False, on_map)
+    canvas, _ = map_frame(ui, explored_art(ui, content_ui, map_id), False, on_map)
     return canvas
 
 
@@ -551,10 +551,12 @@ def render():
     if version != PILLOW:
         print(f"warning: Pillow {version}, not the pinned {PILLOW}: the PNGs may not match byte for byte")
     ui = ArtUi(scale=SCALE)
+    content_ui = drawing.wm.Ui(build=DATA_BUILD, scale=SCALE)
     _, frame = map_frame(ui, drawing.wm.Image.new("RGBA", (1002, 668)), True)
     known = known_frames(frame)
     data, rects = layout_pass(
         ui,
+        content_ui,
         (
             "panel",
             "journeys",
@@ -571,29 +573,29 @@ def render():
     setup_canvas = ui.canvas(454, 294)
     Layout(data["guide_setup"]["layout"], rects["guide_setup"]).draw(setup_canvas)
     images["guide_setup"] = drawing.wm.scene(ui, [(setup_canvas, 0, 0)])
-    canvas, _ = quest_log(ui, data, rects, "restedxp", data["restedxp"]["pins"])
+    canvas, _ = quest_log(ui, content_ui, data, rects, "restedxp", data["restedxp"]["pins"])
     images["restedxp"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     # The lead image: no card chosen yet, compact rows with no scrollbar.
-    canvas, _ = quest_log(ui, data, rects, "journeys", data["journeys"]["pins"])
+    canvas, _ = quest_log(ui, content_ui, data, rects, "journeys", data["journeys"]["pins"])
     images["panel"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     # The panel on its own: four journeys, and an overflow link in a shorter sidebar.
     for name, scene in (("panel_four", "journeys_four"), ("panel_overflow", "journeys_overflow")):
-        canvas, _ = quest_log(ui, data, rects, scene)
+        canvas, _ = quest_log(ui, content_ui, data, rects, scene)
         x, y, width, height = rects[scene]["AdventureGuideForeverPanel"]
         images[name] = drawing.wm.scene(ui, [(crop(canvas, x - 6, y - 6, width + 12, height + 12), 0, 0)])
 
     # The Barrens story chosen: lit over its numbered steps, their rings on the map, the others folded above it.
-    canvas, _ = quest_log(ui, data, rects, "panel", data["panel"]["pins"])
+    canvas, _ = quest_log(ui, content_ui, data, rects, "panel", data["panel"]["pins"])
     images["chosen"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
-    canvas, frame = quest_log(ui, data, rects, "search", data["panel"]["pins"])
+    canvas, frame = quest_log(ui, content_ui, data, rects, "search", data["panel"]["pins"])
     qx, qy, qw, qh = frame["quests"]
     images["search"] = drawing.wm.scene(ui, [(crop(canvas, qx - 3, qy - 30, qw + 3 + 64, qh + 30 + 22), 0, 0)])
 
-    art = explored_art(ui, data["panel"]["map"])
-    canvas = shortest_path(ui, data)
+    art = explored_art(ui, content_ui, data["panel"]["map"])
+    canvas = shortest_path(ui, content_ui, data)
     images["map"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     hovered = data["tooltip"]["hovered"] - 1
