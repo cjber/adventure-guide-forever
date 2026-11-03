@@ -195,7 +195,9 @@ assert(jstep.checklist[2].key == jstep.key .. ":line:2", "text-only instruction 
 assert(not jstep.checklist[1].done, "non-completed instruction is not done")
 
 -- Journey with a known arrowFrame element: coordinates appear in the matching non-sticky step.
-G.RXP.arrowFrame = { element = { zone = 1413, x = 52.23, y = 31.01, arrow = true, step = step } }
+local arrowMock = h.G.CreateFrame("Frame", nil, h.G.UIParent)
+arrowMock.element = { zone = 1413, x = 52.23, y = 31.01, arrow = true, step = step }
+G.RXP.arrowFrame = arrowMock
 G.RXP.activeWaypoints = { {} }
 ns.RestedXP.Refresh()
 h.flush()

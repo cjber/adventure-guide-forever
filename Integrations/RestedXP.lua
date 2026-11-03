@@ -285,6 +285,8 @@ local function Sync()
 	active = not not enabled
 	if active and engine then
 		Window(engine.RXPFrame)
+		-- Its own arrow: RXP leaves it on screen while its windows are gone, and the guide already points the way.
+		Window(engine.arrowFrame)
 		Window(engine.activeItemFrame)
 		Window(engine.targeting and engine.targeting.activeTargetFrame)
 		Window(LibDBIcon10_RXPGuides)

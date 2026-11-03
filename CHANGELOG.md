@@ -20,6 +20,11 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 - **`API.Leaderboard(limit)`** (minor 4) returns the same ranked quest turn-ins as fresh tables (docs/api.md).
 
+- **RestedXP's arrow goes when its windows do.** Choosing the guide used to leave RestedXP's own direction arrow on
+  screen while its windows, item window and map lines were hidden, so two arrows pointed at the same step. The arrow
+  now hides and comes back with the rest of them.
+
+
 ## [1.0.1] - 2026-11-03
 
 - **The guide's game data is re-pinned to the 1.60.1.70753 build.** Nothing the guide sends you to changed with this build, so no quest, zone, pin or route moves: the data now carries the build you are running and the map cache revision that goes with it.

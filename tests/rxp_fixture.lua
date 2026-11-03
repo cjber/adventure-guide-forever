@@ -39,10 +39,12 @@ return function(h, previewCount, fresh)
 		guide.steps[#guide.steps + 1] = future
 	end
 	frame.activeSteps = { sticky, current }
+	local arrow = h.G.CreateFrame("Frame", nil, h.G.UIParent)
+	arrow.element = { zone = 1413, x = 52.23, y = 31.01, arrow = true, step = current }
 	h.G.RXP = {
 		RXPFrame = frame,
 		currentGuide = guide,
-		arrowFrame = { element = { zone = 1413, x = 52.23, y = 31.01, arrow = true, step = current } },
+		arrowFrame = arrow,
 		activeWaypoints = { true },
 		GetGuideProgress = function()
 			return index
