@@ -13,7 +13,7 @@ checks:
   - { name: specs, run: "for s in tests/*_spec.lua; do luajit \"$s\" || exit 1; done", tests: true }
   - { name: tools, run: "ruff format --check tools && ruff check tools" }
   - { name: changelog, run: "python3 tools/changelog.py --check" }
-  - { name: gate, run: "python3 .sift/gate.py --base origin/main && python3 .sift/agents.py check" }
+  - { name: gate, run: "python3 .sloppatrol/gate.py --base origin/main && python3 .sloppatrol/agents.py check" }
 focus: [Core/**, Planning/**, UI/**, Integrations/**]
 ignore: [Data/**, Locales/**, Libs/**, types/**, tools/forever_tools/**]
 guards: { maxFiles: 8, maxLines: 400 }

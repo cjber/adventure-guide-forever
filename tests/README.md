@@ -14,8 +14,9 @@ is stubbed in `harness.lua`, and agents never launch it. Checks that need the re
 | Golden routes | `harness.load` for fixed characters, compared with `tests/golden/*.txt` | catching a route change you didn't mean | `plan_golden_spec` (`AGF_UPDATE_GOLDEN=1` rewrites them) |
 | Contract | reads `types/Namespace.lua` and the vendored `fixtures/spf_types_API.lua` | AGF's mirror of Shortest Path's API at the pinned `SPF_SHA` | `contract_spec` |
 
-`plan_bench.lua` is not a spec. It times every rebuild frame (`luajit -joff tests/plan_bench.lua`); CI checks its call
-counts, and `AGF_BENCH_STRICT=1` adds the frame budget locally.
+`plan_bench.lua` is not a spec. It times every rebuild frame (`luajit -joff tests/plan_bench.lua`); it fails on its
+call counts or a frame over budget, with three times the measured time allowed, and `AGF_BENCH_STRICT=1` checks the
+budget as measured.
 
 ## The harness
 

@@ -4,7 +4,8 @@ Adventure Guide Forever is a World of Warcraft: Forever addon written in Lua 5.1
 here, so what is measured is the planner under its own headless bench, which stubs the client API and
 loads the addon files the TOC lists, in order.
 
-One benchmark, `kind: command`, runs `luajit -joff tests/plan_bench.lua`. Some specs need the corpus
+One benchmark, `kind: command`, runs `luajit -joff tests/plan_bench.lua`. The script fails when a frame
+is over its budget, with three times the measured time allowed unless `AGF_BENCH_STRICT=1`. Some specs need the corpus
 that `python3 tools/gen_corpus.py` builds into `tests/.corpus/`, so run that once in a fresh checkout
 before measuring anything that depends on it.
 
@@ -14,6 +15,12 @@ improvement to make if these numbers prove too coarse.
 
 Anything worth keeping also has to pass the repo's gate, with lua-language-server 3.19.1 and stylua
 2.5.2, the CI pins rather than whatever this machine has installed.
+
+## On pull requests
+
+`.github/workflows/speedpatrol.yml` runs `speedpatrol compare` on every pull request: three A/B rounds
+against the base branch, over `planner.plan` only, failing the job on a regression. CI's `check` job runs the same bench,
+which fails a rebuild or travel frame over its 3 ms budget.
 
 ## Never do these things
 

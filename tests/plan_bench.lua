@@ -5,14 +5,16 @@
 -- Path is a counted cost model, not a sleep: its cache semantics (API.lua:9,166-181: origin rounded to 1e-4 plus the
 -- exact destination, 256 slots, 5 s TTL) on a fake clock, charging 2.45 ms per miss (a cold estimate, API.lua:132) and
 -- 0.003 ms per hit. The cache is reset before every sample, so each one is the cold worst case.
--- CI asserts the call counts; AGF_BENCH_STRICT=1 also asserts the 3 ms frame budget (WFA-13), which shared runners
--- would flake.
+-- The budgets (3 ms a frame, WFA-13) always fail the run, with the measured CPU time divided by SLACK first: a shared
+-- runner is slower and noisier than a player's machine, so the default allows three times the measured time, while the
+-- modelled Shortest Path cost counts in full. AGF_BENCH_STRICT=1 checks the budgets as they are, for a local run.
 local harness = dofile("tests/harness.lua")
 local MISS_MS, HIT_MS, BUDGET_MS, SLOTS, TTL = 2.45, 0.003, 3, 256, 5
 -- QuestieDB's catalogue is built once a login in 2 ms slices (QuestieSource.lua's SLICE_MS): nothing can be drawn
 -- until it lands, so it trades the 3 ms budget for a tracker that fills in seconds.
 local BUILD_BUDGET_MS = 7
 local SAMPLES, strict = 20, os.getenv("AGF_BENCH_STRICT") == "1"
+local SLACK = strict and 1 or 3
 
 local data = harness.data()
 
@@ -146,6 +148,8 @@ local function check(ok, message)
 end
 
 local worstRebuild, worstTravel, worstSlice, profiles = 0, 0, 0, 0
+-- The worst travel frame as the budget sees it: measured time over SLACK plus the modelled cost.
+local worstTravelBudget = 0
 
 -- QuestieDB's build (QuestieSource.lua) on the real clock: each frame's slice, timed as the timer that runs it.
 local function Slices(h)
@@ -270,6 +274,7 @@ local function Profile(profile, level, questiedb, full)
 					label .. ": a travel frame asked " .. (model.calls - callsBefore) .. " times"
 				)
 				worstFrameTravel = math.max(worstFrameTravel, frameMs + model.ms - msBefore)
+				worstTravelBudget = math.max(worstTravelBudget, frameMs / SLACK + model.ms - msBefore)
 			end
 		end
 		check(builtFrames >= 1, label .. ": the build was not sliced")
@@ -307,14 +312,19 @@ for _, level in ipairs({ 10, 40 }) do
 end
 
 print(table.concat(lines, "\n"))
-if strict then
-	check(worstRebuild < BUDGET_MS, ("rebuild frame max %.3f ms is over %d ms"):format(worstRebuild, BUDGET_MS))
-	check(worstTravel < BUDGET_MS, ("travel frame max %.3f ms is over %d ms"):format(worstTravel, BUDGET_MS))
-	check(
-		worstSlice < BUILD_BUDGET_MS,
-		("QuestieDB build slice max %.3f ms is over %d ms"):format(worstSlice, BUILD_BUDGET_MS)
-	)
-end
+local over = (" with the measured time divided by %d"):format(SLACK)
+check(
+	worstRebuild / SLACK < BUDGET_MS,
+	("rebuild frame max %.3f ms is over %d ms%s"):format(worstRebuild, BUDGET_MS, SLACK > 1 and over or "")
+)
+check(
+	worstTravelBudget < BUDGET_MS,
+	("travel frame max %.3f ms is over %d ms%s"):format(worstTravel, BUDGET_MS, SLACK > 1 and over or "")
+)
+check(
+	worstSlice / SLACK < BUILD_BUDGET_MS,
+	("QuestieDB build slice max %.3f ms is over %d ms%s"):format(worstSlice, BUILD_BUDGET_MS, SLACK > 1 and over or "")
+)
 assert(#failures == 0, table.concat(failures, "\n"))
 print(
 	("plan_bench: %d profiles x %d samples; rebuild %.3f ms, travel %.3f ms, " .. "QuestieDB slice %.3f ms%s"):format(
@@ -323,6 +333,6 @@ print(
 		worstRebuild,
 		worstTravel,
 		worstSlice,
-		strict and " (budget checked)" or ""
+		strict and " (budget checked as measured)" or (" (budget checked, measured time / %d)"):format(SLACK)
 	)
 )
