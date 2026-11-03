@@ -27,7 +27,7 @@ Run in order from the repository root. All must pass before and after any audit 
 | Test corpus | `python3 tools/gen_corpus.py` | writes `tests/.corpus/` (gitignored; built from the pinned QuestieDB release, twice, byte-identical) |
 | Types and multi-values | `tools/typecheck.sh` | LuaLS 3.19.1 reports no diagnostics; the multi-value lint and its tests pass |
 | Tests | `for s in tests/*_spec.lua; do luajit "$s" \|\| exit 1; done` | each prints `<name>_spec: N checks passed`, exit 0 |
-| Bench | `luajit -joff tests/plan_bench.lua` | exit 0; after a planner or rebuild change also `AGF_BENCH_STRICT=1` (3 ms frame budget, local only) |
+| Bench | `luajit -joff tests/plan_bench.lua` | exit 0 (call counts and the 3 ms frame budget, with three times the measured time allowed); after a planner or rebuild change also `AGF_BENCH_STRICT=1` (the budget as measured) |
 | Changelog | `python3 tools/changelog.py --check` | exit 0: every release has a `CHANGELOG.md` entry |
 | Workflows | `uvx --from actionlint-py==1.7.12.25 actionlint && uvx zizmor@1.30.1 --offline .github` | exit 0 |
 | Secrets | `gitleaks git --redact --no-banner .` | `no leaks found` |

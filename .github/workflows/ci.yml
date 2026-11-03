@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   deadcode:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -19,12 +19,20 @@ jobs:
       - run: python3 tools/deadcode.py --check
 
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - run: sudo apt-get update && sudo apt-get install -y luajit lua-check
+      # Ubuntu 24.04's release-pocket builds, which the archive never replaces.
+      - name: Install LuaJIT and luacheck
+        env:
+          LUAJIT: 2.1.0+git20231223.c525bcb+dfsg-1
+          LUACHECK: 1.1.2-1
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends --allow-downgrades \
+            "luajit=$LUAJIT" "libluajit-5.1-2=$LUAJIT" "libluajit-5.1-common=$LUAJIT" "lua-check=$LUACHECK"
       # The test corpus is never committed (QuestieDB carries no licence): it is built from the sha-pinned release,
       # downloaded once into tools/.cache and kept here between runs (only its own inputs, keyed by the pins in the
       # generators, so the tracker source and the other dumps never come back stale).
@@ -39,7 +47,7 @@ jobs:
       - run: luacheck .
       - run: for spec in tests/*_spec.lua; do luajit "$spec" || exit 1; done
       # A screenshot older than the headless scene it is drawn from (docs/screenshots/scenes.sha256). On this
-      # repository's own data/refresh PR (and CI dispatched on that branch) a scene moved by new data only warns,
+      # repository's own data/refresh PR (and a manual run on that branch) a scene moved by new data only warns,
       # since the bot can't render; the images are rendered again after it merges.
       - run: python3 tools/check_screenshots.py
         env:
@@ -48,7 +56,7 @@ jobs:
         run: |
           python3 tools/fetch_tracker_ui.py
           TRACKER_UI_ROOT=tools/.cache/tracker-ui luajit tests/tracker_host_spec.lua
-      # Call counts only: the 3 ms budget is AGF_BENCH_STRICT=1, run locally, since shared runners flake.
+      # Call counts and the 3 ms frame budget, with three times the measured time allowed for a shared runner.
       - run: luajit -joff tests/plan_bench.lua
       - name: Check generated localisation template
         run: python3 tools/phrases.py --check
@@ -74,13 +82,20 @@ jobs:
           args: --check .
 
   typecheck:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       # tools/gen_corpus_test.py, among the unit tests typecheck.sh runs, reads the built corpus.
-      - run: sudo apt-get update && sudo apt-get install -y luajit
+      # Ubuntu 24.04's release-pocket builds, which the archive never replaces.
+      - name: Install LuaJIT
+        env:
+          LUAJIT: 2.1.0+git20231223.c525bcb+dfsg-1
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends --allow-downgrades \
+            "luajit=$LUAJIT" "libluajit-5.1-2=$LUAJIT" "libluajit-5.1-common=$LUAJIT"
       # The test corpus is never committed (QuestieDB carries no licence): it is built from the sha-pinned release,
       # downloaded once into tools/.cache and kept here between runs (only its own inputs, keyed by the pins in the
       # generators, so the tracker source and the other dumps never come back stale).
@@ -102,7 +117,7 @@ jobs:
       - run: tools/typecheck.sh
 
   generated-data:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -117,7 +132,7 @@ jobs:
         run: python3 tools/check_generated.py
 
   project-rules:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -131,7 +146,7 @@ jobs:
       - run: python3 .sloppatrol/agents.py check
 
   workflows:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -140,7 +155,7 @@ jobs:
       - run: pipx run zizmor==1.30.1 --offline .github
 
   secrets:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -156,14 +171,21 @@ jobs:
   # What a tag would ship, checked before it ships: the release workflow's packager without uploading or zipping,
   # then tools/check_package.py on .release/ (every loaded file present, no development folders, the smoke spec passes on it).
   package:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
-      - run: sudo apt-get update && sudo apt-get install -y luajit
+      # Ubuntu 24.04's release-pocket builds, which the archive never replaces.
+      - name: Install LuaJIT
+        env:
+          LUAJIT: 2.1.0+git20231223.c525bcb+dfsg-1
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends --allow-downgrades \
+            "luajit=$LUAJIT" "libluajit-5.1-2=$LUAJIT" "libluajit-5.1-common=$LUAJIT"
       # The smoke spec runs on the packaged files with tests/ laid over them, the built corpus with it.
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:

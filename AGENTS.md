@@ -29,9 +29,11 @@ smoke spec passes on the packaged files.
 Every version needs a `CHANGELOG.md` entry (prose, bold-lead bullets) before its `v*` tag: the release publishes
 it as the notes on GitHub, CurseForge and Wago.
 
-The same gate CI runs, plus actionlint, zizmor and gitleaks on the workflows and history. After a change to the
-planner or the rebuild, also run `AGF_BENCH_STRICT=1 luajit -joff tests/plan_bench.lua` (the 3 ms frame budget, and 7 ms for
-the once-a-login QuestieDB catalogue build; local only, since shared runners flake). `AGF_UPDATE_GOLDEN=1` rewrites the golden files in `tests/golden/`.
+The same gate CI runs, plus actionlint, zizmor and gitleaks on the workflows and history. `tests/plan_bench.lua` fails a
+frame over the 3 ms budget (7 ms for the once-a-login QuestieDB catalogue build), allowing three times the measured time
+so a shared runner does not flake; after a change to the planner or the rebuild, also run
+`AGF_BENCH_STRICT=1 luajit -joff tests/plan_bench.lua`, which checks the budget as measured. `.github/workflows/speedpatrol.yml`
+times that bench on every pull request against its base branch and fails on a regression (`.speedpatrol/instructions.md`). `AGF_UPDATE_GOLDEN=1` rewrites the golden files in `tests/golden/`.
 After a UI change, set `FOREVER_CORE` to the installed shared renderer in cjber/forever-core directory and run
 `python3 tools/screenshots.py` (WFA-9; local only: it needs Pillow and wago.tools) and
 commit the PNGs it rewrites in `docs/screenshots/` with `scenes.sha256`; two runs give byte-identical files.
@@ -79,7 +81,8 @@ the newest Forever build on wago.tools, `ERA` (`tools/diff_forever.py`) to the n
 `QUESTIEDB_TAG` and `QUESTIEDB_SHA256` (`tools/gen_corpus.py`) to the newest QuestieDB release; when one moved, the
 workflow regenerates `Data/` and the test corpus, runs `tools/check_generated.py --offline`, the
 generator tests, luacheck, every spec (the golden routes among them), the planner bench and stylua, opens the
-`data/refresh` PR and dispatches CI on it. A failed run on main is re-run once ten minutes later by `.github/workflows/retry-refresh.yml`;
+`data/refresh` PR, then approves that PR's CI and Speedpatrol runs, which GitHub holds for a PR opened by
+`GITHUB_TOKEN`. A failed run on main is re-run once ten minutes later by `.github/workflows/retry-refresh.yml`;
 one that fails again opens the issue "Data refresh failed", assigned to the owner, or comments on the open one. A check that rejects new client data is corrected from that data and kept
 exact, never loosened; a golden route is re-based only when the new data explains the change.
 
