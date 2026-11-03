@@ -2109,7 +2109,11 @@ function harness.load(options)
 	}
 	-- The selected quest: 0 when none, as the client returns it.
 	h.superTrackedQuest = 0
+	h.superTracked = options.waypoint ~= nil
 	G.C_SuperTrack = {
+		IsSuperTrackingUserWaypoint = function()
+			return h.superTracked == true
+		end,
 		SetSuperTrackedUserWaypoint = function(on)
 			h.superTracked = on
 		end,

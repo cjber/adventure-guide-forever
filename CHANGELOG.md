@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Unfocusing a map pin stops its guidance.** The guide leaves your pin and new quest focus alone instead of treating an unfocused pin as a running route. Its own objective highlighting preserves navigation already running. Thanks to cjber for the report (#304).
+
 ## [1.0.2] - 2026-11-03
 
 - **A quest turn-in leaderboard for your guild and groups.** `/agf leaderboard` (or `/agf stats`) ranks the quest turn-ins Adventure Guide has seen your character make against the totals your guild and group members running the addon report. Their numbers are what they report, not verified, and someone who has not reported is shown as unknown. Your own row always shows. Sharing stays on by default; turn it off with `/agf share off` or in Settings > AddOns > Adventure Guide and nothing is sent or shown from others, while your own progress and history stay. Totals heard before this version carry over, and a choice to share nothing is kept.

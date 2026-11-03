@@ -284,4 +284,124 @@ maps.ns.SetSetting("restedxpGuide", false)
 maps.flush()
 assert(ownLine:IsMouseEnabled(), "native line mouse input is restored")
 assert(ownLine:GetAlpha() == 0.7, "turning off integration restores native line presentation")
-print("restedxp_mode_spec: native map suppression preserves ownership and waypoints")
+-- RXP's explicit .ingamewaypoint instruction can replace the native user waypoint.
+for _, integrated in ipairs({ true, false }) do
+	local native = harness.load({ db = { autoStart = false } })
+	local nativeEngine = dofile("tests/rxp_fixture.lua")(native)
+	native.ns.SetSetting("restedxpGuide", integrated)
+	native.flush()
+	local destination = { map = 1413, x = 0.5, y = 0.4, title = "Guide destination" }
+	assert(native.ns.Guidance.Navigate(destination), "Go can set a native waypoint with RXP installed")
+	assert(native.ns.Guidance.Owns(), "Go owns its newly set waypoint")
+	local replacement = native.G.UiMapPoint.CreateFromCoordinates(1413, 0.3, 0.6)
+	native.G.C_Map.SetUserWaypoint(replacement)
+	local sets, clears = native.counts.SetUserWaypoint, native.counts.ClearUserWaypoint
+	native.fire("USER_WAYPOINT_UPDATED")
+	nativeEngine.UpdateMap()
+	native.flush()
+	assert(not native.ns.Guidance.Owns(), "a waypoint moved by RXP is no longer owned by the guide")
+	assert(native.ns.Prefs().waypoint == nil, "the replaced waypoint is forgotten")
+	native.ns.Stop()
+	native.flush()
+	assert(native.G.C_Map.GetUserWaypoint() == replacement, "Stop preserves RXP's replacement waypoint")
+	assert(native.counts.SetUserWaypoint == sets, "refresh does not fight a replacement waypoint")
+	assert(native.counts.ClearUserWaypoint == clears, "Stop does not clear another addon's waypoint")
+	assert(#native.errors == 0, table.concat(native.errors, "\n"))
+end
+
+-- Native Unfocus leaves the pin in place but ends navigation to it.
+for _, integrated in ipairs({ true, false }) do
+	local native = harness.load({ db = { autoStart = false } })
+	dofile("tests/rxp_fixture.lua")(native)
+	native.ns.SetSetting("restedxpGuide", integrated)
+	native.flush()
+	assert(native.ns.Guidance.Navigate({ map = 1413, x = 0.5, y = 0.4, title = "Guide destination" }))
+	local point = native.G.C_Map.GetUserWaypoint()
+	native.G.C_SuperTrack.SetSuperTrackedUserWaypoint(false)
+	native.G.C_SuperTrack.SetSuperTrackedQuestID(845)
+	native.fire("SUPER_TRACKING_CHANGED")
+	native.flush()
+	assert(not native.ns.Guidance.Owns(), "unfocused waypoint no longer counts as running guidance")
+	assert(native.ns.Prefs().waypoint == nil, "unfocused waypoint ownership is forgotten")
+	local sets, clears = native.counts.SetUserWaypoint, native.counts.ClearUserWaypoint
+	native.ns.Stop()
+	native.flush()
+	assert(native.G.C_Map.GetUserWaypoint() == point, "Stop preserves the pin the player unfocused")
+	assert(native.G.C_SuperTrack.GetSuperTrackedQuestID() == 845, "Stop preserves the replacement quest focus")
+	assert(not native.G.C_SuperTrack.IsSuperTrackingUserWaypoint(), "refresh never takes focus back")
+	assert(native.counts.SetUserWaypoint == sets and native.counts.ClearUserWaypoint == clears)
+	assert(#native.errors == 0, table.concat(native.errors, "\n"))
+end
+
+-- Automatic objective highlighting must retain navigation, whether the client
+-- changes waypoint focus as a side effect of selecting a quest or not.
+for _, exclusive in ipairs({ true, false }) do
+	local native = harness.load({ db = { autoStart = false, followQuest = true } })
+	local prefs = native.ns.Prefs()
+	local step = {
+		key = "area:845",
+		title = "Quest objectives",
+		map = 1413,
+		x = 0.5,
+		y = 0.4,
+		here = true,
+		objectives = { { id = 845 } },
+		quests = { 845 },
+		handins = {},
+	}
+	local route = native.ns.Route()
+	route.chosen, route.steps = true, { step }
+	native.ns.Snapshot().log[845] = { complete = false }
+	local selectQuest = native.G.C_SuperTrack.SetSuperTrackedQuestID
+	native.G.C_SuperTrack.SetSuperTrackedQuestID = function(id)
+		selectQuest(id)
+		if exclusive then
+			native.G.C_SuperTrack.SetSuperTrackedUserWaypoint(false)
+		end
+	end
+	assert(native.ns.Guidance.Navigate(step))
+	native.ns.Focus.Sync()
+	assert(prefs.focus == 845, "arrival selects the quest for objective highlighting")
+	assert(native.G.C_SuperTrack.IsSuperTrackingUserWaypoint(), "own quest focus preserves waypoint navigation")
+	assert(native.ns.Guidance.Owns(), "own quest focus does not discard the route's waypoint")
+	step.here = false
+	native.ns.Focus.Sync()
+	assert(prefs.focus == nil, "leaving the objective clears the guide's quest highlight")
+	assert(native.G.C_SuperTrack.IsSuperTrackingUserWaypoint(), "clearing own quest focus preserves navigation")
+	assert(native.ns.Guidance.Owns(), "waypoint ownership survives leaving an objective")
+	local point = native.G.C_Map.GetUserWaypoint()
+	native.G.C_SuperTrack.SetSuperTrackedUserWaypoint(false)
+	step.here = true
+	native.ns.Focus.Sync()
+	assert(
+		not native.G.C_SuperTrack.IsSuperTrackingUserWaypoint(),
+		"objective highlighting never refocuses an unfocused pin"
+	)
+	assert(native.G.C_Map.GetUserWaypoint() == point, "objective highlighting leaves the pin in place")
+	assert(#native.errors == 0, table.concat(native.errors, "\n"))
+end
+
+for _, hidden in ipairs({ true, false }) do
+	local native = harness.load({ db = { autoStart = false } })
+	local nativeEngine = dofile("tests/rxp_fixture.lua")(native)
+	native.ns.SetSetting("restedxpGuide", false)
+	native.flush()
+	local arrow = nativeEngine.arrowFrame
+	nativeEngine.settings.profile.disableArrow = hidden
+	arrow:SetAlpha(0.65)
+	arrow:SetPoint("CENTER", native.G.UIParent, "CENTER", 24, 36)
+	arrow:SetShown(not hidden)
+	native.ns.SetSetting("restedxpGuide", true)
+	native.flush()
+	assert(arrow:GetAlpha() == 0, "integrated mode suppresses the RXP arrow presentation")
+	assert(arrow:IsShown() == not hidden, "suppression preserves RXP's engine visibility")
+	native.ns.SetSetting("restedxpGuide", false)
+	native.flush()
+	assert(arrow:GetAlpha() == 0.65, "returning to RXP restores its arrow alpha")
+	assert(arrow:IsShown() == not hidden, "returning to RXP preserves the player's hidden-arrow choice")
+	assert(nativeEngine.settings.profile.disableArrow == hidden, "integration never writes RXP's arrow preference")
+	local point, _, _, x, y = arrow:GetPoint()
+	assert(point == "CENTER" and x == 24 and y == 36, "returning to RXP restores its arrow position")
+	assert(#native.errors == 0, table.concat(native.errors, "\n"))
+end
+print("restedxp_mode_spec: map suppression, native waypoint ownership and arrow preferences passed")
