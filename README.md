@@ -35,7 +35,7 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 ## Features
 
-- **RestedXP guides.** Read the active guide in the journey cards, step rows and tracker, with about ten steps on the map. Choose a guide from the Continue cards, move between steps or skip one. RestedXP handles completion; Shortest Path Forever handles travel. Turn off *Use RestedXP guides* to return to Adventure Guide's suggestions.
+- **RestedXP guides.** Choose a guide from the Continue cards and follow its steps on the map and tracker. RestedXP handles completion; Shortest Path Forever handles travel. RestedXP’s item and target windows keep their own settings and positions. Turn off *Use RestedXP guides* to return to Adventure Guide's suggestions.
 
 - **Map guide.** The active RestedXP guide comes first while *Use RestedXP guides* is on; otherwise Quests in your log.
 
@@ -67,9 +67,15 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/micro-menu-adventure-guide.png" width="640" alt="Adventure Guide button replacing Blizzard's tome"></p>
 
+<p align="center">Open Adventure Guide from the tome’s place in the micro menu.</p>
+
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/micro-menu-adventure-guide-additive.png" width="640" alt="Adventure Guide button alongside Blizzard's tome"></p>
 
+<p align="center">Keep Blizzard’s tome beside the Adventure Guide button if you use both.</p>
+
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/micro-menu-options.png" width="500" alt="Micro menu button settings"></p>
+
+<p align="center">Choose whether to replace the tome, add a button beside it or hide the button.</p>
 
 ## Install
 
