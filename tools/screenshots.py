@@ -11,9 +11,10 @@ one the dumps name has a recipe in screenshots_stock.py citing its Blizzard XML;
 The frames around the addon (the world map, the tracker, the tooltip and the menu) are wowmock's
 (the forever-core shared renderer), drawn from Blizzard's own layout numbers (WFA-4: the stock look).
 
-Art, fonts and DB2 tables come from wago.tools for BUILD and are cached under ~/.cache/wowmock. The game client is
-never started or read. Two runs give byte-identical PNGs with this environment (pip is not installed on the
-machine that pinned it, so the freeze is importlib.metadata's, limited to what the script imports):
+UI art and fonts come from wago.tools for UI_ART_BUILD; generated map and content tables come from DATA_BUILD.
+They are cached under ~/.cache/wowmock. The game client is never started or read. Two runs give byte-identical PNGs
+with this environment (pip is not installed on the machine that pinned it, so the freeze is importlib.metadata's,
+limited to what the script imports):
 
     Python 3.14.7, pillow==12.3.0
     wowmock.py        db11c4fdc3ea7f43e6a754e28da468b3a1008ee89029466f68b9dc4ac2a93e33
@@ -37,7 +38,7 @@ from pathlib import Path
 
 import screenshots_art as drawing
 from diff_forever import ERA
-from gen_quests import BUILD
+from gen_quests import BUILD as DATA_BUILD
 from screenshots_art import draw_font_string, draw_texture, fit_text, font, load_wowmock
 from screenshots_resolver import effective_scales, lua_rects, map_point, parent_path, resolve, scroll_child_anchors
 from screenshots_spf import SPF_SHA, breadcrumbs, goal_pins, map_position, spf_walk, stop_groups
@@ -52,6 +53,7 @@ PILLOW = "12.3.0"
 # measuring at 2x then shrinking gives different widths and hides client wrapping/truncation.
 SCALE = 1.2
 LAYOUT_PASSES = 8
+UI_ART_BUILD = "1.60.1.70124"
 
 # ------------------------------------------------------------------------------------- the addon, headless
 
@@ -106,7 +108,7 @@ def layout_pass(ui, scenes, known):
     inputs["atlasloot"] = json.loads(loot.stdout)
     items = {}
     era = drawing.wm.Ui(ERA)
-    client = drawing.wm.Ui(BUILD)
+    client = drawing.wm.Ui(DATA_BUILD)
     for boss in inputs["atlasloot"]["WailingCaverns"]["items"]:
         for row in boss.get("1", []):
             if isinstance(row[1], int) and row[1] > 0:
@@ -462,7 +464,7 @@ def manifest(paths):
     """docs/screenshots/manifest.txt: what the PNGs were made from and each PNG's sha256, so a stale image or a
     changed input shows in review."""
     lines = [
-        f"build {BUILD}",
+        f"data build {DATA_BUILD}, art build {UI_ART_BUILD}",
         f"shortest-path-forever {SPF_SHA}",
         f"tests/golden/layout.json {sha256(GOLDEN)}",
     ]
@@ -519,10 +521,36 @@ def demo(ui, images):
 def render():
     """Every scene into OUT; returns the written paths."""
     load_wowmock()
+
+    class ArtUi(drawing.wm.Ui):
+        """Use the approved retail art build while map tables remain on generated data."""
+
+        _DATA_TABLES = frozenset(
+            {
+                "UiMapArt",
+                "UiMapArtStyleLayer",
+                "UiMapArtTile",
+                "UiMapAssignment",
+                "UiMapXMapArt",
+                "WorldMapOverlay",
+                "WorldMapOverlayTile",
+            }
+        )
+
+        def __init__(self, *args, **kwargs):
+            kwargs.setdefault("build", UI_ART_BUILD)
+            super().__init__(*args, **kwargs)
+            self._data = drawing.wm.Ui(build=DATA_BUILD, scale=self.scale)
+
+        def table(self, name, key="ID"):
+            if name in self._DATA_TABLES:
+                return self._data.table(name, key)
+            return super().table(name, key)
+
     version = importlib.metadata.version("pillow")
     if version != PILLOW:
         print(f"warning: Pillow {version}, not the pinned {PILLOW}: the PNGs may not match byte for byte")
-    ui = drawing.wm.Ui(BUILD, scale=SCALE)
+    ui = ArtUi(scale=SCALE)
     _, frame = map_frame(ui, drawing.wm.Image.new("RGBA", (1002, 668)), True)
     known = known_frames(frame)
     data, rects = layout_pass(
