@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.8] - 2026-11-04
+
+- **Quest and zone data now name the 1.60.1.70790 build.** Quest geometry, zone art and the Forever-only quest diff are regenerated from the new Forever client build, and the README scenes are re-rendered from it. The regenerated values match the previous build, so no guide step changes.
+
 ## [1.0.7] - 2026-11-04
 
 - **Quest rewards that beat what you wear are marked.** The quest giver's detail and reward window draw the game's own green upgrade arrow on a reward the game shows usable, that fits your class's armour type, that carries no primary stat your class never uses, and that has a higher item level than the weaker item it would replace. Weapons follow the game tutorial's own upgrade rules. Setting *Mark reward upgrades* (Interface, on by default); with Pawn loaded nothing is marked, and the README says so.
