@@ -24,7 +24,7 @@ These images are generated previews of the guide UI.
 
 ## Features
 
-- **RestedXP guides.** Read RestedXP's instructions and objectives in the Adventure tab and tracker. Choose a guide from the Continue cards and move between its steps. Turn off *Use RestedXP guides* to return to Adventure Guide recommendations.
+- **RestedXP guides.** Read RestedXP's instructions and objectives in the Adventure tab and tracker. Choose a guide from the Continue cards and move between its steps. RestedXP’s item and target windows keep their own settings and positions. Turn off *Use RestedXP guides* to return to Adventure Guide recommendations.
 
 
 - **Works alongside Polestar.** While Polestar guides, the route and map marks pause; click the tracker line to take over, or turn this off in Route settings.

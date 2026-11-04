@@ -38,6 +38,7 @@ No embedded libraries ship. `media/` is this addon's own: the icon is drawn in `
 | [forever_tools](https://github.com/cjber/forever-core/tree/main/.agents/skills/wow-forever-addon/tooling/forever_tools) | Shared lints, release checks and the generated-data gate, vendored in `tools/forever_tools/` | `revision` in `tools/forever_tools/MANIFEST.json` | MIT |
 | [forever-core/tools/wowmock](https://github.com/cjber/forever-core/tree/main/tools/wowmock) and the client art it fetches | `tools/screenshots.py` | `FOREVER_CORE` (a local forever-core checkout); UI art at `UI_ART_BUILD` and map/content data at `DATA_BUILD` in `tools/screenshots.py` | MIT; the art is Blizzard Entertainment's, fetched at build time and committed only as it appears in `docs/screenshots/` |
 | AtlasLoot Classic data | Loot in the screenshots (`tools/screenshot_loot.lua`) | A local install (`AGF_ATLASLOOT`) | Its own; only `docs/screenshots/loot.png`, which shows the items it lists, is committed |
+| Forever Core native simulator | `tools/forever_sim/`, used by `tests/sim/` | Revision in `tools/forever_sim/MANIFEST.json`; Blizzard inputs pinned by its fetcher | GPL-3.0-or-later; development only. Downloaded Blizzard source and data are not shipped |
 | Sloppatrol gate | `.sloppatrol/gate.py` and `.sloppatrol/agents.py` in CI | Vendored by `sloppatrol init` | MIT (`.sloppatrol/LICENSE`) |
 
 CI tools (StyLua, ruff, luacheck, lua-language-server, actionlint, zizmor, gitleaks, the BigWigs packager) are pinned in `.github/workflows/` and `tools/typecheck.sh`, except luajit and luacheck, which come from the runner's apt; they build and check the addon and are never part of it.
@@ -55,6 +56,7 @@ Credit for the ideas and reports behind the addon.
 | rhednak, on CurseForge | Found the integer overflow error that broke the guide for Skyborne characters, with the full error text (0.8.0) | |
 | jechten, on CurseForge | Reported slow loading, which later releases sped up (#166) | |
 | deathmvp1 and berserkerlxl, on CurseForge | Found Questie's quest list covering the Forever tracker sections, which now move clear of it (cjber/shortest-path-forever#214) | |
+| Gnatz_0815, on CurseForge | Asked to keep RestedXP’s quest-item and target controls while following its guides here (#237) | |
 | CodeHoax | Reported the RestedXP guide's overview card failing the route rebuild, with the full error text (#233) | |
 
 Thanks also to everyone else who reported a bug or asked for a feature, here or on CurseForge.
