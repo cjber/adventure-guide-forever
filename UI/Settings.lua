@@ -191,6 +191,10 @@ function ns.RegisterSettings()
 				)
 				Settings.RegisterInitializer(
 					subcategory,
+					Checkbox(subcategory, "markUpgrades", ns.L.SETTING_UPGRADES, ns.L.SETTING_UPGRADES_TOOLTIP)
+				)
+				Settings.RegisterInitializer(
+					subcategory,
 					Checkbox(subcategory, "microButton", ns.L.SETTING_MICRO_BUTTON, ns.L.MICRO_BUTTON_TOOLTIP)
 				)
 				Settings.RegisterInitializer(

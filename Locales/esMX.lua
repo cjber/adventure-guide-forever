@@ -359,6 +359,9 @@ L["SETTING_TRAINING_REMINDERS_TOOLTIP"] =
 L["SETTING_UNTRACK_OTHERS"] = "Dejar de seguir otras misiones"
 L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
 	"El mismo clic deja de seguir cada misión que no está en la ruta. Necesita también que se sigan las misiones de la ruta."
+L["SETTING_UPGRADES"] = "Marcar mejoras de recompensa" -- mt
+L["SETTING_UPGRADES_TOOLTIP"] =
+	"Cuando una misión ofrece recompensas a elegir, una flecha verde marca cada una que supera lo que llevas en esa ranura: tu tipo de armadura, un atributo principal que usa tu clase y un nivel de objeto mayor. No se elige nada por ti. Con Pawn instalado, Pawn las marca en su lugar." -- mt
 L["SETTING_WANDERER"] = "Trotamundos: solo nombrar lugares"
 L["SETTING_WANDERER_TOOLTIP"] =
 	"La guía dice adónde ir y te deja el camino a ti: sin punto de ruta, sin ruta con Shortest Path Forever y sin marcas en el mapa."

@@ -273,6 +273,11 @@ ns.L = {
 	SETTING_WARN_CLOSING_TOOLTIP = "When a quest giver offers a quest that would close another one for good, "
 		.. "say in chat which quests you'd lose, before you accept.",
 	CLOSES_WARNING = "Taking %s closes %s for good.",
+	-- The upgrade arrow on quest reward choices (Upgrades.lua).
+	SETTING_UPGRADES = "Mark reward upgrades",
+	SETTING_UPGRADES_TOOLTIP = "When a quest offers rewards to choose from, a green arrow marks each one that beats "
+		.. "what you wear in its slot: your armour type, a main stat your class uses and a higher item level. "
+		.. "Nothing is chosen for you. With Pawn installed, Pawn marks them instead.",
 	-- The trainer aside.
 	TRAINER = "Visit your class trainer",
 	TRAINER_SPELLS = "%d new spells",

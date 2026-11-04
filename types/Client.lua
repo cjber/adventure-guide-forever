@@ -385,3 +385,31 @@ AdventureGuideMicroButton = nil
 ---@field microButtonSpec table the spec the consumer passed to Create
 ---@field icon Texture the glyph drawn over the plate
 ---@field alert table? the template's alert overlay, hidden for a custom button
+
+-- The quest giver window's reward display (Blizzard_UIPanels_Game QuestInfo.xml), read by UI/Upgrades.lua.
+---@class AGFQuestRewardButton : Button
+---@field type string? "choice" or "reward"
+---@field Icon Texture
+
+---@class AGFQuestInfoRewardsFrame : Frame
+---@field RewardButtons AGFQuestRewardButton[]
+---@type AGFQuestInfoRewardsFrame
+QuestInfoRewardsFrame = nil
+
+---@class AGFQuestInfoFrame : Frame
+---@field questLog boolean? true while the quest log, not a giver, shows the quest
+---@type AGFQuestInfoFrame
+QuestInfoFrame = nil
+
+-- QuestInfo.lua's templates for a giver's detail and reward panels.
+---@type table
+QUEST_TEMPLATE_DETAIL = nil
+---@type table
+QUEST_TEMPLATE_REWARD = nil
+
+---@param template table
+---@param parentFrame Frame
+---@param acceptButton Button?
+---@param material string?
+---@param mapView boolean?
+function QuestInfo_Display(template, parentFrame, acceptButton, material, mapView) end

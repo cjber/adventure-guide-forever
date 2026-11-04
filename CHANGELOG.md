@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Quest rewards that beat your gear are marked.** When a quest giver offers rewards to choose from, the game's green upgrade arrow marks each one you can use that beats what you wear in that slot: your class's armour type, a main stat your class uses and a higher item level. Nothing is chosen for you, and with Pawn installed Pawn marks them instead. Thanks to cjber for the idea (#321).
+
 ## [1.0.6] - 2026-11-04
 
 - **Data regenerated against the 1.60.1.70755 build.** The guide's zone data, route geometry, zone art and the Questie source pin are rebuilt from the new Forever client build. The regenerated values match the previous build, so the routes and pins you see do not move.

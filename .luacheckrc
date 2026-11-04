@@ -217,6 +217,22 @@ for _, locale in ipairs({ "deDE", "esES", "esMX", "frFR", "koKR", "ptBR", "ruRU"
 	files["Locales/" .. locale .. ".lua"] = { max_line_length = false }
 end
 read_globals[#read_globals + 1] = "EditModeManagerFrame"
+-- The quest giver window's rewards and the worn gear they are weighed against (UI/Upgrades.lua).
+for _, name in ipairs({
+	"CanDualWield",
+	"GetInventoryItemID",
+	"GetNumQuestChoices",
+	"GetQuestItemInfo",
+	"GetQuestItemInfoLootType",
+	"GetQuestItemLink",
+	"QuestInfoFrame",
+	"QuestInfoRewardsFrame",
+	"QuestInfo_Display",
+	"QUEST_TEMPLATE_DETAIL",
+	"QUEST_TEMPLATE_REWARD",
+}) do
+	read_globals[#read_globals + 1] = name
+end
 
 -- Addon-private map marker inventory, published as a copy by the shared canvas.
 globals[#globals + 1] = "ForeverMapMarkers"

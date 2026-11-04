@@ -359,6 +359,9 @@ L["SETTING_TRAINING_REMINDERS_TOOLTIP"] =
 L["SETTING_UNTRACK_OTHERS"] = "Arrêter le suivi des autres quêtes"
 L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
 	"Le même clic arrête le suivi de chaque quête qui n’est pas sur l’itinéraire. Demande aussi que les quêtes de l’itinéraire soient suivies."
+L["SETTING_UPGRADES"] = "Signaler les récompenses meilleures" -- mt
+L["SETTING_UPGRADES_TOOLTIP"] =
+	"Quand une quête propose des récompenses au choix, une flèche verte signale chacune qui surpasse ce que vous portez à cet emplacement : votre type d’armure, une caractéristique principale utile à votre classe et un niveau d’objet supérieur. Rien n’est choisi à votre place. Si Pawn est installé, c’est Pawn qui les signale." -- mt
 L["SETTING_WANDERER"] = "Vagabond : seulement nommer les lieux"
 L["SETTING_WANDERER_TOOLTIP"] =
 	"Le guide nomme où aller ensuite et vous laisse trouver le chemin : pas de point de passage, pas d’itinéraire avec Shortest Path Forever et aucune marque sur la carte."

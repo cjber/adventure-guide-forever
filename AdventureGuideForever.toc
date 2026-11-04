@@ -101,6 +101,7 @@ UI\TrackerHost.lua
 UI\StoryCompletion.lua
 UI\Tracker.lua
 UI\Tooltip.lua
+UI\Upgrades.lua
 UI\Settings.lua
 UI\SettingsPage.lua
 UI\Dump.lua

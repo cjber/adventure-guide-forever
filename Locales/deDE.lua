@@ -357,6 +357,9 @@ L["SETTING_TRAINING_REMINDERS_TOOLTIP"] =
 L["SETTING_UNTRACK_OTHERS"] = "Andere Quests nicht mehr verfolgen"
 L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
 	"Derselbe Klick beendet die Verfolgung jeder Quest, die nicht auf der Route liegt. Braucht auch die verfolgten Quests der Route."
+L["SETTING_UPGRADES"] = "Belohnungs-Verbesserungen markieren" -- mt
+L["SETTING_UPGRADES_TOOLTIP"] =
+	"Bietet eine Quest Belohnungen zur Auswahl, markiert ein grüner Pfeil jede, die besser ist als das, was Ihr in diesem Platz tragt: Euer Rüstungstyp, ein Hauptattribut Eurer Klasse und eine höhere Gegenstandsstufe. Es wird nichts für Euch gewählt. Ist Pawn installiert, markiert Pawn sie stattdessen." -- mt
 L["SETTING_WANDERER"] = "Wanderer: nur Orte nennen"
 L["SETTING_WANDERER_TOOLTIP"] =
 	"Der Führer nennt, wohin es als Nächstes geht, und überlässt Euch den Weg: kein Wegpunkt, keine Route mit Shortest Path Forever und keine Markierungen auf der Karte."

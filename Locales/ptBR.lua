@@ -357,6 +357,9 @@ L["SETTING_TRAINING_REMINDERS_TOOLTIP"] =
 L["SETTING_UNTRACK_OTHERS"] = "Parar de rastrear outras missões"
 L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
 	"O mesmo clique para de rastrear cada missão que não está na rota. Também precisa que as missões da rota sejam rastreadas."
+L["SETTING_UPGRADES"] = "Marcar recompensas melhores" -- mt
+L["SETTING_UPGRADES_TOOLTIP"] =
+	"Quando uma missão oferece recompensas para escolher, uma seta verde marca cada uma que supera o que você usa naquele espaço: seu tipo de armadura, um atributo primário que sua classe usa e um nível de item maior. Nada é escolhido por você. Com o Pawn instalado, o Pawn as marca no lugar." -- mt
 L["SETTING_WANDERER"] = "Andarilho: só nomear lugares"
 L["SETTING_WANDERER_TOOLTIP"] =
 	"O guia diz aonde ir em seguida e deixa o caminho com você: sem ponto de rota, sem rota com o Shortest Path Forever e sem marcas no mapa."

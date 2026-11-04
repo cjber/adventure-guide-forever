@@ -144,6 +144,18 @@ abandons quests.
   the step's tooltip (its ring and its row) and in the tracker's step block (a RestedXP step's after its checklist);
   the row keeps its group icon. `Model.GroupNeed`, `Overview.GroupNote`.
 
+- **2.28 Reward upgrades.** A quest giver's detail or reward window marks each reward choice that is an upgrade
+  with the game's own green arrow (`bags-greenarrow`, top left of the icon, as the bags draw it): an item the game
+  shows usable, of the armour type the class wears at its level (cloth, leather, mail from 40 for hunters and
+  shamans, plate from 40 for warriors and paladins; a cloak and jewellery take any), with no primary stat the class
+  never uses, and a higher item level than the weaker worn item in the slots it would take (an empty slot counts as
+  0). Weapons follow the game tutorial's rules (Blizzard_TutorialServices.lua): a main-hand weapon only for the same
+  kind (two-handed or not) as the one held, nothing for the off hand behind a two-hander, and a one-hander's off-hand
+  slot only with dual wield. No stat weights. The quest log's reward display is left alone. With Pawn loaded nothing
+  is marked, since Pawn marks the same rewards with every stat weighed. Tweaks Forever's best-selling coin sits on
+  the icon's other corner and answers a different question. The setting `markUpgrades` (on) turns it off.
+  `UI/Upgrades.lua`.
+
 ### Guide navigation
 
 The world-map sidebar is the guide. Folded sections show two Continue journeys and one journey per other
