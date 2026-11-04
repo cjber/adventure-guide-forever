@@ -452,7 +452,7 @@ L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
 -- mt
-L["WHATS_NEW"] = "La primera versión estable, lista para el lanzamiento de WoW: Forever." -- mt
+L["WHATS_NEW"] = "Datos regenerados con la compilación 1.60.1.70755." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
