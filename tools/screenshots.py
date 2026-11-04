@@ -17,7 +17,7 @@ with this environment (pip is not installed on the machine that pinned it, so th
 limited to what the script imports):
 
     Python 3.14.7, pillow==12.3.0
-    wowmock.py        db11c4fdc3ea7f43e6a754e28da468b3a1008ee89029466f68b9dc4ac2a93e33
+    wowmock.py        503b024c0c2aae953044fd2e041691809a9e55109a6b54b31005e32cc52bd57e
     fonts/frizqt__.ttf (fdid 615960)  73de74d5d63690f29c7f97a9225edc8bd6f89e5103806af3714e4d7bfb9474e9
     fonts/arialn.ttf   (fdid 615958)  bd31d0cf2e5a1a3a9074e98ebe4964c641121e9e660f31627614c4acb6c89c1c
     fonts/morpheus.ttf (fdid 615962)  0df28ca8a5e6fc14ee53de7b7f8ed7cf128108766b97d13d5ba60296cb517fd7
