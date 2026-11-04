@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.6] - 2026-11-04
+
+- **Data regenerated against the 1.60.1.70755 build.** The guide's zone data, route geometry, zone art and the Questie source pin are rebuilt from the new Forever client build. The regenerated values match the previous build, so the routes and pins you see do not move.
+
 ## [1.0.5] - 2026-11-04
 
 - **Map pins stay clear of the gamepad map controls.** Route rings, quest givers and reveal pings use their own map layer, keeping zooming and navigation available. Pins hide during combat and return on the map currently shown. Thanks to cjber for reporting the blocked controls (#304).
