@@ -315,7 +315,7 @@ PLAYER_ARROW = 27  # the player pin's arrow, as wowmock's NOTES measure it again
 GREEN = (0.1, 1.0, 0.1)  # GREEN_FONT_COLOR, what GameTooltip_AddInstructionLine uses
 
 
-def explored_art(ui, content_ui, map_id):
+def explored_art(content_ui, map_id):
     """A uiMap's base art with every WorldMapOverlay drawn, as a character who has explored the whole zone sees it;
     the base art alone is the unexplored parchment."""
     art = drawing.wm.map_art(content_ui, map_id)
@@ -421,7 +421,7 @@ PLAYER = {"x": 0.52, "y": 0.30}  # tests/harness.lua's player position in The Ba
 def quest_log(ui, content_ui, data, rects, scene, pins=()):
     """The world map with the quest log open on the guide's tab: `scene`'s panel dump in the quest pane, the tabs,
     and the map's pins."""
-    art = explored_art(ui, content_ui, data["panel"]["map"])
+    art = explored_art(content_ui, data["panel"]["map"])
 
     def on_map(canvas, frame_rects):
         draw_pins(canvas, frame_rects, pins)
@@ -450,7 +450,7 @@ def shortest_path(ui, content_ui, data):
         goal_pins(canvas, stops, marks)
         draw_player(canvas, rects, player)
 
-    canvas, _ = map_frame(ui, explored_art(ui, content_ui, map_id), False, on_map)
+    canvas, _ = map_frame(ui, explored_art(content_ui, map_id), False, on_map)
     return canvas
 
 
@@ -569,7 +569,7 @@ def render():
     qx, qy, qw, qh = frame["quests"]
     images["search"] = drawing.wm.scene(ui, [(crop(canvas, qx - 3, qy - 30, qw + 3 + 64, qh + 30 + 22), 0, 0)])
 
-    art = explored_art(ui, content_ui, data["panel"]["map"])
+    art = explored_art(content_ui, data["panel"]["map"])
     canvas = shortest_path(ui, content_ui, data)
     images["map"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
