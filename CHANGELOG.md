@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-11-04
+
 - **RestedXP’s item and target buttons stay available.** Following its guides here keeps its quest-item and targeting windows in their own positions, with their RestedXP settings. Thanks to Gnatz_0815 on CurseForge for the idea (#237).
 
 ## [1.0.3] - 2026-11-03
