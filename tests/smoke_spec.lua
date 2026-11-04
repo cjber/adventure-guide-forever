@@ -218,7 +218,7 @@ local PIN_TEMPLATES = {
 -- Every live pin: its tooltip, then its click (a step ring's right-click returns to the story's start).
 local function DrivePins(h, label)
 	for _, template in ipairs(PIN_TEMPLATES) do
-		for index, pin in ipairs(h.pins[template] or {}) do
+		for index, pin in ipairs(h.Pins(template) or {}) do
 			stats.pins = stats.pins + 1
 			local tag = ("%s %s#%d"):format(label, template, index)
 			if pin.OnMouseEnter then
@@ -231,17 +231,17 @@ local function DrivePins(h, label)
 					h.call(pin.OnMouseLeave, pin)
 				end)
 			end
-			if pin.OnClick then
+			if pin.OnMouseClickAction then
 				for _, button in ipairs({ "LeftButton", "RightButton" }) do
 					Run(h, tag .. " click " .. button, function()
 						h.menu = nil
-						h.call(pin.OnClick, pin, button)
+						h.call(pin.OnMouseClickAction, pin, button)
 						DrainMenu(h, tag)
 					end)
 				end
 				Run(h, tag .. " shift-click", function()
 					h.Shift(function()
-						h.call(pin.OnClick, pin, "LeftButton")
+						h.call(pin.OnMouseClickAction, pin, "LeftButton")
 					end)
 				end)
 			end

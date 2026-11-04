@@ -596,14 +596,15 @@ do
 	h.G.C_Map.OpenWorldMap()
 	h.map:SetMapID(1413)
 	h.flush()
-	h.providers[1]:RefreshAllData()
+	h.flush()
+	h.ns.Pins.Refresh()
 	local numbered = false
-	for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
+	for _, pin in ipairs(h.Pins("AdventureGuideForeverPinTemplate") or {}) do
 		numbered = numbered or pin.step == standing
 	end
 	equal(numbered, false, "here, waypoint: no numbered pin where the player is")
 	local later = false
-	for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
+	for _, pin in ipairs(h.Pins("AdventureGuideForeverPinTemplate") or {}) do
 		later = later or pin.step == h.ns.Route().steps[2]
 	end
 	equal(later, true, "here, waypoint: the stops after it keep theirs")
@@ -1107,7 +1108,7 @@ end
 local function IdleUpdates(h)
 	local busy = 0
 	for _, frame in ipairs(h.frames) do
-		busy = busy + (frame.scripts.OnUpdate and 1 or 0)
+		busy = busy + (frame:IsVisible() and frame.scripts.OnUpdate and 1 or 0)
 	end
 	return busy + h.counts.tickers
 end
@@ -1124,10 +1125,13 @@ for _, spf in ipairs({ false, "v1" }) do
 		h.flush()
 	end
 	equal(h.counts.CreateFrame - created, 0, label .. ": frames created by 10 refreshes")
-	equal(#h.pins.AdventureGuideForeverPinTemplate, Places(h.ns.Route()), label .. ": the refreshes drew the route")
+	equal(#h.Pins("AdventureGuideForeverPinTemplate"), Places(h.ns.Route()), label .. ": the refreshes drew the route")
 	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
 	h.flush()
-	equal(IdleUpdates(h), 0, label .. ": per-frame work once the guide is closed")
+	equal(IdleUpdates(h), 1, label .. ": only the visible map observer runs after closing the guide")
+	h.map:Hide()
+	h.flush()
+	equal(IdleUpdates(h), 0, label .. ": no per-frame work once the map is closed")
 	clean(h, label .. ": idle")
 end
 
@@ -1137,18 +1141,20 @@ do
 	h.G.C_Map.OpenWorldMap()
 	h.flush()
 	h.map:SetMapID(1442)
-	equal(#h.pins.AdventureGuideForeverGiverPinTemplate > 0, true, "standalone giver baseline")
+	h.flush()
+	equal(#h.Pins("AdventureGuideForeverGiverPinTemplate") > 0, true, "standalone giver baseline")
 	h.installed.Questie = true
-	h.providers[1]:RefreshAllData()
-	equal(#h.pins.AdventureGuideForeverGiverPinTemplate > 0, true, "disabled Questie does not claim markers")
+	h.ns.Pins.Refresh()
+	equal(#h.Pins("AdventureGuideForeverGiverPinTemplate") > 0, true, "disabled Questie does not claim markers")
 	h.metadata.Questie = { Version = "test" }
-	h.providers[1]:RefreshAllData()
-	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, 0, "loaded Questie owns background markers")
+	h.ns.Pins.Refresh()
+	equal(#h.Pins("AdventureGuideForeverGiverPinTemplate"), 0, "loaded Questie owns background markers")
 	h.G.Questie = { db = { profile = { enabled = false } } }
-	h.providers[1]:RefreshAllData()
-	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, 0, "Questie hide toggle cannot reveal duplicates")
+	h.ns.Pins.Refresh()
+	equal(#h.Pins("AdventureGuideForeverGiverPinTemplate"), 0, "Questie hide toggle cannot reveal duplicates")
 	h.map:SetMapID(1413)
-	equal(#h.pins.AdventureGuideForeverPinTemplate > 0, true, "route markers remain with Questie")
+	h.flush()
+	equal(#h.Pins("AdventureGuideForeverPinTemplate") > 0, true, "route markers remain with Questie")
 end
 
 -- Map pins: a refresh replaces, never adds; removal leaves none; the tooltips read as design §2.9 and the tracker
@@ -1157,24 +1163,24 @@ for _, spf in ipairs({ false, "v1" }) do
 	local label = spf or "no Shortest Path"
 	local click = spf and "instruction: Click to travel with Shortest Path" or "instruction: Click to set a waypoint"
 	local h = Load(spf, PINS_ON)
-	local provider, ns = h.providers[1], h.ns
+	local pins, ns = h.ns.Pins, h.ns
 	h.G.C_Map.OpenWorldMap()
 	h.flush()
 	local function Live()
-		return #h.pins.AdventureGuideForeverPinTemplate + #h.pins.AdventureGuideForeverGiverPinTemplate
+		return #h.Pins("AdventureGuideForeverPinTemplate") + #h.Pins("AdventureGuideForeverGiverPinTemplate")
 	end
-	provider:RefreshAllData()
+	pins.Refresh()
 	local first = Live()
-	provider:RefreshAllData()
+	pins.Refresh()
 	equal(Live(), first, label .. ": a second refresh keeps the pin count")
-	equal(#h.pins.AdventureGuideForeverPinTemplate, Places(ns.Route()), label .. ": one ring per place on this map")
+	equal(#h.Pins("AdventureGuideForeverPinTemplate"), Places(ns.Route()), label .. ": one ring per place on this map")
 
-	local ring = h.pins.AdventureGuideForeverPinTemplate[1]
+	local ring = h.Pins("AdventureGuideForeverPinTemplate")[1]
 	equal(ring.Number.file, "Interface\\WorldMap\\UI-QuestPoi-NumberIcons", label .. ": the stock quest numeral")
 	same(ring.Number.texCoord, { 0, 0.125, 0, 0.125 }, label .. ": the next stop's dark numeral 1")
 	equal(ring.Icon:GetAtlas(), "UI-QuestPoi-QuestNumber-SuperTracked", label .. ": the next stop's tracked button")
 	-- Rings draw above the stock quest marks; givers stay under them (Blizzard_WorldMap.lua:291-311).
-	equal(ring.frameLevelType, "PIN_FRAME_LEVEL_WAYPOINT_LOCATION", label .. ": rings at the user waypoint's level")
+	equal(ring.levelType, "PIN_FRAME_LEVEL_WAYPOINT_LOCATION", label .. ": rings at the user waypoint's level")
 	h.Hover(ring)
 	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. Step 1 is the Crossroads, where The
 	-- Zhevra opens its next chapter, handed in before the town's pickups.
@@ -1191,19 +1197,20 @@ for _, spf in ipairs({ false, "v1" }) do
 
 	-- Stonetalon has quest givers and no route step, so every eligible giver gets a "!".
 	h.map:SetMapID(1442)
+	h.flush()
 	local givers = ns.Model.Givers(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), 1442)
-	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, #givers, label .. ": a giver pin per eligible giver")
-	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, label .. ": no rings off the route's map")
+	equal(#h.Pins("AdventureGuideForeverGiverPinTemplate"), #givers, label .. ": a giver pin per eligible giver")
+	equal(#h.Pins("AdventureGuideForeverPinTemplate"), 0, label .. ": no rings off the route's map")
 	-- The first giver whose quests the route can take: a giver's hard quests get a pin but no shift-click.
 	local giverPin
-	for _, pin in ipairs(h.pins.AdventureGuideForeverGiverPinTemplate) do
+	for _, pin in ipairs(h.Pins("AdventureGuideForeverGiverPinTemplate")) do
 		if #pin.giver.adds > 0 then
 			giverPin = pin
 			break
 		end
 	end
 	equal(giverPin ~= nil, true, label .. ": a giver the route can take from")
-	equal(giverPin.frameLevelType, "PIN_FRAME_LEVEL_AREA_POI", label .. ": givers at the area POI level")
+	equal(giverPin.levelType, "PIN_FRAME_LEVEL_AREA_POI", label .. ": givers at the area POI level")
 	h.Hover(giverPin)
 	-- Closing the map fires no OnMouseLeave: the pin's own OnHide takes its tooltip.
 	h.map:SetShown(not h.map:IsShown())
@@ -1236,25 +1243,26 @@ for _, spf in ipairs({ false, "v1" }) do
 	local navigated = h.counts.SetUserWaypoint + (h.spf and h.spf.NavigateRoute or 0)
 	local giver = giverPin.giver
 	h.Shift(function()
-		giverPin:OnClick("LeftButton")
+		giverPin:OnMouseClickAction("LeftButton")
 	end)
 	equal(ns.Pinned(giver.adds), true, label .. ": a shift-click adds the giver's quests")
 	equal(h.counts.SetUserWaypoint + (h.spf and h.spf.NavigateRoute or 0), navigated, label .. ": and goes nowhere")
 	h.Hover(giverPin)
 	equal(h.tooltip[#h.tooltip], "instruction: " .. ns.L.SHIFT_REMOVE, label .. ": then offers to take them off")
 	h.Shift(function()
-		giverPin:OnClick("LeftButton")
+		giverPin:OnMouseClickAction("LeftButton")
 	end)
 	h.flush()
 	equal(next(ns.Prefs().pinned), nil, label .. ": a second shift-click takes them off")
 
 	-- The story card's step tells its chapter under the title (design §2.9).
 	h.map:SetMapID(1413)
+	h.flush()
 	ns.Prefs().journey = ns.Route().journeys[1].key
 	ns.Invalidate()
 	h.flush()
 	local chapter
-	for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate) do
+	for _, pin in ipairs(h.Pins("AdventureGuideForeverPinTemplate")) do
 		chapter = pin.step.chapter and pin or chapter
 	end
 	h.Hover(chapter)
@@ -1263,8 +1271,10 @@ for _, spf in ipairs({ false, "v1" }) do
 	ns.Invalidate()
 	h.flush()
 
-	provider:RemoveAllData()
-	equal(Live(), 0, label .. ": RemoveAllData leaves no pins")
+	ns.SetSetting("showMapPins", false)
+	ns.SetSetting("showQuestGivers", false)
+	h.flush()
+	equal(Live(), 0, label .. ": disabling map marks releases the pins")
 
 	-- Design §2.8's menu for a town holding a log quest; Stop only once Go runs, Show quest never in combat.
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:1413:380"], "RightButton")
@@ -1295,13 +1305,13 @@ do
 	local h = Load(false, PINS_ON)
 	h.G.C_Map.OpenWorldMap()
 	h.flush()
-	local pin = h.pins.AdventureGuideForeverPinTemplate[1]
+	local pin = h.Pins("AdventureGuideForeverPinTemplate")[1]
 	local step = pin.step
 	local visits = { { step = step, index = 25 }, { step = step, index = 26 } }
 	pin:OnAcquired(step, 25, visits)
 	equal(pin:GetWidth(), 20, "POI: fixed 20-unit button")
 	equal(pin.ignoreGlobalPinScale, true, "POI: ignores the global pin scale")
-	same(pin.scalingLimits, { 1, 1, 1 }, "POI: unchanged by map zoom")
+	same({ pin.scaleFactor, pin.startScale, pin.endScale }, { 1, 1, 1 }, "POI: unchanged by map zoom")
 	equal(pin.Icon:GetAtlas(), "UI-QuestPoi-QuestNumber", "POI: stock button")
 	equal(pin.Disc:GetAtlas(), pin.Icon:GetAtlas(), "POI: silhouette follows the stock art")
 	same(pin.Disc.vertexColor, { 0, 0, 0 }, "POI: black silhouette")
@@ -1378,13 +1388,13 @@ do
 	})
 	h.G.C_Map.OpenWorldMap()
 	h.flush()
-	h.providers[1]:RefreshAllData()
+	h.ns.Pins.Refresh()
 	local index, step
 	for i, candidate in ipairs(h.ns.Route().steps) do
 		index, step = candidate.key == "area:843:0" and i or index, candidate.key == "area:843:0" and candidate or step
 	end
 	equal(step and step.kind, "area", "area step: Gann's Reclamation is an area step")
-	equal(h.pins.AdventureGuideForeverAreaPinTemplate, nil, "area step: no disc of ours over the area")
+	equal(h.Pins("AdventureGuideForeverAreaPinTemplate"), nil, "area step: no disc of ours over the area")
 	-- The step's point, and its pin, is the objective node nearest the stop before (design §4.2), a spot inside one of
 	-- its shapes rather than on the ring's border.
 	local inside = false
@@ -1394,7 +1404,7 @@ do
 	end
 	equal(inside, true, "area step: its pin on an objective's spot, inside a shape")
 	local pin
-	for _, candidate in ipairs(h.pins.AdventureGuideForeverPinTemplate) do
+	for _, candidate in ipairs(h.Pins("AdventureGuideForeverPinTemplate")) do
 		pin = candidate.step == step and candidate or pin
 	end
 	h.Hover(pin)
@@ -1434,9 +1444,9 @@ do
 	})
 	h.G.C_Map.OpenWorldMap()
 	h.flush()
-	h.providers[1]:RefreshAllData()
+	h.ns.Pins.Refresh()
 	local pin
-	for _, candidate in ipairs(h.pins.AdventureGuideForeverPinTemplate) do
+	for _, candidate in ipairs(h.Pins("AdventureGuideForeverPinTemplate")) do
 		pin = candidate.step.key == "area:3902:4" and candidate or pin
 	end
 	equal(pin ~= nil, true, "uncounted objective: the area pin")
@@ -1458,9 +1468,9 @@ do
 	h.G.C_Map.OpenWorldMap()
 	h.flush()
 	for _ = 1, 10 do
-		h.providers[1]:RefreshAllData()
+		h.ns.Pins.Refresh()
 	end
-	equal(h.counts.AcquirePin, 0, "map budget: a fresh install draws nothing")
+	equal(h.counts.SetMouseClickEnabled, 0, "map budget: a fresh install draws nothing")
 	equal(h.G.AdventureGuideForeverDB.showMapPins, false, "map budget: pins are opt-in")
 	equal(h.G.AdventureGuideForeverDB.showQuestGivers, false, "map budget: givers are opt-in")
 	clean(h, "map budget: fresh")
@@ -1475,24 +1485,28 @@ for _, case in ipairs({
 	local ns = h.ns
 	h.G.C_Map.OpenWorldMap()
 	h.flush()
-	local rings = #h.pins.AdventureGuideForeverPinTemplate
+	local rings = #h.Pins("AdventureGuideForeverPinTemplate")
 	equal(rings <= ns.Model.MAX_STEPS, true, label .. ": at most 9 rings")
 	equal(rings, case.db.showMapPins and Places(ns.Route()) or 0, label .. ": a ring per place, only with pins on")
 	h.map:SetMapID(1442)
+	h.flush()
 	local givers = #ns.Model.Givers(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), 1442)
 	equal(givers > 0, true, label .. ": Stonetalon has givers")
 	local expected = case.givers and givers or 0
-	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, expected, label .. ": givers")
+	equal(#h.Pins("AdventureGuideForeverGiverPinTemplate"), expected, label .. ": givers")
 	ns.Guidance.Navigate(ns.Route().steps[1])
 	equal(ns.Integrations.Guiding(), true, label .. ": Shortest Path guides")
 	h.map:SetMapID(1413)
-	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, label .. ": rings step aside while Shortest Path guides")
+	h.flush()
+	equal(#h.Pins("AdventureGuideForeverPinTemplate"), 0, label .. ": rings step aside while Shortest Path guides")
 	ns.OpenPanel()
 	h.flush()
 	h.map:SetMapID(1413)
-	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, label .. ": the guide's preview steps aside as well")
+	h.flush()
+	equal(#h.Pins("AdventureGuideForeverPinTemplate"), 0, label .. ": the guide's preview steps aside as well")
 	h.map:SetMapID(1442)
-	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, expected, label .. ": givers stay while it guides")
+	h.flush()
+	equal(#h.Pins("AdventureGuideForeverGiverPinTemplate"), expected, label .. ": givers stay while it guides")
 	clean(h, label)
 end
 -- Choosing another card while Shortest Path guides: it still walks the old route, so the new journey's givers
@@ -1518,8 +1532,9 @@ do
 	ns.Invalidate()
 	h.flush()
 	h.map:SetMapID(nextZone.map)
+	h.flush()
 	local givers = ns.Model.Givers(ns.Data, ns.State.Player(), ns.State.Completed(), ns.State.Log(), nextZone.map)
-	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, #givers, "guided givers: every giver on the new card's map")
+	equal(#h.Pins("AdventureGuideForeverGiverPinTemplate"), #givers, "guided givers: every giver on the new card's map")
 	clean(h, "guided givers")
 end
 do
@@ -2444,8 +2459,8 @@ do
 	same(colors[over], { 1, 1, 0 }, "hub tooltip: a quest 2 over the player is yellow")
 
 	-- The ring's tooltip lists the same, then the click line.
-	h.providers[1]:RefreshAllData()
-	local ring = h.pins.AdventureGuideForeverPinTemplate[1]
+	h.ns.Pins.Refresh()
+	local ring = h.Pins("AdventureGuideForeverPinTemplate")[1]
 	equal(ring.step.key, step.key, "hub tooltip: ring 1 is the town")
 	h.Hover(ring)
 	-- The route comes back to Crossroads to hand in, so the ring names its two visits after the quest list.
@@ -2992,7 +3007,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		equal(h.map:GetMapID(), journey.map, label .. ": click " .. click .. " turns the map to it")
 		equal(Spf("Estimate") + Spf("EstimateDetail") - estimates <= 1, true, label .. ": at most one estimate")
 		local rings, expected = {}, {}
-		for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
+		for _, pin in ipairs(h.Pins("AdventureGuideForeverPinTemplate") or {}) do
 			rings[#rings + 1] = pin.step.key
 		end
 		-- A place the route comes back to keeps its first visit's ring: a town by its hub, anything else by its point.
@@ -3012,7 +3027,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(drawn > 0, true, label .. ": the rings preview with map pins off")
 	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
 	h.flush()
-	equal(#(h.pins.AdventureGuideForeverPinTemplate or {}), 0, label .. ": closing the guide takes the rings away")
+	equal(#(h.Pins("AdventureGuideForeverPinTemplate") or {}), 0, label .. ": closing the guide takes the rings away")
 	clean(h, label)
 end
 
@@ -3712,7 +3727,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.ns.OpenPanel()
 	h.flush()
 	local function Rings()
-		return #(h.pins.AdventureGuideForeverPinTemplate or {})
+		return #(h.Pins("AdventureGuideForeverPinTemplate") or {})
 	end
 	equal(Rings() > 0, true, label .. ": the chosen journey's rings")
 	-- A Go that recorded no journey (prefs.guided), as an aside's or a giver's does.
@@ -3750,12 +3765,12 @@ do
 	local h = Load(false)
 	h.ns.OpenPanel()
 	h.flush()
-	local rings = #h.pins.AdventureGuideForeverPinTemplate
+	local rings = #h.Pins("AdventureGuideForeverPinTemplate")
 	equal(rings > 0, true, "preview: the open guide previews its journey")
 	h.G.QuestMapFrame:Hide()
-	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, "preview: a collapsed sidebar takes the rings away")
+	equal(#h.Pins("AdventureGuideForeverPinTemplate"), 0, "preview: a collapsed sidebar takes the rings away")
 	h.G.QuestMapFrame:Show()
-	equal(#h.pins.AdventureGuideForeverPinTemplate, rings, "preview: and its return brings them back")
+	equal(#h.Pins("AdventureGuideForeverPinTemplate"), rings, "preview: and its return brings them back")
 	-- Opening the guide never asks for the quest log: with the sidebar collapsed it opens in its own window.
 	h.ns.OpenPanel()
 	equal(h.G.AdventureGuideForeverWindow, nil, "open: no separate window")
@@ -3870,7 +3885,7 @@ do
 		for _, step in ipairs(h.ns.Route().steps) do
 			steps[step] = true
 		end
-		for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
+		for _, pin in ipairs(h.Pins("AdventureGuideForeverPinTemplate") or {}) do
 			equal(steps[pin.step] or false, true, label .. ": every ring is a route step's")
 			rings = rings + 1
 		end
@@ -3974,7 +3989,7 @@ do
 		Upcoming(h, 3),
 	}, label .. ": the tracker")
 	local ringed = false
-	for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
+	for _, pin in ipairs(h.Pins("AdventureGuideForeverPinTemplate") or {}) do
 		ringed = ringed or pin.step == step
 	end
 	equal(ringed, true, label .. ": its ring")
@@ -4259,9 +4274,9 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	ns.OpenPanel()
 	h.flush()
-	h.providers[1]:RefreshAllData()
-	equal(#h.pins.AdventureGuideForeverPinTemplate, 0, label .. ": no rings, even with the guide open")
-	equal(#h.pins.AdventureGuideForeverGiverPinTemplate, 0, label .. ": no givers")
+	h.ns.Pins.Refresh()
+	equal(#h.Pins("AdventureGuideForeverPinTemplate"), 0, label .. ": no rings, even with the guide open")
+	equal(#h.Pins("AdventureGuideForeverGiverPinTemplate"), 0, label .. ": no givers")
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[step.key], "RightButton")
 	for _, entry in ipairs(h.menu.entries) do
 		equal(entry.text ~= ns.L.GO, true, label .. ": the step menu offers no Go")
