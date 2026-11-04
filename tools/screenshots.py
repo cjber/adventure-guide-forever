@@ -522,35 +522,10 @@ def render():
     """Every scene into OUT; returns the written paths."""
     load_wowmock()
 
-    class ArtUi(drawing.wm.Ui):
-        """Use the approved retail art build while map tables remain on generated data."""
-
-        _DATA_TABLES = frozenset(
-            {
-                "UiMapArt",
-                "UiMapArtStyleLayer",
-                "UiMapArtTile",
-                "UiMapAssignment",
-                "UiMapXMapArt",
-                "WorldMapOverlay",
-                "WorldMapOverlayTile",
-            }
-        )
-
-        def __init__(self, *args, **kwargs):
-            kwargs.setdefault("build", UI_ART_BUILD)
-            super().__init__(*args, **kwargs)
-            self._data = drawing.wm.Ui(build=DATA_BUILD, scale=self.scale)
-
-        def table(self, name, key="ID"):
-            if name in self._DATA_TABLES:
-                return self._data.table(name, key)
-            return super().table(name, key)
-
     version = importlib.metadata.version("pillow")
     if version != PILLOW:
         print(f"warning: Pillow {version}, not the pinned {PILLOW}: the PNGs may not match byte for byte")
-    ui = ArtUi(scale=SCALE)
+    ui = drawing.wm.Ui(build=UI_ART_BUILD, scale=SCALE)
     content_ui = drawing.wm.Ui(build=DATA_BUILD, scale=SCALE)
     _, frame = map_frame(ui, drawing.wm.Image.new("RGBA", (1002, 668)), True)
     known = known_frames(frame)
