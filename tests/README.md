@@ -18,6 +18,12 @@ is stubbed in `harness.lua`, and agents never launch it. Checks that need the re
 call counts or a frame over budget, with three times the measured time allowed, and `AGF_BENCH_STRICT=1` checks the
 budget as measured.
 
+## Native adapter scenario
+
+Run `python3 tools/forever_sim/fetch.py`, then `luajit tools/forever_sim/run.lua`. CI verifies the vendored simulator before running every `tests/sim/*_scenario.lua`.
+
+The RestedXP scenario loads the integration module with real Blizzard frames and example secure action controls. It checks guide suppression, preserved anchors and action attributes, RestedXP-hidden controls, combat and gamepad input. It is a focused adapter test, not a complete TOC or RestedXP engine test. Full-addon native map-provider ownership remains tracked in #304; real RestedXP clicks need the PR’s live-client check.
+
 ## The harness
 
 `harness.lua` builds a stub of the client big enough for the addon's frames, events, timers and APIs. Unknown frame
