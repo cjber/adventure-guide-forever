@@ -37,13 +37,28 @@ scenario("full addon map keeps gamepad tables native", function(sim)
 	)
 	sim:advance(0.1)
 	assert(#ns.Pins.Active() == 2, "the real route and giver renderers draw private pins")
-	local pingShown = false
-	for _, pool in ipairs(ns.MapCanvas.Watch(sim.G.WorldMapFrame).pools) do
-		for _, pin in ipairs(pool:Active()) do
-			pingShown = pingShown or (pin.PlayAt ~= nil and pin:IsVisible())
+	local function pingShown()
+		for _, pool in ipairs(ns.MapCanvas.Watch(sim.G.WorldMapFrame).pools) do
+			for _, pin in ipairs(pool:Active()) do
+				if pin.PlayAt ~= nil and pin:IsVisible() then
+					return true
+				end
+			end
 		end
+		return false
 	end
-	assert(pingShown, "reveal plays the native ping on a private frame")
+	assert(pingShown(), "reveal plays the native ping on a private frame")
+	local revealStep = ns.Route().steps[1]
+	sim:closeWorldMap()
+	for _, pin in ipairs(ns.Pins.Active()) do
+		assert(not pin:IsVisible(), "closing the native map hides private pins")
+	end
+	assert(not pingShown(), "closing the native map hides its reveal ping")
+	sim:runAs(ADDON, "local ns, step = ...; ns.Pins.Reveal(step)", ns, revealStep)
+	sim:advance(0.1)
+	assert(sim.G.WorldMapFrame:IsVisible(), "reveal opens the closed native map")
+	assert(sim.G.WorldMapFrame:GetMapID() == 1454, "reveal reopens the requested map")
+	assert(pingShown(), "reveal plays after reopening the same native map")
 	sim:setGamepad(true)
 	sim:zoomMap(1)
 	sim:panMap(0.1, 0)
