@@ -298,25 +298,38 @@ function Pins.StepTooltip(tooltip, step, index, travel)
 	AreaObjectives(tooltip, step)
 end
 
-local provider = CreateFromMixins(MapCanvasDataProviderMixin) --[[@as AGFMapProvider]]
----@type AGFMapPing?
-local ping
+---@type WorldMapFrame?
+local map
+---@type ForeverCanvasPool?, ForeverCanvasPool?, ForeverCanvasPool?
+local routePool, giverPool, pingPool
+---@type AGFPoint|AGFPlace|AGFStep|AGFGiver?
+local reveal
 local afterCombat = CreateFrame("Frame")
 
-function provider:RemoveAllData()
-	self:GetMap():RemoveAllPinsByTemplate(PIN_TEMPLATE)
-	self:GetMap():RemoveAllPinsByTemplate(GIVER_TEMPLATE)
-	self:GetMap():RemoveAllPinsByTemplate(PING_TEMPLATE)
-	ping = nil
+local function ReleaseMarks()
+	for _, pool in ipairs({ routePool, giverPool }) do
+		pool:ReleaseAll()
+	end
 	pinsByKey = {}
+end
+
+-- Active route and giver pins, also used by highlighting and the layout dump.
+---@return (AGFPinFrame|AGFGiverPinFrame)[]
+function Pins.Active()
+	local pins = {}
+	for _, pool in ipairs({ routePool, giverPool }) do
+		for _, pin in ipairs(pool:Active()) do
+			pins[#pins + 1] = pin
+		end
+	end
+	return pins
 end
 
 -- Givers first, so the route's numbered pins draw above them. A giver whose quest is a stop drawn already is left
 -- to that stop: our ring for the chosen journey, or Shortest Path's numbered stop for what the last Go handed it.
----@param map AGFWorldMapFrame
 ---@param mapID integer
-local function AddGivers(map, mapID)
-	if not GiversShown() or not ns.State.Ready() then
+local function AddGivers(mapID)
+	if not giverPool or not GiversShown() or not ns.State.Ready() then
 		return
 	end
 	local routed = {}
@@ -336,31 +349,30 @@ local function AddGivers(map, mapID)
 			covered = covered or routed[id] == true
 		end
 		if not covered then
-			map:AcquirePin(GIVER_TEMPLATE, giver)
+			giverPool:Acquire(giver)
 		end
 	end
 end
 
 -- Only the steps that sit on the map currently shown: a continent view gets no pins, matching
 -- how the route already only points at zone-level maps.
-function provider:RefreshAllData()
-	-- Acquiring even an ordinary map pin changes protected mouse passthrough in this client.
+local function Draw()
+	if not map or not routePool then
+		return
+	end
 	if InCombatLockdown() then
-		for _, template in ipairs({ PIN_TEMPLATE, GIVER_TEMPLATE, PING_TEMPLATE }) do
-			for pin in self:GetMap():EnumeratePinsByTemplate(template) do
-				pin:Hide()
-			end
-		end
+		ns.MapCanvas.SetShown(map, false)
 		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return
 	end
 	afterCombat:UnregisterEvent("PLAYER_REGEN_ENABLED")
-	self:RemoveAllData()
-	local mapID = self:GetMap():GetMapID()
+	ReleaseMarks()
+	ns.MapCanvas.SetShown(map, true)
+	local mapID = map:GetMapID()
 	if not mapID then
 		return
 	end
-	AddGivers(self:GetMap(), mapID)
+	AddGivers(mapID)
 	if not RingsShown() then
 		return
 	end
@@ -368,9 +380,8 @@ function provider:RefreshAllData()
 	-- draws nothing more: the game's own objective mark and its hover shape show where its objectives are.
 	-- A place the route comes back to keeps one ring, numbered for its first visit, with its quest-action badge
 	-- intact and every visit in its tooltip (docs/design.md §2.9).
-	local map = self:GetMap()
-	local canvas = map.GetCanvas and map:GetCanvas() or map.ScrollContainer
-	local scale = map.GetCanvasScale and map:GetCanvasScale() or 1
+	local canvas = map:GetCanvas()
+	local scale = map:GetCanvasScale() or 1
 	local reachX = MAP_GROUP_SIZE / math.max(1, canvas:GetWidth() * scale)
 	local reachY = MAP_GROUP_SIZE / math.max(1, canvas:GetHeight() * scale)
 	local groups = Groups(function(step)
@@ -380,15 +391,11 @@ function provider:RefreshAllData()
 	end)
 	for _, visits in ipairs(groups) do
 		---@type AGFPinFrame
-		local pin = self:GetMap():AcquirePin(PIN_TEMPLATE, visits[1].step, visits[1].index, visits)
+		local pin = routePool:Acquire(visits[1].step, visits[1].index, visits) --[[@as AGFPinFrame]]
 		for _, visit in ipairs(visits) do
 			pinsByKey[visit.step.key] = pin
 		end
 	end
-end
-
-function provider:OnCanvasScaleChanged()
-	self:RefreshAllData()
 end
 
 ---@class AGFPinVisit
@@ -406,7 +413,7 @@ local function Badge(pin)
 	return pin.Badge
 end
 
----@class AGFPinFrame : AGFMapPinMixin
+---@class AGFPinFrame : ForeverCanvasPin
 ---@field Disc Texture
 ---@field Icon Texture
 ---@field Number Texture
@@ -417,7 +424,11 @@ end
 ---@field index? number
 ---@field visits? AGFPinVisit[]
 ---@field Stack? Texture
-AdventureGuideForeverPinMixin = CreateFromMixins(MapCanvasPinMixin)
+AdventureGuideForeverPinMixin = CreateFromMixins(ns.MapCanvas.PinMixin, { takesMouse = true, clicks = true })
+
+function AdventureGuideForeverPinMixin.ShouldMouseButtonBePassthrough(_, button)
+	return button ~= "LeftButton" and button ~= "RightButton"
+end
 
 ---@param step AGFStep
 ---@param index number
@@ -472,9 +483,7 @@ function AdventureGuideForeverPinMixin:OnAcquired(step, index, visits)
 	self:SetPosition(step.x, step.y)
 	self:SetIgnoreGlobalPinScale(true)
 	self:SetScalingLimits(1, 1, 1)
-	self:ApplyCurrentScale()
-	-- Closing the map hides the pin without an OnMouseLeave.
-	self:SetScript("OnHide", self.OnMouseLeave)
+	self:ApplyScale()
 end
 
 function AdventureGuideForeverPinMixin:OnMouseEnter()
@@ -505,7 +514,7 @@ function AdventureGuideForeverPinMixin:OnMouseLeave()
 	end
 end
 
-function AdventureGuideForeverPinMixin:OnClick(button)
+function AdventureGuideForeverPinMixin:OnMouseClickAction(button)
 	if not self.step then
 		return
 	end
@@ -517,11 +526,11 @@ function AdventureGuideForeverPinMixin:OnClick(button)
 	end
 end
 
----@class AGFGiverPinFrame : AGFMapPinMixin
+---@class AGFGiverPinFrame : ForeverCanvasPin
 ---@field Icon Texture
 ---@field Glow Texture
 ---@field giver? AGFGiver
-AdventureGuideForeverGiverPinMixin = CreateFromMixins(MapCanvasPinMixin)
+AdventureGuideForeverGiverPinMixin = CreateFromMixins(ns.MapCanvas.PinMixin, { takesMouse = true, clicks = true })
 
 ---@param giver AGFGiver
 function AdventureGuideForeverGiverPinMixin:OnAcquired(giver)
@@ -529,9 +538,7 @@ function AdventureGuideForeverGiverPinMixin:OnAcquired(giver)
 	self.giver = giver
 	self:SetPosition(giver.x, giver.y)
 	self:SetScalingLimits(1, 1.0, 1.2)
-	self:ApplyCurrentScale()
-	-- Closing the map hides the pin without an OnMouseLeave.
-	self:SetScript("OnHide", self.OnMouseLeave)
+	self:ApplyScale()
 end
 
 -- The client's own title wins when the quest is cached; the level is the bundled one.
@@ -566,7 +573,7 @@ end
 
 -- A shift-click adds the giver's quests to the route (docs/design.md §2.18), or takes them off: those not orange or
 -- red, which no route takes.
-function AdventureGuideForeverGiverPinMixin:OnClick(button)
+function AdventureGuideForeverGiverPinMixin:OnMouseClickAction(button)
 	if button == "LeftButton" and self.giver and IsShiftKeyDown() then
 		if #self.giver.adds > 0 then
 			ns.TogglePinned(self.giver.adds)
@@ -587,22 +594,16 @@ end
 ---@param visit fun(pin: AGFPinFrame|AGFGiverPinFrame)
 ---@param tolerance? number
 local function AtPoint(point, visit, tolerance)
-	for _, template in ipairs({ PIN_TEMPLATE, GIVER_TEMPLATE }) do
-		for pin in WorldMapFrame:EnumeratePinsByTemplate(template) do
-			local place = pin.step or (pin --[[@as AGFGiverPinFrame]]).giver
-			if
-				place
-				and (
-					(place.x == point.x and place.y == point.y)
-					or (
-						tolerance
-						and math.abs(place.x - point.x) < tolerance
-						and math.abs(place.y - point.y) < tolerance
-					)
-				)
-			then
-				visit(pin)
-			end
+	for _, pin in ipairs(Pins.Active()) do
+		local place = pin.step or (pin --[[@as AGFGiverPinFrame]]).giver
+		if
+			place
+			and (
+				(place.x == point.x and place.y == point.y)
+				or (tolerance and math.abs(place.x - point.x) < tolerance and math.abs(place.y - point.y) < tolerance)
+			)
+		then
+			visit(pin)
 		end
 	end
 end
@@ -635,53 +636,107 @@ function Pins.Highlight(point, shown)
 	end, 0.0001)
 end
 
+-- A requested reveal waits for the canvas to observe the target map before playing.
+local function PlayReveal()
+	local point = reveal
+	if
+		not point
+		or not map
+		or not pingPool
+		or InCombatLockdown()
+		or not map:IsShown()
+		or map:GetMapID() ~= point.map
+	then
+		return
+	end
+	reveal = nil
+	pingPool:ReleaseAll()
+	pingPool:Acquire(point.x, point.y)
+	AtPoint(point, Flash)
+end
+
 ---@param point AGFPoint|AGFPlace|AGFStep|AGFGiver
 function Pins.Reveal(point)
 	if InCombatLockdown() or not ns.Model.ValidPlace(point) or ns.Setting("wanderer") then
 		return
 	end
-	-- C_Map.OpenWorldMap has the client open and turn the map from its own code. The global OpenWorldMap and
-	-- WorldMapFrame:SetMapID run as the addon and leave the map's fields tainted, which blocks its pins in combat.
+	reveal = point
+	-- The client opens and turns the map from its own code, keeping those fields untainted.
 	C_Map.OpenWorldMap(point.map)
 	C_Timer.After(0, function()
-		if InCombatLockdown() or not WorldMapFrame:IsShown() or WorldMapFrame:GetMapID() ~= point.map then
-			return
+		if not InCombatLockdown() and map then
+			local view = ns.MapCanvas.Watch(map)
+			if view.shown and view.mapID == point.map then
+				PlayReveal()
+			end
 		end
-		if not ping then
-			ping = WorldMapFrame:AcquirePin(PING_TEMPLATE) --[[@as AGFMapPing]]
-			ping:UseFrameLevelType("PIN_FRAME_LEVEL_QUEST_PING")
-		end
-		ping:SetNumLoops(2)
-		ping:PlayAt(point.x, point.y)
-		AtPoint(point, Flash)
 	end)
 end
 
 function Pins.Refresh()
 	if InCombatLockdown() then
+		reveal = nil
+		if map then
+			ns.MapCanvas.SetShown(map, false)
+		end
 		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return
 	end
 	RefreshMinimap()
-	if WorldMapFrame:IsShown() then
-		provider:RefreshAllData()
+	if map and map:IsShown() then
+		Draw()
 	end
 end
 
 afterCombat:SetScript("OnEvent", function(self, event)
-	if event == "PLAYER_REGEN_ENABLED" then
+	if event == "PLAYER_REGEN_DISABLED" then
+		reveal = nil
+		if map then
+			ns.MapCanvas.SetShown(map, false)
+		end
+		self:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
+	elseif event == "PLAYER_REGEN_ENABLED" then
 		self:UnregisterEvent("PLAYER_REGEN_ENABLED")
 	end
 	Pins.Refresh()
 end)
 
 afterCombat:RegisterEvent("MINIMAP_UPDATE_ZOOM")
+afterCombat:RegisterEvent("PLAYER_REGEN_DISABLED")
 
 local function Attach()
-	local map = WorldMapFrame
-	map:AddDataProvider(provider)
+	map = WorldMapFrame
+	routePool = ns.MapCanvas.Pool(map, AdventureGuideForeverPinMixin, { template = PIN_TEMPLATE, marker = "route" })
+	-- The native ping keeps its art and animations; private placement overrides its native pin base.
+	local pingMixin = CreateFromMixins(MapPinPingMixin, ns.MapCanvas.PinMixin, {
+		OnLoad = MapPinPingMixin.OnLoad,
+		OnAcquired = function(self, x, y)
+			self:UseFrameLevelType("PIN_FRAME_LEVEL_QUEST_PING")
+			self:SetNumLoops(2)
+			self:PlayAt(x, y)
+		end,
+		OnReleased = function(self)
+			self:Stop()
+		end,
+	})
+	giverPool = ns.MapCanvas.Pool(map, AdventureGuideForeverGiverPinMixin, { template = GIVER_TEMPLATE })
+	pingPool = ns.MapCanvas.Pool(map, pingMixin, { template = PING_TEMPLATE })
+	ns.MapCanvas.Watch(map, function(_, what)
+		if what == "map" or what == "hide" then
+			pingPool:ReleaseAll()
+		end
+		if what == "map" and reveal and map:GetMapID() ~= reveal.map then
+			reveal = nil
+		end
+		if what == "hide" then
+			reveal = nil
+		else
+			Pins.Refresh()
+			PlayReveal()
+		end
+	end)
 	ns.OnRouteChange(Pins.Refresh)
-	map:HookScript("OnShow", Pins.Refresh)
 end
 
 EventUtil.ContinueOnAddOnLoaded("Blizzard_WorldMap", Attach)

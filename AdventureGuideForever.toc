@@ -31,6 +31,7 @@ Data\Forever.lua
 Data\ZoneArt.lua
 Core\Secret.lua
 Core\SafeCall.lua
+UI\MapCanvas.lua
 Core\Text.lua
 Core\MicroButton.lua
 Core\Core.lua

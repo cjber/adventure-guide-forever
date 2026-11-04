@@ -137,8 +137,11 @@ read_globals = {
 	"debugprofilestop",
 	-- Pins.lua
 	"CreateFromMixins",
-	"MapCanvasDataProviderMixin",
-	"MapCanvasPinMixin",
+	"MapPinPingMixin",
+	"SoftCursor",
+	"C_InputInterfaceStyle",
+	"Saturate",
+	"Lerp",
 	"GameTooltip",
 	"GameTooltip_SetTitle",
 	"GameTooltip_AddNormalLine",
@@ -214,3 +217,6 @@ for _, locale in ipairs({ "deDE", "esES", "esMX", "frFR", "koKR", "ptBR", "ruRU"
 	files["Locales/" .. locale .. ".lua"] = { max_line_length = false }
 end
 read_globals[#read_globals + 1] = "EditModeManagerFrame"
+
+-- Addon-private map marker inventory, published as a copy by the shared canvas.
+globals[#globals + 1] = "ForeverMapMarkers"

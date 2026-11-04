@@ -87,7 +87,7 @@
 			</Layer>
 		</Layers>
 	</Button>
-	<!-- The route pin must be a real XML template: MapCanvasMixin AcquirePin resolves its template argument through CreateFramePool, which needs a declared virtual frame. -->
+	<!-- Private frame pools instantiate the route pin from this virtual template. -->
 	<Frame name="AdventureGuideForeverPinTemplate" mixin="AdventureGuideForeverPinMixin" enableMouse="true" virtual="true">
 		<Size x="20" y="20"/>
 		<Layers>
@@ -136,7 +136,6 @@
 				</FontString>
 			</Layer>
 		</Layers>
-		<!-- No OnEnter/OnLeave scripts: MapCanvas asserts a new pin has none and wires OnMouseEnter/OnMouseLeave itself. -->
-		<!-- OnClick is not an XML script here: MapCanvasMixin OnPinMouseUp calls pin OnClick(button) directly once IsMouseClickEnabled() is true (see enableMouse above), same as OnMouseUp/Down. -->
+		<!-- The shared private canvas wires hover and observes global mouse clicks. -->
 	</Frame>
 </Ui>
