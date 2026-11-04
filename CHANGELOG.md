@@ -12,6 +12,11 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-11-04
+
+- **Quest rewards that beat what you wear are marked.** The quest giver's detail and reward window draw the game's own green upgrade arrow on a reward the game shows usable, that fits your class's armour type, that carries no primary stat your class never uses, and that has a higher item level than the weaker item it would replace. Weapons follow the game tutorial's own upgrade rules. Setting *Mark reward upgrades* (Interface, on by default); with Pawn loaded nothing is marked, and the README says so.
+
+
 - **Quest rewards that beat your gear are marked.** When a quest giver offers rewards to choose from, the game's green upgrade arrow marks each one you can use that beats what you wear in that slot: your class's armour type, a main stat your class uses and a higher item level. Nothing is chosen for you, and with Pawn installed Pawn marks them instead. Thanks to cjber for the idea (#321).
 
 ## [1.0.6] - 2026-11-04
