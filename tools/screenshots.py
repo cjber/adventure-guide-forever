@@ -440,8 +440,8 @@ def shortest_path(ui, content_ui, data):
     stops, and the player."""
     stops, map_id = data["map"]["stops"], data["panel"]["map"]
     player = data["map"]["player"]
-    walk = spf_walk(ui, map_id, (player["x"], player["y"]), (stops[0]["x"], stops[0]["y"]))
-    current = [map_position(ui, map_id, point) for point in walk]
+    walk = spf_walk(content_ui, map_id, (player["x"], player["y"]), (stops[0]["x"], stops[0]["y"]))
+    current = [map_position(content_ui, map_id, point) for point in walk]
     preview = [(stop["x"], stop["y"]) for stop in stops]
 
     def on_map(canvas, rects):
