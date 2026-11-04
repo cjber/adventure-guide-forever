@@ -11,12 +11,13 @@ one the dumps name has a recipe in screenshots_stock.py citing its Blizzard XML;
 The frames around the addon (the world map, the tracker, the tooltip and the menu) are wowmock's
 (the forever-core shared renderer), drawn from Blizzard's own layout numbers (WFA-4: the stock look).
 
-Art, fonts and DB2 tables come from wago.tools for BUILD and are cached under ~/.cache/wowmock. The game client is
-never started or read. Two runs give byte-identical PNGs with this environment (pip is not installed on the
-machine that pinned it, so the freeze is importlib.metadata's, limited to what the script imports):
+UI art and fonts come from wago.tools for UI_ART_BUILD; generated map and content tables come from DATA_BUILD.
+They are cached under ~/.cache/wowmock. The game client is never started or read. Two runs give byte-identical PNGs
+with this environment (pip is not installed on the machine that pinned it, so the freeze is importlib.metadata's,
+limited to what the script imports):
 
     Python 3.14.7, pillow==12.3.0
-    wowmock.py        db11c4fdc3ea7f43e6a754e28da468b3a1008ee89029466f68b9dc4ac2a93e33
+    wowmock.py        503b024c0c2aae953044fd2e041691809a9e55109a6b54b31005e32cc52bd57e
     fonts/frizqt__.ttf (fdid 615960)  73de74d5d63690f29c7f97a9225edc8bd6f89e5103806af3714e4d7bfb9474e9
     fonts/arialn.ttf   (fdid 615958)  bd31d0cf2e5a1a3a9074e98ebe4964c641121e9e660f31627614c4acb6c89c1c
     fonts/morpheus.ttf (fdid 615962)  0df28ca8a5e6fc14ee53de7b7f8ed7cf128108766b97d13d5ba60296cb517fd7
@@ -36,8 +37,7 @@ import tempfile
 from pathlib import Path
 
 import screenshots_art as drawing
-from diff_forever import ERA
-from gen_quests import BUILD
+from gen_quests import BUILD as DATA_BUILD
 from screenshots_art import draw_font_string, draw_texture, fit_text, font, load_wowmock
 from screenshots_resolver import effective_scales, lua_rects, map_point, parent_path, resolve, scroll_child_anchors
 from screenshots_spf import SPF_SHA, breadcrumbs, goal_pins, map_position, spf_walk, stop_groups
@@ -52,6 +52,7 @@ PILLOW = "12.3.0"
 # measuring at 2x then shrinking gives different widths and hides client wrapping/truncation.
 SCALE = 1.2
 LAYOUT_PASSES = 8
+UI_ART_BUILD = "1.60.1.70124"
 
 # ------------------------------------------------------------------------------------- the addon, headless
 
@@ -82,7 +83,7 @@ def two_places(value):
     return value
 
 
-def layout_pass(ui, scenes, known):
+def layout_pass(ui, content_ui, scenes, known):
     """The client's layout, emulated: rects resolved from a run's dumps go back into the next run (h.SetRects runs
     the addon's OnSizeChanged, then the refresh re-lays the rows) until nothing moves, as the client settles over
     its first frames. The first run carries no input and must be tests/golden/layout.json exactly, so the scenes'
@@ -91,35 +92,7 @@ def layout_pass(ui, scenes, known):
     golden = json.loads(GOLDEN.read_text())["layout"]
     if two_places(data["panel"]["layout"]) != golden:
         sys.exit("tests/scenes.lua's panel differs from tests/golden/layout.json: update its fixture to ui_spec's")
-    inputs = {"rects": {}, "mapArt": map_tiles(ui)}
-    source = Path(
-        os.environ.get(
-            "AGF_ATLASLOOT",
-            Path.home()
-            / "Games/battlenet/drive_c/Program Files (x86)/World of Warcraft"
-            / "_classic_beta_/Interface/AddOns/AtlasLootClassic_DungeonsAndRaids/data.lua",
-        )
-    )
-    loot = subprocess.run(
-        ["luajit", "tools/screenshot_loot.lua", str(source)], cwd=ROOT, capture_output=True, text=True, check=True
-    )
-    inputs["atlasloot"] = json.loads(loot.stdout)
-    items = {}
-    era = drawing.wm.Ui(ERA)
-    client = drawing.wm.Ui(BUILD)
-    for boss in inputs["atlasloot"]["WailingCaverns"]["items"]:
-        for row in boss.get("1", []):
-            if isinstance(row[1], int) and row[1] > 0:
-                try:
-                    item = client.item(row[1])
-                    items[str(row[1])] = {"name": item.name, "icon": item.icon}
-                except KeyError:
-                    try:
-                        item = era.item(row[1])
-                        items[str(row[1])] = {"name": item.name, "icon": item.icon}
-                    except KeyError:
-                        pass
-    inputs["lootItems"] = items
+    inputs = {"rects": {}, "mapArt": map_tiles(content_ui)}
     for _ in range(LAYOUT_PASSES):
         data = run_scenes(inputs)
         rects = {
@@ -313,13 +286,13 @@ PLAYER_ARROW = 27  # the player pin's arrow, as wowmock's NOTES measure it again
 GREEN = (0.1, 1.0, 0.1)  # GREEN_FONT_COLOR, what GameTooltip_AddInstructionLine uses
 
 
-def explored_art(ui, map_id):
+def explored_art(content_ui, map_id):
     """A uiMap's base art with every WorldMapOverlay drawn, as a character who has explored the whole zone sees it;
     the base art alone is the unexplored parchment."""
-    art = drawing.wm.map_art(ui, map_id)
-    for overlay in drawing.wm.map_overlays(ui, map_id):
+    art = drawing.wm.map_art(content_ui, map_id)
+    for overlay in drawing.wm.map_overlays(content_ui, map_id):
         drawing.wm.draw_overlay(
-            ui, art, overlay.offset_x, overlay.offset_y, overlay.width, overlay.height, overlay.tiles
+            content_ui, art, overlay.offset_x, overlay.offset_y, overlay.width, overlay.height, overlay.tiles
         )
     return art
 
@@ -416,10 +389,10 @@ def known_frames(rects):
 PLAYER = {"x": 0.52, "y": 0.30}  # tests/harness.lua's player position in The Barrens
 
 
-def quest_log(ui, data, rects, scene, pins=()):
+def quest_log(ui, content_ui, data, rects, scene, pins=()):
     """The world map with the quest log open on the guide's tab: `scene`'s panel dump in the quest pane, the tabs,
     and the map's pins."""
-    art = explored_art(ui, data["panel"]["map"])
+    art = explored_art(content_ui, data["panel"]["map"])
 
     def on_map(canvas, frame_rects):
         draw_pins(canvas, frame_rects, pins)
@@ -432,14 +405,14 @@ def quest_log(ui, data, rects, scene, pins=()):
     return canvas, frame
 
 
-def shortest_path(ui, data):
+def shortest_path(ui, content_ui, data):
     """The map while Shortest Path guides the route AGF handed it: the current leg (player to stop 1) walked with
     Path.FindSync, the later stops joined by the straight preview walk (Route.lua's `preview` path), the numbered
     stops, and the player."""
     stops, map_id = data["map"]["stops"], data["panel"]["map"]
     player = data["map"]["player"]
-    walk = spf_walk(ui, map_id, (player["x"], player["y"]), (stops[0]["x"], stops[0]["y"]))
-    current = [map_position(ui, map_id, point) for point in walk]
+    walk = spf_walk(content_ui, map_id, (player["x"], player["y"]), (stops[0]["x"], stops[0]["y"]))
+    current = [map_position(content_ui, map_id, point) for point in walk]
     preview = [(stop["x"], stop["y"]) for stop in stops]
 
     def on_map(canvas, rects):
@@ -448,7 +421,7 @@ def shortest_path(ui, data):
         goal_pins(canvas, stops, marks)
         draw_player(canvas, rects, player)
 
-    canvas, _ = map_frame(ui, explored_art(ui, map_id), False, on_map)
+    canvas, _ = map_frame(ui, explored_art(content_ui, map_id), False, on_map)
     return canvas
 
 
@@ -462,7 +435,7 @@ def manifest(paths):
     """docs/screenshots/manifest.txt: what the PNGs were made from and each PNG's sha256, so a stale image or a
     changed input shows in review."""
     lines = [
-        f"build {BUILD}",
+        f"data build {DATA_BUILD}, art build {UI_ART_BUILD}",
         f"shortest-path-forever {SPF_SHA}",
         f"tests/golden/layout.json {sha256(GOLDEN)}",
     ]
@@ -519,14 +492,17 @@ def demo(ui, images):
 def render():
     """Every scene into OUT; returns the written paths."""
     load_wowmock()
+
     version = importlib.metadata.version("pillow")
     if version != PILLOW:
         print(f"warning: Pillow {version}, not the pinned {PILLOW}: the PNGs may not match byte for byte")
-    ui = drawing.wm.Ui(BUILD, scale=SCALE)
+    ui = drawing.wm.Ui(build=UI_ART_BUILD, scale=SCALE)
+    content_ui = drawing.wm.Ui(build=DATA_BUILD, scale=SCALE)
     _, frame = map_frame(ui, drawing.wm.Image.new("RGBA", (1002, 668)), True)
     known = known_frames(frame)
     data, rects = layout_pass(
         ui,
+        content_ui,
         (
             "panel",
             "journeys",
@@ -543,29 +519,29 @@ def render():
     setup_canvas = ui.canvas(454, 294)
     Layout(data["guide_setup"]["layout"], rects["guide_setup"]).draw(setup_canvas)
     images["guide_setup"] = drawing.wm.scene(ui, [(setup_canvas, 0, 0)])
-    canvas, _ = quest_log(ui, data, rects, "restedxp", data["restedxp"]["pins"])
+    canvas, _ = quest_log(ui, content_ui, data, rects, "restedxp", data["restedxp"]["pins"])
     images["restedxp"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     # The lead image: no card chosen yet, compact rows with no scrollbar.
-    canvas, _ = quest_log(ui, data, rects, "journeys", data["journeys"]["pins"])
+    canvas, _ = quest_log(ui, content_ui, data, rects, "journeys", data["journeys"]["pins"])
     images["panel"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     # The panel on its own: four journeys, and an overflow link in a shorter sidebar.
     for name, scene in (("panel_four", "journeys_four"), ("panel_overflow", "journeys_overflow")):
-        canvas, _ = quest_log(ui, data, rects, scene)
+        canvas, _ = quest_log(ui, content_ui, data, rects, scene)
         x, y, width, height = rects[scene]["AdventureGuideForeverPanel"]
         images[name] = drawing.wm.scene(ui, [(crop(canvas, x - 6, y - 6, width + 12, height + 12), 0, 0)])
 
     # The Barrens story chosen: lit over its numbered steps, their rings on the map, the others folded above it.
-    canvas, _ = quest_log(ui, data, rects, "panel", data["panel"]["pins"])
+    canvas, _ = quest_log(ui, content_ui, data, rects, "panel", data["panel"]["pins"])
     images["chosen"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
-    canvas, frame = quest_log(ui, data, rects, "search", data["panel"]["pins"])
+    canvas, frame = quest_log(ui, content_ui, data, rects, "search", data["panel"]["pins"])
     qx, qy, qw, qh = frame["quests"]
     images["search"] = drawing.wm.scene(ui, [(crop(canvas, qx - 3, qy - 30, qw + 3 + 64, qh + 30 + 22), 0, 0)])
 
-    art = explored_art(ui, data["panel"]["map"])
-    canvas = shortest_path(ui, data)
+    art = explored_art(content_ui, data["panel"]["map"])
+    canvas = shortest_path(ui, content_ui, data)
     images["map"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     hovered = data["tooltip"]["hovered"] - 1
