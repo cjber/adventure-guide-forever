@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The objective tracker column stays still as you enter and leave combat.** It no longer jumps in height or drops its last line during a fight, and the quest list below it stays where it is.
+
 ## [1.0.8] - 2026-11-04
 
 - **Quest and zone data now name the 1.60.1.70790 build.** Quest geometry, zone art and the Forever-only quest diff are regenerated from the new Forever client build, and the README scenes are re-rendered from it. The regenerated values match the previous build, so no guide step changes.
