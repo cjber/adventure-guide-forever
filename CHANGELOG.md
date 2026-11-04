@@ -13,6 +13,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [Unreleased]
 
 - **Map pins stay clear of the gamepad map controls.** Route rings, quest givers and reveal pings use their own map layer, keeping zooming and navigation available. Pins hide during combat and return on the map currently shown. Thanks to cjber for reporting the blocked controls (#304).
+
+## [1.0.4] - 2026-11-04
+
 - **RestedXP’s item and target buttons stay available.** Following its guides here keeps its quest-item and targeting windows in their own positions, with their RestedXP settings. Thanks to Gnatz_0815 on CurseForge for the idea (#237).
 
 ## [1.0.3] - 2026-11-03
