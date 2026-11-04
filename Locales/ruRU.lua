@@ -299,8 +299,9 @@ L["RXP_RECOMMENDATIONS"] = "Советы Adventure Guide"
 L["RXP_SELECT"] = "Выбрать руководство"
 L["RXP_SETTINGS"] = "Настройки"
 L["RXP_SETUP_AGF"] = "Показывать шаги RestedXP в Adventure Guide."
-L["RXP_SETUP_HIDDEN"] = "Скрыть окна и метки на карте RestedXP."
-L["RXP_SETUP_HIDDEN_SPF"] = "Скрыть окна, стрелку и метки на карте RestedXP."
+L["RXP_SETUP_HIDDEN"] = "Скрыть окно руководства и метки на карте RestedXP."
+L["RXP_SETUP_HIDDEN_SPF"] =
+	"Скрыть окно руководства, стрелку и метки на карте RestedXP."
 L["RXP_SETUP_NATIVE"] =
 	"Оставить его окно руководства, стрелку, цели и метки на карте."
 L["RXP_SETUP_NATIVE_TITLE"] = "RestedXP"

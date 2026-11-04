@@ -287,8 +287,6 @@ local function Sync()
 		Window(engine.RXPFrame)
 		-- Its own arrow: RXP leaves it on screen while its windows are gone, and the guide already points the way.
 		Window(engine.arrowFrame)
-		Window(engine.activeItemFrame)
-		Window(engine.targeting and engine.targeting.activeTargetFrame)
 		Window(LibDBIcon10_RXPGuides)
 		SuppressMap(engine)
 		Window(engine.v2 and engine.v2.state and engine.v2.state.guideWindow and engine.v2.state.guideWindow.frame)
