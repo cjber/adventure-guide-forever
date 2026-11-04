@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-11-04
+
 - **Map pins stay clear of the gamepad map controls.** Route rings, quest givers and reveal pings use their own map layer, keeping zooming and navigation available. Pins hide during combat and return on the map currently shown. Thanks to cjber for reporting the blocked controls (#304).
 
 ## [1.0.4] - 2026-11-04
