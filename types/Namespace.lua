@@ -797,6 +797,7 @@
 ---@field Debug fun(): string /agf travel's line
 
 ---@class AGFNamespace
+---@field MapCanvas ForeverMapCanvas
 ---@field ReportTitle string the localized title shown by the shared report window
 ---@field Offers AGFOffersModule what a giver's window really offers (Offers.lua)
 ---@field Closes AGFClosesModule the chat warning before taking a quest that closes another (Closes.lua)
@@ -1600,6 +1601,8 @@
 ---@field Grip? fun(host: Frame, source: ForeverTrackerHostAPI): ForeverTrackerGrip draws the grip on the column it drags
 
 ---@class ForeverTrackerNamespace
+---@field MapCanvas? ForeverMapCanvas
+---@field SafeCall fun(label: string, fn: function, ...: any): boolean, ...any
 ---@field TrackerHost? ForeverTrackerHostAPI
 ---@field TrackerOrder? ForeverTrackerOrderAPI the section order, from UI/TrackerOrder.lua
 ---@field TrackerQuestie? ForeverTrackerQuestie Questie's quest list, from UI/TrackerQuestie.lua

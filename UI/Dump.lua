@@ -5,11 +5,6 @@ local _, ns = ...
      writes it to disk for tests/dump_diff.lua to compare with the headless layout. It runs only on the
      command, and the snapshot is dropped at the next login so it never lingers in the save file. ]]
 
-local PIN_TEMPLATES = {
-	"AdventureGuideForeverPinTemplate",
-	"AdventureGuideForeverGiverPinTemplate",
-}
-
 -- The key a parent holds a region under: its XML parentKey, else the first field (by name) that holds it.
 ---@param parent table
 ---@param region Region
@@ -150,12 +145,8 @@ local function Frames()
 			Visit(root)
 		end
 	end
-	if WorldMapFrame then
-		for _, template in ipairs(PIN_TEMPLATES) do
-			for pin in WorldMapFrame:EnumeratePinsByTemplate(template) do
-				Visit(pin)
-			end
-		end
+	for _, pin in ipairs(ns.Pins.Active()) do
+		Visit(pin)
 	end
 	return frames
 end

@@ -39,6 +39,7 @@ No embedded libraries ship. `media/` is this addon's own: the icon is drawn in `
 | [forever-core/tools/wowmock](https://github.com/cjber/forever-core/tree/main/tools/wowmock) and the client art it fetches | `tools/screenshots.py` | `FOREVER_CORE` (a local forever-core checkout); the art at `BUILD` in `tools/gen_quests.py` | MIT; the art is Blizzard Entertainment's, fetched at build time and committed only as it appears in `docs/screenshots/` |
 | AtlasLoot Classic data | Loot in the screenshots (`tools/screenshot_loot.lua`) | A local install (`AGF_ATLASLOOT`) | Its own; only `docs/screenshots/loot.png`, which shows the items it lists, is committed |
 | Sloppatrol gate | `.sloppatrol/gate.py` and `.sloppatrol/agents.py` in CI | Vendored by `sloppatrol init` | MIT (`.sloppatrol/LICENSE`) |
+| Forever Core native simulator | `tools/forever_sim/`, used by `tests/sim/` | Revision in `tools/forever_sim/MANIFEST.json`; Blizzard inputs pinned by its fetcher | GPL-3.0-or-later; development only. Downloaded Blizzard source and data are not shipped |
 
 CI tools (StyLua, ruff, luacheck, lua-language-server, actionlint, zizmor, gitleaks, the BigWigs packager) are pinned in `.github/workflows/` and `tools/typecheck.sh`, except luajit and luacheck, which come from the runner's apt; they build and check the addon and are never part of it.
 

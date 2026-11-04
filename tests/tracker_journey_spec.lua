@@ -149,12 +149,12 @@ do
 	local ns = h.ns
 	h.G.C_Map.OpenWorldMap()
 	h.flush()
-	h.providers[1]:RefreshAllData()
+	h.ns.Pins.Refresh()
 	local route = ns.Route()
 	local first, second = route.steps[1], route.steps[2]
 	check(second ~= nil, "the route has a second step")
 	local pin, firstPin
-	for _, candidate in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
+	for _, candidate in ipairs(h.Pins("AdventureGuideForeverPinTemplate") or {}) do
 		pin = candidate.step == second and candidate or pin
 		firstPin = candidate.step == first and candidate or firstPin
 	end
@@ -165,14 +165,14 @@ do
 	h.Hover(firstPin)
 	check(table.concat(h.tooltip, "\n"):find(ns.L.PIN_RETURN_STORY, 1, true) == nil, "the first needs no return")
 
-	h.call(pin.OnClick, pin, "LeftButton")
+	h.call(pin.OnMouseClickAction, pin, "LeftButton")
 	h.flush()
 	check(h.spf.NavigateRoute == 1, "clicking the pin routes")
 	check(
 		h.spfRoute.stops[1].title == (second.kind == "town" and second.place or second.title),
 		"from the clicked step"
 	)
-	h.call(pin.OnClick, pin, "RightButton")
+	h.call(pin.OnMouseClickAction, pin, "RightButton")
 	h.flush()
 	check(
 		h.spfRoute.stops[1].title == (first.kind == "town" and first.place or first.title),

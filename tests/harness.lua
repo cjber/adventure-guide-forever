@@ -226,9 +226,14 @@ function harness.load(options)
 		prints = {},
 		uiErrors = {},
 		tooltip = {},
-		pins = {},
-		providers = {},
-		counts = { CreateFrame = 0, displayModeWrites = 0, tickers = 0, AcquirePin = 0, SetMapID = 0, OpenQuestLog = 0 },
+		counts = {
+			CreateFrame = 0,
+			displayModeWrites = 0,
+			tickers = 0,
+			SetMouseClickEnabled = 0,
+			SetMapID = 0,
+			OpenQuestLog = 0,
+		},
 		modelCalls = {},
 		fanfares = {},
 		sounds = {},
@@ -440,6 +445,15 @@ function harness.load(options)
 	function Methods:IsMouseEnabled()
 		return self.mouseEnabled == true
 	end
+	function Methods:SetMouseClickEnabled(enabled)
+		assert(not h.combat, "mouse click configuration is refused in combat")
+		h.counts.SetMouseClickEnabled = h.counts.SetMouseClickEnabled + 1
+		self.mouseClickEnabled = enabled
+	end
+	function Methods:SetPassThroughButtons(...)
+		assert(not h.combat, "mouse passthrough is refused in combat")
+		self.passThrough = { ... }
+	end
 	function Methods:IsMouseOver()
 		return self.mouseOver == true
 	end
@@ -532,6 +546,9 @@ function harness.load(options)
 	end
 	function Methods:GetRight()
 		return self.rect and self.rect[1] + self.rect[3]
+	end
+	function Methods:GetScale()
+		return self.scale or 1
 	end
 	function Methods:GetEffectiveScale()
 		return self.scale or 1
@@ -1164,15 +1181,7 @@ function harness.load(options)
 			end
 		end,
 		MapPinPingTemplate = function(frame)
-			for key, value in pairs(G.MapCanvasPinMixin) do
-				frame[key] = value
-			end
-			function frame:SetNumLoops(loops)
-				self.loops = loops
-			end
-			function frame:PlayAt(x, y)
-				self:SetPosition(x, y)
-			end
+			G.Mixin(frame, G.MapPinPingMixin)
 		end,
 		-- Blizzard_PagedContent/Blizzard_PagingControls.xml: the spellbook's page arrows, 32px file art.
 		PagingControlsPrevPageButtonTemplate = function(frame)
@@ -1365,6 +1374,7 @@ function harness.load(options)
 			-- options.panelHeight: a spec about every card at once asks for a panel tall enough to hold them.
 			frame.rect = { 0, 0, 306, options.panelHeight or 535 }
 		end
+		frame.template = template
 		if template then
 			Instantiate(frame, template)
 		end
@@ -1399,6 +1409,13 @@ function harness.load(options)
 			h.call(ticker.fn)
 		end
 	end
+	function h.frame()
+		for _, frame in ipairs(h.frames) do
+			if frame.scripts.OnUpdate and frame:IsVisible() then
+				h.call(frame.scripts.OnUpdate, frame, 1 / 60)
+			end
+		end
+	end
 	-- Runs one frame: the timers queued now, not the ones they queue. Returns how many ran.
 	function h.tick()
 		local due = timers
@@ -1406,13 +1423,17 @@ function harness.load(options)
 		for _, fn in ipairs(due) do
 			h.call(fn)
 		end
+		h.frame()
 		return #due
 	end
 	-- Runs queued timers, and any they queue, the way the next frames would.
 	function h.flush()
 		for _ = 1, 1000 do
 			if #timers == 0 then
-				return
+				h.frame()
+				if #timers == 0 then
+					return
+				end
 			end
 			local due = timers
 			timers = {}
@@ -1538,8 +1559,13 @@ function harness.load(options)
 	end
 	-- Entering or leaving combat fires the same events the client does.
 	function h.SetCombat(on)
-		h.combat = on
-		h.fire(on and "PLAYER_REGEN_DISABLED" or "PLAYER_REGEN_ENABLED")
+		if on then
+			h.fire("PLAYER_REGEN_DISABLED")
+			h.combat = true
+		else
+			h.combat = false
+			h.fire("PLAYER_REGEN_ENABLED")
+		end
 	end
 	G.strtrim = function(text)
 		return (text:match("^%s*(.-)%s*$"))
@@ -2208,6 +2234,12 @@ function harness.load(options)
 	end
 	-- Unit tooltips: TooltipDataProcessor's post calls, run by h.HoverUnit on the unit's GUID (UnitGUID).
 	G.Enum = { TooltipDataType = { Unit = 2 } }
+	G.Lerp = function(a, b, t)
+		return a + (b - a) * t
+	end
+	G.Saturate = function(value)
+		return math.max(0, math.min(1, value))
+	end
 	local postCalls, guids = {}, {}
 	G.TooltipDataProcessor = {
 		AddTooltipPostCall = function(kind, fn)
@@ -2497,101 +2529,73 @@ function harness.load(options)
 		end,
 	}
 
-	-- The world map: a canvas with data providers and pooled pins, counted per template.
+	-- The native map exposes reads; addon providers and native pin-pool writes are forbidden.
 	local map = NewRegion("Frame", "WorldMapFrame", G.UIParent)
 	map.ScrollContainer = NewRegion("Frame", nil, map)
 	map.ScrollContainer:SetSize(830, 560)
-	map.mapID = player.map
+	map.mapID, map.canvasScale, map.zoom, map.pinScale = player.map, 1, 0, 1
 	map:Hide()
-	local pools = {}
-	function map:AddDataProvider(provider)
-		h.providers[#h.providers + 1] = provider
-		provider:OnAdded(self)
-	end
-	function map:RefreshAllDataProviders()
-		for _, provider in ipairs(h.providers) do
-			h.call(provider.RefreshAllData, provider)
-		end
-	end
-	-- MapCanvasMixin:OnShow and OnMapChanged refresh every provider, before any hook of the addon's runs.
-	map:SetScript("OnShow", map.RefreshAllDataProviders)
 	function map:SetMapID(mapID)
 		h.counts.SetMapID = h.counts.SetMapID + 1
 		self.mapID = mapID
-		if self:IsShown() then
-			self:RefreshAllDataProviders()
-		end
 	end
 	function map:GetMapID()
 		return self.mapID
 	end
-	function map:AcquirePin(template, ...)
-		assert(not h.combat, "AcquirePin changes protected mouse passthrough in combat")
-		h.counts.AcquirePin = h.counts.AcquirePin + 1
-		pools[template] = pools[template] or {}
-		h.pins[template] = h.pins[template] or {}
-		local pin = table.remove(pools[template])
-		if not pin then
-			pin = NewRegion("Frame", nil, self)
-			Instantiate(pin, template)
-			if not pin.scripts.OnLoad then
-				pin:OnLoad()
+	function map:GetCanvas()
+		return self.ScrollContainer
+	end
+	function map:GetCanvasScale()
+		return self.canvasScale
+	end
+	function map:GetCanvasZoomPercent()
+		return self.zoom
+	end
+	function map:GetGlobalPinScale()
+		return self.pinScale
+	end
+	local levels =
+		{ PIN_FRAME_LEVEL_AREA_POI = 20, PIN_FRAME_LEVEL_WAYPOINT_LOCATION = 30, PIN_FRAME_LEVEL_QUEST_PING = 40 }
+	function map:GetPinFrameLevelsManager()
+		return {
+			GetValidFrameLevel = function(_, kind)
+				return levels[kind]
+			end,
+		}
+	end
+	for _, name in ipairs({ "AddDataProvider", "AcquirePin", "RemoveAllPinsByTemplate", "EnumeratePinsByTemplate" }) do
+		map[name] = function()
+			error("addon called native map mutation " .. name)
+		end
+	end
+	-- Real MapPinPingMixin methods used by the template, with animation completion outside this harness's scope.
+	G.MapPinPingMixin = {
+		OnLoad = function(self)
+			self:SetScalingLimits(1, 0.65, 0.65)
+		end,
+		SetNumLoops = function(self, loops)
+			self.loops = loops
+		end,
+		PlayAt = function(self, x, y)
+			self:SetPosition(x, y)
+			self:Show()
+		end,
+		Stop = function(self)
+			self:Hide()
+		end,
+	}
+	function h.Pins(template)
+		if template == "AdventureGuideForeverAreaPinTemplate" then
+			return nil
+		end
+		local pins = {}
+		for _, frame in ipairs(h.frames) do
+			if frame.template == template and frame:IsShown() then
+				pins[#pins + 1] = frame
 			end
 		end
-		table.insert(h.pins[template], pin)
-		pin:Show()
-		pin:OnAcquired(...)
-		return pin
+		return pins
 	end
-	function map:RemoveAllPinsByTemplate(template)
-		pools[template] = pools[template] or {}
-		for _, pin in ipairs(h.pins[template] or {}) do
-			pin:Hide()
-			pin:ClearAllPoints()
-			pin:OnReleased()
-			table.insert(pools[template], pin)
-		end
-		h.pins[template] = {}
-	end
-	function map:EnumeratePinsByTemplate(template)
-		local index, list = 0, h.pins[template] or {}
-		return function()
-			index = index + 1
-			return list[index]
-		end
-	end
-	G.MapCanvasDataProviderMixin = {
-		OnAdded = function(self, owningMap)
-			self.owningMap = owningMap
-		end,
-		GetMap = function(self)
-			return self.owningMap
-		end,
-		RefreshAllData = noop,
-		RemoveAllData = noop,
-	}
-	G.MapCanvasPinMixin = {
-		OnLoad = noop,
-		OnAcquired = noop,
-		OnReleased = noop,
-		GetMap = function()
-			return map
-		end,
-		UseFrameLevelType = function(self, frameLevelType)
-			self.frameLevelType = frameLevelType
-		end,
-		SetPosition = function(self, x, y)
-			self.x, self.y = x, y
-			self:SetPoint("CENTER", map, "TOPLEFT", x * 1000, -y * 700)
-		end,
-		SetScalingLimits = function(self, style, minScale, maxScale)
-			self.scalingLimits = { style, minScale, maxScale }
-		end,
-		SetIgnoreGlobalPinScale = function(self, ignore)
-			self.ignoreGlobalPinScale = ignore
-		end,
-		ApplyCurrentScale = noop,
-	}
 	-- Blizzard_Menu/Mainline/MenuTemplates.xml: the drop-down template's own mixin.
 	G.WowStyle1DropdownMixin = {}
 	-- WORLD_MAP_OPEN, which Blizzard_WorldMap.lua:198 turns into its own OpenWorldMap(mapID).
@@ -3155,11 +3159,19 @@ function harness.load(options)
 	function h.ClickTab(tab)
 		h.call(assert(tab.mouseUpHandler, "no tab handler"), tab, "LeftButton", true)
 	end
+	local hoveredFrame
 	function h.Hover(frame)
-		if frame.OnMouseEnter then
-			h.call(frame.OnMouseEnter, frame)
+		if hoveredFrame then
+			local leave = hoveredFrame.scripts.OnLeave or hoveredFrame.OnMouseLeave
+			if leave then
+				h.call(leave, hoveredFrame)
+			end
+		end
+		hoveredFrame = frame
+		if frame.scripts.OnEnter then
+			h.call(frame.scripts.OnEnter, frame)
 		else
-			h.call(assert(frame.scripts.OnEnter, "no OnEnter"), frame)
+			h.call(assert(frame.OnMouseEnter, "no OnEnter"), frame)
 		end
 	end
 	function h.Type(editBox, text)

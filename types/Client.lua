@@ -118,35 +118,28 @@ QuestMapFrameOverrides = nil
 ---@type string
 QUESTS_LABEL = nil
 
----@class AGFMapProvider
----@field GetMap fun(self: AGFMapProvider): AGFWorldMapFrame
----@field RefreshAllData fun(self: AGFMapProvider, fromOnShow?: boolean)
----@field OnCanvasScaleChanged fun(self: AGFMapProvider)
----@field RemoveAllData fun(self: AGFMapProvider)
----@type AGFMapProvider
-MapCanvasDataProviderMixin = nil
-
----@class AGFMapPinMixin : Frame
----@field GetMap fun(self: AGFMapPinMixin): AGFWorldMapFrame
----@field UseFrameLevelType fun(self: AGFMapPinMixin, frameLevelType: string)
----@field SetPosition fun(self: AGFMapPinMixin, x: number, y: number)
----@field SetScalingLimits fun(self: AGFMapPinMixin, style: number, minScale: number, maxScale: number)
----@field SetIgnoreGlobalPinScale fun(self: AGFMapPinMixin, ignore: boolean)
----@field ApplyCurrentScale fun(self: AGFMapPinMixin)
----@type AGFMapPinMixin
-MapCanvasPinMixin = nil
-
----@class AGFWorldMapFrame : Frame
+---@class AGFWorldMapFrame : ForeverCanvasMap
 ---@field ScrollContainer Frame
----@field GetCanvas? fun(self: AGFWorldMapFrame): Frame
----@field GetCanvasScale? fun(self: AGFWorldMapFrame): number
----@field AddDataProvider fun(self: AGFWorldMapFrame, provider: AGFMapProvider)
----@field GetMapID fun(self: AGFWorldMapFrame): integer?
----@field AcquirePin fun(self: AGFWorldMapFrame, template: string, ...: any): AGFPinFrame
----@field RemoveAllPinsByTemplate fun(self: AGFWorldMapFrame, template: string)
----@field EnumeratePinsByTemplate fun(self: AGFWorldMapFrame, template: string): fun(): AGFPinFrame?
 ---@type AGFWorldMapFrame
 WorldMapFrame = nil
+
+-- Blizzard's ping animation is reused with the shared private pin placement.
+---@type {OnLoad: fun(self: ForeverCanvasPin)}
+MapPinPingMixin = nil
+---@type {GetCurrentStyle: fun(): number}?
+C_InputInterfaceStyle = nil
+---@type Frame
+SoftCursor = nil
+---@type table<string, fun(map: ForeverCanvasMap): {x: number, y: number, kind: string}[]>
+ForeverMapMarkers = nil
+---@param value number
+---@return number
+function Saturate(value) end
+---@param a number
+---@param b number
+---@param t number
+---@return number
+function Lerp(a, b, t) end
 
 ---@param tooltip GameTooltip
 ---@param title string
@@ -358,10 +351,6 @@ function C_MajorFactions.GetMajorFactionProgressionInfo(majorFactionID) end
 ---@class AGFCollapseButton : Button
 ---@field Icon Texture
 ---@field UpdateCollapsedState fun(self: AGFCollapseButton, collapsed: boolean)
-
----@class AGFMapPing : AGFMapPinMixin
----@field SetNumLoops fun(self: AGFMapPing, loops: integer)
----@field PlayAt fun(self: AGFMapPing, x: number, y: number)
 
 ---@type table<integer, {r: number, g: number, b: number}>
 ITEM_QUALITY_COLORS = nil

@@ -45,9 +45,10 @@ equal(h.ns.Integrations.Travel(step), nil, "here: no travel line inside the area
 h.G.C_Map.OpenWorldMap()
 h.map:SetMapID(1420)
 h.flush()
-h.providers[1]:RefreshAllData()
+h.flush()
+h.ns.Pins.Refresh()
 local numbered, laterPinned = false, false
-for _, pin in ipairs(h.pins.AdventureGuideForeverPinTemplate or {}) do
+for _, pin in ipairs(h.Pins("AdventureGuideForeverPinTemplate") or {}) do
 	numbered = numbered or pin.step == step
 	laterPinned = laterPinned or pin.step == route.steps[2]
 end
