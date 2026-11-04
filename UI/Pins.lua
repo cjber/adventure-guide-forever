@@ -298,7 +298,7 @@ function Pins.StepTooltip(tooltip, step, index, travel)
 	AreaObjectives(tooltip, step)
 end
 
----@type AGFWorldMapFrame?
+---@type WorldMapFrame?
 local map
 ---@type ForeverCanvasPool?, ForeverCanvasPool?, ForeverCanvasPool?
 local routePool, giverPool, pingPool

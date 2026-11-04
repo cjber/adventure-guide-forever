@@ -118,9 +118,18 @@ QuestMapFrameOverrides = nil
 ---@type string
 QUESTS_LABEL = nil
 
----@class AGFWorldMapFrame : ForeverCanvasMap
+-- The generated FrameXML annotations are absent from this checker's pinned API checkout.
+---@class WorldMapFrame : Frame
 ---@field ScrollContainer Frame
----@type AGFWorldMapFrame
+---@field GetMapID fun(self: WorldMapFrame): integer?
+---@field GetCanvas fun(self: WorldMapFrame): Frame
+---@field GetCanvasScale fun(self: WorldMapFrame): number?
+---@field GetCanvasZoomPercent fun(self: WorldMapFrame): number?
+---@field GetGlobalPinScale fun(self: WorldMapFrame): number?
+---@field GetPinFrameLevelsManager? fun(self: WorldMapFrame): AGFMapFrameLevels
+---@class AGFMapFrameLevels
+---@field GetValidFrameLevel fun(self: AGFMapFrameLevels, levelType: string): number?
+---@type WorldMapFrame
 WorldMapFrame = nil
 
 -- Blizzard's ping animation is reused with the shared private pin placement.
