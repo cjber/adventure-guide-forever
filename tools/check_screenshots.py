@@ -37,6 +37,8 @@ CODE = (
     "tools/screenshots_spf.py",
     "tools/screenshots_stock.py",
     "tools/screenshot_loot.lua",
+    "tools/gen_quests.py",
+    "Data/ZoneArt.lua",
 )
 # Each image and the parts of tests/scenes.lua's run tools/screenshots.py reads for it: a scene, or one of its
 # fields ("panel.map" is the zone every quest-log image is drawn on).
