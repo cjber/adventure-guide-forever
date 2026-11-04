@@ -70,6 +70,8 @@ local DEFAULTS = {
 	microButtonPlacement = "beforeGameMenu",
 	-- Before a giver's window offers a quest that closes another for good, say which in chat (Closes.lua).
 	warnClosing = true,
+	-- The green arrow on a quest reward choice that beats what you wear in its slot (Upgrades.lua).
+	markUpgrades = true,
 }
 ns.DEFAULTS = DEFAULTS
 
@@ -340,6 +342,9 @@ function ns.SetSetting(key, value)
 	end
 	if key == "partyQuests" then
 		ns.Party.Apply()
+	end
+	if key == "markUpgrades" then
+		ns.Upgrades.Update()
 	end
 	if key == "statsShare" and ns.Stats then
 		ns.Stats.SetEnabled(value == true)

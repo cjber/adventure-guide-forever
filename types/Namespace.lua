@@ -639,6 +639,8 @@
 ---@field SETTING_POLESTAR_ASIDE_TOOLTIP string
 ---@field SETTING_WARN_CLOSING string
 ---@field SETTING_WARN_CLOSING_TOOLTIP string
+---@field SETTING_UPGRADES string
+---@field SETTING_UPGRADES_TOOLTIP string
 ---@field CLOSES_WARNING string format: the offered quest's title, then the quests it closes, joined by LIST_SEPARATOR
 ---@field DUMP_SAVED string
 ---@field TURN_IN string format: quest title
@@ -801,6 +803,7 @@
 ---@field ReportTitle string the localized title shown by the shared report window
 ---@field Offers AGFOffersModule what a giver's window really offers (Offers.lua)
 ---@field Closes AGFClosesModule the chat warning before taking a quest that closes another (Closes.lua)
+---@field Upgrades AGFUpgrades the upgrade arrow on quest reward choices (Upgrades.lua)
 ---@field CreatureEntry fun(guid?: string): integer? a creature's entry from its GUID; nil for anything else or a secret
 ---@field PanelSearch AGFPanelSearch
 ---@field QuestieFields {spawns: string[], drops: string[], level: string[], rank: string[]}

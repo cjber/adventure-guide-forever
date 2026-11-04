@@ -360,6 +360,9 @@ L["SETTING_TRAINING_REMINDERS_TOOLTIP"] =
 L["SETTING_UNTRACK_OTHERS"] = "다른 퀘스트 추적 해제"
 L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
 	"같은 클릭으로 경로에 없는 모든 퀘스트의 추적을 해제합니다. 경로의 퀘스트 추적도 켜야 합니다."
+L["SETTING_UPGRADES"] = "보상 향상 표시" -- mt
+L["SETTING_UPGRADES_TOOLTIP"] =
+	"퀘스트에서 보상을 선택할 수 있으면, 해당 부위에 착용 중인 아이템보다 나은 보상마다 초록색 화살표를 표시합니다: 내 방어구 종류, 직업이 사용하는 주 능력치, 더 높은 아이템 레벨. 대신 선택하지는 않습니다. Pawn이 설치되어 있으면 Pawn이 대신 표시합니다." -- mt
 L["SETTING_WANDERER"] = "방랑자: 장소 이름만"
 L["SETTING_WANDERER_TOOLTIP"] =
 	"안내서는 다음에 갈 곳의 이름만 알려 주고 길은 맡깁니다. 이동 지점, Shortest Path Forever 경로, 지도 표시가 없습니다."

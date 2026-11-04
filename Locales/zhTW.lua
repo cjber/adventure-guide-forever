@@ -348,6 +348,9 @@ L["SETTING_TRAINING_REMINDERS_TOOLTIP"] =
 L["SETTING_UNTRACK_OTHERS"] = "停止追蹤其他任務"
 L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
 	"同一次點擊會停止追蹤所有不在路線上的任務。還需要追蹤路線上的任務。"
+L["SETTING_UPGRADES"] = "標記獎勵提升" -- mt
+L["SETTING_UPGRADES_TOOLTIP"] =
+	"當任務提供可選獎勵時，綠色箭頭會標出每件優於你該部位目前裝備的獎勵：符合你的護甲類型、帶有你的職業使用的主屬性，且物品等級更高。不會替你做出選擇。安裝了Pawn時，改由Pawn標記。" -- mt
 L["SETTING_WANDERER"] = "漫遊者：只說地名"
 L["SETTING_WANDERER_TOOLTIP"] =
 	"指南只說出下一步去哪裡，路怎麼走由你決定：沒有路徑點，沒有Shortest Path Forever路線，地圖上也沒有標記。"

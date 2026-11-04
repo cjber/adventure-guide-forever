@@ -50,6 +50,7 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 - **Your order.** Drag steps or right-click to move them earlier or later. Moves that break quest order are greyed out. *Back to suggested order* restores the plan.
 - **Where to do an objective.** The guide skips a place whose mobs are 3 or more levels above you for a lower one on the same map. *Next spot* in the step's menu moves the arrow to the nearest other camp, even where you stand.
 - **Givers that don't offer a quest.** If a giver doesn't offer the quest the guide sent you for, the guide says so once in chat and drops it, trying again after a level-up or a hand-in that could open it up.
+- **Reward upgrades.** When a quest offers rewards to choose from, the game's green arrow marks each one that beats what you wear: your armour type, a main stat your class uses and a higher item level.
 - **Story milestones.** Finishing a proven quest chain shows a short popup, once per character.
 - **Stories and search.** Stories read as chapters without naming later quests. Search puts the best match first and shows which of a quest's requirements you meet. For a locked quest it names the earliest quest in its chain you can take, and a shift-click adds that one.
 - **Other things to do.** Hints cover professions, unspent talents, hearths and unexplored areas. Class spell reminders and trainer visits are off by default (Route settings). PvP shows your rank, its next reward and the nearest battlemaster.
@@ -106,7 +107,7 @@ Forever's new quests are only considered once they are in your log. The guide re
 
 ## Works alongside
 
-QuestieDB and Questie are needed for pickup recommendations. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) is an optional companion for bosses and loot. While Polestar has a guide running, the guide starts no route and draws no map marks until you click its tracker line; *Step aside while Polestar is guiding* turns that off. The guide's tracker section shares one column with the other Forever sections, above your quests, and has its own switch when you prefer another guide. An empty column leaves your quests where Edit Mode or your UI addon put them.
+QuestieDB and Questie are needed for pickup recommendations. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) is an optional companion for bosses and loot. While Polestar has a guide running, the guide starts no route and draws no map marks until you click its tracker line; *Step aside while Polestar is guiding* turns that off. The guide's tracker section shares one column with the other Forever sections, above your quests, and has its own switch when you prefer another guide. An empty column leaves your quests where Edit Mode or your UI addon put them. With [Pawn](https://www.curseforge.com/wow/addons/pawn) installed, the guide draws no reward upgrade arrows and leaves them to Pawn, which weighs every stat.
 
 <!-- forever-family:start -->
 
