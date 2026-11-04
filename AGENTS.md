@@ -86,7 +86,7 @@ generator tests, luacheck, every spec (the golden routes among them), the planne
 one that fails again opens the issue "Data refresh failed", assigned to the owner, or comments on the open one. A check that rejects new client data is corrected from that data and kept
 exact, never loosened; a golden route is re-based only when the new data explains the change.
 
-Pins moved by hand: `LEGACY_MAP_BUILD` (the last build with WorldMapArea, fixed), `CLASSICDB_COMMIT` (the waivers
+Pins moved by hand: `UI_ART_BUILD` in `tools/screenshots.py` (the independently reviewed art pin), `LEGACY_MAP_BUILD` (the last build with WorldMapArea, fixed), `CLASSICDB_COMMIT` (the waivers
 below; not bumped), `REVISION` in `tools/fetch_tracker_ui.py` (checksum-pinned tracker source shared with the other
 Forever addons), `SPF_SHA` in `tests/contract_spec.lua` and `tools/screenshots_spf.py` (a new Shortest Path API needs
 its types reviewed), and the tool versions in
