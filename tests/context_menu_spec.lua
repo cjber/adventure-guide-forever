@@ -48,6 +48,21 @@ h.ns.ContextMenu(owner, function(_, root)
 end)
 equal(popup:GetHeight() <= 420, true, "long menus fit viewport")
 equal(popup.body:GetHeight() > popup:GetHeight(), true, "long menu scrolls")
+-- A level that sets its own extent scrolls past it, as Blizzard's SetScrollMode does.
+h.ns.ContextMenu(owner, function(_, root)
+	root:SetScrollMode(100)
+	for i = 1, 10 do
+		root:CreateButton("Entry " .. i, function() end)
+	end
+end)
+equal(popup:GetHeight(), 114, "a scrolled level stops at its extent")
+equal(popup.scroll.ScrollBar:IsShown(), true, "and shows its scroll bar")
+-- Lists built in the guide's menus scroll past 20 rows (WFA-36).
+h.ns.ContextMenu(owner, function(_, root)
+	equal(root.scrollExtent, nil, "a root with no list does not set an extent")
+	h.ns.Menu.Skipped(root)
+	equal(root.scrollExtent, 400, "the skipped list scrolls past 20 rows")
+end)
 owner:Hide()
 equal(popup:IsVisible(), false, "owner hide closes visible menu")
 owner:Show()

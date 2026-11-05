@@ -12,6 +12,7 @@ local _, ns = ...
 ---@field isSelected? fun(): boolean
 ---@field isEnabled? boolean|fun(): boolean
 ---@field tooltip? fun(tooltip: GameTooltip)
+---@field scrollExtent? number
 ---@field parent? AGFMenuDescription
 ---@field back? AGFMenuDescription
 local Description = {}
@@ -67,10 +68,18 @@ function Description:SetTooltip(tooltip)
 	self.tooltip = tooltip
 end
 
+-- Blizzard's Menu API contract: this level's rows scroll past `extent` pixels (BaseMenuDescriptionMixin:SetScrollMode).
+---@param extent number
+function Description:SetScrollMode(extent)
+	self.scrollExtent = extent
+end
+
 -- The popup is as wide as its longest entry: a fixed row width cut titles such as a step's "Complete objectives ·
 -- ..." with no way to read them. The body width is capped so one very long line cannot run off the screen; a row cut
 -- at the cap carries its whole text in a tooltip, unless the entry already has one of its own.
 local BODY_MIN, FRAME_PAD, ROW_INSET, TEXT_PADDING, BODY_MAX = 180, 24, 12, 20, 600
+-- A level scrolls past its SetScrollMode extent, or past this one; the popup's frame adds 14 px around the rows.
+local SCROLL_EXTENT, FRAME_HEIGHT_PAD = 406, 14
 
 ---@class AGFContextPopup : Frame
 ---@field rows Button[]
@@ -213,8 +222,9 @@ function Draw(root)
 	end
 	frame.body:SetWidth(bodyWidth)
 	frame.body:SetHeight(y + 6)
-	frame:SetSize(bodyWidth + FRAME_PAD, math.min(y + 14, 420))
-	frame.scroll.ScrollBar:SetShown(y + 14 > 420)
+	local extent = root.scrollExtent or SCROLL_EXTENT
+	frame:SetSize(bodyWidth + FRAME_PAD, math.min(y, extent) + FRAME_HEIGHT_PAD)
+	frame.scroll.ScrollBar:SetShown(y > extent)
 	frame.scroll:SetVerticalScroll(0)
 end
 

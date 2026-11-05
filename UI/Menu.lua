@@ -8,13 +8,18 @@ local L = ns.L
 local Menu = {}
 ns.Menu = Menu
 
+-- A submenu built from a list scrolls past 20 rows of 20 px rather than running off the screen (WFA-36).
+local MENU_EXTENT = 400
+
 ---@param choose AGFMenuDescription
 local function GuideChoices(choose)
 	local groups = {}
+	choose:SetScrollMode(MENU_EXTENT)
 	for _, guide in ipairs(ns.RestedXP.Guides()) do
 		local group = groups[guide.group]
 		if not group then
 			group = choose:CreateButton(guide.group)
+			group:SetScrollMode(MENU_EXTENT)
 			groups[guide.group] = group
 		end
 		group:CreateButton(guide.name, function()
@@ -46,6 +51,7 @@ end
 -- character is not interested in, then each aside it turned down.
 ---@param description AGFMenuDescription
 function Menu.Skipped(description)
+	description:SetScrollMode(MENU_EXTENT)
 	for _, skipped in ipairs(ns.Skipped()) do
 		description:CreateButton(L.SHOW_AGAIN:format(skipped.title), function()
 			ns.Unskip(skipped.key)
@@ -83,6 +89,7 @@ local function NotThisQuest(root, step)
 		return
 	end
 	local submenu = root:CreateButton(L.NOT_THIS_QUEST)
+	submenu:SetScrollMode(MENU_EXTENT)
 	for _, id in ipairs(step.quests) do
 		submenu:CreateButton(Title(id), function()
 			ns.NotThisQuest(id, Title(id))
@@ -152,12 +159,14 @@ function Menu.Journey(owner, journey)
 		end
 		if journey.instance then
 			local loot = root:CreateButton(L.DUNGEON_BOSSES_LOOT)
+			loot:SetScrollMode(MENU_EXTENT)
 			local bosses, hint = ns.DungeonLoot.Bosses(journey.instance)
 			if hint then
 				loot:CreateTitle(hint)
 			end
 			for _, boss in ipairs(bosses) do
 				local drops = loot:CreateButton(boss.name)
+				drops:SetScrollMode(MENU_EXTENT)
 				drops:CreateTitle(boss.name)
 				for _, id in ipairs(boss.items) do
 					local name = C_Item.GetItemNameByID(id)

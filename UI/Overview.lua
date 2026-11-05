@@ -286,6 +286,8 @@ local function OrderEntries(root, step, index)
 	end
 	if #open > 0 then
 		local skip = root:CreateButton(L.TOWN_SKIP_GIVER)
+		-- A town's givers are a list: past 20 rows of 20 px the submenu scrolls (WFA-36).
+		skip:SetScrollMode(400)
 		for _, giver in ipairs(open) do
 			skip:CreateButton(giver.name, function()
 				Order.SkipGiver(step.key, giver.key)
