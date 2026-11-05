@@ -50,6 +50,9 @@ local DEFAULTS = {
 	trackRouteQuests = false,
 	-- Opt-in: it throws away the player's own choice of tracked quests.
 	untrackOthers = false,
+	-- While a RestedXP guide leads, the tracker lists only the quests its steps name; the player's own list comes back
+	-- when it stops (RestedXPWatch.lua).
+	guideTracksQuests = true,
 	-- Hint strength, Guide (false) or Wanderer (true), which gates every waypoint, route and map mark.
 	wanderer = false,
 	-- Walking into the quest area the route leads to selects its quest, so the map draws its blue area (Focus.lua).
@@ -337,6 +340,9 @@ function ns.SetSetting(key, value)
 		ns.GuideSetup.Hide()
 		ns.RestedXP.Refresh()
 	end
+	if key == "guideTracksQuests" then
+		ns.GuideWatch.Sync()
+	end
 	if key == "polestarAside" then
 		ns.Polestar.Check()
 	end
@@ -561,6 +567,10 @@ end
 -- the watches itself (by distance, on each zone change), so no order is kept. With untrackOthers, every other
 -- tracked quest leaves first, which also makes room.
 function ns.TrackRouteQuests()
+	-- A RestedXP guide that leads already tracks its own quests (RestedXPWatch.lua).
+	if ns.Prefs().guideWatch then
+		return
+	end
 	local onRoute, order = {}, {}
 	for _, step in ipairs(ns.Route().steps) do
 		for _, questID in ipairs(LogQuests(step)) do
@@ -797,14 +807,14 @@ end
 local function CommitRoute(shown, full, world)
 	local guide = ns.RestedXP and ns.RestedXP.Journey()
 	if guide and not ns.Prefs().notInterested[guide.key] then
+		-- A chosen RestedXP guide follows the one RestedXP has loaded: its next chapter, another guide picked in it, or
+		-- the guide it loads after a login that saved an older one (#368).
 		local prefs = ns.Prefs()
-		for _, previous in ipairs(cachedRoute.journeys) do
-			if previous.kind == "guide" and prefs.journey == previous.key and previous.key ~= guide.key then
-				prefs.journey = guide.key
-				if prefs.guided == previous.key then
-					prefs.guided = guide.key
-				end
-				break
+		local was = prefs.journey
+		if was and was ~= guide.key and was:find("^guide:") ~= nil then
+			prefs.journey = guide.key
+			if prefs.guided == was then
+				prefs.guided = guide.key
 			end
 		end
 		for _, route in ipairs(shown == full and { shown } or { shown, full }) do

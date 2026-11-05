@@ -319,6 +319,9 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "Questgeber auf der Karte anzeigen"
 L["SETTING_GIVERS_TOOLTIP"] =
 	"Ein „!“ auf der Weltkarte über allen, die jetzt eine Quest für Euch haben. Braucht auch die Routenmarkierungen auf der Karte."
+L["SETTING_GUIDE_TRACKS"] = "Nur die Quests des RestedXP-Guides verfolgen" -- mt
+L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
+	"Während Ihr einem RestedXP-Guide folgt, zeigt die Zielverfolgung nur die Quests, die seine aktuellen und laufenden Schritte nennen. Die Quests, die Ihr selbst verfolgt habt, kehren zurück, wenn Ihr ihm nicht mehr folgt." -- mt
 L["SETTING_LOCK_TRACKER"] = "Verfolgung sperren"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] =
 	"Hält die gemeinsame Forever-Verfolgung dort, wo Ihr sie hingelegt habt. Der Griff oben zieht sie nicht mehr."
@@ -430,6 +433,7 @@ L["TRACKER_DRAG_TITLE"] = "Forever-Verfolgung"
 L["TRACKER_DRAG_TOOLTIP"] = "Ziehen zum Verschieben"
 L["TRACKER_LOADING"] = "Questdaten werden geladen..."
 L["TRACKER_LOCKED_TOOLTIP"] = "Die Verfolgung ist gesperrt. Schaltet Verfolgung sperren aus, um sie zu verschieben."
+L["TRACKER_PAUSED"] = "Route pausiert. Klickt auf den Titel, um fortzufahren." -- mt
 L["TRACKER_UNATTACHED"] = "Konnte der Questzielverfolgung keinen Abschnitt hinzufügen; bitte meldet es mit /agf audit."
 L["TRAINER"] = "Besucht Euren Klassenlehrer"
 L["TRAINER_IN"] = "Besucht Euren Klassenlehrer in %s"

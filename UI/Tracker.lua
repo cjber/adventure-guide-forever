@@ -205,6 +205,25 @@ local function Plain(text)
 	return (text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""))
 end
 
+-- Step 1's travel line, then, while its route is paused (cleared in Shortest Path, refused, or never handed), a line
+-- saying so: the title's click resumes it, and a walk time alone would read as guidance under way (#361).
+---@param block AGFTrackerBlock
+---@param step AGFStep
+---@param line integer
+---@return integer
+local function TravelLines(block, step, line)
+	local travel = ns.Integrations.Travel(step)
+	if travel then
+		line = line + 1
+		block:AddObjective(line, travel)
+	end
+	if ns.Guidance.Status() == "paused" then
+		line = line + 1
+		block:AddObjective(line, L.TRACKER_PAUSED)
+	end
+	return line
+end
+
 -- The quests a guide step's lines work on (its "complete" and "collect" lines).
 ---@param step AGFStep
 ---@return table<integer, true>
@@ -258,10 +277,8 @@ local function GuideSection(module, block, step)
 		block:AddObjective(line, ns.Overview.LineMarkup(item.rxpTag, MARK_SIZE) .. text, nil, true, nil, style)
 	end
 	line = GroupLines(block, step, line)
-	local travel = not ns.Integrations.Guiding() and ns.Integrations.Travel(step)
-	if travel then
-		line = line + 1
-		block:AddObjective(line, travel)
+	if not ns.Integrations.Guiding() then
+		line = TravelLines(block, step, line)
 	end
 	local ongoing, upcoming = {}, nil
 	for _, other in ipairs(ns.Route().steps) do
@@ -435,11 +452,7 @@ function ModuleMixin:LayoutContents()
 		line = line + 1
 		block:AddObjective(line, giver.text, nil, giver.done)
 	end
-	local travel = ns.Integrations.Travel(step)
-	if travel then
-		line = line + 1
-		block:AddObjective(line, travel)
-	end
+	line = TravelLines(block, step, line)
 	Preview(block, step, line)
 	self:LayoutBlock(block)
 end

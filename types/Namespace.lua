@@ -194,6 +194,13 @@
 ---@field waypoint? {map: integer, x: number, y: number} the native waypoint the last Go set, while it may still be ours
 ---@field guided? string the key of the chosen journey whose route AGF started, while that guidance should run
 ---@field focus? integer the quest AGF selected on walking into its area (Focus.lua), while that selection is still AGF's
+---@field guideWatch? AGFGuideWatchState the tracked quests a leading RestedXP guide took over (RestedXPWatch.lua)
+
+-- What RestedXPWatch.lua keeps on the character while a RestedXP guide leads the tracked quests.
+---@class AGFGuideWatchState
+---@field saved integer[] the player's tracked quests when the guide took over, given back when it stops
+---@field added table<integer, true> what this file or the client's auto quest watch tracked for the guide
+---@field named table<integer, true> the quests the guide named at the last look
 
 -- What Focus.Next keeps between looks: the area step 1 was, and the quest AGF selected.
 ---@class AGFFocusState
@@ -595,6 +602,7 @@
 ---@field BACK_TO_ALL string the chosen card's tooltip: the back arrow goes back to every card
 ---@field CLICK_TO_RESUME string the chosen card's tooltip while its route is paused: the click resumes it
 ---@field ROUTE_PAUSED string the footer line while the chosen journey's route is paused
+---@field TRACKER_PAUSED string the tracker's line under step 1 while the chosen journey's route is paused
 ---@field HUB_MORE string format: a card's first stop, how many stops follow it
 ---@field HUB_MORE_ONE string format: a card's first stop, when one stop follows it
 ---@field CARD_MINUTES string format: a card's minutes to its first stop
@@ -714,6 +722,8 @@
 ---@field SETTING_AUTO_START_TOOLTIP string
 ---@field SETTING_TRACK_ROUTE string
 ---@field SETTING_TRACK_ROUTE_TOOLTIP string
+---@field SETTING_GUIDE_TRACKS string
+---@field SETTING_GUIDE_TRACKS_TOOLTIP string
 ---@field SETTING_UNTRACK_OTHERS string
 ---@field SETTING_UNTRACK_OTHERS_TOOLTIP string
 ---@field PREVIOUS_PAGE string
@@ -818,6 +828,7 @@
 ---@field Integrations AGFIntegrations
 ---@field Guidance AGFGuidance
 ---@field Focus AGFFocus
+---@field GuideWatch AGFGuideWatch
 ---@field Print fun(msg: string)
 ---@field NextCamp fun(step: AGFStep) "Next spot": pass over the spot the area step points at (the one the player is at, inside the area) for this session; the last one starts the round again
 ---@field Readable fun(value: any): any `value`, or nil when the client keeps it secret (Core/Secret.lua)

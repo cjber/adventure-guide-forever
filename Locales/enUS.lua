@@ -169,6 +169,9 @@ ns.L = {
 	SETTING_TRACK_ROUTE = "Tracker title tracks quests",
 	SETTING_TRACK_ROUTE_TOOLTIP = "Clicking the guide's title in the objective tracker adds every quest on the "
 		.. "route that's in your log, up to the tracker's limit.",
+	SETTING_GUIDE_TRACKS = "Track only the RestedXP guide's quests",
+	SETTING_GUIDE_TRACKS_TOOLTIP = "While you follow a RestedXP guide, the objective tracker shows only the quests its "
+		.. "current and ongoing steps name. The quests you tracked yourself come back when you stop following it.",
 	SETTING_UNTRACK_OTHERS = "Stop tracking other quests",
 	SETTING_UNTRACK_OTHERS_TOOLTIP = "The same click stops tracking every quest that isn't on the route. Needs the "
 		.. "route's quests tracked as well.",
@@ -222,6 +225,7 @@ ns.L = {
 	-- The chosen journey's route stopped (cleared, replaced or refused): its card and the tracker title resume it.
 	CLICK_TO_RESUME = "Click to resume the route",
 	ROUTE_PAUSED = "Route paused. Click the journey to resume.",
+	TRACKER_PAUSED = "Route paused. Click the title to resume.",
 	-- A card's third line when it has no reason: its first stop, then how many follow.
 	HUB_MORE = "%s and %d more stops",
 	HUB_MORE_ONE = "%s and 1 more stop",
