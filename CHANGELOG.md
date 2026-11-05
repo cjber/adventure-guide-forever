@@ -12,6 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.21] - 2026-11-05
 - **RestedXP's step items and targets wear the game's own buttons.** While Adventure Guide steers a RestedXP guide, the tracker shows a native quest item button for each usable item of the current step, with its cooldown, count, range marker and key binding, and a button for each talk or kill target that selects it with one click; the current target shows its portrait and is marked. RestedXP's own item and target windows stay hidden until you stop, and any change waits for combat to end.
 
 ## [1.0.20] - 2026-11-05
