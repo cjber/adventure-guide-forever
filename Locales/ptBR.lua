@@ -292,9 +292,9 @@ L["RXP_SKIP"] = "Pular: %s"
 L["RXP_SKIP_STEP"] = "Pular passo"
 L["RXP_STEP"] = "Passo %d"
 L["RXP_STICKY"] = "%s (em andamento)"
-L["RXP_ONGOING"] = "Em andamento"
-L["RXP_MORE_STEP"] = "+1 etapa a mais"
-L["RXP_MORE_STEPS"] = "+%d etapas a mais"
+L["RXP_ONGOING"] = "Em andamento" -- mt
+L["RXP_MORE_STEP"] = "+1 etapa a mais" -- mt
+L["RXP_MORE_STEPS"] = "+%d etapas a mais" -- mt
 L["RXP_TITLE"] = "Guias do RestedXP"
 L["SEARCH_NONE"] = "Nenhuma missão corresponde à sua busca."
 L["SEARCH_QUESTS"] = "Buscar missões"
@@ -457,7 +457,7 @@ L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
 L["UPDATED_TO"] = "atualizado para %s. %s"
 -- mt
-L["WHATS_NEW"] = "A página de configurações dos addons Forever termina com um link do Ko-fi." -- mt
+L["WHATS_NEW"] = "As etapas do RestedXP aparecem como o rastreador de objetivos do jogo." -- mt
 L["WHY_ALLIANCE"] = "Só Aliança"
 L["WHY_BREADCRUMB"] = "Só até você aceitar %s"
 L["WHY_CHOSE"] = "Você escolheu %s no lugar"
