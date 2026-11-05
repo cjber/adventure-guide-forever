@@ -1323,6 +1323,8 @@
 ---@field key string
 ---@field name string
 ---@field text string
+---@field rxpTag? string a RestedXP line's kind (AGFRXPElement.tag)
+---@field rxpQuest? integer the quest a RestedXP line works on
 ---@field pickups integer[]
 ---@field handins integer[]
 ---@field done boolean
@@ -1997,6 +1999,9 @@ AdventureGuideForever = nil
 ---@field RXP_STEP string
 ---@field RXP_NO_GUIDE string
 ---@field RXP_STICKY string
+---@field RXP_ONGOING string
+---@field RXP_MORE_STEP string
+---@field RXP_MORE_STEPS string format: how many ongoing steps did not fit
 ---@field RXP_RECOMMENDATIONS string
 
 ---@class AGFNamespace

@@ -205,6 +205,32 @@ local function VerbIcon(step)
 	return verb and VERB_ATLAS[verb] or nil
 end
 
+-- A RestedXP line's kind (AGFRXPElement.tag) in the same marks (#351): a pickup's "!", a hand-in's "?", an objective's
+-- mark, the bag over something to collect, the flight master's and the innkeeper's tracking icons for a flight and a
+-- hearth. Other kinds (a walk, a note) have no mark.
+local LINE_ATLAS = { accept = VERB_ATLAS.pickup, turnin = VERB_ATLAS.turnin, complete = VERB_ATLAS.objective }
+local LINE_FILES = {
+	collect = OBJECTIVE_FILES.item,
+	collectmultiple = OBJECTIVE_FILES.item,
+	fly = "Interface\\Minimap\\Tracking\\FlightMaster",
+	fp = "Interface\\Minimap\\Tracking\\FlightMaster",
+	hs = "Interface\\Minimap\\Tracking\\Innkeeper",
+	home = "Interface\\Minimap\\Tracking\\Innkeeper",
+}
+
+---@param tag? string
+---@param size number
+---@return string
+function Overview.LineMarkup(tag, size)
+	local atlas, file = LINE_ATLAS[tag or ""], LINE_FILES[tag or ""]
+	if atlas then
+		return ns.Art.Markup(atlas, size) .. " "
+	elseif file then
+		return ns.Art.FileMarkup(file, size) .. " "
+	end
+	return ""
+end
+
 ---@param step AGFStep
 ---@param size number
 ---@return string

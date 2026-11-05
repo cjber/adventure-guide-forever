@@ -110,7 +110,7 @@ assert(
 )
 local shown = ns.RestedXP.Snapshot()
 assert(shown.index == 2 and shown.total == 14 and #shown.steps[1].lines == 2)
-assert(shown.steps[1].lines[1].text == "Collect apples: 3/10")
+assert(shown.steps[1].lines[1].text == "3/10 Collect apples", "progress reads as the tracker writes it")
 assert(shown.steps[1].lines[1].elementIndex == 2, "hidden elements retain original indices")
 assert(not shown.steps[1].lines[2].done, "text-only instructions are not completed objectives")
 assert(shown.steps[1].lines[2].elementIndex == nil, "text instructions cannot be skipped as objectives")
@@ -121,7 +121,7 @@ step.elements[2].text = "Collect apples: 4/10"
 frame.CurrentStepFrame.UpdateText()
 h.flush()
 assert(
-	ns.RestedXP.Snapshot().steps[1].lines[1].text == "Collect apples: 4/10",
+	ns.RestedXP.Snapshot().steps[1].lines[1].text == "4/10 Collect apples",
 	"legacy progress refreshes without a quest event"
 )
 assert(ns.RestedXP.Skip(2, 2) and step.elements[2].skip and completed == 1)

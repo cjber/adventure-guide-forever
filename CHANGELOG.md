@@ -12,6 +12,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **RestedXP steps read like the game's own tracker.** Enemies show red, friendly NPCs green, items in their quality colour and quest names gold, each line gets the matching quest, item, flight or inn icon, and the line you are working on stands out. Progress reads "3/7 Small Spider Leg" and long lines wrap in full instead of ending in "...".
+- **The guide section shrinks in place instead of jumping beside the tracker.** The current step shows in full, ongoing steps take one line each and skip what the Quests section or the current step already shows, and when room runs out the rest fold into "+N more steps". The Walk to line is dropped while Shortest Path guides you there.
+- **The quest area highlights again while following a RestedXP guide.** Standing in a step's quest area selects that quest, so the minimap draws its area, and Shortest Path now gets the quest and area for guide steps too.
 - **The Adventure Guide micro-menu button stays inside the micro menu.** Blizzard's buttons slid aside past the menu's own edge, so the row ran over the action bar beside it. The menu now grows by the addon buttons, and the action bar and bags beside it move aside, as they do for Blizzard's own buttons.
 - **Pressing the micro-menu button no longer logs an error.** Every press logged "attempt to concatenate field 'textureName'" in Blizzard's micro menu code.
 ## [1.0.15] - 2026-11-05

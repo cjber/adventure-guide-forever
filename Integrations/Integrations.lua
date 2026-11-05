@@ -331,10 +331,12 @@ end
 ---@return integer[]?
 local function Shapes(step)
 	local kind = step.kind --[[@as AGFStepKind?]]
-	if kind ~= "area" then
+	local area = step --[[@as AGFStep]]
+	-- A RestedXP step that completes quests in the log carries their objective shapes as an area does (#352).
+	local guide = kind == "guide" and area.shapes ~= nil and #area.shapes > 0
+	if kind ~= "area" and not guide then
 		return
 	end
-	local area = step --[[@as AGFStep]]
 	local shapes, radius, matched = {}, 30, false
 	for _, shape in ipairs(area.shapes or {}) do
 		shapes[#shapes + 1] = { map = shape.map, x = shape.x, y = shape.y, radius = shape.r }
@@ -352,6 +354,16 @@ local function Shapes(step)
 		end
 	end
 	local quests = area.quests or {}
+	if guide then
+		-- Only the quests whose objectives the shapes are: the step's other lines may pick up or hand in.
+		local seen = {}
+		quests = {}
+		for _, objective in ipairs(area.objectives or {}) do
+			if not seen[objective.id] then
+				seen[objective.id], quests[#quests + 1] = true, objective.id
+			end
+		end
+	end
 	local questIDs = #quests > 0 and { unpack(quests) } or nil
 	return #shapes > 0 and shapes or nil, radius, #quests == 1 and quests[1] or nil, questIDs
 end
