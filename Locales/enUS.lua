@@ -540,6 +540,8 @@ ns.L = {
 	FAMILY_COPY_HINT = "Copy the address, then open it in your browser.",
 	FAMILY_CLOSE = "Close",
 	FAMILY_DONT_SUGGEST = "Don't suggest this again",
+	FAMILY_SUPPORT = "The Forever addons are free, with nothing locked behind them. "
+		.. "If they help, you can buy me a coffee.",
 	SPF_FAMILY_MENU = "Walked routes and boat times: Shortest Path Forever",
 	SKILLUP_FAMILY = "SkillUp Forever plans the cheapest route to your next profession rank.",
 	SKILLUP_FAMILY_MENU = "Cheapest route to your next rank: SkillUp Forever",

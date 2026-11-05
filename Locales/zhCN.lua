@@ -74,6 +74,8 @@ L["FAMILY_STATE_ON"] = "开启"
 L["FAMILY_SUGGEST"] = "推荐我的其他Forever插件"
 L["FAMILY_SUGGEST_ABOUT"] =
 	"在我的其他Forever插件能帮上忙的地方显示一行不显眼的提示。仅限你尚未安装的插件。"
+L["FAMILY_SUPPORT"] =
+	"Forever 插件全部免费，没有任何付费才能使用的内容。如果它们对你有帮助，可以请我喝杯咖啡。" -- mt
 L["FAMILY_THIS_ADDON"] = "本插件"
 L["FROM_SKILLUP"] = "来自SkillUp Forever"
 L["GO"] = "出发"

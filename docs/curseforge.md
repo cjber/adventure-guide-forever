@@ -2,6 +2,8 @@ Adventure Guide Forever suggests quests for your level and quest log, in a short
 
 QuestieDB supplies quests; Questie checks pickup availability. With RestedXP installed, a one-time prompt lets you keep its display or follow its guides here.
 
+Free, with nothing locked behind it. If it saves you time, you can [buy me a coffee on Ko-fi](https://ko-fi.com/cjber).
+
 ![A journey's quest stops numbered on The Barrens map, with Shortest Path Forever's route to the first](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/map.png)
 
 Each number is a stop on the route: a pickup, an objective or a hand-in.
@@ -77,7 +79,5 @@ Installed together, Shortest Path Forever plans the way to every stop. SkillUp F
 The guide's tracker section shares one column with the other Forever sections, above your quests. Empty, it leaves your quests where Edit Mode or your UI addon put them.
 
 Source code and issues: [github.com/cjber/adventure-guide-forever](https://github.com/cjber/adventure-guide-forever). Licence: GPL-3.0-or-later.
-
-The addon is free. If it saves you time, you can [buy me a coffee on Ko-fi](https://ko-fi.com/cjber59408).
 
 Built with AI assistance.

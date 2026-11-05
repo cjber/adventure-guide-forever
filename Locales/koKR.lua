@@ -78,6 +78,8 @@ L["FAMILY_STATE_ON"] = "켬"
 L["FAMILY_SUGGEST"] = "제 다른 Forever 애드온 추천"
 L["FAMILY_SUGGEST_ABOUT"] =
 	"제 다른 Forever 애드온이 도움이 될 만한 곳에 조용히 한 줄을 표시합니다. 설치하지 않은 애드온만 해당됩니다."
+L["FAMILY_SUPPORT"] =
+	"Forever 애드온은 무료이며 잠긴 기능이 없습니다. 도움이 되셨다면 커피 한 잔 사 주세요." -- mt
 L["FAMILY_THIS_ADDON"] = "이 애드온"
 L["FROM_SKILLUP"] = "SkillUp Forever 제공"
 L["GO"] = "출발"
