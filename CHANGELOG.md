@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.9] - 2026-11-05
+
 - **No more "C stack overflow" errors.** The micro-menu button hooked the game's micro-menu update again on every refresh, so each update ran one layer deeper until the game menu, the map and the micro buttons threw errors and the frame rate dropped. It now hooks once.
 - **Bigger step markers on the minimap.** The numbered RestedXP step markers are a third larger, with larger numbers, so they read at a glance.
 
