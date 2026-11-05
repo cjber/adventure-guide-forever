@@ -127,6 +127,9 @@ native.NineSlice = {
 	GetBottom = function()
 		return 0
 	end,
+	GetEffectiveScale = function()
+		return 1
+	end,
 }
 local nativeHeader = frame()
 nativeHeader.MinimizeButton = frame()
@@ -208,6 +211,7 @@ local env = setmetatable({
 	end,
 }, { __index = _G })
 env._G = env
+-- In TOC order: UI/TrackerLock.lua draws the grip, then the host is handed it.
 setfenv(assert(loadfile("UI/TrackerLock.lua")), env)("Test", ns)
 setfenv(assert(loadfile("UI/TrackerOrder.lua")), env)("Test", ns) -- the section order, loaded before the host
 setfenv(assert(loadfile("UI/TrackerHost.lua")), env)("Test", ns)
