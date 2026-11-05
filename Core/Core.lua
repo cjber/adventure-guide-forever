@@ -817,6 +817,14 @@ local function CommitRoute(shown, full, world)
 			if ns.Prefs().journey == guide.key or not route.chosen then
 				route.journey, route.steps = guide.key, guide.steps
 				route.chosen = ns.Prefs().journey == guide.key
+				-- The planner never saw these steps, so "you're here" is judged on them as it is on a planned card
+				-- (Shown.lua's Reorder): Focus selects the quest of the area the player stands in, and the stop and
+				-- its line step aside (#352).
+				local here = ns.Model.Here(ns.Data, world.player, guide.steps, cachedRoute.here, ns.Prefs().camps)
+				for index, step in ipairs(guide.steps) do
+					step.here = index == 1 and here == 1 or nil
+				end
+				route.here = here == 1 and guide.steps[1].key or nil
 			end
 		end
 	end

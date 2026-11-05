@@ -2,7 +2,8 @@
 
 ---@class AGFRXPElement
 ---@field questId? integer
----@field tag? string
+---@field tag? string the RestedXP function that made it: accept, turnin, complete, collect, fly, hs...
+---@field id? integer|string a collect element's item
 ---@field text? string
 ---@field tooltipText? string
 ---@field rawtext? string
@@ -56,6 +57,7 @@
 ---@field CurrentStepFrame? AGFRXPCurrentStepFrame
 
 ---@class AGFRXPEngine
+---@field guideTextColors? table<string, string|table<string, string>> each text role's colour (RXP_ENEMY_ and so on) and `default`
 ---@field activeItemFrame? AGFRXPWindow
 ---@field UpdateItemFrame? function
 ---@field ResetItemPosition? function

@@ -20,8 +20,9 @@ end)
 assert(#checks > 0, "guide objectives use the existing checklist")
 h.tracker:LayoutContents()
 local main = h.tracker.liveBlocks[guide.steps[1].key]
-local sticky = h.tracker.liveBlocks[guide.steps[2].key]
+local sticky = h.tracker.liveBlocks["rxp-ongoing"]
 assert(main and sticky, "the ordinary tracker shows current and ongoing guide steps")
+assert(sticky.lines[1]:find("3/10 Supplies collected", 1, true), "an ongoing step is one line of its progress")
 assert(main.lines[1]:find("quartermaster", 1, true), "instruction text reaches the tracker")
 ns.SetSetting("restedxpGuide", false)
 h.flush()
@@ -122,11 +123,16 @@ end)
 assert(#futureRows >= 9, "the existing map guide panel displays upcoming steps")
 preview.tracker:LayoutContents()
 local currentBlock = preview.tracker.liveBlocks[upcoming.steps[1].key]
-local nextBlock = preview.tracker.liveBlocks[upcoming.steps[2].key]
-assert(currentBlock and nextBlock, "the quest tracker shows current and next guide steps")
-assert(not preview.tracker.liveBlocks[upcoming.steps[3].key], "later preview steps stay in the world map panel")
-local ongoingBlock = preview.tracker.liveBlocks[upcoming.steps[#upcoming.steps].key]
-assert(ongoingBlock, "the quest tracker retains active ongoing objectives")
+local nextLine = currentBlock and currentBlock.lines[currentBlock.order[#currentBlock.order]]
+assert(nextLine and nextLine:find(upcoming.steps[2].title, 1, true), "the step under way names the next step")
+local later = upcoming.steps[3].title
+for _, block in pairs(preview.tracker.liveBlocks) do
+	for _, text in pairs(block.used and block.lines or {}) do
+		assert(not text:find(later, 1, true), "later preview steps stay in the world map panel")
+	end
+end
+local ongoingBlock = preview.tracker.liveBlocks["rxp-ongoing"]
+assert(ongoingBlock and ongoingBlock.used, "the quest tracker retains active ongoing objectives")
 assert(#preview.errors == 0, table.concat(preview.errors, "\n"))
 print("restedxp_ui_spec: ten-step preview and minimap guidance passed")
 
