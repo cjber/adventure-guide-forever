@@ -306,6 +306,8 @@
 ---@field rxpName? string
 ---@field guideLow? integer
 ---@field guideHigh? integer
+---@field guideStep? integer the running RestedXP guide's current step, from 1
+---@field guideSteps? integer how many steps the running RestedXP guide has
 ---@field kind AGFJourneyKind
 ---@field section AGFJourneySection the overview header it shows under
 ---@field zone? integer uiMapID of a zone story or next-zone journey, independent of its first step
@@ -2012,6 +2014,13 @@ AdventureGuideForever = nil
 ---@field RXP_MORE_STEP string
 ---@field RXP_MORE_STEPS string format: how many ongoing steps did not fit
 ---@field RXP_RECOMMENDATIONS string
+---@field SETTING_HIDE_QUESTIE_TRACKER string
+---@field SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP string
+---@field QUESTIE_TRACKER_RELOAD string
+---@field QUEST_AREAS_OFF string
+---@field QUEST_AREAS_SHOW string
+---@field QUEST_AREAS_DISMISS string
+---@field QUEST_AREAS_TOOLTIP string
 
 ---@class AGFNamespace
 ---@field GuideSetup AGFGuideSetup
@@ -2030,3 +2039,7 @@ AdventureGuideForever = nil
 ---@field RXP_SETUP_SKILLUP_SPF string
 ---@field RXP_SETUP_SKILLUP string
 ---@field RXP_SETUP_SETTINGS string
+
+-- Integrations/QuestieOptions.lua: Questie's objective type and tracker options the guide sets through Questie.
+---@class AGFNamespace
+---@field QuestieOptions AGFQuestieOptions

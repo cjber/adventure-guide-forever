@@ -872,11 +872,27 @@ function harness.load(options)
 					this.lines[key], this.dashes[key] = text, dashStyle
 					this.full[key], this.styles[key] = useFullHeight, colorStyle
 					this.height = this.height + 16
+					this.last = key
 					return { Text = {
 						GetText = function()
 							return text
 						end,
 					} }
+				end
+				-- ObjectiveTrackerBlockMixin:AddProgressBar: under the last line, nil without one; its percent
+				-- (ObjectiveTrackerProgressBarMixin:SetPercent) lands in block.bars by that line's key.
+				block.AddProgressBar = function(this)
+					local key = this.last
+					if key == nil then
+						return nil
+					end
+					this.bars = this.bars or {}
+					this.height = this.height + 25
+					return {
+						SetPercent = function(_, percent)
+							this.bars[key] = percent
+						end,
+					}
 				end
 				self.liveBlocks[id] = block
 			end
@@ -906,6 +922,7 @@ function harness.load(options)
 			self.availableHeight, self.contentsHeight = h.trackerRoom or math.huge, 0
 			for _, block in pairs(self.liveBlocks) do
 				block.used, block.lines, block.order, block.dashes = false, {}, {}, {}
+				block.bars, block.last = nil, nil
 				block.full, block.styles, block.height = {}, {}, 0
 			end
 			h.call(self.LayoutContents, self)
@@ -1604,6 +1621,18 @@ function harness.load(options)
 	end
 	G.InCombatLockdown = function()
 		return h.combat
+	end
+	-- The client's console variables (h.cvars, from options.cvars); SetCVar fires CVAR_UPDATE as the client does.
+	h.cvars = { questPOI = "1" }
+	for key, value in pairs(options.cvars or {}) do
+		h.cvars[key] = value
+	end
+	G.GetCVar = function(name)
+		return h.cvars[name]
+	end
+	G.SetCVar = function(name, value)
+		h.cvars[name] = tostring(value)
+		h.fire("CVAR_UPDATE", name, tostring(value))
 	end
 	-- Shift held while `fn` runs: a shift-click.
 	G.IsShiftKeyDown = function()

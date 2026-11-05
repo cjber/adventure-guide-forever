@@ -39,6 +39,8 @@ globals = {
 read_globals = {
 	"time",
 	"GetServerTime",
+	"GetCVar",
+	"SetCVar",
 	"GetRealmName",
 	"IsInGuild",
 	"LE_PARTY_CATEGORY_INSTANCE",

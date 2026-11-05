@@ -494,3 +494,12 @@ L["ISSUE_LINK_HINT"] =
 L["ISSUE_TITLE_LABEL"] = "標題" -- mt
 L["ISSUE_WINDOW_TITLE"] = "回報錯誤或請求功能" -- mt
 L["MICRO_MENU_UNAVAILABLE"] = "微選單不可用，已略過自訂按鈕。" -- mt
+L["SETTING_HIDE_QUESTIE_TRACKER"] = "關閉 Questie 的追蹤欄" -- mt
+L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
+	"顯示此區塊時，Questie 自己的任務追蹤欄會關閉，你的任務就不會列出兩次。關閉此選項可讓 Questie 恢復它的追蹤欄。" -- mt
+L["QUESTIE_TRACKER_RELOAD"] = "Questie 的追蹤欄會在 /reload 後恢復。" -- mt
+L["QUEST_AREAS_OFF"] = "任務區域已隱藏" -- mt
+L["QUEST_AREAS_SHOW"] = "點擊在地圖上顯示遊戲的藍色任務區域" -- mt
+L["QUEST_AREAS_DISMISS"] = "右鍵點擊隱藏此提示" -- mt
+L["QUEST_AREAS_TOOLTIP"] =
+	"地圖上的藍色任務區域顯示每個目標的完成地點。Questie 的 Questie 和 pfQuest 目標類型會關閉它們。" -- mt

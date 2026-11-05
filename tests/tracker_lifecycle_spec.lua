@@ -8,6 +8,8 @@ for _, readyAtLoad in ipairs({ false, true }) do
 		return {
 			Hide = noop,
 			SetHeader = noop,
+			RegisterEvent = noop,
+			SetScript = noop,
 		}
 	end
 	local env = setmetatable({

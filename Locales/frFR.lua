@@ -511,3 +511,12 @@ L["ISSUE_LINK_HINT"] =
 L["ISSUE_TITLE_LABEL"] = "Titre" -- mt
 L["ISSUE_WINDOW_TITLE"] = "Signaler un bug ou demander une fonctionnalité" -- mt
 L["MICRO_MENU_UNAVAILABLE"] = "Menu micro indisponible ; le bouton personnalisé est ignoré." -- mt
+L["SETTING_HIDE_QUESTIE_TRACKER"] = "Désactiver le suivi de Questie" -- mt
+L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
+	"Tant que cette section s'affiche, le suivi de quêtes de Questie est désactivé, pour que vos quêtes n'apparaissent pas deux fois. Désactivez cette option pour rendre son suivi à Questie." -- mt
+L["QUESTIE_TRACKER_RELOAD"] = "Le suivi de Questie revient après un /reload." -- mt
+L["QUEST_AREAS_OFF"] = "Les zones de quête sont masquées" -- mt
+L["QUEST_AREAS_SHOW"] = "Cliquez pour afficher les zones de quête bleues du jeu sur la carte" -- mt
+L["QUEST_AREAS_DISMISS"] = "Clic droit pour masquer cette note" -- mt
+L["QUEST_AREAS_TOOLTIP"] =
+	"Les zones de quête bleues de la carte montrent où chaque objectif s'accomplit. Les types d'objectif Questie et pfQuest de Questie les désactivent." -- mt

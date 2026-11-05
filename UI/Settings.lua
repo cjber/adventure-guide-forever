@@ -174,6 +174,20 @@ function ns.RegisterSettings()
 					return ns.Setting("trackRouteQuests")
 				end)
 				Settings.RegisterInitializer(subcategory, show)
+				if ns.QuestieOptions.Available() then
+					local questie = Checkbox(
+						subcategory,
+						"hideQuestieTracker",
+						ns.L.SETTING_HIDE_QUESTIE_TRACKER,
+						ns.L.SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP
+					)
+					questie:Indent()
+					questie:AddEvaluateStateCVar("AdventureGuideForever_showTracker")
+					questie:AddModifyPredicate(function()
+						return ns.Setting("showTracker")
+					end)
+					Settings.RegisterInitializer(subcategory, questie)
+				end
 				Settings.RegisterInitializer(subcategory, track)
 				Settings.RegisterInitializer(subcategory, untrack)
 				Settings.RegisterInitializer(

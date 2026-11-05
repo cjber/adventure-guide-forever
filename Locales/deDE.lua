@@ -506,3 +506,12 @@ L["ISSUE_LINK_HINT"] =
 L["ISSUE_TITLE_LABEL"] = "Titel" -- mt
 L["ISSUE_WINDOW_TITLE"] = "Einen Fehler melden oder eine Funktion wünschen" -- mt
 L["MICRO_MENU_UNAVAILABLE"] = "Mikromenü nicht verfügbar; eigene Schaltfläche wird übersprungen." -- mt
+L["SETTING_HIDE_QUESTIE_TRACKER"] = "Questies Tracker ausschalten" -- mt
+L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
+	"Solange dieser Abschnitt angezeigt wird, ist Questies eigener Quest-Tracker aus, damit deine Quests nicht doppelt erscheinen. Schalte dies aus, um Questie seinen Tracker zurückzugeben." -- mt
+L["QUESTIE_TRACKER_RELOAD"] = "Questies Tracker kommt nach einem /reload zurück." -- mt
+L["QUEST_AREAS_OFF"] = "Questgebiete sind ausgeblendet" -- mt
+L["QUEST_AREAS_SHOW"] = "Klicken, um die blauen Questgebiete des Spiels auf der Karte zu zeigen" -- mt
+L["QUEST_AREAS_DISMISS"] = "Rechtsklick, um diesen Hinweis auszublenden" -- mt
+L["QUEST_AREAS_TOOLTIP"] =
+	"Die blauen Questgebiete der Karte zeigen, wo jedes Ziel erledigt wird. Questies Zieltypen Questie und pfQuest schalten sie aus." -- mt

@@ -609,7 +609,8 @@ local function CardTooltip(card)
 end
 
 -- How far a journey has come, when it has come some way: a story's chapters done of a chain the data proves the length
--- of, Quests in your log' quests ready of all it holds. The bar's value and the grid footer's words.
+-- of, a RestedXP guide's steps done of all it has, Quests in your log' quests ready of all it holds. The bar's value
+-- and the grid footer's words.
 ---@param journey AGFJourney
 ---@return number? value
 ---@return string? label
@@ -617,6 +618,10 @@ local function Progress(journey)
 	local story = journey.story
 	if story and story.total and story.chapter > 1 then
 		return (story.chapter - 1) / story.total, L.CHAPTERS_DONE:format(story.chapter - 1, story.total)
+	end
+	local step, steps = journey.guideStep, journey.guideSteps
+	if step and steps and steps > 0 and step > 1 then
+		return (step - 1) / steps, L.CHAPTERS_DONE:format(step - 1, steps)
 	end
 	local ready, underway = journey.ready or 0, journey.underway or 0
 	if journey.kind == "carry" and ready > 0 then

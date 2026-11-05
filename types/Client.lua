@@ -288,6 +288,8 @@ CreateSettingsButtonInitializer = nil
 ---@field height number
 ---@field SetHeader fun(self: AGFTrackerBlock, text: string)
 ---@field AddObjective fun(self: AGFTrackerBlock, index: integer|string, text: string, ...: any)
+-- The stock ObjectiveTrackerProgressBarTemplate under the line added last.
+---@field AddProgressBar fun(self: AGFTrackerBlock, id: string): {SetPercent: fun(self: table, percent: number)}?
 
 ---@class ObjectiveTrackerModuleTemplate : Frame
 ---@field uiOrder number
