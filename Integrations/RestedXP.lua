@@ -563,10 +563,13 @@ function Guide.Cards(current)
 	current = current or Guide.Journey()
 	local result = current and { current } or {}
 	local seen = current and { [current.key] = true } or {}
+	-- RestedXP ships one zone's guide in more than one group (the speedrun and dungeon routes both have "06-11
+	-- Teldrassil"): the running guide's card stands for every guide of its name, so it is never offered twice (#364).
+	local running = current and snapshot.name ~= "" and snapshot.name or nil
 	local level = ns.State.Player().level
 	for _, entry in ipairs(Guide.Guides()) do
 		local key = GuideKey(entry.group, entry.name)
-		if not seen[key] and not ns.Prefs().notInterested[key] then
+		if not seen[key] and entry.name ~= running and not ns.Prefs().notInterested[key] then
 			seen[key] = true
 			local data = engine.GetGuideTable(entry.group, entry.name)
 			local low, high = entry.name:match("^(%d+)%-(%d+)")
@@ -804,6 +807,8 @@ function Guide.Journey()
 		subline = subline,
 		map = firstMap,
 		steps = steps,
+		guideStep = snapshot.total > 0 and snapshot.index or nil,
+		guideSteps = snapshot.total > 0 and snapshot.total or nil,
 	}
 end
 

@@ -505,3 +505,12 @@ L["ISSUE_LINK_HINT"] =
 L["ISSUE_TITLE_LABEL"] = "Título" -- mt
 L["ISSUE_WINDOW_TITLE"] = "Relatar um erro ou pedir um recurso" -- mt
 L["MICRO_MENU_UNAVAILABLE"] = "Micro menu indisponível; o botão personalizado será ignorado." -- mt
+L["SETTING_HIDE_QUESTIE_TRACKER"] = "Desativar o rastreador do Questie" -- mt
+L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
+	"Enquanto esta seção aparece, o rastreador de missões do Questie fica desativado, para que suas missões não apareçam duas vezes. Desative esta opção para devolver o rastreador ao Questie." -- mt
+L["QUESTIE_TRACKER_RELOAD"] = "O rastreador do Questie volta depois de um /reload." -- mt
+L["QUEST_AREAS_OFF"] = "As áreas de missão estão ocultas" -- mt
+L["QUEST_AREAS_SHOW"] = "Clique para mostrar no mapa as áreas de missão azuis do jogo" -- mt
+L["QUEST_AREAS_DISMISS"] = "Clique com o botão direito para ocultar esta nota" -- mt
+L["QUEST_AREAS_TOOLTIP"] =
+	"As áreas de missão azuis do mapa mostram onde cada objetivo é feito. Os tipos de objetivo Questie e pfQuest do Questie as desativam." -- mt

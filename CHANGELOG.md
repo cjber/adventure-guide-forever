@@ -12,6 +12,11 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Questie's first-run question no longer hides the game's quest areas.** Questie asks new players which objective marks to show, and its Questie and pfQuest answers turn off the game's blue quest areas. While that question is still unanswered, Adventure Guide answers it with Questie's own Blizzard option, so the areas stay on. If you already chose, the tracker says the quest areas are hidden, and one click turns them back on.
+- **One card per RestedXP guide.** A guide RestedXP lists in two groups, such as a zone's speedrun and dungeon routes, no longer shows a second "Choose guide" card beside the one you are running.
+- **A progress bar for RestedXP guides.** The guide's card shows a bar with the steps done, and the tracker shows "Step 95 of 188" with the tracker's own bar under the guide's title.
+- **Questie's tracker steps aside for this one.** While the Adventure Guide section shows, Questie's own quest tracker is off, so your quests are not listed twice. Turn off "Turn off Questie's tracker" in Settings > AddOns > Adventure Guide Forever > Objective tracker to give Questie its tracker back.
+
 ## [1.0.17] - 2026-11-05
 
 - **Shortest Path guides RestedXP steps again.** When RestedXP hid the step before the one it shows, the step the guide shows next was kept as a preview, so the tracker gave a walk time while nothing guided you there. A guide RestedXP loads late at login, while it imports purchased guides, also stays your chosen journey instead of being swapped for a zone.

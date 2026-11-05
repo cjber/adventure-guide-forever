@@ -75,6 +75,10 @@ local DEFAULTS = {
 	warnClosing = true,
 	-- The green arrow on a quest reward choice that beats what you wear in its slot (Upgrades.lua).
 	markUpgrades = true,
+	-- Questie's own tracker is off while this one shows, so quests are not listed twice (QuestieOptions.lua).
+	hideQuestieTracker = true,
+	-- A record, not a setting: the player hid the note that the game's quest areas are off (Tracker.lua).
+	questAreasNoteHidden = false,
 }
 ns.DEFAULTS = DEFAULTS
 
@@ -345,6 +349,9 @@ function ns.SetSetting(key, value)
 	end
 	if key == "polestarAside" then
 		ns.Polestar.Check()
+	end
+	if key == "hideQuestieTracker" or key == "showTracker" then
+		ns.QuestieOptions.ApplyTracker()
 	end
 	if key == "partyQuests" then
 		ns.Party.Apply()
@@ -1185,6 +1192,7 @@ end
 EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	LoadDB()
 	LoadCharDB()
+	ns.QuestieOptions.Load()
 	ns.State.OnChange(function(countsOnly)
 		if countsOnly then
 			ns.InvalidateCounts()

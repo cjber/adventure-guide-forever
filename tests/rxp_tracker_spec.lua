@@ -140,9 +140,9 @@ for _, line in pairs(ongoing.lines) do
 end
 
 -- Little room: what does not fit is counted, never cut (#353).
--- The step under way takes 98 (a header, five lines, a gap); 170 leaves the ongoing block its header, two lines and
--- the count, which is no room for a third line with the count still under it.
-h.trackerRoom = 170
+-- The step under way takes 139 (a header, the guide's progress line and bar, five lines, a gap); 211 leaves the
+-- ongoing block its header, two lines and the count, which is no room for a third line with the count still under it.
+h.trackerRoom = 211
 h.tracker:MarkDirty()
 ongoing = h.tracker.liveBlocks["rxp-ongoing"]
 check(ongoing.used, "the ongoing block still shows")

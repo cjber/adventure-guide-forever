@@ -511,3 +511,12 @@ L["ISSUE_LINK_HINT"] =
 L["ISSUE_TITLE_LABEL"] = "제목" -- mt
 L["ISSUE_WINDOW_TITLE"] = "오류 보고 또는 기능 요청" -- mt
 L["MICRO_MENU_UNAVAILABLE"] = "미니 메뉴를 사용할 수 없어 사용자 지정 버튼을 건너뜁니다." -- mt
+L["SETTING_HIDE_QUESTIE_TRACKER"] = "Questie 추적기 끄기" -- mt
+L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
+	"이 구역이 표시되는 동안 Questie의 퀘스트 추적기는 꺼져 있어 퀘스트가 두 번 표시되지 않습니다. 이 옵션을 끄면 Questie의 추적기가 돌아옵니다." -- mt
+L["QUESTIE_TRACKER_RELOAD"] = "Questie의 추적기는 /reload 후에 돌아옵니다." -- mt
+L["QUEST_AREAS_OFF"] = "퀘스트 지역이 숨겨져 있습니다" -- mt
+L["QUEST_AREAS_SHOW"] = "클릭하여 지도에 게임의 파란색 퀘스트 지역 표시" -- mt
+L["QUEST_AREAS_DISMISS"] = "오른쪽 클릭하여 이 안내 숨기기" -- mt
+L["QUEST_AREAS_TOOLTIP"] =
+	"지도의 파란색 퀘스트 지역은 각 목표를 수행하는 곳을 보여 줍니다. Questie의 Questie 및 pfQuest 목표 유형은 이를 끕니다." -- mt

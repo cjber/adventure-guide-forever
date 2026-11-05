@@ -550,3 +550,14 @@ L["ISSUE_TITLE_LABEL"] = "Заголовок" -- mt
 L["ISSUE_WINDOW_TITLE"] = "Сообщить об ошибке или предложить функцию" -- mt
 L["MICRO_MENU_UNAVAILABLE"] =
 	"Микроменю недоступно; пользовательская кнопка пропущена." -- mt
+L["SETTING_HIDE_QUESTIE_TRACKER"] = "Отключить трекер Questie" -- mt
+L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
+	"Пока этот раздел показан, собственный трекер заданий Questie отключён, чтобы задания не показывались дважды. Отключите этот параметр, чтобы вернуть Questie его трекер." -- mt
+L["QUESTIE_TRACKER_RELOAD"] = "Трекер Questie вернётся после /reload." -- mt
+L["QUEST_AREAS_OFF"] = "Области заданий скрыты" -- mt
+L["QUEST_AREAS_SHOW"] =
+	"Щелкните, чтобы показать на карте синие области заданий игры" -- mt
+L["QUEST_AREAS_DISMISS"] =
+	"Щелкните правой кнопкой, чтобы скрыть эту подсказку" -- mt
+L["QUEST_AREAS_TOOLTIP"] =
+	"Синие области заданий на карте показывают, где выполняется каждая цель. Типы целей Questie и pfQuest в Questie их отключают." -- mt

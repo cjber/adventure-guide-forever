@@ -22,6 +22,12 @@ local LOADING = "loading"
 local POLESTAR = "polestar"
 -- A RestedXP guide's ongoing steps, one line each, under the step under way.
 local ONGOING = "rxp-ongoing"
+-- The game's quest areas are off (the questPOI CVar, which Questie's Questie and pfQuest objective types turn off):
+-- one note says so, a click turns them back on and a right-click hides the note for good (#363). Never turned on
+-- without the player's click: it is their choice, or Questie's.
+local QUEST_AREAS = "quest-areas"
+-- The running guide's progress bar under its title (#365).
+local GUIDE_PROGRESS = "rxp-progress"
 -- Headers that are not the step's: its click and hover never act on them.
 local NOT_STEP = {
 	[STORY_COMPLETE] = true,
@@ -31,6 +37,7 @@ local NOT_STEP = {
 	[LOADING] = true,
 	[POLESTAR] = true,
 	[ONGOING] = true,
+	[QUEST_AREAS] = true,
 }
 -- A town's NPC line names this many, then counts the rest.
 local NAMED_GIVERS = 2
@@ -85,6 +92,14 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 	if block.id == ASIDE and aside then
 		ns.Asides.Click(block.HeaderButton or block, mouseButton, aside)
 		return
+	elseif block.id == QUEST_AREAS then
+		if mouseButton == "RightButton" then
+			ns.SetSetting("questAreasNoteHidden", true)
+		elseif not InCombatLockdown() then
+			SetCVar("questPOI", "1")
+		end
+		self:MarkDirty()
+		return
 	elseif block.id == POLESTAR then
 		if mouseButton ~= "RightButton" then
 			ns.Polestar.TakeOver()
@@ -119,6 +134,13 @@ end
 -- does.
 ---@param block AGFTrackerBlock
 function ModuleMixin:OnBlockHeaderEnter(block)
+	if block.id == QUEST_AREAS then
+		GameTooltip:SetOwner(block, "ANCHOR_RIGHT")
+		GameTooltip_SetTitle(GameTooltip, L.QUEST_AREAS_OFF)
+		GameTooltip_AddNormalLine(GameTooltip, L.QUEST_AREAS_TOOLTIP)
+		GameTooltip:Show()
+		return
+	end
 	if not ns.Integrations.ReplacesJourney() then
 		return
 	end
@@ -266,6 +288,23 @@ end
 local function GuideSection(module, block, step)
 	local colors = OBJECTIVE_TRACKER_COLOR
 	local line, lit = 0, false
+	-- How far the guide has come, under the guide's title: "Step 95 of 188" and the tracker's own progress bar, as a
+	-- quest objective with a bar draws it (#365).
+	local journey = ns.CurrentJourney()
+	local at, steps = journey and journey.guideStep, journey and journey.guideSteps
+	if at and steps and steps > 0 then
+		block:AddObjective(
+			GUIDE_PROGRESS,
+			L.RXP_PROGRESS:format(at, steps),
+			nil,
+			nil,
+			OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE
+		)
+		local bar = block:AddProgressBar(GUIDE_PROGRESS)
+		if bar then
+			bar:SetPercent(math.floor((at - 1) / steps * 100))
+		end
+	end
 	for _, item in ipairs(step.checklist or {}) do
 		line = line + 1
 		-- A done line greys whole, its coloured words too.
@@ -351,6 +390,15 @@ function ModuleMixin:LayoutContents()
 	end
 	if not LayoutLine(self) then
 		return
+	end
+	if GetCVar("questPOI") == "0" and not ns.Setting("questAreasNoteHidden") then
+		local note = self:GetBlock(QUEST_AREAS)
+		note:SetHeader(L.QUEST_AREAS_OFF)
+		note:AddObjective(1, L.QUEST_AREAS_SHOW)
+		note:AddObjective(2, GRAY_FONT_COLOR:WrapTextInColorCode(L.QUEST_AREAS_DISMISS))
+		if not self:LayoutBlock(note) then
+			return
+		end
 	end
 	local moment = ns.Moments.Line()
 	if moment then
@@ -551,6 +599,14 @@ local function OnRouteChange()
 end
 
 Register()
+-- The note on hidden quest areas follows the CVar, whoever changes it.
+local cvars = CreateFrame("Frame")
+cvars:RegisterEvent("CVAR_UPDATE")
+cvars:SetScript("OnEvent", function(_, _, name)
+	if name == "questPOI" then
+		Refresh()
+	end
+end)
 ns.OnRouteChange(OnRouteChange)
 ns.Integrations.OnTravelChange(Refresh)
 ns.Guidance.OnChange(Refresh)

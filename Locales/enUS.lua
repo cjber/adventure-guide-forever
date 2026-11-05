@@ -369,6 +369,15 @@ ns.L = {
 		.. "longer drags it.",
 	SETTING_TRACKER_TOOLTIP = 'A short "Adventure Guide" section above your quests in the objective tracker, for the '
 		.. "current step.",
+	SETTING_HIDE_QUESTIE_TRACKER = "Turn off Questie's tracker",
+	SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP = "While this section shows, Questie's own quest tracker is off, so your "
+		.. "quests are not listed twice. Turn this off to give Questie its tracker back.",
+	QUESTIE_TRACKER_RELOAD = "Questie's tracker comes back after a /reload.",
+	QUEST_AREAS_OFF = "Quest areas are hidden",
+	QUEST_AREAS_SHOW = "Click to show the game's blue quest areas on the map",
+	QUEST_AREAS_DISMISS = "Right-click to hide this note",
+	QUEST_AREAS_TOOLTIP = "The map's blue quest areas show where each objective is done. Questie's Questie and "
+		.. "pfQuest objective types turn them off.",
 	SETTING_MAP_PINS = "Show route pins on the map",
 	SETTING_GIVERS = "Show quest givers on the map",
 	SETTING_DUNGEONS_DEFAULT = "Include dungeons by default",

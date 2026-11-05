@@ -72,6 +72,7 @@ Integrations\Providers.lua
 Integrations\QuestieObjectives.lua
 Integrations\QuestieTowns.lua
 Integrations\QuestieSource.lua
+Integrations\QuestieOptions.lua
 Integrations\Dungeons.lua
 Integrations\AtlasLoot.lua
 UI\Asides.lua
