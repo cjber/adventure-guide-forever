@@ -15,7 +15,6 @@
 ## OptionalDeps: AtlasLootClassic, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever, RXPGuides, Polestar
 
 Locales\enUS.lua
-Bindings.xml
 Locales\deDE.lua
 Locales\esES.lua
 Locales\esMX.lua

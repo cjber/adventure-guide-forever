@@ -13,6 +13,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [Unreleased]
 
 - **"Story complete" uses the game's achievement toast.** Finishing a quest chain now shows the same toast the game shows for an achievement, in its usual place above the action bars, headed "Story complete" and naming the chain. Two show at once and the rest wait their turn; right-click one to dismiss it.
+- **No more key binding warnings at login.** The game loads the Adventure Guide key binding file on its own, so the addon no longer lists it a second time, which logged five "Unrecognized XML" warnings every login.
 
 ## [1.0.9] - 2026-11-05
 
