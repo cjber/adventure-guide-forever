@@ -218,6 +218,14 @@ print("restedxp_mode_spec: guide cards, auto selection and quest areas passed")
 
 local extras = harness.load({ spf = "v1", db = { autoStart = false } })
 local er = dofile("tests/rxp_fixture.lua")(extras)
+-- AGF shows its own item row for this step, so the native action windows have a replacement to make way for (#334).
+extras.bags[6948] = 1
+er.currentGuide.steps[2].activeItems = { [6948] = true }
+local extraModule = assert(extras.ns.TrackerModule())
+extraModule.rect = { 40, 300, 240, 140 }
+extras.G.UnitName = function()
+	return nil
+end
 local item = extras.G.CreateFrame("Frame", nil, extras.G.UIParent)
 local target = extras.G.CreateFrame("Frame", nil, extras.G.UIParent)
 local icon = extras.G.CreateFrame("Button", nil, extras.G.UIParent)
