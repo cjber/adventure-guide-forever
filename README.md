@@ -91,6 +91,7 @@ Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-
 | `/agf issue` | Open a ready-made GitHub issue link to report a bug or request a feature |
 | `/agf where` | Show the stop the guide is on, for a wrong-stop report |
 | `/agf travel` | Print guidance state for a travel report |
+| `/agf timing` | Print where the login's wait went, for a slow-login report |
 | `/agf tracker` | Print the tracker anchors for an overlap report |
 | `/agf audit` | Compare the quest data with the game and report its source |
 | `/agf leaderboard` | Rank your quest turn-ins against guild and group members who report theirs (also `/agf stats`) |

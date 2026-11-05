@@ -1,4 +1,9 @@
-"""Fingerprint the inputs that produce AGF's saved Questie catalogue."""
+"""Fingerprint the inputs that produce AGF's saved Questie catalogue.
+
+The saved catalogue's key carries this fingerprint in place of the addon's version, so it must cover every file the
+build reads. The build also calls Planning/Model.lua's ValidPlace and EXPLORE_SLOT, a range check and a constant, which
+are left out so that a planner change does not throw every player's catalogue away.
+"""
 
 import argparse
 import hashlib

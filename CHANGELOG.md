@@ -17,6 +17,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 - **One card per RestedXP guide.** A guide RestedXP lists in two groups, such as a zone's speedrun and dungeon routes, no longer shows a second "Choose guide" card beside the one you are running.
 - **A progress bar for RestedXP guides.** The guide's card shows a bar with the steps done, and the tracker shows "Step 95 of 188" with the tracker's own bar under the guide's title.
 - **Questie's tracker steps aside for this one.** While the Adventure Guide section shows, Questie's own quest tracker is off, so your quests are not listed twice. Turn off "Turn off Questie's tracker" in Settings > AddOns > Adventure Guide Forever > Objective tracker to give Questie its tracker back.
+- **The guide is ready sooner after you log in.** Building the quest list from QuestieDB now takes about half the time, so "Loading quest data..." clears twice as fast, and updating Adventure Guide Forever no longer throws away the saved list: only a new game build, a QuestieDB update or a change to how the list is made rebuilds it.
+- **A RestedXP guide shows its step straight away.** While the quest list is still loading, the tracker shows the guide's current step instead of the loading line, and fills in its quests once the list is ready.
+- **`/agf timing` says where the login went.** It prints when Questie was ready, whether the saved quest list was used or rebuilt (and why), how long that took and when the first route appeared, for a report about a slow login.
+- **The quest list is read again when Questie reports ready late.** A list read before Questie finished starting is no longer saved or reused, so its corrections always reach the guide.
 
 ## [1.0.17] - 2026-11-05
 
