@@ -307,6 +307,7 @@ function harness.load(options)
 		SetHighlightFontObject = "highlightFont",
 		SetDisabledFontObject = "disabledFont",
 		SetJustifyH = "justifyH",
+		SetJustifyV = "justifyV",
 		SetMaxLines = "maxLines",
 		SetTexCoord = "texCoord",
 		SetVertexColor = "vertexColor",
@@ -1083,6 +1084,45 @@ function harness.load(options)
 			frame.scripts.OnLoad = frame.UpdateHighlightForState
 		end,
 		QuestLogBorderFrameTemplate = noop,
+		-- Mainline/AlertFrameSystems.xml:173-327: the achievement toast's art and text where the template puts them; the
+		-- glow and shine only animate, and are left out.
+		AchievementAlertFrameTemplate = function(frame)
+			frame.hidden = true
+			frame:SetSize(300, 101)
+			local function Key(region, key)
+				region.parentKey, frame[key] = key, region
+				return region
+			end
+			Key(frame:CreateTexture(nil, "BACKGROUND"), "Background"):SetAtlas("ui-achievement-alert-background", true)
+			frame.Background:SetPoint("CENTER")
+			local unlocked = Key(frame:CreateFontString(nil, "BACKGROUND", "GameFontBlackTiny"), "Unlocked")
+			unlocked:SetSize(200, 12)
+			unlocked:SetPoint("TOP", 7, -23)
+			unlocked:SetText("Achievement Unlocked")
+			local name = Key(frame:CreateFontString(nil, "BACKGROUND", "GameFontHighlight"), "Name")
+			name:SetSize(155, 36)
+			name:SetPoint("TOP", unlocked, "BOTTOM")
+			name:SetMaxLines(2)
+			name:SetJustifyH("CENTER")
+			name:SetJustifyV("MIDDLE")
+			local icon = Key(NewRegion("Frame", nil, frame), "Icon")
+			icon:SetSize(78, 75)
+			icon:SetPoint("TOPLEFT", -4, -15)
+			local texture = icon:CreateTexture(nil, "ARTWORK")
+			texture.parentKey, icon.Texture = "Texture", texture
+			texture:SetSize(52, 52)
+			texture:SetPoint("CENTER")
+			local overlay = icon:CreateTexture(nil, "OVERLAY")
+			overlay.parentKey, icon.Overlay = "Overlay", overlay
+			overlay:SetAtlas("ui-achievement-iconframe", true)
+			overlay:SetPoint("CENTER", -1, 2)
+			local shield = Key(NewRegion("Frame", nil, frame), "Shield")
+			shield:SetSize(64, 64)
+			shield:SetPoint("TOPRIGHT", -8, -15)
+			local shieldIcon = shield:CreateTexture(nil, "BACKGROUND")
+			shieldIcon:SetAtlas("ui-achievement-shield-1", true)
+			shieldIcon:SetPoint("TOPRIGHT", 1, -6)
+		end,
 		-- SharedTooltipTemplates.xml: the stock bordered tooltip backdrop.
 		SharedButtonSmallTemplate = noop,
 		-- SharedXMLBase InputBoxTemplate: the stock single-line edit box art (the Forever addons link window's).
@@ -1589,6 +1629,44 @@ function harness.load(options)
 			h.uiErrors[#h.uiErrors + 1] = message
 		end,
 	}
+	-- Mainline/AlertFrames.lua:91-256: a queued subsystem shows up to maxAlerts toasts of its template, each from a
+	-- pool and filled by its setUp, and queues up to maxQueue more; a toast's hide frees its place for the next.
+	-- h.alerts holds every toast shown, in order.
+	h.alerts = {}
+	G.AlertFrame = NewRegion("Frame", "AlertFrame", G.UIParent)
+	function G.AlertFrame.AddQueuedAlertFrameSubSystem(_, template, setUp, maxAlerts, maxQueue)
+		local system, free, shown, queued = {}, {}, 0, {}
+		local function Show(...)
+			local frame = table.remove(free)
+			if not frame then
+				frame = G.CreateFrame("Button", nil, G.UIParent, template)
+				frame:SetScript("OnHide", function(self)
+					shown = shown - 1
+					free[#free + 1] = self
+					local waiting = table.remove(queued, 1)
+					if waiting then
+						Show(unpack(waiting, 1, waiting.n))
+					end
+				end)
+			end
+			setUp(frame, ...)
+			shown = shown + 1
+			h.alerts[#h.alerts + 1] = frame
+			frame:Show()
+		end
+		function system.AddAlert(_, ...)
+			if shown < (maxAlerts or 2) then
+				Show(...)
+			elseif #queued < (maxQueue or 6) then
+				queued[#queued + 1] = { n = select("#", ...), ... }
+			else
+				return false
+			end
+			return true
+		end
+		return system
+	end
+	G.AchievementAlertSystem = {}
 	G.SlashCmdList = {}
 	-- Mainline/SharedUIPanelTemplates.lua:439-640: tab i > 1 after tab i - 1, and the selected tab disabled.
 	G.geterrorhandler = function()
