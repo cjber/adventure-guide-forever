@@ -385,7 +385,8 @@ function Guidance.Ended(route)
 		return
 	end
 	local key = prefs.journey
-	if not key or route.chosen then
+	-- A RestedXP guide it has yet to load (#368): the choice and its route wait for it.
+	if not key or route.chosen or ns.RestedXP.Awaits(key) then
 		return
 	end
 	if not Filtered(key, prefs, route) then
@@ -509,16 +510,17 @@ function Guidance.Reroute()
 end
 
 -- The route AGF started for the chosen journey stopped without the player's Stop: cleared in Shortest Path, replaced
--- by another journey, refused after a /reload, or its waypoint moved. It has steps, nothing of ours guides it and no
--- start is on its way, so its card and the tracker title resume it rather than clear the choice. A route that arrived
--- at its last stop is done, not paused.
+-- by another journey, refused after a /reload, or its waypoint moved. Its first step has a place (a RestedXP step
+-- without one waits for RestedXP, with nothing to resume), nothing of ours guides it and no start is on its way, so
+-- its card and the tracker title resume it rather than clear the choice. A route that arrived at its last stop is
+-- done, not paused.
 ---@return boolean
 local function Paused()
 	local route = ns.Route()
 	local key = route.journey
 	return route.chosen
 		and (ns.Prefs().guided == key or stopped == key)
-		and #route.steps > 0
+		and ns.Model.ValidPlace(route.steps[1]) == true
 		and ns.Setting("titleStartsRoute") == true
 		and not pendingStart
 		and not Guidance.Owns()
@@ -560,7 +562,8 @@ local function StopUnchosen()
 	if InCombatLockdown() then
 		return
 	end
-	local chosen = ns.Route().chosen
+	-- A RestedXP guide between two loads is still chosen (#368).
+	local chosen = ns.Route().chosen or ns.RestedXP.Awaits(ns.Prefs().journey)
 	if wasChosen and not chosen and Guidance.Owns() then
 		Guidance.Cancel()
 	end
@@ -582,6 +585,10 @@ local function Restore()
 		return
 	end
 	local prefs, route = ns.Prefs(), ns.Route()
+	-- The chosen RestedXP guide has yet to load (#368): wait for it, rather than start another journey over it.
+	if ns.RestedXP.Awaits(prefs.journey) then
+		return
+	end
 	-- Someone (this addon or the player) already holds the route: leave it be.
 	if Guidance.Owns() then
 		restoring = false

@@ -310,6 +310,9 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "在地图上显示任务NPC"
 L["SETTING_GIVERS_TOOLTIP"] =
 	"在世界地图上，为每个有你现在可接任务的人显示“!”。还需要开启地图上的路线标记。"
+L["SETTING_GUIDE_TRACKS"] = "只追踪RestedXP指南的任务" -- mt
+L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
+	"跟随RestedXP指南时，目标追踪器只显示其当前和进行中步骤提到的任务。停止跟随后，你自己追踪的任务会恢复。" -- mt
 L["SETTING_LOCK_TRACKER"] = "锁定追踪器"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] =
 	"将共享的 Forever 追踪器保持在您放置的位置。顶部的拖拽手柄不再移动它。"
@@ -419,6 +422,7 @@ L["TRACKER_DRAG_TITLE"] = "Forever追踪栏"
 L["TRACKER_DRAG_TOOLTIP"] = "拖动以移动"
 L["TRACKER_LOADING"] = "正在加载任务数据..."
 L["TRACKER_LOCKED_TOOLTIP"] = "追踪器已锁定。关闭“锁定追踪器”即可移动它。"
+L["TRACKER_PAUSED"] = "路线已暂停。点击标题以继续。" -- mt
 L["TRACKER_UNATTACHED"] = "无法在目标追踪栏中添加区块；请使用/agf audit报告。"
 L["TRAINER"] = "拜访你的职业训练师"
 L["TRAINER_IN"] = "拜访%s的职业训练师"

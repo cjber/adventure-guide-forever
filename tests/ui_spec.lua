@@ -322,8 +322,8 @@ do
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
 	equal(
 		#h.settings,
-		32,
-		"26 settings rows, the keybinding note and 5 index buttons, all through Settings.RegisterInitializer"
+		33,
+		"27 settings rows, the keybinding note and 5 index buttons, all through Settings.RegisterInitializer"
 	)
 	local L = h.ns.L
 	equal(
@@ -335,7 +335,7 @@ do
 	equal(table.concat(pages[L.SETTINGS_GROUP_MAP] or {}, " "), "showMapPins showQuestGivers", "Map holds its rows")
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_TRACKER] or {}, " "),
-		"attachTracker lockTracker showTracker trackRouteQuests untrackOthers",
+		"attachTracker lockTracker showTracker trackRouteQuests untrackOthers guideTracksQuests",
 		"the objective tracker rows sit together, the parent first"
 	)
 	equal(

@@ -72,6 +72,7 @@
 ---@field DisplayLines? function
 ---@field UpdateMap fun(resetPins?: boolean)
 ---@field UpdateGotoSteps? fun()
+---@field ResetArrowPosition? fun()
 ---@field updateSteps? boolean
 ---@field RenderFrame? function
 ---@field RegisterMessage? fun(receiver: table, message: string, callback: function)
@@ -100,6 +101,9 @@ RXPCData = nil
 ---@class AGFRXPDisplayStep
 ---@field index integer
 ---@field title string
+---@field titled boolean RestedXP gave the step a title of its own (else `title` is "Step N")
+---@field target? string the NPC the step's open lines name first, else any line's
+---@field targetOpen? boolean `target` comes from a line not yet done
 ---@field sticky boolean
 ---@field preview boolean true for a read-only future guide row
 ---@field lines AGFRXPInstruction[]
@@ -117,6 +121,7 @@ RXPCData = nil
 ---@class AGFRestedXPAdapter
 ---@field Enabled fun(): boolean
 ---@field Active fun(): boolean
+---@field Awaits fun(key?: string): boolean `key` is a guide's, guide mode is on and RestedXP has no guide loaded yet
 ---@field Snapshot fun(): AGFRXPSnapshot
 ---@field OnChange fun(callback: fun())
 ---@field Refresh fun()

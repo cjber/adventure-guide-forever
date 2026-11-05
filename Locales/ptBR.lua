@@ -319,6 +319,9 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "Mostrar recrutadores de missões no mapa"
 L["SETTING_GIVERS_TOOLTIP"] =
 	'Um "!" no mapa-múndi sobre todos que têm uma missão que você pode aceitar agora. Também precisa dos marcadores de rota no mapa.'
+L["SETTING_GUIDE_TRACKS"] = "Rastrear só as missões do guia RestedXP" -- mt
+L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
+	"Enquanto você segue um guia RestedXP, o rastreador de objetivos mostra só as missões que as etapas atuais e em andamento citam. As missões que você rastreava voltam quando você para de segui-lo." -- mt
 L["SETTING_LOCK_TRACKER"] = "Travar o rastreador"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] =
 	"Mantém o rastreador Forever compartilhado onde você o colocou. A alça no topo não o arrasta mais."
@@ -429,6 +432,7 @@ L["TRACKER_DRAG_TITLE"] = "Rastreador Forever"
 L["TRACKER_DRAG_TOOLTIP"] = "Arraste para mover"
 L["TRACKER_LOADING"] = "Carregando dados de missões..."
 L["TRACKER_LOCKED_TOOLTIP"] = "O rastreador está travado. Desative Travar o rastreador para movê-lo."
+L["TRACKER_PAUSED"] = "Rota pausada. Clique no título para retomar." -- mt
 L["TRACKER_UNATTACHED"] = "não foi possível adicionar uma seção ao rastreador de objetivos; informe com /agf audit."
 L["TRAINER"] = "Visite o seu instrutor de classe"
 L["TRAINER_IN"] = "Visite o seu instrutor de classe em %s"

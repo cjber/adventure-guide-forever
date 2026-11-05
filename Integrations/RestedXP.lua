@@ -77,10 +77,12 @@ local function Roles(engine)
 	return roles
 end
 
+-- The words RestedXP drew, in the client's colours, and the first friendly NPC they name (the step's target).
 ---@param engine AGFRXPEngine
 ---@param value string?
 ---@param element? AGFRXPElement
----@return string
+---@return string text
+---@return string? npc
 local function Text(engine, value, element)
 	if type(value) ~= "string" then
 		return ""
@@ -100,7 +102,9 @@ local function Text(engine, value, element)
 		return role and ("\001" .. role .. "\002" .. inner .. "\003") or inner
 	end)
 	value = value:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+	local npc
 	value = value:gsub("\001(.-)\002(.-)\003", function(role, inner)
+		npc = npc or (role == "RXP_FRIENDLY_" and inner ~= "" and inner or nil)
 		local color = RoleColor(role, element)
 		return color and color:WrapTextInColorCode(inner) or inner
 	end)
@@ -112,7 +116,7 @@ local function Text(engine, value, element)
 		value = value:sub(1, at - 1) .. NORMAL_FONT_COLOR:WrapTextInColorCode(title) .. value:sub(at + #title)
 	end
 	-- Progress as the game's tracker writes it: "3/7 Small Spider Leg", not "Small Spider Leg: 3/7" (#353).
-	return (value:gsub("^(.-):%s*(%d+/%d+)$", "%2 %1"))
+	return (value:gsub("^(.-):%s*(%d+/%d+)$", "%2 %1")), npc
 end
 
 ---@param frame Frame
@@ -301,7 +305,8 @@ local function Snapshot(engine)
 		---@type AGFRXPDisplayStep
 		local row = {
 			index = step.index,
-			title = Text(engine, step.title or ns.L.RXP_STEP:format(step.index)),
+			title = (Text(engine, step.title or ns.L.RXP_STEP:format(step.index))),
+			titled = type(step.title) == "string",
 			sticky = not preview and not not step.sticky,
 			preview = not not preview,
 			lines = {},
@@ -310,11 +315,16 @@ local function Snapshot(engine)
 			y = sy,
 		}
 		for index, element in ipairs(step.elements or {}) do
-			local text = Text(engine, element.text or element.tooltipText or element.rawtext, element)
+			local text, npc = Text(engine, element.text or element.tooltipText or element.rawtext, element)
 			if text ~= "" and not element.hideTooltip and not element.hidden then
+				local done = not preview and not element.textOnly and not not (element.completed or element.skip)
+				-- Who the step is for: the first NPC an open line names, else any line's.
+				if npc and (not row.target or not (done or row.targetOpen)) then
+					row.target, row.targetOpen = npc, not done
+				end
 				row.lines[#row.lines + 1] = {
 					text = text,
-					done = not preview and not element.textOnly and not not (element.completed or element.skip),
+					done = done,
 					questId = element.questId,
 					tag = element.tag,
 					elementIndex = not preview and not element.textOnly and not element.optional and index or nil,
@@ -352,6 +362,15 @@ end
 
 function Guide.Active()
 	return active
+end
+
+-- `key` is a RestedXP guide's and RestedXP has no guide loaded yet, with its guide mode on: its empty guide while
+-- purchased guides import at login, or the frames between two guide loads. A chosen guide waits through this rather
+-- than ending, and nothing starts or untracks over it (#368).
+---@param key? string
+---@return boolean
+function Guide.Awaits(key)
+	return key ~= nil and key:find("^guide:") ~= nil and snapshot.name == "" and Guide.Enabled()
 end
 function Guide.Snapshot()
 	return snapshot
@@ -495,9 +514,10 @@ local function Attach()
 				Guide.Refresh()
 			end)
 		end
-		for _, method in ipairs({ "UpdateItemFrame", "ResetItemPosition" }) do
+		-- ResetArrowPosition moves RestedXP's arrow back on screen: Sync hides it again while Shortest Path leads.
+		for _, method in ipairs({ "UpdateItemFrame", "ResetItemPosition", "ResetArrowPosition" }) do
 			if type(engine[method]) == "function" then
-				hooksecurefunc(engine, method, Guide.Refresh) -- taint-ok: RestedXP owns its active-item controller.
+				hooksecurefunc(engine, method, Guide.Refresh) -- taint-ok: RestedXP owns its item and arrow controllers.
 			end
 		end
 		if engine.targeting and type(engine.targeting.UpdateTargetFrame) == "function" then
@@ -744,6 +764,9 @@ function Guide.Journey()
 					key = stepKey,
 					kind = "guide",
 					preview = row.preview,
+					-- What a walk there is to (Integrations' travel line, Shortest Path's stop): the NPC the step
+					-- names, else for a step RestedXP left untitled ("Step 96") the zone it is in (#361).
+					place = row.target or (not row.titled and row.map > 0 and ns.State.ZoneName(row.map)) or nil,
 					title = row.sticky and ns.L.RXP_STICKY:format(row.title) or row.title,
 					detail = "",
 					reason = "",
@@ -764,6 +787,12 @@ function Guide.Journey()
 				end
 			end
 		end
+	end
+	-- RestedXP hides some current steps from its window (a step only it acts on), so the step it shows next leads,
+	-- as in its own window: the step under way is never a read-only preview, or nothing would hand it on (#361).
+	local lead = steps[1]
+	if lead and lead.preview then
+		lead.preview = false
 	end
 	local subline = snapshot.total > 0 and ns.L.RXP_PROGRESS:format(snapshot.index, snapshot.total) or ns.L.RXP_NO_GUIDE
 	---@type AGFJourney

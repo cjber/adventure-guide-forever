@@ -176,6 +176,15 @@ function ns.RegisterSettings()
 				Settings.RegisterInitializer(subcategory, show)
 				Settings.RegisterInitializer(subcategory, track)
 				Settings.RegisterInitializer(subcategory, untrack)
+				Settings.RegisterInitializer(
+					subcategory,
+					Checkbox(
+						subcategory,
+						"guideTracksQuests",
+						ns.L.SETTING_GUIDE_TRACKS,
+						ns.L.SETTING_GUIDE_TRACKS_TOOLTIP
+					)
+				)
 			end,
 		},
 		{

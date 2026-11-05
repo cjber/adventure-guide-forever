@@ -58,6 +58,7 @@ Planning\Geometry.lua
 Planning\Focus.lua
 Integrations\Integrations.lua
 Integrations\RestedXP.lua
+Integrations\RestedXPWatch.lua
 Integrations\Polestar.lua
 Integrations\Tweaks.lua
 Integrations\SkillUp.lua

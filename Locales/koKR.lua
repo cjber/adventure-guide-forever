@@ -322,6 +322,9 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "지도에 퀘스트 NPC 표시"
 L["SETTING_GIVERS_TOOLTIP"] =
 	'지금 수락할 수 있는 퀘스트가 있는 모든 NPC 위에 세계 지도의 "!"를 표시합니다. 지도의 경로 핀도 켜야 합니다.'
+L["SETTING_GUIDE_TRACKS"] = "RestedXP 가이드의 퀘스트만 추적" -- mt
+L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
+	"RestedXP 가이드를 따라가는 동안 목표 추적기에는 현재 단계와 진행 중인 단계가 지정한 퀘스트만 표시됩니다. 직접 추적하던 퀘스트는 가이드를 그만 따라가면 돌아옵니다." -- mt
 L["SETTING_LOCK_TRACKER"] = "추적기 잠금"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] =
 	"공유 Forever 추적기를 놓은 자리에 유지합니다. 위쪽 손잡이로 더 이상 끌 수 없습니다."
@@ -434,6 +437,7 @@ L["TRACKER_DRAG_TITLE"] = "Forever 추적기"
 L["TRACKER_DRAG_TOOLTIP"] = "끌어서 이동"
 L["TRACKER_LOADING"] = "퀘스트 데이터 불러오는 중..."
 L["TRACKER_LOCKED_TOOLTIP"] = "추적기가 잠겨 있습니다. 추적기 잠금을 끄면 이동할 수 있습니다."
+L["TRACKER_PAUSED"] = "경로가 일시 중지되었습니다. 제목을 클릭하면 재개합니다." -- mt
 L["TRACKER_UNATTACHED"] =
 	"목표 추적기에 영역을 추가하지 못했습니다. /agf audit로 보고해 주십시오."
 L["TRAINER"] = "직업 상급자 방문"
