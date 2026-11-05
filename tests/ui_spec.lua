@@ -2236,8 +2236,9 @@ do
 	-- From the overview: the card under the pointer takes the next journey, and its tooltip speaks for it.
 	ns.Choose(nil)
 	h.flush()
+	-- Quests in your log leads the overview but has no menu, so the card with one is the story after it.
 	local over = Shown(h, function(frame)
-		return frame.Icon ~= nil and frame.Icon.Clip ~= nil and frame.journey ~= nil
+		return frame.Icon ~= nil and frame.Icon.Clip ~= nil and frame.journey ~= nil and frame.journey.kind ~= "carry"
 	end)[1]
 	local gone = over.journey
 	h.Click(over, "RightButton")
@@ -3129,8 +3130,9 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Heights(), "", label .. ": none of the chosen view's cards")
 	local cards = Overview()
 	equal(#cards, #route.journeys, label .. ": every card in the overview")
+	local ordered = h.ns.Model.Cards(route)
 	for index, card in ipairs(cards) do
-		equal(card.journey, route.journeys[index], label .. ": in the route's order")
+		equal(card.journey, ordered[index], label .. ": in the guide's order")
 		equal(card.state, "shown", label .. ": none chosen or folded")
 		equal(card.highlightLocked == true, false, label .. ": no card lit")
 	end
@@ -3148,7 +3150,13 @@ for _, spf in ipairs({ false, "v1" }) do
 		label .. ": where the player is, by the title"
 	)
 	equal(Starts(), 0, label .. ": nothing guides")
-	local story = first.journey
+	equal(first.journey.kind, "carry", label .. ": Quests in your log leads the overview")
+	local storyCard
+	for _, card in ipairs(cards) do
+		storyCard = storyCard or (card.journey.kind == "story" and card or nil)
+	end
+	equal(storyCard ~= nil, true, label .. ": the story still has a card")
+	local story = storyCard.journey
 	equal(story.ready, 1, label .. ": the story holds a ready quest")
 	-- Detail, then the progress, level or stop count on a compact third line.
 	local function Hub(journey)
@@ -3157,9 +3165,9 @@ for _, spf in ipairs({ false, "v1" }) do
 			or (more == 1 and L.HUB_MORE_ONE:format(journey.hub))
 			or journey.hub
 	end
-	equal(first.Reason:GetText(), story.reason or Hub(story), label .. ": the first row's reason")
+	equal(storyCard.Reason:GetText(), story.reason or Hub(story), label .. ": the story's reason")
 	local zones, carried = 0, 0
-	for index = 2, #cards do
+	for index = 1, #cards do
 		local card, journey = cards[index], cards[index].journey
 		local foot = card.Foot:GetText()
 		if journey.kind == "carry" then
@@ -3193,7 +3201,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.ns.OpenPanel()
 	-- The zone icons: the zone's art cut round by the circle mask in a clipping frame, the ring over it and the kind
 	-- as a badge; built once, not on every refresh; the plain ring where the data has no art.
-	local icon = first.Icon
+	local icon = storyCard.Icon
 	equal(icon.Clip:IsShown(), true, label .. ": the story's zone art")
 	equal(icon.Clip.clipsChildren, true, label .. ": clipped")
 	equal(icon.Art.Mask:GetAtlas(), "CircleMaskScalable", label .. ": round")
@@ -3262,8 +3270,8 @@ for _, spf in ipairs({ false, "v1" }) do
 		same(h.tooltip, expected, label .. ": " .. journey.key .. "'s tooltip")
 	end
 
-	-- The first row chooses itself; its steps lead and alternatives fold below.
-	h.Click(Overview()[1])
+	-- The story row chooses itself; its steps lead and alternatives fold below.
+	h.Click(storyCard)
 	equal(Starts(), 0, label .. ": the route waits for the rebuild with its steps")
 	h.flush()
 	equal(h.ns.Route().journey, story.key, label .. ": a click chooses")
@@ -3338,7 +3346,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(h.counts.SetMapID, maps, label .. ": without turning the map")
 	equal(Heights(), "", label .. ": the overview again")
 	equal(#Overview(), #h.ns.Route().journeys, label .. ": every card")
-	equal(Overview()[1].journey.key, h.ns.Route().journeys[1].key, label .. ": in order")
+	equal(Overview()[1].journey, h.ns.Model.Cards(h.ns.Route())[1], label .. ": in order")
 	equal(Previews(), "", label .. ": no steps until choosing again")
 	equal(Rows(), 0, label .. ": with no route rows")
 	equal(Back(), nil, label .. ": and the back arrow goes")

@@ -12,6 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Quests in your log leads until you pick another journey.** A new or returning character who has not chosen a journey now starts on Quests in your log, with its card first in the guide. RestedXP guides stay selectable cards, but only take over when you choose one; a guide RestedXP loads by itself no longer replaces the default route.
 - **Questie's first-run question no longer hides the game's quest areas.** Questie asks new players which objective marks to show, and its Questie and pfQuest answers turn off the game's blue quest areas. While that question is still unanswered, Adventure Guide answers it with Questie's own Blizzard option, so the areas stay on. If you already chose, the tracker says the quest areas are hidden, and one click turns them back on.
 - **One card per RestedXP guide.** A guide RestedXP lists in two groups, such as a zone's speedrun and dungeon routes, no longer shows a second "Choose guide" card beside the one you are running.
 - **A progress bar for RestedXP guides.** The guide's card shows a bar with the steps done, and the tracker shows "Step 95 of 188" with the tracker's own bar under the guide's title.

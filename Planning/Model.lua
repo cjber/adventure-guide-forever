@@ -9,8 +9,31 @@ ns.Model = Model
 ---@type AGFJourneySection[]
 Model.SECTIONS = { "continue", "zones", "dungeons", "battlegrounds" }
 
+-- The cards of `section` in the order the guide draws them: Quests in your log leads Continue, ahead of the zone story
+-- and a companion guide, then the route's own order. The carry card is the journey the guide follows until the player
+-- picks another (Plan.lua's Route).
+---@param journeys AGFJourney[]
+---@param section AGFJourneySection
+---@return AGFJourney[]
+function Model.InSection(journeys, section)
+	local kept, carry = {}, nil
+	for _, journey in ipairs(journeys) do
+		if journey.section == section then
+			if journey.kind == "carry" then
+				carry = journey
+			else
+				kept[#kept + 1] = journey
+			end
+		end
+	end
+	if carry then
+		table.insert(kept, 1, carry)
+	end
+	return kept
+end
+
 -- The guide's cards in the order its panel draws them (UI/Panel.lua LayoutJourneys): with one chosen, that card and
--- then the rest as the route offered them; with none, each header's cards in turn, in the route's order.
+-- then the rest as the route offered them; with none, each header's cards in turn, Quests in your log first.
 ---@param route AGFRoute
 ---@return AGFJourney[]
 function Model.Cards(route)
@@ -26,10 +49,8 @@ function Model.Cards(route)
 		return cards
 	end
 	for _, section in ipairs(Model.SECTIONS) do
-		for _, journey in ipairs(route.journeys) do
-			if journey.section == section then
-				cards[#cards + 1] = journey
-			end
+		for _, journey in ipairs(Model.InSection(route.journeys, section)) do
+			cards[#cards + 1] = journey
 		end
 	end
 	return cards

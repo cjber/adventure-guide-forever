@@ -908,6 +908,7 @@
 
 ---@class AGFModel
 ---@field SECTIONS AGFJourneySection[] the overview's headers in the order they show
+---@field InSection fun(journeys: AGFJourney[], section: AGFJourneySection): AGFJourney[] one header's cards in the order the guide draws them
 ---@field Cards fun(route: AGFRoute): AGFJourney[] the cards in the order the panel draws them
 ---@field LevelRange fun(data: AGFData, journey: AGFJourney): integer?, integer? the levels a card shows; high nil for "from low"
 ---@field Unlisted fun(data: AGFData, map?: integer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>): boolean the log holds a quest the data lacks, or Forever added quests on `map` the data lacks and the player hasn't finished

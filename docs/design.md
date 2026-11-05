@@ -13,10 +13,11 @@ abandons quests.
 - **2.1 Map tab.** The overview scrolls; the overview keeps two Continue cards and one card per other section until expanded. Chosen steps and
   search can scroll. Quest-giver marks and route pins are opt-in.
 - **2.2 Journey cards.** Offer every eligible journey for the current level; the map overview scrolls and the guide
-  pages through them. The home view groups its cards under collapsible quest log headers, in order: Continue (the story,
-  Quests in your log and your calling), Zones for your level, Dungeons, then Battlegrounds. A group with no card draws
-  no header, each header remembers its open state per character, and the header holding the route the guide follows
-  stays open. Prefer useful green/yellow quests; the maximum quest level slider defaults to +2, excluding
+  pages through them. The home view groups its cards under collapsible quest log headers, in order: Continue (Quests in
+  your log, the story and your calling), Zones for your level, Dungeons, then Battlegrounds. With no journey chosen the
+  route follows Quests in your log, and its card leads; RestedXP guides stay selectable cards and take over only when
+  the player picks one. A group with no card draws no header, each header remembers its open state per character, and
+  the header holding the route the guide follows stays open. Prefer useful green/yellow quests; the maximum quest level slider defaults to +2, excluding
   orange/red pickups. The limit applies to recommendations, zone ranking and search recommendation eligibility; higher-level quests remain searchable, and accepted quests keep their steps. A choice shows up to ten route actions,
   followed by upcoming quest entries when fewer actions are available. The active route appears above alternative
   destinations.
