@@ -1,6 +1,6 @@
 -- Run from the repository root: luajit tests/explore_spec.lua
--- Exploration and new lands (Hints/Explore.lua): the choice of area and land on the bundled data
--- and on small fixtures, then both asides through tests/harness.lua against a stubbed C_MapExplorationInfo.
+-- New lands (Hints/Explore.lua): the choice of land on the bundled data, then the aside through tests/harness.lua
+-- against a stubbed C_MapExplorationInfo.
 local harness = dofile("tests/harness.lua")
 local checks = 0
 
@@ -52,7 +52,7 @@ end
 
 do
 	local h = Load()
-	local data, Explore = h.ns.Data, h.ns.Explore
+	local data = h.ns.Data
 	-- The probe's Darkshore overlays (GetExploredMapTextures(1439) at level 18) are in the data by the same offsets.
 	local darkshore = {}
 	for _, overlay in ipairs(data.overlays[1439]) do
@@ -76,50 +76,7 @@ do
 	equal(data.forever.lands[2521].min .. "-" .. data.forever.lands[2521].max, "3-12", "Zephras Isle's range")
 	equal(#data.forever.lands[2521].taxi, 0, "and no flight master")
 
-	-- Unexplored: the nearest area of the player's map they haven't explored, at most two levels above them.
-	local player = { level = 18, side = 2, map = 1413, x = 0.52, y = 0.30 }
-	local function Name(explored)
-		local overlay = Explore.Unexplored(data, player, explored)
-		return overlay and overlay.name
-	end
-	equal(Name({}), "The Crossroads", "the nearest")
-	equal(Name({ ["431:118"] = true }), "Thorn Hill", "an explored one is passed over")
-	player.x, player.y = 0.45, 0.8
-	equal(Name({}), "Blackthorn Ridge", "Bael Modan (25) is nearer, but too high")
-	player.x, player.y = nil, nil
-	equal(Name({}), "Camp Taurajo", "no place for the player: the lowest area ID")
-	local all = {}
-	for _, overlay in ipairs(data.overlays[1413]) do
-		all[overlay.ox .. ":" .. overlay.oy] = true
-	end
-	equal(Name(all), nil, "every one explored")
-	player.map = 1454
-	equal(Name({}), nil, "a capital has none")
-	player.map = nil
-	equal(Name({}), nil, "nor does no map")
 	clean(h, "data")
-end
-
--- An area Forever added comes before a nearer one, and a level above the window never shows.
-do
-	local h = Load()
-	local Explore = h.ns.Explore
-	local data = {
-		overlays = {
-			[7] = {
-				{ area = 1, name = "Near", level = 5, ox = 0, oy = 0, x = 0.5, y = 0.5 },
-				{ area = 2, name = "Far and new", level = 5, ox = 10, oy = 0, x = 0.9, y = 0.9 },
-				{ area = 3, name = "New but high", level = 8, ox = 20, oy = 0, x = 0.5, y = 0.5 },
-			},
-		},
-		forever = { areas = { [2] = true, [3] = true } },
-	}
-	local player = { level = 5, side = 1, map = 7, x = 0.5, y = 0.5 }
-	equal(Explore.Unexplored(data, player, {}).name, "Far and new", "Forever's first")
-	equal(Explore.Unexplored(data, player, { ["10:0"] = true }).name, "Near", "then the nearest")
-	player.level = 6
-	equal(Explore.Unexplored(data, player, {}).name, "New but high", "8 is within two levels of 6: nearer, and new")
-	clean(h, "added first")
 end
 
 --[[ New lands ]]
@@ -161,33 +118,7 @@ do
 	clean(h, "no API")
 end
 
--- An unexplored area of the zone: text only, retired by the client's discovery.
-do
-	local h = Load(nil, { [1413] = {} })
-	Settle(h)
-	local aside = h.ns.Asides.Current()
-	equal(aside.text, "You haven't seen The Crossroads yet", "the nearest area")
-	equal(aside.key, "explore", "one key for every area, so Not interested ends them all")
-	equal(aside.icon, "islands-queue-prop-compass", "the guide's compass")
-	equal(aside.place, nil, "no place: never a ring or a waypoint")
-	equal(h.ns.Asides.Go(aside), false, "so Go goes nowhere")
-	h.explored[1413]["The Crossroads"] = true
-	h.fire("MAP_EXPLORATION_UPDATED")
-	equal(Text(h), "You haven't seen Thorn Hill yet", "discovery retires it at once")
-	-- The client's own name for the area wins.
-	h.G.C_Map.GetAreaInfo = function(area)
-		return area == 1699 and "Colline des Épines" or nil
-	end
-	h.fire("MAP_EXPLORATION_UPDATED")
-	equal(Text(h), "You haven't seen Colline des Épines yet", "the client's name")
-	h.ns.Asides.Decline(h.ns.Asides.Current())
-	h.explored[1413]["Thorn Hill"] = true
-	Settle(h)
-	equal(Text(h), nil, "not interested: no more areas")
-	clean(h, "unexplored")
-end
-
--- A new land comes before the zone's area, with Go to the flight master for the player's side.
+-- A new land, with Go to the flight master for the player's side; nothing about the zone's unexplored areas.
 do
 	local h = Load({ level = 38 }, { [1413] = {} })
 	Settle(h)
@@ -201,21 +132,21 @@ do
 	equal(h.waypoint.position.x .. "," .. h.waypoint.position.y, "0.5961,0.4506", "at the flight master")
 	h.explored[2548] = { ["Rog'mar"] = true }
 	h.fire("MAP_EXPLORATION_UPDATED")
-	equal(Text(h), "You haven't seen The Crossroads yet", "once seen, the zone's area again")
+	equal(Text(h), nil, "once seen, no aside: unexplored areas of the zone are never hinted")
 	clean(h, "new land")
 end
 
 -- In combat the last answers stand, as for every aside.
 do
-	local h = Load(nil, { [1413] = {} })
+	local h = Load({ level = 38 }, { [1413] = {} })
 	Settle(h)
 	h.combat = true
-	h.explored[1413]["The Crossroads"] = true
+	h.explored[2548] = { ["Rog'mar"] = true }
 	h.fire("MAP_EXPLORATION_UPDATED")
-	equal(Text(h), "You haven't seen The Crossroads yet", "combat: unchanged")
+	equal(Text(h), "Map 2548 · For levels 36-44", "combat: unchanged")
 	h.combat = false
 	Settle(h)
-	equal(Text(h), "You haven't seen Thorn Hill yet", "after combat: asked again")
+	equal(Text(h), nil, "after combat: asked again")
 	clean(h, "combat")
 end
 

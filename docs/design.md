@@ -245,7 +245,7 @@ When the optional RestedXP addon is available, `Integrations/RestedXP.lua` adapt
 
 AGF hands the current guide waypoint to SPF as `AdventureGuideForever`, held until RXP changes it. Sticky objectives remain visible without becoming future travel stops. Unknown destinations have no pin or travel estimate. SPF's direct RXP adapter defers while `AdventureGuideForever.API.RestedXPIntegrated()` is true, so Stop and route ownership stay with the existing frontend.
 
-RXP active-item and target windows, its arrow and its minimap icon are suppressed alongside its guide window. The adapter does not change the player's RXP arrow preference. Native RXP windows retain their engine updates while their presentation is suppressed; restoring the original frontend restores its captured presentation state.
+RXP active-item and target windows and its minimap icon are suppressed alongside its guide window. Its arrow is suppressed too while SPF is loaded, since SPF's arrow points at the step AGF hands it. Without SPF, RXP's arrow is the guide's only arrow and is suppressed only while another journey is chosen. The adapter does not change the player's RXP arrow preference. Native RXP windows retain their engine updates while their presentation is suppressed; restoring the original frontend restores its captured presentation state.
 
 RXP's explicit `.ingamewaypoint` instructions can still set the native user waypoint; ordinary RXP arrow steps do not write it. If the player or another addon moves or unfocuses AGF's native waypoint, AGF forgets ownership and neither refresh nor Stop overwrites or clears the replacement. Its own automatic quest highlighting retains an already focused, owned native waypoint, without refocusing one the player unfocused.
 

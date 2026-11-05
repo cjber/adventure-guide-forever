@@ -321,6 +321,9 @@ L["RXP_SKIP"] = "Пропустить: %s"
 L["RXP_SKIP_STEP"] = "Пропустить шаг"
 L["RXP_STEP"] = "Шаг %d"
 L["RXP_STICKY"] = "%s (постоянно)"
+L["RXP_ONGOING"] = "Постоянно"
+L["RXP_MORE_STEP"] = "+1 шаг"
+L["RXP_MORE_STEPS"] = "+%d шагов"
 L["RXP_TITLE"] = "Руководства RestedXP"
 L["SEARCH_NONE"] = "Нет заданий, подходящих под поиск."
 L["SEARCH_QUESTS"] = "Поиск заданий"
@@ -490,7 +493,6 @@ L["TWEAKS_MISSING"] =
 	"Установите Tweaks Forever, чтобы находить входы в подземелья."
 L["TWEAKS_OUTDATED"] =
 	"Обновите Tweaks Forever, чтобы находить входы в подземелья."
-L["UNEXPLORED"] = "Вы еще не видели: %s"
 L["UNLISTED"] =
 	"В этих землях есть истории, которых путеводитель пока не знает; ищите «!» над теми, кто дает задания."
 L["UPDATED_TO"] = "обновлено до %s. %s"

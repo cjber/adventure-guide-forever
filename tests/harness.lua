@@ -850,21 +850,28 @@ function harness.load(options)
 		function module:GetContentsHeight()
 			return #self.layoutOrder > 0 and 25 + #self.layoutOrder * 40 or 0
 		end
+		-- The room a layout has (h.trackerRoom, unlimited by default) and what its blocks used, as
+		-- Blizzard_ObjectiveTrackerModule.lua's CanFitBlock reads them: a header and each line 14 high with 2 between.
+		function module:GetNextBlockAnchoring()
+			return nil, -4
+		end
 		function module:SetHeader(text)
 			self.Header.Text:SetText(text)
 		end
 		function module:GetBlock(id)
 			local block = self.liveBlocks[id]
 			if not block then
-				block = { id = id, lines = {}, order = {}, dashes = {} }
+				block = { id = id, lines = {}, order = {}, dashes = {}, full = {}, styles = {}, height = 0 }
 				block.SetHeader = function(this, text)
-					this.header = text
+					this.header, this.height = text, 14
 				end
-				block.AddObjective = function(this, key, text, _, _, dashStyle)
+				block.AddObjective = function(this, key, text, _, useFullHeight, dashStyle, colorStyle)
 					if not this.lines[key] then
 						this.order[#this.order + 1] = key
 					end
 					this.lines[key], this.dashes[key] = text, dashStyle
+					this.full[key], this.styles[key] = useFullHeight, colorStyle
+					this.height = this.height + 16
 					return { Text = {
 						GetText = function()
 							return text
@@ -877,6 +884,10 @@ function harness.load(options)
 			return block
 		end
 		function module:LayoutBlock(block)
+			if self.contentsHeight + block.height + 4 > self.availableHeight then
+				return false
+			end
+			self.contentsHeight = self.contentsHeight + block.height + 4
 			self.layoutOrder[#self.layoutOrder + 1] = block.id
 			return true
 		end
@@ -892,8 +903,10 @@ function harness.load(options)
 		end
 		function module:MarkDirty()
 			self.layoutOrder = {}
+			self.availableHeight, self.contentsHeight = h.trackerRoom or math.huge, 0
 			for _, block in pairs(self.liveBlocks) do
 				block.used, block.lines, block.order, block.dashes = false, {}, {}, {}
+				block.full, block.styles, block.height = {}, {}, 0
 			end
 			h.call(self.LayoutContents, self)
 			for _, id in ipairs(self.layoutOrder) do
@@ -2032,6 +2045,15 @@ function harness.load(options)
 		GetNumQuestWatches = function()
 			return #h.watched
 		end,
+		-- Enum.QuestWatchType.Manual (1) for a tracked quest, nil for one the tracker does not show.
+		GetQuestWatchType = function(questID)
+			for _, watched in ipairs(h.watched) do
+				if watched == questID then
+					return 1
+				end
+			end
+			return nil
+		end,
 		GetQuestIDForQuestWatchIndex = function(index)
 			return h.watched[index]
 		end,
@@ -2288,8 +2310,21 @@ function harness.load(options)
 		}
 	end
 	-- UIParent.lua GetRelativeDifficultyColor's bands, with QuestDifficultyColors' values; grey is Model.IsGray's.
-	G.NORMAL_FONT_COLOR = { r = 1, g = 0.82, b = 0 }
+	G.NORMAL_FONT_COLOR = G.CreateColor(1, 0.82, 0)
 	G.GRAY_FONT_COLOR = G.CreateColor(0.5, 0.5, 0.5)
+	for _, quality in pairs(G.ITEM_QUALITY_COLORS) do
+		quality.color = G.CreateColor(quality.r, quality.g, quality.b)
+	end
+	-- SharedColorConstants and the generated colour table: white, and the hostile and friendly reaction colours.
+	G.HIGHLIGHT_FONT_COLOR = G.CreateColor(1, 1, 1)
+	G.FACTION_RED_COLOR = G.CreateColor(0.8, 0.3, 0.22)
+	G.FACTION_GREEN_COLOR = G.CreateColor(0, 0.6, 0.1)
+	-- Blizzard_ObjectiveTrackerShared.lua:1-11: the tracker's text styles.
+	G.OBJECTIVE_TRACKER_COLOR = {
+		Normal = { r = 0.8, g = 0.8, b = 0.8 },
+		NormalHighlight = { r = 1, g = 1, b = 1 },
+		Complete = { r = 0.6, g = 0.6, b = 0.6 },
+	}
 	G.GameTooltip.SetText = noop
 	G.GameTooltip.AddLine = noop
 	G.NORMAL_FONT_COLOR.GetRGB = function()

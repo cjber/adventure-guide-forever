@@ -292,6 +292,9 @@ L["RXP_SKIP"] = "Pular: %s"
 L["RXP_SKIP_STEP"] = "Pular passo"
 L["RXP_STEP"] = "Passo %d"
 L["RXP_STICKY"] = "%s (em andamento)"
+L["RXP_ONGOING"] = "Em andamento"
+L["RXP_MORE_STEP"] = "+1 etapa a mais"
+L["RXP_MORE_STEPS"] = "+%d etapas a mais"
 L["RXP_TITLE"] = "Guias do RestedXP"
 L["SEARCH_NONE"] = "Nenhuma missão corresponde à sua busca."
 L["SEARCH_QUESTS"] = "Buscar missões"
@@ -450,7 +453,6 @@ L["TWEAKS_DISABLED"] = "Ative o Tweaks Forever para encontrar entradas de masmor
 L["TWEAKS_FAMILY_MENU"] = "Encontrar entradas de masmorras: Tweaks Forever"
 L["TWEAKS_MISSING"] = "Instale o Tweaks Forever para encontrar entradas de masmorras."
 L["TWEAKS_OUTDATED"] = "Atualize o Tweaks Forever para encontrar entradas de masmorras."
-L["UNEXPLORED"] = "Você ainda não viu %s"
 L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
 L["UPDATED_TO"] = "atualizado para %s. %s"
