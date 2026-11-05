@@ -89,6 +89,8 @@ read_globals = {
 	"UNKNOWNOBJECT",
 	"UnitExists",
 	"UnitName",
+	"SetPortraitTexture",
+	"RANGE_INDICATOR",
 	-- Secret.lua
 	"canaccessvalue",
 	-- SafeCall.lua

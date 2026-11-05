@@ -592,6 +592,14 @@ ns.L = {
 
 _G.BINDING_HEADER_ADVENTUREGUIDEFOREVER = "Adventure Guide Forever"
 _G["BINDING_NAME_CLICK AdventureGuideForeverMicroButton:LeftButton"] = "Open Adventure Guide"
+_G["BINDING_NAME_CLICK AdventureGuideForeverItem1:LeftButton"] = "Use step item 1"
+_G["BINDING_NAME_CLICK AdventureGuideForeverItem2:LeftButton"] = "Use step item 2"
+_G["BINDING_NAME_CLICK AdventureGuideForeverItem3:LeftButton"] = "Use step item 3"
+_G["BINDING_NAME_CLICK AdventureGuideForeverItem4:LeftButton"] = "Use step item 4"
+_G["BINDING_NAME_CLICK AdventureGuideForeverTarget1:LeftButton"] = "Target step creature 1"
+_G["BINDING_NAME_CLICK AdventureGuideForeverTarget2:LeftButton"] = "Target step creature 2"
+_G["BINDING_NAME_CLICK AdventureGuideForeverTarget3:LeftButton"] = "Target step creature 3"
+_G["BINDING_NAME_CLICK AdventureGuideForeverTarget4:LeftButton"] = "Target step creature 4"
 
 -- The Forever addons page's words in English, kept before a translation replaces them. The shared module
 -- (UI/ForeverFamily.lua, loaded next) reads its words from ns.FamilyL by their English phrase, since our ns.L is keyed

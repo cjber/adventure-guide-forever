@@ -21,6 +21,10 @@ local receiver = {}
 local windows = {}
 ---@type table<Frame, boolean>
 local clamps = {}
+-- RestedXP's own item and target windows, hidden while AGF draws native-styled replacements: whether each was shown
+-- before AGF hid it, so stopping AGF gives the native frontend back rather than leaving two silent frames off.
+---@type table<AGFRXPWindow, boolean>
+local actionFrames = {}
 -- A skip asked for in combat, made once it ends: RestedXP moves its secure item buttons with the step.
 ---@type {group: string, name: string, index: integer, elementIndex?: integer}?
 local pendingSkip
@@ -211,6 +215,40 @@ local function Restore()
 	windows, clamps = {}, {}
 end
 
+-- AGF's replacements are secure buttons: showing, hiding or reparenting their native counterparts waits for combat's
+-- end, which Sync already does. RestedXP's own updates decide its windows' contents, so restoring then asks the engine
+-- to lay them out again instead of guessing what it would have shown.
+---@param frame? AGFRXPWindow
+local function SuppressAction(frame)
+	if not frame then
+		return
+	end
+	if actionFrames[frame] == nil then
+		actionFrames[frame] = frame:IsShown()
+	end
+	frame:Hide()
+end
+
+---@param engine? AGFRXPEngine
+local function RestoreActions(engine)
+	if not next(actionFrames) then
+		return
+	end
+	for frame, shown in pairs(actionFrames) do
+		frame:SetShown(shown)
+	end
+	actionFrames = {}
+	if not engine then
+		return
+	end
+	if type(engine.UpdateItemFrame) == "function" then
+		engine.UpdateItemFrame()
+	end
+	if engine.targeting and type(engine.targeting.UpdateTargetFrame) == "function" then
+		engine.targeting:UpdateTargetFrame()
+	end
+end
+
 local function GuideKey(group, name)
 	return "guide:" .. tostring(#group) .. ":" .. group .. ":" .. tostring(#name) .. ":" .. name
 end
@@ -292,6 +330,50 @@ local function Coordinates(element, step, preview)
 	return map, x / 100, y / 100
 end
 
+-- The step's usable items as data: the guide says which IDs it wants; whether the bags hold one and whether the
+-- player can use it now is the client's answer, read where the button is drawn.
+---@param step AGFRXPStep
+---@return AGFRXPItem[]
+local function StepItems(step)
+	local items, seen = {}, {}
+	for id, wanted in pairs(step.activeItems or {}) do
+		if wanted ~= false and type(id) == "number" and id > 0 and not seen[id] then
+			seen[id] = true
+			items[#items + 1] = { id = id }
+		end
+	end
+	table.sort(items, function(a, b)
+		return a.id < b.id
+	end)
+	return items
+end
+
+-- The step's talk and kill targets, once each, friendly first. RestedXP resolves its elements' NPC IDs to names before
+-- they reach this snapshot; an unresolved number has no name a macro could use.
+---@param step AGFRXPStep
+---@return AGFRXPTarget[]
+local function StepTargets(step)
+	local targets, seen = {}, {}
+	local order = { target = 1, mob = 2, unitscan = 3 }
+	local function Add(list, kind)
+		for _, name in ipairs(list or {}) do
+			if type(name) == "string" and name ~= "" and not seen[name] then
+				seen[name] = true
+				targets[#targets + 1] = { name = name, kind = kind }
+			end
+		end
+	end
+	for _, element in ipairs(step.elements or {}) do
+		Add(element.targets, "target")
+		Add(element.mobs, "mob")
+		Add(element.unitscan, "unitscan")
+	end
+	table.sort(targets, function(a, b)
+		return order[a.kind] == order[b.kind] and a.name < b.name or order[a.kind] < order[b.kind]
+	end)
+	return targets
+end
+
 ---@param engine AGFRXPEngine
 ---@return AGFRXPSnapshot
 local function Snapshot(engine)
@@ -340,6 +422,8 @@ local function Snapshot(engine)
 			sticky = not preview and not not step.sticky,
 			preview = not not preview,
 			lines = {},
+			items = StepItems(step),
+			targets = StepTargets(step),
 			map = map,
 			x = sx,
 			y = sy,
@@ -426,6 +510,15 @@ local function Sync()
 		Window(LibDBIcon10_RXPGuides)
 		SuppressMap(engine)
 		Window(engine.v2 and engine.v2.state and engine.v2.state.guideWindow and engine.v2.state.guideWindow.frame)
+		-- AGF's tracker draws native-styled item and target buttons in its own section (#334): RestedXP's own windows
+		-- are hidden only while those buttons are actually shown, and come back when the tracker setting, a collapsed
+		-- section or a step without actions leaves them off.
+		if ns.RXPActions and ns.RXPActions.Shown() then
+			SuppressAction(engine.activeItemFrame)
+			SuppressAction(engine.targeting and engine.targeting.activeTargetFrame)
+		else
+			RestoreActions(engine)
+		end
 		-- A step the player skipped ahead of RestedXP stays skipped, after a /reload too (#374).
 		ApplySkips(engine)
 		snapshot = Snapshot(engine)
@@ -466,6 +559,7 @@ local function Sync()
 		end
 	else
 		Restore()
+		RestoreActions(engine)
 		if changed and engine then
 			engine.UpdateMap(true)
 		end
@@ -486,6 +580,12 @@ local function Sync()
 				.. tostring(line.elementIndex)
 				.. tostring(line.questId)
 				.. tostring(line.tag)
+		end
+		for _, item in ipairs(step.items or {}) do
+			parts[#parts + 1] = "item:" .. tostring(item.id)
+		end
+		for _, target in ipairs(step.targets or {}) do
+			parts[#parts + 1] = "target:" .. target.kind .. ":" .. target.name
 		end
 	end
 	local key = table.concat(parts, "\000")

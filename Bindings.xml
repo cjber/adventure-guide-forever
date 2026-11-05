@@ -1,3 +1,11 @@
 <Bindings>
 	<Binding name="CLICK AdventureGuideForeverMicroButton:LeftButton" header="BINDING_HEADER_ADVENTUREGUIDEFOREVER" default="ALT-G" category="ADDONS"/>
+	<Binding name="CLICK AdventureGuideForeverItem1:LeftButton" category="ADDONS"/>
+	<Binding name="CLICK AdventureGuideForeverItem2:LeftButton" category="ADDONS"/>
+	<Binding name="CLICK AdventureGuideForeverItem3:LeftButton" category="ADDONS"/>
+	<Binding name="CLICK AdventureGuideForeverItem4:LeftButton" category="ADDONS"/>
+	<Binding name="CLICK AdventureGuideForeverTarget1:LeftButton" category="ADDONS"/>
+	<Binding name="CLICK AdventureGuideForeverTarget2:LeftButton" category="ADDONS"/>
+	<Binding name="CLICK AdventureGuideForeverTarget3:LeftButton" category="ADDONS"/>
+	<Binding name="CLICK AdventureGuideForeverTarget4:LeftButton" category="ADDONS"/>
 </Bindings>

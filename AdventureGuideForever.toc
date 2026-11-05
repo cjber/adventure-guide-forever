@@ -103,6 +103,7 @@ UI\TrackerOrder.lua
 UI\TrackerHost.lua
 UI\StoryCompletion.lua
 UI\Tracker.lua
+UI\RXPActions.lua
 UI\Tooltip.lua
 UI\Upgrades.lua
 UI\Settings.lua

@@ -82,6 +82,7 @@ local function BlockStep(block)
 end
 
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
+---@field rxpActionsReserved? number the height the RestedXP action rows already added to contentsHeight
 local ModuleMixin = { headerText = L.TITLE, blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
 
 ---@param block AGFTrackerBlock the header's own block: the aside's goes to its place, the journey's end opens the guide
@@ -377,7 +378,7 @@ end
 -- its place (a town's counts), why it is next (a town's NPCs) and the travel line as objective lines, then what
 -- follows it, undashed. Nothing is laid out (an empty,
 -- self-hiding module) when the setting is off, or there's nothing to say.
-function ModuleMixin:LayoutContents()
+function ModuleMixin:LayoutContentsBase()
 	if not ns.Setting("showTracker") then
 		return
 	end
@@ -515,6 +516,16 @@ end
 ---@type AGFTrackerModule?
 local module
 
+-- RestedXP's secure item and target buttons sit inside this section (#334). Their height is added after the section's
+-- own blocks lay out, so the column reserves room for them and no section below overlaps.
+local Contents = ModuleMixin.LayoutContentsBase
+function ModuleMixin:LayoutContents()
+	Contents(self)
+	if ns.RXPActions then
+		ns.RXPActions.Reserve(self)
+	end
+end
+
 local function WarnIfUnattached()
 	if module and not ns.TrackerHost.IsAttached(module) then
 		ns.Print(L.TRACKER_UNATTACHED)
@@ -606,6 +617,10 @@ local function OnRouteChange()
 end
 
 Register()
+-- Where the RestedXP secure action buttons attach (#334).
+function ns.TrackerModule()
+	return module
+end
 -- The note on hidden quest areas follows the CVar, whoever changes it.
 local cvars = CreateFrame("Frame")
 cvars:RegisterEvent("CVAR_UPDATE")

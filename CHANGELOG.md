@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **RestedXP's step items and targets wear the game's own buttons.** While Adventure Guide steers a RestedXP guide, the tracker shows a native quest item button for each usable item of the current step, with its cooldown, count, range marker and key binding, and a button for each talk or kill target that selects it with one click; the current target shows its portrait and is marked. RestedXP's own item and target windows stay hidden until you stop, and any change waits for combat to end.
+
 ## [1.0.20] - 2026-11-05
 - **Every step line reads like the game's tracker.** Quests in your log, zone journeys and town stops now colour quest names gold, NPCs by their side, items by quality, and zones, in the tracker, the guide, the overview and map pin tooltips. One shared renderer feeds them and RestedXP's own steps, so the styling lives in one place.
 
