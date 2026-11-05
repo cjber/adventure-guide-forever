@@ -18,6 +18,7 @@ luajit -joff tests/plan_bench.lua
 python3 tools/check_generated.py --offline # omit --offline to fetch missing pinned inputs
 python3 tools/changelog.py --check
 python3 tools/check_screenshots.py   # an image older than its scene; tools/screenshots.py re-records it
+python3 tools/check_menu_scroll.py # menus built from a list scroll (WFA-36); CI runs it in core-shared
 python3 .sloppatrol/gate.py --base origin/main && python3 .sloppatrol/agents.py check
 ```
 
