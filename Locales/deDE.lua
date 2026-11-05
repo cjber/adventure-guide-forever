@@ -292,9 +292,9 @@ L["RXP_SKIP"] = "Überspringen: %s"
 L["RXP_SKIP_STEP"] = "Schritt überspringen"
 L["RXP_STEP"] = "Schritt %d"
 L["RXP_STICKY"] = "%s (laufend)"
-L["RXP_ONGOING"] = "Laufend"
-L["RXP_MORE_STEP"] = "+1 weiterer Schritt"
-L["RXP_MORE_STEPS"] = "+%d weitere Schritte"
+L["RXP_ONGOING"] = "Laufend" -- mt
+L["RXP_MORE_STEP"] = "+1 weiterer Schritt" -- mt
+L["RXP_MORE_STEPS"] = "+%d weitere Schritte" -- mt
 L["RXP_TITLE"] = "RestedXP-Guides"
 L["SEARCH_NONE"] = "Keine Quests entsprechen Eurer Suche."
 L["SEARCH_QUESTS"] = "Quests suchen"
@@ -458,7 +458,7 @@ L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
 -- mt
-L["WHATS_NEW"] = "Die Einstellungsseite der Forever-Addons endet mit einem Ko-fi-Link." -- mt
+L["WHATS_NEW"] = "RestedXP-Schritte lesen sich wie die Zielverfolgung des Spiels." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"

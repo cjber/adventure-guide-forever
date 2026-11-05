@@ -12,16 +12,19 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.16] - 2026-11-05
+
 - **RestedXP steps read like the game's own tracker.** Enemies show red, friendly NPCs green, items in their quality colour and quest names gold, each line gets the matching quest, item, flight or inn icon, and the line you are working on stands out. Progress reads "3/7 Small Spider Leg" and long lines wrap in full instead of ending in "...".
 - **The guide section shrinks in place instead of jumping beside the tracker.** The current step shows in full, ongoing steps take one line each and skip what the Quests section or the current step already shows, and when room runs out the rest fold into "+N more steps". The Walk to line is dropped while Shortest Path guides you there.
 - **The quest area highlights again while following a RestedXP guide.** Standing in a step's quest area selects that quest, so the minimap draws its area, and Shortest Path now gets the quest and area for guide steps too.
 - **The Adventure Guide micro-menu button stays inside the micro menu.** Blizzard's buttons slid aside past the menu's own edge, so the row ran over the action bar beside it. The menu now grows by the addon buttons, and the action bar and bags beside it move aside, as they do for Blizzard's own buttons.
 - **Pressing the micro-menu button no longer logs an error.** Every press logged "attempt to concatenate field 'textureName'" in Blizzard's micro menu code.
+- **One arrow on a RestedXP guide.** With Shortest Path Forever installed, RestedXP's own arrow stays hidden while Adventure Guide steers its guide, and Shortest Path's compass and arrow point at the current step instead, so you no longer see two arrows. Without Shortest Path, RestedXP's arrow is still the guide's arrow. Choosing RestedXP's own window brings its arrow back.
+- **No more "You haven't seen" hints.** The guide no longer suggests unexplored areas of the zone you stand in. The hint for a new land Forever added at your level stays.
+
 ## [1.0.15] - 2026-11-05
 
 - **The Forever addons settings page ends with a Ko-fi link.** If the addons help you, its Copy link button shows the address, ready to paste into your browser. Nothing is locked behind it, and it shows nowhere else.
-- **One arrow on a RestedXP guide.** With Shortest Path Forever installed, RestedXP's own arrow stays hidden while Adventure Guide steers its guide, and Shortest Path's compass and arrow point at the current step instead, so you no longer see two arrows. Without Shortest Path, RestedXP's arrow is still the guide's arrow. Choosing RestedXP's own window brings its arrow back.
-- **No more "You haven't seen" hints.** The guide no longer suggests unexplored areas of the zone you stand in. The hint for a new land Forever added at your level stays.
 
 ## [1.0.14] - 2026-11-05
 

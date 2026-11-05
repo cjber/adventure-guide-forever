@@ -321,9 +321,9 @@ L["RXP_SKIP"] = "Пропустить: %s"
 L["RXP_SKIP_STEP"] = "Пропустить шаг"
 L["RXP_STEP"] = "Шаг %d"
 L["RXP_STICKY"] = "%s (постоянно)"
-L["RXP_ONGOING"] = "Постоянно"
-L["RXP_MORE_STEP"] = "+1 шаг"
-L["RXP_MORE_STEPS"] = "+%d шагов"
+L["RXP_ONGOING"] = "Текущие" -- mt
+L["RXP_MORE_STEP"] = "Ещё 1 шаг" -- mt
+L["RXP_MORE_STEPS"] = "Ещё шагов: %d" -- mt
 L["RXP_TITLE"] = "Руководства RestedXP"
 L["SEARCH_NONE"] = "Нет заданий, подходящих под поиск."
 L["SEARCH_QUESTS"] = "Поиск заданий"
@@ -497,8 +497,7 @@ L["UNLISTED"] =
 	"В этих землях есть истории, которых путеводитель пока не знает; ищите «!» над теми, кто дает задания."
 L["UPDATED_TO"] = "обновлено до %s. %s"
 -- mt
-L["WHATS_NEW"] =
-	"Страница настроек аддонов Forever заканчивается ссылкой на Ko-fi." -- mt
+L["WHATS_NEW"] = "Шаги RestedXP выглядят как список заданий самой игры." -- mt
 L["WHY_ALLIANCE"] = "Только для Альянса"
 L["WHY_BREADCRUMB"] = "Только пока вы не возьмете: %s"
 L["WHY_CHOSE"] = "Вместо этого вы выбрали: %s"
