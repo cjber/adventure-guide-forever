@@ -27,6 +27,10 @@ abandons quests.
   ranked the same way, which costs nothing while the player is inside its range: a zone that still has takeable,
   experience-giving quests stays on offer rather than being buried by the zones that reach higher, while a zone the
   player has long outgrown does not ride one near-level quest past a zone that fits.
+    Quests in your log also offers a few eligible quests to pick up on its way while the client's log has room: the
+  giver, every objective and the hand-in all stand near a stop the route already makes, the smallest detour first, and
+  no more than the free slots, a card's worth of actions less the log's own quests, or three. The route keeps the
+  pickups it chose while they stay open, so walking or taking one quest up does not shuffle its head.
     Give each card a reason and only known travel estimates.
 - **2.3 Chapters.** Show a total only for a proven chain. A quest tooltip may name its proven next chapter with its level.
 - **2.4 Search.** Share eligibility checks with the planner. Explain missing requirements; locked
