@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The settings page opens without an error.** Its title asked the game for a font Forever does not have, which logged a Lua error each time the page was built; it now uses the font the game's own settings pages title with.
+
 ## [1.0.11] - 2026-11-05
 
 - **RestedXP's arrow points the way again.** Choosing the guide for a RestedXP guide hid RestedXP's own direction arrow along with its windows, so only the game's small waypoint marker was left and the way to the step was easy to lose. The arrow now stays where you put it and points at the step the guide shows; it steps aside only while you have chosen another journey, and Shortest Path's own arrow gives way to it, so one arrow leads. With TomTom installed, its arrow still shows only for waypoints set in it.
