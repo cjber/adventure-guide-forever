@@ -21,7 +21,7 @@ ns.Pins = Pins
 local pinsByKey = {}
 local minimapOwner = {}
 local minimapIcons = {}
-local RingsShown
+local RingsShown, MarkerTooltip
 
 ---@class AGFMinimapIcon : Frame
 ---@field disc Texture
@@ -65,6 +65,24 @@ end
 -- A minimap step marker's side in pixels; also the spacing under which nearby steps share one marker.
 local MINIMAP_ICON = 24
 
+-- As the minimap's own buttons (Blizzard_Minimap Minimap.lua): the tooltip to the left, toward the screen.
+---@param icon AGFMinimapIcon
+local function MinimapIconEnter(icon)
+	if not icon.visits then
+		return
+	end
+	GameTooltip:SetOwner(icon, "ANCHOR_LEFT")
+	MarkerTooltip(GameTooltip, icon.visits)
+	GameTooltip:Show()
+end
+
+---@param icon AGFMinimapIcon
+local function MinimapIconLeave(icon)
+	if GameTooltip:GetOwner() == icon then
+		GameTooltip:Hide()
+	end
+end
+
 local function RefreshMinimap()
 	local pins = LibStub and LibStub:GetLibrary("HereBeDragons-Pins-2.0", true)
 	if not pins then
@@ -100,7 +118,12 @@ local function RefreshMinimap()
 				icon = CreateFrame("Frame") --[[@as AGFMinimapIcon]]
 				icon:SetSize(MINIMAP_ICON, MINIMAP_ICON)
 				icon:SetFrameStrata("MEDIUM")
+				-- Hover only, set once outside combat (Refresh never draws in it): clicks fall through to the minimap,
+				-- which pings as before. A plain frame of ours, so its scripts touch nothing protected.
 				icon:EnableMouse(false)
+				icon:SetMouseMotionEnabled(true)
+				icon:SetScript("OnEnter", MinimapIconEnter)
+				icon:SetScript("OnLeave", MinimapIconLeave)
 				local texture = icon:CreateTexture(nil, "ARTWORK")
 				ns.Art.Fit(texture, index == 1 and CURRENT_ATLAS or STOP_ATLAS, MINIMAP_ICON, MINIMAP_ICON)
 				texture:SetPoint("CENTER")
@@ -272,6 +295,29 @@ local function AreaObjectives(tooltip, step)
 	end
 end
 
+-- A guide step's checklist as the tracker words it ("Talk to Iverron", "Turn in Iverron's Antidote"), done lines
+-- greyed, then the quests it touches that no objective line below names already.
+---@param tooltip GameTooltip
+---@param step AGFStep
+local function GuideLines(tooltip, step)
+	for _, item in ipairs(step.checklist or {}) do
+		if item.done then
+			GameTooltip_AddColoredLine(tooltip, item.text, GRAY_FONT_COLOR)
+		else
+			GameTooltip_AddHighlightLine(tooltip, item.text)
+		end
+	end
+	local named = {}
+	for _, objective in ipairs(step.objectives or {}) do
+		named[objective.id] = true
+	end
+	for _, id in ipairs(step.quests) do
+		if not named[id] then
+			QuestLine(tooltip, id, "")
+		end
+	end
+end
+
 -- A step's lines (docs/design.md §2.9), shared by its ring and its row in the guide: the title numbered as the route
 -- numbers it, the chapter, the travel line when there is one, why it is on the route, why it wants a group (§2.27),
 -- a town's quests by NPC, and an area's objectives.
@@ -287,7 +333,10 @@ function Pins.StepTooltip(tooltip, step, index, travel)
 	if travel then
 		GameTooltip_AddHighlightLine(tooltip, travel)
 	end
-	GameTooltip_AddHighlightLine(tooltip, step.reason)
+	-- A guide step's reason is empty: its checklist below says what to do.
+	if step.reason ~= "" then
+		GameTooltip_AddHighlightLine(tooltip, step.reason)
+	end
 	for _, note in ipairs(ns.Overview.GroupNotes(step)) do
 		GameTooltip_AddNormalLine(tooltip, note)
 	end
@@ -297,8 +346,24 @@ function Pins.StepTooltip(tooltip, step, index, travel)
 		for _, id in ipairs(step.quests) do
 			QuestLine(tooltip, id, HAND_IN_ICON)
 		end
+	elseif step.rxpIndex then
+		GuideLines(tooltip, step)
 	end
 	AreaObjectives(tooltip, step)
+end
+
+-- What a step marker says on hover, on the world map and the minimap alike: the first visit's lines, then every visit
+-- when the route comes back to the place.
+---@param tooltip GameTooltip
+---@param visits AGFPinVisit[]
+MarkerTooltip = function(tooltip, visits)
+	local first = visits[1]
+	Pins.StepTooltip(tooltip, first.step, first.index, ns.Integrations.Travel(first.step))
+	if #visits > 1 then
+		for _, visit in ipairs(visits) do
+			GameTooltip_AddNormalLine(tooltip, ns.L.STOP_VISIT:format(visit.index, visit.step.title))
+		end
+	end
 end
 
 ---@type WorldMapFrame?
@@ -494,12 +559,7 @@ function AdventureGuideForeverPinMixin:OnMouseEnter()
 	self.Glow:Show()
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	if self.step and self.index then
-		Pins.StepTooltip(GameTooltip, self.step, self.index, ns.Integrations.Travel(self.step))
-		if self.visits and #self.visits > 1 then
-			for _, visit in ipairs(self.visits) do
-				GameTooltip_AddNormalLine(GameTooltip, ns.L.STOP_VISIT:format(visit.index, visit.step.title))
-			end
-		end
+		MarkerTooltip(GameTooltip, self.visits or { { step = self.step, index = self.index } })
 		AddClickLine(GameTooltip)
 		-- A step past the first still has a clear way back to the story's start (docs/design.md §2.10).
 		if self.index and self.index > 1 then

@@ -73,6 +73,32 @@ for _, marker in ipairs(assert(numbered)) do
 	assert(marker.icon.Stack:IsShown() == (#marker.icon.visits > 1), "minimap uses stacked rings for shared visits")
 end
 assert(represented == 10 and #numbered < 10, "all ten destinations are represented by grouped minimap markers")
+-- Hovering a minimap marker names its step as the tracker words it; clicks still fall through to the minimap.
+local hovered = numbered[1].icon
+local first = hovered.visits[1]
+local questID = next(preview.ns.Data.quests)
+first.step.quests = { questID }
+first.step.checklist[1].done = true
+assert(hovered.mouseMotionEnabled and not hovered:IsMouseEnabled(), "minimap markers take hover, never clicks")
+hovered:GetScript("OnEnter")(hovered)
+local G = preview.G
+assert(G.GameTooltip:GetOwner() == hovered and G.GameTooltip:IsShown(), "hover shows the native tooltip")
+local lines = table.concat(preview.tooltip, "\n")
+assert(lines:find("title: " .. first.index .. ". " .. first.step.title, 1, true), "the tooltip names the step number")
+assert(lines:find("colored: " .. first.step.checklist[1].text, 1, true), "a done checklist line is greyed")
+assert(
+	lines:find(preview.ns.State.QuestTitle(questID) or preview.ns.Data.quests[questID].title, 1, true),
+	"the tooltip names the quest"
+)
+assert(
+	not lines:find("highlight: \n", 1, true) and not lines:find("highlight: $"),
+	"a guide step adds no empty reason line"
+)
+if #hovered.visits > 1 then
+	assert(lines:find("normal: Stop " .. hovered.visits[2].index, 1, true), "a shared marker lists every visit")
+end
+hovered:GetScript("OnLeave")(hovered)
+assert(not G.GameTooltip:IsShown(), "leaving hides the tooltip")
 local groupedCount = #numbered
 radius = 10
 preview.ns.Pins.Refresh()

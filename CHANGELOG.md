@@ -27,6 +27,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 - **The objective tracker column stays still as you enter and leave combat.** All Objectives and your quests keep their place at the top, and the Forever sections always follow below them, so nothing swaps order, jumps or loses a line when a fight starts or ends.
 - **"Story complete" uses the game's achievement toast.** Finishing a quest chain now shows the same toast the game shows for an achievement, in its usual place above the action bars, headed "Story complete" and naming the chain. Two show at once and the rest wait their turn; right-click one to dismiss it.
 - **No more key binding warnings at login.** The game loads the Adventure Guide key binding file on its own, so the addon no longer lists it a second time, which logged five "Unrecognized XML" warnings every login.
+- **Hover a step marker to see the step.** The numbered markers on the minimap now show a tooltip naming the step: its number, what to do there as the tracker words it ("Talk to Iverron", "Turn in Iverron's Antidote"), done lines greyed, and the quest. World map markers for a RestedXP guide step show the same lines instead of the bare step title. Clicking the minimap still pings it as before.
 
 ## [1.0.9] - 2026-11-05
 

@@ -451,6 +451,10 @@ function harness.load(options)
 		h.counts.SetMouseClickEnabled = h.counts.SetMouseClickEnabled + 1
 		self.mouseClickEnabled = enabled
 	end
+	function Methods:SetMouseMotionEnabled(enabled)
+		assert(not h.combat, "mouse motion configuration is refused in combat")
+		self.mouseMotionEnabled = enabled
+	end
 	function Methods:SetPassThroughButtons(...)
 		assert(not h.combat, "mouse passthrough is refused in combat")
 		self.passThrough = { ... }
