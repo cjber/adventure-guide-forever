@@ -455,7 +455,6 @@ L["TWEAKS_DISABLED"] = "Activez Tweaks Forever pour trouver les entrées des don
 L["TWEAKS_FAMILY_MENU"] = "Trouver les entrées des donjons : Tweaks Forever"
 L["TWEAKS_MISSING"] = "Installez Tweaks Forever pour trouver les entrées des donjons."
 L["TWEAKS_OUTDATED"] = "Mettez à jour Tweaks Forever pour trouver les entrées des donjons."
-L["UNEXPLORED"] = "Vous n’avez pas encore vu %s"
 L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"

@@ -13,6 +13,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [Unreleased]
 
 - **The Forever addons settings page ends with a Ko-fi link.** If the addons help you, its Copy link button shows the address, ready to paste into your browser. Nothing is locked behind it, and it shows nowhere else.
+- **One arrow on a RestedXP guide.** With Shortest Path Forever installed, RestedXP's own arrow stays hidden while Adventure Guide steers its guide, and Shortest Path's compass and arrow point at the current step instead, so you no longer see two arrows. Without Shortest Path, RestedXP's arrow is still the guide's arrow. Choosing RestedXP's own window brings its arrow back.
+- **No more "You haven't seen" hints.** The guide no longer suggests unexplored areas of the zone you stand in. The hint for a new land Forever added at your level stays.
 
 ## [1.0.14] - 2026-11-05
 

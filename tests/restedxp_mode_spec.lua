@@ -423,6 +423,32 @@ for _, hidden in ipairs({ true, false }) do
 	assert(point == "CENTER" and x == 24 and y == 36, "returning to RXP restores its arrow position")
 	assert(#native.errors == 0, table.concat(native.errors, "\n"))
 end
+
+-- With Shortest Path loaded its arrow leads, so RXP's never shows as a second one, whichever journey is chosen.
+do
+	local suite = harness.load({ db = { autoStart = false }, spf = "v1" })
+	local suiteEngine = dofile("tests/rxp_fixture.lua")(suite)
+	suite.ns.SetSetting("restedxpGuide", false)
+	suite.flush()
+	local arrow = suiteEngine.arrowFrame
+	arrow:SetAlpha(0.65)
+	arrow:SetPoint("CENTER", suite.G.UIParent, "CENTER", 24, 36)
+	suite.ns.SetSetting("restedxpGuide", true)
+	suite.flush()
+	assert(arrow:GetAlpha() == 0, "Shortest Path's arrow leads in place of RXP's on the guide")
+	suite.ns.Choose("quest:845")
+	suite.flush()
+	assert(arrow:GetAlpha() == 0, "RXP's arrow stays hidden on another journey")
+	suite.ns.Choose(assert(suite.ns.RestedXP.Journey()).key)
+	suite.flush()
+	assert(arrow:GetAlpha() == 0, "choosing the guide again keeps RXP's arrow hidden")
+	suite.ns.SetSetting("restedxpGuide", false)
+	suite.flush()
+	assert(arrow:GetAlpha() == 0.65, "RestedXP's own window brings its arrow back")
+	local point, _, _, x, y = arrow:GetPoint()
+	assert(point == "CENTER" and x == 24 and y == 36, "RXP's arrow returns where the player put it")
+	assert(#suite.errors == 0, table.concat(suite.errors, "\n"))
+end
 print("restedxp_mode_spec: map suppression, native waypoint ownership and arrow preferences passed")
 
 -- Skip for now, from the step menu, on every step it offers: the current step, one still ahead, and in combat.

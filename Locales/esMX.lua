@@ -452,7 +452,6 @@ L["TWEAKS_DISABLED"] = "Activa Tweaks Forever para encontrar entradas de calaboz
 L["TWEAKS_FAMILY_MENU"] = "Encontrar entradas de calabozos: Tweaks Forever"
 L["TWEAKS_MISSING"] = "Instala Tweaks Forever para encontrar entradas de calabozos."
 L["TWEAKS_OUTDATED"] = "Actualiza Tweaks Forever para encontrar entradas de calabozos."
-L["UNEXPLORED"] = "Aún no has visto %s"
 L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"

@@ -440,7 +440,6 @@ L["TWEAKS_DISABLED"] = "啟用Tweaks Forever以尋找地城入口。"
 L["TWEAKS_FAMILY_MENU"] = "尋找地城入口：Tweaks Forever"
 L["TWEAKS_MISSING"] = "安裝Tweaks Forever以尋找地城入口。"
 L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以尋找地城入口。"
-L["UNEXPLORED"] = "你還沒見過%s"
 L["UNLISTED"] = "這片土地有指南尚不知道的故事；請留意任務給予者頭上的「!」。"
 L["UPDATED_TO"] = "已更新到%s。%s"
 -- mt
