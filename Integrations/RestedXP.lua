@@ -38,28 +38,6 @@ local function Engine()
 	end
 end
 
--- RestedXP marks what its words are with its own colours (its Themes.lua guideTextColors, each a role the player may
--- recolour): the guide shows each role in the client's colour for it instead (#351). Enemies and friendly NPCs take
--- their reaction colours, an item its quality's, and a warning the game's gold. A role with no colour of the game's
--- own, and any other colour, reads as plain text.
----@param role string
----@param element? AGFRXPElement
----@return ColorMixin?
-local function RoleColor(role, element)
-	if role == "RXP_ENEMY_" then
-		return FACTION_RED_COLOR
-	elseif role == "RXP_FRIENDLY_" then
-		return FACTION_GREEN_COLOR
-	elseif role == "RXP_WARN_" then
-		return NORMAL_FONT_COLOR
-	elseif role == "RXP_LOOT_" or role == "RXP_BUY_" then
-		local item = element and element.tag and element.tag:find("^collect") and tonumber(element.id)
-		local quality = item and C_Item.GetItemQualityByID(item)
-		local colors = quality and ITEM_QUALITY_COLORS[quality]
-		return colors and colors.color or HIGHLIGHT_FONT_COLOR
-	end
-end
-
 -- The role each colour RestedXP drew with stands for: its defaults and the player's own.
 ---@param engine AGFRXPEngine
 ---@return table<string, string>
@@ -105,15 +83,20 @@ local function Text(engine, value, element)
 	local npc
 	value = value:gsub("\001(.-)\002(.-)\003", function(role, inner)
 		npc = npc or (role == "RXP_FRIENDLY_" and inner ~= "" and inner or nil)
-		local color = RoleColor(role, element)
-		return color and color:WrapTextInColorCode(inner) or inner
+		local item = (role == "RXP_LOOT_" or role == "RXP_BUY_")
+				and element
+				and element.tag
+				and element.tag:find("^collect")
+				and tonumber(element.id)
+			or nil
+		return ns.StepStyle.Wrap(ns.StepStyle.Color(role, item), inner)
 	end)
 	-- A quest the line takes or hands in is named in the quest title's gold.
 	local quest = element and (element.tag == "accept" or element.tag == "turnin") and element.questId
 	local title = quest and (ns.State.QuestTitle(quest) or (ns.Data.quests[quest] and ns.Data.quests[quest].title))
 	local at = title and value:find(title, 1, true)
 	if title and at then
-		value = value:sub(1, at - 1) .. NORMAL_FONT_COLOR:WrapTextInColorCode(title) .. value:sub(at + #title)
+		value = value:sub(1, at - 1) .. ns.StepStyle.Quest(title) .. value:sub(at + #title)
 	end
 	-- Progress as the game's tracker writes it: "3/7 Small Spider Leg", not "Small Spider Leg: 3/7" (#353).
 	return (value:gsub("^(.-):%s*(%d+/%d+)$", "%2 %1")), npc

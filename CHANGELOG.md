@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Every step line reads like the game's tracker.** Quests in your log, zone journeys and town stops now colour quest names gold, NPCs by their side, items by quality, and zones, in the tracker, the guide, the overview and map pin tooltips. One shared renderer feeds them and RestedXP's own steps, so the styling lives in one place.
+
 ## [1.0.19] - 2026-11-05
 - **Right-click the tracker header to attach, detach or lock it.** The section header in the quest tracker now opens a small menu with Attach to quest tracker and Lock the tracker, the same switches as in the settings, so moving the section no longer needs a trip to the options.
 

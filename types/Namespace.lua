@@ -99,6 +99,7 @@
 ---@field areaNames table<integer, string> AreaTable ID -> its English name, the fallback when the client has none
 ---@field roles table<integer, AGFRole> creature entry -> what that trainer or battlemaster does
 ---@field expiring? table<integer, integer> item ID -> the seconds it lasts in the bags, a day or less (ItemSparse)
+---@field itemIDs? table<string, integer> a collect item's lower-cased name -> its ID, for the quality colour of its name
 
 -- Measures between steps on different maps without travel maths (Travel.lua Cost). World coordinates are yards.
 ---@class AGFMapCentre
@@ -793,6 +794,10 @@
 
 ---@alias AGFGuidanceStatus "queued"|"paused"|"arrived" -- a start waits for combat's end; the route stopped without the player's Stop and can be resumed; it reached its last stop
 
+---@class AGFRXPActionsModule
+---@field Refresh fun() rebuild the secure item and target buttons, or queue the change during combat
+---@field Reserve fun(module: AGFTrackerModule) add the action rows' height below the tracker section's own blocks
+
 -- The guidance lifecycle (Guidance.lua): the one writer of AGFPrefs.guided and AGFPrefs.waypoint. Choosing, starting
 -- and stopping are ns.Choose, ns.StartRoute and ns.Stop.
 ---@class AGFGuidance
@@ -823,6 +828,8 @@
 ---@field QuestieFields {spawns: string[], drops: string[], level: string[], rank: string[]}
 ---@field TrackerHost ForeverTrackerHostAPI
 ---@field TrackerHostSettings fun(): ForeverTrackerSettings
+---@field TrackerModule fun(): AGFTrackerModule? the AGF tracker section, where RestedXP's secure action buttons attach
+---@field RXPActions AGFRXPActionsModule native-styled secure replacements for RestedXP's item and target windows
 ---@field Geometry AGFGeometry the native-geometry adapter (Geometry.lua)
 ---@field TITLE string
 ---@field L AGFStrings
@@ -1308,9 +1315,19 @@
 ---@field SETTING_ROUTE_ORDER string beta: the planned route order (chapter lead, town look-ahead, committed order)
 ---@field SETTING_ROUTE_ORDER_TOOLTIP string
 
+---@class AGFStepStyle
+---@field Color fun(role?: string, id?: integer): ColorMixin?
+---@field Wrap fun(color?: ColorMixin, text?: string): string
+---@field Quest fun(text?: string): string
+---@field StepParts fun(step?: AGFStep|AGFGiver, extra?: {text: string, kind: string, id?: integer, lower?: string}[]): {text: string, kind: string, id?: integer, lower?: string}[]
+---@field Step fun(step?: AGFStep|AGFGiver, text?: string, extra?: {text: string, kind: string, id?: integer, lower?: string}[]): string
+---@field StepTitle fun(step?: AGFStep|AGFGiver, text?: string): string
+---@field Checklist fun(step?: AGFStep, row?: AGFTownGiver): string
+
 ---@class AGFNamespace
 ---@field Art AGFArt
 ---@field Overview AGFOverview
+---@field StepStyle AGFStepStyle one renderer for every step line
 ---@field Widgets AGFWidgets shared guide row and popup widgets
 
 ---@class AGFStrings
@@ -1584,7 +1601,7 @@
 ---@field QuestieTowns AGFQuestieTowns
 ---@field QuestieLevel fun(value: any): integer|false an NPC's QuestieDB minLevel as a level, false when it has none
 ---@field QuestieElite fun(value: any): boolean whether an NPC's QuestieDB rank is an elite's (1 to 3)
----@field QuestieObjectives fun(lib: AGFQuestieDB, objectives: table?, trigger: table?, zone: integer?, data: AGFData, mapOf: AGFMapLookup, yield: AGFYield, questID: integer, reads: AGFQuestieReads): table?, AGFObjectiveArea[]?, table?, boolean?, table<integer, string>?
+---@field QuestieObjectives fun(lib: AGFQuestieDB, objectives: table?, trigger: table?, zone: integer?, data: AGFData, mapOf: AGFMapLookup, yield: AGFYield, questID: integer, reads: AGFQuestieReads): table?, AGFObjectiveArea[]?, table?, boolean?, table<integer, string>?, table<integer, integer>?
 
 ---@class AGFStrings
 ---@field WHY_PROVIDER string

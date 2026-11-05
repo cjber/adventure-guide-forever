@@ -91,12 +91,13 @@ end
 ---@param sources table<integer, {kind: string, id: integer?}>
 ---@param reads AGFQuestieReads
 ---@return table<integer, string>?
+---@return table<integer, integer>?
 local function Names(lib, kinds, sources, reads)
 	local count = {}
 	for _, kind in pairs(kinds) do
 		count[kind] = (count[kind] or 0) + 1
 	end
-	local names
+	local names, items
 	for slot, kind in pairs(kinds) do
 		local source = sources[slot]
 		if count[kind] > 1 and source and source.id then
@@ -111,10 +112,14 @@ local function Names(lib, kinds, sources, reads)
 			if name then
 				names = names or {}
 				names[slot] = name
+				if kind == "item" then
+					items = items or {}
+					items[slot] = source.id
+				end
 			end
 		end
 	end
-	return names
+	return names, items
 end
 
 -- An NPC's spawns, lowest level and rank, as one read (ns.QuestieFields, set by QuestieSource.lua, which loads after
@@ -150,7 +155,9 @@ end
 ---@param yield fun()
 ---@param questID integer
 ---@param reads AGFQuestieReads one catalogue build's QuestieDB answers, so a creature many quests share is read once
----@return table?, AGFObjectiveArea[]?, table?, boolean? unsupported, table<integer, string>? names
+---@return table?, AGFObjectiveArea[]?, table?, boolean? unsupported
+---@return table<integer, string>? names
+---@return table<integer, integer>? items
 function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield, questID, reads)
 	-- Questie stores icon overrides, not required counts, in objective[3] (kill credits: [4]).
 	-- Zero retains the objective slot; the quest log supplies its actual count after pickup.

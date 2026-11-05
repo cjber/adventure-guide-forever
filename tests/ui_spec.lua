@@ -1187,7 +1187,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	local expected = { "title: 1. Visit The Crossroads: Pick up 5, turn in 1" }
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
 	expected[#expected + 1] = "highlight: Opens the next chapter here"
-	expected[#expected + 1] = "normal: Sergra Darkthorn"
+	expected[#expected + 1] = "normal: |cff009919Sergra Darkthorn|r"
 	expected[#expected + 1] = "colored: |A:questturnin:14:14|a [13] The Zhevra"
 	same({ unpack(h.tooltip, 1, #expected) }, expected, label .. ": ring tooltip")
 	equal(h.tooltip[#h.tooltip], click, label .. ": ring tooltip instruction")
@@ -1406,7 +1406,7 @@ do
 	end
 	h.Hover(pin)
 	local expected = {
-		"title: " .. index .. ". Complete 2 objectives · Gann's Reclamation",
+		"title: " .. h.ns.StepStyle.StepTitle(step, index .. ". " .. step.title),
 		"highlight: quests in progress",
 		"colored: [23] Gann's Reclamation",
 		"highlight: - Bael'dun Excavator slain: 7/15",
@@ -2330,7 +2330,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	local steps = h.ns.Route().steps
 	local expected = { "1 to hand in, 5 to pick up", "Opens the next chapter here" }
 	for _, giver in ipairs(steps[1].checklist) do
-		expected[#expected + 1] = giver.text
+		expected[#expected + 1] = h.ns.StepStyle.Checklist(steps[1], giver)
 	end
 	expected[#expected + 1] = spf and "About 6 min away" or nil
 	expected[#expected + 1] = Upcoming(h, 2)
@@ -2429,7 +2429,7 @@ do
 	local lines, colors = h.tooltip, h.tooltipColors
 	equal(lines[1], "title: 1. Visit The Crossroads: Pick up 9, turn in 1", "hub tooltip: the numbered town")
 	equal(lines[2], "highlight: " .. step.reason, "hub tooltip: the reason")
-	equal(lines[3], "normal: Sergra Darkthorn", "hub tooltip: the hand-in's NPC first")
+	equal(lines[3], "normal: |cff009919Sergra Darkthorn|r", "hub tooltip: the hand-in's NPC first")
 	equal(lines[4], "colored: |A:questturnin:14:14|a [13] The Zhevra", "hub tooltip: a hand-in has the turn-in mark")
 	equal(lines[6], "colored: |A:questnormal:14:14|a [13] Raptor Thieves", "hub tooltip: a pickup has its level")
 	local quests, npcs = 0, 0
@@ -2501,7 +2501,7 @@ do
 	equal(step.detail, "1 to hand in, 5 to pick up", "tracker, town: the hand-in joins the pickups")
 	local expected = { step.detail, "Opens the next chapter here" }
 	for _, giver in ipairs(step.checklist) do
-		expected[#expected + 1] = giver.text
+		expected[#expected + 1] = ns.StepStyle.Checklist(step, giver)
 	end
 	expected[#expected + 1] = Upcoming(h, 2)
 	expected[#expected + 1] = Upcoming(h, 3)
@@ -2511,7 +2511,7 @@ do
 	h.tracker:MarkDirty()
 	local detailed = { step.detail }
 	for _, giver in ipairs(step.checklist) do
-		detailed[#detailed + 1] = giver.text
+		detailed[#detailed + 1] = ns.StepStyle.Checklist(step, giver)
 	end
 	detailed[#detailed + 1] = Upcoming(h, 2)
 	detailed[#detailed + 1] = Upcoming(h, 3)
@@ -2533,7 +2533,7 @@ do
 	local npc = step.kind == "town" and #step.quests == 1 and step.spots[step.quests[1]].name
 	equal(step.title:find("^Pick up: ") ~= nil, true, "tracker: pickup title names its action")
 	equal(npc ~= nil, true, "tracker, one quest: a town of one leads, " .. step.title)
-	equal(TrackerLines(h)[1], npc .. ", The Barrens", "tracker, one quest: NPC, zone")
+	equal(TrackerLines(h)[1], ns.StepStyle.Step(step, npc .. ", The Barrens"), "tracker, one quest: NPC, zone")
 	clean(h, "tracker, town")
 end
 
@@ -3987,7 +3987,7 @@ do
 	equal(step.key, "trainer:3170", label .. ": the route's first stop")
 	same({ h.tracker.liveBlocks[step.key].header, unpack((TrackerLines(h))) }, {
 		h.ns.Overview.VerbMarkup(step, 14) .. "Train in Razor Hill",
-		"Kaplak, Durotar",
+		h.ns.StepStyle.Step(step, "Kaplak, Durotar"),
 		"1 new spell",
 		"About 6 min away",
 		Upcoming(h, 2),
