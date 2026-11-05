@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.10] - 2026-11-05
+
+- **The objective tracker column stays still as you enter and leave combat.** The guide no longer moves the game's quest tracker: the All Objectives header and your quests keep their slot, and the Forever sections always follow below them, so nothing swaps order or loses a line when a fight starts or ends.
+
 ## [1.0.9] - 2026-11-05
 
 - **No more "C stack overflow" errors.** The micro-menu button hooked the game's micro-menu update again on every refresh, so each update ran one layer deeper until the game menu, the map and the micro buttons threw errors and the frame rate dropped. It now hooks once.
