@@ -12,6 +12,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **No more "C stack overflow" errors.** The micro-menu button hooked the game's micro-menu update again on every refresh, so each update ran one layer deeper until the game menu, the map and the micro buttons threw errors and the frame rate dropped. It now hooks once.
+- **Bigger step markers on the minimap.** The numbered RestedXP step markers are a third larger, with larger numbers, so they read at a glance.
+
 ## [1.0.8] - 2026-11-04
 
 - **Quest and zone data now name the 1.60.1.70790 build.** Quest geometry, zone art and the Forever-only quest diff are regenerated from the new Forever client build, and the README scenes are re-rendered from it. The regenerated values match the previous build, so no guide step changes.

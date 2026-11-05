@@ -62,6 +62,9 @@ local function Groups(eligible, close)
 	return groups
 end
 
+-- A minimap step marker's side in pixels; also the spacing under which nearby steps share one marker.
+local MINIMAP_ICON = 24
+
 local function RefreshMinimap()
 	local pins = LibStub and LibStub:GetLibrary("HereBeDragons-Pins-2.0", true)
 	if not pins then
@@ -78,7 +81,7 @@ local function RefreshMinimap()
 		return
 	end
 	local radius = C_Minimap.GetViewRadius()
-	local reach = radius * 2 * 18 / math.max(1, Minimap:GetWidth())
+	local reach = radius * 2 * MINIMAP_ICON / math.max(1, Minimap:GetWidth())
 	local groups = Groups(function(step)
 		return step.map > 0 and not step.here and step.x >= 0 and step.x <= 1 and step.y >= 0 and step.y <= 1
 	end, function(first, step)
@@ -95,24 +98,24 @@ local function RefreshMinimap()
 			local icon = minimapIcons[slot]
 			if not icon then
 				icon = CreateFrame("Frame") --[[@as AGFMinimapIcon]]
-				icon:SetSize(18, 18)
+				icon:SetSize(MINIMAP_ICON, MINIMAP_ICON)
 				icon:SetFrameStrata("MEDIUM")
 				icon:EnableMouse(false)
 				local texture = icon:CreateTexture(nil, "ARTWORK")
-				ns.Art.Fit(texture, index == 1 and CURRENT_ATLAS or STOP_ATLAS, 18, 18)
+				ns.Art.Fit(texture, index == 1 and CURRENT_ATLAS or STOP_ATLAS, MINIMAP_ICON, MINIMAP_ICON)
 				texture:SetPoint("CENTER")
-				local number = icon:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+				local number = icon:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 				number:SetPoint("CENTER")
 				number:SetTextColor(index == 1 and 0.1 or 1, index == 1 and 0.05 or 0.82, index == 1 and 0 or 0.25)
 				icon.number, icon.disc = number, texture
 				minimapIcons[slot] = icon
 			end
-			ns.Art.Fit(icon.disc, index == 1 and CURRENT_ATLAS or STOP_ATLAS, 18, 18)
+			ns.Art.Fit(icon.disc, index == 1 and CURRENT_ATLAS or STOP_ATLAS, MINIMAP_ICON, MINIMAP_ICON)
 			icon.number:SetTextColor(index == 1 and 0.1 or 1, index == 1 and 0.05 or 0.82, index == 1 and 0 or 0.25)
 			icon.visits = visits
 			if not icon.Stack then
 				icon.Stack = icon:CreateTexture(nil, "BACKGROUND")
-				ns.Art.Fit(icon.Stack, STOP_ATLAS, 18, 18)
+				ns.Art.Fit(icon.Stack, STOP_ATLAS, MINIMAP_ICON, MINIMAP_ICON)
 				icon.Stack:SetPoint("CENTER", 3, -3)
 				icon.Stack:SetAlpha(0.7)
 			end
