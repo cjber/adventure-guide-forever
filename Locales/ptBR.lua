@@ -77,6 +77,8 @@ L["FAMILY_STATE_ON"] = "Ativado"
 L["FAMILY_SUGGEST"] = "Sugerir meus outros AddOns Forever"
 L["FAMILY_SUGGEST_ABOUT"] =
 	"Mostra uma linha discreta onde outro dos meus AddOns Forever ajudaria. Só para AddOns que você não tem."
+L["FAMILY_SUPPORT"] =
+	"Os addons Forever são gratuitos, sem nada bloqueado por pagamento. Se eles ajudarem, você pode me pagar um café." -- mt
 L["FAMILY_THIS_ADDON"] = "Este AddOn"
 L["FROM_SKILLUP"] = "do SkillUp Forever"
 L["GO"] = "Ir"
