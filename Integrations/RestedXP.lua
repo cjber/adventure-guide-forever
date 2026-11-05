@@ -232,6 +232,53 @@ local function GuideKey(group, name)
 	return "guide:" .. tostring(#group) .. ":" .. group .. ":" .. tostring(#name) .. ":" .. name
 end
 
+-- Guide steps the player skipped while RestedXP had not reached them, kept on the character: RestedXP marks such a
+-- step only in memory (`step.completed`), so without this the guide is back at the same step after a /reload (#374).
+-- RestedXP passes over a completed step when it reaches it; entries go once RestedXP's own progress is past them.
+---@param engine AGFRXPEngine
+local function ApplySkips(engine)
+	local guide = engine.currentGuide
+	if not guide or guide.empty then
+		return
+	end
+	local prefs = ns.Prefs()
+	local key = GuideKey(guide.group or "", guide.name or "")
+	local skips = prefs.guideSkips and prefs.guideSkips[key]
+	if not skips then
+		return
+	end
+	local progress = engine.GetGuideProgress()
+	local current = guide.steps[progress]
+	-- After a reload RestedXP starts from its own saved step, which can be one the player skipped: hand it on, as its
+	-- own skip of the step under way does.
+	if current and not current.sticky and skips[progress] then
+		engine.SetStep(progress + 1)
+		return
+	end
+	for index in pairs(skips) do
+		local step = guide.steps[index]
+		if not step or index < progress then
+			skips[index] = nil
+		elseif not step.active and not step.completed then
+			step.completed = true
+		end
+	end
+	if not next(skips) then
+		prefs.guideSkips[key] = nil
+	end
+end
+
+---@param group string
+---@param name string
+---@param index integer
+local function RememberSkip(group, name, index)
+	local prefs = ns.Prefs()
+	prefs.guideSkips = prefs.guideSkips or {}
+	local key = GuideKey(group, name)
+	prefs.guideSkips[key] = prefs.guideSkips[key] or {}
+	prefs.guideSkips[key][index] = true
+end
+
 ---@param element? AGFRXPElement
 ---@param step AGFRXPStep
 ---@return integer, number, number
@@ -396,6 +443,8 @@ local function Sync()
 		Window(LibDBIcon10_RXPGuides)
 		SuppressMap(engine)
 		Window(engine.v2 and engine.v2.state and engine.v2.state.guideWindow and engine.v2.state.guideWindow.frame)
+		-- A step the player skipped ahead of RestedXP stays skipped, after a /reload too (#374).
+		ApplySkips(engine)
 		snapshot = Snapshot(engine)
 		-- With Shortest Path loaded, its arrow points at the step handed to it, so RXP's arrow never shows as a second
 		-- one. Without it, RXP's arrow is the guide's only arrow: it goes only while another journey is chosen, so it
@@ -663,11 +712,13 @@ function Guide.Skip(index, elementIndex)
 		return true
 	end
 	if not step.active then
-		-- A step still ahead: RXP passes over a completed step when the guide reaches it, as with its own skips.
+		-- A step still ahead: RXP passes over a completed step when the guide reaches it, as with its own skips. That
+		-- mark lives in memory only, so it is kept on the character and put back at every build and after a /reload.
 		if elementIndex or step.sticky or index <= (engine.GetGuideProgress()) then
 			return false
 		end
 		step.completed = true
+		RememberSkip(guide.group or "", guide.name or "", index)
 	elseif elementIndex then
 		local element = step.elements[elementIndex]
 		if not element or element.textOnly or element.optional then
@@ -843,11 +894,71 @@ function Guide.SkipKey(key)
 	return Guide.Skip(stepIndex)
 end
 
+-- Whether a RestedXP element's event list carries `event`: the element's own (`element.event`) or its tag's.
+---@param list string|string[]?
+---@param event string
+---@return boolean
+local function Listens(list, event)
+	if type(list) == "string" then
+		return list == event
+	elseif type(list) == "table" then
+		for _, name in ipairs(list) do
+			if name == event then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+-- RestedXP completes a step element only from a callback bound to a frame in its guide window's step list, which
+-- Adventure Guide keeps hidden, so a turned-in or accepted quest does not always reach the step (#374). Its own
+-- callbacks read the quest and item state themselves, so running them again for the steps under way completes a step
+-- whose event they missed, and changes nothing when they already saw it.
+---@param engine AGFRXPEngine
+---@param event string
+local function Recount(engine, event, ...)
+	local functions = engine.functions
+	local set = type(functions) == "table" and functions.events
+	if not active or InCombatLockdown() or type(functions) ~= "table" or type(set) ~= "table" then
+		return
+	end
+	for _, step in ipairs(engine.RXPFrame.activeSteps or {}) do
+		if step.active then
+			for _, element in ipairs(step.elements or {}) do
+				local tag = element.tag
+				local callback = tag and functions[tag]
+				if
+					not element.completed
+					and type(callback) == "function"
+					and Listens(element.event or set[tag], event)
+				then
+					local carrier = { element = element, step = step, button = element.frame and element.frame.button }
+					if type(engine.Call) == "function" then
+						engine.Call(tag, callback, carrier, event, ...) -- multi-value: the event's arguments reach RXP's callback.
+					else
+						pcall(callback, carrier, event, ...) -- multi-value: the event's arguments reach RXP's callback.
+					end
+				end
+			end
+		end
+	end
+end
+
 local events = CreateFrame("Frame")
 events:RegisterEvent("PLAYER_REGEN_ENABLED")
 events:RegisterEvent("QUEST_LOG_UPDATE")
+events:RegisterEvent("QUEST_TURNED_IN")
+events:RegisterEvent("QUEST_ACCEPTED")
+events:RegisterEvent("QUEST_REMOVED")
 events:RegisterEvent("PLAYER_ENTERING_WORLD")
-events:SetScript("OnEvent", Guide.Refresh)
+events:SetScript("OnEvent", function(_, event, ...)
+	local engine = Engine()
+	if engine then
+		Recount(engine, event, ...) -- multi-value: QUEST_TURNED_IN names its quest and its experience.
+	end
+	Guide.Refresh()
+end)
 EventUtil.ContinueOnAddOnLoaded("RXPGuides", Attach)
 EventUtil.ContinueAfterAllEvents(function()
 	ready = true

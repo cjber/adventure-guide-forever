@@ -1,5 +1,8 @@
 ---@meta
 
+---@class AGFRXPElementFrame : Frame
+---@field button? Button RestedXP's skip checkbox for the element
+
 ---@class AGFRXPElement
 ---@field questId? integer
 ---@field tag? string the RestedXP function that made it: accept, turnin, complete, collect, fly, hs...
@@ -21,6 +24,8 @@
 ---@field generated? integer non-zero when auto-generated; 0 or nil for a real waypoint
 ---@field parent? {completed?: boolean, skip?: boolean}
 ---@field step? AGFRXPStep the step this element belongs to
+---@field frame? AGFRXPElementFrame RestedXP's own element frame, while it has one bound
+---@field event? string|string[] the client events RestedXP completes this element on, when not its tag's
 
 ---@class AGFRXPStep
 ---@field index integer
@@ -76,6 +81,8 @@
 ---@field updateSteps? boolean
 ---@field RenderFrame? function
 ---@field RegisterMessage? fun(receiver: table, message: string, callback: function)
+---@field functions? table<string, any> RestedXP's element callbacks, and `events`, the client events each tag reads
+---@field Call? fun(label: string?, callback: function, ...: any): any RestedXP's error-isolating callback runner
 ---@field locale? {Get: fun(text: string): string}
 ---@field ReplaceNpcIds? fun(text: string, element?: AGFRXPElement): string
 ---@field guideList? table<string, {names_: {name: string, group: string}[]}>
