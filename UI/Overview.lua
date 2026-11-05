@@ -42,20 +42,9 @@ for index, key in ipairs(ns.Model.SECTIONS) do
 	GROUPS[index] = { key = key, label = LABELS[key], open = false }
 end
 
--- `journeys`' cards under `key`, in the order the route offered them; empty when it has none, so a header with no
--- card is never drawn.
----@param journeys AGFJourney[]
----@param key AGFJourneySection
----@return AGFJourney[]
-local function InGroup(journeys, key)
-	local kept = {}
-	for _, journey in ipairs(journeys) do
-		if journey.section == key then
-			kept[#kept + 1] = journey
-		end
-	end
-	return kept
-end
+-- `journeys`' cards under `key` in the order the guide draws them (Model.InSection); empty when it has none, so a
+-- header with no card is never drawn.
+local InGroup = ns.Model.InSection
 
 -- Whether the player collapsed `key`: their saved choice, else the group's default.
 ---@param key AGFJourneySection

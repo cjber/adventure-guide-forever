@@ -148,10 +148,11 @@ assert(#choices == 2, "past guide chapters do not crowd out suitable guides")
 assert(choices[1].title == "20-23 Current chapter", "the player's current level sorts first")
 assert(selected == "20-23 Current chapter", "one suitable chapter is selected automatically")
 local routeCards = catalogue.ns.Route().journeys
-assert(
-	routeCards[1].key == choices[1].key and routeCards[1].section == "continue",
-	"available guides use ordinary Continue cards"
-)
+local guideCard
+for _, card in ipairs(routeCards) do
+	guideCard = guideCard or (card.key == choices[1].key and card or nil)
+end
+assert(guideCard and guideCard.section == "continue", "available guides use ordinary Continue cards")
 
 local declined = harness.load({ spf = "v1", player = { level = 22 }, db = { autoStart = false } })
 local dr = dofile("tests/rxp_fixture.lua")(declined)
@@ -250,6 +251,9 @@ print("restedxp_mode_spec: action controls remain available and the minimap butt
 
 local maps = harness.load({ spf = "v1", db = { autoStart = false } })
 local mr = dofile("tests/rxp_fixture.lua")(maps)
+-- An unchosen guide no longer leads (#378), so choose it for the guide's own map marks.
+maps.ns.Choose(assert(maps.ns.RestedXP.Journey()).key)
+maps.flush()
 local canvas = maps.G.CreateFrame("Frame", nil, maps.G.UIParent)
 maps.G.WorldMapFrame.GetCanvas = function()
 	return canvas

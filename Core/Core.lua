@@ -831,9 +831,11 @@ local function CommitRoute(shown, full, world)
 				end
 			end
 
-			if ns.Prefs().journey == guide.key or not route.chosen then
+			-- An unchosen RestedXP guide is only a card: a player who has not picked a journey keeps the planner's
+			-- default, Quests in your log, rather than being handed over to a guide they did not choose.
+			if ns.Prefs().journey == guide.key then
 				route.journey, route.steps = guide.key, guide.steps
-				route.chosen = ns.Prefs().journey == guide.key
+				route.chosen = true
 				-- The planner never saw these steps, so "you're here" is judged on them as it is on a planned card
 				-- (Shown.lua's Reorder): Focus selects the quest of the area the player stands in, and the stop and
 				-- its line step aside (#352).
@@ -847,10 +849,17 @@ local function CommitRoute(shown, full, world)
 	end
 	local guideCards = ns.RestedXP.Cards(guide)
 	for _, route in ipairs(shown == full and { shown } or { shown, full }) do
-		for index = #guideCards, 1, -1 do
-			local card = guideCards[index]
+		-- Guides stay selectable, after Quests in your log (or the story without one): the default card leads until the
+		-- player picks a guide, and the cards after it keep their own order.
+		local at
+		for index, journey in ipairs(route.journeys) do
+			at = at or (journey.kind == "carry" and index or nil)
+		end
+		at = at or (#route.journeys > 0 and 1 or 0)
+		for _, card in ipairs(guideCards) do
 			if not ns.Prefs().notInterested[card.key] then
-				table.insert(route.journeys, 1, card)
+				table.insert(route.journeys, at + 1, card)
+				at = at + 1
 			end
 		end
 	end
