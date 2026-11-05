@@ -221,7 +221,7 @@ function Pins.QuestLineText(id)
 end
 
 local function ColorTitle(title, color)
-	return CreateColor(color.r, color.g, color.b):WrapTextInColorCode(title)
+	return ns.StepStyle.Wrap(CreateColor(color.r, color.g, color.b), title)
 end
 
 ---@param step AGFStep|AGFGiver
@@ -265,7 +265,7 @@ local function TownQuests(tooltip, step)
 					return
 				end
 				if not named then
-					GameTooltip_AddNormalLine(tooltip, giver)
+					GameTooltip_AddNormalLine(tooltip, ns.StepStyle.Step(step, giver))
 					named = true
 				end
 				shown = shown + 1
@@ -288,7 +288,7 @@ local function AreaObjectives(tooltip, step)
 		end
 		-- A count only when one is known: a needed count of 0 is a kind the client does not tally, and "2/0" says nothing.
 		local text = ns.Model.ObjectiveText(objective)
-		local line = text and ns.L.OBJECTIVE_LINE:format(text)
+		local line = text and ns.StepStyle.Step(step, ns.L.OBJECTIVE_LINE:format(text))
 		if line then
 			GameTooltip_AddHighlightLine(tooltip, line)
 		end
@@ -304,7 +304,7 @@ local function GuideLines(tooltip, step)
 		if item.done then
 			GameTooltip_AddColoredLine(tooltip, item.text, GRAY_FONT_COLOR)
 		else
-			GameTooltip_AddHighlightLine(tooltip, item.text)
+			GameTooltip_AddHighlightLine(tooltip, ns.StepStyle.Checklist(step, item))
 		end
 	end
 	local named = {}
@@ -326,16 +326,16 @@ end
 ---@param index number
 ---@param travel? string
 function Pins.StepTooltip(tooltip, step, index, travel)
-	GameTooltip_SetTitle(tooltip, ns.L.STEP_NUMBERED:format(index, step.title))
+	GameTooltip_SetTitle(tooltip, ns.StepStyle.StepTitle(step, ns.L.STEP_NUMBERED:format(index, step.title)))
 	if step.chapter then
-		GameTooltip_AddNormalLine(tooltip, step.chapter)
+		GameTooltip_AddNormalLine(tooltip, ns.StepStyle.Step(step, step.chapter))
 	end
 	if travel then
 		GameTooltip_AddHighlightLine(tooltip, travel)
 	end
 	-- A guide step's reason is empty: its checklist below says what to do.
 	if step.reason ~= "" then
-		GameTooltip_AddHighlightLine(tooltip, step.reason)
+		GameTooltip_AddHighlightLine(tooltip, ns.StepStyle.Step(step, step.reason))
 	end
 	for _, note in ipairs(ns.Overview.GroupNotes(step)) do
 		GameTooltip_AddNormalLine(tooltip, note)

@@ -42,6 +42,7 @@
 ---@field provider? boolean QuestieDB quest; live Questie policy decides pickup availability
 ---@field kinds? table<integer, string> objective slot type
 ---@field names? table<integer, string> where two or more slots share a type: each slot's NPC, object or item name in the client's language, lower-cased, to match the log's objectives by
+---@field items? table<integer, integer> each collect slot's item ID, for the quality colour of its name
 ---@field title string English title from the source data; the client's own title wins when cached
 ---@field level integer quest level (-1 scales to the player)
 ---@field min integer minimum level to accept
@@ -1308,9 +1309,19 @@
 ---@field SETTING_ROUTE_ORDER string beta: the planned route order (chapter lead, town look-ahead, committed order)
 ---@field SETTING_ROUTE_ORDER_TOOLTIP string
 
+---@class AGFStepStyle
+---@field Color fun(role?: string, id?: integer): ColorMixin?
+---@field Wrap fun(color?: ColorMixin, text?: string): string
+---@field Quest fun(text?: string): string
+---@field StepParts fun(step?: AGFStep|AGFGiver, extra?: {text: string, kind: string, id?: integer}[]): {text: string, kind: string, id?: integer}[]
+---@field Step fun(step?: AGFStep|AGFGiver, text?: string, extra?: {text: string, kind: string, id?: integer}[]): string
+---@field StepTitle fun(step?: AGFStep|AGFGiver, text?: string): string
+---@field Checklist fun(step?: AGFStep, row?: AGFTownGiver): string
+
 ---@class AGFNamespace
 ---@field Art AGFArt
 ---@field Overview AGFOverview
+---@field StepStyle AGFStepStyle one renderer for every step line
 ---@field Widgets AGFWidgets shared guide row and popup widgets
 
 ---@class AGFStrings
@@ -1584,7 +1595,7 @@
 ---@field QuestieTowns AGFQuestieTowns
 ---@field QuestieLevel fun(value: any): integer|false an NPC's QuestieDB minLevel as a level, false when it has none
 ---@field QuestieElite fun(value: any): boolean whether an NPC's QuestieDB rank is an elite's (1 to 3)
----@field QuestieObjectives fun(lib: AGFQuestieDB, objectives: table?, trigger: table?, zone: integer?, data: AGFData, mapOf: AGFMapLookup, yield: AGFYield, questID: integer, reads: AGFQuestieReads): table?, AGFObjectiveArea[]?, table?, boolean?, table<integer, string>?
+---@field QuestieObjectives fun(lib: AGFQuestieDB, objectives: table?, trigger: table?, zone: integer?, data: AGFData, mapOf: AGFMapLookup, yield: AGFYield, questID: integer, reads: AGFQuestieReads): table?, AGFObjectiveArea[]?, table?, boolean?, table<integer, string>?, table<integer, integer>?
 
 ---@class AGFStrings
 ---@field WHY_PROVIDER string

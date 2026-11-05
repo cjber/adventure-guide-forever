@@ -65,9 +65,9 @@ end
 local function QuestLine(step, questID)
 	local title, color = ns.Pins.QuestLineText(questID)
 	if title == "" then
-		return step.questTitle or step.title
+		return ns.StepStyle.StepTitle(step)
 	end
-	return CreateColor(color.r, color.g, color.b):WrapTextInColorCode(title)
+	return ns.StepStyle.Wrap(CreateColor(color.r, color.g, color.b), title)
 end
 
 ---@param block AGFTrackerBlock
@@ -310,7 +310,7 @@ local function GuideSection(module, block, step)
 		-- A done line greys whole, its coloured words too.
 		local style, text = colors.Complete, Plain(item.text)
 		if not item.done then
-			style, text = lit and colors.Normal or colors.NormalHighlight, item.text
+			style, text = lit and colors.Normal or colors.NormalHighlight, ns.StepStyle.Checklist(step, item)
 			lit = true
 		end
 		block:AddObjective(line, ns.Overview.LineMarkup(item.rxpTag, MARK_SIZE) .. text, nil, true, nil, style)
@@ -433,7 +433,7 @@ function ModuleMixin:LayoutContents()
 		return
 	end
 	local block = self:GetBlock(step.key)
-	block:SetHeader(ns.Overview.VerbMarkup(step, 14) .. step.title)
+	block:SetHeader(ns.StepStyle.StepTitle(step, ns.Overview.VerbMarkup(step, 14) .. step.title))
 	local line = 0
 	if step.rxpIndex then
 		GuideSection(self, block, step)
@@ -448,7 +448,7 @@ function ModuleMixin:LayoutContents()
 				local text = objective.id == questID and ns.Model.ObjectiveText(objective)
 				if text then
 					line = line + 1
-					block:AddObjective(line, GRAY_FONT_COLOR:WrapTextInColorCode(text))
+					block:AddObjective(line, GRAY_FONT_COLOR:WrapTextInColorCode(ns.StepStyle.Step(step, text)))
 				end
 			end
 		end
@@ -474,7 +474,7 @@ function ModuleMixin:LayoutContents()
 	place = town and step.detail or place or step.zone
 	if place and not step.title:find(place, 1, true) then
 		line = line + 1
-		block:AddObjective(line, place)
+		block:AddObjective(line, ns.StepStyle.Step(step, place))
 	end
 	local resume = ns.Resume(step)
 	-- A lone hand-in, a turn-in or a town's, is titled "Turn in: %s" (L.TURN_IN), which already says it is ready.
@@ -493,12 +493,19 @@ function ModuleMixin:LayoutContents()
 	end
 	if reason then
 		line = line + 1
-		block:AddObjective(line, reason)
+		block:AddObjective(line, ns.StepStyle.Step(step, reason))
 	end
 	line = GroupLines(block, step, line)
+	local lit = false
 	for _, giver in ipairs(step.checklist or {}) do
 		line = line + 1
-		block:AddObjective(line, giver.text, nil, giver.done)
+		local text, style = giver.text, nil
+		if not (giver.done or giver.skipped) then
+			text = ns.StepStyle.Checklist(step, giver)
+			style = lit and OBJECTIVE_TRACKER_COLOR.Normal or OBJECTIVE_TRACKER_COLOR.NormalHighlight
+			lit = true
+		end
+		block:AddObjective(line, text, nil, giver.done, nil, style)
 	end
 	line = TravelLines(block, step, line)
 	Preview(block, step, line)

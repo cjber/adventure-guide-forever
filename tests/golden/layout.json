@@ -1385,7 +1385,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Title",
-      "text": "Complete objectives · WANTED: Bruuz",
+      "text": "Complete objectives · |cffffd100WANTED: Bruuz|r",
       "type": "FontString",
       "wordWrap": false
     },
@@ -1675,7 +1675,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Title",
-      "text": "Complete 2 objectives · Southsea Freebooters",
+      "text": "Complete 2 objectives · |cffffd100Southsea Freebooters|r",
       "type": "FontString",
       "wordWrap": false
     },
@@ -1965,7 +1965,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Title",
-      "text": "Complete objectives · Parts and Pieces",
+      "text": "Complete objectives · |cffffd100Parts and Pieces|r",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2255,7 +2255,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Title",
-      "text": "Complete objectives · WANTED: Baron Longshore",
+      "text": "Complete objectives · |cffffd100WANTED: Baron Longshore|r",
       "type": "FontString",
       "wordWrap": false
     },
@@ -2545,7 +2545,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Title",
-      "text": "Complete objectives · Raptor Horns",
+      "text": "Complete objectives · |cffffd100Raptor Horns|r",
       "type": "FontString",
       "wordWrap": false
     },
@@ -3125,7 +3125,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Title",
-      "text": "Complete objectives · Raptor Thieves",
+      "text": "Complete objectives · |cffffd100Raptor Thieves|r",
       "type": "FontString",
       "wordWrap": false
     },
@@ -3396,7 +3396,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Title",
-      "text": "Complete objectives · Consumed by Hatred",
+      "text": "Complete objectives · |cffffd100Consumed by Hatred|r",
       "type": "FontString",
       "wordWrap": false
     },
@@ -4754,7 +4754,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[13].Text",
-      "text": "Gazrog: Pick up 1",
+      "text": "|cff009919Gazrog|r: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -4821,7 +4821,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[14].Text",
-      "text": "Darsok Swiftdagger: Pick up 1",
+      "text": "|cff009919Darsok Swiftdagger|r: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -4888,7 +4888,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[15].Text",
-      "text": "Mankrik: Pick up 3",
+      "text": "|cff009919Mankrik|r: Pick up 3",
       "textColor": [
         0.90,
         0.90,
@@ -4955,7 +4955,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[16].Text",
-      "text": "Sergra Darkthorn: Turn in 1",
+      "text": "|cff009919Sergra Darkthorn|r: Turn in 1",
       "textColor": [
         0.90,
         0.90,
@@ -5022,7 +5022,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[17].Text",
-      "text": "Mebok Mizzyrix: Pick up 1",
+      "text": "|cff009919Mebok Mizzyrix|r: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -5156,7 +5156,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[19].Text",
-      "text": "Gazlowe: Pick up 1",
+      "text": "|cff009919Gazlowe|r: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -5223,7 +5223,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[20].Text",
-      "text": "Sputtervalve: Pick up 1",
+      "text": "|cff009919Sputtervalve|r: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -5290,7 +5290,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[21].Text",
-      "text": "Wrenix the Wretched: Pick up 1",
+      "text": "|cff009919Wrenix the Wretched|r: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -5357,7 +5357,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[22].Text",
-      "text": "Mebok Mizzyrix: Turn in 1",
+      "text": "|cff009919Mebok Mizzyrix|r: Turn in 1",
       "textColor": [
         0.90,
         0.90,
@@ -5424,7 +5424,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[23].Text",
-      "text": "Gazlowe: Turn in 3",
+      "text": "|cff009919Gazlowe|r: Turn in 3",
       "textColor": [
         0.90,
         0.90,
@@ -5491,7 +5491,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[24].Text",
-      "text": "Wrenix the Wretched: Turn in 1",
+      "text": "|cff009919Wrenix the Wretched|r: Turn in 1",
       "textColor": [
         0.90,
         0.90,

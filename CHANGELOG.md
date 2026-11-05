@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Every step line reads like the game's tracker.** Quests in your log, zone journeys and town stops now colour quest names gold, friendly NPCs green and enemies red by their side, items by quality, and zones, in the tracker, the guide, the overview and map pin tooltips. One shared renderer feeds them and RestedXP's own steps, so the styling lives in one place.
+
 ## [1.0.18] - 2026-11-05
 - **Quests in your log leads until you pick another journey.** A new or returning character who has not chosen a journey now starts on Quests in your log, with its card first in the guide. RestedXP guides stay selectable cards, but only take over when you choose one; a guide RestedXP loads by itself no longer replaces the default route.
 - **Quests in your log picks up quests on your way.** While your quest log has room, the card now offers a few quests whose giver, objectives and hand-in all sit on or near the route you are already running. It takes the smallest detours first, sizes the offers to the slots you have free, and stops after a handful, so a 40-quest log gains a few quests on the way instead of a second list. With no slot left, the card suggests nothing new.

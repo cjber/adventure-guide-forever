@@ -150,11 +150,15 @@ end
 ---@param yield fun()
 ---@param questID integer
 ---@param reads AGFQuestieReads one catalogue build's QuestieDB answers, so a creature many quests share is read once
----@return table?, AGFObjectiveArea[]?, table?, boolean? unsupported, table<integer, string>? names
+---@return table?, AGFObjectiveArea[]?, table?, boolean? unsupported
+---@return table<integer, string>? names
+---@return table<integer, integer>? items
 function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield, questID, reads)
 	-- Questie stores icon overrides, not required counts, in objective[3] (kill credits: [4]).
 	-- Zero retains the objective slot; the quest log supplies its actual count after pickup.
 	local need, areas, kinds = {}, {}, {}
+	-- Each collect slot's item ID, so its name takes the client's quality colour when a step line names it.
+	local items = {}
 	-- What each slot is named by: the QuestieDB entity and id.
 	---@type table<integer, {kind: string, id: integer?}>
 	local sources = {}
@@ -359,6 +363,7 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 		slot = index + 3
 		need[slot], kinds[slot] = 0, "item"
 		sources[slot] = { kind = "Item", id = tonumber(objective[1]) }
+		items[slot] = sources[slot].id
 		local lists = {}
 		Item(objective[1], lists, {})
 		Places(slot, lists)
@@ -376,5 +381,6 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 		areas[1] and areas or nil,
 		next(kinds) and kinds or nil,
 		nil,
-		Names(lib, kinds, sources, reads)
+		Names(lib, kinds, sources, reads),
+		next(items) and items or nil
 end
