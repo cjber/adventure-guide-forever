@@ -12,6 +12,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The Adventure Guide micro-menu button stays inside the micro menu.** Blizzard's buttons slid aside past the menu's own edge, so the row ran over the action bar beside it. The menu now grows by the addon buttons, and the action bar and bags beside it move aside, as they do for Blizzard's own buttons.
+- **Pressing the micro-menu button no longer logs an error.** Every press logged "attempt to concatenate field 'textureName'" in Blizzard's micro menu code.
+
 ## [1.0.14] - 2026-11-05
 
 - **Long menus scroll instead of running off the screen.** The guide's choice and group menus, the skipped quests list, the loot and drops lists and the overview's skip menu show about twenty rows at a time and scroll the rest, so every entry stays reachable on any screen. The addon's own context menu caps its height and scrolls too. The shared settings page also drops a dropdown helper nothing called.

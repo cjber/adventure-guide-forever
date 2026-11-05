@@ -387,6 +387,9 @@ ITEM_QUALITY_COLORS = nil
 ---@field stride number? buttons per row
 ---@type AGFMicroMenu?
 MicroMenu = nil
+-- The Edit Mode frame the menu sits in; MicroMenuContainer:Layout sizes it to the menu.
+---@type Frame?
+MicroMenuContainer = nil
 ---@type Button?
 MainMenuMicroButton = nil
 ---@type Button?
@@ -403,7 +406,7 @@ UpdateMicroButtons = nil
 ---@field hookedUpdate boolean?
 ---@field hookedScripts table<Frame, boolean>? the frames whose scripts are hooked, weak keys
 ---@field events Frame? the frame listening for Edit Mode layout changes
----@field first { button: Frame, origin: number, applied: number }? where the row's first button was placed last
+---@field width number? the width the last placement widened the menu to, nil while the menu has Blizzard's own
 ---@type ForeverMicroButtonRegistry?
 ForeverMicroButtons = nil
 
@@ -416,6 +419,7 @@ AdventureGuideMicroButton = nil
 ---@field microButtonSpec table the spec the consumer passed to Create
 ---@field icon Texture the glyph drawn over the plate
 ---@field alert table? the template's alert overlay, hidden for a custom button
+---@field textureName string the atlas name the template's pushed and normal highlights are built from
 
 -- The quest giver window's reward display (Blizzard_UIPanels_Game QuestInfo.xml), read by UI/Upgrades.lua.
 ---@class AGFQuestRewardButton : Button
