@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.14] - 2026-11-05
+
+- **Long menus scroll instead of running off the screen.** The guide's choice and group menus, the skipped quests list, the loot and drops lists and the overview's skip menu show about twenty rows at a time and scroll the rest, so every entry stays reachable on any screen. The addon's own context menu caps its height and scrolls too. The shared settings page also drops a dropdown helper nothing called.
+
 ## [1.0.13] - 2026-11-05
 
 - **Hover a step marker to see the step.** The numbered markers on the minimap now show a tooltip naming the step: its number, what to do there as the tracker words it ("Talk to Iverron", "Turn in Iverron's Antidote"), done lines greyed, and the quest. World map markers for a RestedXP guide step show the same lines instead of the bare step title. Clicking the minimap still pings it as before.
