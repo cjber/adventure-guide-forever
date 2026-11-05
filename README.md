@@ -2,16 +2,22 @@
 
 <h1 align="center">Adventure Guide Forever</h1>
 
+<p align="center">Story levelling and quest routes for WoW: Forever</p>
+
 <p align="center">
-Picks quests for your level in WoW: Forever and, with Shortest Path Forever, walks you to each one.<br>
+Levels you through zone stories and tidies your quest log, then routes you from stop to stop.<br>
 <a href="https://github.com/cjber/adventure-guide-forever/actions/workflows/ci.yml"><img src="https://github.com/cjber/adventure-guide-forever/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 <a href="https://github.com/cjber/adventure-guide-forever/releases/latest"><img src="https://img.shields.io/github/v/release/cjber/adventure-guide-forever" alt="Latest release"></a>
 <a href="https://ko-fi.com/cjber"><img src="https://img.shields.io/badge/Ko--fi-tip-ff5e5b?logo=ko-fi&logoColor=white" alt="Ko-fi"></a>
 </p>
 
-Adventure Guide Forever suggests quests for your level and quest log, in a short route. Shortest Path Forever walks you to each stop; without it, the game's waypoint does.
+Adventure Guide Forever is a levelling guide for WoW: Forever. Zone story journeys read as chapters, with your progress through each chapter kept per character, and **Quests in your log** finishes what you already carry so the log empties instead of growing. Then a short route joins the rest of your level's quests, and Shortest Path Forever walks you to each stop; without it, the game's waypoint does.
 
 Questie draws the quest markers; the guide adds route rings. With RestedXP installed, a one-time prompt lets you keep its display or follow its guides in Adventure Guide.
+
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/chosen.png" width="640" alt="The Barrens story chosen: chapter 1 of 8, its numbered stops in the panel and on the map, with the route drawn from the first"></p>
+
+<p align="center">A zone story journey, read as chapters: every stop numbered and the route drawn from the first.</p>
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/map.png" width="640" alt="A journey's quest stops numbered on The Barrens map, with Shortest Path Forever's route to the first"></p>
 
@@ -37,7 +43,7 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 - **Quests in your log.** The journey the guide starts on when you have not chosen another: turn in what is ready, finish objectives and follow a chain you already carry. Zone stories and RestedXP guides wait as cards you can pick.
 
-- **RestedXP guides.** Choose a guide from the Continue cards and follow its steps on the map and tracker. RestedXP handles completion; Shortest Path Forever handles travel. While you follow one, the tracker lists only the quests its steps name, and your own tracked quests come back when you stop. RestedXP’s item and target windows keep their own settings and positions. Turn off *Use RestedXP guides* to return to Adventure Guide's suggestions.
+- **RestedXP guides.** Choose a guide from the Continue cards and follow its steps on the map and tracker. RestedXP handles completion; Shortest Path Forever handles travel. While you follow one, the tracker lists only the quests its steps name, and your own tracked quests come back when you stop. While it steers a RestedXP guide, Adventure Guide shows its own item and target buttons for the current step. Turn off *Use RestedXP guides* to return to Adventure Guide's suggestions.
 
 - **Quest difficulty.** Choose the highest recommended quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups. Accepted quests remain visible.
 
