@@ -12,6 +12,15 @@ local function Wrap(color, text)
 	return color:WrapTextInColorCode(text)
 end
 
+-- A rebuild draws the same step in several places, and the panel and tracker ask again for every line: their words and
+-- colours are kept per step and per checklist row, so a route change is the only time it is worked out.
+---@type table<AGFStep|AGFGiver, {text: string, kind: string, id?: integer}[]>
+local baseParts = setmetatable({}, { __mode = "k" })
+---@type table<AGFStep|AGFGiver, {text: string, kind: string, id?: integer}[]>
+local sortedParts = setmetatable({}, { __mode = "k" })
+---@type table<AGFTownGiver, boolean>
+local rowNpc = setmetatable({}, { __mode = "k" })
+
 -- The colours of a step line. A role with no colour of the game's own reads as plain text.
 ---@param role? string
 ---@param id? integer an item's ID, for the quality of an item role
@@ -95,6 +104,9 @@ end
 ---@param extra? {text: string, kind: string, id?: integer}[]
 ---@return {text: string, kind: string, id?: integer}[]
 function Style.StepParts(step, extra)
+	if step and not extra and baseParts[step] then
+		return baseParts[step]
+	end
 	local parts, seen = {}, {}
 	local data = ns.Data
 	local player = ns.State.Player()
@@ -118,7 +130,7 @@ function Style.StepParts(step, extra)
 			-- not in the data, and guessing "monster" as enemy painted neutral wildlife red.
 			for slot, name in pairs(quest.names or {}) do
 				if quest.kinds and quest.kinds[slot] == "item" then
-					Add(parts, seen, name, "item", quest.items and quest.items[slot] or nil)
+					Add(parts, seen, name, "item", data.itemIDs and data.itemIDs[name] or nil)
 				end
 			end
 		end
@@ -127,6 +139,9 @@ function Style.StepParts(step, extra)
 	Add(parts, seen, step.zone, "zone")
 	local zone = data.zones and data.zones[step.map]
 	Add(parts, seen, zone and zone.name, "zone")
+	if not extra then
+		baseParts[step] = parts
+	end
 	return parts
 end
 
@@ -141,10 +156,31 @@ function Style.Step(step, text, extra)
 	if text == "" then
 		return text
 	end
-	local parts = Style.StepParts(step, extra)
-	table.sort(parts, function(a, b)
-		return #a.text > #b.text
-	end)
+	local parts
+	if extra and #extra > 0 then
+		local seen = {}
+		parts = {}
+		for _, part in ipairs(Style.StepParts(step)) do
+			seen[part.kind .. "\0" .. part.text] = true
+			parts[#parts + 1] = part
+		end
+		for _, part in ipairs(extra) do
+			Add(parts, seen, part.text, part.kind, part.id)
+		end
+		table.sort(parts, function(a, b)
+			return #a.text > #b.text
+		end)
+	elseif step and sortedParts[step] then
+		parts = sortedParts[step]
+	else
+		parts = Style.StepParts(step)
+		table.sort(parts, function(a, b)
+			return #a.text > #b.text
+		end)
+		if step then
+			sortedParts[step] = parts
+		end
+	end
 	local lower, out, index = text:lower(), {}, 1
 	while index <= #text do
 		local found
@@ -183,12 +219,16 @@ function Style.Checklist(step, row)
 	if row.rxpTag then
 		return row.text
 	end
-	local npc = false
-	for _, list in ipairs({ row.pickups or {}, row.handins or {} }) do
-		for _, id in ipairs(list) do
-			local place = step and step.spots and step.spots[id]
-			npc = npc or (place ~= nil and place.npc ~= nil)
+	local npc = rowNpc[row]
+	if npc == nil then
+		npc = false
+		for _, list in ipairs({ row.pickups or {}, row.handins or {} }) do
+			for _, id in ipairs(list) do
+				local place = step and step.spots and step.spots[id]
+				npc = npc or (place ~= nil and place.npc ~= nil)
+			end
 		end
+		rowNpc[row] = npc
 	end
-	return Style.Step(step, row.text, row.name and { { text = row.name, kind = npc and "friendly" or nil } } or nil)
+	return Style.Step(step, row.text, npc and { { text = row.name, kind = "friendly" } } or nil)
 end

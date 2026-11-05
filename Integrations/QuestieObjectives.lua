@@ -91,12 +91,13 @@ end
 ---@param sources table<integer, {kind: string, id: integer?}>
 ---@param reads AGFQuestieReads
 ---@return table<integer, string>?
+---@return table<integer, integer>?
 local function Names(lib, kinds, sources, reads)
 	local count = {}
 	for _, kind in pairs(kinds) do
 		count[kind] = (count[kind] or 0) + 1
 	end
-	local names
+	local names, items
 	for slot, kind in pairs(kinds) do
 		local source = sources[slot]
 		if count[kind] > 1 and source and source.id then
@@ -111,10 +112,14 @@ local function Names(lib, kinds, sources, reads)
 			if name then
 				names = names or {}
 				names[slot] = name
+				if kind == "item" then
+					items = items or {}
+					items[slot] = source.id
+				end
 			end
 		end
 	end
-	return names
+	return names, items
 end
 
 -- An NPC's spawns, lowest level and rank, as one read (ns.QuestieFields, set by QuestieSource.lua, which loads after
@@ -157,8 +162,6 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 	-- Questie stores icon overrides, not required counts, in objective[3] (kill credits: [4]).
 	-- Zero retains the objective slot; the quest log supplies its actual count after pickup.
 	local need, areas, kinds = {}, {}, {}
-	-- Each collect slot's item ID, so its name takes the client's quality colour when a step line names it.
-	local items = {}
 	-- What each slot is named by: the QuestieDB entity and id.
 	---@type table<integer, {kind: string, id: integer?}>
 	local sources = {}
@@ -363,7 +366,6 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 		slot = index + 3
 		need[slot], kinds[slot] = 0, "item"
 		sources[slot] = { kind = "Item", id = tonumber(objective[1]) }
-		items[slot] = sources[slot].id
 		local lists = {}
 		Item(objective[1], lists, {})
 		Places(slot, lists)
@@ -381,6 +383,5 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 		areas[1] and areas or nil,
 		next(kinds) and kinds or nil,
 		nil,
-		Names(lib, kinds, sources, reads),
-		next(items) and items or nil
+		Names(lib, kinds, sources, reads)
 end

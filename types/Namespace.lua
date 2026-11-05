@@ -42,7 +42,6 @@
 ---@field provider? boolean QuestieDB quest; live Questie policy decides pickup availability
 ---@field kinds? table<integer, string> objective slot type
 ---@field names? table<integer, string> where two or more slots share a type: each slot's NPC, object or item name in the client's language, lower-cased, to match the log's objectives by
----@field items? table<integer, integer> each collect slot's item ID, for the quality colour of its name
 ---@field title string English title from the source data; the client's own title wins when cached
 ---@field level integer quest level (-1 scales to the player)
 ---@field min integer minimum level to accept
@@ -100,6 +99,7 @@
 ---@field areaNames table<integer, string> AreaTable ID -> its English name, the fallback when the client has none
 ---@field roles table<integer, AGFRole> creature entry -> what that trainer or battlemaster does
 ---@field expiring? table<integer, integer> item ID -> the seconds it lasts in the bags, a day or less (ItemSparse)
+---@field itemIDs? table<string, integer> a collect item's lower-cased name -> its ID, for the quality colour of its name
 
 -- Measures between steps on different maps without travel maths (Travel.lua Cost). World coordinates are yards.
 ---@class AGFMapCentre
@@ -794,6 +794,10 @@
 
 ---@alias AGFGuidanceStatus "queued"|"paused"|"arrived" -- a start waits for combat's end; the route stopped without the player's Stop and can be resumed; it reached its last stop
 
+---@class AGFRXPActionsModule
+---@field Refresh fun() rebuild the secure item and target buttons, or queue the change during combat
+---@field Reserve fun(module: AGFTrackerModule) add the action rows' height below the tracker section's own blocks
+
 -- The guidance lifecycle (Guidance.lua): the one writer of AGFPrefs.guided and AGFPrefs.waypoint. Choosing, starting
 -- and stopping are ns.Choose, ns.StartRoute and ns.Stop.
 ---@class AGFGuidance
@@ -824,6 +828,8 @@
 ---@field QuestieFields {spawns: string[], drops: string[], level: string[], rank: string[]}
 ---@field TrackerHost ForeverTrackerHostAPI
 ---@field TrackerHostSettings fun(): ForeverTrackerSettings
+---@field TrackerModule fun(): AGFTrackerModule? the AGF tracker section, where RestedXP's secure action buttons attach
+---@field RXPActions AGFRXPActionsModule native-styled secure replacements for RestedXP's item and target windows
 ---@field Geometry AGFGeometry the native-geometry adapter (Geometry.lua)
 ---@field TITLE string
 ---@field L AGFStrings
