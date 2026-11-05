@@ -13,6 +13,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [Unreleased]
 
 - **The settings page opens without an error.** Its title asked the game for a font Forever does not have, which logged a Lua error each time the page was built; it now uses the font the game's own settings pages title with.
+- **The Adventure Guide micro-menu button gets its own slot.** With Field Guide Forever also installed, the two buttons sat on the same spot, so one hid the other, and either covered the game's own button beside Game Menu or Collections. Each Forever button now has a slot of its own, and the game's buttons move aside to make room.
 
 ## [1.0.11] - 2026-11-05
 

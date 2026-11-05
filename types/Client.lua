@@ -381,6 +381,10 @@ ITEM_QUALITY_COLORS = nil
 -- The client's micro menu bar and the buttons MicroButton.lua anchors against (FrameXML MicroMenu).
 ---@class AGFMicroMenu : Frame
 ---@field Layout fun(self: AGFMicroMenu)
+---@field childXPadding number? the grid's gap between buttons, negative where they overlap
+---@field isHorizontal boolean?
+---@field layoutFramesGoingRight boolean?
+---@field stride number? buttons per row
 ---@type AGFMicroMenu?
 MicroMenu = nil
 ---@type Button?
@@ -389,6 +393,19 @@ MainMenuMicroButton = nil
 CollectionsMicroButton = nil
 ---@type fun()
 UpdateMicroButtons = nil
+-- A child of the micro menu's grid: Blizzard's buttons carry the layout order the grid sorts by.
+---@class ForeverMicroGridChild : Frame
+---@field layoutIndex number?
+-- The registry every vendored copy of Core/MicroButton.lua shares, published by the first to load.
+---@class ForeverMicroButtonRegistry
+---@field buttons ForeverMicroButton[] every addon button, in creation order
+---@field Reflow? fun() the first copy's placement, which every copy runs
+---@field hookedUpdate boolean?
+---@field hookedScripts table<Frame, boolean>? the frames whose scripts are hooked, weak keys
+---@field events Frame? the frame listening for Edit Mode layout changes
+---@field first { button: Frame, origin: number, applied: number }? where the row's first button was placed last
+---@type ForeverMicroButtonRegistry?
+ForeverMicroButtons = nil
 
 -- Blizzard's own Adventure Guide micro button, hidden when the Forever button replaces it (Core/Core.lua).
 ---@type Button?
