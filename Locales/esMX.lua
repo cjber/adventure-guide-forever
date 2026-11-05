@@ -463,7 +463,7 @@ L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
 -- mt
-L["WHATS_NEW"] = "Los objetos y objetivos de los pasos de RestedXP usan los botones del juego." -- mt
+L["WHATS_NEW"] = "Subida de nivel por historias y rutas de misiones: la guía ahora dice para qué sirve." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
