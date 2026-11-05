@@ -15,6 +15,7 @@ python3 tools/gen_corpus.py   # builds the test corpus into tests/.corpus/ (neve
 tools/typecheck.sh
 for s in tests/*_spec.lua; do luajit "$s" || exit 1; done
 luajit -joff tests/plan_bench.lua
+AGF_QUESTIEDB=tools/.cache/questiedb-<QUESTIEDB_TAG>/QuestieDB luajit -joff tools/login_bench.lua # login cost on the real QuestieDB
 python3 tools/check_generated.py --offline # omit --offline to fetch missing pinned inputs
 python3 tools/changelog.py --check
 python3 tools/check_screenshots.py   # an image older than its scene; tools/screenshots.py re-records it

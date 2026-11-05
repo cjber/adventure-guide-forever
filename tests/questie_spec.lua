@@ -442,7 +442,7 @@ do
 end
 -- The composed catalogue is saved per character and reloaded in place of the build. These checks drive the
 -- production save path through tests/harness.lua: a save is only adopted for the exact inputs that produced it
--- (addon version, QuestieDB version and flavour, client build, locale, class, faction), a save that fails the
+-- (catalogue revision, QuestieDB version and flavour, client build, locale, class, faction), a save that fails the
 -- shape check rebuilds, and an adopted save is the built catalogue, value for value.
 -- Counts Questie's quest id reads: a build asks, an adopted save never does.
 local function Cat(version, charDB, change)
@@ -516,14 +516,18 @@ do
 	equal(adopted.ns.Data.quests[900001].title, "Provider-only quest", "the adopted records stand after ready")
 	equal(#adopted.errors, 0, "the late ready raises no error")
 end
--- A key that no longer matches neither adopts nor waits forever: Questie's ready callback builds the catalogue.
+-- A key that no longer matches neither adopts nor waits forever: Questie's ready callback builds the catalogue, and
+-- /agf timing names the input that changed and when the build ran.
 do
 	local charDB = SavedOnce("0.8.0")
 	local changed = harness.load({
-		version = "0.8.1",
+		version = "0.8.0",
 		questiedb = Fake(),
 		charDB = charDB,
-		setup = NotReady,
+		setup = function(loaded)
+			loaded.metadata.QuestieDB.Version = "0.0-other"
+			NotReady(loaded)
+		end,
 	})
 	equal(changed.ns.QuestieStatus.settled, false, "a changed key waits for Questie")
 	equal(changed.ns.QuestieBuilding(), true, "and holds the route")
@@ -537,7 +541,27 @@ do
 	equal(changed.ns.QuestieStatus.state, "questie", "the build lands")
 	equal(changed.ns.Data.quests[900002].title, "Collect", "a changed key builds the catalogue")
 	equal(changed.ns.Data.quests[900001], nil, "the build replaces the saved records")
+	local line = changed.ns.LoginTiming()
+	equal(
+		line:find("(saved one: questiedb)", 1, true) ~= nil,
+		true,
+		"the timing line names the changed input: " .. line
+	)
+	equal(line:find("Questie ready +", 1, true) ~= nil, true, "the timing line has Questie's ready: " .. line)
+	equal(line:find("first route +", 1, true) ~= nil, true, "the timing line has the first route: " .. line)
 	equal(#changed.errors, 0, "the rebuild raises no error")
+end
+
+-- An update to this addon that leaves the catalogue's producers alone keeps the saved catalogue: the addon version is
+-- not in the key, so the first login after updating adopts it rather than building for most of a minute (#373).
+do
+	local charDB = SavedOnce("0.8.0")
+	local updated, reads = Cat("0.8.1", charDB)
+	equal(reads, 0, "an update adopts the saved catalogue")
+	equal(updated.ns.QuestieStatus.state, "questie", "the adopted catalogue is ready")
+	local line = updated.ns.LoginTiming()
+	equal(line:find("saved catalogue adopted in", 1, true) ~= nil, true, "the timing line says it adopted: " .. line)
+	equal(#updated.errors, 0, "the update adopts without an error")
 end
 
 -- One Lua literal per value, as the client writes saved variables: the round trip proves the save is plain data
@@ -618,21 +642,13 @@ end
 -- Every input in the key invalidates the save on its own: a changed value rebuilds rather than adopting.
 for _, case in ipairs({
 	{
-		"addon version",
-		function()
-			return "0.8.1"
-		end,
-	},
-	{
 		"QuestieDB version",
-		nil,
 		function(loaded)
 			loaded.metadata.QuestieDB.Version = "0.0-other"
 		end,
 	},
 	{
 		"client build",
-		nil,
 		function(loaded)
 			loaded.G.GetBuildInfo = function()
 				return "1.60.2", "69914", "Sep 2 2026", 16002
@@ -641,7 +657,6 @@ for _, case in ipairs({
 	},
 	{
 		"locale",
-		nil,
 		function(loaded)
 			loaded.G.GetLocale = function()
 				return "deDE"
@@ -650,7 +665,6 @@ for _, case in ipairs({
 	},
 	{
 		"class",
-		nil,
 		function(loaded)
 			loaded.G.UnitClassBase = function()
 				return "MAGE"
@@ -659,7 +673,6 @@ for _, case in ipairs({
 	},
 	{
 		"faction",
-		nil,
 		function(loaded)
 			loaded.G.UnitFactionGroup = function()
 				return "Alliance"
@@ -668,8 +681,7 @@ for _, case in ipairs({
 	},
 }) do
 	local charDB = SavedOnce("0.8.0")
-	local version = case[2] and case[2]() or "0.8.0"
-	local rebuilt, reads = Cat(version, charDB, case[3])
+	local rebuilt, reads = Cat("0.8.0", charDB, case[2])
 	equal(reads > 0, true, "a changed " .. case[1] .. " rebuilds")
 	equal(rebuilt.ns.QuestieStatus.state, "questie", "a changed " .. case[1] .. " still lands")
 	equal(#rebuilt.errors, 0, "a changed " .. case[1] .. " raises no error")

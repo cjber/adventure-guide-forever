@@ -19,7 +19,8 @@ end
 -- an NPC QuestieDB gives none).
 do
 	local MAP = 1436
-	local reads = { Npc = {}, Object = {}, Item = {}, levels = {}, names = { Npc = {}, Object = {}, Item = {} } }
+	local reads =
+		{ Npc = {}, Object = {}, Item = {}, levels = {}, names = { Npc = {}, Object = {}, Item = {} }, camps = {} }
 	local rows = {
 		Npc = {
 			[1] = { spawns = { [MAP] = { { 28.4, 70.3 }, { 28.5, 70.4 }, { 28.3, 70.2 } } }, minLevel = 16 },
@@ -72,7 +73,7 @@ do
 	equal(ns.QuestieLevel("7.0"), 7, "a level from QuestieDB: a number")
 	equal(ns.QuestieLevel(0), false, "a zero level is none")
 	-- A QuestieDB without the field: no levels are read, and no spot has one.
-	local plain = { Npc = {}, Object = {}, Item = {}, names = { Npc = {}, Object = {}, Item = {} } }
+	local plain = { Npc = {}, Object = {}, Item = {}, names = { Npc = {}, Object = {}, Item = {} }, camps = {} }
 	local asked
 	local wrapped = lib.Npc.GetAll
 	lib.Npc.GetAll = function(id, keys)
