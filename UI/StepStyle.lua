@@ -14,9 +14,9 @@ end
 
 -- A rebuild draws the same step in several places, and the panel and tracker ask again for every line: their words and
 -- colours are kept per step and per checklist row, so a route change is the only time it is worked out.
----@type table<AGFStep|AGFGiver, {text: string, kind: string, id?: integer}[]>
+---@type table<AGFStep|AGFGiver, {text: string, kind: string, id?: integer, lower?: string}[]>
 local baseParts = setmetatable({}, { __mode = "k" })
----@type table<AGFStep|AGFGiver, {text: string, kind: string, id?: integer}[]>
+---@type table<AGFStep|AGFGiver, {text: string, kind: string, id?: integer, lower?: string}[]>
 local sortedParts = setmetatable({}, { __mode = "k" })
 ---@type table<AGFTownGiver, boolean>
 local rowNpc = setmetatable({}, { __mode = "k" })
@@ -77,7 +77,7 @@ end
 
 -- The word as a styled part, once, and only when it is long enough to mean something: a one- or two-letter NPC name
 -- would colour half a sentence.
----@param parts {text: string, kind: string, id?: integer}[]
+---@param parts {text: string, kind: string, id?: integer, lower?: string}[]
 ---@param seen table<string, true>
 ---@param text? string
 ---@param kind? string
@@ -101,8 +101,8 @@ end
 -- What AGF's own data names in `step`: its quests in gold, the NPCs they start and end at by their side, the items
 -- its objectives name, and its zone.
 ---@param step? AGFStep|AGFGiver
----@param extra? {text: string, kind: string, id?: integer}[]
----@return {text: string, kind: string, id?: integer}[]
+---@param extra? {text: string, kind: string, id?: integer, lower?: string}[]
+---@return {text: string, kind: string, id?: integer, lower?: string}[]
 function Style.StepParts(step, extra)
 	if step and not extra and baseParts[step] then
 		return baseParts[step]
@@ -149,7 +149,7 @@ end
 -- shorter name inside it. One pass over the line keeps two names from colouring each other's markup.
 ---@param step? AGFStep|AGFGiver
 ---@param text? string
----@param extra? {text: string, kind: string, id?: integer}[]
+---@param extra? {text: string, kind: string, id?: integer, lower?: string}[]
 ---@return string
 function Style.Step(step, text, extra)
 	text = text or ""
@@ -181,20 +181,33 @@ function Style.Step(step, text, extra)
 			sortedParts[step] = parts
 		end
 	end
-	local lower, out, index = text:lower(), {}, 1
-	while index <= #text do
-		local found
-		for _, part in ipairs(parts) do
-			local size = #part.text
-			if lower:sub(index, index + size - 1) == part.text:lower() then
-				found = part
-				break
+	local lower = text:lower()
+	local active = {}
+	for _, part in ipairs(parts) do
+		part.lower = part.lower or part.text:lower()
+		if lower:find(part.lower, 1, true) then
+			active[#active + 1] = part
+		end
+	end
+	if #active == 0 then
+		return text
+	end
+	local out, from = {}, 1
+	while from <= #text do
+		local at, found
+		for _, part in ipairs(active) do
+			local first = lower:find(part.lower, from, true)
+			if first and (not at or first < at or (first == at and #part.text > #found.text)) then
+				at, found = first, part
 			end
 		end
-		local size = found and #found.text or 1
-		out[#out + 1] = found and Style.Wrap(Style.Color(found.kind, found.id), text:sub(index, index + size - 1))
-			or text:sub(index, index)
-		index = index + size
+		if not at then
+			out[#out + 1] = text:sub(from)
+			break
+		end
+		out[#out + 1] = text:sub(from, at - 1)
+		out[#out + 1] = Style.Wrap(Style.Color(found.kind, found.id), text:sub(at, at + #found.text - 1))
+		from = at + #found.text
 	end
 	return table.concat(out)
 end

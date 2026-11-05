@@ -1319,8 +1319,8 @@
 ---@field Color fun(role?: string, id?: integer): ColorMixin?
 ---@field Wrap fun(color?: ColorMixin, text?: string): string
 ---@field Quest fun(text?: string): string
----@field StepParts fun(step?: AGFStep|AGFGiver, extra?: {text: string, kind: string, id?: integer}[]): {text: string, kind: string, id?: integer}[]
----@field Step fun(step?: AGFStep|AGFGiver, text?: string, extra?: {text: string, kind: string, id?: integer}[]): string
+---@field StepParts fun(step?: AGFStep|AGFGiver, extra?: {text: string, kind: string, id?: integer, lower?: string}[]): {text: string, kind: string, id?: integer, lower?: string}[]
+---@field Step fun(step?: AGFStep|AGFGiver, text?: string, extra?: {text: string, kind: string, id?: integer, lower?: string}[]): string
 ---@field StepTitle fun(step?: AGFStep|AGFGiver, text?: string): string
 ---@field Checklist fun(step?: AGFStep, row?: AGFTownGiver): string
 
