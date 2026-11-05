@@ -466,7 +466,7 @@ L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
 -- mt
-L["WHATS_NEW"] = "Shortest Path vous guide à nouveau dans les étapes de RestedXP." -- mt
+L["WHATS_NEW"] = "Les quêtes de votre journal guident jusqu'à ce que vous choisissiez un autre voyage." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"
