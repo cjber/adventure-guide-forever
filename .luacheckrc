@@ -197,6 +197,7 @@ read_globals = {
 	"C_MapExplorationInfo",
 	-- Settings.lua
 	"Settings",
+	"MenuUtil",
 	"CreateSettingsButtonInitializer",
 	-- Window.lua and its tabs
 	"UISpecialFrames",
