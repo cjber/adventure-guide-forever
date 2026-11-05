@@ -41,6 +41,8 @@ def load_wowmock():
         wm.FONTS.setdefault("QuestTitleFontBlackShadow", wm.Font("fonts/morpheus.ttf", 18, wm.NORMAL, (1, -1)))
         # GameFontBlack: SystemFont_Med1 (FRIZQT at 12) in black, no shadow; the journal loot row's metadata.
         wm.FONTS.setdefault("GameFontBlack", wm.Font(wm.FRIZQT, 12, (0, 0, 0)))
+        # GameFontBlackTiny: SystemFont_Tiny (FRIZQT at 9) in black, no shadow; the achievement toast's heading.
+        wm.FONTS.setdefault("GameFontBlackTiny", wm.Font(wm.FRIZQT, 9, (0, 0, 0)))
     return wm
 
 

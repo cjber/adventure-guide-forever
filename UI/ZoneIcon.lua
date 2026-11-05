@@ -64,7 +64,7 @@ end
 
 -- The art under `icon`'s clip: a window `span` by `tall` map pixels round `x`, `y`, kept EDGE inside the art, drawn
 -- `icon.width` across. Only the tiles and overlay pieces the window shows are placed.
----@param icon AGFZoneIcon|AGFZoneBackdrop
+---@param icon AGFZoneIcon
 ---@param map integer
 ---@param base integer[]
 ---@param overlays table
@@ -197,48 +197,4 @@ function ZoneIcon.Set(icon, atlas, map, x, y, span)
 	---@cast x -?
 	---@cast y -?
 	Fill(icon, map, base, overlays, x, y, span, span)
-end
-
--- A card's backdrop in the Adventure Guide window: the same zone art as a rectangle with no ring, mask or badge, cut
--- round the card's next town. Hidden where the data has no art for the zone, so the card's own fill shows.
----@param parent Frame
----@return AGFZoneBackdrop
-function ZoneIcon.CreateBackdrop(parent)
-	local backdrop = CreateFrame("Frame", nil, parent) --[[@as AGFZoneBackdrop]]
-	backdrop.width = 0
-	backdrop.Clip = CreateFrame("Frame", nil, backdrop)
-	backdrop.Clip:SetAllPoints()
-	backdrop.Clip:SetClipsChildren(true)
-	local art = CreateFrame("Frame", nil, backdrop.Clip) --[[@as AGFZoneIconArt]]
-	art.base, art.overlays = {}, {}
-	backdrop.Art = art
-	return backdrop
-end
-
--- The zone's art round `x`, `y` in `width` by `height`, `span` map pixels across; false, and hidden, when there is
--- none.
----@param backdrop AGFZoneBackdrop
----@param width number
----@param height number
----@param map? integer
----@param x? number
----@param y? number
----@param span number
----@return boolean drawn
-function ZoneIcon.SetBackdrop(backdrop, width, height, map, x, y, span)
-	local overlays, base = Drawable(map, x, y)
-	local drawn = base ~= nil
-	backdrop:SetShown(drawn)
-	if not drawn then
-		backdrop.key = nil
-		return false
-	end
-	---@cast base -?
-	---@cast overlays -?
-	---@cast x -?
-	---@cast y -?
-	backdrop:SetSize(width, height)
-	backdrop.width = width
-	Fill(backdrop, map --[[@as integer]], base, overlays, x, y, span, span * height / width)
-	return true
 end

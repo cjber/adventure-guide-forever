@@ -4,14 +4,44 @@ local L = ns.L
 ---@class AGFStoryCompletion
 local Stories = {}
 ns.StoryCompletion = Stories
----@type {key: string, title: string, quest: integer}[]
-local queue = {}
----@type AGFWindowCard?
-local popup
----@type FontString
-local title
-local ready, showing = false, false
-local ShowNext
+
+-- The toast is the client's own achievement alert (Mainline/AlertFrameSystems.xml:173), queued through AlertFrame
+-- like the achievement system's (two on screen, six waiting). It carries no achievement ID, so a left click opens
+-- nothing (AchievementAlertFrame_OnClick returns without one) and a right click dismisses it.
+local TEMPLATE = "AchievementAlertFrameTemplate"
+local ICON = "Interface\\Icons\\Achievement_Quests_Completed_08"
+
+---@class AGFStoryAlert : Button
+---@field Unlocked FontString
+---@field Name FontString
+---@field Icon Frame|{Texture: Texture}
+---@field Shield Frame
+---@field id integer?
+
+-- Fills a pooled toast: the shield's points hide and the heading centres as an achievement already earned does
+-- (AchievementAlertFrame_SetUp); the sound plays as it shows, so a queued story sounds when its turn comes.
+---@param frame AGFStoryAlert
+---@param record {key: string, title: string}
+local function SetUp(frame, record)
+	frame.id = nil
+	frame.Shield:Hide()
+	frame.Unlocked:SetPoint("TOP", 27, -23)
+	frame.Unlocked:SetText(L.STORY_COMPLETE)
+	frame.Name:SetText(record.title)
+	ns.Art.Icon(frame.Icon.Texture, ICON, 52)
+	ns.Sound.Complete(record.key, true)
+end
+
+---@type AGFAlertSubSystem?
+local system
+-- Registered at the first story finished, so a session that finishes none adds nothing to AlertFrame. The
+-- achievement system's own global stands for its template being loaded.
+local function System()
+	if not system and AlertFrame and AchievementAlertSystem then
+		system = AlertFrame:AddQueuedAlertFrameSubSystem(TEMPLATE, SetUp, 2, 6)
+	end
+	return system
+end
 
 ---@param questID integer
 ---@return boolean
@@ -28,64 +58,11 @@ function Stories.Record(questID)
 	local head = ns.Data.quests[story.members[1]]
 	local record = { key = key, title = head.title, quest = questID }
 	records[key] = record
-	queue[#queue + 1] = record
-	ShowNext()
+	local alerts = System()
+	if alerts then
+		alerts:AddAlert(record)
+	else
+		ns.Sound.Complete(key, true)
+	end
 	return true
 end
-
-ShowNext = function()
-	if showing or not ready or not queue[1] then
-		return
-	end
-	if not popup then
-		popup = ns.Widgets.CreateCard(UIParent, false)
-		ns.Widgets.SizeCard(popup, 360, 82, 0.95)
-		popup:SetPoint("TOP", UIParent, "TOP", 0, -180)
-		popup:SetFrameStrata("DIALOG")
-		popup:EnableMouse(false)
-		local inner = CreateFrame("Frame", nil, popup)
-		inner:SetAllPoints()
-		inner:SetFrameLevel(popup:GetFrameLevel() + 6)
-		local icon = ns.Widgets.CreateRingIcon(inner, 42)
-		icon:SetPoint("LEFT", 18, 0)
-		ns.Widgets.SetRingIcon(icon, "QuestNormal")
-		local heading = ns.Widgets.Heading(inner, L.STORY_COMPLETE)
-		heading:SetPoint("TOPLEFT", 76, -18)
-		title = inner:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-		title:SetPoint("TOPLEFT", 76, -38)
-		title:SetWidth(264)
-		title:SetJustifyH("LEFT")
-		title:SetWordWrap(true)
-		title:SetMaxLines(2)
-		popup.Highlight:Hide()
-	end
-	local record = table.remove(queue, 1)
-	showing = true
-	title:SetText(record.title)
-	popup:SetAlpha(1)
-	popup:Show()
-	popup.Highlight:Show()
-	C_Timer.After(0.8, function()
-		popup.Highlight:Hide()
-	end)
-	ns.Sound.Complete(record.key, true)
-	C_Timer.After(6, function()
-		for index = 1, 4 do
-			C_Timer.After(index * 0.1, function()
-				popup:SetAlpha(1 - index / 4)
-				if index == 4 then
-					popup:Hide()
-					showing = false
-					ShowNext()
-				end
-			end)
-		end
-	end)
-end
-
-EventUtil.ContinueAfterAllEvents(function()
-	C_Timer.After(0, function()
-		ready = true
-		ShowNext()
-	end)
-end, "VARIABLES_LOADED", "PLAYER_ENTERING_WORLD")

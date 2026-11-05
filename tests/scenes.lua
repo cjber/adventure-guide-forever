@@ -210,14 +210,11 @@ out.map = { stops = stops, pins = Pins(h), player = { map = h.player.map, x = h.
 h = Load("v1", false, true)
 h.flush()
 h.ns.StoryCompletion.Record(849)
-local popup = h.Find(function(frame)
-	return frame.Fill and frame:GetWidth() == 360 and frame:GetHeight() == 82
-end)
-assert(popup[1], "story completion popup missing")
+local toast = assert(h.alerts[1], "story completion toast missing")
 if input.rects.story_complete then
-	h.SetRects(popup[1], input.rects.story_complete)
+	h.SetRects(toast, input.rects.story_complete)
 end
-out.story_complete = { layout = h.ns.DumpLayout(popup[1], h.Describe) }
+out.story_complete = { layout = h.ns.DumpLayout(toast, h.Describe) }
 
 -- AtlasLoot Classic's Deadmines record: Edwin VanCleef (639), Cruel Barb (5191).
 h = harness.load({ items = { [5191] = { name = "Cruel Barb" } } })

@@ -889,14 +889,6 @@
 ---@class AGFZoneIconModule
 ---@field Create fun(parent: Frame, size: number, badge: number): AGFZoneIcon a round zone icon, its art `size` across and the kind badge `badge`
 ---@field Set fun(icon: AGFZoneIcon, atlas: string, map?: integer, x?: number, y?: number, span: number) the zone's art round (x, y), `span` map pixels across; the plain ring with `atlas` centred when there is none
----@field CreateBackdrop fun(parent: Frame): AGFZoneBackdrop a card's rectangular zone art, for the Adventure Guide window
----@field SetBackdrop fun(backdrop: AGFZoneBackdrop, width: number, height: number, map?: integer, x?: number, y?: number, span: number): boolean the zone's art round (x, y) in width x height, `span` map pixels across; false and hidden when there is none
-
----@class AGFZoneBackdrop : Frame
----@field Clip Frame
----@field Art AGFZoneIconArt
----@field width number
----@field key? string the zone and window drawn
 
 ---@class AGFNamespace
 ---@field ZoneIcon AGFZoneIconModule
@@ -1986,16 +1978,6 @@ AdventureGuideForever = nil
 ---@field JOURNEY_PROGRESS_EMPTY string
 ---@field LEGACY_PROGRESS_LINK string
 ---@field LEGACY_PROGRESS_NOTE string
-
----@class AGFDungeonRow
----@field Icon Texture
----@field Ring AGFRingIcon
-
----@class AGFDungeonRow
----@field journey? AGFJourney
-
----@class AGFJourneyBanner : AGFWindowCard
----@field journey? AGFJourney
 
 ---@class AGFNamespace
 

@@ -45,6 +45,20 @@ UIFrameFlashStop = nil
 ---@type DropdownButton?
 AddonCompartmentFrame = nil
 
+-- Blizzard_FrameXML Mainline/AlertFrames.lua:354: the alert container; a queued subsystem shows up to `maxAlerts` frames
+-- of `template` at once, each filled by `setUp` with what AddAlert was given, and holds up to `maxQueue` more.
+---@class AGFAlertSubSystem
+---@field AddAlert fun(self: AGFAlertSubSystem, ...: any): boolean
+
+---@class AGFAlertContainer : Frame
+---@field AddQueuedAlertFrameSubSystem fun(self: AGFAlertContainer, template: string, setUp: fun(frame: any, ...: any), maxAlerts?: integer, maxQueue?: integer): AGFAlertSubSystem
+---@type AGFAlertContainer?
+AlertFrame = nil
+
+-- Mainline/AlertFrameSystems.lua:429: the achievement toasts' subsystem, present once AchievementAlertFrameTemplate is.
+---@type AGFAlertSubSystem?
+AchievementAlertSystem = nil
+
 -- UIErrorsFrame.lua: the red line at the top of the screen, as the client shows its own errors.
 ---@type {AddExternalErrorMessage: fun(self: any, message: string)}
 UIErrorsFrame = nil

@@ -299,8 +299,14 @@ def draw_alpha_highlight(canvas, entry, rect, layer):
     which no scene holds."""
 
 
+def draw_achievement_alert(canvas, entry, rect, layer):
+    """AchievementAlertFrameTemplate (Mainline/AlertFrameSystems.xml:173): its background, text, icon and shield are
+    the harness's regions and child frames, drawn as the dump has them; the glow and shine only animate."""
+
+
 # name: (draw(canvas, entry, rect, layer), its <Size> by (ui, entry) or None, its own <Anchors> or None, frameLevel)
 STOCK = {
+    "AchievementAlertFrameTemplate": (draw_achievement_alert, lambda ui, entry: (300, 101), None, 0),
     "UICheckButtonTemplate": (draw_check_button, lambda ui, entry: (32, 32), None, 0),
     "TabSystemTopButtonTemplate": (draw_top_tab, None, None, 0),
     "CollapseButtonTemplate": (draw_collapse_button, None, None, 0),
