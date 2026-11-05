@@ -18,4 +18,5 @@ ignore:
   - media/icon.svg
   - media/icon-400.png
   - stylua.toml
+  - ruff.toml
   - .claude
