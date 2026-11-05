@@ -797,6 +797,7 @@
 ---@class AGFRXPActionsModule
 ---@field Refresh fun() rebuild the secure item and target buttons, or queue the change during combat
 ---@field Reserve fun(module: AGFTrackerModule) add the action rows' height below the tracker section's own blocks
+---@field Shown fun(): boolean the action rows are on screen, so RestedXP's own item and target windows stay hidden
 
 -- The guidance lifecycle (Guidance.lua): the one writer of AGFPrefs.guided and AGFPrefs.waypoint. Choosing, starting
 -- and stopping are ns.Choose, ns.StartRoute and ns.Stop.

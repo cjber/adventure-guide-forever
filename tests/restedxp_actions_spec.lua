@@ -52,8 +52,8 @@ local talk = assert(h.G.AdventureGuideForeverTarget1)
 local kill = assert(h.G.AdventureGuideForeverTarget2)
 assert(talk:IsShown() and kill:IsShown(), "one target button per step target")
 assert(talk:GetAttribute("type1") == "macro", "a target button is a secure macro")
-assert(talk:GetAttribute("macrotext") == "/targetexact Quartermaster", "a talk target names its NPC")
-assert(kill:GetAttribute("macrotext") == "/targetexact Plainstrider", "a kill target names its creature")
+assert(talk:GetAttribute("macrotext") == "/cleartarget\n/targetexact Quartermaster", "a talk target names its NPC")
+assert(kill:GetAttribute("macrotext") == "/cleartarget\n/targetexact Plainstrider", "a kill target names its creature")
 assert(talk.Glow:IsShown() and not kill.Glow:IsShown(), "the current target is the one marked")
 assert(talk.Icon.file == "portrait:target", "the current target shows its portrait")
 assert(talk.Binding:GetText() == "ALT-2" and talk.Binding:IsShown(), "the target button shows its key binding")
@@ -83,7 +83,10 @@ ns.RXPActions.Refresh()
 Aim({ [9012] = true }, { "New Quartermaster" }, {})
 assert(h.counts.CreateFrame == created, "combat creates no secure action frame")
 assert(scroll:GetAttribute("item") == "item:1234", "combat leaves the old item action in place")
-assert(talk:GetAttribute("macrotext") == "/targetexact Quartermaster", "combat leaves the old target in place")
+assert(
+	talk:GetAttribute("macrotext") == "/cleartarget\n/targetexact Quartermaster",
+	"combat leaves the old target in place"
+)
 assert(root:IsShown(), "the actions already shown stay put through combat")
 local combatPoint, combatParent = root:GetPoint(1)
 assert(
@@ -104,7 +107,10 @@ assert(scroll:GetAttribute("item") == "item:1234", "a bag change in combat leave
 targetName = "Plainstrider"
 h.fire("PLAYER_TARGET_CHANGED")
 assert(not talk.Glow:IsShown() and kill.Glow:IsShown(), "a target change in combat moves the glow only")
-assert(talk:GetAttribute("macrotext") == "/targetexact Quartermaster", "a target change leaves the macro in place")
+assert(
+	talk:GetAttribute("macrotext") == "/cleartarget\n/targetexact Quartermaster",
+	"a target change leaves the macro in place"
+)
 targetName = "Quartermaster"
 h.fire("PLAYER_TARGET_CHANGED")
 assert(talk.Glow:IsShown() and not kill.Glow:IsShown(), "the glow follows the current target back mid-fight")
@@ -112,9 +118,80 @@ h.SetCombat(false)
 h.flush()
 assert(scroll:GetAttribute("item") == "item:9012", "combat's end applies the step's new item")
 assert(scroll.Count:GetText() == "2", "the new item's count is read when it applies")
-assert(talk:GetAttribute("macrotext") == "/targetexact New Quartermaster", "combat's end applies the new target")
+assert(
+	talk:GetAttribute("macrotext") == "/cleartarget\n/targetexact New Quartermaster",
+	"combat's end applies the new target"
+)
 assert(not potion:IsShown(), "an item no longer in the step is hidden after combat")
 assert(not kill:IsShown(), "a target no longer in the step is hidden after combat")
+
+-- An item's icon starts from its own colours: a cleared range or cooldown leaves no old tint behind, and the range tint
+-- wins when both apply.
+local originalCooldown, originalRange = h.G.C_Item.GetItemCooldown, h.G.C_Item.IsItemInRange
+h.G.C_Item.GetItemCooldown = function()
+	return 0, 0, 1
+end
+h.G.C_Item.IsItemInRange = function()
+	return false
+end
+ns.RXPActions.Refresh()
+local r, g, b = unpack(scroll.Icon.vertexColor)
+assert(r == 1 and g == 0.1 and b == 0.1, "an out-of-range item tints its icon red")
+assert(scroll.Range:IsShown(), "the range marker shows out of range")
+h.G.C_Item.IsItemInRange = function()
+	return nil
+end
+ns.RXPActions.Refresh()
+r, g, b = unpack(scroll.Icon.vertexColor)
+assert(r == 1 and g == 1 and b == 1, "a cleared range restores the icon's own colours")
+assert(not scroll.Range:IsShown(), "the range marker hides back in range")
+h.G.C_Item.GetItemCooldown = function()
+	return 0, 30, 0
+end
+ns.RXPActions.Refresh()
+r, g, b = unpack(scroll.Icon.vertexColor)
+assert(r == 0.4 and g == 0.4 and b == 0.4, "a disabled cooldown tints the icon after the reset")
+h.G.C_Item.IsItemInRange = function()
+	return false
+end
+ns.RXPActions.Refresh()
+r, g, b = unpack(scroll.Icon.vertexColor)
+assert(r == 1 and g == 0.1 and b == 0.1, "the range tint is applied after the cooldown tint")
+
+-- The item range is re-read while the player moves: a throttled OnUpdate refresh of the shown item buttons only.
+local polls = 0
+h.G.C_Item.GetItemCooldown = function()
+	return 0, 0, 1
+end
+h.G.C_Item.IsItemInRange = function()
+	polls = polls + 1
+	return false
+end
+ns.RXPActions.Refresh()
+local update = assert(root:GetScript("OnUpdate"), "the shown item rows poll the item's range")
+update(root, 1) -- clear any time the harness frames already added
+polls = 0
+update(root, 0.19)
+assert(polls == 0, "the poll waits for its 0.2 s interval")
+update(root, 0.01)
+assert(polls == 1, "the poll reads the item's range once the interval passes")
+r, g, b = unpack(scroll.Icon.vertexColor)
+assert(
+	r == 1 and g == 0.1 and b == 0.1 and scroll.Range:IsShown(),
+	"a move out of range tints the icon without a bag event"
+)
+root:Hide()
+update(root, 0.2)
+assert(polls == 1, "the poll does nothing while the rows are hidden")
+root:Show()
+Aim({}, { "Quartermaster" }, {})
+assert(root:IsShown(), "a target-only step still shows its target row")
+assert(root:GetScript("OnUpdate") == nil, "the poll is off when the step has no item button")
+Aim({ [9012] = true }, { "New Quartermaster" }, {})
+assert(root:GetScript("OnUpdate"), "the poll returns with the item button")
+h.G.C_Item.GetItemCooldown = originalCooldown
+h.G.C_Item.IsItemInRange = originalRange
+ns.RXPActions.Refresh()
 
 -- AGF hides RXP's own windows only while it steers, and gives back what RXP itself was showing.
 local itemFrame = h.G.CreateFrame("Frame", nil, h.G.UIParent)
@@ -126,6 +203,16 @@ engine.targeting = { activeTargetFrame = targetFrame }
 ns.RestedXP.Refresh()
 h.flush()
 assert(not itemFrame:IsShown() and not targetFrame:IsShown(), "RXP's action windows stay hidden while AGF steers")
+-- Turning the tracker setting off while the guide stays active hides AGF's rows and gives RXP its windows back; turning
+-- it on again takes them away.
+ns.SetSetting("showTracker", false)
+h.flush()
+assert(not root:IsShown(), "the tracker setting hides the AGF action rows")
+assert(itemFrame:IsShown() and targetFrame:IsShown(), "the tracker setting gives RXP's action windows back")
+ns.SetSetting("showTracker", true)
+h.flush()
+assert(root:IsShown(), "the tracker setting brings the AGF action rows back")
+assert(not itemFrame:IsShown() and not targetFrame:IsShown(), "the AGF action rows hide RXP's windows again")
 ns.SetSetting("restedxpGuide", false)
 h.flush()
 assert(itemFrame:IsShown() and targetFrame:IsShown(), "stopping AGF gives RXP's action windows back")

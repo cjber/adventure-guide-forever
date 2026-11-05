@@ -370,6 +370,10 @@ function ns.SetSetting(key, value)
 	if key == "hideQuestieTracker" or key == "showTracker" then
 		ns.QuestieOptions.ApplyTracker()
 	end
+	-- Turning the tracker off hides AGF's action rows out of combat (and gives RestedXP's own windows back).
+	if key == "showTracker" and ns.RXPActions then
+		ns.RXPActions.Refresh()
+	end
 	if key == "partyQuests" then
 		ns.Party.Apply()
 	end

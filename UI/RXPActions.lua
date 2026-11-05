@@ -2,15 +2,17 @@
 local _, ns = ...
 
 --[[ Native-styled replacements for RestedXP's item and target windows while AGF steers its guide (#334). The buttons
-     are secure: an item button uses the client's own item action, and a target button is a /targetexact macro. Their
-     frames are built, shown, hidden, moved and given attributes only out of combat; mid-fight only count, cooldown,
-     range tint, glow and icon follow the client, and a change seen during a fight waits for PLAYER_REGEN_ENABLED.
-     RestedXP's own windows are hidden and restored by Integrations/RestedXP.lua. ]]
+     are secure: an item button uses the client's own item action, and a target button is a /cleartarget + /targetexact
+     macro. Their frames are built, shown, hidden, moved and given attributes only out of combat; mid-fight only count,
+     cooldown, range tint, glow and icon follow the client, and a change seen during a fight waits for
+     PLAYER_REGEN_ENABLED. RestedXP's own windows are hidden while these are shown and restored otherwise, by
+     Integrations/RestedXP.lua. ]]
 
 local ITEM_SIZE = 26
 local FRAME_SIZE = 42
 local GAP = 2
 local ROW_GAP = 4
+local POLL_INTERVAL = 0.2
 local TARGET_ICON = { target = 2056011, mob = 135274, unitscan = 135274 }
 local QUESTION_ICON = "Interface\\Icons\\INV_Misc_QuestionMark"
 local HIGHLIGHT = "Interface\\Buttons\\ButtonHilight-Square"
@@ -37,6 +39,9 @@ local itemButtons = {}
 ---@type AGFRXPActionButton[]
 local targetButtons = {}
 local appliedHeight = 0
+local pollElapsed = 0
+local polling = false
+local lastShown = false
 
 ---@param button AGFRXPActionButton
 ---@param name string
@@ -193,7 +198,7 @@ local function SetTarget(button, target, current)
 	button.targetName = target.name
 	button.targetKind = target.kind
 	button:SetAttribute("type1", "macro")
-	button:SetAttribute("macrotext", "/targetexact " .. target.name)
+	button:SetAttribute("macrotext", "/cleartarget\n/targetexact " .. target.name)
 	UpdateTargetVisual(button, current)
 end
 
@@ -203,6 +208,8 @@ local function UpdateItemState(button, itemID)
 	local count = C_Item.GetItemCount(itemID)
 	SetCount(button, count)
 
+	-- Start from the item's own colours, so a cleared cooldown or range leaves no tint behind.
+	button.Icon:SetVertexColor(1, 1, 1)
 	local start, duration, enable = C_Item.GetItemCooldown(itemID)
 	if start and duration and duration > 0 then
 		button.Cooldown:SetCooldown(start, duration)
@@ -219,6 +226,27 @@ local function UpdateItemState(button, itemID)
 		button.Icon:SetVertexColor(1, 0.1, 0.1)
 	else
 		button.Range:Hide()
+	end
+end
+
+-- The client re-reads an item's range as the player moves only when something asks it to, so a shown item button polls:
+-- four cheap reads a second, non-secure visuals only, and nothing while the rows are hidden or the step has no item.
+---@param _ Frame
+---@param elapsed number
+local function PollItemState(_, elapsed)
+	if not root or not root:IsShown() then
+		pollElapsed = 0
+		return
+	end
+	pollElapsed = pollElapsed + elapsed
+	if pollElapsed < POLL_INTERVAL then
+		return
+	end
+	pollElapsed = 0
+	for _, button in ipairs(itemButtons) do
+		if button:IsShown() and button.itemId then
+			UpdateItemState(button, button.itemId)
+		end
 	end
 end
 
@@ -304,6 +332,22 @@ local function Clear()
 	end
 end
 
+-- Whether AGF's own action rows are the thing on screen right now; RestedXP's native windows follow this.
+---@return boolean
+function Actions.Shown()
+	return root ~= nil and root:IsShown()
+end
+
+-- Hidden for any reason (the tracker setting, a collapsed section, a step without actions): RestedXP's own item and
+-- target windows come back, so a changed state asks the integration to reconcile them.
+local function NotifyShown()
+	local shown = Actions.Shown()
+	if shown ~= lastShown then
+		lastShown = shown
+		ns.RestedXP.Refresh()
+	end
+end
+
 local function Apply()
 	if InCombatLockdown() then
 		return
@@ -363,6 +407,12 @@ local function Apply()
 	else
 		root:Hide()
 	end
+	local wantPoll = #items > 0
+	if wantPoll ~= polling then
+		polling = wantPoll
+		pollElapsed = 0
+		root:SetScript("OnUpdate", wantPoll and PollItemState or nil)
+	end
 	if height ~= appliedHeight then
 		appliedHeight = height
 		module:MarkDirty()
@@ -385,6 +435,7 @@ function Actions.Reserve(module)
 			root:Show()
 		end
 	end
+	NotifyShown()
 	local shown = visible and root:IsShown() and ns.Setting("showTracker")
 	local height = shown and root:GetHeight() or 0
 	local reserved = module.rxpActionsReserved or 0
@@ -441,9 +492,11 @@ function Actions.Refresh()
 	end
 	if not (ns.RestedXP and ns.RestedXP.Active and ns.RestedXP.Active()) then
 		Clear()
+		NotifyShown()
 		return
 	end
 	Apply()
+	NotifyShown()
 end
 
 ns.RestedXP.OnChange(Actions.Refresh)

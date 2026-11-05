@@ -510,9 +510,15 @@ local function Sync()
 		Window(LibDBIcon10_RXPGuides)
 		SuppressMap(engine)
 		Window(engine.v2 and engine.v2.state and engine.v2.state.guideWindow and engine.v2.state.guideWindow.frame)
-		-- AGF's tracker draws native-styled item and target buttons in its own section (#334).
-		SuppressAction(engine.activeItemFrame)
-		SuppressAction(engine.targeting and engine.targeting.activeTargetFrame)
+		-- AGF's tracker draws native-styled item and target buttons in its own section (#334): RestedXP's own windows
+		-- are hidden only while those buttons are actually shown, and come back when the tracker setting, a collapsed
+		-- section or a step without actions leaves them off.
+		if ns.RXPActions and ns.RXPActions.Shown() then
+			SuppressAction(engine.activeItemFrame)
+			SuppressAction(engine.targeting and engine.targeting.activeTargetFrame)
+		else
+			RestoreActions(engine)
+		end
 		-- A step the player skipped ahead of RestedXP stays skipped, after a /reload too (#374).
 		ApplySkips(engine)
 		snapshot = Snapshot(engine)
