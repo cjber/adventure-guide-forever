@@ -109,7 +109,11 @@ for _, owned in pairs(markers) do
 end
 local future = upcoming.steps[2]
 assert(future.preview and not preview.ns.StartRoute(future), "a preview click cannot start out-of-order guidance")
-assert(not preview.ns.RestedXP.Skip(future.rxpIndex), "future guide steps cannot be skipped")
+local futureStep = preview.G.RXP.currentGuide.steps[future.rxpIndex]
+assert(preview.ns.RestedXP.Skip(future.rxpIndex) and futureStep.completed, "a future guide step is passed over")
+futureStep.completed = nil
+preview.ns.RestedXP.Refresh()
+preview.flush()
 preview.ns.OpenPanel()
 preview.flush()
 local futureRows = preview.Find(function(frame)

@@ -12,6 +12,19 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.12] - 2026-11-05
+
+- **The settings page opens without an error.** Its title asked the game for a font Forever does not have, which logged a Lua error each time the page was built; it now uses the font the game's own settings pages title with.
+- **The Adventure Guide micro-menu button gets its own slot.** With Field Guide Forever also installed, the two buttons sat on the same spot, so one hid the other, and either covered the game's own button beside Game Menu or Collections. Each Forever button now has a slot of its own, and the game's buttons move aside to make room.
+
+## [1.0.11] - 2026-11-05
+
+- **RestedXP's arrow points the way again.** Choosing the guide for a RestedXP guide hid RestedXP's own direction arrow along with its windows, so only the game's small waypoint marker was left and the way to the step was easy to lose. The arrow now stays where you put it and points at the step the guide shows; it steps aside only while you have chosen another journey, and Shortest Path's own arrow gives way to it, so one arrow leads. With TomTom installed, its arrow still shows only for waypoints set in it.
+- **Skip for now works on every RestedXP step.** Skipping a step still ahead in the guide did nothing, and a skip in combat was dropped. A step ahead is now passed over when the guide reaches it, as RestedXP does with its own skips, and a skip asked for in combat is made as soon as the fight ends.
+
+## [1.0.10] - 2026-11-05
+
+- **The objective tracker column stays still as you enter and leave combat.** All Objectives and your quests keep their place at the top, and the Forever sections always follow below them, so nothing swaps order, jumps or loses a line when a fight starts or ends.
 - **"Story complete" uses the game's achievement toast.** Finishing a quest chain now shows the same toast the game shows for an achievement, in its usual place above the action bars, headed "Story complete" and naming the chain. Two show at once and the rest wait their turn; right-click one to dismiss it.
 - **No more key binding warnings at login.** The game loads the Adventure Guide key binding file on its own, so the addon no longer lists it a second time, which logged five "Unrecognized XML" warnings every login.
 - **Hover a step marker to see the step.** The numbered markers on the minimap now show a tooltip naming the step: its number, what to do there as the tracker words it ("Talk to Iverron", "Turn in Iverron's Antidote"), done lines greyed, and the quest. World map markers for a RestedXP guide step show the same lines instead of the bare step title. Clicking the minimap still pings it as before.

@@ -401,15 +401,57 @@ for _, hidden in ipairs({ true, false }) do
 	arrow:SetShown(not hidden)
 	native.ns.SetSetting("restedxpGuide", true)
 	native.flush()
-	assert(arrow:GetAlpha() == 0, "integrated mode suppresses the RXP arrow presentation")
-	assert(arrow:IsShown() == not hidden, "suppression preserves RXP's engine visibility")
+	assert(arrow:GetAlpha() == 0.65, "RXP's arrow points the way to the guide's step")
+	assert(arrow:IsShown() == not hidden, "the guide keeps RXP's own arrow preference")
+	local point, _, _, x, y = arrow:GetPoint()
+	assert(point == "CENTER" and x == 24 and y == 36, "RXP's arrow stays where the player put it")
+	-- Another journey chosen: RXP's arrow would point away from the route being followed.
+	native.ns.Choose("quest:845")
+	native.flush()
+	assert(arrow:GetAlpha() == 0, "another chosen journey hides RXP's arrow")
+	native.ns.Choose(assert(native.ns.RestedXP.Journey()).key)
+	native.flush()
+	assert(arrow:GetAlpha() == 0.65, "choosing the guide again brings RXP's arrow back")
+	native.ns.Choose("quest:845")
+	native.flush()
 	native.ns.SetSetting("restedxpGuide", false)
 	native.flush()
 	assert(arrow:GetAlpha() == 0.65, "returning to RXP restores its arrow alpha")
 	assert(arrow:IsShown() == not hidden, "returning to RXP preserves the player's hidden-arrow choice")
 	assert(nativeEngine.settings.profile.disableArrow == hidden, "integration never writes RXP's arrow preference")
-	local point, _, _, x, y = arrow:GetPoint()
+	point, _, _, x, y = arrow:GetPoint()
 	assert(point == "CENTER" and x == 24 and y == 36, "returning to RXP restores its arrow position")
 	assert(#native.errors == 0, table.concat(native.errors, "\n"))
 end
 print("restedxp_mode_spec: map suppression, native waypoint ownership and arrow preferences passed")
+
+-- Skip for now, from the step menu, on every step it offers: the current step, one still ahead, and in combat.
+local skipping = harness.load({ spf = "v1", db = { autoStart = false } })
+local se = dofile("tests/rxp_fixture.lua")(skipping, 3)
+local function Key(index)
+	return assert(skipping.ns.RestedXP.Journey()).key .. ":step:" .. index
+end
+local function Shown(index)
+	for _, row in ipairs(skipping.ns.RestedXP.Snapshot().steps) do
+		if row.index == index then
+			return true
+		end
+	end
+	return false
+end
+assert(Shown(4), "the guide previews the steps ahead")
+skipping.ns.Skip(Key(4), "Continue the journey 2")
+skipping.flush()
+assert(se.currentGuide.steps[4].completed, "a step ahead is skipped the way RXP skips its own")
+assert(se.GetGuideProgress() == 2 and not Shown(4), "skipping a step ahead leaves the current step and drops the row")
+skipping.combat = true
+skipping.ns.Skip(Key(2), "Speak with the quartermaster")
+skipping.flush()
+assert(se.GetGuideProgress() == 2, "RXP's step waits for combat's end")
+skipping.combat = false
+skipping.fire("PLAYER_REGEN_ENABLED")
+skipping.flush()
+assert(se.GetGuideProgress() == 3, "a skip asked for in combat is made once it ends")
+assert(not skipping.ns.Prefs().skipped[Key(2)], "a guide step is skipped in RXP, never as a local skip")
+assert(#skipping.errors == 0, table.concat(skipping.errors, "\n"))
+print("restedxp_mode_spec: Skip for now on current, upcoming and in-combat steps passed")
