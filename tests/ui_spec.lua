@@ -1277,25 +1277,22 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Live(), 0, label .. ": disabling map marks releases the pins")
 
 	-- Design §2.8's menu for a town holding a log quest; Stop only once Go runs, Show quest never in combat.
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:1413:380"], "RightButton")
+	local head = ns.Route().steps[1]
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[head.key], "RightButton")
 	local menu = {
-		"title: Turn in: The Zhevra",
+		"title: " .. head.title,
 		"button: Go",
 		"button: Show quest",
 		"button: Skip for now",
 		"button: Choose another journey",
 	}
-	same(h.MenuLines(), WithNotThisQuest(ns, ns.Route().steps[1], menu), label .. ": tracker menu")
-	ns.Guidance.Navigate(ns.Route().steps[1])
+	same(h.MenuLines(), WithNotThisQuest(ns, head, menu), label .. ": tracker menu")
+	ns.Guidance.Navigate(head)
 	h.SetCombat(true)
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["town:1413:380"], "RightButton")
+	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[head.key], "RightButton")
 	h.SetCombat(false)
 	menu[3] = "button: Stop"
-	same(
-		h.MenuLines(),
-		WithNotThisQuest(ns, ns.Route().steps[1], menu, true),
-		label .. ": tracker menu while Go guides, in combat"
-	)
+	same(h.MenuLines(), WithNotThisQuest(ns, head, menu, true), label .. ": tracker menu while Go guides, in combat")
 	ns.Guidance.Cancel()
 	clean(h, label .. ": pins")
 end

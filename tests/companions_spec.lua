@@ -214,6 +214,7 @@ local function Recorder()
 	function root:CreateButton(text, onClick)
 		local button = { text = text, onClick = onClick }
 		function button.SetTooltip() end
+		function button.SetScrollMode() end
 		function button.CreateButton(_, ...)
 			return root:CreateButton(...)
 		end

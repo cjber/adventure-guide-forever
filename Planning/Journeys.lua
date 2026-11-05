@@ -22,13 +22,16 @@ local Nodes = ns.Planner.Steps.Nodes
 local Opens = ns.Planner.Steps.Opens
 local OutdoorElite = ns.Planner.Zones.OutdoorElite
 local Oversea = ns.Planner.Travel.Oversea
+local Pickable = ns.Planner.Laps.Pickable
 local PickupSteps = ns.Planner.Steps.PickupSteps
+local Planned = ns.Planner.Steps.Planned
 local QuestLevel = ns.Planner.Steps.QuestLevel
 local ReadDropped = ns.Planner.Eligibility.ReadDropped
 local Ready = ns.Planner.Steps.Ready
 local Rest = ns.Planner.Services.Rest
 local TrainerSteps = ns.Planner.Services.TrainerSteps
 local Trim = ns.Planner.Steps.Trim
+local ValidPlace = ns.Model.ValidPlace
 local Visit = ns.Planner.Steps.Visit
 
 -- The journey cards (docs/design.md §2.2), each holding only steps the player can take now.
@@ -151,12 +154,163 @@ local function Added(data, player, completed, log, prefs, elsewhere)
 	return ids
 end
 
+-- A few quests to pick up on the way (docs/design.md §2.2): while the client's log has room, the carry card offers
+-- givers whose whole quest -- its start, every objective and its hand-in -- stands within CARRY_YARDS of a stop the
+-- log's route already makes. The smallest detour comes first, and no more than the free slots, a card's worth of
+-- actions less the log's own quests, or CARRY_PICKUPS, so a 40-quest log gains a few quests on its way rather than a
+-- second journey's worth. The route keeps the pickups it chose while they stay open, so walking or taking one quest up
+-- does not shuffle its head with a new giver (docs/design.md §4.3). Only the log's route is the way: a card with no
+-- stop to go on, or with no client cap to read, offers none.
+local CARRY_PICKUPS, CARRY_YARDS = 3, 1200
+
+-- The slots the client's log has free; none when it gave no cap (a headless build) or the log is full, and the log's
+-- own count, which a card's room is measured against.
+---@return integer room, integer count
+local function Room(player, log)
+	local count = 0
+	for _ in pairs(log) do
+		count = count + 1
+	end
+	if not player.logMax then
+		return 0, count
+	end
+	return math.max(0, player.logMax - count), count
+end
+
+-- How far `points` stand from the nearest of `anchors`, on one continent: the sum ranks the quest (a farther point
+-- makes the whole detour longer), and the farthest one rejects it past CARRY_YARDS. Nil when a point is another map's
+-- or continent's, or one is too far.
+---@param anchors {map: integer, x: number, y: number, r?: number}[]
+---@param points {map: integer, x: number, y: number, r?: number}[]
+---@return number?
+local function Detour(data, anchors, points)
+	local total = 0
+	for _, point in ipairs(points) do
+		local best
+		for _, anchor in ipairs(anchors) do
+			local yards = Model.Yards(data, anchor, point)
+			if yards then
+				best = math.min(best or math.huge, math.max(0, yards - (anchor.r or 0) - (point.r or 0)))
+				if best == 0 then
+					break
+				end
+			end
+		end
+		if not best or best > CARRY_YARDS then
+			return nil
+		end
+		total = total + best
+	end
+	return total
+end
+
+-- The eligible quests worth taking up on the carry route's way (Detour), best first: no instance's or raid's, none the
+-- player added, and only quests a lap can plan (Pickable, every objective placed), so a suggestion never adds a town
+-- for work the route then drops. `saved` is the set the route chose before: it keeps it while each quest is still open
+-- and the log still has room, so a rebuild does not trade one giver for another. Level fit and ID break the detour tie.
+---@param eligible? integer[]
+---@param saved? integer[]
+---@return integer[]
+local function OnTheWay(data, player, log, eligible, candidates, added, prefs, saved)
+	-- In combat's cheap rebuild there is neither an eligibility pass nor a committed order to keep.
+	if not (eligible or saved) then
+		return NONE
+	end
+	local room, count = Room(player, log)
+	local limit = math.min(room, CARRY_PICKUPS, Model.MAX_STEPS - count)
+	if limit <= 0 then
+		return NONE
+	end
+	local taken = {}
+	for _, id in ipairs(added) do
+		taken[id] = true
+	end
+	local open
+	if eligible then
+		open = {}
+		for _, id in ipairs(eligible) do
+			open[id] = true
+		end
+	end
+	local anchors = {}
+	for _, step in ipairs(candidates) do
+		if step.kind ~= "trainer" and not prefs.skipped[step.key] and ValidPlace(step) then
+			anchors[#anchors + 1] = step
+		end
+	end
+	-- With no stop of its own the card has no way to offer.
+	if #anchors == 0 then
+		return NONE
+	end
+	if saved then
+		local kept = {}
+		for _, id in ipairs(saved) do
+			local quest = data.quests[id]
+			if
+				#kept < limit
+				and quest
+				and not taken[id]
+				and not log[id]
+				and Pickable(quest)
+				and (not open or open[id])
+			then
+				kept[#kept + 1] = id
+			end
+		end
+		if #kept > 0 then
+			return kept
+		end
+	end
+	if not eligible then
+		return NONE
+	end
+	local ranked = {}
+	for _, id in ipairs(eligible) do
+		local quest = data.quests[id]
+		if quest and not (quest.dungeon or quest.raid) and not taken[id] and Pickable(quest) then
+			local points, placed = { quest.start }, {}
+			for _, node in ipairs(Planned(quest, id, player.level)) do
+				points[#points + 1], placed[node.slot] = node, true
+			end
+			local complete = true
+			for slot in pairs(quest.need or NONE) do
+				complete = complete and placed[slot] == true
+			end
+			if complete and ValidPlace(quest.finish) then
+				points[#points + 1] = quest.finish
+			end
+			local detour = complete and Detour(data, anchors, points)
+			if detour then
+				ranked[#ranked + 1] = {
+					id = id,
+					detour = detour,
+					level = Model.LevelPreference(QuestLevel(data, log, player, id), player.level),
+				}
+			end
+		end
+	end
+	table.sort(ranked, function(a, b)
+		if a.detour ~= b.detour then
+			return a.detour < b.detour
+		elseif a.level ~= b.level then
+			return a.level < b.level
+		end
+		return a.id < b.id
+	end)
+	local ids = {}
+	for index = 1, math.min(limit, #ranked) do
+		ids[index] = ranked[index].id
+	end
+	return ids
+end
+
 -- "Quests in your log": every accepted quest's turn-ins and objectives, plus quests
--- the player added that no zone card holds (`added`). The subline counts every quest the card holds, including
--- those outside the route and those nothing places.
+-- the player added that no zone card holds (`added`), and a few worth taking up on the way (OnTheWay). The subline
+-- counts every quest the card holds, including those outside the route and those nothing places.
 ---@param ready table<integer, AGFPlace>
 ---@param added integer[]
-local function Carry(data, player, completed, log, ready, prefs, mapName, added)
+---@param eligible? integer[]
+local function Carry(data, player, completed, log, ready, prefs, mapName, added, eligible)
 	local candidates, stops = TrainerSteps(data, player, prefs, "carry"), {}
 	local plan = { areas = {}, anchors = {} }
 	local held = LogSteps(data, player, log, ready, function(id)
@@ -165,10 +319,20 @@ local function Carry(data, player, completed, log, ready, prefs, mapName, added)
 	PickupSteps(data, added, function()
 		return true
 	end, candidates, stops)
+	local committed = State.committedOrders and State.committedOrders["carry"]
+	local onWay = OnTheWay(data, player, log, eligible, candidates, added, prefs, committed and committed.pickups)
+	PickupSteps(data, onWay, function()
+		return true
+	end, candidates, stops)
 	local steps = State.committedOrders
 			and Laps(data, player, completed, log, candidates, plan, prefs, mapName, nil, nil, "carry")
 		or Build(data, player, completed, log, candidates, prefs, mapName)
-	steps = #added > 0 and Within(data, player, completed, log, steps) or steps
+	steps = (#added > 0 or #onWay > 0) and Within(data, player, completed, log, steps) or steps
+	-- Keep this build's pickups with the card's committed order, so the next build keeps the same givers.
+	committed = State.committedOrders and State.committedOrders["carry"]
+	if committed then
+		committed.pickups = #onWay > 0 and onWay or nil
+	end
 	if steps[1] and Model.Here(data, player, steps, State.heldHere, State.camps) == 1 then
 		steps[1].here = true
 	end
@@ -967,7 +1131,7 @@ function Model.Journeys(
 	local added = Added(data, player, completed, log, prefs, function(quest)
 		return not onStory(quest)
 	end)
-	journeys[#journeys + 1] = Carry(data, player, completed, log, ready, prefs, mapName, added)
+	journeys[#journeys + 1] = Carry(data, player, completed, log, ready, prefs, mapName, added, eligible)
 	-- Story and carry routes can exhaust a frame before the alternative zones.
 	Yield()
 	-- Every zone with a useful pickup is an option, ranked for the player's level now.

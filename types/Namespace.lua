@@ -347,6 +347,7 @@
 ---@class AGFOrder: string[]
 ---@field picked? table<integer, true>
 ---@field taken? table<integer, true> the quests its steps pick up, past the step limit too
+---@field pickups? integer[] the carry card's pickups on its way, which the next build keeps
 
 -- One requirement in the why-not view (Model.Why).
 ---@class AGFWhyLine
@@ -1827,10 +1828,11 @@
 
 ---@class AGFPlannerLaps
 ---@field Laps fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, candidates: AGFStep[], plan: AGFPlanAreas, prefs: AGFPrefs, mapName: AGFMapName?, leadID: integer?, join: (fun(selected: AGFStep[]))?, card: string): AGFStep[]?
+---@field Pickable fun(quest: AGFQuest): boolean
 
 ---@class AGFPlannerJourneys
 ---@field Added fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, elsewhere: (fun(quest: AGFQuest): boolean)): integer[]
----@field Carry fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, ready: table<integer, AGFPlace>, prefs: AGFPrefs, mapName: AGFMapName?, added: integer[]): AGFJourney?
+---@field Carry fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, ready: table<integer, AGFPlace>, prefs: AGFPrefs, mapName: AGFMapName?, added: integer[], eligible?: integer[]): AGFJourney?
 ---@field Summarise fun(journey: AGFJourney)
 
 ---@class AGFPlannerDecoration

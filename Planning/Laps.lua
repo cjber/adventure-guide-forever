@@ -1049,4 +1049,5 @@ end
 
 ns.Planner.Laps = {
 	Laps = Laps,
+	Pickable = Pickable,
 }
