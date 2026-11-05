@@ -113,6 +113,8 @@ assert(future.preview and not preview.ns.StartRoute(future), "a preview click ca
 local futureStep = preview.G.RXP.currentGuide.steps[future.rxpIndex]
 assert(preview.ns.RestedXP.Skip(future.rxpIndex) and futureStep.completed, "a future guide step is passed over")
 futureStep.completed = nil
+-- The skip is kept on the character now, so the record goes with the mark (#374).
+preview.ns.Prefs().guideSkips = {}
 preview.ns.RestedXP.Refresh()
 preview.flush()
 preview.ns.OpenPanel()

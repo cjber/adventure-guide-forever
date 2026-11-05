@@ -180,6 +180,7 @@
 ---@field polestarTakenFrom? string|true the Polestar guide the player took over from (Polestar.lua); nil once Polestar runs none
 ---@field camps? table<string, table<string, true>> the spots "Next spot" passed over this session, by area step key and Model.SpotKey
 ---@field notOffered table<integer, integer> route pickups their giver's window left out: quest ID -> the player's level then (Offers.lua)
+---@field guideSkips table<string, table<integer, true>> RestedXP guide steps skipped while RestedXP had not reached them, by guide key (RestedXP.lua)
 ---@field plannedDungeons table<integer, boolean>
 ---@field quests boolean
 ---@field dungeons boolean
@@ -346,6 +347,7 @@
 ---@class AGFOrder: string[]
 ---@field picked? table<integer, true>
 ---@field taken? table<integer, true> the quests its steps pick up, past the step limit too
+---@field pickups? integer[] the carry card's pickups on its way, which the next build keeps
 
 -- One requirement in the why-not view (Model.Why).
 ---@class AGFWhyLine
@@ -1826,10 +1828,11 @@
 
 ---@class AGFPlannerLaps
 ---@field Laps fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, candidates: AGFStep[], plan: AGFPlanAreas, prefs: AGFPrefs, mapName: AGFMapName?, leadID: integer?, join: (fun(selected: AGFStep[]))?, card: string): AGFStep[]?
+---@field Pickable fun(quest: AGFQuest): boolean
 
 ---@class AGFPlannerJourneys
 ---@field Added fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, elsewhere: (fun(quest: AGFQuest): boolean)): integer[]
----@field Carry fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, ready: table<integer, AGFPlace>, prefs: AGFPrefs, mapName: AGFMapName?, added: integer[]): AGFJourney?
+---@field Carry fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, ready: table<integer, AGFPlace>, prefs: AGFPrefs, mapName: AGFMapName?, added: integer[], eligible?: integer[]): AGFJourney?
 ---@field Summarise fun(journey: AGFJourney)
 
 ---@class AGFPlannerDecoration

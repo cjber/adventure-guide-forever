@@ -14,6 +14,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [1.0.18] - 2026-11-05
 - **Quests in your log leads until you pick another journey.** A new or returning character who has not chosen a journey now starts on Quests in your log, with its card first in the guide. RestedXP guides stay selectable cards, but only take over when you choose one; a guide RestedXP loads by itself no longer replaces the default route.
+- **Quests in your log picks up quests on your way.** While your quest log has room, the card now offers a few quests whose giver, objectives and hand-in all sit on or near the route you are already running. It takes the smallest detours first, sizes the offers to the slots you have free, and stops after a handful, so a 40-quest log gains a few quests on the way instead of a second list. With no slot left, the card suggests nothing new.
 - **Questie's first-run question no longer hides the game's quest areas.** Questie asks new players which objective marks to show, and its Questie and pfQuest answers turn off the game's blue quest areas. While that question is still unanswered, Adventure Guide answers it with Questie's own Blizzard option, so the areas stay on. If you already chose, the tracker says the quest areas are hidden, and one click turns them back on.
 - **One card per RestedXP guide.** A guide RestedXP lists in two groups, such as a zone's speedrun and dungeon routes, no longer shows a second "Choose guide" card beside the one you are running.
 - **A progress bar for RestedXP guides.** The guide's card shows a bar with the steps done, and the tracker shows "Step 95 of 188" with the tracker's own bar under the guide's title.
@@ -22,6 +23,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 - **A RestedXP guide shows its step straight away.** While the quest list is still loading, the tracker shows the guide's current step instead of the loading line, and fills in its quests once the list is ready.
 - **`/agf timing` says where the login went.** It prints when Questie was ready, whether the saved quest list was used or rebuilt (and why), how long that took and when the first route appeared, for a report about a slow login.
 - **The quest list is read again when Questie reports ready late.** A list read before Questie finished starting is no longer saved or reused, so its corrections always reach the guide.
+- **RestedXP steps complete again while Adventure Guide steers the guide.** RestedXP only finishes a step from its own guide window, which Adventure Guide keeps hidden, so turning in or accepting a quest left the step open and it had to be skipped by hand. The guide now gives RestedXP's own step checks the quest events it already sees, so its steps advance on their own while its window stays hidden.
+- **A step skipped ahead stays skipped.** Skipping a step RestedXP had not reached only lasted until `/reload`, which brought the guide back to it. Adventure Guide keeps that skip on the character and passes the step over again, even when RestedXP starts on it after a reload.
 
 ## [1.0.17] - 2026-11-05
 
