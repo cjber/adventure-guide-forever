@@ -101,6 +101,8 @@ local PREFS_DEFAULTS = {
 	pinned = {},
 	-- Route pickups their giver's window left out (Offers.lua): quest ID -> the level the player was then.
 	notOffered = {},
+	-- RestedXP guide steps skipped while RestedXP had not reached them, by guide key: step index -> true (RestedXP.lua).
+	guideSkips = {},
 }
 
 ---@type table<string, any>?
@@ -246,6 +248,21 @@ local function LoadCharDB()
 	for id, level in pairs(loaded.notOffered) do
 		if type(id) ~= "number" or type(level) ~= "number" then
 			loaded.notOffered[id] = nil
+		end
+	end
+	-- RestedXP steps skipped ahead of RestedXP's own progress: guide key -> the step indexes left out.
+	for key, indices in pairs(loaded.guideSkips) do
+		if type(key) ~= "string" or type(indices) ~= "table" then
+			loaded.guideSkips[key] = nil
+		else
+			for index, value in pairs(indices) do
+				if type(index) ~= "number" or value ~= true then
+					indices[index] = nil
+				end
+			end
+			if not next(indices) then
+				loaded.guideSkips[key] = nil
+			end
 		end
 	end
 	-- Asides turned down: key -> the text Show again names it by. Asides.lua makes the table; anything else in it would

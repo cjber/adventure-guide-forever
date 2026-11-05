@@ -21,6 +21,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 - **A RestedXP guide shows its step straight away.** While the quest list is still loading, the tracker shows the guide's current step instead of the loading line, and fills in its quests once the list is ready.
 - **`/agf timing` says where the login went.** It prints when Questie was ready, whether the saved quest list was used or rebuilt (and why), how long that took and when the first route appeared, for a report about a slow login.
 - **The quest list is read again when Questie reports ready late.** A list read before Questie finished starting is no longer saved or reused, so its corrections always reach the guide.
+- **RestedXP steps complete again while Adventure Guide steers the guide.** RestedXP only finishes a step from its own guide window, which Adventure Guide keeps hidden, so turning in or accepting a quest left the step open and it had to be skipped by hand. The guide now gives RestedXP's own step checks the quest events it already sees, so its steps advance on their own while its window stays hidden.
+- **A step skipped ahead stays skipped.** Skipping a step RestedXP had not reached only lasted until `/reload`, which brought the guide back to it. Adventure Guide keeps that skip on the character and passes the step over again, even when RestedXP starts on it after a reload.
 
 ## [1.0.17] - 2026-11-05
 

@@ -180,6 +180,7 @@
 ---@field polestarTakenFrom? string|true the Polestar guide the player took over from (Polestar.lua); nil once Polestar runs none
 ---@field camps? table<string, table<string, true>> the spots "Next spot" passed over this session, by area step key and Model.SpotKey
 ---@field notOffered table<integer, integer> route pickups their giver's window left out: quest ID -> the player's level then (Offers.lua)
+---@field guideSkips table<string, table<integer, true>> RestedXP guide steps skipped while RestedXP had not reached them, by guide key (RestedXP.lua)
 ---@field plannedDungeons table<integer, boolean>
 ---@field quests boolean
 ---@field dungeons boolean
