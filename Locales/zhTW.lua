@@ -442,7 +442,7 @@ L["UNEXPLORED"] = "你還沒見過%s"
 L["UNLISTED"] = "這片土地有指南尚不知道的故事；請留意任務給予者頭上的「!」。"
 L["UPDATED_TO"] = "已更新到%s。%s"
 -- mt
-L["WHATS_NEW"] = "進入和離開戰鬥時，目標追蹤欄保持不動。" -- mt
+L["WHATS_NEW"] = "RestedXP 的箭頭重新指引方向。" -- mt
 L["WHY_ALLIANCE"] = "僅限聯盟"
 L["WHY_BREADCRUMB"] = "僅在你接受%s之前"
 L["WHY_CHOSE"] = "你改選了%s"

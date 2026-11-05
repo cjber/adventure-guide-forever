@@ -12,13 +12,16 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.11] - 2026-11-05
+
+- **RestedXP's arrow points the way again.** Choosing the guide for a RestedXP guide hid RestedXP's own direction arrow along with its windows, so only the game's small waypoint marker was left and the way to the step was easy to lose. The arrow now stays where you put it and points at the step the guide shows; it steps aside only while you have chosen another journey, and Shortest Path's own arrow gives way to it, so one arrow leads. With TomTom installed, its arrow still shows only for waypoints set in it.
+- **Skip for now works on every RestedXP step.** Skipping a step still ahead in the guide did nothing, and a skip in combat was dropped. A step ahead is now passed over when the guide reaches it, as RestedXP does with its own skips, and a skip asked for in combat is made as soon as the fight ends.
+
 ## [1.0.10] - 2026-11-05
 
 - **The objective tracker column stays still as you enter and leave combat.** All Objectives and your quests keep their place at the top, and the Forever sections always follow below them, so nothing swaps order, jumps or loses a line when a fight starts or ends.
 - **"Story complete" uses the game's achievement toast.** Finishing a quest chain now shows the same toast the game shows for an achievement, in its usual place above the action bars, headed "Story complete" and naming the chain. Two show at once and the rest wait their turn; right-click one to dismiss it.
 - **No more key binding warnings at login.** The game loads the Adventure Guide key binding file on its own, so the addon no longer lists it a second time, which logged five "Unrecognized XML" warnings every login.
-- **RestedXP's arrow points the way again.** Choosing the guide for a RestedXP guide hid RestedXP's own direction arrow along with its windows, so only the game's small waypoint marker was left and the way to the step was easy to lose. The arrow now stays where you put it and points at the step the guide shows; it steps aside only while you have chosen another journey, and Shortest Path's own arrow gives way to it, so one arrow leads. With TomTom installed, its arrow still shows only for waypoints set in it.
-- **Skip for now works on every RestedXP step.** Skipping a step still ahead in the guide did nothing, and a skip in combat was dropped. A step ahead is now passed over when the guide reaches it, as RestedXP does with its own skips, and a skip asked for in combat is made as soon as the fight ends.
 
 ## [1.0.9] - 2026-11-05
 
