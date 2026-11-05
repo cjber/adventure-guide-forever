@@ -861,6 +861,8 @@ local function CommitRoute(shown, full, world)
 		hereKey = shown.here
 	end
 	cachedRoute, rawRoute, snapshot = shown, full, world
+	local timing = ns.QuestieStatus.timing
+	timing.route = timing.route or debugprofilestop()
 	-- The zone the story led with, and the zone it left, outlive the session, so a /reload does not shuffle it
 	-- (Plan.lua reads them back).
 	local prefs = ns.Prefs()
@@ -897,6 +899,20 @@ function ns.QuestieBuilding()
 		)
 end
 
+-- While the catalogue builds, a chosen RestedXP guide's steps stand as the route: they come from RestedXP, not the
+-- catalogue, so the tracker shows the guide's step at once rather than the loading line, and the full build that
+-- follows the catalogue fills in each step's quests. Only a guide the player chose (a guide key, which CommitRoute
+-- moves to the guide RestedXP has loaded); anything else waits on the loading line.
+local function GuideWhileBuilding()
+	local guide = ns.RestedXP.Journey()
+	local prefs = ns.Prefs()
+	local chosen = prefs.journey
+	if guide and #guide.steps > 0 and not prefs.notInterested[guide.key] and chosen and chosen:find("^guide:") then
+		-- Settled until the next invalidation (the catalogue landing, or RestedXP moving on), so a read reuses it.
+		cachedRoute, dirty = { journeys = { guide }, chosen = true, journey = guide.key, steps = guide.steps }, false
+	end
+end
+
 -- The synchronous full build: ns.Route()'s lazy path, and any caller before Core's coroutine starts. One frame, no
 -- slices.
 local function Rebuild()
@@ -909,6 +925,7 @@ local function Rebuild()
 	if ns.QuestieBuilding() then
 		-- The catalogue is still building: hold the route rather than build a log-only one that flips.
 		snapshot = nil
+		GuideWhileBuilding()
 		return
 	end
 	CommitRoute(BuildRoute()) -- multi-value: the shown route, the full one and their snapshot
@@ -1015,6 +1032,7 @@ local function StepRebuild()
 			-- log-only route that changes the moment the records land (docs/design.md §2.14).
 			pendingRebuild = false
 			snapshot = nil
+			GuideWhileBuilding()
 			FinishRebuild()
 			return
 		end
@@ -1156,6 +1174,8 @@ local function Slash(msg)
 		ns.Print(ns.TrackerHost.Debug())
 	elseif command == "travel" then
 		ns.Print(ns.Guidance.Debug())
+	elseif command == "timing" then
+		ns.Print(ns.LoginTiming())
 	elseif command == "" then
 		if ns.OpenPanel then
 			ns.OpenPanel()

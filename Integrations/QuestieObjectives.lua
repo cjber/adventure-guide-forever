@@ -9,6 +9,8 @@ local ROW = 2 ^ 16
 -- A camp's reach in yards: the spawns this near a spawn are its camp, and spawns are bucketed into squares this wide,
 -- so a spawn's camp is in its own square or the eight around it.
 local CAMP = 100
+-- Just over CAMP squared: a square root that rounds to exactly CAMP still counts, as Camp counts it.
+local CAMP_SQUARED = CAMP * CAMP * (1 + 1e-9)
 
 -- The spawns in `spawn`'s camp (within CAMP yards of it, itself included), from the squares around it.
 ---@param onMap table<integer, table[]>
@@ -28,6 +30,55 @@ local function Camp(onMap, spawn, sx, sy)
 		end
 	end
 	return camp, sum
+end
+
+-- How many spawns `spawn`'s camp holds and their summed yards from it: Camp's measure without the list, since every
+-- spawn of an objective is measured and only the three camps chosen need theirs. Squared yards are compared first, so
+-- the square root is taken only for a member.
+---@param onMap table<integer, table[]>
+---@return integer size, number sum
+local function CampSize(onMap, spawn, sx, sy)
+	local size, sum, x, y, key = 0, 0, spawn.x, spawn.y, spawn.key
+	for dx = -ROW, ROW, ROW do
+		for dy = -1, 1 do
+			local square = onMap[key + dx + dy]
+			if square then
+				for index = 1, #square do
+					local other = square[index]
+					local ox, oy = (other.x - x) * sx, (other.y - y) * sy
+					local squared = ox * ox + oy * oy
+					if squared <= CAMP_SQUARED then
+						local yards = math.sqrt(squared)
+						if yards <= CAMP then
+							size, sum = size + 1, sum + yards
+						end
+					end
+				end
+			end
+		end
+	end
+	return size, sum
+end
+
+-- Whether spawn `a` makes a better camp centre than `b`: the quest's zone first, then the most spawns within CAMP
+-- yards, the nearest together on a tie, then by map and place so the choice is the same every build.
+local function Before(a, b, zone)
+	if (a.map == zone) ~= (b.map == zone) then
+		return a.map == zone
+	end
+	if a.size ~= b.size then
+		return a.size > b.size
+	end
+	if a.sum ~= b.sum then
+		return a.sum < b.sum
+	end
+	if a.map ~= b.map then
+		return a.map < b.map
+	end
+	if a.x ~= b.x then
+		return a.x < b.x
+	end
+	return a.y < b.y
 end
 
 -- The names a client objective of a shared type is matched by (Planning/Steps.lua OpenSlots): only where two or more
@@ -111,8 +162,8 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 	-- unknown) and whether that NPC is an elite. A spot is a camp: the spawn with the most others within CAMP yards,
 	-- the quest's zone first, the spawns nearest it on a tie, at most three apart. A spot's level is the lowest of its
 	-- mobs', only when every spawn in it has one; a spot is elite only when every spawn in it is an elite's.
-	local function Places(slot, lists)
-		local squares, spawns, scales = {}, {}, {}
+	local function Camps(lists)
+		local camps, squares, spawns, scales = {}, {}, {}, {}
 		for _, list in ipairs(lists) do
 			local level, elite = list[2], list[3]
 			for area, coordinates in pairs(list[1]) do
@@ -147,57 +198,65 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 		end
 		for index, spawn in ipairs(spawns) do
 			local geometry = scales[spawn.map]
-			local camp, sum = Camp(squares[spawn.map], spawn, geometry.sx, geometry.sy)
-			spawn.size, spawn.sum = #camp, sum
+			spawn.size, spawn.sum = CampSize(squares[spawn.map], spawn, geometry.sx, geometry.sy)
 			if index % 64 == 0 then
 				yield()
 			end
 		end
-		table.sort(spawns, function(a, b)
-			if (a.map == zone) ~= (b.map == zone) then
-				return a.map == zone
+		-- Up to three camps, each centred on a spawn in no camp taken before it, so "Next spot" moves between camps:
+		-- the first in Before's order that is still free, picked by a scan rather than sorting every spawn.
+		for _ = 1, 3 do
+			local spawn
+			for _, other in ipairs(spawns) do
+				if not other.used and (not spawn or Before(other, spawn, zone)) then
+					spawn = other
+				end
 			end
-			if a.size ~= b.size then
-				return a.size > b.size
-			end
-			if a.sum ~= b.sum then
-				return a.sum < b.sum
-			end
-			if a.map ~= b.map then
-				return a.map < b.map
-			end
-			if a.x ~= b.x then
-				return a.x < b.x
-			end
-			return a.y < b.y
-		end)
-		-- Up to three camps, each centred on a spawn in no camp taken before it, so "Next spot" moves between camps.
-		local taken = 0
-		for _, spawn in ipairs(spawns) do
-			if taken == 3 then
+			if not spawn then
 				break
 			end
-			if not spawn.used then
-				taken = taken + 1
-				local geometry = scales[spawn.map]
-				local reach, level, elite = 0, spawn.level, spawn.elite
-				for _, other in ipairs((Camp(squares[spawn.map], spawn, geometry.sx, geometry.sy))) do
-					other.used = true
-					reach = math.max(reach, other.yards)
-					level = level and other.level and math.min(level, other.level) or false
-					elite = elite and other.elite
-				end
-				areas[#areas + 1] = {
-					slot,
-					math.floor(spawn.x * 1000 + 0.5),
-					math.floor(spawn.y * 1000 + 0.5),
-					math.ceil(reach),
-					spawn.map,
-					level or nil,
-					-- Only after a level, so the record stays a plain list.
-					level and elite or nil,
-				}
+			local geometry = scales[spawn.map]
+			local reach, level, elite = 0, spawn.level, spawn.elite
+			for _, other in ipairs((Camp(squares[spawn.map], spawn, geometry.sx, geometry.sy))) do
+				other.used = true
+				reach = math.max(reach, other.yards)
+				level = level and other.level and math.min(level, other.level) or false
+				elite = elite and other.elite
 			end
+			camps[#camps + 1] = {
+				x = math.floor(spawn.x * 1000 + 0.5),
+				y = math.floor(spawn.y * 1000 + 0.5),
+				reach = math.ceil(reach),
+				map = spawn.map,
+				level = level or nil,
+				elite = level and elite or nil,
+			}
+			yield()
+		end
+		return camps
+	end
+	-- The slot's camps as area records. Many quests send the player to the same creatures, so the camps of one set of
+	-- QuestieDB entities (lists.key, Spawns) and quest zone are found once a build.
+	local function Places(slot, lists)
+		local key = lists.key and lists.key .. "@" .. tostring(zone)
+		local camps = key and reads.camps[key]
+		if not camps then
+			camps = Camps(lists)
+			if key then
+				reads.camps[key] = camps
+			end
+		end
+		for _, camp in ipairs(camps) do
+			areas[#areas + 1] = {
+				slot,
+				camp.x,
+				camp.y,
+				camp.reach,
+				camp.map,
+				camp.level,
+				-- Only after a level, so the record stays a plain list.
+				camp.elite,
+			}
 		end
 	end
 	-- An NPC's spawns, lowest level and rank are one read, when the build reads levels (reads.levels).
@@ -228,6 +287,7 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 		if spawns then
 			lists[#lists + 1] =
 				{ spawns, npc and levels and levels[id] or false, npc and elites and elites[id] or false }
+			lists.key = (lists.key or "") .. kind .. id .. ","
 		end
 	end
 	local function Item(id, lists, seen)

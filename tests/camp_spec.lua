@@ -46,7 +46,15 @@ local function Map(area)
 end
 local function yield() end
 local function Reads()
-	return { Npc = {}, Object = {}, Item = {}, levels = {}, elite = {}, names = { Npc = {}, Object = {}, Item = {} } }
+	return {
+		Npc = {},
+		Object = {},
+		Item = {},
+		levels = {},
+		elite = {},
+		names = { Npc = {}, Object = {}, Item = {} },
+		camps = {},
+	}
 end
 -- The spots QuestieObjectives gives one kill objective of NPC 1, as "x,y r level elite" in order.
 local function Spots(zone, reads)

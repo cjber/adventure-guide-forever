@@ -1119,6 +1119,19 @@
 ---@field settled boolean whether the deferred provider startup has completed
 ---@field version? string QuestieDB's version, once its quests are in use
 ---@field reason? string why QuestieDB is not used (an ns.L line); nil while it is, or before login
+---@field timing AGFLoginTiming the login's catalogue work, for /agf timing
+
+-- When each step of a login's catalogue work happened (debugprofilestop milliseconds), QuestieSource.lua.
+---@class AGFLoginTiming
+---@field login? number PLAYER_LOGIN
+---@field ready? number Questie's ready callback
+---@field adopted? number milliseconds the saved catalogue took to adopt, when it was
+---@field miss? string the key inputs the saved catalogue was built under that differ, when it was not adopted
+---@field built? number the build's first slice
+---@field landed? number the build's last slice
+---@field work number milliseconds of build work
+---@field frames integer frames the build ran in
+---@field route? number the first route committed
 
 ---@class AGFNamespace
 ---@field QuestieStatus AGFQuestieStatus
@@ -1554,7 +1567,7 @@
 
 ---@alias AGFMapLookup fun(area: integer): integer?
 ---@alias AGFYield fun()
----@alias AGFQuestieReads {Npc: table<integer, table|false>, Object: table<integer, table|false>, Item: table<integer, table|false>, levels?: table<integer, integer|false>, elite?: table<integer, boolean>, names: {Npc: table<integer, string|false>, Object: table<integer, string|false>, Item: table<integer, string|false>}}
+---@alias AGFQuestieReads {Npc: table<integer, table|false>, Object: table<integer, table|false>, Item: table<integer, table|false>, camps: table<string, table[]>, levels?: table<integer, integer|false>, elite?: table<integer, boolean>, names: {Npc: table<integer, string|false>, Object: table<integer, string|false>, Item: table<integer, string|false>}}
 
 ---@class AGFQuestieNpcRow one Npc's place and service fields for a catalogue build
 ---@field name string
@@ -1577,6 +1590,7 @@
 
 ---@class AGFNamespace
 ---@field SourceHint fun(): string?
+---@field LoginTiming fun(): string the login's catalogue timings as one line (/agf timing)
 ---@class AGFQuestieStatus
 ---@field catalogueCount? integer
 ---@field questCount? integer
