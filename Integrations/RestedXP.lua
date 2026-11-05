@@ -21,6 +21,9 @@ local receiver = {}
 local windows = {}
 ---@type table<Frame, boolean>
 local clamps = {}
+-- A skip asked for in combat, made once it ends: RestedXP moves its secure item buttons with the step.
+---@type {group: string, name: string, index: integer, elementIndex?: integer}?
+local pendingSkip
 
 ---@return AGFRXPEngine?
 local function Engine()
@@ -118,25 +121,51 @@ local function SuppressMap(engine)
 	end
 end
 
+---@param frame Frame
+local function Reclamp(frame)
+	if clamps[frame] ~= nil then
+		frame:SetClampedToScreen(clamps[frame])
+		clamps[frame] = nil
+	end
+	for _, child in ipairs({ frame:GetChildren() }) do -- multi-value: Unclamp went through every descendant.
+		Reclamp(child)
+	end
+end
+
+---@param frame AGFRXPWindow?
+local function Unwindow(frame)
+	local saved = frame and windows[frame]
+	if not frame or not saved then
+		return
+	end
+	frame.savePosition = saved.savePosition
+	frame:SetDontSavePosition(saved.dontSave)
+	frame:SetAlpha(saved.alpha)
+	frame:ClearAllPoints()
+	for _, point in ipairs(saved.points) do
+		frame:SetPoint(unpack(point))
+	end
+	windows[frame] = nil
+	Reclamp(frame)
+end
+
 local function Restore()
 	for frame, saved in pairs(mapLines) do
 		frame:SetAlpha(saved.alpha)
 		frame:EnableMouse(saved.mouse)
 	end
 	mapLines = {}
-	for frame, saved in pairs(windows) do
-		frame.savePosition = saved.savePosition
-		frame:SetDontSavePosition(saved.dontSave)
-		frame:SetAlpha(saved.alpha)
-		frame:ClearAllPoints()
-		for _, point in ipairs(saved.points) do
-			frame:SetPoint(unpack(point))
-		end
+	for frame in pairs(windows) do
+		Unwindow(frame)
 	end
 	for frame, clamped in pairs(clamps) do
 		frame:SetClampedToScreen(clamped)
 	end
 	windows, clamps = {}, {}
+end
+
+local function GuideKey(group, name)
+	return "guide:" .. tostring(#group) .. ":" .. group .. ":" .. tostring(#name) .. ":" .. name
 end
 
 ---@param element? AGFRXPElement
@@ -184,7 +213,7 @@ local function Snapshot(engine)
 	local arrowElement = engine.arrowFrame and engine.arrowFrame.element
 	local seen, nonSticky = {}, 0
 	local function AddStep(step, preview)
-		if not step.index or seen[step.index] or step.hidewindow or step.hidetip then
+		if not step.index or seen[step.index] or step.hidewindow or step.hidetip or (preview and step.completed) then
 			return
 		end
 		if not step.sticky or preview then
@@ -285,12 +314,23 @@ local function Sync()
 	active = not not enabled
 	if active and engine then
 		Window(engine.RXPFrame)
-		-- Its own arrow: RXP leaves it on screen while its windows are gone, and the guide already points the way.
-		Window(engine.arrowFrame)
 		Window(LibDBIcon10_RXPGuides)
 		SuppressMap(engine)
 		Window(engine.v2 and engine.v2.state and engine.v2.state.guideWindow and engine.v2.state.guideWindow.frame)
 		snapshot = Snapshot(engine)
+		-- RXP's own arrow is the guide's arrow: it points at the step shown here. It goes only while another journey
+		-- is chosen, so it never points somewhere other than the route being followed.
+		local chosen = ns.Prefs().journey
+		if snapshot.name ~= "" and chosen ~= nil and chosen ~= GuideKey(snapshot.group, snapshot.name) then
+			Window(engine.arrowFrame)
+		else
+			Unwindow(engine.arrowFrame)
+		end
+		local skip = pendingSkip
+		pendingSkip = nil
+		if skip and skip.group == snapshot.group and skip.name == snapshot.name then
+			Guide.Skip(skip.index, skip.elementIndex)
+		end
 		if
 			snapshot.name == ""
 			and not (
@@ -426,10 +466,6 @@ function Guide.Guides()
 	return result
 end
 
-local function GuideKey(group, name)
-	return "guide:" .. tostring(#group) .. ":" .. group .. ":" .. tostring(#name) .. ":" .. name
-end
-
 ---@param current? AGFJourney
 ---@return AGFJourney[]
 function Guide.Cards(current)
@@ -530,11 +566,22 @@ end
 
 function Guide.Skip(index, elementIndex)
 	local engine = Engine()
-	local step = engine and engine.currentGuide and engine.currentGuide.steps[index]
-	if not engine or not active or InCombatLockdown() or not step or not step.active then
+	local guide = engine and engine.currentGuide
+	local step = guide and guide.steps[index]
+	if not engine or not guide or not active or not step then
 		return false
 	end
-	if elementIndex then
+	if InCombatLockdown() then
+		pendingSkip = { group = guide.group or "", name = guide.name or "", index = index, elementIndex = elementIndex }
+		return true
+	end
+	if not step.active then
+		-- A step still ahead: RXP passes over a completed step when the guide reaches it, as with its own skips.
+		if elementIndex or step.sticky or index <= (engine.GetGuideProgress()) then
+			return false
+		end
+		step.completed = true
+	elseif elementIndex then
 		local element = step.elements[elementIndex]
 		if not element or element.textOnly or element.optional then
 			return false
@@ -686,7 +733,7 @@ function Guide.SkipKey(key)
 	end
 	-- Re-read the current guide to avoid trusting stale rows after chapter changes
 	local engine = Engine()
-	if not engine or InCombatLockdown() then
+	if not engine then
 		return false
 	end
 	local currentGuide = engine.currentGuide
@@ -704,5 +751,7 @@ events:SetScript("OnEvent", Guide.Refresh)
 EventUtil.ContinueOnAddOnLoaded("RXPGuides", Attach)
 EventUtil.ContinueAfterAllEvents(function()
 	ready = true
+	-- Choosing another journey, or the guide again, decides whether RXP's arrow shows.
+	hooksecurefunc(ns, "Choose", Guide.Refresh) -- taint-ok: Adventure Guide owns this addon table.
 	Attach()
 end, "VARIABLES_LOADED", "PLAYER_ENTERING_WORLD")

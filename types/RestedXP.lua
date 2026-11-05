@@ -28,6 +28,7 @@
 ---@field hidewindow? boolean
 ---@field hidetip? boolean
 ---@field active? boolean
+---@field completed? boolean RXP passes over a completed step when the guide reaches it
 ---@field elements AGFRXPElement[]
 
 ---@class AGFRXPGuide
