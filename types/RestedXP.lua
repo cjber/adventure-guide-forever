@@ -7,6 +7,9 @@
 ---@field questId? integer
 ---@field tag? string the RestedXP function that made it: accept, turnin, complete, collect, fly, hs...
 ---@field id? integer|string a collect element's item
+---@field targets? string[] friendly names this element talks to
+---@field mobs? string[] enemies this element kills
+---@field unitscan? string[] enemies this element scans for
 ---@field text? string
 ---@field tooltipText? string
 ---@field rawtext? string
@@ -36,6 +39,7 @@
 ---@field active? boolean
 ---@field completed? boolean RXP passes over a completed step when the guide reaches it
 ---@field elements AGFRXPElement[]
+---@field activeItems? table<integer, string|boolean> the items this step uses, by ID
 
 ---@class AGFRXPGuide
 ---@field lowPrio? string
@@ -98,6 +102,13 @@ RXP = nil
 ---@type {stepSkip: table<integer, boolean>}
 RXPCData = nil
 
+---@class AGFRXPItem
+---@field id integer the item a step uses
+
+---@class AGFRXPTarget
+---@field name string the creature or NPC to target
+---@field kind "target"|"mob"|"unitscan" how RestedXP names it: a talk target, a kill target or a scan
+
 ---@class AGFRXPInstruction
 ---@field questId? integer
 ---@field tag? string
@@ -114,6 +125,8 @@ RXPCData = nil
 ---@field sticky boolean
 ---@field preview boolean true for a read-only future guide row
 ---@field lines AGFRXPInstruction[]
+---@field items AGFRXPItem[] the step's usable items, by ID
+---@field targets AGFRXPTarget[] the step's talk and kill targets
 ---@field map integer uiMapID; 0 when no real waypoint is known
 ---@field x number normalized 0-1; 0 when unknown
 ---@field y number normalized 0-1; 0 when unknown

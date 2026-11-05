@@ -230,16 +230,12 @@ extras.G.LibDBIcon10_RXPGuides = icon
 er.UpdateMap()
 extras.flush()
 for _, frame in ipairs({ item, target }) do
-	assert(frame:GetAlpha() == 0.8, "RXP item and target controls retain their visibility")
+	assert(not frame:IsShown(), "RXP item and target controls make way for the AGF replacements")
+	assert(frame:GetAlpha() == 0.8, "the suppressed RXP action controls keep their presentation")
 	local point, _, _, x, y = frame:GetPoint()
 	assert(point == "CENTER" and x == 12 and y == 18, "RXP action controls retain their anchors")
 end
 assert(icon:GetAlpha() == 0, "the redundant RXP minimap button stays suppressed")
-item:Hide()
-target:Hide()
-er.UpdateMap()
-extras.flush()
-assert(not item:IsShown() and not target:IsShown(), "integration respects controls hidden by RestedXP")
 extras.ns.SetSetting("restedxpGuide", false)
 extras.flush()
 for _, frame in ipairs({ item, target, icon }) do
@@ -247,7 +243,8 @@ for _, frame in ipairs({ item, target, icon }) do
 	local point, _, _, x, y = frame:GetPoint()
 	assert(point == "CENTER" and x == 12 and y == 18, "auxiliary anchors are restored")
 end
-print("restedxp_mode_spec: action controls remain available and the minimap button restores")
+assert(item:IsShown() and target:IsShown(), "RXP's own action windows return when AGF stops steering")
+print("restedxp_mode_spec: action controls make way while steering and restore afterwards")
 
 local maps = harness.load({ spf = "v1", db = { autoStart = false } })
 local mr = dofile("tests/rxp_fixture.lua")(maps)

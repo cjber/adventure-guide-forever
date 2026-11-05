@@ -34,6 +34,7 @@ local SUPER = {
 	DropdownButton = "Button",
 	EditBox = "Frame",
 	ScrollFrame = "Frame",
+	Cooldown = "Frame",
 	Texture = "Region",
 	MaskTexture = "Region",
 	FontString = "Region",
@@ -430,6 +431,14 @@ function harness.load(options)
 			self:Hide()
 		end
 	end
+	function Methods:SetCooldown(start, duration)
+		self.cooldownStart, self.cooldownDuration = start, duration
+		self.hidden = duration <= 0
+	end
+	function Methods:Clear()
+		self.cooldownStart, self.cooldownDuration = nil, nil
+		self.hidden = true
+	end
 	function Methods:SetAlpha(alpha)
 		self.alpha = alpha
 	end
@@ -611,6 +620,9 @@ function harness.load(options)
 	end
 	function Methods:GetFrameLevel()
 		return self.level or 0
+	end
+	function Methods:GetFrameStrata()
+		return self.frameStrata or "MEDIUM"
 	end
 	function Methods:CreateTexture(name, layer, template, subLevel)
 		local texture = NewRegion("Texture", name, self)
@@ -1118,6 +1130,9 @@ function harness.load(options)
 			frame.scripts.OnLoad = frame.UpdateHighlightForState
 		end,
 		QuestLogBorderFrameTemplate = noop,
+		-- SecureActionButtonTemplate is a bare button: specs read its attributes, not its secure click handling.
+		SecureActionButtonTemplate = noop,
+		CooldownFrameTemplate = noop,
 		-- Mainline/AlertFrameSystems.xml:173-327: the achievement toast's art and text where the template puts them; the
 		-- glow and shine only animate, and are left out.
 		AchievementAlertFrameTemplate = function(frame)
@@ -1838,6 +1853,15 @@ function harness.load(options)
 		GetItemIconByID = function(itemID)
 			return items[itemID] and items[itemID].icon
 		end,
+		GetItemCooldown = function()
+			return 0, 0, 1
+		end,
+		IsItemInRange = function()
+			return nil
+		end,
+		IsUsableItem = function()
+			return true, false
+		end,
 		GetItemInfo = function(itemID)
 			local item = items[itemID]
 			if not item then
@@ -1900,6 +1924,10 @@ function harness.load(options)
 	end
 	G.UnitLevel = function()
 		return player.level
+	end
+	-- Portraits are the client's; specs that read one replace this with their own texture.
+	G.SetPortraitTexture = function(texture, unit)
+		texture:SetTexture("portrait:" .. tostring(unit))
 	end
 	-- h.onTaxi stands for a flight in the air.
 	G.UnitOnTaxi = function()

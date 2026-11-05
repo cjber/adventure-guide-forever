@@ -87,6 +87,10 @@ function GetQuestUiMapID(questID, ignoreWaypoints) end
 ---@type integer
 OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 3
 
+-- GlobalStrings.lua: the red or grey marker a ranged item's button shows when it is out of range.
+---@type string
+RANGE_INDICATOR = nil
+
 -- Blizzard_ObjectiveTracker/Blizzard_ObjectiveTrackerShared.lua: the tracker's line colours (an open line, the line
 -- it points at, a done line).
 ---@type {Normal: ColorMixin, NormalHighlight: ColorMixin, Complete: ColorMixin}
@@ -299,8 +303,11 @@ CreateSettingsButtonInitializer = nil
 ---@field LayoutBlock fun(self: ObjectiveTrackerModuleTemplate, block: AGFTrackerBlock): boolean
 ---@field MarkDirty fun(self: ObjectiveTrackerModuleTemplate)
 ---@field LayoutContents fun(self: ObjectiveTrackerModuleTemplate)
+---@field UpdateHeight fun(self: ObjectiveTrackerModuleTemplate)
 ---@field OnBlockHeaderClick fun(self: ObjectiveTrackerModuleTemplate, block: AGFTrackerBlock, mouseButton: string)
 ---@field blockTemplate string
+-- Blizzard_ObjectiveTrackerModule.lua: set by SetCollapsed, which hides the module's contents under its header.
+---@field isCollapsed? boolean
 -- Blizzard_ObjectiveTrackerModule.lua: the room the tracker gave the module, what its blocks take so far, and the
 -- offset the next block hangs at (CanFitBlock compares them).
 ---@field availableHeight number
