@@ -1,8 +1,12 @@
-Adventure Guide Forever suggests quests for your level and quest log, in a short route. Shortest Path Forever walks you to each stop; without it, the game's waypoint does.
+Adventure Guide Forever is a levelling guide for WoW: Forever. Zone story journeys read as chapters, with your progress through each chapter kept per character, and Quests in your log finishes what you already carry so the log empties instead of growing. Then a short route joins the rest of your level's quests, and Shortest Path Forever walks you to each stop; without it, the game's waypoint does.
 
 QuestieDB supplies quests; Questie checks pickup availability. With RestedXP installed, a one-time prompt lets you keep its display or follow its guides here.
 
 Free, with nothing locked behind it. If it saves you time, you can [buy me a coffee on Ko-fi](https://ko-fi.com/cjber).
+
+![The Barrens story chosen: chapter 1 of 8, its numbered stops in the panel and on the map, with the route drawn from the first](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/chosen.png)
+
+A zone story journey, read as chapters: every stop numbered and the route drawn from the first.
 
 ![A journey's quest stops numbered on The Barrens map, with Shortest Path Forever's route to the first](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/map.png)
 
@@ -28,7 +32,7 @@ These images are generated previews of the guide UI.
 
 - **What to do next.** With no journey chosen, the guide starts on Quests in your log: hand in what is ready and follow a chain you carry. Zone stories and RestedXP guides are cards you can pick.
 
-- **RestedXP guides.** Read RestedXP's instructions and objectives in the Adventure tab and tracker. Choose a guide from the Continue cards and move between its steps. While you follow one, the tracker lists only the quests its steps name, and your own tracked quests come back when you stop. RestedXP’s item and target windows keep their own settings and positions. Turn off *Use RestedXP guides* to return to Adventure Guide recommendations.
+- **RestedXP guides.** Read RestedXP's instructions and objectives in the Adventure tab and tracker. Choose a guide from the Continue cards and move between its steps. While you follow one, the tracker lists only the quests its steps name, and your own tracked quests come back when you stop. While it steers a RestedXP guide, Adventure Guide shows its own item and target buttons for the current step. Turn off *Use RestedXP guides* to return to Adventure Guide recommendations.
 
 
 - **Works alongside Polestar.** While Polestar guides, the route and map marks pause; click the tracker line to take over, or turn this off in Route settings.
