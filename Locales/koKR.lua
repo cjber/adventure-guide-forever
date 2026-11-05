@@ -467,7 +467,7 @@ L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
 -- mt
-L["WHATS_NEW"] = "RestedXP 단계의 아이템과 대상이 게임 자체 버튼으로 표시됩니다." -- mt
+L["WHATS_NEW"] = "스토리 레벨링과 퀘스트 경로: 안내서가 이제 무엇을 위한 것인지 알려 줍니다." -- mt
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"
