@@ -11,6 +11,7 @@ verbatim rather than rewritten as the addon moves. API changes other addons' aut
 optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
+- **Right-click the tracker header to attach, detach or lock it.** The section header in the quest tracker now opens a small menu with Attach to quest tracker and Lock the tracker, the same switches as in the settings, so moving the section no longer needs a trip to the options.
 
 ## [1.0.18] - 2026-11-05
 - **Quests in your log leads until you pick another journey.** A new or returning character who has not chosen a journey now starts on Quests in your log, with its card first in the guide. RestedXP guides stay selectable cards, but only take over when you choose one; a guide RestedXP loads by itself no longer replaces the default route.
