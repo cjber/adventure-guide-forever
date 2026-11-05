@@ -399,7 +399,7 @@ UpdateMicroButtons = nil
 -- The registry every vendored copy of Core/MicroButton.lua shares, published by the first to load.
 ---@class ForeverMicroButtonRegistry
 ---@field buttons ForeverMicroButton[] every addon button, in creation order
----@field Reflow fun() the first copy's placement, which every copy runs
+---@field Reflow? fun() the first copy's placement, which every copy runs
 ---@field hookedUpdate boolean?
 ---@field hookedScripts table<Frame, boolean>? the frames whose scripts are hooked, weak keys
 ---@field events Frame? the frame listening for Edit Mode layout changes
