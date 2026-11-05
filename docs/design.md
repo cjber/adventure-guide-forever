@@ -162,11 +162,11 @@ The world-map sidebar is the guide. Folded sections show two Continue journeys a
 section. Expanding a header reveals the remaining choices. Existing settings from the paged overview do
 not expand the new previews. Accepted quests, including the current story's quests, form Quests in your log,
 the default suggested route until the player chooses a journey. This does not start guidance automatically.
-Shared row and notification art lives in `UI/Widgets.lua`.
+Shared row art lives in `UI/Widgets.lua`.
 
 `Core/Recommendations.lua` reads the committed route and wanted hints. An action revalidates its identity and destination before delegating to Guidance. Combat and Wanderer mode disable travel. Unknown destinations remain advice. The detailed contracts are in [guide-navigation-design.md](guide-navigation-design.md).
 
-Story completion comes only from a proven final chain hand-in. `UI/StoryCompletion.lua` persists the chain head identity per character and queues an addon-owned notification independently of tracker visibility. It does not announce historical completions on login. Popup and tracker share one completion record and sound.
+Story completion comes only from a proven final chain hand-in. `UI/StoryCompletion.lua` persists the chain head identity per character and, independently of tracker visibility, queues the client's own achievement toast (`AchievementAlertFrameTemplate` in a queued `AlertFrame` subsystem, with no achievement ID) headed "Story complete" and naming the chain. It does not announce historical completions on login. Toast and tracker share one completion record and sound.
 
 ## 3. Copy
 

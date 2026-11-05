@@ -100,7 +100,7 @@ def layout_pass(ui, content_ui, scenes, known):
                 ui,
                 data[scene]["layout"],
                 known
-                | ({data[scene]["layout"][0]["path"]: (20, 20, 360, 82)} if scene == "story_complete" else {})
+                | ({data[scene]["layout"][0]["path"]: (50, 10, 300, 101)} if scene == "story_complete" else {})
                 | ({data[scene]["layout"][0]["path"]: (0, 0, 454, 294)} if scene == "guide_setup" else {}),
             )
             for scene in scenes
