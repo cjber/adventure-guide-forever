@@ -87,6 +87,11 @@ function GetQuestUiMapID(questID, ignoreWaypoints) end
 ---@type integer
 OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 3
 
+-- Blizzard_ObjectiveTracker/Blizzard_ObjectiveTrackerShared.lua: the tracker's line colours (an open line, the line
+-- it points at, a done line).
+---@type {Normal: ColorMixin, NormalHighlight: ColorMixin, Complete: ColorMixin}
+OBJECTIVE_TRACKER_COLOR = nil
+
 -- ScrollFrameTemplate: ScrollFrame_OnLoad attaches a MinimalScrollBar as ScrollBar.
 ---@class AGFScrollFrame : ScrollFrame
 ---@field ScrollBar Frame
@@ -279,6 +284,8 @@ CreateSettingsButtonInitializer = nil
 ---@class AGFTrackerBlock : Frame
 ---@field HeaderButton? Button
 ---@field id string
+-- Blizzard_ObjectiveTrackerBlock.lua: the height the block's header and lines take once laid out.
+---@field height number
 ---@field SetHeader fun(self: AGFTrackerBlock, text: string)
 ---@field AddObjective fun(self: AGFTrackerBlock, index: integer|string, text: string, ...: any)
 
@@ -292,6 +299,11 @@ CreateSettingsButtonInitializer = nil
 ---@field LayoutContents fun(self: ObjectiveTrackerModuleTemplate)
 ---@field OnBlockHeaderClick fun(self: ObjectiveTrackerModuleTemplate, block: AGFTrackerBlock, mouseButton: string)
 ---@field blockTemplate string
+-- Blizzard_ObjectiveTrackerModule.lua: the room the tracker gave the module, what its blocks take so far, and the
+-- offset the next block hangs at (CanFitBlock compares them).
+---@field availableHeight number
+---@field contentsHeight number
+---@field GetNextBlockAnchoring fun(self: ObjectiveTrackerModuleTemplate): (Region?, number)
 -- Blizzard_ObjectiveTrackerModule.lua:634: the block with this id plays its fanfare at the next layout.
 ---@field SetNeedsFanfare fun(self: ObjectiveTrackerModuleTemplate, key: string)
 
@@ -375,7 +387,7 @@ function C_MajorFactions.GetMajorFactionProgressionInfo(majorFactionID) end
 ---@field Icon Texture
 ---@field UpdateCollapsedState fun(self: AGFCollapseButton, collapsed: boolean)
 
----@type table<integer, {r: number, g: number, b: number}>
+---@type table<integer, {r: number, g: number, b: number, color: ColorMixin}>
 ITEM_QUALITY_COLORS = nil
 
 -- The client's micro menu bar and the buttons MicroButton.lua anchors against (FrameXML MicroMenu).
@@ -387,6 +399,9 @@ ITEM_QUALITY_COLORS = nil
 ---@field stride number? buttons per row
 ---@type AGFMicroMenu?
 MicroMenu = nil
+-- The Edit Mode frame the menu sits in; MicroMenuContainer:Layout sizes it to the menu.
+---@type Frame?
+MicroMenuContainer = nil
 ---@type Button?
 MainMenuMicroButton = nil
 ---@type Button?
@@ -403,7 +418,7 @@ UpdateMicroButtons = nil
 ---@field hookedUpdate boolean?
 ---@field hookedScripts table<Frame, boolean>? the frames whose scripts are hooked, weak keys
 ---@field events Frame? the frame listening for Edit Mode layout changes
----@field first { button: Frame, origin: number, applied: number }? where the row's first button was placed last
+---@field width number? the width the last placement widened the menu to, nil while the menu has Blizzard's own
 ---@type ForeverMicroButtonRegistry?
 ForeverMicroButtons = nil
 
@@ -416,6 +431,7 @@ AdventureGuideMicroButton = nil
 ---@field microButtonSpec table the spec the consumer passed to Create
 ---@field icon Texture the glyph drawn over the plate
 ---@field alert table? the template's alert overlay, hidden for a custom button
+---@field textureName string the atlas name the template's pushed and normal highlights are built from
 
 -- The quest giver window's reward display (Blizzard_UIPanels_Game QuestInfo.xml), read by UI/Upgrades.lua.
 ---@class AGFQuestRewardButton : Button

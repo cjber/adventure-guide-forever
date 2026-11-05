@@ -48,6 +48,9 @@ ns.L = {
 	RXP_STEP = "Step %d",
 	RXP_NO_GUIDE = "Choose a guide to begin.",
 	RXP_STICKY = "%s (ongoing)",
+	RXP_ONGOING = "Ongoing",
+	RXP_MORE_STEP = "+1 more step",
+	RXP_MORE_STEPS = "+%d more steps",
 	RXP_RECOMMENDATIONS = "Adventure Guide recommendations",
 
 	SETTING_QUEST_LEVEL = "Maximum quest level above yours",

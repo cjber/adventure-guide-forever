@@ -38,6 +38,45 @@ local function Engine()
 	end
 end
 
+-- RestedXP marks what its words are with its own colours (its Themes.lua guideTextColors, each a role the player may
+-- recolour): the guide shows each role in the client's colour for it instead (#351). Enemies and friendly NPCs take
+-- their reaction colours, an item its quality's, and a warning the game's gold. A role with no colour of the game's
+-- own, and any other colour, reads as plain text.
+---@param role string
+---@param element? AGFRXPElement
+---@return ColorMixin?
+local function RoleColor(role, element)
+	if role == "RXP_ENEMY_" then
+		return FACTION_RED_COLOR
+	elseif role == "RXP_FRIENDLY_" then
+		return FACTION_GREEN_COLOR
+	elseif role == "RXP_WARN_" then
+		return NORMAL_FONT_COLOR
+	elseif role == "RXP_LOOT_" or role == "RXP_BUY_" then
+		local item = element and element.tag and element.tag:find("^collect") and tonumber(element.id)
+		local quality = item and C_Item.GetItemQualityByID(item)
+		local colors = quality and ITEM_QUALITY_COLORS[quality]
+		return colors and colors.color or HIGHLIGHT_FONT_COLOR
+	end
+end
+
+-- The role each colour RestedXP drew with stands for: its defaults and the player's own.
+---@param engine AGFRXPEngine
+---@return table<string, string>
+local function Roles(engine)
+	local roles = {}
+	local colors = engine.guideTextColors
+	local default = colors and colors.default
+	for _, set in ipairs({ type(default) == "table" and default or {}, colors or {} }) do
+		for role, hex in pairs(set) do
+			if type(role) == "string" and role:find("^RXP_%u+_$") and type(hex) == "string" then
+				roles[hex:upper()] = role
+			end
+		end
+	end
+	return roles
+end
+
 ---@param engine AGFRXPEngine
 ---@param value string?
 ---@param element? AGFRXPElement
@@ -52,7 +91,28 @@ local function Text(engine, value, element)
 	if engine.ReplaceNpcIds then
 		value = engine.ReplaceNpcIds(value, element)
 	end
-	return (value:gsub("|T.-|t", ""):gsub("|A.-|a", ""):gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""))
+	value = value:gsub("|T.-|t", ""):gsub("|A.-|a", "")
+	-- Each coloured span (by RestedXP's token or the colour it put there) is set aside by its role, every other colour
+	-- code goes, then the spans take the client's colours.
+	local roles = Roles(engine)
+	value = value:gsub("|c(RXP_%u+_)(.-)|r", "\001%1\002%2\003"):gsub("|c(%x%x%x%x%x%x%x%x)(.-)|r", function(hex, inner)
+		local role = roles[hex:upper()]
+		return role and ("\001" .. role .. "\002" .. inner .. "\003") or inner
+	end)
+	value = value:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+	value = value:gsub("\001(.-)\002(.-)\003", function(role, inner)
+		local color = RoleColor(role, element)
+		return color and color:WrapTextInColorCode(inner) or inner
+	end)
+	-- A quest the line takes or hands in is named in the quest title's gold.
+	local quest = element and (element.tag == "accept" or element.tag == "turnin") and element.questId
+	local title = quest and (ns.State.QuestTitle(quest) or (ns.Data.quests[quest] and ns.Data.quests[quest].title))
+	local at = title and value:find(title, 1, true)
+	if title and at then
+		value = value:sub(1, at - 1) .. NORMAL_FONT_COLOR:WrapTextInColorCode(title) .. value:sub(at + #title)
+	end
+	-- Progress as the game's tracker writes it: "3/7 Small Spider Leg", not "Small Spider Leg: 3/7" (#353).
+	return (value:gsub("^(.-):%s*(%d+/%d+)$", "%2 %1"))
 end
 
 ---@param frame Frame
@@ -671,6 +731,8 @@ function Guide.Journey()
 						key = elemKey,
 						name = line.text,
 						text = line.text,
+						rxpTag = line.tag,
+						rxpQuest = line.questId,
 						pickups = {},
 						handins = {},
 						done = line.done,

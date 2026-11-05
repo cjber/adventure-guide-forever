@@ -20,6 +20,8 @@ local MOMENT = "moment"
 local LOADING = "loading"
 -- Polestar is guiding (Polestar.lua): its line stands alone, and a click takes over again.
 local POLESTAR = "polestar"
+-- A RestedXP guide's ongoing steps, one line each, under the step under way.
+local ONGOING = "rxp-ongoing"
 -- Headers that are not the step's: its click and hover never act on them.
 local NOT_STEP = {
 	[STORY_COMPLETE] = true,
@@ -28,6 +30,7 @@ local NOT_STEP = {
 	[MOMENT] = true,
 	[LOADING] = true,
 	[POLESTAR] = true,
+	[ONGOING] = true,
 }
 -- A town's NPC line names this many, then counts the rest.
 local NAMED_GIVERS = 2
@@ -183,6 +186,136 @@ local function Preview(block, step, line)
 	end
 end
 
+-- The room a block laid out next still has in the section (Blizzard_ObjectiveTrackerModule.lua CanFitBlock), less
+-- what the block already holds.
+---@param module AGFTrackerModule
+---@param block AGFTrackerBlock
+---@return number
+local function Room(module, block)
+	local _, offsetY = module:GetNextBlockAnchoring()
+	return module.availableHeight - module.contentsHeight + offsetY - block.height
+end
+
+-- Room kept for one more line, and the marks' size in a line.
+local LINE_ROOM, MARK_SIZE = 16, 12
+
+---@param text string
+---@return string
+local function Plain(text)
+	return (text:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""))
+end
+
+-- The quests a guide step's lines work on (its "complete" and "collect" lines).
+---@param step AGFStep
+---@return table<integer, true>
+local function WorkQuests(step)
+	local quests = {}
+	for _, item in ipairs(step.checklist or {}) do
+		if item.rxpQuest and not item.done and (item.rxpTag == "complete" or item.rxpTag == "collect") then
+			quests[item.rxpQuest] = true
+		end
+	end
+	return quests
+end
+
+-- An ongoing guide step in one line: its progress ("3/7 Small Spider Leg") when a line has one, else its first open
+-- line, so the step under way stays the one that reads in full (#353).
+---@param step AGFStep
+---@return string?
+local function OneLine(step)
+	local first
+	for _, item in ipairs(step.checklist or {}) do
+		if not item.done then
+			local text = ns.Overview.LineMarkup(item.rxpTag, MARK_SIZE) .. item.text
+			if Plain(item.text):find("^%d+/%d+ ") then
+				return text
+			end
+			first = first or text
+		end
+	end
+	return first
+end
+
+-- A RestedXP step (docs/design.md §2.5): the step under way in full, each line marked with its kind, the first open
+-- line lit as the tracker lights what it points at, done lines greyed; the next step in one grey line; then the
+-- ongoing steps, one line each, those whose work the step under way or the quest tracker already shows left out, in
+-- the room the section has left, with what does not fit counted (#351, #353). The walk is left to Shortest Path's
+-- own section while it guides.
+---@param module AGFTrackerModule
+---@param block AGFTrackerBlock
+---@param step AGFStep
+local function GuideSection(module, block, step)
+	local colors = OBJECTIVE_TRACKER_COLOR
+	local line, lit = 0, false
+	for _, item in ipairs(step.checklist or {}) do
+		line = line + 1
+		-- A done line greys whole, its coloured words too.
+		local style, text = colors.Complete, Plain(item.text)
+		if not item.done then
+			style, text = lit and colors.Normal or colors.NormalHighlight, item.text
+			lit = true
+		end
+		block:AddObjective(line, ns.Overview.LineMarkup(item.rxpTag, MARK_SIZE) .. text, nil, true, nil, style)
+	end
+	line = GroupLines(block, step, line)
+	local travel = not ns.Integrations.Guiding() and ns.Integrations.Travel(step)
+	if travel then
+		line = line + 1
+		block:AddObjective(line, travel)
+	end
+	local ongoing, upcoming = {}, nil
+	for _, other in ipairs(ns.Route().steps) do
+		if other ~= step and other.rxpIndex then
+			if other.rxpSticky and not other.preview then
+				ongoing[#ongoing + 1] = other
+			elseif not other.rxpSticky and not upcoming then
+				upcoming = other
+			end
+		end
+	end
+	if upcoming then
+		block:AddObjective(
+			line + 1,
+			GRAY_FONT_COLOR:WrapTextInColorCode(L.NEXT:format(upcoming.title)),
+			nil,
+			nil,
+			OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE
+		)
+	end
+	if not module:LayoutBlock(block) then
+		return
+	end
+	local shown, lines, seen = WorkQuests(step), {}, {}
+	for _, other in ipairs(ongoing) do
+		local quests, covered = WorkQuests(other), true
+		for questID in pairs(quests) do
+			covered = covered and (shown[questID] or C_QuestLog.GetQuestWatchType(questID) ~= nil)
+		end
+		local text = OneLine(other)
+		if text and not (next(quests) and covered) and not seen[text] then
+			seen[text] = true
+			lines[#lines + 1] = text
+			for questID in pairs(quests) do
+				shown[questID] = true
+			end
+		end
+	end
+	if #lines == 0 then
+		return
+	end
+	local extra = module:GetBlock(ONGOING)
+	extra:SetHeader(L.RXP_ONGOING)
+	for index, text in ipairs(lines) do
+		if Room(module, extra) < LINE_ROOM * (index < #lines and 2 or 1) then
+			local more = #lines - index + 1
+			extra:AddObjective(index, more == 1 and L.RXP_MORE_STEP or L.RXP_MORE_STEPS:format(more))
+			break
+		end
+		extra:AddObjective(index, text, nil, true)
+	end
+	module:LayoutBlock(extra)
+end
+
 -- One quiet line (LayoutLine), something new (Moments.Line) under it, then one block for the current step of the
 -- chosen journey, else of the first card, which the guide draws on its own (docs/design.md §2.5):
 -- its place (a town's counts), why it is next (a town's NPCs) and the travel line as objective lines, then what
@@ -238,36 +371,7 @@ function ModuleMixin:LayoutContents()
 	block:SetHeader(ns.Overview.VerbMarkup(step, 14) .. step.title)
 	local line = 0
 	if step.rxpIndex then
-		for _, item in ipairs(step.checklist or {}) do
-			line = line + 1
-			block:AddObjective(line, item.text, nil, item.done)
-		end
-		line = GroupLines(block, step, line)
-		local travel = ns.Integrations.Travel(step)
-		if travel then
-			block:AddObjective(line + 1, travel)
-		end
-		if not self:LayoutBlock(block) then
-			return
-		end
-		local nextShown = false
-		for _, sticky in ipairs(ns.Route().steps) do
-			local ongoing = sticky.rxpSticky and not sticky.preview
-			local upcoming = not sticky.rxpSticky and not nextShown
-			if sticky ~= step and sticky.rxpIndex and (ongoing or upcoming) then
-				if upcoming then
-					nextShown = true
-				end
-				local extra = self:GetBlock(sticky.key)
-				extra:SetHeader(sticky.title)
-				for index, item in ipairs(sticky.checklist or {}) do
-					extra:AddObjective(index, item.text, nil, item.done)
-				end
-				if not self:LayoutBlock(extra) then
-					return
-				end
-			end
-		end
+		GuideSection(self, block, step)
 		return
 	end
 	local guiding = ns.Integrations.Guiding()
