@@ -35,7 +35,7 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 ## Features
 
-- **RestedXP guides.** Choose a guide from the Continue cards and follow its steps on the map and tracker. RestedXP handles completion; Shortest Path Forever handles travel. RestedXP’s item and target windows keep their own settings and positions. Turn off *Use RestedXP guides* to return to Adventure Guide's suggestions.
+- **RestedXP guides.** Choose a guide from the Continue cards and follow its steps on the map and tracker. RestedXP handles completion; Shortest Path Forever handles travel. While you follow one, the tracker lists only the quests its steps name, and your own tracked quests come back when you stop. RestedXP’s item and target windows keep their own settings and positions. Turn off *Use RestedXP guides* to return to Adventure Guide's suggestions.
 
 - **Map guide.** The active RestedXP guide comes first while *Use RestedXP guides* is on; otherwise Quests in your log.
 

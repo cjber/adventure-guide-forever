@@ -12,7 +12,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-- **Shortest Path guides a RestedXP step again when RestedXP hides the step before it.** The step the guide shows next was kept as a preview, so the tracker gave a walk time while nothing guided you there. A guide RestedXP loads late at login, while it imports purchased guides, also stays your chosen journey instead of being swapped for a zone.
+## [1.0.17] - 2026-11-05
+
+- **Shortest Path guides RestedXP steps again.** When RestedXP hid the step before the one it shows, the step the guide shows next was kept as a preview, so the tracker gave a walk time while nothing guided you there. A guide RestedXP loads late at login, while it imports purchased guides, also stays your chosen journey instead of being swapped for a zone.
 - **The tracker says when your route is paused.** "Route paused. Click the title to resume." sits under the walk time, and a RestedXP step's walk names the NPC it is for, or its zone, instead of "Step 96".
 - **A RestedXP guide tracks only its own quests.** While you follow one, the objective tracker lists just the quests its current and ongoing steps name, and the quests you tracked yourself come back when you stop. Turn it off with "Track only the RestedXP guide's quests".
 
