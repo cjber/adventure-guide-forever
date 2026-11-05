@@ -378,10 +378,14 @@ local function Sync()
 		SuppressMap(engine)
 		Window(engine.v2 and engine.v2.state and engine.v2.state.guideWindow and engine.v2.state.guideWindow.frame)
 		snapshot = Snapshot(engine)
-		-- RXP's own arrow is the guide's arrow: it points at the step shown here. It goes only while another journey
-		-- is chosen, so it never points somewhere other than the route being followed.
+		-- With Shortest Path loaded, its arrow points at the step handed to it, so RXP's arrow never shows as a second
+		-- one. Without it, RXP's arrow is the guide's only arrow: it goes only while another journey is chosen, so it
+		-- never points somewhere other than the route being followed.
 		local chosen = ns.Prefs().journey
-		if snapshot.name ~= "" and chosen ~= nil and chosen ~= GuideKey(snapshot.group, snapshot.name) then
+		if
+			ns.Integrations.Provider() ~= nil
+			or (snapshot.name ~= "" and chosen ~= nil and chosen ~= GuideKey(snapshot.group, snapshot.name))
+		then
 			Window(engine.arrowFrame)
 		else
 			Unwindow(engine.arrowFrame)
@@ -813,7 +817,7 @@ events:SetScript("OnEvent", Guide.Refresh)
 EventUtil.ContinueOnAddOnLoaded("RXPGuides", Attach)
 EventUtil.ContinueAfterAllEvents(function()
 	ready = true
-	-- Choosing another journey, or the guide again, decides whether RXP's arrow shows.
+	-- Choosing another journey, or the guide again, decides whether RXP's arrow shows without Shortest Path.
 	hooksecurefunc(ns, "Choose", Guide.Refresh) -- taint-ok: Adventure Guide owns this addon table.
 	Attach()
 end, "VARIABLES_LOADED", "PLAYER_ENTERING_WORLD")

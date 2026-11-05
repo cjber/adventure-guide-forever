@@ -53,7 +53,7 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 - **Reward upgrades.** When a quest offers rewards to choose from, the game's green arrow marks each one that beats what you wear: your armour type, a main stat your class uses and a higher item level.
 - **Story milestones.** Finishing a proven quest chain shows a short popup, once per character.
 - **Stories and search.** Stories read as chapters without naming later quests. Search puts the best match first and shows which of a quest's requirements you meet. For a locked quest it names the earliest quest in its chain you can take, and a shift-click adds that one.
-- **Other things to do.** Hints cover professions, unspent talents, hearths and unexplored areas. Class spell reminders and trainer visits are off by default (Route settings). PvP shows your rank, its next reward and the nearest battlemaster.
+- **Other things to do.** Hints cover professions, unspent talents, hearths and new lands Forever added. Class spell reminders and trainer visits are off by default (Route settings). PvP shows your rank, its next reward and the nearest battlemaster.
 - **Your say.** Skip a step until your next reload, hide a journey or rule out a quest on this character. Shift-click a search result or map quest giver to add quests. *Skipped* restores hidden suggestions. The guide never abandons quests for you. Map marks are off by default.
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png" width="400" alt="The Adventure Guide tracker section"></p>

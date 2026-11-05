@@ -459,7 +459,6 @@ L["TWEAKS_DISABLED"] = "던전 입구를 찾으려면 Tweaks Forever를 켜십�
 L["TWEAKS_FAMILY_MENU"] = "던전 입구 찾기: Tweaks Forever"
 L["TWEAKS_MISSING"] = "던전 입구를 찾으려면 Tweaks Forever를 설치하십시오."
 L["TWEAKS_OUTDATED"] = "던전 입구를 찾으려면 Tweaks Forever를 업데이트하십시오."
-L["UNEXPLORED"] = "아직 보지 못한 곳: %s"
 L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"

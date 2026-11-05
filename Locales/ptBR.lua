@@ -453,7 +453,6 @@ L["TWEAKS_DISABLED"] = "Ative o Tweaks Forever para encontrar entradas de masmor
 L["TWEAKS_FAMILY_MENU"] = "Encontrar entradas de masmorras: Tweaks Forever"
 L["TWEAKS_MISSING"] = "Instale o Tweaks Forever para encontrar entradas de masmorras."
 L["TWEAKS_OUTDATED"] = "Atualize o Tweaks Forever para encontrar entradas de masmorras."
-L["UNEXPLORED"] = "Você ainda não viu %s"
 L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
 L["UPDATED_TO"] = "atualizado para %s. %s"

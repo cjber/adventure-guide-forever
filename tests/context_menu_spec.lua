@@ -79,7 +79,7 @@ h.fire("GLOBAL_MOUSE_DOWN")
 equal(popup:IsShown(), false, "outside click closes menu")
 -- A long entry widens the whole menu rather than being cut: the aside lines in the guide's "+1 more" menu and a step
 -- menu's title, "Complete objectives · ...", are the entries that need it.
-local aside = "You haven't seen Overlook Standing yet: the overlook on the ridge"
+local aside = "Overlook Standing · For levels 36-44: the overlook on the ridge"
 h.ns.ContextMenu(owner, function(_, root)
 	root:CreateTitle(aside)
 	root:CreateButton("Short", function() end)

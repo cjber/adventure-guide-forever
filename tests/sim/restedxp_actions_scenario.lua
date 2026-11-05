@@ -14,6 +14,11 @@ scenario("RestedXP action windows survive guide suppression", { addon = false, s
 			return {}
 		end,
 		Choose = function() end,
+		Integrations = {
+			Provider = function()
+				return nil
+			end,
+		},
 	}
 	local guide = sim.G.CreateFrame("Frame", nil, sim.G.UIParent)
 	local item = sim.G.CreateFrame("Button", nil, sim.G.UIParent, "SecureActionButtonTemplate")

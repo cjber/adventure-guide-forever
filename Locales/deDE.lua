@@ -454,7 +454,6 @@ L["TWEAKS_DISABLED"] = "Aktiviert Tweaks Forever, um Dungeoneingänge zu finden.
 L["TWEAKS_FAMILY_MENU"] = "Dungeoneingänge finden: Tweaks Forever"
 L["TWEAKS_MISSING"] = "Installiert Tweaks Forever, um Dungeoneingänge zu finden."
 L["TWEAKS_OUTDATED"] = "Aktualisiert Tweaks Forever, um Dungeoneingänge zu finden."
-L["UNEXPLORED"] = "Ihr habt %s noch nicht gesehen"
 L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"

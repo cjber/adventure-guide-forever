@@ -414,7 +414,6 @@ ns.L = {
 	PROFESSION_RANK_4 = "Artisan",
 	-- Exploration and new lands: a land Forever added and its levels; an area not yet seen.
 	NEW_LAND = "%s · For levels %d-%d",
-	UNEXPLORED = "You haven't seen %s yet",
 	-- A way into an instance is no place to be the level for.
 	MOMENT_OPEN = "%s is open to you",
 	-- The route's last stop, when rested XP is low and an innkeeper stands there (docs/design.md §2.17).
