@@ -116,7 +116,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 - **Quest rewards that beat what you wear are marked.** The quest giver's detail and reward window draw the game's own green upgrade arrow on a reward the game shows usable, that fits your class's armour type, that carries no primary stat your class never uses, and that has a higher item level than the weaker item it would replace. Weapons follow the game tutorial's own upgrade rules. Setting *Mark reward upgrades* (Interface, on by default); with Pawn loaded nothing is marked, and the README says so.
 
 
-- **Quest rewards that beat your gear are marked.** When a quest giver offers rewards to choose from, the game's green upgrade arrow marks each one you can use that beats what you wear in that slot: your class's armour type, a main stat your class uses and a higher item level. Nothing is chosen for you, and with Pawn installed Pawn marks them instead. Thanks to cjber for the idea (#321).
+- **Quest rewards that beat your gear are marked.** When a quest giver offers rewards to choose from, the game's green upgrade arrow marks each one you can use that beats what you wear in that slot: your class's armour type, a main stat your class uses and a higher item level. Nothing is chosen for you, and with Pawn installed Pawn marks them instead.
 
 ## [1.0.6] - 2026-11-04
 
@@ -124,7 +124,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [1.0.5] - 2026-11-04
 
-- **Map pins stay clear of the gamepad map controls.** Route rings, quest givers and reveal pings use their own map layer, keeping zooming and navigation available. Pins hide during combat and return on the map currently shown. Thanks to cjber for reporting the blocked controls (#304).
+- **Map pins stay clear of the gamepad map controls.** Route rings, quest givers and reveal pings use their own map layer, keeping zooming and navigation available. Pins hide during combat and return on the map currently shown.
 
 ## [1.0.4] - 2026-11-04
 
@@ -132,9 +132,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [1.0.3] - 2026-11-03
 
-- **Shared reports keep distinct errors separate.** Errors with the same opening text keep their own counts, and BugGrabber entries already captured by the addon appear once. Thanks to cjber for requesting the compatibility audit (#304).
+- **Shared reports keep distinct errors separate.** Errors with the same opening text keep their own counts, and BugGrabber entries already captured by the addon appear once.
 
-- **Unfocusing a map pin stops its guidance.** The guide leaves your pin and new quest focus alone instead of treating an unfocused pin as a running route. Its own objective highlighting preserves navigation already running. Thanks to cjber for the report (#304).
+- **Unfocusing a map pin stops its guidance.** The guide leaves your pin and new quest focus alone instead of treating an unfocused pin as a running route. Its own objective highlighting preserves navigation already running.
 
 ### For addon authors
 
