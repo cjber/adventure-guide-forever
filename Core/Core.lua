@@ -48,7 +48,7 @@ local DEFAULTS = {
 	autoStart = true,
 	-- Finishing a zone journey moves to the next zone card, and starts its route when the finished one was guided (#400).
 	autoNextZone = true,
-	-- Highlight the NPC a talk step names, with a nameplate arrow and a target button (#401).
+	-- Highlight the NPC a talk step names, with nameplate arrows and a target button (#401).
 	npcHighlight = true,
 	-- Opt-in: the route never takes over the player's tracked quests unasked. A saved true stays true.
 	trackRouteQuests = false,
@@ -578,6 +578,26 @@ function ns.InLog(step)
 	return #LogQuests(step) > 0
 end
 
+-- Opens the world map, or turns a shown one, to `mapID`. Blizzard's own opener (Blizzard_WorldMap.lua's
+-- OpenWorldMap) is plain Lua, so addon code may call it, unlike the restricted C_Map.OpenWorldMap, which raises
+-- ADDON_ACTION_BLOCKED from the carry card's cleanup menu (#411). A shown map turns without touching the map's
+-- layout; a closed one still opens through C_Map.OpenWorldMap, which has Blizzard open it without tainting the
+-- gamepad UI's provider tables. Never in combat, like the map's own code; false when nothing opened.
+---@param mapID? integer
+---@return boolean
+function ns.OpenMap(mapID)
+	if InCombatLockdown() then
+		return false
+	end
+	local map = mapID ~= nil and mapID ~= 0 and mapID or nil
+	if WorldMapFrame and WorldMapFrame:IsShown() then
+		OpenWorldMap(map) -- taint-ok: Blizzard's opener on the map it shows; C_Map.OpenWorldMap is restricted (#411)
+	else
+		C_Map.OpenWorldMap(map)
+	end
+	return true
+end
+
 -- A quest in the log opens the world map on the quest's zone and becomes the selected quest (docs/design.md §2.5);
 -- anything else is left to the caller. Never in combat. True when the map opened. Blizzard's details pane is the
 -- player's to open: QuestMapFrame_ShowQuestDetails run from addon code writes the pane's questID, which the map's
@@ -589,9 +609,8 @@ function ns.ShowQuest(step)
 		return false
 	end
 	local questID = LogQuests(step)[1]
-	local map = GetQuestUiMapID(questID)
 	C_QuestLog.SetSelectedQuest(questID)
-	C_Map.OpenWorldMap(map ~= 0 and map or nil)
+	ns.OpenMap(GetQuestUiMapID(questID))
 	return true
 end
 
@@ -1214,7 +1233,7 @@ local function Slash(msg)
 		if ns.OpenPanel then
 			ns.OpenPanel()
 		else
-			C_Map.OpenWorldMap()
+			ns.OpenMap()
 		end
 	else
 		ns.Print(L.HELP_OPEN)
@@ -1237,7 +1256,7 @@ function AdventureGuideForever_OnAddonCompartmentClick()
 	if ns.OpenPanel then
 		ns.OpenPanel()
 	else
-		C_Map.OpenWorldMap()
+		ns.OpenMap()
 	end
 end
 

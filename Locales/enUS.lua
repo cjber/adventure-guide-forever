@@ -182,9 +182,9 @@ ns.L = {
 		.. "zone for your level from the same list. When that journey was already guiding you, its route starts too. "
 		.. "Turn this off to stop at Journey complete and choose the next journey yourself.",
 	SETTING_NPC_HIGHLIGHT = "Highlight the next quest NPC",
-	SETTING_NPC_HIGHLIGHT_TOOLTIP = "While a step talks to a quest giver or turn-in NPC, a small arrow bounces over "
-		.. "their nameplate and a target button sits under the tracker. Turn this off to hide both. The guide never "
-		.. "changes your nameplate settings.",
+	SETTING_NPC_HIGHLIGHT_TOOLTIP = "While a step talks to a quest giver or turn-in NPC, small arrows bounce at "
+		.. "either side of their nameplate and a target button sits under the tracker. Turn this off to hide both. "
+		.. "The guide never changes your nameplate settings.",
 	SETTING_TRACK_ROUTE = "Tracker title tracks quests",
 	SETTING_TRACK_ROUTE_TOOLTIP = "Clicking the guide's title in the objective tracker adds every quest on the "
 		.. "route that's in your log, up to the tracker's limit.",

@@ -1,16 +1,24 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
---[[ The current step's NPC (#401): a secure target button in the tracker, a small bouncing arrow over their nameplate,
-     and one session-long hint when friendly nameplates are off. The arrow is our own frame anchored to the client's
-     nameplate; the nameplate itself is never touched. The target button shares its chrome and macro with RestedXP's
-     target rows (UI/ActionButton.lua). ]]
+--[[ The current step's NPC (#401): a secure target button in the tracker, a pair of small bouncing arrows either side
+     of their nameplate, and one session-long hint when friendly nameplates are off. The arrows are our own frame
+     anchored to the client's nameplate; the nameplate itself is never touched, so the client's own quest `?`/`!` at
+     its top stays clear. The target button shares its chrome and macro with RestedXP's target rows
+     (UI/ActionButton.lua). ]]
 
 local L = ns.L
 local ActionButton = ns.ActionButton
 local ITEM_SIZE = ActionButton.ITEM_SIZE
-local ARROW_ATLAS = "NPE_ArrowDown"
+-- NPE_ArrowLeft and NPE_ArrowRight both exist in this client (Blizzard_ArrowCalloutFrame/ArrowCalloutFrame.xml;
+-- UiTextureAtlasMember). The left arrow points right, the right one points left, so both point at the nameplate.
+local ARROW_LEFT_ATLAS = "NPE_ArrowRight"
+local ARROW_RIGHT_ATLAS = "NPE_ArrowLeft"
 local ARROW_SIZE = 22
+local ARROW_BOB = 3
+-- Field Guide Forever draws a 17-unit tier mark just right of a nameplate's name, so the right arrow keeps clear of it.
+local ARROW_GAP = 6
+local ARROW_TIER_GAP = 16
 local ROW_GAP = 4
 
 ---@class AGFNpcHighlightModule
@@ -24,7 +32,12 @@ local activeNpc
 ---@type Frame?
 local arrowFrame
 ---@type Texture?
-local arrow
+local arrowLeft
+---@type Texture?
+local arrowRight
+---@type Frame?
+local arrowBar
+
 ---@type Frame?
 local targetRoot
 ---@type AGFActionButton?
@@ -86,7 +99,21 @@ local function HideArrow()
 	if arrowFrame then
 		arrowFrame:Hide()
 	end
+	arrowBar = nil
 	arrowUnit = nil
+end
+
+-- The arrows at `shift` from their places: the left one moves right and the right one left as `shift` grows, so both
+-- bob toward the nameplate and back together.
+---@param shift number
+local function Place(shift)
+	if not (arrowLeft and arrowRight and arrowBar) then
+		return
+	end
+	arrowLeft:ClearAllPoints()
+	arrowLeft:SetPoint("RIGHT", arrowBar, "LEFT", -ARROW_GAP + shift, 0)
+	arrowRight:ClearAllPoints()
+	arrowRight:SetPoint("LEFT", arrowBar, "RIGHT", ARROW_GAP + ARROW_TIER_GAP - shift, 0)
 end
 
 local function EnsureArrow()
@@ -96,12 +123,13 @@ local function EnsureArrow()
 	arrowFrame = CreateFrame("Frame", "AdventureGuideForeverNpcArrow", UIParent)
 	arrowFrame:SetSize(ARROW_SIZE, ARROW_SIZE)
 	arrowFrame:Hide()
-	arrow = arrowFrame:CreateTexture(nil, "ARTWORK")
-	ns.Art.Fit(arrow --[[@as Texture]], ARROW_ATLAS, ARROW_SIZE, ARROW_SIZE)
-	arrow:SetPoint("CENTER")
+	arrowLeft = arrowFrame:CreateTexture(nil, "ARTWORK")
+	ns.Art.Fit(arrowLeft, ARROW_LEFT_ATLAS, ARROW_SIZE, ARROW_SIZE)
+	arrowRight = arrowFrame:CreateTexture(nil, "ARTWORK")
+	ns.Art.Fit(arrowRight, ARROW_RIGHT_ATLAS, ARROW_SIZE, ARROW_SIZE)
 	arrowFrame:SetScript("OnUpdate", function(_, elapsed)
 		bounce = (bounce + elapsed) % 1
-		arrow:SetPoint("CENTER", arrowFrame, "CENTER", 0, math.sin(bounce * math.pi * 2) * 3)
+		Place(math.sin(bounce * math.pi * 2) * ARROW_BOB)
 	end)
 end
 
@@ -135,15 +163,15 @@ local function UpdateArrow()
 		return
 	end
 	arrowUnit = unit
+	local unitFrame = plate.UnitFrame --[[@as AGFNamePlateUnitFrame?]]
+	arrowBar = (unitFrame and unitFrame.healthBar) or plate
 	frame:ClearAllPoints()
-	-- Beside the plate, not above it: the client draws its own quest and exclamation markers over a nameplate's top,
-	-- so an arrow there collided with them at every distance. Anchored to the plate's left edge, vertically centred
-	-- on the health bar, the arrow never shares space with those markers.
-	frame:SetPoint("RIGHT", plate, "LEFT", -ARROW_SIZE / 2 - 2, 0)
+	frame:SetPoint("CENTER", arrowBar, "CENTER")
+	Place(0)
 	frame:Show()
 end
 
--- The arrow's nameplate unit, for the specs and for a report; nil while no talk step's nameplate is shown.
+-- The arrows' nameplate unit, for the specs and for a report; nil while no talk step's nameplate is shown.
 ---@return string?
 function Highlight.ArrowUnit()
 	return arrowUnit

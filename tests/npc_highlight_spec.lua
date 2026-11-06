@@ -1,7 +1,7 @@
 -- Run from the repository root: luajit tests/npc_highlight_spec.lua
--- The current talk step's NPC (#401): match a nameplate by creature entry then exact name, bounce our own arrow over
--- it, mark the target only when it carries no mark, hint once when friendly nameplates are off, and clean up when the
--- step changes. The guide never writes a CVar or touches the nameplate.
+-- The current talk step's NPC (#401): match a nameplate by creature entry then exact name, bounce our own two arrows
+-- either side of it, mark the target only when it carries no mark, hint once when friendly nameplates are off, and
+-- clean up when the step changes. The guide never writes a CVar or touches the nameplate.
 local harness = dofile("tests/harness.lua")
 local checks = 0
 local function check(value, label)
@@ -80,7 +80,7 @@ do
 	check(#h.errors == 0, table.concat(h.errors, "\n"))
 end
 
--- A shown nameplate gets our own bouncing arrow; removal and a step change take it away.
+-- A shown nameplate gets our own bouncing arrows; removal and a step change take them away.
 do
 	local h = Load()
 	local ns = h.ns
@@ -91,14 +91,42 @@ do
 	h.G.UnitName = function(unit)
 		return h.unitNames[unit]
 	end
-	h.namePlates = { nameplate1 = {
-		IsShown = function()
-			return true
-		end,
-	} }
+	local healthBar = {}
+	h.namePlates =
+		{ nameplate1 = {
+			IsShown = function()
+				return true
+			end,
+			UnitFrame = { healthBar = healthBar },
+		} }
 	Step(h, STEP)
 	h.fire("NAME_PLATE_UNIT_ADDED", "nameplate1")
 	check(ns.NpcHighlight.ArrowUnit() == "nameplate1", "the matching nameplate carries the arrow")
+	-- Only the two arrows: no glow square behind them (#412).
+	local frame = h.G.AdventureGuideForeverNpcArrow
+	local arrows = { frame:GetRegions() }
+	check(#arrows == 2, "the arrow frame holds just the two arrows")
+	check(arrows[1].layer == "ARTWORK" and arrows[2].layer == "ARTWORK", "both arrows draw on ARTWORK")
+	check(arrows[1].atlas == "NPE_ArrowRight", "the left arrow points right")
+	check(arrows[2].atlas == "NPE_ArrowLeft", "the right arrow points left")
+	local function anchor(texture)
+		local point, relativeTo, relativePoint, x = texture:GetPoint(1)
+		return point, relativeTo, relativePoint, x
+	end
+	local point, bar, relativePoint, leftX = anchor(arrows[1])
+	local rightX
+	check(point == "RIGHT" and relativePoint == "LEFT", "the left arrow hangs off the nameplate's left edge")
+	check(bar == h.namePlates.nameplate1.UnitFrame.healthBar, "at the health bar, not the plate's top")
+	check(leftX == -6, "six units clear of it")
+	point, bar, relativePoint, rightX = anchor(arrows[2])
+	check(point == "LEFT" and relativePoint == "RIGHT", "the right arrow hangs off the right edge")
+	check(bar == h.namePlates.nameplate1.UnitFrame.healthBar, "at the health bar too")
+	check(rightX == 22, "and sixteen units further out than the left, clearing Field Guide's tier mark")
+	-- Both bob inward together, three units.
+	h.call(frame.scripts.OnUpdate, frame, 0.25)
+	local _, _, _, bobbedLeft = anchor(arrows[1])
+	local _, _, _, bobbedRight = anchor(arrows[2])
+	check(bobbedLeft == -3 and bobbedRight == 19, "the pair bobs toward the nameplate and back, in step")
 	check(ns.NpcHighlight.TargetShown(), "and the talk step has a target button")
 	local button = h.G.AdventureGuideForeverNpcTarget
 	check(button ~= nil, "the target button is built")

@@ -11,6 +11,9 @@ verbatim rather than rewritten as the addon moves. API changes other addons' aut
 optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
+- **Arrows on both sides of the quest giver's nameplate.** A pair of arrows now bobs inward from either side of the nameplate, so the NPC to talk to stands out from any angle, and the right one leaves room for Field Guide's tier mark.
+- **A looted quest item now finishes its stop.** When an objective's count reaches what the quest asks for, the stop's count follows it and the journey moves on to the turn-in, even if the game reports the count a beat before it marks the objective and quest complete.
+- **Cleaning up a quest no longer trips a blocked action.** Choosing a grey or elsewhere quest from the carry card's cleanup menu opens it on the world map through the game's own map opener, so the client no longer raises ADDON_ACTION_BLOCKED.
 
 ## [1.1.1] - 2026-11-06
 - **The quest giver arrow sits beside the nameplate.** The arrow drew a pale square behind it and hung over the nameplate's top, where the client puts its own quest and exclamation markers, so the two overlapped at every distance. It is now the bare arrow, anchored to the left of the health bar, clear of those markers.

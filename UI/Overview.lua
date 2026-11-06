@@ -471,9 +471,8 @@ function Overview.OpenCleanupQuest(questID)
 	if InCombatLockdown() then
 		return
 	end
-	local map = GetQuestUiMapID(questID)
 	C_QuestLog.SetSelectedQuest(questID)
-	C_Map.OpenWorldMap(map ~= 0 and map or nil)
+	ns.OpenMap(GetQuestUiMapID(questID))
 end
 
 -- The carry card's right-click menu: the grey and elsewhere quests under their headings, each opening on the map.
@@ -542,7 +541,7 @@ local function CardClick(self, mouseButton)
 	else
 		-- Turn the map to the selected journey.
 		if WorldMapFrame:IsShown() and journey.map > 0 then
-			C_Map.OpenWorldMap(journey.map)
+			ns.OpenMap(journey.map)
 		end
 		if self.state ~= "chosen" then
 			ns.Choose(journey.key, ns.Setting("titleStartsRoute"))

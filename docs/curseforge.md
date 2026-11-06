@@ -43,7 +43,7 @@ These images are generated previews of the guide UI.
 - **Choose and go.** Use Shortest Path Forever or the game's waypoint. Stop clears only guidance the addon started.
 - **Your route.** Your journey survives travel and reloads. Ready hand-ins come first. Towns group quest givers into checklists. A quest missing from its giver's list drops off, with a line in chat.
 - **Where to do objectives.** A place with mobs 3 or more levels above you gives way to a lower one on its map. *Next spot* picks another camp, even where you stand.
-- **Quest givers stand out.** While a step talks to an NPC, a small arrow bounces over their nameplate and a target button selects them and, when you play solo, stars them if they carry no mark of their own. Friendly nameplates must be on; the tracker says so once.
+- **Quest givers stand out.** While a step talks to an NPC, a pair of small arrows bounces either side of their nameplate and a target button selects them and, when you play solo, stars them if they carry no mark of their own. Friendly nameplates must be on; the tracker says so once.
 - **Quest difficulty.** Set the highest quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups.
 - **Your order.** Drag steps or use their menu. Moves that break quest order are greyed out.
 - **Search and hints.** Search puts the best match first, with each quest's requirements and, for a locked one, the first quest in its chain you can take. Hints cover talents and battlegrounds.

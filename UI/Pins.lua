@@ -724,8 +724,8 @@ function Pins.Reveal(point)
 		return
 	end
 	reveal = point
-	-- The client opens and turns the map from its own code, keeping those fields untainted.
-	C_Map.OpenWorldMap(point.map)
+	-- Blizzard's own opener: its code turns the map, as it does from the quest tracker's menu (#411).
+	ns.OpenMap(point.map)
 	C_Timer.After(0, function()
 		if not InCombatLockdown() and map then
 			local view = ns.MapCanvas.Watch(map)

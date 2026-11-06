@@ -404,23 +404,31 @@ local function LoadPoints(log)
 end
 
 -- The client's objectives for a quest, in its order: each one's type ("monster", "object", "item", "event", ...),
--- its words, whether it is done, and its count.
+-- its words, whether it is done, and its count. An item objective can report its count at 1/1 a tick before the
+-- client marks it finished (#410), so a count that reaches its need is done; its words carry that count and are
+-- rewritten from it, since they can lag it.
 local objectiveDone = {}
 ---@return AGFLogObjective[]
 local function Objectives(questID)
 	local objectives, done = {}, {}
 	local previous = objectiveDone[questID]
 	for index, info in ipairs(C_QuestLog.GetQuestObjectives(questID) or {}) do
-		done[index] = info.finished == true
-		if previous and done[index] and not previous[index] then
+		local have, need = info.numFulfilled or 0, info.numRequired or 0
+		local finished = info.finished == true or (need > 0 and have >= need)
+		done[index] = finished
+		if previous and finished and not previous[index] then
 			ns.Sound.ClientEvent()
+		end
+		local text = info.text or ""
+		if need > 0 then
+			text = text:gsub("%d+%s*/%s*%d+", have .. "/" .. need, 1)
 		end
 		objectives[index] = {
 			type = info.type,
-			text = info.text or "",
-			done = info.finished == true,
-			have = info.numFulfilled or 0,
-			need = info.numRequired or 0,
+			text = text,
+			done = finished,
+			have = have,
+			need = need,
 		}
 	end
 	objectiveDone[questID] = done
@@ -448,17 +456,27 @@ function State.Log()
 		local info = C_QuestLog.GetInfo(index)
 		if info and not info.isHeader then
 			local map, x, y = C_QuestLog.GetNextWaypoint(info.questID)
+			local objectives = Objectives(info.questID)
+			local complete = C_QuestLog.IsComplete(info.questID) or false
+			-- The client can keep IsComplete false for a tick after an item objective's count fills (#410): a quest
+			-- whose every objective is done is ready to hand in, the same answer it gives a moment later.
+			if not complete and #objectives > 0 then
+				complete = true
+				for _, objective in ipairs(objectives) do
+					complete = complete and objective.done
+				end
+			end
 			---@type AGFLogQuest
 			log[info.questID] = {
 				id = info.questID,
 				title = info.title,
-				complete = C_QuestLog.IsComplete(info.questID) or false,
+				complete = complete,
 				level = info.level or 0,
 				groupSize = (info.suggestedGroup or 0) > 1 and info.suggestedGroup or nil,
 				map = map,
 				x = x,
 				y = y,
-				objectives = Objectives(info.questID),
+				objectives = objectives,
 			}
 		end
 	end
@@ -553,13 +571,17 @@ events:RegisterEvent("SKILL_LINES_CHANGED")
 events:RegisterEvent("UPDATE_FACTION")
 -- Rest and XP, by feature detection: the Forever probes never registered these, and the client raises
 -- on an event it lacks, so one it refuses just leaves the rest line to the next rebuild.
--- QUEST_POI_UPDATE moves the client's quest points (LoadPoints).
+-- QUEST_POI_UPDATE moves the client's quest points (LoadPoints). ITEM_COUNT_CHANGED and BAG_UPDATE_DELAYED are the
+-- later events for a looted quest item: its count, words and complete flag can still read as they did on the
+-- QUEST_LOG_UPDATE that came first (#410).
 for _, event in ipairs({
 	"PLAYER_UPDATE_RESTING",
 	"UPDATE_EXHAUSTION",
 	"PLAYER_XP_UPDATE",
 	"QUEST_POI_UPDATE",
 	"QUEST_WATCH_UPDATE",
+	"ITEM_COUNT_CHANGED",
+	"BAG_UPDATE_DELAYED",
 }) do
 	pcall(events.RegisterEvent, events, event)
 end
@@ -570,6 +592,8 @@ local KEEPS_POINTS = {
 	PLAYER_UPDATE_RESTING = true,
 	UPDATE_EXHAUSTION = true,
 	PLAYER_XP_UPDATE = true,
+	ITEM_COUNT_CHANGED = true,
+	BAG_UPDATE_DELAYED = true,
 }
 -- The completed quests are read whole at every loading screen, and again a moment after a turn-in's quest log
 -- settles: the server can mark a quest done with no QUEST_TURNED_IN (a breadcrumb or a chain's other branch closing),
@@ -628,7 +652,12 @@ end
 
 -- The first argument is PLAYER_ENTERING_WORLD's isInitialLogin, and QUEST_TURNED_IN's and QUEST_WATCH_UPDATE's questID.
 -- The events that move only the quest log; whether only its counts moved is Core's rebuild's to say (LogShape).
-local COUNTS_EVENTS = { QUEST_LOG_UPDATE = true, QUEST_WATCH_UPDATE = true }
+local COUNTS_EVENTS = {
+	QUEST_LOG_UPDATE = true,
+	QUEST_WATCH_UPDATE = true,
+	ITEM_COUNT_CHANGED = true,
+	BAG_UPDATE_DELAYED = true,
+}
 
 local function OnEvent(_, event, arg)
 	if event == "PLAYER_LEVEL_UP" then

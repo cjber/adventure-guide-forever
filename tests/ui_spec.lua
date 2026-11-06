@@ -137,7 +137,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	equal(panel:IsVisible(), true, label .. ": the guide opens")
 	equal(questsFrame:IsShown(), false, label .. ": the quest list steps aside")
 	-- F6: the first step, a quest in the log, is selected and shown on the map from its row and from the tracker,
-	-- through C_Map.OpenWorldMap alone; in combat the row turns the map and the tracker opens the guide instead.
+	-- through the map opener alone; in combat the row turns the map and the tracker opens the guide instead.
 	local first = h.ns.Route().steps[1]
 	local function Row()
 		return Shown(h, function(frame)
