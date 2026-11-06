@@ -471,7 +471,8 @@ L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
 L["UPDATED_TO"] = "atualizado para %s. %s"
 -- mt
-L["WHATS_NEW"] = "O rastreador mostra o capítulo em que você está, e terminar uma zona passa para a próxima." -- mt
+L["WHATS_NEW"] =
+	"Setas dos dois lados da placa do NPC da missão. Agora duas setas se movem para dentro de cada lado, para que o NPC com quem falar se destaque de qualquer ângulo." -- mt
 L["WHY_ALLIANCE"] = "Só Aliança"
 L["WHY_BREADCRUMB"] = "Só até você aceitar %s"
 L["WHY_CHOSE"] = "Você escolheu %s no lugar"

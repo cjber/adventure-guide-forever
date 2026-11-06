@@ -476,7 +476,8 @@ L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
 -- mt
-L["WHATS_NEW"] = "Le suivi indique le chapitre en cours, et terminer une zone passe à la suivante." -- mt
+L["WHATS_NEW"] =
+	"Des flèches des deux côtés de la plaque du donneur de quête. Deux flèches vont et viennent vers l'intérieur de chaque côté, pour que le PNJ à qui parler ressorte sous n'importe quel angle." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"
