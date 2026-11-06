@@ -51,14 +51,14 @@ equal(#h.Pins("AdventureGuideForeverPingPinTemplate"), 1, "resizing the canvas r
 h.map:SetMapID(1454)
 h.flush()
 equal(#h.Pins("AdventureGuideForeverPingPinTemplate"), 0, "changing maps releases the previous map ping")
-local openMap = h.G.C_Map.OpenWorldMap
-h.G.C_Map.OpenWorldMap = function() end
+local openMap = h.G.OpenWorldMap
+h.G.OpenWorldMap = function() end
 h.ns.Pins.Reveal({ map = 1413, x = 0.5, y = 0.5 })
 h.map:SetMapID(1411)
 h.flush()
 h.map:SetMapID(1413)
 h.flush()
 equal(#h.Pins("AdventureGuideForeverPingPinTemplate"), 0, "a superseded reveal does not play on a later map visit")
-h.G.C_Map.OpenWorldMap = openMap
+h.G.OpenWorldMap = openMap
 equal(#h.errors, 0, table.concat(h.errors, "\n"))
 print("combat_pins_spec: " .. checks .. " checks passed")

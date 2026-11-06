@@ -215,6 +215,9 @@ follow the shared family voice.
 - **4.4 Count ticks.** A burst of quest-log events that leaves the log's shape alone (the same quests, complete flags
   and objective done flags; `Model.LogShape`) only moved counts: the last route is repainted with the live counts
   (`Model.Repaint`), every journey, order, `here` hold and choice kept, without a plan. Anything else plans in full.
+  An objective whose count reaches its need is done, and a quest whose objectives are all done is complete, even
+  while the client's finished and complete flags lag the count (a looted quest item reports it a tick later;
+  `ITEM_COUNT_CHANGED` and `BAG_UPDATE_DELAYED` re-read it). The objective's words carry the live count too.
 - **4.5 Party quests.** In a party (not a raid) with *Favour quests your party has* on (the default), a step holding
   a quest someone in the party also has costs half as much to reach, but never more than 300 yards less
   (`Model.PartyCost`, in the selection, the nearest order and the laps' walk alike). The route stays the nearest
