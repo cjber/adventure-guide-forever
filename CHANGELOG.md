@@ -12,6 +12,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.23] - 2026-11-06
+- **The tracker column steps aside for EQ Objective Tracker.** EQ Objective Tracker hides the game's quest tracker and draws its own list in that same slot, so its quests and this addon's tracker section drew over each other and neither could be read. The section now asks EQOT where its list is through EQOT's public API and re-places itself below, above or beside it after every redraw, and reads EQOT's own frame the same way when that API is not there. Turn EQOT off and the column goes back where it was.
+
 ## [1.0.22] - 2026-11-05
 - **Story levelling and quest routes: the guide now says what it is for.** The TOC title, README heading and store summary carry a subtitle, and the store copy leads with the two things the guide is for, zone story journeys read as chapters and Quests in your log emptying your log, before the route through the rest. The README and CurseForge galleries open on a chosen story journey.
 - **The RestedXP line is true again.** Since 1.0.21 the tracker shows the game's own item and target buttons for the current step, so the copy no longer says RestedXP keeps its own item and target windows.
