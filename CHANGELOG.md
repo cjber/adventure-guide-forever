@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves. API changes other addons' aut
 optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
+
+## [1.1.3] - 2026-11-06
 - **The minimap button now looks like the LibDBIcon buttons of other addons.** It wears the same tracking border, round background and hover glow as the Questie, RXP and AtlasLoot buttons on the rim, with the guide's own icon on top.
 - **The guide wears the game's own art.** Journey progress bars are the client's reputation and skills bar, the step rows are the Who list's rows, objectives that collect or use something wear the quest log's own objective mark, and the extra glow layers over step buttons, the current target and map rings are gone, so the guide looks like it came with the client.
 

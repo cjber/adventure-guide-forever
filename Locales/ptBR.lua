@@ -472,7 +472,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "atualizado para %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Setas dos dois lados da placa do NPC da missão. Agora duas setas se movem para dentro de cada lado, para que o NPC com quem falar se destaque de qualquer ângulo." -- mt
+	"O botão do minimapa agora se parece com os botões LibDBIcon de outros addons. Ele usa a mesma borda, fundo e brilho ao passar o mouse que os outros botões na borda do minimapa." -- mt
 L["WHY_ALLIANCE"] = "Só Aliança"
 L["WHY_BREADCRUMB"] = "Só até você aceitar %s"
 L["WHY_CHOSE"] = "Você escolheu %s no lugar"
