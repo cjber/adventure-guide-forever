@@ -11,6 +11,7 @@ verbatim rather than rewritten as the addon moves. API changes other addons' aut
 optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
+- **Story toasts no longer raise a Lua error.** Before the first story toast, the guide now loads the game's achievement window the way the game does before it shows its own achievement toast, so the toast's shield has the code it needs.
 - **Targeting a quest giver no longer raises a Lua error.** The guide tried to star the NPC a step talks to whenever you targeted them, and the client refuses that call to addons even out of combat, so it played an error sound each time. The guide no longer tries; the arrows beside the nameplate and the target button under the tracker stay as they were.
 
 ## [1.1.3] - 2026-11-06

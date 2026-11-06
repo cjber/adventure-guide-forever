@@ -196,6 +196,8 @@ read_globals = {
 	"AddonCompartmentFrame",
 	"AlertFrame",
 	"AchievementAlertSystem",
+	-- StoryCompletion.lua: the load-on-demand achievement UI the toast's template needs (#429).
+	"AchievementFrame_LoadUI",
 	-- Asides.lua and PvP.lua (roadmap #12, #25, #28), each read with a nil check
 	"GetNumUnspentTalents",
 	"C_PvP",
