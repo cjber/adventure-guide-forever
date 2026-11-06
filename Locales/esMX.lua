@@ -474,7 +474,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "actualizado a %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"El botón del minimapa ahora se ve como los botones LibDBIcon de otros addons. Lleva el mismo borde, fondo y brillo al pasar el ratón que los demás botones del borde del minimapa." -- mt
+	"Los avisos de historia ya no provocan un error de Lua. La guía ahora carga la ventana de logros del juego tal como lo hace el juego, para que el escudo del aviso tenga el código que necesita." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
