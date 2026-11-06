@@ -95,8 +95,6 @@ read_globals = {
 	"SetPortraitTexture",
 	"RANGE_INDICATOR",
 	"C_NamePlate",
-	"GetRaidTargetIndex",
-	"SetRaidTarget",
 	"GetCVarBool",
 	-- Secret.lua
 	"canaccessvalue",

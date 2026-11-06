@@ -2038,7 +2038,6 @@ AdventureGuideForever = nil
 ---@field ArrowUnit fun(): string? the nameplate unit carrying the arrow
 ---@field TargetShown fun(): boolean whether the secure target button is shown
 ---@field Hint fun(step?: AGFStep): string? the friendly-nameplate hint, once a session
----@field MarkTarget fun() star the target if it is the talk NPC and carries no mark
 ---@field Refresh fun() recompute the current NPC, arrow and target button
 ---@field Reserve fun(module: AGFTrackerModule) keep tracker room for the target button
 

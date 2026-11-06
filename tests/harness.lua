@@ -2489,14 +2489,6 @@ function harness.load(options)
 	G.GetCVarBool = function(name)
 		return name == "nameplateShowFriends" and h.nameplateShowFriends == true
 	end
-	G.GetRaidTargetIndex = function(unit)
-		return (h.raidTargets or {})[unit]
-	end
-	G.SetRaidTarget = function(unit, index)
-		h.raidTargets = h.raidTargets or {}
-		h.raidTargets[unit] = index
-		h.counts.SetRaidTarget = (h.counts.SetRaidTarget or 0) + 1
-	end
 	function G.GameTooltip:GetUnit()
 		return self.unitName, self.unit
 	end
