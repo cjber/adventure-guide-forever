@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves. API changes other addons' aut
 optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
+
+## [1.0.25] - 2026-11-06
 - **The tracker names the chapter you are on.** A story journey now shows one quiet line under its heading, such as Chapter 3 of 7: The Zhevra, so you can see where the chain stands and which quest it is on. The line moves on as you hand chapters in.
 - **Clean up my log.** The journey for the quests you carry now always counts what you could hand in, what has gone grey and what you cannot finish here, and its tooltip lists every quest in each group. Right-click its card for the same list, then choose a grey or elsewhere quest to open it on the world map and select it in your quest log, where you can abandon it yourself. The guide never abandons anything for you.
 - **Finishing a zone moves on to the next one.** When a zone journey ends after you hand in its last quest, the guide picks the next zone for your level and, if it was already walking you, starts the new route. A Route setting, on by default, turns this off so you can choose for yourself.
