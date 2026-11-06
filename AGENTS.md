@@ -20,7 +20,7 @@ python3 tools/check_generated.py --offline # omit --offline to fetch missing pin
 python3 tools/changelog.py --check
 python3 tools/check_screenshots.py   # an image older than its scene; tools/screenshots.py re-records it
 python3 tools/check_menu_scroll.py # menus built from a list scroll (WFA-36); CI runs it in core-shared
-python3 .sloppatrol/gate.py --base origin/main && python3 .sloppatrol/agents.py check
+python3 tools/repo_rules.py   # rules no linter covers; CI runs it in project-rules
 ```
 
 CI's `package` job builds the zip with the release's packager without uploading (`-d -z`) and runs
@@ -114,7 +114,8 @@ its types reviewed), and the tool versions in
 - Release: load `.agents/skills/release/SKILL.md` when preparing or publishing a release.
   A cloud session cannot push tags: once the version's PR is merged and `.github/workflows/ci.yml` passed on main, start the Release
   workflow on main with `version` (and `commit` for an older main commit); it tags that commit and publishes.
-- Quality: load `.agents/skills/sloppatrol-project/SKILL.md` before cleanup, dead-code or refactoring work.
+- Quality: read the live roots and settled shapes in `.sloppatrol/instructions.md` before cleanup, dead-code or
+  refactoring work.
 - A quest whose eligibility the data cannot establish is never recommended, and a step never points at
   coordinates the data does not have.
 - Store copy, README and posts pitch the addon as looking like it came with the game, in cjber's
