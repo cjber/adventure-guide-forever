@@ -10,9 +10,7 @@ local L = ns.L
 local ActionButton = ns.ActionButton
 local ITEM_SIZE = ActionButton.ITEM_SIZE
 local ARROW_ATLAS = "NPE_ArrowDown"
-local GLOW_ATLAS = "UI-QuestTrackerButton-QuestItem-Frame-Glow"
 local ARROW_SIZE = 22
-local GLOW_SIZE = 30
 local ROW_GAP = 4
 
 ---@class AGFNpcHighlightModule
@@ -98,10 +96,6 @@ local function EnsureArrow()
 	arrowFrame = CreateFrame("Frame", "AdventureGuideForeverNpcArrow", UIParent)
 	arrowFrame:SetSize(ARROW_SIZE, ARROW_SIZE)
 	arrowFrame:Hide()
-	local glow = arrowFrame:CreateTexture(nil, "BACKGROUND")
-	ns.Art.Fit(glow, GLOW_ATLAS, GLOW_SIZE, GLOW_SIZE)
-	glow:SetPoint("CENTER")
-	glow:SetAlpha(0.45)
 	arrow = arrowFrame:CreateTexture(nil, "ARTWORK")
 	ns.Art.Fit(arrow --[[@as Texture]], ARROW_ATLAS, ARROW_SIZE, ARROW_SIZE)
 	arrow:SetPoint("CENTER")
@@ -142,7 +136,10 @@ local function UpdateArrow()
 	end
 	arrowUnit = unit
 	frame:ClearAllPoints()
-	frame:SetPoint("BOTTOM", plate, "TOP", 0, 6)
+	-- Beside the plate, not above it: the client draws its own quest and exclamation markers over a nameplate's top,
+	-- so an arrow there collided with them at every distance. Anchored to the plate's left edge, vertically centred
+	-- on the health bar, the arrow never shares space with those markers.
+	frame:SetPoint("RIGHT", plate, "LEFT", -ARROW_SIZE / 2 - 2, 0)
 	frame:Show()
 end
 
