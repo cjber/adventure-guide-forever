@@ -473,7 +473,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Die tägliche Datenaktualisierung funktioniert wieder, damit die Anleitung mit neuen Spielversionen Schritt hält." -- mt
+	"Der Tracker nennt das Kapitel, in dem du bist, und nach einer abgeschlossenen Zone geht es mit der nächsten weiter." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"
