@@ -497,16 +497,11 @@ L["WHY_REP_BELOW"] = "Seulement en dessous de %s auprès de %s"
 L["WHY_REP_MIN"] = "Requiert %s auprès de %s"
 L["WHY_SKILL"] = "Requiert %s %d"
 L["YOUR_CHOICE"] = "Votre choix"
--- mt: Micro-menu button settings.
-L["SETTING_MICRO_BUTTON"] = "Afficher Adventure Guide dans le menu micro" -- mt
-L["SETTING_REPLACE_MICRO_BUTTON"] = "Remplacer Adventure Guide de Blizzard" -- mt
-L["SETTING_MICRO_BUTTON_PLACEMENT"] = "Position" -- mt
-L["SETTING_MICRO_BUTTON_BEFORE"] = "Avant le menu du jeu" -- mt
-L["SETTING_MICRO_BUTTON_AFTER"] = "Après Collections" -- mt
-L["MICRO_BUTTON_BINDING_NOTE"] = "Les deux boutons peuvent aussi être associés dans Raccourcis > AddOns." -- mt
-L["MICRO_BUTTON_TOOLTIP"] = "Ajoute Adventure Guide au menu micro." -- mt
-L["MICRO_BUTTON_TITLE"] = "Adventure Guide" -- mt
-L["MICRO_BUTTON_SUBTEXT"] = "Cliquez pour ouvrir le guide de progression" -- mt
+-- mt: Minimap button settings.
+L["SETTING_MINIMAP_BUTTON"] = "Bouton de la mini-carte" -- mt
+L["MINIMAP_BUTTON_TOOLTIP"] =
+	"Ajoute un bouton Adventure Guide à la mini-carte. Faites-le glisser le long du bord pour le déplacer ou désactivez-le ici." -- mt
+L["MINIMAP_BUTTON_SUBTEXT"] = "Cliquez pour ouvrir le guide de progression" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] =
 	"/agf issue - signaler un bug ou demander une fonctionnalité avec un lien d’issue GitHub prêt à l’emploi" -- mt
@@ -521,7 +516,7 @@ L["ISSUE_LINK_HINT"] =
 	"Le lien est sélectionné. Appuyez sur Ctrl+C (Cmd+C sur un Mac), puis collez-le dans votre navigateur : GitHub ouvre une nouvelle issue avec ces informations." -- mt
 L["ISSUE_TITLE_LABEL"] = "Titre" -- mt
 L["ISSUE_WINDOW_TITLE"] = "Signaler un bug ou demander une fonctionnalité" -- mt
-L["MICRO_MENU_UNAVAILABLE"] = "Menu micro indisponible ; le bouton personnalisé est ignoré." -- mt
+L["MINIMAP_UNAVAILABLE"] = "Mini-carte indisponible ; le bouton personnalisé est ignoré." -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Désactiver le suivi de Questie" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 	"Tant que cette section s'affiche, le suivi de quêtes de Questie est désactivé, pour que vos quêtes n'apparaissent pas deux fois. Désactivez cette option pour rendre son suivi à Questie." -- mt

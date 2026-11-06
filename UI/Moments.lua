@@ -12,7 +12,7 @@ ns.Moments = Moments
 
 -- An aside's key in the seen set, apart from the journeys' (the same prefix Skipped uses).
 local ASIDE = "aside:"
--- The addon compartment's pip: the Adventure Guide micro button's alert (CSV:2025) at its top-right corner.
+-- The addon compartment's pip: the Adventure Guide button's alert (CSV:2025) at its top-right corner.
 local PIP = "adventureguide-microbutton-alert"
 
 -- The session's first look only learns what is there, so a save file the client never loaded never floods.

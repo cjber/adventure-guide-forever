@@ -494,16 +494,11 @@ L["WHY_REP_BELOW"] = "Solo mientras estés por debajo de %s con %s"
 L["WHY_REP_MIN"] = "Requiere %s con %s"
 L["WHY_SKILL"] = "Requiere %s %d"
 L["YOUR_CHOICE"] = "Tu elección"
--- mt: Micro-menu button settings.
-L["SETTING_MICRO_BUTTON"] = "Mostrar Adventure Guide en el menú micro" -- mt
-L["SETTING_REPLACE_MICRO_BUTTON"] = "Reemplazar Adventure Guide de Blizzard" -- mt
-L["SETTING_MICRO_BUTTON_PLACEMENT"] = "Posición" -- mt
-L["SETTING_MICRO_BUTTON_BEFORE"] = "Antes del menú del juego" -- mt
-L["SETTING_MICRO_BUTTON_AFTER"] = "Después de colecciones" -- mt
-L["MICRO_BUTTON_BINDING_NOTE"] = "También puedes asignar ambos botones en Teclas > AddOns." -- mt
-L["MICRO_BUTTON_TOOLTIP"] = "Añade Adventure Guide al menú micro." -- mt
-L["MICRO_BUTTON_TITLE"] = "Adventure Guide" -- mt
-L["MICRO_BUTTON_SUBTEXT"] = "Haz clic para abrir la guía de leveo" -- mt
+-- mt: Minimap button settings.
+L["SETTING_MINIMAP_BUTTON"] = "Botón del minimapa" -- mt
+L["MINIMAP_BUTTON_TOOLTIP"] =
+	"Añade un botón de Adventure Guide al minimapa. Arrástralo por el borde para moverlo o desactívalo aquí." -- mt
+L["MINIMAP_BUTTON_SUBTEXT"] = "Haz clic para abrir la guía de leveo" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] = "/agf issue - informar de un error o pedir una función con un enlace listo para GitHub" -- mt
 L["ISSUE_BUG"] = "Error" -- mt
@@ -517,7 +512,7 @@ L["ISSUE_LINK_HINT"] =
 	"El enlace está seleccionado. Pulsa Ctrl+C (Cmd+C en Mac) y pégalo en tu navegador: GitHub abre una incidencia nueva con estos datos." -- mt
 L["ISSUE_TITLE_LABEL"] = "Título" -- mt
 L["ISSUE_WINDOW_TITLE"] = "Informar de un error o pedir una función" -- mt
-L["MICRO_MENU_UNAVAILABLE"] = "Menú micro no disponible; se omite el botón personalizado." -- mt
+L["MINIMAP_UNAVAILABLE"] = "Minimapa no disponible; se omite el botón personalizado." -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Desactivar el rastreador de Questie" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 	"Mientras se muestra esta sección, el rastreador de misiones de Questie está desactivado, para que tus misiones no aparezcan dos veces. Desactiva esta opción para devolverle a Questie su rastreador." -- mt

@@ -498,16 +498,11 @@ L["WHY_REP_BELOW"] = "%s 미만일 때만 (%s)"
 L["WHY_REP_MIN"] = "%s 필요 (%s)"
 L["WHY_SKILL"] = "%s %d 필요"
 L["YOUR_CHOICE"] = "선택"
--- mt: Micro-menu button settings.
-L["SETTING_MICRO_BUTTON"] = "미니 메뉴에 Adventure Guide 표시" -- mt
-L["SETTING_REPLACE_MICRO_BUTTON"] = "Blizzard Adventure Guide 대체" -- mt
-L["SETTING_MICRO_BUTTON_PLACEMENT"] = "위치" -- mt
-L["SETTING_MICRO_BUTTON_BEFORE"] = "게임 메뉴 앞" -- mt
-L["SETTING_MICRO_BUTTON_AFTER"] = "수집품 뒤" -- mt
-L["MICRO_BUTTON_BINDING_NOTE"] = "키 설정 > 애드온에서 두 버튼을 지정할 수도 있습니다." -- mt
-L["MICRO_BUTTON_TOOLTIP"] = "미니 메뉴에 Adventure Guide 버튼을 추가합니다." -- mt
-L["MICRO_BUTTON_TITLE"] = "Adventure Guide" -- mt
-L["MICRO_BUTTON_SUBTEXT"] = "레벨링 안내서를 열려면 클릭하세요" -- mt
+-- mt: Minimap button settings.
+L["SETTING_MINIMAP_BUTTON"] = "미니맵 버튼" -- mt
+L["MINIMAP_BUTTON_TOOLTIP"] =
+	"미니맵에 Adventure Guide 버튼을 추가합니다. 테두리를 따라 끌어 이동하거나 여기에서 끄세요." -- mt
+L["MINIMAP_BUTTON_SUBTEXT"] = "레벨링 안내서를 열려면 클릭하세요" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] = "/agf issue - GitHub 이슈 링크와 함께 오류를 보고하거나 기능을 요청합니다" -- mt
 L["ISSUE_BUG"] = "오류" -- mt
@@ -521,7 +516,7 @@ L["ISSUE_LINK_HINT"] =
 	"링크가 선택되었습니다. Ctrl+C(Mac은 Cmd+C)를 눌러 브라우저에 붙여 넣으십시오. GitHub에서 이 내용이 채워진 새 이슈가 열립니다." -- mt
 L["ISSUE_TITLE_LABEL"] = "제목" -- mt
 L["ISSUE_WINDOW_TITLE"] = "오류 보고 또는 기능 요청" -- mt
-L["MICRO_MENU_UNAVAILABLE"] = "미니 메뉴를 사용할 수 없어 사용자 지정 버튼을 건너뜁니다." -- mt
+L["MINIMAP_UNAVAILABLE"] = "미니맵을 사용할 수 없어 사용자 지정 버튼을 건너뜁니다." -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Questie 추적기 끄기" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 	"이 구역이 표시되는 동안 Questie의 퀘스트 추적기는 꺼져 있어 퀘스트가 두 번 표시되지 않습니다. 이 옵션을 끄면 Questie의 추적기가 돌아옵니다." -- mt
