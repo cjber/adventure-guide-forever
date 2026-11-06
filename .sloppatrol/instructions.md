@@ -2,7 +2,7 @@
 
 Adventure Guide Forever is a World of Warcraft: Forever addon written in Lua 5.1, with Python tooling
 that generates its data and runs its checks. The game cannot run here. What verifies a change is the
-repo's own gate: `stylua --check .`, `luacheck .`, `tools/typecheck.sh` against the pinned client
+repo's own checks: `stylua --check .`, `luacheck .`, `tools/typecheck.sh` against the pinned client
 annotations, the generators under `tools/`, and every `tests/*_spec.lua` under LuaJIT, where the specs
 stub the client API and load the addon files the TOC lists in order.
 
@@ -24,3 +24,41 @@ the checks below are what make a proposed change verifiable anyway.
 - Never edit `tools/forever_tools/` - vendored byte for byte from forever-core.
 - Never launch the game, Battle.net, Lutris or Wine, and never use the network.
 - Never leave the working tree with two changes at once: one change, one commit.
+
+`python3 tools/repo_rules.py` holds the rules no linter covers; run it with the other checks.
+
+## Live roots
+
+Things reached indirectly: none of them is dead code, even when no file calls it by name.
+
+- `AdventureGuideForever.toc` file list: loads runtime modules in `Core/`, `Planning/`, `Integrations/`, `UI/` and `Data/`.
+- `ns.*`: the shared addon table; search all files for `ns.Name`, not the local file.
+- `## SavedVariables: AdventureGuideForeverDB`, `## SavedVariablesPerCharacter: AdventureGuideForeverCharDB`: keys in `Core/Core.lua` `DEFAULTS` may hold data written by older versions.
+- `## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick` and `SLASH_ADVENTUREGUIDEFOREVER1/2`: called by the client by name.
+- `EventUtil.ContinueAfterAllEvents`, `EventRegistry:RegisterCallback("QuestLog.SetDisplayMode")`, `WorldMapFrame:AddDataProvider`, `TooltipDataProcessor.AddTooltipPostCall`: host callbacks.
+- Optional integrations: QuestieDB supplies quests and entrance points, Questie confirms pickups, AtlasLoot's public ItemDB supplies bosses and drops. Shortest Path, Skill Up, Legacy and Tweaks Forever are companions through public contracts. Dungeon interiors belong to Tweaks Forever; AGF has no Atlas overlay or Classic guide handoff.
+- `hooksecurefunc("QuestMapFrame_ShowQuestDetails")`, `EventUtil.ContinueOnAddOnLoaded("Blizzard_WorldMap")`: host callbacks.
+- Methods the host calls by name: the map provider's `RefreshAllData`/`RemoveAllData`; the pin mixins' `OnAcquired`/`OnMouseEnter`/`OnMouseLeave`/`OnClick` (bound through `mixin=` in `UI/Panel.xml`); the tracker module's `LayoutContents`/`OnBlockHeaderClick`.
+
+## Settled
+
+Shapes that look like defects here but are not. Add an entry when the same shape keeps being raised and
+dismissed for the same reason.
+
+- **Planner look-alikes**: the `Planning/` modules' step builders, locators and shallow-copy loops (`TrainerSteps`/`Battleground`,
+  `Locate`/`Build`, `Describe` before and after the overseas override) read alike but take different contracts; five
+  `parallel-implementations` candidates were dismissed on the small-idiom and different-contract exclusions in the
+  2026-09-27 audit. Raise one only with a caller that needs both to change together.
+- **One-line idioms**: a bit test beside `Model.HasBit`, the hub name before the comma, a Find-and-Click loop in a spec:
+  one expression under different contracts, dismissed six times on the small-idiom exclusion in the 2026-10-02 audit
+  (e.g. `UI/Hints/Explore.lua`, `UI/Hints/Hearth.lua`, `tests/scenes.lua`).
+- **Open keys**: `"town:" .. hub` and `"dungeon:" .. id` identify an open, persisted set of steps and journeys, so they
+  are not a closed set to type (`stringly-typed` dismissed twice; e.g. `Planning/Model.lua`, `Integrations/Dungeons.lua`).
+- **Absence checks**: a spec asserting that a removed field or pin pool stays absent (`pin.More == nil` in
+  `tests/ui_spec.lua`) is a regression test for a shipped defect, not a check that cannot fail.
+- **Guards a spec needs**: a nil or existence guard that looks unreachable in game but that a spec exercises: the
+  harness loads a file without the global or stubs the module that defines the field. Delete the guard in a copy and
+  run every spec before raising it (`defensive-noise` dismissed three times in the 2026-10-03 audit: `EventRegistry` in
+  `UI/TrackerHost.lua`, `ns.SourceHint` in `UI/Panel.lua`, the nil `api` in `Planning/Geometry.lua` `Maps`).
+- **Repeated spec fixtures**: the same character or options literal retyped per spec or scene is fixture input, not a
+  parallel implementation (e.g. `tests/feature_rules_spec.lua`, `tests/scenes.lua`).
