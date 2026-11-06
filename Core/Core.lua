@@ -1,6 +1,5 @@
 ---@type string, AGFNamespace
 local addonName, ns = ...
--- luacheck: globals AdventureGuideMicroButton
 local REPORT_TEXT_HINT = "The text is selected. Press Ctrl+C (Cmd+C on a Mac) to copy it, "
 	.. "then paste it into your bug report."
 local ISSUE_LINK_HINT = "The link is selected. Press Ctrl+C (Cmd+C on a Mac), "
@@ -72,9 +71,8 @@ local DEFAULTS = {
 	polestarAside = true,
 	-- In a party, steps for quests the party shares count as nearer, and the quest IDs go to the party (Party.lua).
 	partyQuests = true,
-	microButton = true,
-	replaceMicroButton = true,
-	microButtonPlacement = "beforeGameMenu",
+	-- The Adventure Guide button on the minimap rim is there unless the player hides it (Core/MinimapButton.lua).
+	minimapButtonHidden = false,
 	-- Before a giver's window offers a quest that closes another for good, say which in chat (Closes.lua).
 	warnClosing = true,
 	-- The green arrow on a quest reward choice that beats what you wear in its slot (Upgrades.lua).
@@ -149,6 +147,13 @@ end
 
 local function LoadDB()
 	local loaded = type(AdventureGuideForeverDB) == "table" and AdventureGuideForeverDB or {}
+	-- The micro menu button became the minimap button (#416): a player who turned the old button off keeps the
+	-- new one off, and the old placement choice has no meaning on the rim. Removed keys stay removed after the
+	-- first login, so showing the new button later is not undone by the old setting.
+	if loaded.microButton == false and loaded.minimapButtonHidden == nil then
+		loaded.minimapButtonHidden = true
+	end
+	loaded.microButton, loaded.microButtonPlacement, loaded.replaceMicroButton = nil, nil, nil
 	for key, value in pairs(DEFAULTS) do
 		if type(loaded[key]) ~= type(value) then
 			loaded[key] = value
@@ -387,13 +392,8 @@ function ns.SetSetting(key, value)
 	if key == "statsShare" and ns.Stats then
 		ns.Stats.SetEnabled(value == true)
 	end
-	if key == "microButton" or key == "replaceMicroButton" or key == "microButtonPlacement" then
-		if key == "replaceMicroButton" and AdventureGuideMicroButton then
-			AdventureGuideMicroButton:SetShown(value ~= true)
-		end
-		if ns.MicroButton then
-			ns.MicroButton.Refresh()
-		end
+	if key == "minimapButtonHidden" and ns.MinimapButton then
+		ns.MinimapButton.Refresh()
 	end
 	-- Wandering from now: what Go started stops, as the player's Stop would.
 	if key == "wanderer" and value then
@@ -1281,29 +1281,14 @@ EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	ns.RegisterSettings()
 	EventUtil.ContinueAfterAllEvents(ns.WhatsNew, "PLAYER_LOGIN")
 	EventUtil.ContinueAfterAllEvents(function()
-		if AdventureGuideMicroButton then
-			AdventureGuideMicroButton:SetShown(ns.Setting("replaceMicroButton") ~= true)
-			AdventureGuideMicroButton:HookScript("OnClick", function()
-				if ns.Setting("replaceMicroButton") == true and ns.OpenPanel then
-					ns.OpenPanel()
-				end
-			end)
-		end
-		ns.MicroButton.Create({
-			name = "AdventureGuideForeverMicroButton",
-			atlas = "AdventureGuide",
+		ns.MinimapButton.Create({
+			name = "AdventureGuideForeverMinimapButton",
 			icon = "Interface\\Icons\\inv_misc_map_01",
 			title = ns.L.TITLE,
 			binding = "Alt-G",
-			subtext = ns.L.MICRO_BUTTON_SUBTEXT,
-			slot = "beforeGameMenu",
-			getSlot = function()
-				return ns.Setting("microButtonPlacement")
-			end,
+			subtext = ns.L.MINIMAP_BUTTON_SUBTEXT,
+			settings = db,
 			host = ns,
-			getShown = function()
-				return ns.Setting("microButton") == true
-			end,
 			onClick = function()
 				if ns.OpenPanel then
 					ns.OpenPanel()

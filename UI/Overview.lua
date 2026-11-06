@@ -151,11 +151,15 @@ local VERB_ATLAS = {
 	battlemaster = "battlemaster",
 }
 local TRAINER_FILE = "Interface\\Minimap\\Tracking\\Class"
--- An objective step whose open objectives are all one kind wears the cursor the game shows over that kind of
--- target: a skull for kills, the bag over something to collect, the gear over something to use.
--- Mixed work, and a place to reach, keep the objective's own mark.
+-- An objective step whose open objectives are all one kind wears the mark the game shows over that kind of
+-- target: the targeting frame's skull for kills, the bag over something to collect, the gear over something to
+-- use. Mixed work, and a place to reach, keep the objective's own mark.
+-- The targeting frame's own skull over a high-level target (Blizzard_UnitFrame/Mainline/TargetFrame.xml,
+-- HighLevelTexture), the modern atlas for the loose skull the old frame shipped.
+local OBJECTIVE_ATLASES = {
+	monster = "UI-HUD-UnitFrame-Target-HighLevelTarget_Icon",
+}
 local OBJECTIVE_FILES = {
-	monster = "Interface\\TargetingFrame\\UI-TargetingFrame-Skull",
 	item = "Interface\\Cursor\\Pickup",
 	object = "Interface\\Cursor\\Interact",
 }
@@ -173,7 +177,7 @@ local function ObjectiveIcon(step)
 		end
 		kind = own
 	end
-	return nil, kind and OBJECTIVE_FILES[kind] or nil
+	return kind and OBJECTIVE_ATLASES[kind] or nil, kind and OBJECTIVE_FILES[kind] or nil
 end
 
 ---@param step AGFStep

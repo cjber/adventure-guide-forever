@@ -535,17 +535,11 @@ L["WHY_REP_BELOW"] = "Только пока ниже «%s» у: %s"
 L["WHY_REP_MIN"] = "Требуется «%s» у: %s"
 L["WHY_SKILL"] = "Требуется %s %d"
 L["YOUR_CHOICE"] = "Ваш выбор"
--- mt: Micro-menu button settings.
-L["SETTING_MICRO_BUTTON"] = "Показывать Adventure Guide в микроменю" -- mt
-L["SETTING_REPLACE_MICRO_BUTTON"] = "Заменить Adventure Guide Blizzard" -- mt
-L["SETTING_MICRO_BUTTON_PLACEMENT"] = "Положение" -- mt
-L["SETTING_MICRO_BUTTON_BEFORE"] = "Перед меню игры" -- mt
-L["SETTING_MICRO_BUTTON_AFTER"] = "После коллекций" -- mt
-L["MICRO_BUTTON_BINDING_NOTE"] =
-	"Обе кнопки также можно назначить в настройках клавиш > Аддоны." -- mt
-L["MICRO_BUTTON_TOOLTIP"] = "Добавляет Adventure Guide в микроменю." -- mt
-L["MICRO_BUTTON_TITLE"] = "Adventure Guide" -- mt
-L["MICRO_BUTTON_SUBTEXT"] = "Нажмите, чтобы открыть руководство прокачки" -- mt
+-- mt: Minimap button settings.
+L["SETTING_MINIMAP_BUTTON"] = "Кнопка на миникарте" -- mt
+L["MINIMAP_BUTTON_TOOLTIP"] =
+	"Добавляет кнопку Adventure Guide на миникарту. Перетащите её по краю, чтобы переместить, или отключите здесь." -- mt
+L["MINIMAP_BUTTON_SUBTEXT"] = "Нажмите, чтобы открыть руководство прокачки" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] =
 	"/agf issue - сообщить об ошибке или предложить функцию с готовой ссылкой на issue GitHub" -- mt
@@ -560,8 +554,8 @@ L["ISSUE_LINK_HINT"] =
 	"Ссылка выделена. Нажмите Ctrl+C (Cmd+C на Mac) и вставьте ее в браузер: GitHub откроет новую issue с этими данными." -- mt
 L["ISSUE_TITLE_LABEL"] = "Заголовок" -- mt
 L["ISSUE_WINDOW_TITLE"] = "Сообщить об ошибке или предложить функцию" -- mt
-L["MICRO_MENU_UNAVAILABLE"] =
-	"Микроменю недоступно; пользовательская кнопка пропущена." -- mt
+L["MINIMAP_UNAVAILABLE"] =
+	"Миникарта недоступна; пользовательская кнопка пропущена." -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Отключить трекер Questie" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 	"Пока этот раздел показан, собственный трекер заданий Questie отключён, чтобы задания не показывались дважды. Отключите этот параметр, чтобы вернуть Questie его трекер." -- mt

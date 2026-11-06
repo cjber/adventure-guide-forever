@@ -1123,7 +1123,6 @@ function harness.load(options)
 	end
 
 	local STOCK = {
-		MainMenuBarMicroButton = noop,
 		-- Mainline/SharedUIPanelTemplates.xml:1587 and .lua:1763: the highlight is the normal art, or the pushed art
 		-- while the mouse is down.
 		AlphaHighlightButtonTemplate = function(frame)
@@ -1473,11 +1472,6 @@ function harness.load(options)
 		end
 		return frame
 	end
-	G.MicroMenu = NewRegion("Frame", "MicroMenu")
-	G.MainMenuMicroButton = NewRegion("Button", "MainMenuMicroButton", G.MicroMenu)
-	G.CollectionsMicroButton = NewRegion("Button", "CollectionsMicroButton", G.MicroMenu)
-	G.AdventureGuideMicroButton = NewRegion("Button", "AdventureGuideMicroButton", G.MicroMenu)
-	G.UpdateMicroButtons = noop
 
 	local timers = {}
 	G.C_Timer = {
@@ -1818,6 +1812,8 @@ function harness.load(options)
 		["pvpqueue-background-casual-horde"] = { 387, 291 },
 		["professions-recipe-background"] = { 675, 548 },
 		["ui-ej-classic"] = { 786, 425 },
+		-- The targeting frame's skull over a high-level target, set 1 at 1x (Blizzard_UnitFrame TargetFrame.xml).
+		["ui-hud-unitframe-target-highleveltarget_icon"] = { 18, 23 },
 		["questlog-main-background"] = { 307, 510 },
 		["islands-queue-prop-compass"] = { 300, 297 },
 		["adventureguide-ring"] = { 94, 95 },

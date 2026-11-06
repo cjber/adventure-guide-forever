@@ -493,16 +493,11 @@ L["WHY_REP_BELOW"] = "Nur solange unter %s bei %s"
 L["WHY_REP_MIN"] = "Benötigt %s bei %s"
 L["WHY_SKILL"] = "Benötigt %s %d"
 L["YOUR_CHOICE"] = "Eure Wahl"
--- mt: Micro-menu button settings.
-L["SETTING_MICRO_BUTTON"] = "Adventure Guide im Mikromenü anzeigen" -- mt
-L["SETTING_REPLACE_MICRO_BUTTON"] = "Blizzards Adventure Guide ersetzen" -- mt
-L["SETTING_MICRO_BUTTON_PLACEMENT"] = "Position" -- mt
-L["SETTING_MICRO_BUTTON_BEFORE"] = "Vor dem Spielmenü" -- mt
-L["SETTING_MICRO_BUTTON_AFTER"] = "Nach Sammlungen" -- mt
-L["MICRO_BUTTON_BINDING_NOTE"] = "Beide Schaltflächen können auch unter Tastaturbelegung > AddOns belegt werden." -- mt
-L["MICRO_BUTTON_TOOLTIP"] = "Fügt Adventure Guide dem Mikromenü hinzu." -- mt
-L["MICRO_BUTTON_TITLE"] = "Adventure Guide" -- mt
-L["MICRO_BUTTON_SUBTEXT"] = "Klicken, um den Leveling-Guide zu öffnen" -- mt
+-- mt: Minimap button settings.
+L["SETTING_MINIMAP_BUTTON"] = "Minimap-Schaltfläche" -- mt
+L["MINIMAP_BUTTON_TOOLTIP"] =
+	"Fügt dem Minimap eine Adventure Guide-Schaltfläche hinzu. Ziehe sie um den Rand, um sie zu verschieben, oder schalte sie hier aus." -- mt
+L["MINIMAP_BUTTON_SUBTEXT"] = "Klicken, um den Leveling-Guide zu öffnen" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] = "/agf issue - einen Fehler melden oder eine Funktion wünschen, mit einem fertigen GitHub-Issue-Link" -- mt
 L["ISSUE_BUG"] = "Fehler" -- mt
@@ -516,7 +511,7 @@ L["ISSUE_LINK_HINT"] =
 	"Der Link ist markiert. Drückt Strg+C (Cmd+C auf dem Mac) und fügt ihn dann in Euren Browser ein: GitHub öffnet ein neues Issue mit diesen Angaben." -- mt
 L["ISSUE_TITLE_LABEL"] = "Titel" -- mt
 L["ISSUE_WINDOW_TITLE"] = "Einen Fehler melden oder eine Funktion wünschen" -- mt
-L["MICRO_MENU_UNAVAILABLE"] = "Mikromenü nicht verfügbar; eigene Schaltfläche wird übersprungen." -- mt
+L["MINIMAP_UNAVAILABLE"] = "Minimap nicht verfügbar; eigene Schaltfläche wird übersprungen." -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Questies Tracker ausschalten" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 	"Solange dieser Abschnitt angezeigt wird, ist Questies eigener Quest-Tracker aus, damit deine Quests nicht doppelt erscheinen. Schalte dies aus, um Questie seinen Tracker zurückzugeben." -- mt

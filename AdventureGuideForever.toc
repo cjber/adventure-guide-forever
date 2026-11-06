@@ -34,7 +34,7 @@ Core\SafeCall.lua
 UI\MapCanvas.lua
 Core\Text.lua
 UI\StepStyle.lua
-Core\MicroButton.lua
+Core\MinimapButton.lua
 Core\Core.lua
 Planning\Model.lua
 Planning\Travel.lua

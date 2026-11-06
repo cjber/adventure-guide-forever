@@ -90,7 +90,7 @@ abandons quests.
 - **2.17 Pacing.** Rest and hearth hints advise. Wanderer mode chooses without starting guidance.
 - **2.18 Choices.** Dropped quests stay in the log. Added quests still pass eligibility checks.
   Skips are reversible; a full log gets advice only.
-- **2.19 Guide access.** The map tab, addon compartment and `/agf` open the same guide. No standalone window or default key binding.
+- **2.19 Guide access.** The map tab, minimap button, addon compartment, Alt-G and `/agf` open the same guide. No standalone window.
 - **2.20 Your order.** Reordering must preserve quest dependencies. Suggested order remains recoverable.
 
 - **2.21 Dungeons.** Dungeon journeys share the normal planner, guide and Shortest Path integration.

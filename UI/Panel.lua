@@ -34,8 +34,8 @@ local EMPTY_HEIGHT = 40
 -- The content above the cards: the header 4px down and 34px tall, then 6px to the first card.
 local LIST_TOP = 4 + 34 + 6
 -- Something new (docs/design.md §2.13): the Adventure Guide's own "new" mark (CSV:2024) on a card the character
--- hasn't been offered before, over its ring's top-right, or beside a one-line row's "+"; its micro button's alert
--- (CSV:2025) on the tab.
+-- hasn't been offered before, over its ring's top-right, or beside a one-line row's "+"; the Adventure Guide alert
+-- pip (CSV:2025) on the tab.
 local NEW_MARK, NEW_SIZE, NEW_COMPACT = "adventureguide-icon-whatsnew", 24, 18
 local TAB_PIP = "adventureguide-microbutton-alert"
 -- The chosen card keeps this art and is lit instead: the renown card's pressed art is drawn a few pixels over, which
