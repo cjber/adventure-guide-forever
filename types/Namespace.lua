@@ -2052,7 +2052,7 @@ AdventureGuideForever = nil
 ---@class AGFNamespace
 ---@field ActionButton AGFActionButtonModule
 
--- The current talk step's NPC (#401): nameplate arrow, secure target button and the friendly-nameplate hint.
+-- The current talk step's NPC (#401): nameplate arrows, secure target button and the friendly-nameplate hint.
 ---@class AGFNpcTalk
 ---@field name string the NPC's name, exactly as the client shows it
 ---@field npc? integer its creature entry, the sixth field of its UnitGUID

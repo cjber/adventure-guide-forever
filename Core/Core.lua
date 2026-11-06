@@ -48,7 +48,7 @@ local DEFAULTS = {
 	autoStart = true,
 	-- Finishing a zone journey moves to the next zone card, and starts its route when the finished one was guided (#400).
 	autoNextZone = true,
-	-- Highlight the NPC a talk step names, with a nameplate arrow and a target button (#401).
+	-- Highlight the NPC a talk step names, with nameplate arrows and a target button (#401).
 	npcHighlight = true,
 	-- Opt-in: the route never takes over the player's tracked quests unasked. A saved true stays true.
 	trackRouteQuests = false,

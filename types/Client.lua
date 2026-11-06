@@ -447,6 +447,11 @@ AdventureGuideMicroButton = nil
 ---@field alert table? the template's alert overlay, hidden for a custom button
 ---@field textureName string the atlas name the template's pushed and normal highlights are built from
 
+-- The client nameplate's child UnitFrame (Blizzard_NamePlateUnitFrame.lua): a CompactUnitFrame whose healthBar is
+-- the name-and-health area UI/NpcHighlight.lua centres the quest giver's arrows on.
+---@class AGFNamePlateUnitFrame : Button
+---@field healthBar Frame? the nameplate's health bar
+
 -- The quest giver window's reward display (Blizzard_UIPanels_Game QuestInfo.xml), read by UI/Upgrades.lua.
 ---@class AGFQuestRewardButton : Button
 ---@field type string? "choice" or "reward"
