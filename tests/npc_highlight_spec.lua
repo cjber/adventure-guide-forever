@@ -1,7 +1,8 @@
 -- Run from the repository root: luajit tests/npc_highlight_spec.lua
 -- The current talk step's NPC (#401): match a nameplate by creature entry then exact name, bounce our own two arrows
--- either side of it, mark the target only when it carries no mark, hint once when friendly nameplates are off, and
--- clean up when the step changes. The guide never writes a CVar or touches the nameplate.
+-- either side of it, hint once when friendly nameplates are off, and clean up when the step changes. Every target
+-- change rebuilds the target button and raises nothing: the client refuses a raid mark to addons. The guide never
+-- writes a CVar or touches the nameplate.
 local harness = dofile("tests/harness.lua")
 local checks = 0
 local function check(value, label)
@@ -142,11 +143,11 @@ do
 	check(#h.errors == 0, table.concat(h.errors, "\n"))
 end
 
--- The star marker only fills an unmarked target, and never in combat.
+-- A target change rebuilds the target button and calls nothing forbidden: the client refuses SetRaidTarget to addons.
 do
 	local h = Load()
-	h.guids = { nameplate1 = GUID, target = GUID }
-	h.unitNames = { nameplate1 = "Wizzlecrank's Shredder", target = "Wizzlecrank's Shredder" }
+	h.guids = { target = GUID }
+	h.unitNames = { target = "Wizzlecrank's Shredder" }
 	h.G.UnitGUID = function(unit)
 		return h.guids[unit]
 	end
@@ -154,30 +155,11 @@ do
 		return h.unitNames[unit]
 	end
 	Step(h, STEP)
-	local marks, marked = 0, nil
-	h.G.GetRaidTargetIndex = function()
-		return marked
-	end
-	h.G.SetRaidTarget = function(_, index)
-		marks = marks + 1
-		marked = index
-	end
-	h.group = true
-	h.fire("PLAYER_TARGET_CHANGED")
-	check(marks == 0, "in a group the target is never marked")
-	h.group = false
-	h.fire("PLAYER_TARGET_CHANGED")
-	check(marks == 1 and marked == 1, "an unmarked target gets the star")
-	h.fire("PLAYER_TARGET_CHANGED")
-	check(marks == 1, "a marked target stays as it is")
-	marked = 8
-	h.fire("PLAYER_TARGET_CHANGED")
-	check(marks == 1, "another player's mark is kept")
-	marked = nil
 	h.SetCombat(true)
 	h.fire("PLAYER_TARGET_CHANGED")
-	check(marks == 1, "nothing is marked in combat")
 	h.SetCombat(false)
+	h.fire("PLAYER_TARGET_CHANGED")
+	check(h.counts.SetRaidTarget == nil, "the guide never asks for a raid mark")
 	check(#h.errors == 0, table.concat(h.errors, "\n"))
 end
 
@@ -210,7 +192,6 @@ do
 	end
 	Step(h, STEP)
 	h.ns.NpcHighlight.Hint(STEP)
-	h.ns.NpcHighlight.MarkTarget()
 	check(writes == 0, "the guide never writes a CVar")
 	check(#h.errors == 0, table.concat(h.errors, "\n"))
 end
