@@ -581,8 +581,9 @@ ns.L = {
 	SPF_DISABLED = "Enable Shortest Path Forever for walked routes and boat times.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "Story toasts no longer raise a Lua error. The guide now loads the game's achievement window the way "
-		.. "the game does, so the toast's shield has the code it needs.",
+	WHATS_NEW = "Targeting a quest giver no longer raises a Lua error. The guide no longer tries to star the NPC a "
+		.. "step talks to, which the client refuses to addons, so the arrows beside the nameplate and the target button "
+		.. "under the tracker stay without the error sound.",
 	DUNGEON_BOSSES_LOOT = "Bosses and loot",
 	DUNGEON_LOOT_INSTALL = "Install AtlasLoot Classic and its Dungeons and Raids module for bosses and loot.",
 	DUNGEON_LOOT_COMBAT = "Boss loot will load after combat.",
