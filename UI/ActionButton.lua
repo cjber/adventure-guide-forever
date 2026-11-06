@@ -12,7 +12,6 @@ local HIGHLIGHT = "Interface\\Buttons\\ButtonHilight-Square"
 
 ---@class AGFActionButton : Button
 ---@field Icon Texture
----@field Glow Texture
 ---@field Count FontString
 ---@field Range FontString
 ---@field Binding FontString
@@ -58,12 +57,6 @@ function ActionButton.Chrome(button)
 	ns.Art.Fit(border, "UI-QuestTrackerButton-QuestItem-Frame", FRAME_SIZE, FRAME_SIZE)
 	border:SetPoint("CENTER")
 
-	local glow = button:CreateTexture(nil, "BACKGROUND", nil, 1)
-	ns.Art.Fit(glow, "UI-QuestTrackerButton-QuestItem-Frame-Glow", FRAME_SIZE, FRAME_SIZE)
-	glow:SetPoint("CENTER")
-	glow:Hide()
-	button.Glow = glow
-
 	local icon = button:CreateTexture(nil, "BORDER")
 	icon:SetSize(ITEM_SIZE, ITEM_SIZE)
 	icon:SetPoint("CENTER")
@@ -108,7 +101,8 @@ function ActionButton.Create(parent, name)
 	return button
 end
 
--- Only the icon and the glow, the parts a fight may touch: the button's macro and name stay as they were.
+-- Only the icon, the part a fight may touch: the button's macro and name stay as they were. The current target shows
+-- its portrait, and the others their creature icon, with no glow layer over either.
 ---@param button AGFActionButton
 ---@param current? string
 function ActionButton.UpdateTargetVisual(button, current)
@@ -118,7 +112,6 @@ function ActionButton.UpdateTargetVisual(button, current)
 		ns.Art.Icon(button.Icon, TARGET_ICON[button.targetKind] or TARGET_ICON.mob, ITEM_SIZE)
 	end
 	button.Icon:SetVertexColor(1, 1, 1)
-	button.Glow:SetShown(button.targetName == current)
 end
 
 ---@param button AGFActionButton

@@ -606,43 +606,34 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonBackground",
+      "atlas": "common-button-list-large",
       "layer": "BACKGROUND",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Texture[1]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
     {
+      "alphaMode": "ADD",
       "anchors": [
         {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1]",
           "x": 0.00,
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonBackground",
-      "layer": "BACKGROUND",
+      "atlas": "common-button-list-large-hover",
+      "layer": "HIGHLIGHT",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Texture[2]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
         0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
@@ -656,93 +647,13 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonHighlight",
-      "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Texture[3]",
+      "atlas": "common-button-list-large-selected",
+      "layer": "BACKGROUND",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Selected",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonHighlight",
-      "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Texture[4]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonSelect",
-      "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Texture[5]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.00,
-        0.06,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonSelect",
-      "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Texture[6]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
@@ -946,47 +857,18 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonBackground",
+      "atlas": "common-button-list-large",
       "layer": "BACKGROUND",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Texture[1]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
     {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonBackground",
-      "layer": "BACKGROUND",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Texture[2]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
+      "alphaMode": "ADD",
       "anchors": [
         {
           "point": "TOPLEFT",
@@ -996,43 +878,13 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonHighlight",
+      "atlas": "common-button-list-large-hover",
       "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Texture[3]",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Texture[2]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonHighlight",
-      "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Texture[4]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
@@ -1236,47 +1088,18 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonBackground",
+      "atlas": "common-button-list-large",
       "layer": "BACKGROUND",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Texture[1]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
     {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonBackground",
-      "layer": "BACKGROUND",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Texture[2]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
+      "alphaMode": "ADD",
       "anchors": [
         {
           "point": "TOPLEFT",
@@ -1286,43 +1109,13 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonHighlight",
+      "atlas": "common-button-list-large-hover",
       "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Texture[3]",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Texture[2]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonHighlight",
-      "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Texture[4]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
@@ -1421,7 +1214,7 @@
           "y": 5.00
         }
       ],
-      "file": "Interface\\Cursor\\Pickup",
+      "atlas": "QuestObjective",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Kind",
       "size": [
@@ -1526,47 +1319,18 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonBackground",
+      "atlas": "common-button-list-large",
       "layer": "BACKGROUND",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Texture[1]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
     {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonBackground",
-      "layer": "BACKGROUND",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Texture[2]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
+      "alphaMode": "ADD",
       "anchors": [
         {
           "point": "TOPLEFT",
@@ -1576,43 +1340,13 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonHighlight",
+      "atlas": "common-button-list-large-hover",
       "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Texture[3]",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Texture[2]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonHighlight",
-      "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Texture[4]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
@@ -1816,47 +1550,18 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonBackground",
+      "atlas": "common-button-list-large",
       "layer": "BACKGROUND",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Texture[1]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
     {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonBackground",
-      "layer": "BACKGROUND",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Texture[2]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
+      "alphaMode": "ADD",
       "anchors": [
         {
           "point": "TOPLEFT",
@@ -1866,43 +1571,13 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonHighlight",
+      "atlas": "common-button-list-large-hover",
       "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Texture[3]",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Texture[2]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonHighlight",
-      "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Texture[4]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
@@ -2001,7 +1676,7 @@
           "y": 5.00
         }
       ],
-      "file": "Interface\\Cursor\\Pickup",
+      "atlas": "QuestObjective",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Kind",
       "size": [
@@ -2106,47 +1781,18 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonBackground",
+      "atlas": "common-button-list-large",
       "layer": "BACKGROUND",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Texture[1]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
     {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonBackground",
-      "layer": "BACKGROUND",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Texture[2]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
+      "alphaMode": "ADD",
       "anchors": [
         {
           "point": "TOPLEFT",
@@ -2156,43 +1802,13 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonHighlight",
+      "atlas": "common-button-list-large-hover",
       "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Texture[3]",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Texture[2]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonHighlight",
-      "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Texture[4]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
@@ -2291,7 +1907,7 @@
           "y": 5.00
         }
       ],
-      "file": "Interface\\Cursor\\Pickup",
+      "atlas": "QuestObjective",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Kind",
       "size": [
@@ -2396,47 +2012,18 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonBackground",
+      "atlas": "common-button-list-large",
       "layer": "BACKGROUND",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Texture[1]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
     {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonBackground",
-      "layer": "BACKGROUND",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Texture[2]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
+      "alphaMode": "ADD",
       "anchors": [
         {
           "point": "TOPLEFT",
@@ -2446,43 +2033,13 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonHighlight",
+      "atlas": "common-button-list-large-hover",
       "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Texture[3]",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Texture[2]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonHighlight",
-      "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Texture[4]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
@@ -2581,7 +2138,7 @@
           "y": 5.00
         }
       ],
-      "file": "Interface\\Cursor\\Pickup",
+      "atlas": "QuestObjective",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Kind",
       "size": [
@@ -2686,47 +2243,18 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonBackground",
+      "atlas": "common-button-list-large",
       "layer": "BACKGROUND",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Texture[1]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
     {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonBackground",
-      "layer": "BACKGROUND",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Texture[2]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
+      "alphaMode": "ADD",
       "anchors": [
         {
           "point": "TOPLEFT",
@@ -2736,43 +2264,13 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonHighlight",
+      "atlas": "common-button-list-large-hover",
       "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Texture[3]",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Texture[2]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonHighlight",
-      "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Texture[4]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
@@ -2976,47 +2474,18 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonBackground",
+      "atlas": "common-button-list-large",
       "layer": "BACKGROUND",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Texture[1]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
     {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonBackground",
-      "layer": "BACKGROUND",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Texture[2]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
+      "alphaMode": "ADD",
       "anchors": [
         {
           "point": "TOPLEFT",
@@ -3026,43 +2495,13 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonHighlight",
+      "atlas": "common-button-list-large-hover",
       "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Texture[3]",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Texture[2]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonHighlight",
-      "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Texture[4]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
@@ -3161,7 +2600,7 @@
           "y": 5.00
         }
       ],
-      "file": "Interface\\Cursor\\Pickup",
+      "atlas": "QuestObjective",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Kind",
       "size": [
@@ -3266,47 +2705,18 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonBackground",
+      "atlas": "common-button-list-large",
       "layer": "BACKGROUND",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Texture[1]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
     {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonBackground",
-      "layer": "BACKGROUND",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Texture[2]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
+      "alphaMode": "ADD",
       "anchors": [
         {
           "point": "TOPLEFT",
@@ -3316,43 +2726,13 @@
           "y": 0.00
         }
       ],
-      "atlas": "PetList-ButtonHighlight",
+      "atlas": "common-button-list-large-hover",
       "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Texture[3]",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Texture[2]",
+      "scale": 0.64,
       "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
         0.00,
-        0.06,
-        0.00,
-        1.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPRIGHT",
-          "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "PetList-ButtonHighlight",
-      "layer": "HIGHLIGHT",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Texture[4]",
-      "size": [
-        11.48,
-        44.00
-      ],
-      "texCoord": [
-        0.94,
-        1.00,
-        0.00,
-        1.00
+        69.00
       ],
       "type": "Texture"
     },
@@ -3432,7 +2812,7 @@
           "y": 5.00
         }
       ],
-      "file": "Interface\\Cursor\\Pickup",
+      "atlas": "QuestObjective",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Kind",
       "size": [

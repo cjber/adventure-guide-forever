@@ -9,7 +9,7 @@ local BADGE, BADGE_OUT = 16, 3
 -- Shared map rows.
 
 ---@class AGFWindowRow : Button
----@field Selected AGFArtSlice
+---@field Selected Texture
 ---@field Ring Texture
 ---@field Number Texture
 ---@field Kind AGFBadge the step's kind, badged on the ring
@@ -43,7 +43,7 @@ end
 function Widgets.CreateStepRow(parent, height)
 	local row = CreateFrame("Button", nil, parent) --[[@as AGFWindowRow]]
 	row:SetHeight(height)
-	row.Selected = Art.RowArt(row, true) --[[@as AGFArtSlice]]
+	row.Selected = Art.RowArt(row, true) --[[@as Texture]]
 	row.Ring = row:CreateTexture(nil, "ARTWORK")
 	Art.Fit(row.Ring, "adventureguide-ring", 26, 26)
 	row.Ring:SetPoint("LEFT", 6, 0)
@@ -63,7 +63,7 @@ function Widgets.SetStepRow(row, index, title, detail, step)
 	Art.SetNumber(row.Number, index)
 	row.Title:SetText(title)
 	row.Detail:SetText(detail or "")
-	Art.SetSliceShown(row.Selected, index == 1)
+	row.Selected:SetShown(index == 1)
 	if step then
 		ns.Overview.SetVerbIcon(row.Kind, step)
 	else

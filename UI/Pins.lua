@@ -17,8 +17,7 @@ local BADGE_SIZE, BADGE_OFFSET = 16, 4
 local Pins = {}
 ns.Pins = Pins
 
----@type table<string, AGFPinFrame>
-local pinsByKey = {}
+---@type table<string, true>
 local minimapOwner = {}
 local minimapIcons = {}
 local RingsShown, MarkerTooltip
@@ -378,10 +377,9 @@ local function ReleaseMarks()
 	for _, pool in ipairs({ routePool, giverPool }) do
 		pool:ReleaseAll()
 	end
-	pinsByKey = {}
 end
 
--- Active route and giver pins, also used by highlighting and the layout dump.
+-- Active route and giver pins, used by the layout dump.
 ---@return (AGFPinFrame|AGFGiverPinFrame)[]
 function Pins.Active()
 	local pins = {}
@@ -458,11 +456,7 @@ local function Draw()
 		return math.abs(first.x - step.x) <= reachX and math.abs(first.y - step.y) <= reachY
 	end)
 	for _, visits in ipairs(groups) do
-		---@type AGFPinFrame
-		local pin = routePool:Acquire(visits[1].step, visits[1].index, visits) --[[@as AGFPinFrame]]
-		for _, visit in ipairs(visits) do
-			pinsByKey[visit.step.key] = pin
-		end
+		routePool:Acquire(visits[1].step, visits[1].index, visits)
 	end
 end
 
@@ -486,7 +480,6 @@ end
 ---@field Icon Texture
 ---@field Number Texture
 ---@field NumberText FontString
----@field Glow Texture
 ---@field Badge? AGFBadge
 ---@field step? AGFStep
 ---@field index? number
@@ -555,8 +548,6 @@ function AdventureGuideForeverPinMixin:OnAcquired(step, index, visits)
 end
 
 function AdventureGuideForeverPinMixin:OnMouseEnter()
-	UIFrameFlashStop(self.Glow)
-	self.Glow:Show()
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	if self.step and self.index then
 		MarkerTooltip(GameTooltip, self.visits or { { step = self.step, index = self.index } })
@@ -570,8 +561,6 @@ function AdventureGuideForeverPinMixin:OnMouseEnter()
 end
 
 function AdventureGuideForeverPinMixin:OnMouseLeave()
-	UIFrameFlashStop(self.Glow)
-	self.Glow:Hide()
 	if GameTooltip:GetOwner() == self then
 		GameTooltip:Hide()
 	end
@@ -627,7 +616,6 @@ function AdventureGuideForeverGiverPinMixin:OnMouseEnter()
 end
 
 function AdventureGuideForeverGiverPinMixin:OnMouseLeave()
-	UIFrameFlashStop(self.Glow)
 	self.Glow:Hide()
 	if GameTooltip:GetOwner() == self then
 		GameTooltip:Hide()
@@ -647,58 +635,6 @@ function AdventureGuideForeverGiverPinMixin:OnMouseClickAction(button)
 	end
 end
 
----@param pin AGFPinFrame|AGFGiverPinFrame
-local function Flash(pin)
-	-- Flash the glow so resetting its alpha does not change the pin's opacity.
-	UIFrameFlash(pin.Glow, 0.2, 0.2, 1.2, GameTooltip:GetOwner() == pin)
-end
-
----@param point AGFPoint|AGFPlace|AGFStep|AGFGiver
----@param visit fun(pin: AGFPinFrame|AGFGiverPinFrame)
----@param tolerance? number
-local function AtPoint(point, visit, tolerance)
-	for _, pin in ipairs(Pins.Active()) do
-		local place = pin.step or (pin --[[@as AGFGiverPinFrame]]).giver
-		if
-			place
-			and (
-				(place.x == point.x and place.y == point.y)
-				or (tolerance and math.abs(place.x - point.x) < tolerance and math.abs(place.y - point.y) < tolerance)
-			)
-		then
-			visit(pin)
-		end
-	end
-end
-
--- A short flash on a step's pin so it is easy to find on the map. A no-op when the
--- step's pin isn't on the map currently shown (e.g. the click just switched maps and the new
--- pins haven't been laid out yet).
----@param key string
-function Pins.Ping(key)
-	local pin = pinsByKey[key]
-	if pin then
-		Flash(pin)
-	end
-end
-
----@param point AGFPoint|AGFPlace|AGFStep|AGFGiver?
----@param shown boolean
-function Pins.Highlight(point, shown)
-	if
-		not point
-		or not ns.Model.ValidPlace(point)
-		or not WorldMapFrame:IsShown()
-		or WorldMapFrame:GetMapID() ~= point.map
-	then
-		return
-	end
-	AtPoint(point, function(pin)
-		UIFrameFlashStop(pin.Glow)
-		pin.Glow:SetShown(shown or GameTooltip:GetOwner() == pin)
-	end, 0.0001)
-end
-
 -- A requested reveal waits for the canvas to observe the target map before playing.
 local function PlayReveal()
 	local point = reveal
@@ -715,7 +651,6 @@ local function PlayReveal()
 	reveal = nil
 	pingPool:ReleaseAll()
 	pingPool:Acquire(point.x, point.y)
-	AtPoint(point, Flash)
 end
 
 ---@param point AGFPoint|AGFPlace|AGFStep|AGFGiver

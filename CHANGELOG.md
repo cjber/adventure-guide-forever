@@ -12,6 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 - **The minimap button now looks like the LibDBIcon buttons of other addons.** It wears the same tracking border, round background and hover glow as the Questie, RXP and AtlasLoot buttons on the rim, with the guide's own icon on top.
+- **The guide wears the game's own art.** Journey progress bars are the client's reputation and skills bar, the step rows are the Who list's rows, objectives that collect or use something wear the quest log's own objective mark, and the extra glow layers over step buttons, the current target and map rings are gone, so the guide looks like it came with the client.
 
 ## [1.1.2] - 2026-11-06
 - **Arrows on both sides of the quest giver's nameplate.** A pair of arrows now bobs inward from either side of the nameplate, so the NPC to talk to stands out from any angle, and the right one leaves room for Field Guide's tier mark.

@@ -1,6 +1,6 @@
 -- Run from the repository root: luajit tests/art_spec.lua
 -- Art.lua on its own, with a stub C_Texture.GetAtlasInfo and stub textures and frames: an atlas fits its box at its
--- own aspect, covers a box with the overflow cropped evenly, and a three-slice repeats its middle at native scale.
+-- own aspect, covers a box with the overflow cropped evenly, and a row's art is scaled uniformly to the row.
 local checks = 0
 
 local function equal(actual, expected, label)
@@ -56,11 +56,17 @@ end
 function Texture:SetSize(width, height)
 	self.width, self.height = width, height
 end
+function Texture:SetScale(scale)
+	self.scale = scale
+end
+function Texture:GetScale()
+	return self.scale or 1
+end
 function Texture:ClearAllPoints()
 	self.point = nil
 end
-function Texture:SetPoint(point, x)
-	self.point, self.x = point, x
+function Texture:SetPoint(point, relative, relativePoint, x, y)
+	self.point = { point = point, relative = relative, relativePoint = relativePoint, x = x, y = y }
 end
 function Texture:SetShown(shown)
 	self.shown = shown
@@ -145,50 +151,32 @@ do
 	aspect((right - left) * 1024, (bottom - top) * 512, 3, "cover frame: the frame's size less its trim")
 end
 
+-- RowTexture: the atlas at its native 69 height, scaled uniformly to the row's height, laid out again when the row
+-- resizes, its offsets in its own units.
+do
+	local frame = NewFrame(120, 44)
+	local texture = Art.RowTexture(frame, "wide", "BACKGROUND")
+	equal(texture.atlas, "wide", "row: the atlas")
+	equal(texture.layer, "BACKGROUND", "row: the layer")
+	near(texture:GetScale(), 44 / 69, "row: the row's height over the atlas's")
+	equal(texture.height, 69, "row: the atlas's native height")
+	near(texture.width * texture:GetScale(), 120, "row: the width spans the row at that scale")
+	equal(texture.point.point, "TOPLEFT", "row: anchored at the row's top left")
+	equal(texture.point.relative, frame, "row: to the row")
+	equal(texture.point.relativePoint, "TOPLEFT", "row: at its top left")
+	frame:Resize(300, 26)
+	near(texture:GetScale(), 26 / 69, "row: a resize rescales")
+	equal(texture.height, 69, "row: still at the native height")
+	near(texture.width * texture:GetScale(), 300, "row: and the width follows")
+	local offset = Art.RowTexture(frame, "wide", "HIGHLIGHT", 7, -3)
+	near(offset.point.x, 7 / (26 / 69), "row: offsets are in the texture's own units")
+	near(offset.point.y, -3 / (26 / 69), "row: vertically too")
+end
+
 -- Markup: the height given, the width from the aspect.
 do
 	equal(Art.Markup("tall", 31), "|A:tall:31:22|a", "markup: the width from the aspect")
 	equal(Art.Markup("unknown", 14), "|A:unknown:14:14|a", "markup: an unknown atlas is square")
-end
-
--- Slice: caps at native scale for the frame's height, the middle repeated at native scale and the last copy cut.
-do
-	local frame = NewFrame(440, 44)
-	local slice = Art.Slice(frame, "wide", "BACKGROUND", 12, 12)
-	local info = C_Texture.GetAtlasInfo("wide")
-	local scale, pixel = 44 / 46, (info.rightTexCoord - info.leftTexCoord) / 209
-	local strip = (209 - 24) * scale
-	local copies = math.ceil((440 - 24 * scale) / strip)
-	equal(slice.used, 2 + copies, "slice: two caps and the copies")
-	local covered = 0
-	for index = 1, slice.used do
-		local piece = slice.pieces[index]
-		local left, right, top, bottom = unpack(piece.coords)
-		equal(piece.file, 12345, "slice: the atlas's sheet")
-		equal(piece.layer, "BACKGROUND", "slice: in its layer")
-		equal(piece.height, 44, "slice: the frame's height")
-		near(top, info.topTexCoord, "slice: the atlas's top")
-		near(bottom, info.bottomTexCoord, "slice: the atlas's bottom")
-		-- Each piece at native scale: its width is its pixels across the atlas at the height's scale.
-		near(piece.width, (right - left) / pixel * scale, "slice: piece " .. index .. " at native scale")
-		covered = covered + piece.width
-	end
-	near(covered, 440, "slice: the pieces cover the frame")
-	equal(slice.pieces[1].point, "TOPLEFT", "slice: the left cap at the left")
-	equal(slice.pieces[2].point, "TOPRIGHT", "slice: the right cap at the right")
-	near(slice.pieces[2].coords[2], info.rightTexCoord, "slice: the right cap ends the atlas")
-	local last = slice.pieces[slice.used]
-	equal(last.width < strip, true, "slice: the last copy cut short")
-	near(last.x + last.width, 440 - 12 * scale, "slice: the last copy meets the right cap")
-
-	frame:Resize(230, 44)
-	equal(slice.used, 4, "slice: narrower, two copies")
-	equal(slice.pieces[5].shown, false, "slice: the copy no longer needed hides")
-	Art.SetSliceShown(slice, false)
-	equal(slice.pieces[1].shown, false, "slice: hidden")
-	Art.SetSliceShown(slice, true)
-	equal(slice.pieces[4].shown, true, "slice: shown again")
-	equal(slice.pieces[5].shown, false, "slice: the spare copy stays hidden")
 end
 
 print(("art_spec: %d checks passed"):format(checks))

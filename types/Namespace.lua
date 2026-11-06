@@ -1891,7 +1891,7 @@
 ---@field Title FontString
 ---@field Info FontString
 ---@field Giver FontString
----@field Selected AGFArtSlice
+---@field Selected Texture
 ---@field Map Button
 ---@field Expand AGFCollapseButton
 ---@field value? table

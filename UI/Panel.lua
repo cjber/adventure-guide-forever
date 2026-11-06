@@ -142,7 +142,7 @@ local checks = {}
 ---@field aside? AGFAside the aside it draws
 
 ---@class AGFRouteRow : Button, AGFDraggableRow
----@field Selected AGFArtSlice
+---@field Selected Texture
 ---@field Ring Texture
 ---@field Number Texture
 ---@field Title FontString
@@ -199,8 +199,8 @@ end
 local function CreateRow(parent)
 	local row = CreateFrame("Button", nil, parent) --[[@as AGFRouteRow]]
 	row:SetHeight(ROW_HEIGHT)
-	-- The Classic mount and pet collection list rows: background, hover and selected art.
-	row.Selected = ns.Art.RowArt(row, true) --[[@as AGFArtSlice]]
+	-- The Who list's rows: background, hover and selected art (Blizzard_GroupFinder_VanillaStyle WhoList.xml).
+	row.Selected = ns.Art.RowArt(row, true) --[[@as Texture]]
 
 	row.SkipButton = CreateRowIcon(row, "common-icon-redx", 14, function()
 		return ns.L.SKIP_STEP
@@ -331,7 +331,8 @@ local function CreateAsideLine(parent)
 	local line = CreateFrame("Button", nil, parent) --[[@as AGFAsideLine]]
 	line:SetHeight(ASIDE_HEIGHT)
 	line:SetPoint("RIGHT", -10, 0)
-	ns.Art.Slice(line, "PetList-ButtonHighlight", "HIGHLIGHT", 12, 12)
+	local hover = ns.Art.RowTexture(line, "common-button-list-large-hover", "HIGHLIGHT")
+	hover:SetBlendMode("ADD")
 	line.Icon = line:CreateTexture(nil, "ARTWORK")
 	line.Icon:SetPoint("LEFT")
 	line.Skip = CreateRowIcon(line, "common-icon-redx", ASIDE_HEIGHT, function()
@@ -595,7 +596,7 @@ local function RefreshRow(row, step, index)
 		- (row.Tag:IsShown() and row.Tag:GetUnboundedStringWidth() + (group and 4 or 6) or 0)
 	row.Detail:SetWidth(math.min(row.Detail:GetUnboundedStringWidth(), room))
 	row:SetAlpha(step.optional and 0.6 or 1)
-	Art.SetSliceShown(row.Selected, index == 1)
+	row.Selected:SetShown(index == 1)
 	Overview.SetVerbIcon(row.Kind, step)
 end
 
@@ -783,7 +784,7 @@ local function LayoutRows(route, top, hidden, journey)
 			ns.Widgets.SetStepRow(row, 1, title, L.GUIDE_OUTLINE)
 			row.Number:Hide()
 			row.Ring:Hide()
-			ns.Art.SetSliceShown(row.Selected, false)
+			row.Selected:Hide()
 			row.Title:SetTextColor(color.r, color.g, color.b)
 			row:SetPoint("TOPLEFT", 6, -top)
 			row:SetPoint("TOPRIGHT", -6, -top)

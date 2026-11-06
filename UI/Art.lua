@@ -2,9 +2,9 @@
 local _, ns = ...
 
 --[[ Art at its native aspect (AGENTS.md: never stretch art). Every atlas is sized from C_Texture.GetAtlasInfo: an
-     icon fits inside its box, a picture covers its box with the overflow cropped evenly, and fixed-height art whose
-     width varies (a row, a bar) is a three-slice whose middle repeats at native scale. Only nine-slice pieces
-     stretch, by design. ]]
+     icon fits inside its box, a picture covers its box with the overflow cropped evenly, and art whose atlas carries
+     its own nine-slice margins (the rows) is drawn by SetAtlas at the box the client gives it. Only nine-slice
+     pieces, bars and tiles stretch, by design. ]]
 
 ---@class AGFArt
 local Art = {}
@@ -122,116 +122,57 @@ function Art.FileMarkup(file, size)
 	return ("|T%s:%d:%d|t"):format(file, size, size)
 end
 
----@class AGFArtSlice
----@field frame Frame
----@field atlas string
----@field layer DrawLayer
----@field left number the left cap, in the atlas's pixels
----@field right number the right cap, in the atlas's pixels
----@field pieces Texture[] the caps, then the middle's copies
----@field used integer the pieces the last layout drew
----@field shown boolean
+-- The Who list's row atlases are 169x69 (WhoList.xml:8, 9 and 59) with 14-pixel horizontal slice margins and none
+-- top or bottom: the client draws them at that height on its 69-high rows.
+local ROW_ART = 69
 
--- One piece: the atlas's sheet cut to pixels `from` to `to` across the atlas, `width` wide at `x` from `point` (the
--- frame's TOPLEFT, or its TOPRIGHT for the right cap, which then needs no width to sit right). The sheet, not
--- SetAtlas: an atlas with slice data (the renown bar's) would nine-slice each piece again.
----@param slice AGFArtSlice
----@param index integer
----@param info AtlasInfo
----@param from number
----@param to number
----@param point "TOPLEFT"|"TOPRIGHT"
----@param x number
----@param width number
----@param height number
-local function Piece(slice, index, info, from, to, point, x, width, height)
-	local piece = slice.pieces[index]
-	if not piece then
-		piece = slice.frame:CreateTexture(nil, slice.layer)
-		slice.pieces[index] = piece
-	end
-	local span = info.rightTexCoord - info.leftTexCoord
-	piece:SetTexture(info.file or info.filename)
-	piece:SetTexCoord(
-		info.leftTexCoord + span * from / info.width,
-		info.leftTexCoord + span * to / info.width,
-		info.topTexCoord,
-		info.bottomTexCoord
-	)
-	piece:ClearAllPoints()
-	piece:SetPoint(point, x, 0)
-	piece:SetSize(width, height)
-	piece:SetShown(slice.shown)
-end
-
--- The caps at the frame's height at native scale, the middle's copies after the left cap until the right, the last
--- cut short; a frame narrower than its caps shows the caps alone, overlapping.
----@param slice AGFArtSlice
-local function Lay(slice)
-	local info = C_Texture.GetAtlasInfo(slice.atlas)
-	local width, height = slice.frame:GetSize()
-	if not (info and info.width > 0 and info.height > 0 and height > 0) then
-		return
-	end
-	local scale = height / info.height
-	local left, right = slice.left * scale, slice.right * scale
-	local strip = info.width - slice.left - slice.right
-	Piece(slice, 1, info, 0, slice.left, "TOPLEFT", 0, left, height)
-	Piece(slice, 2, info, info.width - slice.right, info.width, "TOPRIGHT", 0, right, height)
-	local used, index, x = 2, 3, left
-	local room = width - right
-	while x < room - 0.01 do
-		local drawn = math.min(strip * scale, room - x)
-		Piece(slice, index, info, slice.left, slice.left + drawn / scale, "TOPLEFT", x, drawn, height)
-		used, index, x = index, index + 1, x + drawn
-	end
-	slice.used = used
-	for rest = used + 1, #slice.pieces do
-		slice.pieces[rest]:Hide()
-	end
-end
-
--- A horizontal three-slice of `atlas` across `frame` in `layer`: caps `left` and `right` atlas pixels wide, the middle
--- repeated at native scale, never stretched; laid out again whenever the frame's size changes.
----@param frame Frame
+-- `atlas` across `row` at the atlas's native 69 height, scaled uniformly to the row's height the way the client scales
+-- art (Texture:SetScale, as ActionButtonComponentTemplate.xml's scale="0.8"): the texture keeps the art's own shape,
+-- and its width follows so the row is still spanned. SetAllPoints would squash it. The offsets are in the texture's
+-- own units too, hence over the scale; it is laid out again whenever the row's size changes.
+---@param row Button
 ---@param atlas string
 ---@param layer DrawLayer
----@param left number
----@param right number
----@return AGFArtSlice
-function Art.Slice(frame, atlas, layer, left, right)
-	---@type AGFArtSlice
-	local slice =
-		{ frame = frame, atlas = atlas, layer = layer, left = left, right = right, pieces = {}, used = 0, shown = true }
-	Lay(slice)
-	frame:HookScript("OnSizeChanged", function()
-		Lay(slice)
-	end)
-	return slice
-end
-
----@param slice AGFArtSlice
----@param shown boolean
-function Art.SetSliceShown(slice, shown)
-	slice.shown = shown
-	for index = 1, slice.used do
-		slice.pieces[index]:SetShown(shown)
+---@param x? number
+---@param y? number
+---@return Texture
+function Art.RowTexture(row, atlas, layer, x, y)
+	local texture = row:CreateTexture(nil, layer)
+	texture:SetAtlas(atlas) -- art-ok: at the atlas's native height, scaled uniformly to the row below
+	local offsetX, offsetY = x or 0, y or 0
+	local function Lay(width, height)
+		if height <= 0 then
+			return
+		end
+		local scale = height / ROW_ART
+		texture:SetScale(scale)
+		texture:SetSize(width / scale, ROW_ART)
+		texture:ClearAllPoints()
+		texture:SetPoint("TOPLEFT", row, "TOPLEFT", offsetX / scale, offsetY / scale)
 	end
+	Lay(row:GetSize())
+	row:HookScript("OnSizeChanged", function(_, width, height)
+		Lay(width, height)
+	end)
+	return texture
 end
 
--- The rows' art (the Classic pet list's, 209x46) as a three-slice: caps past its 10-pixel bevel and glow.
-local ROW_CAP = 12
-
--- The route rows' art across `row` (Panel.lua's and the window's): its background, and its hover in the HIGHLIGHT
--- layer, which a button shows under the mouse; with `withSelected`, the selected art over them. Here rather than in
--- Window.lua because Panel.lua, which loads first, builds its rows as soon as the world map is loaded.
+-- The route rows' art: the Who list's row (Blizzard_GroupFinder_VanillaStyle WhoList.xml:8, 9 and 59), its hover
+-- added over it in the HIGHLIGHT layer a button shows under the mouse, and with `withSelected`, the selected art over
+-- the background. Here rather than in Panel.lua because the shared rows in Widgets.lua build theirs too.
 ---@param row Button
 ---@param withSelected? boolean
----@return AGFArtSlice? selected
+---@return Texture? selected
 function Art.RowArt(row, withSelected)
-	Art.Slice(row, "PetList-ButtonBackground", "BACKGROUND", ROW_CAP, ROW_CAP)
-	Art.Slice(row, "PetList-ButtonHighlight", "HIGHLIGHT", ROW_CAP, ROW_CAP)
-	return withSelected and Art.Slice(row, "PetList-ButtonSelect", "OVERLAY", ROW_CAP, ROW_CAP) or nil
+	Art.RowTexture(row, "common-button-list-large", "BACKGROUND")
+	local hover = Art.RowTexture(row, "common-button-list-large-hover", "HIGHLIGHT")
+	hover:SetBlendMode("ADD")
+	if not withSelected then
+		return nil
+	end
+	local selected = Art.RowTexture(row, "common-button-list-large-selected", "BACKGROUND")
+	selected:Hide()
+	return selected
 end
 
 -- The stock atlas stops at nine; larger step numbers use the same gold as the ring.

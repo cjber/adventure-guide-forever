@@ -1191,9 +1191,8 @@ for _, spf in ipairs({ false, "v1" }) do
 	expected[#expected + 1] = "colored: |A:questturnin:14:14|a [13] The Zhevra"
 	same({ unpack(h.tooltip, 1, #expected) }, expected, label .. ": ring tooltip")
 	equal(h.tooltip[#h.tooltip], click, label .. ": ring tooltip instruction")
-	equal(ring.Glow:IsShown(), true, label .. ": hover glow")
+	equal(ring.Glow, nil, label .. ": no glow layer over the ring")
 	ring:OnMouseLeave()
-	equal(ring.Glow:IsShown(), false, label .. ": glow off after hover")
 
 	-- Stonetalon has quest givers and no route step, so every eligible giver gets a "!".
 	h.map:SetMapID(1442)
@@ -1211,6 +1210,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	end
 	equal(giverPin ~= nil, true, label .. ": a giver the route can take from")
 	equal(giverPin.levelType, "PIN_FRAME_LEVEL_AREA_POI", label .. ": givers at the area POI level")
+	equal(giverPin.Glow.alphaMode, "BLEND", label .. ": the giver's hover mark is drawn plainly, not added")
 	h.Hover(giverPin)
 	-- Closing the map fires no OnMouseLeave: the pin's own OnHide takes its tooltip.
 	h.map:SetShown(not h.map:IsShown())
@@ -1316,24 +1316,17 @@ do
 	for _, region in ipairs({ pin.Icon, pin.Number, pin.NumberText, pin.Badge }) do
 		equal(region:GetAlpha(), 0.9, "POI: later stop fades every foreground part")
 	end
-	for _, region in ipairs({ pin.Disc, pin.Icon, pin.Number, pin.Glow }) do
+	for _, region in ipairs({ pin.Disc, pin.Icon, pin.Number }) do
 		same({ region:GetSize() }, { 32, 32 }, "POI: stock 32-unit art") -- multi-value: width and height
 	end
+	equal(pin.Glow, nil, "POI: no glow layer on the pin")
 	same(pin.Number.texCoord, { 0, 0.125, 0.875, 1 }, "POI: final tinted numeral")
 	equal(pin.Badge:IsShown(), true, "POI: repeated visits keep the quest badge")
 	equal(pin.More, nil, "POI: no count covering the badge")
-	h.ns.Pins.Ping(step.key)
-	equal(pin.Glow.flashing, true, "POI: the glow flashes when the guide pings a stop")
-	h.G.UIFrameFlashStop(pin.Glow)
-	equal(pin.Icon:GetAlpha(), 0.9, "POI: a completed ping preserves the later stop's fade")
-	h.ns.Pins.Ping(step.key)
 	pin:OnMouseEnter()
-	equal(pin.Glow.flashing, nil, "POI: hover takes over from the ping")
-	equal(pin.Glow:IsShown(), true, "POI: hover restores the steady glow")
-	h.ns.Pins.Ping(step.key)
+	equal(pin.Icon:GetAlpha(), 0.9, "POI: hover leaves the later stop's fade alone")
+	equal(pin.Glow, nil, "POI: hover draws no glow")
 	pin:OnMouseLeave()
-	equal(pin.Glow.flashing, nil, "POI: leaving cancels the ping before the pin is reused")
-	equal(pin.Glow:IsShown(), false, "POI: leaving clears the glow")
 	pin:OnAcquired(step, 26)
 	equal(pin.Number:IsShown(), false, "POI: no texture cell after 25")
 	equal(pin.NumberText:GetText(), "26", "POI: font fallback after 25")
@@ -3173,6 +3166,8 @@ for _, spf in ipairs({ false, "v1" }) do
 			equal(foot, L.READY_OF:format(journey.ready, total), label .. ": Quests in your log counts what is ready")
 			equal(card.Bar:IsShown(), journey.ready > 0, label .. ": and its bar")
 			equal(card.Bar.Fill:GetWidth() > 0, true, label .. ": never empty")
+			equal(card.Bar.template, "ColoredProgressBarTemplate", label .. ": the client's own stat bar, inherited")
+			equal(card.Bar.Fill:GetAtlas(), "common-stat-bar-green", label .. ": its green fill")
 		elseif journey.kind == "nextzone" then
 			zones = zones + 1
 			equal(foot, h.ns.Overview.Stops(journey), label .. ": " .. journey.key .. " current stops")
@@ -3329,6 +3324,28 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(chosenCard.PushedTexture:GetAtlas(), "ui-journeys-renown-button", label .. ": a press moves nothing")
 	equal(Cards()[2].PushedTexture:GetAtlas(), Cards()[2].NormalTexture:GetAtlas(), label .. ": nor on a row")
 	equal(Rows(), #h.ns.Route().steps, label .. ": its steps listed")
+	local stepRow = Shown(h, function(frame)
+		return frame.SkipButton ~= nil
+	end)[1]
+	local rowArt = {}
+	for _, region in ipairs({ stepRow:GetRegions() }) do
+		local atlas = region:GetAtlas()
+		if atlas and atlas:find("^common%-button%-list%-large") then
+			rowArt[atlas] = region
+		end
+	end
+	equal(rowArt["common-button-list-large"] ~= nil, true, label .. ": the Who list's row art")
+	equal(rowArt["common-button-list-large-hover"] ~= nil, true, label .. ": its hover")
+	equal(rowArt["common-button-list-large-selected"] ~= nil, true, label .. ": and its selected art")
+	-- Drawn at the atlas's native 69 height and scaled uniformly to the row, never squashed into it.
+	for atlas, region in pairs(rowArt) do
+		local native = h.G.C_Texture.GetAtlasInfo(atlas).height
+		equal(native, 69, label .. ": " .. atlas .. " is 69 high")
+		equal(region:GetScale(), stepRow:GetHeight() / native, label .. ": " .. atlas .. " scaled to the row")
+		equal(region:GetHeight(), native, label .. ": " .. atlas .. " at its native height")
+	end
+	equal(rowArt["common-button-list-large-hover"].alphaMode, "ADD", label .. ": the row's hover is added over its art")
+	equal(stepRow.Selected:IsShown(), stepRow.index == 1, label .. ": the selected art marks the first step")
 	local nextZone
 	for _, card in ipairs(Cards()) do
 		nextZone = nextZone or (card.journey.kind == "nextzone" and card or nil)
@@ -4105,6 +4122,15 @@ do
 	differences, onlyInGame = diff.Compare(golden, game)
 	equal(#differences, 1, "dump_diff: a changed atlas is one difference")
 	equal(onlyInGame, 1, "dump_diff: stock chrome is counted, not failed")
+	-- A scaled texture's width is its row's over its scale, which only the game's layout knows; its native height
+	-- still compares, so a squashed row cannot pass.
+	local scaled = { path = "row.Texture", type = "Texture", atlas = "row", scale = 0.64, size = { 0, 69 } }
+	local laid = { path = "row.Texture", type = "Texture", atlas = "row", size = { 628.12, 69 } }
+	differences = diff.Compare({ scaled }, { laid })
+	equal(#differences, 0, "dump_diff: a scaled texture's laid-out width is not compared")
+	laid.size = { 628.12, 64 }
+	differences = diff.Compare({ scaled }, { laid })
+	equal(#differences, 1, "dump_diff: its native height is")
 	clean(h, "golden")
 end
 

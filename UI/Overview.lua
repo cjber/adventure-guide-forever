@@ -92,7 +92,7 @@ local function Open(route, journey)
 	return false
 end
 
--- A step on the world map: the map opens when it is closed, then turns to the step and flashes its ring.
+-- A step on the world map: the map opens when it is closed, then turns to the step and pings it.
 ---@param step AGFStep
 local function ShowOnMap(step)
 	ns.Pins.Reveal(step)
@@ -113,9 +113,7 @@ end
 ---@field step? AGFStep
 ---@field index? integer
 
----@param self AGFStepHoverRow
-function Overview.RowLeave(self)
-	ns.Pins.Highlight(self.step, false)
+function Overview.RowLeave()
 	GameTooltip_Hide()
 end
 
@@ -126,7 +124,6 @@ local function RowEnter(self)
 	if not (step and index) then
 		return
 	end
-	ns.Pins.Highlight(step, true)
 	local travel = index == 1 and ns.Integrations.Travel(step) or ns.Integrations.TravelLine(step)
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	ns.Pins.StepTooltip(GameTooltip, step, index, travel)
@@ -152,21 +149,18 @@ local VERB_ATLAS = {
 }
 local TRAINER_FILE = "Interface\\Minimap\\Tracking\\Class"
 -- An objective step whose open objectives are all one kind wears the mark the game shows over that kind of
--- target: the targeting frame's skull for kills, the bag over something to collect, the gear over something to
--- use. Mixed work, and a place to reach, keep the objective's own mark.
+-- target: the targeting frame's skull for kills, the quest log's own objective mark for something to collect or use.
+-- Mixed work, and a place to reach, keep the objective's own mark.
 -- The targeting frame's own skull over a high-level target (Blizzard_UnitFrame/Mainline/TargetFrame.xml,
 -- HighLevelTexture), the modern atlas for the loose skull the old frame shipped.
 local OBJECTIVE_ATLASES = {
 	monster = "UI-HUD-UnitFrame-Target-HighLevelTarget_Icon",
-}
-local OBJECTIVE_FILES = {
-	item = "Interface\\Cursor\\Pickup",
-	object = "Interface\\Cursor\\Interact",
+	item = "QuestObjective",
+	object = "QuestObjective",
 }
 
 ---@param step AGFStep
 ---@return string? atlas
----@return string? file
 local function ObjectiveIcon(step)
 	local kind
 	for _, objective in ipairs(step.objectives or {}) do
@@ -177,7 +171,7 @@ local function ObjectiveIcon(step)
 		end
 		kind = own
 	end
-	return kind and OBJECTIVE_ATLASES[kind] or nil, kind and OBJECTIVE_FILES[kind] or nil
+	return kind and OBJECTIVE_ATLASES[kind] or nil
 end
 
 ---@param step AGFStep
@@ -190,21 +184,25 @@ local function VerbIcon(step)
 	elseif verb == "trainer" then
 		return nil, TRAINER_FILE
 	elseif verb == "objective" then
-		local atlas, file = ObjectiveIcon(step)
-		if atlas or file then
-			return atlas, file
+		local atlas = ObjectiveIcon(step)
+		if atlas then
+			return atlas
 		end
 	end
 	return verb and VERB_ATLAS[verb] or nil
 end
 
 -- A RestedXP line's kind (AGFRXPElement.tag) in the same marks (#351): a pickup's "!", a hand-in's "?", an objective's
--- mark, the bag over something to collect, the flight master's and the innkeeper's tracking icons for a flight and a
--- hearth. Other kinds (a walk, a note) have no mark.
-local LINE_ATLAS = { accept = VERB_ATLAS.pickup, turnin = VERB_ATLAS.turnin, complete = VERB_ATLAS.objective }
+-- mark, the quest log's objective mark for something to collect, the flight master's and the innkeeper's tracking
+-- icons for a flight and a hearth. Other kinds (a walk, a note) have no mark.
+local LINE_ATLAS = {
+	accept = VERB_ATLAS.pickup,
+	turnin = VERB_ATLAS.turnin,
+	complete = VERB_ATLAS.objective,
+	collect = "QuestObjective",
+	collectmultiple = "QuestObjective",
+}
 local LINE_FILES = {
-	collect = OBJECTIVE_FILES.item,
-	collectmultiple = OBJECTIVE_FILES.item,
 	fly = "Interface\\Minimap\\Tracking\\FlightMaster",
 	fp = "Interface\\Minimap\\Tracking\\FlightMaster",
 	hs = "Interface\\Minimap\\Tracking\\Innkeeper",
@@ -240,8 +238,8 @@ end
 ---@class AGFBadge : Texture
 ---@field box number the square the mark fits in
 
--- The kind's mark on `badge` at its own aspect, hidden when the step has none. A file (the trainer's, a cursor) is a
--- square icon.
+-- The kind's mark on `badge` at its own aspect, hidden when the step has none. A file (the trainer's, the flight
+-- master's) is a square icon.
 ---@param badge AGFBadge
 ---@param step AGFStep
 local function SetVerbIcon(badge, step)
@@ -766,42 +764,33 @@ local function Counts(journey)
 	return #counts > 0 and table.concat(counts, COUNT_GAP) or journey.subline
 end
 
--- The Journeys renown bar is 18 tall at its own scale, too tall for a card: its frame is scaled to draw it 7 tall.
--- Its art (335x18) is a three-slice at that scale, its caps the atlas's own 11-pixel slice margins round the rounded
--- ends; the fill is the whole bar's width of its own art, clipped to the progress. The fill runs dark green, then
--- brightens from pixel 120 to 250: its left cap takes all of that, so only the even bright run after it repeats.
-local BAR_HEIGHT, BAR_ART, BAR_CAP, FILL_CAP = 7, 18, 11, 250
+-- The client's own stat bar (Blizzard_SharedXML/Camelot/ProgressBars/ColoredProgressBar.xml, which the reputation and
+-- skills frames inherit as ReputationBarTemplate and SkillsBarTemplate): inherited whole, so the background, the
+-- mask-clipped fill and their nine-slices are the client's, and the bar is lengthened only through the template's
+-- own SetFillPercent. The frame is 29 tall at its own size; a card draws it at 7 by scaling the whole frame, so the
+-- art keeps its shape and the fill keeps the client's own rounded ends.
+local BAR_HEIGHT, BAR_ART = 7, 29
 
 ---@class AGFProgressBar : Frame
----@field Fill Frame the clip, as wide as the progress
----@field FillArt Frame the fill's art, the bar's width
+---@field Fill Texture the template's mask-clipped fill, as wide as the progress
+---@field Mask MaskTexture the fill's rounded ends
+---@field Text FontString the template's own label, unused here
+---@field SetFillPercent fun(self: AGFProgressBar, percent: number) the template's own fill, from its left edge
 
 ---@param parent Frame
 ---@return AGFProgressBar
 local function CreateBar(parent)
-	local bar = CreateFrame("Frame", nil, parent) --[[@as AGFProgressBar]]
+	local bar = CreateFrame("Frame", nil, parent, "ColoredProgressBarTemplate") --[[@as AGFProgressBar]]
 	bar:SetScale(BAR_HEIGHT / BAR_ART)
 	bar:SetHeight(BAR_ART)
-	ns.Art.Slice(bar, "UI-Journeys-renown-progressbar-BG", "BACKGROUND", BAR_CAP, BAR_CAP)
-	bar.Fill = CreateFrame("Frame", nil, bar)
-	bar.Fill:SetFrameLevel(bar:GetFrameLevel() + 1)
-	bar.Fill:SetPoint("TOPLEFT")
-	bar.Fill:SetPoint("BOTTOMLEFT")
-	bar.Fill:SetClipsChildren(true)
-	bar.FillArt = CreateFrame("Frame", nil, bar.Fill)
-	bar.FillArt:SetPoint("TOPLEFT")
-	bar.FillArt:SetHeight(BAR_ART)
-	ns.Art.Slice(bar.FillArt, "UI-Journeys-renown-progressbar-fill", "ARTWORK", FILL_CAP, BAR_CAP)
-	local rim = CreateFrame("Frame", nil, bar)
-	rim:SetFrameLevel(bar:GetFrameLevel() + 2)
-	rim:SetAllPoints()
-	ns.Art.Slice(rim, "UI-Journeys-renown-progressbar-frame", "OVERLAY", BAR_CAP, BAR_CAP)
+	-- The template's fill is white; the game's reputation and skill bars use its green for progress that is going up.
+	bar.Fill:SetAtlas("common-stat-bar-green", true)
+	bar:SetFillPercent(0)
 	return bar
 end
 
 -- The bar `width` wide at (x, y) in its card, filled to `value` (0-1]; a scaled frame's offsets and size are in its
--- own units. An empty bar hides its fill: the client takes a width of 0 as unset, and the fill's clip, anchored by its
--- left edge only, would then show the whole fill.
+-- own units. The template draws no fill at all at 0, so an empty bar is its own background and nothing else.
 ---@param bar AGFProgressBar
 ---@param x number
 ---@param y number
@@ -811,14 +800,9 @@ local function SetBar(bar, x, y, width, value)
 	local scale = BAR_HEIGHT / BAR_ART
 	bar:SetScale(scale)
 	bar:SetWidth(width / scale)
-	bar.FillArt:SetWidth(width / scale)
 	bar:ClearAllPoints()
 	bar:SetPoint("TOPLEFT", x / scale, -y / scale)
-	local fill = width / scale * math.min(value, 1)
-	bar.Fill:SetShown(fill > 0)
-	if fill > 0 then
-		bar.Fill:SetWidth(fill)
-	end
+	bar:SetFillPercent(math.min(value, 1))
 	bar:Show()
 end
 
