@@ -445,6 +445,21 @@ local function RowClick(self, mouseButton)
 	end
 end
 
+-- The world map, opened or turned from a click of AGF's own: C_Map.OpenWorldMap is protected, and the client
+-- blocks a call made while it runs a dropdown button's handler, which is what the cleanup card's menu is
+-- (AGF #411). One frame later the call runs on AGF's own path again, as ns.ShowQuest's does.
+---@param mapID integer?
+local function OpenMapAfterClick(mapID)
+	if InCombatLockdown() then
+		return
+	end
+	C_Timer.After(0, function()
+		if not InCombatLockdown() then
+			C_Map.OpenWorldMap(mapID ~= 0 and mapID or nil)
+		end
+	end)
+end
+
 -- A cleanup quest's title, from the log first so it is in the client's language, then the data.
 ---@param id integer
 ---@return string?
@@ -473,7 +488,7 @@ function Overview.OpenCleanupQuest(questID)
 	end
 	local map = GetQuestUiMapID(questID)
 	C_QuestLog.SetSelectedQuest(questID)
-	C_Map.OpenWorldMap(map ~= 0 and map or nil)
+	OpenMapAfterClick(map)
 end
 
 -- The carry card's right-click menu: the grey and elsewhere quests under their headings, each opening on the map.
@@ -541,8 +556,8 @@ local function CardClick(self, mouseButton)
 		ns.StartRoute()
 	else
 		-- Turn the map to the selected journey.
-		if WorldMapFrame:IsShown() and journey.map > 0 then
-			C_Map.OpenWorldMap(journey.map)
+		if journey.map > 0 then
+			OpenMapAfterClick(journey.map)
 		end
 		if self.state ~= "chosen" then
 			ns.Choose(journey.key, ns.Setting("titleStartsRoute"))

@@ -170,6 +170,7 @@ do
 	check(h.counts.SetMapID == maps, "in combat the map does not turn")
 	h.SetCombat(false)
 	entry.onClick()
+	h.tick()
 	check(h.selectedQuests[#h.selectedQuests] == 844, "the menu selects the quest's log entry")
 	check(h.counts.SetMapID == maps + 1, "and opens the map")
 	check(h.map:GetMapID() == 1413, "on the quest's zone")

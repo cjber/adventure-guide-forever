@@ -11,6 +11,7 @@ verbatim rather than rewritten as the addon moves. API changes other addons' aut
 optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
+- **Cleanup quests open on the map again.** Choosing a grey or elsewhere quest in the carry card's right-click menu opened the map from inside the menu, which the client blocks and logged as a blocked action. The map now opens a frame later, off the menu's path, and the quest is still selected in your log for you to abandon yourself.
 
 ## [1.1.1] - 2026-11-06
 - **The quest giver arrow sits beside the nameplate.** The arrow drew a pale square behind it and hung over the nameplate's top, where the client puts its own quest and exclamation markers, so the two overlapped at every distance. It is now the bare arrow, anchored to the left of the health bar, clear of those markers.
