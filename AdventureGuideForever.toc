@@ -98,6 +98,7 @@ UI\Access.lua
 UI\Widgets.lua
 UI\GuideOutline.lua
 UI\TrackerQuestie.lua
+UI\TrackerEqot.lua
 UI\TrackerLock.lua
 UI\TrackerOrder.lua
 UI\TrackerHost.lua
