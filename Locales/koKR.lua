@@ -478,7 +478,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
 -- mt
 L["WHATS_NEW"] =
-	"일일 데이터 새로 고침이 다시 작동하여 안내서가 새 게임 빌드를 따라갑니다." -- mt
+	"추적기에 진행 중인 장이 표시되고, 지역을 마치면 다음 지역으로 넘어갑니다." -- mt
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"
