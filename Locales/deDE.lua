@@ -473,7 +473,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Der Tracker nennt das Kapitel, in dem du bist, und nach einer abgeschlossenen Zone geht es mit der nächsten weiter." -- mt
+	"Pfeile auf beiden Seiten des Namensschilds des Questgebers, und ein geplünderter Questgegenstand schließt jetzt seinen Halt ab." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"
@@ -532,6 +532,6 @@ L["SETTING_AUTO_NEXT_ZONE_TOOLTIP"] =
 	"Wenn eine Zonenreise nach einer Questabgabe endet, wählt der Guide die nächste Zone für Eure Stufe aus derselben Liste. War diese Reise schon Eure Führung, startet auch ihre Route. Schaltet dies aus, um bei Reise abgeschlossen zu halten und die nächste Reise selbst zu wählen."
 L["SETTING_NPC_HIGHLIGHT"] = "Nächsten Quest-NPC hervorheben"
 L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
-	"Wenn ein Schritt mit einem Questgeber oder Abgabe-NPC spricht, hüpft ein kleiner Pfeil über seinem Namensschild und unter dem Tracker steht eine Ziel-Schaltfläche. Schaltet dies aus, um beides zu verbergen. Der Guide ändert nie Eure Namensschild-Einstellungen."
+	"Wenn ein Schritt mit einem Questgeber oder Abgabe-NPC spricht, hüpfen kleine Pfeile zu beiden Seiten seines Namensschilds und unter dem Tracker steht eine Ziel-Schaltfläche. Schaltet dies aus, um beides zu verbergen. Der Guide ändert nie Eure Namensschild-Einstellungen."
 L["NPC_HIGHLIGHT_HINT"] =
 	"Freundliche Namensschilder sind aus: Schaltet sie in den Interface-Optionen ein, um zu sehen, wohin Ihr gehen müsst."

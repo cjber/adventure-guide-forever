@@ -476,7 +476,8 @@ L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
 -- mt
-L["WHATS_NEW"] = "Le suivi indique le chapitre en cours, et terminer une zone passe à la suivante." -- mt
+L["WHATS_NEW"] =
+	"Des flèches des deux côtés de la plaque de nom du donneur de quête, et un objet de quête ramassé termine désormais son étape." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"
@@ -536,6 +537,6 @@ L["SETTING_AUTO_NEXT_ZONE_TOOLTIP"] =
 	"Quand un voyage de zone se termine après avoir rendu une quête, le guide choisit la zone suivante pour votre niveau dans la même liste. Si ce voyage vous guidait déjà, son itinéraire démarre aussi. Désactivez cette option pour vous arrêter à Voyage terminé et choisir vous-même le prochain voyage."
 L["SETTING_NPC_HIGHLIGHT"] = "Mettre en évidence le prochain PNJ de quête"
 L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
-	"Quand une étape parle à un PNJ qui donne ou rend une quête, une petite flèche rebondit au-dessus de sa plaque de nom et un bouton de cible apparaît sous le suivi. Désactivez cette option pour masquer les deux. Le guide ne change jamais vos réglages de plaque de nom."
+	"Quand une étape parle à un PNJ qui donne ou rend une quête, de petites flèches rebondissent de chaque côté de sa plaque de nom et un bouton de cible apparaît sous le suivi. Désactivez cette option pour masquer les deux. Le guide ne change jamais vos réglages de plaque de nom."
 L["NPC_HIGHLIGHT_HINT"] =
 	"Les plaques de nom amies sont désactivées : activez-les dans les options d'interface pour voir où aller."

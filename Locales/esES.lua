@@ -473,7 +473,8 @@ L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
 -- mt
-L["WHATS_NEW"] = "El rastreador muestra el capítulo en el que estás, y al terminar una zona pasas a la siguiente." -- mt
+L["WHATS_NEW"] =
+	"Flechas a ambos lados de la placa de nombre del PNJ de misión, y un objeto de misión saqueado ahora completa su parada." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
@@ -532,6 +533,6 @@ L["SETTING_AUTO_NEXT_ZONE_TOOLTIP"] =
 	"Cuando un viaje de zona termina tras entregar una misión, la guía elige la siguiente zona para tu nivel de la misma lista. Si ese viaje ya te estaba guiando, su ruta también empieza. Desactívalo para parar en Viaje completado y elegir tú el siguiente viaje."
 L["SETTING_NPC_HIGHLIGHT"] = "Resaltar el próximo PNJ de misión"
 L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
-	"Cuando un paso habla con un PNJ que da o recibe una misión, una flecha pequeña bota sobre su placa de nombre y un botón de objetivo aparece bajo el rastreador. Desactívalo para ocultar ambos. La guía nunca cambia la configuración de tus placas de nombre."
+	"Cuando un paso habla con un PNJ que da o recibe una misión, unas flechas pequeñas botan a ambos lados de su placa de nombre y un botón de objetivo aparece bajo el rastreador. Desactívalo para ocultar ambos. La guía nunca cambia la configuración de tus placas de nombre."
 L["NPC_HIGHLIGHT_HINT"] =
 	"Las placas de nombre amistosas están desactivadas: actívalas en las opciones de interfaz para ver adónde ir."
