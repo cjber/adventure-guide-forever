@@ -320,18 +320,6 @@ function Highlight.Hint(step)
 	return L.NPC_HIGHLIGHT_HINT
 end
 
--- Star the target when it became the talk step's NPC and carries no mark of its own. Solo and out of combat only: in
--- a group a raid mark shows to everyone. The addon never writes a CVar or touches the nameplate itself.
-function Highlight.MarkTarget()
-	if InCombatLockdown() or IsInGroup() or not Enabled() or not activeNpc then
-		return
-	end
-	if not Highlight.Matches(activeNpc, "target") or GetRaidTargetIndex("target") ~= nil then
-		return
-	end
-	SetRaidTarget("target", 1)
-end
-
 function Highlight.Refresh()
 	if InCombatLockdown() then
 		return
@@ -358,7 +346,6 @@ events:SetScript("OnEvent", function(_, event, unit)
 		end
 		UpdateArrow()
 	elseif event == "PLAYER_TARGET_CHANGED" then
-		Highlight.MarkTarget()
 		if not InCombatLockdown() then
 			UpdateTarget()
 		end
