@@ -471,8 +471,7 @@ L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
 L["UPDATED_TO"] = "atualizado para %s. %s"
 -- mt
-L["WHATS_NEW"] =
-	"Setas dos dois lados da placa de nome de quem dá a missão, e um item de missão saqueado agora conclui a sua parada." -- mt
+L["WHATS_NEW"] = "Setas dos dois lados da placa de nome do NPC da missão. Agora duas setas se movem para dentro de cada lado, para que o NPC com quem falar se destaque de qualquer ângulo." -- mt
 L["WHY_ALLIANCE"] = "Só Aliança"
 L["WHY_BREADCRUMB"] = "Só até você aceitar %s"
 L["WHY_CHOSE"] = "Você escolheu %s no lugar"
@@ -531,6 +530,6 @@ L["SETTING_AUTO_NEXT_ZONE_TOOLTIP"] =
 	"Quando uma jornada de região termina depois de entregar uma missão, o guia escolhe a próxima região para o seu nível na mesma lista. Se essa jornada já estava guiando você, a rota dela também começa. Desligue para parar em Jornada concluída e escolher a próxima jornada."
 L["SETTING_NPC_HIGHLIGHT"] = "Destacar o próximo NPC de missão"
 L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
-	"Quando uma etapa fala com um NPC que dá ou recebe uma missão, pequenas setas pulam dos dois lados da placa de nome dele e um botão de alvo fica sob o rastreador. Desligue para ocultar os dois. O guia nunca altera as configurações da sua placa de nome."
+	"Quando uma etapa fala com um NPC que dá ou recebe uma missão, uma pequena seta pula sobre a placa de nome dele e um botão de alvo fica sob o rastreador. Desligue para ocultar os dois. O guia nunca altera as configurações da sua placa de nome."
 L["NPC_HIGHLIGHT_HINT"] =
 	"As placas de nome amistosas estão desligadas: ative-as nas opções de interface para ver onde ir."
