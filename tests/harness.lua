@@ -303,6 +303,8 @@ function harness.load(options)
 		SetDontSavePosition = "dontSavePosition",
 		SetBlendMode = "alphaMode",
 		SetFrameStrata = "frameStrata",
+		SetFixedFrameStrata = "fixedFrameStrata",
+		SetFixedFrameLevel = "fixedFrameLevel",
 		SetMovable = "movable",
 		SetPushedAtlas = "pushedAtlas",
 		SetDisabledAtlas = "disabledAtlas",
@@ -697,6 +699,9 @@ function harness.load(options)
 	end
 	function Methods:SetHighlightAtlas(atlas)
 		self.highlightAtlas = atlas
+	end
+	function Methods:SetHighlightTexture(texture, blend)
+		self.highlightTexture, self.highlightBlend = texture, blend
 	end
 	function Methods:SetID(id)
 		self.id = id

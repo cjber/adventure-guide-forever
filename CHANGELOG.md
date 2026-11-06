@@ -11,6 +11,7 @@ verbatim rather than rewritten as the addon moves. API changes other addons' aut
 optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
+- **The minimap button now looks like the LibDBIcon buttons of other addons.** It wears the same tracking border, round background and hover glow as the Questie, RXP and AtlasLoot buttons on the rim, with the guide's own icon on top.
 
 ## [1.1.2] - 2026-11-06
 - **Arrows on both sides of the quest giver's nameplate.** A pair of arrows now bobs inward from either side of the nameplate, so the NPC to talk to stands out from any angle, and the right one leaves room for Field Guide's tier mark.
