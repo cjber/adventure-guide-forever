@@ -38,6 +38,11 @@ local system
 -- achievement system's own global stands for its template being loaded.
 local function System()
 	if not system and AlertFrame and AchievementAlertSystem then
+		-- The template's Shield child calls AchievementShield_OnLoad, which lives in the load-on-demand
+		-- Blizzard_AchievementUI; the client loads it before queueing its own toasts (AlertFrames.lua:544).
+		if AchievementFrame_LoadUI then
+			AchievementFrame_LoadUI()
+		end
 		system = AlertFrame:AddQueuedAlertFrameSubSystem(TEMPLATE, SetUp, 2, 6)
 	end
 	return system

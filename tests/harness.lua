@@ -1738,8 +1738,17 @@ function harness.load(options)
 	-- pool and filled by its setUp, and queues up to maxQueue more; a toast's hide frees its place for the next.
 	-- h.alerts holds every toast shown, in order.
 	h.alerts = {}
+	-- Blizzard_AchievementUI/Blizzard_AchievementUI_Bootstrap.lua:1: the UI the toast's Shield child needs (it calls
+	-- AchievementShield_OnLoad from there). h.achievementUILoads counts the loads, and h.alertSystemUILoads freezes
+	-- that count at the moment the subsystem is queued, so a spec can see the UI loaded first.
+	h.achievementUILoads = 0
+	G.AchievementFrame_LoadUI = function()
+		h.achievementUILoads = h.achievementUILoads + 1
+		return true
+	end
 	G.AlertFrame = NewRegion("Frame", "AlertFrame", G.UIParent)
 	function G.AlertFrame.AddQueuedAlertFrameSubSystem(_, template, setUp, maxAlerts, maxQueue)
+		h.alertSystemUILoads = h.achievementUILoads
 		local system, free, shown, queued = {}, {}, 0, {}
 		local function Show(...)
 			local frame = table.remove(free)
