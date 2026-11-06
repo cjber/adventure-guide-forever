@@ -80,7 +80,7 @@ straight after it merges: on main, and on every other branch, a stale image fail
 
 `.github/workflows/refresh-data.yml` runs daily. `tools/refresh_pins.py` moves `BUILD` (`tools/gen_quests.py`) to
 the newest Forever build on wago.tools, `ERA` (`tools/diff_forever.py`) to the newest Classic Era build there, and
-`QUESTIEDB_TAG` and `QUESTIEDB_SHA256` (`tools/gen_corpus.py`) to the newest QuestieDB release; when one moved, the
+`QUESTIEDB_TAG`, `QUESTIEDB_ASSET` and `QUESTIEDB_SHA256` (`tools/gen_corpus.py`) to the newest QuestieDB release; when one moved, the
 workflow regenerates `Data/` and the test corpus, runs `tools/check_generated.py --offline`, the
 generator tests, luacheck, every spec (the golden routes among them), the planner bench and stylua, opens the
 `data/refresh` PR, then approves that PR's CI and Speedpatrol runs, which GitHub holds for a PR opened by
