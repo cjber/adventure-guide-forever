@@ -6,16 +6,11 @@ local _, ns = ...
 -- has, so a line nobody has translated yet stays in English. Format strings keep their specifiers.
 ---@type AGFStrings
 ns.L = {
-	MICRO_MENU_UNAVAILABLE = "Micro menu unavailable; skipping custom button.",
-	SETTING_MICRO_BUTTON = "Show the Adventure Guide micro menu button",
-	SETTING_REPLACE_MICRO_BUTTON = "Replace Blizzard's Adventure Guide button",
-	SETTING_MICRO_BUTTON_PLACEMENT = "Position",
-	SETTING_MICRO_BUTTON_BEFORE = "Before the Game Menu",
-	SETTING_MICRO_BUTTON_AFTER = "After Collections",
-	MICRO_BUTTON_BINDING_NOTE = "Both buttons can also be bound in Key Bindings > AddOns.",
-	MICRO_BUTTON_TOOLTIP = "Adds an Adventure Guide button to the micro menu bar.",
-	MICRO_BUTTON_TITLE = "Adventure Guide",
-	MICRO_BUTTON_SUBTEXT = "Click to open the levelling guide",
+	MINIMAP_UNAVAILABLE = "Minimap unavailable; skipping custom button.",
+	SETTING_MINIMAP_BUTTON = "Minimap button",
+	MINIMAP_BUTTON_TOOLTIP = "Adds an Adventure Guide button to the minimap. Drag it around the rim to move it, "
+		.. "or turn it off here.",
+	MINIMAP_BUTTON_SUBTEXT = "Click to open the levelling guide",
 	SETTING_STATS_SHARE = "Share activity with guild and groups",
 	SETTING_STATS_SHARE_TOOLTIP = "On by default. Shares cumulative activity rows with addon users in "
 		.. "your guild, party, raid or instance. Turn it off to keep records on this character only. "
@@ -612,7 +607,7 @@ ns.L = {
 }
 
 _G.BINDING_HEADER_ADVENTUREGUIDEFOREVER = "Adventure Guide Forever"
-_G["BINDING_NAME_CLICK AdventureGuideForeverMicroButton:LeftButton"] = "Open Adventure Guide"
+_G["BINDING_NAME_CLICK AdventureGuideForeverMinimapButton:LeftButton"] = "Open Adventure Guide"
 _G["BINDING_NAME_CLICK AdventureGuideForeverItem1:LeftButton"] = "Use step item 1"
 _G["BINDING_NAME_CLICK AdventureGuideForeverItem2:LeftButton"] = "Use step item 2"
 _G["BINDING_NAME_CLICK AdventureGuideForeverItem3:LeftButton"] = "Use step item 3"

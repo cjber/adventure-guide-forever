@@ -228,48 +228,24 @@ function ns.RegisterSettings()
 					subcategory,
 					Checkbox(subcategory, "markUpgrades", ns.L.SETTING_UPGRADES, ns.L.SETTING_UPGRADES_TOOLTIP)
 				)
-				Settings.RegisterInitializer(
+				-- Shown unless hidden: the checkbox reads the shown state, while the saved key holds the hide flag
+				-- Core/MinimapButton.lua reads (Core.lua's migration carries an old micro menu choice over).
+				local minimap = Settings.RegisterProxySetting(
 					subcategory,
-					Checkbox(subcategory, "microButton", ns.L.SETTING_MICRO_BUTTON, ns.L.MICRO_BUTTON_TOOLTIP)
+					"AdventureGuideForever_minimapButton",
+					Settings.VarType.Boolean,
+					ns.L.SETTING_MINIMAP_BUTTON,
+					true,
+					function()
+						return ns.Setting("minimapButtonHidden") ~= true
+					end,
+					function(value)
+						ns.SetSetting("minimapButtonHidden", value ~= true)
+					end
 				)
 				Settings.RegisterInitializer(
 					subcategory,
-					Checkbox(
-						subcategory,
-						"replaceMicroButton",
-						ns.L.SETTING_REPLACE_MICRO_BUTTON,
-						ns.L.MICRO_BUTTON_TOOLTIP
-					)
-				)
-				local setting = Settings.RegisterAddOnSetting(
-					subcategory,
-					"AdventureGuideForever_microButtonPlacement",
-					"microButtonPlacement",
-					AdventureGuideForeverDB,
-					Settings.VarType.String,
-					ns.L.SETTING_MICRO_BUTTON_PLACEMENT,
-					ns.DEFAULTS.microButtonPlacement
-				)
-				setting:SetValueChangedCallback(function(_, value)
-					ns.SetSetting("microButtonPlacement", value)
-				end)
-				local options = Settings.CreateControlTextContainer()
-				options:Add("beforeGameMenu", ns.L.SETTING_MICRO_BUTTON_BEFORE)
-				options:Add("afterCollections", ns.L.SETTING_MICRO_BUTTON_AFTER)
-				Settings.RegisterInitializer(
-					subcategory,
-					Settings.CreateDropdownInitializer(setting, function()
-						return options:GetData()
-					end)
-				)
-				-- The note under the micro menu rows: a plain element row, so it reads as Blizzard's own
-				-- small print rather than a control, and the keybinding path is visible without a tooltip.
-				Settings.RegisterInitializer(
-					subcategory,
-					Settings.CreateElementInitializer(
-						"SettingsListElementTemplate",
-						{ name = ns.L.MICRO_BUTTON_BINDING_NOTE }
-					)
+					Settings.CreateCheckboxInitializer(minimap, nil, ns.L.MINIMAP_BUTTON_TOOLTIP)
 				)
 			end,
 		},

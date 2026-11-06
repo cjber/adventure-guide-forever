@@ -1711,11 +1711,11 @@
           "y": 5.00
         }
       ],
-      "file": "Interface\\TargetingFrame\\UI-TargetingFrame-Skull",
+      "atlas": "UI-HUD-UnitFrame-Target-HighLevelTarget_Icon",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Kind",
       "size": [
-        16.00,
+        12.52,
         16.00
       ],
       "subLevel": 1.00,

@@ -480,16 +480,11 @@ L["WHY_REP_BELOW"] = "僅在低於%s時（%s）"
 L["WHY_REP_MIN"] = "需要%s（%s）"
 L["WHY_SKILL"] = "需要%s %d"
 L["YOUR_CHOICE"] = "你的選擇"
--- mt: Micro-menu button settings.
-L["SETTING_MICRO_BUTTON"] = "在微選單中顯示 Adventure Guide" -- mt
-L["SETTING_REPLACE_MICRO_BUTTON"] = "取代暴雪的 Adventure Guide" -- mt
-L["SETTING_MICRO_BUTTON_PLACEMENT"] = "位置" -- mt
-L["SETTING_MICRO_BUTTON_BEFORE"] = "遊戲選單之前" -- mt
-L["SETTING_MICRO_BUTTON_AFTER"] = "收藏之後" -- mt
-L["MICRO_BUTTON_BINDING_NOTE"] = "也可以在按鍵設定 > 插件中綁定這兩個按鈕。" -- mt
-L["MICRO_BUTTON_TOOLTIP"] = "在微選單中新增 Adventure Guide。" -- mt
-L["MICRO_BUTTON_TITLE"] = "Adventure Guide" -- mt
-L["MICRO_BUTTON_SUBTEXT"] = "點擊以開啟升級指南" -- mt
+-- mt: Minimap button settings.
+L["SETTING_MINIMAP_BUTTON"] = "小地圖按鈕" -- mt
+L["MINIMAP_BUTTON_TOOLTIP"] =
+	"在小地圖上新增 Adventure Guide 按鈕。沿邊緣拖曳可移動，或在此關閉。" -- mt
+L["MINIMAP_BUTTON_SUBTEXT"] = "點擊以開啟升級指南" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] = "/agf issue - 透過現成的 GitHub Issue 連結回報錯誤或請求功能" -- mt
 L["ISSUE_BUG"] = "錯誤" -- mt
@@ -503,7 +498,7 @@ L["ISSUE_LINK_HINT"] =
 	"連結已選取。按Ctrl+C（Mac上為Cmd+C），然後貼到瀏覽器中：GitHub 會開啟一個已填好的新 Issue。" -- mt
 L["ISSUE_TITLE_LABEL"] = "標題" -- mt
 L["ISSUE_WINDOW_TITLE"] = "回報錯誤或請求功能" -- mt
-L["MICRO_MENU_UNAVAILABLE"] = "微選單不可用，已略過自訂按鈕。" -- mt
+L["MINIMAP_UNAVAILABLE"] = "小地圖不可用，已略過自訂按鈕。" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "關閉 Questie 的追蹤欄" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 	"顯示此區塊時，Questie 自己的任務追蹤欄會關閉，你的任務就不會列出兩次。關閉此選項可讓 Questie 恢復它的追蹤欄。" -- mt

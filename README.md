@@ -70,19 +70,13 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 <p align="center">Right-click a dungeon card for its bosses and loot. Hover a drop for the game's item tooltip.</p>
 
-## Micro menu button
+## Minimap button
 
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/micro-menu-adventure-guide.png" width="640" alt="Adventure Guide button replacing Blizzard's tome"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/minimap-adventure-guide.png" width="640" alt="The Adventure Guide button on the minimap rim"></p>
 
-<p align="center">Open Adventure Guide from the tome’s place in the micro menu.</p>
+<p align="center">Open Adventure Guide from its button on the minimap rim, Alt-G or <code>/agf</code>.</p>
 
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/micro-menu-adventure-guide-additive.png" width="640" alt="Adventure Guide button alongside Blizzard's tome"></p>
-
-<p align="center">Keep Blizzard’s tome beside the Adventure Guide button if you use both.</p>
-
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/micro-menu-options.png" width="500" alt="Micro menu button settings"></p>
-
-<p align="center">Choose whether to replace the tome, add a button beside it or hide the button.</p>
+<p align="center">Drag the button around the rim to move it. Turn it off in Settings > AddOns > Adventure Guide if you prefer the map tab or the addon compartment.</p>
 
 ## Install
 
@@ -104,7 +98,7 @@ Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-
 | `/agf share on\|off` | Turn sharing of your quest turn-in total with guild and groups on or off |
 | `/agf dump` | Save the drawn layout; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua` |
 
-Open the guide from its world-map tab or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including tracking route quests, detaching the shared Forever tracker and *Share activity with guild and groups*, the switch behind the leaderboard. Its Forever addons page lists all five Forever addons, with a box to turn off suggestions.
+Open the guide from its world-map tab, its minimap button or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including tracking route quests, detaching the shared Forever tracker and *Share activity with guild and groups*, the switch behind the leaderboard. Its Forever addons page lists all five Forever addons, with a box to turn off suggestions.
 
 ## Where the quests come from
 

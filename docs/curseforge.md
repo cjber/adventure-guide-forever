@@ -41,6 +41,7 @@ These images are generated previews of the guide UI.
 - **Dungeons.** Check quests and prerequisites, then visit their givers. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) supplies bosses and loot.
 - **Full guide.** Browse the route and the area's quest outline.
 - **Choose and go.** Use Shortest Path Forever or the game's waypoint. Stop clears only guidance the addon started.
+- **A button on the minimap.** Drag it around the rim to choose its place, press Alt-G or use `/agf`, and hide it in Settings if you prefer the map tab or the addon compartment.
 - **Your route.** Your journey survives travel and reloads. Ready hand-ins come first. Towns group quest givers into checklists. A quest missing from its giver's list drops off, with a line in chat.
 - **Where to do objectives.** A place with mobs 3 or more levels above you gives way to a lower one on its map. *Next spot* picks another camp, even where you stand.
 - **Quest givers stand out.** While a step talks to an NPC, a pair of small arrows bounces either side of their nameplate and a target button selects them and, when you play solo, stars them if they carry no mark of their own. Friendly nameplates must be on; the tracker says so once.
@@ -57,7 +58,7 @@ Right-click a dungeon card for AtlasLoot bosses and drops, with native item tool
 
 ## Usage
 
-`/agf`, `/adventureguide` or the addon compartment opens the guide on the world map. Options are in the guide's cog and Settings > AddOns > Adventure Guide, whose Forever addons page lists all five Forever addons.
+`/agf`, `/adventureguide`, the minimap button or the addon compartment opens the guide on the world map. Options are in the guide's cog and Settings > AddOns > Adventure Guide, whose Forever addons page lists all five Forever addons.
 `/agf leaderboard` ranks your quest turn-ins against the totals your guild and group members running the addon report; their numbers are player-reported, not verified. Sharing is on by default and `/agf share off`, or the checkbox under Settings > AddOns > Adventure Guide, stops it.
 
 Translated into German, French, Spanish, Brazilian Portuguese, Russian, Korean and Chinese (machine translated; corrections welcome through the [translation form](https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml)).

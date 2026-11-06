@@ -1,5 +1,5 @@
 <Bindings>
-	<Binding name="CLICK AdventureGuideForeverMicroButton:LeftButton" header="BINDING_HEADER_ADVENTUREGUIDEFOREVER" default="ALT-G" category="ADDONS"/>
+	<Binding name="CLICK AdventureGuideForeverMinimapButton:LeftButton" header="BINDING_HEADER_ADVENTUREGUIDEFOREVER" default="ALT-G" category="ADDONS"/>
 	<Binding name="CLICK AdventureGuideForeverItem1:LeftButton" category="ADDONS"/>
 	<Binding name="CLICK AdventureGuideForeverItem2:LeftButton" category="ADDONS"/>
 	<Binding name="CLICK AdventureGuideForeverItem3:LeftButton" category="ADDONS"/>

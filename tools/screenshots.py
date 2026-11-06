@@ -612,7 +612,7 @@ def render():
 def main():
     for path in render():
         print(path.relative_to(ROOT))
-    render_micro_menu_scenes()
+    render_minimap_button_scenes()
     # What each image was drawn from, for CI's stale-screenshot check (tools/check_screenshots.py). Every image was
     # just drawn, so one whose pixels came out the same is recorded too, but only with the pinned Pillow: another
     # version's bytes are not the ones to keep.
@@ -622,16 +622,12 @@ def main():
     screens.record(OUT, check_screenshots.SCENES, force=importlib.metadata.version("pillow") == PILLOW)
 
 
-def render_micro_menu_scenes():
-    renderer = FOREVER_CORE / "docs/handoff/micro-menu-buttons/render.py"
-    with tempfile.TemporaryDirectory(prefix="adventure-guide-micro-menu-") as directory:
+def render_minimap_button_scenes():
+    """The Adventure Guide button on the minimap rim, drawn by forever-core's shared renderer."""
+    renderer = FOREVER_CORE / "docs/handoff/minimap-buttons/render.py"
+    with tempfile.TemporaryDirectory(prefix="adventure-guide-minimap-") as directory:
         subprocess.run([sys.executable, str(renderer)], cwd=directory, check=True)
-        for scene in (
-            "micro-menu-adventure-guide.png",
-            "micro-menu-adventure-guide-additive.png",
-            "micro-menu-options.png",
-        ):
-            shutil.copy2(Path(directory) / scene, OUT / scene)
+        shutil.copy2(Path(directory) / "minimap-adventure-guide.png", OUT / "minimap-adventure-guide.png")
 
 
 if __name__ == "__main__":
