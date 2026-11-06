@@ -477,7 +477,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "mis à jour en %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Le bouton de la minicarte ressemble désormais aux boutons LibDBIcon des autres addons. Il porte la même bordure, le même fond et la même lueur au survol que les autres boutons au bord de la minicarte." -- mt
+	"Les notifications d'histoire ne provoquent plus d'erreur Lua. Le guide charge désormais la fenêtre des hauts faits du jeu comme le fait le jeu, pour que le bouclier de la notification ait le code nécessaire." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"
