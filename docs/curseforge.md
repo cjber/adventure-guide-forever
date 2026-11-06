@@ -22,7 +22,7 @@ Choose a journey from the world map's quest log.
 
 ![The Adventure Guide tracker section](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png)
 
-Your journey heads the tracker, with its current and next two stops.
+Your journey heads the tracker: the story chapter you are on, then your current and next two stops.
 
 ![RestedXP instructions in the Adventure tab](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/restedxp.png)
 
@@ -30,19 +30,20 @@ These images are generated previews of the guide UI.
 
 ## Features
 
-- **What to do next.** With no journey chosen, the guide starts on Quests in your log: hand in what is ready and follow a chain you carry. Zone stories and RestedXP guides are cards you can pick.
+- **Zone stories.** Each zone's quest chains read as chapters, such as *Chapter 3 of 7*, on the journey card, the map guide and the tracker, without naming later quests. Finishing a story shows a short popup, once per character. Finishing a zone moves on to the next zone for your level, and starts walking there when it was guiding you.
 
 - **RestedXP guides.** Read RestedXP's instructions and objectives in the Adventure tab and tracker. Choose a guide from the Continue cards and move between its steps. While you follow one, the tracker lists only the quests its steps name, and your own tracked quests come back when you stop. While it steers a RestedXP guide, Adventure Guide shows its own item and target buttons for the current step. Turn off *Use RestedXP guides* to return to Adventure Guide recommendations.
 
 
 - **Works alongside Polestar.** While Polestar guides, the route and map marks pause; click the tracker line to take over, or turn this off in Route settings.
 
-- **Journeys.** Finish loose ends, follow zone stories or pick up class quests. Dungeon and battleground journeys are opt-in.
+- **Journeys.** Find nearby zones for your level or pick up class quests. Dungeon and battleground journeys are opt-in.
 - **Dungeons.** Check quests and prerequisites, then visit their givers. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) supplies bosses and loot.
 - **Full guide.** Browse the route and the area's quest outline.
 - **Choose and go.** Use Shortest Path Forever or the game's waypoint. Stop clears only guidance the addon started.
 - **Your route.** Your journey survives travel and reloads. Ready hand-ins come first. Towns group quest givers into checklists. A quest missing from its giver's list drops off, with a line in chat.
 - **Where to do objectives.** A place with mobs 3 or more levels above you gives way to a lower one on its map. *Next spot* picks another camp, even where you stand.
+- **Quest givers stand out.** While a step talks to an NPC, a small arrow bounces over their nameplate and a target button selects them and, when you play solo, stars them if they carry no mark of their own. Friendly nameplates must be on; the tracker says so once.
 - **Quest difficulty.** Set the highest quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups.
 - **Your order.** Drag steps or use their menu. Moves that break quest order are greyed out.
 - **Search and hints.** Search puts the best match first, with each quest's requirements and, for a locked one, the first quest in its chain you can take. Hints cover talents and battlegrounds.

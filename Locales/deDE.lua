@@ -38,6 +38,16 @@ L["CARRY_READY"] = "%d bereit zur Abgabe"
 L["CHAPTER"] = "Kapitel %d"
 L["CHAPTERS_DONE"] = "%d von %d erledigt"
 L["CHAPTER_OF"] = "Kapitel %d von %d"
+L["CHAPTER_QUEST"] = "%s: %s"
+L["CLEANUP"] = "Aufräumen: %s"
+L["CLEANUP_READY"] = "%d zur Abgabe"
+L["CLEANUP_GREY"] = "%d grau"
+L["CLEANUP_ELSEWHERE"] = "%d anderswo"
+L["CLEANUP_READY_HEADING"] = "Bereit zur Abgabe:"
+L["CLEANUP_GREY_HEADING"] = "Grau:"
+L["CLEANUP_ELSEWHERE_HEADING"] = "Hier nicht abschließbar:"
+L["CLEANUP_MENU_TITLE"] = "Log aufräumen"
+L["CLEANUP_RIGHT_CLICK"] = "Rechtsklick öffnet eine graue oder andere Quest auf der Karte."
 L["CHOOSE_JOURNEY"] = "Andere Reise wählen"
 L["CHOOSE_NEXT"] = "Wählt Eure nächste Reise"
 L["CLICK_TO_CHOOSE"] = "Klicken, um diese Reise zu wählen"
@@ -123,7 +133,7 @@ L["HUB_NPCS_MORE"] = "%s und %d weitere"
 L["HUB_PICK_UP"] = "%d anzunehmen"
 L["ITEM_LOADING"] = "Gegenstand wird geladen..."
 L["JOURNEY_CALLING"] = "Eure Berufung"
-L["JOURNEY_CARRY"] = "Quests in Eurem Log"
+L["JOURNEY_CARRY"] = "Log aufräumen"
 L["JOURNEY_CHOICES"] = "Wählt ein Abenteuer"
 L["JOURNEY_CHOOSE"] = "Wählt unter Aktivitäten eine Reise, um zu beginnen."
 L["JOURNEY_COMPLETE"] = "Reise abgeschlossen"
@@ -516,3 +526,12 @@ L["QUEST_AREAS_SHOW"] = "Klicken, um die blauen Questgebiete des Spiels auf der 
 L["QUEST_AREAS_DISMISS"] = "Rechtsklick, um diesen Hinweis auszublenden" -- mt
 L["QUEST_AREAS_TOOLTIP"] =
 	"Die blauen Questgebiete der Karte zeigen, wo jedes Ziel erledigt wird. Questies Zieltypen Questie und pfQuest schalten sie aus." -- mt
+L["JOURNEY_NEXT"] = "Weiter nach %s"
+L["SETTING_AUTO_NEXT_ZONE"] = "Nächste Zone starten, wenn eine abgeschlossen ist"
+L["SETTING_AUTO_NEXT_ZONE_TOOLTIP"] =
+	"Wenn eine Zonenreise nach einer Questabgabe endet, wählt der Guide die nächste Zone für Eure Stufe aus derselben Liste. War diese Reise schon Eure Führung, startet auch ihre Route. Schaltet dies aus, um bei Reise abgeschlossen zu halten und die nächste Reise selbst zu wählen."
+L["SETTING_NPC_HIGHLIGHT"] = "Nächsten Quest-NPC hervorheben"
+L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
+	"Wenn ein Schritt mit einem Questgeber oder Abgabe-NPC spricht, hüpft ein kleiner Pfeil über seinem Namensschild und unter dem Tracker steht eine Ziel-Schaltfläche. Schaltet dies aus, um beides zu verbergen. Der Guide ändert nie Eure Namensschild-Einstellungen."
+L["NPC_HIGHLIGHT_HINT"] =
+	"Freundliche Namensschilder sind aus: Schaltet sie in den Interface-Optionen ein, um zu sehen, wohin Ihr gehen müsst."

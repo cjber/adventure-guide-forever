@@ -11,7 +11,7 @@ card | zone:1433 | Redridge Mountains story | 1 ready to hand in, 11 in progress
   step 8 | area:127:4 | Complete objectives · Selling Fish | 1433 0.5300,0.5740 | quests in progress | 97 yd | 127/4
   step 9 | area:20:4 | Complete 2 objectives · Redridge Mountains | 1433 0.6130,0.5330 | 2 quests here | 100 yd | 20/4 169/4
   step 10 | area:91:4 | Complete objectives · Solomon's Law | 1433 0.7390,0.4940 | quests in progress | 99 yd | 91/4
-card (chosen) | carry | Quests in your log | 5 ready to hand in, 11 in progress | - | map 1433
+card (chosen) | carry | Clean up my log | 5 ready to hand in, 11 in progress | - | map 1433
   step 1 | area:3741:4 | Complete objectives · Hilary's Necklace | 1433 0.2080,0.5410 | quests in progress | 88 yd | 3741/4
   step 2 | area:92:4 | Complete 2 objectives · Redridge Mountains | 1433 0.2390,0.7330 | 2 quests here | 245 yd | 92/4 246/1
   step 3 | town:1433:1002 | Turn in: A Free Lunch | 1433 0.1037,0.7126 | Opens the next chapter here

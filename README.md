@@ -41,7 +41,7 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 ## Features
 
-- **Quests in your log.** The journey the guide starts on when you have not chosen another: turn in what is ready, finish objectives and follow a chain you already carry. Zone stories and RestedXP guides wait as cards you can pick.
+- **Zone stories.** Each zone's quest chains read as chapters, such as *Chapter 3 of 7*, on the journey card, the map guide and the tracker, without naming later quests. Finishing a story shows a short popup, once per character. Finishing a zone moves on to the next zone for your level, and starts walking there when it was guiding you.
 
 - **RestedXP guides.** Choose a guide from the Continue cards and follow its steps on the map and tracker. RestedXP handles completion; Shortest Path Forever handles travel. While you follow one, the tracker lists only the quests its steps name, and your own tracked quests come back when you stop. While it steers a RestedXP guide, Adventure Guide shows its own item and target buttons for the current step. Turn off *Use RestedXP guides* to return to Adventure Guide's suggestions.
 
@@ -55,10 +55,10 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 - **Playing in a party.** Quests someone in your party also has count as a little nearer, so you tend to do them together, and a pickup a party member already has says so. Party members with the guide tell each other which quests they have through hidden addon messages, at most one every 15 seconds and never in combat. Turn off *Favour quests your party has* in Route settings to stop it.
 - **Your order.** Drag steps or right-click to move them earlier or later. Moves that break quest order are greyed out. *Back to suggested order* restores the plan.
 - **Where to do an objective.** The guide skips a place whose mobs are 3 or more levels above you for a lower one on the same map. *Next spot* in the step's menu moves the arrow to the nearest other camp, even where you stand.
+- **Quest givers stand out.** While a step talks to an NPC, a small arrow bounces over their nameplate and a target button selects them and, when you play solo, stars them if they carry no mark of their own. Friendly nameplates must be on; the tracker says so once.
 - **Givers that don't offer a quest.** If a giver doesn't offer the quest the guide sent you for, the guide says so once in chat and drops it, trying again after a level-up or a hand-in that could open it up.
 - **Reward upgrades.** When a quest offers rewards to choose from, the game's green arrow marks each one that beats what you wear: your armour type, a main stat your class uses and a higher item level.
-- **Story milestones.** Finishing a proven quest chain shows a short popup, once per character.
-- **Stories and search.** Stories read as chapters without naming later quests. Search puts the best match first and shows which of a quest's requirements you meet. For a locked quest it names the earliest quest in its chain you can take, and a shift-click adds that one.
+- **Search.** Search puts the best match first and shows which of a quest's requirements you meet. For a locked quest it names the earliest quest in its chain you can take, and a shift-click adds that one.
 - **Other things to do.** Hints cover professions, unspent talents, hearths and new lands Forever added. Class spell reminders and trainer visits are off by default (Route settings). PvP shows your rank, its next reward and the nearest battlemaster.
 - **Your say.** Skip a step until your next reload, hide a journey or rule out a quest on this character. Shift-click a search result or map quest giver to add quests. *Skipped* restores hidden suggestions. The guide never abandons quests for you. Map marks are off by default.
 

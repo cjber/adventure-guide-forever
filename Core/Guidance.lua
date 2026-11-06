@@ -389,13 +389,29 @@ function Guidance.Ended(route)
 	if not key or route.chosen or ns.RestedXP.Awaits(key) then
 		return
 	end
+	-- A zone story that ended after a turn-in moves to the next zone card (the planner's order, the lead first),
+	-- never the one just finished and never one the player hid (#400). Its route starts when the finished one was
+	-- guided. Other journey kinds still clear.
+	local nextKey, nextTitle
 	if not Filtered(key, prefs, route) then
-		prefs.journey, pendingStart = nil, false
+		if completed and key:find("^zone:") and ns.Setting("autoNextZone") then
+			for _, journey in ipairs(route.journeys or {}) do
+				if journey.key ~= key and journey.key:find("^zone:") and not prefs.notInterested[journey.key] then
+					nextKey, nextTitle = journey.key, journey.title
+					break
+				end
+			end
+		end
+		if nextKey then
+			ns.Choose(nextKey, prefs.guided == key)
+		else
+			prefs.journey, pendingStart = nil, false
+		end
 		if completed and ns.OnJourneyComplete then
-			ns.OnJourneyComplete()
+			ns.OnJourneyComplete(nextTitle)
 		end
 	end
-	if prefs.guided == key then
+	if prefs.guided == key and not nextKey then
 		Guidance.Cancel()
 	end
 end

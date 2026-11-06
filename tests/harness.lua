@@ -240,6 +240,9 @@ function harness.load(options)
 		sounds = {},
 		waypoint = options.waypoint,
 		combat = false,
+		-- Friendly nameplates: on by default in the specs, so a talk step's one-line hint never changes an unrelated
+		-- layout check. tests/npc_highlight_spec.lua turns it off to exercise the hint.
+		nameplateShowFriends = true,
 	}
 	local player = {
 		level = 18,
@@ -1637,6 +1640,9 @@ function harness.load(options)
 	G.InCombatLockdown = function()
 		return h.combat
 	end
+	G.IsInGroup = function()
+		return h.group == true
+	end
 	-- The client's console variables (h.cvars, from options.cvars); SetCVar fires CVAR_UPDATE as the client does.
 	h.cvars = { questPOI = "1" }
 	for key, value in pairs(options.cvars or {}) do
@@ -2323,6 +2329,9 @@ function harness.load(options)
 	function G.GameTooltip:GetOwner()
 		return self.owner
 	end
+	function G.GameTooltip:NumLines()
+		return #h.tooltip
+	end
 	function G.GameTooltip:SetItemByID(id)
 		h.tooltip[#h.tooltip + 1] = "item: " .. id
 	end
@@ -2423,6 +2432,33 @@ function harness.load(options)
 	}
 	G.UnitGUID = function(unit)
 		return guids[unit]
+	end
+	G.UnitName = function(unit)
+		local names = h.unitNames
+		if names and names[unit] ~= nil then
+			return names[unit]
+		end
+		local fallback = rawget(_G, "UnitName")
+		if fallback and fallback ~= G.UnitName then
+			return fallback(unit)
+		end
+	end
+	-- Nameplates (#401): the client's nameplate frame per unit, and the CVar the friendly-nameplate hint reads.
+	G.C_NamePlate = {
+		GetNamePlateForUnit = function(unit)
+			return (h.namePlates or {})[unit]
+		end,
+	}
+	G.GetCVarBool = function(name)
+		return name == "nameplateShowFriends" and h.nameplateShowFriends == true
+	end
+	G.GetRaidTargetIndex = function(unit)
+		return (h.raidTargets or {})[unit]
+	end
+	G.SetRaidTarget = function(unit, index)
+		h.raidTargets = h.raidTargets or {}
+		h.raidTargets[unit] = index
+		h.counts.SetRaidTarget = (h.counts.SetRaidTarget or 0) + 1
 	end
 	function G.GameTooltip:GetUnit()
 		return self.unitName, self.unit

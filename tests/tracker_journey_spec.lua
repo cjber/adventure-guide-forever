@@ -37,7 +37,8 @@ do
 	check(journey ~= nil and journey.title == "The Barrens story", "the chosen story")
 	check(h.tracker.Header.Text:GetText() == journey.title, "one section heading names the story")
 	check(h.tracker.liveBlocks.journey == nil, "no duplicate story block")
-	check(h.tracker.layoutOrder[1] == route.steps[1].key, "current action follows the section heading")
+	check(h.tracker.layoutOrder[1] == "story-beat", "the story beat follows the section heading")
+	check(h.tracker.layoutOrder[2] == route.steps[1].key, "current action follows the story beat")
 	local block = h.tracker.liveBlocks[route.steps[1].key]
 	check(block.header:find("|A:QuestNormal:", 1, true) ~= nil, "current town action uses its pickup icon")
 	check(block.header:find(route.steps[1].title, 1, true) ~= nil, "current action remains readable")

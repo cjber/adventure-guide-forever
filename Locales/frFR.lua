@@ -38,6 +38,16 @@ L["CARRY_READY"] = "%d à rendre"
 L["CHAPTER"] = "Chapitre %d"
 L["CHAPTERS_DONE"] = "%d sur %d terminés"
 L["CHAPTER_OF"] = "Chapitre %d sur %d"
+L["CHAPTER_QUEST"] = "%s : %s"
+L["CLEANUP"] = "Nettoyage : %s"
+L["CLEANUP_READY"] = "%d à rendre"
+L["CLEANUP_GREY"] = "%d grises"
+L["CLEANUP_ELSEWHERE"] = "%d ailleurs"
+L["CLEANUP_READY_HEADING"] = "À rendre :"
+L["CLEANUP_GREY_HEADING"] = "Grises :"
+L["CLEANUP_ELSEWHERE_HEADING"] = "Impossible à finir ici :"
+L["CLEANUP_MENU_TITLE"] = "Nettoyer mon journal"
+L["CLEANUP_RIGHT_CLICK"] = "Cliquez avec le bouton droit pour ouvrir sur la carte une quête grise ou ailleurs."
 L["CHOOSE_JOURNEY"] = "Choisir un autre voyage"
 L["CHOOSE_NEXT"] = "Choisissez votre prochain voyage"
 L["CLICK_TO_CHOOSE"] = "Cliquez pour choisir ce voyage"
@@ -123,7 +133,7 @@ L["HUB_NPCS_MORE"] = "%s et %d de plus"
 L["HUB_PICK_UP"] = "%d à prendre"
 L["ITEM_LOADING"] = "Chargement de l’objet..."
 L["JOURNEY_CALLING"] = "Votre vocation"
-L["JOURNEY_CARRY"] = "Quêtes de votre journal"
+L["JOURNEY_CARRY"] = "Nettoyer mon journal"
 L["JOURNEY_CHOICES"] = "Choisissez une aventure"
 L["JOURNEY_CHOOSE"] = "Choisissez un voyage dans Activités pour commencer."
 L["JOURNEY_COMPLETE"] = "Voyage terminé"
@@ -521,3 +531,12 @@ L["QUEST_AREAS_SHOW"] = "Cliquez pour afficher les zones de quête bleues du jeu
 L["QUEST_AREAS_DISMISS"] = "Clic droit pour masquer cette note" -- mt
 L["QUEST_AREAS_TOOLTIP"] =
 	"Les zones de quête bleues de la carte montrent où chaque objectif s'accomplit. Les types d'objectif Questie et pfQuest de Questie les désactivent." -- mt
+L["JOURNEY_NEXT"] = "En route vers %s"
+L["SETTING_AUTO_NEXT_ZONE"] = "Commencer la zone suivante quand une zone est terminée"
+L["SETTING_AUTO_NEXT_ZONE_TOOLTIP"] =
+	"Quand un voyage de zone se termine après avoir rendu une quête, le guide choisit la zone suivante pour votre niveau dans la même liste. Si ce voyage vous guidait déjà, son itinéraire démarre aussi. Désactivez cette option pour vous arrêter à Voyage terminé et choisir vous-même le prochain voyage."
+L["SETTING_NPC_HIGHLIGHT"] = "Mettre en évidence le prochain PNJ de quête"
+L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
+	"Quand une étape parle à un PNJ qui donne ou rend une quête, une petite flèche rebondit au-dessus de sa plaque de nom et un bouton de cible apparaît sous le suivi. Désactivez cette option pour masquer les deux. Le guide ne change jamais vos réglages de plaque de nom."
+L["NPC_HIGHLIGHT_HINT"] =
+	"Les plaques de nom amies sont désactivées : activez-les dans les options d'interface pour voir où aller."

@@ -93,7 +93,11 @@ do
 	equal(Top(lines[1]), 0, "above the cards")
 	equal(Top(lines[2]), -16, "a line under the other")
 	local step = h.ns.Route().steps[1]
-	same(h.tracker.layoutOrder, { "aside", step.key }, "one line in the tracker, above the chosen journey's step")
+	same(
+		h.tracker.layoutOrder,
+		{ "aside", "story-beat", step.key },
+		"one line in the tracker, above the chosen journey's story and step"
+	)
 	equal(h.tracker.liveBlocks.aside.header, A.text, "the same aside")
 	equal(#h.tracker.liveBlocks.aside.order, 0, "one line: the header alone")
 
@@ -119,7 +123,7 @@ do
 	h.menu.entries[3].onClick()
 	h.flush()
 	equal(#Line(h), 0, "declined: no line in the guide")
-	same(h.tracker.layoutOrder, { step.key }, "declined: nor in the tracker")
+	same(h.tracker.layoutOrder, { "story-beat", step.key }, "declined: nor in the tracker")
 	equal(h.G.AdventureGuideForeverCharDB.asides.b, B.text, "declined: saved per character with its text")
 
 	-- The cog brings it back, by the text its provider gives now (a trainer's count moves on).

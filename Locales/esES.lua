@@ -38,6 +38,16 @@ L["CARRY_READY"] = "%d listas para entregar"
 L["CHAPTER"] = "Capítulo %d"
 L["CHAPTERS_DONE"] = "%d de %d hechos"
 L["CHAPTER_OF"] = "Capítulo %d de %d"
+L["CHAPTER_QUEST"] = "%s: %s"
+L["CLEANUP"] = "Limpieza: %s"
+L["CLEANUP_READY"] = "%d para entregar"
+L["CLEANUP_GREY"] = "%d grises"
+L["CLEANUP_ELSEWHERE"] = "%d en otro sitio"
+L["CLEANUP_READY_HEADING"] = "Listas para entregar:"
+L["CLEANUP_GREY_HEADING"] = "Grises:"
+L["CLEANUP_ELSEWHERE_HEADING"] = "No se puede terminar aquí:"
+L["CLEANUP_MENU_TITLE"] = "Limpiar mi registro"
+L["CLEANUP_RIGHT_CLICK"] = "Haz clic derecho para abrir en el mapa una misión gris o de otro sitio."
 L["CHOOSE_JOURNEY"] = "Elegir otro viaje"
 L["CHOOSE_NEXT"] = "Elige tu próximo viaje"
 L["CLICK_TO_CHOOSE"] = "Haz clic para elegir este viaje"
@@ -123,7 +133,7 @@ L["HUB_NPCS_MORE"] = "%s y %d más"
 L["HUB_PICK_UP"] = "%d para aceptar"
 L["ITEM_LOADING"] = "Cargando objeto..."
 L["JOURNEY_CALLING"] = "Tu vocación"
-L["JOURNEY_CARRY"] = "Misiones en tu registro"
+L["JOURNEY_CARRY"] = "Limpiar mi registro"
 L["JOURNEY_CHOICES"] = "Elige una aventura"
 L["JOURNEY_CHOOSE"] = "Elige un viaje en Actividades para empezar."
 L["JOURNEY_COMPLETE"] = "Viaje completado"
@@ -517,3 +527,12 @@ L["QUEST_AREAS_SHOW"] = "Haz clic para mostrar en el mapa las zonas de misión a
 L["QUEST_AREAS_DISMISS"] = "Clic derecho para ocultar esta nota" -- mt
 L["QUEST_AREAS_TOOLTIP"] =
 	"Las zonas de misión azules del mapa muestran dónde se cumple cada objetivo. Los tipos de objetivo Questie y pfQuest de Questie las desactivan." -- mt
+L["JOURNEY_NEXT"] = "Seguir hacia %s"
+L["SETTING_AUTO_NEXT_ZONE"] = "Empezar la siguiente zona al terminar una"
+L["SETTING_AUTO_NEXT_ZONE_TOOLTIP"] =
+	"Cuando un viaje de zona termina tras entregar una misión, la guía elige la siguiente zona para tu nivel de la misma lista. Si ese viaje ya te estaba guiando, su ruta también empieza. Desactívalo para parar en Viaje completado y elegir tú el siguiente viaje."
+L["SETTING_NPC_HIGHLIGHT"] = "Resaltar el próximo PNJ de misión"
+L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
+	"Cuando un paso habla con un PNJ que da o recibe una misión, una flecha pequeña bota sobre su placa de nombre y un botón de objetivo aparece bajo el rastreador. Desactívalo para ocultar ambos. La guía nunca cambia la configuración de tus placas de nombre."
+L["NPC_HIGHLIGHT_HINT"] =
+	"Las placas de nombre amistosas están desactivadas: actívalas en las opciones de interfaz para ver adónde ir."

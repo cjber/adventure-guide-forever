@@ -80,6 +80,18 @@ function ns.RegisterSettings()
 					Checkbox(subcategory, "autoStart", ns.L.SETTING_AUTO_START, ns.L.SETTING_AUTO_START_TOOLTIP),
 					Checkbox(
 						subcategory,
+						"autoNextZone",
+						ns.L.SETTING_AUTO_NEXT_ZONE,
+						ns.L.SETTING_AUTO_NEXT_ZONE_TOOLTIP
+					),
+					Checkbox(
+						subcategory,
+						"npcHighlight",
+						ns.L.SETTING_NPC_HIGHLIGHT,
+						ns.L.SETTING_NPC_HIGHLIGHT_TOOLTIP
+					),
+					Checkbox(
+						subcategory,
 						"polestarAside",
 						ns.L.SETTING_POLESTAR_ASIDE,
 						ns.L.SETTING_POLESTAR_ASIDE_TOOLTIP

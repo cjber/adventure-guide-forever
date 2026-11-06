@@ -106,7 +106,7 @@ ns.L = {
 	PREVIOUS_PAGE = "Previous",
 	NEXT_PAGE = "Next",
 	JOURNEY_PAGE = "%d / %d",
-	JOURNEY_CARRY = "Quests in your log",
+	JOURNEY_CARRY = "Clean up my log",
 	CARRY_EXPLANATION = "Turn-ins and unfinished objectives from your quest log, "
 		.. "plus quests you added to the route.",
 	JOURNEY_STORY = "%s story",
@@ -135,6 +135,16 @@ ns.L = {
 	LOG_FULL = "Log nearly full: %d you could drop",
 	LOG_FULL_ONE = "Log nearly full: 1 you could drop",
 	LOG_FULL_LIST = "To make room in your log, you could drop:",
+	-- The carry card's cleanup line (§2.18): what is ready, grey, or can't be finished from here, then its tooltip.
+	CLEANUP = "Clean up: %s",
+	CLEANUP_READY = "%d to hand in",
+	CLEANUP_GREY = "%d grey",
+	CLEANUP_ELSEWHERE = "%d elsewhere",
+	CLEANUP_READY_HEADING = "Ready to hand in:",
+	CLEANUP_GREY_HEADING = "Grey:",
+	CLEANUP_ELSEWHERE_HEADING = "Can't finish here:",
+	CLEANUP_MENU_TITLE = "Clean up my log",
+	CLEANUP_RIGHT_CLICK = "Right-click to open a grey or elsewhere quest on the map.",
 	LATER_LAPS = "%d of them on later laps",
 	LIST_SEPARATOR = ", ",
 	QUESTS_NEAR = "%d quests near your level",
@@ -142,6 +152,7 @@ ns.L = {
 	-- Stories (docs/design.md §2.3): a total only when the data proves it, never a later chapter's title.
 	CHAPTER_OF = "Chapter %d of %d",
 	CHAPTER = "Chapter %d",
+	CHAPTER_QUEST = "%s: %s",
 	CONTINUES_STORY = "Continues a story you started",
 	BEGINS_STORY = "Begins a new story",
 	-- A zone card's reason in the world's voice: a chain's giver, a town by its flight master's name.
@@ -166,6 +177,14 @@ ns.L = {
 	SETTING_AUTO_START_TOOLTIP = "The guide sends your chosen journey's route to Shortest Path as soon as it is "
 		.. "ready, so the map line is drawn on login and after a reload without pressing Go. Pressing Stop still "
 		.. "clears it until you choose a journey again.",
+	SETTING_AUTO_NEXT_ZONE = "Start the next zone when one is finished",
+	SETTING_AUTO_NEXT_ZONE_TOOLTIP = "When a zone journey ends after a quest hand-in, the guide chooses the next "
+		.. "zone for your level from the same list. When that journey was already guiding you, its route starts too. "
+		.. "Turn this off to stop at Journey complete and choose the next journey yourself.",
+	SETTING_NPC_HIGHLIGHT = "Highlight the next quest NPC",
+	SETTING_NPC_HIGHLIGHT_TOOLTIP = "While a step talks to a quest giver or turn-in NPC, a small arrow bounces over "
+		.. "their nameplate and a target button sits under the tracker. Turn this off to hide both. The guide never "
+		.. "changes your nameplate settings.",
 	SETTING_TRACK_ROUTE = "Tracker title tracks quests",
 	SETTING_TRACK_ROUTE_TOOLTIP = "Clicking the guide's title in the objective tracker adds every quest on the "
 		.. "route that's in your log, up to the tracker's limit.",
@@ -264,6 +283,8 @@ ns.L = {
 	STORY_COMPLETE = "Story complete",
 	JOURNEY_COMPLETE = "Journey complete",
 	CHOOSE_NEXT = "Choose your next journey",
+	JOURNEY_NEXT = "Moving on to %s",
+	NPC_HIGHLIGHT_HINT = "Friendly nameplates are off: turn them on in Interface options to see where to walk.",
 	-- The tracker's journey line and the wait for QuestieDB's catalogue.
 	TRACKER_DRAG_TITLE = "Forever tracker",
 	TRACKER_DRAG_TOOLTIP = "Drag to move",

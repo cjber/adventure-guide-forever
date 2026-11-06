@@ -38,6 +38,16 @@ L["CARRY_READY"] = "제출 가능 %d개"
 L["CHAPTER"] = "%d장"
 L["CHAPTERS_DONE"] = "%d/%d 완료"
 L["CHAPTER_OF"] = "%d장 / %d장"
+L["CHAPTER_QUEST"] = "%s: %s"
+L["CLEANUP"] = "정리: %s"
+L["CLEANUP_READY"] = "제출 가능 %d개"
+L["CLEANUP_GREY"] = "회색 %d개"
+L["CLEANUP_ELSEWHERE"] = "다른 곳 %d개"
+L["CLEANUP_READY_HEADING"] = "제출 가능:"
+L["CLEANUP_GREY_HEADING"] = "회색:"
+L["CLEANUP_ELSEWHERE_HEADING"] = "여기서 끝낼 수 없음:"
+L["CLEANUP_MENU_TITLE"] = "내 퀘스트 목록 정리"
+L["CLEANUP_RIGHT_CLICK"] = "오른쪽 클릭으로 회색 또는 다른 곳의 퀘스트를 지도에서 엽니다."
 L["CHOOSE_JOURNEY"] = "다른 여정 선택"
 L["CHOOSE_NEXT"] = "다음 여정을 선택하십시오"
 L["CLICK_TO_CHOOSE"] = "클릭하여 이 여정 선택"
@@ -123,7 +133,7 @@ L["HUB_NPCS_MORE"] = "%s 외 %d명"
 L["HUB_PICK_UP"] = "수락 %d개"
 L["ITEM_LOADING"] = "아이템 불러오는 중..."
 L["JOURNEY_CALLING"] = "당신의 소명"
-L["JOURNEY_CARRY"] = "퀘스트 목록의 퀘스트"
+L["JOURNEY_CARRY"] = "내 퀘스트 목록 정리"
 L["JOURNEY_CHOICES"] = "모험 선택"
 L["JOURNEY_CHOOSE"] = "시작하려면 활동에서 여정을 선택하십시오."
 L["JOURNEY_COMPLETE"] = "여정 완료"
@@ -521,3 +531,12 @@ L["QUEST_AREAS_SHOW"] = "클릭하여 지도에 게임의 파란색 퀘스트 �
 L["QUEST_AREAS_DISMISS"] = "오른쪽 클릭하여 이 안내 숨기기" -- mt
 L["QUEST_AREAS_TOOLTIP"] =
 	"지도의 파란색 퀘스트 지역은 각 목표를 수행하는 곳을 보여 줍니다. Questie의 Questie 및 pfQuest 목표 유형은 이를 끕니다." -- mt
+L["JOURNEY_NEXT"] = "%s(으)로 이동"
+L["SETTING_AUTO_NEXT_ZONE"] = "지역 완료 시 다음 지역 시작"
+L["SETTING_AUTO_NEXT_ZONE_TOOLTIP"] =
+	"퀘스트를 제출해 지역 여정이 끝나면 안내가 같은 목록에서 현재 레벨에 맞는 다음 지역을 고릅니다. 그 여정이 이미 안내 중이었다면 경로도 시작합니다. 끄면 여정 완료에서 멈추고 다음 여정을 직접 고릅니다."
+L["SETTING_NPC_HIGHLIGHT"] = "다음 퀘스트 NPC 강조"
+L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
+	"단계가 퀘스트를 주거나 받는 NPC와 대화할 때 작은 화살표가 이름표 위에서 튀고 추적기 아래에 대상 버튼이 표시됩니다. 끄면 둘 다 숨깁니다. 안내는 이름표 설정을 바꾸지 않습니다."
+L["NPC_HIGHLIGHT_HINT"] =
+	"우호적 이름표가 꺼져 있습니다. 인터페이스 설정에서 켜면 어디로 가야 하는지 볼 수 있습니다."

@@ -445,11 +445,75 @@ local function RowClick(self, mouseButton)
 	end
 end
 
+-- A cleanup quest's title, from the log first so it is in the client's language, then the data.
+---@param id integer
+---@return string?
+local function CleanupTitle(id)
+	local entry = ns.Snapshot().log[id]
+	local quest = ns.Data.quests[id]
+	return (entry and entry.title) or (quest and quest.title)
+end
+
+-- One cleanup quest's title in the card's tooltip.
+---@param id integer
+local function AddCleanupTitle(id)
+	local title = CleanupTitle(id)
+	if title then
+		GameTooltip_AddHighlightLine(GameTooltip, title)
+	end
+end
+
+-- Open a cleanup quest on the map, selected in the game's quest log, so its Abandon button is the player's to press.
+-- The same path as ns.ShowQuest (Core/Core.lua); AGF never opens the details pane and never abandons a quest itself
+-- (docs/design.md §1, §2.18).
+---@param questID integer
+function Overview.OpenCleanupQuest(questID)
+	if InCombatLockdown() then
+		return
+	end
+	local map = GetQuestUiMapID(questID)
+	C_QuestLog.SetSelectedQuest(questID)
+	C_Map.OpenWorldMap(map ~= 0 and map or nil)
+end
+
+-- The carry card's right-click menu: the grey and elsewhere quests under their headings, each opening on the map.
+-- False when there is nothing to clean up, so the card keeps doing nothing.
+---@param owner Region
+---@param journey AGFJourney
+---@return boolean opened
+local function CleanupMenu(owner, journey)
+	local cleanup = journey.cleanup
+	if not cleanup or cleanup.grey + cleanup.elsewhere == 0 then
+		return false
+	end
+	ns.ContextMenu(owner, function(_, root)
+		root:SetScrollMode(400)
+		root:CreateTitle(L.CLEANUP_MENU_TITLE)
+		if cleanup.grey > 0 then
+			root:CreateTitle(L.CLEANUP_GREY_HEADING)
+			for _, id in ipairs(cleanup.greyIDs or {}) do
+				root:CreateButton(CleanupTitle(id) or "", function()
+					Overview.OpenCleanupQuest(id)
+				end)
+			end
+		end
+		if cleanup.elsewhere > 0 then
+			root:CreateTitle(L.CLEANUP_ELSEWHERE_HEADING)
+			for _, id in ipairs(cleanup.elsewhereIDs or {}) do
+				root:CreateButton(CleanupTitle(id) or "", function()
+					Overview.OpenCleanupQuest(id)
+				end)
+			end
+		end
+	end)
+	return true
+end
+
 -- Choosing a journey shows its route and turns the map to it, and with the setting on starts it (ns.Choose, once the
 -- rebuild has its steps). The map turns before the invalidation, so its redraw reads the route as it is and the one
 -- rebuild waits a frame. The chosen card is no toggle: the header's back arrow goes back to the overview and the
 -- footer's Stop stops the route, so a click on it only turns the map to it again, or resumes its route while that is
--- paused. Right-click offers "Not interested", except on what the player carries.
+-- paused. Right-click offers "Not interested", except on what the player carries, whose menu cleans up the log.
 ---@param self AGFCardButton
 ---@param mouseButton string
 local function CardClick(self, mouseButton)
@@ -463,7 +527,11 @@ local function CardClick(self, mouseButton)
 		return
 	end
 	if mouseButton == "RightButton" then
-		if journey.kind ~= "carry" then
+		if journey.kind == "carry" then
+			if CleanupMenu(self, journey) then
+				GameTooltip_Hide()
+			end
+		else
 			GameTooltip_Hide()
 			ns.Menu.Journey(self, journey)
 		end
@@ -503,6 +571,22 @@ end
 local function DropLine(journey)
 	local drop = journey.drop and #journey.drop or 0
 	return (drop == 1 and L.LOG_FULL_ONE) or (drop > 1 and L.LOG_FULL:format(drop)) or nil
+end
+
+-- The carry card's cleanup line (docs/design.md §2.18): what the player could hand in, what has gone grey, and what
+-- they can't finish from here. Its tooltip lists the titles, and its right-click menu opens one on the map.
+---@param journey AGFJourney
+---@return string?
+local function CleanupLine(journey)
+	local cleanup = journey.cleanup
+	if not cleanup then
+		return nil
+	end
+	local parts = {}
+	parts[#parts + 1] = cleanup.ready > 0 and L.CLEANUP_READY:format(cleanup.ready) or nil
+	parts[#parts + 1] = cleanup.grey > 0 and L.CLEANUP_GREY:format(cleanup.grey) or nil
+	parts[#parts + 1] = cleanup.elsewhere > 0 and L.CLEANUP_ELSEWHERE:format(cleanup.elsewhere) or nil
+	return #parts > 0 and L.CLEANUP:format(table.concat(parts, L.LIST_SEPARATOR)) or nil
 end
 
 -- The dungeon card's way in (docs/design.md §2.19): the entrance for its instance (a Map.ID, Dungeons.Entrance), else
@@ -560,6 +644,30 @@ local function CardTooltip(card)
 	end
 	if journey.kind == "carry" then
 		GameTooltip_AddNormalLine(GameTooltip, L.CARRY_EXPLANATION)
+	end
+	local cleanup = journey.cleanup
+	if cleanup then
+		if cleanup.ready > 0 then
+			GameTooltip_AddNormalLine(GameTooltip, L.CLEANUP_READY_HEADING)
+			for _, id in ipairs(cleanup.readyIDs or {}) do
+				AddCleanupTitle(id)
+			end
+		end
+		if cleanup.grey > 0 then
+			GameTooltip_AddNormalLine(GameTooltip, L.CLEANUP_GREY_HEADING)
+			for _, id in ipairs(cleanup.greyIDs or {}) do
+				AddCleanupTitle(id)
+			end
+		end
+		if cleanup.elsewhere > 0 then
+			GameTooltip_AddNormalLine(GameTooltip, L.CLEANUP_ELSEWHERE_HEADING)
+			for _, id in ipairs(cleanup.elsewhereIDs or {}) do
+				AddCleanupTitle(id)
+			end
+		end
+		if cleanup.grey + cleanup.elsewhere > 0 then
+			GameTooltip_AddInstructionLine(GameTooltip, L.CLEANUP_RIGHT_CLICK)
+		end
 	end
 	local group = journey.group or 0
 	if group > 0 then
@@ -826,6 +934,7 @@ Overview.RefreshCardTooltip = RefreshCardTooltip
 Overview.HideTooltipWithin = HideTooltipWithin
 Overview.HubLine = HubLine
 Overview.DropLine = DropLine
+Overview.CleanupLine = CleanupLine
 Overview.Progress = Progress
 Overview.IconStep = IconStep
 Overview.Stops = Stops

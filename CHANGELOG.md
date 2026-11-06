@@ -11,6 +11,10 @@ verbatim rather than rewritten as the addon moves. API changes other addons' aut
 optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
+- **The tracker names the chapter you are on.** A story journey now shows one quiet line under its heading, such as Chapter 3 of 7: The Zhevra, so you can see where the chain stands and which quest it is on. The line moves on as you hand chapters in.
+- **Clean up my log.** The journey for the quests you carry now always counts what you could hand in, what has gone grey and what you cannot finish here, and its tooltip lists every quest in each group. Right-click its card for the same list, then choose a grey or elsewhere quest to open it on the world map and select it in your quest log, where you can abandon it yourself. The guide never abandons anything for you.
+- **Finishing a zone moves on to the next one.** When a zone journey ends after you hand in its last quest, the guide picks the next zone for your level and, if it was already walking you, starts the new route. A Route setting, on by default, turns this off so you can choose for yourself.
+- **Quest givers are easier to spot.** While a step talks to a quest giver or turn-in NPC, a small arrow bounces over their nameplate and a target button under the tracker selects them and, when you play solo, stars them if they carry no mark of their own. Friendly nameplates need to be on; the tracker says so once. A Route setting hides the highlight.
 
 ## [1.0.24] - 2026-11-06
 - **The daily data refresh works again, so the guide keeps up with new game builds.** QuestieDB renamed the files it publishes at v1.0.11, and the refresh stopped at the first one it could not find, so a new game build could pass without the bundled quest data moving with it. The refresh now finds the Forever file by name and pins that name beside its tag and checksum.

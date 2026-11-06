@@ -102,6 +102,42 @@ local function Droppable(data, player, log)
 	return #ids > 0 and ids or nil
 end
 
+-- The carry card's cleanup line (docs/design.md §2.18): the log's finished quests, its unfinished quests gone grey,
+-- and its unfinished quests the player can't finish from here -- unplaced, across an ocean, or ruled out with "Not
+-- this quest". Each quest counts once: ruled out and unplaced come before grey, so a grey one the player also ruled
+-- out is only "elsewhere". IDs are sorted for a stable tooltip. Nil when the log has nothing to report.
+---@return AGFCleanup?
+local function Cleanup(data, player, log)
+	local ready, grey, elsewhere = {}, {}, {}
+	for id, entry in pairs(log) do
+		if entry.complete then
+			ready[#ready + 1] = id
+		else
+			local quest = data.quests[id]
+			local place = quest and Nodes(data, entry, player.level)[1] or nil
+			if Dropped(id) or not place or Oversea(data, player, place) then
+				elsewhere[#elsewhere + 1] = id
+			elseif Model.IsGray(QuestLevel(data, log, player, id), player.level) then
+				grey[#grey + 1] = id
+			end
+		end
+	end
+	if #ready + #grey + #elsewhere == 0 then
+		return nil
+	end
+	table.sort(ready)
+	table.sort(grey)
+	table.sort(elsewhere)
+	return {
+		ready = #ready,
+		grey = #grey,
+		elsewhere = #elsewhere,
+		readyIDs = ready,
+		greyIDs = grey,
+		elsewhereIDs = elsewhere,
+	}
+end
+
 -- Build's route within the log's limit (Laps keeps its own): walked in order, a pickup past it waits, and a town left
 -- with nothing goes.
 ---@param steps AGFStep[]
@@ -304,7 +340,7 @@ local function OnTheWay(data, player, log, eligible, candidates, added, prefs, s
 	return ids
 end
 
--- "Quests in your log": every accepted quest's turn-ins and objectives, plus quests
+-- "Clean up my log": every accepted quest's turn-ins and objectives, plus quests
 -- the player added that no zone card holds (`added`), and a few worth taking up on the way (OnTheWay). The subline
 -- counts every quest the card holds, including those outside the route and those nothing places.
 ---@param ready table<integer, AGFPlace>
@@ -358,6 +394,7 @@ local function Carry(data, player, completed, log, ready, prefs, mapName, added,
 		steps = steps,
 		ready = finished,
 		underway = underway,
+		cleanup = Cleanup(data, player, log),
 	}
 end
 
