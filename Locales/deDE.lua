@@ -472,7 +472,8 @@ L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
 -- mt
-L["WHATS_NEW"] = "Pfeile auf beiden Seiten des Namensplaketts des Questgebers. Nun wippen zwei Pfeile von beiden Seiten nach innen, damit der NPC zum Ansprechen aus jedem Winkel auffällt." -- mt
+L["WHATS_NEW"] =
+	"Pfeile auf beiden Seiten des Namensplaketts des Questgebers. Nun wippen zwei Pfeile von beiden Seiten nach innen, damit der NPC zum Ansprechen aus jedem Winkel auffällt." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"
