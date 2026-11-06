@@ -474,7 +474,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "actualizado a %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Flechas a ambos lados de la placa del PNJ de la misión. Ahora dos flechas se mueven hacia dentro desde ambos lados, para que el PNJ al que hablar destaque desde cualquier ángulo." -- mt
+	"El botón del minimapa ahora se ve como los botones LibDBIcon de otros addons. Lleva el mismo borde, fondo y brillo al pasar el ratón que los demás botones del borde del minimapa." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"

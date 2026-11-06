@@ -473,7 +473,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Pfeile auf beiden Seiten des Namensplaketts des Questgebers. Nun wippen zwei Pfeile von beiden Seiten nach innen, damit der NPC zum Ansprechen aus jedem Winkel auffällt." -- mt
+	"Die Minimap-Schaltfläche sieht jetzt aus wie die LibDBIcon-Schaltflächen anderer Addons. Sie trägt denselben Rahmen, Hintergrund und Hover-Glanz wie die anderen Schaltflächen am Rand der Minimap." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"
