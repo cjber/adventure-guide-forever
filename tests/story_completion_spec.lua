@@ -34,6 +34,9 @@ equal(
 equal(h.ns.StoryCompletion.Record(last), false, "repeat hand-in suppressed")
 local key = "story:" .. story.members[1]
 equal(h.ns.Prefs().completedStories[key].quest, last, "stable head identity persists final quest")
+-- The toast's Shield child calls AchievementShield_OnLoad, so the load-on-demand achievement UI comes first (#429).
+equal(h.alertSystemUILoads, 1, "achievement UI loaded before the toast subsystem is queued")
+equal(h.achievementUILoads, 1, "the achievement UI is loaded once")
 equal(h.ns.StoryCompletion.Record(finals[2]), true, "second completion queued")
 equal(#h.errors, 0, "queued presentation has no errors")
 -- The client's achievement toast, filled with the story: the heading and title, no achievement behind it, no shield.

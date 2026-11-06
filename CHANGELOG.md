@@ -11,6 +11,7 @@ verbatim rather than rewritten as the addon moves. API changes other addons' aut
 optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
+- **Story toasts no longer raise a Lua error.** Before the first story toast, the guide now loads the game's achievement window the way the game does before it shows its own achievement toast, so the toast's shield has the code it needs.
 
 ## [1.1.3] - 2026-11-06
 - **The minimap button now looks like the LibDBIcon buttons of other addons.** It wears the same tracking border, round background and hover glow as the Questie, RXP and AtlasLoot buttons on the rim, with the guide's own icon on top.

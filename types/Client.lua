@@ -60,6 +60,12 @@ AlertFrame = nil
 ---@type AGFAlertSubSystem?
 AchievementAlertSystem = nil
 
+-- Blizzard_AchievementUI/Blizzard_AchievementUI_Bootstrap.lua:1 loads the achievement UI on demand; the client's
+-- alert frame calls it before queueing a toast (Mainline/AlertFrames.lua:544), since the template's Shield child
+-- needs AchievementShield_OnLoad from that UI. Read with a nil check.
+---@type (fun(): boolean)?
+AchievementFrame_LoadUI = nil
+
 -- UIErrorsFrame.lua: the red line at the top of the screen, as the client shows its own errors.
 ---@type {AddExternalErrorMessage: fun(self: any, message: string)}
 UIErrorsFrame = nil
