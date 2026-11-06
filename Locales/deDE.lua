@@ -473,7 +473,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Die Minimap-Schaltfläche sieht jetzt aus wie die LibDBIcon-Schaltflächen anderer Addons. Sie trägt denselben Rahmen, Hintergrund und Hover-Glanz wie die anderen Schaltflächen am Rand der Minimap." -- mt
+	"Die Meldung zum Abschluss einer Geschichte löst keinen Lua-Fehler mehr aus. Die Anleitung lädt jetzt das Erfolgsfenster des Spiels so, wie es das Spiel vor seinen eigenen Erfolgsmeldungen tut, damit der Schild der Meldung den nötigen Code hat." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"

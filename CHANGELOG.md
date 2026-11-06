@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves. API changes other addons' aut
 optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
+
+## [1.1.4] - 2026-11-06
 - **Story toasts no longer raise a Lua error.** Before the first story toast, the guide now loads the game's achievement window the way the game does before it shows its own achievement toast, so the toast's shield has the code it needs.
 
 ## [1.1.3] - 2026-11-06
