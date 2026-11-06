@@ -461,7 +461,7 @@ L["UNLISTED"] = "这片土地有指南尚不知道的故事；请留意任务NPC
 L["UPDATED_TO"] = "已更新到%s。%s"
 -- mt
 L["WHATS_NEW"] =
-	"故事提示不再引发 Lua 错误。指南现在会像游戏本身那样加载游戏成就窗口，让提示的盾牌获得所需的代码。" -- mt
+	"使用两段式名字时，你在排行榜上只出现一次。像 Hel Io 这样的 Forever 名字不再显示两次。" -- mt
 L["WHY_ALLIANCE"] = "仅限联盟"
 L["WHY_BREADCRUMB"] = "仅在你接受%s之前"
 L["WHY_CHOSE"] = "你改选了%s"
