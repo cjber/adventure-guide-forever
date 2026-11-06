@@ -8,25 +8,12 @@ local _, ns = ...
      PLAYER_REGEN_ENABLED. RestedXP's own windows are hidden while these are shown and restored otherwise, by
      Integrations/RestedXP.lua. ]]
 
-local ITEM_SIZE = 26
-local FRAME_SIZE = 42
+local ActionButton = ns.ActionButton
+local ITEM_SIZE = ActionButton.ITEM_SIZE
 local GAP = 2
 local ROW_GAP = 4
 local POLL_INTERVAL = 0.2
-local TARGET_ICON = { target = 2056011, mob = 135274, unitscan = 135274 }
 local QUESTION_ICON = "Interface\\Icons\\INV_Misc_QuestionMark"
-local HIGHLIGHT = "Interface\\Buttons\\ButtonHilight-Square"
-
----@class AGFRXPActionButton : Button
----@field Icon Texture
----@field Glow Texture
----@field Count FontString
----@field Range FontString
----@field Binding FontString
----@field Cooldown Cooldown
----@field itemId? integer
----@field targetName? string
----@field targetKind? string
 
 ---@class AGFRXPActionsModule
 local Actions = {}
@@ -34,24 +21,16 @@ ns.RXPActions = Actions
 
 ---@type Frame?
 local root
----@type AGFRXPActionButton[]
+---@type AGFActionButton[]
 local itemButtons = {}
----@type AGFRXPActionButton[]
+---@type AGFActionButton[]
 local targetButtons = {}
 local appliedHeight = 0
 local pollElapsed = 0
 local polling = false
 local lastShown = false
 
----@param button AGFRXPActionButton
----@param name string
-local function SetKeybind(button, name)
-	local key = GetBindingKey("CLICK " .. name .. ":LeftButton")
-	button.Binding:SetText(key or "")
-	button.Binding:SetShown(key ~= nil and key ~= "")
-end
-
----@param button AGFRXPActionButton
+---@param button AGFActionButton
 local function ShowItemTooltip(button)
 	if not button.itemId then
 		return
@@ -61,99 +40,35 @@ local function ShowItemTooltip(button)
 	GameTooltip:Show()
 end
 
----@param button AGFRXPActionButton
-local function ShowTargetTooltip(button)
-	if not button.targetName then
-		return
-	end
-	GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
-	local friendly = button.targetKind == "target"
-	GameTooltip:SetText(button.targetName, friendly and 0 or 1, friendly and 1 or 0, 0)
-	GameTooltip:Show()
-end
-
----@param button AGFRXPActionButton
-local function CreateChrome(button)
-	button:SetSize(ITEM_SIZE, ITEM_SIZE)
-	button:RegisterForClicks("AnyUp")
-	button:SetScript("OnLeave", function()
-		GameTooltip:Hide()
-	end)
-
-	local border = button:CreateTexture(nil, "BACKGROUND")
-	ns.Art.Fit(border, "UI-QuestTrackerButton-QuestItem-Frame", FRAME_SIZE, FRAME_SIZE)
-	border:SetPoint("CENTER")
-
-	local glow = button:CreateTexture(nil, "BACKGROUND", nil, 1)
-	ns.Art.Fit(glow, "UI-QuestTrackerButton-QuestItem-Frame-Glow", FRAME_SIZE, FRAME_SIZE)
-	glow:SetPoint("CENTER")
-	glow:Hide()
-	button.Glow = glow
-
-	local icon = button:CreateTexture(nil, "BORDER")
-	icon:SetSize(ITEM_SIZE, ITEM_SIZE)
-	icon:SetPoint("CENTER")
-	button.Icon = icon
-
-	local highlight = button:CreateTexture(nil, "HIGHLIGHT")
-	ns.Art.Icon(highlight, HIGHLIGHT, ITEM_SIZE)
-	highlight:SetPoint("CENTER")
-	highlight:SetBlendMode("ADD")
-
-	local count = button:CreateFontString(nil, "ARTWORK", "NumberFontNormal")
-	count:SetPoint("BOTTOMRIGHT", -3, 2)
-	count:Hide()
-	button.Count = count
-
-	local range = button:CreateFontString(nil, "ARTWORK", "NumberFontNormalSmallGray")
-	range:SetPoint("TOPRIGHT", 16, -2)
-	range:SetSize(29, 10)
-	range:SetText(RANGE_INDICATOR)
-	range:Hide()
-	button.Range = range
-
-	local binding = button:CreateFontString(nil, "ARTWORK", "NumberFontNormalSmallGray")
-	binding:SetPoint("TOPLEFT", -2, -1)
-	binding:Hide()
-	button.Binding = binding
-
-	local cooldown = CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate") --[[@as Cooldown]]
-	cooldown:SetAllPoints()
-	cooldown:Hide()
-	button.Cooldown = cooldown
-end
-
 ---@param index integer
----@return AGFRXPActionButton
+---@return AGFActionButton
 local function ItemButton(index)
 	local button = itemButtons[index]
 	if button then
 		return button
 	end
 	local name = "AdventureGuideForeverItem" .. index
-	button = CreateFrame("Button", name, root, "SecureActionButtonTemplate") --[[@as AGFRXPActionButton]]
-	CreateChrome(button)
+	button = CreateFrame("Button", name, root, "SecureActionButtonTemplate") --[[@as AGFActionButton]]
+	ActionButton.Chrome(button)
 	button:SetScript("OnEnter", ShowItemTooltip)
 	itemButtons[index] = button
 	return button
 end
 
 ---@param index integer
----@return AGFRXPActionButton
+---@return AGFActionButton
 local function TargetButton(index)
 	local button = targetButtons[index]
 	if button then
 		return button
 	end
 	local name = "AdventureGuideForeverTarget" .. index
-	button = CreateFrame("Button", name, root, "SecureActionButtonTemplate") --[[@as AGFRXPActionButton]]
-	CreateChrome(button)
-	button:SetScript("OnEnter", ShowTargetTooltip)
+	button = ActionButton.Create(assert(root), name)
 	targetButtons[index] = button
 	return button
 end
 
----@param button AGFRXPActionButton
+---@param button AGFActionButton
 ---@param count integer
 local function SetCount(button, count)
 	if count > 1 then
@@ -164,7 +79,7 @@ local function SetCount(button, count)
 	end
 end
 
----@param button AGFRXPActionButton
+---@param button AGFActionButton
 ---@param itemID integer
 local function SetItem(button, itemID)
 	button.itemId = itemID
@@ -177,32 +92,7 @@ local function SetItem(button, itemID)
 	button.Icon:SetVertexColor(1, 1, 1)
 end
 
--- Only the icon and the glow, the parts a fight may touch: the button's macro and name stay as they were.
----@param button AGFRXPActionButton
----@param current? string
-local function UpdateTargetVisual(button, current)
-	if button.targetName == current then
-		SetPortraitTexture(button.Icon, "target")
-	else
-		ns.Art.Icon(button.Icon, TARGET_ICON[button.targetKind] or TARGET_ICON.mob, ITEM_SIZE)
-	end
-	button.Icon:SetVertexColor(1, 1, 1)
-	button.Glow:SetShown(button.targetName == current)
-end
-
----@param button AGFRXPActionButton
----@param target AGFRXPTarget
----@param current? string
-local function SetTarget(button, target, current)
-	button.itemId = nil
-	button.targetName = target.name
-	button.targetKind = target.kind
-	button:SetAttribute("type1", "macro")
-	button:SetAttribute("macrotext", "/cleartarget\n/targetexact " .. target.name)
-	UpdateTargetVisual(button, current)
-end
-
----@param button AGFRXPActionButton
+---@param button AGFActionButton
 ---@param itemID integer
 local function UpdateItemState(button, itemID)
 	local count = C_Item.GetItemCount(itemID)
@@ -378,7 +268,7 @@ local function Apply()
 		local button = ItemButton(index)
 		SetItem(button, item.id)
 		UpdateItemState(button, item.id)
-		SetKeybind(button, "AdventureGuideForeverItem" .. index)
+		ActionButton.SetKeybind(button, "AdventureGuideForeverItem" .. index)
 		button:ClearAllPoints()
 		button:SetPoint("TOPLEFT", root, "TOPLEFT", (index - 1) * (ITEM_SIZE + GAP), 0)
 		button:Show()
@@ -388,8 +278,8 @@ local function Apply()
 	end
 	for index, target in ipairs(targets) do
 		local button = TargetButton(index)
-		SetTarget(button, target, current)
-		SetKeybind(button, "AdventureGuideForeverTarget" .. index)
+		ActionButton.SetTarget(button, target, current)
+		ActionButton.SetKeybind(button, "AdventureGuideForeverTarget" .. index)
 		button:ClearAllPoints()
 		button:SetPoint("TOPLEFT", root, "TOPLEFT", (index - 1) * (ITEM_SIZE + GAP), -ITEM_SIZE - ROW_GAP)
 		button:Show()
@@ -481,7 +371,7 @@ local function UpdateVisuals()
 	end
 	for _, button in ipairs(targetButtons) do
 		if button:IsShown() and button.targetName then
-			UpdateTargetVisual(button, current)
+			ActionButton.UpdateTargetVisual(button, current)
 		end
 	end
 end

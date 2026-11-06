@@ -322,14 +322,14 @@ do
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
 	equal(
 		#h.settings,
-		33,
-		"27 settings rows, the keybinding note and 5 index buttons, all through Settings.RegisterInitializer"
+		35,
+		"29 settings rows, the keybinding note and 5 index buttons, all through Settings.RegisterInitializer"
 	)
 	local L = h.ns.L
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
 		"maxQuestLevelOffset restedxpGuide wanderer followQuest partyQuests optimisedRoute includeDungeonsDefault "
-			.. "titleStartsRoute autoStart polestarAside warnClosing stepSound trainingReminders",
+			.. "titleStartsRoute autoStart autoNextZone npcHighlight polestarAside warnClosing stepSound trainingReminders",
 		"Route holds its rows in order"
 	)
 	equal(table.concat(pages[L.SETTINGS_GROUP_MAP] or {}, " "), "showMapPins showQuestGivers", "Map holds its rows")
@@ -738,7 +738,11 @@ do
 	equal(block and block.header, "Journey complete", "journey complete: the header")
 	-- None is chosen now: the header, then the step of the first card, which the guide draws on its own.
 	local first = h.ns.Route().steps[1].key
-	same(h.tracker.layoutOrder, { "journey-complete", first }, "journey complete: over the first card's step")
+	same(
+		h.tracker.layoutOrder,
+		{ "journey-complete", "story-beat", first },
+		"journey complete: over the first card's step"
+	)
 	same(h.fanfares, { "journey-complete" }, "journey complete: glows once")
 	equal(#h.sounds, 0, "journey complete: no stage-end sound")
 	local opened, openPanel = 0, h.ns.OpenPanel
@@ -751,7 +755,7 @@ do
 	equal(h.spf.NavigateRoute, 1, "journey complete: and starts nothing")
 	h.ns.Invalidate()
 	h.flush()
-	same(h.tracker.layoutOrder, { first }, "journey complete: gone on the next route change")
+	same(h.tracker.layoutOrder, { "story-beat", first }, "journey complete: gone on the next route change")
 
 	h = Started("v1")
 	h.SetCombat(true)
@@ -2664,7 +2668,7 @@ do
 	local first = ns.Route().steps[1]
 	ns.Skip(first.key, first.title)
 	h.flush()
-	same(h.tracker.layoutOrder, { ns.Route().steps[1].key }, "fanfare: gone once step 1 moves on")
+	same(h.tracker.layoutOrder, { "story-beat", ns.Route().steps[1].key }, "fanfare: gone once step 1 moves on")
 	clean(h, "fanfare")
 
 	h = Load(false, { showTracker = false })
@@ -3179,9 +3183,14 @@ for _, spf in ipairs({ false, "v1" }) do
 			equal(card.Bar:IsShown(), false, label .. ": " .. journey.key .. " no bar")
 		end
 		local reason = journey.reason ~= foot and journey.reason or nil
-		-- A zone above the player's level (Stranglethorn Vale's Booty Bay) says so instead.
+		-- A zone above the player's level (Stranglethorn Vale's Booty Bay) says so instead, and a carry card its
+		-- cleanup summary.
 		local warning = h.ns.Overview.VisitWarning(journey)
-		equal(card.Reason:GetText(), warning or reason or Hub(journey), label .. ": " .. journey.key .. " reason")
+		equal(
+			card.Reason:GetText(),
+			warning or h.ns.Overview.DropLine(journey) or h.ns.Overview.CleanupLine(journey) or reason or Hub(journey),
+			label .. ": " .. journey.key .. " reason"
+		)
 	end
 	equal(carried, 1, label .. ": the Quests in your log card")
 	equal(zones > 0, true, label .. ": a zone to head to")
@@ -3236,6 +3245,11 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(icon.Clip:IsShown(), true, label .. ": and back")
 	-- An overview card's tooltip: its lines, the hub line when line 2 holds the reason, and what a click
 	-- does.
+	local function CleanupTitle(id)
+		local entry = h.ns.Snapshot().log[id]
+		local quest = h.ns.Data.quests[id]
+		return (entry and entry.title) or (quest and quest.title)
+	end
 	for _, card in ipairs(Overview()) do
 		local journey = card.journey
 		h.Hover(card)
@@ -3245,6 +3259,14 @@ for _, spf in ipairs({ false, "v1" }) do
 		end
 		if journey.reason or card.detail == Hub(journey) then
 			expected[#expected + 1] = "highlight: " .. Hub(journey)
+		end
+		if
+			card.detail
+			and card.detail ~= journey.reason
+			and card.detail ~= journey.subline
+			and card.detail ~= Hub(journey)
+		then
+			expected[#expected + 1] = "highlight: " .. card.detail
 		end
 		local warning = h.ns.Overview.VisitWarning(journey)
 		if warning then
@@ -3257,6 +3279,30 @@ for _, spf in ipairs({ false, "v1" }) do
 		end
 		if journey.kind == "carry" then
 			expected[#expected + 1] = "normal: " .. L.CARRY_EXPLANATION
+		end
+		local cleanup = journey.cleanup
+		if cleanup then
+			if cleanup.ready > 0 then
+				expected[#expected + 1] = "normal: " .. L.CLEANUP_READY_HEADING
+				for _, id in ipairs(cleanup.readyIDs) do
+					expected[#expected + 1] = "highlight: " .. CleanupTitle(id)
+				end
+			end
+			if cleanup.grey > 0 then
+				expected[#expected + 1] = "normal: " .. L.CLEANUP_GREY_HEADING
+				for _, id in ipairs(cleanup.greyIDs) do
+					expected[#expected + 1] = "highlight: " .. CleanupTitle(id)
+				end
+			end
+			if cleanup.elsewhere > 0 then
+				expected[#expected + 1] = "normal: " .. L.CLEANUP_ELSEWHERE_HEADING
+				for _, id in ipairs(cleanup.elsewhereIDs) do
+					expected[#expected + 1] = "highlight: " .. CleanupTitle(id)
+				end
+			end
+			if cleanup.grey + cleanup.elsewhere > 0 then
+				expected[#expected + 1] = "instruction: " .. L.CLEANUP_RIGHT_CLICK
+			end
 		end
 		if (journey.group or 0) > 0 then
 			expected[#expected + 1] = "highlight: "

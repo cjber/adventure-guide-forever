@@ -46,6 +46,10 @@ local DEFAULTS = {
 	titleStartsRoute = true,
 	-- Start the route the guide is offering without a click, so the map line is drawn on login and after a reload.
 	autoStart = true,
+	-- Finishing a zone journey moves to the next zone card, and starts its route when the finished one was guided (#400).
+	autoNextZone = true,
+	-- Highlight the NPC a talk step names, with a nameplate arrow and a target button (#401).
+	npcHighlight = true,
 	-- Opt-in: the route never takes over the player's tracked quests unasked. A saved true stays true.
 	trackRouteQuests = false,
 	-- Opt-in: it throws away the player's own choice of tracked quests.

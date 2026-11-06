@@ -302,6 +302,16 @@
 ---@field total? integer the chain's length, only when the data proves where it ends
 ---@field members integer[] the chain's quest IDs in order, the head first
 
+-- The carry card's cleanup line (docs/design.md §2.18): what the player could hand in, what has gone grey, and what
+-- they can't finish from here. Each quest counts once; the ID lists are sorted for a stable tooltip.
+---@class AGFCleanup
+---@field ready integer complete quests in the log
+---@field grey integer unfinished quests grey for the player's level
+---@field elsewhere integer unfinished quests unplaced, across the sea, or ruled out
+---@field readyIDs integer[] the complete quests' IDs
+---@field greyIDs integer[] the grey quests' IDs
+---@field elsewhereIDs integer[] the unplaced, oversea and ruled-out quests' IDs
+
 -- One card in the guide (docs/design.md §2.2): only steps the player can take now.
 ---@class AGFJourney
 ---@field rxpGroup? string
@@ -327,7 +337,8 @@
 ---@field more? integer how many stops follow the first (Model.Journeys sets it and `group` once the card is built)
 ---@field group? integer how many of its quests are elite, dungeon or raid (the sum of its steps' `group`)
 ---@field drop? integer[] the first card's log-full note: the log's quests the guide would let go, by ID, when 2 or fewer slots are free
----@field ready? integer the log's quests it holds that are ready to hand in (Quests in your log and a zone story)
+---@field cleanup? AGFCleanup the carry card's cleanup summary, whenever there is something to report
+---@field ready? integer the log's quests it holds that are ready to hand in (the carry card and a zone story)
 ---@field underway? integer the log's quests it holds that are still in progress
 ---@field holds? table<integer, true> a zone story's log quests on its zone, a later lap's too: carry (Quests in your log) holds the rest
 
@@ -638,6 +649,8 @@
 ---@field STORY_COMPLETE string the tracker header that glows when a proven chain's last quest is handed in
 ---@field JOURNEY_COMPLETE string the tracker header that glows when a turn-in ends the chosen journey
 ---@field CHOOSE_NEXT string its line: the guide has every journey again
+---@field JOURNEY_NEXT string format: the next zone journey the guide moved on to
+---@field NPC_HIGHLIGHT_HINT string the tracker's one-line hint when friendly nameplates are off
 ---@field TRACKER_DRAG_TITLE string shared tracker grip title
 ---@field TRACKER_DRAG_TOOLTIP string shared tracker grip tooltip
 ---@field TRAINER string
@@ -725,6 +738,10 @@
 ---@field SETTING_TITLE_ROUTE_TOOLTIP string
 ---@field SETTING_AUTO_START string
 ---@field SETTING_AUTO_START_TOOLTIP string
+---@field SETTING_AUTO_NEXT_ZONE string starts the next zone after a zone journey is finished
+---@field SETTING_AUTO_NEXT_ZONE_TOOLTIP string
+---@field SETTING_NPC_HIGHLIGHT string highlight the NPC a talk step names
+---@field SETTING_NPC_HIGHLIGHT_TOOLTIP string
 ---@field SETTING_TRACK_ROUTE string
 ---@field SETTING_TRACK_ROUTE_TOOLTIP string
 ---@field SETTING_GUIDE_TRACKS string
@@ -760,6 +777,7 @@
 ---@field QUESTS_NEAR_ONE string
 ---@field CHAPTER_OF string format: chapter, total
 ---@field CHAPTER string format: chapter; the chain's length unproven
+---@field CHAPTER_QUEST string format: a chapter ("Chapter 3 of 7") and its quest's title
 ---@field CONTINUES_STORY string
 ---@field BEGINS_STORY string
 ---@field NO_JOURNEY string the guide with no journey
@@ -878,7 +896,7 @@
 ---@field ContextMenu fun(owner: Region, generator: fun(owner: Region, root: AGFMenuDescription)): AGFMenuDescription
 ---@field ShowQuest fun(step: AGFStep): boolean open the map on a log step's quest and select it; false for other steps or in combat
 ---@field TurnedIn fun(questID: integer) QUEST_TURNED_IN: latched so a chosen journey that ends there is complete, then OnTurnIn
----@field OnJourneyComplete? fun() a turn-in ended the chosen journey; set by Tracker.lua
+---@field OnJourneyComplete? fun(next?: string) a turn-in ended the chosen journey, optionally moving on to a next zone; set by Tracker.lua
 ---@field OnTurnIn? fun(questID: integer) QUEST_TURNED_IN: the chapter-end fanfare when the quest ends a proven chain; set by Tracker.lua
 ---@field TrackRouteQuests fun() track the route's log quests; with untrackOthers, stop tracking the rest
 ---@field DumpLayout fun(root: Frame, describe?: fun(region: Region, entry: AGFDumpEntry)): AGFDumpEntry[]
@@ -950,6 +968,15 @@
 ---@field LOG_FULL string format: the log-full note's count of quests the player could drop
 ---@field LOG_FULL_ONE string the same for one quest
 ---@field LOG_FULL_LIST string the log-full note's tooltip, over the quests' titles
+---@field CLEANUP string format: the carry card's cleanup line, over its counts
+---@field CLEANUP_READY string format: count ready to hand in
+---@field CLEANUP_GREY string format: count gone grey
+---@field CLEANUP_ELSEWHERE string format: count the player can't finish from here
+---@field CLEANUP_READY_HEADING string the cleanup tooltip's heading over ready quests
+---@field CLEANUP_GREY_HEADING string the cleanup tooltip's heading over grey quests
+---@field CLEANUP_ELSEWHERE_HEADING string the cleanup tooltip's heading over the quests that can't be finished here
+---@field CLEANUP_MENU_TITLE string the cleanup right-click menu's title
+---@field CLEANUP_RIGHT_CLICK string the cleanup tooltip's instruction: right-click opens the list on the card
 ---@field NOT_THIS_QUEST string a step's menu: drop one of its quests on this character
 ---@field SHIFT_ADD string a quest giver's or search result's tooltip: its shift-click adds the quests
 ---@field SHIFT_REMOVE string the same once they are added: its shift-click takes them off
@@ -2010,10 +2037,44 @@ AdventureGuideForever = nil
 ---@class AGFStrings
 ---@field QUEST_VISIT_WARNING string
 
+-- Shared secure action-button chrome (UI/ActionButton.lua): the item frame, its target macro and its keybind.
+---@class AGFActionButtonModule
+---@field ITEM_SIZE integer
+---@field FRAME_SIZE integer
+---@field SetKeybind fun(button: AGFActionButton, name: string)
+---@field ShowTargetTooltip fun(button: AGFActionButton)
+---@field Chrome fun(button: AGFActionButton)
+---@field Create fun(parent: Frame, name: string): AGFActionButton
+---@field UpdateTargetVisual fun(button: AGFActionButton, current?: string)
+---@field SetTarget fun(button: AGFActionButton, target: AGFRXPTarget, current?: string)
+
+---@class AGFNamespace
+---@field ActionButton AGFActionButtonModule
+
+-- The current talk step's NPC (#401): nameplate arrow, secure target button and the friendly-nameplate hint.
+---@class AGFNpcTalk
+---@field name string the NPC's name, exactly as the client shows it
+---@field npc? integer its creature entry, the sixth field of its UnitGUID
+
+---@class AGFNpcHighlightModule
+---@field StepNpc fun(step?: AGFStep): AGFNpcTalk? the NPC a talk step names
+---@field Matches fun(npc: AGFNpcTalk, unit: string): boolean whether a unit is that NPC, by entry then exact name
+---@field ArrowUnit fun(): string? the nameplate unit carrying the arrow
+---@field TargetShown fun(): boolean whether the secure target button is shown
+---@field Hint fun(step?: AGFStep): string? the friendly-nameplate hint, once a session
+---@field MarkTarget fun() star the target if it is the talk NPC and carries no mark
+---@field Refresh fun() recompute the current NPC, arrow and target button
+---@field Reserve fun(module: AGFTrackerModule) keep tracker room for the target button
+
+---@class AGFNamespace
+---@field NpcHighlight AGFNpcHighlightModule
+
 ---@class AGFOverview
 ---@field VisitWarning fun(journey: AGFJourney, player?: AGFPlayer): string?
 ---@field GroupNote fun(questID: integer, log?: table<integer, AGFLogQuest>): string? why a quest wants a group, in words; nil for one done alone
 ---@field GroupNotes fun(step: AGFStep): string[] a step's distinct group notes, in its quest order
+---@field CleanupLine fun(journey: AGFJourney): string? the carry card's cleanup summary line
+---@field OpenCleanupQuest fun(questID: integer) select a cleanup quest in the quest log and open the map on its zone
 
 ---@class AGFNamespace
 ---@field DungeonLoot {Bosses: fun(instance: integer): AGFLootBoss[], string?}

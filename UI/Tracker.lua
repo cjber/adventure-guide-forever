@@ -28,9 +28,12 @@ local ONGOING = "rxp-ongoing"
 local QUEST_AREAS = "quest-areas"
 -- The running guide's progress bar under its title (#365).
 local GUIDE_PROGRESS = "rxp-progress"
+-- The chapter the chosen story is on, one muted line under the section heading (#394, #395).
+local STORY_BEAT = "story-beat"
 -- Headers that are not the step's: its click and hover never act on them.
 local NOT_STEP = {
 	[STORY_COMPLETE] = true,
+	[STORY_BEAT] = true,
 	[ASIDE] = true,
 	[JOURNEY_COMPLETE] = true,
 	[MOMENT] = true,
@@ -47,7 +50,7 @@ local NAMED_GIVERS = 2
 local finished
 -- Set when a turn-in ends the chosen journey; `seen` once the route change of that rebuild has passed, and the next
 -- one takes the block away.
----@type {seen: boolean}?
+---@type {seen: boolean, next?: string}?
 local journeyDone
 
 -- A town's NPCs: the first two by name, the rest counted.
@@ -83,6 +86,7 @@ end
 
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
 ---@field rxpActionsReserved? number the height the RestedXP action rows already added to contentsHeight
+---@field npcHighlightReserved? number the height the next-NPC target button already added to contentsHeight
 local ModuleMixin = { headerText = L.TITLE, blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
 
 ---@param block AGFTrackerBlock the header's own block: the aside's goes to its place, the journey's end opens the guide
@@ -181,6 +185,20 @@ local function GroupLines(block, step, line)
 	for _, note in ipairs(ns.Overview.GroupNotes(step)) do
 		line = line + 1
 		block:AddObjective(line, note)
+	end
+	return line
+end
+
+-- Friendly nameplates are off: one muted line under the talk step, once a session (#401).
+---@param block AGFTrackerBlock
+---@param step AGFStep
+---@param line integer
+---@return integer line
+local function NpcHint(block, step, line)
+	local hint = ns.NpcHighlight and ns.NpcHighlight.Hint(step)
+	if hint then
+		line = line + 1
+		block:AddObjective(line, GRAY_FONT_COLOR:WrapTextInColorCode(hint))
 	end
 	return line
 end
@@ -373,6 +391,29 @@ local function GuideSection(module, block, step)
 	module:LayoutBlock(extra)
 end
 
+-- The chosen story's chapter, "Chapter 3 of 7: <the chapter's quest>" (#394, #395): the chain's place and the title
+-- of the quest it is on. Only a story has one, and a chapter whose quest the data cannot name says nothing.
+---@return string?
+local function StoryBeat()
+	local journey = ns.CurrentJourney()
+	local story = journey and journey.story
+	if not story then
+		return nil
+	end
+	local id = story.members[story.chapter]
+	if not id then
+		return nil
+	end
+	local entry = ns.Snapshot().log[id]
+	local quest = ns.Data.quests[id]
+	local title = (entry and entry.title) or (quest and quest.title)
+	if not title or title == "" then
+		return nil
+	end
+	local chapter = story.total and L.CHAPTER_OF:format(story.chapter, story.total) or L.CHAPTER:format(story.chapter)
+	return L.CHAPTER_QUEST:format(chapter, title)
+end
+
 -- One quiet line (LayoutLine), something new (Moments.Line) under it, then one block for the current step of the
 -- chosen journey, else of the first card, which the guide draws on its own (docs/design.md §2.5):
 -- its place (a town's counts), why it is next (a town's NPCs) and the travel line as objective lines, then what
@@ -419,7 +460,7 @@ function ModuleMixin:LayoutContentsBase()
 	if journeyDone then
 		local block = self:GetBlock(JOURNEY_COMPLETE)
 		block:SetHeader(L.JOURNEY_COMPLETE)
-		block:AddObjective(1, L.CHOOSE_NEXT)
+		block:AddObjective(1, journeyDone.next and L.JOURNEY_NEXT:format(journeyDone.next) or L.CHOOSE_NEXT)
 		if not self:LayoutBlock(block) then
 			return
 		end
@@ -432,6 +473,14 @@ function ModuleMixin:LayoutContentsBase()
 			self:LayoutBlock(loading)
 		end
 		return
+	end
+	local beat = StoryBeat()
+	if beat then
+		local storyBlock = self:GetBlock(STORY_BEAT)
+		storyBlock:SetHeader(GRAY_FONT_COLOR:WrapTextInColorCode(beat))
+		if not self:LayoutBlock(storyBlock) then
+			return
+		end
 	end
 	local block = self:GetBlock(step.key)
 	block:SetHeader(ns.StepStyle.StepTitle(step, ns.Overview.VerbMarkup(step, 14) .. step.title))
@@ -460,6 +509,7 @@ function ModuleMixin:LayoutContentsBase()
 			block:AddObjective(line, step.reason)
 		end
 		line = GroupLines(block, step, line)
+		line = NpcHint(block, step, line)
 		Preview(block, step, line)
 		self:LayoutBlock(block)
 		return
@@ -509,6 +559,7 @@ function ModuleMixin:LayoutContentsBase()
 		block:AddObjective(line, text, nil, giver.done, nil, style)
 	end
 	line = TravelLines(block, step, line)
+	line = NpcHint(block, step, line)
 	Preview(block, step, line)
 	self:LayoutBlock(block)
 end
@@ -523,6 +574,9 @@ function ModuleMixin:LayoutContents()
 	Contents(self)
 	if ns.RXPActions then
 		ns.RXPActions.Reserve(self)
+	end
+	if ns.NpcHighlight then
+		ns.NpcHighlight.Reserve(self)
 	end
 end
 
@@ -573,12 +627,14 @@ function ns.OnTurnIn(questID)
 	Refresh()
 end
 
--- Journey completion adds only the visual fanfare; step and story sounds are handled separately.
-function ns.OnJourneyComplete()
+-- Journey completion adds only the visual fanfare; step and story sounds are handled separately. `next` names the
+-- zone the guide moved on to, when it did (#400).
+---@param next? string
+function ns.OnJourneyComplete(next)
 	if not (module and ns.Setting("showTracker")) then
 		return
 	end
-	journeyDone = { seen = false }
+	journeyDone = { seen = false, next = next }
 	module:SetNeedsFanfare(JOURNEY_COMPLETE)
 	Refresh()
 end

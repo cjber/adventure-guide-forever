@@ -82,7 +82,7 @@ do
 	h.flush()
 	equal(h.ns.Route().chosen, false, "none chosen")
 	same(Lines(h, Creature(MANKRIK)), {}, "none chosen: unrelated pickup has no line")
-	same(Lines(h, Creature(SERGRA)), { "normal: Adventure Guide: Quests in your log" }, "none chosen: accepted hand-in")
+	same(Lines(h, Creature(SERGRA)), { "normal: Adventure Guide: Clean up my log" }, "none chosen: accepted hand-in")
 	equal(#h.errors, 0, "story: errors\n" .. table.concat(h.errors, "\n"))
 end
 
@@ -102,7 +102,7 @@ end
 do
 	local h = Load(nil)
 	equal(h.ns.Route().chosen, false, "login: none chosen")
-	same(Lines(h, Creature(SERGRA)), { "normal: Adventure Guide: Quests in your log" }, "login: accepted quest route")
+	same(Lines(h, Creature(SERGRA)), { "normal: Adventure Guide: Clean up my log" }, "login: accepted quest route")
 	equal(#h.errors, 0, "login: errors\n" .. table.concat(h.errors, "\n"))
 end
 

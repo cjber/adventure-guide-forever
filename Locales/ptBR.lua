@@ -38,6 +38,16 @@ L["CARRY_READY"] = "%d prontas para entregar"
 L["CHAPTER"] = "Capítulo %d"
 L["CHAPTERS_DONE"] = "%d de %d concluídos"
 L["CHAPTER_OF"] = "Capítulo %d de %d"
+L["CHAPTER_QUEST"] = "%s: %s"
+L["CLEANUP"] = "Limpeza: %s"
+L["CLEANUP_READY"] = "%d para entregar"
+L["CLEANUP_GREY"] = "%d cinzentas"
+L["CLEANUP_ELSEWHERE"] = "%d em outro lugar"
+L["CLEANUP_READY_HEADING"] = "Prontas para entregar:"
+L["CLEANUP_GREY_HEADING"] = "Cinzentas:"
+L["CLEANUP_ELSEWHERE_HEADING"] = "Não dá para terminar aqui:"
+L["CLEANUP_MENU_TITLE"] = "Limpar meu registro"
+L["CLEANUP_RIGHT_CLICK"] = "Clique com o botão direito para abrir no mapa uma missão cinzenta ou de outro lugar."
 L["CHOOSE_JOURNEY"] = "Escolher outra jornada"
 L["CHOOSE_NEXT"] = "Escolha a sua próxima jornada"
 L["CLICK_TO_CHOOSE"] = "Clique para escolher esta jornada"
@@ -121,7 +131,7 @@ L["HUB_NPCS_MORE"] = "%s e mais %d"
 L["HUB_PICK_UP"] = "%d para aceitar"
 L["ITEM_LOADING"] = "Carregando item..."
 L["JOURNEY_CALLING"] = "O seu chamado"
-L["JOURNEY_CARRY"] = "Missões no seu registro"
+L["JOURNEY_CARRY"] = "Limpar meu registro"
 L["JOURNEY_CHOICES"] = "Escolha uma aventura"
 L["JOURNEY_CHOOSE"] = "Escolha uma jornada em Atividades para começar."
 L["JOURNEY_COMPLETE"] = "Jornada concluída"
@@ -514,3 +524,12 @@ L["QUEST_AREAS_SHOW"] = "Clique para mostrar no mapa as áreas de missão azuis 
 L["QUEST_AREAS_DISMISS"] = "Clique com o botão direito para ocultar esta nota" -- mt
 L["QUEST_AREAS_TOOLTIP"] =
 	"As áreas de missão azuis do mapa mostram onde cada objetivo é feito. Os tipos de objetivo Questie e pfQuest do Questie as desativam." -- mt
+L["JOURNEY_NEXT"] = "Seguindo para %s"
+L["SETTING_AUTO_NEXT_ZONE"] = "Começar a próxima região quando uma terminar"
+L["SETTING_AUTO_NEXT_ZONE_TOOLTIP"] =
+	"Quando uma jornada de região termina depois de entregar uma missão, o guia escolhe a próxima região para o seu nível na mesma lista. Se essa jornada já estava guiando você, a rota dela também começa. Desligue para parar em Jornada concluída e escolher a próxima jornada."
+L["SETTING_NPC_HIGHLIGHT"] = "Destacar o próximo NPC de missão"
+L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
+	"Quando uma etapa fala com um NPC que dá ou recebe uma missão, uma pequena seta pula sobre a placa de nome dele e um botão de alvo fica sob o rastreador. Desligue para ocultar os dois. O guia nunca altera as configurações da sua placa de nome."
+L["NPC_HIGHLIGHT_HINT"] =
+	"As placas de nome amistosas estão desligadas: ative-as nas opções de interface para ver onde ir."
