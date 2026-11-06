@@ -1,8 +1,9 @@
 -- Usage, from the repository root: luajit tests/dump_diff.lua <WTF/.../SavedVariables/AdventureGuideForever.lua>
 -- Compares the layout /agf dump saved in game with tests/golden/layout.json: the region paths, atlases and
--- explicitly set sizes. Font metrics and stock-template sizes legitimately differ, so they are not compared (a font
--- string's set width is measured from its text, Panel.lua's row detail), and the regions only the game draws
--- (stock-template chrome the harness stubs) are counted, not failed.
+-- explicitly set sizes (a scaled region's height, since its width comes from the layout). Font metrics and
+-- stock-template sizes legitimately differ, so they are not compared (a font string's set width is measured from its
+-- text, Panel.lua's row detail), and the regions only the game draws (stock-template chrome the harness stubs) are
+-- counted, not failed.
 local diff = {}
 
 local function Size(entry)
@@ -30,7 +31,13 @@ function diff.Compare(golden, game)
 				)
 			end
 			-- A stock template sizes itself in game only (UIPanelIconDropdownButtonTemplate is 15x16).
-			if not entry.stockTemplate and entry.type ~= "FontString" and Size(entry) ~= Size(other) then
+			local sameSize = Size(entry) == Size(other)
+			-- A scaled region's width is the frame it is laid across, over its scale: the headless golden has no
+			-- layout to resolve that in, so only the height (the art's native) is compared there.
+			if entry.scale and entry.size and other.size then
+				sameSize = ("%.2f"):format(entry.size[2]) == ("%.2f"):format(other.size[2])
+			end
+			if not entry.stockTemplate and entry.type ~= "FontString" and not sameSize then
 				differences[#differences + 1] = ("%s: size %s in golden, %s in game"):format(
 					entry.path,
 					Size(entry),

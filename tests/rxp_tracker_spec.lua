@@ -108,7 +108,7 @@ check(accept:find("^|A:QuestNormal:"), "a pickup line wears the pickup mark")
 check(accept:find("|cffffd100Marla's Last Wish|r", 1, true), "the quest it takes is named in gold")
 check(kill:find("^|A:questobjective:"), "an objective line wears the objective mark")
 check(kill:find("|cffcc4c38Rattlecage Skeletons|r", 1, true), "enemies take the hostile reaction colour")
-check(collect:find("^|TInterface\\Cursor\\Pickup:"), "a collect line wears the bag")
+check(collect:find("^|A:QuestObjective:"), "a collect line wears the quest objective mark")
 check(collect:find("3/7 |cff1eff00Clam Meat|r", 1, true), "progress first, the item in its quality's colour")
 check(done:find("Speak with Executor Arren", 1, true), "a done line greys whole")
 local snapshotLine

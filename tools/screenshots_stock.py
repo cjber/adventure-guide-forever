@@ -304,9 +304,16 @@ def draw_achievement_alert(canvas, entry, rect, layer):
     the harness's regions and child frames, drawn as the dump has them; the glow and shine only animate."""
 
 
+def draw_colored_progress_bar(canvas, entry, rect, layer):
+    """ColoredProgressBarTemplate (Blizzard_SharedXML/Camelot/ProgressBars/ColoredProgressBar.xml:3): no art of its
+    own beyond its regions: the background, the masked fill and the label are the harness's, drawn as the dump has
+    them, and the fill's width and crop are the mixin's SetFillPercent."""
+
+
 # name: (draw(canvas, entry, rect, layer), its <Size> by (ui, entry) or None, its own <Anchors> or None, frameLevel)
 STOCK = {
     "AchievementAlertFrameTemplate": (draw_achievement_alert, lambda ui, entry: (300, 101), None, 0),
+    "ColoredProgressBarTemplate": (draw_colored_progress_bar, lambda ui, entry: (67, 29), None, 0),
     "UICheckButtonTemplate": (draw_check_button, lambda ui, entry: (32, 32), None, 0),
     "TabSystemTopButtonTemplate": (draw_top_tab, None, None, 0),
     "CollapseButtonTemplate": (draw_collapse_button, None, None, 0),

@@ -2,7 +2,7 @@
 	<Frame name="AdventureGuideForeverPingPinTemplate" inherits="MapPinPingTemplate" virtual="true"/>
 	<!-- The guide tab is built with CreateFrame in Panel.lua; its journey cards use AdventureGuideForeverJourneyCardTemplate below. -->
 	<!-- The tab reuses the stock LargeSideTabButtonTemplate directly (see Panel.lua CreateTab()) and anchors to QuestMapFrame in Lua once Blizzard_WorldMap loads. -->
-	<!-- A quest giver: the game's own available-quest "!", brightened on hover like the quest POIs. -->
+	<!-- A quest giver: the game's own available-quest "!", redrawn plainly on hover like the quest POIs' own mark. -->
 	<Frame name="AdventureGuideForeverGiverPinTemplate" mixin="AdventureGuideForeverGiverPinMixin" enableMouse="true" virtual="true">
 		<Size x="22" y="22"/>
 		<Layers>
@@ -12,7 +12,7 @@
 			</Layer>
 			<Layer level="ARTWORK" textureSubLevel="1">
 				<!-- art-ok: a square atlas on the pin's 22 square -->
-				<Texture parentKey="Glow" atlas="QuestNormal" alphaMode="ADD" setAllPoints="true" hidden="true"/>
+				<Texture parentKey="Glow" atlas="QuestNormal" alphaMode="BLEND" setAllPoints="true" hidden="true"/>
 			</Layer>
 		</Layers>
 	</Frame>
@@ -120,15 +120,9 @@
 					</Anchors>
 				</Texture>
 			</Layer>
-			<!-- The quest POI's own hover glow, over the ring; shown from OnMouseEnter since a Frame has no highlight state. -->
+			<!-- The quest POI's own numeral over the ring; hover and the reveal ping are the tooltip and the native
+			     ping pin, with no glow layer of our own. -->
 			<Layer level="OVERLAY">
-				<!-- art-ok: the quest POI's square glow at 32 square -->
-				<Texture parentKey="Glow" atlas="UI-QuestPoi-InnerGlow" alphaMode="ADD" hidden="true">
-					<Size x="32" y="32"/>
-					<Anchors>
-						<Anchor point="CENTER"/>
-					</Anchors>
-				</Texture>
 				<FontString parentKey="NumberText" inherits="GameFontNormal">
 					<Anchors>
 						<Anchor point="CENTER"/>

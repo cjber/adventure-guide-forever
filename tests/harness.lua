@@ -1141,6 +1141,44 @@ function harness.load(options)
 		-- SecureActionButtonTemplate is a bare button: specs read its attributes, not its secure click handling.
 		SecureActionButtonTemplate = noop,
 		CooldownFrameTemplate = noop,
+		-- Blizzard_SharedXML/Camelot/ProgressBars/ColoredProgressBar.xml: the reputation and skills bars' stat bar, its
+		-- background, its masked fill and the mixin that sizes the fill to a percent. The bar's own background art has
+		-- no anchors and fills the frame, and its fill is masked by the template's own mask.
+		ColoredProgressBarTemplate = function(frame)
+			frame:SetSize(67, 29)
+			local background = frame:CreateTexture(nil, "BACKGROUND")
+			background:SetAtlas("common-stat-bar-BG")
+			background:SetAllPoints()
+			local fill = frame:CreateTexture(nil, "BORDER")
+			fill.parentKey, frame.Fill = "Fill", fill
+			fill:SetAtlas("common-stat-bar-white", true)
+			fill:SetSize(0, 15)
+			fill:SetPoint("LEFT")
+			local mask = frame:CreateMaskTexture(nil, "BORDER")
+			mask.parentKey, frame.Mask = "Mask", mask
+			mask:SetAtlas("common-stat-bar-Mask", true)
+			mask:SetSize(67, 29)
+			mask:SetPoint("LEFT")
+			mask:SetPoint("RIGHT")
+			fill:AddMaskTexture(mask)
+			local text = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+			text.parentKey, frame.Text = "Text", text
+			text:SetSize(0, 20)
+			text:SetPoint("LEFT")
+			text:SetPoint("RIGHT")
+			function frame:SetText(value)
+				self.Text:SetText(value)
+			end
+			function frame:SetFillWidth(width)
+				self.Fill:SetWidth(width)
+			end
+			function frame:SetFillPercent(percent)
+				local p = math.min(1, math.max(0, percent))
+				self:SetFillWidth(p * self:GetWidth())
+				self.Fill:SetTexCoord(0, p, 1, 0)
+			end
+			frame:SetFillPercent(0)
+		end,
 		-- Mainline/AlertFrameSystems.xml:173-327: the achievement toast's art and text where the template puts them; the
 		-- glow and shine only animate, and are left out.
 		AchievementAlertFrameTemplate = function(frame)
@@ -1793,12 +1831,6 @@ function harness.load(options)
 	-- Each atlas fills its own sheet here, so a texCoord in the dump is within the atlas, and the sheet stands for the
 	-- atlas: SetTexture of it records the atlas, as tools/screenshots.py draws it.
 	local ATLAS_SIZES = {
-		["petlist-buttonbackground"] = { 209, 46 },
-		["petlist-buttonhighlight"] = { 209, 46 },
-		["petlist-buttonselect"] = { 209, 46 },
-		["ui-journeys-renown-progressbar-bg"] = { 335, 18 },
-		["ui-journeys-renown-progressbar-fill"] = { 335, 18 },
-		["ui-journeys-renown-progressbar-frame"] = { 335, 18 },
 		["ui-journeys-renown-divider"] = { 733, 16 },
 		["ui-journeys-renown-button"] = { 374, 112 },
 		["tradeskills-star"] = { 20, 19 },
@@ -1809,6 +1841,9 @@ function harness.load(options)
 		["options_listexpand_left"] = { 12, 26 },
 		["options_listexpand_right"] = { 28, 26 },
 		["common-button-list-collapseexpand"] = { 64, 22 },
+		["common-button-list-large"] = { 169, 69 },
+		["common-button-list-large-hover"] = { 169, 69 },
+		["common-button-list-large-selected"] = { 169, 69 },
 		["minortalents-icon-book"] = { 40, 38 },
 		["legacy-rewards-tracker-icon"] = { 108, 155 },
 		["legacy-tree-frame-points-icon"] = { 50, 73 },

@@ -54,7 +54,7 @@ assert(talk:IsShown() and kill:IsShown(), "one target button per step target")
 assert(talk:GetAttribute("type1") == "macro", "a target button is a secure macro")
 assert(talk:GetAttribute("macrotext") == "/cleartarget\n/targetexact Quartermaster", "a talk target names its NPC")
 assert(kill:GetAttribute("macrotext") == "/cleartarget\n/targetexact Plainstrider", "a kill target names its creature")
-assert(talk.Glow:IsShown() and not kill.Glow:IsShown(), "the current target is the one marked")
+assert(talk.Glow == nil and kill.Glow == nil, "no glow layer marks the current target")
 assert(talk.Icon.file == "portrait:target", "the current target shows its portrait")
 assert(talk.Binding:GetText() == "ALT-2" and talk.Binding:IsShown(), "the target button shows its key binding")
 
@@ -103,17 +103,23 @@ h.bags[1234] = 5
 h.fire("BAG_UPDATE_DELAYED")
 assert(scroll.Count:GetText() == "5", "a bag change in combat updates the shown count only")
 assert(scroll:GetAttribute("item") == "item:1234", "a bag change in combat leaves the item action in place")
--- The target's icon and glow are not secure either: the current target moves the mark without changing the macro.
+-- The target's icon is not secure either: the current target moves the portrait without changing the macro.
 targetName = "Plainstrider"
 h.fire("PLAYER_TARGET_CHANGED")
-assert(not talk.Glow:IsShown() and kill.Glow:IsShown(), "a target change in combat moves the glow only")
+assert(
+	kill.Icon.file == "portrait:target" and talk.Icon.file == 2056011,
+	"a target change in combat moves the portrait only"
+)
 assert(
 	talk:GetAttribute("macrotext") == "/cleartarget\n/targetexact Quartermaster",
 	"a target change leaves the macro in place"
 )
 targetName = "Quartermaster"
 h.fire("PLAYER_TARGET_CHANGED")
-assert(talk.Glow:IsShown() and not kill.Glow:IsShown(), "the glow follows the current target back mid-fight")
+assert(
+	talk.Icon.file == "portrait:target" and kill.Icon.file == 135274,
+	"the portrait follows the current target back mid-fight"
+)
 h.SetCombat(false)
 h.flush()
 assert(scroll:GetAttribute("item") == "item:9012", "combat's end applies the step's new item")
