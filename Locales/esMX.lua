@@ -463,7 +463,8 @@ L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
 -- mt
-L["WHATS_NEW"] = "La columna del rastreador se aparta del EQ Objective Tracker." -- mt
+L["WHATS_NEW"] =
+	"La actualización diaria de datos vuelve a funcionar, así que la guía se mantiene al día con las nuevas versiones del juego." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
