@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The quest giver arrow sits beside the nameplate.** The arrow drew a pale square behind it and hung over the nameplate's top, where the client puts its own quest and exclamation markers, so the two overlapped. It is now the bare arrow, anchored to the left of the health bar, clear of those markers at any distance.
+
 ## [1.1.0] - 2026-11-06
 - **The tracker names the chapter you are on.** A story journey now shows one quiet line under its heading, such as Chapter 3 of 7: The Zhevra, so you can see where the chain stands and which quest it is on. The line moves on as you hand chapters in.
 - **Clean up my log.** The journey for the quests you carry now always counts what you could hand in, what has gone grey and what you cannot finish here, and its tooltip lists every quest in each group. Right-click its card for the same list, then choose a grey or elsewhere quest to open it on the world map and select it in your quest log, where you can abandon it yourself. The guide never abandons anything for you.
