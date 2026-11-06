@@ -12,6 +12,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.0.24] - 2026-11-06
+- **The daily data refresh works again, so the guide keeps up with new game builds.** QuestieDB renamed the files it publishes at v1.0.11, and the refresh stopped at the first one it could not find, so a new game build could pass without the bundled quest data moving with it. The refresh now finds the Forever file by name and pins that name beside its tag and checksum.
+
 ## [1.0.23] - 2026-11-06
 - **The tracker column steps aside for EQ Objective Tracker.** EQ Objective Tracker hides the game's quest tracker and draws its own list in that same slot, so its quests and this addon's tracker section drew over each other and neither could be read. The section now asks EQOT where its list is through EQOT's public API and re-places itself below, above or beside it after every redraw, and reads EQOT's own frame the same way when that API is not there. Turn EQOT off and the column goes back where it was.
 
