@@ -1,5 +1,5 @@
 ---@type string, AGFNamespace
-local addonName, ns = ...
+local _, ns = ...
 
 -- Adventure Guide's side of the shared peer statistics (Core/PeerStats.lua, vendored from Forever Core): it names the
 -- one metric this addon reports, keeps the saved peer table, and registers the addon's board with the shared Forever
@@ -13,7 +13,7 @@ local METRIC = "quest_turn_ins"
 local SUBJECT = "all"
 local DEFAULT_LIMIT, MAX_LIMIT = 10, 25
 local MAX_VALUE, MAX_UNIX = 1e9, 2 ^ 31 - 1
-local ICON = "Interface\\AddOns\\" .. addonName .. "\\media\\Icon"
+local TAB_ICON = "Interface\\Icons\\INV_Misc_Map_01"
 
 ---@param value any
 ---@param low number
@@ -127,7 +127,7 @@ end
 if ns.Leaderboards then
 	ns.Leaderboards:Register("agf", {
 		title = ns.L.TITLE,
-		icon = ICON,
+		icon = TAB_ICON,
 		metric = ns.L.LEADERBOARD_METRIC,
 		board = Board,
 		revision = function()

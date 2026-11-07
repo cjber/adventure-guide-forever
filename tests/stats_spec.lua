@@ -106,7 +106,7 @@ equal(type(leaderboards), "table", "the shared Forever Leaderboards window is pu
 local spec = leaderboards.boards.agf
 equal(spec.title, "Adventure Guide", "the tab carries the addon's title")
 equal(spec.metric, "Quests turned in", "the board names its metric")
-equal(spec.icon, "Interface\\AddOns\\AdventureGuideForever\\media\\Icon", "the tab carries the addon's icon")
+equal(spec.icon, "Interface\\Icons\\INV_Misc_Map_01", "the tab carries the game's own icon")
 equal(type(spec.revision), "function", "the board has a revision callback")
 equal(spec.sharing(), true, "sharing reads the addon's setting")
 local allRows = spec.board("all")
