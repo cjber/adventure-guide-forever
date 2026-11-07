@@ -59,7 +59,7 @@ Right-click a dungeon card for AtlasLoot bosses and drops, with native item tool
 ## Usage
 
 `/agf`, `/adventureguide`, the minimap button or the addon compartment opens the guide on the world map. Options are in the guide's cog and Settings > AddOns > Adventure Guide, whose Forever addons page lists all five Forever addons.
-`/agf leaderboard` ranks your quest turn-ins against the totals your guild and group members running the addon report; their numbers are player-reported, not verified. Sharing is on by default and `/agf share off`, or the checkbox under Settings > AddOns > Adventure Guide, stops it.
+`/agf leaderboard` opens Forever Leaderboards on the Adventure Guide tab, ranking your quest turn-ins against the totals your guild and group members running the addon report; their numbers are player-reported, not verified. Sharing is on unless you turn it off with `/agf share off`, the window's Share my progress box, or the checkbox under Settings > AddOns > Adventure Guide.
 
 Translated into German, French, Spanish, Brazilian Portuguese, Russian, Korean and Chinese (machine translated; corrections welcome through the [translation form](https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml)).
 

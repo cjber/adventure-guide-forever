@@ -115,8 +115,7 @@ L["BEFORE_IT_RUNS_OUT"] = "antes que %s expire"
 L["BEFORE_ITEM_RUNS_OUT"] = "antes que um item de missão expire"
 L["HELP_AUDIT"] = "/agf audit - conferir os dados de missões com o jogo"
 L["HELP_DUMP"] = "/agf dump - salvar o layout do guia para um relatório de erro"
-L["HELP_LEADERBOARD"] =
-	"/agf leaderboard - mostra as entregas de missões informadas pela sua guilda e grupo (também /agf stats)"
+L["HELP_LEADERBOARD"] = "/agf leaderboard - abre o Forever Leaderboards na aba deste addon (também /agf stats)" -- mt
 L["HELP_OPEN"] = "/agf - abrir o guia no mapa-múndi."
 L["HELP_REPORT"] = "/agf report - mostrar um relatório para copiar num relatório de erro"
 L["HELP_SHARE"] =
@@ -142,18 +141,10 @@ L["JOURNEY_PROGRESS_EMPTY"] = "As suas histórias concluídas vão aparecer aqui
 L["JOURNEY_QUESTS"] = "Missões desta jornada"
 L["JOURNEY_STORY"] = "História: %s"
 L["LATER_LAPS"] = "%d delas em voltas posteriores"
-L["LEADERBOARD_NO_PEERS"] = "Nenhum membro da guilda ou do grupo informou ainda; os totais deles são desconhecidos."
-L["LEADERBOARD_PEERS_HIDDEN"] =
-	"Os totais de outros jogadores ficam ocultos enquanto o compartilhamento estiver desligado."
-L["LEADERBOARD_ROW"] = "%d. %s: %d"
-L["LEADERBOARD_ROW_SELF"] = "%d. %s (você): %d"
-L["LEADERBOARD_SCOPE"] =
-	"Membros da guilda e do grupo com o Adventure Guide informam os próprios totais. Os valores são informados pelos jogadores e não são verificados."
 L["LEADERBOARD_SHARING_OFF"] =
 	"O compartilhamento está desligado: nada é enviado nem exibido. Ligue com /agf share on."
 L["LEADERBOARD_SHARING_ON"] =
 	"O compartilhamento está ligado. Desligue com /agf share off ou em Opções > AddOns > Adventure Guide."
-L["LEADERBOARD_TITLE"] = "Entregas de missões observadas neste personagem (acumuladas)"
 L["LEGACY_PROGRESS_LINK"] = "Abrir o mapa para o progresso de Legado"
 L["LEGACY_PROGRESS_NOTE"] = "Coleções, exploração e conclusão de zonas são acompanhadas pelo Legacy Forever."
 L["LEVELS"] = "%d-%d"
@@ -529,3 +520,34 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 	"Quando uma etapa fala com um NPC que dá ou recebe uma missão, uma pequena seta pula sobre a placa de nome dele e um botão de alvo fica sob o rastreador. Desligue para ocultar os dois. O guia nunca altera as configurações da sua placa de nome."
 L["NPC_HIGHLIGHT_HINT"] =
 	"As placas de nome amistosas estão desligadas: ative-as nas opções de interface para ver onde ir."
+
+-- Forever Leaderboards (Forever Core's shared window).
+L["Forever Leaderboards"] = "Classificações Forever" -- mt
+L["Overall"] = "Geral" -- mt
+L["Forever standing"] = "Posição Forever" -- mt
+L["Your guild and group"] = "Sua guilda e grupo" -- mt
+L["This week"] = "Esta semana" -- mt
+L["All time"] = "Todo o período" -- mt
+L["Rank"] = "Classificação" -- mt
+L["Player"] = "Jogador" -- mt
+L["No one has reported yet."] = "Ninguém reportou ainda." -- mt
+L["Share my progress"] = "Compartilhar meu progresso" -- mt
+L["Others' values are player-reported."] = "Os valores dos outros jogadores são reportados por eles." -- mt
+L["Points for placing on each addon's board."] = "Pontos por se classificar no quadro de cada addon." -- mt
+L["(you)"] = "(você)" -- mt
+L["board"] = "quadro" -- mt
+L["boards"] = "quadros" -- mt
+L["Uses Forever addons"] = "Usa addons Forever" -- mt
+L["Forever: %s overall this week"] = "Forever: %s no total esta semana" -- mt
+L["Forever: %s overall"] = "Forever: %s no total" -- mt
+L["1st"] = "1º" -- mt
+L["2nd"] = "2º" -- mt
+L["3rd"] = "3º" -- mt
+L["4th"] = "4º" -- mt
+L["5th"] = "5º" -- mt
+L["6th"] = "6º" -- mt
+L["7th"] = "7º" -- mt
+L["8th"] = "8º" -- mt
+L[", "] = ", " -- mt
+L.LEADERBOARD_METRIC = "Missões entregues" -- mt
+L.LEADERBOARD_TOTAL = "total" -- mt

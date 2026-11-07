@@ -126,7 +126,7 @@ L["HELP_AUDIT"] = "/agf audit - сверить данные заданий с и
 L["HELP_DUMP"] =
 	"/agf dump - сохранить раскладку путеводителя для отчета об ошибке"
 L["HELP_LEADERBOARD"] =
-	"/agf leaderboard - показать сданные задания, о которых сообщили гильдия и группа (также /agf stats)"
+	"/agf leaderboard - открывает Forever Leaderboards на вкладке этого аддона (также /agf stats)" -- mt
 L["HELP_OPEN"] = "/agf - открыть путеводитель на карте мира."
 L["HELP_REPORT"] =
 	"/agf report - показать отчет для копирования в сообщение об ошибке"
@@ -156,20 +156,10 @@ L["JOURNEY_PROGRESS_EMPTY"] = "Здесь появятся завершенны�
 L["JOURNEY_QUESTS"] = "Задания этого путешествия"
 L["JOURNEY_STORY"] = "История: %s"
 L["LATER_LAPS"] = "из них на следующих кругах: %d"
-L["LEADERBOARD_NO_PEERS"] =
-	"Пока никто из гильдии или группы не сообщил данные; их итоги неизвестны."
-L["LEADERBOARD_PEERS_HIDDEN"] =
-	"Итоги других игроков скрыты, пока обмен выключен."
-L["LEADERBOARD_ROW"] = "%d. %s: %d"
-L["LEADERBOARD_ROW_SELF"] = "%d. %s (вы): %d"
-L["LEADERBOARD_SCOPE"] =
-	"Члены гильдии и группы с Adventure Guide сообщают свои собственные итоги. Значения сообщают сами игроки, они не проверяются."
 L["LEADERBOARD_SHARING_OFF"] =
 	"Обмен выключен: ничего не отправляется и не показывается. Включить: /agf share on."
 L["LEADERBOARD_SHARING_ON"] =
 	"Обмен включён. Выключить: /agf share off или Настройки > Модификации > Adventure Guide."
-L["LEADERBOARD_TITLE"] =
-	"Сданные задания этого персонажа, замеченные аддоном (всего)"
 L["LEGACY_PROGRESS_LINK"] = "Открыть карту для прогресса старинных испытаний"
 L["LEGACY_PROGRESS_NOTE"] =
 	"Коллекции, исследование и завершение зон отслеживает Legacy Forever."
@@ -576,3 +566,35 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 	"Когда шаг говорит с NPC, который дает или принимает задание, над его табличкой имени подпрыгивает маленькая стрелка, а под трекером появляется кнопка цели. Отключите, чтобы скрыть обе. Гид никогда не меняет настройки табличек имени."
 L["NPC_HIGHLIGHT_HINT"] =
 	"Дружественные таблички имени отключены: включите их в настройках интерфейса, чтобы видеть, куда идти."
+
+-- Forever Leaderboards (Forever Core's shared window).
+L["Forever Leaderboards"] = "Рейтинги Forever" -- mt
+L["Overall"] = "Общий" -- mt
+L["Forever standing"] = "Общий рейтинг Forever" -- mt
+L["Your guild and group"] = "Ваша гильдия и группа" -- mt
+L["This week"] = "На этой неделе" -- mt
+L["All time"] = "За всё время" -- mt
+L["Rank"] = "Место" -- mt
+L["Player"] = "Игрок" -- mt
+L["No one has reported yet."] = "Пока никто не сообщил." -- mt
+L["Share my progress"] = "Делиться прогрессом" -- mt
+L["Others' values are player-reported."] =
+	"Значения других игроков сообщены ими самими." -- mt
+L["Points for placing on each addon's board."] = "Очки за место в списке каждого аддона." -- mt
+L["(you)"] = "(вы)" -- mt
+L["board"] = "список" -- mt
+L["boards"] = "списки" -- mt
+L["Uses Forever addons"] = "Использует аддоны Forever" -- mt
+L["Forever: %s overall this week"] = "Forever: %s на этой неделе" -- mt
+L["Forever: %s overall"] = "Forever: %s за всё время" -- mt
+L["1st"] = "1-е" -- mt
+L["2nd"] = "2-е" -- mt
+L["3rd"] = "3-е" -- mt
+L["4th"] = "4-е" -- mt
+L["5th"] = "5-е" -- mt
+L["6th"] = "6-е" -- mt
+L["7th"] = "7-е" -- mt
+L["8th"] = "8-е" -- mt
+L[", "] = ", " -- mt
+L.LEADERBOARD_METRIC = "Сданные задания" -- mt
+L.LEADERBOARD_TOTAL = "всего" -- mt

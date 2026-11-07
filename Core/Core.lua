@@ -62,7 +62,7 @@ local DEFAULTS = {
 	followQuest = true,
 	-- One chat line after an update (WhatsNew).
 	whatsNew = true,
-	-- Share small cumulative activity rows over guild/group addon channels; local records remain when disabled.
+	-- Share small cumulative activity rows over guild/group addon channels; opt-out, so only an explicit off stops it.
 	statsShare = true,
 	-- Beta: the planned route order (chapter lead, town look-ahead, committed order); false is the simple
 	-- nearest-action order, the default (docs/design.md §4.1).
@@ -1214,7 +1214,7 @@ local function Slash(msg)
 	elseif command == "audit" then
 		Audit()
 	elseif command == "leaderboard" or command == "stats" then
-		ns.Stats.Print()
+		ns.Stats.Open()
 	elseif command == "share" or command == "share on" or command == "share off" then
 		if command ~= "share" then
 			ns.SetSetting("statsShare", command == "share on")

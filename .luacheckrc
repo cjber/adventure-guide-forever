@@ -20,6 +20,7 @@ ignore = { "212/_.*", "212/self" } -- unused args prefixed with _, and self on m
 globals = {
 	"RXPCData",
 	"ForeverFamily",
+	"ForeverLeaderboards",
 	"ForeverTrackerHost",
 	"ForeverMinimapButtons",
 	"AdventureGuideForever",
@@ -30,6 +31,8 @@ globals = {
 	"AdventureGuideForever_OnAddonCompartmentClick",
 	"SLASH_ADVENTUREGUIDEFOREVER1",
 	"SLASH_ADVENTUREGUIDEFOREVER2",
+	"SLASH_FOREVERLEADERBOARDS1",
+	"SLASH_FOREVERLEADERBOARDS2",
 	"SlashCmdList",
 	-- Window.lua: the key binding (Bindings.xml) and its names on the Key Bindings page
 	"AdventureGuideForever_ToggleWindow",
@@ -53,11 +56,15 @@ read_globals = {
 	"HideUIPanel",
 	"CreateFramePoolCollection",
 	"C_XMLUtil",
+	"C_DateAndTime",
 	"CreateScrollBoxListLinearView",
 	"CreateDataProvider",
 	"ScrollUtil",
+	"ScrollBoxConstants",
+	"RAID_CLASS_COLORS",
 	"NORMAL_FONT_COLOR",
 	"GRAY_FONT_COLOR",
+	"GREEN_FONT_COLOR",
 	"HIGHLIGHT_FONT_COLOR",
 	"FACTION_RED_COLOR",
 	"FACTION_GREEN_COLOR",
@@ -255,3 +262,7 @@ end
 
 -- Addon-private map marker inventory, published as a copy by the shared canvas.
 globals[#globals + 1] = "ForeverMapMarkers"
+
+-- LeaderboardsData.lua: the guild roster's classFileName behind a peer row's missing class.
+read_globals[#read_globals + 1] = "GetGuildRosterInfo"
+read_globals[#read_globals + 1] = "GetNumGuildMembers"

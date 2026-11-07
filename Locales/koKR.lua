@@ -118,7 +118,7 @@ L["BEFORE_ITEM_RUNS_OUT"] = "퀘스트 아이템이 사라지기 전에"
 L["HELP_AUDIT"] = "/agf audit - 퀘스트 데이터를 게임과 대조합니다"
 L["HELP_DUMP"] = "/agf dump - 오류 보고용으로 안내서 배치를 저장합니다"
 L["HELP_LEADERBOARD"] =
-	"/agf leaderboard - 길드와 파티가 보고한 퀘스트 완료 횟수를 표시합니다 (/agf stats도 가능)"
+	"/agf leaderboard - 이 애드온 탭에서 Forever Leaderboards를 엽니다 (또한 /agf stats)" -- mt
 L["HELP_OPEN"] = "/agf - 세계 지도에서 안내서를 엽니다."
 L["HELP_REPORT"] = "/agf report - 오류 보고에 복사할 보고서를 표시합니다"
 L["HELP_SHARE"] =
@@ -144,18 +144,10 @@ L["JOURNEY_PROGRESS_EMPTY"] = "완료한 이야기가 여기에 표시됩니다.
 L["JOURNEY_QUESTS"] = "이 여정의 퀘스트"
 L["JOURNEY_STORY"] = "%s 이야기"
 L["LATER_LAPS"] = "그중 %d개는 나중 바퀴"
-L["LEADERBOARD_NO_PEERS"] =
-	"아직 보고한 길드 또는 파티 구성원이 없습니다. 그들의 합계는 알 수 없습니다."
-L["LEADERBOARD_PEERS_HIDDEN"] = "공유가 꺼져 있는 동안 다른 플레이어의 합계는 숨겨집니다."
-L["LEADERBOARD_ROW"] = "%d. %s: %d"
-L["LEADERBOARD_ROW_SELF"] = "%d. %s (나): %d"
-L["LEADERBOARD_SCOPE"] =
-	"Adventure Guide를 사용하는 길드 및 파티 구성원이 각자의 합계를 보고합니다. 값은 플레이어가 직접 보고한 것이며 검증되지 않았습니다."
 L["LEADERBOARD_SHARING_OFF"] =
 	"공유가 꺼져 있습니다. 아무것도 보내거나 표시하지 않습니다. /agf share on으로 켤 수 있습니다."
 L["LEADERBOARD_SHARING_ON"] =
 	"공유가 켜져 있습니다. /agf share off 또는 설정 > 애드온 > Adventure Guide에서 끌 수 있습니다."
-L["LEADERBOARD_TITLE"] = "이 캐릭터에서 관찰된 퀘스트 완료 횟수 (누적)"
 L["LEGACY_PROGRESS_LINK"] = "지도에서 유산 진행 상황 열기"
 L["LEGACY_PROGRESS_NOTE"] = "수집품, 탐험, 지역 완료는 Legacy Forever가 추적합니다."
 L["LEVELS"] = "%d-%d"
@@ -535,3 +527,34 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 	"단계가 퀘스트를 주거나 받는 NPC와 대화할 때 작은 화살표가 이름표 위에서 튀고 추적기 아래에 대상 버튼이 표시됩니다. 끄면 둘 다 숨깁니다. 안내는 이름표 설정을 바꾸지 않습니다."
 L["NPC_HIGHLIGHT_HINT"] =
 	"우호적 이름표가 꺼져 있습니다. 인터페이스 설정에서 켜면 어디로 가야 하는지 볼 수 있습니다."
+
+-- Forever Leaderboards (Forever Core's shared window).
+L["Forever Leaderboards"] = "Forever 순위표" -- mt
+L["Overall"] = "전체" -- mt
+L["Forever standing"] = "Forever 순위" -- mt
+L["Your guild and group"] = "길드 및 그룹" -- mt
+L["This week"] = "이번 주" -- mt
+L["All time"] = "전체 기간" -- mt
+L["Rank"] = "순위" -- mt
+L["Player"] = "플레이어" -- mt
+L["No one has reported yet."] = "아직 보고한 사람이 없습니다." -- mt
+L["Share my progress"] = "내 진행 상황 공유" -- mt
+L["Others' values are player-reported."] = "다른 플레이어의 값은 플레이어가 보고한 것입니다." -- mt
+L["Points for placing on each addon's board."] = "각 애드온 순위표에 오른 점수입니다." -- mt
+L["(you)"] = "(나)" -- mt
+L["board"] = "순위표" -- mt
+L["boards"] = "순위표" -- mt
+L["Uses Forever addons"] = "Forever 애드온 사용 중" -- mt
+L["Forever: %s overall this week"] = "Forever: 이번 주 종합 %s" -- mt
+L["Forever: %s overall"] = "Forever: 종합 %s" -- mt
+L["1st"] = "1위" -- mt
+L["2nd"] = "2위" -- mt
+L["3rd"] = "3위" -- mt
+L["4th"] = "4위" -- mt
+L["5th"] = "5위" -- mt
+L["6th"] = "6위" -- mt
+L["7th"] = "7위" -- mt
+L["8th"] = "8위" -- mt
+L[", "] = ", " -- mt
+L.LEADERBOARD_METRIC = "완료한 퀘스트" -- mt
+L.LEADERBOARD_TOTAL = "총" -- mt
