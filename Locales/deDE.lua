@@ -466,8 +466,7 @@ L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
 -- mt
-L["WHATS_NEW"] =
-	"Die Addon-Liste beschreibt die Anleitung jetzt als Abenteuer. Ihr Tooltip nennt Zonengeschichten, Reisen, die ihr auf der Karte wahlt, und eine Route bis zu jeder Abgabe, statt sie als Level-Anleitung zu bezeichnen." -- mt
+L["WHATS_NEW"] = "Das Fenster von Forever Leaderboards öffnet sich." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"

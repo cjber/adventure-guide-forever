@@ -465,8 +465,7 @@ L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
 -- mt
-L["WHATS_NEW"] =
-	"La lista de complementos describe ahora la guia como una aventura. Su descripcion menciona historias de zona, viajes que eliges en el mapa y una ruta hasta cada entrega, en lugar de llamarla guia de subida de nivel." -- mt
+L["WHATS_NEW"] = "Se abre la ventana de Forever Leaderboards." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"

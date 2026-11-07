@@ -453,8 +453,7 @@ L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以尋找地城入口。"
 L["UNLISTED"] = "這片土地有指南尚不知道的故事；請留意任務給予者頭上的「!」。"
 L["UPDATED_TO"] = "已更新到%s。%s"
 -- mt
-L["WHATS_NEW"] =
-	"插件列表現在將指南描述為一場冒險。其提示會列出區域故事、在地圖上選擇的旅程以及前往每個交付點的路线，而不再稱其為升級指南。" -- mt
+L["WHATS_NEW"] = "Forever Leaderboards 視窗現在可以開啟。" -- mt
 L["WHY_ALLIANCE"] = "僅限聯盟"
 L["WHY_BREADCRUMB"] = "僅在你接受%s之前"
 L["WHY_CHOSE"] = "你改選了%s"

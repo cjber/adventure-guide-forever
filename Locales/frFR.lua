@@ -468,8 +468,7 @@ L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
 -- mt
-L["WHATS_NEW"] =
-	"La liste des addons presente desormais le guide comme une aventure. Son infobulle cite des histoires de zone, des voyages choisis sur la carte et un itineraire jusqu'a chaque remise, au lieu de le decrire comme un guide de leveling." -- mt
+L["WHATS_NEW"] = "La fenêtre Forever Leaderboards s'ouvre." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"
