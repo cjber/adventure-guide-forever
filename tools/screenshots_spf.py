@@ -8,8 +8,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-from PIL import Image
-
 import screenshots_art as drawing
 from screenshots_resolver import map_point
 
@@ -337,7 +335,7 @@ def marker(number):
     """Our gold numbered marker art, decoded from the TGA the addon ships (media/Numbers)."""
     number = max(1, min(number, 10))
     if number not in NUMBER_IMAGES:
-        NUMBER_IMAGES[number] = Image.open(NUMBER_DIR / f"{number}.tga").convert("RGBA")
+        NUMBER_IMAGES[number] = drawing.wm.Image.open(NUMBER_DIR / f"{number}.tga").convert("RGBA")
     return NUMBER_IMAGES[number]
 
 
