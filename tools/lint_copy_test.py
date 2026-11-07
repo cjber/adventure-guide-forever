@@ -48,8 +48,15 @@ class TableTests(unittest.TestCase):
         entries = [(key, value) for _, key, value in strings_table(tokens(source))]
         self.assertEqual(entries, [("A", "one %d"), ("B", "joined across lines"), ("C", "fallback"), ("D", "x")])
 
+    def test_phrase_key_entry(self):
+        source = 'ns.L = { A = "ok", ["Shared phrase"] = "the fastest route" }'
+        self.assertEqual(
+            [(key, value) for _, key, value in strings_table(tokens(source))],
+            [("A", "ok"), ("Shared phrase", "the fastest route")],
+        )
+
     def test_unreadable_entry_fails(self):
-        for source in ['ns.L = { A = "ok", ["B"] = "the fastest route" }', 'ns.L = { "positional" }']:
+        for source in ['ns.L = { ["B"] "value" }', 'ns.L = { "positional" }']:
             with self.assertRaises(ValueError, msg=source):
                 strings_table(tokens(source))
 

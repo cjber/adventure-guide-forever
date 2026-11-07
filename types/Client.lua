@@ -31,6 +31,20 @@ EventUtil = {}
 ---@type {RegisterCallback: fun(self: any, event: string, callback: fun(...), owner: any), TriggerEvent: fun(self: any, event: string, ...: any)}
 EventRegistry = {}
 
+-- UI/Leaderboards.lua publishes the window every Forever addon registers into.
+---@type ForeverLeaderboardsAPI?
+ForeverLeaderboards = nil
+
+---@class AGFClassColor
+---@field GetRGB fun(self: AGFClassColor): number, number, number
+---@type table<string, AGFClassColor>?
+RAID_CLASS_COLORS = nil
+
+---@class AGFScrollBoxConstants
+---@field RetainScrollPosition integer
+---@type AGFScrollBoxConstants
+ScrollBoxConstants = nil
+
 ---@class EditModeManagerFrame : Frame
 ---@field IsEditModeActive fun(self: EditModeManagerFrame): boolean
 ---@type EditModeManagerFrame?
@@ -123,7 +137,7 @@ OBJECTIVE_TRACKER_COLOR = nil
 ---@type fun(top?: number, bottom?: number, left?: number, right?: number, spacing?: number): AGFScrollBoxLinearView
 CreateScrollBoxListLinearView = nil
 
----@type {InitScrollBoxListWithScrollBar: fun(scrollBox: Frame, scrollBar: Frame, view: AGFScrollBoxLinearView)}
+---@type {InitScrollBoxListWithScrollBar: fun(scrollBox: Frame, scrollBar: any, view: AGFScrollBoxLinearView)}
 ScrollUtil = nil
 
 ---@type fun(tbl?: any[]): AGFDataProvider

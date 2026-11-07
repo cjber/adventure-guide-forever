@@ -1,9 +1,10 @@
 ---@type string, AGFNamespace
-local _, ns = ...
+local addonName, ns = ...
 
 -- Adventure Guide's side of the shared peer statistics (Core/PeerStats.lua, vendored from Forever Core): it names the
--- one metric this addon reports, keeps the saved peer table, and draws the leaderboard. The protocol, the bounds, the
--- send queue and the game events behind them belong to the shared module; nothing here reimplements them.
+-- one metric this addon reports, keeps the saved peer table, and registers the addon's board with the shared Forever
+-- Leaderboards window. The protocol, the bounds, the send queue, the window and the game events behind them belong to
+-- the shared modules; nothing here reimplements them.
 ---@class AGFStats
 local Stats = {}
 ns.Stats = Stats
@@ -12,6 +13,7 @@ local METRIC = "quest_turn_ins"
 local SUBJECT = "all"
 local DEFAULT_LIMIT, MAX_LIMIT = 10, 25
 local MAX_VALUE, MAX_UNIX = 1e9, 2 ^ 31 - 1
+local ICON = "Interface\\AddOns\\" .. addonName .. "\\media\\Icon"
 
 ---@param value any
 ---@param low number
@@ -81,6 +83,63 @@ local peerStats = ns.PeerStats.New({
 	metrics = { [METRIC] = { subject = "all" } },
 })
 
+-- One row per ranked player, in the shape the shared window draws. Rows leave class nil: the shared window fills it
+-- through ForeverLeaderboards.ClassOf, which knows the player, group and guild roster better than a name match here.
+-- The all-time board keeps the cumulative total in the value column; the weekly board draws the progress since the
+-- reset there and the cumulative total in grey.
+---@param scope ForeverLeaderboardsScope
+---@return ForeverLeaderboardsRow[]
+local function Board(scope)
+	local value, eventUnix = LocalTotal()
+	local weekly = scope == "week"
+	local ranked
+	local totals
+	if weekly then
+		ranked = peerStats:WeekBoard(METRIC, SUBJECT, value, eventUnix)
+		totals = {}
+		for _, row in ipairs(peerStats:Board(METRIC, SUBJECT, value, eventUnix)) do
+			totals[row.identity] = row.value
+			totals[row.name:lower()] = row.value
+		end
+	else
+		ranked = peerStats:Board(METRIC, SUBJECT, value, eventUnix)
+	end
+	local rows = {}
+	for _, row in ipairs(ranked) do
+		local total = totals and (totals[row.identity] or totals[row.name:lower()])
+		rows[#rows + 1] = {
+			name = row.name,
+			value = row.value,
+			extra = total and (total .. " " .. ns.L.LEADERBOARD_TOTAL) or nil,
+			you = row.self == true,
+		}
+	end
+	return rows
+end
+
+--- Open the shared Forever Leaderboards window on this addon's tab.
+function Stats.Open()
+	if ns.Leaderboards then
+		ns.Leaderboards:Open("agf")
+	end
+end
+
+if ns.Leaderboards then
+	ns.Leaderboards:Register("agf", {
+		title = ns.L.TITLE,
+		icon = ICON,
+		metric = ns.L.LEADERBOARD_METRIC,
+		board = Board,
+		revision = function()
+			return peerStats:Revision()
+		end,
+		sharing = Enabled,
+		setSharing = function(shared)
+			ns.SetSetting("statsShare", shared == true)
+		end,
+	})
+end
+
 --- Offer this character's total to the guild and group channels again.
 function Stats.Sync()
 	peerStats:Sync()
@@ -121,21 +180,6 @@ function Stats.Leaderboard(limit)
 		end
 	end
 	return { metric = METRIC, scope = "guild_group", sharing = Enabled(), total = #ranked, rows = rows }
-end
-
---- Chat output for /agf leaderboard.
-function Stats.Print()
-	local L = ns.L
-	local board = Stats.Leaderboard() --[[@as AGFLeaderboard]]
-	ns.Print(L.LEADERBOARD_TITLE)
-	ns.Print(L.LEADERBOARD_SCOPE)
-	for _, row in ipairs(board.rows) do
-		ns.Print((row.self and L.LEADERBOARD_ROW_SELF or L.LEADERBOARD_ROW):format(row.rank, row.name, row.value))
-	end
-	if board.total == 1 then
-		ns.Print(board.sharing and L.LEADERBOARD_NO_PEERS or L.LEADERBOARD_PEERS_HIDDEN)
-	end
-	ns.Print(board.sharing and L.LEADERBOARD_SHARING_ON or L.LEADERBOARD_SHARING_OFF)
 end
 
 -- The shared module owns the chat and roster events. Here only this addon's own change: a turn-in, and the first

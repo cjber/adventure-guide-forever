@@ -81,11 +81,11 @@ Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-
 | `/agf timing` | Print where the login's wait went, for a slow-login report |
 | `/agf tracker` | Print the tracker anchors for an overlap report |
 | `/agf audit` | Compare the quest data with the game and report its source |
-| `/agf leaderboard` | Rank your quest turn-ins against guild and group members who report theirs (also `/agf stats`) |
+| `/agf leaderboard` | Open Forever Leaderboards on the Adventure Guide tab: your quest turn-ins against guild and group members who report theirs (also `/agf stats`) |
 | `/agf share on\|off` | Turn sharing of your quest turn-in total with guild and groups on or off |
 | `/agf dump` | Save the drawn layout; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua` |
 
-Open the guide from its world-map tab, its minimap button or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including tracking route quests, detaching the shared Forever tracker and *Share activity with guild and groups*, the switch behind the leaderboard. Its Forever addons page lists all five Forever addons, with a box to turn off suggestions.
+Open the guide from its world-map tab, its minimap button or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including tracking route quests, detaching the shared Forever tracker and *Share activity with guild and groups*, the switch behind Forever Leaderboards. Sharing is on unless you turn it off. Its Forever addons page lists all five Forever addons, with a box to turn off suggestions.
 
 ## Where the quests come from
 

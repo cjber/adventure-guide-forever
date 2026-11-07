@@ -577,14 +577,10 @@
 ---@field HELP_DUMP string
 ---@field HELP_LEADERBOARD string
 ---@field HELP_SHARE string
----@field LEADERBOARD_TITLE string
----@field LEADERBOARD_SCOPE string
----@field LEADERBOARD_ROW string
----@field LEADERBOARD_ROW_SELF string
----@field LEADERBOARD_NO_PEERS string
----@field LEADERBOARD_PEERS_HIDDEN string
 ---@field LEADERBOARD_SHARING_ON string
 ---@field LEADERBOARD_SHARING_OFF string
+---@field LEADERBOARD_METRIC string the heading above the leaderboard list
+---@field LEADERBOARD_TOTAL string the grey word after a weekly row's cumulative total
 ---@field HELP_TRACKER string
 ---@field HELP_REPORT string
 ---@field HELP_ISSUE string
@@ -1977,6 +1973,8 @@ AdventureGuideForever = nil
 ---@class AGFNamespace
 ---@field ActivityStats fun(): AGFActivityRecord[]
 ---@field PeerStats ForeverPeerStatsNamespace the shared guild and group statistics transport (Core/PeerStats.lua)
+---@field LeaderboardsData? ForeverLeaderboardsData the shared leaderboards' data half (Core/LeaderboardsData.lua)
+---@field Leaderboards? ForeverLeaderboardsAPI the shared Forever Leaderboards window (UI/Leaderboards.lua)
 ---@field Stats AGFStats Adventure Guide's adapter and leaderboard over it (Core/Stats.lua)
 
 ---@class AGFLeaderboardRow
@@ -1998,7 +1996,7 @@ AdventureGuideForever = nil
 ---@field Shared fun(): table<string, table<string, table<string, {value: integer, eventUnix: integer}>>> rows heard from other users by sender, metric and subject; empty while sharing is off
 ---@field SetEnabled fun(enabled: boolean) the saved sharing switch changed: cancel what waited, or offer the total again
 ---@field Leaderboard fun(limit?: integer): AGFLeaderboard?
----@field Print fun() /agf leaderboard
+---@field Open fun() /agf leaderboard, on this addon's tab in Forever Leaderboards
 
 ---@class AGFStoryCompletion
 ---@field Record fun(questID: integer): boolean true only for a new proven final turn-in
