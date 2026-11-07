@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Title: Adventure Guide Forever - story levelling and quest routes
-## Notes: Picks quests for your level and, with Shortest Path Forever, walks you to each one.
+## Notes: Zone stories as chapters, journeys you pick on the map, and a route walked to each hand-in.
 ## Author: cjber
 ## Version: @project-version@
 ## Category: Quests
