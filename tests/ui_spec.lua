@@ -29,6 +29,9 @@ local function same(actual, expected, label)
 	equal(Flat(actual), Flat(expected), label)
 end
 
+-- The route's gold numbered marker art: one texture per step, painted by tools/export_numbers.py.
+local MARKER = "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\"
+
 -- The route's places: a ring each, a town the route comes back to sharing its first visit's (docs/design.md §2.9).
 local function Places(route)
 	local seen, count = {}, 0
@@ -144,6 +147,8 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 			return frame.SkipButton ~= nil
 		end)[1]
 	end
+	equal(Row().Number.file, MARKER .. "1.tga", label .. ": the first row wears our numbered marker")
+	same({ Row().Number:GetSize() }, { 26, 26 }, label .. ": the row's marker is square")
 	h.Click(Row())
 	h.flush()
 	equal(table.concat(h.selectedQuests, " "), tostring(first.quests[1]), label .. ": a row in the log selects it")
@@ -1176,9 +1181,11 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#h.Pins("AdventureGuideForeverPinTemplate"), Places(ns.Route()), label .. ": one ring per place on this map")
 
 	local ring = h.Pins("AdventureGuideForeverPinTemplate")[1]
-	equal(ring.Number.file, "Interface\\WorldMap\\UI-QuestPoi-NumberIcons", label .. ": the stock quest numeral")
-	same(ring.Number.texCoord, { 0, 0.125, 0, 0.125 }, label .. ": the next stop's dark numeral 1")
-	equal(ring.Icon:GetAtlas(), "UI-QuestPoi-QuestNumber-SuperTracked", label .. ": the next stop's tracked button")
+	equal(ring.Icon.file, MARKER .. "1.tga", label .. ": our numbered marker, the number in the art")
+	equal(ring.Icon:GetAtlas(), nil, label .. ": no stock quest atlas")
+	same({ ring.Icon:GetSize() }, { 24, 24 }, label .. ": the marker is square")
+	equal(ring.Icon:GetAlpha(), 1, label .. ": the next stop is at full strength")
+	equal(ring.Stack, nil, label .. ": a first visit stacks nothing")
 	-- Rings draw above the stock quest marks; givers stay under them (Blizzard_WorldMap.lua:291-311).
 	equal(ring.levelType, "PIN_FRAME_LEVEL_WAYPOINT_LOCATION", label .. ": rings at the user waypoint's level")
 	h.Hover(ring)
@@ -1297,51 +1304,46 @@ for _, spf in ipairs({ false, "v1" }) do
 	clean(h, label .. ": pins")
 end
 
--- A pooled stop can change from a later shared pin to the current stop, and cross the numeric texture's limit.
+-- A pooled stop can change from a later shared pin to the current stop, and its own marker art follows.
 do
 	local h = Load(false, PINS_ON)
 	h.G.C_Map.OpenWorldMap()
 	h.flush()
 	local pin = h.Pins("AdventureGuideForeverPinTemplate")[1]
 	local step = pin.step
-	local visits = { { step = step, index = 25 }, { step = step, index = 26 } }
-	pin:OnAcquired(step, 25, visits)
+	local visits = { { step = step, index = 9 }, { step = step, index = 10 } }
+	pin:OnAcquired(step, 9, visits)
 	equal(pin:GetWidth(), 20, "POI: fixed 20-unit button")
 	equal(pin.ignoreGlobalPinScale, true, "POI: ignores the global pin scale")
 	same({ pin.scaleFactor, pin.startScale, pin.endScale }, { 1, 1, 1 }, "POI: unchanged by map zoom")
-	equal(pin.Icon:GetAtlas(), "UI-QuestPoi-QuestNumber", "POI: stock button")
-	equal(pin.Disc:GetAtlas(), pin.Icon:GetAtlas(), "POI: silhouette follows the stock art")
-	same(pin.Disc.vertexColor, { 0, 0, 0 }, "POI: black silhouette")
-	equal(pin.Disc:GetAlpha(), 1, "POI: faded stops keep an opaque silhouette")
-	for _, region in ipairs({ pin.Icon, pin.Number, pin.NumberText, pin.Badge }) do
-		equal(region:GetAlpha(), 0.9, "POI: later stop fades every foreground part")
-	end
-	for _, region in ipairs({ pin.Disc, pin.Icon, pin.Number }) do
-		same({ region:GetSize() }, { 32, 32 }, "POI: stock 32-unit art") -- multi-value: width and height
-	end
-	equal(pin.Glow, nil, "POI: no glow layer on the pin")
-	same(pin.Number.texCoord, { 0, 0.125, 0.875, 1 }, "POI: final tinted numeral")
+	equal(pin.Icon.file, MARKER .. "9.tga", "POI: our numbered marker, the number in the art")
+	equal(pin.Icon:GetAtlas(), nil, "POI: no stock quest atlas")
+	same({ pin.Icon:GetSize() }, { 24, 24 }, "POI: the marker is 24 square") -- multi-value: width and height
+	equal(pin.Icon:GetAlpha(), 0.7, "POI: a later stop fades its marker")
+	equal(pin.Stack:IsShown(), true, "POI: a repeated visit stacks the empty ring")
+	equal(pin.Stack.file, h.ns.Art.STEP_RING, "POI: the stack is our empty ring")
+	same({ pin.Stack:GetSize() }, { 24, 24 }, "POI: the stack ring is 24 square") -- multi-value: width and height
+	local _, relativeTo, relativePoint, x, y = pin.Stack:GetPoint(1)
+	equal(relativeTo, pin, "POI: the stack sits on the pin")
+	equal(relativePoint, "CENTER", "POI: at its centre")
+	same({ x, y }, { 4, -4 }, "POI: offset down and right")
+	equal(pin.Stack:GetAlpha(), 0.7, "POI: the stack fades with the marker")
 	equal(pin.Badge:IsShown(), true, "POI: repeated visits keep the quest badge")
 	equal(pin.More, nil, "POI: no count covering the badge")
 	pin:OnMouseEnter()
-	equal(pin.Icon:GetAlpha(), 0.9, "POI: hover leaves the later stop's fade alone")
+	equal(pin.Icon:GetAlpha(), 0.7, "POI: hover leaves the later stop's fade alone")
 	equal(pin.Glow, nil, "POI: hover draws no glow")
 	pin:OnMouseLeave()
-	pin:OnAcquired(step, 26)
-	equal(pin.Number:IsShown(), false, "POI: no texture cell after 25")
-	equal(pin.NumberText:GetText(), "26", "POI: font fallback after 25")
-	equal(pin.NumberText.font, "GameFontNormal", "POI: stock fallback font")
+	pin:OnAcquired(step, 10)
+	equal(pin.Icon.file, MARKER .. "10.tga", "POI: ten has a marker texture of its own")
+	equal(pin.Stack:IsShown(), false, "POI: a lone stop hides the stacked ring")
 	equal(pin.More, nil, "POI: reused lone stop has no count")
 	equal(pin.Badge:IsShown(), true, "POI: reused lone stop restores its kind")
 	pin:OnAcquired(step, 1)
-	equal(pin.Number:IsShown(), true, "POI: reused current stop restores its numeral")
-	equal(pin.NumberText:GetText(), "", "POI: reused current stop clears its fallback")
-	equal(pin.Icon:GetAtlas(), "UI-QuestPoi-QuestNumber-SuperTracked", "POI: reused current stop is lit again")
-	for _, region in ipairs({ pin.Icon, pin.Number, pin.NumberText, pin.Badge }) do
-		equal(region:GetAlpha(), 1, "POI: reused current stop restores full strength")
-	end
+	equal(pin.Icon.file, MARKER .. "1.tga", "POI: reused current stop restores marker 1")
+	equal(pin.Icon:GetAlpha(), 1, "POI: reused current stop restores full strength")
 	pin:OnAcquired({ x = step.x, y = step.y }, 9)
-	same(pin.Number.texCoord, { 0, 0.125, 0.625, 0.75 }, "POI: tinted numerals wrap to the next row")
+	equal(pin.Icon.file, MARKER .. "9.tga", "POI: an unmarked stop keeps its own marker")
 	equal(pin.Badge:IsShown(), false, "POI: an unmarked stop loses its badge")
 	same(pin.hitRectInsets, { 0, 0, 0, 0 }, "POI: an unmarked stop restores the plain hit rect")
 	clean(h, "POI reuse")

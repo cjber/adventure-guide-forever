@@ -7,6 +7,8 @@ from pathlib import Path
 
 FOREVER_CORE = Path(os.environ.get("FOREVER_CORE", Path(__file__).resolve().parents[2] / "forever-core")).expanduser()
 WOWMOCK = FOREVER_CORE / "tools" / "wowmock"
+ROOT = Path(__file__).resolve().parent.parent
+ADDON_MEDIA = "interface/addons/adventureguideforever/"
 
 wm = None  # Imported by load_wowmock so headless tests need no Pillow.
 
@@ -53,7 +55,13 @@ def font(name):
 
 
 def texture(ui, ref):
-    return ui.texture(int(ref) if isinstance(ref, (int, float)) else ref.replace("\\", "/").lower() + ".blp")
+    if isinstance(ref, str):
+        path = ref.replace("\\", "/")
+        # The addon's own art ships in this repository, not the client's listfile.
+        if path.lower().startswith(ADDON_MEDIA):
+            return wm.Image.open(ROOT / path[len(ADDON_MEDIA) :]).convert("RGBA")
+        return ui.texture(path.lower() + ".blp")
+    return ui.texture(int(ref) if isinstance(ref, (int, float)) else ref)
 
 
 def fit_text(canvas, text, face, width, wrap, max_lines=None):

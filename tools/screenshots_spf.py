@@ -8,11 +8,14 @@ import subprocess
 import sys
 from pathlib import Path
 
+from PIL import Image
+
 import screenshots_art as drawing
-from screenshots_art import draw_font_string
 from screenshots_resolver import map_point
 
 ROOT = Path(__file__).resolve().parent.parent
+NUMBER_DIR = ROOT / "media" / "Numbers"
+NUMBER_IMAGES = {}
 
 # SPF #52's stock quest POIs. Its geometry is SPF's own Path.FindSync, run by LuaJIT in an extracted copy.
 # The API contract fixture keeps its independent compatibility pin in tests/contract_spec.lua.
@@ -330,22 +333,20 @@ def stop_groups(rects, stops):
     return marks
 
 
+def marker(number):
+    """Our gold numbered marker art, decoded from the TGA the addon ships (media/Numbers)."""
+    number = max(1, min(number, 10))
+    if number not in NUMBER_IMAGES:
+        NUMBER_IMAGES[number] = Image.open(NUMBER_DIR / f"{number}.tga").convert("RGBA")
+    return NUMBER_IMAGES[number]
+
+
 def goal_pins(canvas, stops, marks):
-    """SPF StopPin.lua and Map.xml: warm gold stock quest disc, numeral and action badge.
-    Later foreground art fades to 0.9 over an opaque black silhouette."""
+    """SPF StopPin.lua and Map.xml: our numbered marker and action badge. A later stop's marker fades to 0.7."""
     ui = canvas.ui
-    button = ui.atlas("UI-QuestPoi-QuestNumber")
-    numerals = ui.texture("interface/worldmap/ui-questpoi-numbericons.blp")
     for cx, cy, group in marks:
-        number, alpha = group[0] + 1, 0.9 if group[0] else 1
-        canvas.draw(button, cx - 16, cy - 16, 32, 32, (0, 0, 0, 1))
-        canvas.draw(button, cx - 16, cy - 16, 32, 32, (1, 0.9, 0.7, alpha))
-        if number <= 25:
-            left, top = (number - 1) % 8 * 0.125, 0.5 + (number - 1) // 8 * 0.125
-            numeral = drawing.wm.crop_coords(numerals, left, left + 0.125, top, top + 0.125)
-            canvas.draw(numeral, cx - 16, cy - 16, 32, 32, (1, 0.9, 0.7, alpha))
-        else:
-            draw_font_string(canvas, {"text": str(number), "font": "GameFontNormal"}, (cx - 16, cy - 16, 32, 32), alpha)
+        number, alpha = group[0] + 1, 0.7 if group[0] else 1
+        canvas.draw(marker(number), cx - 12, cy - 12, 24, 24, (1, 1, 1, alpha))
         kind = stops[group[0]].get("kind")
         if kind in STOP_ATLASES:
             art = ui.atlas(STOP_ATLASES[kind])

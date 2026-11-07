@@ -4,13 +4,9 @@ local _, ns = ...
 local PIN_TEMPLATE = "AdventureGuideForeverPinTemplate"
 local GIVER_TEMPLATE = "AdventureGuideForeverGiverPinTemplate"
 local PING_TEMPLATE = "AdventureGuideForeverPingPinTemplate"
--- Warm gold route rings keep future stops readable against the map.
-local NUMERAL_CELL, NUMERAL_YELLOW, NUMERALS_PER_ROW, MAX_NUMERAL = 0.125, 0.5, 8, 25
-local LATER_STOP_ALPHA = 0.9
+-- Warm gold route markers keep future stops readable against the map.
+local LATER_STOP_ALPHA = 0.7
 local MAP_GROUP_SIZE = 32
--- The route's next stop wears the button of the quest the game tracks (POIButton.lua): the lit disc with the dark
--- numeral from the grid's upper half. Every later stop wears the plain button with the yellow numeral.
-local STOP_ATLAS, CURRENT_ATLAS = "UI-QuestPoi-QuestNumber", "UI-QuestPoi-QuestNumber-SuperTracked"
 local BADGE_SIZE, BADGE_OFFSET = 16, 4
 
 ---@class AGFPinsModule
@@ -23,8 +19,7 @@ local minimapIcons = {}
 local RingsShown, MarkerTooltip
 
 ---@class AGFMinimapIcon : Frame
----@field disc Texture
----@field number FontString
+---@field marker Texture
 ---@field visits AGFPinVisit[]
 ---@field Stack? Texture
 
@@ -124,25 +119,21 @@ local function RefreshMinimap()
 				icon:SetScript("OnEnter", MinimapIconEnter)
 				icon:SetScript("OnLeave", MinimapIconLeave)
 				local texture = icon:CreateTexture(nil, "ARTWORK")
-				ns.Art.Fit(texture, index == 1 and CURRENT_ATLAS or STOP_ATLAS, MINIMAP_ICON, MINIMAP_ICON)
+				ns.Art.SetStepMarker(texture, index, MINIMAP_ICON)
 				texture:SetPoint("CENTER")
-				local number = icon:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-				number:SetPoint("CENTER")
-				number:SetTextColor(index == 1 and 0.1 or 1, index == 1 and 0.05 or 0.82, index == 1 and 0 or 0.25)
-				icon.number, icon.disc = number, texture
+				icon.marker = texture
 				minimapIcons[slot] = icon
 			end
-			ns.Art.Fit(icon.disc, index == 1 and CURRENT_ATLAS or STOP_ATLAS, MINIMAP_ICON, MINIMAP_ICON)
-			icon.number:SetTextColor(index == 1 and 0.1 or 1, index == 1 and 0.05 or 0.82, index == 1 and 0 or 0.25)
+			ns.Art.SetStepMarker(icon.marker, index, MINIMAP_ICON)
+			icon.marker:SetAlpha(index == 1 and 1 or LATER_STOP_ALPHA)
 			icon.visits = visits
 			if not icon.Stack then
 				icon.Stack = icon:CreateTexture(nil, "BACKGROUND")
-				ns.Art.Fit(icon.Stack, STOP_ATLAS, MINIMAP_ICON, MINIMAP_ICON)
+				ns.Art.SetStepRing(icon.Stack, MINIMAP_ICON)
 				icon.Stack:SetPoint("CENTER", 3, -3)
 				icon.Stack:SetAlpha(0.7)
 			end
 			icon.Stack:SetShown(#visits > 1)
-			icon.number:SetText(index <= MAX_NUMERAL and tostring(index) or "")
 			icon:Show()
 			pins:AddMinimapIconMap(minimapOwner, icon, step.map, step.x, step.y, true, false)
 		end
@@ -151,7 +142,7 @@ end
 
 -- One switch over every mark AGF draws (design §2.6): nothing unless showMapPins is on, and nothing for a wanderer
 -- who is told where and never shown. While Polestar guides (Polestar.lua) the switch draws nothing.
--- While the guide is open the rings preview the route it shows whatever the switch says: the chosen journey's,
+-- While the guide is open the markers preview the route it shows whatever the switch says: the chosen journey's,
 -- else the first card's, which the guide draws on its own (docs/design.md §2.2). Either way they step aside while
 -- Shortest Path guides, since it numbers its stops itself.
 ---@return boolean
@@ -317,9 +308,9 @@ local function GuideLines(tooltip, step)
 	end
 end
 
--- A step's lines (docs/design.md §2.9), shared by its ring and its row in the guide: the title numbered as the route
--- numbers it, the chapter, the travel line when there is one, why it is on the route, why it wants a group (§2.27),
--- a town's quests by NPC, and an area's objectives.
+-- A step's lines (docs/design.md §2.9), shared by its map marker and its row in the guide: the title numbered as the
+-- route numbers it, the chapter, the travel line when there is one, why it is on the route, why it wants a group
+-- (§2.27), a town's quests by NPC, and an area's objectives.
 ---@param tooltip GameTooltip
 ---@param step AGFStep
 ---@param index number
@@ -392,7 +383,7 @@ function Pins.Active()
 end
 
 -- Givers first, so the route's numbered pins draw above them. A giver whose quest is a stop drawn already is left
--- to that stop: our ring for the chosen journey, or Shortest Path's numbered stop for what the last Go handed it.
+-- to that stop: our marker for the chosen journey, or Shortest Path's numbered stop for what the last Go handed it.
 ---@param mapID integer
 local function AddGivers(mapID)
 	if not giverPool or not GiversShown() or not ns.State.Ready() then
@@ -444,7 +435,7 @@ local function Draw()
 	end
 	-- A numbered pin at each step's point, but none for the area the player stands in: they are there (§4.2). An area
 	-- draws nothing more: the game's own objective mark and its hover shape show where its objectives are.
-	-- A place the route comes back to keeps one ring, numbered for its first visit, with its quest-action badge
+	-- A place the route comes back to keeps one marker, numbered for its first visit, with its quest-action badge
 	-- intact and every visit in its tooltip (docs/design.md §2.9).
 	local canvas = map:GetCanvas()
 	local scale = map:GetCanvasScale() or 1
@@ -464,7 +455,7 @@ end
 ---@field step AGFStep
 ---@field index number
 
--- The step's kind (a pickup, a hand-in, an objective...) as a small badge on the ring's lower right, as Shortest
+-- The step's kind (a pickup, a hand-in, an objective...) as a small badge on the marker's lower right, as Shortest
 -- Path badges its own stops; made on first use.
 ---@param pin AGFPinFrame
 ---@return AGFBadge
@@ -476,10 +467,7 @@ local function Badge(pin)
 end
 
 ---@class AGFPinFrame : ForeverCanvasPin
----@field Disc Texture
 ---@field Icon Texture
----@field Number Texture
----@field NumberText FontString
 ---@field Badge? AGFBadge
 ---@field step? AGFStep
 ---@field index? number
@@ -502,7 +490,7 @@ function AdventureGuideForeverPinMixin:OnAcquired(step, index, visits)
 	if visits and #visits > 1 then
 		if not self.Stack then
 			self.Stack = self:CreateTexture(nil, "BACKGROUND", nil, -1)
-			ns.Art.Fit(self.Stack, STOP_ATLAS, 32, 32)
+			ns.Art.SetStepRing(self.Stack, 24)
 			self.Stack:SetPoint("CENTER", self, "CENTER", 4, -4)
 			self.Stack:SetAlpha(0.7)
 		end
@@ -510,33 +498,12 @@ function AdventureGuideForeverPinMixin:OnAcquired(step, index, visits)
 	elseif self.Stack then
 		self.Stack:Hide()
 	end
-	self.Disc:SetVertexColor(0, 0, 0)
-	for _, texture in ipairs({ self.Icon, self.Number }) do
-		texture:SetDesaturated(false)
-		texture:SetVertexColor(1, 0.9, 0.7)
-	end
 	local current = index == 1
-	-- art-ok: the quest POI's two discs, one shape, in the pin's own square (Panel.xml)
-	self.Icon:SetAtlas(current and CURRENT_ATLAS or STOP_ATLAS)
-	if current then
-		self.NumberText:SetTextColor(0.1, 0.05, 0)
-	else
-		self.NumberText:SetTextColor(1, 0.82, 0.25)
-	end
-	local numeral = index <= MAX_NUMERAL
-	self.Number:SetShown(numeral)
-	self.NumberText:SetText(not numeral and tostring(index) or "")
-	if numeral then
-		local left = (index - 1) % NUMERALS_PER_ROW * NUMERAL_CELL
-		local top = (current and 0 or NUMERAL_YELLOW) + math.floor((index - 1) / NUMERALS_PER_ROW) * NUMERAL_CELL
-		self.Number:SetTexCoord(left, left + NUMERAL_CELL, top, top + NUMERAL_CELL)
-	end
+	ns.Art.SetStepMarker(self.Icon, index, 24)
 	local badge = Badge(self)
 	ns.Overview.SetVerbIcon(badge, step)
 	local alpha = current and 1 or LATER_STOP_ALPHA
 	self.Icon:SetAlpha(alpha)
-	self.Number:SetAlpha(alpha)
-	self.NumberText:SetAlpha(alpha)
 	badge:SetAlpha(alpha)
 	-- The badge hangs past the button; the pin takes the clicks it gets.
 	local corner = badge:IsShown() and -BADGE_OFFSET or 0

@@ -175,33 +175,37 @@ function Art.RowArt(row, withSelected)
 	return selected
 end
 
--- The stock atlas stops at nine; larger step numbers use the same gold as the ring.
----@type table<Texture, FontString>
-local numberLabels = {}
+-- The route's gold numbered markers, one per step in Model.MAX_STEPS, painted into the art by
+-- tools/export_numbers.py; Ring is the empty ring a place visited twice stacks behind its marker.
+local NUMBER_MARKER = [[Interface\AddOns\AdventureGuideForever\media\Numbers\%d.tga]]
+Art.STEP_RING = [[Interface\AddOns\AdventureGuideForever\media\Numbers\Ring.tga]]
+
+-- A marker's own square, with the crop cleared first so a texture that drew an atlas does not keep its corner.
+---@param texture Texture
+---@param file string
+---@param size? number
+local function SetMarker(texture, file, size)
+	texture:SetTexCoord(0, 1, 0, 1)
+	texture:SetTexture(file)
+	if size then
+		texture:SetSize(size, size)
+	end
+end
+
+-- The gold marker for route step `index`, its number painted into the art.
 ---@param texture Texture
 ---@param index integer
-function Art.SetNumber(texture, index)
-	local label = numberLabels[texture]
-	if index <= 9 then
-		Art.Fit(texture, "services-number-" .. index, 22, 25)
-		texture:Show()
-		if label then
-			label:Hide()
-		end
-	else
-		if not label then
-			label = texture:GetParent():CreateFontString(nil, "OVERLAY", "GameFontNormal")
-			numberLabels[texture] = label
-		end
-		label:ClearAllPoints()
-		for pointIndex = 1, texture:GetNumPoints() do
-			local point, relativeTo, relativePoint, x, y = texture:GetPoint(pointIndex)
-			label:SetPoint(point, relativeTo, relativePoint, x, y)
-		end
-		texture:Hide()
-		label:SetText(tostring(index))
-		label:Show()
-	end
+---@param size? number
+function Art.SetStepMarker(texture, index, size)
+	local last = ns.Model and ns.Model.MAX_STEPS or 10
+	SetMarker(texture, NUMBER_MARKER:format(math.max(1, math.min(index, last))), size)
+end
+
+-- The empty ring behind a marker for a place the route visits twice.
+---@param texture Texture
+---@param size? number
+function Art.SetStepRing(texture, size)
+	SetMarker(texture, Art.STEP_RING, size)
 end
 
 -- The Suggested Content ring icon: art masked to a circle (CircleMaskScalable) inside the Adventure Guide's ring,
