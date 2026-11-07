@@ -2,7 +2,7 @@
 card (chosen) | zone:1442 | Stonetalon Mountains story | Chapter 1 of 2 | A chain begins with Piznik | map 1442
   step 1 | town:1442:464 | Pick up: Stonetalon Supply Run | 1442 0.4871,0.3985 | near your level
   step 2 | area:86574:4 | Complete objectives · Stonetalon Supply Run | 1442 0.5420,0.3780 | after you pick it up | 92 yd | 86574/4
-  step 3 | town:1442:460 | Pick up: Scramble | 1442 0.4076,0.5257 | near your level
+  step 3 | town:1442:460 | Pick up: Scramble | 1442 0.4077,0.5257 | near your level
   step 4 | town:1442:460:2 | Turn in: Scramble | 1442 0.3962,0.4986 | once it's done
   step 5 | town:1442:1076 | Visit Webwinder Path: Pick up 2 | 1442 0.5822,0.5174 | 2 to pick up
   step 6 | area:1093:4 | Complete objectives · Super Reaper 6000 | 1442 0.6270,0.5350 | after you pick it up | 93 yd | 1093/4
@@ -43,10 +43,10 @@ card | zone:1421 | Head to Silverpine Forest | 1 quest near your level | - | map
   step 1 | town:1421:204 | Pick up: The Horn of Xelthos | 1421 0.4712,0.7099 | near your level
 card | zone:1432 | Head to Loch Modan | 7 quests near your level | Thelsamar needs hands | map 1432
   step 1 | town:1432:144 | Visit Thelsamar: Pick up 3 | 1432 0.3730,0.4652 | 3 to pick up
-  step 2 | town:1432:556 | Pick up: Silver of the Waves | 1432 0.4806,0.3970 | near your level
+  step 2 | town:1432:556 | Pick up: Silver of the Waves | 1432 0.4805,0.3970 | near your level
   step 3 | town:1432:146 | Pick up: A Dark Threat Looms | 1432 0.4605,0.1361 | near your level
   step 4 | town:1432:142 | Pick up: Gathering Idols | 1432 0.6490,0.6666 | near your level
-  step 5 | town:1432:923 | Pick up: Banner of the Fallen | 1432 0.3177,0.8631 | near your level
+  step 5 | town:1432:923 | Pick up: Banner of the Fallen | 1432 0.3177,0.8629 | near your level
 card | zone:1436 | Head to Westfall | 4 quests near your level | - | map 1436
   step 1 | town:1436:108 | Pick up: The Defias Brotherhood | 1436 0.5633,0.4752 | near your level
   step 2 | town:1436:219 | Pick up: ... and that note you found | 1436 0.3741,0.5070 | near your level

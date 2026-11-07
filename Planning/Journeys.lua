@@ -192,25 +192,39 @@ end
 
 -- A few quests to pick up on the way (docs/design.md §2.2): while the client's log has room, the carry card offers
 -- givers whose whole quest -- its start, every objective and its hand-in -- stands within CARRY_YARDS of a stop the
--- log's route already makes. The smallest detour comes first, and no more than the free slots, a card's worth of
--- actions less the log's own quests, or CARRY_PICKUPS, so a 40-quest log gains a few quests on its way rather than a
--- second journey's worth. The route keeps the pickups it chose while they stay open, so walking or taking one quest up
--- does not shuffle its head with a new giver (docs/design.md §4.3). Only the log's route is the way: a card with no
--- stop to go on, or with no client cap to read, offers none.
+-- log's route already makes. The smallest detour comes first, and no more than the free slots, a card's worth of new
+-- actions less the steps the log's route already takes, or CARRY_PICKUPS, so a 40-quest log gains a few quests on its
+-- way rather than a second journey's worth. The route keeps the pickups it chose while they stay open, so walking or
+-- taking one quest up does not shuffle its head with a new giver (docs/design.md §4.3). Only the log's route is the
+-- way: a card with no stop to go on, or with no client cap to read, offers none.
 local CARRY_PICKUPS, CARRY_YARDS = 3, 1200
 
--- The slots the client's log has free; none when it gave no cap (a headless build) or the log is full, and the log's
--- own count, which a card's room is measured against.
----@return integer room, integer count
+-- The slots the client's log has free; none when it gave no cap (a headless build) or the log is full.
+---@return integer room
 local function Room(player, log)
 	local count = 0
 	for _ in pairs(log) do
 		count = count + 1
 	end
 	if not player.logMax then
-		return 0, count
+		return 0
 	end
-	return math.max(0, player.logMax - count), count
+	return math.max(0, player.logMax - count)
+end
+
+-- The card's actions the log already takes: one per distinct step its quests hold. A quest nothing places (a grey
+-- delivery, say) holds none, so it never costs the card room for a pickup, nor changes a town's pickups by its
+-- presence.
+---@param held table<integer, AGFStep|false>
+---@return integer
+local function Actions(held)
+	local steps, count = {}, 0
+	for _, step in pairs(held) do
+		if step and not steps[step] then
+			steps[step], count = true, count + 1
+		end
+	end
+	return count
 end
 
 -- How far `points` stand from the nearest of `anchors`, on one continent: the sum ranks the quest (a farther point
@@ -247,16 +261,13 @@ end
 ---@param eligible? integer[]
 ---@param saved? integer[]
 ---@return integer[]
-local function OnTheWay(data, player, log, eligible, candidates, added, prefs, saved)
+local function OnTheWay(data, player, log, held, eligible, candidates, added, prefs, saved)
 	-- In combat's cheap rebuild there is neither an eligibility pass nor a committed order to keep.
 	if not (eligible or saved) then
 		return NONE
 	end
-	local room, count = Room(player, log)
-	local limit = math.min(room, CARRY_PICKUPS, Model.MAX_STEPS - count)
-	if limit <= 0 then
-		return NONE
-	end
+	local room = Room(player, log)
+	local limit = math.min(room, CARRY_PICKUPS, Model.MAX_STEPS - Actions(held))
 	local taken = {}
 	for _, id in ipairs(added) do
 		taken[id] = true
@@ -280,10 +291,13 @@ local function OnTheWay(data, player, log, eligible, candidates, added, prefs, s
 	end
 	if saved then
 		local kept = {}
+		-- The log's own steps never push a pickup the route already made off it: a quest taken up since must not
+		-- trade a chosen giver for another or change step 1 (docs/design.md §4.3). Only the log's room bounds them.
+		local keep = math.min(room, CARRY_PICKUPS)
 		for _, id in ipairs(saved) do
 			local quest = data.quests[id]
 			if
-				#kept < limit
+				#kept < keep
 				and quest
 				and not taken[id]
 				and not log[id]
@@ -296,6 +310,9 @@ local function OnTheWay(data, player, log, eligible, candidates, added, prefs, s
 		if #kept > 0 then
 			return kept
 		end
+	end
+	if limit <= 0 then
+		return NONE
 	end
 	if not eligible then
 		return NONE
@@ -356,7 +373,7 @@ local function Carry(data, player, completed, log, ready, prefs, mapName, added,
 		return true
 	end, candidates, stops)
 	local committed = State.committedOrders and State.committedOrders["carry"]
-	local onWay = OnTheWay(data, player, log, eligible, candidates, added, prefs, committed and committed.pickups)
+	local onWay = OnTheWay(data, player, log, held, eligible, candidates, added, prefs, committed and committed.pickups)
 	PickupSteps(data, onWay, function()
 		return true
 	end, candidates, stops)

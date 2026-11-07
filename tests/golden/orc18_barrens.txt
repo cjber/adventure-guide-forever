@@ -6,7 +6,7 @@ card | zone:1413 | The Barrens story | Chapter 1 of 8 | A chain begins with Sput
   step 4 | area:850:4 | Complete objectives · Kolkar Leaders | 1413 0.4280,0.2350 | after you pick it up | 0 yd | 850/4
   step 5 | area:867:4 | Complete objectives · Harpy Raiders | 1413 0.4040,0.1630 | after you pick it up | 100 yd | 867/4
   step 6 | town:1413:383 | Visit The Dry Hills: Pick up 5 | 1413 0.4380,0.1221 | 5 to pick up
-  step 7 | area:95621:4 | Complete objectives · Trouble in the Valley | 1413 0.4210,0.1580 | after you pick it up | 100 yd | 95621/4
+  step 7 | area:95621:4 | Complete objectives · Trouble in the Valley | 1413 0.4180,0.1520 | after you pick it up | 99 yd | 95621/4
   step 8 | area:95507:4 | Complete objectives · Vrang's Game | 1413 0.4700,0.1300 | after you pick it up | 67 yd | 95507/4
   step 9 | town:1413:382 | Pick up: Ignition | 1413 0.5652,0.0745 | near your level
   step 10 | area:858:4 | Complete objectives · Ignition | 1413 0.5630,0.0860 | after you pick it up | 0 yd | 858/4
@@ -29,5 +29,3 @@ card | zone:1436 | Head to Westfall | 3 quests near your level | Westfall Lighth
   step 1 | town:1436:115 | Visit Westfall Lighthouse: Pick up 3 | 1436 0.3001,0.8602 | 3 to pick up
 card | zone:1433 | Head to Redridge Mountains | 1 quest near your level | - | map 1433
   step 1 | town:1433:69 | Pick up: Hilary's Necklace | 1433 0.2423,0.5364 | near your level
-card | zone:1420 | Head to Tirisfal Glades | 1 quest near your level | - | map 1420
-  step 1 | town:1420:159 | Pick up: The Argent Emissary | 1420 0.6150,0.5350 | near your level

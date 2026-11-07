@@ -152,11 +152,14 @@ h.flush()
 same(h.fanfares, { "moment" }, "after combat: the line glows")
 clean(h, "combat")
 
--- A new quest visit in a higher-level zone keeps the same range warning as its card.
+-- A new quest visit in a higher-level zone keeps the same range warning as its card. Tirisfal Glades is marked seen
+-- too: with QuestieDB v1.0.11 it is no longer offered at level 18 (The Argent Emissary is grey there), so at 22 it is
+-- a new zone of its own and would take the moment line.
 h = Load()
 h.ns.Prefs().seen["zone:1424"] = true
 h.ns.Prefs().seen["zone:1411"] = true
 h.ns.Prefs().seen["zone:1412"] = true
+h.ns.Prefs().seen["zone:1420"] = true
 LevelUp(h, 22)
 local visit
 for _, journey in ipairs(h.ns.Route().journeys) do
@@ -171,11 +174,12 @@ equal(Tracker(h), warning, "quest visit: alert keeps the range warning")
 clean(h, "quest visit")
 
 -- An aside no provider gave before: its own line glows, with the pips, and no moment line. One that stops being
--- given leaves the seen set, so it is new again when it comes back. Hillsbrad and Moonglade, zones to head to from
--- level 20, are turned down so the line level 20 brings is the calling's.
+-- given leaves the seen set, so it is new again when it comes back. Hillsbrad, Tirisfal Glades and Moonglade, zones to
+-- head to from level 20, are turned down so the line level 20 brings is the calling's.
 h = Load({
 	notInterested = {
 		["zone:1424"] = "Head to Hillsbrad Foothills",
+		["zone:1420"] = "Head to Tirisfal Glades",
 		["zone:1450"] = "Head to Moonglade",
 		["zone:1411"] = "Durotar",
 		["zone:1412"] = "Mulgore",

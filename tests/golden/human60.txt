@@ -78,7 +78,7 @@ card | zone:1444 | Head to Feralas | 6 quests near your level | - | map 1444
   step 3 | town:1444:1119 | Visit The Twin Colossals: Pick up 3 | 1444 0.4481,0.4342 | 3 to pick up
   step 4 | town:1444:1120 | Pick up: The Sunken Temple | 1444 0.3183,0.4561 | near your level
 card | zone:1416 | Head to Alterac Mountains | 2 quests near your level | - | map 1416
-  step 1 | town:1416:279 | Visit Dalaran: Pick up 2 | 1416 0.1165,0.5777 | 2 to pick up
+  step 1 | town:1416:279 | Visit Dalaran: Pick up 2 | 1416 0.1165,0.5776 | 2 to pick up
 card | zone:1435 | Head to Swamp of Sorrows | 1 quest near your level | - | map 1435
   step 1 | town:1435:1780 | Pick up: Warrior Kinship | 1435 0.3429,0.6614 | near your level
 card | zone:1441 | Head to Thousand Needles | 2 quests near your level | - | map 1441
