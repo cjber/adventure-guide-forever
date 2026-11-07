@@ -34,7 +34,9 @@ MARKUP = re.compile(r"\|c[0-9a-fA-F]{8}|\|r|\|A[^|]*\|a|\|T[^|]*\|t")
 ESCAPES = {"n": "\n", "t": "\t", "\\": "\\", '"': '"', "'": "'"}
 # Shared byte for byte by the Forever addons, so it can't use this addon's constant keys: its copy goes through its own
 # L, keyed by the English phrase (L["Close"]), which falls back to the phrase. Those lookups are its ns.L.
-PHRASE_KEYED = {"ForeverFamily.lua", "Report.lua"}
+PHRASE_KEYED = {"ForeverFamily.lua", "Report.lua", "LeaderboardsData.lua", "Leaderboards.lua"}
+# These shared files also compare code values ("week", "all") in a text call's arguments, which are not copy.
+LITERAL_SKIPPED = {"LeaderboardsData.lua", "Leaderboards.lua"}
 
 
 def unquote(literal: str) -> str:
@@ -99,9 +101,18 @@ def ns_l_entries(tokens: list[Token]) -> list[tuple[Token, list[Token]]]:
     for entry in split(tokens[index + 5 : matching(tokens, index + 4)], ","):
         if not entry:
             continue
-        if len(entry) < 3 or entry[0].kind != "name" or entry[1].text != "=":
-            raise ValueError(f"{entry[0].line}: an ns.L entry not shaped NAME = value; the copy checks cannot read it")
-        entries.append((entry[0], entry[2:]))
+        # A shared Forever file reads ns.L by its English phrase, so those lines are keyed `["phrase"] = "text"`.
+        if len(entry) >= 5 and entry[0].text == "[" and entry[1].kind == "string" and entry[2].text == "]":
+            if entry[3].text != "=":
+                raise ValueError(f'{entry[0].line}: an ns.L phrase key must be ["phrase"] = value')
+            entries.append((entry[1], entry[4:]))
+        elif len(entry) >= 3 and entry[0].kind == "name" and entry[1].text == "=":
+            entries.append((entry[0], entry[2:]))
+        else:
+            raise ValueError(
+                f'{entry[0].line}: an ns.L entry not shaped NAME = value or ["phrase"] = value; '
+                "the copy checks cannot read it"
+            )
     return entries
 
 
@@ -109,10 +120,11 @@ def strings_table(tokens: list[Token]) -> list[tuple[int, str, str]]:
     """(line, key, value) for each alternative of each ns.L entry; "a" .. "b" joins, "X or 'b'" gives 'b'."""
     entries = []
     for key, value in ns_l_entries(tokens):
+        label = unquote(key.text) if key.kind == "string" else key.text
         for alternative in split(value, "or"):
             literals = [unquote(t.text) for t in alternative if t.kind == "string"]
             if literals:
-                entries.append((key.line, key.text, "".join(literals)))
+                entries.append((key.line, label, "".join(literals)))
     return entries
 
 
@@ -163,7 +175,10 @@ def check(core: Path, files: list[Path]) -> list[str]:
     for path in files:
         tokens = tokenize(path.read_text())[0]
         keyed = path.name in PHRASE_KEYED
-        for line, call in literal_calls(tokens, keyed):
+        # A shared Forever file is vendored byte for byte and reads its copy by English phrase. Its literal arguments
+        # also hold code values ("week", "all"), which are not copy, so only its phrase lookups are checked here.
+        literal = [] if path.name in LITERAL_SKIPPED else literal_calls(tokens, keyed)
+        for line, call in literal:
             report.append(f"{path}:{line}: a string literal passed to {call}; put the copy in ns.L")
         for line, phrase in phrases(tokens) if keyed else []:
             report += [f"{path}:{line}: L[{phrase!r}]: {problem}" for problem in value_problems(phrase)]

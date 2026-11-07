@@ -21,9 +21,13 @@ L["D"] = "WTF\\Account"
 """
         self.assertEqual(render(phrases(source)), HEADER + expected)
 
+    def test_phrase_key(self):
+        # A shared Forever file reads ns.L by its English phrase, so those entries are bracketed keys.
+        self.assertEqual(phrases('ns.L = { ["Shared phrase"] = "a" }'), {"Shared phrase": "a"})
+
     def test_unreadable(self):
-        # The same walker as the copy lint (lint_copy.ns_l_entries): a missing table or a bracketed key fails loudly.
-        for source in ('local L = { A = "a" }', 'ns.L = { ["A"] = "a" }'):
+        # The same walker as the copy lint (lint_copy.ns_l_entries): a missing table fails loudly.
+        for source in ('local L = { A = "a" }', 'ns.L = { ["A"] "a" }'):
             with self.assertRaises(ValueError, msg=source):
                 phrases(source)
 

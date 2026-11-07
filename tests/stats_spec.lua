@@ -1,7 +1,8 @@
 -- Run from the repository root: luajit tests/stats_spec.lua
 -- Adventure Guide's adapter over the shared peer stats (Core/Stats.lua): the saved-layout migration, the cumulative
--- snapshot it offers, the opt-out across a reload, and the leaderboard the API and /agf print. The protocol itself
--- (bounds, malformed and stale rows, caps, several addons together) is tests/peer_stats_spec.lua's.
+-- snapshot it offers, the opt-out across a reload, its board on the shared Forever Leaderboards window and the window
+-- the API and /agf open. The protocol itself (bounds, malformed and stale rows, caps, several addons together) is
+-- tests/peer_stats_spec.lua's.
 local harness = dofile("tests/harness.lua")
 local checks = 0
 local function equal(actual, expected, label)
@@ -41,15 +42,6 @@ end
 
 local function hear(h, sender, total)
 	h.fire("CHAT_MSG_ADDON", "WFAStats", ("1|agf|quest_turn_ins|all|%d|%d"):format(total, now - 60), "GUILD", sender)
-end
-
-local function printed(h, needle)
-	for _, line in ipairs(h.prints) do
-		if line:find(needle, 1, true) then
-			return true
-		end
-	end
-	return false
 end
 
 --[[ Migration: only this addon's validated total moves; the old table stays ]]
@@ -108,16 +100,37 @@ equal(api.Leaderboard().rows[1].value, 20, "API result is a copy")
 local shared = db.peerStats
 equal(shared.Alice.quest_turn_ins.all.value, 20, "heard rows land in the canonical table")
 
---[[ Command ]]
+--[[ Forever Leaderboards registration and command ]]
+local leaderboards = h.G.ForeverLeaderboards
+equal(type(leaderboards), "table", "the shared Forever Leaderboards window is published")
+local spec = leaderboards.boards.agf
+equal(spec.title, "Adventure Guide", "the tab carries the addon's title")
+equal(spec.metric, "Quests turned in", "the board names its metric")
+equal(spec.icon, "Interface\\AddOns\\AdventureGuideForever\\media\\Icon", "the tab carries the addon's icon")
+equal(type(spec.revision), "function", "the board has a revision callback")
+equal(spec.sharing(), true, "sharing reads the addon's setting")
+local allRows = spec.board("all")
+equal(allRows[1].name, "Alice", "the all-time board ranks the peers")
+equal(allRows[1].value, 20, "as their cumulative totals")
+equal(allRows[1].class, nil, "a peer's class stays unknown")
+equal(allRows[4].you, true, "the player's own row is marked")
+equal(allRows[4].class, nil, "the shared window fills every row's class")
+local opened
+leaderboards.Open = function(_, key)
+	opened = key
+end
 h.Slash("leaderboard")
-equal(printed(h, "Quest turn-ins observed for this character"), true, "title names the observed metric")
-equal(printed(h, "player-reported, not verified"), true, "peer values are labelled player-reported")
-equal(printed(h, "1. Alice: 20"), true, "ranked peer row")
-equal(printed(h, "4. Me (you): 2"), true, "own row")
-equal(printed(h, "/agf share off"), true, "opt-out is stated")
-local before = #h.prints
+equal(opened, "agf", "leaderboard opens the shared window on this addon's tab")
+opened = nil
 h.Slash("stats")
-equal(#h.prints > before, true, "stats is an alias")
+equal(opened, "agf", "stats is an alias")
+
+--[[ Weekly board: progress since the reset, with the cumulative total in grey ]]
+hear(h, "Alice-MyRealm", 25)
+local weekly = spec.board("week")
+equal(weekly[1].name, "Alice", "the weekly board ranks this week's progress")
+equal(weekly[1].value, 5, "the value is the change since the first total heard this week")
+equal(weekly[1].extra, "25 total", "the grey value keeps the cumulative total")
 
 --[[ Opt-out: send, receive and rows stop at once; the local row stays ]]
 h.fire("QUEST_TURNED_IN", 1003)
@@ -131,12 +144,11 @@ equal(off.sharing, false, "sharing reported off")
 equal(#off.rows, 1, "peers are hidden")
 equal(off.rows[1].self, true, "own row remains")
 equal(off.rows[1].value, 3, "own total still counts")
-h.prints = {}
-h.Slash("leaderboard")
-equal(printed(h, "1. Me (you): 3"), true, "personal progress shows with sharing off")
-equal(printed(h, "hidden while sharing is off"), true, "hidden peers are said to be hidden")
-equal(printed(h, "/agf share on"), true, "how to turn it back on")
-equal(printed(h, "Alice"), false, "no peer row")
+equal(spec.sharing(), false, "the board reads the saved opt-out")
+local offRows = spec.board("all")
+equal(#offRows, 1, "the shared board hides peers while sharing is off")
+equal(offRows[1].you, true, "the player's row stays")
+equal(offRows[1].value, 3, "with the local total")
 
 --[[ Reload keeps the opt-out and the local history ]]
 local saved, savedChar = h.G.AdventureGuideForeverDB, h.G.AdventureGuideForeverCharDB
@@ -149,7 +161,7 @@ equal(reloaded.sharing, false, "still off after reload")
 equal(#reloaded.rows, 1, "no peers while off")
 equal(reloaded.rows[1].value, 3, "local history survives")
 equal(saved.peerStats.Dave, nil, "a report is not kept while off")
-equal(saved.peerStats.Alice.quest_turn_ins.all.value, 20, "cached peers are kept, only hidden")
+equal(saved.peerStats.Alice.quest_turn_ins.all.value, 25, "cached peers are kept, only hidden")
 equal(saved.sharedStats.Bob.fieldguide.creature_kills.all.value, 99, "the old table survives a reload")
 
 --[[ Re-enable ]]

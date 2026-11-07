@@ -118,7 +118,8 @@ L["BEFORE_IT_RUNS_OUT"] = "bevor %s abläuft"
 L["BEFORE_ITEM_RUNS_OUT"] = "bevor ein Questgegenstand abläuft"
 L["HELP_AUDIT"] = "/agf audit - die Questdaten mit dem Spiel abgleichen"
 L["HELP_DUMP"] = "/agf dump - das Layout des Führers für einen Fehlerbericht speichern"
-L["HELP_LEADERBOARD"] = "/agf leaderboard - zeigt die von Gilde und Gruppe gemeldeten Questabgaben (auch /agf stats)"
+L["HELP_LEADERBOARD"] =
+	"/agf leaderboard - öffnet Forever Leaderboards auf der Registerkarte dieses Addons (auch /agf stats)" -- mt
 L["HELP_OPEN"] = "/agf - den Führer auf der Weltkarte öffnen."
 L["HELP_REPORT"] = "/agf report - einen Bericht zum Kopieren in einen Fehlerbericht anzeigen"
 L["HELP_SHARE"] = "/agf share on|off - schaltet das Teilen der Questabgaben-Summen mit Gilde und Gruppen an oder aus"
@@ -144,16 +145,9 @@ L["JOURNEY_PROGRESS_EMPTY"] = "Eure abgeschlossenen Geschichten erscheinen hier.
 L["JOURNEY_QUESTS"] = "Quests dieser Reise"
 L["JOURNEY_STORY"] = "Geschichte: %s"
 L["LATER_LAPS"] = "%d davon in späteren Runden"
-L["LEADERBOARD_NO_PEERS"] = "Noch kein Gilden- oder Gruppenmitglied hat gemeldet; deren Summen sind unbekannt."
-L["LEADERBOARD_PEERS_HIDDEN"] = "Die Summen anderer Spieler sind verborgen, solange das Teilen aus ist."
-L["LEADERBOARD_ROW"] = "%d. %s: %d"
-L["LEADERBOARD_ROW_SELF"] = "%d. %s (Ihr): %d"
-L["LEADERBOARD_SCOPE"] =
-	"Gilden- und Gruppenmitglieder mit Adventure Guide melden ihre eigenen Summen. Die Werte stammen von den Spielern und sind nicht überprüft."
 L["LEADERBOARD_SHARING_OFF"] = "Teilen ist aus: nichts wird gesendet oder angezeigt. Einschalten mit /agf share on."
 L["LEADERBOARD_SHARING_ON"] =
 	"Teilen ist an. Ausschalten mit /agf share off oder unter Einstellungen > AddOns > Adventure Guide."
-L["LEADERBOARD_TITLE"] = "Beobachtete Questabgaben dieses Charakters (insgesamt)"
 L["LEGACY_PROGRESS_LINK"] = "Karte für Vermächtnis-Fortschritt öffnen"
 L["LEGACY_PROGRESS_NOTE"] = "Sammlungen, Erkundung und Gebietsabschluss verfolgt Legacy Forever."
 L["LEVELS"] = "%d-%d"
@@ -530,3 +524,34 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 	"Wenn ein Schritt mit einem Questgeber oder Abgabe-NPC spricht, hüpft ein kleiner Pfeil über seinem Namensschild und unter dem Tracker steht eine Ziel-Schaltfläche. Schaltet dies aus, um beides zu verbergen. Der Guide ändert nie Eure Namensschild-Einstellungen."
 L["NPC_HIGHLIGHT_HINT"] =
 	"Freundliche Namensschilder sind aus: Schaltet sie in den Interface-Optionen ein, um zu sehen, wohin Ihr gehen müsst."
+
+-- Forever Leaderboards (Forever Core's shared window).
+L["Forever Leaderboards"] = "Forever-Ranglisten" -- mt
+L["Overall"] = "Gesamt" -- mt
+L["Forever standing"] = "Forever-Gesamtwertung" -- mt
+L["Your guild and group"] = "Eure Gilde und Gruppe" -- mt
+L["This week"] = "Diese Woche" -- mt
+L["All time"] = "Gesamte Zeit" -- mt
+L["Rank"] = "Rang" -- mt
+L["Player"] = "Spieler" -- mt
+L["No one has reported yet."] = "Niemand hat bisher berichtet." -- mt
+L["Share my progress"] = "Fortschritt teilen" -- mt
+L["Others' values are player-reported."] = "Werte anderer Spieler werden von ihnen gemeldet." -- mt
+L["Points for placing on each addon's board."] = "Punkte für einen Platz auf der Liste jedes Addons." -- mt
+L["(you)"] = "(Ihr)" -- mt
+L["board"] = "Liste" -- mt
+L["boards"] = "Listen" -- mt
+L["Uses Forever addons"] = "Verwendet Forever-Addons" -- mt
+L["Forever: %s overall this week"] = "Forever: %s insgesamt diese Woche" -- mt
+L["Forever: %s overall"] = "Forever: %s insgesamt" -- mt
+L["1st"] = "1." -- mt
+L["2nd"] = "2." -- mt
+L["3rd"] = "3." -- mt
+L["4th"] = "4." -- mt
+L["5th"] = "5." -- mt
+L["6th"] = "6." -- mt
+L["7th"] = "7." -- mt
+L["8th"] = "8." -- mt
+L[", "] = ", " -- mt
+L.LEADERBOARD_METRIC = "Abgegebene Quests" -- mt
+L.LEADERBOARD_TOTAL = "gesamt" -- mt

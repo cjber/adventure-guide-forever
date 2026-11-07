@@ -12,19 +12,14 @@ ns.L = {
 		.. "or turn it off here.",
 	MINIMAP_BUTTON_SUBTEXT = "Click to open the levelling guide",
 	SETTING_STATS_SHARE = "Share activity with guild and groups",
-	SETTING_STATS_SHARE_TOOLTIP = "On by default. Shares cumulative activity rows with addon users in "
-		.. "your guild, party, raid or instance. Turn it off to keep records on this character only. "
-		.. "Shared records are player-reported, not verified.",
-	LEADERBOARD_TITLE = "Quest turn-ins observed for this character (cumulative)",
-	LEADERBOARD_SCOPE = "Guild and group members running Adventure Guide report their own totals. "
-		.. "Values are player-reported, not verified.",
-	LEADERBOARD_ROW = "%d. %s: %d",
-	LEADERBOARD_ROW_SELF = "%d. %s (you): %d",
-	LEADERBOARD_NO_PEERS = "No guild or group member has reported yet; their totals are unknown.",
-	LEADERBOARD_PEERS_HIDDEN = "Other players' totals are hidden while sharing is off.",
+	SETTING_STATS_SHARE_TOOLTIP = "On unless you turn it off. Shares cumulative quest turn-ins with addon users in "
+		.. "your guild, party, raid or instance and puts you on Forever Leaderboards. Turn it off to keep records "
+		.. "on this character only. Shared records are player-reported, not verified.",
 	LEADERBOARD_SHARING_ON = "Sharing is on. Turn it off with /agf share off or in Settings > AddOns > Adventure Guide.",
 	LEADERBOARD_SHARING_OFF = "Sharing is off: nothing is sent or shown. Turn it on with /agf share on.",
-	HELP_LEADERBOARD = "/agf leaderboard - show quest turn-ins reported by your guild and group (also /agf stats)",
+	LEADERBOARD_METRIC = "Quests turned in",
+	LEADERBOARD_TOTAL = "total",
+	HELP_LEADERBOARD = "/agf leaderboard - open Forever Leaderboards on this addon's tab (also /agf stats)",
 	HELP_SHARE = "/agf share on|off - turn sharing of quest turn-in totals with your guild and groups on or off",
 	SETTING_RXP = "Use RestedXP guides",
 	SETTING_RXP_TOOLTIP = "Add the current RestedXP guide to your journey cards, map and tracker. "
@@ -605,6 +600,35 @@ ns.L = {
 	RXP_SETUP_SKILLUP_SPF = "SkillUp: equipment and shopping routes use Shortest Path.",
 	RXP_SETUP_SKILLUP = "SkillUp: equipment and shopping journeys are available.",
 	RXP_SETUP_SETTINGS = "Change this later in AddOns settings.",
+
+	-- Forever Leaderboards (Forever Core's shared window, which reads ns.L by English phrase).
+	["Forever Leaderboards"] = "Forever Leaderboards",
+	["Overall"] = "Overall",
+	["Forever standing"] = "Forever standing",
+	["Your guild and group"] = "Your guild and group",
+	["This week"] = "This week",
+	["All time"] = "All time",
+	["Rank"] = "Rank",
+	["Player"] = "Player",
+	["No one has reported yet."] = "No one has reported yet.",
+	["Share my progress"] = "Share my progress",
+	["Others' values are player-reported."] = "Others' values are player-reported.",
+	["Points for placing on each addon's board."] = "Points for placing on each addon's board.",
+	["(you)"] = "(you)",
+	["board"] = "board",
+	["boards"] = "boards",
+	["Uses Forever addons"] = "Uses Forever addons",
+	["Forever: %s overall this week"] = "Forever: %s overall this week",
+	["Forever: %s overall"] = "Forever: %s overall",
+	["1st"] = "1st",
+	["2nd"] = "2nd",
+	["3rd"] = "3rd",
+	["4th"] = "4th",
+	["5th"] = "5th",
+	["6th"] = "6th",
+	["7th"] = "7th",
+	["8th"] = "8th",
+	[", "] = ", ",
 }
 
 _G.BINDING_HEADER_ADVENTUREGUIDEFOREVER = "Adventure Guide Forever"

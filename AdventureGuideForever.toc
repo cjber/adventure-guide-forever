@@ -53,6 +53,8 @@ UI\Sound.lua
 Core\State.lua
 Core\Activity.lua
 Core\PeerStats.lua
+Core\LeaderboardsData.lua
+UI\Leaderboards.lua
 Core\Stats.lua
 Core\Party.lua
 Planning\Geometry.lua

@@ -1,8 +1,9 @@
 """Write Locales/phrases.txt, the template the translations follow, or check it and the tree with --check.
 
 A translation is Locales/<locale>.lua: the guard lines below, then `L["KEY"] = "text"` for each line it translates.
-The keys are AGF's constant names and the template gives each one's English. A line that is a Blizzard GlobalString
-with an English fallback (`ITEM_RACES_ALLOWED or "Races: %s"`) is left out: the client already translates it.
+The keys are AGF's constant names, and the English phrase of a shared Forever file that reads ns.L by phrase, and the
+template gives each one's English. A line that is a Blizzard GlobalString with an English fallback
+(`ITEM_RACES_ALLOWED or "Races: %s"`) is left out: the client already translates it.
 """
 
 import argparse
@@ -37,7 +38,9 @@ def phrases(source: str) -> dict[str, str]:
     for key, tokens in ns_l_entries(tokenize(source)[0]):
         value = split(tokens, "..")
         if all(len(part) == 1 and part[0].kind == "string" for part in value):
-            found[key.text] = "".join(unquote(part[0].text) for part in value)
+            found[unquote(key.text) if key.kind == "string" else key.text] = "".join(
+                unquote(part[0].text) for part in value
+            )
     return found
 
 
