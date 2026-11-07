@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves. API changes other addons' aut
 optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
+
+## [1.1.7] - 2026-11-07
 - **The addon list now describes the guide as an adventure.** Its tooltip names zone stories, journeys you pick on the map and a route walked to each hand-in, instead of calling it a levelling guide.
 
 ## [1.1.6] - 2026-11-06
