@@ -12,6 +12,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+
+## [1.1.12] - 2026-11-07
+
 - **The Forever Leaderboards tab wears a game icon.** The Adventure Guide tab in Forever Leaderboards now shows the game's own map icon instead of the addon's logo, so it sits beside the Overall trophy without a second gold frame. The TOC, minimap and the rest of the guide keep the addon's icon. (cjber/forever-core#180)
 
 ## [1.1.11] - 2026-11-07
