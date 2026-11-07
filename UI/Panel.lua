@@ -1139,7 +1139,11 @@ local function CreateTabs()
 		end)
 		questsTab.activeAtlas = "questlog-tab-icon-quest"
 		questsTab.inactiveAtlas = "questlog-tab-icon-quest-inactive"
-		questsTab:SetPoint("TOPLEFT", map, "TOPRIGHT", QuestMapFrameOverrides.GetQuestsTabAnchorOffset())
+		-- The client's offset is tuned for the Camelot tab art, which Forever hides and never draws, so
+		-- against Forever's own frame it leaves a dark strip between the map frame and the tab (#447).
+		-- Keep the client's vertical offset and pin the tab flush to the frame's right edge.
+		local _, tabOffsetY = QuestMapFrameOverrides.GetQuestsTabAnchorOffset()
+		questsTab:SetPoint("TOPLEFT", map, "TOPRIGHT", 0, tabOffsetY)
 		guideTab:SetPoint("TOP", questsTab, "BOTTOM", 0, -3)
 	else
 		local last = map.MapLegendTab:IsShown() and map.MapLegendTab or map.QuestsTab
