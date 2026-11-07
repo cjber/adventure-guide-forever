@@ -11,6 +11,8 @@ verbatim rather than rewritten as the addon moves. API changes other addons' aut
 optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
+
+## [1.1.11] - 2026-11-07
 - **A low-level quest in your log no longer hides a nearby giver.** Pickups offered along the way to the quests you carry were sized by how many quests the log held, so adding a quest the route never works, such as a grey delivery, could push a town and its giver off the card. Only the steps the route actually takes count now, and a pickup it already chose stays when you take another quest up.
 - **A locked tracker stays quiet until you hover it.** With *Lock the tracker* on, the Forever column's grip no longer shows the long "tracker is locked" sentence all the time, where it overlapped whatever sat below and ran off screen at an edge. The grip stays blank until the pointer is over it, and the sentence is in its tooltip. Thanks to MrFIXlT for the request (cjber/forever-core#193).
 
