@@ -38,6 +38,8 @@ local LIST_TOP = 4 + 34 + 6
 -- pip (CSV:2025) on the tab.
 local NEW_MARK, NEW_SIZE, NEW_COMPACT = "adventureguide-icon-whatsnew", 24, 18
 local TAB_PIP = "adventureguide-microbutton-alert"
+-- The Quests tab meets the map's frame edge: its border keeps retail's x=4 corner and QuestMapFrame sits 3px inside.
+local QUESTS_TAB_X = 3
 -- The chosen card keeps this art and is lit instead: the renown card's pressed art is drawn a few pixels over, which
 -- reads as the card slipping out of line.
 local CARD_ART = "ui-journeys-renown-button"
@@ -1143,7 +1145,8 @@ local function CreateTabs()
 		end)
 		questsTab.activeAtlas = "questlog-tab-icon-quest"
 		questsTab.inactiveAtlas = "questlog-tab-icon-quest-inactive"
-		questsTab:SetPoint("TOPLEFT", map, "TOPRIGHT", QuestMapFrameOverrides.GetQuestsTabAnchorOffset())
+		local _, offsetY = QuestMapFrameOverrides.GetQuestsTabAnchorOffset()
+		questsTab:SetPoint("TOPLEFT", map, "TOPRIGHT", QUESTS_TAB_X, offsetY)
 		guideTab:SetPoint("TOP", questsTab, "BOTTOM", 0, -3)
 	else
 		local last = map.MapLegendTab:IsShown() and map.MapLegendTab or map.QuestsTab

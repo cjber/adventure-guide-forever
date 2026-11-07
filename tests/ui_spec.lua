@@ -124,6 +124,19 @@ local function Shown(h, test)
 	end)
 end
 
+-- The tabs meet the map's frame edge: the Quests tab is retail's 3px out, and its y is the Camelot override's.
+do
+	local h = Load()
+	local tab, map = h.G.AdventureGuideForeverQuestsTab, h.G.QuestMapFrame
+	local point, relativeTo, relativePoint, x, y = tab:GetPoint(1)
+	equal(point, "TOPLEFT", "map tabs: the Quests tab anchors from its top left")
+	equal(relativeTo, map, "map tabs: against the quest map's right edge")
+	equal(relativePoint, "TOPRIGHT", "map tabs: from the map's top right")
+	equal(x, 3, "map tabs: 3px from the frame edge")
+	equal(y, select(2, h.G.QuestMapFrameOverrides.GetQuestsTabAnchorOffset()), "map tabs: y from the override")
+	clean(h, "map tabs")
+end
+
 for _, spf in ipairs({ false, "v1", "v1+" }) do
 	local label = spf or "no Shortest Path"
 	local h = Load(spf)
