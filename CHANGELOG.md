@@ -11,6 +11,7 @@ verbatim rather than rewritten as the addon moves. API changes other addons' aut
 optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
+- **A low-level quest in your log no longer hides a nearby giver.** Pickups offered along the way to the quests you carry were sized by how many quests the log held, so adding a quest the route never works, such as a grey delivery, could push a town and its giver off the card. Only the steps the route actually takes count now, and a pickup it already chose stays when you take another quest up.
 
 ## [1.1.9] - 2026-11-07
 - **The Forever Leaderboards window opens.** `/flb` and `/forever` no longer raise a Lua error on first open: the list's rows now have a fixed height (cjber/forever-core#174).

@@ -30,7 +30,7 @@ card | zone:1439 | Head to Darkshore | 10 quests near your level | Auberdine nee
 card | zone:1438 | Head to Teldrassil | 13 quests near your level | 3 quests will soon turn grey | map 1438
   step 1 | town:1438:259 | Visit Lake Al'Ameth: Pick up 2 | 1438 0.6090,0.6849 | 2 to pick up
   step 2 | town:1438:186 | Visit Dolanaar: Pick up 5 | 1438 0.5551,0.5715 | 5 to pick up
-  step 3 | town:1438:736 | Visit Ban'ethil Hollow: Pick up 3 | 1438 0.4468,0.5892 | 3 to pick up
+  step 3 | town:1438:736 | Visit Ban'ethil Hollow: Pick up 3 | 1438 0.4467,0.5892 | 3 to pick up
   step 4 | town:1438:264 | Visit The Oracle Glade: Pick up 3 | 1438 0.3832,0.3436 | 3 to pick up
 card | zone:1411 | Head to Durotar | 1 quest near your level | - | map 1411
   step 1 | town:1411:369 | Pick up: Winds in the Desert | 1411 0.4637,0.2294 | near your level

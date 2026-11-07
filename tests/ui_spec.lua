@@ -2738,7 +2738,8 @@ do
 	clean(h, "card")
 end
 
--- The guide (F2): eight cards in this fixture. The chosen one is lit, never moved, 288x86 with a 46x46 ring
+-- The guide (F2): seven cards in this fixture. Tirisfal Glades left it when QuestieDB v1.0.11 gave The Argent
+-- Emissary its level 12, grey at this fixture's level 18. The chosen one is lit, never moved, 288x86 with a 46x46 ring
 -- and followed by its steps; the others sit above it as one-line 288x26 header rows with a 16x16 icon and no ring, in
 -- the dumped layout the client's own dump is compared with.
 do
@@ -2761,7 +2762,7 @@ do
 		end
 	end
 	equal(full + compact, #route.journeys, "guide: a card per journey")
-	equal(#route.journeys, 8, "guide: all eight eligible journeys survive")
+	equal(#route.journeys, 7, "guide: all seven eligible journeys survive")
 	equal(full, 1, "guide: only the chosen card is whole")
 	equal(lit, 1, "guide: and only it stays lit, so it reads as chosen in game")
 	local rows = Shown(h, function(frame)
@@ -3315,7 +3316,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#Overview(), 0, label .. ": the overview gives way")
 	equal(Previews(), "", label .. ": with its steps")
 	equal(Says(L.OVERVIEW_WHERE:format("The Barrens", h.player.level)), 0, label .. ": and the line by the title")
-	equal(Heights(), "86 26 26 26 26 26 26 26", label .. ": the chosen route precedes alternatives")
+	equal(Heights(), "86 26 26 26 26 26 26", label .. ": the chosen route precedes alternatives")
 	equal(Cards()[1].journey.key, story.key, label .. ": the chosen card first, over its steps")
 	-- The chosen card is lit, not pressed: its art, pressed or not, is the card's own, so nothing moves.
 	local chosenCard = Cards()[1]
@@ -3377,7 +3378,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(h.ns.Route().journey, key, label .. ": a row chooses its card")
 	equal(Starts(), 2, label .. ": and starts its route in place of the first")
-	equal(Heights(), "86 26 26 26 26 26 26 26", label .. ": still one whole card")
+	equal(Heights(), "86 26 26 26 26 26 26", label .. ": still one whole card")
 	equal(Cards()[1].journey.key, key, label .. ": the new choice over the steps")
 
 	-- The chosen card again: nothing changes but the map, which turns to it.
@@ -3412,7 +3413,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Click(Overview()[2])
 	h.flush()
 	equal(h.ns.Route().chosen and h.ns.Route().journey, second.key, label .. ": a row chooses it")
-	equal(Heights(), "86 26 26 26 26 26 26 26", label .. ": alternatives fold below it")
+	equal(Heights(), "86 26 26 26 26 26 26", label .. ": alternatives fold below it")
 	equal(Cards()[1].journey.key, second.key, label .. ": lit over its steps")
 	equal(Rows(), #h.ns.Route().steps, label .. ": which are listed")
 	h.Click(Back())
@@ -3466,7 +3467,7 @@ do
 	equal(header.CollapseButton:IsShown(), true, label .. ": more choices can expand")
 	h.Click(header)
 	h.flush()
-	equal(#Cards("zones"), 6, label .. ": expansion shows every zone")
+	equal(#Cards("zones"), 5, label .. ": expansion shows every zone")
 	equal(h.ns.Prefs().previewGroups.zones, false, label .. ": expansion is saved")
 	local card = Cards("zones")[1]
 	local zone = h.ns.Data.zones[card.journey.zone]
