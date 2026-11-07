@@ -145,9 +145,9 @@ local VERB_ATLAS = {
 	pickup = "QuestNormal",
 	turnin = "QuestTurnin",
 	objective = "questobjective",
+	trainer = "Class",
 	battlemaster = "battlemaster",
 }
-local TRAINER_FILE = "Interface\\Minimap\\Tracking\\Class"
 -- An objective step whose open objectives are all one kind wears the mark the game shows over that kind of
 -- target: the targeting frame's skull for kills, the quest log's own objective mark for something to collect or use.
 -- Mixed work, and a place to reach, keep the objective's own mark.
@@ -176,13 +176,10 @@ end
 
 ---@param step AGFStep
 ---@return string? atlas
----@return string? file
 local function VerbIcon(step)
 	local verb = step.verb
 	if verb == "town" then
 		return (step.pickups and #step.pickups > 0) and VERB_ATLAS.pickup or VERB_ATLAS.turnin
-	elseif verb == "trainer" then
-		return nil, TRAINER_FILE
 	elseif verb == "objective" then
 		local atlas = ObjectiveIcon(step)
 		if atlas then
@@ -201,23 +198,19 @@ local LINE_ATLAS = {
 	complete = VERB_ATLAS.objective,
 	collect = "QuestObjective",
 	collectmultiple = "QuestObjective",
-}
-local LINE_FILES = {
-	fly = "Interface\\Minimap\\Tracking\\FlightMaster",
-	fp = "Interface\\Minimap\\Tracking\\FlightMaster",
-	hs = "Interface\\Minimap\\Tracking\\Innkeeper",
-	home = "Interface\\Minimap\\Tracking\\Innkeeper",
+	fly = "FlightMaster",
+	fp = "FlightMaster",
+	hs = "Innkeeper",
+	home = "Innkeeper",
 }
 
 ---@param tag? string
 ---@param size number
 ---@return string
 function Overview.LineMarkup(tag, size)
-	local atlas, file = LINE_ATLAS[tag or ""], LINE_FILES[tag or ""]
+	local atlas = LINE_ATLAS[tag or ""]
 	if atlas then
 		return ns.Art.Markup(atlas, size) .. " "
-	elseif file then
-		return ns.Art.FileMarkup(file, size) .. " "
 	end
 	return ""
 end
@@ -226,11 +219,9 @@ end
 ---@param size number
 ---@return string
 function Overview.VerbMarkup(step, size)
-	local atlas, file = VerbIcon(step)
+	local atlas = VerbIcon(step)
 	if atlas then
 		return ns.Art.Markup(atlas, size) .. " "
-	elseif file then
-		return ns.Art.FileMarkup(file, size) .. " "
 	end
 	return ""
 end
@@ -238,18 +229,15 @@ end
 ---@class AGFBadge : Texture
 ---@field box number the square the mark fits in
 
--- The kind's mark on `badge` at its own aspect, hidden when the step has none. A file (the trainer's, the flight
--- master's) is a square icon.
+-- The kind's mark on `badge` at its own aspect, hidden when the step has none.
 ---@param badge AGFBadge
 ---@param step AGFStep
 local function SetVerbIcon(badge, step)
-	local atlas, file = VerbIcon(step)
+	local atlas = VerbIcon(step)
 	if atlas then
 		ns.Art.Fit(badge, atlas, badge.box, badge.box)
-	elseif file then
-		ns.Art.Icon(badge, file, badge.box)
 	end
-	badge:SetShown(atlas ~= nil or file ~= nil)
+	badge:SetShown(atlas ~= nil)
 end
 
 -- A step's badge: the kind's mark over its ring's lower right, in a `size` square `out` past the ring's edge, as
