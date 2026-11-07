@@ -474,7 +474,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "actualizado a %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Apareces una vez en las clasificaciones con un nombre de dos partes. Un nombre de Forever como Hel Io ya no aparece dos veces." -- mt
+	"La lista de complementos describe ahora la guia como una aventura. Su descripcion menciona historias de zona, viajes que eliges en el mapa y una ruta hasta cada entrega, en lugar de llamarla guia de subida de nivel." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
