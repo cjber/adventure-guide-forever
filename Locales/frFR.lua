@@ -469,7 +469,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "mis à jour en %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Les notifications d'histoire ne provoquent plus d'erreur Lua. Le guide charge désormais la fenêtre des hauts faits du jeu comme le fait le jeu, pour que le bouclier de la notification ait le code nécessaire." -- mt
+	"La liste des addons presente desormais le guide comme une aventure. Son infobulle cite des histoires de zone, des voyages choisis sur la carte et un itineraire jusqu'a chaque remise, au lieu de le decrire comme un guide de leveling." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"

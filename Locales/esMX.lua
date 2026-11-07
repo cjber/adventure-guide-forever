@@ -466,7 +466,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "actualizado a %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Los avisos de historia ya no provocan un error de Lua. La guía ahora carga la ventana de logros del juego tal como lo hace el juego, para que el escudo del aviso tenga el código que necesita." -- mt
+	"La lista de complementos describe ahora la guia como una aventura. Su descripcion menciona historias de zona, viajes que eliges en el mapa y una ruta hasta cada entrega, en lugar de llamarla guia de subida de nivel." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"

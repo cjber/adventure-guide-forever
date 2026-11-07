@@ -10,6 +10,7 @@ the same harness, so no AGF text or layout is retyped here. Stock templates prod
 one the dumps name has a recipe in screenshots_stock.py citing its Blizzard XML; an unknown stockTemplate fails the run.
 The frames around the addon (the world map, the tracker, the tooltip and the menu) are wowmock's
 (the forever-core shared renderer), drawn from Blizzard's own layout numbers (WFA-4: the stock look).
+Shortest Path's walked route and the steps it plans are its own pinned sources (screenshots_spf.py).
 
 UI art and fonts come from wago.tools for UI_ART_BUILD; generated map and content tables come from DATA_BUILD.
 They are cached under ~/.cache/wowmock. The game client is never started or read. Two runs give byte-identical PNGs
@@ -40,7 +41,16 @@ import screenshots_art as drawing
 from gen_quests import BUILD as DATA_BUILD
 from screenshots_art import draw_font_string, draw_texture, fit_text, font, load_wowmock
 from screenshots_resolver import effective_scales, lua_rects, map_point, parent_path, resolve, scroll_child_anchors
-from screenshots_spf import SPF_SHA, breadcrumbs, goal_pins, map_position, spf_walk, stop_groups
+from screenshots_spf import (
+    SPF_SHA,
+    assignment,
+    breadcrumbs,
+    goal_pins,
+    map_position,
+    spf_itinerary,
+    spf_walk,
+    stop_groups,
+)
 from screenshots_stock import LAYERS, button_font, draw_scroll_frame, stock
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -405,6 +415,123 @@ def quest_log(ui, content_ui, data, rects, scene, pins=()):
     return canvas, frame
 
 
+MINIMAP_SIZE = 198  # the minimap face's UI units, as SPF's own minimap scene draws it
+MINIMAP_RADIUS = 233 + 1 / 3  # world yards it shows
+MINIMAP_CENTRE = (150, 155)  # the face's centre in the 300x285 cluster
+MINIMAP_REACH = 170  # yards before the stop the minimap looks from
+
+
+def tracker_module(ui, dump):
+    """A tracker section from a tests/scenes.lua dump: its header, then each block's header and its lines."""
+    blocks = [
+        drawing.wm.TrackerBlock(block["header"], [(line["text"], line["dash"]) for line in block["lines"]])
+        for block in dump["blocks"]
+    ]
+    return drawing.wm.TrackerModule(dump["header"], blocks)
+
+
+def spf_map(ui, content_ui, data, rects):
+    """The world map with the guide's journey card and Shortest Path's walked route to the first stop: the guide's
+    own panel, its numbered stops, and the walk Shortest Path took up when the route was handed over."""
+    map_id = data["panel"]["map"]
+    stops, player = data["map"]["stops"], data["map"]["player"]
+    walk = spf_walk(content_ui, map_id, (player["x"], player["y"]), (stops[0]["x"], stops[0]["y"]))
+    current = [map_position(content_ui, map_id, point) for point in walk]
+    preview = [(stop["x"], stop["y"]) for stop in stops]
+
+    def on_map(canvas, frame):
+        marks = stop_groups(frame, stops)
+        breadcrumbs(canvas, frame, [current, preview], marks)
+        # While Shortest Path guides, the guide's own rings stay down and Shortest Path draws the numbered stops.
+        goal_pins(canvas, stops, marks)
+        draw_player(canvas, frame, player)
+
+    canvas, frame = map_frame(ui, explored_art(content_ui, map_id), True, on_map)
+    Layout(data["map_panel"]["layout"], rects["map_panel"]).draw(canvas)
+    tabs = [entry for dump in data["map_panel"]["tabs"] for entry in dump]
+    Layout(tabs, layout_rects(ui, tabs, known_frames(frame))).draw(canvas)
+    return canvas
+
+
+def before_stop(points, yards):
+    """A walk of (x, y) world points cut `yards` before its end: the point there, and the walk from there on."""
+    lengths = [((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2) ** 0.5 for a, b in zip(points, points[1:], strict=False)]
+    left = yards
+    for index in range(len(points) - 2, -1, -1):
+        if lengths[index] >= left:
+            a, b, t = points[index], points[index + 1], left / lengths[index] if lengths[index] else 0
+            here = (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
+            return here, [here, *points[index + 1 :]]
+        left -= lengths[index]
+    return points[0], points
+
+
+def minimap_icon(canvas, name, x, y, size=None):
+    """An icon centred on (x, y), its native aspect fitted inside `size` (WFA-27)."""
+    art = canvas.ui.atlas(name)
+    factor = size / max(art.width, art.height) if size else 1
+    width, height = art.width * factor, art.height * factor
+    canvas.draw(art, x - width / 2, y - height / 2, width, height)
+
+
+def spf_minimap(ui, content_ui, data):
+    """The minimap on the walk's last stretch into the first stop, Shortest Path's breadcrumbs and the game's own
+    waypoint pin on it, with the guide's tracker beside it."""
+    map_id = data["panel"]["map"]
+    stops, player = data["map"]["stops"], data["map"]["player"]
+    walk = spf_walk(content_ui, map_id, (player["x"], player["y"]), (stops[0]["x"], stops[0]["y"]))
+    here, remaining = before_stop(walk, MINIMAP_REACH)
+    size, radius = MINIMAP_SIZE, MINIMAP_RADIUS
+    face = ui.canvas(size, size)
+    # minimap_art stitches the world map's WDT tiles, which the world map id names (1 for Kalimdor).
+    world_map = int(assignment(content_ui, map_id)["MapID"])
+    face.draw(drawing.wm.minimap_art(content_ui, world_map, here[0], here[1], radius), 0, 0, size, size)
+
+    def project(point):
+        return (
+            size / 2 + (here[1] - point[1]) * size / (2 * radius),
+            size / 2 - (point[0] - here[0]) * size / (2 * radius),
+        )
+
+    # Breadcrumbs take normalised map points: here they are the face's own 0..1 square.
+    breadcrumbs(
+        face,
+        {"map": (0, 0, size, size)},
+        [[tuple(value / size for value in project(point)) for point in remaining]],
+        [],
+    )
+    face.mask(ui.atlas("ui-hud-minimap-frame-generic-mask").image, 0, 0, size, size)
+    cx, cy = MINIMAP_CENTRE
+    canvas = ui.canvas(300, 285)
+    canvas.paste(face, cx - size / 2, cy - size / 2)
+    minimap_icon(canvas, "UI-HUD-Minimap-Frame", cx, cy)
+    minimap_icon(canvas, "UI-HUD-Minimap-NightCycle", cx + 63, cy - 72)
+    minimap_icon(canvas, "UI-HUD-Minimap-Frame-Cycle", cx + 63, cy - 72)
+    minimap_icon(canvas, "MinimapArrow", cx, cy, 16)
+    # MinimapPins.lua hides the pin until it is wholly inside the rim, 16 units of it.
+    stop = project(walk[-1])
+    if (here[0] - walk[-1][0]) ** 2 + (here[1] - walk[-1][1]) ** 2 <= ((1 - 16 / size) * radius) ** 2:
+        minimap_icon(canvas, "Waypoint-MapPin-Minimap-Tracked", cx - size / 2 + stop[0], cy - size / 2 + stop[1], 16)
+    canvas.text(0, 13, data["map"]["zone"], drawing.wm.FONTS["GameFontNormal"], justify="CENTER", width=300)
+    tracker, _ = drawing.wm.objective_tracker(ui, [tracker_module(ui, data["map"]["tracker"])], container=False)
+    # The minimap sits on the screen's right edge, so the column to its left is what a crop of that corner shows.
+    return drawing.wm.scene(ui, [(tracker, 0, 6), (canvas, tracker.width + 24, 0)])
+
+
+def spf_steps(ui, data):
+    """The guide's tracker over Shortest Path's own: the steps it plans for the journey, the boat and the flight
+    included, as its tracker words them."""
+    dump = data["steps"]
+    plan = spf_itinerary(ui, dump["player"], dump["stops"][0], dump["zone"])
+    count = len(dump["stops"])
+    title = f"Stop 1 of {count}: {dump['stops'][0]['title']}" if count > 1 else f"Journey to {dump['zone']}"
+    # Route.lua's current row is OBJECTIVE_TRACKER_COLOR.NormalHighlight (white), the rest Normal.
+    rows = [(f"|cffffffff{row['text']}|r" if row["current"] else row["text"], True) for row in plan["rows"]]
+    module = drawing.wm.TrackerModule(plan["header"], [drawing.wm.TrackerBlock(title, rows)])
+    canvas, _ = drawing.wm.objective_tracker(ui, [tracker_module(ui, dump["tracker"]), module], container=False)
+    return canvas
+
+
 def shortest_path(ui, content_ui, data):
     """The map while Shortest Path guides the route AGF handed it: the current leg (player to stop 1) walked with
     Path.FindSync, the later stops joined by the straight preview walk (Route.lua's `preview` path), the numbered
@@ -512,6 +639,7 @@ def render():
             "story_complete",
             "restedxp",
             "guide_setup",
+            "map_panel",
         ),
         known,
     )
@@ -521,6 +649,12 @@ def render():
     images["guide_setup"] = drawing.wm.scene(ui, [(setup_canvas, 0, 0)])
     canvas, _ = quest_log(ui, content_ui, data, rects, "restedxp", data["restedxp"]["pins"])
     images["restedxp"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
+
+    # The lead images: the guide driving Shortest Path. The route on the map is the one it handed over, walked by
+    # Shortest Path's own planner; the tracker beside the minimap is the step it heads for.
+    images["spf_map"] = drawing.wm.scene(ui, [(spf_map(ui, content_ui, data, rects), 0, 0)])
+    images["spf_minimap"] = drawing.wm.scene(ui, [(spf_minimap(ui, content_ui, data), 0, 0)])
+    images["spf_steps"] = drawing.wm.scene(ui, [(spf_steps(ui, data), 0, 0)])
 
     # The lead image: no card chosen yet, compact rows with no scrollbar.
     canvas, _ = quest_log(ui, content_ui, data, rects, "journeys", data["journeys"]["pins"])
@@ -573,14 +707,7 @@ def render():
     shot = crop(canvas, left, top, tip_x + tip.width + 40 - left, py + 90 - top)
     images["tooltip"] = drawing.wm.scene(ui, [(shot, 0, 0), (tip, tip_x - left, tip_y - top)])
 
-    tracker = data["tracker"]
-    blocks = [
-        drawing.wm.TrackerBlock(block["header"], [(line["text"], line["dash"]) for line in block["lines"]])
-        for block in tracker["blocks"]
-    ]
-    canvas, tracked = drawing.wm.objective_tracker(
-        ui, [drawing.wm.TrackerModule(tracker["header"], blocks)], container=False
-    )
+    canvas, tracked = drawing.wm.objective_tracker(ui, [tracker_module(ui, data["tracker"])], container=False)
     images["tracker"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     kinds = {"title": drawing.wm.MenuTitle, "button": drawing.wm.MenuButton}

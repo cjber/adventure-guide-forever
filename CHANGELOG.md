@@ -13,6 +13,12 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [Unreleased]
 - **The quest turn-in leaderboard is part of the shared Forever Leaderboards window.** `/agf leaderboard` and `/agf stats` open that window on the Adventure Guide tab, where you can switch between this week's progress and the all-time total, see your own row pinned in place and read the player-reported values without a line of chat. `/agf` and `/flb` open the window too, and the unit tooltip shows the player's overall place across every installed Forever addon. Sharing stays on unless you turn it off, and the window's Share my progress box, `/agf share off` and the settings checkbox all switch it.
 
+## [1.1.7] - 2026-11-07
+- **The addon list now describes the guide as an adventure.** Its tooltip names zone stories, journeys you pick on the map and a route walked to each hand-in, instead of calling it a levelling guide.
+
+## [1.1.6] - 2026-11-06
+- **You appear once on leaderboards with a two-part name.** A Forever name like Hel Io no longer shows twice, once as you and once as a reported player with the same value.
+
 ## [1.1.5] - 2026-11-06
 - **Targeting a quest giver no longer raises a Lua error.** The guide tried to star the NPC a step talks to whenever you targeted them, and the client refuses that call to addons even out of combat, so it played an error sound each time. The guide no longer tries; the arrows beside the nameplate and the target button under the tracker stay as they were.
 

@@ -2,34 +2,50 @@
 
 <h1 align="center">Adventure Guide Forever</h1>
 
-<p align="center">Story levelling and quest routes for WoW: Forever</p>
+<p align="center">Zone stories, journeys and a route walked for you in WoW: Forever</p>
 
 <p align="center">
-Levels you through zone stories and tidies your quest log, then routes you from stop to stop.<br>
+Adventure Guide Forever turns levelling into the zone's story: chapters you finish, journeys you pick on the map, dungeons with their quests and prerequisites, and a route walked for you to the next hand-in.<br>
 <a href="https://github.com/cjber/adventure-guide-forever/actions/workflows/ci.yml"><img src="https://github.com/cjber/adventure-guide-forever/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 <a href="https://github.com/cjber/adventure-guide-forever/releases/latest"><img src="https://img.shields.io/github/v/release/cjber/adventure-guide-forever" alt="Latest release"></a>
 <a href="https://ko-fi.com/cjber"><img src="https://img.shields.io/badge/Ko--fi-tip-ff5e5b?logo=ko-fi&logoColor=white" alt="Ko-fi"></a>
 </p>
 
-Adventure Guide Forever is a levelling guide for WoW: Forever. Zone story journeys read as chapters, with your progress through each chapter kept per character, and **Quests in your log** finishes what you already carry so the log empties instead of growing. Then a short route joins the rest of your level's quests, and Shortest Path Forever walks you to each stop; without it, the game's waypoint does.
+Each zone's quests read as chapters, the map offers journeys worth taking, and Shortest Path Forever walks you from stop to stop: a pickup, an objective or a hand-in, with flights and boats included. Without it, the game's own waypoint marks the next stop.
 
 Questie draws the quest markers; the guide adds route rings. With RestedXP installed, a one-time prompt lets you keep its display or follow its guides in Adventure Guide.
 
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/chosen.png" width="640" alt="The Barrens story chosen: chapter 1 of 8, its numbered stops in the panel and on the map, with the route drawn from the first"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/spf_map.png" width="640" alt="The Barrens story chosen: the journey card, its numbered stops and Shortest Path's route from the first"></p>
 
-<p align="center">A zone story journey, read as chapters: every stop numbered and the route drawn from the first.</p>
+<p align="center">The Barrens story chosen: the card names the chapter, every stop is numbered, and Shortest Path's route runs from the first.</p>
 
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/map.png" width="640" alt="A journey's quest stops numbered on The Barrens map, with Shortest Path Forever's route to the first"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/spf_steps.png" width="400" alt="The guide's tracker above Shortest Path's steps for a journey across the sea"></p>
 
-<p align="center">Each number is a stop on the route: a pickup, an objective or a hand-in.</p>
+<p align="center">A journey across the sea: Shortest Path lists the boat and the flight, and the guide names the quests waiting at the far end.</p>
 
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif" width="640" alt="Choosing a journey and following its route"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/spf_minimap.png" width="640" alt="The guide's tracker beside the minimap and Shortest Path's walk"></p>
 
-<p align="center">Choose a journey and follow its route, checking off its quests as you go.</p>
+<p align="center">The tracker names the next stop while the minimap carries the same walk.</p>
+
+## Features
+
+- **Zone stories.** Each zone's quest chains read as chapters, such as *Chapter 3 of 7*, on the journey card, the map and the tracker, without naming later quests. Finishing a story shows a short popup, once per character, then moves on to the next zone for your level.
+- **Journeys.** Pick a journey on the map: follow a zone's story, find nearby zones for your level, take class quests or tidy your log. Each journey explains why it fits.
+- **Dungeons.** Read a dungeon's quests and prerequisites, then visit its givers as a numbered route. Right-click a dungeon card for [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) bosses, drops and item tooltips.
+- **A route walked for you.** Choose a journey and Shortest Path Forever takes each stop in order, on foot, by flight or by boat, with its minutes on the card. Its tracker sits above Shortest Path's directions.
+- **Quests in your log.** Finishes what you already carry so the log empties instead of growing. Ready hand-ins come first, and towns group their givers into checklists.
+- **Where to do objectives.** A camp with mobs 3 or more levels above you gives way to a lower one. *Next spot* in the step's menu moves the arrow to another camp, even where you stand.
+- **Search.** Search puts the best match first and shows which requirements you meet. For a locked quest it names the earliest quest in its chain you can take, and a shift-click adds that one.
+- **Your say.** Skip a step until your next reload, hide a journey or rule out a quest. Shift-click a search result or map quest giver to add quests. The guide never abandons quests for you. Map marks are off by default.
+- **RestedXP guides.** Choose a guide from the Continue cards and follow its steps on the map and tracker. RestedXP handles completion; Shortest Path Forever handles travel.
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/panel.png" width="640" alt="Adventure Guide beside The Barrens map"></p>
 
 <p align="center">Choose a journey from the world map's quest log. Expand a header for more choices.</p>
+
+<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/demo.gif" width="640" alt="Choosing a journey and following its route"></p>
+
+<p align="center">Choose a journey and follow its route, checking off its quests as you go.</p>
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/story_complete.png" width="400" alt="Story completion popup"></p>
 
@@ -39,33 +55,6 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 <p align="center">Follow a RestedXP guide in the Adventure tab, with its engine handling progress.</p>
 
-## Features
-
-- **Zone stories.** Each zone's quest chains read as chapters, such as *Chapter 3 of 7*, on the journey card, the map guide and the tracker, without naming later quests. Finishing a story shows a short popup, once per character. Finishing a zone moves on to the next zone for your level, and starts walking there when it was guiding you.
-
-- **RestedXP guides.** Choose a guide from the Continue cards and follow its steps on the map and tracker. RestedXP handles completion; Shortest Path Forever handles travel. While you follow one, the tracker lists only the quests its steps name, and your own tracked quests come back when you stop. While it steers a RestedXP guide, Adventure Guide shows its own item and target buttons for the current step. Turn off *Use RestedXP guides* to return to Adventure Guide's suggestions.
-
-- **Quest difficulty.** Choose the highest recommended quest level relative to yours in Route settings. The default, +2, avoids orange and red pickups. Accepted quests remain visible.
-
-- **Dungeon journeys.** Follow quest pickups, preparation chains and hand-ins with Shortest Path Forever. Right-click a dungeon card for AtlasLoot bosses, drops and native item tooltips. Tweaks Forever handles automatic dungeon maps.
-- **Journeys.** Finish loose ends, follow a zone's story, find nearby zones suited to your level or take class quests. Journey choices explain why each fits. Dungeon and battleground journeys are opt-in.
-- **Full guide.** Expand the map guide for the whole route, then the area's Questie outline. Later entries stay as outline until Questie confirms them.
-- **Choose and go.** Pick a journey on the map to start guidance with Shortest Path Forever, or the game's waypoint. A setting makes choosing preview only. Stop clears only guidance the addon started.
-- **A route that stays with you.** Your choice survives new quests, travel and reloads. Ready hand-ins and nearby pickups come first. Town stops group quest givers into a checklist.
-- **Playing in a party.** Quests someone in your party also has count as a little nearer, so you tend to do them together, and a pickup a party member already has says so. Party members with the guide tell each other which quests they have through hidden addon messages, at most one every 15 seconds and never in combat. Turn off *Favour quests your party has* in Route settings to stop it.
-- **Your order.** Drag steps or right-click to move them earlier or later. Moves that break quest order are greyed out. *Back to suggested order* restores the plan.
-- **Where to do an objective.** The guide skips a place whose mobs are 3 or more levels above you for a lower one on the same map. *Next spot* in the step's menu moves the arrow to the nearest other camp, even where you stand.
-- **Quest givers stand out.** While a step talks to an NPC, a pair of small arrows bounces either side of their nameplate and a target button selects them. Friendly nameplates must be on; the tracker says so once.
-- **Givers that don't offer a quest.** If a giver doesn't offer the quest the guide sent you for, the guide says so once in chat and drops it, trying again after a level-up or a hand-in that could open it up.
-- **Reward upgrades.** When a quest offers rewards to choose from, the game's green arrow marks each one that beats what you wear: your armour type, a main stat your class uses and a higher item level.
-- **Search.** Search puts the best match first and shows which of a quest's requirements you meet. For a locked quest it names the earliest quest in its chain you can take, and a shift-click adds that one.
-- **Other things to do.** Hints cover professions, unspent talents, hearths and new lands Forever added. Class spell reminders and trainer visits are off by default (Route settings). PvP shows your rank, its next reward and the nearest battlemaster.
-- **Your say.** Skip a step until your next reload, hide a journey or rule out a quest on this character. Shift-click a search result or map quest giver to add quests. *Skipped* restores hidden suggestions. The guide never abandons quests for you. Map marks are off by default.
-
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/tracker.png" width="400" alt="The Adventure Guide tracker section"></p>
-
-<p align="center">Your next stop sits beside your quests, with travel time when Shortest Path Forever has an estimate.</p>
-
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/loot.png" width="300" alt="Dungeon boss drops in the map card menu"></p>
 
 <p align="center">Right-click a dungeon card for its bosses and loot. Hover a drop for the game's item tooltip.</p>
@@ -74,9 +63,7 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/minimap-adventure-guide.png" width="640" alt="The Adventure Guide button on the minimap rim"></p>
 
-<p align="center">Open Adventure Guide from its button on the minimap rim, Alt-G or <code>/agf</code>.</p>
-
-<p align="center">Drag the button around the rim to move it. Turn it off in Settings > AddOns > Adventure Guide if you prefer the map tab or the addon compartment.</p>
+<p align="center">Open Adventure Guide from its button on the minimap rim, Alt-G or <code>/agf</code>. Drag the button around the rim to move it, or turn it off in Settings > AddOns > Adventure Guide if you prefer the map tab or the addon compartment.</p>
 
 ## Install
 
@@ -108,7 +95,7 @@ Forever's new quests are only considered once they are in your log. The guide re
 
 ## Works alongside
 
-QuestieDB and Questie are needed for pickup recommendations. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) is an optional companion for bosses and loot. While Polestar has a guide running, the guide starts no route and draws no map marks until you click its tracker line; *Step aside while Polestar is guiding* turns that off. The guide's tracker section shares one column with the other Forever sections, above your quests, and has its own switch when you prefer another guide. An empty column leaves your quests where Edit Mode or your UI addon put them. With [Pawn](https://www.curseforge.com/wow/addons/pawn) installed, the guide draws no reward upgrade arrows and leaves them to Pawn, which weighs every stat.
+QuestieDB and Questie are needed for pickup recommendations. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) is an optional companion for bosses and loot. While Polestar has a guide running, the guide starts no route and draws no map marks until you click its tracker line; *Step aside while Polestar is guiding* turns that off. The guide's tracker section shares one column with the other Forever sections, above your quests. With [Pawn](https://www.curseforge.com/wow/addons/pawn) installed, the guide leaves reward upgrade arrows to Pawn.
 
 <!-- forever-family:start -->
 
@@ -140,15 +127,11 @@ No code needed:
 
 ## Development
 
-Run the full gate in [AGENTS.md](AGENTS.md#commands). `python3 tools/doctor.py` lists the tools it needs, with a fix for each problem.
-
-Screenshots use Pillow and the [shared renderer in forever-core](https://github.com/cjber/forever-core): set `FOREVER_CORE` to the forever-core checkout and run `python3 tools/screenshots.py` twice; both runs must match.
-
-[tests/README.md](tests/README.md) describes the test layers and the harness. Contributing and security policies are inherited from [cjber/.github](https://github.com/cjber/.github). Read [AGENTS.md](AGENTS.md) before changing code.
+Run the full gate in [AGENTS.md](AGENTS.md#commands). `python3 tools/doctor.py` lists the tools it needs, with a fix for each problem. Screenshots use Pillow and the [shared renderer in forever-core](https://github.com/cjber/forever-core): set `FOREVER_CORE` to the forever-core checkout and run `python3 tools/screenshots.py` twice; both runs must match. [tests/README.md](tests/README.md) describes the test layers. Contributing and security policies are inherited from [cjber/.github](https://github.com/cjber/.github).
 
 ## Support
 
-The addon is free and stays GPL-3.0. If it saves you time, you can [buy me a coffee on Ko-fi](https://ko-fi.com/cjber); nothing is locked behind it and there is no paid version.
+The addon is free and stays GPL-3.0. If it saves you time, you can [buy me a coffee on Ko-fi](https://ko-fi.com/cjber); nothing is locked behind it.
 
 ## Credits
 

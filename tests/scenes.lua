@@ -104,6 +104,22 @@ local function Tooltip(h)
 	return lines
 end
 
+-- The guide's tracker section: its header, then each block's header and its lines (a dash unless the line hides it,
+-- OBJECTIVE_DASH_STYLE_HIDE and _HIDE_AND_COLLAPSE). Shortest Path's own section is drawn from its planner.
+local function Tracker(h)
+	local module = h.tracker
+	local blocks = {}
+	for index, id in ipairs(module.layoutOrder) do
+		local block = module.liveBlocks[id]
+		local lines = {}
+		for position, key in ipairs(block.order) do
+			lines[position] = { text = block.lines[key], dash = (block.dashes[key] or 1) == 1 }
+		end
+		blocks[index] = { header = block.header, lines = lines }
+	end
+	return { header = module.Header.Text:GetText(), blocks = blocks }
+end
+
 local out = {}
 
 -- Match ui_spec's explicit paused, planned-order fixture for its golden layout. Other scenes use nearest-first.
@@ -173,17 +189,7 @@ out.tooltip = {
 ring:OnMouseLeave()
 
 local module = h.tracker
-local blocks = {}
-for index, id in ipairs(module.layoutOrder) do
-	local block = module.liveBlocks[id]
-	local lines = {}
-	for position, key in ipairs(block.order) do
-		-- A dash unless the line hides it (OBJECTIVE_DASH_STYLE_HIDE and _HIDE_AND_COLLAPSE).
-		lines[position] = { text = block.lines[key], dash = (block.dashes[key] or 1) == 1 }
-	end
-	blocks[index] = { header = block.header, lines = lines }
-end
-out.tracker = { header = module.Header.Text:GetText(), blocks = blocks }
+out.tracker = Tracker(h)
 -- The step block is laid out last, under the journey's title, the asides and the fanfares.
 module:OnBlockHeaderClick(module.liveBlocks[module.layoutOrder[#module.layoutOrder]], "RightButton")
 local entries = {}
@@ -205,7 +211,45 @@ h.flush()
 h.ns.Guidance.Navigate(h.ns.Route().steps[1])
 h.flush()
 h.ns.Pins.Refresh()
-out.map = { stops = stops, pins = Pins(h), player = { map = h.player.map, x = h.player.x, y = h.player.y } }
+out.map = {
+	stops = stops,
+	pins = Pins(h),
+	player = { map = h.player.map, x = h.player.x, y = h.player.y },
+	zone = h.ns.State.MapName(h.player.map),
+	tracker = Tracker(h),
+}
+-- The panel as that route leaves it: the same order the stops were handed in, the first step lit.
+out.map_panel = Panel(h, "map_panel")
+
+-- The guide on a journey across the sea, its tracker beside Shortest Path's own: the boat and the flight are Shortest
+-- Path's lines, read from its planner by tools/screenshots.py. The legs below are that plan's, so the card's minutes
+-- and the tracker's travel line (while it is held, not guided) say the same thing as the steps.
+h = Load("v1+", false, false, "zone:1436")
+h.spfLegs = {
+	{ mode = "walk", to = "Ratchet dock", seconds = 25 },
+	{ mode = "boat", to = "Stranglethorn Vale", seconds = 283, wait = 176 },
+	{ mode = "walk", to = "Booty Bay dock", seconds = 65 },
+	{ mode = "flight", to = "Grom'gol, Stranglethorn", seconds = 105 },
+	{ mode = "walk", to = "Westfall", seconds = 467 },
+}
+h.MovePlayer(1413, 0.6237, 0.3762)
+h.ns.Invalidate()
+h.flush()
+local guideAPI, guidedStops = h.G.ShortestPathForever.API, nil
+local GuideRoute = guideAPI.NavigateRoute
+guideAPI.NavigateRoute = function(owner, route)
+	guidedStops = route
+	return GuideRoute(owner, route)
+end
+h.ns.Choose("zone:1436", true)
+h.flush()
+local guided = h.ns.Route().steps[1]
+out.steps = {
+	tracker = Tracker(h),
+	stops = guidedStops,
+	zone = guided.zone,
+	player = { map = h.player.map, x = h.player.x, y = h.player.y },
+}
 
 h = Load("v1", false, true)
 h.flush()
