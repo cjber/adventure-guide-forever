@@ -42,6 +42,9 @@ CODE = (
 # Each image and the parts of tests/scenes.lua's run tools/screenshots.py reads for it: a scene, or one of its
 # fields ("panel.map" is the zone every quest-log image is drawn on).
 IMAGES = {
+    "spf_map.png": ("map", "map_panel", "panel.map"),
+    "spf_minimap.png": ("map", "panel.map"),
+    "spf_steps.png": ("steps",),
     "panel.png": ("journeys", "panel.map"),
     "chosen.png": ("panel",),
     "panel_four.png": ("journeys_four", "panel.map"),

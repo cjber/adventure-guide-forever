@@ -2,6 +2,7 @@
 
 import io
 import json
+import math
 import os
 import subprocess
 import sys
@@ -44,6 +45,112 @@ for index, leg in ipairs(LEGS) do
 	walks[index] = "[" .. table.concat(out, ",") .. "]"
 end
 print("[" .. table.concat(walks, ",") .. "]")
+"""
+
+# A whole journey as Shortest Path plans and words it: its own planner and LegStep/LegTime strings, run offline by its
+# journey test driver on the same pinned sources. The driver answers C_Map from its fixture, so the two facts it cannot
+# take from the client are named here: the flight points this character has flown, and the zone each boat pier this
+# route can touch stands in (C_Map.GetMapInfo in game, Data/Zones.lua's box otherwise).
+SPF_ITINERARY_PROGRAM = r"""
+local driver = assert(loadfile("tests/journey_driver.lua"))()
+local ns = driver.ns
+for _, file in ipairs({
+	"Data/Routes.lua", "Data/Transports.lua", "Data/Taxi.lua", "Data/Portals.lua", "Data/Walks.lua",
+	"Routing/PathGrid.lua", "Routing/Path.lua", "Routing/PathJobs.lua",
+}) do driver.load(file) end
+for _, map in ipairs({ 0, 1 }) do assert(loadfile("tools/load_nav.lua"))(map) end
+ns.NowMs = function() return 123456 end
+local nextFrame
+ns.Path.after = function(fn) nextFrame = fn end
+ns.faction, ns.speed, ns.water = "Horde", 7, false
+-- Booty Bay (both flight masters) and Grom'gol: the points a character who has been to Redridge has flown.
+ns.known = {}
+for _, id in ipairs({ 18, 19, 20 }) do ns.known[id] = true end
+local DOCK_ZONE = { [1] = "The Barrens", [2] = "Stranglethorn Vale" }
+local SCHEDULED = { boat = true, zeppelin = true, lift = true, tram = true }
+-- JourneySteps.lua's own words, so a step names the same place in both addons' trackers.
+local STEP = {
+	walk = "Walk to %s", flight = "Fly to %s", boat = "Boat to %s", zeppelin = "Zeppelin to %s", lift = "Lift to %s",
+	tram = "Tram to %s", portal = "Portal to %s", passage = "Go through to %s", teleport = "Teleport to %s",
+}
+local function dockPlace(id)
+	local dock = ns.Docks[id]
+	local name, best = nil, math.huge
+	for _, taxi in pairs(ns.TaxiNodes) do
+		if taxi.map == dock.map then
+			local distance = (taxi.x - dock.x) ^ 2 + (taxi.y - dock.y) ^ 2
+			if distance < best then name, best = taxi.name:match("^[^,]+"), distance end
+		end
+	end
+	return name or "dock"
+end
+-- Map.lua's DockPierName for a pier with no other of its kind within 800 yards: "Ratchet dock", "Booty Bay dock".
+local function dockTitle(id)
+	local dock = ns.Docks[id]
+	if dock.site then return dock.site .. ", " .. dock.name end
+	return dockPlace(id) .. " dock"
+end
+local function label(leg)
+	if leg.to.kind == "dock" then
+		if leg.mode == "walk" then return dockTitle(leg.to.id) end
+		return assert(DOCK_ZONE[leg.to.id], "no zone for dock " .. leg.to.id)
+	end
+	if leg.to.kind == "taxi" then return ns.TaxiName(leg.to.id) end
+	return ns.LegStep(leg)
+end
+local function countdown(ms)
+	local seconds = math.max(0, math.ceil(ms / 1000))
+	return string.format("%d:%02d", math.floor(seconds / 60), seconds % 60)
+end
+local function legTime(leg)
+	local text = countdown(leg.arrive - leg.depart)
+	if leg.wait and leg.wait > 0 then
+		local lead = leg.mode == "teleport" and "ready in %s"
+			or leg.estimated and SCHEDULED[leg.mode] and "leaves in about %s"
+			or "leaves in %s"
+		text = string.format("%s · %s", string.format(lead, countdown(leg.wait)), text)
+	end
+	return text
+end
+local function drain()
+	local frames = 0
+	while nextFrame do
+		local fn = nextFrame
+		nextFrame = nil
+		fn()
+		frames = frames + 1
+		assert(frames < 20000, "the journey search did not settle")
+	end
+end
+local from = { map = FROM_MAP, x = FROM_X, y = FROM_Y, z = 0 }
+local goal = { map = TO_MAP, x = TO_X, y = TO_Y, z = 0 }
+driver.begin(from, goal)
+drain()
+local plan = assert(driver.shown(), "Shortest Path found no route")
+local rows, total, yards = {}, 0, 0
+for index, leg in ipairs(plan.legs) do
+	local ride, wait = (leg.arrive - leg.depart) / 1000, (leg.wait or 0) / 1000
+	total = total + math.ceil(ride) + math.ceil(wait)
+	local place = index == #plan.legs and leg.mode == "walk" and GOAL or label(leg)
+	local text = string.format("%d. %s", index, string.format(STEP[leg.mode], place))
+	if leg.mode == "walk" and leg.to.undiscovered then text = string.format("%s (new flight path)", text) end
+	rows[index] = { text = text .. "   " .. legTime(leg), current = index == 1 }
+	local ok, points = pcall(ns.PlanContext.LegPoints, leg)
+	if ok and points and leg.mode == "walk" then
+		for at = 2, #points do
+			local a, b = points[at - 1], points[at]
+			if a.map == b.map and not a.jump then
+				yards = yards + math.sqrt((b.x - a.x) ^ 2 + (b.y - a.y) ^ 2)
+			end
+		end
+	end
+end
+local lines = {}
+for index, row in ipairs(rows) do
+	lines[index] = string.format('{"text": %q, "current": %s}', row.text, tostring(row.current))
+end
+local pattern = '{"seconds": %d, "yards": %d, "rows": [%s]}'
+print(string.format(pattern, total, math.floor(yards + 0.5), table.concat(lines, ",")))
 """
 
 
@@ -123,6 +230,41 @@ def spf_walk(ui, map_id, a, b):
         sys.exit("Shortest Path's Path.FindSync failed:\n" + result.stderr)
     (walk,) = json.loads(result.stdout)
     return walk
+
+
+def countdown(seconds):
+    """Whole seconds as Shortest Path's tracker shows them (Transport/Model.lua's FormatCountdown)."""
+    seconds = max(0, math.ceil(seconds))
+    return f"{seconds // 60}:{seconds % 60:02d}"
+
+
+def distance(yards):
+    """Yards as Shortest Path's tracker shows them (Core/Distance.lua's FormatDistance, compact)."""
+    return f"{yards / 1000:.1f}k yd" if yards >= 999.5 else f"{round(yards)} yd"
+
+
+def spf_itinerary(ui, start, goal, goal_label):
+    """Shortest Path's own plan from `start` to `goal` (uiMap positions) with its rows as its tracker words them:
+    the numbered steps, the boat's wait and the flight. `goal_label` is the zone its destination node names, which
+    the offline driver cannot resolve."""
+    a, b = world_point(ui, start["map"], start["x"], start["y"]), world_point(ui, goal["map"], goal["x"], goal["y"])
+    program = SPF_ITINERARY_PROGRAM
+    for name, value in (
+        ("FROM_MAP", a["map"]),
+        ("FROM_X", f"{a['x']:.4f}"),
+        ("FROM_Y", f"{a['y']:.4f}"),
+        ("TO_MAP", b["map"]),
+        ("TO_X", f"{b['x']:.4f}"),
+        ("TO_Y", f"{b['y']:.4f}"),
+        ("GOAL", json.dumps(goal_label)),
+    ):
+        program = program.replace(name, str(value))
+    result = subprocess.run(["luajit", "-"], input=program, text=True, cwd=spf_sources(), capture_output=True)
+    if result.returncode:
+        sys.exit("Shortest Path's planner failed:\n" + result.stderr)
+    plan = json.loads(result.stdout)
+    plan["header"] = f"Journey  {countdown(plan['seconds'])} · {distance(plan['yards'])}"
+    return plan
 
 
 def breadcrumbs(canvas, rects, lines, marks):
