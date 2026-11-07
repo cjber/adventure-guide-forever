@@ -469,7 +469,7 @@ L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
 -- mt
-L["WHATS_NEW"] = "Forever Leaderboards 창이 열립니다." -- mt
+L["WHATS_NEW"] = "금색 번호 표식이 경로의 모든 단계를 표시합니다." -- mt
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"
