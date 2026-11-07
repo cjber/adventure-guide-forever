@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 import screenshots_art as drawing
-from screenshots_art import draw_font_string, texture
+from screenshots_art import draw_font_string
 from screenshots_resolver import map_point
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -306,10 +306,8 @@ STOP_ATLASES = {
     "objective": "questobjective",
     "dungeon": "dungeon",
     "innkeeper": "innkeeper",
-}
-STOP_FILES = {
-    "trainer": "Interface\\Minimap\\Tracking\\Class",
-    "battlemaster": "Interface\\Minimap\\Tracking\\BattleMaster",
+    "trainer": "Class",
+    "battlemaster": "BattleMaster",
 }
 
 
@@ -349,8 +347,8 @@ def goal_pins(canvas, stops, marks):
         else:
             draw_font_string(canvas, {"text": str(number), "font": "GameFontNormal"}, (cx - 16, cy - 16, 32, 32), alpha)
         kind = stops[group[0]].get("kind")
-        if kind in STOP_ATLASES or kind in STOP_FILES:
-            art = ui.atlas(STOP_ATLASES[kind]) if kind in STOP_ATLASES else texture(ui, STOP_FILES[kind])
+        if kind in STOP_ATLASES:
+            art = ui.atlas(STOP_ATLASES[kind])
             scale = 16 / max(art.width, art.height)
             width, height = art.width * scale, art.height * scale
             canvas.draw(art, cx + 14 - width, cy + 14 - height, width, height, (1, 1, 1, alpha))
