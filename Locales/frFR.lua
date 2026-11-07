@@ -477,7 +477,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "mis à jour en %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Les notifications d'histoire ne provoquent plus d'erreur Lua. Le guide charge désormais la fenêtre des hauts faits du jeu comme le fait le jeu, pour que le bouclier de la notification ait le code nécessaire." -- mt
+	"Vous n'apparaissez qu'une fois dans les classements avec un nom en deux parties. Un nom Forever comme Hel Io ne s'affiche plus deux fois." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"

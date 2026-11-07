@@ -472,7 +472,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "atualizado para %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Os avisos de história não geram mais um erro de Lua. O guia agora carrega a janela de conquistas do jogo como o próprio jogo faz, para que o escudo do aviso tenha o código de que precisa." -- mt
+	"Você aparece uma vez nas classificações com um nome de duas partes. Um nome Forever como Hel Io não aparece mais duas vezes." -- mt
 L["WHY_ALLIANCE"] = "Só Aliança"
 L["WHY_BREADCRUMB"] = "Só até você aceitar %s"
 L["WHY_CHOSE"] = "Você escolheu %s no lugar"
