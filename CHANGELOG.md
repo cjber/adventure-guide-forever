@@ -12,6 +12,11 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+
+## [1.1.14] - 2026-11-07
+
+- **The map's tabs touch the frame.** The Quests tab and the Adventure Guide tab on the right of the world map now sit flush against the map frame, with no dark strip between them.
+
 ## [1.1.13] - 2026-11-07
 
 - **Gold numbered markers.** Route steps on the world map, the minimap and in the guide wear gold numbered rings with the number drawn into the art, so every number sits centred and crisp. Later steps dim so the next one stands out.
