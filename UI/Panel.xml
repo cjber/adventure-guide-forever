@@ -91,43 +91,14 @@
 	<Frame name="AdventureGuideForeverPinTemplate" mixin="AdventureGuideForeverPinMixin" enableMouse="true" virtual="true">
 		<Size x="20" y="20"/>
 		<Layers>
-			<!-- The stock quest POI, as Shortest Path's StopPin.lua draws it: 32-unit art on a 20-unit button.
-			     Its black silhouette stays opaque beneath faded later stops. -->
-			<Layer level="BACKGROUND">
-				<!-- art-ok: the quest POI's square art at 32 square -->
-				<Texture parentKey="Disc" atlas="UI-QuestPoi-QuestNumber">
-					<Size x="32" y="32"/>
-					<Anchors>
-						<Anchor point="CENTER"/>
-					</Anchors>
-				</Texture>
-			</Layer>
+			<!-- Our gold numbered marker at 24 square, the number painted into the art (UI/Art.lua). -->
 			<Layer level="ARTWORK">
-				<!-- art-ok: the quest POI's square art at 32 square -->
-				<Texture parentKey="Icon" atlas="UI-QuestPoi-QuestNumber">
-					<Size x="32" y="32"/>
+				<Texture parentKey="Icon">
+					<Size x="24" y="24"/>
 					<Anchors>
 						<Anchor point="CENTER"/>
 					</Anchors>
 				</Texture>
-			</Layer>
-			<Layer level="ARTWORK" textureSubLevel="1">
-				<!-- art-ok: a square cell of the POI number sheet, cropped in Pins.lua -->
-				<Texture parentKey="Number" file="Interface\WorldMap\UI-QuestPoi-NumberIcons">
-					<Size x="32" y="32"/>
-					<Anchors>
-						<Anchor point="CENTER"/>
-					</Anchors>
-				</Texture>
-			</Layer>
-			<!-- The quest POI's own numeral over the ring; hover and the reveal ping are the tooltip and the native
-			     ping pin, with no glow layer of our own. -->
-			<Layer level="OVERLAY">
-				<FontString parentKey="NumberText" inherits="GameFontNormal">
-					<Anchors>
-						<Anchor point="CENTER"/>
-					</Anchors>
-				</FontString>
 			</Layer>
 		</Layers>
 		<!-- The shared private canvas wires hover and observes global mouse clicks. -->

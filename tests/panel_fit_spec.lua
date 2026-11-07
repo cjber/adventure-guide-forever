@@ -1,4 +1,5 @@
 local harness = dofile("tests/harness.lua")
+local MARKER = "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\"
 local h = harness.load({ log = { { id = 99999, title = "Unknown quest", level = 18 } } })
 local ns = h.ns
 ns.OpenPanel()
@@ -81,11 +82,12 @@ for _, row in ipairs(previews) do
 	if row.questID then
 		future = future + 1
 		assert(not row:IsEnabled(), "future quest cannot start a premature route")
-		assert(not row.Number:IsShown() and not row.Ring:IsShown(), "future quests are distinct from active stops")
+		assert(not row.Number:IsShown(), "future quests are distinct from active stops")
 		assert(row.Detail:GetText() == fresh.ns.L.GUIDE_OUTLINE, "future quest explicitly labelled")
 		seen[row.questID] = true
 	else
 		active = active + 1
+		assert(row.Number.file == MARKER .. row.index .. ".tga", "an active row wears our numbered marker")
 	end
 end
 assert(active == #fresh.ns.Route().steps and future > 0, "outline never mutates the active navigation route")
@@ -97,20 +99,22 @@ for _, row in ipairs(previews) do
 		assert(not row:IsVisible(), "leaving the guide hides continuation rows")
 	end
 end
--- The tenth numeral must not request a nonexistent stock atlas, and recycled rows restore atlas numerals.
+-- The tenth marker is our own art, not a font, and recycled rows restore their numbered marker.
 local parent = fresh.G.CreateFrame("Frame")
 local number = parent:CreateTexture()
 number:SetSize(20, 20)
 number:SetPoint("CENTER", parent)
-fresh.ns.Art.SetNumber(number, 10)
-local label
+fresh.ns.Art.SetStepMarker(number, 10, 26)
+assert(number.file == MARKER .. "10.tga", "ten has a marker texture of its own")
+local labelled
 for _, region in ipairs({ parent:GetRegions() }) do
 	if region.GetText and region:GetText() == "10" then
-		label = region
+		labelled = region
 	end
 end
-assert(label and label:IsShown() and not number:IsShown(), "ten uses a legible text numeral")
-fresh.ns.Art.SetNumber(number, 1)
-assert(not label:IsShown() and number:IsShown(), "recycling ten to one hides the fallback numeral")
+assert(not labelled, "ten draws no font")
+assert(number:GetWidth() == 26 and number:GetHeight() == 26, "ten keeps the route row's square")
+fresh.ns.Art.SetStepMarker(number, 1, 26)
+assert(number.file == MARKER .. "1.tga", "recycling ten to one reuses the marker art")
 assert(#fresh.errors == 0, table.concat(fresh.errors, "\n"))
 print("panel_fit_spec: destinations and ten-step continuation accessible")

@@ -12,6 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Numbered markers.** Route steps on the map, the minimap and in the guide wear gold numbered markers with the number drawn into the art.
 
 ## [1.1.12] - 2026-11-07
 

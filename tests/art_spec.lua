@@ -173,6 +173,38 @@ do
 	near(offset.point.y, -3 / (26 / 69), "row: vertically too")
 end
 
+-- Step markers: our own numbered art, square, and the empty ring for a repeated visit.
+do
+	local texture = setmetatable({}, Texture)
+	Art.SetStepMarker(texture, 3, 26)
+	equal(
+		texture.file,
+		"Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\3.tga",
+		"marker: the step's own numbered art"
+	)
+	equal(texture.atlas, nil, "marker: no atlas")
+	for index = 1, 4 do
+		equal(texture.coords[index], index % 2 == 1 and 0 or 1, "marker: whole")
+	end
+	equal(texture.width, 26, "marker: square")
+	equal(texture.height, 26, "marker: square")
+	Art.SetStepMarker(texture, 10, 24)
+	equal(
+		texture.file,
+		"Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\10.tga",
+		"marker: ten is a texture of its own"
+	)
+	Art.SetStepMarker(texture, 99, 24)
+	equal(
+		texture.file,
+		"Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\10.tga",
+		"marker: a step past the route's ten keeps the last art"
+	)
+	Art.SetStepRing(texture, 24)
+	equal(texture.file, Art.STEP_RING, "ring: the empty ring")
+	equal(texture.width, 24, "ring: square")
+end
+
 -- Markup: the height given, the width from the aspect.
 do
 	equal(Art.Markup("tall", 31), "|A:tall:31:22|a", "markup: the width from the aspect")

@@ -77,6 +77,12 @@ assert(represented == 10 and #numbered < 10, "all ten destinations are represent
 -- Hovering a minimap marker names its step as the tracker words it; clicks still fall through to the minimap.
 local hovered = numbered[1].icon
 local first = hovered.visits[1]
+assert(
+	hovered.marker.file == "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\" .. first.index .. ".tga",
+	"minimap markers wear our numbered marker art"
+)
+assert(hovered.marker:GetWidth() == 24 and hovered.marker:GetHeight() == 24, "a minimap marker is square")
+assert(hovered.Stack.file == preview.ns.Art.STEP_RING, "minimap stacks use our empty ring")
 local questID = next(preview.ns.Data.quests)
 first.step.quests = { questID }
 first.step.checklist[1].done = true

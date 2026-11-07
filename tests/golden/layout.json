@@ -667,31 +667,12 @@
           "y": 0.00
         }
       ],
-      "atlas": "adventureguide-ring",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Ring",
-      "size": [
-        25.73,
-        26.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "CENTER",
-          "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Ring",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "services-number-1",
+      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\1.tga",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Number",
       "size": [
-        22.00,
-        24.48
+        26.00,
+        26.00
       ],
       "type": "Texture"
     },
@@ -700,7 +681,7 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Number",
           "x": 8.00,
           "y": 4.00
         },
@@ -747,7 +728,7 @@
         {
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Number",
           "x": -5.00,
           "y": 5.00
         }
@@ -898,31 +879,12 @@
           "y": 0.00
         }
       ],
-      "atlas": "adventureguide-ring",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Ring",
-      "size": [
-        25.73,
-        26.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "CENTER",
-          "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Ring",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "services-number-2",
+      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\2.tga",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Number",
       "size": [
-        22.00,
-        24.48
+        26.00,
+        26.00
       ],
       "type": "Texture"
     },
@@ -931,7 +893,7 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Number",
           "x": 8.00,
           "y": 4.00
         },
@@ -978,7 +940,7 @@
         {
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Number",
           "x": -5.00,
           "y": 5.00
         }
@@ -1129,31 +1091,12 @@
           "y": 0.00
         }
       ],
-      "atlas": "adventureguide-ring",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Ring",
-      "size": [
-        25.73,
-        26.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "CENTER",
-          "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Ring",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "services-number-3",
+      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\3.tga",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Number",
       "size": [
-        22.00,
-        24.48
+        26.00,
+        26.00
       ],
       "type": "Texture"
     },
@@ -1162,7 +1105,7 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Number",
           "x": 8.00,
           "y": 4.00
         },
@@ -1209,7 +1152,7 @@
         {
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Number",
           "x": -5.00,
           "y": 5.00
         }
@@ -1360,31 +1303,12 @@
           "y": 0.00
         }
       ],
-      "atlas": "adventureguide-ring",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Ring",
-      "size": [
-        25.73,
-        26.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "CENTER",
-          "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Ring",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "services-number-4",
+      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\4.tga",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Number",
       "size": [
-        22.00,
-        24.48
+        26.00,
+        26.00
       ],
       "type": "Texture"
     },
@@ -1393,7 +1317,7 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Number",
           "x": 8.00,
           "y": 4.00
         },
@@ -1440,7 +1364,7 @@
         {
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Number",
           "x": -5.00,
           "y": 5.00
         }
@@ -1591,31 +1515,12 @@
           "y": 0.00
         }
       ],
-      "atlas": "adventureguide-ring",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Ring",
-      "size": [
-        25.73,
-        26.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "CENTER",
-          "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Ring",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "services-number-5",
+      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\5.tga",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Number",
       "size": [
-        22.00,
-        24.48
+        26.00,
+        26.00
       ],
       "type": "Texture"
     },
@@ -1624,7 +1529,7 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Number",
           "x": 8.00,
           "y": 4.00
         },
@@ -1671,7 +1576,7 @@
         {
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Number",
           "x": -5.00,
           "y": 5.00
         }
@@ -1822,31 +1727,12 @@
           "y": 0.00
         }
       ],
-      "atlas": "adventureguide-ring",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Ring",
-      "size": [
-        25.73,
-        26.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "CENTER",
-          "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Ring",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "services-number-6",
+      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\6.tga",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Number",
       "size": [
-        22.00,
-        24.48
+        26.00,
+        26.00
       ],
       "type": "Texture"
     },
@@ -1855,7 +1741,7 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Number",
           "x": 8.00,
           "y": 4.00
         },
@@ -1902,7 +1788,7 @@
         {
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Number",
           "x": -5.00,
           "y": 5.00
         }
@@ -2053,31 +1939,12 @@
           "y": 0.00
         }
       ],
-      "atlas": "adventureguide-ring",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Ring",
-      "size": [
-        25.73,
-        26.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "CENTER",
-          "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Ring",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "services-number-7",
+      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\7.tga",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Number",
       "size": [
-        22.00,
-        24.48
+        26.00,
+        26.00
       ],
       "type": "Texture"
     },
@@ -2086,7 +1953,7 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Number",
           "x": 8.00,
           "y": 4.00
         },
@@ -2133,7 +2000,7 @@
         {
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Number",
           "x": -5.00,
           "y": 5.00
         }
@@ -2284,31 +2151,12 @@
           "y": 0.00
         }
       ],
-      "atlas": "adventureguide-ring",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Ring",
-      "size": [
-        25.73,
-        26.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "CENTER",
-          "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Ring",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "services-number-8",
+      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\8.tga",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Number",
       "size": [
-        22.00,
-        24.48
+        26.00,
+        26.00
       ],
       "type": "Texture"
     },
@@ -2317,7 +2165,7 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Number",
           "x": 8.00,
           "y": 4.00
         },
@@ -2364,7 +2212,7 @@
         {
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Number",
           "x": -5.00,
           "y": 5.00
         }
@@ -2515,31 +2363,12 @@
           "y": 0.00
         }
       ],
-      "atlas": "adventureguide-ring",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Ring",
-      "size": [
-        25.73,
-        26.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "CENTER",
-          "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Ring",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "services-number-9",
+      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\9.tga",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Number",
       "size": [
-        22.00,
-        24.48
+        26.00,
+        26.00
       ],
       "type": "Texture"
     },
@@ -2548,7 +2377,7 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Number",
           "x": 8.00,
           "y": 4.00
         },
@@ -2595,7 +2424,7 @@
         {
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Number",
           "x": -5.00,
           "y": 5.00
         }
@@ -2746,11 +2575,11 @@
           "y": 0.00
         }
       ],
-      "atlas": "adventureguide-ring",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Ring",
+      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\10.tga",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Number",
       "size": [
-        25.73,
+        26.00,
         26.00
       ],
       "type": "Texture"
@@ -2760,7 +2589,7 @@
         {
           "point": "TOPLEFT",
           "relativePoint": "TOPRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Number",
           "x": 8.00,
           "y": 4.00
         },
@@ -2807,7 +2636,7 @@
         {
           "point": "CENTER",
           "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Ring",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Number",
           "x": -5.00,
           "y": 5.00
         }
@@ -2821,22 +2650,6 @@
       ],
       "subLevel": 1.00,
       "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "CENTER",
-          "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Ring",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "font": "GameFontNormal",
-      "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].FontString[1]",
-      "text": "10",
-      "type": "FontString"
     },
     {
       "alpha": 0.00,

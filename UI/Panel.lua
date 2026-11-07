@@ -143,7 +143,6 @@ local checks = {}
 
 ---@class AGFRouteRow : Button, AGFDraggableRow
 ---@field Selected Texture
----@field Ring Texture
 ---@field Number Texture
 ---@field Title FontString
 ---@field Detail FontString
@@ -211,14 +210,12 @@ local function CreateRow(parent)
 	end)
 	row.SkipButton:SetPoint("TOPRIGHT", -6, -7)
 
-	row.Ring = row:CreateTexture(nil, "ARTWORK")
-	Art.Fit(row.Ring, "adventureguide-ring", 26, 26)
-	row.Ring:SetPoint("LEFT", 6, 0)
 	row.Number = row:CreateTexture(nil, "OVERLAY")
-	row.Number:SetPoint("CENTER", row.Ring)
+	row.Number:SetPoint("LEFT", 6, 0)
+	ns.Art.SetStepMarker(row.Number, 1, 26)
 
 	row.Title = row:CreateFontString(nil, "ARTWORK", "GameFontNormalMed3")
-	row.Title:SetPoint("TOPLEFT", row.Ring, "TOPRIGHT", 8, 4)
+	row.Title:SetPoint("TOPLEFT", row.Number, "TOPRIGHT", 8, 4)
 	row.Title:SetPoint("RIGHT", row.SkipButton, "LEFT", -4, 0)
 	row.Title:SetJustifyH("LEFT")
 	row.Title:SetWordWrap(false)
@@ -239,7 +236,7 @@ local function CreateRow(parent)
 	row:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	row:SetScript("OnClick", RowClick)
 	HoverOnly(row.SkipButton, row)
-	row.Kind = Overview.CreateBadge(row, row.Ring, BADGE, BADGE_OUT)
+	row.Kind = Overview.CreateBadge(row, row.Number, BADGE, BADGE_OUT)
 	Overview.Draggable(row, rows, function()
 		Refresh()
 	end)
@@ -578,7 +575,7 @@ end
 ---@param index integer
 local function RefreshRow(row, step, index)
 	row.index = index
-	ns.Art.SetNumber(row.Number, index)
+	ns.Art.SetStepMarker(row.Number, index, 26)
 	row.Title:SetText(ns.StepStyle.StepTitle(step))
 	-- Step 1 adds how long it takes when Shortest Path knows; its tooltip gives the way.
 	local minutes = index == 1 and ns.Integrations.TravelMinutes(step)
@@ -783,7 +780,6 @@ local function LayoutRows(route, top, hidden, journey)
 			local title, color = ns.Pins.QuestLineText(id)
 			ns.Widgets.SetStepRow(row, 1, title, L.GUIDE_OUTLINE)
 			row.Number:Hide()
-			row.Ring:Hide()
 			row.Selected:Hide()
 			row.Title:SetTextColor(color.r, color.g, color.b)
 			row:SetPoint("TOPLEFT", 6, -top)

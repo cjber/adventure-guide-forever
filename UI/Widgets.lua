@@ -10,9 +10,8 @@ local BADGE, BADGE_OUT = 16, 3
 
 ---@class AGFWindowRow : Button
 ---@field Selected Texture
----@field Ring Texture
 ---@field Number Texture
----@field Kind AGFBadge the step's kind, badged on the ring
+---@field Kind AGFBadge the step's kind, badged on the marker
 ---@field Title FontString
 ---@field Detail FontString
 
@@ -35,8 +34,8 @@ local function RowText(row, left, titleFont)
 	return title, detail
 end
 
--- A numbered step on the right of a card: the route rows' art (Panel.lua), the ring and number at 26, the step's
--- kind badged on the ring.
+-- A numbered step on the right of a card: the route rows' art (Panel.lua), the gold marker at 26, the step's kind
+-- badged on it.
 ---@param parent Frame
 ---@param height number
 ---@return AGFWindowRow
@@ -44,12 +43,10 @@ function Widgets.CreateStepRow(parent, height)
 	local row = CreateFrame("Button", nil, parent) --[[@as AGFWindowRow]]
 	row:SetHeight(height)
 	row.Selected = Art.RowArt(row, true) --[[@as Texture]]
-	row.Ring = row:CreateTexture(nil, "ARTWORK")
-	Art.Fit(row.Ring, "adventureguide-ring", 26, 26)
-	row.Ring:SetPoint("LEFT", 6, 0)
 	row.Number = row:CreateTexture(nil, "OVERLAY")
-	row.Number:SetPoint("CENTER", row.Ring, "CENTER", 0, 0)
-	row.Kind = ns.Overview.CreateBadge(row, row.Ring, BADGE, BADGE_OUT)
+	Art.SetStepMarker(row.Number, 1, 26)
+	row.Number:SetPoint("LEFT", 6, 0)
+	row.Kind = ns.Overview.CreateBadge(row, row.Number, BADGE, BADGE_OUT)
 	row.Title, row.Detail = RowText(row, 40, "GameFontNormalMed3")
 	return row
 end
@@ -60,7 +57,7 @@ end
 ---@param detail? string
 ---@param step? AGFStep a route step, for its kind's badge
 function Widgets.SetStepRow(row, index, title, detail, step)
-	Art.SetNumber(row.Number, index)
+	Art.SetStepMarker(row.Number, index, 26)
 	row.Title:SetText(title)
 	row.Detail:SetText(detail or "")
 	row.Selected:SetShown(index == 1)
