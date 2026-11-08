@@ -1747,7 +1747,7 @@ do
 			assert(ns.Data.instances[q.dungeon].name ~= "", q.title)
 		end
 	end
-	equal(flagged, 558, "dungeon and raid quests flagged")
+	equal(flagged, 596, "dungeon and raid quests flagged")
 	equal(raids, 283, "raid quests flagged")
 end
 -- Raid quests filed outdoors (typed Raid) are on no card, nor is a raid's quest given outdoors under its instance:

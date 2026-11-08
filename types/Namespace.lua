@@ -1598,8 +1598,8 @@
 ---@field name string
 ---@field raid? boolean
 ---@field entrances? AGFEntranceGate[]
----@field low? integer published recommended level
----@field high? integer published recommended level
+---@field low? integer the client's lowest level for the dungeon
+---@field high? integer the client's suggested highest level for the dungeon
 
 ---@class AGFModel
 ---@field QuestXP fun(quest: AGFQuest, level: integer): number?
