@@ -383,6 +383,7 @@
 ---@field Hub fun(data: AGFData, place: {map: integer, x: number, y: number}): string? the town `place` stands in, as "map:area"
 ---@field ChainStart fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): integer? a locked quest's earliest prerequisite open now and not orange or red
 ---@field Hard fun(quest: AGFQuest, player: AGFPlayer): boolean above the chosen quest level ceiling
+---@field AboveCeiling fun(level: integer, player: AGFPlayer): boolean `level` is past the player's quest level ceiling (maxQuestLevelOffset)
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
 ---@field Closes fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): integer[] what taking the quest closes for good that the character could still do, ascending
 ---@field GroupNeed fun(data: AGFData, log: table<integer, AGFLogQuest>, questID: integer): AGFGroupNeed?, integer? why a quest wants a group: its raid or dungeon (with the instance), the log's suggested size, or the elite tag
@@ -1774,7 +1775,9 @@
 ---@field step? AGFStep|AGFAnchor
 ---@field anchor? AGFAnchor
 ---@field kind? "open"|"stop"|"close"
+---@field map? integer the stop's map, so the tier decides only between stops on one map
 ---@field rank? number
+---@field tier? integer 1 for a stop above the player's level, 0 for work now
 ---@field value? number
 ---@field key? string
 
@@ -1885,8 +1888,9 @@
 ---@field Route fun(journeys: AGFJourney[], prefs: AGFPrefs): AGFRoute
 
 ---@class AGFModel
----@field Nearest fun(from: AGFPosition?, stops: AGFStep[], at: (fun(step: AGFStep): AGFPosition?), group?: (fun(step: AGFStep): unknown), party?: table<integer, integer>): AGFStep[]
+---@field Nearest fun(from: AGFPosition?, stops: AGFStep[], at: (fun(step: AGFStep): AGFPosition?), group?: (fun(step: AGFStep): unknown), party?: table<integer, integer>, rank?: (fun(step: AGFStep): integer)): AGFStep[]
 ---@field PartyCost fun(party: table<integer, integer>?, quests: integer[]?, cost: number): number `cost` less half, at most 300 yards, when the party shares one of `quests` (docs/design.md §4.5)
+---@field StopTier fun(data: AGFData, log: table<integer, AGFLogQuest>, player: AGFPlayer, step: AGFStep): integer 1 when a stop holds at least one quest, every one past the player's level ceiling (AboveCeiling), and no ready hand-in; 0 otherwise (docs/design.md §4.1)
 
 ---@class AGFDungeonRow : Button
 ---@field Title FontString

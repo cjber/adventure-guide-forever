@@ -26,6 +26,7 @@ local Position = ns.Planner.Travel.Position
 local QuestLevel = ns.Planner.Steps.QuestLevel
 local Recommit = ns.Planner.Routing.Recommit
 local Stabilise = ns.Planner.Routing.Stabilise
+local StopTier = ns.Model.StopTier
 local Tell = ns.Planner.Steps.Tell
 local TownPoint = ns.Planner.Steps.TownPoint
 local Trim = ns.Planner.Steps.Trim
@@ -420,8 +421,9 @@ end
 -- shuffles the route; a pinned quest (and the story's chapter) first among the rest; then the nearest action,
 -- with a stop in the town the route is already in preferred while it is within half a lap on its map.
 -- The planned mode ranks the committed order, a pinned quest and the story's chapter above plain distance, and
--- finishes a town the route is already in (the look-ahead). The nearest mode ranks by distance alone. In both, a stop
--- for a quest the party shares counts as nearer (Model.PartyCost).
+-- finishes a town the route is already in (the look-ahead). The nearest mode ranks a stop for now before a stop above
+-- the player's level, then by distance; the tier decides only between stops on one map, so a stop across the sea keeps
+-- the place distance gives it. In both, a stop for a quest the party shares counts as nearer (Model.PartyCost).
 ---@param lap AGFLapState
 ---@param walk AGFLapWalk
 ---@param choice AGFLapChoice
@@ -432,7 +434,8 @@ end
 local function Consider(lap, walk, choice, step, anchor, cost, kind)
 	local planned, pinned, leadID, rank, at = lap.planned, lap.pinned, lap.leadID, lap.rank, lap.at
 	local lastAnchor = walk.lastAnchor
-	local pick, pickRank, pickValue, pickKey = choice.step, choice.rank, choice.value, choice.key
+	local pick, pickRank, pickMap, pickTier, pickValue, pickKey =
+		choice.step, choice.rank, choice.map, choice.tier, choice.value, choice.key
 	-- The party's quests count as nearer (docs/design.md §4.5): a visit back hands in the anchor's quests.
 	cost = PartyCost(lap.player.party, kind == "close" and anchor.hands or step.quests, cost)
 	local pref = 0
@@ -451,13 +454,29 @@ local function Consider(lap, walk, choice, step, anchor, cost, kind)
 			and Cost(anchor.pos, at(step)) <= LAP_YARDS / 2
 		pref = held and held - 6000000 or (pin and -5000000 or (lead and -4000000 or (same and -3000000 or 0)))
 	end
+	-- A visit back is a ready hand-in, and a stop keeps its own quests' tier (Model.StopTier).
+	local map = kind == "close" and anchor.place.map or step.map
+	local tier = 0
+	if not planned and kind ~= "close" then
+		tier = StopTier(lap.data, lap.log, lap.player, step --[[@as AGFStep]])
+	end
+	local sameMap = map ~= nil and map == pickMap
 	if
 		not pick
 		or pref < pickRank
-		or (pref == pickRank and (cost < pickValue - 1e-6 or (cost <= pickValue + 1e-6 and step.key < pickKey)))
+		or (
+			pref == pickRank
+			and (
+				(sameMap and tier < pickTier)
+				or (
+					(not sameMap or tier == pickTier)
+					and (cost < pickValue - 1e-6 or (cost <= pickValue + 1e-6 and step.key < pickKey))
+				)
+			)
+		)
 	then
-		choice.step, choice.anchor, choice.kind, choice.rank, choice.value, choice.key =
-			step, anchor, kind, pref, cost, step.key
+		choice.step, choice.anchor, choice.kind, choice.rank, choice.map, choice.tier, choice.value, choice.key =
+			step, anchor, kind, pref, map, tier, cost, step.key
 	end
 end
 
