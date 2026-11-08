@@ -1,6 +1,6 @@
 data build 1.60.1.70862, art build 1.60.1.70124
 shortest-path-forever 9c2d86bad8418ee07c74b54e2757568b9d5aff3f
-tests/golden/layout.json de0d647a5b223e2fb484710c4f4484b676e44ec855cb50011d8d83eac94cb959
+tests/golden/layout.json 92c598619829a9159f268062a37a81f6e94f93f835c149fcf6cb598dce5e3267
 docs/screenshots/chosen.png 08df7f9035048f915316194360c0a7447377b881f0ec5705634b8d5857afc60c
 docs/screenshots/demo.gif ce6cdef679b950d298c83928d59c8e209ddd80616203d25e4448ae8353ddca33
 docs/screenshots/guide_setup.png 7017d41ea4030ddcc7dd421e0fe9ed7958ed64e308c05e73fc8087e91c5e8102

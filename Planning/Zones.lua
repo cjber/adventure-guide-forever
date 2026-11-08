@@ -171,7 +171,11 @@ local function Choices(data, player, completed, log, index, prefs, far)
 	return zones, eligible
 end
 
--- A rank point per ZONE_YARDS yards to a zone's middle on the player's own continent, at most ZONE_NEAR.
+-- A rank point per ZONE_YARDS yards of travel to a zone's middle, at most ZONE_NEAR however far that is: the
+-- journey is a tie-break against a zone's work, never a reason it loses. The whole of a zone's work is at most
+-- ZONE_QUESTS quests at ZONE_QUEST rank each, so travel stays below it; a boat's wait alone (Travel.CROSSING,
+-- 10000 yards) would otherwise be 2.5 rank, more than every zone's work, and a two-stop zone across the sea beat a
+-- full zone next door (#492).
 local ZONE_YARDS, ZONE_NEAR = 4000, 1.5
 
 -- Each zone's middle, placed once (Far).
@@ -179,8 +183,9 @@ local ZONE_YARDS, ZONE_NEAR = 4000, 1.5
 local middles = setmetatable({}, { __mode = "k" })
 
 -- A zone's distance cost from the player for Rank: none when the data cannot place them both, so the ranking never
--- guesses. On their own continent it stops at ZONE_NEAR; across an ocean it is the whole way, through the docks
--- their side sails from (Cost), so a zone next door beats one overseas unless it fits clearly worse.
+-- guesses. A walk on the player's own continent and a crossing through the docks their side sails from (Cost) cost
+-- the same per ZONE_YARDS and both stop at ZONE_NEAR, so a zone next door still beats one far away, but the crossing
+-- can no longer outweigh the work that zone holds (#492).
 ---@return fun(map: integer): number
 local function Far(data, player)
 	local here = Position(data, player, Docks(data, player.side))
@@ -191,10 +196,9 @@ local function Far(data, player)
 		local there = here and here.known and kept[map] or nil
 		if not (here and there and there.known) then
 			return 0
-		elseif there.continent ~= here.continent then
-			return Cost(here, there) / ZONE_YARDS
 		end
-		return math.min(Yards(here, there) / ZONE_YARDS, ZONE_NEAR)
+		local cost = there.continent ~= here.continent and Cost(here, there) or Yards(here, there)
+		return math.min(cost / ZONE_YARDS, ZONE_NEAR)
 	end
 end
 
