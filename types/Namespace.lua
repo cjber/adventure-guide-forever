@@ -756,6 +756,7 @@
 ---@field GROUP_ZONES string the header over the "Head to <zone>" cards
 ---@field GROUP_DUNGEONS string the header over the dungeon cards
 ---@field GROUP_BATTLEGROUNDS string the header over the battleground cards
+---@field MORE_CARDS string format: how many cards a folded header hides
 ---@field LEVELS string a card's level range, low then high
 ---@field LEVELS_FROM string a battleground card's first level
 ---@field DUNGEON_QUESTS string format: quest count
@@ -1890,7 +1891,7 @@
 ---@class AGFModel
 ---@field Nearest fun(from: AGFPosition?, stops: AGFStep[], at: (fun(step: AGFStep): AGFPosition?), group?: (fun(step: AGFStep): unknown), party?: table<integer, integer>, rank?: (fun(step: AGFStep): integer)): AGFStep[]
 ---@field PartyCost fun(party: table<integer, integer>?, quests: integer[]?, cost: number): number `cost` less half, at most 300 yards, when the party shares one of `quests` (docs/design.md §4.5)
----@field StopTier fun(data: AGFData, log: table<integer, AGFLogQuest>, player: AGFPlayer, step: AGFStep): integer 1 when a stop holds at least one quest, every one past the player's level ceiling (AboveCeiling), and no ready hand-in; 0 otherwise (docs/design.md §4.1)
+---@field StopTier fun(data: AGFData, log: table<integer, AGFLogQuest>, player: AGFPlayer, step: AGFStep): integer 1 when a stop holds at least one quest, every one past the player's level ceiling (AboveCeiling) by its quest level or, on an area step, by the highest mob level at the spots it sends the player to, and no ready hand-in; 0 otherwise (docs/design.md §4.1)
 
 ---@class AGFDungeonRow : Button
 ---@field Title FontString

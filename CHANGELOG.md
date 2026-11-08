@@ -13,6 +13,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [Unreleased]
 
 - **The guide hands its next stop to Waypoint UI.** With Waypoint UI installed and Shortest Path Forever absent, Go now gives Waypoint UI the stop's name, map and point, so its own arrow and pin steer to each step as the route moves on, and they go when the guide stops. The game's waypoint still marks the next stop when neither addon is there. Thanks to sampconrad for the report (#482).
+- **An area no longer leads when the mobs there are too high for you.** The route judged a step by the quest's own level, so Fruit of the Sea at level 17 looked fine for a level 15 character even though its crab spots carry level 18 mobs. A stop now counts as above your "Maximum quest level above yours" ceiling when the highest mob level at the spots it sends you to is past it, so the area waits behind work you can do now. A town pickup still reads the quest's own level. Thanks to the player who reported this in Darkshore in game (#490).
+- **Your calling no longer offers a hunter a second Taming the Beast chain.** The Goldshire chain is an alternative to the Dwarf, Night Elf and Skyborne chains, but the quest data had no exclusivity between them, so a Night Elf who had finished the Teldrassil chain was still offered the Goldshire one. The card now also leads with the nearest class quest you can take rather than the lowest ID. (#491).
+- **A folded list now says how many more cards it hides.** A collapsed header such as Quest destinations showed only its first card and a small "+", so the rest were easy to miss. A row under the last visible card now reads "6 more: click to show", and a click opens the header in place without moving the panel or your scroll position. Reported in game (#494).
 
 ## [1.1.18] - 2026-11-08
 
