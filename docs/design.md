@@ -76,7 +76,8 @@ abandons quests.
   giver or objective whitelist;
   provider absence/failure publishes no partial or fallback quest list. The game owns progress and live POIs;
   QuestieDB owns records, spawns and XP; the live log owns objective counts. Provider objective icon fields are never treated as counts. Questie's IsDoable policy, plus minimum/maximum
-  level and guide difficulty preferences, gates pickups. Without live policy, logged quests remain browsable
+  level and guide difficulty preferences, gates pickups. A prerequisite our data layer corrects also gates the
+  quest, since the live policy predates that correction. Without live policy, logged quests remain browsable
   but new pickups are not recommended. A place's town is the named area of its map that holds it, one of the areas the
   world map reveals as you explore (WorldMapOverlay; among overlapping rectangles the nearest centre wins), and a place
   in no area, a city map, an instance or a gap between rectangles, belongs to its map itself. A town's name is the
@@ -86,7 +87,9 @@ abandons quests.
   Trainers, battlemasters and innkeepers take their place and side from QuestieDB's NPC rows, and an innkeeper
   is QuestieDB's flag. Only what a trainer teaches is bundled. Map geometry and transport metadata are separate
   data sources.
-  Questie owns background markers whenever loaded, including its visibility toggle; AGF owns route markers.
+  Questie owns background giver markers while it shows them on the world map; when its icons, map icons or
+  available-quest icons are off, AGF draws its own givers under its own "Show quest givers" setting. AGF owns route
+  markers.
 - **2.15 PvP.** Offer only battlegrounds open at the player's level; journey cards are opt-in.
 - **2.16 Professions.** Suggest only training the player qualifies for. Crafting routes come from SkillUp.
 - **2.17 Pacing.** Rest and hearth hints advise. Wanderer mode chooses without starting guidance.
