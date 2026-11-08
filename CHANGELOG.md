@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Your route no longer walks past near-level work to a quest several levels above you.** A stop where every quest is past your "Maximum quest level above yours" setting, with no ready hand-in, now waits behind the stops you can work on now, so a green quest and a ready hand-in lead a red, optional quest already in your log. Within each tier the rest of the order is unchanged. Thanks to starkovsky for the report (#474).
+
 ## [1.1.17] - 2026-11-08
 
 - **A town visit shows every NPC and object it covers on the map.** The numbered stop still marks where the visit begins, and a small quest mark now sits on each giver or object the visit includes, so a hand-in away from the town's NPCs, such as Buzzbox 411 in Darkshore, shows where it actually is. Hovering one names the NPC or object and the quests done there.

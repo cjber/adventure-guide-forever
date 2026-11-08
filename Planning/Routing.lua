@@ -14,6 +14,8 @@ local Position = ns.Planner.Travel.Position
 local TownPoint = ns.Planner.Steps.TownPoint
 local UNKNOWN = ns.Planner.Travel.UNKNOWN
 local ValidPlace = ns.Model.ValidPlace
+local AboveCeiling = ns.Model.AboveCeiling
+local QuestLevel = ns.Planner.Steps.QuestLevel
 
 -- A stop the player only hands in at: a turn-in, or a town with hand-ins and nothing to pick up. Never a trainer's.
 ---@param step AGFStep
@@ -43,35 +45,75 @@ function Model.PartyCost(party, quests, cost)
 end
 local PartyCost = Model.PartyCost
 
--- Orders `stops` greedily by nearest action (docs/design.md §4.1): from `from`, repeatedly the unvisited stop
--- cheapest to reach, so the route is the nearest action at every step. `group` (optional) names the town or area a
+-- A stop's tier (docs/design.md §4.1): 1 when every quest the player would act on there is past their level ceiling
+-- (Model.AboveCeiling, the same limit that keeps such a quest out of the pickups) and it holds no ready hand-in, 0
+-- otherwise. A ready hand-in, a quest within the ceiling, and a stop with no quest at all (a trainer, a battlemaster,
+-- an entrance) are work for now. The route takes every "now" stop before an "above" one, so a quest several levels
+-- up waits behind near-level and lower-level work.
+---@param data AGFData
+---@param log table<integer, AGFLogQuest>
+---@param player AGFPlayer
+---@param step AGFStep
+---@return integer
+function Model.StopTier(data, log, player, step)
+	-- A turn-in is a ready hand-in, whatever its own quest's level is.
+	if step.kind == "turnin" then
+		return 0
+	end
+	local above = false
+	for _, id in ipairs(step.quests or NONE) do
+		local entry = log[id]
+		if (entry and entry.complete) or not AboveCeiling(QuestLevel(data, log, player, id), player) then
+			return 0
+		end
+		above = true
+	end
+	return above and 1 or 0
+end
+local StopTier = Model.StopTier
+
+-- Orders `stops` greedily by what the player should do now (docs/design.md §4.1): from `from`, repeatedly the
+-- unvisited "now" stop before any "above" one; within a tier, the cheapest to reach, so near-level and lower-level
+-- work and ready hand-ins lead a quest several levels above the player. `group` (optional) names the town or area a
 -- stop belongs to; a stop in the group the route is already in comes before the route leaves it, so nearby stops of
 -- one town are finished first and the route never zig-zags between them. A stop already placed is never revisited,
 -- and ties break by key, so a rebuild gives the same order. `party` (optional) favours the party's quests (PartyCost).
+-- `rank` (optional) gives each stop's tier; without it the order is the nearest action alone.
 ---@param from? AGFPosition
 ---@param stops AGFStep[]
 ---@param at fun(step: AGFStep): AGFPosition?
 ---@param group? fun(step: AGFStep): unknown
 ---@param party? table<integer, integer>
+---@param rank? fun(step: AGFStep): integer
 ---@return AGFStep[]
-local function NearestStop(from, stops, at, group, party)
+local function NearestStop(from, stops, at, group, party, rank)
 	local path, left = {}, {}
 	for _, step in ipairs(stops) do
 		left[#left + 1] = step
 	end
 	local here, was = from, nil
 	while #left > 0 do
-		local pick, pickIndex, pickCost, pickSame
+		local pick, pickIndex, pickCost, pickSame, pickTier
 		for index, step in ipairs(left) do
 			local home = group and group(step) or nil
 			local same = home ~= nil and home == was
+			local tier = rank and rank(step) or 0
 			local cost = PartyCost(party, step.quests, Gap(here, 0, at(step), step.r or 0))
 			if
 				not pick
-				or (same ~= pickSame and same)
-				or (same == pickSame and (cost < pickCost - 1e-6 or (cost <= pickCost + 1e-6 and step.key < pick.key)))
+				or tier < pickTier
+				or (
+					tier == pickTier
+					and (
+						(same ~= pickSame and same)
+						or (
+							same == pickSame
+							and (cost < pickCost - 1e-6 or (cost <= pickCost + 1e-6 and step.key < pick.key))
+						)
+					)
+				)
 			then
-				pick, pickIndex, pickCost, pickSame = step, index, cost, same
+				pick, pickIndex, pickCost, pickSame, pickTier = step, index, cost, same, tier
 			end
 		end
 		table.remove(left, pickIndex)
@@ -86,8 +128,9 @@ Model.Nearest = NearestStop
 
 -- Groups the selected steps by continent, the player's first and the rest by how dear they are to reach, so the
 -- route crosses each ocean once. In each group the turn-ins in `away` (another continent than the player's) go last,
--- and within a part the stops go in Nearest order, the player's nearest action at every step.
-local function Order(selected, origin, where, away, planned, party)
+-- and within a part the stops go in Nearest order: work for now before work above the player, then the player's
+-- nearest action at every step.
+local function Order(selected, origin, where, away, planned, party, rank)
 	local groups, byContinent = {}, {}
 	for _, step in ipairs(selected) do
 		local continent = where[step].continent
@@ -120,7 +163,7 @@ local function Order(selected, origin, where, away, planned, party)
 	end
 	for _, group in ipairs(groups) do
 		for _, part in ipairs({ group.main, group.last }) do
-			for _, step in ipairs(NearestStop(from, part, At, Group, party)) do
+			for _, step in ipairs(NearestStop(from, part, At, Group, party, rank)) do
 				steps[#steps + 1] = step
 				from = where[step]
 			end
@@ -241,7 +284,20 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, l
 	end
 	-- Each town's point is the place of its quest nearest the stop before it (the player, for the first): a real
 	-- giver, never a centre, so Shortest Path takes the player to the nearest door of the town.
-	local steps, from = Order(selected, start, where, away, prefs.optimisedRoute == true, player.party), start
+	local function Rank(step)
+		return StopTier(data, log, player, step)
+	end
+	local steps, from =
+		Order(
+			selected,
+			start,
+			where,
+			away,
+			prefs.optimisedRoute == true,
+			player.party,
+			prefs.optimisedRoute ~= true and Rank or nil
+		),
+		start
 	for _, step in ipairs(steps) do
 		if step.spots then
 			TownPoint(data, step, from)

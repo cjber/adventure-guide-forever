@@ -738,12 +738,20 @@ local function Dropped(id)
 	return droppedIDs[id] == true
 end
 
+-- A quest level past the player's chosen ceiling (the maxQuestLevelOffset setting): too high to recommend.
+---@param level integer
+---@param player AGFPlayer
+---@return boolean
+function Model.AboveCeiling(level, player)
+	return level - player.level > (player.maxQuestLevelOffset or (ORANGE - 1))
+end
+local AboveCeiling = Model.AboveCeiling
+
 -- Pickup recommendations respect the chosen level ceiling; accepted quests keep their log steps.
 ---@param quest AGFQuest
 ---@param player AGFPlayer
 function Model.Hard(quest, player)
-	local level = quest.level > 0 and quest.level or player.level
-	return level - player.level > (player.maxQuestLevelOffset or (ORANGE - 1))
+	return AboveCeiling(quest.level > 0 and quest.level or player.level, player)
 end
 local Hard = Model.Hard
 
