@@ -628,6 +628,19 @@ ns.L = {
 	["7th"] = "7th",
 	["8th"] = "8th",
 	[", "] = ", ",
+
+	-- Shared debug log (Forever Core's Core/Log.lua, which reads ns.L by English phrase).
+	["Debug log is off."] = "Debug log is off.",
+	["Debug log is on for this session."] = "Debug log is on for this session.",
+	["Debug log is on and pinned for this character."] = "Debug log is on and pinned for this character.",
+	["Debug log is already on and pinned for this character."] = "Debug log is already on and pinned for this character.",
+	["Debug log is off for this session; it is still pinned."] = "Debug log is off for this session; it is still pinned.",
+	["Debug log is off and unpinned."] = "Debug log is off and unpinned.",
+	["No addon has attached its log yet."] = "No addon has attached its log yet.",
+	["%s (last %d):"] = "%s (last %d):",
+	["%s: no lines yet."] = "%s: no lines yet.",
+	["Usage: /forever debug, /forever debug pin, /forever debug off, /forever debug show"] = "Usage: /forever debug, "
+		.. "/forever debug pin, /forever debug off, /forever debug show",
 }
 
 _G.BINDING_HEADER_ADVENTUREGUIDEFOREVER = "Adventure Guide Forever"

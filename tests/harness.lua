@@ -3273,6 +3273,10 @@ function harness.load(options)
 	G.GetTime = function()
 		return h.time
 	end
+	-- The client's own date for the shared log's lines (Core/Log.lua), fixed so its specs are deterministic.
+	G.date = function()
+		return "2026-11-08 12:00:00"
+	end
 	G.GetBindLocation = noop
 	-- The client's language: English unless a spec names another, which also loads that Locales file.
 	G.GetLocale = function()

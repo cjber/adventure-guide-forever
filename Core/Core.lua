@@ -166,6 +166,16 @@ local function LoadDB()
 		loaded.suggestFamily = false
 	end
 	loaded.suggestCompanions = nil
+	-- The shared error journal (Core/SafeCall.lua) lives in the saved table, so the report lists earlier sessions'
+	-- errors after a /reload. A record, not a setting: no row on the AddOns page reads it.
+	if type(loaded.errors) ~= "table" then
+		loaded.errors = {}
+	end
+	-- The shared log (Core/Log.lua) rides in the saved table beside the journal, so the lines that led to a bug
+	-- survive a /reload. A record, not a setting.
+	if type(loaded.log) ~= "table" then
+		loaded.log = {}
+	end
 	loaded.maxQuestLevelOffset = QuestLevelOffset(loaded.maxQuestLevelOffset)
 	AdventureGuideForeverDB = loaded
 	db = loaded
@@ -1265,6 +1275,10 @@ end
 EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	LoadDB()
 	LoadCharDB()
+	-- The saved journal is attached once the saved variables and their defaults are in: what SafeCall recorded
+	-- before this line (the client's own early errors) arrives with it.
+	ns.AttachErrorJournal(AdventureGuideForeverDB.errors)
+	ns.AttachLog(AdventureGuideForeverDB.log)
 	ns.QuestieOptions.Load()
 	ns.State.OnChange(function(countsOnly)
 		if countsOnly then
