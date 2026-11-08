@@ -130,6 +130,48 @@ tierPlayer.maxQuestLevelOffset = 3
 equal(tier({ 5 }), 0, "level order: a higher ceiling setting makes that quest work for now")
 tierPlayer.maxQuestLevelOffset = nil
 
+-- #490: an area step's difficulty is also the level of the mobs it sends the player to, not just the quest's level
+-- (docs/design.md §4.1). Fruit of the Sea is level 17, inside a level 15 player's +2 ceiling, but one of its crab spots
+-- carries level 18 mobs, so the area is past the ceiling and waits like a quest past it.
+local areaData = {
+	quests = {
+		[6] = {
+			level = 17,
+			zone = 1439,
+			obj = { { 4, 468, 203, 99, 1439, 15 }, { 4, 517, 225, 80, 1439, 15 }, { 4, 528, 195, 96, 1439, 18 } },
+		},
+		-- A high spot in a slot this step does not hold is not one of its own spots.
+		[7] = { level = 15, zone = 1439, obj = { { 4, 468, 203, 99, 1439, 15 }, { 0, 500, 200, 50, 1439, 20 } } },
+		[8] = { level = 15, zone = 1439, obj = { { 0, 500, 200, 50, 1439, 20 } } },
+		-- A mob exactly at the ceiling (level 17 for a level 15 player) is still work for now.
+		[9] = { level = 15, zone = 1439, obj = { { 4, 468, 203, 99, 1439, 17 } } },
+	},
+}
+local areaPlayer = { level = 15 }
+local function areaTier(id, objectives, kind)
+	return Model.StopTier(areaData, {}, areaPlayer, {
+		kind = kind or "area",
+		map = 1439,
+		quests = { id },
+		objectives = objectives,
+	})
+end
+equal(areaTier(6, { { id = 6, slot = 4 } }), 1, "level order: an area step whose mobs are past the ceiling is above")
+equal(areaTier(8, { { id = 8, slot = 0 } }), 1, "level order: a high spot in the step's own slot makes it above")
+equal(areaTier(7, { { id = 7, slot = 4 } }), 0, "level order: a high spot in a slot the step does not hold is ignored")
+equal(areaTier(9, { { id = 9, slot = 4 } }), 0, "level order: a mob at the ceiling is work for now")
+equal(areaTier(6, nil, "town"), 0, "level order: a pickup or town stop keeps the quest's level only")
+equal(
+	Model.StopTier(
+		areaData,
+		{ [6] = { id = 6, level = 17, complete = true } },
+		areaPlayer,
+		{ kind = "area", map = 1439, quests = { 6 }, objectives = { { id = 6, slot = 4 } } }
+	),
+	0,
+	"level order: a ready hand-in in an area with high mobs is still now"
+)
+
 -- A level 17 stop next door leads a level 20 stop across the map for a level 20 player: both are work for now, so
 -- distance decides.
 local nearStop = { key = "near", x = 10, y = 0, continent = 1, known = true, r = 0, quests = { 3 } }
