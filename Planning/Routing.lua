@@ -45,11 +45,36 @@ function Model.PartyCost(party, quests, cost)
 end
 local PartyCost = Model.PartyCost
 
+-- The highest level of the mobs an area step sends the player to (obj[i][6], the same field Steps.lua reads as
+-- area[6]): every spot on the step's map for the objectives the step holds, including a spot harder than the camp
+-- AreaNode points at first. Nil when the data gives none.
+---@param data AGFData
+---@param step AGFStep
+---@param id integer
+---@return integer?
+local function MobLevel(data, step, id)
+	local quest = data.quests[id]
+	local slots, highest = {}, nil
+	for _, objective in ipairs(step.objectives or NONE) do
+		if objective.id == id then
+			slots[objective.slot] = true
+		end
+	end
+	for _, area in ipairs(quest and quest.obj or NONE) do
+		local level = area[6]
+		if level and slots[area[1]] and (area[5] or quest.zone or 0) == step.map then
+			highest = math.max(highest or level, level)
+		end
+	end
+	return highest
+end
+
 -- A stop's tier (docs/design.md §4.1): 1 when every quest the player would act on there is past their level ceiling
--- (Model.AboveCeiling, the same limit that keeps such a quest out of the pickups) and it holds no ready hand-in, 0
--- otherwise. A ready hand-in, a quest within the ceiling, and a stop with no quest at all (a trainer, a battlemaster,
--- an entrance) are work for now. The route takes every "now" stop before an "above" one, so a quest several levels
--- up waits behind near-level and lower-level work.
+-- and it holds no ready hand-in, 0 otherwise. A quest is past the ceiling when Model.AboveCeiling says so for its own
+-- level or, on an area step, for the highest mob level (obj[i][6]) among that quest's spots the step sends the player
+-- to. A ready hand-in, a quest within the ceiling, and a stop with no quest at all (a trainer, a battlemaster, an
+-- entrance) are work for now. The route takes every "now" stop before an "above" one, so a quest several levels up,
+-- or an area whose mobs are, waits behind near-level and lower-level work.
 ---@param data AGFData
 ---@param log table<integer, AGFLogQuest>
 ---@param player AGFPlayer
@@ -63,7 +88,12 @@ function Model.StopTier(data, log, player, step)
 	local above = false
 	for _, id in ipairs(step.quests or NONE) do
 		local entry = log[id]
-		if (entry and entry.complete) or not AboveCeiling(QuestLevel(data, log, player, id), player) then
+		local past = AboveCeiling(QuestLevel(data, log, player, id), player)
+		if not past and step.kind == "area" then
+			local mob = MobLevel(data, step, id)
+			past = mob ~= nil and AboveCeiling(mob, player)
+		end
+		if (entry and entry.complete) or not past then
 			return 0
 		end
 		above = true
