@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.1.15] - 2026-11-08
+
+- **The guide's quest data is a release fresher.** The bundled quest catalogue moves to QuestieDB v1.0.12, so quests and givers it had missed are known again: three more chains now read as a numbered story, and the Crossroads offers a sixth pickup in the Barrens opening. A few hub coordinates moved by a yard, so a route through them can order its steps slightly differently.
+
 
 ## [1.1.14] - 2026-11-07
 
