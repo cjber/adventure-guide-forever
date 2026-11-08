@@ -455,7 +455,7 @@ L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以尋找地城入口。"
 L["UNLISTED"] = "這片土地有指南尚不知道的故事；請留意任務給予者頭上的「!」。"
 L["UPDATED_TO"] = "已更新到%s。%s"
 -- mt
-L["WHATS_NEW"] = "路線不再越過適合你等級的任務，去做高你好幾級的任務。" -- mt
+L["WHATS_NEW"] = "追蹤器可以有背景了：右鍵點擊任一分區標題，選擇「追蹤器背景」。" -- mt
 L["WHY_ALLIANCE"] = "僅限聯盟"
 L["WHY_BREADCRUMB"] = "僅在你接受%s之前"
 L["WHY_CHOSE"] = "你改選了%s"

@@ -465,7 +465,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "atualizado para %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Sua rota não passa mais direto pelas tarefas do seu nível para ir a uma missão vários níveis acima de você." -- mt
+	'O rastreador pode ter fundo: clique com o botão direito no título de uma seção e escolha "Fundo do rastreador".' -- mt
 L["WHY_ALLIANCE"] = "Só Aliança"
 L["WHY_BREADCRUMB"] = "Só até você aceitar %s"
 L["WHY_CHOSE"] = "Você escolheu %s no lugar"
