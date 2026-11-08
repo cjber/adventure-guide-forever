@@ -13,6 +13,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [Unreleased]
 
 - **Your calling no longer offers a hunter a second Taming the Beast chain.** The Goldshire chain is an alternative to the Dwarf, Night Elf and Skyborne chains, but the quest data had no exclusivity between them, so a Night Elf who had finished the Teldrassil chain was still offered the Goldshire one. The card now also leads with the nearest class quest you can take rather than the lowest ID. (#491).
+- **A folded list now says how many more cards it hides.** A collapsed header such as Quest destinations showed only its first card and a small "+", so the rest were easy to miss. A row under the last visible card now reads "6 more: click to show", and a click opens the header in place without moving the panel or your scroll position. Reported in game (#494).
+
 ## [1.1.18] - 2026-11-08
 
 - **Your route no longer walks past near-level work to a quest several levels above you.** A stop where every quest is past your "Maximum quest level above yours" setting, with no ready hand-in, now waits behind the stops you can work on now, so a green quest and a ready hand-in lead a red, optional quest already in your log. Within each tier the rest of the order is unchanged. Thanks to starkovsky for the report (#474).
