@@ -469,7 +469,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Die Verfolgung kann einen Hintergrund haben: Rechtsklickt auf den Titel eines Abschnitts und wählt „Hintergrund der Verfolgung“." -- mt
+	"Eure Route führt nicht mehr an Aufgaben auf Eurer Stufe vorbei zu einer Quest, die mehrere Stufen über Euch liegt." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"

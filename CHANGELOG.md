@@ -12,8 +12,6 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-## [1.2.0] - 2026-11-08
-
 - **The tracker can have a background.** Right-click any section's title in the Forever tracker and pick *Tracker background*: Off, or the game's tooltip fill at 25, 50, 75 or 100%, so quest text stays readable over bright ground. The choice is shared by every Forever addon in the column (cjber/forever-core#246).
 - **The controller keeps working after the world map and a guide menu opened from it close.** Closing either could leave the game's interact action blocked and sometimes freeze the client. The guide now lets the game finish closing the map before it takes its own hover and tooltip down, so the controller's actions stay the game's. (#493).
 - **The Dungeons list knows Forever's new dungeons.** The Hall of Thanes, Ruins of Lordaeron and the rest of the party dungeons the client lists now appear with their own level range, so a level 17 Alliance character is offered The Hall of Thanes instead of only the old Classic instances. The ranges come from the client's own dungeon data, so every dungeon card also follows the client when a range differs from the old hand-kept list (#504).
