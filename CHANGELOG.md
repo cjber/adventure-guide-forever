@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The guide's quest log tab now comes from Forever Core's shared quest log tabs.** With Shortest Path's Nearby services tab installed there is one Quests tab, the tabs keep a fixed order, and one panel is open at a time (#477).
+
 - **A stop where you hand a quest in no longer shows the game's quest icon on top of it.** The guide now tells Shortest Path which quests each stop hands in, so the game's own question mark steps aside there instead of sitting over the numbered stop (#475, cjber/shortest-path-forever#484).
 
 ## [1.1.16] - 2026-11-08

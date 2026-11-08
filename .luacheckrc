@@ -21,6 +21,7 @@ globals = {
 	"RXPCData",
 	"ForeverFamily",
 	"ForeverLeaderboards",
+	"ForeverQuestLogTabs",
 	"ForeverTrackerHost",
 	"ForeverMinimapButtons",
 	"AdventureGuideForever",
@@ -229,10 +230,10 @@ read_globals = {
 	"C_Item",
 	"C_Spell",
 	"C_CurrencyInfo",
-	-- Dump.lua: frames Panel.lua and Tracker.lua create by name
+	-- Dump.lua: frames Panel.lua, the shared quest log tabs and Tracker.lua create by name
 	"AdventureGuideForeverPanel",
 	"AdventureGuideForeverTab",
-	"AdventureGuideForeverQuestsTab",
+	"ForeverQuestLogQuestsTab",
 	"AdventureGuideForeverObjectiveTracker",
 }
 

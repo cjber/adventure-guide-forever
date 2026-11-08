@@ -67,10 +67,8 @@ local GROUP_GAP = 6
 
 ---@type Frame?
 local panel
----@type AGFTabButton?
+---@type ForeverQuestLogTab?
 local guideTab
----@type AGFTabButton?
-local questsTab
 ---@type Texture?
 local tabPip
 ---@type AGFRouteRow[]
@@ -1086,75 +1084,6 @@ function Refresh()
 	end
 end
 
--- Blizzard's displayMode and TabButtons are never written: the guide lays over the quest log
--- by hiding its content frames, and puts them back exactly as displayMode says when it closes.
----@param showGuide boolean
-local function ShowGuide(showGuide)
-	---@cast panel -?
-	---@cast guideTab -?
-	local map = QuestMapFrame
-	for _, frame in ipairs(map.ContentFrames) do
-		frame:SetShown(not showGuide and frame.displayMode == map.displayMode)
-	end
-	guideTab:SetChecked(showGuide)
-	if questsTab then
-		questsTab:SetChecked(not showGuide)
-	end
-	panel:SetShown(showGuide)
-	if showGuide then
-		Refresh()
-	end
-end
-
----@param name string
----@param tooltip string
----@param onClick fun()
----@return AGFTabButton
-local function CreateTab(name, tooltip, onClick)
-	local tab = CreateFrame("Frame", name, QuestMapFrame, "LargeSideTabButtonTemplate") --[[@as AGFTabButton]]
-	tab.tooltipText = tooltip
-	tab:SetCustomOnMouseUpHandler(function(_, mouseButton, upInside)
-		if mouseButton == "LeftButton" and upInside then
-			onClick()
-		end
-	end)
-	return tab
-end
-
--- Forever's quest log (the "camelot" UI flavour) hides every stock tab, so the guide brings its
--- own Quests tab to switch back; on a client that shows the stock tabs it sits below them instead.
-local function CreateTabs()
-	local map = QuestMapFrame
-	guideTab = CreateTab("AdventureGuideForeverTab", ns.TITLE, function()
-		ShowGuide(true)
-	end)
-	Art.Fit(guideTab.Icon, "islands-queue-prop-compass", 30, 30)
-	tabPip = guideTab:CreateTexture(nil, "OVERLAY")
-	Art.Fit(tabPip, TAB_PIP, 20, 20)
-	tabPip:SetPoint("CENTER", guideTab, "TOPRIGHT", -8, -8)
-	tabPip:SetShown(ns.Moments.Unseen())
-	if QuestMapFrameOverrides.questTabHidden then
-		questsTab = CreateTab("AdventureGuideForeverQuestsTab", QUESTS_LABEL, function()
-			ShowGuide(false)
-		end)
-		questsTab.activeAtlas = "questlog-tab-icon-quest"
-		questsTab.inactiveAtlas = "questlog-tab-icon-quest-inactive"
-		-- The client's offset is tuned for the Camelot tab art, which Forever hides and never draws, so
-		-- against Forever's own frame it leaves a dark strip between the map frame and the tab (#447).
-		-- Keep the client's vertical offset and pin the tab flush to the frame's right edge.
-		local _, tabOffsetY = QuestMapFrameOverrides.GetQuestsTabAnchorOffset()
-		questsTab:SetPoint("TOPLEFT", map, "TOPRIGHT", 0, tabOffsetY)
-		guideTab:SetPoint("TOP", questsTab, "BOTTOM", 0, -3)
-	else
-		local last = map.MapLegendTab:IsShown() and map.MapLegendTab or map.QuestsTab
-		guideTab:SetPoint("TOP", last, "BOTTOM", 0, -3)
-	end
-	guideTab:SetChecked(false)
-	if questsTab then
-		questsTab:SetChecked(true)
-	end
-end
-
 local function Attach()
 	local map = QuestMapFrame
 	panel = CreateFrame("Frame", "AdventureGuideForeverPanel", map)
@@ -1164,7 +1093,7 @@ local function Attach()
 	local background = panel:CreateTexture(nil, "BACKGROUND")
 	background:SetPoint("TOPLEFT", 0, -TOP_BAR)
 	background:SetPoint("BOTTOMRIGHT")
-	-- Above the quest details view, which is not one of the content frames ShowGuide hides.
+	-- Above the quest details view, which is not one of the content frames the shared tabs hide.
 	panel:SetFrameLevel(map:GetFrameLevel() + 20)
 	panel:EnableMouse(true)
 	panel:Hide()
@@ -1192,6 +1121,8 @@ local function Attach()
 	panel:HookScript("OnHide", ns.Moments.Closed)
 	ns.OnRouteChange(QueueCards)
 	BuildContent(panel)
+	-- The guide opens from its tab or from any other caller, so the content is read whenever it shows.
+	panel:HookScript("OnShow", Refresh)
 	panel:SetScript("OnSizeChanged", Refresh)
 	Art.CoverFrame(panel, background, "QuestLog-main-background", 0, TOP_BAR)
 	-- The footer's Stop follows Shortest Path ending our journey and the player clearing or moving the waypoint through
@@ -1203,20 +1134,19 @@ local function Attach()
 			Refresh()
 		end
 	end)
-	CreateTabs()
+	guideTab = ns.QuestLogTabs.Register("guide", {
+		name = "AdventureGuideForeverTab",
+		tooltip = ns.TITLE,
+		panel = panel,
+		order = 10,
+	})
+	---@cast guideTab -?
+	Art.Fit(guideTab.Icon, "islands-queue-prop-compass", 30, 30)
+	tabPip = guideTab:CreateTexture(nil, "OVERLAY")
+	Art.Fit(tabPip, TAB_PIP, 20, 20)
+	tabPip:SetPoint("CENTER", guideTab, "TOPRIGHT", -8, -8)
+	tabPip:SetShown(ns.Moments.Unseen())
 
-	EventRegistry:RegisterCallback("QuestLog.SetDisplayMode", function()
-		if panel:IsShown() then
-			ShowGuide(false)
-		end
-	end, panel)
-	-- Opening a tracked quest asks for Quests mode, but SetDisplayMode returns early when the mode is unchanged,
-	-- so the callback above never fires for it.
-	hooksecurefunc("QuestMapFrame_ShowQuestDetails", function()
-		if panel:IsShown() then
-			ShowGuide(false)
-		end
-	end)
 	ns.OnRouteChange(Refresh)
 	ns.Guidance.OnChange(Refresh)
 	ns.Integrations.OnTravelChange(Refresh)
@@ -1239,7 +1169,12 @@ local function Attach()
 		if not QuestMapFrame:IsShown() then
 			return
 		end
-		ShowGuide(true)
+		-- A tab already selected does not fire OnShow again, so an open guide still re-reads the route.
+		local wasShown = panel ~= nil and panel:IsShown()
+		ns.QuestLogTabs.Select("guide")
+		if wasShown then
+			Refresh()
+		end
 	end
 end
 

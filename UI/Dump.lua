@@ -138,7 +138,7 @@ local function Frames()
 	for _, root in ipairs({
 		AdventureGuideForeverPanel or false,
 		AdventureGuideForeverTab or false,
-		AdventureGuideForeverQuestsTab or false,
+		ForeverQuestLogQuestsTab or false,
 		AdventureGuideForeverObjectiveTracker or false,
 	}) do
 		if root then

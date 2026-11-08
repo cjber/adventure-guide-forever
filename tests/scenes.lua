@@ -71,7 +71,7 @@ local function Panel(h, scene, height)
 	return {
 		layout = h.ns.DumpLayout(panel, h.Describe),
 		tabs = {
-			h.ns.DumpLayout(h.G.AdventureGuideForeverQuestsTab, h.Describe),
+			h.ns.DumpLayout(h.G.ForeverQuestLogQuestsTab, h.Describe),
 			h.ns.DumpLayout(h.G.AdventureGuideForeverTab, h.Describe),
 		},
 	}

@@ -133,7 +133,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	clean(h, label .. ": load")
 	equal(h.ns.Route().steps[1].key, "town:1413:380", label .. ": the hand-in leads the route")
 
-	-- Blizzard's displayMode is never written, whatever the player clicks (Panel.lua ShowGuide).
+	-- Blizzard's displayMode is never written, whatever the player clicks (UI/QuestLogTabs.lua).
 	local panel, questsFrame = h.G.AdventureGuideForeverPanel, h.questMap.QuestsFrame
 	h.ns.OpenPanel()
 	h.flush()
@@ -154,7 +154,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	equal(table.concat(h.selectedQuests, " "), tostring(first.quests[1]), label .. ": a row in the log selects it")
 	equal(h.map:GetMapID(), h.G.GetQuestUiMapID(first.quests[1]), label .. ": and turns the map to its zone")
 	equal(panel:IsShown(), true, label .. ": the guide stays open")
-	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+	h.ClickTab(h.G.ForeverQuestLogQuestsTab)
 	equal(panel:IsShown(), false, label .. ": the Quests tab closes the guide")
 	equal(questsFrame:IsShown(), true, label .. ": the quest list is back")
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[first.key], "LeftButton")
@@ -1131,7 +1131,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	end
 	equal(h.counts.CreateFrame - created, 0, label .. ": frames created by 10 refreshes")
 	equal(#h.Pins("AdventureGuideForeverPinTemplate"), Places(h.ns.Route()), label .. ": the refreshes drew the route")
-	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+	h.ClickTab(h.G.ForeverQuestLogQuestsTab)
 	h.flush()
 	equal(IdleUpdates(h), 1, label .. ": only the visible map observer runs after closing the guide")
 	h.map:Hide()
@@ -3019,7 +3019,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Spf("Navigate") + Spf("NavigateRoute") - navigate, 0, label .. ": no guidance")
 	equal(h.counts.SetMapID - maps, 5, label .. ": the map turns once per click")
 	equal(drawn > 0, true, label .. ": the rings preview with map pins off")
-	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+	h.ClickTab(h.G.ForeverQuestLogQuestsTab)
 	h.flush()
 	equal(#(h.Pins("AdventureGuideForeverPinTemplate") or {}), 0, label .. ": closing the guide takes the rings away")
 	clean(h, label)
@@ -3619,7 +3619,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	h.flush()
 	equal(Cached(), spf and #journeys or 0, label .. ": answered once it ends")
 	-- Closed, nothing is asked.
-	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+	h.ClickTab(h.G.ForeverQuestLogQuestsTab)
 	h.flush()
 	integrations.RefreshCards({})
 	integrations.RefreshCards(journeys)
@@ -3656,7 +3656,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 		equal(boats > 0 and boats < #journeys, true, label .. ": a short subline names the boat, a long one doesn't")
 	end
 	-- Opened in a rebuild's frame, after it: step 1's travel frame is still its own, whatever order the frames run in.
-	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+	h.ClickTab(h.G.ForeverQuestLogQuestsTab)
 	h.flush()
 	h.player.x = h.player.x + 0.01
 	h.ns.Invalidate()
@@ -3691,7 +3691,7 @@ for _, spf in ipairs({ false, "v1+" }) do
 	h.fire(event)
 	equal(h.tick(), 1, label .. ": one redraw however many events")
 	equal(StopButton(h):IsShown(), false, label .. ": Stop goes on the next frame")
-	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+	h.ClickTab(h.G.ForeverQuestLogQuestsTab)
 	h.flush()
 	h.fire(event)
 	equal(h.tick(), 1, label .. ": the ending is judged with the guide closed too, in one frame")
