@@ -466,8 +466,7 @@ L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
 -- mt
-L["WHATS_NEW"] =
-	"Tu ruta ya no pasa de largo las tareas de tu nivel para ir a una misión varios niveles por encima de ti." -- mt
+L["WHATS_NEW"] = "La lista de mazmorras conoce las nuevas mazmorras de Forever." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"

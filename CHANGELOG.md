@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.1.19] - 2026-11-08
+
 - **The Dungeons list knows Forever's new dungeons.** The Hall of Thanes, Ruins of Lordaeron and the rest of the party dungeons the client lists now appear with their own level range, so a level 17 Alliance character is offered The Hall of Thanes instead of only the old Classic instances. The ranges come from the client's own dungeon data, so every dungeon card also follows the client when a range differs from the old hand-kept list (#504).
 - **A Darkshore route no longer starts the Master's Glaive chain in the middle.** "It's All Fun and Games Until..." at the Twilight Tome in the south waited for nothing, so the route offered it before the chain's first quest, "Cave Mushrooms", in Auberdine. The Forever record now carries its missing link to "The Twilight Camp", so the chain is taken from its first quest (#496).
 - **Hiding Questie's icons no longer leaves the world map without quest givers.** Questie draws its own there only while its hide/show switch and its map icon and available quest icons are on, so once they are off the guide draws its own under "Show quest givers on the map" instead. (#505)
