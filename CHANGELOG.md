@@ -13,6 +13,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [Unreleased]
 
 - **The controller keeps working after the world map and a guide menu opened from it close.** Closing either could leave the game's interact action blocked and sometimes freeze the client. The guide now lets the game finish closing the map before it takes its own hover and tooltip down, so the controller's actions stay the game's. (#493).
+- **Your calling no longer offers a hunter a second Taming the Beast chain.** The Goldshire chain is an alternative to the Dwarf, Night Elf and Skyborne chains, but the quest data had no exclusivity between them, so a Night Elf who had finished the Teldrassil chain was still offered the Goldshire one. The card now also leads with the nearest class quest you can take rather than the lowest ID. (#491).
+- **A folded list now says how many more cards it hides.** A collapsed header such as Quest destinations showed only its first card and a small "+", so the rest were easy to miss. A row under the last visible card now reads "6 more: click to show", and a click opens the header in place without moving the panel or your scroll position. Reported in game (#494).
 
 ## [1.1.18] - 2026-11-08
 
