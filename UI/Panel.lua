@@ -67,6 +67,10 @@ local GROUP_GAP = 6
 
 ---@type Frame?
 local panel
+-- Whether the guide panel is visible as the last Sync saw it.
+local reported = false
+-- Defined in Attach, before the map can show or hide; ShowGuide reads it.
+local Sync
 ---@type AGFTabButton?
 local guideTab
 ---@type AGFTabButton?
@@ -1166,6 +1170,7 @@ local function ShowGuide(showGuide)
 		questsTab:SetChecked(not showGuide)
 	end
 	panel:SetShown(showGuide)
+	Sync()
 	if showGuide then
 		Refresh()
 	end
@@ -1233,11 +1238,6 @@ local function Attach()
 	panel:SetFrameLevel(map:GetFrameLevel() + 20)
 	panel:EnableMouse(true)
 	panel:Hide()
-	-- The rings preview the chosen journey only while the guide is visible: its tab, the quest sidebar collapsing
-	-- and the map closing all come through here.
-	panel:HookScript("OnShow", ns.Pins.Refresh)
-	panel:HookScript("OnHide", ns.Pins.Refresh)
-	panel:HookScript("OnHide", Overview.HideTooltipWithin)
 	-- The cards' minutes, while the guide is open: on opening it and on each new route. A card its header hides is
 	-- never queued.
 	local function QueueCards()
@@ -1251,11 +1251,27 @@ local function Attach()
 			ns.Integrations.RefreshCards(shown)
 		end
 	end
-	panel:HookScript("OnShow", QueueCards)
-	-- Something new: seen once the guide shows; its cards' marks go when it closes.
-	panel:HookScript("OnShow", ns.Moments.Opened)
-	panel:HookScript("OnHide", ns.Moments.Closed)
 	ns.OnRouteChange(QueueCards)
+	-- The rings preview the chosen journey only while the guide is visible: its tab, the quest sidebar collapsing and
+	-- the map closing all come through here. No OnShow or OnHide script on the panel (#493): one runs inside the
+	-- client's own hide and taints the gamepad interface's protected interact target. Sync reads visibility after the
+	-- client has finished showing or hiding it.
+	Sync = function()
+		local visible = panel:IsVisible()
+		if visible == reported then
+			return
+		end
+		reported = visible
+		ns.Pins.Refresh()
+		if visible then
+			QueueCards()
+			-- Something new: seen once the guide shows; its cards' marks go when it closes.
+			ns.Moments.Opened()
+		else
+			Overview.HideTooltipWithin(panel)
+			ns.Moments.Closed()
+		end
+	end
 	BuildContent(panel)
 	panel:SetScript("OnSizeChanged", Refresh)
 	Art.CoverFrame(panel, background, "QuestLog-main-background", 0, TOP_BAR)
@@ -1269,6 +1285,18 @@ local function Attach()
 		end
 	end)
 	CreateTabs()
+
+	-- The client has shown or hidden the map: react after it, isolated from its own show or hide (#493).
+	local function MapChanged(_, frame)
+		if frame == WorldMapFrame then
+			Sync()
+		end
+	end
+	EventRegistry:RegisterCallback("UIParentPanelManager.ShowUIPanel", MapChanged, panel)
+	EventRegistry:RegisterCallback("UIParentPanelManager.HideUIPanel", MapChanged, panel)
+	EventRegistry:RegisterCallback("UIParentPanelManager.ForcePanelHide", MapChanged, panel)
+	-- The client's own toggle, minimize and maximize show and hide the quest side panel, the guide's parent, through it.
+	hooksecurefunc(WorldMapFrame, "SetQuestLogPanelShown", Sync) -- taint-ok: post-hook only; no frame script
 
 	EventRegistry:RegisterCallback("QuestLog.SetDisplayMode", function()
 		if panel:IsShown() then
