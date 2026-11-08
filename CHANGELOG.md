@@ -15,6 +15,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [1.2.1] - 2026-11-08
 
 - **The controller keeps working after closing the map with the guide open.** Closing the world map while the guide tab showed ran the guide's own code inside the game's close, which could leave the controller's interact action blocked. The guide now hears the map close after the game has finished it. (#493).
+- **OpenMap's seamless map shows the whole route.** With OpenMap stitching the world map together, the guide drew only the stops in the zone the map sat on. Stops in the zones around it now draw too, numbered as on their own map. (#514).
 
 ## [1.2.0] - 2026-11-08
 
