@@ -812,6 +812,49 @@ local function Lead(data, completed, eligible, belongs)
 	return best, bestID, continues
 end
 
+-- The nearest quest a calling can take: the class quests `belongs` keeps, in the order the player would reach them.
+-- A chapter whose chain was begun elsewhere, with the chapter before it not done, has no honest reason to offer, so
+-- it never leads. Of an exclusive group only the first quest leads, the one PickupSteps offers. Distance is the
+-- travel cost from where the player stands; a tie takes a chain already started, then the longer proven one, then the
+-- lower ID.
+---@param belongs fun(quest: AGFQuest, id: integer): boolean
+---@return AGFStory?, integer?, boolean? the chain, the quest that takes it up, and whether it continues one
+local function NearestLead(data, player, completed, eligible, belongs)
+	local travel = ns.Planner.Travel
+	local origin = travel.Position(data, player, travel.Docks(data, player.side))
+	local best, bestID, bestCost, bestRank, bestStarted, continues
+	local groups = {}
+	local function Better(cost, rank, started, id)
+		if not bestCost then
+			return true
+		elseif cost ~= bestCost then
+			return cost < bestCost
+		elseif started ~= bestStarted then
+			return started == true
+		elseif rank ~= bestRank then
+			return rank < bestRank
+		end
+		return id < bestID
+	end
+	for _, id in ipairs(eligible) do
+		local quest = data.quests[id]
+		local offered = belongs(quest, id) and not (quest.group and groups[quest.group])
+		if offered and quest.group then
+			groups[quest.group] = true
+		end
+		local story = offered and Model.Story(data, id) or nil
+		local started = story and story.chapter > 1 and completed[story.members[story.chapter - 1]] == true
+		if offered and (not story or started or story.chapter == 1) then
+			local cost = travel.Cost(origin, travel.Position(data, quest.start))
+			local rank = (started and 0 or 1000) - (story and story.total or 0)
+			if Better(cost, rank, started, id) then
+				best, bestID, bestCost, bestRank, bestStarted, continues = story, id, cost, rank, started, started
+			end
+		end
+	end
+	return best, bestID, continues
+end
+
 -- The overview header each kind shows under (Overview.GROUPS, docs/design.md §2.2); the map is the one place that
 -- decides it, and no card is grouped by its title. A calling is the player's own class work, so it continues too,
 -- and so does a companion guide's card: the RestedXP guide the player follows is their route, not a zone or an
@@ -944,18 +987,15 @@ local function ForClass(classBit)
 	end
 end
 
--- Your calling (docs/design.md §2.2): the class quests the player can take now, as one card. It leads with
--- a chain as a zone's story does (§2.3), else the first class quest by ID, and its reason names that quest: "Your class
--- trainer has a task" only when the data proves its giver trains the player's class.
+-- Your calling (docs/design.md §2.2): the class quests the player can take now, as one card. It leads with the
+-- nearest of them, a chain's current chapter included (§2.3), and its reason names that quest: "Your class trainer
+-- has a task" only when the data proves its giver trains the player's class.
 ---@param ready table<integer, AGFPlace>
 ---@return AGFJourney?
 local function CallingJourney(data, player, completed, log, ready, eligible, prefs, mapName)
 	local laps = prefs.journey == "calling"
 	local L, belongs = ns.L, ForClass(player.classBit)
-	local chain, leadID, continues = Lead(data, completed, eligible, belongs)
-	for _, id in ipairs(leadID and NONE or eligible) do
-		leadID = leadID or (belongs(data.quests[id]) and id or nil)
-	end
+	local chain, leadID, continues = NearestLead(data, player, completed, eligible, belongs)
 	local calling, quests, lead =
 		Pickups(data, player, completed, log, ready, eligible, belongs, "calling", prefs, mapName, leadID, nil, laps)
 	if not calling then
