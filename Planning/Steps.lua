@@ -61,6 +61,35 @@ local function Hub(place)
 	return place.hub and tostring(place.hub) or string.format("%d:%.4f:%.4f", place.map, place.x, place.y)
 end
 
+-- Every NPC or object a town visit covers, with the quests picked up or handed in there: one row per place, even when
+-- several quests use it. Built from the visit's own lists and places, so the map draws no spot the visit does not have.
+---@param step AGFStep
+local function VisitSpots(step)
+	local spots, byKey = {}, {}
+	for _, list in ipairs({ "handins", "pickups" }) do
+		for _, id in ipairs(step[list] or NONE) do
+			local place = step.spots and step.spots[id]
+			if place then
+				local key = string.format("%d:%.5f:%.5f:%s", place.map, place.x, place.y, place.name)
+				local spot = byKey[key]
+				if not spot then
+					spot = {
+						map = place.map,
+						x = place.x,
+						y = place.y,
+						name = place.name,
+						pickups = {},
+						handins = {},
+					}
+					byKey[key], spots[#spots + 1] = spot, spot
+				end
+				spot[list][#spot[list] + 1] = id
+			end
+		end
+	end
+	step.visitSpots = spots
+end
+
 -- The visit to `place`'s town among `stops` (by key), made and added to `steps` when the card has none yet, with quest
 -- `id` added to its `list` ("handins" or "pickups"), which `place` finishes or starts. Every card keys a town the same
 -- way, so a town skipped is skipped wherever it shows. Its point is the first quest's place until Build moves it to
@@ -85,6 +114,7 @@ local function Visit(stops, steps, place, list, id)
 			givers = {},
 			group = 0,
 			spots = {},
+			visitSpots = {},
 			map = place.map,
 			x = place.x,
 			y = place.y,
@@ -95,6 +125,7 @@ local function Visit(stops, steps, place, list, id)
 	town[list][#town[list] + 1] = id
 	town.quests[#town.quests + 1] = id
 	town.spots[id] = place
+	VisitSpots(town)
 	return town
 end
 
@@ -150,6 +181,7 @@ local function Describe(data, log, player, step)
 	end
 	local town = step.hub and data.hubs and data.hubs[step.hub]
 	step.quests, step.givers, step.group = quests, givers, group
+	VisitSpots(step)
 	step.place = town and town.name or busiest
 	if #quests == 1 then
 		local id, quest = quests[1], data.quests[quests[1]]
@@ -675,6 +707,7 @@ local function Trim(town, handins, pickups)
 			town.quests[#town.quests + 1] = id
 		end
 	end
+	VisitSpots(town)
 end
 
 -- A new quest's objective nodes, one for each slot at its first area (AreaNode, as for a quest under way), each

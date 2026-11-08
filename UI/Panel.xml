@@ -16,6 +16,20 @@
 			</Layer>
 		</Layers>
 	</Frame>
+	<!-- A town visit's NPC or object, apart from its numbered stop: a small mark of the game's own art at its spot. -->
+	<Frame name="AdventureGuideForeverSpotPinTemplate" mixin="AdventureGuideForeverSpotPinMixin" enableMouse="true" virtual="true">
+		<Size x="14" y="14"/>
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture parentKey="Icon">
+					<Size x="14" y="14"/>
+					<Anchors>
+						<Anchor point="CENTER"/>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+	</Frame>
 	<!-- A journey card: Blizzard's renown card (Blizzard_Journeys.xml:5-107, RenownCardButtonTemplate) at 0.77 scale,
 	     its art and radial ring kept, the kind's quest-log icon in the ring, and a title, a count and a reason beside
 	     it. AlphaHighlightButtonTemplate's OnLoad copies NormalTexture's atlas into the highlight, so the art is set
