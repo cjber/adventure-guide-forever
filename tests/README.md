@@ -31,7 +31,8 @@ methods are errors, so each new client call is stubbed on purpose.
 
 - `harness.load(options)` returns `h`. The options are listed above the function: `log`, `completed`, `player`,
   `charDB` and `db` (saved variables), `spf` (a Shortest Path profile: `"v1"`, `"v1+"`, `"ended"`, `"subscribe"`),
-  `questiedb` (a synthetic QuestieDB), `planned`, `version` and more.
+  `waypointui` (Waypoint UI loaded with its public API), `questiedb` (a synthetic QuestieDB), `planned`, `version`
+  and more.
 - `h.flush()` runs the queued timers and frames until nothing is due. Most specs call it after each action.
 - `h.fire(event, ...)`, `h.Slash(text)`, `h.Click(frame)`, `h.Hover(frame)`, `h.HoverUnit(guid)`, `h.Type(box, text)`,
   `h.MovePlayer(map, x, y)`, `h.SetCombat(on)` drive the addon as a player would.

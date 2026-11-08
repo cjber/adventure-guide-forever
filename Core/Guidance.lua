@@ -228,7 +228,7 @@ function Guidance.Cancel()
 		ns.Pins.Refresh()
 	end
 	if OwnsWaypoint() then
-		Integrations.ClearWaypoint()
+		Integrations.ClearWaypoint(ns.Prefs().waypoint)
 		ns.Prefs().waypoint = nil
 	end
 	Notify()

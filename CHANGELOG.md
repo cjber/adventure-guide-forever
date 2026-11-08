@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The guide hands its next stop to Waypoint UI.** With Waypoint UI installed and Shortest Path Forever absent, Go now gives Waypoint UI the stop's name, map and point, so its own arrow and pin steer to each step as the route moves on, and they go when the guide stops. The game's waypoint still marks the next stop when neither addon is there. Thanks to sampconrad for the report (#482).
+
 ## [1.1.18] - 2026-11-08
 
 - **Your route no longer walks past near-level work to a quest several levels above you.** A stop where every quest is past your "Maximum quest level above yours" setting, with no ready hand-in, now waits behind the stops you can work on now, so a green quest and a ready hand-in lead a red, optional quest already in your log. Within each tier the rest of the order is unchanged. Thanks to starkovsky for the report (#474).

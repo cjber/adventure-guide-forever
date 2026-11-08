@@ -287,3 +287,13 @@ until Polestar runs a different guide. The guide taken over from is kept per cha
 Polestar reopening it after a reload does not undo the choice, and it is forgotten once Polestar runs none. A one-off
 Go (a trainer, a giver pin, a dungeon entrance) sets its waypoint without taking over. With Polestar absent or idle, or
 the setting off, nothing changes.
+
+## Alongside Waypoint UI
+
+Waypoint UI (github.com/Adaptvx/Waypoint-UI) drives the client's own user waypoint with its own arrow, compass and pin.
+`Integrations/Integrations.lua` reads its public `WaypointUIAPI.Navigation` at the point of use, since it may load after
+AGF, and only while Shortest Path Forever has no usable API: with Shortest Path loaded its journey is the one Waypoint UI
+already follows, and a second waypoint handed over would fight it. `SetWaypoint` gives `NewUserNavigation` the stop's
+name, map and point in percent, as the API takes them; `ClearWaypoint` calls `ClearUserNavigation` only while the
+navigation still sits where Go put it, so a pin the player moved is left alone. A missing function, a raise, or a map
+the client allows no pin on leaves the native waypoint as the fallback. There is no setting.
