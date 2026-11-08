@@ -1234,6 +1234,7 @@ function Model.Journeys(
 	local headed = chosenZone ~= zone and chosenZone or nil
 	local function NextZone(map)
 		local key = "zone:" .. map
+		local mine = chosen == key
 		local nextZone = Pickups(
 			data,
 			player,
@@ -1246,8 +1247,10 @@ function Model.Journeys(
 			prefs,
 			mapName,
 			nil,
-			nil,
-			chosen == key
+			-- The chosen zone holds its log quests, as the story does: a build that recommends no new pickup there
+			-- (Questie's live policy not in yet, say) still has the steps the player's choice stands on.
+			mine and map or nil,
+			mine
 		)
 		if not nextZone then
 			return nil
