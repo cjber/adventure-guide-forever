@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Zones are recommended for the quests they hold, not for being on the same continent.** A level 15 night elf in Darkshore was pointed at The Barrens, a Horde zone with a couple of neutral quests, ahead of Loch Modan, a full Alliance zone at the same levels, because the boat to the other continent cost more rank than the whole of either zone's work. Travel now costs the same at most whether it is a walk or a boat, so the quests waiting in a zone decide the ranking and the journey only breaks ties. Taking a quest up along the way also no longer trades away the pickup the first stop already offers. (#492).
+
 ## [1.1.18] - 2026-11-08
 
 - **Your route no longer walks past near-level work to a quest several levels above you.** A stop where every quest is past your "Maximum quest level above yours" setting, with no ready hand-in, now waits behind the stops you can work on now, so a green quest and a ready hand-in lead a red, optional quest already in your log. Within each tier the rest of the order is unchanged. Thanks to starkovsky for the report (#474).

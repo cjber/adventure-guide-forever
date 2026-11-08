@@ -292,8 +292,9 @@ local function OnTheWay(data, player, log, held, eligible, candidates, added, pr
 	if saved then
 		local kept = {}
 		-- The log's own steps never push a pickup the route already made off it: a quest taken up since must not
-		-- trade a chosen giver for another or change step 1 (docs/design.md §4.3). Only the log's room bounds them.
-		local keep = math.min(room, CARRY_PICKUPS)
+		-- trade a chosen giver for another or change step 1 (docs/design.md §4.3). The card's room is checked in
+		-- route order (Within), so a quest newly taken up drops the last stop's pickup, never the first one's.
+		local keep = CARRY_PICKUPS
 		for _, id in ipairs(saved) do
 			local quest = data.quests[id]
 			if
