@@ -374,6 +374,9 @@ local function Stops(steps, hold)
 	local stops = {}
 	for index, step in ipairs(steps) do
 		local shapes, radius, questID, questIDs = Shapes(step)
+		-- The quests handed in at this stop, copied, so Shortest Path hides the game's own "?" pin over it
+		-- (cjber/shortest-path-forever#484). An older Shortest Path ignores the field, and an empty list sends none.
+		local handins = step.handins and #step.handins > 0 and { unpack(step.handins) } or nil
 		stops[index] = {
 			map = step.map,
 			x = step.x,
@@ -386,6 +389,7 @@ local function Stops(steps, hold)
 			radius = radius,
 			questID = questID,
 			questIDs = questIDs,
+			handins = handins,
 			shapes = shapes,
 			hold = hold == true
 				and step.kind ~= "trainer"
