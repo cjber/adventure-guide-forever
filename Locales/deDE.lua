@@ -466,7 +466,7 @@ L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
 -- mt
-L["WHATS_NEW"] = "Die Tabs der Karte berühren den Rahmen." -- mt
+L["WHATS_NEW"] = "Die Einstellungsseite der Forever-Addons hinterlässt keinen verirrten Namen mehr, über den andere Addons stolpern können." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"
