@@ -98,8 +98,7 @@ its types reviewed), and the tool versions in
 
 - Lua 5.1 in the game's sandbox: no `require`. The client loads the files `AdventureGuideForever.toc`
   lists, in that order, each receiving `local addonName, ns = ...`; a new file goes in the TOC or never runs.
-- The specs use stubbed client APIs. Agents never launch or drive the game. List checks that need
-  the client in the PR as `/reload` tests for the user.
+- The specs use stubbed client APIs. Checks that need the client run in the headless client (forever-core's `wow-forever-addon/in-game.md`); list in the PR what was checked, and as `/reload` tests for the user what waits on their session.
 - Host globals go in `.luacheckrc`; LuaLS gets WoW APIs from the pinned Ketho annotations. Add missing
   Forever/integration APIs with real types in `types/`, never `diagnostics.globals`. Addon contracts live
   in `types/Namespace.lua`.

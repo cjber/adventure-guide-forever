@@ -22,7 +22,7 @@ the checks below are what make a proposed change verifiable anyway.
 - Never replace a Blizzard global or hook a secure function a spec does not already hook: the taint
   lint refuses it, and so does the game.
 - Never edit `tools/forever_tools/` - vendored byte for byte from forever-core.
-- Never launch the game, Battle.net, Lutris or Wine, and never use the network.
+- Never use the network, and never start the game, Battle.net, Lutris or Wine. The headless client (forever-core's `wow-forever-addon/in-game.md`) tests the build linked into the game, not this checkout, so in-game checks belong to the agent that ships a change.
 - Never leave the working tree with two changes at once: one change, one commit.
 
 `python3 tools/repo_rules.py` holds the rules no linter covers; run it with the other checks.
