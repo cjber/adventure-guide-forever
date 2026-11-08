@@ -211,10 +211,11 @@ function harness.data()
 	return harness.fixture(ns.Data)
 end
 
--- options: spf ("v1" or "v1+"; absent by default), db and charDB (saved variables), log ({id, title, level, groupSize,
--- complete, map, x, y} entries), completed (quest IDs), player (overrides), initialLogin (default true), waypoint
--- (the user waypoint the client kept across a /reload, a UiMapPoint), completedPending (the client has no completed
--- quests to give until the spec sets h.completedPending to false).
+-- options: spf ("v1" or "v1+"; absent by default), waypointui (Waypoint UI loaded with its public API), db and
+-- charDB (saved variables), log ({id, title, level, groupSize, complete, map, x, y} entries), completed (quest IDs),
+-- player (overrides), initialLogin (default true), waypoint (the user waypoint the client kept across a /reload, a
+-- UiMapPoint), completedPending (the client has no completed quests to give until the spec sets h.completedPending to
+-- false).
 function harness.load(options)
 	options = options or {}
 	local G = setmetatable({}, { __index = _G })
@@ -3121,6 +3122,35 @@ function harness.load(options)
 			return Loaded(addon) or h.installed[addon] == true
 		end,
 	}
+	-- Waypoint UI (github.com/Adaptvx/Waypoint-UI): options.waypointui loads it with its public Navigation API, which
+	-- NewUserNavigation creates and tracks the client's own waypoint for, as the real API does. h.waypointUI holds
+	-- each handover's options, its clear count and the session it tracks.
+	if options.waypointui then
+		h.metadata.WaypointUI = {}
+		h.waypointUI = { newCalls = {}, cleared = 0, navigation = nil }
+		G.WaypointUIAPI = {
+			Navigation = {
+				IsUserNavigationTracked = function()
+					return h.waypointUI.navigation ~= nil and h.superTracked == true
+				end,
+				GetUserNavigation = function()
+					return h.waypointUI.navigation
+				end,
+				NewUserNavigation = function(handover)
+					h.waypointUI.newCalls[#h.waypointUI.newCalls + 1] = handover
+					h.waypointUI.navigation =
+						{ name = handover.name, mapID = handover.mapID, x = handover.x / 100, y = handover.y / 100 }
+					h.waypoint = G.UiMapPoint.CreateFromCoordinates(handover.mapID, handover.x / 100, handover.y / 100)
+					h.superTracked = handover.superTracked ~= false
+					return h.waypointUI.navigation
+				end,
+				ClearUserNavigation = function()
+					h.waypointUI.cleared = h.waypointUI.cleared + 1
+					h.waypointUI.navigation, h.waypoint, h.superTracked = nil, nil, false
+				end,
+			},
+		}
+	end
 	if options.questiedb then
 		local fake = options.questiedb
 		local function Copy(value)
