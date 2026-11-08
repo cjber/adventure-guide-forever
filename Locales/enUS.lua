@@ -108,6 +108,8 @@ ns.L = {
 	GROUP_ZONES = "Quest destinations",
 	GROUP_DUNGEONS = "Dungeons",
 	GROUP_BATTLEGROUNDS = "Battlegrounds",
+	-- The row under a folded header's last card, saying what the fold hides and that a click opens it.
+	MORE_CARDS = "%d more: click to show",
 	DUNGEON_QUESTS = "%d quests for this dungeon",
 	DUNGEON_QUESTS_ONE = "1 quest for this dungeon",
 	-- The dungeon card's reason: the log's quests filed under its instance, counted.

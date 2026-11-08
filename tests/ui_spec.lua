@@ -3485,6 +3485,83 @@ do
 	clean(h, label)
 end
 
+-- A folded header says how many cards it hides, in its own row style, and a click on that row opens it. The panel and
+-- the scroll position stay where the player left them; the header's own toggle still folds and opens.
+do
+	local label = "overview more row"
+	local h = Load(false, nil, false, true, true)
+	local L = h.ns.L
+	local route = h.ns.Route()
+	local function Clone(journey, key)
+		local copy = {}
+		for field, value in pairs(journey) do
+			copy[field] = value
+		end
+		copy.key, copy.title = key, "Another " .. key
+		route.journeys[#route.journeys + 1] = copy
+		return copy
+	end
+	local zones = h.ns.Model.InSection(route.journeys, "zones")
+	local source = zones[1]
+	for index = #zones + 1, 7 do
+		Clone(source, "zone:more-" .. index)
+	end
+	h.ns.OpenPanel()
+	h.flush()
+	local function Cards(key)
+		return Shown(h, function(frame)
+			return frame.Icon and frame.Icon.Clip and frame.journey and frame.journey.section == key
+		end)
+	end
+	local function Header(key)
+		return Shown(h, function(frame)
+			return frame.key == key and frame.Name ~= nil
+		end)[1]
+	end
+	local function More(key)
+		return Shown(h, function(frame)
+			return frame.key == key and frame.Text ~= nil
+		end)[1]
+	end
+	local panel = h.G.AdventureGuideForeverPanel
+	local scroll = Shown(h, function(frame)
+		return frame:GetObjectType() == "ScrollFrame" and frame.ScrollBar ~= nil
+	end)[1]
+	equal(#Cards("zones"), 1, label .. ": a folded zone header shows one card")
+	local more = More("zones")
+	equal(more ~= nil, true, label .. ": and a row under it")
+	equal(more.Text:GetText(), L.MORE_CARDS:format(6), label .. ": saying how many cards it hides")
+	scroll:UpdateScrollChildRect()
+	scroll:SetVerticalScroll(math.min(80, scroll.scrollRange or 0))
+	local height, position = panel:GetHeight(), scroll:GetVerticalScroll()
+	equal(position > 0, true, label .. ": the list has room to scroll")
+	h.Click(more)
+	h.flush()
+	equal(h.ns.Prefs().previewGroups.zones, false, label .. ": the row opens the header")
+	equal(#Cards("zones"), 7, label .. ": showing every card")
+	equal(More("zones"), nil, label .. ": and the row goes")
+	equal(panel:GetHeight(), height, label .. ": the panel keeps its height")
+	equal(scroll:GetVerticalScroll(), position, label .. ": and the scroll position")
+	h.Click(Header("zones"))
+	h.flush()
+	equal(#Cards("zones"), 1, label .. ": the header's own toggle still folds")
+	equal(More("zones").Text:GetText(), L.MORE_CARDS:format(6), label .. ": its row is back")
+
+	-- Continue keeps two cards, so its row counts the third.
+	local continuing = h.ns.Model.InSection(route.journeys, "continue")
+	Clone(continuing[#continuing], "continue:more")
+	h.ns.Prefs().previewGroups.continue = true
+	h.ns.OpenPanel()
+	h.flush()
+	equal(#Cards("continue"), 2, label .. ": a folded Continue shows two cards")
+	equal(More("continue").Text:GetText(), L.MORE_CARDS:format(1), label .. ": and its one hidden card")
+	h.Click(More("continue"))
+	h.flush()
+	equal(#Cards("continue"), 3, label .. ": the row opens it")
+	equal(More("continue"), nil, label .. ": and the row goes")
+	clean(h, label)
+end
+
 -- Card minutes: while the guide is open, one Shortest Path estimate a frame over the shown cards,
 -- none in the rebuild's frame, none in step 1's travel frame beyond its own, none in combat (the last answers stand),
 -- none with the guide closed and none without Shortest Path. A boat names itself where the subline leaves room.
