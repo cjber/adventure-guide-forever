@@ -1156,10 +1156,55 @@ do
 	equal(#h.Pins("AdventureGuideForeverGiverPinTemplate"), 0, "loaded Questie owns background markers")
 	h.G.Questie = { db = { profile = { enabled = false } } }
 	h.ns.Pins.Refresh()
-	equal(#h.Pins("AdventureGuideForeverGiverPinTemplate"), 0, "Questie hide toggle cannot reveal duplicates")
+	equal(#h.Pins("AdventureGuideForeverGiverPinTemplate") > 0, true, "Questie hide toggle shows the guide's givers")
+	h.G.Questie = { db = { profile = { enabled = true, enableMapIcons = true, enableAvailable = true } } }
+	h.ns.Pins.Refresh()
+	equal(#h.Pins("AdventureGuideForeverGiverPinTemplate"), 0, "all three Questie switches on keep its markers")
+	h.G.Questie.db.profile.enableMapIcons = false
+	h.ns.Pins.Refresh()
+	equal(#h.Pins("AdventureGuideForeverGiverPinTemplate") > 0, true, "Questie map icons off shows the guide's givers")
+	h.G.Questie.db.profile.enableMapIcons, h.G.Questie.db.profile.enableAvailable = true, false
+	h.ns.Pins.Refresh()
+	equal(#h.Pins("AdventureGuideForeverGiverPinTemplate") > 0, true, "Questie available icons off shows the givers")
+	h.G.Questie = {}
+	h.ns.Pins.Refresh()
+	equal(#h.Pins("AdventureGuideForeverGiverPinTemplate"), 0, "a Questie without a built profile owns its markers")
 	h.map:SetMapID(1413)
 	h.flush()
 	equal(#h.Pins("AdventureGuideForeverPinTemplate") > 0, true, "route markers remain with Questie")
+
+	-- Questie's own hide/show switch redraws the guide's givers with it, through one hook.
+	h.G.Questie = {
+		API = { isReady = true },
+		db = { profile = { enabled = true, enableMapIcons = true, enableAvailable = true } },
+	}
+	h.G.QuestieQuest = {
+		ToggleNotes = function()
+			h.G.Questie.db.profile.enabled = not h.G.Questie.db.profile.enabled
+		end,
+	}
+	local imports = 0
+	h.G.QuestieLoader = {
+		ImportModule = function(_, name)
+			imports = imports + 1
+			equal(name, "QuestieQuest", "the toggle hook imports Questie's quest module")
+			return h.G.QuestieQuest
+		end,
+	}
+	local refreshes = 0
+	local refresh = h.ns.Pins.Refresh
+	h.ns.Pins.Refresh = function(...)
+		refreshes = refreshes + 1
+		return refresh(...) -- multi-value: the wrapper is transparent
+	end
+	h.ns.Pins.Refresh()
+	equal(imports, 1, "one refresh imports Questie's quest module")
+	refreshes = 0
+	h.G.QuestieQuest.ToggleNotes(false)
+	equal(refreshes, 1, "Questie's toggle redraws the pins once")
+	h.G.QuestieQuest.ToggleNotes(true)
+	equal(refreshes, 2, "the hook stays installed once")
+	equal(imports, 1, "later refreshes do not import again")
 end
 
 -- Map pins: a refresh replaces, never adds; removal leaves none; the tooltips read as design §2.9 and the tracker
