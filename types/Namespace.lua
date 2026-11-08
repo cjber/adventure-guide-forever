@@ -244,15 +244,6 @@
 ---@field text? string the client's words for it, when they line up and it has any
 ---@field finish? string the town key ("town:<hub>") of the quest's hand-in, when the data has one
 
--- One NPC or object a town visit covers: where it stands and what the visit does there.
----@class AGFVisitSpot
----@field map integer
----@field x number
----@field y number
----@field name string the NPC's or object's name
----@field pickups integer[] quest IDs picked up there
----@field handins integer[] quest IDs handed in there
-
 ---@class AGFStep
 ---@field rxpIndex? integer
 ---@field rxpSticky? boolean an ongoing RestedXP objective
@@ -272,7 +263,6 @@
 ---@field givers? string[] a town's distinct NPC and object names, in `quests` order
 ---@field group? integer how many of a town's quests are elite, dungeon or raid
 ---@field spots? table<integer, AGFPlace> a town's quest ID -> its start or finish there; the point is one of them
----@field visitSpots? AGFVisitSpot[] every NPC or object the visit covers, each with what is done there
 ---@field map integer
 ---@field x number
 ---@field y number

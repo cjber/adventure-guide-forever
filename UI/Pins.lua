@@ -60,6 +60,15 @@ local function Groups(eligible, close)
 	return groups
 end
 
+-- One NPC or object a town visit covers: where it stands and what the visit does there.
+---@class AGFVisitSpot
+---@field map integer
+---@field x number
+---@field y number
+---@field name string the NPC's or object's name
+---@field pickups integer[] quest IDs picked up there
+---@field handins integer[] quest IDs handed in there
+
 -- The town visits' spots on `mapID`, the points numbered stops already stand on left to those pins: one mark per NPC
 -- or object, carrying every quest the route does there. The first visit that comes there sets the mark's fade.
 ---@class AGFSpotPinRow : AGFVisitSpot
@@ -70,37 +79,36 @@ end
 ---@return AGFSpotPinRow[]
 local function VisitSpotRows(mapID, numbered)
 	local rows, byKey = {}, {}
-	local function Add(ids, into)
-		for _, id in ipairs(ids) do
-			local found = false
-			for _, old in ipairs(into) do
-				found = found or old == id
-			end
-			if not found then
-				into[#into + 1] = id
+	local function Add(id, into)
+		for _, old in ipairs(into) do
+			if old == id then
+				return
 			end
 		end
+		into[#into + 1] = id
 	end
 	for index, step in ipairs(ns.Route().steps) do
 		if step.kind == "town" and step.map == mapID and not step.here then
-			for _, spot in ipairs(step.visitSpots or NONE) do
-				local key = ns.Model.SpotKey(spot) .. ":" .. spot.name
-				if spot.map == mapID and not numbered[ns.Model.SpotKey(spot)] then
-					local row = byKey[key]
-					if not row then
-						row = {
-							map = spot.map,
-							x = spot.x,
-							y = spot.y,
-							name = spot.name,
-							pickups = {},
-							handins = {},
-							index = index,
-						}
-						byKey[key], rows[#rows + 1] = row, row
+			for _, list in ipairs({ "handins", "pickups" }) do
+				for _, id in ipairs(step[list] or NONE) do
+					local place = step.spots and step.spots[id]
+					if place and place.map == mapID and not numbered[ns.Model.SpotKey(place)] then
+						local key = ns.Model.SpotKey(place) .. ":" .. place.name
+						local row = byKey[key]
+						if not row then
+							row = {
+								map = place.map,
+								x = place.x,
+								y = place.y,
+								name = place.name,
+								pickups = {},
+								handins = {},
+								index = index,
+							}
+							byKey[key], rows[#rows + 1] = row, row
+						end
+						Add(id, row[list])
 					end
-					Add(spot.pickups, row.pickups)
-					Add(spot.handins, row.handins)
 				end
 			end
 		end
@@ -466,7 +474,7 @@ end
 -- Only the steps that sit on the map currently shown: a continent view gets no pins, matching
 -- how the route already only points at zone-level maps.
 local function Draw()
-	if not map or not routePool then
+	if not map or not routePool or not spotPool then
 		return
 	end
 	if InCombatLockdown() then

@@ -25,19 +25,17 @@ for _, step in ipairs(ns.Route().steps) do
 end
 equal(visit ~= nil, true, "the route visits Bashal'Aran")
 
-local buzzbox
-for _, spot in ipairs(visit.visitSpots or {}) do
-	if spot.name == "Buzzbox 411" then
-		buzzbox = spot
-	end
-end
-equal(buzzbox ~= nil, true, "the visit carries the Buzzbox spot")
+local buzzbox = visit.spots[1001]
+equal(buzzbox ~= nil, true, "the visit records the Buzzbox's place")
 equal(buzzbox.map, 1439, "the spot is on Darkshore")
 equal(buzzbox.x, 0.4196, "the spot keeps its x")
 equal(buzzbox.y, 0.2862, "the spot keeps its y")
-equal(#buzzbox.handins, 1, "one quest is handed in there")
-equal(buzzbox.handins[1], 1001, "Buzzbox 411 is handed in there")
-equal(#buzzbox.pickups, 0, "nothing is picked up there")
+equal(buzzbox.name, "Buzzbox 411", "the spot is the Buzzbox")
+local handedIn = false
+for _, id in ipairs(visit.handins or {}) do
+	handedIn = handedIn or id == 1001
+end
+equal(handedIn, true, "Buzzbox 411 is handed in there")
 equal(visit.x ~= buzzbox.x or visit.y ~= buzzbox.y, true, "the numbered stop sits elsewhere")
 
 h.G.C_Map.OpenWorldMap()
