@@ -13,6 +13,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [Unreleased]
 
 - **A Darkshore route no longer starts the Master's Glaive chain in the middle.** "It's All Fun and Games Until..." at the Twilight Tome in the south waited for nothing, so the route offered it before the chain's first quest, "Cave Mushrooms", in Auberdine. The Forever record now carries its missing link to "The Twilight Camp", so the chain is taken from its first quest (#496).
+- **An area no longer leads when the mobs there are too high for you.** The route judged a step by the quest's own level, so Fruit of the Sea at level 17 looked fine for a level 15 character even though its crab spots carry level 18 mobs. A stop now counts as above your "Maximum quest level above yours" ceiling when the highest mob level at the spots it sends you to is past it, so the area waits behind work you can do now. A town pickup still reads the quest's own level. Reported in game in Darkshore (#490).
+- **Your calling no longer offers a hunter a second Taming the Beast chain.** The Goldshire chain is an alternative to the Dwarf, Night Elf and Skyborne chains, but the quest data had no exclusivity between them, so a Night Elf who had finished the Teldrassil chain was still offered the Goldshire one. The card now also leads with the nearest class quest you can take rather than the lowest ID. (#491).
+- **A folded list now says how many more cards it hides.** A collapsed header such as Quest destinations showed only its first card and a small "+", so the rest were easy to miss. A row under the last visible card now reads "6 more: click to show", and a click opens the header in place without moving the panel or your scroll position. Reported in game (#494).
 
 ## [1.1.18] - 2026-11-08
 

@@ -186,7 +186,10 @@ follow the shared family voice.
 - **4.1 Selection.** Take the best action for the player now at every step, not the nearest alone: every stop that is
   work for now comes before a stop above the player's level ceiling, and within each tier the nearest action decides.
   The ceiling is the one that limits pickups: the "Maximum quest level above yours" setting, two levels up by default. A stop is
-  above only when every quest the player would act on there is past that ceiling and it holds no ready hand-in; a
+  above only when every quest the player would act on there is past that ceiling and it holds no ready hand-in; a quest
+  counts as past it by its own level, or on an area step by the highest mob level (`obj[i][6]`) among that quest's spots
+  the step sends the player to, so an area whose mobs outlevel the ceiling waits even when its quest does not. A town or pickup stop
+  reads the quest's own level only. A
   ready hand-in, a quest within the ceiling, and a stop with no quest at all (a trainer, an entrance) are work for now. So near-level and lower-level work, and hand-ins already done, lead a quest several levels above the
   player. Then take the nearest town pickup, the nearest area of a quest the town handed out or the player carries, or
   the nearest ready hand-in. A ready hand-in or a pickup within a short walk of the player comes before a step whose
