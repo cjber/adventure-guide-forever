@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The Forever addons page opens with a gamepad.** With the gamepad interface on, the Forever addons settings page can be entered from the Options list (cjber/tweaks-forever#382).
+
 ## [1.2.1] - 2026-11-08
 
 - **The controller keeps working after closing the map with the guide open.** Closing the world map while the guide tab showed ran the guide's own code inside the game's close, which could leave the controller's interact action blocked. The guide now hears the map close after the game has finished it. (#493).
