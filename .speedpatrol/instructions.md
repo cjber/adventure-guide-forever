@@ -24,6 +24,6 @@ which fails a rebuild or travel frame over its 3 ms budget.
 
 ## Never do these things
 
-- Never launch the game, Battle.net, Lutris or Wine.
+- Never start the game, Battle.net, Lutris or Wine. The headless client (forever-core's `wow-forever-addon/in-game.md`) tests the build linked into the game, not this checkout, so in-game checks belong to the agent that ships a change.
 - Never commit a speed-up that only the benchmark likes: it has to pass the full gate.
 - Never leave scratch files in the commit.
