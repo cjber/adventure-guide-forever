@@ -28,22 +28,28 @@ local RingsShown, MarkerTooltip
 ---@field Stack? Texture
 
 ---@param eligible fun(step: AGFStep): boolean
----@param close fun(first: AGFStep, step: AGFStep): boolean
+---@param close fun(first: AGFStep, step: AGFStep, firstX: number, firstY: number, x: number, y: number): boolean
+---@param space? fun(step: AGFStep): integer, number, number the grouping map and point, defaulting to the step's own
 ---@return AGFPinVisit[][]
-local function Groups(eligible, close)
+local function Groups(eligible, close, space)
+	space = space or function(step)
+		return step.map, step.x, step.y
+	end
 	local groups = {}
 	for index, step in ipairs(ns.Route().steps) do
 		if eligible(step) then
+			local map, x, y = space(step)
 			local group
 			for _, visits in ipairs(groups) do
 				local first = visits[1].step
+				local firstMap, firstX, firstY = space(first)
 				if
-					first.map == step.map
+					firstMap == map
 					and (
 						first.key == step.key
 						or (first.kind == "town" and step.kind == "town" and first.hub and first.hub == step.hub)
-						or (first.x == step.x and first.y == step.y)
-						or ((step.preview or first.preview) and close(first, step))
+						or (x ~= nil and firstX ~= nil and firstX == x and firstY == y)
+						or ((step.preview or first.preview) and close(first, step, firstX, firstY, x, y))
 					)
 				then
 					group = visits
@@ -156,13 +162,13 @@ local function RefreshMinimap()
 	local reach = radius * 2 * MINIMAP_ICON / math.max(1, Minimap:GetWidth())
 	local groups = Groups(function(step)
 		return step.map > 0 and not step.here and step.x >= 0 and step.x <= 1 and step.y >= 0 and step.y <= 1
-	end, function(first, step)
+	end, function(_, step, firstX, firstY, x, y)
 		local map = ns.Data.maps[step.map]
 		return map ~= nil
 			and map.sx ~= nil
 			and map.sy ~= nil
-			and math.abs(first.x - step.x) * map.sx <= reach
-			and math.abs(first.y - step.y) * map.sy <= reach
+			and math.abs(firstX - x) * map.sx <= reach
+			and math.abs(firstY - y) * map.sy <= reach
 	end)
 	for slot, visits in ipairs(groups) do
 		local step, index = visits[1].step, visits[1].index
@@ -512,8 +518,9 @@ local function AddGivers(mapID)
 	end
 end
 
--- Only the steps that sit on the map currently shown: a continent view gets no pins, matching
--- how the route already only points at zone-level maps.
+-- The steps drawn are those on the map currently shown: a continent view gets no pins, matching how the route already
+-- only points at zone-level maps. While OpenMap stitches the zones around it onto the same canvas, their stops draw at
+-- the place each has on that canvas too.
 local function Draw()
 	if not map or not routePool or not spotPool then
 		return
@@ -542,13 +549,32 @@ local function Draw()
 	local scale = map:GetCanvasScale() or 1
 	local reachX = MAP_GROUP_SIZE / math.max(1, canvas:GetWidth() * scale)
 	local reachY = MAP_GROUP_SIZE / math.max(1, canvas:GetHeight() * scale)
+	-- Each drawn step's point in the shown map's fractions: its own, or its place on OpenMap's stitched canvas.
+	local stitched = ns.OpenMapStitch.Stitched()
+	local placed = {}
+	for _, step in ipairs(ns.Route().steps) do
+		if not step.here then
+			if step.map == mapID then
+				placed[step] = { x = step.x, y = step.y }
+			elseif stitched then
+				local x, y = ns.OpenMapStitch.Place(step, mapID)
+				if x ~= nil and y ~= nil then
+					placed[step] = { x = x, y = y }
+				end
+			end
+		end
+	end
 	local groups = Groups(function(step)
-		return step.map == mapID and not step.here
-	end, function(first, step)
-		return math.abs(first.x - step.x) <= reachX and math.abs(first.y - step.y) <= reachY
+		return placed[step] ~= nil and not step.here
+	end, function(_, _, firstX, firstY, x, y)
+		return math.abs(firstX - x) <= reachX and math.abs(firstY - y) <= reachY
+	end, function(step)
+		local point = placed[step]
+		return mapID, point.x, point.y
 	end)
 	for _, visits in ipairs(groups) do
-		routePool:Acquire(visits[1].step, visits[1].index, visits)
+		local first, point = visits[1].step, placed[visits[1].step]
+		routePool:Acquire(first, visits[1].index, visits, point.x, point.y)
 	end
 	-- A town visit's other NPCs and objects, so a hand-in away from its numbered stop shows where it is: one small quest
 	-- mark each, never on a point a numbered stop already has, faded as the stop it belongs to.
@@ -592,7 +618,9 @@ end
 ---@param step AGFStep
 ---@param index number
 ---@param visits? AGFPinVisit[]
-function AdventureGuideForeverPinMixin:OnAcquired(step, index, visits)
+---@param x? number the point in the shown map's fractions; nil keeps the step's own
+---@param y? number
+function AdventureGuideForeverPinMixin:OnAcquired(step, index, visits, x, y)
 	-- The stock user waypoint's level (WaypointLocationDataProvider), above every quest "!" and "?", the super-tracked
 	-- one's included (Blizzard_WorldMap.lua:291-311); givers stay at AREA_POI, under both.
 	self:UseFrameLevelType("PIN_FRAME_LEVEL_WAYPOINT_LOCATION")
@@ -618,7 +646,7 @@ function AdventureGuideForeverPinMixin:OnAcquired(step, index, visits)
 	-- The badge hangs past the button; the pin takes the clicks it gets.
 	local corner = badge:IsShown() and -BADGE_OFFSET or 0
 	self:SetHitRectInsets(0, corner, 0, corner)
-	self:SetPosition(step.x, step.y)
+	self:SetPosition(x or step.x, y or step.y)
 	self:SetIgnoreGlobalPinScale(true)
 	self:SetScalingLimits(1, 1, 1)
 	self:ApplyScale()
@@ -862,6 +890,7 @@ local function Attach()
 			PlayReveal()
 		end
 	end)
+	ns.OpenMapStitch.OnStitchedChanged(Pins.Refresh)
 	ns.OnRouteChange(Pins.Refresh)
 end
 

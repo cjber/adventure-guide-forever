@@ -45,7 +45,9 @@ abandons quests.
   Quest tracking is opt-in; a step's quest opens on the map only outside combat.
   Shared objective stops use a combined heading and show each quest's live objective progress beneath it.
   Completed objectives leave the stop during combat without clearing unfinished work.
-- **2.6 Pins.** Draw only known locations and step aside while Shortest Path supplies guidance. While the player
+- **2.6 Pins.** Draw only known locations and step aside while Shortest Path supplies guidance. While OpenMap stitches
+  the zones around the map's own onto one canvas, their route stops draw too, numbered as on their own map; givers and
+  town visit spots stay on the map's own zone. While the player
   stands in the current step's objective area, the world map shows that area's full outline in yellow, the minimap
   turns the game's own quest area gold, and the step's own pin and line step aside. A town visit keeps one numbered
   stop, and every other NPC or object it covers draws a small mark at its own spot, with its name and the quests done
