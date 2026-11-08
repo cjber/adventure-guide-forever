@@ -96,6 +96,8 @@ local asideLines = {}
 local overviewCards = {}
 ---@type AGFOverviewHeader[]
 local overviewHeaders = {}
+---@type AGFOverviewMore[]
+local overviewMores = {}
 ---@type Frame
 local viewport
 ---@type AGFScrollFrame?
@@ -881,26 +883,75 @@ local function CreateOverviewHeader(parent)
 end
 
 -- Folded groups keep leading cards visible; expansion shows all cards in the scrollable list.
+---@class AGFOverviewMore : Button
+---@field key AGFJourneySection
+---@field Text FontString
+
+-- The row under a folded header's last card: how many cards the fold hides, and that a click shows them. It wears
+-- the guide's own collapsible row (the compact card's art and caps), so it reads as part of the same list.
+---@param parent Frame
+---@return AGFOverviewMore
+local function CreateOverviewMore(parent)
+	local row = CreateFrame("Button", nil, parent) --[[@as AGFOverviewMore]]
+	row:SetHeight(COMPACT_HEIGHT)
+	for _, layer in ipairs({ "BACKGROUND", "HIGHLIGHT" }) do
+		local art = row:CreateTexture(nil, layer)
+		art:SetAtlas(ROW_ART) -- art-ok: the guide's own collapsible row's tiling middle
+		art:SetAllPoints()
+		if layer == "HIGHLIGHT" then
+			art:SetBlendMode("ADD")
+			art:SetAlpha(0.4)
+		end
+	end
+	for _, cap in ipairs(ROW_CAPS) do
+		local texture = row:CreateTexture(nil, "OVERLAY")
+		-- art-ok: a row cap at the row art's native 46 high, its width the cap's own share of it
+		texture:SetAtlas(cap[1])
+		texture:SetSize(cap[2], COMPACT_HEIGHT)
+		texture:SetPoint(cap[3])
+	end
+	row.Text = row:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+	row.Text:SetPoint("LEFT", 12, 0)
+	row.Text:SetPoint("RIGHT", -34, 0)
+	row.Text:SetJustifyH("LEFT")
+	row.Text:SetWordWrap(false)
+	row:RegisterForClicks("LeftButtonUp")
+	row:SetScript("OnClick", function(self)
+		Overview.ToggleCollapsed(self.key)
+		Refresh()
+	end)
+	return row
+end
+
+-- Folded groups keep leading cards visible; expansion shows all cards in the scrollable list. Hidden cards are
+-- counted by the same Open rule that chooses which ones show, so the row never disagrees with the list.
 ---@param group AGFJourneyGroup
 ---@param header AGFOverviewHeader
+---@param more AGFOverviewMore
 ---@param journeys AGFJourney[]
 ---@param top number
 ---@param width number
 ---@param pool table
+---@param route AGFRoute
 ---@return number top
-local function LayoutGroup(group, header, journeys, top, width, pool)
-	local collapsed = Overview.Collapsed(group.key)
+local function LayoutGroup(group, header, more, journeys, top, width, pool, route)
+	local shown = 0
+	for _, journey in ipairs(journeys) do
+		if Overview.Open(route, journey) then
+			shown = shown + 1
+		end
+	end
+	local hidden = #journeys - shown
 	local preview = group.key == "continue" and 2 or 1
-	local count = collapsed and math.min(preview, #journeys) or #journeys
 	header.key = group.key
 	header:SetWidth(width)
 	header.Name:SetText(group.label)
 	header.Count:SetText(#journeys > preview and tostring(#journeys) or "")
-	header.CollapseButton:UpdateCollapsedState(collapsed)
+	header.CollapseButton:UpdateCollapsedState(Overview.Collapsed(group.key))
 	header.CollapseButton:SetShown(#journeys > preview)
 	header:SetPoint("TOPLEFT", 0, -top)
 	top = top + HEADER_HEIGHT + HEADER_GAP
-	for index = 1, count do
+	for index = 1, shown do
 		pool.next = pool.next + 1
 		local card = overviewCards[pool.next] or CreateOverviewCard(assert(list))
 		overviewCards[pool.next] = card
@@ -908,6 +959,14 @@ local function LayoutGroup(group, header, journeys, top, width, pool)
 		RefreshOverviewCard(card, journeys[index], width)
 		card:SetPoint("TOPLEFT", 0, -top)
 		top = top + OVERVIEW_HEIGHT + OVERVIEW_GAP
+	end
+	more.key = group.key
+	more.Text:SetText(L.MORE_CARDS:format(hidden))
+	more:SetShown(hidden > 0)
+	if hidden > 0 then
+		more:SetWidth(width)
+		more:SetPoint("TOPLEFT", 0, -top)
+		top = top + COMPACT_HEIGHT + OVERVIEW_GAP
 	end
 	return top
 end
@@ -929,17 +988,23 @@ local function LayoutOverview(route, top, shown)
 		for _, card in ipairs(overviewCards) do
 			card:Hide()
 		end
+		for _, more in ipairs(overviewMores) do
+			more:Hide()
+		end
 		return top
 	end
 	local pool, shownGroups = { next = 0 }, 0
 	for index, group in ipairs(Overview.GROUPS) do
 		local header = overviewHeaders[index] or CreateOverviewHeader(assert(list))
 		overviewHeaders[index] = header
+		local more = overviewMores[index] or CreateOverviewMore(assert(list))
+		overviewMores[index] = more
+		more:Hide()
 		local journeys = Overview.InGroup(route.journeys, group.key)
 		header:SetShown(#journeys > 0)
 		if #journeys > 0 then
 			top = top + (shownGroups > 0 and GROUP_GAP or 0)
-			top = LayoutGroup(group, header, journeys, top, width, pool)
+			top = LayoutGroup(group, header, more, journeys, top, width, pool, route)
 			shownGroups = shownGroups + 1
 		end
 	end
