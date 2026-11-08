@@ -442,9 +442,9 @@ local function Drive(h, label)
 	end)
 	DrivePins(h, label .. " pin")
 
-	-- Closing and reopening the world map runs its OnHide/OnShow hooks (pins, tooltips, the guide's own refresh).
+	-- Closing and reopening the world map runs its panel-hide callback (pins, tooltips) and its next frame (show).
 	Run(h, label .. " close map", function()
-		h.G.WorldMapFrame:Hide()
+		h.G.HideUIPanel(h.G.WorldMapFrame)
 		h.flush()
 	end)
 	Run(h, label .. " reopen map", function()

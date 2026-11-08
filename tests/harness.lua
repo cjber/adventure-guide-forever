@@ -1638,6 +1638,8 @@ function harness.load(options)
 			h.uiPanel = nil
 		end
 		frame:Hide()
+		-- The panel manager tells its callbacks the panel is hidden, after the hide, as the client's HideUIPanel does.
+		G.EventRegistry:TriggerEvent("UIParentPanelManager.HideUIPanel", frame)
 	end
 	G.EventRegistry = {
 		RegisterCallback = function(_, event, callback, owner)

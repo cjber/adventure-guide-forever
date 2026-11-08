@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The controller keeps working after the world map and a guide menu opened from it close.** Closing either could leave the game's interact action blocked and sometimes freeze the client. The guide now lets the game finish closing the map before it takes its own hover and tooltip down, so the controller's actions stay the game's. (#493).
+
 ## [1.1.18] - 2026-11-08
 
 - **Your route no longer walks past near-level work to a quest several levels above you.** A stop where every quest is past your "Maximum quest level above yours" setting, with no ready hand-in, now waits behind the stops you can work on now, so a green quest and a ready hand-in lead a red, optional quest already in your log. Within each tier the rest of the order is unchanged. Thanks to starkovsky for the report (#474).
