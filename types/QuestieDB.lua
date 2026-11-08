@@ -30,7 +30,20 @@
 ---@type AGFQuestieDB?
 LibQuestieDB = nil
 
----@type {API: {isReady: boolean, RegisterOnReady: fun(callback: fun()), RegisterForQuestUpdates: fun(callback: fun(questId: integer?, objectiveIndex: integer?, triggerReason: integer?))}}?
+-- Questie's saved settings the guide reads, and the one module it hooks: QuestieQuest's hide/show switch.
+---@class AGFQuestieProfile
+---@field enabled? boolean
+---@field enableMapIcons? boolean
+---@field enableAvailable? boolean
+
+---@class AGFQuestieSettings
+---@field profile? AGFQuestieProfile
+
+---@class AGFQuestieModule
+---@field IsDoable? fun(id: integer): boolean
+---@field ToggleNotes? fun(enabled: boolean)
+
+---@type {API: {isReady: boolean, RegisterOnReady: fun(callback: fun()), RegisterForQuestUpdates: fun(callback: fun(questId: integer?, objectiveIndex: integer?, triggerReason: integer?))}, db?: AGFQuestieSettings}?
 Questie = nil
----@type {ImportModule: fun(self: table, name: string): {IsDoable: fun(id: integer): boolean}}?
+---@type {ImportModule: fun(self: table, name: string): AGFQuestieModule?}?
 QuestieLoader = nil
