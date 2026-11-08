@@ -182,10 +182,15 @@ follow the shared family voice.
 
 ## 4. Routes
 
-- **4.1 Selection.** Take the nearest action at every step: the nearest town pickup, the nearest area of
-  a quest the town handed out or the player carries, or the nearest ready hand-in. A ready hand-in or a pickup
-  within a short walk of the player comes before a step whose own target point is farther, so the guide finishes
-  what is beside the player first; once it leads it stays until it is done or the player walks clearly away.
+- **4.1 Selection.** Take the best action for the player now at every step, not the nearest alone: every stop that is
+  work for now comes before a stop above the player's level ceiling, and within each tier the nearest action decides.
+  The ceiling is the one that limits pickups: the "Maximum quest level above yours" setting, two levels up by default. A stop is
+  above only when every quest the player would act on there is past that ceiling and it holds no ready hand-in; a
+  ready hand-in, a quest within the ceiling, and a stop with no quest at all (a trainer, an entrance) are work for now. So near-level and lower-level work, and hand-ins already done, lead a quest several levels above the
+  player. Then take the nearest town pickup, the nearest area of a quest the town handed out or the player carries, or
+  the nearest ready hand-in. A ready hand-in or a pickup within a short walk of the player comes before a step whose
+  own target point is farther, so the guide finishes what is beside the player first; once it leads it stays until it
+  is done or the player walks clearly away.
   A quest whose item runs out in the bags (one the client lets last a day or less, ItemSparse DurationInInventory,
   that the quest hands over, needs or collects) goes first while the player carries one, ahead even of the area they
   stand in: its hand-in once it is done, else its objectives, with the reason "before <item> runs out".
