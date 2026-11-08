@@ -13,7 +13,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [Unreleased]
 
 - **A town visit shows every NPC and object it covers on the map.** The numbered stop still marks where the visit begins, and a small quest mark now sits on each giver or object the visit includes, so a hand-in away from the town's NPCs, such as Buzzbox 411 in Darkshore, shows where it actually is. Hovering one names the NPC or object and the quests done there.
-- **The Forever addons settings page no longer writes the client's bare `Text` name.** Its check box came from a Blizzard template under an unnamed page, so the label landed on a global another addon or the game could read as its own. The page is named now (cjber/forever-core#208).
+
+## [1.1.16] - 2026-11-08
+
+- **The Forever addons settings page no longer leaves a stray name behind for other addons to trip over.** Its check box came from a Blizzard template under an unnamed page, so the label landed on a global another addon or the game could read as its own. The page is named now (cjber/forever-core#208).
 
 ## [1.1.15] - 2026-11-08
 
