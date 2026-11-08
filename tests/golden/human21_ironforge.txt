@@ -18,11 +18,11 @@ card | zone:1440 | Head to Ashenvale | 7 quests near your level | - | map 1440
 card | zone:1413 | Head to The Barrens | 7 quests near your level | Ratchet needs hands | map 1413
   step 1 | town:1413:392 | Visit Ratchet: Pick up 6 | 1413 0.6237,0.3762 | 6 to pick up
   step 2 | town:1413:382 | Pick up: Ignition | 1413 0.5652,0.0745 | near your level
-card | zone:1439 | Head to Darkshore | 14 quests near your level | - | map 1453
+card | zone:1439 | Head to Darkshore | 13 quests near your level | - | map 1453
   step 1 | town:1453:0 | Pick up: Business in Auberdine | 1453 0.5940,0.3426 | near your level
   step 2 | town:1439:442 | Visit Auberdine: Pick up 7 | 1439 0.3744,0.4184 | 7 to pick up
   step 3 | town:1439:448 | Visit Grove of the Ancients: Pick up 2 | 1439 0.4440,0.7643 | 2 to pick up
-  step 4 | town:1439:449 | Visit The Master's Glaive: Pick up 3 | 1439 0.4594,0.9029 | 3 to pick up
+  step 4 | town:1439:449 | Visit The Master's Glaive: Pick up 2 | 1439 0.4594,0.9029 | 2 to pick up
   step 5 | town:1439:443 | Pick up: Gyromast's Retrieval | 1439 0.5666,0.1348 | near your level
 card | zone:1432 | Head to Loch Modan | 14 quests near your level | 5 quests will soon turn grey | map 1432
   step 1 | town:1432:838 | Pick up: Filthy Paws | 1432 0.2476,0.1840 | near your level
