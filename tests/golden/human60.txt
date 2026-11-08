@@ -116,9 +116,9 @@ card | zone:1438 | Head to Teldrassil | 3 quests near your level | - | map 1438
   step 2 | town:1438:186 | Pick up: Bladeleaf the Elder | 1438 0.5730,0.6077 | near your level
 card | zone:1412 | Head to Mulgore | 1 quest near your level | - | map 1412
   step 1 | town:1412:222 | Pick up: Bloodhoof the Elder | 1412 0.4754,0.5781 | near your level
-card | calling | Your calling | Chapter 1 of 4 | Your class trainer has a task: A Troubled Spirit | map 1455
-  step 1 | town:1455:0 | Pick up: An Earnest Proposition | 1455 0.4353,0.5264 | near your level
-  step 2 | town:1453:0 | Pick up: A Troubled Spirit | 1453 0.8055,0.5987 | Begins a new story
+card | calling | Your calling | Chapter 1 | A task for your class: An Earnest Proposition | map 1455
+  step 1 | town:1455:0 | Pick up: An Earnest Proposition | 1455 0.4353,0.5264 | Begins a new story
+  step 2 | town:1453:0 | Pick up: A Troubled Spirit | 1453 0.8055,0.5987 | near your level
   step 3 | town:1435:1780 | Pick up: Warrior Kinship | 1435 0.3429,0.6614 | near your level
 card | dungeon:329 | Stratholme | 9 quests for this dungeon | - | map 1423
   step 1 | town:1423:2268 | Visit Light's Hope Chapel: Pick up 4 | 1423 0.7163,0.5009 | 4 to pick up
