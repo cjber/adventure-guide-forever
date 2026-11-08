@@ -29,6 +29,7 @@ globals = {
 	"AdventureGuideForeverCharDB",
 	"AdventureGuideForeverPinMixin",
 	"AdventureGuideForeverGiverPinMixin",
+	"AdventureGuideForeverSpotPinMixin",
 	"AdventureGuideForever_OnAddonCompartmentClick",
 	"SLASH_ADVENTUREGUIDEFOREVER1",
 	"SLASH_ADVENTUREGUIDEFOREVER2",
@@ -108,6 +109,8 @@ read_globals = {
 	"canaccessvalue",
 	-- SafeCall.lua
 	"debugstack",
+	-- Log.lua
+	"date",
 	-- Offers.lua
 	"C_GossipInfo",
 	"GetNumAvailableQuests",
@@ -267,3 +270,5 @@ globals[#globals + 1] = "ForeverMapMarkers"
 -- LeaderboardsData.lua: the guild roster's classFileName behind a peer row's missing class.
 read_globals[#read_globals + 1] = "GetGuildRosterInfo"
 read_globals[#read_globals + 1] = "GetNumGuildMembers"
+-- Core/Log.lua: the client's date, this session's seconds.
+read_globals[#read_globals + 1] = "date"

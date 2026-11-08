@@ -863,6 +863,11 @@
 ---@field RecordError fun(label: string, message: any, stack?: string) keep an error caught some other way (a coroutine's) for the report
 ---@field CutText fun(text: string, limit: integer): string `text` at most `limit` bytes, cut on a character boundary with "..."
 ---@field CaughtErrors fun(): ForeverCaughtError[] this session's caught errors, oldest first, as copies
+---@field AttachErrorJournal fun(store: table) keep the journal in the addon's saved table, so a /reload keeps it
+---@field Log fun(level: string, topic: string, message: any, ...: any) one line in the shared ring (Core/Log.lua)
+---@field LogLines fun(count?: integer): string[] the newest log lines, oldest first, as copies (Core/Log.lua)
+---@field AttachLog fun(store: table) keep the log ring in the addon's saved table, so a /reload keeps it
+---@field DebugCommand fun(argument?: string): boolean `/forever debug`: toggle, pin, off or show (Core/Log.lua)
 ---@field Report ForeverReportModule the report window (UI/Report.lua)
 ---@field WhereLines fun(): string[] /agf where: versions, place and the report's own lines (Core/Report.lua)
 ---@field ReportLines fun(): string[] Adventure Guide's own lines in the report (Core/Report.lua)

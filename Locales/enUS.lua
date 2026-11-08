@@ -576,7 +576,7 @@ ns.L = {
 	SPF_DISABLED = "Enable Shortest Path Forever for walked routes and boat times.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "The Forever addons settings page no longer leaves a stray name behind for other addons to trip over.",
+	WHATS_NEW = "A town visit shows every NPC and object it covers on the map.",
 	DUNGEON_BOSSES_LOOT = "Bosses and loot",
 	DUNGEON_LOOT_INSTALL = "Install AtlasLoot Classic and its Dungeons and Raids module for bosses and loot.",
 	DUNGEON_LOOT_COMBAT = "Boss loot will load after combat.",
@@ -628,6 +628,19 @@ ns.L = {
 	["7th"] = "7th",
 	["8th"] = "8th",
 	[", "] = ", ",
+
+	-- Shared debug log (Forever Core's Core/Log.lua, which reads ns.L by English phrase).
+	["Debug log is off."] = "Debug log is off.",
+	["Debug log is on for this session."] = "Debug log is on for this session.",
+	["Debug log is on and pinned for this character."] = "Debug log is on and pinned for this character.",
+	["Debug log is already on and pinned for this character."] = "Debug log is already on and pinned for this character.",
+	["Debug log is off for this session; it is still pinned."] = "Debug log is off for this session; it is still pinned.",
+	["Debug log is off and unpinned."] = "Debug log is off and unpinned.",
+	["No addon has attached its log yet."] = "No addon has attached its log yet.",
+	["%s (last %d):"] = "%s (last %d):",
+	["%s: no lines yet."] = "%s: no lines yet.",
+	["Usage: /forever debug, /forever debug pin, /forever debug off, /forever debug show"] = "Usage: /forever debug, "
+		.. "/forever debug pin, /forever debug off, /forever debug show",
 }
 
 _G.BINDING_HEADER_ADVENTUREGUIDEFOREVER = "Adventure Guide Forever"

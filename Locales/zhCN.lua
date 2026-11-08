@@ -453,7 +453,7 @@ L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以寻找地下城入口。"
 L["UNLISTED"] = "这片土地有指南尚不知道的故事；请留意任务NPC头上的“!”。"
 L["UPDATED_TO"] = "已更新到%s。%s"
 -- mt
-L["WHATS_NEW"] = "Forever 插件设置页面不再留下可能让其他插件出错的游离名称。" -- mt
+L["WHATS_NEW"] = "城镇访问会在地图上显示其涵盖的每个 NPC 和物件。" -- mt
 L["WHY_ALLIANCE"] = "仅限联盟"
 L["WHY_BREADCRUMB"] = "仅在你接受%s之前"
 L["WHY_CHOSE"] = "你改选了%s"
@@ -540,3 +540,17 @@ L["8th"] = "第 8 名" -- mt
 L[", "] = ", " -- mt
 L.LEADERBOARD_METRIC = "已交付任务" -- mt
 L.LEADERBOARD_TOTAL = "总计" -- mt
+
+-- Shared debug log (Forever Core's Core/Log.lua).
+L["Debug log is off."] = "调试日志已关闭。" -- mt
+L["Debug log is on for this session."] = "本次会话已开启调试日志。" -- mt
+L["Debug log is on and pinned for this character."] = "该角色的调试日志已开启并固定。" -- mt
+L["Debug log is already on and pinned for this character."] = "该角色的调试日志已经开启并固定。" -- mt
+L["Debug log is off for this session; it is still pinned."] =
+	"本次会话已关闭调试日志，但仍保持固定。" -- mt
+L["Debug log is off and unpinned."] = "调试日志已关闭并取消固定。" -- mt
+L["No addon has attached its log yet."] = "还没有插件附加日志。" -- mt
+L["%s (last %d):"] = "%s（最近 %d 条）：" -- mt
+L["%s: no lines yet."] = "%s：还没有日志行。" -- mt
+L["Usage: /forever debug, /forever debug pin, /forever debug off, /forever debug show"] =
+	"用法：/forever debug、/forever debug pin、/forever debug off、/forever debug show" -- mt

@@ -469,8 +469,7 @@ L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
 -- mt
-L["WHATS_NEW"] =
-	"Forever 애드온 설정 페이지가 더 이상 다른 애드온이 걸려 넘어질 수 있는 떠도는 이름을 남기지 않습니다." -- mt
+L["WHATS_NEW"] = "마을 방문은 그 방문이 포함하는 모든 NPC와 오브젝트를 지도에 표시합니다." -- mt
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"
@@ -558,3 +557,19 @@ L["8th"] = "8위" -- mt
 L[", "] = ", " -- mt
 L.LEADERBOARD_METRIC = "완료한 퀘스트" -- mt
 L.LEADERBOARD_TOTAL = "총" -- mt
+
+-- Shared debug log (Forever Core's Core/Log.lua).
+L["Debug log is off."] = "디버그 기록이 꺼져 있습니다." -- mt
+L["Debug log is on for this session."] = "이 세션 동안 디버그 기록이 켜져 있습니다." -- mt
+L["Debug log is on and pinned for this character."] =
+	"이 캐릭터에 대해 디버그 기록이 켜져 있고 고정되어 있습니다." -- mt
+L["Debug log is already on and pinned for this character."] =
+	"이 캐릭터에 대해 디버그 기록이 이미 켜져 있고 고정되어 있습니다." -- mt
+L["Debug log is off for this session; it is still pinned."] =
+	"이 세션 동안 디버그 기록이 꺼져 있지만 여전히 고정되어 있습니다." -- mt
+L["Debug log is off and unpinned."] = "디버그 기록이 꺼져 있고 고정이 해제되었습니다." -- mt
+L["No addon has attached its log yet."] = "아직 기록을 첨부한 애드온이 없습니다." -- mt
+L["%s (last %d):"] = "%s (최근 %d개):" -- mt
+L["%s: no lines yet."] = "%s: 아직 줄이 없습니다." -- mt
+L["Usage: /forever debug, /forever debug pin, /forever debug off, /forever debug show"] =
+	"사용법: /forever debug, /forever debug pin, /forever debug off, /forever debug show" -- mt

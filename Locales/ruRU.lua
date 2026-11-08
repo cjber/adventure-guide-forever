@@ -504,7 +504,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "обновлено до %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Страница настроек аддонов Forever больше не оставляет бесхозное имя, о которое могут споткнуться другие аддоны." -- mt
+	"Посещение города показывает на карте каждого NPC и каждый объект, которые оно охватывает." -- mt
 L["WHY_ALLIANCE"] = "Только для Альянса"
 L["WHY_BREADCRUMB"] = "Только пока вы не возьмете: %s"
 L["WHY_CHOSE"] = "Вместо этого вы выбрали: %s"
@@ -598,3 +598,20 @@ L["8th"] = "8-е" -- mt
 L[", "] = ", " -- mt
 L.LEADERBOARD_METRIC = "Сданные задания" -- mt
 L.LEADERBOARD_TOTAL = "всего" -- mt
+
+-- Shared debug log (Forever Core's Core/Log.lua).
+L["Debug log is off."] = "Журнал отладки выключен." -- mt
+L["Debug log is on for this session."] = "Журнал отладки включён для этого сеанса." -- mt
+L["Debug log is on and pinned for this character."] =
+	"Журнал отладки включён и закреплён для этого персонажа." -- mt
+L["Debug log is already on and pinned for this character."] =
+	"Журнал отладки уже включён и закреплён для этого персонажа." -- mt
+L["Debug log is off for this session; it is still pinned."] =
+	"Журнал отладки выключен для этого сеанса; закрепление сохранено." -- mt
+L["Debug log is off and unpinned."] = "Журнал отладки выключен, закрепление снято." -- mt
+L["No addon has attached its log yet."] =
+	"Ни один аддон ещё не подключил свой журнал." -- mt
+L["%s (last %d):"] = "%s (последние %d):" -- mt
+L["%s: no lines yet."] = "%s: строк пока нет." -- mt
+L["Usage: /forever debug, /forever debug pin, /forever debug off, /forever debug show"] =
+	"Использование: /forever debug, /forever debug pin, /forever debug off, /forever debug show" -- mt

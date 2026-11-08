@@ -77,9 +77,10 @@ local function Panel(h, scene, height)
 	}
 end
 
--- Drawn in this order: the givers under the numbered rings.
+-- Drawn in this order: the givers and visit spots under the numbered rings.
 local PIN_TEMPLATES = {
 	"AdventureGuideForeverGiverPinTemplate",
+	"AdventureGuideForeverSpotPinTemplate",
 	"AdventureGuideForeverPinTemplate",
 }
 

@@ -468,8 +468,7 @@ L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
 -- mt
-L["WHATS_NEW"] =
-	"La page de paramètres des addons Forever ne laisse plus derrière elle un nom égaré sur lequel d'autres addons pourraient trébucher." -- mt
+L["WHATS_NEW"] = "Une visite de ville montre sur la carte chaque PNJ et objet qu'elle couvre." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"
@@ -558,3 +557,19 @@ L["8th"] = "8e" -- mt
 L[", "] = ", " -- mt
 L.LEADERBOARD_METRIC = "Quêtes rendues" -- mt
 L.LEADERBOARD_TOTAL = "total" -- mt
+
+-- Shared debug log (Forever Core's Core/Log.lua).
+L["Debug log is off."] = "Le journal de débogage est désactivé." -- mt
+L["Debug log is on for this session."] = "Le journal de débogage est activé pour cette session." -- mt
+L["Debug log is on and pinned for this character."] =
+	"Le journal de débogage est activé et épinglé pour ce personnage." -- mt
+L["Debug log is already on and pinned for this character."] =
+	"Le journal de débogage est déjà activé et épinglé pour ce personnage." -- mt
+L["Debug log is off for this session; it is still pinned."] =
+	"Le journal de débogage est désactivé pour cette session ; il reste épinglé." -- mt
+L["Debug log is off and unpinned."] = "Le journal de débogage est désactivé et désépinglé." -- mt
+L["No addon has attached its log yet."] = "Aucun addon n'a encore joint son journal." -- mt
+L["%s (last %d):"] = "%s (dernières %d) :" -- mt
+L["%s: no lines yet."] = "%s : aucune ligne pour l'instant." -- mt
+L["Usage: /forever debug, /forever debug pin, /forever debug off, /forever debug show"] =
+	"Utilisation : /forever debug, /forever debug pin, /forever debug off, /forever debug show" -- mt

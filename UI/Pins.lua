@@ -3,11 +3,15 @@ local _, ns = ...
 
 local PIN_TEMPLATE = "AdventureGuideForeverPinTemplate"
 local GIVER_TEMPLATE = "AdventureGuideForeverGiverPinTemplate"
+local SPOT_TEMPLATE = "AdventureGuideForeverSpotPinTemplate"
 local PING_TEMPLATE = "AdventureGuideForeverPingPinTemplate"
 -- Warm gold route markers keep future stops readable against the map.
 local LATER_STOP_ALPHA = 0.7
+local NONE = {}
 local MAP_GROUP_SIZE = 32
 local BADGE_SIZE, BADGE_OFFSET = 16, 4
+-- A town visit's NPC and object marks, smaller than its numbered stop.
+local SPOT_ICON = 14
 
 ---@class AGFPinsModule
 local Pins = {}
@@ -54,6 +58,62 @@ local function Groups(eligible, close)
 		end
 	end
 	return groups
+end
+
+-- One NPC or object a town visit covers: where it stands and what the visit does there.
+---@class AGFVisitSpot
+---@field map integer
+---@field x number
+---@field y number
+---@field name string the NPC's or object's name
+---@field pickups integer[] quest IDs picked up there
+---@field handins integer[] quest IDs handed in there
+
+-- The town visits' spots on `mapID`, the points numbered stops already stand on left to those pins: one mark per NPC
+-- or object, carrying every quest the route does there. The first visit that comes there sets the mark's fade.
+---@class AGFSpotPinRow : AGFVisitSpot
+---@field index integer the route index of the first visit that comes there
+
+---@param mapID integer
+---@param numbered table<string, true>
+---@return AGFSpotPinRow[]
+local function VisitSpotRows(mapID, numbered)
+	local rows, byKey = {}, {}
+	local function Add(id, into)
+		for _, old in ipairs(into) do
+			if old == id then
+				return
+			end
+		end
+		into[#into + 1] = id
+	end
+	for index, step in ipairs(ns.Route().steps) do
+		if step.kind == "town" and step.map == mapID and not step.here then
+			for _, list in ipairs({ "handins", "pickups" }) do
+				for _, id in ipairs(step[list] or NONE) do
+					local place = step.spots and step.spots[id]
+					if place and place.map == mapID and not numbered[ns.Model.SpotKey(place)] then
+						local key = ns.Model.SpotKey(place) .. ":" .. place.name
+						local row = byKey[key]
+						if not row then
+							row = {
+								map = place.map,
+								x = place.x,
+								y = place.y,
+								name = place.name,
+								pickups = {},
+								handins = {},
+								index = index,
+							}
+							byKey[key], rows[#rows + 1] = row, row
+						end
+						Add(id, row[list])
+					end
+				end
+			end
+		end
+	end
+	return rows
 end
 
 -- A minimap step marker's side in pixels; also the spacing under which nearby steps share one marker.
@@ -358,23 +418,23 @@ end
 
 ---@type WorldMapFrame?
 local map
----@type ForeverCanvasPool?, ForeverCanvasPool?, ForeverCanvasPool?
-local routePool, giverPool, pingPool
+---@type ForeverCanvasPool?, ForeverCanvasPool?, ForeverCanvasPool?, ForeverCanvasPool?
+local routePool, giverPool, spotPool, pingPool
 ---@type AGFPoint|AGFPlace|AGFStep|AGFGiver?
 local reveal
 local afterCombat = CreateFrame("Frame")
 
 local function ReleaseMarks()
-	for _, pool in ipairs({ routePool, giverPool }) do
+	for _, pool in ipairs({ routePool, giverPool, spotPool }) do
 		pool:ReleaseAll()
 	end
 end
 
 -- Active route and giver pins, used by the layout dump.
----@return (AGFPinFrame|AGFGiverPinFrame)[]
+---@return (AGFPinFrame|AGFGiverPinFrame|AGFSpotPinFrame)[]
 function Pins.Active()
 	local pins = {}
-	for _, pool in ipairs({ routePool, giverPool }) do
+	for _, pool in ipairs({ routePool, giverPool, spotPool }) do
 		for _, pin in ipairs(pool:Active()) do
 			pins[#pins + 1] = pin
 		end
@@ -414,7 +474,7 @@ end
 -- Only the steps that sit on the map currently shown: a continent view gets no pins, matching
 -- how the route already only points at zone-level maps.
 local function Draw()
-	if not map or not routePool then
+	if not map or not routePool or not spotPool then
 		return
 	end
 	if InCombatLockdown() then
@@ -448,6 +508,15 @@ local function Draw()
 	end)
 	for _, visits in ipairs(groups) do
 		routePool:Acquire(visits[1].step, visits[1].index, visits)
+	end
+	-- A town visit's other NPCs and objects, so a hand-in away from its numbered stop shows where it is: one small quest
+	-- mark each, never on a point a numbered stop already has, faded as the stop it belongs to.
+	local numbered = {}
+	for _, visits in ipairs(groups) do
+		numbered[ns.Model.SpotKey(visits[1].step)] = true
+	end
+	for _, spot in ipairs(VisitSpotRows(mapID, numbered)) do
+		spotPool:Acquire(spot, spot.index)
 	end
 end
 
@@ -602,6 +671,55 @@ function AdventureGuideForeverGiverPinMixin:OnMouseClickAction(button)
 	end
 end
 
+-- A visit spot's own mark: the game's turn-in "?" where something is handed in there, else its pickup "!".
+---@param spot AGFVisitSpot
+---@return string
+local function SpotAtlas(spot)
+	return #spot.handins > 0 and "QuestTurnin" or "QuestNormal"
+end
+
+---@class AGFSpotPinFrame : ForeverCanvasPin
+---@field Icon Texture
+---@field spot? AGFVisitSpot
+---@field index? integer
+AdventureGuideForeverSpotPinMixin = CreateFromMixins(ns.MapCanvas.PinMixin, { takesMouse = true })
+
+---@param spot AGFVisitSpot
+---@param index integer
+function AdventureGuideForeverSpotPinMixin:OnAcquired(spot, index)
+	-- Under the numbered stops, which keep the user waypoint's level.
+	self:UseFrameLevelType("PIN_FRAME_LEVEL_AREA_POI")
+	self.spot, self.index = spot, index
+	ns.Art.Fit(self.Icon, SpotAtlas(spot), SPOT_ICON, SPOT_ICON)
+	self.Icon:SetAlpha(index == 1 and 1 or LATER_STOP_ALPHA)
+	self:SetPosition(spot.x, spot.y)
+	self:SetIgnoreGlobalPinScale(true)
+	self:SetScalingLimits(1, 1, 1)
+end
+
+-- The NPC or object, then the quests picked up and handed in there.
+function AdventureGuideForeverSpotPinMixin:OnMouseEnter()
+	local spot = self.spot
+	if not spot then
+		return
+	end
+	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+	GameTooltip_SetTitle(GameTooltip, spot.name)
+	for _, id in ipairs(spot.handins) do
+		QuestLine(GameTooltip, id, HAND_IN_ICON)
+	end
+	for _, id in ipairs(spot.pickups) do
+		QuestLine(GameTooltip, id, PICK_UP_ICON)
+	end
+	GameTooltip:Show()
+end
+
+function AdventureGuideForeverSpotPinMixin:OnMouseLeave()
+	if GameTooltip:GetOwner() == self then
+		GameTooltip:Hide()
+	end
+end
+
 -- A requested reveal waits for the canvas to observe the target map before playing.
 local function PlayReveal()
 	local point = reveal
@@ -686,6 +804,7 @@ local function Attach()
 		end,
 	})
 	giverPool = ns.MapCanvas.Pool(map, AdventureGuideForeverGiverPinMixin, { template = GIVER_TEMPLATE })
+	spotPool = ns.MapCanvas.Pool(map, AdventureGuideForeverSpotPinMixin, { template = SPOT_TEMPLATE })
 	pingPool = ns.MapCanvas.Pool(map, pingMixin, { template = PING_TEMPLATE })
 	ns.MapCanvas.Watch(map, function(_, what)
 		if what == "map" or what == "hide" then

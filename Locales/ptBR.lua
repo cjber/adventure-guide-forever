@@ -462,8 +462,7 @@ L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
 L["UPDATED_TO"] = "atualizado para %s. %s"
 -- mt
-L["WHATS_NEW"] =
-	"A página de configurações dos addons Forever não deixa mais um nome solto para outros addons tropeçarem." -- mt
+L["WHATS_NEW"] = "Uma visita à cidade mostra no mapa todos os NPCs e objetos que ela abrange." -- mt
 L["WHY_ALLIANCE"] = "Só Aliança"
 L["WHY_BREADCRUMB"] = "Só até você aceitar %s"
 L["WHY_CHOSE"] = "Você escolheu %s no lugar"
@@ -551,3 +550,19 @@ L["8th"] = "8º" -- mt
 L[", "] = ", " -- mt
 L.LEADERBOARD_METRIC = "Missões entregues" -- mt
 L.LEADERBOARD_TOTAL = "total" -- mt
+
+-- Shared debug log (Forever Core's Core/Log.lua).
+L["Debug log is off."] = "O registro de depuração está desativado." -- mt
+L["Debug log is on for this session."] = "O registro de depuração está ativado para esta sessão." -- mt
+L["Debug log is on and pinned for this character."] =
+	"O registro de depuração está ativado e fixado para este personagem." -- mt
+L["Debug log is already on and pinned for this character."] =
+	"O registro de depuração já está ativado e fixado para este personagem." -- mt
+L["Debug log is off for this session; it is still pinned."] =
+	"O registro de depuração está desativado para esta sessão; ele continua fixado." -- mt
+L["Debug log is off and unpinned."] = "O registro de depuração está desativado e desafixado." -- mt
+L["No addon has attached its log yet."] = "Nenhum addon anexou seu registro ainda." -- mt
+L["%s (last %d):"] = "%s (últimas %d):" -- mt
+L["%s: no lines yet."] = "%s: ainda não há linhas." -- mt
+L["Usage: /forever debug, /forever debug pin, /forever debug off, /forever debug show"] =
+	"Uso: /forever debug, /forever debug pin, /forever debug off, /forever debug show" -- mt

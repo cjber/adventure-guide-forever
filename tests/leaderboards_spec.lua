@@ -9,7 +9,7 @@ do
 	Client()
 	local env, frames, named = harness.env, harness.frames, harness.named
 	local api = Load()
-	check(api ~= nil and api.VERSION == 1, "the first copy publishes a versioned global")
+	check(api ~= nil and api.VERSION == 2, "the first copy publishes a versioned global")
 	check(env.ForeverLeaderboards == api, "the global is the same table")
 	check(type(api.Register) == "function" and type(api.Open) == "function", "the API is there")
 	check(api.window == nil, "loading builds no window")
@@ -48,7 +48,7 @@ do
 	for _, widget in ipairs(frames) do
 		equal(widget:GetScript("OnUpdate"), nil, "no frame runs an OnUpdate")
 	end
-	equal(named.ForeverLeaderboardsFrame, window, "the window has its name")
+	equal(named.ForeverLeaderboardsFrame2, window, "the window has its name")
 	equal(window.title, "Forever Leaderboards", "the title")
 	equal(window.portrait.texture, ICON, "the trophy portrait")
 	equal(#window.tabs, 3, "Overall plus both boards")
@@ -132,6 +132,29 @@ do
 	radios[2].onClick()
 	equal(api.window.heading.text, "Metric guide", "scope keeps the selected board")
 	radios[1].onClick()
+end
+
+-- /forever debug routes to the shared log without opening a board ------------------------------------------------
+do
+	Client()
+	local env = harness.env
+	local api, ns = Load()
+	local seen
+	ns.DebugCommand = function(argument)
+		seen = argument
+		return true
+	end
+	check(api:IsShown() == false, "debug starts with no window")
+	env.SlashCmdList.FOREVERLEADERBOARDS("debug show")
+	equal(seen, "show", "the debug subcommand receives its argument")
+	check(api:IsShown() == false, "debug does not open the window")
+	env.SlashCmdList.FOREVERLEADERBOARDS("debug")
+	equal(seen, "", "a bare debug reaches the log")
+	ns.DebugCommand = nil
+	env.SlashCmdList.FOREVERLEADERBOARDS("debug show")
+	check(api:IsShown() == false, "a copy without the log still answers debug")
+	env.SlashCmdList.FOREVERLEADERBOARDS("paths")
+	check(api:IsShown(), "a board name still opens a board")
 end
 
 -- Tab order ------------------------------------------------------------------------------------------------------
