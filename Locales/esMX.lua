@@ -465,8 +465,7 @@ L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
 -- mt
-L["WHATS_NEW"] =
-	"La página de configuración de los addons Forever ya no deja un nombre suelto con el que otros addons puedan tropezar." -- mt
+L["WHATS_NEW"] = "Una visita a un pueblo muestra en el mapa todos los PNJ y objetos que abarca." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
