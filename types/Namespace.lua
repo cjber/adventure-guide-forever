@@ -756,6 +756,7 @@
 ---@field GROUP_ZONES string the header over the "Head to <zone>" cards
 ---@field GROUP_DUNGEONS string the header over the dungeon cards
 ---@field GROUP_BATTLEGROUNDS string the header over the battleground cards
+---@field MORE_CARDS string format: how many cards a folded header hides
 ---@field LEVELS string a card's level range, low then high
 ---@field LEVELS_FROM string a battleground card's first level
 ---@field DUNGEON_QUESTS string format: quest count
