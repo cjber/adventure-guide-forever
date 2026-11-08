@@ -12,7 +12,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-- **The Forever addons settings page no longer writes the client's bare `Text` name.** Its check box came from a Blizzard template under an unnamed page, so the label landed on a global another addon or the game could read as its own. The page is named now (cjber/forever-core#208).
+## [1.1.16] - 2026-11-08
+
+- **The Forever addons settings page no longer leaves a stray name behind for other addons to trip over.** Its check box came from a Blizzard template under an unnamed page, so the label landed on a global another addon or the game could read as its own. The page is named now (cjber/forever-core#208).
 
 ## [1.1.15] - 2026-11-08
 
