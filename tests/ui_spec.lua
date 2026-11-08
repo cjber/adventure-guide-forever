@@ -1264,10 +1264,10 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(giverPin.levelType, "PIN_FRAME_LEVEL_AREA_POI", label .. ": givers at the area POI level")
 	equal(giverPin.Glow.alphaMode, "BLEND", label .. ": the giver's hover mark is drawn plainly, not added")
 	h.Hover(giverPin)
-	-- Closing the map fires no OnMouseLeave: the pin's own OnHide takes its tooltip.
-	h.map:SetShown(not h.map:IsShown())
+	-- Closing the map clears the hovered pin through the panel manager, which takes its tooltip with it.
+	h.G.HideUIPanel(h.map)
 	equal(h.G.GameTooltip:IsShown(), false, label .. ": closing the map takes a hovered giver's tooltip")
-	h.map:SetShown(not h.map:IsShown())
+	h.map:Show()
 	h.Hover(giverPin)
 	equal(h.tooltip[1], "title: " .. giverPin.giver.title, label .. ": giver tooltip title")
 	equal(#h.tooltip, #giverPin.giver.quests + 3, label .. ": a giver tooltip line per quest")

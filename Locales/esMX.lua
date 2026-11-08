@@ -359,6 +359,7 @@ L["SETTING_TITLE_ROUTE"] = "Los viajes inician la ruta"
 L["SETTING_TITLE_ROUTE_TOOLTIP"] =
 	"Elegir un viaje en la guía, o hacer clic en el título del paso actual en el rastreador de objetivos, inicia la ruta, con Shortest Path Forever si está cargado y si no con un punto de ruta en el mapa. Volver a hacer clic en el viaje elegido lo detiene."
 L["SETTING_TRACKER"] = "Mostrar sección en el rastreador"
+L["SETTING_TRACKER_BACKGROUND"] = "Fondo del rastreador"
 L["SETTING_TRACKER_TOOLTIP"] =
 	"Una sección corta «Adventure Guide» sobre tus misiones en el rastreador de objetivos, para el paso actual."
 L["SETTING_TRACK_ROUTE"] = "El título del rastreador sigue misiones"

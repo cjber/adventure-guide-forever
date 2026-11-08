@@ -349,6 +349,7 @@ L["SETTING_TITLE_ROUTE"] = "旅程开始路线"
 L["SETTING_TITLE_ROUTE_TOOLTIP"] =
 	"在指南中选择旅程，或点击目标追踪栏中当前步骤的标题，即沿路线出发：已加载Shortest Path Forever时使用它，否则使用地图路径点。再次点击所选旅程即可停止。"
 L["SETTING_TRACKER"] = "显示追踪栏区块"
+L["SETTING_TRACKER_BACKGROUND"] = "追踪器背景"
 L["SETTING_TRACKER_TOOLTIP"] =
 	"在目标追踪栏中你的任务上方显示一个简短的“Adventure Guide”区块，用于当前步骤。"
 L["SETTING_TRACK_ROUTE"] = "追踪栏标题追踪任务"

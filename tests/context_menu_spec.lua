@@ -41,6 +41,21 @@ h.Click(popup.rows[2])
 h.Click(popup.rows[2])
 equal(calls, 1, "leaf executes once")
 equal(popup:IsShown(), false, "leaf closes menu")
+-- The shared tracker's background choice is a set of radios (Blizzard's MenuUtil contract).
+local picked = 0.5
+h.ns.ContextMenu(owner, function(_, root)
+	for _, value in ipairs({ 0.5, 1 }) do
+		root:CreateRadio(value * 100 .. "%", function(data)
+			return picked == data
+		end, function(data)
+			picked = data
+		end, value)
+	end
+end)
+equal(popup.rows[1]:GetText(), "[x] 50%", "the chosen radio is marked")
+equal(popup.rows[2]:GetText(), "[ ] 100%", "the other radio is not")
+h.Click(popup.rows[2])
+equal(picked, 1, "a radio hands its data to the setter")
 h.ns.ContextMenu(owner, function(_, root)
 	for i = 1, 40 do
 		root:CreateButton("Entry " .. i, function() end)
@@ -67,6 +82,22 @@ owner:Hide()
 equal(popup:IsVisible(), false, "owner hide closes visible menu")
 owner:Show()
 equal(popup:IsShown(), false, "owner reshow does not reopen menu")
+-- A card on the world map: no show or hide script is put on a frame under the map, where it would run inside the
+-- panel manager's own hide (#493). Its menu closes from the panel manager's callback instead.
+local mapOwner = h.G.CreateFrame("Button", nil, h.G.WorldMapFrame)
+h.ns.ContextMenu(mapOwner, function(_, root)
+	root:CreateButton("On the map")
+end)
+equal(mapOwner.scripts.OnShow, nil, "a map owner carries no OnShow script")
+equal(mapOwner.scripts.OnHide, nil, "a map owner carries no OnHide script")
+equal(popup:IsShown(), true, "a map menu opens")
+h.G.HideUIPanel(h.G.WorldMapFrame)
+equal(popup:IsShown(), false, "hiding the map closes its menu")
+h.ns.ContextMenu(mapOwner, function(_, root)
+	root:CreateButton("On the map again")
+end)
+h.TriggerEvent("UIParentPanelManager.ForcePanelHide", h.G.WorldMapFrame)
+equal(popup:IsShown(), false, "a forced panel hide closes the map's menu")
 h.ns.ContextMenu(owner, function(_, root)
 	root:CreateButton("Outside")
 end)
