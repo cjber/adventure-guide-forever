@@ -28,6 +28,7 @@ globals = {
 	"AdventureGuideForeverCharDB",
 	"AdventureGuideForeverPinMixin",
 	"AdventureGuideForeverGiverPinMixin",
+	"AdventureGuideForeverSpotPinMixin",
 	"AdventureGuideForever_OnAddonCompartmentClick",
 	"SLASH_ADVENTUREGUIDEFOREVER1",
 	"SLASH_ADVENTUREGUIDEFOREVER2",
