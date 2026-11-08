@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The report keeps errors from earlier sessions.** An error the guide caught before the last `/reload`, a blocked action or a Lua warning was forgotten when the client reloaded, so it could not be copied into a report once it was gone. The report now lists them under their own heading, with when each was first and last seen and the version, build and locale it happened on, and keeps the 50 most recent. It also carries the guide's recent log lines, the steps that led up to a bug, and `/forever debug` turns on detailed lines for the session (cjber/forever-core#204, cjber/forever-core#206).
+
 ## [1.1.17] - 2026-11-08
 
 - **A town visit shows every NPC and object it covers on the map.** The numbered stop still marks where the visit begins, and a small quest mark now sits on each giver or object the visit includes, so a hand-in away from the town's NPCs, such as Buzzbox 411 in Darkshore, shows where it actually is. Hovering one names the NPC or object and the quests done there.
