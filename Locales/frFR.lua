@@ -359,6 +359,7 @@ L["SETTING_TITLE_ROUTE"] = "Les voyages lancent l’itinéraire"
 L["SETTING_TITLE_ROUTE_TOOLTIP"] =
 	"Choisir un voyage dans le guide, ou cliquer sur le titre de l’étape actuelle dans le suivi des objectifs, lance l’itinéraire, avec Shortest Path Forever s’il est chargé et sinon un point de passage sur la carte. Cliquer à nouveau sur le voyage choisi l’arrête."
 L["SETTING_TRACKER"] = "Afficher la section du suivi"
+L["SETTING_TRACKER_BACKGROUND"] = "Fond du suivi"
 L["SETTING_TRACKER_TOOLTIP"] =
 	"Une courte section « Adventure Guide » au-dessus de vos quêtes dans le suivi des objectifs, pour l’étape actuelle."
 L["SETTING_TRACK_ROUTE"] = "Le titre du suivi suit les quêtes"
@@ -470,7 +471,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "mis à jour en %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Votre itinéraire ne passe plus devant les tâches de votre niveau pour aller vers une quête de plusieurs niveaux au-dessus de vous." -- mt
+	"Le suivi peut avoir un fond : faites un clic droit sur le titre d'une section et choisissez « Fond du suivi »." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"

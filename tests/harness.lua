@@ -1630,6 +1630,10 @@ function harness.load(options)
 			frame:SetPoint("TOPLEFT", G.UIParent, "TOPLEFT", 16, -116)
 		end
 		frame:Show()
+		-- The panel manager tells its callbacks the panel is shown, after the show, as the client's ShowUIPanel does.
+		if frame:IsShown() then
+			G.EventRegistry:TriggerEvent("UIParentPanelManager.ShowUIPanel", frame)
+		end
 	end
 	G.HideUIPanel = function(frame)
 		if h.combat then
@@ -1639,6 +1643,8 @@ function harness.load(options)
 			h.uiPanel = nil
 		end
 		frame:Hide()
+		-- The panel manager tells its callbacks the panel is hidden, after the hide, as the client's HideUIPanel does.
+		G.EventRegistry:TriggerEvent("UIParentPanelManager.HideUIPanel", frame)
 	end
 	G.EventRegistry = {
 		RegisterCallback = function(_, event, callback, owner)
@@ -2892,6 +2898,14 @@ function harness.load(options)
 			return 5, -28
 		end,
 	}
+	-- QuestLogOwnerMixin:SetQuestLogPanelShown: the map's quest sidebar is QuestMapFrame, which the client hides and
+	-- shows on minimize and maximize. The guide panel lives inside it.
+	map.QuestLog = questMap
+	function map:SetQuestLogPanelShown(shown)
+		if shown ~= self.QuestLog:IsShown() then
+			self.QuestLog:SetShown(shown)
+		end
+	end
 	-- QuestLogOwnerMixin:HandleUserActionOpenQuestLog: the map opens with its quest sidebar shown.
 	G.OpenQuestLog = function()
 		h.counts.OpenQuestLog = h.counts.OpenQuestLog + 1

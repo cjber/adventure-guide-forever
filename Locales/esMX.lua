@@ -359,6 +359,7 @@ L["SETTING_TITLE_ROUTE"] = "Los viajes inician la ruta"
 L["SETTING_TITLE_ROUTE_TOOLTIP"] =
 	"Elegir un viaje en la guía, o hacer clic en el título del paso actual en el rastreador de objetivos, inicia la ruta, con Shortest Path Forever si está cargado y si no con un punto de ruta en el mapa. Volver a hacer clic en el viaje elegido lo detiene."
 L["SETTING_TRACKER"] = "Mostrar sección en el rastreador"
+L["SETTING_TRACKER_BACKGROUND"] = "Fondo del rastreador"
 L["SETTING_TRACKER_TOOLTIP"] =
 	"Una sección corta «Adventure Guide» sobre tus misiones en el rastreador de objetivos, para el paso actual."
 L["SETTING_TRACK_ROUTE"] = "El título del rastreador sigue misiones"
@@ -467,7 +468,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "actualizado a %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Tu ruta ya no pasa de largo las tareas de tu nivel para ir a una misión varios niveles por encima de ti." -- mt
+	"El rastreador puede tener fondo: haz clic derecho en el título de una sección y elige «Fondo del rastreador»." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"

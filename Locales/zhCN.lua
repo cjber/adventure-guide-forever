@@ -349,6 +349,7 @@ L["SETTING_TITLE_ROUTE"] = "旅程开始路线"
 L["SETTING_TITLE_ROUTE_TOOLTIP"] =
 	"在指南中选择旅程，或点击目标追踪栏中当前步骤的标题，即沿路线出发：已加载Shortest Path Forever时使用它，否则使用地图路径点。再次点击所选旅程即可停止。"
 L["SETTING_TRACKER"] = "显示追踪栏区块"
+L["SETTING_TRACKER_BACKGROUND"] = "追踪器背景"
 L["SETTING_TRACKER_TOOLTIP"] =
 	"在目标追踪栏中你的任务上方显示一个简短的“Adventure Guide”区块，用于当前步骤。"
 L["SETTING_TRACK_ROUTE"] = "追踪栏标题追踪任务"
@@ -454,7 +455,7 @@ L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以寻找地下城入口。"
 L["UNLISTED"] = "这片土地有指南尚不知道的故事；请留意任务NPC头上的“!”。"
 L["UPDATED_TO"] = "已更新到%s。%s"
 -- mt
-L["WHATS_NEW"] = "路线不再越过适合你等级的任务，去做高你好几级的任务。" -- mt
+L["WHATS_NEW"] = "追踪器可以有背景了：右键点击任一分区标题，选择“追踪器背景”。" -- mt
 L["WHY_ALLIANCE"] = "仅限联盟"
 L["WHY_BREADCRUMB"] = "仅在你接受%s之前"
 L["WHY_CHOSE"] = "你改选了%s"

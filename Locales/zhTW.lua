@@ -349,6 +349,7 @@ L["SETTING_TITLE_ROUTE"] = "旅程開始路線"
 L["SETTING_TITLE_ROUTE_TOOLTIP"] =
 	"在指南中選擇旅程，或點擊目標追蹤器中目前步驟的標題，即沿路線出發：已載入Shortest Path Forever時使用它，否則使用地圖路徑點。再次點擊所選旅程即可停止。"
 L["SETTING_TRACKER"] = "顯示追蹤器區塊"
+L["SETTING_TRACKER_BACKGROUND"] = "追蹤器背景"
 L["SETTING_TRACKER_TOOLTIP"] =
 	"在目標追蹤器中你的任務上方顯示一個簡短的「Adventure Guide」區塊，用於目前步驟。"
 L["SETTING_TRACK_ROUTE"] = "追蹤器標題追蹤任務"
@@ -454,7 +455,7 @@ L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以尋找地城入口。"
 L["UNLISTED"] = "這片土地有指南尚不知道的故事；請留意任務給予者頭上的「!」。"
 L["UPDATED_TO"] = "已更新到%s。%s"
 -- mt
-L["WHATS_NEW"] = "路線不再越過適合你等級的任務，去做高你好幾級的任務。" -- mt
+L["WHATS_NEW"] = "追蹤器可以有背景了：右鍵點擊任一分區標題，選擇「追蹤器背景」。" -- mt
 L["WHY_ALLIANCE"] = "僅限聯盟"
 L["WHY_BREADCRUMB"] = "僅在你接受%s之前"
 L["WHY_CHOSE"] = "你改選了%s"

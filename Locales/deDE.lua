@@ -359,6 +359,7 @@ L["SETTING_TITLE_ROUTE"] = "Reisen starten die Route"
 L["SETTING_TITLE_ROUTE_TOOLTIP"] =
 	"Wenn Ihr im Führer eine Reise wählt oder in der Questzielverfolgung auf den Titel des aktuellen Schritts klickt, geht es entlang der Route los, mit Shortest Path Forever, wenn es geladen ist, sonst mit einem Wegpunkt auf der Karte. Ein erneuter Klick auf die gewählte Reise beendet sie."
 L["SETTING_TRACKER"] = "Abschnitt in der Verfolgung zeigen"
+L["SETTING_TRACKER_BACKGROUND"] = "Hintergrund der Verfolgung"
 L["SETTING_TRACKER_TOOLTIP"] =
 	"Ein kurzer Abschnitt „Adventure Guide“ über Euren Quests in der Questzielverfolgung, für den aktuellen Schritt."
 L["SETTING_TRACK_ROUTE"] = "Titel der Verfolgung verfolgt Quests"
@@ -468,7 +469,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Eure Route führt nicht mehr an Aufgaben auf Eurer Stufe vorbei zu einer Quest, die mehrere Stufen über Euch liegt." -- mt
+	"Die Verfolgung kann einen Hintergrund haben: Rechtsklickt auf den Titel eines Abschnitts und wählt „Hintergrund der Verfolgung“." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"

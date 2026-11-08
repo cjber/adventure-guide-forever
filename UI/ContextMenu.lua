@@ -53,6 +53,20 @@ function Description:CreateCheckbox(text, selected, action)
 	return entry
 end
 
+-- Blizzard's radio contract: setSelected gets the entry's data. The guide's text rows mark a radio as a checkbox.
+---@param text string
+---@param selected fun(data: any): boolean
+---@param action fun(data: any)
+---@param data? any
+---@return AGFMenuDescription
+function Description:CreateRadio(text, selected, action, data)
+	return self:CreateCheckbox(text, function()
+		return selected(data)
+	end, function()
+		action(data)
+	end)
+end
+
 function Description:SetEnabled(enabled)
 	self.isEnabled = enabled
 end
@@ -97,6 +111,55 @@ local function OwnerHidden(owner)
 	if popup and popup.owner == owner then
 		popup:Hide()
 	end
+end
+
+-- Whether `frame` is `owner` or one of its ancestors: a menu made from a card on the world map closes with the panel.
+---@param owner Region
+---@param frame Frame
+---@return boolean
+local function Inside(owner, frame)
+	local current = owner
+	while current do
+		if current == frame then
+			return true
+		end
+		current = current:GetParent()
+	end
+	return false
+end
+
+-- The panel manager's own callback: a script on a frame under the map would run inside its hide, before the gamepad
+-- binding stack is cleared, and this addon's taint blocks the controller's interact action (#493).
+---@param _ table
+---@param frame Frame
+local function PanelHidden(_, frame)
+	if popup and popup.owner and Inside(popup.owner, frame) then
+		popup:Hide()
+	end
+end
+
+local watchingPanels
+local function WatchPanels()
+	if watchingPanels then
+		return
+	end
+	watchingPanels = true
+	EventRegistry:RegisterCallback("UIParentPanelManager.HideUIPanel", PanelHidden, ns)
+	EventRegistry:RegisterCallback("UIParentPanelManager.ForcePanelHide", PanelHidden, ns)
+end
+
+-- Whether the owner sits under the world map, where the panel manager rather than a frame script closes the menu.
+---@param frame Frame
+---@return boolean
+local function UnderMap(frame)
+	local map = WorldMapFrame
+	while frame do
+		if frame == map then
+			return true
+		end
+		frame = frame:GetParent()
+	end
+	return false
 end
 
 ---@return AGFContextPopup
@@ -237,9 +300,11 @@ function ns.ContextMenu(owner, generator)
 	local frame = Ensure()
 	frame:Hide()
 	frame.owner = owner
-	-- Card owners can be inside a ScrollFrame; parenting to them clips the popup's rows.
+	WatchPanels()
+	-- Card owners can be inside a ScrollFrame; parenting to them clips the popup's rows. An owner under the map hears
+	-- its close through the panel manager instead, so no show or hide script sits on a frame there (#493).
 	local ownerFrame = owner --[[@as Frame]]
-	if ownerFrame.HookScript and not watchedOwners[ownerFrame] then
+	if ownerFrame.HookScript and not watchedOwners[ownerFrame] and not UnderMap(ownerFrame) then
 		ownerFrame:HookScript("OnHide", OwnerHidden)
 		watchedOwners[ownerFrame] = true
 	end

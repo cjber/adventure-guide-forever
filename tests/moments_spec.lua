@@ -122,6 +122,30 @@ equal(select(1, Pips(h)), false, "guide open: no pip")
 equal(Marked(h, "zone:1424"), true, "guide open: the card is marked")
 clean(h, "guide open")
 
+-- Closing the map with the guide open is a hide through the panel manager, after the client has finished its own
+-- hide, and reopening shows the guide again (#493). The panel itself carries no script to run inside the client's hide.
+h = Load()
+h.ns.Prefs().previewGroups = { continue = false, zones = false }
+h.ns.OpenPanel()
+h.flush()
+local panel = h.G.AdventureGuideForeverPanel
+equal(panel:GetScript("OnShow"), nil, "map close: no OnShow script on the panel")
+equal(panel:GetScript("OnHide"), nil, "map close: no OnHide script on the panel")
+LevelUp(h, 22)
+equal(Marked(h, "zone:1424"), true, "map close: the card is marked while the guide shows")
+h.G.HideUIPanel(h.map)
+equal(panel:IsVisible(), false, "map close: the guide hides with the map")
+h.G.ShowUIPanel(h.map)
+h.flush()
+equal(panel:IsVisible(), true, "map reopen: the guide shows again")
+equal(Marked(h, "zone:1424"), false, "map reopen: the hidden guide took the mark away")
+-- The client's own quest sidebar toggle reaches the guide through a secure post-hook, not a frame script.
+h.map:SetQuestLogPanelShown(false)
+equal(panel:IsVisible(), false, "sidebar collapsed: the guide hides")
+h.map:SetQuestLogPanelShown(true)
+equal(panel:IsVisible(), true, "sidebar back: the guide shows again")
+clean(h, "map close")
+
 -- A saved seen set: the same level-up on the next session finds nothing new.
 local saved = Load()
 LevelUp(saved, 22)

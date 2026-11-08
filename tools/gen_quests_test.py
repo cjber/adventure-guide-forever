@@ -11,6 +11,7 @@ from gen_quests import (
     SpawnAreas,
     continents,
     crossings,
+    dungeon_sources,
     entrance_requirements,
     faction,
     flight_masters,
@@ -21,6 +22,7 @@ from gen_quests import (
     instance_fields,
     instance_index,
     lua,
+    named_instances,
     objective_areas,
     objectives,
     options_at,
@@ -280,6 +282,100 @@ class InstanceTest(unittest.TestCase):
         self.assertEqual(instance_of, {1581: None})
         with self.assertRaises(ValueError):
             instance_fields({"entry": 167, "ZoneOrSort": 1581, "Type": 0}, instance_of, instances)
+
+    def test_instance_map_named_before_an_area_row(self):
+        # A Forever dungeon can sit in Map before AreaTable names one of its areas.
+        _, instances = instance_index([], [{"ID": "3065", "MapName_lang": "The Hall of Thanes", "InstanceType": "1"}])
+        self.assertEqual(instances, {3065: {"name": "The Hall of Thanes", "raid": False}})
+
+
+class DungeonSourceTest(unittest.TestCase):
+    GROUPS = [{"ID": "285", "Name_lang": "Dungeons"}, {"ID": "290", "Name_lang": "Raids"}]
+
+    @staticmethod
+    def map_row(map_id, name, kind):
+        return {"ID": str(map_id), "MapName_lang": name, "InstanceType": str(kind)}
+
+    @staticmethod
+    def activity(map_id, name, low, high, group=285):
+        return {
+            "ID": "1",
+            "FullName_lang": name,
+            "GroupFinderActivityGrpID": str(group),
+            "MapID": str(map_id),
+            "MinLevel": str(low),
+            "MaxLevelSuggestion": str(high),
+        }
+
+    @staticmethod
+    def lfg(lfg_id, name, tuning):
+        return {"ID": str(lfg_id), "Name_lang": name, "MapID": "0", "ContentTuningID": str(tuning)}
+
+    @staticmethod
+    def difficulty(map_id, tuning):
+        return {"MapID": str(map_id), "DifficultyID": "1", "ContentTuningID": str(tuning)}
+
+    def test_forever_party_dungeon_gets_levels_and_lfg_from_the_client(self):
+        # The Hall of Thanes at 1.60.1.70862: Map 3065 InstanceType 1, GroupFinderActivity 1984 (min 13, suggested
+        # max 20) and LFGDungeons 3273, joined by MapDifficulty's ContentTuningID 7000.
+        self.assertEqual(
+            dungeon_sources(
+                [self.map_row(3065, "The Hall of Thanes", 1)],
+                self.GROUPS,
+                [self.activity(3065, "Hall of Thanes", 13, 20)],
+                [self.lfg(3273, "Hall of Thanes", 7000)],
+                [self.difficulty(3065, 7000)],
+            ),
+            {3065: {"name": "The Hall of Thanes", "low": 13, "high": 20, "lfg": 3273}},
+        )
+
+    def test_wings_span_their_activities_and_the_lowest_lfg_row_wins(self):
+        # Scarlet Monastery's four wings at 1.60.1.70862: 30-38, 36-44, 38-46 and 33-41, one LFG row 17.
+        activities = [
+            self.activity(189, "Scarlet Monastery - Graveyard", 30, 38),
+            self.activity(189, "Scarlet Monastery - Armory", 36, 44),
+            self.activity(189, "Scarlet Monastery - Cathedral", 38, 46),
+            self.activity(189, "Scarlet Monastery - Library", 33, 41),
+        ]
+        self.assertEqual(
+            dungeon_sources(
+                [self.map_row(189, "Scarlet Monastery", 1)],
+                self.GROUPS,
+                activities,
+                [self.lfg(17, "Scarlet Monastery", 5247)],
+                [self.difficulty(189, 5247)],
+            ),
+            {189: {"name": "Scarlet Monastery", "low": 30, "high": 46, "lfg": 17}},
+        )
+
+    def test_exact_name_answers_when_no_map_difficulty_tuning_exists(self):
+        # The Drowned City at 1.60.1.70862: Map 2970 and LFGDungeons 3270 share no MapDifficulty tuning.
+        self.assertEqual(
+            dungeon_sources(
+                [self.map_row(2970, "The Drowned City", 1)],
+                self.GROUPS,
+                [self.activity(2970, "The Drowned City", 35, 42)],
+                [self.lfg(3270, "The Drowned City", 4522)],
+                [],
+            ),
+            {2970: {"name": "The Drowned City", "low": 35, "high": 42, "lfg": 3270}},
+        )
+
+    def test_raids_and_other_activity_groups_are_not_party_dungeons(self):
+        maps = [self.map_row(409, "Molten Core", 2), self.map_row(33, "Shadowfang Keep", 1)]
+        activities = [
+            self.activity(409, "Molten Core", 60, 60),
+            self.activity(33, "Shadowfang Keep", 20, 30, group=290),
+        ]
+        self.assertEqual(dungeon_sources(maps, self.GROUPS, activities, [], []), {})
+
+    def test_a_client_dungeon_needs_no_quest_or_entrance_for_its_card(self):
+        instances = {3065: {"name": "The Hall of Thanes", "raid": False}}
+        dungeons = {3065: {"name": "The Hall of Thanes", "low": 13, "high": 20, "lfg": 3273}}
+        self.assertEqual(
+            named_instances({}, {"areatrigger_teleport": []}, instances, dungeons),
+            {3065: {"name": "The Hall of Thanes", "low": 13, "high": 20, "lfg": 3273}},
+        )
 
 
 class NpcTest(unittest.TestCase):

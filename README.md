@@ -118,7 +118,7 @@ For help, ideas and each day's release notes, join [cjber's Workshop on Discord]
 
 <!-- forever-family:end -->
 
-Installed together, Shortest Path Forever plans the way to every stop, SkillUp Forever fills the Professions tab, and Legacy Forever adds your zone completion. Tweaks Forever supplies class trainer locations and dungeon entrances, and its Windows option moves the guide window.
+Installed together, Shortest Path Forever plans the way to every stop, SkillUp Forever fills the Professions tab, and Legacy Forever adds your zone completion. Tweaks Forever supplies class trainer locations and dungeon entrances, and its Windows option moves the guide window. Without Shortest Path Forever, Waypoint UI's arrow and pin steer to each stop instead.
 
 ## Ways to help
 
