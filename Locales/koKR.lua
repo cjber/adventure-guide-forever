@@ -360,6 +360,7 @@ L["SETTING_TITLE_ROUTE"] = "여정으로 경로 시작"
 L["SETTING_TITLE_ROUTE_TOOLTIP"] =
 	"안내서에서 여정을 선택하거나 목표 추적기에서 현재 단계의 제목을 클릭하면 경로를 따라 출발합니다. Shortest Path Forever를 불러왔으면 그것을, 아니면 지도의 이동 지점을 사용합니다. 선택한 여정을 다시 클릭하면 중지합니다."
 L["SETTING_TRACKER"] = "추적기 영역 표시"
+L["SETTING_TRACKER_BACKGROUND"] = "추적기 배경"
 L["SETTING_TRACKER_TOOLTIP"] =
 	'목표 추적기의 퀘스트 위에 현재 단계를 위한 짧은 "Adventure Guide" 영역을 표시합니다.'
 L["SETTING_TRACK_ROUTE"] = "추적기 제목으로 퀘스트 추적"

@@ -53,6 +53,20 @@ function Description:CreateCheckbox(text, selected, action)
 	return entry
 end
 
+-- Blizzard's radio contract: setSelected gets the entry's data. The guide's text rows mark a radio as a checkbox.
+---@param text string
+---@param selected fun(data: any): boolean
+---@param action fun(data: any)
+---@param data? any
+---@return AGFMenuDescription
+function Description:CreateRadio(text, selected, action, data)
+	return self:CreateCheckbox(text, function()
+		return selected(data)
+	end, function()
+		action(data)
+	end)
+end
+
 function Description:SetEnabled(enabled)
 	self.isEnabled = enabled
 end

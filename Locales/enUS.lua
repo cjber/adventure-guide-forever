@@ -375,6 +375,7 @@ ns.L = {
 	SETTINGS_GROUP_INTERFACE = "Interface",
 	SETTINGS_OPEN = "Open",
 	SETTING_TRACKER = "Show tracker section",
+	SETTING_TRACKER_BACKGROUND = "Tracker background",
 	SETTING_ATTACH_TRACKER = "Attach to quest tracker",
 	SETTING_ATTACH_TRACKER_TOOLTIP = "Turn this off to drag the shared Forever tracker anywhere on screen.",
 	SETTING_LOCK_TRACKER = "Lock the tracker",

@@ -41,6 +41,21 @@ h.Click(popup.rows[2])
 h.Click(popup.rows[2])
 equal(calls, 1, "leaf executes once")
 equal(popup:IsShown(), false, "leaf closes menu")
+-- The shared tracker's background choice is a set of radios (Blizzard's MenuUtil contract).
+local picked = 0.5
+h.ns.ContextMenu(owner, function(_, root)
+	for _, value in ipairs({ 0.5, 1 }) do
+		root:CreateRadio(value * 100 .. "%", function(data)
+			return picked == data
+		end, function(data)
+			picked = data
+		end, value)
+	end
+end)
+equal(popup.rows[1]:GetText(), "[x] 50%", "the chosen radio is marked")
+equal(popup.rows[2]:GetText(), "[ ] 100%", "the other radio is not")
+h.Click(popup.rows[2])
+equal(picked, 1, "a radio hands its data to the setter")
 h.ns.ContextMenu(owner, function(_, root)
 	for i = 1, 40 do
 		root:CreateButton("Entry " .. i, function() end)
