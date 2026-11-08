@@ -534,8 +534,8 @@
 ---@field EndReason fun(last?: AGFStep|AGFGiver): string? why our journey ended: Shortest Path's Ended, else guessed from another journey running or standing in the last stop's town or area
 ---@field WaypointAt fun(place?: {map: integer, x: number, y: number}): boolean the client's waypoint still sits at the place
 ---@field CanWaypoint fun(map: integer): boolean the client allows a waypoint on the map
----@field SetWaypoint fun(place: {map: integer, x: number, y: number}, track?: boolean) the client's waypoint goes there; `track` points the arrow at it
----@field ClearWaypoint fun() the client's waypoint and its arrow go
+---@field SetWaypoint fun(place: {map: integer, x: number, y: number, title?: string, place?: string, zone?: string}, track?: boolean) the client's waypoint goes there; `track` points the arrow at it
+---@field ClearWaypoint fun(place?: {map: integer, x: number, y: number}) the client's waypoint and its arrow go; `place` names the one Go set, so a Waypoint UI navigation moved elsewhere is left alone
 ---@field RefreshCards fun(journeys: AGFJourney[]) the cards shown: drops other answers, asks for stale destinations, one a frame
 ---@field ResumeCards fun() step 1's travel frame is over: the queued cards ask from the next frame
 ---@field CardTravel fun(journey: AGFJourney): AGFCardTravel? a card's last answer, without asking again
