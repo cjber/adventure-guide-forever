@@ -281,14 +281,15 @@ MinimalSliderWithSteppersMixin = nil
 ---@class AGFSettingsModule
 ---@field VarType {Boolean: string, Number: string, String: string}
 ---@field RegisterVerticalLayoutCategory fun(name: string): AGFSettingsCategory
----@field RegisterVerticalLayoutSubcategory fun(category: AGFSettingsCategory, name: string): AGFSettingsCategory
----@field RegisterCanvasLayoutSubcategory fun(category: AGFSettingsCategory, frame: Frame, name: string): AGFSettingsCategory
+---@field RegisterVerticalLayoutSubcategory fun(category: table, name: string): AGFSettingsCategory
+---@field RegisterCanvasLayoutSubcategory fun(category: table, frame: Frame, name: string): AGFSettingsCategory
 ---@field RegisterAddOnSetting fun(category: AGFSettingsCategory, variable: string, key: string, storage: table, variableType: string, name: string, default: boolean|number|string): AGFSettingsSetting
 ---@field RegisterProxySetting fun(category: AGFSettingsCategory, variable: string, variableType: string, name: string, default: boolean, getter: (fun(): boolean), setter: (fun(value: boolean))): AGFSettingsSetting
 ---@field NotifyUpdate fun(variable: string)
 ---@field CreateSliderOptions fun(minimum: number, maximum: number, step: number): AGFSliderOptions
 ---@field CreateSliderInitializer fun(setting: AGFSettingsSetting, options: AGFSliderOptions, tooltip?: string): AGFSettingsInitializer
 ---@field CreateCheckboxInitializer fun(setting: AGFSettingsSetting, options?: table, tooltip?: string): AGFSettingsInitializer
+---@field CreateCheckbox fun(category: table, setting: AGFSettingsSetting, tooltip?: string)
 ---@field CreateControlTextContainer fun(): AGFControlTextContainer
 ---@field CreateDropdownInitializer fun(setting: AGFSettingsSetting, getData: fun(): table[]): AGFSettingsInitializer
 ---@field CreateElementInitializer fun(template: string, data?: table): AGFSettingsInitializer
@@ -300,8 +301,14 @@ MinimalSliderWithSteppersMixin = nil
 Settings = nil
 
 -- Blizzard_Settings_Shared.lua: the index page's button; addSearchTags false keeps it out of the settings search.
----@type fun(name: string, tooltip: string, onClick: fun(), getDisabledTooltip?: fun(), addSearchTags?: boolean): AGFSettingsInitializer
+---@type fun(name: string, buttonText: string, buttonClick: fun(), tooltip?: string, addSearchTags?: boolean): AGFSettingsInitializer
 CreateSettingsButtonInitializer = nil
+
+-- The client's input-device switch (Blizzard_SharedXMLGame InputUtil.lua), read by UI/ForeverFamily.lua.
+---@class AGFInputUtil
+---@field IsGamepadUIEnabled fun(): boolean
+---@type AGFInputUtil?
+InputUtil = nil
 
 ---@class AGFTabButton : Button
 ---@field SetCustomOnMouseUpHandler fun(self: AGFTabButton, handler: fun(self: AGFTabButton, mouseButton: string, upInside: boolean))

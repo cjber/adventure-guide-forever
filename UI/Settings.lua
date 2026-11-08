@@ -270,13 +270,11 @@ function ns.RegisterSettings()
 	end
 
 	-- The Forever addons page, shared by all five addons (UI/ForeverFamily.lua), with the suggestions setting on it.
+	-- With the gamepad interface on, the page is the client's own rows so the Options navigation can enter it
+	-- (cjber/tweaks-forever#382).
 	IndexButton(
 		ns.L.FAMILY_PAGE,
-		Settings.RegisterCanvasLayoutSubcategory(
-			category,
-			ns.Family.CreatePanel(nil, ns.FamilyDB, "AdventureGuideForever"),
-			ns.L.FAMILY_PAGE
-		)
+		ns.Family.Register(category, ns.FamilyDB, "AdventureGuideForever") --[[@as AGFSettingsCategory]]
 	)
 
 	Settings.RegisterAddOnCategory(category)
