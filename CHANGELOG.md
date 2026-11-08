@@ -13,6 +13,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [Unreleased]
 
 - **Zones are recommended for the quests they hold, not for being on the same continent.** A level 15 night elf in Darkshore was pointed at The Barrens, a Horde zone with a couple of neutral quests, ahead of Loch Modan, a full Alliance zone at the same levels, because the boat to the other continent cost more rank than the whole of either zone's work. Travel now costs the same at most whether it is a walk or a boat, so the quests waiting in a zone decide the ranking and the journey only breaks ties. Taking a quest up along the way also no longer trades away the pickup the first stop already offers. (#492).
+- **Your calling no longer offers a hunter a second Taming the Beast chain.** The Goldshire chain is an alternative to the Dwarf, Night Elf and Skyborne chains, but the quest data had no exclusivity between them, so a Night Elf who had finished the Teldrassil chain was still offered the Goldshire one. The card now also leads with the nearest class quest you can take rather than the lowest ID. (#491).
 - **A folded list now says how many more cards it hides.** A collapsed header such as Quest destinations showed only its first card and a small "+", so the rest were easy to miss. A row under the last visible card now reads "6 more: click to show", and a click opens the header in place without moving the panel or your scroll position. Reported in game (#494).
 
 ## [1.1.18] - 2026-11-08
