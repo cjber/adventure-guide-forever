@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-11-08
+
 - **The controller keeps working after closing the map with the guide open.** Closing the world map while the guide tab showed ran the guide's own code inside the game's close, which could leave the controller's interact action blocked. The guide now hears the map close after the game has finished it. (#493).
 
 ## [1.2.0] - 2026-11-08
