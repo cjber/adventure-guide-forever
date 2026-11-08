@@ -797,17 +797,6 @@
 ---@field SEARCH_QUESTS string the search box's instructions
 ---@field SEARCH_NONE string a search that finds no quest
 
----@class ForeverTrackerHostAPI
----@field GetSettings fun(): ForeverTrackerSettings
----@field GetScale fun(): number
----@field SetScale fun(scale: number)
----@field SetAttached fun(value: boolean)
----@field IsAttachedToQuestTracker fun(): boolean
----@field OnAttachmentChanged fun(callback: fun(attached: boolean))
----@field SavePosition fun(x: number, y: number)
----@field IsLocked fun(): boolean
----@field SetLocked fun(value: boolean)
-
 ---@alias AGFGuidanceStatus "queued"|"paused"|"arrived" -- a start waits for combat's end; the route stopped without the player's Stop and can be resumed; it reached its last stop
 
 ---@class AGFRXPActionsModule
@@ -1598,8 +1587,8 @@
 ---@field name string
 ---@field raid? boolean
 ---@field entrances? AGFEntranceGate[]
----@field low? integer published recommended level
----@field high? integer published recommended level
+---@field low? integer the client's lowest level for the dungeon
+---@field high? integer the client's suggested highest level for the dungeon
 
 ---@class AGFModel
 ---@field QuestXP fun(quest: AGFQuest, level: integer): number?
@@ -1650,36 +1639,9 @@
 ---@class AGFStrings
 ---@field DUNGEON_BOSSES_LOOT string
 
----@class ForeverTrackerSettings
----@field attached boolean
----@field locked? boolean the grip ignores drag while the tracker is locked
----@field scale? number tracker size, 1 is the stock size
----@field backdropOpacity? number the tracker background's opacity, 0 (off) to 1
----@field x? number
----@field y? number
-
----@class ForeverTrackerGrip
----@field Show fun(value: boolean) shows or hides the grip, which the host keeps hidden while attached
----@field SetLabel fun(value: boolean) redraws the label from the switch, without waiting for a hover
-
----@class ForeverTrackerOrderAPI
----@field Sort fun(modules: ForeverTrackerModule[]) orders the shared column's sections in place
-
----@class ForeverTrackerLock
----@field Locked? fun(): boolean reads the saved switch through the host
----@field Grip? fun(host: Frame, source: ForeverTrackerHostAPI): ForeverTrackerGrip draws the grip on the column it drags
-
 ---@class ForeverTrackerNamespace
 ---@field MapCanvas? ForeverMapCanvas
 ---@field SafeCall fun(label: string, fn: function, ...: any): boolean, ...any
----@field TrackerHost? ForeverTrackerHostAPI
----@field TrackerOrder? ForeverTrackerOrderAPI the section order, from UI/TrackerOrder.lua
----@field TrackerQuestie? ForeverTrackerQuestie Questie's quest list, from UI/TrackerQuestie.lua
----@field TrackerEqot? ForeverTrackerEqot EQ Objective Tracker's quest list, from UI/TrackerEqot.lua
----@field TrackerLock? ForeverTrackerLock the grip and its Lock switch, from UI/TrackerLock.lua
----@field TrackerHostSettings? fun(): ForeverTrackerSettings
----@field L table<string, string>
----@field ContextMenu? fun(owner: Frame, generator: fun(owner: Frame, root: any)): any the addon's own context menu, when it draws one
 
 ---@class AGFIndex
 ---@field ids integer[]

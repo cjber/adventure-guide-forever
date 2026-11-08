@@ -124,4 +124,25 @@ local ui = harness.load({ charDB = { journey = "dungeon:389", dungeons = true } 
 ui.ns.OpenPanel()
 ui.flush()
 equal(#ui.errors, 0, "dungeon journey opens without Classic guide or AtlasLoot")
+
+-- #504: a Forever dungeon the client lists is offered at its own level. The Hall of Thanes (Map 3065) is a party
+-- instance in Map, a Dungeons activity in GroupFinderActivity and an LFGDungeons row; the corpus files its quests
+-- there once the generated data names it.
+local forever = harness.load({
+	player = { level = 17, faction = "Alliance", raceID = 1, classID = 1, map = 1426, x = 0.5, y = 0.5 },
+})
+forever.flush()
+local foreverPrefs = forever.ns.Prefs()
+foreverPrefs.dungeons = true
+local foreverPlayer = { level = 17, maxLevel = 60, side = 1, raceBit = 1, classBit = 1, map = 1426, x = 0.5, y = 0.5 }
+local foreverPlan = forever.ns.Model.Plan(forever.ns.Data, foreverPlayer, {}, {}, foreverPrefs)
+local hall
+for _, foreverJourney in ipairs(foreverPlan.journeys) do
+	if foreverJourney.kind == "dungeon" and foreverJourney.instance == 3065 then
+		hall = foreverJourney
+	end
+end
+equal(hall and hall.title, "The Hall of Thanes", "Forever dungeon: The Hall of Thanes is offered at level 17")
+equal(hall and #hall.steps > 0, true, "Forever dungeon: its card has a way in")
+
 print(("dungeons_spec: %d checks passed"):format(checks))

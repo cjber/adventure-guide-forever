@@ -35,53 +35,6 @@ CLASSICDB_URL = (
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / "tools" / ".cache"
 OUTPUT = ROOT / "Data" / "Geometry.lua"
-# Published dungeon ranges, following the zone generator's published-range fallback.
-# The client's LFGDungeons has MapID=0 and no usable min/max range (see docs/dungeon-sources.md).
-# Wowhead, Classic Dungeons Overview, 2024-11-22, "WoW Classic Instances by Level":
-# https://www.wowhead.com/classic/guide/classic-dungeons-overview
-DUNGEON_LEVELS = {
-    389: (13, 18),
-    43: (15, 25),
-    36: (18, 23),
-    33: (22, 30),
-    34: (22, 30),
-    48: (24, 32),
-    90: (29, 38),
-    47: (30, 40),
-    189: (26, 45),
-    129: (40, 50),
-    70: (42, 52),
-    209: (44, 54),
-    349: (46, 55),
-    109: (50, 60),
-    230: (52, 60),
-    229: (55, 60),
-    289: (58, 60),
-    329: (58, 60),
-    429: (58, 60),
-}
-# Stable LFGDungeons IDs in the pinned build; MapID is zero, so names are never matched at runtime.
-DUNGEON_LFG = {
-    43: 1,
-    289: 2,
-    389: 3,
-    36: 5,
-    33: 7,
-    48: 9,
-    34: 11,
-    90: 13,
-    47: 15,
-    189: 17,
-    129: 19,
-    70: 21,
-    209: 23,
-    349: 25,
-    109: 27,
-    230: 29,
-    229: 31,
-    429: 33,
-    329: 39,
-}
 ZONE_SOURCE = "https://warcraft.wiki.gg/wiki/Zones_by_level_(original)"
 # Same published ranges as tweaks-forever/tools/gen_zonelevels.py. Cities have no range.
 PUBLISHED = {
@@ -826,18 +779,16 @@ def faction(mask):
 
 def instance_index(area_rows, map_rows):
     """Each area inside a dungeon (InstanceType 1) or raid (2): its instance Map.ID, or None when its map has no Map
-    row, so whether it is an instance is unknown; and each instance map's name."""
+    row, so whether it is an instance is unknown; and every instance map's name, whether an area row names it yet."""
     kinds = {int(r["ID"]): (int(r["InstanceType"]), r["MapName_lang"]) for r in map_rows}
-    by_area, names = {}, {}
+    by_area = {}
     for row in area_rows:
         map_id = int(row["ContinentID"])
         if map_id not in kinds:
             by_area[int(row["ID"])] = None
-            continue
-        kind, name = kinds[map_id]
-        if kind in (1, 2):
+        elif kinds[map_id][0] in (1, 2):
             by_area[int(row["ID"])] = map_id
-            names[map_id] = {"name": name, "raid": kind == 2}
+    names = {m: {"name": name, "raid": kind == 2} for m, (kind, name) in kinds.items() if kind in (1, 2)}
     return by_area, names
 
 
@@ -1339,16 +1290,73 @@ def transport_routes(ui_maps, assignments, centres, tables, path_nodes, taxi_nod
     return shifts, ferries
 
 
-def named_instances(emitted, tables, instances):
+def name_key(name):
+    """A name's letters and digits only, so the client's own spelling (Stockades, Zul'Farak) can meet the map's."""
+    return re.sub(r"[^0-9a-z]+", "", name.lower())
+
+
+def dungeon_sources(map_rows, group_rows, activity_rows, lfg_rows, difficulty_rows):
+    """Every party dungeon the client's Dungeons activity group lists, by Map.ID: its Map name, the least and
+    greatest of its activities' GroupFinderActivity.MinLevel/MaxLevelSuggestion, and its LFGDungeons.ID.
+
+    This build's LFGDungeons carries no level range: MinLevel and MaxLevelSuggestion live on GroupFinderActivity,
+    whose MapID joins the activity to its Map (LFGDungeons.MapID is 0 throughout). A map's wings (Scarlet Monastery,
+    Dire Maul, Blackrock Spire) keep their own activities, so its range spans them all. An LFG row is joined by the
+    ContentTuningID its MapDifficulty shares with the map; where that join is empty (the custom rows without a
+    MapDifficulty tuning), the client's exact Map or activity name answers instead. The lowest LFG ID wins when a map
+    has several wing rows, the same row the addon already queried.
+    """
+    kinds = {int(r["ID"]): (int(r["InstanceType"]), r["MapName_lang"]) for r in map_rows}
+    groups = {int(r["ID"]) for r in group_rows if r["Name_lang"] == "Dungeons"}
+    spans = defaultdict(list)
+    for row in activity_rows:
+        map_id = int(row["MapID"])
+        low, high = int(row["MinLevel"] or 0), int(row["MaxLevelSuggestion"] or 0)
+        if (
+            int(row["GroupFinderActivityGrpID"]) in groups
+            and kinds.get(map_id, (0,))[0] == 1
+            and low > 0
+            and high >= low
+        ):
+            spans[map_id].append((low, high))
+    tuning = defaultdict(set)
+    for row in difficulty_rows:
+        tuning[int(row["MapID"])].add(int(row["ContentTuningID"] or 0))
+    tuning.pop(0, None)
+    by_tuning = defaultdict(list)
+    for row in lfg_rows:
+        if int(row["ContentTuningID"] or 0):
+            by_tuning[int(row["ContentTuningID"])].append(int(row["ID"]))
+    names = defaultdict(set)
+    for row in activity_rows:
+        names[int(row["MapID"])].add(name_key(row["FullName_lang"]))
+    dungeons = {}
+    for map_id, levels in sorted(spans.items()):
+        entry = {
+            "name": kinds[map_id][1],
+            "low": min(low for low, _ in levels),
+            "high": max(high for _, high in levels),
+        }
+        ids = sorted({lfg for ct in tuning.get(map_id, ()) for lfg in by_tuning.get(ct, ())})
+        if not ids:
+            wanted = names[map_id] | {name_key(kinds[map_id][1])}
+            ids = sorted(int(r["ID"]) for r in lfg_rows if name_key(r["Name_lang"]) in wanted)
+        if ids:
+            entry["lfg"] = ids[0]
+        dungeons[map_id] = entry
+    return dungeons
+
+
+def named_instances(emitted, tables, instances, dungeons):
+    """Each instance the quests or entrance gates name, plus every party dungeon the client lists: its name, the
+    client's level range and LFG ID where it has them, and the classicdb entrance gates where it has those."""
     entrances = entrance_requirements(tables["areatrigger_teleport"], instances)
-    used = {q["dungeon"] for q in emitted.values() if "dungeon" in q} | entrances.keys()
+    used = {q["dungeon"] for q in emitted.values() if "dungeon" in q} | entrances.keys() | dungeons.keys()
     named = {
         m: {"name": instances[m]["name"], **({"raid": True} if instances[m]["raid"] else {})} for m in sorted(used)
     }
-    for instance, levels in DUNGEON_LEVELS.items():
-        if instance in named:
-            named[instance]["low"], named[instance]["high"] = levels
-            named[instance]["lfg"] = DUNGEON_LFG[instance]
+    for instance, fields in dungeons.items():
+        named[instance].update({key: value for key, value in fields.items() if key != "name"})
     for instance, requirements_ in entrances.items():
         named[instance]["entrances"] = requirements_
     return named
@@ -1385,6 +1393,10 @@ def generate(
     taxi_nodes,
     area_rows,
     map_rows,
+    group_rows,
+    activity_rows,
+    lfg_rows,
+    difficulty_rows,
     faction_rows,
     effects,
     skill_lines,
@@ -1400,6 +1412,7 @@ def generate(
     legacy = legacy_maps(legacy_rows, areas)
     skill_names, faction_names = gate_names(skill_lines, reputations)
     instance_of, instances = instance_index(area_rows, map_rows)
+    dungeons = dungeon_sources(map_rows, group_rows, activity_rows, lfg_rows, difficulty_rows)
     locations = places(tables, world)
     steps, spells = skill_steps(effects, skill_lines), trainer_spells(tables)
     role = roles(tables, steps, spells)
@@ -1418,12 +1431,13 @@ def generate(
         role,
     )
     zones, centres = zones_and_centres(maps, assignments, emitted, counts)
+    counts["party dungeons"] = len(dungeons)
     towns, area_names = town_areas(centres, map_art, overlay_rows, area_rows)
     counts["town areas"] = sum(map(len, towns.values()))
     counts["zone maps with town areas"] = len(towns)
     npcs = role_npcs(tables, world, faction_rows, role, centres.keys(), counts, area_at)
     shifts, ferries = transport_routes(ui_maps, assignments, centres, tables, path_nodes, taxi_nodes, counts)
-    named = named_instances(emitted, tables, instances)
+    named = named_instances(emitted, tables, instances, dungeons)
     lookups = quest_lookups(npcs, steps, spells, skill_lines, counts)
     explorable = overlays(ui_maps, map_art, overlay_rows, area_rows)
     counts["explorable areas"] = sum(map(len, explorable.values()))
@@ -1466,7 +1480,8 @@ def render(data):
         "-- Generated by tools/gen_quests.py: do not edit.",
         f"-- CMaNGOS classic-db (GPL-3.0), pinned: {CLASSICDB_URL}",
         "-- wago.tools UiMap, UiMapAssignment, QuestV2, TaxiPathNode, TaxiNodes, AreaTable, Map,",
-        "-- FactionTemplate, SpellEffect, SkillLine, Faction, UiMapXMapArt, WorldMapOverlay, ItemSparse:",
+        "-- FactionTemplate, SpellEffect, SkillLine, Faction, UiMapXMapArt, WorldMapOverlay, ItemSparse,",
+        "-- GroupFinderActivity, GroupFinderActivityGrp, LFGDungeons, MapDifficulty:",
         f"-- https://wago.tools/db2/QuestV2/csv?build={BUILD}",
         "-- Pinned client WDT/ADT terrain area IDs disambiguate unhinted outdoor giver maps.",
         f"-- wago.tools WorldMapArea at {LEGACY_MAP_BUILD}, the last build with it (quest_poi's mapAreaId).",
@@ -1484,6 +1499,8 @@ def render(data):
         "-- and ExplorationLevel, never 0); ox, oy: the offset GetExploredMapTextures returns; x, y: nearness only.",
         "-- expiring: each item that leaves the bags after a while, at most a day (ItemSparse DurationInInventory),",
         "-- and its seconds.",
+        "-- instances: every party dungeon the client's Dungeons activity group lists, with that activity's level",
+        "-- range and the LFGDungeons ID its MapDifficulty tuning names; classicdb adds each entrance gate.",
         "---@type string, AGFNamespace",
         "local _, ns = ...",
         "---@type AGFData",
@@ -1574,6 +1591,14 @@ def main():
             **options,
         ),
         map_rows=db2("Map", ("ID", "MapName_lang", "InstanceType", "WdtFileDataID"), **options),
+        group_rows=db2("GroupFinderActivityGrp", ("ID", "Name_lang"), **options),
+        activity_rows=db2(
+            "GroupFinderActivity",
+            ("ID", "FullName_lang", "GroupFinderActivityGrpID", "MapID", "MinLevel", "MaxLevelSuggestion"),
+            **options,
+        ),
+        lfg_rows=db2("LFGDungeons", ("ID", "Name_lang", "MapID", "ContentTuningID"), **options),
+        difficulty_rows=db2("MapDifficulty", ("MapID", "DifficultyID", "ContentTuningID"), **options),
         faction_rows=db2("FactionTemplate", ("ID", "EnemyGroup"), **options),
         effects=db2("SpellEffect", ("SpellID", "Effect", "EffectMiscValue_0", "EffectBasePointsF"), **options),
         skill_lines=db2("SkillLine", ("ID", "CategoryID", "DisplayName_lang"), **options),
