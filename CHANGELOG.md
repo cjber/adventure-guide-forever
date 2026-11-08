@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The Forever addons settings page no longer writes the client's bare `Text` name.** Its check box came from a Blizzard template under an unnamed page, so the label landed on a global another addon or the game could read as its own. The page is named now (cjber/forever-core#208).
+
 ## [1.1.15] - 2026-11-08
 
 - **The guide's quest data is a release fresher.** The bundled quest catalogue moves to QuestieDB v1.0.12, so quests and givers it had missed are known again: three more chains now read as a numbered story, and the Crossroads offers a sixth pickup in the Barrens opening. A few hub coordinates moved by a yard, so a route through them can order its steps slightly differently.
