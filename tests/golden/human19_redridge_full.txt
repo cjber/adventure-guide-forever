@@ -7,7 +7,7 @@ card | zone:1433 | Redridge Mountains story | 1 ready to hand in, 11 in progress
   step 4 | area:34:4 | Complete objectives · An Unwelcome Guest | 1433 0.1060,0.4930 | quests in progress | 0 yd | 34/4
   step 5 | town:1433:69 | Visit Lakeshire: Pick up 2 | 1433 0.2564,0.6000 | 2 to pick up
   step 6 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | quests in progress | 0 yd | 125/4
-  step 7 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4850,0.4270 | quests in progress | 99 yd | 92/6
+  step 7 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4830,0.4270 | quests in progress | 100 yd | 92/6
   step 8 | area:127:4 | Complete objectives · Selling Fish | 1433 0.5300,0.5740 | quests in progress | 97 yd | 127/4
   step 9 | area:20:4 | Complete 2 objectives · Redridge Mountains | 1433 0.6130,0.5330 | 2 quests here | 100 yd | 20/4 169/4
   step 10 | area:91:4 | Complete objectives · Solomon's Law | 1433 0.7390,0.4940 | quests in progress | 99 yd | 91/4
@@ -17,7 +17,7 @@ card (chosen) | carry | Clean up my log | 5 ready to hand in, 11 in progress | -
   step 3 | town:1433:1002 | Turn in: A Free Lunch | 1433 0.1037,0.7126 | Opens the next chapter here
   step 4 | area:34:4 | Complete objectives · An Unwelcome Guest | 1433 0.1060,0.4930 | quests in progress | 0 yd | 34/4
   step 5 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | quests in progress | 0 yd | 125/4
-  step 6 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4850,0.4270 | quests in progress | 99 yd | 92/6
+  step 6 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4830,0.4270 | quests in progress | 100 yd | 92/6
   step 7 | area:127:4 | Complete objectives · Selling Fish | 1433 0.5300,0.5740 | quests in progress | 97 yd | 127/4
   step 8 | area:20:4 | Complete 2 objectives · Redridge Mountains | 1433 0.6130,0.5330 | 2 quests here | 100 yd | 20/4 169/4
   step 9 | area:91:4 | Complete objectives · Solomon's Law | 1433 0.7390,0.4940 | quests in progress | 99 yd | 91/4

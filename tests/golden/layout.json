@@ -230,7 +230,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild",
       "size": [
         306.00,
-        964.00
+        978.00
       ],
       "type": "Frame"
     },
@@ -255,7 +255,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1]",
       "size": [
         0.00,
-        964.00
+        978.00
       ],
       "type": "Frame"
     },
@@ -397,7 +397,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
       "size": [
         0.00,
-        912.00
+        926.00
       ],
       "type": "Frame"
     },
@@ -697,7 +697,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Title",
-      "text": "Visit The Crossroads: Pick up 5, turn in 1",
+      "text": "Visit The Crossroads: Pick up 6, turn in 1",
       "type": "FontString",
       "wordWrap": false
     },
@@ -719,7 +719,7 @@
         210.00,
         0.00
       ],
-      "text": "1 to hand in, 5 to pick up · 6 min",
+      "text": "1 to hand in, 6 to pick up · 6 min",
       "type": "FontString",
       "wordWrap": false
     },
@@ -810,14 +810,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -210.00
+          "y": -224.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -210.00
+          "y": -224.00
         }
       ],
       "onUpdate": false,
@@ -1022,14 +1022,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -328.00
+          "y": -342.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -328.00
+          "y": -342.00
         }
       ],
       "onUpdate": false,
@@ -1234,14 +1234,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -374.00
+          "y": -388.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -374.00
+          "y": -388.00
         }
       ],
       "onUpdate": false,
@@ -1446,14 +1446,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -420.00
+          "y": -434.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -420.00
+          "y": -434.00
         }
       ],
       "onUpdate": false,
@@ -1658,14 +1658,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -466.00
+          "y": -480.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -466.00
+          "y": -480.00
         }
       ],
       "onUpdate": false,
@@ -1870,14 +1870,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -512.00
+          "y": -526.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -512.00
+          "y": -526.00
         }
       ],
       "onUpdate": false,
@@ -2082,14 +2082,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -558.00
+          "y": -572.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -558.00
+          "y": -572.00
         }
       ],
       "onUpdate": false,
@@ -2294,14 +2294,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -648.00
+          "y": -662.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -648.00
+          "y": -662.00
         }
       ],
       "onUpdate": false,
@@ -2506,14 +2506,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -694.00
+          "y": -708.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -694.00
+          "y": -708.00
         }
       ],
       "onUpdate": false,
@@ -2916,7 +2916,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -744.00
+          "y": -758.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3056,7 +3056,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -772.00
+          "y": -786.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3196,7 +3196,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -800.00
+          "y": -814.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3336,7 +3336,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -828.00
+          "y": -842.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3476,7 +3476,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -856.00
+          "y": -870.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3616,7 +3616,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -884.00
+          "y": -898.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3874,7 +3874,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[14].Text",
-      "text": "|cff009919Darsok Swiftdagger|r: Pick up 1",
+      "text": "|cff009919Apothecary Helbrim|r: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -3941,7 +3941,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[15].Text",
-      "text": "|cff009919Mankrik|r: Pick up 3",
+      "text": "|cff009919Darsok Swiftdagger|r: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -4008,7 +4008,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[16].Text",
-      "text": "|cff009919Sergra Darkthorn|r: Turn in 1",
+      "text": "|cff009919Mankrik|r: Pick up 3",
       "textColor": [
         0.90,
         0.90,
@@ -4024,7 +4024,7 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 46.00,
-          "y": -256.00
+          "y": -208.00
         }
       ],
       "onUpdate": false,
@@ -4075,7 +4075,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[17].Text",
-      "text": "|cff009919Mebok Mizzyrix|r: Pick up 1",
+      "text": "|cff009919Sergra Darkthorn|r: Turn in 1",
       "textColor": [
         0.90,
         0.90,
@@ -4142,7 +4142,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[18].Text",
-      "text": "WANTED: Pick up 2",
+      "text": "|cff009919Mebok Mizzyrix|r: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -4209,7 +4209,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[19].Text",
-      "text": "|cff009919Gazlowe|r: Pick up 1",
+      "text": "WANTED: Pick up 2",
       "textColor": [
         0.90,
         0.90,
@@ -4276,7 +4276,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[20].Text",
-      "text": "|cff009919Sputtervalve|r: Pick up 1",
+      "text": "|cff009919Wrenix the Wretched|r: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -4343,7 +4343,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[21].Text",
-      "text": "|cff009919Wrenix the Wretched|r: Pick up 1",
+      "text": "|cff009919Gazlowe|r: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -4359,7 +4359,7 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 46.00,
-          "y": -604.00
+          "y": -326.00
         }
       ],
       "onUpdate": false,
@@ -4410,7 +4410,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[22].Text",
-      "text": "|cff009919Mebok Mizzyrix|r: Turn in 1",
+      "text": "|cff009919Sputtervalve|r: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -4477,7 +4477,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[23].Text",
-      "text": "|cff009919Gazlowe|r: Turn in 3",
+      "text": "|cff009919Mebok Mizzyrix|r: Turn in 1",
       "textColor": [
         0.90,
         0.90,
@@ -4544,6 +4544,73 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[24].Text",
+      "text": "|cff009919Gazlowe|r: Turn in 3",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
+          "x": 46.00,
+          "y": -646.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[25]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[25]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[25].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[25]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[25]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[25].Text",
       "text": "|cff009919Wrenix the Wretched|r: Turn in 1",
       "textColor": [
         0.90,
