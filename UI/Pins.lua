@@ -215,11 +215,52 @@ RingsShown = function()
 		and not ns.Setting("wanderer")
 end
 
--- Questie owns background quest markers when loaded, including its hide/show switch.
--- Without it, givers stay while Shortest Path guides: it draws no givers of its own.
+-- Questie draws available-quest icons on the world map only while all three of its switches are on: `enabled` (its
+-- hide/show toggle) plus `enableMapIcons` and `enableAvailable`
+-- (Questie/Modules/Map/QuestieMap.lua:604-611, Modules/Options/IconsTab/QuestieOptionsIcons.lua). While it does, it
+-- owns the background giver markers. A Questie whose profile is not built yet counts as the owner too, so its startup
+-- shows no duplicates.
+---@return boolean
+local function QuestieOwnsGivers()
+	if not C_AddOns.IsAddOnLoaded("Questie") then
+		return false
+	end
+	local db = Questie and Questie.db
+	local profile = type(db) == "table" and db.profile
+	if type(profile) ~= "table" then
+		return true
+	end
+	return profile.enabled ~= false and profile.enableMapIcons ~= false and profile.enableAvailable ~= false
+end
+
+-- Questie redraws its own map notes through QuestieQuest:ToggleNotes when the player flips its hide/show switch, and
+-- who owns the giver markers moves with it. Hooked once, through its loader (Core/State.lua guards the same global),
+-- from the first refresh after Questie is ready: the route rebuilds then, so a refresh always follows.
+local questieHooked = false
+local function HookQuestieToggle()
+	if questieHooked or not (Questie and Questie.API and Questie.API.isReady) then
+		return
+	end
+	local loader = QuestieLoader
+	if type(loader) ~= "table" or type(loader.ImportModule) ~= "function" then
+		return
+	end
+	local ok, module = pcall(loader.ImportModule, loader, "QuestieQuest")
+	if not (ok and type(module) == "table" and type(module.ToggleNotes) == "function") then
+		return
+	end
+	questieHooked = true
+	hooksecurefunc(module, "ToggleNotes", function() -- taint-ok: Questie's own module, not a Blizzard frame.
+		Pins.Refresh()
+	end)
+end
+
+-- Questie owns background giver markers while it shows them on the world map; when its icons, map icons or
+-- available-quest icons are off, AGF draws its own givers under its own "Show quest givers" setting. Without Questie,
+-- givers stay while Shortest Path guides: it draws no givers of its own.
 ---@return boolean
 local function GiversShown()
-	return not C_AddOns.IsAddOnLoaded("Questie")
+	return not QuestieOwnsGivers()
 		and ns.Setting("showMapPins")
 		and ns.Setting("showQuestGivers")
 		and not ns.Setting("wanderer")
@@ -765,6 +806,7 @@ function Pins.Refresh()
 		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return
 	end
+	HookQuestieToggle()
 	RefreshMinimap()
 	if map and map:IsShown() then
 		Draw()
