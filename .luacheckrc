@@ -146,6 +146,7 @@ read_globals = {
 	"TweaksForever",
 	"Polestar",
 	"LegacyForever",
+	"OpenMapAPI",
 	"GetBindLocation",
 	"GetLocale",
 	"GetTime",
