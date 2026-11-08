@@ -3250,7 +3250,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Ashenvale",
+      "text": "Head to Silverpine Forest",
       "type": "FontString",
       "wordWrap": false
     },
@@ -3390,7 +3390,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Silverpine Forest",
+      "text": "Head to Redridge Mountains",
       "type": "FontString",
       "wordWrap": false
     },
@@ -3530,7 +3530,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Westfall",
+      "text": "Head to Ashenvale",
       "type": "FontString",
       "wordWrap": false
     },
@@ -3670,7 +3670,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Redridge Mountains",
+      "text": "Head to Westfall",
       "type": "FontString",
       "wordWrap": false
     },

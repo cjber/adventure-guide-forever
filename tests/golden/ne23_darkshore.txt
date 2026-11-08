@@ -1,14 +1,20 @@
 # ne23_darkshore: level 23, side 1, at 1439 0.3700,0.4400
-card (chosen) | zone:1442 | Stonetalon Mountains story | Chapter 1 of 2 | A chain begins with Piznik | map 1442
+card (chosen) | zone:1437 | Wetlands story | Chapter 1 of 6 | A chain begins with Mountaineer Kadrell | map 1439
+  step 1 | town:1439:442 | Pick up: Unrequited Love | 1439 0.3744,0.4184 | near your level
+  step 2 | town:1437:150 | Visit Menethil Harbor: Pick up 7 | 1437 0.0832,0.5857 | 7 to pick up
+  step 3 | area:98197:5 | Complete objectives · Spoils of War | 1437 0.0500,0.5260 | after you pick it up | 98 yd | 98197/5
+  step 4 | area:98197:4 | Complete objectives · Spoils of War | 1437 0.1540,0.5380 | after you pick it up | 97 yd | 98197/4
+  step 5 | area:279:0 | Complete 2 objectives · Claws from the Deep | 1437 0.1400,0.4070 | after you pick it up | 89 yd | 279/0 279/4
+  step 6 | town:1437:118 | Pick up: Ormer's Revenge | 1437 0.3818,0.5089 | near your level
+  step 7 | area:98282:4 | Complete objectives · Alchemical Hazards | 1437 0.4900,0.6140 | after you pick it up | 100 yd | 98282/4
+  step 8 | town:1437:1025 | Visit The Green Belt: Pick up 2 | 1437 0.5637,0.4040 | 2 to pick up
+  step 9 | area:470:4 | Complete objectives · Digging Through the Ooze | 1437 0.4470,0.2540 | after you pick it up | 92 yd | 470/4
+  step 10 | area:294:0 | Complete objectives · Ormer's Revenge | 1437 0.2420,0.4830 | after you pick it up | 87 yd | 294/0
+card | zone:1442 | Head to Stonetalon Mountains | 5 quests near your level | - | map 1442
   step 1 | town:1442:464 | Pick up: Stonetalon Supply Run | 1442 0.4870,0.3986 | near your level
-  step 2 | area:86574:4 | Complete objectives · Stonetalon Supply Run | 1442 0.5420,0.3780 | after you pick it up | 92 yd | 86574/4
-  step 3 | town:1442:460 | Pick up: Scramble | 1442 0.4077,0.5257 | near your level
-  step 4 | town:1442:460:2 | Turn in: Scramble | 1442 0.3962,0.4987 | once it's done
-  step 5 | town:1442:1076 | Visit Webwinder Path: Pick up 2 | 1442 0.5822,0.5174 | 2 to pick up
-  step 6 | area:1093:4 | Complete objectives · Super Reaper 6000 | 1442 0.6270,0.5350 | after you pick it up | 93 yd | 1093/4
-  step 7 | town:1442:1076:2 | Visit Webwinder Path: Turn in 2 | 1442 0.5822,0.5174 | Opens the next chapter here
-  step 8 | town:1442:461 | Pick up: Gerenzo's Orders | 1442 0.7187,0.6000 | Begins a new story
-  step 9 | area:1090:0 | Complete objectives · Gerenzo's Orders | 1442 0.7190,0.6000 | after you pick it up | 0 yd | 1090/0
+  step 2 | town:1442:460 | Pick up: Scramble | 1442 0.4077,0.5257 | near your level
+  step 3 | town:1442:1076 | Visit Webwinder Path: Pick up 2 | 1442 0.5822,0.5174 | 2 to pick up
+  step 4 | town:1442:461 | Pick up: Gerenzo's Orders | 1442 0.7187,0.6000 | near your level
 card | zone:1440 | Head to Ashenvale | 14 quests near your level | - | map 1439
   step 1 | town:1439:442 | Pick up: Trek to Ashenvale | 1439 0.3928,0.4346 | Continues a story you started
   step 2 | town:1440:414 | Pick up: The Ancient Statuette | 1440 0.1479,0.3129 | near your level
@@ -16,22 +22,14 @@ card | zone:1440 | Head to Ashenvale | 14 quests near your level | - | map 1439
   step 4 | town:1440:415 | Visit Astranaar: Pick up 5 | 1440 0.3467,0.4884 | 5 to pick up
   step 5 | town:1440:421 | Visit Mystral Lake: Pick up 4 | 1440 0.4200,0.6920 | 4 to pick up
   step 6 | town:1442:1076 | Pick up: On Guard in Stonetalon | 1442 0.5990,0.6685 | near your level
-card | zone:1413 | Head to The Barrens | 7 quests near your level | - | map 1413
-  step 1 | town:1413:382 | Pick up: Ignition | 1413 0.5652,0.0745 | near your level
-  step 2 | town:1413:392 | Visit Ratchet: Pick up 5 | 1413 0.6237,0.3762 | 5 to pick up
-  step 3 | town:1413:390 | Pick up: Stepping Stones | 1413 0.4635,0.7389 | near your level
-card | zone:1437 | Head to Wetlands | 14 quests near your level | - | map 1439
-  step 1 | town:1439:442 | Pick up: Unrequited Love | 1439 0.3744,0.4184 | near your level
-  step 2 | town:1437:150 | Visit Menethil Harbor: Pick up 7 | 1437 0.0832,0.5857 | 7 to pick up
-  step 3 | town:1437:118 | Pick up: Ormer's Revenge | 1437 0.3818,0.5089 | near your level
-  step 4 | town:1437:1025 | Visit The Green Belt: Pick up 2 | 1437 0.5637,0.4040 | 2 to pick up
-  step 5 | town:1432:838 | Pick up: The Algaz Gauntlet | 1432 0.2544,0.1038 | near your level
-  step 6 | town:1432:144 | Pick up: Report to Mountaineer Rockgar | 1432 0.3263,0.4974 | near your level
-  step 7 | town:1424:271 | Pick up: A Lack of Virtue | 1424 0.5119,0.6646 | near your level
 card | zone:1433 | Head to Redridge Mountains | 13 quests near your level | - | map 1433
   step 1 | town:1433:95 | Pick up: Missing In Action | 1433 0.2330,0.1255 | near your level
   step 2 | town:1433:69 | Visit Lakeshire: Pick up 11 | 1433 0.2564,0.6000 | 11 to pick up
   step 3 | town:1429:91 | Pick up: A Watchful Eye | 1429 0.6522,0.6971 | near your level
+card | zone:1413 | Head to The Barrens | 7 quests near your level | - | map 1413
+  step 1 | town:1413:382 | Pick up: Ignition | 1413 0.5652,0.0745 | near your level
+  step 2 | town:1413:392 | Visit Ratchet: Pick up 5 | 1413 0.6237,0.3762 | 5 to pick up
+  step 3 | town:1413:390 | Pick up: Stepping Stones | 1413 0.4635,0.7389 | near your level
 card | zone:1431 | Head to Duskwood | 13 quests near your level | - | map 1416
   step 1 | town:1416:1684 | Pick up: Ira's Dagger | 1416 0.8050,0.6692 | near your level
   step 2 | town:1431:492 | Pick up: Supplies from Darkshire | 1431 0.2811,0.3146 | near your level
@@ -41,16 +39,16 @@ card | zone:1431 | Head to Duskwood | 13 quests near your level | - | map 1416
   step 6 | town:1431:42 | Visit Darkshire: Pick up 7 | 1431 0.7534,0.4875 | 7 to pick up
 card | zone:1421 | Head to Silverpine Forest | 1 quest near your level | - | map 1421
   step 1 | town:1421:204 | Pick up: The Horn of Xelthos | 1421 0.4712,0.7099 | near your level
+card | zone:1436 | Head to Westfall | 4 quests near your level | - | map 1436
+  step 1 | town:1436:108 | Pick up: The Defias Brotherhood | 1436 0.5633,0.4752 | near your level
+  step 2 | town:1436:219 | Pick up: ... and that note you found | 1436 0.3741,0.5070 | near your level
+  step 3 | town:1436:115 | Visit Westfall Lighthouse: Pick up 2 | 1436 0.3001,0.8602 | 2 to pick up
 card | zone:1432 | Head to Loch Modan | 7 quests near your level | Thelsamar needs hands | map 1432
   step 1 | town:1432:144 | Visit Thelsamar: Pick up 3 | 1432 0.3730,0.4652 | 3 to pick up
   step 2 | town:1432:556 | Pick up: Silver of the Waves | 1432 0.4568,0.4329 | near your level
   step 3 | town:1432:146 | Pick up: A Dark Threat Looms | 1432 0.4605,0.1361 | near your level
   step 4 | town:1432:142 | Pick up: Gathering Idols | 1432 0.6490,0.6666 | near your level
   step 5 | town:1432:923 | Pick up: Banner of the Fallen | 1432 0.3178,0.8632 | near your level
-card | zone:1436 | Head to Westfall | 4 quests near your level | - | map 1436
-  step 1 | town:1436:108 | Pick up: The Defias Brotherhood | 1436 0.5633,0.4752 | near your level
-  step 2 | town:1436:219 | Pick up: ... and that note you found | 1436 0.3741,0.5070 | near your level
-  step 3 | town:1436:115 | Visit Westfall Lighthouse: Pick up 2 | 1436 0.3001,0.8602 | 2 to pick up
 card | zone:1426 | Head to Dun Morogh | 2 quests near your level | - | map 1426
   step 1 | town:1426:1537 | Pick up: Search for Incendicite | 1426 0.4962,0.4861 | near your level
   step 2 | town:1432:144 | Pick up: Stonegear's Search | 1432 0.3263,0.4974 | near your level
