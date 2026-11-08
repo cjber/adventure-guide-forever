@@ -399,8 +399,9 @@ local function Stops(steps, hold)
 	end
 	return stops
 end
--- The seam to whatever draws the way (Guidance.lua is its one caller): Shortest Path's journey by our name, and the
--- client's own waypoint. Nothing here remembers what was handed or whose it is; Guidance does.
+-- The seam to whatever draws the way (Guidance.lua is its one caller): Shortest Path's journey by our name, the
+-- client's own waypoint, or Waypoint UI's navigation of it. Nothing here remembers what was handed or whose it is;
+-- Guidance does.
 
 -- Hands Shortest Path the steps as one numbered journey of ours, replacing any it held. With `hold` a stop with quests
 -- stays until the journey is handed again, so standing in its first town or objective area keeps the whole route
@@ -467,6 +468,48 @@ function Integrations.EndReason(last)
 	return arrived and "arrived" or "cleared"
 end
 
+-- Waypoint UI (github.com/Adaptvx/Waypoint-UI) drives the client's own user waypoint, and steers with its own arrow,
+-- compass and pin. Its public API is read at the point of use, because it may load after us. With Shortest Path
+-- loaded its journey is the one Waypoint UI follows, so only one addon ever navigates: the native waypoint stays ours
+-- there, as it did before.
+---@return table? navigation
+local function WaypointUINavigation()
+	if SPF() then
+		return nil
+	end
+	local api = rawget(_G, "WaypointUIAPI")
+	local navigation = type(api) == "table" and api.Navigation
+	if
+		type(navigation) ~= "table"
+		or type(navigation.NewUserNavigation) ~= "function"
+		or type(navigation.ClearUserNavigation) ~= "function"
+		or type(navigation.GetUserNavigation) ~= "function"
+	then
+		return nil
+	end
+	if C_AddOns and C_AddOns.IsAddOnLoaded and not C_AddOns.IsAddOnLoaded("WaypointUI") then
+		return nil
+	end
+	return navigation
+end
+
+-- Waypoint UI's current navigation still sits at `place`: the one Go handed over, not something the player or
+-- Waypoint UI replaced since. It takes percent but keeps the session's point as a fraction of the map, as ours is.
+---@param navigation table
+---@param place? {map: integer, x: number, y: number}
+---@return boolean
+local function WaypointUIAt(navigation, place)
+	if not place then
+		return false
+	end
+	local ok, current = ns.SafeCall("Waypoint UI navigation", navigation.GetUserNavigation)
+	return ok
+		and type(current) == "table"
+		and current.mapID == place.map
+		and math.abs(current.x - place.x) < 1e-4
+		and math.abs(current.y - place.y) < 1e-4
+end
+
 -- The client's waypoint still sits at `place` (x and y within 1e-4): once the player moves or clears it, it does not.
 ---@param place? {map: integer, x: number, y: number}
 ---@return boolean
@@ -485,17 +528,43 @@ function Integrations.CanWaypoint(map)
 	return C_Map.CanSetUserWaypointOnMap(map)
 end
 
--- The client's waypoint goes to `place`; with `track` the arrow follows it, as a Go asks.
----@param place {map: integer, x: number, y: number}
+-- The client's waypoint goes to `place`; with `track` the arrow follows it, as a Go asks. Waypoint UI gets the place
+-- through its own API when it is loaded, so its navigation and pin are the ones that steer; the native waypoint is
+-- written otherwise. A renamed member, or one Waypoint UI refuses, still leaves the native waypoint as the fallback.
+---@param place {map: integer, x: number, y: number, title?: string, place?: string, zone?: string}
 ---@param track? boolean
 function Integrations.SetWaypoint(place, track)
+	local navigation = WaypointUINavigation()
+	if navigation then
+		local ok, handed = ns.SafeCall("Waypoint UI handover", navigation.NewUserNavigation, {
+			name = place.place or place.zone or place.title,
+			mapID = place.map,
+			x = place.x * 100,
+			y = place.y * 100,
+			superTracked = track ~= false,
+		})
+		if ok and handed then
+			return
+		end
+	end
 	C_Map.SetUserWaypoint(UiMapPoint.CreateFromCoordinates(place.map, place.x, place.y))
 	if track then
 		C_SuperTrack.SetSuperTrackedUserWaypoint(true)
 	end
 end
 
-function Integrations.ClearWaypoint()
+-- The client's waypoint and its arrow go. When the navigation is the one AGF handed to Waypoint UI, its own call
+-- clears it; the native waypoint is cleared otherwise, never a navigation the player set elsewhere.
+---@param place? {map: integer, x: number, y: number}
+function Integrations.ClearWaypoint(place)
+	local navigation = WaypointUINavigation()
+	if
+		navigation
+		and WaypointUIAt(navigation, place)
+		and ns.SafeCall("Waypoint UI clear", navigation.ClearUserNavigation)
+	then
+		return
+	end
 	C_Map.ClearUserWaypoint()
 	C_SuperTrack.SetSuperTrackedUserWaypoint(false)
 end
