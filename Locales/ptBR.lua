@@ -356,6 +356,7 @@ L["SETTING_TITLE_ROUTE"] = "Jornadas iniciam a rota"
 L["SETTING_TITLE_ROUTE_TOOLTIP"] =
 	"Escolher uma jornada no guia, ou clicar no título do passo atual no rastreador de objetivos, inicia a rota, com o Shortest Path Forever quando estiver carregado e com um ponto de rota no mapa caso contrário. Clicar de novo na jornada escolhida a interrompe."
 L["SETTING_TRACKER"] = "Mostrar seção no rastreador"
+L["SETTING_TRACKER_BACKGROUND"] = "Fundo do rastreador"
 L["SETTING_TRACKER_TOOLTIP"] =
 	'Uma seção curta "Adventure Guide" acima das suas missões no rastreador de objetivos, para o passo atual.'
 L["SETTING_TRACK_ROUTE"] = "Título do rastreador rastreia missões"
