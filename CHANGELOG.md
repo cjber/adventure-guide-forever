@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **A Darkshore route no longer starts the Master's Glaive chain in the middle.** "It's All Fun and Games Until..." at the Twilight Tome in the south waited for nothing, so the route offered it before the chain's first quest, "Cave Mushrooms", in Auberdine. The Forever record now carries its missing link to "The Twilight Camp", so the chain is taken from its first quest (#496).
+
 ## [1.1.18] - 2026-11-08
 
 - **Your route no longer walks past near-level work to a quest several levels above you.** A stop where every quest is past your "Maximum quest level above yours" setting, with no ready hand-in, now waits behind the stops you can work on now, so a green quest and a ready hand-in lead a red, optional quest already in your log. Within each tier the rest of the order is unchanged. Thanks to starkovsky for the report (#474).
