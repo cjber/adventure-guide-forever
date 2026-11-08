@@ -13,6 +13,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [Unreleased]
 
 - **An area no longer leads when the mobs there are too high for you.** The route judged a step by the quest's own level, so Fruit of the Sea at level 17 looked fine for a level 15 character even though its crab spots carry level 18 mobs. A stop now counts as above your "Maximum quest level above yours" ceiling when the highest mob level at the spots it sends you to is past it, so the area waits behind work you can do now. A town pickup still reads the quest's own level. Thanks to the player who reported this in Darkshore in game (#490).
+
+## [1.1.18] - 2026-11-08
+
 - **Your route no longer walks past near-level work to a quest several levels above you.** A stop where every quest is past your "Maximum quest level above yours" setting, with no ready hand-in, now waits behind the stops you can work on now, so a green quest and a ready hand-in lead a red, optional quest already in your log. Within each tier the rest of the order is unchanged. Thanks to starkovsky for the report (#474).
 - **The report keeps errors from earlier sessions.** An error the guide caught before the last `/reload`, a blocked action or a Lua warning was forgotten when the client reloaded, so it could not be copied into a report once it was gone. The report now lists them under their own heading, with when each was first and last seen and the version, build and locale it happened on, and keeps the 50 most recent. It also carries the guide's recent log lines, the steps that led up to a bug, and `/forever debug` turns on detailed lines for the session (cjber/forever-core#204, cjber/forever-core#206).
 
