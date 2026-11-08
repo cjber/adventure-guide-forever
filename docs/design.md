@@ -76,7 +76,8 @@ abandons quests.
   giver or objective whitelist;
   provider absence/failure publishes no partial or fallback quest list. The game owns progress and live POIs;
   QuestieDB owns records, spawns and XP; the live log owns objective counts. Provider objective icon fields are never treated as counts. Questie's IsDoable policy, plus minimum/maximum
-  level and guide difficulty preferences, gates pickups. Without live policy, logged quests remain browsable
+  level and guide difficulty preferences, gates pickups. A prerequisite our data layer corrects also gates the
+  quest, since the live policy predates that correction. Without live policy, logged quests remain browsable
   but new pickups are not recommended. A place's town is the named area of its map that holds it, one of the areas the
   world map reveals as you explore (WorldMapOverlay; among overlapping rectangles the nearest centre wins), and a place
   in no area, a city map, an instance or a gap between rectangles, belongs to its map itself. A town's name is the
