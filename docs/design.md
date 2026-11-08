@@ -87,7 +87,9 @@ abandons quests.
   Trainers, battlemasters and innkeepers take their place and side from QuestieDB's NPC rows, and an innkeeper
   is QuestieDB's flag. Only what a trainer teaches is bundled. Map geometry and transport metadata are separate
   data sources.
-  Questie owns background markers whenever loaded, including its visibility toggle; AGF owns route markers.
+  Questie owns background giver markers while it shows them on the world map; when its icons, map icons or
+  available-quest icons are off, AGF draws its own givers under its own "Show quest givers" setting. AGF owns route
+  markers.
 - **2.15 PvP.** Offer only battlegrounds open at the player's level; journey cards are opt-in.
 - **2.16 Professions.** Suggest only training the player qualifies for. Crafting routes come from SkillUp.
 - **2.17 Pacing.** Rest and hearth hints advise. Wanderer mode chooses without starting guidance.
