@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **A stop where you hand a quest in no longer shows the game's quest icon on top of it.** The guide now tells Shortest Path which quests each stop hands in, so the game's own question mark steps aside there instead of sitting over the numbered stop (#475, cjber/shortest-path-forever#484).
+
 ## [1.1.16] - 2026-11-08
 
 - **The Forever addons settings page no longer leaves a stray name behind for other addons to trip over.** Its check box came from a Blizzard template under an unnamed page, so the label landed on a global another addon or the game could read as its own. The page is named now (cjber/forever-core#208).
