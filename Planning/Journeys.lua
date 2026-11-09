@@ -1229,8 +1229,10 @@ function Model.Journeys(
 	journeys[#journeys + 1] = Carry(data, player, completed, log, ready, prefs, mapName, added, eligible)
 	-- Story and carry routes can exhaust a frame before the alternative zones.
 	Yield()
-	-- Every zone with a useful pickup is an option, ranked for the player's level now.
-	-- The current story already has a card; chosen zones stay while they have a step.
+	-- Every zone with a useful pickup other than the story's is an option, ranked for the player's level now. That
+	-- includes the zone the player stands in when the lead kept the story elsewhere: standing there is not the story,
+	-- so it still earns a card (#552). The current story already has a card, so it is never offered twice; chosen
+	-- zones stay while they have a step; NextZone returns nil for a zone with no useful pickup.
 	local headed = chosenZone ~= zone and chosenZone or nil
 	local function NextZone(map)
 		local key = "zone:" .. map
@@ -1263,7 +1265,7 @@ function Model.Journeys(
 	local offered = false
 	for _, map in ipairs(zones) do
 		local mine = map == chosenZone
-		if map ~= zone and (mine or (map ~= player.map and Open(map))) then
+		if map ~= zone and (mine or Open(map)) then
 			local card = NextZone(map)
 			journeys[#journeys + 1] = card
 			if card then

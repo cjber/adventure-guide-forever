@@ -356,7 +356,8 @@ local capCards = Model.Plan(Ahead(5), capped, {}, {}, prefs()).journeys
 equal(Kinds(capCards), "zone:1 zone:2", "at the cap, the zones that fit now")
 equal(capCards[2].reason, nil, "and no level past the cap")
 local standing = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 2, x = 0.5, y = 0.5 }
--- Standing in There, which fits too, makes it the story (design §2.10), and the next zone is never the zone you are in.
+-- Standing in There, which fits too, makes it the story (design §2.10), and the story's own zone is never offered
+-- again as somewhere to head to.
 equal(
 	Kinds(Model.Plan(Ahead(5), standing, {}, {}, prefs()).journeys),
 	"zone:2 zone:1",
@@ -397,7 +398,16 @@ equal(
 )
 mostlyTaken.quests[20].elite, mostlyTaken.instances = nil, nil
 inTaken.level = 20
-equal(Kinds(Model.Plan(mostlyTaken, inTaken, {}, {}, prefs()).journeys):match("zone:3"), nil, "past its range: not")
+do
+	local outgrown = Model.Plan(mostlyTaken, inTaken, {}, {}, prefs()).journeys
+	equal(Kinds(outgrown):match("^zone:3"), nil, "past its range: not the story")
+	-- The zone the player stands in is still a useful place to head to when the story is elsewhere (#552).
+	local offeredThere = false
+	for _, journey in ipairs(outgrown) do
+		offeredThere = offeredThere or (journey.kind == "nextzone" and journey.key == "zone:3")
+	end
+	equal(offeredThere, true, "past its range: offered as a zone to head to")
+end
 local capital = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 9, x = 0.5, y = 0.5 }
 equal(Kinds(Model.Plan(Ahead(5), capital, {}, {}, prefs()).journeys), "zone:1 zone:2", "a zone with none: level fit")
 equal(Kinds(Model.Plan(Ahead(4), player, {}, {}, prefs()).journeys), "zone:1 zone:2", "four quests are a useful option")
