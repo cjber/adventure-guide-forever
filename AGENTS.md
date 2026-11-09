@@ -152,7 +152,7 @@ its types reviewed), and the tool versions in
 
 ## Secure UI regression checks
 
-`tools/typecheck.sh` checks the TOC/XML load graph, LuaLS coverage, `tools/lint_taint.py`, `tools/lint_art.py`, `tools/lint_secret.py` (secret values through `ns.Readable`, tooltip hooks behind `ns.Usable`),
+`tools/typecheck.sh` checks the TOC/XML load graph, LuaLS coverage, `tools/lint_art.py`, `tools/lint_secret.py` (secret values through `ns.Readable`, tooltip hooks behind `ns.Usable`),
 `tools/check_editorconfig.py` and `tools/check_family.py` (the shared family block between the `forever-family` markers in README.md and docs/curseforge.md).
 `tools/forever_tools/` is the shared tooling (cjber/forever-core, https://github.com/cjber/forever-core/tree/main/.agents/skills/wow-forever-addon/tooling), vendored byte for byte: never edit it here.
 `python3 tools/forever_tools/sync.py check` verifies it offline; `sync.py update --source <checkout>` is the only way to refresh it.
