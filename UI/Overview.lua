@@ -462,7 +462,11 @@ function Overview.OpenCleanupQuest(questID)
 		return
 	end
 	C_QuestLog.SetSelectedQuest(questID)
-	ns.OpenMap(GetQuestUiMapID(questID))
+	local map = GetQuestUiMapID(questID)
+	-- The client refuses C_Map.OpenWorldMap from a MenuUtil callback (#411), so ask once the menu has closed.
+	C_Timer.After(0, function()
+		ns.OpenMap(map)
+	end)
 end
 
 -- The carry card's right-click menu: the grey and elsewhere quests under their headings, each opening on the map.

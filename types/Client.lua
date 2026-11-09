@@ -105,11 +105,6 @@ SlashCmdList = nil
 ---@return integer uiMapID
 function GetQuestUiMapID(questID, ignoreWaypoints) end
 
--- Blizzard_WorldMap.lua:1329 (1.60.1.69913): the world map's own opener. It is plain Lua, so addons may call it,
--- unlike the restricted C_Map.OpenWorldMap (#411); the pinned annotations leave it out.
----@param mapID? integer
-function OpenWorldMap(mapID) end
-
 -- Blizzard_ObjectiveTracker/Blizzard_ObjectiveTrackerShared.lua:23: an objective line with no dash and no indent.
 ---@type integer
 OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE = 3

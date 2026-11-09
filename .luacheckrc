@@ -83,8 +83,6 @@ read_globals = {
 	"strtrim",
 	"strlenutf8",
 	"WorldMapFrame",
-	-- Blizzard_WorldMap.lua: the world map's own opener, which does not carry C_Map.OpenWorldMap's restriction (#411).
-	"OpenWorldMap",
 	"GetQuestUiMapID",
 	"EventUtil",
 	"MAP_PIN_INVALID_MAP",
