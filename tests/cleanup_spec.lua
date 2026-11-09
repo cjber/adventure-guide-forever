@@ -171,6 +171,8 @@ do
 	h.SetCombat(false)
 	entry.onClick()
 	check(h.selectedQuests[#h.selectedQuests] == 844, "the menu selects the quest's log entry")
+	-- A MenuUtil callback refuses C_Map.OpenWorldMap (#411), so the open waits for the menu to close.
+	h.flush()
 	check(h.counts.SetMapID == maps + 1, "and opens the map")
 	check(h.map:GetMapID() == 1413, "on the quest's zone")
 	check(abandoned == 0, "the guide never abandons a quest")

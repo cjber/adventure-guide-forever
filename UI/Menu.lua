@@ -115,9 +115,13 @@ function Menu.Step(root, step)
 		root:CreateButton(L.STOP, ns.Stop)
 	end
 	-- The quest's map only opens out of combat, so in combat the entry is left out rather than doing nothing.
+	-- MenuUtil runs a responder inside its securecall, where C_Map.OpenWorldMap is refused (#411); ask on the next
+	-- frame, as the addon, for the entries that open or turn the map.
 	if step and ns.InLog(step) and not InCombatLockdown() then
 		root:CreateButton(L.SHOW_QUEST, function()
-			ns.ShowQuest(step)
+			C_Timer.After(0, function()
+				ns.ShowQuest(step)
+			end)
 		end)
 	end
 	-- An area with more than one spot: the next one, for a camp that's cleared or contested, standing in it or not.
@@ -144,7 +148,9 @@ function Menu.Step(root, step)
 		ns.Companions.AddMenu(root, "ShortestPathForever")
 	end
 	if ns.OpenPanel then
-		root:CreateButton(L.CHOOSE_JOURNEY, ns.OpenPanel)
+		root:CreateButton(L.CHOOSE_JOURNEY, function()
+			C_Timer.After(0, ns.OpenPanel)
+		end)
 	end
 end
 

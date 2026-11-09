@@ -588,11 +588,13 @@ function ns.InLog(step)
 	return #LogQuests(step) > 0
 end
 
--- Opens the world map, or turns a shown one, to `mapID`. Blizzard's own opener (Blizzard_WorldMap.lua's
--- OpenWorldMap) is plain Lua, so addon code may call it, unlike the restricted C_Map.OpenWorldMap, which raises
--- ADDON_ACTION_BLOCKED from the carry card's cleanup menu (#411). A shown map turns without touching the map's
--- layout; a closed one still opens through C_Map.OpenWorldMap, which has Blizzard open it without tainting the
--- gamepad UI's provider tables. Never in combat, like the map's own code; false when nothing opened.
+-- Opens the world map, or turns a shown one, to `mapID`, through the client's own C_Map.OpenWorldMap. Blizzard's
+-- Lua OpenWorldMap (Blizzard_WorldMap.lua:1329) runs in the caller's taint, and the map's SetMapID then writes
+-- WorldMapFrame.mapID as the addon (Blizzard_MapCanvas.lua:62). The quest data provider reads that field on every
+-- map open (QuestDataProvider.lua:117 through Blizzard_MapCanvas.lua:81), which taints the pin it acquires, and the
+-- client blocks the pin's protected SetPassThroughButtons (Blizzard_MapCanvas.lua:331 and
+-- MapCanvas_DataProviderBase.lua:290) on the next player open, blamed on this addon (#534). Never in combat, like
+-- the map's own code; false when nothing opened.
 ---@param mapID? integer
 ---@return boolean
 function ns.OpenMap(mapID)
@@ -600,11 +602,7 @@ function ns.OpenMap(mapID)
 		return false
 	end
 	local map = mapID ~= nil and mapID ~= 0 and mapID or nil
-	if WorldMapFrame and WorldMapFrame:IsShown() then
-		OpenWorldMap(map) -- taint-ok: Blizzard's opener on the map it shows; C_Map.OpenWorldMap is restricted (#411)
-	else
-		C_Map.OpenWorldMap(map)
-	end
+	C_Map.OpenWorldMap(map)
 	return true
 end
 

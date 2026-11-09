@@ -12,6 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Opening the map no longer breaks its quest pins.** After the guide turned the map to a zone, opening it could make the game block its own quest markers and report a blocked action blamed on the guide. The guide now asks the game to open and turn the map instead of doing it itself, so the map's quest pins stay the game's own. (#534)
 
 ## [1.3.0] - 2026-11-09
 

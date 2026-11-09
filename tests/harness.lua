@@ -2886,8 +2886,8 @@ function harness.load(options)
 	end
 	-- Blizzard_Menu/Mainline/MenuTemplates.xml: the drop-down template's own mixin.
 	G.WowStyle1DropdownMixin = {}
-	-- Blizzard_WorldMap.lua: the world map's own opener, which AGF uses so a menu callback is not blocked (#411).
-	-- C_Map.OpenWorldMap below is the restricted call, kept for specs that open the map directly.
+	-- Blizzard_WorldMap.lua:1329: the world map's own Lua opener, which runs as its caller and taints the map fields
+	-- AGF must leave native. Kept for specs that mimic it; addon code never calls it (#534).
 	G.OpenWorldMap = function(mapID)
 		h.counts.OpenWorldMap = h.counts.OpenWorldMap + 1
 		map:Show()
@@ -2895,7 +2895,8 @@ function harness.load(options)
 			map:SetMapID(mapID)
 		end
 	end
-	-- WORLD_MAP_OPEN, which Blizzard_WorldMap.lua:198 turns into its own OpenWorldMap(mapID).
+	-- The client's own opener: WORLD_MAP_OPEN, which Blizzard_WorldMap.lua:198 turns into its own OpenWorldMap(mapID)
+	-- from Blizzard's code, so the map fields stay secure.
 	G.C_Map.OpenWorldMap = function(mapID)
 		map:Show()
 		if mapID then

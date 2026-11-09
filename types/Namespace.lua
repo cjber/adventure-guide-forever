@@ -889,7 +889,7 @@
 ---@field ContextMenu fun(owner: Region, generator: fun(owner: Region, root: AGFMenuDescription)): AGFMenuDescription
 ---@field ShowQuest fun(step: AGFStep): boolean open the map on a log step's quest and select it; false for other steps or in combat
 ---@field OpenMapStitch AGFOpenMapModule OpenMap's stitched canvas: where a stop of a neighbouring zone sits on the shown map (Integrations/OpenMap.lua)
----@field OpenMap fun(mapID: integer?): boolean open or turn the world map: Blizzard's own opener on a shown map, C_Map.OpenWorldMap otherwise; false in combat
+---@field OpenMap fun(mapID: integer?): boolean open or turn the world map through C_Map.OpenWorldMap; false in combat
 ---@field TurnedIn fun(questID: integer) QUEST_TURNED_IN: latched so a chosen journey that ends there is complete, then OnTurnIn
 ---@field OnJourneyComplete? fun(next?: string) a turn-in ended the chosen journey, optionally moving on to a next zone; set by Tracker.lua
 ---@field OnTurnIn? fun(questID: integer) QUEST_TURNED_IN: the chapter-end fanfare when the quest ends a proven chain; set by Tracker.lua
