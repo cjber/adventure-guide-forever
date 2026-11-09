@@ -80,6 +80,7 @@ Integrations\QuestieOptions.lua
 Integrations\Dungeons.lua
 Integrations\AtlasLoot.lua
 Integrations\OpenMap.lua
+Integrations\Queston.lua
 UI\Asides.lua
 UI\Hints\Profession.lua
 UI\PvP.lua

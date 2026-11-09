@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Adventure Guide and Queston Forever no longer fight over the world map's quest pages.** Both addons draw a page in the map's quest log, and each left its page up when the other's tab was chosen, so the map opened on whichever page was built last and one could cover the other. Choosing either addon's tab now closes the other's page first, and the map keeps the page you picked. Reported on Discord by kragmars. (#542)
+
 ## [1.3.1] - 2026-11-09
 
 - **Opening the map no longer breaks its quest pins.** After the guide turned the map to a zone, opening it could make the game block its own quest markers and report a blocked action blamed on the guide. The guide now asks the game to open and turn the map instead of doing it itself, so the map's quest pins stay the game's own. (#534)

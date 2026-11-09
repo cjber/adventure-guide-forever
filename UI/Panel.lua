@@ -1223,7 +1223,11 @@ local function Attach()
 		order = 10,
 		-- The tab module reports a tab switch; Sync reads the panel's own visibility, so its report and the map
 		-- callbacks below make one change each.
-		shown = function()
+		-- Queston Forever's page shares the side panel outside the registry, so the guide closes it on showing.
+		shown = function(visible)
+			if visible then
+				ns.Queston.Close()
+			end
 			Sync()
 		end,
 	})
@@ -1233,6 +1237,7 @@ local function Attach()
 	Art.Fit(tabPip, TAB_PIP, 20, 20)
 	tabPip:SetPoint("CENTER", guideTab, "TOPRIGHT", -8, -8)
 	tabPip:SetShown(ns.Moments.Unseen())
+	ns.Queston.Register(_G.ForeverQuestLogQuestsTab)
 
 	-- The client has shown or hidden the map: react after it, isolated from its own show or hide (#493).
 	local function MapChanged(_, frame)
