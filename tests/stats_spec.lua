@@ -14,6 +14,17 @@ end
 
 local now = os.time()
 local sent
+-- Core's PeerStats relays the stored peer rows (2| payloads) on Sync beside the addon's
+-- own snapshot (1|), so the wire counts below only count what this addon itself sent.
+local function own(list)
+	local out = {}
+	for _, line in ipairs(list) do
+		if tostring(line):match(":1|") then
+			out[#out + 1] = line
+		end
+	end
+	return out
+end
 -- Loads the addon over `db` and `charDB` with the chat, guild and clock the transport needs.
 local function boot(db, charDB)
 	sent = {}
@@ -69,12 +80,14 @@ equal(db.sharedStats.Bad.agf.quest_turn_ins.all.value, -5, "the old table is unt
 --[[ Cumulative snapshots ]]
 h.fire("QUEST_TURNED_IN", 1001)
 h.flush()
-equal(#sent, 1, "first turn-in is offered once")
-equal(sent[1]:match("^GUILD:1|agf|quest_turn_ins|all|1|%d+$") ~= nil, true, "cumulative total on the wire")
+local first = own(sent)
+equal(#first, 1, "first turn-in is offered once")
+equal(first[1]:match("^GUILD:1|agf|quest_turn_ins|all|1|%d+$") ~= nil, true, "cumulative total on the wire")
 h.fire("QUEST_TURNED_IN", 1002)
 h.flush()
-equal(#sent, 2, "a second turn-in is a new offer")
-equal(sent[2]:match("|all|2|") ~= nil, true, "the snapshot is the running total")
+local both = own(sent)
+equal(#both, 2, "a second turn-in is a new offer")
+equal(both[2]:match("|all|2|") ~= nil, true, "the snapshot is the running total")
 for _, line in ipairs(sent) do
 	equal(line:find("quest_turn_in|", 1, true), nil, "per-quest rows are not shared")
 end
@@ -137,7 +150,7 @@ h.fire("QUEST_TURNED_IN", 1003)
 h.Slash("share off")
 equal(db.statsShare, false, "the setting is saved")
 h.flush()
-equal(#sent, 2, "a queued offer is cancelled")
+equal(#own(sent), 2, "a queued offer is cancelled")
 hear(h, "Carol", 50)
 local off = api.Leaderboard()
 equal(off.sharing, false, "sharing reported off")
@@ -154,7 +167,7 @@ equal(offRows[1].value, 3, "with the local total")
 local saved, savedChar = h.G.AdventureGuideForeverDB, h.G.AdventureGuideForeverCharDB
 h, api = boot(saved, savedChar)
 h.flush()
-equal(#sent, 0, "nothing is sent after a reload while off")
+equal(#own(sent), 0, "nothing is sent after a reload while off")
 hear(h, "Dave", 70)
 local reloaded = api.Leaderboard()
 equal(reloaded.sharing, false, "still off after reload")
@@ -167,8 +180,9 @@ equal(saved.sharedStats.Bob.fieldguide.creature_kills.all.value, 99, "the old ta
 --[[ Re-enable ]]
 h.Slash("share on")
 h.flush()
-equal(#sent, 1, "re-enabling offers the total again")
-equal(sent[1]:match("|all|3|") ~= nil, true, "with the current total")
+local again = own(sent)
+equal(#again, 1, "re-enabling offers the total again")
+equal(again[1]:match("|all|3|") ~= nil, true, "with the current total")
 equal(api.Leaderboard().rows[1].name, "Alice", "cached peers return")
 equal(api.Leaderboard().sharing, true, "sharing on")
 
