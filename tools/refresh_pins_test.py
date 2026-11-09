@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Run from the repository root: python3 tools/refresh_pins_test.py"""
 
+import json
+import os
 import unittest
+from unittest import mock
 
 import refresh_pins
 
@@ -49,6 +52,38 @@ RELEASES = [
         ],
     },
 ]
+
+
+class Response:
+    """The part of an `urlopen` response `json.load` and the digest loop use."""
+
+    def __init__(self, payload):
+        self.payload = payload
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exception):
+        return False
+
+    def read(self):
+        return json.dumps(self.payload).encode()
+
+
+def sent_requests(call, token):
+    """The requests `call` makes, with GITHUB_TOKEN set to `token` (absent when None)."""
+    requests = []
+
+    def urlopen(request, timeout=None):
+        requests.append(request)
+        return Response([])
+
+    with mock.patch.dict(os.environ, {"GITHUB_TOKEN": token} if token is not None else {}, clear=False):
+        if token is None:
+            os.environ.pop("GITHUB_TOKEN", None)
+        with mock.patch.object(refresh_pins.urllib.request, "urlopen", urlopen):
+            call()
+    return requests
 
 
 class RefreshPins(unittest.TestCase):
@@ -123,6 +158,21 @@ class RefreshPins(unittest.TestCase):
         ]
         with self.assertRaises(SystemExit):
             refresh_pins.newest_questiedb_release(releases)
+
+
+class GitHubToken(unittest.TestCase):
+    def test_the_release_list_carries_the_workflow_token(self):
+        (request,) = sent_requests(refresh_pins.fetch_questiedb_releases, "s3cret")
+        self.assertEqual(request.get_header("Authorization"), "Bearer s3cret")
+
+    def test_the_release_list_without_a_token_carries_none(self):
+        (request,) = sent_requests(refresh_pins.fetch_questiedb_releases, None)
+        self.assertIsNone(request.get_header("Authorization"))
+
+    def test_the_token_goes_only_to_the_github_api(self):
+        with mock.patch.dict(os.environ, {"GITHUB_TOKEN": "s3cret"}):
+            request = refresh_pins.github_request("https://wago.tools/api/builds")
+        self.assertIsNone(request.get_header("Authorization"))
 
 
 if __name__ == "__main__":

@@ -76,11 +76,21 @@ def forever_asset(release):
     return found
 
 
+def github_request(url):
+    """A request for `url` that carries the workflow's token on the GitHub API when one is set.
+
+    Without a token the API allows an address 60 requests an hour, shared with every other job on the runner's
+    address, so the refresh fails whenever that is spent; the workflow passes its own token.
+    """
+    headers = {"User-Agent": "AdventureGuideForever/1.0", "Accept": "application/vnd.github+json"}
+    token = os.environ.get("GITHUB_TOKEN")
+    if url.startswith("https://api.github.com/") and token:
+        headers["Authorization"] = f"Bearer {token}"
+    return urllib.request.Request(url, headers=headers)
+
+
 def fetch_questiedb_releases():
-    request = urllib.request.Request(
-        "https://api.github.com/repos/Questie/QuestieDB/releases?per_page=30",
-        headers={"User-Agent": "AdventureGuideForever/1.0", "Accept": "application/vnd.github+json"},
-    )
+    request = github_request("https://api.github.com/repos/Questie/QuestieDB/releases?per_page=30")
     with urllib.request.urlopen(request, timeout=60) as response:
         return json.load(response)
 
