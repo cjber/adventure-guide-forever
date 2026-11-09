@@ -83,6 +83,7 @@ read_globals = {
 	"strtrim",
 	"strlenutf8",
 	"WorldMapFrame",
+	"CreateSecureDelegate",
 	"GetQuestUiMapID",
 	"EventUtil",
 	"MAP_PIN_INVALID_MAP",
