@@ -458,7 +458,7 @@ L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以寻找地下城入口。"
 L["UNLISTED"] = "这片土地有指南尚不知道的故事；请留意任务NPC头上的“!”。"
 L["UPDATED_TO"] = "已更新到%s。%s"
 -- mt
-L["WHATS_NEW"] = "地下城旅程会先收集所有系列任务，再带你进入。" -- mt
+L["WHATS_NEW"] = "世界地图上任务NPC的提示现在会像任务日志一样为每个任务着色。" -- mt
 L["WHY_ALLIANCE"] = "仅限联盟"
 L["WHY_BREADCRUMB"] = "仅在你接受%s之前"
 L["WHY_CHOSE"] = "你改选了%s"

@@ -470,7 +470,8 @@ L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
 -- mt
-L["WHATS_NEW"] = "Los viajes a calabozos reúnen cada cadena de misiones antes de enviarte adentro." -- mt
+L["WHATS_NEW"] =
+	"La descripción emergente de un asignador de misiones en el mapa del mundo ahora colorea cada misión como tu registro de misiones." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
