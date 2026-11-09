@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.4.3] - 2026-11-09
+
 ### For addon authors
 
 - **Another guide addon can see each stop's quests and pause the route.** `AdventureGuideForever.API` minor 5 gives every stop `kind`, `pickupQuests`, `turninQuests` and `objectiveQuests`, and adds `Status()`, `Pause()` and `Resume()`. A companion can now read which quests a stop picks up, hands in or works on, step aside while its own guide runs, and hand the player back without losing the chosen journey. `Subscribe` reports the new `status` change too. (#583)
