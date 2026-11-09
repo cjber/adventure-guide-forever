@@ -471,6 +471,100 @@ local routePool, giverPool, spotPool, pingPool
 local reveal
 local afterCombat = CreateFrame("Frame")
 
+-- The world map's own quest pins repeat a journey's stops (#468): QuestDataProvider's QuestPinTemplate draws a "..."
+-- or "?" circle for each quest on the map, so a quest a numbered stop already marks reads twice. The pass below hides
+-- only those pins, one per quest at a stop drawn on the map shown, and brings every pin back when its stop goes. It
+-- reads each pin's quest ID field, calls no pin method but Hide and Show, and leaves the questPOI setting and the data
+-- provider as the player set them (WFA-38).
+local QUEST_PINS = "QuestPinTemplate"
+-- The events QuestDataProvider refreshes its pins on, plus SUPER_TRACKING_CHANGED; CVAR_UPDATE counts only for
+-- questPOI.
+local PROVIDER_EVENTS = {
+	"QUEST_LOG_UPDATE",
+	"QUEST_WATCH_LIST_CHANGED",
+	"QUEST_POI_UPDATE",
+	"SUPER_TRACKING_CHANGED",
+	"CVAR_UPDATE",
+}
+-- The pins this pass hid, so it shows only those again: a pin another addon hid is never ours to show.
+---@type table<AGFQuestPin, true>
+local hiddenPins = setmetatable({}, { __mode = "k" })
+
+-- The quests whose game pins a numbered stop on `mapID` marks. A stop the player stands in draws no numbered marker,
+-- so its quests keep their pins; RingsShown already leaves a wanderer's map alone.
+---@param mapID integer
+---@return table<integer, true>
+local function MarkedQuests(mapID)
+	local marked = {}
+	if not RingsShown() then
+		return marked
+	end
+	for _, step in ipairs(ns.Route().steps) do
+		if step.map == mapID and not step.here then
+			for _, id in ipairs(step.quests or NONE) do
+				marked[id] = true
+			end
+		end
+	end
+	return marked
+end
+
+-- One pass over the map's quest pins: hide the marked quests, bring back the pins this pass hid, and forget the pins
+-- the provider has released. A hidden map has nothing to do, and combat waits for its end redraw.
+local function RefreshQuestPins()
+	if not map or InCombatLockdown() or not map:IsShown() then
+		return
+	end
+	local mapID = map:GetMapID()
+	if not mapID then
+		return
+	end
+	local marked = MarkedQuests(mapID)
+	local seen = {}
+	for pin in map:EnumeratePinsByTemplate(QUEST_PINS) do
+		---@cast pin AGFQuestPin
+		seen[pin] = true
+		if pin.questID and marked[pin.questID] then
+			hiddenPins[pin] = true
+			pin:Hide()
+		elseif hiddenPins[pin] then
+			hiddenPins[pin] = nil
+			pin:Show()
+		end
+	end
+	for pin in pairs(hiddenPins) do
+		if not seen[pin] then
+			hiddenPins[pin] = nil
+		end
+	end
+end
+
+-- The provider refreshes first and re-acquires every pin, so the walk waits a frame for the pins it has just drawn.
+-- Many events in one frame share one pass, and a closed map has none: opening it redraws through Draw.
+---@type boolean?
+local pinsQueued
+local function QueueQuestPins()
+	if pinsQueued or not (map and map:IsShown()) then
+		return
+	end
+	pinsQueued = true
+	C_Timer.After(0, function()
+		pinsQueued = nil
+		RefreshQuestPins()
+	end)
+end
+
+local providerEvents = CreateFrame("Frame")
+providerEvents:SetScript("OnEvent", function(_, event, cvar)
+	if event == "CVAR_UPDATE" and cvar ~= "questPOI" then
+		return
+	end
+	QueueQuestPins()
+end)
+for _, event in ipairs(PROVIDER_EVENTS) do
+	providerEvents:RegisterEvent(event)
+end
+
 local function ReleaseMarks()
 	for _, pool in ipairs({ routePool, giverPool, spotPool }) do
 		pool:ReleaseAll()
@@ -538,53 +632,53 @@ local function Draw()
 		return
 	end
 	AddGivers(mapID)
-	if not RingsShown() then
-		return
-	end
-	-- A numbered pin at each step's point, but none for the area the player stands in: they are there (§4.2). An area
-	-- draws nothing more: the game's own objective mark and its hover shape show where its objectives are.
-	-- A place the route comes back to keeps one marker, numbered for its first visit, with its quest-action badge
-	-- intact and every visit in its tooltip (docs/design.md §2.9).
-	local canvas = map:GetCanvas()
-	local scale = map:GetCanvasScale() or 1
-	local reachX = MAP_GROUP_SIZE / math.max(1, canvas:GetWidth() * scale)
-	local reachY = MAP_GROUP_SIZE / math.max(1, canvas:GetHeight() * scale)
-	-- Each drawn step's point in the shown map's fractions: its own, or its place on OpenMap's stitched canvas.
-	local stitched = ns.OpenMapStitch.Stitched()
-	local placed = {}
-	for _, step in ipairs(ns.Route().steps) do
-		if not step.here then
-			if step.map == mapID then
-				placed[step] = { x = step.x, y = step.y }
-			elseif stitched then
-				local x, y = ns.OpenMapStitch.Place(step, mapID)
-				if x ~= nil and y ~= nil then
-					placed[step] = { x = x, y = y }
+	if RingsShown() then
+		-- A numbered pin at each step's point, but none for the area the player stands in: they are there (§4.2). An
+		-- area draws nothing more: the game's own objective mark and its hover shape show where its objectives are.
+		-- A place the route comes back to keeps one marker, numbered for its first visit, with its quest-action badge
+		-- intact and every visit in its tooltip (docs/design.md §2.9).
+		local canvas = map:GetCanvas()
+		local scale = map:GetCanvasScale() or 1
+		local reachX = MAP_GROUP_SIZE / math.max(1, canvas:GetWidth() * scale)
+		local reachY = MAP_GROUP_SIZE / math.max(1, canvas:GetHeight() * scale)
+		-- Each drawn step's point in the shown map's fractions: its own, or its place on OpenMap's stitched canvas.
+		local stitched = ns.OpenMapStitch.Stitched()
+		local placed = {}
+		for _, step in ipairs(ns.Route().steps) do
+			if not step.here then
+				if step.map == mapID then
+					placed[step] = { x = step.x, y = step.y }
+				elseif stitched then
+					local x, y = ns.OpenMapStitch.Place(step, mapID)
+					if x ~= nil and y ~= nil then
+						placed[step] = { x = x, y = y }
+					end
 				end
 			end
 		end
+		local groups = Groups(function(step)
+			return placed[step] ~= nil and not step.here
+		end, function(_, _, firstX, firstY, x, y)
+			return math.abs(firstX - x) <= reachX and math.abs(firstY - y) <= reachY
+		end, function(step)
+			local point = placed[step]
+			return mapID, point.x, point.y
+		end)
+		for _, visits in ipairs(groups) do
+			local first, point = visits[1].step, placed[visits[1].step]
+			routePool:Acquire(first, visits[1].index, visits, point.x, point.y)
+		end
+		-- A town visit's other NPCs and objects, so a hand-in away from its numbered stop shows where it is: one small
+		-- quest mark each, never on a point a numbered stop already has, faded as the stop it belongs to.
+		local numbered = {}
+		for _, visits in ipairs(groups) do
+			numbered[ns.Model.SpotKey(visits[1].step)] = true
+		end
+		for _, spot in ipairs(VisitSpotRows(mapID, numbered)) do
+			spotPool:Acquire(spot, spot.index)
+		end
 	end
-	local groups = Groups(function(step)
-		return placed[step] ~= nil and not step.here
-	end, function(_, _, firstX, firstY, x, y)
-		return math.abs(firstX - x) <= reachX and math.abs(firstY - y) <= reachY
-	end, function(step)
-		local point = placed[step]
-		return mapID, point.x, point.y
-	end)
-	for _, visits in ipairs(groups) do
-		local first, point = visits[1].step, placed[visits[1].step]
-		routePool:Acquire(first, visits[1].index, visits, point.x, point.y)
-	end
-	-- A town visit's other NPCs and objects, so a hand-in away from its numbered stop shows where it is: one small quest
-	-- mark each, never on a point a numbered stop already has, faded as the stop it belongs to.
-	local numbered = {}
-	for _, visits in ipairs(groups) do
-		numbered[ns.Model.SpotKey(visits[1].step)] = true
-	end
-	for _, spot in ipairs(VisitSpotRows(mapID, numbered)) do
-		spotPool:Acquire(spot, spot.index)
-	end
+	RefreshQuestPins()
 end
 
 ---@class AGFPinVisit

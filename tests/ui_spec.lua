@@ -3811,12 +3811,13 @@ for _, spf in ipairs({ false, "v1+" }) do
 	h.fire(event)
 	equal(StopButton(h):IsShown(), true, label .. ": not in the event's own frame")
 	h.fire(event)
-	equal(h.tick(), 1, label .. ": one redraw however many events")
+	-- With Shortest Path, SUPER_TRACKING_CHANGED also queues the open map's quest pin pass (#468): one timer each.
+	equal(h.tick(), spf and 2 or 1, label .. ": one redraw however many events")
 	equal(StopButton(h):IsShown(), false, label .. ": Stop goes on the next frame")
 	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
 	h.flush()
 	h.fire(event)
-	equal(h.tick(), 1, label .. ": the ending is judged with the guide closed too, in one frame")
+	equal(h.tick(), spf and 2 or 1, label .. ": the ending is judged with the guide closed too, in one frame")
 	clean(h, label)
 end
 

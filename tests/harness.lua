@@ -2818,7 +2818,31 @@ function harness.load(options)
 			end,
 		}
 	end
-	for _, name in ipairs({ "AddDataProvider", "AcquirePin", "RemoveAllPinsByTemplate", "EnumeratePinsByTemplate" }) do
+	-- The game's quest pins, as the provider acquired them: a spec registers one with h.AddQuestPin, and the addon
+	-- may only walk them and read the quest ID field, never call a pin's methods but Hide and Show (#468).
+	h.mapPins = {}
+	function h.AddQuestPin(questID, shown)
+		local pin = NewRegion("Frame", nil, map)
+		pin.template = "QuestPinTemplate"
+		pin.questID = questID
+		pin.hidden = shown == false
+		h.mapPins[#h.mapPins + 1] = pin
+		return pin
+	end
+	function map:EnumeratePinsByTemplate(template)
+		local pins = {}
+		for _, pin in ipairs(h.mapPins) do
+			if pin.template == template then
+				pins[#pins + 1] = pin
+			end
+		end
+		local index = 0
+		return function()
+			index = index + 1
+			return pins[index]
+		end
+	end
+	for _, name in ipairs({ "AddDataProvider", "AcquirePin", "RemoveAllPinsByTemplate" }) do
 		map[name] = function()
 			error("addon called native map mutation " .. name)
 		end

@@ -176,8 +176,14 @@ QUESTS_LABEL = nil
 ---@field GetCanvasZoomPercent fun(self: WorldMapFrame): number?
 ---@field GetGlobalPinScale fun(self: WorldMapFrame): number?
 ---@field GetPinFrameLevelsManager? fun(self: WorldMapFrame): AGFMapFrameLevels
+---@field EnumeratePinsByTemplate fun(self: WorldMapFrame, template: string): fun(): AGFQuestPin
 ---@class AGFMapFrameLevels
 ---@field GetValidFrameLevel fun(self: AGFMapFrameLevels, levelType: string): number?
+
+-- One of the map's own pins, as the quest pin pass reads it: the quest it marks is a field, never a method (WFA-38).
+---@class AGFQuestPin : Frame
+---@field questID? integer
+
 ---@type WorldMapFrame
 WorldMapFrame = nil
 
