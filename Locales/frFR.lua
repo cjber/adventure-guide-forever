@@ -473,7 +473,8 @@ L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
 -- mt
-L["WHATS_NEW"] = "Les voyages en donjon rassemblent chaque suite de quêtes avant de vous y envoyer." -- mt
+L["WHATS_NEW"] =
+	"L’infobulle d’un donneur de quêtes sur la carte du monde colore désormais chaque quête comme votre journal des quêtes." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"

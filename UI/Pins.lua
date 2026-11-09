@@ -792,7 +792,7 @@ function AdventureGuideForeverGiverPinMixin:OnAcquired(giver)
 	self:ApplyScale()
 end
 
--- The client's own title wins when the quest is cached; the level is the bundled one.
+-- The NPC, then each quest it offers, as the pickups they are; the click line and the shift-click's follow.
 function AdventureGuideForeverGiverPinMixin:OnMouseEnter()
 	local giver = self.giver
 	if not giver then
@@ -802,10 +802,7 @@ function AdventureGuideForeverGiverPinMixin:OnMouseEnter()
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 	GameTooltip_SetTitle(GameTooltip, giver.title)
 	for _, id in ipairs(giver.quests) do
-		local quest = ns.Data.quests[id]
-		local level = quest.level == -1 and ns.State.Level() or quest.level
-		local title = ns.State.QuestTitle(id) or quest.title
-		GameTooltip_AddNormalLine(GameTooltip, ns.L.QUEST_LEVEL:format(level, title))
+		QuestLine(GameTooltip, id, PICK_UP_ICON)
 	end
 	AddClickLine(GameTooltip)
 	if #giver.adds > 0 then

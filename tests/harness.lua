@@ -1849,6 +1849,11 @@ function harness.load(options)
 			h.map
 		)
 	end
+	-- CreateSecureDelegate: the client wraps a Lua function so a call from addon code runs with secure execution
+	-- taint. The sim models it (forever_sim/tooltip.lua) as clearing taint for the call then restoring the caller's.
+	G.CreateSecureDelegate = G.CreateSecureDelegate or function(fn)
+		return fn
+	end
 	G.hooksecurefunc = function(target, name, hook)
 		if type(target) == "string" then
 			target, name, hook = G, target, name

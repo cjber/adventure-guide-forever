@@ -150,4 +150,61 @@ equal(
 	"the entrance counts only the instance's quests this player could take"
 )
 
+-- #574: the reported Deadmines card. Oh Brother's two objectives are under way, and the card used to put them (and
+-- the Sentinel Hill pickup) before the Defias Brotherhood hand-in that opens the next part of its chain. The pinned
+-- corpus leaves a dungeon quest's own objectives unplaced, so the spec supplies the two kill areas the client shows.
+data.quests[167].need = { [0] = 6, [1] = 4 }
+data.quests[167].kinds = { [0] = "monster", [1] = "monster" }
+data.quests[167].names = { [0] = "riverpaw miner", [1] = "kobold digger" }
+data.quests[167].obj = { { 0, 563, 475, 50, 1436, 16 }, { 1, 350, 350, 50, 1436, 16 } }
+local reported = {}
+for key, value in pairs(fixture) do
+	reported[key] = value
+end
+reported.log = {
+	{ id = 65, title = "The Defias Brotherhood", level = 18, complete = true },
+	{
+		id = 167,
+		title = "Oh Brother. . .",
+		level = 20,
+		complete = false,
+		objectives = {
+			{ type = "monster", done = false, have = 0, need = 6, text = "Riverpaw Miner slain: 0/6" },
+			{ type = "monster", done = false, have = 0, need = 4, text = "Kobold Digger slain: 0/4" },
+		},
+	},
+	{ id = 168, title = "Collecting Memories", level = 18, complete = false },
+	{ id = 2040, title = "Underground Assault", level = 20, complete = false },
+}
+local rplayer, rcompleted, rlog, rprefs, rinputs = characters.Resolve(data, reported)
+rplayer.maxQuestLevelOffset = 9
+local rroute = Model.Plan(data, rplayer, rcompleted, rlog, rprefs, nil, nil, nil, rinputs)
+local rcard
+for _, journey in ipairs(rroute.journeys) do
+	rcard = journey.key == "dungeon:36" and journey or rcard
+end
+assert(rcard, "the reported Deadmines card is offered")
+local function At(key)
+	for index, step in ipairs(rcard.steps) do
+		if step.key == key then
+			return index
+		end
+	end
+end
+local handinAt, riverAt, koboldAt = At("turnin:65"), At("area:167:0"), At("area:167:1")
+equal(handinAt ~= nil, true, "the Defias Brotherhood hand-in is a step")
+equal(riverAt ~= nil, true, "the Riverpaw Miner objective is a step")
+equal(koboldAt ~= nil, true, "the Kobold Digger objective is a step")
+equal(
+	handinAt ~= nil and riverAt ~= nil and handinAt < riverAt,
+	true,
+	"the Defias Brotherhood hand-in comes before the Riverpaw Miner objective"
+)
+equal(
+	handinAt ~= nil and koboldAt ~= nil and handinAt < koboldAt,
+	true,
+	"the Defias Brotherhood hand-in comes before the Kobold Digger objective"
+)
+equal(At("entrance:36"), #rcard.steps, "the reported card still sends the player to the entrance last")
+
 print(("dungeon_chains_spec: %d checks passed"):format(checks))
