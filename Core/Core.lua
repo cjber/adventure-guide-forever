@@ -588,13 +588,28 @@ function ns.InLog(step)
 	return #LogQuests(step) > 0
 end
 
+-- The client's own opener, run with secure execution taint: CreateSecureDelegate wraps a Lua function so a call from
+-- addon code runs as the client, not as the addon. Created once, on first use, so a spec without the client's
+-- delegate never runs it at load.
+local secureOpenWorldMap
+local function OpenMapThroughClient(mapID)
+	if not secureOpenWorldMap then
+		secureOpenWorldMap = CreateSecureDelegate(function(id)
+			C_Map.OpenWorldMap(id)
+		end)
+	end
+	return secureOpenWorldMap(mapID)
+end
+
 -- Opens the world map, or turns a shown one, to `mapID`, through the client's own C_Map.OpenWorldMap. Blizzard's
 -- Lua OpenWorldMap (Blizzard_WorldMap.lua:1329) runs in the caller's taint, and the map's SetMapID then writes
 -- WorldMapFrame.mapID as the addon (Blizzard_MapCanvas.lua:62). The quest data provider reads that field on every
 -- map open (QuestDataProvider.lua:117 through Blizzard_MapCanvas.lua:81), which taints the pin it acquires, and the
 -- client blocks the pin's protected SetPassThroughButtons (Blizzard_MapCanvas.lua:331 and
--- MapCanvas_DataProviderBase.lua:290) on the next player open, blamed on this addon (#534). Never in combat, like
--- the map's own code; false when nothing opened.
+-- MapCanvas_DataProviderBase.lua:290) on the next player open, blamed on this addon (#534). The C API is itself
+-- refused from addon-tainted code (#411), so the call goes through CreateSecureDelegate: the client's secure
+-- delegate runs it with secure execution taint, which permits the call and leaves every field it writes secure.
+-- Never in combat, like the map's own code; false when nothing opened.
 ---@param mapID? integer
 ---@return boolean
 function ns.OpenMap(mapID)
@@ -602,7 +617,7 @@ function ns.OpenMap(mapID)
 		return false
 	end
 	local map = mapID ~= nil and mapID ~= 0 and mapID or nil
-	C_Map.OpenWorldMap(map)
+	OpenMapThroughClient(map)
 	return true
 end
 
