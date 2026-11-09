@@ -87,7 +87,13 @@ end
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
 ---@field rxpActionsReserved? number the height the RestedXP action rows already added to contentsHeight
 ---@field npcHighlightReserved? number the height the next-NPC target button already added to contentsHeight
-local ModuleMixin = { headerText = L.TITLE, blockTemplate = "ObjectiveTrackerAnimBlockTemplate" }
+local ModuleMixin = {
+	headerText = L.TITLE,
+	blockTemplate = "ObjectiveTrackerAnimBlockTemplate",
+	-- Blizzard pairs its fanfare block with this line (Blizzard_ObjectiveTrackerAnimTemplates.xml:3): every used
+	-- line's FadeInAnim is restarted when the block plays its add animation, so the plain line would raise a nil.
+	lineTemplate = "ObjectiveTrackerAnimLineTemplate",
+}
 
 ---@param block AGFTrackerBlock the header's own block: the aside's goes to its place, the journey's end opens the guide
 ---and the story's does nothing; for the step's, ns.Guidance.CurrentStep() is used since it's always current
