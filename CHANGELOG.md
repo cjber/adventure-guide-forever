@@ -12,7 +12,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-- **Dungeon cards put the quests that lead into the dungeon before its own quests.** Choosing the Deadmines put Oh Brother's objectives ahead of The Defias Brotherhood hand-in in Lakeshire, so the step that opens the next part of the chain waited behind the dungeon's own quests. The card now shows the hand-ins and objectives that open another of the dungeon's quests first, then the rest, and still sends you to the entrance last. (#574)
+## [1.4.2] - 2026-11-09
+
+- **Dungeon cards now put the quests that lead into the dungeon first.** Choosing the Deadmines put Oh Brother's objectives ahead of The Defias Brotherhood hand-in in Lakeshire, so the step that opens the next part of the chain waited behind the dungeon's own quests. The card now shows the hand-ins and objectives that open another of the dungeon's quests first, then the rest, and still sends you to the entrance last. (#574)
 
 ## [1.4.1] - 2026-11-09
 

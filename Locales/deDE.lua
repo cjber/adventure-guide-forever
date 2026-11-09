@@ -471,7 +471,7 @@ L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
 -- mt
-L["WHATS_NEW"] = "Der Tooltip eines Questgebers auf der Weltkarte färbt jetzt jede Quest wie in Eurem Questlog." -- mt
+L["WHATS_NEW"] = "Dungeon-Karten zeigen jetzt zuerst die Quests, die in das Dungeon führen." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"
