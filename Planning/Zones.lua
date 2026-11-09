@@ -7,10 +7,8 @@ local Docks = ns.Planner.Travel.Docks
 local Dropped = ns.Planner.Eligibility.Dropped
 local Eligible = ns.Planner.Eligibility.Eligible
 local Hard = ns.Model.Hard
-local HasBit = ns.Model.HasBit
 local Position = ns.Planner.Travel.Position
 local SimpleOpen = ns.Planner.Eligibility.SimpleOpen
-local ValidPlace = ns.Model.ValidPlace
 local Yards = ns.Planner.Travel.Yards
 
 ---@param quest AGFQuest
@@ -118,9 +116,7 @@ local function Choices(data, player, completed, log, index, prefs, far)
 			if
 				quest.min <= player.level
 				and not Model.IsGray(quest.level, player.level)
-				and ValidPlace(quest.start)
-				and HasBit(quest.races, player.raceBit)
-				and HasBit(quest.classes, player.classBit)
+				and Model.CouldTake(quest, player)
 			then
 				candidates[#candidates + 1] = id
 			end

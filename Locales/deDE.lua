@@ -38,6 +38,7 @@ L["CARRY_READY"] = "%d bereit zur Abgabe"
 L["CHAPTER"] = "Kapitel %d"
 L["CHAPTERS_DONE"] = "%d von %d erledigt"
 L["CHAPTER_OF"] = "Kapitel %d von %d"
+L["CHAIN_PROGRESS"] = "%s, %d von %d"
 L["CHAPTER_QUEST"] = "%s: %s"
 L["CLEANUP"] = "Aufräumen: %s"
 L["CLEANUP_READY"] = "%d zur Abgabe"
@@ -63,6 +64,8 @@ L["DUMP_SAVED"] =
 L["DUNGEON_BOSSES_LOOT"] = "Bosse und Beute"
 L["DUNGEON_INSIDE"] = "%d Eurer Quests enden in %s"
 L["DUNGEON_INSIDE_ONE"] = "1 Eurer Quests endet in %s"
+L["DUNGEON_LEFT_BEHIND"] = "Noch %d Dungeonquests zu holen"
+L["DUNGEON_LEFT_BEHIND_ONE"] = "Noch 1 Dungeonquest zu holen"
 L["DUNGEON_LOOT_COMBAT"] = "Die Bossbeute wird nach dem Kampf geladen."
 L["DUNGEON_LOOT_INSTALL"] =
 	"Installiert AtlasLoot Classic und sein Modul für Dungeons und Schlachtzüge, um Bosse und Beute zu sehen."
@@ -468,7 +471,7 @@ L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
 -- mt
-L["WHATS_NEW"] = "Die Zone, in der du questest, steht immer auf der Liste." -- mt
+L["WHATS_NEW"] = "Dungeon-Reisen sammeln jede Questreihe, bevor sie dich hineinschicken." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"

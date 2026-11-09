@@ -1919,7 +1919,7 @@ do
 			local planned = Model.Plan(ns.Data, who, done, carried, cardPrefs)
 			for _, journey in ipairs(planned.journeys) do
 				if journey.kind == "dungeon" then
-					local off = dungeons and 0 or 1
+					local off = (dungeons or cardPrefs.journey == journey.key) and 0 or 1
 					cards, offCards = cards + 1, offCards + (planned.stranded and 0 or off)
 					strandedCards = strandedCards + (planned.stranded and off or 0)
 					for _, step in ipairs(journey.steps) do

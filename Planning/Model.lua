@@ -134,6 +134,18 @@ end
 
 Model.HasBit = HasBit
 
+-- Whether the player could ever take `quest`: its side is theirs or open to both, its race and class masks hold them,
+-- and the data places its start. The shortlist the zone choices and a dungeon card's leftovers share.
+---@param quest AGFQuest
+---@param player AGFPlayer
+---@return boolean
+function Model.CouldTake(quest, player)
+	return (quest.side == 3 or quest.side == player.side)
+		and ValidPlace(quest.start)
+		and HasBit(quest.races, player.raceBit)
+		and HasBit(quest.classes, player.classBit)
+end
+
 -- A zone map's art in pixels (tools/gen_quests.py CANVAS): overlay rectangles and their centres are on this canvas,
 -- so which of two overlaps is nearer is measured across and down, as the client's own shading does.
 local CANVAS_W, CANVAS_H = 1002, 668
@@ -274,6 +286,169 @@ function Model.Story(data, questID)
 		memo.stories[questID] = story
 	end
 	return story or nil
+end
+
+-- Preparation for an instance (docs/design.md §2.21): the chains that lead into it, walked back through every
+-- prerequisite link. A story follows `next` links, so it cannot describe a chain that forks (92742 + 92744 > 92745);
+-- the dungeon card walks `pre` and `preAny` instead, which is the only direction the data gives for both branches.
+-- Memoized per data, like Index.
+---@class AGFPreparation
+---@field dependents table<integer, table<integer, true>>
+---@field leads table<integer, table<integer, true>>
+---@field chains table<integer, AGFDungeonChain[]>
+---@field visiting table<integer, true>
+
+---@type table<AGFData, AGFPreparation>
+local preparations = setmetatable({}, { __mode = "k" })
+
+---@param data AGFData
+---@return AGFPreparation
+local function Preparation(data)
+	local memo = preparations[data]
+	if memo then
+		return memo
+	end
+	local dependents = {}
+	for id, quest in pairs(data.quests) do
+		for _, list in ipairs({ quest.pre or NONE, quest.preAny or NONE }) do
+			for _, pre in ipairs(list) do
+				if data.quests[pre] then
+					local users = dependents[pre]
+					if not users then
+						users = {}
+						dependents[pre] = users
+					end
+					users[id] = true
+				end
+			end
+		end
+	end
+	memo = { dependents = dependents, leads = {}, chains = {}, visiting = {} }
+	preparations[data] = memo
+	return memo
+end
+
+-- The instances `questID`'s prerequisite chain leads into: itself when it is filed under one, and every instance a
+-- quest that needs it leads into. Memoized. Empty when the data has no such quest.
+---@param data AGFData
+---@param questID integer
+---@return table<integer, true>
+function Model.Leads(data, questID)
+	local memo = Preparation(data)
+	local leads = memo.leads[questID]
+	if leads then
+		return leads
+	end
+	local quest = data.quests[questID]
+	if not quest or memo.visiting[questID] then
+		return NONE
+	end
+	memo.visiting[questID] = true
+	leads = {}
+	if quest.dungeon and not quest.raid and data.instances and data.instances[quest.dungeon] then
+		leads[quest.dungeon] = true
+	end
+	for dependent in pairs(memo.dependents[questID] or NONE) do
+		for instance in pairs(Model.Leads(data, dependent)) do
+			leads[instance] = true
+		end
+	end
+	memo.visiting[questID] = nil
+	memo.leads[questID] = leads
+	return leads
+end
+
+-- The instance's own quests, grouped into the chains their prerequisites form: two quests whose ways back share any
+-- quest are one chain, so a branch (92742 + 92744 > 92745) and its later forks stay together. Ascending by the lowest
+-- direct quest ID. Memoized.
+---@param data AGFData
+---@param instance integer
+---@return AGFDungeonChain[]
+function Model.Chains(data, instance)
+	local memo = Preparation(data)
+	local cached = memo.chains[instance]
+	if cached then
+		return cached
+	end
+	local direct = {}
+	for id, quest in pairs(data.quests) do
+		if quest.dungeon == instance and not quest.raid then
+			direct[#direct + 1] = id
+		end
+	end
+	table.sort(direct)
+	local closures = {}
+	for _, id in ipairs(direct) do
+		local set, stack = {}, { id }
+		while #stack > 0 do
+			local questID = table.remove(stack)
+			if not set[questID] then
+				set[questID] = true
+				local quest = data.quests[questID]
+				if quest then
+					for _, list in ipairs({ quest.pre or NONE, quest.preAny or NONE }) do
+						for _, pre in ipairs(list) do
+							if data.quests[pre] and not set[pre] then
+								stack[#stack + 1] = pre
+							end
+						end
+					end
+				end
+			end
+		end
+		closures[id] = set
+	end
+	local parent = {}
+	for index = 1, #direct do
+		parent[index] = index
+	end
+	local function Find(index)
+		while parent[index] ~= index do
+			parent[index] = parent[parent[index]]
+			index = parent[index]
+		end
+		return index
+	end
+	local owner = {}
+	for index, id in ipairs(direct) do
+		for questID in pairs(closures[id]) do
+			local first = owner[questID]
+			if first then
+				local a, b = Find(index), Find(first)
+				if a ~= b then
+					parent[math.max(a, b)] = math.min(a, b)
+				end
+			else
+				owner[questID] = index
+			end
+		end
+	end
+	local groups, byRoot = {}, {}
+	for index, id in ipairs(direct) do
+		local root = Find(index)
+		local group = byRoot[root]
+		if not group then
+			group = { direct = {}, members = {}, set = {} }
+			byRoot[root] = group
+			groups[#groups + 1] = group
+		end
+		group.direct[#group.direct + 1] = id
+		for questID in pairs(closures[id]) do
+			group.set[questID] = true
+		end
+	end
+	for _, group in ipairs(groups) do
+		for questID in pairs(group.set) do
+			group.members[#group.members + 1] = questID
+		end
+		table.sort(group.members)
+		table.sort(group.direct)
+	end
+	table.sort(groups, function(a, b)
+		return a.direct[1] < b.direct[1]
+	end)
+	memo.chains[instance] = groups
+	return groups
 end
 
 -- English race and class names by UnitRace/UnitClass ID, the fallback when the client names none (a headless spec).

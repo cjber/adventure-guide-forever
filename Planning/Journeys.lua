@@ -566,19 +566,36 @@ local function AllDungeons(data, eligible, log, prefs, open, chosen)
 	end
 	for id in pairs(ids) do
 		local quest = data.quests[id]
-		local story = quest and not quest.dungeon and Model.Story(data, id)
-		local instance = quest and not quest.raid and (quest.dungeon or (story and Into(data, story)))
-		if
-			instance
-			and data.instances[instance]
-			and not data.instances[instance].raid
-			and (open or instance == chosen)
-			and not dismissed["dungeon:" .. instance]
-		then
-			counts[instance] = (counts[instance] or 0) + 1
-			accepted[instance] = (accepted[instance] or 0) + (log[id] and 1 or 0)
-			if not openedMap[instance] or quest.min > openedMap[instance] then
-				openedMap[instance] = quest.min
+		if quest and not quest.raid then
+			-- A direct quest stands for its own instance; every other quest stands for the instances its prerequisite
+			-- chain leads into (Model.Leads), so a branching chain such as Destruction in Deadmines counts. A story
+			-- whose `next` links go inside counts too, as it always has.
+			local found = {}
+			if quest.dungeon then
+				found[quest.dungeon] = true
+			else
+				for instance in pairs(Model.Leads(data, id)) do
+					found[instance] = true
+				end
+				local story = Model.Story(data, id)
+				local instance = story and Into(data, story)
+				if instance then
+					found[instance] = true
+				end
+			end
+			for instance in pairs(found) do
+				if
+					data.instances[instance]
+					and not data.instances[instance].raid
+					and (open or instance == chosen)
+					and not dismissed["dungeon:" .. instance]
+				then
+					counts[instance] = (counts[instance] or 0) + 1
+					accepted[instance] = (accepted[instance] or 0) + (log[id] and 1 or 0)
+					if not openedMap[instance] or quest.min > openedMap[instance] then
+						openedMap[instance] = quest.min
+					end
+				end
 			end
 		end
 	end
@@ -667,12 +684,50 @@ local function DungeonJourney(
 	quests,
 	entrances
 )
-	local candidates, stops, belongs, preparation = {}, {}, InDungeon(best), {}
+	local candidates, stops, belongs, preparation, groups, chainOf = {}, {}, InDungeon(best), {}, {}, {}
+	-- Every prerequisite chain that reaches one of the instance's quests, through every branch: the card offers the
+	-- reachable next step of each, so following it ends with all of the dungeon's quests in the log.
+	for _, chain in ipairs(Model.Chains(data, best)) do
+		local group = { direct = chain.direct, members = {}, set = {}, done = 0, total = 0 }
+		for _, id in ipairs(chain.members) do
+			local quest = data.quests[id]
+			if quest and not quest.raid then
+				group.members[#group.members + 1] = id
+				group.set[id], preparation[id] = true, true
+				group.total = group.total + 1
+				if completed[id] or log[id] then
+					group.done = group.done + 1
+				end
+			end
+		end
+		local alive = false
+		for _, id in ipairs(group.direct) do
+			alive = alive or (data.quests[id] ~= nil and not completed[id])
+		end
+		-- A quest with no prerequisite is a single quest, not a chain.
+		if alive and group.total > 1 then
+			local titleID
+			for _, id in ipairs(group.direct) do
+				local quest = data.quests[id]
+				titleID = titleID or (quest and not completed[id] and id or nil)
+			end
+			local title = data.quests[titleID or group.direct[1]]
+			title = title and title.title ~= "" and title.title or data.instances[best].name
+			group.title = title
+			group.label = ns.L.CHAIN_PROGRESS:format(title, group.done, group.total)
+			groups[#groups + 1] = group
+			for id in pairs(group.set) do
+				chainOf[id] = group
+			end
+		end
+	end
+	-- A story whose `next` links lead inside joins too: a breadcrumb such as Speak with Shoni has no `pre` link to
+	-- walk back from, and is still the step before the dungeon's quest.
 	local function Prepare(id)
 		local quest = data.quests[id]
 		local story = quest and not quest.dungeon and Model.Story(data, id)
 		if story and Into(data, story) == best then
-			preparation[quest] = true
+			preparation[id] = true
 		end
 	end
 	for _, id in ipairs(eligible) do
@@ -685,17 +740,33 @@ local function DungeonJourney(
 	end
 	local held = LogSteps(data, player, log, Ready(data, log), function(id)
 		local quest = data.quests[id]
-		return quest ~= nil and not Dropped(id) and (belongs(quest) or preparation[quest] == true)
+		return quest ~= nil and not Dropped(id) and (belongs(quest) or preparation[id] == true)
 	end, stops, candidates, { areas = {}, anchors = {} })
 	local unplaced = {}
 	for id, step in pairs(held) do
-		if not step and not log[id].complete and belongs(data.quests[id]) then
+		local quest = data.quests[id]
+		if not step and not log[id].complete and quest and (belongs(quest) or preparation[id]) then
 			unplaced[#unplaced + 1] = id
 		end
 	end
 	table.sort(unplaced)
+	-- How many of the instance's own quests the player still has to collect once the card's chains are walked.
+	local leftBehind = 0
+	for id, quest in pairs(data.quests) do
+		if
+			quest.dungeon == best
+			and not quest.raid
+			and not completed[id]
+			and not log[id]
+			and not Dropped(id)
+			and not Hard(quest, player)
+			and Model.CouldTake(quest, player)
+		then
+			leftBehind = leftBehind + 1
+		end
+	end
 	local entrance = entrances and entrances[best]
-	if #unplaced > 0 and Model.ValidPlace(entrance) then
+	if (#unplaced > 0 or leftBehind > 0) and Model.ValidPlace(entrance) then
 		candidates[#candidates + 1] = {
 			kind = "dungeon",
 			key = "entrance:" .. best,
@@ -704,15 +775,16 @@ local function DungeonJourney(
 			x = entrance.x,
 			y = entrance.y,
 			title = ns.L.GO_TO_ENTRANCE,
-			reason = ns.L.QUESTS_IN_PROGRESS,
+			reason = leftBehind > 0 and Count(ns.L.DUNGEON_LEFT_BEHIND_ONE, ns.L.DUNGEON_LEFT_BEHIND, leftBehind)
+				or ns.L.QUESTS_IN_PROGRESS,
 			detail = "",
 			quests = unplaced,
 			group = #unplaced,
 			optional = true,
 		}
 	end
-	PickupSteps(data, eligible, function(quest)
-		return belongs(quest) or preparation[quest] == true
+	PickupSteps(data, eligible, function(quest, id)
+		return belongs(quest) or preparation[id] == true
 	end, candidates, stops)
 	for _, step in ipairs(TrainerSteps(data, player, prefs, "dungeon:" .. best)) do
 		candidates[#candidates + 1] = step
@@ -720,6 +792,29 @@ local function DungeonJourney(
 	local steps = Within(data, player, completed, log, Build(data, player, completed, log, candidates, prefs, mapName))
 	if #steps == 0 then
 		return nil
+	end
+	-- The entrance waits for every chain and pickup (docs/design.md §2.21): gathering the reachable quests comes
+	-- before going in, and a hand-in outside comes first too. It says how much is left behind when it is not last.
+	for index, step in ipairs(steps) do
+		if step.key == "entrance:" .. best then
+			table.remove(steps, index)
+			steps[#steps + 1] = step
+			break
+		end
+	end
+	-- Each chain is a labelled group on the steps that hold its quests; a single quest keeps no label.
+	for _, step in ipairs(steps) do
+		local labels, seen = {}, {}
+		for _, id in ipairs(step.quests or NONE) do
+			local group = chainOf[id]
+			if group and not seen[group] then
+				seen[group] = true
+				labels[#labels + 1] = group.label
+			end
+		end
+		if #labels > 0 then
+			step.chapter = table.concat(labels, ns.L.LIST_SEPARATOR)
+		end
 	end
 	local name = instanceName and instanceName(best) or data.instances[best].name
 	local L, inside = ns.L, 0
@@ -729,6 +824,15 @@ local function DungeonJourney(
 	local reason = inside == 1 and L.DUNGEON_INSIDE_ONE:format(name)
 		or inside > 1 and L.DUNGEON_INSIDE:format(inside, name)
 		or nil
+	local summaries = {}
+	for _, group in ipairs(groups) do
+		summaries[#summaries + 1] = {
+			title = group.title,
+			done = group.done,
+			total = group.total,
+			label = group.label,
+		}
+	end
 	return {
 		kind = "dungeon",
 		key = "dungeon:" .. best,
@@ -738,6 +842,7 @@ local function DungeonJourney(
 		reason = reason,
 		map = steps[1].map,
 		steps = steps,
+		chains = #summaries > 0 and summaries or nil,
 	}
 end
 

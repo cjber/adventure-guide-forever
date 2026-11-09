@@ -40,6 +40,7 @@ L["CARRY_READY"] = "готово к сдаче: %d"
 L["CHAPTER"] = "Глава %d"
 L["CHAPTERS_DONE"] = "Выполнено %d из %d"
 L["CHAPTER_OF"] = "Глава %d из %d"
+L["CHAIN_PROGRESS"] = "%s, %d из %d"
 L["CHAPTER_QUEST"] = "%s: %s"
 L["CLEANUP"] = "Уборка: %s"
 L["CLEANUP_READY"] = "готово к сдаче: %d"
@@ -66,6 +67,8 @@ L["DUMP_SAVED"] =
 L["DUNGEON_BOSSES_LOOT"] = "Боссы и добыча"
 L["DUNGEON_INSIDE"] = "Ваших заданий, завершающихся внутри: %d (%s)"
 L["DUNGEON_INSIDE_ONE"] = "1 ваше задание завершается внутри: %s"
+L["DUNGEON_LEFT_BEHIND"] = "Ещё %d заданий подземелья нужно взять"
+L["DUNGEON_LEFT_BEHIND_ONE"] = "Ещё 1 задание подземелья нужно взять"
 L["DUNGEON_LOOT_COMBAT"] = "Добыча боссов загрузится после боя."
 L["DUNGEON_LOOT_INSTALL"] =
 	"Установите AtlasLoot Classic и его модуль подземелий и рейдов, чтобы видеть боссов и добычу."
@@ -506,7 +509,7 @@ L["UNLISTED"] =
 L["UPDATED_TO"] = "обновлено до %s. %s"
 -- mt
 L["WHATS_NEW"] =
-	"Зона, в которой вы выполняете задания, всегда есть в списке." -- mt
+	"Путешествия в подземелья собирают все цепочки заданий, прежде чем отправить вас внутрь." -- mt
 L["WHY_ALLIANCE"] = "Только для Альянса"
 L["WHY_BREADCRUMB"] = "Только пока вы не возьмете: %s"
 L["WHY_CHOSE"] = "Вместо этого вы выбрали: %s"

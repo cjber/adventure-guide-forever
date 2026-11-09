@@ -38,6 +38,7 @@ L["CARRY_READY"] = "제출 가능 %d개"
 L["CHAPTER"] = "%d장"
 L["CHAPTERS_DONE"] = "%d/%d 완료"
 L["CHAPTER_OF"] = "%d장 / %d장"
+L["CHAIN_PROGRESS"] = "%s, %d/%d"
 L["CHAPTER_QUEST"] = "%s: %s"
 L["CLEANUP"] = "정리: %s"
 L["CLEANUP_READY"] = "제출 가능 %d개"
@@ -63,6 +64,8 @@ L["DUMP_SAVED"] =
 L["DUNGEON_BOSSES_LOOT"] = "우두머리와 전리품"
 L["DUNGEON_INSIDE"] = "퀘스트 %d개가 다음 장소 안에서 끝남: %s"
 L["DUNGEON_INSIDE_ONE"] = "퀘스트 1개가 다음 장소 안에서 끝남: %s"
+L["DUNGEON_LEFT_BEHIND"] = "아직 받아야 할 던전 퀘스트 %d개"
+L["DUNGEON_LEFT_BEHIND_ONE"] = "아직 받아야 할 던전 퀘스트 1개"
 L["DUNGEON_LOOT_COMBAT"] = "우두머리 전리품은 전투가 끝난 후 불러옵니다."
 L["DUNGEON_LOOT_INSTALL"] =
 	"우두머리와 전리품을 보려면 AtlasLoot Classic과 던전 및 공격대 모듈을 설치하십시오."
@@ -471,7 +474,7 @@ L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
 -- mt
-L["WHATS_NEW"] = "퀘스트 중인 지역이 항상 목록에 표시됩니다." -- mt
+L["WHATS_NEW"] = "던전 여정이 입장하기 전에 모든 연계 퀘스트를 모읍니다." -- mt
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"

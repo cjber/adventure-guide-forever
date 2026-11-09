@@ -38,6 +38,7 @@ L["CARRY_READY"] = "%d à rendre"
 L["CHAPTER"] = "Chapitre %d"
 L["CHAPTERS_DONE"] = "%d sur %d terminés"
 L["CHAPTER_OF"] = "Chapitre %d sur %d"
+L["CHAIN_PROGRESS"] = "%s, %d sur %d"
 L["CHAPTER_QUEST"] = "%s : %s"
 L["CLEANUP"] = "Nettoyage : %s"
 L["CLEANUP_READY"] = "%d à rendre"
@@ -63,6 +64,8 @@ L["DUMP_SAVED"] =
 L["DUNGEON_BOSSES_LOOT"] = "Boss et butin"
 L["DUNGEON_INSIDE"] = "%d de vos quêtes se terminent dans %s"
 L["DUNGEON_INSIDE_ONE"] = "1 de vos quêtes se termine dans %s"
+L["DUNGEON_LEFT_BEHIND"] = "%d quêtes de donjon restent à prendre"
+L["DUNGEON_LEFT_BEHIND_ONE"] = "1 quête de donjon reste à prendre"
 L["DUNGEON_LOOT_COMBAT"] = "Le butin des boss se chargera après le combat."
 L["DUNGEON_LOOT_INSTALL"] = "Installez AtlasLoot Classic et son module Donjons et raids pour voir les boss et le butin."
 L["DUNGEON_LOOT_UNKNOWN"] = "AtlasLoot ne connaît pas encore le butin des boss de ce donjon."
@@ -470,7 +473,7 @@ L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
 -- mt
-L["WHATS_NEW"] = "La zone où vous faites vos quêtes figure toujours dans la liste." -- mt
+L["WHATS_NEW"] = "Les voyages en donjon rassemblent chaque suite de quêtes avant de vous y envoyer." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"

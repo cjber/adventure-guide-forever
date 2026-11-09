@@ -67,8 +67,8 @@ local function ValidPlace(step)
 end
 
 for _, fixture in ipairs(characters.list) do
-	local player, completed, log, prefs = characters.Resolve(data, fixture)
-	local route = Model.Plan(data, player, completed, log, prefs)
+	local player, completed, log, prefs, inputs = characters.Resolve(data, fixture)
+	local route = Model.Plan(data, player, completed, log, prefs, nil, nil, nil, inputs)
 
 	-- F2: no journey is offered twice, and each has at least one step the player can take now. The standing rules hold
 	-- on every card: nothing ineligible is suggested, and no step points where the data has no place.
@@ -268,7 +268,7 @@ for _, fixture in ipairs(characters.list) do
 	handle:close()
 	equal(text, stored, fixture.name .. ": golden route (AGF_UPDATE_GOLDEN=1 rewrites it)")
 	-- Deterministic: a second build of the same state gives the same text.
-	local again = Model.Plan(data, player, completed, log, prefs)
+	local again = Model.Plan(data, player, completed, log, prefs, nil, nil, nil, inputs)
 	equal(Render(fixture, again), text, fixture.name .. ": rebuild")
 	-- The in-combat rebuild: a quest looted mid-fight brings a carry card the last build lacked, in the story's wake as
 	-- the full build orders them, and a chosen last card keeps its slot (design §2.10).
@@ -276,7 +276,7 @@ for _, fixture in ipairs(characters.list) do
 	local fight = { [168] = { id = 168, title = "Collecting Memories", level = 18, complete = true } }
 	prefs.journey = last and last.key
 	local refreshed = Model.Refresh(data, player, completed, fight, prefs, route)
-	local full = Model.Plan(data, player, completed, fight, prefs)
+	local full = Model.Plan(data, player, completed, fight, prefs, nil, nil, nil, inputs)
 
 	local story = refreshed.journeys[1].kind == "story"
 	equal(refreshed.journeys[story and 2 or 1].key, "carry", fixture.name .. ": the new carry card after the story")

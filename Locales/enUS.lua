@@ -115,6 +115,11 @@ ns.L = {
 	-- The dungeon card's reason: the log's quests filed under its instance, counted.
 	DUNGEON_INSIDE = "%d of your quests end inside %s",
 	DUNGEON_INSIDE_ONE = "1 of your quests ends inside %s",
+	-- A dungeon card's chain, labelled with its progress: "The Defias Brotherhood, 1 of 7".
+	CHAIN_PROGRESS = "%s, %d of %d",
+	-- The dungeon card's entrance, when its chains still have this many of the instance's quests to gather.
+	DUNGEON_LEFT_BEHIND = "%d dungeon quests are still to pick up",
+	DUNGEON_LEFT_BEHIND_ONE = "1 dungeon quest is still to pick up",
 	-- A chain that leads into an instance, a story when there is no next zone: the instance's name.
 	JOURNEY_INTO = "The way into %s",
 	-- The carry card's counts, joined when several apply: "3 ready to hand in, 1 in progress".
@@ -546,7 +551,7 @@ ns.L = {
 	STEP_BATTLEMASTER = "Visit the battlemaster in %s",
 	-- After an update (WhatsNew): the version, then WHATS_NEW.
 	UPDATED_TO = "updated to %s. %s",
-	SETTING_WHATS_NEW = "What's new after an update",
+	SETTING_WHATS_NEW = "Dungeon journeys gather every quest chain before sending you in.",
 	SETTING_WHATS_NEW_TOOLTIP = "One line in chat the first time you log in after the guide updates.",
 	-- Companion hints (Companions.lua): what another Forever addon would add here, while it isn't loaded. The
 	-- Forever addons page itself and its setting are UI/ForeverFamily.lua's, shared by all five addons.

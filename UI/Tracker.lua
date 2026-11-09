@@ -496,6 +496,10 @@ function ModuleMixin:LayoutContentsBase()
 		return
 	end
 	local guiding = ns.Integrations.Guiding()
+	-- A dungeon card's current step says which chain it belongs to, and how far that chain has come. The story's
+	-- chapter already has its own line above, so this is only for a dungeon's chains.
+	local journey = ns.CurrentJourney()
+	local chain = journey and journey.kind == "dungeon" and step.chapter or nil
 	if step.kind == "area" or step.kind == "dungeon" or (guiding and #step.quests > 1) then
 		for _, questID in ipairs(step.quests) do
 			line = line + 1
@@ -513,6 +517,10 @@ function ModuleMixin:LayoutContentsBase()
 		if step.reason ~= L.READY_TO_HAND_IN then
 			line = line + 1
 			block:AddObjective(line, step.reason)
+		end
+		if chain then
+			line = line + 1
+			block:AddObjective(line, GRAY_FONT_COLOR:WrapTextInColorCode(chain))
 		end
 		line = GroupLines(block, step, line)
 		line = NpcHint(block, step, line)
@@ -551,6 +559,10 @@ function ModuleMixin:LayoutContentsBase()
 	if reason then
 		line = line + 1
 		block:AddObjective(line, ns.StepStyle.Step(step, reason))
+	end
+	if chain then
+		line = line + 1
+		block:AddObjective(line, GRAY_FONT_COLOR:WrapTextInColorCode(chain))
 	end
 	line = GroupLines(block, step, line)
 	local lit = false

@@ -272,7 +272,7 @@
 ---@field r? number an area's radius in yards, wide enough for all its objectives; 0 for a point
 ---@field planned? table<integer, true> the quests on it the route picks up first, not in the log yet (Laps.lua)
 ---@field returns? table<integer, true> a town's hand-ins the route comes back for once their objectives are done
----@field chapter? string the story card's chapter line, on the step that takes the chain up
+---@field chapter? string the story card's chapter line, or a dungeon chain's label, on the step that holds its quests
 ---@field shapes? AGFNode[] an area's objective nodes, each its own ring, merged into it
 ---@field here? true step 1 is the area the player stands in, objectives open: nothing guides to it, only on past it
 
@@ -301,6 +301,20 @@
 ---@field chapter integer this quest's place in the chain, from 1
 ---@field total? integer the chain's length, only when the data proves where it ends
 ---@field members integer[] the chain's quest IDs in order, the head first
+
+-- A prerequisite chain that leads into an instance (Model.Chains): every quest on the way, through every branch.
+---@class AGFDungeonChain
+---@field direct integer[] the instance's own quests in this chain, ascending
+---@field members integer[] every quest on the chain, ascending
+---@field set table<integer, true>
+
+-- A dungeon card's chain line (Journeys, docs/design.md §2.21): its title and how many of its quests the player holds
+-- or has done.
+---@class AGFJourneyChain
+---@field title string
+---@field done integer
+---@field total integer
+---@field label string e.g. "The Defias Brotherhood, 1 of 7"
 
 -- The carry card's cleanup line (docs/design.md §2.18): what the player could hand in, what has gone grey, and what
 -- they can't finish from here. Each quest counts once; the ID lists are sorted for a stable tooltip.
@@ -332,6 +346,7 @@
 ---@field map integer where its first step is: choosing the card turns the world map there
 ---@field steps AGFStep[] never more than MAX_STEPS, in route order
 ---@field story? AGFStory the story card's chain, when the zone has one the player can take up now
+---@field chains? AGFJourneyChain[] a dungeon card's prerequisite chains, each with its progress
 ---@field count? string a zone card's count of quests, the story card's subline once its chapter is skipped
 ---@field hub? string its first stop's place, else that stop's title: the card's line 3 when it has no reason
 ---@field more? integer how many stops follow the first (Model.Journeys sets it and `group` once the card is built)
@@ -380,6 +395,7 @@
 ---@field LevelPreference fun(questLevel: integer, playerLevel: integer): integer lower is taken first; at the player's level and one or two below are free, each level above costs twice its distance, and each level further below costs one
 ---@field EXPLORE_SLOT integer the data's need slot for an explore objective (tools/gen_quests.py)
 ---@field ValidPlace fun(place?: {map?: integer, x?: number, y?: number}): boolean? true when `place` has a positive map and x, y in 0..1
+---@field CouldTake fun(quest: AGFQuest, player: AGFPlayer): boolean the player could ever take it: the side, race and class fit, and the data places its start
 ---@field Hub fun(data: AGFData, place: {map: integer, x: number, y: number}): string? the town `place` stands in, as "map:area"
 ---@field ChainStart fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): integer? a locked quest's earliest prerequisite open now and not orange or red
 ---@field Hard fun(quest: AGFQuest, player: AGFPlayer): boolean above the chosen quest level ceiling
@@ -391,6 +407,8 @@
 ---@field Search fun(data: AGFData, player: AGFPlayer, query: string, title?: (fun(questID: integer): string?), completed?: table<integer, boolean>, log?: table<integer, AGFLogQuest>): integer[] up to 10 quest IDs whose title holds every word of `query`, best match first
 ---@field Givers fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, mapID: integer): AGFGiver[]
 ---@field Story fun(data: AGFData, questID: integer): AGFStory? the chain the quest belongs to; nil when it is in none, or the way back forks
+---@field Leads fun(data: AGFData, questID: integer): table<integer, true> the instances the quest's prerequisite chain leads into
+---@field Chains fun(data: AGFData, instance: integer): AGFDungeonChain[] the instance's quests grouped into the prerequisite chains that reach them
 ---@field Journeys fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (AGFMapName), instanceName?: (fun(id: integer): string?), skippedQuests?: table<string, integer[]>, lead?: integer, left?: integer, entrances?: table<integer, AGFLocation>): AGFJourney[], boolean
 ---@field Plan fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: (AGFMapName), instanceName?: (fun(id: integer): string?), last?: AGFRoute, inputs?: AGFPlanInputs): AGFRoute
 ---@field Here fun(data: AGFData, where?: {map?: integer, x?: number, y?: number}, steps: AGFStep[], held?: string, camps?: table<string, table<string, true>>): integer? the open area step `where` stands in: the head when it is one, else the first; `held`, the key of the one stood in last, lets go past a margin; a spot `camps` passed over doesn't count
@@ -764,6 +782,8 @@
 ---@field DUNGEON_QUESTS_ONE string
 ---@field DUNGEON_INSIDE string format: count of the log's quests filed under the instance, its name
 ---@field DUNGEON_INSIDE_ONE string format: the instance's name
+---@field DUNGEON_LEFT_BEHIND string format: count of the instance's quests still to pick up
+---@field DUNGEON_LEFT_BEHIND_ONE string the one-quest line
 ---@field JOURNEY_INTO string format: the instance a chain leads into
 ---@field CARRY_READY string format: count of finished quests whose hand-in is on this continent
 ---@field HAND_IN_WHEN_DONE string a lap's return visit's reason for its one hand-in, a quest the lap does first
@@ -775,6 +795,7 @@
 ---@field QUESTS_NEAR string format: count
 ---@field QUESTS_NEAR_ONE string
 ---@field CHAPTER_OF string format: chapter, total
+---@field CHAIN_PROGRESS string format: chain title, done, total
 ---@field CHAPTER string format: chapter; the chain's length unproven
 ---@field CHAPTER_QUEST string format: a chapter ("Chapter 3 of 7") and its quest's title
 ---@field CONTINUES_STORY string
@@ -1830,7 +1851,7 @@
 ---@field LiveObjectives fun(data: AGFData, log: table<integer, AGFLogQuest>, objectives: AGFAreaObjective[]): AGFAreaObjective[]
 ---@field Opens fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, step: AGFStep)
 ---@field Optional fun(quest: AGFQuest?, level: integer, player: AGFPlayer): boolean?
----@field PickupSteps fun(data: AGFData, eligible: integer[], wanted: (fun(quest: AGFQuest): boolean), steps: AGFStep[], stops?: table<string, AGFStep>)
+---@field PickupSteps fun(data: AGFData, eligible: integer[], wanted: (fun(quest: AGFQuest, id: integer): boolean), steps: AGFStep[], stops?: table<string, AGFStep>)
 ---@field Planned fun(quest: AGFQuest, id: integer, level?: integer): AGFNode[]
 ---@field QuestLevel fun(data: AGFData, log: table<integer, AGFLogQuest>, player: AGFPlayer, id: integer): integer
 ---@field Ready fun(data: AGFData, log: table<integer, AGFLogQuest>): table<integer, AGFPlace>
