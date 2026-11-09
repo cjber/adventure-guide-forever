@@ -3683,8 +3683,12 @@ function harness.load(options)
 	function h.Click(frame, button, down)
 		h.call(assert(frame.scripts.OnClick, "no OnClick"), frame, button or "LeftButton", down)
 	end
+	-- LargeSideTabButtonTemplate's OnMouseUp runs the custom handler; a HookScript on OnMouseUp runs after it.
 	function h.ClickTab(tab)
 		h.call(assert(tab.mouseUpHandler, "no tab handler"), tab, "LeftButton", true)
+		if tab.scripts and tab.scripts.OnMouseUp then
+			h.call(tab.scripts.OnMouseUp, tab, "LeftButton", true)
+		end
 	end
 	local hoveredFrame
 	function h.Hover(frame)
