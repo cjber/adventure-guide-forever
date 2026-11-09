@@ -153,9 +153,24 @@ for line in io.lines("AdventureGuideForever.toc") do
 end
 equal(translated > 0, true, "the TOC loads the translations")
 
--- WHATS_NEW is the newest release's news: it opens with the first headline of CHANGELOG.md's top versioned entry, so
--- a release that forgets to rewrite it fails here instead of announcing the last release's features.
-local newest = Read("CHANGELOG.md"):match("\n## %[?%d+%.%d+%.%d+%]? %- [^\n]*\n+%- %*%*(.-)%.?%*%*")
+-- WHATS_NEW is the newest release's news: the first headline of CHANGELOG.md's top versioned entry, so a release that
+-- forgets to rewrite it fails here instead of announcing the last release's features. Comment lines (the discord-image
+-- marker) may sit between the heading and its first bullet, and an entry with no bullet fails rather than matching an
+-- older one (#570).
+local newest
+local inNewest = false
+for line in Read("CHANGELOG.md"):gmatch("[^\n]+") do
+	if line:match("^## %[?%d+%.%d+%.%d+%]? %- ") then
+		if inNewest then
+			break
+		end
+		inNewest = true
+	elseif inNewest and line:find("^%- %*%*") then
+		newest = line:match("^%- %*%*(.-)%.?%*%*")
+		break
+	end
+end
+assert(newest, "CHANGELOG.md's newest versioned entry has no bullet")
 equal(english.WHATS_NEW:sub(1, #newest), newest, "WHATS_NEW opens with the newest release's headline")
 
 print(("locales_spec: %d checks passed"):format(checks))

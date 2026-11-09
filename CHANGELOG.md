@@ -12,7 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-11-09
+
 - **A quest giver's tooltip on the world map now colours each quest like your quest log.** Hovering a "!" listed every quest it offers in plain gold, so one you had outlevelled looked worth taking. Each line now shows the quest's level in the quest log's difficulty colour, with the group tag when the quest has one. (#567)
+- **The *What's new after an update* setting has its own name again.** In 1.4.0 its label showed the update's news instead. (#570)
 
 ## [1.4.0] - 2026-11-09
 
