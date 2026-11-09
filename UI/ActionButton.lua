@@ -48,7 +48,10 @@ end
 ---@param button AGFActionButton
 function ActionButton.Chrome(button)
 	button:SetSize(ITEM_SIZE, ITEM_SIZE)
-	button:RegisterForClicks("AnyUp")
+	-- Forever's ActionButtonUseKeyDown is 1 by default, and a secure button with no useOnKeyDown follows it: the
+	-- action runs on the down event (SecureTemplates.lua, SecureActionButton_ShouldUseOnKeyDown and
+	-- SecureActionButton_OnClick). Register both, or a click never reaches the button.
+	button:RegisterForClicks("AnyUp", "AnyDown")
 	button:SetScript("OnLeave", function()
 		GameTooltip:Hide()
 	end)

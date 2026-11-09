@@ -285,7 +285,6 @@ function harness.load(options)
 	local regionMeta = { __index = Methods }
 	-- Client methods whose effect no spec reads: accepted and ignored.
 	for _, name in ipairs({
-		"RegisterForClicks",
 		"RegisterForDrag",
 		"SetClampedToScreen",
 		"SetMaxLetters",
@@ -689,6 +688,10 @@ function harness.load(options)
 		return self.attributes and self.attributes[key]
 	end
 	-- Buttons.
+	-- The click directions a button hears; SecureActionButtonTemplate's stub dispatches on them, as the client does.
+	function Methods:RegisterForClicks(...)
+		self.clicks = { ... }
+	end
 	function Methods:SetEnabled(enabled)
 		self.disabled = not enabled
 	end
@@ -1283,8 +1286,41 @@ function harness.load(options)
 			frame.scripts.OnLoad = frame.UpdateHighlightForState
 		end,
 		QuestLogBorderFrameTemplate = noop,
-		-- SecureActionButtonTemplate is a bare button: specs read its attributes, not its secure click handling.
-		SecureActionButtonTemplate = noop,
+		-- Blizzard_FrameXML/SecureTemplates.lua: SecureActionButton_ShouldUseOnKeyDown follows the
+		-- ActionButtonUseKeyDown CVar when the button has no useOnKeyDown attribute, and SecureActionButton_OnClick
+		-- runs the action on the down event that setting picks. A click the button did not RegisterForClicks for
+		-- never reaches OnClick. Each action that runs is recorded in `actions` for the specs.
+		SecureActionButtonTemplate = function(frame)
+			frame.clicks, frame.actions = {}, {}
+			local function Registered(mouseButton, down)
+				local event = mouseButton .. (down and "Down" or "Up")
+				for _, name in ipairs(frame.clicks) do
+					if name == event or name == (down and "AnyDown" or "AnyUp") then
+						return true
+					end
+				end
+				return false
+			end
+			frame.scripts.OnClick = function(self, mouseButton, down)
+				down = down == true
+				mouseButton = mouseButton or "LeftButton"
+				if not Registered(mouseButton, down) then
+					return
+				end
+				local useOnKeyDown = self:GetAttribute("useOnKeyDown")
+				if useOnKeyDown == nil then
+					useOnKeyDown = G.GetCVar("ActionButtonUseKeyDown") ~= "0"
+				end
+				if not ((down and useOnKeyDown) or (not down and not useOnKeyDown)) then
+					return
+				end
+				frame.actions[#frame.actions + 1] = {
+					type = self:GetAttribute("type1"),
+					item = self:GetAttribute("item"),
+					macrotext = self:GetAttribute("macrotext"),
+				}
+			end
+		end,
 		CooldownFrameTemplate = noop,
 		-- Blizzard_SharedXML/Camelot/ProgressBars/ColoredProgressBar.xml: the reputation and skills bars' stat bar, its
 		-- background, its masked fill and the mixin that sizes the fill to a percent. The bar's own background art has
@@ -1842,7 +1878,8 @@ function harness.load(options)
 		return h.group == true
 	end
 	-- The client's console variables (h.cvars, from options.cvars); SetCVar fires CVAR_UPDATE as the client does.
-	h.cvars = { questPOI = "1" }
+	-- Forever's ActionButtonUseKeyDown is 1 by default, as on the client the guide runs against.
+	h.cvars = { questPOI = "1", ActionButtonUseKeyDown = "1" }
 	for key, value in pairs(options.cvars or {}) do
 		h.cvars[key] = value
 	end
@@ -3643,8 +3680,8 @@ function harness.load(options)
 
 	--[[ Driving the UI ]]
 
-	function h.Click(frame, button)
-		h.call(assert(frame.scripts.OnClick, "no OnClick"), frame, button or "LeftButton")
+	function h.Click(frame, button, down)
+		h.call(assert(frame.scripts.OnClick, "no OnClick"), frame, button or "LeftButton", down)
 	end
 	-- LargeSideTabButtonTemplate's OnMouseUp runs the custom handler; a HookScript on OnMouseUp runs after it.
 	function h.ClickTab(tab)
