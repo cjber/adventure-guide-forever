@@ -835,6 +835,7 @@
 ---@field ShowOnMap fun(step: AGFStep|AGFGiver): boolean route, open its zone and ping the destination
 ---@field Running fun(key: string): boolean the card is chosen and its route is ours, running and not paused
 ---@field Cancel fun() Stop: cancels our Shortest Path journey, and clears the native waypoint only while it is ours
+---@field Pause fun(): boolean stops the chosen journey's route but keeps the choice, so its card and the tracker title resume it
 ---@field StepAside fun() Polestar started guiding: drops a waiting start and cancels only what Go started
 ---@field Reroute fun() the player reordered the chosen journey: the route AGF runs for it starts again a frame on
 ---@field CurrentStep fun(): AGFStep? the step the handed route heads for while it guides, else the route's head
@@ -1479,6 +1480,9 @@
 ---@field Advice fun(data: AGFData, player: AGFPlayer, steps: AGFStep[], bind?: string, locale?: string): AGFAside?
 
 ---@class AGFModel
+---@field Handins fun(step: AGFStep): integer[] a town's hand-ins, or a lone turn-in step's quests
+---@field Pickups fun(step: AGFStep): integer[] a town's pickups, or a lone pickup step's quests
+---@field Objectives fun(step: AGFStep): integer[] an area step's distinct objective quests, or an objective step's quests
 ---@field Spots fun(step: AGFStep): AGFCamp[] an area step's distinct objective spots, in the data's order: each node, then its alternates
 ---@field SpotKey fun(spot: {map: integer, x: number, y: number}): string a spot's identity for "Next spot"
 ---@field PlaceCamp fun(data: AGFData, player: AGFPlayer, step: AGFStep, passed?: table<string, true>) where an area step points among its spots once its here is settled
@@ -1928,6 +1932,10 @@
 ---@field headingHeight number
 ---@field paint fun(row: AGFDungeonRow, value: table)
 
+-- What the stop is, in the API's words: a town or a lone pickup or turn-in visit, an objective area, a trainer,
+-- a battlemaster or a companion guide's step.
+---@alias AGFAPIStopKind "town"|"pickup"|"turnin"|"objective"|"trainer"|"battlemaster"|"guide"
+
 -- The public surface (Core/API.lua, docs/api.md).
 ---@class AGFAPIStop
 ---@field map integer uiMapID
@@ -1935,8 +1943,12 @@
 ---@field y number normalized 0-1
 ---@field name string the town, else the step's busiest giver, zone or title
 ---@field isTown boolean
----@field handins integer quests the route hands in there
----@field pickups integer quests the route picks up there
+---@field kind AGFAPIStopKind
+---@field handins integer quests the route hands in there; agrees with #turninQuests
+---@field pickups integer quests the route picks up there; agrees with #pickupQuests
+---@field pickupQuests integer[] fresh ascending quest IDs the route picks up there, empty when none
+---@field turninQuests integer[] fresh ascending quest IDs the route hands in there, empty when none
+---@field objectiveQuests integer[] fresh ascending quest IDs whose objectives are done there, empty when none
 
 -- One of the guide's cards, as API.Suggestions answers.
 ---@class AGFAPISuggestion
@@ -1948,23 +1960,30 @@
 ---@field x? number normalized 0-1; nil when the first stop has no known place
 ---@field y? number normalized 0-1; nil when the first stop has no known place
 
+-- Where the chosen journey's guidance stands (Core/API.lua's Status).
+---@alias AGFAPIStatus "running"|"queued"|"paused"|"arrived"
+
 ---@class AGFAPI
 ---@field RestedXPIntegrated fun(): boolean
 ---@field RestedXPNativeUI fun(): boolean
 ---@field version integer
----@field minor integer 1 from Subscribe, 2 from Suggestions and StartSuggestion, 3 from Stats, 4 from Leaderboard
+---@field minor integer 1 from Subscribe, 2 from Suggestions and StartSuggestion, 3 from Stats, 4 from Leaderboard, 5 from Status, Pause, Resume and each stop's quest IDs
 ---@field Stats fun(): AGFActivityRecord[] read-only per-character rows (minor 3)
 ---@field Leaderboard fun(limit?: integer): AGFLeaderboard? quest turn-ins among this character and reporting peers (minor 4)
 ---@field Suggestions fun(limit?: integer): AGFAPISuggestion[]? the panel's cards, at most five
 ---@field StartSuggestion fun(id: string): boolean starts a card as the guide's own Start does
----@field Subscribe fun(callback: fun(changes: AGFAPIChanges)): fun() calls back the frame after the current stop or the journey changes, at most once per burst; returns the unsubscribe
+---@field Subscribe fun(callback: fun(changes: AGFAPIChanges)): fun() calls back the frame after the current stop, the journey or the status changes, at most once per burst; returns the unsubscribe
 ---@field CurrentStop fun(): AGFAPIStop?
 ---@field NextStops fun(limit?: integer): AGFAPIStop[]?
+---@field Status fun(): AGFAPIStatus? where the chosen journey's guidance stands (minor 5)
+---@field Pause fun(): boolean stops the chosen journey's route but keeps the choice (minor 5)
+---@field Resume fun(): boolean starts the chosen journey's route again as its card does (minor 5)
 
 -- What changed since a Subscribe callback was last called; each field true or absent.
 ---@class AGFAPIChanges
 ---@field stop? true what CurrentStop answers changed (a stop appeared, moved on, changed or went)
 ---@field journey? true the journey the route follows changed, or was chosen or let go
+---@field status? true what Status answers changed
 
 ---@class AGFGlobal
 ---@field API AGFAPI

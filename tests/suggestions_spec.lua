@@ -20,7 +20,7 @@ local h = harness.load({
 })
 local API = h.G.AdventureGuideForever.API
 equal(API.version, 1, "version stays 1")
-equal(API.minor, 4, "Leaderboard raises minor to 4")
+equal(API.minor >= 4, true, "Leaderboard arrived in minor 4")
 h.ns.Invalidate()
 equal(API.Suggestions(), nil, "a route due a rebuild says ask again later")
 equal(API.StartSuggestion("carry"), false, "nothing starts while the route settles")
