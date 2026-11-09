@@ -58,6 +58,23 @@ assert(talk.Glow == nil and kill.Glow == nil, "no glow layer marks the current t
 assert(talk.Icon.file == "portrait:target", "the current target shows its portrait")
 assert(talk.Binding:GetText() == "ALT-2" and talk.Binding:IsShown(), "the target button shows its key binding")
 
+-- A click runs the action. Forever's ActionButtonUseKeyDown is 1, so a secure button with no useOnKeyDown runs its
+-- action on the down event; the buttons must hear that event, or a click does nothing (#550).
+h.Click(scroll, "LeftButton", true)
+h.Click(scroll, "LeftButton", false)
+assert(#scroll.actions == 1, "an item button runs its action once on a click")
+assert(
+	scroll.actions[1].type == "item" and scroll.actions[1].item == "item:1234",
+	"an item button's click runs its item action"
+)
+h.Click(talk, "LeftButton", true)
+h.Click(talk, "LeftButton", false)
+assert(#talk.actions == 1, "a target button runs its action once on a click")
+assert(
+	talk.actions[1].macrotext == "/cleartarget\n/targetexact Quartermaster",
+	"a target button's click runs its /target macro"
+)
+
 h.tracker:LayoutContents()
 local reserved = assert(module.rxpActionsReserved, "the section reserves room for the action rows")
 assert(module.contentsHeight >= reserved, "the action rows are part of the section's height")
