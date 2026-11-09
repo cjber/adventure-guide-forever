@@ -203,12 +203,14 @@ function Guidance.ShowOnMap(step)
 	return routed
 end
 
--- The native waypoint is ours while it is still where Go put it and focused. Moving, clearing or unfocusing it
--- yields navigation to the player or another addon, and the saved one is forgotten.
+-- The native waypoint is ours while it is still where Go put it and focused, or while Naowh Journeys guides the player
+-- there (its journey can be on a flight or a portal, so the focus is Naowh's to set). Moving, clearing or unfocusing
+-- the plain waypoint yields navigation to the player or another addon, and the saved one is forgotten.
 ---@return boolean
 local function OwnsWaypoint()
 	local prefs = ns.Prefs()
-	local same = Integrations.WaypointAt(prefs.waypoint) and C_SuperTrack.IsSuperTrackingUserWaypoint()
+	local same = Integrations.YieldedAt(prefs.waypoint)
+		or (Integrations.WaypointAt(prefs.waypoint) and C_SuperTrack.IsSuperTrackingUserWaypoint())
 	if not same then
 		prefs.waypoint = nil
 	end

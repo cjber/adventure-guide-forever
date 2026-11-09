@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Go works with Naowh's Journeys.** With Naowh's Journeys turning map pins into journeys, the guide's waypoint became Naowh's journey and the guide thought its route had stopped. It now counts that journey as its own guidance: Stop ends it, and the next step's waypoint takes over from it. (#304).
+
 ## [1.2.3] - 2026-11-09
 
 - **Walking into your step's area no longer takes the marker from another guide.** Focusing the quest for the area you stand in used to stop the game's navigation marker wherever another addon or the player had put it, so Shortest Path's arrow drew a second marker beside the quest's. It now puts the super-tracked waypoint back, whoever placed it. Reported on CurseForge by vladsnz (cjber/shortest-path-forever#531).

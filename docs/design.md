@@ -305,3 +305,5 @@ already follows, and a second waypoint handed over would fight it. `SetWaypoint`
 name, map and point in percent, as the API takes them; `ClearWaypoint` calls `ClearUserNavigation` only while the
 navigation still sits where Go put it, so a pin the player moved is left alone. A missing function, a raise, or a map
 the client allows no pin on leaves the native waypoint as the fallback. There is no setting.
+
+With Naowh's Journeys (NaowhForever_Utilities) on and its Map Pins on, Go's native waypoint becomes that module's own journey, and a journey still headed for the place Go put down counts as the guide's guidance until it is cleared or moved (#304).
