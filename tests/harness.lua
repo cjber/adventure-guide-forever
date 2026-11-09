@@ -858,9 +858,112 @@ function harness.load(options)
 		return region
 	end
 
-	-- The tracker module's block stubs: a block records its header and objective lines.
+	-- The tracker's animation groups and templates, as far as the fanfare path reaches. A line's template decides
+	-- whether it carries FadeInAnim (Blizzard_ObjectiveTrackerAnimTemplates.xml:3-70, only
+	-- ObjectiveTrackerAnimLineTemplate does), and a block's template decides whether it carries AddAnim
+	-- (Blizzard_ObjectiveTrackerAnimTemplates.xml:74-95). PlayAddAnimation then restarts every used line's
+	-- FadeInAnim with no guard, exactly as Blizzard_ObjectiveTrackerAnimTemplates.lua:143 does.
+	local function AnimationGroup()
+		local group = { plays = 0, stops = 0, restarts = 0 }
+		function group:Play()
+			self.plays = self.plays + 1
+		end
+		function group:Stop()
+			self.stops = self.stops + 1
+		end
+		function group:Restart()
+			self.restarts = self.restarts + 1
+		end
+		return group
+	end
+
+	-- ObjectiveTrackerLineTemplate (Blizzard_ObjectiveTrackerShared.xml:217) and, inheriting it,
+	-- ObjectiveTrackerAnimLineTemplate: the icon and both glows start hidden or transparent, and
+	-- ObjectiveTrackerAnimLineMixin:OnFree (Blizzard_ObjectiveTrackerAnimTemplates.lua:77) touches the animation
+	-- members only once a state was set, so a line laid out without a fanfare is released without side effects.
+	local function Line(template)
+		local line = { template = template, used = false }
+		if template == "ObjectiveTrackerAnimLineTemplate" then
+			line.Icon = { shown = false }
+			function line.Icon:Hide()
+				self.shown = false
+			end
+			function line.Icon:Show()
+				self.shown = true
+			end
+			line.CheckGlow, line.Glow = { alpha = 0 }, { alpha = 0 }
+			line.CheckAnim, line.GlowAnim = AnimationGroup(), AnimationGroup()
+			line.FadeOutAnim, line.FadeInAnim = AnimationGroup(), AnimationGroup()
+			function line:OnFree()
+				if self.state then
+					self.state, self.noIcon = nil, nil
+					self.Glow.alpha, self.CheckGlow.alpha = 0, 0
+					self.GlowAnim:Stop()
+					self.CheckAnim:Stop()
+					self.FadeOutAnim:Stop()
+					self.FadeInAnim:Stop()
+				end
+				self.Icon:Hide()
+			end
+		end
+		return line
+	end
+
+	-- ObjectiveTrackerAnimBlockMixin (Blizzard_ObjectiveTrackerAnimTemplates.lua:95-155): a fanfare block plays
+	-- AddAnim from OnLayout, and the animation restarts each used line's FadeInAnim.
+	local function AnimBlock(block)
+		block.AddAnim = AnimationGroup()
+		block.activeAnim = nil
+		function block:ForEachUsedLine(func)
+			for key, line in pairs(self.frames) do
+				if line.used and func(line, key) then
+					return
+				end
+			end
+		end
+		function block:FreeUnusedLines()
+			for key, line in pairs(self.frames) do
+				if not line.used then
+					self.frames[key] = nil
+					if line.OnFree then
+						line:OnFree(self)
+					end
+				end
+			end
+		end
+		function block:PlayAddAnimation()
+			self.activeAnim = self.AddAnim
+			self:ForEachUsedLine(function(line)
+				line.FadeInAnim:Restart()
+			end)
+			self.AddAnim:Play()
+		end
+		function block:TryPlayAnim(anim)
+			if self.activeAnim == anim then
+				return
+			end
+			if anim == self.AddAnim then
+				if self.activeAnim then
+					self.activeAnim:Stop()
+				else
+					self:PlayAddAnimation()
+				end
+			end
+		end
+		function block:OnLayout()
+			if self.parentModule:NeedsFanfare(self.id) then
+				self:TryPlayAnim(self.AddAnim)
+			end
+		end
+	end
+
+	-- The tracker module's block stubs: a block records its header and objective lines, and each objective line is
+	-- acquired from the module's lineTemplate, as ObjectiveTrackerBlockMixin:GetLine does
+	-- (Blizzard_ObjectiveTrackerBlock.lua:79).
 	local function TrackerModule(module)
 		module.liveBlocks, module.layoutOrder = {}, {}
+		module.blockTemplate = module.blockTemplate or "ObjectiveTrackerBlockTemplate"
+		module.lineTemplate = module.lineTemplate or "ObjectiveTrackerLineTemplate"
 		Internal("FontString", Internal("Frame", module, "Header"), "Text")
 		function module:SetContainer(container)
 			self.parentContainer = container
@@ -883,11 +986,25 @@ function harness.load(options)
 		function module:GetBlock(id)
 			local block = self.liveBlocks[id]
 			if not block then
-				block = { id = id, lines = {}, order = {}, dashes = {}, full = {}, styles = {}, height = 0 }
+				block = {
+					id = id,
+					parentModule = module,
+					template = self.blockTemplate,
+					lines = {},
+					frames = {},
+					order = {},
+					dashes = {},
+					full = {},
+					styles = {},
+					height = 0,
+				}
+				if block.template == "ObjectiveTrackerAnimBlockTemplate" then
+					AnimBlock(block)
+				end
 				block.SetHeader = function(this, text)
 					this.header, this.height = text, 14
 				end
-				block.AddObjective = function(this, key, text, _, useFullHeight, dashStyle, colorStyle)
+				block.AddObjective = function(this, key, text, lineTemplate, useFullHeight, dashStyle, colorStyle)
 					if not this.lines[key] then
 						this.order[#this.order + 1] = key
 					end
@@ -895,6 +1012,19 @@ function harness.load(options)
 					this.full[key], this.styles[key] = useFullHeight, colorStyle
 					this.height = this.height + 16
 					this.last = key
+					lineTemplate = lineTemplate or this.parentModule.lineTemplate
+					local line = this.frames[key]
+					if line and line.template ~= lineTemplate then
+						if line.OnFree then
+							line:OnFree(this)
+						end
+						line = nil
+					end
+					if not line then
+						line = Line(lineTemplate)
+						this.frames[key] = line
+					end
+					line.used, line.objectiveKey = true, key
 					return { Text = {
 						GetText = function()
 							return text
@@ -927,6 +1057,14 @@ function harness.load(options)
 			end
 			self.contentsHeight = self.contentsHeight + block.height + 4
 			self.layoutOrder[#self.layoutOrder + 1] = block.id
+			-- ObjectiveTrackerModuleMixin:LayoutBlock (Blizzard_ObjectiveTrackerModule.lua:349): release the lines
+			-- this layout no longer uses, then let an anim block play its fanfare.
+			if block.FreeUnusedLines then
+				block:FreeUnusedLines()
+			end
+			if block.OnLayout then
+				block:OnLayout()
+			end
 			return true
 		end
 		function module:GetContextMenuParent()
@@ -939,6 +1077,9 @@ function harness.load(options)
 			self.fanfares = self.fanfares or {}
 			self.fanfares[key] = true
 		end
+		function module:NeedsFanfare(key)
+			return self.fanfares and self.fanfares[key]
+		end
 		function module:MarkDirty()
 			self.layoutOrder = {}
 			self.availableHeight, self.contentsHeight = h.trackerRoom or math.huge, 0
@@ -946,6 +1087,9 @@ function harness.load(options)
 				block.used, block.lines, block.order, block.dashes = false, {}, {}, {}
 				block.bars, block.last = nil, nil
 				block.full, block.styles, block.height = {}, {}, 0
+				for _, line in pairs(block.frames) do
+					line.used = false
+				end
 			end
 			h.call(self.LayoutContents, self)
 			for _, id in ipairs(self.layoutOrder) do
