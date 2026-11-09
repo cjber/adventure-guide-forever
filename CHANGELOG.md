@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The guide's target and item buttons work when clicked.** With RestedXP's Active Targets window open, expanding the guide entry showed the step's item and target buttons in place of it, but a click did nothing. They now run their item or target action, and RestedXP's windows still come back when the buttons hide. Thanks to eliasbusato for the report (#550).
+
 ## [1.3.1] - 2026-11-09
 
 - **Opening the map no longer breaks its quest pins.** After the guide turned the map to a zone, opening it could make the game block its own quest markers and report a blocked action blamed on the guide. The guide now asks the game to open and turn the map instead of doing it itself, so the map's quest pins stay the game's own. (#534)
