@@ -35,6 +35,8 @@ jobs:
           restore-keys: regeneration-${{ runner.os }}-
       - name: Pin the newest Forever, Classic Era and QuestieDB releases
         id: pins
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: python3 tools/refresh_pins.py
       # Ubuntu 24.04's release-pocket builds, which the archive never replaces.
       - name: Install LuaJIT and luacheck
