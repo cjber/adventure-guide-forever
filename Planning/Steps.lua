@@ -562,13 +562,13 @@ end
 
 -- One visit per town of the eligible quests `wanted` accepts; a group quest joins its town's like any other. `stops`
 -- holds the towns the card already has (LogSteps' hand-ins), which a pickup there joins.
----@param wanted fun(quest: AGFQuest): boolean
+---@param wanted fun(quest: AGFQuest, id: integer): boolean
 local function PickupSteps(data, eligible, wanted, steps, stops)
 	local chosenGroups = {}
 	stops = stops or {}
 	for _, id in ipairs(eligible) do
 		local quest = data.quests[id]
-		if wanted(quest) and not (quest.group and chosenGroups[quest.group]) then
+		if wanted(quest, id) and not (quest.group and chosenGroups[quest.group]) then
 			if quest.group then
 				chosenGroups[quest.group] = true
 			end

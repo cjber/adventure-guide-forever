@@ -1,6 +1,6 @@
 -- Fixed characters for the golden routes. Each is plain data: level, side (1 Alliance,
 -- 2 Horde), race and class bits as State.lua builds them (1 << (ID - 1)), a map position, completed quests as
--- rules plus explicit IDs, a quest log and prefs. `Resolve` turns one into the planner's arguments.
+-- rules plus explicit IDs, a quest log, prefs and the build's inputs. `Resolve` turns one into the planner's arguments.
 local characters = {}
 
 characters.list = {
@@ -90,6 +90,28 @@ characters.list = {
 		y = 0.4700,
 		completed = { zones = { 1429 } },
 		prefs = { dungeons = true },
+	},
+	{
+		-- #557: a night elf hunter at Sentinel Hill choosing the Deadmines card. The log holds The Defias Brotherhood
+		-- step 1 ready to hand in and three of the dungeon's own quests, while its two prerequisite chains are still
+		-- before the player.
+		name = "ne17_westfall_deadmines",
+		level = 17,
+		side = 1,
+		raceBit = 8,
+		classBit = 4,
+		map = 1436,
+		x = 0.5633,
+		y = 0.4752,
+		completed = { zones = { 1438, 1439 } },
+		log = {
+			{ id = 65, title = "The Defias Brotherhood", level = 18, complete = true },
+			{ id = 167, title = "Oh Brother. . .", level = 20, complete = false },
+			{ id = 168, title = "Collecting Memories", level = 18, complete = false },
+			{ id = 2040, title = "Underground Assault", level = 20, complete = false },
+		},
+		prefs = { dungeons = true, journey = "dungeon:36" },
+		inputs = { dungeonEntrances = { [36] = { map = 1436, x = 0.425, y = 0.716 } } },
 	},
 	{
 		-- human18_westfall after choosing "Head to Redridge Mountains" and walking into Lakeshire: the choice stays,
@@ -250,7 +272,7 @@ function characters.Resolve(data, fixture)
 	for key, value in pairs(fixture.prefs or {}) do
 		prefs[key] = value
 	end
-	return player, Completed(data, fixture), log, prefs
+	return player, Completed(data, fixture), log, prefs, fixture.inputs
 end
 
 return characters

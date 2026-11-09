@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Dungeon journeys gather every quest chain before sending you in.** Choosing the Deadmines used to show "Go to entrance" with only the next step of each chain beside it, so you could walk in without The Defias Brotherhood's final part, Red Silk Bandanas or Destruction in Deadmines. The card now walks each chain that leads into the dungeon back to the step you can take now, including chains that start with two quests at once, keeps the entrance for last and says how many of the dungeon's quests you would leave behind. Each chain shows as its own group with how far along you are, apart from the single quests. (#557)
+
 ## [1.3.2] - 2026-11-09
 
 - **The zone you are questing in is always on the list.** Once the guide had a story in one zone, walking to another zone and taking its quests left that zone off Quest destinations entirely: a Night Elf who moved from Darkshore to Westfall saw Redridge, Loch Modan and The Barrens, but never Westfall. The zone you stand in now gets its own "Head to" card whenever the story is elsewhere. (#552)

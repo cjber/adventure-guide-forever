@@ -115,6 +115,11 @@ ns.L = {
 	-- The dungeon card's reason: the log's quests filed under its instance, counted.
 	DUNGEON_INSIDE = "%d of your quests end inside %s",
 	DUNGEON_INSIDE_ONE = "1 of your quests ends inside %s",
+	-- A dungeon card's chain, labelled with its progress: "The Defias Brotherhood, 1 of 7".
+	CHAIN_PROGRESS = "%s, %d of %d",
+	-- The dungeon card's entrance, when its chains still have this many of the instance's quests to gather.
+	DUNGEON_LEFT_BEHIND = "%d dungeon quests are still to pick up",
+	DUNGEON_LEFT_BEHIND_ONE = "1 dungeon quest is still to pick up",
 	-- A chain that leads into an instance, a story when there is no next zone: the instance's name.
 	JOURNEY_INTO = "The way into %s",
 	-- The carry card's counts, joined when several apply: "3 ready to hand in, 1 in progress".

@@ -3300,6 +3300,9 @@ for _, spf in ipairs({ false, "v1" }) do
 		if journey.reason then
 			expected[#expected + 1] = "highlight: " .. journey.reason
 		end
+		for _, chain in ipairs(journey.chains or {}) do
+			expected[#expected + 1] = "normal: " .. chain.label
+		end
 		if journey.reason or card.detail == Hub(journey) then
 			expected[#expected + 1] = "highlight: " .. Hub(journey)
 		end

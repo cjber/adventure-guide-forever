@@ -624,6 +624,11 @@ local function CardTooltip(card)
 	if journey.reason then
 		GameTooltip_AddHighlightLine(GameTooltip, journey.reason)
 	end
+	-- A dungeon card's chains, each with how many of its quests the player holds or has done. Single quests have no
+	-- line, so what is a chain and what is one quest reads apart.
+	for _, chain in ipairs(journey.chains or {}) do
+		GameTooltip_AddNormalLine(GameTooltip, chain.label)
+	end
 	local hub = HubLine(journey)
 	if hub and (journey.reason or journey.drop or card.state == "compact" or card.detail == hub) then
 		GameTooltip_AddHighlightLine(GameTooltip, hub)
