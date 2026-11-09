@@ -106,9 +106,9 @@ abandons quests.
   QuestieDB supplies quest chains and outdoor entrance points; Tweaks Forever is the entrance fallback.
   The full guide lists remaining prerequisites before their dungeon quest. Future entries are an outline,
   not a pickup recommendation or navigation target. The dungeon card itself walks every prerequisite chain back to
-  what the player can do now, through branches, and offers those reachable pickups, objectives and hand-ins before
-  its entrance; each chain carries its label and progress, and the entrance says how many of the instance's quests
-  are still to pick up. Character restrictions and completion apply throughout.
+  what the player can do now, through branches, and offers the steps that open another of its quests first, then the
+  rest, before its entrance; each chain carries its label and progress, and the entrance says how many of the
+  instance's quests are still to pick up. Character restrictions and completion apply throughout.
   Boss names and item drops are read from installed AtlasLoot's public ItemDB, resolving its linked tables
   and selected difficulty. Only the selected dungeon is read; visible item rows request missing item data.
   Bosses and loot sit beside the journey, with item tooltips and no strategies or models.
