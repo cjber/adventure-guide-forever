@@ -12,6 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The guide's quest log tab now comes from Forever Core's shared quest log tabs.** With Shortest Path's Nearby services tab installed there is one Quests tab, the tabs keep a fixed order, and one panel is open at a time (#477).
 
 ## [1.2.4] - 2026-11-09
 

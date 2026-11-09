@@ -73,6 +73,8 @@ straight after it merges: on main, and on every other branch, a stale image fail
 - `Locales/enUS.lua`: every line the player reads (`ns.L`, constant keys); a translation is `Locales/<locale>.lua`
   (`Locales/README.md`). After changing copy, `python3 tools/phrases.py > Locales/phrases.txt`.
 - `UI/Dump.lua`: `/agf dump` saves the drawn layout to the saved variables for `tests/dump_diff.lua`.
+- `UI/QuestLogTabs.lua`: Forever Core's shared world map quest log tab, vendored byte for byte; `UI/Panel.lua`
+  registers the guide's panel with it and opens through `ns.QuestLogTabs.Select("guide")`.
 - `docs/curseforge.md`: the store description, pasted into CurseForge and Wago by hand.
 - `docs/design.md`: the brief contracts referenced by the source and headless specs.
 

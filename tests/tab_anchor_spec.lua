@@ -3,7 +3,7 @@
 -- offset is tuned for stock tab art that Forever hides and never draws, so its horizontal part leaves a dark strip.
 local harness = dofile("tests/harness.lua")
 local h = harness.load({ log = {} })
-local map, tab = h.G.QuestMapFrame, h.G.AdventureGuideForeverQuestsTab
+local map, tab = h.G.QuestMapFrame, h.G.ForeverQuestLogQuestsTab
 assert(tab, "the guide brings its own Quests tab when the stock tabs are hidden")
 local point, relativeTo, relativePoint, x, y = tab:GetPoint(1)
 assert(point == "TOPLEFT", "the tab hangs off the frame's top right: " .. tostring(point))

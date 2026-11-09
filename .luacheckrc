@@ -21,6 +21,7 @@ globals = {
 	"RXPCData",
 	"ForeverFamily",
 	"ForeverLeaderboards",
+	"ForeverQuestLogTabs",
 	"ForeverTrackerHost",
 	"ForeverMinimapButtons",
 	"AdventureGuideForever",
@@ -185,6 +186,8 @@ read_globals = {
 	"EventRegistry",
 	"QuestMapFrame",
 	"QuestMapFrameOverrides",
+	-- QuestLogTabs.lua (vendored): the secure wrapper the client offers for a panel's shown callback.
+	"securecallfunction",
 	"QUESTS_LABEL",
 	"GameTooltip_Hide",
 	"IsShiftKeyDown",
@@ -233,10 +236,10 @@ read_globals = {
 	"C_Item",
 	"C_Spell",
 	"C_CurrencyInfo",
-	-- Dump.lua: frames Panel.lua and Tracker.lua create by name
+	-- Dump.lua: frames Panel.lua, the shared quest log tabs and Tracker.lua create by name
 	"AdventureGuideForeverPanel",
 	"AdventureGuideForeverTab",
-	"AdventureGuideForeverQuestsTab",
+	"ForeverQuestLogQuestsTab",
 	"AdventureGuideForeverObjectiveTracker",
 }
 

@@ -8,6 +8,7 @@
 -- Additive: merges with the fields already declared on AGFNamespace in types/Namespace.lua.
 ---@class AGFNamespace
 ---@field OpenPanel? fun() set once the world map tab exists (Panel.lua); opens the guide tab.
+---@field QuestLogTabs ForeverQuestLogTabsAPI the shared world map quest log tab (UI/QuestLogTabs.lua)
 ---@field RegisterSettings fun() defined by Settings.lua, called once after ADDON_LOADED.
 ---@field OpenSettings? fun() set by RegisterSettings; opens our page under Settings > AddOns.
 ---@field Pins AGFPinsModule
@@ -335,13 +336,18 @@ CreateSettingsButtonInitializer = nil
 ---@type AGFInputUtil?
 InputUtil = nil
 
----@class AGFTabButton : Button
----@field SetCustomOnMouseUpHandler fun(self: AGFTabButton, handler: fun(self: AGFTabButton, mouseButton: string, upInside: boolean))
----@field SetChecked fun(self: AGFTabButton, checked: boolean)
+-- UI/QuestLogTabs.lua: the tab it builds from Blizzard's LargeSideTabButtonTemplate.
+---@class ForeverQuestLogTab : Button
+---@field SetCustomOnMouseUpHandler fun(self: ForeverQuestLogTab, handler: fun(self: ForeverQuestLogTab, mouseButton: string, upInside: boolean))
+---@field SetChecked fun(self: ForeverQuestLogTab, checked: boolean)
 ---@field Icon Texture
 ---@field activeAtlas? string
 ---@field inactiveAtlas? string
 ---@field tooltipText string
+
+-- The registry every vendored copy of UI/QuestLogTabs.lua shares, published by the first to load.
+---@type ForeverQuestLogTabsAPI?
+ForeverQuestLogTabs = nil
 
 ---@class AGFTrackerBlock : Frame
 ---@field HeaderButton? Button
@@ -399,10 +405,10 @@ ObjectiveTrackerFrame = nil
 -- AGF's own named frames (CreateFrame names in Panel.lua and Tracker.lua); nil until they are built.
 ---@type Frame?
 AdventureGuideForeverPanel = nil
----@type AGFTabButton?
+---@type ForeverQuestLogTab?
 AdventureGuideForeverTab = nil
----@type AGFTabButton?
-AdventureGuideForeverQuestsTab = nil
+---@type ForeverQuestLogTab?
+ForeverQuestLogQuestsTab = nil
 ---@type AGFTrackerModule?
 AdventureGuideForeverObjectiveTracker = nil
 
