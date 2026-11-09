@@ -6,7 +6,7 @@
 ## Category: Quests
 ## X-License: GPL-3.0-or-later
 ## X-Website: https://github.com/cjber/adventure-guide-forever
-## X-Donate: https://ko-fi.com/cjber
+## X-Donate: https://github.com/sponsors/cjber
 ## X-Curse-Project-ID: 1711538
 ## X-Wago-ID: rNkgPlNa
 ## IconTexture: Interface\AddOns\AdventureGuideForever\media\Icon
