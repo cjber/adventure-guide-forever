@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-11-09
+
 - **Opening the map no longer breaks its quest pins.** After the guide turned the map to a zone, opening it could make the game block its own quest markers and report a blocked action blamed on the guide. The guide now asks the game to open and turn the map instead of doing it itself, so the map's quest pins stay the game's own. (#534)
 - **The tracker's journey complete glow no longer raises an error.** Turning in the last quest of a journey lit the tracker's "Journey complete" header, and the game's fanfare then looked for a fade on a line that did not have one, so each journey's end could fill BugGrabber with an error. The guide's lines are now the animated ones the game pairs with that header, so the glow plays as it should. (#539)
 
