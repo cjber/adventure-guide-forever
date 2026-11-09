@@ -101,7 +101,7 @@ equal(Marked(h, "zone:1424"), true, "opened: the new card is marked")
 equal(Marked(h, "zone:1413"), false, "opened: the others are not")
 
 -- Closing the guide takes the marks away; a zone change that brings nothing new leaves them away.
-h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+h.ClickTab(h.G.ForeverQuestLogQuestsTab)
 h.ns.Prefs().previewGroups = { continue = false, zones = false }
 h.ns.OpenPanel()
 h.flush()

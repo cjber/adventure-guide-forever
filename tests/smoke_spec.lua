@@ -407,9 +407,9 @@ local function Drive(h, label)
 			end)
 			DriveScope(h, panel, label .. " panel-guide", h.ns.OpenPanel)
 		end
-		if h.G.AdventureGuideForeverQuestsTab then
+		if h.G.ForeverQuestLogQuestsTab then
 			Run(h, label .. " quests tab", function()
-				h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+				h.ClickTab(h.G.ForeverQuestLogQuestsTab)
 				h.flush()
 			end)
 		end
@@ -449,6 +449,7 @@ local function Drive(h, label)
 	end)
 	Run(h, label .. " reopen map", function()
 		h.G.C_Map.OpenWorldMap(h.player.map)
+		h.TriggerEvent("UIParentPanelManager.ShowUIPanel", h.map)
 		h.flush()
 	end)
 

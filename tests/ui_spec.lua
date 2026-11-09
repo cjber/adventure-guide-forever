@@ -133,8 +133,12 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	clean(h, label .. ": load")
 	equal(h.ns.Route().steps[1].key, "town:1413:380", label .. ": the hand-in leads the route")
 
-	-- Blizzard's displayMode is never written, whatever the player clicks (Panel.lua ShowGuide).
+	-- Blizzard's displayMode is never written, whatever the player clicks (UI/QuestLogTabs.lua).
 	local panel, questsFrame = h.G.AdventureGuideForeverPanel, h.questMap.QuestsFrame
+	-- The panel sets no show or hide script: a script under the world map runs in the map's close path and taints
+	-- the gamepad UI (shortest-path-forever#158).
+	equal(panel.scripts.OnShow, nil, label .. ": the panel sets no OnShow script")
+	equal(panel.scripts.OnHide, nil, label .. ": the panel sets no OnHide script")
 	h.ns.OpenPanel()
 	h.flush()
 	equal(panel:IsVisible(), true, label .. ": the guide opens")
@@ -154,7 +158,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	equal(table.concat(h.selectedQuests, " "), tostring(first.quests[1]), label .. ": a row in the log selects it")
 	equal(h.map:GetMapID(), h.G.GetQuestUiMapID(first.quests[1]), label .. ": and turns the map to its zone")
 	equal(panel:IsShown(), true, label .. ": the guide stays open")
-	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+	h.ClickTab(h.G.ForeverQuestLogQuestsTab)
 	equal(panel:IsShown(), false, label .. ": the Quests tab closes the guide")
 	equal(questsFrame:IsShown(), true, label .. ": the quest list is back")
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[first.key], "LeftButton")
@@ -1131,7 +1135,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	end
 	equal(h.counts.CreateFrame - created, 0, label .. ": frames created by 10 refreshes")
 	equal(#h.Pins("AdventureGuideForeverPinTemplate"), Places(h.ns.Route()), label .. ": the refreshes drew the route")
-	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+	h.ClickTab(h.G.ForeverQuestLogQuestsTab)
 	h.flush()
 	equal(IdleUpdates(h), 1, label .. ": only the visible map observer runs after closing the guide")
 	h.map:Hide()
@@ -3064,7 +3068,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(Spf("Navigate") + Spf("NavigateRoute") - navigate, 0, label .. ": no guidance")
 	equal(h.counts.SetMapID - maps, 5, label .. ": the map turns once per click")
 	equal(drawn > 0, true, label .. ": the rings preview with map pins off")
-	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+	h.ClickTab(h.G.ForeverQuestLogQuestsTab)
 	h.flush()
 	equal(#(h.Pins("AdventureGuideForeverPinTemplate") or {}), 0, label .. ": closing the guide takes the rings away")
 	clean(h, label)
@@ -3741,7 +3745,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 	h.flush()
 	equal(Cached(), spf and #journeys or 0, label .. ": answered once it ends")
 	-- Closed, nothing is asked.
-	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+	h.ClickTab(h.G.ForeverQuestLogQuestsTab)
 	h.flush()
 	integrations.RefreshCards({})
 	integrations.RefreshCards(journeys)
@@ -3778,7 +3782,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 		equal(boats > 0 and boats < #journeys, true, label .. ": a short subline names the boat, a long one doesn't")
 	end
 	-- Opened in a rebuild's frame, after it: step 1's travel frame is still its own, whatever order the frames run in.
-	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+	h.ClickTab(h.G.ForeverQuestLogQuestsTab)
 	h.flush()
 	h.player.x = h.player.x + 0.01
 	h.ns.Invalidate()
@@ -3814,7 +3818,7 @@ for _, spf in ipairs({ false, "v1+" }) do
 	-- With Shortest Path, SUPER_TRACKING_CHANGED also queues the open map's quest pin pass (#468): one timer each.
 	equal(h.tick(), spf and 2 or 1, label .. ": one redraw however many events")
 	equal(StopButton(h):IsShown(), false, label .. ": Stop goes on the next frame")
-	h.ClickTab(h.G.AdventureGuideForeverQuestsTab)
+	h.ClickTab(h.G.ForeverQuestLogQuestsTab)
 	h.flush()
 	h.fire(event)
 	equal(h.tick(), spf and 2 or 1, label .. ": the ending is judged with the guide closed too, in one frame")
@@ -3949,14 +3953,20 @@ do
 	clean(h, "cleared, player's route")
 end
 
--- The preview follows the guide's visibility, not only its tab: collapsing the quest sidebar hides the guide and
--- its rings, and bringing the sidebar back brings both.
+-- The preview follows the guide's visibility, not only its tab: leaving it for the Quests page takes its rings
+-- away, and opening the guide again brings both.
 do
 	local h = Load(false)
 	h.ns.OpenPanel()
 	h.flush()
 	local rings = #h.Pins("AdventureGuideForeverPinTemplate")
 	equal(rings > 0, true, "preview: the open guide previews its journey")
+	h.ClickTab(h.G.ForeverQuestLogQuestsTab)
+	h.flush()
+	equal(#h.Pins("AdventureGuideForeverPinTemplate"), 0, "preview: the Quests page takes the rings away")
+	h.ns.OpenPanel()
+	h.flush()
+	equal(#h.Pins("AdventureGuideForeverPinTemplate"), rings, "preview: and opening the guide brings them back")
 	h.map:SetQuestLogPanelShown(false)
 	equal(#h.Pins("AdventureGuideForeverPinTemplate"), 0, "preview: a collapsed sidebar takes the rings away")
 	h.map:SetQuestLogPanelShown(true)
@@ -3970,6 +3980,46 @@ do
 	equal(h.G.AdventureGuideForeverWindow, nil, "open: no window fallback")
 	h.map:SetQuestLogPanelShown(true)
 	clean(h, "preview")
+end
+
+-- The map's own side panel toggle: collapsing it through the client's SetQuestLogPanelShown takes the guide with it
+-- and runs the hide path, and expanding it runs the show path. The panel sets no show or hide script of its own
+-- (shortest-path-forever#158).
+do
+	local h = Load(false)
+	h.ns.OpenPanel()
+	h.flush()
+	local panel = h.G.AdventureGuideForeverPanel
+	equal(panel:IsVisible(), true, "sidebar: the guide starts open")
+	equal(panel.scripts.OnShow, nil, "sidebar: the panel sets no OnShow script")
+	equal(panel.scripts.OnHide, nil, "sidebar: the panel sets no OnHide script")
+	local refreshes, closed, opened = 0, 0, 0
+	local refresh, close, open = h.ns.Pins.Refresh, h.ns.Moments.Closed, h.ns.Moments.Opened
+	h.ns.Pins.Refresh = function()
+		refreshes = refreshes + 1
+		return refresh()
+	end
+	h.ns.Moments.Closed = function()
+		closed = closed + 1
+		return close()
+	end
+	h.ns.Moments.Opened = function()
+		opened = opened + 1
+		return open()
+	end
+	h.G.WorldMapFrame:SetQuestLogPanelShown(false)
+	equal(h.G.QuestMapFrame:IsShown(), false, "sidebar: collapsing hides the quest log")
+	equal(panel:IsVisible(), false, "sidebar: and the guide with it")
+	equal(refreshes, 1, "sidebar: the collapse refreshes the pins")
+	equal(closed, 1, "sidebar: and closes the guide's moments")
+	h.G.WorldMapFrame:SetQuestLogPanelShown(true)
+	equal(h.G.QuestMapFrame:IsShown(), true, "sidebar: expanding shows the quest log")
+	equal(panel:IsVisible(), true, "sidebar: and the guide with it")
+	equal(refreshes, 2, "sidebar: the expansion refreshes the pins")
+	equal(opened, 1, "sidebar: and opens the guide's moments")
+	h.G.WorldMapFrame:SetQuestLogPanelShown(false)
+	h.ns.Pins.Refresh, h.ns.Moments.Closed, h.ns.Moments.Opened = refresh, close, open
+	clean(h, "sidebar")
 end
 
 -- The activity filters live in the cog's menu, not on the guide (design §2.1).

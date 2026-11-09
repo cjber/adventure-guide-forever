@@ -1660,6 +1660,15 @@ function harness.load(options)
 	function h.TriggerEvent(event, ...)
 		G.EventRegistry:TriggerEvent(event, ...)
 	end
+	-- The world map's panel manager (UIParentPanelManager.lua) shows or hides the frame and then fires the event
+	-- every panel under the map listens to. The map's own show and hide paths drive the guide's shown callback.
+	function h.SetWorldMapShown(shown)
+		h.map:SetShown(shown)
+		G.EventRegistry:TriggerEvent(
+			shown and "UIParentPanelManager.ShowUIPanel" or "UIParentPanelManager.HideUIPanel",
+			h.map
+		)
+	end
 	G.hooksecurefunc = function(target, name, hook)
 		if type(target) == "string" then
 			target, name, hook = G, target, name
@@ -2915,6 +2924,12 @@ function harness.load(options)
 			questMap[key] = value
 		end,
 	})
+	-- QuestLogOwnerMixin:SetQuestLogPanelShown: the map's own side panel toggle shows or hides the quest log frame,
+	-- taking everything inside it, the guide included, with it.
+	map.QuestLog = questMap
+	function map:SetQuestLogPanelShown(shown)
+		self.QuestLog:SetShown(shown)
+	end
 	-- Blizzard_UIPanels_Game/Camelot/QuestMapFrameOverrides.lua.
 	G.QuestMapFrameOverrides = {
 		questTabHidden = true,
