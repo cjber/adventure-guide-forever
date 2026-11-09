@@ -8,7 +8,7 @@
 Adventure Guide Forever turns levelling into the zone's story: chapters you finish, journeys you pick on the map, dungeons with their quests and prerequisites, and a route walked for you to the next hand-in.<br>
 <a href="https://github.com/cjber/adventure-guide-forever/actions/workflows/ci.yml"><img src="https://github.com/cjber/adventure-guide-forever/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 <a href="https://github.com/cjber/adventure-guide-forever/releases/latest"><img src="https://img.shields.io/github/v/release/cjber/adventure-guide-forever" alt="Latest release"></a>
-<a href="https://ko-fi.com/cjber"><img src="https://img.shields.io/badge/Ko--fi-tip-ff5e5b?logo=ko-fi&logoColor=white" alt="Ko-fi"></a>
+<br><br><a href="https://ko-fi.com/cjber"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support me on Ko-fi"></a>
 </p>
 
 Each zone's quests read as chapters, the map offers journeys worth taking, and Shortest Path Forever walks you from stop to stop: a pickup, an objective or a hand-in, with flights and boats included. Without it, the game's own waypoint marks the next stop.

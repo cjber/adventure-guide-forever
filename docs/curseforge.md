@@ -4,6 +4,8 @@ QuestieDB supplies the quests; Questie checks pickup availability. With RestedXP
 
 Free, with nothing locked behind it. If it saves you time, you can [buy me a coffee on Ko-fi](https://ko-fi.com/cjber).
 
+[![Support me on Ko-fi](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/kofi-button.png)](https://ko-fi.com/cjber)
+
 ![The Barrens story chosen: the journey card, its numbered stops and Shortest Path's route from the first](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/spf_map.png)
 
 The Barrens story chosen: the card names the chapter, every stop is numbered, and Shortest Path's route runs from the first.
