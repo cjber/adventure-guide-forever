@@ -721,6 +721,32 @@ local function DungeonJourney(
 			end
 		end
 	end
+	-- The quests that open another of the instance's quests (#574): every prerequisite on the way back from one of the
+	-- dungeon's own quests the player does not have yet. A quest already held or done opens nothing still to come, and
+	-- a dungeon quest is not its own prerequisite, so its own pickup is not part of the chain behind it.
+	local leads = {}
+	local function Lead(id, seen)
+		local quest = data.quests[id]
+		if not quest or seen[id] then
+			return
+		end
+		seen[id] = true
+		for _, list in ipairs({ quest.pre or NONE, quest.preAny or NONE }) do
+			for _, pre in ipairs(list) do
+				if data.quests[pre] then
+					leads[pre] = true
+					Lead(pre, seen)
+				end
+			end
+		end
+	end
+	for _, chain in ipairs(Model.Chains(data, best)) do
+		for _, id in ipairs(chain.direct) do
+			if not completed[id] and not log[id] and not Dropped(id) then
+				Lead(id, {})
+			end
+		end
+	end
 	-- A story whose `next` links lead inside joins too: a breadcrumb such as Speak with Shoni has no `pre` link to
 	-- walk back from, and is still the step before the dungeon's quest.
 	local function Prepare(id)
@@ -795,13 +821,55 @@ local function DungeonJourney(
 	end
 	-- The entrance waits for every chain and pickup (docs/design.md §2.21): gathering the reachable quests comes
 	-- before going in, and a hand-in outside comes first too. It says how much is left behind when it is not last.
+	local entranceStep
 	for index, step in ipairs(steps) do
 		if step.key == "entrance:" .. best then
-			table.remove(steps, index)
-			steps[#steps + 1] = step
+			entranceStep = table.remove(steps, index)
 			break
 		end
 	end
+	-- The steps that open another of the dungeon's quests lead the card, then the rest (#574): a hand-in or objective
+	-- of a quest on a chain the player has not finished comes before the dungeon's own work. Each group keeps the
+	-- planner's order, within one continent so the route still crosses an ocean once, and the entrance still comes last.
+	local function OpensStep(step)
+		for _, id in ipairs(Model.Handins(step)) do
+			if leads[id] then
+				return true
+			end
+		end
+		for _, objective in ipairs(step.objectives or NONE) do
+			if leads[objective.id] then
+				return true
+			end
+		end
+		return false
+	end
+	local ordered = {}
+	local opening, other = {}, {}
+	local function Flush()
+		for _, step in ipairs(opening) do
+			ordered[#ordered + 1] = step
+		end
+		for _, step in ipairs(other) do
+			ordered[#ordered + 1] = step
+		end
+		opening, other = {}, {}
+	end
+	local continent
+	for _, step in ipairs(steps) do
+		local map = data.maps and data.maps[step.map]
+		local at = map and map.continent
+		if continent ~= nil and at ~= continent then
+			Flush()
+		end
+		continent = at
+		table.insert(OpensStep(step) and opening or other, step)
+	end
+	Flush()
+	if entranceStep then
+		ordered[#ordered + 1] = entranceStep
+	end
+	steps = ordered
 	-- Each chain is a labelled group on the steps that hold its quests; a single quest keeps no label.
 	for _, step in ipairs(steps) do
 		local labels, seen = {}, {}
