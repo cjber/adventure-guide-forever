@@ -467,7 +467,8 @@ L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
 L["UPDATED_TO"] = "atualizado para %s. %s"
 -- mt
-L["WHATS_NEW"] = "As jornadas de masmorra reúnem cada cadeia de missões antes de mandar você entrar." -- mt
+L["WHATS_NEW"] =
+	"A dica de tela de um recrutador de missões no mapa-múndi agora colore cada missão como o seu registro de missões." -- mt
 L["WHY_ALLIANCE"] = "Só Aliança"
 L["WHY_BREADCRUMB"] = "Só até você aceitar %s"
 L["WHY_CHOSE"] = "Você escolheu %s no lugar"
