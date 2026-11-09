@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-11-09
+
 - **Walking into your step's area no longer takes the marker from another guide.** Focusing the quest for the area you stand in used to stop the game's navigation marker wherever another addon or the player had put it, so Shortest Path's arrow drew a second marker beside the quest's. It now puts the super-tracked waypoint back, whoever placed it. Reported on CurseForge by vladsnz (cjber/shortest-path-forever#531).
 
 ## [1.2.2] - 2026-11-08
