@@ -475,17 +475,17 @@ do
 	equal(h.spf.NavigateRoute, 1, "follow: started once")
 	Moved(h, h.player.map, h.player.x, h.player.y)
 	equal(h.spf.NavigateRoute, 1, "follow: a rebuild that changes nothing sends nothing")
-	-- Southsea Freebooters and Baron Longshore go in the log: the route already picked them up at Ratchet and worked
+	-- WANTED: Bruuz and Baron Longshore go in the log: the route already picked them up at Ratchet and worked
 	-- their camps after, so no stop it handed leaves and nothing is sent (a stop leaving is the stale cases above); once
 	-- the player stands in the first area, it leads.
-	h.log[#h.log + 1] = { id = 887, title = "Southsea Freebooters", level = 14, complete = false }
+	h.log[#h.log + 1] = { id = 92706, title = "WANTED: Bruuz", level = 20, complete = false }
 	h.log[#h.log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
 	h.fire("QUEST_LOG_UPDATE")
 	h.flush()
 	equal(h.spf.NavigateRoute, 1, "follow: quests the route already held, now taken, send nothing")
-	Moved(h, 1413, 0.64, 0.46)
+	Moved(h, 1413, 0.626, 0.498)
 	local head = h.ns.Route().steps[1]
-	equal(head.key, "area:887:0", "follow: the area the player stands in leads")
+	equal(head.key, "area:895:4", "follow: the area the player stands in leads")
 	-- Entering an objective area retains the current approach and all later route stops.
 	equal(head.here, true, "follow: you're here")
 	equal(h.spf.NavigateRoute, 2, "follow: in step 1's area, the stops after it sent")
@@ -493,7 +493,7 @@ do
 	equal(#h.spfRoute.stops, #onward, "follow: proximity keeps every stop")
 	equal(h.spfRoute.stops[1].x, onward[1].x, "follow: current area retains its destination")
 	equal(h.ns.Guidance.Owns(), true, "follow: guidance holds, so Stop still shows")
-	Moved(h, 1413, 0.64, 0.47)
+	Moved(h, 1413, 0.626, 0.499)
 	equal(h.spf.NavigateRoute, 2, "follow: nothing again while the player is in it")
 	h.SetCombat(true)
 	Moved(h, 1413, 0.5223, 0.3101)
@@ -535,21 +535,21 @@ do
 	-- The "you're here" head (design §4.2): checked every 2 s only while the player moves, and a rebuild only on
 	-- walking into an open area the route reaches later, once.
 	h = Load("ended")
-	h.log[#h.log + 1] = { id = 887, title = "Southsea Freebooters", level = 14, complete = false }
+	h.log[#h.log + 1] = { id = 92706, title = "WANTED: Bruuz", level = 20, complete = false }
 	h.log[#h.log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
 	h.fire("QUEST_LOG_UPDATE")
 	h.flush()
-	equal(h.ns.Route().steps[1].key ~= "area:887:0", true, "here: the area is later while the player is in town")
+	equal(h.ns.Route().steps[1].key ~= "area:895:4", true, "here: the area is later while the player is in town")
 	h.fire("PLAYER_STARTED_MOVING")
 	equal(next(h.ticking) ~= nil, true, "here: moving checks")
 	local builds = h.modelCalls.Journeys
 	h.tickers()
 	h.flush()
 	equal(h.modelCalls.Journeys, builds, "here: no rebuild while the player is in no area")
-	h.MovePlayer(1413, 0.64, 0.46)
+	h.MovePlayer(1413, 0.626, 0.498)
 	h.tickers()
 	h.flush()
-	equal(h.ns.Route().steps[1].key, "area:887:0", "here: walking into the area makes it step 1")
+	equal(h.ns.Route().steps[1].key, "area:895:4", "here: walking into the area makes it step 1")
 	builds = h.modelCalls.Journeys
 	h.tickers()
 	h.flush()
@@ -562,40 +562,40 @@ do
 	-- Following the quest worked on (Focus.lua): walking into step 1's area selects its quest, so the map draws its
 	-- blue area; walking out clears it. Never over the player's own selection.
 	h = Load("ended")
-	h.log[#h.log + 1] = { id = 887, title = "Southsea Freebooters", level = 14, complete = false }
+	h.log[#h.log + 1] = { id = 92706, title = "WANTED: Bruuz", level = 20, complete = false }
 	h.log[#h.log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
 	h.fire("QUEST_LOG_UPDATE")
 	h.flush()
 	equal(h.superTrackedQuest, 0, "focus: nothing selected outside the area")
-	Moved(h, 1413, 0.64, 0.46)
+	Moved(h, 1413, 0.626, 0.498)
 	equal(h.ns.Route().steps[1].here, true, "focus: in step 1's area")
-	equal(h.superTrackedQuest, 887, "focus: its quest selected")
-	equal(h.ns.Prefs().focus, 887, "focus: kept as AGF's")
+	equal(h.superTrackedQuest, 895, "focus: its quest selected")
+	equal(h.ns.Prefs().focus, 895, "focus: kept as AGF's")
 	-- They are there: no "Walk to <zone>" line to the area's middle.
 	equal(h.ns.Integrations.Travel(h.ns.Route().steps[1]), nil, "focus: no travel line in the area")
 	local selected = h.counts.SetSuperTrackedQuestID
-	Moved(h, 1413, 0.64, 0.47)
+	Moved(h, 1413, 0.626, 0.499)
 	equal(h.counts.SetSuperTrackedQuestID, selected, "focus: once, on walking in")
 	Moved(h, 1413, 0.5223, 0.3101)
 	equal(h.superTrackedQuest, 0, "focus: walking out clears it")
 	equal(h.ns.Prefs().focus, nil, "focus: forgotten")
 	h.superTrackedQuest = 843
-	Moved(h, 1413, 0.64, 0.46)
+	Moved(h, 1413, 0.626, 0.498)
 	equal(h.superTrackedQuest, 843, "focus: the player's own selection stays")
 	Moved(h, 1413, 0.5223, 0.3101)
 	equal(h.superTrackedQuest, 843, "focus: and stays on walking out")
 	h.superTrackedQuest = 0
 	h.ns.SetSetting("followQuest", false)
-	Moved(h, 1413, 0.64, 0.46)
+	Moved(h, 1413, 0.626, 0.498)
 	equal(h.superTrackedQuest, 0, "focus: the setting off selects nothing")
 	clean(h, "focus")
 
 	-- Without Shortest Path, Go sets the waypoint at the step; walking out does not move it, since the area's
 	-- objective is unfinished and its point sits on the work rather than chasing the player.
 	h = Load(false, PINS_ON)
-	h.log[#h.log + 1] = { id = 887, title = "Southsea Freebooters", level = 14, complete = false }
+	h.log[#h.log + 1] = { id = 92706, title = "WANTED: Bruuz", level = 20, complete = false }
 	h.log[#h.log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
-	Moved(h, 1413, 0.64, 0.46)
+	Moved(h, 1413, 0.626, 0.498)
 	local standing = h.ns.Route().steps[1]
 	equal(standing.here, true, "here, waypoint: in the area")
 	h.G.C_Map.OpenWorldMap()
@@ -1240,7 +1240,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Hover(ring)
 	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. Step 1 is the Crossroads, where The
 	-- Zhevra opens its next chapter, handed in before the town's pickups.
-	local expected = { "title: 1. Visit The Crossroads: Pick up 6, turn in 1" }
+	local expected = { "title: 1. Visit The Crossroads: Pick up 5, turn in 1" }
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
 	expected[#expected + 1] = "highlight: Opens the next chapter here"
 	expected[#expected + 1] = "normal: |cff009919Sergra Darkthorn|r"
@@ -2372,7 +2372,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	local label = "tracker: " .. (spf or "no Shortest Path")
 	local h = Load(spf)
 	local steps = h.ns.Route().steps
-	local expected = { "1 to hand in, 6 to pick up", "Opens the next chapter here" }
+	local expected = { "1 to hand in, 5 to pick up", "Opens the next chapter here" }
 	for _, giver in ipairs(steps[1].checklist) do
 		expected[#expected + 1] = h.ns.StepStyle.Checklist(steps[1], giver)
 	end
@@ -2541,8 +2541,8 @@ do
 	h.flush()
 	local steps = ns.Route().steps
 	local step = steps[1]
-	equal(step.title, "Visit The Crossroads: Pick up 6, turn in 1", "tracker, town: town and actions")
-	equal(step.detail, "1 to hand in, 6 to pick up", "tracker, town: the hand-in joins the pickups")
+	equal(step.title, "Visit The Crossroads: Pick up 5, turn in 1", "tracker, town: town and actions")
+	equal(step.detail, "1 to hand in, 5 to pick up", "tracker, town: the hand-in joins the pickups")
 	local expected = { step.detail, "Opens the next chapter here" }
 	for _, giver in ipairs(step.checklist) do
 		expected[#expected + 1] = ns.StepStyle.Checklist(step, giver)
