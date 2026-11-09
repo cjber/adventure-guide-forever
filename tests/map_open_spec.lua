@@ -1,8 +1,9 @@
 -- Run from the repository root: luajit tests/map_open_spec.lua
--- Every map AGF opens goes through ns.OpenMap (#411). With the map already showing (the guide's sidebar, the cleanup
--- menu) it turns the map through Blizzard's own opener, whose call from addon code is not restricted; with the map
--- closed it asks C_Map.OpenWorldMap, which has Blizzard open it without tainting the gamepad UI. The restricted call
--- is never made on a shown map, where the carry card's MenuUtil callback raised ADDON_ACTION_BLOCKED.
+-- Every map AGF opens goes through ns.OpenMap, which asks C_Map.OpenWorldMap: the client's own code opens or turns
+-- the map, so WorldMapFrame.mapID is never written as the addon (#534). Blizzard's Lua OpenWorldMap
+-- (Blizzard_WorldMap.lua:1329) runs as its caller instead, and the client then blocks the quest pins that read the
+-- map id (QuestDataProvider.lua:117, Blizzard_MapCanvas.lua:331). A MenuUtil callback refuses C_Map.OpenWorldMap
+-- (#411), so the carry card's cleanup menu asks after the menu has closed.
 local harness = dofile("tests/harness.lua")
 local checks = 0
 local function equal(actual, expected, label)
@@ -64,7 +65,7 @@ local h = harness.load({
 h.flush()
 local ns = h.ns
 
--- The restricted call is the one Blizzard blocks from addon menu callbacks; it must never run while the map shows.
+-- The client's own opener, counted; Blizzard's Lua opener (h.counts.OpenWorldMap) is what the addon must never run.
 local restricted = 0
 local cMapOpen = h.G.C_Map.OpenWorldMap
 h.G.C_Map.OpenWorldMap = function(...)
@@ -75,17 +76,17 @@ local function Opened()
 	return h.counts.OpenWorldMap
 end
 
--- A closed map still opens through the client's own entry point, which Blizzard runs without tainting the UI.
+-- A closed map opens through the client, which leaves the map's fields secure.
 h.G.WorldMapFrame:Hide()
 local opened, maps = Opened(), h.counts.SetMapID
 equal(ns.OpenMap(0), true, "closed: the map opens on the player's own map")
-equal(Opened(), opened, "closed: through C_Map.OpenWorldMap")
-equal(restricted, 1, "closed: the client's entry point")
+equal(Opened(), opened, "closed: Blizzard's Lua opener is never run")
+equal(restricted, 1, "closed: through C_Map.OpenWorldMap")
 equal(h.counts.SetMapID, maps, "closed: no map id keeps the current map")
 equal(h.G.WorldMapFrame:IsShown(), true, "closed: the map now shows")
 
--- The reported path: the carry card's cleanup menu, with the map showing. Its MenuUtil callback opened through
--- Blizzard's own function and did not touch the restricted call.
+-- The reported path: the carry card's cleanup menu, with the map showing. Its MenuUtil callback refuses the client
+-- opener, so the open is asked for after the menu has closed and still never runs Blizzard's Lua opener.
 ns.OpenPanel()
 h.flush()
 local carry = Carry(ns)
@@ -96,50 +97,103 @@ h.Click(card, "RightButton")
 local entry = h.menu and MenuEntry(h.menu, "Plainstrider Menace")
 assert(entry, "the cleanup menu offers the quest")
 opened, maps = Opened(), h.counts.SetMapID
+local before = restricted
 entry.onClick()
 equal(h.selectedQuests[#h.selectedQuests], 844, "cleanup: the quest is selected in the log")
-equal(Opened(), opened + 1, "cleanup: the map turns through Blizzard's opener")
+equal(restricted, before, "cleanup: the open waits for the menu to close")
+h.flush()
+equal(restricted, before + 1, "cleanup: through C_Map.OpenWorldMap")
+equal(Opened(), opened, "cleanup: Blizzard's Lua opener is never run")
 equal(h.counts.SetMapID, maps + 1, "cleanup: on the quest's zone")
 equal(h.map:GetMapID(), 1413, "cleanup: the map's id")
-equal(restricted, 1, "cleanup: the restricted call is not made")
 
 -- The guide's panel, a log step's quest and a pin reveal all take the same path while the map shows.
-opened = Opened()
+opened, maps = Opened(), restricted
 ns.OpenPanel()
 h.flush()
-equal(Opened(), opened + 1, "panel: through Blizzard's opener")
-opened = Opened()
+equal(restricted, maps + 1, "panel: through C_Map.OpenWorldMap")
+equal(Opened(), opened, "panel: Blizzard's Lua opener is never run")
+opened, maps = Opened(), restricted
 local step
 for _, each in ipairs(ns.Route().steps) do
 	step = step or (ns.InLog(each) and each or nil)
 end
 assert(step, "the route has a quest in the log")
 equal(ns.ShowQuest(step), true, "step: the quest opens")
-equal(Opened(), opened + 1, "step: through Blizzard's opener")
-opened = Opened()
+equal(restricted, maps + 1, "step: through C_Map.OpenWorldMap")
+equal(Opened(), opened, "step: Blizzard's Lua opener is never run")
+opened, maps = Opened(), restricted
 ns.Pins.Reveal({ map = 1413, x = 0.5, y = 0.5 })
-equal(Opened(), opened + 1, "reveal: through Blizzard's opener")
-equal(restricted, 1, "shown: the restricted call is still not made")
+equal(restricted, maps + 1, "reveal: through C_Map.OpenWorldMap")
+equal(Opened(), opened, "reveal: Blizzard's Lua opener is never run")
+
+-- MenuUtil runs a responder inside its securecall, where the client refuses C_Map.OpenWorldMap (#411): the step
+-- menu's map entries wait for the menu to close.
+local function Recorder()
+	local root = { buttons = {} }
+	function root:CreateTitle() end
+	function root:SetScrollMode() end
+	function root:CreateButton(text, onClick)
+		local button = { text = text, onClick = onClick, buttons = {} }
+		button.CreateTitle = function() end
+		button.SetScrollMode = function() end
+		button.SetTooltip = function() end
+		button.CreateButton = function(_, text2, onClick2)
+			local nested = { text = text2, onClick = onClick2 }
+			button.buttons[#button.buttons + 1] = nested
+			return nested
+		end
+		root.buttons[#root.buttons + 1] = button
+		return button
+	end
+	return root
+end
+local function MenuButton(root, text)
+	for _, button in ipairs(root.buttons) do
+		if button.text == text then
+			return button
+		end
+	end
+end
+local recorder = Recorder()
+ns.Menu.Step(recorder, step)
+local showQuest = MenuButton(recorder, ns.L.SHOW_QUEST)
+assert(showQuest, "the step menu offers Show quest")
+local select = MenuButton(recorder, ns.L.CHOOSE_JOURNEY)
+assert(select, "the step menu offers Choose another journey")
+opened, maps = Opened(), restricted
+showQuest.onClick()
+equal(restricted, maps, "menu: Show quest waits for the menu to close")
+h.flush()
+equal(restricted, maps + 1, "menu: Show quest through C_Map.OpenWorldMap")
+equal(Opened(), opened, "menu: Show quest never runs Blizzard's Lua opener")
+opened, maps = Opened(), restricted
+select.onClick()
+equal(restricted, maps, "menu: Choose another journey waits for the menu to close")
+h.flush()
+equal(restricted, maps + 1, "menu: Choose another journey through C_Map.OpenWorldMap")
+equal(Opened(), opened, "menu: Choose another journey never runs Blizzard's Lua opener")
 
 -- A reveal on a closed map asks the client to open it, untainted, and the compartment button follows the same rule.
 h.G.WorldMapFrame:Hide()
-opened = Opened()
+opened, maps = Opened(), restricted
 ns.Pins.Reveal({ map = 1413, x = 0.5, y = 0.5 })
-equal(Opened(), opened, "reveal closed: the client opens it")
-equal(restricted, 2, "reveal closed: through C_Map.OpenWorldMap")
+equal(restricted, maps + 1, "reveal closed: through C_Map.OpenWorldMap")
+equal(Opened(), opened, "reveal closed: Blizzard's Lua opener is never run")
 h.G.WorldMapFrame:Show()
-opened = Opened()
+opened, maps = Opened(), restricted
 h.G.AdventureGuideForever_OnAddonCompartmentClick()
 h.flush()
-equal(Opened(), opened + 1, "compartment: through Blizzard's opener")
+equal(restricted, maps + 1, "compartment: through C_Map.OpenWorldMap")
+equal(Opened(), opened, "compartment: Blizzard's Lua opener is never run")
 
 -- In combat nothing opens, either way.
 local shown = h.G.WorldMapFrame:IsShown()
-opened = Opened()
+opened, maps = Opened(), restricted
 h.SetCombat(true)
 equal(ns.OpenMap(1413), false, "combat: no map")
-equal(Opened(), opened, "combat: the opener is not called")
-equal(restricted, 2, "combat: nor the client's")
+equal(restricted, maps, "combat: the opener is not called")
+equal(Opened(), opened, "combat: nor Blizzard's Lua opener")
 h.SetCombat(false)
 equal(h.G.WorldMapFrame:IsShown(), shown, "combat: the map is left as it was")
 
