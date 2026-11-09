@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **A quest giver's tooltip on the world map now colours each quest like your quest log.** Hovering a "!" listed every quest it offers in plain gold, so one you had outlevelled looked worth taking. Each line now shows the quest's level in the quest log's difficulty colour, with the group tag when the quest has one. (#567)
+
 ## [1.4.0] - 2026-11-09
 
 <!-- discord-image: docs/screenshots/panel_four.png -->

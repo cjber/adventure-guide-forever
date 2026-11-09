@@ -1275,6 +1275,20 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Hover(giverPin)
 	equal(h.tooltip[1], "title: " .. giverPin.giver.title, label .. ": giver tooltip title")
 	equal(#h.tooltip, #giverPin.giver.quests + 3, label .. ": a giver tooltip line per quest")
+	-- Each offered quest is a pickup line, numbered and coloured as the quest log colours its level (#567).
+	local offered = ns.Data.quests[giverPin.giver.quests[1]]
+	local level = offered.level == -1 and h.G.UnitLevel("player") or offered.level
+	equal(
+		h.tooltip[2],
+		"colored: |A:questnormal:14:14|a " .. ns.L.QUEST_LEVEL:format(level, offered.title),
+		label .. ": a giver's quest line has its pickup mark and level"
+	)
+	local difficulty = h.G.GetQuestDifficultyColor(level)
+	same(
+		h.tooltipColors[2],
+		{ difficulty.r, difficulty.g, difficulty.b },
+		label .. ": a giver's quest line wears the quest log's difficulty colour"
+	)
 	equal(h.tooltip[#h.tooltip - 1], click, label .. ": giver tooltip instruction")
 	equal(h.tooltip[#h.tooltip], "instruction: " .. ns.L.SHIFT_ADD, label .. ": and the shift-click's")
 	-- The client answers "" for a title it hasn't cached: the line falls back to the data's title.
@@ -1283,14 +1297,9 @@ for _, spf in ipairs({ false, "v1" }) do
 		return ""
 	end
 	h.Hover(giverPin)
-	local uncached = ns.Data.quests[giverPin.giver.quests[1]]
 	equal(
 		h.tooltip[2],
-		"normal: "
-			.. ns.L.QUEST_LEVEL:format(
-				uncached.level == -1 and h.G.UnitLevel("player") or uncached.level,
-				uncached.title
-			),
+		"colored: |A:questnormal:14:14|a " .. ns.L.QUEST_LEVEL:format(level, offered.title),
 		label .. ": an uncached title reads the data's"
 	)
 	h.G.C_QuestLog.GetTitleForQuestID = titleFor
