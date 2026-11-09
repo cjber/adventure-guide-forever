@@ -178,6 +178,38 @@ function Model.Handins(step)
 	return step.handins or (step.kind == "turnin" and step.quests) or NONE
 end
 
+-- The quests a step picks up: a town's eligible pickups, else a lone pickup step's own quests.
+---@param step AGFStep
+---@return integer[]
+function Model.Pickups(step)
+	local kind = step.kind --[[@as string]]
+	return step.pickups or (kind == "pickup" and step.quests) or NONE
+end
+
+-- The distinct quest IDs a step works on, ascending: an area step's open objectives, or an objective step's own quests.
+---@param step AGFStep
+---@return integer[]
+function Model.Objectives(step)
+	local ids, seen = {}, {}
+	for _, objective in ipairs(step.objectives or NONE) do
+		if objective.id and not seen[objective.id] then
+			seen[objective.id] = true
+			ids[#ids + 1] = objective.id
+		end
+	end
+	local kind = step.kind --[[@as string]]
+	if not ids[1] and (kind == "objective" or step.verb == "objective") then
+		for _, id in ipairs(step.quests or NONE) do
+			if not seen[id] then
+				seen[id] = true
+				ids[#ids + 1] = id
+			end
+		end
+	end
+	table.sort(ids)
+	return ids
+end
+
 -- Only published quest data is memoized; player/log/completion tables may change in place.
 ---@type table<AGFData, AGFIndex>
 local indexes = setmetatable({}, { __mode = "k" })

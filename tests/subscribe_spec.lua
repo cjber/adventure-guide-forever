@@ -149,4 +149,34 @@ do
 	equal(late, 1, "api: called on the next burst")
 end
 
+-- A status change alone calls back (minor 5): pausing and resuming leave the stop and journey alone.
+do
+	local h = Load("subscribe")
+	local API = h.G.AdventureGuideForever.API
+	h.ns.StartRoute()
+	h.flush()
+	equal(API.Status(), "running", "status: the route runs")
+	local calls, seen = 0, {}
+	API.Subscribe(function(changes)
+		calls = calls + 1
+		seen[#seen + 1] = changes
+	end)
+	local base = calls
+	equal(API.Pause(), true, "status: pause accepted")
+	h.flush()
+	equal(API.Status(), "paused", "status: paused")
+	equal(calls, base + 1, "status: one call for the pause")
+	local changes = seen[#seen]
+	equal(changes.status, true, "status: the change is named")
+	equal(changes.stop, nil, "status: the stop did not change")
+	equal(changes.journey, nil, "status: nor the journey")
+	equal(API.Resume(), true, "status: resume accepted")
+	h.flush()
+	equal(API.Status(), "running", "status: running again")
+	equal(calls, base + 2, "status: one call for the resume")
+	equal(seen[#seen].status, true, "status: the resume is named")
+	equal(seen[#seen].stop, nil, "status: still the same stop")
+	equal(#h.errors, 0, "status: errors\n" .. table.concat(h.errors, "\n"))
+end
+
 print(("subscribe_spec: %d checks passed"):format(checks))

@@ -5,9 +5,9 @@ local _, ns = ...
 -- nil means the route is still settling, so ask again later.
 ---@class AGFAPI
 -- `minor` rises with each addition within version 1 (1: Subscribe, 2: Suggestions and StartSuggestion, 3: Stats,
--- 4: Leaderboard);
+-- 4: Leaderboard, 5: Status, Pause, Resume and each stop's quest IDs);
 -- a caller checks a member before using it.
-local API = { version = 1, minor = 4 }
+local API = { version = 1, minor = 5 }
 
 local NEXT_LIMIT = 8
 local SUGGESTION_LIMIT = 5
@@ -26,20 +26,65 @@ function API.Leaderboard(limit)
 	return ns.Stats.Leaderboard(limit)
 end
 
+-- What the stop is, in the words docs/api.md lists: a town or lone pickup step reads as that visit, an area as its
+-- objective work, and a companion guide's step as "guide".
+---@type table<string, AGFAPIStopKind>
+local KINDS = {
+	area = "objective",
+	battlemaster = "battlemaster",
+	dungeon = "objective",
+	guide = "guide",
+	objective = "objective",
+	pickup = "pickup",
+	town = "town",
+	trainer = "trainer",
+	turnin = "turnin",
+}
+
+---@param step AGFStep
+---@return AGFAPIStopKind
+local function Kind(step)
+	if step.kind == "guide" then
+		return "guide"
+	end
+	if step.verb then
+		return step.verb
+	end
+	local kind = step.kind --[[@as string]]
+	return KINDS[kind] or "guide"
+end
+
+-- A fresh ascending copy: a stop never shares a table with the route.
+---@param ids integer[]
+---@return integer[]
+local function Sorted(ids)
+	local copy = {}
+	for index, id in ipairs(ids) do
+		copy[index] = id
+	end
+	table.sort(copy)
+	return copy
+end
+
 ---@param step AGFStep
 ---@return AGFAPIStop?
 local function Stop(step)
 	if not ns.Model.ValidPlace(step) then
 		return nil
 	end
+	local pickups, handins = ns.Model.Pickups(step), ns.Model.Handins(step)
 	return {
 		map = step.map,
 		x = step.x,
 		y = step.y,
 		name = step.place or step.zone or step.title,
 		isTown = step.kind == "town",
-		handins = #ns.Model.Handins(step),
-		pickups = step.pickups and #step.pickups or 0,
+		kind = Kind(step),
+		handins = #handins,
+		pickups = #pickups,
+		pickupQuests = Sorted(pickups),
+		turninQuests = Sorted(handins),
+		objectiveQuests = Sorted(ns.Model.Objectives(step)),
 	}
 end
 
@@ -84,6 +129,48 @@ function API.NextStops(limit)
 		stops[#stops + 1] = stop
 	end
 	return stops
+end
+
+-- Where the chosen journey's guidance stands: "running" while its route is ours, else Guidance's "queued", "paused" or
+-- "arrived"; nil when no journey is chosen (or the route does not guide).
+---@return AGFAPIStatus?
+function API.Status()
+	if not ns.RouteSettled() then
+		return nil
+	end
+	local route = ns.Route()
+	if not route.chosen then
+		return nil
+	end
+	local status = ns.Guidance.Status()
+	if status then
+		return status
+	end
+	return ns.Guidance.Running(route.journey) and "running" or nil
+end
+
+-- Stops the chosen journey's route but keeps the choice, in the same paused state as a route cleared in Shortest Path,
+-- so its card and the tracker title resume it. False when the route is working out or nothing is chosen.
+---@return boolean
+function API.Pause()
+	if not ns.RouteSettled() then
+		return false
+	end
+	return ns.Guidance.Pause()
+end
+
+-- Starts the chosen journey's route again as its card's Start does. False when nothing is chosen, the route is working
+-- out, or it cannot start.
+---@return boolean
+function API.Resume()
+	if not ns.RouteSettled() then
+		return false
+	end
+	local route = ns.Route()
+	if not route.chosen then
+		return false
+	end
+	return ns.StartJourney(route.journey) == true
 end
 
 ---@param limit? integer how many, five (the most) unless given
@@ -169,9 +256,9 @@ end
 
 ---@type AGFSubscription[]
 local subscriptions = {}
--- What the last dispatch saw: CurrentStop's answer as a string (false for none) and the journey followed.
----@type string|false, string|false
-local lastStop, lastJourney = false, false
+-- What the last dispatch saw: CurrentStop's answer as a string (false for none), the journey followed and Status().
+---@type string|false, string|false, string|false
+local lastStop, lastJourney, lastStatus = false, false, false
 local pending = false
 
 ---@param stop? AGFAPIStop
@@ -180,14 +267,18 @@ local function StopKey(stop)
 	if not stop then
 		return false
 	end
-	return ("%d:%.4f:%.4f:%s:%s:%d:%d"):format(
+	return ("%d:%.4f:%.4f:%s:%s:%s:%d:%d:%s:%s:%s"):format(
 		stop.map,
 		stop.x,
 		stop.y,
 		tostring(stop.name),
 		tostring(stop.isTown),
+		tostring(stop.kind),
 		stop.handins,
-		stop.pickups
+		stop.pickups,
+		table.concat(stop.turninQuests, ","),
+		table.concat(stop.pickupQuests, ","),
+		table.concat(stop.objectiveQuests, ",")
 	)
 end
 
@@ -203,9 +294,10 @@ local function Dispatch()
 	local route = ns.Route()
 	local stop = StopKey(API.CurrentStop())
 	local journey = route.journey and (route.journey .. (route.chosen and ":chosen" or "")) or false
-	local stopChanged, journeyChanged = stop ~= lastStop, journey ~= lastJourney
-	lastStop, lastJourney = stop, journey
-	if not (stopChanged or journeyChanged) then
+	local status = API.Status() or false
+	local stopChanged, journeyChanged, statusChanged = stop ~= lastStop, journey ~= lastJourney, status ~= lastStatus
+	lastStop, lastJourney, lastStatus = stop, journey, status
+	if not (stopChanged or journeyChanged or statusChanged) then
 		return
 	end
 	local current = {}
@@ -217,6 +309,7 @@ local function Dispatch()
 			ns.SafeCall("API subscriber", subscription.callback, {
 				stop = stopChanged or nil,
 				journey = journeyChanged or nil,
+				status = statusChanged or nil,
 			})
 		end
 	end
@@ -247,6 +340,7 @@ function API.Subscribe(callback)
 		local route = ns.RouteSettled() and ns.Route()
 		lastStop = route and StopKey(API.CurrentStop()) or false
 		lastJourney = route and route.journey and (route.journey .. (route.chosen and ":chosen" or "")) or false
+		lastStatus = route and (API.Status() or false) or false
 	end
 	---@type AGFSubscription
 	local subscription = { callback = callback }

@@ -117,7 +117,7 @@ abandons quests.
 - **2.22 Addon API.** `AdventureGuideForever.API` (docs/api.md) is read-only and versioned. It copies the
   tracker's step from the committed route and answers nil while a route is due, never building one for a caller.
   Fields are added, never renamed or repurposed, within a version; `minor` counts the additions. `Subscribe` calls
-  back the frame after the stop or the journey changes. Shortest Path's own `Subscribe`, when it has one, replaces
+  back the frame after the stop, the journey or the status changes. Shortest Path's own `Subscribe`, when it has one, replaces
   watching the super-tracking events. `Suggestions` copies the panel's cards in the order it draws them, and
   `StartSuggestion` starts one through the same `ns.StartJourney` as the guide's Start, so another addon's menu and the
   guide never disagree.

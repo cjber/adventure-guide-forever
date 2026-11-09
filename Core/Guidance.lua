@@ -223,8 +223,8 @@ function Guidance.Owns()
 	return OwnsWaypoint() or Integrations.CurrentStop() ~= nil
 end
 
--- Stop: ends only what Go started. Shortest Path's journey by our name, and the native waypoint only while it is ours.
-function Guidance.Cancel()
+-- Ends only what Go started: Shortest Path's journey by our name, and the native waypoint only while it is ours.
+local function CancelRoute()
 	ns.Prefs().guided, ours, arrived, stopped = nil, false, false, nil
 	if Integrations.Drop() then
 		ns.Pins.Refresh()
@@ -233,7 +233,27 @@ function Guidance.Cancel()
 		Integrations.ClearWaypoint(ns.Prefs().waypoint)
 		ns.Prefs().waypoint = nil
 	end
+end
+
+-- Stop: ends only what Go started. Shortest Path's journey by our name, and the native waypoint only while it is ours.
+function Guidance.Cancel()
+	CancelRoute()
 	Notify()
+end
+
+-- The API's Pause: stops the chosen journey's route but keeps the choice, in the same paused state a route cleared in
+-- Shortest Path leaves (Paused), so its card and the tracker title resume it. False when nothing is chosen.
+---@return boolean
+function Guidance.Pause()
+	local route = ns.Route()
+	if not route.chosen then
+		return false
+	end
+	local key = route.journey
+	CancelRoute()
+	stopped = key
+	Notify()
+	return true
 end
 
 -- Our journey ended since the last look (docs/design.md §2.10): arriving keeps the choice's guidance, so new steps
