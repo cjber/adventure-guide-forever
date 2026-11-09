@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-11-09
+
+<!-- discord-image: docs/screenshots/panel_four.png -->
+
 - **Dungeon journeys gather every quest chain before sending you in.** Choosing the Deadmines used to show "Go to entrance" with only the next step of each chain beside it, so you could walk in without The Defias Brotherhood's final part, Red Silk Bandanas or Destruction in Deadmines. The card now walks each chain that leads into the dungeon back to the step you can take now, including chains that start with two quests at once, keeps the entrance for last and says how many of the dungeon's quests you would leave behind. Each chain shows as its own group with how far along you are, apart from the single quests. (#557)
 
 ## [1.3.2] - 2026-11-09

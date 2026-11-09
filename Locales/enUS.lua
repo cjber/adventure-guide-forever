@@ -551,7 +551,7 @@ ns.L = {
 	STEP_BATTLEMASTER = "Visit the battlemaster in %s",
 	-- After an update (WhatsNew): the version, then WHATS_NEW.
 	UPDATED_TO = "updated to %s. %s",
-	SETTING_WHATS_NEW = "What's new after an update",
+	SETTING_WHATS_NEW = "Dungeon journeys gather every quest chain before sending you in.",
 	SETTING_WHATS_NEW_TOOLTIP = "One line in chat the first time you log in after the guide updates.",
 	-- Companion hints (Companions.lua): what another Forever addon would add here, while it isn't loaded. The
 	-- Forever addons page itself and its setting are UI/ForeverFamily.lua's, shared by all five addons.
