@@ -12,6 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Walking into your step's area no longer takes the marker from another guide.** Focusing the quest for the area you stand in used to stop the game's navigation marker wherever another addon or the player had put it, so Shortest Path's arrow drew a second marker beside the quest's. It now puts the super-tracked waypoint back, whoever placed it. Reported on CurseForge by vladsnz (cjber/shortest-path-forever#531).
 - **The Forever Leaderboards period menu works with a gamepad.** With the gamepad interface on, a press on it steps through this week or all time, for your guild and group or for players you've met, instead of opening a game menu that later had the client block `SetPreferredGamepadInteractTarget()` (cjber/forever-core#267).
 
 ## [1.2.2] - 2026-11-08

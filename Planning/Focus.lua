@@ -6,6 +6,9 @@ local _, ns = ...
 -- own blue objective area where the player stands. Only on walking in, and never over a quest the player selected: a
 -- selection that is neither none nor the one AGF made is theirs. Leaving the area, finishing its objectives or turning
 -- the setting off clears AGF's selection while it is still AGF's, back to none, the only selection AGF ever replaces.
+-- Selecting the quest must not take native navigation from whoever is using it: a super-tracked user waypoint is
+-- super-tracked again afterwards, whether AGF, Shortest Path or the player placed it, so the marker keeps leading and
+-- the quest only highlights its objective area.
 -- The call is not protected (Blizzard_APIDocumentationGenerated/SuperTrackManagerDocumentation.lua on 1.60.1), so it
 -- runs in combat too.
 ---@class AGFFocusModule : AGFFocus
@@ -81,10 +84,11 @@ function Focus.Sync()
 	local set = Focus.Next(state, Here(ns.Route()), C_SuperTrack.GetSuperTrackedQuestID(), ns.Setting("followQuest"))
 	area, prefs.focus = state.area, state.quest
 	if set then
-		local navigating = ns.Integrations.WaypointAt(prefs.waypoint) and C_SuperTrack.IsSuperTrackingUserWaypoint()
+		-- Whoever placed the super-tracked waypoint (AGF, Shortest Path or the player), the quest focus must not
+		-- take the marker: restore the waypoint's tracking after selecting the quest for its objective area.
+		local navigating = C_SuperTrack.IsSuperTrackingUserWaypoint()
 		C_SuperTrack.SetSuperTrackedQuestID(set)
-		-- Objective highlighting must not take focus from our running native navigation.
-		if navigating and not C_SuperTrack.IsSuperTrackingUserWaypoint() then
+		if navigating then
 			C_SuperTrack.SetSuperTrackedUserWaypoint(true)
 		end
 	end
