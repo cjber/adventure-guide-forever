@@ -493,6 +493,64 @@ local function WaypointUINavigation()
 	return navigation
 end
 
+-- Naowh's Journeys (NaowhForever_Utilities' Journeys module) turns a new native waypoint that is not its own into a
+-- journey of its own, when its "Map Pins" option is on. Go still puts the native waypoint down, Naowh moves it to its
+-- first leg, and the guide counts the journey as its own guidance while it heads for the place Go set (#304); Stop
+-- clears the waypoint, which ends that journey. It is read at the point of use, because it may load after us, like
+-- Waypoint UI above. Every call is another addon's code, so each goes through ns.SafeCall.
+---@return AGFNaowhJourneys?
+local function NaowhJourneys()
+	local addon = rawget(_G, "NaowhForever")
+	if type(addon) ~= "table" then
+		return nil
+	end
+	local journeys = addon.Journeys
+	if type(journeys) ~= "table" then
+		return nil
+	end
+	local settings, guide = journeys.Settings, journeys.Guide
+	if
+		type(journeys.On) ~= "function"
+		or type(settings) ~= "table"
+		or type(settings.Get) ~= "function"
+		or type(guide) ~= "table"
+		or type(guide.Destination) ~= "function"
+	then
+		return nil
+	end
+	---@cast journeys AGFNaowhJourneys
+	return journeys
+end
+
+-- Naowh Journeys guides `place`: it is on with map pins, and the journey it runs heads for the place Go put the
+-- waypoint on. Its legs move the native waypoint, so the client's waypoint itself no longer sits there.
+---@param place? {map: integer, x: number, y: number}
+---@return boolean
+function Integrations.YieldedAt(place)
+	if not place then
+		return false
+	end
+	local journeys = NaowhJourneys()
+	if not journeys then
+		return false
+	end
+	local onOK, on = ns.SafeCall("Naowh Journeys", journeys.On)
+	if not (onOK and on) then
+		return false
+	end
+	local pinsOK, pins = ns.SafeCall("Naowh Journeys settings", journeys.Settings.Get, "mapPins")
+	if not (pinsOK and pins) then
+		return false
+	end
+	local destinationOK, map, x, y = ns.SafeCall("Naowh Journeys destination", journeys.Guide.Destination)
+	return destinationOK
+		and map == place.map
+		and type(x) == "number"
+		and type(y) == "number"
+		and math.abs(x / 100 - place.x) < 1e-4
+		and math.abs(y / 100 - place.y) < 1e-4
+end
+
 -- Waypoint UI's current navigation still sits at `place`: the one Go handed over, not something the player or
 -- Waypoint UI replaced since. It takes percent but keeps the session's point as a fraction of the map, as ours is.
 ---@param navigation table

@@ -254,6 +254,25 @@ TweaksForever = nil
 ---@type AGFPolestarGlobal?
 Polestar = nil
 
+-- Naowh's Journeys (NaowhForever_Utilities, Journeys/Pins.lua): it turns a new native waypoint that is not its own
+-- into a journey. Integrations.lua reads these members at the point of use, each checked before it is called.
+---@class AGFNaowhJourneySettings
+---@field Get fun(key: string): any? one of the module's options by name; "mapPins" is true while map pins become journeys
+
+---@class AGFNaowhJourneyGuide
+---@field Destination fun(): integer?, number?, number? the running journey's last stop: map, x and y in percent (0-100); nothing when no journey runs
+
+---@class AGFNaowhJourneys
+---@field On fun(): boolean? true while the module is enabled
+---@field Settings AGFNaowhJourneySettings
+---@field Guide AGFNaowhJourneyGuide
+
+---@class AGFNaowhGlobal
+---@field Journeys? AGFNaowhJourneys
+
+---@type AGFNaowhGlobal?
+NaowhForever = nil
+
 -- Party.lua: the client's home group category (Enum-era clients define it as 1) and its "Unknown" name for a unit not
 -- loaded yet; both read only, and checked against nil.
 ---@type integer?
