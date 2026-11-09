@@ -594,9 +594,7 @@ end
 local secureOpenWorldMap
 local function OpenMapThroughClient(mapID)
 	if not secureOpenWorldMap then
-		secureOpenWorldMap = CreateSecureDelegate(function(id)
-			C_Map.OpenWorldMap(id)
-		end)
+		secureOpenWorldMap = CreateSecureDelegate(C_Map.OpenWorldMap)
 	end
 	return secureOpenWorldMap(mapID)
 end
