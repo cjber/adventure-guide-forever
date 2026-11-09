@@ -12,8 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-- **One marker per journey quest.** While the guide shows a journey on the world map, the game's own quest icon for each quest at a numbered stop is hidden, so a stop no longer reads twice. Quests outside the journey keep theirs.
 
+## [1.2.4] - 2026-11-09
+
+- **One marker per journey quest.** While the guide shows a journey on the world map, the game's own quest icon for each quest at a numbered stop is hidden, so a stop no longer reads twice. Quests outside the journey keep theirs.
 - **Go works with Naowh's Journeys.** With Naowh's Journeys turning map pins into journeys, the guide's waypoint became Naowh's journey and the guide thought its route had stopped. It now counts that journey as its own guidance: Stop ends it, and the next step's waypoint takes over from it. (#304).
 
 ## [1.2.3] - 2026-11-09
