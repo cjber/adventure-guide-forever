@@ -502,11 +502,12 @@ local function CleanupMenu(owner, journey)
 	return true
 end
 
--- Choosing a journey shows its route and turns the map to it, and with the setting on starts it (ns.Choose, once the
--- rebuild has its steps). The map turns before the invalidation, so its redraw reads the route as it is and the one
--- rebuild waits a frame. The chosen card is no toggle: the header's back arrow goes back to the overview and the
--- footer's Stop stops the route, so a click on it only turns the map to it again, or resumes its route while that is
--- paused. Right-click offers "Not interested", except on what the player carries, whose menu cleans up the log.
+-- Choosing a journey shows its route, and with the setting on starts it (ns.Choose, once the rebuild has its steps);
+-- the map then turns to it. The choice comes first and only the map turn is protected, so a build where opening the
+-- map fails still selects the journey (#590, #599). The chosen card is no toggle: the header's back arrow goes back to
+-- the overview and the footer's Stop stops the route, so a click on it only turns the map to it again, or resumes its
+-- route while that is paused. Right-click offers "Not interested", except on what the player carries, whose menu
+-- cleans up the log.
 ---@param self AGFCardButton
 ---@param mouseButton string
 local function CardClick(self, mouseButton)
@@ -533,12 +534,12 @@ local function CardClick(self, mouseButton)
 	if self.state == "chosen" and ns.Guidance.Status() == "paused" then
 		ns.StartRoute()
 	else
-		-- Turn the map to the selected journey.
-		if WorldMapFrame:IsShown() and journey.map > 0 then
-			ns.OpenMap(journey.map)
-		end
 		if self.state ~= "chosen" then
 			ns.Choose(journey.key, ns.Setting("titleStartsRoute"))
+		end
+		-- Turn the map to the selected journey, never letting its failure undo the choice.
+		if WorldMapFrame:IsShown() and journey.map > 0 then
+			pcall(ns.OpenMap, journey.map)
 		end
 	end
 	-- Its tooltip spoke for the state the click just left.
