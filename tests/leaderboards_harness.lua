@@ -287,7 +287,7 @@ function harness.Client()
 			return name
 		end,
 		GetNumGuildMembers = function()
-			-- The client returns (numMembers, numOnline); the second value must not reach tonumber's base (#587).
+			-- The client returns (numMembers, numOnline); the second must not reach tonumber's base (#587).
 			return #harness.guildMembers, 1
 		end,
 		GetGuildRosterInfo = function(index)
