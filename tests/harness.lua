@@ -236,6 +236,7 @@ function harness.load(options)
 			SetMapID = 0,
 			OpenQuestLog = 0,
 			OpenWorldMap = 0,
+			secureCalls = 0,
 		},
 		modelCalls = {},
 		fanfares = {},
@@ -1851,9 +1852,15 @@ function harness.load(options)
 	end
 	-- CreateSecureDelegate: the client wraps a Lua function so a call from addon code runs with secure execution
 	-- taint. The sim models it (forever_sim/tooltip.lua) as clearing taint for the call then restoring the caller's.
-	G.CreateSecureDelegate = G.CreateSecureDelegate or function(fn)
-		return fn
+	-- Calls through a delegate are counted, so a spec can tell an opener that ran through the shared secure opener
+	-- from a caller that ran the restricted client function itself (cjber/forever-core#333).
+	local function CountedDelegate(fn)
+		return function(...)
+			h.counts.secureCalls = h.counts.secureCalls + 1
+			return fn(...) -- multi-value: the wrapped client function's results pass through
+		end
 	end
+	G.CreateSecureDelegate = G.CreateSecureDelegate or CountedDelegate
 	G.hooksecurefunc = function(target, name, hook)
 		if type(target) == "string" then
 			target, name, hook = G, target, name
@@ -2837,6 +2844,9 @@ function harness.load(options)
 	-- h.settings is the registered rows; h.addonSettings the setting object per row, so a spec can drive the
 	-- real value-changed callback the checkbox fires, not only ns.SetSetting.
 	h.settings, h.taintedRows, h.subcategories, h.openedSettings, h.addonSettings = {}, 0, {}, nil, {}
+	-- The restricted wrapper's own counter and the scroll target the secure opener asked for, for specs that check
+	-- the settings open path (cjber/forever-core#333).
+	h.openedSettingsRestricted, h.openedSettingsElement = 0, nil
 	-- h.canvasPages: the pages the addon draws itself, by name.
 	h.canvasPages = {}
 	local settingsCategory = 0
@@ -2963,8 +2973,20 @@ function harness.load(options)
 			h.settings[#h.settings + 1] = initializer
 		end,
 		RegisterAddOnCategory = noop,
+		-- Blizzard's Lua wrapper runs the restricted C_SettingsUtil.OpenSettingsPanel in the addon's taint, which the
+		-- client refuses and blames the addon (cjber/forever-core#333). The addon asks the shared secure opener
+		-- (ns.OpenSettingsPanel) instead; this count lets a spec fail if a call site goes back to the wrapper.
 		OpenToCategory = function(categoryID)
+			h.openedSettingsRestricted = h.openedSettingsRestricted + 1
 			h.openedSettings = categoryID
+		end,
+	}
+	-- The client's own restricted opener, counted: the shared ns.OpenSettingsPanel (Core/OpenSettings.lua) reaches it
+	-- through CreateSecureDelegate.
+	G.C_SettingsUtil = {
+		OpenSettingsPanel = function(categoryID, element)
+			h.openedSettings = categoryID
+			h.openedSettingsElement = element
 		end,
 	}
 	function G.CreateSettingsButtonInitializer(name, tooltip, onClick, _, addSearchTags)

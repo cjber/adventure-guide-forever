@@ -904,7 +904,8 @@ function Pins.Reveal(point)
 		return
 	end
 	reveal = point
-	-- Blizzard's own opener: its code turns the map, as it does from the quest tracker's menu (#411).
+	-- The client's own opener, run securely (Core/OpenMap.lua): its code turns the map, as from the quest tracker's
+	-- menu.
 	ns.OpenMap(point.map)
 	C_Timer.After(0, function()
 		if not InCombatLockdown() and map then
