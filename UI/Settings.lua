@@ -258,7 +258,9 @@ function ns.RegisterSettings()
 		Settings.RegisterInitializer(
 			category,
 			CreateSettingsButtonInitializer(name, ns.L.SETTINGS_OPEN, function()
-				Settings.OpenToCategory(subcategory:GetID())
+				-- The shared secure opener (Core/OpenSettings.lua): Blizzard's Lua wrapper would ask the client's
+				-- restricted C_SettingsUtil.OpenSettingsPanel as this addon (cjber/forever-core#333).
+				ns.OpenSettingsPanel(subcategory:GetID())
 			end, nil, false)
 		)
 	end
@@ -279,6 +281,6 @@ function ns.RegisterSettings()
 
 	Settings.RegisterAddOnCategory(category)
 	function ns.OpenSettings()
-		Settings.OpenToCategory(category:GetID())
+		ns.OpenSettingsPanel(category:GetID())
 	end
 end

@@ -274,3 +274,5 @@ read_globals[#read_globals + 1] = "GetGuildRosterInfo"
 read_globals[#read_globals + 1] = "GetNumGuildMembers"
 -- Core/Log.lua: the client's date, this session's seconds.
 read_globals[#read_globals + 1] = "date"
+-- Core/OpenSettings.lua: the client's secure settings panel opener.
+read_globals[#read_globals + 1] = "C_SettingsUtil"

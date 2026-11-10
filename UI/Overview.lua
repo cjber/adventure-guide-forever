@@ -463,7 +463,8 @@ function Overview.OpenCleanupQuest(questID)
 	end
 	C_QuestLog.SetSelectedQuest(questID)
 	local map = GetQuestUiMapID(questID)
-	-- The client refuses C_Map.OpenWorldMap from a MenuUtil callback (#411), so ask once the menu has closed.
+	-- MenuUtil runs its callback inside a securecall, where the restricted C_Map.OpenWorldMap is refused (#411), so
+	-- ask once the menu has closed.
 	C_Timer.After(0, function()
 		ns.OpenMap(map)
 	end)

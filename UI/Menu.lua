@@ -115,8 +115,8 @@ function Menu.Step(root, step)
 		root:CreateButton(L.STOP, ns.Stop)
 	end
 	-- The quest's map only opens out of combat, so in combat the entry is left out rather than doing nothing.
-	-- MenuUtil runs a responder inside its securecall, where C_Map.OpenWorldMap is refused (#411); ask on the next
-	-- frame, as the addon, for the entries that open or turn the map.
+	-- MenuUtil runs a responder inside its securecall, where the restricted C_Map.OpenWorldMap is refused (#411); the
+	-- open is asked for on the next frame so it does not depend on what the menu's securecall allows.
 	if step and ns.InLog(step) and not InCombatLockdown() then
 		root:CreateButton(L.SHOW_QUEST, function()
 			C_Timer.After(0, function()
