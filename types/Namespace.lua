@@ -845,6 +845,7 @@
 
 ---@class AGFNamespace
 ---@field broken? boolean set when an installed ForeverCore is too old, so the addon's files stop
+---@field Icon string the one client icon this addon shows for itself in game, from ## X-Forever-Icon
 ---@field core ForeverCoreAddon the addon's own ForeverCore services: journal, log, report and map canvas
 ---@field ReportTitle string the localized title shown by the shared report window
 ---@field Offers AGFOffersModule what a giver's window really offers (Offers.lua)
