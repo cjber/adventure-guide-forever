@@ -470,7 +470,7 @@ L["TWEAKS_OUTDATED"] = "Aktualisiert Tweaks Forever, um Dungeoneingänge zu find
 L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
-L["WHATS_NEW"] = "The guide opens again on the map instead of doing nothing." -- mt
+L["WHATS_NEW"] = "A journey card chooses the guide even when the map will not open." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"
