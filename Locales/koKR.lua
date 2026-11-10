@@ -244,6 +244,7 @@ L["QUESTIE_ENABLE"] = "퀘스트 데이터를 불러오려면 QuestieDB를 켜�
 L["QUESTIE_FAILED"] = "읽기 실패 (%s)"
 L["QUESTIE_FIELD"] = "%s 항목이 없습니다"
 L["QUESTIE_FLAVOUR"] = "WoW: Forever용이 아닙니다"
+L["QUESTIE_INSTALL"] = "퀘스트 데이터를 불러오려면 QuestieDB를 설치하십시오."
 L["QUESTIE_POLICY"] = "수행 가능한 퀘스트를 추천받으려면 Questie를 켜십시오."
 L["QUESTIE_ZONES"] = "지역 테이블이 없습니다"
 L["QUESTS_HERE"] = "이곳의 퀘스트 %d개"
