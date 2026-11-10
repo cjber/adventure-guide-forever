@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The guide opens a little faster the first time.** It no longer prepares the journey cards an overview without a chosen journey never shows (#564).
+
 ## [1.5.0] - 2026-11-10
 
 - **Needs Forever Core.** The shared tracker column, bug report and leaderboards now come from one Forever Core addon, which comes in the same download, so every Forever addon's tracker scale, lock and position stay in step. Your tracker settings carry over.
