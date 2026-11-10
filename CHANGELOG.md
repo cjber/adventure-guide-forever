@@ -12,6 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The guide no longer sends you to Alterac Mountains for Ira's Dagger.** QuestieDB lists Bath'rah the Windwatcher there as one of the Duskwood quest's starters, so the guide sent you to him for a pickup he does not give. The quest starts from the dagger that drops in Duskwood, so it waits until you loot one. Reported on GitHub by starkovsky (#591).
 
 ## [1.4.5] - 2026-11-10
 
