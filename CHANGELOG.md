@@ -12,6 +12,11 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+
+## [1.4.5] - 2026-11-10
+
+- **A journey card chooses the guide even when the map will not open.** With the world map open, a click on a journey card turned the map before it chose the journey, so a build where the map opener raised lost the click and no guide could be selected at all. The click now chooses first and only the map turn is protected, so the guide is selected whatever the map does. (#590, #599)
+
 ## [1.4.4] - 2026-11-10
 
 ### Fixed
