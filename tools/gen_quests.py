@@ -499,7 +499,7 @@ def spawns(tables, kind, wanted, world):
     """Every spawn of the `wanted` entries of `kind`, with each zone map whose rectangle contains it.
 
     Zone rectangles overlap (Durotar's covers the eastern Barrens), so the map is chosen in `pick`, not here. `at` is
-    the spawn's continent and world x, y.
+    the spawn's continent and world x, y; `z` is its world height in yards.
     """
     names = {r.get("Entry", r.get("entry")): r.get("Name", r.get("name")) for r in tables[f"{kind}_template"]}
     # A positive event spawns the row only while that event (Midsummer, Hallow's End...) runs.
@@ -511,8 +511,38 @@ def spawns(tables, kind, wanted, world):
             continue
         if options := options_at(world[spawn["map"]], spawn["position_x"], spawn["position_y"], spawn["position_z"]):
             at = (spawn["map"], spawn["position_x"], spawn["position_y"])
-            result[entry].append({"entry": (kind, entry), "name": names[entry], "options": options, "at": at})
+            result[entry].append(
+                {
+                    "entry": (kind, entry),
+                    "name": names[entry],
+                    "options": options,
+                    "at": at,
+                    "z": spawn["position_z"],
+                }
+            )
     return result
+
+
+def spawn_heights(locations, role_found):
+    """The world height of each NPC or object with exactly one placed spawn, by creature and gameobject entry.
+
+    A stop that points at one spawn can say how high it is, so Shortest Path marks a raised floor (Sentinel Hill's
+    tower, #613). An NPC or object with several spawns cannot say which one a stop means, and an objective area over
+    many spawns says none. The height is whole yards, the precision the route needs.
+    """
+    found = defaultdict(set)
+    for relations in locations.values():
+        for spawn_list in relations.values():
+            for spawn in spawn_list:
+                found[spawn["entry"]].add((spawn["at"], round(spawn["z"])))
+    for spawn_list in role_found.values():
+        for spawn in spawn_list:
+            found[spawn["entry"]].add((spawn["at"], round(spawn["z"])))
+    heights = {"npc": {}, "object": {}}
+    for (kind, entry), places in found.items():
+        if len(places) == 1:
+            heights["npc" if kind == "creature" else "object"][entry] = next(iter(places))[1]
+    return heights
 
 
 def options_at(rows, x, y, z=0):
@@ -987,7 +1017,7 @@ def reaction(template):
     return 0 if enemies & 1 else (0 if enemies & 2 else 1) | (0 if enemies & 4 else 2)
 
 
-def role_npcs(tables, world, faction_rows, role, maps, counts, area_at):
+def role_npcs(tables, world, faction_rows, role, maps, counts, area_at, found):
     """Each role NPC (`roles`) with its side (`reaction`) and place: a spawn projected as a quest giver's is. `pick`
     resolves overlapping maps through the client's terrain area. Several proven spawns give the least place, as
     several givers of one quest do. What a trainer teaches is `roles`; the place only decides which trainer the
@@ -995,7 +1025,6 @@ def role_npcs(tables, world, faction_rows, role, maps, counts, area_at):
     """
     factions = {int(r["ID"]): r for r in faction_rows}
     template_faction = {r["Entry"]: r["Faction"] for r in tables["creature_template"]}
-    found = spawns(tables, "creature", role.keys(), world)
     npcs = {}
     for entry, fields in role.items():
         side = reaction(factions.get(template_faction[entry]))
@@ -1122,6 +1151,7 @@ class Generated:
     lookups: dict
     explorable: dict
     counts: Counter
+    heights: dict = field(default_factory=dict)
     expiring: dict = field(default_factory=dict)
 
 
@@ -1435,7 +1465,10 @@ def generate(
     towns, area_names = town_areas(centres, map_art, overlay_rows, area_rows)
     counts["town areas"] = sum(map(len, towns.values()))
     counts["zone maps with town areas"] = len(towns)
-    npcs = role_npcs(tables, world, faction_rows, role, centres.keys(), counts, area_at)
+    role_found = spawns(tables, "creature", role.keys(), world)
+    npcs = role_npcs(tables, world, faction_rows, role, centres.keys(), counts, area_at, role_found)
+    heights = spawn_heights(locations, role_found)
+    counts["spawn heights"] = len(heights["npc"]) + len(heights["object"])
     shifts, ferries = transport_routes(ui_maps, assignments, centres, tables, path_nodes, taxi_nodes, counts)
     named = named_instances(emitted, tables, instances, dungeons)
     lookups = quest_lookups(npcs, steps, spells, skill_lines, counts)
@@ -1456,6 +1489,7 @@ def generate(
         lookups=lookups,
         explorable=explorable,
         counts=counts,
+        heights=heights,
         expiring=expiring_items(item_rows, counts),
     )
 
@@ -1499,6 +1533,9 @@ def render(data):
         "-- and ExplorationLevel, never 0); ox, oy: the offset GetExploredMapTextures returns; x, y: nearness only.",
         "-- expiring: each item that leaves the bags after a while, at most a day (ItemSparse DurationInInventory),",
         "-- and its seconds.",
+        "-- heights: the world height (whole yards) of each creature (`npc`) and game object (`object`) with exactly",
+        "-- one spawn, by entry; a stop that points at one spawn sends it, so Shortest Path can mark a raised floor.",
+        "-- An NPC or object with several spawns, and an objective area over many spawns, carries none.",
         "-- instances: every party dungeon the client's Dungeons activity group lists, with that activity's level",
         "-- range and the LFGDungeons ID its MapDifficulty tuning names; classicdb adds each entrance gate.",
         "---@type string, AGFNamespace",
@@ -1534,6 +1571,11 @@ def render(data):
         lines.append("\t\t},")
     lines.extend(["\t},", "\tareaNames = {"])
     lines.extend(f"\t\t[{area}] = {lua(name)}," for area, name in sorted(data.area_names.items()))
+    lines.extend(["\t},", "\theights = {"])
+    for kind in ("npc", "object"):
+        lines.append(f"\t\t{kind} = {{")
+        lines.extend(f"\t\t\t[{entry}] = {height}," for entry, height in sorted(data.heights.get(kind, {}).items()))
+        lines.append("\t\t},")
     lines.extend(["\t},", "\troles = {"])
     lines.extend(f"\t\t[{entry}] = {lua(role)}," for entry, role in sorted(shipped_roles(data.roles).items()))
     lines.extend(["\t},", "\tprofessions = {"])

@@ -3,6 +3,7 @@
 ---@field map integer
 ---@field x number
 ---@field y number
+---@field z? number world height in yards, when the point is one NPC's or object's single spawn
 
 ---@class AGFProviders
 ---@field OnChange fun(callback: fun())

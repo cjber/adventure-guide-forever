@@ -224,6 +224,7 @@ local function TrainerSteps(data, player, prefs, key)
 				map = place.map,
 				x = place.x,
 				y = place.y,
+				z = place.z,
 				place = place.name,
 			}
 		end

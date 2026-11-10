@@ -214,6 +214,7 @@ function Asides.Go(aside)
 			map = place.map,
 			x = place.x,
 			y = place.y,
+			z = place.z,
 			title = place.name,
 			quests = {},
 			adds = {},

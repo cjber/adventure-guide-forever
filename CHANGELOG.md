@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **A stop up a tower now says to climb.** A quest giver or hand-in on a raised floor looked like it stood on the ground, so the guide could read "34 yd" while you stood underneath Scout Riell at the top of Sentinel Hill's tower. Each stop at one NPC's or object's spawn now carries that spawn's height, and a Shortest Path that knows floors marks it with the map's own up arrow. Objective areas spread over many spawns are unchanged. (#613)
+
 ## [1.4.6] - 2026-11-10
 
 - **The guide no longer sends you to Alterac Mountains for Ira's Dagger.** QuestieDB lists Bath'rah the Windwatcher there as one of the Duskwood quest's starters, so the guide sent you to him for a pickup he does not give. The quest starts from the dagger that drops in Duskwood, so it waits until you loot one. Reported on GitHub by starkovsky (#591).

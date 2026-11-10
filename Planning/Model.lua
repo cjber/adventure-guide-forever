@@ -1009,7 +1009,8 @@ function Model.Givers(data, player, completed, log, mapID)
 			local key = string.format("%s:%.4f:%.4f", start.name, start.x, start.y)
 			local giver = byPlace[key]
 			if not giver then
-				giver = { map = mapID, x = start.x, y = start.y, title = start.name, quests = {}, adds = {} }
+				giver =
+					{ map = mapID, x = start.x, y = start.y, z = start.z, title = start.name, quests = {}, adds = {} }
 				byPlace[key] = giver
 				givers[#givers + 1] = giver
 			end

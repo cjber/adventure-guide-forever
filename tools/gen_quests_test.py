@@ -42,6 +42,7 @@ from gen_quests import (
     shipped_roles,
     skill_steps,
     spawn_areas,
+    spawn_heights,
     terrain_cells,
     town_areas,
     trainer_spells,
@@ -697,6 +698,33 @@ class TownAreasTest(unittest.TestCase):
         row = self.row(4, 447, (40, 40))
         row["UiMapArtID"] = "2172"
         self.assertEqual(town_areas(self.CENTRES, world, [row], self.AREAS), ({}, {}))
+
+
+class SpawnHeightsTest(unittest.TestCase):
+    @staticmethod
+    def spawn(kind, entry, x, y, z):
+        return {"entry": (kind, entry), "at": (0, x, y), "z": z}
+
+    def test_only_an_entity_with_one_spawn_keeps_its_height(self):
+        single = self.spawn("creature", 820, 10, 20, 95.8)
+        twice = [self.spawn("creature", 821, 30, 40, 12.2), self.spawn("creature", 821, 31, 41, 13.0)]
+        locations = {
+            ("creature", "questrelation"): {1: [single, twice[0]], 2: [single, twice[1]]},
+            ("gameobject", "questrelation"): {3: [self.spawn("gameobject", 9, 50, 60, -3.6)]},
+        }
+        role_found = {
+            900: [self.spawn("creature", 900, 70, 80, 7.5)],
+            901: [self.spawn("creature", 901, 32, 42, 14.0), self.spawn("creature", 901, 33, 43, 15.0)],
+        }
+        self.assertEqual(
+            spawn_heights(locations, role_found),
+            {"npc": {820: 96, 900: 8}, "object": {9: -4}},
+        )
+
+    def test_the_same_spawn_under_two_quests_is_still_one(self):
+        spawn = self.spawn("creature", 197, 10, 20, 82.4)
+        heights = spawn_heights({("creature", "questrelation"): {1: [spawn], 2: [spawn]}}, {})
+        self.assertEqual(heights, {"npc": {197: 82}, "object": {}})
 
 
 def quest_row(**fields):

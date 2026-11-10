@@ -69,11 +69,37 @@ equal(h.ns.Data.quests[7], nil, "bundled-only quest absent")
 local q = h.ns.Data.quests[900001]
 equal(q.title, "Provider-only quest", "new quest imported")
 equal(q.start.npc, 197, "new quest giver")
+equal(q.start.z, h.ns.Data.heights.npc[197], "a giver with one spawn carries its bundled height")
 equal(q.need[0], 0, "zero icon does not erase an objective")
 equal(q.obj[1][5], 1429, "provider objective map")
 equal(q.obj[1][2], 500, "provider spawn")
 equal(h.ns.Data.quests[900002].need[4], 0, "icon override is not an item count")
 equal(h.ns.Data.quests[900002].obj[1][2], 500, "item drop location")
+-- Only a single spawn can carry a height: a stop at an NPC or object with several cannot say which one it means.
+do
+	local heights = Fake()
+	heights.quests[900004] = {
+		name = "Object giver",
+		questLevel = 10,
+		requiredLevel = 1,
+		startedBy = { nil, { 31 } },
+		zoneOrSort = 12,
+	}
+	heights.quests[900005] = {
+		name = "Two spots",
+		questLevel = 10,
+		requiredLevel = 1,
+		startedBy = { { 198 } },
+		zoneOrSort = 12,
+	}
+	heights.objects[31] = { name = "Chest", spawns = { [12] = { { 49, 42 } } }, zoneID = 12 }
+	heights.npcs[198] = { name = "Two spots", spawns = { [12] = { { 48, 42 }, { 50, 44 } } }, zoneID = 12 }
+	local placed = harness.load({ questiedb = heights, setup = Policy })
+	local object = placed.ns.Data.quests[900004].start
+	equal(object.z, placed.ns.Data.heights.object[31], "an object with one spawn carries its bundled height")
+	equal(object.npc, nil, "an object is no NPC")
+	equal(placed.ns.Data.quests[900005].start.z, nil, "two spawns carry no height")
+end
 -- A QuestieDB without NPC levels still builds: only the spots' level weighting (#152) is lost.
 do
 	local fake = Fake()
@@ -114,6 +140,10 @@ for index, step in ipairs(replay.ns.Route().steps) do
 end
 equal(picked ~= nil and worked ~= nil and returned ~= nil, true, "provider route includes all three actions")
 equal(picked < worked and worked < returned, true, "provider route cannot hand in before doing the work")
+local replaySteps = replay.ns.Route().steps
+equal(replaySteps[picked].z, replay.ns.Data.heights.npc[197], "a pickup town carries its giver's height")
+equal(replaySteps[returned].z, replay.ns.Data.heights.npc[197], "a hand-in town carries its giver's height")
+equal(replaySteps[worked].z, nil, "an objective area over many spawns carries no height")
 -- Two quests need the same creature: one kills it, one loots it. One build asks QuestieDB for its spawns once, and
 -- for the looted item's droppers once, however many quests share them.
 local shared = Fake()
