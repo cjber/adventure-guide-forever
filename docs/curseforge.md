@@ -4,7 +4,9 @@ QuestieDB supplies the quests; Questie checks pickup availability. With RestedXP
 
 It needs Forever Core, which CurseForge and Wago install with it.
 
-Free, with nothing locked behind it. If it saves you time, you can [sponsor me on GitHub](https://github.com/sponsors/cjber), which takes no fees, or [buy me a coffee on Ko-fi](https://ko-fi.com/cjber).
+Free, with nothing locked behind it. If it saves you time, you can [sponsor me on GitHub](https://github.com/sponsors/cjber), which takes no fees, or [buy me a coffee on Ko-fi](https://ko-fi.com/cjber). For help and each day's release notes, [join me on Discord](https://discord.gg/FpHugGxRJY).
+
+[![Join me on Discord](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/discord-button.png)](https://discord.gg/FpHugGxRJY) [![Sponsor me on GitHub](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/github-sponsors-button.png)](https://github.com/sponsors/cjber) [![Support me on Ko-fi](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/kofi-button.png)](https://ko-fi.com/cjber)
 
 ![The Barrens story chosen: the journey card, its numbered stops and Shortest Path's route from the first](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/spf_map.png)
 
@@ -78,5 +80,3 @@ Installed together, Shortest Path Forever plans the way to every stop. SkillUp F
 Source code and issues: [github.com/cjber/adventure-guide-forever](https://github.com/cjber/adventure-guide-forever). Licence: GPL-3.0-or-later.
 
 Built with AI assistance.
-
-[![Sponsor me on GitHub](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/github-sponsors-button.png)](https://github.com/sponsors/cjber) [![Support me on Ko-fi](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/kofi-button.png)](https://ko-fi.com/cjber)
