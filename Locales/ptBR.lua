@@ -220,6 +220,7 @@ L["QUESTIE_ENABLE"] = "Ative o QuestieDB para carregar os dados de missões."
 L["QUESTIE_FAILED"] = "a leitura falhou (%s)"
 L["QUESTIE_FIELD"] = "falta %s nele"
 L["QUESTIE_FLAVOUR"] = "não é a edição para WoW: Forever"
+L["QUESTIE_INSTALL"] = "Instale o QuestieDB para carregar os dados de missões."
 L["QUESTIE_POLICY"] = "Ative o Questie para recomendações de missões disponíveis."
 L["QUESTIE_ZONES"] = "faltam as tabelas de zonas nele"
 L["QUESTS_HERE"] = "%d missões aqui"
@@ -444,8 +445,7 @@ L["TWEAKS_OUTDATED"] = "Atualize o Tweaks Forever para encontrar entradas de mas
 L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
 L["UPDATED_TO"] = "atualizado para %s. %s"
-L["WHATS_NEW"] =
-	"Uma parada no alto de uma torre ou no fundo de uma cripta agora indica isso. Com o Shortest Path 1.26.0 ou posterior, seu marcador mostra a seta do mapa para cima ou para baixo." -- mt
+L["WHATS_NEW"] = "Requer Forever Core." -- mt
 L["WHY_ALLIANCE"] = "Só Aliança"
 L["WHY_BREADCRUMB"] = "Só até você aceitar %s"
 L["WHY_CHOSE"] = "Você escolheu %s no lugar"

@@ -224,6 +224,7 @@ L["QUESTIE_ENABLE"] = "퀘스트 데이터를 불러오려면 QuestieDB를 켜�
 L["QUESTIE_FAILED"] = "읽기 실패 (%s)"
 L["QUESTIE_FIELD"] = "%s 항목이 없습니다"
 L["QUESTIE_FLAVOUR"] = "WoW: Forever용이 아닙니다"
+L["QUESTIE_INSTALL"] = "퀘스트 데이터를 불러오려면 QuestieDB를 설치하십시오."
 L["QUESTIE_POLICY"] = "수행 가능한 퀘스트를 추천받으려면 Questie를 켜십시오."
 L["QUESTIE_ZONES"] = "지역 테이블이 없습니다"
 L["QUESTS_HERE"] = "이곳의 퀘스트 %d개"
@@ -451,8 +452,7 @@ L["TWEAKS_OUTDATED"] = "던전 입구를 찾으려면 Tweaks Forever를 업데�
 L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
-L["WHATS_NEW"] =
-	"탑 위나 지하 묘지 아래에 있는 경유지가 이제 이를 알려 줍니다. Shortest Path 1.26.0 이상에서는 표시에 지도의 위쪽 또는 아래쪽 화살표가 나타납니다." -- mt
+L["WHATS_NEW"] = "Forever Core가 필요합니다." -- mt
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"
