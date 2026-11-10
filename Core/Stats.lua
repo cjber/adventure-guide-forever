@@ -17,7 +17,6 @@ local METRIC = "quest_turn_ins"
 local SUBJECT = "all"
 local DEFAULT_LIMIT, MAX_LIMIT = 10, 25
 local MAX_VALUE, MAX_UNIX = 1e9, 2 ^ 31 - 1
-local TAB_ICON = "Interface\\Icons\\INV_Misc_Map_01"
 
 ---@param value any
 ---@param low number
@@ -129,7 +128,7 @@ end
 
 ForeverCore.Leaderboards:Register("agf", {
 	title = ns.L.TITLE,
-	icon = TAB_ICON,
+	icon = ns.Icon,
 	metric = ns.L.LEADERBOARD_METRIC,
 	board = Board,
 	safeCall = ns.core.SafeCall,
