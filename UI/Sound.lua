@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 ---@class AGFSound
 local Sound = {}
 ns.Sound = Sound

@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- The overview's round zone icons (docs/design.md §2.2): the Suggested Content recipe, the zone's own map cut to a
 -- circle (CircleMaskScalable) inside the Adventure Guide's ring, with the card's kind as a badge at its bottom-right.
 -- The map is the world map's: the base tiles the client gives (C_Map.GetMapArtLayerTextures) under every overlay

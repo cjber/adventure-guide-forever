@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- Two of Questie's own options the guide sets for the player, each through Questie's own option or function, never by
 -- moving or hiding a frame of Questie's:
 --
@@ -73,7 +77,7 @@ local function ApplyTheme()
 	local utils = Module("QuestieOptionsUtils")
 	if utils and type(utils.ExecuteTheme) == "function" then
 		themePending = false
-		ns.SafeCall("Questie objective type", utils.ExecuteTheme, nil, "blizzard")
+		ns.core.SafeCall("Questie objective type", utils.ExecuteTheme, nil, "blizzard")
 	end
 end
 
@@ -110,7 +114,7 @@ local function UpdateTracker(showing)
 		events:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return
 	end
-	ns.SafeCall("Questie tracker", tracker.Update, tracker)
+	ns.core.SafeCall("Questie tracker", tracker.Update, tracker)
 end
 
 -- Questie's tracker off while the guide's shows and the setting asks for it; Questie's own choice back otherwise.
@@ -164,7 +168,7 @@ events:SetScript("OnEvent", function(self, event)
 		ApplyTheme()
 		local tracker = Module("QuestieTracker")
 		if tracker and tracker.started and type(tracker.Update) == "function" then
-			ns.SafeCall("Questie tracker", tracker.Update, tracker)
+			ns.core.SafeCall("Questie tracker", tracker.Update, tracker)
 		end
 	elseif event == "PLAYER_LOGOUT" then
 		-- Questie saves its settings after this: its own choice goes back first.

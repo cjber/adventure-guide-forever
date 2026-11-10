@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 local Model = ns.Model
 
 -- Towns from the quest places the installed QuestieDB gives (docs/design.md §2.14): a place belongs to the named area

@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 local L = ns.L
 
 -- The step menu (docs/design.md §2.8), one generator for the tracker's right-click and a step row's. It loads before
@@ -11,7 +15,7 @@ ns.Menu = Menu
 -- A submenu built from a list scrolls past 20 rows of 20 px rather than running off the screen (WFA-36).
 local MENU_EXTENT = 400
 
----@param choose AGFMenuDescription
+---@param choose ForeverMenuDescription
 local function GuideChoices(choose)
 	local groups = {}
 	choose:SetScrollMode(MENU_EXTENT)
@@ -29,7 +33,7 @@ local function GuideChoices(choose)
 end
 
 -- Guide actions use the same menus as journey cards and step rows.
----@param root AGFMenuDescription
+---@param root ForeverMenuDescription
 local function GuideEntries(root)
 	if not ns.RestedXP.Active() then
 		return
@@ -49,7 +53,7 @@ end
 
 -- "Show again: <title>" for each step skipped this session, in the order they were skipped, then each journey this
 -- character is not interested in, then each aside it turned down.
----@param description AGFMenuDescription
+---@param description ForeverMenuDescription
 function Menu.Skipped(description)
 	description:SetScrollMode(MENU_EXTENT)
 	for _, skipped in ipairs(ns.Skipped()) do
@@ -70,7 +74,7 @@ end
 
 -- "Not this quest" (docs/design.md §2.18) for a step's quests: one button for a lone quest, else one per quest under
 -- it. A trainer's or battlemaster's stop has none. The quest stays in the log; Show again brings it back.
----@param root AGFMenuDescription
+---@param root ForeverMenuDescription
 ---@param step AGFStep
 local function NotThisQuest(root, step)
 	if step.kind == "trainer" or step.kind == "battlemaster" or #step.quests == 0 then
@@ -97,7 +101,7 @@ local function NotThisQuest(root, step)
 	end
 end
 
----@param root AGFMenuDescription
+---@param root ForeverMenuDescription
 ---@param step? AGFStep
 function Menu.Step(root, step)
 	root:CreateTitle(step and step.title or ns.TITLE)
@@ -158,7 +162,7 @@ end
 ---@param owner Region
 ---@param journey AGFJourney
 function Menu.Journey(owner, journey)
-	ns.ContextMenu(owner, function(_, root)
+	ForeverCore.ContextMenu(owner, function(_, root)
 		root:CreateTitle(journey.title)
 		if journey.kind == "guide" then
 			GuideEntries(root)
@@ -195,14 +199,6 @@ function Menu.Journey(owner, journey)
 	end)
 end
 
----@param owner Region
----@param step? AGFStep
-function Menu.Open(owner, step)
-	ns.ContextMenu(owner, function(_, root)
-		Menu.Step(root, step)
-	end)
-end
-
 ---@return string
 function Menu.ClickLine()
 	local provider = ns.Integrations.Provider()
@@ -210,7 +206,7 @@ function Menu.ClickLine()
 end
 
 ---@param _ Region
----@param menu AGFMenuDescription
+---@param menu ForeverMenuDescription
 function Menu.Settings(_, menu)
 	local function Setting(label, key)
 		return menu:CreateCheckbox(label, function()

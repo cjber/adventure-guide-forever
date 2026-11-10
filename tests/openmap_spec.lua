@@ -149,7 +149,7 @@ h.G.OpenMapAPI = fake
 h.ns.Pins.Refresh()
 equal(#RoutePins(), 1, "another major version: only the host map's stop")
 
--- A failing OpenMap read is reported through ns.SafeCall, and the host map's stops stay drawn.
+-- A failing OpenMap read is reported through ns.core.SafeCall, and the host map's stops stay drawn.
 fake.major = 1
 h.G.OpenMapAPI = fake
 fake.Fire(h, true)

@@ -53,7 +53,7 @@ do
 	end
 	h.spfNotify({ changed = true })
 	h.ns.Route = follow
-	local caught = h.ns.CaughtErrors()
+	local caught = h.ns.core.CaughtErrors()
 	equal(caught[#caught].label, "spf subscriber", "spf: a failing look is caught for the report")
 	equal(#h.errors, 1, "spf: and passed to the error handler")
 end
@@ -112,7 +112,7 @@ do
 	equal(changes.journey, true, "api: the journey changed")
 	equal(changes.stop, true, "api: and the stop")
 	equal(failing > 0 and others > 0, true, "api: a failing subscriber doesn't stop the next")
-	local caught = h.ns.CaughtErrors()
+	local caught = h.ns.core.CaughtErrors()
 	equal(caught[#caught].label, "API subscriber", "api: its error is caught for the report")
 	equal(#h.errors > 0, true, "api: and passed to the error handler")
 	-- A rebuild that leaves the stop and journey alone calls nobody.

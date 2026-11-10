@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 local PIN_TEMPLATE = "AdventureGuideForeverPinTemplate"
 local GIVER_TEMPLATE = "AdventureGuideForeverGiverPinTemplate"
 local SPOT_TEMPLATE = "AdventureGuideForeverSpotPinTemplate"
@@ -620,13 +624,13 @@ local function Draw()
 		return
 	end
 	if InCombatLockdown() then
-		ns.MapCanvas.SetShown(map, false)
+		ns.core.MapCanvas.SetShown(map, false)
 		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return
 	end
 	afterCombat:UnregisterEvent("PLAYER_REGEN_ENABLED")
 	ReleaseMarks()
-	ns.MapCanvas.SetShown(map, true)
+	ns.core.MapCanvas.SetShown(map, true)
 	local mapID = map:GetMapID()
 	if not mapID then
 		return
@@ -703,7 +707,7 @@ end
 ---@field index? number
 ---@field visits? AGFPinVisit[]
 ---@field Stack? Texture
-AdventureGuideForeverPinMixin = CreateFromMixins(ns.MapCanvas.PinMixin, { takesMouse = true, clicks = true })
+AdventureGuideForeverPinMixin = CreateFromMixins(ns.core.MapCanvas.PinMixin, { takesMouse = true, clicks = true })
 
 function AdventureGuideForeverPinMixin.ShouldMouseButtonBePassthrough(_, button)
 	return button ~= "LeftButton" and button ~= "RightButton"
@@ -781,7 +785,7 @@ end
 ---@field Icon Texture
 ---@field Glow Texture
 ---@field giver? AGFGiver
-AdventureGuideForeverGiverPinMixin = CreateFromMixins(ns.MapCanvas.PinMixin, { takesMouse = true, clicks = true })
+AdventureGuideForeverGiverPinMixin = CreateFromMixins(ns.core.MapCanvas.PinMixin, { takesMouse = true, clicks = true })
 
 ---@param giver AGFGiver
 function AdventureGuideForeverGiverPinMixin:OnAcquired(giver)
@@ -842,7 +846,7 @@ end
 ---@field Icon Texture
 ---@field spot? AGFVisitSpot
 ---@field index? integer
-AdventureGuideForeverSpotPinMixin = CreateFromMixins(ns.MapCanvas.PinMixin, { takesMouse = true })
+AdventureGuideForeverSpotPinMixin = CreateFromMixins(ns.core.MapCanvas.PinMixin, { takesMouse = true })
 
 ---@param spot AGFVisitSpot
 ---@param index integer
@@ -906,10 +910,10 @@ function Pins.Reveal(point)
 	reveal = point
 	-- The client's own opener, run securely (Core/OpenMap.lua): its code turns the map, as from the quest tracker's
 	-- menu.
-	ns.OpenMap(point.map)
+	ForeverCore.OpenMap(point.map)
 	C_Timer.After(0, function()
 		if not InCombatLockdown() and map then
-			local view = ns.MapCanvas.Watch(map)
+			local view = ns.core.MapCanvas.Watch(map)
 			if view.shown and view.mapID == point.map then
 				PlayReveal()
 			end
@@ -921,7 +925,7 @@ function Pins.Refresh()
 	if InCombatLockdown() then
 		reveal = nil
 		if map then
-			ns.MapCanvas.SetShown(map, false)
+			ns.core.MapCanvas.SetShown(map, false)
 		end
 		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return
@@ -937,7 +941,7 @@ afterCombat:SetScript("OnEvent", function(self, event)
 	if event == "PLAYER_REGEN_DISABLED" then
 		reveal = nil
 		if map then
-			ns.MapCanvas.SetShown(map, false)
+			ns.core.MapCanvas.SetShown(map, false)
 		end
 		self:RegisterEvent("PLAYER_REGEN_ENABLED")
 		return
@@ -952,9 +956,10 @@ afterCombat:RegisterEvent("PLAYER_REGEN_DISABLED")
 
 local function Attach()
 	map = WorldMapFrame
-	routePool = ns.MapCanvas.Pool(map, AdventureGuideForeverPinMixin, { template = PIN_TEMPLATE, marker = "route" })
+	routePool =
+		ns.core.MapCanvas.Pool(map, AdventureGuideForeverPinMixin, { template = PIN_TEMPLATE, marker = "route" })
 	-- The native ping keeps its art and animations; private placement overrides its native pin base.
-	local pingMixin = CreateFromMixins(MapPinPingMixin, ns.MapCanvas.PinMixin, {
+	local pingMixin = CreateFromMixins(MapPinPingMixin, ns.core.MapCanvas.PinMixin, {
 		OnLoad = MapPinPingMixin.OnLoad,
 		OnAcquired = function(self, x, y)
 			self:UseFrameLevelType("PIN_FRAME_LEVEL_QUEST_PING")
@@ -965,10 +970,10 @@ local function Attach()
 			self:Stop()
 		end,
 	})
-	giverPool = ns.MapCanvas.Pool(map, AdventureGuideForeverGiverPinMixin, { template = GIVER_TEMPLATE })
-	spotPool = ns.MapCanvas.Pool(map, AdventureGuideForeverSpotPinMixin, { template = SPOT_TEMPLATE })
-	pingPool = ns.MapCanvas.Pool(map, pingMixin, { template = PING_TEMPLATE })
-	ns.MapCanvas.Watch(map, function(_, what)
+	giverPool = ns.core.MapCanvas.Pool(map, AdventureGuideForeverGiverPinMixin, { template = GIVER_TEMPLATE })
+	spotPool = ns.core.MapCanvas.Pool(map, AdventureGuideForeverSpotPinMixin, { template = SPOT_TEMPLATE })
+	pingPool = ns.core.MapCanvas.Pool(map, pingMixin, { template = PING_TEMPLATE })
+	ns.core.MapCanvas.Watch(map, function(_, what)
 		if what == "map" or what == "hide" then
 			pingPool:ReleaseAll()
 		end

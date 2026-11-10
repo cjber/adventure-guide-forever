@@ -1,5 +1,11 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
+local Text = ForeverCore.Text --[[@as AGFTextModule]]
+
 ---@class AGFModel
 -- Ten upcoming route actions; the UI scrolls and the plan rebuilds as quests progress.
 local Model = { MAX_STEPS = 10 }
@@ -853,8 +859,8 @@ local SEARCH_MAX = 10
 local SEARCH_ASKED = 30
 
 -- Search folds text with the suite's one fold and ranks a match with its one ranking, both in Forever Core's
--- Core/Text.lua (`ns.Text.Fold` and `ns.Text.Rank`), so "dun garok" finds "Dûn Garok" here exactly as it does
--- in Shortest Path and Hoard.
+-- Core/Text.lua (`ForeverCore.Text.Fold` and `ForeverCore.Text.Rank`), so "dun garok" finds "Dûn Garok" here exactly as
+-- it does in Shortest Path and Hoard.
 
 -- The player's side's quests whose title holds every word of `query` (plain, case-insensitive, accents folded), at
 -- most 10: the search's rows (docs/design.md §2.4). Best match first: the whole title, then a title starting with the
@@ -867,7 +873,7 @@ local SEARCH_ASKED = 30
 ---@return integer[]
 function Model.Search(data, player, query, title, completed, log)
 	local words = {}
-	for word in ns.Text.Fold(query):gmatch("%S+") do
+	for word in Text.Fold(query):gmatch("%S+") do
 		words[#words + 1] = word
 	end
 	if not words[1] then
@@ -878,7 +884,7 @@ function Model.Search(data, player, query, title, completed, log)
 	for id, quest in pairs(data.quests) do
 		if quest.side == 3 or quest.side == player.side then
 			local name = (title and title(id)) or quest.title
-			local tier = ns.Text.Rank(ns.Text.Fold(name), query)
+			local tier = Text.Rank(Text.Fold(name), query)
 			if tier then
 				local level = (quest.level or 0) > 0 and quest.level or player.level
 				found[#found + 1] = id

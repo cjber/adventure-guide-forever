@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 local floor = math.floor
 
 local KINDS = { "Npc", "Object" }

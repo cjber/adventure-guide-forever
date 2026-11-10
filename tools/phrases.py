@@ -38,9 +38,7 @@ def phrases(source: str) -> dict[str, str]:
     for key, tokens in ns_l_entries(tokenize(source)[0]):
         value = split(tokens, "..")
         if all(len(part) == 1 and part[0].kind == "string" for part in value):
-            found[unquote(key.text) if key.kind == "string" else key.text] = "".join(
-                unquote(part[0].text) for part in value
-            )
+            found[key.text] = "".join(unquote(part[0].text) for part in value)
     return found
 
 

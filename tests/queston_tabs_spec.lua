@@ -56,7 +56,7 @@ h.ClickTab(qtab)
 h.flush()
 equal(qpanel:IsShown(), true, "Queston's tab: its page shows")
 equal(guide:IsShown(), false, "Queston's tab: the guide's page is closed")
-equal(h.ns.QuestLogTabs.Selected(), nil, "Queston's tab: no guide tab stays selected")
+equal(h.G.ForeverCore.QuestLogTabs.Selected(), nil, "Queston's tab: no guide tab stays selected")
 -- The guide stepping aside puts the map's own frames back; they must stay hidden behind Queston's page.
 local function contentShown()
 	for _, frame in ipairs(map.ContentFrames) do

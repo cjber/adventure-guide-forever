@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 ---@class AGFIntegrationsModule : AGFIntegrations
 local Integrations = {}
 ns.Integrations = Integrations
@@ -500,7 +504,7 @@ end
 -- journey of its own, when its "Map Pins" option is on. Go still puts the native waypoint down, Naowh moves it to its
 -- first leg, and the guide counts the journey as its own guidance while it heads for the place Go set (#304); Stop
 -- clears the waypoint, which ends that journey. It is read at the point of use, because it may load after us, like
--- Waypoint UI above. Every call is another addon's code, so each goes through ns.SafeCall.
+-- Waypoint UI above. Every call is another addon's code, so each goes through ns.core.SafeCall.
 ---@return AGFNaowhJourneys?
 local function NaowhJourneys()
 	local addon = rawget(_G, "NaowhForever")
@@ -537,15 +541,15 @@ function Integrations.YieldedAt(place)
 	if not journeys then
 		return false
 	end
-	local onOK, on = ns.SafeCall("Naowh Journeys", journeys.On)
+	local onOK, on = ns.core.SafeCall("Naowh Journeys", journeys.On)
 	if not (onOK and on) then
 		return false
 	end
-	local pinsOK, pins = ns.SafeCall("Naowh Journeys settings", journeys.Settings.Get, "mapPins")
+	local pinsOK, pins = ns.core.SafeCall("Naowh Journeys settings", journeys.Settings.Get, "mapPins")
 	if not (pinsOK and pins) then
 		return false
 	end
-	local destinationOK, map, x, y = ns.SafeCall("Naowh Journeys destination", journeys.Guide.Destination)
+	local destinationOK, map, x, y = ns.core.SafeCall("Naowh Journeys destination", journeys.Guide.Destination)
 	return destinationOK
 		and map == place.map
 		and type(x) == "number"
@@ -563,7 +567,7 @@ local function WaypointUIAt(navigation, place)
 	if not place then
 		return false
 	end
-	local ok, current = ns.SafeCall("Waypoint UI navigation", navigation.GetUserNavigation)
+	local ok, current = ns.core.SafeCall("Waypoint UI navigation", navigation.GetUserNavigation)
 	return ok
 		and type(current) == "table"
 		and current.mapID == place.map
@@ -597,7 +601,7 @@ end
 function Integrations.SetWaypoint(place, track)
 	local navigation = WaypointUINavigation()
 	if navigation then
-		local ok, handed = ns.SafeCall("Waypoint UI handover", navigation.NewUserNavigation, {
+		local ok, handed = ns.core.SafeCall("Waypoint UI handover", navigation.NewUserNavigation, {
 			name = place.place or place.zone or place.title,
 			mapID = place.map,
 			x = place.x * 100,
@@ -622,7 +626,7 @@ function Integrations.ClearWaypoint(place)
 	if
 		navigation
 		and WaypointUIAt(navigation, place)
-		and ns.SafeCall("Waypoint UI clear", navigation.ClearUserNavigation)
+		and ns.core.SafeCall("Waypoint UI clear", navigation.ClearUserNavigation)
 	then
 		return
 	end

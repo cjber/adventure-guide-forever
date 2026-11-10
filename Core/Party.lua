@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- Party quests (docs/design.md §4.5): while the player is in a party (not a raid), the planner favours steps for
 -- quests someone in the party also has, so the group tends to do them together and a quest another member carries can
 -- be shared rather than walked to. Two sources, both read only:
@@ -361,7 +365,7 @@ events:SetScript("OnEvent", function(_, event, prefix, text, channel, sender)
 	end
 	if event == "CHAT_MSG_ADDON" then
 		if prefix == PREFIX and channel == "PARTY" and ns.Setting("partyQuests") == true then
-			ns.SafeCall("party message", Heard, sender, text)
+			ns.core.SafeCall("party message", Heard, sender, text)
 		end
 	elseif ns.Setting("partyQuests") == true and (grouped or InParty()) then
 		QueueRead()

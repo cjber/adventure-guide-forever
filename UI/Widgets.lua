@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 local Art = ns.Art
 ---@class AGFWidgets
 local Widgets = {}

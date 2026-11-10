@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- Queston Forever (CurseForge 1785839) draws its own page in the world map's quest log and adds its own side tab,
 -- without joining Forever Core's shared tabs. Each addon used to leave its page shown when the other's was chosen,
 -- so both pages stayed under the map and the one built last covered the other. This module is the handshake, done
@@ -30,7 +34,7 @@ function Queston.Close()
 	if not view or view.open ~= true then
 		return
 	end
-	ns.SafeCall("Queston page", view.Show, view, false)
+	ns.core.SafeCall("Queston page", view.Show, view, false)
 end
 
 -- Queston's page opened (its tab, its window or its key) while the guide's page is up: the guide steps aside, which
@@ -38,9 +42,9 @@ end
 ---@param view QuestonChronicleView
 ---@param showGuide boolean?
 local function QuestonShown(view, showGuide)
-	if showGuide == true and ns.QuestLogTabs.Selected() == "guide" then
-		ns.QuestLogTabs.ShowQuests()
-		ns.SafeCall("Queston page", view.Show, view, true)
+	if showGuide == true and ForeverCore.QuestLogTabs.Selected() == "guide" then
+		ForeverCore.QuestLogTabs.ShowQuests()
+		ns.core.SafeCall("Queston page", view.Show, view, true)
 	end
 end
 

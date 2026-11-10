@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 --[[ Art at its native aspect (AGENTS.md: never stretch art). Every atlas is sized from C_Texture.GetAtlasInfo: an
      icon fits inside its box, a picture covers its box with the overflow cropped evenly, and art whose atlas carries
      its own nine-slice margins (the rows) is drawn by SetAtlas at the box the client gives it. Only nine-slice

@@ -2,6 +2,8 @@ std = "lua51"
 max_line_length = 120
 exclude_files = {
 	"tools/.cache/**",
+	-- The ForeverCore checkout CI and local specs load.
+	"forever-core/**",
 	-- The test corpus tools/gen_corpus.py builds (gitignored).
 	"tests/.corpus/**",
 	".types/**",
@@ -19,11 +21,6 @@ ignore = { "212/_.*", "212/self" } -- unused args prefixed with _, and self on m
 
 globals = {
 	"RXPCData",
-	"ForeverFamily",
-	"ForeverLeaderboards",
-	"ForeverQuestLogTabs",
-	"ForeverTrackerHost",
-	"ForeverMinimapButtons",
 	"AdventureGuideForever",
 	"AdventureGuideForeverDB",
 	"AdventureGuideForeverCharDB",
@@ -33,8 +30,6 @@ globals = {
 	"AdventureGuideForever_OnAddonCompartmentClick",
 	"SLASH_ADVENTUREGUIDEFOREVER1",
 	"SLASH_ADVENTUREGUIDEFOREVER2",
-	"SLASH_FOREVERLEADERBOARDS1",
-	"SLASH_FOREVERLEADERBOARDS2",
 	"SlashCmdList",
 	-- Window.lua: the key binding (Bindings.xml) and its names on the Key Bindings page
 	"AdventureGuideForever_ToggleWindow",
@@ -43,6 +38,7 @@ globals = {
 }
 
 read_globals = {
+	"ForeverCore",
 	"time",
 	"GetServerTime",
 	"GetCVar",
@@ -83,7 +79,6 @@ read_globals = {
 	"strtrim",
 	"strlenutf8",
 	"WorldMapFrame",
-	"CreateSecureDelegate",
 	"GetQuestUiMapID",
 	"EventUtil",
 	"MAP_PIN_INVALID_MAP",
@@ -106,10 +101,8 @@ read_globals = {
 	"GetCVarBool",
 	-- Secret.lua
 	"canaccessvalue",
-	-- SafeCall.lua
+	-- Core.lua and Core/Report.lua keep an error's stack for the report.
 	"debugstack",
-	-- Log.lua
-	"date",
 	-- Offers.lua
 	"C_GossipInfo",
 	"GetNumAvailableQuests",
@@ -185,10 +178,8 @@ read_globals = {
 	"EventRegistry",
 	"QuestMapFrame",
 	"QuestMapFrameOverrides",
-	-- QuestLogTabs.lua (vendored): the secure wrapper the client offers for a panel's shown callback.
-	"securecallfunction",
-	"QUESTS_LABEL",
 	"GameTooltip_Hide",
+	-- Overview.lua, PanelSearch.lua and Pins.lua: the client's cursor and shift-key readers.
 	"IsShiftKeyDown",
 	"SetCursor",
 	"ResetCursor",
@@ -266,13 +257,7 @@ for _, name in ipairs({
 	read_globals[#read_globals + 1] = name
 end
 
--- Addon-private map marker inventory, published as a copy by the shared canvas.
-globals[#globals + 1] = "ForeverMapMarkers"
 
 -- LeaderboardsData.lua: the guild roster's classFileName behind a peer row's missing class.
 read_globals[#read_globals + 1] = "GetGuildRosterInfo"
 read_globals[#read_globals + 1] = "GetNumGuildMembers"
--- Core/Log.lua: the client's date, this session's seconds.
-read_globals[#read_globals + 1] = "date"
--- Core/OpenSettings.lua: the client's secure settings panel opener.
-read_globals[#read_globals + 1] = "C_SettingsUtil"

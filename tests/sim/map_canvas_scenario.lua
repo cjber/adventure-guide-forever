@@ -1,5 +1,7 @@
 -- luacheck: read globals scenario ADDON
-scenario("full addon map keeps gamepad tables native", function(sim)
+local core = dofile("tests/sim/forever_core.lua")
+
+scenario("full addon map keeps gamepad tables native", { addons = core }, function(sim)
 	sim.world.maps[1454] = { name = "Orgrimmar", parent = 1411 }
 	sim.world.maps[1411] = { name = "Durotar", parent = 1414 }
 	sim.world.maps[1414] = { name = "Kalimdor", parent = 947, mapType = 2 }
@@ -38,7 +40,7 @@ scenario("full addon map keeps gamepad tables native", function(sim)
 	sim:advance(0.1)
 	assert(#ns.Pins.Active() == 2, "the real route and giver renderers draw private pins")
 	local function pingShown()
-		for _, pool in ipairs(ns.MapCanvas.Watch(sim.G.WorldMapFrame).pools) do
+		for _, pool in ipairs(ns.core.MapCanvas.Watch(sim.G.WorldMapFrame).pools) do
 			for _, pin in ipairs(pool:Active()) do
 				if pin.PlayAt ~= nil and pin:IsVisible() then
 					return true

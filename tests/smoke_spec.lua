@@ -2,7 +2,7 @@
 -- The whole interactive surface, headless: every saved setting, every window tab and its buttons, the map panel, its
 -- context menus and its pins, across representative profiles, each action asserting no Lua error (h.errors). A crash
 -- in game shows up here named by the setting, frame or screen that raised it. What it cannot reach is the client a
--- /reload runs against; the native block clicks live in tracker_host_spec.
+-- /reload runs against; the shared column's own clicks live in its own specs.
 local harness = dofile("tests/harness.lua")
 local checks = 0
 

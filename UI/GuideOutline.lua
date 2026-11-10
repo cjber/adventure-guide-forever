@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 local Widgets = ns.Widgets
 
 -- Per quest table, the IDs of quests in each zone or picked up there, ascending. Published quest tables are not

@@ -1,30 +1,20 @@
 ---@type string, AGFNamespace
 local addonName, ns = ...
-local REPORT_TEXT_HINT = "The text is selected. Press Ctrl+C (Cmd+C on a Mac) to copy it, "
-	.. "then paste it into your bug report."
-local ISSUE_LINK_HINT = "The link is selected. Press Ctrl+C (Cmd+C on a Mac), "
-	.. "then paste into a browser; GitHub opens a filled-in issue."
-local REPORT_PHRASES = {
-	["Adventure Guide report"] = "REPORT_TITLE",
-	[REPORT_TEXT_HINT] = "REPORT_HINT",
-	["Report a bug or request a feature"] = "ISSUE_WINDOW_TITLE",
-	[ISSUE_LINK_HINT] = "ISSUE_LINK_HINT",
-	["Bug"] = "ISSUE_BUG",
-	["Feature request"] = "ISSUE_FEATURE",
-	["Title"] = "ISSUE_TITLE_LABEL",
-	["Bug: "] = "ISSUE_BUG_PREFIX",
-	["Feature request: "] = "ISSUE_FEATURE_PREFIX",
-	["What happened, or what you would like"] = "ISSUE_DETAILS_LABEL",
-	["Copy issue link"] = "ISSUE_COPY_LINK",
-	["Copy report"] = "ISSUE_COPY_REPORT",
-}
-for phrase, key in pairs(REPORT_PHRASES) do
-	ns.L[phrase] = ns.L[key]
-end
 
+if ns.broken then
+	return
+end
 local L = ns.L
-ns.ReportTitle = L["Adventure Guide report"]
+ns.ReportTitle = L.REPORT_TITLE
 ns.TITLE = L.TITLE
+
+-- The shared services, registered once: the report window's title and Adventure Guide's own report lines.
+ns.core = ForeverCore.Register(addonName, {
+	title = ns.ReportTitle,
+	lines = function()
+		return ns.ReportLines()
+	end,
+})
 
 -- Account-wide settings (Settings.lua), one key per row on the AddOns page. A missing key
 -- always reads as its default here, so an old save file and a new option agree (WFA-14).
@@ -71,7 +61,7 @@ local DEFAULTS = {
 	polestarAside = true,
 	-- In a party, steps for quests the party shares count as nearer, and the quest IDs go to the party (Party.lua).
 	partyQuests = true,
-	-- The Adventure Guide button on the minimap rim is there unless the player hides it (Core/MinimapButton.lua).
+	-- The Adventure Guide button on the minimap rim is there unless the player hides it (ForeverCore.MinimapButton).
 	minimapButtonHidden = false,
 	-- Before a giver's window offers a quest that closes another for good, say which in chat (Closes.lua).
 	warnClosing = true,
@@ -161,46 +151,24 @@ local function LoadDB()
 	end
 	loaded.window, loaded.floatWindow = nil, nil
 	-- "Suggest companion addons" became the Forever addons page's "Suggest my other Forever addons"
-	-- (UI/ForeverFamily.lua, `suggestFamily`, on unless false): a player who had turned it off keeps it off.
+	-- (ForeverCore.Family, `suggestFamily`, on unless false): a player who had turned it off keeps it off.
 	if loaded.suggestCompanions == false and loaded.suggestFamily == nil then
 		loaded.suggestFamily = false
 	end
 	loaded.suggestCompanions = nil
-	-- The shared error journal (Core/SafeCall.lua) lives in the saved table, so the report lists earlier sessions'
-	-- errors after a /reload. A record, not a setting: no row on the AddOns page reads it.
-	if type(loaded.errors) ~= "table" then
-		loaded.errors = {}
-	end
-	-- The shared log (Core/Log.lua) rides in the saved table beside the journal, so the lines that led to a bug
-	-- survive a /reload. A record, not a setting.
-	if type(loaded.log) ~= "table" then
-		loaded.log = {}
-	end
+	-- The shared error journal and debug log live in this saved table, under ForeverCore's own keys, so the report
+	-- lists earlier sessions' errors after a /reload. They are records, not settings: no row on the AddOns page reads
+	-- them.
 	loaded.maxQuestLevelOffset = QuestLevelOffset(loaded.maxQuestLevelOffset)
 	AdventureGuideForeverDB = loaded
 	db = loaded
 end
 
--- The account-wide saved variables the Forever addons page and its hints read and write (UI/ForeverFamily.lua);
+-- The account-wide saved variables the Forever addons page and its hints read and write (ForeverCore.Family);
 -- nil before they load.
 ---@return ForeverFamilyDB?
 function ns.FamilyDB()
 	return db
-end
-
----@return table
-function ns.TrackerHostSettings()
-	local account = assert(db)
-	if type(account.trackerHost) ~= "table" then
-		account.trackerHost = { attached = true, locked = false }
-	elseif account.trackerHost.attached == nil then
-		account.trackerHost.attached = true
-	end
-	-- Lock defaults off, and a trackerHost saved before it existed simply gains the key.
-	if type(account.trackerHost.locked) ~= "boolean" then
-		account.trackerHost.locked = false
-	end
-	return account.trackerHost
 end
 
 local function LoadCharDB()
@@ -406,8 +374,8 @@ function ns.SetSetting(key, value)
 	if key == "statsShare" and ns.Stats then
 		ns.Stats.SetEnabled(value == true)
 	end
-	if key == "minimapButtonHidden" and ns.MinimapButton then
-		ns.MinimapButton.Refresh()
+	if key == "minimapButtonHidden" then
+		ForeverCore.MinimapButton.Refresh()
 	end
 	-- Wandering from now: what Go started stops, as the player's Stop would.
 	if key == "wanderer" and value then
@@ -608,7 +576,7 @@ function ns.ShowQuest(step)
 	end
 	local questID = LogQuests(step)[1]
 	C_QuestLog.SetSelectedQuest(questID)
-	ns.OpenMap(GetQuestUiMapID(questID))
+	ForeverCore.OpenMap(GetQuestUiMapID(questID))
 	return true
 end
 
@@ -1052,7 +1020,7 @@ end
 local function NotifyRouteChange()
 	ns.Guidance.RouteChanged()
 	for _, fn in ipairs(routeListeners) do
-		ns.SafeCall("route listener", fn)
+		ns.core.SafeCall("route listener", fn)
 	end
 end
 
@@ -1126,7 +1094,7 @@ local function StepRebuild()
 		fullDue = true -- the next build plans in full, never repaints a route that failed
 		-- debugstack takes the coroutine first in the client; the annotations know only its level form.
 		---@diagnostic disable-next-line: param-type-mismatch
-		ns.RecordError("rebuild", shown, debugstack and debugstack(failed) or debug.traceback(failed))
+		ns.core.RecordError("rebuild", shown, debugstack and debugstack(failed) or debug.traceback(failed))
 		error(shown, 0)
 	end
 	if coroutine.status(rebuildCo) == "suspended" then
@@ -1223,12 +1191,12 @@ SLASH_ADVENTUREGUIDEFOREVER1 = "/agf"
 SLASH_ADVENTUREGUIDEFOREVER2 = "/adventureguide"
 local function Slash(msg)
 	local command = strtrim(msg or ""):lower()
-	if ns.Report and ns.Report.Command and ns.Report.Command(command) then
+	if ns.core.Report.Command(command) then
 		return
 	elseif command == "where" then
-		local ok, lines = ns.SafeCall("where lines", ns.WhereLines)
-		ns.Report.Show(
-			ns.CutText(table.concat(ok and lines or { "Report lines failed: " .. tostring(lines) }, "\n"), 2000)
+		local ok, lines = ns.core.SafeCall("where lines", ns.WhereLines)
+		ns.core.Report.Show(
+			ns.core.CutText(table.concat(ok and lines or { "Report lines failed: " .. tostring(lines) }, "\n"), 2000)
 		)
 	elseif command == "audit" then
 		Audit()
@@ -1243,7 +1211,7 @@ local function Slash(msg)
 	elseif command == "dump" then
 		ns.Dump()
 	elseif command == "tracker" then
-		ns.Print(ns.TrackerHost.Debug())
+		ns.Print(ForeverCore.TrackerHost.Debug())
 	elseif command == "travel" then
 		ns.Print(ns.Guidance.Debug())
 	elseif command == "timing" then
@@ -1252,7 +1220,7 @@ local function Slash(msg)
 		if ns.OpenPanel then
 			ns.OpenPanel()
 		else
-			ns.OpenMap()
+			ForeverCore.OpenMap()
 		end
 	else
 		ns.Print(L.HELP_OPEN)
@@ -1267,7 +1235,7 @@ local function Slash(msg)
 	end
 end
 SlashCmdList.ADVENTUREGUIDEFOREVER = function(msg)
-	ns.SafeCall("slash command", Slash, msg)
+	ns.core.SafeCall("slash command", Slash, msg)
 end
 
 -- Open the guide on the world map.
@@ -1275,7 +1243,7 @@ function AdventureGuideForever_OnAddonCompartmentClick()
 	if ns.OpenPanel then
 		ns.OpenPanel()
 	else
-		ns.OpenMap()
+		ForeverCore.OpenMap()
 	end
 end
 
@@ -1284,10 +1252,9 @@ end
 EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	LoadDB()
 	LoadCharDB()
-	-- The saved journal is attached once the saved variables and their defaults are in: what SafeCall recorded
-	-- before this line (the client's own early errors) arrives with it.
-	ns.AttachErrorJournal(AdventureGuideForeverDB.errors)
-	ns.AttachLog(AdventureGuideForeverDB.log)
+	-- The saved journal and log are ForeverCore's now, under the same table: what SafeCall recorded before this line
+	-- (the client's own early errors) arrives with it, and a /reload keeps it.
+	ns.core.Attach(AdventureGuideForeverDB)
 	ns.QuestieOptions.Load()
 	ns.State.OnChange(function(countsOnly)
 		if countsOnly then
@@ -1304,7 +1271,7 @@ EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	ns.RegisterSettings()
 	EventUtil.ContinueAfterAllEvents(ns.WhatsNew, "PLAYER_LOGIN")
 	EventUtil.ContinueAfterAllEvents(function()
-		ns.MinimapButton.Create({
+		ForeverCore.MinimapButton.Create({
 			name = "AdventureGuideForeverMinimapButton",
 			icon = "Interface\\Icons\\inv_misc_map_01",
 			title = ns.L.TITLE,
@@ -1312,6 +1279,7 @@ EventUtil.ContinueOnAddOnLoaded(addonName, function()
 			subtext = ns.L.MINIMAP_BUTTON_SUBTEXT,
 			settings = db,
 			host = ns,
+			safeCall = ns.core.SafeCall,
 			onClick = function()
 				if ns.OpenPanel then
 					ns.OpenPanel()
