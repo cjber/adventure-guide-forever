@@ -237,6 +237,7 @@ L["QUESTIE_ENABLE"] = "Включите QuestieDB, чтобы загрузить
 L["QUESTIE_FAILED"] = "не удалось прочитать (%s)"
 L["QUESTIE_FIELD"] = "в нем нет %s"
 L["QUESTIE_FLAVOUR"] = "это не версия для WoW: Forever"
+L["QUESTIE_INSTALL"] = "Установите QuestieDB, чтобы загрузить данные заданий."
 L["QUESTIE_POLICY"] =
 	"Включите Questie, чтобы получать советы по доступным заданиям."
 L["QUESTIE_ZONES"] = "в нем нет таблиц зон"
