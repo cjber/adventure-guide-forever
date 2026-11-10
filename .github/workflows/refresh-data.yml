@@ -84,7 +84,7 @@ jobs:
         if: steps.pins.outputs.changed == 'true'
         run: |
           luacheck .
-          for spec in tests/*_spec.lua; do luajit "$spec" || exit 1; done
+          python3 -m tools.forever_tools.specs
           luajit -joff tests/plan_bench.lua
       - if: steps.pins.outputs.changed == 'true'
         uses: JohnnyMorganz/stylua-action@76fd70c03e6340ceaf673366712db9b20560b402 # v5.0.0
@@ -144,6 +144,7 @@ jobs:
     # The first attempt stays quiet: retry-refresh.yml re-runs it, and only a failed re-run is reported.
     if: failure() && github.run_attempt > 1 && github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     permissions:
       issues: write
     steps:
