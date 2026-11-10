@@ -93,7 +93,7 @@ do
 	clean(h, "no saved variables")
 end
 
---[[ Companion hints, through the shared Forever addons rules (UI/ForeverFamily.lua) ]]
+--[[ Companion hints, through ForeverCore.Family's shared Forever addons rules ]]
 
 -- The three states, the way the client tells them: not on disk, on disk but not loaded, loaded.
 local function State(h, addon, state)
@@ -139,22 +139,6 @@ for _, case in ipairs({
 	State(h, addon, "on")
 	equal(Companions.Line(addon), nil, addon .. " loaded: nothing")
 	clean(h, addon)
-end
-
--- The shared module looks its words up by English phrase: every one it asks for maps to our line of the same words,
--- which a translation of its FAMILY_ key replaces.
-do
-	local h = Load()
-	local file = assert(io.open("UI/ForeverFamily.lua", "rb"))
-	local source = file:read("*a")
-	file:close()
-	local asked = 0
-	for phrase in source:gmatch('L%["([^"]+)"%]') do
-		asked = asked + 1
-		equal(h.ns.FamilyL[phrase], phrase, "the module's phrase has our line: " .. phrase)
-	end
-	equal(asked >= 16, true, "the module's phrases were found")
-	clean(h, "phrases")
 end
 
 -- The old "Suggest companion addons" setting carries over: off stays off, and the old key goes.

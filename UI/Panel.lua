@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 local L = ns.L
 local Art = ns.Art
 local Overview = ns.Overview
@@ -71,6 +75,7 @@ local panel
 local reported = false
 -- Defined in Attach, before the map can show or hide.
 local Sync
+---@type ForeverQuestLogTab?
 ---@type ForeverQuestLogTab?
 local guideTab
 ---@type Texture?
@@ -479,7 +484,7 @@ local function BuildJourneys(parent, below)
 	skippedButton:SetNormalFontObject("GameFontNormalSmall")
 	skippedButton:SetHighlightFontObject("GameFontHighlightSmall")
 	skippedButton:SetScript("OnClick", function(self)
-		ns.ContextMenu(self, function(_, root)
+		ForeverCore.ContextMenu(self, function(_, root)
 			ns.Menu.Skipped(root)
 		end)
 	end)
@@ -528,7 +533,7 @@ local function BuildTopBar(panelFrame)
 	icon:SetAtlas("questlog-icon-setting", true)
 	Art.Highlight(cog, "questlog-icon-setting", 15, 16)
 	cog:SetScript("OnClick", function(self)
-		ns.ContextMenu(self, ns.Menu.Settings)
+		ForeverCore.ContextMenu(self, ns.Menu.Settings)
 	end)
 end
 
@@ -1216,11 +1221,12 @@ local function Attach()
 		end
 	end)
 	-- The panel sets no show or hide script because it lives under the world map (shortest-path-forever#158).
-	guideTab = ns.QuestLogTabs.Register("guide", {
+	guideTab = ForeverCore.QuestLogTabs.Register("guide", {
 		name = "AdventureGuideForeverTab",
 		tooltip = ns.TITLE,
 		panel = panel,
 		order = 10,
+		safeCall = ns.core.SafeCall,
 		-- The tab module reports a tab switch; Sync reads the panel's own visibility, so its report and the map
 		-- callbacks below make one change each.
 		-- Queston Forever's page shares the side panel outside the registry, so the guide closes it on showing.
@@ -1232,6 +1238,7 @@ local function Attach()
 		end,
 	})
 	---@cast guideTab -?
+	---@cast guideTab ForeverQuestLogTab
 	Art.Fit(guideTab.Icon, "islands-queue-prop-compass", 30, 30)
 	tabPip = guideTab:CreateTexture(nil, "OVERLAY")
 	Art.Fit(tabPip, TAB_PIP, 20, 20)
@@ -1267,7 +1274,7 @@ local function Attach()
 	end
 
 	function ns.OpenPanel()
-		ns.OpenMap()
+		ForeverCore.OpenMap()
 		-- A collapsed quest sidebar or a maximized map hides QuestMapFrame and so the panel inside it. Bringing the
 		-- sidebar back from addon code taints the map, so opening the guide leaves the sidebar state alone.
 		if not QuestMapFrame:IsShown() then
@@ -1275,7 +1282,7 @@ local function Attach()
 		end
 		-- A tab already selected is not reported visible again, so an open guide still re-reads the route.
 		local wasShown = panel ~= nil and panel:IsShown()
-		ns.QuestLogTabs.Select("guide")
+		ForeverCore.QuestLogTabs.Select("guide")
 		if wasShown then
 			Refresh()
 		end

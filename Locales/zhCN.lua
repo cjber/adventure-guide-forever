@@ -70,26 +70,6 @@ L["DUNGEON_PICKUP"] = "接受"
 L["DUNGEON_QUESTS"] = "此地下城的%d个任务"
 L["DUNGEON_QUESTS_ONE"] = "此地下城的1个任务"
 L["ENTRANCE_UNKNOWN"] = "入口位置未知。"
-L["FAMILY_CLOSE"] = "关闭"
-L["FAMILY_COPY_HINT"] = "复制该地址，然后在浏览器中打开。"
-L["FAMILY_COPY_LINK"] = "复制链接"
-L["FAMILY_DONT_SUGGEST"] = "不再推荐"
-L["FAMILY_LINE_AGF"] = "挑选适合你等级的任务，并规划成一段旅程。"
-L["FAMILY_LINE_LEGACY"] = "显示每个地区中你可以推进的传承挑战。"
-L["FAMILY_LINE_SKILLUP"] = "规划升到下一专业等级最省钱的路线。"
-L["FAMILY_LINE_SPF"] =
-	"规划前往任何地点的最快路线并为你引路，附带船只和飞艇的实时时刻。"
-L["FAMILY_LINE_TWEAKS"] = "为默认界面提供任务自动化、稀有怪提醒和商人处理。"
-L["FAMILY_PAGE"] = "Forever插件"
-L["FAMILY_STATE_MISSING"] = "未安装"
-L["FAMILY_STATE_OFF"] = "已安装，已禁用"
-L["FAMILY_STATE_ON"] = "开启"
-L["FAMILY_SUGGEST"] = "推荐我的其他Forever插件"
-L["FAMILY_SUGGEST_ABOUT"] =
-	"在我的其他Forever插件能帮上忙的地方显示一行不显眼的提示。仅限你尚未安装的插件。"
-L["FAMILY_SUPPORT"] =
-	"Forever 插件全部免费，没有任何付费才能使用的内容。如果它们对你有帮助，可以请我喝杯咖啡。" -- mt
-L["FAMILY_THIS_ADDON"] = "本插件"
 L["FROM_SKILLUP"] = "来自SkillUp Forever"
 L["GO"] = "出发"
 L["GO_TO_ENTRANCE"] = "前往入口"
@@ -261,7 +241,6 @@ L["RECIPE_LEARNED"] = "已学会"
 L["RECIPE_TRAIN_AT"] = "%d时可学"
 L["RECOMMENDED"] = "推荐"
 L["REPLACES_JOURNEY"] = "将替换你当前的旅程。"
-L["REPORT_HINT"] = "文本已选中。按Ctrl+C（Mac上为Cmd+C）复制，然后粘贴到你的错误报告中。"
 L["REPORT_TITLE"] = "Adventure Guide报告"
 L["REST_HERE"] = "在这里的旅店休息"
 L["RESUME"] = "上次进度：%s"
@@ -486,17 +465,6 @@ L["MINIMAP_BUTTON_TOOLTIP"] =
 L["MINIMAP_BUTTON_SUBTEXT"] = "点击打开升级指南" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] = "/agf issue - 通过现成的 GitHub Issue 链接报告错误或请求功能" -- mt
-L["ISSUE_BUG"] = "错误" -- mt
-L["ISSUE_BUG_PREFIX"] = "错误：" -- mt
-L["ISSUE_COPY_LINK"] = "复制 Issue 链接" -- mt
-L["ISSUE_COPY_REPORT"] = "复制报告" -- mt
-L["ISSUE_DETAILS_LABEL"] = "发生了什么，或你想要的功能" -- mt
-L["ISSUE_FEATURE"] = "功能请求" -- mt
-L["ISSUE_FEATURE_PREFIX"] = "功能请求：" -- mt
-L["ISSUE_LINK_HINT"] =
-	"链接已选中。按Ctrl+C（Mac上为Cmd+C），然后粘贴到浏览器中：GitHub 会打开一个已填好的新 Issue。" -- mt
-L["ISSUE_TITLE_LABEL"] = "标题" -- mt
-L["ISSUE_WINDOW_TITLE"] = "报告错误或请求功能" -- mt
 L["MINIMAP_UNAVAILABLE"] = "小地图不可用，已跳过自定义按钮。" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "关闭 Questie 的追踪栏" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
@@ -516,47 +484,5 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 	"当步骤需要与发放或交付任务的 NPC 交谈时，一个小箭头会在其姓名板上方跳动，追踪器下方会出现目标按钮。关闭后可隐藏两者。指南从不会更改你的姓名板设置。"
 L["NPC_HIGHLIGHT_HINT"] = "友方姓名板已关闭：请在界面选项中开启，以查看该往哪走。"
 
--- Forever Leaderboards (Forever Core's shared window).
-L["Forever Leaderboards"] = "Forever 排行榜" -- mt
-L["Overall"] = "总览" -- mt
-L["Forever standing"] = "Forever 总排名" -- mt
-L["Your guild and group"] = "你的公会和队伍" -- mt
-L["This week"] = "本周" -- mt
-L["All time"] = "全部时间" -- mt
-L["Rank"] = "排名" -- mt
-L["Player"] = "玩家" -- mt
-L["No one has reported yet."] = "还没有人报告。" -- mt
-L["Share my progress"] = "分享我的进度" -- mt
-L["Others' values are player-reported."] = "其他玩家的数值由玩家自行报告。" -- mt
-L["Points for placing on each addon's board."] = "在每个插件的排行榜上获得名次的分数。" -- mt
-L["(you)"] = "（你）" -- mt
-L["board"] = "个榜单" -- mt
-L["boards"] = "个榜单" -- mt
-L["Uses Forever addons"] = "使用 Forever 插件" -- mt
-L["Forever: %s overall this week"] = "Forever：本周总排名 %s" -- mt
-L["Forever: %s overall"] = "Forever：总排名 %s" -- mt
-L["1st"] = "第 1 名" -- mt
-L["2nd"] = "第 2 名" -- mt
-L["3rd"] = "第 3 名" -- mt
-L["4th"] = "第 4 名" -- mt
-L["5th"] = "第 5 名" -- mt
-L["6th"] = "第 6 名" -- mt
-L["7th"] = "第 7 名" -- mt
-L["8th"] = "第 8 名" -- mt
-L[", "] = ", " -- mt
 L.LEADERBOARD_METRIC = "已交付任务" -- mt
 L.LEADERBOARD_TOTAL = "总计" -- mt
-
--- Shared debug log (Forever Core's Core/Log.lua).
-L["Debug log is off."] = "调试日志已关闭。" -- mt
-L["Debug log is on for this session."] = "本次会话已开启调试日志。" -- mt
-L["Debug log is on and pinned for this character."] = "该角色的调试日志已开启并固定。" -- mt
-L["Debug log is already on and pinned for this character."] = "该角色的调试日志已经开启并固定。" -- mt
-L["Debug log is off for this session; it is still pinned."] =
-	"本次会话已关闭调试日志，但仍保持固定。" -- mt
-L["Debug log is off and unpinned."] = "调试日志已关闭并取消固定。" -- mt
-L["No addon has attached its log yet."] = "还没有插件附加日志。" -- mt
-L["%s (last %d):"] = "%s（最近 %d 条）：" -- mt
-L["%s: no lines yet."] = "%s：还没有日志行。" -- mt
-L["Usage: /forever debug, /forever debug pin, /forever debug off, /forever debug show"] =
-	"用法：/forever debug、/forever debug pin、/forever debug off、/forever debug show" -- mt

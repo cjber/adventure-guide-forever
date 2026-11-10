@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- Stepping aside for Polestar (docs/design.md, "Alongside Polestar"): while Polestar, a separate leveling guide, has a
 -- guide running, Adventure Guide stops pushing its own route. Nothing starts or restores it, the route it was running
 -- stops, the map marks go, and the tracker shows one line that takes over again. The reads are

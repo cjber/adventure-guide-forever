@@ -114,7 +114,7 @@ local shared = db.peerStats
 equal(shared.Alice.quest_turn_ins.all.value, 20, "heard rows land in the canonical table")
 
 --[[ Forever Leaderboards registration and command ]]
-local leaderboards = h.G.ForeverLeaderboards
+local leaderboards = h.G.ForeverCore.Leaderboards
 equal(type(leaderboards), "table", "the shared Forever Leaderboards window is published")
 local spec = leaderboards.boards.agf
 equal(spec.title, "Adventure Guide", "the tab carries the addon's title")

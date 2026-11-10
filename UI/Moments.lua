@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 local L = ns.L
 
 -- "Something new" (docs/design.md §2.13): after a level gained or a zone entered, a journey card or an aside the

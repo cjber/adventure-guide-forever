@@ -41,9 +41,11 @@ local function Setup(sim, settings, global)
 		Setting = function(key)
 			return settings[key]
 		end,
-		SafeCall = function(_, fn, ...)
-			return pcall(fn, ...)
-		end,
+		core = {
+			SafeCall = function(_, fn, ...)
+				return pcall(fn, ...)
+			end,
+		},
 		Print = function(text)
 			calls.printed[#calls.printed + 1] = text
 		end,

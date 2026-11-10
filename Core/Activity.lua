@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- Record completed quest turn-ins from the client's authoritative event. These are local character records; this
 -- addon does not transmit them or claim that a local record is a realm first.
 local events = CreateFrame("Frame")

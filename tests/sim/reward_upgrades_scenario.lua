@@ -2,7 +2,9 @@
 -- The upgrade arrow on a quest giver's reward choices (UI/Upgrades.lua), drawn on Blizzard's own QuestInfo reward
 -- buttons: the better helm is marked, the mail one a level 18 shaman can't wear and the weaker one are not; it holds
 -- through combat and the gamepad interface, and Pawn loaded or the setting off clears it.
-scenario("quest reward upgrades mark Blizzard's reward buttons", function(sim)
+local core = dofile("tests/sim/forever_core.lua")
+
+scenario("quest reward upgrades mark Blizzard's reward buttons", { addons = core }, function(sim)
 	-- The quest giver window, which the sim does not boot by default.
 	sim:loadBlizzard("Blizzard_UIPanels_Game:FriendshipStatusBar|QuestFrame|QuestInfo")
 	sim:login({ savedVariables = { AdventureGuideForeverDB = {} } })

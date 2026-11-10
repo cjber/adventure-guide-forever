@@ -74,27 +74,6 @@ L["DUNGEON_PICKUP"] = "Annehmen"
 L["DUNGEON_QUESTS"] = "%d Quests für diesen Dungeon"
 L["DUNGEON_QUESTS_ONE"] = "1 Quest für diesen Dungeon"
 L["ENTRANCE_UNKNOWN"] = "Der Eingang ist unbekannt."
-L["FAMILY_CLOSE"] = "Schließen"
-L["FAMILY_COPY_HINT"] = "Kopiert die Adresse und öffnet sie dann in Eurem Browser."
-L["FAMILY_COPY_LINK"] = "Link kopieren"
-L["FAMILY_DONT_SUGGEST"] = "Nicht mehr vorschlagen"
-L["FAMILY_LINE_AGF"] = "Wählt Quests für Eure Stufe und plant sie zu einer Reise."
-L["FAMILY_LINE_LEGACY"] = "Zeigt die Vermächtnis-Herausforderungen, die Ihr in jeder Zone voranbringen könnt."
-L["FAMILY_LINE_SKILLUP"] = "Plant den günstigsten Weg zu Eurem nächsten Berufsrang."
-L["FAMILY_LINE_SPF"] =
-	"Plant den schnellsten Weg überallhin und führt Euch dorthin, mit aktuellen Zeiten für Schiffe und Zeppeline."
-L["FAMILY_LINE_TWEAKS"] =
-	"Questautomatik, Warnungen bei seltenen Gegnern und Händlerhilfe für die Standardoberfläche."
-L["FAMILY_PAGE"] = "Forever-Addons"
-L["FAMILY_STATE_MISSING"] = "Nicht installiert"
-L["FAMILY_STATE_OFF"] = "Installiert, deaktiviert"
-L["FAMILY_STATE_ON"] = "An"
-L["FAMILY_SUGGEST"] = "Meine anderen Forever-Addons vorschlagen"
-L["FAMILY_SUGGEST_ABOUT"] =
-	"Zeigt eine unauffällige Zeile, wo eines meiner anderen Forever-Addons helfen würde. Nur für Addons, die Ihr nicht habt."
-L["FAMILY_SUPPORT"] =
-	"Die Forever-Addons sind kostenlos, und nichts ist hinter einer Bezahlung versteckt. Wenn sie Euch helfen, könnt Ihr mir einen Kaffee spendieren." -- mt
-L["FAMILY_THIS_ADDON"] = "Dieses Addon"
 L["FROM_SKILLUP"] = "von SkillUp Forever"
 L["GO"] = "Los"
 L["GO_TO_ENTRANCE"] = "Zum Eingang"
@@ -269,8 +248,6 @@ L["RECIPE_LEARNED"] = "erlernt"
 L["RECIPE_TRAIN_AT"] = "erlernbar ab %d"
 L["RECOMMENDED"] = "Empfohlen"
 L["REPLACES_JOURNEY"] = "Ersetzt Eure aktuelle Reise."
-L["REPORT_HINT"] =
-	"Der Text ist markiert. Drückt Strg+C (Cmd+C auf dem Mac) zum Kopieren und fügt ihn dann in Euren Fehlerbericht ein."
 L["REPORT_TITLE"] = "Bericht von Adventure Guide"
 L["REST_HERE"] = "Im Gasthaus hier rasten"
 L["RESUME"] = "Wo Ihr aufgehört habt: %s"
@@ -499,17 +476,6 @@ L["MINIMAP_BUTTON_TOOLTIP"] =
 L["MINIMAP_BUTTON_SUBTEXT"] = "Klicken, um den Leveling-Guide zu öffnen" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] = "/agf issue - einen Fehler melden oder eine Funktion wünschen, mit einem fertigen GitHub-Issue-Link" -- mt
-L["ISSUE_BUG"] = "Fehler" -- mt
-L["ISSUE_BUG_PREFIX"] = "Fehler: " -- mt
-L["ISSUE_COPY_LINK"] = "Issue-Link kopieren" -- mt
-L["ISSUE_COPY_REPORT"] = "Bericht kopieren" -- mt
-L["ISSUE_DETAILS_LABEL"] = "Was passiert ist oder was Ihr Euch wünscht" -- mt
-L["ISSUE_FEATURE"] = "Funktionswunsch" -- mt
-L["ISSUE_FEATURE_PREFIX"] = "Funktionswunsch: " -- mt
-L["ISSUE_LINK_HINT"] =
-	"Der Link ist markiert. Drückt Strg+C (Cmd+C auf dem Mac) und fügt ihn dann in Euren Browser ein: GitHub öffnet ein neues Issue mit diesen Angaben." -- mt
-L["ISSUE_TITLE_LABEL"] = "Titel" -- mt
-L["ISSUE_WINDOW_TITLE"] = "Einen Fehler melden oder eine Funktion wünschen" -- mt
 L["MINIMAP_UNAVAILABLE"] = "Minimap nicht verfügbar; eigene Schaltfläche wird übersprungen." -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Questies Tracker ausschalten" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
@@ -530,49 +496,5 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 L["NPC_HIGHLIGHT_HINT"] =
 	"Freundliche Namensschilder sind aus: Schaltet sie in den Interface-Optionen ein, um zu sehen, wohin Ihr gehen müsst."
 
--- Forever Leaderboards (Forever Core's shared window).
-L["Forever Leaderboards"] = "Forever-Ranglisten" -- mt
-L["Overall"] = "Gesamt" -- mt
-L["Forever standing"] = "Forever-Gesamtwertung" -- mt
-L["Your guild and group"] = "Eure Gilde und Gruppe" -- mt
-L["This week"] = "Diese Woche" -- mt
-L["All time"] = "Gesamte Zeit" -- mt
-L["Rank"] = "Rang" -- mt
-L["Player"] = "Spieler" -- mt
-L["No one has reported yet."] = "Niemand hat bisher berichtet." -- mt
-L["Share my progress"] = "Fortschritt teilen" -- mt
-L["Others' values are player-reported."] = "Werte anderer Spieler werden von ihnen gemeldet." -- mt
-L["Points for placing on each addon's board."] = "Punkte für einen Platz auf der Liste jedes Addons." -- mt
-L["(you)"] = "(Ihr)" -- mt
-L["board"] = "Liste" -- mt
-L["boards"] = "Listen" -- mt
-L["Uses Forever addons"] = "Verwendet Forever-Addons" -- mt
-L["Forever: %s overall this week"] = "Forever: %s insgesamt diese Woche" -- mt
-L["Forever: %s overall"] = "Forever: %s insgesamt" -- mt
-L["1st"] = "1." -- mt
-L["2nd"] = "2." -- mt
-L["3rd"] = "3." -- mt
-L["4th"] = "4." -- mt
-L["5th"] = "5." -- mt
-L["6th"] = "6." -- mt
-L["7th"] = "7." -- mt
-L["8th"] = "8." -- mt
-L[", "] = ", " -- mt
 L.LEADERBOARD_METRIC = "Abgegebene Quests" -- mt
 L.LEADERBOARD_TOTAL = "gesamt" -- mt
-
--- Shared debug log (Forever Core's Core/Log.lua).
-L["Debug log is off."] = "Das Debug-Protokoll ist aus." -- mt
-L["Debug log is on for this session."] = "Das Debug-Protokoll ist für diese Sitzung an." -- mt
-L["Debug log is on and pinned for this character."] =
-	"Das Debug-Protokoll ist an und für diesen Charakter dauerhaft aktiviert." -- mt
-L["Debug log is already on and pinned for this character."] =
-	"Das Debug-Protokoll ist bereits an und für diesen Charakter dauerhaft aktiviert." -- mt
-L["Debug log is off for this session; it is still pinned."] =
-	"Das Debug-Protokoll ist für diese Sitzung aus; es bleibt dauerhaft aktiviert." -- mt
-L["Debug log is off and unpinned."] = "Das Debug-Protokoll ist aus und nicht mehr dauerhaft aktiviert." -- mt
-L["No addon has attached its log yet."] = "Noch kein Addon hat sein Protokoll angehängt." -- mt
-L["%s (last %d):"] = "%s (letzte %d):" -- mt
-L["%s: no lines yet."] = "%s: noch keine Zeilen." -- mt
-L["Usage: /forever debug, /forever debug pin, /forever debug off, /forever debug show"] =
-	"Verwendung: /forever debug, /forever debug pin, /forever debug off, /forever debug show" -- mt

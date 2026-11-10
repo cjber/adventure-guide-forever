@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 local L, Art = ns.L, ns.Art
 ---@class AGFPanelSearch
 local Search = {}

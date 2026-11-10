@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- Quests that taking another closes for good (docs/design.md §2.26). When a giver's detail window offers a quest
 -- whose taking would close another quest of its exclusive group that this character could still do, one chat line
 -- names what would be lost, before the player clicks Accept. Said once per quest a session; a quest the game took
@@ -60,5 +64,5 @@ end
 local events = CreateFrame("Frame")
 events:RegisterEvent("QUEST_DETAIL")
 events:SetScript("OnEvent", function()
-	ns.SafeCall("quest window", Offered)
+	ns.core.SafeCall("quest window", Offered)
 end)

@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 --[[ While a RestedXP guide leads (#362), the objective tracker lists only the quests its step under way and its
      ongoing steps name. The player's own tracked quests are kept on the character when the guide takes over, and come
      back when it stops leading: another journey chosen, RestedXP guides or this setting turned off. Every change goes

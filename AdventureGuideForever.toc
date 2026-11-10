@@ -1,4 +1,5 @@
 ## Interface: 16001
+## Dependencies: ForeverCore
 ## Title: Adventure Guide Forever - story levelling and quest routes
 ## Notes: Zone stories as chapters, journeys you pick on the map, and a route walked to each hand-in.
 ## Author: cjber
@@ -15,6 +16,7 @@
 ## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick
 ## OptionalDeps: AtlasLootClassic, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever, RXPGuides, Polestar
 
+Core\Require.lua
 Locales\enUS.lua
 Locales\deDE.lua
 Locales\esES.lua
@@ -25,19 +27,11 @@ Locales\ptBR.lua
 Locales\ruRU.lua
 Locales\zhCN.lua
 Locales\zhTW.lua
-UI\ForeverFamily.lua
 Data\Geometry.lua
 Data\Forever.lua
 Data\ZoneArt.lua
 Core\Secret.lua
-Core\SafeCall.lua
-Core\OpenSettings.lua
-Core\OpenMap.lua
-Core\Log.lua
-UI\MapCanvas.lua
-Core\Text.lua
 UI\StepStyle.lua
-Core\MinimapButton.lua
 Core\Core.lua
 Planning\Model.lua
 Planning\Travel.lua
@@ -55,9 +49,6 @@ Planning\Shown.lua
 UI\Sound.lua
 Core\State.lua
 Core\Activity.lua
-Core\PeerStats.lua
-Core\LeaderboardsData.lua
-UI\Leaderboards.lua
 Core\Stats.lua
 Core\Party.lua
 Planning\Geometry.lua
@@ -90,14 +81,11 @@ UI\Hints\Explore.lua
 UI\Hints\Hearth.lua
 Core\Recommendations.lua
 UI\Art.lua
-UI\Report.lua
 UI\Moments.lua
-UI\ContextMenu.lua
 UI\GuideSetup.lua
 UI\Menu.lua
 UI\Pins.lua
 UI\Overview.lua
-UI\QuestLogTabs.lua
 UI\Panel.xml
 UI\ZoneIcon.lua
 UI\PanelSearch.lua
@@ -106,11 +94,6 @@ UI\Access.lua
 UI\Widgets.lua
 UI\ActionButton.lua
 UI\GuideOutline.lua
-UI\TrackerQuestie.lua
-UI\TrackerEqot.lua
-UI\TrackerLock.lua
-UI\TrackerOrder.lua
-UI\TrackerHost.lua
 UI\StoryCompletion.lua
 UI\Tracker.lua
 UI\RXPActions.lua
@@ -118,5 +101,4 @@ UI\NpcHighlight.lua
 UI\Tooltip.lua
 UI\Upgrades.lua
 UI\Settings.lua
-UI\SettingsPage.lua
 UI\Dump.lua

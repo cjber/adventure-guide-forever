@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- Secret values (docs/design.md §2.23). The client can hand an addon a value it may hold but not read: another unit's
 -- GUID, token or name in some combat and instance states. Comparing, indexing, matching or even testing such a value
 -- for truth raises an error, so each such read passes through ns.Readable before anything else touches it. A tooltip

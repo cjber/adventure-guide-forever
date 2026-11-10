@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 --[[ /agf dump: a plain-table snapshot of what the guide drew, kept in AdventureGuideForeverDB so a /reload
      writes it to disk for tests/dump_diff.lua to compare with the headless layout. It runs only on the
      command, and the snapshot is dropped at the next login so it never lingers in the save file. ]]

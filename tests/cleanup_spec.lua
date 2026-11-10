@@ -30,9 +30,9 @@ local function Card(h, key)
 	end
 end
 
----@param menu AGFMenuDescription
+---@param menu ForeverMenuDescription
 ---@param text string
----@return AGFMenuDescription?
+---@return ForeverMenuDescription?
 local function MenuEntry(menu, text)
 	for _, entry in ipairs(menu.entries or {}) do
 		if entry.text == text then

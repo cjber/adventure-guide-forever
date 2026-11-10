@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- Shared chrome for the tracker's secure item and target buttons (RXPActions.lua, NpcHighlight.lua): a square action
 -- button whose icon sits in the game's own quest-item frame, and the one-click /cleartarget + /targetexact target
 -- action. Buttons are made and given attributes out of combat only.

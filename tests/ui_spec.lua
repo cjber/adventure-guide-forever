@@ -47,11 +47,11 @@ end
 
 -- A step menu's lines with "Not this quest" (design §2.18) after "Skip for now": one button for a lone quest, else
 -- one per quest under it, titled as the log titles it. `combat`: the menu opened in combat.
-local function WithNotThisQuest(ns, step, lines, combat)
+local function WithNotThisQuest(ns, family, step, lines, combat)
 	local out = {}
 	-- Without Shortest Path installed, a step's menu ends with its grey suggestion before Choose another journey; never
 	-- in combat, where its window can't open.
-	local suggests = ns.Family.State("ShortestPathForever") == "missing" and not ns.Setting("wanderer") and not combat
+	local suggests = family.State("ShortestPathForever") == "missing" and not ns.Setting("wanderer") and not combat
 	for _, line in ipairs(lines) do
 		if suggests and line == "button: " .. ns.L.CHOOSE_JOURNEY then
 			out[#out + 1] = "button: " .. "|cff7f7f7f" .. ns.L.SPF_FAMILY_MENU .. "|r"
@@ -92,7 +92,7 @@ end
 -- finished quest handed in at Orgrimmar, off the story's map, so the log has a carry card.
 local PINS_ON = { showMapPins = true, showQuestGivers = true }
 local AWAY = 5729
-local function Load(spf, db, charDB, away, short, atArea)
+local function Load(spf, db, charDB, away, short, atArea, coreDB)
 	local log = {
 		{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
 		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
@@ -124,6 +124,7 @@ local function Load(spf, db, charDB, away, short, atArea)
 		log = log,
 		-- The Longshore area's objective node, so the area leads on the first build (nothing is held yet).
 		player = atArea and { map = 1413, x = 0.626, y = 0.498 } or nil,
+		coreDB = coreDB,
 	})
 end
 
@@ -363,8 +364,9 @@ do
 	end
 	equal(#buttons, 5, "one index button per group, then the Forever addons page")
 	local familyButton = table.remove(buttons)
-	local familyPage = assert(h.canvasPages[L.FAMILY_PAGE], "the Forever addons page is registered")
-	equal(familyButton.name, L.FAMILY_PAGE, "the last index button is the Forever addons page's")
+	local familyName = "Forever addons"
+	local familyPage = assert(h.canvasPages[familyName], "the Forever addons page is registered")
+	equal(familyButton.name, familyName, "the last index button is the Forever addons page's")
 	equal(familyButton.addSearchTags, false, "the Forever addons button stays out of search")
 	equal(familyPage.parent.name, h.ns.TITLE, "the Forever addons page hangs off the addon's page")
 	familyButton.onClick()
@@ -409,10 +411,14 @@ do
 	end
 	equal(attachSetting ~= nil, true, "shared tracker setting is registered")
 	equal(attachSetting.GetValue(), true, "shared tracker defaults attached")
-	h.ns.TrackerHostSettings().attached = false
-	equal(h.ns.TrackerHostSettings().attached, false, "AGF account host state retains saved false")
-	local malformed = Load("v1", { trackerHost = "bad" })
-	equal(malformed.ns.TrackerHostSettings().attached, true, "AGF account host state normalizes malformed value")
+	h.trackerHostSettings.attached = false
+	equal(h.G.ForeverCore.TrackerHost.GetSettings().attached, false, "ForeverCore's host state retains saved false")
+	local malformed = Load("v1", nil, nil, nil, nil, nil, { trackerHost = "bad" })
+	equal(
+		malformed.G.ForeverCore.TrackerHost.GetSettings().attached,
+		true,
+		"ForeverCore's host state normalizes malformed value"
+	)
 	h.trackerHostSettings.attached = false
 	equal(attachSetting.GetValue(), false, "shared tracker reads the host owner state")
 	h.trackerHostSettings.attached = true
@@ -560,8 +566,9 @@ do
 	h.flush()
 	local heldKey = h.ns.Route().steps[1].key
 	equal(heldKey ~= "area:895:4", true, "here: the area is later while the player is in town")
+	local tickers = h.TickerCount()
 	h.fire("PLAYER_STARTED_MOVING")
-	equal(next(h.ticking) ~= nil, true, "here: moving checks")
+	equal(h.TickerCount() > tickers, true, "here: moving checks")
 	local builds = h.modelCalls.Journeys
 	h.tickers()
 	h.flush()
@@ -576,7 +583,7 @@ do
 	equal(h.modelCalls.Journeys, builds, "here: the area entered is noticed once")
 	h.fire("PLAYER_STOPPED_MOVING")
 	h.flush()
-	equal(next(h.ticking), nil, "here: standing still checks nothing")
+	equal(h.TickerCount(), tickers, "here: standing still checks nothing")
 	clean(h, "here")
 
 	-- Following the quest worked on (Focus.lua): standing in step 1's area selects its quest, so the map draws its
@@ -1129,10 +1136,11 @@ end
 -- WFA-13: nothing runs per frame while idle, and a refresh reuses the frames it has.
 local function IdleUpdates(h)
 	local busy = 0
-	for _, frame in ipairs(h.frames) do
+	for index = h.coreFrameCount + 1, #h.frames do
+		local frame = h.frames[index]
 		busy = busy + (frame:IsVisible() and frame.scripts.OnUpdate and 1 or 0)
 	end
-	return busy + h.counts.tickers
+	return busy + h.TickerCount() - h.idleTickers
 end
 
 for _, spf in ipairs({ false, "v1" }) do
@@ -1356,7 +1364,7 @@ for _, spf in ipairs({ false, "v1" }) do
 
 	-- Design §2.8's menu for a town holding a log quest; Stop only once Go runs, Show quest never in combat.
 	local head = ns.Route().steps[1]
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[head.key], "RightButton")
+	h.OpenTrackerMenu(h.tracker)
 	local menu = {
 		"title: " .. head.title,
 		"button: Go",
@@ -1364,13 +1372,17 @@ for _, spf in ipairs({ false, "v1" }) do
 		"button: Skip for now",
 		"button: Choose another journey",
 	}
-	same(h.MenuLines(), WithNotThisQuest(ns, head, menu), label .. ": tracker menu")
+	same(h.MenuLines(), WithNotThisQuest(ns, h.G.ForeverCore.Family, head, menu), label .. ": tracker menu")
 	ns.Guidance.Navigate(head)
 	h.SetCombat(true)
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[head.key], "RightButton")
+	h.OpenTrackerMenu(h.tracker)
 	h.SetCombat(false)
 	menu[3] = "button: Stop"
-	same(h.MenuLines(), WithNotThisQuest(ns, head, menu, true), label .. ": tracker menu while Go guides, in combat")
+	same(
+		h.MenuLines(),
+		WithNotThisQuest(ns, h.G.ForeverCore.Family, head, menu, true),
+		label .. ": tracker menu while Go guides, in combat"
+	)
 	ns.Guidance.Cancel()
 	clean(h, label .. ": pins")
 end
@@ -1783,7 +1795,7 @@ do
 	equal(keys["area:843:0"], nil, "combat: its objective step is gone")
 	equal(cards[1].key, story.key, "combat: the story stays first")
 	equal(#cards[1].steps, #story.steps, "combat: the story's steps hold")
-	equal(h.counts.tickers, 0, "combat: no timer waits for the fight to end")
+	equal(h.TickerCount(), h.idleTickers, "combat: no timer waits for the fight to end")
 	-- A skip mid-fight takes effect at once, on the story's card as on the log's.
 	ns.Prefs().journey = story.key
 	ns.Invalidate()
@@ -1886,7 +1898,7 @@ local function Warnings(h)
 	end)[1])
 	Count()
 	h.tooltip = {}
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[h.ns.Route().steps[1].key], "RightButton")
+	h.OpenTrackerMenu(h.tracker)
 	local go = h.menu.entries[2]
 	if go.tooltip then
 		h.call(go.tooltip, h.G.GameTooltip, go)
@@ -2057,7 +2069,7 @@ do
 	h.Click(Rows()[1], "RightButton")
 	same(
 		h.MenuLines(),
-		WithNotThisQuest(ns, first, {
+		WithNotThisQuest(ns, h.G.ForeverCore.Family, first, {
 			"title: " .. first.title,
 			"button: Go",
 			"button: Stop",
@@ -2103,7 +2115,7 @@ do
 	local submenu = { "  button: Show again: " .. first.title, "  button: Show again: " .. second.title }
 	same(
 		h.MenuLines(),
-		WithNotThisQuest(ns, ns.Route().steps[1], {
+		WithNotThisQuest(ns, h.G.ForeverCore.Family, ns.Route().steps[1], {
 			"title: " .. ns.Route().steps[1].title,
 			"button: Go",
 			"button: Stop",
@@ -2159,7 +2171,7 @@ do
 	end
 	local logged = ns.State.Log()[id] ~= nil
 	equal(Holds(), true, "not this quest: the route has it")
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[step.key], "RightButton")
+	h.OpenTrackerMenu(h.tracker)
 	local entry = assert(Entry(h.menu.entries, ns.L.NOT_THIS_QUEST), "not this quest: in the step's menu")
 	entry = #step.quests > 1 and entry.entries[1] or entry
 	h.call(entry.onClick)
@@ -2168,7 +2180,7 @@ do
 	equal(ns.State.Log()[id] ~= nil, logged, "not this quest: the log keeps what it had")
 	local saved = h.G.AdventureGuideForeverCharDB.notInterested["quest:" .. id]
 	equal(saved and saved.title ~= nil, true, "not this quest: saved on this character, with its title")
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[ns.Route().steps[1].key], "RightButton")
+	h.OpenTrackerMenu(h.tracker)
 	local skipped = assert(Entry(h.menu.entries, "Skipped (1)"), "not this quest: Skipped (1)")
 	equal(skipped.entries[1].text, ns.L.SHOW_AGAIN:format(saved.title), "not this quest: Show again names it")
 	h.call(skipped.entries[1].onClick)
@@ -2709,21 +2721,18 @@ do
 	local block = h.tracker.liveBlocks["story-complete"]
 	equal(block.header, "Story complete", "fanfare: the header")
 	equal(h.tracker.layoutOrder[1], "story-complete", "fanfare: above the steps")
-	-- The header is not the step's: clicking it neither guides, opens the guide nor opens the step's menu.
-	local waypoints, opened, menus = h.counts.SetUserWaypoint, 0, 0
-	local openPanel, openMenu = ns.OpenPanel, ns.Menu.Open
+	-- The header is not the step's: clicking it neither guides nor opens the guide.
+	local waypoints, opened = h.counts.SetUserWaypoint, 0
+	local openPanel = ns.OpenPanel
 	ns.OpenPanel = function()
 		opened = opened + 1
-	end
-	ns.Menu.Open = function()
-		menus = menus + 1
 	end
 	h.tracker:OnBlockHeaderClick(block, "LeftButton")
 	h.tracker:OnBlockHeaderClick(block, "RightButton")
 	h.flush()
-	ns.OpenPanel, ns.Menu.Open = openPanel, openMenu
+	ns.OpenPanel = openPanel
 	equal(h.counts.SetUserWaypoint - waypoints, 0, "fanfare: the header sets no waypoint")
-	equal(opened + menus, 0, "fanfare: nor opens the guide or the step's menu")
+	equal(opened, 0, "fanfare: nor opens the guide")
 	h.tracker:MarkDirty()
 	equal(#h.fanfares, 1, "fanfare: a later layout doesn't glow again")
 	equal(h.tracker.layoutOrder[1], "story-complete", "fanfare: and still shows the header")
@@ -4159,7 +4168,7 @@ do
 		local waypoints, routes = h.counts.SetUserWaypoint, h.spf.Navigate + h.spf.NavigateRoute
 		if block then
 			h.tracker:OnBlockHeaderClick(block, "LeftButton")
-			h.tracker:OnBlockHeaderClick(block, "RightButton")
+			h.OpenTrackerMenu(h.tracker)
 			h.flush()
 		end
 		equal(h.counts.SetUserWaypoint - waypoints, 0, label .. ": no waypoint")
@@ -4551,7 +4560,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.ns.Pins.Refresh()
 	equal(#h.Pins("AdventureGuideForeverPinTemplate"), 0, label .. ": no rings, even with the guide open")
 	equal(#h.Pins("AdventureGuideForeverGiverPinTemplate"), 0, label .. ": no givers")
-	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks[step.key], "RightButton")
+	h.OpenTrackerMenu(h.tracker)
 	for _, entry in ipairs(h.menu.entries) do
 		equal(entry.text ~= ns.L.GO, true, label .. ": the step menu offers no Go")
 	end

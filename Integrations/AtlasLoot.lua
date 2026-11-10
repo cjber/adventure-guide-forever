@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 local MODULE = "AtlasLootClassic_DungeonsAndRaids"
 ---@class AGFLootBoss
 ---@field name string

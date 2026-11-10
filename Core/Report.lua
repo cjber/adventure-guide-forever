@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local addonName, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- Adventure Guide's own lines in /agf report (docs/design.md §2.24): the guide's settings, the quest data, and the
 -- stop the tracker shows with each quest's ID and Why lines, then the next stops' titles. Read from the committed
 -- route and the snapshot it was planned from: while a build is due the report says so rather than building one.
@@ -30,7 +34,7 @@ end
 ---@param step AGFStep
 ---@param label string "Stop" for the stop being guided to, "Route head" for step 1 when nothing is
 local function Stop(lines, step, label)
-	local Percent = ns.Report.Percent
+	local Percent = ns.core.Report.Percent
 	lines[#lines + 1] = ("%s: %s [%s %s] map %s %s, %s r%s"):format(
 		label,
 		step.title or "-",
@@ -143,12 +147,12 @@ function ns.WhereLines()
 		("Place: map %s (%s) %s, %s"):format(
 			tostring(map or "-"),
 			info and info.name or "-",
-			ns.Report.Percent(x),
-			ns.Report.Percent(y)
+			ns.core.Report.Percent(x),
+			ns.core.Report.Percent(y)
 		),
 	}
 	-- The guide's own lines can fail in the very state being reported: the versions and place still show.
-	local ok, own = ns.SafeCall("where lines", ns.ReportLines)
+	local ok, own = ns.core.SafeCall("where lines", ns.ReportLines)
 	for _, line in ipairs(ok and own or { "Report lines failed: " .. tostring(own) }) do
 		lines[#lines + 1] = line
 	end

@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 local L = ns.L
 
 -- Asides (docs/design.md §2.11): one-line hints beside the journeys, never a route. Each domain registers a provider
@@ -237,7 +241,7 @@ end
 ---@param owner Region
 ---@param aside AGFAside
 function Asides.Open(owner, aside)
-	ns.ContextMenu(owner, function(_, root)
+	ForeverCore.ContextMenu(owner, function(_, root)
 		root:CreateTitle(aside.text)
 		if aside.place and not ns.Setting("wanderer") then
 			root:CreateButton(L.GO, function()

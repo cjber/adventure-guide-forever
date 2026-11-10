@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 local Model = ns.Model
 local NONE = {}
 local Added = ns.Planner.Journeys.Added

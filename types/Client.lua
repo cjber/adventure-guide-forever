@@ -8,13 +8,10 @@
 -- Additive: merges with the fields already declared on AGFNamespace in types/Namespace.lua.
 ---@class AGFNamespace
 ---@field OpenPanel? fun() set once the world map tab exists (Panel.lua); opens the guide tab.
----@field QuestLogTabs ForeverQuestLogTabsAPI the shared world map quest log tab (UI/QuestLogTabs.lua)
 ---@field RegisterSettings fun() defined by Settings.lua, called once after ADDON_LOADED.
----@field OpenSettings? fun() set by RegisterSettings; opens our page under Settings > AddOns through ns.OpenSettingsPanel.
+---@field OpenSettings? fun() set by RegisterSettings; opens our page under Settings > AddOns through ForeverCore.OpenSettingsPanel.
 ---@field Pins AGFPinsModule
 ---@field DEFAULTS table<string, boolean|number|string> account-wide setting defaults (Core.lua)
----@field MinimapButton ForeverMinimapButtonAPI the shared minimap button module (Core/MinimapButton.lua)
----@field minimapButton? ForeverMinimapButton the shared module sets it when it creates the button (host)
 
 ---@class AGFPinsModule
 ---@field Ping fun(key: string) flash the numbered pin for a step, if it's on the shown map.
@@ -31,10 +28,6 @@ EventUtil = {}
 
 ---@type {RegisterCallback: fun(self: any, event: string, callback: fun(...), owner: any), TriggerEvent: fun(self: any, event: string, ...: any)}
 EventRegistry = {}
-
--- UI/Leaderboards.lua publishes the window every Forever addon registers into.
----@type ForeverLeaderboardsAPI?
-ForeverLeaderboards = nil
 
 ---@class AGFClassColor
 ---@field GetRGB fun(self: AGFClassColor): number, number, number
@@ -190,8 +183,6 @@ MapPinPingMixin = nil
 C_InputInterfaceStyle = nil
 ---@type Frame
 SoftCursor = nil
----@type table<string, fun(map: ForeverCanvasMap): {x: number, y: number, kind: string}[]>
-ForeverMapMarkers = nil
 ---@param value number
 ---@return number
 function Saturate(value) end
@@ -299,49 +290,26 @@ UNKNOWNOBJECT = nil
 ---@type {Label: {Right: integer}}
 MinimalSliderWithSteppersMixin = nil
 
----@class AGFSettingsModule
----@field VarType {Boolean: string, Number: string, String: string}
+---@class ForeverSettings
 ---@field RegisterVerticalLayoutCategory fun(name: string): AGFSettingsCategory
----@field RegisterVerticalLayoutSubcategory fun(category: table, name: string): AGFSettingsCategory
----@field RegisterCanvasLayoutSubcategory fun(category: table, frame: Frame, name: string): AGFSettingsCategory
 ---@field RegisterAddOnSetting fun(category: AGFSettingsCategory, variable: string, key: string, storage: table, variableType: string, name: string, default: boolean|number|string): AGFSettingsSetting
----@field RegisterProxySetting fun(category: AGFSettingsCategory, variable: string, variableType: string, name: string, default: boolean, getter: (fun(): boolean), setter: (fun(value: boolean))): AGFSettingsSetting
 ---@field NotifyUpdate fun(variable: string)
 ---@field CreateSliderOptions fun(minimum: number, maximum: number, step: number): AGFSliderOptions
----@field CreateSliderInitializer fun(setting: AGFSettingsSetting, options: AGFSliderOptions, tooltip?: string): AGFSettingsInitializer
----@field CreateCheckboxInitializer fun(setting: AGFSettingsSetting, options?: table, tooltip?: string): AGFSettingsInitializer
----@field CreateCheckbox fun(category: table, setting: AGFSettingsSetting, tooltip?: string)
+---@field CreateSliderInitializer fun(setting: AGFSettingsSetting|table, options: AGFSliderOptions, tooltip?: string): AGFSettingsInitializer
+---@field CreateCheckboxInitializer fun(setting: AGFSettingsSetting|table, options?: table, tooltip?: string): AGFSettingsInitializer
 ---@field CreateControlTextContainer fun(): AGFControlTextContainer
----@field CreateDropdownInitializer fun(setting: AGFSettingsSetting, getData: fun(): table[]): AGFSettingsInitializer
+---@field CreateDropdownInitializer fun(setting: AGFSettingsSetting|table, getData: fun(): table[]): AGFSettingsInitializer
 ---@field CreateElementInitializer fun(template: string, data?: table): AGFSettingsInitializer
----@field RegisterInitializer fun(category: AGFSettingsCategory, initializer: AGFSettingsInitializer) inserts the row from Blizzard's secure delegate
----@field RegisterAddOnCategory fun(category: AGFSettingsCategory)
----@field RegisterCanvasLayoutCategory fun(frame: Frame, name: string): AGFSettingsCategory
----@type AGFSettingsModule
-Settings = nil
 
 -- Blizzard_Settings_Shared.lua: the index page's button; addSearchTags false keeps it out of the settings search.
 ---@type fun(name: string, buttonText: string, buttonClick: fun(), tooltip?: string, addSearchTags?: boolean): AGFSettingsInitializer
 CreateSettingsButtonInitializer = nil
 
--- The client's input-device switch (Blizzard_SharedXMLGame InputUtil.lua), read by UI/ForeverFamily.lua.
+-- The client's input-device switch (Blizzard_SharedXMLGame InputUtil.lua), read by ForeverCore.Family.
 ---@class AGFInputUtil
 ---@field IsGamepadUIEnabled fun(): boolean
 ---@type AGFInputUtil?
 InputUtil = nil
-
--- UI/QuestLogTabs.lua: the tab it builds from Blizzard's LargeSideTabButtonTemplate.
----@class ForeverQuestLogTab : Button
----@field SetCustomOnMouseUpHandler fun(self: ForeverQuestLogTab, handler: fun(self: ForeverQuestLogTab, mouseButton: string, upInside: boolean))
----@field SetChecked fun(self: ForeverQuestLogTab, checked: boolean)
----@field Icon Texture
----@field activeAtlas? string
----@field inactiveAtlas? string
----@field tooltipText string
-
--- The registry every vendored copy of UI/QuestLogTabs.lua shares, published by the first to load.
----@type ForeverQuestLogTabsAPI?
-ForeverQuestLogTabs = nil
 
 ---@class AGFTrackerBlock : Frame
 ---@field HeaderButton? Button
@@ -457,39 +425,6 @@ function C_MajorFactions.GetMajorFactionProgressionInfo(majorFactionID) end
 ---@type table<integer, {r: number, g: number, b: number, color: ColorMixin}>
 ITEM_QUALITY_COLORS = nil
 
--- The saved table a consumer hands the shared minimap button: the angle and the hide flag live in it.
----@class ForeverMinimapButtonSpec
----@field name string the frame name, unique in the addon
----@field icon string|number the addon's own content icon
----@field title string the tooltip title
----@field binding? string shown under the title, e.g. "Shift-F"
----@field subtext? string the tooltip's one line about what a click does
----@field onClick? fun(button: Frame, mouseButton: string) what a left click runs
----@field settings? table the saved table holding the angle and hide flag
----@field angleKey? string the settings key holding the angle, default "minimapButtonAngle"
----@field hiddenKey? string the settings key whose true value hides the button, default "minimapButtonHidden"
----@field getShown? fun(): boolean an addon-owned visibility rule, which wins over the hide flag
----@field host? table receives the frame as its minimapButton
-
--- The registry every vendored copy of Core/MinimapButton.lua shares, published by the first to load.
----@class ForeverMinimapButtonRegistry
----@field buttons ForeverMinimapButton[] every addon button, in creation order
----@type ForeverMinimapButtonRegistry?
-ForeverMinimapButtons = nil
-
--- The frame Core/MinimapButton.lua builds: the client's minimap plate, the addon's icon and the angle on the rim.
----@class ForeverMinimapButton : Button
----@field minimapButtonSpec ForeverMinimapButtonSpec the spec the consumer passed to Create
----@field icon Texture the addon's icon drawn on the plate
----@field angle number the angle around the Minimap, in degrees
----@field dragging boolean? true while the player drags the button around the rim
-
----@class ForeverMinimapButtonAPI
----@field Create fun(spec: ForeverMinimapButtonSpec): ForeverMinimapButton?
----@field Destroy fun(button: ForeverMinimapButton?)
----@field Refresh fun()
----@field SetShown fun(button: ForeverMinimapButton?, shown: boolean)
-
 -- The client nameplate's child UnitFrame (Blizzard_NamePlateUnitFrame.lua): a CompactUnitFrame whose healthBar is
 -- the name-and-health area UI/NpcHighlight.lua centres the quest giver's arrows on.
 ---@class AGFNamePlateUnitFrame : Button
@@ -522,3 +457,13 @@ QUEST_TEMPLATE_REWARD = nil
 ---@param material string?
 ---@param mapView boolean?
 function QuestInfo_Display(template, parentFrame, acceptButton, material, mapView) end
+
+-- ForeverCore.Text: the shared search fold and rank (ForeverCore.Text).
+---@class AGFTextModule
+---@field Fold fun(text: string?): string lower case with Latin accents folded, for search only; nil reads as ""
+---@field Rank fun(folded: string, query: string): integer? 0 an empty query, 1 the whole title, 2 a prefix, 3 a word
+-- start, 4 anywhere, nil for no match
+
+-- The shared tab's icon is the addon's own art slot, which core's declaration leaves out.
+---@class ForeverQuestLogTab : Button
+---@field Icon Texture

@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- What a giver really offers (docs/design.md §2.25). When the player talks to an NPC, its gossip or greeting window
 -- lists the quests it offers. A quest the route sends the player there to pick up that the window leaves out, and
 -- that isn't grey for them, is one Forever removed or changed, so it is marked not offered at the player's level:
@@ -143,9 +147,9 @@ events:RegisterEvent("QUEST_TURNED_IN")
 events:SetScript("OnEvent", function(_, event, arg)
 	if event == "QUEST_TURNED_IN" then
 		if type(arg) == "number" then
-			ns.SafeCall("giver window", TurnedIn, arg)
+			ns.core.SafeCall("giver window", TurnedIn, arg)
 		end
 		return
 	end
-	ns.SafeCall("giver window", Look, event)
+	ns.core.SafeCall("giver window", Look, event)
 end)
