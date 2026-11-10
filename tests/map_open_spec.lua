@@ -1,6 +1,7 @@
 -- Run from the repository root: luajit tests/map_open_spec.lua
--- Every map AGF opens goes through ns.OpenMap, which asks C_Map.OpenWorldMap: the client's own code opens or turns
--- the map, so WorldMapFrame.mapID is never written as the addon (#534). Blizzard's Lua OpenWorldMap
+-- Every map AGF opens goes through the shared ns.OpenMap (Core/OpenMap.lua), which asks C_Map.OpenWorldMap through
+-- CreateSecureDelegate: the client's own code opens or turns the map, so WorldMapFrame.mapID is never written as the
+-- addon (#534). Blizzard's Lua OpenWorldMap
 -- (Blizzard_WorldMap.lua:1329) runs as its caller instead, and the client then blocks the quest pins that read the
 -- map id (QuestDataProvider.lua:117, Blizzard_MapCanvas.lua:331). A MenuUtil callback refuses C_Map.OpenWorldMap
 -- (#411), so the carry card's cleanup menu asks after the menu has closed.
@@ -72,6 +73,12 @@ h.G.C_Map.OpenWorldMap = function(...)
 	restricted = restricted + 1
 	return cMapOpen(...)
 end
+-- Every open also runs through the shared opener's secure delegate (Core/OpenMap.lua), the only way the client
+-- permits the restricted client function (cjber/forever-core#333). A caller that ran it itself would lift
+-- `restricted` alone, so the two counts stay level.
+local function SecureCalls()
+	return h.counts.secureCalls
+end
 local function Opened()
 	return h.counts.OpenWorldMap
 end
@@ -95,6 +102,7 @@ local opened, maps = Opened(), h.counts.SetMapID
 equal(ns.OpenMap(0), true, "closed: the map opens on the player's own map")
 equal(Opened(), opened, "closed: Blizzard's Lua opener is never run")
 equal(restricted, 1, "closed: through C_Map.OpenWorldMap")
+equal(SecureCalls(), restricted, "closed: through the shared opener's secure delegate")
 equal(h.counts.SetMapID, maps, "closed: no map id keeps the current map")
 equal(h.G.WorldMapFrame:IsShown(), true, "closed: the map now shows")
 
@@ -211,6 +219,9 @@ h.SetCombat(false)
 equal(h.G.WorldMapFrame:IsShown(), shown, "combat: the map is left as it was")
 
 equal(h.counts.OpenQuestLog, 0, "the quest log's sidebar is never opened")
+
+-- No path opened the client function itself: every open ran through the shared opener's delegate.
+equal(SecureCalls(), restricted, "every map open ran through the shared opener's secure delegate")
 
 equal(#h.errors, 0, "errors\n" .. table.concat(h.errors, "\n"))
 
