@@ -193,6 +193,7 @@
 ---@field previewGroups table<string, boolean> the overview headers this character collapsed, by group key; a group with no entry uses its default
 ---@field skipped table<string, boolean> step keys skipped this session
 ---@field last? {key: string, reason: string} step 1 at the last rebuild, for the next login's resume line
+---@field heldStep? string the step the tracker showed at the last build, held again by the first build after a /reload
 ---@field lead? integer the map of the zone the story led with, which the next build keeps while it still has useful work
 ---@field left? integer the map of the zone the story left, which waits behind every other zone the next build offers
 ---@field waypoint? {map: integer, x: number, y: number} the native waypoint the last Go set, while it may still be ours
