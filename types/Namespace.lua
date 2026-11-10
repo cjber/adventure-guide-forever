@@ -1667,6 +1667,7 @@
 ---@field catalogueCount? integer
 ---@field questCount? integer
 ---@class AGFStrings
+---@field QUESTIE_INSTALL string
 ---@field QUESTIE_ENABLE string
 ---@field QUESTIE_POLICY string
 

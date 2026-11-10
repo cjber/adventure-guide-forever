@@ -153,6 +153,21 @@ local function MissingField(lib, entities, extraFields)
 	end
 end
 
+-- One of QuestieDB's support modules, or nil. Support belongs to another addon, so it is read through the shape its
+-- contract documents: an install that lacks part of it, or a call that throws, degrades to a plain reason instead of
+-- erroring while a dungeon card draws.
+---@param lib AGFQuestieDB
+---@param name string
+---@return table?
+local function SupportModule(lib, name)
+	local support = lib.Support
+	if type(support) ~= "table" or type(support.Get) ~= "function" then
+		return nil
+	end
+	local called, module = pcall(support.Get, name)
+	return called and type(module) == "table" and module or nil
+end
+
 -- QuestieDB as this file reads it, or nil and why not (an ns.L line).
 ---@return AGFQuestieDB?, string?, AGFQuestieZones?
 local function Fit()
@@ -176,8 +191,8 @@ local function Fit()
 	if type(lib.Quest.GetAllIds) ~= "function" then
 		return nil, ns.L.QUESTIE_FIELD:format("Quest.GetAllIds")
 	end
-	local zoneDB = type(lib.Support) == "table" and lib.Support.Get("ZoneDB") or {}
-	local private = zoneDB["private"]
+	local zoneDB = SupportModule(lib, "ZoneDB")
+	local private = zoneDB and zoneDB.private
 	if type(private) ~= "table" then
 		return nil, ns.L.QUESTIE_ZONES
 	end
@@ -280,8 +295,12 @@ end
 ---@param keep fun(instance: integer): boolean
 ---@return table<integer, integer> instanceOf, table<integer, table> dungeons
 local function InstanceAreas(lib, zones, keep)
-	local zoneDB = lib.Support.Get("ZoneDB")
-	local dungeons = zoneDB and zoneDB.private and zoneDB.private.dungeons or {}
+	local zoneDB = SupportModule(lib, "ZoneDB")
+	local private = zoneDB and zoneDB.private
+	local dungeons = type(private) == "table" and private.dungeons
+	if type(dungeons) ~= "table" then
+		dungeons = {}
+	end
 	local instanceOf = {}
 	for instance, area in pairs(zones.instances) do
 		if keep(instance) then
@@ -518,8 +537,11 @@ local function Build(lib, zones, bundled, yield)
 	-- Item names that a step line can name, each with the item ID its quality colours.
 	local itemIDs
 	status.catalogueCount, status.questCount = #ids, 0
-	local xpSource = lib.Support.Get("QuestXP")
-	local xp = xpSource and xpSource.db or {}
+	local xpSource = SupportModule(lib, "QuestXP")
+	local xp = xpSource and xpSource.db
+	if type(xp) ~= "table" then
+		xp = {}
+	end
 	for _, id in ipairs(ids) do
 		local values = lib.Quest.GetAll(id, QUEST_FIELDS)
 		if values then
@@ -1144,12 +1166,21 @@ function ns.LoginTiming()
 	)
 end
 
+-- Why the guide isn't showing QuestieDB's quests, for the dimmed line under the cards: what to install, what to
+-- enable, or why a loaded QuestieDB isn't used.
+---@return string?
 function ns.SourceHint()
 	if status.state == "building" then
 		return ns.L.AUDIT_QUESTIE_BUILDING
 	end
 	if status.state ~= "questie" then
-		return ns.L.QUESTIE_ENABLE
+		local installed = ns.Family.State(ADDON)
+		if installed == "missing" then
+			return ns.L.QUESTIE_INSTALL
+		elseif installed == "off" then
+			return ns.L.QUESTIE_ENABLE
+		end
+		return status.reason and ns.L.AUDIT_QUESTIE_UNUSED:format(status.reason) or nil
 	end
 	if not (Questie and Questie.API and Questie.API.isReady) then
 		return ns.L.QUESTIE_POLICY

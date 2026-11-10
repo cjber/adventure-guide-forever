@@ -62,6 +62,7 @@ ns.L = {
 	WHY_NOT_OFFERED = "The giver didn't offer it",
 	NOT_OFFERED = "Skipped %s: the giver didn't offer it.",
 	WHY_PROVIDER = "Questie must be ready and confirm this quest is available.",
+	QUESTIE_INSTALL = "Install QuestieDB to load quest data.",
 	QUESTIE_ENABLE = "Enable QuestieDB to load quest data.",
 	QUESTIE_POLICY = "Enable Questie for available quest recommendations.",
 	QUESTIE_ABSENT = "it isn't loaded",

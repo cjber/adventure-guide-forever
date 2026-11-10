@@ -9,22 +9,36 @@ local Loot = {}
 local attemptedSource
 ns.DungeonLoot = Loot
 
--- AtlasLoot resolves linked loot tables and difficulty inheritance through this public API.
+-- AtlasLoot resolves linked loot tables and difficulty inheritance through this public API. It is another addon's
+-- code, so every function this file calls is checked first: an older or newer copy degrades to the install line
+-- rather than erroring while a dungeon card draws.
 ---@param instance integer
 ---@return AGFLootBoss[]
 ---@return string? hint
 function Loot.Bosses(instance)
 	local atlas = AtlasLoot
-	if not atlas or not atlas.ItemDB then
+	if type(atlas) ~= "table" or type(atlas.ItemDB) ~= "table" then
 		return {}, ns.L.DUNGEON_LOOT_INSTALL
 	end
-	local database = atlas.ItemDB:Get(MODULE)
-	if not database and atlas.Loader and attemptedSource ~= atlas and not InCombatLockdown() then
-		attemptedSource = atlas
-		atlas.Loader:LoadModule(MODULE)
-		database = atlas.ItemDB:Get(MODULE)
+	local itemDB = atlas.ItemDB
+	if type(itemDB.Get) ~= "function" then
+		return {}, ns.L.DUNGEON_LOOT_INSTALL
 	end
-	if not database then
+	local database = itemDB:Get(MODULE)
+	if type(database) ~= "table" then
+		local loader = atlas.Loader
+		if
+			attemptedSource ~= atlas
+			and not InCombatLockdown()
+			and type(loader) == "table"
+			and type(loader.LoadModule) == "function"
+		then
+			attemptedSource = atlas
+			loader:LoadModule(MODULE)
+			database = itemDB:Get(MODULE)
+		end
+	end
+	if type(database) ~= "table" then
 		return {}, InCombatLockdown() and ns.L.DUNGEON_LOOT_COMBAT or ns.L.DUNGEON_LOOT_INSTALL
 	end
 	local bosses = {}
@@ -41,8 +55,7 @@ function Loot.Bosses(instance)
 		for index, boss in ipairs(content.items) do
 			local npcID = type(boss.npcID) == "table" and boss.npcID[1] or boss.npcID
 			if type(npcID) == "number" and not seen[npcID] then
-				local ok, items =
-					pcall(atlas.ItemDB.GetItemTable, atlas.ItemDB, MODULE, key, index, content.LoadDifficulty or 1)
+				local ok, items = pcall(itemDB.GetItemTable, itemDB, MODULE, key, index, content.LoadDifficulty or 1)
 				local drops, dropped = {}, {}
 				if ok and type(items) == "table" then
 					for _, entry in ipairs(items) do
