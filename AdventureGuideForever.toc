@@ -31,6 +31,8 @@ Data\Forever.lua
 Data\ZoneArt.lua
 Core\Secret.lua
 Core\SafeCall.lua
+Core\OpenSettings.lua
+Core\OpenMap.lua
 Core\Log.lua
 UI\MapCanvas.lua
 Core\Text.lua

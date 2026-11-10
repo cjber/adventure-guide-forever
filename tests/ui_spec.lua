@@ -390,6 +390,14 @@ do
 		equal(h.subcategories[index].name, button.name, "index button " .. index .. " names its subpage")
 		equal(h.subcategories[index].parent.name, h.ns.TITLE, "and the subpage hangs off the addon's page")
 	end
+	-- Every settings open goes through the shared secure opener (Core/OpenSettings.lua): Blizzard's Lua wrapper runs
+	-- the restricted C_SettingsUtil.OpenSettingsPanel in the addon's taint, which the client refuses and blames the
+	-- addon (cjber/forever-core#333).
+	equal(h.openedSettingsRestricted, 0, "no index button calls Blizzard's restricted opener")
+	equal(h.openedSettingsElement, nil, "an index button asks for no row to scroll to")
+	h.ns.OpenSettings()
+	equal(h.openedSettings, familyPage.parent.GetID(), "More settings opens the addon's own page")
+	equal(h.openedSettingsRestricted, 0, "More settings calls the shared opener, not Blizzard's wrapper")
 	equal(byKey.untrackOthers.indented, true, "untrackOthers is indented under tracking")
 	equal(byKey.untrackOthers.evaluateCVar, "AdventureGuideForever_trackRouteQuests", "parent changes reevaluate child")
 	equal(byKey.untrackOthers.enabled(), false, "and is greyed while it is off")

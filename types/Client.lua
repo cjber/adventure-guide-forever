@@ -10,7 +10,7 @@
 ---@field OpenPanel? fun() set once the world map tab exists (Panel.lua); opens the guide tab.
 ---@field QuestLogTabs ForeverQuestLogTabsAPI the shared world map quest log tab (UI/QuestLogTabs.lua)
 ---@field RegisterSettings fun() defined by Settings.lua, called once after ADDON_LOADED.
----@field OpenSettings? fun() set by RegisterSettings; opens our page under Settings > AddOns.
+---@field OpenSettings? fun() set by RegisterSettings; opens our page under Settings > AddOns through ns.OpenSettingsPanel.
 ---@field Pins AGFPinsModule
 ---@field DEFAULTS table<string, boolean|number|string> account-wide setting defaults (Core.lua)
 ---@field MinimapButton ForeverMinimapButtonAPI the shared minimap button module (Core/MinimapButton.lua)
@@ -317,7 +317,6 @@ MinimalSliderWithSteppersMixin = nil
 ---@field RegisterInitializer fun(category: AGFSettingsCategory, initializer: AGFSettingsInitializer) inserts the row from Blizzard's secure delegate
 ---@field RegisterAddOnCategory fun(category: AGFSettingsCategory)
 ---@field RegisterCanvasLayoutCategory fun(frame: Frame, name: string): AGFSettingsCategory
----@field OpenToCategory fun(categoryID: integer)
 ---@type AGFSettingsModule
 Settings = nil
 

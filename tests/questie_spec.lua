@@ -802,4 +802,44 @@ do
 	end
 	equal(#both.errors, 0, "the update coalescing raises no error")
 end
+-- QuestieDB's Forever record for Ira's Dagger (96137) lists Bath'rah the Windwatcher (6176) in Alterac Mountains as a
+-- starter beside item 281143. The quest is the Duskwood one that item begins, so it has no giver and no pickup
+-- waypoint at all, and Bath'rah is not where it starts (#591).
+do
+	local dagger = Fake()
+	dagger.zones.area[10], dagger.zones.area[36] = 1431, 1416
+	dagger.quests[96137] = {
+		name = "Ira's Dagger",
+		questLevel = 25,
+		requiredLevel = 18,
+		requiredRaces = 77 + 2 ^ 32,
+		startedBy = { { 6176 }, nil, { 281143 } },
+		finishedBy = { { 268 } },
+		zoneOrSort = 10,
+		objectives = { { { 272260, nil, 0 } } },
+	}
+	dagger.npcs[6176] = { name = "Bath'rah the Windwatcher", spawns = { [36] = { { 80.5, 66.92 } } }, zoneID = 36 }
+	dagger.npcs[272260] = { name = "Lost Stalker", spawns = { [10] = { { 30, 40 } } }, zoneID = 10, minLevel = 24 }
+	dagger.npcs[268] = { name = "Sirra Von'Indi", spawns = { [10] = { { 72.62, 47.62 } } }, zoneID = 10 }
+	dagger.items[281143] = { name = "Ira's Dagger", startQuest = 96137, npcDrops = { 272260 } }
+	local dropped = harness.load({
+		questiedb = dagger,
+		setup = Policy,
+		player = { level = 25, faction = "Alliance", raceID = 1, classID = 1, map = 1431, x = 0.5, y = 0.5 },
+	})
+	equal(#dropped.errors, 0, "Ira's Dagger: build errors")
+	local quest = dropped.ns.Data.quests[96137]
+	equal(quest ~= nil, true, "Ira's Dagger: the catalogue holds it")
+	local start = quest and quest.start
+	equal(start == nil or start.map ~= 1416, true, "Ira's Dagger: Bath'rah is never its start")
+	local pickups = {}
+	for _, step in ipairs(dropped.ns.Route().steps) do
+		for _, id in ipairs(step.pickups or {}) do
+			if id == 96137 then
+				pickups[#pickups + 1] = step
+			end
+		end
+	end
+	equal(#pickups, 0, "Ira's Dagger: an item-started quest has no pickup step, in Alterac Mountains or anywhere else")
+end
 print(("questie_spec: %d checks passed"):format(checks))
