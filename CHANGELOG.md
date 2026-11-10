@@ -12,7 +12,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-- **A stop up a tower now says to climb.** A quest giver or hand-in on a raised floor looked like it stood on the ground, so the guide could read "34 yd" while you stood underneath Scout Riell at the top of Sentinel Hill's tower. Each stop at one NPC's or object's spawn now carries that spawn's height, and a Shortest Path that knows floors marks it with the map's own up arrow. Objective areas spread over many spawns are unchanged. (#613)
+## [1.4.7] - 2026-11-10
+
+- **A stop up a tower or down in a crypt now says so.** A quest giver on a raised floor looked like it stood on the ground, so the guide could read "34 yd" while you stood underneath Scout Riell at the top of Sentinel Hill's tower. A stop at an NPC or object with a single spawn now passes its height to Shortest Path, which from 1.26.0 marks the stop with the map's own up or down arrow and says "Above ground level" or "Below ground level" in its tooltip (#613).
 
 ## [1.4.6] - 2026-11-10
 
