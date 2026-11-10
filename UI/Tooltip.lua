@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- The NPC tooltip line (docs/design.md §2.9): a giver or ender the shown journey's steps visit says so on its unit
 -- tooltip. The NPCs are gathered on each route change, so a hover only reads; the line is the tooltip's own, added
 -- after the client's (TooltipDataProcessor), and touches no secure frame, in combat or out.

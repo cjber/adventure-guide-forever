@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 local L = ns.L
 
 -- WFA-5: Legacy Forever holds 0 and -1, SkillUp Forever -2, Shortest Path Forever -3. This is the
@@ -84,9 +88,10 @@ local function BlockStep(block)
 	return ns.Guidance.CurrentStep()
 end
 
----@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
+---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate, ForeverTrackerModule
 ---@field rxpActionsReserved? number the height the RestedXP action rows already added to contentsHeight
 ---@field npcHighlightReserved? number the height the next-NPC target button already added to contentsHeight
+---@field AddHeaderMenuEntries? fun(self: AGFTrackerModule, root: ForeverMenuDescription)
 local ModuleMixin = {
 	headerText = L.TITLE,
 	blockTemplate = "ObjectiveTrackerAnimBlockTemplate",
@@ -123,22 +128,22 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 		end
 		return
 	end
-	if mouseButton ~= "RightButton" then
-		local step = BlockStep(block)
-		if step and ns.Setting("trackRouteQuests") then
-			ns.TrackRouteQuests()
-		end
-		-- The step is the chosen journey's, else the first card's, which this chooses (ns.StartRoute).
-		if step and ns.Setting("titleStartsRoute") then
-			ns.StartRoute()
-		end
-		-- The step's quest when the log has it, the guide otherwise.
-		if not (step and ns.ShowQuest(step)) and ns.OpenPanel then
-			ns.OpenPanel()
-		end
+	if mouseButton == "RightButton" then
+		-- ForeverCore's column owns the header's right-click switches and asks AddHeaderMenuEntries for our own.
 		return
 	end
-	ns.Menu.Open(block.HeaderButton or block, BlockStep(block))
+	local step = BlockStep(block)
+	if step and ns.Setting("trackRouteQuests") then
+		ns.TrackRouteQuests()
+	end
+	-- The step is the chosen journey's, else the first card's, which this chooses (ns.StartRoute).
+	if step and ns.Setting("titleStartsRoute") then
+		ns.StartRoute()
+	end
+	-- The step's quest when the log has it, the guide otherwise.
+	if not (step and ns.ShowQuest(step)) and ns.OpenPanel then
+		ns.OpenPanel()
+	end
 end
 
 -- The title's click starts the route when the setting says so, as an aside's with a place does, so each warns as Go
@@ -599,15 +604,27 @@ function ModuleMixin:LayoutContents()
 end
 
 local function WarnIfUnattached()
-	if module and not ns.TrackerHost.IsAttached(module) then
+	if module and not ForeverCore.TrackerHost.IsAttached(module) then
 		ns.Print(L.TRACKER_UNATTACHED)
 	end
 end
 
-local function Register()
-	if not ns.TrackerHost then
-		return
+-- The column's scale, Lock and position were the addon's before ForeverCore kept them; the host copies this table
+-- once, so the player keeps the layout they chose. Saved variables load with the addon, so attach happens after them.
+local function Attach()
+	---@cast module AGFTrackerModule
+	module.legacySettings = AdventureGuideForeverDB and AdventureGuideForeverDB.trackerHost or nil
+	module.safeCall = ns.core.SafeCall
+	module.AddHeaderMenuEntries = function(_, root)
+		ns.Menu.Step(root, ns.Guidance.CurrentStep())
 	end
+	ForeverCore.TrackerHost.Attach(module)
+	if AdventureGuideForeverDB then
+		AdventureGuideForeverDB.trackerHost = nil
+	end
+end
+
+local function Register()
 	local frame =
 		CreateFrame("Frame", "AdventureGuideForeverObjectiveTracker", UIParent, "ObjectiveTrackerModuleTemplate")
 	---@cast frame AGFTrackerModule
@@ -615,11 +632,8 @@ local function Register()
 	Mixin(module, ModuleMixin)
 	module:SetHeader(ModuleMixin.headerText)
 	module.uiOrder = UI_ORDER
-	ns.TrackerHost.Attach(module)
 	EventUtil.ContinueAfterAllEvents(function()
-		C_Timer.After(0, function()
-			ns.TrackerHost.Attach(module)
-		end)
+		C_Timer.After(0, Attach)
 		C_Timer.After(5, WarnIfUnattached)
 	end, "PLAYER_ENTERING_WORLD", "VARIABLES_LOADED")
 end

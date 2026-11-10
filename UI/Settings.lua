@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- Settings > AddOns > Adventure Guide Forever: a short index page, then a subpage per group (Route, Map,
 -- Objective tracker, Interface) so no page grows tall, like tweaks-forever. Every row goes in through
 -- Settings.RegisterInitializer, which inserts it from Blizzard's secure delegate: Settings.CreateCheckbox inserts
@@ -42,7 +46,7 @@ function ns.RegisterSettings()
 					"AdventureGuideForever_maxQuestLevelOffset",
 					"maxQuestLevelOffset",
 					AdventureGuideForeverDB,
-					Settings.VarType.Number,
+					"number",
 					ns.L.SETTING_QUEST_LEVEL,
 					ns.DEFAULTS.maxQuestLevelOffset
 				)
@@ -124,7 +128,7 @@ function ns.RegisterSettings()
 			"SETTINGS_GROUP_TRACKER",
 			function(subcategory)
 				---@type ForeverTrackerHostAPI
-				local host = ns.TrackerHost
+				local host = ForeverCore.TrackerHost
 				if host and host.GetSettings and host.SetAttached and host.OnAttachmentChanged then
 					local variable = "AdventureGuideForever_attachTracker"
 					local setting = Settings.RegisterProxySetting(
@@ -260,27 +264,26 @@ function ns.RegisterSettings()
 			CreateSettingsButtonInitializer(name, ns.L.SETTINGS_OPEN, function()
 				-- The shared secure opener (Core/OpenSettings.lua): Blizzard's Lua wrapper would ask the client's
 				-- restricted C_SettingsUtil.OpenSettingsPanel as this addon (cjber/forever-core#333).
-				ns.OpenSettingsPanel(subcategory:GetID())
+				ForeverCore.OpenSettingsPanel(subcategory:GetID())
 			end, nil, false)
 		)
 	end
 
 	for _, group in ipairs(groups) do
-		local subcategory = Settings.RegisterVerticalLayoutSubcategory(category, ns.L[group[1]])
+		local subcategory = Settings.RegisterVerticalLayoutSubcategory(category, ns.L[group[1]]) --[[@as AGFSettingsCategory]]
 		group[2](subcategory)
 		IndexButton(ns.L[group[1]], subcategory)
 	end
 
-	-- The Forever addons page, shared by all five addons (UI/ForeverFamily.lua), with the suggestions setting on it.
+	-- The Forever addons page, shared by all five addons (ForeverCore.Family), with the suggestions setting on it.
 	-- With the gamepad interface on, the page is the client's own rows so the Options navigation can enter it
 	-- (cjber/tweaks-forever#382).
-	IndexButton(
-		ns.L.FAMILY_PAGE,
-		ns.Family.Register(category, ns.FamilyDB, "AdventureGuideForever") --[[@as AGFSettingsCategory]]
-	)
+	local family =
+		ForeverCore.Family.Register(category, assert(ns.FamilyDB()), "AdventureGuideForever", ns.core.SafeCall)
+	IndexButton(family.name, family --[[@as AGFSettingsCategory]])
 
 	Settings.RegisterAddOnCategory(category)
 	function ns.OpenSettings()
-		ns.OpenSettingsPanel(category:GetID())
+		ForeverCore.OpenSettingsPanel(category:GetID())
 	end
 end

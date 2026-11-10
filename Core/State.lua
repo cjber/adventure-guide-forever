@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 ---@class AGFStateModule : AGFState
 local State = {}
 ns.State = State
@@ -711,5 +715,5 @@ local function OnEvent(_, event, arg)
 	Coalesce(COUNTS_EVENTS[event])
 end
 events:SetScript("OnEvent", function(self, event, arg)
-	ns.SafeCall("state event", OnEvent, self, event, arg)
+	ns.core.SafeCall("state event", OnEvent, self, event, arg)
 end)

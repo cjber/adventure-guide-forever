@@ -75,19 +75,7 @@ ns.L = {
 	HELP_WHERE = "/agf where - show the stop the guide is on, to copy into a wrong-stop report",
 	HELP_REPORT = "/agf report - show a report to copy into a bug report",
 	HELP_ISSUE = "/agf issue - report a bug or request a feature with a ready-made GitHub issue link",
-	ISSUE_WINDOW_TITLE = "Report a bug or request a feature",
-	ISSUE_LINK_HINT = "The link is selected. Press Ctrl+C (Cmd+C on a Mac), then paste it into your browser: "
-		.. "GitHub opens a new issue with this filled in.",
-	ISSUE_BUG = "Bug",
-	ISSUE_BUG_PREFIX = "Bug: ",
-	ISSUE_FEATURE = "Feature request",
-	ISSUE_FEATURE_PREFIX = "Feature request: ",
-	ISSUE_TITLE_LABEL = "Title",
-	ISSUE_DETAILS_LABEL = "What happened, or what you would like",
-	ISSUE_COPY_LINK = "Copy issue link",
-	ISSUE_COPY_REPORT = "Copy report",
 	REPORT_TITLE = "Adventure Guide report",
-	REPORT_HINT = "The text is selected. Press Ctrl+C (Cmd+C on a Mac) to copy it, then paste it into your bug report.",
 	HELP_AUDIT = "/agf audit - check the quest data against the game",
 	HELP_DUMP = "/agf dump - save the guide's layout for a bug report",
 	HELP_TRACKER = "/agf tracker - print the tracker stack's anchors (for a combat overlap)",
@@ -554,28 +542,7 @@ ns.L = {
 	SETTING_WHATS_NEW = "What's new after an update",
 	SETTING_WHATS_NEW_TOOLTIP = "One line in chat the first time you log in after the guide updates.",
 	-- Companion hints (Companions.lua): what another Forever addon would add here, while it isn't loaded. The
-	-- Forever addons page itself and its setting are UI/ForeverFamily.lua's, shared by all five addons.
-	FAMILY_PAGE = "Forever addons",
-	-- The Forever addons page and its address window (UI/ForeverFamily.lua): the shared module looks each up by its
-	-- English, so these keep its words exactly (Companions.lua maps them, tests/companions_spec.lua checks).
-	FAMILY_LINE_SPF = "Plans the quickest way anywhere and guides you there, with live boat and zeppelin times.",
-	FAMILY_LINE_AGF = "Picks quests for your level and plans them into one journey.",
-	FAMILY_LINE_SKILLUP = "Plans the cheapest route to your next profession rank.",
-	FAMILY_LINE_LEGACY = "Shows the Legacy challenges you can advance in each zone.",
-	FAMILY_LINE_TWEAKS = "Quest automation, rare alerts and merchant handling for the default UI.",
-	FAMILY_SUGGEST = "Suggest my other Forever addons",
-	FAMILY_SUGGEST_ABOUT = "Show a quiet line where one of my other Forever addons would help. "
-		.. "Only for addons you don't have.",
-	FAMILY_STATE_ON = "On",
-	FAMILY_STATE_OFF = "Installed, turned off",
-	FAMILY_STATE_MISSING = "Not installed",
-	FAMILY_THIS_ADDON = "This addon",
-	FAMILY_COPY_LINK = "Copy link",
-	FAMILY_COPY_HINT = "Copy the address, then open it in your browser.",
-	FAMILY_CLOSE = "Close",
-	FAMILY_DONT_SUGGEST = "Don't suggest this again",
-	FAMILY_SUPPORT = "The Forever addons are free, with nothing locked behind them. "
-		.. "If they help, you can buy me a coffee.",
+	-- Forever addons page itself and its setting are ForeverCore.Family's, shared by all five addons.
 	SPF_FAMILY_MENU = "Walked routes and boat times: Shortest Path Forever",
 	SKILLUP_FAMILY = "SkillUp Forever plans the cheapest route to your next profession rank.",
 	SKILLUP_FAMILY_MENU = "Cheapest route to your next rank: SkillUp Forever",
@@ -608,48 +575,6 @@ ns.L = {
 	RXP_SETUP_SKILLUP_SPF = "SkillUp: equipment and shopping routes use Shortest Path.",
 	RXP_SETUP_SKILLUP = "SkillUp: equipment and shopping journeys are available.",
 	RXP_SETUP_SETTINGS = "Change this later in AddOns settings.",
-
-	-- Forever Leaderboards (Forever Core's shared window, which reads ns.L by English phrase).
-	["Forever Leaderboards"] = "Forever Leaderboards",
-	["Overall"] = "Overall",
-	["Forever standing"] = "Forever standing",
-	["Your guild and group"] = "Your guild and group",
-	["This week"] = "This week",
-	["All time"] = "All time",
-	["Rank"] = "Rank",
-	["Player"] = "Player",
-	["No one has reported yet."] = "No one has reported yet.",
-	["Share my progress"] = "Share my progress",
-	["Others' values are player-reported."] = "Others' values are player-reported.",
-	["Points for placing on each addon's board."] = "Points for placing on each addon's board.",
-	["(you)"] = "(you)",
-	["board"] = "board",
-	["boards"] = "boards",
-	["Uses Forever addons"] = "Uses Forever addons",
-	["Forever: %s overall this week"] = "Forever: %s overall this week",
-	["Forever: %s overall"] = "Forever: %s overall",
-	["1st"] = "1st",
-	["2nd"] = "2nd",
-	["3rd"] = "3rd",
-	["4th"] = "4th",
-	["5th"] = "5th",
-	["6th"] = "6th",
-	["7th"] = "7th",
-	["8th"] = "8th",
-	[", "] = ", ",
-
-	-- Shared debug log (Forever Core's Core/Log.lua, which reads ns.L by English phrase).
-	["Debug log is off."] = "Debug log is off.",
-	["Debug log is on for this session."] = "Debug log is on for this session.",
-	["Debug log is on and pinned for this character."] = "Debug log is on and pinned for this character.",
-	["Debug log is already on and pinned for this character."] = "Debug log is already on and pinned for this character.",
-	["Debug log is off for this session; it is still pinned."] = "Debug log is off for this session; it is still pinned.",
-	["Debug log is off and unpinned."] = "Debug log is off and unpinned.",
-	["No addon has attached its log yet."] = "No addon has attached its log yet.",
-	["%s (last %d):"] = "%s (last %d):",
-	["%s: no lines yet."] = "%s: no lines yet.",
-	["Usage: /forever debug, /forever debug pin, /forever debug off, /forever debug show"] = "Usage: /forever debug, "
-		.. "/forever debug pin, /forever debug off, /forever debug show",
 }
 
 _G.BINDING_HEADER_ADVENTUREGUIDEFOREVER = "Adventure Guide Forever"
@@ -662,18 +587,3 @@ _G["BINDING_NAME_CLICK AdventureGuideForeverTarget1:LeftButton"] = "Target step 
 _G["BINDING_NAME_CLICK AdventureGuideForeverTarget2:LeftButton"] = "Target step creature 2"
 _G["BINDING_NAME_CLICK AdventureGuideForeverTarget3:LeftButton"] = "Target step creature 3"
 _G["BINDING_NAME_CLICK AdventureGuideForeverTarget4:LeftButton"] = "Target step creature 4"
-
--- The Forever addons page's words in English, kept before a translation replaces them. The shared module
--- (UI/ForeverFamily.lua, loaded next) reads its words from ns.FamilyL by their English phrase, since our ns.L is keyed
--- by name: English here, and Integrations/Companions.lua puts each translated line in once every Locales file has
--- loaded.
----@type table<string, string>
-ns.FamilyPhrases = {}
----@type table<string, string>
-ns.FamilyL = {}
-for key, text in pairs(ns.L) do
-	if key:find("^FAMILY_") then
-		ns.FamilyPhrases[key] = text
-		ns.FamilyL[text] = text
-	end
-end

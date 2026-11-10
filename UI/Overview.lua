@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 local L = ns.L
 
 -- The map guide's shared presentation (docs/design.md §2.2): the kind icons, a card's
@@ -266,7 +270,7 @@ local DIMMED = 0.35
 
 -- After the step menu (Menu.lua), the chosen journey's order: each move greyed where Order.lua refuses it, the way
 -- back while the order is the player's, and a town's givers still to see, a skip each.
----@param root AGFMenuDescription
+---@param root ForeverMenuDescription
 ---@param step AGFStep
 ---@param index? integer
 local function OrderEntries(root, step, index)
@@ -306,7 +310,7 @@ end
 ---@param step AGFStep
 ---@param index? integer
 local function StepMenu(owner, step, index)
-	ns.ContextMenu(owner, function(_, root)
+	ForeverCore.ContextMenu(owner, function(_, root)
 		ns.Menu.Step(root, step)
 		OrderEntries(root, step, index)
 	end)
@@ -466,7 +470,7 @@ function Overview.OpenCleanupQuest(questID)
 	-- MenuUtil runs its callback inside a securecall, where the restricted C_Map.OpenWorldMap is refused (#411), so
 	-- ask once the menu has closed.
 	C_Timer.After(0, function()
-		ns.OpenMap(map)
+		ForeverCore.OpenMap(map)
 	end)
 end
 
@@ -480,7 +484,7 @@ local function CleanupMenu(owner, journey)
 	if not cleanup or cleanup.grey + cleanup.elsewhere == 0 then
 		return false
 	end
-	ns.ContextMenu(owner, function(_, root)
+	ForeverCore.ContextMenu(owner, function(_, root)
 		root:SetScrollMode(400)
 		root:CreateTitle(L.CLEANUP_MENU_TITLE)
 		if cleanup.grey > 0 then
@@ -540,7 +544,7 @@ local function CardClick(self, mouseButton)
 		end
 		-- Turn the map to the selected journey, never letting its failure undo the choice.
 		if WorldMapFrame:IsShown() and journey.map > 0 then
-			pcall(ns.OpenMap, journey.map)
+			pcall(ForeverCore.OpenMap, journey.map)
 		end
 	end
 	-- Its tooltip spoke for the state the click just left.

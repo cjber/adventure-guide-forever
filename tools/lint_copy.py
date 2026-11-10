@@ -32,11 +32,8 @@ TOOLTIP_PREFIX = "GameTooltip_"
 # Colour codes, atlas and texture markup carry no words, so a literal of only those is not copy.
 MARKUP = re.compile(r"\|c[0-9a-fA-F]{8}|\|r|\|A[^|]*\|a|\|T[^|]*\|t")
 ESCAPES = {"n": "\n", "t": "\t", "\\": "\\", '"': '"', "'": "'"}
-# Shared byte for byte by the Forever addons, so it can't use this addon's constant keys: its copy goes through its own
-# L, keyed by the English phrase (L["Close"]), which falls back to the phrase. Those lookups are its ns.L.
-PHRASE_KEYED = {"ForeverFamily.lua", "Report.lua", "LeaderboardsData.lua", "Leaderboards.lua"}
-# These shared files also compare code values ("week", "all") in a text call's arguments, which are not copy.
-LITERAL_SKIPPED = {"LeaderboardsData.lua", "Leaderboards.lua"}
+# Core/Require.lua runs before Locales, so its one-line API floor cannot read ns.L: the literal is the line itself.
+LITERAL_SKIPPED = {"Require.lua"}
 
 
 def unquote(literal: str) -> str:
@@ -101,18 +98,10 @@ def ns_l_entries(tokens: list[Token]) -> list[tuple[Token, list[Token]]]:
     for entry in split(tokens[index + 5 : matching(tokens, index + 4)], ","):
         if not entry:
             continue
-        # A shared Forever file reads ns.L by its English phrase, so those lines are keyed `["phrase"] = "text"`.
-        if len(entry) >= 5 and entry[0].text == "[" and entry[1].kind == "string" and entry[2].text == "]":
-            if entry[3].text != "=":
-                raise ValueError(f'{entry[0].line}: an ns.L phrase key must be ["phrase"] = value')
-            entries.append((entry[1], entry[4:]))
-        elif len(entry) >= 3 and entry[0].kind == "name" and entry[1].text == "=":
+        if len(entry) >= 3 and entry[0].kind == "name" and entry[1].text == "=":
             entries.append((entry[0], entry[2:]))
         else:
-            raise ValueError(
-                f'{entry[0].line}: an ns.L entry not shaped NAME = value or ["phrase"] = value; '
-                "the copy checks cannot read it"
-            )
+            raise ValueError(f"{entry[0].line}: an ns.L entry not shaped NAME = value; the copy checks cannot read it")
     return entries
 
 
@@ -120,7 +109,7 @@ def strings_table(tokens: list[Token]) -> list[tuple[int, str, str]]:
     """(line, key, value) for each alternative of each ns.L entry; "a" .. "b" joins, "X or 'b'" gives 'b'."""
     entries = []
     for key, value in ns_l_entries(tokens):
-        label = unquote(key.text) if key.kind == "string" else key.text
+        label = key.text
         for alternative in split(value, "or"):
             literals = [unquote(t.text) for t in alternative if t.kind == "string"]
             if literals:
@@ -128,29 +117,8 @@ def strings_table(tokens: list[Token]) -> list[tuple[int, str, str]]:
     return entries
 
 
-def phrase_lookup(tokens: list[Token], index: int) -> bool:
-    """The string at index is the key of an L["phrase"] lookup."""
-    return (
-        2 <= index < len(tokens) - 1
-        and tokens[index - 1].text == "["
-        and tokens[index - 2].text == "L"
-        and tokens[index + 1].text == "]"
-    )
-
-
-def phrases(tokens: list[Token]) -> list[tuple[int, str]]:
-    """(line, phrase) for each L["phrase"] lookup."""
-    return [
-        (token.line, unquote(token.text))
-        for index, token in enumerate(tokens)
-        if token.kind == "string" and phrase_lookup(tokens, index)
-    ]
-
-
-def literal_calls(tokens: list[Token], keyed: bool = False) -> list[tuple[int, str]]:
-    """(line, call) for each string literal with words in it in a call's text argument; with `keyed`, an L["phrase"]
-    lookup is copy, not a literal."""
-    positions = {id(token): index for index, token in enumerate(tokens)}
+def literal_calls(tokens: list[Token]) -> list[tuple[int, str]]:
+    """(line, call) for each string literal with words in it in a call's text argument."""
     hits = []
     for index, token in enumerate(tokens[:-1]):
         if token.kind != "name" or tokens[index + 1].text != "(":
@@ -161,8 +129,6 @@ def literal_calls(tokens: list[Token], keyed: bool = False) -> list[tuple[int, s
         arguments = split(tokens[index + 2 : matching(tokens, index + 1)], ",")
         if len(arguments) >= position:
             for part in arguments[position - 1]:
-                if keyed and part.kind == "string" and phrase_lookup(tokens, positions[id(part)]):
-                    continue
                 if part.kind == "string" and re.search(r"[^\W\d_]", MARKUP.sub("", unquote(part.text))):
                     hits.append((part.line, token.text))
     return hits
@@ -174,14 +140,9 @@ def check(core: Path, files: list[Path]) -> list[str]:
         report += [f"{core}:{line}: L.{key}: {problem}" for problem in value_problems(value)]
     for path in files:
         tokens = tokenize(path.read_text())[0]
-        keyed = path.name in PHRASE_KEYED
-        # A shared Forever file is vendored byte for byte and reads its copy by English phrase. Its literal arguments
-        # also hold code values ("week", "all"), which are not copy, so only its phrase lookups are checked here.
-        literal = [] if path.name in LITERAL_SKIPPED else literal_calls(tokens, keyed)
+        literal = [] if path.name in LITERAL_SKIPPED else literal_calls(tokens)
         for line, call in literal:
             report.append(f"{path}:{line}: a string literal passed to {call}; put the copy in ns.L")
-        for line, phrase in phrases(tokens) if keyed else []:
-            report += [f"{path}:{line}: L[{phrase!r}]: {problem}" for problem in value_problems(phrase)]
     return report
 
 

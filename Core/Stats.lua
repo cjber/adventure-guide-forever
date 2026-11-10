@@ -1,10 +1,14 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
--- Adventure Guide's side of the shared peer statistics (Core/PeerStats.lua, vendored from Forever Core): it names the
--- one metric this addon reports, keeps the saved peer table, and registers the addon's board with the shared Forever
--- Leaderboards window. The protocol, the bounds, the send queue, the window and the game events behind them belong to
--- the shared modules; nothing here reimplements them.
+if ns.broken then
+	return
+end
+
+-- Adventure Guide's side of ForeverCore's peer statistics: it names the one metric this addon reports, keeps the
+-- saved peer table, and registers the addon's board with the shared Forever Leaderboards window. The protocol, the
+-- bounds, the send queue, the window and the game events behind them belong to ForeverCore; nothing here reimplements
+-- them.
 ---@class AGFStats
 local Stats = {}
 ns.Stats = Stats
@@ -71,10 +75,11 @@ local function LocalTotal()
 	return 0, nil
 end
 
-local peerStats = ns.PeerStats.New({
+local peerStats = ForeverCore.PeerStats.New({
 	addon = "agf",
 	enabled = Enabled,
 	db = Peers,
+	safeCall = ns.core.SafeCall,
 	-- A character with no turn-in yet has nothing to report; unknown stays unknown.
 	snapshot = function()
 		local value, eventUnix = LocalTotal()
@@ -84,9 +89,9 @@ local peerStats = ns.PeerStats.New({
 })
 
 -- One row per ranked player, in the shape the shared window draws. Rows leave class nil: the shared window fills it
--- through ForeverLeaderboards.ClassOf, which knows the player, group and guild roster better than a name match here.
--- The all-time board keeps the cumulative total in the value column; the weekly board draws the progress since the
--- reset there and the cumulative total in grey.
+-- through ForeverCore.LeaderboardsData.ClassOf, which knows the player, group and guild roster better than a name
+-- match here. The all-time board keeps the cumulative total in the value column; the weekly board draws the progress
+-- since the reset there and the cumulative total in grey.
 ---@param scope ForeverLeaderboardsScope
 ---@return ForeverLeaderboardsRow[]
 local function Board(scope)
@@ -119,26 +124,23 @@ end
 
 --- Open the shared Forever Leaderboards window on this addon's tab.
 function Stats.Open()
-	if ns.Leaderboards then
-		ns.Leaderboards:Open("agf")
-	end
+	ForeverCore.Leaderboards:Open("agf")
 end
 
-if ns.Leaderboards then
-	ns.Leaderboards:Register("agf", {
-		title = ns.L.TITLE,
-		icon = TAB_ICON,
-		metric = ns.L.LEADERBOARD_METRIC,
-		board = Board,
-		revision = function()
-			return peerStats:Revision()
-		end,
-		sharing = Enabled,
-		setSharing = function(shared)
-			ns.SetSetting("statsShare", shared == true)
-		end,
-	})
-end
+ForeverCore.Leaderboards:Register("agf", {
+	title = ns.L.TITLE,
+	icon = TAB_ICON,
+	metric = ns.L.LEADERBOARD_METRIC,
+	board = Board,
+	safeCall = ns.core.SafeCall,
+	revision = function()
+		return peerStats:Revision()
+	end,
+	sharing = Enabled,
+	setSharing = function(shared)
+		ns.SetSetting("statsShare", shared == true)
+	end,
+})
 
 --- Offer this character's total to the guild and group channels again.
 function Stats.Sync()

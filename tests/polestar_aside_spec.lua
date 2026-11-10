@@ -191,7 +191,7 @@ do
 	local h = Load(stub)
 	h.flush()
 	check(not h.ns.Polestar.Active(), "idle at first")
-	check(next(h.ticking) ~= nil, "a timer stands in for the message bus")
+	check(h.TickerCount() > 0, "a timer stands in for the message bus")
 	stub.guide = { id = "forever/alliance/elwynn" }
 	h.tickers()
 	h.flush()

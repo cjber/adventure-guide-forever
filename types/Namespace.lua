@@ -611,19 +611,8 @@
 ---@field HELP_TRACKER string
 ---@field HELP_REPORT string
 ---@field HELP_ISSUE string
----@field ISSUE_WINDOW_TITLE string
----@field ISSUE_LINK_HINT string
----@field ISSUE_BUG string
----@field ISSUE_BUG_PREFIX string
----@field ISSUE_FEATURE string
----@field ISSUE_FEATURE_PREFIX string
----@field ISSUE_TITLE_LABEL string
----@field ISSUE_DETAILS_LABEL string
----@field ISSUE_COPY_LINK string
----@field ISSUE_COPY_REPORT string
 ---@field HELP_WHERE string
 ---@field REPORT_TITLE string the report window's title
----@field REPORT_HINT string the report window's line on copying its text
 ---@field HAND_IN_WHEN string format: zone name; the reason on a turn-in the route leaves for another continent
 ---@field BEFORE_IT_RUNS_OUT string format: expiring quest item name; the reason a route step is hurried
 ---@field BEFORE_ITEM_RUNS_OUT string the fallback reason when the client has not loaded the item name
@@ -854,7 +843,8 @@
 ---@field Debug fun(): string /agf travel's line
 
 ---@class AGFNamespace
----@field MapCanvas ForeverMapCanvas
+---@field broken? boolean set when an installed ForeverCore is too old, so the addon's files stop
+---@field core ForeverCoreAddon the addon's own ForeverCore services: journal, log, report and map canvas
 ---@field ReportTitle string the localized title shown by the shared report window
 ---@field Offers AGFOffersModule what a giver's window really offers (Offers.lua)
 ---@field Closes AGFClosesModule the chat warning before taking a quest that closes another (Closes.lua)
@@ -862,8 +852,6 @@
 ---@field CreatureEntry fun(guid?: string): integer? a creature's entry from its GUID; nil for anything else or a secret
 ---@field PanelSearch AGFPanelSearch
 ---@field QuestieFields {spawns: string[], drops: string[], level: string[], rank: string[]}
----@field TrackerHost ForeverTrackerHostAPI
----@field TrackerHostSettings fun(): ForeverTrackerSettings
 ---@field TrackerModule fun(): AGFTrackerModule? the AGF tracker section, where RestedXP's secure action buttons attach
 ---@field RXPActions AGFRXPActionsModule native-styled secure replacements for RestedXP's item and target windows
 ---@field Geometry AGFGeometry the native-geometry adapter (Geometry.lua)
@@ -880,16 +868,6 @@
 ---@field NextCamp fun(step: AGFStep) "Next spot": pass over the spot the area step points at (the one the player is at, inside the area) for this session; the last one starts the round again
 ---@field Readable fun(value: any): any `value`, or nil when the client keeps it secret (Core/Secret.lua)
 ---@field Usable fun(frame?: Frame): boolean false for nil and for a forbidden frame (Core/Secret.lua)
----@field SafeCall fun(label: string, fn: function, ...: any): boolean, ... run fn as pcall does, keeping a failure for the report and passing it to the error handler (Core/SafeCall.lua)
----@field RecordError fun(label: string, message: any, stack?: string) keep an error caught some other way (a coroutine's) for the report
----@field CutText fun(text: string, limit: integer): string `text` at most `limit` bytes, cut on a character boundary with "..."
----@field CaughtErrors fun(): ForeverCaughtError[] this session's caught errors, oldest first, as copies
----@field AttachErrorJournal fun(store: table) keep the journal in the addon's saved table, so a /reload keeps it
----@field Log fun(level: string, topic: string, message: any, ...: any) one line in the shared ring (Core/Log.lua)
----@field LogLines fun(count?: integer): string[] the newest log lines, oldest first, as copies (Core/Log.lua)
----@field AttachLog fun(store: table) keep the log ring in the addon's saved table, so a /reload keeps it
----@field DebugCommand fun(argument?: string): boolean `/forever debug`: toggle, pin, off or show (Core/Log.lua)
----@field Report ForeverReportModule the report window (UI/Report.lua)
 ---@field WhereLines fun(): string[] /agf where: versions, place and the report's own lines (Core/Report.lua)
 ---@field ReportLines fun(): string[] Adventure Guide's own lines in the report (Core/Report.lua)
 ---@field Setting fun(key: string): any
@@ -915,12 +893,9 @@
 ---@field Resume fun(step: AGFStep): string? the reason saved last session, while the resume line stands for this step
 ---@field InLog fun(step: AGFStep): boolean the step is a quest in the player's log (a turn-in or its objectives)
 ---@field Menu AGFMenuModule
----@field ContextMenu fun(owner: Region, generator: fun(owner: Region, root: AGFMenuDescription)): AGFMenuDescription
 ---@field ShowQuest fun(step: AGFStep): boolean open the map on a log step's quest and select it; false for other steps or in combat
 ---@field OpenMapStitch AGFOpenMapModule OpenMap's stitched canvas: where a stop of a neighbouring zone sits on the shown map (Integrations/OpenMap.lua)
 ---@field Queston AGFQuestonModule Queston Forever's map page: choosing either addon's page closes the other (Integrations/Queston.lua)
----@field OpenMap fun(mapID: integer?): boolean open or turn the world map through the client's own opener, run securely (Core/OpenMap.lua); false in combat
----@field OpenSettingsPanel fun(categoryID: integer?, element: string?): boolean open Options on our page through the client's own opener, run securely (Core/OpenSettings.lua); false in combat
 ---@field TurnedIn fun(questID: integer) QUEST_TURNED_IN: latched so a chosen journey that ends there is complete, then OnTurnIn
 ---@field OnJourneyComplete? fun(next?: string) a turn-in ended the chosen journey, optionally moving on to a next zone; set by Tracker.lua
 ---@field OnTurnIn? fun(questID: integer) QUEST_TURNED_IN: the chapter-end fanfare when the quest ends a proven chain; set by Tracker.lua
@@ -1573,22 +1548,6 @@
 ---@field WHATS_NEW string this version's headline, printed once after an update
 ---@field SETTING_WHATS_NEW string
 ---@field SETTING_WHATS_NEW_TOOLTIP string
----@field FAMILY_PAGE string the Forever addons settings page's name
----@field FAMILY_LINE_SPF string the Forever addons page: Plans the quickest way anywhere and guid
----@field FAMILY_LINE_AGF string the Forever addons page: Picks quests for your level and plans th
----@field FAMILY_LINE_SKILLUP string the Forever addons page: Plans the cheapest route to your next pr
----@field FAMILY_LINE_LEGACY string the Forever addons page: Shows the Legacy challenges you can adva
----@field FAMILY_LINE_TWEAKS string the Forever addons page: Quest automation, rare alerts and mercha
----@field FAMILY_SUGGEST string the Forever addons page: Suggest my other Forever addons
----@field FAMILY_SUGGEST_ABOUT string the Forever addons page: Show a quiet line where one of my other
----@field FAMILY_STATE_ON string the Forever addons page: On
----@field FAMILY_STATE_OFF string the Forever addons page: Installed, turned off
----@field FAMILY_STATE_MISSING string the Forever addons page: Not installed
----@field FAMILY_THIS_ADDON string the Forever addons page: This addon
----@field FAMILY_COPY_LINK string the Forever addons page: Copy link
----@field FAMILY_COPY_HINT string the Forever addons page: Copy the address, then open it in your b
----@field FAMILY_CLOSE string the Forever addons page: Close
----@field FAMILY_DONT_SUGGEST string the Forever addons page: Don't suggest this again
 ---@field SPF_FAMILY_MENU string a step's menu entry without Shortest Path Forever installed
 ---@field SKILLUP_FAMILY string a profession trainer's tooltip without SkillUp Forever installed
 ---@field SKILLUP_FAMILY_MENU string a profession trainer's menu entry without SkillUp Forever installed
@@ -1599,15 +1558,12 @@
 ---@class AGFCompanions
 ---@field Line fun(addon: string): string?, boolean? the line for a companion that isn't running, and whether it suggests installing it
 ---@field AddLine fun(tooltip: GameTooltip, addon: string) the line at a tooltip's foot: a suggestion grey, an "Enable" line as an instruction
----@field AddMenu fun(root: AGFMenuDescription, addon: string) the grey entry that shows a missing companion's address
+---@field AddMenu fun(root: ForeverMenuDescription, addon: string) the grey entry that shows a missing companion's address
 
 ---@class AGFNamespace
 ---@field WhatsNew fun() on login: print WHATS_NEW once if the version changed since the last one seen
 ---@field Companions AGFCompanions
----@field Family ForeverFamilyAPI the shared Forever addons module (UI/ForeverFamily.lua)
 ---@field FamilyDB fun(): ForeverFamilyDB? the account-wide saved variables its page and hints use
----@field FamilyPhrases table<string, string> FAMILY_ key -> its English, before any translation
----@field FamilyL table<string, string> the shared module's L: its English phrases -> our lines, translated
 
 ---@class AGFModel
 ---@field ObjectiveDone fun(data: AGFData, entry?: AGFLogQuest, slot: integer): boolean
@@ -1675,23 +1631,6 @@
 
 ---@class AGFStrings
 ---@field DUNGEON_BOSSES_LOOT string
-
----@class ForeverQuestLogTabSpec
----@field name string the tab frame's global name
----@field tooltip string the tab's tooltip text
----@field panel Frame the panel the tab shows
----@field order number where the tab sits in the stack, lowest first
----@field shown? fun(visible: boolean) called once per change after the panel is shown or hidden
-
----@class ForeverQuestLogTabsAPI
----@field Register fun(key: string, spec: ForeverQuestLogTabSpec): ForeverQuestLogTab
----@field Select fun(key: string)
----@field ShowQuests fun()
----@field Selected fun(): string?
-
----@class ForeverTrackerNamespace
----@field MapCanvas? ForeverMapCanvas
----@field SafeCall fun(label: string, fn: function, ...: any): boolean, ...any
 
 ---@class AGFIndex
 ---@field ids integer[]
@@ -1998,7 +1937,6 @@
 
 ---@class AGFGlobal
 ---@field API AGFAPI
----@field MinimapButton ForeverMinimapButtonAPI the shared minimap button module (Core/MinimapButton.lua)
 
 ---@type AGFGlobal
 AdventureGuideForever = nil
@@ -2012,9 +1950,6 @@ AdventureGuideForever = nil
 
 ---@class AGFNamespace
 ---@field ActivityStats fun(): AGFActivityRecord[]
----@field PeerStats ForeverPeerStatsNamespace the shared guild and group statistics transport (Core/PeerStats.lua)
----@field LeaderboardsData? ForeverLeaderboardsData the shared leaderboards' data half (Core/LeaderboardsData.lua)
----@field Leaderboards? ForeverLeaderboardsAPI the shared Forever Leaderboards window (UI/Leaderboards.lua)
 ---@field Stats AGFStats Adventure Guide's adapter and leaderboard over it (Core/Stats.lua)
 
 ---@class AGFLeaderboardRow

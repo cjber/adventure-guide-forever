@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 --[[ The guidance lifecycle (docs/design.md §2.10, §4.2): choosing a journey, starting, stopping and restoring its
      route, following it as its steps change, and ending it. The cards, the tracker, the menus and the map's rings all
      come through here, so every route AGF starts runs on the chosen journey. This file alone writes prefs.guided
@@ -392,7 +396,7 @@ events:RegisterEvent("PLAYER_LOGIN")
 events:SetScript("OnEvent", function(_, event)
 	if event == "PLAYER_LOGIN" then
 		if Integrations.Subscribe(function()
-			ns.SafeCall("spf subscriber", Look)
+			ns.core.SafeCall("spf subscriber", Look)
 		end) then
 			events:UnregisterEvent("SUPER_TRACKING_CHANGED")
 		end

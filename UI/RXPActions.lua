@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 --[[ Native-styled replacements for RestedXP's item and target windows while AGF steers its guide (#334). The buttons
      are secure: an item button uses the client's own item action, and a target button is a /cleartarget + /targetexact
      macro. Their frames are built, shown, hidden, moved and given attributes only out of combat; mid-fight only count,

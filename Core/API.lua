@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- Public answers and navigation requests for other addons (docs/api.md). Reads return copies;
 -- nil means the route is still settling, so ask again later.
 ---@class AGFAPI
@@ -283,9 +287,9 @@ local function StopKey(stop)
 end
 
 -- One burst's changes, to every subscriber there when the call-back began (one added by a callback waits for the next
--- burst), each with its own table and each under
--- ns.SafeCall, so an error in one reaches the game's error handler and the report without stopping the others. While
--- the route is being worked out nothing is sent: the rebuild's own notification queues the next look.
+-- burst), each with its own table and each under ns.core.SafeCall, so an error in one reaches the game's error handler
+-- and the report without stopping the others. While the route is being worked out nothing is sent: the rebuild's own
+-- notification queues the next look.
 local function Dispatch()
 	pending = false
 	if not subscriptions[1] or not ns.RouteSettled() then
@@ -306,7 +310,7 @@ local function Dispatch()
 	end
 	for _, subscription in ipairs(current) do
 		if subscription.callback then
-			ns.SafeCall("API subscriber", subscription.callback, {
+			ns.core.SafeCall("API subscriber", subscription.callback, {
 				stop = stopChanged or nil,
 				journey = journeyChanged or nil,
 				status = statusChanged or nil,
@@ -320,7 +324,7 @@ local function Queue()
 	if not pending and subscriptions[1] then
 		pending = true
 		C_Timer.After(0, function()
-			ns.SafeCall("API subscribers", Dispatch)
+			ns.core.SafeCall("API subscribers", Dispatch)
 		end)
 	end
 end

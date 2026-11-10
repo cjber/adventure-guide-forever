@@ -1,5 +1,7 @@
 -- luacheck: read globals scenario ADDON
-scenario("closing the map with the guide open keeps the gamepad secure", function(sim)
+local core = dofile("tests/sim/forever_core.lua")
+
+scenario("closing the map with the guide open keeps the gamepad secure", { addons = core }, function(sim)
 	sim.world.maps[1429] = { name = "Elwynn Forest", parent = 1415, mapType = 3 }
 	sim.world.maps[1415] = { name = "Eastern Kingdoms", parent = 947, mapType = 2 }
 	sim:login()

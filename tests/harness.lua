@@ -2,6 +2,7 @@
 -- global environment, against stubs of only the client API the addon calls, and returns a handle to drive it.
 -- Paths are relative to the repository root: run the specs from there.
 local harness = {}
+local ForeverCore = dofile("tests/forever_core.lua")
 
 local ADDON = "AdventureGuideForever"
 
@@ -1721,6 +1722,14 @@ function harness.load(options)
 			h.call(ticker.fn)
 		end
 	end
+	-- How many tickers run now, ForeverCore's own included.
+	function h.TickerCount()
+		local count = 0
+		for _ in pairs(h.ticking) do
+			count = count + 1
+		end
+		return count
+	end
 	function h.frame()
 		for _, frame in ipairs(h.frames) do
 			if frame.scripts.OnUpdate and frame:IsVisible() then
@@ -2803,6 +2812,9 @@ function harness.load(options)
 		return entry
 	end
 	-- MenuUtil.lua:293: the menu calls it with GameTooltip on hover; h.HoverEntry does the same.
+	function DescriptionMethods:SetScrollMode(extent)
+		self.scrollExtent = extent
+	end
 	function DescriptionMethods:SetTooltip(tooltip)
 		self.tooltip = tooltip
 	end
@@ -2838,6 +2850,12 @@ function harness.load(options)
 			h.MenuLines(entry, lines, indent .. "  ")
 		end
 		return lines
+	end
+	-- The entries the addon adds to ForeverCore's tracker header menu, without core's own switches.
+	function h.OpenTrackerMenu(module)
+		h.menu = Description("root")
+		module.AddHeaderMenuEntries(module, h.menu)
+		return h.menu
 	end
 
 	-- Settings > AddOns: the addon's page holds index buttons, each opening a subcategory of rows.
@@ -2974,15 +2992,15 @@ function harness.load(options)
 		end,
 		RegisterAddOnCategory = noop,
 		-- Blizzard's Lua wrapper runs the restricted C_SettingsUtil.OpenSettingsPanel in the addon's taint, which the
-		-- client refuses and blames the addon (cjber/forever-core#333). The addon asks the shared secure opener
-		-- (ns.OpenSettingsPanel) instead; this count lets a spec fail if a call site goes back to the wrapper.
+		-- client refuses and blames the addon (cjber/forever-core#333). The addon asks ForeverCore.OpenSettingsPanel
+		-- instead; this count lets a spec fail if a call site goes back to the wrapper.
 		OpenToCategory = function(categoryID)
 			h.openedSettingsRestricted = h.openedSettingsRestricted + 1
 			h.openedSettings = categoryID
 		end,
 	}
-	-- The client's own restricted opener, counted: the shared ns.OpenSettingsPanel (Core/OpenSettings.lua) reaches it
-	-- through CreateSecureDelegate.
+	-- The client's own restricted opener, counted: ForeverCore.OpenSettingsPanel reaches it through
+	-- CreateSecureDelegate.
 	G.C_SettingsUtil = {
 		OpenSettingsPanel = function(categoryID, element)
 			h.openedSettings = categoryID
@@ -3203,7 +3221,7 @@ function harness.load(options)
 	G.CreateFramePoolCollection = function()
 		return {
 			GetOrCreatePool = function()
-				error("pooled native blocks require tracker_host_spec")
+				error("pooled native blocks require the shared tracker host")
 			end,
 		}
 	end
@@ -3618,6 +3636,24 @@ function harness.load(options)
 		options.db.optimisedRoute = true
 	end
 
+	--[[ ForeverCore, then the addon: the dependency's TOC files first, each given (addonName, ns) ]]
+
+	-- ForeverCore loads first, as the client loads a dependency before the addon that requires it. The specs use the
+	-- real shared modules, never a fake, so a change in core reaches them.
+	G.ForeverCoreDB = options.coreDB or {}
+	local coreNamespace = ForeverCore.load(G)
+	h.fire("ADDON_LOADED", "ForeverCore")
+	-- Frames made so far belong to ForeverCore; the addon's own start at the next index.
+	h.coreFrameCount = #h.frames
+	-- Keep the menu a spec opens, whether the addon asked core for it or core's tracker column did.
+	for _, menu in ipairs({ coreNamespace, G.ForeverCore }) do
+		local original = menu.ContextMenu
+		menu.ContextMenu = function(owner, generator)
+			h.menu = original(owner, generator)
+			return h.menu
+		end
+	end
+
 	--[[ Load the addon: the TOC's files in order, each given (addonName, ns) ]]
 
 	G.AdventureGuideForeverDB, G.AdventureGuideForeverCharDB = options.db, options.charDB
@@ -3679,30 +3715,15 @@ function harness.load(options)
 	if options.setup then
 		options.setup(h)
 	end
-	local trackerSettings = { attached = true, locked = false }
-	local trackerCallbacks = {}
-	function h.ns.TrackerHost.GetSettings()
-		return trackerSettings
-	end
-	function h.ns.TrackerHost.SetAttached(value)
-		trackerSettings.attached = value
-		for _, callback in ipairs(trackerCallbacks) do
-			callback()
-		end
-	end
-	function h.ns.TrackerHost.SetLocked(value)
-		trackerSettings.locked = value
-	end
-	function h.ns.TrackerHost.OnAttachmentChanged(callback)
-		trackerCallbacks[#trackerCallbacks + 1] = callback
-	end
-	h.trackerHostSettings = trackerSettings
+	h.trackerHostSettings = G.ForeverCoreDB.trackerHost
 	h.fire("ADDON_LOADED", ADDON)
 	h.fire("ADDON_LOADED", "Blizzard_WorldMap")
 	h.fire("PLAYER_LOGIN")
 	h.fire("PLAYER_ENTERING_WORLD", options.initialLogin ~= false, options.initialLogin == false)
 	h.fire("VARIABLES_LOADED")
 	h.flush()
+	-- ForeverCore's own tickers, running from its load events, are not idle work the addon added.
+	h.idleTickers = h.TickerCount()
 	h.map, h.questMap, h.tracker = map, questMap, G.AdventureGuideForeverObjectiveTracker
 
 	--[[ Driving the UI ]]
@@ -3824,13 +3845,31 @@ function harness.load(options)
 			end
 		end)
 	end
-	local contextMenu = h.ns.ContextMenu
-	h.ns.ContextMenu = function(owner, generator)
-		h.menu = contextMenu(owner, generator)
-		return h.menu
-	end
-
 	return h
+end
+
+-- The shared modules a headless model spec reads: the text fold and the services Core/Core.lua registers with.
+-- Loaded once into the global environment, which the planner files read for ForeverCore.Text.
+local coreLoaded = false
+local function EnsureCore()
+	if coreLoaded then
+		return
+	end
+	-- The shared files only need a frame factory at load; the model specs never draw one.
+	if type(rawget(_G, "CreateFrame")) ~= "function" then
+		_G.CreateFrame = function()
+			return { SetScript = function() end, RegisterEvent = function() end }
+		end
+	end
+	ForeverCore.load(_G, {
+		"Core/SafeCall.lua",
+		"Core/Log.lua",
+		"Core/Text.lua",
+		"UI/Report.lua",
+		"UI/MapCanvas.lua",
+		"Expose.lua",
+	})
+	coreLoaded = true
 end
 
 -- The planner alone: locale strings and route geometry, then Core with its client hooks stubbed,
@@ -3838,6 +3877,7 @@ end
 ---@param ns table
 ---@return AGFModel
 function harness.model(ns)
+	EnsureCore()
 	if not ns.Data then
 		assert(loadfile("Data/Geometry.lua"))(ADDON, ns)
 	end
@@ -3861,10 +3901,7 @@ end
 -- Reload only the planner and its caches, in the same order as the client.
 ---@param ns table
 function harness.planner(ns)
-	-- Core/Text.lua loads before the planner in the TOC, and Planning/Model.lua's search reads ns.Text.
-	if not ns.Text then
-		assert(loadfile("Core/Text.lua"))(ADDON, ns)
-	end
+	EnsureCore()
 	local planner = false
 	for line in io.lines("AdventureGuideForever.toc") do
 		local path = line:gsub("\\", "/")

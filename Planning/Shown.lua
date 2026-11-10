@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 -- The route as shown: one pass from a snapshot of the player to the steps the views draw. The planner's route
 -- (Plan.lua and Refresh.lua, which read no client state), then the player's own order (docs/design.md §2.20) and
 -- giver skips, all over the same player and log. Core.lua's rebuild is the one caller.

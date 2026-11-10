@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- Native-geometry adapter: the client answers what the data would otherwise bundle. Every function here takes an
 -- injected `api` table rather than reading globals, so the module loads in the client with `api` being the real
 -- namespaces (C_Map, C_SkillInfo, C_Reputation, GetLFGDungeonInfo, UiMapPoint, ...) and in the headless specs with

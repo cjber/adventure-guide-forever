@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 --[[ Reward upgrades (docs/design.md §2.28). When a quest giver's window lists rewards to choose from, the game's own
      green upgrade arrow (the bags' `bags-greenarrow`) marks each choice that beats what the character wears in its
      slot: an item the character can use, of the armour type its class wears at its level, with no primary stat the
@@ -313,7 +317,7 @@ Upgrades.Update = Update
 local function Displayed(template)
 	showing = (template == QUEST_TEMPLATE_DETAIL or template == QUEST_TEMPLATE_REWARD)
 		and not (QuestInfoFrame and QuestInfoFrame.questLog)
-	ns.SafeCall("quest rewards", Update)
+	ns.core.SafeCall("quest rewards", Update)
 end
 
 local events = CreateFrame("Frame")
@@ -333,5 +337,5 @@ events:SetScript("OnEvent", function(_, event)
 	elseif not waiting then
 		return
 	end
-	ns.SafeCall("quest rewards", Update)
+	ns.core.SafeCall("quest rewards", Update)
 end)

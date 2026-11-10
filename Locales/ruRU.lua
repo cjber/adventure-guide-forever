@@ -77,30 +77,6 @@ L["DUNGEON_PICKUP"] = "Взять"
 L["DUNGEON_QUESTS"] = "Заданий для этого подземелья: %d"
 L["DUNGEON_QUESTS_ONE"] = "1 задание для этого подземелья"
 L["ENTRANCE_UNKNOWN"] = "Расположение входа неизвестно."
-L["FAMILY_CLOSE"] = "Закрыть"
-L["FAMILY_COPY_HINT"] = "Скопируйте адрес и откройте его в браузере."
-L["FAMILY_COPY_LINK"] = "Копировать ссылку"
-L["FAMILY_DONT_SUGGEST"] = "Больше не предлагать"
-L["FAMILY_LINE_AGF"] =
-	"Подбирает задания по вашему уровню и объединяет их в один маршрут."
-L["FAMILY_LINE_LEGACY"] =
-	"Показывает старинные испытания, которые можно продвинуть в каждой зоне."
-L["FAMILY_LINE_SKILLUP"] =
-	"Прокладывает самый дешевый путь к следующему рангу профессии."
-L["FAMILY_LINE_SPF"] =
-	"Прокладывает самый быстрый путь куда угодно и ведет вас туда, с расписанием кораблей и дирижаблей в реальном времени."
-L["FAMILY_LINE_TWEAKS"] =
-	"Автоматизация заданий, оповещения о редких противниках и работа с торговцами для стандартного интерфейса."
-L["FAMILY_PAGE"] = "Модификации Forever"
-L["FAMILY_STATE_MISSING"] = "Не установлено"
-L["FAMILY_STATE_OFF"] = "Установлено, отключено"
-L["FAMILY_STATE_ON"] = "Вкл."
-L["FAMILY_SUGGEST"] = "Предлагать другие мои модификации Forever"
-L["FAMILY_SUGGEST_ABOUT"] =
-	"Показывать неприметную строку там, где помогла бы другая моя модификация Forever. Только для тех, что у вас не установлены."
-L["FAMILY_SUPPORT"] =
-	"Аддоны Forever бесплатны, и ничего в них не закрыто за оплатой. Если они вам помогают, можете угостить меня кофе." -- mt
-L["FAMILY_THIS_ADDON"] = "Эта модификация"
 L["FROM_SKILLUP"] = "из SkillUp Forever"
 L["GO"] = "Вперед"
 L["GO_TO_ENTRANCE"] = "Ко входу"
@@ -287,8 +263,6 @@ L["RECIPE_LEARNED"] = "изучено"
 L["RECIPE_TRAIN_AT"] = "изучается на %d"
 L["RECOMMENDED"] = "Рекомендуется"
 L["REPLACES_JOURNEY"] = "Заменяет текущее путешествие."
-L["REPORT_HINT"] =
-	"Текст выделен. Нажмите Ctrl+C (Cmd+C на Mac), чтобы скопировать его, затем вставьте в сообщение об ошибке."
 L["REPORT_TITLE"] = "Отчет Adventure Guide"
 L["REST_HERE"] = "Отдохните в здешней таверне"
 L["RESUME"] = "Где вы остановились: %s"
@@ -537,17 +511,6 @@ L["MINIMAP_BUTTON_SUBTEXT"] = "Нажмите, чтобы открыть рук�
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] =
 	"/agf issue - сообщить об ошибке или предложить функцию с готовой ссылкой на issue GitHub" -- mt
-L["ISSUE_BUG"] = "Ошибка" -- mt
-L["ISSUE_BUG_PREFIX"] = "Ошибка: " -- mt
-L["ISSUE_COPY_LINK"] = "Скопировать ссылку на issue" -- mt
-L["ISSUE_COPY_REPORT"] = "Скопировать отчет" -- mt
-L["ISSUE_DETAILS_LABEL"] = "Что произошло или что вы хотели бы видеть" -- mt
-L["ISSUE_FEATURE"] = "Предложение функции" -- mt
-L["ISSUE_FEATURE_PREFIX"] = "Предложение функции: " -- mt
-L["ISSUE_LINK_HINT"] =
-	"Ссылка выделена. Нажмите Ctrl+C (Cmd+C на Mac) и вставьте ее в браузер: GitHub откроет новую issue с этими данными." -- mt
-L["ISSUE_TITLE_LABEL"] = "Заголовок" -- mt
-L["ISSUE_WINDOW_TITLE"] = "Сообщить об ошибке или предложить функцию" -- mt
 L["MINIMAP_UNAVAILABLE"] =
 	"Миникарта недоступна; пользовательская кнопка пропущена." -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Отключить трекер Questie" -- mt
@@ -571,51 +534,5 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 L["NPC_HIGHLIGHT_HINT"] =
 	"Дружественные таблички имени отключены: включите их в настройках интерфейса, чтобы видеть, куда идти."
 
--- Forever Leaderboards (Forever Core's shared window).
-L["Forever Leaderboards"] = "Рейтинги Forever" -- mt
-L["Overall"] = "Общий" -- mt
-L["Forever standing"] = "Общий рейтинг Forever" -- mt
-L["Your guild and group"] = "Ваша гильдия и группа" -- mt
-L["This week"] = "На этой неделе" -- mt
-L["All time"] = "За всё время" -- mt
-L["Rank"] = "Место" -- mt
-L["Player"] = "Игрок" -- mt
-L["No one has reported yet."] = "Пока никто не сообщил." -- mt
-L["Share my progress"] = "Делиться прогрессом" -- mt
-L["Others' values are player-reported."] =
-	"Значения других игроков сообщены ими самими." -- mt
-L["Points for placing on each addon's board."] = "Очки за место в списке каждого аддона." -- mt
-L["(you)"] = "(вы)" -- mt
-L["board"] = "список" -- mt
-L["boards"] = "списки" -- mt
-L["Uses Forever addons"] = "Использует аддоны Forever" -- mt
-L["Forever: %s overall this week"] = "Forever: %s на этой неделе" -- mt
-L["Forever: %s overall"] = "Forever: %s за всё время" -- mt
-L["1st"] = "1-е" -- mt
-L["2nd"] = "2-е" -- mt
-L["3rd"] = "3-е" -- mt
-L["4th"] = "4-е" -- mt
-L["5th"] = "5-е" -- mt
-L["6th"] = "6-е" -- mt
-L["7th"] = "7-е" -- mt
-L["8th"] = "8-е" -- mt
-L[", "] = ", " -- mt
 L.LEADERBOARD_METRIC = "Сданные задания" -- mt
 L.LEADERBOARD_TOTAL = "всего" -- mt
-
--- Shared debug log (Forever Core's Core/Log.lua).
-L["Debug log is off."] = "Журнал отладки выключен." -- mt
-L["Debug log is on for this session."] = "Журнал отладки включён для этого сеанса." -- mt
-L["Debug log is on and pinned for this character."] =
-	"Журнал отладки включён и закреплён для этого персонажа." -- mt
-L["Debug log is already on and pinned for this character."] =
-	"Журнал отладки уже включён и закреплён для этого персонажа." -- mt
-L["Debug log is off for this session; it is still pinned."] =
-	"Журнал отладки выключен для этого сеанса; закрепление сохранено." -- mt
-L["Debug log is off and unpinned."] = "Журнал отладки выключен, закрепление снято." -- mt
-L["No addon has attached its log yet."] =
-	"Ни один аддон ещё не подключил свой журнал." -- mt
-L["%s (last %d):"] = "%s (последние %d):" -- mt
-L["%s: no lines yet."] = "%s: строк пока нет." -- mt
-L["Usage: /forever debug, /forever debug pin, /forever debug off, /forever debug show"] =
-	"Использование: /forever debug, /forever debug pin, /forever debug off, /forever debug show" -- mt

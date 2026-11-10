@@ -1,8 +1,12 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- Where another Forever addon would fill a route step or a stop, one quiet line says so, through the shared rules in
--- UI/ForeverFamily.lua: a grey line (and a grey menu entry that shows its address) only while that addon isn't
+-- ForeverCore.Family: a grey line (and a grey menu entry that shows its address) only while that addon isn't
 -- installed, the Forever addons page's "Suggest my other Forever addons" is on and the player hasn't chosen "Don't
 -- suggest this again". An addon that is installed but turned off gets its "Enable" line instead, while suggestions are
 -- on: it explains a missing feature rather than suggesting an addon. Nothing once the addon runs.
@@ -39,12 +43,6 @@ local HINTS = {
 	},
 }
 
--- The shared module (UI/ForeverFamily.lua) reads its words from ns.FamilyL by their English phrase: each FAMILY_ line
--- goes in here as translated, now that every Locales file has loaded (the table is the one the module holds).
-for key, phrase in pairs(ns.FamilyPhrases) do
-	ns.FamilyL[phrase] = L[key]
-end
-
 -- The line for `addon` and whether it suggests installing it (grey), or nil while it runs, suggestions are off or
 -- the player dismissed it.
 ---@param addon string a key of HINTS
@@ -52,9 +50,9 @@ end
 ---@return boolean? suggestion
 function Companions.Line(addon)
 	local hint, db = HINTS[addon], ns.FamilyDB()
-	if ns.Family.Hint(db, hint.key, addon) then
+	if ForeverCore.Family.Hint(db, hint.key, addon) then
 		return hint.missing, true
-	elseif hint.disabled and db and db.suggestFamily ~= false and ns.Family.State(addon) == "off" then
+	elseif hint.disabled and db and db.suggestFamily ~= false and ForeverCore.Family.State(addon) == "off" then
 		return hint.disabled, false
 	end
 end
@@ -74,13 +72,13 @@ end
 -- The grey menu entry for `addon`, while its hint may show: it opens the window with the addon's address, which also
 -- offers "Don't suggest this again". The window never opens in combat, so in combat the entry is left out rather than
 -- doing nothing.
----@param root AGFMenuDescription
+---@param root ForeverMenuDescription
 ---@param addon string a key of HINTS with a menu entry
 function Companions.AddMenu(root, addon)
 	local hint, db = HINTS[addon], ns.FamilyDB()
-	if hint.menu and not InCombatLockdown() and ns.Family.Hint(db, hint.key, addon) then
+	if hint.menu and not InCombatLockdown() and ForeverCore.Family.Hint(db, hint.key, addon) then
 		root:CreateButton(GRAY_FONT_COLOR:WrapTextInColorCode(hint.menu), function()
-			ns.Family.ShowLink(db, hint.key, addon)
+			ForeverCore.Family.ShowLink(db, hint.key, addon, nil, ns.core.SafeCall)
 		end)
 	end
 end

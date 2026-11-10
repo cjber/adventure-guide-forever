@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- OpenMap, the seamless world map addon, offers other addons a small read-only API through the global OpenMapAPI
 -- (major 1): `IsStitched` says whether the world map is showing OpenMap's stitched map now, `WorldFromMap` puts a
 -- point on one uiMap (0..1) on that stitched world, and `MapFromWorld` puts a stitched world point back on a uiMap,
@@ -31,14 +35,14 @@ function OpenMap.API()
 end
 
 -- Whether the world map is showing OpenMap's stitched map now. The read is another addon's code, so it goes through
--- ns.SafeCall: a failure there leaves the guide drawing as without OpenMap.
+-- ns.core.SafeCall: a failure there leaves the guide drawing as without OpenMap.
 ---@return boolean
 function OpenMap.Stitched()
 	local api = OpenMap.API()
 	if not (api and type(api.IsStitched) == "function") then
 		return false
 	end
-	local ok, stitched = ns.SafeCall("OpenMap stitched", api.IsStitched)
+	local ok, stitched = ns.core.SafeCall("OpenMap stitched", api.IsStitched)
 	return ok and stitched == true
 end
 
@@ -58,11 +62,11 @@ function OpenMap.Place(step, hostMapID)
 	if not api or type(api.WorldFromMap) ~= "function" or type(api.MapFromWorld) ~= "function" then
 		return nil, nil
 	end
-	local placed, u, v = ns.SafeCall("OpenMap world point", api.WorldFromMap, step.map, step.x, step.y)
+	local placed, u, v = ns.core.SafeCall("OpenMap world point", api.WorldFromMap, step.map, step.x, step.y)
 	if not placed or type(u) ~= "number" or type(v) ~= "number" then
 		return nil, nil
 	end
-	local mapped, x, y = ns.SafeCall("OpenMap map point", api.MapFromWorld, hostMapID, u, v)
+	local mapped, x, y = ns.core.SafeCall("OpenMap map point", api.MapFromWorld, hostMapID, u, v)
 	if not mapped or type(x) ~= "number" or type(y) ~= "number" then
 		return nil, nil
 	end
@@ -89,7 +93,7 @@ local function Register()
 	if not (api and type(api.RegisterCallback) == "function") then
 		return
 	end
-	registered = ns.SafeCall("OpenMap callback", api.RegisterCallback, OpenMap, CALLBACK, Notify) == true
+	registered = ns.core.SafeCall("OpenMap callback", api.RegisterCallback, OpenMap, CALLBACK, Notify) == true
 end
 
 -- Calls `fn` whenever OpenMap switches between its stitched map and Blizzard's own. OpenMap may load after us.
