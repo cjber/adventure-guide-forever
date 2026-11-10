@@ -32,6 +32,7 @@ python3 tools/check_editorconfig.py
 # --release: a locale that is short a line now fails the PR, not just the release.
 python3 tools/check_locales.py --release
 python3 tools/check_family.py
+python3 tools/check_store_page.py
 python3 tools/phrases.py --check
 # A fresh output path prevents a crashed server from reusing an earlier clean report.
 report_dir=$(mktemp -d)
