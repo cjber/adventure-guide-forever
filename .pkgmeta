@@ -34,5 +34,10 @@ optional-dependencies:
   - restedxp-guide
   - polestar
 
-required-dependencies:
-  - forevercore
+# ForeverCore ships inside this zip as its own folder, from the release tools/forever-core.txt pins, because
+# its CurseForge project is not yet approved and so cannot be a required-dependencies relation.
+externals:
+  ForeverCore: https://github.com/cjber/forever-core/releases/download/v1.1.0/ForeverCore-v1.1.0-forever.zip
+
+move-folders:
+  AdventureGuideForever/ForeverCore: ForeverCore
