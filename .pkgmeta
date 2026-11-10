@@ -34,5 +34,5 @@ optional-dependencies:
   - restedxp-guide
   - polestar
 
-required-dependencies:
-  - forevercore
+# ForeverCore has no CurseForge project (it ships from GitHub and Wago), so it cannot be a
+# CurseForge relation; the TOC's `## Dependencies: ForeverCore` is what the client reads.
