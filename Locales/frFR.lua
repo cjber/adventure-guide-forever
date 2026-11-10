@@ -472,7 +472,8 @@ L["TWEAKS_OUTDATED"] = "Mettez à jour Tweaks Forever pour trouver les entrées 
 L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
-L["WHATS_NEW"] = "A journey card chooses the guide even when the map will not open." -- mt
+L["WHATS_NEW"] =
+	"Le guide ne vous envoie plus aux Montagnes d’Alterac pour Dague d’Ira. Ses options et la carte s’ouvrent désormais sans l’erreur d’action bloquée." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"
