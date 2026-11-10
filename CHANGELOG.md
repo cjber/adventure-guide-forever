@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The guide opens a little faster the first time.** It no longer prepares the journey cards an overview without a chosen journey never shows (#564).
+
 ### For addon authors
 
 - **Another addon hears when the guide's cards change, and a bad limit says why.** `AdventureGuideForever.API` (minor 7) adds a `suggestions` change to `Subscribe`, reported the frame after a card appears, goes, moves, reorders or changes its level, kind, map or place, and `NextStops` and `Suggestions` now return `nil, "invalid"` for a `limit` that is not a whole number of zero or more rather than a bare `nil`. A caller that checks only the first value keeps working.
