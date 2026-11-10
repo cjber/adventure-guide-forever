@@ -108,7 +108,7 @@ end
 ---@param b AGFStep
 ---@return boolean
 local function Far(a, b)
-	return a.map ~= b.map or a.x ~= b.x or a.y ~= b.y
+	return a.map ~= b.map or a.x ~= b.x or a.y ~= b.y or a.z ~= b.z
 end
 
 -- The stops handed from `index` on are still in the order the route has them. A stop that left was caught by Stale

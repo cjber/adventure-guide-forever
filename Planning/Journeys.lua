@@ -1263,6 +1263,7 @@ local function Battleground(data, player, prefs, mapName)
 				map = place.map,
 				x = place.x,
 				y = place.y,
+				z = place.z,
 				place = place.name,
 			}
 			Locate(data, step, mapName)

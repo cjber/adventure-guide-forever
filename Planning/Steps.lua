@@ -50,6 +50,7 @@ local function Step(kind, key, title, place, id, optional, reason)
 		map = place.map,
 		x = place.x,
 		y = place.y,
+		z = place.z,
 		optional = optional or nil,
 	}
 end
@@ -88,6 +89,7 @@ local function Visit(stops, steps, place, list, id)
 			map = place.map,
 			x = place.x,
 			y = place.y,
+			z = place.z,
 		}
 		stops[key] = town
 		steps[#steps + 1] = town
@@ -664,6 +666,7 @@ local function TownPoint(data, step, from)
 		end
 	end
 	step.map, step.x, step.y = best.map, best.x, best.y
+	step.z = best.z
 end
 
 -- A town's lists after some of its quests went: its hand-ins first, as Visit adds them.

@@ -25,12 +25,14 @@ local town = {
 	map = 1413,
 	x = 0.5,
 	y = 0.5,
+	z = 96,
 	quests = { 843, 845 },
 	pickups = { 843 },
 	handins = { 845 },
 }
 assert(h.ns.Integrations.Hand({ town }, true), "a town step is handed over")
 local stop = h.spfRoute.stops[1]
+equal(stop.z, 96, "a town at one spawn sends its world height")
 equal(stop.handins and stop.handins[1], 845, "the town's hand-in reaches Shortest Path")
 equal(#stop.handins, 1, "and only the hand-ins it names")
 town.handins[1] = 999
@@ -70,6 +72,22 @@ equal(areaStop.questID, 844, "the area's one quest reaches Shortest Path")
 equal(areaStop.questIDs and areaStop.questIDs[1], 844, "and its quest list as before")
 equal(areaStop.shapes and areaStop.shapes[1].radius, 40, "and its shape as before")
 equal(areaStop.handins, nil, "an area sends no hand-ins")
+equal(areaStop.z, nil, "an objective area over many spawns sends no height")
+
+-- A town that moves to another of its givers moves that giver's height with it.
+local Travel = h.ns.Planner.Travel
+local nearTown = {
+	quests = { 1, 2 },
+	spots = {
+		[1] = { map = 1413, x = 0.2, y = 0.2, z = 11 },
+		[2] = { map = 1413, x = 0.8, y = 0.8, z = 22 },
+	},
+	map = 1413,
+	x = 0.5,
+	y = 0.5,
+}
+h.ns.Planner.Steps.TownPoint(h.ns.Data, nearTown, Travel.Position(h.ns.Data, { map = 1413, x = 0.1, y = 0.1 }))
+equal(nearTown.z, 11, "a town keeps the height of the giver it points at")
 
 assert(#h.errors == 0, "errors: " .. table.concat(h.errors, "\n"))
 print(("handins_stops_spec: %d checks passed"):format(checks))

@@ -381,6 +381,9 @@ local function Stops(steps, hold)
 			map = step.map,
 			x = step.x,
 			y = step.y,
+			-- A stop at one NPC's or object's spawn carries its world height, so a Shortest Path that knows floors can
+			-- mark a raised one (#613). A Shortest Path before it ignores the field rather than refusing the stop.
+			z = step.z,
 			-- Shortest Path words its steps around this ("Walk to ..."), so a town, or the NPC a guide step is
 			-- for, is named, not described.
 			title = (step.kind == "town" or step.kind == "guide") and step.place or step.title,

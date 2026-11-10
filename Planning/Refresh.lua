@@ -203,6 +203,7 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 		if not here then
 			local spot = copy.spots[copy.quests[1]]
 			copy.map, copy.x, copy.y = spot.map, spot.x, spot.y
+			copy.z = spot.z
 			Locate(data, copy, mapName)
 		end
 		return copy

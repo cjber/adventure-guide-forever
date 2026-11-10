@@ -7,6 +7,7 @@
 ---@field map integer uiMapID
 ---@field x number
 ---@field y number
+---@field z? number world height in yards, when the place is one NPC's or object's single spawn
 ---@field name string NPC or object name
 ---@field hub? string the town it stands in, as "map:area"; nil on a map the data doesn't place
 
@@ -98,6 +99,7 @@
 ---@field towns table<integer, AGFTownArea[]> zone uiMapID -> its named areas, the areas the world map reveals as you explore
 ---@field areaNames table<integer, string> AreaTable ID -> its English name, the fallback when the client has none
 ---@field roles table<integer, AGFRole> creature entry -> what that trainer or battlemaster does
+---@field heights? table<string, table<integer, integer>> by kind ("npc" or "object"): entry -> world height in yards, for an NPC or object with one spawn
 ---@field expiring? table<integer, integer> item ID -> the seconds it lasts in the bags, a day or less (ItemSparse)
 ---@field itemIDs? table<string, integer> a collect item's lower-cased name -> its ID, for the quality colour of its name
 
@@ -266,6 +268,7 @@
 ---@field map integer
 ---@field x number
 ---@field y number
+---@field z? number world height in yards, when the step points at one NPC's or object's spawn
 ---@field place? string the town's name, else its busiest giver; a turn-in's NPC only where its waypoint agrees; a trainer's NPC
 ---@field zone? string the client's name for `map`, else the data's
 ---@field optional? boolean elite/group or outside the player's level band
@@ -286,6 +289,7 @@
 ---@field map integer
 ---@field x number
 ---@field y number
+---@field z? number world height in yards, when the giver has one spawn
 ---@field title string NPC or object name
 ---@field quests integer[] quest IDs it offers the player now, ascending
 ---@field adds integer[] those a shift-click puts on the route: none orange or red
@@ -466,6 +470,7 @@
 ---@field map integer -- uiMapID
 ---@field x number -- normalized 0-1
 ---@field y number -- normalized 0-1
+---@field z? number -- world height in yards, when the stop is one NPC's or object's spawn; an older Shortest Path ignores it
 ---@field title? string
 ---@field kind? AGFSPFStopKind -- a Shortest Path before kinds ignores it
 ---@field tooltip? string optional quest level/chain detail for the stop tooltip

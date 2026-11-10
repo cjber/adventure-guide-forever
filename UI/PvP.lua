@@ -160,6 +160,7 @@ function PvP.Go(id)
 				map = bg.place.map,
 				x = bg.place.x,
 				y = bg.place.y,
+				z = bg.place.z,
 				quests = {},
 				title = L.BATTLEMASTER_QUEUE:format(bg.name),
 				detail = "",

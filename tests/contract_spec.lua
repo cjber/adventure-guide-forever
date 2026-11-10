@@ -123,6 +123,11 @@ end
 -- Every difference between AGF's mirror and SPF, as readable lines; an empty list means they agree. AGF may mark a
 -- field optional that SPF always has (`EstimateDetail?`): AGF also runs on a Shortest Path from before it and checks
 -- the member where it uses it. Never the reverse.
+local AHEAD = {
+	-- A stop's world height, which SPF adds in cjber/shortest-path-forever#648. Every SPF ignores an unknown stop
+	-- field, so sending it early still starts the route; remove this entry when the pin moves to a release with it.
+	["AGFSPFStop.z?"] = true,
+}
 local function Compare(agfText, spfText, required)
 	local agf, spf, problems = Parse(agfText), Parse(spfText), {}
 	local mirrored = {}
@@ -138,7 +143,9 @@ local function Compare(agfText, spfText, required)
 			for _, name in ipairs(Sorted(ours)) do
 				local spfType = theirs[name] or theirs[(name:gsub("%?$", ""))]
 				if spfType == nil then
-					problems[#problems + 1] = ("%s.%s: not in SPF's %s"):format(agfClass, name, spfClass)
+					if not AHEAD[agfClass .. "." .. name] then
+						problems[#problems + 1] = ("%s.%s: not in SPF's %s"):format(agfClass, name, spfClass)
+					end
 				elseif ToSPF(ours[name]) ~= spfType then
 					problems[#problems + 1] = ("%s.%s: AGF %s, SPF %s"):format(agfClass, name, ours[name], spfType)
 				end

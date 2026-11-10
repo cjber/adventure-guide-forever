@@ -116,6 +116,7 @@ function Model.TownChecklist(data, player, completed, log, step, previous, skipp
 	step.checklist, step.complete = rows, complete
 	if nearest then
 		step.map, step.x, step.y = nearest.map, nearest.x, nearest.y
+		step.z = nearest.z
 	end
 end
 
@@ -191,6 +192,7 @@ function Model.Camp(data, player, step, passed)
 	end
 	if best then
 		step.map, step.x, step.y = best.map, best.x, best.y
+		step.z = best.z
 	end
 end
 
@@ -220,6 +222,7 @@ function Model.PlaceCamp(data, player, step, passed)
 	end
 	if best then
 		step.map, step.x, step.y = best.map, best.x, best.y
+		step.z = best.z
 	end
 end
 
