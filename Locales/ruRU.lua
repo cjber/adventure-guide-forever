@@ -507,9 +507,7 @@ L["TWEAKS_OUTDATED"] =
 L["UNLISTED"] =
 	"В этих землях есть истории, которых путеводитель пока не знает; ищите «!» над теми, кто дает задания."
 L["UPDATED_TO"] = "обновлено до %s. %s"
--- mt
-L["WHATS_NEW"] =
-	"Карточки подземелий теперь сначала показывают задания, которые ведут в подземелье." -- mt
+L["WHATS_NEW"] = "The guide opens again on the map instead of doing nothing." -- mt
 L["WHY_ALLIANCE"] = "Только для Альянса"
 L["WHY_BREADCRUMB"] = "Только пока вы не возьмете: %s"
 L["WHY_CHOSE"] = "Вместо этого вы выбрали: %s"
