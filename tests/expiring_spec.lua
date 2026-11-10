@@ -61,15 +61,13 @@ for _, planned in ipairs({ false, true }) do
 	equal(Handing(first, 853), true, label .. ": with them, Zamah's hand-in goes first")
 	equal(first.reason, "before Rendered Spores runs out", label .. ": and says why")
 	equal(#h.errors, 0, label .. ": no errors\n" .. table.concat(h.errors, "\n"))
-	-- The item gone (it ran out), the nearest order comes back; the planned beta keeps its committed order, as for any
-	-- step that led (§4.3), but no longer says to hurry.
+	-- The item gone (it ran out), the step it put first stays: step 1 holds until it is done or skipped, whichever
+	-- order built it (docs/design.md §4.2). The hurry line goes with the item.
 	h.bags[SPORES] = nil
 	h.fire("QUEST_LOG_UPDATE")
 	h.flush()
 	first = h.ns.Route().steps[1]
-	if not planned then
-		equal(Handing(first, 853), false, label .. ": the spores gone, the hurry ends")
-	end
+	equal(Handing(first, 853), true, label .. ": the spores gone, the held step stays")
 	equal(first.reason ~= "before Rendered Spores runs out", true, label .. ": the spores gone, no hurry line")
 end
 

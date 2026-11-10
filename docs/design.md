@@ -65,7 +65,8 @@ abandons quests.
   repeated visits share a map ring.
 - **2.10 Lifecycle.** Keep the chosen journey through rebuilds, travel and reloads. Resume paused
   guidance explicitly. Stop clears only owned guidance; a moved waypoint survives. A town visit's arrow stays on the
-  giver it points at while that giver has work, until another is 35 yards nearer. The current stop's
+  giver it points at while that giver has work, until another is 35 yards nearer; that point moving alone does not
+  restart the route Shortest Path already walks. The current stop's
   objective title stays in sync with Shortest Path; text changes in passed stops do not restart them.
 - **2.11 Asides.** Keep hints separate from routes. Unknown locations remain text only.
 - **2.12 Trainers.** Use known spells and trainer locations; add a stop only when the route passes.
@@ -201,10 +202,10 @@ follow the shared family voice.
   player. Then take the nearest town pickup, the nearest area of a quest the town handed out or the player carries, or
   the nearest ready hand-in. A ready hand-in or a pickup within a short walk of the player comes before a step whose
   own target point is farther, so the guide finishes what is beside the player first; once it leads it stays until it
-  is done or the player walks clearly away.
+  is done or skipped (the held step, §4.2).
   A quest whose item runs out in the bags (one the client lets last a day or less, ItemSparse DurationInInventory,
   that the quest hands over, needs or collects) goes first while the player carries one, ahead even of the area they
-  stand in: its hand-in once it is done, else its objectives, with the reason "before <item> runs out".
+  stand in and of a held step: its hand-in once it is done, else its objectives, with the reason "before <item> runs out".
   Group town visits and cross
   the sea at most once. This nearest order is the default; the opt-in `optimisedRoute` beta instead keeps the
   older heuristics (the story's chapter lead, a town's-own look-ahead and the committed order), which the
@@ -212,6 +213,9 @@ follow the shared family voice.
 - **4.2 Laps.** A quest's objectives follow its pickup and its hand-in all of them. Respect quest-log capacity.
   Objective areas merge only on the same map and for the same activity kind; separate maps keep separate visits. A
   quest a lap picks up joins an area only when every quest picked up for it there comes from the same town. Current objective data does not distinguish floors on the same map.
+  The step the tracker shows holds (§2.5): a re-plan from a new place, including a trip to a city to train, keeps it at
+  step 1 and only reorders the stops after it, until the player finishes or skips it. With nothing held yet (a fresh
+  journey, or the held step just finished or skipped), an objective area the player stands in takes step 1.
   Rebuild on events;
   movement changes focus without shuffling the route. Proximity never hides or truncates guidance. Plan a bounded lookahead, then verify and merge visits before limiting the displayed actions. Keep work bounded per frame.
   An objective's spawns form camps: 100-yard cells ranked by the spawns in and around them, so a camp across a cell's

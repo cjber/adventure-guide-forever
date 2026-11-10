@@ -737,6 +737,10 @@ local function BuildRoute()
 	player.train = training
 	---@type AGFSnapshot
 	local world = { player = player, completed = state.Completed(), log = log, shape = shape }
+	-- The step the tracker shows now, which a re-plan keeps at its head (docs/design.md §4.2): a move, training in a
+	-- city or any rebuild only reorders the stops after it. A RestedXP guide orders its own steps.
+	local heldStep = ns.Guidance and ns.Guidance.CurrentStep(cachedRoute)
+	local held = heldStep and not heldStep.preview and not heldStep.rxpIndex and heldStep.key or nil
 	local dungeonEntrances, queried = {}, {}
 	if not (combat or repaint) then
 		for id, entry in pairs(log) do
@@ -755,6 +759,7 @@ local function BuildRoute()
 		completed = world.completed,
 		log = log,
 		prefs = prefs,
+		held = held,
 		mapName = state.MapName,
 		instanceName = state.InstanceName,
 		last = rawRoute,

@@ -12,6 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The guide no longer changes its next step just because you moved.** Walking to a city to train, or anywhere else, could re-plan the story from where you stood and make another quest from your log step 1, with no hint why. The step the tracker shows now stays until you finish or skip it, and a re-plan only reorders the stops after it; when nothing is held yet, an objective area you are standing in leads. A town's nearer giver or a fight's end no longer restarts the route Shortest Path already walks when its stops are the same. Reported on CurseForge by methabolic. (#554)
 
 ## [1.4.5] - 2026-11-10
 

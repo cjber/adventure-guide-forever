@@ -5,19 +5,17 @@ local function atObjectives()
 		spf = "ended",
 		charDB = { journey = "zone:1413" },
 		completed = { 844 },
+		player = { level = 18, faction = "Horde", raceID = 2, classID = 64, map = 1413, x = 0.64, y = 0.46 },
 		log = {
 			{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
 			{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
+			{ id = 887, title = "Southsea Freebooters", level = 14, complete = false },
+			{ id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false },
 		},
 	})
+	-- The player stands in the freebooters' area from the start, so step 1 is the area the guidance holds: walking
+	-- into another area later does not change it (docs/design.md §4.2).
 	h.ns.StartRoute()
-	h.flush()
-	h.log[3] = { id = 887, title = "Southsea Freebooters", level = 14, complete = false }
-	h.log[4] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
-	h.fire("QUEST_LOG_UPDATE")
-	h.flush()
-	h.MovePlayer(1413, 0.64, 0.46)
-	h.ns.Invalidate()
 	h.flush()
 	assert(h.ns.Guidance.CurrentStep().key == "area:887:0", "active guidance targets the objective area")
 	assert(h.spfRoute.stops[1].hold == true, "objective interaction holds its destination")

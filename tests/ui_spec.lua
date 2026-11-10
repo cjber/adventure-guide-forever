@@ -92,11 +92,15 @@ end
 -- finished quest handed in at Orgrimmar, off the story's map, so the log has a carry card.
 local PINS_ON = { showMapPins = true, showQuestGivers = true }
 local AWAY = 5729
-local function Load(spf, db, charDB, away, short)
+local function Load(spf, db, charDB, away, short, atArea)
 	local log = {
 		{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
 		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 	}
+	if atArea then
+		log[#log + 1] = { id = 92706, title = "WANTED: Bruuz", level = 20, complete = false }
+		log[#log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
+	end
 	if away then
 		log[3] =
 			{ id = AWAY, title = "Hidden Enemies", level = 15, complete = true, map = 1454, x = 0.4947, y = 0.5059 }
@@ -118,6 +122,8 @@ local function Load(spf, db, charDB, away, short)
 		charDB = charDB ~= false and (charDB or { journey = "zone:1413" }) or nil,
 		completed = { 844 },
 		log = log,
+		-- The Longshore area's objective node, so the area leads on the first build (nothing is held yet).
+		player = atArea and { map = 1413, x = 0.626, y = 0.498 } or nil,
 	})
 end
 
@@ -476,22 +482,27 @@ do
 	Moved(h, h.player.map, h.player.x, h.player.y)
 	equal(h.spf.NavigateRoute, 1, "follow: a rebuild that changes nothing sends nothing")
 	-- WANTED: Bruuz and Baron Longshore go in the log: the route already picked them up at Ratchet and worked
-	-- their camps after, so no stop it handed leaves and nothing is sent (a stop leaving is the stale cases above); once
-	-- the player stands in the first area, it leads.
+	-- their camps after, so no stop it handed leaves and nothing is sent (a stop leaving is the stale cases above).
+	-- Walking into their area does not take step 1: the town hand-in the guidance holds stays (docs/design.md §4.2).
 	h.log[#h.log + 1] = { id = 92706, title = "WANTED: Bruuz", level = 20, complete = false }
 	h.log[#h.log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
 	h.fire("QUEST_LOG_UPDATE")
 	h.flush()
 	equal(h.spf.NavigateRoute, 1, "follow: quests the route already held, now taken, send nothing")
+	local held = h.ns.Route().steps[1].key
 	Moved(h, 1413, 0.626, 0.498)
 	local head = h.ns.Route().steps[1]
-	equal(head.key, "area:895:4", "follow: the area the player stands in leads")
-	-- Entering an objective area retains the current approach and all later route stops.
-	equal(head.here, true, "follow: you're here")
-	equal(h.spf.NavigateRoute, 2, "follow: in step 1's area, the stops after it sent")
+	equal(head.key, held, "follow: a later area the player stands in does not take step 1")
+	equal(head.here, nil, "follow: the held step is not where the player stands")
+	local area
+	for _, step in ipairs(h.ns.Route().steps) do
+		area = area or (step.key == "area:895:4" and step or nil)
+	end
+	equal(area ~= nil, true, "follow: the area they stand in keeps its place after the held step")
+	equal(h.spf.NavigateRoute, 2, "follow: the route's later stops settle once")
 	local onward = h.ns.Route().steps
 	equal(#h.spfRoute.stops, #onward, "follow: proximity keeps every stop")
-	equal(h.spfRoute.stops[1].x, onward[1].x, "follow: current area retains its destination")
+	equal(h.spfRoute.stops[1].x, onward[1].x, "follow: the held step retains its destination")
 	equal(h.ns.Guidance.Owns(), true, "follow: guidance holds, so Stop still shows")
 	Moved(h, 1413, 0.626, 0.499)
 	equal(h.spf.NavigateRoute, 2, "follow: nothing again while the player is in it")
@@ -500,7 +511,7 @@ do
 	equal(h.spf.NavigateRoute, 2, "follow: nothing in combat")
 	h.SetCombat(false)
 	h.flush()
-	equal(h.spf.NavigateRoute, 2, "follow: out of the area, the unfinished step still holds, so nothing is sent")
+	equal(h.ns.Route().steps[1].key, held, "follow: the held step survives the full build after combat")
 	equal(h.ns.Prefs().guided, "zone:1413", "follow: still the chosen journey's")
 	-- Standing in the Crossroads still shows the complete route.
 	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: town proximity keeps later stops")
@@ -513,9 +524,9 @@ do
 	Moved(h, 1413, 0.5223, 0.3101)
 	Moved(h, 1413, 0.5224, 0.3101)
 	equal(h.spf.NavigateRoute, 2, "follow: near the town, its complete route remains active")
-	-- North of the town, so the area's nearest camp, its point, stays the one handed.
+	-- North of the town, so the held step's point stays the one handed.
 	Moved(h, 1413, 0.58, 0.2)
-	equal(h.spf.NavigateRoute, 2, "follow: out of the town, the unfinished step still holds")
+	equal(h.spf.NavigateRoute, 2, "follow: out of the town, the held step still holds")
 	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: every step")
 	-- Shortest Path moves on stop by stop until it heads for the Crossroads, then the player reaches it.
 	for _, step in ipairs(h.ns.Route().steps) do
@@ -525,21 +536,22 @@ do
 		h.spfAdvance()
 	end
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 2, "follow: the unfinished area holds through the retarget")
+	equal(h.spf.NavigateRoute, 2, "follow: the held step holds through the retarget")
 	h.spfOther()
 	Moved(h, 1413, 0.46, 0.79)
 	Moved(h, 1413, 0.5223, 0.3101)
 	equal(h.spf.NavigateRoute, 2, "follow: another journey replaced ours: nothing")
 	clean(h, "follow")
 
-	-- The "you're here" head (design §4.2): checked every 2 s only while the player moves, and a rebuild only on
-	-- walking into an open area the route reaches later, once.
+	-- The "you're here" head (design §4.2): checked every 2 s only while the player moves. Walking into a later area
+	-- is noticed once, and the held step stays step 1 (it is not taken for where the player stands).
 	h = Load("ended")
 	h.log[#h.log + 1] = { id = 92706, title = "WANTED: Bruuz", level = 20, complete = false }
 	h.log[#h.log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
 	h.fire("QUEST_LOG_UPDATE")
 	h.flush()
-	equal(h.ns.Route().steps[1].key ~= "area:895:4", true, "here: the area is later while the player is in town")
+	local heldKey = h.ns.Route().steps[1].key
+	equal(heldKey ~= "area:895:4", true, "here: the area is later while the player is in town")
 	h.fire("PLAYER_STARTED_MOVING")
 	equal(next(h.ticking) ~= nil, true, "here: moving checks")
 	local builds = h.modelCalls.Journeys
@@ -549,25 +561,20 @@ do
 	h.MovePlayer(1413, 0.626, 0.498)
 	h.tickers()
 	h.flush()
-	equal(h.ns.Route().steps[1].key, "area:895:4", "here: walking into the area makes it step 1")
+	equal(h.ns.Route().steps[1].key, heldKey, "here: walking into a later area holds step 1")
 	builds = h.modelCalls.Journeys
 	h.tickers()
 	h.flush()
-	equal(h.modelCalls.Journeys, builds, "here: once")
+	equal(h.modelCalls.Journeys, builds, "here: the area entered is noticed once")
 	h.fire("PLAYER_STOPPED_MOVING")
 	h.flush()
 	equal(next(h.ticking), nil, "here: standing still checks nothing")
 	clean(h, "here")
 
-	-- Following the quest worked on (Focus.lua): walking into step 1's area selects its quest, so the map draws its
+	-- Following the quest worked on (Focus.lua): standing in step 1's area selects its quest, so the map draws its
 	-- blue area; walking out clears it. Never over the player's own selection.
-	h = Load("ended")
-	h.log[#h.log + 1] = { id = 92706, title = "WANTED: Bruuz", level = 20, complete = false }
-	h.log[#h.log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
-	h.fire("QUEST_LOG_UPDATE")
-	h.flush()
-	equal(h.superTrackedQuest, 0, "focus: nothing selected outside the area")
-	Moved(h, 1413, 0.626, 0.498)
+	h = Load("ended", nil, nil, nil, nil, true)
+	equal(h.ns.Route().steps[1].key, "area:895:4", "focus: the area leads on a fresh build")
 	equal(h.ns.Route().steps[1].here, true, "focus: in step 1's area")
 	equal(h.superTrackedQuest, 895, "focus: its quest selected")
 	equal(h.ns.Prefs().focus, 895, "focus: kept as AGF's")
@@ -575,7 +582,7 @@ do
 	equal(h.ns.Integrations.Travel(h.ns.Route().steps[1]), nil, "focus: no travel line in the area")
 	local selected = h.counts.SetSuperTrackedQuestID
 	Moved(h, 1413, 0.626, 0.499)
-	equal(h.counts.SetSuperTrackedQuestID, selected, "focus: once, on walking in")
+	equal(h.counts.SetSuperTrackedQuestID, selected, "focus: once, on the first build")
 	Moved(h, 1413, 0.5223, 0.3101)
 	equal(h.superTrackedQuest, 0, "focus: walking out clears it")
 	equal(h.ns.Prefs().focus, nil, "focus: forgotten")
@@ -592,11 +599,9 @@ do
 
 	-- Without Shortest Path, Go sets the waypoint at the step; walking out does not move it, since the area's
 	-- objective is unfinished and its point sits on the work rather than chasing the player.
-	h = Load(false, PINS_ON)
-	h.log[#h.log + 1] = { id = 92706, title = "WANTED: Bruuz", level = 20, complete = false }
-	h.log[#h.log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
-	Moved(h, 1413, 0.626, 0.498)
+	h = Load(false, PINS_ON, nil, nil, nil, true)
 	local standing = h.ns.Route().steps[1]
+	equal(standing.key, "area:895:4", "here, waypoint: the area leads on a fresh build")
 	equal(standing.here, true, "here, waypoint: in the area")
 	h.G.C_Map.OpenWorldMap()
 	h.map:SetMapID(1413)
