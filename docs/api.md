@@ -1,33 +1,60 @@
 # Addon API
 
 Addons can read where the guide is sending the player through `AdventureGuideForever.API` (`version = 1`). Additions
-keep `version` at 1 and raise `minor` (1 from `Subscribe`, 2 from `Suggestions` and `StartSuggestion`, 3 from
-`Stats`, 4 from `Leaderboard`, 5 from `Status`, `Pause`, `Resume` and each stop's quest IDs), so check that a function
-exists before calling it.
-The stop and suggestion queries are read-only; `ResumeRestedXP()`, `StartSuggestion(id)`, `Pause()` and `Resume()` are
-explicit navigation requests. Places use uiMapIDs and
-normalized 0-1 coordinates, as Shortest Path's API does.
+keep `version` at 1 and raise `minor`, so check that a function exists before calling it. The stop and suggestion
+queries are read-only; `ResumeRestedXP()`, `StartSuggestion(id)`, `Pause()` and `Resume()` are explicit navigation
+requests. Places use uiMapIDs and normalized 0-1 coordinates, as Shortest Path's API does.
 
-- `CurrentStop()` returns the stop the tracker shows now, or `nil`.
-- `NextStops(limit)` returns the stops after it in route order, nearest first: two unless `limit` says otherwise,
-  at most eight, and an empty table at the end of the route. A `limit` that is not a whole number of zero or more
-  returns `nil`.
+The minor history, from the git history:
+
+- `minor` 1: `Subscribe`, alongside the version's first members `CurrentStop`, `NextStops`,
+  `RestedXPIntegrated`, `RestedXPNativeUI` and `ResumeRestedXP`, which shipped before minors were counted.
+- `minor` 2: `Suggestions` and `StartSuggestion`.
+- `minor` 3: `Stats`.
+- `minor` 4: `Leaderboard`.
+- `minor` 5: `Status`, `Pause`, `Resume` and each stop's quest IDs.
+- `minor` 6: each read's not-ready reason (`nil, reason`) and `Subscribe` built on `ForeverCore.APIKit.Hub`, with the
+  same change names and the same frame-after behaviour.
+
+## Functions
+
+- `CurrentStop()` returns the stop the tracker shows now, or `nil, reason`.
+- `NextStops(limit)` returns the stops after it in route order, nearest first, or `nil, reason`.
 - `Stats()` returns fresh read-only activity rows: an aggregate `quest_turn_ins` row and one `quest_turn_in` row per
-  quest ID. Each row has `addon`, `metric`, `subject`, `value`, and the latest observed `eventUnix` when available.
-  These are local SavedVariables. Adventure Guide does not broadcast them or assert that a record is a first for
-  anyone else.
+  quest ID.
 - `Leaderboard(limit)` returns cumulative quest turn-ins ranked among this character and the guild and group members
-  who report theirs: `{ metric = "quest_turn_ins", scope = "guild_group", sharing, total, rows }`. `rows` holds the top
-  `limit` rows (ten unless given, 25 at most) and this character's row when it ranks below them; each row has `rank`,
-  `name`, `value`, `eventUnix` and `self` (true on this character's). Ties fall to the lowercase name. Values are
-  what each player's addon reported, so they are neither verified nor realm-wide, and a player who has not reported
-  is unknown rather than zero. With `sharing` false (the player turned it off), only this character's row is
-  returned. A `limit` that is not a whole number of zero or more returns `nil`. The result is a fresh table.
+  who report theirs.
+- `Status()` returns where the chosen journey's guidance stands, or `nil, reason`.
+- `Pause()` stops the chosen journey's route without dropping the choice.
+- `Resume()` starts the chosen journey's route again as its card does.
+- `Subscribe(callback)` calls `callback(changes)` the frame after a stop, the journey or the status changes.
+- `Suggestions(limit)` returns the guide's cards in the order its panel draws them, or `nil, reason`.
+- `StartSuggestion(id)` starts the card with that `id` as the guide's own Start does.
+- `RestedXPIntegrated()` returns whether the installed RestedXP engine is assigned to the guide.
+- `RestedXPNativeUI()` returns whether the player's display choice is still pending or they chose RestedXP.
+- `ResumeRestedXP()` resumes the active RestedXP guide through the guide's navigation.
 
-`RestedXPNativeUI()` returns true while the display choice is pending or the player chose RestedXP. Navigation addons should preserve the native arrow in that case.
+## Not ready
 
-`RestedXPIntegrated()` returns whether the installed RestedXP engine is assigned to AGF, including before its first deferred render. Navigation addons can
-use it to defer standalone RXP routing and suppress its native arrow while AGF owns the guide.
+A read with nothing to answer returns `nil, reason`, the shape every Forever addon uses
+(`ForeverCore.APIKit.NotReady`). The reason says whether to ask again:
+
+| reason | meaning |
+|---|---|
+| `"loading"` | the addon is still building its route, so ask again later |
+| `"disabled"` | the player turned travel off, with Wanderer mode |
+| `"none"` | there is nothing to answer, for example no current stop or no chosen journey |
+
+`CurrentStop`, `NextStops` and `Status` return `nil, "loading"` while the route is being worked out.
+`CurrentStop` and `NextStops` return `nil, "none"` when there is no current stop to read, and `Status` returns
+`nil, "none"` when no journey is chosen or nothing guides it. `Status` returns `nil, "disabled"` in Wanderer mode,
+which never travels. `Suggestions` returns `nil, "loading"` until the route is settled.
+
+A `limit` that is not a whole number of zero or more still returns plain `nil`, without a reason: the argument is
+wrong rather than the data unready. `Stats` always returns a table, and `Pause`, `Resume`, `StartSuggestion` and the
+RestedXP reads answer with booleans.
+
+## Stops
 
 A stop is a fresh table on every call:
 
@@ -43,27 +70,31 @@ A stop is a fresh table on every call:
 | `turninQuests` | fresh ascending quest IDs the route hands in there; empty when none |
 | `objectiveQuests` | fresh ascending quest IDs whose objectives are done there; empty when none |
 
-`nil` means ask again later: the game's quest data has not loaded, the route is being worked out, or the current
-stop has no known place. The counts are what the route plans for the visit; a hand-in the route returns for later
-is counted at its stop. A pickup or turn-in step that is not a town carries its quests the same way a town does.
-`Subscribe` says when to read again.
+`CurrentStop()` returns `nil, "loading"` while the game's quest data has not loaded or the route is being worked out,
+and `nil, "none"` when the current stop has no known place. `NextStops(limit)` returns the stops after it: two unless
+`limit` says otherwise, at most eight, and an empty table at the end of the route. The counts are what the route
+plans for the visit; a hand-in the route returns for later is counted at its stop. A pickup or turn-in step that is
+not a town carries its quests the same way a town does. `Subscribe` says when to read again.
+
+## Status and Subscribe
 
 - `Status()` returns `"running"` while the chosen journey's route runs, `"paused"` while it is stopped but kept,
-  `"queued"` while a start waits for combat's end, `"arrived"` once it reached its last stop, or `nil` when no journey
-  is chosen or nothing guides it.
+  `"queued"` while a start waits for combat's end, `"arrived"` once it reached its last stop, or `nil, reason` when
+  no journey is chosen, Wanderer mode has travel off, or nothing guides it.
 - `Pause()` stops the chosen journey's route without dropping the choice, in the same paused state as a route cleared
   in Shortest Path, so the card and the tracker title resume it. It returns `true` when the journey is paused, or
   `false` while the route is being worked out or no journey is chosen. Call it for a player's action, or when another
   guide takes over.
 - `Resume()` starts the chosen journey's route again as the card's Start does. It returns `true` when the route is
   running or under way, or `false` when nothing is chosen, the route is being worked out, or it cannot start.
-- `Subscribe(callback)` calls `callback(changes)` on the frame after what `CurrentStop` answers, the journey the
-  route follows or `Status()` changes, at most once per burst of changes and never while the route is being worked
-  out. `changes` is a new table each call with one or more set to `true`: `stop` (a stop appeared, moved on, changed
-  or went), `journey` (another journey, or the same one chosen or let go) and `status` (the status above changed).
-  Read `CurrentStop` and `NextStops` again rather than replaying the changes. A callback added by another callback
-  waits for the next burst. It returns a function that unsubscribes, safe to call twice. An error in one callback goes
-  to the game's error handler without stopping the others. A non-function callback is an error.
+- `Subscribe(callback)` runs on `ForeverCore.APIKit.Hub` and changes nothing a caller sees: `callback(changes)` is
+  called on the frame after what `CurrentStop` answers, the journey the route follows or `Status()` changes, at most
+  once per burst of changes and never while the route is being worked out. `changes` is a new table each call with one
+  or more set to `true`: `stop` (a stop appeared, moved on, changed or went), `journey` (another journey, or the same
+  one chosen or let go) and `status` (the status above changed). Read `CurrentStop` and `NextStops` again rather than
+  replaying the changes. A callback added by another callback waits for the next burst. It returns a function that
+  unsubscribes, safe to call twice. An error in one callback goes to the game's error handler without stopping the
+  others. A non-function callback is an error.
 
 ```lua
 local api = AdventureGuideForever and AdventureGuideForever.API
@@ -97,17 +128,26 @@ end
 local resumed = api and type(api.Resume) == "function" and api.Resume()
 ```
 
-### `API.ResumeRestedXP()`
+## RestedXP
 
-Resume the active RestedXP guide through Adventure Guide's navigation. Returns `true` when the request is accepted, or `false` when integrated RestedXP is unavailable. Use this for an explicit player action after selecting another destination.
+`RestedXPIntegrated()` returns whether the installed RestedXP engine is assigned to AGF, including before its first
+deferred render. Navigation addons can use it to defer standalone RXP routing and suppress its native arrow while AGF
+owns the guide.
+
+`RestedXPNativeUI()` returns true while the display choice is pending or the player chose RestedXP. Navigation addons
+should preserve the native arrow in that case.
+
+`ResumeRestedXP()` resumes the active RestedXP guide through Adventure Guide's navigation. It returns `true` when the
+request is accepted, or `false` when integrated RestedXP is unavailable. Use it for an explicit player action after
+selecting another destination.
 
 ## Suggestions
 
 - `Suggestions(limit)` returns the guide's cards in the order its panel draws them: the chosen one first, then each
   header's cards (Continue, Zones, Dungeons, Battlegrounds) in the order the route offers them. Five unless `limit`
   says fewer, and never more than five. It copies what the guide has already worked out and plans nothing for the
-  caller. `nil` means ask again later, as for the stops; a `limit` that is not a whole number of zero or more also
-  returns `nil`.
+  caller. `nil, "loading"` means ask again later, until the route has settled; a `limit` that is not a whole number of
+  zero or more returns plain `nil`.
 - `StartSuggestion(id)` starts the card with that `id` as the guide's own Start does: it chooses the card and starts
   its route on the rebuild that has its steps (through Shortest Path when it is loaded, the game's waypoint
   otherwise), resumes the chosen card's route when it is paused or not running, and hands a RestedXP guide's card to

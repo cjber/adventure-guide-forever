@@ -81,6 +81,8 @@ jobs:
       - run: luajit -joff tests/plan_bench.lua
       - name: Check generated localisation template
         run: python3 tools/phrases.py --check
+      - name: Check the published API against its docs
+        run: python3 tools/check_api_docs.py
       - name: Check generator rendering from pinned fixtures
         run: |
           python3 tools/gen_quests_test.py

@@ -14,6 +14,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 - **Needs Forever Core.** The shared tracker column, bug report and leaderboards now come from one Forever Core addon that installs with it, so every Forever addon's tracker scale, lock and position stay in step. Your tracker settings carry over.
 
+### For addon authors
+
+- `AdventureGuideForever.API` (minor 6) now says why a read has no answer: `CurrentStop`, `NextStops` and `Status` return `nil, "loading"`, `nil, "disabled"` or `nil, "none"`, `Suggestions` returns `nil, "loading"`, and `Subscribe` runs on `ForeverCore.APIKit.Hub` with the same `stop`, `journey` and `status` changes. A read that has an answer is unchanged, so a caller that checks only the first value keeps working.
+
 ## [1.4.7] - 2026-11-10
 
 - **A stop up a tower or down in a crypt now says so.** A quest giver on a raised floor looked like it stood on the ground, so the guide could read "34 yd" while you stood underneath Scout Riell at the top of Sentinel Hill's tower. A stop at an NPC or object with a single spawn now passes its height to Shortest Path, which from 1.26.0 marks the stop with the map's own up or down arrow and says "Above ground level" or "Below ground level" in its tooltip (#613).

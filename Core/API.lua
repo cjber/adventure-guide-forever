@@ -5,13 +5,15 @@ if ns.broken then
 	return
 end
 
--- Public answers and navigation requests for other addons (docs/api.md). Reads return copies;
--- nil means the route is still settling, so ask again later.
+-- Public answers and navigation requests for other addons (docs/api.md). Reads return copies; a read with nothing to
+-- answer returns nil and a reason from ForeverCore.APIKit.NotReady, and Subscribe is the shared hub.
+local APIKit = assert(ForeverCore.APIKit)
+
 ---@class AGFAPI
 -- `minor` rises with each addition within version 1 (1: Subscribe, 2: Suggestions and StartSuggestion, 3: Stats,
--- 4: Leaderboard, 5: Status, Pause, Resume and each stop's quest IDs);
--- a caller checks a member before using it.
-local API = { version = 1, minor = 5 }
+-- 4: Leaderboard, 5: Status, Pause, Resume and each stop's quest IDs, 6: each read's not-ready reason and the shared
+-- subscription hub); a caller checks a member before using it.
+local API = { version = 1, minor = 6 }
 
 local NEXT_LIMIT = 8
 local SUGGESTION_LIMIT = 5
@@ -95,9 +97,6 @@ end
 -- The tracker's step and its place in the settled route.
 ---@return AGFStep?, integer?
 local function Current()
-	if not ns.RouteSettled() then
-		return nil
-	end
 	local step = ns.Guidance.CurrentStep()
 	for index, candidate in ipairs(ns.Route().steps) do
 		if candidate == step then
@@ -106,23 +105,36 @@ local function Current()
 	end
 end
 
----@return AGFAPIStop?
+---@return AGFAPIStop?, ForeverCoreAPIReason?
 function API.CurrentStop()
+	if not ns.RouteSettled() then
+		return APIKit.NotReady("loading")
+	end
 	local step = Current()
-	return step and Stop(step)
+	if not step then
+		return APIKit.NotReady("none")
+	end
+	local stop = Stop(step)
+	if not stop then
+		return APIKit.NotReady("none")
+	end
+	return stop
 end
 
 ---@param limit? integer how many stops after the current one, 2 unless given
----@return AGFAPIStop[]?
+---@return AGFAPIStop[]?, ForeverCoreAPIReason?
 function API.NextStops(limit)
 	if limit == nil then
 		limit = 2
 	elseif type(limit) ~= "number" or limit < 0 or limit % 1 ~= 0 then
 		return nil
 	end
+	if not ns.RouteSettled() then
+		return APIKit.NotReady("loading")
+	end
 	local _, index = Current()
 	if not index then
-		return nil
+		return APIKit.NotReady("none")
 	end
 	local stops, steps = {}, ns.Route().steps
 	for offset = 1, math.min(limit, NEXT_LIMIT) do
@@ -136,21 +148,27 @@ function API.NextStops(limit)
 end
 
 -- Where the chosen journey's guidance stands: "running" while its route is ours, else Guidance's "queued", "paused" or
--- "arrived"; nil when no journey is chosen (or the route does not guide).
----@return AGFAPIStatus?
+-- "arrived"; nil and a reason when no journey is chosen, the wanderer has travel off, or the route does not guide.
+---@return AGFAPIStatus?, ForeverCoreAPIReason?
 function API.Status()
 	if not ns.RouteSettled() then
-		return nil
+		return APIKit.NotReady("loading")
 	end
 	local route = ns.Route()
 	if not route.chosen then
-		return nil
+		return APIKit.NotReady("none")
+	end
+	if ns.Setting("wanderer") then
+		return APIKit.NotReady("disabled")
 	end
 	local status = ns.Guidance.Status()
 	if status then
 		return status
 	end
-	return ns.Guidance.Running(route.journey) and "running" or nil
+	if ns.Guidance.Running(route.journey) then
+		return "running"
+	end
+	return APIKit.NotReady("none")
 end
 
 -- Stops the chosen journey's route but keeps the choice, in the same paused state as a route cleared in Shortest Path,
@@ -178,7 +196,7 @@ function API.Resume()
 end
 
 ---@param limit? integer how many, five (the most) unless given
----@return AGFAPISuggestion[]?
+---@return AGFAPISuggestion[]?, ForeverCoreAPIReason?
 function API.Suggestions(limit)
 	if limit == nil then
 		limit = SUGGESTION_LIMIT
@@ -186,7 +204,7 @@ function API.Suggestions(limit)
 		return nil
 	end
 	if not ns.RouteSettled() then
-		return nil
+		return APIKit.NotReady("loading")
 	end
 	local suggestions, cap = {}, math.min(limit, SUGGESTION_LIMIT)
 	for _, journey in ipairs(ns.Model.Cards(ns.Route())) do
@@ -253,18 +271,9 @@ function API.ResumeRestedXP()
 	return true
 end
 
---[[ Subscribe: the frame after the current stop or the journey changes ]]
+--[[ Subscribe: the frame after the current stop, the journey or the status changes (ForeverCore.APIKit.Hub) ]]
 
----@class AGFSubscription
----@field callback? fun(changes: AGFAPIChanges) nil once unsubscribed
-
----@type AGFSubscription[]
-local subscriptions = {}
--- What the last dispatch saw: CurrentStop's answer as a string (false for none), the journey followed and Status().
----@type string|false, string|false, string|false
-local lastStop, lastJourney, lastStatus = false, false, false
-local pending = false
-
+-- What a stop reads as, so a moved, emptied or restaffed stop is a change and a rebuild that leaves it alone is not.
 ---@param stop? AGFAPIStop
 ---@return string|false
 local function StopKey(stop)
@@ -286,78 +295,28 @@ local function StopKey(stop)
 	)
 end
 
--- One burst's changes, to every subscriber there when the call-back began (one added by a callback waits for the next
--- burst), each with its own table and each under ns.core.SafeCall, so an error in one reaches the game's error handler
--- and the report without stopping the others. While the route is being worked out nothing is sent: the rebuild's own
--- notification queues the next look.
-local function Dispatch()
-	pending = false
-	if not subscriptions[1] or not ns.RouteSettled() then
-		return
-	end
-	local route = ns.Route()
-	local stop = StopKey(API.CurrentStop())
-	local journey = route.journey and (route.journey .. (route.chosen and ":chosen" or "")) or false
-	local status = API.Status() or false
-	local stopChanged, journeyChanged, statusChanged = stop ~= lastStop, journey ~= lastJourney, status ~= lastStatus
-	lastStop, lastJourney, lastStatus = stop, journey, status
-	if not (stopChanged or journeyChanged or statusChanged) then
-		return
-	end
-	local current = {}
-	for index, subscription in ipairs(subscriptions) do
-		current[index] = subscription
-	end
-	for _, subscription in ipairs(current) do
-		if subscription.callback then
-			ns.core.SafeCall("API subscriber", subscription.callback, {
-				stop = stopChanged or nil,
-				journey = journeyChanged or nil,
-				status = statusChanged or nil,
-			})
-		end
-	end
-end
+-- Every change name docs/api.md lists, read only while the route is settled and only while someone listens: one hub for
+-- the whole API, so the frame-after rule, the one-call burst, the fresh `changes` table and the per-subscriber SafeCall
+-- are the kit's own.
+local hub = APIKit.Hub("AdventureGuideForever", {
+	stop = function()
+		local stop = API.CurrentStop()
+		return StopKey(stop)
+	end,
+	journey = function()
+		local route = ns.Route()
+		return route.journey and (route.journey .. (route.chosen and ":chosen" or "")) or false
+	end,
+	status = function()
+		return API.Status() or false
+	end,
+}, ns.RouteSettled)
 
-local function Queue()
-	-- Nobody listening: no timer, no stop read. API.Subscribe takes its baseline when the first one joins.
-	if not pending and subscriptions[1] then
-		pending = true
-		C_Timer.After(0, function()
-			ns.core.SafeCall("API subscribers", Dispatch)
-		end)
-	end
-end
-ns.OnRouteChange(Queue)
-ns.Guidance.OnChange(Queue)
-
--- Calls `callback(changes)` the frame after what CurrentStop answers or the journey followed changes, at most once per
--- burst of changes (docs/api.md). Returns a function that unsubscribes, safe to call twice.
----@param callback fun(changes: AGFAPIChanges)
----@return fun()
-function API.Subscribe(callback)
-	if type(callback) ~= "function" then
-		error("AdventureGuideForever.API.Subscribe: callback must be a function", 2)
-	end
-	if not subscriptions[1] then
-		-- The first subscriber: what CurrentStop answers now is the baseline, so it hears only what changes after.
-		local route = ns.RouteSettled() and ns.Route()
-		lastStop = route and StopKey(API.CurrentStop()) or false
-		lastJourney = route and route.journey and (route.journey .. (route.chosen and ":chosen" or "")) or false
-		lastStatus = route and (API.Status() or false) or false
-	end
-	---@type AGFSubscription
-	local subscription = { callback = callback }
-	subscriptions[#subscriptions + 1] = subscription
-	return function()
-		subscription.callback = nil
-		for index, other in ipairs(subscriptions) do
-			if other == subscription then
-				table.remove(subscriptions, index)
-				return
-			end
-		end
-	end
-end
+-- Calls `callback(changes)` the frame after what CurrentStop answers, the journey followed or Status() changes, at most
+-- once per burst of changes (docs/api.md). Returns a function that unsubscribes, safe to call twice.
+---@type fun(callback: fun(changes: AGFAPIChanges)): fun()
+API.Subscribe = hub.Subscribe
+ns.OnRouteChange(hub.Queue)
+ns.Guidance.OnChange(hub.Queue)
 
 AdventureGuideForever = { API = API }
