@@ -764,7 +764,7 @@ local function CommitLap(lap)
 		-- through the greedy loop's front, so an unfinished step is never passed for a walk away.
 		local here = Model.Here(data, player, route, State.heldHere, State.camps)
 		local standsIn = here and route[here]
-		if standsIn and here > 1 then
+		if not lap.held and standsIn and here > 1 then
 			-- Lead with the area the player stands in. A merged area can hold both objectives the player can work on and
 			-- objectives for quests the route has yet to pick up elsewhere; the latter are not work they can do there
 			-- yet, so the leading visit keeps only the workable ones (Verify drops what the fronted order cannot reach).
@@ -781,10 +781,15 @@ local function CommitLap(lap)
 		if standsIn and route[1] == standsIn then
 			standsIn.here = true
 		end
-		local near = card == "carry" and route[1] and route[1].kind ~= "area" and NearAction(origin, log, route, at)
+		local near = not lap.held
+			and card == "carry"
+			and route[1]
+			and route[1].kind ~= "area"
+			and NearAction(origin, log, route, at)
 		if near and near ~= route[1] then
 			route = Front(lap, route, { [near] = true })
 		end
+		-- An item running out still leads over a held step: the card says why ("before <item> runs out").
 		route = Hurry(lap, route)
 		if standsIn and route[1] ~= standsIn then
 			standsIn.here = nil
@@ -798,19 +803,29 @@ local function CommitLap(lap)
 	else
 		route = Verify(lap, route)
 		-- Nearest first already puts the area the player stands in at the head; a merged visit keeps only the work
-		-- they can do now, not objectives for quests the route has yet to pick up elsewhere.
+		-- they can do now, not objectives for quests the route has yet to pick up elsewhere. A later area they stand in
+		-- leads only when no step is held (docs/design.md §4.2): a held step stays until it is done or skipped.
 		local here = Model.Here(data, player, route, State.heldHere, State.camps)
 		local standsIn = here and route[here]
-		if standsIn and here == 1 and standsIn.planned then
-			local lead = LeadingArea(standsIn)
-			route[1], standsIn = lead, lead
+		if not lap.held and standsIn then
+			if standsIn.planned then
+				local lead = LeadingArea(standsIn)
+				for index, step in ipairs(route) do
+					route[index] = step == standsIn and lead or step
+				end
+				standsIn = lead
+			end
+			if here > 1 then
+				route = Front(lap, route, { [standsIn] = true })
+			end
 		end
 		-- A ready hand-in or a pickup beside the player goes before the step they head for, a broad area they stand in
 		-- included. Front keeps the route when the check refuses the move, so the head only changes when it is legal.
-		local near = NearAction(origin, log, route, at)
+		local near = not lap.held and NearAction(origin, log, route, at)
 		if near and near ~= route[1] then
 			route = Front(lap, route, { [near] = true })
 		end
+		-- An item running out still leads over a held step: the card says why ("before <item> runs out").
 		route = Hurry(lap, route)
 		if standsIn and route[1] == standsIn then
 			standsIn.here = true
@@ -949,6 +964,7 @@ local function DescribeLap(lap)
 		end
 		local hurry = Expiring(log, step)
 		if hurry then
+			step.hurry = true
 			step.reason = hurry.expiringName and ns.L.BEFORE_IT_RUNS_OUT:format(hurry.expiringName)
 				or ns.L.BEFORE_ITEM_RUNS_OUT
 			step.detail = step.reason
@@ -1008,6 +1024,25 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	for _, area in ipairs(plan.areas) do
 		areas[#areas + 1] = kept[area] and area or nil
 	end
+	-- The step the tracker holds (State.held), while this build still has it (docs/design.md §4.2): only then does a
+	-- re-plan keep its head and leave the stops after it to the route, instead of letting where the player stands or a
+	-- step beside them lead. A second visit's key carries its number from the last build ("town:x:2"), which the
+	-- unmerged candidates do not yet have, so a candidate's key matches its prefix too. Shown.Build moves it to the
+	-- head once the visits have merged and the keys have settled.
+	local held = State.held
+	if held then
+		local present = false
+		for _, step in ipairs(candidates) do
+			local key = step.key
+			local same = key == held
+				or (held:sub(1, #key + 1) == key .. ":" and held:sub(#key + 2):match("^%d+$") ~= nil)
+			if same and not skipped[key] then
+				present = true
+				break
+			end
+		end
+		held = present and held or nil
+	end
 
 	local count = 0
 	for _ in pairs(log) do
@@ -1028,6 +1063,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 		leadID = leadID,
 		join = join,
 		card = card,
+		held = held,
 		docks = docks,
 		hub = Model.Hub(data, player),
 		origin = origin,

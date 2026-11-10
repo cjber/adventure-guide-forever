@@ -111,6 +111,29 @@ local function Far(a, b)
 	return a.map ~= b.map or a.x ~= b.x or a.y ~= b.y
 end
 
+-- The stops handed from `index` on are still in the order the route has them. A stop that left was caught by Stale
+-- already, and one added ahead of them (a pickup the player made) is not a reorder: only a stop moving past another
+-- counts.
+---@param handed AGFStep[]
+---@param index integer
+---@param steps AGFStep[]
+---@return boolean
+local function InOrder(handed, index, steps)
+	local at = {}
+	for position, step in ipairs(steps) do
+		at[step.key] = position
+	end
+	local last = 0
+	for stop = index, #handed do
+		local position = at[handed[stop].key]
+		if not position or position < last then
+			return false
+		end
+		last = position
+	end
+	return true
+end
+
 -- The stops Shortest Path walks, while it guides; empty otherwise.
 ---@return (AGFStep|AGFGiver)[]
 function Guidance.Guided()
@@ -119,10 +142,13 @@ end
 
 -- Resolve the exact stop handed to SPF, including a route which starts after an occupied objective area.
 -- Standing in the head area pins the tracker to it until its objectives are done, whatever its own stop index has
--- advanced to: a step advances only when its state is satisfied (docs/design.md §4.2).
+-- advanced to: a step advances only when its state is satisfied (docs/design.md §4.2). `route` reads a given route
+-- (Core's build reads the committed one without asking for another build); nil reads the current one.
+---@param route? AGFRoute
 ---@return AGFStep?
-function Guidance.CurrentStep()
-	local head = ns.Route().steps[1]
+function Guidance.CurrentStep(route)
+	route = route or ns.Route()
+	local head = route.steps[1]
 	if head and head.here then
 		return head
 	end
@@ -132,14 +158,14 @@ function Guidance.CurrentStep()
 		return nil
 	end
 	if sent then
-		for _, step in ipairs(ns.Route().steps) do
+		for _, step in ipairs(route.steps) do
 			if step.key == sent.key then
 				return step
 			end
 		end
 		return nil
 	end
-	return ns.Route().steps[1]
+	return route.steps[1]
 end
 
 -- With Shortest Path, the step and every step after it become one numbered journey. When it declines (it returns
@@ -328,11 +354,18 @@ local function Follow()
 	end
 	local index = Integrations.CurrentStop()
 	if index then
+		-- A town's arrow moves to the giver nearest the player as they walk (docs/design.md §2.10): that point alone is
+		-- decoration, not a different route, so it does not restart the stops Shortest Path already walks. An area's
+		-- point is the stop itself, and a route with nothing after its head has no stop to reorder, so both still send.
+		local ordered = #guided > index and InOrder(guided --[[@as AGFStep[] ]], index, route.steps)
+		---@param a AGFStep
+		---@param b AGFStep
+		---@return boolean
+		local function FarHeaded(a, b)
+			return not (ordered and a.kind == "town" and b.kind == "town") and Far(a, b)
+		end
 		if
-			Integrations.Guiding()
-			and (
-				Guidance.Stale(guided --[[@as AGFStep[] ]], index, route.steps, Far)
-			)
+			Integrations.Guiding() and Guidance.Stale(guided --[[@as AGFStep[] ]], index, route.steps, FarHeaded)
 		then
 			Send(route.steps, true)
 		end
