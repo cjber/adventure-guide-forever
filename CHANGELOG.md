@@ -12,6 +12,11 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+### Fixed
+
+- **The guide opens again on the map instead of doing nothing.** On a build that lacks `CreateSecureDelegate` the map opener errored, so with the world map open a click on a journey card was lost before the journey was chosen. The opener now skips the map turn and reports it, and the card still chooses the journey. (#592)
+- **Your guild's classes show on the Leaderboards window again.** `GetNumGuildMembers` returns the member count and the online count, and the second value reached `tonumber`'s base argument, so building the guild part raised "base out of range" and no guild row got a class colour or icon. (#587)
+
 ## [1.4.3] - 2026-11-09
 
 ### For addon authors
