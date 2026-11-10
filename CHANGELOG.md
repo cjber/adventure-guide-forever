@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.4.4] - 2026-11-10
+
 ### Fixed
 
 - **The guide opens again on the map instead of doing nothing.** On a build that lacks `CreateSecureDelegate` the map opener errored, so with the world map open a click on a journey card was lost before the journey was chosen. The opener now skips the map turn and reports it, and the card still chooses the journey. (#592)
