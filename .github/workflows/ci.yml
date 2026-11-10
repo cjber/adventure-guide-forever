@@ -25,9 +25,21 @@ jobs:
 
   check:
     runs-on: ubuntu-24.04
+    env:
+      FOREVER_CORE: forever-core
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
+      - name: Read the ForeverCore ref
+        id: forever-core-ref
+        run: echo "ref=$(cat tools/forever-core.txt)" >> "$GITHUB_OUTPUT"
+      - name: Check out ForeverCore
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: cjber/forever-core
+          ref: ${{ steps.forever-core-ref.outputs.ref }}
+          path: forever-core
           persist-credentials: false
       # Ubuntu 24.04's release-pocket builds, which the archive never replaces.
       - name: Install LuaJIT and luacheck
@@ -65,10 +77,6 @@ jobs:
       - run: python3 tools/check_screenshots.py
         env:
           SCREENSHOTS_STALE_WARN: ${{ (github.event_name == 'pull_request' && github.head_ref == 'data/refresh' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'workflow_dispatch' && github.ref_name == 'data/refresh') }}
-      - name: Native tracker integration
-        run: |
-          python3 tools/fetch_tracker_ui.py
-          TRACKER_UI_ROOT=tools/.cache/tracker-ui luajit tests/tracker_host_spec.lua
       # Call counts and the 3 ms frame budget, with three times the measured time allowed for a shared runner.
       - run: luajit -joff tests/plan_bench.lua
       - name: Check generated localisation template
@@ -96,9 +104,21 @@ jobs:
 
   typecheck:
     runs-on: ubuntu-24.04
+    env:
+      FOREVER_CORE: forever-core
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
+      - name: Read the ForeverCore ref
+        id: forever-core-ref
+        run: echo "ref=$(cat tools/forever-core.txt)" >> "$GITHUB_OUTPUT"
+      - name: Check out ForeverCore
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: cjber/forever-core
+          ref: ${{ steps.forever-core-ref.outputs.ref }}
+          path: forever-core
           persist-credentials: false
       # tools/gen_corpus_test.py, among the unit tests typecheck.sh runs, reads the built corpus.
       # Ubuntu 24.04's release-pocket builds, which the archive never replaces.
@@ -183,10 +203,22 @@ jobs:
   package:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    env:
+      FOREVER_CORE: forever-core
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
+      - name: Read the ForeverCore ref
+        id: forever-core-ref
+        run: echo "ref=$(cat tools/forever-core.txt)" >> "$GITHUB_OUTPUT"
+      - name: Check out ForeverCore
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: cjber/forever-core
+          ref: ${{ steps.forever-core-ref.outputs.ref }}
+          path: forever-core
           persist-credentials: false
       # Ubuntu 24.04's release-pocket builds, which the archive never replaces.
       - name: Install LuaJIT

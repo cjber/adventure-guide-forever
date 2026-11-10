@@ -39,8 +39,8 @@ local function Card(h)
 	end
 end
 
--- The reported build: the map is already up and CreateSecureDelegate is nil before the panel opens, so ns.OpenMap
--- cannot turn it.
+-- The reported build: the map is already up and CreateSecureDelegate is nil before the panel opens, so
+-- ForeverCore.OpenMap cannot turn it.
 do
 	local h = Load()
 	h.G.WorldMapFrame:Show()
@@ -81,15 +81,15 @@ do
 	h.G.WorldMapFrame:Show()
 	local card = Card(h)
 	assert(card, "map error: the overview draws a journey card")
-	local opened = h.ns.OpenMap
+	local opened = h.G.ForeverCore.OpenMap
 	local calls = 0
-	h.ns.OpenMap = function()
+	h.G.ForeverCore.OpenMap = function()
 		calls = calls + 1
 		error("the map refuses to open")
 	end
 	h.Click(card)
 	h.flush()
-	h.ns.OpenMap = opened
+	h.G.ForeverCore.OpenMap = opened
 	equal(calls, 1, "map error: the click tries to turn the map")
 	equal(#h.errors, 0, "map error: the error does not leave the click handler")
 	equal(h.ns.Prefs().journey, card.journey.key, "map error: the click still selects the journey")

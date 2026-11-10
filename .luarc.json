@@ -3,7 +3,11 @@
   "workspace.library": [
     ".types/vscode-wow-api/Annotations/Core",
     ".types/vscode-wow-api/Annotations/FrameXML",
-    "types"
+    "types",
+    "../forever-core",
+    "forever-core",
+    "forever-core/types",
+    "../forever-core/types"
   ],
   "workspace.ignoreDir": [
     ".types",
@@ -14,7 +18,8 @@
     ".claude",
     ".bugpatrol",
     ".speedpatrol",
-    ".sloppatrol"
+    ".sloppatrol",
+    "forever-core"
   ],
   "workspace.checkThirdParty": false,
   "workspace.maxPreload": 10000,

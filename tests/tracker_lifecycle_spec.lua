@@ -1,4 +1,5 @@
--- Initialization must tolerate either native event order and an addon loaded after login.
+-- Initialization must tolerate either native event order and an addon loaded after login. The section is created with
+-- the files and attaches to ForeverCore's column only after the addon's saved variables load.
 local checks = 0
 local function noop() end
 for _, readyAtLoad in ipairs({ false, true }) do
@@ -52,6 +53,24 @@ for _, readyAtLoad in ipairs({ false, true }) do
 		end,
 	}, { __index = _G })
 	local ns = {
+		core = {
+			SafeCall = function(_, fn, ...)
+				return true, fn(...)
+			end,
+		},
+		L = setmetatable({}, {
+			__index = function(_, key)
+				return key
+			end,
+		}),
+		Menu = { Step = noop },
+		Integrations = { OnTravelChange = noop },
+		Guidance = { OnChange = noop },
+		Asides = { OnChange = noop },
+		Moments = { OnChange = noop },
+		OnRouteChange = noop,
+	}
+	env.ForeverCore = {
 		TrackerHost = {
 			Attach = function(module)
 				owners[module] = native
@@ -60,28 +79,18 @@ for _, readyAtLoad in ipairs({ false, true }) do
 				return owners[module] == native
 			end,
 		},
-		L = setmetatable({}, {
-			__index = function(_, key)
-				return key
-			end,
-		}),
-		Integrations = { OnTravelChange = noop },
-		Guidance = { OnChange = noop },
-		Asides = { OnChange = noop },
-		Moments = { OnChange = noop },
-		OnRouteChange = noop,
 	}
 	setfenv(assert(loadfile("UI/Tracker.lua")), env)("Addon", ns)
-	if not readyAtLoad then
-		assert(owners[modules[1]] == native, "private host attachment is independent of Blizzard")
-		for _, fn in ipairs(callbacks) do
-			fn()
-		end
+	assert(modules[1] ~= nil, "the section is made with the files")
+	assert(owners[modules[1]] == nil, "and waits for the saved variables before attaching")
+	for _, fn in ipairs(callbacks) do
+		fn()
 	end
 	for _, fn in ipairs(timers) do
 		fn()
 	end
-	assert(owners[modules[1]] == native, "private ownership survives initialization and late loading")
+	assert(owners[modules[1]] == native, "then attaches to ForeverCore's column")
+	assert(modules[1].safeCall == ns.core.SafeCall, "and carries the addon's SafeCall")
 	checks = checks + 1
 end
 print("tracker_lifecycle_spec: " .. checks .. " load-order cases passed")

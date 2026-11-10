@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 --[[ The current step's NPC (#401): a secure target button in the tracker, a pair of small bouncing arrows either side
      of their nameplate, and one session-long hint when friendly nameplates are off. The arrows are our own frame
      anchored to the client's nameplate; the nameplate itself is never touched, so the client's own quest `?`/`!` at

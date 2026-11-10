@@ -33,7 +33,6 @@ No embedded libraries ship. `media/` is this addon's own: the icon is drawn in `
 | Input | Used for | Pin | Licence |
 |---|---|---|---|
 | QuestieDB Forever release | The test corpus, `quests.lua` and `towns.lua` in the gitignored `tests/.corpus/`, built from the release at test time by `tools/gen_corpus.py` | `QUESTIEDB_TAG`, `QUESTIEDB_ASSET` and `QUESTIEDB_SHA256` in `tools/gen_corpus.py` | No licence, so it is fetched for the tests and never committed or shipped |
-| [Blizzard UI source](https://github.com/Gethe/wow-ui-source) | The native tracker integration spec, fetched into `tools/.cache/` | `REVISION` in `tools/fetch_tracker_ui.py` | Blizzard Entertainment's; fetched, never committed |
 | Shortest Path Forever types and source | The API contract spec and the map screenshots | `SPF_SHA` in `tests/contract_spec.lua` and `tools/screenshots_spf.py` | GPL-3.0-or-later |
 | [Ketho's WoW API annotations](https://github.com/Ketho/vscode-wow-api) | lua-language-server types in `tools/typecheck.sh` | `revision` in `tools/typecheck.sh` | MIT |
 | [forever_tools](https://github.com/cjber/forever-core/tree/main/.agents/skills/wow-forever-addon/tooling/forever_tools) | Shared lints, release checks and the generated-data gate, vendored in `tools/forever_tools/` | `revision` in `tools/forever_tools/MANIFEST.json` | MIT |

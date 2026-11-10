@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- Following the quest the player is working on (docs/design.md §4.2): walking into the chosen route's step 1 area
 -- ("you're here") selects its quest, the stock way (C_SuperTrack.SetSuperTrackedQuestID), so the map draws the game's
 -- own blue objective area where the player stands. Only on walking in, and never over a quest the player selected: a

@@ -1,3 +1,4 @@
 .types/
 tests/fixtures/spf_types_API.lua
 .claude/
+forever-core/

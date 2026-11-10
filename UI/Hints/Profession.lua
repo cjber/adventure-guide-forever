@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 local L = ns.L
 
 --[[ The profession aside (docs/design.md §2.16): a learned line at its rank's cap whose next rank is open

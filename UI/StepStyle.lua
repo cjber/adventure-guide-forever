@@ -1,6 +1,10 @@
 ---@type string, AGFNamespace
 local _, ns = ...
 
+if ns.broken then
+	return
+end
+
 -- One renderer for every step line: the tracker, the guide's rows, the overview and the pin tooltips all call this,
 -- so an AGF journey and a RestedXP guide read alike (docs/design.md §2.5). A role says what a word is; the client's
 -- colour for that role is chosen once here. RestedXP's own roles are roles too, used only for its steps (#351, #376).

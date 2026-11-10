@@ -1,5 +1,5 @@
 -- Run from the repository root: luajit tests/map_open_spec.lua
--- Every map AGF opens goes through the shared ns.OpenMap (Core/OpenMap.lua), which asks C_Map.OpenWorldMap through
+-- Every map AGF opens goes through ForeverCore.OpenMap, which asks C_Map.OpenWorldMap through
 -- CreateSecureDelegate: the client's own code opens or turns the map, so WorldMapFrame.mapID is never written as the
 -- addon (#534). Blizzard's Lua OpenWorldMap
 -- (Blizzard_WorldMap.lua:1329) runs as its caller instead, and the client then blocks the quest pins that read the
@@ -34,9 +34,9 @@ local function Card(h, key)
 	end
 end
 
----@param menu AGFMenuDescription
+---@param menu ForeverMenuDescription
 ---@param text string
----@return AGFMenuDescription?
+---@return ForeverMenuDescription?
 local function MenuEntry(menu, text)
 	for _, entry in ipairs(menu.entries or {}) do
 		if entry.text == text then
@@ -89,7 +89,7 @@ end
 local delegate = h.G.CreateSecureDelegate
 h.G.CreateSecureDelegate = nil
 local nilOpened, nilRestricted = Opened(), restricted
-local nilOk, nilResult = pcall(ns.OpenMap, 1413)
+local nilOk, nilResult = pcall(h.G.ForeverCore.OpenMap, 1413)
 equal(nilOk, true, "#592: a build without CreateSecureDelegate does not error: " .. tostring(nilResult))
 equal(nilResult, false, "#592: the open is reported as not done")
 equal(restricted, nilRestricted, "#592: the client opener is not called")
@@ -99,7 +99,7 @@ h.G.CreateSecureDelegate = delegate
 -- A closed map opens through the client, which leaves the map's fields secure.
 h.G.WorldMapFrame:Hide()
 local opened, maps = Opened(), h.counts.SetMapID
-equal(ns.OpenMap(0), true, "closed: the map opens on the player's own map")
+equal(h.G.ForeverCore.OpenMap(0), true, "closed: the map opens on the player's own map")
 equal(Opened(), opened, "closed: Blizzard's Lua opener is never run")
 equal(restricted, 1, "closed: through C_Map.OpenWorldMap")
 equal(SecureCalls(), restricted, "closed: through the shared opener's secure delegate")
@@ -212,7 +212,7 @@ equal(Opened(), opened, "compartment: Blizzard's Lua opener is never run")
 local shown = h.G.WorldMapFrame:IsShown()
 opened, maps = Opened(), restricted
 h.SetCombat(true)
-equal(ns.OpenMap(1413), false, "combat: no map")
+equal(h.G.ForeverCore.OpenMap(1413), false, "combat: no map")
 equal(restricted, maps, "combat: the opener is not called")
 equal(Opened(), opened, "combat: nor Blizzard's Lua opener")
 h.SetCombat(false)

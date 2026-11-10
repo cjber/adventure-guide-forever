@@ -25,7 +25,7 @@ At most 2,000 characters, one Discord or forum message, in this order:
 4. The addon's own lines. For AGF these are QuestieDB's state and version, the guide's settings, the journey, the stop
    the tracker shows (title, kind, key, map, coordinates, radius, reason and detail), each of its quests by ID with
    `Model.Why`'s lines (`+` met, `-` unmet), and the next two stops' titles.
-5. `Errors (n):`: what `ns.SafeCall` caught, newest first, as `- [label] xCount message` with up to four stack lines.
+5. `Errors (n):`: what `ns.core.SafeCall` caught, newest first, as `- [label] xCount message` with up to four stack lines.
    `Errors: none caught` otherwise.
 6. `Other addons (n): A 1.0, B 2.1 and 40 more`: the loaded addons and their versions, sorted, trimmed to the room
    left.
@@ -38,20 +38,20 @@ the stop being guided to and `Route head:` for step 1 when nothing is being guid
 
 ## Files
 
-| File | Ports as | Role |
-| --- | --- | --- |
-| `Core/SafeCall.lua` | as is | `ns.SafeCall(label, fn, ...)`, `ns.RecordError(label, message, stack)`, `ns.CaughtErrors()` |
-| `UI/Report.lua` | `REPORT_*` strings changed | the window, the shared header, errors and addon list: `ns.Report.Text(lines)`, `ns.Report.Show(text)` |
-| `Core/Report.lua` | rewritten per addon | `ns.ReportLines()`: the addon's own lines as a string list |
+ForeverCore owns the window and the error journal; an addon supplies only its own lines.
 
-Load `Core/SafeCall.lua` before any file that uses it (AGF lists it just before `Core/Core.lua`), and `UI/Report.lua`
-after `UI/Art.lua`, since it draws the portrait through `Art.Icon`. The slash handler runs
-`ns.ReportLines` through `ns.SafeCall` and shows `ns.Report.Text(lines)`, with one "Report lines failed" line in
-their place when they error, so the header and the caught errors still reach the player.
+| ForeverCore module | Role |
+| --- | --- |
+| `Core/SafeCall.lua` | `ns.core.SafeCall(label, fn, ...)`, `ns.core.RecordError(label, message, stack)`, `ns.core.CaughtErrors()` |
+| `UI/Report.lua` | the window, the shared header, errors and addon list: `ns.core.Report.Text(lines)`, `ns.core.Report.Show(text)` |
+| `Core/Report.lua` in the addon | `ns.ReportLines()`: the addon's own lines as a string list, passed to `ForeverCore.Register` |
+
+The slash handler runs `ns.ReportLines` through `ns.core.SafeCall` and shows `ns.core.Report.Text(lines)`, with one
+"Report lines failed" line in their place when they error, so the header and the caught errors still reach the player.
 
 ## SafeCall
 
-`ns.SafeCall(label, fn, ...)` returns what `pcall(fn, ...)` would, nils included. On a failure it:
+`ns.core.SafeCall(label, fn, ...)` returns what `pcall(fn, ...)` would, nils included. On a failure it:
 
 - keeps the error under `label` (the innermost SafeCall's, when they nest) with a stack cut to four lines that name a
   `.lua` file (`debugstack`, else `debug.traceback`). A repeat of the same label and message raises the count and
@@ -62,20 +62,17 @@ their place when they error, so the header and the caught errors still reach the
 Wrap the places where an error would otherwise be lost or would stop other work: callbacks you run for other code
 (listener lists), event handlers and the slash command. AGF wraps the route listeners (one failing listener no longer
 stops the rest), `Core/State.lua`'s event handler and the slash command. A coroutine's error never reaches an
-`xpcall`, so record it with `ns.RecordError(label, message, debug.traceback(co))` before re-raising, as AGF's sliced
+`xpcall`, so record it with `ns.core.RecordError(label, message, debug.traceback(co))` before re-raising, as AGF's sliced
 rebuild does.
 
 ## Porting checklist
 
-- Copy `Core/SafeCall.lua` and `UI/Report.lua` (the icon path is built from the addon's folder name). Add the
-  `REPORT_TITLE`, `REPORT_HINT` and `HELP_REPORT` strings.
+- Require ForeverCore and register once with `ForeverCore.Register(addonName, { title = ..., lines = ... })`. Add the
+  `REPORT_TITLE` and `HELP_REPORT` strings.
 - Write `ns.ReportLines()` (SPF: the journey and ride trace; Legacy and SkillUp: the audit lines).
-- Add the slash command and its help line, the TOC entries, and the `types/` fields.
-- Specs: copy the shape of `tests/report_spec.lua`. It covers the selected text, read-only typing, Escape, one frame,
-  SafeCall's results, counts, cap, copies, nesting and forwarding, client-format stack lines, a UTF-8 cut, a failing
-  listener, failing addon lines, long addon lines that leave the errors in, the 2,000-character cap with many addons,
-  Escape through `UISpecialFrames`, and the help line. The harness needs `SetFocus`, `HighlightText`, `SetMultiLine`, `SetAutoFocus`,
-  `C_AddOns.GetNumAddOns` and `C_AddOns.GetAddOnInfo`.
+- Add the slash command and its help line, and the `types/` fields.
+- Specs: core's own `tests/api_spec.lua` and `tests/report_spec.lua` cover the window, the journal and SafeCall; an
+  addon's specs cover only its own lines.
 
 ## Issue link
 

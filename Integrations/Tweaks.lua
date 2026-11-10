@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 local Integrations = ns.Integrations
 
 -- Tweaks Forever's API when it is at least version 1 (version 2 keeps v1's members and adds Trainers), else nil.

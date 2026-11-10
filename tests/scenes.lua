@@ -192,7 +192,7 @@ ring:OnMouseLeave()
 local module = h.tracker
 out.tracker = Tracker(h)
 -- The step block is laid out last, under the journey's title, the asides and the fanfares.
-module:OnBlockHeaderClick(module.liveBlocks[module.layoutOrder[#module.layoutOrder]], "RightButton")
+h.OpenTrackerMenu(module)
 local entries = {}
 for index, entry in ipairs(h.menu.entries) do
 	entries[index] = { kind = entry.kind, text = entry.text }
@@ -269,7 +269,7 @@ h.ns.DungeonLoot.Bosses = function()
 end
 local owner = h.G.CreateFrame("Button", nil, h.G.UIParent)
 h.ns.Menu.Journey(owner, { title = "Deadmines", key = "dungeon:36", instance = 36 })
-local lootPopup = h.G.AdventureGuideForeverContextMenu
+local lootPopup = h.G.ForeverCoreContextMenu
 h.Click(lootPopup.rows[2])
 h.Click(lootPopup.rows[2])
 out.loot_menu = {}

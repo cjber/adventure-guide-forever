@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 local Integrations = ns.Integrations
 
 -- SkillUp Forever's API (version 1), for the window's Professions tab: "ready" when every call the tab makes is

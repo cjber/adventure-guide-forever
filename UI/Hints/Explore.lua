@@ -1,5 +1,9 @@
 ---@type string, AGFNamespace
 local _, ns = ...
+
+if ns.broken then
+	return
+end
 local L = ns.L
 
 -- New lands (docs/design.md §2.11): an aside after the trainer's. A land Forever added that fits the player's level,

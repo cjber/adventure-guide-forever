@@ -74,26 +74,6 @@ L["DUNGEON_PICKUP"] = "수락"
 L["DUNGEON_QUESTS"] = "이 던전의 퀘스트 %d개"
 L["DUNGEON_QUESTS_ONE"] = "이 던전의 퀘스트 1개"
 L["ENTRANCE_UNKNOWN"] = "입구 위치를 알 수 없습니다."
-L["FAMILY_CLOSE"] = "닫기"
-L["FAMILY_COPY_HINT"] = "주소를 복사한 후 브라우저에서 여십시오."
-L["FAMILY_COPY_LINK"] = "링크 복사"
-L["FAMILY_DONT_SUGGEST"] = "다시 제안하지 않기"
-L["FAMILY_LINE_AGF"] = "레벨에 맞는 퀘스트를 골라 하나의 여정으로 계획합니다."
-L["FAMILY_LINE_LEGACY"] = "각 지역에서 진행할 수 있는 유산 도전을 보여줍니다."
-L["FAMILY_LINE_SKILLUP"] = "다음 전문 기술 등급까지 가장 저렴한 경로를 계획합니다."
-L["FAMILY_LINE_SPF"] =
-	"어디든 가장 빠른 길을 계획해 안내하며, 배와 비행선 시간을 실시간으로 보여줍니다."
-L["FAMILY_LINE_TWEAKS"] = "기본 UI용 퀘스트 자동화, 희귀 몬스터 알림, 상인 거래 처리."
-L["FAMILY_PAGE"] = "Forever 애드온"
-L["FAMILY_STATE_MISSING"] = "설치 안 됨"
-L["FAMILY_STATE_OFF"] = "설치됨, 사용 안 함"
-L["FAMILY_STATE_ON"] = "켬"
-L["FAMILY_SUGGEST"] = "제 다른 Forever 애드온 추천"
-L["FAMILY_SUGGEST_ABOUT"] =
-	"제 다른 Forever 애드온이 도움이 될 만한 곳에 조용히 한 줄을 표시합니다. 설치하지 않은 애드온만 해당됩니다."
-L["FAMILY_SUPPORT"] =
-	"Forever 애드온은 무료이며 잠긴 기능이 없습니다. 도움이 되셨다면 커피 한 잔 사 주세요." -- mt
-L["FAMILY_THIS_ADDON"] = "이 애드온"
 L["FROM_SKILLUP"] = "SkillUp Forever 제공"
 L["GO"] = "출발"
 L["GO_TO_ENTRANCE"] = "입구로 가기"
@@ -269,8 +249,6 @@ L["RECIPE_LEARNED"] = "배움"
 L["RECIPE_TRAIN_AT"] = "%d에 수련"
 L["RECOMMENDED"] = "추천"
 L["REPLACES_JOURNEY"] = "현재 여정을 대체합니다."
-L["REPORT_HINT"] =
-	"텍스트가 선택되었습니다. Ctrl+C(Mac은 Cmd+C)를 눌러 복사한 후 오류 보고에 붙여 넣으십시오."
 L["REPORT_TITLE"] = "Adventure Guide 보고서"
 L["REST_HERE"] = "이곳 여관에서 휴식"
 L["RESUME"] = "중단한 곳: %s"
@@ -501,17 +479,6 @@ L["MINIMAP_BUTTON_TOOLTIP"] =
 L["MINIMAP_BUTTON_SUBTEXT"] = "레벨링 안내서를 열려면 클릭하세요" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] = "/agf issue - GitHub 이슈 링크와 함께 오류를 보고하거나 기능을 요청합니다" -- mt
-L["ISSUE_BUG"] = "오류" -- mt
-L["ISSUE_BUG_PREFIX"] = "오류: " -- mt
-L["ISSUE_COPY_LINK"] = "이슈 링크 복사" -- mt
-L["ISSUE_COPY_REPORT"] = "보고서 복사" -- mt
-L["ISSUE_DETAILS_LABEL"] = "무슨 일이 있었는지 또는 원하는 기능" -- mt
-L["ISSUE_FEATURE"] = "기능 요청" -- mt
-L["ISSUE_FEATURE_PREFIX"] = "기능 요청: " -- mt
-L["ISSUE_LINK_HINT"] =
-	"링크가 선택되었습니다. Ctrl+C(Mac은 Cmd+C)를 눌러 브라우저에 붙여 넣으십시오. GitHub에서 이 내용이 채워진 새 이슈가 열립니다." -- mt
-L["ISSUE_TITLE_LABEL"] = "제목" -- mt
-L["ISSUE_WINDOW_TITLE"] = "오류 보고 또는 기능 요청" -- mt
 L["MINIMAP_UNAVAILABLE"] = "미니맵을 사용할 수 없어 사용자 지정 버튼을 건너뜁니다." -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Questie 추적기 끄기" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
@@ -532,49 +499,5 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 L["NPC_HIGHLIGHT_HINT"] =
 	"우호적 이름표가 꺼져 있습니다. 인터페이스 설정에서 켜면 어디로 가야 하는지 볼 수 있습니다."
 
--- Forever Leaderboards (Forever Core's shared window).
-L["Forever Leaderboards"] = "Forever 순위표" -- mt
-L["Overall"] = "전체" -- mt
-L["Forever standing"] = "Forever 순위" -- mt
-L["Your guild and group"] = "길드 및 그룹" -- mt
-L["This week"] = "이번 주" -- mt
-L["All time"] = "전체 기간" -- mt
-L["Rank"] = "순위" -- mt
-L["Player"] = "플레이어" -- mt
-L["No one has reported yet."] = "아직 보고한 사람이 없습니다." -- mt
-L["Share my progress"] = "내 진행 상황 공유" -- mt
-L["Others' values are player-reported."] = "다른 플레이어의 값은 플레이어가 보고한 것입니다." -- mt
-L["Points for placing on each addon's board."] = "각 애드온 순위표에 오른 점수입니다." -- mt
-L["(you)"] = "(나)" -- mt
-L["board"] = "순위표" -- mt
-L["boards"] = "순위표" -- mt
-L["Uses Forever addons"] = "Forever 애드온 사용 중" -- mt
-L["Forever: %s overall this week"] = "Forever: 이번 주 종합 %s" -- mt
-L["Forever: %s overall"] = "Forever: 종합 %s" -- mt
-L["1st"] = "1위" -- mt
-L["2nd"] = "2위" -- mt
-L["3rd"] = "3위" -- mt
-L["4th"] = "4위" -- mt
-L["5th"] = "5위" -- mt
-L["6th"] = "6위" -- mt
-L["7th"] = "7위" -- mt
-L["8th"] = "8위" -- mt
-L[", "] = ", " -- mt
 L.LEADERBOARD_METRIC = "완료한 퀘스트" -- mt
 L.LEADERBOARD_TOTAL = "총" -- mt
-
--- Shared debug log (Forever Core's Core/Log.lua).
-L["Debug log is off."] = "디버그 기록이 꺼져 있습니다." -- mt
-L["Debug log is on for this session."] = "이 세션 동안 디버그 기록이 켜져 있습니다." -- mt
-L["Debug log is on and pinned for this character."] =
-	"이 캐릭터에 대해 디버그 기록이 켜져 있고 고정되어 있습니다." -- mt
-L["Debug log is already on and pinned for this character."] =
-	"이 캐릭터에 대해 디버그 기록이 이미 켜져 있고 고정되어 있습니다." -- mt
-L["Debug log is off for this session; it is still pinned."] =
-	"이 세션 동안 디버그 기록이 꺼져 있지만 여전히 고정되어 있습니다." -- mt
-L["Debug log is off and unpinned."] = "디버그 기록이 꺼져 있고 고정이 해제되었습니다." -- mt
-L["No addon has attached its log yet."] = "아직 기록을 첨부한 애드온이 없습니다." -- mt
-L["%s (last %d):"] = "%s (최근 %d개):" -- mt
-L["%s: no lines yet."] = "%s: 아직 줄이 없습니다." -- mt
-L["Usage: /forever debug, /forever debug pin, /forever debug off, /forever debug show"] =
-	"사용법: /forever debug, /forever debug pin, /forever debug off, /forever debug show" -- mt

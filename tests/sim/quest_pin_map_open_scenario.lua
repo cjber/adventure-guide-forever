@@ -7,7 +7,9 @@
 -- here. The scenario instead watches the write that produces it: WorldMapFrame:SetMapID while Adventure Guide's code
 -- is running. On the old code the guide's turn runs Blizzard's Lua OpenWorldMap (Blizzard_WorldMap.lua:1329), which
 -- calls SetMapID as the addon; the assertion below fails at that seam.
-scenario("player opens the map with quests in the log after the guide turned it", function(sim)
+local core = dofile("tests/sim/forever_core.lua")
+
+scenario("player opens the map with quests in the log after the guide turned it", { addons = core }, function(sim)
 	sim.world.maps[1429] = { name = "Elwynn Forest", parent = 1415, mapType = 3 }
 	sim.world.maps[1415] = { name = "Eastern Kingdoms", parent = 947, mapType = 2 }
 	sim.world.maps[1413] = { name = "Northern Barrens", parent = 1414, mapType = 3 }
@@ -58,7 +60,7 @@ scenario("player opens the map with quests in the log after the guide turned it"
 	assert(pins > 0, "the map acquired a quest pin")
 
 	-- The guide turns the shown map, as a card or a step reveal does: through the client, never by writing its id.
-	sim:runAs(ADDON, "local ns, map = ...; ns.OpenMap(map)", ns, 1413)
+	sim:runAs(ADDON, "local ns, map = ...; ForeverCore.OpenMap(map)", ns, 1413)
 	sim:advance(0.3)
 	assert(not writtenByAddon, "the guide asks the client to retarget the map")
 

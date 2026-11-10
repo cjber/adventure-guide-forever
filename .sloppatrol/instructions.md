@@ -59,6 +59,6 @@ dismissed for the same reason.
 - **Guards a spec needs**: a nil or existence guard that looks unreachable in game but that a spec exercises: the
   harness loads a file without the global or stubs the module that defines the field. Delete the guard in a copy and
   run every spec before raising it (`defensive-noise` dismissed three times in the 2026-10-03 audit: `EventRegistry` in
-  `UI/TrackerHost.lua`, `ns.SourceHint` in `UI/Panel.lua`, the nil `api` in `Planning/Geometry.lua` `Maps`).
+  `UI/Tracker.lua`, `ns.SourceHint` in `UI/Panel.lua`, the nil `api` in `Planning/Geometry.lua` `Maps`).
 - **Repeated spec fixtures**: the same character or options literal retyped per spec or scene is fixture input, not a
   parallel implementation (e.g. `tests/feature_rules_spec.lua`, `tests/scenes.lua`).

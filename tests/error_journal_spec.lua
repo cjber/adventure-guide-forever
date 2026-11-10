@@ -1,5 +1,5 @@
 -- Run from the repository root: luajit tests/error_journal_spec.lua
--- The shared error journal (Core/SafeCall.lua) and debug log (Core/Log.lua) live in the addon's saved table, attached
+-- ForeverCore's shared error journal and debug log live in the addon's saved table, attached
 -- at ADDON_LOADED once the saved variables and their defaults are in, so the report lists earlier sessions' errors and
 -- the lines that led to them after a /reload.
 local harness = dofile("tests/harness.lua")
@@ -7,8 +7,8 @@ local h = harness.load()
 local db = h.G.AdventureGuideForeverDB
 assert(type(db.errors) == "table", "the saved table has no error journal")
 
--- An error caught by ns.SafeCall is recorded in the saved journal, which is where the next session reads it.
-local ok = h.ns.SafeCall("error journal spec", function()
+-- An error caught by ns.core.SafeCall is recorded in the saved journal, which is where the next session reads it.
+local ok = h.ns.core.SafeCall("error journal spec", function()
 	error("error journal spec failure")
 end)
 assert(ok == false, "the failure was not caught")
@@ -24,7 +24,7 @@ assert(type(entry.firstSeen) == "number" and type(entry.lastSeen) == "number", "
 
 -- The shared log rides in the same saved table, so the lines that led to a bug survive a /reload too.
 assert(type(db.log) == "table", "the saved table has no debug log")
-h.ns.Log("info", "error journal spec", "a line before the reload")
+h.ns.core.Log("info", "error journal spec", "a line before the reload")
 local logged
 for _, line in ipairs(db.log.lines or {}) do
 	if line:find("a line before the reload", 1, true) then
@@ -57,7 +57,7 @@ local reloaded = harness.load({ db = saved })
 assert(reloaded.G.AdventureGuideForeverDB.errors == saved.errors, "the journal is not the saved errors table")
 assert(reloaded.G.AdventureGuideForeverDB.log == saved.log, "the log is not the saved log table")
 local earlier
-for _, candidate in ipairs(reloaded.ns.CaughtErrors()) do
+for _, candidate in ipairs(reloaded.ns.core.CaughtErrors()) do
 	if candidate.message == "error from an earlier session" then
 		earlier = candidate
 	end
@@ -65,7 +65,7 @@ end
 assert(earlier and earlier.fromSession == false, "an earlier session's error is missing from the report")
 assert(earlier.count == 2, "the earlier session's count was lost")
 local kept
-for _, line in ipairs(reloaded.ns.LogLines(10)) do
+for _, line in ipairs(reloaded.ns.core.LogLines(10)) do
 	if line:find("line from an earlier session", 1, true) then
 		kept = line
 	end

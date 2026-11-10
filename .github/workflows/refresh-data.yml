@@ -18,6 +18,8 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    env:
+      FOREVER_CORE: forever-core
     outputs:
       branch: ${{ steps.pr.outputs.pull-request-branch }}
       operation: ${{ steps.pr.outputs.pull-request-operation }}
@@ -26,6 +28,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # create-pull-request authenticates with its own `token` input.
+          persist-credentials: false
+      - name: Read the ForeverCore ref
+        id: forever-core-ref
+        run: echo "ref=$(cat tools/forever-core.txt)" >> "$GITHUB_OUTPUT"
+      - name: Check out ForeverCore
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: cjber/forever-core
+          ref: ${{ steps.forever-core-ref.outputs.ref }}
+          path: forever-core
           persist-credentials: false
       # Pinned inputs CI already downloaded, such as frozen dumps; each file is keyed by its pin.
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
