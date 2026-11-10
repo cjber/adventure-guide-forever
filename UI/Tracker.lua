@@ -88,11 +88,9 @@ local function BlockStep(block)
 	return ns.Guidance.CurrentStep()
 end
 
----@class AGFTrackerModule : ObjectiveTrackerModuleTemplate
+---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate, ForeverTrackerModule
 ---@field rxpActionsReserved? number the height the RestedXP action rows already added to contentsHeight
 ---@field npcHighlightReserved? number the height the next-NPC target button already added to contentsHeight
----@field legacySettings? ForeverTrackerLegacySettings the addon's old tracker table, copied once by ForeverCore
----@field safeCall? ForeverSafeCall the addon's SafeCall for the section's own menu entries
 ---@field AddHeaderMenuEntries? fun(self: AGFTrackerModule, root: ForeverMenuDescription)
 local ModuleMixin = {
 	headerText = L.TITLE,
