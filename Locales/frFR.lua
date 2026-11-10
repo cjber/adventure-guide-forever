@@ -473,7 +473,7 @@ L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
 L["WHATS_NEW"] =
-	"Le guide ne vous envoie plus aux Montagnes d’Alterac pour Dague d’Ira. Ses options et la carte s’ouvrent désormais sans l’erreur d’action bloquée." -- mt
+	"Une étape en haut d’une tour ou au fond d’une crypte l’indique désormais. Avec Shortest Path 1.26.0 ou ultérieur, son repère affiche la flèche de la carte vers le haut ou vers le bas." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"
