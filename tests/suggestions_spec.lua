@@ -97,8 +97,11 @@ equal(#API.Suggestions(2), 2, "a limit is honoured")
 equal(#API.Suggestions(0), 0, "zero is an empty list")
 equal(#API.Suggestions(100), 5, "five at most")
 equal(API.Suggestions(-1), nil, "a negative limit")
+equal(select(2, API.Suggestions(-1)), "invalid", "a negative limit says why")
 equal(API.Suggestions(1.5), nil, "a fractional limit")
+equal(select(2, API.Suggestions(1.5)), "invalid", "a fractional limit says why")
 equal(API.Suggestions("2"), nil, "a string limit")
+equal(select(2, API.Suggestions("2")), "invalid", "a string limit says why")
 equal(h.spf.NavigateRoute, navigations, "reads never start guidance")
 
 -- With nothing chosen the headers' order holds alone: the story under "continue" before the next zones.

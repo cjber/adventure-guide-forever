@@ -1,7 +1,8 @@
 -- Run from the repository root: luajit tests/api_spec.lua
 -- AdventureGuideForever.API answers from the settled route with fresh tables, and never builds one for its caller.
 -- Minor 5 adds each stop's kind and quest IDs, and Status, Pause and Resume. Minor 6 adds each read's not-ready
--- reason and builds Subscribe on ForeverCore.APIKit.Hub.
+-- reason and builds Subscribe on ForeverCore.APIKit.Hub. Minor 7 adds the suggestions change and nil, "invalid" for a
+-- bad limit.
 local harness = dofile("tests/harness.lua")
 
 local checks = 0
@@ -40,7 +41,7 @@ local h = harness.load({
 })
 local API = h.G.AdventureGuideForever.API
 equal(API.version, 1, "still version 1")
-equal(API.minor, 6, "minor 6 is the not-ready reasons and the shared subscription hub")
+equal(API.minor, 7, "minor 7 is the suggestions change and the invalid-argument reason")
 h.ns.Invalidate()
 local loadingStop, loadingStopReason = API.CurrentStop()
 local loadingNext, loadingNextReason = API.NextStops()
@@ -99,9 +100,13 @@ equal(#API.NextStops(0), 0, "none ahead is honoured")
 equal(#API.NextStops(100) <= 8, true, "the limit is capped")
 local invalidLimit, invalidReason = API.NextStops(-1)
 equal(invalidLimit, nil, "a negative limit is invalid")
-equal(invalidReason, nil, "an invalid argument is no not-ready reason")
-equal(API.NextStops(1.5), nil, "a fractional limit is invalid")
-equal(API.NextStops("2"), nil, "a string limit is invalid")
+equal(invalidReason, "invalid", "a bad argument names itself, rather than a not-ready reason")
+equal(select(2, API.NextStops(1.5)), "invalid", "a fractional limit is invalid")
+equal(select(2, API.NextStops("2")), "invalid", "a string limit is invalid")
+equal(API.Suggestions(-1), nil, "a negative suggestion limit is invalid")
+equal(select(2, API.Suggestions(-1)), "invalid", "and says so the same way")
+equal(select(2, API.Suggestions(1.5)), "invalid", "a fractional suggestion limit is invalid")
+equal(select(2, API.Suggestions("2")), "invalid", "a string suggestion limit is invalid")
 
 local navigations = h.spf.NavigateRoute
 h.combat = true
@@ -210,6 +215,21 @@ equal(API.Pause(), true, "a chosen journey pauses")
 equal(calls, beforePause, "the pause's change waits for a later frame")
 h.tick()
 equal(calls, beforePause + 1, "and the harness's timer delivers it")
+equal(seen[#seen].status, true, "the pause is a status change")
+equal(seen[#seen].suggestions, nil, "and leaves the cards alone")
+
+-- The cards are a change of their own: another chosen card reorders them, and the frame after the rebuild says so.
+local beforeCards = calls
+h.ns.Choose(assert(otherJourney, "another journey"))
+equal(calls, beforeCards, "the cards' change waits for a later frame")
+h.flush()
+equal(calls, beforeCards + 1, "the cards are one call")
+equal(seen[#seen].suggestions, true, "and the changes name them")
+-- A rebuild that leaves every card as it was is quiet.
+local settledCards = calls
+h.ns.Choose(otherJourney)
+h.flush()
+equal(calls, settledCards, "a rebuild that leaves the cards alone is no change")
 unsubscribe()
 unsubscribe()
 local silent = calls

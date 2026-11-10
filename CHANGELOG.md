@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+### For addon authors
+
+- **Another addon hears when the guide's cards change, and a bad limit says why.** `AdventureGuideForever.API` (minor 7) adds a `suggestions` change to `Subscribe`, reported the frame after a card appears, goes, moves, reorders or changes its level, kind, map or place, and `NextStops` and `Suggestions` now return `nil, "invalid"` for a `limit` that is not a whole number of zero or more rather than a bare `nil`. A caller that checks only the first value keeps working.
+
 ## [1.5.0] - 2026-11-10
 
 - **Needs Forever Core.** The shared tracker column, bug report and leaderboards now come from one Forever Core addon, which comes in the same download, so every Forever addon's tracker scale, lock and position stay in step. Your tracker settings carry over.

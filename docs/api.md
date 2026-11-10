@@ -15,11 +15,14 @@ The minor history, from the git history:
 - `minor` 5: `Status`, `Pause`, `Resume` and each stop's quest IDs.
 - `minor` 6: each read's not-ready reason (`nil, reason`) and `Subscribe` built on `ForeverCore.APIKit.Hub`, with the
   same change names and the same frame-after behaviour.
+- `minor` 7: `Subscribe`'s `suggestions` change, and `nil, "invalid"` for a `limit` that is not a whole number of zero
+  or more on `NextStops` and `Suggestions`.
 
 ## Functions
 
 - `CurrentStop()` returns the stop the tracker shows now, or `nil, reason`.
-- `NextStops(limit)` returns the stops after it in route order, nearest first, or `nil, reason`.
+- `NextStops(limit)` returns the stops after it in route order, nearest first, or `nil, reason`. A `limit` that is not
+  a whole number of zero or more is `nil, "invalid"`.
 - `Stats()` returns fresh read-only activity rows: an aggregate `quest_turn_ins` row and one `quest_turn_in` row per
   quest ID.
 - `Leaderboard(limit)` returns cumulative quest turn-ins ranked among this character and the guild and group members
@@ -27,8 +30,10 @@ The minor history, from the git history:
 - `Status()` returns where the chosen journey's guidance stands, or `nil, reason`.
 - `Pause()` stops the chosen journey's route without dropping the choice.
 - `Resume()` starts the chosen journey's route again as its card does.
-- `Subscribe(callback)` calls `callback(changes)` the frame after a stop, the journey or the status changes.
-- `Suggestions(limit)` returns the guide's cards in the order its panel draws them, or `nil, reason`.
+- `Subscribe(callback)` calls `callback(changes)` the frame after a stop, the cards, the journey or the status
+  changes.
+- `Suggestions(limit)` returns the guide's cards in the order its panel draws them, or `nil, reason`, and
+  `nil, "invalid"` for a bad `limit`.
 - `StartSuggestion(id)` starts the card with that `id` as the guide's own Start does.
 - `RestedXPIntegrated()` returns whether the installed RestedXP engine is assigned to the guide.
 - `RestedXPNativeUI()` returns whether the player's display choice is still pending or they chose RestedXP.
@@ -44,15 +49,16 @@ A read with nothing to answer returns `nil, reason`, the shape every Forever add
 | `"loading"` | the addon is still building its route, so ask again later |
 | `"disabled"` | the player turned travel off, with Wanderer mode |
 | `"none"` | there is nothing to answer, for example no current stop or no chosen journey |
+| `"invalid"` | an argument is wrong, for example a `limit` that is not a whole number of zero or more |
 
 `CurrentStop`, `NextStops` and `Status` return `nil, "loading"` while the route is being worked out.
 `CurrentStop` and `NextStops` return `nil, "none"` when there is no current stop to read, and `Status` returns
 `nil, "none"` when no journey is chosen or nothing guides it. `Status` returns `nil, "disabled"` in Wanderer mode,
 which never travels. `Suggestions` returns `nil, "loading"` until the route is settled.
 
-A `limit` that is not a whole number of zero or more still returns plain `nil`, without a reason: the argument is
-wrong rather than the data unready. `Stats` always returns a table, and `Pause`, `Resume`, `StartSuggestion` and the
-RestedXP reads answer with booleans.
+A `limit` that is not a whole number of zero or more is a wrong argument rather than unready data: `NextStops` and
+`Suggestions` return `nil, "invalid"`, a reason that never means ask again. `Stats` always returns a table, and
+`Pause`, `Resume`, `StartSuggestion` and the RestedXP reads answer with booleans.
 
 ## Stops
 
@@ -72,9 +78,10 @@ A stop is a fresh table on every call:
 
 `CurrentStop()` returns `nil, "loading"` while the game's quest data has not loaded or the route is being worked out,
 and `nil, "none"` when the current stop has no known place. `NextStops(limit)` returns the stops after it: two unless
-`limit` says otherwise, at most eight, and an empty table at the end of the route. The counts are what the route
-plans for the visit; a hand-in the route returns for later is counted at its stop. A pickup or turn-in step that is
-not a town carries its quests the same way a town does. `Subscribe` says when to read again.
+`limit` says otherwise, at most eight, and an empty table at the end of the route, or `nil, "invalid"` for a `limit`
+that is not a whole number of zero or more. The counts are what the route plans for the visit; a hand-in the route
+returns for later is counted at its stop. A pickup or turn-in step that is not a town carries its quests the same way
+a town does. `Subscribe` says when to read again.
 
 ## Status and Subscribe
 
@@ -88,13 +95,14 @@ not a town carries its quests the same way a town does. `Subscribe` says when to
 - `Resume()` starts the chosen journey's route again as the card's Start does. It returns `true` when the route is
   running or under way, or `false` when nothing is chosen, the route is being worked out, or it cannot start.
 - `Subscribe(callback)` runs on `ForeverCore.APIKit.Hub` and changes nothing a caller sees: `callback(changes)` is
-  called on the frame after what `CurrentStop` answers, the journey the route follows or `Status()` changes, at most
-  once per burst of changes and never while the route is being worked out. `changes` is a new table each call with one
-  or more set to `true`: `stop` (a stop appeared, moved on, changed or went), `journey` (another journey, or the same
-  one chosen or let go) and `status` (the status above changed). Read `CurrentStop` and `NextStops` again rather than
-  replaying the changes. A callback added by another callback waits for the next burst. It returns a function that
-  unsubscribes, safe to call twice. An error in one callback goes to the game's error handler without stopping the
-  others. A non-function callback is an error.
+  called on the frame after what `CurrentStop` answers, the cards `Suggestions` answers, the journey the route follows
+  or `Status()` changes, at most once per burst of changes and never while the route is being worked out. `changes` is
+  a new table each call with one or more set to `true`: `stop` (a stop appeared, moved on, changed or went),
+  `suggestions` (a card appeared, went, moved, reordered or changed its level, kind, map or place), `journey` (another
+  journey, or the same one chosen or let go) and `status` (the status above changed). Read `CurrentStop`, `NextStops`
+  and `Suggestions` again rather than replaying the changes. A callback added by another callback waits for the next
+  burst. It returns a function that unsubscribes, safe to call twice. An error in one callback goes to the game's error
+  handler without stopping the others. A non-function callback is an error.
 
 ```lua
 local api = AdventureGuideForever and AdventureGuideForever.API
@@ -147,7 +155,7 @@ selecting another destination.
   header's cards (Continue, Zones, Dungeons, Battlegrounds) in the order the route offers them. Five unless `limit`
   says fewer, and never more than five. It copies what the guide has already worked out and plans nothing for the
   caller. `nil, "loading"` means ask again later, until the route has settled; a `limit` that is not a whole number of
-  zero or more returns plain `nil`.
+  zero or more returns `nil, "invalid"`.
 - `StartSuggestion(id)` starts the card with that `id` as the guide's own Start does: it chooses the card and starts
   its route on the rebuild that has its steps (through Shortest Path when it is loaded, the game's waypoint
   otherwise), resumes the chosen card's route when it is paused or not running, and hands a RestedXP guide's card to
@@ -156,7 +164,8 @@ selecting another destination.
   With the guide's wanderer setting on, it chooses the card and starts nothing, as the guide's own Start does. Call it
   only for a player's click.
 
-Read `Suggestions` when your menu opens: `Subscribe` does not call back when only the cards change.
+Read `Suggestions` when your menu opens and when `Subscribe` names `suggestions`: the change says the cards moved, not
+what they now are.
 
 A suggestion is a fresh table on every call:
 
