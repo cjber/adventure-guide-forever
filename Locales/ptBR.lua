@@ -444,8 +444,7 @@ L["TWEAKS_OUTDATED"] = "Atualize o Tweaks Forever para encontrar entradas de mas
 L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
 L["UPDATED_TO"] = "atualizado para %s. %s"
-L["WHATS_NEW"] =
-	"Uma parada no alto de uma torre ou no fundo de uma cripta agora indica isso. Com o Shortest Path 1.26.0 ou posterior, seu marcador mostra a seta do mapa para cima ou para baixo." -- mt
+L["WHATS_NEW"] = "Requer Forever Core." -- mt
 L["WHY_ALLIANCE"] = "Só Aliança"
 L["WHY_BREADCRUMB"] = "Só até você aceitar %s"
 L["WHY_CHOSE"] = "Você escolheu %s no lugar"
