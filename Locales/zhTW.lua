@@ -458,7 +458,7 @@ L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以尋找地城入口。"
 L["UNLISTED"] = "這片土地有指南尚不知道的故事；請留意任務給予者頭上的「!」。"
 L["UPDATED_TO"] = "已更新到%s。%s"
 L["WHATS_NEW"] =
-	"指南不再因為伊菈的匕首把你送到奧特蘭克山脈。指南的選項和地圖現在開啟時不會再出現動作被封鎖的錯誤。" -- mt
+	"位於塔頂或地穴深處的站點現在會註明這一點。搭配 Shortest Path 1.26.0 或更新版本，其標記會顯示地圖的向上或向下箭頭。" -- mt
 L["WHY_ALLIANCE"] = "僅限聯盟"
 L["WHY_BREADCRUMB"] = "僅在你接受%s之前"
 L["WHY_CHOSE"] = "你改選了%s"

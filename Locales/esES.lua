@@ -470,7 +470,7 @@ L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
 L["WHATS_NEW"] =
-	"La guía ya no te envía a las Montañas de Alterac por Daga de Ira. Sus opciones y el mapa ahora se abren sin el error de acción bloqueada." -- mt
+	"Una parada en lo alto de una torre o en el fondo de una cripta ahora lo indica. Con Shortest Path 1.26.0 o posterior, su marcador muestra la flecha del mapa hacia arriba o hacia abajo." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"

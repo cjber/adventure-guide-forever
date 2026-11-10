@@ -584,8 +584,8 @@ ns.L = {
 	SPF_DISABLED = "Enable Shortest Path Forever for walked routes and boat times.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
 	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "The guide no longer sends you to Alterac Mountains for Ira's Dagger. "
-		.. "Its options and the map now open without a blocked-action error.",
+	WHATS_NEW = "A stop up a tower or down in a crypt now says so. "
+		.. "With Shortest Path 1.26.0 or later, its pin shows the map's up or down arrow.",
 	DUNGEON_BOSSES_LOOT = "Bosses and loot",
 	DUNGEON_LOOT_INSTALL = "Install AtlasLoot Classic and its Dungeons and Raids module for bosses and loot.",
 	DUNGEON_LOOT_COMBAT = "Boss loot will load after combat.",

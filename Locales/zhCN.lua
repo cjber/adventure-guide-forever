@@ -458,7 +458,7 @@ L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以寻找地下城入口。"
 L["UNLISTED"] = "这片土地有指南尚不知道的故事；请留意任务NPC头上的“!”。"
 L["UPDATED_TO"] = "已更新到%s。%s"
 L["WHATS_NEW"] =
-	"指南不再因为艾拉的匕首把你送到奥特兰克山脉。指南的选项和地图现在打开时不会再出现动作被阻止的错误。" -- mt
+	"位于塔顶或地穴深处的站点现在会注明这一点。配合 Shortest Path 1.26.0 或更高版本，其标记会显示地图的向上或向下箭头。" -- mt
 L["WHY_ALLIANCE"] = "仅限联盟"
 L["WHY_BREADCRUMB"] = "仅在你接受%s之前"
 L["WHY_CHOSE"] = "你改选了%s"
