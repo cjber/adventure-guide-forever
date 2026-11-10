@@ -12,6 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The guide wears its map icon everywhere.** Its tab beside the quest log and the guide's header now show the same map icon as the minimap button and the Forever Leaderboards tab (#603).
 - **The guide opens a little faster the first time.** It no longer prepares the journey cards an overview without a chosen journey never shows (#564).
 
 ### For addon authors

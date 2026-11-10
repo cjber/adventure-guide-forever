@@ -47,6 +47,7 @@ from screenshots_spf import (
     breadcrumbs,
     goal_pins,
     map_position,
+    marker,
     spf_itinerary,
     spf_walk,
     stop_groups,
@@ -475,8 +476,8 @@ def minimap_icon(canvas, name, x, y, size=None):
 
 
 def spf_minimap(ui, content_ui, data):
-    """The minimap on the walk's last stretch into the first stop, Shortest Path's breadcrumbs and the game's own
-    waypoint pin on it, with the guide's tracker beside it."""
+    """The minimap on the walk's last stretch into the first stop, Shortest Path's breadcrumbs and the guide's numbered
+    marker for that stop on it, with the guide's tracker beside it."""
     map_id = data["panel"]["map"]
     stops, player = data["map"]["stops"], data["map"]["player"]
     walk = spf_walk(content_ui, map_id, (player["x"], player["y"]), (stops[0]["x"], stops[0]["y"]))
@@ -508,10 +509,11 @@ def spf_minimap(ui, content_ui, data):
     minimap_icon(canvas, "UI-HUD-Minimap-NightCycle", cx + 63, cy - 72)
     minimap_icon(canvas, "UI-HUD-Minimap-Frame-Cycle", cx + 63, cy - 72)
     minimap_icon(canvas, "MinimapArrow", cx, cy, 16)
-    # MinimapPins.lua hides the pin until it is wholly inside the rim, 16 units of it.
+    # Pins.lua: the first stop wears our numbered marker at MINIMAP_ICON (24), pinned through HereBeDragons without
+    # floatOnEdge, which hides it once its centre leaves the minimap's radius.
     stop = project(walk[-1])
-    if (here[0] - walk[-1][0]) ** 2 + (here[1] - walk[-1][1]) ** 2 <= ((1 - 16 / size) * radius) ** 2:
-        minimap_icon(canvas, "Waypoint-MapPin-Minimap-Tracked", cx - size / 2 + stop[0], cy - size / 2 + stop[1], 16)
+    if (here[0] - walk[-1][0]) ** 2 + (here[1] - walk[-1][1]) ** 2 <= radius**2:
+        canvas.draw(marker(1), cx - size / 2 + stop[0] - 12, cy - size / 2 + stop[1] - 12, 24, 24)
     canvas.text(0, 13, data["map"]["zone"], drawing.wm.FONTS["GameFontNormal"], justify="CENTER", width=300)
     tracker, _ = drawing.wm.objective_tracker(ui, [tracker_module(ui, data["map"]["tracker"])], container=False)
     # The minimap sits on the screen's right edge, so the column to its left is what a crop of that corner shows.

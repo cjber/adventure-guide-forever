@@ -3834,6 +3834,7 @@ function harness.load(options)
 				shown = inner:IsShown(),
 				text = inner.text,
 				atlas = inner.atlas,
+				file = inner.file,
 				size = inner.width and { inner.width, inner.height } or nil,
 				anchors = #points > 0 and points or nil,
 			}
