@@ -14,6 +14,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 - **Without QuestieDB, the guide tells you to install it.** The line under the cards now says QuestieDB is missing rather than leaving the list empty, and a QuestieDB or AtlasLoot version without a part the guide reads is skipped with a note instead of a Lua error (#621).
 
+### For addon authors
+
+- `AdventureGuideForever.API` (minor 6) now says why a read has no answer: `CurrentStop`, `NextStops` and `Status` return `nil, "loading"`, `nil, "disabled"` or `nil, "none"`, `Suggestions` returns `nil, "loading"`, and `Subscribe` runs on `ForeverCore.APIKit.Hub` with the same `stop`, `journey` and `status` changes. A read that has an answer is unchanged, so a caller that checks only the first value keeps working.
+
 ## [1.5.0] - 2026-11-10
 
 - **Needs Forever Core.** The shared tracker column, bug report and leaderboards now come from one Forever Core addon that installs with it, so every Forever addon's tracker scale, lock and position stay in step. Your tracker settings carry over.
