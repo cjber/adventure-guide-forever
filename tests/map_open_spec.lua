@@ -76,6 +76,19 @@ local function Opened()
 	return h.counts.OpenWorldMap
 end
 
+-- #592: CreateSecureDelegate is absent on some Forever builds. Without it there is no secure way to open the map, so
+-- the open is skipped and reported false, and the caller still carries on. Run before the first open, while the
+-- delegate the addon keeps is still unbuilt.
+local delegate = h.G.CreateSecureDelegate
+h.G.CreateSecureDelegate = nil
+local nilOpened, nilRestricted = Opened(), restricted
+local nilOk, nilResult = pcall(ns.OpenMap, 1413)
+equal(nilOk, true, "#592: a build without CreateSecureDelegate does not error: " .. tostring(nilResult))
+equal(nilResult, false, "#592: the open is reported as not done")
+equal(restricted, nilRestricted, "#592: the client opener is not called")
+equal(Opened(), nilOpened, "#592: Blizzard's Lua opener is never run")
+h.G.CreateSecureDelegate = delegate
+
 -- A closed map opens through the client, which leaves the map's fields secure.
 h.G.WorldMapFrame:Hide()
 local opened, maps = Opened(), h.counts.SetMapID
@@ -198,6 +211,7 @@ h.SetCombat(false)
 equal(h.G.WorldMapFrame:IsShown(), shown, "combat: the map is left as it was")
 
 equal(h.counts.OpenQuestLog, 0, "the quest log's sidebar is never opened")
+
 equal(#h.errors, 0, "errors\n" .. table.concat(h.errors, "\n"))
 
 print(("map_open_spec: %d checks passed"):format(checks))

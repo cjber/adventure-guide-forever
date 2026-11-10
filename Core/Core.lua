@@ -592,11 +592,18 @@ end
 -- addon code runs as the client, not as the addon. Created once, on first use, so a spec without the client's
 -- delegate never runs it at load.
 local secureOpenWorldMap
+-- CreateSecureDelegate is absent on some Forever builds (reported on 1.60.1.70862, #592), and C_Map.OpenWorldMap is
+-- itself refused from addon-tainted code (#411): without the delegate there is no way to open the map securely, so
+-- we leave it unopened rather than error or taint the map's fields. False when nothing was opened.
 local function OpenMapThroughClient(mapID)
 	if not secureOpenWorldMap then
+		if type(CreateSecureDelegate) ~= "function" or type(C_Map.OpenWorldMap) ~= "function" then
+			return false
+		end
 		secureOpenWorldMap = CreateSecureDelegate(C_Map.OpenWorldMap)
 	end
-	return secureOpenWorldMap(mapID)
+	secureOpenWorldMap(mapID)
+	return true
 end
 
 -- Opens the world map, or turns a shown one, to `mapID`, through the client's own C_Map.OpenWorldMap. Blizzard's
@@ -615,8 +622,7 @@ function ns.OpenMap(mapID)
 		return false
 	end
 	local map = mapID ~= nil and mapID ~= 0 and mapID or nil
-	OpenMapThroughClient(map)
-	return true
+	return OpenMapThroughClient(map)
 end
 
 -- A quest in the log opens the world map on the quest's zone and becomes the selected quest (docs/design.md §2.5);
