@@ -25,6 +25,7 @@ python3 tools/changelog.py --check
 python3 tools/check_screenshots.py   # an image older than its scene; tools/screenshots.py re-records it
 python3 tools/check_menu_scroll.py # menus built from a list scroll (WFA-36); CI runs it in core-shared
 python3 tools/repo_rules.py   # rules no linter covers; CI runs it in project-rules
+python3 tools/check_api_docs.py # every function Core/API.lua publishes, and its minor, are in docs/api.md
 ```
 
 CI's `package` job builds the zip with the release's packager without uploading (`-d -z`) and runs

@@ -1919,15 +1919,15 @@
 ---@field RestedXPIntegrated fun(): boolean
 ---@field RestedXPNativeUI fun(): boolean
 ---@field version integer
----@field minor integer 1 from Subscribe, 2 from Suggestions and StartSuggestion, 3 from Stats, 4 from Leaderboard, 5 from Status, Pause, Resume and each stop's quest IDs
+---@field minor integer 1 from Subscribe, 2 from Suggestions and StartSuggestion, 3 from Stats, 4 from Leaderboard, 5 from Status, Pause, Resume and each stop's quest IDs, 6 from each read's not-ready reason and the shared subscription hub
 ---@field Stats fun(): AGFActivityRecord[] read-only per-character rows (minor 3)
 ---@field Leaderboard fun(limit?: integer): AGFLeaderboard? quest turn-ins among this character and reporting peers (minor 4)
----@field Suggestions fun(limit?: integer): AGFAPISuggestion[]? the panel's cards, at most five
+---@field Suggestions fun(limit?: integer): AGFAPISuggestion[]?, ForeverCoreAPIReason? the panel's cards, at most five; nil and "loading" while the route is being worked out
 ---@field StartSuggestion fun(id: string): boolean starts a card as the guide's own Start does
 ---@field Subscribe fun(callback: fun(changes: AGFAPIChanges)): fun() calls back the frame after the current stop, the journey or the status changes, at most once per burst; returns the unsubscribe
----@field CurrentStop fun(): AGFAPIStop?
----@field NextStops fun(limit?: integer): AGFAPIStop[]?
----@field Status fun(): AGFAPIStatus? where the chosen journey's guidance stands (minor 5)
+---@field CurrentStop fun(): AGFAPIStop?, ForeverCoreAPIReason? the tracker's stop; nil and "loading" or "none"
+---@field NextStops fun(limit?: integer): AGFAPIStop[]?, ForeverCoreAPIReason? the stops after it; nil and "loading" or "none"
+---@field Status fun(): AGFAPIStatus?, ForeverCoreAPIReason? where the chosen journey's guidance stands; nil and "loading", "disabled" or "none" (minor 5)
 ---@field Pause fun(): boolean stops the chosen journey's route but keeps the choice (minor 5)
 ---@field Resume fun(): boolean starts the chosen journey's route again as its card does (minor 5)
 
