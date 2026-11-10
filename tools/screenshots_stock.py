@@ -130,9 +130,14 @@ def draw_side_tab(canvas, entry, rect, layer):
     elif layer == "ARTWORK":
         icon = entry.get("stock", {}).get("Icon", {})
         atlas = entry.get("activeAtlas" if entry.get("checked") else "inactiveAtlas") or icon.get("atlas")
+        art = canvas.ui.canvas(canvas.width, canvas.height)
         if atlas:
-            art = canvas.ui.canvas(canvas.width, canvas.height)
             art.draw(*centred(atlas, -3, None if entry.get("activeAtlas") else icon.get("size")))
+        elif icon.get("file") is not None:
+            # A file the addon set (a client icon), at the size it gave, where SetChecked leaves it.
+            width, height = icon.get("size") or (0, 0)
+            art.draw(texture(ui, icon["file"]), cx - 3 - width / 2, cy - height / 2, width, height)
+        if atlas or icon.get("file") is not None:
             mask, mx, my, mw, mh = centred("common-sidetab-mask")
             art.mask(mask.image, mx, my, mw, mh)
             canvas.paste(art, 0, 0)

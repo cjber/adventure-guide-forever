@@ -294,12 +294,12 @@
           "y": 0.00
         }
       ],
-      "atlas": "islands-queue-prop-compass",
+      "file": "Interface\\Icons\\INV_Misc_Map_01",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[1].Texture[1]",
       "size": [
         30.00,
-        29.70
+        30.00
       ],
       "type": "Texture"
     },

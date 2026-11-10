@@ -122,11 +122,11 @@ local unlistedText
 local queuedText
 ---@type Button?
 local stopButton
--- The header's back arrow, and the compass it pushes aside while a card is chosen.
+-- The header's back arrow, and the portrait it pushes aside while a card is chosen.
 ---@type Button?
 local backButton
 ---@type Texture?
-local compass
+local portrait
 ---@type Frame?
 local track
 ---@type Button?
@@ -293,9 +293,9 @@ local function BuildHeader(parent)
 			Back()
 		end
 	end)
-	compass = header:CreateTexture(nil, "ARTWORK")
-	Art.Fit(compass, "islands-queue-prop-compass", 30, 30)
-	compass:SetPoint("LEFT", 2, 0)
+	portrait = header:CreateTexture(nil, "ARTWORK")
+	Art.Icon(portrait, ns.Icon, 30)
+	portrait:SetPoint("LEFT", 2, 0)
 	headerTitle = header:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 	headerTitle:SetText(ns.TITLE)
 	-- In the overview, the player's zone and level under the title (Refresh).
@@ -1159,9 +1159,9 @@ function Refresh()
 	queuedText:SetShown(queued or status == "paused")
 	stopButton:SetShown(ns.Guidance.Owns())
 	---@cast backButton -?
-	---@cast compass -?
+	---@cast portrait -?
 	backButton:SetShown(route.chosen)
-	compass:SetPoint("LEFT", route.chosen and 22 or 2, 0)
+	portrait:SetPoint("LEFT", route.chosen and 22 or 2, 0)
 	-- The overview names where the player is under the title.
 	---@cast headerTitle -?
 	---@cast subtitle -?
@@ -1259,7 +1259,7 @@ local function Attach()
 	})
 	---@cast guideTab -?
 	---@cast guideTab ForeverQuestLogTab
-	Art.Fit(guideTab.Icon, "islands-queue-prop-compass", 30, 30)
+	Art.Icon(guideTab.Icon, ns.Icon, 30)
 	tabPip = guideTab:CreateTexture(nil, "OVERLAY")
 	Art.Fit(tabPip, TAB_PIP, 20, 20)
 	tabPip:SetPoint("CENTER", guideTab, "TOPRIGHT", -8, -8)
