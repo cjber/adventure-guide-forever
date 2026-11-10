@@ -214,7 +214,8 @@ follow the shared family voice.
   Objective areas merge only on the same map and for the same activity kind; separate maps keep separate visits. A
   quest a lap picks up joins an area only when every quest picked up for it there comes from the same town. Current objective data does not distinguish floors on the same map.
   The step the tracker shows holds (§2.5): a re-plan from a new place, including a trip to a city to train, keeps it at
-  step 1 and only reorders the stops after it, until the player finishes or skips it. With nothing held yet (a fresh
+  step 1 and only reorders the stops after it, until the player finishes or skips it. Its key is saved with the
+  character, so the first build after a /reload holds the same step. With nothing held yet (a fresh
   journey, or the held step just finished or skipped), an objective area the player stands in takes step 1.
   Rebuild on events;
   movement changes focus without shuffling the route. Proximity never hides or truncates guidance. Plan a bounded lookahead, then verify and merge visits before limiting the displayed actions. Keep work bounded per frame.

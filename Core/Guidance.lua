@@ -252,6 +252,8 @@ end
 -- Ends only what Go started: Shortest Path's journey by our name, and the native waypoint only while it is ours.
 local function CancelRoute()
 	ns.Prefs().guided, ours, arrived, stopped = nil, false, false, nil
+	-- The step the tracker held went with the route it led (docs/design.md §4.2).
+	ns.Prefs().heldStep = nil
 	if Integrations.Drop() then
 		ns.Pins.Refresh()
 	end
@@ -292,7 +294,7 @@ local function Watch()
 		if reason == "arrived" then
 			arrived = true
 		elseif reason == "cleared" or reason == "replaced" then
-			stopped, ns.Prefs().guided = ns.Prefs().guided, nil
+			stopped, ns.Prefs().guided, ns.Prefs().heldStep = ns.Prefs().guided, nil, nil
 		end
 		ns.Pins.Refresh()
 	end
@@ -460,7 +462,7 @@ function Guidance.Ended(route)
 		if nextKey then
 			ns.Choose(nextKey, prefs.guided == key)
 		else
-			prefs.journey, pendingStart = nil, false
+			prefs.journey, prefs.heldStep, pendingStart = nil, nil, false
 		end
 		if completed and ns.OnJourneyComplete then
 			ns.OnJourneyComplete(nextTitle)
@@ -478,6 +480,10 @@ end
 function ns.Choose(key, start)
 	local prefs = ns.Prefs()
 	local was = prefs.guided
+	-- A different journey is a different route, so no step of the old one is held (docs/design.md §4.2).
+	if prefs.journey ~= key then
+		prefs.heldStep = nil
+	end
 	prefs.journey = key
 	-- A wanderer's choice starts nothing (StartRoute), so nothing waits for combat's end either.
 	pendingStart = key ~= nil and start == true and not ns.Setting("wanderer")

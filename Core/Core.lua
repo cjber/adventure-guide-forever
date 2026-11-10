@@ -313,6 +313,10 @@ local function LoadCharDB()
 	if loaded.guided ~= nil and type(loaded.guided) ~= "string" then
 		loaded.guided = nil
 	end
+	-- The step the tracker held at the last build, so the first build after a /reload keeps it (docs/design.md §4.2).
+	if loaded.heldStep ~= nil and type(loaded.heldStep) ~= "string" then
+		loaded.heldStep = nil
+	end
 	if loaded.focus ~= nil and type(loaded.focus) ~= "number" then
 		loaded.focus = nil
 	end
@@ -455,6 +459,10 @@ function ns.Skip(key, title)
 			ns.RestedXP.SkipKey(key)
 		end
 		return
+	end
+	local prefs = ns.Prefs()
+	if prefs.heldStep == key then
+		prefs.heldStep = nil
 	end
 	if not sessionSkipped[key] then
 		sessionSkipped[key] = true
@@ -670,6 +678,15 @@ local training
 local trainingEndedBySpell = false
 -- In combat only the cheap rebuild runs (the log's steps; the rest as the last full build left them), and the full
 -- one waits for PLAYER_REGEN_ENABLED: looting a quest item mid-fight must not cost a frame.
+-- The step the tracker shows for `route`, which a rebuild keeps at its head (docs/design.md §4.2): never a preview or a
+-- RestedXP guide step, whose own guide orders it.
+---@param route AGFRoute
+---@return string?
+local function HeldKey(route)
+	local step = ns.Guidance and ns.Guidance.CurrentStep(route)
+	return step and not step.preview and not step.rxpIndex and step.key or nil
+end
+
 local function BuildRoute()
 	-- Overlay the client's native map/zone/instance/skill/faction answers onto whichever ns.Data QuestieSource has
 	-- swapped in, before the planner reads it. EnsureNative is memoized per data table, so the repeated rebuilds are
@@ -701,9 +718,12 @@ local function BuildRoute()
 	---@type AGFSnapshot
 	local world = { player = player, completed = state.Completed(), log = log, shape = shape }
 	-- The step the tracker shows now, which a re-plan keeps at its head (docs/design.md §4.2): a move, training in a
-	-- city or any rebuild only reorders the stops after it. A RestedXP guide orders its own steps.
-	local heldStep = ns.Guidance and ns.Guidance.CurrentStep(cachedRoute)
-	local held = heldStep and not heldStep.preview and not heldStep.rxpIndex and heldStep.key or nil
+	-- city or any rebuild only reorders the stops after it. A RestedXP guide orders its own steps. The first build after
+	-- a /reload has no route in hand, so the key the last build saved stands in for it.
+	local held = HeldKey(cachedRoute)
+	if not held and #cachedRoute.steps == 0 then
+		held = prefs.heldStep
+	end
 	local dungeonEntrances, queried = {}, {}
 	if not (combat or repaint) then
 		for id, entry in pairs(log) do
@@ -859,6 +879,7 @@ local function CommitRoute(shown, full, world)
 		local was = prefs.journey
 		if was and was ~= guide.key and was:find("^guide:") ~= nil then
 			prefs.journey = guide.key
+			prefs.heldStep = nil
 			if prefs.guided == was then
 				prefs.guided = guide.key
 			end
@@ -915,6 +936,9 @@ local function CommitRoute(shown, full, world)
 	-- (Plan.lua reads them back).
 	local prefs = ns.Prefs()
 	prefs.lead, prefs.left = full.lead, full.left
+	-- The step the tracker shows now, kept with the character so the first build after a /reload holds it too
+	-- (docs/design.md §4.2). Cleared by ns.Skip, a journey change and Guidance's Stop.
+	prefs.heldStep = HeldKey(cachedRoute)
 	dirty = false
 	if not InCombatLockdown() then
 		ns.Guidance.Ended(rawRoute)
