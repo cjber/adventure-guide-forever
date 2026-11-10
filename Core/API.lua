@@ -12,8 +12,9 @@ local APIKit = assert(ForeverCore.APIKit)
 ---@class AGFAPI
 -- `minor` rises with each addition within version 1 (1: Subscribe, 2: Suggestions and StartSuggestion, 3: Stats,
 -- 4: Leaderboard, 5: Status, Pause, Resume and each stop's quest IDs, 6: each read's not-ready reason and the shared
--- subscription hub); a caller checks a member before using it.
-local API = { version = 1, minor = 6 }
+-- subscription hub, 7: the `suggestions` change and `nil, "invalid"` for a bad limit); a caller checks a member before
+-- using it.
+local API = { version = 1, minor = 7 }
 
 local NEXT_LIMIT = 8
 local SUGGESTION_LIMIT = 5
@@ -122,12 +123,12 @@ function API.CurrentStop()
 end
 
 ---@param limit? integer how many stops after the current one, 2 unless given
----@return AGFAPIStop[]?, ForeverCoreAPIReason?
+---@return AGFAPIStop[]?, AGFAPIReadError?
 function API.NextStops(limit)
 	if limit == nil then
 		limit = 2
 	elseif type(limit) ~= "number" or limit < 0 or limit % 1 ~= 0 then
-		return nil
+		return nil, "invalid"
 	end
 	if not ns.RouteSettled() then
 		return APIKit.NotReady("loading")
@@ -196,12 +197,12 @@ function API.Resume()
 end
 
 ---@param limit? integer how many, five (the most) unless given
----@return AGFAPISuggestion[]?, ForeverCoreAPIReason?
+---@return AGFAPISuggestion[]?, AGFAPIReadError?
 function API.Suggestions(limit)
 	if limit == nil then
 		limit = SUGGESTION_LIMIT
 	elseif type(limit) ~= "number" or limit < 0 or limit % 1 ~= 0 then
-		return nil
+		return nil, "invalid"
 	end
 	if not ns.RouteSettled() then
 		return APIKit.NotReady("loading")
@@ -271,7 +272,8 @@ function API.ResumeRestedXP()
 	return true
 end
 
---[[ Subscribe: the frame after the current stop, the journey or the status changes (ForeverCore.APIKit.Hub) ]]
+--[[ Subscribe: the frame after the current stop, the cards, the journey or the status changes
+     (ForeverCore.APIKit.Hub) ]]
 
 -- What a stop reads as, so a moved, emptied or restaffed stop is a change and a rebuild that leaves it alone is not.
 ---@param stop? AGFAPIStop
@@ -295,6 +297,28 @@ local function StopKey(stop)
 	)
 end
 
+-- What the cards read as, so a card that appears, goes, moves, reorders or changes its level, kind, map or place is a
+-- change and a rebuild that leaves every card alone is not. Each card's six answered fields, in the panel's order.
+---@param suggestions AGFAPISuggestion[]?
+---@return string|false
+local function SuggestionsKey(suggestions)
+	if not suggestions then
+		return false
+	end
+	local cards = {}
+	for index, suggestion in ipairs(suggestions) do
+		cards[index] = ("%s:%s:%s:%s:%s:%s"):format(
+			suggestion.id,
+			tostring(suggestion.kind),
+			tostring(suggestion.level),
+			tostring(suggestion.map),
+			suggestion.x and ("%.4f"):format(suggestion.x) or "-",
+			suggestion.y and ("%.4f"):format(suggestion.y) or "-"
+		)
+	end
+	return table.concat(cards, "|")
+end
+
 -- Every change name docs/api.md lists, read only while the route is settled and only while someone listens: one hub for
 -- the whole API, so the frame-after rule, the one-call burst, the fresh `changes` table and the per-subscriber SafeCall
 -- are the kit's own.
@@ -302,6 +326,10 @@ local hub = APIKit.Hub("AdventureGuideForever", {
 	stop = function()
 		local stop = API.CurrentStop()
 		return StopKey(stop)
+	end,
+	suggestions = function()
+		local suggestions = API.Suggestions()
+		return SuggestionsKey(suggestions)
 	end,
 	journey = function()
 		local route = ns.Route()
@@ -312,8 +340,8 @@ local hub = APIKit.Hub("AdventureGuideForever", {
 	end,
 }, ns.RouteSettled)
 
--- Calls `callback(changes)` the frame after what CurrentStop answers, the journey followed or Status() changes, at most
--- once per burst of changes (docs/api.md). Returns a function that unsubscribes, safe to call twice.
+-- Calls `callback(changes)` the frame after what CurrentStop answers, the cards, the journey followed or Status()
+-- changes, at most once per burst of changes (docs/api.md). Returns a function that unsubscribes, safe to call twice.
 ---@type fun(callback: fun(changes: AGFAPIChanges)): fun()
 API.Subscribe = hub.Subscribe
 ns.OnRouteChange(hub.Queue)
