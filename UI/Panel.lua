@@ -574,6 +574,9 @@ local function BuildContent(panelFrame)
 	content = CreateFrame("Frame", nil, viewport)
 	content:SetPoint("TOPLEFT")
 	content:SetPoint("RIGHT")
+	-- The quest log's scrolling list is part of the window's chrome, made with the rest of it at load: the first open
+	-- then has no scroll frame (and its stock scrollbar's frames) to make in the slash handler.
+	EnsureScroll()
 	local header = BuildHeader(content)
 	BuildJourneys(content, header)
 	BuildFooter(panelFrame)
@@ -989,30 +992,41 @@ local function LayoutOverview(route, top, shown)
 	local width = math.max(0, panel:GetWidth() - 2 * PAD)
 	-- The chosen view and the search draw no card and no header, so neither is even built for them.
 	if not shown then
-		for _, header in ipairs(overviewHeaders) do
+		-- Headers and fold rows are keyed by group, so a group with no cards can leave a hole; `pairs` visits them all.
+		for _, header in pairs(overviewHeaders) do
 			header:Hide()
 		end
 		for _, card in ipairs(overviewCards) do
 			card:Hide()
 		end
-		for _, more in ipairs(overviewMores) do
+		for _, more in pairs(overviewMores) do
 			more:Hide()
 		end
 		return top
 	end
 	local pool, shownGroups = { next = 0 }, 0
 	for index, group in ipairs(Overview.GROUPS) do
-		local header = overviewHeaders[index] or CreateOverviewHeader(assert(list))
-		overviewHeaders[index] = header
-		local more = overviewMores[index] or CreateOverviewMore(assert(list))
-		overviewMores[index] = more
-		more:Hide()
 		local journeys = Overview.InGroup(route.journeys, group.key)
-		header:SetShown(#journeys > 0)
 		if #journeys > 0 then
+			local header = overviewHeaders[index] or CreateOverviewHeader(assert(list))
+			overviewHeaders[index] = header
+			local more = overviewMores[index] or CreateOverviewMore(assert(list))
+			overviewMores[index] = more
+			more:Hide()
+			header:SetShown(true)
 			top = top + (shownGroups > 0 and GROUP_GAP or 0)
 			top = LayoutGroup(group, header, more, journeys, top, width, pool, route)
 			shownGroups = shownGroups + 1
+		else
+			-- A group that had cards earlier is empty now: its header and fold row go with them.
+			local header = overviewHeaders[index]
+			if header then
+				header:Hide()
+			end
+			local more = overviewMores[index]
+			if more then
+				more:Hide()
+			end
 		end
 	end
 	for index = pool.next + 1, #overviewCards do
@@ -1068,14 +1082,20 @@ local function LayoutJourneys(route)
 		and (sourceHint ~= nil or ns.Model.Unlisted(ns.Data, state.Player().map, state.Completed(), state.Log()))
 	local skipped = not searching and #ns.Skipped() or 0
 	top = LayoutOverview(route, top, not searching and not route.chosen)
+	local chosenJourneys = not searching and route.chosen and route.journeys or nil
 	local shownCard, shownJourney = nil, nil
-	for index = 1, math.max(#route.journeys, #cards) do
-		local card = cards[index] or CreateJourneyCard()
-		cards[index] = card
-		local journey = not searching and route.chosen and route.journeys[index] or nil
-		card:SetShown(journey ~= nil)
-		if journey and journey.key == route.journey then
-			shownCard, shownJourney = card, journey
+	for index = 1, math.max(chosenJourneys and #chosenJourneys or 0, #cards) do
+		local journey = chosenJourneys and chosenJourneys[index] or nil
+		local card = cards[index]
+		if journey and not card then
+			card = CreateJourneyCard()
+			cards[index] = card
+		end
+		if card then
+			card:SetShown(journey ~= nil)
+			if journey and journey.key == route.journey then
+				shownCard, shownJourney = card, journey
+			end
 		end
 	end
 	if shownCard and shownJourney then
