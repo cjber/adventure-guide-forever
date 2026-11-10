@@ -120,6 +120,28 @@ ns.DungeonLoot.Bosses(36)
 ns.DungeonLoot.Bosses(36)
 equal(attempts, 1, "disabled module load is not retried on every refresh")
 
+-- Another addon's surface can be incomplete in an install this file wasn't written against: a missing method
+-- degrades to the install line instead of erroring while a dungeon card draws.
+h.G.AtlasLoot = true
+bosses, hint = ns.DungeonLoot.Bosses(36)
+equal(#bosses, 0, "an AtlasLoot that isn't a table has no bosses")
+equal(hint, ns.L.DUNGEON_LOOT_INSTALL, "an AtlasLoot that isn't a table says what to install")
+h.G.AtlasLoot = { ItemDB = {} }
+bosses, hint = ns.DungeonLoot.Bosses(36)
+equal(#bosses, 0, "an ItemDB without Get has no bosses")
+equal(hint, ns.L.DUNGEON_LOOT_INSTALL, "an ItemDB without Get says what to install")
+h.G.AtlasLoot = {
+	ItemDB = {
+		Get = function()
+			return nil
+		end,
+	},
+	Loader = {},
+}
+bosses, hint = ns.DungeonLoot.Bosses(36)
+equal(#bosses, 0, "a Loader without LoadModule has no bosses")
+equal(hint, ns.L.DUNGEON_LOOT_INSTALL, "a Loader without LoadModule says what to install")
+
 local ui = harness.load({ charDB = { journey = "dungeon:389", dungeons = true } })
 ui.ns.OpenPanel()
 ui.flush()

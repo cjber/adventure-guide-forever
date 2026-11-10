@@ -62,6 +62,61 @@ for _, case in ipairs({
 	equal(h.ns.QuestieStatus.state, "unavailable", case[2] .. " state")
 	equal(next(h.ns.Data.quests), nil, case[2] .. " no stale fallback")
 end
+-- QuestieDB is another addon, so its support modules are read through the shape its contract documents. An install
+-- that lacks part of that shape, or throws, leaves the catalogue unavailable with one plain reason, and a dungeon
+-- card reading its entrance never errors.
+local function Broken(change)
+	local broken = harness.load({
+		questiedb = Fake(),
+		setup = function(loaded)
+			change(loaded.G.LibQuestieDB)
+		end,
+	})
+	equal(#broken.errors, 0, "off-contract QuestieDB: load errors")
+	equal(broken.ns.QuestieStatus.state, "unavailable", "off-contract QuestieDB: state")
+	equal(broken.ns.QuestieStatus.reason, broken.ns.L.QUESTIE_ZONES, "off-contract QuestieDB: reason")
+	local ok, point = pcall(broken.ns.DungeonEntrance, 36)
+	equal(ok, true, "off-contract QuestieDB: a dungeon card's entrance read does not error")
+	equal(point, nil, "off-contract QuestieDB: no dungeon entrance")
+end
+for _, change in ipairs({
+	function(lib)
+		lib.Support = nil
+	end,
+	function(lib)
+		lib.Support.Get = nil
+	end,
+	function(lib)
+		lib.Support.Get = function()
+			return true
+		end
+	end,
+	function(lib)
+		lib.Support.Get = function()
+			error("off contract")
+		end
+	end,
+}) do
+	Broken(change)
+end
+-- QuestieDB's quest XP is optional: a support module that cannot be read costs the XP, never the catalogue.
+do
+	local unreadable = harness.load({
+		questiedb = Fake(),
+		setup = function(loaded)
+			local get = loaded.G.LibQuestieDB.Support.Get
+			loaded.G.LibQuestieDB.Support.Get = function(name)
+				if name == "QuestXP" then
+					return true
+				end
+				return get(name)
+			end
+		end,
+	})
+	equal(#unreadable.errors, 0, "unreadable QuestXP: errors")
+	equal(unreadable.ns.QuestieStatus.state, "questie", "unreadable QuestXP: the catalogue lands")
+	equal(unreadable.ns.Data.quests[900001] ~= nil, true, "unreadable QuestXP: its quests are read")
+end
 local h = harness.load({ questiedb = Fake(), setup = Policy })
 equal(#h.errors, 0, "build errors")
 equal(h.ns.QuestieStatus.state, "questie", "provider ready")
@@ -422,6 +477,20 @@ ready()
 stuck.flush()
 equal(stuck.ns.Data.quests[900001], nil, "a late ready callback reads the catalogue again")
 equal(stuck.ns.Data.quests[900002].title, "Collect", "the late read publishes the corrected catalogue")
+-- The hint under the cards names the problem: what to install without QuestieDB, what to enable with it turned off,
+-- and why a loaded QuestieDB isn't used when it doesn't fit.
+do
+	local absent = harness.load({ questiedb = false })
+	equal(absent.ns.SourceHint(), absent.ns.L.QUESTIE_INSTALL, "not installed: says what to install")
+	local off = harness.load({ questiedb = false, installed = { QuestieDB = true } })
+	equal(off.ns.SourceHint(), off.ns.L.QUESTIE_ENABLE, "installed but turned off: says to enable it")
+	local unfit = harness.load({ questiedb = { contract = 1 } })
+	equal(
+		unfit.ns.SourceHint(),
+		unfit.ns.L.AUDIT_QUESTIE_UNUSED:format(unfit.ns.L.QUESTIE_CONTRACT),
+		"loaded but unfit: says why it isn't used"
+	)
+end
 -- A missing coordinate never inherits the bundled location for the same NPC/quest.
 local fake = Fake()
 fake.quests[7] = fake.quests[900001]
