@@ -16,6 +16,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 - **The guide no longer sends you to Alterac Mountains for Ira's Dagger.** QuestieDB lists Bath'rah the Windwatcher there as one of the Duskwood quest's starters, so the guide sent you to him for a pickup he does not give. The quest starts from the dagger that drops in Duskwood, so it waits until you loot one. Reported on GitHub by starkovsky (#591).
 - **Opening the guide's options or the map no longer brings up a blocked-action error naming this addon.** The client refused the map and the Options panel when the guide asked for them on the player's behalf, and blamed AdventureGuideForever; both now open through the client's own route, so the error is gone. (cjber/forever-core#333)
+- **The guide no longer changes its next step just because you moved.** Walking to a city to train, or anywhere else, could re-plan the story from where you stood and make another quest from your log step 1, with no hint why. The step the tracker shows now stays until you finish or skip it, and a re-plan only reorders the stops after it; when nothing is held yet, an objective area you are standing in leads. A town's nearer giver or a fight's end no longer restarts the route Shortest Path already walks when its stops are the same. Reported on CurseForge by methabolic. (#554)
 
 ## [1.4.5] - 2026-11-10
 

@@ -47,6 +47,54 @@ local function Reorder(route, input)
 	end
 end
 
+-- The step the tracker holds (docs/design.md §4.2, ns.Guidance.CurrentStep's key): a re-plan keeps it at the head and
+-- only reorders the stops after it, so walking to train in a city, or any other rebuild, never swaps the story's
+-- current step for another quest from the log. A finished or skipped step is no longer in the route, so the hold ends
+-- with it. The order check refuses a move that would put work before its pickup or a hand-in before its objectives.
+---@param route AGFRoute
+---@param input AGFShownInput
+local function Hold(route, input)
+	local held = input.held
+	if not held then
+		return
+	end
+	local at
+	for index, step in ipairs(route.steps) do
+		if step.key == held then
+			at = index
+			break
+		end
+	end
+	-- A step whose bag item runs out leads with its reason shown, ahead of the held one.
+	if not (at and at > 1) or route.steps[1].hurry then
+		return
+	end
+	local moved = { route.steps[at] }
+	for index, step in ipairs(route.steps) do
+		if index ~= at then
+			moved[#moved + 1] = step
+		end
+	end
+	if not ns.Order.Valid(moved, input.player.logMax, input.log) then
+		return
+	end
+	route.steps = moved
+	for _, card in ipairs(route.journeys) do
+		if card.key == route.journey then
+			card.steps = moved
+		end
+	end
+	-- "You're here" follows the head: only the area it stands in counts, and the step that led before is no longer it.
+	for _, step in ipairs(moved) do
+		step.here = nil
+	end
+	local index = ns.Model.Here(input.data, input.player, moved, route.here, input.prefs.camps)
+	if index == 1 then
+		moved[1].here = true
+	end
+	route.here = moved[1].here and moved[1].key or nil
+end
+
 -- Planning and presentation use separate frames; only the finished route is committed by Core.
 ---@param input AGFShownInput
 ---@return AGFRoute shown what the views draw: the chosen journey's steps in the player's order
@@ -90,6 +138,9 @@ function Shown.Build(input)
 		if co and not main then
 			coroutine.yield("frame")
 		end
+	end
+	if not input.repaint then
+		Hold(full, input)
 	end
 	Reorder(full, input)
 	if input.observe then

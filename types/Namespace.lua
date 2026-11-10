@@ -272,6 +272,7 @@
 ---@field r? number an area's radius in yards, wide enough for all its objectives; 0 for a point
 ---@field planned? table<integer, true> the quests on it the route picks up first, not in the log yet (Laps.lua)
 ---@field returns? table<integer, true> a town's hand-ins the route comes back for once their objectives are done
+---@field hurry? boolean it leads because a bag item it needs runs out (Laps Hurry); a held step yields to it
 ---@field chapter? string the story card's chapter line, or a dungeon chain's label, on the step that holds its quests
 ---@field shapes? AGFNode[] an area's objective nodes, each its own ring, merged into it
 ---@field here? true step 1 is the area the player stands in, objectives open: nothing guides to it, only on past it
@@ -422,6 +423,7 @@
 ---@field dungeonEntrances? table<integer, AGFLocation> known instance entrance points
 ---@field skippedQuests? table<string, integer[]> the quests of each skipped giver, by skipped key: no route offers them
 ---@field forget? table<string, true> journeys whose committed order (`AGFRoute.orders`) this build lets go
+---@field held? string the step the tracker holds (`ns.Guidance.CurrentStep`): a re-plan keeps it at the head (docs/design.md §4.2)
 
 ---@class AGFState
 ---@field Level fun(): integer the player's level: UnitLevel, or PLAYER_LEVEL_UP's level while UnitLevel still lags behind it
@@ -838,7 +840,7 @@
 ---@field Pause fun(): boolean stops the chosen journey's route but keeps the choice, so its card and the tracker title resume it
 ---@field StepAside fun() Polestar started guiding: drops a waiting start and cancels only what Go started
 ---@field Reroute fun() the player reordered the chosen journey: the route AGF runs for it starts again a frame on
----@field CurrentStep fun(): AGFStep? the step the handed route heads for while it guides, else the route's head
+---@field CurrentStep fun(route?: AGFRoute): AGFStep? the step the handed route heads for while it guides, else the route's head; `route` reads a given route instead of the current one
 ---@field Guided fun(): (AGFStep|AGFGiver)[] the stops Shortest Path walks, while it guides; empty otherwise
 ---@field OnChange fun(callback: fun()) called after every Go that guides, every Stop and the super-tracking events
 ---@field Stale fun(handed: AGFStep[], index: integer, steps: AGFStep[], far: fun(a: AGFStep, b: AGFStep): boolean): boolean the guidance handed to Shortest Path no longer matches the journey's steps
@@ -1463,6 +1465,7 @@
 ---@field completed table<integer, boolean>
 ---@field log table<integer, AGFLogQuest>
 ---@field prefs AGFPrefs
+---@field held? string the step the tracker holds, which the route keeps at its head
 ---@field mapName? AGFMapName
 ---@field instanceName? fun(id: integer): string?
 ---@field last? AGFRoute the full route of the build before
@@ -1741,6 +1744,7 @@
 ---@field leadID? integer
 ---@field join? fun(selected: AGFStep[])
 ---@field card string
+---@field held? string the step the tracker holds, while this build still has it
 ---@field docks AGFFrameCrossing[]
 ---@field hub string? the town the player stands in, its areas' own
 ---@field origin AGFPosition
@@ -1810,6 +1814,7 @@
 ---@field committedOrders? table<string, AGFOrder>
 ---@field planDocks? {data: AGFData, [integer]: AGFFrameCrossing[]}
 ---@field heldHere? string
+---@field held? string the tracker's current step, which this build keeps at the head
 ---@field camps? table<string, table<string, true>> one plan's spots "Next spot" passed over, by area step key
 
 ---@alias AGFLocation {map?: integer, x?: number, y?: number}
