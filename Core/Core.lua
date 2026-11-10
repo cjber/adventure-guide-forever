@@ -1273,7 +1273,7 @@ EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	EventUtil.ContinueAfterAllEvents(function()
 		ForeverCore.MinimapButton.Create({
 			name = "AdventureGuideForeverMinimapButton",
-			icon = "Interface\\Icons\\inv_misc_map_01",
+			icon = ns.Icon,
 			title = ns.L.TITLE,
 			binding = "Alt-G",
 			subtext = ns.L.MINIMAP_BUTTON_SUBTEXT,

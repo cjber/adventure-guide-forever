@@ -3363,7 +3363,18 @@ function harness.load(options)
 	-- An addon is loaded when it has metadata or its global (every companion's global is its folder name);
 	-- options.installed names addons on disk but not loaded (turned off); options.version is this addon's TOC version.
 	h.installed = options.installed or {}
-	h.metadata[ADDON] = { Version = options.version }
+	-- The client answers GetAddOnMetadata from the TOC, so the harness reads the same fields the client would,
+	-- including the identity icon every Forever addon declares once.
+	local metadata = {}
+	for tocline in io.lines(ADDON .. ".toc") do
+		local key, value = tocline:match("^##%s*([^:]+):%s*(.-)%s*$")
+		if key then
+			metadata[key] = value
+		end
+	end
+	-- options.version overrides the TOC's @project-version@ placeholder, exactly as a built addon reports it.
+	metadata.Version = options.version
+	h.metadata[ADDON] = metadata
 	local function Loaded(addon)
 		return addon ~= ADDON and (h.metadata[addon] ~= nil or G[addon] ~= nil)
 	end

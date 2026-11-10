@@ -20,7 +20,7 @@ assert(button:IsShown(), "the minimap button starts hidden")
 assert(h.ns.minimapButton == button and button.minimapButtonSpec.host == h.ns, "the host does not point at it")
 
 local spec = button.minimapButtonSpec
-assert(spec.icon == "Interface\\Icons\\inv_misc_map_01", spec.icon)
+assert(spec.icon == h.ns.Icon and h.ns.Icon == "Interface\\Icons\\INV_Misc_Map_01", spec.icon)
 assert(spec.title == h.ns.L.TITLE, spec.title)
 assert(spec.binding == "Alt-G", spec.binding)
 assert(spec.subtext == h.ns.L.MINIMAP_BUTTON_SUBTEXT, spec.subtext)
