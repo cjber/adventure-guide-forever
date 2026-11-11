@@ -6,6 +6,9 @@ if GetLocale() ~= "deDE" then
 	return
 end
 local L = ns.L
+L["%s could not start. Reinstall %s to fix this."] = "%s could not start. Reinstall %s to fix this."
+L["%s: %s are out of date. Update them to fix this."] = "%s: %s are out of date. Update them to fix this."
+L["%s: %s is out of date. Update it to fix this."] = "%s: %s is out of date. Update it to fix this."
 L["AFTER_PICK_UP"] = "after you pick it up"
 L["ALL_SUGGESTIONS"] = "All suggestions"
 L["AUDIT_BUILD"] = "data from build %s, client build %s.%s"
@@ -444,7 +447,7 @@ L["TWEAKS_MISSING"] = "Install Tweaks Forever to find dungeon entrances."
 L["TWEAKS_OUTDATED"] = "Update Tweaks Forever to find dungeon entrances."
 L["UNLISTED"] = "This land has stories the guide doesn't know yet; look for the \"!\" over quest givers."
 L["UPDATED_TO"] = "updated to %s. %s"
-L["WHATS_NEW"] = "Works again after updating."
+L["WHATS_NEW"] = "Tells you which addon to update."
 L["WHY_ALLIANCE"] = "Alliance only"
 L["WHY_BREADCRUMB"] = "Only until you take %s"
 L["WHY_CHOSE"] = "You chose %s instead"

@@ -4,6 +4,9 @@ if GetLocale() ~= "deDE" then
 	return
 end
 local L = ns.L
+L["%s could not start. Reinstall %s to fix this."] = "%s konnte nicht starten. Installiere %s neu, um das zu beheben." -- mt
+L["%s: %s are out of date. Update them to fix this."] = "%s: %s sind veraltet. Aktualisiere sie, um das zu beheben." -- mt
+L["%s: %s is out of date. Update it to fix this."] = "%s: %s ist veraltet. Aktualisiere es, um das zu beheben." -- mt
 L["AFTER_PICK_UP"] = "nachdem Ihr sie angenommen habt"
 L["ALL_SUGGESTIONS"] = "Alle Vorschläge"
 L["AUDIT_BUILD"] = "Daten aus Build %s, Client-Build %s.%s"
@@ -458,7 +461,7 @@ L["TWEAKS_OUTDATED"] = "Aktualisiert Tweaks Forever, um Dungeoneingänge zu find
 L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
-L["WHATS_NEW"] = "Funktioniert nach dem Update wieder." -- mt
+L["WHATS_NEW"] = "Sagt dir, welches Addon aktualisiert werden muss." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"

@@ -562,9 +562,9 @@ ns.L = {
 	TWEAKS_FAMILY_MENU = "Find dungeon entrances: Tweaks Forever",
 	SPF_MISSING = "Install Shortest Path Forever for walked routes and boat times.",
 	SPF_DISABLED = "Enable Shortest Path Forever for walked routes and boat times.",
-	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of its CHANGELOG
-	-- entry, and tests/locales_spec.lua fails a release whose entry it does not match.
-	WHATS_NEW = "Works again after updating.",
+	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of the newest
+	-- CHANGELOG entry that has a bold lead, whose version is ns.WHATS_NEW_VERSION; tests/locales_spec.lua checks both.
+	WHATS_NEW = "Tells you which addon to update.",
 	DUNGEON_BOSSES_LOOT = "Bosses and loot",
 	DUNGEON_LOOT_INSTALL = "Install AtlasLoot Classic and its Dungeons and Raids module for bosses and loot.",
 	DUNGEON_LOOT_COMBAT = "Boss loot will load after combat.",
@@ -588,6 +588,16 @@ ns.L = {
 	RXP_SETUP_SKILLUP = "SkillUp: equipment and shopping journeys are available.",
 	RXP_SETUP_SETTINGS = "Change this later in AddOns settings.",
 }
+
+-- The release whose WHATS_NEW is the newest headline in CHANGELOG.md. A core sync adds a maintenance release above it
+-- with no bold lead, so the game prints nothing new for that version but still remembers it.
+ns.WHATS_NEW_VERSION = "1.6.5"
+
+-- The shared out-of-date warning (Core/ForeverRequire.lua) reads ns.L by the English phrase itself, so these keys are
+-- the sentence. A locale translates the same keys.
+ns.L["%s could not start. Reinstall %s to fix this."] = "%s could not start. Reinstall %s to fix this."
+ns.L["%s: %s are out of date. Update them to fix this."] = "%s: %s are out of date. Update them to fix this."
+ns.L["%s: %s is out of date. Update it to fix this."] = "%s: %s is out of date. Update it to fix this."
 
 _G.BINDING_HEADER_ADVENTUREGUIDEFOREVER = "Adventure Guide Forever"
 _G["BINDING_NAME_CLICK AdventureGuideForeverMinimapButton:LeftButton"] = "Open Adventure Guide"

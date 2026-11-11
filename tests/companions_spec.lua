@@ -56,7 +56,13 @@ do
 end
 
 do
-	local h = Load({ version = "0.2.0", db = { lastVersion = "0.1.1" } })
+	local h = Load({
+		version = "0.2.0",
+		db = { lastVersion = "0.1.1" },
+		setup = function(loaded)
+			loaded.ns.WHATS_NEW_VERSION = "0.2.0"
+		end,
+	})
 	local lines = Updates(h)
 	equal(#lines, 1, "new version: one line")
 	equal(
@@ -71,7 +77,27 @@ do
 end
 
 do
-	local h = Load({ version = "0.2.0", db = { lastVersion = "0.1.1", whatsNew = false } })
+	-- A maintenance release (a core sync) has no headline in CHANGELOG.md, so it is newer than WHATS_NEW_VERSION.
+	local h = Load({
+		version = "0.2.1",
+		db = { lastVersion = "0.2.0" },
+		setup = function(loaded)
+			loaded.ns.WHATS_NEW_VERSION = "0.2.0"
+		end,
+	})
+	equal(#Updates(h), 0, "maintenance release: silent")
+	equal(h.G.AdventureGuideForeverDB.lastVersion, "0.2.1", "maintenance release: the version is kept")
+	clean(h, "maintenance release")
+end
+
+do
+	local h = Load({
+		version = "0.2.0",
+		db = { lastVersion = "0.1.1", whatsNew = false },
+		setup = function(loaded)
+			loaded.ns.WHATS_NEW_VERSION = "0.2.0"
+		end,
+	})
 	equal(#Updates(h), 0, "setting off: silent")
 	equal(h.G.AdventureGuideForeverDB.lastVersion, "0.2.0", "setting off: the version is still kept")
 	clean(h, "setting off")

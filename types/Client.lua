@@ -74,8 +74,9 @@ AchievementAlertSystem = nil
 ---@type (fun(): boolean)?
 AchievementFrame_LoadUI = nil
 
--- UIErrorsFrame.lua: the red line at the top of the screen, as the client shows its own errors.
----@type {AddExternalErrorMessage: fun(self: any, message: string)}
+-- UIErrorsFrame.lua: the red line at the top of the screen, as the client shows its own errors. The shared out-of-date
+-- warning (Core/ForeverRequire.lua) draws its one line with AddMessage.
+---@type {AddExternalErrorMessage: fun(self: any, message: string), AddMessage: fun(self: any, message: string, red?: number, green?: number, blue?: number, alpha?: number, holdTime?: number)}
 UIErrorsFrame = nil
 
 -- GlobalStrings: "You can't place a pin on this map." in enUS; absent from some builds, so read with a fallback.

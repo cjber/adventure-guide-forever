@@ -32,8 +32,8 @@ card | zone:1432 | Head to Loch Modan | 14 quests near your level | 5 quests wil
   step 5 | town:1432:142 | Visit Ironband's Excavation Site: Pick up 2 | 1432 0.6490,0.6666 | 2 to pick up
   step 6 | town:1432:147 | Visit The Farstrider Lodge: Pick up 3 | 1432 0.8176,0.6166 | 3 to pick up
   step 7 | town:1432:923 | Pick up: Banner of the Fallen | 1432 0.3178,0.8632 | near your level
-card | zone:1433 | Head to Redridge Mountains | 15 quests near your level | 3 quests will soon turn grey | map 1433
-  step 1 | town:1433:69 | Visit Lakeshire: Pick up 13 | 1433 0.1759,0.4384 | 13 to pick up
+card | zone:1433 | Head to Redridge Mountains | 14 quests near your level | 3 quests will soon turn grey | map 1433
+  step 1 | town:1433:69 | Visit Lakeshire: Pick up 12 | 1433 0.1759,0.4384 | 12 to pick up
   step 2 | town:1433:1002 | Pick up: Encroaching Gnolls | 1433 0.1037,0.7126 | near your level
   step 3 | town:1429:91 | Pick up: A Watchful Eye | 1429 0.6522,0.6971 | near your level
 card | zone:1431 | Head to Duskwood | 6 quests near your level | - | map 1431
