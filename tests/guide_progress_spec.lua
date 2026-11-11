@@ -71,6 +71,12 @@ h.G.SetCVar("questPOI", "0")
 note = h.tracker.liveBlocks["quest-areas"]
 check(note and note.used and h.tracker.layoutOrder[1] == "quest-areas", "the note shows first")
 check(note.header == h.ns.L.QUEST_AREAS_OFF, "it says the quest areas are hidden")
+-- Its hover is ForeverCore.TrackerLine.SetHeaderTooltip's: a title, then one normal line.
+h.tracker:OnBlockHeaderEnter(note)
+check(h.tooltip[1] == "title: " .. h.ns.L.QUEST_AREAS_OFF, "hover names the note")
+check(h.tooltip[2] == "normal: " .. h.ns.L.QUEST_AREAS_TOOLTIP, "and says what the areas show")
+h.tracker:OnBlockHeaderLeave(note)
+check(not h.G.GameTooltip:IsShown(), "the tooltip goes on leave")
 check(h.cvars.questPOI == "0", "the CVar is left to the player")
 -- A click in combat does nothing; out of combat it turns them on and the note goes.
 h.combat = true

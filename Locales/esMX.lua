@@ -422,6 +422,7 @@ L["TRACKER_DRAG_TOOLTIP"] = "Arrastra para mover"
 L["TRACKER_LOADING"] = "Cargando datos de misiones..."
 L["TRACKER_LOCKED_TOOLTIP"] = "El rastreador está bloqueado. Desactiva Bloquear el rastreador para moverlo."
 L["TRACKER_PAUSED"] = "Ruta en pausa. Haz clic en el título para reanudarla." -- mt
+L["TRACKER_SHOW_WHERE"] = "Vuelve a activarlo en Opciones > AddOns > Adventure Guide, en Rastreador de objetivos." -- mt
 L["TRACKER_UNATTACHED"] = "no se pudo añadir una sección al rastreador de objetivos; infórmalo con /agf audit."
 L["TRAINER"] = "Visita a tu instructor de clase"
 L["TRAINER_IN"] = "Visita a tu instructor de clase en %s"

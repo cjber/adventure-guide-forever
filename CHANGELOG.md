@@ -15,6 +15,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 ### For addon authors
 
 - **The guide's API is listed with every other Forever addon's.** `AdventureGuideForever.API` now hands itself to `ForeverCore.APIKit.Publish`, so another addon finds it through `ForeverCore.APIKit.Addons()` on ForeverCore 1.3.2 or later, with the same `version` and `minor`. Nothing a caller reads changed, and an older core loads as before.
+- The tracker section is built by ForeverCore's `TrackerSection.Create`, measures its ongoing steps with `TrackerSection.Room`, and draws its block header tooltip with `TrackerLine.SetHeaderTooltip`, so the addon's own copies of that plumbing are gone.
 
 ## [1.6.2] - 2026-11-11
 

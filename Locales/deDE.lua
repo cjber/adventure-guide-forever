@@ -423,6 +423,7 @@ L["TRACKER_DRAG_TOOLTIP"] = "Ziehen zum Verschieben"
 L["TRACKER_LOADING"] = "Questdaten werden geladen..."
 L["TRACKER_LOCKED_TOOLTIP"] = "Die Verfolgung ist gesperrt. Schaltet Verfolgung sperren aus, um sie zu verschieben."
 L["TRACKER_PAUSED"] = "Route pausiert. Klickt auf den Titel, um fortzufahren." -- mt
+L["TRACKER_SHOW_WHERE"] = "Zum Wiedereinschalten unter Einstellungen > AddOns > Adventure Guide, Questzielverfolgung." -- mt
 L["TRACKER_UNATTACHED"] = "Konnte der Questzielverfolgung keinen Abschnitt hinzufügen; bitte meldet es mit /agf audit."
 L["TRAINER"] = "Besucht Euren Klassenlehrer"
 L["TRAINER_IN"] = "Besucht Euren Klassenlehrer in %s"

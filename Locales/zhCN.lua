@@ -413,6 +413,7 @@ L["TRACKER_DRAG_TOOLTIP"] = "拖动以移动"
 L["TRACKER_LOADING"] = "正在加载任务数据..."
 L["TRACKER_LOCKED_TOOLTIP"] = "追踪器已锁定。关闭“锁定追踪器”即可移动它。"
 L["TRACKER_PAUSED"] = "路线已暂停。点击标题以继续。" -- mt
+L["TRACKER_SHOW_WHERE"] = "可在 设置 > 插件 > Adventure Guide 的 目标追踪栏 中重新开启。" -- mt
 L["TRACKER_UNATTACHED"] = "无法在目标追踪栏中添加区块；请使用/agf audit报告。"
 L["TRAINER"] = "拜访你的职业训练师"
 L["TRAINER_IN"] = "拜访%s的职业训练师"

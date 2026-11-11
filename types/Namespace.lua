@@ -672,6 +672,7 @@
 ---@field TRAINER_SPELLS string format: spell count
 ---@field TRAINER_SPELL string
 ---@field TRAINER_LINE string format: TRAINER, then the spell count
+---@field TRACKER_SHOW_WHERE string where the tracker's own show switch lives
 ---@field TRACKER_UNATTACHED string
 ---@field TRACKER_LOADING string the tracker's quiet line while QuestieDB's catalogue builds
 ---@field POLESTAR_GUIDING string the tracker's one line while Polestar runs a guide

@@ -300,6 +300,7 @@ ns.L = {
 	TRAINER_SPELLS = "%d new spells",
 	TRAINER_SPELL = "1 new spell",
 	TRAINER_LINE = "%s · %s",
+	TRACKER_SHOW_WHERE = "Turn it back on in Settings > AddOns > Adventure Guide, under Objective tracker.",
 	TRACKER_UNATTACHED = "couldn't add a section to the objective tracker; please report with /agf audit.",
 	DUMP_SAVED = "layout saved. Type /reload, then send "
 		.. "WTF\\Account\\<account>\\SavedVariables\\AdventureGuideForever.lua",

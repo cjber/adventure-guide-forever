@@ -858,6 +858,17 @@ function harness.load(options)
 
 	local templates = {}
 
+	-- A virtual template another addon's XML declares, as the TOC reader lists it (tools/forever_sim/toc.lua): the
+	-- client registers it before it runs the files after that XML, so a frame built from it inherits what it names.
+	-- ForeverCore's UI/TrackerSection.xml declares ForeverTrackerInteractiveLineTemplate this way.
+	local function RegisterTemplate(template)
+		templates[template.name] = {
+			tag = template.type,
+			attrs = { name = template.name, inherits = template.inherits, virtual = "true" },
+			children = {},
+		}
+	end
+
 	local function Internal(objectType, parent, key)
 		local region = NewRegion(objectType, nil, parent, true)
 		region.parentKey = key
@@ -1424,6 +1435,13 @@ function harness.load(options)
 		MinimalScrollBar = noop,
 		LargeSideTabButtonTemplate = function(frame)
 			Internal("Texture", frame, "Icon")
+		end,
+		-- Blizzard_ObjectiveTrackerShared.xml:217: the plain objective line, a text region and an icon that start out
+		-- empty or hidden. ForeverCore's UI/TrackerSection.xml declares a line inheriting this one, so the chain a
+		-- frame built from ForeverTrackerInteractiveLineTemplate resolves ends here.
+		ObjectiveTrackerLineTemplate = function(frame)
+			Internal("FontString", frame, "Text"):SetText("")
+			Internal("Texture", frame, "Icon"):Hide()
 		end,
 		ObjectiveTrackerModuleTemplate = TrackerModule,
 		-- Mainline/SharedUIPanelTemplates.xml:566-662: the portrait's container is a real child (level 400) so a dump
@@ -3656,7 +3674,7 @@ function harness.load(options)
 	-- ForeverCore loads first, as the client loads a dependency before the addon that requires it. The specs use the
 	-- real shared modules, never a fake, so a change in core reaches them.
 	G.ForeverCoreDB = options.coreDB or {}
-	local coreNamespace = ForeverCore.load(G)
+	local coreNamespace = ForeverCore.load(G, nil, RegisterTemplate)
 	h.fire("ADDON_LOADED", "ForeverCore")
 	-- Frames made so far belong to ForeverCore; the addon's own start at the next index.
 	h.coreFrameCount = #h.frames

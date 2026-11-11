@@ -1,5 +1,7 @@
 -- Initialization must tolerate either native event order and an addon loaded after login. The section is created with
--- the files and attaches to ForeverCore's column only after the addon's saved variables load.
+-- the files through ForeverCore's TrackerSection and attaches to its column only after the addon's saved variables
+-- load.
+local ForeverCore = dofile("tests/forever_core.lua")
 local checks = 0
 local function noop() end
 for _, readyAtLoad in ipairs({ false, true }) do
@@ -8,12 +10,15 @@ for _, readyAtLoad in ipairs({ false, true }) do
 	local function region()
 		return {
 			Hide = noop,
-			SetHeader = noop,
+			SetHeader = function(self, text)
+				self.headerText = text
+			end,
 			RegisterEvent = noop,
 			SetScript = noop,
 		}
 	end
 	local env = setmetatable({
+		ObjectiveTrackerFrame = {},
 		ObjectiveTrackerManager = setmetatable({}, {
 			__index = function()
 				error("must not register with native manager")
@@ -72,7 +77,8 @@ for _, readyAtLoad in ipairs({ false, true }) do
 	}
 	env.ForeverCore = {
 		TrackerHost = {
-			Attach = function(module)
+			Attach = function(module, show)
+				module.show = show
 				owners[module] = native
 			end,
 			IsAttached = function(module)
@@ -80,9 +86,22 @@ for _, readyAtLoad in ipairs({ false, true }) do
 			end,
 		},
 	}
+	-- The real section API, as ForeverCore loads it: the spec asserts the addon through the calls core publishes.
+	local core = { TrackerHost = env.ForeverCore.TrackerHost, SafeCall = ns.core.SafeCall }
+	local chunk = assert(loadfile(ForeverCore.directory() .. "/UI/TrackerSection.lua"))
+	setfenv(chunk, env)
+	chunk("ForeverCore", core)
+	env.ForeverCore.TrackerSection = core.TrackerSection
+	env.ForeverCore.TrackerLine = core.TrackerLine
+	local saved = { trackerHost = { scale = 0.8 } }
+	local old = saved.trackerHost
+	env.AdventureGuideForeverDB = saved
 	setfenv(assert(loadfile("UI/Tracker.lua")), env)("Addon", ns)
 	assert(modules[1] ~= nil, "the section is made with the files")
 	assert(owners[modules[1]] == nil, "and waits for the saved variables before attaching")
+	assert(modules[1].uiOrder == -4, "at the addon's place in the column")
+	assert(modules[1].lineTemplate == "ObjectiveTrackerAnimLineTemplate", "with the fanfare block's own line")
+	assert(modules[1].headerText == "TITLE", "under the addon's header")
 	for _, fn in ipairs(callbacks) do
 		fn()
 	end
@@ -91,6 +110,9 @@ for _, readyAtLoad in ipairs({ false, true }) do
 	end
 	assert(owners[modules[1]] == native, "then attaches to ForeverCore's column")
 	assert(modules[1].safeCall == ns.core.SafeCall, "and carries the addon's SafeCall")
+	assert(modules[1].legacySettings == old, "and offers the old tracker table once")
+	assert(saved.trackerHost == nil, "which is then cleared")
+	assert(modules[1].show.where == "TRACKER_SHOW_WHERE", "the header menu offers the addon's show switch")
 	checks = checks + 1
 end
 print("tracker_lifecycle_spec: " .. checks .. " load-order cases passed")
