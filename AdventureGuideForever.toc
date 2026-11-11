@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Dependencies: ForeverCore
-## X-Forever-Core: v1.7.1
+## X-Forever-Core: v1.7.2
 ## Title: Adventure Guide Forever - story levelling and quest routes
 ## Notes: Zone stories as chapters, journeys you pick on the map, and a route walked to each hand-in.
 ## Author: cjber
