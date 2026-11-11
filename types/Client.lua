@@ -166,6 +166,8 @@ QUESTS_LABEL = nil
 ---@field GetGlobalPinScale fun(self: WorldMapFrame): number?
 ---@field GetPinFrameLevelsManager? fun(self: WorldMapFrame): AGFMapFrameLevels
 ---@field EnumeratePinsByTemplate fun(self: WorldMapFrame, template: string): fun(): AGFQuestPin
+-- WorldMapMixin:IsMaximized (Blizzard_WorldMap.lua:138): the maximized map has no quest sidebar and no toggle.
+---@field IsMaximized fun(self: WorldMapFrame): boolean
 ---@class AGFMapFrameLevels
 ---@field GetValidFrameLevel fun(self: AGFMapFrameLevels, levelType: string): number?
 

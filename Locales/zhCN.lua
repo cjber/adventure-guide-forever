@@ -365,7 +365,10 @@ L["SHORTEST_PATH"] = "Shortest Path"
 L["SHOW_AGAIN"] = "重新显示：%s"
 L["SHOW_ON_MAP"] = "在地图上显示"
 L["SHOW_QUEST"] = "显示任务"
-L["SIDEBAR_COLLAPSED"] = "展开任务日志以打开指南。"
+L["SIDEBAR_COLLAPSED"] =
+	"指南在世界地图旁的任务日志中打开。点击地图右下角的箭头即可显示任务日志。"
+L["SIDEBAR_MAXIMIZED"] =
+	"指南在世界地图旁的任务日志中打开。点击地图关闭按钮旁的按钮缩小地图，即可显示任务日志。"
 L["SKILLUP_FAMILY"] = "SkillUp Forever规划升到下一专业等级最省钱的路线。"
 L["SKILLUP_FAMILY_MENU"] = "升到下一等级最省钱的路线：SkillUp Forever"
 L["SKILLUP_NONE"] = "没有可提升的制造专业。在训练师处学会一个后，它会显示在这里。"

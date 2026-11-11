@@ -365,7 +365,10 @@ L["SHORTEST_PATH"] = "Shortest Path"
 L["SHOW_AGAIN"] = "重新顯示：%s"
 L["SHOW_ON_MAP"] = "在地圖上顯示"
 L["SHOW_QUEST"] = "顯示任務"
-L["SIDEBAR_COLLAPSED"] = "展開任務日誌以開啟指南。"
+L["SIDEBAR_COLLAPSED"] =
+	"指南在世界地圖旁的任務日誌中開啟。點擊地圖右下角的箭頭即可顯示任務日誌。"
+L["SIDEBAR_MAXIMIZED"] =
+	"指南在世界地圖旁的任務日誌中開啟。點擊地圖關閉按鈕旁的按鈕縮小地圖，即可顯示任務日誌。"
 L["SKILLUP_FAMILY"] = "SkillUp Forever規劃升到下一個專業等級最省錢的路線。"
 L["SKILLUP_FAMILY_MENU"] = "升到下一等級最省錢的路線：SkillUp Forever"
 L["SKILLUP_NONE"] = "沒有可提升的製作專業。在訓練師處學會一個後，它會顯示在這裡。"

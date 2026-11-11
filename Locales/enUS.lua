@@ -215,8 +215,11 @@ ns.L = {
 	NOT_INTERESTED = "Not interested",
 	RIGHT_CLICK_NOT_INTERESTED = "Right-click if you're not interested",
 	CHOOSE_JOURNEY = "Choose another journey",
-	-- The map's quest sidebar is collapsed or the map is maximized, so the guide cannot be shown.
-	SIDEBAR_COLLAPSED = "Expand the quest sidebar to open the guide.",
+	-- The map's quest sidebar is collapsed, or the map is maximized and has none, so the guide cannot be shown.
+	SIDEBAR_COLLAPSED = "The guide opens in the quest log beside the world map. "
+		.. "Click the arrow at the bottom right of the map to show the quest log.",
+	SIDEBAR_MAXIMIZED = "The guide opens in the quest log beside the world map. "
+		.. "Click the button beside the map's close cross to shrink the map and show the quest log.",
 	-- A step's quest ruled out on this character (docs/design.md §2.18): it stays in the log, off every route.
 	NOT_THIS_QUEST = "Not this quest",
 	-- A quest the route leaves out joins it with a shift-click, in the search or on the map, and leaves the same way.

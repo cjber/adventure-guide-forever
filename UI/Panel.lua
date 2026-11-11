@@ -73,6 +73,8 @@ local GROUP_GAP = 6
 local panel
 -- Whether the guide panel is visible as the last Sync saw it.
 local reported = false
+-- An open the player asked for before the world map was on screen (#664).
+local pendingOpen = false
 -- Defined in Attach, before the map can show or hide.
 local Sync
 ---@type ForeverQuestLogTab?
@@ -1266,6 +1268,44 @@ local function Attach()
 	tabPip:SetShown(ns.Moments.Unseen())
 	ns.Queston.Register(_G.ForeverQuestLogQuestsTab)
 
+	-- The client shows the world map a frame after the ask: C_Map.OpenWorldMap posts WORLD_MAP_OPEN, whose handler
+	-- calls OpenWorldMap, and ShowUIPanel hands the show to the panel manager's secure frame. Until then its quest
+	-- sidebar is hidden because the map is, not because the player collapsed it, so an open the player asked for
+	-- finishes on the state the client reports once the map has shown (#664).
+	local function SelectGuide()
+		-- A tab already selected is not reported visible again, so an open guide still re-reads the route.
+		local wasShown = panel ~= nil and panel:IsShown()
+		ForeverCore.QuestLogTabs.Select("guide")
+		if wasShown then
+			Refresh()
+		end
+	end
+
+	-- A collapsed quest sidebar or a maximized map hides QuestMapFrame and so the panel inside it. Bringing the
+	-- sidebar back from addon code taints the map, so the guide says which control shows it instead of opening
+	-- nothing (#641, #664).
+	local function FinishOpen()
+		if not pendingOpen or not WorldMapFrame:IsShown() then
+			return
+		end
+		pendingOpen = false
+		if QuestMapFrame:IsShown() then
+			SelectGuide()
+		elseif WorldMapFrame:IsMaximized() then
+			ns.Print(L.SIDEBAR_MAXIMIZED)
+		else
+			ns.Print(L.SIDEBAR_COLLAPSED)
+		end
+	end
+
+	-- The map has shown with its quest sidebar in its final state (WorldMapFrame:OnShow sets the map's display state
+	-- and then fires this): finish an open that was asked for before the map was on screen, and read the guide's
+	-- visibility again after a reopen, where the client shows the sidebar it kept and calls nothing (#664).
+	EventRegistry:RegisterCallback("WorldMapOnShow", function()
+		FinishOpen()
+		Sync()
+	end, panel)
+
 	-- The client has shown or hidden the map: react after it, isolated from its own show or hide (#493).
 	local function MapChanged(_, frame)
 		if frame == WorldMapFrame then
@@ -1294,19 +1334,16 @@ local function Attach()
 	end
 
 	function ns.OpenPanel()
-		ForeverCore.OpenMap()
-		-- A collapsed quest sidebar or a maximized map hides QuestMapFrame and so the panel inside it. Bringing the
-		-- sidebar back from addon code taints the map, so the guide says what to do instead of opening nothing (#641).
-		if not QuestMapFrame:IsShown() then
-			ns.Print(L.SIDEBAR_COLLAPSED)
+		pendingOpen = true
+		local opened = ForeverCore.OpenMap()
+		if not opened and not WorldMapFrame:IsShown() then
+			-- The client refuses the map for now (combat, or a build without its secure opener), so nothing will show:
+			-- the guide is still chosen, and the next map the player opens opens on it.
+			pendingOpen = false
+			SelectGuide()
 			return
 		end
-		-- A tab already selected is not reported visible again, so an open guide still re-reads the route.
-		local wasShown = panel ~= nil and panel:IsShown()
-		ForeverCore.QuestLogTabs.Select("guide")
-		if wasShown then
-			Refresh()
-		end
+		FinishOpen()
 	end
 end
 

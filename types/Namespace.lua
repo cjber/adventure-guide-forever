@@ -627,7 +627,8 @@
 ---@field SKIPPED string format: how many steps are skipped this session
 ---@field SHOW_AGAIN string format: a skipped step's title
 ---@field CHOOSE_JOURNEY string opens the guide
----@field SIDEBAR_COLLAPSED string says to expand the quest sidebar when the guide cannot be shown
+---@field SIDEBAR_COLLAPSED string says how to show the quest log when the player collapsed it
+---@field SIDEBAR_MAXIMIZED string says how to shrink the map and show the quest log when the map is maximized
 ---@field ALL_SUGGESTIONS string the header's back arrow tooltip: it chooses none, so the guide shows the overview again
 ---@field BACK_STOPS_ROUTE string the back arrow's tooltip while AGF's route runs, which going back stops
 ---@field BACK_TO_ALL string the chosen card's tooltip: the back arrow goes back to every card

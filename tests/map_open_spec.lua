@@ -104,6 +104,8 @@ equal(Opened(), opened, "closed: Blizzard's Lua opener is never run")
 equal(restricted, 1, "closed: through C_Map.OpenWorldMap")
 equal(SecureCalls(), restricted, "closed: through the shared opener's secure delegate")
 equal(h.counts.SetMapID, maps, "closed: no map id keeps the current map")
+-- The client shows the map a frame after the ask (#664).
+h.flush()
 equal(h.G.WorldMapFrame:IsShown(), true, "closed: the map now shows")
 
 -- The reported path: the carry card's cleanup menu, with the map showing. Its MenuUtil callback refuses the client

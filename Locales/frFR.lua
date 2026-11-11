@@ -374,7 +374,10 @@ L["SHORTEST_PATH"] = "Shortest Path"
 L["SHOW_AGAIN"] = "Afficher à nouveau : %s"
 L["SHOW_ON_MAP"] = "Voir sur la carte"
 L["SHOW_QUEST"] = "Afficher la quête"
-L["SIDEBAR_COLLAPSED"] = "Développez le journal de quêtes pour ouvrir le guide."
+L["SIDEBAR_COLLAPSED"] =
+	"Le guide s'ouvre dans le journal de quêtes à côté de la carte du monde. Cliquez sur la flèche en bas à droite de la carte pour afficher le journal de quêtes."
+L["SIDEBAR_MAXIMIZED"] =
+	"Le guide s'ouvre dans le journal de quêtes à côté de la carte du monde. Cliquez sur le bouton à côté de la croix de fermeture de la carte pour la réduire et afficher le journal de quêtes."
 L["SKILLUP_FAMILY"] = "SkillUp Forever prévoit le chemin le moins cher vers votre prochain rang de métier."
 L["SKILLUP_FAMILY_MENU"] = "Chemin le moins cher vers votre prochain rang : SkillUp Forever"
 L["SKILLUP_NONE"] =
