@@ -17,7 +17,7 @@ except ModuleNotFoundError:
     from forever_tools import package
 
 ROOT = Path(__file__).resolve().parent.parent
-POLICY = package.Policy(addons=("AdventureGuideForever", "ForeverCore"), specs=("tests/smoke_spec.lua",))
+POLICY = package.Policy(addons=("AdventureGuideForever"), specs=("tests/smoke_spec.lua",))
 
 if __name__ == "__main__":
     sys.exit(package.main(ROOT, POLICY))
