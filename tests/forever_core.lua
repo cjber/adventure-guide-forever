@@ -44,14 +44,15 @@ function ForeverCore.directory()
 	)
 end
 
--- The files ForeverCore.toc lists, in its order, with forward slashes for loadfile.
+-- The Lua files ForeverCore.toc lists, in its order, with forward slashes for loadfile. The client reads the XML
+-- the TOC also lists itself, so there is nothing here to hand LuaJIT.
 ---@param directory string
 ---@return string[]
 function ForeverCore.files(directory)
 	local files = {}
 	for line in io.lines(directory .. "/ForeverCore.toc") do
 		line = line:gsub("\r$", "")
-		if not (line:match("^%s*$") or line:match("^%s*#")) then
+		if not (line:match("^%s*$") or line:match("^%s*#")) and line:match("%.lua%s*$") then
 			files[#files + 1] = (line:gsub("\\", "/"))
 		end
 	end

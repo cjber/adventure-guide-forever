@@ -333,6 +333,10 @@ function harness.load(options)
 		self.atlasCrop = nil
 		return setTexCoord(self, ...)
 	end
+	-- A texture's draw layer and its order within it, which the client takes as two arguments.
+	function Methods:SetDrawLayer(drawLayer, subLevel)
+		self.layer, self.subLevel = drawLayer, subLevel
+	end
 	local function visibilityChanged(frame, shown)
 		local script = frame.scripts and frame.scripts[shown and "OnShow" or "OnHide"]
 		if script then

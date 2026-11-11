@@ -2,7 +2,8 @@
 -- AdventureGuideForever.API answers from the settled route with fresh tables, and never builds one for its caller.
 -- Minor 5 adds each stop's kind and quest IDs, and Status, Pause and Resume. Minor 6 adds each read's not-ready
 -- reason and builds Subscribe on ForeverCore.APIKit.Hub. Minor 7 adds the suggestions change and nil, "invalid" for a
--- bad limit.
+-- bad limit. The table is also published for ForeverCore.APIKit.Addons(), and an older kit without Publish still
+-- loads it.
 local harness = dofile("tests/harness.lua")
 
 local checks = 0
@@ -42,6 +43,40 @@ local h = harness.load({
 local API = h.G.AdventureGuideForever.API
 equal(API.version, 1, "still version 1")
 equal(API.minor, 7, "minor 7 is the suggestions change and the invalid-argument reason")
+
+-- Published once at load, so another addon lists this API by name, with the version and minor the table carries.
+local function Published(addonName)
+	for _, entry in ipairs(h.G.ForeverCore.APIKit.Addons()) do
+		if entry.name == addonName then
+			return entry
+		end
+	end
+end
+local published = assert(Published("AdventureGuideForever"), "Addons() lists AdventureGuideForever")
+equal(published.version, API.version, "the listed version is the API's own")
+equal(published.minor, API.minor, "and so is its minor")
+equal(published.api, API, "Addons() hands back the addon's own table, never a copy")
+
+-- A ForeverCore older than 1.3.2 has no Publish: the same file loads, publishes nothing and raises nothing.
+local apiKit = h.G.ForeverCore.APIKit
+local kitMinor, kitPublish = apiKit.minor, apiKit.Publish
+local publishes = {}
+apiKit.minor, apiKit.Publish = 1, function(addonName)
+	publishes[#publishes + 1] = addonName
+end
+local older = setmetatable({ ForeverCore = h.G.ForeverCore }, { __index = h.G })
+local chunk = assert(loadfile("Core/API.lua"))
+setfenv(chunk, older)
+local loaded, problem = pcall(chunk, "AdventureGuideForever", {
+	Guidance = { OnChange = function() end },
+	OnRouteChange = function() end,
+})
+apiKit.minor, apiKit.Publish = kitMinor, kitPublish
+equal(loaded, true, "an older core's kit loads the API with no error: " .. tostring(problem))
+equal(#publishes, 0, "and the Publish it does not have is never called")
+local exposed = rawget(older, "AdventureGuideForever")
+assert(exposed and exposed.API, "the API is exposed as before")
+
 h.ns.Invalidate()
 local loadingStop, loadingStopReason = API.CurrentStop()
 local loadingNext, loadingNextReason = API.NextStops()
