@@ -72,6 +72,8 @@ do
 	equal(reads.levels[5], false, "no level is remembered as none")
 	equal(ns.QuestieLevel("7.0"), 7, "a level from QuestieDB: a number")
 	equal(ns.QuestieLevel(0), false, "a zero level is none")
+	equal(ns.QuestieLevel(9999), false, "QuestieDB's unknown-level sentinel is none")
+	equal(ns.QuestieLevel(10000), false, "a level past the sentinel is none too")
 	-- A QuestieDB without the field: no levels are read, and no spot has one.
 	local plain = { Npc = {}, Object = {}, Item = {}, names = { Npc = {}, Object = {}, Item = {} }, camps = {} }
 	local asked
